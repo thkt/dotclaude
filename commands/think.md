@@ -42,7 +42,7 @@ Perform detailed problem analysis with dynamic project understanding, risk asses
 Count source files:
 
 ```bash
-find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) -not -path "*/node_modules/*" | wc -l
+find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | grep -v node_modules | wc -l
 ```
 
 ### Dependencies That May Impact

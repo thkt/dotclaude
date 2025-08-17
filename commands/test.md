@@ -46,7 +46,7 @@ Ensure code quality with comprehensive testing featuring dynamic discovery, hier
 ### Test File Count
 
 ```bash
-!`find . -type f \( -name "*.test.*" -o -name "*.spec.*" \) -not -path "*/node_modules/*" 2>/dev/null | wc -l || echo "0"`
+!`find . -name "*.test.*" -o -name "*.spec.*" | grep -v node_modules | wc -l || echo "0"`
 ```
 
 ## Hierarchical Testing Process
@@ -85,7 +85,7 @@ Analyze results with confidence scoring:
 Focus only on changed files:
 
 ```bash
-!`npm test -- --findRelatedTests $(git diff --name-only HEAD) 2>/dev/null || echo "Quick test not available"`
+!`npm test 2>/dev/null || yarn test 2>/dev/null || pnpm test 2>/dev/null || bun test 2>/dev/null || echo "Quick test not available"`
 ```
 
 Command: `/test --quick`
@@ -95,7 +95,7 @@ Command: `/test --quick`
 Run main test suite:
 
 ```bash
-!`npm test 2>&1 || yarn test 2>&1 || pnpm test 2>&1`
+!`npm test 2>&1 || yarn test 2>&1 || pnpm test 2>&1 || bun test 2>&1`
 ```
 
 Command: `/test` (default)
@@ -105,7 +105,7 @@ Command: `/test` (default)
 Full test suite with coverage:
 
 ```bash
-!`npm test -- --coverage --verbose 2>&1 || npm run test:all 2>&1`
+!`npm test -- --coverage --verbose 2>&1 || yarn test --coverage --verbose 2>&1 || pnpm test --coverage --verbose 2>&1 || bun test --coverage 2>&1 || echo "Coverage test not available"`
 ```
 
 Command: `/test --full`
@@ -115,7 +115,7 @@ Command: `/test --full`
 For development iterations:
 
 ```bash
-!`npm test -- --watch 2>&1 &`
+!`npm test -- --watch 2>&1 || yarn test --watch 2>&1 || pnpm test --watch 2>&1 || bun test --watch 2>&1`
 ```
 
 Command: `/test --watch`
@@ -234,7 +234,7 @@ Automatic task tracking:
 Determine which tests to run based on changes:
 
 ```bash
-!`npm test -- --findRelatedTests $(git diff --cached --name-only) 2>/dev/null`
+!`npm test 2>/dev/null || yarn test 2>/dev/null || pnpm test 2>/dev/null || bun test 2>/dev/null || echo "No tests available"`
 ```
 
 ### Mutation Testing

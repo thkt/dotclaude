@@ -46,13 +46,13 @@ Investigate codebase with dynamic discovery, parallel search execution, and conf
 ### Documentation Files
 
 ```bash
-!`find . -type f -name "*.md" -not -path "*/node_modules/*" | head -10 || echo "No documentation found"`
+!`find . -name "*.md" | grep -v node_modules | head -10 || echo "No documentation found"`
 ```
 
 ### Core File Count
 
 ```bash
-!`find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) -not -path "*/node_modules/*" | wc -l | xargs -I {} echo "Core files: {}"`
+!`find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | grep -v node_modules | wc -l`
 ```
 
 ## Quick Context Analysis

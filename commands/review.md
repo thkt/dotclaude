@@ -30,7 +30,7 @@ Orchestrate multiple specialized review agents with dynamic context analysis, hi
 Check git status:
 
 ```bash
-git status --porcelain
+!`git status --porcelain`
 ```
 
 ### Files Changed
@@ -38,7 +38,7 @@ git status --porcelain
 List changed files:
 
 ```bash
-git diff --name-only HEAD
+!`git diff --name-only HEAD`
 ```
 
 ### Recent Commits
@@ -46,7 +46,7 @@ git diff --name-only HEAD
 View recent commits:
 
 ```bash
-git log --oneline -10
+!`git log --oneline -10`
 ```
 
 ### Change Statistics
@@ -54,7 +54,7 @@ git log --oneline -10
 Show change statistics:
 
 ```bash
-git diff --stat HEAD
+!`git diff --stat HEAD`
 ```
 
 ## Hierarchical Review Process
@@ -240,7 +240,7 @@ Support for project-specific rules:
 Compare against baseline:
 
 ```bash
-git diff origin/main...HEAD --name-only
+!`git diff origin/main...HEAD --name-only`
 ```
 
 ### Pattern Detection
