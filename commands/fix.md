@@ -35,25 +35,25 @@ For simple fixes that don't require extensive planning or research.
 ### Recent Changes Analysis
 
 ```bash
-!`git diff HEAD~1 --stat 2>/dev/null | head -5 || echo "No recent changes"`
+git diff HEAD~1 --stat | head -5
 ```
 
 ### Test Status Check
 
 ```bash
-!`npm test -- --listTests 2>/dev/null | grep -E "(test|spec)" | wc -l | xargs -I {} echo "Available test files: {}" || echo "No tests found"`
+npm test -- --listTests | grep -E "(test|spec)" | wc -l
 ```
 
 ### Quality Commands Discovery
 
 ```bash
-!`npm run 2>&1 | grep -E "lint|type|check|test" | head -5 || echo "No quality scripts"`
+npm run 2>&1 | grep -E "lint|type|check|test" | head -5
 ```
 
 ### Related Files Detection
 
 ```bash
-!`git ls-files --modified 2>/dev/null | head -5 || echo "No modified files"`
+git ls-files --modified | head -5
 ```
 
 ## Hierarchical Fix Process
@@ -200,6 +200,46 @@ Status: ✅ FIX COMPLETE
 ```
 
 If any metric has confidence < 0.8, continue improving.
+
+## Progress Display
+
+### Quick Fix Progress Visualization
+
+Display fix progress with confidence tracking:
+
+```markdown
+📋 Fix Task: Button Alignment Issue
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Analysis:      [████████████] Complete (Confidence: 92%)
+Implementation: [████████░░░░] 70% In progress...
+Verification:   [░░░░░░░░░░░░] Waiting
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current: Editing CSS file...
+Changes: 2 files | 15 lines | Elapsed: 3 min
+```
+
+### Parallel Quality Checks
+
+Show concurrent quality verification:
+
+```markdown
+🔍 Quality Verification (Parallel Execution):
+├─ 🧪 Tests     [████████████] ✅ 12/12 passing
+├─ 🔍 Lint      [████████████] ✅ No new issues
+├─ 🔷 Types     [████████████] ✅ All valid
+└─ 📊 Regress   [████████░░░░] ⏳ Checking...
+
+Fix Confidence: 90% | Status: Safe
+```
+
+### Fix Mode Indicators
+
+```markdown
+⚡ Quick fix mode
+Focus: Minimal change for maximum impact
+Scope: 2 files | Risk: Low | Time: < 5 min
+```
 
 ## Enhanced Output Format
 

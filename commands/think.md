@@ -23,18 +23,20 @@ context:
 
 Perform detailed problem analysis with dynamic project understanding, risk assessment, and confidence-scored solution planning (SOW).
 
+**RECOMMENDED**: Run `/research` first to understand the codebase context before planning. Planning with actual codebase knowledge results in more accurate and implementable SOWs.
+
 ## Dynamic Project Context
 
 ### Current Branch & Changes
 
 ```bash
-!`git branch --show-current 2>/dev/null || echo "Not in a git repository"`
+git branch --show-current
 ```
 
 ### Recent Related Commits
 
 ```bash
-!`git log --oneline -5 2>/dev/null || echo "No recent commits"`
+git log --oneline -5
 ```
 
 ### Project Complexity Metrics
@@ -297,6 +299,210 @@ Detailed execution strategy:
 - **Documentation Updates**: [Required docs]
 ```
 
+## SOW Display Optimization
+
+### User-Facing Summary Format
+
+When presenting SOW to users, display this concise summary instead of the full document:
+
+```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 Implementation Plan Summary
+
+**Problem**: [1-line description]
+**Solution**: [1-line approach]
+**Complexity**: [X/10] | **Risk**: [Low/Med/High]
+**Estimated Time**: [Total hours]
+**Confidence**: [XX%]
+
+**Key Phases**:
+1. [Phase 1 name] - [duration]
+2. [Phase 2 name] - [duration]
+3. [Phase 3 name] - [duration]
+
+✅ **Success Criteria** (3 key points):
+- [Most important measurable outcome]
+- [Second measurable outcome]
+- [Third measurable outcome]
+
+📁 Full SOW saved to: .claude/workspace/sow/[filename].md
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Type 'show details' for full SOW or proceed with implementation.
+```
+
+### Dynamic Display Control
+
+Display detail level based on task complexity:
+
+#### Simple Tasks (Complexity 1-3)
+
+- Show only summary
+- Save full SOW silently
+- Auto-proceed if confidence > 0.9
+
+#### Medium Tasks (Complexity 4-6)
+
+- Show summary + key risks
+- Prompt for confirmation
+- Full SOW available on request
+
+#### Complex Tasks (Complexity 7-10)
+
+- Show extended summary
+- Include risk matrix
+- Require explicit confirmation
+- Recommend review of full SOW
+
+### Display Verbosity Settings
+
+Support user preferences for SOW display:
+
+```yaml
+# User can configure in .claude/settings.json
+{
+  "sow_display": "summary",     # summary | normal | detailed | auto
+  "auto_save_sow": true,        # Always save full version
+  "show_confidence": true,      # Display confidence scores
+  "show_progress": true,        # Real-time progress indicators
+  "verbosity_by_complexity": {
+    "simple": "summary",
+    "medium": "normal",
+    "complex": "detailed"
+  }
+}
+```
+
+### Progressive Disclosure Pattern
+
+Information revealed in stages:
+
+1. **Initial Display**: Summary only (5-10 lines)
+2. **On Request**: Specific sections (e.g., "show risks")
+3. **Full Details**: Complete SOW (saved file or inline)
+
+Example interaction:
+
+```bash
+User: /think "Add OAuth authentication"
+AI: [Shows summary]
+User: show risks
+AI: [Shows risk analysis section]
+User: proceed
+AI: [Continues with implementation]
+```
+
+### Implementation Examples
+
+#### Example 1: Simple Task (Low Complexity)
+
+```markdown
+User: /think "Fix button alignment issue"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 Implementation Plan Summary
+
+**Problem**: Button misaligned in header on mobile
+**Solution**: CSS flexbox adjustment
+**Complexity**: 2/10 | **Risk**: Low
+**Estimated Time**: 0.5 hours
+**Confidence**: 95%
+
+**Key Phases**:
+1. CSS Analysis - 10 min
+2. Fix & Test - 20 min
+
+✅ **Success Criteria**:
+- Button centered on all screen sizes
+- No layout breaks
+- Passes visual regression tests
+
+📁 Full SOW saved to: .claude/workspace/sow/2024-11-21-button-fix.md
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[Auto-proceeding with high confidence...]
+```
+
+#### Example 2: Complex Task (High Complexity)
+
+```markdown
+User: /think "Implement real-time collaboration features"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 Implementation Plan Summary
+
+**Problem**: No real-time collaboration in document editor
+**Solution**: WebSocket + CRDT implementation
+**Complexity**: 8/10 | **Risk**: High
+**Estimated Time**: 40 hours
+**Confidence**: 75%
+
+**Key Phases**:
+1. Architecture Design - 8 hours
+2. WebSocket Infrastructure - 16 hours
+3. CRDT Implementation - 12 hours
+4. Testing & Optimization - 4 hours
+
+⚠️ **Major Risks**:
+- Conflict resolution complexity
+- Performance at scale
+- Browser compatibility
+
+✅ **Success Criteria**:
+- < 100ms sync latency
+- Handles 50+ concurrent users
+- Zero data loss on conflicts
+
+📁 Full SOW saved to: .claude/workspace/sow/2024-11-21-realtime-collab.md
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ This is a complex task. Review the full SOW? (Y/n/proceed)
+```
+
+### Best Practices for SOW Display
+
+#### DO
+
+- ✅ Always save full SOW regardless of display mode
+- ✅ Show confidence scores for transparency
+- ✅ Adapt detail level to task complexity
+- ✅ Provide quick access to specific sections
+- ✅ Use visual indicators (emoji/colors) for quick scanning
+- ✅ Keep summary under 15 lines for readability
+
+#### DON'T
+
+- ❌ Hide critical risks in summary mode
+- ❌ Auto-proceed on low confidence tasks
+- ❌ Overwhelm with details on simple tasks
+- ❌ Skip SOW generation for "quick" tasks
+- ❌ Mix summary and detailed content
+
+#### Display Decision Matrix
+
+| Complexity | Confidence | Display Mode | Auto-Proceed |
+|------------|------------|--------------|--------------|
+| 1-3        | > 90%      | Summary      | Yes          |
+| 1-3        | < 90%      | Summary      | No           |
+| 4-6        | > 80%      | Normal       | No           |
+| 4-6        | < 80%      | Detailed     | No           |
+| 7-10       | Any        | Extended     | Never        |
+
+### Monitoring and Feedback
+
+Track display effectiveness:
+
+```bash
+# Log user interactions with SOW display
+.claude/metrics/sow-display.log
+- Summary views: [count]
+- Detail requests: [count]
+- Auto-proceeds: [count]
+- User overrides: [count]
+```
+
+Use metrics to refine thresholds and improve user experience.
+
 ## TodoWrite Integration
 
 Automatic task creation with priorities:
@@ -310,6 +516,83 @@ Automatic task creation with priorities:
 5. ⏳ Create detailed implementation plan (20 min) [P1]
 6. ⏳ Document SOW (10 min) [P3]
 7. ⏳ Review and finalize (10 min) [P3]
+```
+
+## Progress Display
+
+### TodoWrite Integration with Analysis Progress
+
+Display planning progress with confidence building:
+
+```markdown
+📋 Planning Task: OAuth Authentication Feature
+1. ✅ Problem analysis and context gathering (Completed: 3 min)
+2. ✅ Solution generation (Completed: 5 min)
+3. ⏳ Evaluating principles... ▓▓▓▓▓▓▓░░░ 70%
+4. ⏸️ Risk assessment (Waiting)
+5. ⏸️ Implementation planning (Waiting)
+6. ⏸️ SOW documentation (Waiting)
+7. ⏸️ Review and finalization (Waiting)
+
+Current: Verifying SOLID principles alignment...
+Confidence building: 72% | Elapsed: 12 min / Estimated: 20 min
+```
+
+### Confidence Building Visualization
+
+Show confidence progression during analysis:
+
+```markdown
+🎯 Confidence Building Process:
+Problem Understanding: [████████████] 95%
+Solution:             [████████░░░░] 70%
+Risk Assessment:      [██████░░░░░░] 50%
+Implementation Detail: [████░░░░░░░░] 35%
+
+Overall Confidence: 62.5% (Target: 80%)
+Current Phase: Verifying technical feasibility...
+```
+
+### Planning Mode Indicators
+
+#### Quick Planning
+
+```markdown
+⚡ Quick plan... [████████░░] 80% (2 min)
+Scope: Simple fix | Confidence: High
+```
+
+#### Standard Planning
+
+```markdown
+📋 Standard Planning Progress:
+Phase 1/3: ✅ Analysis complete
+Phase 2/3: ⏳ Solution design (60%)
+Phase 3/3: ⏸️ Documentation pending
+```
+
+#### Deep Planning
+
+```markdown
+🔬 Deep Planning Analysis:
+Discovery:      [████████████] 100%
+Architecture:   [████████████] 100%
+Risk Analysis:  [████████░░░░] 70%
+Dependencies:   [██████░░░░░░] 50%
+Implementation: [████░░░░░░░░] 30%
+
+Current: Mapping dependency impacts...
+Decisions Made: 8/12 | Confidence Avg: 0.75
+```
+
+### Real-time Decision Updates
+
+```markdown
+💡 Decision Points:
+[10:15:23] ✅ Approach: Microservice pattern selected
+[10:15:45] ✅ Database: PostgreSQL chosen over MongoDB
+[10:16:02] ⏳ Caching: Evaluating Redis vs Memory cache...
+[10:16:15] ⏸️ API Design: Pending architecture decision
 ```
 
 ## Interactive Planning Mode
@@ -412,11 +695,12 @@ cat .metrics/performance.json 2>/dev/null | jq '.current' || echo "No performanc
 
 ## Usage Examples
 
-### Quick Planning
+### Quick Planning (After Research)
 
 ```bash
+/research "login button implementation"
 /think --quick "Fix login button disabled state"
-# Fast planning for simple issue
+# Fast planning with context for simple issue
 ```
 
 ### Standard Planning
@@ -442,9 +726,9 @@ cat .metrics/performance.json 2>/dev/null | jq '.current' || echo "No performanc
 
 ## Next Steps After Planning
 
-- **High Confidence (>0.8)** → Proceed to `/research` or `/code`
-- **Medium Confidence (0.6-0.8)** → Additional `/research` recommended
-- **Low Confidence (<0.6)** → Clarification needed before proceeding
+- **High Confidence (>0.8)** → Proceed to `/code`
+- **Medium Confidence (0.6-0.8)** → Consider more `/research` if needed
+- **Low Confidence (<0.6)** → Clarification or `/research` needed before proceeding
 
 ## Best Practices
 

@@ -40,31 +40,31 @@ Perform code implementation with real-time test feedback, dynamic quality discov
 ### Current Implementation State
 
 ```bash
-!`git status --porcelain 2>/dev/null | head -10 || echo "Not a git repository"`
+git status --porcelain 2>/dev/null | head -10
 ```
 
 ### Quality Commands Available
 
 ```bash
-!`npm run 2>&1 | grep -E "lint|type|check|test|format" || echo "No quality scripts found"`
+npm run 2>&1 | grep -E "lint|type|check|test|format"
 ```
 
 ### Test Framework Detection
 
 ```bash
-!`cat package.json 2>/dev/null | grep -E '"(jest|vitest|mocha|cypress|playwright)"' || echo "No test framework detected"`
+cat package.json 2>/dev/null | grep -E '"(jest|vitest|mocha|cypress|playwright)"'
 ```
 
 ### Code Conventions
 
 ```bash
-!`ls -la .eslintrc* .prettierrc* tsconfig.json 2>/dev/null || echo "No lint configs found"`
+ls -la .eslintrc* .prettierrc* tsconfig.json 2>/dev/null
 ```
 
 ### Recent Related Changes
 
 ```bash
-!`git log --oneline -5 --grep="[feature]" 2>/dev/null || echo "No related commits"`
+git log --oneline -5 --grep="[feature]" 2>/dev/null
 ```
 
 ## Implementation Principles
@@ -160,6 +160,61 @@ Real-time tracking with confidence scoring:
 - 📊 Coverage: 78% (target: 80%)
 - 🔍 Lint: 2 warnings
 - 🔷 Types: All passing
+```
+
+## Progress Display
+
+### RGRC Cycle Progress Visualization
+
+Display TDD cycle progress with real-time updates:
+
+```markdown
+📋 Implementation Task: User Authentication Feature
+🔴 Red → 🟢 Green → 🔵 Refactor → ✅ Commit
+
+Current Cycle: Scenario 2/5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔴 Red Phase    [████████████] Complete
+🟢 Green Phase  [████████░░░░] 70%
+🔵 Refactor     [░░░░░░░░░░░░] Waiting
+✅ Commit       [░░░░░░░░░░░░] Waiting
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current: Minimal implementation until test passes...
+Elapsed: 8 min | Remaining scenarios: 3
+```
+
+### Quality Check Progress
+
+Parallel quality checks during implementation:
+
+```markdown
+Quality checks in progress:
+├─ 🧪 Tests      [████████████] ✅ 45/45 passing
+├─ 📊 Coverage   [████████░░░░] ⚠️ 78% (Target: 80%)
+├─ 🔍 Lint       [████████████] ✅ 0 errors, 2 warnings
+├─ 🔷 TypeCheck  [████████████] ✅ All types valid
+└─ 🎨 Format     [████████████] ✅ Formatted
+
+Quality Score: 92% | Confidence: HIGH
+```
+
+### Implementation Mode Indicators
+
+#### TDD Mode (Default)
+
+```markdown
+📋 TDD Progress:
+Cycle 3/8: Green Phase
+⏳ Current test: should handle edge cases
+📝 Lines written: 125 | Tests: 18/20
+```
+
+#### Quick Implementation Mode
+
+```markdown
+⚡ Quick implementation... [████████░░] 80%
+Skipping some quality checks for speed
 ```
 
 ### 2. SOLID Principles During Implementation
