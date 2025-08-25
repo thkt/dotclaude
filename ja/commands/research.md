@@ -9,7 +9,7 @@ suitable_for:
   urgency: [low, medium]
 aliases: []
 timeout: 90
-allowed-tools: Bash(find:*), Bash(tree:*), Bash(ls:*), Bash(cat package.json:*), Read, Glob, Grep, LS, Task
+allowed-tools: Bash(find:*), Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(cat package.json:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task
 context:
   project_structure: "dynamic"
   tech_stack: "discovered"
@@ -25,46 +25,66 @@ context:
 
 ## 動的プロジェクト発見
 
-### プロジェクト構造
-
-以下のコマンドで探索：
+### 最近のコミット履歴
 
 ```bash
-tree -L 2 -I 'node_modules|dist|build|coverage|.git' | head -20
-# または
-ls -la
+!`git log --oneline -10 || echo "Not a git repository"`
 ```
 
 ### 技術スタック
 
-package.jsonでフレームワークをチェック：
-
 ```bash
-cat package.json | grep -E '"(react|vue|angular|next|nuxt|svelte|express|fastify|nest)"'
+!`ls -la package.json pyproject.toml go.mod Cargo.toml pom.xml build.gradle | head -5 || echo "No standard project files found"`
 ```
 
-### 言語分布
-
-ソースファイルタイプを検索：
+### 変更されたファイル
 
 ```bash
-find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.py" -o -name "*.go" \) -not -path "*/node_modules/*" | sed 's/.*\.//' | sort | uniq -c | sort -rn
+!`git diff --name-only HEAD~1 | head -10 || echo "No recent changes"`
 ```
 
-### 依存関係分析
-
-主要な依存関係をリスト：
+### ドキュメントファイル
 
 ```bash
-cat package.json | jq -r '.dependencies | keys[]' | head -10
+!`find . -name "*.md" | grep -v node_modules | head -10 || echo "No documentation found"`
+```
+
+### コアファイルカウント
+
+```bash
+!`find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | grep -v node_modules | wc -l`
+```
+
+## クイックコンテキスト分析
+
+### テストフレームワーク検出
+
+```bash
+!`grep -E "jest|mocha|vitest|pytest|unittest" package.json 2>/dev/null | head -3 || echo "No test framework detected"`
+```
+
+### APIエンドポイント
+
+```bash
+!`grep -r "app.get\|app.post\|app.put\|app.delete\|router." --include="*.js" --include="*.ts" | head -10 || echo "No API endpoints found"`
 ```
 
 ### 設定ファイル
 
-設定ファイルを検索：
+```bash
+!`ls -la .env* .config* *.config.* | head -10 || echo "No configuration files found"`
+```
+
+### パッケージ依存関係
 
 ```bash
-ls -la *.config.* *.json *.yml *.yaml | grep -v node_modules
+!`cat package.json | grep -E '"dependencies"|"devDependencies"' -A 10 || echo "No package.json found"`
+```
+
+### 最近の問題/TODO
+
+```bash
+!`grep -r "TODO\|FIXME\|HACK" --include="*.ts" --include="*.tsx" --include="*.js" | head -10 || echo "No TODOs found"`
 ```
 
 ## 階層的調査プロセス

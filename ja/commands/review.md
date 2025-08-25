@@ -27,34 +27,26 @@ context:
 
 ### Gitステータス
 
-Gitステータスを確認:
-
 ```bash
-git status --porcelain
+!`git status --porcelain`
 ```
 
 ### 変更されたファイル
 
-変更されたファイルをリスト:
-
 ```bash
-git diff --name-only HEAD
+!`git diff --name-only HEAD`
 ```
 
 ### 最近のコミット
 
-最近のコミットを表示:
-
 ```bash
-git log --oneline -10
+!`git log --oneline -10`
 ```
 
 ### 変更統計
 
-変更統計を表示:
-
 ```bash
-git diff --stat HEAD
+!`git diff --stat HEAD`
 ```
 
 ## 階層的レビュープロセス
@@ -240,7 +232,7 @@ Taskエージェントを使用して：
 ベースラインと比較：
 
 ```bash
-git diff origin/main...HEAD --name-only
+!`git diff origin/main...HEAD --name-only`
 ```
 
 ### パターン検出

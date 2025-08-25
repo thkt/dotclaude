@@ -1,6 +1,6 @@
 ---
 name: test
-description: 実装コードの品質を包括的なテストで保証
+description: 包括的なテストと検証でコード品質を保証
 priority: high
 suitable_for:
   scale: [small, medium, large]
@@ -9,7 +9,7 @@ suitable_for:
   urgency: [low, medium]
 aliases: []
 timeout: 120
-allowed-tools: Bash(npm test:*), Bash(npm run:*), Bash(yarn test:*), Bash(pnpm test:*), Bash(jest:*), Bash(vitest:*), Bash(pytest:*), Read, Glob, Grep, LS, Task
+allowed-tools: Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn test:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm test:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun test:*), Bash(bun run), Bash(bun run:*), Bash(npx:*), Bash(jest:*), Bash(vitest:*), Bash(ls:*), Bash(cat:*), Bash(find:*), Read, Glob, Grep, LS, Task
 context:
   files_changed: "dynamic"
   lines_changed: "dynamic"
@@ -27,34 +27,26 @@ context:
 
 ### 利用可能なテストスクリプト
 
-テストスクリプトを一覧表示:
-
 ```bash
-npm run 2>&1 | grep -E "test|spec|check|lint|type"
+!`npm run || yarn run || pnpm run || bun run`
 ```
 
 ### パッケージマネージャー検出
 
-ロックファイルを確認:
-
 ```bash
-ls package-lock.json yarn.lock pnpm-lock.yaml 2>/dev/null | head -1
+!`find . -maxdepth 1 -name "*.lock*" -o -name "package*.json" | head -5`
 ```
 
 ### テストフレームワーク検出
 
-package.jsonからテストフレームワークを検出:
-
 ```bash
-cat package.json 2>/dev/null | grep -E "jest|vitest|mocha|jasmine|karma|cypress|playwright"
+!`cat package.json`
 ```
 
 ### テストファイル数
 
-テストファイルをカウント:
-
 ```bash
-find . -type f \( -name "*.test.*" -o -name "*.spec.*" \) -not -path "*/node_modules/*" 2>/dev/null | wc -l
+!`find . -name "*test*" -o -name "*spec*"`
 ```
 
 ## 階層的テストプロセス
@@ -93,7 +85,7 @@ Taskエージェントを使用して：
 変更されたファイルのみに焦点：
 
 ```bash
-npm test -- --findRelatedTests $(git diff --name-only HEAD) 2>/dev/null
+!`npm run test || yarn test || pnpm test || bun test || echo "テストスクリプトが見つかりません"`
 ```
 
 コマンド: `/test --quick`
@@ -103,7 +95,7 @@ npm test -- --findRelatedTests $(git diff --name-only HEAD) 2>/dev/null
 メインテストスイートを実行：
 
 ```bash
-npm test 2>&1 || yarn test 2>&1 || pnpm test 2>&1
+!`npm run test || yarn test || pnpm test || bun test || echo "テストスクリプトが見つかりません"`
 ```
 
 コマンド: `/test` (デフォルト)
@@ -113,7 +105,7 @@ npm test 2>&1 || yarn test 2>&1 || pnpm test 2>&1
 カバレッジ付きフルテストスイート：
 
 ```bash
-npm test -- --coverage --verbose 2>&1 || npm run test:all 2>&1
+!`npm test -- --coverage --verbose 2>&1 || yarn test --coverage --verbose 2>&1 || pnpm test --coverage --verbose 2>&1 || bun test --coverage 2>&1 || echo "カバレッジテストは利用できません"`
 ```
 
 コマンド: `/test --full`
@@ -123,7 +115,7 @@ npm test -- --coverage --verbose 2>&1 || npm run test:all 2>&1
 開発イテレーション用：
 
 ```bash
-npm test -- --watch 2>&1 &
+!`npm test -- --watch || yarn test --watch || pnpm test --watch || bun test --watch`
 ```
 
 コマンド: `/test --watch`
@@ -132,10 +124,8 @@ npm test -- --watch 2>&1 &
 
 ### 現在のカバレッジ
 
-カバレッジサマリーを表示:
-
 ```bash
-cat coverage/coverage-summary.json 2>/dev/null | grep -E "lines|statements|functions|branches"
+!`cat coverage/coverage-summary.json | grep -E "lines|statements|functions|branches" || echo "カバレッジデータがありません"`
 ```
 
 ### カバレッジトレンド
@@ -197,26 +187,20 @@ cat coverage/coverage-summary.json 2>/dev/null | grep -E "lines|statements|funct
 
 ### リント
 
-リンターを実行:
-
 ```bash
-npm run lint 2>&1
+!`npm run lint || yarn run lint || pnpm run lint || bun run lint || echo "リンターが設定されていません"`
 ```
 
 ### 型チェック
 
-TypeScript型チェックを実行:
-
 ```bash
-npm run type-check 2>&1 || npx tsc --noEmit 2>&1
+!`npm run type-check || yarn run type-check || pnpm run type-check || bun run type-check || npx tsc --noEmit || echo "型チェックは利用できません"`
 ```
 
 ### フォーマットチェック
 
-コードフォーマットをチェック:
-
 ```bash
-npm run format:check 2>&1
+!`npm run format:check || yarn run format:check || pnpm run format:check || bun run format:check || echo "フォーマッターが設定されていません"`
 ```
 
 ## UI変更のブラウザテスト
@@ -250,7 +234,7 @@ UIコンポーネントが変更された場合：
 変更に基づいて実行するテストを決定：
 
 ```bash
-npm test -- --findRelatedTests $(git diff --cached --name-only) 2>/dev/null
+!`npm run test || yarn test || pnpm test || bun test || echo "テストがありません"`
 ```
 
 ### ミューテーションテスト
@@ -258,7 +242,7 @@ npm test -- --findRelatedTests $(git diff --cached --name-only) 2>/dev/null
 重要なコードパス用（設定されている場合）：
 
 ```bash
-npm run test:mutation 2>/dev/null
+!`npm run test:mutation || yarn run test:mutation || pnpm run test:mutation || bun run test:mutation || echo "ミューテーションテストが設定されていません"`
 ```
 
 ### パフォーマンス回帰テスト
@@ -302,7 +286,7 @@ npm test -- --bail --findRelatedTests
 ### PR検証
 
 ```yaml
-- name: Test Suite
+- name: テストスイート
   run: npm test -- --coverage --ci
 ```
 

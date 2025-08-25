@@ -9,7 +9,7 @@ suitable_for:
   urgency: [low, medium]
 aliases: []
 timeout: 120
-allowed-tools: Bash(npm test:*), Bash(npm run:*), Bash(yarn test:*), Bash(pnpm test:*), Bash(jest:*), Bash(vitest:*), Bash(pytest:*), Read, Glob, Grep, LS, Task
+allowed-tools: Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn test:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm test:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun test:*), Bash(bun run), Bash(bun run:*), Bash(npx:*), Bash(jest:*), Bash(vitest:*), Bash(ls:*), Bash(cat:*), Bash(find:*), Read, Glob, Grep, LS, Task
 context:
   files_changed: "dynamic"
   lines_changed: "dynamic"
@@ -28,25 +28,25 @@ Ensure code quality with comprehensive testing featuring dynamic discovery, hier
 ### Available Test Scripts
 
 ```bash
-!`npm run 2>&1 | grep -E "test|spec|check|lint|type" || echo "No npm scripts found"`
+!`npm run || yarn run || pnpm run || bun run`
 ```
 
 ### Package Manager Detection
 
 ```bash
-!`ls package-lock.json yarn.lock pnpm-lock.yaml 2>/dev/null | head -1 || echo "package.json"`
+!`find . -maxdepth 1 -name "*.lock*" -o -name "package*.json" | head -5`
 ```
 
 ### Test Framework Detection
 
 ```bash
-!`cat package.json 2>/dev/null | grep -E "jest|vitest|mocha|jasmine|karma|cypress|playwright" || echo "No test framework detected"`
+!`cat package.json`
 ```
 
 ### Test File Count
 
 ```bash
-!`find . -name "*.test.*" -o -name "*.spec.*" | grep -v node_modules | wc -l || echo "0"`
+!`find . -name "*test*" -o -name "*spec*"`
 ```
 
 ## Hierarchical Testing Process
@@ -85,7 +85,7 @@ Analyze results with confidence scoring:
 Focus only on changed files:
 
 ```bash
-!`npm test 2>/dev/null || yarn test 2>/dev/null || pnpm test 2>/dev/null || bun test 2>/dev/null || echo "Quick test not available"`
+!`npm run test || yarn test || pnpm test || bun test || echo "No test script found"`
 ```
 
 Command: `/test --quick`
@@ -95,7 +95,7 @@ Command: `/test --quick`
 Run main test suite:
 
 ```bash
-!`npm test 2>&1 || yarn test 2>&1 || pnpm test 2>&1 || bun test 2>&1`
+!`npm run test || yarn test || pnpm test || bun test || echo "No test script found"`
 ```
 
 Command: `/test` (default)
@@ -115,7 +115,7 @@ Command: `/test --full`
 For development iterations:
 
 ```bash
-!`npm test -- --watch 2>&1 || yarn test --watch 2>&1 || pnpm test --watch 2>&1 || bun test --watch 2>&1`
+!`npm test -- --watch || yarn test --watch || pnpm test --watch || bun test --watch`
 ```
 
 Command: `/test --watch`
@@ -125,7 +125,7 @@ Command: `/test --watch`
 ### Current Coverage
 
 ```bash
-!`cat coverage/coverage-summary.json 2>/dev/null | grep -E "lines|statements|functions|branches" || echo "No coverage data available"`
+!`cat coverage/coverage-summary.json | grep -E "lines|statements|functions|branches" || echo "No coverage data available"`
 ```
 
 ### Coverage Trends
@@ -188,19 +188,19 @@ Track coverage changes:
 ### Linting
 
 ```bash
-!`npm run lint 2>&1 || echo "Linter not configured"`
+!`npm run lint || yarn run lint || pnpm run lint || bun run lint || echo "Linter not configured"`
 ```
 
 ### Type Checking
 
 ```bash
-!`npm run type-check 2>&1 || npx tsc --noEmit 2>&1 || echo "Type checking not available"`
+!`npm run type-check || yarn run type-check || pnpm run type-check || bun run type-check || npx tsc --noEmit || echo "Type checking not available"`
 ```
 
 ### Format Check
 
 ```bash
-!`npm run format:check 2>&1 || echo "Formatter not configured"`
+!`npm run format:check || yarn run format:check || pnpm run format:check || bun run format:check || echo "Formatter not configured"`
 ```
 
 ## Browser Testing for UI Changes
@@ -234,7 +234,7 @@ Automatic task tracking:
 Determine which tests to run based on changes:
 
 ```bash
-!`npm test 2>/dev/null || yarn test 2>/dev/null || pnpm test 2>/dev/null || bun test 2>/dev/null || echo "No tests available"`
+!`npm run test || yarn test || pnpm test || bun test || echo "No tests available"`
 ```
 
 ### Mutation Testing
@@ -242,7 +242,7 @@ Determine which tests to run based on changes:
 For critical code paths (if configured):
 
 ```bash
-!`npm run test:mutation 2>/dev/null || echo "Mutation testing not configured"`
+!`npm run test:mutation || yarn run test:mutation || pnpm run test:mutation || bun run test:mutation || echo "Mutation testing not configured"`
 ```
 
 ### Performance Regression Testing

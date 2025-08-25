@@ -9,7 +9,7 @@ suitable_for:
   urgency: [low, medium]
 aliases: [implement, impl]
 timeout: 120
-allowed-tools: Bash(npm run:*), Bash(yarn:*), Bash(pnpm:*), Bash(make:*), Bash(git status:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, TodoWrite
+allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
 context:
   files_changed: "dynamic"
   lines_changed: "tracked"
@@ -37,34 +37,34 @@ Perform code implementation with real-time test feedback, dynamic quality discov
 
 ## Dynamic Project Context
 
-### Current Implementation State
+### Current Git Status
 
 ```bash
-git status --porcelain 2>/dev/null | head -10
+!`git status --porcelain`
 ```
 
-### Quality Commands Available
+### Package.json Check
 
 ```bash
-npm run 2>&1 | grep -E "lint|type|check|test|format"
+!`ls package.json`
 ```
 
-### Test Framework Detection
+### NPM Scripts Available
 
 ```bash
-cat package.json 2>/dev/null | grep -E '"(jest|vitest|mocha|cypress|playwright)"'
+!`npm run || yarn run || pnpm run || bun run`
 ```
 
-### Code Conventions
+### Config Files
 
 ```bash
-ls -la .eslintrc* .prettierrc* tsconfig.json 2>/dev/null
+!`ls *.json`
 ```
 
-### Recent Related Changes
+### Recent Commits
 
 ```bash
-git log --oneline -5 --grep="[feature]" 2>/dev/null
+!`git log --oneline -5`
 ```
 
 ## Implementation Principles
@@ -289,7 +289,7 @@ Follow the RGRC cycle defined above:
 #### Automatic Discovery
 
 ```bash
-cat package.json | jq -r '.scripts | to_entries[] | select(.key | test("lint|type|check|test|format")) | .key' | head -10
+!`cat package.json`
 ```
 
 #### Parallel Execution

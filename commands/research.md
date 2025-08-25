@@ -9,7 +9,7 @@ suitable_for:
   urgency: [low, medium]
 aliases: []
 timeout: 90
-allowed-tools: Bash(find:*), Bash(tree:*), Bash(ls:*), Bash(cat package.json:*), Read, Glob, Grep, LS, Task
+allowed-tools: Bash(find:*), Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(cat package.json:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task
 context:
   project_structure: "dynamic"
   tech_stack: "discovered"
@@ -28,19 +28,19 @@ Investigate codebase with dynamic discovery, parallel search execution, and conf
 ### Recent Commit History
 
 ```bash
-!`git log --oneline -10 2>/dev/null || echo "Not a git repository"`
+!`git log --oneline -10 || echo "Not a git repository"`
 ```
 
 ### Technology Stack
 
 ```bash
-!`ls -la package.json pyproject.toml go.mod Cargo.toml pom.xml build.gradle 2>/dev/null | head -5 || echo "No standard project files found"`
+!`ls -la package.json pyproject.toml go.mod Cargo.toml pom.xml build.gradle | head -5 || echo "No standard project files found"`
 ```
 
 ### Modified Files
 
 ```bash
-!`git diff --name-only HEAD~1 2>/dev/null | head -10 || echo "No recent changes"`
+!`git diff --name-only HEAD~1 | head -10 || echo "No recent changes"`
 ```
 
 ### Documentation Files
@@ -72,13 +72,13 @@ Investigate codebase with dynamic discovery, parallel search execution, and conf
 ### Configuration Files
 
 ```bash
-!`ls -la .env* .config* *.config.* 2>/dev/null | head -10 || echo "No configuration files found"`
+!`ls -la .env* .config* *.config.* | head -10 || echo "No configuration files found"`
 ```
 
 ### Package Dependencies
 
 ```bash
-!`cat package.json 2>/dev/null | grep -E '"dependencies"|"devDependencies"' -A 10 || echo "No package.json found"`
+!`cat package.json | grep -E '"dependencies"|"devDependencies"' -A 10 || echo "No package.json found"`
 ```
 
 ### Recent Issues/TODOs

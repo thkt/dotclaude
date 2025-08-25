@@ -9,7 +9,7 @@ suitable_for:
   urgency: [low, medium]
 aliases: [implement, impl]
 timeout: 120
-allowed-tools: Bash(npm run:*), Bash(yarn:*), Bash(pnpm:*), Bash(make:*), Bash(git status:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, TodoWrite
+allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
 context:
   files_changed: "dynamic"
   lines_changed: "tracked"
@@ -37,44 +37,34 @@ context:
 
 ## 動的プロジェクトコンテキスト
 
-### 現在の実装状態
-
-Gitステータスを確認:
+### 現在のGitステータス
 
 ```bash
-git status --porcelain 2>/dev/null | head -10
+!`git status --porcelain`
 ```
 
-### 利用可能な品質コマンド
-
-品質スクリプトを確認:
+### Package.jsonチェック
 
 ```bash
-npm run 2>&1 | grep -E "lint|type|check|test|format"
+!`ls package.json`
 ```
 
-### テストフレームワーク検出
-
-package.jsonをチェック:
+### NPMスクリプト利用可能
 
 ```bash
-cat package.json 2>/dev/null | grep -E '"(jest|vitest|mocha|cypress|playwright)"'
+!`npm run || yarn run || pnpm run || bun run`
 ```
 
-### コード規約
-
-設定ファイルを確認:
+### 設定ファイル
 
 ```bash
-ls -la .eslintrc* .prettierrc* tsconfig.json 2>/dev/null
+!`ls *.json`
 ```
 
-### 最近の関連変更
-
-関連コミットを表示:
+### 最近のコミット
 
 ```bash
-git log --oneline -5 --grep="[feature]" 2>/dev/null
+!`git log --oneline -5`
 ```
 
 ## 実装原則
@@ -102,10 +92,9 @@ git log --oneline -5 --grep="[feature]" 2>/dev/null
 #### リアルタイムフィードバック付き強化RGRCサイクル
 
 1. **Redフェーズ** (信頼度目標: 0.9)
-   テストを実行して失敗を確認:
 
    ```bash
-   npm test -- --testNamePattern="[現在のテスト]" 2>&1 | grep -E "FAIL|PASS"
+   npm test -- --testNamePattern="[現在のテスト]" | grep -E "FAIL|PASS"
    ```
 
    - 明確な意図で失敗するテストを書く
@@ -114,10 +103,9 @@ git log --oneline -5 --grep="[feature]" 2>/dev/null
    - **終了条件**: 期待された理由でテストが失敗
 
 2. **Greenフェーズ** (信頼度目標: 0.7)
-   ウォッチモードでテストを実行:
 
    ```bash
-   npm test -- --watch --testNamePattern="[現在のテスト]" 2>&1 &
+   npm test -- --watch --testNamePattern="[現在のテスト]"
    ```
 
    - パスするための最小実装
@@ -126,10 +114,9 @@ git log --oneline -5 --grep="[feature]" 2>/dev/null
    - **終了条件**: テストが一貫してパス
 
 3. **Refactorフェーズ** (信頼度目標: 0.95)
-   テスト結果を確認:
 
    ```bash
-   npm test 2>&1 | tail -5 | grep -E "Passing|Failing"
+   npm test | tail -5 | grep -E "Passing|Failing"
    ```
 
    - SOLID原則を適用
@@ -246,10 +233,8 @@ const qualityChecks = [
 
 #### 自動発見
 
-品質スクリプトを発見:
-
 ```bash
-cat package.json 2>/dev/null | jq -r '.scripts | to_entries[] | select(.key | test("lint|type|check|test|format")) | .key' | head -10
+!`cat package.json`
 ```
 
 #### 並列実行
@@ -257,8 +242,9 @@ cat package.json 2>/dev/null | jq -r '.scripts | to_entries[] | select(.key | te
 ```markdown
 ## 品質チェック結果
 ### リント (信頼度: 0.95)
+
       ```bash
-      npm run lint 2>&1 | tail -5
+      npm run lint | tail -5
       ```
 
 - ステータス: ✅ パス中
@@ -268,7 +254,7 @@ cat package.json 2>/dev/null | jq -r '.scripts | to_entries[] | select(.key | te
 ### 型チェック (信頼度: 0.98)
 
       ```bash
-      npm run type-check 2>&1 | tail -5
+      npm run type-check | tail -5
       ```
 
 - ステータス: ✅ すべての型が有効
@@ -278,7 +264,7 @@ cat package.json 2>/dev/null | jq -r '.scripts | to_entries[] | select(.key | te
 ### テスト (信頼度: 0.92)
 
       ```bash
-      npm test -- --passWithNoTests 2>&1 | grep -E "Tests:|Snapshots:"
+      npm test -- --passWithNoTests | grep -E "Tests:|Snapshots:"
       ```
 
 - ステータス: ✅ 45/45 パス中
@@ -288,7 +274,7 @@ cat package.json 2>/dev/null | jq -r '.scripts | to_entries[] | select(.key | te
 ### フォーマットチェック (信頼度: 0.90)
 
       ```bash
-      npm run format:check 2>&1 | tail -3
+      npm run format:check | tail -3
       ```
 
 - ステータス: ⚠️ 3ファイルにフォーマットが必要
@@ -308,6 +294,61 @@ cat package.json 2>/dev/null | jq -r '.scripts | to_entries[] | select(.key | te
 - 開発サーバーで確認
 - エッジケースの検証
 - パフォーマンスのチェック
+
+## 進捗表示
+
+### RGRCサイクル進捗ビジュアライゼーション
+
+リアルタイム更新でTDDサイクル進捗を表示:
+
+```markdown
+📋 実装タスク: ユーザー認証機能
+🔴 Red → 🟢 Green → 🔵 Refactor → ✅ Commit
+
+現在のサイクル: シナリオ 2/5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔴 Red フェーズ    [████████████] 完了
+🟢 Green フェーズ  [████████░░░░] 70%
+🔵 Refactor       [░░░░░░░░░░░░] 待機中
+✅ Commit         [░░░░░░░░░░░░] 待機中
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+現在: テストがパスするまで最小限の実装...
+経過: 8分 | 残りのシナリオ: 3
+```
+
+### 品質チェック進捗
+
+実装中の並列品質チェック:
+
+```markdown
+進行中の品質チェック:
+├─ 🧪 テスト      [████████████] ✅ 45/45 パス
+├─ 📊 カバレッジ   [████████░░░░] ⚠️ 78% (目標: 80%)
+├─ 🔍 リント       [████████████] ✅ 0エラー、2警告
+├─ 🔷 型チェック   [████████████] ✅ すべての型が有効
+└─ 🎨 フォーマット  [████████████] ✅ フォーマット済み
+
+品質スコア: 92% | 信頼度: 高
+```
+
+### 実装モードインジケーター
+
+#### TDDモード（デフォルト）
+
+```markdown
+📋 TDD進捗:
+サイクル 3/8: Greenフェーズ
+⏳ 現在のテスト: エッジケースを処理すべき
+📝 記述行数: 125 | テスト: 18/20
+```
+
+#### クイック実装モード
+
+```markdown
+⚡ クイック実装中... [████████░░] 80%
+速度のために一部の品質チェックをスキップ
+```
 
 ## 高度な機能
 

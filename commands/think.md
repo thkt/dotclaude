@@ -9,7 +9,7 @@ suitable_for:
   urgency: [low, medium]
 aliases: [plan, analyze]
 timeout: 60
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(find:*), Bash(cat package.json:*), Read, Glob, Grep, LS, Task
+allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(find:*), Bash(cat:*), Bash(cat package.json:*), Bash(ls:*), Read, Glob, Grep, LS, Task
 context:
   complexity: "assessed"
   risks: "evaluated"
@@ -30,13 +30,13 @@ Perform detailed problem analysis with dynamic project understanding, risk asses
 ### Current Branch & Changes
 
 ```bash
-git branch --show-current
+!`git branch --show-current`
 ```
 
 ### Recent Related Commits
 
 ```bash
-git log --oneline -5
+!`git log --oneline -5`
 ```
 
 ### Project Complexity Metrics
@@ -44,7 +44,7 @@ git log --oneline -5
 Count source files:
 
 ```bash
-find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | grep -v node_modules | wc -l
+!`find . \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) -type f`
 ```
 
 ### Dependencies That May Impact
@@ -52,7 +52,7 @@ find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | grep -v 
 List key dependencies:
 
 ```bash
-cat package.json | jq -r '.dependencies | to_entries | map(select(.key | test("react|redux|router|state|auth|api"))) | .[].key' | head -5
+!`cat package.json`
 ```
 
 ### Test Coverage Status
@@ -60,7 +60,7 @@ cat package.json | jq -r '.dependencies | to_entries | map(select(.key | test("r
 Check test coverage:
 
 ```bash
-cat coverage/coverage-summary.json | jq -r '.total.lines.pct'
+!`find . -name "coverage" -type d`
 ```
 
 ## Hierarchical Analysis Process

@@ -10,7 +10,7 @@ suitable_for:
   environment: development  # Development environment only
 aliases: [qf]
 timeout: 30
-allowed-tools: Bash(git diff:*), Bash(npm test:*), Bash(npm run:*), Edit, MultiEdit, Read, Grep, TodoWrite
+allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Task
 context:
   files_changed: "dynamic"
   lines_changed: "tracked"
@@ -34,34 +34,26 @@ excludes: [hotfix]  # Don't suggest both
 
 ### 最近の変更分析
 
-最近の変更を確認:
-
 ```bash
-git diff HEAD~1 --stat 2>/dev/null | head -5
+!`git diff HEAD~1 --stat`
 ```
 
 ### テストステータスチェック
 
-テストファイル数を確認:
-
 ```bash
-npm test -- --listTests 2>/dev/null | grep -E "(test|spec)" | wc -l | xargs -I {} echo "利用可能なテストファイル: {}"
+!`find . -name "*test*" -o -name "*spec*"`
 ```
 
 ### 品質コマンド発見
 
-品質スクリプトを確認:
-
 ```bash
-npm run 2>&1 | grep -E "lint|type|check|test" | head -5
+!`npm run || yarn run || pnpm run || bun run`
 ```
 
 ### 関連ファイル検出
 
-変更されたファイルを一覧表示:
-
 ```bash
-git ls-files --modified 2>/dev/null | head -5
+!`git ls-files --modified`
 ```
 
 ## 階層的修正プロセス
@@ -113,10 +105,8 @@ const checks = [
 
 #### 最近のコンテキスト
 
-最近の修正コミットを表示:
-
 ```bash
-git log --oneline -5 --grep="fix" 2>/dev/null
+git log --oneline -5 --grep="fix"
 ```
 
 ### 2. スマート実装
@@ -145,26 +135,18 @@ git log --oneline -5 --grep="fix" 2>/dev/null
 
 #### 並列品質実行
 
-テスト、リント、型チェックを実行:
+品質チェックを並列で実行:
 
 ```bash
-npm test -- --findRelatedTests 2>&1 | grep -E "PASS|FAIL" | head -5
-```
-
-```bash
-npm run lint 2>&1 | tail -3
-```
-
-```bash
-npm run type-check 2>&1 | tail -3
+npm test -- --findRelatedTests | grep -E "PASS|FAIL" | head -5
+npm run lint | tail -3
+npm run type-check | tail -3
 ```
 
 #### リグレッションチェック
 
-変更されたテストを実行:
-
 ```bash
-npm test -- --onlyChanged 2>&1 | grep -E "Test Suites:"
+npm test -- --onlyChanged | grep -E "Test Suites:"
 ```
 
 ## 高度なTodoWrite統合
@@ -219,6 +201,46 @@ npm test -- --onlyChanged 2>&1 | grep -E "Test Suites:"
 
 信頼度 < 0.8 のメトリクスがある場合、改善を続ける。
 
+## 進捗表示
+
+### クイックフィックス進捗ビジュアライゼーション
+
+信頼度追跡付きで修正進捗を表示:
+
+```markdown
+📋 修正タスク: ボタン配置の問題
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+分析:         [████████████] 完了 (信頼度: 92%)
+実装:         [████████░░░░] 70% 進行中...
+検証:         [░░░░░░░░░░░░] 待機中
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+現在: CSSファイルを編集中...
+変更: 2ファイル | 15行 | 経過: 3分
+```
+
+### 並列品質チェック
+
+同時品質検証を表示:
+
+```markdown
+🔍 品質検証 (並列実行):
+├─ 🧪 テスト     [████████████] ✅ 12/12 パス
+├─ 🔍 リント      [████████████] ✅ 新しい問題なし
+├─ 🔷 型        [████████████] ✅ すべて有効
+└─ 📊 リグレッション [████████░░░░] ⏳ チェック中...
+
+修正信頼度: 90% | ステータス: 安全
+```
+
+### 修正モードインジケーター
+
+```markdown
+⚡ クイックフィックスモード
+フォーカス: 最大効果を得るための最小限の変更
+スコープ: 2ファイル | リスク: 低 | 時間: < 5分
+```
+
 ## 強化された出力フォーマット
 
 ```markdown
@@ -252,9 +274,10 @@ npm test -- --onlyChanged 2>&1 | grep -E "Test Suites:"
 | **総合** | **0.91** | **高信頼度** |
 
 ### パフォーマンス影響
-```bash
-git diff HEAD --stat | tail -3
-```
+
+    ```bash
+    git diff HEAD --stat | tail -3
+    ```
 
 - 変更行数: XX
 - 影響ファイル: X
@@ -356,7 +379,7 @@ git diff HEAD --stat | tail -3
 類似問題の成功した修正を追跡：
 
 ```bash
-git log --grep="fix" --oneline | head -3
+git log --grep="fix" --oneline | grep -i "[similar keyword]" | head -3
 ```
 
 ### 自動発見
@@ -372,7 +395,7 @@ grep -r "TODO\|FIXME\|HACK" --include="*.ts" --include="*.tsx" | head -5
 コードベースの健全性への修正影響を監視：
 
 ```bash
-npm run lint 2>&1 | grep -E "problems\|warnings"
+npm run lint | grep -E "problems\|warnings"
 ```
 
 ## 適用される原則

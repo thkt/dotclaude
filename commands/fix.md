@@ -10,7 +10,7 @@ suitable_for:
   environment: development  # Development environment only
 aliases: [qf]
 timeout: 30
-allowed-tools: Bash(git diff:*), Bash(npm test:*), Bash(npm run:*), Edit, MultiEdit, Read, Grep, TodoWrite
+allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Task
 context:
   files_changed: "dynamic"
   lines_changed: "tracked"
@@ -35,25 +35,25 @@ For simple fixes that don't require extensive planning or research.
 ### Recent Changes Analysis
 
 ```bash
-git diff HEAD~1 --stat | head -5
+!`git diff HEAD~1 --stat`
 ```
 
 ### Test Status Check
 
 ```bash
-npm test -- --listTests | grep -E "(test|spec)" | wc -l
+!`find . -name "*test*" -o -name "*spec*"`
 ```
 
 ### Quality Commands Discovery
 
 ```bash
-npm run 2>&1 | grep -E "lint|type|check|test" | head -5
+!`npm run || yarn run || pnpm run || bun run`
 ```
 
 ### Related Files Detection
 
 ```bash
-git ls-files --modified | head -5
+!`git ls-files --modified`
 ```
 
 ## Hierarchical Fix Process
