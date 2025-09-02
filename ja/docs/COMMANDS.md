@@ -32,7 +32,7 @@
 ### 機能開発
 
 ```txt
-/think → /research → /code → /test
+/research → /think → /code → /test
 ```
 
 ### バグ調査と修正

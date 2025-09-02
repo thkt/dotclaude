@@ -41,6 +41,33 @@
 - **Command**: Use `mv [file] ~/.Trash/` for file deletion
 - **Reason**: Safety - allows recovery of accidentally deleted files
 
+## Work Completion Guidelines
+
+**Critical**: Ensure all work is properly verified before reporting completion
+
+- **Test Creation**: After creating tests, always run the project's test command to verify they pass
+  - Discover test command from package.json/pubspec.yaml/etc.
+  - Common patterns: `npm test`, `yarn test`, `flutter test`, `vitest`, etc.
+  
+- **Code Implementation**: After writing code, always verify:
+  - Code compiles/builds without errors (use project's build/analyze command)
+  - Linting passes (use project's lint command if available)
+  - Related tests pass (run relevant test suites)
+  - No obvious runtime errors
+  
+- **Command Discovery**:
+  - First check README.md for available scripts
+  - Check package manager config (package.json scripts, pubspec.yaml, etc.)
+  - Ask user for specific commands if unclear
+  
+- **Retry Policy**: 問題発生時は自動で最大5回まで再試行し、それでも解消できない場合にのみユーザーへ連絡する（途中経過は報告しない）
+  - Report to user: "同じエラーが5回続いています。別のアプローチが必要かもしれません。"
+  
+- **Never report completion** with:
+  - Failing tests (unless explicitly creating tests for unimplemented features)
+  - Compilation/build errors
+  - Unresolved errors from previous attempts
+
 ### Commands Reference
 
 - Command list: [@~/.claude/docs/COMMANDS.md](./docs/COMMANDS.md)

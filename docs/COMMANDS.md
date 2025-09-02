@@ -32,7 +32,7 @@ Custom commands for systematic software development support.
 ### Feature Development
 
 ```txt
-/think → /research → /code → /test
+/research → /think → /code → /test
 ```
 
 ### Bug Investigation & Fix

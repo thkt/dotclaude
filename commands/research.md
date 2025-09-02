@@ -78,7 +78,7 @@ Investigate codebase with dynamic discovery, parallel search execution, and conf
 ### Package Dependencies
 
 ```bash
-!`cat package.json | grep -E '"dependencies"|"devDependencies"' -A 10 || echo "No package.json found"`
+!`grep -E '"dependencies"|"devDependencies"' -A 10 package.json 2>/dev/null || echo "No package.json found"`
 ```
 
 ### Recent Issues/TODOs
@@ -116,29 +116,76 @@ Consolidate findings with confidence levels:
 3. **Relationship Mapping**: Connect related components
 4. **Priority Assessment**: Rank by importance
 
+## Context-Based Automatic Level Selection
+
+The `/research` command automatically determines the appropriate investigation depth based on context analysis, eliminating the need for manual level specification.
+
+### How Context Analysis Works
+
+When you run `/research`, the AI automatically:
+
+1. **Analyzes Current Context**
+   - Conversation history and flow
+   - Previous research findings
+   - Current work phase (planning/implementation/debugging)
+   - User's implied intent
+
+2. **Selects Optimal Level**
+   - **Quick Scan (30 sec)**: Initial project exploration, overview requests
+   - **Standard Research (2-3 min)**: Implementation preparation, specific inquiries
+   - **Deep Investigation (5 min)**: Problem solving, comprehensive analysis
+
+3. **Explains the Decision**
+
+   ```text
+   🔍 Research Level: Standard (auto-selected)
+   Reason: Implementation context detected - gathering detailed information
+   ```
+
+### Context Determination Criteria
+
+```markdown
+## Automatic Level Selection Logic
+
+### Quick Scan Selected When:
+- First interaction with a project
+- User asks for overview or summary
+- No specific problem to solve
+- General exploration needed
+
+### Standard Research Selected When:
+- Following up on previous findings
+- Preparing for implementation
+- Specific component investigation
+- Normal development workflow
+
+### Deep Investigation Selected When:
+- Debugging or troubleshooting context
+- Previous research was insufficient
+- Complex system analysis needed
+- Multiple interconnected components involved
+```
+
 ## Research Strategies
 
-### Quick Scan (1-2 min)
+### Quick Scan (Auto-selected: 30 sec)
 
 Surface-level understanding:
 
-```bash
-find . -type f -name "*.md" -not -path "*/node_modules/*" | head -5 | xargs head -20
-```
+- Project structure overview
+- Main technologies identification
+- Key file discovery
 
-Command: `/research --quick`
-
-### Standard Research (3-5 min)
+### Standard Research (Auto-selected: 2-3 min)
 
 Balanced depth and breadth:
 
 - Core architecture understanding
 - Key patterns identification
 - Main dependencies analysis
+- Implementation-ready insights
 
-Command: `/research` (default)
-
-### Deep Dive (5-10 min)
+### Deep Dive (Auto-selected: 5 min)
 
 Comprehensive investigation:
 
@@ -146,17 +193,15 @@ Comprehensive investigation:
 - All patterns and relationships
 - Full dependency graph
 - Historical context (git history)
+- Root cause analysis
 
-Command: `/research --deep`
+### Manual Override (Optional)
 
-### Focused Research
+While context-based selection is automatic, you can override if needed:
 
-Target specific areas:
-
-- `/research --auth` - Authentication system
-- `/research --api` - API structure
-- `/research --state` - State management
-- `/research --data` - Data flow
+- `/research --quick` - Force quick scan
+- `/research --deep` - Force deep investigation
+- Default behavior: Automatic context-based selection
 
 ## Efficient Search Patterns
 
@@ -231,20 +276,142 @@ Use `general-purpose` agent for:
 - **Exploratory Analysis**: Unknown structure
 - **Relationship Mapping**: Understanding connections
 - **Historical Research**: Git history analysis
+- **Parallel Execution**: Multiple searches simultaneously
+- **Result Structuring**: Clean, organized output
 
-### Task Agent Example
+### Enhanced Task Agent Integration with Context Analysis
 
 ```typescript
+// Context-aware automatic level selection
 Task({
   subagent_type: "general-purpose",
-  description: "Authentication flow analysis",
-  prompt: `Investigate the complete authentication system:
-    1. Find all auth-related files
-    2. Map the authentication flow
-    3. Identify security patterns
-    4. Trace token lifecycle
-    5. Document API endpoints
-    Return a comprehensive auth architecture report`
+  description: "Context-aware code investigation",
+  prompt: `
+    [CONTEXT ANALYSIS]
+    First, analyze the current context to determine investigation depth:
+
+    1. Conversation Context:
+       - Is this the first investigation? → Quick scan
+       - Following up on previous findings? → Standard/Deep
+       - Debugging or troubleshooting? → Deep
+
+    2. User Intent Analysis:
+       - Overview requested? → Quick scan
+       - Implementation preparation? → Standard
+       - Problem solving? → Deep
+
+    3. Automatically Select Level:
+       - Quick (30 sec): High-level overview only
+       - Standard (2-3 min): Balanced investigation
+       - Deep (5 min): Comprehensive analysis
+
+    [SELECTED LEVEL: Determine based on context]
+
+    [PARALLEL EXECUTION TASKS]
+    Based on selected level, execute appropriate tasks:
+
+    Quick Scan Tasks:
+    - Project structure overview
+    - Main technology identification
+    - Key component listing
+
+    Standard Research Tasks:
+    - Architecture analysis with patterns
+    - Technology stack deep dive
+    - Code quality assessment
+    - Implementation readiness check
+
+    Deep Investigation Tasks:
+    - Complete system mapping
+    - All design patterns and relationships
+    - Security analysis
+    - Performance bottlenecks
+    - Historical evolution
+    - Root cause analysis if debugging
+
+    [OUTPUT REQUIREMENTS]
+    - State selected level and reason
+    - Return only structured results
+    - Include confidence score (0.0-1.0) for each finding
+    - Sort by importance
+    - Remove redundant information
+    - Quick: 30 seconds max
+    - Standard: 2-3 minutes max
+    - Deep: 5 minutes max
+
+    [REPORT FORMAT]
+    ## 🔍 Research Level: [Quick/Standard/Deep] (auto-selected)
+    Reason: [Why this level was chosen based on context]
+
+    ## Investigation Summary
+    - Execution time: [seconds]
+    - Coverage: [%]
+    - Overall confidence: [0.0-1.0]
+
+    ## Key Findings (by confidence)
+    1. [Finding] (Confidence: X.XX)
+    2. [Finding] (Confidence: X.XX)
+
+    ## Technical Details
+    - Architecture: [Brief description]
+    - Main technologies: [List]
+    - Improvement suggestions: [If any]
+  `
+})
+```
+
+### Context-Aware Research Task (Default)
+
+```typescript
+// Default: Let AI determine appropriate level based on context
+Task({
+  subagent_type: "general-purpose",
+  description: "Adaptive research",
+  prompt: `
+    Topic: ${topic}
+
+    [AUTO-SELECT RESEARCH LEVEL]
+    Analyze context and choose:
+    - Quick (30s): If overview/first look needed
+    - Standard (2-3m): If implementation/normal investigation
+    - Deep (5m): If debugging/comprehensive analysis
+
+    Execute appropriate investigation based on selected level.
+    Return structured findings with confidence scores.
+    Include reason for level selection.
+  `
+})
+```
+
+### Manual Override Examples
+
+```typescript
+// Force quick scan (when you know you need just an overview)
+Task({
+  subagent_type: "general-purpose",
+  description: "Quick scan override",
+  prompt: `
+    FORCE LEVEL: Quick scan (30 seconds max)
+    Topic: ${topic}
+    Return top 5 findings only.
+    Each finding: one line with confidence score.
+  `
+})
+
+// Force deep investigation (when you know you need everything)
+Task({
+  subagent_type: "general-purpose",
+  description: "Deep investigation override",
+  prompt: `
+    FORCE LEVEL: Deep investigation (5 minutes)
+    Topic: ${topic}
+    Perform comprehensive analysis including:
+    - Complete architecture mapping
+    - All patterns and relationships
+    - Historical context
+    - Root cause analysis
+    Return detailed findings with full context.
+  `
 })
 ```
 
@@ -354,32 +521,43 @@ Include:
 
 ## Usage Examples
 
-### Quick Research
+### Default Context-Based Selection (Recommended)
 
 ```bash
+/research "authentication system"
+# AI automatically selects appropriate level based on context
+# Example: Selects "Standard" if preparing for implementation
+# Example: Selects "Deep" if debugging authentication issues
+# Example: Selects "Quick" if first time exploring the project
+```
+
+### Automatic Level Selection Examples
+
+```bash
+# Scenario 1: First project exploration
+/research
+# → Auto-selects Quick scan (30s overview)
+
+# Scenario 2: After finding a bug
+/research "user validation error"
+# → Auto-selects Deep investigation (root cause analysis)
+
+# Scenario 3: During implementation planning
+/research "database schema"
+# → Auto-selects Standard research (implementation details)
+```
+
+### Manual Override (When Needed)
+
+```bash
+# Force quick overview
 /research --quick "API structure"
-# Fast overview of API organization
-```
 
-### Standard Research
+# Force deep analysis
+/research --deep "complete system architecture"
 
-```bash
-/research "authentication implementation"
-# Balanced investigation of auth system
-```
-
-### Deep Research
-
-```bash
-/research --deep "complete data flow"
-# Comprehensive analysis from UI to database
-```
-
-### Focused Research
-
-```bash
-/research --state "Redux implementation"
-# Targeted state management investigation
+# Default (recommended): Let AI decide
+/research "payment processing"
 ```
 
 ## Best Practices
