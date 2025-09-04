@@ -1,367 +1,159 @@
 ---
 name: test
-description: Ensure code quality with comprehensive testing and validation
+description: Run tests and validate code quality
 priority: high
 suitable_for:
   scale: [small, medium, large]
   type: [test]
   understanding: "≥ 70%"
   urgency: [low, medium]
-aliases: []
 timeout: 120
-allowed-tools: Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn test:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm test:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun test:*), Bash(bun run), Bash(bun run:*), Bash(npx:*), Bash(jest:*), Bash(vitest:*), Bash(ls:*), Bash(cat:*), Bash(find:*), Read, Glob, Grep, LS, Task
+allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, TodoWrite
 context:
-  files_changed: "dynamic"
-  lines_changed: "dynamic"
   test_coverage: "measured"
   test_results: "analyzed"
 ---
 
-# /test - Advanced Testing & Validation
+# /test - Test Execution & Quality Validation
 
 ## Purpose
 
-Ensure code quality with comprehensive testing featuring dynamic discovery, hierarchical analysis, and coverage metrics.
+Run project tests and ensure code quality through comprehensive testing and validation.
 
-## Dynamic Test Discovery
+## Initial Discovery
 
-### Available Test Scripts
-
-```bash
-!`npm run || yarn run || pnpm run || bun run`
-```
-
-### Package Manager Detection
+### Check Package Manager
 
 ```bash
-!`find . -maxdepth 1 -name "*.lock*" -o -name "package*.json" | head -5`
+!`ls package*.json 2>/dev/null | head -1`
 ```
 
-### Test Framework Detection
+## Test Execution Process
+
+### 1. Run Tests
+
+Use TodoWrite to track testing progress.
+
+First, check available scripts in package.json:
 
 ```bash
-!`cat package.json`
+cat package.json
 ```
 
-### Test File Count
+Then run appropriate test command:
 
 ```bash
-!`find . -name "*test*" -o -name "*spec*"`
+npm test
 ```
 
-## Hierarchical Testing Process
-
-### Phase 1: Environment Analysis
-
-Use Task agent to:
-
-1. Detect test infrastructure and frameworks
-2. Identify test file patterns and locations
-3. Discover available test commands and scripts
-4. Check coverage configuration
-
-### Phase 2: Parallel Test Execution
-
-Run test suites concurrently when possible:
-
-- **Unit Tests**: Fastest feedback for component logic
-- **Integration Tests**: API and service interactions
-- **E2E Tests**: Critical user paths (if configured)
-- **Quality Checks**: Linting, type checking, formatting
-
-### Phase 3: Result Analysis & Metrics
-
-Analyze results with confidence scoring:
-
-1. **Failure Analysis**: Identify root causes
-2. **Coverage Metrics**: Line, branch, function coverage
-3. **Performance Data**: Test execution times
-4. **Flaky Test Detection**: Intermittent failures
-
-## Test Execution Strategies
-
-### Quick Test (1-2 min)
-
-Focus only on changed files:
+Alternative package managers:
 
 ```bash
-!`npm run test || yarn test || pnpm test || bun test || echo "No test script found"`
+yarn test
 ```
-
-Command: `/test --quick`
-
-### Standard Test (3-5 min)
-
-Run main test suite:
 
 ```bash
-!`npm run test || yarn test || pnpm test || bun test || echo "No test script found"`
+pnpm test
 ```
-
-Command: `/test` (default)
-
-### Comprehensive Test (5-10 min)
-
-Full test suite with coverage:
 
 ```bash
-!`npm test -- --coverage --verbose 2>&1 || yarn test --coverage --verbose 2>&1 || pnpm test --coverage --verbose 2>&1 || bun test --coverage 2>&1 || echo "Coverage test not available"`
+bun test
 ```
 
-Command: `/test --full`
+### 2. Coverage Analysis
 
-### Watch Mode
-
-For development iterations:
+Run tests with coverage:
 
 ```bash
-!`npm test -- --watch || yarn test --watch || pnpm test --watch || bun test --watch`
+npm test -- --coverage
 ```
 
-Command: `/test --watch`
-
-## Coverage Metrics
-
-### Current Coverage
+Check coverage directory:
 
 ```bash
-!`cat coverage/coverage-summary.json | grep -E "lines|statements|functions|branches" || echo "No coverage data available"`
+ls coverage/
 ```
 
-### Coverage Trends
+### 3. Quality Checks
 
-Track coverage changes:
-
-- Compare against main branch
-- Monitor coverage trajectory
-- Identify uncovered critical paths
-
-### Coverage Thresholds
-
-```json
-{
-  "lines": 80,
-  "functions": 80,
-  "branches": 75,
-  "statements": 80
-}
-```
-
-## Test Result Analysis
-
-### Failure Classification
-
-```markdown
-## Test Results Summary
-- Total Tests: [number]
-- ✅ Passed: [number] ([percentage]%)
-- ❌ Failed: [number]
-- ⏭️ Skipped: [number]
-- ⏱️ Duration: [time]
-
-## Failed Test Analysis
-### Category: [Unit|Integration|E2E]
-#### Test: [test name]
-- **File**: path/to/test.js:42
-- **Failure Type**: [Assertion|Timeout|Error]
-- **Root Cause**: [analysis]
-- **Confidence**: 0.95
-- **Fix Suggestion**: [specific solution]
-
-## Coverage Report
-- 📊 Line Coverage: [percentage]% (↑/↓ from main)
-- 🌿 Branch Coverage: [percentage]%
-- 🔧 Function Coverage: [percentage]%
-- 📝 Statement Coverage: [percentage]%
-
-## Uncovered Critical Paths
-[List of important untested code]
-
-## Performance Metrics
-- Slowest Tests: [top 5 with times]
-- Flaky Tests: [intermittent failures]
-- Test Efficiency: [tests per second]
-```
-
-## Quality Checks Integration
-
-### Linting
+#### Linting
 
 ```bash
-!`npm run lint || yarn run lint || pnpm run lint || bun run lint || echo "Linter not configured"`
+npm run lint
 ```
 
-### Type Checking
+#### Type Checking
 
 ```bash
-!`npm run type-check || yarn run type-check || pnpm run type-check || bun run type-check || npx tsc --noEmit || echo "Type checking not available"`
+npm run type-check
 ```
 
-### Format Check
+Alternative:
 
 ```bash
-!`npm run format:check || yarn run format:check || pnpm run format:check || bun run format:check || echo "Formatter not configured"`
+npx tsc --noEmit
 ```
 
-## Browser Testing for UI Changes
+#### Format Check
 
-When UI components change:
+```bash
+npm run format:check
+```
 
-1. Use Playwright MCP tools for visual testing
-2. Verify responsive design breakpoints
-3. Check accessibility compliance
-4. Test cross-browser compatibility
+## Result Analysis
+
+### Test Results Summary
+
+Provide clear summary of:
+
+- Total tests run
+- Passed/Failed breakdown
+- Execution time
+- Coverage percentage (if measured)
+
+### Failure Analysis
+
+For failed tests:
+
+1. Identify test file and line number
+2. Analyze failure reason
+3. Suggest specific fix
+4. Link to relevant code
+
+### Coverage Report
+
+When coverage is available:
+
+- Line coverage percentage
+- Branch coverage percentage
+- Uncovered critical paths
+- Suggestions for improvement
 
 ## TodoWrite Integration
 
 Automatic task tracking:
 
 ```markdown
-# Testing: [Target Description]
-1. ⏳ Discover test infrastructure (1 min)
-2. ⏳ Run unit tests (parallel)
-3. ⏳ Run integration tests (if exists)
-4. ⏳ Analyze failures and root causes
-5. ⏳ Generate coverage report
-6. ⏳ Execute quality checks (lint, type check)
-7. ⏳ Summarize results and recommendations
-```
-
-## Advanced Features
-
-### Test Impact Analysis
-
-Determine which tests to run based on changes:
-
-```bash
-!`npm run test || yarn test || pnpm test || bun test || echo "No tests available"`
-```
-
-### Mutation Testing
-
-For critical code paths (if configured):
-
-```bash
-!`npm run test:mutation || yarn run test:mutation || pnpm run test:mutation || bun run test:mutation || echo "Mutation testing not configured"`
-```
-
-### Performance Regression Testing
-
-Track test suite performance over time:
-
-- Identify slow tests
-- Monitor memory usage
-- Detect performance regressions
-
-### Test Reliability Scoring
-
-- Track flaky test frequency
-- Calculate test confidence scores
-- Prioritize test maintenance
-
-## Failure Recovery Strategies
-
-### Immediate Actions
-
-1. **Isolate Failure**: Run single test in isolation
-2. **Debug Mode**: Run with verbose output
-3. **Check Dependencies**: Verify test environment
-4. **Review Changes**: Compare with last passing state
-
-### Root Cause Analysis
-
-- Stack trace analysis
-- Assertion failure patterns
-- Environment dependencies
-- Timing/race conditions
-
-## CI/CD Integration
-
-### Pre-commit Hook
-
-```bash
-npm test -- --bail --findRelatedTests
-```
-
-### PR Validation
-
-```yaml
-- name: Test Suite
-  run: npm test -- --coverage --ci
-```
-
-### Deployment Gate
-
-```bash
-npm test -- --coverage --threshold 80
-```
-
-## Usage Examples
-
-### Basic Testing
-
-```bash
-/test
-# Run standard test suite with coverage
-```
-
-### Quick Feedback
-
-```bash
-/test --quick
-# Test only changed files
-```
-
-### Pre-PR Validation
-
-```bash
-/test --full
-# Comprehensive testing before PR
-```
-
-### Specific Test Suite
-
-```bash
-/test "authentication tests"
-# Run tests matching pattern
-```
-
-### With Coverage Goals
-
-```bash
-/test --coverage 90
-# Ensure 90% coverage threshold
+1. Discover test infrastructure
+2. Run test suite
+3. Analyze failures (if any)
+4. Generate coverage report
+5. Execute quality checks
+6. Summarize results
 ```
 
 ## Best Practices
 
-1. **Test First**: Run tests before committing
-2. **Fix Immediately**: Don't accumulate test debt
-3. **Monitor Trends**: Track coverage over time
-4. **Optimize Suite**: Remove redundant tests
-5. **Document Failures**: Keep failure pattern log
-6. **Parallelize**: Run independent tests concurrently
-
-## Exclusion Rules
-
-### Auto-Skip Patterns
-
-1. **Generated Files**: dist/, build/, coverage/
-2. **Dependencies**: node_modules/, vendor/
-3. **Documentation**: *.md files (unless docs tests exist)
-4. **Config Files**: Unless specifically testing config
-5. **Mock Data**: Test fixtures and stubs
-
-### Context-Aware Skipping
-
-- Skip E2E in CI when not needed
-- Skip slow tests in watch mode
-- Skip integration tests in quick mode
+1. **Fix Immediately**: Don't accumulate test debt
+2. **Monitor Coverage**: Track trends over time
+3. **Prioritize Failures**: Fix broken tests before adding new ones
+4. **Document Issues**: Keep failure patterns for future reference
 
 ## Next Steps
 
-- **Failed Tests** → `/fix` with specific test context
-- **Low Coverage** → Add tests for critical paths
-- **Performance Issues** → Optimize slow tests
-- **Flaky Tests** → Investigate and stabilize
-- **All Green** → Ready for PR/deployment
+Based on results:
+
+- **Failed Tests** → Use `/fix` to address specific failures
+- **Low Coverage** → Add tests for uncovered critical paths
+- **All Green** → Ready for commit/PR
+- **Quality Issues** → Fix lint/type errors first
