@@ -157,7 +157,7 @@ Phase 3: Production (60s timeout)
 
 ```text
 Feature Development:
-/think → /research → /code → /test → /review
+/research → /think → /code → /test → /review
 
 Bug Investigation:
 /research → /fix → /test

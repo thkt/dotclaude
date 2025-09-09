@@ -93,7 +93,7 @@ This repository contains personal configurations for Claude AI, including:
 ### Feature Development
 
 ```txt
-/think → /research → /code → /test
+/research → /think → /code → /test
 ```
 
 ### Bug Investigation & Fix

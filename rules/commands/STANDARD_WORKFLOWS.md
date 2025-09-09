@@ -5,7 +5,7 @@
 | Pattern | Workflow | Tasks |
 |---------|----------|-------|
 | Bug Investigation | `/research` → `/fix` | 2 |
-| Feature Development | `/think` → `/research` → `/code` → `/test` | 4 |
+| Feature Development | `/research` → `/think` → `/code` → `/test` | 4 |
 | Emergency Fix | `/hotfix` | 1 |
 | Quick Fix | `/fix` | 1 |
 
@@ -26,8 +26,8 @@
 ### New Feature
 
 - **Condition**: Adding new capability
-- **Workflow**: `/think` → `/code` → `/test`
-- **TodoWrite**: Plan, implement, verify
+- **Workflow**: `/research` → `/think` → `/code` → `/test`
+- **TodoWrite**: Investigate, plan, implement, verify
 
 ### Simple Known Bug
 
