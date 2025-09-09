@@ -11,7 +11,7 @@ DIR=$(basename "$PWD")
 # Get git branch
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 
-# Count git changes  
+# Count git changes
 CHANGES=$(git status --porcelain 2>/dev/null | wc -l | xargs)
 
 # Build status line with colors matching Starship

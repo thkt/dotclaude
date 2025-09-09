@@ -365,6 +365,24 @@ const Component = () => {
 - `frontend-type-safety-reviewer`: 型システムの深度のため
 - `frontend-performance-reviewer`: 最適化ニーズのため
 
-参照: [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md)
+## 適用する開発原則
+
+### The Art of Readable Code
+
+[@~/.claude/rules/development/READABLE_CODE.md] - 「コードは他の人が理解するのにかかる時間を最小化するように書かれるべき」
+
+レビュー時の適用:
+
+- **1分ルール**: 新しいチームメンバーが1分以内にコードを理解できるか
+- **名前の明確性**: 誤解されない名前、具体的で検索可能な名前
+- **制御フローの単純化**: ガード節、早期リターン、ネストの最小化
+- **一度に一つのタスク**: 関数が一つのことをやっているか
+- **コードが意図を表現**: コメントなしで何をしているか明確か
+
+主要な質問:
+
+1. これを理解する最も簡単な方法は何か？
+2. これを読む人を混乱させるものは何か？
+3. 意図をより明確にできるか？
 
 覚えておくべきこと: 明確なコードはデバッグ可能なコードです。読みにくければ、修正も困難です。

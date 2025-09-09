@@ -131,14 +131,16 @@ Apply multi-level filtering:
 ## Output Format with Confidence Scoring
 
 ```markdown
-## Review Summary
+[REVIEW OUTPUT TEMPLATE]
+
+Review Summary
 - Files Reviewed: [Count and list]
 - Total Issues: [Count by severity]
 - Review Coverage: [Percentage]
 - Confidence Level: [Average confidence]
 
-## Critical Issues 🚨 (Confidence > 0.9)
-### Issue #1: [Title]
+Critical Issues 🚨 (Confidence > 0.9)
+Issue #1: [Title]
 - **File**: path/to/file.ts:42
 - **Category**: security|performance|accessibility|etc
 - **Confidence**: 0.95
@@ -146,22 +148,22 @@ Apply multi-level filtering:
 - **Impact**: [User/system impact]
 - **Recommendation**: [Specific fix with code example]
 
-## High Priority ⚠️ (Confidence > 0.8)
+High Priority ⚠️ (Confidence > 0.8)
 [Similar format...]
 
-## Medium Priority 💡 (Confidence > 0.7)
+Medium Priority 💡 (Confidence > 0.7)
 [Similar format...]
 
-## Improvement Opportunities
+Improvement Opportunities
 [Lower confidence suggestions for consideration]
 
-## Metrics
+Metrics
 - Code Quality Score: [A-F rating]
 - Technical Debt Estimate: [Hours]
 - Test Coverage Gap: [Percentage]
 - Security Posture: [Rating]
 
-## Recommended Actions
+Recommended Actions
 1. **Immediate**: [Critical fixes]
 2. **Next Sprint**: [High priority items]
 3. **Backlog**: [Nice-to-have improvements]
@@ -217,7 +219,8 @@ Target specific areas:
 Automatic task creation:
 
 ```markdown
-# Code Review: [Target]
+[TODO LIST TEMPLATE]
+Code Review: [Target]
 1. ⏳ Context discovery and scope analysis
 2. ⏳ Execute specialized review agents (parallel)
 3. ⏳ Filter and validate findings (confidence > 0.7)
@@ -323,6 +326,28 @@ claude review --quick || exit 1
 ### PR Comments
 
 Results formatted for GitHub/GitLab comments
+
+## Applied Development Principles
+
+### Principles Guide
+
+[@~/.claude/rules/PRINCIPLES_GUIDE.md] - Foundation for review prioritization
+
+Application:
+
+- **Priority Matrix**: Categorize issues by Essential > Default > Contextual principles
+- **Conflict Resolution**: Decision criteria for DRY vs Readable, SOLID vs Simple, etc.
+- **Red Flags**: Method chains > 3 levels, can't understand in 1 minute, "just in case" implementations
+
+### Documentation Rules
+
+[@~/.claude/docs/DOCUMENTATION_RULES.md] - Review report format and structure
+
+Application:
+
+- **Clarity First**: Understandability over completeness
+- **Consistency**: Unified report format
+- **Actionable Recommendations**: Specific improvement actions
 
 ## Next Steps After Review
 

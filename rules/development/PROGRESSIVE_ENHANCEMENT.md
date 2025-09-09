@@ -38,6 +38,10 @@ Layout, positioning, show/hide, responsive, animations, visual states
 
 "The best code is no code" - If CSS can solve it, skip JS
 
+## Related Principles
+
+- [@../reference/OCCAMS_RAZOR.md] - The simplicity principle underlying Progressive Enhancement
+
 ## Outcome-First Development
 
 **Core Principle**: Ship the outcome, not the architecture
@@ -67,6 +71,18 @@ If "No" → Don't add it yet
 - Every line of code is a liability
 - YAGNI is the default position
 
-## Remember
+## Key Takeaway
 
 "The best code is code that doesn't exist yet doesn't need to"
+
+## Related Principles
+
+### Development Practices
+
+- [@./LEAKY_ABSTRACTION.md] - Build abstractions progressively, expecting leaks
+- [@./LAW_OF_DEMETER.md] - Progressive coupling reduction
+- [@./READABLE_CODE.md] - Start simple, enhance readability gradually
+
+### Core Principles
+
+- [@../reference/OCCAMS_RAZOR.md] - Simplicity first aligns with progressive enhancement

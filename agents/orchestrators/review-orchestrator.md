@@ -297,6 +297,26 @@ function deduplicateFindings(findings: ReviewFinding[]): ReviewFinding[] {
 
 ### 4. Priority Scoring
 
+#### Principle-Based Prioritization
+
+Based on [@~/.claude/rules/PRINCIPLES_GUIDE.md] priority matrix, automatically prioritize review findings in the following hierarchy:
+
+1. **🔴 Essential Principle Violations (Highest Priority)**
+   - Occam's Razor violations: Unnecessary complexity
+   - Progressive Enhancement violations: Over-engineering upfront
+
+2. **🟡 Default Principle Violations (Medium Priority)**
+   - Readable Code violations: Hard to understand code
+   - DRY violations: Knowledge duplication
+   - TDD/Baby Steps violations: Changes too large
+
+3. **🟢 Contextual Principle Violations (Low Priority)**
+   - SOLID violations: Evaluated based on context
+   - Law of Demeter violations: Excessive coupling
+   - Ignoring Leaky Abstractions: Perfectionism
+
+This hierarchy ensures review results are objectively prioritized based on development principles, allowing teams to address the most important issues first.
+
 #### Severity Weighting
 
 ```typescript

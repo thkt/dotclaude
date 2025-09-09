@@ -131,3 +131,8 @@ export const TodoContainer = () => {
 - Presentational components are props-only
 - Keep Presentational components pure
 - When in doubt, favor Presentational
+
+## Related Principles
+
+- [@./LAW_OF_DEMETER.md] - Props-only pattern naturally follows Law of Demeter
+- [@./READABLE_CODE.md] - Clear separation improves code understanding

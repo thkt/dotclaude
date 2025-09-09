@@ -71,6 +71,7 @@ Perform code implementation with real-time test feedback, dynamic quality discov
 
 ### Applied Development Rules
 
+- [@~/.claude/rules/development/TDD_RGRC.md] - Test-Driven Development with Baby Steps
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - CSS-first approach for UI
 - [@~/.claude/rules/development/READABLE_CODE.md] - Code readability and clarity
 - [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md] - React component patterns
@@ -88,6 +89,53 @@ This ensures that code first works (TDD), then becomes clean and maintainable (S
 ### 1. Test-Driven Development (TDD) as t_wada would
 
 **Goal**: "Clean code that works" (動作するきれいなコード) - Ron Jeffries
+
+#### Baby Steps - The Foundation of TDD
+
+**Core Principle**: Make the smallest possible change at each step
+
+##### Why Baby Steps Matter
+
+- **Immediate error localization**: When test fails, the cause is in the last tiny change
+- **Continuous working state**: Code is always seconds away from green
+- **Rapid feedback**: Each step takes 1-2 minutes max
+- **Confidence building**: Small successes compound into major features
+
+##### Baby Steps in Practice
+
+```typescript
+// ❌ Big Step - Multiple changes at once
+function calculateTotal(items, tax, discount) {
+  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+  const afterTax = subtotal * (1 + tax);
+  const afterDiscount = afterTax * (1 - discount);
+  return afterDiscount;
+}
+
+// ✅ Baby Steps - One change at a time
+// Step 1: Return zero (make test pass minimally)
+function calculateTotal(items) {
+  return 0;
+}
+
+// Step 2: Basic sum (next test drives this)
+function calculateTotal(items) {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
+
+// Step 3: Add tax support (only when test requires it)
+// ... continue in tiny increments
+```
+
+##### Baby Steps Rhythm
+
+1. **Write smallest failing test** (30 seconds)
+2. **Make it pass with minimal code** (1 minute)
+3. **Run tests** (10 seconds)
+4. **Tiny refactor if needed** (30 seconds)
+5. **Commit if green** (20 seconds)
+
+Total cycle: ~2 minutes
 
 #### Enhanced RGRC Cycle with Real-time Feedback
 
@@ -275,7 +323,7 @@ Make implementation choices based on evidence:
 - **Medium (0.5-0.8)**: Add defensive checks
 - **Low (<0.5)**: Research before implementing
 
-### 2. Code Implementation with TDD
+### 5. Code Implementation with TDD
 
 Follow the RGRC cycle defined above:
 
@@ -284,7 +332,7 @@ Follow the RGRC cycle defined above:
 - **Refactor**: Apply SOLID and DRY principles
 - **Commit**: Save stable state
 
-### 3. Dynamic Quality Checks
+### 6. Dynamic Quality Checks
 
 #### Automatic Discovery
 
@@ -345,7 +393,7 @@ Overall Quality Score: (L*0.3 + T*0.3 + Test*0.3 + F*0.1) = 0.93
 Confidence Level: HIGH - Ready for commit
 ```
 
-### 4. Functionality Verification
+### 7. Functionality Verification
 
 - Verify on development server
 - Validate edge cases
@@ -532,6 +580,31 @@ Proceeding without resolution? (y/N)
 /code --pattern repository "Database access layer"
 # Use repository pattern for implementation
 ```
+
+## Applied Development Principles
+
+### TDD/RGRC
+
+[@~/.claude/rules/development/TDD_RGRC.md] - Red-Green-Refactor-Commit cycle
+
+Application:
+
+- **Baby Steps**: Smallest possible change
+- **Red**: Write failing test first
+- **Green**: Minimal code to pass test
+- **Refactor**: Improve clarity
+- **Commit**: Manual commit after each cycle
+
+### Occam's Razor
+
+[@~/.claude/rules/reference/OCCAMS_RAZOR.md] - "Entities should not be multiplied without necessity"
+
+Application:
+
+- **Simplest Solution**: Minimal implementation that meets requirements
+- **Avoid Unnecessary Complexity**: Don't abstract until proven
+- **Question Every Abstraction**: Is it truly necessary?
+- **Avoid Premature Optimization**: Only for measured needs
 
 ## Next Steps
 

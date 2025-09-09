@@ -18,7 +18,7 @@ color: indigo
 
 ### 1. エージェント実行管理
 
-#### 順次実行グループ
+#### 強化された並列実行グループ
 
 ```yaml
 execution_plan:
@@ -40,13 +40,13 @@ execution_plan:
     - accessibility-reviewer  # WCAG準拠とユーザビリティ
 ```
 
-#### 並列実行最適化
+#### 並列実行の利点
 
 - 同一フェーズ内のエージェントを並列実行
 - 依存関係管理のためフェーズは順次実行
 - 効率性のため結果を非同期収集
 
-#### エージェント検証
+#### エージェント検証とメタデータ
 
 ```typescript
 async function validateAgents(agents: string[]): Promise<string[]> {
@@ -66,15 +66,15 @@ async function validateAgents(agents: string[]): Promise<string[]> {
 
 function findAgentFile(agentName: string): Promise<string | null> {
   const paths = [
-    `~/.claude/agents/frontend/${agentName}.md`,
-    `~/.claude/agents/general/${agentName}.md`,
-    `~/.claude/agents/orchestrators/${agentName}.md`
+    `~/.claude/ja/agents/frontend/${agentName}.md`,
+    `~/.claude/ja/agents/general/${agentName}.md`,
+    `~/.claude/ja/agents/orchestrators/${agentName}.md`
   ]
   // 各パスをチェックし、最初の一致を返す
 }
 ```
 
-#### 実行タイムアウト
+#### 並列実行エンジン
 
 ```yaml
 execution_timeouts:
@@ -189,6 +189,26 @@ function deduplicateFindings(findings: ReviewFinding[]): ReviewFinding[] {
 ```
 
 ### 4. 優先度スコアリング
+
+#### 原則に基づく優先順位付け
+
+[@~/.claude/ja/rules/PRINCIPLES_GUIDE.md]の優先度マトリックスに基づいて、レビュー結果を以下の階層で自動的に優先順位付けします：
+
+1. **🔴 必須原則違反（最高優先度）**
+   - オッカムの剃刀違反: 不必要な複雑さ
+   - プログレッシブエンハンスメント違反: 過度な先行設計
+
+2. **🟡 デフォルト原則違反（中優先度）**
+   - 可読性のあるコード違反: 理解困難なコード
+   - DRY違反: 知識の重複
+   - TDD/Baby Steps違反: 大きすぎる変更
+
+3. **🟢 状況依存原則違反（低優先度）**
+   - SOLID違反: 文脈に応じて評価
+   - デメテルの法則違反: 過度な結合
+   - 漏れのある抽象化の無視: 完璧主義
+
+この階層により、レビュー結果を開発原則に基づいて客観的に優先順位付けし、最も重要な問題から対処できるようにします。
 
 #### 重要度の重み付け
 
@@ -462,6 +482,13 @@ custom_rules:
 3. **修正率**: レビュー後に解決された問題の割合
 4. **レビュー時間**: 平均レビュー完了時間
 5. **開発者満足度**: 推奨事項の有用性
+
+## 出力のローカライゼーション
+
+- すべてのレビュー出力はユーザーのCLAUDE.md要件に従って日本語に翻訳される
+- 明確性のため適切な場合は技術用語を英語で維持
+- 日付、数値、パーセンテージには日本語のフォーマットと慣例を使用
+- セクションヘッダーと説明を含むすべてのユーザー向けメッセージを翻訳
 
 ## エージェントの場所
 

@@ -95,8 +95,8 @@ const checks = [
 #### Issue Classification
 
 ```markdown
-## Problem Analysis (Confidence: X.XX)
-### Category: [UI/Logic/Performance/Type/Test]
+[TEMPLATE: Problem Analysis Section]
+Category: [UI/Logic/Performance/Type/Test]
 - **Symptoms**: [Observable behavior]
 - **Evidence**: [Error messages, test failures]
 - **Root Cause**: [Why it's happening]
@@ -114,8 +114,8 @@ git log --oneline -5 --grep="fix"
 #### Fix Approach Selection
 
 ```markdown
-## Fix Strategy (Confidence: X.XX)
-### Selected Approach: [Name]
+[TEMPLATE: Fix Strategy Section]
+Selected Approach: [Name]
 - **Implementation**: [How to fix]
 - **Rationale**: [Why this approach]
 - **Risk Level**: [Low/Medium/High]
@@ -125,7 +125,7 @@ git log --oneline -5 --grep="fix"
 #### Progressive Enhancement Check
 
 ```markdown
-## CSS-First Analysis
+[TEMPLATE: CSS-First Analysis]
 - Can CSS solve this? [Yes/No]
 - If Yes: [CSS solution]
 - If No: [Why JS is needed]
@@ -154,8 +154,9 @@ npm test -- --onlyChanged | grep -E "Test Suites:"
 Real-time tracking with confidence scoring:
 
 ```markdown
-# Fix: [Issue Description]
-## Analysis Phase (Confidence: X.XX)
+[TODO LIST TEMPLATE]
+Fix: [Issue Description]
+Analysis Phase (Confidence: X.XX)
 1. ✅ Problem identified [C: 0.95] ✓ 2 min
 2. ❌ Root cause analysis [C: 0.85] ⏱️ Active
 3. ⏳ Fix strategy selection [C: pending]
@@ -178,8 +179,8 @@ Real-time tracking with confidence scoring:
 ## Definition of Done with Confidence Scoring
 
 ```markdown
-## Fix Completion Checklist
-### Problem Resolution
+[COMPLETION CHECKLIST TEMPLATE]
+Problem Resolution
 - ✅ Root cause identified [C: 0.92]
 - ✅ Fix addresses cause not symptom [C: 0.88]
 - ✅ Minimal complexity solution [C: 0.95]
@@ -244,8 +245,9 @@ Scope: 2 files | Risk: Low | Time: < 5 min
 ## Enhanced Output Format
 
 ```markdown
-## 🔧 Fix Summary
-### Problem
+[FIX SUMMARY TEMPLATE]
+🔧 Fix Summary
+Problem
 - **Issue**: [Description]
 - **Category**: [UI/Logic/Performance/Type]
 - **Root Cause**: [Why it happened]
@@ -315,8 +317,8 @@ Scope: 2 files | Risk: Low | Time: < 5 min
 If confidence drops below 0.6 during analysis:
 
 ```markdown
-## Low Confidence Detected
-### Issue: Fix scope exceeds /fix capabilities
+[LOW CONFIDENCE ALERT TEMPLATE]
+Issue: Fix scope exceeds /fix capabilities
 
 Recommended action:
 - For investigation: /research
@@ -365,7 +367,7 @@ Switch command? (Y/n)
 ### Escalation Path (Confidence <0.7)
 
 ```markdown
-## Recommended Workflow
+[WORKFLOW RECOMMENDATION TEMPLATE]
 Based on analysis, suggesting:
 1. /research - Investigate deeper
 2. /think - Plan comprehensive solution
@@ -428,3 +430,27 @@ This command applies Progressive Enhancement from [@~/.claude/rules/development/
 
 - **fix**: Rapid development fixes with normal testing/deployment
 - **hotfix**: Emergency production fixes requiring immediate action
+
+## Applied Development Principles
+
+### Occam's Razor
+
+[@~/.claude/rules/reference/OCCAMS_RAZOR.md] - "Entities should not be multiplied without necessity"
+
+Application in fixes:
+
+- **Minimal Change**: Simplest change that fixes the issue
+- **Avoid Restructuring**: Don't change surrounding code
+- **Minimize Side Effects**: Fix stays focused on the problem
+- **Avoid Over-generalization**: Solve just the current issue
+
+### TIDYINGS
+
+[@~/.claude/rules/development/TIDYINGS.md] - Clean as you go
+
+Application in fixes:
+
+- **Clean Only What You Touch**: Improve only fix-related code
+- **Leave It Better**: Better than before, not perfect
+- **Incremental Improvement**: Don't try to fix everything at once
+- **Boy Scout Rule**: Leave it cleaner than you found it

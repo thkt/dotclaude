@@ -2,7 +2,7 @@
 
 **デフォルトマインドセット**: コードは理解しやすくあるべき - Dustin Boswell & Trevor Foucher
 
-## コア原則
+## 核心哲学
 
 **「コードは他の誰かがそれを理解するのにかかる時間を最小限にするように書かれるべきである」**
 
@@ -135,3 +135,9 @@ const availableProducts = products.filter(product =>
 - 明確さは賢さに勝る
 - 未来のあなたは別人
 - 読むことは書くことよりも多く起こる
+
+## 関連する原則
+
+- [@./LAW_OF_DEMETER.md] - シンプルなインターフェースが可読性を向上
+- [@./CONTAINER_PRESENTATIONAL.md] - 明確な分離が理解を向上
+- [@../reference/OCCAMS_RAZOR.md] - シンプルさが可読性を強化

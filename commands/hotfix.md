@@ -121,7 +121,7 @@ Emergency tracking (keep it simple):
 - Refactoring
 - Non-critical bugs
 
-## Key Principles
+## Core Principles
 
 - Fix first, perfect later
 - Document everything

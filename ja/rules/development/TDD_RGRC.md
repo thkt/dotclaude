@@ -1,6 +1,6 @@
 # t_wadaのようにテスト駆動開発
 
-## 核心原則
+## 核心哲学
 
 新機能実装やバグ修正時は、t_wadaのように考え行動する - 厳格なRed-Green-Refactor-Commit（RGRC）サイクルを使い、各ステップがなぜ重要かを深く理解する。
 
@@ -10,6 +10,55 @@
 
 1. **テストシナリオリストの作成** - 小さなテスト可能な単位に分解し、TodoWriteで追跡
 2. **RGRCサイクルの実行** - 一度に1つのシナリオ、最小ステップ、素早く繰り返す
+
+## Baby Steps - TDDの基礎
+
+### 核心哲学
+
+**各ステップで可能な限り最小の変更を行う** - これがTDDの成功の鍵
+
+### Baby Stepsが重要な理由
+
+- **即座のエラー特定**: テストが失敗したら、原因は直前の小さな変更にある
+- **継続的な動作状態**: コードは常に数秒でグリーンに戻せる
+- **高速フィードバック**: 各ステップは最大1-2分
+- **自信の構築**: 小さな成功が複合して大きな機能になる
+
+### Baby Stepsの実践例
+
+```typescript
+// ❌ 大きなステップ - 複数の変更を一度に
+function calculateTotal(items, tax, discount) {
+  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+  const afterTax = subtotal * (1 + tax);
+  const afterDiscount = afterTax * (1 - discount);
+  return afterDiscount;
+}
+
+// ✅ Baby Steps - 一度に1つの変更
+// ステップ1: ゼロを返す（最小限でテストを通す）
+function calculateTotal(items) {
+  return 0;
+}
+
+// ステップ2: 基本的な合計（次のテストがこれを駆動）
+function calculateTotal(items) {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
+
+// ステップ3: 税金サポートを追加（テストが要求したときのみ）
+// ... 小さな増分で継続
+```
+
+### Baby Stepsのリズム
+
+1. **最小の失敗テストを書く** (30秒)
+2. **最小限のコードで通す** (1分)
+3. **テストを実行** (10秒)
+4. **必要なら小さなリファクタリング** (30秒)
+5. **グリーンならコミット** (20秒)
+
+合計サイクル: 約2分
 
 ## RGRCサイクルの実装
 
@@ -77,3 +126,7 @@
 ## Claude Codeでの利点
 
 フェーズごとの明確な境界、過度な設計の防止、自己文書化されたテスト、自然なチェックポイント
+
+## 関連する原則
+
+- [@../reference/OCCAMS_RAZOR.md] - Baby Stepsはシンプルさの原則を体現

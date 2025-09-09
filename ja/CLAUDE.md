@@ -15,6 +15,14 @@
 
 ### [P2] 開発アプローチ
 
+- **📚 原則ガイド**: 完全な適用ガイド → [@~/.claude/ja/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
+  - 即座の判断のためのクイックリファレンス
+  - 深い理解のための詳細ガイド
+  - 優先度マトリックスと競合解決
+- **核心原則**: オッカムの剃刀 → [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../rules/reference/OCCAMS_RAZOR.md)
+  - 動作する最もシンプルな解決策を選ぶ
+  - 不必要な複雑さを避ける
+  - すべての抽象化を疑う
 - **デフォルト哲学**: プログレッシブエンハンスメント → [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](../rules/development/PROGRESSIVE_ENHANCEMENT.md)
   - シンプルに構築 → 段階的に強化
   - クイックフィックスより根本原因
@@ -31,7 +39,7 @@
   - ContainerコンポーネントでHooks
   - 再利用性の最大化
 - コマンドに統合された開発方法論:
-  - `/code` - TDD/RGRC [@~/.claude/ja/rules/reference/TDD_RGRC.md]、SOLID [@~/.claude/ja/rules/reference/SOLID.md]、DRY原則 [@~/.claude/ja/rules/reference/DRY.md]
+  - `/code` - TDD/RGRC [@~/.claude/ja/rules/development/TDD_RGRC.md]、SOLID [@~/.claude/ja/rules/reference/SOLID.md]、DRY原則 [@~/.claude/ja/rules/reference/DRY.md]
   - `/think` - SOLID設計原則 [@~/.claude/ja/rules/reference/SOLID.md]
 
 ### [P3] ファイル削除動作
@@ -48,21 +56,21 @@
 - **テスト作成**: テストを作成した後、必ずプロジェクトのテストコマンドを実行してパスすることを確認
   - package.json/pubspec.yaml等からテストコマンドを発見
   - 一般的なパターン: `npm test`, `yarn test`, `flutter test`, `vitest` など
-  
+
 - **コード実装**: コードを書いた後、必ず以下を確認:
   - コンパイル/ビルドエラーがない（プロジェクトのビルド/解析コマンドを使用）
   - Lintがパスする（利用可能な場合はプロジェクトのlintコマンドを使用）
   - 関連テストがパスする（関連するテストスイートを実行）
   - 明らかな実行時エラーがない
-  
+
 - **コマンド発見**:
   - まずREADME.mdで利用可能なスクリプトを確認
   - パッケージマネージャーの設定を確認（package.jsonのscripts、pubspec.yamlなど）
   - 不明な場合はユーザーに特定のコマンドを尋ねる
-  
+
 - **再試行ポリシー**: 問題発生時は自動で最大5回まで再試行し、それでも解消できない場合にのみユーザーへ連絡する（途中経過は報告しない）
   - ユーザーへの報告: "同じエラーが5回続いています。別のアプローチが必要かもしれません。"
-  
+
 - **以下の状態では完了を報告しない**:
   - テストが失敗している（未実装機能のテストを明示的に作成している場合を除く）
   - コンパイル/ビルドエラーがある
@@ -72,6 +80,11 @@
 
 - コマンドリスト（英語版）: [@~/.claude/docs/COMMANDS.md](../docs/COMMANDS.md)
 - コマンドリスト（日本語版）: [@~/.claude/ja/docs/COMMANDS.md](./docs/COMMANDS.md)
+
+### ドキュメントガイドライン
+
+- ドキュメントルール: [@~/.claude/ja/docs/DOCUMENTATION_RULES.md](./docs/DOCUMENTATION_RULES.md)
+- すべてのドキュメントで一貫性を維持
 
 ### 参考
 

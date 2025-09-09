@@ -5,9 +5,11 @@
 ### Active Agents (Used by Commands)
 
 #### Orchestrators
+
 - **review-orchestrator** - Used by `/review` command to coordinate all review activities
 
 #### Frontend Reviewers (Used by `/review`)
+
 - **readability-reviewer** - Code readability and clarity
 - **structure-reviewer** - Code organization and architecture
 - **root-cause-reviewer** - Deep problem analysis
@@ -19,32 +21,39 @@
 - **testability-reviewer** - Test design
 
 #### General Reviewers (Used by `/review`)
+
 - **progressive-enhancer** - Progressive enhancement approach
 
 ### Internal/Utility Agents (Not directly exposed via commands)
 
 #### document-reviewer
+
 **Purpose**: Review technical documentation quality
 **Use Cases**:
+
 - Review README.md files when created/updated
 - Validate API documentation
 - Check rule files and configuration docs
 - Could be invoked by other agents when documentation needs review
 
 **Suggested Integration**:
+
 - Auto-trigger on `.md` file changes
 - Add to `/review` when documentation files are included
 - Use with `/code` when generating documentation
 
 #### subagent-reviewer
+
 **Purpose**: Meta-agent for reviewing agent definition files
 **Use Cases**:
+
 - Validate new agent definitions before activation
 - Review agent YAML frontmatter format
 - Check tool permissions and model selection
 - Ensure consistency across agent definitions
 
 **Suggested Integration**:
+
 - Auto-trigger when creating new agents
 - Use as part of system maintenance
 - Could be a separate `/review-agents` command

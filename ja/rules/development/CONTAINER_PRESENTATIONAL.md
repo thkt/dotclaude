@@ -2,7 +2,7 @@
 
 **デフォルトアプローチ**: 最大の再利用性のためにロジックをUIから分離
 
-## コア哲学
+## 核心哲学
 
 - **Container**: ロジックとデータ取得
 - **Presentational**: UIと表示のみ
@@ -131,3 +131,8 @@ export const TodoContainer = () => {
 - PresentationalコンポーネントはPropsのみ
 - Presentationalコンポーネントを純粋に保つ
 - 迷ったらPresentationalを優先
+
+## 関連する原則
+
+- [@./LAW_OF_DEMETER.md] - Propsのみパターンは自然にデメテルの法則に従う
+- [@./READABLE_CODE.md] - 明確な分離がコードの理解を向上

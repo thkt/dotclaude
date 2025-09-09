@@ -434,4 +434,22 @@ This reviewer focuses on structure and waste. For comprehensive review:
 - Performance → `frontend-performance-reviewer`
 - Type Safety → `frontend-type-safety-reviewer`
 
+## Applied Development Principles
+
+### Occam's Razor
+[@~/.claude/rules/reference/OCCAMS_RAZOR.md] - "Entities should not be multiplied without necessity"
+
+Application in reviews:
+- When multiple solutions exist for the same problem, recommend the simplest
+- Identify unnecessary abstractions, patterns, and dependencies
+- Always ask: "Is this truly necessary?"
+
+### DRY Principle
+[@~/.claude/rules/reference/DRY.md] - "Every piece of knowledge must have a single, unambiguous, authoritative representation within a system"
+
+Application in reviews:
+- Detect duplications appearing 3+ times (Rule of Three)
+- Identify business logic, data schema, and configuration value duplications
+- Distinguish between knowledge duplication and coincidental similarity
+
 Remember: Clean structure is the foundation of maintainable code.

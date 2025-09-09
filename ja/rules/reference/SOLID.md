@@ -121,6 +121,6 @@ constructor(private fileLogger: FileLogger) {}
 - DRYと: 抽象化が重複を防ぐ
 - Tidyingsと: SOLIDに向けてリファクタリング
 
-## 忘れずに
+## 覚えておくこと
 
 「速く進む唯一の方法は、うまくやることだ」 - クリーンアーキテクチャが速度を可能にする

@@ -2,7 +2,7 @@
 
 **Default mindset**: Code should be easy to understand - Dustin Boswell & Trevor Foucher
 
-## Core Principle
+## Core Philosophy
 
 **"Code should be written to minimize the time it would take for someone else to understand it"**
 
@@ -135,3 +135,9 @@ If not, simplify further.
 - Clarity beats cleverness
 - Future you is a different person
 - Reading happens more than writing
+
+## Related Principles
+
+- [@./LAW_OF_DEMETER.md] - Simpler interfaces improve readability
+- [@./CONTAINER_PRESENTATIONAL.md] - Clear separation improves understanding
+- [@../reference/OCCAMS_RAZOR.md] - Simplicity enhances readability

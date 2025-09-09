@@ -89,6 +89,53 @@ context:
 
 **目標**: 「動作するきれいなコード」 - Ron Jeffries
 
+#### Baby Steps - TDDの基礎
+
+**核心原則**: 各ステップで可能な限り最小の変更を行う
+
+##### Baby Stepsが重要な理由
+
+- **即座のエラー特定**: テストが失敗した時、原因は最後の小さな変更にある
+- **継続的な動作状態**: コードは常に数秒でグリーンにできる
+- **迅速なフィードバック**: 各ステップは最大1-2分
+- **自信の構築**: 小さな成功が主要機能へと積み重なる
+
+##### Baby Stepsの実践
+
+```typescript
+// ❌ 大きなステップ - 一度に複数の変更
+function calculateTotal(items, tax, discount) {
+  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+  const afterTax = subtotal * (1 + tax);
+  const afterDiscount = afterTax * (1 - discount);
+  return afterDiscount;
+}
+
+// ✅ Baby Steps - 一度に一つの変更
+// ステップ1: ゼロを返す（最小限でテストをパス）
+function calculateTotal(items) {
+  return 0;
+}
+
+// ステップ2: 基本的な合計（次のテストがこれを促進）
+function calculateTotal(items) {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
+
+// ステップ3: 税サポートを追加（テストが要求した時のみ）
+// ... 小さな増分で継続
+```
+
+##### Baby Stepsのリズム
+
+1. **最小の失敗テストを書く** (30秒)
+2. **最小限のコードでパスさせる** (1分)
+3. **テストを実行** (10秒)
+4. **必要なら小さなリファクタ** (30秒)
+5. **グリーンならコミット** (20秒)
+
+合計サイクル: 約2分
+
 #### リアルタイムフィードバック付き強化RGRCサイクル
 
 1. **Redフェーズ** (信頼度目標: 0.9)
@@ -531,6 +578,31 @@ npm audit --production 2>&1 | grep -E "found|Severity"
 /code --pattern repository "データベースアクセスレイヤー"
 # 実装にリポジトリパターンを使用
 ```
+
+## 適用する開発原則
+
+### TDD/RGRC
+
+[@~/.claude/ja/rules/development/TDD_RGRC.md] - Red-Green-Refactor-Commitサイクル
+
+適用方法:
+
+- **Baby Steps**: 可能な限り最小の変更
+- **Red**: まず失敗するテストを書く
+- **Green**: テストをパスする最小限のコード
+- **Refactor**: 明確さのためのリファクタリング
+- **Commit**: 各サイクルの後に手動コミット
+
+### オッカムの剃刀
+
+[@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md] - 「必要なしに存在を増やすべきではない」
+
+適用方法:
+
+- **最もシンプルな解決策**: 要件を満たす最小限の実装
+- **不要な複雑さを避ける**: 証明されるまで抽象化しない
+- **すべての抽象化を疑う**: 本当に必要か？
+- **早期の最適化を避ける**: 測定されたニーズのみ
 
 ## 次のステップ
 
