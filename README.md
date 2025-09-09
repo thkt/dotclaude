@@ -2,6 +2,8 @@
 
 A comprehensive configuration system for Claude AI with custom commands, development principles, and workflow optimizations.
 
+📌 **[日本語版](./ja/README.md)**
+
 ## 🎯 Overview
 
 This repository contains personal configurations for Claude AI, including:
@@ -36,8 +38,8 @@ This repository contains personal configurations for Claude AI, including:
 ├── rules/                 # English rule definitions
 │   ├── core/             # Core AI principles
 │   ├── commands/         # Command selection logic
-│   ├── development/      # Development patterns
-│   └── reference/        # Development methodologies
+│   ├── development/      # Development patterns & methodologies
+│   └── reference/        # Additional reference principles
 └── ja/                    # Japanese translations
     ├── CLAUDE.md         # Main config (Japanese)
     ├── commands/         # Command definitions (Japanese)
@@ -120,6 +122,7 @@ This repository contains personal configurations for Claude AI, including:
 - **Code Readability**: Based on "The Art of Readable Code"
 - **Container/Presentational**: React component pattern
 - **SOLID, DRY, TDD/RGRC**: Industry best practices
+- **Comprehensive Guide**: See [PRINCIPLES_GUIDE.md](./docs/PRINCIPLES_GUIDE.md) for all principles
 
 ### Safety Features
 
@@ -129,12 +132,21 @@ This repository contains personal configurations for Claude AI, including:
 
 ## 📚 Documentation
 
+### Core Documentation
+
 - [Commands Reference (English)](./docs/COMMANDS.md)
 - [Commands Reference (Japanese)](./ja/docs/COMMANDS.md)
 - [System Architecture](./docs/ARCHITECTURE.md)
 - [Configuration Guide](./CLAUDE.md)
 - [Japanese Configuration](./ja/CLAUDE.md)
-- [Project Setup](./docs/PROJECT_SETUP.md)
+
+### Development Guides
+
+- [Principles Guide](./docs/PRINCIPLES_GUIDE.md) - Complete overview of all development principles
+- [Documentation Rules](./docs/DOCUMENTATION_RULES.md) - Standards for documentation
+- [Project Setup](./docs/PROJECT_SETUP.md) - Getting started guide
+- [Model Selection](./docs/MODEL_SELECTION.md) - AI model usage guidelines
+- [Agent Usage](./docs/AGENT_USAGE.md) - Working with specialized agents
 
 ## 🤝 Contributing
 
@@ -143,6 +155,16 @@ Feel free to fork this repository and customize it for your needs. Pull requests
 ## 📜 License
 
 MIT License - Feel free to use and modify as needed.
+
+## 📅 Recent Updates
+
+**2025-01-09** - Documentation Enhancement
+
+- Added comprehensive [PRINCIPLES_GUIDE.md](./docs/PRINCIPLES_GUIDE.md) for all development principles
+- Reorganized `rules/` directory structure (reference → development)
+- Standardized terminology across all documentation (Core Philosophy, Core Principles)
+- Added principle references to all agents and commands
+- Improved consistency between English and Japanese versions
 
 ## 👤 Author
 
