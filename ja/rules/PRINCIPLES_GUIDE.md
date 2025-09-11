@@ -56,7 +56,7 @@
 | 状況 | コマンド | 適用される原則 |
 |------|----------|----------------|
 | バグ修正 | `/fix` | オッカムの剃刀、プログレッシブエンハンスメント |
-| 新機能 | `/think → /code` | TDD、Baby Steps、SOLID |
+| 新機能 | `/research → /think → /code` | TDD、Baby Steps、SOLID |
 | リファクタリング | `/research → /code` | TIDYINGS、DRY、可読性のあるコード |
 | 緊急事態 | `/hotfix` | オッカムの剃刀のみ |
 

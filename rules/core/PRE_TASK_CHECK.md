@@ -122,7 +122,7 @@ See: [@../commands/COMMAND_SELECTION.md] for detailed algorithm
 ## Standard Workflows
 
 - **Bug Fix**: Investigate+Fix → `/research → /fix`
-- **Feature**: Implement+Test → `/think → /research → /code → /test`
+- **Feature**: Implement+Test → `/research → /think → /code → /test → /review → /validate`
 - **Emergency**: Critical+Production → `/hotfix`
 
 Details: [@../commands/STANDARD_WORKFLOWS.md]

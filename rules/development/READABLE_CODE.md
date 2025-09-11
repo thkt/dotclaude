@@ -9,6 +9,17 @@
 - That "someone else" might be you six months later
 - Understanding time > writing time
 
+## Scientific Foundation
+
+Miller's Law (7±2) demonstrates that human cognitive capacity is limited. When code exceeds these limits:
+- Comprehension time increases exponentially
+- Error rates multiply
+- Mental fatigue accelerates
+
+This scientific backing explains WHY readable code matters: our brains literally cannot process too much complexity at once.
+
+→ See [@../reference/MILLERS_LAW.md] for the cognitive science behind readable code
+
 ## Key Practices
 
 ### 1. Making Code Easy to Understand
@@ -138,6 +149,10 @@ If not, simplify further.
 
 ## Related Principles
 
+### Scientific Foundation
+- [@../reference/MILLERS_LAW.md] - Cognitive limits explain why readability matters
+
+### Complementary Principles
 - [@./LAW_OF_DEMETER.md] - Simpler interfaces improve readability
 - [@./CONTAINER_PRESENTATIONAL.md] - Clear separation improves understanding
 - [@../reference/OCCAMS_RAZOR.md] - Simplicity enhances readability

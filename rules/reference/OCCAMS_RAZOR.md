@@ -6,6 +6,44 @@
 
 The simplest solution that solves the problem is usually the best solution.
 
+## Alternative Names and Expressions
+
+### KISS - Keep It Simple, Stupid
+
+The principle is often expressed as **KISS** in software development circles. This memorable acronym serves as a practical reminder:
+
+- **Keep It Simple** - The goal
+- **Stupid** - A humorous reminder that clever solutions often backfire
+
+Both Occam's Razor and KISS express the same fundamental truth: **simplicity is a virtue in design**.
+
+#### Why "Stupid"?
+
+The word "stupid" isn't an insult - it's a reminder:
+
+- **Stupid simple** = So simple that it seems obvious
+- Clever code often becomes a maintenance nightmare
+- What seems brilliant today confuses everyone tomorrow (including you)
+
+#### KISS in Practice
+
+```typescript
+// ❌ "Clever" - using advanced techniques unnecessarily
+const isEven = n => !(n & 1);  // Bitwise operation
+
+// ✅ KISS - obviously correct
+const isEven = n => n % 2 === 0;  // Clear intent
+```
+
+### Other Expressions
+
+- **Principle of Parsimony** - Academic term
+- **Law of Parsimony** - Scientific context
+- **Lex Parsimoniae** - Latin form
+- **最小十分原則** - Japanese expression
+
+All express the same idea: prefer simple explanations and solutions.
+
 ## The Principle in Software Development
 
 ### What It Means

@@ -56,7 +56,7 @@ New Task?
 | Situation | Command | Principles Applied |
 |-----------|---------|-------------------|
 | Bug fix | `/fix` | Occam's Razor, Progressive Enhancement |
-| New feature | `/think → /code` | TDD, Baby Steps, SOLID |
+| New feature | `/research → /think → /code` | TDD, Baby Steps, SOLID |
 | Refactoring | `/research → /code` | TIDYINGS, DRY, Readable Code |
 | Emergency | `/hotfix` | Occam's Razor only |
 

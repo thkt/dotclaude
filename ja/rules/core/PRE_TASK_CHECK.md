@@ -122,7 +122,7 @@
 ## 標準ワークフロー
 
 - **バグ修正**: 調査+修正 → `/research → /fix`
-- **機能**: 実装+テスト → `/think → /research → /code → /test`
+- **機能**: 実装+テスト → `/research → /think → /code → /test → /review → /validate`
 - **緊急対応**: 重大+本番 → `/hotfix`
 
 詳細: [@../commands/STANDARD_WORKFLOWS.md]

@@ -8,11 +8,13 @@ Custom commands for systematic software development support.
 
 | Command | Purpose | Environment |
 |---------|---------|-------------|
-| `/think` | Planning & SOW creation | Analysis phase |
+| `/think` | Verifiable SOW creation with validation | Analysis phase |
 | `/research` | Investigation without implementation | Understanding phase |
 | `/code` | TDD/RGRC implementation | Development phase |
 | `/test` | Comprehensive testing | Verification phase |
 | `/review` | Code review via agents | Quality phase |
+| `/sow` | Display SOW progress | Monitoring phase |
+| `/validate` | Validate SOW conformance | Verification phase |
 
 ### Quick Action Commands
 
@@ -29,10 +31,16 @@ Custom commands for systematic software development support.
 
 ## 🔄 Standard Workflows
 
-### Feature Development
+### Feature Development (Enhanced)
 
 ```txt
-/research → /think → /code → /test
+/research → /think → /code → /test → /review → /validate
+```
+
+### Progress Monitoring
+
+```txt
+/sow (check progress anytime)
 ```
 
 ### Bug Investigation & Fix
@@ -49,12 +57,13 @@ Custom commands for systematic software development support.
 
 ## 💡 Command Details
 
-### /think - Planning & Analysis
+### /think - Verifiable SOW Generator
 
-- Creates SOW (Statement of Work) document
-- Defines clear implementation phases
-- Saves to `.claude/workspace/sow/`
-- Integrates development principles evaluation
+- Creates verifiable Statement of Work with dynamic validation
+- Defines acceptance criteria with TodoWrite integration
+- Sets validation points and success metrics
+- Saves to `.claude/workspace/sow/` with auto-update capability
+- Enables progress tracking via `/sow` and `/validate`
 
 ### /research - Investigation
 
@@ -98,6 +107,22 @@ Custom commands for systematic software development support.
 - Actionable recommendations
 - Priority-based issue reporting
 
+### /sow - Progress Viewer
+
+- Displays current SOW progress status
+- Shows acceptance criteria completion
+- Tracks key metrics and build status
+- Read-only, no options needed
+- Quick status check for active work
+
+### /validate - SOW Validator
+
+- Validates implementation against SOW
+- L2 (practical) validation level
+- Checks acceptance criteria, coverage, performance
+- Pass/fail logic with clear scoring
+- Identifies missing features and issues
+
 ### /gemini:search - Google Search
 
 - Technical research via Gemini CLI
@@ -120,6 +145,8 @@ Custom commands for systematic software development support.
 │   ├── review.md
 │   ├── test.md
 │   ├── think.md
+│   ├── sow.md
+│   ├── validate.md
 │   └── gemini/
 │       └── search.md
 ├── ja/               # Japanese versions
@@ -130,13 +157,15 @@ Custom commands for systematic software development support.
 
 ## 🚀 Quick Start
 
-### New Feature
+### New Feature (Enhanced Flow)
 
 ```bash
-/think "Feature description"
-/research  # Understand codebase
-/code      # Implement with TDD
-/test      # Verify everything works
+/think "Feature description"  # Create verifiable SOW
+/research                      # Understand codebase
+/code                         # Implement with TDD
+/test                         # Verify tests pass
+/sow                          # Check progress
+/validate                     # Validate conformance
 ```
 
 ### Bug Fix
@@ -175,8 +204,21 @@ Custom commands for systematic software development support.
 ### Use `/think` when
 
 - Starting new feature
-- Need structured planning
-- Creating SOW document
+- Need structured planning with validation
+- Creating verifiable SOW document
+- Want automated progress tracking
+
+### Use `/sow` when
+
+- Need to check implementation progress
+- Want to see acceptance criteria status
+- Monitoring active development work
+
+### Use `/validate` when
+
+- Ready to verify implementation
+- Need conformance check against SOW
+- Want to identify missing requirements
 
 ## 🔧 Configuration
 
@@ -192,6 +234,13 @@ Custom commands for systematic software development support.
 - `~/.claude/settings.json` - Tool permissions
 
 ## 📅 Updates
+
+2025-09-11 - Enhanced with Spec Kit integration
+
+- Added `/sow` for progress monitoring
+- Added `/validate` for SOW conformance
+- Enhanced `/think` with verifiable SOW generation
+- Updated workflows with validation steps
 
 2025-08-06 - Current command set
 
