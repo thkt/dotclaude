@@ -118,7 +118,6 @@ For changes with 5+ files or 100+ lines:
 ## 📝 Commit Message Suggestions
 
 ### Primary Suggestion
-```
 
 ```text
 [type]([scope]): [description]
@@ -146,7 +145,6 @@ Closes #234
 ## 📝 Commit Message for Complex Changes
 
 ### Structured Format
-```
 
 ```text
 [type]([scope]): [short description]
@@ -330,8 +328,6 @@ Detected multiple contributors. Add to commit:
 ```text
 Co-authored-by: Name <email@example.com>
 ```
-
-```markdown
 
 ## Integration with Workflow
 

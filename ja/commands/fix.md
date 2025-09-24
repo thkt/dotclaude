@@ -283,8 +283,6 @@ npm test -- --onlyChanged | grep -E "Test Suites:"
 - 影響ファイル: X
 - 複雑度: 低
 
-```
-
 ## 決定フレームワーク
 
 ### `/fix` を使用する場合（信頼度チェック）

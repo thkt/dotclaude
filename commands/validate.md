@@ -1,129 +1,154 @@
 ---
 name: validate
-description: SOW適合性を検証
-priority: high
+description: SOWの受け入れ基準を手動確認
+priority: low
 suitable_for:
-  type: [validation, testing, quality]
-  phase: [development, testing, review]
+  type: [verification, review]
+  phase: [testing, deployment]
   understanding: "≥ 80%"
-aliases: [verify, check]
-timeout: 30
-allowed-tools: Read, Bash, Grep
+aliases: [check, verify]
+timeout: 10
+allowed-tools: Read, Bash(ls:*), Bash(cat:*), Grep
 context:
-  sow_dir: "workspace/sow/"
-  validation_level: "L2"
+  validation_level: "manual"
+  sow_directory: "~/.claude/workspace/sow/"
 ---
 
-# /validate - SOW Validator
+# /validate - SOW Criteria Checker
 
 ## Purpose
 
-Validate SOW conformance and report discrepancies. No options, always L2 (practical level) validation.
+Display SOW acceptance criteria for manual verification against completed work.
 
-## Philosophy
+**Simplified**: Manual checklist review tool.
 
-- **No Options**: Best behavior without configuration
-- **L2 Only**: Practical validation level only
-- **Read Only**: Validate but don't modify
-- **Clear Output**: Essential information only
+## Functionality
 
-## Usage
+### Display Acceptance Criteria
 
 ```bash
-/validate
+# Show criteria from latest SOW
+!`ls -t ~/.claude/workspace/sow/*/sow.md | head -1 | xargs grep -A 20 "Acceptance Criteria"`
 ```
 
-## What It Checks (L2 Standard)
+### Manual Review Process
 
-1. **Acceptance Criteria** - Completion status
-2. **Success Metrics** - Measured vs target values
-3. **Test Coverage** - Coverage percentage
-4. **Build Status** - Pass/fail status
-5. **Basic Performance** - Response times
+1. Display SOW criteria
+2. Review each item manually
+3. Check against implementation
+4. Document findings
 
 ## Output Format
 
 ```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔍 SOW Validation
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 SOW Validation Checklist
 
 Feature: User Authentication
-Score: 85% 🟢
+Created: 2025-01-14
 
-✅ Acceptance Criteria: 10/12 (83%)
-✅ Test Coverage: 85% (target: >80%)
-✅ Response Time: 180ms (target: <200ms)
-✅ Build Status: Passing
-❌ Documentation: 60% (target: 100%)
-❌ Security Issues: 2 moderate
+## Acceptance Criteria:
 
-Missing:
-- AC-009: Two-factor authentication
-- AC-010: Password reset
+□ AC-01: User registration with email
+  → Check: Does registration form exist?
+  → Check: Email validation implemented?
 
-Issues Found: 4
-- 2 missing features
-- 1 documentation gap
-- 2 security vulnerabilities
+□ AC-02: Password requirements enforced
+  → Check: Min 8 characters?
+  → Check: Special character required?
 
-To fix issues, run: /fix
+□ AC-03: OAuth integration
+  → Check: Google OAuth working?
+  → Check: GitHub OAuth working?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Manual Review Required:
+- Test each feature
+- Verify against criteria
+- Document any gaps
 ```
 
-## Pass/Fail Logic
+## Usage Examples
 
-| Metric | Pass Criteria | Weight |
-|--------|--------------|--------|
-| Acceptance Criteria | >80% complete | 40% |
-| Test Coverage | >80% | 20% |
-| Build Status | Passing | 20% |
-| Performance | Within targets | 10% |
-| Security | No critical | 10% |
-
-**Overall**: 
-- 🟢 >80% = PASSED
-- 🟡 60-80% = PASSED WITH WARNINGS
-- 🔴 <60% = FAILED
-
-## Integration
+### Validate Latest SOW
 
 ```bash
-/think
-/code
-/test
 /validate
-/fix
 ```
 
-## Error Handling
+Shows acceptance criteria from most recent SOW.
 
-### No SOW Found
+### Validate Specific SOW
+
+```bash
+/validate "feature-name"
+```
+
+Shows criteria for specific feature.
+
+## Manual Validation Process
+
+### Step 1: Review Criteria
 
 ```markdown
-❌ No SOW found
-
-Create one with: /think "feature description"
+- Read each acceptance criterion
+- Understand requirements
+- Note any ambiguities
 ```
 
-### Validation Failed
+### Step 2: Test Implementation
 
 ```markdown
-❌ Validation Failed (45%)
-
-Critical issues found.
-Run /fix to attempt repairs.
+- Run application
+- Test each feature
+- Document behavior
 ```
 
-## What It Doesn't Do
+### Step 3: Compare Results
 
-- No options or flags
-- No report generation
-- No auto-fixing
-- No deep code analysis
-- No E2E testing
+```markdown
+- Match behavior to criteria
+- Identify gaps
+- Note improvements needed
+```
+
+## Integration with Workflow
+
+```markdown
+1. Complete implementation
+2. Run /validate to see criteria
+3. Manually test each item
+4. Update documentation with results
+```
+
+## Simplified Approach
+
+- **No automation**: Human judgment required
+- **Clear checklist**: Easy to follow
+- **Manual process**: Thorough verification
 
 ## Related Commands
 
-- `/sow` - View SOW progress
-- `/fix` - Fix validation issues
-- `/test` - Run tests
+- `/think` - Create SOW with criteria
+- `/sow` - View full SOW document
+- `/test` - Run automated tests
+
+## Applied Principles
+
+### Occam's Razor
+
+- Simple checklist display
+- No complex validation logic
+- Human judgment valued
+
+### Single Responsibility
+
+- Only displays criteria
+- Validation done manually
+
+### Progressive Enhancement
+
+- Start with manual process
+- Automate later if needed

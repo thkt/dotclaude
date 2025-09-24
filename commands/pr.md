@@ -161,16 +161,14 @@ Generate PR description with these sections:
 
 ### 📸 Screenshots/Demo
 [If applicable, add screenshots or GIFs]
-<details>
-<summary>Screenshots</summary>
 
-Before:
+#### Screenshots
+
+**Before:**
 [Image/description]
 
-After:
+**After:**
 [Image/description]
-
-</details>
 
 ### ✅ Checklist
 - [ ] Code follows project style guidelines
@@ -369,37 +367,32 @@ Include:
 
 ### Basic
 
-```
-
+```bash
 /pr
-
-```markdown
+```
 
 Generates PR description from current branch changes.
 
 ### With Issue Reference
 
-```
-
+```bash
 /pr "#456"
-
-```markdown
+```
 
 Links PR to specific issue.
 
 ### With Custom Context
 
-```
-
+```bash
 /pr "This PR implements the new authentication flow discussed in the team meeting"
-
-```markdown
+```
 
 Incorporates additional context into the description.
 
 ## Quality Indicators
 
 The command will indicate:
+
 - **Completeness**: Are all necessary sections filled?
 - **Clarity**: Is the description clear?
 - **Testability**: Are test instructions adequate?

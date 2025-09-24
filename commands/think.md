@@ -1,6 +1,6 @@
 ---
 name: think
-description: 検証可能な動的SOWを生成
+description: 構造化された計画文書（SOW）を生成
 priority: high
 suitable_for:
   scale: [small, medium, large]
@@ -9,23 +9,21 @@ suitable_for:
   urgency: [low, medium]
 aliases: [plan, analyze, sow]
 timeout: 60
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(find:*), Bash(cat:*), Read, Write, Glob, Grep, LS, Task, TodoWrite
+allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Read, Write, Glob, Grep, LS
 context:
   complexity: "assessed"
   risks: "evaluated"
   dependencies: "mapped"
   solutions: "scored"
-  validation_enabled: true
-  output_dir: "workspace/sow/"
 ---
 
-# /think - Verifiable SOW Generator
+# /think - Simple SOW Generator
 
 ## Purpose
 
-Create comprehensive, verifiable Statement of Work (SOW) with dynamic validation points and automated progress tracking.
+Create a comprehensive Statement of Work (SOW) as a static planning document for feature development or problem solving.
 
-**Enhancement**: Extends standard /think with validation criteria, metrics tracking, and TodoWrite integration.
+**Simplified**: Focus on planning and documentation without complex automation.
 
 ## Dynamic Project Context
 
@@ -34,7 +32,6 @@ Create comprehensive, verifiable Statement of Work (SOW) with dynamic validation
 ```bash
 !`git branch --show-current`
 !`git log --oneline -5`
-!`find . -name "*.test.*" -o -name "*.spec.*" | wc -l`
 ```
 
 ## SOW Structure
@@ -48,149 +45,71 @@ Status: Draft
 Created: [Date]
 
 ## Executive Summary
-[Problem and solution overview]
+[High-level overview]
 
-## ✅ Acceptance Criteria
-<!--validation:criteria-->
-- [ ] AC-001: [Specific requirement] <!--todo-id:auto-->
-- [ ] AC-002: [Specific requirement] <!--todo-id:auto-->
-- [ ] AC-003: [Specific requirement] <!--todo-id:auto-->
-<!--validation:end-->
+## Problem Analysis
+[Current issues and challenges]
 
-## 📊 Validation Points
-<!--validation:yaml-->
-validations:
-  - id: VAL-001
-    type: functional
-    description: "[What to validate]"
-    test_command: "npm test -- [specific test]"
-    expected: "[Expected result]"
-    auto_check: true
-<!--validation:end-->
+## Solution Design
+[Proposed approach and alternatives]
 
-## 🎯 Success Metrics
-<!--metrics:auto-->
-| Metric | Target | Current | Status |
-|--------|--------|---------|--------|
-| Test Coverage | >80% | - | ⏳ |
-| Response Time | <200ms | - | ⏳ |
-| Build Status | Passing | - | ⏳ |
-<!--metrics:end-->
-
-## 📈 Implementation Progress
-<!--progress:auto-->
-Overall: 0%
-Tasks: 0/[total]
-Updated: [timestamp]
-<!--progress:end-->
-```
-
-## Analysis Process
-
-### Phase 1: Problem Understanding
-
-1. **Problem Definition** with evidence
-2. **Impact Analysis** on systems and users
-3. **Root Cause** identification
-4. **Constraints** evaluation
-
-### Phase 2: Solution Architecture
-
-1. **Generate Solutions** (3+ alternatives)
-2. **Score Solutions** (0.0-1.0 confidence)
-3. **Risk Assessment** per solution
-4. **Select Optimal** based on principles
-
-### Phase 3: Validation Design
-
-1. **Define Acceptance Criteria** (measurable)
-2. **Create Validation Points** (testable)
-3. **Set Success Metrics** (trackable)
-4. **Link TodoWrite Tasks** (auto-generated)
-
-## Decision Trace
-
-### Problem Analysis (Confidence: X.XX)
-
-```markdown
-- Input: [User request]
-- Category: [Type]
-- Evidence: [Specific indicators]
-- Similar cases: `git log --grep="[keyword]"`
-```
-
-### Solution Selection (Confidence: X.XX)
-
-```markdown
-Option A: [Approach] → Score: X.X
-  Pros: [Benefits]
-  Cons: [Drawbacks]
-
-Option B: [Alternative] → Score: X.X
-  Pros: [Benefits]
-  Cons: [Drawbacks]
-
-Selected: [Option] because [rationale]
-```
+## Acceptance Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Criterion 3
 
 ## Implementation Plan
+[Phases and steps]
 
-### Tasks with TodoWrite Integration
+## Success Metrics
+[Measurable outcomes]
 
-```markdown
-1. [Task description] → AC-001
-2. [Task description] → AC-002
-3. [Task description] → AC-003
+## Risks & Mitigations
+[Potential issues and solutions]
 ```
 
-Each task automatically:
+## Key Features
 
-- Creates TodoWrite entry
-- Links to Acceptance Criteria
-- Updates SOW on completion
+### 1. Problem Definition
 
-## Validation Configuration
+- Clear articulation of the issue
+- Impact assessment
+- Stakeholder identification
 
-### Auto-Update Hooks
+### 2. Solution Exploration
 
-```yaml
-auto_update:
-  on_todo_complete: true
-  on_test_run: true
-  on_commit: true
+- Multiple approaches considered
+- Trade-off analysis
+- Recommendation with rationale
 
-tracking:
-  todo_items: true
-  test_results: true
-  metrics: true
-```
+### 3. Acceptance Criteria
 
-## Success Criteria
+- Clear, testable criteria
+- User-facing outcomes
+- Technical requirements
 
-### Pass Conditions
+### 4. Risk Assessment
 
-- All Acceptance Criteria checked
-- All Validation Points passing
-- Metrics within targets
-- No critical issues
+- Technical risks
+- Timeline risks
+- Mitigation strategies
 
 ## Output
 
-SOW saved to: `workspace/sow/[timestamp]-[feature]/sow.md`
+SOW saved to: `~/.claude/workspace/sow/[timestamp]-[feature]/sow.md`
 
-With:
+Features:
 
-- Verifiable criteria
-- Automated tracking
-- Progress monitoring
-- Test integration
+- Structured planning document
+- Clear acceptance criteria
+- Risk assessment
+- Implementation roadmap
 
 ## Integration
 
 ```bash
-/think "feature"    # Create verifiable SOW
-/sow               # Monitor progress
-/validate          # Check conformance
+/think "feature"    # Create planning SOW
+/todos              # Track implementation separately
 ```
 
 ## Example Usage
@@ -201,13 +120,47 @@ With:
 
 Generates:
 
-- 10-15 Acceptance Criteria
-- 5-8 Validation Points
-- TodoWrite tasks with IDs
-- Auto-update configuration
+- Comprehensive planning document
+- 8-12 Acceptance Criteria
+- Risk assessment
+- Implementation phases
+
+## Simplified Workflow
+
+1. **Planning Phase**
+   - Use `/think` to create SOW
+   - Review and refine plan
+
+2. **Execution Phase**
+   - Use TodoWrite for task tracking
+   - Reference SOW for requirements
+
+3. **Review Phase**
+   - Check against acceptance criteria
+   - Update documentation as needed
 
 ## Related Commands
 
-- `/sow` - View SOW progress
-- `/validate` - Validate implementation
-- `/code` - Implement with TDD
+- `/code` - Implementation with TDD
+- `/test` - Testing and verification
+- `/review` - Code review
+
+## Applied Principles
+
+### Occam's Razor
+
+- Simple, static documents
+- No complex automation
+- Clear separation of concerns
+
+### Progressive Enhancement
+
+- Start with basic SOW
+- Add detail as needed
+- No premature optimization
+
+### Readable Documentation
+
+- Clear structure
+- Plain language
+- Actionable criteria

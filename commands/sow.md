@@ -1,107 +1,128 @@
 ---
 name: sow
-description: SOW進捗状況を表示
-priority: high
+description: SOW文書の一覧表示と閲覧
+priority: medium
 suitable_for:
-  type: [monitoring, tracking]
-  phase: [development, verification]
+  type: [documentation, review, planning]
+  phase: [planning, review]
   understanding: "≥ 90%"
-aliases: [progress, status]
-timeout: 5
-allowed-tools: Read, Grep, Bash(ls)
+aliases: [show-sow, list-sow]
+timeout: 10
+allowed-tools: Read, Bash(ls:*), Bash(find:*), Bash(cat:*)
 context:
-  sow_dir: "workspace/sow/"
-  display_mode: "read-only"
+  sow_directory: "~/.claude/workspace/sow/"
+  display: "list_or_view"
 ---
 
-# /sow - SOW Progress Viewer
+# /sow - SOW Document Viewer
 
 ## Purpose
 
-Display current SOW (Statement of Work) progress status in a simple, read-only format.
+List and view Statement of Work (SOW) documents stored in the workspace.
 
-## Philosophy
+**Simplified**: Read-only viewer for planning documents.
 
-- **No Options**: Optimal information display without options
-- **Read-Only**: Display only, updates handled by other commands
-- **Essential Info**: Minimal set of critical information
+## Functionality
 
-## Usage
+### List SOWs
 
 ```bash
-/sow
+!`ls -la ~/.claude/workspace/sow/`
+```
+
+### View Latest SOW
+
+```bash
+!`ls -t ~/.claude/workspace/sow/*/sow.md | head -1 | xargs cat`
+```
+
+### View Specific SOW
+
+```bash
+# By date or feature name
+!`cat ~/.claude/workspace/sow/[directory]/sow.md`
 ```
 
 ## Output Format
 
 ```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 SOW: User Authentication
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Status: In Progress 🔄
-Progress: 65% ███████░░░░
+📚 Available SOW Documents
 
-Acceptance Criteria: 8/12 ✅
-├─ Completed: 8
-├─ In Progress: 2
-└─ Pending: 2
+1. 2025-01-14-oauth-authentication
+   Created: 2025-01-14
+   Status: Draft
 
-Key Metrics:
-├─ Test Coverage: 82% ✅
-├─ Build Status: Passing ✅
-└─ Last Updated: 2 hours ago
+2. 2025-01-13-api-refactor
+   Created: 2025-01-13
+   Status: Active
 
-Next Actions:
-• Complete AC-009: Password reset
-• Fix failing tests in auth module
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+To view a specific SOW:
+/sow "oauth-authentication"
 ```
 
-## What It Shows
+## Usage Examples
 
-1. **SOW Title** - Current SOW name
-2. **Overall Progress** - Completion percentage
-3. **Acceptance Criteria** - Completed/In-progress/Pending counts
-4. **Key Metrics** - Coverage and build status
-5. **Next Actions** - Priority tasks to complete
-
-## Error Handling
-
-### No SOW Found
-
-```markdown
-❌ No active SOW found
-
-Create one with: /think "feature description"
-```
-
-### Multiple SOWs
-
-```markdown
-🔍 Multiple SOWs found:
-
-1. User Authentication (Active) ✓
-2. Payment System
-3. Notification Service
-
-Showing: User Authentication
-```
-
-## Integration
+### List All SOWs
 
 ```bash
-/think
 /sow
-/validate
 ```
 
-## Performance
+Shows all available SOW documents with creation dates.
 
-- Display time: <100ms
-- No file modifications
-- Minimal resource usage
+### View Latest SOW
+
+```bash
+/sow --latest
+```
+
+Displays the most recently created SOW.
+
+### View Specific SOW
+
+```bash
+/sow "feature-name"
+```
+
+Shows the SOW for a specific feature.
+
+## Integration with Workflow
+
+```markdown
+1. Create SOW: /think "feature"
+2. View SOW: /sow
+3. Track Tasks: Use TodoWrite independently
+4. Reference SOW during implementation
+```
+
+## Simplified Design
+
+- **Read-only**: No modification capabilities
+- **Static documents**: SOWs are planning references
+- **Clear separation**: SOW for planning, TodoWrite for execution
 
 ## Related Commands
 
 - `/think` - Create new SOW
-- `/validate` - Validate against SOW
+- `/todos` - View current tasks (separate from SOW)
+
+## Applied Principles
+
+### Single Responsibility
+
+- SOW viewer only views documents
+- No complex synchronization
+
+### Occam's Razor
+
+- Simple file listing and viewing
+- No unnecessary features
+
+### Progressive Enhancement
+
+- Start with basic viewing
+- Add search/filter if needed later
