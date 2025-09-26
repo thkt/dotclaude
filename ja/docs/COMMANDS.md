@@ -23,6 +23,13 @@
 | `/fix` | 素早いバグ修正 | 🔧 開発 | think → code → test |
 | `/hotfix` | 緊急本番修正 | 🚨 本番 | 最小プロセス |
 
+### 自動化コマンド（SlashCommandツール v1.0.123+）
+
+| コマンド | 目的 | 環境 | SlashCommand使用 |
+|---------|------|------|-------------------|
+| `/auto-test` | 条件付き修正を伴う自動テストランナー | 🔧 開発 | はい - 失敗時に`/fix`を呼び出し |
+| `/full-cycle` | 完全な開発サイクル自動化 | 🔄 メタコマンド | はい - 複数コマンドを連鎖 |
+
 ### 外部ツールコマンド
 
 | コマンド | 目的 | 必要条件 |
@@ -53,6 +60,13 @@
 
 ```txt
 /hotfix (重大な問題に対して単独で使用)
+```
+
+### 自動化ワークフロー（SlashCommandツールで新登場）
+
+```txt
+/auto-test        # 自動テスト → 修正サイクル
+/full-cycle       # 完全自動開発フロー
 ```
 
 ## 💡 コマンド詳細
@@ -123,6 +137,23 @@
 - 明確なスコアリングによる合否判定
 - 不足している機能と問題を特定
 
+### /auto-test - 自動テストランナー
+
+- ファイル変更後に自動的にテストを実行
+- テスト失敗時にSlashCommandツールで`/fix`を呼び出し
+- テスト修正サイクルの効率化
+- settings.jsonのフック経由でトリガー可能
+- SlashCommandツール v1.0.123+ が必要
+
+### /full-cycle - 完全開発自動化
+
+- 開発フロー全体を調整するメタコマンド
+- SlashCommandで連鎖実行: /research → /think → /code → /test → /review → /validate
+- 結果に基づく条件付き実行
+- 独立タスクの並列実行サポート
+- TodoWrite連携による進捗追跡
+- SlashCommandツール v1.0.123+ が必要
+
 ### /gemini:search - Google検索
 
 - Gemini CLI経由の技術調査
@@ -141,8 +172,10 @@
 │   └── docs/
 │       └── COMMANDS.md    # 日本語版（このファイル）
 ├── commands/          # コマンド定義
+│   ├── auto-test.md  # 自動テストランナー（SlashCommand）
 │   ├── code.md
 │   ├── fix.md
+│   ├── full-cycle.md # メタコマンド（SlashCommand）
 │   ├── hotfix.md
 │   ├── research.md
 │   ├── review.md
@@ -237,6 +270,13 @@
 - `~/.claude/settings.json` - ツール権限
 
 ## 📅 更新
+
+2025-09-24 - SlashCommandツール統合（v1.0.123）
+
+- 自動テスト修正ワークフロー用の`/auto-test`を追加
+- 完全自動化用の`/full-cycle`メタコマンドを追加
+- コマンド連鎖のためのSlashCommandツールを統合
+- 自動化機能を強化
 
 2025-09-11 - Spec Kit統合による拡張
 

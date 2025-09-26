@@ -23,6 +23,13 @@ Custom commands for systematic software development support.
 | `/fix` | Quick bug fixes | 🔧 Development | think → code → test |
 | `/hotfix` | Emergency production fixes | 🚨 Production | Minimal process |
 
+### Automation Commands (SlashCommand Tool v1.0.123+)
+
+| Command | Purpose | Environment | Uses SlashCommand |
+|---------|---------|-------------|-------------------|
+| `/auto-test` | Auto test runner with conditional fix | 🔧 Development | Yes - invokes `/fix` on failure |
+| `/full-cycle` | Complete development cycle automation | 🔄 Meta-command | Yes - chains multiple commands |
+
 ### External Tool Commands
 
 | Command | Purpose | Requires |
@@ -53,6 +60,13 @@ Custom commands for systematic software development support.
 
 ```txt
 /hotfix (standalone for critical issues)
+```
+
+### Automated Workflows (New with SlashCommand Tool)
+
+```txt
+/auto-test        # Automatic test → fix cycle
+/full-cycle       # Complete automated development flow
 ```
 
 ## 💡 Command Details
@@ -123,6 +137,23 @@ Custom commands for systematic software development support.
 - Pass/fail logic with clear scoring
 - Identifies missing features and issues
 
+### /auto-test - Automatic Test Runner
+
+- Runs tests automatically after file changes
+- Uses SlashCommand tool to invoke `/fix` if tests fail
+- Streamlines test-fix cycle
+- Can be triggered via hooks in settings.json
+- Requires SlashCommand tool v1.0.123+
+
+### /full-cycle - Complete Development Automation
+
+- Meta-command orchestrating entire development flow
+- Uses SlashCommand to chain: /research → /think → /code → /test → /review → /validate
+- Conditional execution based on results
+- Parallel execution support for independent tasks
+- TodoWrite integration for progress tracking
+- Requires SlashCommand tool v1.0.123+
+
 ### /gemini:search - Google Search
 
 - Technical research via Gemini CLI
@@ -138,8 +169,10 @@ Custom commands for systematic software development support.
 ├── docs/
 │   └── COMMANDS.md    # This file
 ├── commands/          # Command definitions
+│   ├── auto-test.md  # Auto test runner (SlashCommand)
 │   ├── code.md
 │   ├── fix.md
+│   ├── full-cycle.md # Meta-command (SlashCommand)
 │   ├── hotfix.md
 │   ├── research.md
 │   ├── review.md
@@ -234,6 +267,13 @@ Custom commands for systematic software development support.
 - `~/.claude/settings.json` - Tool permissions
 
 ## 📅 Updates
+
+2025-09-24 - SlashCommand Tool Integration (v1.0.123)
+
+- Added `/auto-test` for automatic test-fix workflow
+- Added `/full-cycle` meta-command for complete automation
+- Integrated SlashCommand tool for command chaining
+- Enhanced automation capabilities
 
 2025-09-11 - Enhanced with Spec Kit integration
 
