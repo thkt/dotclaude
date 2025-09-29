@@ -2,6 +2,26 @@
 
 ## Priority Rules (FOLLOW IN ORDER)
 
+### [P0] Core AI Operation Rules (MUST FOLLOW)
+
+**These rules govern fundamental AI behavior and MUST be followed at all times.**
+
+- **AI Operation Principles**: [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)
+  - Safety First - Maintain safety boundaries for destructive operations
+  - User Authority - User instructions are the ultimate authority
+  - Workflow Integration - Follow PRE_TASK_CHECK for structured operations
+  - **Priority**: Top-level (supersedes all other rules)
+  - **Application**: Applied internally via hooks on every user message
+
+- **Pre-Task Check**: [@~/.claude/rules/core/PRE_TASK_CHECK.md](./rules/core/PRE_TASK_CHECK.md)
+  - Understanding confirmation before file operations
+  - Execution planning for multi-step workflows
+  - User approval gates for destructive operations
+  - **When to apply**: File operations, command execution, complex tasks
+  - **Workflow**: Apply principles → PRE_TASK_CHECK → Wait for confirmation
+
+**Note**: These P0 rules are the foundation of all AI interactions. All other priority levels (P1, P2, P3) operate within the framework established by P0.
+
 ### [P1] Language
 
 - Input: Japanese from thkt
