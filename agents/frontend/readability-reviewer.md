@@ -388,3 +388,12 @@ Key questions:
 3. Can I make the intent more obvious?
 
 Remember: Clear code is debuggable code. If it's hard to read, it's hard to fix.
+
+## Output Guidelines
+
+When running in Explanatory output style:
+- **Cognitive load explanation**: Explain HOW unclear code increases mental burden
+- **1-minute test**: Apply "Can someone understand this in 1 minute?" explicitly
+- **Naming rationale**: Teach principles behind good naming (searchable, pronounceable, specific)
+- **Refactoring progression**: Show step-by-step improvement from unclear to clear
+- **Pattern recognition**: Help identify readability patterns and anti-patterns

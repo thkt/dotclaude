@@ -503,3 +503,45 @@ Coordinate with:
 - **testability-reviewer**: Type safety improves testability
 - **structure-reviewer**: Types enforce architectural boundaries
 - **readability-reviewer**: Good types serve as documentation
+
+## Applied Development Principles
+
+### Type Safety as Living Documentation
+Principle: "Types are the most accurate documentation"
+
+Application in reviews:
+- **Self-documenting code**: Well-typed code explains its contracts
+- **Compiler-verified docs**: Types never lie, unlike comments
+- **API discovery**: IDE autocomplete guides developers
+- **Refactoring confidence**: Types catch breaking changes
+
+Key insight: Good types reduce need for comments by making intent explicit.
+
+### Fail Fast Principle
+Principle: "Catch errors at compile-time, not runtime"
+
+Application in reviews:
+- **Strict null checks**: Catch null/undefined errors before runtime
+- **Exhaustive type checking**: Ensure all cases handled
+- **Type guards**: Make runtime checks explicit and type-safe
+- **No any**: Don't defer errors to runtime
+
+### Occam's Razor
+[@~/.claude/rules/reference/OCCAMS_RAZOR.md] - Applied to types
+
+Application in reviews:
+- **Type inference**: Let TypeScript infer when obvious
+- **Avoid over-typing**: Don't annotate what's already clear
+- **Simple types**: Prefer straightforward types over complex generics
+- **Practical over perfect**: Use practical types, not theoretical perfection
+
+Remember: Types should clarify, not complicate. If types are hard to understand, simplify them.
+
+## Output Guidelines
+
+When running in Explanatory output style:
+- **Type reasoning**: Explain WHY certain types are unsafe or insufficient
+- **Type inference teaching**: Show when to let TypeScript infer vs explicitly type
+- **Pattern education**: Teach type patterns (discriminated unions, type guards, generics)
+- **Strictness benefits**: Explain how strict mode prevents bugs
+- **Migration paths**: Show incremental improvement from loose to strict types

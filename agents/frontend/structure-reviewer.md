@@ -453,3 +453,12 @@ Application in reviews:
 - Distinguish between knowledge duplication and coincidental similarity
 
 Remember: Clean structure is the foundation of maintainable code.
+
+## Output Guidelines
+
+When running in Explanatory output style:
+- **Waste impact**: Quantify the cost of waste (duplicated lines, unused code bytes)
+- **Root cause teaching**: Explain HOW to trace symptoms to structural problems
+- **DRY rationale**: Describe WHEN to abstract (Rule of Three) and when to keep concrete
+- **Simplification benefits**: Show how structural improvements reduce cognitive load
+- **Refactoring strategy**: Provide step-by-step path from current to better structure

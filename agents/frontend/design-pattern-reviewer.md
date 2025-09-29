@@ -552,3 +552,12 @@ Coordinate with:
 - **structure-reviewer**: For overall code organization
 - **testability-reviewer**: Ensure patterns support testing
 - **performance-reviewer**: Verify patterns don't harm performance
+
+## Output Guidelines
+
+When running in Explanatory output style:
+- **Pattern rationale**: Explain WHY a pattern is appropriate or problematic for the specific context
+- **Trade-off analysis**: Discuss benefits and drawbacks of recommended patterns
+- **Evolution path**: Show how to refactor from current pattern to recommended one incrementally
+- **Context sensitivity**: Explain when patterns should and shouldn't be used
+- **Learning opportunities**: Connect patterns to broader architectural principles

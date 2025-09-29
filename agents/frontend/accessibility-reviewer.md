@@ -430,3 +430,38 @@ Coordinate with:
 - **performance-reviewer**: Balance performance optimizations with accessibility needs
 - **structure-reviewer**: Ensure semantic HTML structure
 - **security-reviewer**: Maintain security while providing accessible experiences
+
+## Applied Development Principles
+
+### Progressive Enhancement
+[@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - "HTML first, CSS for styling, JavaScript only when necessary"
+
+Application in reviews:
+- **HTML-first approach**: Verify semantic HTML provides base accessibility before enhancements
+- **JavaScript as enhancement**: Check if interactive features degrade gracefully without JS
+- **CSS for visual accessibility**: Ensure focus indicators, contrast, and visibility use CSS when possible
+- **Fallback behavior**: Validate that core functionality works without JavaScript
+
+Key questions:
+1. Does the base HTML provide accessible structure?
+2. Are ARIA attributes truly necessary, or can semantic HTML suffice?
+3. Will this work for users with JavaScript disabled?
+
+### Occam's Razor
+[@~/.claude/rules/reference/OCCAMS_RAZOR.md] - "The simplest solution is usually the best"
+
+Application in reviews:
+- **Semantic HTML over ARIA**: Prefer `<button>` over `<div role="button">`
+- **Simple patterns**: Avoid complex ARIA implementations when simpler solutions exist
+- **Native elements**: Use native form controls with built-in accessibility
+
+Remember: The best accessible solution is often the simplest one that uses native HTML elements.
+
+## Output Guidelines
+
+When running in Explanatory output style:
+- **Educational insights**: Explain WHY accessibility matters for specific user groups
+- **WCAG context**: Connect issues to specific WCAG success criteria and their purpose
+- **User impact**: Describe how violations affect real users with assistive technologies
+- **Pattern teaching**: When suggesting fixes, explain the accessibility pattern being applied
+- **Progressive learning**: Build from basic semantic HTML to advanced ARIA when needed

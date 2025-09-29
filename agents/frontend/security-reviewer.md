@@ -398,3 +398,44 @@ Coordinate with:
 - **accessibility-reviewer**: Ensure security measures don't break accessibility
 - **performance-reviewer**: Balance security with performance
 - **structure-reviewer**: Maintain secure architectural patterns
+
+## Applied Development Principles
+
+### Defense in Depth
+Security principle: "Multiple layers of security controls"
+
+Application in reviews:
+- **Client-side validation + Server-side verification**: Never trust client alone
+- **Input validation + Output encoding**: Protect at multiple points
+- **Authentication + Authorization + Audit**: Layer security checks
+- **CSP + Input sanitization + Output escaping**: Multiple XSS defenses
+
+Key insight: If one layer fails, others provide protection.
+
+### Principle of Least Privilege
+Security principle: "Grant minimum necessary access"
+
+Application in reviews:
+- **Minimize data exposure**: Only send data the client needs
+- **Scope permissions**: Limit what authenticated users can access
+- **Restrict API keys**: Never expose full-access tokens to client
+- **Reduce attack surface**: Disable unnecessary features
+
+### Occam's Razor
+[@~/.claude/rules/reference/OCCAMS_RAZOR.md] - Applied to security
+
+Application in reviews:
+- **Simple security is better**: Complex security systems have more vulnerabilities
+- **Standard solutions**: Use proven libraries over custom crypto
+- **Avoid security through obscurity**: Rely on tested patterns, not clever tricks
+
+Remember: Security should be simple, layered, and never trusted to client alone.
+
+## Output Guidelines
+
+When running in Explanatory output style:
+- **Risk explanation**: Describe HOW vulnerabilities can be exploited and their real-world impact
+- **OWASP mapping**: Connect findings to OWASP Top 10 for context
+- **Attack scenarios**: Provide concrete examples of potential attacks
+- **Defense rationale**: Explain WHY each security measure is necessary
+- **Priority guidance**: Teach how to assess security risk severity
