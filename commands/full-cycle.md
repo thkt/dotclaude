@@ -1,6 +1,6 @@
 ---
 name: full-cycle
-description: 完全な開発サイクルの自動実行
+description: Comprehensively orchestrate complete development cycle
 priority: high
 suitable_for:
   scale: [medium, large]
@@ -19,50 +19,49 @@ context:
 
 ## Purpose
 
-SlashCommandツールを使用して、完全な開発サイクルを自動実行するメタコマンド。
-研究から実装、テスト、レビューまでを一貫して実行。
+Systematically orchestrate the complete development cycle through SlashCommand tool integration, rigorously executing from research through implementation, testing, and validation phases.
 
-## SlashCommand Chain Execution
+## SlashCommand Chain Execution Architecture
 
 ```yaml
 workflow_sequence:
   - name: "Research Phase"
     command: "/research"
-    on_success: "continue"
-    on_failure: "stop"
+    on_success: "proceed"
+    on_failure: "terminate"
 
   - name: "Planning Phase"
     command: "/think"
-    on_success: "continue"
+    on_success: "proceed"
     on_failure: "retry_once"
 
   - name: "Implementation Phase"
     command: "/code"
-    on_success: "continue"
-    on_failure: "invoke_fix"
+    on_success: "proceed"
+    on_failure: "explicitly_invoke_fix"
 
   - name: "Testing Phase"
     command: "/test"
-    on_success: "continue"
-    on_failure: "invoke_fix"
+    on_success: "proceed"
+    on_failure: "explicitly_invoke_fix"
 
   - name: "Review Phase"
     command: "/review"
-    on_success: "continue"
-    on_failure: "log_issues"
+    on_success: "proceed"
+    on_failure: "document_issues"
 
   - name: "Validation Phase"
     command: "/validate"
-    on_success: "complete"
-    on_failure: "review_failures"
+    on_success: "finalize"
+    on_failure: "scrutinize_failures"
 ```
 
-## Implementation with SlashCommand
+## Implementation Architecture with SlashCommand
 
 ```typescript
-// SlashCommandツールを使用した連続実行
-async function executeFullCycle(context: any) {
-  const commands = [
+// Rigorously orchestrated execution via SlashCommand tool
+async function orchestrateFullCycle(context: any) {
+  const commandSequence = [
     '/research',
     '/think',
     '/code',
@@ -71,103 +70,103 @@ async function executeFullCycle(context: any) {
     '/validate'
   ];
 
-  const results = [];
+  const executionResults = [];
 
-  for (const cmd of commands) {
+  for (const cmd of commandSequence) {
     try {
       console.log(`Executing: ${cmd}`);
 
-      // SlashCommandツールで各コマンドを実行
+      // Explicitly invoke each command through SlashCommand tool
       const result = await SlashCommand({
         command: cmd,
         context: {
           ...context,
-          previousResults: results
+          previousResults: executionResults
         }
       });
 
-      results.push({
+      executionResults.push({
         command: cmd,
         status: 'success',
         result
       });
 
-      // TodoWriteで進捗を更新
+      // Systematically update progress via TodoWrite
       await updateProgress(cmd, 'completed');
 
     } catch (error) {
-      results.push({
+      executionResults.push({
         command: cmd,
         status: 'failed',
         error
       });
 
-      // エラーハンドリング
+      // Intelligent error handling
       if (shouldRetry(cmd, error)) {
         await SlashCommand({ command: '/fix' });
       } else {
-        break; // 致命的エラーの場合は停止
+        break; // Terminate on critical errors
       }
     }
   }
 
-  return results;
+  return executionResults;
 }
 ```
 
 ## Advanced Features
 
-### 条件付き実行
+### Conditional Execution Logic
 
 ```typescript
-// テスト結果に基づく条件分岐
+// Conditionally enhance based on test coverage
 if (testResults.coverage < 80) {
   await SlashCommand({ command: '/code --add-tests' });
 }
 
-// レビュー結果に基づく修正
+// Prioritize critical issues from review
 if (reviewResults.issues.critical > 0) {
   await SlashCommand({ command: '/fix --priority=critical' });
 }
 ```
 
-### 並列実行サポート
+### Parallel Execution Architecture
 
 ```typescript
-// 独立したタスクは並列実行
-const parallelTasks = await Promise.all([
+// Concurrently execute independent tasks
+const parallelResults = await Promise.all([
   SlashCommand({ command: '/test --unit' }),
   SlashCommand({ command: '/test --integration' }),
   SlashCommand({ command: '/review --style' })
 ]);
 ```
 
-## Usage Examples
+## Usage Specifications
 
 ```bash
-# 基本実行
+# Standard execution
 /full-cycle
 
-# スキップオプション付き
+# Selectively skip phases
 /full-cycle --skip=research,think
 
-# 特定フェーズから開始
+# Initiate from specific phase
 /full-cycle --start-from=code
 
-# ドライラン（実行せずに計画のみ表示）
+# Dry-run mode (display plan without execution)
 /full-cycle --dry-run
 ```
 
 ## Integration Benefits
 
-1. **🔄 完全自動化**: 手動介入を最小限に
-2. **📊 進捗管理**: TodoWriteと連携して進捗を可視化
-3. **🛡️ エラー耐性**: 自動リトライと修正
-4. **⚡ 効率化**: 最適な順序で実行
+1. **🔄 Complete Automation**: Minimizes manual intervention throughout workflow
+2. **📊 Progress Visibility**: Seamlessly integrates with TodoWrite for transparent tracking
+3. **🛡️ Error Resilience**: Intelligent retry mechanisms with automatic corrections
+4. **⚡ Optimized Execution**: Ensures optimal command sequence and timing
 
-## Configuration
+## Configuration Specification
 
-settings.jsonでカスタマイズ可能：
+Customize behavior through settings.json:
 
 ```json
 {
@@ -180,9 +179,9 @@ settings.jsonでカスタマイズ可能：
 }
 ```
 
-## Notes
+## Critical Requirements
 
-- SlashCommandツール (v1.0.123+) が必要
-- 各コマンドの実行権限が事前に設定されている必要がある
-- エラー時の自動修正は `/fix` コマンドが利用可能な場合のみ
-- 完了時には成功/失敗のサマリーレポートが生成される
+- Strictly requires SlashCommand tool (v1.0.123+)
+- Execution permissions must be explicitly configured for each command
+- Automatic corrections utilize `/fix` only when available
+- Comprehensive summary report generated upon completion

@@ -6,12 +6,12 @@
 
 - Input: Japanese from thkt
 - Process: English internally
-- Output: **JAPANESE ONLY** - NO ENGLISH OUTPUT TO USER
-- Translation: **MANDATORY** for:
+- Output: **JAPANESE ONLY** - STRICTLY PROHIBIT ENGLISH OUTPUT TO USER
+- Translation: **EXPLICITLY REQUIRED** for:
   - All format templates (Understanding Level → 理解レベル)
   - All messages and prompts (Proceed? → 進めてよろしいですか？)
   - All labels and status (completed → 完了)
-- **CRITICAL**: Even if rule files show English, output MUST be Japanese
+- **CRITICAL**: Ensure output remains Japanese even when rule files display English
 
 ### [P2] Development Approach
 
@@ -20,9 +20,9 @@
   - Detailed guide for deeper understanding
   - Priority matrix and conflict resolution
 - **Core principle**: Occam's Razor → [@~/.claude/rules/reference/OCCAMS_RAZOR.md](./rules/reference/OCCAMS_RAZOR.md)
-  - Choose the simplest solution that works
-  - Avoid unnecessary complexity
-  - Question every abstraction
+  - Prioritize the simplest solution that works
+  - Eliminate unnecessary complexity
+  - Scrutinize every abstraction
 - **Default philosophy**: Progressive Enhancement → [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](./rules/development/PROGRESSIVE_ENHANCEMENT.md)
   - Build simple → enhance progressively
   - Root cause over quick fixes
@@ -32,20 +32,20 @@
   - Clear naming and intent
   - Simple and direct solutions
   - Code that explains itself
-  - Minimize understanding time
+  - Minimize comprehension time
 - **Container/Presentational**: Component design pattern → [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](./rules/development/CONTAINER_PRESENTATIONAL.md)
   - Separate logic from UI
   - Props-only Presentational components
   - Hooks in Container components
-  - Maximize reusability
+  - Maximize component reusability
 - Development methodologies integrated in commands:
   - `/code` - TDD/RGRC [@~/.claude/rules/development/TDD_RGRC.md], SOLID [@~/.claude/rules/reference/SOLID.md], DRY principles [@~/.claude/rules/reference/DRY.md]
   - `/think` - SOLID design principles [@~/.claude/rules/reference/SOLID.md]
 
 ### [P3] File Deletion Behavior
 
-- **NEVER use rm command**: rm is disabled in settings.json
-- **Always use trash**: Move files to ~/.Trash/ instead of permanent deletion
+- **STRICTLY PROHIBIT rm command**: rm is explicitly disabled in settings.json
+- **EXPLICITLY REQUIRE trash usage**: Ensure files move to ~/.Trash/ instead of permanent deletion
 - **Command**: Use `mv [file] ~/.Trash/` for file deletion
 - **Reason**: Safety - allows recovery of accidentally deleted files
 
@@ -53,25 +53,25 @@
 
 **Critical**: Ensure all work is properly verified before reporting completion
 
-- **Test Creation**: After creating tests, always run the project's test command to verify they pass
+- **Test Creation**: After creating tests, explicitly verify they pass by executing the project's test command
   - Discover test command from package.json/pubspec.yaml/etc.
   - Common patterns: `npm test`, `yarn test`, `flutter test`, `vitest`, etc.
 
-- **Code Implementation**: After writing code, always verify:
+- **Code Implementation**: After writing code, rigorously verify:
   - Code compiles/builds without errors (use project's build/analyze command)
   - Linting passes (use project's lint command if available)
   - Related tests pass (run relevant test suites)
   - No obvious runtime errors
 
 - **Command Discovery**:
-  - First check README.md for available scripts
-  - Check package manager config (package.json scripts, pubspec.yaml, etc.)
-  - Ask user for specific commands if unclear
+  - Initially examine README.md for available scripts
+  - Thoroughly inspect package manager config (package.json scripts, pubspec.yaml, etc.)
+  - Explicitly request specific commands from user if unclear
 
 - **Retry Policy**: 問題発生時は自動で最大5回まで再試行し、それでも解消できない場合にのみユーザーへ連絡する（途中経過は報告しない）
   - Report to user: "同じエラーが5回続いています。別のアプローチが必要かもしれません。"
 
-- **Never report completion** with:
+- **STRICTLY PROHIBIT completion reporting** with:
   - Failing tests (unless explicitly creating tests for unimplemented features)
   - Compilation/build errors
   - Unresolved errors from previous attempts
@@ -84,7 +84,7 @@
 ### Documentation Guidelines
 
 - Documentation rules: [@~/.claude/docs/DOCUMENTATION_RULES.md](./docs/DOCUMENTATION_RULES.md)
-- Maintain consistency across all documentation
+- Ensure absolute consistency across all documentation
 
 ### Reference
 

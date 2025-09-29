@@ -1,6 +1,6 @@
 ---
 name: auto-test
-description: ファイル変更後に自動テスト実行
+description: Automatically execute tests after file modifications
 priority: medium
 suitable_for:
   scale: [small, medium]
@@ -14,42 +14,42 @@ context:
   trigger: "after_file_change"
 ---
 
-# /auto-test - Automatic Test Runner with SlashCommand
+# /auto-test - Automatic Test Runner with SlashCommand Integration
 
 ## Purpose
 
-ファイル変更後に自動的にテストを実行し、問題があれば `/fix` コマンドを呼び出す自動ワークフロー。
+Systematically execute tests after file modifications and explicitly invoke `/fix` command when issues are detected through automated workflow orchestration.
 
 ## SlashCommand Integration
 
-このコマンドはSlashCommandツールを使用して、条件に応じて他のコマンドを自動実行します。
+This command rigorously utilizes the SlashCommand tool to conditionally execute other commands based on test results.
 
-## Workflow
+## Workflow Specification
 
 ```yaml
 workflow:
-  - step: "Run tests"
+  - step: "Execute comprehensive tests"
     command: "npm test || yarn test || pnpm test"
     on_success: "continue"
-    on_failure: "invoke_fix"
+    on_failure: "explicitly_invoke_fix"
 
-  - step: "Invoke fix if needed"
-    condition: "test_failed"
+  - step: "Conditionally invoke fix mechanism"
+    condition: "test_failure_detected"
     action:
       type: "SlashCommand"
       command: "/fix"
-      context: "Retain test failure information"
+      context: "Preserve complete test failure information"
 ```
 
 ## Auto-execution Pattern
 
 ```typescript
-// SlashCommandツールを使用した自動実行
-async function autoTest() {
-  const testResult = await runTests();
+// Systematically orchestrated execution via SlashCommand tool
+async function executeAutoTest() {
+  const testResult = await rigorouslyExecuteTests();
 
   if (!testResult.success) {
-    // SlashCommandツールで/fixを呼び出し
+    // Explicitly invoke /fix through SlashCommand tool
     await SlashCommand({
       command: "/fix",
       context: testResult.errors
@@ -60,19 +60,19 @@ async function autoTest() {
 }
 ```
 
-## Usage
+## Usage Patterns
 
 ```bash
-# 手動実行
+# Manual execution
 /auto-test
 
-# ファイル変更後の自動トリガー（フック経由）
-# settings.jsonに設定を追加することで有効化
+# Automatic trigger after file modifications (via hooks)
+# Explicitly enable by configuring settings.json
 ```
 
-## Integration with Hooks
+## Hook Integration Configuration
 
-settings.jsonに以下を追加して自動実行を有効化：
+Explicitly enable automatic execution by adding to settings.json:
 
 ```json
 {
@@ -92,14 +92,14 @@ settings.jsonに以下を追加して自動実行を有効化：
 }
 ```
 
-## Benefits
+## Key Benefits
 
-- 🚀 **自動化**: ファイル変更後の手動テスト実行が不要
-- 🔄 **連続実行**: テスト失敗時に自動修正を試みる
-- 📊 **効率的**: 開発サイクルの高速化
+- 🚀 **Complete Automation**: Eliminates manual test execution after file changes
+- 🔄 **Continuous Execution**: Automatically attempts fixes upon test failures
+- 📊 **Maximized Efficiency**: Accelerates development cycle significantly
 
-## Notes
+## Critical Notes
 
-- SlashCommandツールが利用可能であることを前提とする
-- テストコマンドは環境に応じて自動検出
-- 修正が必要な場合は `/fix` コマンドが自動的に呼び出される
+- Strictly requires SlashCommand tool availability
+- Test commands are intelligently auto-detected based on environment
+- `/fix` command is explicitly invoked when corrections are necessary

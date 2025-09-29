@@ -1,0 +1,60 @@
+{"display":"/release-notes ","pastedContents":{},"timestamp":1759115263846,"project":"/Users/thkt/.claude"}
+{"display":"/release-notes ","pastedContents":{},"timestamp":1759115263862,"project":"/Users/thkt/.claude"}
+{"display":"/release-notes ","pastedContents":{},"timestamp":1759115263865,"project":"/Users/thkt/.claude"}
+{"display":"E2Eテストのためのサブエージェントやスラッシュコマンドってありましたっけ？","pastedContents":{},"timestamp":1759120369675,"project":"/Users/thkt/.claude"}
+{"display":"E2Eテストのためのサブエージェントやスラッシュコマンドってありましたっけ？","pastedContents":{},"timestamp":1759120369691,"project":"/Users/thkt/.claude"}
+{"display":"/exit ","pastedContents":{},"timestamp":1759130414689,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/release-notes ","pastedContents":{},"timestamp":1759130761800,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/release-notes ","pastedContents":{},"timestamp":1759130761812,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/release-notes ","pastedContents":{},"timestamp":1759130761815,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"https://github.com/tsukulink/tsukulink_front/pull/339 レビューできそ？","pastedContents":{},"timestamp":1759130774343,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"https://github.com/tsukulink/tsukulink_front/pull/339 レビューできそ？","pastedContents":{},"timestamp":1759130774355,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"y","pastedContents":{},"timestamp":1759130822202,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"y","pastedContents":{},"timestamp":1759130822215,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"y","pastedContents":{},"timestamp":1759130831916,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"y","pastedContents":{},"timestamp":1759130831919,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"テスト観点に絞って、テストが適切かレビューしてほしいです","pastedContents":{},"timestamp":1759131715870,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"テスト観点に絞って、テストが適切かレビューしてほしいです","pastedContents":{},"timestamp":1759131715891,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"ユーザーインタラクションのテストって具体的にはどんなテスト？","pastedContents":{},"timestamp":1759132088172,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"ユーザーインタラクションのテストって具体的にはどんなテスト？","pastedContents":{},"timestamp":1759132088193,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"エッジケースのテストの内容は？","pastedContents":{},"timestamp":1759134529550,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"エッジケースのテストの内容は？","pastedContents":{},"timestamp":1759134529571,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"[Pasted text #1 +10 lines]これ何？","pastedContents":{"1":{"id":1,"type":"text","content":"[vite] Internal server error: Cannot find module '/Users/thkt/GitHub/kai/main/node_modules/.prisma/client/sql/index.mjs' imported from /Users/thkt/GitHub/kai/main/node_modules/@prisma/client/sql.mjs\n      at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n      at moduleResolve (node:internal/modules/esm/resolve:932:10)\n      at defaultResolve (node:internal/modules/esm/resolve:1056:11)\n      at nextResolve (node:internal/modules/esm/hooks:748:28)\n      at o (file:///Users/thkt/GitHub/kai/main/node_modules/@tailwindcss/node/dist/esm-cache.loader.mjs:1:69)\n      at nextResolve (node:internal/modules/esm/hooks:748:28)\n      at Hooks.resolve (node:internal/modules/esm/hooks:240:30)\n      at MessagePort.handleMessage (node:internal/modules/esm/worker:199:24)\n      at [nodejs.internal.kHybridDispatch] (node:internal/event_target:827:20)\n      at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28) (x5)"}},"timestamp":1759137819188,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"[Pasted text #1 +10 lines]これ何？","pastedContents":{"1":{"id":1,"type":"text","content":"[vite] Internal server error: Cannot find module '/Users/thkt/GitHub/kai/main/node_modules/.prisma/client/sql/index.mjs' imported from /Users/thkt/GitHub/kai/main/node_modules/@prisma/client/sql.mjs\n      at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n      at moduleResolve (node:internal/modules/esm/resolve:932:10)\n      at defaultResolve (node:internal/modules/esm/resolve:1056:11)\n      at nextResolve (node:internal/modules/esm/hooks:748:28)\n      at o (file:///Users/thkt/GitHub/kai/main/node_modules/@tailwindcss/node/dist/esm-cache.loader.mjs:1:69)\n      at nextResolve (node:internal/modules/esm/hooks:748:28)\n      at Hooks.resolve (node:internal/modules/esm/hooks:240:30)\n      at MessagePort.handleMessage (node:internal/modules/esm/worker:199:24)\n      at [nodejs.internal.kHybridDispatch] (node:internal/event_target:827:20)\n      at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28) (x5)"}},"timestamp":1759137819201,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"[Pasted text #1 +10 lines]こんなんでた","pastedContents":{},"timestamp":1759137944228,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"[Pasted text #1 +10 lines]こんなんでた","pastedContents":{},"timestamp":1759137944241,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"pc1080 っていうブレークポイント効いてる？","pastedContents":{},"timestamp":1759138141684,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"pc1080 っていうブレークポイント効いてる？","pastedContents":{},"timestamp":1759138141703,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"https://azukiazusa.dev/blog/tailwind-css-v4-css-first-configurations/ 設定はあってる気がするんだあ","pastedContents":{},"timestamp":1759138484887,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"https://azukiazusa.dev/blog/tailwind-css-v4-css-first-configurations/ 設定はあってる気がするんだあ","pastedContents":{},"timestamp":1759138484905,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"            <TalkDemoPlayer />が動いてないかも","pastedContents":{},"timestamp":1759138717277,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"            <TalkDemoPlayer />が動いてないかも","pastedContents":{},"timestamp":1759138717303,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"text-article-section-title も追加しなきゃだ\n\n元は\n      \"article-section-title\": [\n        \"21px\",\n        { lineHeight: \"1.752\", fontWeight: \"700\", letterSpacing: \"0.9px\" },\n      ],\n\n","pastedContents":{},"timestamp":1759140329893,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"text-article-section-title も追加しなきゃだ\n\n元は\n      \"article-section-title\": [\n        \"21px\",\n        { lineHeight: \"1.752\", fontWeight: \"700\", letterSpacing: \"0.9px\" },\n      ],\n\n","pastedContents":{},"timestamp":1759140329911,"project":"/Users/thkt/GitHub/kai/main"}
+{"display":"/release-notes ","pastedContents":{},"timestamp":1759178188621,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/release-notes ","pastedContents":{},"timestamp":1759178188634,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/release-notes ","pastedContents":{},"timestamp":1759178188637,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"https://handsshare.atlassian.net/browse/TSUK-17240これ読んで","pastedContents":{},"timestamp":1759178237019,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"https://handsshare.atlassian.net/browse/TSUK-17240これ読んで","pastedContents":{},"timestamp":1759178237032,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/exit ","pastedContents":{},"timestamp":1759178248589,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/exit ","pastedContents":{},"timestamp":1759178248603,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/exit ","pastedContents":{},"timestamp":1759178248606,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"https://handsshare.atlassian.net/browse/TSUK-17240これ読んで","pastedContents":{},"timestamp":1759178253228,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"https://handsshare.atlassian.net/browse/TSUK-17240これ読んで","pastedContents":{},"timestamp":1759178253243,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/login ","pastedContents":{},"timestamp":1759178285017,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/login ","pastedContents":{},"timestamp":1759178285035,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/login ","pastedContents":{},"timestamp":1759178285043,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"https://handsshare.atlassian.net/browse/TSUK-17240これ読んで","pastedContents":{},"timestamp":1759178287861,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"https://handsshare.atlassian.net/browse/TSUK-17240これ読んで","pastedContents":{},"timestamp":1759178287880,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/mcp ","pastedContents":{},"timestamp":1759178344526,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/mcp ","pastedContents":{},"timestamp":1759178344538,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/mcp ","pastedContents":{},"timestamp":1759178344541,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"あれ、ツール使えない？","pastedContents":{},"timestamp":1759178366112,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"あれ、ツール使えない？","pastedContents":{},"timestamp":1759178366128,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/mcp ","pastedContents":{},"timestamp":1759178437380,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/mcp ","pastedContents":{},"timestamp":1759178437404,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"/mcp ","pastedContents":{},"timestamp":1759178437408,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"接続したよ","pastedContents":{},"timestamp":1759178440744,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"接続したよ","pastedContents":{},"timestamp":1759178440761,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"既存のコードベースで調査を行い、追記した方が良い内容を洗い出してほしい","pastedContents":{},"timestamp":1759178573855,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
+{"display":"既存のコードベースで調査を行い、追記した方が良い内容を洗い出してほしい","pastedContents":{},"timestamp":1759178573869,"project":"/Users/thkt/GitHub/tsukulink/dev-a"}
