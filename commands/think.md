@@ -56,15 +56,16 @@ Created: [Date]
 ## Test Plan
 
 ### Unit Tests (Priority: High)
-- [ ] Function: `functionName()` - Description
-- [ ] Function: `functionName()` - Edge case description
+- [ ] Function: `calculateDiscount(count)` - Returns 20% for 15+ purchases
+- [ ] Function: `calculateDiscount(count)` - Returns 10% for <15 purchases
+- [ ] Function: `calculateDiscount(count)` - Handles zero/negative input
 
 ### Integration Tests (Priority: Medium)
-- [ ] API/Flow: Description
-- [ ] API/Flow: Error case description
+- [ ] API: POST /users - Creates user with valid data
+- [ ] API: POST /users - Rejects duplicate email with 409
 
 ### E2E Tests (Priority: Low)
-- [ ] User flow: Description
+- [ ] User registration flow - Complete signup process
 
 ## Acceptance Criteria
 - [ ] Criterion 1

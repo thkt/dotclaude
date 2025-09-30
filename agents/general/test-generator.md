@@ -195,8 +195,36 @@ describe('UserCard', () => {
 
 1. **Read Test Plan** - Parse SOW document for test cases
 2. **Discover Project Structure** - Find test file locations and naming conventions
-3. **Generate Tests** - Create tests matching the plan exactly
-4. **Verify Completeness** - Ensure all planned tests are implemented
+3. **Check Existing Tests** - Avoid duplicates, append to existing files if appropriate
+4. **Generate Tests** - Create tests matching the plan exactly
+5. **Verify Completeness** - Ensure all planned tests are implemented
+
+## Error Handling
+
+### SOW Not Found
+
+```bash
+# Check common locations
+.claude/workspace/sow/*/sow.md
+
+# If not found: Report and skip
+"⚠️ No SOW found. Skipping test generation."
+```
+
+### No Test Plan Section
+
+```bash
+# If SOW exists but no "## Test Plan"
+"ℹ️ No test plan in SOW. Manual test creation required."
+```
+
+### Unknown Test Framework
+
+```bash
+# Check package.json for: jest, vitest, mocha, etc.
+# If none found:
+"⚠️ No test framework detected. Cannot generate tests."
+```
 
 ### Step 1: Read Test Plan
 
@@ -217,6 +245,24 @@ grep -r "describe\|test\|it" . --include="*.test.ts" --include="*.spec.ts"
 
 # Identify test framework
 package.json → "jest" | "vitest" | "mocha"
+
+# Discover naming convention
+src/utils/discount.ts → src/utils/discount.test.ts (co-located)
+src/utils/discount.ts → tests/utils/discount.test.ts (separate)
+src/utils/discount.ts → __tests__/discount.test.ts (jest convention)
+```
+
+### Step 2.5: Check Existing Tests
+
+```bash
+# For each test in plan:
+# 1. Check if test file exists
+# 2. Check if test case already exists (by name)
+
+# Decision:
+- File exists + Test exists → Skip (report as "already covered")
+- File exists + Test missing → Append to existing file
+- File missing → Create new file
 ```
 
 ### Step 3: Generate Tests

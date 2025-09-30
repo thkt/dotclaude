@@ -145,7 +145,11 @@ RGRCサイクルに入る前に、SOWから自動的にテストを生成：
 .claude/workspace/sow/[feature-name]/sow.md
 
 # 2. テスト計画が存在する場合、test-generatorを起動
-Task(subagent_type="test-generator", prompt="SOWテスト計画からテストを生成")
+Task(
+  subagent_type="test-generator",
+  description="SOWからテスト生成",
+  prompt="SOWテスト計画からテストを生成"
+)
 
 # 3. 生成されたテストを検証
 npm test -- --listTests | grep -E "\.test\.|\.spec\."

@@ -146,7 +146,11 @@ Before entering the RGRC cycle, automatically generate tests from SOW:
 .claude/workspace/sow/[feature-name]/sow.md
 
 # 2. If test plan exists, invoke test-generator
-Task(subagent_type="test-generator", prompt="Generate tests from SOW test plan")
+Task(
+  subagent_type="test-generator",
+  description="Generate tests from SOW",
+  prompt="Generate tests from SOW test plan"
+)
 
 # 3. Verify generated tests
 npm test -- --listTests | grep -E "\.test\.|\.spec\."

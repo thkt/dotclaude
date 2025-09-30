@@ -24,6 +24,10 @@
 
 - **progressive-enhancer** - Progressive enhancement approach
 
+#### General Utilities (Used by `/code`)
+
+- **test-generator** - Generate tests from SOW test plans
+
 ### Internal/Utility Agents (Not directly exposed via commands)
 
 #### document-reviewer
@@ -79,5 +83,6 @@
 | design-pattern-reviewer | purple | Patterns/Design |
 | testability-reviewer | green | Testing/Success |
 | progressive-enhancer | lime | Growth/Enhancement |
+| test-generator | cyan | Testing/Generation |
 | document-reviewer | brown | Documentation/Paper |
 | subagent-reviewer | gray | Meta/Neutral |
