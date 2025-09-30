@@ -556,6 +556,7 @@ Coordinate with:
 ## Output Guidelines
 
 When running in Explanatory output style:
+
 - **Pattern rationale**: Explain WHY a pattern is appropriate or problematic for the specific context
 - **Trade-off analysis**: Discuss benefits and drawbacks of recommended patterns
 - **Evolution path**: Show how to refactor from current pattern to recommended one incrementally

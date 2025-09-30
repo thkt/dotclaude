@@ -373,9 +373,11 @@ This reviewer complements:
 ## Applied Development Principles
 
 ### The Art of Readable Code
+
 [@~/.claude/rules/development/READABLE_CODE.md] - "Code should be written to minimize the time it would take for someone else to understand it"
 
 Application in reviews:
+
 - **1-minute rule**: Can a new team member understand the code in under 1 minute?
 - **Name clarity**: Names that can't be misconstrued, specific and searchable
 - **Control flow simplification**: Guard clauses, early returns, minimal nesting
@@ -383,6 +385,7 @@ Application in reviews:
 - **Code expresses intent**: Is it clear what the code does without comments?
 
 Key questions:
+
 1. What is the easiest way to understand this?
 2. What would confuse someone reading this?
 3. Can I make the intent more obvious?
@@ -392,6 +395,7 @@ Remember: Clear code is debuggable code. If it's hard to read, it's hard to fix.
 ## Output Guidelines
 
 When running in Explanatory output style:
+
 - **Cognitive load explanation**: Explain HOW unclear code increases mental burden
 - **1-minute test**: Apply "Can someone understand this in 1 minute?" explicitly
 - **Naming rationale**: Teach principles behind good naming (searchable, pronounceable, specific)

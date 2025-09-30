@@ -17,6 +17,7 @@ Ensure English and Japanese versions of documentation remain synchronized in str
 ```
 
 **Requirements**:
+
 - [ ] Every `.md` file in English has corresponding `ja/*.md` file
 - [ ] Every `.md` file in Japanese has corresponding English file
 - [ ] Directory structure is identical in both versions
@@ -99,11 +100,13 @@ fi
 English and Japanese files may have different relative paths due to nesting:
 
 **English** (`rules/reference/OCCAMS_RAZOR.md`):
+
 ```markdown
 [@../development/PROGRESSIVE_ENHANCEMENT.md]
 ```
 
 **Japanese** (`ja/rules/reference/OCCAMS_RAZOR.md`):
+
 ```markdown
 [@../development/PROGRESSIVE_ENHANCEMENT.md]
 ```

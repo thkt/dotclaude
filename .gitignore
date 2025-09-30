@@ -25,6 +25,11 @@ todos/
 .credentials.json
 settings.json
 
+# Claude session history
+history.jsonl
+*.jsonl
+file-history/
+
 # Private/Local configurations
 *.local
 .env

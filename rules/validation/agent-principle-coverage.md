@@ -17,6 +17,7 @@ Ensure all agents properly reference and apply development principles for consis
 #### Frontend Agents
 
 All frontend agents should reference at least one of:
+
 - Occam's Razor (simplicity)
 - Progressive Enhancement (if applicable to domain)
 - SOLID principles (if applicable to domain)
@@ -73,6 +74,7 @@ grep -l "PROGRESSIVE_ENHANCEMENT" /Users/thkt/.claude/agents/frontend/*.md
 ### Minimum Requirements
 
 Each agent MUST have:
+
 1. At least ONE principle reference that aligns with its domain
 2. Clear explanation of HOW the principle applies to reviews
 3. Output Guidelines for Explanatory style

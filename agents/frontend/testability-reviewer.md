@@ -491,31 +491,38 @@ Coordinate with:
 ## Applied Development Principles
 
 ### SOLID - Dependency Inversion Principle
+
 [@~/.claude/rules/reference/SOLID.md] - "Depend on abstractions, not concretions"
 
 Application in reviews:
+
 - **Injectable dependencies**: Identify hard-coded dependencies that prevent mocking
 - **Interface-based design**: Recommend abstractions for external services
 - **Inversion of control**: Suggest passing dependencies rather than creating them
 - **Testability by design**: Dependencies should be replaceable for testing
 
 Key questions:
+
 1. Can this function/component be tested without real external dependencies?
 2. Are dependencies explicit (parameters/props) or hidden (imports)?
 3. Can we easily provide test doubles?
 
 ### Single Responsibility Principle
+
 [@~/.claude/rules/reference/SOLID.md] - "One reason to change"
 
 Application in reviews:
+
 - **Pure logic extraction**: Separate business logic from side effects
 - **Testable units**: Each function should do one thing that's easy to test
 - **Side effect isolation**: Keep I/O separate from calculations
 
 ### Occam's Razor
+
 [@~/.claude/rules/reference/OCCAMS_RAZOR.md] - Applied to testability
 
 Application in reviews:
+
 - **Simple tests for simple code**: Complex test setups indicate complex code
 - **Avoid test gymnastics**: If testing is hard, simplify the code, not the test
 - **Pure functions**: The simplest testable code has no side effects
@@ -525,6 +532,7 @@ Remember: If code is hard to test, it's often too complex. Simplify the code, no
 ## Output Guidelines
 
 When running in Explanatory output style:
+
 - **Testability rationale**: Explain WHY certain patterns make testing difficult
 - **Refactoring for tests**: Show how to restructure code to improve testability
 - **Dependency injection teaching**: Demonstrate DI patterns and their benefits

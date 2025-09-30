@@ -23,6 +23,7 @@ All principle files in `rules/reference/` and `rules/development/` should have:
 **Format**: `[@./FILE.md]` (same directory) or `[@../category/FILE.md]` (different directory)
 
 **Rules**:
+
 1. All `[@...]` references must point to existing files
 2. Relative paths must be correct from the referencing file's location
 3. No circular references without purpose
@@ -119,7 +120,7 @@ done
 
 The dependency graph in PRINCIPLES_GUIDE.md should match actual references:
 
-```
+```markdown
 Expected relationships (from graph):
 - OCCAMS_RAZOR → PROGRESSIVE_ENHANCEMENT ✅
 - OCCAMS_RAZOR → DRY ✅

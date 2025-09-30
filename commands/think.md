@@ -53,6 +53,19 @@ Created: [Date]
 ## Solution Design
 [Proposed approach and alternatives]
 
+## Test Plan
+
+### Unit Tests (Priority: High)
+- [ ] Function: `functionName()` - Description
+- [ ] Function: `functionName()` - Edge case description
+
+### Integration Tests (Priority: Medium)
+- [ ] API/Flow: Description
+- [ ] API/Flow: Error case description
+
+### E2E Tests (Priority: Low)
+- [ ] User flow: Description
+
 ## Acceptance Criteria
 - [ ] Criterion 1
 - [ ] Criterion 2

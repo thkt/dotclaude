@@ -321,23 +321,28 @@ Coordinate with:
 ## Applied Development Principles
 
 ### Occam's Razor
+
 [@~/.claude/rules/reference/OCCAMS_RAZOR.md] - "The simplest solution is usually the best"
 
 Application in reviews:
+
 - **Premature optimization**: Identify complex optimizations that don't address real bottlenecks
 - **Simple first**: Recommend measuring before optimizing
 - **Complexity trade-offs**: Balance performance gains against code complexity
 - **Remove over-engineering**: Detect unnecessary memoization, virtualization, or code splitting
 
 Key questions:
+
 1. Is this optimization solving a measured problem?
 2. Is the complexity justified by the performance gain?
 3. Could a simpler approach achieve similar results?
 
 ### Progressive Enhancement
+
 [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - "Build simple, enhance gradually"
 
 Application in reviews:
+
 - **Baseline performance**: Ensure basic functionality is fast before adding optimizations
 - **Incremental optimization**: Recommend starting simple and optimizing based on metrics
 - **Avoid premature complexity**: Question optimizations added "just in case"
@@ -347,6 +352,7 @@ Remember: Measure first, optimize second. The best optimization is often elimina
 ## Output Guidelines
 
 When running in Explanatory output style:
+
 - **Performance impact**: Quantify the actual impact of issues (ms, KB, FPS)
 - **Why it matters**: Explain how performance issues affect user experience
 - **Measurement guidance**: Teach how to measure and verify improvements
