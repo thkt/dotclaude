@@ -137,6 +137,33 @@ function calculateTotal(items) {
 
 Total cycle: ~2 minutes
 
+#### Test Generation from Plan (Pre-Red)
+
+Before entering the RGRC cycle, automatically generate tests from SOW:
+
+```bash
+# 1. Check for SOW with test plan
+.claude/workspace/sow/[feature-name]/sow.md
+
+# 2. If test plan exists, invoke test-generator
+Task(subagent_type="test-generator", prompt="Generate tests from SOW test plan")
+
+# 3. Verify generated tests
+npm test -- --listTests | grep -E "\.test\.|\.spec\."
+```
+
+**When to generate:**
+
+- SOW contains "Test Plan" section
+- No existing tests for planned features
+- User requests test generation
+
+**Skip conditions:**
+
+- Tests already exist
+- No SOW test plan defined
+- Quick fix mode
+
 #### Enhanced RGRC Cycle with Real-time Feedback
 
 1. **Red Phase** (Confidence Target: 0.9)
@@ -145,7 +172,7 @@ Total cycle: ~2 minutes
    npm test -- --testNamePattern="[current test]" | grep -E "FAIL|PASS"
    ```
 
-   - Write failing test with clear intent
+   - Write failing test with clear intent (or use generated tests)
    - Verify failure reason matches expectation
    - Document understanding via test assertions
    - **Exit Criteria**: Test fails for expected reason

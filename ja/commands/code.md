@@ -136,6 +136,33 @@ function calculateTotal(items) {
 
 合計サイクル: 約2分
 
+#### 計画からのテスト生成（Pre-Red）
+
+RGRCサイクルに入る前に、SOWから自動的にテストを生成：
+
+```bash
+# 1. テスト計画を含むSOWを確認
+.claude/workspace/sow/[feature-name]/sow.md
+
+# 2. テスト計画が存在する場合、test-generatorを起動
+Task(subagent_type="test-generator", prompt="SOWテスト計画からテストを生成")
+
+# 3. 生成されたテストを検証
+npm test -- --listTests | grep -E "\.test\.|\.spec\."
+```
+
+**生成タイミング:**
+
+- SOWに「テスト計画」セクションがある
+- 計画された機能の既存テストがない
+- ユーザーがテスト生成を要求
+
+**スキップ条件:**
+
+- テストが既に存在
+- SOWテスト計画が未定義
+- クイック修正モード
+
 #### リアルタイムフィードバック付き強化RGRCサイクル
 
 1. **Redフェーズ** (信頼度目標: 0.9)
@@ -144,7 +171,7 @@ function calculateTotal(items) {
    npm test -- --testNamePattern="[現在のテスト]" | grep -E "FAIL|PASS"
    ```
 
-   - 明確な意図で失敗するテストを書く
+   - 明確な意図で失敗するテストを書く（または生成されたテストを使用）
    - 失敗理由が期待と一致することを確認
    - テストアサーションで理解を文書化
    - **終了条件**: 期待された理由でテストが失敗
