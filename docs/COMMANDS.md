@@ -36,6 +36,13 @@ Custom commands for systematic software development support.
 |---------|---------|----------|
 | `/gemini:search` | Google search via Gemini | Gemini CLI |
 
+### Documentation Commands
+
+| Command | Purpose | Environment |
+|---------|---------|-------------|
+| `/adr [title]` | Create Architecture Decision Record in MADR format | 📝 Documentation |
+| `/adr:rule <number>` | Generate project rule from ADR | 📝 Documentation |
+
 ## 🔄 Standard Workflows
 
 ### Feature Development (Enhanced)
@@ -161,6 +168,23 @@ Custom commands for systematic software development support.
 - Troubleshooting assistance
 - Requires Gemini CLI setup
 
+### /adr - Architecture Decision Record Creator
+
+- Creates MADR (Markdown Architecture Decision Records) format documentation
+- Records architecture decisions with context and rationale
+- Automatic numbering (0001, 0002, ...)
+- Saves to `docs/adr/` in project root
+- Interactive input for decision details
+- Japanese language support
+
+### /adr:rule - ADR to Rule Converter
+
+- Automatically generates project rules from ADR
+- Converts decision into AI-executable format
+- Saves to `docs/rules/` in project root
+- Auto-integrates with `.claude/CLAUDE.md`
+- Enables AI to follow project-specific decisions
+
 ## 📂 Workspace Structure
 
 ```txt
@@ -169,6 +193,9 @@ Custom commands for systematic software development support.
 ├── docs/
 │   └── COMMANDS.md    # This file
 ├── commands/          # Command definitions
+│   ├── adr.md        # ADR creator
+│   ├── adr/
+│   │   └── rule.md   # ADR to rule converter
 │   ├── auto-test.md  # Auto test runner (SlashCommand)
 │   ├── code.md
 │   ├── fix.md
@@ -252,6 +279,19 @@ Custom commands for systematic software development support.
 - Ready to verify implementation
 - Need conformance check against SOW
 - Want to identify missing requirements
+
+### Use `/adr` when
+
+- Making important architecture decisions
+- Need to document technical choices
+- Want to record decision rationale
+- Team needs visibility into decisions
+
+### Use `/adr:rule` when
+
+- ADR decision should affect AI behavior
+- Want to enforce project-specific patterns
+- Need AI to follow architecture decisions automatically
 
 ## 🔧 Configuration
 
