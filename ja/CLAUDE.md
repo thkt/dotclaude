@@ -36,31 +36,10 @@
 ### [P2] 開発アプローチ
 
 - **原則ガイド**: 完全な適用ガイド → [@~/.claude/ja/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
-  - 即座の判断のためのクイックリファレンス
-  - 深い理解のための詳細ガイド
-  - 優先度マトリックスと競合解決
 - **核心原則**: オッカムの剃刀 → [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../rules/reference/OCCAMS_RAZOR.md)
-  - 動作する最もシンプルな解決策を選ぶ
-  - 不必要な複雑さを避ける
-  - すべての抽象化を疑う
 - **デフォルト哲学**: プログレッシブエンハンスメント → [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](../rules/development/PROGRESSIVE_ENHANCEMENT.md)
-  - シンプルに構築 → 段階的に強化
-  - クイックフィックスより根本原因
-  - UIソリューションにはCSS優先
-  - シンプルさによるエレガンス
 - **コード可読性**: The Art of Readable Code → [@~/.claude/rules/development/READABLE_CODE.md](../rules/development/READABLE_CODE.md)
-  - 明確な命名と意図
-  - シンプルで直接的な解決策
-  - 自己説明的なコード
-  - 理解時間の最小化
 - **Container/Presentational**: コンポーネント設計パターン → [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](../rules/development/CONTAINER_PRESENTATIONAL.md)
-  - ロジックとUIを分離
-  - PropsのみのPresentationalコンポーネント
-  - ContainerコンポーネントでHooks
-  - 再利用性の最大化
-- コマンドに統合された開発方法論:
-  - `/code` - TDD/RGRC [@~/.claude/ja/rules/development/TDD_RGRC.md](../rules/development/TDD_RGRC.md)、SOLID [@~/.claude/ja/rules/reference/SOLID.md](../rules/reference/SOLID.md)、DRY原則 [@~/.claude/ja/rules/reference/DRY.md](../rules/reference/DRY.md)
-  - `/think` - SOLID設計原則 [@~/.claude/ja/rules/reference/SOLID.md](../rules/reference/SOLID.md)
 
 ### [P3] ファイル削除動作
 
@@ -105,8 +84,3 @@
 
 - ドキュメントルール: [@~/.claude/ja/docs/DOCUMENTATION_RULES.md](./docs/DOCUMENTATION_RULES.md)
 - すべてのドキュメントで一貫性を維持
-
-### 参考
-
-英語版（AI用）: [@~/.claude/CLAUDE.md](../CLAUDE.md)
-AIは英語版のみを読む。

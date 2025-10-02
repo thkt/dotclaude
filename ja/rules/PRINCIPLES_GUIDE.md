@@ -407,12 +407,12 @@ class UserService {
 
 ### 中心文書
 
-- [@./reference/OCCAMS_RAZOR.md] - メタ原則
-- [@./development/PROGRESSIVE_ENHANCEMENT.md] - アプローチ
-- [@./development/READABLE_CODE.md] - ベースライン
+- [@./reference/OCCAMS_RAZOR.md](./reference/OCCAMS_RAZOR.md) - メタ原則
+- [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md) - アプローチ
+- [@./development/READABLE_CODE.md](./development/READABLE_CODE.md) - ベースライン
 
 ### すべての原則
 
-- Reference: [@./reference/] - SOLID、DRY、オッカムの剃刀
-- Development: [@./development/] - すべての実践的原則
-- Commands: [@../docs/COMMANDS.md] - 統合されたワークフロー
+- Reference: [@./reference/](./reference/) - SOLID、DRY、オッカムの剃刀
+- Development: [@./development/](./development/) - すべての実践的原則
+- Commands: [@../docs/COMMANDS.md](../docs/COMMANDS.md) - 統合されたワークフロー

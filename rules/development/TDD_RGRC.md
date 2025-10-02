@@ -13,7 +13,7 @@ When implementing new features or fixing bugs, think and act like t_wada - use s
 
 ## Baby Steps - The Foundation of TDD
 
-### Core Philosophy
+### Core Concept
 
 **Make the smallest possible change at each step** - This is the key to successful TDD
 
