@@ -172,11 +172,120 @@ Details: [@../commands/STANDARD_WORKFLOWS.md]
 
 **Important: Always wait for user response after showing understanding check**
 
-- Y: Proceed with implementation (show execution plan if needed)
+- Y: Proceed with implementation (show impact simulation if needed)
 - n: Re-evaluate task understanding
 - i: Wait for additional information
 
-## Execution Plan (After Y Confirmation)
+## Impact Simulation (Dry-run)
+
+**When to display**: After Y confirmation, before Execution Plan, for file operations or complex changes.
+
+Provides a brief simulation of expected changes and their impact. Based on the "Dry-run" approach - simulating changes without actual execution to preview effects.
+
+**Display Format**:
+
+```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 Impact Simulation (Dry-run)
+
+Expected changes:
+• Files to modify: [list 2-5 key files]
+• Affected components: [list impacted modules/components]
+• Risk level: 🟢 Low / 🟡 Medium / 🔴 High
+• Note: [Any important considerations]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Guidelines**:
+
+- **Keep it concise**: 3-5 bullet points maximum
+- **Focus on impact**: What will change, what might break
+- **Risk assessment**: Honest evaluation of potential issues
+- **Actionable**: Highlight areas requiring special attention
+
+**Example**:
+
+```markdown
+🔍 Impact Simulation (Dry-run)
+
+Expected changes:
+• Files to modify: src/auth/login.ts, src/components/LoginForm.tsx
+• Affected components: AuthService, UserSession, LoginPage
+• Risk level: 🟡 Medium (authentication flow change)
+• Note: Existing user sessions may require re-login, update tests for new flow
+
+```
+
+**Skip conditions**: Simple file reads, documentation updates, or when impact is obvious.
+
+### Combined Display Format
+
+**When to use**: When both Impact Simulation and Execution Plan are displayed consecutively.
+
+**Purpose**: Reduce visual noise by combining both sections into a single box with cleaner separation.
+
+**Format**:
+
+```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 Impact Simulation (Dry-run)
+
+Expected changes:
+• Files to modify: [list 2-5 key files]
+• Affected components: [list impacted modules/components]
+• Risk level: 🟢 Low / 🟡 Medium / 🔴 High
+• Note: [Any important considerations]
+
+─────────────────────────────────────────────────
+
+📝 Execution Plan
+
+Will execute the following:
+1. [Specific action]
+2. [Specific action]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Proceed with this plan? (Y/n/i)
+```
+
+**Key differences from separate display**:
+
+- Single outer box (━) instead of two separate boxes
+- Thin separator line (─) between sections
+- One confirmation prompt at the end
+- Cleaner visual hierarchy
+
+**Example**:
+
+```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 Impact Simulation (Dry-run)
+
+Expected changes:
+• Files to modify: rules/core/PRE_TASK_CHECK.md, ja/rules/core/PRE_TASK_CHECK.md
+• Affected components: Understanding Check workflow display
+• Risk level: 🟢 Low (documentation only)
+• Note: Adding combined display format option
+
+─────────────────────────────────────────────────
+
+📝 Execution Plan
+
+Will execute the following:
+1. Edit rules/core/PRE_TASK_CHECK.md - Add combined display format section
+2. Edit ja/rules/core/PRE_TASK_CHECK.md - Sync Japanese version
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Proceed with this plan? (Y/n/i)
+```
+
+## Execution Plan (After Impact Simulation)
 
 Display for operations that will modify files or execute commands.
 Skip for pure read operations (Read, Grep, LS).
@@ -215,9 +324,10 @@ Proceed with this plan? (Y/n/i)
 
 1. **Understanding Check**: Assess comprehension & suggest approach
 2. **User Confirmation**: Wait for Y/n/i ← **STOP POINT**
-3. **Execution Plan** (if Y and file/command ops): Show specific actions
-4. **Plan Confirmation**: Wait for final Y/n/i ← **STOP POINT**
-5. **Execute**: Perform the approved actions
+3. **Impact Simulation** (if Y and complex/risky changes): Show dry-run preview
+4. **Execution Plan** (if Y and file/command ops): Show specific actions
+5. **Plan Confirmation**: Wait for final Y/n/i ← **STOP POINT**
+6. **Execute**: Perform the approved actions
 
 ## Integration with Output Verifiability
 

@@ -30,6 +30,12 @@ Custom commands for systematic software development support.
 | `/auto-test` | Auto test runner with conditional fix | 🔧 Development | Yes - invokes `/fix` on failure |
 | `/full-cycle` | Complete development cycle automation | 🔄 Meta-command | Yes - chains multiple commands |
 
+### Browser Automation Commands
+
+| Command | Purpose | Environment |
+|---------|---------|-------------|
+| `/workflow:create [name]` | Create reusable browser automation workflows | 🌐 E2E Testing |
+
 ### External Tool Commands
 
 | Command | Purpose | Requires |
@@ -42,6 +48,34 @@ Custom commands for systematic software development support.
 |---------|---------|-------------|
 | `/adr [title]` | Create Architecture Decision Record in MADR format | 📝 Documentation |
 | `/adr:rule <number>` | Generate project rule from ADR | 📝 Documentation |
+
+## 🔍 Dry-run Impact Simulation
+
+**Automatic safety feature** integrated into PRE_TASK_CHECK workflow.
+
+When confirming file operations or complex changes, Claude Code automatically displays a brief impact simulation before execution:
+
+- **Files to modify**: Lists 2-5 key files
+- **Affected components**: Shows impacted modules
+- **Risk level**: 🟢 Low / 🟡 Medium / 🔴 High
+- **Important notes**: Highlights areas requiring attention
+
+This "Dry-run" approach previews changes without execution, helping you:
+
+- Understand the scope of changes
+- Identify potential risks
+- Make informed decisions before proceeding
+
+**Workflow integration**:
+
+```txt
+1. Understanding Check (理解確認)
+2. User Confirmation (Y) ← STOP POINT
+3. 🔍 Impact Simulation ← NEW (auto-displayed for risky changes)
+4. Execution Plan
+5. Plan Confirmation (Y) ← STOP POINT
+6. Execute
+```
 
 ## 🔄 Standard Workflows
 
@@ -185,6 +219,19 @@ Custom commands for systematic software development support.
 - Auto-integrates with `.claude/CLAUDE.md`
 - Enables AI to follow project-specific decisions
 
+### /workflow:create - Browser Workflow Generator
+
+- Creates reusable browser automation workflows via interactive recording
+- Uses Chrome DevTools MCP for real browser control
+- Saves workflows as Markdown command files
+- Generated workflows become discoverable slash commands
+- Executes via `/workflow-name` after creation
+- Use cases: E2E testing, monitoring, scraping, regression testing
+- Interactive step-by-step recording with live execution
+- Supports navigation, clicking, form filling, waiting, screenshots
+- Workflows saved to `.claude/commands/workflows/`
+- Human-editable Markdown format
+
 ## 📂 Workspace Structure
 
 ```txt
@@ -207,6 +254,9 @@ Custom commands for systematic software development support.
 │   ├── think.md
 │   ├── sow.md
 │   ├── validate.md
+│   ├── workflow/
+│   │   └── create.md # Workflow generator
+│   ├── workflows/    # Generated workflows (user-created)
 │   └── gemini/
 │       └── search.md
 ├── ja/               # Japanese versions
@@ -292,6 +342,15 @@ Custom commands for systematic software development support.
 - ADR decision should affect AI behavior
 - Want to enforce project-specific patterns
 - Need AI to follow architecture decisions automatically
+
+### Use `/workflow:create` when
+
+- Need to automate repetitive browser interactions
+- Creating E2E test scenarios
+- Setting up monitoring for critical user flows
+- Building data collection workflows
+- Want to document complex manual testing procedures
+- Need reproducible browser automation
 
 ## 🔧 Configuration
 
