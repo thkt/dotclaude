@@ -8,11 +8,9 @@ A comprehensive configuration system for Claude AI with custom commands, develop
 
 This repository contains personal configurations for Claude AI, including:
 
-- **[P0] Core AI Operation Rules** - Safety First, User Authority, Output Verifiability
 - Custom slash commands for systematic development workflows
-- Development principles (SOLID, DRY, TDD/RGRC, Occam's Razor)
+- Core AI operation principles and development best practices
 - Progressive Enhancement and code readability guidelines
-- Pre-task understanding checks with execution planning
 - Japanese language support
 
 ## 📁 Structure
@@ -150,7 +148,7 @@ This repository contains personal configurations for Claude AI, including:
 
 ## 🛠️ Key Features
 
-### Core AI Operation Principles [P0]
+### Core AI Operation Principles
 
 - **Safety First**: Maintain safety boundaries for destructive operations
 - **User Authority**: User instructions are the ultimate authority

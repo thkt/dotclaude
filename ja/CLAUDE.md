@@ -35,7 +35,7 @@
 
 ### [P2] 開発アプローチ
 
-- **📚 原則ガイド**: 完全な適用ガイド → [@~/.claude/ja/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
+- **原則ガイド**: 完全な適用ガイド → [@~/.claude/ja/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
   - 即座の判断のためのクイックリファレンス
   - 深い理解のための詳細ガイド
   - 優先度マトリックスと競合解決

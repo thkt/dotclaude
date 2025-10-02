@@ -35,7 +35,7 @@
 
 ### [P2] Development Approach
 
-- **📚 Principles Guide**: Complete application guide → [@~/.claude/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
+- **Principles Guide**: Complete application guide → [@~/.claude/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
   - Quick reference for immediate decisions
   - Detailed guide for deeper understanding
   - Priority matrix and conflict resolution
