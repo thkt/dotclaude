@@ -22,6 +22,8 @@ Sub-agent files are **system specifications**, not end-user documentation. They 
 - Integration points with other agents
 - Output formats and quality metrics
 
+**Output Verifiability**: All findings MUST include specific section/line references in the agent file, confidence markers (✓/→/?), concrete examples from the definition, and reasoning per AI Operation Principle #4.
+
 ## Review Criteria
 
 ### 1. YAML Frontmatter Validation
@@ -147,34 +149,64 @@ Exception: User-facing strings in output templates should be Japanese.
 
 ## Output Format
 
+**IMPORTANT**: Use confidence markers (✓/→/?) and provide specific line/section references for all findings.
+
 ```markdown
 ## Sub-Agent Definition Review
 
 ### Compliance Summary
-- Structure: ✅/⚠️/❌
-- Technical Accuracy: ✅/⚠️/❌
-- Integration: ✅/⚠️/❌
-- Overall: [Status]
+**Overall Confidence**: [✓/→] [0.X]
+
+- Structure: ✅/⚠️/❌ [✓/→]
+- Technical Accuracy: ✅/⚠️/❌ [✓/→]
+- Integration: ✅/⚠️/❌ [✓/→]
+- Overall: [Status with confidence]
+- Total Issues: N (✓: X, →: Y)
 
 ### Strengths
-- [What the definition does well]
+- **[✓]** [What the definition does well] (Section: [name], lines X-Y)
+- **[✓]** [Specific good practice with evidence]
 
-### Required Changes 🔴
-1. **[Issue]**: [Specific fix needed]
-   - Location: line X
-   - Suggestion: [Exact change]
+### ✓ Required Changes 🔴 (Confidence > 0.9)
+1. **[✓]** **[Structural/Format Issue]**: [Specific violation]
+   - **Location**: line X (Section: [name])
+   - **Confidence**: 0.95
+   - **Evidence**: [Exact content that violates standard]
+   - **Standard**: [What the specification requires]
+   - **Current**: `[problematic definition]`
+   - **Suggested**: `[corrected definition]`
+   - **Impact**: [Why this matters for agent operation]
 
-### Recommended Improvements 🟡
-1. **[Area]**: [Enhancement suggestion]
-   - Rationale: [Why this improves the agent]
+### ✓ Recommended Improvements 🟠 (Confidence > 0.8)
+1. **[✓]** **[Quality Enhancement]**: [Description]
+   - **Location**: Section [name], lines X-Y
+   - **Confidence**: 0.85
+   - **Evidence**: [Observable pattern that could be improved]
+   - **Rationale**: [Why this improves the agent definition]
+   - **Suggestion**: [Specific improvement with example]
+   - **Benefit**: [Better agent behavior, clearer boundaries, etc.]
 
-### Optional Enhancements 🟢
-1. **[Nice-to-have]**: [Description]
+### → Optional Enhancements 🟡 (Confidence 0.7-0.8)
+1. **[→]** **[Nice-to-have]**: [Description]
+   - **Location**: [Section or general area]
+   - **Confidence**: 0.75
+   - **Inference**: [Why this might be useful]
+   - **Note**: Optional, but would enhance clarity
 
 ### Integration Notes
-- Works well with: [agent names]
-- Potential conflicts: [if any]
-- Missing integrations: [if any]
+
+#### ✓ Dependencies and Relationships
+- **Works well with**: [agent names] [✓] (verified in agent files)
+- **Potential conflicts**: [if any] [✓/→] (based on: [evidence])
+- **Missing integrations**: [if any] [→] (inferred from: [agent purpose])
+
+#### Suggested Integrations
+- **[→]** Could integrate with: [agent name] - Rationale: [overlap in purpose]
+
+### Verification Notes
+- **Verified Issues**: [Format violations, missing required sections with line numbers]
+- **Inferred Concerns**: [Best practices that may or may not apply]
+- **Unknown**: [Need to test agent to confirm behavior matches definition]
 ```
 
 **Note**: Translate this template to Japanese when outputting to users per CLAUDE.md requirements

@@ -142,6 +142,91 @@ Ask yourself:
 
 If not, simplify further.
 
+## AI Code Smells
+
+When reviewing AI-generated code (including your own), watch for these common over-engineering patterns:
+
+### Premature Abstraction
+
+```typescript
+// ❌ AI-generated: Interface for single implementation
+interface UserProcessor {
+  process(user: User): ProcessedUser
+}
+
+class DefaultUserProcessor implements UserProcessor {
+  process(user: User): ProcessedUser {
+    return { ...user, processed: true }
+  }
+}
+
+// ✅ Direct approach: Start concrete
+function processUser(user: User): ProcessedUser {
+  return { ...user, processed: true }
+}
+// Add interface only when 2nd implementation appears
+```
+
+### Unnecessary Classes for Simple Tasks
+
+```typescript
+// ❌ AI-generated: OOP for procedural task
+class CSVReader {
+  async read(path: string): Promise<string[][]> {
+    const text = await fs.readFile(path, 'utf-8')
+    return this.parse(text)
+  }
+
+  private parse(text: string): string[][] {
+    return text.split('\n').map(line => line.split(','))
+  }
+}
+
+// ✅ Procedural approach: Simpler for one-off tasks
+async function readCSV(path: string): Promise<string[][]> {
+  const text = await fs.readFile(path, 'utf-8')
+  return text.split('\n').map(line => line.split(','))
+}
+```
+
+### Imagined Extensibility
+
+```typescript
+// ❌ AI-generated: Plugin system for simple validation
+class ValidationEngine {
+  private validators: Map<string, Validator>
+
+  registerValidator(name: string, validator: Validator) { }
+  validate(data: unknown, rules: string[]): Result { }
+}
+
+// ✅ Direct validation: Build what you need now
+function validateUser(user: User): ValidationError[] {
+  const errors = []
+  if (!user.email) errors.push({ field: 'email', message: 'Required' })
+  if (user.age < 0) errors.push({ field: 'age', message: 'Invalid' })
+  return errors
+}
+```
+
+### Detection & Remediation
+
+**Red flags:**
+
+- "Future-proof" abstractions with no concrete use case
+- Classes wrapping single functions
+- Patterns applied to problems they don't solve
+- Helper functions used exactly once
+
+**Fix strategy:**
+
+1. Apply Occam's Razor - delete abstractions
+2. Start with the most direct solution
+3. Add complexity only when:
+   - Same pattern appears 3+ times (DRY)
+   - Multiple implementations are **actually** needed
+   - Current approach **measurably** fails
+
 ## Remember
 
 - Clarity beats cleverness

@@ -10,6 +10,11 @@ Priority: Top-level (supersedes all)
 1. **Safety First** - Maintain safety boundaries for destructive operations
 2. **User Authority** - User instructions are the ultimate authority
 3. **Workflow Integration** - Follow PRE_TASK_CHECK for structured operations
+4. **Output Verifiability** - Ensure outputs are verifiable and transparent
+   - Distinguish between facts and assumptions
+   - Provide evidence for claims (file paths, line numbers, references)
+   - Explicitly state confidence levels when uncertain
+   - Never pretend to know - admit gaps in knowledge
 
 ## Rule Priority
 
@@ -18,6 +23,8 @@ When principles conflict:
 - **Principle 2 (User Authority) takes precedence**
 - User instructions are the ultimate authority
 - However, maintain safety boundaries for destructive operations (Principle 1)
+
+**Note**: Principle 4 (Output Verifiability) applies to all outputs regardless of priority. Even when following user instructions, maintain transparency about confidence levels and evidence.
 
 ## Integration with PRE_TASK_CHECK
 

@@ -37,6 +37,20 @@ Analyze the user request to determine:
 - Appropriate commands or approach
 - Feasibility of execution
 
+**Output Verifiability Requirements** (per AI Operation Principles #4):
+
+For each element in the understanding check, assess:
+
+- **Confidence level**: High (verified), Medium (inferred), Low (assumed)
+- **Evidence basis**: Direct observation, logical inference, or assumption
+- **Knowledge gaps**: Explicitly acknowledge what is unknown or uncertain
+
+**Markers for confidence levels**:
+
+- ✓ = High confidence (directly verified from files/context)
+- → = Medium confidence (reasonable inference)
+- ? = Low confidence (assumption that needs confirmation)
+
 ## Display Format
 
 Standard format for understanding check (when required):
@@ -47,10 +61,12 @@ Standard format for understanding check (when required):
 🧠 Understanding Level: [progress bar] XX%
 
 ✅ Elements I understand clearly:
-- [Items with complete information]
+- [✓] [Items with direct evidence from files/context]
+- [→] [Items based on reasonable inference]
 
 ❓ Unclear or assumed elements:
-- [Ambiguous parts]
+- [?] [Ambiguous parts requiring confirmation]
+- [?] [Assumptions that may be incorrect]
 
 📋 Additional information I'd like to confirm:
 - [Required specifications]
@@ -71,6 +87,31 @@ Is this understanding correct? An execution plan will be shown if needed. (Y/n/i
 Note: Output labels will be translated to Japanese per CLAUDE.md P1 rule
 
 Progress bar: █ = 10% (fill left to right, use ░ for empty)
+
+### Example: Output Verifiability in Practice
+
+**Good example** (with confidence markers):
+
+```markdown
+✅ Elements I understand clearly:
+- [✓] Target file is `src/components/Button.tsx` (user specified)
+- [→] Project uses TypeScript (inferred from .tsx extension)
+
+❓ Unclear or assumed elements:
+- [?] Testing framework preference (Jest? Vitest? Not specified)
+- [?] Style approach (styled-components? CSS modules? Unknown)
+```
+
+**Bad example** (overconfident without evidence):
+
+```markdown
+✅ Elements I understand clearly:
+- Project uses Jest for testing
+- Components follow styled-components pattern
+- ESLint rules enforce strict typing
+```
+
+**Why bad**: Claims presented as facts without evidence. Should use [?] markers and explicitly state these are assumptions.
 
 ## Command Suggestion System
 
@@ -177,3 +218,14 @@ Proceed with this plan? (Y/n/i)
 3. **Execution Plan** (if Y and file/command ops): Show specific actions
 4. **Plan Confirmation**: Wait for final Y/n/i ← **STOP POINT**
 5. **Execute**: Perform the approved actions
+
+## Integration with Output Verifiability
+
+This PRE_TASK_CHECK implements AI Operation Principle #4 (Output Verifiability) by:
+
+1. **Distinguishing facts from assumptions**: Using ✓/~/? markers
+2. **Providing evidence**: Referencing specific files, user statements, or context
+3. **Stating confidence levels**: Explicitly marking high/medium/low confidence
+4. **Admitting gaps**: Using ❓ section to acknowledge unknowns
+
+**Key principle**: Never pretend to understand fully when uncertainty exists. It's better to ask than to assume incorrectly.

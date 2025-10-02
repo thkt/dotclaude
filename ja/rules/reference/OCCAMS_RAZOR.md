@@ -98,6 +98,43 @@ function authenticate(username: string, password: string): boolean {
 - キャッシュが測定可能に必要になるまでデータベース
 ```
 
+### タスクスコープ別アプローチ
+
+想像上の未来ではなく、実際のタスクスコープに基づいて実装アプローチを選択：
+
+```typescript
+// 単一関数タスク → 直接的な手続き型
+async function uploadFile(file: File): Promise<string> {
+  const data = await file.arrayBuffer()
+  return await storage.put(data)
+}
+
+// ファイルレベルのロジック → 最小限の抽象化を持つ関数
+function validateUser(user: User): ValidationError[] { }
+function saveUser(user: User): Promise<void> { }
+function notifyUser(user: User): void { }
+
+// モジュールレベルの複雑さ → クラス/インターフェースを検討
+class UserRepository {
+  // 複数の関連操作
+  // 共有状態（接続、キャッシュ）
+  // 明確な責任境界
+}
+
+// システムレベルのアーキテクチャ → SOLID原則を適用
+// 以下の場合のみ：複数チーム、プラグインシステム、パブリックAPI
+```
+
+**決定ルール：**
+
+1. 現在のスコープに対して最もシンプルなアプローチから始める
+2. 以下の場合のみ次のレベルにリファクタリング：
+   - 現在のアプローチが保守困難になる
+   - 複数の類似実装が現れる
+   - 複雑さが**測定され**、想像ではない
+
+**覚えておくこと：** 手続き型 vs OOPは好みの問題ではなく、解決策の複雑さを問題の複雑さに一致させることです。
+
 ## 他の原則との関連
 
 ### Baby Steps (TDD_RGRC)

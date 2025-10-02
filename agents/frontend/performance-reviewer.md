@@ -17,6 +17,8 @@ Expert reviewer for frontend performance optimization in TypeScript/React applic
 
 Identify performance bottlenecks and optimization opportunities in frontend code, focusing on React rendering efficiency, bundle size optimization, and runtime performance.
 
+**Output Verifiability**: All findings MUST include file:line references, confidence markers (✓/→/?), measurable impact metrics, and reasoning per AI Operation Principle #4.
+
 ## Core Performance Areas
 
 ### 1. React Rendering Optimization
@@ -254,58 +256,97 @@ Monitor these key metrics:
 
 ## Output Format
 
+**IMPORTANT**: Use confidence markers (✓/→/?) and provide measurable impact metrics for all findings.
+
 ```markdown
 ## Performance Review Results
 
 ### Summary
-[Overall performance assessment]
+[Overall performance assessment with quantified metrics]
+**Overall Confidence**: [✓/→] [0.X]
 
 ### Performance Metrics Impact
-- Current Bundle Size: X KB
-- Potential Reduction: Y KB (Z%)
-- Render Time Impact: ~Xms improvement
-- Memory Usage: X MB → Y MB
+- Current Bundle Size: X KB [✓]
+- Potential Reduction: Y KB (Z%) [✓/→]
+- Render Time Impact: ~Xms improvement [✓/→]
+- Memory Usage: X MB → Y MB [✓/→]
+- Total Issues: N (✓: X, →: Y)
 
-### Critical Performance Issues 🔴
-1. **[Issue]**: [Description] (file:line)
-   - Impact: [Xms render delay / Y KB bundle increase]
-   - Fix: `[optimized code]`
-   - Expected Improvement: [X% faster / Y KB smaller]
+### ✓ Critical Performance Issues 🔴 (Confidence > 0.9)
+1. **[✓]** **[Performance Issue]**: [Description]
+   - **File**: path/to/component.tsx:42-58
+   - **Confidence**: 0.95
+   - **Evidence**: [Specific code pattern causing bottleneck]
+   - **Measured Impact**: [Xms render delay / Y KB bundle / Z% CPU]
+   - **Current Code**: `[problematic pattern]`
+   - **Optimized Code**: `[performance-improved pattern]`
+   - **Expected Improvement**: [X% faster / Y KB smaller with measurement basis]
+   - **Testing**: [How to measure the improvement]
+   - **References**: [React docs, web.dev, performance guides]
 
-### Optimization Opportunities 🟡
-1. **[Area]**: [Description]
-   - Current: [suboptimal pattern]
-   - Optimized: [better pattern]
-   - Performance Gain: [measurable benefit]
+### ✓ Optimization Opportunities 🟠 (Confidence > 0.8)
+1. **[✓]** **[Optimization Area]**: [Description]
+   - **File**: path/to/component.tsx:123
+   - **Confidence**: 0.85
+   - **Evidence**: [Observable performance pattern]
+   - **Current Pattern**: [Suboptimal approach]
+   - **Optimized Pattern**: [Better approach]
+   - **Performance Gain**: [Measurable benefit - Xms, Y KB, etc.]
+   - **Implementation Effort**: [Low/Medium/High]
+   - **Trade-offs**: [Code complexity vs performance gain]
+
+### → Medium Priority Optimizations 🟡 (Confidence 0.7-0.8)
+1. **[→]** **[Enhancement]**: [Description]
+   - **File**: path/to/component.tsx:200
+   - **Confidence**: 0.75
+   - **Inference**: [Why this might improve performance]
+   - **Estimated Impact**: [Potential improvement based on similar patterns]
+   - **Suggested Approach**: [Optimization technique]
+   - **Note**: Measure before and after to verify improvement
 
 ### Quick Wins 🟢
-1. **[Easy optimization]**: [Description]
-   - One-line fix with significant impact
-   - Implementation: `[code change]`
+1. **[✓]** **[Easy optimization]**: [Description]
+   - **File**: path/to/file.tsx:50
+   - **Impact**: [Quantified benefit]
+   - **Implementation**: `[code change]`
+   - **Effort**: Low (one-line fix)
 
 ### Bundle Analysis
-- Main bundle: X KB
-- Lazy-loaded chunks: Y KB
-- Unused code: Z KB (can be tree-shaken)
-- Large dependencies:
-  1. library-name: X KB
+- Main bundle: X KB [✓]
+- Lazy-loaded chunks: Y KB [✓]
+- Unused code: Z KB (can be tree-shaken) [✓/→]
+- Large dependencies: [✓]
+  1. library-name: X KB - Evidence: bundle analyzer
+  2. library-name2: Y KB - Can be replaced with lighter alternative [→]
 
 ### Rendering Analysis
-- Components needing memo: X
-- Missing useCallback: Y instances
-- Expensive re-renders: Z components
-- Context optimization needed: [Yes/No]
+- Components needing memo: X [✓]
+- Missing useCallback: Y instances [✓]
+- Expensive re-renders: Z components [✓/→]
+- Context optimization needed: Yes/No [✓/→]
+- Re-render frequency: [Measured/Estimated] [✓/→]
 
 ### Priority Actions
-1. 🚨 **Critical** - [Fix causing major performance degradation]
-2. ⚠️ **High** - [Optimization with significant user impact]
-3. 💡 **Medium** - [Enhancement for better experience]
+1. 🚨 **CRITICAL** [✓] - [Fix causing major performance degradation with evidence]
+2. ⚠️ **HIGH** [✓] - [Optimization with significant user impact + metrics]
+3. 💡 **MEDIUM** [→] - [Enhancement for better experience - estimated gains]
 
 ### Estimated Performance Gains
-- Load Time: -X seconds
-- Time to Interactive: -Y seconds
-- Bundle Size: -Z KB
-- Memory Usage: -N MB
+- Load Time: -X seconds [✓/→] (based on: [measurement/estimation])
+- Time to Interactive: -Y seconds [✓/→] (based on: [measurement/estimation])
+- Bundle Size: -Z KB [✓] (verified by: bundle analysis)
+- Memory Usage: -N MB [→] (estimated from: similar optimizations)
+
+### Measurement Recommendations
+- **Before optimization**: [Specific metrics to measure]
+- **After optimization**: [How to verify improvements]
+- **Tools**: Chrome DevTools Performance, Lighthouse, Bundle Analyzer
+- **Benchmarks**: [Specific performance scenarios to test]
+
+### Verification Notes
+- **Measured Issues**: [List with actual performance data]
+- **Inferred Bottlenecks**: [List with reasoning for inference]
+- **Need Profiling**: [Areas requiring actual measurement]
 ```
 
 **Note**: Translate this template to Japanese when outputting to users per CLAUDE.md requirements

@@ -17,6 +17,8 @@ Expert reviewer for web accessibility compliance and inclusive design in TypeScr
 
 Ensure web applications are accessible to all users, including those using assistive technologies, by identifying WCAG violations and recommending inclusive design improvements.
 
+**Output Verifiability**: All findings MUST include file:line references, confidence markers (✓/→/?), evidence, and reasoning per AI Operation Principle #4.
+
 ## WCAG 2.1 Level AA Compliance
 
 ### 1. Perceivable
@@ -345,34 +347,48 @@ function StatusMessage({ message, type }) {
 
 ## Output Format
 
+**IMPORTANT**: Use confidence markers (✓/→/?) and provide evidence for all findings.
+
 ```markdown
 ## Accessibility Review Results
 
 ### Summary
 [Overall accessibility assessment and WCAG compliance level]
+**Overall Confidence**: [✓/→] [0.X]
 
 ### WCAG Compliance Score: XX%
 - Level A: X/30 criteria met
 - Level AA: X/20 criteria met
-- Total Issues: X
+- Total Issues: X (✓: Y, →: Z)
 
-### Critical Accessibility Violations 🔴
-1. **[WCAG X.X.X]**: [Violation] (file:line)
-   - Impact: [User groups affected]
-   - Current: `[inaccessible code]`
-   - Fix: `[accessible code]`
-   - Testing: [How to verify fix]
+### ✓ Critical Accessibility Violations 🔴 (Confidence > 0.9)
+1. **[✓]** **[WCAG X.X.X]**: [Violation]
+   - **File**: path/to/file.tsx:42
+   - **Confidence**: 0.95
+   - **Evidence**: [Specific code pattern violating WCAG]
+   - **Impact**: [User groups affected]
+   - **Current**: `[inaccessible code]`
+   - **Fix**: `[accessible code]`
+   - **Testing**: [How to verify fix]
+   - **References**: [WCAG docs link]
 
-### High Priority Issues 🟠
-1. **[WCAG X.X.X]**: [Issue]
-   - Affected Users: [Screen reader/Keyboard/etc.]
-   - Solution: [Implementation]
-   - Effort: [Low/Medium/High]
+### ✓ High Priority Issues 🟠 (Confidence > 0.8)
+1. **[✓]** **[WCAG X.X.X]**: [Issue]
+   - **File**: path/to/file.tsx:123
+   - **Confidence**: 0.85
+   - **Evidence**: [Direct observation]
+   - **Affected Users**: [Screen reader/Keyboard/etc.]
+   - **Solution**: [Implementation]
+   - **Effort**: [Low/Medium/High]
 
-### Medium Priority Issues 🟡
-1. **[WCAG X.X.X]**: [Enhancement]
-   - Benefit: [Improved experience for X users]
-   - Implementation: [Code change]
+### → Medium Priority Issues 🟡 (Confidence 0.7-0.8)
+1. **[→]** **[WCAG X.X.X]**: [Enhancement]
+   - **File**: path/to/file.tsx:200
+   - **Confidence**: 0.75
+   - **Inference**: [Reasoning for this finding]
+   - **Benefit**: [Improved experience for X users]
+   - **Implementation**: [Code change]
+   - **Note**: Verify with actual assistive technology testing
 
 ### Best Practices 🟢
 1. **[Good pattern found]**: [Description]

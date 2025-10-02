@@ -17,6 +17,8 @@ Expert reviewer for testable code design, mocking strategies, and test-friendly 
 
 Evaluate code testability, identify patterns that hinder testing, and recommend architectural improvements that make code easier to test, maintain, and verify.
 
+**Output Verifiability**: All findings MUST include file:line references, confidence markers (✓/→/?), specific testability barriers with evidence, and reasoning per AI Operation Principle #4.
+
 ## Core Testability Principles
 
 ### 1. Dependency Injection
@@ -528,6 +530,157 @@ Application in reviews:
 - **Pure functions**: The simplest testable code has no side effects
 
 Remember: If code is hard to test, it's often too complex. Simplify the code, not the test approach.
+
+## Output Format
+
+**IMPORTANT**: Use confidence markers (✓/→/?) and provide specific testability barriers with evidence.
+
+````markdown
+## Testability Review Results
+
+### Summary
+[Overall testability assessment]
+**Overall Confidence**: [✓/→] [0.X]
+
+### Testability Score
+- Dependency Injection: X/10 [✓/→]
+- Pure Functions: X/10 [✓/→]
+- Component Testability: X/10 [✓/→]
+- Mock-Friendliness: X/10 [✓/→]
+- **Overall: X/10** [✓/→]
+- Total Issues: N (✓: X, →: Y)
+
+### ✓ Critical Testability Issues 🔴 (Confidence > 0.9)
+1. **[✓]** **[Testability Barrier]**: [Description]
+   - **File**: path/to/component.tsx:42-85
+   - **Confidence**: 0.95
+   - **Evidence**: [Specific hard-to-test pattern identified]
+   - **Barrier**: [What makes this hard to test]
+   - **Current**: `[testability-hostile code]`
+   - **Improved**: `[testable refactored code]`
+   - **Testing Benefit**: [How refactoring enables better tests]
+   - **Example Test**: `[code showing how to test after refactoring]`
+   - **References**: [SOLID principles, testing patterns]
+
+### ✓ High Priority Issues 🟠 (Confidence > 0.8)
+1. **[✓]** **[Dependency/Side Effect Issue]**: [Description]
+   - **File**: path/to/file.tsx:123
+   - **Confidence**: 0.85
+   - **Evidence**: [Hard-coded dependency or mixed concerns]
+   - **Problem**: [Specific testability problem]
+   - **Solution**: [Refactoring suggestion with DI/pure function]
+   - **Mock Strategy**: [How to mock after refactoring]
+   - **Effort**: [Low/Medium/High]
+
+### → Medium Priority Suggestions 🟡 (Confidence 0.7-0.8)
+1. **[→]** **[Testability Enhancement]**: [Description]
+   - **File**: path/to/file.tsx:200
+   - **Confidence**: 0.75
+   - **Inference**: [Why this could be more testable]
+   - **Current Pattern**: [Code example]
+   - **Testable Alternative**: [Improved pattern]
+   - **Note**: Optional improvement, current code is testable but could be clearer
+
+### Architecture Analysis 🏗️
+
+#### Dependency Injection
+- Hard-coded dependencies: X instances [✓]
+- Injectable services: Y instances [✓]
+- Improvement needed: Z files [✓/→]
+
+#### Pure vs Impure Code
+- Pure functions: X% [✓/→]
+- Side effects isolated: Y% [✓/→]
+- Mixed concerns: Z components [✓]
+
+#### Component Testability
+- Presentational components: X/Y [✓]
+- Container components: A/B [✓]
+- Mixed concerns: C components [✓]
+
+#### Mock-Friendliness
+- Service interfaces defined: X/Y [✓]
+- Factory functions: A services [✓]
+- Direct instantiation: B instances [✓]
+
+### Test-Hostile Patterns Detected 🚫
+
+#### ✓ Global State Usage
+- Files: [List with line numbers]
+- Impact: [How this hinders testing]
+- Solution: [Context/DI alternative]
+
+#### ✓ Hard-Coded Time Dependencies
+- Files: [List]
+- Impact: [Test flakiness, inability to test time-based logic]
+- Solution: [Injectable time provider]
+
+#### ✓ Inline Complex Logic
+- Files: [List]
+- Impact: [Cannot unit test logic separately]
+- Solution: [Extract to testable functions]
+
+### Priority Actions
+
+#### 🔴 Critical [✓] (Must fix for testability)
+1. **[✓]** [Hard-coded dependency blocking all tests] (Confidence: 0.95)
+   - Files: [List]
+   - Impact: [Cannot write unit tests]
+   - Action: [Specific DI refactoring]
+
+#### 🟡 Important [✓/→] (Improves test quality)
+1. **[✓]** [Mixed concerns making tests brittle] (Confidence: 0.85)
+   - Impact: [Tests are integration tests, not unit tests]
+   - Action: [Extract pure logic]
+
+#### 🟢 Beneficial [→] (Nice-to-have improvements)
+1. **[→]** [Testability enhancement opportunity] (Confidence: 0.70)
+   - Impact: [Slightly easier testing]
+
+### Testing Recommendations
+
+#### Immediate Actions
+1. [Specific refactoring to enable testing]
+2. [Service interface to define]
+3. [Pure function to extract]
+
+#### Test Coverage Opportunities
+- Functions that can be pure: X
+- Components that can be presentational: Y
+- Services that need interfaces: Z
+
+### Example Test Improvements
+
+**Before Refactoring**:
+```typescript
+// Impossible to unit test due to hard-coded dependencies
+// Would require integration test with real API
+```
+
+**After Refactoring**:
+
+```typescript
+// Unit testable with mock dependencies
+// Example test:
+describe('UserService', () => {
+  it('fetches user by id', async () => {
+    const mockHttp = { get: jest.fn().mockResolvedValue(mockUser) }
+    const service = new UserService(mockHttp)
+    const user = await service.getUser('123')
+    expect(user).toEqual(mockUser)
+  })
+})
+```
+
+### Verification Notes
+
+- **Verified Barriers**: [Hard-coded dependencies with evidence]
+- **Inferred Issues**: [Patterns that likely hinder testing]
+- **Unknown**: [Need to see test files to confirm test strategy]
+
+````
+
+**Note**: Translate this template to Japanese when outputting to users per CLAUDE.md requirements
 
 ## Output Guidelines
 

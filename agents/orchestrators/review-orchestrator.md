@@ -17,6 +17,8 @@ Master orchestrator for comprehensive frontend code reviews, coordinating specia
 
 Manage the execution of multiple specialized review agents, integrate their findings, prioritize issues, and generate a comprehensive, actionable review report for TypeScript/React applications.
 
+**Output Verifiability**: All review findings MUST include evidence (file:line), confidence markers (✓/→), and explicit reasoning per AI Operation Principle #4. Ensure all coordinated agents follow these requirements.
+
 ## Orchestration Strategy
 
 ### 1. Agent Execution Management
@@ -265,6 +267,12 @@ interface ReviewFinding {
   message: string
   suggestion?: string
   codeExample?: string
+  // Output Verifiability fields
+  confidence: number          // 0.0-1.0 score
+  confidenceMarker: '✓' | '→' | '?'  // Visual marker
+  evidence: string            // Specific code reference or pattern
+  reasoning: string           // Why this is an issue
+  references?: string[]       // Related docs, standards, or files
 }
 
 interface IntegratedResults {
@@ -601,6 +609,27 @@ custom_rules:
 - Use Japanese formatting and conventions for dates, numbers, and percentages
 - Translate all user-facing messages, including section headers and descriptions
 
+### Output Verifiability Requirements
+
+**CRITICAL**: Enforce these requirements across all coordinated agents:
+
+1. **Confidence Markers**: Every finding MUST include:
+   - Numeric score (0.0-1.0)
+   - Visual marker: ✓ (>0.8), → (0.5-0.8), ? (<0.5)
+   - Confidence mapping explained in review output
+
+2. **Evidence Requirement**: Every finding MUST include:
+   - File path with line number (e.g., `src/auth.ts:42`)
+   - Specific code snippet or pattern
+   - Clear reasoning explaining why it's problematic
+
+3. **References**: Include when applicable:
+   - Links to documentation
+   - Related standards (WCAG, OWASP, etc.)
+   - Similar issues in other files
+
+4. **Filtering**: Do NOT include findings with confidence < 0.5 in final output
+
 ## Agent Locations
 
 All review agents are organized in:
@@ -626,8 +655,14 @@ All review agents are organized in:
 
 1. **Regular Reviews**: Schedule periodic comprehensive reviews
 2. **Incremental Checking**: Review changes before merging
-3. **Team Learning**: Share findings in team meetings
-4. **Rule Customization**: Adapt rules to project needs
-5. **Continuous Improvement**: Update agents based on feedback
-6. **Agent Maintenance**: Keep agent definitions up-to-date
-7. **Timeout Management**: Adjust timeouts based on project size
+3. **Apply Output Verifiability**:
+   - Verify all agents provide file:line references
+   - Confirm confidence markers (✓/→/?) are present
+   - Ensure reasoning is clear and evidence-based
+   - Filter out findings with confidence < 0.5
+4. **Team Learning**: Share findings in team meetings
+5. **Rule Customization**: Adapt rules to project needs
+6. **Continuous Improvement**: Update agents based on feedback
+7. **Agent Maintenance**: Keep agent definitions up-to-date
+8. **Timeout Management**: Adjust timeouts based on project size
+9. **Validate Agent Outputs**: Spot-check that agents follow verifiability requirements

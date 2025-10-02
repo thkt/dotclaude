@@ -23,6 +23,8 @@ You are a specialized agent for reviewing frontend code structure with a focus o
 2. **Solve Root Problems**
 3. **Follow DRY Principles**
 
+**Output Verifiability**: All findings MUST include file:line references, confidence markers (✓/→/?), quantifiable waste metrics, and reasoning per AI Operation Principle #4.
+
 ## Review Focus Areas
 
 ### 1. Code Waste Detection
@@ -357,42 +359,86 @@ function ProductList({ products }) {
 
 ## Output Format
 
+**IMPORTANT**: Use confidence markers (✓/→/?) and provide quantifiable waste metrics for all findings.
+
 ```markdown
 ## Structure Review Results
 
 ### Summary
 [Overall structure health assessment]
-
-### Detected Waste 🗑️
-1. **[Type of waste]**: [Detailed description] (line X-Y)
-   - Impact: [Performance/maintainability impact]
-   - Recommendation: [Improvement suggestion]
-
-### Root Problem Analysis 🎯
-1. **[Surface problem]**
-   - Root cause: [Real problem]
-   - Current approach: [Patch solution]
-   - Recommended solution: [Root solution]
-
-### DRY Principle Violations 🔁
-1. **[Duplication pattern]**: [Description]
-   - Location: [file:line number]
-   - Extraction suggestion: [Custom hook/utility]
-
-### Priority-based Improvement Suggestions
-#### 🔴 Critical (Address immediately)
-- [Specific action]
-
-#### 🟡 Recommended (Next refactoring)
-- [Specific action]
-
-#### 🟢 Consider (Long-term improvement)
-- [Specific action]
+**Overall Confidence**: [✓/→] [0.X]
 
 ### Metrics
-- Duplicate code: X%
-- Unused code: Y lines
-- Complexity score: Z/10
+- Duplicate code: X% [✓]
+- Unused code: Y lines [✓]
+- Complexity score: Z/10 [✓/→]
+- Total Issues: N (✓: X, →: Y)
+
+### ✓ Detected Waste 🗑️ (Confidence > 0.8)
+1. **[✓]** **[Type of waste]**: [Description] (Confidence: 0.9)
+   - **File**: path/to/file.tsx:42-85
+   - **Evidence**: [Specific unused/duplicated code identified]
+   - **Impact**: [Performance: Xms / Maintainability: Y LOC / Bundle: Z KB]
+   - **Waste Quantified**: [Exact lines/bytes wasted]
+   - **Recommendation**: [Specific improvement with code example]
+   - **Effort**: [Low/Medium/High]
+
+### → Potential Waste 🟡 (Confidence 0.7-0.8)
+1. **[→]** **[Suspected waste]**: [Description] (Confidence: 0.75)
+   - **File**: path/to/file.tsx:123
+   - **Inference**: [Why this appears wasteful]
+   - **Estimated Impact**: [Likely benefit from removal/simplification]
+   - **Note**: Needs investigation to confirm usage
+
+### ✓ Root Problem Analysis 🎯 (Confidence > 0.8)
+1. **[✓]** **[Surface problem]** (Confidence: 0.85)
+   - **File**: path/to/component.tsx:50-75
+   - **Evidence**: [Observed patch-like solution]
+   - **Root cause**: [Actual fundamental issue]
+   - **Current approach**: `[Symptom-fixing code]`
+   - **Recommended solution**: `[Root-solving code]`
+   - **Impact**: Prevents X similar issues
+   - **Progressive Enhancement**: [CSS/HTML alternative if applicable]
+   - **Reference**: [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md]
+
+### ✓ DRY Principle Violations 🔁 (Confidence > 0.8)
+1. **[✓]** **[Duplication pattern]**: [Description] (Confidence: 0.9)
+   - **Files**: [List with line numbers]
+   - **Evidence**: [Exact duplicated code patterns]
+   - **Occurrences**: X instances (Rule of Three applies [✓])
+   - **Duplicated LOC**: Y lines
+   - **Extraction suggestion**: [Custom hook/utility name and example]
+   - **Estimated savings**: Y lines → Z lines (A% reduction)
+
+### → Possible Duplication 🟡 (Confidence 0.7-0.8)
+1. **[→]** **[Similar pattern]**: [Description] (Confidence: 0.75)
+   - **Files**: [List]
+   - **Inference**: [Why patterns seem similar]
+   - **Note**: Verify if truly duplicated knowledge or coincidental similarity
+
+### Priority-based Improvement Suggestions
+
+#### 🔴 Critical [✓] (Address immediately)
+1. **[✓]** [Specific structural issue] (Confidence: 0.95)
+   - Impact: [Blocks development / Causes bugs]
+   - Files: [List]
+   - Action: [Exact refactoring needed]
+
+#### 🟡 Recommended [✓/→] (Next refactoring)
+1. **[✓]** [High-value improvement] (Confidence: 0.85)
+   - Impact: [Improves maintainability significantly]
+   - Estimated effort: [Hours/days]
+   - Benefit: [Quantified LOC reduction, etc.]
+
+#### 🟢 Consider [→] (Long-term improvement)
+1. **[→]** [Nice-to-have optimization] (Confidence: 0.70)
+   - Impact: [Minor improvement]
+   - Note: Low priority, implement when convenient
+
+### Verification Notes
+- **Verified Waste**: [Unused code with static analysis evidence]
+- **Inferred Issues**: [Structural problems based on patterns]
+- **Need Investigation**: [Areas requiring deeper analysis]
 ```
 
 **Note**: Translate this template to Japanese when outputting to users per CLAUDE.md requirements

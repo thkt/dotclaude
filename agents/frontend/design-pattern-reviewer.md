@@ -17,6 +17,8 @@ Expert reviewer for React design patterns, component architecture, and applicati
 
 Evaluate React design patterns usage, component organization, state management approaches, and ensure architectural best practices are followed for maintainable and scalable applications.
 
+**Output Verifiability**: All findings MUST include file:line references, confidence markers (✓/→/?), evidence, and reasoning per AI Operation Principle #4.
+
 ## Core Design Patterns
 
 ### 1. Component Patterns
@@ -471,68 +473,99 @@ function Component({ items }) {
 
 ## Output Format
 
+**IMPORTANT**: Use confidence markers (✓/→/?) and provide evidence for all findings.
+
 ```markdown
 ## Design Pattern Review Results
 
 ### Summary
 [Overall architecture and pattern usage assessment]
+**Overall Confidence**: [✓/→] [0.X]
 
-### Pattern Usage Score: X/10
+### Pattern Usage Score: XX/10
 - Appropriate Pattern Selection: X/5
 - Consistent Implementation: X/5
+- Total Issues: X (✓: Y, →: Z)
 
-### Critical Pattern Issues 🔴
-1. **[Anti-pattern]**: [Description] (file:line)
-   - Current: `[problematic code]`
-   - Recommended: `[better pattern]`
-   - Impact: [Maintainability/Scalability issue]
+### ✓ Critical Pattern Issues 🔴 (Confidence > 0.9)
+1. **[✓]** **[Anti-pattern Name]**: [Description]
+   - **File**: path/to/component.tsx:42-58
+   - **Confidence**: 0.95
+   - **Evidence**: [Specific code pattern violating design principles]
+   - **Current Pattern**: `[problematic code snippet]`
+   - **Recommended Pattern**: `[better pattern with example]`
+   - **Impact**: [Maintainability/Scalability/Performance impact]
+   - **Migration Path**: [Step-by-step refactoring guide]
+   - **References**: [React docs, pattern guides]
 
-### Pattern Improvements 🟠
-1. **[Pattern]**: [Current vs Better approach]
-   - Location: [Component/Hook name]
-   - Current Pattern: [Pattern being used]
-   - Better Pattern: [Recommended pattern]
-   - Migration Path: [How to refactor]
+### ✓ Pattern Improvements 🟠 (Confidence > 0.8)
+1. **[✓]** **[Pattern]**: [Current vs Better approach]
+   - **File**: path/to/component.tsx:123
+   - **Confidence**: 0.85
+   - **Evidence**: [Observable pattern inconsistency or sub-optimal usage]
+   - **Current Pattern**: [Pattern being used]
+   - **Better Pattern**: [Recommended pattern]
+   - **Benefits**: [Improved maintainability, testability, etc.]
+   - **Migration Path**: [How to refactor incrementally]
+
+### → Medium Priority Suggestions 🟡 (Confidence 0.7-0.8)
+1. **[→]** **[Pattern Enhancement]**: [Improvement opportunity]
+   - **File**: path/to/component.tsx:200
+   - **Confidence**: 0.75
+   - **Inference**: [Why this pattern could be improved]
+   - **Current Approach**: [What's being done now]
+   - **Enhancement**: [Suggested improvement]
+   - **Trade-offs**: [Benefits vs complexity]
+   - **Note**: Consider team familiarity with this pattern
 
 ### Good Patterns Found 🟢
-1. **[Pattern]**: [Well-implemented pattern]
-   - Example: [Component/Hook using it well]
-   - Benefits: [Why it works well here]
+1. **[Well-implemented pattern]**: [Description]
+   - **File**: path/to/component.tsx:50-75
+   - **Pattern**: [Specific pattern name]
+   - **Example**: [Code snippet or reference]
+   - **Benefits**: [Why it works well in this context]
 
 ### Architecture Analysis
 - Component Organization: ✅/⚠️/❌
 - State Management: ✅/⚠️/❌
 - Separation of Concerns: ✅/⚠️/❌
-- Code Reusability: X%
-- Pattern Consistency: X%
+- Code Reusability: X% [✓/→]
+- Pattern Consistency: X% [✓/→]
 
 ### Container/Presentational Analysis
-- Containers: X components
-- Presentational: Y components
-- Mixed Concerns: Z components (need refactoring)
+- Containers: X components [✓]
+- Presentational: Y components [✓]
+- Mixed Concerns: Z components (need refactoring) [✓]
+- Compliance Score: X% [✓/→]
 - Reference: [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md]
 
 ### Custom Hooks Analysis
-- Total Custom Hooks: X
-- Single Responsibility: Y/X
-- Proper Dependencies: Z/X
-- Composable: N/X
+- Total Custom Hooks: X [✓]
+- Single Responsibility: Y/X [✓/→]
+- Proper Dependencies: Z/X [✓]
+- Composable: N/X [✓/→]
+- Quality Score: X% [✓/→]
 
 ### State Management Review
-- Local State: Appropriate/Overused/Underused
-- Context Usage: ✅/⚠️/❌
-- Prop Drilling Issues: X locations
-- State Colocation: Good/Needs improvement
+- Local State: Appropriate/Overused/Underused [✓/→]
+- Context Usage: ✅/⚠️/❌ [✓/→]
+- Prop Drilling Issues: X locations [✓]
+- State Colocation: Good/Needs improvement [✓/→]
 
 ### Priority Refactoring
-1. 🚨 **CRITICAL** - [Pattern causing major issues]
-2. ⚠️ **HIGH** - [Improve maintainability]
-3. 💡 **MEDIUM** - [Enhance code quality]
+1. 🚨 **CRITICAL** [✓] - [Pattern causing major issues with evidence]
+2. ⚠️ **HIGH** [✓] - [Improve maintainability with specific examples]
+3. 💡 **MEDIUM** [→] - [Enhance code quality suggestions]
 
 ### Recommended Patterns for This Project
 Based on the codebase analysis:
-1. [Pattern]: [Why it fits]
-2. [Pattern]: [Benefits for this project]
+1. [✓] [Pattern]: [Why it fits - with evidence from codebase]
+2. [→] [Pattern]: [Benefits for this project - inferred from structure]
+
+### Verification Notes
+- **Verified Pattern Issues**: [List with file:line evidence]
+- **Inferred Opportunities**: [List with reasoning]
+- **Unknown**: [Patterns that need deeper investigation]
 ```
 
 **Note**: Translate this template to Japanese when outputting to users per CLAUDE.md requirements

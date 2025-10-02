@@ -142,6 +142,91 @@ const availableProducts = products.filter(product =>
 
 できなければ、さらに簡素化する。
 
+## AIコードのクセ
+
+AI生成コード（自分のものを含む）をレビューする際、これらの一般的な過度な設計パターンに注意：
+
+### 早すぎる抽象化
+
+```typescript
+// ❌ AI生成：単一実装のためのインターフェース
+interface UserProcessor {
+  process(user: User): ProcessedUser
+}
+
+class DefaultUserProcessor implements UserProcessor {
+  process(user: User): ProcessedUser {
+    return { ...user, processed: true }
+  }
+}
+
+// ✅ 直接的アプローチ：具体的に始める
+function processUser(user: User): ProcessedUser {
+  return { ...user, processed: true }
+}
+// 2番目の実装が現れた時のみインターフェースを追加
+```
+
+### シンプルなタスクに対する不要なクラス
+
+```typescript
+// ❌ AI生成：手続き的タスクのためのOOP
+class CSVReader {
+  async read(path: string): Promise<string[][]> {
+    const text = await fs.readFile(path, 'utf-8')
+    return this.parse(text)
+  }
+
+  private parse(text: string): string[][] {
+    return text.split('\n').map(line => line.split(','))
+  }
+}
+
+// ✅ 手続き的アプローチ：一度きりのタスクにはよりシンプル
+async function readCSV(path: string): Promise<string[][]> {
+  const text = await fs.readFile(path, 'utf-8')
+  return text.split('\n').map(line => line.split(','))
+}
+```
+
+### 想像上の拡張性
+
+```typescript
+// ❌ AI生成：シンプルな検証のためのプラグインシステム
+class ValidationEngine {
+  private validators: Map<string, Validator>
+
+  registerValidator(name: string, validator: Validator) { }
+  validate(data: unknown, rules: string[]): Result { }
+}
+
+// ✅ 直接的な検証：今必要なものを構築
+function validateUser(user: User): ValidationError[] {
+  const errors = []
+  if (!user.email) errors.push({ field: 'email', message: 'Required' })
+  if (user.age < 0) errors.push({ field: 'age', message: 'Invalid' })
+  return errors
+}
+```
+
+### 検出と修正
+
+**危険信号：**
+
+- 具体的なユースケースのない「将来性のある」抽象化
+- 単一の関数をラップするクラス
+- 解決しない問題に適用されたパターン
+- 正確に1回だけ使用されるヘルパー関数
+
+**修正戦略：**
+
+1. オッカムの剃刀を適用 - 抽象化を削除
+2. 最も直接的な解決策から始める
+3. 以下の場合のみ複雑さを追加：
+   - 同じパターンが3回以上現れる（DRY）
+   - 複数の実装が**実際に**必要
+   - 現在のアプローチが**測定可能に**失敗
+
 ## 覚えておくこと
 
 - 明確さは賢さに勝る

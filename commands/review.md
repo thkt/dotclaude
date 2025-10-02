@@ -23,6 +23,8 @@ context:
 
 Orchestrate multiple specialized review agents with dynamic context analysis, hierarchical task decomposition, and confidence-based filtering.
 
+**Output Verifiability**: All review findings include evidence (file:line), distinguish verified issues (✓) from inferred problems (→), per AI Operation Principle #4.
+
 ## Dynamic Context Analysis
 
 ### Git Status
@@ -78,12 +80,22 @@ Launch multiple review agents concurrently:
 
 ### Phase 3: Filtering and Consolidation
 
-Apply multi-level filtering:
+Apply multi-level filtering with evidence requirements:
 
 1. **Confidence Filter**: Only issues with >0.7 confidence
-2. **False Positive Filter**: Apply exclusion rules
-3. **Deduplication**: Merge similar findings
-4. **Prioritization**: Sort by impact and severity
+2. **Evidence Requirement**: All findings MUST include:
+   - File path with line number (e.g., `src/auth.ts:42`)
+   - Specific code reference or pattern
+   - Reasoning for the issue
+3. **False Positive Filter**: Apply exclusion rules
+4. **Deduplication**: Merge similar findings
+5. **Prioritization**: Sort by impact and severity
+
+**Confidence Mapping**:
+
+- ✓ High Confidence (>0.8): Verified issue with direct code evidence
+- → Medium Confidence (0.5-0.8): Inferred problem with reasoning
+- ? Low Confidence (<0.5): Not included in output (too uncertain)
 
 ## Review Agents and Their Focus
 
@@ -130,43 +142,65 @@ Apply multi-level filtering:
 
 ## Output Format with Confidence Scoring
 
+**IMPORTANT**: Use both numeric scores (0.0-1.0) and visual markers (✓/→) for clarity.
+
 ```markdown
 [REVIEW OUTPUT TEMPLATE]
 
 Review Summary
 - Files Reviewed: [Count and list]
-- Total Issues: [Count by severity]
+- Total Issues: [Count by severity with markers]
 - Review Coverage: [Percentage]
-- Confidence Level: [Average confidence]
+- Overall Confidence: [✓/→] [Average score]
 
-Critical Issues 🚨 (Confidence > 0.9)
+## ✓ Critical Issues 🚨 (Confidence > 0.9)
 Issue #1: [Title]
-- **File**: path/to/file.ts:42
+- **Marker**: [✓] High Confidence
+- **File**: path/to/file.ts:42-45
 - **Category**: security|performance|accessibility|etc
 - **Confidence**: 0.95
+- **Evidence**: [Specific code snippet or pattern found]
 - **Description**: [Detailed explanation]
 - **Impact**: [User/system impact]
 - **Recommendation**: [Specific fix with code example]
+- **References**: [Related files, docs, or standards]
 
-High Priority ⚠️ (Confidence > 0.8)
-[Similar format...]
+## ✓ High Priority ⚠️ (Confidence > 0.8)
+Issue #2: [Title]
+- **Marker**: [✓] High Confidence
+- **File**: path/to/another.ts:123
+- **Evidence**: [Direct observation]
+- **Description**: [Issue explanation]
+- **Recommendation**: [Fix with example]
 
-Medium Priority 💡 (Confidence > 0.7)
-[Similar format...]
+## → Medium Priority 💡 (Confidence 0.7-0.8)
+Issue #3: [Title]
+- **Marker**: [→] Medium Confidence
+- **File**: path/to/file.ts:200
+- **Inference**: [Reasoning behind this finding]
+- **Description**: [Issue explanation]
+- **Recommendation**: [Suggested improvement]
+- **Note**: Verify this inference before implementing fix
 
 Improvement Opportunities
-[Lower confidence suggestions for consideration]
+[→] Lower confidence suggestions (0.5-0.7) for consideration
+- Mark as [→] to indicate these are recommendations, not confirmed issues
 
 Metrics
-- Code Quality Score: [A-F rating]
-- Technical Debt Estimate: [Hours]
-- Test Coverage Gap: [Percentage]
-- Security Posture: [Rating]
+- Code Quality Score: [A-F rating] [✓/→]
+- Technical Debt Estimate: [Hours] [✓/→]
+- Test Coverage Gap: [Percentage] [✓]
+- Security Posture: [Rating] [✓/→]
 
 Recommended Actions
-1. **Immediate**: [Critical fixes]
-2. **Next Sprint**: [High priority items]
-3. **Backlog**: [Nice-to-have improvements]
+1. **Immediate** [✓]: [Critical fixes with evidence]
+2. **Next Sprint** [✓/→]: [High priority items]
+3. **Backlog** [→]: [Nice-to-have improvements]
+
+Evidence Summary
+- **Verified Issues** [✓]: [Count] - Direct code evidence
+- **Inferred Problems** [→]: [Count] - Based on patterns/reasoning
+- **Total Confidence**: [Overall score]
 ```
 
 ## Review Strategies
@@ -303,10 +337,17 @@ Track and improve:
 
 1. **Review Early**: Catch issues before they compound
 2. **Review Incrementally**: Small, frequent reviews > large, rare ones
-3. **Act on High Confidence**: Focus on >0.8 confidence issues
-4. **Track Patterns**: Identify recurring problems
-5. **Customize Rules**: Add project-specific exclusions
-6. **Iterate on Feedback**: Tune confidence thresholds
+3. **Apply Output Verifiability**:
+   - **Always provide evidence**: File paths with line numbers
+   - **Use confidence markers**: ✓ for verified, → for inferred
+   - **Explain reasoning**: Why is this an issue?
+   - **Reference standards**: Link to docs, best practices, or past issues
+   - **Never guess**: If uncertain, mark as [→] and explain the inference
+4. **Act on High Confidence**: Focus on ✓ (>0.8) issues first
+5. **Validate Inferences**: [→] markers require verification before fixing
+6. **Track Patterns**: Identify recurring problems
+7. **Customize Rules**: Add project-specific exclusions
+8. **Iterate on Feedback**: Tune confidence thresholds
 
 ## Integration Points
 
@@ -329,6 +370,16 @@ Results formatted for GitHub/GitLab comments
 
 ## Applied Development Principles
 
+### Output Verifiability (AI Operation Principle #4)
+
+All review findings MUST follow Output Verifiability:
+
+- **Distinguish verified from inferred**: Use ✓/→ markers
+- **Provide evidence**: File:line for every issue
+- **State confidence explicitly**: Numeric + visual marker
+- **Explain reasoning**: Why is this problematic?
+- **Admit uncertainty**: [→] when inferred, never pretend to know
+
 ### Principles Guide
 
 [@~/.claude/rules/PRINCIPLES_GUIDE.md] - Foundation for review prioritization
@@ -346,8 +397,8 @@ Application:
 Application:
 
 - **Clarity First**: Understandability over completeness
-- **Consistency**: Unified report format
-- **Actionable Recommendations**: Specific improvement actions
+- **Consistency**: Unified report format with ✓/→ markers
+- **Actionable Recommendations**: Specific improvement actions with evidence
 
 ## Next Steps After Review
 

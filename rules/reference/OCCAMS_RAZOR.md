@@ -98,6 +98,43 @@ function authenticate(username: string, password: string): boolean {
 - Database until caching is measurably needed
 ```
 
+### Task Scope Based Approach
+
+Choose implementation approach based on actual task scope, not imagined future:
+
+```typescript
+// Single-function task → Direct procedural
+async function uploadFile(file: File): Promise<string> {
+  const data = await file.arrayBuffer()
+  return await storage.put(data)
+}
+
+// File-level logic → Functions with minimal abstraction
+function validateUser(user: User): ValidationError[] { }
+function saveUser(user: User): Promise<void> { }
+function notifyUser(user: User): void { }
+
+// Module-level complexity → Consider classes/interfaces
+class UserRepository {
+  // Multiple related operations
+  // Shared state (connection, cache)
+  // Clear responsibility boundary
+}
+
+// System-level architecture → Apply SOLID principles
+// Only when: multiple teams, plugin system, public API
+```
+
+**Decision rule:**
+
+1. Start with the simplest approach for current scope
+2. Refactor to next level only when:
+   - Current approach becomes difficult to maintain
+   - Multiple similar implementations emerge
+   - Complexity is **measured**, not imagined
+
+**Remember:** Procedural vs OOP is not about preference—it's about matching solution complexity to problem complexity.
+
 ## Connection to Other Principles
 
 ### Baby Steps (TDD_RGRC)

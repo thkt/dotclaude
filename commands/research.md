@@ -21,7 +21,9 @@ context:
 
 ## Purpose
 
-Investigate codebase with dynamic discovery, parallel search execution, and confidence-based findings, without implementation commitment.
+Investigate codebase with dynamic discovery, parallel search execution, and confidence-based findings (✓/→/?), without implementation commitment.
+
+**Output Verifiability**: All findings include evidence, distinguish facts from inferences, and explicitly state unknowns per AI Operation Principle #4.
 
 ## Dynamic Project Discovery
 
@@ -229,27 +231,32 @@ Based on initial discovery:
 
 ### Finding Classification
 
+Use both numeric scores (0.0-1.0) and visual markers (✓/→/?) for clarity:
+
+- **✓ High Confidence (> 0.8)**: Directly verified from code/files
+- **→ Medium Confidence (0.5 - 0.8)**: Reasonable inference from evidence
+- **? Low Confidence (< 0.5)**: Assumption requiring verification
+
 ```markdown
-## High Confidence Findings (> 0.8)
-### Authentication System
-- **Location**: src/auth/*
-- **Type**: JWT-based
-- **Confidence**: 0.95
+## ✓ High Confidence Findings (> 0.8)
+### Authentication System (0.95)
+- **Location**: src/auth/* (verified)
+- **Type**: JWT-based (confirmed by imports)
 - **Evidence**: Multiple JWT imports, token validation middleware
-- **Dependencies**: jsonwebtoken, bcrypt
+- **Dependencies**: jsonwebtoken, bcrypt (package.json:12-15)
 - **Entry Points**: auth.controller.ts, auth.middleware.ts
 
-## Medium Confidence Findings (0.5 - 0.8)
-### State Management
+## → Medium Confidence Findings (0.5 - 0.8)
+### State Management (0.7)
 - **Pattern**: Redux-like pattern detected
-- **Confidence**: 0.7
-- **Evidence**: Actions, reducers folders found
+- **Evidence**: Actions, reducers folders found (src/store/)
 - **Uncertainty**: Actual library unclear (Redux/MobX/Zustand?)
+- **Reason**: Folder structure suggests Redux, but no explicit import found yet
 
-## Low Confidence Findings (< 0.5)
+## ? Low Confidence Findings (< 0.5)
 ### Possible Patterns
-- May use microservices (0.4) - multiple service folders
-- Might have WebSocket support (0.3) - socket.io in dependencies
+- [?] May use microservices (0.4) - multiple service folders observed
+- [?] Might have WebSocket support (0.3) - socket.io in dependencies, no usage found
 ```
 
 ## TodoWrite Integration
@@ -329,10 +336,12 @@ Task({
     - Historical evolution
     - Root cause analysis if debugging
 
-    [OUTPUT REQUIREMENTS]
+    [OUTPUT REQUIREMENTS - Output Verifiability]
     - State selected level and reason
     - Return only structured results
-    - Include confidence score (0.0-1.0) for each finding
+    - Include confidence score (0.0-1.0) AND marker (✓/→/?) for each finding
+    - Provide evidence for all claims (file paths, line numbers)
+    - Distinguish facts (✓) from inferences (→) from assumptions (?)
     - Sort by importance
     - Remove redundant information
     - Quick: 30 seconds max
@@ -346,16 +355,22 @@ Task({
     ## Investigation Summary
     - Execution time: [seconds]
     - Coverage: [%]
-    - Overall confidence: [0.0-1.0]
+    - Overall confidence: [Marker + Score: ✓ 0.9]
 
     ## Key Findings (by confidence)
-    1. [Finding] (Confidence: X.XX)
-    2. [Finding] (Confidence: X.XX)
+    1. [✓] [Finding] (0.95) - Evidence: [file:line]
+    2. [→] [Finding] (0.7) - Inferred from: [reasoning]
+    3. [?] [Finding] (0.4) - Assumption: [needs verification]
 
     ## Technical Details
-    - Architecture: [Brief description]
-    - Main technologies: [List]
+    - Architecture: [Brief description] [✓/→/?]
+    - Main technologies: [List with evidence] [✓/→/?]
     - Improvement suggestions: [If any]
+
+    ## Verification Notes
+    - Verified: [What was directly confirmed]
+    - Inferred: [What was reasonably deduced]
+    - Unknown: [What remains uncertain]
   `
 })
 ```
@@ -451,57 +466,67 @@ git log --oneline --since="3 months ago" --pretty=format:"%h %s" | head -10
 
 ## Output Format
 
+**IMPORTANT**: Apply Output Verifiability principle - use ✓/→/? markers with evidence.
+
 ```markdown
 ## Research Summary
 - **Scope**: [What was researched]
 - **Duration**: [Time taken]
-- **Confidence**: [Overall confidence score]
+- **Overall Confidence**: [Score with marker: ✓/→/?]
 - **Coverage**: [% of codebase analyzed]
 
 ## Key Discoveries
 
-### Architecture (Confidence: 0.9)
+### ✓ Architecture (0.9)
 - **Pattern**: [MVC/Microservices/Monolith]
 - **Structure**: [Description]
-- **Entry Points**: [Main files]
+- **Entry Points**: [Main files with line numbers]
+- **Evidence**: [Specific files/imports that confirm this]
 
-### Technology Stack (Confidence: 0.95)
+### ✓ Technology Stack (0.95)
 - **Framework**: [React/Vue/Express/etc]
 - **Language**: [TypeScript/JavaScript]
-- **Key Libraries**: [List]
+- **Key Libraries**: [List with versions from package.json:line]
+- **Evidence**: [package.json dependencies, import statements]
 
-### Code Patterns (Confidence: 0.85)
+### → Code Patterns (0.7)
 - **Design Patterns**: [Observer/Factory/etc]
 - **Conventions**: [Naming/Structure]
 - **Best Practices**: [Identified patterns]
+- **Inference Basis**: [Why we believe this - folder structure/naming]
 
 ## Findings by Confidence
 
-### High Confidence (>0.8)
-1. [Finding with evidence]
-2. [Finding with evidence]
+### ✓ High Confidence (>0.8)
+1. [✓] [Finding] - Evidence: [file:line, specific code reference]
+2. [✓] [Finding] - Evidence: [direct observation]
 
-### Medium Confidence (0.5-0.8)
-1. [Finding with uncertainty noted]
-2. [Finding with assumptions]
+### → Medium Confidence (0.5-0.8)
+1. [→] [Finding] - Inferred from: [logical reasoning]
+2. [→] [Finding] - Likely because: [supporting evidence]
 
-### Low Confidence (<0.5)
-1. [Possible pattern]
-2. [Needs verification]
+### ? Low Confidence (<0.5)
+1. [?] [Possible pattern] - Needs verification: [what to check]
+2. [?] [Assumption] - Unknown: [what information is missing]
 
 ## Relationships Discovered
-- [Component A] → [Component B]: [Relationship type]
-- [Service X] ← [Module Y]: [Dependency]
+- [✓] [Component A] → [Component B]: [Relationship] (verified in imports)
+- [→] [Service X] ← [Module Y]: [Dependency] (inferred from structure)
 
 ## Recommendations
 1. **Immediate Focus**: [Most important areas]
-2. **Further Investigation**: [Areas needing deeper research]
+2. **Further Investigation**: [Areas needing deeper research with specific unknowns]
 3. **Implementation Approach**: [If moving to /code]
 
 ## References
-- Key Files: [List with paths]
-- Documentation: [Links/paths]
-- External Resources: [If found]
+- Key Files: [List with absolute paths and relevant line numbers]
+- Documentation: [Absolute paths to docs]
+- External Resources: [URLs if found]
+
+## Verification Notes
+- **What was directly verified**: [List with ✓]
+- **What was inferred**: [List with →]
+- **What remains unknown**: [List with ?]
 ```
 
 ## Persistent Documentation
@@ -564,10 +589,15 @@ Include:
 
 1. **Start Broad**: Get overview before diving deep
 2. **Parallel Search**: Execute multiple searches simultaneously
-3. **Score Confidence**: Always rate findings reliability
-4. **Document Patterns**: Note recurring themes
-5. **Map Relationships**: Connect components
-6. **Save Important Findings**: Persist for future reference
+3. **Apply Output Verifiability**: Use ✓/→/? markers with evidence
+   - [✓] Direct verification: Include file paths and line numbers
+   - [→] Logical inference: Explain reasoning
+   - [?] Assumptions: Explicitly state what needs confirmation
+4. **Score Confidence**: Always rate findings reliability (0.0-1.0)
+5. **Document Patterns**: Note recurring themes
+6. **Map Relationships**: Connect components with evidence
+7. **Save Important Findings**: Persist for future reference
+8. **Admit Unknowns**: Never pretend to know - explicitly list gaps
 
 ## Performance Tips
 
