@@ -107,6 +107,64 @@ const mockUser = { id: '1', name: 'John' }
 
 **Extract helpers only after 3+ repetitions** (DRY's rule of three).
 
+### 4. Past Performance Reference
+
+**Always reference existing tests before creating new ones** - This is the most effective way to ensure consistency and quality.
+
+```bash
+# Before writing tests:
+1. Find tests in the same directory/module
+2. Analyze test patterns and style
+3. Follow project-specific conventions
+```
+
+#### Why Past Performance Matters
+
+Based on research (Zenn article: AI-assisted test generation):
+
+- **Output quality = Instruction quality**: AI performs best with concrete examples
+- **Past performance > Abstract rules**: Seeing how tests are actually written is more effective than theoretical guidelines
+- **Consistency is key**: Following existing patterns ensures maintainability
+
+#### How to Reference Past Performance
+
+```bash
+# Step 1: Find similar existing tests
+grep -r "describe\|test" [target-directory] --include="*.test.ts"
+
+# Step 2: Analyze patterns
+- Mock setup style (jest.fn() vs manual mocks)
+- Assertion style (toBe vs toEqual)
+- Test structure (AAA pattern, Given-When-Then)
+- Naming conventions (test vs it, describe structure)
+
+# Step 3: Apply learned patterns
+# Use the same style as existing tests, not theoretical best practices
+```
+
+#### Example: Learning from Existing Tests
+
+```typescript
+// ✅ Discovered pattern from existing tests:
+// Project uses jest.fn() for mocks, AAA pattern, descriptive test names
+
+// Follow this pattern:
+describe('calculateDiscount', () => {
+  test('returns 20% discount for purchases over 10 items', () => {
+    // Arrange
+    const purchaseCount = 15
+
+    // Act
+    const result = calculateDiscount(purchaseCount)
+
+    // Assert
+    expect(result).toBe(0.2)
+  })
+})
+```
+
+**Remember**: Human review is still essential - AI-generated tests are a starting point, not the final product.
+
 ## Test Plan Format
 
 Test plans are embedded in SOW documents:
@@ -195,9 +253,10 @@ describe('UserCard', () => {
 
 1. **Read Test Plan** - Parse SOW document for test cases
 2. **Discover Project Structure** - Find test file locations and naming conventions
-3. **Check Existing Tests** - Avoid duplicates, append to existing files if appropriate
-4. **Generate Tests** - Create tests matching the plan exactly
-5. **Verify Completeness** - Ensure all planned tests are implemented
+3. **Analyze Test Patterns** - Reference existing tests to learn project conventions and style
+4. **Check Duplicates** - Avoid duplicate tests, append to existing files if appropriate
+5. **Generate Tests** - Create tests matching the plan and existing patterns
+6. **Verify Completeness** - Ensure all planned tests are implemented
 
 ## Error Handling
 
@@ -252,17 +311,37 @@ src/utils/discount.ts → tests/utils/discount.test.ts (separate)
 src/utils/discount.ts → __tests__/discount.test.ts (jest convention)
 ```
 
-### Step 2.5: Check Existing Tests
+### Step 2.5: Analyze Test Patterns & Check Duplicates
 
 ```bash
+# Part A: Analyze Existing Test Patterns (NEW - from past performance research)
+# 1. Find existing tests in same directory/module
+grep -r "describe\|test\|it" [target-directory] --include="*.test.ts" --include="*.spec.ts"
+
+# 2. Analyze patterns from 2-3 similar existing tests:
+- Mock setup: jest.fn() vs createMock() vs manual objects
+- Assertion style: toBe vs toEqual vs toStrictEqual
+- Test structure: AAA (Arrange-Act-Assert) vs Given-When-Then
+- Naming: test() vs it(), describe structure
+- Comments: inline vs block, JSDoc presence
+
+# 3. Document discovered patterns
+patterns = {
+  mockStyle: 'jest.fn()',
+  assertions: 'toEqual for objects',
+  structure: 'AAA with comments',
+  naming: 'descriptive test() with full sentences'
+}
+
+# Part B: Check for Duplicates
 # For each test in plan:
 # 1. Check if test file exists
-# 2. Check if test case already exists (by name)
+# 2. Check if test case already exists (by name/description)
 
 # Decision:
 - File exists + Test exists → Skip (report as "already covered")
-- File exists + Test missing → Append to existing file
-- File missing → Create new file
+- File exists + Test missing → Append using discovered patterns
+- File missing → Create new file using discovered patterns
 ```
 
 ### Step 3: Generate Tests

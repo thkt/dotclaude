@@ -22,6 +22,7 @@
 | | Container/Presentational | Separate logic from UI | React/UI components |
 | | Law of Demeter | Only talk to immediate friends | Complex dependencies |
 | | Leaky Abstraction | Accept imperfect abstractions | Evaluating abstractions |
+| | AI-Assisted Development | AI generates, humans validate | When using AI tools |
 | | TIDYINGS | Clean as you go | During development |
 
 ### Decision Flow
@@ -50,6 +51,7 @@ New Task?
 - Implementing "just in case" → Remember YAGNI
 - Perfect abstraction attempt → Accept Leaky Abstraction
 - Complex solution first → Apply Occam's Razor
+- Accepting AI output without review → Apply AI-Assisted Development
 
 ### Quick Commands
 
@@ -311,8 +313,8 @@ const calculateTotal = memo((items) => {
 |---------|-------------------|---------------------|
 | `/think` | SOLID, Occam's Razor | Progressive Enhancement |
 | `/research` | - | All principles for context |
-| `/code` | TDD, Baby Steps | Readable Code, DRY |
-| `/test` | TDD | Law of Demeter |
+| `/code` | TDD, Baby Steps | Readable Code, DRY, AI-Assisted Development |
+| `/test` | TDD | Law of Demeter, AI-Assisted Development |
 | `/fix` | Occam's Razor | TIDYINGS |
 | `/hotfix` | Occam's Razor only | - |
 | `/review` | All principles | Priority order |

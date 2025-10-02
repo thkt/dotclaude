@@ -1,7 +1,7 @@
 ---
 name: performance-reviewer
 description: フロントエンドコードのパフォーマンスを分析し、React再レンダリング、バンドルサイズ、遅延ローディング、メモ化などの最適化機会を特定します
-tools: Read, Grep, Glob, LS, Task
+tools: Read, Grep, Glob, LS, Task, mcp__chrome-devtools__*
 model: sonnet
 color: orange
 max_execution_time: 60
@@ -253,6 +253,208 @@ Monitor these key metrics:
 5. **Unoptimized Dependencies**
    - Large libraries imported entirely
    - Missing tree-shaking opportunities
+
+## Browser Performance Measurement (Optional)
+
+**When Chrome DevTools MCP is available**, optionally measure actual runtime performance in browser.
+
+### MCP Availability Check
+
+```bash
+# Check if Chrome DevTools MCP tools are available
+# If these tools exist, performance measurement is possible:
+- mcp__chrome-devtools__new_page
+- mcp__chrome-devtools__performance_start_trace
+- mcp__chrome-devtools__performance_analyze_insight
+- mcp__chrome-devtools__list_console_messages
+- mcp__chrome-devtools__list_network_requests
+```
+
+### When to Use Performance Measurement
+
+**Use when**:
+
+- Complex React components with suspected re-render issues
+- Performance-critical features (data grids, virtual scrolling)
+- Bundle size concerns
+- Suspected memory leaks
+- Animation/interaction performance issues
+
+**Skip when**:
+
+- Simple utility functions
+- Pure TypeScript modules (no UI)
+- No dev server available
+- Time-critical reviews
+
+### Performance Measurement Process
+
+**Step 1: Check MCP Availability**
+
+```typescript
+// Attempt to use MCP tools
+// If tools are not available, skip measurement gracefully
+// Continue with code-only review (existing functionality)
+```
+
+**Step 2: Start Performance Trace**
+
+```bash
+# Prerequisite: Development server must be running
+# Use new_page to navigate
+# Use performance_start_trace to begin recording
+# Perform user interactions or page load
+```
+
+**Step 3: Analyze Web Vitals**
+
+```typescript
+// Use performance_analyze_insight to get:
+1. LCP (Largest Contentful Paint) - Loading performance
+2. FID (First Input Delay) - Interactivity
+3. CLS (Cumulative Layout Shift) - Visual stability
+4. TTFB (Time to First Byte) - Server response
+5. TBT (Total Blocking Time) - Main thread blockage
+```
+
+**Step 4: Identify Bottlenecks**
+
+```typescript
+// Analyze trace data for:
+- Long tasks blocking main thread
+- React component render times
+- Network waterfall issues
+- Memory allocation patterns
+- Animation frame drops
+```
+
+**Step 5: Verify Code Findings**
+
+```typescript
+// Cross-reference with code analysis:
+- Suspected re-renders → Measure actual render count
+- Bundle size concerns → Check network payload
+- Memory leaks → Profile heap allocations
+- Animation jank → Measure frame rate
+```
+
+### Performance Measurement Output
+
+**Add to review when MCP measurement is performed**:
+
+```markdown
+### 📊 Browser Performance Metrics (Actual Measurement)
+
+**MCP Status**: ✅ Available | ⚠️ Partial | ❌ Not Available
+**Measurement URL**: [URL tested]
+**Measured At**: [timestamp]
+
+#### Web Vitals Scores
+- **LCP**: X.Xs (🟢 Good <2.5s | 🟡 Needs Improvement 2.5-4s | 🔴 Poor >4s)
+- **FID**: Xms (🟢 Good <100ms | 🟡 Needs Improvement 100-300ms | 🔴 Poor >300ms)
+- **CLS**: X.XX (🟢 Good <0.1 | 🟡 Needs Improvement 0.1-0.25 | 🔴 Poor >0.25)
+- **TTFB**: Xms
+- **TBT**: Xms
+
+#### Performance Issues Found
+1. **[✓] Long Task Detected** (High Confidence: 0.9)
+   - **Duration**: Xms (blocks main thread)
+   - **Source**: [file.tsx:line] - [specific function]
+   - **Evidence**: DevTools trace shows [details]
+   - **Impact**: Delays interactivity by Xms
+   - **Fix**: [optimization strategy]
+
+2. **[✓] React Re-render Overhead** (High Confidence: 0.95)
+   - **Component**: [ComponentName]
+   - **Render Count**: X times during interaction
+   - **Render Time**: Total Xms
+   - **Cause**: [identified from trace]
+   - **Fix**: Apply React.memo or useMemo
+
+3. **[→] Bundle Size Impact** (Medium Confidence: 0.75)
+   - **Total JS**: X KB (gzipped)
+   - **Largest Chunks**: [list top 3]
+   - **Load Time**: Xms on 3G
+   - **Recommendation**: Code splitting for [specific routes]
+
+#### Network Performance
+- **Total Requests**: X
+- **Total Transfer**: X KB
+- **Waterfall Issues**: [blocking resources identified]
+- **Optimization**: [specific recommendations]
+
+**Note**: Metrics are from actual browser measurement.
+Code analysis findings marked with [Code] vs [Browser].
+```
+
+### Fallback Behavior
+
+**If MCP is not available**:
+
+1. Continue with code-only analysis (existing functionality)
+2. Mark performance estimates as [Code Analysis] with lower confidence
+3. Recommend manual DevTools testing in output
+4. Suggest specific metrics to measure
+
+**Example fallback message**:
+
+```markdown
+ℹ️ **Performance Measurement Not Available**
+
+Chrome DevTools MCP is not installed or configured.
+Review is based on code analysis and estimated impact only.
+
+**Recommended Manual Testing**:
+1. Open Chrome DevTools Performance tab
+2. Record during page load and interaction
+3. Check Web Vitals in Lighthouse
+4. Profile React renders with React DevTools
+
+**Estimated Impact** (based on code analysis):
+- Suspected re-render cost: ~Xms (needs measurement)
+- Bundle size increase: ~X KB (estimate)
+
+**To enable automated performance measurement**:
+Install Chrome DevTools MCP: [installation instructions]
+```
+
+### Integration with Code Analysis
+
+Performance measurement **validates** code analysis:
+
+1. **Code Analysis** (always): Identify potential performance issues
+2. **Browser Measurement** (when available): Measure actual impact
+3. **Combined Assessment**: Code patterns + Real metrics = Actionable insights
+
+```markdown
+Example combined finding:
+
+**[✓] React Re-render Issue - Inline Object Creation** (High Confidence: 0.95)
+- **Code Analysis** [✓]: Inline style object in render (file.tsx:42)
+- **Browser Measurement** [✓]: Component re-renders 23 times during scroll
+- **Measured Impact**: +180ms total render time
+- **Evidence**: Both code pattern and trace data confirm issue
+- **Fix**: Move style to useMemo
+- **Expected Improvement**: ~180ms reduction in scroll interaction
+```
+
+### Confidence Scoring with Browser Data
+
+**Confidence levels increase with browser verification**:
+
+- **Code Only**: Max confidence 0.8 (estimated impact)
+- **Code + Browser**: Max confidence 0.95 (measured impact)
+
+```typescript
+// Without browser data
+[→] Suspected performance issue (Confidence: 0.7)
+
+// With browser verification
+[✓] Confirmed performance issue (Confidence: 0.95)
+    - Code pattern matches known anti-pattern
+    - Browser trace shows 180ms delay
+    - Web Vitals impact measured
+```
 
 ## Output Format
 

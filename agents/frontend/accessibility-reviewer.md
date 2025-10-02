@@ -1,7 +1,7 @@
 ---
 name: accessibility-reviewer
 description: フロントエンドコードのアクセシビリティを検証し、WCAG準拠、セマンティックHTML、キーボードナビゲーション、スクリーンリーダー対応などの改善点を特定します
-tools: Read, Grep, Glob, LS, Task
+tools: Read, Grep, Glob, LS, Task, mcp__chrome-devtools__*
 model: sonnet
 color: pink
 max_execution_time: 45
@@ -311,6 +311,161 @@ function StatusMessage({ message, type }) {
 - [ ] Check ARIA attribute validity
 - [ ] Test keyboard event handlers
 - [ ] Verify focus order
+
+## Browser Verification (Optional)
+
+**When Chrome DevTools MCP is available**, optionally verify accessibility in actual browser environment.
+
+### MCP Availability Check
+
+```bash
+# Check if Chrome DevTools MCP tools are available
+# If these tools exist, browser verification is possible:
+- mcp__chrome-devtools__new_page
+- mcp__chrome-devtools__take_snapshot
+- mcp__chrome-devtools__evaluate_script
+- mcp__chrome-devtools__list_console_messages
+```
+
+### When to Use Browser Verification
+
+**Use when**:
+
+- UI components with complex interactions
+- Custom ARIA implementations
+- Dynamic content updates
+- Critical user flows
+- High-risk accessibility violations found in code review
+
+**Skip when**:
+
+- Simple static HTML components
+- Pure TypeScript/utility files
+- No dev server available
+- Time-critical reviews
+
+### Browser Verification Process
+
+**Step 1: Check MCP Availability**
+
+```typescript
+// Attempt to use MCP tools
+// If tools are not available, skip browser verification gracefully
+// Continue with code-only review (existing functionality)
+```
+
+**Step 2: Open Development Server**
+
+```bash
+# Prerequisite: Development server must be running
+# Common URLs: http://localhost:3000, http://localhost:5173
+# Use new_page to navigate to the page
+```
+
+**Step 3: Capture Accessibility Tree**
+
+```typescript
+// Use take_snapshot to capture page state
+// Analyze accessibility tree structure
+// Verify ARIA attributes in runtime
+// Check actual screen reader announcements
+```
+
+**Step 4: Verify Real-World Behavior**
+
+```typescript
+// Test scenarios:
+1. Actual focus order (not just tabindex)
+2. Screen reader announcements (role, name, state)
+3. Live region updates (aria-live)
+4. Keyboard navigation flow
+5. Color contrast in rendered state
+```
+
+**Step 5: Console Error Check**
+
+```typescript
+// Use list_console_messages to find:
+- ARIA attribute warnings
+- Focus management errors
+- Accessibility API violations
+```
+
+### Browser Verification Output
+
+**Add to review when MCP verification is performed**:
+
+```markdown
+### 🌐 Browser Verification Results (Actual Runtime)
+
+**MCP Status**: ✅ Available | ⚠️ Partial | ❌ Not Available
+**Verification URL**: [URL tested]
+**Verified At**: [timestamp]
+
+#### Accessibility Tree Analysis
+- **[✓]** Actual role announcements: [findings from browser]
+- **[✓]** Focus order verification: [actual tab sequence]
+- **[→]** ARIA attribute runtime values: [observed values]
+
+#### Console Accessibility Warnings
+- **[✓]** Found X accessibility warnings in console
+  - File: [source mapped to file:line]
+  - Warning: [actual browser warning]
+  - Fix: [solution]
+
+#### Screen Reader Simulation
+- **[✓]** Announced as: "[actual announcement text]"
+- **Expected**: "[what should be announced]"
+- **Gap**: [difference between expected and actual]
+
+**Note**: Browser verification provides actual runtime data.
+Static code analysis findings marked with [Code] vs [Browser].
+```
+
+### Fallback Behavior
+
+**If MCP is not available**:
+
+1. Continue with code-only review (existing functionality)
+2. Mark findings as [Code Analysis] with medium confidence
+3. Recommend manual browser testing in output
+4. Suggest specific testing steps for validation
+
+**Example fallback message**:
+
+```markdown
+ℹ️ **Browser Verification Not Available**
+
+Chrome DevTools MCP is not installed or configured.
+Review is based on static code analysis only.
+
+**Recommended Manual Testing**:
+1. Open the page in browser
+2. Test with screen reader (NVDA/JAWS/VoiceOver)
+3. Verify focus order with Tab key
+4. Check color contrast with DevTools
+
+**To enable automated browser verification**:
+Install Chrome DevTools MCP: [installation instructions]
+```
+
+### Integration with Existing Review
+
+Browser verification **enhances** code review, does not replace it:
+
+1. **Code Review** (always): Static analysis of accessibility patterns
+2. **Browser Verification** (when available): Runtime validation
+3. **Combined Confidence**: Code findings + Browser data = Higher confidence
+
+```markdown
+Example combined finding:
+
+**[✓] WCAG 1.3.1 Violation - Missing Form Label** (High Confidence: 0.95)
+- **Code Analysis** [✓]: No <label> element found (file.tsx:42)
+- **Browser Verification** [✓]: Confirmed - Screen reader announces "Edit text" only
+- **Evidence**: Both code and runtime confirm violation
+- **Fix**: Add explicit <label> element
+```
 
 ## Screen Reader Considerations
 
