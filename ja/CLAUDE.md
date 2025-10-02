@@ -2,6 +2,26 @@
 
 ## 優先順位ルール（順番に従う）
 
+### [P0] コアAI動作ルール（必須遵守）
+
+**これらのルールは基本的なAI動作を管理し、常に遵守する必要があります。**
+
+- **AI動作原則**: [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
+  - Safety First - 破壊的操作に対する安全境界を維持
+  - User Authority - ユーザーの指示が最終的な権限
+  - Workflow Integration - 構造化された操作のためにPRE_TASK_CHECKに従う
+  - **優先度**: 最上位（他のすべてのルールに優先）
+  - **適用**: すべてのユーザーメッセージでフック経由で内部的に適用
+
+- **事前タスクチェック**: [@~/.claude/rules/core/PRE_TASK_CHECK.md](../rules/core/PRE_TASK_CHECK.md)
+  - ファイル操作前の理解確認
+  - 複数ステップワークフローの実行計画
+  - 破壊的操作に対するユーザー承認ゲート
+  - **適用タイミング**: ファイル操作、コマンド実行、複雑なタスク
+  - **ワークフロー**: 原則適用 → PRE_TASK_CHECK → 確認待機
+
+**注**: これらのP0ルールはすべてのAI相互作用の基盤です。他のすべての優先レベル（P1、P2、P3）はP0が確立した枠組みの中で動作します。
+
 ### [P1] 言語
 
 - 入力: thktからの日本語
