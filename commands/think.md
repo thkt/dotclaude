@@ -170,7 +170,25 @@ Before starting implementation, verify:
 
 ## Output
 
-SOW saved to: `~/.claude/workspace/sow/[timestamp]-[feature]/sow.md`
+### SOW Location (Auto-Detection)
+
+The SOW file location is automatically determined using git-style directory search:
+
+1. **Search upward** from current directory for `.claude/` directory
+2. **If found**: Save to `.claude/workspace/sow/[timestamp]-[feature]/sow.md` (project-local)
+3. **If not found**: Save to `~/.claude/workspace/sow/[timestamp]-[feature]/sow.md` (global)
+
+**Feedback**: The save location is displayed with context indicator:
+
+- `✅ SOW saved to: .claude/workspace/sow/... (Project-local: .claude/ detected)`
+- `✅ SOW saved to: ~/.claude/workspace/sow/... (Global: no .claude/ found)`
+
+**Benefits**:
+
+- **Zero-config**: Automatically adapts to project structure
+- **Team sharing**: Project-local enables git-based sharing
+- **Personal notes**: Global storage for exploratory work
+- **Flexible**: Create `.claude/` to switch to project-local mode
 
 Features:
 
