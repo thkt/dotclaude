@@ -71,9 +71,9 @@ context:
 
 ### 適用される開発ルール
 
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - UIのCSSファーストアプローチ
-- [@~/.claude/rules/development/READABLE_CODE.md] - コードの可読性と明確性
-- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md] - Reactコンポーネントパターン
+- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - UIのCSSファーストアプローチ
+- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - コードの可読性と明確性
+- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md) - Reactコンポーネントパターン
 
 ### 原則の階層
 
@@ -614,7 +614,7 @@ npm audit --production 2>&1 | grep -E "found|Severity"
 
 ### TDD/RGRC
 
-[@~/.claude/ja/rules/development/TDD_RGRC.md] - Red-Green-Refactor-Commitサイクル
+[@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - Red-Green-Refactor-Commitサイクル
 
 適用方法:
 
@@ -626,7 +626,7 @@ npm audit --production 2>&1 | grep -E "found|Severity"
 
 ### オッカムの剃刀
 
-[@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md] - 「必要なしに存在を増やすべきではない」
+[@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - 「必要なしに存在を増やすべきではない」
 
 適用方法:
 

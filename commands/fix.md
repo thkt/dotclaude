@@ -402,7 +402,7 @@ npm run lint | grep -E "problems\|warnings"
 
 ## Applied Principles
 
-This command applies Progressive Enhancement from [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md]:
+This command applies Progressive Enhancement from [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md):
 
 - CSS-first approach for UI issues
 - Root cause analysis
@@ -435,7 +435,7 @@ This command applies Progressive Enhancement from [@~/.claude/rules/development/
 
 ### Occam's Razor
 
-[@~/.claude/rules/reference/OCCAMS_RAZOR.md] - "Entities should not be multiplied without necessity"
+[@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - "Entities should not be multiplied without necessity"
 
 Application in fixes:
 
@@ -446,7 +446,7 @@ Application in fixes:
 
 ### TIDYINGS
 
-[@~/.claude/rules/development/TIDYINGS.md] - Clean as you go
+[@~/.claude/rules/development/TIDYINGS.md](~/.claude/rules/development/TIDYINGS.md) - Clean as you go
 
 Application in fixes:
 

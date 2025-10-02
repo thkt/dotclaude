@@ -320,7 +320,7 @@ GitHub/GitLabコメント用にフォーマットされた結果
 
 ### 原則ガイド
 
-[@~/.claude/ja/rules/PRINCIPLES_GUIDE.md] - レビュー優先順位付けの基盤
+[@~/.claude/ja/rules/PRINCIPLES_GUIDE.md](~/.claude/ja/rules/PRINCIPLES_GUIDE.md) - レビュー優先順位付けの基盤
 
 適用方法:
 
@@ -330,7 +330,7 @@ GitHub/GitLabコメント用にフォーマットされた結果
 
 ### ドキュメントルール
 
-[@~/.claude/ja/docs/DOCUMENTATION_RULES.md] - レビューレポートの形式と構造
+[@~/.claude/ja/docs/DOCUMENTATION_RULES.md](~/.claude/ja/docs/DOCUMENTATION_RULES.md) - レビューレポートの形式と構造
 
 適用方法:
 

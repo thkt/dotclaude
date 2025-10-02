@@ -59,8 +59,8 @@
   - Hooks in Container components
   - Maximize component reusability
 - Development methodologies integrated in commands:
-  - `/code` - TDD/RGRC [@~/.claude/rules/development/TDD_RGRC.md], SOLID [@~/.claude/rules/reference/SOLID.md], DRY principles [@~/.claude/rules/reference/DRY.md]
-  - `/think` - SOLID design principles [@~/.claude/rules/reference/SOLID.md]
+  - `/code` - TDD/RGRC [@~/.claude/rules/development/TDD_RGRC.md](./rules/development/TDD_RGRC.md), SOLID [@~/.claude/rules/reference/SOLID.md](./rules/reference/SOLID.md), DRY principles [@~/.claude/rules/reference/DRY.md](./rules/reference/DRY.md)
+  - `/think` - SOLID design principles [@~/.claude/rules/reference/SOLID.md](./rules/reference/SOLID.md)
 
 ### [P3] File Deletion Behavior
 

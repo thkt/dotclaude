@@ -40,7 +40,7 @@ Layout, positioning, show/hide, responsive, animations, visual states
 
 ## Related Principles
 
-- [@../reference/OCCAMS_RAZOR.md] - The simplicity principle underlying Progressive Enhancement
+- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - The simplicity principle underlying Progressive Enhancement
 
 ## Outcome-First Development
 
@@ -79,10 +79,10 @@ If "No" → Don't add it yet
 
 ### Development Practices
 
-- [@./LEAKY_ABSTRACTION.md] - Build abstractions progressively, expecting leaks
-- [@./LAW_OF_DEMETER.md] - Progressive coupling reduction
-- [@./READABLE_CODE.md] - Start simple, enhance readability gradually
+- [@./LEAKY_ABSTRACTION.md](./LEAKY_ABSTRACTION.md) - Build abstractions progressively, expecting leaks
+- [@./LAW_OF_DEMETER.md](./LAW_OF_DEMETER.md) - Progressive coupling reduction
+- [@./READABLE_CODE.md](./READABLE_CODE.md) - Start simple, enhance readability gradually
 
 ### Core Principles
 
-- [@../reference/OCCAMS_RAZOR.md] - Simplicity first aligns with progressive enhancement
+- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - Simplicity first aligns with progressive enhancement

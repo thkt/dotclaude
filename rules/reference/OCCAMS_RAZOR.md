@@ -240,12 +240,12 @@ The best code is often:
 
 ### Core Principles (Same Level)
 
-- [@./SOLID.md] - SRP aligns with focused simplicity
-- [@./DRY.md] - Eliminate duplication, keep it simple
+- [@./SOLID.md](./SOLID.md) - SRP aligns with focused simplicity
+- [@./DRY.md](./DRY.md) - Eliminate duplication, keep it simple
 
 ### Applied in Practice
 
-- [@../development/PROGRESSIVE_ENHANCEMENT.md] - Build simple, enhance gradually
-- [@../development/TDD_RGRC.md] - Baby Steps embody Occam's Razor
-- [@../development/READABLE_CODE.md] - Simplicity for understanding
-- [@../development/LEAKY_ABSTRACTION.md] - Accept simple leaky abstractions over complex "perfect" ones
+- [@../development/PROGRESSIVE_ENHANCEMENT.md](../development/PROGRESSIVE_ENHANCEMENT.md) - Build simple, enhance gradually
+- [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - Baby Steps embody Occam's Razor
+- [@../development/READABLE_CODE.md](../development/READABLE_CODE.md) - Simplicity for understanding
+- [@../development/LEAKY_ABSTRACTION.md](../development/LEAKY_ABSTRACTION.md) - Accept simple leaky abstractions over complex "perfect" ones

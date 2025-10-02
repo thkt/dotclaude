@@ -399,7 +399,7 @@ npm run lint | grep -E "problems\|warnings"
 
 ## 適用される原則
 
-このコマンドは [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] からのProgressive Enhancementを適用します：
+このコマンドは [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) からのProgressive Enhancementを適用します：
 
 - UI問題に対するCSSファーストアプローチ
 - 根本原因分析
@@ -432,7 +432,7 @@ npm run lint | grep -E "problems\|warnings"
 
 ### オッカムの剃刀
 
-[@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md] - 「必要なしに存在を増やすべきではない」
+[@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - 「必要なしに存在を増やすべきではない」
 
 修正時の適用:
 
@@ -443,7 +443,7 @@ npm run lint | grep -E "problems\|warnings"
 
 ### TIDYINGS
 
-[@~/.claude/ja/rules/development/TIDYINGS.md] - 開発しながら整理
+[@~/.claude/ja/rules/development/TIDYINGS.md](~/.claude/ja/rules/development/TIDYINGS.md) - 開発しながら整理
 
 修正時の適用:
 

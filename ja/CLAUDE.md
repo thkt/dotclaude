@@ -59,8 +59,8 @@
   - ContainerコンポーネントでHooks
   - 再利用性の最大化
 - コマンドに統合された開発方法論:
-  - `/code` - TDD/RGRC [@~/.claude/ja/rules/development/TDD_RGRC.md]、SOLID [@~/.claude/ja/rules/reference/SOLID.md]、DRY原則 [@~/.claude/ja/rules/reference/DRY.md]
-  - `/think` - SOLID設計原則 [@~/.claude/ja/rules/reference/SOLID.md]
+  - `/code` - TDD/RGRC [@~/.claude/ja/rules/development/TDD_RGRC.md](../rules/development/TDD_RGRC.md)、SOLID [@~/.claude/ja/rules/reference/SOLID.md](../rules/reference/SOLID.md)、DRY原則 [@~/.claude/ja/rules/reference/DRY.md](../rules/reference/DRY.md)
+  - `/think` - SOLID設計原則 [@~/.claude/ja/rules/reference/SOLID.md](../rules/reference/SOLID.md)
 
 ### [P3] ファイル削除動作
 

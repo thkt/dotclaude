@@ -240,12 +240,12 @@ class UserRepository {
 
 ### 核心原則（同レベル）
 
-- [@./SOLID.md] - SRPは集中したシンプルさと一致
-- [@./DRY.md] - 重複を排除、シンプルに保つ
+- [@./SOLID.md](./SOLID.md) - SRPは集中したシンプルさと一致
+- [@./DRY.md](./DRY.md) - 重複を排除、シンプルに保つ
 
 ### 実践での適用
 
-- [@../development/PROGRESSIVE_ENHANCEMENT.md] - シンプルに構築、段階的に強化
-- [@../development/TDD_RGRC.md] - Baby Stepsはオッカムの剃刀を体現
-- [@../development/READABLE_CODE.md] - 理解のためのシンプルさ
-- [@../development/LEAKY_ABSTRACTION.md] - 複雑な「完璧な」ものよりシンプルな漏れのある抽象化を受け入れる
+- [@../development/PROGRESSIVE_ENHANCEMENT.md](../development/PROGRESSIVE_ENHANCEMENT.md) - シンプルに構築、段階的に強化
+- [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - Baby Stepsはオッカムの剃刀を体現
+- [@../development/READABLE_CODE.md](../development/READABLE_CODE.md) - 理解のためのシンプルさ
+- [@../development/LEAKY_ABSTRACTION.md](../development/LEAKY_ABSTRACTION.md) - 複雑な「完璧な」ものよりシンプルな漏れのある抽象化を受け入れる

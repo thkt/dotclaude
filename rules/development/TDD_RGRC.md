@@ -129,4 +129,4 @@ Clear boundaries per phase, Prevents overengineering, Self-documenting tests, Na
 
 ## Related Principles
 
-- [@../reference/OCCAMS_RAZOR.md] - Baby Steps embody the simplicity principle
+- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - Baby Steps embody the simplicity principle

@@ -229,11 +229,11 @@ Before committing code, verify:
 
 ### Scientific Foundation For
 
-- [@../development/READABLE_CODE.md] - Provides cognitive science basis
-- [@./OCCAMS_RAZOR.md] - Quantifies what "simple" means
-- [@../development/CONTAINER_PRESENTATIONAL.md] - Limits component responsibilities
+- [@../development/READABLE_CODE.md](../development/READABLE_CODE.md) - Provides cognitive science basis
+- [@./OCCAMS_RAZOR.md](./OCCAMS_RAZOR.md) - Quantifies what "simple" means
+- [@../development/CONTAINER_PRESENTATIONAL.md](../development/CONTAINER_PRESENTATIONAL.md) - Limits component responsibilities
 
 ### Complemented By
 
-- [@./SOLID.md] - Single Responsibility aligns with cognitive limits
-- [@./DRY.md] - Reduces mental load through elimination of duplication
+- [@./SOLID.md](./SOLID.md) - Single Responsibility aligns with cognitive limits
+- [@./DRY.md](./DRY.md) - Reduces mental load through elimination of duplication

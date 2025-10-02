@@ -70,11 +70,11 @@ Level 1: CLAUDE.md (Top-level configuration)
 ## Related Principles
 
 ### Core Principles (Same Level)
-- [@./SOLID.md] - Description
-- [@./DRY.md] - Description
+- [@./SOLID.md](./SOLID.md) - Description
+- [@./DRY.md](./DRY.md) - Description
 
 ### Applied in Practice
-- [@../development/TDD_RGRC.md] - Description
+- [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - Description
 ```
 
 ## Language Synchronization
@@ -104,15 +104,15 @@ When updating documentation:
 English references:
 
 ```markdown
-[@./SOLID.md]                    # Same directory
-[@../development/TDD_RGRC.md]    # Up one, into development
+[@./SOLID.md](./SOLID.md)                    # Same directory
+[@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # Up one, into development
 ```
 
 Japanese references:
 
 ```markdown
-[@./SOLID.md]                    # Same directory
-[@../development/TDD_RGRC.md]    # Up one, into development
+[@./SOLID.md](./SOLID.md)                    # Same directory
+[@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # Up one, into development
 ```
 
 ## Update Procedures
@@ -261,7 +261,7 @@ Before committing documentation:
 1. Create /rules/reference/PRINCIPLE.md
 2. Create /ja/rules/reference/PRINCIPLE.md
 3. Add to CLAUDE.md:
-   - **Core principle**: Name → [@path]
+   - **Core principle**: Name → [@path](path)
 4. Find related practices
 5. Add cross-references
 ```

@@ -191,7 +191,7 @@ fi
 
 Generated from ADR:
 
-- **[Rule Name]**: [@docs/rules/[RULE_NAME].md] (ADR-[number])
+- **[Rule Name]**: [@docs/rules/[RULE_NAME].md](docs/rules/[RULE_NAME].md) (ADR-[number])
 ```
 
 ### 6. Completion Message

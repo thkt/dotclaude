@@ -71,10 +71,10 @@ Perform code implementation with real-time test feedback, dynamic quality discov
 
 ### Applied Development Rules
 
-- [@~/.claude/rules/development/TDD_RGRC.md] - Test-Driven Development with Baby Steps
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - CSS-first approach for UI
-- [@~/.claude/rules/development/READABLE_CODE.md] - Code readability and clarity
-- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md] - React component patterns
+- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Test-Driven Development with Baby Steps
+- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first approach for UI
+- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Code readability and clarity
+- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md) - React component patterns
 
 ### Principle Hierarchy
 
@@ -616,7 +616,7 @@ Proceeding without resolution? (y/N)
 
 ### TDD/RGRC
 
-[@~/.claude/rules/development/TDD_RGRC.md] - Red-Green-Refactor-Commit cycle
+[@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Red-Green-Refactor-Commit cycle
 
 Application:
 
@@ -628,7 +628,7 @@ Application:
 
 ### Occam's Razor
 
-[@~/.claude/rules/reference/OCCAMS_RAZOR.md] - "Entities should not be multiplied without necessity"
+[@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - "Entities should not be multiplied without necessity"
 
 Application:
 

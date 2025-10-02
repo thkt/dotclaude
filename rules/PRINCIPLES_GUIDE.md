@@ -407,12 +407,12 @@ When in doubt:
 
 ### Core Documents
 
-- [@./reference/OCCAMS_RAZOR.md] - The meta-principle
-- [@./development/PROGRESSIVE_ENHANCEMENT.md] - The approach
-- [@./development/READABLE_CODE.md] - The baseline
+- [@./reference/OCCAMS_RAZOR.md](./reference/OCCAMS_RAZOR.md) - The meta-principle
+- [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md) - The approach
+- [@./development/READABLE_CODE.md](./development/READABLE_CODE.md) - The baseline
 
 ### All Principles
 
-- Reference: [@./reference/] - SOLID, DRY, Occam's Razor
-- Development: [@./development/] - All practical principles
-- Commands: [@../docs/COMMANDS.md] - Integrated workflows
+- Reference: [@./reference/](./reference/) - SOLID, DRY, Occam's Razor
+- Development: [@./development/](./development/) - All practical principles
+- Commands: [@../docs/COMMANDS.md](../docs/COMMANDS.md) - Integrated workflows

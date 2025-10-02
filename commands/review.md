@@ -382,7 +382,7 @@ All review findings MUST follow Output Verifiability:
 
 ### Principles Guide
 
-[@~/.claude/rules/PRINCIPLES_GUIDE.md] - Foundation for review prioritization
+[@~/.claude/rules/PRINCIPLES_GUIDE.md](~/.claude/rules/PRINCIPLES_GUIDE.md) - Foundation for review prioritization
 
 Application:
 
@@ -392,7 +392,7 @@ Application:
 
 ### Documentation Rules
 
-[@~/.claude/docs/DOCUMENTATION_RULES.md] - Review report format and structure
+[@~/.claude/docs/DOCUMENTATION_RULES.md](~/.claude/docs/DOCUMENTATION_RULES.md) - Review report format and structure
 
 Application:
 
