@@ -222,7 +222,7 @@ MIT License - Feel free to use and modify as needed.
 
 ## 👤 Author
 
-thkt
+Your Name
 
 ---
 

@@ -147,7 +147,7 @@ Claude Codeエコシステムにおける一貫性のある、整理されたド
 
    ```bash
    # すべての参照を検索
-   grep -r "FILENAME" /Users/thkt/.claude/
+   grep -r "FILENAME" ~/.claude/
    ```
 
 2. **両言語を更新**
@@ -172,7 +172,7 @@ Claude Codeエコシステムにおける一貫性のある、整理されたド
 2. **すべての参照を検索**
 
    ```bash
-   grep -r "FILE\.md" /Users/thkt/.claude/
+   grep -r "FILE\.md" ~/.claude/
    ```
 
 3. **順序通りに実行**
@@ -338,7 +338,7 @@ advancedImplementation()
 
 ```bash
 # ファイルへのすべての参照を検索
-grep -r "FILENAME" /Users/thkt/.claude/
+grep -r "FILENAME" ~/.claude/
 
 # 英語/日本語の構造一致を確認
 diff <(ls /rules/) <(ls /ja/rules/)
@@ -347,13 +347,13 @@ diff <(ls /rules/) <(ls /ja/rules/)
 # （受信参照のないファイル）
 for file in $(find /rules -name "*.md"); do
   basename=$(basename $file)
-  count=$(grep -r "$basename" /Users/thkt/.claude/ | wc -l)
+  count=$(grep -r "$basename" ~/.claude/ | wc -l)
   if [ $count -eq 0 ]; then echo "孤立: $file"; fi
 done
 
 # すべてのリンクを検証
 # （シンプルなリンク切れチェッカー）
-grep -r "@\[.*\]" /Users/thkt/.claude/ | while read line; do
+grep -r "@\[.*\]" ~/.claude/ | while read line; do
   # 各リンクを抽出して検証
 done
 ```

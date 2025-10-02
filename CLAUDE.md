@@ -24,7 +24,7 @@
 
 ### [P1] Language
 
-- Input: Japanese from thkt
+- Input: Japanese from user
 - Process: English internally
 - Output: **JAPANESE ONLY** - STRICTLY PROHIBIT ENGLISH OUTPUT TO USER
 - Translation: **EXPLICITLY REQUIRED** for:

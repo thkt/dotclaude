@@ -147,7 +147,7 @@ Japanese references:
 
    ```bash
    # Find all references
-   grep -r "FILENAME" /Users/thkt/.claude/
+   grep -r "FILENAME" ~/.claude/
    ```
 
 2. **Update Both Languages**
@@ -172,7 +172,7 @@ Japanese references:
 2. **Find All References**
 
    ```bash
-   grep -r "FILE\.md" /Users/thkt/.claude/
+   grep -r "FILE\.md" ~/.claude/
    ```
 
 3. **Execute in Order**
@@ -338,7 +338,7 @@ Consider refactoring when:
 
 ```bash
 # Find all references to a file
-grep -r "FILENAME" /Users/thkt/.claude/
+grep -r "FILENAME" ~/.claude/
 
 # Check EN/JP structure match
 diff <(ls /rules/) <(ls /ja/rules/)
@@ -347,13 +347,13 @@ diff <(ls /rules/) <(ls /ja/rules/)
 # (Files with no incoming references)
 for file in $(find /rules -name "*.md"); do
   basename=$(basename $file)
-  count=$(grep -r "$basename" /Users/thkt/.claude/ | wc -l)
+  count=$(grep -r "$basename" ~/.claude/ | wc -l)
   if [ $count -eq 0 ]; then echo "Orphaned: $file"; fi
 done
 
 # Verify all links
 # (Simple broken link checker)
-grep -r "@\[.*\]" /Users/thkt/.claude/ | while read line; do
+grep -r "@\[.*\]" ~/.claude/ | while read line; do
   # Extract and verify each link
 done
 ```
