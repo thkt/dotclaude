@@ -51,6 +51,49 @@ For each element in the understanding check, assess:
 - → = Medium confidence (reasonable inference)
 - ? = Low confidence (assumption that needs confirmation)
 
+## 95% Understanding Rule
+
+**Core principle from evidence-based practice:**
+
+Never proceed with implementation below 95% understanding. This threshold is evidence-based (see Rationale below).
+
+### When to Apply
+
+**ALWAYS ask clarifying questions when:**
+
+- Average confidence across elements is below 95%
+- Any critical element is marked with [?] (Low confidence)
+- Multiple elements are marked with [→] (Medium confidence)
+- User requirements contain ambiguity
+- Implementation approach is unclear
+
+**Rule**: If weighted average confidence < 95%, display follow-up questions and wait for user response before proceeding.
+
+### Follow-Up Question Format
+
+When understanding is below 95%, explicitly state what needs clarification:
+
+```markdown
+🤔 Questions to reach 95% confidence:
+1. [Specific question about unclear element]
+2. [Specific question about assumed element]
+3. [Specific question about implementation approach]
+
+These clarifications are needed before proceeding.
+```
+
+### Integration with Analysis Method
+
+1. **Analyze** user request → determine confidence for each element
+2. **Calculate** weighted average confidence
+3. **If <95%**: Display clarifying questions and wait
+4. **If ≥95%**: Proceed with understanding check display
+5. **Always**: Mark confidence explicitly with ✓/→/? markers
+
+**Rationale**: Implementation below 95% confidence frequently requires rework. Asking upfront saves time and builds trust.
+
+**Remember**: Asking for clarification is always better than assuming incorrectly.
+
 ## Display Format
 
 Standard format for understanding check (when required):
@@ -101,17 +144,6 @@ Progress bar: █ = 10% (fill left to right, use ░ for empty)
 - [?] Testing framework preference (Jest? Vitest? Not specified)
 - [?] Style approach (styled-components? CSS modules? Unknown)
 ```
-
-**Bad example** (overconfident without evidence):
-
-```markdown
-✅ Elements I understand clearly:
-- Project uses Jest for testing
-- Components follow styled-components pattern
-- ESLint rules enforce strict typing
-```
-
-**Why bad**: Claims presented as facts without evidence. Should use [?] markers and explicitly state these are assumptions.
 
 ## Command Suggestion System
 
@@ -222,10 +254,6 @@ Expected changes:
 
 ### Combined Display Format
 
-**When to use**: When both Impact Simulation and Execution Plan are displayed consecutively.
-
-**Purpose**: Reduce visual noise by combining both sections into a single box with cleaner separation.
-
 **Format**:
 
 ```markdown
@@ -252,38 +280,7 @@ Will execute the following:
 Proceed with this plan? (Y/n/i)
 ```
 
-**Key differences from separate display**:
-
-- Single outer box (━) instead of two separate boxes
-- Thin separator line (─) between sections
-- One confirmation prompt at the end
-- Cleaner visual hierarchy
-
-**Example**:
-
-```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🔍 Impact Simulation (Dry-run)
-
-Expected changes:
-• Files to modify: rules/core/PRE_TASK_CHECK.md, ja/rules/core/PRE_TASK_CHECK.md
-• Affected components: Understanding Check workflow display
-• Risk level: 🟢 Low (documentation only)
-• Note: Adding combined display format option
-
-─────────────────────────────────────────────────
-
-📝 Execution Plan
-
-Will execute the following:
-1. Edit rules/core/PRE_TASK_CHECK.md - Add combined display format section
-2. Edit ja/rules/core/PRE_TASK_CHECK.md - Sync Japanese version
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Proceed with this plan? (Y/n/i)
-```
+**Notes**: Single outer box with thin separator (─) between sections for cleaner visual hierarchy.
 
 ## Execution Plan (After Impact Simulation)
 
@@ -331,11 +328,4 @@ Proceed with this plan? (Y/n/i)
 
 ## Integration with Output Verifiability
 
-This PRE_TASK_CHECK implements AI Operation Principle #4 (Output Verifiability) by:
-
-1. **Distinguishing facts from assumptions**: Using ✓/~/? markers
-2. **Providing evidence**: Referencing specific files, user statements, or context
-3. **Stating confidence levels**: Explicitly marking high/medium/low confidence
-4. **Admitting gaps**: Using ❓ section to acknowledge unknowns
-
-**Key principle**: Never pretend to understand fully when uncertainty exists. It's better to ask than to assume incorrectly.
+Implements AI Operation Principle #4 using ✓/→/? markers to distinguish facts from assumptions and acknowledge uncertainty.
