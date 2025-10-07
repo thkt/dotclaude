@@ -2,7 +2,7 @@
 name: progressive-enhancer
 description: UI/UX設計に対してプログレッシブエンハンスメントのアプローチをレビュー・提案します
 model: sonnet
-tools: Read, Grep, Glob, LS
+ddtools: Read, Grep, Glob, LS, mcp__mdn__*
 color: lime
 max_execution_time: 30
 dependencies: []
