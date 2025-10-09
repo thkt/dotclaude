@@ -35,6 +35,7 @@ git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/ori
 ```
 
 If this fails, try these fallbacks in order:
+
 1. `main`
 2. `master`
 3. `develop`
