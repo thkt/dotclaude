@@ -35,11 +35,55 @@
 
 ### [P2] 開発アプローチ
 
-- **原則ガイド**: 完全な適用ガイド → [@~/.claude/ja/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
-- **核心原則**: オッカムの剃刀 → [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../rules/reference/OCCAMS_RAZOR.md)
-- **デフォルト哲学**: プログレッシブエンハンスメント → [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](../rules/development/PROGRESSIVE_ENHANCEMENT.md)
-- **コード可読性**: The Art of Readable Code → [@~/.claude/rules/development/READABLE_CODE.md](../rules/development/READABLE_CODE.md)
-- **Container/Presentational**: コンポーネント設計パターン → [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](../rules/development/CONTAINER_PRESENTATIONAL.md)
+**核心原則（常に適用）:**
+
+#### オッカムの剃刀
+
+複数の解決策が存在する場合、最もシンプルなものを選択します。複雑さには明確な正当化が必要です。「念のため」の実装を避け、測定された問題に対してのみ複雑さを追加します。最小限の実装から始め、必要性が証明された時に拡張します。
+
+**例:**
+- インターフェース vs 直接実装 → 2番目の実装が現れるまで待つ
+- 抽象化 vs 具体的コード → 3回目の重複後に抽象化（DRY原則）
+- クラス vs 関数 → タスクスコープに基づいて選択
+
+**判断質問:** 「この複雑さは本当に必要か？もっとシンプルな方法はないか？」
+
+**詳細:** [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../rules/reference/OCCAMS_RAZOR.md) - タスクスコープアプローチ、複雑さの予算、警告サインなど
+
+---
+
+#### 可読性のあるコード
+
+コードは1分以内に理解できるべきです。Millerの法則（7±2の認知限界）を尊重し、複雑さを管理します。明確な命名、明白な制御フロー、焦点を絞った関数（5-10行が理想）を目指します。理解時間 > 書く時間を優先します。
+
+**例:**
+- 変数名: 具体的 > 抽象的（`data`ではなく`userEmail`）
+- 制御フロー: 早期リターンのためのガード句、ネストを最小化
+- 関数: 一つのことをする、「と」で説明できない
+
+**判断質問:** 「新しいチームメンバーは1分以内にこれを理解できるか？」
+
+**詳細:** [@~/.claude/rules/development/READABLE_CODE.md](../rules/development/READABLE_CODE.md) - AIコードの癖、リファクタリング戦略など
+
+---
+
+**Just-in-Time参照（必要に応じて適用）:**
+
+コードタスクの場合:
+- **プログレッシブエンハンスメント**: 最小限で開始、段階的に強化 → [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](../rules/development/PROGRESSIVE_ENHANCEMENT.md)
+- **DRY**: 3回目の重複で抽象化 → [@~/.claude/rules/reference/DRY.md](../rules/reference/DRY.md)
+
+React/UI作業の場合:
+- **Container/Presentational**: ロジックとUIを分離 → [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](../rules/development/CONTAINER_PRESENTATIONAL.md)
+
+大規模設計の場合:
+- **SOLID**: 変更のための設計 → [@~/.claude/rules/reference/SOLID.md](../rules/reference/SOLID.md)
+- **デメテルの法則**: 結合を管理 → [@~/.claude/rules/development/LAW_OF_DEMETER.md](../rules/development/LAW_OF_DEMETER.md)
+
+テスト作成の場合:
+- **TDD/RGRC**: Red-Green-Refactor-Commit → [@~/.claude/rules/development/TDD_RGRC.md](../rules/development/TDD_RGRC.md)
+
+**完全ガイド:** [@~/.claude/ja/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md) - 適用方法、優先順位、競合解決など
 
 ### [P3] ファイル削除動作
 

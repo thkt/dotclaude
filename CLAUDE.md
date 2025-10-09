@@ -37,53 +37,53 @@
 
 **Core Principles (Always Apply):**
 
-#### Occam's Razor（オッカムの剃刀）
+#### Occam's Razor
 
-複数の解決策が存在する場合、最もシンプルなものを選択する。複雑さには明確な正当性が必要。「念のため」の実装は避け、実測された問題に対してのみ複雑さを追加する。動作する最小限の実装から始め、必要性が証明されてから拡張する。
+When multiple solutions exist, choose the simplest one. Complexity requires clear justification. Avoid "just in case" implementations; add complexity only for measured problems. Start with minimum viable implementation and expand when necessity is proven.
 
-**適用例:**
-- インターフェース vs 直接実装 → 2つ目の実装が出現するまで待つ
-- 抽象化 vs 具体的コード → 3回重複してから抽象化（DRY原則）
-- クラス vs 関数 → タスクスコープに応じて選択
+**Examples:**
+- Interface vs direct implementation → Wait until 2nd implementation appears
+- Abstraction vs concrete code → Abstract after 3rd duplication (DRY principle)
+- Class vs function → Choose based on task scope
 
-**判断質問:** "この複雑さは本当に必要か？より単純な方法はないか？"
+**Decision Question:** "Is this complexity truly necessary? Is there a simpler way?"
 
-**詳細:** [@~/.claude/rules/reference/OCCAMS_RAZOR.md](./rules/reference/OCCAMS_RAZOR.md) - タスクスコープ別アプローチ、複雑さの予算、警告サインなど
-
----
-
-#### Readable Code（読みやすいコード）
-
-コードは1分以内に理解できるべき。Miller's Law（7±2の認知限界）を尊重し、複雑さを管理する。明確な命名、明白な制御フロー、集中した関数（5-10行が理想）を心がける。理解時間 > 記述時間を優先。
-
-**適用例:**
-- 変数名: 具体的 > 抽象的（`userEmail` not `data`）
-- 制御フロー: ガード句で早期リターン、ネスト最小化
-- 関数: 1つのことを行う、"and"で説明できない
-
-**判断質問:** "新しいチームメンバーが1分以内に理解できるか？"
-
-**詳細:** [@~/.claude/rules/development/READABLE_CODE.md](./rules/development/READABLE_CODE.md) - AI生成コードのスメル、リファクタリング戦略など
+**Details:** [@~/.claude/rules/reference/OCCAMS_RAZOR.md](./rules/reference/OCCAMS_RAZOR.md) - Task-scope approaches, complexity budget, warning signs, etc.
 
 ---
 
-**Just-in-Time References（状況に応じて参照）:**
+#### Readable Code
 
-コード作業時:
-- **Progressive Enhancement**: 最小限の実装から開始、段階的拡張 → [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](./rules/development/PROGRESSIVE_ENHANCEMENT.md)
-- **DRY**: 3回目の重複で抽象化 → [@~/.claude/rules/reference/DRY.md](./rules/reference/DRY.md)
+Code should be understandable in under 1 minute. Respect Miller's Law (7±2 cognitive limit) to manage complexity. Aim for clear naming, obvious control flow, and focused functions (5-10 lines ideal). Prioritize understanding time > writing time.
 
-React/UI作業時:
-- **Container/Presentational**: ロジックとUIの分離 → [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](./rules/development/CONTAINER_PRESENTATIONAL.md)
+**Examples:**
+- Variable names: Specific > abstract (`userEmail` not `data`)
+- Control flow: Guard clauses for early returns, minimize nesting
+- Functions: Do one thing, can't be explained with "and"
 
-大規模設計時:
-- **SOLID**: 変更に強い設計 → [@~/.claude/rules/reference/SOLID.md](./rules/reference/SOLID.md)
-- **Law of Demeter**: 結合度の管理 → [@~/.claude/rules/development/LAW_OF_DEMETER.md](./rules/development/LAW_OF_DEMETER.md)
+**Decision Question:** "Can a new team member understand this in < 1 minute?"
 
-テスト作成時:
+**Details:** [@~/.claude/rules/development/READABLE_CODE.md](./rules/development/READABLE_CODE.md) - AI code smells, refactoring strategies, etc.
+
+---
+
+**Just-in-Time References (Apply as needed):**
+
+For code tasks:
+- **Progressive Enhancement**: Start minimal, enhance gradually → [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](./rules/development/PROGRESSIVE_ENHANCEMENT.md)
+- **DRY**: Abstract on 3rd duplication → [@~/.claude/rules/reference/DRY.md](./rules/reference/DRY.md)
+
+For React/UI work:
+- **Container/Presentational**: Separate logic from UI → [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](./rules/development/CONTAINER_PRESENTATIONAL.md)
+
+For large-scale design:
+- **SOLID**: Design for change → [@~/.claude/rules/reference/SOLID.md](./rules/reference/SOLID.md)
+- **Law of Demeter**: Manage coupling → [@~/.claude/rules/development/LAW_OF_DEMETER.md](./rules/development/LAW_OF_DEMETER.md)
+
+For test creation:
 - **TDD/RGRC**: Red-Green-Refactor-Commit → [@~/.claude/rules/development/TDD_RGRC.md](./rules/development/TDD_RGRC.md)
 
-**全体ガイド:** [@~/.claude/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md) - 原則の適用方法、優先順位、コンフリクト解決など
+**Complete Guide:** [@~/.claude/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md) - Application methods, priorities, conflict resolution, etc.
 
 ### [P3] File Deletion Behavior
 
