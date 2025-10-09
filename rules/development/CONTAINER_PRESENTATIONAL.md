@@ -1,3 +1,17 @@
+---
+tier: 2
+usage_frequency: most_code_tasks
+applies_to: ["react", "ui_components", "code_writing"]
+related_commands: ["/code", "/fix", "/review"]
+load_strategy: just_in_time
+token_cost: 388
+summary: |
+  Separate logic (Container) from presentation (Presentational).
+  Containers handle data/state, Presentational components receive props only.
+  Maximizes reusability and testability.
+decision_question: "Can this component be split into logic and UI?"
+---
+
 # Container/Presentational Pattern
 
 **Default approach**: Separate logic from UI for maximum reusability

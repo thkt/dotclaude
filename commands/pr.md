@@ -24,40 +24,56 @@ Analyze all changes in the current branch compared to the base branch and genera
 
 ## Dynamic Context Analysis
 
-### Current Branch Info
+**Important**: This command dynamically detects the base branch. Execute the following steps:
+
+### Step 1: Detect Base Branch
+
+First, attempt to detect the default base branch:
+
+```bash
+git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'
+```
+
+If this fails, try these fallbacks in order:
+1. `main`
+2. `master`
+3. `develop`
+
+Store the detected branch name as `BASE_BRANCH` for subsequent commands.
+
+### Step 2: Current Branch Info
 
 ```bash
 !`git branch --show-current`
 ```
 
-### Base Branch Detection
+### Step 3: Execute Analysis Commands
+
+Once `BASE_BRANCH` is determined, execute the following analysis commands (replace `BASE_BRANCH` with the detected value):
+
+#### Branch Comparison Summary
 
 ```bash
-!`git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'`
+# Replace BASE_BRANCH with detected branch name
+git diff BASE_BRANCH...HEAD --stat
 ```
 
-### Branch Comparison Summary
+#### Commit History
 
 ```bash
-!`git diff $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')...HEAD --stat`
+git log BASE_BRANCH..HEAD --oneline
 ```
 
-### Commit History
+#### Files Changed
 
 ```bash
-!`git log $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')..HEAD --oneline`
+git diff BASE_BRANCH...HEAD --name-only
 ```
 
-### Files Changed
+#### Change Statistics
 
 ```bash
-!`git diff $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')...HEAD --name-only`
-```
-
-### Change Statistics
-
-```bash
-!`git diff $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')...HEAD --shortstat`
+git diff BASE_BRANCH...HEAD --shortstat
 ```
 
 ## PR Description Generation Process
@@ -77,19 +93,21 @@ Determine primary change type:
 
 #### Impact Assessment
 
+Execute these commands using the detected `BASE_BRANCH`:
+
 ```bash
 # Check test file changes
-!`git diff $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')...HEAD --name-only | grep -E "(test|spec)" | wc -l`
+git diff BASE_BRANCH...HEAD --name-only | grep -E "(test|spec)" | wc -l
 ```
 
 ```bash
 # Check for breaking changes
-!`git diff $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')...HEAD | grep -E "^-\s*(export|public|interface)" | head -5`
+git diff BASE_BRANCH...HEAD | grep -E "^-\s*(export|public|interface)" | head -5
 ```
 
 ```bash
 # Count affected components
-!`git diff $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')...HEAD --name-only | xargs -I {} dirname {} | sort -u | wc -l`
+git diff BASE_BRANCH...HEAD --name-only | xargs -I {} dirname {} | sort -u | wc -l
 ```
 
 ### 2. Content Structure
@@ -215,30 +233,30 @@ Generate PR description with these sections:
 
 ### Commit Grouping
 
-Group commits by type:
+Group commits by type using detected `BASE_BRANCH`:
 
 ```bash
 # Features
-!`git log $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')..HEAD --oneline | grep -E "^[a-f0-9]+ feat" | head -5`
+git log BASE_BRANCH..HEAD --oneline | grep -E "^[a-f0-9]+ feat" | head -5
 ```
 
 ```bash
 # Fixes
-!`git log $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')..HEAD --oneline | grep -E "^[a-f0-9]+ fix" | head -5`
+git log BASE_BRANCH..HEAD --oneline | grep -E "^[a-f0-9]+ fix" | head -5
 ```
 
 ### Dependency Changes
 
 ```bash
 # Check package.json changes
-!`git diff $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')...HEAD -- package.json | grep -E "^[+-]\s+\"" | head -10`
+git diff BASE_BRANCH...HEAD -- package.json | grep -E "^[+-]\s+\"" | head -10
 ```
 
 ### Performance Impact
 
 ```bash
 # Check for performance-related changes
-!`git diff $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')...HEAD | grep -E "(memo|cache|optimize|performance)" | head -5`
+git diff BASE_BRANCH...HEAD | grep -E "(memo|cache|optimize|performance)" | head -5
 ```
 
 ## Output Format

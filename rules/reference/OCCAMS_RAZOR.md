@@ -1,3 +1,17 @@
+---
+tier: 1
+usage_frequency: every_task
+applies_to: ["all"]
+related_commands: ["all"]
+load_strategy: embedded
+token_cost: 1041
+summary: |
+  Choose the simplest solution that solves the problem.
+  Complexity requires justification. When multiple solutions exist,
+  prefer the one with fewer moving parts and clearer intent.
+decision_question: "Is there a simpler way to achieve this?"
+---
+
 # Occam's Razor - The Simplicity Principle
 
 ## Core Philosophy
