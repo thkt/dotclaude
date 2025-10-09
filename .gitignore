@@ -11,6 +11,7 @@ Thumbs.db
 
 # Workspace and temporary files
 workspace/
+debug/
 *.log
 *.tmp
 *.temp
