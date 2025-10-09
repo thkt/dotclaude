@@ -2,6 +2,67 @@
 
 Technical specification for understanding check and execution planning.
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## ⚡ QUICK REFERENCE (Read This First)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### 🔴 CRITICAL: 95% Understanding Rule
+
+**Never proceed with confidence <95%**. Always ask for clarification first.
+
+### Decision Tree
+
+```text
+START
+  ↓
+Will modify files? ──YES──→ [EXECUTE CHECK]
+  ↓ NO
+Will run commands? ──YES──→ [EXECUTE CHECK]
+  ↓ NO
+Understanding <95%? ──YES──→ [EXECUTE CHECK]
+  ↓ NO
+Multi-step workflow? ──YES──→ [EXECUTE CHECK]
+  ↓ NO
+[SKIP CHECK] ← Simple question, confirmation, or read-only query
+```
+
+### Decision Matrix
+
+| Condition | Action | Example |
+|-----------|--------|---------|
+| **Execute Check** | | |
+| File modification | → Execute | Create/edit CLAUDE.md |
+| Command execution | → Execute | Run `npm test` |
+| Understanding <95% | → Execute | Ambiguous user request |
+| Multi-step workflow | → Execute | Feature implementation |
+| **Skip Check** | | |
+| Simple question | → Skip | "What is PRE_TASK_CHECK?" |
+| Confirmation | → Skip | "yes", "ok", "y" |
+| Read-only query | → Skip | Read file, Grep search |
+| Follow-up clarification | → Skip | Additional context |
+
+### Basic Flow (5 Steps)
+
+1. **Analyze** → Mark confidence (✓/→/?)
+2. **If <95%** → Ask questions → STOP
+3. **If ≥95%** → Display check → Wait for Y
+4. **Show Impact** → Execution Plan → Wait for final Y
+5. **Execute**
+
+### Confidence Markers
+
+- **[✓]** = High (directly verified from files/context)
+- **[→]** = Medium (reasonable inference)
+- **[?]** = Low (assumption needing confirmation)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## 📖 DETAILED RULES (Reference as Needed)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ## Execution Rule
 
 **PRIMARY**: PRE_TASK_CHECK is executed for tasks that involve:

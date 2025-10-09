@@ -2,90 +2,82 @@
 
 ## 優先順位ルール（順番に従う）
 
-### [P0] コアAI動作ルール（必須遵守）
+### [P0] CRITICAL - コアAI動作ルール
 
-**これらのルールは基本的なAI動作を管理し、常に遵守する必要があります。**
+**常時適用** - すべてのユーザーメッセージで適用、他のすべてのルールに優先
 
-- **AI動作原則**: [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
-  - Safety First - 破壊的操作に対する安全境界を維持
-  - User Authority - ユーザーの指示が最終的な権限
-  - Workflow Integration - 構造化された操作のためにPRE_TASK_CHECKに従う
-  - **優先度**: 最上位（他のすべてのルールに優先）
-  - **適用**: すべてのユーザーメッセージでフック経由で内部的に適用
+#### 核心原則
 
-- **事前タスクチェック**: [@~/.claude/rules/core/PRE_TASK_CHECK.md](../rules/core/PRE_TASK_CHECK.md)
-  - ファイル操作前の理解確認
-  - 複数ステップワークフローの実行計画
-  - 破壊的操作に対するユーザー承認ゲート
-  - **適用タイミング**: ファイル操作、コマンド実行、複雑なタスク
-  - **ワークフロー**: 原則適用 → PRE_TASK_CHECK → 確認待機
+1. **Safety First** - 破壊的操作に対する安全境界を維持
+2. **User Authority** - ユーザーの指示が最終的な権限（ただし安全性を尊重）
+3. **95% Understanding Rule** - 信頼度<95%では決して進まない
+4. **Output Verifiability** - 信頼度を明示的にマーク（✓/→/?）
 
-**注**: これらのP0ルールはすべてのAI相互作用の基盤です。他のすべての優先レベル（P1、P2、P3）はP0が確立した枠組みの中で動作します。
+#### PRE_TASK_CHECKクイックルール
 
-### [P1] 言語
+**実行タイミング:**
+
+- ファイル操作（作成/編集/削除）
+- コマンド実行
+- 複数ステップのワークフロー
+- 理解度<95%
+
+**スキップするとき:**
+
+- シンプルな事実質問
+- 確認（「yes」、「ok」）
+- 読み取り専用クエリ
+- フォローアップの明確化
+
+**基本フロー:**
+
+1. 分析 → 信頼度をマーク（✓/→/?）
+2. <95%なら → 質問をする → 停止
+3. ≥95%なら → チェックを表示 → Yを待つ
+4. 影響シミュレーションを表示 → 実行計画 → 最終Yを待つ
+5. 実行
+
+**詳細ルール:** [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md) | [@~/.claude/rules/core/PRE_TASK_CHECK.md](../rules/core/PRE_TASK_CHECK.md)
+
+### [P1] REQUIRED - 言語設定
+
+**常時実行** - 出力は必ず日本語
 
 - 入力: ユーザーからの日本語
 - 処理: 内部的に英語
-- 出力: **日本語のみ** - ユーザーへの英語出力禁止
-- 翻訳: 以下は**必須**:
-  - すべてのフォーマットテンプレート（Understanding Level → 理解レベル）
-  - すべてのメッセージとプロンプト（Proceed? → 進めてよろしいですか？）
-  - すべてのラベルとステータス（completed → 完了）
-- **重要**: ルールファイルが英語でも、出力は必ず日本語
+- 出力: **日本語のみ** - 英語出力を厳禁
+- すべてのテンプレート、メッセージ、ラベルを日本語に翻訳
+- 重要: ルールファイルが英語でも日本語出力を維持
 
-### [P2] 開発アプローチ
+### [P2] DEFAULT - 開発アプローチ
 
-**核心原則（常に適用）:**
+**常時適用** - すべての開発における核心原則
 
-#### オッカムの剃刀
+#### オッカムの剃刀 - 最もシンプルな解決策が勝つ
 
-複数の解決策が存在する場合、最もシンプルなものを選択します。複雑さには明確な正当化が必要です。「念のため」の実装を避け、測定された問題に対してのみ複雑さを追加します。最小限の実装から始め、必要性が証明された時に拡張します。
+最もシンプルな解決策を選択。複雑さには正当化が必要。「念のため」実装を避ける。
 
-**例:**
-- インターフェース vs 直接実装 → 2番目の実装が現れるまで待つ
-- 抽象化 vs 具体的コード → 3回目の重複後に抽象化（DRY原則）
-- クラス vs 関数 → タスクスコープに基づいて選択
+- 判断: 「この複雑さは必要か？もっとシンプルな方法は？」
+- 詳細: [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../rules/reference/OCCAMS_RAZOR.md)
 
-**判断質問:** 「この複雑さは本当に必要か？もっとシンプルな方法はないか？」
+#### 可読性のあるコード - 1分以内に理解
 
-**詳細:** [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../rules/reference/OCCAMS_RAZOR.md) - タスクスコープアプローチ、複雑さの予算、警告サインなど
+Millerの法則（7±2制限）を尊重。明確な命名、明白なフロー、焦点を絞った関数（5-10行）。
 
----
+- 判断: 「新しいチームメンバーは1分以内に理解できるか？」
+- 詳細: [@~/.claude/rules/development/READABLE_CODE.md](../rules/development/READABLE_CODE.md)
 
-#### 可読性のあるコード
+### [P3] CONTEXTUAL - Just-in-Time参照
 
-コードは1分以内に理解できるべきです。Millerの法則（7±2の認知限界）を尊重し、複雑さを管理します。明確な命名、明白な制御フロー、焦点を絞った関数（5-10行が理想）を目指します。理解時間 > 書く時間を優先します。
+**必要時に適用** - タスクタイプに基づいてロード
 
-**例:**
-- 変数名: 具体的 > 抽象的（`data`ではなく`userEmail`）
-- 制御フロー: 早期リターンのためのガード句、ネストを最小化
-- 関数: 一つのことをする、「と」で説明できない
+- コードタスク: [プログレッシブエンハンスメント](../rules/development/PROGRESSIVE_ENHANCEMENT.md) | [DRY](../rules/reference/DRY.md)
+- React/UI: [Container/Presentational](../rules/development/CONTAINER_PRESENTATIONAL.md)
+- 大規模: [SOLID](../rules/reference/SOLID.md) | [デメテルの法則](../rules/development/LAW_OF_DEMETER.md)
+- テスト: [TDD/RGRC](../rules/development/TDD_RGRC.md)
+- 完全ガイド: [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
 
-**判断質問:** 「新しいチームメンバーは1分以内にこれを理解できるか？」
-
-**詳細:** [@~/.claude/rules/development/READABLE_CODE.md](../rules/development/READABLE_CODE.md) - AIコードの癖、リファクタリング戦略など
-
----
-
-**Just-in-Time参照（必要に応じて適用）:**
-
-コードタスクの場合:
-- **プログレッシブエンハンスメント**: 最小限で開始、段階的に強化 → [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](../rules/development/PROGRESSIVE_ENHANCEMENT.md)
-- **DRY**: 3回目の重複で抽象化 → [@~/.claude/rules/reference/DRY.md](../rules/reference/DRY.md)
-
-React/UI作業の場合:
-- **Container/Presentational**: ロジックとUIを分離 → [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](../rules/development/CONTAINER_PRESENTATIONAL.md)
-
-大規模設計の場合:
-- **SOLID**: 変更のための設計 → [@~/.claude/rules/reference/SOLID.md](../rules/reference/SOLID.md)
-- **デメテルの法則**: 結合を管理 → [@~/.claude/rules/development/LAW_OF_DEMETER.md](../rules/development/LAW_OF_DEMETER.md)
-
-テスト作成の場合:
-- **TDD/RGRC**: Red-Green-Refactor-Commit → [@~/.claude/rules/development/TDD_RGRC.md](../rules/development/TDD_RGRC.md)
-
-**完全ガイド:** [@~/.claude/ja/rules/PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md) - 適用方法、優先順位、競合解決など
-
-### [P3] ファイル削除動作
+### [P4] OPTIONAL - ファイル削除動作
 
 - **rmコマンドは絶対使用しない**: settings.jsonでrmは無効化されている
 - **常にゴミ箱を使用**: 永久削除ではなく~/.Trash/にファイルを移動
