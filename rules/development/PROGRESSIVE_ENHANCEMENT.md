@@ -1,10 +1,4 @@
 ---
-tier: 2
-usage_frequency: most_code_tasks
-applies_to: ["code_writing", "architecture_design", "refactoring"]
-related_commands: ["/code", "/think", "/fix"]
-load_strategy: just_in_time
-token_cost: 330
 summary: |
   Start with minimal viable implementation, enhance based on real needs.
   YAGNI (You Aren't Gonna Need It) is default. Add complexity only when

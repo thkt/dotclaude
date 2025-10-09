@@ -1,10 +1,4 @@
 ---
-tier: 1
-usage_frequency: every_task
-applies_to: ["all", "code_writing"]
-related_commands: ["/code", "/fix", "/review"]
-load_strategy: embedded
-token_cost: 828
 summary: |
   Code should be understandable in under 1 minute by any team member.
   Respect Miller's Law (7±2 cognitive limit). Clarity beats cleverness.
