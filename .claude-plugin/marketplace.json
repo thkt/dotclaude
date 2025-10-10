@@ -1,0 +1,234 @@
+{
+  "name": "thkt-development-workflows",
+  "owner": {
+    "name": "thkt",
+    "email": "",
+    "url": "https://github.com/thkt"
+  },
+  "metadata": {
+    "description": "Comprehensive TDD/RGRC workflow system with bilingual (EN/JP) documentation and specialized review agents",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "complete-workflow-system",
+      "source": "local",
+      "description": "Full development workflow: /think → /code → /test → /review → /validate with SOW-based validation",
+      "version": "1.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "tdd",
+        "rgrc",
+        "workflow",
+        "japanese",
+        "sow",
+        "validation",
+        "review",
+        "bilingual"
+      ],
+      "category": "Complete Workflow Systems",
+      "commands": [
+        "commands/think.md",
+        "commands/code.md",
+        "commands/test.md",
+        "commands/review.md",
+        "commands/validate.md",
+        "commands/sow.md",
+        "commands/research.md",
+        "ja/commands/think.md",
+        "ja/commands/code.md",
+        "ja/commands/test.md",
+        "ja/commands/review.md",
+        "ja/commands/validate.md",
+        "ja/commands/sow.md",
+        "ja/commands/research.md"
+      ],
+      "agents": [
+        "agents/orchestrators/review-orchestrator.md",
+        "agents/general/test-generator.md",
+        "agents/general/progressive-enhancer.md",
+        "agents/general/subagent-reviewer.md",
+        "agents/general/document-reviewer.md",
+        "agents/frontend/security-reviewer.md",
+        "agents/frontend/testability-reviewer.md",
+        "agents/frontend/root-cause-reviewer.md",
+        "agents/frontend/structure-reviewer.md",
+        "agents/frontend/performance-reviewer.md",
+        "agents/frontend/type-safety-reviewer.md",
+        "agents/frontend/readability-reviewer.md",
+        "agents/frontend/accessibility-reviewer.md",
+        "agents/frontend/design-pattern-reviewer.md"
+      ]
+    },
+    {
+      "name": "quick-actions",
+      "source": "local",
+      "description": "Fast bug fixes and emergency hotfixes: /fix for development, /hotfix for production",
+      "version": "1.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "fix",
+        "hotfix",
+        "quick",
+        "emergency",
+        "production"
+      ],
+      "category": "Quick Actions",
+      "commands": [
+        "commands/fix.md",
+        "commands/hotfix.md",
+        "ja/commands/fix.md",
+        "ja/commands/hotfix.md"
+      ]
+    },
+    {
+      "name": "automation-commands",
+      "source": "local",
+      "description": "Automated development cycle: /auto-test for continuous testing, /full-cycle for complete automation",
+      "version": "1.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "automation",
+        "auto-test",
+        "full-cycle",
+        "continuous"
+      ],
+      "category": "Automation",
+      "commands": [
+        "commands/auto-test.md",
+        "commands/full-cycle.md",
+        "ja/commands/auto-test.md",
+        "ja/commands/full-cycle.md"
+      ]
+    },
+    {
+      "name": "git-utilities",
+      "source": "local",
+      "description": "Git workflow helpers: /commit (Conventional Commits), /branch (naming), /pr (pull request)",
+      "version": "1.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "git",
+        "commit",
+        "branch",
+        "pr",
+        "conventional-commits"
+      ],
+      "category": "Git Utilities",
+      "commands": [
+        "commands/commit.md",
+        "commands/branch.md",
+        "commands/pr.md",
+        "ja/commands/commit.md",
+        "ja/commands/branch.md",
+        "ja/commands/pr.md"
+      ]
+    },
+    {
+      "name": "documentation-tools",
+      "source": "local",
+      "description": "Architecture Decision Records (ADR) in MADR format with automatic rule generation",
+      "version": "1.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "adr",
+        "madr",
+        "documentation",
+        "architecture",
+        "decision-records"
+      ],
+      "category": "Documentation",
+      "commands": [
+        "commands/adr.md",
+        "commands/adr/rule.md",
+        "ja/commands/adr.md",
+        "ja/commands/adr/rule.md"
+      ]
+    },
+    {
+      "name": "browser-workflows",
+      "source": "local",
+      "description": "Browser automation workflow generator for E2E testing and monitoring",
+      "version": "1.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "browser",
+        "e2e",
+        "automation",
+        "workflow",
+        "testing"
+      ],
+      "category": "Browser Automation",
+      "commands": [
+        "commands/workflow/create.md"
+      ]
+    },
+    {
+      "name": "external-integrations",
+      "source": "local",
+      "description": "External tool integrations: /gemini:search for Google search via Gemini CLI",
+      "version": "1.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "gemini",
+        "search",
+        "external",
+        "integration"
+      ],
+      "category": "External Tools",
+      "commands": [
+        "commands/gemini/search.md",
+        "ja/commands/gemini/search.md"
+      ]
+    },
+    {
+      "name": "utilities",
+      "source": "local",
+      "description": "Development utilities: /context for diagnostics",
+      "version": "1.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "context",
+        "diagnostics",
+        "utilities"
+      ],
+      "category": "Utilities",
+      "commands": [
+        "commands/context.md",
+        "ja/commands/context.md"
+      ]
+    }
+  ]
+}

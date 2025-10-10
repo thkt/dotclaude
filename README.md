@@ -51,20 +51,64 @@ This repository contains personal configurations for Claude AI, including:
 
 ## 🚀 Quick Start
 
-### Installation
+### Option 1: Install as Claude Code Plugin (Recommended)
+
+This repository is available as a Claude Code plugin, allowing you to easily install specific workflow sets:
+
+1. **Add this repository as a marketplace**:
+
+   ```bash
+   /plugin marketplace add thkt/.claude
+   ```
+
+2. **Browse available plugins**:
+
+   ```bash
+   /plugin
+   ```
+
+3. **Install specific plugin** (choose one or more):
+
+   ```bash
+   /plugin install complete-workflow-system  # Full TDD/RGRC workflow
+   /plugin install quick-actions             # /fix and /hotfix
+   /plugin install automation-commands       # /auto-test, /full-cycle
+   /plugin install git-utilities             # /commit, /branch, /pr
+   /plugin install documentation-tools       # /adr, /adr:rule
+   /plugin install browser-workflows         # /workflow:create
+   /plugin install external-integrations     # /gemini:search
+   /plugin install utilities                 # /context
+   ```
+
+**Available Plugins**:
+
+- **complete-workflow-system**: Full development workflow with 14 review agents
+- **quick-actions**: Fast bug fixes (/fix) and emergency hotfixes (/hotfix)
+- **automation-commands**: Auto-test and full-cycle automation
+- **git-utilities**: Git workflow helpers (commit, branch, PR)
+- **documentation-tools**: ADR creation and rule generation
+- **browser-workflows**: E2E testing and automation
+- **external-integrations**: Gemini search integration
+- **utilities**: Development diagnostics tools
+
+### Option 2: Manual Installation (Full Configuration)
+
+For using this as your personal `.claude` configuration:
 
 1. Clone this repository to your home directory:
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/claude-config.git ~/.claude
+   git clone https://github.com/thkt/.claude ~/.claude
    ```
 
 2. Or if you already have a `.claude` directory, back it up first:
 
    ```bash
    mv ~/.claude ~/.claude.backup
-   git clone https://github.com/YOUR_USERNAME/claude-config.git ~/.claude
+   git clone https://github.com/thkt/.claude ~/.claude
    ```
+
+**Note**: Manual installation includes all commands, agents, rules, and personal configurations. Plugin installation only includes shared commands and agents (excludes personal `CLAUDE.md`, `rules/`, and `settings.json`).
 
 ## 📝 Available Commands
 

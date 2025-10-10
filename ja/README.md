@@ -50,20 +50,64 @@
 
 ## 🚀 クイックスタート
 
-### インストール
+### Option 1: Claude Codeプラグインとしてインストール（推奨）
+
+このリポジトリはClaude Codeプラグインとして利用可能で、特定のワークフローセットを簡単にインストールできます：
+
+1. **このリポジトリをマーケットプレイスとして追加**:
+
+   ```bash
+   /plugin marketplace add thkt/.claude
+   ```
+
+2. **利用可能なプラグインを閲覧**:
+
+   ```bash
+   /plugin
+   ```
+
+3. **特定のプラグインをインストール**（1つまたは複数を選択）:
+
+   ```bash
+   /plugin install complete-workflow-system  # 完全なTDD/RGRCワークフロー
+   /plugin install quick-actions             # /fixと/hotfix
+   /plugin install automation-commands       # /auto-test、/full-cycle
+   /plugin install git-utilities             # /commit、/branch、/pr
+   /plugin install documentation-tools       # /adr、/adr:rule
+   /plugin install browser-workflows         # /workflow:create
+   /plugin install external-integrations     # /gemini:search
+   /plugin install utilities                 # /context
+   ```
+
+**利用可能なプラグイン**:
+
+- **complete-workflow-system**: 14個のレビューエージェントを含む完全な開発ワークフロー
+- **quick-actions**: 素早いバグ修正（/fix）と緊急修正（/hotfix）
+- **automation-commands**: 自動テストと完全サイクル自動化
+- **git-utilities**: Gitワークフローヘルパー（commit、branch、PR）
+- **documentation-tools**: ADR作成とルール生成
+- **browser-workflows**: E2Eテストと自動化
+- **external-integrations**: Gemini検索統合
+- **utilities**: 開発診断ツール
+
+### Option 2: 手動インストール（完全な設定）
+
+個人の`.claude`設定として使用する場合：
 
 1. このリポジトリをホームディレクトリにクローン：
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/claude-config.git ~/.claude
+   git clone https://github.com/thkt/.claude ~/.claude
    ```
 
 2. すでに`.claude`ディレクトリがある場合は、先にバックアップを取ってください：
 
    ```bash
    mv ~/.claude ~/.claude.backup
-   git clone https://github.com/YOUR_USERNAME/claude-config.git ~/.claude
+   git clone https://github.com/thkt/.claude ~/.claude
    ```
+
+**注意**: 手動インストールには、すべてのコマンド、エージェント、ルール、個人設定が含まれます。プラグインインストールには、共有コマンドとエージェントのみが含まれます（個人の`CLAUDE.md`、`rules/`、`settings.json`は除外されます）。
 
 ## 📝 利用可能なコマンド
 

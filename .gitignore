@@ -38,3 +38,8 @@ file-history/
 # Cache
 .cache/
 *.cache
+
+# Plugin system (auto-generated)
+# Note: .claude-plugin/marketplace.json is tracked
+# This directory may contain auto-generated plugin metadata
+.claude-plugin/.cache/
