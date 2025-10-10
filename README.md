@@ -58,7 +58,7 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 1. **Add this repository as a marketplace**:
 
    ```bash
-   /plugin marketplace add thkt/.claude
+   /plugin marketplace add thkt/claude-config
    ```
 
 2. **Browse available plugins**:

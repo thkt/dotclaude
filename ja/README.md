@@ -57,7 +57,7 @@
 1. **このリポジトリをマーケットプレイスとして追加**:
 
    ```bash
-   /plugin marketplace add thkt/.claude
+   /plugin marketplace add thkt/claude-config
    ```
 
 2. **利用可能なプラグインを閲覧**:
