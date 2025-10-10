@@ -12,7 +12,7 @@
   "plugins": [
     {
       "name": "complete-workflow-system",
-      "source": "local",
+      "source": "./",
       "description": "Full development workflow: /think → /code → /test → /review → /validate with SOW-based validation",
       "version": "1.0.0",
       "author": {
@@ -32,41 +32,41 @@
       ],
       "category": "Complete Workflow Systems",
       "commands": [
-        "commands/think.md",
-        "commands/code.md",
-        "commands/test.md",
-        "commands/review.md",
-        "commands/validate.md",
-        "commands/sow.md",
-        "commands/research.md",
-        "ja/commands/think.md",
-        "ja/commands/code.md",
-        "ja/commands/test.md",
-        "ja/commands/review.md",
-        "ja/commands/validate.md",
-        "ja/commands/sow.md",
-        "ja/commands/research.md"
+        "./commands/think.md",
+        "./commands/code.md",
+        "./commands/test.md",
+        "./commands/review.md",
+        "./commands/validate.md",
+        "./commands/sow.md",
+        "./commands/research.md",
+        "./ja/commands/think.md",
+        "./ja/commands/code.md",
+        "./ja/commands/test.md",
+        "./ja/commands/review.md",
+        "./ja/commands/validate.md",
+        "./ja/commands/sow.md",
+        "./ja/commands/research.md"
       ],
       "agents": [
-        "agents/orchestrators/review-orchestrator.md",
-        "agents/general/test-generator.md",
-        "agents/general/progressive-enhancer.md",
-        "agents/general/subagent-reviewer.md",
-        "agents/general/document-reviewer.md",
-        "agents/frontend/security-reviewer.md",
-        "agents/frontend/testability-reviewer.md",
-        "agents/frontend/root-cause-reviewer.md",
-        "agents/frontend/structure-reviewer.md",
-        "agents/frontend/performance-reviewer.md",
-        "agents/frontend/type-safety-reviewer.md",
-        "agents/frontend/readability-reviewer.md",
-        "agents/frontend/accessibility-reviewer.md",
-        "agents/frontend/design-pattern-reviewer.md"
+        "./agents/orchestrators/review-orchestrator.md",
+        "./agents/general/test-generator.md",
+        "./agents/general/progressive-enhancer.md",
+        "./agents/general/subagent-reviewer.md",
+        "./agents/general/document-reviewer.md",
+        "./agents/frontend/security-reviewer.md",
+        "./agents/frontend/testability-reviewer.md",
+        "./agents/frontend/root-cause-reviewer.md",
+        "./agents/frontend/structure-reviewer.md",
+        "./agents/frontend/performance-reviewer.md",
+        "./agents/frontend/type-safety-reviewer.md",
+        "./agents/frontend/readability-reviewer.md",
+        "./agents/frontend/accessibility-reviewer.md",
+        "./agents/frontend/design-pattern-reviewer.md"
       ]
     },
     {
       "name": "quick-actions",
-      "source": "local",
+      "source": "./",
       "description": "Fast bug fixes and emergency hotfixes: /fix for development, /hotfix for production",
       "version": "1.0.0",
       "author": {
@@ -83,15 +83,15 @@
       ],
       "category": "Quick Actions",
       "commands": [
-        "commands/fix.md",
-        "commands/hotfix.md",
-        "ja/commands/fix.md",
-        "ja/commands/hotfix.md"
+        "./commands/fix.md",
+        "./commands/hotfix.md",
+        "./ja/commands/fix.md",
+        "./ja/commands/hotfix.md"
       ]
     },
     {
       "name": "automation-commands",
-      "source": "local",
+      "source": "./",
       "description": "Automated development cycle: /auto-test for continuous testing, /full-cycle for complete automation",
       "version": "1.0.0",
       "author": {
@@ -107,15 +107,15 @@
       ],
       "category": "Automation",
       "commands": [
-        "commands/auto-test.md",
-        "commands/full-cycle.md",
-        "ja/commands/auto-test.md",
-        "ja/commands/full-cycle.md"
+        "./commands/auto-test.md",
+        "./commands/full-cycle.md",
+        "./ja/commands/auto-test.md",
+        "./ja/commands/full-cycle.md"
       ]
     },
     {
       "name": "git-utilities",
-      "source": "local",
+      "source": "./",
       "description": "Git workflow helpers: /commit (Conventional Commits), /branch (naming), /pr (pull request)",
       "version": "1.0.0",
       "author": {
@@ -132,17 +132,17 @@
       ],
       "category": "Git Utilities",
       "commands": [
-        "commands/commit.md",
-        "commands/branch.md",
-        "commands/pr.md",
-        "ja/commands/commit.md",
-        "ja/commands/branch.md",
-        "ja/commands/pr.md"
+        "./commands/commit.md",
+        "./commands/branch.md",
+        "./commands/pr.md",
+        "./ja/commands/commit.md",
+        "./ja/commands/branch.md",
+        "./ja/commands/pr.md"
       ]
     },
     {
       "name": "documentation-tools",
-      "source": "local",
+      "source": "./",
       "description": "Architecture Decision Records (ADR) in MADR format with automatic rule generation",
       "version": "1.0.0",
       "author": {
@@ -159,15 +159,15 @@
       ],
       "category": "Documentation",
       "commands": [
-        "commands/adr.md",
-        "commands/adr/rule.md",
-        "ja/commands/adr.md",
-        "ja/commands/adr/rule.md"
+        "./commands/adr.md",
+        "./commands/adr/rule.md",
+        "./ja/commands/adr.md",
+        "./ja/commands/adr/rule.md"
       ]
     },
     {
       "name": "browser-workflows",
-      "source": "local",
+      "source": "./",
       "description": "Browser automation workflow generator for E2E testing and monitoring",
       "version": "1.0.0",
       "author": {
@@ -184,12 +184,12 @@
       ],
       "category": "Browser Automation",
       "commands": [
-        "commands/workflow/create.md"
+        "./commands/workflow/create.md"
       ]
     },
     {
       "name": "external-integrations",
-      "source": "local",
+      "source": "./",
       "description": "External tool integrations: /gemini:search for Google search via Gemini CLI",
       "version": "1.0.0",
       "author": {
@@ -205,13 +205,13 @@
       ],
       "category": "External Tools",
       "commands": [
-        "commands/gemini/search.md",
-        "ja/commands/gemini/search.md"
+        "./commands/gemini/search.md",
+        "./ja/commands/gemini/search.md"
       ]
     },
     {
       "name": "utilities",
-      "source": "local",
+      "source": "./",
       "description": "Development utilities: /context for diagnostics",
       "version": "1.0.0",
       "author": {
@@ -226,8 +226,8 @@
       ],
       "category": "Utilities",
       "commands": [
-        "commands/context.md",
-        "ja/commands/context.md"
+        "./commands/context.md",
+        "./ja/commands/context.md"
       ]
     }
   ]
