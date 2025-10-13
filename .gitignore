@@ -23,6 +23,7 @@ shell-snapshots/
 sounds/
 statsig/
 todos/
+.claude/
 .credentials.json
 settings.json
 
