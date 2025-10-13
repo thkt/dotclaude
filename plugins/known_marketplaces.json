@@ -1,0 +1,10 @@
+{
+  "thkt-development-workflows": {
+    "source": {
+      "source": "github",
+      "repo": "thkt/claude-config"
+    },
+    "installLocation": "/Users/thkt/.claude/plugins/marketplaces/thkt-development-workflows",
+    "lastUpdated": "2025-10-10T01:41:01.383Z"
+  }
+}

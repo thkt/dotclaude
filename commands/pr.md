@@ -129,24 +129,24 @@ Generate PR description with these sections:
 ### Comprehensive Template
 
 ```markdown
-## 📋 Pull Request Description
+## Pull Request Description
 
 ### Summary
 [One paragraph overview of all changes]
 
-### 🎯 Problem/Motivation
+### Problem/Motivation
 [Why these changes are needed]
 - Issue: [Link to issue if applicable]
 - Context: [Background information]
 - Goal: [What we're trying to achieve]
 
-### 💡 Solution
+### Solution
 [How the problem was solved]
 - Approach: [Implementation strategy]
 - Key decisions: [Important choices made]
 - Trade-offs: [Compromises if any]
 
-### 📝 Changes
+### Changes
 
 #### Core Changes
 - [ ] [Main feature/fix implemented]
@@ -165,7 +165,7 @@ Generate PR description with these sections:
 
 ```markdown
 
-### 🧪 Testing
+### Testing
 
 #### How to Test
 1. [Step-by-step testing instructions]
@@ -178,7 +178,7 @@ Generate PR description with these sections:
 - [ ] Manual testing completed
 - [ ] Edge cases tested
 
-### 📸 Screenshots/Demo
+### Screenshots/Demo
 [If applicable, add screenshots or GIFs]
 
 #### Screenshots
@@ -189,7 +189,7 @@ Generate PR description with these sections:
 **After:**
 [Image/description]
 
-### ✅ Checklist
+### Checklist
 - [ ] Code follows project style guidelines
 - [ ] Self-review completed
 - [ ] Comments added for complex logic
@@ -199,12 +199,12 @@ Generate PR description with these sections:
 - [ ] No linting errors
 - [ ] Breaking changes documented
 
-### 🔗 Related
+### Related
 - Closes #[issue number]
 - Related to #[other issue/PR]
 - Depends on #[dependency PR]
 
-### 🏷️ Labels Suggested
+### Labels Suggested
 - `[type]` (feature/bug/refactor)
 - `[priority]` (high/medium/low)
 - `[component]` (affected area)
@@ -265,7 +265,7 @@ git diff BASE_BRANCH...HEAD | grep -E "(memo|cache|optimize|performance)" | head
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📝 PR Description Generator
+PR Description Generator
 
 ## Branch Analysis
 - **Current branch**: [branch name]
@@ -282,10 +282,10 @@ git diff BASE_BRANCH...HEAD | grep -E "(memo|cache|optimize|performance)" | head
 
 ## Generated PR Description
 
-### 🎯 Recommended Template
+### Recommended Template
 [Full PR description formatted for GitHub]
 
-### 📋 Alternative Formats
+### Alternative Formats
 
 #### Detailed Version
 [Comprehensive description with all sections]

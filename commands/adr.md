@@ -119,7 +119,7 @@ Explain why you chose this option:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## Optional Information (Press Enter to skip)
+## Optional Information (y/yes to skip)
 
 ### Decision Drivers
 Enter factors that influenced the decision:
