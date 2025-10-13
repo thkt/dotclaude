@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "mdn": {
+      "command": "bun",
+      "args": [
+        "${HOME}/Tools/mcp/mdn/dist/index"
+      ]
+    },
+    "calculator": {
+      "command": "bun",
+      "args": [
+        "${HOME}/Tools/mcp/calculator/dist/index"
+      ],
+      "transport": "stdio"
+    },
+    "text-counter": {
+      "command": "bun",
+      "args": [
+        "${HOME}/Tools/mcp/text-counter/dist/index"
+      ]
+    },
+    "data-processor": {
+      "command": "bun",
+      "args": [
+        "${HOME}/Tools/mcp/data-processor/dist/index"
+      ]
+    }
+  }
+}

@@ -175,6 +175,13 @@ Standard format for understanding check (when required):
 📋 Additional information I'd like to confirm:
 - [Required specifications]
 
+🎯 Done Definition:
+- [ ] [Inferred completion criterion 1]
+- [ ] [Inferred completion criterion 2]
+- [ ] [Inferred completion criterion 3]
+
+Is this definition correct? Please point out any missing or incorrect items.
+
 💡 Suggested approach:
 - Command: [/command or N/A]
 - Reason: [Brief explanation]
@@ -191,6 +198,8 @@ Is this understanding correct? An execution plan will be shown if needed. (Y/n/i
 Note: Output labels will be translated to Japanese per CLAUDE.md P1 rule
 
 Progress bar: █ = 10% (fill left to right, use ░ for empty)
+
+**Done Definition Section**: Display only for implementation/fix tasks (/code, /fix, /hotfix commands). This section is separate from TodoWrite - Done Definition represents the goal (what to achieve), while TodoWrite tracks execution steps (how to achieve it).
 
 ### Example: Output Verifiability in Practice
 

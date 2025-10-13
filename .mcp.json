@@ -1,0 +1,53 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "--init",
+        "--pull=always",
+        "mcr.microsoft.com/playwright/mcp"
+      ],
+      "enabled": false
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest"
+      ],
+      "env": {}
+    },
+    "figma-remote-mcp": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp"
+    },
+    "mdn": {
+      "command": "bun",
+      "args": [
+        "${HOME}/Tools/mcp/mdn/dist/index"
+      ]
+    },
+    "calculator": {
+      "command": "bun",
+      "args": [
+        "${HOME}/Tools/mcp/calculator/dist/index"
+      ],
+      "transport": "stdio"
+    },
+    "text-counter": {
+      "command": "bun",
+      "args": [
+        "${HOME}/Tools/mcp/text-counter/dist/index"
+      ]
+    },
+    "data-processor": {
+      "command": "bun",
+      "args": [
+        "${HOME}/Tools/mcp/data-processor/dist/index"
+      ]
+    }
+  }
+}
