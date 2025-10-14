@@ -1,6 +1,6 @@
-# The Law of Leaky Abstractions
+# The Law of Leaky Abstractions like Joel Spolsky
 
-**Core principle**: "All non-trivial abstractions, to some degree, are leaky" - Joel Spolsky
+**Core principle**: "All non-trivial abstractions, to some degree, are leaky"
 
 ## Core Philosophy
 

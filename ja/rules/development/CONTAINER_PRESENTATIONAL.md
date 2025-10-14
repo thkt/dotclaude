@@ -1,4 +1,4 @@
-# Container/Presentationalパターン
+# Container/Presentationalパターン - 関心の分離
 
 **デフォルトアプローチ**: 最大の再利用性のためにロジックをUIから分離
 

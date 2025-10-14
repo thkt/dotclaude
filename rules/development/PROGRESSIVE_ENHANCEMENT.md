@@ -6,7 +6,7 @@ summary: |
 decision_question: "Is this solving a real problem that exists now?"
 ---
 
-# Progressive Enhancement
+# Progressive Enhancement - Outcome-First Development
 
 **Default approach**: Build simple → enhance progressively
 

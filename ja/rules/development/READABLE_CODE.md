@@ -1,6 +1,6 @@
-# The Art of Readable Code
+# The Art of Readable Code like Dustin Boswell & Trevor Foucher
 
-**デフォルトマインドセット**: コードは理解しやすくあるべき - Dustin Boswell & Trevor Foucher
+**デフォルトマインドセット**: コードは理解しやすくあるべき
 
 ## 核心哲学
 

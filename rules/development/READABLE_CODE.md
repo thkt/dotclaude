@@ -6,9 +6,9 @@ summary: |
 decision_question: "Would a new team member understand this in < 1 minute?"
 ---
 
-# The Art of Readable Code
+# The Art of Readable Code like Dustin Boswell & Trevor Foucher
 
-**Default mindset**: Code should be easy to understand - Dustin Boswell & Trevor Foucher
+**Default mindset**: Code should be easy to understand
 
 ## Core Philosophy
 

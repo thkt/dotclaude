@@ -6,7 +6,7 @@ summary: |
 decision_question: "Can this component be split into logic and UI?"
 ---
 
-# Container/Presentational Pattern
+# Container/Presentational Pattern - Separation of Concerns
 
 **Default approach**: Separate logic from UI for maximum reusability
 

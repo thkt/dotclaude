@@ -197,7 +197,32 @@ Is this understanding correct? An execution plan will be shown if needed. (Y/n/i
 
 Note: Output labels will be translated to Japanese per CLAUDE.md P1 rule
 
-Progress bar: █ = 10% (fill left to right, use ░ for empty)
+**Progress Bar Construction**:
+
+- Uses 10 blocks total to represent 100%
+- Each block (█ or ░) represents 10%
+- Fill from left to right based on percentage
+- █ = filled (confidence level reached)
+- ░ = empty (confidence level not reached)
+
+**Examples**:
+
+```text
+100% → ██████████ 100%  (10 filled)
+ 90% → █████████░  90%  (9 filled, 1 empty)
+ 70% → ███████░░░  70%  (7 filled, 3 empty)
+ 50% → █████░░░░░  50%  (5 filled, 5 empty)
+ 30% → ███░░░░░░░  30%  (3 filled, 7 empty)
+  0% → ░░░░░░░░░░   0%  (10 empty)
+```
+
+**Implementation pattern**:
+
+```text
+filled_count = Math.floor(percentage / 10)
+empty_count = 10 - filled_count
+bar = "█".repeat(filled_count) + "░".repeat(empty_count)
+```
 
 **Done Definition Section**: Display only for implementation/fix tasks (/code, /fix, /hotfix commands). This section is separate from TodoWrite - Done Definition represents the goal (what to achieve), while TodoWrite tracks execution steps (how to achieve it).
 
