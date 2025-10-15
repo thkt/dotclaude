@@ -44,3 +44,4 @@ file-history/
 # Note: .claude-plugin/marketplace.json is tracked
 # This directory may contain auto-generated plugin metadata
 .claude-plugin/.cache/
+plugins/
