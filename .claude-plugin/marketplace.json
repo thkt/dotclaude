@@ -7,14 +7,14 @@
   },
   "metadata": {
     "description": "Comprehensive TDD/RGRC workflow system with bilingual (EN/JP) documentation and specialized review agents",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "complete-workflow-system",
       "source": "./",
       "description": "Full development workflow: /think → /code → /test → /review → /validate with SOW-based validation",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -62,13 +62,17 @@
         "./agents/frontend/readability-reviewer.md",
         "./agents/frontend/accessibility-reviewer.md",
         "./agents/frontend/design-pattern-reviewer.md"
+      ],
+      "rules": [
+        "./rules/development/TEST_GENERATION.md",
+        "./ja/rules/development/TEST_GENERATION.md"
       ]
     },
     {
       "name": "quick-actions",
       "source": "./",
       "description": "Fast bug fixes and emergency hotfixes: /fix for development, /hotfix for production",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -93,7 +97,7 @@
       "name": "automation-commands",
       "source": "./",
       "description": "Automated development cycle: /auto-test for continuous testing, /full-cycle for complete automation",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -117,7 +121,7 @@
       "name": "git-utilities",
       "source": "./",
       "description": "Git workflow helpers: /commit (Conventional Commits), /branch (naming), /pr (pull request)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -138,13 +142,21 @@
         "./ja/commands/commit.md",
         "./ja/commands/branch.md",
         "./ja/commands/pr.md"
+      ],
+      "agents": [
+        "./agents/git/branch-generator.md",
+        "./agents/git/commit-generator.md",
+        "./agents/git/pr-generator.md",
+        "./ja/agents/git/branch-generator.md",
+        "./ja/agents/git/commit-generator.md",
+        "./ja/agents/git/pr-generator.md"
       ]
     },
     {
       "name": "documentation-tools",
       "source": "./",
       "description": "Architecture Decision Records (ADR) in MADR format with automatic rule generation",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -169,7 +181,7 @@
       "name": "browser-workflows",
       "source": "./",
       "description": "Browser automation workflow generator for E2E testing and monitoring",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -191,7 +203,7 @@
       "name": "external-integrations",
       "source": "./",
       "description": "External tool integrations: /gemini:search for Google search via Gemini CLI",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -213,7 +225,7 @@
       "name": "utilities",
       "source": "./",
       "description": "Development utilities: /context for diagnostics",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
