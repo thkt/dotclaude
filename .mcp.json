@@ -48,6 +48,12 @@
       "args": [
         "${HOME}/Tools/mcp/data-processor/dist/index"
       ]
+    },
+    "ops-history": {
+      "command": "bun",
+      "args": [
+        "${HOME}/Tools/mcp/ops-history/dist/index"
+      ]
     }
   }
 }

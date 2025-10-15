@@ -19,6 +19,8 @@ Analyze git diff, commit history, and file changes to automatically generate wel
 
 **Core Focus**: Git operations only - no codebase context required.
 
+**Output Language**: All output must be translated to Japanese per CLAUDE.md P1 requirements. Templates shown in this file are examples in English, but actual execution outputs Japanese.
+
 ## Git Analysis Tools
 
 This agent ONLY uses bash commands for git operations:
@@ -114,7 +116,7 @@ Create comprehensive but concise description with:
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📋 Pull Request Description Generator
+Pull Request Description Generator
 
 ## Branch Analysis
 - **Current branch**: [branch-name]
@@ -131,7 +133,7 @@ Create comprehensive but concise description with:
 
 ## Generated PR Description
 
-### 📝 Recommended Template
+### Recommended Template
 
 ```markdown
 ## Summary
@@ -186,7 +188,7 @@ Create comprehensive but concise description with:
 - [ ] No breaking changes (or documented)
 ```
 
-### 🔄 Alternative Formats
+### Alternative Formats
 
 #### Concise Version (for small changes)
 
@@ -262,7 +264,7 @@ gh pr create --title "[PR Title]" --body "[Generated Description]"
 
 ```markdown
 
-**Note**: Output will be translated to Japanese per CLAUDE.md requirements.
+**IMPORTANT**: The above templates are examples in English for documentation purposes. When this agent executes, **ALL output must be translated to Japanese** per CLAUDE.md P1 requirements. Do not output English text to the user.
 
 ## Advanced Features
 
