@@ -127,6 +127,47 @@ Skip for: Prototypes, External APIs (use mocks), Throwaway scripts
 
 Clear boundaries per phase, Prevents overengineering, Self-documenting tests, Natural checkpoints
 
+## Test Design Techniques
+
+Before writing tests, apply systematic test design:
+
+### Quick Test Design Steps
+
+1. **Identify partitions** - What are the equivalence classes?
+2. **Find boundaries** - Where are the edges [min, max]?
+3. **Complex logic?** - Use decision tables for 3+ conditions
+
+### Example: Systematic Test Design
+
+```typescript
+// Function to test
+function canPurchase(age: number, balance: number): boolean {
+  return age >= 18 && balance >= 10
+}
+
+// 1. Equivalence Partitions:
+// - age: <18, >=18
+// - balance: <10, >=10
+
+// 2. Boundaries:
+// - age: 17, 18
+// - balance: 9, 10
+
+// 3. Test Cases (Red Phase):
+test('rejects under 18', () => expect(canPurchase(17, 10)).toBe(false))  // Boundary
+test('accepts 18 with sufficient balance', () => expect(canPurchase(18, 10)).toBe(true))  // Min boundary
+test('rejects sufficient age with low balance', () => expect(canPurchase(20, 9)).toBe(false))  // Boundary
+test('accepts sufficient age and balance', () => expect(canPurchase(20, 10)).toBe(true))  // Valid partition
+```
+
+**For detailed test design techniques**, see [@./TEST_GENERATION.md](./TEST_GENERATION.md):
+
+- Equivalence Partitioning
+- Boundary Value Analysis
+- Decision Table Testing
+- Coverage Goals (C0: 80%, C1: 70%)
+
 ## Related Principles
 
 - [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - Baby Steps embody the simplicity principle
+- [@./TEST_GENERATION.md](./TEST_GENERATION.md) - Systematic test design techniques

@@ -127,6 +127,47 @@ function calculateTotal(items) {
 
 フェーズごとの明確な境界、過度な設計の防止、自己文書化されたテスト、自然なチェックポイント
 
+## テスト設計技法
+
+テストを書く前に、体系的なテスト設計を適用:
+
+### クイックテスト設計ステップ
+
+1. **分割を特定** - 同値クラスは何か？
+2. **境界を見つける** - 境界[min, max]はどこか？
+3. **複雑なロジック？** - 3以上の条件にはデシジョンテーブルを使用
+
+### 例: 体系的なテスト設計
+
+```typescript
+// テスト対象の関数
+function canPurchase(age: number, balance: number): boolean {
+  return age >= 18 && balance >= 10
+}
+
+// 1. 同値分割:
+// - age: <18, >=18
+// - balance: <10, >=10
+
+// 2. 境界値:
+// - age: 17, 18
+// - balance: 9, 10
+
+// 3. テストケース（Redフェーズ）:
+test('18歳未満を拒否', () => expect(canPurchase(17, 10)).toBe(false))  // 境界
+test('18歳で十分な残高を受理', () => expect(canPurchase(18, 10)).toBe(true))  // 最小境界
+test('十分な年齢で低残高を拒否', () => expect(canPurchase(20, 9)).toBe(false))  // 境界
+test('十分な年齢と残高を受理', () => expect(canPurchase(20, 10)).toBe(true))  // 有効な分割
+```
+
+**詳細なテスト設計技法については**、[@./TEST_GENERATION.md]を参照:
+
+- 同値分析
+- 境界値分析
+- デシジョンテーブルテスト
+- カバレッジ目標（C0: 80%, C1: 70%）
+
 ## 関連する原則
 
 - [@../reference/OCCAMS_RAZOR.md] - Baby Stepsはシンプルさの原則を体現
+- [@./TEST_GENERATION.md] - 体系的なテスト設計技法
