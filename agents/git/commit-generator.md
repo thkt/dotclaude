@@ -2,7 +2,7 @@
 name: commit-generator
 description: Git差分を分析してConventional Commits形式のメッセージを自動生成する専門エージェント
 tools: Bash
-model: sonnet
+model: haiku
 color: green
 max_execution_time: 15
 dependencies: []

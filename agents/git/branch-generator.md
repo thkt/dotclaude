@@ -2,7 +2,7 @@
 name: branch-generator
 description: Git差分を分析して適切なブランチ名を自動生成する専門エージェント
 tools: Bash
-model: sonnet
+model: haiku
 color: cyan
 max_execution_time: 10
 dependencies: []

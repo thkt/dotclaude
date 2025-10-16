@@ -1,7 +1,7 @@
 ---
 name: readability-reviewer
 description: フロントエンドコード（TypeScript/React）の可読性を「The Art of Readable Code」の原則とフロントエンド特有の観点からレビューします
-model: sonnet
+model: haiku
 tools: Read, Grep, Glob, LS, Task
 color: cyan
 max_execution_time: 30

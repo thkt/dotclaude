@@ -1,7 +1,7 @@
 ---
 name: structure-reviewer
 description: フロントエンドコードの構造を無駄、重複、根本的問題解決の観点からレビューします
-model: sonnet
+model: haiku
 tools: Read, Grep, Glob, LS, Task
 color: magenta
 max_execution_time: 30

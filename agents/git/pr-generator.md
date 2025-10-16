@@ -2,7 +2,7 @@
 name: pr-generator
 description: ブランチの変更内容を分析して包括的なPR説明文を自動生成する専門エージェント
 tools: Bash
-model: sonnet
+model: haiku
 color: blue
 max_execution_time: 20
 dependencies: []
