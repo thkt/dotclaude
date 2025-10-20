@@ -55,14 +55,30 @@
 
 #### Occam's Razor - Simplest solution wins
 
-Choose simplest solution. Complexity requires justification. Avoid "just in case" implementations.
+Choose simplest solution using these criteria:
+
+- Fewest dependencies (prefer 0-2 over 3+)
+- Fewer lines of code (prefer <50 lines per function)
+- Lower cyclomatic complexity (prefer <5 conditional branches)
+
+Complexity requires justification. Avoid "just in case" implementations.
+
+When complexity is unavoidable, document the specific requirement it addresses.
 
 - Decision: "Is this complexity necessary? Is there a simpler way?"
 - Details: [@~/.claude/rules/reference/OCCAMS_RAZOR.md](./rules/reference/OCCAMS_RAZOR.md)
 
 #### Readable Code - Understand in <1 minute
 
-Respect Miller's Law (7±2 limit). Clear naming, obvious flow, focused functions (5-10 lines).
+Respect Miller's Law (7±2 limit) by enforcing these constraints:
+
+- Function parameters: max 5 (ideal: 3 or fewer)
+- Class public methods: max 7
+- Conditional branches per function: max 5
+- Function length: 5-15 lines (ideal: 5-10)
+- Nesting depth: max 3 levels
+
+When these limits are exceeded, refactor into smaller units or use parameter objects.
 
 - Decision: "Can new team member understand in <1 minute?"
 - Details: [@~/.claude/rules/development/READABLE_CODE.md](./rules/development/READABLE_CODE.md)
@@ -86,25 +102,43 @@ Respect Miller's Law (7±2 limit). Clear naming, obvious flow, focused functions
 
 ## Work Completion Guidelines
 
-**Critical**: Ensure all work is properly verified before reporting completion
+**Critical**: Verify all work meets these specific criteria before reporting completion:
 
-- **Test Creation**: After creating tests, explicitly verify they pass by executing the project's test command
-  - Discover test command from package.json/pubspec.yaml/etc.
-  - Common patterns: `npm test`, `yarn test`, `flutter test`, `vitest`, etc.
+- **Test Creation**: After creating tests, execute ALL of the following checks:
+  1. Run project's test command (discover from package.json/pubspec.yaml/etc.)
+  2. Verify exit code is 0 (all tests passed)
+  3. Common patterns: `npm test`, `yarn test`, `flutter test`, `vitest`, etc.
 
-- **Code Implementation**: After writing code, rigorously verify:
-  - Code compiles/builds without errors (use project's build/analyze command)
-  - Linting passes (use project's lint command if available)
-  - Related tests pass (run relevant test suites)
-  - No obvious runtime errors
+- **Code Implementation**: After writing code, execute ALL of the following checks:
+  1. Build/compile succeeds (exit code 0)
+  2. Linter passes with 0 errors (warnings acceptable if <5)
+  3. All related tests pass (0 failures)
+  4. Manual smoke test for critical paths (document steps taken)
 
-- **Command Discovery**:
-  - Initially examine README.md for available scripts
-  - Thoroughly inspect package manager config (package.json scripts, pubspec.yaml, etc.)
-  - Explicitly request specific commands from user if unclear
+If any check fails:
 
-- **Retry Policy**: Automatically retry up to 5 times when issues occur, only contact user if unresolved (do not report intermediate progress)
-  - Report to user: "Same error occurred 5 times. A different approach may be needed."
+- For build errors: Fix immediately, do not proceed
+- For linter errors: Fix all errors, address warnings if time permits
+- For test failures: Fix root cause, do not disable tests
+- For smoke test failures: Debug and re-test until green
+
+- **Command Discovery** (execute in this priority order):
+  1. **First**: Read README.md, check "Scripts" or "Commands" section
+  2. **Second**: Inspect package manager config (package.json > scripts, pubspec.yaml > scripts)
+  3. **Third**: Search for common test files (*.test.*, *.spec.*, test/, spec/)
+  4. **Last resort**: If steps 1-3 yield no results, ask user with format:
+     "Could not find test command. Please specify the command to run tests (e.g., npm test, yarn test)."
+
+- **Retry Policy**: Automatically retry with these specific conditions:
+  - **Maximum retries**: 5 attempts
+  - **Retry interval**: Exponential backoff (1s, 2s, 4s, 8s, 16s)
+  - **Retry triggers**: Network errors, temporary file locks, transient test failures
+  - **Do NOT retry**: Syntax errors, compilation errors, authentication failures
+
+  After 5 failed attempts with the same error:
+  1. Stop further retries immediately
+  2. Report to user: "Same error occurred 5 times: [error message]. A different approach may be needed."
+  3. Suggest alternative approaches if available
 
 - **STRICTLY PROHIBIT completion reporting** with:
   - Failing tests (unless explicitly creating tests for unimplemented features)

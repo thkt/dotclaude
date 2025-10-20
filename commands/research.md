@@ -469,6 +469,30 @@ git log --oneline --since="3 months ago" --pretty=format:"%h %s" | head -10
 **IMPORTANT**: Apply Output Verifiability principle - use ✓/→/? markers with evidence.
 
 ```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 Research Context (Context Engineering Structure)
+
+🎯 Purpose
+- Why this research is being conducted
+- What we aim to achieve
+
+📋 Prerequisites
+- [✓] Known constraints & requirements (verified)
+- [→] Inferred environment & configuration
+- [?] Unknown dependencies (need verification)
+
+📊 Available Data
+- Related files: [file paths discovered]
+- Tech stack: [frameworks/libraries identified]
+- Existing implementation: [what was found]
+
+🔒 Constraints
+- Security requirements
+- Performance limitations
+- Compatibility constraints
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ## Research Summary
 - **Scope**: [What was researched]
 - **Duration**: [Time taken]
@@ -543,6 +567,67 @@ Include:
 - Dependency graphs
 - Key code snippets
 - Future reference notes
+
+### Context Engineering Integration
+
+**IMPORTANT**: Always save structured context for `/think` integration.
+
+**Context File**: `.claude/workspace/research/[timestamp]-[topic]-context.md`
+
+**Format**:
+
+```markdown
+# Research Context: [Topic]
+Generated: [Timestamp]
+Overall Confidence: [✓/→/?] [Score]
+
+## 🎯 Purpose
+[Why this research was conducted]
+[What we aim to achieve with this knowledge]
+
+## 📋 Prerequisites
+### Verified Facts (✓)
+- [✓] [Fact] - Evidence: [file:line or source]
+
+### Working Assumptions (→)
+- [→] [Assumption] - Based on: [reasoning]
+
+### Unknown/Needs Verification (?)
+- [?] [Unknown] - Need to check: [what/where]
+
+## 📊 Available Data
+### Related Files
+- [file paths with relevance notes]
+
+### Technology Stack
+- [frameworks/libraries with versions]
+
+### Existing Implementation
+- [what was found with evidence]
+
+## 🔒 Constraints
+### Security
+- [security requirements identified]
+
+### Performance
+- [performance limitations discovered]
+
+### Compatibility
+- [compatibility constraints found]
+
+## 📌 Key Findings Summary
+[Brief summary of most important discoveries for quick reference]
+
+## 🔗 References
+- Detailed findings: [link to full research doc]
+- Related SOWs: [if any exist]
+```
+
+**Usage Flow**:
+
+1. `/research` generates both detailed findings AND structured context
+2. Context file is automatically saved for `/think` to discover
+3. `/think` reads latest context file to inform planning
 
 ## Usage Examples
 

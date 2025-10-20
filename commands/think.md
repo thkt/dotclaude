@@ -27,6 +27,40 @@ Create a comprehensive Statement of Work (SOW) as a static planning document for
 
 **Output Verifiability**: All analyses, assumptions, and solutions marked with ✓/→/? to distinguish facts from inferences per AI Operation Principle #4.
 
+## Context Engineering Integration
+
+**IMPORTANT**: Before starting analysis, check for existing research context.
+
+### Automatic Context Discovery
+
+```bash
+# Search for latest research context files
+!`find .claude/workspace/research ~/.claude/workspace/research -name "*-context.md" 2>/dev/null | sort -r | head -1`
+```
+
+### Context Loading Strategy
+
+1. **Check for recent research**: Look for context files in the last 24 hours
+2. **Prioritize project-local**: `.claude/workspace/research/` over global `~/.claude/workspace/research/`
+3. **Extract key information**: Purpose, Prerequisites, Available Data, Constraints
+4. **Integrate into planning**: Use research findings to inform SOW creation
+
+### Context-Informed Planning
+
+If research context is found:
+
+- **🎯 Purpose**: Align SOW goals with research objectives
+- **📋 Prerequisites**: Build on verified facts, validate assumptions
+- **📊 Available Data**: Reference discovered files and stack
+- **🔒 Constraints**: Respect identified limitations
+
+**Benefits**:
+
+- **Higher confidence**: Planning based on actual codebase knowledge
+- **Fewer assumptions**: Replace unknowns with verified facts
+- **Better estimates**: Realistic based on discovered complexity
+- **Aligned goals**: Purpose-driven from research to implementation
+
 ## Dynamic Project Context
 
 ### Current State Analysis

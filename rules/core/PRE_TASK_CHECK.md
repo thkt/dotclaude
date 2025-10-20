@@ -70,7 +70,9 @@ Multi-step workflow? ──YES──→ [EXECUTE CHECK]
 - File operations (create/edit/delete)
 - Command executions (bash, npm, etc.)
 - Multi-step workflows
-- Ambiguous or complex requests
+- Requests meeting ANY of these criteria:
+  - **Ambiguous**: Contains pronouns without clear referents ("it", "that") OR vague quantities ("some", "a few")
+  - **Complex**: Requires 3+ distinct actions OR affects 5+ files OR involves 2+ subsystems
 - When understanding is below 95%
 
 **SKIP CONDITIONS** (AI judgment allowed):
@@ -95,7 +97,10 @@ Analyze the user request to determine:
 
 - Understanding percentage based on available information
 - Clear and unclear elements
-- Appropriate commands or approach
+- Command selection based on these prioritized criteria:
+  1. **Task scope**: Single file = /fix, Multiple files = /code, Investigation = /research
+  2. **Change type**: Bug fix = /fix, New feature = /think → /code, Emergency = /hotfix
+  3. **Confidence level**: <70% = /research first, 70-90% = /think, >90% = /code directly
 - Feasibility of execution
 
 **Output Verifiability Requirements** (per AI Operation Principles #4):
@@ -126,7 +131,11 @@ Never proceed with implementation below 95% understanding. This threshold is evi
 - Any critical element is marked with [?] (Low confidence)
 - Multiple elements are marked with [→] (Medium confidence)
 - User requirements contain ambiguity
-- Implementation approach is unclear
+- Implementation approach meets ANY of these unclear conditions:
+  - Cannot identify specific files to modify within 30 seconds of analysis
+  - Multiple valid approaches exist with no clear selection criteria
+  - Required technology/framework is not explicitly stated
+  - Success criteria cannot be defined in measurable terms
 
 **Rule**: If weighted average confidence < 95%, display follow-up questions and wait for user response before proceeding.
 
@@ -327,7 +336,10 @@ Expected changes:
 
 **Guidelines**:
 
-- **Keep it concise**: 3-5 bullet points maximum
+- **Length limits**:
+  - Bullet points: 3-5 items (enforce max 5)
+  - Characters per bullet: max 100 characters
+  - Total impact simulation: max 300 characters
 - **Focus on impact**: What will change, what might break
 - **Risk assessment**: Honest evaluation of potential issues
 - **Actionable**: Highlight areas requiring special attention
@@ -345,7 +357,17 @@ Expected changes:
 
 ```
 
-**Skip conditions**: Simple file reads, documentation updates, or when impact is obvious.
+**Skip conditions** (apply Impact Simulation ONLY when these are FALSE):
+
+- **Simple file reads**: Read tool with no modifications
+- **Documentation updates**: Only *.md files affected, no code changes
+- **Obvious low-risk changes**: Single file, <10 lines changed, no dependencies affected
+
+If any of the following apply, ALWAYS show Impact Simulation:
+
+- Modifying core configuration (CLAUDE.md, PRE_TASK_CHECK.md, settings.json)
+- Changing 3+ files simultaneously
+- Affecting authentication, security, or data integrity logic
 
 ### Combined Display Format
 
