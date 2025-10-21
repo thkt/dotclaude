@@ -20,11 +20,8 @@ This repository contains personal configurations for Claude AI, including:
 ├── CLAUDE.md              # Main configuration (AI reads this)
 ├── README.md              # This file - Quick start guide
 ├── docs/                  # Documentation
-│   ├── ARCHITECTURE.md   # System architecture
 │   ├── COMMANDS.md       # Command reference (English)
-│   ├── MODEL_SELECTION.md # Model selection guidelines
-│   ├── AGENT_USAGE.md    # Agent usage documentation
-│   └── PROJECT_SETUP.md  # Project setup guide
+│   └── DOCUMENTATION_RULES.md # Documentation standards
 ├── commands/              # Command definitions
 │   ├── code.md           # TDD/RGRC implementation
 │   ├── fix.md            # Quick bug fixes
@@ -230,11 +227,8 @@ For using this as your personal `.claude` configuration:
 
 ### Development Guides
 
-- [Principles Guide](./docs/PRINCIPLES_GUIDE.md) - Complete overview of all development principles
+- [Principles Guide](./rules/PRINCIPLES_GUIDE.md) - Complete overview of all development principles
 - [Documentation Rules](./docs/DOCUMENTATION_RULES.md) - Standards for documentation
-- [Project Setup](./docs/PROJECT_SETUP.md) - Getting started guide
-- [Model Selection](./docs/MODEL_SELECTION.md) - AI model usage guidelines
-- [Agent Usage](./docs/AGENT_USAGE.md) - Working with specialized agents
 
 ## 🤝 Contributing
 

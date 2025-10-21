@@ -18,11 +18,8 @@
 ├── CLAUDE.md              # メイン設定（AIが読む）
 ├── README.md              # クイックスタートガイド（英語版）
 ├── docs/                  # ドキュメント
-│   ├── ARCHITECTURE.md   # システムアーキテクチャ
 │   ├── COMMANDS.md       # コマンドリファレンス（英語）
-│   ├── MODEL_SELECTION.md # モデル選択ガイドライン
-│   ├── AGENT_USAGE.md    # エージェント使用ドキュメント
-│   └── PROJECT_SETUP.md  # プロジェクトセットアップガイド
+│   └── DOCUMENTATION_RULES.md # ドキュメント標準
 ├── commands/              # コマンド定義
 │   ├── code.md           # TDD/RGRC実装
 │   ├── fix.md            # クイックバグ修正
@@ -229,11 +226,8 @@
 
 ### 開発ガイド
 
-- [原則ガイド](../docs/PRINCIPLES_GUIDE.md) - すべての開発原則の完全な概要
+- [原則ガイド](../rules/PRINCIPLES_GUIDE.md) - すべての開発原則の完全な概要
 - [ドキュメントルール](../docs/DOCUMENTATION_RULES.md) - ドキュメントの標準
-- [プロジェクトセットアップ](../docs/PROJECT_SETUP.md) - はじめ方ガイド
-- [モデル選択](../docs/MODEL_SELECTION.md) - AIモデル使用ガイドライン
-- [エージェント使用](../docs/AGENT_USAGE.md) - 専門エージェントとの作業
 
 ## 🤝 貢献
 
