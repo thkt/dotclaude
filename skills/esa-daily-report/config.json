@@ -1,0 +1,24 @@
+{
+  "skill_name": "esa-daily-report",
+  "version": "1.0.0",
+  "description": "Automatic daily report creator for esa.io",
+  "default_config": {
+    "esa_team": "gaji",
+    "template_post_number": 126,
+    "category": "report/daily-report/",
+    "wip": true,
+    "timezone": "Asia/Tokyo",
+    "note": "screen_name is auto-detected from current user using esa_get_team_members"
+  },
+  "supported_locales": ["ja"],
+  "required_tools": [
+    "esa_get_team_members",
+    "list_gcal_events",
+    "esa_create_post"
+  ],
+  "optional_tools": [
+    "esa_get_teams",
+    "view"
+  ],
+  "template_path": "/mnt/skills/user/esa-daily-report/templates/default.md"
+}
