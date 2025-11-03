@@ -38,8 +38,8 @@ execution_plan:
 
   phase_3_production:
     - performance-reviewer    # ランタイムとビルド最適化
-    - security-reviewer       # セキュリティ脆弱性
     - accessibility-reviewer  # WCAG準拠とユーザビリティ
+    # 注記: セキュリティレビューは/reviewコマンドレベルでsecurity-review skillを使用
 ```
 
 #### 並列実行の利点
@@ -346,9 +346,10 @@ const review = await reviewOrchestrator.review({
 })
 
 // フォーカスレビュー
+// 注記: セキュリティレビューは/reviewコマンドレベルでsecurity-review skillを使用
 const focusedReview = await reviewOrchestrator.review({
   target: 'src/components/UserProfile.tsx',
-  agents: ['security-reviewer', 'type-safety-reviewer'],
+  agents: ['type-safety-reviewer', 'accessibility-reviewer'],
   depth: 'deep'
 })
 
@@ -504,8 +505,8 @@ custom_rules:
   - design-pattern-reviewer
   - testability-reviewer
   - performance-reviewer
-  - security-reviewer
   - accessibility-reviewer
+  - 注記: security-reviewerはsecurity-review skillに統合されました
 - `~/.claude/agents/general/` - 汎用レビューアー
   - document-reviewer
   - subagent-reviewer

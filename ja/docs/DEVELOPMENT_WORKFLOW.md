@@ -481,7 +481,7 @@ describe('Profile Edit Flow', () => {
 **Phase 3: 本番対応レビュー**
 
 - performance-reviewer: パフォーマンス
-- security-reviewer: セキュリティ
+- security-review (skill): セキュリティ
 - accessibility-reviewer: アクセシビリティ
 
 **3. 結果統合**

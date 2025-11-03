@@ -582,4 +582,4 @@ Chrome DevTools MCPをインストール：[インストール手順]
 
 - **performance-reviewer**: アクセシビリティニーズとパフォーマンス最適化のバランス
 - **structure-reviewer**: セマンティックHTML構造の確保
-- **security-reviewer**: アクセシブルな体験を提供しながらセキュリティを維持
+- **security-review (skill)**: アクセシブルな体験を提供しながらセキュリティを維持

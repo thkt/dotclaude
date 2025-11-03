@@ -600,7 +600,7 @@ Coordinate with:
 
 - **performance-reviewer**: Balance performance optimizations with accessibility needs
 - **structure-reviewer**: Ensure semantic HTML structure
-- **security-reviewer**: Maintain security while providing accessible experiences
+- **security-review (skill)**: Maintain security while providing accessible experiences
 
 ## Applied Development Principles
 

@@ -54,6 +54,16 @@
       "args": [
         "${HOME}/Tools/mcp/ops-history/dist/index"
       ]
+    },
+    "markdown-search": {
+      "command": "bun",
+      "args": [
+        "run",
+        "${HOME}/Tools/mcp/markdown-search/src/index"
+      ],
+      "env": {
+        "MARKDOWN_ROOT": "${HOME}/Documents/Obsidian/vault/"
+      }
     }
   }
 }

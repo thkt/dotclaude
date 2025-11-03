@@ -93,7 +93,7 @@ Taskエージェントを使用して：
 
 ### 専門ドメインレビュアー
 
-- `security-reviewer`: 脆弱性、認証問題、データ露出
+- セキュリティレビュー（`security-review` スキル経由）: OWASP Top 10脆弱性、認証問題、データ露出
 - `accessibility-reviewer`: WCAG準拠、キーボードナビゲーション、ARIA
 - `performance-reviewer`: ボトルネック、バンドルサイズ、レンダリング問題
 - `design-pattern-reviewer`: パターン一貫性、Reactベストプラクティス

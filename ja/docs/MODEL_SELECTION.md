@@ -50,7 +50,7 @@
 - `performance-reviewer`: パフォーマンスアンチパターン検出
 - `progressive-enhancer`: CSS/HTMLパターンの提案
 - `readability-reviewer`: コード可読性パターン
-- `security-reviewer`: セキュリティ脆弱性パターン
+- ~~`security-reviewer`~~: ※security-review skillに統合
 - `structure-reviewer`: コード構成パターン
 - `testability-reviewer`: テストパターン評価
 - `type-safety-reviewer`: TypeScriptパターンチェック

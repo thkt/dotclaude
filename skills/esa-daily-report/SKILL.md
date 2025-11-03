@@ -118,6 +118,12 @@ The template defines the exact structure and sections for the daily report. Foll
 - User input in each respective section
 - Meeting names for "MTG 振り返り" subsections
 
+**Template Processing Rules:**
+
+- **Ignore h1 headings** (`# xxx` format) from the template - do not include them in the final report
+- Include h2 and below headings (`## xxx`, `### xxx`, etc.) as they define the report structure
+- This ensures the report doesn't have duplicate top-level titles
+
 **Do not hardcode the template structure** - always reference the template file to ensure consistency and allow for easy template updates.
 
 ### Step 4: Create esa Post
@@ -126,7 +132,7 @@ The template defines the exact structure and sections for the daily report. Foll
 Use esa_create_post with:
 - teamName: 'gaji' (or user-specified)
 - name: 'Daily 振り返り YYYY.MM.DD : [screen_name] #reflection'
-  Example: 'Daily 振り返り 2025.10.22:thkt'
+  Example: 'Daily 振り返り 2025.10.22 : screen_name #reflection'
 - bodyMd: [Structured content from Step 3]
 - category: 'report/daily-report/'
 - wip: true

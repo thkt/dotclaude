@@ -113,7 +113,7 @@ Apply multi-level filtering with evidence requirements:
 
 ### Specialized Domain Reviewers
 
-- `security-reviewer`: Vulnerabilities, auth issues, data exposure
+- Security review (via `security-review` skill): OWASP Top 10 vulnerabilities, auth issues, data exposure
 - `accessibility-reviewer`: WCAG compliance, keyboard navigation, ARIA
 - `performance-reviewer`: Bottlenecks, bundle size, rendering issues
 - `design-pattern-reviewer`: Pattern consistency, React best practices

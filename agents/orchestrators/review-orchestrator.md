@@ -73,15 +73,12 @@ execution_plan:
     execution_mode: sequential
 
   # Parallel Group 3: Production Readiness (max 60s each)
+  # Note: Security review is handled via security-review skill at /review command level
   parallel_group_3:
     agents:
       - name: performance-reviewer
         max_execution_time: 60
         dependencies: [type-safety-reviewer]
-        parallel_group: production
-      - name: security-reviewer
-        max_execution_time: 60
-        dependencies: []
         parallel_group: production
       - name: accessibility-reviewer
         max_execution_time: 45
@@ -463,9 +460,10 @@ const review = await reviewOrchestrator.review({
 })
 
 // Focused review
+// Note: For security review, use security-review skill at /review command level
 const focusedReview = await reviewOrchestrator.review({
   target: 'src/components/UserProfile.tsx',
-  agents: ['security-reviewer', 'type-safety-reviewer'],
+  agents: ['type-safety-reviewer', 'accessibility-reviewer'],
   depth: 'deep'
 })
 
@@ -642,8 +640,8 @@ All review agents are organized in:
   - design-pattern-reviewer
   - testability-reviewer
   - performance-reviewer
-  - security-reviewer
   - accessibility-reviewer
+  - Note: security-reviewer has been integrated into security-review skill
 - `~/.claude/agents/general/` - General purpose reviewers
   - document-reviewer
   - subagent-reviewer
