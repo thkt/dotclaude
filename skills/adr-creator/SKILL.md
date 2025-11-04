@@ -1,8 +1,39 @@
 ---
 name: ADR Creator
-description: 構造化されたプロセスで高品質なArchitecture Decision Recordを作成
-version: 1.0.0
+description: >
+  Structured process for creating high-quality Architecture Decision Records in MADR format.
+  Triggers on keywords: "ADR", "Architecture Decision", "決定記録", "技術選定",
+  "アーキテクチャ決定", "design decision", "技術的決定", "設計判断".
+  Provides 6-phase process: pre-creation validation, template selection, reference collection,
+  proofreading, index update, and error recovery with retry mechanisms.
+version: 1.1.0
 author: Claude Code Team
+triggers:
+  keywords:
+    - ADR
+    - Architecture Decision
+    - 決定記録
+    - 技術選定
+    - アーキテクチャ決定
+    - アーキテクチャ判断
+    - 設計決定
+    - 技術的決定
+    - 技術選択
+    - design decision
+  patterns:
+    - "create.*ADR"
+    - "作成.*ADR"
+    - "記録.*決定"
+    - "document.*decision"
+context_size: ~2000 tokens
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Grep
+  - Glob
+  - Bash
+  - Task
 ---
 
 # ADR Creator - 構造化ADR作成プロセス

@@ -1,6 +1,39 @@
 ---
 name: esa-daily-report
-description: Automatic daily report creator for esa.io that integrates with Google Calendar to streamline the daily reporting process with a structured template format.
+description: >
+  Automatic daily report creator for esa.io with Google Calendar integration.
+  Triggers on keywords: "日報", "daily report", "振り返り", "reflection", "今日の記録", "today's summary",
+  "esa", "日次レポート", "デイリーレポート".
+  Streamlines daily reporting process by auto-fetching calendar events and following structured template format.
+  Project-specific automation for team communication but customizable for different teams.
+version: 1.1.0
+triggers:
+  keywords:
+    - 日報
+    - daily report
+    - 振り返り
+    - reflection
+    - 今日の記録
+    - today's summary
+    - esa
+    - 日次レポート
+    - デイリーレポート
+    - daily reflection
+    - 日報作成
+    - 日報を作って
+  patterns:
+    - "日報.*作成"
+    - "create.*daily report"
+    - "今日の.*振り返り"
+    - "today.*reflection"
+    - "日報.*書く"
+context_size: ~1000 tokens
+allowed-tools:
+  - Read
+  - Bash
+  - Task
+  - mcp__esa__*
+  - mcp__google-calendar__*
 ---
 
 # esa Daily Report Creator

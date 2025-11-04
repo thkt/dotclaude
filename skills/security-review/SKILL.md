@@ -1,11 +1,53 @@
 ---
 name: security-review
 description: >
-  OWASP Top 10-based security review support skill.
-  Triggers on keywords: "セキュリティ (security)", "脆弱性 (vulnerability)", "XSS", "SQLインジェクション (SQL injection)",
-  "CSRF", "認証 (authentication)", "認可 (authorization)", "暗号化 (encryption)", "安全性 (safety)", "セキュアコーディング (secure coding)", etc.
-  Auto-activates during code implementation or review.
-  Detects common vulnerability patterns and suggests secure implementations.
+  OWASP Top 10-based security review and vulnerability detection skill.
+  Triggers on keywords: "セキュリティ", "security", "脆弱性", "vulnerability", "XSS", "SQLインジェクション",
+  "SQL injection", "CSRF", "認証", "authentication", "認可", "authorization", "暗号化", "encryption",
+  "安全性", "safety", "セキュアコーディング", "secure coding", "injection", "access control".
+  Auto-activates during code implementation or review to detect common vulnerability patterns
+  and suggest secure implementations based on OWASP Top 10.
+version: 1.1.0
+triggers:
+  keywords:
+    - セキュリティ
+    - security
+    - 脆弱性
+    - vulnerability
+    - XSS
+    - Cross-Site Scripting
+    - SQLインジェクション
+    - SQL injection
+    - CSRF
+    - Cross-Site Request Forgery
+    - 認証
+    - authentication
+    - 認可
+    - authorization
+    - 暗号化
+    - encryption
+    - 安全性
+    - safety
+    - secure
+    - セキュアコーディング
+    - secure coding
+    - injection
+    - access control
+    - OWASP
+    - SSRF
+    - password
+    - パスワード
+    - token
+    - session
+    - セッション
+  patterns:
+    - "セキュリティ.*チェック"
+    - "security.*check"
+    - "脆弱性.*検出"
+    - "vulnerability.*scan"
+    - "安全.*実装"
+    - "secure.*implementation"
+context_size: ~2800 tokens
 allowed-tools:
   - Read
   - Grep
