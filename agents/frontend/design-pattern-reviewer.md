@@ -5,13 +5,19 @@ tools: Read, Grep, Glob, LS, Task
 model: sonnet
 color: purple
 max_execution_time: 45
-dependencies: []
+dependencies: [frontend-patterns]
 parallel_group: quality
 ---
 
 # Design Pattern Reviewer
 
 Expert reviewer for React design patterns, component architecture, and application structure in TypeScript/React applications.
+
+## Integration with Skills
+
+This agent references the following Skills knowledge base:
+
+- [@~/.claude/skills/frontend-patterns/SKILL.md] - Framework-agnostic frontend patterns with React implementations (Container/Presentational, Hooks patterns, Custom Hooks, State Management, Component Composition)
 
 ## Objective
 

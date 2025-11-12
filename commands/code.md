@@ -67,14 +67,21 @@ Perform code implementation with real-time test feedback, dynamic quality discov
 !`git log --oneline -5`
 ```
 
+## Integration with Skills
+
+This command references the following Skills for implementation guidance:
+
+- [@~/.claude/skills/tdd-test-generation/SKILL.md] - TDD/RGRC cycle, Baby Steps, systematic test design
+- [@~/.claude/skills/frontend-patterns/SKILL.md] - Frontend component design patterns (Container/Presentational, Hooks, State Management, Composition)
+
 ## Implementation Principles
 
 ### Applied Development Rules
 
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Test-Driven Development with Baby Steps
+- [@~/.claude/skills/tdd-test-generation/SKILL.md] - Test-Driven Development with Baby Steps (primary)
+- [@~/.claude/skills/frontend-patterns/SKILL.md] - Frontend component design patterns
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first approach for UI
 - [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Code readability and clarity
-- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md) - React component patterns
 
 ### Principle Hierarchy
 

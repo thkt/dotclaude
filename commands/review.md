@@ -25,6 +25,18 @@ Orchestrate multiple specialized review agents with dynamic context analysis, hi
 
 **Output Verifiability**: All review findings include evidence (file:line), distinguish verified issues (✓) from inferred problems (→), per AI Operation Principle #4.
 
+## Integration with Skills
+
+This command explicitly references the following Skills:
+
+- [@~/.claude/skills/security-review/SKILL.md] - Security review knowledge based on OWASP Top 10
+
+Other Skills are automatically loaded through each review agent's dependencies:
+
+- `performance-reviewer` → `performance-optimization` skill
+- `readability-reviewer` → `readability-review` skill
+- `progressive-enhancer` → `progressive-enhancement` skill
+
 ## Dynamic Context Analysis
 
 ### Git Status

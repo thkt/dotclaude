@@ -90,7 +90,7 @@ When these limits are exceeded, refactor into smaller units or use parameter obj
 - Code tasks: [Progressive Enhancement](./rules/development/PROGRESSIVE_ENHANCEMENT.md) | [DRY](./rules/reference/DRY.md)
 - React/UI: [Container/Presentational](./rules/development/CONTAINER_PRESENTATIONAL.md)
 - Large-scale: [SOLID](./rules/reference/SOLID.md) | [Law of Demeter](./rules/development/LAW_OF_DEMETER.md)
-- Testing: [TDD/RGRC](./rules/development/TDD_RGRC.md) | [Test Generation](./rules/development/TEST_GENERATION.md)
+- Testing: Available via `tdd-test-generation` skill (auto-loaded)
 - Complete guide: [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
 
 ### [P4] OPTIONAL - File Deletion Behavior

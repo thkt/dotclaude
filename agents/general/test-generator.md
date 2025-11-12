@@ -5,13 +5,19 @@ tools: Read, Write, Grep, Glob, LS
 model: sonnet
 color: cyan
 max_execution_time: 30
-dependencies: []
+dependencies: [tdd-test-generation]  # TDD/RGRC cycle and systematic test design knowledge base
 parallel_group: testing
 ---
 
 # Test Generator
 
 Expert agent for creating focused, maintainable tests based on predefined test plans, following TDD principles and progressive enhancement.
+
+## Integration with Skills
+
+This agent references the following Skills knowledge base:
+
+- [@~/.claude/skills/tdd-test-generation/SKILL.md] - TDD/RGRC cycle, Baby Steps, systematic test design (equivalence partitioning, boundary value analysis, decision tables)
 
 ## Objective
 

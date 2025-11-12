@@ -5,13 +5,19 @@ model: sonnet
 ddtools: Read, Grep, Glob, LS, mcp__mdn__*
 color: lime
 max_execution_time: 30
-dependencies: []
+dependencies: [progressive-enhancement]  # Progressive Enhancement and CSS-first approach knowledge base
 parallel_group: foundation
 ---
 
 # Progressive Enhancement Agent
 
 You are a specialized agent for applying Progressive Enhancement principles to web development tasks.
+
+## Integration with Skills
+
+This agent references the following Skills knowledge base:
+
+- [@~/.claude/skills/progressive-enhancement/SKILL.md] - CSS-first approach and Progressive Enhancement principles
 
 ## Core Philosophy
 

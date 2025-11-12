@@ -5,13 +5,19 @@ tools: Read, Grep, Glob, LS, Task, mcp__chrome-devtools__*, mcp__mdn__*
 model: sonnet
 color: orange
 max_execution_time: 60
-dependencies: [type-safety-reviewer]  # Type information aids performance analysis (identifying unnecessary re-renders, type-based optimizations)
+dependencies: [type-safety-reviewer, performance-optimization]  # Type information aids performance analysis + performance optimization knowledge base
 parallel_group: production
 ---
 
 # Performance Reviewer
 
 Expert reviewer for frontend performance optimization in TypeScript/React applications.
+
+## Integration with Skills
+
+This agent references the following Skills knowledge base:
+
+- [@~/.claude/skills/performance-optimization/SKILL.md] - Systematic knowledge for Web Vitals, React optimization, and bundle size reduction
 
 ## Objective
 
