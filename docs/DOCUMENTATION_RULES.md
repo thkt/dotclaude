@@ -122,6 +122,7 @@ The following files exist only in Japanese (no English version):
 - `ja/docs/ARCHITECTURE.md` - System architecture overview
 - `ja/docs/WORKFLOW_GUIDE.md` - Quick start guide
 - `ja/docs/DEVELOPMENT_WORKFLOW.md` - Practical development workflow
+- `ja/commands/git/worktree-setup.md` - Git worktree setup guide
 
 **Rationale**: These documents serve Japanese-speaking users and creating English versions would require significant translation effort without clear benefit. They are properly referenced within the Japanese documentation tree.
 

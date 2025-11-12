@@ -115,6 +115,17 @@ Claude Codeエコシステムにおける一貫性のある、整理されたド
 [@../development/TDD_RGRC.md]    # 一つ上、developmentへ
 ```
 
+### 例外: 日本語のみのドキュメント
+
+以下のファイルは日本語版のみ存在します（英語版なし）：
+
+- `ja/docs/ARCHITECTURE.md` - システムアーキテクチャ概要
+- `ja/docs/WORKFLOW_GUIDE.md` - クイックスタートガイド
+- `ja/docs/DEVELOPMENT_WORKFLOW.md` - 実践的な開発ワークフロー
+- `ja/commands/git/worktree-setup.md` - Git worktree設定ガイド
+
+**理由**: これらのドキュメントは日本語話者向けであり、英語版の作成には大きな翻訳労力が必要で、明確な利益がありません。日本語ドキュメントツリー内で適切に参照されています。
+
 ## 更新手順
 
 ### 新しい原則の追加
