@@ -6,34 +6,11 @@ description: >
   "esa", "日次レポート", "デイリーレポート".
   Streamlines daily reporting process by auto-fetching calendar events and following structured template format.
   Project-specific automation for team communication but customizable for different teams.
-version: 1.1.0
-triggers:
-  keywords:
-    - 日報
-    - daily report
-    - 振り返り
-    - reflection
-    - 今日の記録
-    - today's summary
-    - esa
-    - 日次レポート
-    - デイリーレポート
-    - daily reflection
-    - 日報作成
-    - 日報を作って
-  patterns:
-    - "日報.*作成"
-    - "create.*daily report"
-    - "今日の.*振り返り"
-    - "today.*reflection"
-    - "日報.*書く"
-context_size: ~1000 tokens
 allowed-tools:
   - Read
+  - Write
   - Bash
   - Task
-  - mcp__esa__*
-  - mcp__google-calendar__*
 ---
 
 # esa Daily Report Creator
@@ -115,7 +92,7 @@ Use list_gcal_events with:
 
 **Read the template file first** to understand what sections need to be filled.
 
-Use `view /mnt/skills/user/esa-daily-report/templates/default.md` to:
+Use `view /mnt/skills/user/esa-daily-report/assets/default.md` to:
 
 1. Identify all sections that require user input (those with placeholder `-` or empty content)
 2. Dynamically determine which information to collect based on the template
@@ -137,12 +114,12 @@ Use `view /mnt/skills/user/esa-daily-report/templates/default.md` to:
 
 ### Step 3: Structure the Report
 
-**CRITICAL: Always read the template from `/mnt/skills/user/esa-daily-report/templates/default.md` before structuring the report.**
+**CRITICAL: Always read the template from `/mnt/skills/user/esa-daily-report/assets/default.md` before structuring the report.**
 
 Use the `view` tool to read the template file:
 
 ```bash
-view /mnt/skills/user/esa-daily-report/templates/default.md
+view /mnt/skills/user/esa-daily-report/assets/default.md
 ```
 
 The template defines the exact structure and sections for the daily report. Follow this template structure when building the report content, replacing placeholder text with:
@@ -186,7 +163,7 @@ Use esa_create_post with:
 
 1. Get current user's screen_name from esa_get_team_members
 2. Fetch today's calendar events
-3. **Read template structure from `/mnt/skills/user/esa-daily-report/templates/default.md`**
+3. **Read template structure from `/mnt/skills/user/esa-daily-report/assets/default.md`**
 4. Present events to user: "今日はこれらの予定がありましたね: [list events]"
 5. Create post in esa with calendar events and empty sections for other content
 6. Reply: "日報を作成しました！[URL] カレンダーの予定を記載しています。他の内容は後からesaで編集できます。"
@@ -242,7 +219,7 @@ If user says: "今日の日報を作成して。今日はReactのuseEffectにつ
 
 ### For Claude
 
-- **ALWAYS read the template file first**: Use `view /mnt/skills/user/esa-daily-report/templates/default.md` at the start of Step 3
+- **ALWAYS read the template file first**: Use `view /mnt/skills/user/esa-daily-report/assets/default.md` at the start of Step 3
 - Never hardcode the template structure - always reference the actual template file
 - Be conversational - don't just collect data mechanically
 - Adapt to user's communication style
@@ -261,7 +238,7 @@ If user says: "今日の日報を作成して。今日はReactのuseEffectにつ
 
 ## Template Reference
 
-**Location**: `/mnt/skills/user/esa-daily-report/templates/default.md`
+**Location**: `/mnt/skills/user/esa-daily-report/assets/default.md`
 
 **Usage**: This template file is the single source of truth for daily report structure.
 Claude MUST read this file using the `view` tool during Step 3 before structuring any report.
@@ -273,7 +250,7 @@ Claude MUST read this file using the `view` tool during Step 3 before structurin
 - Ensures consistency across all reports
 - No hardcoded structure in the skill logic
 
-**To customize**: Edit `/mnt/skills/user/esa-daily-report/templates/default.md` directly.
+**To customize**: Edit `/mnt/skills/user/esa-daily-report/assets/default.md` directly.
 
 ## Maintenance Notes
 

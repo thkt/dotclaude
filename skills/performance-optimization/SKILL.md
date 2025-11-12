@@ -4,67 +4,11 @@ description: >
   Frontend performance optimization expertise with data-driven approach.
   Triggers on keywords: "パフォーマンス", "performance", "遅い", "slow", "最適化", "optimization",
   "レンダリング", "rendering", "バンドルサイズ", "bundle size", "LCP", "FID", "CLS", "Web Vitals",
-  "再レンダリング", "re-render", "メモ化", "memoization", "重い", "heavy", "高速化", "speed up".
+  "Core Web Vitals", "再レンダリング", "re-render", "メモ化", "memoization", "useMemo", "useCallback",
+  "React.memo", "重い", "heavy", "高速化", "speed up", "lazy loading", "Code splitting", "tree shaking".
   Provides practical techniques for React optimization, Web Vitals improvement, and bundle optimization
-  based on measurement and profiling.
-version: 2.0.0
-triggers:
-  keywords:
-    - パフォーマンス
-    - performance
-    - 遅い
-    - slow
-    - 最適化
-    - optimization
-    - レンダリング
-    - rendering
-    - バンドルサイズ
-    - bundle size
-    - bundle
-    - 重い
-    - heavy
-    - 高速化
-    - speed up
-    - LCP
-    - FID
-    - CLS
-    - Web Vitals
-    - Core Web Vitals
-    - 再レンダリング
-    - re-render
-    - メモ化
-    - memoization
-    - useMemo
-    - useCallback
-    - React.memo
-    - lazy loading
-    - Code splitting
-  patterns:
-    - "遅.*ページ"
-    - "slow.*page"
-    - "improve.*performance"
-    - "optimize.*速度"
-    - "パフォーマンス.*改善"
-sections:
-  - id: web-vitals
-    file: sections/web-vitals.md
-    triggers: [LCP, FID, CLS, Core Web Vitals, Largest Contentful Paint, First Input Delay, Cumulative Layout Shift]
-    tokens: ~500
-    description: Google's Core Web Vitals optimization techniques
-
-  - id: react-optimization
-    file: sections/react-optimization.md
-    triggers: [再レンダリング, re-render, useMemo, useCallback, React.memo, 不要なレンダリング, unnecessary render]
-    tokens: ~800
-    description: React performance optimization patterns
-
-  - id: bundle-optimization
-    file: sections/bundle-optimization.md
-    triggers: [バンドルサイズ, bundle size, Code splitting, Tree shaking, lazy loading, 動的インポート]
-    tokens: ~600
-    description: Bundle size and code splitting strategies
-context_size: ~200 tokens (metadata only)
-full_size: ~2100 tokens (all sections loaded)
+  based on measurement and profiling. Includes sections on Web Vitals (LCP, FID, CLS), React rendering
+  optimization, and bundle size reduction strategies.
 allowed-tools:
   - Read
   - Grep
@@ -97,7 +41,7 @@ This skill is organized into 3 specialized sections for efficient context usage:
 
 ### 🔍 Section 1: Web Vitals Optimization
 
-**File**: [`sections/web-vitals.md`](./sections/web-vitals.md)
+**File**: [`references/web-vitals.md`](./references/web-vitals.md)
 **Tokens**: ~500
 **Focus**: Google's Core Web Vitals (LCP, FID, CLS)
 
@@ -114,7 +58,7 @@ This skill is organized into 3 specialized sections for efficient context usage:
 
 ### ⚛️ Section 2: React Optimization
 
-**File**: [`sections/react-optimization.md`](./sections/react-optimization.md)
+**File**: [`references/react-optimization.md`](./references/react-optimization.md)
 **Tokens**: ~800
 **Focus**: React-specific performance patterns
 
@@ -132,7 +76,7 @@ This skill is organized into 3 specialized sections for efficient context usage:
 
 ### 📦 Section 3: Bundle Optimization
 
-**File**: [`sections/bundle-optimization.md`](./sections/bundle-optimization.md)
+**File**: [`references/bundle-optimization.md`](./references/bundle-optimization.md)
 **Tokens**: ~600
 **Focus**: Bundle size reduction and code splitting
 
@@ -161,7 +105,7 @@ User: "LCPが遅い"
 User: "LCPが遅い"
 → Load skill.md metadata (200 tokens)
 → Detect "LCP" keyword → Match to web-vitals section
-→ Load sections/web-vitals.md (500 tokens)
+→ Load references/web-vitals.md (500 tokens)
 → Total: 700 tokens (77% reduction)
 ```
 
@@ -183,7 +127,7 @@ User: "ページの読み込みが遅い。LCPを改善したい"
 
 Claude loads:
 ✓ skill.md metadata (200 tokens)
-✓ sections/web-vitals.md (500 tokens)
+✓ references/web-vitals.md (500 tokens)
 Total: 700 tokens
 
 Provides:
@@ -200,7 +144,7 @@ User: "コンポーネントが不要に再レンダリングされる"
 
 Claude loads:
 ✓ skill.md metadata (200 tokens)
-✓ sections/react-optimization.md (800 tokens)
+✓ references/react-optimization.md (800 tokens)
 Total: 1000 tokens
 
 Provides:
@@ -217,7 +161,7 @@ User: "バンドルサイズが大きすぎる"
 
 Claude loads:
 ✓ skill.md metadata (200 tokens)
-✓ sections/bundle-optimization.md (600 tokens)
+✓ references/bundle-optimization.md (600 tokens)
 Total: 800 tokens
 
 Provides:

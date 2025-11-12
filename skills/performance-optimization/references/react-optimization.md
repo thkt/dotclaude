@@ -294,16 +294,19 @@ const MyComponent = React.memo(() => {
 ## 🎯 Decision Framework
 
 **When to use React.memo?**
+
 - Component renders often with same props
 - Rendering is expensive (complex UI or calculations)
 - Parent re-renders frequently
 
 **When to use useMemo?**
+
 - Calculation is computationally expensive
 - Result is used in render or as dependency
 - Profiling shows performance issue
 
 **When to use useCallback?**
+
 - Function is passed as prop to memoized child
 - Function is used as dependency in useEffect/useMemo
 - Preventing unnecessary re-renders is critical

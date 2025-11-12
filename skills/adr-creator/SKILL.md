@@ -1,31 +1,12 @@
 ---
-name: ADR Creator
+name: adr-creator
 description: >
   Structured process for creating high-quality Architecture Decision Records in MADR format.
   Triggers on keywords: "ADR", "Architecture Decision", "決定記録", "技術選定",
-  "アーキテクチャ決定", "design decision", "技術的決定", "設計判断".
+  "アーキテクチャ決定", "design decision", "技術的決定", "設計判断", "create ADR",
+  "作成 ADR", "記録 決定", "document decision".
   Provides 6-phase process: pre-creation validation, template selection, reference collection,
   proofreading, index update, and error recovery with retry mechanisms.
-version: 1.1.0
-author: Claude Code Team
-triggers:
-  keywords:
-    - ADR
-    - Architecture Decision
-    - 決定記録
-    - 技術選定
-    - アーキテクチャ決定
-    - アーキテクチャ判断
-    - 設計決定
-    - 技術的決定
-    - 技術選択
-    - design decision
-  patterns:
-    - "create.*ADR"
-    - "作成.*ADR"
-    - "記録.*決定"
-    - "document.*decision"
-context_size: ~2000 tokens
 allowed-tools:
   - Read
   - Write
@@ -213,7 +194,7 @@ done
 #### 4-1. 影響範囲分析
 
 ```markdown
-# checklists/impact-analysis.md
+# references/impact-analysis.md
 
 ## 影響範囲チェックリスト
 
@@ -237,7 +218,7 @@ done
 #### 4-2. テストカバレッジ
 
 ```markdown
-# checklists/test-coverage.md
+# references/test-coverage.md
 
 ## テスト更新チェックリスト
 
@@ -251,7 +232,7 @@ done
 #### 4-3. ロールバック計画
 
 ```markdown
-# checklists/rollback-plan.md
+# references/rollback-plan.md
 
 ## ロールバック計画チェックリスト
 
@@ -376,7 +357,7 @@ done
 ```text
 ❌ Error: 選択したテンプレートが見つかりません
    Template: technology-selection.md
-   Path: .claude/skills/adr-creator/templates/
+   Path: .claude/skills/adr-creator/assets/
 
 🔧 フォールバック:
 1. デフォルトテンプレート使用
@@ -501,7 +482,7 @@ gh auth login
 
 ```bash
 # プロジェクト固有テンプレート配置
-.claude/skills/adr-creator/templates/custom-template.md
+.claude/skills/adr-creator/assets/custom-template.md
 
 # ADR作成時に選択肢に表示される
 ```

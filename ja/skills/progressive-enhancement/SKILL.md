@@ -1,10 +1,14 @@
 ---
 name: progressive-enhancement
 description: >
-  Progressive Enhancement guide with CSS-first approach auto-suggestions.
-  Triggers on keywords: "レイアウト (layout)", "スタイル (style)", "位置 (position)",
-  "アニメーション (animation)", "表示/非表示 (show/hide)", "レスポンシブ (responsive)", etc.
-  Suggests CSS solutions before JavaScript, promoting simple and maintainable implementations.
+  CSS優先アプローチとアウトカムファースト開発哲学によるプログレッシブエンハンスメントガイド。
+  トリガーキーワード: "レイアウト", "layout", "スタイル", "style", "位置", "position",
+  "アニメーション", "animation", "表示", "非表示", "show", "hide", "toggle", "トグル",
+  "レスポンシブ", "responsive", "CSS", "Grid", "Flexbox", "transform", "transition",
+  "JavaScript不要", "without JavaScript", "no JavaScript", "CSS-only", "CSSのみ",
+  "シンプル", "simple", "YAGNI"。
+  JavaScriptよりも前にCSSソリューションを提案し、「最良のコードは存在しないコード」の哲学に基づいて、
+  シンプルで保守しやすく高性能な実装を推進。
 allowed-tools:
   - Read
   - Write

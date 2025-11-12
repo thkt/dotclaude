@@ -32,12 +32,15 @@
 │       └── search.md     # Gemini経由のGoogle検索
 ├── rules/                 # 英語版ルール定義
 │   ├── core/             # [P0] コアAI動作原則
-│   │   ├── AI_OPERATION_PRINCIPLES.md
-│   │   └── PRE_TASK_CHECK.md
+│   │   └── AI_OPERATION_PRINCIPLES.md
 │   ├── PRINCIPLES_GUIDE.md  # 完全な原則ガイド
 │   ├── commands/         # コマンド選択ロジック
 │   ├── development/      # 開発パターンと方法論
 │   └── reference/        # 基本原則（SOLID、DRY、オッカムの剃刀）
+├── skills/               # スキルベースの知識モジュール
+│   ├── pre-task-check/   # タスク理解検証（自動起動）
+│   ├── performance-optimization/  # Webパフォーマンス知識
+│   └── esa-daily-report/ # プロジェクト固有の自動化
 └── ja/                    # 日本語翻訳
     ├── CLAUDE.md         # メイン設定（日本語）
     ├── README.md         # このファイル

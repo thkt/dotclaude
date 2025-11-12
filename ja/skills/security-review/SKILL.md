@@ -1,11 +1,18 @@
 ---
 name: security-review
 description: >
-  OWASP Top 10-based security review support skill.
-  Triggers on keywords: "セキュリティ (security)", "脆弱性 (vulnerability)", "XSS", "SQLインジェクション (SQL injection)",
-  "CSRF", "認証 (authentication)", "認可 (authorization)", "暗号化 (encryption)", "安全性 (safety)", "セキュアコーディング (secure coding)", etc.
-  Auto-activates during code implementation or review.
-  Detects common vulnerability patterns and suggests secure implementations.
+  OWASP Top 10ベースのセキュリティレビューと脆弱性検出スキル。
+  トリガーキーワード: "セキュリティ", "security", "脆弱性", "vulnerability", "XSS",
+  "Cross-Site Scripting", "SQLインジェクション", "SQL injection", "CSRF", "Cross-Site Request Forgery",
+  "認証", "authentication", "認可", "authorization", "暗号化", "encryption", "安全性", "safety",
+  "secure", "セキュアコーディング", "secure coding", "injection", "access control", "OWASP",
+  "SSRF", "Server-Side Request Forgery", "password", "パスワード", "token", "session", "セッション",
+  "rate limiting", "brute force", "ブルートフォース", "Access Control", "Broken Access Control",
+  "Cryptographic Failures", "Command Injection", "NoSQL injection", "Security Misconfiguration",
+  "logging", "monitoring", "dependencies", "脆弱性スキャン"。
+  コード実装やレビュー中に自動的にアクティブ化され、一般的な脆弱性パターンを検出し、
+  OWASP Top 10に基づいて安全な実装を提案。基本セキュリティ（アクセス制御、暗号化、認証）、
+  インジェクション攻撃（SQL、XSS、CSRF）、高度なトピック（レート制限、SSRF、設定、監視）のセクションを含む。
 allowed-tools:
   - Read
   - Grep

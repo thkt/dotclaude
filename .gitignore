@@ -33,6 +33,7 @@ history.jsonl
 file-history/
 
 # Private/Local configurations
+local/
 *.local
 .env
 

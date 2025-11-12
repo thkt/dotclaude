@@ -3,79 +3,14 @@ name: readability-review
 description: >
   Code readability review based on "The Art of Readable Code" and Miller's Law (7±2 cognitive limits).
   Triggers on keywords: "可読性", "readability", "読みやすさ", "理解しやすい", "understandable",
-  "わかりやすい", "命名", "naming", "ネスト", "nesting", "関数設計", "function design",
-  "コメント", "comments", "複雑", "complex", "難しい", "難読", "Miller's Law".
+  "わかりやすい", "clear", "明確", "命名", "naming", "variable name", "変数名", "関数名",
+  "function name", "ネスト", "nesting", "深いネスト", "deep nesting", "関数設計", "function design",
+  "コメント", "comments", "複雑", "complex", "complexity", "難しい", "難読", "confusing",
+  "Miller's Law", "ミラーの法則", "cognitive load", "認知負荷", "AI-generated", "premature",
+  "over-engineering", "過剰設計", "unnecessary abstraction", "不要な抽象化".
   Auto-activates during code review to detect readability issues and suggest improvements
-  based on cognitive science principles and practical patterns.
-version: 1.0.0
-triggers:
-  keywords:
-    - 可読性
-    - readability
-    - 読みやすさ
-    - 理解しやすい
-    - understandable
-    - わかりやすい
-    - clear
-    - 明確
-    - 命名
-    - naming
-    - variable name
-    - 変数名
-    - 関数名
-    - function name
-    - ネスト
-    - nesting
-    - 深いネスト
-    - deep nesting
-    - 関数設計
-    - function design
-    - コメント
-    - comments
-    - 複雑
-    - complex
-    - complexity
-    - 難しい
-    - 難読
-    - confusing
-    - Miller's Law
-    - ミラーの法則
-    - cognitive load
-    - 認知負荷
-  patterns:
-    - "読み.*くい"
-    - "わかり.*くい"
-    - "理解.*難しい"
-    - "hard to.*understand"
-    - "difficult to.*read"
-    - "複雑.*すぎる"
-    - "too.*complex"
-sections:
-  - id: naming-structure
-    file: sections/naming-structure.md
-    triggers: [naming, 命名, variable name, 変数名, function name, 関数名, 具体的, concrete, abstract, 抽象的]
-    tokens: ~500
-    description: Variable/function naming and code structure fundamentals
-
-  - id: control-flow
-    file: sections/control-flow.md
-    triggers: [nesting, ネスト, control flow, 制御フロー, Miller's Law, ミラーの法則, complexity, 複雑, guard clause, early return]
-    tokens: ~600
-    description: Control flow, nesting reduction, Miller's Law application
-
-  - id: comments-clarity
-    file: sections/comments-clarity.md
-    triggers: [comments, コメント, documentation, ドキュメント, intent, 意図, obvious, 明白, clarity, 明確性]
-    tokens: ~400
-    description: Comments strategy and code clarity principles
-
-  - id: ai-antipatterns
-    file: sections/ai-antipatterns.md
-    triggers: [AI, AI-generated, premature, 早すぎる, over-engineering, 過剰設計, unnecessary abstraction, 不要な抽象化]
-    tokens: ~500
-    description: AI-generated code antipattern detection
-context_size: ~200 tokens (metadata only)
-full_size: ~2200 tokens (all sections loaded)
+  based on cognitive science principles and practical patterns. Includes sections on naming/structure,
+  control flow optimization, comments strategy, and AI code antipattern detection.
 allowed-tools:
   - Read
   - Grep
@@ -125,7 +60,7 @@ This skill is organized into 4 specialized sections for efficient context usage:
 
 ### 📝 Section 1: Naming & Structure Fundamentals
 
-**File**: [`sections/naming-structure.md`](./sections/naming-structure.md)
+**File**: [`references/naming-structure.md`](./references/naming-structure.md)
 **Tokens**: ~500
 **Focus**: Variable/function naming, concrete vs abstract, searchability
 
@@ -141,7 +76,7 @@ This skill is organized into 4 specialized sections for efficient context usage:
 
 ### 🔀 Section 2: Control Flow & Complexity
 
-**File**: [`sections/control-flow.md`](./sections/control-flow.md)
+**File**: [`references/control-flow.md`](./references/control-flow.md)
 **Tokens**: ~600
 **Focus**: Control flow optimization, nesting reduction, Miller's Law application
 
@@ -158,7 +93,7 @@ This skill is organized into 4 specialized sections for efficient context usage:
 
 ### 💬 Section 3: Comments & Clarity
 
-**File**: [`sections/comments-clarity.md`](./sections/comments-clarity.md)
+**File**: [`references/comments-clarity.md`](./references/comments-clarity.md)
 **Tokens**: ~400
 **Focus**: Comment strategy, intent communication, code self-documentation
 
@@ -174,7 +109,7 @@ This skill is organized into 4 specialized sections for efficient context usage:
 
 ### 🤖 Section 4: AI Code Antipatterns
 
-**File**: [`sections/ai-antipatterns.md`](./sections/ai-antipatterns.md)
+**File**: [`references/ai-antipatterns.md`](./references/ai-antipatterns.md)
 **Tokens**: ~500
 **Focus**: Detecting over-engineering patterns in AI-generated code
 

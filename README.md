@@ -34,12 +34,14 @@ This repository contains personal configurations for Claude AI, including:
 │       └── search.md     # Google search via Gemini
 ├── rules/                 # English rule definitions
 │   ├── core/             # [P0] Core AI operation principles
-│   │   ├── AI_OPERATION_PRINCIPLES.md
-│   │   └── PRE_TASK_CHECK.md
+│   │   └── AI_OPERATION_PRINCIPLES.md
 │   ├── PRINCIPLES_GUIDE.md  # Complete principles guide
 │   ├── commands/         # Command selection logic
 │   ├── development/      # Development patterns & methodologies
 │   └── reference/        # Fundamental principles (SOLID, DRY, Occam's Razor)
+├── skills/               # Skill-based knowledge modules
+│   ├── performance-optimization/  # Web performance knowledge
+│   └── esa-daily-report/ # Project-specific automation
 └── ja/                    # Japanese translations
     ├── CLAUDE.md         # Main config (Japanese)
     ├── commands/         # Command definitions (Japanese)

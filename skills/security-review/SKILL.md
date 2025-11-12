@@ -1,75 +1,19 @@
 ---
 name: security-review
 description: >
-  OWASP Top 10-based security review and vulnerability detection skill with section-based content.
-  Triggers on keywords: "セキュリティ", "security", "脆弱性", "vulnerability", "XSS", "SQLインジェクション",
-  "SQL injection", "CSRF", "認証", "authentication", "認可", "authorization", "暗号化", "encryption",
-  "安全性", "safety", "セキュアコーディング", "secure coding", "injection", "access control".
+  OWASP Top 10-based security review and vulnerability detection skill.
+  Triggers on keywords: "セキュリティ", "security", "脆弱性", "vulnerability", "XSS",
+  "Cross-Site Scripting", "SQLインジェクション", "SQL injection", "CSRF", "Cross-Site Request Forgery",
+  "認証", "authentication", "認可", "authorization", "暗号化", "encryption", "安全性", "safety",
+  "secure", "セキュアコーディング", "secure coding", "injection", "access control", "OWASP",
+  "SSRF", "Server-Side Request Forgery", "password", "パスワード", "token", "session", "セッション",
+  "rate limiting", "brute force", "ブルートフォース", "Access Control", "Broken Access Control",
+  "Cryptographic Failures", "Command Injection", "NoSQL injection", "Security Misconfiguration",
+  "logging", "monitoring", "dependencies", "脆弱性スキャン".
   Auto-activates during code implementation or review to detect common vulnerability patterns
-  and suggest secure implementations based on OWASP Top 10.
-version: 2.0.0
-triggers:
-  keywords:
-    - セキュリティ
-    - security
-    - 脆弱性
-    - vulnerability
-    - XSS
-    - Cross-Site Scripting
-    - SQLインジェクション
-    - SQL injection
-    - CSRF
-    - Cross-Site Request Forgery
-    - 認証
-    - authentication
-    - 認可
-    - authorization
-    - 暗号化
-    - encryption
-    - 安全性
-    - safety
-    - secure
-    - セキュアコーディング
-    - secure coding
-    - injection
-    - access control
-    - OWASP
-    - SSRF
-    - password
-    - パスワード
-    - token
-    - session
-    - セッション
-    - rate limiting
-    - brute force
-    - ブルートフォース
-  patterns:
-    - "セキュリティ.*チェック"
-    - "security.*check"
-    - "脆弱性.*検出"
-    - "vulnerability.*scan"
-    - "安全.*実装"
-    - "secure.*implementation"
-sections:
-  - id: owasp-basic
-    file: sections/owasp-basic.md
-    triggers: [Access Control, Broken Access Control, 認証, authentication, 認可, authorization, 暗号化, encryption, Cryptographic Failures, password, パスワード, session, セッション]
-    tokens: ~900
-    description: OWASP 1, 2, 7 - Access Control, Cryptography, Authentication
-
-  - id: owasp-injection
-    file: sections/owasp-injection.md
-    triggers: [injection, SQL injection, SQLインジェクション, XSS, Cross-Site Scripting, CSRF, Command Injection, NoSQL injection]
-    tokens: ~600
-    description: OWASP 3 + XSS/CSRF - All injection attacks
-
-  - id: owasp-advanced
-    file: sections/owasp-advanced.md
-    triggers: [rate limiting, brute force, ブルートフォース, SSRF, Server-Side Request Forgery, Security Misconfiguration, logging, monitoring, dependencies, 脆弱性スキャン]
-    tokens: ~800
-    description: OWASP 4-6, 8-10 - Design, Configuration, Monitoring, SSRF
-context_size: ~200 tokens (metadata only)
-full_size: ~2500 tokens (all sections loaded)
+  and suggest secure implementations based on OWASP Top 10. Includes sections on basic security
+  (access control, cryptography, authentication), injection attacks (SQL, XSS, CSRF), and advanced
+  topics (rate limiting, SSRF, configuration, monitoring).
 allowed-tools:
   - Read
   - Grep
@@ -100,7 +44,7 @@ This skill is organized into 3 specialized sections for efficient context usage:
 
 ### 🔒 Section 1: OWASP Basic Security
 
-**File**: [`sections/owasp-basic.md`](./sections/owasp-basic.md)
+**File**: [`references/owasp-basic.md`](./references/owasp-basic.md)
 **Tokens**: ~900
 **Focus**: Access Control (OWASP 1), Cryptographic Failures (OWASP 2), Authentication Failures (OWASP 7)
 
@@ -115,7 +59,7 @@ This skill is organized into 3 specialized sections for efficient context usage:
 
 ### 💉 Section 2: OWASP Injection Attacks
 
-**File**: [`sections/owasp-injection.md`](./sections/owasp-injection.md)
+**File**: [`references/owasp-injection.md`](./references/owasp-injection.md)
 **Tokens**: ~600
 **Focus**: Injection (OWASP 3) - SQL, NoSQL, Command + XSS/CSRF Prevention
 
@@ -132,7 +76,7 @@ This skill is organized into 3 specialized sections for efficient context usage:
 
 ### 🛡️ Section 3: OWASP Advanced Security
 
-**File**: [`sections/owasp-advanced.md`](./sections/owasp-advanced.md)
+**File**: [`references/owasp-advanced.md`](./references/owasp-advanced.md)
 **Tokens**: ~800
 **Focus**: Design (OWASP 4-6), Monitoring (OWASP 8-10), SSRF
 

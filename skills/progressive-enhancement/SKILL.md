@@ -3,50 +3,12 @@ name: progressive-enhancement
 description: >
   Progressive Enhancement guide with CSS-first approach and outcome-first development philosophy.
   Triggers on keywords: "レイアウト", "layout", "スタイル", "style", "位置", "position",
-  "アニメーション", "animation", "表示", "非表示", "show", "hide", "レスポンシブ", "responsive",
-  "CSS", "JavaScript不要", "without JavaScript", "シンプル", "simple".
+  "アニメーション", "animation", "表示", "非表示", "show", "hide", "toggle", "トグル",
+  "レスポンシブ", "responsive", "CSS", "Grid", "Flexbox", "transform", "transition",
+  "JavaScript不要", "without JavaScript", "no JavaScript", "CSS-only", "CSSのみ",
+  "シンプル", "simple", "YAGNI".
   Suggests CSS solutions before JavaScript, promoting simple, maintainable, and performant implementations
   based on "The best code is no code" philosophy.
-version: 1.1.0
-triggers:
-  keywords:
-    - レイアウト
-    - layout
-    - スタイル
-    - style
-    - 位置
-    - position
-    - アニメーション
-    - animation
-    - 表示
-    - 非表示
-    - show
-    - hide
-    - toggle
-    - トグル
-    - レスポンシブ
-    - responsive
-    - CSS
-    - Grid
-    - Flexbox
-    - transform
-    - transition
-    - JavaScript不要
-    - without JavaScript
-    - no JavaScript
-    - CSS-only
-    - CSSのみ
-    - シンプル
-    - simple
-    - YAGNI
-  patterns:
-    - "CSS.*できる"
-    - "CSS.*solve"
-    - "JavaScript.*必要"
-    - "without.*JavaScript"
-    - "シンプル.*実装"
-    - "simple.*implementation"
-context_size: ~1700 tokens
 allowed-tools:
   - Read
   - Write

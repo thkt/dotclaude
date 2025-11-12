@@ -1,10 +1,13 @@
 ---
 name: performance-optimization
 description: >
-  Frontend performance optimization expertise.
-  Triggers on keywords: "パフォーマンス (performance)", "遅い (slow)", "最適化 (optimization)", "レンダリング (rendering)",
-  "バンドルサイズ (bundle size)", "LCP", "FID", "CLS", "Web Vitals", "再レンダリング (re-render)", "メモ化 (memoization)", etc.
-  Suggests practical techniques for React optimization, Web Vitals improvement, and bundle optimization.
+  データドリブンアプローチによるフロントエンドパフォーマンス最適化の専門知識。
+  トリガーキーワード: "パフォーマンス", "performance", "遅い", "slow", "最適化", "optimization",
+  "レンダリング", "rendering", "バンドルサイズ", "bundle size", "LCP", "FID", "CLS", "Web Vitals",
+  "Core Web Vitals", "再レンダリング", "re-render", "メモ化", "memoization", "useMemo", "useCallback",
+  "React.memo", "重い", "heavy", "高速化", "speed up", "lazy loading", "Code splitting", "tree shaking"。
+  測定とプロファイリングに基づいたReact最適化、Web Vitals改善、バンドル最適化の実践的技法を提供。
+  Web Vitals (LCP, FID, CLS)、Reactレンダリング最適化、バンドルサイズ削減戦略のセクションを含む。
 allowed-tools:
   - Read
   - Grep
