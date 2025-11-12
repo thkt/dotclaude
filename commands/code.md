@@ -73,12 +73,14 @@ This command references the following Skills for implementation guidance:
 
 - [@~/.claude/skills/tdd-test-generation/SKILL.md] - TDD/RGRC cycle, Baby Steps, systematic test design
 - [@~/.claude/skills/frontend-patterns/SKILL.md] - Frontend component design patterns (Container/Presentational, Hooks, State Management, Composition)
+- [@~/.claude/skills/code-principles/SKILL.md] - Fundamental software development principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI)
 
 ## Implementation Principles
 
 ### Applied Development Rules
 
 - [@~/.claude/skills/tdd-test-generation/SKILL.md] - Test-Driven Development with Baby Steps (primary)
+- [@~/.claude/skills/code-principles/SKILL.md] - Fundamental software principles (SOLID, DRY, Occam's Razor, YAGNI)
 - [@~/.claude/skills/frontend-patterns/SKILL.md] - Frontend component design patterns
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first approach for UI
 - [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Code readability and clarity

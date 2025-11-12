@@ -2,15 +2,13 @@
 name: readability-review
 description: >
   Code readability review based on "The Art of Readable Code" and Miller's Law (7±2 cognitive limits).
-  Triggers on keywords: "可読性", "readability", "読みやすさ", "理解しやすい", "understandable",
-  "わかりやすい", "clear", "明確", "命名", "naming", "variable name", "変数名", "関数名",
-  "function name", "ネスト", "nesting", "深いネスト", "deep nesting", "関数設計", "function design",
-  "コメント", "comments", "複雑", "complex", "complexity", "難しい", "難読", "confusing",
-  "Miller's Law", "ミラーの法則", "cognitive load", "認知負荷", "AI-generated", "premature",
-  "over-engineering", "過剰設計", "unnecessary abstraction", "不要な抽象化".
-  Auto-activates during code review to detect readability issues and suggest improvements
-  based on cognitive science principles and practical patterns. Includes sections on naming/structure,
-  control flow optimization, comments strategy, and AI code antipattern detection.
+  Use when reviewing readability (可読性), understandability (理解しやすい/わかりやすい),
+  clarity (明確), naming (命名), variable/function names (変数名/関数名), nesting depth
+  (ネスト/深いネスト), function design (関数設計), comments (コメント), complexity (複雑),
+  confusing code (難しい/難読), Miller's Law (ミラーの法則), cognitive load (認知負荷),
+  AI-generated code issues, premature optimization, over-engineering (過剰設計), or
+  unnecessary abstractions (不要な抽象化). Detects readability issues and suggests improvements
+  based on cognitive science. Essential for readability-focused code reviews.
 allowed-tools:
   - Read
   - Grep
@@ -67,6 +65,7 @@ This skill is organized into 4 specialized sections for efficient context usage:
 **Triggers**: naming, 命名, variable name, 変数名, function name, 関数名, concrete, abstract
 
 **Coverage**:
+
 - Names that can't be misconstrued
 - Concrete over abstract naming
 - Searchable, pronounceable names
@@ -83,6 +82,7 @@ This skill is organized into 4 specialized sections for efficient context usage:
 **Triggers**: nesting, ネスト, control flow, Miller's Law, complexity, guard clause, early return
 
 **Coverage**:
+
 - Minimize nesting depth
 - Guard clauses and early returns
 - Extract complex conditions
@@ -100,6 +100,7 @@ This skill is organized into 4 specialized sections for efficient context usage:
 **Triggers**: comments, コメント, documentation, intent, 意図, obvious, clarity
 
 **Coverage**:
+
 - Why, not What comments
 - Code first, comments second
 - Update or delete outdated comments
@@ -116,6 +117,7 @@ This skill is organized into 4 specialized sections for efficient context usage:
 **Triggers**: AI, AI-generated, premature, over-engineering, unnecessary abstraction
 
 **Coverage**:
+
 - Premature abstraction detection
 - Unnecessary classes for simple tasks
 - Imagined extensibility

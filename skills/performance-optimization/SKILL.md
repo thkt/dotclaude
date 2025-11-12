@@ -1,14 +1,13 @@
 ---
 name: performance-optimization
 description: >
-  Frontend performance optimization expertise with data-driven approach.
-  Triggers on keywords: "パフォーマンス", "performance", "遅い", "slow", "最適化", "optimization",
-  "レンダリング", "rendering", "バンドルサイズ", "bundle size", "LCP", "FID", "CLS", "Web Vitals",
-  "Core Web Vitals", "再レンダリング", "re-render", "メモ化", "memoization", "useMemo", "useCallback",
-  "React.memo", "重い", "heavy", "高速化", "speed up", "lazy loading", "Code splitting", "tree shaking".
-  Provides practical techniques for React optimization, Web Vitals improvement, and bundle optimization
-  based on measurement and profiling. Includes sections on Web Vitals (LCP, FID, CLS), React rendering
-  optimization, and bundle size reduction strategies.
+  Frontend performance optimization expertise with data-driven approach. Use when addressing
+  performance issues (パフォーマンス), slow pages (遅い), optimization (最適化),
+  rendering problems (レンダリング), bundle size (バンドルサイズ), Web Vitals (LCP, FID, CLS),
+  Core Web Vitals, re-rendering (再レンダリング), memoization (メモ化), useMemo, useCallback,
+  React.memo, heavy pages (重い), speed improvements (高速化), lazy loading, code splitting,
+  or tree shaking. Provides measurement-based techniques for React optimization, Web Vitals
+  improvement, and bundle optimization. Essential for performance-reviewer agent.
 allowed-tools:
   - Read
   - Grep
@@ -46,6 +45,7 @@ This skill is organized into 3 specialized sections for efficient context usage:
 **Focus**: Google's Core Web Vitals (LCP, FID, CLS)
 
 **Covers**:
+
 - Understanding Core Web Vitals metrics
 - Improving LCP (Largest Contentful Paint)
 - Reducing FID (First Input Delay)
@@ -63,6 +63,7 @@ This skill is organized into 3 specialized sections for efficient context usage:
 **Focus**: React-specific performance patterns
 
 **Covers**:
+
 - React.memo for component memoization
 - useMemo for computation caching
 - useCallback for function memoization
@@ -81,6 +82,7 @@ This skill is organized into 3 specialized sections for efficient context usage:
 **Focus**: Bundle size reduction and code splitting
 
 **Covers**:
+
 - Code splitting patterns
 - Tree shaking techniques
 - Image optimization
@@ -122,7 +124,7 @@ User: "LCPが遅い"
 
 ### Example 1: LCP Optimization
 
-```
+```markdown
 User: "ページの読み込みが遅い。LCPを改善したい"
 
 Claude loads:
@@ -139,7 +141,7 @@ Provides:
 
 ### Example 2: React Re-rendering Issues
 
-```
+```markdown
 User: "コンポーネントが不要に再レンダリングされる"
 
 Claude loads:
@@ -156,7 +158,7 @@ Provides:
 
 ### Example 3: Bundle Size Reduction
 
-```
+```markdown
 User: "バンドルサイズが大きすぎる"
 
 Claude loads:

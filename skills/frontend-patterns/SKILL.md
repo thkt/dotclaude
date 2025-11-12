@@ -2,12 +2,12 @@
 name: frontend-patterns
 description: >
   Framework-agnostic frontend component design patterns with rich React implementation examples.
-  Triggers on keywords: "React", "component", "コンポーネント", "pattern", "パターン", "design",
-  "hooks", "custom hook", "カスタムフック", "container", "presentational", "分離", "state management",
-  "状態管理", "composition", "HOC", "render props", "Vue", "Angular", "frontend architecture".
+  Use when working with React, Vue, or Angular components (コンポーネント), discussing patterns
+  (パターン), hooks or custom hooks (カスタムフック), container/presentational separation (分離),
+  state management (状態管理), composition, HOC, render props, or frontend architecture.
   Covers Container/Presentational separation, React Hooks patterns (useEffect, useMemo, useCallback),
   custom hooks design, state management strategies, and component composition.
-  Essential knowledge base for design-pattern-reviewer agent and frontend implementation guidance.
+  Essential for design-pattern-reviewer agent and frontend implementations.
 allowed-tools:
   - Read
   - Grep

@@ -53,45 +53,37 @@
 
 **ALWAYS APPLY** - Core principles for all development
 
-#### Occam's Razor - Simplest solution wins
+Core development principles are available via the `code-principles` skill:
 
-Choose simplest solution using these criteria:
+- **Occam's Razor (KISS)** - Choose simplest solution
+- **SOLID Principles** - Manage dependencies, enable change
+- **DRY** - Single source of truth for knowledge
+- **Miller's Law** - Respect cognitive limits (7±2)
+- **YAGNI** - Build what you need now
 
-- Fewest dependencies (prefer 0-2 over 3+)
-- Fewer lines of code (prefer <50 lines per function)
-- Lower cyclomatic complexity (prefer <5 conditional branches)
+Quick Decision Questions:
 
-Complexity requires justification. Avoid "just in case" implementations.
+- "Is there a simpler way to achieve this?"
+- "Can new team member understand in <1 minute?"
+- "Am I duplicating knowledge or intent?"
+- "Is this solving a real problem that exists now?"
 
-When complexity is unavoidable, document the specific requirement it addresses.
+**Note**: Skills are automatically activated when relevant keywords are mentioned.
 
-- Decision: "Is this complexity necessary? Is there a simpler way?"
-- Details: [@~/.claude/rules/reference/OCCAMS_RAZOR.md](./rules/reference/OCCAMS_RAZOR.md)
-
-#### Readable Code - Understand in <1 minute
-
-Respect Miller's Law (7±2 limit) by enforcing these constraints:
-
-- Function parameters: max 5 (ideal: 3 or fewer)
-- Class public methods: max 7
-- Conditional branches per function: max 5
-- Function length: 5-15 lines (ideal: 5-10)
-- Nesting depth: max 3 levels
-
-When these limits are exceeded, refactor into smaller units or use parameter objects.
-
-- Decision: "Can new team member understand in <1 minute?"
-- Details: [@~/.claude/rules/development/READABLE_CODE.md](./rules/development/READABLE_CODE.md)
+Full details: [@~/.claude/skills/code-principles/SKILL.md]
 
 ### [P3] CONTEXTUAL - Just-in-Time References
 
 **APPLY AS NEEDED** - Load based on task type
 
-- Code tasks: [Progressive Enhancement](./rules/development/PROGRESSIVE_ENHANCEMENT.md) | [DRY](./rules/reference/DRY.md)
-- React/UI: [Container/Presentational](./rules/development/CONTAINER_PRESENTATIONAL.md)
-- Large-scale: [SOLID](./rules/reference/SOLID.md) | [Law of Demeter](./rules/development/LAW_OF_DEMETER.md)
-- Testing: Available via `tdd-test-generation` skill (auto-loaded)
-- Complete guide: [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
+- Code tasks: Available via `progressive-enhancement` skill
+- React/UI: Available via `frontend-patterns` skill
+- Large-scale: [Law of Demeter](./rules/development/LAW_OF_DEMETER.md)
+- Testing: Available via `tdd-test-generation` skill
+
+**Note**: Skills are automatically activated based on context and keywords.
+
+Complete guide: [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
 
 ### [P4] OPTIONAL - File Deletion Behavior
 

@@ -1,17 +1,13 @@
 ---
 name: tdd-test-generation
 description: >
-  Comprehensive TDD (Test-Driven Development) guide with RGRC cycle (Red-Green-Refactor-Commit),
-  Baby Steps methodology, and systematic test design techniques.
-  Triggers on keywords: "TDD", "Test-Driven Development", "テスト駆動開発", "RGRC", "Red-Green-Refactor",
-  "Baby Steps", "test generation", "テスト生成", "test design", "テスト設計", "test cases",
-  "テストケース", "test plan", "equivalence partitioning", "boundary value", "境界値分析",
-  "decision table", "coverage", "カバレッジ", "test first", "テストファースト", "unit test",
-  "ユニットテスト", "test strategy", "testing approach".
-  Provides structured approach to TDD implementation with t_wada-style Baby Steps,
-  systematic test case generation using equivalence partitioning and boundary value analysis,
-  and integration with SOW test plans. Essential knowledge base for test-generator agent
-  and /code command TDD implementations.
+  Comprehensive TDD (Test-Driven Development) guide with RGRC cycle, Baby Steps methodology,
+  and systematic test design techniques. Use when implementing TDD (テスト駆動開発),
+  discussing Red-Green-Refactor, Baby Steps, test generation (テスト生成), test design
+  (テスト設計), test cases (テストケース), equivalence partitioning, boundary value
+  analysis (境界値分析), decision tables, coverage (カバレッジ), or unit testing
+  (ユニットテスト). Provides t_wada-style Baby Steps approach with systematic test case
+  generation and SOW integration. Essential for test-generator agent and /code TDD implementations.
 allowed-tools:
   - Read
   - Write
