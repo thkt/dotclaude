@@ -1,4 +1,5 @@
 ---
+name: test-generator
 description: >
   Expert agent for creating focused, maintainable tests based on predefined test plans, following TDD principles and progressive enhancement.
   References [@~/.claude/skills/tdd-test-generation/SKILL.md] for TDD/RGRC cycle and systematic test design knowledge.

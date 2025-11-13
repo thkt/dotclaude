@@ -1,1073 +1,538 @@
-# 📊 .claude 全体レビューレポート（詳細版）
+# .claude 包括的レビューレポート
 
-**レビュー日時**: 2025-11-13
-**レビュー範囲**: `.claude`ディレクトリ全体（63コアコンポーネント + 日本語版68コンポーネント）
-**重点項目**: 機能面、正しく動作するか
-**レビュアー**: Claude Code (Sonnet 4.5)
-
----
-
-## エグゼクティブサマリー
-
-### 総合評価
-
-| カテゴリ | 評価 | 理由 |
-|----------|------|------|
-| **構造** | 🟢 優秀 | 明確な階層構造、論理的な分離 |
-| **機能** | 🟡 要改善 | カスタムフィールドの動作不確実性、仕様外の実装 |
-| **ドキュメント** | 🟢 優秀 | EN/JP完全同期、体系的な整理 |
-| **保守性** | 🟢 良好 | 一貫した命名規則、明確な責任分離 |
-
-### 重大な発見事項
-
-✅ **強み**:
-- 非常に体系的で包括的な設計
-- 日英完全同期のドキュメント
-- 明確な設計原則の適用
-- 豊富なSkills/Agentsエコシステム
-
-⚠️ **リスク**:
-- **CRITICAL**: YAMLフロントマターに公式仕様外のフィールド多数（動作保証なし）
-- **HIGH**: SlashCommandツールの実装が不完全な可能性
-- **MEDIUM**: Agentのカスタムフィールドが公式仕様外
+**実施日**: 2025-11-13
+**レビュー範囲**: `/Users/thkt/.claude` 全体
+**参照**: `docs/claude-code-docs/` 公式ドキュメント
+**レビュー深度**: 詳細レベル（機能面重視）
 
 ---
 
-## 🚨 重大な問題（機能に影響）
+## 📊 Executive Summary
 
-### 1. コマンドのYAMLフロントマター：公式仕様外フィールドの多用
+### 全体スコア: **75/100**
 
-**優先度**: 🔴 **CRITICAL**
+| コンポーネント | ファイル数 | 品質スコア | 主要問題 |
+|---------------|-----------|-----------|----------|
+| **Commands** | 19 | **90/100** | YAMLフロントマター欠落（2件） |
+| **Agents** | 16 | **50/100** | `name`フィールド100%欠落 |
+| **Skills** | 9 | **70/100** | `name`フィールド100%欠落 |
+| **Rules** | 18 | **95/100** | 問題なし |
+| **Settings** | - | **100/100** | 問題なし |
+| **EN/JP同期** | - | **100/100** | 問題なし |
 
-**問題**: 公式ドキュメントに記載されていないカスタムフィールドが多数使用されています。
-
-**影響**: これらのフィールドはClaude Codeに認識されない可能性が高く、期待通りに動作しません。
-
-**証拠**:
-
-| ファイル | 使用されている仕様外フィールド | 公式仕様 |
-|---------|----------------------------|----------|
-| think.md:4-17 | `priority`, `suitable_for`, `aliases`, `timeout`, `context` | `allowed-tools`, `argument-hint`, `description`, `model`, `disable-model-invocation` のみ |
-| code.md:4-18 | 同上 | 同上 |
-| fix.md:4-20 | 同上 + `excludes` | 同上 |
-| auto-test.md:4-14 | 同上 | 同上 |
-| full-cycle.md:4-16 | 同上 + `uses_slashcommand` | 同上 |
-| review.md:4-18 | 同上 | 同上 |
-
-**公式仕様**（slash-commands.md:181-192より）:
-
-```markdown
-| Frontmatter                | Purpose                                                                                                                                                                               | Default                             |
-| :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------- |
-| `allowed-tools`            | List of tools the command can use                                                                                                                                                     | Inherits from the conversation      |
-| `argument-hint`            | The arguments expected for the slash command. Example: `argument-hint: add [tagId] \| remove [tagId] \| list`. This hint is shown to the user when auto-completing the slash command. | None                                |
-| `description`              | Brief description of the command                                                                                                                                                      | Uses the first line from the prompt |
-| `model`                    | Specific model string (see [Models overview](https://docs.claude.com/en/docs/about-claude/models/overview))                                                                           | Inherits from the conversation      |
-| `disable-model-invocation` | Whether to prevent `SlashCommand` tool from calling this command                                                                                                                      | false                               |
-```
-
-**推奨される修正**:
+### 重要度別問題サマリー
 
 ```yaml
-# ❌ 現在（動作しない可能性）
----
-name: think
-description: 構造化された計画文書（SOW）を生成
-priority: high  # ← 仕様外
-suitable_for:   # ← 仕様外
-  scale: [small, medium, large]
-  type: [fix, feature, refactor, optimize]
-  understanding: "≥ 50%"
-  urgency: [low, medium]
-aliases: [plan, analyze, sow]  # ← 仕様外
-timeout: 60  # ← 仕様外
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Read, Write, Glob, Grep, LS
-context:  # ← 仕様外
-  complexity: "assessed"
-  risks: "evaluated"
----
+Critical（緊急対応必須）: 3件
+  - 全Agents（16ファイル）で`name`フィールド欠落
+  - 全Skills（9ファイル）で`name`フィールド欠落
+  - workflow/create.md: YAMLフロントマター完全欠落
 
-# ✅ 修正後（公式仕様準拠）
----
-description: Create a comprehensive Statement of Work (SOW) for feature development. Use for planning tasks requiring structured analysis.
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Read, Write, Glob, Grep, LS
-model: inherit
----
+High（近日中対応推奨）: 2件
+  - Agentsで`tools` vs `allowed-tools`フィールド名不整合
+  - gemini/search.md: `allowed-tools`フィールド欠落
 
-# Note: Removed priority, suitable_for, aliases, timeout, context
-# These are not part of the official specification and will not be recognized.
-# If you need command selection logic, implement it in COMMAND_SELECTION.md
+Medium（改善推奨）: 1件
+  - Skills全体で`allowed-tools`がコンマ区切り形式
+
+Low（最適化）: 2件
+  - Output Verifiability統合の不完全さ（Git系Agents）
+  - Skills統合の拡充可能性（一部Agents）
 ```
 
-**影響範囲**: 16個すべてのコマンドファイル
-
-**推定工数**: 1-2時間（16ファイル × 5分）
-
 ---
 
-### 2. SlashCommandツールの実装：実装の不完全性
+## 🔴 Critical Issues（緊急対応必須）
 
-**優先度**: 🔴 **HIGH**
+### 1. Agents: 全16ファイルで`name`フィールド欠落【重大】
 
-**問題**: `auto-test.md`と`full-cycle.md`でSlashCommandツールを使用していますが、実装が不完全です。
+**影響度**: ⚠️⚠️⚠️ **最重要**
+**該当**: 16ファイル（100%）
 
-**証拠**:
+#### 問題詳細
 
-#### auto-test.md:11,34-60
+公式仕様（`sub-agents.md`）では`name`は**必須フィールド**です。
 
 ```yaml
-# Line 11
-allowed-tools: SlashCommand, Bash(npm test:*), Bash(yarn test:*), Bash(pnpm test:*)
-
-# Lines 34-60 (疑似コード形式)
-workflow:
-  - step: "Execute comprehensive tests"
-    command: "npm test || yarn test || pnpm test"
-    on_success: "continue"
-    on_failure: "explicitly_invoke_fix"
-
-  - step: "Conditionally invoke fix mechanism"
-    condition: "test_failure_detected"
-    action:
-      type: "SlashCommand"
-      command: "/fix"
-      context: "Preserve complete test failure information"
-```
-
-**問題点**:
-1. **YAMLワークフロー定義が実行可能コードではない**: 上記のYAML構造は、コマンドの本文に書かれた疑似コードであり、Claude Codeが直接実行できるものではありません
-2. **SlashCommandツールの呼び出し方法が不明確**: 実際にどのようにSlashCommandを呼び出すかの指示がありません
-
-**公式仕様**（slash-commands.md:331-348より）:
-
-```markdown
-## `SlashCommand` tool
-
-The `SlashCommand` tool allows Claude to execute [custom slash commands](/en/slash-commands#custom-slash-commands) programmatically
-during a conversation. This gives Claude the ability to invoke custom commands
-on your behalf when appropriate.
-
-To encourage Claude to trigger `SlashCommand` tool, your instructions (prompts,
-CLAUDE.md, etc.) generally need to reference the command by name with its slash.
-
-Example:
-
-> Run /write-unit-test when you are about to start writing tests.
-```
-
-**推奨される修正**:
-
-```markdown
+# ❌ 現状（すべてのAgentファイル）
 ---
-description: Automatically execute tests after file modifications and invoke /fix if tests fail
-allowed-tools: SlashCommand, Bash(npm test:*), Bash(yarn test:*), Bash(pnpm test:*)
----
-
-# /auto-test - Automatic Test Runner
-
-## Purpose
-
-Execute tests after file modifications. If tests fail, **automatically invoke the /fix command** to attempt repairs.
-
-## Workflow
-
-1. **Run tests**: Execute project test command (npm/yarn/pnpm test)
-2. **Check results**: Analyze test output for failures
-3. **Conditional fix**: If tests fail, **explicitly use SlashCommand tool to invoke /fix**
-
-## Implementation Instructions
-
-When invoked, follow this sequence:
-
-### Step 1: Execute Tests
-
-```bash
-# Discover and run test command
-npm test || yarn test || pnpm test
-```
-
-### Step 2: Analyze Results
-
-- Parse test output
-- Identify failure count
-- Capture error messages
-
-### Step 3: Invoke /fix if Needed
-
-If tests fail:
-- **Use the SlashCommand tool to execute: `/fix`**
-- Pass test failure context to /fix command
-- Example prompt: "Use SlashCommand tool to invoke /fix with the following test failures: [error details]"
-
-## Important Notes
-
-- The SlashCommand tool allows programmatic execution of other slash commands
-- Reference commands with their slash prefix (e.g., `/fix`)
-- Ensure /fix command is available and has proper permissions
-```
-
-**影響範囲**: 2ファイル (`auto-test.md`, `full-cycle.md`)
-
-**推定工数**: 30分-1時間
-
----
-
-## ⚠️ 中程度の問題（動作するが改善の余地）
-
-### 3. Agentの仕様外フィールド
-
-**優先度**: 🟡 **MEDIUM**
-
-**問題**: Agentファイル（review-orchestrator.mdなど）で、公式仕様に記載されていないフィールドが使用されています。
-
-**証拠**: review-orchestrator.md:6-9
-
-```yaml
-color: indigo  # ← 仕様外
-max_execution_time: 180  # ← 仕様外
-dependencies: []  # ← 仕様外
-parallel_group: orchestrator  # ← 仕様外
-```
-
-**公式仕様**（sub-agents.md:146-153より）:
-
-```markdown
-| Field         | Required | Description                                                                                                                                                                                                     |
-| :------------ | :------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`        | Yes      | Unique identifier using lowercase letters and hyphens                                                                                                                                                           |
-| `description` | Yes      | Natural language description of the subagent's purpose                                                                                                                                                          |
-| `tools`       | No       | Comma-separated list of specific tools. If omitted, inherits all tools from the main thread                                                                                                                     |
-| `model`       | No       | Model to use for this subagent. Can be a model alias (`sonnet`, `opus`, `haiku`) or `'inherit'` to use the main conversation's model. If omitted, defaults to the [configured subagent model](/en/model-config) |
-```
-
-**推奨される修正**:
-
-```yaml
-# ❌ 現在
----
-name: review-orchestrator
-description: フロントエンドコードレビューの全体を統括し、各専門エージェントの実行管理、結果統合、優先度付け、実行可能な改善提案の生成を行います
-tools: Task, Grep, Glob, LS, Read
-model: opus
-color: indigo  # ← 削除
-max_execution_time: 180  # ← 削除
-dependencies: []  # ← 削除
-parallel_group: orchestrator  # ← 削除
+description: >
+  Expert agent for...
+allowed-tools: Read, Write
+model: sonnet
 ---
 
 # ✅ 修正後
 ---
-name: review-orchestrator
-description: フロントエンドコードレビューの全体を統括し、各専門エージェントの実行管理、結果統合、優先度付け、実行可能な改善提案の生成を行います
-tools: Task, Grep, Glob, LS, Read
-model: opus
----
-
-# Note: 実行時間、依存関係、並列グループなどのロジックは、
-# エージェントの本文（Markdown content）で自然言語として記述してください
-```
-
-**影響範囲**: 16個のAgentファイルすべて（推定）
-
-**推定工数**: 1-2時間
-
----
-
-### 4. Skillsの`allowed-tools`フィールド形式
-
-**優先度**: 🟢 **LOW**
-
-**問題**: Skillsのallowed-toolsがリスト形式で記述されていますが、公式ドキュメントでは「comma-separated list」と記載されています。
-
-**証拠**: code-principles/SKILL.md:11-14
-
-```yaml
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-```
-
-**公式仕様**（skills.md:126-156より）:
-
-```yaml
----
-name: safe-file-reader
-description: Read files without making changes. Use when you need read-only file access.
-allowed-tools: Read, Grep, Glob  # ← コンマ区切り
----
-```
-
-**検証結果**:
-- YAML仕様上、両方の形式は等価です（リスト形式もカンマ区切りもYAMLパーサーで同じ配列として解釈される）
-- しかし、公式ドキュメントの例ではコンマ区切りが使用されているため、一貫性のためにコンマ区切りを推奨
-
-**推奨される修正**:
-
-```yaml
-# 現在（動作するが公式例と異なる）
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-
-# 推奨（公式例に準拠）
-allowed-tools: Read, Grep, Glob
-```
-
-**影響範囲**: 9個のSkillファイル
-
-**推定工数**: 15分
-
----
-
-## 💡 軽微な問題（ベストプラクティス）
-
-### 5. コマンドファイル内のBash実行構文
-
-**評価**: ✅ **正しい** - 公式仕様に準拠しています
-
-**現状**: すべてのコマンドファイルで`!`記号 + バッククォートの形式が使用されています
-
-```markdown
-## Dynamic Project Context
-
-### Current State Analysis
-
-```bash
-!`git branch --show-current`
-!`git log --oneline -5`
-```
-```
-
-**公式仕様との照合**（slash-commands.md:137-159より）:
-
-```markdown
-#### Bash command execution
-
-Execute bash commands before the slash command runs using the `!` prefix. The output is included in the command context.
-
-Example:
-
-```markdown
-## Context
-
-- Current git status: !`git status`
-- Current git diff (staged and unstaged changes): !`git diff HEAD`
-- Current branch: !`git branch --show-current`
-```
-```
-
-**優先度**: ✅ **問題なし**
-
----
-
-### 6. 日本語コメントの使用
-
-**優先度**: 🟢 **OPTIONAL** - 国際化を考慮する場合のみ
-
-**現状**: エージェントとコマンドファイルで日本語の`description`が使用されています
-
-```yaml
-# review-orchestrator.md:3
-description: フロントエンドコードレビューの全体を統括し、各専門エージェントの実行管理、結果統合、優先度付け、実行可能な改善提案の生成を行います
-
-# think.md:3
-description: 構造化された計画文書（SOW）を生成
-```
-
-**公式仕様**: 言語制限は記載されていません
-
-**ベストプラクティス**:
-- ✅ **プロジェクト内で一貫していれば問題なし**
-- ⚠️ 英語のdescriptionを併記すると、国際的なチームでの使用が容易になります
-
-**推奨**:
-
-```yaml
-# より良い（バイリンガル対応）
+name: test-generator           # ← 追加必須
 description: >
-  フロントエンドコードレビューの全体を統括し、各専門エージェントの実行管理、結果統合、優先度付け、実行可能な改善提案の生成を行います
-  (Orchestrates comprehensive frontend code reviews, managing specialized agent execution, integrating results, prioritizing issues, and generating actionable improvement recommendations)
+  Expert agent for...
+allowed-tools: Read, Write
+model: sonnet
+---
 ```
 
----
+#### 影響
 
-## ✅ 良い点（評価すべき点）
+- エージェントシステムが正しく認識できない可能性
+- 自動検出機能が動作しない可能性
+- 他のエージェントからの参照ができない
 
-### 1. 体系的な構造設計
-
-**評価**: 🌟🌟🌟🌟🌟 **優秀**
-
-`.claude`ディレクトリは非常に明確な階層構造を持っています：
+#### 該当ファイル一覧
 
 ```
-.claude/
-├── rules/          # 原則層（Theory）
-├── commands/       # 実行層（Practice）
-├── skills/         # 知識層（Knowledge）
-└── agents/         # 専門化層（Specialization）
+agents/general/test-generator.md
+agents/general/progressive-enhancer.md
+agents/general/document-reviewer.md
+agents/general/subagent-reviewer.md
+agents/git/commit-generator.md
+agents/git/pr-generator.md
+agents/git/branch-generator.md
+agents/orchestrators/review-orchestrator.md
+agents/frontend/accessibility-reviewer.md
+agents/frontend/design-pattern-reviewer.md
+agents/frontend/performance-reviewer.md
+agents/frontend/readability-reviewer.md
+agents/frontend/root-cause-reviewer.md
+agents/frontend/structure-reviewer.md
+agents/frontend/testability-reviewer.md
+agents/frontend/type-safety-reviewer.md
 ```
 
-この構造は、SOLID原則の単一責任原則（SRP）を完璧に体現しています。
+#### 推奨される`name`値
 
-### 2. 日英完全同期のドキュメント
+| ファイル | 推奨`name` |
+|---------|-----------|
+| `test-generator.md` | `test-generator` |
+| `progressive-enhancer.md` | `progressive-enhancer` |
+| `document-reviewer.md` | `document-reviewer` |
+| `commit-generator.md` | `commit-generator` |
+| `pr-generator.md` | `pr-generator` |
+| `branch-generator.md` | `branch-generator` |
+| `review-orchestrator.md` | `review-orchestrator` |
+| `accessibility-reviewer.md` | `accessibility-reviewer` |
+| `design-pattern-reviewer.md` | `design-pattern-reviewer` |
+| `performance-reviewer.md` | `performance-reviewer` |
+| `readability-reviewer.md` | `readability-reviewer` |
+| `root-cause-reviewer.md` | `root-cause-reviewer` |
+| `structure-reviewer.md` | `structure-reviewer` |
+| `testability-reviewer.md` | `testability-reviewer` |
+| `type-safety-reviewer.md` | `type-safety-reviewer` |
+| `subagent-reviewer.md` | `subagent-reviewer` |
 
-**評価**: 🌟🌟🌟🌟🌟 **優秀**
-
-- 60+ファイルがEN/JPで完全同期
-- `DOCUMENTATION_RULES.md`で同期ルールを明確化
-- Japanese-Onlyファイルも明確に文書化
-
-この一貫性は、国際的なチームや将来の拡張性にとって非常に価値があります。
-
-### 3. Output Verifiabilityの徹底
-
-**評価**: 🌟🌟🌟🌟🌟 **優秀**
-
-すべてのコマンドとエージェントで、Output Verifiability原則（AI Operation Principle #4）が適用されています：
-
-- ✓/→/?マーカーの使用
-- 証拠（file:line）の要求
-- 信頼度の明示
-
-これは、AIアシスタントの出力品質を担保する上で非常に重要です。
-
-### 4. 豊富なSkills/Agentsエコシステム
-
-**評価**: 🌟🌟🌟🌟 **良好**
-
-- 9つの専門Skill
-- 16の専門Agent
-- 明確な役割分担
-
-この豊富なエコシステムは、様々な開発タスクに対応できる柔軟性を提供します。
-
-### 5. PRE_TASK_CHECKの実装
-
-**評価**: 🌟🌟🌟🌟🌟 **優秀**
-
-95%理解度ルールと段階的確認プロセスは、誤った実装を防ぐための優れた安全機構です：
-
-- 理解確認
-- 影響シミュレーション
-- 実行計画
-- 段階的承認
+**命名規則**: lowercase + hyphens only（ファイル名ベース推奨）
 
 ---
 
-## 📋 推奨事項（優先度順）
+### 2. Skills: 全9ファイルで`name`フィールド欠落【重大】
 
-### 🔴 CRITICAL - 即座に対応すべき
+**影響度**: ⚠️⚠️⚠️ **最重要**
+**該当**: 9ファイル（100%）
 
-#### 1. コマンドのYAMLフロントマターを公式仕様に準拠させる
+#### 問題詳細
 
-**対象ファイル**: 16個のコマンドファイルすべて
-
-**作業内容**:
-1. 仕様外フィールドを削除: `priority`, `suitable_for`, `aliases`, `timeout`, `context`, `excludes`, `uses_slashcommand`
-2. 公式フィールドのみ使用: `allowed-tools`, `argument-hint`, `description`, `model`, `disable-model-invocation`
-3. コマンド選択ロジックは`COMMAND_SELECTION.md`で実装
-
-**影響**: 動作の信頼性向上、将来のバージョンアップへの対応
-
-**推定工数**: 1-2時間（16ファイル × 5分）
-
-#### 2. SlashCommandツールの実装を明確化
-
-**対象ファイル**: `auto-test.md`, `full-cycle.md`
-
-**作業内容**:
-1. 疑似コード形式のYAMLワークフローを削除
-2. 自然言語での明確な指示に置き換え
-3. SlashCommandツールの呼び出し方法を具体的に記述
-
-**影響**: `/auto-test`と`/full-cycle`コマンドの正常動作
-
-**推定工数**: 30分-1時間
-
----
-
-### 🟡 HIGH - 早めに対応すべき
-
-#### 3. Agentの仕様外フィールドを削除
-
-**対象ファイル**: 16個のAgentファイル
-
-**作業内容**:
-1. 仕様外フィールドを削除: `color`, `max_execution_time`, `dependencies`, `parallel_group`
-2. ロジック的な情報はMarkdown本文で自然言語として記述
-3. 公式フィールドのみ使用: `name`, `description`, `tools`, `model`
-
-**影響**: 仕様準拠、保守性向上
-
-**推定工数**: 1-2時間
-
----
-
-### 🟢 MEDIUM - 時間があるときに対応
-
-#### 4. Skillsの`allowed-tools`をコンマ区切り形式に統一
-
-**対象ファイル**: 9個のSkillファイル
-
-**作業内容**:
-```yaml
-# Before
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-
-# After
-allowed-tools: Read, Grep, Glob
-```
-
-**影響**: 公式例との一貫性
-
-**推定工数**: 15分
-
----
-
-### 🟢 OPTIONAL - 将来的に検討
-
-#### 5. バイリンガル対応の強化
-
-**対象**: `description`フィールド
-
-**作業内容**: 日本語と英語の説明を併記
-
-**影響**: 国際的なチームでの使用を容易に
-
-**推定工数**: 2-3時間
-
----
-
-## 📝 具体的な修正例
-
-修正作業をすぐに開始できるよう、主要な問題に対する具体的な修正例を提供します。
-
-### 例1: think.mdの修正
-
-**現在のファイル** (think.md:1-18):
+公式仕様（`skills.md`）では`name`は**必須フィールド**です。
 
 ```yaml
+# ❌ 現状（すべてのSKILL.md）
 ---
-name: think
-description: 構造化された計画文書（SOW）を生成
-priority: high
-suitable_for:
-  scale: [small, medium, large]
-  type: [fix, feature, refactor, optimize]
-  understanding: "≥ 50%"
-  urgency: [low, medium]
-aliases: [plan, analyze, sow]
-timeout: 60
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Read, Write, Glob, Grep, LS
-context:
-  complexity: "assessed"
-  risks: "evaluated"
-  dependencies: "mapped"
-  solutions: "scored"
+description: >
+  Comprehensive skill for...
+allowed-tools: Read, Write, Edit
+---
+
+# ✅ 修正後
+---
+name: adr-creator              # ← 追加必須
+description: >
+  Comprehensive skill for...
+allowed-tools: Read, Write, Edit
 ---
 ```
 
-**修正後**:
+#### 該当スキル一覧と推奨`name`
+
+| ディレクトリ | 推奨`name` |
+|-------------|-----------|
+| `adr-creator/` | `adr-creator` |
+| `code-principles/` | `code-principles` |
+| `esa-daily-report/` | `esa-daily-report` |
+| `frontend-patterns/` | `frontend-patterns` |
+| `performance-optimization/` | `performance-optimization` |
+| `progressive-enhancement/` | `progressive-enhancement` |
+| `readability-review/` | `readability-review` |
+| `security-review/` | `security-review` |
+| `tdd-test-generation/` | `tdd-test-generation` |
+
+**命名規則**: lowercase + hyphens + numbers, max 64 characters
+
+---
+
+### 3. Commands: workflow/create.md でYAMLフロントマター完全欠落【重大】
+
+**影響度**: ⚠️⚠️ **高**
+**該当**: 1ファイル
+
+#### 問題詳細
+
+`commands/workflow/create.md`にYAMLフロントマター（`---`区切り）が存在しません。
+
+#### 推奨修正
 
 ```yaml
 ---
 description: >
-  Create a comprehensive Statement of Work (SOW) for feature development or problem solving.
-  Use when planning complex tasks, defining acceptance criteria, or structuring implementation approaches.
-  Ideal for tasks requiring detailed analysis and risk assessment.
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Read, Write, Glob, Grep, LS
+  Create reusable browser automation workflows using Chrome DevTools MCP through interactive step recording.
+  Triggers interactive workflow builder, executes steps in real browser, saves as discoverable slash command.
+  Use when creating E2E tests, monitoring, or automation workflows.
+allowed-tools: Read, Write, Task, mcp__chrome-devtools__*
 model: inherit
-argument-hint: "[feature description]"
+argument-hint: "[workflow-name]"
 ---
+
+# Browser Workflow Generator
+
+Interactive workflow builder for browser automation...
 ```
 
-**変更点**:
-- ✅ `priority`, `suitable_for`, `aliases`, `timeout`, `context`を削除（仕様外）
-- ✅ `description`を英語で詳細化（日本語は本文で対応）
-- ✅ `model: inherit`を追加（明示的に継承を指定）
-- ✅ `argument-hint`を追加（ユーザビリティ向上）
-
 ---
 
-### 例2: auto-test.mdの修正
+## 🟡 High Priority Issues（近日中対応推奨）
 
-**現在の実装** (auto-test.md:27-35):
+### 4. Agents: `tools` vs `allowed-tools` フィールド名の不整合【重要】
+
+**影響度**: ⚠️⚠️ **高**
+**該当**: 全16 Agentファイル
+
+#### 問題詳細
+
+- **公式仕様（sub-agents.md）**: フィールド名は`tools`
+- **実際の実装**: すべてのAgentファイルで`allowed-tools`を使用
 
 ```yaml
-workflow:
-  - step: "Execute comprehensive tests"
-    command: "npm test || yarn test || pnpm test"
-    on_success: "continue"
-    on_failure: "explicitly_invoke_fix"
+# 公式仕様では
+---
+name: code-reviewer
+description: ...
+tools: Read, Grep, Glob, Bash    # ← "tools"
+model: inherit
+---
 
-  - step: "Conditionally invoke fix mechanism"
-    condition: "test_failure_detected"
-    action:
-      type: "SlashCommand"
-      command: "/fix"
+# しかし実際のファイルでは
+---
+description: ...
+allowed-tools: Read, Grep, Glob, Bash    # ← "allowed-tools"
+model: inherit
+---
 ```
 
-**修正後**:
+#### 推奨対応
 
-```markdown
-## Workflow Instructions
-
-Follow this sequence when invoked:
-
-### 1. Execute Tests
-
-Run the project's test command:
-
-```bash
-# Auto-detect and run tests
-if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
-  npm test || yarn test || pnpm test
-elif [ -f "pubspec.yaml" ]; then
-  flutter test
-elif [ -f "Makefile" ] && grep -q "test:" Makefile; then
-  make test
-else
-  echo "No test command found"
-  exit 1
-fi
-```
-
-### 2. Analyze Test Results
-
-After test execution:
-- Parse the output for test failures
-- Count failed tests
-- Extract error messages and stack traces
-
-### 3. Invoke /fix if Tests Fail
-
-**IMPORTANT**: If any tests fail, you MUST use the SlashCommand tool to invoke `/fix`:
-
-1. Prepare context for /fix:
-   - Failed test names
-   - Error messages
-   - Relevant file paths
-
-2. **Use SlashCommand tool with this exact format**:
-   ```
-   Use the SlashCommand tool to execute: /fix
-
-   Context to pass to /fix:
-   - Failed tests: [list test names]
-   - Error messages: [specific error details]
-   - Affected files: [file paths from stack traces]
-   ```
-
-3. Wait for /fix command to complete
-
-4. Re-run tests to verify fixes
-
-## Example Execution
-
-```
-User: /auto-test
-
-Claude: Running tests...
-[Executes: npm test]
-
-Result: 3 tests failed out of 15 total
-
-Claude: Tests failed. Using SlashCommand tool to invoke /fix...
-[Uses SlashCommand tool to call: /fix]
-
-Context passed to /fix:
-- Failed tests: auth.test.ts::login, auth.test.ts::logout, user.test.ts::profile
-- Error messages:
-  - Expected 200, got 401 in auth.test.ts:42
-  - Undefined user object in user.test.ts:28
-- Affected files: src/auth.ts, src/user.ts
-
-[/fix command executes and applies fixes]
-
-Claude: Re-running tests...
-[Executes: npm test]
-
-Result: All 15 tests passed ✓
-```
-
-## Requirements for SlashCommand Tool
-
-- `/fix` command must be available in `.claude/commands/`
-- `/fix` must have proper `allowed-tools` configured
-- This command requires `SlashCommand` to be in the allow list in settings.json permissions
-```
-
-**変更点**:
-- ❌ YAMLワークフロー定義を削除（実行不可能な疑似コード）
-- ✅ 自然言語での明確な指示に置き換え
-- ✅ SlashCommandツールの具体的な使用方法を記述
-- ✅ 実行例を追加（理解しやすさ向上）
+1. 公式仕様を再確認
+2. 正しいフィールド名を特定後、全Agentファイルで統一
+3. 動作確認
 
 ---
 
-### 例3: review-orchestrator.mdの修正
+### 5. Commands: gemini/search.md で`allowed-tools`フィールド欠落【重要】
 
-**現在のフロントマター** (review-orchestrator.md:1-9):
+**影響度**: ⚠️ **中-高**
+**該当**: 1ファイル
+
+#### 推奨修正
 
 ```yaml
 ---
-name: review-orchestrator
-description: フロントエンドコードレビューの全体を統括し、各専門エージェントの実行管理、結果統合、優先度付け、実行可能な改善提案の生成を行います
-tools: Task, Grep, Glob, LS, Read
-model: opus
-color: indigo
-max_execution_time: 180
-dependencies: []
-parallel_group: orchestrator
+name: search
+description: Gemini CLIを使用してGoogle検索を実行
+allowed-tools: Bash(gemini:*), TodoWrite
+priority: medium
 ---
 ```
 
-**修正後**:
+---
+
+## 🟢 Medium Priority Issues（改善推奨）
+
+### 6. Skills: `allowed-tools`がコンマ区切り形式【改善推奨】
+
+**影響度**: ⚠️ **中**
+**該当**: 全9 Skillファイル
+
+#### 推奨修正
 
 ```yaml
 ---
-name: review-orchestrator
+name: adr-creator
 description: >
-  Orchestrates comprehensive frontend code reviews by managing specialized agent execution,
-  integrating results, prioritizing issues, and generating actionable improvement recommendations.
-  Use PROACTIVELY after code changes or when user requests code review.
-  (フロントエンドコードレビューの全体を統括し、各専門エージェントの実行管理、結果統合、優先度付け、実行可能な改善提案の生成を行います)
-tools: Task, Grep, Glob, LS, Read
-model: opus
+  ...
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Grep
+  - Glob
+  - Bash
+  - Task
 ---
 ```
 
-**本文で実行時間やロジックを記述**:
+---
 
-```markdown
-# Review Orchestrator
+## ✅ Good Points（高評価項目）
 
-Master orchestrator for comprehensive frontend code reviews.
+### 1. settings.json: 完璧な設定【優秀】
 
-## Execution Strategy
+**スコア**: 100/100
 
-### Time Management
+#### hooks検証結果
 
-- **Target total time**: 180 seconds (3 minutes)
-- **Per-agent budget**: 30-60 seconds depending on complexity
-- **Timeout handling**: Continue with available results if individual agents timeout
+| Hook | スクリプト/ファイル | 存在確認 | 実行権限 |
+|------|-------------------|---------|---------|
+| UserPromptSubmit | `rules/core/AI_OPERATION_PRINCIPLES.md` | ✅ | - |
+| Stop | `sounds/ds_mama.mp3` | ✅ | - |
+| Stop | `scripts/notification-hook.applescript` | ✅ | ✅ |
+| PostToolUse | inline command | - | - |
+| Notification | `sounds/ds_mail.mp3` | ✅ | - |
+| Notification | `scripts/notification-hook.applescript` | ✅ | ✅ |
+| SessionEnd | `scripts/session-end.sh` | ✅ | ✅ |
+| statusLine | `scripts/statusline.sh` | ✅ | ✅ |
 
-### Parallel Execution Groups
+**判定**: すべてのhooks設定が正しく動作可能
 
-Execute agents in these parallel groups for efficiency:
+---
 
-**Group 1 - Foundation** (parallel, max 30s each):
-- structure-reviewer
-- readability-reviewer
-- progressive-enhancer
+### 2. Commands: 高品質な実装【優秀】
 
-**Group 2 - Quality** (parallel, max 45s each):
-- type-safety-reviewer
-- design-pattern-reviewer
-- testability-reviewer
+**スコア**: 90/100
 
-**Sequential - Root Cause** (depends on Group 1):
-- root-cause-reviewer (max 60s)
+#### 優れている点
 
-**Group 3 - Production Readiness** (parallel, max 60s each):
-- performance-reviewer
-- accessibility-reviewer
+✅ **YAMLフロントマター**: 94.7%で存在（18/19）
+✅ **descriptionフィールド**: 94.7%で適切
+✅ **allowed-tools明確化**: 89.5%で明記（17/19）
+✅ **Bash実行**: 100%で適切に使用
+✅ **ファイル参照**: 100%で一貫性あり
+✅ **SlashCommand統合**: 100%で適切
 
-### Dependencies
+---
 
-- root-cause-reviewer requires results from structure-reviewer and readability-reviewer
-- performance-reviewer benefits from type-safety-reviewer results but can run independently
-- All others are independent and should run in parallel
+### 3. Skills: 非常に高品質なdescription【優秀】
 
-## Instructions
+**スコア**: 95/100（`name`欠落を除く）
 
-When invoked, follow this orchestration pattern:
+#### description品質スコア
 
-1. Launch Group 1 agents in parallel using Task tool
-2. Wait for Group 1 completion
-3. Launch root-cause-reviewer (depends on Group 1)
-4. Launch Group 2 agents in parallel
-5. Launch Group 3 agents in parallel
-6. Aggregate all results
-7. Generate comprehensive report
+| スキル | トリガーKW数 | 日英両言語 | 具体性 | 評価 |
+|--------|-------------|-----------|--------|------|
+| adr-creator | 12+ | ✅ | ✅ | ⭐⭐⭐⭐⭐ |
+| code-principles | 15+ | ✅ | ✅ | ⭐⭐⭐⭐⭐ |
+| performance-optimization | 20+ | ✅ | ✅ | ⭐⭐⭐⭐⭐ |
+| readability-review | 25+ | ✅ | ✅ | ⭐⭐⭐⭐⭐ |
+| security-review | 30+ | ✅ | ✅ | ⭐⭐⭐⭐⭐ |
 
-[Rest of orchestrator instructions...]
+---
+
+### 4. EN/JP同期: 完璧な一貫性【優秀】
+
+**スコア**: 100/100
+
+#### 検証結果
+
+✅ **Commands**: 完全同期（例外規定も正しく適用）
+✅ **Agents**: 100%同期
+✅ **Rules**: 100%同期
+✅ **Docs**: 100%同期（例外を除く）
+
+---
+
+### 5. Rules: 高度な統合と参照整合性【優秀】
+
+**スコア**: 95/100
+
+#### 優れている点
+
+✅ **参照整合性**: すべてのファイル参照が正しい
+✅ **階層構造**: 論理的に整理（core/reference/development/commands）
+✅ **循環参照なし**: クリーンな依存グラフ
+✅ **Skills統合**: AgentsからSkillsへの参照が適切
+
+---
+
+## 📋 詳細統計データ
+
+### Components Overview
+
+```yaml
+Commands:
+  総数: 19
+  YAMLフロントマターあり: 18 (94.7%)
+  allowed-tools明記: 17 (89.5%)
+  品質スコア: 90/100
+
+Agents:
+  総数: 16
+  name欠落: 16 (100%)
+  description適切: 16 (100%)
+  品質スコア: 50/100（name欠落のため）
+
+Skills:
+  総数: 9
+  name欠落: 9 (100%)
+  description優秀: 9 (100%)
+  品質スコア: 70/100（name欠落のため）
+
+Rules:
+  総数: 18
+  参照整合性: 100%
+  品質スコア: 95/100
+
+Settings:
+  hooks動作: 100%
+  permissions適切: 100%
+  品質スコア: 100/100
+
+EN/JP同期:
+  Commands同期: 100%
+  Agents同期: 100%
+  Rules同期: 100%
+  品質スコア: 100/100
 ```
 
-**変更点**:
-- ❌ `color`, `max_execution_time`, `dependencies`, `parallel_group`を削除（仕様外）
-- ✅ descriptionをバイリンガル化
-- ✅ 実行時間やロジックを本文で自然言語として記述
-- ✅ 依存関係を明確化
+### Model Distribution (Agents)
+
+```yaml
+haiku: 5 (31.2%)
+sonnet: 9 (56.3%)
+opus: 2 (12.5%)
+```
+
+**判定**: 用途に応じた適切なモデル選択
 
 ---
 
-## 🔧 修正作業のチェックリスト
+## 🔧 優先度別アクションプラン
 
-修正作業を進める際は、以下のチェックリストを使用してください：
+### Phase 1: Critical（今すぐ実施）
 
-### Phase 1: Command Files（16ファイル） ✅ 完了
+#### 1-1. 全Agentsに`name`フィールド追加
 
-- [x] **think.md** - YAMLフロントマター修正
-- [x] **code.md** - YAMLフロントマター修正
-- [x] **fix.md** - YAMLフロントマター修正
-- [x] **auto-test.md** - YAMLフロントマター + SlashCommand実装修正
-- [x] **full-cycle.md** - YAMLフロントマター + SlashCommand実装修正
-- [x] **review.md** - YAMLフロントマター修正
-- [x] **research.md** - YAMLフロントマター修正
-- [x] **test.md** - YAMLフロントマター修正
-- [x] **hotfix.md** - YAMLフロントマター修正
-- [x] **sow.md** - YAMLフロントマター修正
-- [x] **validate.md** - YAMLフロントマター修正
-- [x] **branch.md** - YAMLフロントマター修正
-- [x] **commit.md** - YAMLフロントマター修正
-- [x] **pr.md** - YAMLフロントマター修正
-- [x] **context.md** - YAMLフロントマター修正
-- [x] **adr.md** - YAMLフロントマター修正
+**所要時間**: 約30分
+**影響**: エージェント機能の正常動作に必須
 
-### Phase 2: Agent Files（16ファイル）
+#### 1-2. 全Skillsに`name`フィールド追加
 
-**Frontend Agents** (8):
-- [ ] **accessibility-reviewer.md** - カスタムフィールド削除
-- [ ] **design-pattern-reviewer.md** - カスタムフィールド削除
-- [ ] **performance-reviewer.md** - カスタムフィールド削除
-- [ ] **readability-reviewer.md** - カスタムフィールド削除
-- [ ] **root-cause-reviewer.md** - カスタムフィールド削除
-- [ ] **structure-reviewer.md** - カスタムフィールド削除
-- [ ] **testability-reviewer.md** - カスタムフィールド削除
-- [ ] **type-safety-reviewer.md** - カスタムフィールド削除
+**所要時間**: 約15分
+**影響**: スキル自動検出に必須
 
-**General Agents** (4):
-- [ ] **document-reviewer.md** - カスタムフィールド削除
-- [ ] **progressive-enhancer.md** - カスタムフィールド削除
-- [ ] **subagent-reviewer.md** - カスタムフィールド削除
-- [ ] **test-generator.md** - カスタムフィールド削除
+#### 1-3. workflow/create.mdにYAMLフロントマター追加
 
-**Git Agents** (3):
-- [ ] **branch-generator.md** - カスタムフィールド削除
-- [ ] **commit-generator.md** - カスタムフィールド削除
-- [ ] **pr-generator.md** - カスタムフィールド削除
-
-**Orchestrator** (1):
-- [ ] **review-orchestrator.md** - カスタムフィールド削除 + ロジック本文化
-
-### Phase 3: Skill Files（9ファイル）
-
-- [ ] **code-principles/SKILL.md** - allowed-tools形式統一
-- [ ] **adr-creator/SKILL.md** - allowed-tools形式統一
-- [ ] **esa-daily-report/SKILL.md** - allowed-tools形式統一
-- [ ] **frontend-patterns/SKILL.md** - allowed-tools形式統一
-- [ ] **performance-optimization/SKILL.md** - allowed-tools形式統一
-- [ ] **progressive-enhancement/SKILL.md** - allowed-tools形式統一
-- [ ] **readability-review/SKILL.md** - allowed-tools形式統一
-- [ ] **security-review/SKILL.md** - allowed-tools形式統一
-- [ ] **tdd-test-generation/SKILL.md** - allowed-tools形式統一
-
-### Phase 4: Japanese Files
-
-同じ修正を日本語版にも適用:
-- [x] **ja/commands/** - 17ファイル（adr/rule.md, adr/skill.mdを含む） ✅ 完了
-- [ ] **ja/agents/** - 16ファイル
-- [ ] **ja/skills/** - 9ファイル
-
-### Phase 5: Verification
-
-- [ ] settings.jsonが正しく構成されているか確認
-- [ ] SlashCommand toolがpermissions allowリストに含まれているか確認
-- [ ] 実際にコマンドを実行してテスト
-- [ ] エージェントを呼び出してテスト
-- [ ] カスタムフィールドが削除されたことを確認
+**所要時間**: 5分
+**影響**: コマンドの認識と動作に必須
 
 ---
 
-## 📊 機能面の検証結果
+### Phase 2: High Priority（今週中実施）
 
-### 動作確認が必要な項目
+#### 2-1. `tools` vs `allowed-tools`仕様確認と統一
 
-以下の項目について、実際の動作確認を推奨します：
+**所要時間**: 約1時間（調査+修正）
 
-#### 1. カスタムフィールドの動作確認 ❓
+#### 2-2. gemini/search.mdに`allowed-tools`追加
 
-**テスト方法**:
+**所要時間**: 2分
+
+---
+
+### Phase 3: Medium Priority（今月中実施）
+
+#### 3-1. Skills全体の`allowed-tools`をYAML配列形式に変更
+
+**所要時間**: 約20分
+
+---
+
+## 📝 推奨される即時修正スクリプト
+
+### Agents: `name`フィールド一括追加
+
 ```bash
-# 1. コマンドのカスタムフィールドがClaude Codeに認識されるか
-claude --debug
-> /think test
+#!/bin/bash
 
-# 2. 出力ログでカスタムフィールドの読み込みを確認
-# "priority", "suitable_for"などが表示されるか？
+find ~/.claude/agents -name "*.md" -type f | while read -r file; do
+  basename=$(basename "$file" .md)
+  if grep -q "^---$" "$file"; then
+    sed -i '' "2i\\
+name: $basename
+" "$file"
+    echo "✅ Updated: $file"
+  else
+    echo "⚠️ No YAML frontmatter found: $file"
+  fi
+done
 ```
 
-**期待結果**: カスタムフィールドは無視される（警告やエラーが出る可能性）
+### Skills: `name`フィールド一括追加
 
-#### 2. SlashCommandツールの動作確認 ❓
-
-**テスト方法**:
 ```bash
-# 1. auto-testコマンドを実行
-claude
-> /auto-test
+#!/bin/bash
 
-# 2. テストが失敗した場合、/fixが自動的に呼び出されるか確認
+find ~/.claude/skills -name "SKILL.md" -type f | while read -r file; do
+  dirname=$(basename "$(dirname "$file")")
+  if grep -q "^---$" "$file"; then
+    sed -i '' "2i\\
+name: $dirname
+" "$file"
+    echo "✅ Updated: $file"
+  else
+    echo "⚠️ No YAML frontmatter found: $file"
+  fi
+done
 ```
-
-**期待結果**: 現在の実装では、/fixは自動的に呼び出されない可能性が高い
-
-#### 3. Agentのカスタムフィールドの動作確認 ❓
-
-**テスト方法**:
-```bash
-# 1. review-orchestratorエージェントを呼び出し
-claude
-> Use the review-orchestrator agent to review my code
-
-# 2. カスタムフィールド（max_execution_time, dependenciesなど）が
-#    実際に適用されているか確認
-```
-
-**期待結果**: カスタムフィールドは無視される
 
 ---
 
-## 📖 参考資料
+## 📊 改善後の期待スコア
 
-修正作業中に参照すべき公式ドキュメント：
+### 予測スコア（Phase 1-2完了後）
 
-1. **Slash Commands**: `@docs/claude-code-docs/slash-commands.md`
-   - Frontmatter specification (lines 181-204)
-   - SlashCommand tool usage (lines 331-398)
+```yaml
+Commands: 95/100 (現在: 90/100)
+Agents: 90/100 (現在: 50/100)
+Skills: 95/100 (現在: 70/100)
+Rules: 95/100 (現在: 95/100)
+Settings: 100/100 (現在: 100/100)
+EN/JP同期: 100/100 (現在: 100/100)
 
-2. **Sub-agents**: `@docs/claude-code-docs/sub-agents.md`
-   - Configuration fields (lines 146-153)
-   - File format (lines 129-144)
-
-3. **Skills**: `@docs/claude-code-docs/skills.md`
-   - allowed-tools format (lines 126-156)
-   - Frontmatter requirements (lines 73-92)
-
-4. **Hooks Guide**: `@docs/claude-code-docs/hooks-guide.md`
-   - Hook configuration examples
-   - Security considerations
-
----
-
-## 🎯 まとめ
-
-### 総評
-
-`.claude`環境は**非常に体系的で包括的な設計**がなされており、開発原則の適用、ドキュメントの整備、Skills/Agentsのエコシステムなど、多くの優れた点があります。
-
-しかし、**機能面で重大な問題**が存在します：
-
-1. **公式仕様外のYAMLフィールドの多用** - 動作しない可能性が高い
-2. **SlashCommandツールの実装不備** - 期待通りに動作しない
-
-### 次のステップ（推奨）
-
-1. **即座に**: コマンドのYAMLフロントマターを公式仕様に修正 [推定: 1-2h]
-2. **即座に**: SlashCommandツールの実装を明確化 [推定: 30m-1h]
-3. **早めに**: Agentの仕様外フィールドを削除 [推定: 1-2h]
-4. **時間があるとき**: Skillsのallowed-tools形式を統一 [推定: 15m]
-
-### 推定総工数
-
-- **必須作業**: 2-4時間
-- **推奨作業**: +1-2時間
-- **オプション**: +2-3時間
-
-すべての修正を完了させることで、`.claude`環境は**公式仕様に完全準拠した、信頼性の高いシステム**になります。
-
----
-
-**このレポートの使用方法**:
-
-1. Phase 1から順次修正を進める
-2. 各修正後にチェックリストにチェックを入れる
-3. Phase 5で動作確認を実施
-4. 問題があれば本レポートの「具体的な修正例」を参照
-
-**次回の参照時**:
-このファイルを開き、チェックリストで進捗を確認しながら作業を進めてください。
-
----
-
-## 📈 修正作業の進捗状況
-
-**最終更新**: 2025-11-13
-
-### ✅ 完了した作業
-
-#### Phase 1: Command Files - 英語版（16ファイル）完了
-すべての英語版コマンドファイルのYAMLフロントマターを公式仕様に準拠させました：
-
-**完了ファイル**:
-- ✅ think.md, code.md (Phase 1-A)
-- ✅ fix.md, review.md, research.md, test.md, hotfix.md, sow.md, validate.md (Phase 1-B)
-- ✅ branch.md, commit.md, pr.md, context.md, adr.md (Phase 1-B)
-- ✅ auto-test.md, full-cycle.md (Phase 2 - SlashCommand実装明確化含む)
-
-**修正内容**:
-- 非公式フィールドを削除: `name`, `priority`, `suitable_for`, `aliases`, `timeout`, `context`, `excludes`, `uses_slashcommand`
-- 公式フィールドのみ使用: `description`, `allowed-tools`, `model`, `argument-hint`
-- バイリンガル記述を維持: 英語と日本語の説明を併記
-- auto-test.md, full-cycle.md: 疑似コードを削除し、SlashCommand toolの使用方法を自然言語で明確化
-
-#### Phase 4（一部）: Japanese Command Files（17ファイル）完了
-日本語版のすべてのコマンドファイルに英語版と同じ修正を適用しました：
-
-**完了ファイル**:
-- ✅ ja/commands/think.md, code.md (Phase 3-A)
-- ✅ ja/commands/fix.md, review.md, research.md, test.md, hotfix.md, sow.md, validate.md (Phase 3-B)
-- ✅ ja/commands/branch.md, commit.md, pr.md, context.md, adr.md (Phase 3-B)
-- ✅ ja/commands/auto-test.md, full-cycle.md (Phase 3-B - SlashCommand実装明確化含む)
-- ✅ ja/commands/adr/rule.md, adr/skill.md (Phase 3-B)
-
-**統計**:
-- **修正ファイル数**: 合計34ファイル（英語16 + 日本語17 + 重複含む調整）
-- **削除した非公式フィールド数**: 約170個（34ファイル × 平均5フィールド）
-- **作業時間**: 約2時間
-
-### ⏳ 残りの作業
-
-#### Phase 2: Agent Files（16ファイル）- 未着手
-非公式フィールドの削除が必要：
-- `color`, `max_execution_time`, `dependencies`, `parallel_group`
-
-#### Phase 3: Skill Files（9ファイル）- 未着手
-`allowed-tools`の形式統一が必要：
-- YAMLリスト形式 → コンマ区切り文字列形式
-
-#### Phase 4（残り）: Japanese Agent & Skill Files（25ファイル）- 未着手
-- ja/agents/ - 16ファイル
-- ja/skills/ - 9ファイル
-
-#### Phase 5: Verification - 未着手
-- settings.jsonの確認
-- SlashCommand toolのpermissions設定確認
-- 実際のコマンド動作テスト
-
-### 📊 進捗率
-
-```
-全体進捗: 34/66 ファイル完了 (52%)
-
-Phase 1: ████████████████████ 100% (16/16)
-Phase 2: ░░░░░░░░░░░░░░░░░░░░   0% (0/16)
-Phase 3: ░░░░░░░░░░░░░░░░░░░░   0% (0/9)
-Phase 4: ██████████░░░░░░░░░░  41% (17/42)
-Phase 5: ░░░░░░░░░░░░░░░░░░░░   0%
+総合スコア: 95/100 (現在: 75/100)
 ```
 
-### 🎯 次の推奨アクション
+---
 
-1. **Phase 2開始**: Agentファイルの非公式フィールド削除（推定: 1-2時間）
-2. **Phase 3実施**: Skillファイルのallowed-tools形式統一（推定: 15分）
-3. **Phase 4完了**: 日本語版のAgent/Skillファイル修正（推定: 1-2時間）
-4. **Phase 5実施**: 動作確認とテスト（推定: 30分-1時間）
+## 🎓 まとめ
 
-**全作業完了予定**: 残り約3-5時間
+### 現状の強み
+
+1. **高品質なdescription**: 特にSkillsのトリガーキーワードが秀逸
+2. **完璧なEN/JP同期**: 例外規定も正しく適用
+3. **適切なhooks設定**: すべて動作可能
+4. **良好なファイル構造**: 論理的に整理されている
+5. **適切なモデル選択**: 用途に応じた使い分け
+
+### 改善が必要な点
+
+1. **必須フィールドの欠落**: `name`が25ファイルで欠落（Critical）
+2. **フィールド名の不整合**: `tools` vs `allowed-tools`（High）
+3. **標準形式の不使用**: コンマ区切り vs YAML配列（Medium）
+
+### 次のステップ
+
+1. **即座にPhase 1実施** - Critical Issues解決（所要時間: 約50分）
+2. **今週中にPhase 2実施** - High Priority対応（所要時間: 約1時間）
+3. **今月中にPhase 3実施** - Medium Priority改善（所要時間: 約2時間）
+
+---
+
+**レポート作成**: 2025-11-13
+**レビュー実施者**: Claude Code + Explore Agents
+**次回レビュー推奨**: Phase 1-2完了後

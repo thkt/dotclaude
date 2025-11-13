@@ -1,4 +1,5 @@
 ---
+name: pr-generator
 description: >
   Expert agent for analyzing all branch changes and generating comprehensive PR descriptions.
   Analyzes git diff, commit history, and file changes to help reviewers understand changes.

@@ -1,4 +1,5 @@
 ---
+name: design-pattern-reviewer
 description: >
   Expert reviewer for React design patterns, component architecture, and application structure.
   Evaluates React design patterns usage, component organization, and state management approaches.

@@ -1,4 +1,5 @@
 ---
+name: security-review
 description: >
   OWASP Top 10-based security review and vulnerability detection. Use when reviewing security
   (セキュリティ), vulnerabilities (脆弱性), XSS, Cross-Site Scripting, SQL injection

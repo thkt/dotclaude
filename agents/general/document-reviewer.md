@@ -1,4 +1,5 @@
 ---
+name: document-reviewer
 description: >
   Expert technical documentation reviewer with deep expertise in creating clear, user-focused documentation.
   Reviews README, API specifications, rule files, and other technical documents for quality, clarity, and structure.

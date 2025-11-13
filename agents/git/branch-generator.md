@@ -1,4 +1,5 @@
 ---
+name: branch-generator
 description: >
   Expert agent for analyzing Git changes and generating appropriate branch names following conventional patterns.
   Analyzes git diff and git status to suggest branch names that follow project conventions and clearly describe changes.

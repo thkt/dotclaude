@@ -1,4 +1,5 @@
 ---
+name: readability-review
 description: >
   Code readability review based on "The Art of Readable Code" and Miller's Law (7±2 cognitive limits).
   Use when reviewing readability (可読性), understandability (理解しやすい/わかりやすい),

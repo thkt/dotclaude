@@ -1,4 +1,5 @@
 ---
+name: review-orchestrator
 description: >
   Master orchestrator for comprehensive frontend code reviews, coordinating specialized agents and synthesizing findings.
   Manages execution of multiple specialized review agents, integrates findings, prioritizes issues, and generates comprehensive reports.

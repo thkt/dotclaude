@@ -1,4 +1,5 @@
 ---
+name: structure-reviewer
 description: >
   Specialized agent for reviewing frontend code structure with focus on eliminating waste and ensuring DRY principles.
   Verifies that code addresses root problems rather than applying patches.

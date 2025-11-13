@@ -1,4 +1,5 @@
 ---
+name: root-cause-reviewer
 description: >
   Specialized agent for analyzing frontend code to identify root causes and detect patch-like solutions.
   Applies "5 Whys" analysis to ensure code addresses fundamental issues rather than superficial fixes.

@@ -1,4 +1,5 @@
 ---
+name: accessibility-reviewer
 description: >
   Expert reviewer for web accessibility compliance and inclusive design in TypeScript/React applications.
   Ensures applications are accessible to all users by identifying WCAG violations and recommending inclusive design improvements.

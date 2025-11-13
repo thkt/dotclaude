@@ -1,4 +1,5 @@
 ---
+name: tdd-test-generation
 description: >
   Comprehensive TDD (Test-Driven Development) guide with RGRC cycle, Baby Steps methodology,
   and systematic test design techniques. Use when implementing TDD (テスト駆動開発),

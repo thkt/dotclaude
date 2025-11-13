@@ -1,4 +1,5 @@
 ---
+name: testability-reviewer
 description: >
   Expert reviewer for testable code design, mocking strategies, and test-friendly patterns in TypeScript/React applications.
   Evaluates code testability and identifies patterns that hinder testing, recommending architectural improvements.

@@ -1,4 +1,5 @@
 ---
+name: commit-generator
 description: >
   Expert agent for analyzing staged Git changes and generating Conventional Commits format messages.
   Analyzes git diff and generates appropriate, well-structured commit messages.

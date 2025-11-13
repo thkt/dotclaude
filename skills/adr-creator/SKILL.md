@@ -1,4 +1,5 @@
 ---
+name: adr-creator
 description: >
   Structured process for creating high-quality Architecture Decision Records in MADR format.
   Triggers on keywords: "ADR", "Architecture Decision", "決定記録", "技術選定",

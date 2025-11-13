@@ -1,4 +1,5 @@
 ---
+name: frontend-patterns
 description: >
   Framework-agnostic frontend component design patterns with rich React implementation examples.
   Use when working with React, Vue, or Angular components (コンポーネント), discussing patterns

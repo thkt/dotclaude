@@ -1,4 +1,5 @@
 ---
+name: readability-reviewer
 description: >
   Specialized agent for reviewing frontend code readability, extending "The Art of Readable Code" principles.
   Applies TypeScript, React, and modern frontend-specific readability considerations.

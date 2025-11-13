@@ -1,4 +1,5 @@
 ---
+name: performance-optimization
 description: >
   Frontend performance optimization expertise with data-driven approach. Use when addressing
   performance issues (パフォーマンス), slow pages (遅い), optimization (最適化),

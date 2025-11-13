@@ -1,4 +1,5 @@
 ---
+name: code-principles
 description: >
   Fundamental software development principles including SOLID, DRY, Occam's Razor (KISS),
   Miller's Law, and YAGNI. Use when discussing principles (原則), simplicity (シンプル),

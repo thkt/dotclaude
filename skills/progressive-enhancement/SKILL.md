@@ -1,4 +1,5 @@
 ---
+name: progressive-enhancement
 description: >
   Progressive Enhancement guide with CSS-first approach and outcome-first development philosophy.
   Use when working with layout (レイアウト), styling (スタイル), positioning (位置),

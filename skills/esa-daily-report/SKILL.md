@@ -1,4 +1,5 @@
 ---
+name: esa-daily-report
 description: >
   Automatic daily report creator for esa.io with Google Calendar integration.
   Triggers on keywords: "日報", "daily report", "振り返り", "reflection", "今日の記録", "today's summary",
