@@ -15,6 +15,7 @@ Skillsは以下の目的で使用されます:
 ## Commands, Agents, Skillsの使い分け
 
 ### 📋 Commands
+
 **役割**: ユーザーが直接呼び出すワークフロー
 
 - `/review` → コードレビューのオーケストレーション
@@ -24,6 +25,7 @@ Skillsは以下の目的で使用されます:
 **特徴**: 薄いラッパー、SkillsやAgentsを調整
 
 ### 🤖 Agents
+
 **役割**: 専門的な分析・レビュー（Commandsから呼ばれる）
 
 - `performance-reviewer` → パフォーマンス分析
@@ -33,6 +35,7 @@ Skillsは以下の目的で使用されます:
 **特徴**: 特定タスクの実行、短期的、Skillsを参照可能
 
 ### 📚 Skills
+
 **役割**: 知識ベース・ガイド・自動化
 
 - `performance-optimization` → 最適化知識
@@ -77,6 +80,7 @@ Skillsは以下の目的で使用されます:
 ### 知識ベース系
 
 #### performance-optimization
+
 **目的**: パフォーマンス最適化の体系的ガイド
 
 - Web Vitals (LCP, FID, CLS) の詳細解説
@@ -89,6 +93,7 @@ Skillsは以下の目的で使用されます:
 **Agentとの連携**: `performance-reviewer`エージェントがこのSkillの知識を参照
 
 #### progressive-enhancement
+
 **目的**: CSS-firstアプローチの設計原則ガイド
 
 - HTML → CSS → JavaScriptの優先順位
@@ -98,6 +103,7 @@ Skillsは以下の目的で使用されます:
 **使い方**: 「レイアウト」「スタイル」「アニメーション」などのキーワードで自動トリガー
 
 #### security-review
+
 **目的**: OWASP Top 10に基づくセキュリティガイド
 
 - OWASP Top 10の詳細解説
@@ -109,6 +115,7 @@ Skillsは以下の目的で使用されます:
 **Commandとの連携**: `/review`コマンドがこのSkillの知識を参照
 
 #### adr-creator
+
 **目的**: Architecture Decision Record作成の詳細プロセスガイド
 
 - MADR形式のADR作成6段階プロセス
@@ -120,6 +127,7 @@ Skillsは以下の目的で使用されます:
 ### プロジェクト固有系
 
 #### esa-daily-report
+
 **目的**: esa.io日報作成の自動化
 
 - Google Calendar連携
@@ -217,6 +225,7 @@ Output: セキュリティレビュー結果
 ### Q: いつSkillを作るべき？
 
 以下の条件に当てはまる場合:
+
 - プロジェクト横断的に再利用できる
 - 「なぜ」を説明する教育的価値がある
 - チームメンバーの学習リソースになる

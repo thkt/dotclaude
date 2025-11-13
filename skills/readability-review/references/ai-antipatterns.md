@@ -53,11 +53,13 @@ async function readCSV(path: string): Promise<string[][]> {
 ```
 
 **When to use classes**:
+
 - Multiple related operations
 - Shared state between methods
 - Clear responsibility boundary
 
 **When to use functions**:
+
 - Single operation
 - Stateless transformation
 - Simple task
@@ -153,6 +155,7 @@ function calculateDiscount(amount: number, userType: string): number {
 ```
 
 **Use patterns only when**:
+
 - Multiple actual implementations exist
 - Behavior needs runtime switching
 - Pattern solves a real problem

@@ -62,6 +62,7 @@ allowed-tools: Read, Grep, Glob, Task
 **トリガー**: naming, 命名, variable name, 変数名, function name, 関数名, concrete, abstract
 
 **カバー範囲**:
+
 - 誤解されない命名
 - 具体的な命名より抽象的
 - 検索可能で発音可能な名前
@@ -78,6 +79,7 @@ allowed-tools: Read, Grep, Glob, Task
 **トリガー**: nesting, ネスト, control flow, Miller's Law, complexity, guard clause, early return
 
 **カバー範囲**:
+
 - ネストの深さを最小化
 - ガード節と早期リターン
 - 複雑な条件の抽出
@@ -95,6 +97,7 @@ allowed-tools: Read, Grep, Glob, Task
 **トリガー**: comments, コメント, documentation, intent, 意図, obvious, clarity
 
 **カバー範囲**:
+
 - Whatではなく、Whyのコメント
 - コード優先、コメント二の次
 - 古いコメントの更新または削除
@@ -111,6 +114,7 @@ allowed-tools: Read, Grep, Glob, Task
 **トリガー**: AI, AI-generated, premature, over-engineering, unnecessary abstraction
 
 **カバー範囲**:
+
 - 時期尚早な抽象化の検出
 - 単純なタスクに対する不必要なクラス
 - 想像上の拡張性

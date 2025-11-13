@@ -102,7 +102,7 @@ After each phase, evaluate results:
 
 ## Example Execution
 
-```
+```markdown
 User: /full-cycle "Add user authentication feature"
 
 Claude: Starting full development cycle...

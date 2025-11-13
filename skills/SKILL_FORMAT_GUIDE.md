@@ -1,10 +1,11 @@
 # Skill Format Guide - Official Specification
 
-Official format guide for Claude Code Skills based on https://code.claude.com/docs/en/skills
+Official format guide for Claude Code Skills based on <https://code.claude.com/docs/en/skills>
 
 ## Quick Reference
 
 ### Required Fields
+
 ```yaml
 ---
 name: skill-name  # lowercase, hyphens, max 64 chars
@@ -22,6 +23,7 @@ allowed-tools:  # Optional but recommended
 ### YAML Front Matter
 
 #### `name` (Required)
+
 - **Format**: Lowercase letters, numbers, hyphens only
 - **Max length**: 64 characters
 - **Examples**:
@@ -31,6 +33,7 @@ allowed-tools:  # Optional but recommended
   - ❌ `adr_creator` (underscores not preferred)
 
 #### `description` (Required)
+
 - **Purpose**: Critical for Claude to discover when to use the Skill
 - **Max length**: 1024 characters
 - **Content**: Should include:
@@ -39,6 +42,7 @@ allowed-tools:  # Optional but recommended
   3. Key capabilities or use cases
 - **Format**: Use `>` for multi-line YAML string
 - **Examples**:
+
   ```yaml
   description: >
     Brief one-line summary of functionality.
@@ -47,6 +51,7 @@ allowed-tools:  # Optional but recommended
   ```
 
 #### `allowed-tools` (Optional, Recommended)
+
 - **Purpose**: Restricts Claude to specified tools
 - **Format**: YAML array
 - **Common tools**:
@@ -56,6 +61,7 @@ allowed-tools:  # Optional but recommended
   - `mcp__*` (MCP server tools)
 - **Best practice**: Always specify explicitly
 - **Example**:
+
   ```yaml
   allowed-tools:
     - Read
@@ -70,6 +76,7 @@ allowed-tools:  # Optional but recommended
 **Important**: Fields not in official spec may not function as expected.
 
 ❌ **Do NOT use these fields**:
+
 - `version`, `author`
 - `triggers`, `sections`, `patterns`
 - `context_size`, `full_size`
@@ -90,6 +97,7 @@ description: >
 ```
 
 **Tips**:
+
 - Include both English and Japanese keywords if applicable
 - List 10-20 most important keywords
 - Include common user phrases
@@ -98,6 +106,7 @@ description: >
 ## Directory Structure
 
 ### Single-File Skill
+
 ```
 skill-name/
 └── SKILL.md (required)
@@ -106,6 +115,7 @@ skill-name/
 **Use when**: Skill has minimal requirements
 
 ### Multi-File Skill (Recommended)
+
 ```
 skill-name/
 ├── SKILL.md (required)
@@ -125,6 +135,7 @@ skill-name/
 ## Bilingual Skills (EN/JP)
 
 ### Structure
+
 ```
 ~/.claude/
 ├── skills/
@@ -137,6 +148,7 @@ skill-name/
 ```
 
 ### Synchronization
+
 - **Same structure**: EN and JP must match
 - **Same content**: Translated, but structurally identical
 - **Same YAML**: `name` and `allowed-tools` identical
@@ -145,18 +157,22 @@ skill-name/
 ## Best Practices
 
 ### 1. Keep Focus Narrow
+
 - ✅ One Skill = One capability
 - ❌ Avoid multi-purpose "Swiss Army knife" skills
 
 **Example**:
+
 - ✅ `readability-review` - Code readability only
 - ❌ `code-review` - Too broad (readability + security + performance)
 
 ### 2. Write Specific Descriptions
+
 - ✅ Include functionality AND trigger terms
 - ❌ Vague terms like "helps with documents"
 
 **Example**:
+
 ```yaml
 # ❌ Vague
 description: >
@@ -171,16 +187,19 @@ description: >
 ```
 
 ### 3. Test with Teammates
+
 - Validate Skills activate appropriately
 - Confirm trigger keywords work as expected
 - Ensure description clarity
 
 ### 4. Document Versions
+
 - Add version history in Skill body (not YAML)
 - Track changes in comments
 - Update `description` when behavior changes
 
 **Example**:
+
 ```markdown
 # Skill Name
 
@@ -292,6 +311,7 @@ Default settings in skill body or external config file.
 Before committing a Skill:
 
 ### YAML Front Matter
+
 - [ ] `name` is lowercase with hyphens only
 - [ ] `name` is ≤ 64 characters
 - [ ] `description` is ≤ 1024 characters
@@ -300,18 +320,21 @@ Before committing a Skill:
 - [ ] No non-official fields (`version`, `triggers`, etc.)
 
 ### Content
+
 - [ ] Skill has clear, narrow focus
 - [ ] Instructions are step-by-step
 - [ ] Examples demonstrate usage
 - [ ] Related files referenced correctly
 
 ### Bilingual (if applicable)
+
 - [ ] Japanese version exists
 - [ ] Structure matches English version
 - [ ] YAML fields are synchronized
 - [ ] All trigger keywords translated
 
 ### Testing
+
 - [ ] Skill activates on expected keywords
 - [ ] Tools function as allowed
 - [ ] No errors in Claude Code
@@ -323,6 +346,7 @@ Before committing a Skill:
 If you have Skills with non-official fields:
 
 1. **Remove non-official fields** from YAML:
+
    ```diff
    ---
    name: skill-name
@@ -337,6 +361,7 @@ If you have Skills with non-official fields:
    ```
 
 2. **Move trigger keywords to `description`**:
+
    ```yaml
    description: >
      Main functionality.
@@ -344,6 +369,7 @@ If you have Skills with non-official fields:
    ```
 
 3. **Document sections in body** (if using section-based structure):
+
    ```markdown
    ## Section-Based Content
 
@@ -364,4 +390,4 @@ If you have Skills with non-official fields:
 ---
 
 **Last Updated**: 2025-11-12
-**Based on**: Claude Code Official Documentation (https://code.claude.com/docs/en/skills)
+**Based on**: Claude Code Official Documentation (<https://code.claude.com/docs/en/skills>)

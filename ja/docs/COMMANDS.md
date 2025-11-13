@@ -361,7 +361,7 @@
 
 Claude Codeは、Commands、Agents、Skillsの3層構造で機能を提供します。それぞれの役割を理解することで、効果的な活用が可能になります。
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │ Commands: ユーザーが直接呼び出すワークフロー              │
 ├─────────────────────────────────────────────────────────────┤
@@ -401,12 +401,14 @@ Claude Codeは、Commands、Agents、Skillsの3層構造で機能を提供しま
 **役割**: ユーザーが明示的に呼び出すワークフロー
 
 **特徴**:
+
 - ユーザーインターフェース（`/command`形式）
 - 薄いオーケストレーションレイヤー
 - AgentsやSkillsを調整・連携
 - タスクの進行管理
 
 **例**:
+
 - `/review` → 複数のreview agentsを呼び出し、結果を統合
 - `/adr` → adr-creator skillを参照してADR作成プロセスを実行
 
@@ -415,12 +417,14 @@ Claude Codeは、Commands、Agents、Skillsの3層構造で機能を提供しま
 **役割**: 専門的な分析・レビュー（主にCommandsから呼ばれる）
 
 **特徴**:
+
 - 特定ドメインの専門知識
 - 実際のコード分析・レビュー実行
 - Skillsの知識ベースを参照可能
 - 短期的なタスク実行
 
 **例**:
+
 - `performance-reviewer` → 実際のコードのパフォーマンスボトルネックを特定
 - `security-reviewer` → コード内の脆弱性を検出（※削除済み、security-review skillに統合）
 
@@ -429,12 +433,14 @@ Claude Codeは、Commands、Agents、Skillsの3層構造で機能を提供しま
 **役割**: 知識ベース、ガイド、プロジェクト固有の自動化
 
 **特徴**:
+
 - 永続的な技術知識
 - 教育的コンテンツ
 - プロジェクト横断的に再利用可能
 - キーワードベースの自動トリガー（オプション）
 
 **例**:
+
 - `performance-optimization` → Web Vitals、React最適化のガイド
 - `progressive-enhancement` → CSS-firstアプローチの設計原則
 - `esa-daily-report` → プロジェクト固有の日報自動化

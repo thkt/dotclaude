@@ -39,6 +39,7 @@ fi
 ### Step 2: Analyze Test Results
 
 After test execution:
+
 - Parse the output for test failures
 - Count failed tests
 - Extract error messages and stack traces
@@ -53,14 +54,15 @@ After test execution:
    - Relevant file paths
 
 2. **Use SlashCommand tool with this exact format**:
-   ```
-   Use the SlashCommand tool to execute: /fix
 
-   Context to pass to /fix:
-   - Failed tests: [list test names]
-   - Error messages: [specific error details]
-   - Affected files: [file paths from stack traces]
-   ```
+    ```markdown
+    Use the SlashCommand tool to execute: /fix
+
+    Context to pass to /fix:
+    - Failed tests: [list test names]
+    - Error messages: [specific error details]
+    - Affected files: [file paths from stack traces]
+    ```
 
 3. Wait for /fix command to complete
 
@@ -68,7 +70,7 @@ After test execution:
 
 ## Example Execution
 
-```
+```markdown
 User: /auto-test
 
 Claude: Running tests...
