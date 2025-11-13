@@ -107,7 +107,7 @@ description: >
 
 ### Single-File Skill
 
-```
+```text
 skill-name/
 └── SKILL.md (required)
 ```
@@ -116,7 +116,7 @@ skill-name/
 
 ### Multi-File Skill (Recommended)
 
-```
+```text
 skill-name/
 ├── SKILL.md (required)
 ├── sections/ (optional)
@@ -136,7 +136,7 @@ skill-name/
 
 ### Structure
 
-```
+```text
 ~/.claude/
 ├── skills/
 │   └── skill-name/
