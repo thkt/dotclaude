@@ -4,7 +4,7 @@ description: >
   Expert reviewer for testable code design, mocking strategies, and test-friendly patterns in TypeScript/React applications.
   Evaluates code testability and identifies patterns that hinder testing, recommending architectural improvements.
   コードのテスタビリティを評価し、テスト可能な設計、モックの容易性、純粋関数の使用、副作用の分離などの観点から改善点を特定します。
-allowed-tools: Read, Grep, Glob, LS, Task
+tools: Read, Grep, Glob, LS, Task
 model: sonnet
 ---
 

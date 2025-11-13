@@ -4,7 +4,7 @@ description: >
   Specialized reviewer for sub-agent definition files ensuring proper format, structure, and quality standards.
   Reviews agent system specifications for capabilities, boundaries, review focus areas, and integration points.
   サブエージェント定義ファイルの形式、構造、品質をレビューします。
-allowed-tools: Read, Grep, Glob, LS
+tools: Read, Grep, Glob, LS
 model: opus
 ---
 

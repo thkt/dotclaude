@@ -5,7 +5,7 @@ description: >
   Applies "5 Whys" analysis to ensure code addresses fundamental issues rather than superficial fixes.
   References [@~/.claude/skills/code-principles/SKILL.md] for fundamental software development principles.
   フロントエンドコードの根本的な問題を分析し、表面的な対処療法ではなく本質的な解決策を提案します。
-allowed-tools: Read, Grep, Glob, LS, Task
+tools: Read, Grep, Glob, LS, Task
 model: opus
 ---
 

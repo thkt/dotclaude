@@ -4,7 +4,7 @@ description: >
   Expert reviewer for web accessibility compliance and inclusive design in TypeScript/React applications.
   Ensures applications are accessible to all users by identifying WCAG violations and recommending inclusive design improvements.
   フロントエンドコードのアクセシビリティを検証し、WCAG準拠、セマンティックHTML、キーボードナビゲーション、スクリーンリーダー対応などの改善点を特定します。
-allowed-tools: Read, Grep, Glob, LS, Task, mcp__chrome-devtools__*, mcp__mdn__*
+tools: Read, Grep, Glob, LS, Task, mcp__chrome-devtools__*, mcp__mdn__*
 model: sonnet
 ---
 

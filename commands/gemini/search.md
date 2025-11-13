@@ -1,6 +1,7 @@
 ---
 name: search
 description: Gemini CLIを使用してGoogle検索を実行
+allowed-tools: Bash(gemini:*), TodoWrite
 priority: medium
 suitable_for:
   scale: [small, medium, large]

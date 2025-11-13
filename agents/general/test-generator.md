@@ -4,7 +4,7 @@ description: >
   Expert agent for creating focused, maintainable tests based on predefined test plans, following TDD principles and progressive enhancement.
   References [@~/.claude/skills/tdd-test-generation/SKILL.md] for TDD/RGRC cycle and systematic test design knowledge.
   TDD原則に基づき、事前に定義されたテスト計画書に従って必要最小限のテストを作成します。計画書にないテストケースは作成せず、オッカムの剃刀に従います。
-allowed-tools: Read, Write, Grep, Glob, LS
+tools: Read, Write, Grep, Glob, LS
 model: sonnet
 ---
 

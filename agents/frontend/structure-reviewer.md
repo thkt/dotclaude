@@ -5,7 +5,7 @@ description: >
   Verifies that code addresses root problems rather than applying patches.
   References [@~/.claude/skills/code-principles/SKILL.md] for fundamental development principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI).
   フロントエンドコードの構造を無駄、重複、根本的問題解決の観点からレビューします。
-allowed-tools: Read, Grep, Glob, LS, Task
+tools: Read, Grep, Glob, LS, Task
 model: haiku
 ---
 

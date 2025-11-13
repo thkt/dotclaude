@@ -5,7 +5,7 @@ description: >
   Applies TypeScript, React, and modern frontend-specific readability considerations.
   References [@~/.claude/skills/readability-review/SKILL.md] for readability principles and Miller's Law.
   フロントエンドコード（TypeScript/React）の可読性を「The Art of Readable Code」の原則とフロントエンド特有の観点からレビューします。
-allowed-tools: Read, Grep, Glob, LS, Task
+tools: Read, Grep, Glob, LS, Task
 model: haiku
 ---
 
