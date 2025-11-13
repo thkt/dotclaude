@@ -44,6 +44,32 @@ When principles conflict:
 
 **Note**: Principle 4 (Output Verifiability) applies to all outputs regardless of priority. Even when following user instructions, maintain transparency about confidence levels and evidence.
 
+## Principle Interaction: YAGNI vs Impact Simulation
+
+The priority between YAGNI and Impact Simulation is **context-dependent**:
+
+### Prioritize YAGNI when
+
+- Working on prototypes or MVP phase
+- Requirements are uncertain and likely to change
+- Team resources are limited
+- Risk of over-engineering is high
+
+### Prioritize Impact Simulation when
+
+- Considering large-scale refactoring or changes
+- Complex dependencies exist in the system
+- Impact scope is unclear
+- Coordination across teams is required
+
+### Practical Balance
+
+In most cases, use a **phased approach**: "Start with YAGNI, validate with Impact Simulation when needed"
+
+1. Start with minimal implementation (YAGNI)
+2. When changes are needed, check impact scope (Impact Simulation)
+3. If impact is large → proceed carefully; if small → move quickly
+
 ## Integration with PRE_TASK_CHECK
 
 - Principles are applied before PRE_TASK_CHECK

@@ -121,17 +121,6 @@ If any check fails:
   4. **Last resort**: If steps 1-3 yield no results, ask user with format:
      "Could not find test command. Please specify the command to run tests (e.g., npm test, yarn test)."
 
-- **Retry Policy**: Automatically retry with these specific conditions:
-  - **Maximum retries**: 5 attempts
-  - **Retry interval**: Exponential backoff (1s, 2s, 4s, 8s, 16s)
-  - **Retry triggers**: Network errors, temporary file locks, transient test failures
-  - **Do NOT retry**: Syntax errors, compilation errors, authentication failures
-
-  After 5 failed attempts with the same error:
-  1. Stop further retries immediately
-  2. Report to user: "Same error occurred 5 times: [error message]. A different approach may be needed."
-  3. Suggest alternative approaches if available
-
 - **STRICTLY PROHIBIT completion reporting** with:
   - Failing tests (unless explicitly creating tests for unimplemented features)
   - Compilation/build errors
