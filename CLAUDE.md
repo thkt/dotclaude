@@ -70,7 +70,7 @@ Quick Decision Questions:
 
 **Note**: Skills are automatically activated when relevant keywords are mentioned.
 
-Full details: [@~/.claude/skills/code-principles/SKILL.md]
+Full details: [@~/.claude/skills/code-principles/SKILL.md](./skills/code-principles/SKILL.md)
 
 ### [P3] CONTEXTUAL - Just-in-Time References
 
