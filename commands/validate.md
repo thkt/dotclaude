@@ -1,17 +1,11 @@
 ---
-name: validate
-description: SOWの受け入れ基準を手動確認
-priority: low
-suitable_for:
-  type: [verification, review]
-  phase: [testing, deployment]
-  understanding: "≥ 80%"
-aliases: [check, verify]
-timeout: 10
+description: >
+  Validate implementation against SOW acceptance criteria with L2 (practical) validation level.
+  Checks acceptance criteria, coverage, and performance. Pass/fail logic with clear scoring.
+  Identifies missing features and issues. Use when ready to verify implementation conformance.
+  SOWの受け入れ基準に対して実装を検証。受け入れ基準、カバレッジ、パフォーマンスをチェック。
 allowed-tools: Read, Bash(ls:*), Bash(cat:*), Grep
-context:
-  validation_level: "manual"
-  sow_directory: "~/.claude/workspace/sow/"
+model: inherit
 ---
 
 # /validate - SOW Criteria Checker

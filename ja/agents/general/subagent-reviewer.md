@@ -1,9 +1,10 @@
 ---
-name: subagent-reviewer
-description: サブエージェント定義ファイルの形式、構造、品質をレビューします
+description: >
+  サブエージェント定義ファイルの形式、構造、品質をレビューします。
+  Specialized reviewer for sub-agent definition files ensuring proper format, structure, and quality standards.
+  Reviews agent system specifications for capabilities, boundaries, review focus areas, and integration points.
+allowed-tools: Read, Grep, Glob, LS
 model: opus
-tools: Read, Grep, Glob, LS
-color: gray
 ---
 
 # Sub-Agent Reviewer

@@ -1,20 +1,11 @@
 ---
-name: review
-description: 複数の専門エージェントによるコードレビューを実行
-priority: medium
-suitable_for:
-  scale: [small, medium, large]
-  type: [review, analysis]
-  understanding: "≥ 50%"
-  urgency: [low, medium]
-aliases: [code-review, cr]
-timeout: 90
+description: >
+  Orchestrate specialized review agents for comprehensive code review.
+  Covers security, performance, accessibility, type safety, readability, structure, and testability.
+  Use after completing implementation to identify issues and get actionable recommendations.
+  複数の専門エージェントによる包括的なコードレビューを調整。セキュリティ、パフォーマンス、アクセシビリティをカバー。
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Read, Glob, Grep, LS, Task
-context:
-  files_changed: "dynamic"
-  lines_changed: "dynamic"
-  new_features: "detected"
-  breaking_changes: "detected"
+model: inherit
 ---
 
 # /review - 高度なコードレビューオーケストレーター

@@ -1,12 +1,11 @@
 ---
-name: readability-reviewer
-description: フロントエンドコード（TypeScript/React）の可読性を「The Art of Readable Code」の原則とフロントエンド特有の観点からレビューします
+description: >
+  Specialized agent for reviewing frontend code readability, extending "The Art of Readable Code" principles.
+  Applies TypeScript, React, and modern frontend-specific readability considerations.
+  References [@~/.claude/skills/readability-review/SKILL.md] for readability principles and Miller's Law.
+  フロントエンドコード（TypeScript/React）の可読性を「The Art of Readable Code」の原則とフロントエンド特有の観点からレビューします。
+allowed-tools: Read, Grep, Glob, LS, Task
 model: haiku
-tools: Read, Grep, Glob, LS, Task
-color: cyan
-max_execution_time: 30
-dependencies: [readability-review]  # Readability principles and Miller's Law knowledge base
-parallel_group: foundation
 ---
 
 # Frontend Readability Reviewer

@@ -1,12 +1,11 @@
 ---
-name: structure-reviewer
-description: フロントエンドコードの構造を無駄、重複、根本的問題解決の観点からレビューします
+description: >
+  Specialized agent for reviewing frontend code structure with focus on eliminating waste and ensuring DRY principles.
+  Verifies that code addresses root problems rather than applying patches.
+  References [@~/.claude/skills/code-principles/SKILL.md] for fundamental development principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI).
+  フロントエンドコードの構造を無駄、重複、根本的問題解決の観点からレビューします。
+allowed-tools: Read, Grep, Glob, LS, Task
 model: haiku
-tools: Read, Grep, Glob, LS, Task
-color: magenta
-max_execution_time: 30
-dependencies: [code-principles]
-parallel_group: foundation
 ---
 
 # Frontend Structure Reviewer

@@ -1,5 +1,4 @@
 ---
-name: adr-creator
 description: >
   MADR形式で高品質なArchitecture Decision Recordを作成するための構造化プロセス。
   トリガーキーワード: "ADR", "Architecture Decision", "決定記録", "技術選定",
@@ -7,14 +6,7 @@ description: >
   "作成 ADR", "記録 決定", "document decision"。
   事前作成検証、テンプレート選択、参照収集、校正、インデックス更新、再試行メカニズムを持つエラー回復の
   6段階プロセスを提供します。
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Grep
-  - Glob
-  - Bash
-  - Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash, Task
 ---
 
 # ADR Creator - 構造化ADR作成プロセス

@@ -1,9 +1,10 @@
 ---
-name: type-safety-reviewer
-description: TypeScriptコードの型安全性を評価し、型定義の網羅性、型推論の活用、anyの使用検出、型ガードの実装など静的型付けの品質を検証します
-tools: Read, Grep, Glob, LS, Task
+description: >
+  TypeScriptコードの型安全性を評価し、型定義の網羅性、型推論の活用、anyの使用検出、型ガードの実装など静的型付けの品質を検証します。
+  Expert reviewer for TypeScript type safety, static typing practices, and type system utilization.
+  Ensures maximum type safety by identifying type coverage gaps and opportunities to leverage TypeScript's type system.
+allowed-tools: Read, Grep, Glob, LS, Task
 model: sonnet
-color: cyan
 ---
 
 # 型安全性レビューアー

@@ -1,20 +1,11 @@
 ---
-name: test
-description: 包括的なテストと検証でコード品質を保証
-priority: high
-suitable_for:
-  scale: [small, medium, large]
-  type: [test]
-  understanding: "≥ 70%"
-  urgency: [low, medium]
-aliases: []
-timeout: 120
+description: >
+  Comprehensive testing and verification with automatic test command discovery.
+  Handles unit, integration, and E2E tests. Tracks progress with TodoWrite.
+  Discovers and runs project-specific test commands from package.json or similar.
+  包括的なテストと検証を自動テストコマンド発見で実行。ユニット、統合、E2Eテストを処理。
 allowed-tools: Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn test:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm test:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun test:*), Bash(bun run), Bash(bun run:*), Bash(npx:*), Bash(jest:*), Bash(vitest:*), Bash(ls:*), Bash(cat:*), Bash(find:*), Read, Glob, Grep, LS, Task
-context:
-  files_changed: "dynamic"
-  lines_changed: "dynamic"
-  test_coverage: "measured"
-  test_results: "analyzed"
+model: inherit
 ---
 
 # /test - 高度なテストと検証

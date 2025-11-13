@@ -1,21 +1,12 @@
 ---
-name: code
-description: 計画に基づいてコードを記述（TDD推奨）
-priority: high
-suitable_for:
-  scale: [small, medium, large]
-  type: [feature, refactor, fix]
-  understanding: "≥ 70%"
-  urgency: [low, medium]
-aliases: [implement, impl]
-timeout: 120
+description: >
+  Implement code following TDD/RGRC cycle (Red-Green-Refactor-Commit) with real-time test feedback and quality checks.
+  Use for feature implementation, refactoring, or bug fixes when you have clear understanding (≥70%) of requirements.
+  Applies SOLID principles, DRY, and progressive enhancement. Includes dynamic quality discovery and confidence scoring.
+  計画に基づいてコードを記述（TDD/RGRC推奨）。要件の明確な理解がある場合に、機能実装、リファクタリング、バグ修正で使用。
 allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
-context:
-  files_changed: "dynamic"
-  lines_changed: "tracked"
-  test_status: "real-time"
-  quality_checks: "discovered"
-  confidence_level: "scored"
+model: inherit
+argument-hint: "[implementation description]"
 ---
 
 # /code - 動的品質保証付き高度な実装

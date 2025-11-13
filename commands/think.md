@@ -1,20 +1,12 @@
 ---
-name: think
-description: 構造化された計画文書（SOW）を生成
-priority: high
-suitable_for:
-  scale: [small, medium, large]
-  type: [fix, feature, refactor, optimize]
-  understanding: "≥ 50%"
-  urgency: [low, medium]
-aliases: [plan, analyze, sow]
-timeout: 60
+description: >
+  Create a comprehensive Statement of Work (SOW) for feature development or problem solving.
+  Use when planning complex tasks, defining acceptance criteria, or structuring implementation approaches.
+  Ideal for tasks requiring detailed analysis, risk assessment, and structured planning documentation.
+  構造化された計画文書（SOW）を生成。複雑なタスクの計画、受け入れ基準の定義、実装アプローチの構造化が必要な場合に使用。
 allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Read, Write, Glob, Grep, LS
-context:
-  complexity: "assessed"
-  risks: "evaluated"
-  dependencies: "mapped"
-  solutions: "scored"
+model: inherit
+argument-hint: "[feature or problem description]"
 ---
 
 # /think - Simple SOW Generator

@@ -1,9 +1,11 @@
 ---
-name: root-cause-reviewer
-description: フロントエンドコードの根本的な問題を分析し、表面的な対処療法ではなく本質的な解決策を提案します
+description: >
+  フロントエンドコードの根本的な問題を分析し、表面的な対処療法ではなく本質的な解決策を提案します。
+  Specialized agent for analyzing frontend code to identify root causes and detect patch-like solutions.
+  Applies "5 Whys" analysis to ensure code addresses fundamental issues rather than superficial fixes.
+  References [@~/.claude/skills/code-principles/SKILL.md] for fundamental software development principles.
+allowed-tools: Read, Grep, Glob, LS, Task
 model: opus
-tools: Read, Grep, Glob, LS, Task
-color: red
 ---
 
 # フロントエンド根本原因レビューアー

@@ -1,23 +1,12 @@
 ---
-name: fix
-description: 開発環境で小さなバグの修正や軽微な改善を素早く実行
-priority: high
-suitable_for:
-  scale: [small]
-  type: [fix, refactor]
-  understanding: "≥ 80%"
-  urgency: [low, medium]  # Not for emergencies
-  environment: development  # Development environment only
-aliases: [qf]
-timeout: 30
+description: >
+  Quick bug fixes and minor improvements in development environment.
+  Streamlined mini-workflow for small, well-understood issues. Development environment only.
+  Not for emergency production issues (use /hotfix instead).
+  開発環境で小さなバグの修正や軽微な改善を素早く実行。小規模で理解された問題用の合理化されたミニワークフロー。
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Task
-context:
-  files_changed: "dynamic"
-  lines_changed: "tracked"
-  test_status: "monitored"
-  quality_checks: "parallel"
-  confidence_level: "scored"
-excludes: [hotfix]  # Don't suggest both
+model: inherit
+argument-hint: "[bug description or issue]"
 ---
 
 # /fix - 動的分析付き高度なクイックフィックス

@@ -1,12 +1,11 @@
 ---
-name: root-cause-reviewer
-description: フロントエンドコードの根本的な問題を分析し、表面的な対処療法ではなく本質的な解決策を提案します
-model: opus  # Root cause analysis requires deeper reasoning and multi-step "5 Whys" analysis
-tools: Read, Grep, Glob, LS, Task
-color: red
-max_execution_time: 60
-dependencies: [structure-reviewer, readability-reviewer, code-principles]  # Structure provides context for identifying wasteful workarounds; readability reveals complexity symptoms; code-principles for fundamental design evaluation
-parallel_group: sequential
+description: >
+  Specialized agent for analyzing frontend code to identify root causes and detect patch-like solutions.
+  Applies "5 Whys" analysis to ensure code addresses fundamental issues rather than superficial fixes.
+  References [@~/.claude/skills/code-principles/SKILL.md] for fundamental software development principles.
+  フロントエンドコードの根本的な問題を分析し、表面的な対処療法ではなく本質的な解決策を提案します。
+allowed-tools: Read, Grep, Glob, LS, Task
+model: opus
 ---
 
 # Frontend Root Cause Reviewer

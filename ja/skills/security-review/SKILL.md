@@ -1,5 +1,4 @@
 ---
-name: security-review
 description: >
   OWASP Top 10ベースのセキュリティレビューと脆弱性検出スキル。
   トリガーキーワード: "セキュリティ", "security", "脆弱性", "vulnerability", "XSS",
@@ -13,11 +12,7 @@ description: >
   コード実装やレビュー中に自動的にアクティブ化され、一般的な脆弱性パターンを検出し、
   OWASP Top 10に基づいて安全な実装を提案。基本セキュリティ（アクセス制御、暗号化、認証）、
   インジェクション攻撃（SQL、XSS、CSRF）、高度なトピック（レート制限、SSRF、設定、監視）のセクションを含む。
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Task
+allowed-tools: Read, Grep, Glob, Task
 ---
 
 # Security Review - OWASP Top 10 ベースのコード分析

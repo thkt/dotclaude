@@ -1,5 +1,4 @@
 ---
-name: frontend-patterns
 description: >
   Framework-agnostic frontend component design patterns with rich React implementation examples.
   Use when working with React, Vue, or Angular components (コンポーネント), discussing patterns
@@ -8,11 +7,7 @@ description: >
   Covers Container/Presentational separation, React Hooks patterns (useEffect, useMemo, useCallback),
   custom hooks design, state management strategies, and component composition.
   Essential for design-pattern-reviewer agent and frontend implementations.
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Task
+allowed-tools: Read, Grep, Glob, Task
 ---
 
 # Frontend Patterns - Component Design Guide

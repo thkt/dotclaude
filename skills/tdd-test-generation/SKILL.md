@@ -1,5 +1,4 @@
 ---
-name: tdd-test-generation
 description: >
   Comprehensive TDD (Test-Driven Development) guide with RGRC cycle, Baby Steps methodology,
   and systematic test design techniques. Use when implementing TDD (テスト駆動開発),
@@ -8,13 +7,7 @@ description: >
   analysis (境界値分析), decision tables, coverage (カバレッジ), or unit testing
   (ユニットテスト). Provides t_wada-style Baby Steps approach with systematic test case
   generation and SOW integration. Essential for test-generator agent and /code TDD implementations.
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Grep
-  - Glob
-  - Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Task
 ---
 
 # TDD Test Generation - Comprehensive Test-Driven Development Guide

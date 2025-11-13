@@ -1,17 +1,11 @@
 ---
-name: auto-test
-description: ファイル変更後に自動テスト実行
-priority: medium
-suitable_for:
-  scale: [small, medium]
-  type: [fix, refactor]
-  understanding: "≥ 90%"
-aliases: [at]
-timeout: 30
+description: >
+  Automatically execute tests after file modifications and invoke /fix command if tests fail using SlashCommand tool.
+  Streamlines test-fix cycle with automatic conditional execution. Can be triggered via hooks in settings.json.
+  Use after code changes to verify functionality and automatically attempt fixes on failure.
+  ファイル変更後に自動的にテストを実行し、失敗時に/fixコマンドを呼び出す。
 allowed-tools: SlashCommand, Bash(npm test:*), Bash(yarn test:*), Bash(pnpm test:*)
-context:
-  auto_execution: true
-  trigger: "after_file_change"
+model: inherit
 ---
 
 # /auto-test - SlashCommand統合による自動テストランナー

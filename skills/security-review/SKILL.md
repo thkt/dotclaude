@@ -1,5 +1,4 @@
 ---
-name: security-review
 description: >
   OWASP Top 10-based security review and vulnerability detection. Use when reviewing security
   (セキュリティ), vulnerabilities (脆弱性), XSS, Cross-Site Scripting, SQL injection
@@ -10,11 +9,7 @@ description: >
   NoSQL injection, security misconfiguration, logging, monitoring, or dependency vulnerabilities
   (脆弱性スキャン). Detects common vulnerability patterns and suggests secure implementations
   based on OWASP Top 10. Essential for security-focused code reviews.
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Task
+allowed-tools: Read, Grep, Glob, Task
 ---
 
 # Security Review - OWASP Top 10 Based Code Analysis

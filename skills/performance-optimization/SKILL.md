@@ -1,5 +1,4 @@
 ---
-name: performance-optimization
 description: >
   Frontend performance optimization expertise with data-driven approach. Use when addressing
   performance issues (パフォーマンス), slow pages (遅い), optimization (最適化),
@@ -8,13 +7,7 @@ description: >
   React.memo, heavy pages (重い), speed improvements (高速化), lazy loading, code splitting,
   or tree shaking. Provides measurement-based techniques for React optimization, Web Vitals
   improvement, and bundle optimization. Essential for performance-reviewer agent.
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Task
-  - mcp__chrome-devtools__*
-  - mcp__mdn__*
+allowed-tools: Read, Grep, Glob, Task, mcp__chrome-devtools__*, mcp__mdn__*
 ---
 
 # Performance Optimization - Data-Driven Frontend Optimization

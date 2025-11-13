@@ -1,19 +1,12 @@
 ---
-name: adr
-description: MADR形式でArchitecture Decision Record（ADR）を作成
-priority: medium
-suitable_for:
-  scale: [small, medium, large]
-  type: [documentation, decision-making]
-  understanding: "any"
-  urgency: [low, medium]
-aliases: [decision, architecture-decision]
-timeout: 60
-context:
-  files_changed: "docs"
-  lines_changed: "100+"
-  new_features: true
-  breaking_changes: false
+description: >
+  Create Architecture Decision Record (ADR) in MADR format with Skills integration.
+  Documents architecture decisions with context, alternatives, and rationale.
+  Automatic numbering (0001, 0002...), saves to docs/adr/ in project root. Japanese language support.
+  MADR形式でArchitecture Decision Recordを作成。自動採番、プロジェクトルートのdocs/adr/に保存。
+allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(mkdir:*), Bash(cat:*), Grep, Glob
+model: inherit
+argument-hint: "[decision title]"
 ---
 
 # /adr - Architecture Decision Record作成

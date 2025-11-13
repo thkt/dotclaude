@@ -1,18 +1,12 @@
 ---
-name: full-cycle
-description: 完全な開発サイクルを包括的に調整
-priority: high
-suitable_for:
-  scale: [medium, large]
-  type: [feature, refactor]
-  understanding: "≥ 70%"
-aliases: [fc, fulldev]
-timeout: 300
+description: >
+  Orchestrate complete development cycle through SlashCommand tool integration, executing from research through implementation, testing, and validation.
+  Chains multiple commands: /research → /think → /code → /test → /review → /validate with conditional execution and error handling.
+  TodoWrite integration for progress tracking. Use for comprehensive feature development requiring full workflow automation.
+  SlashCommandツール統合により、研究から実装、テスト、検証まで完全な開発サイクルを統括。
 allowed-tools: SlashCommand, TodoWrite, Read, Write, Edit, MultiEdit
-uses_slashcommand: true
-context:
-  workflow_type: "sequential"
-  error_handling: "stop_on_failure"
+model: inherit
+argument-hint: "[feature or task description]"
 ---
 
 # /full-cycle - 完全な開発サイクル自動化

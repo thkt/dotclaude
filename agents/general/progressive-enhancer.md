@@ -1,12 +1,11 @@
 ---
-name: progressive-enhancer
-description: UI/UX設計に対してプログレッシブエンハンスメントのアプローチをレビュー・提案します
+description: >
+  Specialized agent for applying Progressive Enhancement principles to web development tasks.
+  Reviews and suggests CSS-first approaches for UI/UX design.
+  References [@~/.claude/skills/progressive-enhancement/SKILL.md] for Progressive Enhancement and CSS-first approach knowledge.
+  UI/UX設計に対してプログレッシブエンハンスメントのアプローチをレビュー・提案します。
+allowed-tools: Read, Grep, Glob, LS, mcp__mdn__*
 model: sonnet
-ddtools: Read, Grep, Glob, LS, mcp__mdn__*
-color: lime
-max_execution_time: 30
-dependencies: [progressive-enhancement]  # Progressive Enhancement and CSS-first approach knowledge base
-parallel_group: foundation
 ---
 
 # Progressive Enhancement Agent

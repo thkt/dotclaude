@@ -1,22 +1,12 @@
 ---
-name: hotfix
-description: 本番環境の緊急対応が必要な重大な問題を修正
-priority: high
-suitable_for:
-  scale: [small, medium]
-  type: [fix]
-  understanding: "≥ 70%"
-  urgency: [high]  # Only for urgent issues
-  environment: production
-  severity: [critical, security]
-aliases: [emergency-fix, prod-fix]
-timeout: 60
-context:
-  files_changed: "< 10"
-  lines_changed: "< 200"
-  new_features: false
-  breaking_changes: true  # May need breaking changes for security
-excludes: [fix]  # Don't suggest both
+description: >
+  Emergency fixes for critical production issues ONLY. For production-impacting problems, security vulnerabilities, or immediate deployment needs.
+  5-min triage, 15-min fix, 10-min test. Minimal process overhead with required rollback plan.
+  NOT for development fixes (use /fix instead). High severity (critical/security) only.
+  本番環境の緊急対応が必要な重大な問題を修正。本番影響、セキュリティ脆弱性、即座のデプロイが必要な場合のみ。
+allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Edit, MultiEdit, Read, Write, Glob, Grep, Task
+model: inherit
+argument-hint: "[critical issue description]"
 ---
 
 # /hotfix - Emergency Hot Fix

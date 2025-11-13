@@ -1,5 +1,4 @@
 ---
-name: frontend-patterns
 description: >
   Reactの豊富な実装例を含むフレームワーク非依存のフロントエンドコンポーネント設計パターン。
   React、Vue、Angularコンポーネント（コンポーネント）を扱う際、パターン
@@ -8,11 +7,7 @@ description: >
   議論する際に使用。Container/Presentational分離、Reactフックパターン（useEffect、useMemo、useCallback）、
   カスタムフック設計、状態管理戦略、コンポーネントコンポジションをカバー。
   design-pattern-reviewerエージェントとフロントエンド実装に必須。
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Task
+allowed-tools: Read, Grep, Glob, Task
 ---
 
 # フロントエンドパターン - コンポーネント設計ガイド

@@ -1,12 +1,10 @@
 ---
-name: pr-generator
-description: ブランチの変更内容を分析して包括的なPR説明文を自動生成する専門エージェント
-tools: Bash
+description: >
+  Expert agent for analyzing all branch changes and generating comprehensive PR descriptions.
+  Analyzes git diff, commit history, and file changes to help reviewers understand changes.
+  ブランチの変更内容を分析して包括的なPR説明文を自動生成する専門エージェント。
+allowed-tools: Bash
 model: haiku
-color: blue
-max_execution_time: 20
-dependencies: []
-parallel_group: git-operations
 ---
 
 # Pull Request Description Generator

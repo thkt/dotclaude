@@ -1,19 +1,11 @@
 ---
-name: pr
-description: ブランチの変更内容を分析して包括的なPR説明文を自動生成
-priority: high
-suitable_for:
-  type: [git, workflow, documentation, review]
-  phase: [pull-request, review]
-  understanding: "≥ 70%"
-aliases: [pull-request, pr-desc]
-timeout: 20
+description: >
+  Analyze branch changes and generate comprehensive PR description automatically. Uses pr-generator agent.
+  Examines all commits from branch divergence, not just latest. Creates summary, test plan, and checklist.
+  Use when ready to create pull request and need description text.
+  ブランチの変更内容を分析して包括的なPR説明文を自動生成。分岐点からのすべてのコミットを検査。
 allowed-tools: Task
-context:
-  branch_comparison: "delegated"
-  commit_history: "delegated"
-  file_changes: "delegated"
-  test_coverage: "delegated"
+model: inherit
 ---
 
 # /pr - Pull Request Description Generator

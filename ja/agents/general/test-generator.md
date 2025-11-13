@@ -1,12 +1,10 @@
 ---
-name: test-generator
-description: TDD原則に基づき、事前に定義されたテスト計画書に従って必要最小限のテストを作成します。計画書にないテストケースは作成せず、オッカムの剃刀に従います
-tools: Read, Write, Grep, Glob, LS
+description: >
+  TDD原則に基づき、事前に定義されたテスト計画書に従って必要最小限のテストを作成します。計画書にないテストケースは作成せず、オッカムの剃刀に従います。
+  Expert agent for creating focused, maintainable tests based on predefined test plans, following TDD principles and progressive enhancement.
+  References [@~/.claude/skills/tdd-test-generation/SKILL.md] for TDD/RGRC cycle and systematic test design knowledge.
+allowed-tools: Read, Write, Grep, Glob, LS
 model: sonnet
-color: cyan
-max_execution_time: 30
-dependencies: [tdd-test-generation]  # TDD/RGRC cycle and systematic test design knowledge base
-parallel_group: testing
 ---
 
 # Test Generator

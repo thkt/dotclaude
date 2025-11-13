@@ -1,18 +1,11 @@
 ---
-name: branch
-description: Git差分を分析して適切なブランチ名を自動生成
-priority: medium
-suitable_for:
-  type: [naming, git, workflow]
-  phase: [planning, development]
-  understanding: "≥ 70%"
-aliases: [br, branch-name]
-timeout: 10
+description: >
+  Analyze current Git changes and suggest appropriate branch names following conventional patterns (feature/fix/chore/docs).
+  Uses branch-generator agent to analyze diff and file patterns. Provides 3-5 naming suggestions with rationale.
+  Use before creating a new branch when you need help with naming conventions.
+  Git差分を分析して適切なブランチ名を自動生成。慣習的なパターン（feature/fix/chore/docs）に従う。
 allowed-tools: Task
-context:
-  changes_analyzed: "delegated"
-  naming_convention: "feature/fix/chore/docs"
-  file_patterns: "detected"
+model: inherit
 ---
 
 # /branch - Git Branch Name Generator

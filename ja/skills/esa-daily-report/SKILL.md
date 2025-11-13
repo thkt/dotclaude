@@ -1,16 +1,11 @@
 ---
-name: esa-daily-report
 description: >
   Google Calendar統合によるesa.io用の自動日報作成ツール。
   トリガーキーワード: 「日報」、「daily report」、「振り返り」、「reflection」、「今日の記録」、「today's summary」、
   「esa」、「日次レポート」、「デイリーレポート」。
   カレンダーイベントの自動取得と構造化テンプレート形式に従うことで日報作成プロセスを効率化。
   チームコミュニケーション用のプロジェクト固有の自動化だが、異なるチーム向けにカスタマイズ可能。
-allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Task
+allowed-tools: Read, Write, Bash, Task
 ---
 
 # esa 日報作成ツール

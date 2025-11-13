@@ -1,5 +1,4 @@
 ---
-name: readability-review
 description: >
   Code readability review based on "The Art of Readable Code" and Miller's Law (7±2 cognitive limits).
   Use when reviewing readability (可読性), understandability (理解しやすい/わかりやすい),
@@ -9,11 +8,7 @@ description: >
   AI-generated code issues, premature optimization, over-engineering (過剰設計), or
   unnecessary abstractions (不要な抽象化). Detects readability issues and suggests improvements
   based on cognitive science. Essential for readability-focused code reviews.
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Task
+allowed-tools: Read, Grep, Glob, Task
 ---
 
 # Readability Review - Code Clarity & Cognitive Load Analysis

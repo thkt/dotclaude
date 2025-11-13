@@ -1,12 +1,11 @@
 ---
-name: design-pattern-reviewer
-description: React設計パターンの適切な使用を検証し、コンポーネント構造、状態管理、カスタムフックの設計などのアーキテクチャの妥当性を評価します
-tools: Read, Grep, Glob, LS, Task
+description: >
+  Expert reviewer for React design patterns, component architecture, and application structure.
+  Evaluates React design patterns usage, component organization, and state management approaches.
+  References [@~/.claude/skills/frontend-patterns/SKILL.md] for framework-agnostic frontend patterns with React implementations.
+  React設計パターンの適切な使用を検証し、コンポーネント構造、状態管理、カスタムフックの設計などのアーキテクチャの妥当性を評価します。
+allowed-tools: Read, Grep, Glob, LS, Task
 model: sonnet
-color: purple
-max_execution_time: 45
-dependencies: [frontend-patterns]
-parallel_group: quality
 ---
 
 # Design Pattern Reviewer

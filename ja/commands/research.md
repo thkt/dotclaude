@@ -1,20 +1,12 @@
 ---
-name: research
-description: プロジェクト理解と技術調査を行う（実装なし）
-priority: medium
-suitable_for:
-  scale: [small, medium, large]
-  type: [exploration, analysis, learning]
-  understanding: "≥ 30%"
-  urgency: [low, medium]
-aliases: []
-timeout: 90
+description: >
+  Project exploration and technical research without implementation commitment.
+  Use for understanding existing code, exploring solution options, or learning project structure.
+  Documents findings persistently for future reference. Efficient parallel search execution.
+  プロジェクト理解と技術調査を実装なしで実行。既存コードの理解、解決オプションの探索に使用。
 allowed-tools: Bash(find:*), Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(cat package.json:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task
-context:
-  project_structure: "dynamic"
-  tech_stack: "discovered"
-  dependencies: "analyzed"
-  patterns: "identified"
+model: inherit
+argument-hint: "[topic or question to investigate]"
 ---
 
 # /research - 高度なプロジェクト調査と技術研究

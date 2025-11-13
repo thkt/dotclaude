@@ -1,20 +1,12 @@
 ---
-name: research
-description: プロジェクト理解と技術調査を行う（実装なし）
-priority: medium
-suitable_for:
-  scale: [small, medium, large]
-  type: [exploration, analysis, learning]
-  understanding: "≥ 30%"
-  urgency: [low, medium]
-aliases: []
-timeout: 90
+description: >
+  Perform project research and technical investigation without implementation. Explore codebase structure, technology stack, dependencies, and patterns.
+  Use when understanding is low (≥30%) and you need to learn before implementing. Documents findings persistently for future reference.
+  Uses Task agent for complex searches with efficient parallel execution.
+  プロジェクト理解と技術調査を行う（実装なし）。コードベース構造、技術スタック、依存関係、パターンを探索。
 allowed-tools: Bash(find:*), Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(cat package.json:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task
-context:
-  project_structure: "dynamic"
-  tech_stack: "discovered"
-  dependencies: "analyzed"
-  patterns: "identified"
+model: inherit
+argument-hint: "[research topic or question]"
 ---
 
 # /research - Advanced Project Research & Technical Investigation

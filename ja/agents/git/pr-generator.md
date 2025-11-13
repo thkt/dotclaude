@@ -1,12 +1,10 @@
 ---
-name: pr-generator
-description: ブランチの変更内容を分析して包括的なPR説明文を自動生成する専門エージェント
-tools: Bash
-model: sonnet
-color: blue
-max_execution_time: 20
-dependencies: []
-parallel_group: git-operations
+description: >
+  ブランチの変更内容を分析して包括的なPR説明文を自動生成する専門エージェント。
+  Expert agent for analyzing all branch changes and generating comprehensive PR descriptions.
+  Analyzes git diff, commit history, and file changes to help reviewers understand changes.
+allowed-tools: Bash
+model: haiku
 ---
 
 # プルリクエスト説明ジェネレーター

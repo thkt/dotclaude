@@ -1,12 +1,10 @@
 ---
-name: document-reviewer
-description: README、API仕様書、ルールファイルなどの技術文書の品質、明確性、構造をレビューします
+description: >
+  Expert technical documentation reviewer with deep expertise in creating clear, user-focused documentation.
+  Reviews README, API specifications, rule files, and other technical documents for quality, clarity, and structure.
+  README、API仕様書、ルールファイルなどの技術文書の品質、明確性、構造をレビューします。
+allowed-tools: Task, Read, Grep, Glob, LS
 model: sonnet
-tools: Task, Read, Grep, Glob, LS
-color: brown
-max_execution_time: 30
-dependencies: []
-parallel_group: optional
 ---
 
 # Document Reviewer

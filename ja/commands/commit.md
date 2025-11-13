@@ -1,19 +1,12 @@
 ---
-name: commit
-description: Git差分を分析してConventional Commits形式のメッセージを自動生成
-priority: high
-suitable_for:
-  type: [git, workflow, documentation]
-  phase: [development, commit]
-  understanding: "≥ 75%"
-aliases: [cm, commit-msg]
-timeout: 15
+description: >
+  Analyze Git diff and generate Conventional Commits format messages.
+  Delegates to commit-generator sub-agent for optimal performance.
+  Suggests multiple message alternatives following conventional commit standards.
+  Git差分を分析してConventional Commits形式のメッセージを自動生成。複数のメッセージ代替案を提案。
 allowed-tools: Task
-context:
-  staged_changes: "delegated"
-  commit_format: "conventional"
-  scope_detection: "automatic"
-  breaking_changes: "detected"
+model: inherit
+argument-hint: "[optional: context for commit]"
 ---
 
 # /commit - Gitコミットメッセージジェネレーター

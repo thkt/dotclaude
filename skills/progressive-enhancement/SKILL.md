@@ -1,5 +1,4 @@
 ---
-name: progressive-enhancement
 description: >
   Progressive Enhancement guide with CSS-first approach and outcome-first development philosophy.
   Use when working with layout (レイアウト), styling (スタイル), positioning (位置),
@@ -8,12 +7,7 @@ description: >
   seeking CSS-only solutions (CSSのみ/JavaScript不要). Suggests CSS solutions before
   JavaScript, promoting simple (シンプル), maintainable, and performant implementations
   based on "The best code is no code" and YAGNI philosophy.
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Grep
-  - Glob
+allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
 # Progressive Enhancement - CSS-First Development

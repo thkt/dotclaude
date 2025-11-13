@@ -1,16 +1,11 @@
 ---
-name: context
-description: Diagnose current context usage
-priority: low
-suitable_for:
-  type: [debug, diagnostic]
-  understanding: "≥ 50%"
-timeout: 30
+description: >
+  Diagnose current context usage and provide token optimization recommendations.
+  Displays token usage, file count, session cost. Helps identify context-heavy operations.
+  Use when context limits are approaching or to optimize session efficiency.
+  現在のコンテキスト使用状況を診断し、トークン最適化の推奨事項を提供。
 allowed-tools: Read, Glob, Grep, LS, Bash(wc:*), Bash(du:*), Bash(find:*)
-context:
-  token_usage: "displayed"
-  file_count: "counted"
-  session_cost: "shown"
+model: inherit
 ---
 
 # /context - Context Diagnostics & Optimization

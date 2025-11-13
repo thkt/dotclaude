@@ -1,19 +1,12 @@
 ---
-name: rule
-description: ADRからプロジェクトルールを自動生成し、CLAUDE.mdに統合
-priority: medium
-suitable_for:
-  scale: [small, medium, large]
-  type: [documentation, automation]
-  understanding: "high"
-  urgency: [low, medium]
-aliases: [to-rule, generate-rule]
-timeout: 60
-context:
-  files_changed: "docs, .claude"
-  lines_changed: "50+"
-  new_features: false
-  breaking_changes: false
+description: >
+  Generate project rules from ADR automatically and integrate with CLAUDE.md. Converts decision into AI-executable format.
+  Saves to docs/rules/, auto-integrates with .claude/CLAUDE.md. Enables AI to follow project-specific decisions.
+  Use when ADR decision should affect AI behavior and enforce project-specific patterns.
+  ADRからプロジェクトルールを自動生成し、CLAUDE.mdに統合。決定内容をAI実行可能形式に変換。
+allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(cat:*), Grep, Glob
+model: inherit
+argument-hint: "[ADR number]"
 ---
 
 # /adr:rule - Generate Rule from ADR

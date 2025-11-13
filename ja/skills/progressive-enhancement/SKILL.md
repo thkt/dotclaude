@@ -1,5 +1,4 @@
 ---
-name: progressive-enhancement
 description: >
   CSS優先アプローチとアウトカムファースト開発哲学によるプログレッシブエンハンスメントガイド。
   トリガーキーワード: "レイアウト", "layout", "スタイル", "style", "位置", "position",
@@ -9,12 +8,7 @@ description: >
   "シンプル", "simple", "YAGNI"。
   JavaScriptよりも前にCSSソリューションを提案し、「最良のコードは存在しないコード」の哲学に基づいて、
   シンプルで保守しやすく高性能な実装を推進。
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Grep
-  - Glob
+allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
 # Progressive Enhancement - CSS優先開発

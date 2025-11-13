@@ -1,18 +1,12 @@
 ---
-name: full-cycle
-description: Comprehensively orchestrate complete development cycle
-priority: high
-suitable_for:
-  scale: [medium, large]
-  type: [feature, refactor]
-  understanding: "≥ 70%"
-aliases: [fc, fulldev]
-timeout: 300
+description: >
+  Orchestrate complete development cycle through SlashCommand tool integration, executing from research through implementation, testing, and validation.
+  Chains multiple commands: /research → /think → /code → /test → /review → /validate with conditional execution and error handling.
+  TodoWrite integration for progress tracking. Use for comprehensive feature development requiring full workflow automation.
+  SlashCommandツール統合により、研究から実装、テスト、検証まで完全な開発サイクルを統括。
 allowed-tools: SlashCommand, TodoWrite, Read, Write, Edit, MultiEdit
-uses_slashcommand: true
-context:
-  workflow_type: "sequential"
-  error_handling: "stop_on_failure"
+model: inherit
+argument-hint: "[feature or task description]"
 ---
 
 # /full-cycle - Complete Development Cycle Automation
@@ -21,124 +15,123 @@ context:
 
 Systematically orchestrate the complete development cycle through SlashCommand tool integration, rigorously executing from research through implementation, testing, and validation phases.
 
-## SlashCommand Chain Execution Architecture
+## Workflow Instructions
 
-```yaml
-workflow_sequence:
-  - name: "Research Phase"
-    command: "/research"
-    on_success: "proceed"
-    on_failure: "terminate"
+Follow this command sequence when invoked. Use the **SlashCommand tool** to execute each command:
 
-  - name: "Planning Phase"
-    command: "/think"
-    on_success: "proceed"
-    on_failure: "retry_once"
+### Phase 1: Research
 
-  - name: "Implementation Phase"
-    command: "/code"
-    on_success: "proceed"
-    on_failure: "explicitly_invoke_fix"
+**Use SlashCommand tool to execute**: `/research [task description]`
 
-  - name: "Testing Phase"
-    command: "/test"
-    on_success: "proceed"
-    on_failure: "explicitly_invoke_fix"
+- Explore codebase structure and understand existing implementation
+- Document findings for context
+- On failure: Terminate workflow and report to user
 
-  - name: "Review Phase"
-    command: "/review"
-    on_success: "proceed"
-    on_failure: "document_issues"
+### Phase 2: Planning
 
-  - name: "Validation Phase"
-    command: "/validate"
-    on_success: "finalize"
-    on_failure: "scrutinize_failures"
+**Use SlashCommand tool to execute**: `/think [feature description]`
+
+- Create comprehensive SOW with acceptance criteria
+- Define implementation approach and risks
+- On failure: May retry once or ask user for clarification
+
+### Phase 3: Implementation
+
+**Use SlashCommand tool to execute**: `/code [implementation details]`
+
+- Implement following TDD/RGRC cycle
+- Apply SOLID principles and code quality standards
+- On failure: **Use SlashCommand tool to execute `/fix`** and retry
+
+### Phase 4: Testing
+
+**Use SlashCommand tool to execute**: `/test`
+
+- Run all tests (unit, integration, E2E)
+- Verify quality standards
+- On failure: **Use SlashCommand tool to execute `/fix`** and re-test
+
+### Phase 5: Review
+
+**Use SlashCommand tool to execute**: `/review`
+
+- Multi-agent code review for quality, security, performance
+- Generate actionable recommendations
+- On failure: Document issues for manual review
+
+### Phase 6: Validation
+
+**Use SlashCommand tool to execute**: `/validate`
+
+- Verify implementation against SOW criteria
+- Check coverage and performance metrics
+- On failure: Report missing requirements
+
+## Progress Tracking
+
+Use **TodoWrite** tool throughout to track progress:
+
+```markdown
+Development Cycle Progress:
+- [ ] Research phase (Use SlashCommand: /research)
+- [ ] Planning phase (Use SlashCommand: /think)
+- [ ] Implementation phase (Use SlashCommand: /code)
+- [ ] Testing phase (Use SlashCommand: /test)
+- [ ] Review phase (Use SlashCommand: /review)
+- [ ] Validation phase (Use SlashCommand: /validate)
 ```
 
-## Implementation Architecture with SlashCommand
+Update each task status as commands complete.
 
-```typescript
-// Rigorously orchestrated execution via SlashCommand tool
-async function orchestrateFullCycle(context: any) {
-  const commandSequence = [
-    '/research',
-    '/think',
-    '/code',
-    '/test',
-    '/review',
-    '/validate'
-  ];
+## Error Handling Strategy
 
-  const executionResults = [];
+When a command fails:
 
-  for (const cmd of commandSequence) {
-    try {
-      console.log(`Executing: ${cmd}`);
+1. **For /code or /test failures**: Automatically use SlashCommand to invoke `/fix`
+2. **For /research or /think failures**: Ask user for clarification
+3. **For /review failures**: Continue with documented issues
+4. **For /validate failures**: Report specific criteria that failed
 
-      // Explicitly invoke each command through SlashCommand tool
-      const result = await SlashCommand({
-        command: cmd,
-        context: {
-          ...context,
-          previousResults: executionResults
-        }
-      });
+## Conditional Execution
 
-      executionResults.push({
-        command: cmd,
-        status: 'success',
-        result
-      });
+After each phase, evaluate results:
 
-      // Systematically update progress via TodoWrite
-      await updateProgress(cmd, 'completed');
+- If test coverage < 80%: Consider additional test implementation
+- If critical security issues found: Prioritize fixes before proceeding
+- If performance issues detected: May need optimization pass
 
-    } catch (error) {
-      executionResults.push({
-        command: cmd,
-        status: 'failed',
-        error
-      });
+## Example Execution
 
-      // Intelligent error handling
-      if (shouldRetry(cmd, error)) {
-        await SlashCommand({ command: '/fix' });
-      } else {
-        break; // Terminate on critical errors
-      }
-    }
-  }
-
-  return executionResults;
-}
 ```
+User: /full-cycle "Add user authentication feature"
 
-## Advanced Features
+Claude: Starting full development cycle...
 
-### Conditional Execution Logic
+[Uses SlashCommand to execute: /research user authentication]
+✓ Research complete - found existing auth patterns
 
-```typescript
-// Conditionally enhance based on test coverage
-if (testResults.coverage < 80) {
-  await SlashCommand({ command: '/code --add-tests' });
-}
+[Uses SlashCommand to execute: /think Add OAuth2 authentication]
+✓ SOW created with 8 acceptance criteria
 
-// Prioritize critical issues from review
-if (reviewResults.issues.critical > 0) {
-  await SlashCommand({ command: '/fix --priority=critical' });
-}
-```
+[Uses SlashCommand to execute: /code Implement OAuth2 login flow]
+✓ Implementation complete - 15 files modified
 
-### Parallel Execution Architecture
+[Uses SlashCommand to execute: /test]
+⚠ 3 tests failed
 
-```typescript
-// Concurrently execute independent tasks
-const parallelResults = await Promise.all([
-  SlashCommand({ command: '/test --unit' }),
-  SlashCommand({ command: '/test --integration' }),
-  SlashCommand({ command: '/review --style' })
-]);
+[Uses SlashCommand to execute: /fix]
+✓ Fixes applied
+
+[Uses SlashCommand to execute: /test]
+✓ All tests passing
+
+[Uses SlashCommand to execute: /review]
+✓ Review complete - 2 medium priority issues found
+
+[Uses SlashCommand to execute: /validate]
+✓ All acceptance criteria met
+
+Complete! Feature successfully implemented and validated.
 ```
 
 ## Usage Specifications

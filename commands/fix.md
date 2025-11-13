@@ -1,23 +1,12 @@
 ---
-name: fix
-description: 開発環境で小さなバグの修正や軽微な改善を素早く実行
-priority: high
-suitable_for:
-  scale: [small]
-  type: [fix, refactor]
-  understanding: "≥ 80%"
-  urgency: [low, medium]  # Not for emergencies
-  environment: development  # Development environment only
-aliases: [qf]
-timeout: 30
+description: >
+  Rapidly fix small bugs and minor improvements in development environment with dynamic problem detection and parallel quality verification.
+  Use for well-understood (≥80%) small-scale fixes in development only. NOT for production emergencies (use /hotfix instead).
+  Applies Occam's Razor (simplest solution), Progressive Enhancement (CSS-first), and TIDYINGS (clean as you go).
+  開発環境で小さなバグの修正や軽微な改善を素早く実行。よく理解された小規模な修正に使用。本番緊急時は/hotfixを使用。
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Task
-context:
-  files_changed: "dynamic"
-  lines_changed: "tracked"
-  test_status: "monitored"
-  quality_checks: "parallel"
-  confidence_level: "scored"
-excludes: [hotfix]  # Don't suggest both
+model: inherit
+argument-hint: "[bug or issue description]"
 ---
 
 # /fix - Advanced Quick Fix with Dynamic Analysis

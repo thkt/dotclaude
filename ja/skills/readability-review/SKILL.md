@@ -1,5 +1,4 @@
 ---
-name: readability-review
 description: >
   「リーダブルコード」とミラーの法則（7±2の認知限界）に基づくコード可読性レビュー。
   トリガーキーワード: "可読性", "readability", "読みやすさ", "理解しやすい", "understandable",
@@ -11,11 +10,7 @@ description: >
   認知科学の原則と実践的パターンに基づいて、コードレビュー中に自動的にアクティブ化され、
   可読性の問題を検出し改善を提案。命名/構造、制御フロー最適化、コメント戦略、
   AIコードアンチパターン検出のセクションを含む。
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Task
+allowed-tools: Read, Grep, Glob, Task
 ---
 
 # Readability Review - コード明確性と認知負荷分析

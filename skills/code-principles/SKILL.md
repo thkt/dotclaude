@@ -1,5 +1,4 @@
 ---
-name: code-principles
 description: >
   Fundamental software development principles including SOLID, DRY, Occam's Razor (KISS),
   Miller's Law, and YAGNI. Use when discussing principles (原則), simplicity (シンプル),
@@ -8,10 +7,7 @@ description: >
   or clean code. Provides decision frameworks and practical guidelines for writing
   maintainable, understandable code. Essential for structure-reviewer, root-cause-reviewer,
   and /code command implementations.
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
+allowed-tools: Read, Grep, Glob
 ---
 
 # Code Principles - Fundamental Software Development Guidelines

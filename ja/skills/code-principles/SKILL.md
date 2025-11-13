@@ -1,15 +1,11 @@
 ---
-name: code-principles
 description: >
   SOLID、DRY、オッカムの剃刀（KISS）、ミラーの法則、YAGNIを含む基本的なソフトウェア開発原則。
   原則、シンプル、複雑、アーキテクチャ、リファクタリング、保守性、コード品質、
   デザインパターン、ベストプラクティス、クリーンコードについて議論する際に使用。
   保守可能で理解しやすいコードを書くための意思決定フレームワークと実践的ガイドラインを提供。
   structure-reviewer、root-cause-reviewer、/codeコマンド実装に不可欠。
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
+allowed-tools: Read, Grep, Glob
 ---
 
 # コード原則 - 基本的なソフトウェア開発ガイドライン

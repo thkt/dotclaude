@@ -1,9 +1,10 @@
 ---
-name: review-orchestrator
-description: フロントエンドコードレビューの全体を統括し、各専門エージェントの実行管理、結果統合、優先度付け、実行可能な改善提案の生成を行います
-tools: Task, Grep, Glob, LS, Read
+description: >
+  フロントエンドコードレビューの全体を統括し、各専門エージェントの実行管理、結果統合、優先度付け、実行可能な改善提案の生成を行います。
+  Master orchestrator for comprehensive frontend code reviews, coordinating specialized agents and synthesizing findings.
+  Manages execution of multiple specialized review agents, integrates findings, prioritizes issues, and generates comprehensive reports.
+allowed-tools: Task, Grep, Glob, LS, Read
 model: opus
-color: indigo
 ---
 
 # レビューオーケストレーター

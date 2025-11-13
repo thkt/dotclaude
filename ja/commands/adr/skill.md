@@ -1,19 +1,12 @@
 ---
-name: skill
-description: ADRからプロジェクト固有のスキルを生成し、コンテキスト検出で実装ガイダンスを提供
-priority: medium
-suitable_for:
-  scale: [small, medium, large]
-  type: [documentation, automation, implementation]
-  understanding: "high"
-  urgency: [low, medium]
-aliases: [to-skill, generate-skill]
-timeout: 60
-context:
-  files_changed: ".claude, skills"
-  lines_changed: "100+"
-  new_features: true
-  breaking_changes: false
+description: >
+  Generate project-specific skill from ADR for context-aware implementation guidance. Creates skill with references, examples, and validation.
+  Saves to .claude/skills/, enables automatic discovery. Provides implementation guidance based on architecture decisions.
+  Use when ADR needs to guide implementation with comprehensive context and examples.
+  ADRからプロジェクト固有のスキルを生成し、コンテキストに応じた実装ガイダンスを提供。
+allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(mkdir:*), Bash(cat:*), Grep, Glob
+model: inherit
+argument-hint: "[ADR number]"
 ---
 
 # /adr:skill - ADRからスキル生成

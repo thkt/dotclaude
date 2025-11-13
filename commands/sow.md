@@ -1,17 +1,11 @@
 ---
-name: sow
-description: SOW文書の一覧表示と閲覧
-priority: medium
-suitable_for:
-  type: [documentation, review, planning]
-  phase: [planning, review]
-  understanding: "≥ 90%"
-aliases: [show-sow, list-sow]
-timeout: 10
+description: >
+  Display current SOW progress status, showing acceptance criteria completion, key metrics, and build status.
+  Read-only viewer for active work monitoring. Lists and views Statement of Work documents stored in workspace.
+  Use to check implementation progress anytime during development.
+  SOW文書の一覧表示と閲覧。受け入れ基準の完了状況、主要メトリクス、ビルドステータスを表示。
 allowed-tools: Read, Bash(ls:*), Bash(find:*), Bash(cat:*)
-context:
-  sow_directory: "~/.claude/workspace/sow/"
-  display: "list_or_view"
+model: inherit
 ---
 
 # /sow - SOW Document Viewer

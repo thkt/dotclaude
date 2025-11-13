@@ -1,5 +1,4 @@
 ---
-name: tdd-test-generation
 description: >
   RGRCサイクル、Baby Steps手法、体系的なテスト設計技法を含む包括的なTDD（テスト駆動開発）ガイド。
   TDD (テスト駆動開発)、Red-Green-Refactor、Baby Steps、テスト生成（テスト生成）、テスト設計
@@ -7,13 +6,7 @@ description: >
   デシジョンテーブル、カバレッジ（カバレッジ）、ユニットテスト（ユニットテスト）について
   実装・議論する際に使用。t_wadaスタイルのBaby Stepsアプローチと体系的なテストケース生成、
   SOW統合を提供。test-generatorエージェントと/code TDD実装に必須。
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Grep
-  - Glob
-  - Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Task
 ---
 
 # TDDテスト生成 - 包括的テスト駆動開発ガイド
