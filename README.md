@@ -81,7 +81,7 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 
 **Available Plugins**:
 
-- **complete-workflow-system**: Full development workflow with 14 review agents
+- **complete-workflow-system**: Full development workflow with 16 specialized agents
 - **quick-actions**: Fast bug fixes (/fix) and emergency hotfixes (/hotfix)
 - **automation-commands**: Auto-test and full-cycle automation
 - **git-utilities**: Git workflow helpers (commit, branch, PR)

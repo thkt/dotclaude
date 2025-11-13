@@ -81,7 +81,7 @@
 
 **利用可能なプラグイン**:
 
-- **complete-workflow-system**: 14個のレビューエージェントを含む完全な開発ワークフロー
+- **complete-workflow-system**: 16個の専門エージェントを含む完全な開発ワークフロー
 - **quick-actions**: 素早いバグ修正（/fix）と緊急修正（/hotfix）
 - **automation-commands**: 自動テストと完全サイクル自動化
 - **git-utilities**: Gitワークフローヘルパー（commit、branch、PR）
