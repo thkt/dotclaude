@@ -7,6 +7,8 @@ description: >
   フロントエンドコードの根本的な問題を分析し、表面的な対処療法ではなく本質的な解決策を提案します。
 tools: Read, Grep, Glob, LS, Task
 model: opus
+skills:
+  - code-principles
 ---
 
 # Frontend Root Cause Reviewer

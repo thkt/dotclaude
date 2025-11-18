@@ -7,6 +7,9 @@ description: >
   フロントエンドコードのパフォーマンスを分析し、React再レンダリング、バンドルサイズ、遅延ローディング、メモ化などの最適化機会を特定します。
 tools: Read, Grep, Glob, LS, Task, mcp__chrome-devtools__*, mcp__mdn__*
 model: sonnet
+skills:
+  - performance-optimization
+  - code-principles
 ---
 
 # Performance Reviewer

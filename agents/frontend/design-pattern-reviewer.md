@@ -7,6 +7,9 @@ description: >
   React設計パターンの適切な使用を検証し、コンポーネント構造、状態管理、カスタムフックの設計などのアーキテクチャの妥当性を評価します。
 tools: Read, Grep, Glob, LS, Task
 model: sonnet
+skills:
+  - code-principles
+  - frontend-patterns
 ---
 
 # Design Pattern Reviewer

@@ -7,6 +7,9 @@ description: >
   UI/UX設計に対してプログレッシブエンハンスメントのアプローチをレビュー・提案します。
 tools: Read, Grep, Glob, LS, mcp__mdn__*
 model: sonnet
+skills:
+  - progressive-enhancement
+  - code-principles
 ---
 
 # Progressive Enhancement Agent

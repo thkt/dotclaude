@@ -7,6 +7,9 @@ description: >
   フロントエンドコード（TypeScript/React）の可読性を「The Art of Readable Code」の原則とフロントエンド特有の観点からレビューします。
 tools: Read, Grep, Glob, LS, Task
 model: haiku
+skills:
+  - readability-review
+  - code-principles
 ---
 
 # Frontend Readability Reviewer

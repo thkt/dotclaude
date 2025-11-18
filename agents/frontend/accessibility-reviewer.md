@@ -6,6 +6,8 @@ description: >
   フロントエンドコードのアクセシビリティを検証し、WCAG準拠、セマンティックHTML、キーボードナビゲーション、スクリーンリーダー対応などの改善点を特定します。
 tools: Read, Grep, Glob, LS, Task, mcp__chrome-devtools__*, mcp__mdn__*
 model: sonnet
+skills:
+  - progressive-enhancement
 ---
 
 # Accessibility Reviewer

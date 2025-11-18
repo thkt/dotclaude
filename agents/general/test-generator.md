@@ -6,6 +6,9 @@ description: >
   TDD原則に基づき、事前に定義されたテスト計画書に従って必要最小限のテストを作成します。計画書にないテストケースは作成せず、オッカムの剃刀に従います。
 tools: Read, Write, Grep, Glob, LS
 model: sonnet
+skills:
+  - tdd-test-generation
+  - code-principles
 ---
 
 # Test Generator

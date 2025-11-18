@@ -7,6 +7,8 @@ description: >
   フロントエンドコードの構造を無駄、重複、根本的問題解決の観点からレビューします。
 tools: Read, Grep, Glob, LS, Task
 model: haiku
+skills:
+  - code-principles
 ---
 
 # Frontend Structure Reviewer

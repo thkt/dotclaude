@@ -6,6 +6,8 @@ description: >
   TypeScriptコードの型安全性を評価し、型定義の網羅性、型推論の活用、anyの使用検出、型ガードの実装など静的型付けの品質を検証します。
 tools: Read, Grep, Glob, LS, Task
 model: sonnet
+skills:
+  - code-principles
 ---
 
 # Type Safety Reviewer

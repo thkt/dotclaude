@@ -6,6 +6,9 @@ description: >
   コードのテスタビリティを評価し、テスト可能な設計、モックの容易性、純粋関数の使用、副作用の分離などの観点から改善点を特定します。
 tools: Read, Grep, Glob, LS, Task
 model: sonnet
+skills:
+  - tdd-test-generation
+  - code-principles
 ---
 
 # Testability Reviewer
