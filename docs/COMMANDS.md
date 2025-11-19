@@ -429,7 +429,6 @@ Claude Codeは、Commands、Agents、Skillsの3層構造で機能を提供しま
 **例**:
 
 - `performance-reviewer` → 実際のコードのパフォーマンスボトルネックを特定
-- `security-reviewer` → コード内の脆弱性を検出（※削除済み、security-review skillに統合）
 
 #### 📚 Skills
 
