@@ -192,6 +192,7 @@ Claude Code provides 15 specialized commands organized into 5 categories:
   - `/workflow:create`, `/gemini:search`
 
 **📚 Detailed Reference**: For complete command documentation, see:
+
 - [English Command Reference](./docs/COMMANDS.md)
 - [日本語コマンドリファレンス](./ja/docs/COMMANDS.md)
 
