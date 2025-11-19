@@ -37,7 +37,7 @@
 4. Show Impact Simulation → Execution Plan → Wait for final Y
 5. Execute
 
-**Detailed rules:** [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md) | [@~/.claude/rules/core/PRE_TASK_CHECK.md](./rules/core/PRE_TASK_CHECK.md)
+**Note:** Full AI Operation Principles and PRE_TASK_CHECK details are automatically loaded via UserPromptSubmit hook.
 
 ### [P1] REQUIRED - Language Settings
 
@@ -84,13 +84,6 @@ Full details: [@~/.claude/skills/code-principles/SKILL.md](./skills/code-princip
 **Note**: Skills are automatically activated based on context and keywords.
 
 Complete guide: [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
-
-### [P4] OPTIONAL - File Deletion Behavior
-
-- **STRICTLY PROHIBIT rm command**: rm is explicitly disabled in settings.json
-- **EXPLICITLY REQUIRE trash usage**: Ensure files move to ~/.Trash/ instead of permanent deletion
-- **Command**: Use `mv [file] ~/.Trash/` for file deletion
-- **Reason**: Safety - allows recovery of accidentally deleted files
 
 ## Work Completion Guidelines
 
