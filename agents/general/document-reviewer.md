@@ -6,6 +6,9 @@ description: >
   README、API仕様書、ルールファイルなどの技術文書の品質、明確性、構造をレビューします。
 tools: Task, Read, Grep, Glob, LS
 model: sonnet
+skills:
+  - readability-review
+  - code-principles
 ---
 
 # Document Reviewer

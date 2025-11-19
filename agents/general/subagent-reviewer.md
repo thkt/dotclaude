@@ -6,6 +6,8 @@ description: >
   サブエージェント定義ファイルの形式、構造、品質をレビューします。
 tools: Read, Grep, Glob, LS
 model: opus
+skills:
+  - code-principles
 ---
 
 # Sub-Agent Reviewer
