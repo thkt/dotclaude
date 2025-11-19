@@ -109,6 +109,67 @@ For using this as your personal `.claude` configuration:
 
 **Note**: Manual installation includes all commands, agents, rules, and personal configurations. Plugin installation only includes shared commands and agents (excludes personal `CLAUDE.md`, `rules/`, and `settings.json`).
 
+## 📦 Dependencies & Setup
+
+### Sandbox Feature (Optional but Recommended)
+
+Claude Code's sandbox feature provides secure command execution with automatic permission handling, reducing approval fatigue while maintaining safety.
+
+**System Requirements**:
+
+- macOS or Linux (Windows not yet supported)
+- Node.js with npm/npx
+- ripgrep (typically pre-installed)
+
+**Quick Setup**:
+
+```bash
+# Automated setup (recommended)
+~/.claude/scripts/setup-sandbox.sh
+```
+
+**Manual Setup**:
+
+```bash
+# 1. Install sandbox runtime
+npm install -g @anthropic-ai/sandbox-runtime
+
+# 2. Verify installation
+srt --version
+
+# 3. Enable in Claude Code
+# Run this command in Claude Code session:
+/sandbox
+# Select option 1: "Sandbox BashTool, with auto-allow in accept edits mode"
+```
+
+**What it does**:
+
+- ✅ Restricts file system access to allowed directories
+- ✅ Controls network access via proxy
+- ✅ Auto-executes safe commands in sandbox
+- ✅ Requests approval only when sandbox restrictions are hit
+
+**Configuration** (optional):
+
+Create `~/.srt-settings.json` for custom settings:
+
+```json
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "excludedCommands": ["docker"],
+    "network": {
+      "allowLocalBinding": true,
+      "httpProxyPort": 8080
+    }
+  }
+}
+```
+
+See the [official blog post](https://azukiazusa.dev/blog/claude-code-sandbox-feature/) for more details.
+
 ## 📝 Available Commands
 
 ### Core Development Commands

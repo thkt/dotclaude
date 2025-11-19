@@ -109,6 +109,67 @@
 
 **注意**: 手動インストールには、すべてのコマンド、エージェント、ルール、個人設定が含まれます。プラグインインストールには、共有コマンドとエージェントのみが含まれます（個人の`CLAUDE.md`、`rules/`、`settings.json`は除外されます）。
 
+## 📦 依存関係とセットアップ
+
+### サンドボックス機能（オプションだが推奨）
+
+Claude Codeのサンドボックス機能は、自動的な権限処理により安全なコマンド実行を提供し、承認疲れを軽減しながら安全性を維持します。
+
+**システム要件**:
+
+- macOSまたはLinux（Windowsはまだ未対応）
+- Node.jsとnpm/npx
+- ripgrep（通常はプリインストール済み）
+
+**クイックセットアップ**:
+
+```bash
+# 自動セットアップ（推奨）
+~/.claude/scripts/setup-sandbox.sh
+```
+
+**手動セットアップ**:
+
+```bash
+# 1. サンドボックスランタイムをインストール
+npm install -g @anthropic-ai/sandbox-runtime
+
+# 2. インストールを確認
+srt --version
+
+# 3. Claude Codeで有効化
+# Claude Codeセッションで以下のコマンドを実行：
+/sandbox
+# オプション1を選択：「Sandbox BashTool, with auto-allow in accept edits mode」
+```
+
+**機能**:
+
+- ✅ ファイルシステムアクセスを許可されたディレクトリに制限
+- ✅ プロキシ経由でネットワークアクセスを制御
+- ✅ サンドボックス内で安全なコマンドを自動実行
+- ✅ サンドボックス制限に抵触した場合のみ承認を要求
+
+**設定**（オプション）:
+
+カスタム設定のために`~/.srt-settings.json`を作成：
+
+```json
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "excludedCommands": ["docker"],
+    "network": {
+      "allowLocalBinding": true,
+      "httpProxyPort": 8080
+    }
+  }
+}
+```
+
+詳細は[公式ブログ記事](https://azukiazusa.dev/blog/claude-code-sandbox-feature/)を参照してください。
+
 ## 📝 利用可能なコマンド
 
 ### コア開発コマンド

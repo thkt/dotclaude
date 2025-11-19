@@ -115,10 +115,12 @@ This "Dry-run" approach previews changes without execution, helping you:
 ### /think - Verifiable SOW Generator
 
 - Creates verifiable Statement of Work with dynamic validation
+- **Generates both SOW and Spec**: sow.md (planning) + spec.md (implementation details)
 - Defines acceptance criteria with TodoWrite integration
 - Sets validation points and success metrics
 - Saves to `.claude/workspace/sow/` with auto-update capability
 - Enables progress tracking via `/sow` and `/validate`
+- **Spec includes**: Functional requirements, API specs, data models, UI specs, test scenarios
 
 ### /research - Investigation
 
@@ -130,9 +132,11 @@ This "Dry-run" approach previews changes without execution, helping you:
 ### /code - Implementation
 
 - Follows TDD/RGRC cycle (Red-Green-Refactor-Commit)
+- **Auto-references spec.md**: Uses specification as implementation guide
 - Applies SOLID principles
 - Manual commit execution
 - Quality checks via hooks
+- **Spec-driven**: Implements functional requirements, follows API specs and data models
 
 ### /test - Verification
 
@@ -158,9 +162,11 @@ This "Dry-run" approach previews changes without execution, helping you:
 ### /review - Code Review
 
 - Orchestrates specialized review agents
+- **Auto-references spec.md**: Verifies implementation aligns with specification
 - Multiple review dimensions (security, performance, a11y)
 - Actionable recommendations
 - Priority-based issue reporting
+- **Spec verification**: Identifies missing features, API deviations, and requirement gaps
 
 ### /sow - Progress Viewer
 

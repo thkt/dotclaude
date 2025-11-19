@@ -58,6 +58,35 @@ Perform code implementation with real-time test feedback, dynamic quality discov
 !`git log --oneline -5`
 ```
 
+## Specification Context (Auto-Detection)
+
+### Discover Latest Spec
+
+Search for spec.md in SOW workspace:
+
+```bash
+!`find .claude/workspace/sow ~/.claude/workspace/sow -name "spec.md" -type f 2>/dev/null | sort -r | head -1`
+```
+
+### Load Specification for Implementation
+
+**If spec.md exists**, use it as implementation guide:
+
+- **Functional Requirements (FR-xxx)**: Define what to implement
+- **API Specifications**: Provide exact request/response structures
+- **Data Models**: Show expected data structures and validation rules
+- **UI Specifications**: Define layout, validation, and interactions
+- **Test Scenarios**: Guide test case creation with Given-When-Then
+- **Implementation Checklist**: Track implementation progress
+
+**If spec.md does not exist**:
+
+- Proceed with implementation based on available requirements
+- Consider running `/think` first to generate specification
+- Document assumptions and design decisions inline
+
+This ensures implementation aligns with specification from the start.
+
 ## Integration with Skills
 
 This command references the following Skills for implementation guidance:

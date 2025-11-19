@@ -63,11 +63,78 @@ Show change statistics:
 !`git diff --stat HEAD`
 ```
 
-## Hierarchical Review Process
+## Specification Context (Auto-Detection)
+
+### Discover Latest Spec
+
+Search for spec.md in SOW workspace:
+
+```bash
+!`find .claude/workspace/sow ~/.claude/workspace/sow -name "spec.md" -type f 2>/dev/null | sort -r | head -1`
+```
+
+### Load Specification
+
+**If spec.md exists**, load it for review context:
+
+- Provides functional requirements for alignment checking
+- Enables "specification vs implementation" verification
+- Implements Article 2's approach: spec.md in review prompts
+- Allows reviewers to identify gaps like "仕様書ではこう定義されていますが、この実装ではそのケースが考慮されていません"
+
+**If spec.md does not exist**:
+
+- Review proceeds with code-only analysis
+- Focus on code quality, security, and best practices
+- Consider creating specification with `/think` for future reference
+
+## Execution
+
+Invoke the review-orchestrator agent to perform comprehensive code review:
+
+```typescript
+Task({
+  subagent_type: "review-orchestrator",
+  description: "Comprehensive code review",
+  prompt: `
+Execute comprehensive code review with the following requirements:
+
+### Review Context
+- Changed files: Use git status and git diff to identify scope
+- Recent commits: Analyze recent changes for context
+- Project type: Detect technology stack automatically
+- Specification: If spec.md exists in workspace, verify implementation aligns with specification requirements
+  - Check if all functional requirements (FR-xxx) are implemented
+  - Identify missing features defined in spec
+  - Flag deviations from API specifications
+  - Compare actual vs expected behavior per spec
+
+### Review Process
+1. **Context Discovery**: Analyze repository structure and technology stack
+2. **Parallel Reviews**: Launch specialized review agents concurrently
+   - structure-reviewer, readability-reviewer, progressive-enhancer
+   - type-safety-reviewer, design-pattern-reviewer, testability-reviewer
+   - performance-reviewer, accessibility-reviewer
+   - document-reviewer (if .md files present)
+3. **Filtering & Consolidation**: Apply confidence filters and deduplication
+
+### Output Requirements
+- All findings MUST include evidence (file:line)
+- Use confidence markers: ✓ (>0.8), → (0.5-0.8)
+- Only include findings with confidence >0.7
+- Group by severity: Critical, High, Medium, Low
+- Provide actionable recommendations
+
+Report results in Japanese.
+  `
+})
+```
+
+## Hierarchical Review Process Details
 
 ### Phase 1: Context Discovery
 
-Use Task agent to:
+Analyze repository and determine review scope:
 
 1. Analyze repository structure and technology stack
 2. Identify review scope (changed files, directories)
