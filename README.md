@@ -172,44 +172,28 @@ See the [official blog post](https://azukiazusa.dev/blog/claude-code-sandbox-fea
 
 ## 📝 Available Commands
 
-### Core Development Commands
+Claude Code provides 15 specialized commands organized into 5 categories:
 
-| Command | Purpose | Environment |
-|---------|---------|-------------|
-| `/think` | Verifiable SOW creation with validation | Analysis phase |
-| `/research` | Investigation without implementation | Understanding phase |
-| `/code` | TDD/RGRC implementation | Development phase |
-| `/test` | Comprehensive testing | Verification phase |
-| `/review` | Code review via agents | Quality phase |
-| `/sow` | Display SOW progress | Monitoring phase |
-| `/validate` | Validate SOW conformance | Verification phase |
+### Command Categories
 
-### Quick Action Commands
+- **Core Development** (7 commands): Complete workflow from planning to validation
+  - `/think`, `/research`, `/code`, `/test`, `/review`, `/sow`, `/validate`
 
-| Command | Purpose | Environment | Combines |
-|---------|---------|-------------|----------|
-| `/fix` | Quick bug fixes | 🔧 Development | think → code → test |
-| `/hotfix` | Emergency production fixes | 🚨 Production | Minimal process |
+- **Quick Actions** (2 commands): Rapid bug fixes
+  - `/fix` (development), `/hotfix` (production emergencies)
 
-### Automation Commands (SlashCommand Tool v1.0.123+)
+- **Automation** (2 commands): Test and development cycle automation
+  - `/auto-test`, `/full-cycle`
 
-| Command | Purpose | Environment |
-|---------|---------|-------------|
-| `/auto-test` | Auto test runner with conditional fix | 🔧 Development |
-| `/full-cycle` | Complete development cycle automation | 🔄 Meta-command |
+- **Documentation** (2 commands): Architecture decisions and rules
+  - `/adr`, `/adr:rule`
 
-### Documentation Commands
+- **External Tools** (2 commands): Browser automation and search
+  - `/workflow:create`, `/gemini:search`
 
-| Command | Purpose | Environment |
-|---------|---------|-------------|
-| `/adr [title]` | Create Architecture Decision Record in MADR format | 📝 Documentation |
-| `/adr:rule <number>` | Generate project rule from ADR | 📝 Documentation |
-
-### External Tool Commands
-
-| Command | Purpose | Requires |
-|---------|---------|----------|
-| `/gemini:search` | Google search via Gemini | Gemini CLI |
+**📚 Detailed Reference**: For complete command documentation, see:
+- [English Command Reference](./docs/COMMANDS.md)
+- [日本語コマンドリファレンス](./ja/docs/COMMANDS.md)
 
 ## 🔄 Standard Workflows
 
