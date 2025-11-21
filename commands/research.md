@@ -267,9 +267,9 @@ Automatic task tracking:
 
 ## Task Agent Usage
 
-### When to Use Task Agent
+### When to Use Explore Agent
 
-Use `general-purpose` agent for:
+Use `Explore` agent for:
 
 - **Complex Investigations**: 10+ related searches
 - **Exploratory Analysis**: Unknown structure
@@ -277,115 +277,67 @@ Use `general-purpose` agent for:
 - **Historical Research**: Git history analysis
 - **Parallel Execution**: Multiple searches simultaneously
 - **Result Structuring**: Clean, organized output
+- **Fast Codebase Exploration**: Haiku-powered for efficiency
 
-### Enhanced Task Agent Integration with Context Analysis
+### Explore Agent Integration
 
 ```typescript
-// Context-aware automatic level selection
+// Explore agent with automatic level selection
 Task({
-  subagent_type: "general-purpose",
-  description: "Context-aware code investigation",
+  subagent_type: "Explore",
+  thoroughness: determineThornessLevel(), // "quick" | "medium" | "very thorough"
+  description: "Codebase exploration and investigation",
   prompt: `
-    [CONTEXT ANALYSIS]
-    First, analyze the current context to determine investigation depth:
+Topic: "${researchTopic}"
 
-    1. Conversation Context:
-       - Is this the first investigation? → Quick scan
-       - Following up on previous findings? → Standard/Deep
-       - Debugging or troubleshooting? → Deep
+Investigate:
+1. Architecture: organization, entry points (file:line), patterns [✓]
+2. Tech stack: frameworks (versions), languages, testing [✓]
+3. Key components: modules, APIs, config [✓]
+4. Code patterns: conventions, practices [→]
+5. Relationships: dependencies, data flow, integration [→]
 
-    2. User Intent Analysis:
-       - Overview requested? → Quick scan
-       - Implementation preparation? → Standard
-       - Problem solving? → Deep
-
-    3. Automatically Select Level:
-       - Quick (30 sec): High-level overview only
-       - Standard (2-3 min): Balanced investigation
-       - Deep (5 min): Comprehensive analysis
-
-    [SELECTED LEVEL: Determine based on context]
-
-    [PARALLEL EXECUTION TASKS]
-    Based on selected level, execute appropriate tasks:
-
-    Quick Scan Tasks:
-    - Project structure overview
-    - Main technology identification
-    - Key component listing
-
-    Standard Research Tasks:
-    - Architecture analysis with patterns
-    - Technology stack deep dive
-    - Code quality assessment
-    - Implementation readiness check
-
-    Deep Investigation Tasks:
-    - Complete system mapping
-    - All design patterns and relationships
-    - Security analysis
-    - Performance bottlenecks
-    - Historical evolution
-    - Root cause analysis if debugging
-
-    [OUTPUT REQUIREMENTS - Output Verifiability]
-    - State selected level and reason
-    - Return only structured results
-    - Include confidence score (0.0-1.0) AND marker (✓/→/?) for each finding
-    - Provide evidence for all claims (file paths, line numbers)
-    - Distinguish facts (✓) from inferences (→) from assumptions (?)
-    - Sort by importance
-    - Remove redundant information
-    - Quick: 30 seconds max
-    - Standard: 2-3 minutes max
-    - Deep: 5 minutes max
-
-    [REPORT FORMAT]
-    ## 🔍 Research Level: [Quick/Standard/Deep] (auto-selected)
-    Reason: [Why this level was chosen based on context]
-
-    ## Investigation Summary
-    - Execution time: [seconds]
-    - Coverage: [%]
-    - Overall confidence: [Marker + Score: ✓ 0.9]
-
-    ## Key Findings (by confidence)
-    1. [✓] [Finding] (0.95) - Evidence: [file:line]
-    2. [→] [Finding] (0.7) - Inferred from: [reasoning]
-    3. [?] [Finding] (0.4) - Assumption: [needs verification]
-
-    ## Technical Details
-    - Architecture: [Brief description] [✓/→/?]
-    - Main technologies: [List with evidence] [✓/→/?]
-    - Improvement suggestions: [If any]
-
-    ## Verification Notes
-    - Verified: [What was directly confirmed]
-    - Inferred: [What was reasonably deduced]
-    - Unknown: [What remains uncertain]
+Report format:
+- Coverage, confidence [✓/→/?]
+- Key findings by confidence with evidence (file:line)
+- Verification notes: verified, inferred, unknown
   `
 })
+
+// Helper function for determining thoroughness level
+function determineThornessLevel() {
+  // Auto-select based on context
+  if (isQuickScanNeeded()) return "quick";        // 30s overview
+  if (isDeepDiveNeeded()) return "very thorough"; // 5m comprehensive
+  return "medium";                                 // 2-3m balanced (default)
+}
 ```
 
 ### Context-Aware Research Task (Default)
 
 ```typescript
-// Default: Let AI determine appropriate level based on context
+// Default: Explore agent with automatic thoroughness selection
 Task({
-  subagent_type: "general-purpose",
-  description: "Adaptive research",
+  subagent_type: "Explore",
+  thoroughness: "medium", // Auto-adjusted based on context if needed
+  description: "Codebase investigation",
   prompt: `
-    Topic: ${topic}
+    Research Topic: "${topic}"
 
-    [AUTO-SELECT RESEARCH LEVEL]
-    Analyze context and choose:
-    - Quick (30s): If overview/first look needed
-    - Standard (2-3m): If implementation/normal investigation
-    - Deep (5m): If debugging/comprehensive analysis
+    Explore the codebase and provide structured findings:
 
-    Execute appropriate investigation based on selected level.
-    Return structured findings with confidence scores.
-    Include reason for level selection.
+    1. Architecture & Structure [✓]
+    2. Technology Stack [✓]
+    3. Key Components & Patterns [→]
+    4. Relationships & Dependencies [→]
+    5. Unknowns requiring investigation [?]
+
+    Include:
+    - Confidence markers (✓/→/?)
+    - Evidence (file:line references)
+    - Clear distinction between facts and inferences
+
+    Return organized report with verification notes.
   `
 })
 ```
@@ -395,29 +347,39 @@ Task({
 ```typescript
 // Force quick scan (when you know you need just an overview)
 Task({
-  subagent_type: "general-purpose",
-  description: "Quick scan override",
+  subagent_type: "Explore",
+  thoroughness: "quick",
+  description: "Quick overview scan",
   prompt: `
-    FORCE LEVEL: Quick scan (30 seconds max)
-    Topic: ${topic}
-    Return top 5 findings only.
-    Each finding: one line with confidence score.
+    Topic: "${topic}"
+
+    Provide quick overview (30 seconds):
+    - Top 5 key findings
+    - Basic architecture
+    - Main technologies
+    - Entry points
+
+    Each finding: one line with confidence marker (✓/→/?)
   `
 })
 
 // Force deep investigation (when you know you need everything)
 Task({
-  subagent_type: "general-purpose",
-  description: "Deep investigation override",
+  subagent_type: "Explore",
+  thoroughness: "very thorough",
+  description: "Comprehensive investigation",
   prompt: `
-    FORCE LEVEL: Deep investigation (5 minutes)
-    Topic: ${topic}
-    Perform comprehensive analysis including:
+    Topic: "${topic}"
+
+    Comprehensive analysis (5 minutes):
     - Complete architecture mapping
     - All patterns and relationships
-    - Historical context
+    - Historical context (git history)
     - Root cause analysis
-    Return detailed findings with full context.
+    - Security and performance considerations
+
+    Return detailed findings with full evidence and context.
+    Include confidence markers and verification notes.
   `
 })
 ```

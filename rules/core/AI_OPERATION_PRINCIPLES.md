@@ -27,6 +27,7 @@ Priority: Top-level (supersedes all)
      - [✓] = 95-100% confidence (directly verified)
      - [→] = 70-94% confidence (reasonable inference)
      - [?] = <70% confidence (assumption needing confirmation)
+   - **Partial knowledge**: Knowing concepts ≠ knowing details. Read files for exact formats/templates.
    - **Knowledge gaps**: Explicitly state "I don't know" rather than guessing
 
    When unable to verify a claim:

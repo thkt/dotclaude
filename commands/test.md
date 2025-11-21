@@ -4,7 +4,7 @@ description: >
   Handles unit, integration, and E2E tests with progress tracking via TodoWrite. Includes browser testing for UI changes when applicable.
   Use after implementation to verify functionality and quality standards.
   プロジェクトのテストを実行し、包括的なテストでコード品質を検証。ユニット、統合、E2Eテストに対応。
-allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, TodoWrite
+allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, TodoWrite, Task
 model: inherit
 argument-hint: "[test scope or specific tests]"
 ---
@@ -69,7 +69,67 @@ Check coverage directory:
 ls coverage/
 ```
 
-### 3. Quality Checks
+### 3. Test Gap Analysis
+
+**Purpose**: Automatically identify missing tests and suggest improvements based on coverage data.
+
+Use test-generator agent to analyze coverage gaps:
+
+```typescript
+Task({
+  subagent_type: "test-generator",
+  description: "Analyze test coverage gaps",
+  prompt: `
+Test Results: ${testResults}
+Coverage: ${coverageData}
+
+Analyze gaps:
+1. Uncovered code: files <80%, untested functions, branches [✓]
+2. Missing scenarios: edge cases, error paths, boundaries [→]
+3. Quality issues: shallow tests, missing assertions [→]
+4. Generate test code for priority areas [→]
+
+Return: Test code snippets (not descriptions), coverage improvement estimate.
+Mark: [✓] verified gaps, [→] suggested tests.
+  `
+})
+```
+
+#### Gap Analysis Output
+
+```markdown
+## Test Coverage Gaps
+
+### High Priority (< 50% coverage)
+- **File**: src/utils/validation.ts
+  - **Lines**: 45-67 (23 lines uncovered)
+  - **Issue**: No tests for error cases
+  - **Suggested Test**:
+    ```typescript
+    describe('validation', () => {
+      it('should handle invalid input', () => {
+        expect(() => validate(null)).toThrow('Invalid input')
+      })
+    })
+    ```
+
+### Medium Priority (50-80% coverage)
+- **File**: src/services/api.ts
+  - **Lines**: 120-135
+  - **Issue**: Network error handling not tested
+
+### Edge Cases Not Covered
+1. Boundary conditions (empty arrays, null values)
+2. Concurrent operations
+3. Timeout scenarios
+
+### Estimated Impact
+- Adding suggested tests: 65% → 85% coverage
+- Effort: ~2 hours
+- Critical paths covered: 95%+
+```
+
+### 4. Quality Checks
 
 #### Linting
 
@@ -133,9 +193,12 @@ Automatic task tracking:
 2. Run test suite
 3. Analyze failures (if any)
 4. Generate coverage report
-5. Execute quality checks
-6. Summarize results
+5. Analyze test gaps (NEW - test-generator)
+6. Execute quality checks
+7. Summarize results
 ```
+
+**Enhanced with test-generator**: Step 5 now includes automated gap analysis and test suggestions.
 
 ## Best Practices
 

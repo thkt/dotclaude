@@ -67,10 +67,14 @@ Show change statistics:
 
 ### Discover Latest Spec
 
-Search for spec.md in SOW workspace:
+Search for spec.md in SOW workspace using Glob tool (approved):
 
-```bash
-!`find .claude/workspace/sow ~/.claude/workspace/sow -name "spec.md" -type f 2>/dev/null | sort -r | head -1`
+```markdown
+Use Glob tool to find spec.md:
+- Pattern: ".claude/workspace/sow/**/spec.md"
+- Alternative: "~/.claude/workspace/sow/**/spec.md"
+
+Select the most recent spec.md if multiple exist (check modification time).
 ```
 
 ### Load Specification

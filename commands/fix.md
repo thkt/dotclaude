@@ -45,16 +45,100 @@ For simple fixes that don't require extensive planning or research.
 !`git ls-files --modified`
 ```
 
+## Phase 0.5: Deep Root Cause Analysis
+
+**Purpose**: Identify the true root cause, not just surface symptoms, before attempting fixes.
+
+### Step 1: Explore Bug Context
+
+Use Explore agent for rapid context gathering (30 seconds):
+
+```typescript
+Task({
+  subagent_type: "Explore",
+  thoroughness: "quick",
+  description: "Explore bug-related code",
+  prompt: `
+Bug: "${bugDescription}"
+
+Find (30s):
+1. Related files: mentioned, recent changes, similar patterns [✓]
+2. Dependencies: interacting components, shared utilities [✓]
+3. Recent commits (last 10), PRs [✓]
+4. Similar past issues [→]
+
+Return: Findings with file:line evidence. Mark: [✓/→/?].
+  `
+})
+```
+
+### Step 2: Root Cause Analysis
+
+Use root-cause-reviewer for deep analysis:
+
+```typescript
+Task({
+  subagent_type: "root-cause-reviewer",
+  description: "Identify root cause",
+  prompt: `
+Bug: "${bugDescription}"
+Context: ${exploreFindings}
+
+5 Whys analysis:
+1. Symptom vs root cause (dig 5x deep) [✓]
+2. Similar bugs: pattern or isolated? [→]
+3. Fix strategy: symptom or root cause? [→]
+4. Impact: affected areas, side effects, tests [→]
+
+Return: Root cause [✓] with evidence, fix approach [→], prevention [→], risks [?].
+  `
+})
+```
+
+### Benefits of Phase 0.5
+
+```yaml
+Before (without Phase 0.5):
+  - Quick surface-level fix
+  - May miss root cause
+  - Bug might recur elsewhere
+  - Confidence: 0.75-0.85
+
+After (with Phase 0.5):
+  - Root cause identified
+  - Comprehensive fix
+  - Prevention measures included
+  - Confidence: 0.95+
+```
+
+### Cost-Benefit Analysis
+
+| Aspect | Cost | Benefit |
+|--------|------|---------|
+| **Time** | +30-60s | Fewer iterations, no recurrence |
+| **Expense** | +$0.05-0.15 | Permanent fix vs temporary patch |
+| **Quality** | None | Root cause resolution |
+| **Prevention** | None | Similar bugs prevented |
+
+**ROI**: High - One-time investment prevents multiple future fixes.
+
 ## Hierarchical Fix Process
 
-### Phase 1: Problem Analysis (Confidence Target: 0.85)
+### Phase 1: Problem Analysis (Enhanced with Phase 0.5 - Confidence Target: 0.95+)
+
+**Integration**: Uses findings from Phase 0.5 for higher confidence decisions.
 
 Dynamic root cause identification:
 
 1. **Issue Detection**: Analyze symptoms and error patterns
+   - **Enhanced**: Leverage Explore findings for context
 2. **Impact Scope**: Determine affected files and components
+   - **Enhanced**: Use dependency analysis from Phase 0.5
 3. **Root Cause**: Identify why not just what
+   - **Enhanced**: Apply root-cause-reviewer insights
 4. **Fix Strategy**: Choose simplest effective approach
+   - **Enhanced**: Based on root cause, not symptoms
+   - **Enhanced**: Include prevention measures from Phase 0.5
 
 ### Phase 2: Targeted Implementation (Confidence Target: 0.90)
 

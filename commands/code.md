@@ -107,13 +107,65 @@ This command references the following Skills for implementation guidance:
 
 ### Principle Hierarchy
 
-**TDD/RGRC is the primary implementation cycle**. Within this cycle:
+**TDD/RGRC is the primary implementation cycle**. With test-generator enhancement:
 
+- **Phase 0 (Preparation)**: test-generator creates test scaffold from spec.md
 - **Red & Green phases**: Focus on functionality only
 - **Refactor phase**: Apply SOLID and DRY principles
 - **Commit phase**: Save stable state
 
-This ensures that code first works (TDD), then becomes clean and maintainable (SOLID/DRY).
+This ensures:
+
+1. Tests align with specification (Phase 0)
+2. Code first works (TDD Red-Green)
+3. Code becomes clean and maintainable (Refactor with SOLID/DRY)
+
+### 0. Test Preparation (Phase 0 - NEW)
+
+**Purpose**: Generate initial test cases from specification before starting TDD cycle.
+
+**When to use**: When spec.md exists and contains test scenarios.
+
+Use test-generator to extract and generate test code from specification:
+
+```typescript
+Task({
+  subagent_type: "test-generator",
+  description: "Generate tests from specification",
+  prompt: `
+Feature: "${featureDescription}"
+Spec: ${specContent}
+
+Generate test code:
+1. FR-xxx requirements → test cases [✓]
+2. Given-When-Then scenarios → executable tests [✓]
+3. Baby steps order: simple → complex [→]
+4. Edge cases and error handling [→]
+
+Output: Test file using project framework (detect from package.json).
+Mark: [✓] from spec, [→] inferred, [?] unclear.
+  `
+})
+```
+
+**Benefits**:
+
+- Automatic test scaffold from specification
+- Baby steps ordering built-in
+- Consistent with spec.md requirements
+- Faster TDD cycle start
+
+**Integration with TDD**:
+
+```text
+Phase 0: test-generator creates test scaffold
+  ↓
+Phase 1 (Red): Run generated tests (they fail)
+  ↓
+Phase 2 (Green): Implement to pass tests
+  ↓
+...
+```
 
 ### 1. Test-Driven Development (TDD) as t_wada would
 
