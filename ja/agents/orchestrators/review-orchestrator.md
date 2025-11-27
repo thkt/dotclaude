@@ -69,8 +69,9 @@ async function validateAgents(agents: string[]): Promise<string[]> {
 
 function findAgentFile(agentName: string): Promise<string | null> {
   const paths = [
-    `~/.claude/ja/agents/frontend/${agentName}.md`,
-    `~/.claude/ja/agents/general/${agentName}.md`,
+    `~/.claude/ja/agents/reviewers/${agentName}.md`,
+    `~/.claude/ja/agents/generators/${agentName}.md`,
+    `~/.claude/ja/agents/enhancers/${agentName}.md`,
     `~/.claude/ja/agents/orchestrators/${agentName}.md`
   ]
   // 各パスをチェックし、最初の一致を返す
@@ -496,22 +497,17 @@ custom_rules:
 
 ## エージェントの場所
 
-すべてのレビューエージェントは以下に整理されています：
+すべてのレビューエージェントは機能別に整理されています：
 
-- `~/.claude/agents/frontend/` - フロントエンド専用レビューアー
-  - structure-reviewer
-  - readability-reviewer
-  - root-cause-reviewer
-  - type-safety-reviewer
-  - design-pattern-reviewer
-  - testability-reviewer
-  - performance-reviewer
-  - accessibility-reviewer
-  - 注記: security-reviewerはsecurity-review skillに統合されました
-- `~/.claude/agents/general/` - 汎用レビューアー
-  - document-reviewer
-  - subagent-reviewer
-  - progressive-enhancer
+- `~/.claude/agents/reviewers/` - すべてのレビューエージェント
+  - structure, readability, root-cause, type-safety
+  - design-pattern, testability, performance, accessibility
+  - document, subagent
+  - 注記: セキュリティレビューは `security-review` スキルで利用可能
+- `~/.claude/agents/generators/` - コード生成エージェント
+  - test (test-generator)
+- `~/.claude/agents/enhancers/` - コード改善エージェント
+  - progressive (progressive-enhancer)
 - `~/.claude/agents/orchestrators/` - オーケストレーションエージェント
   - review-orchestrator (このファイル)
 

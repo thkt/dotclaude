@@ -160,7 +160,7 @@ test('十分な年齢で低残高を拒否', () => expect(canPurchase(20, 9)).to
 test('十分な年齢と残高を受理', () => expect(canPurchase(20, 10)).toBe(true))  // 有効な分割
 ```
 
-**詳細なテスト設計技法については**、[@./TEST_GENERATION.md]を参照:
+**詳細なテスト設計技法については**、[@~/.claude/ja/rules/development/TEST_GENERATION.md](~/.claude/ja/rules/development/TEST_GENERATION.md)を参照:
 
 - 同値分析
 - 境界値分析
@@ -169,5 +169,5 @@ test('十分な年齢と残高を受理', () => expect(canPurchase(20, 10)).toBe
 
 ## 関連する原則
 
-- [@../reference/OCCAMS_RAZOR.md] - Baby Stepsはシンプルさの原則を体現
-- [@./TEST_GENERATION.md] - 体系的なテスト設計技法
+- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - Baby Stepsはシンプルさの原則を体現
+- [@~/.claude/ja/rules/development/TEST_GENERATION.md](~/.claude/ja/rules/development/TEST_GENERATION.md) - 体系的なテスト設計技法

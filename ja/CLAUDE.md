@@ -37,7 +37,7 @@
 4. 影響シミュレーションを表示 → 実行計画 → 最終Yを待つ
 5. 実行
 
-**詳細ルール:** [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md) | [@~/.claude/rules/core/PRE_TASK_CHECK.md](../rules/core/PRE_TASK_CHECK.md)
+**詳細ルール:** [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md) | [@~/.claude/rules/core/PRE_TASK_CHECK.md](~/.claude/rules/core/PRE_TASK_CHECK.md)
 
 ### [P1] REQUIRED - 言語設定
 
@@ -66,7 +66,7 @@
 複雑さが避けられない場合、それが対応する具体的な要件を文書化する。
 
 - 判断: 「この複雑さは必要か？もっとシンプルな方法は？」
-- 詳細: [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../rules/reference/OCCAMS_RAZOR.md)
+- 詳細: [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md)
 
 #### 可読性のあるコード - 1分以内に理解
 
@@ -81,17 +81,17 @@
 これらの制限を超える場合、より小さな単位にリファクタリングするか、パラメータオブジェクトを使用する。
 
 - 判断: 「新しいチームメンバーは1分以内に理解できるか？」
-- 詳細: [@~/.claude/rules/development/READABLE_CODE.md](../rules/development/READABLE_CODE.md)
+- 詳細: [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md)
 
 ### [P3] CONTEXTUAL - Just-in-Time参照
 
 **必要時に適用** - タスクタイプに基づいてロード
 
-- コードタスク: [プログレッシブエンハンスメント](../rules/development/PROGRESSIVE_ENHANCEMENT.md) | [DRY](../rules/reference/DRY.md)
-- React/UI: [Container/Presentational](../rules/development/CONTAINER_PRESENTATIONAL.md)
-- 大規模: [SOLID](../rules/reference/SOLID.md) | [デメテルの法則](../rules/development/LAW_OF_DEMETER.md)
-- テスト: [TDD/RGRC](../rules/development/TDD_RGRC.md) | [テスト生成](../rules/development/TEST_GENERATION.md)
-- 完全ガイド: [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
+- コードタスク: [プログレッシブエンハンスメント](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md) | [DRY](~/.claude/ja/rules/reference/DRY.md)
+- React/UI: [Container/Presentational](~/.claude/ja/rules/development/CONTAINER_PRESENTATIONAL.md)
+- 大規模: [SOLID](~/.claude/ja/rules/reference/SOLID.md) | [デメテルの法則](~/.claude/ja/rules/development/LAW_OF_DEMETER.md)
+- テスト: [TDD/RGRC](~/.claude/ja/rules/development/TDD_RGRC.md) | [テスト生成](~/.claude/ja/rules/development/TEST_GENERATION.md)
+- 完全ガイド: [PRINCIPLES_GUIDE.md](~/.claude/ja/rules/PRINCIPLES_GUIDE.md)
 
 ### [P4] OPTIONAL - ファイル削除動作
 
@@ -147,10 +147,10 @@
 
 ### コマンドリファレンス
 
-- コマンドリスト（英語版）: [@~/.claude/docs/COMMANDS.md](../docs/COMMANDS.md)
-- コマンドリスト（日本語版）: [@~/.claude/ja/docs/COMMANDS.md](./docs/COMMANDS.md)
+- コマンドリスト（英語版）: [@~/.claude/docs/COMMANDS.md](~/.claude/docs/COMMANDS.md)
+- コマンドリスト（日本語版）: [@~/.claude/ja/docs/COMMANDS.md](~/.claude/ja/docs/COMMANDS.md)
 
 ### ドキュメントガイドライン
 
-- ドキュメントルール: [@~/.claude/ja/docs/DOCUMENTATION_RULES.md](./docs/DOCUMENTATION_RULES.md)
+- ドキュメントルール: [@~/.claude/ja/docs/DOCUMENTATION_RULES.md](~/.claude/ja/docs/DOCUMENTATION_RULES.md)
 - すべてのドキュメントで一貫性を維持

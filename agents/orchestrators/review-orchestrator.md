@@ -629,22 +629,17 @@ custom_rules:
 
 ## Agent Locations
 
-All review agents are organized in:
+All review agents are organized by function:
 
-- `~/.claude/agents/frontend/` - Frontend-specific reviewers
-  - structure-reviewer
-  - readability-reviewer
-  - root-cause-reviewer
-  - type-safety-reviewer
-  - design-pattern-reviewer
-  - testability-reviewer
-  - performance-reviewer
-  - accessibility-reviewer
-  - Note: security-reviewer has been integrated into security-review skill
-- `~/.claude/agents/general/` - General purpose reviewers
-  - document-reviewer
-  - subagent-reviewer
-  - progressive-enhancer
+- `~/.claude/agents/reviewers/` - All review agents
+  - structure, readability, root-cause, type-safety
+  - design-pattern, testability, performance, accessibility
+  - document, subagent
+  - Note: security review is available via `security-review` skill
+- `~/.claude/agents/generators/` - Code generation agents
+  - test (test-generator)
+- `~/.claude/agents/enhancers/` - Code enhancement agents
+  - progressive (progressive-enhancer)
 - `~/.claude/agents/orchestrators/` - Orchestration agents
   - review-orchestrator (this file)
 

@@ -111,3 +111,15 @@ if (user.canPerform(action))
 ## Remember
 
 "DRY is about the duplication of knowledge, of intent. It's about expressing the same thing in two or more places, possibly in two or more totally different ways." - The Pragmatic Programmer
+
+## Related Principles
+
+### Core Principles (Same Level)
+
+- [@~/.claude/rules/reference/SOLID.md](~/.claude/rules/reference/SOLID.md) - DRY drives good abstractions (DIP)
+- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplicity through single sources
+
+### Applied in Practice
+
+- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Tests reveal duplication early
+- [@~/.claude/rules/development/TIDYINGS.md](~/.claude/rules/development/TIDYINGS.md) - Remove duplication incrementally

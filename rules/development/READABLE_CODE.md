@@ -27,7 +27,7 @@ Miller's Law (7±2) demonstrates that human cognitive capacity is limited. When 
 
 This scientific backing explains WHY readable code matters: our brains literally cannot process too much complexity at once.
 
-→ See [@../reference/MILLERS_LAW.md](../reference/MILLERS_LAW.md) for the cognitive science behind readable code
+→ See [@~/.claude/rules/reference/MILLERS_LAW.md](~/.claude/rules/reference/MILLERS_LAW.md) for the cognitive science behind readable code
 
 ## Key Practices
 
@@ -245,10 +245,10 @@ function validateUser(user: User): ValidationError[] {
 
 ### Scientific Foundation
 
-- [@../reference/MILLERS_LAW.md](../reference/MILLERS_LAW.md) - Cognitive limits explain why readability matters
+- [@~/.claude/rules/reference/MILLERS_LAW.md](~/.claude/rules/reference/MILLERS_LAW.md) - Cognitive limits explain why readability matters
 
 ### Complementary Principles
 
-- [@./LAW_OF_DEMETER.md](./LAW_OF_DEMETER.md) - Simpler interfaces improve readability
-- [@./CONTAINER_PRESENTATIONAL.md](./CONTAINER_PRESENTATIONAL.md) - Clear separation improves understanding
-- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - Simplicity enhances readability
+- [@~/.claude/rules/development/LAW_OF_DEMETER.md](~/.claude/rules/development/LAW_OF_DEMETER.md) - Simpler interfaces improve readability
+- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md) - Clear separation improves understanding
+- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplicity enhances readability

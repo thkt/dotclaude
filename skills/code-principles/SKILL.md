@@ -149,7 +149,7 @@ Many specific interfaces over one general-purpose interface.
 
 Depend on abstractions, not concretions.
 
-**Full details**: [@./references/solid.md]
+**Full details**: [@~/.claude/rules/reference/SOLID.md]
 
 ### 2. DRY - Don't Repeat Yourself
 
@@ -170,7 +170,7 @@ const LIMITS = { username: 100 }
 
 **Rule of Three**: See duplication twice? Note it. See it three times? Refactor it.
 
-**Full details**: [@./references/dry.md]
+**Full details**: [@~/.claude/rules/reference/DRY.md]
 
 ### 3. Occam's Razor (KISS)
 
@@ -198,7 +198,7 @@ function authenticate(username: string, password: string): boolean {
 }
 ```
 
-**Full details**: [@./references/occams-razor.md]
+**Full details**: [@~/.claude/rules/reference/OCCAMS_RAZOR.md]
 
 ### 4. Miller's Law
 
@@ -233,7 +233,7 @@ function createUser(
 ) { }
 ```
 
-**Full details**: [@./references/millers-law.md]
+**Full details**: [@~/.claude/rules/reference/MILLERS_LAW.md]
 
 ### 5. YAGNI - You Aren't Gonna Need It
 
@@ -271,7 +271,7 @@ async function processPayment(amount: number) {
 // Add interface when second processor is actually needed
 ```
 
-**Full details**: [@./references/yagni.md]
+**Full details**: [@~/.claude/rules/reference/YAGNI.md]
 
 ## Principle Interactions
 
@@ -309,11 +309,13 @@ When principles conflict:
 
 ### Reference Documents
 
-- **[@./references/solid.md]** - Complete SOLID principles guide with Uncle Bob's methodology
-- **[@./references/dry.md]** - Don't Repeat Yourself with Pragmatic Programmers' approach
-- **[@./references/occams-razor.md]** - Simplicity principle with KISS, task scope guidance
-- **[@./references/millers-law.md]** - Cognitive limits (7±2) with scientific foundation
-- **[@./references/yagni.md]** - You Aren't Gonna Need It with outcome-first development
+> **Canonical source**: `~/.claude/rules/reference/`
+
+- **[@~/.claude/rules/reference/SOLID.md]** - Complete SOLID principles guide with Uncle Bob's methodology
+- **[@~/.claude/rules/reference/DRY.md]** - Don't Repeat Yourself with Pragmatic Programmers' approach
+- **[@~/.claude/rules/reference/OCCAMS_RAZOR.md]** - Simplicity principle with KISS, task scope guidance
+- **[@~/.claude/rules/reference/MILLERS_LAW.md]** - Cognitive limits (7±2) with scientific foundation
+- **[@~/.claude/rules/reference/YAGNI.md]** - You Aren't Gonna Need It with outcome-first development
 
 ## Integration Points
 
@@ -415,20 +417,14 @@ Principles are working when:
 
 ## Resources
 
-### references/
+### Canonical Reference Location
 
-Complete documentation for each principle:
+All principle documentation is maintained in `~/.claude/rules/reference/`:
 
-- `solid.md` - Five SOLID principles with examples
-- `dry.md` - Don't Repeat Yourself methodology
-- `occams-razor.md` - Simplicity principle with KISS
-- `millers-law.md` - Cognitive limits (7±2) scientific foundation
-- `yagni.md` - You Aren't Gonna Need It with decision framework
+- `SOLID.md` - Five SOLID principles with examples
+- `DRY.md` - Don't Repeat Yourself methodology
+- `OCCAMS_RAZOR.md` - Simplicity principle with KISS
+- `MILLERS_LAW.md` - Cognitive limits (7±2) scientific foundation
+- `YAGNI.md` - You Aren't Gonna Need It with decision framework
 
-### scripts/
-
-Currently empty (knowledge-only skill)
-
-### assets/
-
-Currently empty (knowledge-only skill)
+**Note**: This skill references `rules/reference/` as the single source of truth for principle documentation.

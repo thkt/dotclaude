@@ -1,34 +1,34 @@
 # DRY原則 - Andy Hunt & Dave Thomasのように
 
-プラグマティックプログラマーのようにDon't Repeat Yourself原則を適用 - コードだけでなく、知識の重複を排除する。
+達人プログラマーのようにDRY原則を適用 - コードだけでなく知識の重複を排除。
 
 ## 核心哲学
 
-**「システム内のあらゆる知識の断片は、単一で、曖昧でない、権威ある表現を持つべきである」**
+**「すべての知識は、システム内で単一の、明確な、権威ある表現を持たなければならない」**
 
-これは単なるコードの重複ではなく、知識の重複に関するものです。
+これはコードの重複だけでなく、知識の重複に関するもの。
 
 ## 重複の種類
 
-### 1. リテラルコードの重複
+### 1. 文字通りのコード重複
 
 ```javascript
-// ❌ 悪い：コピーペースト
-function validateEmail(email) { /* 検証 */ }
-function checkEmail(email) { /* 同じ検証 */ }
+// ❌ 悪い: コピー＆ペースト
+function validateEmail(email) { /* validation */ }
+function checkEmail(email) { /* same validation */ }
 
-// ✅ 良い：単一のソース
-function validateEmail(email) { /* 検証 */ }
+// ✅ 良い: 単一ソース
+function validateEmail(email) { /* validation */ }
 ```
 
 ### 2. 構造的重複
 
 ```javascript
-// ❌ 悪い：構造の繰り返し
+// ❌ 悪い: 繰り返しの構造
 if (user.age > 18 && user.hasConsent) { allow() }
 if (post.age > 18 && post.hasConsent) { allow() }
 
-// ✅ 良い：パターンを抽出
+// ✅ 良い: パターンを抽出
 function canAccess(entity) {
   return entity.age > 18 && entity.hasConsent
 }
@@ -37,19 +37,19 @@ function canAccess(entity) {
 ### 3. 知識の重複
 
 ```javascript
-// ❌ 悪い：ビジネスルールが複数の場所に
-// 検証で：maxLength = 100
-// データベースで：VARCHAR(100)
-// UIで：maxlength="100"
+// ❌ 悪い: 複数の場所にビジネスルール
+// バリデーションで: maxLength = 100
+// データベースで: VARCHAR(100)
+// UIで: maxlength="100"
 
-// ✅ 良い：真実の単一ソース
+// ✅ 良い: 単一の信頼できるソース
 const LIMITS = { username: 100 }
 // どこでもLIMITSを使用
 ```
 
-## DRYを適用する時
+## DRYを適用するタイミング
 
-**適用すべき対象**：
+**適用対象**:
 
 - ビジネスルール/ロジック
 - データスキーマ
@@ -57,17 +57,17 @@ const LIMITS = { username: 100 }
 - アルゴリズム
 - 複雑な条件
 
-**過度に適用しない対象**：
+**過剰適用しない**:
 
 - 偶然の類似性
 - 異なるコンテキスト
 - テストデータ
-- シンプルなワンライナー
+- シンプルな1行コード
 
 ## 3の法則
 
-2回重複を見たら？記録する。
-3回見たら？リファクタリングする。
+重複を2回見た？ メモする。
+3回見た？ リファクタリングする。
 
 ## 一般的な違反と修正
 
@@ -80,34 +80,46 @@ if (items.length > MAX_ITEMS)
 ```
 
 ```javascript
-// ❌ 繰り返される条件
+// ❌ 繰り返しの条件
 if (user && user.isActive && user.hasPermission)
 
 // ✅ カプセル化されたロジック
 if (user.canPerform(action))
 ```
 
-## DRYテクニック
+## DRY技法
 
-1. **関数を抽出**：繰り返されるロジック用
-2. **設定オブジェクト**：繰り返される値用
-3. **継承/コンポジション**：繰り返される構造用
-4. **コード生成**：繰り返しパターン用
-5. **テンプレート**：類似の実装用
+1. **関数の抽出**: 繰り返しロジックに
+2. **設定オブジェクト**: 繰り返し値に
+3. **継承/コンポジション**: 繰り返し構造に
+4. **コード生成**: 反復パターンに
+5. **テンプレート**: 類似実装に
 
 ## 他の原則との統合
 
-- **SOLIDと**：DRYは良い抽象化を促進（DIP）
-- **TDDと**：テストが早期に重複を明らかに
-- **Tidyingsと**：重複を段階的に削除
+- **SOLIDと**: DRYは良い抽象化を促進（DIP）
+- **TDDと**: テストが早期に重複を明らかにする
+- **Tidyingsと**: 段階的に重複を削除
 
 ## 警告サイン
 
-- ショットガン手術（多くの場所での変更）
-- 時間と共に発散する変更
-- 「これ、さっき書かなかった？」
-- グローバル検索置換の必要性
+- 散弾銃手術（多くの場所で変更）
+- 時間とともに乖離する変更
+- 「これ、さっき書いたような...」
+- グローバル検索置換が必要
 
 ## 覚えておくこと
 
-「DRYは知識の重複、意図の重複についてです。同じことを2つ以上の場所で、おそらく2つ以上の全く異なる方法で表現することについてです。」- The Pragmatic Programmer
+「DRYは知識の重複、意図の重複に関するもの。それは同じことを2つ以上の場所で、おそらく2つ以上のまったく異なる方法で表現することについて」 - 達人プログラマー
+
+## 関連する原則
+
+### 基本原則（同レベル）
+
+- [@~/.claude/ja/rules/reference/SOLID.md](~/.claude/ja/rules/reference/SOLID.md) - DRYは良い抽象化を促進（DIP）
+- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - 単一ソースによるシンプルさ
+
+### 実践での適用
+
+- [@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - テストが早期に重複を明らかにする
+- [@~/.claude/ja/rules/development/TIDYINGS.md](~/.claude/ja/rules/development/TIDYINGS.md) - 段階的に重複を削除

@@ -169,10 +169,10 @@ The goal is **low coupling** and **high cohesion**:
 
 ### Development Practices
 
-- [@./CONTAINER_PRESENTATIONAL.md] - Natural application of Demeter in React
-- [@./READABLE_CODE.md] - Simpler interfaces improve readability
+- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md) - Natural application of Demeter in React
+- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Simpler interfaces improve readability
 
 ### Core Principles
 
-- [@../reference/SOLID.md] - Complements SOLID principles
-- [@../reference/OCCAMS_RAZOR.md] - Simpler interactions reduce complexity
+- [@~/.claude/rules/reference/SOLID.md](~/.claude/rules/reference/SOLID.md) - Complements SOLID principles
+- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simpler interactions reduce complexity

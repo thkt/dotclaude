@@ -226,10 +226,10 @@ function Button({
 
 ### Development Practices
 
-- [@./PROGRESSIVE_ENHANCEMENT.md] - Build abstractions progressively
-- [@./LAW_OF_DEMETER.md] - Manage abstraction boundaries
+- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Build abstractions progressively
+- [@~/.claude/rules/development/LAW_OF_DEMETER.md](~/.claude/rules/development/LAW_OF_DEMETER.md) - Manage abstraction boundaries
 
 ### Core Principles
 
-- [@../reference/OCCAMS_RAZOR.md] - Simple leaky abstractions over complex "perfect" ones
-- [@../reference/SOLID.md] - DIP must account for leaky abstractions
+- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simple leaky abstractions over complex "perfect" ones
+- [@~/.claude/rules/reference/SOLID.md](~/.claude/rules/reference/SOLID.md) - DIP must account for leaky abstractions

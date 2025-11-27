@@ -169,10 +169,10 @@ query.select('*').from('users').where('active', true).limit(10)
 
 ### 開発実践
 
-- [@./CONTAINER_PRESENTATIONAL.md] - Reactでのデメテルの自然な適用
-- [@./READABLE_CODE.md] - シンプルなインターフェースが可読性を向上
+- [@~/.claude/ja/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/ja/rules/development/CONTAINER_PRESENTATIONAL.md) - Reactでのデメテルの自然な適用
+- [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md) - シンプルなインターフェースが可読性を向上
 
 ### 核心原則
 
-- [@../reference/SOLID.md] - SOLID原則を補完
-- [@../reference/OCCAMS_RAZOR.md] - シンプルな相互作用が複雑さを削減
+- [@~/.claude/ja/rules/reference/SOLID.md](~/.claude/ja/rules/reference/SOLID.md) - SOLID原則を補完
+- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - シンプルな相互作用が複雑さを削減

@@ -409,14 +409,14 @@ test('最大値超過を拒否', () => expect(validateAge(121)).toBe(false))
 
 ### 基本原則
 
-- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - テストをシンプルで焦点を絞ったものに保つ
-- [@../reference/MILLERS_LAW.md](../reference/MILLERS_LAW.md) - テストケースの複雑さを制限
+- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - テストをシンプルで焦点を絞ったものに保つ
+- [@~/.claude/ja/rules/reference/MILLERS_LAW.md](~/.claude/ja/rules/reference/MILLERS_LAW.md) - テストケースの複雑さを制限
 
 ### 開発実践
 
-- [@./TDD_RGRC.md](./TDD_RGRC.md) - 実装のテストファーストアプローチ
-- [@./READABLE_CODE.md](./READABLE_CODE.md) - テストコードの明確性
-- [@./PROGRESSIVE_ENHANCEMENT.md](./PROGRESSIVE_ENHANCEMENT.md) - シンプルに始め、段階的にカバレッジを向上
+- [@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - 実装のテストファーストアプローチ
+- [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md) - テストコードの明確性
+- [@~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md) - シンプルに始め、段階的にカバレッジを向上
 
 ## 覚えておくべきこと
 

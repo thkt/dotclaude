@@ -226,10 +226,10 @@ function Button({
 
 ### 開発実践
 
-- [@./PROGRESSIVE_ENHANCEMENT.md] - 抽象化を段階的に構築
-- [@./LAW_OF_DEMETER.md] - 抽象化の境界を管理
+- [@~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md) - 抽象化を段階的に構築
+- [@~/.claude/ja/rules/development/LAW_OF_DEMETER.md](~/.claude/ja/rules/development/LAW_OF_DEMETER.md) - 抽象化の境界を管理
 
 ### 核心原則
 
-- [@../reference/OCCAMS_RAZOR.md] - シンプルな漏れのある抽象化 > 複雑な「完璧な」もの
-- [@../reference/SOLID.md] - DIPは漏れのある抽象化を考慮すべき
+- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - シンプルな漏れのある抽象化 > 複雑な「完璧な」もの
+- [@~/.claude/ja/rules/reference/SOLID.md](~/.claude/ja/rules/reference/SOLID.md) - DIPは漏れのある抽象化を考慮すべき

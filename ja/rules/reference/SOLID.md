@@ -1,21 +1,21 @@
-# Robert C. MartinのようにSOLID原則
+# SOLID原則 - Robert C. Martinのように
 
-Uncle Bobのようにコードを設計・構造化する - 5つの基本原則を通じて柔軟で保守可能なシステムを作成。
+アンクル・ボブのようにコードを設計・構造化 - 5つの基本原則を通じて柔軟で保守可能なシステムを作成。
 
 ## 核心哲学
 
-**依存関係を管理**: 依存関係の方向とフローを制御
-**変更を可能に**: 壊れることなく修正しやすいコード
-**プロフェッショナルな職人技**: 他の開発者が尊敬するコードを書く
+**依存関係を管理**: 依存関係の方向と流れを制御
+**変更を可能に**: 壊さずに修正しやすいコード
+**プロフェッショナルな職人技**: 他の開発者が尊重するコードを書く
 
 ## 5つの原則
 
-### 1. 単一責任の原則 (SRP)
+### 1. 単一責任原則 (SRP)
 
-クラスを変更する理由は1つだけにすべき
+クラスには変更する理由が1つだけであるべき
 
 ```typescript
-// ✅ 良い: 1つの責任
+// ✅ 良い: 単一責任
 class UserValidator {
   validate(user: User): ValidationResult
 }
@@ -28,14 +28,14 @@ class User {
 }
 ```
 
-理由: 変更理由が複数 = 脆弱なコード
+理由: 変更理由が複数 = 脆いコード
 
-### 2. オープン・クローズドの原則 (OCP)
+### 2. 開放閉鎖原則 (OCP)
 
-拡張に対して開いていて、修正に対して閉じている
+拡張に開き、修正に閉じる
 
 ```typescript
-// ✅ 良い: インターフェースで拡張
+// ✅ 良い: インターフェースを通じて拡張
 interface PaymentProcessor {
   process(amount: number): Result
 }
@@ -47,7 +47,7 @@ if (type === 'stripe') { /* stripe logic */ }
 else if (type === 'paypal') { /* paypal logic */ }
 ```
 
-理由: 新機能が既存コードを壊してはいけない
+理由: 新機能は既存コードを壊すべきでない
 
 ### 3. リスコフの置換原則 (LSP)
 
@@ -64,11 +64,11 @@ class Penguin extends Bird {
 }
 ```
 
-理由: 継承での驚き = バグ
+理由: 継承のサプライズ = バグ
 
-### 4. インターフェース分離の原則 (ISP)
+### 4. インターフェース分離原則 (ISP)
 
-汎用インターフェース1つより、特化したインターフェース複数
+1つの汎用インターフェースより多くの特定インターフェース
 
 ```typescript
 // ✅ 良い: 焦点を絞ったインターフェース
@@ -84,11 +84,11 @@ interface FileOps {
 }
 ```
 
-理由: 不要な依存関係を強制しない
+理由: 不必要な依存関係を強制しない
 
-### 5. 依存性逆転の原則 (DIP)
+### 5. 依存性逆転原則 (DIP)
 
-具象ではなく抽象に依存する
+具象ではなく抽象に依存
 
 ```typescript
 // ✅ 良い: インターフェースに依存
@@ -98,29 +98,42 @@ constructor(private logger: Logger) {}
 constructor(private fileLogger: FileLogger) {}
 ```
 
-理由: 高レベルのポリシーは低レベルの詳細に依存すべきでない
+理由: 高レベルポリシーは低レベル詳細に依存すべきでない
 
-## 適用場面
+## 適用するタイミング
 
 - クラス/モジュール設計
 - API境界
 - リファクタリング決定
 - アーキテクチャ計画
 
-## クイック決定ガイド
+## クイック判断ガイド
 
 - 新機能？ → まずOCPを確認
-- クラスが大きい？ → SRPを適用
+- クラスが大きすぎる？ → SRPを適用
 - 継承の問題？ → LSPを検証
-- メソッドが多すぎ？ → ISPを検討
-- テストが困難？ → DIPを適用
+- メソッドが多すぎる？ → ISPを検討
+- テストしにくい？ → DIPを適用
 
 ## 他の原則との統合
 
-- TDDと: テストを通じて設計が現れる
+- TDDと: テストを通じて設計が浮かび上がる
 - DRYと: 抽象化が重複を防ぐ
 - Tidyingsと: SOLIDに向けてリファクタリング
 
 ## 覚えておくこと
 
-「速く進む唯一の方法は、うまくやることだ」 - クリーンアーキテクチャが速度を可能にする
+「速く行く唯一の方法は、うまくやることだ」 - クリーンアーキテクチャがスピードを可能にする
+
+## 関連する原則
+
+### 基本原則（同レベル）
+
+- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - シンプルな設計はSRPと整合
+- [@~/.claude/ja/rules/reference/DRY.md](~/.claude/ja/rules/reference/DRY.md) - 抽象化が重複を防ぐ
+- [@~/.claude/ja/rules/reference/MILLERS_LAW.md](~/.claude/ja/rules/reference/MILLERS_LAW.md) - SRPは認知限界を尊重
+
+### 実践での適用
+
+- [@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - テストを通じて設計が浮かび上がる
+- [@~/.claude/ja/rules/development/LAW_OF_DEMETER.md](~/.claude/ja/rules/development/LAW_OF_DEMETER.md) - SOLID原則を補完

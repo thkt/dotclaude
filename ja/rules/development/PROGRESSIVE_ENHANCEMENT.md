@@ -42,10 +42,10 @@
 
 ### 開発実践
 
-- [@./LEAKY_ABSTRACTION.md] - 漏れを想定して抽象化を段階的に構築
-- [@./LAW_OF_DEMETER.md] - 段階的な結合度削減
-- [@./READABLE_CODE.md] - シンプルに始め、徐々に可読性を向上
+- [@~/.claude/ja/rules/development/LEAKY_ABSTRACTION.md](~/.claude/ja/rules/development/LEAKY_ABSTRACTION.md) - 漏れを想定して抽象化を段階的に構築
+- [@~/.claude/ja/rules/development/LAW_OF_DEMETER.md](~/.claude/ja/rules/development/LAW_OF_DEMETER.md) - 段階的な結合度削減
+- [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md) - シンプルに始め、徐々に可読性を向上
 
 ### 核心原則
 
-- [@../reference/OCCAMS_RAZOR.md] - シンプルさ優先はプログレッシブエンハンスメントと一致
+- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - シンプルさ優先はプログレッシブエンハンスメントと一致

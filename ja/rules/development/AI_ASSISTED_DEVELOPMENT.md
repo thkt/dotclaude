@@ -128,7 +128,7 @@ function processOrder(order) {
 
 ### TDD/Baby Stepsとの関係
 
-[@./TDD_RGRC.md](./TDD_RGRC.md)
+[@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md)
 
 - AIはテストの骨組みを生成可能
 - 人間は実際の要件に基づいてアサーションを書く
@@ -136,7 +136,7 @@ function processOrder(order) {
 
 ### オッカムの剃刀との関係
 
-[@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md)
+[@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md)
 
 - AIは過度な設計をしがち
 - 人間がシンプルさの原則を適用
@@ -144,7 +144,7 @@ function processOrder(order) {
 
 ### プログレッシブエンハンスメントとの関係
 
-[@./PROGRESSIVE_ENHANCEMENT.md](./PROGRESSIVE_ENHANCEMENT.md)
+[@~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md)
 
 - AI生成のシンプル版から始める
 - 実際のニーズに基づいて強化
@@ -152,7 +152,7 @@ function processOrder(order) {
 
 ### 可読性のあるコードとの関係
 
-[@./READABLE_CODE.md](./READABLE_CODE.md)
+[@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md)
 
 - AI生成コードは賢いが不明瞭な場合がある
 - 人間が可読性を保証
@@ -252,12 +252,12 @@ AIはあなたのアシスタントであり、代替品ではありません。
 
 ### 核心実践
 
-- [@./TDD_RGRC.md](./TDD_RGRC.md) - AIはテスト骨組み支援、人間が正確性を保証
-- [@./READABLE_CODE.md](./READABLE_CODE.md) - AI出力を明確さのために洗練
-- [@./PROGRESSIVE_ENHANCEMENT.md](./PROGRESSIVE_ENHANCEMENT.md) - AIでシンプルに始め、手動で強化
+- [@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - AIはテスト骨組み支援、人間が正確性を保証
+- [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md) - AI出力を明確さのために洗練
+- [@~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md) - AIでシンプルに始め、手動で強化
 
 ### 品質原則
 
-- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - AIの複雑な提案を簡素化
-- [@../reference/DRY.md](../reference/DRY.md) - AIが重複を識別、人間が抽象化を決定
-- [@../reference/SOLID.md](../reference/SOLID.md) - アーキテクチャパターンへの人間の判断
+- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - AIの複雑な提案を簡素化
+- [@~/.claude/ja/rules/reference/DRY.md](~/.claude/ja/rules/reference/DRY.md) - AIが重複を識別、人間が抽象化を決定
+- [@~/.claude/ja/rules/reference/SOLID.md](~/.claude/ja/rules/reference/SOLID.md) - アーキテクチャパターンへの人間の判断

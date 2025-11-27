@@ -128,7 +128,7 @@ function processOrder(order) {
 
 ### With TDD/Baby Steps
 
-[@./TDD_RGRC.md](./TDD_RGRC.md)
+[@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md)
 
 - AI can generate test scaffolding
 - Human writes assertions based on actual requirements
@@ -136,7 +136,7 @@ function processOrder(order) {
 
 ### With Occam's Razor
 
-[@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md)
+[@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md)
 
 - AI tends to over-engineer
 - Human applies simplicity principle
@@ -144,7 +144,7 @@ function processOrder(order) {
 
 ### With Progressive Enhancement
 
-[@./PROGRESSIVE_ENHANCEMENT.md](./PROGRESSIVE_ENHANCEMENT.md)
+[@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md)
 
 - Start with AI-generated simple version
 - Enhance based on real needs
@@ -152,7 +152,7 @@ function processOrder(order) {
 
 ### With Readable Code
 
-[@./READABLE_CODE.md](./READABLE_CODE.md)
+[@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md)
 
 - AI-generated code may be clever but unclear
 - Human ensures readability
@@ -252,12 +252,12 @@ AI is your assistant, not your replacement. Use it wisely.
 
 ### Core Practices
 
-- [@./TDD_RGRC.md](./TDD_RGRC.md) - AI can help with test scaffolding, humans ensure correctness
-- [@./READABLE_CODE.md](./READABLE_CODE.md) - Refine AI output for clarity
-- [@./PROGRESSIVE_ENHANCEMENT.md](./PROGRESSIVE_ENHANCEMENT.md) - Start simple with AI, enhance manually
+- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - AI can help with test scaffolding, humans ensure correctness
+- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Refine AI output for clarity
+- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Start simple with AI, enhance manually
 
 ### Quality Principles
 
-- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - Simplify AI's complex suggestions
-- [@../reference/DRY.md](../reference/DRY.md) - AI can identify duplication, humans decide abstractions
-- [@../reference/SOLID.md](../reference/SOLID.md) - Human judgment on architectural patterns
+- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplify AI's complex suggestions
+- [@~/.claude/rules/reference/DRY.md](~/.claude/rules/reference/DRY.md) - AI can identify duplication, humans decide abstractions
+- [@~/.claude/rules/reference/SOLID.md](~/.claude/rules/reference/SOLID.md) - Human judgment on architectural patterns

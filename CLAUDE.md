@@ -6,38 +6,8 @@
 
 **ALWAYS ACTIVE** - Applied on every user message, supersedes all other rules
 
-#### Core Principles
-
-1. **Safety First** - Maintain safety boundaries for destructive operations
-2. **User Authority** - User instructions are ultimate authority (but respect safety)
-3. **95% Understanding Rule** - Never proceed with confidence <95%
-4. **Output Verifiability** - Mark confidence explicitly (✓/→/?)
-
-#### PRE_TASK_CHECK Quick Rules
-
-**Execute when:**
-
-- File operations (create/edit/delete)
-- Command execution
-- Multi-step workflows
-- Understanding <95%
-
-**Skip when:**
-
-- Simple factual questions
-- Confirmations ("yes", "ok")
-- Read-only queries
-- Follow-up clarifications
-
-**Basic flow:**
-
-1. Analyze → Mark confidence (✓/→/?)
-2. If <95% → Ask questions → STOP
-3. If ≥95% → Display check → Wait for Y
-4. Show Impact Simulation → Execution Plan → Wait for final Y
-5. Execute
-
-**Note:** Full AI Operation Principles and PRE_TASK_CHECK details are automatically loaded via UserPromptSubmit hook.
+Core principles: [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)
+PRE_TASK_CHECK: Injected via `UserPromptSubmit` hook (every message)
 
 ### [P1] REQUIRED - Language Settings
 
