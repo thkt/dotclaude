@@ -6,38 +6,8 @@
 
 **常時適用** - すべてのユーザーメッセージで適用、他のすべてのルールに優先
 
-#### 核心原則
-
-1. **Safety First** - 破壊的操作に対する安全境界を維持
-2. **User Authority** - ユーザーの指示が最終的な権限（ただし安全性を尊重）
-3. **95% Understanding Rule** - 信頼度<95%では決して進まない
-4. **Output Verifiability** - 信頼度を明示的にマーク（✓/→/?）
-
-#### PRE_TASK_CHECKクイックルール
-
-**実行タイミング:**
-
-- ファイル操作（作成/編集/削除）
-- コマンド実行
-- 複数ステップのワークフロー
-- 理解度<95%
-
-**スキップするとき:**
-
-- シンプルな事実質問
-- 確認（「yes」、「ok」）
-- 読み取り専用クエリ
-- フォローアップの明確化
-
-**基本フロー:**
-
-1. 分析 → 信頼度をマーク（✓/→/?）
-2. <95%なら → 質問をする → 停止
-3. ≥95%なら → チェックを表示 → Yを待つ
-4. 影響シミュレーションを表示 → 実行計画 → 最終Yを待つ
-5. 実行
-
-**詳細ルール:** [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md) | [@~/.claude/rules/core/PRE_TASK_CHECK.md](~/.claude/rules/core/PRE_TASK_CHECK.md)
+コア原則: [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md)
+PRE_TASK_CHECK: `UserPromptSubmit`フック経由で注入（毎メッセージ）
 
 ### [P1] REQUIRED - 言語設定
 
@@ -53,45 +23,37 @@
 
 **常時適用** - すべての開発における核心原則
 
-#### オッカムの剃刀 - 最もシンプルな解決策が勝つ
+コア開発原則は `code-principles` スキル経由で利用可能:
 
-次の基準を使用して最もシンプルな解決策を選択：
+- **オッカムの剃刀 (KISS)** - 最もシンプルな解決策を選択
+- **SOLID原則** - 依存関係を管理、変更を可能に
+- **DRY** - 知識の単一ソース
+- **Millerの法則** - 認知限界を尊重 (7±2)
+- **YAGNI** - 今必要なものだけを構築
 
-- 最小の依存関係（3個以上より0-2個を推奨）
-- より少ないコード行数（関数あたり50行未満を推奨）
-- より低い循環的複雑度（条件分岐5個未満を推奨）
+クイック判断質問:
 
-複雑さには正当化が必要。「念のため」実装を避ける。
+- 「これを達成するよりシンプルな方法はあるか？」
+- 「新しいチームメンバーは1分以内に理解できるか？」
+- 「知識や意図を重複させていないか？」
+- 「今存在する実際の問題を解決しているか？」
 
-複雑さが避けられない場合、それが対応する具体的な要件を文書化する。
+**注記**: スキルは関連キーワードが言及されると自動的にアクティベートされます。
 
-- 判断: 「この複雑さは必要か？もっとシンプルな方法は？」
-- 詳細: [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md)
-
-#### 可読性のあるコード - 1分以内に理解
-
-次の制約を強制してMillerの法則（7±2制限）を尊重：
-
-- 関数パラメータ: 最大5個（理想は3個以下）
-- クラスのpublicメソッド: 最大7個
-- 関数あたりの条件分岐: 最大5個
-- 関数の長さ: 5-15行（理想は5-10行）
-- ネストの深さ: 最大3レベル
-
-これらの制限を超える場合、より小さな単位にリファクタリングするか、パラメータオブジェクトを使用する。
-
-- 判断: 「新しいチームメンバーは1分以内に理解できるか？」
-- 詳細: [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md)
+詳細: [@~/.claude/skills/code-principles/SKILL.md](~/.claude/skills/code-principles/SKILL.md)
 
 ### [P3] CONTEXTUAL - Just-in-Time参照
 
 **必要時に適用** - タスクタイプに基づいてロード
 
-- コードタスク: [プログレッシブエンハンスメント](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md) | [DRY](~/.claude/ja/rules/reference/DRY.md)
-- React/UI: [Container/Presentational](~/.claude/ja/rules/development/CONTAINER_PRESENTATIONAL.md)
-- 大規模: [SOLID](~/.claude/ja/rules/reference/SOLID.md) | [デメテルの法則](~/.claude/ja/rules/development/LAW_OF_DEMETER.md)
-- テスト: [TDD/RGRC](~/.claude/ja/rules/development/TDD_RGRC.md) | [テスト生成](~/.claude/ja/rules/development/TEST_GENERATION.md)
-- 完全ガイド: [PRINCIPLES_GUIDE.md](~/.claude/ja/rules/PRINCIPLES_GUIDE.md)
+- コードタスク: `progressive-enhancement` スキル経由で利用可能
+- React/UI: `frontend-patterns` スキル経由で利用可能
+- 大規模: [デメテルの法則](~/.claude/rules/development/LAW_OF_DEMETER.md)
+- テスト: `tdd-test-generation` スキル経由で利用可能
+
+**注記**: スキルはコンテキストとキーワードに基づいて自動的にアクティベートされます。
+
+完全ガイド: [PRINCIPLES_GUIDE.md](~/.claude/rules/PRINCIPLES_GUIDE.md)
 
 ### [P4] OPTIONAL - ファイル削除動作
 
@@ -102,20 +64,20 @@
 
 ## 作業完了ガイドライン
 
-**重要**: 完了を報告する前に、すべての作業が次の具体的基準を満たすことを検証：
+**重要**: 完了を報告する前に、すべての作業が次の具体的基準を満たすことを検証:
 
-- **テスト作成**: テストを作成した後、以下のすべてのチェックを実行：
+- **テスト作成**: テストを作成した後、以下のすべてのチェックを実行:
   1. プロジェクトのテストコマンドを実行（package.json/pubspec.yaml等から発見）
   2. 終了コードが0であることを確認（すべてのテストがパス）
   3. 一般的なパターン: `npm test`, `yarn test`, `flutter test`, `vitest` など
 
-- **コード実装**: コードを書いた後、以下のすべてのチェックを実行：
+- **コード実装**: コードを書いた後、以下のすべてのチェックを実行:
   1. ビルド/コンパイルが成功する（終了コード0）
   2. Linterがエラー0でパスする（警告は5個未満なら許容）
   3. すべての関連テストがパスする（失敗0個）
   4. クリティカルパスの手動スモークテスト（実行したステップを文書化）
 
-チェックが失敗した場合：
+チェックが失敗した場合:
 
 - ビルドエラー: 即座に修正、続行しない
 - Linterエラー: すべてのエラーを修正、時間があれば警告にも対処
@@ -126,19 +88,8 @@
   1. **最初**: README.mdを読み取り、「Scripts」または「Commands」セクションを確認
   2. **次に**: パッケージマネージャーの設定を検査（package.json > scripts、pubspec.yaml > scripts）
   3. **3番目**: 一般的なテストファイルを検索（*.test.*、*.spec.*、test/、spec/）
-  4. **最終手段**: ステップ1-3で結果がない場合、次の形式でユーザーに質問：
+  4. **最終手段**: ステップ1-3で結果がない場合、次の形式でユーザーに質問:
      「テストコマンドが見つかりませんでした。テストを実行するコマンドを指定してください（例: npm test、yarn test）。」
-
-- **再試行ポリシー**: 次の具体的な条件で自動再試行：
-  - **最大再試行回数**: 5回
-  - **再試行間隔**: 指数バックオフ（1秒、2秒、4秒、8秒、16秒）
-  - **再試行トリガー**: ネットワークエラー、一時的なファイルロック、一過性のテスト失敗
-  - **再試行しない**: 構文エラー、コンパイルエラー、認証失敗
-
-  同じエラーで5回失敗した後：
-  1. 即座に再試行を停止
-  2. ユーザーへ報告: "同じエラーが5回発生しました: [エラーメッセージ]。別のアプローチが必要かもしれません。"
-  3. 代替アプローチが利用可能なら提案
 
 - **以下の状態では完了を報告しない**:
   - テストが失敗している（未実装機能のテストを明示的に作成している場合を除く）
@@ -147,10 +98,10 @@
 
 ### コマンドリファレンス
 
-- コマンドリスト（英語版）: [@~/.claude/docs/COMMANDS.md](~/.claude/docs/COMMANDS.md)
-- コマンドリスト（日本語版）: [@~/.claude/ja/docs/COMMANDS.md](~/.claude/ja/docs/COMMANDS.md)
+- コマンドリスト: [@~/.claude/docs/COMMANDS.md](~/.claude/docs/COMMANDS.md)
+- 日本語版: [@~/.claude/ja/docs/COMMANDS.md](~/.claude/ja/docs/COMMANDS.md)
 
 ### ドキュメントガイドライン
 
-- ドキュメントルール: [@~/.claude/ja/docs/DOCUMENTATION_RULES.md](~/.claude/ja/docs/DOCUMENTATION_RULES.md)
-- すべてのドキュメントで一貫性を維持
+- ドキュメントルール: [@~/.claude/docs/DOCUMENTATION_RULES.md](~/.claude/docs/DOCUMENTATION_RULES.md)
+- すべてのドキュメントで絶対的な一貫性を確保
