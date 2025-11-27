@@ -55,6 +55,13 @@ Full details: [@~/.claude/skills/code-principles/SKILL.md](./skills/code-princip
 
 Complete guide: [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
 
+### [P4] OPTIONAL - File Deletion Behavior
+
+- **NEVER use rm command**: rm is disabled in settings.json
+- **Always use Trash**: Move files to ~/.Trash/ instead of permanent deletion
+- **Command**: Use `mv [file] ~/.Trash/` for file deletion
+- **Rationale**: Safety - enables recovery of accidentally deleted files
+
 ## Work Completion Guidelines
 
 **Critical**: Verify all work meets these specific criteria before reporting completion:
