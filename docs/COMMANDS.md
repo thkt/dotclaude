@@ -36,12 +36,6 @@ Custom commands for systematic software development support.
 |---------|---------|-------------|
 | `/workflow:create [name]` | Create reusable browser automation workflows | 🌐 E2E Testing |
 
-### External Tool Commands
-
-| Command | Purpose | Requires |
-|---------|---------|----------|
-| `/gemini:search` | Google search via Gemini | Gemini CLI |
-
 ### Documentation Commands
 
 | Command | Purpose | Environment |
@@ -79,11 +73,24 @@ This "Dry-run" approach previews changes without execution, helping you:
 
 ## 🔄 Standard Workflows
 
-### Feature Development (Enhanced)
+### Feature Development
+
+Choose based on complexity:
 
 ```txt
-/research → /think → /code → /test → /review → /validate
+[Complex - Architecture decisions needed]
+(/research →) Plan Mode → /think → /code → /test → /review → /validate
+
+[Standard - Clear requirements]
+/think → /code → /test → /review → /validate
+
+[Simple - Small feature]
+/code → /test
 ```
+
+**Plan Mode**: Press `Shift+Tab` to enter. Explore codebase, design approach, get user approval before proceeding.
+
+**Note**: `/research` is optional before Plan Mode when deep investigation with persistent documentation is needed.
 
 ### Progress Monitoring
 
@@ -103,7 +110,13 @@ This "Dry-run" approach previews changes without execution, helping you:
 /hotfix (standalone for critical issues)
 ```
 
-### Automated Workflows (New with SlashCommand Tool)
+### Investigation Only (No Implementation)
+
+```txt
+/research (findings saved to .claude/workspace/research/)
+```
+
+### Automated Workflows (SlashCommand Tool)
 
 ```txt
 /auto-test        # Automatic test → fix cycle
@@ -201,13 +214,6 @@ This "Dry-run" approach previews changes without execution, helping you:
 - TodoWrite integration for progress tracking
 - Requires SlashCommand tool v1.0.123+
 
-### /gemini:search - Google Search
-
-- Technical research via Gemini CLI
-- Best practices discovery
-- Troubleshooting assistance
-- Requires Gemini CLI setup
-
 ### /adr - Architecture Decision Record Creator
 
 - Creates MADR (Markdown Architecture Decision Records) format documentation
@@ -262,9 +268,7 @@ This "Dry-run" approach previews changes without execution, helping you:
 │   ├── validate.md
 │   ├── workflow/
 │   │   └── create.md # Workflow generator
-│   ├── workflows/    # Generated workflows (user-created)
-│   └── gemini/
-│       └── search.md
+│   └── workflows/    # Generated workflows (user-created)
 ├── ja/               # Japanese versions
 │   └── commands/
 └── workspace/        # Working files
@@ -311,11 +315,21 @@ This "Dry-run" approach previews changes without execution, helping you:
 - Immediate deployment needed
 - Security vulnerability discovered
 
+### Use Plan Mode when
+
+- Complex feature requiring architecture decisions
+- Multiple valid approaches exist
+- Need to explore codebase before planning
+- Want user approval on approach before implementation
+
+**How to enter**: Press `Shift+Tab` or type "enter plan mode"
+
 ### Use `/research` when
 
-- Need to understand existing code
-- Exploring solution options
-- No implementation planned yet
+- Need deep investigation with persistent documentation
+- Exploring solution options without implementation
+- Want findings saved for future reference
+- Can combine with Plan Mode: `/research` → Plan Mode
 
 ### Use `/think` when
 

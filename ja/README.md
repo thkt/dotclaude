@@ -27,9 +27,7 @@
 │   ├── research.md       # 実装なしの調査
 │   ├── review.md         # コードレビューオーケストレーション
 │   ├── test.md           # 包括的テスト
-│   ├── think.md          # 計画とSOW作成
-│   └── gemini/
-│       └── search.md     # Gemini経由のGoogle検索
+│   └── think.md          # 計画とSOW作成
 ├── rules/                 # 英語版ルール定義
 │   ├── core/             # [P0] コアAI動作原則
 │   │   └── AI_OPERATION_PRINCIPLES.md
@@ -75,7 +73,6 @@
    /plugin install git-utilities             # /commit、/branch、/pr
    /plugin install documentation-tools       # /adr、/adr:rule
    /plugin install browser-workflows         # /workflow:create
-   /plugin install external-integrations     # /gemini:search
    /plugin install utilities                 # /context
    ```
 
@@ -87,7 +84,6 @@
 - **git-utilities**: Gitワークフローヘルパー（commit、branch、PR）
 - **documentation-tools**: ADR作成とルール生成
 - **browser-workflows**: E2Eテストと自動化
-- **external-integrations**: Gemini検索統合
 - **utilities**: 開発診断ツール
 
 ### Option 2: 手動インストール（完全な設定）
@@ -188,8 +184,8 @@ Claude Codeは5つのカテゴリに分類された15の専門コマンドを提
 - **ドキュメント** (2個): アーキテクチャ決定と規則
   - `/adr`, `/adr:rule`
 
-- **外部ツール** (2個): ブラウザ自動化と検索
-  - `/workflow:create`, `/gemini:search`
+- **外部ツール** (1個): ブラウザ自動化
+  - `/workflow:create`
 
 **📚 詳細リファレンス**: 各コマンドの詳しい使用方法は以下を参照
 

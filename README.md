@@ -29,9 +29,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── research.md       # Investigation without implementation
 │   ├── review.md         # Code review orchestration
 │   ├── test.md           # Comprehensive testing
-│   ├── think.md          # Planning & SOW creation
-│   └── gemini/
-│       └── search.md     # Google search via Gemini
+│   └── think.md          # Planning & SOW creation
 ├── rules/                 # English rule definitions
 │   ├── core/             # [P0] Core AI operation principles
 │   │   └── AI_OPERATION_PRINCIPLES.md
@@ -75,7 +73,6 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
    /plugin install git-utilities             # /commit, /branch, /pr
    /plugin install documentation-tools       # /adr, /adr:rule
    /plugin install browser-workflows         # /workflow:create
-   /plugin install external-integrations     # /gemini:search
    /plugin install utilities                 # /context
    ```
 
@@ -87,7 +84,6 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 - **git-utilities**: Git workflow helpers (commit, branch, PR)
 - **documentation-tools**: ADR creation and rule generation
 - **browser-workflows**: E2E testing and automation
-- **external-integrations**: Gemini search integration
 - **utilities**: Development diagnostics tools
 
 ### Option 2: Manual Installation (Full Configuration)
@@ -188,8 +184,8 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 - **Documentation** (2 commands): Architecture decisions and rules
   - `/adr`, `/adr:rule`
 
-- **External Tools** (2 commands): Browser automation and search
-  - `/workflow:create`, `/gemini:search`
+- **External Tools** (1 command): Browser automation
+  - `/workflow:create`
 
 **📚 Detailed Reference**: For complete command documentation, see:
 

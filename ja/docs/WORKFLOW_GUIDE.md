@@ -69,12 +69,6 @@ AI支援による体系的なソフトウェア開発ツール。コマンド、
 | `/auto-test` | 自動テスト | ファイル変更時に自動実行 |
 | `/full-cycle` | 完全自動化 | research→think→code→test→review→validate |
 
-### 外部ツール（1個）
-
-| コマンド | 目的 | 要件 |
-|---------|------|------|
-| `/gemini:search` | Google検索 | Gemini CLI |
-
 **詳細**: 各コマンドの使用方法は [@./COMMANDS.md](./COMMANDS.md) を参照
 
 ---

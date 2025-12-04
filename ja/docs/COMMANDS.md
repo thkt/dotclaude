@@ -36,12 +36,6 @@
 |---------|------|------|
 | `/workflow:create [名前]` | 再利用可能なブラウザ自動化ワークフローを作成 | 🌐 E2Eテスト |
 
-### 外部ツールコマンド
-
-| コマンド | 目的 | 必要条件 |
-|---------|------|----------|
-| `/gemini:search` | Gemini経由のGoogle検索 | Gemini CLI |
-
 ### ドキュメントコマンド
 
 | コマンド | 目的 | 環境 |
@@ -79,11 +73,24 @@
 
 ## 🔄 標準ワークフロー
 
-### 機能開発（拡張版）
+### 機能開発
+
+複雑さに応じて選択:
 
 ```txt
-/research → /think → /code → /test → /review → /validate
+[複雑 - アーキテクチャ決定が必要]
+(/research →) Plan Mode → /think → /code → /test → /review → /validate
+
+[標準 - 要件が明確]
+/think → /code → /test → /review → /validate
+
+[シンプル - 小規模機能]
+/code → /test
 ```
+
+**Plan Mode**: `Shift+Tab` で起動。コードベース探索、アプローチ設計、実装前にユーザー承認を取得。
+
+**注記**: `/research` は永続的なドキュメント化を伴う深い調査が必要な場合、Plan Mode の前にオプションで使用可能。
 
 ### 進捗モニタリング
 
@@ -103,7 +110,13 @@
 /hotfix (重大な問題に対して単独で使用)
 ```
 
-### 自動化ワークフロー（SlashCommandツールで新登場）
+### 調査のみ（実装なし）
+
+```txt
+/research (発見内容は .claude/workspace/research/ に保存)
+```
+
+### 自動化ワークフロー（SlashCommandツール）
 
 ```txt
 /auto-test        # 自動テスト → 修正サイクル
@@ -201,13 +214,6 @@
 - TodoWrite連携による進捗追跡
 - SlashCommandツール v1.0.123+ が必要
 
-### /gemini:search - Google検索
-
-- Gemini CLI経由の技術調査
-- ベストプラクティスの発見
-- トラブルシューティング支援
-- Gemini CLIセットアップが必要
-
 ### /adr - Architecture Decision Record作成
 
 - MADR（Markdown Architecture Decision Records）形式でドキュメント作成
@@ -265,9 +271,7 @@
 │   ├── validate.md
 │   ├── workflow/
 │   │   └── create.md # ワークフロージェネレーター
-│   ├── workflows/    # 生成されたワークフロー（ユーザー作成）
-│   └── gemini/
-│       └── search.md
+│   └── workflows/    # 生成されたワークフロー（ユーザー作成）
 ├── ja/               # 日本語版
 │   └── commands/
 └── workspace/        # 作業ファイル
@@ -314,11 +318,21 @@
 - 即座のデプロイが必要
 - セキュリティ脆弱性が発見された
 
+### Plan Modeを使用する場合
+
+- アーキテクチャ決定が必要な複雑な機能
+- 複数の有効なアプローチが存在する
+- 計画前にコードベースを探索する必要がある
+- 実装前にアプローチについてユーザー承認が欲しい
+
+**起動方法**: `Shift+Tab` を押すか「plan modeに入って」と入力
+
 ### `/research`を使用する場合
 
-- 既存コードを理解する必要がある
-- 解決オプションを探索している
-- まだ実装の予定がない
+- 永続的なドキュメント化を伴う深い調査が必要
+- 実装なしで解決オプションを探索している
+- 発見内容を将来の参照用に保存したい
+- Plan Mode と組み合わせ可能: `/research` → Plan Mode
 
 ### `/think`を使用する場合
 

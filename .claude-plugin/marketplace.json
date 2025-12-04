@@ -199,28 +199,6 @@
       ]
     },
     {
-      "name": "external-integrations",
-      "source": "./",
-      "description": "External tool integrations: /gemini:search for Google search via Gemini CLI",
-      "version": "1.1.0",
-      "author": {
-        "name": "thkt",
-        "url": "https://github.com/thkt"
-      },
-      "license": "MIT",
-      "keywords": [
-        "gemini",
-        "search",
-        "external",
-        "integration"
-      ],
-      "category": "External Tools",
-      "commands": [
-        "./commands/gemini/search.md",
-        "./ja/commands/gemini/search.md"
-      ]
-    },
-    {
       "name": "utilities",
       "source": "./",
       "description": "Development utilities: /context for diagnostics",
