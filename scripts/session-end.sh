@@ -29,4 +29,25 @@ cp "$SESSION_FILE" "$SESSION_LOG_DIR/latest-session.json"
 # 古いログを削除（30日以上前のものを削除）
 find "$SESSION_LOG_DIR" -name "session-*.json" -mtime +30 -delete 2>/dev/null
 
+# Agent logs rotation - keep last 50 directories
+AGENT_LOG_DIR="$HOME/.claude/logs/agents"
+if [ -d "$AGENT_LOG_DIR" ]; then
+  agent_count=$(ls -1 "$AGENT_LOG_DIR" 2>/dev/null | wc -l)
+  if [ "$agent_count" -gt 50 ]; then
+    ls -1t "$AGENT_LOG_DIR" | tail -n +51 | while read dir; do
+      mv "$AGENT_LOG_DIR/$dir" ~/.Trash/ 2>/dev/null
+    done
+  fi
+fi
+
+# Subagent log rotation - keep last 1MB
+SUBAGENT_LOG="$HOME/.claude/logs/subagent.log"
+if [ -f "$SUBAGENT_LOG" ]; then
+  log_size=$(stat -f%z "$SUBAGENT_LOG" 2>/dev/null || echo 0)
+  if [ "$log_size" -gt 1048576 ]; then  # 1MB
+    tail -c 512000 "$SUBAGENT_LOG" > "$SUBAGENT_LOG.tmp"
+    mv "$SUBAGENT_LOG.tmp" "$SUBAGENT_LOG"
+  fi
+fi
+
 echo "Session data saved to: $SESSION_FILE"
