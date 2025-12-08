@@ -3,7 +3,6 @@ description: >
   Create a comprehensive Statement of Work (SOW) for feature development or problem solving.
   Use when planning complex tasks, defining acceptance criteria, or structuring implementation approaches.
   Ideal for tasks requiring detailed analysis, risk assessment, and structured planning documentation.
-  構造化された計画文書（SOW）を生成。複雑なタスクの計画、受け入れ基準の定義、実装アプローチの構造化が必要な場合に使用。
 allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Read, Write, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[feature or problem description]"
@@ -399,17 +398,98 @@ Generates:
 ## Simplified Workflow
 
 1. **Planning Phase**
-   - Use `/think` to create SOW
+   - Use `/think` to create SOW and Spec
    - **Automatic codebase analysis** (Plan agent invoked if applicable)
    - Review and refine plan with verified context
 
-2. **Execution Phase**
+2. **Auto Review Phase**
+   - **sow-spec-reviewer** automatically reviews generated documents
+   - 100-point scoring with 90-point pass threshold
+   - SOW ↔ Spec consistency check
+   - If PASS → proceed to Execution Phase
+   - If CONDITIONAL → fix issues and re-review
+   - If FAIL → re-run `/think` with clarifications
+
+3. **Execution Phase**
    - Use TodoWrite for task tracking
    - Reference SOW for requirements
 
-3. **Review Phase**
+4. **Review Phase**
    - Check against acceptance criteria
    - Update documentation as needed
+
+## Auto Review Integration
+
+### Automatic Document Review
+
+After generating sow.md and spec.md, automatically invoke the sow-spec-reviewer:
+
+```typescript
+Task({
+  subagent_type: "sow-spec-reviewer",
+  description: "Auto-review SOW/Spec",
+  prompt: `
+    Review the just-generated documents:
+    - SOW: ${sowPath}
+    - Spec: ${specPath}
+
+    Apply 100-point scoring with 90-point pass threshold.
+    Check SOW ↔ Spec consistency.
+
+    Scoring criteria (each 25 points):
+    - Accuracy: Appropriate use of confidence markers (✓/→/?)
+    - Completeness: Coverage of required sections
+    - Relevance: Alignment with objectives, appropriate scope
+    - Actionability: Concrete enough for implementation
+
+    Report results.
+  `
+})
+```
+
+### Review Flow
+
+```text
+/think "feature"
+    ↓
+Generate sow.md + spec.md
+    ↓
+Auto-invoke sow-spec-reviewer
+    ↓
+┌─────────────────────────────────────┐
+│ Score >= 90: ✅ PASS                │
+│ → Can proceed to implementation     │
+│   phase (/code)                     │
+├─────────────────────────────────────┤
+│ Score 70-89: ⚠️ CONDITIONAL         │
+│ → Show issues, request fixes        │
+│ → Re-review after fixes             │
+├─────────────────────────────────────┤
+│ Score < 70: ❌ FAIL                 │
+│ → Major revision needed             │
+│ → Re-run /think with clarifications │
+└─────────────────────────────────────┘
+```
+
+### Skip Auto-Review
+
+To skip automatic review (not recommended):
+
+```bash
+/think "feature" --skip-review
+```
+
+### Manual Re-Review
+
+To manually trigger a review of existing documents:
+
+```typescript
+Task({
+  subagent_type: "sow-spec-reviewer",
+  description: "Manual SOW/Spec review",
+  prompt: "Review documents at: .claude/workspace/sow/[path]/"
+})
+```
 
 ## Related Commands
 

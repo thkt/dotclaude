@@ -3,7 +3,6 @@ description: >
   Orchestrate complete development cycle through SlashCommand tool integration, executing from research through implementation, testing, and validation.
   Chains multiple commands: /research → /think → /code → /test → /review → /validate with conditional execution and error handling.
   TodoWrite integration for progress tracking. Use for comprehensive feature development requiring full workflow automation.
-  SlashCommandツール統合により、研究から実装、テスト、検証まで完全な開発サイクルを統括。
 allowed-tools: SlashCommand, TodoWrite, Read, Write, Edit, MultiEdit
 model: inherit
 argument-hint: "[feature or task description]"
@@ -34,6 +33,30 @@ Follow this command sequence when invoked. Use the **SlashCommand tool** to exec
 - Create comprehensive SOW with acceptance criteria
 - Define implementation approach and risks
 - On failure: May retry once or ask user for clarification
+
+### Phase 2.5: Design Review
+
+**Use Task tool to invoke**: `sow-spec-reviewer` agent
+
+- Review generated sow.md and spec.md
+- Apply 100-point scoring with 90-point pass threshold
+- Check SOW ↔ Spec consistency
+- On PASS (≥90): Proceed to Phase 3
+- On CONDITIONAL (70-89): Fix issues and re-review
+- On FAIL (<70): Return to Phase 2 with clarifications
+
+```typescript
+Task({
+  subagent_type: "sow-spec-reviewer",
+  description: "Design document review",
+  prompt: `
+    Review the SOW and Spec documents.
+    Apply 100-point scoring (90-point pass threshold).
+    Check SOW ↔ Spec consistency.
+    Report results in Japanese.
+  `
+})
+```
 
 ### Phase 3: Implementation
 
@@ -75,6 +98,7 @@ Use **TodoWrite** tool throughout to track progress:
 Development Cycle Progress:
 - [ ] Research phase (Use SlashCommand: /research)
 - [ ] Planning phase (Use SlashCommand: /think)
+- [ ] Design review phase (Use Task: sow-spec-reviewer)
 - [ ] Implementation phase (Use SlashCommand: /code)
 - [ ] Testing phase (Use SlashCommand: /test)
 - [ ] Review phase (Use SlashCommand: /review)
@@ -89,8 +113,11 @@ When a command fails:
 
 1. **For /code or /test failures**: Automatically use SlashCommand to invoke `/fix`
 2. **For /research or /think failures**: Ask user for clarification
-3. **For /review failures**: Continue with documented issues
-4. **For /validate failures**: Report specific criteria that failed
+3. **For design review failures**:
+   - CONDITIONAL (70-89): Show issues, fix SOW/Spec, re-review
+   - FAIL (<70): Return to `/think` with user clarifications
+4. **For /review failures**: Continue with documented issues
+5. **For /validate failures**: Report specific criteria that failed
 
 ## Conditional Execution
 
@@ -112,6 +139,15 @@ Claude: Starting full development cycle...
 
 [Uses SlashCommand to execute: /think Add OAuth2 authentication]
 ✓ SOW created with 8 acceptance criteria
+✓ Spec created with detailed requirements
+
+[Uses Task to invoke: sow-spec-reviewer]
+📋 Design Review Score: 92/100 ✅ PASS
+- Accuracy: 23/25 ✓
+- Completeness: 24/25 ✓
+- Relevance: 22/25 ✓
+- Actionability: 23/25 ✓
+✓ Proceeding to implementation
 
 [Uses SlashCommand to execute: /code Implement OAuth2 login flow]
 ✓ Implementation complete - 15 files modified

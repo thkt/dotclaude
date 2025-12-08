@@ -29,6 +29,12 @@ workflow_sequence:
     on_success: "続行"
     on_failure: "一度再試行"
 
+  - name: "設計レビューフェーズ"
+    agent: "sow-spec-reviewer"
+    on_pass: "続行"
+    on_conditional: "修正後に再レビュー"
+    on_fail: "計画フェーズに戻る"
+
   - name: "実装フェーズ"
     command: "/code"
     on_success: "続行"
@@ -58,6 +64,7 @@ async function orchestrateFullCycle(context: any) {
   const commandSequence = [
     '/research',
     '/think',
+    { type: 'agent', name: 'sow-spec-reviewer' }, // 設計レビュー
     '/code',
     '/test',
     '/review',
