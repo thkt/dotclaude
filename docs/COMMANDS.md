@@ -63,7 +63,7 @@ This "Dry-run" approach previews changes without execution, helping you:
 **Workflow integration**:
 
 ```txt
-1. Understanding Check (理解確認)
+1. Understanding Check
 2. User Confirmation (Y) ← STOP POINT
 3. 🔍 Impact Simulation ← NEW (auto-displayed for risky changes)
 4. Execution Plan
@@ -372,120 +372,120 @@ Choose based on complexity:
 - Want to document complex manual testing procedures
 - Need reproducible browser automation
 
-## 🏗️ Commands, Agents, Skills の使い分け
+## 🏗️ Commands, Agents, Skills Architecture
 
-### アーキテクチャ概要
+### Architecture Overview
 
-Claude Codeは、Commands、Agents、Skillsの3層構造で機能を提供します。それぞれの役割を理解することで、効果的な活用が可能になります。
+Claude Code provides functionality through a three-layer structure: Commands, Agents, and Skills. Understanding each role enables effective utilization.
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ Commands: ユーザーが直接呼び出すワークフロー              │
-├─────────────────────────────────────────────────────────────┤
-│ - /review → レビューオーケストレーション                  │
-│ - /adr → ADR作成フロー                                      │
-│ - /code → TDD/RGRC実装                                      │
-│                                                              │
-│ 特徴: 薄いラッパー、SkillsやAgentsを調整                  │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Commands["📋 Commands: User-invoked workflows"]
+        C1["/review → Review orchestration"]
+        C2["/adr → ADR creation flow"]
+        C3["/code → TDD/RGRC implementation"]
+    end
 
-┌─────────────────────────────────────────────────────────────┐
-│ Agents: 専門分析・レビュー（Commandsから呼ばれる）        │
-├─────────────────────────────────────────────────────────────┤
-│ - performance-reviewer → パフォーマンス分析                │
-│ - accessibility-reviewer → a11y検証                         │
-│ - type-safety-reviewer → 型安全性チェック                  │
-│                                                              │
-│ 特徴: 特定タスク実行、短期的、Skillsを参照可能            │
-└─────────────────────────────────────────────────────────────┘
+    subgraph Agents["🤖 Agents: Specialized analysis/review"]
+        A1["performance-reviewer"]
+        A2["accessibility-reviewer"]
+        A3["type-safety-reviewer"]
+    end
 
-┌─────────────────────────────────────────────────────────────┐
-│ Skills: 知識ベース・ガイド・自動化                        │
-├─────────────────────────────────────────────────────────────┤
-│ - performance-optimization → 最適化知識                    │
-│ - progressive-enhancement → 設計原則                       │
-│ - adr-creator → ADR作成ガイド                              │
-│ - esa-daily-report → プロジェクト固有自動化               │
-│                                                              │
-│ 特徴: 永続的知識、教育的、再利用可能                      │
-└─────────────────────────────────────────────────────────────┘
+    subgraph Skills["📚 Skills: Knowledge base & guides"]
+        S1["performance-optimization"]
+        S2["progressive-enhancement"]
+        S3["adr-creator"]
+    end
+
+    Commands -->|"invokes"| Agents
+    Agents -->|"references"| Skills
+    Commands -->|"references"| Skills
 ```
 
-### 詳細な役割分担
+**Layer Characteristics**:
+
+| Layer | Features |
+|-------|----------|
+| **Commands** | Thin wrapper, coordinates Skills and Agents |
+| **Agents** | Task execution, short-term, can reference Skills |
+| **Skills** | Persistent knowledge, educational, reusable |
+
+### Detailed Role Division
 
 #### 📋 Commands
 
-**役割**: ユーザーが明示的に呼び出すワークフロー
+**Role**: User-invoked workflows
 
-**特徴**:
+**Features**:
 
-- ユーザーインターフェース（`/command`形式）
-- 薄いオーケストレーションレイヤー
-- AgentsやSkillsを調整・連携
-- タスクの進行管理
+- User interface (`/command` format)
+- Thin orchestration layer
+- Coordinates Agents and Skills
+- Task progress management
 
-**例**:
+**Examples**:
 
-- `/review` → 複数のreview agentsを呼び出し、結果を統合
-- `/adr` → adr-creator skillを参照してADR作成プロセスを実行
+- `/review` → Invokes multiple review agents, consolidates results
+- `/adr` → References adr-creator skill, executes ADR creation process
 
 #### 🤖 Agents
 
-**役割**: 専門的な分析・レビュー（主にCommandsから呼ばれる）
+**Role**: Specialized analysis/review (primarily called by Commands)
 
-**特徴**:
+**Features**:
 
-- 特定ドメインの専門知識
-- 実際のコード分析・レビュー実行
-- Skillsの知識ベースを参照可能
-- 短期的なタスク実行
+- Domain-specific expertise
+- Actual code analysis/review execution
+- Can reference Skills knowledge base
+- Short-term task execution
 
-**例**:
+**Examples**:
 
-- `performance-reviewer` → 実際のコードのパフォーマンスボトルネックを特定
+- `performance-reviewer` → Identifies performance bottlenecks in actual code
 
 #### 📚 Skills
 
-**役割**: 知識ベース、ガイド、プロジェクト固有の自動化
+**Role**: Knowledge base, guides, project-specific automation
 
-**特徴**:
+**Features**:
 
-- 永続的な技術知識
-- 教育的コンテンツ
-- プロジェクト横断的に再利用可能
-- キーワードベースの自動トリガー（オプション）
+- Persistent technical knowledge
+- Educational content
+- Cross-project reusability
+- Keyword-based auto-trigger (optional)
 
-**例**:
+**Examples**:
 
-- `performance-optimization` → Web Vitals、React最適化のガイド
-- `progressive-enhancement` → CSS-firstアプローチの設計原則
-- `esa-daily-report` → プロジェクト固有の日報自動化
+- `performance-optimization` → Web Vitals, React optimization guides
+- `progressive-enhancement` → CSS-first approach design principles
+- `esa-daily-report` → Project-specific daily report automation
 
-### 協調動作の実例
+### Collaboration Examples
 
-#### Example 1: Performance最適化
+#### Example 1: Performance Optimization
 
 ```text
-User: "このページが遅い"
+User: "This page is slow"
     ↓
 Skill (auto-trigger): performance-optimization
-    → Web Vitalsの知識を提供
-    → 測定方法を提案
+    → Provides Web Vitals knowledge
+    → Suggests measurement methods
     ↓
 User: "/review"
     ↓
 Command: /review
     ↓
 Agent: performance-reviewer
-    → 実際のコードを分析
-    → performance-optimization skillを参照
-    → ボトルネックを特定
+    → Analyzes actual code
+    → References performance-optimization skill
+    → Identifies bottlenecks
     ↓
-Output: 具体的な改善提案
-    （Skillの知識 + Agentの分析）
+Output: Specific improvement recommendations
+    (Skill knowledge + Agent analysis)
 ```
 
-#### Example 2: ADR作成
+#### Example 2: ADR Creation
 
 ```text
 User: "/adr 'Adopt React Native for Mobile'"
@@ -493,44 +493,44 @@ User: "/adr 'Adopt React Native for Mobile'"
 Command: /adr
     ↓
 Skill: adr-creator
-    → MADR形式のテンプレート提供
-    → 6段階プロセスガイド
-    → 参照元収集スクリプト
+    → Provides MADR format template
+    → 6-step process guide
+    → Reference collection script
     ↓
 Command: /adr
-    → Skillのガイドに従ってプロセス実行
-    → ユーザー入力を収集
-    → ADRファイル生成
+    → Executes process following Skill guide
+    → Collects user input
+    → Generates ADR file
     ↓
 Output: docs/adr/0023-adopt-react-native.md
 ```
 
-### いつどれを作るべきか
+### When to Create Which
 
-#### Commands を作成すべき場合
+#### When to Create Commands
 
-- ✅ ユーザーが繰り返し実行するワークフロー
-- ✅ 複数のAgentsやSkillsを組み合わせる必要がある
-- ✅ ユーザー入力が必要なインタラクティブなタスク
+- ✅ Workflows users execute repeatedly
+- ✅ Need to combine multiple Agents and Skills
+- ✅ Interactive tasks requiring user input
 
-#### Agents を作成すべき場合
+#### When to Create Agents
 
-- ✅ 特定ドメインの専門的な分析が必要
-- ✅ コードレビューや検証など、実行ベースのタスク
-- ✅ Commandsから呼び出される専門処理
+- ✅ Domain-specific expert analysis needed
+- ✅ Execution-based tasks like code review/verification
+- ✅ Specialized processing called from Commands
 
-#### Skills を作成すべき場合
+#### When to Create Skills
 
-- ✅ プロジェクト横断的な技術知識
-- ✅ 教育的コンテンツ、ベストプラクティス集
-- ✅ プロジェクト固有の自動化ワークフロー
-- ✅ キーワードトリガーによる自動支援
+- ✅ Cross-project technical knowledge
+- ✅ Educational content, best practices collections
+- ✅ Project-specific automation workflows
+- ✅ Keyword-triggered automatic assistance
 
-### 詳細ドキュメント
+### Detailed Documentation
 
-- **Skills詳細**: `~/.claude/skills/README.md`
-- **Agents**: `~/.claude/agents/`配下のドキュメント
-- **Commands**: このファイル（COMMANDS.md）
+- **Skills**: `~/.claude/skills/README.md`
+- **Agents**: Documents under `~/.claude/agents/`
+- **Commands**: This file (COMMANDS.md)
 
 ## 🔧 Configuration
 
@@ -544,3 +544,14 @@ Output: docs/adr/0023-adopt-react-native.md
 - `~/.claude/CLAUDE.md` - Global settings and rules
 - `~/.claude/rules/` - Development principles
 - `~/.claude/settings.json` - Tool permissions
+
+### 📚 Guides
+
+Step-by-step workflow guides:
+
+- [Part 1: Three-Layer Architecture](./guides/part1-three-layer-architecture.md)
+- [Part 2: Investigation Phase (/research)](./guides/part2-research-investigation.md)
+- [Part 3: Planning Phase (/think)](./guides/part3-think-sow-spec.md)
+- [Part 4: Implementation Phase (/code)](./guides/part4-code-implementation.md)
+- [Part 5: Quality Phase (/review)](./guides/part5-review-quality.md)
+- [Part 6: Cross-cutting Concerns (PRE_TASK_CHECK)](./guides/part6-pre-task-check.md)

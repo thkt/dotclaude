@@ -381,38 +381,38 @@
 
 Claude Codeは、Commands、Agents、Skillsの3層構造で機能を提供します。それぞれの役割を理解することで、効果的な活用が可能になります。
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ Commands: ユーザーが直接呼び出すワークフロー              │
-├─────────────────────────────────────────────────────────────┤
-│ - /review → レビューオーケストレーション                  │
-│ - /adr → ADR作成フロー                                      │
-│ - /code → TDD/RGRC実装                                      │
-│                                                              │
-│ 特徴: 薄いラッパー、SkillsやAgentsを調整                  │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Commands["📋 Commands: ユーザーが直接呼び出すワークフロー"]
+        C1["/review → レビューオーケストレーション"]
+        C2["/adr → ADR作成フロー"]
+        C3["/code → TDD/RGRC実装"]
+    end
 
-┌─────────────────────────────────────────────────────────────┐
-│ Agents: 専門分析・レビュー（Commandsから呼ばれる）        │
-├─────────────────────────────────────────────────────────────┤
-│ - performance-reviewer → パフォーマンス分析                │
-│ - accessibility-reviewer → a11y検証                         │
-│ - type-safety-reviewer → 型安全性チェック                  │
-│                                                              │
-│ 特徴: 特定タスク実行、短期的、Skillsを参照可能            │
-└─────────────────────────────────────────────────────────────┘
+    subgraph Agents["🤖 Agents: 専門分析・レビュー"]
+        A1["performance-reviewer"]
+        A2["accessibility-reviewer"]
+        A3["type-safety-reviewer"]
+    end
 
-┌─────────────────────────────────────────────────────────────┐
-│ Skills: 知識ベース・ガイド・自動化                        │
-├─────────────────────────────────────────────────────────────┤
-│ - performance-optimization → 最適化知識                    │
-│ - progressive-enhancement → 設計原則                       │
-│ - adr-creator → ADR作成ガイド                              │
-│ - esa-daily-report → プロジェクト固有自動化               │
-│                                                              │
-│ 特徴: 永続的知識、教育的、再利用可能                      │
-└─────────────────────────────────────────────────────────────┘
+    subgraph Skills["📚 Skills: 知識ベース・ガイド"]
+        S1["performance-optimization"]
+        S2["progressive-enhancement"]
+        S3["adr-creator"]
+    end
+
+    Commands -->|"呼び出す"| Agents
+    Agents -->|"参照する"| Skills
+    Commands -->|"参照する"| Skills
 ```
+
+**各レイヤーの特徴**:
+
+| レイヤー | 特徴 |
+|---------|------|
+| **Commands** | 薄いラッパー、Skills や Agents を調整 |
+| **Agents** | 特定タスク実行、短期的、Skills を参照可能 |
+| **Skills** | 永続的知識、教育的、再利用可能 |
 
 ### 詳細な役割分担
 
@@ -547,3 +547,14 @@ Output: docs/adr/0023-adopt-react-native.md
 - `~/.claude/CLAUDE.md` - グローバル設定とルール
 - `~/.claude/rules/` - 開発原則
 - `~/.claude/settings.json` - ツール権限
+
+### 📚 ガイド
+
+ワークフローのステップバイステップガイド:
+
+- [Part 1: 三層設計](../docs/guides/part1-three-layer-architecture.md)
+- [Part 2: 調査フェーズ（/research）](../docs/guides/part2-research-investigation.md)
+- [Part 3: 計画フェーズ（/think）](../docs/guides/part3-think-sow-spec.md)
+- [Part 4: 実装フェーズ（/code）](../docs/guides/part4-code-implementation.md)
+- [Part 5: 品質フェーズ（/review）](../docs/guides/part5-review-quality.md)
+- [Part 6: 横断的関心事（PRE_TASK_CHECK）](../docs/guides/part6-pre-task-check.md)
