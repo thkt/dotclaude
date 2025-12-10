@@ -1,3 +1,7 @@
+---
+paths: "**/*.{ts,tsx,js,jsx}"
+---
+
 # Test-Driven Development like t_wada
 
 ## Core Philosophy

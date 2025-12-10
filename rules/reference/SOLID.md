@@ -1,3 +1,7 @@
+---
+paths: "**/*.{ts,tsx,js,jsx,py,java}"
+---
+
 # SOLID Principles like Robert C. Martin
 
 Design and structure code like Uncle Bob - create flexible, maintainable systems through five fundamental principles.

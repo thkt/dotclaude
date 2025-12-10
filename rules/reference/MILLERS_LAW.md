@@ -1,3 +1,7 @@
+---
+paths: "**/*.{tsx,jsx,vue,md}"
+---
+
 # Miller's Law - The Cognitive Limit Principle
 
 ## Core Philosophy

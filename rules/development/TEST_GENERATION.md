@@ -1,4 +1,5 @@
 ---
+paths: "**/*.test.*, **/tests/**, **/__tests__/**"
 summary: |
   Systematic test design using equivalence partitioning, boundary value analysis,
   and decision tables. Framework-agnostic principles for high-quality test generation.

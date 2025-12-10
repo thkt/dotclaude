@@ -1,4 +1,5 @@
 ---
+paths: "**/*.{css,scss,tsx,jsx,html}"
 summary: |
   Start with minimal viable implementation, enhance based on real needs.
   YAGNI (You Aren't Gonna Need It) is default. Add complexity only when
