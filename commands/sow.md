@@ -4,7 +4,7 @@ description: >
   Read-only viewer for active work monitoring. Lists and views Statement of Work documents stored in workspace.
   Use to check implementation progress anytime during development.
   SOW文書の一覧表示と閲覧。受け入れ基準の完了状況、主要メトリクス、ビルドステータスを表示。
-allowed-tools: Read, Bash(ls:*), Bash(find:*), Bash(cat:*)
+allowed-tools: Read, Bash(ls:*), Bash(cat:*), Glob
 model: inherit
 ---
 

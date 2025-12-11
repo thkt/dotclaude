@@ -2,7 +2,7 @@
 description: >
   Create Architecture Decision Records (ADR) in MADR format with Skills integration.
   Records architecture decisions with context and rationale. Auto-numbering (0001, 0002, ...), saves to docs/adr/.
-allowed-tools: Read, Write, Bash(ls:*), Bash(find:*), Bash(cat:*), Grep, Glob
+allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Grep, Glob
 model: inherit
 argument-hint: "[decision title]"
 ---

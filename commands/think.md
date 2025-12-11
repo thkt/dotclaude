@@ -24,10 +24,9 @@ Create a comprehensive Statement of Work (SOW) as a static planning document for
 
 ### Automatic Context Discovery
 
-```bash
-# Search for latest research context files
-!`find .claude/workspace/research ~/.claude/workspace/research -name "*-context.md" 2>/dev/null | sort -r | head -1`
-```
+Use Glob to search for existing research context:
+- Project-local: `.claude/workspace/research/*-context.md`
+- Global: `~/.claude/workspace/research/*-context.md`
 
 ### Context Loading Strategy
 

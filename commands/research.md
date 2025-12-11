@@ -4,7 +4,7 @@ description: >
   Use when understanding is low (≥30%) and you need to learn before implementing. Documents findings persistently for future reference.
   Uses Task agent for complex searches with efficient parallel execution.
   プロジェクト理解と技術調査を行う（実装なし）。コードベース構造、技術スタック、依存関係、パターンを探索。
-allowed-tools: Bash(find:*), Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(cat package.json:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task
+allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(cat package.json:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[research topic or question]"
 ---
@@ -39,15 +39,13 @@ Investigate codebase with dynamic discovery, parallel search execution, and conf
 
 ### Documentation Files
 
-```bash
-!`find . -name "*.md" | grep -v node_modules | head -10 || echo "No documentation found"`
-```
+Use Glob to find documentation:
+- `**/*.md` (excluding node_modules)
 
 ### Core File Count
 
-```bash
-!`find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | grep -v node_modules | wc -l`
-```
+Use Glob to count source files:
+- `**/*.{ts,tsx,js,jsx}` (excluding node_modules)
 
 ## Quick Context Analysis
 

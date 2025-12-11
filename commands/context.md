@@ -4,7 +4,7 @@ description: >
   Displays token usage, file count, session cost. Helps identify context-heavy operations.
   Use when context limits are approaching or to optimize session efficiency.
   現在のコンテキスト使用状況を診断し、トークン最適化の推奨事項を提供。
-allowed-tools: Read, Glob, Grep, LS, Bash(wc:*), Bash(du:*), Bash(find:*)
+allowed-tools: Read, Glob, Grep, LS, Bash(wc:*), Bash(du:*)
 model: inherit
 ---
 
@@ -24,9 +24,8 @@ Diagnose current context usage and provide token optimization recommendations.
 
 ### Current Working Files
 
-```bash
-!`find . -type f -name "*.md" -o -name "*.json" -o -name "*.ts" -o -name "*.tsx" | grep -v node_modules | wc -l`
-```
+Use Glob to count project files:
+- `**/*.{md,json,ts,tsx}` (excluding node_modules)
 
 ### Modified Files in Session
 

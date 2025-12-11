@@ -173,6 +173,116 @@ describe('calculateDiscount', () => {
 
 **Remember**: Human review is still essential - AI-generated tests are a starting point, not the final product.
 
+## スキップモード - Baby Steps統合
+
+### 目的
+
+インクリメンタルなBaby Steps TDDワークフローを実現するため、**スキップ状態**でテストを生成します。テストは`/code`実行中に1つずつ有効化されます。
+
+### スキップモードを使用するタイミング
+
+- spec.mdから複数のテストを生成する場合
+- `/code` Phase 0がテストスキャフォールドを要求した場合
+- Baby Stepsワークフローが望ましい場合
+
+### スキップマーカー（フレームワーク非依存）
+
+最大限の互換性のため**デュアルマーカー**を使用：
+
+```typescript
+// Jest/Vitest用（package.jsonから自動検出）
+describe.skip('Feature', () => {
+  it.skip('should do something', () => {
+    // TODO: [SKIP] 準備ができたらこのテストを有効化
+  })
+})
+
+// 不明なフレームワーク用（フォールバック）
+// TODO: [SKIP] テスト: メール形式を検証すべき
+// describe('validateEmail', () => {
+//   test('正しい形式を検証', () => {
+//     expect(validateEmail('test@example.com')).toBe(true)
+//   })
+// })
+```
+
+### スキップモード出力形式
+
+スキップモードでテストを生成する場合、出力に含めるもの：
+
+```markdown
+## 生成されたテスト（スキップモード）
+
+### テストファイル: src/utils/discount.test.ts
+
+| # | テスト名 | ステータス | 出典 |
+|---|----------|------------|------|
+| 1 | 5購入で10%を返す | SKIP | FR-001 |
+| 2 | 15購入で20%を返す | SKIP | FR-001 |
+| 3 | ゼロ購入を処理 | SKIP | エッジケース |
+| 4 | 負の値を拒否 | SKIP | FR-002 |
+
+### 有効化順序（Baby Steps）
+
+シンプル → 複雑の推奨順序:
+1. ⏸️ ゼロ購入を処理（最もシンプル）
+2. ⏸️ 5購入で10%を返す（基本計算）
+3. ⏸️ 15購入で20%を返す（閾値ロジック）
+4. ⏸️ 負の値を拒否（エラー処理）
+
+`/code`でインクリメンタルに有効化する準備完了。
+```
+
+### 有効化API
+
+`/code`が次のテスト有効化を要求した場合：
+
+```typescript
+// 入力: スキップ状態のテストを含む現在のテストファイル
+// アクション: 順序通りに次のテストからスキップマーカーを削除
+// 出力: 更新されたファイル + 確認
+
+// 変更前:
+it.skip('ゼロ購入を処理', () => { ... })
+
+// 変更後:
+it('ゼロ購入を処理', () => { ... })
+// ↑ スキップが削除され、Redフェーズの準備完了
+```
+
+### Given-When-Thenとの統合
+
+仕様のシナリオをスキップ状態のテストに変換：
+
+```markdown
+# Spec.md
+## テストシナリオ
+### TS-001: ユーザー登録
+- Given: 有効なメールとパスワード
+- When: ユーザーが登録フォームを送信
+- Then: アカウントが作成され確認メールが送信される
+```
+
+↓ 変換後:
+
+```typescript
+describe.skip('ユーザー登録', () => {
+  // TODO: [SKIP] TS-001: 登録実装時に有効化
+  it.skip('有効な認証情報でアカウントを作成', () => {
+    // Given: 有効なメールとパスワード
+    const email = 'test@example.com'
+    const password = 'SecurePass123!'
+
+    // When: ユーザーが登録フォームを送信
+    const result = registerUser({ email, password })
+
+    // Then: アカウントが作成される
+    expect(result.success).toBe(true)
+    expect(result.user.email).toBe(email)
+  })
+})
+```
+
 ## Test Plan Format
 
 Test plans are embedded in SOW documents:

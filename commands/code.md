@@ -62,11 +62,9 @@ Perform code implementation with real-time test feedback, dynamic quality discov
 
 ### Discover Latest Spec
 
-Search for spec.md in SOW workspace:
-
-```bash
-!`find .claude/workspace/sow ~/.claude/workspace/sow -name "spec.md" -type f 2>/dev/null | sort -r | head -1`
-```
+Search for spec.md in SOW workspace using Glob:
+- Project-local: `.claude/workspace/sow/**/spec.md`
+- Global: `~/.claude/workspace/sow/**/spec.md`
 
 ### Load Specification for Implementation
 
@@ -120,51 +118,152 @@ This ensures:
 2. Code first works (TDD Red-Green)
 3. Code becomes clean and maintainable (Refactor with SOLID/DRY)
 
-### 0. Test Preparation (Phase 0 - NEW)
+### 0. Test Preparation (Phase 0 - Interactive Test Activation)
 
-**Purpose**: Generate initial test cases from specification before starting TDD cycle.
+**Purpose**: Generate test cases in **skip state** from specification, then activate one-by-one with user confirmation for true Baby Steps TDD.
 
 **When to use**: When spec.md exists and contains test scenarios.
 
-Use test-generator to extract and generate test code from specification:
+#### Step 1: Generate Skipped Tests
+
+Use test-generator with skip mode to create test scaffold:
 
 ```typescript
 Task({
   subagent_type: "test-generator",
-  description: "Generate tests from specification",
+  description: "Generate skipped tests from specification",
   prompt: `
 Feature: "${featureDescription}"
 Spec: ${specContent}
 
-Generate test code:
-1. FR-xxx requirements → test cases [✓]
-2. Given-When-Then scenarios → executable tests [✓]
-3. Baby steps order: simple → complex [→]
-4. Edge cases and error handling [→]
+Generate tests in SKIP MODE:
+1. FR-xxx requirements → skipped test cases [✓]
+2. Given-When-Then scenarios → skipped executable tests [✓]
+3. Order tests: simple → complex (Baby Steps order) [→]
+4. Use framework-appropriate skip markers:
+   - Jest/Vitest: it.skip() + // TODO: [SKIP] comment
+   - Unknown: Comment out + // TODO: [SKIP] marker
 
-Output: Test file using project framework (detect from package.json).
-Mark: [✓] from spec, [→] inferred, [?] unclear.
+Output: Test file with ALL tests in skip state.
+Include activation order recommendation.
   `
 })
 ```
 
+#### Step 2: Display Test Queue
+
+After generation, display the test activation queue:
+
+```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 Test Queue (Baby Steps Order)
+
+| # | Test Name | Status | Complexity |
+|---|-----------|--------|------------|
+| 1 | handles zero input | ⏸️ SKIP | Simple |
+| 2 | calculates basic case | ⏸️ SKIP | Basic |
+| 3 | applies threshold logic | ⏸️ SKIP | Medium |
+| 4 | handles edge cases | ⏸️ SKIP | Complex |
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+#### Step 3: Interactive Activation Loop
+
+For each test in the queue, prompt user before activation:
+
+```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 RGRC Cycle 1/4
+
+次のテストを有効化しますか？
+
+📝 Test: "handles zero input"
+📁 File: src/utils/discount.test.ts:15
+📋 From: FR-001 (Zero purchase handling)
+
+```typescript
+it('handles zero input', () => {
+  expect(calculateDiscount(0)).toBe(0.1)
+})
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[Y] 有効化して Red フェーズへ
+[S] スキップして次のテストへ
+[Q] テスト生成を終了
+```
+
+#### Step 4: Activate and Enter Red Phase
+
+On user confirmation (Y):
+
+1. **Remove skip marker** from the test
+2. **Run test** → Verify it fails (Red phase)
+3. **Proceed to Green phase** → Implement minimal code
+4. **Refactor if needed**
+5. **Return to Step 3** for next test
+
+```typescript
+// Before activation:
+it.skip('handles zero input', () => {
+  // TODO: [SKIP] FR-001
+  expect(calculateDiscount(0)).toBe(0.1)
+})
+
+// After activation:
+it('handles zero input', () => {
+  expect(calculateDiscount(0)).toBe(0.1)
+})
+```
+
+#### Progress Tracking
+
+Display progress after each cycle:
+
+```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 Progress: 2/4 tests complete
+
+| # | Test Name | Status |
+|---|-----------|--------|
+| 1 | handles zero input | ✅ PASS |
+| 2 | calculates basic case | ✅ PASS |
+| 3 | applies threshold logic | ⏸️ SKIP |
+| 4 | handles edge cases | ⏸️ SKIP |
+
+🔴 Red → 🟢 Green → 🔵 Refactor → ✅ Commit
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
 **Benefits**:
 
-- Automatic test scaffold from specification
-- Baby steps ordering built-in
-- Consistent with spec.md requirements
-- Faster TDD cycle start
+- **True Baby Steps**: One test at a time, user-controlled pace
+- **Spec-driven**: Tests derived from Given-When-Then scenarios
+- **Confirmation before action**: No surprises, intentional progress
+- **Clear progress**: Always know where you are in the cycle
 
 **Integration with TDD**:
 
 ```text
-Phase 0: test-generator creates test scaffold
+Phase 0: test-generator creates ALL tests in skip state
   ↓
-Phase 1 (Red): Run generated tests (they fail)
+Loop:
+  ├─ Display next skipped test
+  ├─ Ask: "Activate this test?" (Y/S/Q)
+  ├─ If Y:
+  │   ├─ Remove skip marker
+  │   ├─ Red: Run test (fails)
+  │   ├─ Green: Implement
+  │   ├─ Refactor: Clean up
+  │   └─ Commit: Save state
+  └─ Next test
   ↓
-Phase 2 (Green): Implement to pass tests
-  ↓
-...
+All tests activated and passing
 ```
 
 ### 1. Test-Driven Development (TDD) as t_wada would

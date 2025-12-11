@@ -4,7 +4,7 @@ description: >
   Use for well-understood (≥80%) small-scale fixes in development only. NOT for production emergencies (use /hotfix instead).
   Applies Occam's Razor (simplest solution), Progressive Enhancement (CSS-first), and TIDYINGS (clean as you go).
   開発環境で小さなバグの修正や軽微な改善を素早く実行。よく理解された小規模な修正に使用。本番緊急時は/hotfixを使用。
-allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Task
+allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task
 model: inherit
 argument-hint: "[bug or issue description]"
 ---
@@ -29,9 +29,8 @@ For simple fixes that don't require extensive planning or research.
 
 ### Test Status Check
 
-```bash
-!`find . -name "*test*" -o -name "*spec*"`
-```
+Use Glob to find test files:
+- `**/*test*` or `**/*spec*`
 
 ### Quality Commands Discovery
 
