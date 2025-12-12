@@ -59,4 +59,4 @@ Per 1000 tokens:
 ## Related Documents
 
 - [agents/README.md](./README.md) - Directory structure and creation guide
-- [Skills README](../skills/README.md) - Integration with skills
+- [Skills README](../../skills/README.md) - Integration with skills

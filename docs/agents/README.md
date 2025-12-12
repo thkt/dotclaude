@@ -84,4 +84,4 @@ Agents are dynamically discovered via:
 
 - [MODEL_SELECTION_GUIDE.md](./MODEL_SELECTION_GUIDE.md) - Model selection criteria
 - [reviewers/_base-template.md](./reviewers/_base-template.md) - Reviewer template
-- [Skills README](../skills/README.md) - Integration with skills
+- [Skills README](../../skills/README.md) - Integration with skills
