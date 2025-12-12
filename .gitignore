@@ -40,6 +40,12 @@ local/
 # Cache
 .cache/
 *.cache
+stats-cache.json
+
+# Session and runtime data
+logs/
+session-env/
+plans/
 
 # Plugin system (auto-generated)
 # Note: .claude-plugin/marketplace.json is tracked

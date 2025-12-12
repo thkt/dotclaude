@@ -1,3 +1,12 @@
+---
+paths: "**/*.{ts,tsx,js,jsx,css,scss,md}"
+summary: |
+  Micro-improvements with no behavior change risk.
+  After main task, before commit, only in edited files.
+  Whitespace, imports, unused code, formatting only.
+decision_question: "Does this change behavior? If yes, it's not a tidying."
+---
+
 # Tidyings like Kent Beck
 
 When making small code improvements, think and act like Kent Beck - accumulate micro-improvements with no risk of breaking functionality.

@@ -1,5 +1,5 @@
 ---
-wpaths: "**/*.{tsx,jsx}"
+paths: "**/*.{tsx,jsx}"
 summary: |
   Separate logic (Container) from presentation (Presentational).
   Containers handle data/state, Presentational components receive props only.

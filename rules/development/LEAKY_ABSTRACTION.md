@@ -1,3 +1,12 @@
+---
+paths: "**/*.{ts,tsx,js,jsx,md}"
+summary: |
+  All non-trivial abstractions leak. Accept this reality.
+  Provide escape hatches, document boundaries.
+  Simple leaky abstraction > complex "perfect" abstraction.
+decision_question: "Am I fighting the framework or working with it?"
+---
+
 # The Law of Leaky Abstractions like Joel Spolsky
 
 **Core principle**: "All non-trivial abstractions, to some degree, are leaky"

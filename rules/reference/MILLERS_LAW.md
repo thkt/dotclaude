@@ -1,5 +1,5 @@
 ---
-paths: "**/*.{tsx,jsx,vue,md}"
+paths: "**/*.{ts,tsx,js,jsx,md}"
 ---
 
 # Miller's Law - The Cognitive Limit Principle

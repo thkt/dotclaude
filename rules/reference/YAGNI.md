@@ -1,4 +1,5 @@
 ---
+paths: "**/*.{ts,tsx,js,jsx,md}"
 summary: |
   You Aren't Gonna Need It - Don't build for imagined future needs.
   Add complexity only when measured problems occur, not anticipated scenarios.

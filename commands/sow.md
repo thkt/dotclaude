@@ -4,7 +4,7 @@ description: >
   Read-only viewer for active work monitoring. Lists and views Statement of Work documents stored in workspace.
   Use to check implementation progress anytime during development.
   SOW文書の一覧表示と閲覧。受け入れ基準の完了状況、主要メトリクス、ビルドステータスを表示。
-allowed-tools: Read, Bash(ls:*), Bash(cat:*), Glob
+allowed-tools: Read, Glob
 model: inherit
 ---
 
@@ -20,21 +20,23 @@ List and view Statement of Work (SOW) documents stored in the workspace.
 
 ### List SOWs
 
-```bash
-!`ls -la ~/.claude/workspace/sow/`
+Use Glob tool to find all SOW documents:
+
+```markdown
+Glob pattern: ~/.claude/workspace/sow/**/sow.md
 ```
 
 ### View Latest SOW
 
-```bash
-!`ls -t ~/.claude/workspace/sow/*/sow.md | head -1 | xargs cat`
-```
+1. Use Glob to find SOW files (sorted by modification time)
+2. Use Read tool on the most recent file
 
 ### View Specific SOW
 
-```bash
-# By date or feature name
-!`cat ~/.claude/workspace/sow/[directory]/sow.md`
+Use Read tool with the specific path:
+
+```text
+Read: ~/.claude/workspace/sow/[directory]/sow.md
 ```
 
 ## Output Format

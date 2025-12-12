@@ -1,9 +1,0 @@
-{
-  "name": "claude-workspace",
-  "version": "1.0.0",
-  "description": "Claude workspace configuration",
-  "scripts": {
-    "test": "echo \"No tests configured yet\""
-  },
-  "private": true
-}

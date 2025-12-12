@@ -1,3 +1,12 @@
+---
+paths: "**/*.{ts,tsx,js,jsx,md}"
+summary: |
+  AI generates, humans validate. Never skip review.
+  Past examples beat abstract instructions.
+  You own the code, not the AI.
+decision_question: "Have I reviewed and understood this AI-generated code?"
+---
+
 # AI-Assisted Development
 
 **Default mindset**: AI as a productivity tool, human as the decision maker

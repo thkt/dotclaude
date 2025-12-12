@@ -1,4 +1,5 @@
 ---
+paths: "**/*.{ts,tsx,js,jsx,md}"
 summary: |
   Code should be understandable in under 1 minute by any team member.
   Respect Miller's Law (7±2 cognitive limit). Clarity beats cleverness.

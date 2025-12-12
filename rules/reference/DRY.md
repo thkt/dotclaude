@@ -1,3 +1,12 @@
+---
+paths: "**/*.{ts,tsx,js,jsx,md}"
+summary: |
+  Single authoritative representation for every piece of knowledge.
+  It's about knowledge duplication, not just code duplication.
+  Rule of Three: See it 3 times → refactor.
+decision_question: "Am I duplicating knowledge or intent?"
+---
+
 # DRY Principle like Andy Hunt & Dave Thomas
 
 Apply the Don't Repeat Yourself principle like the Pragmatic Programmers - eliminate duplication of knowledge, not just code.

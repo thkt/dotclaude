@@ -4,7 +4,7 @@ description: >
   Checks acceptance criteria, coverage, and performance. Pass/fail logic with clear scoring.
   Identifies missing features and issues. Use when ready to verify implementation conformance.
   SOWの受け入れ基準に対して実装を検証。受け入れ基準、カバレッジ、パフォーマンスをチェック。
-allowed-tools: Read, Bash(ls:*), Bash(cat:*), Grep
+allowed-tools: Read, Glob, Grep
 model: inherit
 ---
 
@@ -20,10 +20,15 @@ Display SOW acceptance criteria for manual verification against completed work.
 
 ### Display Acceptance Criteria
 
-```bash
-# Show criteria from latest SOW
-!`ls -t ~/.claude/workspace/sow/*/sow.md | head -1 | xargs grep -A 20 "Acceptance Criteria"`
-```
+1. Use Glob to find latest SOW:
+
+   ```text
+   Glob pattern: ~/.claude/workspace/sow/**/sow.md
+   ```
+
+2. Use Read tool on the most recent file
+
+3. Extract and display "Acceptance Criteria" section
 
 ### Manual Review Process
 

@@ -1,4 +1,5 @@
 ---
+paths: "**/*.{ts,tsx,js,jsx,md}"
 summary: |
   Choose the simplest solution that solves the problem.
   Complexity requires justification. When multiple solutions exist,

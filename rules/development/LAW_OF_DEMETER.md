@@ -1,3 +1,12 @@
+---
+paths: "**/*.{ts,tsx,js,jsx,md}"
+summary: |
+  "Only talk to your immediate friends" - Minimize coupling.
+  Avoid method chains (a.b().c().d()). Tell, don't ask.
+  Objects should interact only with immediate neighbors.
+decision_question: "Am I reaching through objects to get data?"
+---
+
 # Law of Demeter - The Principle of Least Knowledge
 
 **Core principle**: "Only talk to your immediate friends"

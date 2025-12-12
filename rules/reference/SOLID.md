@@ -1,5 +1,5 @@
 ---
-paths: "**/*.{ts,tsx,js,jsx,py,java}"
+paths: "**/*.{ts,tsx,js,jsx,md}"
 ---
 
 # SOLID Principles like Robert C. Martin
