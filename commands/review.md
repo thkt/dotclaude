@@ -36,7 +36,7 @@ Other Skills are automatically loaded through each review agent's dependencies:
 Check git status:
 
 ```bash
-!`git status --porcelain`
+!`git status --porcelain 2>/dev/null || echo "(not a git repository)"`
 ```
 
 ### Files Changed
@@ -44,7 +44,7 @@ Check git status:
 List changed files:
 
 ```bash
-!`git diff --name-only HEAD`
+!`git diff --name-only HEAD 2>/dev/null || echo "(not a git repository)"`
 ```
 
 ### Recent Commits
@@ -52,7 +52,7 @@ List changed files:
 View recent commits:
 
 ```bash
-!`git log --oneline -10`
+!`git log --oneline -10 2>/dev/null || echo "(no git history)"`
 ```
 
 ### Change Statistics
@@ -60,7 +60,7 @@ View recent commits:
 Show change statistics:
 
 ```bash
-!`git diff --stat HEAD`
+!`git diff --stat HEAD 2>/dev/null || echo "(not a git repository)"`
 ```
 
 ## Specification Context (Auto-Detection)
@@ -352,7 +352,7 @@ Support for project-specific rules:
 Compare against baseline:
 
 ```bash
-!`git diff origin/main...HEAD --name-only`
+!`git diff origin/main...HEAD --name-only 2>/dev/null || echo "(not a git repository or no origin/main)"`
 ```
 
 ### Pattern Detection

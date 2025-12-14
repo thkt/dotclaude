@@ -28,34 +28,36 @@ Perform code implementation with real-time test feedback, dynamic quality discov
 
 ## Dynamic Project Context
 
+**Note**: These checks are optional. Skip if files/commands are not available.
+
 ### Current Git Status
 
 ```bash
-!`git status --porcelain`
+!`git status --porcelain 2>/dev/null || echo "(not a git repository)"`
 ```
 
 ### Package.json Check
 
 ```bash
-!`ls package.json`
+!`ls package.json 2>/dev/null || echo "(no package.json)"`
 ```
 
 ### NPM Scripts Available
 
 ```bash
-!`npm run || yarn run || pnpm run || bun run`
+!`npm run 2>/dev/null || yarn run 2>/dev/null || pnpm run 2>/dev/null || bun run 2>/dev/null || echo "(no package manager scripts)"`
 ```
 
 ### Config Files
 
 ```bash
-!`ls *.json`
+!`ls *.json 2>/dev/null || echo "(no json files)"`
 ```
 
 ### Recent Commits
 
 ```bash
-!`git log --oneline -5`
+!`git log --oneline -5 2>/dev/null || echo "(no git history)"`
 ```
 
 ## Specification Context (Auto-Detection)
@@ -63,6 +65,7 @@ Perform code implementation with real-time test feedback, dynamic quality discov
 ### Discover Latest Spec
 
 Search for spec.md in SOW workspace using Glob:
+
 - Project-local: `.claude/workspace/sow/**/spec.md`
 - Global: `~/.claude/workspace/sow/**/spec.md`
 
@@ -85,6 +88,81 @@ Search for spec.md in SOW workspace using Glob:
 
 This ensures implementation aligns with specification from the start.
 
+## Storybook Integration (Optional)
+
+### Automatic Stories Generation
+
+When spec.md contains a **Component API section** (`### 4.x Component API:`), automatically generate Stories.
+
+**Trigger Condition**:
+
+- spec.md に `### 4.x Component API:` セクションが存在
+- storybook-integration スキルを参照
+
+**Process**:
+
+1. Parse ComponentSpec from spec.md
+2. Check for existing Stories file
+3. Generate or update based on user choice
+
+### Stories Generation Flow
+
+```text
+spec.md に Component API セクションあり?
+    ├─ YES → parseComponentSpec() でパース
+    │         ↓
+    │   既存 Stories ファイルあり?
+    │         ├─ YES → 統合戦略を表示 (EC-002)
+    │         └─ NO  → generateStoryTemplate() で生成
+    └─ NO  → 通常の実装フロー（スキップ）
+             Log: "Component API not found in spec.md, skipping Stories generation"
+```
+
+### Existing Stories Integration (EC-002)
+
+既存 Stories ファイルがある場合の対応：
+
+```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ 既存 Stories ファイルを検出
+
+ファイル: [path/to/Component.stories.tsx]
+Stories 数: [count]
+
+[O] 上書き - 既存ファイルを完全に置き換え
+[S] スキップ - 既存ファイルを保持、生成しない
+[M] マージ（手動）- 差分を表示、手動で統合
+[D] 差分のみ - 新規 Stories のみ追記
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### Generated Stories Format (CSF3)
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { ComponentName } from './ComponentName';
+
+const meta: Meta<typeof ComponentName> = {
+  title: 'Components/ComponentName',
+  component: ComponentName,
+  tags: ['autodocs'],
+  argTypes: {
+    // Auto-generated from Props table
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof ComponentName>;
+
+export const Default: Story = { args: { /* from Usage Examples */ } };
+// Variant Stories...
+// State Stories...
+```
+
+See: [@~/.claude/skills/storybook-integration/SKILL.md] for full template.
+
 ## Integration with Skills
 
 This command references the following Skills for implementation guidance:
@@ -92,6 +170,7 @@ This command references the following Skills for implementation guidance:
 - [@~/.claude/skills/tdd-test-generation/SKILL.md] - TDD/RGRC cycle, Baby Steps, systematic test design
 - [@~/.claude/skills/frontend-patterns/SKILL.md] - Frontend component design patterns (Container/Presentational, Hooks, State Management, Composition)
 - [@~/.claude/skills/code-principles/SKILL.md] - Fundamental software development principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI)
+- [@~/.claude/skills/storybook-integration/SKILL.md] - Component API to Stories generation (CSF3, autodocs)
 
 ## Implementation Principles
 
@@ -195,7 +274,8 @@ it('handles zero input', () => {
 [Y] 有効化して Red フェーズへ
 [S] スキップして次のテストへ
 [Q] テスト生成を終了
-```
+
+```markdown
 
 #### Step 4: Activate and Enter Red Phase
 
@@ -548,7 +628,7 @@ Follow the RGRC cycle defined above:
 #### Automatic Discovery
 
 ```bash
-!`cat package.json`
+!`cat package.json 2>/dev/null || echo "(no package.json found)"`
 ```
 
 #### Parallel Execution

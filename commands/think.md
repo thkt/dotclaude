@@ -25,6 +25,7 @@ Create a comprehensive Statement of Work (SOW) as a static planning document for
 ### Automatic Context Discovery
 
 Use Glob to search for existing research context:
+
 - Project-local: `.claude/workspace/research/*-context.md`
 - Global: `~/.claude/workspace/research/*-context.md`
 
@@ -172,9 +173,12 @@ ${planFindings.impactAssessment}
 
 ### Current State Analysis
 
+**Note**: Git context is optional. Skip if not in a git repository.
+
 ```bash
-!`git branch --show-current`
-!`git log --oneline -5`
+# Only if in git repository (returns fallback message if not):
+!`git branch --show-current 2>/dev/null || echo "(not a git repository)"`
+!`git log --oneline -5 2>/dev/null || echo "(no git history)"`
 ```
 
 ## SOW Structure
@@ -601,6 +605,69 @@ interface EntityName {
 ### 4.2 User Interactions
 
 - Action: [User action] → Result: [System response]
+
+### 4.x Component API: [ComponentName] (Frontend components only)
+
+**Auto-Generation Logic** (shouldGenerateComponentAPI):
+
+```text
+機能説明に以下のキーワードが含まれるか判定:
+├─ フロントエンド系: component, コンポーネント, UI, button, form, modal, dialog, card...
+├─ バックエンド系 (除外): api endpoint, database, CLI, migration, backend...
+│
+└─ フロントエンド系 あり AND バックエンド系 なし?
+    ├─ YES → このセクションを生成
+    └─ NO  → このセクションをスキップ
+```
+
+See: [@~/.claude/skills/storybook-integration/SKILL.md] for full keyword list.
+
+#### Description
+
+[Component purpose and role in 1-2 sentences]
+
+#### Props
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| children | ReactNode | ✓ | - | Content to display |
+| variant | 'primary' \| 'secondary' | - | 'primary' | Visual style |
+| size | 'sm' \| 'md' \| 'lg' | - | 'md' | Size variant |
+| disabled | boolean | - | false | Disable interactions |
+| onClick | () => void | - | - | Click handler |
+
+#### Variants
+
+**variant**
+
+- `primary`: Primary style - [description]
+- `secondary`: Secondary style - [description]
+
+**size**
+
+- `sm`: Small (32px) - [use case]
+- `md`: Medium (40px) - [use case]
+- `lg`: Large (48px) - [use case]
+
+#### States
+
+| State | Description | Visual Change |
+|-------|-------------|---------------|
+| default | Normal state | Base styling |
+| hover | Mouse hover | [change] |
+| disabled | Non-interactive | Reduced opacity |
+
+#### Usage Examples
+
+```tsx
+// Basic usage
+<ComponentName>Content</ComponentName>
+
+// With variants
+<ComponentName variant="secondary" size="lg">
+  Large Secondary
+</ComponentName>
+```
 
 ---
 
