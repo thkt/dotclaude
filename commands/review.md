@@ -3,7 +3,6 @@ description: >
   Orchestrate multiple specialized review agents with dynamic context analysis, hierarchical task decomposition, and confidence-based filtering.
   Use after code changes or when comprehensive quality assessment is needed. Includes security, performance, accessibility, type safety, and more.
   All findings include evidence (file:line) and confidence markers (✓/→/?) per Output Verifiability principles.
-  複数の専門エージェントによるコードレビューを実行。セキュリティ、パフォーマンス、アクセシビリティなど包括的な品質評価。
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[target files or scope]"
@@ -84,7 +83,7 @@ Select the most recent spec.md if multiple exist (check modification time).
 - Provides functional requirements for alignment checking
 - Enables "specification vs implementation" verification
 - Implements Article 2's approach: spec.md in review prompts
-- Allows reviewers to identify gaps like "仕様書ではこう定義されていますが、この実装ではそのケースが考慮されていません"
+- Allows reviewers to identify gaps like "This is defined in the spec, but this implementation doesn't handle that case"
 
 **If spec.md does not exist**:
 

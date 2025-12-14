@@ -611,13 +611,13 @@ interface EntityName {
 **Auto-Generation Logic** (shouldGenerateComponentAPI):
 
 ```text
-機能説明に以下のキーワードが含まれるか判定:
-├─ フロントエンド系: component, コンポーネント, UI, button, form, modal, dialog, card...
-├─ バックエンド系 (除外): api endpoint, database, CLI, migration, backend...
+Check if feature description contains these keywords:
+├─ Frontend: component, UI, button, form, modal, dialog, card...
+├─ Backend (exclude): api endpoint, database, CLI, migration, backend...
 │
-└─ フロントエンド系 あり AND バックエンド系 なし?
-    ├─ YES → このセクションを生成
-    └─ NO  → このセクションをスキップ
+└─ Has frontend keywords AND NOT backend keywords?
+    ├─ YES → Generate this section
+    └─ NO  → Skip this section
 ```
 
 See: [@~/.claude/skills/storybook-integration/SKILL.md] for full keyword list.

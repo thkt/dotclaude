@@ -25,6 +25,7 @@ Diagnose current context usage and provide token optimization recommendations.
 ### Current Working Files
 
 Use Glob to count project files:
+
 - `**/*.{md,json,ts,tsx}` (excluding node_modules)
 
 ### Modified Files in Session

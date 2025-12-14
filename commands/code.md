@@ -3,7 +3,6 @@ description: >
   Implement code following TDD/RGRC cycle (Red-Green-Refactor-Commit) with real-time test feedback and quality checks.
   Use for feature implementation, refactoring, or bug fixes when you have clear understanding (≥70%) of requirements.
   Applies SOLID principles, DRY, and progressive enhancement. Includes dynamic quality discovery and confidence scoring.
-  計画に基づいてコードを記述（TDD/RGRC推奨）。要件の明確な理解がある場合に、機能実装、リファクタリング、バグ修正で使用。
 allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[implementation description]"
@@ -96,8 +95,8 @@ When spec.md contains a **Component API section** (`### 4.x Component API:`), au
 
 **Trigger Condition**:
 
-- spec.md に `### 4.x Component API:` セクションが存在
-- storybook-integration スキルを参照
+- spec.md contains `### 4.x Component API:` section
+- References storybook-integration skill
 
 **Process**:
 
@@ -108,32 +107,32 @@ When spec.md contains a **Component API section** (`### 4.x Component API:`), au
 ### Stories Generation Flow
 
 ```text
-spec.md に Component API セクションあり?
-    ├─ YES → parseComponentSpec() でパース
+Component API section in spec.md?
+    ├─ YES → parseComponentSpec()
     │         ↓
-    │   既存 Stories ファイルあり?
-    │         ├─ YES → 統合戦略を表示 (EC-002)
-    │         └─ NO  → generateStoryTemplate() で生成
-    └─ NO  → 通常の実装フロー（スキップ）
+    │   Existing Stories file?
+    │         ├─ YES → Show integration strategy (EC-002)
+    │         └─ NO  → generateStoryTemplate()
+    └─ NO  → Normal implementation flow (skip)
              Log: "Component API not found in spec.md, skipping Stories generation"
 ```
 
 ### Existing Stories Integration (EC-002)
 
-既存 Stories ファイルがある場合の対応：
+Options when existing Stories file is found:
 
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⚠️ 既存 Stories ファイルを検出
+⚠️ Existing Stories file detected
 
-ファイル: [path/to/Component.stories.tsx]
-Stories 数: [count]
+File: [path/to/Component.stories.tsx]
+Stories count: [count]
 
-[O] 上書き - 既存ファイルを完全に置き換え
-[S] スキップ - 既存ファイルを保持、生成しない
-[M] マージ（手動）- 差分を表示、手動で統合
-[D] 差分のみ - 新規 Stories のみ追記
+[O] Overwrite - Completely replace existing file
+[S] Skip - Keep existing file, do not generate
+[M] Merge (manual) - Show diff, integrate manually
+[D] Diff only - Append only new Stories
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -257,7 +256,7 @@ For each test in the queue, prompt user before activation:
 
 🔄 RGRC Cycle 1/4
 
-次のテストを有効化しますか？
+Activate the next test?
 
 📝 Test: "handles zero input"
 📁 File: src/utils/discount.test.ts:15
@@ -271,9 +270,9 @@ it('handles zero input', () => {
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-[Y] 有効化して Red フェーズへ
-[S] スキップして次のテストへ
-[Q] テスト生成を終了
+[Y] Activate and enter Red phase
+[S] Skip to next test
+[Q] Quit test generation
 
 ```markdown
 
@@ -348,7 +347,7 @@ All tests activated and passing
 
 ### 1. Test-Driven Development (TDD) as t_wada would
 
-**Goal**: "Clean code that works" (動作するきれいなコード) - Ron Jeffries
+**Goal**: "Clean code that works" - Ron Jeffries
 
 #### Baby Steps - The Foundation of TDD
 

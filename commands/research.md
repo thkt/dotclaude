@@ -40,11 +40,13 @@ Investigate codebase with dynamic discovery, parallel search execution, and conf
 ### Documentation Files
 
 Use Glob to find documentation:
+
 - `**/*.md` (excluding node_modules)
 
 ### Core File Count
 
 Use Glob to count source files:
+
 - `**/*.{ts,tsx,js,jsx}` (excluding node_modules)
 
 ## Quick Context Analysis

@@ -30,6 +30,7 @@ For simple fixes that don't require extensive planning or research.
 ### Test Status Check
 
 Use Glob to find test files:
+
 - `**/*test*` or `**/*spec*`
 
 ### Quality Commands Discovery
