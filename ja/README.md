@@ -121,7 +121,7 @@ Claude Codeのサンドボックス機能は、自動的な権限処理により
 
 ```bash
 # 自動セットアップ（推奨）
-~/.claude/scripts/setup-sandbox.sh
+~/.claude/hooks/setup-sandbox.sh
 ```
 
 **手動セットアップ**:

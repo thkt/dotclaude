@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # SessionEnd Hook Script
-# 目的: セッション終了時に統計情報を保存
+# Purpose: Save session statistics on session end
 
 SESSION_LOG_DIR="$HOME/.claude/logs/sessions"
 SESSION_FILE="$SESSION_LOG_DIR/session-$(date +%Y%m%d-%H%M%S).json"
 
-# ディレクトリ作成（存在しない場合）
+# Create directory if not exists
 mkdir -p "$SESSION_LOG_DIR"
 
-# セッション情報をJSONで保存
+# Save session info as JSON
 cat > "$SESSION_FILE" <<EOF
 {
   "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
@@ -23,11 +23,11 @@ cat > "$SESSION_FILE" <<EOF
 }
 EOF
 
-# 最新のセッション情報をsummaryファイルにも保存
+# Also save to latest-session.json for quick access
 cp "$SESSION_FILE" "$SESSION_LOG_DIR/latest-session.json"
 
-# 古いログを削除（30日以上前のものを削除）
-find "$SESSION_LOG_DIR" -name "session-*.json" -mtime +30 -delete 2>/dev/null
+# Move old logs to Trash (older than 30 days)
+find "$SESSION_LOG_DIR" -name "session-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null
 
 # Agent logs rotation - keep last 50 directories
 AGENT_LOG_DIR="$HOME/.claude/logs/agents"

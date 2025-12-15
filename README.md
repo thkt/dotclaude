@@ -121,7 +121,7 @@ Claude Code's sandbox feature provides secure command execution with automatic p
 
 ```bash
 # Automated setup (recommended)
-~/.claude/scripts/setup-sandbox.sh
+~/.claude/hooks/setup-sandbox.sh
 ```
 
 **Manual Setup**:

@@ -59,6 +59,10 @@ execution_plan:
         max_execution_time: 30
         dependencies: []
         parallel_group: quality
+      - name: silent-failure-reviewer
+        max_execution_time: 30
+        dependencies: []
+        parallel_group: quality
     execution_mode: parallel
     group_timeout: 50
 
@@ -634,7 +638,7 @@ All review agents are organized by function:
 - `~/.claude/agents/reviewers/` - All review agents
   - structure, readability, root-cause, type-safety
   - design-pattern, testability, performance, accessibility
-  - document, subagent
+  - document, subagent, silent-failure
   - Note: security review is available via `security-review` skill
 - `~/.claude/agents/generators/` - Code generation agents
   - test (test-generator)
