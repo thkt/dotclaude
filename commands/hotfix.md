@@ -33,6 +33,18 @@ Streamlined critical path: Quick analysis → Fix → Test → Deploy readiness
 4. **Team Alert**: Notify stakeholders
 5. **Test Plan**: Define critical path testing
 
+## Specification Reference (Quick Check)
+
+**Speed Priority**: Do not extend timeline for spec reading.
+
+If prior specification exists (`.claude/workspace/sow/**/spec.md`):
+
+- Quick scan for **critical dependencies** only
+- Verify fix doesn't break documented contracts
+- Skip if reading takes > 30 seconds
+
+If no spec exists: Skip this step.
+
 ⚠️ **WARNING**: Production changes carry high risk. Double-check everything.
 
 ## Execution Steps

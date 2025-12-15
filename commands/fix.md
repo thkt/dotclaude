@@ -45,6 +45,23 @@ Use Glob to find test files:
 !`git ls-files --modified`
 ```
 
+## Specification Context (Optional)
+
+If a specification (spec.md) exists from a prior `/think` command:
+
+Search for:
+
+- Project-local: `.claude/workspace/sow/**/spec.md`
+- Global: `~/.claude/workspace/sow/**/spec.md`
+
+**If spec.md exists**, use as reference:
+
+- **Functional Requirements (FR-xxx)**: Review scope to ensure fix aligns
+- **Test Scenarios**: Reference for regression testing
+- **Implementation Checklist**: Mark related items
+
+**If spec.md does not exist**: Proceed with available context.
+
 ## Phase 0.5: Deep Root Cause Analysis
 
 **Purpose**: Identify the true root cause, not just surface symptoms, before attempting fixes.
