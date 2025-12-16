@@ -2,7 +2,23 @@
 
 ## Status
 
-Proposed
+Accepted (2025-12-16)
+
+## Implementation Progress
+
+- [x] Phase 1: Validation - commands/code/ directory created
+- [x] Phase 2: High-Priority Separation - test-preparation.md, storybook.md extracted
+- [x] Phase 3: Complete Separation - rgrc-cycle.md, quality-gates.md, completion.md extracted
+- [x] Phase 4: Documentation Update - COMMANDS.md, Japanese sync completed (2025-12-16)
+
+### Implementation Note
+
+`principles.md` was not created as a separate file. Instead, existing skills are referenced:
+
+- `@~/.claude/skills/code-principles/SKILL.md`
+- `@~/.claude/skills/tdd-test-generation/SKILL.md`
+
+This decision follows DRY principle by reusing existing assets rather than duplicating content.
 
 ## Context
 
@@ -61,7 +77,7 @@ Proposed
 
 **説明**: `/code-test`, `/code-impl`, `/code-quality` に分離
 
-```
+```text
 /code → /code-test → /code-impl → /code-quality
 ```
 
@@ -82,7 +98,7 @@ Proposed
 
 **説明**: 共通部分を外部ファイルに切り出し、code.md から参照
 
-```
+```text
 ~/.claude/commands/
 ├── code.md                    # メインコマンド（薄いラッパー）
 └── code/
@@ -124,32 +140,126 @@ Proposed
 - 実現不可能な場合は Option A（現状維持）にフォールバック
 - 将来的に Claude Code がモジュール機能をサポートした場合に再評価
 
+## Technical Investigation Results
+
+### Investigation Date: 2025-12-16
+
+#### Method 1: Skill-based Modularization
+
+**Approach**: Create dedicated skills for each responsibility area.
+
+```text
+~/.claude/skills/
+├── tdd-test-generation/    # Already exists, reused
+├── code-principles/        # Already exists, reused
+├── code-spec-context/      # NEW: spec.md management
+├── code-quality-gates/     # NEW: Quality checks
+└── code-rgrc-cycle/        # NEW: TDD cycle orchestration
+```
+
+**Pros**:
+
+- Skills auto-trigger on keywords
+- Reusable across multiple commands
+- Native Claude Code feature
+- Matches existing pattern (code.md already references 4 skills)
+
+**Cons**:
+
+- Skills designed for knowledge/guides, not orchestration
+- Over-abstraction risk (skills for single-use content)
+- Scattered maintenance across skill directories
+
+#### Method 2: @-Reference Include Approach
+
+**Approach**: Split code.md into focused files using @-references.
+
+```text
+~/.claude/commands/
+├── code.md                 # Thin wrapper (orchestration only)
+└── code/
+    ├── spec-context.md     # spec.md management
+    ├── storybook.md        # Storybook integration
+    ├── test-preparation.md # Phase 0 test generation
+    ├── rgrc-cycle.md       # TDD cycle details
+    ├── quality-gates.md    # Quality checks
+    └── completion.md       # Definition of Done
+```
+
+**Pros**:
+
+- Maintains command structure
+- Files focus on single responsibility
+- Centralized under `/commands/code/`
+- No change to user experience
+
+**Cons**:
+
+- @-references require manual file reads
+- Not a native "include" directive
+- References are context hints, not automatic inclusion
+
+#### Current Pattern Analysis
+
+code.md already uses hybrid approach:
+
+- **Knowledge content** → Skills (`[@~/.claude/skills/tdd-test-generation/SKILL.md]`)
+- **Rule references** → Rules (`[@~/.claude/rules/development/TDD_RGRC.md]`)
+
+#### Recommended Hybrid Approach
+
+| Content Type | Modularization Method | Rationale |
+|--------------|----------------------|-----------|
+| **Knowledge/Principles** | Skills (existing) | Reusable, auto-triggered |
+| **Orchestration/Process** | @-references to commands/code/ | Command-specific |
+| **Templates/Formats** | Inline in sub-files | Single use |
+
+**Implementation Strategy**:
+
+1. **Keep existing skill references** for tdd-test-generation, code-principles, frontend-patterns
+2. **Extract large sections** (Phase 0, Progress Display) to commands/code/
+3. **code.md becomes thin wrapper** (~200 lines) that:
+   - Defines purpose and usage
+   - References skills for knowledge
+   - References sub-files for process details
+   - Handles overall orchestration
+
+#### Estimated Impact
+
+| Metric | Current | After Split |
+|--------|---------|-------------|
+| code.md lines | 905 | ~200 |
+| Responsibilities in main file | 10+ | 4-5 |
+| Sub-files | 0 | 5-6 |
+| Miller's Law compliance | ❌ | ✅ |
+
 ## Implementation Roadmap
 
-### Phase 1: 検証（1週間）
+### Phase 1: Validation (1 week)
 
-1. インクルード方式の技術的実現可能性を検証
-2. プロトタイプ作成
-3. 動作確認
+1. Create commands/code/ directory
+2. Extract spec-context.md (low risk)
+3. Test @-reference behavior
+4. Verify functionality
 
-### Phase 2: 優先度の高い責任から分離（2週間）
+### Phase 2: High-Priority Separation (2 weeks)
 
-1. spec-context.md の切り出し
-2. storybook.md の切り出し
-3. 動作確認とテスト
+1. Extract test-preparation.md (Phase 0)
+2. Extract progress-display.md
+3. Validate and test
 
-### Phase 3: 残りの責任を分離（2週間）
+### Phase 3: Complete Separation (2 weeks)
 
-1. principles.md の切り出し
-2. rgrc-cycle.md の切り出し
-3. quality-gates.md の切り出し
-4. 最終動作確認
+1. Extract rgrc-cycle.md
+2. Extract quality-gates.md
+3. Extract completion.md
+4. Refactor code.md as thin wrapper
 
-### Phase 4: ドキュメント更新（1週間）
+### Phase 4: Documentation Update (1 week)
 
-1. COMMANDS.md の更新
-2. 日本語版の同期
-3. テスト戦略の更新
+1. Update COMMANDS.md
+2. Sync Japanese version
+3. Update test strategy
 
 ## Consequences
 
@@ -176,7 +286,7 @@ Proposed
 ## References
 
 - [Zenn記事: Spec駆動開発におけるコンテキストエンジニアリング](https://zenn.dev/kiokisun/articles/cb5ac3d50145ac)
-- [調査結果](../../workspace/sow/2025-12-16-workflow-improvement/)
+- [調査結果](../../workspace/planning/2025-12-16-workflow-improvement/)
 - [Miller's Law](../../rules/reference/MILLERS_LAW.md)
 - [SOLID Principles](../../rules/reference/SOLID.md)
 

@@ -20,11 +20,17 @@ List and view Statement of Work (SOW) documents stored in the workspace.
 
 ### List SOWs
 
-Use Glob tool to find all SOW documents:
+Use Glob tool to find all SOW documents from both locations:
 
 ```markdown
-Glob pattern: ~/.claude/workspace/sow/**/sow.md
+# Global workspace (user-level)
+Glob pattern: ~/.claude/workspace/planning/**/sow.md
+
+# Project-specific workspace (current project)
+Glob pattern: .claude/workspace/planning/**/sow.md
 ```
+
+**Search Priority**: Project-specific SOWs are shown first, then global SOWs.
 
 ### View Latest SOW
 
@@ -36,7 +42,7 @@ Glob pattern: ~/.claude/workspace/sow/**/sow.md
 Use Read tool with the specific path:
 
 ```text
-Read: ~/.claude/workspace/sow/[directory]/sow.md
+Read: ~/.claude/workspace/planning/[directory]/sow.md
 ```
 
 ## Output Format
@@ -46,10 +52,12 @@ Read: ~/.claude/workspace/sow/[directory]/sow.md
 
 📚 Available SOW Documents
 
+📁 Project-specific (.claude/workspace/)
 1. 2025-01-14-oauth-authentication
    Created: 2025-01-14
    Status: Draft
 
+📁 Global (~/.claude/workspace/)
 2. 2025-01-13-api-refactor
    Created: 2025-01-13
    Status: Active

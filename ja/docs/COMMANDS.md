@@ -41,7 +41,7 @@
 | コマンド | 目的 | 環境 |
 |---------|------|------|
 | `/adr [タイトル]` | MADR形式でArchitecture Decision Recordを作成 | 📝 ドキュメント |
-| `/adr:rule <番号>` | ADRからプロジェクトルールを生成 | 📝 ドキュメント |
+| `/rulify <番号>` | ADRからプロジェクトルールを生成 | 📝 ドキュメント |
 
 ## 🔍 Dry-run影響範囲シミュレーション
 
@@ -131,7 +131,7 @@
 - **SOWとSpecの両方を生成**: sow.md（計画）+ spec.md（実装詳細）
 - TodoWrite連携で受け入れ基準を定義
 - 検証ポイントと成功メトリクスを設定
-- `.claude/workspace/sow/`に自動更新機能付きで保存
+- `.claude/workspace/planning/`に自動更新機能付きで保存
 - `/sow`と`/validate`による進捗追跡を実現
 - **Specに含まれる内容**: 機能要件、API仕様、データモデル、UI仕様、テストシナリオ
 
@@ -150,6 +150,7 @@
 - 手動コミット実行
 - フック経由の品質チェック
 - **仕様駆動**: 機能要件を実装、API仕様とデータモデルに従う
+- **モジュール構造**: 詳細は保守性のため `commands/code/` に分離（ADR 0001参照）
 
 ### /test - 検証
 
@@ -223,7 +224,7 @@
 - 決定詳細の対話形式入力
 - 日本語対応
 
-### /adr:rule - ADRからルール変換
+### /rulify - ADRからルール変換
 
 - ADRからプロジェクトルールを自動生成
 - 決定内容をAI実行可能形式に変換
@@ -256,10 +257,16 @@
 │       └── COMMANDS.md    # 日本語版（このファイル）
 ├── commands/          # コマンド定義
 │   ├── adr.md        # ADR作成
-│   ├── adr/
-│   │   └── rule.md   # ADRからルール変換
+│   ├── rulify.md     # ADRからルール変換
 │   ├── auto-test.md  # 自動テストランナー（SlashCommand）
-│   ├── code.md
+│   ├── code.md       # メインオーケストレーター（薄いラッパー）
+│   ├── code/         # モジュールコンポーネント（ADR 0001）
+│   │   ├── spec-context.md
+│   │   ├── storybook.md
+│   │   ├── test-preparation.md
+│   │   ├── rgrc-cycle.md
+│   │   ├── quality-gates.md
+│   │   └── completion.md
 │   ├── fix.md
 │   ├── full-cycle.md # メタコマンド（SlashCommand）
 │   ├── hotfix.md
@@ -360,7 +367,7 @@
 - 決定理由を記録したい
 - チームに決定の可視性が必要
 
-### `/adr:rule`を使用する場合
+### `/rulify`を使用する場合
 
 - ADRの決定がAI動作に影響すべき
 - プロジェクト固有のパターンを強制したい

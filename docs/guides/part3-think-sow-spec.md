@@ -204,7 +204,7 @@ Recommendation:
 
 **修正手順の詳細**:
 
-1. 生成されたファイルを開く：`.claude/workspace/sow/[日付]-[機能名]/spec.md`
+1. 生成されたファイルを開く：`.claude/workspace/planning/[日付]-[機能名]/spec.md`
 2. 指摘された `[?]` 項目を特定
 3. ステークホルダーに確認後、マーカーを更新：
    - 確認できた → `[?]` を `[✓]` に変更
@@ -214,7 +214,7 @@ Recommendation:
 ### Step 4: 保存場所
 
 ```text
-.claude/workspace/sow/2025-01-15-user-auth/
+.claude/workspace/planning/2025-01-15-user-auth/
 ├── sow.md
 └── spec.md
 ```

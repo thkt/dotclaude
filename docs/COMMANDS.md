@@ -41,7 +41,7 @@ Custom commands for systematic software development support.
 | Command | Purpose | Environment |
 |---------|---------|-------------|
 | `/adr [title]` | Create Architecture Decision Record in MADR format | 📝 Documentation |
-| `/adr:rule <number>` | Generate project rule from ADR | 📝 Documentation |
+| `/rulify <number>` | Generate project rule from ADR | 📝 Documentation |
 
 ## 🔍 Dry-run Impact Simulation
 
@@ -131,7 +131,7 @@ Choose based on complexity:
 - **Generates both SOW and Spec**: sow.md (planning) + spec.md (implementation details)
 - Defines acceptance criteria with TodoWrite integration
 - Sets validation points and success metrics
-- Saves to `.claude/workspace/sow/` with auto-update capability
+- Saves to `.claude/workspace/planning/` with auto-update capability
 - Enables progress tracking via `/sow` and `/validate`
 - **Spec includes**: Functional requirements, API specs, data models, UI specs, test scenarios
 
@@ -150,6 +150,7 @@ Choose based on complexity:
 - Manual commit execution
 - Quality checks via hooks
 - **Spec-driven**: Implements functional requirements, follows API specs and data models
+- **Modular structure**: Details split into `commands/code/` for maintainability (see ADR 0001)
 
 ### /test - Verification
 
@@ -223,7 +224,7 @@ Choose based on complexity:
 - Interactive input for decision details
 - Japanese language support
 
-### /adr:rule - ADR to Rule Converter
+### /rulify - ADR to Rule Converter
 
 - Automatically generates project rules from ADR
 - Converts decision into AI-executable format
@@ -253,10 +254,16 @@ Choose based on complexity:
 │   └── COMMANDS.md    # This file
 ├── commands/          # Command definitions
 │   ├── adr.md        # ADR creator
-│   ├── adr/
-│   │   └── rule.md   # ADR to rule converter
+│   ├── rulify.md     # ADR to rule converter
 │   ├── auto-test.md  # Auto test runner (SlashCommand)
-│   ├── code.md
+│   ├── code.md       # Main orchestrator (thin wrapper)
+│   ├── code/         # Modular components (ADR 0001)
+│   │   ├── spec-context.md
+│   │   ├── storybook.md
+│   │   ├── test-preparation.md
+│   │   ├── rgrc-cycle.md
+│   │   ├── quality-gates.md
+│   │   └── completion.md
 │   ├── fix.md
 │   ├── full-cycle.md # Meta-command (SlashCommand)
 │   ├── hotfix.md
@@ -357,7 +364,7 @@ Choose based on complexity:
 - Want to record decision rationale
 - Team needs visibility into decisions
 
-### Use `/adr:rule` when
+### Use `/rulify` when
 
 - ADR decision should affect AI behavior
 - Want to enforce project-specific patterns

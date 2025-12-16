@@ -189,7 +189,7 @@ sow.md + spec.md 生成
 ### spec.mdの保存場所
 
 ```text
-.claude/workspace/sow/[timestamp]-[feature-name]/
+.claude/workspace/planning/[timestamp]-[feature-name]/
 ├── sow.md       # 計画書
 └── spec.md      # 仕様書（自動参照される）
 ```

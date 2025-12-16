@@ -20,21 +20,33 @@ model: inherit
 
 ### SOWの一覧表示
 
+両方の場所からSOW文書を検索:
+
 ```bash
-!`ls -la ~/.claude/workspace/sow/`
+# プロジェクト固有のワークスペース（カレントプロジェクト）
+!`ls -la .claude/workspace/planning/ 2>/dev/null`
+
+# グローバルワークスペース（ユーザーレベル）
+!`ls -la ~/.claude/workspace/planning/`
 ```
+
+**検索優先順位**: プロジェクト固有のSOWが先に表示され、次にグローバルSOWが表示されます。
 
 ### 最新のSOWを表示
 
 ```bash
-!`ls -t ~/.claude/workspace/sow/*/sow.md | head -1 | xargs cat`
+# プロジェクト固有とグローバルの両方から最新を取得
+!`{ ls -t .claude/workspace/planning/*/sow.md 2>/dev/null; ls -t ~/.claude/workspace/planning/*/sow.md 2>/dev/null; } | head -1 | xargs cat`
 ```
 
 ### 特定のSOWを表示
 
 ```bash
-# 日付または機能名で
-!`cat ~/.claude/workspace/sow/[directory]/sow.md`
+# プロジェクト固有
+!`cat .claude/workspace/planning/[directory]/sow.md`
+
+# グローバル
+!`cat ~/.claude/workspace/planning/[directory]/sow.md`
 ```
 
 ## 出力フォーマット
@@ -44,10 +56,12 @@ model: inherit
 
 📚 利用可能なSOW文書
 
+📁 プロジェクト固有 (.claude/workspace/)
 1. 2025-01-14-oauth-authentication
    作成日: 2025-01-14
    ステータス: ドラフト
 
+📁 グローバル (~/.claude/workspace/)
 2. 2025-01-13-api-refactor
    作成日: 2025-01-13
    ステータス: アクティブ

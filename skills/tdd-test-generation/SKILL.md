@@ -241,6 +241,14 @@ Comprehensive documentation loaded as needed:
 - `tdd-rgrc.md` - Detailed RGRC cycle implementation
 - `test-design.md` - Complete test design techniques guide
 
+### Command Output Testing
+
+For validating command output quality using Golden Master methodology:
+
+- **[~/.claude/tests/README.md](../../tests/README.md)** - Command test strategy and verification checklists
+- **~/.claude/tests/golden-masters/** - Expected output samples for commands
+- **~/.claude/tests/scenarios/** - Test scenarios for command validation
+
 ### scripts/
 
 Currently empty - no automation scripts needed (knowledge-only skill)

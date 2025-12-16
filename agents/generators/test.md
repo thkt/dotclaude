@@ -272,7 +272,7 @@ describe('UserCard', () => {
 
 ```bash
 # Check common locations
-.claude/workspace/sow/*/sow.md
+.claude/workspace/planning/*/sow.md
 
 # If not found: Report and skip
 "⚠️ No SOW found. Skipping test generation."
@@ -297,7 +297,7 @@ describe('UserCard', () => {
 
 ```bash
 # Find SOW document
-.claude/workspace/sow/[feature-name]/sow.md
+.claude/workspace/planning/[feature-name]/sow.md
 
 # Extract test plan section
 ## Test Plan

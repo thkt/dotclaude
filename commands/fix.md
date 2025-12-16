@@ -51,8 +51,8 @@ If a specification (spec.md) exists from a prior `/think` command:
 
 Search for:
 
-- Project-local: `.claude/workspace/sow/**/spec.md`
-- Global: `~/.claude/workspace/sow/**/spec.md`
+- Project-local: `.claude/workspace/planning/**/spec.md`
+- Global: `~/.claude/workspace/planning/**/spec.md`
 
 **If spec.md exists**, use as reference:
 

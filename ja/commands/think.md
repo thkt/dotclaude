@@ -365,7 +365,7 @@ argument-hint: "[feature or problem description]"
 - [2番目の測定可能な成果]
 - [3番目の測定可能な成果]
 
-📁 完全なSOWを保存: .claude/workspace/sow/[ファイル名].md
+📁 完全なSOWを保存: .claude/workspace/planning/[ファイル名].md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 詳細を表示するには'show details'と入力、または実装を進めてください。
@@ -399,13 +399,13 @@ argument-hint: "[feature or problem description]"
 SOWファイルの保存場所は、git方式のディレクトリ検索により自動的に決定されます：
 
 1. **上位検索**: カレントディレクトリから上位へ`.claude/`ディレクトリを検索
-2. **見つかった場合**: `.claude/workspace/sow/[timestamp]-[feature]/sow.md`に保存（プロジェクトローカル）
-3. **見つからない場合**: `~/.claude/workspace/sow/[timestamp]-[feature]/sow.md`に保存（グローバル）
+2. **見つかった場合**: `.claude/workspace/planning/[timestamp]-[feature]/sow.md`に保存（プロジェクトローカル）
+3. **見つからない場合**: `~/.claude/workspace/planning/[timestamp]-[feature]/sow.md`に保存（グローバル）
 
 **フィードバック**: 保存場所はコンテキスト表示と共に表示されます：
 
-- `✅ SOW保存先: .claude/workspace/sow/... (プロジェクトローカル: .claude/を検出)`
-- `✅ SOW保存先: ~/.claude/workspace/sow/... (グローバル: .claude/が見つかりません)`
+- `✅ SOW保存先: .claude/workspace/planning/... (プロジェクトローカル: .claude/を検出)`
+- `✅ SOW保存先: ~/.claude/workspace/planning/... (グローバル: .claude/が見つかりません)`
 
 **メリット**:
 
@@ -477,7 +477,7 @@ User: /think "ボタン配置の問題を修正"
 - レイアウトの破損なし
 - ビジュアル回帰テストに合格
 
-📁 完全なSOWを保存: .claude/workspace/sow/2024-11-21-button-fix.md
+📁 完全なSOWを保存: .claude/workspace/planning/2024-11-21-button-fix.md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 [高信頼度で自動続行中...]
@@ -513,7 +513,7 @@ User: /think "リアルタイムコラボレーション機能を実装"
 - 50以上の同時ユーザーを処理
 - 競合時のデータ損失ゼロ
 
-📁 完全なSOWを保存: .claude/workspace/sow/2024-11-21-realtime-collab.md
+📁 完全なSOWを保存: .claude/workspace/planning/2024-11-21-realtime-collab.md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️ これは複雑なタスクです。完全なSOWをレビューしますか？ (Y/n/proceed)
@@ -821,7 +821,7 @@ sow-spec-reviewer 自動実行
 Task({
   subagent_type: "sow-spec-reviewer",
   description: "手動SOW/Specレビュー",
-  prompt: "以下のパスのドキュメントをレビュー: .claude/workspace/sow/[path]/"
+  prompt: "以下のパスのドキュメントをレビュー: .claude/workspace/planning/[path]/"
 })
 ```
 
@@ -876,7 +876,7 @@ Task({
 将来の参照のためすべてのSOWを保存：
 
 ```bash
-.claude/workspace/sow/
+.claude/workspace/planning/
 ├── YYYY-MM-DD-[タイトル].md      # アクティブなSOW
 ├── completed/                      # 完了した作業
 │   └── YYYY-MM-DD-[タイトル].md

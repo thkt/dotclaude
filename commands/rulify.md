@@ -9,7 +9,7 @@ model: inherit
 argument-hint: "[ADR number]"
 ---
 
-# /adr:rule - Generate Rule from ADR
+# /rulify - Generate Rule from ADR
 
 ## Purpose
 
@@ -18,15 +18,15 @@ Analyze the specified ADR (Architecture Decision Record) and automatically conve
 ## Usage
 
 ```bash
-/adr:rule <ADR-number>
+/rulify <ADR-number>
 ```
 
 **Examples:**
 
 ```bash
-/adr:rule 0001
-/adr:rule 12
-/adr:rule 0003
+/rulify 0001
+/rulify 12
+/rulify 0003
 ```
 
 ## Execution Flow
@@ -316,7 +316,7 @@ Available ADRs:
 - 0003-monorepo-structure.md
 
 Specify correct number:
-/adr:rule 0002
+/rulify 0002
 ```
 
 ### 2. Invalid Number Format
@@ -327,13 +327,13 @@ Specify correct number:
 ADR number must be numeric:
 
 Correct examples:
-/adr:rule 1
-/adr:rule 0001
-/adr:rule 12
+/rulify 1
+/rulify 0001
+/rulify 12
 
 Wrong examples:
-/adr:rule abc
-/adr:rule one
+/rulify abc
+/rulify one
 ```
 
 ### 3. Failed to Create docs/rules/ Directory
@@ -432,7 +432,7 @@ fi
 /adr "Adopt TypeScript strict mode"
 
 # Step 2: Generate rule
-/adr:rule 0001
+/rulify 0001
 ```
 
 **Generated rule (`docs/rules/TYPESCRIPT_STRICT_MODE.md`):**
@@ -519,14 +519,14 @@ Reddit codebase is becoming complex and needs protection through types.
 
 ```bash
 /adr "Use Auth.js for authentication"
-/adr:rule 0002
+/rulify 0002
 ```
 
 ### Example 3: Convert Architecture Rule
 
 ```bash
 /adr "Introduce Turborepo for monorepo"
-/adr:rule 0003
+/rulify 0003
 ```
 
 ## Best Practices
@@ -536,7 +536,7 @@ Reddit codebase is becoming complex and needs protection through types.
 ```bash
 # Don't forget to convert decision to rule immediately
 /adr "New decision"
-/adr:rule [number]  # Execute without forgetting
+/rulify [number]  # Execute without forgetting
 ```
 
 ### 2. Regular Rule Reviews
@@ -566,7 +566,7 @@ When ADR is updated, regenerate the rule:
 vim docs/adr/0001-typescript-strict-mode.md
 
 # Regenerate rule
-/adr:rule 0001  # Confirm overwrite
+/rulify 0001  # Confirm overwrite
 ```
 
 ## Related Commands

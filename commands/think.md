@@ -326,7 +326,7 @@ The `/think` command generates **two complementary documents**:
 
 **IMPORTANT**: Both documents MUST be generated using the Write tool:
 
-1. **Create output directory**: `.claude/workspace/sow/[timestamp]-[feature-name]/`
+1. **Create output directory**: `.claude/workspace/planning/[timestamp]-[feature-name]/`
 2. **Generate sow.md**: Use SOW template structure (sections 1-8)
 3. **Generate spec.md**: Use Spec template structure (sections 1-10)
 4. **Confirm creation**: Display save locations with ✅ indicators
@@ -335,8 +335,8 @@ The `/think` command generates **two complementary documents**:
 
 ```bash
 # After generating both documents
-✅ SOW saved to: .claude/workspace/sow/2025-01-18-auth-feature/sow.md
-✅ Spec saved to: .claude/workspace/sow/2025-01-18-auth-feature/spec.md
+✅ SOW saved to: .claude/workspace/planning/2025-01-18-auth-feature/sow.md
+✅ Spec saved to: .claude/workspace/planning/2025-01-18-auth-feature/spec.md
 ```
 
 ### Output Location (Auto-Detection)
@@ -344,21 +344,21 @@ The `/think` command generates **two complementary documents**:
 Both files are saved using git-style directory search:
 
 1. **Search upward** from current directory for `.claude/` directory
-2. **If found**: Save to `.claude/workspace/sow/[timestamp]-[feature]/` (project-local)
-3. **If not found**: Save to `~/.claude/workspace/sow/[timestamp]-[feature]/` (global)
+2. **If found**: Save to `.claude/workspace/planning/[timestamp]-[feature]/` (project-local)
+3. **If not found**: Save to `~/.claude/workspace/planning/[timestamp]-[feature]/` (global)
 
 **Output Structure**:
 
 ```text
-.claude/workspace/sow/[timestamp]-[feature]/
+.claude/workspace/planning/[timestamp]-[feature]/
 ├── sow.md       # Statement of Work (planning)
 └── spec.md      # Specification (implementation details)
 ```
 
 **Feedback**: The save location is displayed with context indicator:
 
-- `✅ SOW saved to: .claude/workspace/sow/... (Project-local: .claude/ detected)`
-- `✅ Spec saved to: .claude/workspace/sow/... (Project-local: .claude/ detected)`
+- `✅ SOW saved to: .claude/workspace/planning/... (Project-local: .claude/ detected)`
+- `✅ Spec saved to: .claude/workspace/planning/... (Project-local: .claude/ detected)`
 
 **Benefits**:
 
@@ -490,7 +490,7 @@ To manually trigger a review of existing documents:
 Task({
   subagent_type: "sow-spec-reviewer",
   description: "Manual SOW/Spec review",
-  prompt: "Review documents at: .claude/workspace/sow/[path]/"
+  prompt: "Review documents at: .claude/workspace/planning/[path]/"
 })
 ```
 

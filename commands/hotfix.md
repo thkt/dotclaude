@@ -37,7 +37,7 @@ Streamlined critical path: Quick analysis → Fix → Test → Deploy readiness
 
 **Speed Priority**: Do not extend timeline for spec reading.
 
-If prior specification exists (`.claude/workspace/sow/**/spec.md`):
+If prior specification exists (`.claude/workspace/planning/**/spec.md`):
 
 - Quick scan for **critical dependencies** only
 - Verify fix doesn't break documented contracts

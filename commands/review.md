@@ -70,8 +70,8 @@ Search for spec.md in SOW workspace using Glob tool (approved):
 
 ```markdown
 Use Glob tool to find spec.md:
-- Pattern: ".claude/workspace/sow/**/spec.md"
-- Alternative: "~/.claude/workspace/sow/**/spec.md"
+- Pattern: ".claude/workspace/planning/**/spec.md"
+- Alternative: "~/.claude/workspace/planning/**/spec.md"
 
 Select the most recent spec.md if multiple exist (check modification time).
 ```

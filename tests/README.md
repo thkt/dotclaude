@@ -1,113 +1,113 @@
-# Claude Code コマンドテスト戦略
+# Claude Code Command Test Strategy
 
-## 概要
+## Overview
 
-ゴールデンマスター手法を用いたコマンド出力の品質検証基盤。
+Quality verification infrastructure for command outputs using the Golden Master methodology.
 
-## ゴールデンマスター手法とは
+## What is Golden Master Testing?
 
-期待される出力のサンプル（ゴールデンマスター）と実際の出力を比較し、構造・必須セクション・フォーマットの整合性を検証する手法。
+A methodology that compares actual outputs against expected output samples (Golden Masters) to verify structure, required sections, and format consistency.
 
-### メリット
+### Benefits
 
-- **再現性**: 期待出力が明確に定義される
-- **回帰検出**: 変更による品質低下を検出
-- **文書化**: 期待動作がサンプルとして残る
+- **Reproducibility**: Expected outputs are clearly defined
+- **Regression Detection**: Detects quality degradation from changes
+- **Documentation**: Expected behavior remains as samples
 
-### 制限事項
+### Limitations
 
-- 動的コンテンツ（タイムスタンプ、ファイルパス等）は検証困難
-- 完全一致ではなく構造・セクション単位での検証が現実的
+- Dynamic content (timestamps, file paths, etc.) is difficult to verify
+- Structure/section-level verification is more practical than exact matching
 
-## ディレクトリ構造
+## Directory Structure
 
 ```text
 ~/.claude/tests/
-├── README.md                 # このファイル
-├── golden-masters/           # 期待出力サンプル
-│   ├── fix-output.md         # /fix の期待出力例
-│   ├── think-sow.md          # /think の SOW 出力例
-│   └── think-spec.md         # /think の Spec 出力例
-└── scenarios/                # テストシナリオ
-    ├── fix-simple-bug.md     # シンプルなバグ修正シナリオ
-    └── code-new-feature.md   # 新機能実装シナリオ
+├── README.md                 # This file
+├── golden-masters/           # Expected output samples
+│   ├── fix-output.md         # Expected /fix output example
+│   ├── think-sow.md          # Expected /think SOW output
+│   └── think-spec.md         # Expected /think Spec output
+└── scenarios/                # Test scenarios
+    ├── fix-simple-bug.md     # Simple bug fix scenario
+    └── code-new-feature.md   # New feature implementation scenario
 ```
 
-## 検証観点
+## Verification Criteria
 
-### 1. 構造検証
+### 1. Structure Verification
 
-- [ ] 必須セクションがすべて存在するか
-- [ ] セクション順序が正しいか
-- [ ] ネスト構造が適切か
+- [ ] All required sections exist
+- [ ] Section order is correct
+- [ ] Nesting structure is appropriate
 
-### 2. フォーマット検証
+### 2. Format Verification
 
-- [ ] Markdown 構文が正しいか
-- [ ] コードブロックが適切に閉じられているか
-- [ ] リンクが有効か
+- [ ] Markdown syntax is correct
+- [ ] Code blocks are properly closed
+- [ ] Links are valid
 
-### 3. 内容検証
+### 3. Content Verification
 
-- [ ] 信頼度マーカー（✓/→/?）が適切に使用されているか
-- [ ] 具体的な値（ファイルパス、行番号）が含まれているか
-- [ ] 推奨アクションが明確か
+- [ ] Confidence markers (✓/→/?) are used appropriately
+- [ ] Specific values (file paths, line numbers) are included
+- [ ] Recommended actions are clear
 
-## 手動検証チェックリスト
+## Manual Verification Checklists
 
-### /fix 出力検証
+### /fix Output Verification
 
 ```markdown
-□ Specification Context セクションが存在（新規追加）
-□ Phase 0.5: Deep Root Cause Analysis が存在
-□ Root Cause が特定されている
-□ Fix が実装されている
-□ Test が実行されている
-□ 信頼度マーカー（✓/→/?）が適切
+□ Specification Context section exists (newly added)
+□ Phase 0.5: Deep Root Cause Analysis exists
+□ Root Cause is identified
+□ Fix is implemented
+□ Tests are executed
+□ Confidence markers (✓/→/?) are appropriate
 ```
 
-### /hotfix 出力検証
+### /hotfix Output Verification
 
 ```markdown
-□ Safety Checks セクションが存在
-□ Specification Reference (Quick Check) が存在（新規追加）
-□ Triage (5 min) が実行されている
-□ Fix (15 min) が実行されている
-□ Test (10 min) が実行されている
-□ 緊急対応の観点が維持されている
+□ Safety Checks section exists
+□ Specification Reference (Quick Check) exists (newly added)
+□ Triage (5 min) is executed
+□ Fix (15 min) is executed
+□ Test (10 min) is executed
+□ Emergency response perspective is maintained
 ```
 
-### /think 出力検証
+### /think Output Verification
 
 ```markdown
-□ SOW と Spec が両方生成される
-□ Executive Summary が明確
-□ Problem Analysis に信頼度マーカーがある
-□ Assumptions & Prerequisites セクションがある
-□ Acceptance Criteria が明確
-□ Implementation Plan が具体的
-□ Risks & Mitigations が記載されている
+□ Both SOW and Spec are generated
+□ Executive Summary is clear
+□ Problem Analysis has confidence markers
+□ Assumptions & Prerequisites section exists
+□ Acceptance Criteria is clear
+□ Implementation Plan is specific
+□ Risks & Mitigations are documented
 ```
 
-### /code 出力検証
+### /code Output Verification
 
 ```markdown
-□ Specification Context が参照されている
-□ RGRC サイクルが実行されている
-□ Quality Check Results が表示されている
-□ Definition of Done が満たされている
+□ Specification Context is referenced
+□ RGRC cycle is executed
+□ Quality Check Results are displayed
+□ Definition of Done is satisfied
 ```
 
-## 将来の自動化方針
+## Future Automation Roadmap
 
-### Phase 1: 構造検証の自動化
+### Phase 1: Structure Verification Automation
 
-- JSON Schema ベースのセクション検証
-- 必須セクションの存在チェック
-- ネスト構造の検証
+- JSON Schema-based section validation
+- Required section existence checks
+- Nesting structure validation
 
 ```typescript
-// 将来の実装イメージ
+// Future implementation concept
 interface SectionValidator {
   requiredSections: string[];
   optionalSections: string[];
@@ -115,23 +115,24 @@ interface SectionValidator {
 }
 ```
 
-### Phase 2: フォーマット検証の自動化
+### Phase 2: Format Verification Automation
 
-- markdownlint によるフォーマットチェック
-- コードブロック検証
-- リンク検証
+- markdownlint for format checking
+- Code block validation
+- Link validation
 
-### Phase 3: CI/CD 統合
+### Phase 3: CI/CD Integration
 
-- GitHub Actions でのコマンド出力検証
-- Pull Request での自動チェック
-- レポート生成
+- Command output verification in GitHub Actions
+- Automated checks on Pull Requests
+- Report generation
 
-## 関連ドキュメント
+## Related Documents
 
-- [SOW/Spec テンプレート](../workspace/sow/)
-- [コマンドリファレンス](../docs/COMMANDS.md)
-- [ドキュメントルール](../docs/DOCUMENTATION_RULES.md)
+- [SOW/Spec Templates](../workspace/planning/)
+- [Command Reference](../docs/COMMANDS.md)
+- [Documentation Rules](../docs/DOCUMENTATION_RULES.md)
+- [Test Generation Skill](../skills/tdd-test-generation/SKILL.md) - Systematic test design principles
 
 ---
 

@@ -17,35 +17,48 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
     # Context window warning (v1.0.85+)
     EXCEEDS_200K=$(echo "$STDIN_INPUT" | jq -r '.exceeds_200k_tokens // false' 2>/dev/null)
 
-    # Native context window info (v2.0.64+)
-    # Try multiple possible field names
-    CONTEXT_TOKENS=$(echo "$STDIN_INPUT" | jq -r '
-        .context.tokens_used //
-        .context_tokens //
-        .tokens.context //
-        .usage.total_tokens //
-        empty' 2>/dev/null)
+    # Current usage (v2.0.70+) - most accurate source
+    CURRENT_USAGE=$(echo "$STDIN_INPUT" | jq -r '.current_usage // empty' 2>/dev/null)
 
+    if [ -n "$CURRENT_USAGE" ] && [ "$CURRENT_USAGE" != "null" ]; then
+        # Use current_usage for accurate context calculation
+        CONTEXT_TOKENS=$(echo "$STDIN_INPUT" | jq -r '
+            .current_usage.input_tokens +
+            .current_usage.output_tokens +
+            (.current_usage.cache_creation_input_tokens // 0) +
+            (.current_usage.cache_read_input_tokens // 0)' 2>/dev/null)
+    else
+        # Fallback: Try multiple possible field names (v2.0.64+)
+        CONTEXT_TOKENS=$(echo "$STDIN_INPUT" | jq -r '
+            .context.tokens_used //
+            .context_tokens //
+            .tokens.context //
+            .usage.total_tokens //
+            empty' 2>/dev/null)
+
+        # Fallback: Parse transcript if native fields unavailable
+        if [ -z "$CONTEXT_TOKENS" ] || [ "$CONTEXT_TOKENS" = "null" ]; then
+            TRANSCRIPT_PATH=$(echo "$STDIN_INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
+            if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
+                CONTEXT_TOKENS=$(tail -n 100 "$TRANSCRIPT_PATH" 2>/dev/null | \
+                    jq -s 'map(select(.type == "assistant" and .message.usage)) |
+                        last |
+                        .message.usage |
+                        (.input_tokens // 0) +
+                        (.output_tokens // 0) +
+                        (.cache_creation_input_tokens // 0) +
+                        (.cache_read_input_tokens // 0)' 2>/dev/null)
+            fi
+        fi
+    fi
+
+    # Context limit from current_usage or fallback
     CONTEXT_LIMIT=$(echo "$STDIN_INPUT" | jq -r '
+        .current_usage.context_window //
         .context.limit //
         .context_limit //
         .tokens.limit //
         empty' 2>/dev/null)
-
-    # Fallback: Parse transcript if native fields unavailable
-    if [ -z "$CONTEXT_TOKENS" ] || [ "$CONTEXT_TOKENS" = "null" ]; then
-        TRANSCRIPT_PATH=$(echo "$STDIN_INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
-        if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-            CONTEXT_TOKENS=$(tail -n 100 "$TRANSCRIPT_PATH" 2>/dev/null | \
-                jq -s 'map(select(.type == "assistant" and .message.usage)) |
-                    last |
-                    .message.usage |
-                    (.input_tokens // 0) +
-                    (.output_tokens // 0) +
-                    (.cache_creation_input_tokens // 0) +
-                    (.cache_read_input_tokens // 0)' 2>/dev/null)
-        fi
-    fi
 
     # Default context limit based on model
     if [ -z "$CONTEXT_LIMIT" ] || [ "$CONTEXT_LIMIT" = "null" ]; then

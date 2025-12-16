@@ -23,7 +23,7 @@ Display SOW acceptance criteria for manual verification against completed work.
 1. Use Glob to find latest SOW:
 
    ```text
-   Glob pattern: ~/.claude/workspace/sow/**/sow.md
+   Glob pattern: ~/.claude/workspace/planning/**/sow.md
    ```
 
 2. Use Read tool on the most recent file

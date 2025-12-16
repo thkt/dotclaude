@@ -41,8 +41,8 @@ This agent references the following Skills knowledge base:
 1. **Verify SOW/Spec existence**
 
    Use Glob tool to search for latest documents:
-   - Pattern: `.claude/workspace/sow/**/sow.md`
-   - Pattern: `.claude/workspace/sow/**/spec.md`
+   - Pattern: `.claude/workspace/planning/**/sow.md`
+   - Pattern: `.claude/workspace/planning/**/spec.md`
 
    Select the most recent files if multiple exist.
 
@@ -235,8 +235,8 @@ Application in SOW/Spec review:
 ❌ Review target documents not found
 
 Search paths:
-- .claude/workspace/sow/**/sow.md
-- .claude/workspace/sow/**/spec.md
+- .claude/workspace/planning/**/sow.md
+- .claude/workspace/planning/**/spec.md
 
 Recommended actions:
 1. Generate SOW/Spec using /think command
@@ -276,8 +276,8 @@ Task({
   description: "SOW/Spec review",
   prompt: `
     Review the following documents:
-    - SOW: .claude/workspace/sow/2025-12-08-feature/sow.md
-    - Spec: .claude/workspace/sow/2025-12-08-feature/spec.md
+    - SOW: .claude/workspace/planning/2025-12-08-feature/sow.md
+    - Spec: .claude/workspace/planning/2025-12-08-feature/spec.md
 
     Apply 100-point scoring with 90-point pass threshold.
     Check SOW ↔ Spec consistency.

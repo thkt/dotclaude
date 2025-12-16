@@ -159,7 +159,7 @@ AIが以下を生成：
 
 **4. SOW文書の保存**
 
-`.claude/workspace/sow/[timestamp]-[task].md` に保存
+`.claude/workspace/planning/[timestamp]-[task].md` に保存
 
 #### SOW文書の構造
 

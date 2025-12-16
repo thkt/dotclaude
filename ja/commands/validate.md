@@ -22,7 +22,7 @@ model: inherit
 
 ```bash
 # 最新のSOWから基準を表示
-!`ls -t ~/.claude/workspace/sow/*/sow.md | head -1 | xargs grep -A 20 "Acceptance Criteria"`
+!`ls -t ~/.claude/workspace/planning/*/sow.md | head -1 | xargs grep -A 20 "Acceptance Criteria"`
 ```
 
 ### 手動レビュープロセス
