@@ -1,38 +1,22 @@
 ---
 description: >
-  Orchestrate multiple specialized review agents with dynamic context analysis, hierarchical task decomposition, and confidence-based filtering.
-  Use after code changes or when comprehensive quality assessment is needed. Includes security, performance, accessibility, type safety, and more.
-  All findings include evidence (file:line) and confidence markers (✓/→/?) per Output Verifiability principles.
+  Orchestrate multiple specialized review agents with confidence-based filtering.
+  Use after code changes or when comprehensive quality assessment is needed.
+  All findings include evidence (file:line) and confidence markers (✓/→/?).
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[target files or scope]"
 ---
 
-# /review - Advanced Code Review Orchestrator
+# /review - Code Review Orchestrator
 
 ## Purpose
 
-Orchestrate multiple specialized review agents with dynamic context analysis, hierarchical task decomposition, and confidence-based filtering.
+Orchestrate specialized review agents with confidence-based filtering and evidence requirements.
 
-**Output Verifiability**: All review findings include evidence (file:line), distinguish verified issues (✓) from inferred problems (→), per AI Operation Principle #4.
-
-## Integration with Skills
-
-This command explicitly references the following Skills:
-
-- [@~/.claude/skills/security-review/SKILL.md] - Security review knowledge based on OWASP Top 10
-
-Other Skills are automatically loaded through each review agent's dependencies:
-
-- `performance-reviewer` → `performance-optimization` skill
-- `readability-reviewer` → `readability-review` skill
-- `progressive-enhancer` → `progressive-enhancement` skill
-
-## Dynamic Context Analysis
+## Dynamic Context
 
 ### Git Status
-
-Check git status:
 
 ```bash
 !`git status --porcelain 2>/dev/null || echo "(not a git repository)"`
@@ -40,445 +24,149 @@ Check git status:
 
 ### Files Changed
 
-List changed files:
-
 ```bash
-!`git diff --name-only HEAD 2>/dev/null || echo "(not a git repository)"`
+!`git diff --name-only HEAD 2>/dev/null | head -10`
 ```
 
-### Recent Commits
+### Spec Reference (Auto-Detection)
 
-View recent commits:
+Search for spec.md:
 
-```bash
-!`git log --oneline -10 2>/dev/null || echo "(no git history)"`
-```
+- `.claude/workspace/planning/**/spec.md`
 
-### Change Statistics
-
-Show change statistics:
-
-```bash
-!`git diff --stat HEAD 2>/dev/null || echo "(not a git repository)"`
-```
-
-## Specification Context (Auto-Detection)
-
-### Discover Latest Spec
-
-Search for spec.md in SOW workspace using Glob tool (approved):
-
-```markdown
-Use Glob tool to find spec.md:
-- Pattern: ".claude/workspace/planning/**/spec.md"
-- Alternative: "~/.claude/workspace/planning/**/spec.md"
-
-Select the most recent spec.md if multiple exist (check modification time).
-```
-
-### Load Specification
-
-**If spec.md exists**, load it for review context:
-
-- Provides functional requirements for alignment checking
-- Enables "specification vs implementation" verification
-- Implements Article 2's approach: spec.md in review prompts
-- Allows reviewers to identify gaps like "This is defined in the spec, but this implementation doesn't handle that case"
-
-**If spec.md does not exist**:
-
-- Review proceeds with code-only analysis
-- Focus on code quality, security, and best practices
-- Consider creating specification with `/think` for future reference
+**If spec.md exists**: Verify implementation aligns with FR-xxx requirements.
+**If not**: Review proceeds with code-only analysis.
 
 ## Execution
 
-Invoke the review-orchestrator agent to perform comprehensive code review:
+Invoke review-orchestrator:
 
 ```typescript
 Task({
   subagent_type: "review-orchestrator",
   description: "Comprehensive code review",
   prompt: `
-Execute comprehensive code review with the following requirements:
+Execute code review:
 
-### Review Context
-- Changed files: Use git status and git diff to identify scope
-- Recent commits: Analyze recent changes for context
-- Project type: Detect technology stack automatically
-- Specification: If spec.md exists in workspace, verify implementation aligns with specification requirements
-  - Check if all functional requirements (FR-xxx) are implemented
-  - Identify missing features defined in spec
-  - Flag deviations from API specifications
-  - Compare actual vs expected behavior per spec
+### Context
+- Changed files: ${gitDiff}
+- Specification: ${specContext || "none"}
 
 ### Review Process
-1. **Context Discovery**: Analyze repository structure and technology stack
-2. **Parallel Reviews**: Launch specialized review agents concurrently
-   - structure-reviewer, readability-reviewer, progressive-enhancer
-   - type-safety-reviewer, design-pattern-reviewer, testability-reviewer
-   - performance-reviewer, accessibility-reviewer
-   - document-reviewer (if .md files present)
-3. **Filtering & Consolidation**: Apply confidence filters and deduplication
+1. Context Discovery: Analyze repo structure, tech stack
+2. Parallel Reviews: Launch specialized agents concurrently
+3. Filter & Consolidate: Apply confidence filters (>0.7)
+
+### Agents to Invoke
+- structure-reviewer, readability-reviewer
+- type-safety-reviewer, testability-reviewer
+- performance-reviewer, accessibility-reviewer
+- design-pattern-reviewer, progressive-enhancer
 
 ### Output Requirements
-- All findings MUST include evidence (file:line)
-- Use confidence markers: ✓ (>0.8), → (0.5-0.8)
-- Only include findings with confidence >0.7
+- Evidence required: file:line for all findings
+- Confidence markers: ✓ (>0.8), → (0.5-0.8)
 - Group by severity: Critical, High, Medium, Low
-- Provide actionable recommendations
-
-Report results in Japanese.
+- Report in Japanese
   `
 })
 ```
 
-## Hierarchical Review Process Details
+## Review Agents
 
-### Phase 1: Context Discovery
+| Agent | Focus |
+|-------|-------|
+| `structure-reviewer` | Code organization, DRY, coupling |
+| `readability-reviewer` | Clarity, naming, complexity |
+| `type-safety-reviewer` | TypeScript coverage, any usage |
+| `testability-reviewer` | Test design, coverage gaps |
+| `performance-reviewer` | Bottlenecks, bundle size |
+| `accessibility-reviewer` | WCAG, keyboard nav, ARIA |
+| `design-pattern-reviewer` | Pattern consistency |
+| `progressive-enhancer` | CSS-first solutions |
 
-Analyze repository and determine review scope:
+## Confidence Markers
 
-1. Analyze repository structure and technology stack
-2. Identify review scope (changed files, directories)
-3. Detect code patterns and existing quality standards
-4. Determine applicable review categories
-
-### Phase 2: Parallel Specialized Reviews
-
-Launch multiple review agents concurrently:
-
-- Each agent focuses on specific aspect
-- Independent execution for efficiency
-- Collect raw findings with confidence scores
-
-### Phase 3: Filtering and Consolidation
-
-Apply multi-level filtering with evidence requirements:
-
-1. **Confidence Filter**: Only issues with >0.7 confidence
-2. **Evidence Requirement**: All findings MUST include:
-   - File path with line number (e.g., `src/auth.ts:42`)
-   - Specific code reference or pattern
-   - Reasoning for the issue
-3. **False Positive Filter**: Apply exclusion rules
-4. **Deduplication**: Merge similar findings
-5. **Prioritization**: Sort by impact and severity
-
-**Confidence Mapping**:
-
-- ✓ High Confidence (>0.8): Verified issue with direct code evidence
-- → Medium Confidence (0.5-0.8): Inferred problem with reasoning
-- ? Low Confidence (<0.5): Not included in output (too uncertain)
-
-## Review Agents and Their Focus
-
-### Core Architecture Reviewers
-
-- `review-orchestrator`: Coordinates all review activities
-- `structure-reviewer`: Code organization, DRY violations, coupling
-- `root-cause-reviewer`: Deep problem analysis, architectural debt
-
-### Quality Assurance Reviewers
-
-- `readability-reviewer`: Code clarity, naming, complexity
-- `type-safety-reviewer`: TypeScript coverage, any usage, type assertions
-- `testability-reviewer`: Test design, mocking, coverage gaps
-
-### Specialized Domain Reviewers
-
-- Security review (via `security-review` skill): OWASP Top 10 vulnerabilities, auth issues, data exposure
-- `accessibility-reviewer`: WCAG compliance, keyboard navigation, ARIA
-- `performance-reviewer`: Bottlenecks, bundle size, rendering issues
-- `design-pattern-reviewer`: Pattern consistency, React best practices
-- `progressive-enhancer`: CSS-first solutions, graceful degradation
-- `document-reviewer`: README quality, API docs, inline comments
+- **[✓]** High (>0.8): Verified with direct code evidence
+- **[→]** Medium (0.5-0.8): Inferred with reasoning
+- **[?]** Low (<0.5): Not included in output
 
 ## Exclusion Rules
 
-### Automatic Exclusions (False Positive Prevention)
+**Automatic Exclusions**:
 
-1. **Style Issues**: Formatting, indentation (handled by linters)
-2. **Minor Naming**: Unless severely misleading
-3. **Test Files**: Focus on production code unless requested
-4. **Generated Code**: Build outputs, vendor files
-5. **Documentation**: Unless specifically reviewing docs
-6. **Theoretical Issues**: Without concrete exploitation path
-7. **Performance Micro-optimizations**: Unless measurable impact
-8. **Missing Features**: vs actual bugs/issues
+- Style/formatting (handled by linters)
+- Test files (unless requested)
+- Generated/vendor code
+- Theoretical issues without exploitation path
+- Micro-optimizations without measurable impact
 
-### Context-Aware Exclusions
+## Output Format
 
-- Framework-specific patterns (React/Angular/Vue idioms)
-- Project conventions (detected from existing code)
-- Language-specific safety (memory-safe languages)
-- Environment assumptions (browser vs Node.js)
-
-## Output Format with Confidence Scoring
-
-**IMPORTANT**: Use both numeric scores (0.0-1.0) and visual markers (✓/→) for clarity.
-
-```markdown
-[REVIEW OUTPUT TEMPLATE]
-
+```text
 Review Summary
-- Files Reviewed: [Count and list]
-- Total Issues: [Count by severity with markers]
-- Review Coverage: [Percentage]
-- Overall Confidence: [✓/→] [Average score]
+- Files Reviewed: [count]
+- Total Issues: Critical [X] / High [X] / Medium [X]
+- Overall Confidence: [✓/→] [score]
 
 ## ✓ Critical Issues 🚨 (Confidence > 0.9)
-Issue #1: [Title]
-- **Marker**: [✓] High Confidence
-- **File**: path/to/file.ts:42-45
-- **Category**: security|performance|accessibility|etc
-- **Confidence**: 0.95
-- **Evidence**: [Specific code snippet or pattern found]
-- **Description**: [Detailed explanation]
-- **Impact**: [User/system impact]
-- **Recommendation**: [Specific fix with code example]
-- **References**: [Related files, docs, or standards]
+
+### Issue #1: [Title]
+- File: path/to/file.ts:42
+- Evidence: [specific code or pattern]
+- Impact: [user/system impact]
+- Recommendation: [fix with example]
 
 ## ✓ High Priority ⚠️ (Confidence > 0.8)
-Issue #2: [Title]
-- **Marker**: [✓] High Confidence
-- **File**: path/to/another.ts:123
-- **Evidence**: [Direct observation]
-- **Description**: [Issue explanation]
-- **Recommendation**: [Fix with example]
+[issues...]
 
 ## → Medium Priority 💡 (Confidence 0.7-0.8)
-Issue #3: [Title]
-- **Marker**: [→] Medium Confidence
-- **File**: path/to/file.ts:200
-- **Inference**: [Reasoning behind this finding]
-- **Description**: [Issue explanation]
-- **Recommendation**: [Suggested improvement]
-- **Note**: Verify this inference before implementing fix
-
-Improvement Opportunities
-[→] Lower confidence suggestions (0.5-0.7) for consideration
-- Mark as [→] to indicate these are recommendations, not confirmed issues
-
-Metrics
-- Code Quality Score: [A-F rating] [✓/→]
-- Technical Debt Estimate: [Hours] [✓/→]
-- Test Coverage Gap: [Percentage] [✓]
-- Security Posture: [Rating] [✓/→]
+[issues with inference reasoning...]
 
 Recommended Actions
-1. **Immediate** [✓]: [Critical fixes with evidence]
-2. **Next Sprint** [✓/→]: [High priority items]
-3. **Backlog** [→]: [Nice-to-have improvements]
-
-Evidence Summary
-- **Verified Issues** [✓]: [Count] - Direct code evidence
-- **Inferred Problems** [→]: [Count] - Based on patterns/reasoning
-- **Total Confidence**: [Overall score]
+1. Immediate [✓]: [critical fixes]
+2. Next Sprint [→]: [high priority]
+3. Backlog [→]: [improvements]
 ```
 
 ## Review Strategies
 
-### Quick Review (2-3 min)
-
-Focus areas:
-
-- Security vulnerabilities
-- Critical bugs
-- Breaking changes
-- Accessibility violations
-
-Command: `/review --quick`
-
-### Standard Review (5-7 min)
-
-Includes Quick + :
-
-- Performance issues
-- Type safety problems
-- Test coverage gaps
-- Code organization
-
-Command: `/review` (default)
-
-### Deep Review (10+ min)
-
-Comprehensive analysis:
-
-- All standard checks
-- Root cause analysis
-- Technical debt assessment
-- Refactoring opportunities
-- Architecture evaluation
-
-Command: `/review --deep`
-
-### Focused Review
-
-Target specific areas:
-
-- `/review --security` - Security focus
-- `/review --performance` - Performance focus
-- `/review --accessibility` - A11y focus
-- `/review --architecture` - Design patterns
-
-## TodoWrite Integration
-
-Automatic task creation:
-
-```markdown
-[TODO LIST TEMPLATE]
-Code Review: [Target]
-1. ⏳ Context discovery and scope analysis
-2. ⏳ Execute specialized review agents (parallel)
-3. ⏳ Filter and validate findings (confidence > 0.7)
-4. ⏳ Consolidate and prioritize results
-5. ⏳ Generate actionable recommendations
-```
-
-## Custom Review Instructions
-
-Support for project-specific rules:
-
-- `.claude/review-rules.md` - Project conventions
-- `.claude/exclusions.md` - Custom exclusions
-- `.claude/review-focus.md` - Priority areas
-
-## Advanced Features
-
-### Incremental Reviews
-
-Compare against baseline:
-
-```bash
-!`git diff origin/main...HEAD --name-only 2>/dev/null || echo "(not a git repository or no origin/main)"`
-```
-
-### Pattern Detection
-
-Identify recurring issues:
-
-- Similar problems across files
-- Systemic architectural issues
-- Common anti-patterns
-
-### Learning Mode
-
-Track and improve:
-
-- False positive patterns
-- Project-specific idioms
-- Team preferences
+| Strategy | Time | Focus | Command |
+|----------|------|-------|---------|
+| Quick | 2-3 min | Security, critical bugs | `/review --quick` |
+| Standard | 5-7 min | + Performance, types, tests | `/review` |
+| Deep | 10+ min | + Root cause, tech debt | `/review --deep` |
+| Focused | varies | Specific area | `/review --security` |
 
 ## Usage Examples
 
-### Basic Review
-
 ```bash
+# Standard review
 /review
-# Reviews all changed files with standard depth
-```
 
-### Targeted Review
-
-```bash
-/review "authentication module"
-# Focuses on auth-related code
-```
-
-### Security Audit
-
-```bash
+# Security audit
 /review --security --deep
-# Comprehensive security analysis
-```
 
-### Pre-PR Review
+# Target scope
+/review "src/components"
 
-```bash
+# Compare to main
 /review --compare main
-# Reviews changes against main branch
-```
-
-### Component Review
-
-```bash
-/review "src/components" --accessibility
-# A11y review of components directory
 ```
 
 ## Best Practices
 
-1. **Review Early**: Catch issues before they compound
-2. **Review Incrementally**: Small, frequent reviews > large, rare ones
-3. **Apply Output Verifiability**:
-   - **Always provide evidence**: File paths with line numbers
-   - **Use confidence markers**: ✓ for verified, → for inferred
-   - **Explain reasoning**: Why is this an issue?
-   - **Reference standards**: Link to docs, best practices, or past issues
-   - **Never guess**: If uncertain, mark as [→] and explain the inference
-4. **Act on High Confidence**: Focus on ✓ (>0.8) issues first
-5. **Validate Inferences**: [→] markers require verification before fixing
-6. **Track Patterns**: Identify recurring problems
-7. **Customize Rules**: Add project-specific exclusions
-8. **Iterate on Feedback**: Tune confidence thresholds
+1. **Evidence required**: Always include file:line
+2. **Mark confidence**: ✓ for verified, → for inferred
+3. **Focus on high confidence**: Prioritize ✓ issues
+4. **Validate inferences**: Verify → findings before fixing
+5. **Review incrementally**: Small, frequent > large, rare
 
-## Integration Points
+## Next Steps
 
-### Pre-commit Hook
+After review:
 
-```bash
-claude review --quick || exit 1
-```
-
-### CI/CD Pipeline
-
-```yaml
-- name: Code Review
-  run: claude review --security --performance
-```
-
-### PR Comments
-
-Results formatted for GitHub/GitLab comments
-
-## Applied Development Principles
-
-### Output Verifiability (AI Operation Principle #4)
-
-All review findings MUST follow Output Verifiability:
-
-- **Distinguish verified from inferred**: Use ✓/→ markers
-- **Provide evidence**: File:line for every issue
-- **State confidence explicitly**: Numeric + visual marker
-- **Explain reasoning**: Why is this problematic?
-- **Admit uncertainty**: [→] when inferred, never pretend to know
-
-### Principles Guide
-
-[@~/.claude/rules/PRINCIPLES_GUIDE.md](~/.claude/rules/PRINCIPLES_GUIDE.md) - Foundation for review prioritization
-
-Application:
-
-- **Priority Matrix**: Categorize issues by Essential > Default > Contextual principles
-- **Conflict Resolution**: Decision criteria for DRY vs Readable, SOLID vs Simple, etc.
-- **Red Flags**: Method chains > 3 levels, can't understand in 1 minute, "just in case" implementations
-
-### Documentation Rules
-
-[@~/.claude/docs/DOCUMENTATION_RULES.md](~/.claude/docs/DOCUMENTATION_RULES.md) - Review report format and structure
-
-Application:
-
-- **Clarity First**: Understandability over completeness
-- **Consistency**: Unified report format with ✓/→ markers
-- **Actionable Recommendations**: Specific improvement actions with evidence
-
-## Next Steps After Review
-
-- **Critical Issues** → `/hotfix` for production issues
-- **Bugs** → `/fix` for development fixes
-- **Refactoring** → `/think` → `/code` for improvements
-- **Performance** → Targeted optimization with metrics
-- **Tests** → `/test` with coverage goals
-- **Documentation** → Update based on findings
+- **Critical** → `/hotfix`
+- **Bugs** → `/fix`
+- **Refactoring** → `/think` → `/code`
+- **Tests** → `/test`

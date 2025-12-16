@@ -1,132 +1,128 @@
 ---
 description: >
-  Display current SOW progress status, showing acceptance criteria completion, key metrics, and build status.
-  Read-only viewer for active work monitoring. Lists and views Statement of Work documents stored in workspace.
-  Use to check implementation progress anytime during development.
-  SOW文書の一覧表示と閲覧。受け入れ基準の完了状況、主要メトリクス、ビルドステータスを表示。
-allowed-tools: Read, Glob
+  Generate Statement of Work (SOW) only. Use for planning complex tasks with structured analysis.
+  Creates sow.md as a single artifact. Use /spec separately for implementation details.
+allowed-tools: Bash(git log:*), Bash(git diff:*), Read, Write, Glob, Grep, LS, Task
 model: inherit
+argument-hint: "[task description] (optional if research context exists)"
 ---
 
-# /sow - SOW Document Viewer
+# /sow - SOW Generator
 
 ## Purpose
 
-List and view Statement of Work (SOW) documents stored in the workspace.
+Generate sow.md only (single artifact) for planning and analysis.
 
-**Simplified**: Read-only viewer for planning documents.
-
-## Functionality
-
-### List SOWs
-
-Use Glob tool to find all SOW documents from both locations:
-
-```markdown
-# Global workspace (user-level)
-Glob pattern: ~/.claude/workspace/planning/**/sow.md
-
-# Project-specific workspace (current project)
-Glob pattern: .claude/workspace/planning/**/sow.md
-```
-
-**Search Priority**: Project-specific SOWs are shown first, then global SOWs.
-
-### View Latest SOW
-
-1. Use Glob to find SOW files (sorted by modification time)
-2. Use Read tool on the most recent file
-
-### View Specific SOW
-
-Use Read tool with the specific path:
+## Input Resolution
 
 ```text
-Read: ~/.claude/workspace/planning/[directory]/sow.md
+/sow execution
+    │
+    ├─ Argument provided? ─YES──→ Use argument as task description
+    │
+    └─ No argument
+           │
+           ├─ Research context exists? ─YES──→ Extract topic from context, incorporate findings
+           │
+           └─ None ──→ Ask user:
+                       "What would you like to plan? Please provide a task description."
 ```
 
-## Output Format
-
-```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📚 Available SOW Documents
-
-📁 Project-specific (.claude/workspace/)
-1. 2025-01-14-oauth-authentication
-   Created: 2025-01-14
-   Status: Draft
-
-📁 Global (~/.claude/workspace/)
-2. 2025-01-13-api-refactor
-   Created: 2025-01-13
-   Status: Active
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-To view a specific SOW:
-/sow "oauth-authentication"
-```
-
-## Usage Examples
-
-### List All SOWs
+### Research Context Detection
 
 ```bash
+!`ls -t .claude/workspace/research/*-context.md 2>/dev/null | head -1 || ls -t ~/.claude/workspace/research/*-context.md 2>/dev/null | head -1 || echo "(no research context)"`
+```
+
+If found:
+
+- Extract topic from context file
+- Incorporate research findings into SOW
+- Display: `📄 Using research context: [filename]`
+
+## Golden Master Reference
+
+Use for **structure and section order ONLY**:
+[@~/.claude/golden-masters/documents/sow/example-workflow-improvement.md]
+
+**IMPORTANT**:
+
+- ✅ Copy: Section headers, marker usage (✓/→/?), table formats
+- ❌ Do NOT copy: Actual content, specific values, examples from the reference
+- Generate fresh content based on user's feature description
+
+## Confidence Markers
+
+Use throughout the document:
+
+- **[✓]** Verified - Confirmed by evidence (code, logs, user reports)
+- **[→]** Inferred - Reasonable deduction from analysis
+- **[?]** Suspected - Requires investigation
+
+## Codebase Analysis (Optional)
+
+For non-greenfield projects, invoke Plan agent:
+
+```typescript
+Task({
+  subagent_type: "Plan",
+  model: "haiku",
+  description: "Analyze codebase for feature context",
+  prompt: `Feature: "${featureDescription}"
+Investigate: existing patterns, affected modules, tech stack.
+Return with markers: [✓] verified, [→] inferred, [?] unknown.`
+})
+```
+
+## Required Sections
+
+Follow Golden Master structure:
+
+1. **Executive Summary** - High-level overview [→]
+2. **Problem Analysis** - Current State [✓], Issues by confidence
+3. **Assumptions & Prerequisites** - Facts [✓], Assumptions [→], Unknowns [?]
+4. **Solution Design** - Approach, alternatives, recommendation
+5. **Test Plan** - Unit/Integration/E2E with priority
+6. **Acceptance Criteria** - By phase, with confidence markers
+7. **Implementation Plan** - Phases with steps
+8. **Success Metrics** - Measurable outcomes
+9. **Risks & Mitigations** - By confidence level
+10. **Verification Checklist** - Pre-implementation checks
+11. **References** - Related documents
+
+## Output
+
+Save to: `.claude/workspace/planning/[timestamp]-[feature]/sow.md`
+
+```bash
+# Detect output location
+!`ls -d .claude/ 2>/dev/null && echo "Project-local" || echo "Global: ~/.claude/"`
+```
+
+Display after save:
+
+```text
+✅ SOW saved to: .claude/workspace/planning/[path]/sow.md
+```
+
+## Example
+
+```bash
+# With explicit argument
+/sow "Add user authentication with OAuth"
+
+# After /research (auto-detects context)
+/research "user authentication options"
+/sow  # Uses research context automatically
+
+# No context, no argument → asks for input
 /sow
+# → "What would you like to plan? Please provide a task description."
 ```
 
-Shows all available SOW documents with creation dates.
+## Next Steps
 
-### View Latest SOW
+After SOW is created:
 
-```bash
-/sow --latest
-```
-
-Displays the most recently created SOW.
-
-### View Specific SOW
-
-```bash
-/sow "feature-name"
-```
-
-Shows the SOW for a specific feature.
-
-## Integration with Workflow
-
-```markdown
-1. Create SOW: /think "feature"
-2. View SOW: /sow
-3. Track Tasks: Use TodoWrite independently
-4. Reference SOW during implementation
-```
-
-## Simplified Design
-
-- **Read-only**: No modification capabilities
-- **Static documents**: SOWs are planning references
-- **Clear separation**: SOW for planning, TodoWrite for execution
-
-## Related Commands
-
-- `/think` - Create new SOW
-- `/todos` - View current tasks (separate from SOW)
-
-## Applied Principles
-
-### Single Responsibility
-
-- SOW viewer only views documents
-- No complex synchronization
-
-### Occam's Razor
-
-- Simple file listing and viewing
-- No unnecessary features
-
-### Progressive Enhancement
-
-- Start with basic viewing
-- Add search/filter if needed later
+- `/spec` - Generate implementation specification
+- `/plans` - View created documents
