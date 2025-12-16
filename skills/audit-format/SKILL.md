@@ -1,5 +1,5 @@
 ---
-name: review-format
+name: audit-format
 description: >
   Design document review format definition with 100-point scoring system.
   Provides quality evaluation criteria, scoring items, and pass/fail logic for SOW/Spec documents.
@@ -228,7 +228,7 @@ pass_threshold: 90 points
 ```yaml
 # agents/reviewers/sow-spec.md
 skills:
-  - review-format
+  - audit-format
   - readability-review
   - code-principles
 ```

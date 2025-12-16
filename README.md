@@ -27,7 +27,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── fix.md            # Quick bug fixes
 │   ├── hotfix.md         # Emergency production fixes
 │   ├── research.md       # Investigation without implementation
-│   ├── review.md         # Code review orchestration
+│   ├── audit.md          # Code review orchestration
 │   ├── test.md           # Comprehensive testing
 │   └── think.md          # Planning & SOW creation
 ├── rules/                 # English rule definitions
@@ -173,7 +173,7 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 ### Command Categories
 
 - **Core Development** (7 commands): Complete workflow from planning to validation
-  - `/think`, `/research`, `/code`, `/test`, `/review`, `/sow`, `/validate`
+  - `/think`, `/research`, `/code`, `/test`, `/audit`, `/sow`, `/validate`
 
 - **Quick Actions** (2 commands): Rapid bug fixes
   - `/fix` (development), `/hotfix` (production emergencies)
@@ -197,7 +197,7 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 ### Feature Development (Enhanced)
 
 ```txt
-/research → /think → /code → /test → /review → /validate
+/research → /think → /code → /test → /audit → /validate
 ```
 
 ### Progress Monitoring

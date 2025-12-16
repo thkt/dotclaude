@@ -25,7 +25,7 @@ agents/
 ├── generators/                  # Code/content generation
 │   └── test.md
 ├── orchestrators/               # Coordination & integration
-│   └── review-orchestrator.md
+│   └── audit-orchestrator.md
 ├── enhancers/                   # Code improvement
 │   └── progressive.md
 └── git/                         # Git operations

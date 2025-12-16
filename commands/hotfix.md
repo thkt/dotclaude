@@ -3,10 +3,10 @@ description: >
   Emergency fixes for critical production issues ONLY. For production-impacting problems, security vulnerabilities, or immediate deployment needs.
   5-min triage, 15-min fix, 10-min test. Minimal process overhead with required rollback plan.
   NOT for development fixes (use /fix instead). High severity (critical/security) only.
-  本番環境の緊急対応が必要な重大な問題を修正。本番影響、セキュリティ脆弱性、即座のデプロイが必要な場合のみ。
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Edit, MultiEdit, Read, Write, Glob, Grep, Task
 model: inherit
 argument-hint: "[critical issue description]"
+dependencies: []
 ---
 
 # /hotfix - Emergency Hot Fix
@@ -14,6 +14,16 @@ argument-hint: "[critical issue description]"
 ## Purpose
 
 Apply critical fixes to production issues with minimal process overhead while maintaining quality.
+
+## Confidence Markers (Emergency Context)
+
+Even in emergency, mark confidence levels:
+
+- **[✓]** Confirmed - Verified reproduction, known cause
+- **[→]** Likely - Based on symptoms, experienced pattern
+- **[?]** Uncertain - Needs post-incident investigation
+
+**Emergency Note**: Lower confidence threshold acceptable for action, but all outputs must include markers for post-incident review.
 
 ## Usage
 

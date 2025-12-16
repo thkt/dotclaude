@@ -175,7 +175,7 @@ If skip → respond directly. Otherwise → proceed with check.
 
 ### Orchestrators (opus)
 
-- review-orchestrator: opus - 複数レビュアーの調整
+- audit-orchestrator: opus - 複数レビュアーの調整
 
 ## コスト見積もり
 
@@ -226,7 +226,7 @@ agents/
 ├── generators/                  # コード/コンテンツ生成
 │   └── test.md
 ├── orchestrators/               # 調整・統合
-│   └── review-orchestrator.md
+│   └── audit-orchestrator.md
 ├── enhancers/                   # コード改善
 │   └── progressive.md
 └── git/                         # Git操作

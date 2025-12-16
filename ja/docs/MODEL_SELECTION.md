@@ -38,7 +38,7 @@
 
 ### Opusエージェント（3つ）
 
-- `review-orchestrator`: すべてのレビューエージェントを調整、結果を統合
+- `audit-orchestrator`: すべてのレビューエージェントを調整、結果を統合
 - `root-cause-reviewer`: 根本的な問題を見つけるための深い分析
 - `subagent-reviewer`: エージェント設定のメタ分析
 

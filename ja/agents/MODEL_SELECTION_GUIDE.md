@@ -39,7 +39,7 @@
 
 ### Orchestrators (opus)
 
-- review-orchestrator: opus - 複数レビュアーの調整
+- audit-orchestrator: opus - 複数レビュアーの調整
 
 ## コスト見積もり
 

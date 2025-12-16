@@ -256,7 +256,7 @@ const withAuth = (Component) => (props) => {
 ### コマンドとの統合
 
 - **/code** - 実装中にパターンを適用
-- **/review** - パターン使用を検証
+- **/audit** - パターン使用を検証
 
 ### 統合方法
 

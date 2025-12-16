@@ -5,6 +5,7 @@ description: >
 allowed-tools: Read, Write, Glob, Grep, LS
 model: inherit
 argument-hint: "[sow path or feature description]"
+dependencies: []
 ---
 
 # /spec - Specification Generator
@@ -103,4 +104,4 @@ After Spec is created:
 
 - `/code` - Implement based on spec
 - `/plans` - View created documents
-- `/review` - Review will reference spec for validation
+- `/audit` - Review will reference spec for validation

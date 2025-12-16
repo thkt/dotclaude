@@ -6,6 +6,7 @@ description: >
 allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[research topic or question]"
+dependencies: [Explore]
 ---
 
 # /research - Project Research & Investigation

@@ -122,4 +122,4 @@ git commit -m "docs: add rule from ADR-XXXX"
 ## Related Commands
 
 - `/adr [title]` - Create ADR
-- `/review` - Review rule application
+- `/audit` - Review rule application

@@ -175,7 +175,7 @@ Is task pattern-based or routine?
 
 ### Orchestrators (opus)
 
-- review-orchestrator: opus - Coordination of multiple reviewers
+- audit-orchestrator: opus - Coordination of multiple reviewers
 
 ## Cost Estimates
 
@@ -225,7 +225,7 @@ agents/
 ├── generators/                  # Code/content generation
 │   └── test.md
 ├── orchestrators/               # Coordination/integration
-│   └── review-orchestrator.md
+│   └── audit-orchestrator.md
 ├── enhancers/                   # Code improvement
 │   └── progressive.md
 └── git/                         # Git operations

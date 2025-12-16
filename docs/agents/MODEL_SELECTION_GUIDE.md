@@ -39,7 +39,7 @@ Is the task pattern-based or routine?
 
 ### Orchestrators (opus)
 
-- review-orchestrator: opus - Multi-reviewer coordination
+- audit-orchestrator: opus - Multi-reviewer coordination
 
 ## Cost Estimates
 

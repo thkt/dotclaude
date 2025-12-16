@@ -573,7 +573,7 @@ vim docs/adr/0001-typescript-strict-mode.md
 
 - `/adr [タイトル]` - ADRを作成
 - `/research` - 技術調査
-- `/review` - ルール適用のレビュー
+- `/audit` - ルール適用のレビュー
 
 ## ヒント
 

@@ -25,7 +25,7 @@
 │   ├── fix.md            # クイックバグ修正
 │   ├── hotfix.md         # 緊急本番修正
 │   ├── research.md       # 実装なしの調査
-│   ├── review.md         # コードレビューオーケストレーション
+│   ├── audit.md          # コードレビューオーケストレーション
 │   ├── test.md           # 包括的テスト
 │   └── think.md          # 計画とSOW作成
 ├── rules/                 # 英語版ルール定義
@@ -173,7 +173,7 @@ Claude Codeは5つのカテゴリに分類された15の専門コマンドを提
 ### コマンドカテゴリ
 
 - **コア開発** (7個): 計画から検証までの完全なワークフロー
-  - `/think`, `/research`, `/code`, `/test`, `/review`, `/sow`, `/validate`
+  - `/think`, `/research`, `/code`, `/test`, `/audit`, `/sow`, `/validate`
 
 - **クイックアクション** (2個): 迅速なバグ修正
   - `/fix` (開発環境), `/hotfix` (本番緊急対応)
@@ -197,7 +197,7 @@ Claude Codeは5つのカテゴリに分類された15の専門コマンドを提
 ### 機能開発（拡張版）
 
 ```txt
-/research → /think → /code → /test → /review → /validate
+/research → /think → /code → /test → /audit → /validate
 ```
 
 ### 進捗モニタリング

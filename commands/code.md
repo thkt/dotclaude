@@ -5,6 +5,7 @@ description: >
 allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[implementation description] [--frontend] [--principles] [--storybook]"
+dependencies: [tdd-test-generation, frontend-patterns, code-principles, storybook-integration]
 ---
 
 # /code - TDD Implementation
@@ -85,6 +86,6 @@ Before writing code, ask:
 
 ## Next Steps
 
-- **All tests pass** → Ready for `/test` or `/review`
+- **All tests pass** → Ready for `/test` or `/audit`
 - **Quality issues** → Fix before proceeding
 - **Unclear requirements** → Use `/research` first

@@ -6,6 +6,7 @@ description: >
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task
 model: inherit
 argument-hint: "[bug or issue description]"
+dependencies: [Explore, test-generator]
 ---
 
 # /fix - Quick Bug Fix
@@ -22,6 +23,22 @@ Rapidly fix small bugs with root cause analysis and confidence-based verificatio
 | Development environment | Production emergency → `/hotfix` |
 | Single file or 2-3 files | Multi-file refactoring → `/code` |
 | Confidence ≥80% | New feature → `/think` |
+
+## Confidence Markers
+
+Use throughout all outputs:
+
+- **[✓]** High (>0.8) - Directly verified from code/files
+- **[→]** Medium (0.5-0.8) - Reasonable inference from evidence
+- **[?]** Low (<0.5) - Assumption requiring verification
+
+### Application in /fix
+
+| Phase | Marker Usage |
+|-------|--------------|
+| Root Cause | [✓] confirmed cause, [→] likely cause, [?] suspected |
+| Solution | [✓] tested fix, [→] expected to work, [?] uncertain |
+| Verification | [✓] all tests pass, [→] partial coverage, [?] untested |
 
 ## Dynamic Context
 
@@ -93,6 +110,36 @@ npm test -- --findRelatedTests
 npm run lint -- --fix
 npm run type-check
 ```
+
+### Phase 3.5: Regression Test Generation (Optional)
+
+For testable fixes, generate regression tests:
+
+```typescript
+Task({
+  subagent_type: "test-generator",
+  model: "haiku",
+  description: "Generate regression test for bug fix",
+  prompt: `
+    Bug: "${bugDescription}"
+    Root Cause: "${rootCause}"
+    Fix Applied: "${fixSummary}"
+
+    Generate:
+    1. [✓] Test that reproduces original bug (should now pass)
+    2. [→] Edge case tests related to the fix
+    3. [→] Integration test if cross-component fix
+
+    Return test code ready to add to test suite.
+  `
+})
+```
+
+**Skip conditions**:
+
+- Documentation-only changes
+- Configuration changes
+- UI-only fixes without logic
 
 ## Definition of Done
 

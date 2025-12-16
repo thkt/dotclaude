@@ -32,7 +32,7 @@ Claude Codeは便利ですが、運用が複雑化するにつれてCLAUDE.mdに
 
 | 層 | 役割 | 例 | 特徴 |
 |----|------|-----|------|
-| **Commands** | ユーザーが直接呼び出すワークフロー | /review, /code, /think | 薄いラッパー、Agents や Skills を調整 |
+| **Commands** | ユーザーが直接呼び出すワークフロー | /audit, /code, /think | 薄いラッパー、Agents や Skills を調整 |
 | ↓ 呼び出す ||||
 | **Agents** | 専門分析・レビュー | performance-reviewer, accessibility-reviewer | 特定タスク実行、短期的 |
 | ↓ 参照する ||||
@@ -49,7 +49,7 @@ sequenceDiagram
 
     U->>S: 「このページが遅い」
     S-->>U: performance-optimization 自動トリガー<br/>Web Vitals の知識を提供
-    U->>C: /review
+    U->>C: /audit
     C->>A: performance-reviewer 起動
     A->>S: Skill の知識を参照
     A-->>C: ボトルネックを特定
@@ -102,7 +102,7 @@ Core principles via `code-principles` skill:
 ├── CLAUDE.md              # インデックス（目次）
 ├── commands/              # /コマンド定義
 │   ├── code.md
-│   ├── review.md
+│   ├── audit.md
 │   ├── think.md
 │   └── ...
 ├── agents/                # 専門エージェント（.mdファイル）
@@ -152,7 +152,7 @@ Core principles via `code-principles` skill:
 
 - 「TypeScriptの型チェックルール」→ **Skills**（知識として保存）
 - 「型チェックを実行するレビュー」→ **Agents**（分析タスク）
-- 「`/review` で型チェックを含めて実行」→ **Commands**（呼び出し口）
+- 「`/audit` で型チェックを含めて実行」→ **Commands**（呼び出し口）
 
 ### 3. 自動読み込み
 
@@ -245,5 +245,5 @@ allowed-tools: Read, Grep, Glob
 - [Part 2: 調査フェーズ（/research）](./part2-research-investigation.md)
 - [Part 3: 計画フェーズ（/think）](./part3-think-sow-spec.md)
 - [Part 4: 実装フェーズ（/code）](./part4-code-implementation.md)
-- [Part 5: 品質フェーズ（/review）](./part5-review-quality.md)
+- [Part 5: 品質フェーズ（/audit）](./part5-review-quality.md)
 - [Part 6: 横断的関心事（PRE_TASK_CHECK）](./part6-pre-task-check.md)

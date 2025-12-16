@@ -8,7 +8,7 @@ allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git s
 model: inherit
 ---
 
-# /review - 高度なコードレビューオーケストレーター
+# /audit - 高度なコードレビューオーケストレーター
 
 ## 目的
 
@@ -72,7 +72,7 @@ Taskエージェントを使用して：
 
 ### コアアーキテクチャレビュアー
 
-- `review-orchestrator`: すべてのレビュー活動を調整
+- `audit-orchestrator`: すべてのレビュー活動を調整
 - `structure-reviewer`: コード組織、DRY違反、結合度
 - `root-cause-reviewer`: 深い問題分析、アーキテクチャ負債
 
@@ -161,7 +161,7 @@ Taskエージェントを使用して：
 - 破壊的変更
 - アクセシビリティ違反
 
-コマンド: `/review --quick`
+コマンド: `/audit --quick`
 
 ### 標準レビュー（5-7分）
 
@@ -172,7 +172,7 @@ Taskエージェントを使用して：
 - テストカバレッジギャップ
 - コード組織
 
-コマンド: `/review` (デフォルト)
+コマンド: `/audit` (デフォルト)
 
 ### ディープレビュー（10分以上）
 
@@ -184,16 +184,16 @@ Taskエージェントを使用して：
 - リファクタリング機会
 - アーキテクチャ評価
 
-コマンド: `/review --deep`
+コマンド: `/audit --deep`
 
 ### フォーカスレビュー
 
 特定領域をターゲット：
 
-- `/review --security` - セキュリティフォーカス
-- `/review --performance` - パフォーマンスフォーカス
-- `/review --accessibility` - A11yフォーカス
-- `/review --architecture` - デザインパターン
+- `/audit --security` - セキュリティフォーカス
+- `/audit --performance` - パフォーマンスフォーカス
+- `/audit --accessibility` - A11yフォーカス
+- `/audit --architecture` - デザインパターン
 
 ## TodoWrite統合
 
@@ -212,9 +212,9 @@ Taskエージェントを使用して：
 
 プロジェクト固有ルールのサポート：
 
-- `.claude/review-rules.md` - プロジェクト規約
+- `.claude/audit-rules.md` - プロジェクト規約
 - `.claude/exclusions.md` - カスタム除外
-- `.claude/review-focus.md` - 優先領域
+- `.claude/audit-focus.md` - 優先領域
 
 ## 高度な機能
 
@@ -247,35 +247,35 @@ Taskエージェントを使用して：
 ### 基本レビュー
 
 ```bash
-/review
+/audit
 # 標準深度ですべての変更ファイルをレビュー
 ```
 
 ### ターゲットレビュー
 
 ```bash
-/review "認証モジュール"
+/audit "認証モジュール"
 # 認証関連コードに焦点
 ```
 
 ### セキュリティ監査
 
 ```bash
-/review --security --deep
+/audit --security --deep
 # 包括的なセキュリティ分析
 ```
 
 ### PR前レビュー
 
 ```bash
-/review --compare main
+/audit --compare main
 # mainブランチに対する変更をレビュー
 ```
 
 ### コンポーネントレビュー
 
 ```bash
-/review "src/components" --accessibility
+/audit "src/components" --accessibility
 # componentsディレクトリのA11yレビュー
 ```
 

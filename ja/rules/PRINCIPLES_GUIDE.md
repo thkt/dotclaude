@@ -317,7 +317,7 @@ const calculateTotal = memo((items) => {
 | `/test` | TDD | デメテルの法則、AI支援開発 |
 | `/fix` | オッカムの剃刀 | TIDYINGS |
 | `/hotfix` | オッカムの剃刀のみ | - |
-| `/review` | すべての原則 | 優先順位順 |
+| `/audit` | すべての原則 | 優先順位順 |
 
 ### 避けるべきアンチパターン
 

@@ -225,12 +225,12 @@ Recommendation:
 
 SOW/Spec が生成されたら、以下のように活用されます：
 
-`/think` で生成 → **spec.md** → `/code` と `/review` が自動参照
+`/think` で生成 → **spec.md** → `/code` と `/audit` が自動参照
 
 | フェーズ | spec.md の活用 |
 |---------|---------------|
 | **/code** | FR-001〜003 を実装ガイドとして使用、Test Scenarios からテスト生成、Implementation Checklist で進捗管理 |
-| **/review** | spec.md との整合性を検証、「仕様では定義されているが未実装」を検出、API仕様との乖離をフラグ |
+| **/audit** | spec.md との整合性を検証、「仕様では定義されているが未実装」を検出、API仕様との乖離をフラグ |
 
 つまり、`spec.md` は **実装・テスト・レビュー** すべてで参照される「信頼できる情報源」になります。
 
@@ -361,5 +361,5 @@ SOW で合意を取り、Spec で実装を進める。
 - [Part 2: 調査フェーズ（/research）](./part2-research-investigation.md)
 - **Part 3: 計画フェーズ（/think）** ← 今回
 - [Part 4: 実装フェーズ（/code）](./part4-code-implementation.md)
-- [Part 5: 品質フェーズ（/review）](./part5-review-quality.md)
+- [Part 5: 品質フェーズ（/audit）](./part5-review-quality.md)
 - [Part 6: 横断的関心事（PRE_TASK_CHECK）](./part6-pre-task-check.md)

@@ -1,5 +1,5 @@
 ---
-name: review-format
+name: audit-format
 description: >
   100点満点スコアリングによる設計ドキュメントレビューフォーマット定義。
   SOW/Spec文書の品質評価基準、採点項目、合否判定ロジックを提供。
@@ -227,7 +227,7 @@ pass_threshold: 90点
 ```yaml
 # agents/reviewers/sow-spec.md
 skills:
-  - review-format
+  - audit-format
   - readability-review
   - code-principles
 ```

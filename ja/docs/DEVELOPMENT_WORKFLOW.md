@@ -45,7 +45,7 @@ graph TB
 | 計画 | `/think` | SOW作成 | SOW文書 |
 | 実装 | `/code` | TDD実装 | コード + テスト |
 | テスト | `/test` | 動作検証 | テスト結果 |
-| レビュー | `/review` | 品質確認 | レビュー結果 |
+| レビュー | `/audit` | 品質確認 | レビュー結果 |
 | 検証 | `/validate` | 適合性確認 | 検証レポート |
 
 ---
@@ -446,7 +446,7 @@ describe('Profile Edit Flow', () => {
 
 ---
 
-### Phase 5: レビュー（/review）
+### Phase 5: レビュー（/audit）
 
 #### 目的
 
@@ -459,7 +459,7 @@ describe('Profile Edit Flow', () => {
 **1. コマンド実行**
 
 ```bash
-/review
+/audit
 ```
 
 **2. 自動エージェント選択**
@@ -488,7 +488,7 @@ describe('Profile Edit Flow', () => {
 
 **3. 結果統合**
 
-review-orchestratorが：
+audit-orchestratorが：
 
 - 全エージェントの結果を統合
 - 優先度付け（Critical/High/Medium/Low）
@@ -710,7 +710,7 @@ review-orchestratorが：
 
    ↓ 実装完了後
 
-5. /review
+5. /audit
    目的: コード品質を確認
 
 6. /validate
@@ -796,7 +796,7 @@ review-orchestratorが：
 #### 推奨フロー
 
 ```text
-1. /review
+1. /audit
    目的: 現状の問題点を特定
 
 2. /think
@@ -809,7 +809,7 @@ review-orchestratorが：
 4. /test
    目的: 既存機能が壊れていないことを確認
 
-5. /review
+5. /audit
    目的: 改善を確認
 ```
 
@@ -830,7 +830,7 @@ review-orchestratorが：
 #### 推奨フロー
 
 ```text
-1. /review
+1. /audit
    目的: 自動レビューを実行
 
 2. レビュー結果を確認
@@ -950,14 +950,14 @@ Closes #123
 コミット前に必ず実行：
 
 ```bash
-/review
+/audit
 ```
 
 #### チームレビュー
 
 PR作成前に確認：
 
-- `/review` の結果を共有
+- `/audit` の結果を共有
 - Critical/Highは必ず修正
 - Mediumも可能な限り対応
 
@@ -1038,7 +1038,7 @@ PR作成前に確認：
 
 #### 問題2: レビューで多数の警告
 
-**症状**: `/review` で大量のissueが報告される
+**症状**: `/audit` で大量のissueが報告される
 
 **原因**:
 
@@ -1087,7 +1087,7 @@ PR作成前に確認：
 
 **解決策**:
 
-1. `/review` でパフォーマンス問題を確認
+1. `/audit` でパフォーマンス問題を確認
 2. React DevToolsでプロファイリング
 3. メモ化（useMemo/useCallback）の適用
 4. コード分割の検討
@@ -1164,7 +1164,7 @@ Phase 4: テスト
 □ 全テストがパス
 
 Phase 5: レビュー
-□ `/review` で品質確認
+□ `/audit` で品質確認
 □ Critical/High issueを修正
 □ コード規約に準拠
 
@@ -1183,7 +1183,7 @@ Phase 6: 検証
 **毎日**:
 
 - `/sow` で進捗確認
-- `/review` でコード品質確認
+- `/audit` でコード品質確認
 
 **機能完了時**:
 

@@ -1,10 +1,10 @@
 # Claude Code 実践ワークフロー Part 5
 
-## /review で多角的コードレビューする
+## /audit で多角的コードレビューする
 
 > **対象読者**: Claude Code を既に導入している開発チーム
 
-「レビューしたつもりが、見落としがあった…」—— 一人でのレビューには限界があります。この記事では、`/review` コマンドで **複数の専門エージェント** による多角的なコードレビューを実行する方法を紹介します。
+「レビューしたつもりが、見落としがあった…」—— 一人でのレビューには限界があります。この記事では、`/audit` コマンドで **複数の専門エージェント** による多角的なコードレビューを実行する方法を紹介します。
 
 > **Part 1-4 未読の方へ**
 >
@@ -13,7 +13,7 @@
 > - **Part 3**: `/think` で SOW + Spec を生成
 > - **Part 4**: `/code` で TDD/RGRC 実装
 >
-> `/review` は `/code` で実装したコードを検証し、spec.md との整合性を確認します。
+> `/audit` は `/code` で実装したコードを検証し、spec.md との整合性を確認します。
 
 ---
 
@@ -27,17 +27,17 @@
 
 結果、**本番環境で問題が発覚**し、修正コストが増大。
 
-**解決策**: `/review` で専門エージェントによる並列レビューを実行する。
+**解決策**: `/audit` で専門エージェントによる並列レビューを実行する。
 
 ---
 
-## /review の役割: 専門家チームによるレビュー
+## /audit の役割: 専門家チームによるレビュー
 
-`/review` は **review-orchestrator** が複数の専門エージェントを**並列実行**します：
+`/audit` は **audit-orchestrator** が複数の専門エージェントを**並列実行**します：
 
-`/review`
+`/audit`
 
-**review-orchestrator**: レビュー全体を統括
+**audit-orchestrator**: レビュー全体を統括
 
 | Phase | 内容 |
 |-------|------|
@@ -112,7 +112,7 @@ Issue #2: N+1 クエリの可能性
 
 ## spec.md との整合性検証
 
-`/review` は自動的に spec.md を検出し、**仕様と実装の乖離**をチェックします：
+`/audit` は自動的に spec.md を検出し、**仕様と実装の乖離**をチェックします：
 
 **Specification vs Implementation 検証**:
 
@@ -130,7 +130,7 @@ Issue #2: N+1 クエリの可能性
 - **エラーハンドリング**: 仕様で定義されたエラーケースの対応
 - **テストシナリオ**: spec.md の Test Scenarios との整合性
 
-> **Note**: spec.md がない場合、`/review` はコード品質のみを分析します。仕様駆動の検証には先に `/think` で spec.md を生成することを推奨。
+> **Note**: spec.md がない場合、`/audit` はコード品質のみを分析します。仕様駆動の検証には先に `/think` で spec.md を生成することを推奨。
 
 ---
 
@@ -141,7 +141,7 @@ Issue #2: N+1 クエリの可能性
 ### Quick Review（2-3分）
 
 ```bash
-/review --quick
+/audit --quick
 ```
 
 対象：セキュリティ、重大バグ、破壊的変更、アクセシビリティ違反
@@ -151,7 +151,7 @@ Issue #2: N+1 クエリの可能性
 ### Standard Review（5-7分）
 
 ```bash
-/review
+/audit
 ```
 
 対象：Quick + パフォーマンス、型安全性、テストカバレッジ、コード構成
@@ -161,7 +161,7 @@ Issue #2: N+1 クエリの可能性
 ### Deep Review（10分以上）
 
 ```bash
-/review --deep
+/audit --deep
 ```
 
 対象：Standard + 根本原因分析、技術的負債評価、リファクタリング機会、アーキテクチャ評価
@@ -175,16 +175,16 @@ Issue #2: N+1 クエリの可能性
 特定領域に集中する場合：
 
 ```bash
-/review --security      # セキュリティ集中
-/review --performance   # パフォーマンス集中
-/review --accessibility # アクセシビリティ集中
+/audit --security      # セキュリティ集中
+/audit --performance   # パフォーマンス集中
+/audit --accessibility # アクセシビリティ集中
 ```
 
 ---
 
 ## 除外ルール: 誤検知を防ぐ
 
-`/review` は**誤検知（False Positive）**を減らすため、以下を自動除外します：
+`/audit` は**誤検知（False Positive）**を減らすため、以下を自動除外します：
 
 ### 自動除外される指摘
 
@@ -256,7 +256,7 @@ Issue #2: N+1 クエリの可能性
 ### 例1: 基本レビュー
 
 ```bash
-/review
+/audit
 ```
 
 → 変更されたファイルを Standard 深度でレビュー
@@ -264,7 +264,7 @@ Issue #2: N+1 クエリの可能性
 ### 例2: 対象指定レビュー
 
 ```bash
-/review "認証モジュール"
+/audit "認証モジュール"
 ```
 
 → 認証関連のコードに絞ってレビュー
@@ -272,7 +272,7 @@ Issue #2: N+1 クエリの可能性
 ### 例3: セキュリティ監査
 
 ```bash
-/review --security --deep
+/audit --security --deep
 ```
 
 → セキュリティに特化した包括的分析
@@ -280,7 +280,7 @@ Issue #2: N+1 クエリの可能性
 ### 例4: PR前チェック
 
 ```bash
-/review --compare main
+/audit --compare main
 ```
 
 → main ブランチとの差分をレビュー
@@ -289,7 +289,7 @@ Issue #2: N+1 クエリの可能性
 
 ## 自動タスク作成（TodoWrite連携）
 
-`/review` は進捗を自動的に TodoWrite に登録します：
+`/audit` は進捗を自動的に TodoWrite に登録します：
 
 **Code Review: [Target]**
 
@@ -313,7 +313,7 @@ flowchart TD
     B --> C[SOW + spec.md]
     C --> D[/code]
     D --> E[RGRC サイクル完了]
-    E --> F[/review]
+    E --> F[/audit]
     F --> G[spec.md 整合性検証]
     F --> H[11種エージェント並列レビュー]
     F --> I[信頼度フィルタリング]
@@ -339,7 +339,7 @@ flowchart TD
 `--quick` オプションで簡易レビューを実行できます：
 
 ```bash
-/review --quick
+/audit --quick
 ```
 
 Critical/High のみを検出し、2-3分で完了します。
@@ -349,8 +349,8 @@ Critical/High のみを検出し、2-3分で完了します。
 フォーカスオプションで特定領域に絞れます：
 
 ```bash
-/review --security      # セキュリティのみ
-/review --performance   # パフォーマンスのみ
+/audit --security      # セキュリティのみ
+/audit --performance   # パフォーマンスのみ
 ```
 
 ### Q: 誤検知が多い場合は？
@@ -359,9 +359,9 @@ Critical/High のみを検出し、2-3分で完了します。
 
 | ファイル | 用途 |
 |---------|------|
-| `.claude/review-rules.md` | プロジェクト規約（命名ルール、アーキテクチャパターン） |
+| `.claude/audit-rules.md` | プロジェクト規約（命名ルール、アーキテクチャパターン） |
 | `.claude/exclusions.md` | カスタム除外（特定ファイル、パターン） |
-| `.claude/review-focus.md` | 優先領域（重点的にレビューする領域） |
+| `.claude/audit-focus.md` | 優先領域（重点的にレビューする領域） |
 
 例（exclusions.md）:
 
@@ -390,7 +390,7 @@ claude review --quick || exit 1
 
 ### Q: /validate とは何ですか？
 
-`/validate` は `/review` の後に実行し、**SOW（計画書）との適合性を検証**するコマンドです：
+`/validate` は `/audit` の後に実行し、**SOW（計画書）との適合性を検証**するコマンドです：
 
 | 検証項目 | 内容 |
 |---------|------|
@@ -402,7 +402,7 @@ claude review --quick || exit 1
 /validate  # SOW に対する実装の適合性を検証
 ```
 
-> **Note**: `/review` がコード品質を検証するのに対し、`/validate` は計画との整合性を検証します。
+> **Note**: `/audit` がコード品質を検証するのに対し、`/validate` は計画との整合性を検証します。
 
 ---
 
@@ -428,5 +428,5 @@ claude review --quick || exit 1
 - [Part 2: 調査フェーズ（/research）](./part2-research-investigation.md)
 - [Part 3: 計画フェーズ（/think）](./part3-think-sow-spec.md)
 - [Part 4: 実装フェーズ（/code）](./part4-code-implementation.md)
-- **Part 5: 品質フェーズ（/review）** ← 今回
+- **Part 5: 品質フェーズ（/audit）** ← 今回
 - [Part 6: 横断的関心事（PRE_TASK_CHECK）](./part6-pre-task-check.md)

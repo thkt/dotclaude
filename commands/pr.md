@@ -6,6 +6,7 @@ description: >
   ブランチの変更内容を分析して包括的なPR説明文を自動生成。分岐点からのすべてのコミットを検査。
 allowed-tools: Task
 model: inherit
+dependencies: [pr-generator]
 ---
 
 # /pr - Pull Request Description Generator
@@ -84,7 +85,7 @@ Works seamlessly with:
 - `/branch` - Create branch first
 - `/commit` - Make commits
 - `/pr` - Generate PR description
-- `/review` - Code review after PR
+- `/audit` - Code review after PR
 
 ## Technical Details
 
@@ -117,7 +118,7 @@ The subagent automatically detects the base branch:
 
 - `/branch` - Generate branch names
 - `/commit` - Generate commit messages
-- `/review` - Code review
+- `/audit` - Code review
 
 ## Best Practices
 

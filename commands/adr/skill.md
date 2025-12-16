@@ -554,7 +554,7 @@ done
 - `/adr [title]` - Create ADR
 - `/adr:rule <number>` - Generate enforcement rule
 - `/research` - Technical research for ADR
-- `/review` - Review skill effectiveness
+- `/audit` - Review skill effectiveness
 
 ## Tips
 

@@ -5,6 +5,7 @@ description: >
 allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Grep, Glob
 model: inherit
 argument-hint: "[decision title]"
+dependencies: [adr-creator]
 ---
 
 # /adr - Architecture Decision Record Creator

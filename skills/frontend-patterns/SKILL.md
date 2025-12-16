@@ -257,7 +257,7 @@ const withAuth = (Component) => (props) => {
 ### With Commands
 
 - **/code** - Applies patterns during implementation
-- **/review** - Validates pattern usage
+- **/audit** - Validates pattern usage
 
 ### Integration Method
 

@@ -297,7 +297,7 @@ bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 ## 標準ワークフロー
 
 - **バグ修正**: 調査+修正 → `/research → /fix`
-- **機能**: 実装+テスト → `/research → /think → /code → /test → /review → /validate`
+- **機能**: 実装+テスト → `/research → /think → /code → /test → /audit → /validate`
 - **緊急対応**: 重大+本番 → `/hotfix`
 
 詳細: [@../commands/STANDARD_WORKFLOWS.md]

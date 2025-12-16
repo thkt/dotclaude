@@ -1,5 +1,5 @@
 ---
-name: review-orchestrator
+name: audit-orchestrator
 description: >
   Master orchestrator for comprehensive frontend code reviews, coordinating specialized agents and synthesizing findings.
   Manages execution of multiple specialized review agents, integrates findings, prioritizes issues, and generates comprehensive reports.
@@ -76,7 +76,7 @@ execution_plan:
     execution_mode: sequential
 
   # Parallel Group 3: Production Readiness (max 60s each)
-  # Note: Security review is handled via security-review skill at /review command level
+  # Note: Security review is handled via security-review skill at /audit command level
   parallel_group_3:
     agents:
       - name: performance-reviewer
@@ -463,7 +463,7 @@ const review = await reviewOrchestrator.review({
 })
 
 // Focused review
-// Note: For security review, use security-review skill at /review command level
+// Note: For security review, use security-review skill at /audit command level
 const focusedReview = await reviewOrchestrator.review({
   target: 'src/components/UserProfile.tsx',
   agents: ['type-safety-reviewer', 'accessibility-reviewer'],
@@ -581,7 +581,7 @@ custom_rules:
 ```yaml
 # GitHub Actions example
 - name: Code Review
-  uses: ./review-orchestrator
+  uses: ./audit-orchestrator
   with:
     target: 'src/**/*.{ts,tsx}'
     fail-on: 'critical'
@@ -645,7 +645,7 @@ All review agents are organized by function:
 - `~/.claude/agents/enhancers/` - Code enhancement agents
   - progressive (progressive-enhancer)
 - `~/.claude/agents/orchestrators/` - Orchestration agents
-  - review-orchestrator (this file)
+  - audit-orchestrator (this file)
 
 ## Best Practices
 

@@ -324,7 +324,7 @@ flowchart LR
     D --> E[Phase 0: テスト生成]
     E --> F[RGRC サイクル]
     F --> G[品質チェック]
-    G --> H[/review]
+    G --> H[/audit]
 ```
 
 > **Note**: `/research` はオプション。不慣れなコードベースでは先に実行。
@@ -333,7 +333,7 @@ flowchart LR
 
 | 状況 | 推奨フロー |
 |------|-----------|
-| 新機能開発 | `/think` → `/code` → `/review` |
+| 新機能開発 | `/think` → `/code` → `/audit` |
 | 不慣れなコードベース | `/research` → `/think` → `/code` |
 | 単純なバグ修正 | `/fix` |
 | 緊急修正 | `/hotfix` |
@@ -384,9 +384,9 @@ flowchart LR
 
 ## 次回予告
 
-**Part 5: 品質フェーズ - /review でコードレビューする**
+**Part 5: 品質フェーズ - /audit でコードレビューする**
 
-実装が完了したら、`/review` で専門エージェントによる多角的なコードレビューを実行する方法を紹介します。
+実装が完了したら、`/audit` で専門エージェントによる多角的なコードレビューを実行する方法を紹介します。
 
 ---
 
@@ -404,5 +404,5 @@ flowchart LR
 - [Part 2: 調査フェーズ（/research）](./part2-research-investigation.md)
 - [Part 3: 計画フェーズ（/think）](./part3-think-sow-spec.md)
 - **Part 4: 実装フェーズ（/code）** ← 今回
-- [Part 5: 品質フェーズ（/review）](./part5-review-quality.md)
+- [Part 5: 品質フェーズ（/audit）](./part5-review-quality.md)
 - [Part 6: 横断的関心事（PRE_TASK_CHECK）](./part6-pre-task-check.md)

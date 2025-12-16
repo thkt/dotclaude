@@ -7,6 +7,7 @@ description: >
 allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, TodoWrite, Task
 model: inherit
 argument-hint: "[test scope or specific tests]"
+dependencies: [test-generator]
 ---
 
 # /test - Test Execution & Quality Validation

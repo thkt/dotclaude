@@ -63,7 +63,7 @@
 | **Standard** | `medium` | 約2-3分 | 実装準備、特定コンポーネント調査 |
 | **Deep** | `very thorough` | 約5分 | デバッグ、複雑なシステム分析 |
 
-> **Note**: 内部では `thoroughness` パラメータで制御されます。時間は目安で、プロジェクト規模により変動します。`/review`（Part 5）も同名のレベルがありますが、処理内容が異なるため所要時間は異なります。
+> **Note**: 内部では `thoroughness` パラメータで制御されます。時間は目安で、プロジェクト規模により変動します。`/audit`（Part 5）も同名のレベルがありますが、処理内容が異なるため所要時間は異なります。
 
 ### 自動選択の例
 
@@ -317,5 +317,5 @@ Overall Confidence: [→] 0.75
 - **Part 2: 調査フェーズ（/research）** ← 今回
 - [Part 3: 計画フェーズ（/think）](./part3-think-sow-spec.md)
 - [Part 4: 実装フェーズ（/code）](./part4-code-implementation.md)
-- [Part 5: 品質フェーズ（/review）](./part5-review-quality.md)
+- [Part 5: 品質フェーズ（/audit）](./part5-review-quality.md)
 - [Part 6: 横断的関心事（PRE_TASK_CHECK）](./part6-pre-task-check.md)

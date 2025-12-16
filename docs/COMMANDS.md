@@ -12,7 +12,7 @@ Custom commands for systematic software development support.
 | `/research` | Investigation without implementation | Understanding phase |
 | `/code` | TDD/RGRC implementation | Development phase |
 | `/test` | Comprehensive testing | Verification phase |
-| `/review` | Code review via agents | Quality phase |
+| `/audit` | Code review via agents | Quality phase |
 | `/sow` | Display SOW progress | Monitoring phase |
 | `/validate` | Validate SOW conformance | Verification phase |
 
@@ -79,10 +79,10 @@ Choose based on complexity:
 
 ```txt
 [Complex - Architecture decisions needed]
-(/research →) Plan Mode → /think → /code → /test → /review → /validate
+(/research →) Plan Mode → /think → /code → /test → /audit → /validate
 
 [Standard - Clear requirements]
-/think → /code → /test → /review → /validate
+/think → /code → /test → /audit → /validate
 
 [Simple - Small feature]
 /code → /test
@@ -173,7 +173,7 @@ Choose based on complexity:
 - Minimal process overhead
 - Rollback plan required
 
-### /review - Code Review
+### /audit - Code Review
 
 - Orchestrates specialized review agents
 - **Auto-references spec.md**: Verifies implementation aligns with specification
@@ -209,7 +209,7 @@ Choose based on complexity:
 ### /full-cycle - Complete Development Automation
 
 - Meta-command orchestrating entire development flow
-- Uses SlashCommand to chain: /research → /think → /code → /test → /review → /validate
+- Uses SlashCommand to chain: /research → /think → /code → /test → /audit → /validate
 - Conditional execution based on results
 - Parallel execution support for independent tasks
 - TodoWrite integration for progress tracking
@@ -268,7 +268,7 @@ Choose based on complexity:
 │   ├── full-cycle.md # Meta-command (SlashCommand)
 │   ├── hotfix.md
 │   ├── research.md
-│   ├── review.md
+│   ├── audit.md
 │   ├── test.md
 │   ├── think.md
 │   ├── sow.md
@@ -388,7 +388,7 @@ Claude Code provides functionality through a three-layer structure: Commands, Ag
 ```mermaid
 flowchart TB
     subgraph Commands["📋 Commands: User-invoked workflows"]
-        C1["/review → Review orchestration"]
+        C1["/audit → Review orchestration"]
         C2["/adr → ADR creation flow"]
         C3["/code → TDD/RGRC implementation"]
     end
@@ -418,6 +418,69 @@ flowchart TB
 | **Agents** | Task execution, short-term, can reference Skills |
 | **Skills** | Persistent knowledge, educational, reusable |
 
+### Command Dependencies
+
+Commands declare their dependencies in YAML frontmatter via `dependencies` field:
+
+```mermaid
+flowchart LR
+    subgraph Core["Core Development"]
+        code["/code"]
+        audit["/audit"]
+        test["/test"]
+        research["/research"]
+        fix["/fix"]
+        think["/think"]
+    end
+
+    subgraph Git["Git Operations"]
+        branch["/branch"]
+        commit["/commit"]
+        pr["/pr"]
+    end
+
+    subgraph Docs["Documentation"]
+        adr["/adr"]
+    end
+
+    subgraph Agents["🤖 Agents"]
+        review_orch["audit-orchestrator"]
+        test_gen["test-generator"]
+        explore["Explore"]
+        sow_spec["sow-spec-reviewer"]
+        branch_gen["branch-generator"]
+        commit_gen["commit-generator"]
+        pr_gen["pr-generator"]
+    end
+
+    subgraph Skills["📚 Skills"]
+        tdd["tdd-test-generation"]
+        frontend["frontend-patterns"]
+        principles["code-principles"]
+        storybook["storybook-integration"]
+        adr_creator["adr-creator"]
+    end
+
+    code --> tdd & frontend & principles & storybook
+    audit --> review_orch
+    test --> test_gen
+    research --> explore
+    fix --> explore & test_gen
+    think --> sow_spec
+
+    branch --> branch_gen
+    commit --> commit_gen
+    pr --> pr_gen
+
+    adr --> adr_creator
+```
+
+**Reading the Diagram**:
+
+- Arrows show `dependencies` declared in each command's frontmatter
+- Commands without arrows have no explicit skill/agent dependencies
+- Some commands (like `/full-cycle`) orchestrate other commands via SlashCommand tool
+
 ### Detailed Role Division
 
 #### 📋 Commands
@@ -433,7 +496,7 @@ flowchart TB
 
 **Examples**:
 
-- `/review` → Invokes multiple review agents, consolidates results
+- `/audit` → Invokes multiple review agents, consolidates results
 - `/adr` → References adr-creator skill, executes ADR creation process
 
 #### 🤖 Agents
@@ -479,9 +542,9 @@ Skill (auto-trigger): performance-optimization
     → Provides Web Vitals knowledge
     → Suggests measurement methods
     ↓
-User: "/review"
+User: "/audit"
     ↓
-Command: /review
+Command: /audit
     ↓
 Agent: performance-reviewer
     → Analyzes actual code
@@ -560,5 +623,5 @@ Step-by-step workflow guides:
 - [Part 2: Investigation Phase (/research)](./guides/part2-research-investigation.md)
 - [Part 3: Planning Phase (/think)](./guides/part3-think-sow-spec.md)
 - [Part 4: Implementation Phase (/code)](./guides/part4-code-implementation.md)
-- [Part 5: Quality Phase (/review)](./guides/part5-review-quality.md)
+- [Part 5: Quality Phase (/audit)](./guides/part5-review-quality.md)
 - [Part 6: Cross-cutting Concerns (PRE_TASK_CHECK)](./guides/part6-pre-task-check.md)

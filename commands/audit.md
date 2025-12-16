@@ -6,9 +6,10 @@ description: >
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[target files or scope]"
+dependencies: [audit-orchestrator]
 ---
 
-# /review - Code Review Orchestrator
+# /audit - Code Review Orchestrator
 
 ## Purpose
 
@@ -39,11 +40,11 @@ Search for spec.md:
 
 ## Execution
 
-Invoke review-orchestrator:
+Invoke audit-orchestrator:
 
 ```typescript
 Task({
-  subagent_type: "review-orchestrator",
+  subagent_type: "audit-orchestrator",
   description: "Comprehensive code review",
   prompt: `
 Execute code review:
@@ -133,25 +134,25 @@ Recommended Actions
 
 | Strategy | Time | Focus | Command |
 |----------|------|-------|---------|
-| Quick | 2-3 min | Security, critical bugs | `/review --quick` |
-| Standard | 5-7 min | + Performance, types, tests | `/review` |
-| Deep | 10+ min | + Root cause, tech debt | `/review --deep` |
-| Focused | varies | Specific area | `/review --security` |
+| Quick | 2-3 min | Security, critical bugs | `/audit --quick` |
+| Standard | 5-7 min | + Performance, types, tests | `/audit` |
+| Deep | 10+ min | + Root cause, tech debt | `/audit --deep` |
+| Focused | varies | Specific area | `/audit --security` |
 
 ## Usage Examples
 
 ```bash
 # Standard review
-/review
+/audit
 
 # Security audit
-/review --security --deep
+/audit --security --deep
 
 # Target scope
-/review "src/components"
+/audit "src/components"
 
 # Compare to main
-/review --compare main
+/audit --compare main
 ```
 
 ## Best Practices

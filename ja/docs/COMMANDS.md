@@ -12,7 +12,7 @@
 | `/research` | 実装なしの調査 | 理解フェーズ |
 | `/code` | TDD/RGRC実装 | 開発フェーズ |
 | `/test` | 包括的テスト | 検証フェーズ |
-| `/review` | エージェントによるコードレビュー | 品質フェーズ |
+| `/audit` | エージェントによるコードレビュー | 品質フェーズ |
 | `/sow` | SOW進捗表示 | モニタリングフェーズ |
 | `/validate` | SOW適合性検証 | 検証フェーズ |
 
@@ -79,10 +79,10 @@
 
 ```txt
 [複雑 - アーキテクチャ決定が必要]
-(/research →) Plan Mode → /think → /code → /test → /review → /validate
+(/research →) Plan Mode → /think → /code → /test → /audit → /validate
 
 [標準 - 要件が明確]
-/think → /code → /test → /review → /validate
+/think → /code → /test → /audit → /validate
 
 [シンプル - 小規模機能]
 /code → /test
@@ -173,7 +173,7 @@
 - 最小限のプロセスオーバーヘッド
 - ロールバック計画が必要
 
-### /review - コードレビュー
+### /audit - コードレビュー
 
 - 専門レビューエージェントを調整
 - **spec.mdを自動参照**: 実装が仕様と整合しているか検証
@@ -209,7 +209,7 @@
 ### /full-cycle - 完全開発自動化
 
 - 開発フロー全体を調整するメタコマンド
-- SlashCommandで連鎖実行: /research → /think → /code → /test → /review → /validate
+- SlashCommandで連鎖実行: /research → /think → /code → /test → /audit → /validate
 - 結果に基づく条件付き実行
 - 独立タスクの並列実行サポート
 - TodoWrite連携による進捗追跡
@@ -271,7 +271,7 @@
 │   ├── full-cycle.md # メタコマンド（SlashCommand）
 │   ├── hotfix.md
 │   ├── research.md
-│   ├── review.md
+│   ├── audit.md
 │   ├── test.md
 │   ├── think.md
 │   ├── sow.md
@@ -391,7 +391,7 @@ Claude Codeは、Commands、Agents、Skillsの3層構造で機能を提供しま
 ```mermaid
 flowchart TB
     subgraph Commands["📋 Commands: ユーザーが直接呼び出すワークフロー"]
-        C1["/review → レビューオーケストレーション"]
+        C1["/audit → レビューオーケストレーション"]
         C2["/adr → ADR作成フロー"]
         C3["/code → TDD/RGRC実装"]
     end
@@ -421,6 +421,69 @@ flowchart TB
 | **Agents** | 特定タスク実行、短期的、Skills を参照可能 |
 | **Skills** | 永続的知識、教育的、再利用可能 |
 
+### コマンド依存関係
+
+コマンドはYAMLフロントマターの`dependencies`フィールドで依存関係を宣言:
+
+```mermaid
+flowchart LR
+    subgraph Core["コア開発"]
+        code["/code"]
+        audit["/audit"]
+        test["/test"]
+        research["/research"]
+        fix["/fix"]
+        think["/think"]
+    end
+
+    subgraph Git["Git操作"]
+        branch["/branch"]
+        commit["/commit"]
+        pr["/pr"]
+    end
+
+    subgraph Docs["ドキュメント"]
+        adr["/adr"]
+    end
+
+    subgraph Agents["🤖 Agents"]
+        review_orch["audit-orchestrator"]
+        test_gen["test-generator"]
+        explore["Explore"]
+        sow_spec["sow-spec-reviewer"]
+        branch_gen["branch-generator"]
+        commit_gen["commit-generator"]
+        pr_gen["pr-generator"]
+    end
+
+    subgraph Skills["📚 Skills"]
+        tdd["tdd-test-generation"]
+        frontend["frontend-patterns"]
+        principles["code-principles"]
+        storybook["storybook-integration"]
+        adr_creator["adr-creator"]
+    end
+
+    code --> tdd & frontend & principles & storybook
+    audit --> review_orch
+    test --> test_gen
+    research --> explore
+    fix --> explore & test_gen
+    think --> sow_spec
+
+    branch --> branch_gen
+    commit --> commit_gen
+    pr --> pr_gen
+
+    adr --> adr_creator
+```
+
+**図の見方**:
+
+- 矢印は各コマンドのフロントマターで宣言された`dependencies`を示す
+- 矢印がないコマンドは明示的なskill/agent依存がない
+- 一部のコマンド（`/full-cycle`など）はSlashCommandツール経由で他コマンドを調整
+
 ### 詳細な役割分担
 
 #### 📋 Commands
@@ -436,7 +499,7 @@ flowchart TB
 
 **例**:
 
-- `/review` → 複数のreview agentsを呼び出し、結果を統合
+- `/audit` → 複数のreview agentsを呼び出し、結果を統合
 - `/adr` → adr-creator skillを参照してADR作成プロセスを実行
 
 #### 🤖 Agents
@@ -482,9 +545,9 @@ Skill (auto-trigger): performance-optimization
     → Web Vitalsの知識を提供
     → 測定方法を提案
     ↓
-User: "/review"
+User: "/audit"
     ↓
-Command: /review
+Command: /audit
     ↓
 Agent: performance-reviewer
     → 実際のコードを分析
@@ -563,5 +626,5 @@ Output: docs/adr/0023-adopt-react-native.md
 - [Part 2: 調査フェーズ（/research）](../docs/guides/part2-research-investigation.md)
 - [Part 3: 計画フェーズ（/think）](../docs/guides/part3-think-sow-spec.md)
 - [Part 4: 実装フェーズ（/code）](../docs/guides/part4-code-implementation.md)
-- [Part 5: 品質フェーズ（/review）](../docs/guides/part5-review-quality.md)
+- [Part 5: 品質フェーズ（/audit）](../docs/guides/part5-review-quality.md)
 - [Part 6: 横断的関心事（PRE_TASK_CHECK）](../docs/guides/part6-pre-task-check.md)

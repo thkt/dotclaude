@@ -5,6 +5,7 @@ description: >
 allowed-tools: Bash(git log:*), Bash(git diff:*), Read, Write, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[task description] (optional if research context exists)"
+dependencies: []
 ---
 
 # /sow - SOW Generator

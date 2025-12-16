@@ -317,7 +317,7 @@ const calculateTotal = memo((items) => {
 | `/test` | TDD | Law of Demeter, AI-Assisted Development |
 | `/fix` | Occam's Razor | TIDYINGS |
 | `/hotfix` | Occam's Razor only | - |
-| `/review` | All principles | Priority order |
+| `/audit` | All principles | Priority order |
 
 ### Anti-Patterns to Avoid
 

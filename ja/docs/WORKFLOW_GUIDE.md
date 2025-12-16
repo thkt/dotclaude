@@ -51,7 +51,7 @@ AI支援による体系的なソフトウェア開発ツール。コマンド、
 | `/research` | 調査 | コードベースの理解、問題調査 |
 | `/code` | 実装 | TDD/RGRCサイクルで実装 |
 | `/test` | テスト | ユニット/統合/E2Eテスト実行 |
-| `/review` | レビュー | 14エージェントによる品質チェック |
+| `/audit` | レビュー | 14エージェントによる品質チェック |
 | `/sow` | 進捗確認 | 実装進捗の可視化 |
 | `/validate` | 検証 | SOW適合性の最終確認 |
 
@@ -77,11 +77,11 @@ AI支援による体系的なソフトウェア開発ツール。コマンド、
 
 ### 14エージェントの構成
 
-- **オーケストレーター**: 1個（review-orchestrator）
+- **オーケストレーター**: 1個（audit-orchestrator）
 - **フロントエンド専門**: 9個（可読性、構造、型安全性など）
 - **汎用**: 4個（test-generator、document-reviewerなど）
 
-### `/review`コマンドで自動実行
+### `/audit`コマンドで自動実行
 
 ```text
 Phase 1: 基礎（4エージェント、30秒）
@@ -121,7 +121,7 @@ Phase 3: 本番（3エージェント、60秒）
 ### 新機能開発
 
 ```text
-/research → /think → /code → /test → /review → /validate
+/research → /think → /code → /test → /audit → /validate
 
 進捗確認: /sow（いつでも）
 ```
@@ -169,7 +169,7 @@ sow.md + spec.md 生成
   ├─ API仕様に従う
   └─ データモデルを使用
   ↓
-/review
+/audit
   ├─ spec.mdを自動参照
   ├─ 実装が仕様と整合しているか検証
   ├─ 不足している機能を特定
@@ -194,7 +194,7 @@ sow.md + spec.md 生成
 └── spec.md      # 仕様書（自動参照される）
 ```
 
-**重要**: `/code`と`/review`は、最新のspec.mdを自動検出して参照します。手動での指定は不要です。
+**重要**: `/code`と`/audit`は、最新のspec.mdを自動検出して参照します。手動での指定は不要です。
 
 ---
 
@@ -227,7 +227,7 @@ sow.md + spec.md 生成
 
 ```bash
 # 6. コードレビュー
-/review
+/audit
 
 # 7. 最終検証
 /validate
@@ -248,7 +248,7 @@ sow.md + spec.md 生成
 
 1. 完全なワークフローを実践（/think → /validate）
 2. [@./AGENTS.md](./AGENTS.md) でレビュープロセスを理解
-3. `/review` の結果を活用してコード品質を向上
+3. `/audit` の結果を活用してコード品質を向上
 
 ### 上級者（継続的）
 
@@ -266,7 +266,7 @@ sow.md + spec.md 生成
 | コードを理解したい | `/research` |
 | 実装する | `/code` |
 | テストを実行 | `/test` |
-| 品質を確認 | `/review` |
+| 品質を確認 | `/audit` |
 | 進捗を確認 | `/sow` |
 | 完了を検証 | `/validate` |
 | 小さいバグ修正 | `/fix` |
@@ -325,7 +325,7 @@ sow.md + spec.md 生成
 
 ### Q3: レビューエージェントは個別実行できる？
 
-**A**: 現在は `/review` による統合実行のみ。個別エージェントは将来実装予定。
+**A**: 現在は `/audit` による統合実行のみ。個別エージェントは将来実装予定。
 
 ### Q4: SOWとは？
 
@@ -356,7 +356,7 @@ sow.md + spec.md 生成
 1. ✅ このガイドを読んだ（完了！）
 2. 📖 [@./DEVELOPMENT_WORKFLOW.md](./DEVELOPMENT_WORKFLOW.md) で実践的な手順を学ぶ
 3. 🚀 小さなタスクで `/think` → `/code` → `/test` を試す
-4. 🔍 `/review` でコード品質を確認
+4. 🔍 `/audit` でコード品質を確認
 
 ### チーム導入
 

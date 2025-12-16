@@ -299,7 +299,7 @@ See: [@~/.claude/commands/COMMAND_SELECTION.md](~/.claude/commands/COMMAND_SELEC
 ## Standard Workflows
 
 - **Bug Fix**: Investigate+Fix → `/research → /fix`
-- **Feature**: Implement+Test → `/research → /think → /code → /test → /review → /validate`
+- **Feature**: Implement+Test → `/research → /think → /code → /test → /audit → /validate`
 - **Emergency**: Critical+Production → `/hotfix`
 
 Details: [@~/.claude/commands/STANDARD_WORKFLOWS.md](~/.claude/commands/STANDARD_WORKFLOWS.md)

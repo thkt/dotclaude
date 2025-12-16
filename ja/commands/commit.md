@@ -140,7 +140,7 @@ argument-hint: "[optional: context for commit]"
 
 - `/branch` - 変更からブランチ名を生成
 - `/pr` - PR説明を作成
-- `/review` - コミット前にコードレビュー
+- `/audit` - コミット前にコードレビュー
 
 ## ベストプラクティス
 

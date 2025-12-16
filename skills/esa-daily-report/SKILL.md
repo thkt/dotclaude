@@ -51,9 +51,9 @@ These settings can be overridden by user preferences:
 ## Required Tools
 
 1. **esa_get_team_members** - Get current user's screen_name
-2. **list_gcal_events** - Fetch calendar events
+2. **Bash (gemini CLI)** - Fetch calendar events via Google Workspace MCP
 3. **esa_create_post** - Create post in esa
-4. **view** - Read template file (if needed)
+4. **Read** - Read template file (if needed)
 
 ## Execution Flow
 
@@ -70,25 +70,29 @@ This ensures the daily report is automatically created with the correct user's s
 
 ### Step 1: Fetch Calendar Events
 
-```markdown
-Use list_gcal_events with:
-- calendar_id: 'primary'
-- time_min: Start of target day (00:00:00)
-- time_max: End of target day (23:59:59)
-- time_zone: User's timezone (default: Asia/Tokyo)
+Use gemini CLI with Google Workspace MCP to fetch calendar events:
+
+```bash
+echo "今日のカレンダーの予定を時間順に教えてください。タイトルだけを箇条書きで出力してください。" | gemini -y -o text 2>&1
 ```
+
+**Important options:**
+
+- `-y` (yolo mode): Auto-approve tool calls without confirmation
+- `-o text`: Output in text format for easier parsing
 
 **Event Filtering Rules:**
 
 - Exclude work style events (e.g., "自宅勤務", "Home office")
-- Exclude "チーム朝会" from MTG振り返り section (but keep in 今日やったこと)
+- Exclude "チーム朝会" from both 今日やったこと and MTG振り返り sections
+- Exclude "もくもく会" from MTG振り返り section (keep in 今日やったこと)
 - Include all other calendar events
 
 ### Step 2: Gather User Input
 
 **Read the template file first** to understand what sections need to be filled.
 
-Use `view /mnt/skills/user/esa-daily-report/assets/default.md` to:
+Use `Read /Users/thkt/Documents/Personal/esa-daily-report/templates/default.md` to:
 
 1. Identify all sections that require user input (those with placeholder `-` or empty content)
 2. Dynamically determine which information to collect based on the template
@@ -110,12 +114,12 @@ Use `view /mnt/skills/user/esa-daily-report/assets/default.md` to:
 
 ### Step 3: Structure the Report
 
-**CRITICAL: Always read the template from `/mnt/skills/user/esa-daily-report/assets/default.md` before structuring the report.**
+**CRITICAL: Always read the template from `/Users/thkt/Documents/Personal/esa-daily-report/templates/default.md` before structuring the report.**
 
-Use the `view` tool to read the template file:
+Use the `Read` tool to read the template file:
 
 ```bash
-view /mnt/skills/user/esa-daily-report/assets/default.md
+Read /Users/thkt/Documents/Personal/esa-daily-report/templates/default.md
 ```
 
 The template defines the exact structure and sections for the daily report. Follow this template structure when building the report content, replacing placeholder text with:
@@ -159,7 +163,7 @@ Use esa_create_post with:
 
 1. Get current user's screen_name from esa_get_team_members
 2. Fetch today's calendar events
-3. **Read template structure from `/mnt/skills/user/esa-daily-report/assets/default.md`**
+3. **Read template structure from `/Users/thkt/Documents/Personal/esa-daily-report/templates/default.md`**
 4. Present events to user: "今日はこれらの予定がありましたね: [list events]"
 5. Create post in esa with calendar events and empty sections for other content
 6. Reply: "日報を作成しました！[URL] カレンダーの予定を記載しています。他の内容は後からesaで編集できます。"
@@ -215,7 +219,7 @@ If user says: "今日の日報を作成して。今日はReactのuseEffectにつ
 
 ### For Claude
 
-- **ALWAYS read the template file first**: Use `view /mnt/skills/user/esa-daily-report/assets/default.md` at the start of Step 3
+- **ALWAYS read the template file first**: Use `Read /Users/thkt/Documents/Personal/esa-daily-report/templates/default.md` at the start of Step 3
 - Never hardcode the template structure - always reference the actual template file
 - Be conversational - don't just collect data mechanically
 - Adapt to user's communication style
@@ -234,10 +238,10 @@ If user says: "今日の日報を作成して。今日はReactのuseEffectにつ
 
 ## Template Reference
 
-**Location**: `/mnt/skills/user/esa-daily-report/assets/default.md`
+**Location**: `/Users/thkt/Documents/Personal/esa-daily-report/templates/default.md`
 
 **Usage**: This template file is the single source of truth for daily report structure.
-Claude MUST read this file using the `view` tool during Step 3 before structuring any report.
+Claude MUST read this file using the `Read` tool during Step 3 before structuring any report.
 
 **Benefits of template file approach**:
 
@@ -246,7 +250,7 @@ Claude MUST read this file using the `view` tool during Step 3 before structurin
 - Ensures consistency across all reports
 - No hardcoded structure in the skill logic
 
-**To customize**: Edit `/mnt/skills/user/esa-daily-report/assets/default.md` directly.
+**To customize**: Edit `/Users/thkt/Documents/Personal/esa-daily-report/templates/default.md` directly.
 
 ## Maintenance Notes
 

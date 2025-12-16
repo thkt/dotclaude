@@ -6,6 +6,7 @@ description: >
   Git差分を分析してConventional Commits形式のメッセージを自動生成。型、スコープ、破壊的変更を検出。
 allowed-tools: Task
 model: inherit
+dependencies: [commit-generator]
 ---
 
 # /commit - Git Commit Message Generator
@@ -139,7 +140,7 @@ The subagent only executes git commands:
 
 - `/branch` - Generate branch names from changes
 - `/pr` - Create PR descriptions
-- `/review` - Code review before committing
+- `/audit` - Code review before committing
 
 ## Best Practices
 

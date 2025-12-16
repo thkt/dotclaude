@@ -18,7 +18,7 @@ Skillsは以下の目的で使用されます:
 
 **役割**: ユーザーが直接呼び出すワークフロー
 
-- `/review` → コードレビューのオーケストレーション
+- `/audit` → コードレビューのオーケストレーション
 - `/adr` → ADR作成フロー
 - `/code` → TDD/RGRC実装
 
@@ -174,9 +174,9 @@ Skill (auto-trigger): performance-optimization
     → Web Vitalsの知識を提供
     → 測定方法を提案
     ↓
-User: "/review"
+User: "/audit"
     ↓
-Command: /review
+Command: /audit
     ↓
 Agent: performance-reviewer
     → 実際のコードを分析
@@ -192,9 +192,9 @@ Output: 具体的な改善提案
 ```text
 User: "セキュリティをレビューして"
     ↓
-Command: /review
+Command: /audit
     ↓
-/review が security-review skillを参照
+/audit が security-review skillを参照
     → OWASP Top 10の知識を活用
     → 脆弱性パターンを検出
     ↓

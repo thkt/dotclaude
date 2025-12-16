@@ -5,7 +5,7 @@
 | パターン | ワークフロー | タスク数 |
 |---------|------------|----------|
 | バグ調査 | `/research` → `/fix` | 2 |
-| 機能開発 | `/research` → `/think` → `/code` → `/test` → `/review` → `/validate` | 6 |
+| 機能開発 | `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate` | 6 |
 | 緊急修正 | `/hotfix` | 1 |
 | クイック修正 | `/fix` | 1 |
 
@@ -26,7 +26,7 @@
 ### 新機能
 
 - **条件**: 新しい機能の追加
-- **ワークフロー**: `/research` → `/think` → `/code` → `/test` → `/review` → `/validate`
+- **ワークフロー**: `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate`
 - **TodoWrite**: 調査、計画、実装、検証、レビュー、検証
 
 ### 単純な既知のバグ

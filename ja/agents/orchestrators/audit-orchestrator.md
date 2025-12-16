@@ -40,7 +40,7 @@ execution_plan:
   phase_3_production:
     - performance-reviewer    # ランタイムとビルド最適化
     - accessibility-reviewer  # WCAG準拠とユーザビリティ
-    # 注記: セキュリティレビューは/reviewコマンドレベルでsecurity-review skillを使用
+    # 注記: セキュリティレビューは/auditコマンドレベルでsecurity-review skillを使用
 ```
 
 #### 並列実行の利点
@@ -348,7 +348,7 @@ const review = await reviewOrchestrator.review({
 })
 
 // フォーカスレビュー
-// 注記: セキュリティレビューは/reviewコマンドレベルでsecurity-review skillを使用
+// 注記: セキュリティレビューは/auditコマンドレベルでsecurity-review skillを使用
 const focusedReview = await reviewOrchestrator.review({
   target: 'src/components/UserProfile.tsx',
   agents: ['type-safety-reviewer', 'accessibility-reviewer'],
@@ -466,7 +466,7 @@ custom_rules:
 ```yaml
 # GitHub Actions例
 - name: コードレビュー
-  uses: ./review-orchestrator
+  uses: ./audit-orchestrator
   with:
     target: 'src/**/*.{ts,tsx}'
     fail-on: 'critical'
@@ -509,7 +509,7 @@ custom_rules:
 - `~/.claude/agents/enhancers/` - コード改善エージェント
   - progressive (progressive-enhancer)
 - `~/.claude/agents/orchestrators/` - オーケストレーションエージェント
-  - review-orchestrator (このファイル)
+  - audit-orchestrator (このファイル)
 
 ## ベストプラクティス
 

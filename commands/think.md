@@ -5,6 +5,7 @@ description: >
 allowed-tools: SlashCommand, Read, Write, Glob, Task
 model: inherit
 argument-hint: "[task description] (optional if research context exists)"
+dependencies: [sow-spec-reviewer]
 ---
 
 # /think - Planning Orchestrator
@@ -12,6 +13,15 @@ argument-hint: "[task description] (optional if research context exists)"
 ## Purpose
 
 Orchestrate SOW and Spec generation as a single workflow.
+
+## Golden Master Reference
+
+Use for **structure and format guidance**:
+
+- SOW structure: [@~/.claude/golden-masters/documents/sow/example-workflow-improvement.md]
+- Spec structure: [@~/.claude/golden-masters/documents/spec/example-workflow-improvement.md]
+
+**IMPORTANT**: Reference structures only, generate fresh content based on user's task.
 
 ## Input Resolution
 

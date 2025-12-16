@@ -83,7 +83,7 @@ argument-hint: "[optional: issue number or context]"
 - `/branch` - 最初にブランチを作成
 - `/commit` - コミットを作成
 - `/pr` - PR説明文を生成
-- `/review` - PR後のコードレビュー
+- `/audit` - PR後のコードレビュー
 
 ## 技術詳細
 
@@ -116,7 +116,7 @@ argument-hint: "[optional: issue number or context]"
 
 - `/branch` - ブランチ名を生成
 - `/commit` - コミットメッセージを生成
-- `/review` - コードレビュー
+- `/audit` - コードレビュー
 
 ## ベストプラクティス
 

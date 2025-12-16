@@ -1,7 +1,7 @@
 ---
 description: >
   Orchestrate complete development cycle through SlashCommand tool integration, executing from research through implementation, testing, and validation.
-  Chains multiple commands: /research → /think → /code → /test → /review → /validate with conditional execution and error handling.
+  Chains multiple commands: /research → /think → /code → /test → /audit → /validate with conditional execution and error handling.
   TodoWrite integration for progress tracking. Use for comprehensive feature development requiring full workflow automation.
   SlashCommandツール統合により、研究から実装、テスト、検証まで完全な開発サイクルを統括。
 allowed-tools: SlashCommand, TodoWrite, Read, Write, Edit, MultiEdit
@@ -46,7 +46,7 @@ workflow_sequence:
     on_failure: "明示的にfixを呼び出し"
 
   - name: "レビューフェーズ"
-    command: "/review"
+    command: "/audit"
     on_success: "続行"
     on_failure: "問題を文書化"
 
@@ -67,7 +67,7 @@ async function orchestrateFullCycle(context: any) {
     { type: 'agent', name: 'sow-spec-reviewer' }, // 設計レビュー
     '/code',
     '/test',
-    '/review',
+    '/audit',
     '/validate'
   ];
 
@@ -138,7 +138,7 @@ if (reviewResults.issues.critical > 0) {
 const parallelResults = await Promise.all([
   SlashCommand({ command: '/test --unit' }),
   SlashCommand({ command: '/test --integration' }),
-  SlashCommand({ command: '/review --style' })
+  SlashCommand({ command: '/audit --style' })
 ]);
 ```
 

@@ -329,7 +329,7 @@ When principles conflict:
 ### With Commands
 
 - **/code** - Applies principles during implementation (especially YAGNI, TDD)
-- **/review** - Validates adherence to principles
+- **/audit** - Validates adherence to principles
 - **/think** - Uses principles for architecture planning
 
 ### Integration Method

@@ -1,7 +1,7 @@
 ---
 description: >
   Orchestrate complete development cycle through SlashCommand tool integration, executing from research through implementation, testing, and validation.
-  Chains multiple commands: /research → /think → /code → /test → /review → /validate with conditional execution and error handling.
+  Chains multiple commands: /research → /think → /code → /test → /audit → /validate with conditional execution and error handling.
   TodoWrite integration for progress tracking. Use for comprehensive feature development requiring full workflow automation.
 allowed-tools: SlashCommand, TodoWrite, Read, Write, Edit, MultiEdit
 model: inherit
@@ -76,7 +76,7 @@ Task({
 
 ### Phase 5: Review
 
-**Use SlashCommand tool to execute**: `/review`
+**Use SlashCommand tool to execute**: `/audit`
 
 - Multi-agent code review for quality, security, performance
 - Generate actionable recommendations
@@ -101,7 +101,7 @@ Development Cycle Progress:
 - [ ] Design review phase (Use Task: sow-spec-reviewer)
 - [ ] Implementation phase (Use SlashCommand: /code)
 - [ ] Testing phase (Use SlashCommand: /test)
-- [ ] Review phase (Use SlashCommand: /review)
+- [ ] Review phase (Use SlashCommand: /audit)
 - [ ] Validation phase (Use SlashCommand: /validate)
 ```
 
@@ -116,7 +116,7 @@ When a command fails:
 3. **For design review failures**:
    - CONDITIONAL (70-89): Show issues, fix SOW/Spec, re-review
    - FAIL (<70): Return to `/think` with user clarifications
-4. **For /review failures**: Continue with documented issues
+4. **For /audit failures**: Continue with documented issues
 5. **For /validate failures**: Report specific criteria that failed
 
 ## Conditional Execution
@@ -161,7 +161,7 @@ Claude: Starting full development cycle...
 [Uses SlashCommand to execute: /test]
 ✓ All tests passing
 
-[Uses SlashCommand to execute: /review]
+[Uses SlashCommand to execute: /audit]
 ✓ Review complete - 2 medium priority issues found
 
 [Uses SlashCommand to execute: /validate]

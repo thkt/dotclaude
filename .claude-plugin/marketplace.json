@@ -13,7 +13,7 @@
     {
       "name": "complete-workflow-system",
       "source": "./",
-      "description": "Full development workflow: /think → /code → /test → /review → /validate with SOW-based validation",
+      "description": "Full development workflow: /think → /code → /test → /audit → /validate with SOW-based validation",
       "version": "1.1.0",
       "author": {
         "name": "thkt",
@@ -35,20 +35,20 @@
         "./commands/think.md",
         "./commands/code.md",
         "./commands/test.md",
-        "./commands/review.md",
+        "./commands/audit.md",
         "./commands/validate.md",
         "./commands/sow.md",
         "./commands/research.md",
         "./ja/commands/think.md",
         "./ja/commands/code.md",
         "./ja/commands/test.md",
-        "./ja/commands/review.md",
+        "./ja/commands/audit.md",
         "./ja/commands/validate.md",
         "./ja/commands/sow.md",
         "./ja/commands/research.md"
       ],
       "agents": [
-        "./agents/orchestrators/review-orchestrator.md",
+        "./agents/orchestrators/audit-orchestrator.md",
         "./agents/generators/test.md",
         "./agents/enhancers/progressive.md",
         "./agents/reviewers/subagent.md",
