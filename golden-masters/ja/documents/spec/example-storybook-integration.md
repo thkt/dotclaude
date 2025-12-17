@@ -1,3 +1,23 @@
+<!--
+Golden Master: Spec - Storybook Integration
+
+選定理由:
+- フロントエンド機能の明確なFR構造
+- Component API仕様のSpec形式
+- CSF3 Stories生成パターン
+
+特徴:
+- UI/コンポーネントSpecの参考例
+- トリガーキーワード定義
+- /thinkワークフローとの統合
+
+参照元: ~/.claude/workspace/planning/2025-12-14-storybook-integration/
+
+Last Reviewed: 2025-12-17
+Update Reason: メンテナンスメタデータフィールド追加
+Previous Version: N/A
+-->
+
 # Specification: Storybook 連携機能
 
 Version: 1.1.0

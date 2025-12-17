@@ -14,6 +14,10 @@ Features:
 - Measurable NFRs
 
 Source: ~/.claude/workspace/planning/2025-12-16-spec-driven-workflow-improvement/
+
+Last Reviewed: 2025-12-17
+Update Reason: Added maintenance metadata fields
+Previous Version: N/A
 -->
 
 # Specification: Workflow Improvement Based on Spec-Driven Development Practices

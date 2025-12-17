@@ -1,3 +1,23 @@
+<!--
+Golden Master: Research Context Template
+
+Selection criteria:
+- Template for /research output format
+- Consistent ✓/→/? marker usage
+- Clear section structure
+
+Features:
+- Purpose-driven research format
+- Prerequisites with evidence
+- Actionable next steps
+
+Source: Template (not from actual research)
+
+Last Reviewed: 2025-12-17
+Update Reason: Added maintenance metadata fields
+Previous Version: N/A
+-->
+
 # Research Context: [Topic Name]
 
 Generated: [YYYY-MM-DD]

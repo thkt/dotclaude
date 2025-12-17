@@ -1,3 +1,23 @@
+<!--
+Golden Master: Rule from ADR Template
+
+Selection criteria:
+- Template for /rulify output format
+- Clear priority and source tracking
+- Actionable requirements and prohibitions
+
+Features:
+- Derived from ADR structure
+- Good/bad examples included
+- Verification method defined
+
+Source: Template (not from actual ADR)
+
+Last Reviewed: 2025-12-17
+Update Reason: Added maintenance metadata fields
+Previous Version: N/A
+-->
+
 # [RULE_NAME_UPPER_SNAKE_CASE]
 
 Priority: P[0-3]

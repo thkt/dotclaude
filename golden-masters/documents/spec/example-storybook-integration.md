@@ -1,3 +1,23 @@
+<!--
+Golden Master: Spec - Storybook Integration
+
+Selection criteria:
+- Clear FR structure for frontend features
+- Component API specification in spec format
+- CSF3 Stories generation patterns
+
+Features:
+- Reference example for UI/component spec
+- Trigger keywords definition
+- Integration with /think workflow
+
+Source: ~/.claude/workspace/planning/2025-12-14-storybook-integration/
+
+Last Reviewed: 2025-12-17
+Update Reason: Added maintenance metadata fields
+Previous Version: N/A
+-->
+
 # Specification: Storybook Integration Feature
 
 Version: 1.1.0

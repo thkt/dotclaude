@@ -13,6 +13,10 @@ Golden Master: SOW - Storybook Integration
 - CSF3形式のStories生成
 
 参照元: ~/.claude/workspace/planning/2025-12-14-storybook-integration/
+
+Last Reviewed: 2025-12-17
+Update Reason: メンテナンスメタデータフィールド追加
+Previous Version: N/A
 -->
 
 # SOW: Storybook 連携機能

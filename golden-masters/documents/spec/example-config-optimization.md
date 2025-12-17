@@ -1,3 +1,23 @@
+<!--
+Golden Master: Spec - Config Optimization
+
+Selection criteria:
+- Clear FR structure for configuration optimization
+- Pattern-based skip conditions
+- Quantitative targets
+
+Features:
+- Reference example for config/performance spec
+- Measurable acceptance criteria
+- Migration considerations
+
+Source: ~/.claude/workspace/planning/2025-12-04-claude-code-config-optimization/
+
+Last Reviewed: 2025-12-17
+Update Reason: Added maintenance metadata fields
+Previous Version: N/A
+-->
+
 # Specification: Claude Code Configuration Optimization
 
 Version: 1.0.0

@@ -1,3 +1,23 @@
+<!--
+Golden Master: Spec - Config Optimization
+
+選定理由:
+- 設定最適化の明確なFR構造
+- パターンベースのスキップ条件
+- 定量的な目標設定
+
+特徴:
+- 設定・パフォーマンスSpecの参考例
+- 測定可能な受入基準
+- 移行の考慮事項
+
+参照元: ~/.claude/workspace/planning/2025-12-04-claude-code-config-optimization/
+
+Last Reviewed: 2025-12-17
+Update Reason: メンテナンスメタデータフィールド追加
+Previous Version: N/A
+-->
+
 # Specification: Claude Code設定最適化
 
 Version: 1.0.0

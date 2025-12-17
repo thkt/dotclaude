@@ -14,6 +14,10 @@ Golden Master: Spec - Workflow Improvement
 - NFRの測定可能性
 
 参照元: ~/.claude/workspace/planning/2025-12-16-spec-driven-workflow-improvement/
+
+Last Reviewed: 2025-12-17
+Update Reason: メンテナンスメタデータフィールド追加
+Previous Version: N/A
 -->
 
 # Specification: Spec駆動開発プラクティスに基づくワークフロー改善

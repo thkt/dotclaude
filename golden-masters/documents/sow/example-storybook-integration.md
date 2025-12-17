@@ -13,6 +13,10 @@ Features:
 - CSF3 format Stories generation
 
 Source: ~/.claude/workspace/planning/2025-12-14-storybook-integration/
+
+Last Reviewed: 2025-12-17
+Update Reason: Added maintenance metadata fields
+Previous Version: N/A
 -->
 
 # SOW: Storybook Integration Feature

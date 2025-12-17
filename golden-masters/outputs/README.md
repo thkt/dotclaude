@@ -15,10 +15,13 @@ Store canonical output examples for each command to enable:
 ```text
 golden-masters/
 ├── README.md           # This file
-├── fix-output.md       # Expected /fix output format
-├── think-sow.md        # Expected /think SOW output
-├── think-spec.md       # Expected /think Spec output
-└── code-output.md      # Expected /code output format
+├── commit-message.md   # Expected /commit output format
+├── pr-description.md   # Expected /pr output format
+├── issue-body.md       # Expected /issue output format
+├── fix-output.md       # Expected /fix output format (TBD)
+├── think-sow.md        # Expected /think SOW output (TBD)
+├── think-spec.md       # Expected /think Spec output (TBD)
+└── code-output.md      # Expected /code output format (TBD)
 ```
 
 ## Usage
