@@ -409,14 +409,14 @@ For each public method/function:
 
 ### Core Principles
 
-- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - Keep tests simple and focused
-- [@../reference/MILLERS_LAW.md](../reference/MILLERS_LAW.md) - Limit test case complexity
+- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Keep tests simple and focused
+- [@~/.claude/rules/reference/MILLERS_LAW.md](~/.claude/rules/reference/MILLERS_LAW.md) - Limit test case complexity
 
 ### Development Practices
 
-- [@./TDD_RGRC.md](./TDD_RGRC.md) - Test-first approach for implementation
-- [@./READABLE_CODE.md](./READABLE_CODE.md) - Clarity in test code
-- [@./PROGRESSIVE_ENHANCEMENT.md](./PROGRESSIVE_ENHANCEMENT.md) - Start simple, enhance coverage gradually
+- [@./tdd-rgrc.md](./tdd-rgrc.md) - Test-first approach for implementation
+- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Clarity in test code
+- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Start simple, enhance coverage gradually
 
 ## Remember
 

@@ -9,18 +9,18 @@
 ## ディレクトリ構造
 
 ```text
-golden-masters/
-├── README.md             # このファイル
-├── documents/            # ドキュメント品質基準
-│   ├── sow/              # 理想的なSOW例
+~/.claude/ja/golden-masters/   # 日本語版（このディレクトリ）
+├── README.md                  # このファイル
+├── documents/                 # ドキュメント品質基準
+│   ├── sow/                   # 理想的なSOW例
 │   │   └── example-*.md
-│   └── spec/             # 理想的なSpec例
+│   └── spec/                  # 理想的なSpec例
 │       └── example-*.md
-└── outputs/              # コマンド出力検証
-    ├── README.md         # 出力検証ガイド
-    ├── fix-output.md     # /fix 出力形式
-    ├── think-sow.md      # /think SOW出力
-    └── code-output.md    # /code 出力形式
+└── outputs/                   # コマンド出力検証
+    └── README.md              # 出力検証ガイド
+
+# 英語版は以下に配置:
+~/.claude/golden-masters/
 ```
 
 ## 2つの用途
@@ -153,14 +153,16 @@ Previous Version: [アーカイブされたバージョンのパス、または 
 
 ## 関連ドキュメント
 
-- [sow-spec-reviewer](../agents/reviewers/sow-spec.md)
-- [SOWテンプレート](../templates/sow.md)（Phase 4で作成予定）
-- [Specテンプレート](../templates/spec.md)（Phase 4で作成予定）
+- [sow-spec-reviewer](../../agents/reviewers/sow-spec.md)
+- [SOWテンプレート](../../templates/sow.md)（Phase 4で作成予定）
+- [Specテンプレート](../../templates/spec.md)（Phase 4で作成予定）
+- [英語版 Golden Masters](../../golden-masters/README.md)
 
 ## 更新履歴
 
 | 日付 | 変更内容 |
 |------|----------|
+| 2025-12-18 | `~/.claude/ja/golden-masters/`に移動（一貫性のため） |
 | 2025-12-17 | メンテナンスガイドライン追加（更新トリガー、レビュープロセス、メタデータテンプレート） |
 | 2025-12-16 | 初版作成（Spec駆動開発プラクティス導入） |
 | 2025-12-16 | 構造統合（documents/ + outputs/） |

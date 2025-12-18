@@ -1,5 +1,6 @@
 ---
 description: Create custom hooks to prevent unwanted behaviors
+dependencies: [hookify]
 ---
 
 # /hookify - Custom Hook Creator

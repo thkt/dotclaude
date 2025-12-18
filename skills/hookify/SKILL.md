@@ -278,7 +278,7 @@ mv .claude/hookify.my-rule.local.md ~/.Trash/
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Note**: Hookify rules are currently **conceptual** - they require a hook processor to be implemented. The current implementation provides the rule file format and commands for managing rules.
+**Note**: Hookify rules are now **fully implemented** with the `hookify-processor.py` hook. Rules are automatically processed for Write/Edit/MultiEdit/Bash operations via settings.json PreToolUse hook.
 
 ### With settings.json
 

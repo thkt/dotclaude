@@ -1,5 +1,6 @@
 ---
 description: List all hookify rules
+dependencies: [hookify]
 ---
 
 # /hookify:list - Show Hook Rules

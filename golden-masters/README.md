@@ -14,15 +14,18 @@ golden-masters/
 ├── documents/            # Document quality standards
 │   ├── sow/              # Ideal SOW examples
 │   │   └── example-*.md
-│   └── spec/             # Ideal Spec examples
+│   ├── spec/             # Ideal Spec examples
+│   │   └── example-*.md
+│   └── research/         # Research output examples
 │       └── example-*.md
-├── outputs/              # Command output verification
-│   ├── README.md         # Output verification guide
-│   ├── fix-output.md     # /fix output format
-│   ├── think-sow.md      # /think SOW output
-│   └── code-output.md    # /code output format
-└── ja/                   # Japanese version
-    └── ...
+└── outputs/              # Command output verification
+    ├── README.md         # Output verification guide
+    ├── commit-message.md # Commit message format
+    ├── pr-description.md # PR description format
+    └── issue-body.md     # Issue body format
+
+# Japanese version is located at:
+~/.claude/ja/golden-masters/
 ```
 
 ## Two Use Cases
@@ -163,6 +166,7 @@ When replacing a golden master:
 
 | Date | Changes |
 |------|---------|
+| 2025-12-18 | Moved Japanese version to `~/.claude/ja/golden-masters/` for consistency |
 | 2025-12-17 | Added Maintenance Guidelines (update triggers, review process, metadata template) |
 | 2025-12-16 | Initial creation (Spec-driven development practices) |
 | 2025-12-16 | Structure integration (documents/ + outputs/) |

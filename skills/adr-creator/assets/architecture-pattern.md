@@ -10,7 +10,7 @@ Technical Story: {{TECHNICAL_STORY_LINK}}
 
 {{CONTEXT}}
 
-アーキテクチャパターンの選択は、システム全体の構造と保守性に長期的な影響を与えます。
+Architecture pattern selection has long-term impact on system structure and maintainability.
 
 ## Decision Drivers
 
@@ -32,14 +32,14 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 
 #### Positive Consequences
 
-- {{POSITIVE_1}} - アーキテクチャの明確化
-- {{POSITIVE_2}} - 保守性の向上
-- {{POSITIVE_3}} - スケーラビリティの改善
+- {{POSITIVE_1}} - Clear architecture
+- {{POSITIVE_2}} - Improved maintainability
+- {{POSITIVE_3}} - Better scalability
 
 #### Negative Consequences
 
-- {{NEGATIVE_1}} - 学習曲線
-- {{NEGATIVE_2}} - 初期実装コスト
+- {{NEGATIVE_1}} - Learning curve
+- {{NEGATIVE_2}} - Initial implementation cost
 
 ## Pros and Cons of the Options
 
@@ -75,7 +75,7 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 ### Architecture Diagram
 
 ```markdown
-[アーキテクチャ図をここに記述]
+[Insert architecture diagram here]
 ```
 
 ### Implementation Guidelines
@@ -86,8 +86,8 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 
 ### Quality Attributes
 
-| 属性 | 優先度 | 達成方法 |
-|-----|-------|---------|
+| Attribute | Priority | Approach |
+|-----------|----------|----------|
 | {{QA_1}} | {{QA_1_PRIORITY}} | {{QA_1_METHOD}} |
 | {{QA_2}} | {{QA_2_PRIORITY}} | {{QA_2_METHOD}} |
 
@@ -101,7 +101,7 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 
 ### Trade-offs
 
-このパターンは以下をトレードオフします:
+This pattern trades off the following:
 
 - {{TRADEOFF_1}}
 - {{TRADEOFF_2}}

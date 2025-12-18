@@ -241,18 +241,25 @@ Comprehensive documentation loaded as needed:
 - `tdd-rgrc.md` - Detailed RGRC cycle implementation
 - `test-design.md` - Complete test design techniques guide
 
-### Command Output Testing
+### Related Testing Resources
 
-For validating command output quality using Golden Master methodology:
+For command output testing and document quality standards:
 
 - **[~/.claude/tests/README.md](../../tests/README.md)** - Command test strategy and verification checklists
-- **~/.claude/tests/golden-masters/** - Expected output samples for commands
-- **~/.claude/tests/scenarios/** - Test scenarios for command validation
+- **[~/.claude/golden-masters/](../../golden-masters/)** - Document quality standards (SOW/Spec examples, output formats)
+- **[~/.claude/tests/scenarios/](../../tests/scenarios/)** - Test scenarios for command validation
 
 ### scripts/
 
-Currently empty - no automation scripts needed (knowledge-only skill)
+Test automation utilities:
+
+- `run-tests.sh` - Auto-detect package manager and test runner
+- `coverage-check.sh` - Verify coverage thresholds (default: 100%)
+- `generate-test.sh` - Generate test scaffolds with AAA pattern
 
 ### assets/
 
-Currently empty - no template files needed (knowledge-only skill)
+Configuration file templates (TDD-optimized with 100% coverage targets):
+
+- `vitest.config.ts` - Vitest configuration template
+- `jest.config.js` - Jest configuration template

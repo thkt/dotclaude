@@ -4,316 +4,317 @@ description: >
   Structured process for creating high-quality Architecture Decision Records in MADR format.
   Triggers on keywords: "ADR", "Architecture Decision", "決定記録", "技術選定",
   "アーキテクチャ決定", "design decision", "技術的決定", "設計判断", "create ADR",
-  "作成 ADR", "記録 決定", "document decision".
+  "document decision", "非推奨化", "deprecation", "プロセス変更", "process change".
   Provides 6-phase process: pre-creation validation, template selection, reference collection,
   proofreading, index update, and error recovery with retry mechanisms.
+  Available templates: technology-selection, architecture-pattern, process-change, deprecation.
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash, Task
 ---
 
-# ADR Creator - 構造化ADR作成プロセス
+# ADR Creator - Structured ADR Creation Process
 
-## 目的
+## Purpose
 
-MADR形式のArchitecture Decision Recordを、検証・収集・生成・確認の4段階プロセスで作成し、ドキュメント品質を保証する。
+Create Architecture Decision Records in MADR format through a 4-stage process: validation, collection, generation, and confirmation to ensure documentation quality.
 
-## 実行フロー
+## Execution Flow
 
-### Phase 1: 作成前検証 (Pre-Creation Check)
+### Phase 1: Pre-Creation Check
 
-**目的**: 重複や不整合を事前に防ぐ
+**Purpose**: Prevent duplicates and inconsistencies in advance
 
-**実行内容**:
+**Actions**:
 
-1. 既存ADRの重複チェック
-2. 命名規則の検証
-3. 日付・バージョン整合性確認
-4. ディレクトリ構造の検証
+1. Check for duplicate existing ADRs
+2. Validate naming conventions
+3. Confirm date/version consistency
+4. Verify directory structure
 
-**スクリプト**: `scripts/pre-check.sh`
+**Script**: `scripts/pre-check.sh`
 
-**チェック項目**:
+**Check Items**:
 
 ```bash
-# 1. 既存ADR重複チェック
-- タイトルの類似度チェック（Levenshtein距離 < 3で警告）
-- 同一技術・パターンの既存ADR検索
-- 関連するsuperseded ADRの確認
+# 1. Duplicate ADR Check
+- Title similarity check (warning if Levenshtein distance < 3)
+- Search for existing ADRs on same technology/pattern
+- Confirm related superseded ADRs
 
-# 2. 命名規則検証
-- タイトル長: 5-64文字
-- 使用禁止文字チェック（/:*?"<>|）
-- Slug生成可能性確認
+# 2. Naming Convention Validation
+- Title length: 5-64 characters
+- Prohibited character check (/:*?"<>|)
+- Slug generation possibility confirmation
 
-# 3. 日付・バージョン整合性
-- 作成日 ≤ 現在日
-- プロジェクトバージョンとの整合性
-- タイムゾーン確認
+# 3. Date/Version Consistency
+- Created date ≤ current date
+- Consistency with project version
+- Timezone confirmation
 
-# 4. ディレクトリ構造
-- docs/adr/ 存在確認
-- 書き込み権限確認
-- 採番ルール確認（0001-9999）
+# 4. Directory Structure
+- Confirm docs/adr/ exists
+- Check write permissions
+- Verify numbering rules (0001-9999)
 ```
 
-**出力例**:
+**Output Example**:
 
 ```text
-🔍 ADR作成前チェック
+🔍 ADR Pre-Creation Check
 
-✅ 重複チェック: 類似ADRなし
-✅ 命名規則: OK
-✅ 日付整合性: OK
-⚠️  警告: ADR-0015 が関連する可能性（"Adopt React for UI"）
-   → 関連性を確認してください
+✅ Duplicate check: No similar ADRs found
+✅ Naming convention: OK
+✅ Date consistency: OK
+⚠️  Warning: ADR-0015 may be related ("Adopt React for UI")
+   → Please confirm relevance
 
-✅ 作成可能です
-次の番号: 0023
+✅ Ready to create
+Next number: 0023
 ```
 
-### Phase 2: テンプレート選択とセクション構成
+### Phase 2: Template Selection and Section Structure
 
-**目的**: ADRの種類に応じた適切な構成を選択
+**Purpose**: Select appropriate structure based on ADR type
 
-**テンプレート種類**:
+**Template Types**:
 
-| テンプレート | 用途 | セクション特性 |
-|-------------|------|---------------|
-| technology-selection | 技術・ライブラリ選定 | Alternatives比較重視 |
-| architecture-pattern | アーキテクチャパターン | Context詳細・Consequences分析 |
-| process-change | 開発プロセス変更 | Decision Drivers詳細 |
-| deprecation | 既存技術の非推奨化 | Migration Plan必須 |
+| Template | Use Case | Section Characteristics |
+|----------|----------|------------------------|
+| technology-selection | Technology/library selection | Alternatives comparison focused |
+| architecture-pattern | Architecture pattern | Detailed context & consequences analysis |
+| process-change | Development process changes | Detailed decision drivers |
+| deprecation | Deprecating existing technology | Migration plan required |
 
-**選択プロセス**:
+**Selection Process**:
 
 ```text
-📋 ADRテンプレート選択
+📋 ADR Template Selection
 
-この決定はどの分類に該当しますか？
+Which category does this decision fall into?
 
-1. 技術選定（ライブラリ、フレームワーク、言語）
-2. アーキテクチャパターン（構造、設計方針）
-3. プロセス変更（ワークフロー、ルール）
-4. 非推奨化（既存技術の廃止）
+1. Technology selection (library, framework, language)
+2. Architecture pattern (structure, design policy)
+3. Process change (workflow, rules)
+4. Deprecation (retiring existing technology)
 
-選択 > 1
+Selection > 1
 
-✅ テンプレート: technology-selection.md
-必須セクション:
+✅ Template: technology-selection.md
+Required sections:
 - Context and Problem Statement
-- Considered Options (最低3つ推奨)
+- Considered Options (minimum 3 recommended)
 - Pros and Cons of the Options
 - Decision Outcome
-- Confirmation (実装検証方法)
+- Confirmation (implementation verification method)
 ```
 
-### Phase 3: 参照元の収集 (Reference Collection)
+### Phase 3: Reference Collection
 
-**目的**: 決定の根拠となる情報を体系的に収集
+**Purpose**: Systematically collect information that supports the decision
 
-**スクリプト**: `scripts/collect-references.sh`
+**Script**: `scripts/collect-references.sh`
 
-**収集対象**:
+**Collection Targets**:
 
 ```bash
-# 1. プロジェクトドキュメント
-- README.md の関連セクション
-- docs/ 配下の仕様書
-- CHANGELOG.md の関連エントリ
+# 1. Project Documentation
+- Related sections in README.md
+- Specifications under docs/
+- Related entries in CHANGELOG.md
 
 # 2. Issue Tracker
-- GitHub Issues（該当ラベル: architecture, decision）
-- 関連する議論スレッド
-- 決定に至った経緯
+- GitHub Issues (labels: architecture, decision)
+- Related discussion threads
+- History leading to the decision
 
 # 3. Pull Requests
-- 関連する実装PR
-- レビューコメント
-- パフォーマンス計測結果
+- Related implementation PRs
+- Review comments
+- Performance measurement results
 
-# 4. 外部リソース
-- 公式ドキュメント
-- ベンチマーク結果
-- コミュニティの評価
+# 4. External Resources
+- Official documentation
+- Benchmark results
+- Community evaluations
 ```
 
-**出力形式**:
+**Output Format**:
 
 ```markdown
-## 参照元（自動収集）
+## References (auto-collected)
 
-### プロジェクト内
-- [README.md#技術スタック](../README.md#tech-stack)
-- [仕様書: 状態管理要件](../docs/requirements/state-management.md)
+### Within Project
+- [README.md#Tech Stack](../README.md#tech-stack)
+- [Spec: State Management Requirements](../docs/requirements/state-management.md)
 
-### Issue・PR
-- [Issue #145: 状態管理ライブラリの選定](https://github.com/org/repo/issues/145)
-- [PR #167: Zustand POC実装](https://github.com/org/repo/pull/167)
+### Issues & PRs
+- [Issue #145: State Management Library Selection](https://github.com/org/repo/issues/145)
+- [PR #167: Zustand POC Implementation](https://github.com/org/repo/pull/167)
 
-### 外部リソース
-- [Zustand公式ドキュメント](https://github.com/pmndrs/zustand)
+### External Resources
+- [Zustand Official Documentation](https://github.com/pmndrs/zustand)
 - [State of JS 2024: State Management](https://stateofjs.com/...)
-- [ベンチマーク結果](https://npmtrends.com/zustand-vs-redux)
+- [Benchmark Results](https://npmtrends.com/zustand-vs-redux)
 ```
 
-**実装方法**:
+**Implementation**:
 
 ```bash
 #!/bin/bash
 # scripts/collect-references.sh
 
-KEYWORD="$1"  # 例: "zustand" "state management"
+KEYWORD="$1"  # e.g., "zustand" "state management"
 
-# GitHub Issues検索（gh CLI使用）
-echo "### Issue・PR"
+# GitHub Issues search (using gh CLI)
+echo "### Issues & PRs"
 gh issue list --search "$KEYWORD" --state all --limit 5 \
   --json number,title,url \
   --jq '.[] | "- [Issue #\(.number): \(.title)](\(.url))"'
 
-# プロジェクト内grep
-echo "### プロジェクト内"
+# Project-wide grep
+echo "### Within Project"
 rg -l "$KEYWORD" docs/ README.md 2>/dev/null | while read file; do
   echo "- [$file]($file)"
 done
 ```
 
-### Phase 4: 校正・検証チェックリスト
+### Phase 4: Proofreading & Verification Checklist
 
-**目的**: ADR完成後の品質保証
+**Purpose**: Quality assurance after ADR completion
 
-**スクリプト**: `scripts/validate-adr.sh`
+**Script**: `scripts/validate-adr.sh`
 
-**検証項目**:
+**Verification Items**:
 
-#### 4-1. 影響範囲分析
+#### 4-1. Impact Analysis
 
 ```markdown
 # references/impact-analysis.md
 
-## 影響範囲チェックリスト
+## Impact Analysis Checklist
 
-### コードベース
-- [ ] 影響を受けるファイル数を特定（予想: ___個）
-- [ ] 変更が必要なモジュール一覧
-- [ ] 破壊的変更の有無
-- [ ] 互換性レイヤーの必要性
+### Codebase
+- [ ] Identify number of affected files (estimate: ___ files)
+- [ ] List of modules requiring changes
+- [ ] Presence of breaking changes
+- [ ] Need for compatibility layer
 
-### 依存関係
-- [ ] package.json更新の必要性
-- [ ] 依存ライブラリとの競合確認
-- [ ] バージョン制約の確認
+### Dependencies
+- [ ] Need to update package.json
+- [ ] Confirm conflicts with dependent libraries
+- [ ] Confirm version constraints
 
-### チーム
-- [ ] 影響を受けるチームメンバー数
-- [ ] 学習コスト見積もり（___時間/人）
-- [ ] ドキュメント更新タスク
+### Team
+- [ ] Number of affected team members
+- [ ] Learning cost estimate (___ hours/person)
+- [ ] Documentation update tasks
 ```
 
-#### 4-2. テストカバレッジ
+#### 4-2. Test Coverage
 
 ```markdown
 # references/test-coverage.md
 
-## テスト更新チェックリスト
+## Test Update Checklist
 
-- [ ] 既存テストの更新範囲特定
-- [ ] 新規テストの必要性（推定: ___個）
-- [ ] E2Eテストへの影響
-- [ ] パフォーマンステスト要否
-- [ ] 回帰テスト計画
+- [ ] Identify scope of existing test updates
+- [ ] New tests needed (estimate: ___ tests)
+- [ ] Impact on E2E tests
+- [ ] Need for performance tests
+- [ ] Regression test plan
 ```
 
-#### 4-3. ロールバック計画
+#### 4-3. Rollback Plan
 
 ```markdown
 # references/rollback-plan.md
 
-## ロールバック計画チェックリスト
+## Rollback Plan Checklist
 
-### 準備
-- [ ] ロールバック手順書作成
-- [ ] バックアップ対象の特定
-- [ ] 切り戻しトリガー定義
+### Preparation
+- [ ] Create rollback procedure document
+- [ ] Identify backup targets
+- [ ] Define rollback triggers
 
-### 検証
-- [ ] ロールバック所要時間見積もり（___分）
-- [ ] データ整合性の確保方法
-- [ ] 部分適用/段階的ロールバックの可否
+### Verification
+- [ ] Estimate rollback time (___ minutes)
+- [ ] Data integrity assurance method
+- [ ] Possibility of partial/gradual rollback
 ```
 
-**検証スクリプト実行例**:
+**Validation Script Execution Example**:
 
 ```bash
 # scripts/validate-adr.sh 0023-adopt-zustand.md
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ADR検証レポート: 0023-adopt-zustand.md
+ADR Validation Report: 0023-adopt-zustand.md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ 必須セクション: 完備
-✅ MADR形式: 準拠
-⚠️  警告: Confirmation セクションが空白
-⚠️  警告: 参照元が2件のみ（推奨: 3件以上）
+✅ Required sections: Complete
+✅ MADR format: Compliant
+⚠️  Warning: Confirmation section is empty
+⚠️  Warning: Only 2 references (recommended: 3+)
 
-📊 チェックリスト進捗:
-  影響範囲分析: 3/5 完了
-  テスト更新: 0/5 未着手  ← 要対応
-  ロールバック計画: 2/3 完了
+📊 Checklist Progress:
+  Impact analysis: 3/5 complete
+  Test updates: 0/5 not started  ← Action needed
+  Rollback plan: 2/3 complete
 
-推奨: テスト更新チェックリストを完了してください
+Recommendation: Complete the test update checklist
 ```
 
-### Phase 5: 索引更新・リンク生成
+### Phase 5: Index Update & Link Generation
 
-**目的**: ADR間の関連性を可視化し、発見性を向上
+**Purpose**: Visualize relationships between ADRs and improve discoverability
 
-**スクリプト**: `scripts/update-index.sh`
+**Script**: `scripts/update-index.sh`
 
-**実行内容**:
+**Actions**:
 
-#### 5-1. ADR一覧の自動生成
+#### 5-1. Auto-Generate ADR List
 
 ```bash
-# docs/adr/README.md 自動更新
+# docs/adr/README.md auto-update
 
 ## Architecture Decision Records
 
-| 番号 | タイトル | ステータス | 日付 |
-|-----|---------|----------|------|
+| Number | Title | Status | Date |
+|--------|-------|--------|------|
 | [0023](0023-adopt-zustand.md) | Adopt Zustand for State Management | proposed | 2025-10-21 |
 | [0022](0022-migration-turborepo.md) | Migrate to Turborepo | accepted | 2025-10-15 |
 | [0021](0021-typescript-strict.md) | Enable TypeScript Strict Mode | accepted | 2025-10-10 |
 
-### ステータス別
+### By Status
 - **Proposed**: 0023
 - **Accepted**: 0015, 0016, 0021, 0022
 - **Deprecated**: 0008
 - **Superseded**: 0003 → 0021
 ```
 
-#### 5-2. 関連ADRの相互リンク
+#### 5-2. Cross-Link Related ADRs
 
 ```markdown
-# ADR-0023内に自動追加
+# Auto-added within ADR-0023
 
 ## Related ADRs
 
 ### Depends On
-- [ADR-0015: Adopt React for UI](0015-adopt-react-for-ui.md) - 状態管理の前提
+- [ADR-0015: Adopt React for UI](0015-adopt-react-for-ui.md) - Prerequisite for state management
 
 ### Related
-- [ADR-0021: TypeScript Strict Mode](0021-typescript-strict.md) - 型安全性の強化
+- [ADR-0021: TypeScript Strict Mode](0021-typescript-strict.md) - Type safety enhancement
 
 ### May Supersede
-- [ADR-0008: Use Redux for State](0008-use-redux-for-state.md) - 将来的に置き換え
+- [ADR-0008: Use Redux for State](0008-use-redux-for-state.md) - Future replacement candidate
 ```
 
-**リンク生成アルゴリズム**:
+**Link Generation Algorithm**:
 
 ```bash
-# キーワードベースの関連性検出
+# Keyword-based relevance detection
 KEYWORDS=$(extract_keywords "$ADR_FILE")  # "zustand", "state", "react"
 
-# 既存ADRから関連度スコア算出
+# Calculate relevance score from existing ADRs
 for existing_adr in docs/adr/*.md; do
   score=$(calculate_relevance "$KEYWORDS" "$existing_adr")
   if [ $score -gt 3 ]; then
@@ -322,192 +323,192 @@ for existing_adr in docs/adr/*.md; do
 done
 ```
 
-### Phase 6: 失敗時の再試行手順
+### Phase 6: Retry Procedures on Failure
 
-**目的**: エラー時の自動復旧と明確なガイダンス
+**Purpose**: Automatic recovery on errors and clear guidance
 
-**エラーパターンと対処**:
+**Error Patterns and Handling**:
 
-#### 6-1. パス解決エラー
+#### 6-1. Path Resolution Error
 
 ```text
 ❌ Error: Cannot create docs/adr/0023-adopt-zustand.md
    Reason: Relative path resolution failed
 
-🔧 自動修正試行:
-1. 相対パス → 絶対パス変換
+🔧 Auto-fix attempt:
+1. Convert relative path → absolute path
    Before: docs/adr/
    After:  /Users/user/project/docs/adr/
 
-2. ディレクトリ作成試行
+2. Attempt directory creation
    mkdir -p /Users/user/project/docs/adr/
 
-3. 再実行中...
+3. Retrying...
 ```
 
-#### 6-2. テンプレート選択失敗
+#### 6-2. Template Selection Failure
 
 ```text
-❌ Error: 選択したテンプレートが見つかりません
+❌ Error: Selected template not found
    Template: technology-selection.md
    Path: .claude/skills/adr-creator/assets/
 
-🔧 フォールバック:
-1. デフォルトテンプレート使用
-2. カスタムテンプレートの提案
-   - 類似のADRから構造抽出
-   - MADRミニマル構成で開始
+🔧 Fallback:
+1. Use default template
+2. Suggest custom template
+   - Extract structure from similar ADR
+   - Start with MADR minimal structure
 
-選択 > 1 (デフォルト)
+Selection > 1 (default)
 
-✅ デフォルトテンプレートで続行
+✅ Continuing with default template
 ```
 
-#### 6-3. 参照元収集失敗
+#### 6-3. Reference Collection Failure
 
 ```text
-⚠️  Warning: GitHub Issues収集失敗
+⚠️  Warning: GitHub Issues collection failed
    Reason: gh CLI not authenticated
 
-🔧 代替手段:
-1. ローカルファイルのみ検索（続行可能）
-2. 手動で参照元を入力
-3. あとで追加（ADR作成後に編集）
+🔧 Alternatives:
+1. Search local files only (can continue)
+2. Enter references manually
+3. Add later (edit after ADR creation)
 
-選択 > 1
+Selection > 1
 
-✅ ローカル参照元のみで続行
-   プロジェクト内: 3件検出
-   外部リンク: 手動入力が必要
+✅ Continuing with local references only
+   Within project: 3 items found
+   External links: Manual input required
 ```
 
-## 使用方法
+## Usage
 
-### 基本的な呼び出し
+### Basic Invocation
 
 ```bash
-# /adrコマンドがこのskillを自動的に使用
+# /adr command automatically uses this skill
 /adr "Adopt Zustand for State Management"
 ```
 
-### スキルの動作フロー
+### Skill Operation Flow
 
 ```text
-1. Pre-Check実行（自動）
+1. Pre-Check execution (automatic)
    ↓
-2. テンプレート選択（対話）
+2. Template selection (interactive)
    ↓
-3. 参照元収集（自動 + 手動補完）
+3. Reference collection (automatic + manual supplement)
    ↓
-4. 情報入力（対話）
+4. Information input (interactive)
    ↓
-5. ADR生成
+5. ADR generation
    ↓
-6. 検証実行（自動）
+6. Validation execution (automatic)
    ↓
-7. チェックリスト提示（確認）
+7. Checklist presentation (confirmation)
    ↓
-8. 索引更新（自動）
+8. Index update (automatic)
    ↓
-9. 完了
+9. Complete
 ```
 
-## 設定オプション
+## Configuration Options
 
-### SKILL.md frontmatter拡張
+### SKILL.md Frontmatter Extension
 
 ```yaml
 ---
-# 既存設定
+# Existing settings
 name: ADR Creator
-description: 構造化されたプロセスで高品質なArchitecture Decision Recordを作成
+description: Create high-quality Architecture Decision Records through a structured process
 
-# 追加設定
+# Additional settings
 config:
-  strict_mode: true              # 全チェックリスト必須
-  auto_collect_references: true  # 参照元自動収集
-  template_fallback: minimal     # テンプレート失敗時の動作
-  index_auto_update: true        # 索引自動更新
-  duplicate_threshold: 0.7       # 重複判定の類似度閾値（0-1）
+  strict_mode: true              # All checklists required
+  auto_collect_references: true  # Automatic reference collection
+  template_fallback: minimal     # Behavior on template failure
+  index_auto_update: true        # Automatic index update
+  duplicate_threshold: 0.7       # Similarity threshold for duplicate detection (0-1)
 ---
 ```
 
-## 段階的導入計画
+## Phased Implementation Plan
 
-### Phase 1 (即座に実装可能)
+### Phase 1 (Immediately Implementable)
 
-- ✅ pre-check.sh: 重複・命名規則チェック
-- ✅ テンプレート選択UI
-- ✅ 基本的な索引更新
+- ✅ pre-check.sh: Duplicate/naming convention check
+- ✅ Template selection UI
+- ✅ Basic index update
 
-### Phase 2 (1週間以内)
+### Phase 2 (Within 1 Week)
 
-- ⏳ collect-references.sh: GitHub連携
-- ⏳ validate-adr.sh: 完成度検証
-- ⏳ チェックリストテンプレート
+- ⏳ collect-references.sh: GitHub integration
+- ⏳ validate-adr.sh: Completeness verification
+- ⏳ Checklist templates
 
-### Phase 3 (2週間以内)
+### Phase 3 (Within 2 Weeks)
 
-- ⏳ 関連ADR自動リンク
-- ⏳ エラーハンドリング拡充
-- ⏳ 統計情報ダッシュボード
+- ⏳ Related ADR auto-linking
+- ⏳ Enhanced error handling
+- ⏳ Statistics dashboard
 
-## トラブルシューティング
+## Troubleshooting
 
-### Q: スクリプトが実行されない
+### Q: Scripts not executing
 
 ```bash
-# 実行権限の付与
+# Grant execution permissions
 chmod +x .claude/skills/adr-creator/scripts/*.sh
 ```
 
-### Q: GitHub連携が動かない
+### Q: GitHub integration not working
 
 ```bash
-# gh CLI認証確認
+# Check gh CLI authentication
 gh auth status
 
-# 未認証の場合
+# If not authenticated
 gh auth login
 ```
 
-### Q: テンプレートをカスタマイズしたい
+### Q: Want to customize templates
 
 ```bash
-# プロジェクト固有テンプレート配置
+# Place project-specific templates
 .claude/skills/adr-creator/assets/custom-template.md
 
-# ADR作成時に選択肢に表示される
+# Will appear in selection options during ADR creation
 ```
 
-## 統合チェックリスト
+## Integration Checklist
 
-Skills統合状況の確認用:
+For verifying skills integration status:
 
-- [x] Skillsディレクトリ確認（~/.claude/skills/adr-creator/）
-- [x] スクリプト実行権限確認（chmod +x scripts/*.sh）
-- [x] Pre-Check単体テスト成功
-- [x] Validate-ADR単体テスト成功
-- [x] Update-Index単体テスト成功
-- [x] /adrコマンド統合完了
-- [x] テンプレート選択UI実装
-- [x] 検証・索引更新統合
-- [ ] 完全フローテスト成功
-- [ ] ドキュメント更新（COMMANDS.md）
-- [ ] チーム共有・トレーニング
+- [x] Skills directory confirmed (~/.claude/skills/adr-creator/)
+- [x] Script execution permissions confirmed (chmod +x scripts/*.sh)
+- [x] Pre-Check unit test passed
+- [x] Validate-ADR unit test passed
+- [x] Update-Index unit test passed
+- [x] /adr command integration complete
+- [x] Template selection UI implemented
+- [x] Validation & index update integrated
+- [ ] Full flow test passed
+- [ ] Documentation updated (COMMANDS.md)
+- [ ] Team sharing & training
 
-## 期待される改善効果
+## Expected Improvements
 
-| 項目 | Before | After | 改善率 |
-|-----|--------|-------|--------|
-| ADR作成時間 | 15分 | 8分 | 47%短縮 |
-| 重複ADR発生率 | 5% | 0% | 100%削減 |
-| 必須セクション漏れ | 20% | 0% | 100%削減 |
-| 参照元の平均数 | 1.5個 | 3.2個 | 113%増加 |
-| README.md更新忘れ | 30% | 0% | 100%削減 |
+| Item | Before | After | Improvement |
+|------|--------|-------|-------------|
+| ADR creation time | 15 min | 8 min | 47% reduction |
+| Duplicate ADR rate | 5% | 0% | 100% eliminated |
+| Missing required sections | 20% | 0% | 100% eliminated |
+| Average reference count | 1.5 | 3.2 | 113% increase |
+| README.md update forgotten | 30% | 0% | 100% eliminated |
 
-## 関連ドキュメント
+## Related Documentation
 
-- [MADR公式サイト](https://adr.github.io/madr/)
-- [ADRツール比較](https://adr.github.io/tooling/)
-- [/adrコマンド](~/.claude/commands/adr.md)
+- [MADR Official Site](https://adr.github.io/madr/)
+- [ADR Tools Comparison](https://adr.github.io/tooling/)
+- [/adr Command](~/.claude/commands/adr.md)

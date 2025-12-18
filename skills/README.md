@@ -1,260 +1,377 @@
-# Claude Agent Skills - 使い方ガイド
+# Claude Agent Skills - Usage Guide
 
-## 概要
+## Overview
 
-このディレクトリには、Claude Codeで使用するSkillsが含まれています。Skillsは**知識ベース、ガイド、および自動化ワークフロー**を提供する機能です。
+This directory contains Skills for Claude Code. Skills provide **knowledge bases, guides, and automation workflows**.
 
-## Skillsとは？
+## What are Skills?
 
-Skillsは以下の目的で使用されます:
+Skills are used for:
 
-- **教育的コンテンツ**: ベストプラクティス、設計原則、実装パターンの体系的ガイド
-- **知識ベース**: プロジェクト横断的に再利用可能な技術知識
-- **プロジェクト固有の自動化**: 特定の環境やワークフローに特化した自動化
+- **Educational content**: Systematic guides for best practices, design principles, and implementation patterns
+- **Knowledge base**: Technical knowledge reusable across projects
+- **Project-specific automation**: Automation specialized for specific environments or workflows
 
-## Commands, Agents, Skillsの使い分け
+## Commands, Agents, and Skills
 
 ### 📋 Commands
 
-**役割**: ユーザーが直接呼び出すワークフロー
+**Role**: User-invoked workflows
 
-- `/audit` → コードレビューのオーケストレーション
-- `/adr` → ADR作成フロー
-- `/code` → TDD/RGRC実装
+- `/audit` → Code review orchestration
+- `/adr` → ADR creation flow
+- `/code` → TDD/RGRC implementation
 
-**特徴**: 薄いラッパー、SkillsやAgentsを調整
+**Features**: Thin wrapper, coordinates Skills and Agents
 
 ### 🤖 Agents
 
-**役割**: 専門的な分析・レビュー（Commandsから呼ばれる）
+**Role**: Specialized analysis/review (called from Commands)
 
-- `performance-reviewer` → パフォーマンス分析
-- `accessibility-reviewer` → アクセシビリティ検証
-- `type-safety-reviewer` → 型安全性チェック
+- `performance-reviewer` → Performance analysis
+- `accessibility-reviewer` → Accessibility verification
+- `type-safety-reviewer` → Type safety checking
 
-**特徴**: 特定タスクの実行、短期的、Skillsを参照可能
+**Features**: Specific task execution, short-term, can reference Skills
 
 ### 📚 Skills
 
-**役割**: 知識ベース・ガイド・自動化
+**Role**: Knowledge base, guides, automation
 
-- `performance-optimization` → 最適化知識
-- `progressive-enhancement` → 設計原則
-- `adr-creator` → ADR作成ガイド
-- `esa-daily-report` → プロジェクト固有の自動化
+- `performance-optimization` → Optimization knowledge
+- `progressive-enhancement` → Design principles
+- `adr-creator` → ADR creation guide
+- `esa-daily-report` → Project-specific automation
 
-**特徴**: 永続的な知識、教育的、再利用可能
+**Features**: Persistent knowledge, educational, reusable
 
-## Skillsが適している場面
+## When to Use Skills
 
-### ✅ Skillsを作成すべき場合
+### ✅ Create Skills for
 
-1. **教育的コンテンツ**
-   - ベストプラクティスの体系的解説
-   - 設計原則の詳細ガイド
-   - 実装パターン集
+1. **Educational content**
+   - Systematic best practices explanations
+   - Detailed design principle guides
+   - Implementation pattern collections
 
-2. **知識ベース**
-   - プロジェクト横断的な技術知識
-   - チームメンバーの学習リソース
-   - 「なぜ」を説明するコンテンツ
+2. **Knowledge base**
+   - Cross-project technical knowledge
+   - Team member learning resources
+   - Content explaining "why"
 
-3. **プロジェクト固有の自動化**
-   - 環境依存のワークフロー
-   - 外部API連携
-   - 特定のツール統合
+3. **Project-specific automation**
+   - Environment-dependent workflows
+   - External API integration
+   - Specific tool integration
 
-4. **コンテキスト自動拡張**
-   - キーワードトリガーで自動的に知識を提供
-   - 会話の流れで暗黙的に活性化
+4. **Automatic context expansion**
+   - Automatically provide knowledge via keyword triggers
+   - Implicitly activate in conversation flow
 
-### ❌ Skillsに含めるべきでないもの
+### ❌ Not for Skills
 
-- **ワークフロー実行** → Commandsへ
-- **専門的なレビュー** → Agentsへ
-- **一時的なタスク** → 直接実行
+- **Workflow execution** → Use Commands
+- **Specialized reviews** → Use Agents
+- **Temporary tasks** → Execute directly
 
-## 現在のSkills一覧
+## Current Skills List
 
-### 知識ベース系
+### Knowledge Base Skills
 
 #### performance-optimization
 
-**目的**: パフォーマンス最適化の体系的ガイド
+**Purpose**: Systematic guide for performance optimization
 
-- Web Vitals (LCP, FID, CLS) の詳細解説
-- React最適化パターン
-- バンドルサイズ最適化
-- 測定ツールの使い方
+- Detailed Web Vitals (LCP, FID, CLS) explanations
+- React optimization patterns
+- Bundle size optimization
+- Measurement tool usage
 
-**使い方**: 「パフォーマンス」「遅い」「最適化」などのキーワードで自動トリガー
+**Usage**: Auto-triggers on keywords like "performance", "slow", "optimize"
 
-**Agentとの連携**: `performance-reviewer`エージェントがこのSkillの知識を参照
+**Agent integration**: `performance-reviewer` agent references this Skill
 
 #### progressive-enhancement
 
-**目的**: CSS-firstアプローチの設計原則ガイド
+**Purpose**: Design principle guide for CSS-first approach
 
-- HTML → CSS → JavaScriptの優先順位
-- CSS-onlyソリューション集
-- プログレッシブエンハンスメントパターン
+- HTML → CSS → JavaScript priority
+- CSS-only solution collection
+- Progressive enhancement patterns
 
-**使い方**: 「レイアウト」「スタイル」「アニメーション」などのキーワードで自動トリガー
+**Usage**: Auto-triggers on keywords like "layout", "style", "animation"
 
 #### adr-creator
 
-**目的**: Architecture Decision Record作成の詳細プロセスガイド
+**Purpose**: Detailed process guide for Architecture Decision Record creation
 
-- MADR形式のADR作成6段階プロセス
-- 事前チェック、テンプレート選択、参照元収集
-- 検証チェックリスト、索引更新
+- 6-phase ADR creation process in MADR format
+- Pre-check, template selection, reference collection
+- Validation checklist, index updates
 
-**使い方**: `/adr`コマンドがこのSkillを参照
+**Usage**: `/adr` command references this Skill
 
-### プロジェクト固有系
+### Project-Specific Skills
 
 #### esa-daily-report
 
-**目的**: esa.io日報作成の自動化
+**Purpose**: Automation for esa.io daily reports
 
-- Google Calendar連携
-- テンプレートベースの日報生成
-- WIP投稿の自動作成
+- Google Calendar integration
+- Template-based report generation
+- Automatic WIP post creation
 
-**使い方**: 「日報」「daily report」などのキーワードで自動トリガー
+**Usage**: Auto-triggers on keywords like "daily report"
 
-**注意**: プロジェクト固有のため、`.gitignore`に含まれる
+**Note**: Project-specific, included in `.gitignore`
 
-## Skillの作成ガイドライン
+## Skill Creation Guidelines
 
-### 基本構造
+### Structure Levels
 
-```markdown
+Three structure levels based on Skill complexity:
+
+#### Minimal (Knowledge-only Skill)
+
+```text
 skills/
 └── your-skill-name/
-    ├── SKILL.md          # メイン定義ファイル
-    ├── templates/        # テンプレート（必要に応じて）
-    ├── scripts/          # スクリプト（必要に応じて）
-    └── examples/         # 実例（必要に応じて）
+    └── SKILL.md          # Main definition file only
 ```
 
-### SKILL.mdの必須要素
+**Use case**: Simple best practice guides, glossaries, etc.
+
+#### Standard (Most Skills)
+
+```text
+skills/
+└── your-skill-name/
+    ├── SKILL.md          # Main definition file
+    └── references/       # External document references
+```
+
+**Use case**: Guides with external documents or references
+
+#### Comprehensive (Complex Skills)
+
+```text
+skills/
+└── your-skill-name/
+    ├── SKILL.md          # Main definition file
+    ├── references/       # External document references
+    ├── scripts/          # Automation scripts
+    └── assets/           # Templates, config files
+```
+
+**Use case**: High-function Skills with automation, template generation
+**Examples**: adr-creator, tdd-test-generation
+
+### Frontmatter Specification
+
+#### Required Fields
+
+```yaml
+---
+name: your-skill-name          # Must match directory name
+description: >
+  Concise description of Skill purpose and functionality.
+  Include trigger keywords (e.g., "ADR", "decision record", "technology selection")
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash, Task
+---
+```
+
+**Field requirements**:
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | ✅ | Must exactly match directory name |
+| `description` | ✅ | Description including trigger keywords |
+| `allowed-tools` | ✅ | Comma-separated list of available tools |
+
+#### Optional Fields
+
+```yaml
+config:
+  strict_mode: true        # Optional config items
+  auto_collect: true       # Skill-specific settings
+```
+
+### Language Support (EN/JP Sync)
+
+#### Basic Rules
+
+| Item | Requirement |
+|------|-------------|
+| EN version | **Required** - Always create English version first |
+| JP version | **Recommended** - Create for Japanese users |
+| Structure sync | When both exist, match section structure |
+
+#### Directory Structure
+
+```text
+~/.claude/skills/your-skill/SKILL.md        # EN version (required)
+~/.claude/ja/skills/your-skill/SKILL.md     # JP version (recommended)
+```
+
+#### Sync Checklist
+
+When both versions exist:
+
+- [ ] Main sections match
+- [ ] Frontmatter fields match (name, allowed-tools)
+- [ ] Line count ratio is 80%+ (JP/EN)
+- [ ] Reference paths are correct (note relative path differences)
+
+### Quality Checklist
+
+Check when creating/updating Skills:
+
+#### Structure Check
+
+- [ ] `name` field matches directory name
+- [ ] `description` includes trigger keywords
+- [ ] `allowed-tools` lists required tools
+
+#### Content Check
+
+- [ ] "Purpose" section is clear
+- [ ] "Usage" section has concrete examples
+- [ ] All reference links are valid
+
+#### Integration Check
+
+- [ ] References from related Commands work
+- [ ] Integration with related Agents works
+- [ ] EN/JP structure matches (if both exist)
+
+### Required SKILL.md Elements
 
 ```yaml
 ---
 name: your-skill-name
 description: >
-  Skillの目的と機能を簡潔に記述。
-  トリガーキーワードも含める。
+  Concise description of Skill purpose and functionality.
+  Include trigger keywords.
+allowed-tools: Read, Write, Grep, Glob
 ---
 
 # Skill Name
 
-## 目的
-このSkillが解決する問題や提供する価値
+## Purpose
+The problem this Skill solves or value it provides
 
-## いつ使うべきか
-- 具体的な使用シーン
+## When to Use
+- Specific use cases
 
-## 使い方
-- 基本的な呼び出し方法
+## Usage
+- Basic invocation methods
 
-## 内容
-- 詳細なガイド、実装例、ベストプラクティス
+## Content
+- Detailed guides, implementation examples, best practices
 ```
 
-## 協調動作の例
+### Golden Masters (Reference Examples)
 
-### Performance最適化の協調動作
+High-quality Skill implementation examples:
+
+| Skill | Structure Level | Features |
+|-------|-----------------|----------|
+| **adr-creator** | Comprehensive | 6-phase process, scripts, assets, EN/JP both |
+| **tdd-test-generation** | Comprehensive | RGRC cycle, reference docs, scripts |
+| **code-principles** | Standard | Systematic 5-principle explanation, reference docs |
+
+## Collaboration Examples
+
+### Performance Optimization Collaboration
 
 ```text
-User: "このページが遅い"
+User: "This page is slow"
     ↓
 Skill (auto-trigger): performance-optimization
-    → Web Vitalsの知識を提供
-    → 測定方法を提案
+    → Provides Web Vitals knowledge
+    → Suggests measurement methods
     ↓
 User: "/audit"
     ↓
 Command: /audit
     ↓
 Agent: performance-reviewer
-    → 実際のコードを分析
-    → performance-optimization skillを参照
-    → ボトルネックを特定
+    → Analyzes actual code
+    → References performance-optimization skill
+    → Identifies bottlenecks
     ↓
-Output: 具体的な改善提案
-    （Skillの知識 + Agentの分析）
+Output: Specific improvement suggestions
+    (Skill knowledge + Agent analysis)
 ```
 
-### Security関連の協調動作
+### Security-Related Collaboration
 
 ```text
-User: "セキュリティをレビューして"
+User: "Review security"
     ↓
 Command: /audit
     ↓
-/audit が security-review skillを参照
-    → OWASP Top 10の知識を活用
-    → 脆弱性パターンを検出
+/audit references security-review skill
+    → Uses OWASP Top 10 knowledge
+    → Detects vulnerability patterns
     ↓
-Output: セキュリティレビュー結果
-    （Skillの知識ベースに基づく分析）
+Output: Security review results
+    (Analysis based on Skill knowledge base)
 ```
 
-## よくある質問
+## FAQ
 
-### Q: SkillとAgentの違いは？
+### Q: What's the difference between Skill and Agent?
 
-**Skill**: 永続的な知識、教育的コンテンツ、暗黙的トリガー
-**Agent**: 特定タスクの実行、明示的呼び出し、短期的
+**Skill**: Persistent knowledge, educational content, implicit trigger
+**Agent**: Specific task execution, explicit invocation, short-term
 
-### Q: いつSkillを作るべき？
+### Q: When should I create a Skill?
 
-以下の条件に当てはまる場合:
+When these conditions apply:
 
-- プロジェクト横断的に再利用できる
-- 「なぜ」を説明する教育的価値がある
-- チームメンバーの学習リソースになる
-- キーワードベースの自動トリガーが有用
+- Reusable across projects
+- Has educational value explaining "why"
+- Serves as team member learning resource
+- Keyword-based auto-trigger is useful
 
-### Q: Commandとの違いは？
+### Q: What's the difference from Command?
 
-**Command**: ユーザーが明示的に呼び出すワークフロー実行
-**Skill**: 知識提供、Commandから参照される、または自動トリガー
+**Command**: Workflow execution explicitly invoked by user
+**Skill**: Knowledge provision, referenced from Commands, or auto-triggered
 
-### Q: 既存のSkillをカスタマイズしたい
+### Q: I want to customize an existing Skill
 
-1. Skillディレクトリ内のファイルを直接編集
-2. テンプレートファイルを修正（例: `templates/default.md`）
-3. SKILL.mdの設定を調整
+1. Edit files directly in Skill directory
+2. Modify template files (e.g., `templates/default.md`)
+3. Adjust settings in SKILL.md
 
-### Q: プロジェクト固有のSkillを作りたい
+### Q: I want to create a project-specific Skill
 
-1. `skills/your-project-skill/`を作成
-2. `.gitignore`に追加（他プロジェクトで不要な場合）
-3. SKILL.mdで環境依存の設定を明記
+1. Create `skills/your-project-skill/`
+2. Add to `.gitignore` (if not needed for other projects)
+3. Specify environment-dependent settings in SKILL.md
 
-## 関連ドキュメント
+## Related Documentation
 
-- [COMMANDS.md](../docs/COMMANDS.md) - Commandsの詳細
-- [CLAUDE.md](../CLAUDE.md) - グローバル設定とルール
-- [Agent Skills公式ドキュメント](https://docs.claude.com/)
+- [COMMANDS.md](../docs/COMMANDS.md) - Commands details
+- [CLAUDE.md](../CLAUDE.md) - Global settings and rules
+- [Agent Skills Official Documentation](https://docs.claude.com/)
 
-## メンテナンス
+## Maintenance
 
-### 定期レビュー
+### Regular Reviews
 
-- **月次**: Skillsの使用頻度を確認
-- **四半期**: 内容の陳腐化をチェック
-- **必要時**: 新しい知識やベストプラクティスを追加
+- **Monthly**: Check Skills usage frequency
+- **Quarterly**: Check for content staleness
+- **As needed**: Add new knowledge and best practices
 
-### 更新時の注意
+### Update Notes
 
-1. **SKILL.mdの変更**: 説明やトリガーキーワードの更新
-2. **テンプレートの変更**: 後方互換性を考慮
-3. **依存関係**: CommandsやAgentsへの影響を確認
+1. **SKILL.md changes**: Update description or trigger keywords
+2. **Template changes**: Consider backward compatibility
+3. **Dependencies**: Confirm impact on Commands and Agents
 
 ---
 
-**最終更新**: 2025-11-01
+**Last updated**: 2025-12-18

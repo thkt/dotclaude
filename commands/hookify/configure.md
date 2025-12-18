@@ -1,5 +1,6 @@
 ---
 description: Configure hookify rules interactively
+dependencies: [hookify]
 ---
 
 # /hookify:configure - Configure Hook Rules
