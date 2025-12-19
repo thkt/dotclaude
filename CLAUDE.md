@@ -23,24 +23,16 @@ PRE_TASK_CHECK: Injected via `UserPromptSubmit` hook (every message)
 
 **ALWAYS APPLY** - Core principles for all development
 
-Core development principles are available via the `applying-code-principles` skill:
+Essential principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI) available via `applying-code-principles` skill.
 
-- **Occam's Razor (KISS)** - Choose simplest solution
-- **SOLID Principles** - Manage dependencies, enable change
-- **DRY** - Single source of truth for knowledge
-- **Miller's Law** - Respect cognitive limits (7±2)
-- **YAGNI** - Build what you need now
+**Quick Decision Questions** (apply before every implementation):
 
-Quick Decision Questions:
+- "Is there a simpler way?" (Occam's Razor)
+- "Understandable in <1 min?" (Miller's Law)
+- "Duplicating knowledge?" (DRY)
+- "Needed now?" (YAGNI)
 
-- "Is there a simpler way to achieve this?"
-- "Can new team member understand in <1 minute?"
-- "Am I duplicating knowledge or intent?"
-- "Is this solving a real problem that exists now?"
-
-**Note**: Skills are automatically activated when relevant keywords are mentioned.
-
-Full details: [@~/.claude/skills/applying-code-principles/SKILL.md](./skills/applying-code-principles/SKILL.md)
+Skills auto-activate on relevant keywords. Full details: [@~/.claude/skills/applying-code-principles/SKILL.md](./skills/applying-code-principles/SKILL.md)
 
 ### [P3] CONTEXTUAL - Just-in-Time References
 
