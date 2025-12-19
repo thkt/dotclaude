@@ -3,7 +3,7 @@
 ## Purpose
 
 Compact, actionable decision questions for every implementation task.
-Full details available in `skills/code-principles/SKILL.md`.
+Full details available in `skills/applying-code-principles/SKILL.md`.
 
 ## Quick Decision Questions
 
@@ -69,4 +69,4 @@ If any answer is "no" → reconsider approach
 ## Reference
 
 For detailed explanations, examples, and scientific background:
-[@~/.claude/skills/code-principles/SKILL.md](~/.claude/skills/code-principles/SKILL.md)
+[@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md)

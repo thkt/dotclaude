@@ -25,7 +25,7 @@ Implement code with TDD/RGRC cycle and quality checks.
 
 ## Essential Context (Always Loaded)
 
-- [@~/.claude/skills/tdd-test-generation/SKILL.md] - TDD/RGRC cycle, Baby Steps
+- [@~/.claude/skills/generating-tdd-tests/SKILL.md] - TDD/RGRC cycle, Baby Steps
 - [@~/.claude/rules/core/ESSENTIAL_PRINCIPLES.md] - Quick Decision Questions
 
 ## Conditional Context (Flag-based)
@@ -34,9 +34,9 @@ Load with flags when needed:
 
 | Flag | Context | When to Use |
 |------|---------|-------------|
-| `--frontend` | [@~/.claude/skills/frontend-patterns/SKILL.md] | React/UI components |
-| `--principles` | [@~/.claude/skills/code-principles/SKILL.md] | Design decisions, refactoring |
-| `--storybook` | [@~/.claude/skills/storybook-integration/SKILL.md] | Component Stories |
+| `--frontend` | [@~/.claude/skills/applying-frontend-patterns/SKILL.md] | React/UI components |
+| `--principles` | [@~/.claude/skills/applying-code-principles/SKILL.md] | Design decisions, refactoring |
+| `--storybook` | [@~/.claude/skills/integrating-storybook/SKILL.md] | Component Stories |
 
 ## Project Context (Auto-detected)
 

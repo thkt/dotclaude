@@ -3,7 +3,7 @@ name: performance-reviewer
 description: >
   Expert reviewer for frontend performance optimization in TypeScript/React applications.
   Analyzes frontend code performance and identifies optimization opportunities for React re-rendering, bundle size, lazy loading, memoization, etc.
-  References [@~/.claude/skills/performance-optimization/SKILL.md] for systematic Web Vitals and React optimization knowledge.
+  References [@~/.claude/skills/optimizing-performance/SKILL.md] for systematic Web Vitals and React optimization knowledge.
   フロントエンドコードのパフォーマンスを分析し、React再レンダリング、バンドルサイズ、遅延ローディング、メモ化などの最適化機会を特定します。
 tools: Read, Grep, Glob, LS, Task, mcp__chrome-devtools__*, mcp__mdn__*
 model: sonnet

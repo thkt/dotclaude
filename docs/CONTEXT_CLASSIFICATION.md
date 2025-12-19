@@ -12,7 +12,7 @@ Context that is **always needed** for implementation tasks.
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `skills/tdd-test-generation/SKILL.md` | 258 | TDD/RGRC implementation cycle |
+| `skills/generating-tdd-tests/SKILL.md` | 258 | TDD/RGRC implementation cycle |
 | `rules/core/ESSENTIAL_PRINCIPLES.md` | ~50 | Quick Decision Questions |
 | **Total** | **~310** | |
 
@@ -28,9 +28,9 @@ Context loaded only when specific task type requires it.
 
 | Flag | File | Lines | When to Load |
 |------|------|-------|--------------|
-| `--frontend` | `skills/frontend-patterns/SKILL.md` | 362 | React/UI component work |
-| `--principles` | `skills/code-principles/SKILL.md` | 430 | Design decisions, refactoring |
-| `--storybook` | `skills/storybook-integration/SKILL.md` | 270 | Component Stories generation |
+| `--frontend` | `skills/applying-frontend-patterns/SKILL.md` | 362 | React/UI component work |
+| `--principles` | `skills/applying-code-principles/SKILL.md` | 430 | Design decisions, refactoring |
+| `--storybook` | `skills/integrating-storybook/SKILL.md` | 270 | Component Stories generation |
 | (auto) | `rules/development/PROGRESSIVE_ENHANCEMENT.md` | 97 | CSS-first approach needed |
 | (auto) | `rules/development/READABLE_CODE.md` | 255 | Code clarity concerns |
 
@@ -94,4 +94,4 @@ When adding new principles or patterns:
 
 - [ESSENTIAL_PRINCIPLES.md](../rules/core/ESSENTIAL_PRINCIPLES.md) - Quick Decision Questions
 - [/code command](../commands/code.md) - Implementation command
-- [code-principles SKILL](../skills/code-principles/SKILL.md) - Full principles reference
+- [code-principles SKILL](../skills/applying-code-principles/SKILL.md) - Full principles reference

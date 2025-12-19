@@ -159,7 +159,7 @@ Core principles via `code-principles` skill:
 Skillsは `description` フィールドのキーワードで自動トリガー。明示的に呼び出さなくても、文脈に応じて知識が提供される。
 
 ```yaml
-# skills/code-principles/SKILL.md
+# skills/applying-code-principles/SKILL.md
 ---
 name: code-principles
 description: >

@@ -17,7 +17,7 @@ skills:
 
 Agent specialized in quality review of SOW (Statement of Work) and Spec (Specification) documents.
 
-**Output Format**: Uses specialized format from [@~/.claude/skills/audit-format/SKILL.md] (100-point scoring system, distinct from standard reviewer base template).
+**Output Format**: Uses specialized format from [@~/.claude/skills/formatting-audits/SKILL.md] (100-point scoring system, distinct from standard reviewer base template).
 
 ## Objective
 
@@ -30,9 +30,9 @@ Improve development efficiency by detecting design issues before code implementa
 
 This agent references the following Skills knowledge base:
 
-- [@~/.claude/skills/audit-format/SKILL.md] - 100-point scoring definition, grading criteria, output format
-- [@~/.claude/skills/readability-review/SKILL.md] - Document readability evaluation criteria
-- [@~/.claude/skills/code-principles/SKILL.md] - Design principles: SOLID, DRY, YAGNI, etc.
+- [@~/.claude/skills/formatting-audits/SKILL.md] - 100-point scoring definition, grading criteria, output format
+- [@~/.claude/skills/reviewing-readability/SKILL.md] - Document readability evaluation criteria
+- [@~/.claude/skills/applying-code-principles/SKILL.md] - Design principles: SOLID, DRY, YAGNI, etc.
 
 ## Review Process
 
@@ -61,7 +61,7 @@ This agent references the following Skills knowledge base:
 - [ ] Inferences (→) have clearly stated logical basis
 - [ ] Uncertain items (?) are explicitly marked
 
-**Scoring Criteria**: See [@~/.claude/skills/audit-format/SKILL.md#Accuracy Evaluation Criteria]
+**Scoring Criteria**: See [@~/.claude/skills/formatting-audits/SKILL.md#Accuracy Evaluation Criteria]
 
 #### 2.2 Completeness Evaluation
 
@@ -85,7 +85,7 @@ This agent references the following Skills knowledge base:
 - [ ] Test Scenarios (Given-When-Then format)
 - [ ] Dependencies
 
-**Scoring Criteria**: See [@~/.claude/skills/audit-format/SKILL.md#Completeness Evaluation Criteria]
+**Scoring Criteria**: See [@~/.claude/skills/formatting-audits/SKILL.md#Completeness Evaluation Criteria]
 
 #### 2.3 Relevance Evaluation
 
@@ -96,7 +96,7 @@ This agent references the following Skills knowledge base:
 - [ ] No unnecessary features included (YAGNI principle)
 - [ ] Priorities are appropriately set
 
-**Scoring Criteria**: See [@~/.claude/skills/audit-format/SKILL.md#Relevance Evaluation Criteria]
+**Scoring Criteria**: See [@~/.claude/skills/formatting-audits/SKILL.md#Relevance Evaluation Criteria]
 
 #### 2.4 Actionability Evaluation
 
@@ -107,7 +107,7 @@ This agent references the following Skills knowledge base:
 - [ ] Dependencies are resolvable
 - [ ] Next actions are clear
 
-**Scoring Criteria**: See [@~/.claude/skills/audit-format/SKILL.md#Actionability Evaluation Criteria]
+**Scoring Criteria**: See [@~/.claude/skills/formatting-audits/SKILL.md#Actionability Evaluation Criteria]
 
 ### Phase 3: SOW ↔ Spec Consistency Check
 
@@ -141,7 +141,7 @@ This agent references the following Skills knowledge base:
 
 ## Output Format
 
-Follow the output format from [@~/.claude/skills/audit-format/SKILL.md].
+Follow the output format from [@~/.claude/skills/formatting-audits/SKILL.md].
 
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -206,7 +206,7 @@ Coordinate with:
 
 ### YAGNI (You Aren't Gonna Need It)
 
-[@~/.claude/skills/code-principles/SKILL.md] - "Don't add functionality until it's actually needed"
+[@~/.claude/skills/applying-code-principles/SKILL.md] - "Don't add functionality until it's actually needed"
 
 Application in SOW/Spec review:
 

@@ -13,7 +13,7 @@ argument-hint: "[決定タイトル]"
 
 ADR Creator Skillを使用した高品質なArchitecture Decision Record作成コマンド。
 
-**詳細プロセス**: [@~/.claude/ja/skills/adr-creator/SKILL.md]
+**詳細プロセス**: [@~/.claude/ja/skills/creating-adrs/SKILL.md]
 
 ## 使用方法
 
@@ -114,5 +114,5 @@ ADR_AUTO_INDEX="true"              # 自動索引更新
 
 ## 参照
 
-- [ADR Creator Skill](~/.claude/ja/skills/adr-creator/SKILL.md) - 詳細ドキュメント
+- [ADR Creator Skill](~/.claude/ja/skills/creating-adrs/SKILL.md) - 詳細ドキュメント
 - [MADR公式サイト](https://adr.github.io/madr/)

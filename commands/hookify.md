@@ -120,4 +120,4 @@ Debug code detected! Remember to remove before committing.
 
 ## Skill Reference
 
-[@~/.claude/skills/hookify/SKILL.md](~/.claude/skills/hookify/SKILL.md)
+[@~/.claude/skills/creating-hooks/SKILL.md](~/.claude/skills/creating-hooks/SKILL.md)

@@ -2,7 +2,7 @@
 description: >
   Create Architecture Decision Records (ADR) in MADR format with Skills integration.
   Records architecture decisions with context and rationale. Auto-numbering (0001, 0002, ...), saves to docs/adr/.
-allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Bash(~/.claude/skills/adr-creator/scripts/*), Grep, Glob
+allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Bash(~/.claude/skills/creating-adrs/scripts/*), Grep, Glob
 model: inherit
 argument-hint: "[decision title]"
 dependencies: [adr-creator]
@@ -14,7 +14,7 @@ dependencies: [adr-creator]
 
 High-quality Architecture Decision Record creation command using ADR Creator Skill.
 
-**Detailed process**: [@~/.claude/skills/adr-creator/SKILL.md]
+**Detailed process**: [@~/.claude/skills/creating-adrs/SKILL.md]
 
 ## Usage
 
@@ -34,11 +34,11 @@ High-quality Architecture Decision Record creation command using ADR Creator Ski
 
 ### Phase 1: Pre-Check (Automated)
 
-**Run script**: `~/.claude/skills/adr-creator/scripts/pre-check.sh "TITLE"`
+**Run script**: `~/.claude/skills/creating-adrs/scripts/pre-check.sh "TITLE"`
 
 ```bash
 # Validates title, checks duplicates, assigns ADR number
-~/.claude/skills/adr-creator/scripts/pre-check.sh "Decision title"
+~/.claude/skills/creating-adrs/scripts/pre-check.sh "Decision title"
 ```
 
 Script outputs JSON with `number`, `filename`, `slug`, `date` for subsequent phases.
@@ -48,7 +48,7 @@ If script fails → stop and report issues to user.
 
 1. Tech Selection / 2. Architecture Pattern / 3. Process Change / 4. Default
 
-Select based on decision type. Templates at `~/.claude/skills/adr-creator/assets/`.
+Select based on decision type. Templates at `~/.claude/skills/creating-adrs/assets/`.
 
 ### Phase 3: Information Collection
 
@@ -60,22 +60,22 @@ Generate ADR in MADR format using collected information.
 
 ### Phase 5: Validation (Automated)
 
-**Run script**: `~/.claude/skills/adr-creator/scripts/validate-adr.sh FILE`
+**Run script**: `~/.claude/skills/creating-adrs/scripts/validate-adr.sh FILE`
 
 ```bash
 # Validates required sections, metadata, content quality
-~/.claude/skills/adr-creator/scripts/validate-adr.sh docs/adr/XXXX-slug.md
+~/.claude/skills/creating-adrs/scripts/validate-adr.sh docs/adr/XXXX-slug.md
 ```
 
 If validation fails → show issues and allow correction.
 
 ### Phase 6: Index Update (Automated)
 
-**Run script**: `~/.claude/skills/adr-creator/scripts/update-index.sh`
+**Run script**: `~/.claude/skills/creating-adrs/scripts/update-index.sh`
 
 ```bash
 # Updates docs/adr/README.md with all ADRs
-~/.claude/skills/adr-creator/scripts/update-index.sh docs/adr
+~/.claude/skills/creating-adrs/scripts/update-index.sh docs/adr
 ```
 
 ## Output
@@ -141,5 +141,5 @@ Actions: Change title / Review similar ADR / Consider consolidation
 
 ## References
 
-- [ADR Creator Skill](~/.claude/skills/adr-creator/SKILL.md) - Detailed documentation
+- [ADR Creator Skill](~/.claude/skills/creating-adrs/SKILL.md) - Detailed documentation
 - [MADR Official Site](https://adr.github.io/madr/)

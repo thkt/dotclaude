@@ -5,7 +5,7 @@
 ### Required Updates
 
 - [ ] Update Japanese version (ja/rules/reference/)
-- [ ] Check corresponding section in skills/code-principles/SKILL.md
+- [ ] Check corresponding section in skills/applying-code-principles/SKILL.md
 
 ### Verification Items
 
@@ -37,4 +37,4 @@ but rather knowledge representation at different abstraction levels.
 ## Related Documents
 
 - [DOCUMENTATION_RULES.md](../../docs/DOCUMENTATION_RULES.md) - Documentation management rules
-- [code-principles SKILL](../../skills/code-principles/SKILL.md) - Principles skill
+- [code-principles SKILL](../../skills/applying-code-principles/SKILL.md) - Principles skill

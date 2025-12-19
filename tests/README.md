@@ -132,7 +132,7 @@ interface SectionValidator {
 - [SOW/Spec Templates](../workspace/planning/)
 - [Command Reference](../docs/COMMANDS.md)
 - [Documentation Rules](../docs/DOCUMENTATION_RULES.md)
-- [Test Generation Skill](../skills/tdd-test-generation/SKILL.md) - Systematic test design principles
+- [Test Generation Skill](../skills/generating-tdd-tests/SKILL.md) - Systematic test design principles
 
 ---
 

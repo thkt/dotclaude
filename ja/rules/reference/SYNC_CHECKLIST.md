@@ -5,7 +5,7 @@
 ### 必須更新
 
 - [ ] 同ファイルの日本語版（ja/rules/reference/）を更新
-- [ ] skills/code-principles/SKILL.md の該当セクションを確認
+- [ ] skills/applying-code-principles/SKILL.md の該当セクションを確認
 
 ### 確認項目
 
@@ -37,4 +37,4 @@
 ## 関連ドキュメント
 
 - [DOCUMENTATION_RULES.md](../../docs/DOCUMENTATION_RULES.md) - ドキュメント管理ルール
-- [code-principles SKILL](../../skills/code-principles/SKILL.md) - 原則スキル
+- [code-principles SKILL](../../skills/applying-code-principles/SKILL.md) - 原則スキル

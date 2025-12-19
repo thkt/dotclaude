@@ -15,8 +15,8 @@ Accepted (2025-12-16)
 
 `principles.md` was not created as a separate file. Instead, existing skills are referenced:
 
-- `@~/.claude/skills/code-principles/SKILL.md`
-- `@~/.claude/skills/tdd-test-generation/SKILL.md`
+- `@~/.claude/skills/applying-code-principles/SKILL.md`
+- `@~/.claude/skills/generating-tdd-tests/SKILL.md`
 
 This decision follows DRY principle by reusing existing assets rather than duplicating content.
 
@@ -203,7 +203,7 @@ This decision follows DRY principle by reusing existing assets rather than dupli
 
 code.md already uses hybrid approach:
 
-- **Knowledge content** → Skills (`[@~/.claude/skills/tdd-test-generation/SKILL.md]`)
+- **Knowledge content** → Skills (`[@~/.claude/skills/generating-tdd-tests/SKILL.md]`)
 - **Rule references** → Rules (`[@~/.claude/rules/development/TDD_RGRC.md]`)
 
 #### Recommended Hybrid Approach

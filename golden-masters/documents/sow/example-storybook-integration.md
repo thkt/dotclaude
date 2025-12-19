@@ -136,7 +136,7 @@ Rationale:
 
 ### Phase 1: Skill Creation [Day 1]
 
-1. Create `~/.claude/skills/storybook-integration/SKILL.md`
+1. Create `~/.claude/skills/integrating-storybook/SKILL.md`
 2. Create `references/csf3-patterns.md`
 3. Create `references/component-api-template.md`
 

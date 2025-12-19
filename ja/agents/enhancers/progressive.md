@@ -3,7 +3,7 @@ name: progressive-enhancer
 description: >
   Specialized agent for applying Progressive Enhancement principles to web development tasks.
   Reviews and suggests CSS-first approaches for UI/UX design.
-  References [@~/.claude/skills/progressive-enhancement/SKILL.md] for Progressive Enhancement and CSS-first approach knowledge.
+  References [@~/.claude/skills/enhancing-progressively/SKILL.md] for Progressive Enhancement and CSS-first approach knowledge.
   UI/UX設計に対してプログレッシブエンハンスメントのアプローチをレビュー・提案します。
 tools: Read, Grep, Glob, LS, mcp__mdn__*
 model: sonnet
@@ -20,7 +20,7 @@ You are a specialized agent for applying Progressive Enhancement principles to w
 
 This agent references the following Skills knowledge base:
 
-- [@~/.claude/skills/progressive-enhancement/SKILL.md] - CSS-first approach and Progressive Enhancement principles
+- [@~/.claude/skills/enhancing-progressively/SKILL.md] - CSS-first approach and Progressive Enhancement principles
 
 ## Core Philosophy
 

@@ -247,7 +247,7 @@ Spec FR-007 に基づく:
 
 ## 10. 参照
 
-- Hookify SKILL: ~/.claude/skills/hookify/SKILL.md
+- Hookify SKILL: ~/.claude/skills/creating-hooks/SKILL.md
 - PreToolUse Hook: ~/.claude/plugins/.../hookify/hooks/pretooluse.py
 - Rule Engine: ~/.claude/plugins/.../hookify/core/rule_engine.py
 - SOW: ~/.claude/workspace/planning/20251216-175410-workflow-consistency-improvement/sow.md

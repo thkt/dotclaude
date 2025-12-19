@@ -1,0 +1,212 @@
+# {{TITLE}}
+
+- Status: {{STATUS}}
+- Deciders: {{DECIDERS}}
+- Date: {{DATE}}
+
+Technical Story: {{TECHNICAL_STORY_LINK}}
+
+## Context and Problem Statement
+
+{{CONTEXT}}
+
+Deprecating existing technology requires careful planning. We must maintain system stability and team productivity during the transition period while progressively migrating to the new solution.
+
+## Decision Drivers
+
+- {{DRIVER_1}}
+- {{DRIVER_2}}
+- {{DRIVER_3}}
+- Technical debt reduction
+- Security risk mitigation
+- Maintenance cost optimization
+
+## Deprecation Target
+
+### Current Technology
+
+- **Name**: {{DEPRECATED_TECH_NAME}}
+- **Version**: {{DEPRECATED_TECH_VERSION}}
+- **Start Date**: {{DEPRECATED_TECH_START_DATE}}
+- **Usage Locations**: {{USAGE_LOCATIONS}}
+
+### Deprecation Reasons
+
+- {{DEPRECATION_REASON_1}}
+- {{DEPRECATION_REASON_2}}
+- {{DEPRECATION_REASON_3}}
+
+## Replacement Technology
+
+- **Name**: {{REPLACEMENT_TECH_NAME}}
+- **Version**: {{REPLACEMENT_TECH_VERSION}}
+- **Selection Rationale**: {{REPLACEMENT_RATIONALE}}
+
+## Decision Outcome
+
+Chosen option: "Deprecate {{DEPRECATED_TECH_NAME}} and migrate to {{REPLACEMENT_TECH_NAME}}", because {{RATIONALE}}.
+
+### Consequences
+
+#### Positive Consequences
+
+- {{POSITIVE_1}} - Technical debt reduction
+- {{POSITIVE_2}} - Performance improvement
+- {{POSITIVE_3}} - Maintainability improvement
+
+#### Negative Consequences
+
+- {{NEGATIVE_1}} - Migration cost
+- {{NEGATIVE_2}} - Temporary complexity increase
+
+## Impact Analysis
+
+### Code Impact
+
+- Affected files count: {{AFFECTED_FILES_COUNT}}
+- Major change locations:
+  - {{CHANGE_LOCATION_1}}
+  - {{CHANGE_LOCATION_2}}
+  - {{CHANGE_LOCATION_3}}
+
+### Dependency Impact
+
+- Direct dependencies: {{DIRECT_DEPENDENCIES}}
+- Indirect dependencies: {{INDIRECT_DEPENDENCIES}}
+- Compatibility layer needed: {{COMPATIBILITY_LAYER_NEEDED}}
+
+### Team Impact
+
+- Affected teams: {{AFFECTED_TEAMS}}
+- Required skill set: {{REQUIRED_SKILLS}}
+- Learning cost: {{LEARNING_COST}} hours/person
+
+## Migration Plan (REQUIRED)
+
+### Timeline
+
+| Phase | Period | Goal | Success Criteria |
+|-------|--------|------|------------------|
+| Phase 1: Preparation | {{PHASE_1_PERIOD}} | {{PHASE_1_GOAL}} | {{PHASE_1_CRITERIA}} |
+| Phase 2: Pilot Migration | {{PHASE_2_PERIOD}} | {{PHASE_2_GOAL}} | {{PHASE_2_CRITERIA}} |
+| Phase 3: Gradual Migration | {{PHASE_3_PERIOD}} | {{PHASE_3_GOAL}} | {{PHASE_3_CRITERIA}} |
+| Phase 4: Full Migration | {{PHASE_4_PERIOD}} | {{PHASE_4_GOAL}} | {{PHASE_4_CRITERIA}} |
+| Phase 5: Cleanup | {{PHASE_5_PERIOD}} | {{PHASE_5_GOAL}} | {{PHASE_5_CRITERIA}} |
+
+### Deprecation Warning Period
+
+- Warning start date: {{WARNING_START_DATE}}
+- Soft deprecation: {{SOFT_DEPRECATION_DATE}} (warning logs output)
+- Hard deprecation: {{HARD_DEPRECATION_DATE}} (new usage prohibited)
+- Full removal: {{REMOVAL_DATE}}
+
+### Migration Steps
+
+#### Step 1: Create Compatibility Layer
+
+```text
+{{COMPATIBILITY_LAYER_CODE}}
+```
+
+#### Step 2: Gradual Replacement
+
+- [ ] {{MIGRATION_TASK_1}}
+- [ ] {{MIGRATION_TASK_2}}
+- [ ] {{MIGRATION_TASK_3}}
+
+#### Step 3: Verification
+
+- [ ] Update unit tests
+- [ ] Run integration tests
+- [ ] Measure performance
+
+#### Step 4: Remove Legacy Code
+
+- [ ] Remove deprecated code
+- [ ] Remove compatibility layer (if applicable)
+- [ ] Update documentation
+
+### Migration Checklist
+
+- [ ] Impact scope identification complete
+- [ ] Migration plan review complete
+- [ ] Pilot migration successful
+- [ ] All tests green
+- [ ] Performance baseline achieved
+- [ ] Documentation update complete
+- [ ] Team training complete
+
+## Validation
+
+### Success Criteria
+
+- {{SUCCESS_CRITERIA_1}}
+- {{SUCCESS_CRITERIA_2}}
+- {{SUCCESS_CRITERIA_3}}
+
+### Metrics
+
+- Performance: {{PERFORMANCE_METRIC}}
+- Error rate: {{ERROR_RATE_METRIC}}
+- Migration completion rate: {{MIGRATION_COMPLETION_METRIC}}
+
+### Monitoring
+
+- Migration progress dashboard: {{DASHBOARD_LINK}}
+- Alert configuration: {{ALERT_CONFIG}}
+
+## Rollback Plan (REQUIRED)
+
+### Trigger Conditions
+
+- {{ROLLBACK_TRIGGER_1}}
+- {{ROLLBACK_TRIGGER_2}}
+- {{ROLLBACK_TRIGGER_3}}
+
+### Rollback Steps
+
+1. {{ROLLBACK_STEP_1}}
+2. {{ROLLBACK_STEP_2}}
+3. {{ROLLBACK_STEP_3}}
+
+### Rollback Timeline
+
+- Detection to decision: {{DETECTION_TO_DECISION}} minutes
+- Rollback execution: {{ROLLBACK_EXECUTION}} minutes
+- Recovery verification: {{RECOVERY_VERIFICATION}} minutes
+
+### Data Considerations
+
+- Data migration required: {{DATA_MIGRATION_NEEDED}}
+- Data handling during rollback: {{DATA_ROLLBACK_STRATEGY}}
+
+## Communication
+
+### Announcements
+
+| Date | Content | Audience | Channel |
+|------|---------|----------|---------|
+| {{ANNOUNCE_DATE_1}} | Deprecation notice | All developers | {{CHANNEL_1}} |
+| {{ANNOUNCE_DATE_2}} | Migration start | Related teams | {{CHANNEL_2}} |
+| {{ANNOUNCE_DATE_3}} | Completion report | All developers | {{CHANNEL_3}} |
+
+### Documentation Updates
+
+- [ ] README.md
+- [ ] Technical documentation
+- [ ] API documentation
+- [ ] Migration guide
+
+## Related ADRs
+
+<!-- Auto-generated by update-index.sh -->
+
+## References
+
+<!-- Auto-collected by collect-references.sh -->
+
+---
+
+*Created: {{DATE}}*
+*Author: {{AUTHOR}}*
+*ADR Number: {{NUMBER}}*

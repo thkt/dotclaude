@@ -342,7 +342,7 @@ fi
 ### 必須更新
 
 - [ ] 同ファイルの日本語版（ja/rules/reference/）を更新
-- [ ] skills/code-principles/SKILL.md の該当セクションを確認
+- [ ] skills/applying-code-principles/SKILL.md の該当セクションを確認
 
 ### 確認項目
 

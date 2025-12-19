@@ -136,7 +136,7 @@ Updated: 2025-12-14
 
 ### Phase 1: スキル作成 [1日目]
 
-1. `~/.claude/skills/storybook-integration/SKILL.md` 作成
+1. `~/.claude/skills/integrating-storybook/SKILL.md` 作成
 2. `references/csf3-patterns.md` 作成
 3. `references/component-api-template.md` 作成
 

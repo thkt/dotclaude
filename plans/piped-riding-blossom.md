@@ -31,6 +31,7 @@
 ## 統合方針
 
 **ローカルに実体化**（参照ではなくコピー）する理由：
+
 1. チームメンバーがグローバル設定を持っていない
 2. Git管理でチーム全体に共有可能
 3. プロジェクト固有のカスタマイズが可能
@@ -105,6 +106,7 @@
 ```
 
 **既存コマンドとの共存**:
+
 - prisma/, remix/, storybook/, ui/ はそのまま維持
 - グローバルコマンドはルートに配置
 
@@ -198,6 +200,7 @@
 ```
 
 **既存ルールとの統合**:
+
 - file-organization.md → 維持
 - testing-strategy.md → TDD_RGRC への参照追加
 
@@ -234,7 +237,7 @@
 
 ### [P2] DEFAULT - Core Development Principles
 
-Available via `code-principles` skill @.claude/skills/code-principles/SKILL.md:
+Available via `code-principles` skill @.claude/skills/applying-code-principles/SKILL.md:
 - **Occam's Razor (KISS)** - Choose simplest solution
 - **SOLID Principles** - Manage dependencies
 - **DRY** - Single source of truth
@@ -301,6 +304,7 @@ Available via `code-principles` skill @.claude/skills/code-principles/SKILL.md:
 ## 実装順序
 
 ### Step 1: コアルール（Phase 1）
+
 1. `.claude/rules/core/` ディレクトリ作成
 2. AI_OPERATION_PRINCIPLES.md コピー
 3. PRE_TASK_CHECK.md コピー
@@ -309,22 +313,27 @@ Available via `code-principles` skill @.claude/skills/code-principles/SKILL.md:
 6. settings.json に hooks 追加
 
 ### Step 2: コマンド（Phase 2）
+
 1. think.md, code.md, fix.md, research.md, test.md, review.md, hotfix.md, validate.md, sow.md コピー
 2. branch.md, commit.md, pr.md, context.md コピー
 
 ### Step 3: エージェント（Phase 3）
+
 1. `.claude/agents/` ディレクトリ作成
 2. reviewers/, orchestrators/, git/, generators/, enhancers/ コピー
 
 ### Step 4: スキル（Phase 4）
+
 1. code-principles/, tdd-test-generation/, progressive-enhancement/ コピー
 2. performance-optimization/, security-review/ コピー
 
 ### Step 5: 開発ルール（Phase 5）
+
 1. `.claude/rules/development/` ディレクトリ作成
 2. TDD_RGRC.md, PROGRESSIVE_ENHANCEMENT.md, READABLE_CODE.md コピー
 
 ### Step 6: CLAUDE.md 更新（Phase 6）
+
 1. Global Development Principles セクション追加
 2. Standard Workflows セクション追加
 3. Documentation Structure 更新
@@ -334,14 +343,17 @@ Available via `code-principles` skill @.claude/skills/code-principles/SKILL.md:
 ## リスクと軽減策
 
 ### リスク 1: ファイル数の増加
+
 - **影響**: .claude/ ディレクトリが大幅に拡大
 - **軽減策**: Git管理、必要なものだけコピー
 
 ### リスク 2: グローバル設定との乖離
+
 - **影響**: グローバル更新時にローカルが古くなる
 - **軽減策**: 定期的な同期、重要な更新はローカルにも反映
 
 ### リスク 3: 既存設定との競合
+
 - **影響**: プロジェクト固有コマンドとの名前衝突
 - **軽減策**: 既存コマンドはサブディレクトリ維持、新規はルートに配置
 
@@ -350,6 +362,7 @@ Available via `code-principles` skill @.claude/skills/code-principles/SKILL.md:
 ## 成功基準
 
 ### 完了基準
+
 - [ ] コアルール（core/, reference/）追加完了
 - [ ] コマンド（13個）追加完了
 - [ ] エージェント（18個）追加完了
@@ -359,6 +372,7 @@ Available via `code-principles` skill @.claude/skills/code-principles/SKILL.md:
 - [ ] settings.json hooks 設定完了
 
 ### 動作確認
+
 - [ ] `/think` コマンド動作確認
 - [ ] `/review` コマンド動作確認
 - [ ] PRE_TASK_CHECK 自動注入確認

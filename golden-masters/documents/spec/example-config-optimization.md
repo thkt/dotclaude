@@ -338,7 +338,7 @@ fi
 ### Required Updates
 
 - [ ] Update Japanese version (ja/rules/reference/)
-- [ ] Check corresponding section in skills/code-principles/SKILL.md
+- [ ] Check corresponding section in skills/applying-code-principles/SKILL.md
 
 ### Verification Items
 

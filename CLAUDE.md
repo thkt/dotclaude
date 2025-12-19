@@ -23,7 +23,7 @@ PRE_TASK_CHECK: Injected via `UserPromptSubmit` hook (every message)
 
 **ALWAYS APPLY** - Core principles for all development
 
-Core development principles are available via the `code-principles` skill:
+Core development principles are available via the `applying-code-principles` skill:
 
 - **Occam's Razor (KISS)** - Choose simplest solution
 - **SOLID Principles** - Manage dependencies, enable change
@@ -40,16 +40,16 @@ Quick Decision Questions:
 
 **Note**: Skills are automatically activated when relevant keywords are mentioned.
 
-Full details: [@~/.claude/skills/code-principles/SKILL.md](./skills/code-principles/SKILL.md)
+Full details: [@~/.claude/skills/applying-code-principles/SKILL.md](./skills/applying-code-principles/SKILL.md)
 
 ### [P3] CONTEXTUAL - Just-in-Time References
 
 **APPLY AS NEEDED** - Load based on task type
 
-- Code tasks: Available via `progressive-enhancement` skill
-- React/UI: Available via `frontend-patterns` skill
+- Code tasks: Available via `enhancing-progressively` skill
+- React/UI: Available via `applying-frontend-patterns` skill
 - Large-scale: [Law of Demeter](./rules/development/LAW_OF_DEMETER.md)
-- Testing: Available via `tdd-test-generation` skill
+- Testing: Available via `generating-tdd-tests` skill
 
 **Note**: Skills are automatically activated based on context and keywords.
 

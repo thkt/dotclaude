@@ -32,7 +32,7 @@ Last Updated: 2025-12-14 (Revised)
 
 [✓] FR-001: Skill file structure
 
-- Location: `~/.claude/skills/storybook-integration/`
+- Location: `~/.claude/skills/integrating-storybook/`
 - Structure:
   - `SKILL.md` - Main skill file
   - `references/csf3-patterns.md` - CSF3 pattern collection
@@ -300,7 +300,7 @@ export const Disabled: Story = {
 
 [✓] ~/.claude/commands/think.md - Extension target
 [✓] ~/.claude/commands/code.md - Extension target
-[✓] ~/.claude/skills/frontend-patterns/SKILL.md - Reference
+[✓] ~/.claude/skills/applying-frontend-patterns/SKILL.md - Reference
 
 ---
 
@@ -360,7 +360,7 @@ export const Disabled: Story = {
 ### 6.2 New Files (Phase 1)
 
 ```text
-~/.claude/skills/storybook-integration/
+~/.claude/skills/integrating-storybook/
 ├── SKILL.md                              # Main skill file
 └── references/
     ├── csf3-patterns.md                  # CSF3 pattern collection
@@ -560,7 +560,7 @@ describe('/code with storybook-integration', () => {
 
 ### Phase 1: Skill Creation
 
-- [ ] Create `~/.claude/skills/storybook-integration/SKILL.md`
+- [ ] Create `~/.claude/skills/integrating-storybook/SKILL.md`
 - [ ] Create `references/csf3-patterns.md`
 - [ ] Create `references/component-api-template.md`
 
@@ -587,5 +587,5 @@ describe('/code with storybook-integration', () => {
 ## 10. References
 
 - SOW: `sow.md`
-- Related: `~/.claude/skills/frontend-patterns/SKILL.md`
+- Related: `~/.claude/skills/applying-frontend-patterns/SKILL.md`
 - Storybook Docs: <https://storybook.js.org/docs/writing-stories>
