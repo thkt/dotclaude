@@ -146,7 +146,7 @@ If skip → respond directly. Otherwise → proceed with check.
 [Maintain existing content]
 
 ## Full Details
-[@~/.claude/rules/core/PRE_TASK_CHECK.md](./PRE_TASK_CHECK.md)
+[@~/.claude/rules/core/PRE_TASK_CHECK_VERBOSE.md](./PRE_TASK_CHECK_VERBOSE.md)
 ```
 
 ### 2.2 MODEL_SELECTION_GUIDE.md (New)
