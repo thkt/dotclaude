@@ -3,135 +3,63 @@ name: documenting-apis
 description: >
   Generate API specification documentation from codebase analysis.
   Detects REST endpoints, function signatures, type definitions, and schemas.
-  Use when: API specification, endpoints, REST API, type definitions,
+  Triggers: API specification, endpoints, REST API, type definitions,
   OpenAPI, Swagger, API documentation.
 allowed-tools: Read, Write, Grep, Glob, Bash, Task
-
-triggers:
-  keywords:
-    - "API specification"
-    - "endpoints"
-    - "REST API"
-    - "type definitions"
-    - "OpenAPI"
-    - "Swagger"
 ---
 
-# docs:api Skill
+# docs:api - API Specification Generation
 
-Automatically generate API specification documentation.
+Auto-generate API documentation from codebase analysis.
 
-## Features
+## Detection Items
 
-### Detection Items
+| Category | Targets |
+|----------|---------|
+| REST Endpoints | Express, Fastify, Hono, Next.js, Flask, FastAPI, Django REST |
+| Functions | tree-sitter extraction, TypeScript types, JSDoc, docstrings |
+| Types | interface, type, Zod, Yup, dataclass, Pydantic |
+| OpenAPI | openapi.yaml/json, swagger.yaml/json |
 
-1. **REST API Endpoints**
-   - Express.js: `app.get()`, `router.post()`, etc.
-   - Fastify: `fastify.get()`, etc.
-   - Hono: `app.get()`, etc.
-   - Next.js: `app/api/**/route.ts`, `pages/api/**/*.ts`
-   - Flask: `@app.route()` decorator
-   - FastAPI: `@app.get()` decorator
-   - Django REST: `@api_view` decorator
+## Framework Detection Patterns
 
-2. **Function Signatures**
-   - Function definition extraction via tree-sitter-analyzer
-   - TypeScript type annotations
-   - JSDoc comments
-   - Python docstrings
-
-3. **Type Definitions**
-   - TypeScript: interface, type
-   - Zod: z.object() schemas
-   - Yup: yup.object() schemas
-   - Python: dataclass, TypedDict, Pydantic
-
-4. **OpenAPI/Swagger**
-   - openapi.yaml, swagger.yaml
-   - openapi.json, swagger.json
+| Framework | Pattern |
+|-----------|---------|
+| Express/Fastify/Hono | `app.get()`, `router.post()` |
+| Next.js | `app/api/**/route.ts`, `pages/api/**/*.ts` |
+| Flask | `@app.route()` |
+| FastAPI | `@app.get()`, `@app.post()` |
+| Django REST | `@api_view` |
 
 ## Analysis Scripts
 
-### detect-endpoints.sh
+| Script | Purpose |
+|--------|---------|
+| `scripts/detect-endpoints.sh` | HTTP method, path, handler, file location |
+| `scripts/extract-types.sh` | Type name, fields, related types |
 
-Detect API endpoints:
-
-```bash
-~/.claude/skills/documenting-apis/scripts/detect-endpoints.sh {path}
-```
-
-**Output:**
-
-- HTTP method
-- Endpoint path
-- Handler function name
-- File location
-
-### extract-types.sh
-
-Extract type definitions:
-
-```bash
-~/.claude/skills/documenting-apis/scripts/extract-types.sh {path}
-```
-
-**Output:**
-
-- Type name
-- Field definitions
-- Related types
-
-## Generated Document Structure
+## Generated Structure
 
 ```markdown
 # API Specification
 
-## Overview
-- Base URL
-- Authentication method
-- Response format
-
 ## Endpoint List
-
 ### GET /api/users
-**Description**: Get user list
-
-**Request**:
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| page | number | No | Page number |
-
-**Response**:
-\`\`\`json
-{
-  "users": [...]
-}
-\`\`\`
+**Request**: params table
+**Response**: JSON example
 
 ## Type Definitions
-
 ### User
 | Field | Type | Description |
-|-------|------|-------------|
-| id | string | User ID |
-| name | string | User name |
 ```
-
-## Template
-
-`assets/api-template.md` - Markdown template for API specification
 
 ## Usage
 
 ```bash
-# Call from command
-/docs:api
-
-# Direct skill reference
-"Generate API specification"
+/docs:api                    # Generate API docs
+"Generate API specification" # Natural language
 ```
 
-## Related
+## References
 
-- Sibling skills: `documenting-architecture`, `setting-up-docs`
-- Command: `/docs:api`
+- Related: `documenting-architecture`, `setting-up-docs`, `documenting-domains`

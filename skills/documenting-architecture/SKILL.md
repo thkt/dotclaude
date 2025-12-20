@@ -2,218 +2,63 @@
 name: documenting-architecture
 description: >
   Generate architecture overview documentation from codebase analysis.
-  Use when: architecture overview, project structure, module diagram,
-  dependency graph, code structure, directory structure.
   Uses tree-sitter-analyzer for precise code structure extraction.
   Generates Mermaid diagrams for visual representation.
+  Triggers: architecture overview, project structure, module diagram,
+  dependency graph, code structure, directory structure.
 allowed-tools: Read, Write, Grep, Glob, Bash, Task
-
-triggers:
-  keywords:
-    - "architecture overview"
-    - "project structure"
-    - "module diagram"
-    - "dependency graph"
-    - "code structure"
 ---
 
 # docs:architecture - Architecture Overview Generation
 
-## Overview
-
-A skill that analyzes codebases and automatically generates architecture overview documentation.
+Auto-generate architecture documentation from codebase analysis.
 
 ## Generated Content
 
-1. **Project Overview** - Tech stack, framework detection
-2. **Directory Structure** - Structure display via tree command
-3. **Module Composition** - Module relationships via Mermaid diagrams
-4. **Key Components** - Class and function listing with statistics
-5. **Dependencies** - External/internal dependency visualization
-6. **Statistics** - File count, line count, class count, etc.
+| Section | Description |
+|---------|-------------|
+| Project Overview | Tech stack, framework detection |
+| Directory Structure | tree command output |
+| Module Composition | Mermaid relationship diagrams |
+| Key Components | Classes, functions with statistics |
+| Dependencies | External/internal visualization |
+| Statistics | File count, line count, etc. |
 
 ## Processing Flow
 
-```text
-Phase 1: Initialization
-├── Identify project root
-├── Detect language/framework
-└── Collect files for analysis
-
-Phase 2: Directory Structure Analysis
-├── Get structure via tree command
-├── Classify main directories
-└── Determine file types
-
-Phase 3: Code Structure Analysis
-├── Analysis via tree-sitter-analyzer
-│   ├── Class extraction
-│   ├── Function extraction
-│   └── Import extraction
-└── Aggregate statistics
-
-Phase 4: Dependency Analysis
-├── Parse import/export statements
-├── Map inter-module relationships
-└── Identify external dependencies
-
-Phase 5: Document Generation
-├── Generate Mermaid diagrams
-├── Populate templates
-└── Output Markdown
-```
-
-## Usage
-
-```bash
-# Basic usage
-/docs architecture
-
-# Analyze specific directory
-/docs architecture src/
-
-# Specify output destination
-/docs architecture --output docs/ARCHITECTURE.md
-```
+| Phase | Actions |
+|-------|---------|
+| 1. Init | Identify root, detect language/framework |
+| 2. Structure | tree command, classify directories |
+| 3. Code | tree-sitter-analyzer: classes, functions, imports |
+| 4. Dependencies | Parse imports, map relationships |
+| 5. Generate | Mermaid diagrams, populate templates |
 
 ## Analysis Commands
 
-### Get Directory Structure
-
 ```bash
-tree -L 3 -I 'node_modules|.git|dist|build|__pycache__|.venv|coverage|.next' --dirsfirst
-```
+# Directory structure
+tree -L 3 -I 'node_modules|.git|dist|build|__pycache__|.venv' --dirsfirst
 
-### Code Structure Analysis
-
-```bash
-# Analyze structure of each file
+# Code structure (per file)
 tree-sitter-analyzer {file} --structure --output-format json
 
-# Get statistics
-tree-sitter-analyzer {file} --statistics
-```
+# Dependencies - TypeScript/JavaScript
+grep -r "^import\|^export" --include="*.ts" --include="*.tsx"
 
-### Extract Dependencies
-
-```bash
-# TypeScript/JavaScript
-grep -r "^import\|^export" --include="*.ts" --include="*.tsx" --include="*.js"
-
-# Python
+# Dependencies - Python
 grep -r "^import\|^from.*import" --include="*.py"
 ```
-
-## Output Template
-
-See [template file](./assets/architecture-template.md).
-
-## Mermaid Diagram Generation
-
-### Module Relationship Diagram
-
-```mermaid
-graph TB
-    subgraph "Application Layer"
-        APP[App]
-        PAGES[Pages]
-    end
-
-    subgraph "Feature Layer"
-        FEAT[Features]
-        COMP[Components]
-    end
-
-    subgraph "Foundation Layer"
-        UTILS[Utils]
-        HOOKS[Hooks]
-        TYPES[Types]
-    end
-
-    APP --> PAGES
-    PAGES --> FEAT
-    FEAT --> COMP
-    COMP --> UTILS
-    COMP --> HOOKS
-    FEAT --> TYPES
-```
-
-### Dependency Diagram
-
-```mermaid
-graph LR
-    subgraph "External Dependencies"
-        REACT[react]
-        NEXT[next]
-        TS[typescript]
-    end
-
-    subgraph "Project"
-        SRC[src/]
-    end
-
-    SRC --> REACT
-    SRC --> NEXT
-    SRC --> TS
-```
-
-## Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `scripts/analyze-structure.sh` | Directory structure analysis |
-| `scripts/extract-modules.sh` | Module information extraction |
-| `scripts/generate-mermaid.sh` | Mermaid diagram generation |
 
 ## Error Handling
 
 | Error | Resolution |
 |-------|------------|
-| Project root identification failed | Use current directory |
-| tree-sitter-analyzer not supported | Fallback to Grep/Read |
-| Large project | Sampling analysis (top 100 files) |
+| Root not found | Use current directory |
+| tree-sitter unavailable | Fallback to Grep/Read |
+| Large project | Sample top 100 files |
 
-## Output Example
+## References
 
-Example of generated documentation:
-
-```markdown
-# my-project - Architecture Overview
-
-**Generated**: 2025-12-19 12:00
-**Target**: /path/to/my-project
-
-## Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| Language | TypeScript |
-| Framework | Next.js |
-| Testing | Vitest |
-
-## Directory Structure
-
-src/
-├── app/
-│   ├── layout.tsx
-│   └── page.tsx
-├── components/
-│   ├── Button.tsx
-│   └── Header.tsx
-└── lib/
-    └── utils.ts
-
-## Statistics
-
-| Metric | Value |
-|--------|-------|
-| Total Files | 45 |
-| Total Lines | 3,200 |
-| Class Count | 12 |
-| Function Count | 85 |
-```
-
-## Related Documentation
-
-- Agent: [@architecture-analyzer](../../agents/analyzers/architecture-analyzer.md)
-- Command: [@/docs](../../commands/docs.md)
+- [@~/.claude/agents/analyzers/architecture-analyzer.md] - architecture-analyzer agent
+- Command: `/docs:architecture`
