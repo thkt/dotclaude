@@ -91,7 +91,6 @@ If any check fails:
 ### Commands Reference
 
 - Command list: [@~/.claude/docs/COMMANDS.md](./docs/COMMANDS.md)
-- Japanese version: [@~/.claude/ja/docs/COMMANDS.md](./ja/docs/COMMANDS.md)
 
 ### Documentation Guidelines
 
