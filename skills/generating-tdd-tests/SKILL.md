@@ -84,6 +84,6 @@ test('descriptive name', () => {
 
 ## References
 
-- [@./references/tdd-rgrc.md] - Complete RGRC guide
-- [@./references/test-design.md] - Test design techniques
+- [@./references/tdd-rgrc.md](./references/tdd-rgrc.md) - Complete RGRC guide
+- [@./references/test-design.md](./references/test-design.md) - Test design techniques
 - [@~/.claude/rules/development/TDD_RGRC.md]

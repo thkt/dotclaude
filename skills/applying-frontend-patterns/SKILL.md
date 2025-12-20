@@ -87,5 +87,5 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 
 ## References
 
-- [@./references/container-presentational.md] - Detailed separation guide
+- [@./references/container-presentational.md](./references/container-presentational.md) - Detailed separation guide
 - [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md]

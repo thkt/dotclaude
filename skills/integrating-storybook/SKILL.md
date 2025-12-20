@@ -60,6 +60,6 @@ Triggers Component API generation:
 
 ## References
 
-- [@./references/component-api-template.md] - Props/Variants template
-- [@./references/csf3-patterns.md] - CSF3 patterns
+- [@./references/component-api-template.md](./references/component-api-template.md) - Props/Variants template
+- [@./references/csf3-patterns.md](./references/csf3-patterns.md) - CSF3 patterns
 - [Storybook Docs](https://storybook.js.org/docs/writing-stories)

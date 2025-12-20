@@ -48,6 +48,6 @@ Data-driven frontend optimization. **"Measure before optimizing"** - Donald Knut
 
 ## References
 
-- [@./references/web-vitals.md] - LCP, FID, CLS optimization
-- [@./references/react-optimization.md] - memo, useMemo, useCallback
-- [@./references/bundle-optimization.md] - Code splitting, tree shaking
+- [@./references/web-vitals.md](./references/web-vitals.md) - LCP, FID, CLS optimization
+- [@./references/react-optimization.md](./references/react-optimization.md) - memo, useMemo, useCallback
+- [@./references/bundle-optimization.md](./references/bundle-optimization.md) - Code splitting, tree shaking

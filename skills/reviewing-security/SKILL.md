@@ -60,6 +60,6 @@ npm audit  # or yarn audit
 
 ## References
 
-- [@./references/owasp-basic.md] - Access Control, Crypto, Auth
-- [@./references/owasp-injection.md] - SQL/XSS/CSRF
-- [@./references/owasp-advanced.md] - Design, Config, Monitoring
+- [@./references/owasp-basic.md](./references/owasp-basic.md) - Access Control, Crypto, Auth
+- [@./references/owasp-injection.md](./references/owasp-injection.md) - SQL/XSS/CSRF
+- [@./references/owasp-advanced.md](./references/owasp-advanced.md) - Design, Config, Monitoring
