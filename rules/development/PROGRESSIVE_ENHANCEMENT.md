@@ -49,7 +49,7 @@ Layout, positioning, show/hide, responsive, animations, visual states
 
 ## Related Principles
 
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - The simplicity principle underlying Progressive Enhancement
+- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - The simplicity principle underlying Progressive Enhancement
 
 ## Outcome-First Development
 
@@ -86,12 +86,4 @@ If "No" → Don't add it yet
 
 ## Related Principles
 
-### Development Practices
-
-- [@~/.claude/rules/development/LEAKY_ABSTRACTION.md](~/.claude/rules/development/LEAKY_ABSTRACTION.md) - Build abstractions progressively, expecting leaks
-- [@~/.claude/rules/development/LAW_OF_DEMETER.md](~/.claude/rules/development/LAW_OF_DEMETER.md) - Progressive coupling reduction
-- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Start simple, enhance readability gradually
-
-### Core Principles
-
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplicity first aligns with progressive enhancement
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)

@@ -247,14 +247,4 @@ The best code is often:
 
 ## Related Principles
 
-### Core Principles (Same Level)
-
-- [@~/.claude/rules/reference/SOLID.md](~/.claude/rules/reference/SOLID.md) - SRP aligns with focused simplicity
-- [@~/.claude/rules/reference/DRY.md](~/.claude/rules/reference/DRY.md) - Eliminate duplication, keep it simple
-
-### Applied in Practice
-
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Build simple, enhance gradually
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Baby Steps embody Occam's Razor
-- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Simplicity for understanding
-- [@~/.claude/rules/development/LEAKY_ABSTRACTION.md](~/.claude/rules/development/LEAKY_ABSTRACTION.md) - Accept simple leaky abstractions over complex "perfect" ones
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#reference-principles)

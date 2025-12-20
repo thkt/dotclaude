@@ -24,90 +24,11 @@ decision_question: "Are test cases covering all meaningful scenarios efficiently
 
 ## Test Design Techniques
 
-### 1. Equivalence Partitioning
-
-**Concept**: Divide inputs into groups (partitions) that should behave the same way.
-
-**Why it works**: If one value in a partition works, all values should work (or fail) similarly.
-
-```typescript
-// Example: Age validation
-function validateAge(age: number): boolean {
-  return age >= 18 && age <= 120
-}
-
-// Equivalence partitions:
-// 1. age < 18 (invalid - too young)
-// 2. 18 <= age <= 120 (valid)
-// 3. age > 120 (invalid - too old)
-
-// Test cases - one from each partition:
-test('rejects age 17', () => expect(validateAge(17)).toBe(false))  // Partition 1
-test('accepts age 30', () => expect(validateAge(30)).toBe(true))   // Partition 2
-test('rejects age 121', () => expect(validateAge(121)).toBe(false)) // Partition 3
-```
-
-### 2. Boundary Value Analysis
-
-**Concept**: Test at the edges of partitions where bugs often hide.
-
-**Why it works**: Off-by-one errors are common in boundary conditions.
-
-```typescript
-// For age validation, boundaries are: 18, 120
-
-// Boundary test cases:
-test('rejects age 17 (18-1)', () => expect(validateAge(17)).toBe(false))
-test('accepts age 18 (min)', () => expect(validateAge(18)).toBe(true))
-test('accepts age 120 (max)', () => expect(validateAge(120)).toBe(true))
-test('rejects age 121 (120+1)', () => expect(validateAge(121)).toBe(false))
-
-// Common pattern: test [min-1, min, max, max+1]
-```
-
-### 3. Decision Table Testing
-
-**Concept**: For complex logic with multiple conditions, use tables to ensure all combinations are covered.
-
-**Why it works**: Systematically covers all logical paths, preventing missed scenarios.
-
-```typescript
-// Example: User access control
-// Conditions: isLoggedIn, isPremium, isActive
-// Actions: allowAccess
-
-/*
-Decision Table:
-| isLoggedIn | isPremium | isActive | allowAccess |
-|------------|-----------|----------|-------------|
-| false      | *         | *        | false       |
-| true       | false     | false    | false       |
-| true       | false     | true     | true        |
-| true       | true      | false    | false       |
-| true       | true      | true     | true        |
-
-Note: * means "don't care" - value doesn't affect outcome
-*/
-
-// Test cases derived from table:
-test('denies access when not logged in', () => {
-  expect(canAccess(false, false, false)).toBe(false)
-  expect(canAccess(false, true, true)).toBe(false)  // Premium doesn't matter
-})
-
-test('denies access when inactive', () => {
-  expect(canAccess(true, false, false)).toBe(false)
-  expect(canAccess(true, true, false)).toBe(false)
-})
-
-test('allows access for logged in, active free users', () => {
-  expect(canAccess(true, false, true)).toBe(true)
-})
-
-test('allows access for logged in, active premium users', () => {
-  expect(canAccess(true, true, true)).toBe(true)
-})
-```
+| Technique | Concept | Pattern | Example |
+|-----------|---------|---------|---------|
+| **Equivalence Partitioning** | Divide inputs into groups that behave similarly | Test one value from each partition | Age validation: <18 (invalid), 18-120 (valid), >120 (invalid) → Test 17, 30, 121 |
+| **Boundary Value Analysis** | Test at partition edges where bugs hide | Test [min-1, min, max, max+1] | Age boundaries 18, 120 → Test 17, 18, 120, 121 |
+| **Decision Tables** | Map all condition combinations for complex logic (3+ conditions) | Create truth table, derive tests | Access control: isLoggedIn × isPremium × isActive → 5 meaningful combinations to test |
 
 ## Coverage Goals
 
@@ -214,174 +135,28 @@ describe('validateAge', () => {
 
 ## Integration with Other Principles
 
-### Occam's Razor Applied to Tests
-
-```typescript
-// ❌ Over-engineered
-class AgeValidatorTestBuilder {
-  withAge(age: number) { ... }
-  withContext(ctx: any) { ... }
-  build() { ... }
-}
-
-// ✅ Simple and direct
-test('validates age correctly', () => {
-  expect(validateAge(30)).toBe(true)
-})
-```
-
-### Readable Tests
-
-Follow the same readability principles as production code:
-
-- **Clear naming**: Test names describe what they verify
-- **One focus**: Each test checks one specific behavior
-- **Arrange-Act-Assert**: Clear structure
-- **Minimal setup**: Only what's needed for the test
-
-```typescript
-// ✅ Readable test
-test('denies access to inactive users', () => {
-  // Arrange
-  const user = { isActive: false, isPremium: true }
-
-  // Act
-  const result = canAccess(user)
-
-  // Assert
-  expect(result).toBe(false)
-})
-```
-
-### Miller's Law for Tests
-
-Respect cognitive limits (7±2 items):
-
-```typescript
-// ❌ Too many test cases in one describe
-describe('validation', () => {
-  test('case 1', ...)
-  test('case 2', ...)
-  // ... 15 more tests
-})
-
-// ✅ Grouped into categories
-describe('validation', () => {
-  describe('email validation', () => {
-    // 3-5 tests
-  })
-
-  describe('password validation', () => {
-    // 3-5 tests
-  })
-
-  describe('username validation', () => {
-    // 3-5 tests
-  })
-})
-```
+| Principle | Apply to Tests | Key Pattern |
+|-----------|---------------|-------------|
+| **Occam's Razor** | Avoid test builders, helpers for simple cases | Direct test > complex test infrastructure |
+| **Readable Code** | Clear naming, one focus per test, Arrange-Act-Assert structure, minimal setup | Test names describe what they verify |
+| **Miller's Law** | Group tests into categories (7±2 limit) | `describe('validation', () => { describe('email', ...), describe('password', ...) })` |
 
 ## Framework-Agnostic Patterns
 
-These techniques work with any testing framework:
-
-### Jest / Vitest
-
-```typescript
-describe('unit', () => {
-  test('behavior', () => {
-    expect(actual).toBe(expected)
-  })
-})
-```
-
-### Mocha / Chai
-
-```typescript
-describe('unit', () => {
-  it('should behavior', () => {
-    expect(actual).to.equal(expected)
-  })
-})
-```
-
-### Pytest
-
-```python
-class TestUnit:
-    def test_behavior(self):
-        assert actual == expected
-```
-
-### RSpec
-
-```ruby
-describe 'unit' do
-  it 'behavior' do
-    expect(actual).to eq(expected)
-  end
-end
-```
+| Framework | Structure | Assertion |
+|-----------|-----------|-----------|
+| **Jest/Vitest** | `describe('unit', () => { test('behavior', () => {...}) })` | `expect(actual).toBe(expected)` |
+| **Mocha/Chai** | `describe('unit', () => { it('should behavior', () => {...}) })` | `expect(actual).to.equal(expected)` |
+| **Pytest** | `class TestUnit: def test_behavior(self): ...` | `assert actual == expected` |
+| **RSpec** | `describe 'unit' do it 'behavior' do ... end end` | `expect(actual).to eq(expected)` |
 
 ## Common Pitfalls
 
-### 1. Random Testing
-
-```typescript
-// ❌ No systematic approach
-test('it works', () => {
-  expect(validateAge(25)).toBe(true)
-  expect(validateAge(50)).toBe(true)
-  expect(validateAge(75)).toBe(true)
-  // Why these numbers? Missing boundaries!
-})
-
-// ✅ Systematic design
-test('accepts minimum valid age (boundary)', () => {
-  expect(validateAge(18)).toBe(true)
-})
-
-test('accepts typical valid age (equivalence)', () => {
-  expect(validateAge(30)).toBe(true)
-})
-
-test('accepts maximum valid age (boundary)', () => {
-  expect(validateAge(120)).toBe(true)
-})
-```
-
-### 2. Testing Implementation Instead of Behavior
-
-```typescript
-// ❌ Coupled to implementation
-test('calls validateAge internally', () => {
-  const spy = jest.spyOn(service, 'validateAge')
-  service.registerUser({ age: 30 })
-  expect(spy).toHaveBeenCalled()  // Brittle!
-})
-
-// ✅ Test behavior
-test('registers users with valid age', () => {
-  const result = service.registerUser({ age: 30 })
-  expect(result.success).toBe(true)
-})
-```
-
-### 3. Incomplete Coverage
-
-```typescript
-// ❌ Missing boundary cases
-test('validates age', () => {
-  expect(validateAge(30)).toBe(true)  // Only happy path
-})
-
-// ✅ Comprehensive coverage
-test('rejects below minimum', () => expect(validateAge(17)).toBe(false))
-test('accepts minimum', () => expect(validateAge(18)).toBe(true))
-test('accepts valid age', () => expect(validateAge(30)).toBe(true))
-test('accepts maximum', () => expect(validateAge(120)).toBe(true))
-test('rejects above maximum', () => expect(validateAge(121)).toBe(false))
-```
+| Pitfall | Problem | Solution |
+|---------|---------|----------|
+| **Random Testing** | Testing arbitrary values (25, 50, 75) without rationale - misses boundaries | Use systematic design: test boundaries (min-1, min, max, max+1) + one equivalence value |
+| **Testing Implementation** | Spying on internal method calls - brittle, couples to implementation | Test behavior: verify outcomes, not how they're achieved |
+| **Incomplete Coverage** | Only testing happy path - missing edge cases | Cover all partitions + boundaries: [min-1, min, valid, max, max+1] |
 
 ## Quick Reference
 
@@ -408,16 +183,7 @@ For each public method/function:
 
 ## Related Principles
 
-### Core Principles
-
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Keep tests simple and focused
-- [@~/.claude/rules/reference/MILLERS_LAW.md](~/.claude/rules/reference/MILLERS_LAW.md) - Limit test case complexity
-
-### Development Practices
-
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Test-first approach for implementation
-- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Clarity in test code
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Start simple, enhance coverage gradually
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)
 
 ## Remember
 

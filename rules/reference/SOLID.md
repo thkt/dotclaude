@@ -131,13 +131,4 @@ Why: High-level policies shouldn't depend on low-level details
 
 ## Related Principles
 
-### Core Principles (Same Level)
-
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simple designs often align with SRP
-- [@~/.claude/rules/reference/DRY.md](~/.claude/rules/reference/DRY.md) - Abstractions prevent duplication
-- [@~/.claude/rules/reference/MILLERS_LAW.md](~/.claude/rules/reference/MILLERS_LAW.md) - SRP respects cognitive limits
-
-### Applied in Practice
-
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Design emerges through tests
-- [@~/.claude/rules/development/LAW_OF_DEMETER.md](~/.claude/rules/development/LAW_OF_DEMETER.md) - Complements SOLID principles
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#reference-principles)

@@ -98,137 +98,27 @@ Before adding any code, ask these questions:
 
 ## Examples
 
-### ❌ Violating YAGNI
-
 ```typescript
-// Adding flexibility nobody asked for
-class UserService {
-  constructor(
-    private cache: CacheStrategy,      // Not needed yet
-    private logger: LoggerStrategy,    // Not needed yet
-    private validator: ValidationStrategy,  // Not needed yet
-    private transformer: DataTransformer    // Not needed yet
-  ) {}
+// ❌ YAGNI violation: Over-engineered for imagined futures
+interface DatabaseAdapter { query(): Promise<Result> }
+class PostgresAdapter implements DatabaseAdapter { }  // Only implementation
+// 10x more code, untested paths, maintenance burden
 
-  // Plugin system for future extensibility
-  plugins: Plugin[] = []
-  registerPlugin(plugin: Plugin) { }  // Nobody uses this
+// ✅ YAGNI compliant: Solve actual need
+async function getUser(id: string): Promise<User> {
+  return db.query('SELECT * FROM users WHERE id = $1', [id])
 }
-
-// "Just in case" abstraction
-interface DatabaseAdapter {
-  query(): Promise<Result>
-}
-
-class PostgresAdapter implements DatabaseAdapter { }
-class MySQLAdapter implements DatabaseAdapter { }
-class MongoAdapter implements DatabaseAdapter { }
-
-// Reality: Only using Postgres
+// Add interface when 2nd database appears
 ```
-
-**Problems**:
-
-- 10x more code than needed
-- Untested code paths
-- Maintenance burden for unused features
-- Cognitive overhead for readers
-
-### ✅ Following YAGNI
-
-```typescript
-// Solve the actual need
-class UserService {
-  async getUser(id: string): Promise<User> {
-    return db.query('SELECT * FROM users WHERE id = $1', [id])
-  }
-}
-
-// Add abstractions when second database appears
-// Add caching when profiling shows database is bottleneck
-// Add validation when invalid data causes bugs
-```
-
-**Benefits**:
-
-- Simple and direct
-- Easy to test
-- Easy to understand
-- Easy to refactor when needs change
 
 ## Common YAGNI Violations
 
-### 1. Premature Abstraction
-
-```typescript
-// ❌ YAGNI violation
-interface PaymentProcessor {
-  process(amount: number): Promise<Result>
-}
-
-class StripePaymentProcessor implements PaymentProcessor { }
-// No other processors exist or planned
-
-// ✅ YAGNI compliant
-async function processPayment(amount: number) {
-  return stripe.charge(amount)
-}
-// Add interface when second processor is actually needed
-```
-
-### 2. Premature Optimization
-
-```typescript
-// ❌ YAGNI violation
-function getUserPosts(userId: string) {
-  // Complex caching, pagination, prefetching
-  // Nobody complained about speed
-}
-
-// ✅ YAGNI compliant
-function getUserPosts(userId: string) {
-  return db.query('SELECT * FROM posts WHERE user_id = $1', [userId])
-}
-// Optimize after measuring actual performance issue
-```
-
-### 3. Premature Configuration
-
-```typescript
-// ❌ YAGNI violation
-const config = {
-  cache: {
-    ttl: env.CACHE_TTL,
-    max: env.CACHE_MAX,
-    strategy: env.CACHE_STRATEGY,
-    compression: env.CACHE_COMPRESSION
-  },
-  // 50 more config options
-}
-
-// ✅ YAGNI compliant
-const CACHE_TTL = 3600  // Hardcode until variation is needed
-```
-
-### 4. Generic "Reusable" Components
-
-```typescript
-// ❌ YAGNI violation
-<DataGrid
-  columns={columns}
-  data={data}
-  sorting={sorting}
-  filtering={filtering}
-  pagination={pagination}
-  grouping={grouping}
-  // 30 more props for features not used
-/>
-
-// ✅ YAGNI compliant
-<UserTable users={users} />
-// Simple component for actual need
-// Generalize when 3rd similar table appears (Rule of Three)
-```
+| Violation | Problem | YAGNI Solution |
+|-----------|---------|----------------|
+| **Premature Abstraction** | Interface with single implementation | Direct function until 2nd implementation needed |
+| **Premature Optimization** | Complex caching before measuring | Simple query, optimize after profiling |
+| **Premature Configuration** | 50+ config options unused | Hardcode values, add config when variation needed |
+| **Generic Components** | DataGrid with 30+ unused props | Specific component (UserTable), generalize at 3rd use |
 
 ## When to Add Complexity
 
@@ -341,12 +231,4 @@ You're violating YAGNI when you hear:
 
 ## Related Principles
 
-### Core Principles (Same Level)
-
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Choose the simplest solution
-- [@~/.claude/rules/reference/DRY.md](~/.claude/rules/reference/DRY.md) - Single source of truth
-
-### Applied in Practice
-
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Build minimal, enhance progressively
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - TDD naturally enforces YAGNI
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#reference-principles)

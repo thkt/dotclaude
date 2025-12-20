@@ -263,7 +263,7 @@ bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 ### タスク分析
 
 実際のタスクの意図と要件の理解に基づく。
-詳細: [@../commands/COMMAND_SELECTION.md]を参照
+詳細: [@../commands/COMMAND_WORKFLOWS.md]を参照
 
 ### 出力フォーマット
 
@@ -300,7 +300,7 @@ bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 - **機能**: 実装+テスト → `/research → /think → /code → /test → /audit → /validate`
 - **緊急対応**: 重大+本番 → `/hotfix`
 
-詳細: [@../commands/STANDARD_WORKFLOWS.md]
+詳細: [@../commands/COMMAND_WORKFLOWS.md]
 
 ## ユーザー応答処理
 

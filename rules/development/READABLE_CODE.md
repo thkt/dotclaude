@@ -28,7 +28,7 @@ Miller's Law (7±2) demonstrates that human cognitive capacity is limited. When 
 
 This scientific backing explains WHY readable code matters: our brains literally cannot process too much complexity at once.
 
-→ See [@~/.claude/rules/reference/MILLERS_LAW.md](~/.claude/rules/reference/MILLERS_LAW.md) for the cognitive science behind readable code
+→ See [@../reference/MILLERS_LAW.md](../reference/MILLERS_LAW.md) for the cognitive science behind readable code
 
 ## Key Practices
 
@@ -244,12 +244,4 @@ function validateUser(user: User): ValidationError[] {
 
 ## Related Principles
 
-### Scientific Foundation
-
-- [@~/.claude/rules/reference/MILLERS_LAW.md](~/.claude/rules/reference/MILLERS_LAW.md) - Cognitive limits explain why readability matters
-
-### Complementary Principles
-
-- [@~/.claude/rules/development/LAW_OF_DEMETER.md](~/.claude/rules/development/LAW_OF_DEMETER.md) - Simpler interfaces improve readability
-- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md) - Clear separation improves understanding
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplicity enhances readability
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)

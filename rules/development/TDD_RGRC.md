@@ -164,7 +164,7 @@ test('rejects sufficient age with low balance', () => expect(canPurchase(20, 9))
 test('accepts sufficient age and balance', () => expect(canPurchase(20, 10)).toBe(true))  // Valid partition
 ```
 
-**For detailed test design techniques**, see [@~/.claude/rules/development/TEST_GENERATION.md](~/.claude/rules/development/TEST_GENERATION.md):
+**For detailed test design techniques**, see [@./TEST_GENERATION.md](./TEST_GENERATION.md):
 
 - Equivalence Partitioning
 - Boundary Value Analysis
@@ -173,5 +173,4 @@ test('accepts sufficient age and balance', () => expect(canPurchase(20, 10)).toB
 
 ## Related Principles
 
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Baby Steps embody the simplicity principle
-- [@~/.claude/rules/development/TEST_GENERATION.md](~/.claude/rules/development/TEST_GENERATION.md) - Systematic test design techniques
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)

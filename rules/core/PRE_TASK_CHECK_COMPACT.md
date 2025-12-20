@@ -27,13 +27,13 @@
 ## Output Format
 
 ```text
-🧠 理解度: [██████████] XX%
-✅ 明確: [✓]/[→] items
-❓ 不明: [?] items
-💡 推奨: /command
-⚡ 実行可能性: 🟢/🟡/🔴
+🧠 Understanding: [██████████] XX%
+✅ Clear: [✓]/[→] items
+❓ Unclear: [?] items
+💡 Recommended: /command
+⚡ Feasibility: 🟢/🟡/🔴
 
-確認後に実行 (Y/n)
+Proceed after confirmation (Y/n)
 ```
 
 ## Flow
@@ -46,4 +46,4 @@
 
 ## Full Details
 
-[@~/.claude/rules/core/PRE_TASK_CHECK.md](./PRE_TASK_CHECK.md)
+For comprehensive guide: [@./PRE_TASK_CHECK_VERBOSE.md](./PRE_TASK_CHECK_VERBOSE.md)

@@ -265,7 +265,7 @@ bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 ### Task Analysis
 
 Based on understanding the actual task intent and requirements.
-See: [@~/.claude/commands/COMMAND_SELECTION.md](~/.claude/commands/COMMAND_SELECTION.md) for detailed algorithm
+See: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/commands/COMMAND_WORKFLOWS.md) for detailed algorithm
 
 ### Output Format
 
@@ -302,7 +302,7 @@ See: [@~/.claude/commands/COMMAND_SELECTION.md](~/.claude/commands/COMMAND_SELEC
 - **Feature**: Implement+Test → `/research → /think → /code → /test → /audit → /validate`
 - **Emergency**: Critical+Production → `/hotfix`
 
-Details: [@~/.claude/commands/STANDARD_WORKFLOWS.md](~/.claude/commands/STANDARD_WORKFLOWS.md)
+Details: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/commands/COMMAND_WORKFLOWS.md)
 
 ## User Response Handling
 

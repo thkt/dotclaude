@@ -143,5 +143,4 @@ export const TodoContainer = () => {
 
 ## Related Principles
 
-- [@~/.claude/rules/development/LAW_OF_DEMETER.md](~/.claude/rules/development/LAW_OF_DEMETER.md) - Props-only pattern naturally follows Law of Demeter
-- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Clear separation improves code understanding
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)

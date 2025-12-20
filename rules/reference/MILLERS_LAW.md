@@ -231,13 +231,4 @@ Before committing code, verify:
 
 ## Related Principles
 
-### Scientific Foundation For
-
-- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Provides cognitive science basis
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Quantifies what "simple" means
-- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md) - Limits component responsibilities
-
-### Complemented By
-
-- [@~/.claude/rules/reference/SOLID.md](~/.claude/rules/reference/SOLID.md) - Single Responsibility aligns with cognitive limits
-- [@~/.claude/rules/reference/DRY.md](~/.claude/rules/reference/DRY.md) - Reduces mental load through elimination of duplication
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#reference-principles)

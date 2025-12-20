@@ -41,3 +41,7 @@ After main task, before commit, only in edited files
 ## Report Format
 
 `🧹 Tidyings: Whitespace ✓ Imports ✓ Unused code ✓ Other ✓`
+
+## Related Principles
+
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)

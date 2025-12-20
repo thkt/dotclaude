@@ -94,218 +94,28 @@ These principles activate based on context:
 - **Leaky Abstraction** when evaluating framework choices
 - **TIDYINGS** when code quality degrades
 
-### Principle Dependency Graph
+### Principle Relationships
 
-Understanding how principles relate to and build upon each other helps you apply them coherently:
-
-```mermaid
-graph TD
-    %% Meta-principle at the top
-    OR[OCCAM'S RAZOR<br/>Meta-Principle<br/>'Simplest solution wins']
-
-    %% Level 1: Universal Principles
-    OR -->|influences| PE[PROGRESSIVE<br/>ENHANCEMENT<br/>'Build simple<br/>→ enhance']
-    OR -->|influences| RC[READABLE CODE<br/>'Code for humans']
-    OR -->|influences| DRY[DRY<br/>"Don't repeat<br/>yourself"]
-
-    %% Supporting principle for Readable Code
-    RC -->|supported by| ML[MILLER'S LAW<br/>'7±2 cognitive<br/>limit']
-
-    %% Level 2: Applied Practices (from Progressive Enhancement)
-    PE -->|informs| TDD[TDD/Baby Steps<br/>'Red-Green-<br/>Refactor']
-
-    %% Level 2: Applied Practices (from Readable Code & DRY)
-    RC -->|informs| CP[CONTAINER/<br/>PRESENTATIONAL<br/>'Separate logic<br/>from UI']
-    DRY -->|informs| TIDY[TIDYINGS<br/>'Clean as<br/>you go']
-
-    %% SOLID as separate hierarchy
-    SOLID[SOLID<br/>Principles<br/>'Design for<br/>change']
-    OR -->|balances| SOLID
-    SOLID -->|informs| CP
-    SOLID -->|informs| LOD[LAW OF<br/>DEMETER<br/>'Talk to<br/>immediate<br/>friends']
-
-    %% Leaky Abstraction
-    OR -->|accepts| LA[LEAKY<br/>ABSTRACTION<br/>'Pragmatic over<br/>perfect']
-
-    %% Styling for different principle types
-    classDef metaPrinciple fill:#ff6b6b,stroke:#c92a2a,stroke-width:3px,color:#fff
-    classDef universalPrinciple fill:#4dabf7,stroke:#1971c2,stroke-width:2px,color:#fff
-    classDef appliedPractice fill:#51cf66,stroke:#2f9e44,stroke-width:2px,color:#fff
-    classDef contextual fill:#ffd43b,stroke:#fab005,stroke-width:2px,color:#000
-    classDef scientific fill:#e599f7,stroke:#ae3ec9,stroke-width:2px,color:#fff
-
-    class OR metaPrinciple
-    class PE,RC,DRY universalPrinciple
-    class TDD,CP,TIDY,LOD,LA appliedPractice
-    class SOLID contextual
-    class ML scientific
-```
-
-**Graph Legend:**
-
-- 🔴 **Red (Meta-Principle)**: OCCAM'S RAZOR - Questions all complexity
-- 🔵 **Blue (Universal)**: Applied to every decision by default
-- 🟢 **Green (Applied Practice)**: Concrete implementation patterns
-- 🟡 **Yellow (Contextual)**: Applied when situation demands
-- 🟣 **Purple (Scientific)**: Cognitive science backing
-
-**Key Relationships:**
-
-1. **Occam's Razor → Everything**: Meta-principle that questions all complexity
-2. **Occam's Razor → Progressive Enhancement**: Start simple, add complexity only when needed
-3. **Occam's Razor → DRY**: Balance abstraction (DRY) with simplicity (Occam's Razor)
-4. **Occam's Razor ⟷ SOLID**: Balancing relationship - SOLID for structure, Occam's Razor prevents over-engineering
-5. **Progressive Enhancement → TDD/Baby Steps**: Both emphasize incremental development
-6. **Readable Code → Miller's Law**: Cognitive science backing for readability limits (7±2 items)
-7. **SOLID → Container/Presentational**: SRP (Single Responsibility Principle) drives UI/logic separation
-8. **SOLID → Law of Demeter**: Both manage dependencies and coupling
-9. **Readable Code + DRY → TIDYINGS**: Practical application of keeping code clean
-10. **Occam's Razor → Leaky Abstraction**: Accept imperfect abstraction for simplicity
-
-**How to Use This Graph:**
-
-- **Starting point**: Begin with Occam's Razor (red) for every decision
-- **Building up**: Apply universal principles (blue) - Progressive Enhancement, Readable Code, DRY
-- **Implementation**: Use applied practices (green) - TDD, Container/Presentational, TIDYINGS
-- **Specific contexts**: Apply contextual principles (yellow) - SOLID, Law of Demeter only when needed
-- **Conflict resolution**: When principles conflict, trace back to Occam's Razor at the top
+For detailed principle relationships and dependency graph, see:
+[@./PRINCIPLE_RELATIONSHIPS.md](./PRINCIPLE_RELATIONSHIPS.md)
 
 ### Practical Application Scenarios
 
-#### Scenario 1: Starting a New Feature
-
-```markdown
-1. Begin with Progressive Enhancement mindset
-   - What's the simplest version that provides value?
-   - Can we ship this incrementally?
-
-2. Apply TDD/Baby Steps
-   - Write the simplest failing test
-   - Implement minimum code to pass
-   - Refactor only if clarity improves
-
-3. Check Readable Code
-   - Would a new developer understand this?
-   - Are names self-documenting?
-
-4. Consider SOLID only if:
-   - Multiple teams will extend this
-   - Requirements explicitly mention future changes
-   - You're building a public API
-```
-
-#### Scenario 2: Fixing Legacy Code
-
-```markdown
-1. Occam's Razor first
-   - What's the minimal change that fixes the issue?
-   - Can we avoid restructuring?
-
-2. Apply TIDYINGS
-   - Clean only what you touch
-   - Leave the codebase better, not perfect
-
-3. Consider DRY carefully
-   - Is the duplication actually harmful?
-   - Will abstraction make debugging harder?
-
-4. Accept Leaky Abstractions
-   - Don't fix framework limitations
-   - Work with them, document them
-```
-
-#### Scenario 3: Code Review Checklist
-
-```typescript
-// For each principle, ask:
-
-// ✓ Occam's Razor
-Is there a simpler way to achieve this?
-
-// ✓ Progressive Enhancement
-Could this be shipped in smaller pieces?
-
-// ✓ Readable Code
-Can I understand this without context?
-
-// ✓ DRY
-Is this duplication actually problematic?
-
-// ✓ Law of Demeter
-obj.method()           // ✓ Good
-obj.prop.method()      // ⚠️ Question
-obj.prop.prop.method() // ✗ Refactor
-
-// ✓ Leaky Abstraction
-Are we fighting the framework or working with it?
-```
+| Scenario | Key Principles | Approach |
+|----------|---------------|----------|
+| **New Feature** | Progressive Enhancement<br>TDD/Baby Steps<br>Readable Code | 1. Start with simplest version<br>2. Write failing test → minimal code<br>3. Ensure clarity for new developers<br>4. Consider SOLID only if: multi-team, public API, or explicit future requirements |
+| **Legacy Fix** | Occam's Razor<br>TIDYINGS<br>Leaky Abstraction | 1. Minimal change to fix issue<br>2. Clean only touched code<br>3. Question DRY: is duplication harmful?<br>4. Accept framework limitations, don't fight them |
+| **Code Review** | All principles | Check each: Simpler way? (Occam)<br>Ship incrementally? (Progressive)<br>Understandable? (Readable)<br>Duplication problematic? (DRY)<br>Method chains >2? (Demeter)<br>Fighting framework? (Leaky) |
 
 ### Principle Deep Dives
 
 #### When Principles Compete
 
-**DRY vs Readable Code**
-
-```typescript
-// ❌ DRY taken too far
-const processData = (data, mode) => {
-  return mode === 'user'
-    ? data.filter(x => x.active).map(x => ({...x, type: 'user'}))
-    : data.filter(x => x.enabled).map(x => ({...x, type: 'admin'}))
-}
-
-// ✅ Readable duplication
-const processUsers = (users) => {
-  return users
-    .filter(user => user.active)
-    .map(user => ({...user, type: 'user'}))
-}
-
-const processAdmins = (admins) => {
-  return admins
-    .filter(admin => admin.enabled)
-    .map(admin => ({...admin, type: 'admin'}))
-}
-```
-
-**SOLID vs Occam's Razor**
-
-```typescript
-// ❌ SOLID over-engineering for simple need
-interface DataProcessor { process(data: Data): Result }
-class UserProcessor implements DataProcessor { }
-class ProcessorFactory { }
-class ProcessorRegistry { }
-
-// ✅ Simple solution for current need
-function processUser(user) {
-  return { ...user, processed: true }
-}
-// Add abstraction only when 2nd processor appears
-```
-
-#### Progressive Enhancement in Practice
-
-```typescript
-// Phase 1: Make it work (Occam's Razor)
-function calculateTotal(items) {
-  return items.reduce((sum, item) => sum + item.price, 0)
-}
-
-// Phase 2: Real error encountered (not imagined)
-function calculateTotal(items) {
-  if (!items) return 0
-  return items.reduce((sum, item) => sum + item.price, 0)
-}
-
-// Phase 3: Real performance issue measured
-const calculateTotal = memo((items) => {
-  if (!items) return 0
-  return items.reduce((sum, item) => sum + item.price, 0)
-})
-
-// Note: Each phase only after real need proven
-```
+| Conflict | Resolution | Example |
+|----------|------------|---------|
+| **DRY vs Readable** | Readable wins | Accept duplication if abstraction hurts clarity |
+| **SOLID vs Simple** | Simple wins | Don't over-engineer for imagined futures |
+| **Perfect vs Working** | Working wins | Ship leaky abstractions that solve real problems |
 
 ### Integration with Commands
 

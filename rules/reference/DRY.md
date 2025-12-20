@@ -123,12 +123,4 @@ if (user.canPerform(action))
 
 ## Related Principles
 
-### Core Principles (Same Level)
-
-- [@~/.claude/rules/reference/SOLID.md](~/.claude/rules/reference/SOLID.md) - DRY drives good abstractions (DIP)
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplicity through single sources
-
-### Applied in Practice
-
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Tests reveal duplication early
-- [@~/.claude/rules/development/TIDYINGS.md](~/.claude/rules/development/TIDYINGS.md) - Remove duplication incrementally
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#reference-principles)

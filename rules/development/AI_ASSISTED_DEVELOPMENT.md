@@ -94,155 +94,40 @@ Never skip step 2-3.
 
 ## Practical Application
 
-### Test Generation
+**Test Generation**: Find existing tests (grep) → Prompt with examples → Review assertions, mocks, coverage
 
-```bash
-# Effective AI-assisted test creation:
-
-1. Find existing tests in same module
-   grep -r "describe" tests/[module]/
-
-2. Prompt AI with examples:
-   "Generate tests for calculateDiscount() following this pattern:
-   [paste example test from existing codebase]
-
-   Test cases from plan:
-   - Valid discount calculation
-   - Edge case: zero purchases"
-
-3. Review generated tests:
-   - Verify assertions match business logic
-   - Check mock setup follows project style
-   - Ensure no over-testing
-```
-
-### Code Implementation
-
-```typescript
-// ❌ Don't blindly accept AI suggestions
-// AI generates:
-function processOrder(order) {
-  // ... complex implementation
-}
-
-// ✅ Review and refine
-// You verify:
-// - Does this handle our specific business rules?
-// - Are edge cases covered?
-// - Is error handling appropriate?
-// - Does it follow our coding standards?
-```
+**Code Review Checklist**: Business rules correct? Edge cases covered? Error handling appropriate? Follows standards?
 
 ## Integration with Development Principles
 
-### With TDD/Baby Steps
-
-[@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md)
-
-- AI can generate test scaffolding
-- Human writes assertions based on actual requirements
-- Baby steps still apply - one test at a time
-
-### With Occam's Razor
-
-[@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md)
-
-- AI tends to over-engineer
-- Human applies simplicity principle
-- Question every abstraction AI suggests
-
-### With Progressive Enhancement
-
-[@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md)
-
-- Start with AI-generated simple version
-- Enhance based on real needs
-- Don't implement AI's "future-proof" suggestions
-
-### With Readable Code
-
-[@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md)
-
-- AI-generated code may be clever but unclear
-- Human ensures readability
-- Refactor for clarity over cleverness
+| Principle | AI Role | Human Role | Key Insight |
+|-----------|---------|------------|-------------|
+| **TDD/Baby Steps** [@./TDD_RGRC.md] | Generate test scaffolding | Write assertions from requirements | Baby steps still apply - one test at a time |
+| **Occam's Razor** [@../reference/OCCAMS_RAZOR.md] | Generates solutions | Applies simplicity filter | AI tends to over-engineer - question every abstraction |
+| **Progressive Enhancement** [@./PROGRESSIVE_ENHANCEMENT.md] | Generate simple version | Enhance based on real needs | Don't implement "future-proof" suggestions |
+| **Readable Code** [@./READABLE_CODE.md] | May generate clever code | Ensures readability | Refactor for clarity over cleverness |
 
 ## Warning Signs
 
-### Over-Reliance on AI
-
-- ❌ Accepting AI output without review
-- ❌ Not understanding generated code
-- ❌ Skipping manual testing
-- ❌ Treating AI as infallible
-
-### Under-Utilizing AI
-
-- ❌ Writing all boilerplate manually
-- ❌ Not using AI for exploration
-- ❌ Ignoring AI suggestions entirely
-- ❌ Not providing sufficient context to AI
+| Warning Type | Signs |
+|--------------|-------|
+| **Over-Reliance** | Accepting without review, not understanding code, skipping testing, treating as infallible |
+| **Under-Utilizing** | Writing all boilerplate manually, not exploring with AI, ignoring suggestions, insufficient context |
 
 ## Best Practices
 
-### 1. Provide Rich Context
-
-```markdown
-Good AI Prompt Template:
-
-"Task: [Specific task]
-
-Context:
-- Existing pattern: [Link or paste example]
-- Business rules: [Specific requirements]
-- Edge cases: [Known scenarios]
-- Testing framework: [Jest/Vitest/etc]
-
-Constraints:
-- Follow [specific pattern]
-- Maximum complexity: [simple/moderate]
-- Must handle: [specific cases]"
-```
-
-### 2. Iterative Refinement
-
-```bash
-1. Generate initial version
-2. Review and identify issues
-3. Refine prompt with specific feedback
-4. Generate improved version
-5. Repeat until satisfactory
-```
-
-### 3. Learn from Outputs
-
-```typescript
-// When AI generates good code:
-- ✅ Analyze why it worked
-- ✅ Note the prompt that produced it
-- ✅ Reuse successful patterns
-
-// When AI generates poor code:
-- ✅ Identify what was missing in prompt
-- ✅ Note the gap for future reference
-- ✅ Improve prompt engineering
-```
+| Practice | How | When |
+|----------|-----|------|
+| **Rich Context** | Provide: task details, existing patterns (link/paste), business rules, edge cases, testing framework, constraints | Every AI request - specificity = quality |
+| **Iterative Refinement** | Generate → Review → Refine prompt → Regenerate → Repeat | When initial output needs improvement |
+| **Learn from Outputs** | Good code: analyze why, note prompt, reuse pattern<br>Poor code: identify prompt gap, note for future, improve technique | After every AI interaction |
 
 ## Guardrails
 
-**STRICTLY PROHIBIT**:
-
-- Committing AI code without review
-- Using AI for security-critical code without expert review
-- Blindly accepting AI's architectural decisions
-- Skipping tests for AI-generated code
-
-**EXPLICITLY REQUIRE**:
-
-- Human review of all AI output
-- Testing AI-generated code
-- Understanding generated code before use
-- Documenting AI-assisted parts
+| Category | Rules |
+|----------|-------|
+| **Prohibit** | Committing without review, security-critical without expert review, blindly accepting architecture, skipping tests |
+| **Require** | Human review always, test AI code, understand before use, document AI assistance |
 
 ## Remember
 
@@ -259,14 +144,4 @@ AI is your assistant, not your replacement. Use it wisely.
 
 ## Related Principles
 
-### Core Practices
-
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - AI can help with test scaffolding, humans ensure correctness
-- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Refine AI output for clarity
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Start simple with AI, enhance manually
-
-### Quality Principles
-
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplify AI's complex suggestions
-- [@~/.claude/rules/reference/DRY.md](~/.claude/rules/reference/DRY.md) - AI can identify duplication, humans decide abstractions
-- [@~/.claude/rules/reference/SOLID.md](~/.claude/rules/reference/SOLID.md) - Human judgment on architectural patterns
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)

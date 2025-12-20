@@ -45,101 +45,19 @@ The abstraction leaked. You needed SQL knowledge anyway.
 
 ## Common Leaky Abstractions
 
-### 1. ORMs
-
-```typescript
-// ❌ Believing the abstraction is complete
-async getActiveUsers() {
-  return User.findAll({ where: { active: true }})
-  // Hidden: N+1 queries, no control over SQL
-}
-
-// ✅ Acknowledging the leak
-async getActiveUsers() {
-  return simpleQuery
-    ? User.findAll({ where: { active: true }})
-    : this.db.raw(optimizedQuery)
-}
-```
-
-### 2. Network Calls
-
-```typescript
-// ❌ Pretending network calls are local
-async function getUser(id: string) {
-  return api.users.get(id)
-}
-
-// ✅ Acknowledging network reality
-async function getUser(id: string) {
-  try {
-    return await withTimeout(api.users.get(id), 5000)
-  } catch (error) {
-    if (isNetworkError(error)) {
-      return retry(() => api.users.get(id))
-    }
-    throw error
-  }
-}
-```
-
-### 3. Cross-Platform Code
-
-```typescript
-// ❌ Ignoring platform differences
-const filePath = `${dir}/${filename}`
-
-// ✅ Platform-aware
-import path from 'path'
-const filePath = path.join(dir, filename)
-```
+| Abstraction | How it Leaks | Solution |
+|-------------|--------------|----------|
+| **ORMs** | N+1 queries, no SQL control | Provide raw query escape hatch |
+| **Network Calls** | Pretends local, fails unpredictably | Add timeout, retry, error handling |
+| **Cross-Platform** | Platform-specific paths/APIs | Use platform-aware libraries |
 
 ## Designing with Leaks in Mind
 
-### 1. Progressive Abstraction
-
-```typescript
-class DataService {
-  // Level 1: Simple cases (80%)
-  async findUsers(criteria: Simple) {
-    return this.orm.findAll(criteria)
-  }
-
-  // Level 2: Complex cases
-  async findUsersRaw(sql: string) {
-    return this.db.raw(sql)  // Escape hatch
-  }
-}
-```
-
-### 2. Provide Escape Hatches
-
-```typescript
-class CacheLayer {
-  async get(key: string) {
-    return this.redis.get(key)
-  }
-
-  // Escape hatch when abstraction breaks
-  get rawClient() {
-    return this.redis
-  }
-}
-```
-
-### 3. Document the Boundaries
-
-```typescript
-/**
- * ABSTRACTION LIMITS:
- * - Max response: 5MB
- * - Timeout: 30 seconds
- * For bulk ops, use bulkFetchUsers()
- */
-async function fetchUser(id: string) {
-  // Implementation
-}
-```
+| Strategy | How | When |
+|----------|-----|------|
+| **Progressive Abstraction** | Simple API for 80%, raw access for 20% | `findUsers(criteria)` + `findUsersRaw(sql)` |
+| **Escape Hatches** | Expose underlying client | `get rawClient()` for direct access |
+| **Document Boundaries** | JSDoc with limits | Max response: 5MB, timeout: 30s |
 
 ## When to Break Through Abstractions
 
@@ -233,12 +151,4 @@ function Button({
 
 ## Related Principles
 
-### Development Practices
-
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Build abstractions progressively
-- [@~/.claude/rules/development/LAW_OF_DEMETER.md](~/.claude/rules/development/LAW_OF_DEMETER.md) - Manage abstraction boundaries
-
-### Core Principles
-
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simple leaky abstractions over complex "perfect" ones
-- [@~/.claude/rules/reference/SOLID.md](~/.claude/rules/reference/SOLID.md) - DIP must account for leaky abstractions
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)
