@@ -169,5 +169,4 @@ test('十分な年齢と残高を受理', () => expect(canPurchase(20, 10)).toBe
 
 ## 関連する原則
 
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - Baby Stepsはシンプルさの原則を体現
-- [@~/.claude/ja/rules/development/TEST_GENERATION.md](~/.claude/ja/rules/development/TEST_GENERATION.md) - 体系的なテスト設計技法
+参照: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)

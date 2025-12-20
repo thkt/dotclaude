@@ -127,13 +127,4 @@ constructor(private fileLogger: FileLogger) {}
 
 ## 関連する原則
 
-### 基本原則（同レベル）
-
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - シンプルな設計はSRPと整合
-- [@~/.claude/ja/rules/reference/DRY.md](~/.claude/ja/rules/reference/DRY.md) - 抽象化が重複を防ぐ
-- [@~/.claude/ja/rules/reference/MILLERS_LAW.md](~/.claude/ja/rules/reference/MILLERS_LAW.md) - SRPは認知限界を尊重
-
-### 実践での適用
-
-- [@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - テストを通じて設計が浮かび上がる
-- [@~/.claude/ja/rules/development/LAW_OF_DEMETER.md](~/.claude/ja/rules/development/LAW_OF_DEMETER.md) - SOLID原則を補完
+参照: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#参照原則)

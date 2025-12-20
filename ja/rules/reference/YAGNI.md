@@ -340,12 +340,4 @@ YAGNIに違反している時に聞くフレーズ：
 
 ## 関連する原則
 
-### 基本原則（同レベル）
-
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - 最もシンプルな解決策を選ぶ
-- [@~/.claude/ja/rules/reference/DRY.md](~/.claude/ja/rules/reference/DRY.md) - 単一の信頼できるソース
-
-### 実践での適用
-
-- [@~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md) - 最小限を構築し、段階的に強化
-- [@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - TDDは自然にYAGNIを強制
+参照: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#参照原則)

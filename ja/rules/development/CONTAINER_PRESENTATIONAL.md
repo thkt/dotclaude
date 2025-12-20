@@ -134,5 +134,4 @@ export const TodoContainer = () => {
 
 ## 関連する原則
 
-- [@~/.claude/ja/rules/development/LAW_OF_DEMETER.md](~/.claude/ja/rules/development/LAW_OF_DEMETER.md) - Propsのみパターンは自然にデメテルの法則に従う
-- [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md) - 明確な分離がコードの理解を向上
+参照: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)

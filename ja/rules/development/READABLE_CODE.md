@@ -244,12 +244,4 @@ function validateUser(user: User): ValidationError[] {
 
 ## 関連する原則
 
-### 科学的基盤
-
-- [@~/.claude/ja/rules/reference/MILLERS_LAW.md](~/.claude/ja/rules/reference/MILLERS_LAW.md) - 認知限界がなぜ可読性が重要かを説明
-
-### 補完的な原則
-
-- [@~/.claude/ja/rules/development/LAW_OF_DEMETER.md](~/.claude/ja/rules/development/LAW_OF_DEMETER.md) - シンプルなインターフェースが可読性を向上
-- [@~/.claude/ja/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/ja/rules/development/CONTAINER_PRESENTATIONAL.md) - 明確な分離が理解を向上
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - シンプルさが可読性を強化
+参照: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)

@@ -250,14 +250,4 @@ AIはあなたのアシスタントであり、代替品ではありません。
 
 ## 関連する原則
 
-### 核心実践
-
-- [@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - AIはテスト骨組み支援、人間が正確性を保証
-- [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md) - AI出力を明確さのために洗練
-- [@~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md) - AIでシンプルに始め、手動で強化
-
-### 品質原則
-
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - AIの複雑な提案を簡素化
-- [@~/.claude/ja/rules/reference/DRY.md](~/.claude/ja/rules/reference/DRY.md) - AIが重複を識別、人間が抽象化を決定
-- [@~/.claude/ja/rules/reference/SOLID.md](~/.claude/ja/rules/reference/SOLID.md) - アーキテクチャパターンへの人間の判断
+参照: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)

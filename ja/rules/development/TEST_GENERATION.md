@@ -407,16 +407,7 @@ test('最大値超過を拒否', () => expect(validateAge(121)).toBe(false))
 
 ## 関連する原則
 
-### 基本原則
-
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - テストをシンプルで焦点を絞ったものに保つ
-- [@~/.claude/ja/rules/reference/MILLERS_LAW.md](~/.claude/ja/rules/reference/MILLERS_LAW.md) - テストケースの複雑さを制限
-
-### 開発実践
-
-- [@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - 実装のテストファーストアプローチ
-- [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md) - テストコードの明確性
-- [@~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md) - シンプルに始め、段階的にカバレッジを向上
+参照: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)
 
 ## 覚えておくべきこと
 

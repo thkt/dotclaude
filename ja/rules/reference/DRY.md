@@ -114,12 +114,4 @@ if (user.canPerform(action))
 
 ## 関連する原則
 
-### 基本原則（同レベル）
-
-- [@~/.claude/ja/rules/reference/SOLID.md](~/.claude/ja/rules/reference/SOLID.md) - DRYは良い抽象化を促進（DIP）
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - 単一ソースによるシンプルさ
-
-### 実践での適用
-
-- [@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - テストが早期に重複を明らかにする
-- [@~/.claude/ja/rules/development/TIDYINGS.md](~/.claude/ja/rules/development/TIDYINGS.md) - 段階的に重複を削除
+参照: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#参照原則)

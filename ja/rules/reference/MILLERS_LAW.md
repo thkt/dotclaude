@@ -227,13 +227,4 @@ function processOrder(
 
 ## 関連する原則
 
-### 科学的根拠を提供
-
-- [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md) - 認知科学の根拠を提供
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - 「シンプル」の意味を定量化
-- [@~/.claude/ja/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/ja/rules/development/CONTAINER_PRESENTATIONAL.md) - コンポーネントの責任を制限
-
-### 補完関係
-
-- [@~/.claude/ja/rules/reference/SOLID.md](~/.claude/ja/rules/reference/SOLID.md) - 単一責任は認知限界と整合
-- [@~/.claude/ja/rules/reference/DRY.md](~/.claude/ja/rules/reference/DRY.md) - 重複排除で精神的負荷を軽減
+参照: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#参照原則)

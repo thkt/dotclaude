@@ -244,13 +244,4 @@ class UserRepository {
 
 ## 関連する原則
 
-### 基本原則（同レベル）
-
-- [@~/.claude/ja/rules/reference/SOLID.md](~/.claude/ja/rules/reference/SOLID.md) - SRPは焦点を絞ったシンプルさと整合
-- [@~/.claude/ja/rules/reference/DRY.md](~/.claude/ja/rules/reference/DRY.md) - 重複排除でシンプルに保つ
-
-### 実践での適用
-
-- [@~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md) - シンプルに構築し徐々に強化
-- [@~/.claude/ja/rules/development/TDD_RGRC.md](~/.claude/ja/rules/development/TDD_RGRC.md) - ベビーステップはオッカムの剃刀を体現
-- [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md) - 理解のためのシンプルさ
+参照: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#参照原則)
