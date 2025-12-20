@@ -1,9 +1,5 @@
 ---
-description: >
-  Implement code following TDD/RGRC cycle (Red-Green-Refactor-Commit) with real-time test feedback and quality checks.
-  Use for feature implementation, refactoring, or bug fixes when you have clear understanding (≥70%) of requirements.
-  Applies SOLID principles, DRY, and progressive enhancement. Includes dynamic quality discovery and confidence scoring.
-  計画に基づいてコードを記述（TDD/RGRC推奨）。要件の明確な理解がある場合に、機能実装、リファクタリング、バグ修正で使用。
+description: TDD/RGRCサイクルでリアルタイムテストフィードバック付きのコード実装
 allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[implementation description]"

@@ -1,7 +1,5 @@
 ---
-description: >
-  ワークスペースに保存されている計画ドキュメント（SOW/Spec）の一覧表示と閲覧。
-  アクティブな作業モニタリング用の読み取り専用ビューア。
+description: ワークスペースの計画ドキュメント（SOW/Spec）を一覧表示
 allowed-tools: Read, Glob
 model: inherit
 ---

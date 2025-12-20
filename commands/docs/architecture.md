@@ -1,9 +1,6 @@
 ---
-name: docs:architecture
-description: >
-  Generate architecture overview documentation from codebase analysis.
-  Uses tree-sitter-analyzer for precise code structure extraction.
-
+description: Generate architecture overview documentation from codebase analysis
+aliases: [arch-docs, architecture-docs]
 agents:
   - architecture-analyzer
 ---

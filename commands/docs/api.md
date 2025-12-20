@@ -1,9 +1,6 @@
 ---
-name: docs:api
-description: >
-  Generate API specification documentation from codebase analysis.
-  Detects REST endpoints, function signatures, type definitions, and schemas.
-
+description: Generate API specification documentation from codebase analysis
+aliases: [api-docs]
 ---
 
 # /docs:api - API Specification Generation

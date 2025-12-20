@@ -1,7 +1,5 @@
 ---
-description: >
-  Generate Specification (spec.md) from SOW. Creates implementation-ready details as a single artifact.
-  Use after /sow or standalone for features with clear requirements.
+description: Generate Specification (spec.md) with implementation-ready details
 allowed-tools: Read, Write, Glob, Grep, LS
 model: inherit
 argument-hint: "[sow path or feature description]"

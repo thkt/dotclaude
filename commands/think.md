@@ -1,7 +1,5 @@
 ---
-description: >
-  Orchestrate SOW and Spec generation. Creates both planning documents in sequence.
-  Use for comprehensive planning. For single artifacts, use /sow or /spec directly.
+description: Orchestrate SOW and Spec generation for comprehensive planning
 allowed-tools: SlashCommand, Read, Write, Glob, Task
 model: inherit
 argument-hint: "[task description] (optional if research context exists)"

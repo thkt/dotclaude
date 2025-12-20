@@ -1,9 +1,5 @@
 ---
-description: >
-  Comprehensive testing and verification with automatic test command discovery.
-  Handles unit, integration, and E2E tests. Tracks progress with TodoWrite.
-  Discovers and runs project-specific test commands from package.json or similar.
-  包括的なテストと検証を自動テストコマンド発見で実行。ユニット、統合、E2Eテストを処理。
+description: 包括的なテストでコード品質を検証（自動コマンド発見）
 allowed-tools: Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn test:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm test:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun test:*), Bash(bun run), Bash(bun run:*), Bash(npx:*), Bash(jest:*), Bash(vitest:*), Bash(ls:*), Bash(cat:*), Bash(find:*), Read, Glob, Grep, LS, Task
 model: inherit
 ---

@@ -1,8 +1,6 @@
 ---
-description: >
-  Create reusable browser automation workflows using Chrome DevTools MCP through interactive step recording.
-  Triggers interactive workflow builder, executes steps in real browser, saves as discoverable slash command.
-  Use when creating E2E tests, monitoring, or automation workflows.
+description: Create reusable browser automation workflows via interactive recording
+aliases: [create-workflow, workflow-create]
 allowed-tools: Read, Write, Task, mcp__chrome-devtools__*
 model: inherit
 argument-hint: "[workflow-name]"

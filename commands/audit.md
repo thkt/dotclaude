@@ -1,8 +1,6 @@
 ---
-description: >
-  Orchestrate multiple specialized review agents with confidence-based filtering.
-  Use after code changes or when comprehensive quality assessment is needed.
-  All findings include evidence (file:line) and confidence markers (✓/→/?).
+description: Orchestrate specialized review agents for comprehensive code quality assessment
+aliases: [review]
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[target files or scope]"

@@ -1,9 +1,5 @@
 ---
-description: >
-  Analyze current Git changes and suggest appropriate branch names following conventional patterns (feature/fix/chore/docs).
-  Uses branch-generator agent to analyze diff and file patterns. Provides 3-5 naming suggestions with rationale.
-  Use before creating a new branch when you need help with naming conventions.
-  Git差分を分析して適切なブランチ名を自動生成。慣習的なパターン（feature/fix/chore/docs）に従う。
+description: Analyze Git changes and suggest appropriate branch names
 allowed-tools: Task
 model: inherit
 dependencies: [branch-generator]

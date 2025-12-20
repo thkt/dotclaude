@@ -1,9 +1,5 @@
 ---
-description: >
-  Display current SOW (Statement of Work) progress status.
-  Shows acceptance criteria completion, tracks key metrics and build status.
-  Read-only viewer for active work. Quick status check for monitoring implementation progress.
-  SOW進捗状況を表示。受け入れ基準の完了状況、主要メトリクス、ビルドステータスを追跡。
+description: SOW進捗状況を表示（受け入れ基準、メトリクス、ビルドステータス）
 allowed-tools: Read, Bash(ls:*), Bash(find:*), Bash(cat:*)
 model: inherit
 ---

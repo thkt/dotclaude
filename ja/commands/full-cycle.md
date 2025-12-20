@@ -1,9 +1,5 @@
 ---
-description: >
-  Orchestrate complete development cycle through SlashCommand tool integration, executing from research through implementation, testing, and validation.
-  Chains multiple commands: /research → /think → /code → /test → /audit → /validate with conditional execution and error handling.
-  TodoWrite integration for progress tracking. Use for comprehensive feature development requiring full workflow automation.
-  SlashCommandツール統合により、研究から実装、テスト、検証まで完全な開発サイクルを統括。
+description: 研究から検証まで完全な開発サイクルを統括
 allowed-tools: SlashCommand, TodoWrite, Read, Write, Edit, MultiEdit
 model: inherit
 argument-hint: "[feature or task description]"

@@ -1,8 +1,5 @@
 ---
-description: >
-  Rapidly fix small bugs and minor improvements in development environment.
-  Use for well-understood (≥80%) small-scale fixes. NOT for production emergencies (use /hotfix).
-  Applies Occam's Razor (simplest solution) and TIDYINGS (clean as you go).
+description: Rapidly fix small bugs and minor improvements in development environment
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task
 model: inherit
 argument-hint: "[bug or issue description]"

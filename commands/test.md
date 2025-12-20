@@ -1,9 +1,5 @@
 ---
-description: >
-  Run project tests and validate code quality through comprehensive testing. Automatically discovers test commands from package.json, README, or project configuration.
-  Handles unit, integration, and E2E tests with progress tracking via TodoWrite. Includes browser testing for UI changes when applicable.
-  Use after implementation to verify functionality and quality standards.
-  プロジェクトのテストを実行し、包括的なテストでコード品質を検証。ユニット、統合、E2Eテストに対応。
+description: Run project tests and validate code quality through comprehensive testing
 allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, TodoWrite, Task
 model: inherit
 argument-hint: "[test scope or specific tests]"

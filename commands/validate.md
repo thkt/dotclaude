@@ -1,9 +1,5 @@
 ---
-description: >
-  Validate implementation against SOW acceptance criteria with L2 (practical) validation level.
-  Checks acceptance criteria, coverage, and performance. Pass/fail logic with clear scoring.
-  Identifies missing features and issues. Use when ready to verify implementation conformance.
-  SOWの受け入れ基準に対して実装を検証。受け入れ基準、カバレッジ、パフォーマンスをチェック。
+description: Validate implementation against SOW acceptance criteria
 allowed-tools: Read, Glob, Grep
 model: inherit
 ---

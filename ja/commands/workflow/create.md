@@ -1,3 +1,11 @@
+---
+description: 対話形式の記録で再利用可能なブラウザ自動化ワークフローを作成
+aliases: [create-workflow, workflow-create]
+allowed-tools: Read, Write, Task, mcp__chrome-devtools__*
+model: inherit
+argument-hint: "[ワークフロー名]"
+---
+
 # /workflow:create - ブラウザワークフロー生成
 
 Chrome DevTools MCPを使用して、対話形式のステップ記録により再利用可能なブラウザ自動化ワークフローを作成します。

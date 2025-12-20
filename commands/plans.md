@@ -1,7 +1,5 @@
 ---
-description: >
-  List and view planning documents (SOW/Spec) stored in workspace.
-  Read-only viewer for active work monitoring.
+description: List and view planning documents (SOW/Spec) in workspace
 allowed-tools: Read, Glob
 model: inherit
 dependencies: []

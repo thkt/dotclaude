@@ -1,9 +1,5 @@
 ---
-description: >
-  Quick bug fixes and minor improvements in development environment.
-  Streamlined mini-workflow for small, well-understood issues. Development environment only.
-  Not for emergency production issues (use /hotfix instead).
-  開発環境で小さなバグの修正や軽微な改善を素早く実行。小規模で理解された問題用の合理化されたミニワークフロー。
+description: 開発環境で小さなバグの修正や軽微な改善を素早く実行
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Task
 model: inherit
 argument-hint: "[bug description or issue]"

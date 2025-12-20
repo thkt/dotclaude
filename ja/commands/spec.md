@@ -1,7 +1,5 @@
 ---
-description: >
-  SOWからSpec（仕様書）を生成。単一成果物として実装詳細を作成。
-  /sowの後、または明確な要件がある機能にスタンドアロンで使用。
+description: SOWからSpec（仕様書）を生成、実装詳細を作成
 allowed-tools: Read, Write, Glob, Grep, LS
 model: inherit
 argument-hint: "[sowパス または 機能説明]"

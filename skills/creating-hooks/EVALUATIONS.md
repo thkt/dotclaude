@@ -60,36 +60,36 @@ Keywords and contexts that should trigger this skill:
 }
 ```
 
-### Scenario 4: Pre-Commit Hook Integration
+### Scenario 4: Task Completion Check (Stop Event)
 
 ```json
 {
   "skills": ["creating-hooks"],
-  "query": "コミット前に特定のチェックを実行するフックを設定したい",
+  "query": "タスク完了前にテストを実行したか確認するフックを作りたい",
   "files": [],
   "expected_behavior": [
-    "Skill is triggered by 'コミット' and 'フック'",
-    "Shows PreCommit hook configuration",
-    "Integrates with git hooks",
-    "Defines check commands",
-    "Handles hook failure gracefully"
+    "Skill is triggered by 'フック' and 'タスク完了'",
+    "Uses stop event type configuration",
+    "Creates transcript-based condition check",
+    "Shows block action for missing tests",
+    "Documents stop event field (transcript for conversation history)"
   ]
 }
 ```
 
-### Scenario 5: Custom Rule with /hookify
+### Scenario 5: Custom Rule with /hookify Command
 
 ```json
 {
   "skills": ["creating-hooks"],
-  "query": "/hookify APIキーをコードに直接書いたら警告",
+  "query": "/hookify APIキーをハードコードしたら警告を出すルール",
   "files": [],
   "expected_behavior": [
-    "Skill is triggered by '/hookify'",
-    "Generates YAML rule definition",
-    "Creates pattern for API key detection",
-    "Sets warn level (not block)",
-    "Saves rule to appropriate location"
+    "Skill is triggered by '/hookify [description]' command format",
+    "Generates Markdown rule file with YAML frontmatter",
+    "Creates pattern for API key detection (KEY|SECRET|TOKEN)",
+    "Sets warn action (not block) for non-critical issue",
+    "Saves rule to .claude/hookify.[name].local.md"
   ]
 }
 ```
@@ -106,25 +106,27 @@ Keywords and contexts that should trigger this skill:
 After running each scenario:
 
 - [ ] Skill was correctly triggered by hook keywords
-- [ ] Correct rule type (block/warn) was selected
-- [ ] Pattern matching syntax was correct
-- [ ] Rule was saved to correct location
+- [ ] Correct event type (file/bash/stop/prompt/all) was selected
+- [ ] Correct action type (block/warn) was selected
+- [ ] Pattern matching syntax was correct (Python regex)
+- [ ] Rule was saved to correct location (.claude/hookify.*.local.md)
 - [ ] Clear feedback message was defined
-- [ ] Rule was tested before deployment
+- [ ] Conditions were properly configured when needed
 
 ## Baseline Comparison
 
 ### Without Skill
 
-- Manual settings.json editing
-- May miss pattern syntax
-- No rule testing
-- Inconsistent rule format
+- Manual settings.json hook configuration required
+- Python regex escape characters easily forgotten (e.g., `\.` for literal dot)
+- No guidance on event type selection (file vs bash vs stop)
+- Inconsistent rule file naming and location
+- Trial-and-error testing of patterns
 
 ### With Skill
 
-- Declarative rule definition
-- Pattern syntax guidance
-- Block vs warn selection
-- Automatic rule file generation
-- Based on Anthropic's official hookify plugin
+- Declarative Markdown rule definition with YAML frontmatter
+- Pattern syntax guidance with examples (e.g., `rm\s+-rf`, `console\.log\(`)
+- Clear block vs warn action selection based on severity
+- Automatic rule file generation to `.claude/hookify.*.local.md`
+- Pre-tested patterns from Anthropic's official hookify plugin examples

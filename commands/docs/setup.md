@@ -1,9 +1,6 @@
 ---
-name: docs:setup
-description: >
-  Generate environment setup guide documentation from codebase analysis.
-  Detects package managers, runtime versions, environment variables, and startup commands.
-
+description: Generate environment setup guide from codebase analysis
+aliases: [setup-docs, env-setup]
 ---
 
 # /docs:setup - Environment Setup Guide Generation

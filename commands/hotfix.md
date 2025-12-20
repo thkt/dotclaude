@@ -1,8 +1,5 @@
 ---
-description: >
-  Emergency fixes for critical production issues ONLY. For production-impacting problems, security vulnerabilities, or immediate deployment needs.
-  5-min triage, 15-min fix, 10-min test. Minimal process overhead with required rollback plan.
-  NOT for development fixes (use /fix instead). High severity (critical/security) only.
+description: Emergency fixes for critical production issues only
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Edit, MultiEdit, Read, Write, Glob, Grep, Task
 model: inherit
 argument-hint: "[critical issue description]"

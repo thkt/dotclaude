@@ -1,8 +1,5 @@
 ---
-description: >
-  Perform project research and technical investigation without implementation.
-  Explore codebase structure, technology stack, dependencies, and patterns.
-  Documents findings persistently for future reference (/think integration).
+description: Perform project research and technical investigation without implementation
 allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[research topic or question]"

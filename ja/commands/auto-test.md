@@ -1,9 +1,5 @@
 ---
-description: >
-  Automatically execute tests after file modifications and invoke /fix command if tests fail using SlashCommand tool.
-  Streamlines test-fix cycle with automatic conditional execution. Can be triggered via hooks in settings.json.
-  Use after code changes to verify functionality and automatically attempt fixes on failure.
-  ファイル変更後に自動的にテストを実行し、失敗時に/fixコマンドを呼び出す。
+description: 自動テスト実行、失敗時に/fixを呼び出し
 allowed-tools: SlashCommand, Bash(npm test:*), Bash(yarn test:*), Bash(pnpm test:*)
 model: inherit
 ---

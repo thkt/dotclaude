@@ -1,9 +1,6 @@
 ---
-name: docs:domain
-description: >
-  Generate domain understanding documentation from codebase analysis.
-  Extracts entities, business logic, domain terms, and concept relationships.
-
+description: Generate domain understanding documentation from codebase analysis
+aliases: [domain-docs]
 ---
 
 # /docs:domain - Domain Understanding Document Generation

@@ -1,9 +1,5 @@
 ---
-description: >
-  Analyze branch changes and generate comprehensive PR description automatically. Uses pr-generator agent.
-  Examines all commits from branch divergence, not just latest. Creates summary, test plan, and checklist.
-  Use when ready to create pull request and need description text.
-  ブランチの変更内容を分析して包括的なPR説明文を自動生成。分岐点からのすべてのコミットを検査。
+description: Analyze branch changes and generate comprehensive PR description
 allowed-tools: Task
 model: inherit
 dependencies: [pr-generator]

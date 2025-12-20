@@ -1,7 +1,5 @@
 ---
-description: >
-  MADR形式でArchitecture Decision Recordを作成。
-  アーキテクチャ決定を背景と理由とともに記録。自動採番（0001, 0002, ...）、docs/adr/に保存。
+description: MADR形式でArchitecture Decision Recordを作成（自動採番、docs/adr/に保存）
 allowed-tools: Read, Write, Bash(ls:*), Bash(find:*), Bash(cat:*), Grep, Glob
 model: inherit
 argument-hint: "[決定タイトル]"

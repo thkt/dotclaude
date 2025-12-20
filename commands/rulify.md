@@ -1,8 +1,5 @@
 ---
-description: >
-  Generate project rules from ADR automatically and integrate with CLAUDE.md.
-  Converts architecture decisions into AI-executable format.
-  Use when ADR decision should affect AI behavior.
+description: Generate project rules from ADR and integrate with CLAUDE.md
 allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob
 model: inherit
 argument-hint: "[ADR number]"

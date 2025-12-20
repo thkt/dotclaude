@@ -1,9 +1,5 @@
 ---
-description: >
-  Generate GitHub Issue with structured title and body. Uses issue-generator agent.
-  Creates clear problem statements, reproduction steps, and acceptance criteria.
-  Use when you need to create a well-formatted GitHub issue.
-  構造化されたタイトルと本文でGitHub Issueを生成。問題の明確な記述、再現手順、受入基準を作成。
+description: Generate GitHub Issue with structured title and body
 allowed-tools: Task
 model: inherit
 dependencies: [issue-generator]
@@ -60,6 +56,7 @@ Creates issue immediately via `gh` CLI.
 ```
 
 Examples:
+
 - `[Bug] Login fails on Safari mobile`
 - `[Feature] Add export to CSV functionality`
 - `[Docs] Update API authentication guide`

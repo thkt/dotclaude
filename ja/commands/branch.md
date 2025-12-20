@@ -1,9 +1,5 @@
 ---
-description: >
-  Analyze Git diff and generate appropriate branch names following conventional patterns.
-  Delegates to branch-generator sub-agent for optimal performance.
-  Suggests multiple naming alternatives based on change analysis.
-  Git差分を分析して慣習的なパターンに従ったブランチ名を生成。複数の命名代替案を提案。
+description: Git差分を分析して適切なブランチ名を提案
 allowed-tools: Task
 model: inherit
 argument-hint: "[optional: description context]"

@@ -1,9 +1,5 @@
 ---
-description: >
-  Validate implementation against SOW acceptance criteria.
-  L2 (practical) validation level. Checks acceptance criteria, coverage, performance.
-  Pass/fail logic with clear scoring. Identifies missing features and issues.
-  SOWの受け入れ基準に対して実装を検証。実用的な検証レベルで明確なスコアリング。
+description: SOWの受け入れ基準に対して実装を検証
 allowed-tools: Read, Bash(ls:*), Bash(cat:*), Grep, Bash(npm test:*), Bash(npm run), Task
 model: inherit
 ---

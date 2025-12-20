@@ -1,9 +1,5 @@
 ---
-description: >
-  Emergency production fixes for critical issues requiring immediate response.
-  Production critical issues only. Minimal process overhead with quality maintained.
-  5-min triage, 15-min fix, 10-min test. Rollback plan required.
-  本番環境の緊急対応が必要な重大な問題を修正。最小限のプロセスオーバーヘッドで品質を維持。
+description: 本番環境の緊急対応が必要な重大な問題を修正
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep
 model: inherit
 argument-hint: "[critical production issue]"

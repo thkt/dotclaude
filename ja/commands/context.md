@@ -1,9 +1,5 @@
 ---
-description: >
-  Diagnose current context usage and provide optimization suggestions.
-  Displays token usage, file counts, session cost estimation.
-  Analyzes context efficiency and suggests improvements.
-  現在のコンテキスト使用状況を診断し、最適化提案を行う。トークン使用量、ファイル数、セッションコストを表示。
+description: コンテキスト使用状況を診断し最適化提案を行う
 allowed-tools: Read, Glob, Grep, LS, Bash(wc:*), Bash(du:*), Bash(find:*)
 model: inherit
 ---

@@ -1,9 +1,5 @@
 ---
-description: >
-  Create a comprehensive Statement of Work (SOW) for feature development or problem solving.
-  Use when planning complex tasks, defining acceptance criteria, or structuring implementation approaches.
-  Ideal for tasks requiring detailed analysis, risk assessment, and structured planning documentation.
-  構造化された計画文書（SOW）を生成。複雑なタスクの計画、受け入れ基準の定義、実装アプローチの構造化が必要な場合に使用。
+description: SOWとSpecを生成する包括的な計画オーケストレーション
 allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Read, Write, Glob, Grep, LS
 model: inherit
 argument-hint: "[feature or problem description]"

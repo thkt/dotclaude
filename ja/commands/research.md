@@ -1,9 +1,5 @@
 ---
-description: >
-  Project exploration and technical research without implementation commitment.
-  Use for understanding existing code, exploring solution options, or learning project structure.
-  Documents findings persistently for future reference. Efficient parallel search execution.
-  プロジェクト理解と技術調査を実装なしで実行。既存コードの理解、解決オプションの探索に使用。
+description: 実装なしでプロジェクト理解と技術調査を実行
 allowed-tools: Bash(find:*), Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(cat package.json:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[topic or question to investigate]"

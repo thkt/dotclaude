@@ -1,9 +1,6 @@
 ---
-description: >
-  Orchestrate specialized review agents for comprehensive code review.
-  Covers security, performance, accessibility, type safety, readability, structure, and testability.
-  Use after completing implementation to identify issues and get actionable recommendations.
-  複数の専門エージェントによる包括的なコードレビューを調整。セキュリティ、パフォーマンス、アクセシビリティをカバー。
+description: 専門エージェントによる包括的なコードレビューを実行
+aliases: [review]
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Read, Glob, Grep, LS, Task
 model: inherit
 ---
