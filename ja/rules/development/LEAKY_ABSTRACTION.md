@@ -1,3 +1,12 @@
+---
+paths: "**/*.{ts,tsx,js,jsx,md}"
+summary: |
+  すべての重要な抽象化は漏れる。この現実を受け入れる。
+  エスケープハッチを提供し、境界を文書化。
+  シンプルな漏れのある抽象化 > 複雑な「完璧な」抽象化。
+decision_question: "フレームワークと戦っているか、それとも協力しているか？"
+---
+
 # 漏れのある抽象化の法則 like Joel Spolsky
 
 **核心原則**: 「すべての重要な抽象化は、ある程度、漏れている」
@@ -36,146 +45,64 @@ const users = await db.raw(`
 
 ## 一般的な漏れのある抽象化
 
-### 1. ORM
+| 抽象化 | 漏れ方 | 解決策 |
+|--------|--------|--------|
+| **ORM** | N+1クエリ、SQL制御なし | 生のクエリエスケープハッチを提供 |
+| **ネットワーク呼び出し** | ローカルのふりをして予測不能に失敗 | タイムアウト、リトライ、エラー処理を追加 |
+| **クロスプラットフォーム** | プラットフォーム固有のパス/API | プラットフォーム対応ライブラリを使用 |
 
-```typescript
-// ❌ 抽象化が完全だと信じる
-async getActiveUsers() {
-  return User.findAll({ where: { active: true }})
-  // 隠蔽：N+1クエリ、SQL制御なし
-}
+## 漏れを念頭に置いた設計
 
-// ✅ 漏れを認識
-async getActiveUsers() {
-  return simpleQuery
-    ? User.findAll({ where: { active: true }})
-    : this.db.raw(optimizedQuery)
-}
-```
-
-### 2. ネットワーク呼び出し
-
-```typescript
-// ❌ ネットワーク呼び出しをローカルのように扱う
-async function getUser(id: string) {
-  return api.users.get(id)
-}
-
-// ✅ ネットワークの現実を認識
-async function getUser(id: string) {
-  try {
-    return await withTimeout(api.users.get(id), 5000)
-  } catch (error) {
-    if (isNetworkError(error)) {
-      return retry(() => api.users.get(id))
-    }
-    throw error
-  }
-}
-```
-
-### 3. クロスプラットフォームコード
-
-```typescript
-// ❌ プラットフォームの違いを無視
-const filePath = `${dir}/${filename}`
-
-// ✅ プラットフォームを意識
-import path from 'path'
-const filePath = path.join(dir, filename)
-```
-
-## 漏れを考慮した設計
-
-### 1. プログレッシブな抽象化
-
-```typescript
-class DataService {
-  // レベル1：シンプルなケース（80%）
-  async findUsers(criteria: Simple) {
-    return this.orm.findAll(criteria)
-  }
-
-  // レベル2：複雑なケース
-  async findUsersRaw(sql: string) {
-    return this.db.raw(sql)  // 脱出ハッチ
-  }
-}
-```
-
-### 2. 脱出ハッチの提供
-
-```typescript
-class CacheLayer {
-  async get(key: string) {
-    return this.redis.get(key)
-  }
-
-  // 抽象化が壊れた時の脱出ハッチ
-  get rawClient() {
-    return this.redis
-  }
-}
-```
-
-### 3. 境界の文書化
-
-```typescript
-/**
- * 抽象化の限界：
- * - 最大レスポンス：5MB
- * - タイムアウト：30秒
- * バルク操作にはbulkFetchUsers()を使用
- */
-async function fetchUser(id: string) {
-  // 実装
-}
-```
+| 戦略 | 方法 | 時期 |
+|------|------|------|
+| **段階的抽象化** | 80%用のシンプルなAPI、20%用の直接アクセス | `findUsers(criteria)` + `findUsersRaw(sql)` |
+| **エスケープハッチ** | 基礎となるクライアントを公開 | 直接アクセス用の`get rawClient()` |
+| **境界の文書化** | 制限付きのJSDoc | 最大レスポンス: 5MB、タイムアウト: 30秒 |
 
 ## 抽象化を突破すべき時
 
 ### パフォーマンス要件
 
 ```typescript
-// 遅すぎる：5秒
+// 遅すぎ: 5秒
 await orm.findAll({ include: ['author', 'tags'] })
 
-// 突破：100ms
+// 突破: 100ms
 await db.raw('SELECT * FROM posts...')
 ```
 
-## 漏れのある抽象化の管理ガイドライン
+## 漏れのある抽象化を管理するためのガイドライン
 
-### 抽象化を層にする
+### 抽象化を階層化
 
 ```markdown
 高レベル（ビジネスロジック）
     ↓
-中レベル（サービス層）← ほとんどのコードはここ
+中レベル（サービス層）  ← 大部分のコードはここ
     ↓
-低レベル（直接アクセス）← 脱出ハッチ
+低レベル（直接アクセス）   ← エスケープハッチ
 ```
 
 ### 抽象化の健全性を監視
 
-抽象化が漏れすぎている兆候：
+抽象化が漏れすぎているサイン：
 
-- 常に脱出ハッチを使用
-- 全員が実装の詳細を知る必要がある
-- 通常のケースよりエッジケースが多い
+- 常にエスケープハッチを使用している
+- 誰もが実装の詳細を知る必要がある
+- 通常のケースよりもエッジケースの方が多い
 
 ### スタックを知る
 
-- **1レベル下を理解**：Reactを使うならDOMを理解
-- **失敗モードを学ぶ**：ORMがどう失敗するか知る
-- **エッジケースを研究**：フレームワークを壊すものは何か
+- **一段下を理解する**: Reactを使う場合、DOMを理解する
+- **失敗モードを学ぶ**: ORMがどのように失敗するかを知る
+- **エッジケースを研究する**: フレームワークを壊すものは何か？
 
 ## 他の原則との統合
 
 ### プログレッシブエンハンスメント
 
 - シンプルな抽象化から始める
-- 漏れが現れたときだけ複雑さを追加
+- 漏れが現れた時のみ複雑さを追加
 
 ### オッカムの剃刀
 
@@ -183,20 +110,20 @@ await db.raw('SELECT * FROM posts...')
 
 ### YAGNI
 
-- 想像上のニーズのために抽象化層を追加しない
-- 実際に漏れが起きるまで待つ
+- 想像上のニーズのために抽象化レイヤーを追加しない
+- 漏れが実際に起きるまで待つ
 
 ## 実践的な適用
 
 ### コンポーネントライブラリ
 
 ```tsx
-// ✅ 脱出ハッチを提供
+// ✅ エスケープハッチを提供
 function Button({
   children,
   onClick,
-  className,      // スタイル用脱出ハッチ
-  ...restProps    // DOMプロップス用脱出ハッチ
+  className,      // スタイル用のエスケープハッチ
+  ...restProps    // DOMプロパティ用のエスケープハッチ
 }) {
   return (
     <button
@@ -212,24 +139,16 @@ function Button({
 
 ## 覚えておくこと
 
-> 「漏れのある抽象化の法則は、誰かが素晴らしい新しいコード生成ツールを思いつくたびに、多くの人が『まず手動でやり方を学び、それから時間を節約するために素晴らしいツールを使え』と言うのを聞くことを意味する。」 - Joel Spolsky
+> 「漏れのある抽象化の法則は、誰かがすべてを非常に効率的にするはずの素晴らしい新しいコード生成ツールを思いついたとき、『まず手動でやり方を学び、次に素晴らしいツールを使って時間を節約しよう』と多くの人が言うのを耳にすることを意味します。」 - Joel Spolsky
 
 **重要なポイント**：
 
-- すべての抽象化は漏れる - それを計画する
-- 抽象化の1レベル下を知る
-- 脱出ハッチを提供する
-- 境界を文書化する
+- すべての抽象化は漏れる - それに備える
+- 抽象化の一段下を知る
+- エスケープハッチを提供
+- 境界を文書化
 - プログレッシブエンハンスメントは抽象化にも適用される
 
 ## 関連する原則
 
-### 開発実践
-
-- [@~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/ja/rules/development/PROGRESSIVE_ENHANCEMENT.md) - 抽象化を段階的に構築
-- [@~/.claude/ja/rules/development/LAW_OF_DEMETER.md](~/.claude/ja/rules/development/LAW_OF_DEMETER.md) - 抽象化の境界を管理
-
-### 核心原則
-
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - シンプルな漏れのある抽象化 > 複雑な「完璧な」もの
-- [@~/.claude/ja/rules/reference/SOLID.md](~/.claude/ja/rules/reference/SOLID.md) - DIPは漏れのある抽象化を考慮すべき
+詳細: [@~/.claude/ja/rules/PRINCIPLE_RELATIONSHIPS.md](~/.claude/ja/rules/PRINCIPLE_RELATIONSHIPS.md#development-practices)

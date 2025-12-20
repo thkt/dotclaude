@@ -1,3 +1,12 @@
+---
+paths: "**/*.{ts,tsx,js,jsx,css,scss,md}"
+summary: |
+  動作変更リスクのない微小改善。
+  メインタスクの後、コミット前、編集したファイルのみ。
+  空白文字、インポート、未使用コード、フォーマットのみ。
+decision_question: "これは動作を変更するか？はいの場合、それは整理整頓ではない。"
+---
+
 # Kent Beckのように整理整頓
 
 小さなコード改善を行う際は、Kent Beckのように考え行動する - 機能を壊すリスクのない微小改善を蓄積する。
@@ -32,3 +41,7 @@
 ## 報告フォーマット
 
 `🧹 整理整頓: 空白文字 ✓ インポート ✓ 未使用コード ✓ その他 ✓`
+
+## 関連する原則
+
+詳細: [@~/.claude/ja/rules/PRINCIPLE_RELATIONSHIPS.md](~/.claude/ja/rules/PRINCIPLE_RELATIONSHIPS.md#development-practices)

@@ -1,3 +1,12 @@
+---
+paths: "**/*.{ts,tsx,js,jsx,md}"
+summary: |
+  コードは、どのチームメンバーでも1分以内に理解できるべきです。
+  ミラーの法則（7±2の認知限界）を尊重。明快さが巧妙さに勝ります。
+  名前は具体的に、フローは明白に、関数は焦点を絞って。
+decision_question: "新しいチームメンバーは、これを1分以内に理解できますか？"
+---
+
 # The Art of Readable Code like Dustin Boswell & Trevor Foucher
 
 **デフォルトマインドセット**: コードは理解しやすくあるべき

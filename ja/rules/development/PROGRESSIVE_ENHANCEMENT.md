@@ -1,3 +1,12 @@
+---
+paths: "**/*.{css,scss,tsx,jsx,html,md}"
+summary: |
+  最小限の実装から始め、実際のニーズに基づいて強化。
+  YAGNI（必要になってから実装）がデフォルト。想像上の未来ではなく、
+  測定された問題が発生した時のみ複雑さを追加。
+decision_question: "これは今存在する実際の問題を解決しているか？"
+---
+
 # プログレッシブエンハンスメント - 成果優先開発
 
 **デフォルトアプローチ**: シンプルに構築 → 段階的に強化
@@ -40,12 +49,41 @@
 
 ## 関連する原則
 
-### 開発実践
+- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - プログレッシブエンハンスメントの基盤となるシンプルさの原則
 
-- [@~/.claude/ja/rules/development/LEAKY_ABSTRACTION.md](~/.claude/ja/rules/development/LEAKY_ABSTRACTION.md) - 漏れを想定して抽象化を段階的に構築
-- [@~/.claude/ja/rules/development/LAW_OF_DEMETER.md](~/.claude/ja/rules/development/LAW_OF_DEMETER.md) - 段階的な結合度削減
-- [@~/.claude/ja/rules/development/READABLE_CODE.md](~/.claude/ja/rules/development/READABLE_CODE.md) - シンプルに始め、徐々に可読性を向上
+## 成果優先開発
 
-### 核心原則
+**核心原則**: アーキテクチャではなく、成果を出荷する
 
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - シンプルさ優先はプログレッシブエンハンスメントと一致
+### 実装フェーズ
+
+1. **動かす** - 目の前の問題を解決
+2. **堅牢にする** - エラーが発生したらエラー処理を追加
+3. **速くする** - 遅さが測定されたら最適化
+4. **柔軟にする** - ユーザーが要求したらオプションを追加
+
+### 意思決定フレームワーク
+
+コードを追加する前に自問：
+
+- これは今存在する実際の問題を解決しているか？
+- これは実際に本番で失敗したか？
+- ユーザーがこれについて不満を述べたか？
+- 問題の測定された証拠があるか？
+
+「いいえ」なら → まだ追加しない
+
+### プログレッシブエンハンスメントのマインドセット
+
+- ハッピーパスから始める
+- 現実への対応としてのみ複雑さを追加
+- コードの各行は負債である
+- YAGNIがデフォルトポジション
+
+## 重要なポイント
+
+「最良のコードは、まだ存在せず必要もないコード」
+
+## 関連する原則
+
+詳細: [@~/.claude/ja/rules/PRINCIPLE_RELATIONSHIPS.md](~/.claude/ja/rules/PRINCIPLE_RELATIONSHIPS.md#development-practices)
