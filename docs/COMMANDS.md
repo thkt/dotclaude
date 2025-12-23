@@ -23,6 +23,12 @@ Custom commands for systematic software development support.
 | `/fix` | Quick bug fixes | 🔧 Development | think → code → test |
 | `/hotfix` | Emergency production fixes | 🚨 Production | Minimal process |
 
+### External Review Commands
+
+| Command | Purpose | Environment |
+|---------|---------|-------------|
+| `/rabbit` | CodeRabbit AI review for external perspective | 🐰 Quality check |
+
 ### Automation Commands (SlashCommand Tool v1.0.123+)
 
 | Command | Purpose | Environment | Uses SlashCommand |
@@ -173,6 +179,14 @@ Choose based on complexity:
 - Minimal process overhead
 - Rollback plan required
 
+### /rabbit - CodeRabbit AI Review
+
+- External AI code review via CodeRabbit CLI
+- Fast execution (10-30 seconds)
+- Provides second opinion from independent AI
+- Options: `--base <branch>`, `--type <all|committed|uncommitted>`
+- Complements `/audit` with external perspective
+
 ### /audit - Code Review
 
 - Orchestrates specialized review agents
@@ -267,6 +281,7 @@ Choose based on complexity:
 │   ├── fix.md
 │   ├── full-cycle.md # Meta-command (SlashCommand)
 │   ├── hotfix.md
+│   ├── rabbit.md
 │   ├── research.md
 │   ├── audit.md
 │   ├── test.md
@@ -356,6 +371,13 @@ Choose based on complexity:
 - Ready to verify implementation
 - Need conformance check against SOW
 - Want to identify missing requirements
+
+### Use `/rabbit` when
+
+- Want external AI perspective (independent from internal agents)
+- Need fast CLI-based review (10-30 seconds)
+- Looking for quick sanity check before commit/PR
+- Supplementing `/audit` with second opinion
 
 ### Use `/adr` when
 

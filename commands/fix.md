@@ -84,6 +84,48 @@ Task({
 - Is this pattern or isolated issue?
 - What areas are affected?
 
+### Phase 1.5: Regression Test First (Recommended)
+
+Before implementing the fix, write a failing test that reproduces the bug.
+
+**TDD Approach to Bug Fixes**:
+
+```text
+1. Red   - Write test that reproduces the bug (should FAIL)
+2. Verify - Confirm test fails for the RIGHT reason
+3. Green - Implement minimal fix (test should PASS)
+4. Refactor - Clean up if needed (keep test green)
+```
+
+**Example**:
+
+```typescript
+// Step 1: Write failing test FIRST
+it('when discount exceeds total, should return 0 not negative', () => {
+  // This was the bug: returned -50 instead of 0
+  const result = calculateTotal(100, 150) // 150% discount
+  expect(result).toBe(0) // Expected behavior
+})
+
+// Step 2: Verify it fails (confirms bug exists)
+// Step 3: Fix the code
+// Step 4: Verify test passes
+```
+
+**Benefits**:
+
+- [✓] Confirms bug is reproducible
+- [✓] Prevents regression forever
+- [✓] Documents expected behavior
+- [✓] Enables confident refactoring
+
+**When to Skip**:
+
+- Documentation-only changes
+- Configuration changes
+- UI-only fixes without logic
+- Confidence > 0.95 and trivial fix
+
 ### Phase 2: Implementation
 
 Based on confidence:

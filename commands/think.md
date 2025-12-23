@@ -18,6 +18,7 @@ Use for **structure and format guidance**:
 
 - SOW structure: [@~/.claude/golden-masters/documents/sow/example-workflow-improvement.md](~/.claude/golden-masters/documents/sow/example-workflow-improvement.md)
 - Spec structure: [@~/.claude/golden-masters/documents/spec/example-workflow-improvement.md](~/.claude/golden-masters/documents/spec/example-workflow-improvement.md)
+- Summary structure: [@~/.claude/golden-masters/documents/summary/example-workflow-improvement.md](~/.claude/golden-masters/documents/summary/example-workflow-improvement.md)
 
 **IMPORTANT**: Reference structures only, generate fresh content based on user's task.
 

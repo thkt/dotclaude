@@ -31,7 +31,7 @@ Systematic Test-Driven Development combining RGRC cycle, Baby Steps, and test de
 
 Copy and track progress:
 
-```
+```markdown
 TDD Cycle:
 - [ ] Red - 失敗するテスト作成 (verify correct failure reason)
 - [ ] Green - 最小限のコードで通過 (dirty OK)
@@ -81,6 +81,82 @@ test('descriptive name', () => {
 - External API integration (use mocks)
 - Simple one-off scripts
 - UI experiments (visual first)
+
+## Test Priority Matrix
+
+Not everything needs to be tested. Prioritize by impact.
+
+### ✅ Must Test (Priority 1)
+
+- **Business Logic**: Calculations, validation, state transitions
+- **Service/Repository Layer**: Data operations beyond simple CRUD
+- **Critical Paths**: Billing, authentication, data persistence
+- **Edge Cases**: Boundary values, null/undefined, empty arrays
+
+### 🟡 Situational (Priority 2)
+
+- **Utility Functions**: Only complex ones
+- **Custom Hooks**: State management logic portion
+- **Transformations**: Complex mapping/formatting
+
+### ❌ Skip Testing
+
+- Simple property accessors/getters
+- UI layout/styling
+- External library behavior verification
+- Prototype/experimental code
+- Simple CRUD (framework-provided)
+- Config file loading
+
+**Decision Criteria**: "If this logic breaks, will it impact users?"
+
+## Naming Convention (Jest/Vitest)
+
+Consistent naming makes test intent clear.
+
+### Recommended Pattern
+
+```typescript
+describe('[TargetClass/FunctionName]', () => {
+  describe('[MethodName/Scenario]', () => {
+    it('when [condition], should [expected result]', () => {
+      // Arrange - Act - Assert
+    })
+  })
+})
+```
+
+### Examples
+
+```typescript
+describe('PriceCalculator', () => {
+  describe('calculateTotal', () => {
+    it('when empty array, should return 0', () => {
+      expect(calculator.calculateTotal([])).toBe(0)
+    })
+
+    it('when discount code applied, should return discounted total', () => {
+      const items = [{ price: 1000, quantity: 2 }]
+      expect(calculator.calculateTotal(items, 'SAVE10')).toBe(1800)
+    })
+
+    it('when tax included, should return total with correct tax', () => {
+      const items = [{ price: 1000, quantity: 1 }]
+      expect(calculator.calculateTotal(items, null, { includeTax: true })).toBe(1100)
+    })
+  })
+})
+```
+
+### Naming Guidelines
+
+| Element | Good | Bad |
+|---------|------|-----|
+| Condition | `when empty array` | `test1` |
+| Expected | `should return 0` | `works correctly` |
+| Context | `when discount applied` | `discount` |
+
+**Tip**: Use descriptive names that serve as documentation
 
 ## References
 

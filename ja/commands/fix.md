@@ -1,8 +1,9 @@
 ---
 description: 開発環境で小さなバグの修正や軽微な改善を素早く実行
-allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Task
+allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task
 model: inherit
 argument-hint: "[bug description or issue]"
+dependencies: [Explore, test-generator]
 ---
 
 # /fix - 動的分析付き高度なクイックフィックス
@@ -51,6 +52,48 @@ argument-hint: "[bug description or issue]"
 2. **影響範囲**: 影響を受けるファイルとコンポーネントを特定
 3. **根本原因**: 何ではなくなぜを特定
 4. **修正戦略**: 最もシンプルで効果的なアプローチを選択
+
+### フェーズ1.5: リグレッションテストファースト（推奨）
+
+修正を実装する前に、バグを再現する失敗するテストを書く。
+
+**バグ修正へのTDDアプローチ**:
+
+```text
+1. Red   - バグを再現するテストを書く（失敗すべき）
+2. Verify - 正しい理由でテストが失敗することを確認
+3. Green - 最小限の修正を実装（テストがパスすべき）
+4. Refactor - 必要に応じてクリーンアップ（テストをグリーンに保つ）
+```
+
+**例**:
+
+```typescript
+// ステップ1: 最初に失敗するテストを書く
+it('割引が合計を超える場合、負の値ではなく0を返すべき', () => {
+  // これがバグだった: 0ではなく-50を返していた
+  const result = calculateTotal(100, 150) // 150%割引
+  expect(result).toBe(0) // 期待される動作
+})
+
+// ステップ2: 失敗することを確認（バグの存在を確認）
+// ステップ3: コードを修正
+// ステップ4: テストがパスすることを確認
+```
+
+**メリット**:
+
+- [✓] バグが再現可能であることを確認
+- [✓] リグレッションを永久に防止
+- [✓] 期待される動作をドキュメント化
+- [✓] 自信を持ってリファクタリング可能に
+
+**スキップする場合**:
+
+- ドキュメントのみの変更
+- 設定変更
+- ロジックを伴わないUIのみの修正
+- 信頼度 > 0.95 かつ些細な修正
 
 ### フェーズ2: ターゲット実装 (信頼度目標: 0.90)
 
