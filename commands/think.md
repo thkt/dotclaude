@@ -10,7 +10,13 @@ dependencies: [sow-spec-reviewer]
 
 ## Purpose
 
-Orchestrate SOW and Spec generation as a single workflow.
+Orchestrate implementation planning with automated design exploration followed by SOW and Spec generation.
+
+**Key Features**:
+
+- Automated implementation design exploration using Plan agent (Opus)
+- High-quality architectural analysis and approach recommendation
+- Seamless integration with SOW/Spec generation
 
 ## Golden Master Reference
 
@@ -192,7 +198,80 @@ Date: [YYYY-MM-DD]
 
 Save to: `.claude/workspace/qa/[timestamp]-[topic].md`
 
-### Step 1: Generate SOW
+### Step 1: Implementation Design Exploration
+
+**Purpose**: Automated implementation approach analysis using Plan agent with Opus.
+
+**Execution**:
+
+```typescript
+Task({
+  subagent_type: "Plan",
+  model: "opus",
+  description: "実装アプローチの検討と設計",
+  prompt: `
+Feature: "${featureDescription}"
+
+${qaResults ? `Based on Q&A results:\n${qaResults}\n` : ''}
+
+Tasks:
+1. Analyze codebase for similar patterns and existing implementations
+2. Identify affected modules, files, and dependencies
+3. Evaluate multiple implementation approaches with trade-offs
+4. Consider architectural implications and design decisions
+5. Recommend optimal approach with clear rationale
+6. Identify potential risks and mitigation strategies
+
+Output requirements:
+- Use confidence markers: [✓] verified, [→] inferred, [?] unknown
+- Provide concrete file paths and code references
+- Include alternative approaches with trade-offs
+- Flag important decisions requiring attention
+  `
+})
+```
+
+**Why Opus**: Implementation design requires deep architectural understanding, comprehensive trade-off analysis, and high-quality decision-making. Opus provides the best analysis quality for this critical planning phase.
+
+### Step 2: Display Analysis Results
+
+**Purpose**: Show Plan agent's analysis results to user (non-blocking).
+
+**Display Format**:
+
+```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 Implementation Approach Analysis
+
+**Recommended Approach**: [Approach name]
+[Brief description and rationale]
+
+**Alternative Approaches**:
+- Option B: [Trade-offs]
+- Option C: [Trade-offs]
+
+**Affected Scope**:
+- Files to modify: [2-5 key files with paths]
+- Impacted modules: [Module names]
+- Dependencies: [Key dependencies]
+
+**Key Decisions**:
+- [✓] Decision 1: [Confirmed choice]
+- [→] Decision 2: [Inferred recommendation]
+- [?] Decision 3: [Requires attention]
+
+**Risks & Mitigations**:
+- Risk 1: [Description] → Mitigation: [Strategy]
+- Risk 2: [Description] → Mitigation: [Strategy]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Proceeding with SOW generation based on this analysis...
+```
+
+**User Experience**: Results are displayed for visibility, but execution continues automatically. No user confirmation required.
+
+### Step 3: Generate SOW
 
 ```typescript
 // If argument provided
@@ -202,14 +281,14 @@ SlashCommand({ command: '/sow "[task description]"' })
 SlashCommand({ command: '/sow' })
 ```
 
-### Step 2: Generate Spec
+### Step 4: Generate Spec
 
 ```typescript
 SlashCommand({ command: '/spec' })
-// Auto-detects the SOW created in Step 1
+// Auto-detects the SOW created in Step 3
 ```
 
-### Step 3: Review (Optional)
+### Step 5: Review (Optional)
 
 ```typescript
 Task({
@@ -219,7 +298,7 @@ Task({
 })
 ```
 
-### Step 4: Generate Summary (Review Summary)
+### Step 6: Generate Summary (Review Summary)
 
 After SOW and Spec are generated, create a concise summary for efficient team review.
 
