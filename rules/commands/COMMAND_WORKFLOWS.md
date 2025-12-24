@@ -4,7 +4,6 @@
 
 | Pattern | Workflow | When |
 |---------|----------|------|
-| Emergency | `/hotfix` | Production critical |
 | Quick Fix | `/fix` | Small bug, dev env |
 | Investigation | `/research` → `/fix` | Unknown cause |
 | Feature | `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate` | New capability |
@@ -13,10 +12,9 @@
 
 | Criteria | High Priority | Medium Priority | Low Priority |
 |----------|---------------|-----------------|--------------|
-| **Environment** | Production → `/hotfix` | Development → `/fix` | Any → workflow |
 | **Understanding** | ≥95% → direct | 70-94% → `/research` | <70% → clarify |
 | **Complexity** | Multi-step → workflow | Single file → `/fix` | Unclear → `/think` |
-| **Urgency** | Critical → `/hotfix` | Normal → standard | Planning → `/think` |
+| **Urgency** | Critical → `/fix` | Normal → standard | Planning → `/think` |
 
 ## Task Analysis
 
@@ -26,7 +24,7 @@ Match intent to command:
 |-------------|----------|--------|
 | "X is broken" | Need investigation? | Yes → `/research` → `/fix` |
 | "Add Y feature" | Multi-step? | Yes → `/think` → `/code` → `/test` |
-| "Site is down" | Production critical? | Yes → `/hotfix` |
+| "Site is down" | Critical? | Yes → `/fix` (urgent) |
 | "Fix typo" | Simple & clear? | Yes → `/fix` |
 | "How does Z work?" | Investigation only | `/research` (no implementation) |
 

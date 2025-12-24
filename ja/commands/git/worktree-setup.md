@@ -28,14 +28,14 @@ cd ~/project
 # Claude Code セッション1で /research 実行中...
 
 # Step 2: 緊急バグ修正用worktree作成
-git worktree add ../project-hotfix hotfix/critical-bug
+git worktree add ../project-fix fix/critical-bug
 
 # Step 3: 新しいターミナル + Claude Codeセッション2
-cd ~/project-hotfix
-# /hotfix でバグ修正
+cd ~/project-fix
+# /fix でバグ修正
 
 # Step 4: 修正完了後、worktree削除
-git worktree remove ../project-hotfix
+git worktree remove ../project-fix
 ```
 
 ### worktree管理コマンド
@@ -64,6 +64,6 @@ git worktree prune
 
 ## 関連コマンド
 
-- `/hotfix` - 緊急修正（worktree推奨）
+- `/fix` - バグ修正（worktree推奨）
 - `/research` - 調査（mainブランチでworktree推奨）
 - `/code` - 実装（featureブランチでworktree推奨）

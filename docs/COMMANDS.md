@@ -21,7 +21,6 @@ Custom commands for systematic software development support.
 | Command | Purpose | Environment | Combines |
 |---------|---------|-------------|----------|
 | `/fix` | Quick bug fixes | 🔧 Development | think → code → test |
-| `/hotfix` | Emergency production fixes | 🚨 Production | Minimal process |
 
 ### External Review Commands
 
@@ -110,12 +109,6 @@ Choose based on complexity:
 /research → /fix
 ```
 
-### Emergency Response
-
-```txt
-/hotfix (standalone for critical issues)
-```
-
 ### Investigation Only (No Implementation)
 
 ```txt
@@ -174,13 +167,6 @@ Choose based on complexity:
 - **6-phase process**: Root cause → Regression test → Fix → Verify → Additional tests → Done
 - **Modular structure**: Details split into `commands/fix/` for maintainability (see ADR 0002)
 - **Shared TDD components**: References `commands/shared/` and `skills/tdd-fundamentals/`
-
-### /hotfix - Emergency Fixes
-
-- Production critical issues only
-- 5-min triage, 15-min fix, 10-min test
-- Minimal process overhead
-- Rollback plan required
 
 ### /rabbit - CodeRabbit AI Review
 
@@ -293,7 +279,6 @@ Choose based on complexity:
 │   │   ├── tdd-cycle.md
 │   │   └── test-generation.md
 │   ├── full-cycle.md # Meta-command (SlashCommand)
-│   ├── hotfix.md
 │   ├── rabbit.md
 │   ├── research.md
 │   ├── audit.md
@@ -336,25 +321,13 @@ Choose based on complexity:
 /fix       # Quick targeted fix
 ```
 
-### Production Emergency
-
-```bash
-/hotfix "Critical issue description"
-```
-
 ## 📋 Command Selection Guide
 
 ### Use `/fix` when
 
 - Issue is small and well-defined
 - Working in development environment
-- Can wait for normal deployment
-
-### Use `/hotfix` when
-
-- Production is affected
-- Immediate deployment needed
-- Security vulnerability discovered
+- Rapid iteration needed
 
 ### Use Plan Mode when
 

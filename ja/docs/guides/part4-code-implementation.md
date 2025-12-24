@@ -335,8 +335,7 @@ flowchart LR
 |------|-----------|
 | 新機能開発 | `/think` → `/code` → `/audit` |
 | 不慣れなコードベース | `/research` → `/think` → `/code` |
-| 単純なバグ修正 | `/fix` |
-| 緊急修正 | `/hotfix` |
+| バグ修正 | `/fix` |
 
 ---
 
@@ -350,7 +349,7 @@ flowchart LR
 /code --fast "緊急の修正"
 ```
 
-代わりに `/fix` や `/hotfix` の使用を検討してください。
+代わりに `/fix` の使用を検討してください。
 
 ### Q: spec.md がない場合は？
 

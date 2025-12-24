@@ -66,17 +66,6 @@ A methodology that compares actual outputs against expected output samples (Gold
 □ Confidence markers (✓/→/?) are appropriate
 ```
 
-### /hotfix Output Verification
-
-```markdown
-□ Safety Checks section exists
-□ Specification Reference (Quick Check) exists (newly added)
-□ Triage (5 min) is executed
-□ Fix (15 min) is executed
-□ Test (10 min) is executed
-□ Emergency response perspective is maintained
-```
-
 ### /think Output Verification
 
 ```markdown

@@ -165,7 +165,6 @@ Recommended Actions
 
 After review:
 
-- **Critical** → `/hotfix`
-- **Bugs** → `/fix`
+- **Critical/Bugs** → `/fix`
 - **Refactoring** → `/think` → `/code`
 - **Tests** → `/test`

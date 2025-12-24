@@ -48,8 +48,7 @@ Determine branch type from changes:
 | Prefix | Use Case | Trigger Patterns |
 |--------|----------|------------------|
 | `feature/` | New functionality | New files, new components, new features |
-| `fix/` | Bug fixes | Error corrections, validation fixes |
-| `hotfix/` | Emergency fixes | Critical production issues |
+| `fix/` | Bug fixes (including urgent) | Error corrections, validation fixes |
 | `refactor/` | Code improvements | Restructuring, optimization |
 | `docs/` | Documentation | .md files, README updates |
 | `test/` | Test additions/fixes | Test files, test coverage |
@@ -93,7 +92,7 @@ Keep scope:
 ✅ fix/api-resolve-timeout-issue
 ✅ docs/readme-update-install-steps
 ✅ refactor/user-service-cleanup
-✅ hotfix/payment-gateway-critical
+✅ fix/payment-gateway-critical
 
 # With ticket number
 ✅ feature/PROJ-123-user-search
@@ -227,7 +226,7 @@ For changes spanning multiple areas:
 
 Analyze recent branches for patterns:
 ```bash
-git branch -a | grep -E "^(feature|fix|hotfix)" | head -10
+git branch -a | grep -E "^(feature|fix)" | head -10
 ```
 
 Adapt to project conventions:

@@ -99,7 +99,7 @@ Analyze the user request to determine:
 - Clear and unclear elements
 - Command selection based on these prioritized criteria:
   1. **Task scope**: Single file = /fix, Multiple files = /code, Investigation = /research
-  2. **Change type**: Bug fix = /fix, New feature = /think → /code, Emergency = /hotfix
+  2. **Change type**: Bug fix = /fix, New feature = /think → /code
   3. **Confidence level**: <70% = /research first, 70-90% = /think, >90% = /code directly
 - Feasibility of execution
 
@@ -233,7 +233,7 @@ empty_count = 10 - filled_count
 bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 ```
 
-**Done Definition Section**: Display only for implementation/fix tasks (/code, /fix, /hotfix commands). This section is separate from TodoWrite - Done Definition represents the goal (what to achieve), while TodoWrite tracks execution steps (how to achieve it).
+**Done Definition Section**: Display only for implementation/fix tasks (/code, /fix commands). This section is separate from TodoWrite - Done Definition represents the goal (what to achieve), while TodoWrite tracks execution steps (how to achieve it).
 
 ### Example: Output Verifiability in Practice
 
@@ -300,7 +300,6 @@ See: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/commands/C
 
 - **Bug Fix**: Investigate+Fix → `/research → /fix`
 - **Feature**: Implement+Test → `/research → /think → /code → /test → /audit → /validate`
-- **Emergency**: Critical+Production → `/hotfix`
 
 Details: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/commands/COMMAND_WORKFLOWS.md)
 

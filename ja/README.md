@@ -23,7 +23,6 @@
 ├── commands/              # コマンド定義
 │   ├── code.md           # TDD/RGRC実装
 │   ├── fix.md            # クイックバグ修正
-│   ├── hotfix.md         # 緊急本番修正
 │   ├── research.md       # 実装なしの調査
 │   ├── audit.md          # コードレビューオーケストレーション
 │   ├── test.md           # 包括的テスト
@@ -68,7 +67,7 @@
 
    ```bash
    /plugin install complete-workflow-system  # 完全なTDD/RGRCワークフロー
-   /plugin install quick-actions             # /fixと/hotfix
+   /plugin install quick-actions             # /fix
    /plugin install automation-commands       # /auto-test、/full-cycle
    /plugin install git-utilities             # /commit、/branch、/pr
    /plugin install documentation-tools       # /adr、/adr:rule
@@ -79,7 +78,7 @@
 **利用可能なプラグイン**:
 
 - **complete-workflow-system**: 16個の専門エージェントを含む完全な開発ワークフロー
-- **quick-actions**: 素早いバグ修正（/fix）と緊急修正（/hotfix）
+- **quick-actions**: 素早いバグ修正（/fix）
 - **automation-commands**: 自動テストと完全サイクル自動化
 - **git-utilities**: Gitワークフローヘルパー（commit、branch、PR）
 - **documentation-tools**: ADR作成とルール生成
@@ -175,8 +174,8 @@ Claude Codeは5つのカテゴリに分類された15の専門コマンドを提
 - **コア開発** (7個): 計画から検証までの完全なワークフロー
   - `/think`, `/research`, `/code`, `/test`, `/audit`, `/sow`, `/validate`
 
-- **クイックアクション** (2個): 迅速なバグ修正
-  - `/fix` (開発環境), `/hotfix` (本番緊急対応)
+- **クイックアクション** (1個): 迅速なバグ修正
+  - `/fix`
 
 - **自動化** (2個): テストと開発サイクルの自動化
   - `/auto-test`, `/full-cycle`
@@ -210,12 +209,6 @@ Claude Codeは5つのカテゴリに分類された15の専門コマンドを提
 
 ```txt
 /research → /fix
-```
-
-### 緊急対応
-
-```txt
-/hotfix （重大な問題に対して単独で使用）
 ```
 
 ### 自動化ワークフロー（SlashCommandツールで新登場）

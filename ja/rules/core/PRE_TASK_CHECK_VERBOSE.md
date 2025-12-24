@@ -99,7 +99,7 @@
 - 明確な要素と不明確な要素
 - 次の優先基準に基づくコマンド選択：
   1. **タスクスコープ**: 単一ファイル = /fix、複数ファイル = /code、調査 = /research
-  2. **変更タイプ**: バグ修正 = /fix、新機能 = /think → /code、緊急 = /hotfix
+  2. **変更タイプ**: バグ修正 = /fix、新機能 = /think → /code
   3. **信頼度レベル**: <70% = /research優先、70-90% = /think、>90% = /code直接
 - 実行可能性
 
@@ -233,7 +233,7 @@ empty_count = 10 - filled_count
 bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 ```
 
-**完了定義セクション**: 実装/修正タスク（/code、/fix、/hotfixコマンド）の場合のみ表示。このセクションはTodoWriteとは別 - 完了定義は目標を表し（何を達成するか）、TodoWriteは実行ステップを追跡します（どのように達成するか）。
+**完了定義セクション**: 実装/修正タスク（/code、/fixコマンド）の場合のみ表示。このセクションはTodoWriteとは別 - 完了定義は目標を表し（何を達成するか）、TodoWriteは実行ステップを追跡します（どのように達成するか）。
 
 ### 例: 実践における出力検証可能性
 
@@ -300,7 +300,6 @@ bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 
 - **バグ修正**: 調査+修正 → `/research → /fix`
 - **機能**: 実装+テスト → `/research → /think → /code → /test → /audit → /validate`
-- **緊急**: クリティカル+本番 → `/hotfix`
 
 詳細: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/commands/COMMAND_WORKFLOWS.md)
 

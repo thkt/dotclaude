@@ -53,8 +53,7 @@ Includes ticket number in branch name.
 | Prefix | Use Case |
 |--------|----------|
 | `feature/` | New functionality |
-| `fix/` | Bug fixes |
-| `hotfix/` | Emergency fixes |
+| `fix/` | Bug fixes (including urgent) |
 | `refactor/` | Code improvements |
 | `docs/` | Documentation |
 | `test/` | Test additions/fixes |

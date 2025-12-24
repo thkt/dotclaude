@@ -53,8 +53,7 @@ argument-hint: "[optional: description context]"
 | プレフィックス | 使用場面 |
 |---------------|----------|
 | `feature/` | 新機能 |
-| `fix/` | バグ修正 |
-| `hotfix/` | 緊急修正 |
+| `fix/` | バグ修正（緊急含む） |
 | `refactor/` | コード改善 |
 | `docs/` | ドキュメント |
 | `test/` | テスト追加/修正 |

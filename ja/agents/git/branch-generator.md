@@ -47,8 +47,7 @@ git log --oneline -5
 | プレフィックス | 使用場面 | トリガーパターン |
 |---------------|----------|-----------------|
 | `feature/` | 新機能 | 新ファイル、新コンポーネント、新機能 |
-| `fix/` | バグ修正 | エラー訂正、バリデーション修正 |
-| `hotfix/` | 緊急修正 | 重大な本番問題 |
+| `fix/` | バグ修正（緊急含む） | エラー訂正、バリデーション修正 |
 | `refactor/` | コード改善 | 再構築、最適化 |
 | `docs/` | ドキュメント | .mdファイル、README更新 |
 | `test/` | テスト追加/修正 | テストファイル、テストカバレッジ |
@@ -92,7 +91,7 @@ git log --oneline -5
 ✅ fix/api-resolve-timeout-issue
 ✅ docs/readme-update-install-steps
 ✅ refactor/user-service-cleanup
-✅ hotfix/payment-gateway-critical
+✅ fix/payment-gateway-critical
 
 # チケット番号付き
 ✅ feature/PROJ-123-user-search
@@ -224,7 +223,7 @@ git branch -m [current-name] [recommended-name]
 
 最近のブランチのパターンを分析：
 ```bash
-git branch -a | grep -E "^(feature|fix|hotfix)" | head -10
+git branch -a | grep -E "^(feature|fix)" | head -10
 ```
 
 プロジェクトの慣習に適応：

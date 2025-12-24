@@ -60,7 +60,6 @@ New Task?
 | Bug fix | `/fix` | Occam's Razor, Progressive Enhancement |
 | New feature | `/research → /think → /code` | TDD, Baby Steps, SOLID |
 | Refactoring | `/research → /code` | TIDYINGS, DRY, Readable Code |
-| Emergency | `/hotfix` | Occam's Razor only |
 
 ---
 
@@ -126,7 +125,6 @@ For detailed principle relationships and dependency graph, see:
 | `/code` | TDD, Baby Steps | Readable Code, DRY, AI-Assisted Development |
 | `/test` | TDD | Law of Demeter, AI-Assisted Development |
 | `/fix` | Occam's Razor | TIDYINGS |
-| `/hotfix` | Occam's Razor only | - |
 | `/audit` | All principles | Priority order |
 
 ### Anti-Patterns to Avoid

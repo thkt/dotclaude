@@ -325,8 +325,7 @@ flowchart TD
 
 | 指摘の種類 | 推奨コマンド |
 |-----------|-------------|
-| Critical セキュリティ | `/hotfix` |
-| バグ | `/fix` |
+| Critical / バグ | `/fix` |
 | リファクタリング | `/think` → `/code` |
 | テスト不足 | `/test` |
 

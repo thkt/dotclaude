@@ -60,7 +60,6 @@
 | バグ修正 | `/fix` | オッカムの剃刀、プログレッシブエンハンスメント |
 | 新機能 | `/research → /think → /code` | TDD、Baby Steps、SOLID |
 | リファクタリング | `/research → /code` | TIDYINGS、DRY、可読性のあるコード |
-| 緊急事態 | `/hotfix` | オッカムの剃刀のみ |
 
 ---
 
@@ -316,7 +315,6 @@ const calculateTotal = memo((items) => {
 | `/code` | TDD、Baby Steps | 可読性のあるコード、DRY、AI支援開発 |
 | `/test` | TDD | デメテルの法則、AI支援開発 |
 | `/fix` | オッカムの剃刀 | TIDYINGS |
-| `/hotfix` | オッカムの剃刀のみ | - |
 | `/audit` | すべての原則 | 優先順位順 |
 
 ### 避けるべきアンチパターン

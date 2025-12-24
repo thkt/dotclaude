@@ -25,7 +25,6 @@ This repository contains personal configurations for Claude AI, including:
 ├── commands/              # Command definitions
 │   ├── code.md           # TDD/RGRC implementation
 │   ├── fix.md            # Quick bug fixes
-│   ├── hotfix.md         # Emergency production fixes
 │   ├── research.md       # Investigation without implementation
 │   ├── audit.md          # Code review orchestration
 │   ├── test.md           # Comprehensive testing
@@ -68,7 +67,7 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 
    ```bash
    /plugin install complete-workflow-system  # Full TDD/RGRC workflow
-   /plugin install quick-actions             # /fix and /hotfix
+   /plugin install quick-actions             # /fix
    /plugin install automation-commands       # /auto-test, /full-cycle
    /plugin install git-utilities             # /commit, /branch, /pr
    /plugin install documentation-tools       # /adr, /adr:rule
@@ -79,7 +78,7 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 **Available Plugins**:
 
 - **complete-workflow-system**: Full development workflow with 16 specialized agents
-- **quick-actions**: Fast bug fixes (/fix) and emergency hotfixes (/hotfix)
+- **quick-actions**: Fast bug fixes (/fix)
 - **automation-commands**: Auto-test and full-cycle automation
 - **git-utilities**: Git workflow helpers (commit, branch, PR)
 - **documentation-tools**: ADR creation and rule generation
@@ -175,8 +174,8 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 - **Core Development** (7 commands): Complete workflow from planning to validation
   - `/think`, `/research`, `/code`, `/test`, `/audit`, `/sow`, `/validate`
 
-- **Quick Actions** (2 commands): Rapid bug fixes
-  - `/fix` (development), `/hotfix` (production emergencies)
+- **Quick Actions** (1 command): Rapid bug fixes
+  - `/fix`
 
 - **Automation** (2 commands): Test and development cycle automation
   - `/auto-test`, `/full-cycle`
@@ -210,12 +209,6 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 
 ```txt
 /research → /fix
-```
-
-### Emergency Response
-
-```txt
-/hotfix (standalone for critical issues)
 ```
 
 ### Automated Workflows (New with SlashCommand Tool)
