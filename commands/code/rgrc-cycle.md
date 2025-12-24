@@ -1,90 +1,68 @@
 # TDD/RGRC Cycle Implementation Details
 
-This module provides detailed TDD implementation guidance with Baby Steps methodology.
+This module provides detailed TDD implementation guidance for feature development with spec-driven approach.
 
-## 1. Test-Driven Development (TDD) as t_wada would
+## TDD Fundamentals Reference
 
-**Goal**: "Clean code that works" - Ron Jeffries
+For core TDD principles, Baby Steps, and RGRC cycle basics:
 
-### Baby Steps - The Foundation of TDD
+- [@~/.claude/skills/tdd-fundamentals/SKILL.md](~/.claude/skills/tdd-fundamentals/SKILL.md) - TDD philosophy and principles
+- [@~/.claude/skills/tdd-fundamentals/examples/feature-driven.md](~/.claude/skills/tdd-fundamentals/examples/feature-driven.md) - Feature-driven TDD pattern
+- [@~/.claude/commands/shared/tdd-cycle.md](~/.claude/commands/shared/tdd-cycle.md) - RGRC implementation details
 
-**Core Principle**: Make the smallest possible change at each step
+## Feature-Driven TDD Context
 
-#### Why Baby Steps Matter
+This module focuses on **spec-driven feature development** with interactive test activation.
 
-- **Immediate error localization**: When test fails, the cause is in the last tiny change
-- **Continuous working state**: Code is always seconds away from green
-- **Rapid feedback**: Each step takes 1-2 minutes max
-- **Confidence building**: Small successes compound into major features
+**Key Characteristics**:
 
-#### Baby Steps in Practice
+- Tests generated from spec.md (Phase 0)
+- All tests start in skip state
+- User activates one test at a time
+- Full RGRC cycle for each test
 
-```typescript
-// ❌ Big Step - Multiple changes at once
-function calculateTotal(items, tax, discount) {
-  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
-  const afterTax = subtotal * (1 + tax);
-  const afterDiscount = afterTax * (1 - discount);
-  return afterDiscount;
-}
-
-// ✅ Baby Steps - One change at a time
-// Step 1: Return zero (make test pass minimally)
-function calculateTotal(items) {
-  return 0;
-}
-
-// Step 2: Basic sum (next test drives this)
-function calculateTotal(items) {
-  return items.reduce((sum, item) => sum + item.price, 0);
-}
-
-// Step 3: Add tax support (only when test requires it)
-// ... continue in tiny increments
-```
-
-#### Baby Steps Rhythm
-
-1. **Write smallest failing test** (30 seconds)
-2. **Make it pass with minimal code** (1 minute)
-3. **Run tests** (10 seconds)
-4. **Tiny refactor if needed** (30 seconds)
-5. **Commit if green** (20 seconds)
-
-Total cycle: ~2 minutes
+**See also**: [@./test-preparation.md](./test-preparation.md) for Phase 0 details
 
 ### Test Generation from Plan (Pre-Red)
 
-Before entering the RGRC cycle, automatically generate tests from SOW:
+Before entering the RGRC cycle, automatically generate tests from spec.md.
+
+**For detailed test generation patterns**:
+[@~/.claude/commands/shared/test-generation.md](~/.claude/commands/shared/test-generation.md)
+
+**Spec-driven generation** (Phase 0):
+See [@./test-preparation.md](./test-preparation.md) for interactive test activation workflow.
+
+**Quick reference**:
 
 ```bash
-# 1. Check for SOW with test plan
-.claude/workspace/planning/[feature-name]/sow.md
+# 1. Check for spec with test scenarios
+.claude/workspace/planning/[feature-name]/spec.md
 
-# 2. If test plan exists, invoke test-generator
-Task(
-  subagent_type="test-generator",
-  description="Generate tests from SOW",
-  prompt="Generate tests from SOW test plan"
-)
+# 2. Generate tests in skip mode (Phase 0)
+# See test-preparation.md for details
 
-# 3. Verify generated tests
-npm test -- --listTests | grep -E "\.test\.|\.spec\."
+# 3. Activate one test at a time (interactive)
 ```
 
 **When to generate:**
 
-- SOW contains "Test Plan" section
+- spec.md contains FR-xxx requirements or Given-When-Then scenarios
 - No existing tests for planned features
 - User requests test generation
 
 **Skip conditions:**
 
 - Tests already exist
-- No SOW test plan defined
-- Quick fix mode
+- No spec.md defined
+- Quick fix mode (use `/fix` instead)
 
 ### Enhanced RGRC Cycle with Real-time Feedback
+
+For detailed phase guidance, see:
+[@~/.claude/commands/shared/tdd-cycle.md](~/.claude/commands/shared/tdd-cycle.md)
+
+**Feature-specific adaptations**:
 
 1. **Red Phase** (Confidence Target: 0.9)
 

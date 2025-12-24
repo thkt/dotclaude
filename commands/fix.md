@@ -3,7 +3,7 @@ description: Rapidly fix small bugs and minor improvements in development enviro
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task
 model: inherit
 argument-hint: "[bug or issue description]"
-dependencies: [Explore, test-generator]
+dependencies: [Explore, test-generator, tdd-fundamentals]
 ---
 
 # /fix - Quick Bug Fix
@@ -21,6 +21,111 @@ Rapidly fix small bugs with root cause analysis and confidence-based verificatio
 | Single file or 2-3 files | Multi-file refactoring → `/code` |
 | Confidence ≥80% | New feature → `/think` |
 
+## Fix Process Overview
+
+The `/fix` command follows a structured 6-phase approach:
+
+```text
+Phase 1: Root Cause Analysis
+  ↓ Identify true cause, not symptom
+Phase 1.5: Regression Test First (Recommended)
+  ↓ Write failing test (TDD approach)
+Phase 2: Implementation
+  ↓ Confidence-based fix
+Phase 3: Verification
+  ↓ Quality checks
+Phase 3.5: Test Generation (Optional)
+  ↓ Additional regression tests
+Definition of Done
+  ↓ Output & learnings
+```
+
+## Process Modules
+
+Each phase has detailed guidance in dedicated modules:
+
+### Phase 1: Root Cause Analysis
+
+[@./fix/root-cause-analysis.md](./fix/root-cause-analysis.md)
+
+- Dynamic context (git diff, test status)
+- Explore agent for 5 Whys
+- Pattern recognition (isolated/pattern/systematic)
+- Confidence markers ([✓/→/?])
+
+**Output**: Root cause identified with confidence score
+
+### Phase 1.5: Regression Test First (Recommended)
+
+[@./fix/regression-test.md](./fix/regression-test.md)
+
+- TDD approach to bug fixes
+- Write failing test that reproduces bug
+- Verify correct failure
+- References: [@~/.claude/skills/tdd-fundamentals/SKILL.md](~/.claude/skills/tdd-fundamentals/SKILL.md)
+
+**When to skip**:
+
+- Documentation-only changes
+- Configuration changes
+- UI-only fixes without logic
+- Confidence > 0.95 and trivial fix
+
+**Output**: Failing test that reproduces bug
+
+### Phase 2: Implementation
+
+[@./fix/implementation.md](./fix/implementation.md)
+
+- Confidence-based approach:
+  - High (>0.9): Direct fix
+  - Medium (0.7-0.9): Defensive fix
+  - Low (<0.7): Escalate to `/research`
+- Apply Occam's Razor (simplest solution)
+- CSS-first for UI issues
+- Don't restructure surrounding code
+
+**Output**: Minimal fix applied
+
+### Phase 3: Verification
+
+[@./fix/verification.md](./fix/verification.md)
+
+- Run quality checks in parallel:
+  - Tests (regression + all)
+  - Lint (auto-fix)
+  - Type check
+- Manual spot check
+- No regressions detected
+
+**Output**: All checks passing
+
+### Phase 3.5: Test Generation (Optional)
+
+[@./fix/test-generation.md](./fix/test-generation.md)
+
+- Use test-generator for edge cases
+- References: [@~/.claude/commands/shared/test-generation.md](~/.claude/commands/shared/test-generation.md)
+- Integration tests if needed
+
+**When to skip**:
+
+- Non-testable changes
+- Comprehensive tests already exist
+
+**Output**: Additional regression tests
+
+### Definition of Done
+
+[@./fix/completion.md](./fix/completion.md)
+
+- Completion criteria
+- Output formatting
+- Escalation guidelines
+- Applied principles documentation
+
+**Confidence target**: ≥0.9
+
 ## Confidence Markers
 
 Use throughout all outputs:
@@ -29,193 +134,9 @@ Use throughout all outputs:
 - **[→]** Medium (0.5-0.8) - Reasonable inference from evidence
 - **[?]** Low (<0.5) - Assumption requiring verification
 
-### Application in /fix
-
-| Phase | Marker Usage |
-|-------|--------------|
-| Root Cause | [✓] confirmed cause, [→] likely cause, [?] suspected |
-| Solution | [✓] tested fix, [→] expected to work, [?] uncertain |
-| Verification | [✓] all tests pass, [→] partial coverage, [?] untested |
-
-## Dynamic Context
-
-### Recent Changes
-
-```bash
-!`git diff HEAD~1 --stat | head -10`
-```
-
-### Test Status
-
-```bash
-!`npm run || yarn run || pnpm run || echo "No package manager"`
-```
-
-### Spec Reference (Optional)
-
-If spec.md exists from `/think`:
-
-- Check `.claude/workspace/planning/**/spec.md`
-- Use FR-xxx and test scenarios as reference
-
-## Fix Process
-
-### Phase 1: Root Cause Analysis
-
-Use Explore agent for quick context (30 sec):
-
-```typescript
-Task({
-  subagent_type: "Explore",
-  thoroughness: "quick",
-  description: "Bug context exploration",
-  prompt: `
-    Bug: "${bugDescription}"
-    Find: Related files, dependencies, recent commits
-    Apply 5 Whys: Identify root cause, not just symptom
-    Return: Findings with [✓/→/?] markers
-  `
-})
-```
-
-**Key Questions**:
-
-- What is the symptom vs root cause?
-- Is this pattern or isolated issue?
-- What areas are affected?
-
-### Phase 1.5: Regression Test First (Recommended)
-
-Before implementing the fix, write a failing test that reproduces the bug.
-
-**TDD Approach to Bug Fixes**:
-
-```text
-1. Red   - Write test that reproduces the bug (should FAIL)
-2. Verify - Confirm test fails for the RIGHT reason
-3. Green - Implement minimal fix (test should PASS)
-4. Refactor - Clean up if needed (keep test green)
-```
-
-**Example**:
-
-```typescript
-// Step 1: Write failing test FIRST
-it('when discount exceeds total, should return 0 not negative', () => {
-  // This was the bug: returned -50 instead of 0
-  const result = calculateTotal(100, 150) // 150% discount
-  expect(result).toBe(0) // Expected behavior
-})
-
-// Step 2: Verify it fails (confirms bug exists)
-// Step 3: Fix the code
-// Step 4: Verify test passes
-```
-
-**Benefits**:
-
-- [✓] Confirms bug is reproducible
-- [✓] Prevents regression forever
-- [✓] Documents expected behavior
-- [✓] Enables confident refactoring
-
-**When to Skip**:
-
-- Documentation-only changes
-- Configuration changes
-- UI-only fixes without logic
-- Confidence > 0.95 and trivial fix
-
-### Phase 2: Implementation
-
-Based on confidence:
-
-- **High (>0.9)**: Direct fix
-- **Medium (0.7-0.9)**: Add defensive checks
-- **Low (<0.7)**: Switch to `/research`
-
-**Apply Occam's Razor**:
-
-- Simplest change that fixes the issue
-- Don't restructure surrounding code
-- CSS-first for UI issues
-
-### Phase 3: Verification
-
-Run quality checks in parallel:
-
-```bash
-npm test -- --findRelatedTests
-npm run lint -- --fix
-npm run type-check
-```
-
-### Phase 3.5: Regression Test Generation (Optional)
-
-For testable fixes, generate regression tests:
-
-```typescript
-Task({
-  subagent_type: "test-generator",
-  model: "haiku",
-  description: "Generate regression test for bug fix",
-  prompt: `
-    Bug: "${bugDescription}"
-    Root Cause: "${rootCause}"
-    Fix Applied: "${fixSummary}"
-
-    Generate:
-    1. [✓] Test that reproduces original bug (should now pass)
-    2. [→] Edge case tests related to the fix
-    3. [→] Integration test if cross-component fix
-
-    Return test code ready to add to test suite.
-  `
-})
-```
-
-**Skip conditions**:
-
-- Documentation-only changes
-- Configuration changes
-- UI-only fixes without logic
-
-## Definition of Done
-
-```text
-✅ Root cause identified (not just symptom)
-✅ Minimal complexity solution applied
-✅ All related tests pass
-✅ No new lint errors
-✅ No regressions detected
-```
-
-**Confidence Target**: Overall ≥0.9
-
-## Output Format
-
-```text
-🔧 Fix Summary
-
-Problem: [Description]
-Root Cause: [Why it happened]
-Confidence: 0.XX
-
-Solution:
-- Files: [modified files]
-- Approach: [fix strategy]
-
-Verification:
-- Tests: ✅ XX/XX passing
-- Lint: ✅ No issues
-- Types: ✅ Valid
-
-Status: ✅ COMPLETE (Confidence: 0.XX)
-```
-
 ## Escalation
 
-If confidence drops below 0.7:
+If confidence drops below 0.7 at any phase:
 
 ```text
 ⚠️ Low Confidence - Recommend escalation:
@@ -229,11 +150,18 @@ If confidence drops below 0.7:
 - **Occam's Razor**: Simplest solution that works
 - **TIDYINGS**: Clean only what you touch
 - **Progressive Enhancement**: CSS-first for UI issues
+- **TDD**: Test-first for bug fixes
 
-## Next Steps
+## Next Steps After Fix
 
-After fix:
-
-- **Success**: Document learnings, add regression test
+- **Success**: Document learnings, commit changes
 - **Partial**: Follow-up `/fix` or `/research`
 - **Escalation**: `/think` → `/code` for comprehensive solution
+
+## Integration with TDD
+
+For TDD fundamentals and patterns:
+
+- [@~/.claude/skills/tdd-fundamentals/SKILL.md](~/.claude/skills/tdd-fundamentals/SKILL.md) - TDD philosophy
+- [@~/.claude/skills/tdd-fundamentals/examples/bug-driven.md](~/.claude/skills/tdd-fundamentals/examples/bug-driven.md) - Bug-driven TDD pattern
+- [@~/.claude/commands/shared/tdd-cycle.md](~/.claude/commands/shared/tdd-cycle.md) - RGRC cycle details

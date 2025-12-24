@@ -167,10 +167,13 @@
 
 ### /fix - クイック修正
 
-- 合理化されたミニワークフロー
+- TDDアプローチを用いた合理化されたミニワークフロー
 - 小規模で理解された問題用
 - 開発環境のみ
 - 迅速な反復サイクル
+- **6フェーズプロセス**: 根本原因分析 → リグレッションテスト → 修正 → 検証 → 追加テスト → 完了
+- **モジュール構造**: 詳細は保守性のため `commands/fix/` に分離（ADR 0002参照）
+- **共有TDDコンポーネント**: `commands/shared/` と `skills/tdd-fundamentals/` を参照
 
 ### /hotfix - 緊急修正
 
@@ -281,7 +284,17 @@
 │   │   ├── rgrc-cycle.md
 │   │   ├── quality-gates.md
 │   │   └── completion.md
-│   ├── fix.md
+│   ├── fix.md        # メインオーケストレーター（薄いラッパー）
+│   ├── fix/          # モジュールコンポーネント（ADR 0002）
+│   │   ├── root-cause-analysis.md
+│   │   ├── regression-test.md
+│   │   ├── implementation.md
+│   │   ├── verification.md
+│   │   ├── test-generation.md
+│   │   └── completion.md
+│   ├── shared/       # 共有TDDコンポーネント（ADR 0002）
+│   │   ├── tdd-cycle.md
+│   │   └── test-generation.md
 │   ├── full-cycle.md # メタコマンド（SlashCommand）
 │   ├── hotfix.md
 │   ├── rabbit.md     # CodeRabbit外部レビュー
@@ -294,6 +307,12 @@
 │   ├── workflow/
 │   │   └── create.md # ワークフロージェネレーター
 │   └── workflows/    # 生成されたワークフロー（ユーザー作成）
+├── skills/           # 再利用可能な知識ベース
+│   └── tdd-fundamentals/  # TDD原則（ADR 0002）
+│       ├── SKILL.md
+│       └── examples/
+│           ├── feature-driven.md
+│           └── bug-driven.md
 ├── ja/               # 日本語版
 │   └── commands/
 └── workspace/        # 作業ファイル

@@ -6,13 +6,26 @@ This module handles pre-TDD test generation from specifications.
 
 Generate test cases in **skip state** from specification, then activate one-by-one with user confirmation for true Baby Steps TDD.
 
+## TDD Fundamentals Reference
+
+For core TDD concepts and test generation patterns:
+
+- [@~/.claude/skills/tdd-fundamentals/SKILL.md](~/.claude/skills/tdd-fundamentals/SKILL.md) - TDD philosophy
+- [@~/.claude/skills/tdd-fundamentals/examples/feature-driven.md](~/.claude/skills/tdd-fundamentals/examples/feature-driven.md) - Feature-driven pattern
+- [@~/.claude/commands/shared/test-generation.md](~/.claude/commands/shared/test-generation.md) - Test generation patterns
+
 ## When to Use
 
-When spec.md exists and contains test scenarios.
+When spec.md exists and contains FR-xxx requirements or Given-When-Then scenarios.
 
 ## Step 1: Generate Skipped Tests
 
-Use test-generator with skip mode to create test scaffold:
+Use test-generator with skip mode to create test scaffold.
+
+**For detailed test-generator patterns**:
+[@~/.claude/commands/shared/test-generation.md](~/.claude/commands/shared/test-generation.md#pattern-1-spec-driven-generation-feature-development)
+
+**Quick invocation**:
 
 ```typescript
 Task({
@@ -35,6 +48,12 @@ Include activation order recommendation.
   `
 })
 ```
+
+**See shared/test-generation.md for**:
+
+- Framework-specific skip markers
+- Best practices
+- Common issues and solutions
 
 ## Step 2: Display Test Queue
 

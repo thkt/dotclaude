@@ -167,10 +167,13 @@ Choose based on complexity:
 
 ### /fix - Quick Fixes
 
-- Streamlined mini-workflow
+- Streamlined mini-workflow with TDD approach
 - For small, well-understood issues
 - Development environment only
 - Rapid iteration cycle
+- **6-phase process**: Root cause → Regression test → Fix → Verify → Additional tests → Done
+- **Modular structure**: Details split into `commands/fix/` for maintainability (see ADR 0002)
+- **Shared TDD components**: References `commands/shared/` and `skills/tdd-fundamentals/`
 
 ### /hotfix - Emergency Fixes
 
@@ -278,7 +281,17 @@ Choose based on complexity:
 │   │   ├── rgrc-cycle.md
 │   │   ├── quality-gates.md
 │   │   └── completion.md
-│   ├── fix.md
+│   ├── fix.md        # Main orchestrator (thin wrapper)
+│   ├── fix/          # Modular components (ADR 0002)
+│   │   ├── root-cause-analysis.md
+│   │   ├── regression-test.md
+│   │   ├── implementation.md
+│   │   ├── verification.md
+│   │   ├── test-generation.md
+│   │   └── completion.md
+│   ├── shared/       # Shared TDD components (ADR 0002)
+│   │   ├── tdd-cycle.md
+│   │   └── test-generation.md
 │   ├── full-cycle.md # Meta-command (SlashCommand)
 │   ├── hotfix.md
 │   ├── rabbit.md
@@ -291,6 +304,12 @@ Choose based on complexity:
 │   ├── workflow/
 │   │   └── create.md # Workflow generator
 │   └── workflows/    # Generated workflows (user-created)
+├── skills/           # Reusable knowledge base
+│   └── tdd-fundamentals/  # TDD principles (ADR 0002)
+│       ├── SKILL.md
+│       └── examples/
+│           ├── feature-driven.md
+│           └── bug-driven.md
 ├── ja/               # Japanese versions
 │   └── commands/
 └── workspace/        # Working files
