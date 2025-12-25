@@ -77,8 +77,6 @@ YAGNIと影響シミュレーションの優先度は**コンテキスト依存*
 
 完全な仕様: [@./PRE_TASK_CHECK_COMPACT.md](./PRE_TASK_CHECK_COMPACT.md)
 
-詳細版: [@./PRE_TASK_CHECK_VERBOSE.md](./PRE_TASK_CHECK_VERBOSE.md)
-
 - 原則はPRE_TASK_CHECKの前に適用される
 - 理解確認と実行計画はPRE_TASK_CHECKに統合されている
 - これにより、すべての操作に対して単一の一貫したワークフローが確保される

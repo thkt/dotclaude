@@ -126,6 +126,15 @@ The following files exist only in Japanese (no English version):
 
 **Rationale**: These documents serve Japanese-speaking users and creating English versions would require significant translation effort without clear benefit. They are properly referenced within the Japanese documentation tree.
 
+### Exceptions: English-Only Documentation
+
+The following files exist only in English (no Japanese version):
+
+- `skills/automating-browser/` - Browser automation skill (technical reference)
+- `skills/utilizing-cli-tools/` - CLI tools guide skill (technical reference)
+
+**Rationale**: These are technical reference skills that primarily document tool APIs and command syntax. The content is largely code examples and tool names that don't require translation. Creating Japanese versions would add maintenance burden without proportional benefit.
+
 ## Update Procedures
 
 ### Adding New Principles

@@ -4,7 +4,7 @@ description: >
   Expert reviewer for web accessibility compliance and inclusive design in TypeScript/React applications.
   Ensures applications are accessible to all users by identifying WCAG violations and recommending inclusive design improvements.
   フロントエンドコードのアクセシビリティを検証し、WCAG準拠、セマンティックHTML、キーボードナビゲーション、スクリーンリーダー対応などの改善点を特定します。
-tools: Read, Grep, Glob, LS, Task, mcp__chrome-devtools__*, mcp__mdn__*
+tools: Read, Grep, Glob, LS, Task, mcp__claude-in-chrome__*, mcp__mdn__*
 model: sonnet
 skills:
   - progressive-enhancement
@@ -169,6 +169,7 @@ function Modal({ isOpen, onClose, children }) {
 [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - "HTML first, CSS for styling, JavaScript only when necessary"
 
 Key questions:
+
 1. Does the base HTML provide accessible structure?
 2. Are ARIA attributes truly necessary, or can semantic HTML suffice?
 

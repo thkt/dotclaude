@@ -22,7 +22,7 @@ Prefer CSS solutions over JavaScript. "The best code is no code."
 ## CSS-First Decision Flow
 
 | Need | CSS Solution | Avoid JS |
-|------|-------------|----------|
+| --- | --- | --- |
 | Layout | Grid / Flexbox | Manual position calculation |
 | Position change | `transform` (GPU accelerated) | `top/left` (causes reflow) |
 | Show/Hide | `visibility` / `opacity` | `display` toggle |
@@ -58,6 +58,18 @@ Before writing JS, ask:
 
 ## References
 
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md]
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md]
-- [@~/.claude/rules/reference/YAGNI.md]
+### Principles (rules/)
+
+- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first approach, outcome-first development
+- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplest solution wins
+- [@~/.claude/rules/reference/YAGNI.md](~/.claude/rules/reference/YAGNI.md) - Build only what's needed
+
+### Related Skills
+
+- `applying-code-principles` - SOLID, DRY原則
+- `optimizing-performance` - パフォーマンス最適化
+
+### Used by Commands
+
+- `/code --frontend` - フロントエンド実装時
+- `/audit` - CSS-first アプローチ確認

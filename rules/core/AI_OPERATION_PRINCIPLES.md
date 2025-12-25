@@ -77,8 +77,6 @@ In most cases, use a **phased approach**: "Start with YAGNI, validate with Impac
 
 Full specification: [@./PRE_TASK_CHECK_COMPACT.md](./PRE_TASK_CHECK_COMPACT.md)
 
-For verbose version: [@./PRE_TASK_CHECK_VERBOSE.md](./PRE_TASK_CHECK_VERBOSE.md)
-
 - Principles are applied before PRE_TASK_CHECK
 - Understanding confirmation and execution planning are now integrated into PRE_TASK_CHECK
 - This ensures a single, coherent workflow for all operations

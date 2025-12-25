@@ -16,7 +16,7 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 ## Core Patterns Overview
 
 | Pattern | Concept | When to Use |
-|---------|---------|-------------|
+| --- | --- | --- |
 | Container/Presentational | Separate logic from UI | Data fetching + display |
 | Custom Hooks (React) | Reusable stateful logic | Shared behavior across components |
 | Composition | Build complex from simple | Flexible, reusable components |
@@ -27,7 +27,7 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 **Key Principle**: Separate concerns
 
 | Container (Logic) | Presentational (UI) |
-|-------------------|---------------------|
+| --- | --- |
 | Fetches data | Receives data via props |
 | Manages state | Stateless (ideally) |
 | Handles events | Calls callback props |
@@ -42,7 +42,7 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 ## Hooks Guidelines (React)
 
 | Hook | Use For | Pitfall to Avoid |
-|------|---------|------------------|
+| --- | --- | --- |
 | useEffect | Side effects | Missing dependencies |
 | useMemo | Expensive computations | Premature optimization |
 | useCallback | Stable function refs | Over-memoization |
@@ -53,7 +53,7 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 ## State Management Strategy
 
 | Scope | Tool (React) | Example |
-|-------|--------------|---------|
+| --- | --- | --- |
 | Local | useState | Form input, toggle |
 | Shared | Context | Theme, auth status |
 | Global | Zustand/Redux | App-wide cache |
@@ -63,7 +63,7 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 ## Composition Patterns
 
 | Pattern | Use Case |
-|---------|----------|
+| --- | --- |
 | children | Wrapper components, cards, modals |
 | render props | Dynamic rendering based on data |
 | HOC | Cross-cutting concerns (auth, logging) |
@@ -71,7 +71,7 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 ## Framework Comparison
 
 | Pattern | React | Vue | Angular |
-|---------|-------|-----|---------|
+| --- | --- | --- | --- |
 | Separation | Container/Presentational | Composition API | Smart/Dumb |
 | State | useState, Context | ref, reactive | Services |
 | Side effects | useEffect | watch, onMounted | ngOnInit |
@@ -87,5 +87,20 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 
 ## References
 
+### Principles (rules/)
+
+- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md) - Component separation pattern
+
+### Skill References
+
 - [@./references/container-presentational.md](./references/container-presentational.md) - Detailed separation guide
-- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md]
+
+### Related Skills
+
+- `enhancing-progressively` - CSS-first progressive enhancement
+- `integrating-storybook` - コンポーネント可視化
+
+### Used by Commands
+
+- `/code --frontend` - Reactコンポーネント実装
+- `/audit` - フロントエンドパターン確認

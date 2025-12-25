@@ -7,7 +7,7 @@ description: >
   "React.memo", "重い", "heavy", "高速化", "speed up", "lazy loading", "Code splitting", "tree shaking"。
   測定とプロファイリングに基づいたReact最適化、Web Vitals改善、バンドル最適化の実践的技法を提供。
   Web Vitals (LCP, FID, CLS)、Reactレンダリング最適化、バンドルサイズ削減戦略のセクションを含む。
-allowed-tools: Read, Grep, Glob, Task, mcp__chrome-devtools__*, mcp__mdn__*
+allowed-tools: Read, Grep, Glob, Task, mcp__claude-in-chrome__*, mcp__mdn__*
 ---
 
 # Performance Optimization - データドリブンなフロントエンド最適化

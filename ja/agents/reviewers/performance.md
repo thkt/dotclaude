@@ -5,7 +5,7 @@ description: >
   Analyzes frontend code performance and identifies optimization opportunities for React re-rendering, bundle size, lazy loading, memoization, etc.
   References [@~/.claude/skills/optimizing-performance/SKILL.md] for systematic Web Vitals and React optimization knowledge.
   フロントエンドコードのパフォーマンスを分析し、React再レンダリング、バンドルサイズ、遅延ローディング、メモ化などの最適化機会を特定します。
-tools: Read, Grep, Glob, LS, Task, mcp__chrome-devtools__*, mcp__mdn__*
+tools: Read, Grep, Glob, LS, Task, mcp__claude-in-chrome__*, mcp__mdn__*
 model: sonnet
 skills:
   - performance-optimization
@@ -107,6 +107,7 @@ const expensiveResult = useMemo(() =>
 ## Performance Metrics
 
 Target thresholds:
+
 - **FCP**: < 1.8s
 - **LCP**: < 2.5s
 - **TTI**: < 3.8s
@@ -127,6 +128,7 @@ Target thresholds:
 [@~/.claude/rules/reference/OCCAMS_RAZOR.md] - Identify premature optimizations
 
 Key questions:
+
 1. Is this optimization solving a measured problem?
 2. Is the complexity justified by the performance gain?
 

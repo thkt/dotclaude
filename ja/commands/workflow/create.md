@@ -1,7 +1,7 @@
 ---
 description: 対話形式の記録で再利用可能なブラウザ自動化ワークフローを作成
 aliases: [create-workflow, workflow-create]
-allowed-tools: Read, Write, Task, mcp__chrome-devtools__*
+allowed-tools: Read, Write, Task, mcp__claude-in-chrome__*
 model: inherit
 argument-hint: "[ワークフロー名]"
 ---
@@ -119,7 +119,7 @@ AI: ✓ ワークフローを記録しました！
 
 ## Chrome DevTools MCP統合
 
-このコマンドは以下の`mcp__chrome-devtools__*`ツールを使用：
+このコマンドは以下の`mcp__claude-in-chrome__*`ツールを使用：
 
 - `navigate_page` - URLへの遷移
 - `take_snapshot` - ページ要素の識別

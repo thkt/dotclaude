@@ -18,7 +18,7 @@ Architecture Decision Record (ADR) を実行可能なスキル形式に変換し
 **主な違い:**
 
 | 観点 | /adr:rule | /adr:skill |
-|------|-----------|------------|
+| --- | --- | --- |
 | 目的 | 制約の強制 | パターンの提案 |
 | 適用 | 常時有効 | キーワードでトリガー |
 | 出力先 | docs/rules/ | .claude/skills/ |
@@ -150,7 +150,7 @@ const tools = ['Read', 'Grep', 'Glob'];  // 基本ツール
 // 内容分析に基づいて追加
 if (hasCodeExamples) tools.push('Write', 'Edit');
 if (hasSecurityContent) tools.push('Task');
-if (hasBrowserContent) tools.push('mcp__chrome-devtools__*');
+if (hasBrowserContent) tools.push('mcp__claude-in-chrome__*');
 if (hasWebAPIs) tools.push('mcp__mdn__*');
 ```
 

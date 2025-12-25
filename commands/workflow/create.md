@@ -1,7 +1,7 @@
 ---
 description: Create reusable browser automation workflows via interactive recording
 aliases: [create-workflow, workflow-create]
-allowed-tools: Read, Write, Task, mcp__chrome-devtools__*
+allowed-tools: Read, Write, Task, mcp__claude-in-chrome__*
 model: inherit
 argument-hint: "[workflow-name]"
 ---
@@ -117,9 +117,9 @@ During recording, you can use these actions:
 - **Scroll**: `Scroll to <element>`
 - **Done**: `done` (finish recording)
 
-## Chrome DevTools MCP Integration
+## Claude in Chrome MCP Integration
 
-This command uses `mcp__chrome-devtools__*` tools:
+This command uses `mcp__claude-in-chrome__*` tools:
 
 - `navigate_page` - Navigate to URLs
 - `take_snapshot` - Identify page elements

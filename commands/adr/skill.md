@@ -18,7 +18,7 @@ Convert Architecture Decision Record (ADR) into an executable skill format. Unli
 **Key Differences:**
 
 | Aspect | /adr:rule | /adr:skill |
-|--------|-----------|------------|
+| --- | --- | --- |
 | Purpose | Enforce constraints | Suggest patterns |
 | Application | Always active | Triggered by keywords |
 | Output | docs/rules/ | .claude/skills/ |
@@ -150,7 +150,7 @@ const tools = ['Read', 'Grep', 'Glob'];  // Base tools
 // Add based on content analysis
 if (hasCodeExamples) tools.push('Write', 'Edit');
 if (hasSecurityContent) tools.push('Task');
-if (hasBrowserContent) tools.push('mcp__chrome-devtools__*');
+if (hasBrowserContent) tools.push('mcp__claude-in-chrome__*');
 if (hasWebAPIs) tools.push('mcp__mdn__*');
 ```
 

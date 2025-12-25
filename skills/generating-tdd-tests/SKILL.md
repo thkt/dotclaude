@@ -18,7 +18,7 @@ Systematic Test-Driven Development combining RGRC cycle, Baby Steps, and test de
 **"Make the smallest possible change at each step"** - t_wada
 
 | Step | Time | Action |
-|------|------|--------|
+| --- | --- | --- |
 | 1 | 30s | Write smallest failing test |
 | 2 | 1min | Make it pass minimally |
 | 3 | 10s | Run tests |
@@ -42,7 +42,7 @@ TDD Cycle:
 ### Phase Details
 
 | Phase | Goal | Rule |
-|-------|------|------|
+| --- | --- | --- |
 | Red | Failing test | Verify failure reason is correct |
 | Green | Pass test | "You can sin" - quick/dirty OK |
 | Refactor | Clean code | Apply SOLID/DRY, keep green |
@@ -51,7 +51,7 @@ TDD Cycle:
 ## Test Design Techniques
 
 | Technique | Use For | Example |
-|-----------|---------|---------|
+| --- | --- | --- |
 | Equivalence Partitioning | Group inputs with same behavior | Age: <18, 18-120, >120 |
 | Boundary Value | Test edges | 17, 18, 120, 121 |
 | Decision Table | Complex multi-condition logic | isLoggedIn × isPremium → access |
@@ -59,7 +59,7 @@ TDD Cycle:
 ## Coverage Goals
 
 | Level | Target | Focus |
-|-------|--------|-------|
+| --- | --- | --- |
 | C0 (Statement) | 80% | All lines executed |
 | C1 (Branch) | 70% | All branches taken |
 
@@ -151,7 +151,7 @@ describe('PriceCalculator', () => {
 ### Naming Guidelines
 
 | Element | Good | Bad |
-|---------|------|-----|
+| --- | --- | --- |
 | Condition | `when empty array` | `test1` |
 | Expected | `should return 0` | `works correctly` |
 | Context | `when discount applied` | `discount` |
@@ -160,6 +160,22 @@ describe('PriceCalculator', () => {
 
 ## References
 
+### Principles (rules/)
+
+- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Full TDD methodology
+
+### Skill References
+
 - [@./references/tdd-rgrc.md](./references/tdd-rgrc.md) - Complete RGRC guide
 - [@./references/test-design.md](./references/test-design.md) - Test design techniques
-- [@~/.claude/rules/development/TDD_RGRC.md]
+
+### Related Skills
+
+- `tdd-fundamentals` - TDD基本原則
+- `applying-code-principles` - コード原則適用
+
+### Used by Commands
+
+- `/code` - TDD実装サイクル
+- `/fix` - バグ修正のリグレッションテスト
+- `/test` - テスト実行・検証

@@ -1,3 +1,15 @@
+---
+name: tdd-fundamentals
+description: >
+  Test-Driven Development principles and RGRC cycle methodology.
+  Core concepts for writing clean code that works through incremental
+  development with fast feedback loops.
+  Triggers: TDD, テスト駆動開発, Red-Green-Refactor, Baby Steps,
+  clean code that works, RGRC cycle, test first, テストファースト,
+  failing test, グリーンバー, レッドバー, refactoring, リファクタリング.
+allowed-tools: Read, Grep, Glob
+---
+
 # TDD Fundamentals
 
 Test-Driven Development principles and practices for building clean, working code.
@@ -273,15 +285,25 @@ Generate ACTIVE regression tests:
 
 ## References
 
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Full TDD methodology
+### Principles (rules/)
 
-**For implementation details** (used by commands):
+- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Full TDD methodology
+- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplest solution
+- [@~/.claude/rules/reference/YAGNI.md](~/.claude/rules/reference/YAGNI.md) - Build only what's needed
+- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Incremental complexity
+
+### Implementation Details
 
 - Commands reference `commands/shared/tdd-cycle.md` for RGRC implementation
 - Commands reference `commands/shared/test-generation.md` for test-generator patterns
 
-## Related Principles
+### Related Skills
 
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplest solution
-- [@~/.claude/rules/reference/YAGNI.md](~/.claude/rules/reference/YAGNI.md) - Build only what's needed
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Incremental complexity
+- `generating-tdd-tests` - TDDテスト生成パターン
+- `applying-code-principles` - リファクタリング原則
+
+### Used by Commands
+
+- `/code` - TDD実装サイクル
+- `/fix` - バグ修正のリグレッションテスト
+- `/test` - テスト実行・検証
