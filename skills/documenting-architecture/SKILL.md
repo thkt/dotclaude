@@ -16,7 +16,7 @@ Auto-generate architecture documentation from codebase analysis.
 ## Generated Content
 
 | Section | Description |
-|---------|-------------|
+| --- | --- |
 | Project Overview | Tech stack, framework detection |
 | Directory Structure | tree command output |
 | Module Composition | Mermaid relationship diagrams |
@@ -27,7 +27,7 @@ Auto-generate architecture documentation from codebase analysis.
 ## Processing Flow
 
 | Phase | Actions |
-|-------|---------|
+| --- | --- |
 | 1. Init | Identify root, detect language/framework |
 | 2. Structure | tree command, classify directories |
 | 3. Code | tree-sitter-analyzer: classes, functions, imports |
@@ -53,10 +53,20 @@ grep -r "^import\|^from.*import" --include="*.py"
 ## Error Handling
 
 | Error | Resolution |
-|-------|------------|
+| --- | --- |
 | Root not found | Use current directory |
 | tree-sitter unavailable | Fallback to Grep/Read |
 | Large project | Sample top 100 files |
+
+## Markdown Validation
+
+After generation, validate output with:
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+Non-blocking (warnings only) - style issues don't block document creation.
 
 ## References
 

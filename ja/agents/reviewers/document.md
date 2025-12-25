@@ -35,29 +35,34 @@ Review documentation for quality, clarity, structure, and audience appropriatene
 ## Review Areas
 
 ### 1. Clarity and Readability
+
 - Sentence structure and complexity
 - Jargon without explanation
 - Ambiguous statements
 - Terminology consistency
 
 ### 2. Structure and Organization
+
 - Logical information hierarchy
 - Section ordering and flow
 - Navigation and findability
 - Heading clarity and nesting
 
 ### 3. Completeness
+
 - Missing critical information
 - Unanswered user questions
 - Example coverage
 - Edge case documentation
 
 ### 4. Technical Accuracy
+
 - Code examples correctness
 - Command syntax accuracy
 - Version compatibility notes
 
 ### 5. Audience Appropriateness
+
 - Assumed knowledge level
 - Explanation depth
 - Example complexity

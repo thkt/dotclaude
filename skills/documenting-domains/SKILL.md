@@ -15,7 +15,7 @@ Auto-generate domain documentation from codebase analysis.
 ## Detection Items
 
 | Category | Targets |
-|----------|---------|
+| --- | --- |
 | Entities/Models | class, interface, dataclass, Pydantic, Prisma, TypeORM, SQLAlchemy |
 | Domain Terms | Class/function names, comments, JSDoc, docstrings |
 | Relationships | Entity references, inheritance, import analysis |
@@ -24,7 +24,7 @@ Auto-generate domain documentation from codebase analysis.
 ## Analysis Scripts
 
 | Script | Purpose |
-|--------|---------|
+| --- | --- |
 | `scripts/extract-entities.sh` | Entity name, fields, relationships |
 | `scripts/extract-glossary.sh` | Terms, frequency, context |
 | `scripts/generate-er-diagram.sh` | Mermaid ER diagram |
@@ -56,6 +56,16 @@ Related: Order, Profile
 /docs:domain              # Generate domain docs
 "Generate domain glossary" # Natural language
 ```
+
+## Markdown Validation
+
+After generation, validate output with:
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+Non-blocking (warnings only) - style issues don't block document creation.
 
 ## References
 

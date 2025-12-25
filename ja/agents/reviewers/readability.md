@@ -104,6 +104,7 @@ interface UserCardProps {
 [@~/.claude/rules/development/READABLE_CODE.md] - "Code should minimize understanding time"
 
 Key questions:
+
 1. Can a new team member understand this in <1 minute?
 2. What would confuse someone reading this?
 3. Can I make the intent more obvious?

@@ -15,7 +15,7 @@ Target: New team member understands code in < 1 minute.
 ## Miller's Law Limits (7±2)
 
 | Context | Ideal | Maximum |
-|---------|-------|---------|
+| --- | --- | --- |
 | Function arguments | 3 | 5 |
 | Class methods | 5 | 7 |
 | Conditional branches | 3 | 5 |
@@ -25,7 +25,7 @@ Target: New team member understands code in < 1 minute.
 ## Section-Based Loading
 
 | Section | File | Focus | Triggers |
-|---------|------|-------|----------|
+| --- | --- | --- | --- |
 | Naming | `references/naming-structure.md` | Concrete names, searchability | 命名, 変数名, 関数名 |
 | Control Flow | `references/control-flow.md` | Nesting, guard clauses | ネスト, Miller's Law |
 | Comments | `references/comments-clarity.md` | Why not What, intent | コメント, 意図 |
@@ -34,21 +34,25 @@ Target: New team member understands code in < 1 minute.
 ## Quick Checklist
 
 ### Naming
+
 - [ ] Concrete over abstract (`validateUserEmail` not `processData`)
 - [ ] Searchable, pronounceable names
 - [ ] Intent is obvious from name
 
 ### Control Flow
+
 - [ ] Nesting depth ≤ 3
 - [ ] Guard clauses for early returns
 - [ ] Complex conditions extracted to functions
 
 ### Comments
+
 - [ ] Explain "why", not "what"
 - [ ] Update or delete outdated comments
 - [ ] Code is self-documenting first
 
 ### AI Code Smells
+
 - [ ] No premature abstractions (interface for single impl)
 - [ ] No unnecessary classes for simple tasks
 - [ ] No "future-proof" flexibility nobody asked for
@@ -56,7 +60,7 @@ Target: New team member understands code in < 1 minute.
 ## Key Principles
 
 | Principle | Application |
-|-----------|-------------|
+| --- | --- |
 | Clarity > Cleverness | Simple code wins |
 | Respect 7±2 limit | Break into chunks |
 | Tell, Don't Ask | Direct method calls |

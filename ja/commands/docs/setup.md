@@ -25,7 +25,7 @@ aliases: [setup-docs, env-setup]
 ## オプション
 
 | オプション | 説明 | デフォルト |
-|-----------|------|----------|
+| --- | --- | --- |
 | `path` | 解析対象ディレクトリ | カレントディレクトリ |
 | `--output` | 出力ファイルパス | `.claude/workspace/docs/setup-guide.md` |
 | `--format` | 出力形式 | `markdown` |
@@ -43,7 +43,7 @@ aliases: [setup-docs, env-setup]
 ### パッケージマネージャー
 
 | ファイル | 検出内容 |
-|---------|---------|
+| --- | --- |
 | package.json | Node.js (npm/yarn/pnpm/bun) |
 | pyproject.toml | Python (uv/poetry/pip) |
 | requirements.txt | Python (pip) |
@@ -57,7 +57,7 @@ aliases: [setup-docs, env-setup]
 ### バージョン指定ファイル
 
 | ファイル | 検出内容 |
-|---------|---------|
+| --- | --- |
 | .nvmrc, .node-version | Node.jsバージョン |
 | .python-version | Pythonバージョン |
 | .ruby-version | Rubyバージョン |
@@ -67,7 +67,7 @@ aliases: [setup-docs, env-setup]
 ### 環境変数
 
 | ファイル | 検出内容 |
-|---------|---------|
+| --- | --- |
 | .env.example | 環境変数テンプレート |
 | .env.sample | 環境変数サンプル |
 | .env.template | 環境変数テンプレート |
@@ -75,7 +75,7 @@ aliases: [setup-docs, env-setup]
 ### コンテナ設定
 
 | ファイル | 検出内容 |
-|---------|---------|
+| --- | --- |
 | Dockerfile | Dockerイメージ設定 |
 | docker-compose.yml | マルチコンテナセットアップ |
 | .devcontainer/ | Dev Container設定 |
@@ -92,6 +92,14 @@ aliases: [setup-docs, env-setup]
 
 検出結果をテンプレート（`~/.claude/skills/setting-up-docs/assets/setup-template.md`）に
 埋め込み、Markdownドキュメントを生成。
+
+### フェーズ3: Markdown検証
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+生成されたMarkdownのフォーマット問題を検証。非ブロッキング（警告のみ）。
 
 ## 出力例
 
@@ -121,7 +129,7 @@ npm run dev
 ## 環境変数
 
 | 変数名 | デフォルト値 | 説明 |
-|--------|-------------|------|
+| --- | --- | --- |
 | DATABASE_URL | - | データベース接続URL |
 | API_KEY | - | API認証キー |
 ```
@@ -129,7 +137,7 @@ npm run dev
 ## エラーハンドリング
 
 | エラー | 対処 |
-|-------|------|
+| --- | --- |
 | 設定ファイル未検出 | 汎用テンプレートを使用 |
 | 環境変数ファイルなし | 警告を表示して続行 |
 | jq/yq未インストール | 一部機能をスキップ |

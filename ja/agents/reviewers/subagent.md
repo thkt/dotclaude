@@ -44,12 +44,14 @@ skills: [skill-name]      # Optional: Referenced skills
 ### 2. Agent Definition Structure
 
 #### Required Sections
+
 - **Agent Title and Overview**: Clear purpose statement
 - **Primary Objectives/Focus Areas**: Numbered responsibilities
 - **Review/Analysis Process**: Step-by-step methodology
 - **Output Format**: Structured template for results
 
 #### Recommended Sections
+
 - Code examples (with ❌/✅ patterns)
 - Integration with other agents
 - Applied Development Principles
@@ -78,11 +80,13 @@ skills: [skill-name]      # Optional: Referenced skills
 ## Common Issues
 
 ### ❌ Inappropriate for Sub-Agents
+
 - Installation instructions
 - User onboarding guides
 - External links to tutorials
 
 ### ✅ Appropriate for Sub-Agents
+
 - Clear methodology
 - Specific review criteria
 - Code examples showing patterns

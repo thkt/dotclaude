@@ -15,7 +15,7 @@ Auto-generate API documentation from codebase analysis.
 ## Detection Items
 
 | Category | Targets |
-|----------|---------|
+| --- | --- |
 | REST Endpoints | Express, Fastify, Hono, Next.js, Flask, FastAPI, Django REST |
 | Functions | tree-sitter extraction, TypeScript types, JSDoc, docstrings |
 | Types | interface, type, Zod, Yup, dataclass, Pydantic |
@@ -24,7 +24,7 @@ Auto-generate API documentation from codebase analysis.
 ## Framework Detection Patterns
 
 | Framework | Pattern |
-|-----------|---------|
+| --- | --- |
 | Express/Fastify/Hono | `app.get()`, `router.post()` |
 | Next.js | `app/api/**/route.ts`, `pages/api/**/*.ts` |
 | Flask | `@app.route()` |
@@ -34,7 +34,7 @@ Auto-generate API documentation from codebase analysis.
 ## Analysis Scripts
 
 | Script | Purpose |
-|--------|---------|
+| --- | --- |
 | `scripts/detect-endpoints.sh` | HTTP method, path, handler, file location |
 | `scripts/extract-types.sh` | Type name, fields, related types |
 
@@ -59,6 +59,16 @@ Auto-generate API documentation from codebase analysis.
 /docs:api                    # Generate API docs
 "Generate API specification" # Natural language
 ```
+
+## Markdown Validation
+
+After generation, validate output with:
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+Non-blocking (warnings only) - style issues don't block document creation.
 
 ## References
 

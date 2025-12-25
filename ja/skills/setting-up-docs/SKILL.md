@@ -111,6 +111,14 @@ triggers:
 - コンテナでの起動方法
 ```
 
+## Markdown検証
+
+```bash
+~/.claude/ja/skills/scripts/validate-markdown.sh {output-file}
+```
+
+生成されたMarkdownのフォーマット問題を検証。非ブロッキング（警告のみ）。
+
 ## 使用例
 
 ```bash

@@ -27,7 +27,7 @@ Analyzes codebase and automatically generates architecture overview documentatio
 ## Options
 
 | Option | Description | Default |
-|--------|-------------|---------|
+| --- | --- | --- |
 | `path` | Target directory to analyze | Current directory |
 | `--output` | Output file path | `.claude/workspace/docs/architecture.md` |
 | `--format` | Output format | `markdown` |
@@ -77,6 +77,14 @@ ls package.json pubspec.yaml Cargo.toml go.mod pyproject.toml 2>/dev/null
 Embed analysis results into template (`~/.claude/skills/documenting-architecture/assets/architecture-template.md`)
 and generate Markdown documentation.
 
+### Phase 6: Markdown Validation
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+Validates generated Markdown for formatting issues. Non-blocking (warnings only).
+
 ## Output Example
 
 ```markdown
@@ -106,7 +114,7 @@ and generate Markdown documentation.
 ## Required Tools
 
 | Tool | Purpose | Installation |
-|------|---------|--------------|
+| --- | --- | --- |
 | tree-sitter-analyzer | Code structure analysis | `uv tool install "tree-sitter-analyzer[popular]"` |
 | tree | Directory structure | `brew install tree` |
 | jq | JSON processing | `brew install jq` |
@@ -114,7 +122,7 @@ and generate Markdown documentation.
 ## Error Handling
 
 | Error | Action |
-|-------|--------|
+| --- | --- |
 | tree-sitter-analyzer not installed | Execute fallback analysis |
 | Target directory not found | Display error message |
 | Only unsupported languages | Output statistics only |

@@ -154,7 +154,7 @@ graph LR
 ## スクリプト
 
 | スクリプト | 用途 |
-|-----------|------|
+| --- | --- |
 | `scripts/analyze-structure.sh` | ディレクトリ構造解析 |
 | `scripts/extract-modules.sh` | モジュール情報抽出 |
 | `scripts/generate-mermaid.sh` | Mermaid図生成 |
@@ -162,10 +162,18 @@ graph LR
 ## エラーハンドリング
 
 | エラー | 対処 |
-|--------|------|
+| --- | --- |
 | プロジェクトルート特定失敗 | カレントディレクトリを使用 |
 | tree-sitter-analyzer未対応 | Grep/Readでフォールバック |
 | 大規模プロジェクト | サンプリング解析（上位100ファイル） |
+
+## Markdown検証
+
+```bash
+~/.claude/ja/skills/scripts/validate-markdown.sh {output-file}
+```
+
+生成されたMarkdownのフォーマット問題を検証。非ブロッキング（警告のみ）。
 
 ## 出力例
 

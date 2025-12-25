@@ -27,7 +27,7 @@ agents:
 ## オプション
 
 | オプション | 説明 | デフォルト |
-|-----------|------|----------|
+| --- | --- | --- |
 | `path` | 解析対象ディレクトリ | カレントディレクトリ |
 | `--output` | 出力ファイルパス | `.claude/workspace/docs/architecture.md` |
 | `--format` | 出力形式 | `markdown` |
@@ -77,6 +77,14 @@ ls package.json pubspec.yaml Cargo.toml go.mod pyproject.toml 2>/dev/null
 解析結果をテンプレート（`~/.claude/skills/documenting-architecture/assets/architecture-template.md`）に
 埋め込み、Markdownドキュメントを生成。
 
+### フェーズ6: Markdown検証
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+生成されたMarkdownのフォーマット問題を検証。非ブロッキング（警告のみ）。
+
 ## 出力例
 
 ```markdown
@@ -106,7 +114,7 @@ ls package.json pubspec.yaml Cargo.toml go.mod pyproject.toml 2>/dev/null
 ## 必要ツール
 
 | ツール | 用途 | インストール |
-|--------|------|------------|
+| --- | --- | --- |
 | tree-sitter-analyzer | コード構造解析 | `uv tool install "tree-sitter-analyzer[popular]"` |
 | tree | ディレクトリ構造 | `brew install tree` |
 | jq | JSON処理 | `brew install jq` |
@@ -114,7 +122,7 @@ ls package.json pubspec.yaml Cargo.toml go.mod pyproject.toml 2>/dev/null
 ## エラーハンドリング
 
 | エラー | 対処 |
-|-------|------|
+| --- | --- |
 | tree-sitter-analyzer未インストール | フォールバック解析を実行 |
 | 対象ディレクトリ未検出 | エラーメッセージを表示 |
 | 未サポート言語のみ | 統計情報のみ出力 |

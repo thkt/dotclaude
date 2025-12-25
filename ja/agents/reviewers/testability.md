@@ -112,16 +112,19 @@ function createUserService(deps: { http: HttpClient; storage: StorageService }):
 ## Testability Checklist
 
 ### Architecture
+
 - [ ] Dependencies are injectable
 - [ ] Clear separation between pure and impure code
 - [ ] Interfaces defined for external services
 
 ### Components
+
 - [ ] Presentational components are pure
 - [ ] Event handlers are extractable
 - [ ] Side effects isolated in hooks/containers
 
 ### State Management
+
 - [ ] No global mutable state
 - [ ] State updates are predictable
 - [ ] State can be easily mocked
@@ -133,6 +136,7 @@ function createUserService(deps: { http: HttpClient; storage: StorageService }):
 [@~/.claude/rules/reference/SOLID.md] - "Depend on abstractions, not concretions"
 
 Key questions:
+
 1. Can this be tested without real external dependencies?
 2. Are dependencies explicit (parameters/props) or hidden (imports)?
 

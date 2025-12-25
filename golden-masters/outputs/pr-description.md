@@ -184,7 +184,7 @@ for login. I also updated the configuration...
 ## Evaluation Criteria
 
 | Aspect | Points | Criteria |
-|--------|--------|----------|
+| --- | --- | --- |
 | Summary Clarity | 25 | Scannable, specific bullets |
 | Motivation | 25 | Clear "why", not just "what" |
 | Test Plan | 25 | Actionable, checkbox format |
@@ -193,26 +193,31 @@ for login. I also updated the configuration...
 ## Section Guidelines
 
 ### Summary
+
 - 1-3 bullet points
 - Focus on user-visible changes
 - Use action verbs (Add, Fix, Update, Remove)
 
 ### Motivation
+
 - Problem statement
 - User impact
 - Why now
 
 ### Changes
+
 - Group by area (API, UI, Config)
 - List affected files for large PRs
 - Highlight architectural decisions
 
 ### Test Plan
+
 - Checkbox format for reviewers
 - Include happy path and edge cases
 - Note manual vs automated tests
 
 ### Related
+
 - Use "Closes #X" for auto-closing
 - Link to documentation
 - Reference dependent PRs

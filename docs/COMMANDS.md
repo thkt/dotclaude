@@ -7,7 +7,7 @@ Custom commands for systematic software development support.
 ### Core Development Commands
 
 | Command | Purpose | Environment |
-|---------|---------|-------------|
+| --- | --- | --- |
 | `/think` | Verifiable SOW creation with validation | Analysis phase |
 | `/research` | Investigation without implementation | Understanding phase |
 | `/code` | TDD/RGRC implementation | Development phase |
@@ -19,32 +19,32 @@ Custom commands for systematic software development support.
 ### Quick Action Commands
 
 | Command | Purpose | Environment | Combines |
-|---------|---------|-------------|----------|
+| --- | --- | --- | --- |
 | `/fix` | Quick bug fixes | 🔧 Development | think → code → test |
 
 ### External Review Commands
 
 | Command | Purpose | Environment |
-|---------|---------|-------------|
+| --- | --- | --- |
 | `/rabbit` | CodeRabbit AI review for external perspective | 🐰 Quality check |
 
 ### Automation Commands (SlashCommand Tool v1.0.123+)
 
 | Command | Purpose | Environment | Uses SlashCommand |
-|---------|---------|-------------|-------------------|
+| --- | --- | --- | --- |
 | `/auto-test` | Auto test runner with conditional fix | 🔧 Development | Yes - invokes `/fix` on failure |
 | `/full-cycle` | Complete development cycle automation | 🔄 Meta-command | Yes - chains multiple commands |
 
 ### Browser Automation Commands
 
 | Command | Purpose | Environment |
-|---------|---------|-------------|
+| --- | --- | --- |
 | `/workflow:create [name]` | Create reusable browser automation workflows | 🌐 E2E Testing |
 
 ### Documentation Commands
 
 | Command | Purpose | Environment |
-|---------|---------|-------------|
+| --- | --- | --- |
 | `/adr [title]` | Create Architecture Decision Record in MADR format | 📝 Documentation |
 | `/rulify <number>` | Generate project rule from ADR | 📝 Documentation |
 
@@ -427,7 +427,7 @@ flowchart TB
 **Layer Characteristics**:
 
 | Layer | Features |
-|-------|----------|
+| --- | --- |
 | **Commands** | Thin wrapper, coordinates Skills and Agents |
 | **Agents** | Task execution, short-term, can reference Skills |
 | **Skills** | Persistent knowledge, educational, reusable |

@@ -39,7 +39,7 @@ for section in "${REQUIRED_SECTIONS[@]}"; do
     echo -e "${GREEN}✅ $section${NC}"
   else
     echo -e "${RED}❌ $section - Not filled${NC}"
-    ((ERRORS++))
+    ERRORS=$((ERRORS + 1))
   fi
 done
 echo ""
@@ -57,7 +57,7 @@ for meta in "${REQUIRED_META[@]}"; do
     echo -e "${GREEN}✅ $VALUE${NC}"
   else
     echo -e "${RED}❌ $meta - Not set${NC}"
-    ((ERRORS++))
+    ERRORS=$((ERRORS + 1))
   fi
 done
 echo ""
@@ -71,7 +71,7 @@ if [ $OPTIONS_COUNT -ge 2 ]; then
   echo -e "${GREEN}✅ Considered options: ${OPTIONS_COUNT}${NC}"
 elif [ $OPTIONS_COUNT -eq 1 ]; then
   echo -e "${YELLOW}⚠️  Considered options: Only 1 (recommended: 2 or more)${NC}"
-  ((WARNINGS++))
+  WARNINGS=$((WARNINGS + 1))
 else
   echo -e "${RED}❌ Considered options: None${NC}"
   ((ERRORS++))
@@ -81,7 +81,7 @@ fi
 EMPTY_SECTIONS=$(grep -A 1 "^## " "$ADR_FILE" | grep -c "^$" || echo 0)
 if [ $EMPTY_SECTIONS -gt 0 ]; then
   echo -e "${YELLOW}⚠️  ${EMPTY_SECTIONS} empty section(s) found${NC}"
-  ((WARNINGS++))
+  WARNINGS=$((WARNINGS + 1))
 fi
 
 # Reference count
@@ -90,10 +90,10 @@ if [ $REFERENCES_COUNT -ge 3 ]; then
   echo -e "${GREEN}✅ References: ${REFERENCES_COUNT}${NC}"
 elif [ $REFERENCES_COUNT -gt 0 ]; then
   echo -e "${YELLOW}⚠️  References: ${REFERENCES_COUNT} (recommended: 3 or more)${NC}"
-  ((WARNINGS++))
+  WARNINGS=$((WARNINGS + 1))
 else
   echo -e "${YELLOW}⚠️  References: None${NC}"
-  ((WARNINGS++))
+  WARNINGS=$((WARNINGS + 1))
 fi
 echo ""
 
@@ -115,7 +115,7 @@ if grep -q "^- Status:" "$ADR_FILE" && grep -q "^- Date:" "$ADR_FILE"; then
   echo -e "${GREEN}✅ Metadata format: OK${NC}"
 else
   echo -e "${YELLOW}⚠️  Metadata format: Non-standard${NC}"
-  ((WARNINGS++))
+  WARNINGS=$((WARNINGS + 1))
 fi
 echo ""
 
@@ -146,7 +146,29 @@ else
 fi
 echo ""
 
-# 6. Overall evaluation
+# 6. Markdown Lint Check
+echo "📝 6. Markdown Lint Check"
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SHARED_SCRIPTS="${SCRIPT_DIR}/../../scripts"
+
+if [ -f "${SHARED_SCRIPTS}/validate-markdown.sh" ]; then
+  # Run lint and capture output
+  LINT_OUTPUT=$(bash "${SHARED_SCRIPTS}/validate-markdown.sh" "$ADR_FILE" 2>&1) || true
+
+  # Display output (filter empty lines)
+  echo "$LINT_OUTPUT" | grep -v "^$" || true
+
+  # Check if there were warnings (look for warning indicator)
+  if echo "$LINT_OUTPUT" | grep -q "⚠️"; then
+    WARNINGS=$((WARNINGS + 1)) || true
+  fi
+else
+  echo -e "${BLUE}ℹ️  Markdown lint skipped (shared script not found)${NC}"
+fi
+echo ""
+
+# 7. Overall evaluation
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "📊 Overall Evaluation"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

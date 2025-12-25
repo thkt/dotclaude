@@ -13,12 +13,14 @@
 **Input**: CLAUDE.md currently references `PRE_TASK_CHECK.md` (448 lines)
 **Output**: CLAUDE.md references `PRE_TASK_CHECK_COMPACT.md` (49 lines)
 **Validation**:
+
 - [ ] COMPACT version loads correctly
 - [ ] PRE_TASK_CHECK still triggers in conversations
 - [ ] No functional regression
 - [ ] 399 lines saved (89% reduction)
 
 **Implementation**:
+
 ```yaml
 File: ~/.claude/CLAUDE.md
 Change:
@@ -35,18 +37,21 @@ Archive:
 ### FR-002: Command Framework Consolidation [✓]
 
 **Input**:
+
 - `rules/commands/COMMAND_SELECTION.md` (83 lines)
 - `rules/commands/STANDARD_WORKFLOWS.md` (42 lines)
 
 **Output**: Single `rules/commands/COMMAND_WORKFLOWS.md` (65-85 lines)
 
 **Validation**:
+
 - [ ] Decision matrix complete
 - [ ] All workflows covered
 - [ ] References updated
 - [ ] 40-60 lines saved
 
 **Structure**:
+
 ```markdown
 # Command Workflows
 
@@ -68,12 +73,14 @@ Archive:
 **Output**: Single `rules/PRINCIPLE_RELATIONSHIPS.md` (40-50 lines)
 
 **Validation**:
+
 - [ ] All relationships captured
 - [ ] Matrix format clear
 - [ ] 14 files updated
 - [ ] 150-200 lines saved
 
 **Matrix Format**:
+
 ```markdown
 # Principle Relationships
 
@@ -85,6 +92,7 @@ Archive:
 ```
 
 **Files to Update** (14 total):
+
 1. `rules/reference/SOLID.md`
 2. `rules/reference/DRY.md`
 3. `rules/reference/OCCAMS_RAZOR.md`
@@ -101,6 +109,7 @@ Archive:
 14. `rules/PRINCIPLES_GUIDE.md`
 
 **Replacement Pattern**:
+
 ```markdown
 FROM:
 ## Related Principles
@@ -123,15 +132,18 @@ See [@~/.claude/rules/PRINCIPLE_RELATIONSHIPS.md] for principle relationships.
 **Output**: Compressed version (210-252 lines)
 
 **Validation**:
+
 - [ ] Duplicate summaries removed
 - [ ] Mermaid diagram extracted
 - [ ] Individual files referenced
 - [ ] 168-210 lines saved
 
 **Optimization Strategy**:
+
 1. **Remove Duplicate Summaries** (100-150 lines)
    - Current: Full principle explanations inline
    - Target: Reference individual files instead
+
    ```markdown
    FROM:
    ### SOLID Principles
@@ -156,11 +168,13 @@ See [@~/.claude/rules/PRINCIPLE_RELATIONSHIPS.md] for principle relationships.
 
 **Input**: 10+ files with ❌ Bad / ✅ Good blocks (200-300 lines)
 **Output** (Alternative Approach):
+
 - Table format conversion instead of separate library
 - Pattern consolidation in TEST_GENERATION.md, AI_ASSISTED_DEVELOPMENT.md
 - Domain-specific examples remain inline
 
 **Validation**:
+
 - [✓] Pattern consolidation via table format (more efficient than separate file)
 - [✓] References consolidated to PRINCIPLE_RELATIONSHIPS.md
 - [✓] 225+ lines saved (TEST_GENERATION.md alone)
@@ -168,6 +182,7 @@ See [@~/.claude/rules/PRINCIPLE_RELATIONSHIPS.md] for principle relationships.
 **Implementation Note**: Originally planned to create `rules/examples/COMMON_PATTERNS.md`, but table format conversion achieved the same goal more efficiently by consolidating patterns directly within principle files.
 
 **Pattern Library Structure**:
+
 ```markdown
 # Common Code Patterns
 
@@ -183,6 +198,7 @@ class StripePaymentProcessor implements PaymentProcessor { }
 ```
 
 ### ✅ Correct Pattern
+
 ```typescript
 async function processPayment(amount: number) {
   return stripe.charge(amount)
@@ -191,7 +207,6 @@ async function processPayment(amount: number) {
 ```
 
 **Usage**: Reference in principles with `See [@./examples/COMMON_PATTERNS.md#premature-abstraction]`
-```
 
 ---
 
@@ -200,7 +215,7 @@ async function processPayment(amount: number) {
 **Target Files** (6 files, 2,100 lines → 1,470-1,680 lines):
 
 | File | Current | Target | Reduction |
-|------|---------|--------|-----------|
+| --- | --- | --- | --- |
 | YAGNI.md | 352 | 250 | 102 lines (29%) |
 | OCCAMS_RAZOR.md | 260 | 180 | 80 lines (31%) |
 | MILLERS_LAW.md | 243 | 170 | 73 lines (30%) |
@@ -210,6 +225,7 @@ async function processPayment(amount: number) {
 | **Total** | **1,812** | **1,270** | **542 lines (30%)** |
 
 **Trimming Strategy** (Apply to each):
+
 1. **Remove verbose examples** (50-80 lines per file)
    - Keep 2-3 best examples
    - Move common patterns to library
@@ -229,6 +245,7 @@ async function processPayment(amount: number) {
    - Unique domain knowledge
 
 **Validation**:
+
 - [ ] Core concepts intact
 - [ ] Readability maintained
 - [ ] No information loss (moved, not deleted)
@@ -241,11 +258,13 @@ async function processPayment(amount: number) {
 **Output**: Relative paths where appropriate (`[@./reference/...]`)
 
 **Validation**:
+
 - [ ] All paths still resolve
 - [ ] Token efficiency improved
 - [ ] ~50-100 tokens saved
 
 **Conversion Rules**:
+
 ```yaml
 Within rules/:
   from: "[@~/.claude/rules/reference/SOLID.md]"
@@ -266,7 +285,8 @@ External references (skills, commands):
 ### File Structure Changes
 
 **Before**:
-```
+
+```text
 rules/
 ├── core/          (4 files)
 ├── reference/     (6 files)
@@ -277,7 +297,8 @@ Total: 21 English files
 ```
 
 **After**:
-```
+
+```text
 rules/
 ├── core/          (3 files)  [-1: archived PRE_TASK_CHECK_VERBOSE]
 ├── reference/     (6 files)  [no change]
@@ -293,6 +314,7 @@ Total: 22 English files (but significantly reduced content)
 ### Backup Strategy
 
 **PRE-IMPLEMENTATION**:
+
 ```bash
 for file in $(find ~/.claude/rules -name "*.md"); do
   cp "$file" "$file.bak"
@@ -302,6 +324,7 @@ done
 **Backup Location**: Same directory, `.bak` extension
 
 **Rollback**:
+
 ```bash
 for file in $(find ~/.claude/rules -name "*.bak"); do
   mv "$file" "${file%.bak}"
@@ -317,6 +340,7 @@ done
 #### Day 1-2: PRE_TASK_CHECK Replacement
 
 **Step 1.1.1**: Verify COMPACT version
+
 ```bash
 # Check COMPACT version exists and is valid
 cat ~/.claude/rules/core/PRE_TASK_CHECK_COMPACT.md
@@ -324,12 +348,14 @@ cat ~/.claude/rules/core/PRE_TASK_CHECK_COMPACT.md
 ```
 
 **Step 1.1.2**: Update CLAUDE.md
+
 ```bash
 # Edit CLAUDE.md
 sed -i.bak 's|PRE_TASK_CHECK\.md|PRE_TASK_CHECK_COMPACT.md|g' ~/.claude/CLAUDE.md
 ```
 
 **Step 1.1.3**: Archive verbose version
+
 ```bash
 mkdir -p ~/.claude/rules/archive
 mv ~/.claude/rules/core/PRE_TASK_CHECK.md \
@@ -337,6 +363,7 @@ mv ~/.claude/rules/core/PRE_TASK_CHECK.md \
 ```
 
 **Step 1.1.4**: Test
+
 ```bash
 # Run sample conversation
 # Verify PRE_TASK_CHECK still triggers
@@ -346,6 +373,7 @@ mv ~/.claude/rules/core/PRE_TASK_CHECK.md \
 #### Day 3-4: Command Framework Consolidation
 
 **Step 1.2.1**: Create merged file
+
 ```bash
 # Template for COMMAND_WORKFLOWS.md
 cat > ~/.claude/rules/commands/COMMAND_WORKFLOWS.md <<'EOF'
@@ -374,12 +402,14 @@ EOF
 ```
 
 **Step 1.2.2**: Merge content
+
 - Extract decision logic from COMMAND_SELECTION.md
 - Extract workflows from STANDARD_WORKFLOWS.md
 - Convert to table format
 - Add unique content from both files
 
 **Step 1.2.3**: Archive old files
+
 ```bash
 mv ~/.claude/rules/commands/COMMAND_SELECTION.md \
    ~/.claude/rules/archive/
@@ -388,6 +418,7 @@ mv ~/.claude/rules/commands/STANDARD_WORKFLOWS.md \
 ```
 
 **Step 1.2.4**: Update references
+
 ```bash
 # Find all references
 grep -r "COMMAND_SELECTION\|STANDARD_WORKFLOWS" ~/.claude/
@@ -398,6 +429,7 @@ grep -r "COMMAND_SELECTION\|STANDARD_WORKFLOWS" ~/.claude/
 #### Day 5-7: Cross-Reference Extraction
 
 **Step 1.3.1**: Build relationship matrix
+
 ```bash
 # Extract all "Related Principles" sections
 for file in $(find ~/.claude/rules -name "*.md"); do
@@ -408,6 +440,7 @@ done > /tmp/relationships.txt
 ```
 
 **Step 1.3.2**: Create PRINCIPLE_RELATIONSHIPS.md
+
 ```markdown
 # Principle Relationships
 
@@ -441,6 +474,7 @@ Quick reference for principle interconnections.
 ```
 
 **Step 1.3.3**: Update 14 files
+
 ```bash
 # For each file, replace "Related Principles" section
 FILES=(
@@ -473,6 +507,7 @@ done
 #### Day 8-10: PRINCIPLES_GUIDE Compression
 
 **Step 2.1.1**: Extract Mermaid diagram
+
 ```bash
 mkdir -p ~/.claude/rules/visuals
 # Extract diagram lines (estimated 100 lines)
@@ -480,6 +515,7 @@ mkdir -p ~/.claude/rules/visuals
 ```
 
 **Step 2.1.2**: Replace duplicate summaries
+
 ```bash
 # For each principle summary in PRINCIPLES_GUIDE:
 # 1. Identify if it duplicates individual file
@@ -488,6 +524,7 @@ mkdir -p ~/.claude/rules/visuals
 ```
 
 **Step 2.1.3**: Trim redundant examples
+
 ```bash
 # Review all examples
 # Keep 1 best example per principle
@@ -495,6 +532,7 @@ mkdir -p ~/.claude/rules/visuals
 ```
 
 **Target Structure**:
+
 ```markdown
 # Principles Guide (210-252 lines)
 
@@ -525,6 +563,7 @@ Quick summary + See [@./reference/DRY.md]
 #### Day 11-12: Code Example Standardization
 
 **Step 2.2.1**: Create pattern library
+
 ```bash
 mkdir -p ~/.claude/rules/examples
 cat > ~/.claude/rules/examples/COMMON_PATTERNS.md <<'EOF'
@@ -541,6 +580,7 @@ EOF
 ```
 
 **Step 2.2.2**: Extract repeating patterns
+
 ```bash
 # Identify patterns appearing in 3+ files:
 # 1. Premature abstraction (interface for single impl)
@@ -551,6 +591,7 @@ EOF
 ```
 
 **Step 2.2.3**: Update principle files
+
 ```bash
 # For each file with extracted pattern:
 # Replace inline example with reference
@@ -566,13 +607,13 @@ async function processPayment(amount: number) { }
 
 TO:
 See [@./examples/COMMON_PATTERNS.md#premature-abstraction] for anti-pattern example.
-```
 
 **Keep Inline**: Domain-specific examples unique to that principle
 
 #### Day 13-14: Principle File Trimming
 
 **Step 2.3.1**: YAGNI.md (352 → 250 lines)
+
 ```bash
 # Trim strategy:
 # 1. Move 5 code examples to COMMON_PATTERNS (50 lines)
@@ -583,6 +624,7 @@ See [@./examples/COMMON_PATTERNS.md#premature-abstraction] for anti-pattern exam
 ```
 
 **Step 2.3.2**: OCCAMS_RAZOR.md (260 → 180 lines)
+
 ```bash
 # Trim strategy:
 # 1. Move 3 code examples to COMMON_PATTERNS (30 lines)
@@ -593,12 +635,14 @@ See [@./examples/COMMON_PATTERNS.md#premature-abstraction] for anti-pattern exam
 ```
 
 **Step 2.3.3**: Apply same pattern to remaining 4 files
+
 - MILLERS_LAW.md (-73 lines)
 - LEAKY_ABSTRACTION.md (-74 lines)
 - AI_ASSISTED_DEVELOPMENT.md (-82 lines)
 - TEST_GENERATION.md (-131 lines)
 
 **Verification After Each**:
+
 ```bash
 # 1. Read trimmed file end-to-end
 # 2. Verify core concepts intact
@@ -613,12 +657,14 @@ See [@./examples/COMMON_PATTERNS.md#premature-abstraction] for anti-pattern exam
 #### Day 15-16: Reference Path Optimization
 
 **Step 3.1.1**: Audit all references
+
 ```bash
 grep -rn "[@~/.claude/rules" ~/.claude/rules/ > /tmp/all-refs.txt
 # Count: Expected ~64 references
 ```
 
 **Step 3.1.2**: Categorize references
+
 ```bash
 # Same directory: Convert to relative
 # Parent/sibling directory: Convert to relative
@@ -626,6 +672,7 @@ grep -rn "[@~/.claude/rules" ~/.claude/rules/ > /tmp/all-refs.txt
 ```
 
 **Step 3.1.3**: Convert paths
+
 ```bash
 # Within rules/reference/ files:
 sed -i 's|@~/.claude/rules/reference/|@./|g' rules/reference/*.md
@@ -638,6 +685,7 @@ sed -i 's|@~/.claude/rules/reference/|@../reference/|g' rules/development/*.md
 ```
 
 **Step 3.1.4**: Verify all links
+
 ```bash
 # For each reference, verify file exists
 for ref in $(grep -oh "@[./~][^]]*" ~/.claude/rules/**/*.md); do
@@ -648,6 +696,7 @@ done
 #### Day 17-18: Final Verification
 
 **Step 3.2.1**: Run test suite
+
 ```bash
 # Unit tests
 # - Parse all YAML frontmatter
@@ -666,6 +715,7 @@ done
 ```
 
 **Step 3.2.2**: Measure results
+
 ```bash
 # Before/after comparison
 echo "Lines (English):"
@@ -683,6 +733,7 @@ grep -r "[@~" ~/.claude/rules | wc -l
 ```
 
 **Step 3.2.3**: Manual review
+
 ```bash
 # Sample conversations:
 # 1. Trigger PRE_TASK_CHECK
@@ -694,6 +745,7 @@ grep -r "[@~" ~/.claude/rules | wc -l
 ```
 
 **Step 3.2.4**: Documentation
+
 ```bash
 # Update DOCUMENTATION_RULES.md if structure changed
 # Document new directories (examples/, visuals/)
@@ -711,6 +763,7 @@ grep -r "[@~" ~/.claude/rules | wc -l
 **Then**: PRE_TASK_CHECK should trigger with compact format
 
 **Steps**:
+
 1. Ask Claude to create a new file
 2. Verify understanding check displays
 3. Confirm compact format (not verbose 448-line version)
@@ -727,6 +780,7 @@ grep -r "[@~" ~/.claude/rules | wc -l
 **Then**: Claude references PRINCIPLE_RELATIONSHIPS.md correctly
 
 **Steps**:
+
 1. Ask Claude about principle relationships
 2. Verify it references PRINCIPLE_RELATIONSHIPS.md
 3. Check response includes correct related principles
@@ -743,6 +797,7 @@ grep -r "[@~" ~/.claude/rules | wc -l
 **Then**: Claude recommends correct command
 
 **Steps**:
+
 1. Describe bug fix scenario
 2. Verify Claude recommends /research → /fix
 3. Describe feature scenario
@@ -759,6 +814,7 @@ grep -r "[@~" ~/.claude/rules | wc -l
 **Then**: Claude references pattern library
 
 **Steps**:
+
 1. Ask "What is premature abstraction?"
 2. Verify response references COMMON_PATTERNS.md
 3. Check example is accessible
@@ -775,6 +831,7 @@ grep -r "[@~" ~/.claude/rules | wc -l
 **Then**: Response is complete and accurate
 
 **Steps**:
+
 1. Ask detailed question about YAGNI principle
 2. Verify core concepts present in response
 3. Check examples are relevant
@@ -791,6 +848,7 @@ grep -r "[@~" ~/.claude/rules | wc -l
 **Then**: Memory files show 25-35% token reduction
 
 **Steps**:
+
 1. Capture baseline: /context before optimization
 2. Apply all changes
 3. Capture result: /context after optimization
@@ -811,6 +869,7 @@ grep -r "[@~" ~/.claude/rules | wc -l
 **Measurement**: `/context` output
 
 **Acceptance**:
+
 - [ ] PRE_TASK_CHECK: 4.4k → <500 tokens
 - [ ] PRINCIPLES_GUIDE: 4.1k → 2.5-3.0k tokens
 - [ ] Total: 9.5k → 6.5-7.5k tokens
@@ -822,12 +881,14 @@ grep -r "[@~" ~/.claude/rules | wc -l
 **Requirement**: Maintain rule effectiveness and navigability
 
 **Criteria**:
+
 - [ ] No increase in conversation errors
 - [ ] Principle guidance remains complete
 - [ ] Cross-references resolve correctly
 - [ ] New contributors can navigate easily
 
 **Measurement**:
+
 - Monitor error rates for 2 weeks post-deployment
 - Sample 10 conversations for quality
 - Review navigation flow
@@ -839,17 +900,20 @@ grep -r "[@~" ~/.claude/rules | wc -l
 **Requirement**: No breaking changes to existing references
 
 **External References**:
+
 - skills/ → rules/ (15+ files)
 - commands/ → rules/ (10+ files)
 - CLAUDE.md → rules/ (5+ files)
 
 **Acceptance**:
+
 - [ ] All external references still valid
 - [ ] No 404 errors
 - [ ] Skills load correctly
 - [ ] Commands execute successfully
 
 **Verification**:
+
 ```bash
 # Check all external references
 grep -r "rules/" ~/.claude/skills/*.md
@@ -868,6 +932,7 @@ grep -r "rules/" ~/.claude/CLAUDE.md
 **Data Loss**: None (moves, not deletes)
 
 **Acceptance**:
+
 - [ ] All .bak files created
 - [ ] Rollback script tested
 - [ ] Archive directory contains old files
@@ -880,7 +945,7 @@ grep -r "rules/" ~/.claude/CLAUDE.md
 ### Internal Dependencies
 
 | Dependency | Type | Impact | Mitigation |
-|------------|------|--------|------------|
+| --- | --- | --- | --- |
 | CLAUDE.md | Configuration | High | Test reference changes |
 | skills/ | Cross-reference | Medium | Verify external refs |
 | commands/ | Cross-reference | Medium | Verify external refs |
@@ -895,12 +960,14 @@ grep -r "rules/" ~/.claude/CLAUDE.md
 ### From SOW [→]
 
 **Assumptions**:
+
 - Users reference PRINCIPLES_GUIDE.md less frequently than individual files
 - Code examples serve educational purpose but can be consolidated
 - Cross-reference network can be simplified
 - 25-35% reduction won't compromise effectiveness
 
 **Unknowns** [?]:
+
 - Usage frequency of each file
 - Whether Japanese/English can share structure
 - Optimal balance between consolidation and accessibility
@@ -908,11 +975,13 @@ grep -r "rules/" ~/.claude/CLAUDE.md
 ### Implementation-Specific
 
 **Known Limitations**:
+
 - Japanese mirror files not optimized in Phase 1-3
 - Reference path optimization may not work with all external tools
 - Manual review required for subjective trimming decisions
 
 **Risk Mitigation**:
+
 - Test extensively before committing
 - Keep backups
 - Monitor conversations for quality
@@ -989,11 +1058,13 @@ grep -r "rules/" ~/.claude/CLAUDE.md
 ### For End Users (Minimal Impact)
 
 **What Changes**:
+
 - PRE_TASK_CHECK is now compact (same functionality, less verbose)
 - Principle files are shorter (same information, more concise)
 - Cross-references consolidated (easier navigation)
 
 **What Stays the Same**:
+
 - All principles available
 - CLAUDE.md behavior unchanged
 - Command recommendations work as before
@@ -1004,7 +1075,8 @@ grep -r "rules/" ~/.claude/CLAUDE.md
 ### For Contributors (Moderate Impact)
 
 **New Structure**:
-```
+
+```text
 rules/
 ├── examples/          [NEW] Common code patterns
 ├── visuals/           [NEW] Diagrams
@@ -1013,16 +1085,19 @@ rules/
 ```
 
 **Updated Files**:
+
 - 14 files now reference PRINCIPLE_RELATIONSHIPS.md
 - Principle files are 30% shorter
 - Command files merged
 
 **Documentation**:
+
 - Read PRINCIPLE_RELATIONSHIPS.md for navigation
 - Check examples/ for common patterns
 - See archive/ for verbose versions
 
 **Action Required**:
+
 - Update local clones
 - Review new structure
 - Update any scripts referencing old files
@@ -1030,6 +1105,7 @@ rules/
 ### For Developers (High Impact)
 
 **Breaking Changes**:
+
 - `rules/commands/COMMAND_SELECTION.md` → MOVED to archive/
 - `rules/commands/STANDARD_WORKFLOWS.md` → MOVED to archive/
 - `rules/core/PRE_TASK_CHECK.md` → MOVED to archive/
@@ -1037,6 +1113,7 @@ rules/
 - New file: `rules/PRINCIPLE_RELATIONSHIPS.md`
 
 **Reference Updates Required**:
+
 ```bash
 # If your code references:
 "rules/commands/COMMAND_SELECTION.md"
@@ -1050,6 +1127,7 @@ rules/
 ```
 
 **Verification**:
+
 ```bash
 # Test all references resolve
 grep -r "rules/" your-code/ | while read ref; do

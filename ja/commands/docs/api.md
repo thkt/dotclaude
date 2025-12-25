@@ -25,7 +25,7 @@ aliases: [api-docs]
 ## オプション
 
 | オプション | 説明 | デフォルト |
-|-----------|------|----------|
+| --- | --- | --- |
 | `path` | 解析対象ディレクトリ | カレントディレクトリ |
 | `--output` | 出力ファイルパス | `.claude/workspace/docs/api.md` |
 | `--format` | 出力形式 | `markdown` |
@@ -56,6 +56,14 @@ aliases: [api-docs]
 テンプレート（`~/.claude/skills/documenting-apis/assets/api-template.md`）に
 解析結果を埋め込み、Markdownドキュメントを生成。
 
+### フェーズ4: Markdown検証
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+生成されたMarkdownのフォーマット問題を検証。非ブロッキング（警告のみ）。
+
 ## 出力例
 
 ```markdown
@@ -81,7 +89,7 @@ interface UserListResponse {
 ## エラーハンドリング
 
 | エラー | 対処 |
-|-------|------|
+| --- | --- |
 | エンドポイント未検出 | 警告を表示して続行 |
 | 型情報抽出失敗 | フォールバック解析を実行 |
 

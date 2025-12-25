@@ -112,11 +112,13 @@ const total = items.reduce((sum, i) => sum + i.price, 0)
 ## Review Checklist
 
 ### Architecture
+
 - [ ] Clear separation of concerns
 - [ ] Appropriate state management strategy
 - [ ] Logical component hierarchy
 
 ### Patterns Usage
+
 - [ ] Patterns solve actual problems
 - [ ] Not over-engineered
 - [ ] Consistent throughout codebase

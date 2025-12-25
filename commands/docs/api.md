@@ -25,7 +25,7 @@ Analyzes codebase and automatically generates API specification documentation.
 ## Options
 
 | Option | Description | Default |
-|--------|-------------|---------|
+| --- | --- | --- |
 | `path` | Target directory to analyze | Current directory |
 | `--output` | Output file path | `.claude/workspace/docs/api-reference.md` |
 | `--format` | Output format | `markdown` |
@@ -42,7 +42,7 @@ Analyzes codebase and automatically generates API specification documentation.
 ### Node.js Frameworks
 
 | Framework | Detection Pattern |
-|-----------|-------------------|
+| --- | --- |
 | Express.js | `app.get()`, `router.post()`, etc. |
 | Fastify | `fastify.get()`, etc. |
 | Hono | `app.get()`, etc. |
@@ -52,7 +52,7 @@ Analyzes codebase and automatically generates API specification documentation.
 ### Python Frameworks
 
 | Framework | Detection Pattern |
-|-----------|-------------------|
+| --- | --- |
 | Flask | `@app.route()` decorator |
 | FastAPI | `@app.get()` decorator |
 | Django REST | `@api_view` decorator |
@@ -60,7 +60,7 @@ Analyzes codebase and automatically generates API specification documentation.
 ### Type Definitions
 
 | Type | Detection Pattern |
-|------|-------------------|
+| --- | --- |
 | TypeScript | `interface`, `type` |
 | Zod | `z.object()` schema |
 | Python dataclass | `@dataclass` decorator |
@@ -69,7 +69,7 @@ Analyzes codebase and automatically generates API specification documentation.
 ### OpenAPI/Swagger
 
 | File | Detection Content |
-|------|-------------------|
+| --- | --- |
 | openapi.yaml/json | OpenAPI 3.x specification |
 | swagger.yaml/json | Swagger 2.x specification |
 
@@ -92,6 +92,14 @@ Analyzes codebase and automatically generates API specification documentation.
 Embed detection results into template (`~/.claude/skills/documenting-apis/assets/api-template.md`)
 and generate Markdown documentation.
 
+### Phase 4: Markdown Validation
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+Validates generated Markdown for formatting issues. Non-blocking (warnings only).
+
 ## Output Example
 
 ```markdown
@@ -100,7 +108,7 @@ and generate Markdown documentation.
 ## Endpoint List
 
 | Method | Path | Description |
-|--------|------|-------------|
+| --- | --- | --- |
 | GET | /api/users | Get user list |
 | POST | /api/users | Create user |
 | GET | /api/users/:id | Get user details |
@@ -109,7 +117,7 @@ and generate Markdown documentation.
 
 ### User
 | Field | Type | Description |
-|-------|------|-------------|
+| --- | --- | --- |
 | id | string | User ID |
 | name | string | User name |
 | email | string | Email address |
@@ -118,7 +126,7 @@ and generate Markdown documentation.
 ## Error Handling
 
 | Error | Action |
-|-------|--------|
+| --- | --- |
 | No endpoints detected | Display supported frameworks list |
 | tree-sitter-analyzer not installed | Grep fallback |
 | No OpenAPI spec | Infer from codebase |

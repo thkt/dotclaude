@@ -25,7 +25,7 @@ Analyzes codebase and automatically generates domain understanding documentation
 ## Options
 
 | Option | Description | Default |
-|--------|-------------|---------|
+| --- | --- | --- |
 | `path` | Target directory to analyze | Current directory |
 | `--output` | Output file path | `.claude/workspace/docs/domain-glossary.md` |
 | `--format` | Output format | `markdown` |
@@ -43,7 +43,7 @@ Analyzes codebase and automatically generates domain understanding documentation
 ### Entities/Models
 
 | Framework | Detection Pattern |
-|-----------|-------------------|
+| --- | --- |
 | TypeScript | `class`, `interface` |
 | Prisma | `model` definition |
 | TypeORM | `@Entity` decorator |
@@ -53,7 +53,7 @@ Analyzes codebase and automatically generates domain understanding documentation
 ### Business Logic
 
 | Pattern | Description |
-|---------|-------------|
+| --- | --- |
 | `*Service*` | Service class |
 | `*UseCase*` | Use case class |
 | `*Handler*` | Handler class |
@@ -90,6 +90,14 @@ Analyzes codebase and automatically generates domain understanding documentation
 Embed detection results into template (`~/.claude/skills/documenting-domains/assets/domain-template.md`)
 and generate Markdown documentation.
 
+### Phase 5: Markdown Validation
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+Validates generated Markdown for formatting issues. Non-blocking (warnings only).
+
 ## Output Example
 
 ```markdown
@@ -115,7 +123,7 @@ erDiagram
 ## Domain Glossary
 
 | Term | Description |
-|------|-------------|
+| --- | --- |
 | User | System user |
 | Order | Product order |
 ```
@@ -123,7 +131,7 @@ erDiagram
 ## Error Handling
 
 | Error | Action |
-|-------|--------|
+| --- | --- |
 | No entities detected | Re-search with generic patterns |
 | Prisma not used | Fallback to TypeScript analysis |
 | README not found | Skip overview section |

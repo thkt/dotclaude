@@ -25,7 +25,7 @@ Analyzes codebase and automatically generates environment setup guide documentat
 ## Options
 
 | Option | Description | Default |
-|--------|-------------|---------|
+| --- | --- | --- |
 | `path` | Target directory to analyze | Current directory |
 | `--output` | Output file path | `.claude/workspace/docs/setup-guide.md` |
 | `--format` | Output format | `markdown` |
@@ -43,7 +43,7 @@ Analyzes codebase and automatically generates environment setup guide documentat
 ### Package Managers
 
 | File | Detection Content |
-|------|-------------------|
+| --- | --- |
 | package.json | Node.js (npm/yarn/pnpm/bun) |
 | pyproject.toml | Python (uv/poetry/pip) |
 | requirements.txt | Python (pip) |
@@ -57,7 +57,7 @@ Analyzes codebase and automatically generates environment setup guide documentat
 ### Version Specification Files
 
 | File | Detection Content |
-|------|-------------------|
+| --- | --- |
 | .nvmrc, .node-version | Node.js version |
 | .python-version | Python version |
 | .ruby-version | Ruby version |
@@ -67,7 +67,7 @@ Analyzes codebase and automatically generates environment setup guide documentat
 ### Environment Variables
 
 | File | Detection Content |
-|------|-------------------|
+| --- | --- |
 | .env.example | Environment variable template |
 | .env.sample | Environment variable sample |
 | .env.template | Environment variable template |
@@ -75,7 +75,7 @@ Analyzes codebase and automatically generates environment setup guide documentat
 ### Container Configuration
 
 | File | Detection Content |
-|------|-------------------|
+| --- | --- |
 | Dockerfile | Docker image configuration |
 | docker-compose.yml | Multi-container setup |
 | .devcontainer/ | Dev Container configuration |
@@ -92,6 +92,14 @@ Analyzes codebase and automatically generates environment setup guide documentat
 
 Embed detection results into template (`~/.claude/skills/setting-up-docs/assets/setup-template.md`)
 and generate Markdown documentation.
+
+### Phase 3: Markdown Validation
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+Validates generated Markdown for formatting issues. Non-blocking (warnings only).
 
 ## Output Example
 
@@ -121,7 +129,7 @@ npm run dev
 ## Environment Variables
 
 | Variable Name | Default Value | Description |
-|---------------|---------------|-------------|
+| --- | --- | --- |
 | DATABASE_URL | - | Database connection URL |
 | API_KEY | - | API authentication key |
 ```
@@ -129,7 +137,7 @@ npm run dev
 ## Error Handling
 
 | Error | Action |
-|-------|--------|
+| --- | --- |
 | Config file not detected | Use generic template |
 | No environment variable file | Display warning and continue |
 | jq/yq not installed | Skip some features |

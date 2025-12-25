@@ -15,7 +15,7 @@ Auto-generate setup documentation from codebase analysis.
 ## Detection Items
 
 | Category | Targets |
-|----------|---------|
+| --- | --- |
 | Package Managers | package.json, yarn.lock, pnpm-lock, pyproject.toml, Cargo.toml, go.mod, pubspec.yaml, Gemfile, pom.xml |
 | Tool Versions | .nvmrc, .python-version, .ruby-version, .tool-versions, rust-toolchain.toml |
 | Environment | .env.example, .env.sample, .env.template |
@@ -53,6 +53,16 @@ Auto-generate setup documentation from codebase analysis.
 /docs:setup                   # Generate setup guide
 "Generate environment setup"  # Natural language
 ```
+
+## Markdown Validation
+
+After generation, validate output with:
+
+```bash
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
+```
+
+Non-blocking (warnings only) - style issues don't block document creation.
 
 ## References
 

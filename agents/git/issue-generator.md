@@ -45,6 +45,7 @@ Extract from user input:
 Format: `[Type] Brief, specific description`
 
 Rules:
+
 - ≤ 72 characters
 - Specific, not vague
 - Include component if relevant
