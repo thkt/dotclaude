@@ -21,7 +21,7 @@ Transform user descriptions into well-structured GitHub Issues with clear titles
 ## Issue Types
 
 | Type | Prefix | Use Case |
-|------|--------|----------|
+| --- | --- | --- |
 | `bug` | [Bug] | Something isn't working |
 | `feature` | [Feature] | New functionality request |
 | `docs` | [Docs] | Documentation improvement |
@@ -215,7 +215,7 @@ gh issue create --title "[title]" --label "bug,high-priority" --body "..."
 Based on content analysis:
 
 | Keywords | Suggested Labels |
-|----------|-----------------|
+| --- | --- |
 | crash, error, fail | `bug`, `critical` |
 | slow, performance | `performance` |
 | add, new, support | `enhancement` |

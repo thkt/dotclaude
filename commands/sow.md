@@ -83,11 +83,53 @@ Follow Golden Master structure:
 4. **Solution Design** - Approach, alternatives, recommendation
 5. **Test Plan** - Unit/Integration/E2E with priority
 6. **Acceptance Criteria** - By phase, with confidence markers
-7. **Implementation Plan** - Phases with steps
+7. **Implementation Plan** - Phases with steps, **including Progress Matrix**
 8. **Success Metrics** - Measurable outcomes
 9. **Risks & Mitigations** - By confidence level
 10. **Verification Checklist** - Pre-implementation checks
 11. **References** - Related documents
+
+## Progress Matrix (PDD Integration) - Optional
+
+Include in Implementation Plan section. Enables Progress-Driven Development tracking.
+
+> **Reference**: [進捗駆動開発（PDD）](https://zenn.dev/pipipi_dev/articles/20251224-progress-driven-development)
+> PDD = 機能ごとの進捗を5段階ステップで可視化し、人間とAIが協調して効率的に開発を進める手法
+
+### Format
+
+```markdown
+### Progress Matrix
+
+| Feature | spec | design | impl | test | review | Progress |
+| --- |:---:|:---:|:---:|:---:|:---:|:---:|
+| Feature A | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 0% |
+| Feature B | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 0% |
+
+**Legend**: ⬜ none | 🔄 started | 📝 draft | 👀 reviewed | ✅ done
+```
+
+### Steps (5 columns)
+
+| Step | Description | Completion Criteria |
+| --- | --- | --- |
+| spec | Requirements defined | SOW/Spec sections complete |
+| design | Architecture decided | Solution Design approved |
+| impl | Code implemented | Core functionality working |
+| test | Tests passing | Unit/Integration tests green |
+| review | Quality verified | /audit + /validate passed |
+
+### Progress Calculation
+
+- Each step = 20% (5 steps total)
+- Status weights: ⬜=0%, 🔄=25%, 📝=50%, 👀=75%, ✅=100%
+- Feature progress = (Σ step weights) / 5
+
+### Usage
+
+1. **Initial**: All features start with ⬜ in all columns
+2. **During /code**: Update status as work progresses
+3. **Review with /validate**: Verify matrix reflects actual state
 
 ## Output
 

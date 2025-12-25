@@ -46,7 +46,7 @@ Created: 2025-12-16
 ### Current State [✓]
 
 | Metric | Current Value | Issue |
-|--------|---------------|-------|
+| --- | --- | --- |
 | Total commands | 28 files | Management overhead |
 | Max command lines | 809 lines (/think) | Too complex |
 | /code reference context | 2,827 lines | S/N ratio degradation |
@@ -117,7 +117,7 @@ Evidence: `wc -l ~/.claude/commands/*.md`, research results
 ### Alternatives Considered
 
 | Option | Pros | Cons | Evaluation |
-|--------|------|------|------------|
+| --- | --- | --- | --- |
 | [→] A: Incremental improvement | Low risk, compatibility maintained | Takes time | **Adopted** |
 | [→] B: Full refactoring | Consistency ensured | High risk, downtime | Rejected |
 | [→] C: Status quo | Zero effort | Problems continue | Rejected |
@@ -185,6 +185,21 @@ Rationale:
 
 ## Implementation Plan
 
+### Progress Matrix
+
+| Feature | spec | design | impl | test | review | Progress |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: |
+| Golden Master Introduction | ✅ | ✅ | 🔄 | ⬜ | ⬜ | 45% |
+| Context Minimization | ✅ | 📝 | ⬜ | ⬜ | ⬜ | 30% |
+| /think Split | 🔄 | ⬜ | ⬜ | ⬜ | ⬜ | 5% |
+| Instruction Simplification | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 0% |
+
+**Legend**: ⬜ none | 🔄 started | 📝 draft | 👀 reviewed | ✅ done
+
+**Overall Progress**: 20% (avg of 4 features: (45+30+5+0)/4)
+
+---
+
 ### Phase 1: Golden Master Introduction (Day 1)
 
 ```markdown
@@ -234,21 +249,21 @@ Rationale:
 ### High Confidence Risks (✓)
 
 | Risk | Impact | Mitigation |
-|------|--------|------------|
+| --- | --- | --- |
 | [✓] Existing workflow breakage | High | Incremental migration, compatibility layer |
 | [✓] Functionality degradation from context reduction | Medium | Careful selection of essential principles |
 
 ### Potential Risks (→)
 
 | Risk | Impact | Mitigation |
-|------|--------|------------|
+| --- | --- | --- |
 | [→] Difficult to measure improvement effect | Medium | Golden master comparison |
 | [→] Increased learning cost | Low | Documentation improvement |
 
 ### Unknown Risks (?)
 
 | Risk | Monitoring | Preparation |
-|------|------------|-------------|
+| --- | --- | --- |
 | [?] LLM version dependency | Test with new versions | Rollback procedure |
 
 ---
