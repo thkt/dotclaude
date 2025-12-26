@@ -3,6 +3,7 @@ description: Run CodeRabbit AI code review for external perspective analysis
 allowed-tools: Bash(coderabbit:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Read, Glob
 model: inherit
 argument-hint: "[--base <branch>] [--type <all|committed|uncommitted>]"
+dependencies: [utilizing-cli-tools]
 ---
 
 # /rabbit - CodeRabbit AI Review
@@ -14,7 +15,7 @@ Run CodeRabbit CLI for external AI code review. Provides a second opinion from a
 ## When to Use
 
 | Use `/rabbit` | Use other command |
-|---------------|-------------------|
+| --- | --- |
 | Quick external review | Comprehensive review → `/audit` |
 | Before commit/PR | Architecture review → `/audit` |
 | Second opinion needed | Internal patterns check → `/audit` |
@@ -23,7 +24,7 @@ Run CodeRabbit CLI for external AI code review. Provides a second opinion from a
 ## Comparison with /audit
 
 | Aspect | `/rabbit` | `/audit` |
-|--------|-----------|----------|
+| --- | --- | --- |
 | Source | External AI (CodeRabbit) | Internal agents |
 | Speed | Fast (10-30s) | Slower (multi-agent) |
 | Focus | General code quality | Project-specific rules |
@@ -156,7 +157,7 @@ Format the output for readability:
 ## Error Handling
 
 | Error | Action |
-|-------|--------|
+| --- | --- |
 | Not a git repo | Display error, suggest `git init` |
 | No changes to review | Display "Nothing to review" |
 | Auth required | Suggest `coderabbit auth login` |

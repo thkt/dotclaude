@@ -2,7 +2,7 @@
 description: Generate GitHub Issue with structured title and body
 allowed-tools: Task
 model: inherit
-dependencies: [issue-generator]
+dependencies: [issue-generator, utilizing-cli-tools]
 ---
 
 # /issue - GitHub Issue Generator

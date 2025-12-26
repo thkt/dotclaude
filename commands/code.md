@@ -3,7 +3,7 @@ description: Implement code following TDD/RGRC cycle with real-time test feedbac
 allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[implementation description] [--frontend] [--principles] [--storybook]"
-dependencies: [tdd-test-generation, frontend-patterns, code-principles, storybook-integration]
+dependencies: [generating-tdd-tests, applying-frontend-patterns, applying-code-principles, integrating-storybook]
 ---
 
 # /code - TDD Implementation
@@ -31,7 +31,7 @@ Implement code with TDD/RGRC cycle and quality checks.
 Load with flags when needed:
 
 | Flag | Context | When to Use |
-|------|---------|-------------|
+| --- | --- | --- |
 | `--frontend` | [@~/.claude/skills/applying-frontend-patterns/SKILL.md] | React/UI components |
 | `--principles` | [@~/.claude/skills/applying-code-principles/SKILL.md] | Design decisions, refactoring |
 | `--storybook` | [@~/.claude/skills/integrating-storybook/SKILL.md] | Component Stories |

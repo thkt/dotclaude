@@ -3,6 +3,7 @@ description: Generate project rules from ADR and integrate with CLAUDE.md
 allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob
 model: inherit
 argument-hint: "[ADR number]"
+dependencies: [creating-adrs]
 ---
 
 # /rulify - Generate Rule from ADR
@@ -42,7 +43,7 @@ Extract from ADR:
 ### 3. Determine Priority
 
 | Condition | Priority |
-|-----------|----------|
+| --- | --- |
 | Security/Auth related | P0 |
 | Language/Framework config | P1 |
 | Development process | P2 |
@@ -86,7 +87,7 @@ Generated from ADR:
 ## Error Handling
 
 | Error | Message | Resolution |
-|-------|---------|------------|
+| --- | --- | --- |
 | ADR not found | `❌ ADR-XXXX not found` | Check `docs/adr/` |
 | Invalid number | `❌ Invalid ADR number` | Use numeric value |
 | Rule exists | `⚠️ Rule already exists` | Confirm overwrite |

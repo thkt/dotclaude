@@ -4,6 +4,7 @@ aliases: [create-workflow, workflow-create]
 allowed-tools: Read, Write, Task, mcp__claude-in-chrome__*
 model: inherit
 argument-hint: "[workflow-name]"
+dependencies: [automating-browser]
 ---
 
 # /workflow:create - Browser Workflow Generator

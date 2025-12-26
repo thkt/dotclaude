@@ -468,11 +468,11 @@ flowchart LR
     end
 
     subgraph Skills["📚 Skills"]
-        tdd["tdd-test-generation"]
-        frontend["frontend-patterns"]
-        principles["code-principles"]
-        storybook["storybook-integration"]
-        adr_creator["adr-creator"]
+        tdd["generating-tdd-tests"]
+        frontend["applying-frontend-patterns"]
+        principles["applying-code-principles"]
+        storybook["integrating-storybook"]
+        adr_creator["creating-adrs"]
     end
 
     code --> tdd & frontend & principles & storybook
@@ -494,6 +494,20 @@ flowchart LR
 - Arrows show `dependencies` declared in each command's frontmatter
 - Commands without arrows have no explicit skill/agent dependencies
 - Some commands (like `/full-cycle`) orchestrate other commands via SlashCommand tool
+
+### Naming Conventions
+
+| Type | Format | Examples |
+| --- | --- | --- |
+| **Skills** | gerund form (動名詞形式) | `generating-tdd-tests`, `applying-frontend-patterns`, `creating-hooks` |
+| **Agents** | kebab-case | `audit-orchestrator`, `test-generator`, `sow-spec-reviewer` |
+| **Built-in Agents** | PascalCase | `Explore`, `Plan` |
+
+**Why gerund for Skills?**
+
+- 動詞の〜ing形は「能力・スキル」を表現するのに適切
+- ファイル名 (`generating-tdd-tests/SKILL.md`) と一致
+- `dependencies` 配列で使用する名前と実ファイル名が一致し、追跡が容易
 
 ### Detailed Role Division
 

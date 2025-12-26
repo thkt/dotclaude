@@ -3,7 +3,7 @@ description: Generate Specification (spec.md) with implementation-ready details
 allowed-tools: Read, Write, Glob, Grep, LS
 model: inherit
 argument-hint: "[sow path or feature description]"
-dependencies: []
+dependencies: [formatting-audits]
 ---
 
 # /spec - Specification Generator

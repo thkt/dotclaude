@@ -2,7 +2,7 @@
 description: Analyze Git diff and generate Conventional Commits format messages
 allowed-tools: Task
 model: inherit
-dependencies: [commit-generator]
+dependencies: [commit-generator, utilizing-cli-tools]
 ---
 
 # /commit - Git Commit Message Generator
@@ -59,7 +59,7 @@ Includes issue reference in commit message.
 ### Commit Types
 
 | Type | Use Case |
-|------|----------|
+| --- | --- |
 | `feat` | New feature |
 | `fix` | Bug fix |
 | `docs` | Documentation |

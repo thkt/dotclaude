@@ -2,7 +2,7 @@
 description: Analyze branch changes and generate comprehensive PR description
 allowed-tools: Task
 model: inherit
-dependencies: [pr-generator]
+dependencies: [pr-generator, utilizing-cli-tools]
 ---
 
 # /pr - Pull Request Description Generator

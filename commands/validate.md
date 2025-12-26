@@ -2,6 +2,7 @@
 description: Validate implementation against SOW acceptance criteria
 allowed-tools: Read, Glob, Grep
 model: inherit
+dependencies: [sow-spec-reviewer]
 ---
 
 # /validate - SOW Criteria Checker

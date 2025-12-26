@@ -76,7 +76,7 @@ execution_plan:
     execution_mode: sequential
 
   # Parallel Group 3: Production Readiness (max 60s each)
-  # Note: Security review is handled via security-review skill at /audit command level
+  # Note: Security review is handled via reviewing-security skill at /audit command level
   parallel_group_3:
     agents:
       - name: performance-reviewer
@@ -463,7 +463,7 @@ const review = await reviewOrchestrator.review({
 })
 
 // Focused review
-// Note: For security review, use security-review skill at /audit command level
+// Note: For security review, use reviewing-security skill at /audit command level
 const focusedReview = await reviewOrchestrator.review({
   target: 'src/components/UserProfile.tsx',
   agents: ['type-safety-reviewer', 'accessibility-reviewer'],
@@ -639,7 +639,7 @@ All review agents are organized by function:
   - structure, readability, root-cause, type-safety
   - design-pattern, testability, performance, accessibility
   - document, subagent, silent-failure
-  - Note: security review is available via `security-review` skill
+  - Note: security review is available via `reviewing-security` skill
 - `~/.claude/agents/generators/` - Code generation agents
   - test (test-generator)
 - `~/.claude/agents/enhancers/` - Code enhancement agents

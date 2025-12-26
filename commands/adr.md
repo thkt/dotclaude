@@ -3,7 +3,7 @@ description: Create Architecture Decision Records (ADR) in MADR format with auto
 allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Bash(~/.claude/skills/creating-adrs/scripts/*), Grep, Glob
 model: inherit
 argument-hint: "[decision title]"
-dependencies: [adr-creator]
+dependencies: [creating-adrs]
 ---
 
 # /adr - Architecture Decision Record Creator

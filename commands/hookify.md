@@ -1,6 +1,6 @@
 ---
 description: Create custom hooks to prevent unwanted behaviors
-dependencies: [hookify]
+dependencies: [creating-hooks]
 ---
 
 # /hookify - Custom Hook Creator
@@ -54,7 +54,7 @@ Markdown formatting supported.
 ## Events
 
 | Event | Trigger |
-|-------|---------|
+| --- | --- |
 | `file` | Edit/Write/MultiEdit operations |
 | `bash` | Bash command execution |
 | `stop` | When Claude wants to stop |
@@ -63,7 +63,7 @@ Markdown formatting supported.
 ## Actions
 
 | Action | Behavior |
-|--------|----------|
+| --- | --- |
 | `warn` | Show warning, continue operation |
 | `block` | Block operation, require fix |
 

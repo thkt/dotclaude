@@ -7,7 +7,8 @@ description: >
 tools: Read, Grep, Glob, LS, Task
 model: sonnet
 skills:
-  - tdd-test-generation
+  - reviewing-testability
+  - generating-tdd-tests
   - code-principles
 ---
 

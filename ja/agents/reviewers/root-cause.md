@@ -8,6 +8,7 @@ description: >
 tools: Read, Grep, Glob, LS, Task
 model: opus
 skills:
+  - analyzing-root-causes
   - code-principles
 ---
 

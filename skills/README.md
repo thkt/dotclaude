@@ -38,9 +38,9 @@ Skills are used for:
 
 **Role**: Knowledge base, guides, automation
 
-- `performance-optimization` → Optimization knowledge
-- `progressive-enhancement` → Design principles
-- `adr-creator` → ADR creation guide
+- `optimizing-performance` → Optimization knowledge
+- `enhancing-progressively` → Design principles
+- `creating-adrs` → ADR creation guide
 - `esa-daily-report` → Project-specific automation
 
 **Features**: Persistent knowledge, educational, reusable
@@ -74,11 +74,46 @@ Skills are used for:
 - **Specialized reviews** → Use Agents
 - **Temporary tasks** → Execute directly
 
+## Complete Skill Inventory (22 Skills)
+
+| Category | Skill Name | Description | Used by |
+| --- | --- | --- | --- |
+| **TDD/Testing** | `generating-tdd-tests` | TDD/RGRCサイクル、テスト設計 | /code |
+| | `tdd-fundamentals` | TDD基礎原則、例 | /code, /fix |
+| **Code Quality** | `applying-code-principles` | SOLID, DRY, YAGNI原則 | /code |
+| | `applying-frontend-patterns` | React/UIパターン | /code --frontend |
+| | `integrating-storybook` | Storybookコンポーネント開発 | /code --storybook |
+| | `enhancing-progressively` | CSS-first, 段階的強化 | /code |
+| **Review** | `reviewing-security` | セキュリティレビュー（OWASP） | /audit |
+| | `reviewing-readability` | 可読性レビュー | /audit |
+| | `reviewing-type-safety` | 型安全性レビュー（TypeScript） | /audit |
+| | `reviewing-silent-failures` | サイレント障害検出 | /audit |
+| | `reviewing-testability` | テスタビリティレビュー | /audit |
+| | `analyzing-root-causes` | 根本原因分析（5 Whys） | /audit |
+| | `optimizing-performance` | パフォーマンス最適化 | /audit |
+| **Documentation** | `creating-adrs` | ADR作成ガイド | /adr, /rulify |
+| | `formatting-audits` | ドキュメントフォーマット | /sow, /spec |
+| | `documenting-architecture` | アーキテクチャドキュメント | /docs:architecture |
+| | `documenting-apis` | API仕様ドキュメント | /docs:api |
+| | `documenting-domains` | ドメイン理解ドキュメント | /docs:domain |
+| | `setting-up-docs` | 環境セットアップガイド | /docs:setup |
+| **Automation** | `automating-browser` | ブラウザ自動化 | /workflow:create |
+| | `utilizing-cli-tools` | CLI活用（gh, git等） | /commit, /pr, /branch, /issue, /rabbit |
+| | `creating-hooks` | カスタムフック作成 | /hookify |
+
+### Naming Convention
+
+- **Format**: gerund form (動名詞形式) - e.g., `generating-*`, `applying-*`, `creating-*`
+- **Reason**: スキル（能力）を表現する〜ing形式が適切
+- **Consistency**: ディレクトリ名とdependencies配列で同一名を使用
+
+---
+
 ## Current Skills List
 
 ### Knowledge Base Skills
 
-#### performance-optimization
+#### optimizing-performance
 
 **Purpose**: Systematic guide for performance optimization
 
@@ -91,7 +126,7 @@ Skills are used for:
 
 **Agent integration**: `performance-reviewer` agent references this Skill
 
-#### progressive-enhancement
+#### enhancing-progressively
 
 **Purpose**: Design principle guide for CSS-first approach
 
@@ -101,7 +136,59 @@ Skills are used for:
 
 **Usage**: Auto-triggers on keywords like "layout", "style", "animation"
 
-#### adr-creator
+#### reviewing-type-safety
+
+**Purpose**: TypeScript type safety patterns and best practices
+
+- Type coverage metrics (strict null checks, any usage)
+- Type guard patterns and discriminated unions
+- Strict mode configuration checklist
+- Common type safety anti-patterns
+
+**Usage**: Auto-triggers on keywords like "型安全", "type safety", "any", "unknown", "type guard"
+
+**Agent integration**: `type-safety-reviewer` agent references this Skill
+
+#### reviewing-silent-failures
+
+**Purpose**: Detection patterns for silent failures in frontend code
+
+- Empty catch blocks and unhandled Promise rejections
+- Missing error boundaries and fire-and-forget async
+- Risk level assessment (Critical/High/Medium/Low)
+- Error handling best practices
+
+**Usage**: Auto-triggers on keywords like "silent failure", "empty catch", "unhandled promise"
+
+**Agent integration**: `silent-failure-reviewer` agent references this Skill
+
+#### reviewing-testability
+
+**Purpose**: Testable code design patterns for TypeScript/React
+
+- Dependency injection patterns
+- Pure functions and side effect isolation
+- Mock-friendly architecture (interfaces, factories)
+- Component testability guidelines
+
+**Usage**: Auto-triggers on keywords like "testability", "テスト容易性", "dependency injection"
+
+**Agent integration**: `testability-reviewer` agent references this Skill
+
+#### analyzing-root-causes
+
+**Purpose**: Root cause analysis methodology for frontend issues
+
+- 5 Whys technique and templates
+- Common symptom→root cause mappings
+- Decision framework for identifying symptom-based solutions
+- Progressive enhancement opportunities
+
+**Usage**: Auto-triggers on keywords like "root cause", "5 Whys", "根本原因", "対処療法"
+
+**Agent integration**: `root-cause-reviewer` agent references this Skill
+
+#### creating-adrs
 
 **Purpose**: Detailed process guide for Architecture Decision Record creation
 
@@ -164,7 +251,7 @@ skills/
 ```
 
 **Use case**: High-function Skills with automation, template generation
-**Examples**: adr-creator, tdd-test-generation
+**Examples**: creating-adrs, generating-tdd-tests
 
 ### Frontmatter Specification
 
@@ -183,7 +270,7 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash, Task
 **Field requirements**:
 
 | Field | Required | Description |
-|-------|----------|-------------|
+| --- | --- | --- |
 | `name` | ✅ | Must exactly match directory name |
 | `description` | ✅ | Description including trigger keywords |
 | `allowed-tools` | ✅ | Comma-separated list of available tools |
@@ -201,7 +288,7 @@ config:
 #### Basic Rules
 
 | Item | Requirement |
-|------|-------------|
+| --- | --- |
 | EN version | **Required** - Always create English version first |
 | JP version | **Recommended** - Create for Japanese users |
 | Structure sync | When both exist, match section structure |
@@ -275,10 +362,10 @@ The problem this Skill solves or value it provides
 High-quality Skill implementation examples:
 
 | Skill | Structure Level | Features |
-|-------|-----------------|----------|
-| **adr-creator** | Comprehensive | 6-phase process, scripts, assets, EN/JP both |
-| **tdd-test-generation** | Comprehensive | RGRC cycle, reference docs, scripts |
-| **code-principles** | Standard | Systematic 5-principle explanation, reference docs |
+| --- | --- | --- |
+| **creating-adrs** | Comprehensive | 6-phase process, scripts, assets, EN/JP both |
+| **generating-tdd-tests** | Comprehensive | RGRC cycle, reference docs, scripts |
+| **applying-code-principles** | Standard | Systematic 5-principle explanation, reference docs |
 
 ## Collaboration Examples
 
@@ -287,7 +374,7 @@ High-quality Skill implementation examples:
 ```text
 User: "This page is slow"
     ↓
-Skill (auto-trigger): performance-optimization
+Skill (auto-trigger): optimizing-performance
     → Provides Web Vitals knowledge
     → Suggests measurement methods
     ↓
@@ -297,7 +384,7 @@ Command: /audit
     ↓
 Agent: performance-reviewer
     → Analyzes actual code
-    → References performance-optimization skill
+    → References optimizing-performance skill
     → Identifies bottlenecks
     ↓
 Output: Specific improvement suggestions
@@ -311,7 +398,7 @@ User: "Review security"
     ↓
 Command: /audit
     ↓
-/audit references security-review skill
+/audit references reviewing-security skill
     → Uses OWASP Top 10 knowledge
     → Detects vulnerability patterns
     ↓
@@ -374,4 +461,4 @@ When these conditions apply:
 
 ---
 
-**Last updated**: 2025-12-18
+**Last updated**: 2025-12-26

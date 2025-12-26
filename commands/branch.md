@@ -2,7 +2,7 @@
 description: Analyze Git changes and suggest appropriate branch names
 allowed-tools: Task
 model: inherit
-dependencies: [branch-generator]
+dependencies: [branch-generator, utilizing-cli-tools]
 ---
 
 # /branch - Git Branch Name Generator
@@ -51,7 +51,7 @@ Includes ticket number in branch name.
 ### Type Prefixes
 
 | Prefix | Use Case |
-|--------|----------|
+| --- | --- |
 | `feature/` | New functionality |
 | `fix/` | Bug fixes (including urgent) |
 | `refactor/` | Code improvements |
