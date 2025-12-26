@@ -45,6 +45,29 @@ git diff BASE_BRANCH...HEAD --name-only
 git diff BASE_BRANCH...HEAD --numstat
 ```
 
+## PR Title Rules
+
+### Priority Order
+
+1. **Issue referenced** → Use Issue title as-is
+2. **No Issue** → Simple imperative sentence (verb-first)
+
+### Format Guidelines
+
+- Start with imperative verb: Add, Fix, Update, Remove, Refactor
+- No type prefix: ❌ `feat:`, `[Feature]`, `fix:` (No Issue case only)
+- Keep under 72 characters
+- Be specific but concise
+
+### Examples
+
+| Context | Title |
+|---------|-------|
+| Issue: [Bug] Login fails on Safari | `[Bug] Login fails on Safari` |
+| Issue: [Feature] Add dark mode | `[Feature] Add dark mode` |
+| No Issue, auth feature | `Add OAuth authentication support` |
+| No Issue, bug fix | `Fix timeout in user endpoint` |
+
 ## PR Description Structure
 
 ### Essential Sections
@@ -112,126 +135,105 @@ Create comprehensive but concise description with:
 
 ## Output Format
 
-```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The agent outputs in the following structure:
 
+```text
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Pull Request Description Generator
 
 ## Branch Analysis
-- **Current branch**: [branch-name]
-- **Base branch**: [detected-base]
-- **Commits**: [count]
-- **Files changed**: [count]
-- **Lines**: +[additions] -[deletions]
+- Current branch: [branch-name]
+- Base branch: [detected-base]
+- Commits: [count]
+- Files changed: [count]
+- Lines: +[additions] -[deletions]
 
 ## Change Summary
-- **Type**: [feature/fix/refactor/docs/etc]
-- **Components affected**: [list]
-- **Breaking changes**: [Yes/No]
-- **Tests included**: [Yes/No]
+- Type: [feature/fix/refactor/docs/etc]
+- Components affected: [list]
+- Breaking changes: [Yes/No]
+- Tests included: [Yes/No]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ## Generated PR Description
 
-### Recommended Template
+### Standard Template
 
 ```markdown
 ## Summary
 
-[High-level overview of what this PR accomplishes]
-
-## Motivation
-
-[Why these changes are needed - problem statement]
-
-- **Context**: [Background information]
-- **Goal**: [What we're trying to achieve]
-
-## Changes
-
-### Core Changes
-- [Main feature/fix implemented]
-- [Secondary changes]
-- [Additional improvements]
-
-### Technical Details
-- **Added**: [New files/features]
-- **Modified**: [Updated components]
-- **Removed**: [Deprecated code]
-
-## Testing
-
-### How to Test
-1. [Step-by-step testing instructions]
-2. [Expected behavior]
-3. [Edge cases to verify]
-
-### Test Coverage
-- [ ] Unit tests added/updated
-- [ ] Integration tests added/updated
-- [ ] Manual testing completed
-- [ ] Edge cases tested
-
-## Related
-
-- Closes #[issue-number]
-- Related to #[other-issue]
-- Depends on #[dependency-pr]
+[1-2 lines: purpose and effect]
 
 ## Checklist
 
-- [ ] Code follows project style guidelines
-- [ ] Self-review completed
-- [ ] Comments added for complex logic
-- [ ] Documentation updated
-- [ ] Tests pass locally
-- [ ] No breaking changes (or documented)
+- [ ] Changes are focused on the objective (no unrelated changes)
+- [ ] Test steps reproduce expected results
+- [ ] No breaking changes
+
+## Changes
+
+- [Change 1]
+- [Change 2]
+
+## Out of Scope
+
+- [Excluded 1] (Reason: separate PR / spec TBD)
+
+## How to Test
+
+1. [Step]
+2. [Expected result]
+
+## Impact (for breaking changes, security, or user-facing changes)
+
+- [User / Data / Performance / Security / UI]
+
+## Related
+
+- Closes #[issue]
+- [Design / Figma / Logs]
 ```
 
 ### Alternative Formats
 
-#### Concise Version (for small changes)
+#### Minimal Template (for small changes)
 
 ```markdown
 ## Summary
+
 [Brief description]
 
 ## Changes
-- [Change 1]
-- [Change 2]
 
-## Testing
-- [ ] Tests pass
-- [ ] Manual testing done
+- [Done items]
+
+## Out of Scope (optional)
+
+- [Excluded items]
+
+## How to Test
+
+- [Steps and expected result]
 
 Closes #[issue]
 ```
 
-#### Detailed Version (for complex PRs)
+#### Extended Blocks (add when needed)
+
+For UI changes or large-scale PRs, add these sections:
 
 ```markdown
-## Summary
-[Comprehensive overview]
+## UI Before / After
 
-## Problem Statement
-[Detailed context and motivation]
+- Before: [image/video]
+- After: [image/video]
 
-## Solution Approach
-[How the problem was solved]
+## Rollout / Monitoring
 
-## Changes
-[Extensive breakdown with reasoning]
-
-## Testing Strategy
-[Comprehensive test plan]
-
-## Performance Impact
-[Benchmarks and considerations]
-
-## Migration Guide
-[For breaking changes]
-
-## Screenshots
-[Before/After comparisons]
+- Feature Flag: [name / on/off]
+- Rollback: [steps]
+- Telemetry: [events / dashboard]
 ```
 
 ## Usage Instructions
@@ -261,9 +263,7 @@ gh pr create --title "[PR Title]" --body "[Generated Description]"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-```markdown
-
-**IMPORTANT**: The above templates are examples in English for documentation purposes. When this agent executes, **ALL output must be translated to Japanese** per CLAUDE.md P1 requirements. Do not output English text to the user.
+> **Note**: Output will be translated to Japanese per CLAUDE.md P1 requirements.
 
 ## Advanced Features
 
