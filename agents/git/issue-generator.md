@@ -25,8 +25,6 @@ Transform user descriptions into well-structured GitHub Issues with clear titles
 | `bug` | [Bug] | Something isn't working |
 | `feature` | [Feature] | New functionality request |
 | `docs` | [Docs] | Documentation improvement |
-| `enhancement` | [Enhancement] | Improve existing feature |
-| `question` | [Question] | Need clarification |
 | `chore` | [Chore] | Maintenance task |
 
 ## Analysis Workflow
@@ -57,75 +55,71 @@ Structure depends on type:
 #### Bug Report Body
 
 ```markdown
-## Description
+## Summary
 
-[Clear description of the bug]
+[One-line description of the problem]
+
+## Reproducibility & Impact
+
+- **Reproducibility**: [Always / Often (>50%) / Rarely (<50%) / Unknown]
+- **Scope**: [All users / Specific conditions / Developers only]
+- **Business Impact**: [Blocking / Workaround available / Minor]
 
 ## Steps to Reproduce
 
-1. [First step]
-2. [Second step]
-3. [And so on...]
+1. [Step 1]
+2. [Step 2]
 
-## Expected Behavior
+## Expected vs Actual
 
-[What should happen]
-
-## Actual Behavior
-
-[What actually happens]
+- **Expected**: [What should happen]
+- **Actual**: [What actually happens]
 
 ## Environment
 
-- OS: [e.g., macOS 14.0]
-- Browser: [e.g., Chrome 120]
-- Version: [e.g., 1.2.3]
+[OS, Browser, Version - minimal necessary info]
 
-## Additional Context
+## Notes
 
-[Screenshots, logs, related issues]
+[Additional context: workarounds, discovery circumstances, related issues]
 ```
 
 #### Feature Request Body
 
 ```markdown
-## Description
+## Value Hypothesis | Scope
 
-[Clear description of the feature]
+[Who] [does what] [gets what value] | Scope: [in/out boundaries]
 
-## Motivation
+## Acceptance Criteria (Observable Behaviors)
 
-[Why is this feature needed?]
+- [ ] When user does X, Y is displayed
+- [ ] API returns Z with status 200
+- [ ] Log shows W on completion
 
-## Proposed Solution
+## Out of Scope
 
-[How should it work?]
+- [Explicitly excluded items]
 
-## Acceptance Criteria
+## Notes
 
-- [ ] [Criterion 1]
-- [ ] [Criterion 2]
-- [ ] [Criterion 3]
-
-## Alternatives Considered
-
-[Other approaches evaluated]
-
-## Additional Context
-
-[Mockups, examples, related features]
+[Additional context if needed]
 ```
 
 #### Documentation Body
 
 ```markdown
-## Description
+## Target Audience
 
-[What documentation needs updating]
+[Who is this for: New developers / Operators / End users / etc.]
+
+## Goal (What reader can do after reading)
+
+After reading this document, the reader will be able to [specific capability].
 
 ## Current State
 
-[What's currently documented (or missing)]
+[What's currently documented or missing]
 
 ## Proposed Changes
 
@@ -135,6 +129,23 @@ Structure depends on type:
 ## Related
 
 [Links to affected docs]
+```
+
+#### Chore Body
+
+```markdown
+## Summary
+
+[One-line description of the task]
+
+## Tasks
+
+- [ ] [Task 1]
+- [ ] [Task 2]
+
+## Notes
+
+[Additional context if needed]
 ```
 
 ## Output Format
