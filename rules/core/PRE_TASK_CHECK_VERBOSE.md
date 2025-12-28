@@ -31,7 +31,7 @@ Multi-step workflow? ──YES──→ [EXECUTE CHECK]
 ### Decision Matrix
 
 | Condition | Action | Example |
-|-----------|--------|---------|
+| --- | --- | --- |
 | **Execute Check** | | |
 | File modification | → Execute | Create/edit CLAUDE.md |
 | Command execution | → Execute | Run `npm test` |

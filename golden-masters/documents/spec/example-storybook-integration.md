@@ -353,7 +353,7 @@ export const Disabled: Story = {
 ### 6.1 Modified Files
 
 | File | Changes | Priority |
-|------|---------|----------|
+| --- | --- | --- |
 | `~/.claude/commands/think.md` | Add Component API section to spec.md template | Phase 2 |
 | `~/.claude/commands/code.md` | Add Stories generation logic | Phase 3 |
 

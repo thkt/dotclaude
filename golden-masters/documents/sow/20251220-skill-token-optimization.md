@@ -24,7 +24,7 @@ Created: 2025-12-20
 ### Current State [✓]
 
 | Metric | Current Value | Issue |
-|--------|---------------|-------|
+| --- | --- | --- |
 | Total skill lines | 4,116行 | トークン浪費 |
 | 最大スキル | creating-adrs (514行) | 過度に詳細 |
 | 二重ロード | applying-code-principles | CLAUDE.md + system-reminder両方 |
@@ -114,7 +114,7 @@ allowed-tools: [tools]
 ### Alternatives Considered
 
 | Option | Pros | Cons | Evaluation |
-|--------|------|------|------------|
+| --- | --- | --- | --- |
 | [→] A: 段階的最適化 | 影響確認可能、ロールバック容易 | 時間がかかる | **採用** |
 | [→] B: 一括削減 | 一度で完了 | 問題発生時の切り分け困難 | 却下 |
 | [→] C: スキル機能廃止 | 根本解決 | 価値ある機能の喪失 | 却下 |
@@ -198,7 +198,7 @@ allowed-tools: [tools]
 ### High Confidence Risks (✓)
 
 | Risk | Impact | Mitigation |
-|------|--------|------------|
+| --- | --- | --- |
 | [✓] スキル発動精度低下 | Medium | キーワードリストは維持 |
 | [✓] プロジェクト固有ルールの喪失 | High | 判断基準セクションは必ず残す |
 

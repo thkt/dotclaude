@@ -120,7 +120,7 @@ latency from 2s to 200ms.
 ## Evaluation Criteria
 
 | Aspect | Points | Criteria |
-|--------|--------|----------|
+| --- | --- | --- |
 | Type Accuracy | 25 | Correct type for the change |
 | Subject Clarity | 25 | Specific, imperative, ≤72 chars |
 | Body Quality | 25 | Explains "why", wrapped properly |
@@ -129,7 +129,7 @@ latency from 2s to 200ms.
 ## Scope Examples
 
 | Scope | Use Case |
-|-------|----------|
+| --- | --- |
 | `auth` | Authentication/authorization |
 | `api` | API endpoints |
 | `ui` | User interface |

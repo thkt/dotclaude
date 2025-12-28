@@ -166,7 +166,7 @@ Mirror: /ja/rules/ (176K, same structure)
 ### Alternative Approaches
 
 | Approach | Pros | Cons |
-|----------|------|------|
+| --- | --- | --- |
 | **Aggressive merge** | Max reduction (40-50%) | Risk losing structure, harder navigation |
 | **Keep all files, trim each** | Maintain structure | Smaller gains (15-20%) |
 | **Skills-style tables** | High information density | May lose readability for principles |
@@ -180,7 +180,7 @@ Mirror: /ja/rules/ (176K, same structure)
 ### Unit Tests
 
 | Test | Method | Priority |
-|------|--------|----------|
+| --- | --- | --- |
 | YAML frontmatter validity | Parse all rule files | High |
 | Reference path integrity | Verify all `[@...]` paths exist | High |
 | Language consistency | English body, no mixed content | Medium |
@@ -189,7 +189,7 @@ Mirror: /ja/rules/ (176K, same structure)
 ### Integration Tests
 
 | Test | Method | Priority |
-|------|--------|----------|
+| --- | --- | --- |
 | CLAUDE.md references | Verify all referenced rules load | High |
 | Cross-file references | Check PRINCIPLE_RELATIONSHIPS links | High |
 | Command workflow logic | Test decision tree completeness | Medium |
@@ -198,7 +198,7 @@ Mirror: /ja/rules/ (176K, same structure)
 ### End-to-End Tests
 
 | Test | Method | Priority |
-|------|--------|----------|
+| --- | --- | --- |
 | Conversation context load | Measure token usage before/after | High |
 | Rule application | Verify PRE_TASK_CHECK still triggers | High |
 | Principle guidance | Test principle files provide adequate info | Medium |
@@ -303,7 +303,7 @@ Mirror: /ja/rules/ (176K, same structure)
 ## Success Metrics
 
 | Metric | Baseline | Target | Measurement |
-|--------|----------|--------|-------------|
+| --- | --- | --- | --- |
 | **Total lines (English)** | 4,233 | 2,700-3,200 | wc -l count |
 | **Memory files tokens** | 9.5k | 6.5-7.5k | /context output |
 | **File count** | 42 | 35-38 | find count |
@@ -441,7 +441,7 @@ Mirror: /ja/rules/ (176K, same structure)
 ### 圧縮手法の効果
 
 | 手法 | 削減効果 | 適用箇所 |
-|------|---------|---------|
+| --- | --- | --- |
 | 表形式変換 | 40-70% | TEST_GENERATION, AI_ASSISTED_DEVELOPMENT, YAGNI, LEAKY_ABSTRACTION |
 | Cross-reference統合 | 33行 (net) | 13ファイル → PRINCIPLE_RELATIONSHIPS.md |
 | Mermaid図抽出 | 72行 | PRINCIPLES_GUIDE → PRINCIPLE_RELATIONSHIPS.md |

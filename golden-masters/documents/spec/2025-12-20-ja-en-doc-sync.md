@@ -860,7 +860,7 @@ describe('Complete Sync Workflow', () => {
 ## Appendix A: Terminology Map
 
 | English | 日本語 | Notes |
-|---------|--------|-------|
+| --- | --- | --- |
 | Occam's Razor | オッカムの剃刀 | 原則名 |
 | Miller's Law | ミラーの法則 | 認知科学 |
 | SOLID | SOLID | そのまま |

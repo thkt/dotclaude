@@ -219,7 +219,7 @@ Similar to export feature in competitor product X.
 ## Evaluation Criteria
 
 | Aspect | Points | Criteria |
-|--------|--------|----------|
+| --- | --- | --- |
 | Title Clarity | 25 | Type prefix, specific, ≤72 chars |
 | Problem Statement | 25 | Clear description, reproduction steps |
 | Acceptance Criteria | 25 | Specific, measurable, checkbox format |
@@ -228,7 +228,7 @@ Similar to export feature in competitor product X.
 ## Label Mapping
 
 | Issue Content | Suggested Labels |
-|---------------|-----------------|
+| --- | --- |
 | crash, error, exception | `bug`, `critical` |
 | slow, timeout, performance | `performance` |
 | add, new, support, enable | `enhancement` |

@@ -11,7 +11,7 @@ Classify context references into Essential (always load) and Reference (load on 
 Context that is **always needed** for implementation tasks.
 
 | File | Lines | Purpose |
-|------|-------|---------|
+| --- | --- | --- |
 | `skills/generating-tdd-tests/SKILL.md` | 258 | TDD/RGRC implementation cycle |
 | `rules/core/ESSENTIAL_PRINCIPLES.md` | ~50 | Quick Decision Questions |
 | **Total** | **~310** | |
@@ -27,7 +27,7 @@ Context that is **always needed** for implementation tasks.
 Context loaded only when specific task type requires it.
 
 | Flag | File | Lines | When to Load |
-|------|------|-------|--------------|
+| --- | --- | --- | --- |
 | `--frontend` | `skills/applying-frontend-patterns/SKILL.md` | 362 | React/UI component work |
 | `--principles` | `skills/applying-code-principles/SKILL.md` | 430 | Design decisions, refactoring |
 | `--storybook` | `skills/integrating-storybook/SKILL.md` | 270 | Component Stories generation |

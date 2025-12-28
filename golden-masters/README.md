@@ -59,7 +59,7 @@ Details: [outputs/README.md](outputs/README.md)
 ### SOW Evaluation Criteria (100 points)
 
 | Aspect | Points | Evaluation Items |
-|--------|--------|------------------|
+| --- | --- | --- |
 | Structure | 25 | Coverage of required sections |
 | Clarity | 25 | Proper use of ✓/→/? markers |
 | Actionability | 25 | Concrete Acceptance Criteria |
@@ -68,7 +68,7 @@ Details: [outputs/README.md](outputs/README.md)
 ### Spec Evaluation Criteria (100 points)
 
 | Aspect | Points | Evaluation Items |
-|--------|--------|------------------|
+| --- | --- | --- |
 | Implementability | 25 | Directly convertible to code |
 | Testability | 25 | Given-When-Then format |
 | SOW Alignment | 25 | 1:1 correspondence between AC and FR |
@@ -77,7 +77,7 @@ Details: [outputs/README.md](outputs/README.md)
 ### Pass Criteria
 
 | Score | Verdict | Action |
-|-------|---------|--------|
+| --- | --- | --- |
 | 90+ | ✅ PASS | Proceed to implementation phase |
 | 70-89 | ⚠️ CONDITIONAL | Fix issues and re-review |
 | Below 70 | ❌ FAIL | Major revision required |
@@ -87,7 +87,7 @@ Details: [outputs/README.md](outputs/README.md)
 ### documents/sow/
 
 | File | Features | Score |
-|------|----------|-------|
+| --- | --- | --- |
 | `example-workflow-improvement.md` | Phase division, incremental improvement | 95 |
 | `example-storybook-integration.md` | Frontend features, Component API | - |
 | `example-config-optimization.md` | Config optimization, performance | - |
@@ -95,7 +95,7 @@ Details: [outputs/README.md](outputs/README.md)
 ### documents/spec/
 
 | File | Features | Score |
-|------|----------|-------|
+| --- | --- | --- |
 | `example-workflow-improvement.md` | Clear FR/NFR, TypeScript interface | 95 |
 | `example-storybook-integration.md` | Component API, Stories definition | - |
 | `example-config-optimization.md` | Config schema, migration guide | - |
@@ -107,7 +107,7 @@ Details: [outputs/README.md](outputs/README.md)
 Golden masters should be updated when:
 
 | Trigger | Action |
-|---------|--------|
+| --- | --- |
 | Better output found | Compare with current, replace if superior |
 | Current example feels constraining | Relax or remove |
 | New requirements emerged | Add new example |
@@ -165,7 +165,7 @@ When replacing a golden master:
 ## Changelog
 
 | Date | Changes |
-|------|---------|
+| --- | --- |
 | 2025-12-18 | Moved Japanese version to `~/.claude/ja/golden-masters/` for consistency |
 | 2025-12-17 | Added Maintenance Guidelines (update triggers, review process, metadata template) |
 | 2025-12-16 | Initial creation (Spec-driven development practices) |

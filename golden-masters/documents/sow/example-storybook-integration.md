@@ -90,7 +90,7 @@ Updated: 2025-12-14
 ### Alternatives Considered
 
 | Option | Pros | Cons | Verdict |
-|--------|------|------|---------|
+| --- | --- | --- | --- |
 | A. Skill only | Simple, low cost | No automation | △ |
 | B. /think + /code extension | Full automation | Large change scope | ◎ |
 | C. Dedicated /storybook command | High independence | Separate from existing workflow | △ |

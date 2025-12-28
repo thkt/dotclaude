@@ -206,13 +206,13 @@ Hook injection (maintained) → AI checks skip conditions →
 ### High Confidence Risks (✓)
 
 | Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
+| --- | --- | --- | --- |
 | Excessive skipping | Medium | Low | Conservative skip conditions, always confirm file operations |
 
 ### Potential Risks (→)
 
 | Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
+| --- | --- | --- | --- |
 | Insufficient skipping | Low | Medium | Can respond by adding patterns |
 | AI judgment errors | Medium | Low | Clarify Decision Tree |
 

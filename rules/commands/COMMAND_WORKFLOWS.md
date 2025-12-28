@@ -3,7 +3,7 @@
 ## Quick Reference
 
 | Pattern | Workflow | When |
-|---------|----------|------|
+| --- | --- | --- |
 | Quick Fix | `/fix` | Small bug, dev env |
 | Investigation | `/research` → `/fix` | Unknown cause |
 | Feature | `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate` | New capability |
@@ -11,7 +11,7 @@
 ## Selection Matrix
 
 | Criteria | High Priority | Medium Priority | Low Priority |
-|----------|---------------|-----------------|--------------|
+| --- | --- | --- | --- |
 | **Understanding** | ≥95% → direct | 70-94% → `/research` | <70% → clarify |
 | **Complexity** | Multi-step → workflow | Single file → `/fix` | Unclear → `/think` |
 | **Urgency** | Critical → `/fix` | Normal → standard | Planning → `/think` |
@@ -21,7 +21,7 @@
 Match intent to command:
 
 | User Intent | Analysis | Result |
-|-------------|----------|--------|
+| --- | --- | --- |
 | "X is broken" | Need investigation? | Yes → `/research` → `/fix` |
 | "Add Y feature" | Multi-step? | Yes → `/think` → `/code` → `/test` |
 | "Site is down" | Critical? | Yes → `/fix` (urgent) |
@@ -44,7 +44,7 @@ Match intent to command:
 ## Edge Cases
 
 | Situation | Action |
-|-----------|--------|
+| --- | --- |
 | Ambiguous intent | Ask clarification in understanding check |
 | No command match | Use `Command: N/A`, proceed with direct implementation |
 | Multiple valid approaches | Present options for user choice |

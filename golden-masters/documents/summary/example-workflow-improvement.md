@@ -24,7 +24,7 @@ Apply spec-driven development best practices to current Claude Code workflow, ad
 ## 📋 Change Overview
 
 | Phase | Description | Duration |
-|-------|-------------|----------|
+| --- | --- | --- |
 | Phase 1 | Golden Master introduction | 1 day |
 | Phase 2 | Context minimization | 1 day |
 | Phase 3 | /think split (/sow + /spec) | 2 days |
@@ -52,7 +52,7 @@ Apply spec-driven development best practices to current Claude Code workflow, ad
 ## ⚠️ Risks
 
 | Risk | Impact | Mitigation |
-|------|--------|------------|
+| --- | --- | --- |
 | Existing workflow breakage | High | Gradual migration, compatibility layer |
 | Functionality degradation from context reduction | Medium | Careful selection of essential principles |
 
