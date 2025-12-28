@@ -49,7 +49,7 @@ decision_question: "これは今存在する実際の問題を解決している
 
 ## 関連する原則
 
-- [@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - プログレッシブエンハンスメントの基盤となるシンプルさの原則
+- [@~/.claude/ja/rules/reference/PRINCIPLES.md](~/.claude/ja/rules/reference/PRINCIPLES.md) - プログレッシブエンハンスメントの基盤となるシンプルさの原則
 
 ## 成果優先開発
 

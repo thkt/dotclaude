@@ -35,13 +35,7 @@ When principles conflict:
 
 ### Principles (rules/)
 
-Detailed explanations (Claude already knows these concepts):
-
-- [@~/.claude/rules/reference/SOLID.md](~/.claude/rules/reference/SOLID.md) - SRP, OCP, LSP, ISP, DIP
-- [@~/.claude/rules/reference/DRY.md](~/.claude/rules/reference/DRY.md) - Knowledge duplication, Rule of Three
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - KISS, simplicity principle
-- [@~/.claude/rules/reference/MILLERS_LAW.md](~/.claude/rules/reference/MILLERS_LAW.md) - Cognitive limits (7±2)
-- [@~/.claude/rules/reference/YAGNI.md](~/.claude/rules/reference/YAGNI.md) - Outcome-first development
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Development principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI)
 
 ### Related Skills
 

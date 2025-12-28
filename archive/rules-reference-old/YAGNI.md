@@ -114,7 +114,7 @@ async function getUser(id: string): Promise<User> {
 ## Common YAGNI Violations
 
 | Violation | Problem | YAGNI Solution |
-|-----------|---------|----------------|
+| --- | --- | --- |
 | **Premature Abstraction** | Interface with single implementation | Direct function until 2nd implementation needed |
 | **Premature Optimization** | Complex caching before measuring | Simple query, optimize after profiling |
 | **Premature Configuration** | 50+ config options unused | Hardcode values, add config when variation needed |

@@ -58,7 +58,7 @@ Data-driven frontend optimization. **"Measure before optimizing"** - Donald Knut
 
 ### Principles (rules/)
 
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Avoid premature optimization
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Avoid premature optimization
 
 ### Related Skills
 

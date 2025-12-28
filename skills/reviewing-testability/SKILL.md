@@ -131,8 +131,8 @@ function SearchBox({ query, results, onQueryChange }: SearchBoxProps) {
 
 ### Core Principles
 
-- [@~/.claude/rules/reference/SOLID.md](../../rules/reference/SOLID.md) - Dependency Inversion Principle
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../../rules/reference/OCCAMS_RAZOR.md) - If hard to test, simplify
+- [@~/.claude/rules/reference/PRINCIPLES.md](../../rules/reference/PRINCIPLES.md) - Dependency Inversion Principle
+- [@~/.claude/rules/reference/PRINCIPLES.md](../../rules/reference/PRINCIPLES.md) - If hard to test, simplify
 
 ### Related Skills
 

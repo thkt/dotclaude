@@ -169,5 +169,5 @@ test('accepts sufficient age and balance', () => expect(canPurchase(20, 10)).toB
 
 ## Related Principles
 
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Baby Steps embody the simplicity principle
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Baby Steps embody the simplicity principle
 - [@./test-design.md](./test-design.md) - Systematic test design techniques

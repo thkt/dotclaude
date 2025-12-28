@@ -113,7 +113,7 @@ return <Child onValueChange={setValue} />
 ### コア原則
 
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](../../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - シンプルが先
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../../../rules/reference/OCCAMS_RAZOR.md) - 最もシンプルな解決策
+- [@~/.claude/rules/reference/PRINCIPLES.md](../../../rules/reference/PRINCIPLES.md) - 最もシンプルな解決策
 
 ### 関連スキル
 

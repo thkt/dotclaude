@@ -282,6 +282,6 @@ Task({
 
 ## 関連する原則
 
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - 最もシンプルな解決策
-- [@~/.claude/rules/reference/YAGNI.md](~/.claude/rules/reference/YAGNI.md) - 必要なものだけを構築
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - 最もシンプルな解決策
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - 必要なものだけを構築
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - 段階的な複雑さ

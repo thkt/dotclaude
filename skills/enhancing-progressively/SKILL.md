@@ -61,8 +61,8 @@ Before writing JS, ask:
 ### Principles (rules/)
 
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first approach, outcome-first development
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplest solution wins
-- [@~/.claude/rules/reference/YAGNI.md](~/.claude/rules/reference/YAGNI.md) - Build only what's needed
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Simplest solution wins
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Build only what's needed
 
 ### Related Skills
 

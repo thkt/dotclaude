@@ -27,7 +27,7 @@ This decision follows DRY principle by reusing existing assets rather than dupli
 ### 現状の責任（調査結果）
 
 | # | 責任 | 行数 | セクション |
-|---|------|------|-----------|
+| --- | --- | --- | --- |
 | 1 | spec.md 管理 | 26 | Specification Context |
 | 2 | Storybook 統合 | 73 | Storybook Integration |
 | 3 | スキル参照 | 10 | Integration with Skills |
@@ -209,7 +209,7 @@ code.md already uses hybrid approach:
 #### Recommended Hybrid Approach
 
 | Content Type | Modularization Method | Rationale |
-|--------------|----------------------|-----------|
+| --- | --- | --- |
 | **Knowledge/Principles** | Skills (existing) | Reusable, auto-triggered |
 | **Orchestration/Process** | @-references to commands/code/ | Command-specific |
 | **Templates/Formats** | Inline in sub-files | Single use |
@@ -227,7 +227,7 @@ code.md already uses hybrid approach:
 #### Estimated Impact
 
 | Metric | Current | After Split |
-|--------|---------|-------------|
+| --- | --- | --- |
 | code.md lines | 905 | ~200 |
 | Responsibilities in main file | 10+ | 4-5 |
 | Sub-files | 0 | 5-6 |
@@ -287,8 +287,8 @@ code.md already uses hybrid approach:
 
 - [Zenn記事: Spec駆動開発におけるコンテキストエンジニアリング](https://zenn.dev/kiokisun/articles/cb5ac3d50145ac)
 - [調査結果](../../workspace/planning/2025-12-16-workflow-improvement/)
-- [Miller's Law](../../rules/reference/MILLERS_LAW.md)
-- [SOLID Principles](../../rules/reference/SOLID.md)
+- [Miller's Law](../../rules/reference/PRINCIPLES.md)
+- [SOLID Principles](../../rules/reference/PRINCIPLES.md)
 
 ---
 

@@ -140,7 +140,7 @@ Reason: [Why /fix is insufficient]
 ### Escalation Criteria
 
 | Confidence | Phase | Action |
-|------------|-------|--------|
+| --- | --- | --- |
 | <0.5 | Root Cause | → `/research` immediately |
 | 0.5-0.7 | Any | → Ask user: continue or escalate? |
 | 0.7-0.8 | Implementation | Proceed with defensive approach |
@@ -259,6 +259,6 @@ Before marking as complete:
 
 ## References
 
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplicity
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Simplicity
 - [@~/.claude/rules/development/TIDYINGS.md](~/.claude/rules/development/TIDYINGS.md) - Clean as you go
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first

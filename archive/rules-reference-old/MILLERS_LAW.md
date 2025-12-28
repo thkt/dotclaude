@@ -110,7 +110,7 @@ class DataProcessor {
 ### Recommended Limits
 
 | Context | Ideal | Maximum | Critical |
-|---------|-------|---------|----------|
+| --- | --- | --- | --- |
 | Function arguments | 3 | 5 | 7 |
 | Class methods | 5 | 7 | 9 |
 | Interface properties | 5 | 7 | 9 |

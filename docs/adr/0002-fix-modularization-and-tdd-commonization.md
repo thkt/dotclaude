@@ -19,7 +19,7 @@ Accepted (2025-12-24)
 `/fix` command (`~/.claude/commands/fix.md`) was 239 lines with 10+ responsibilities, violating Miller's Law (7±2):
 
 | # | Responsibility | Lines |
-|---|----------------|-------|
+| --- | --- | --- |
 | 1 | Dynamic Context | ~15 |
 | 2 | Root Cause Analysis (Phase 1) | ~30 |
 | 3 | Regression Test First (Phase 1.5) | ~45 |
@@ -36,7 +36,7 @@ Accepted (2025-12-24)
 TDD fundamentals were duplicated across commands:
 
 | Element | `/code/rgrc-cycle.md` | `/fix` Phase 1.5/3.5 | Duplication |
-|---------|----------------------|---------------------|-------------|
+| --- | --- | --- | --- |
 | RGRC Cycle | 198 lines | Implicit | ~90% |
 | Baby Steps | Detailed | Implied | ~60% |
 | test-generator | Pattern 1 | Pattern 2 | ~70% |
@@ -260,7 +260,7 @@ This document + COMMANDS.md updates.
 ### Risks and Mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
+| --- | --- | --- | --- |
 | `/code` functionality broken | Low | High | Non-destructive updates, references only |
 | Circular references | Medium | Medium | Clear hierarchy (Skills → Shared → Commands) |
 | EN/JA drift | High | Low | Existing process, not new |
@@ -271,14 +271,14 @@ This document + COMMANDS.md updates.
 ### Before
 
 | Command | Main File | Responsibilities | Miller's Law |
-|---------|-----------|------------------|--------------|
+| --- | --- | --- | --- |
 | `/code` | 89 lines | 4-5 | ✅ Compliant |
 | `/fix` | 239 lines | 10+ | ❌ Violated |
 
 ### After
 
 | Command | Main File | Modules | Total Lines | Miller's Law |
-|---------|-----------|---------|-------------|--------------|
+| --- | --- | --- | --- | --- |
 | `/code` | 89 lines | 6 | 807 lines | ✅ Compliant |
 | `/fix` | 164 lines | 6 | 1,482 lines | ✅ Compliant |
 
@@ -314,9 +314,9 @@ This architecture enables:
 ## References
 
 - [ADR 0001](./0001-code-command-responsibility-separation.md) - `/code` modularization pattern
-- [Miller's Law](../../rules/reference/MILLERS_LAW.md) - Cognitive load principle
-- [DRY Principle](../../rules/reference/DRY.md) - Knowledge duplication
-- [SOLID Principles](../../rules/reference/SOLID.md) - SRP application
+- [Miller's Law](../../rules/reference/PRINCIPLES.md) - Cognitive load principle
+- [DRY Principle](../../rules/reference/PRINCIPLES.md) - Knowledge duplication
+- [SOLID Principles](../../rules/reference/PRINCIPLES.md) - SRP application
 - [COMMANDS.md](../COMMANDS.md) - Command documentation
 
 ## Future Considerations

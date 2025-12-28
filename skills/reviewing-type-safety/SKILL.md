@@ -109,8 +109,8 @@ function Select<T>({ value, options, onChange }: SelectProps<T>) { /* ... */ }
 
 ### Core Principles
 
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../../rules/reference/OCCAMS_RAZOR.md) - Don't over-type
-- [@~/.claude/rules/reference/SOLID.md](../../rules/reference/SOLID.md) - Type interfaces follow ISP
+- [@~/.claude/rules/reference/PRINCIPLES.md](../../rules/reference/PRINCIPLES.md) - Don't over-type
+- [@~/.claude/rules/reference/PRINCIPLES.md](../../rules/reference/PRINCIPLES.md) - Type interfaces follow ISP
 
 ### Related Skills
 

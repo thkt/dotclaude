@@ -400,7 +400,7 @@ For each public method/function:
 ### When to Use Each Technique
 
 | Technique | When to Use | Example |
-|-----------|-------------|---------|
+| --- | --- | --- |
 | Equivalence Partitioning | Input ranges, categories | Age validation, user roles |
 | Boundary Value Analysis | Numeric ranges, limits | Min/max values, array bounds |
 | Decision Tables | Multiple conditions (3+) | Access control, state machines |
@@ -409,8 +409,8 @@ For each public method/function:
 
 ### Core Principles
 
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Keep tests simple and focused
-- [@~/.claude/rules/reference/MILLERS_LAW.md](~/.claude/rules/reference/MILLERS_LAW.md) - Limit test case complexity
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Keep tests simple and focused
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Limit test case complexity
 
 ### Development Practices
 

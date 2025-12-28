@@ -131,8 +131,8 @@ function SearchBox({ query, results, onQueryChange }: SearchBoxProps) {
 
 ### コア原則
 
-- [@~/.claude/rules/reference/SOLID.md](../../../rules/reference/SOLID.md) - 依存性逆転の原則
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../../../rules/reference/OCCAMS_RAZOR.md) - テスト困難ならシンプルに
+- [@~/.claude/rules/reference/PRINCIPLES.md](../../../rules/reference/PRINCIPLES.md) - 依存性逆転の原則
+- [@~/.claude/rules/reference/PRINCIPLES.md](../../../rules/reference/PRINCIPLES.md) - テスト困難ならシンプルに
 
 ### 関連スキル
 

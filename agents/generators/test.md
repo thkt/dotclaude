@@ -456,7 +456,7 @@ Before completing test generation:
 
 ### Occam's Razor
 
-[@~/.claude/rules/reference/OCCAMS_RAZOR.md]
+[@~/.claude/rules/reference/PRINCIPLES.md]
 
 - **Simplest tests that verify behavior**
 - **No complex test utilities unless proven necessary**
@@ -481,7 +481,7 @@ Before completing test generation:
 
 ### DRY (Rule of Three)
 
-[@~/.claude/rules/reference/DRY.md]
+[@~/.claude/rules/reference/PRINCIPLES.md]
 
 - **First time**: Write test inline
 - **Second time**: Note duplication

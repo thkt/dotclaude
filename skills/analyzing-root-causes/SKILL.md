@@ -113,7 +113,7 @@ return <Child onValueChange={setValue} />
 ### Core Principles
 
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - Simple first
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](../../rules/reference/OCCAMS_RAZOR.md) - Simplest solution
+- [@~/.claude/rules/reference/PRINCIPLES.md](../../rules/reference/PRINCIPLES.md) - Simplest solution
 
 ### Related Skills
 

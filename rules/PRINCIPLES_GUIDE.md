@@ -9,7 +9,7 @@
 ### Priority Matrix
 
 | Priority | Principle | One-liner | When to Apply |
-|----------|-----------|-----------|---------------|
+| --- | --- | --- | --- |
 | 🔴 **Essential** | | | |
 | | Occam's Razor | Choose the simplest solution that works | Always - every decision |
 | | Progressive Enhancement | Build simple, enhance gradually | Starting any implementation |
@@ -38,7 +38,7 @@ New Task?
 ### Conflict Resolution
 
 | Conflict | Resolution | Example |
-|----------|------------|---------|
+| --- | --- | --- |
 | **DRY vs Readable** | Readable wins | Accept duplication if abstraction hurts clarity |
 | **SOLID vs Simple** | Simple wins | Don't over-engineer for imagined futures |
 | **Perfect vs Working** | Working wins | Ship leaky abstractions that solve real problems |
@@ -56,7 +56,7 @@ New Task?
 ### Quick Commands
 
 | Situation | Command | Principles Applied |
-|-----------|---------|-------------------|
+| --- | --- | --- |
 | Bug fix | `/fix` | Occam's Razor, Progressive Enhancement |
 | New feature | `/research → /think → /code` | TDD, Baby Steps, SOLID |
 | Refactoring | `/research → /code` | TIDYINGS, DRY, Readable Code |
@@ -101,7 +101,7 @@ For detailed principle relationships and dependency graph, see:
 ### Practical Application Scenarios
 
 | Scenario | Key Principles | Approach |
-|----------|---------------|----------|
+| --- | --- | --- |
 | **New Feature** | Progressive Enhancement<br>TDD/Baby Steps<br>Readable Code | 1. Start with simplest version<br>2. Write failing test → minimal code<br>3. Ensure clarity for new developers<br>4. Consider SOLID only if: multi-team, public API, or explicit future requirements |
 | **Legacy Fix** | Occam's Razor<br>TIDYINGS<br>Leaky Abstraction | 1. Minimal change to fix issue<br>2. Clean only touched code<br>3. Question DRY: is duplication harmful?<br>4. Accept framework limitations, don't fight them |
 | **Code Review** | All principles | Check each: Simpler way? (Occam)<br>Ship incrementally? (Progressive)<br>Understandable? (Readable)<br>Duplication problematic? (DRY)<br>Method chains >2? (Demeter)<br>Fighting framework? (Leaky) |
@@ -111,7 +111,7 @@ For detailed principle relationships and dependency graph, see:
 #### When Principles Compete
 
 | Conflict | Resolution | Example |
-|----------|------------|---------|
+| --- | --- | --- |
 | **DRY vs Readable** | Readable wins | Accept duplication if abstraction hurts clarity |
 | **SOLID vs Simple** | Simple wins | Don't over-engineer for imagined futures |
 | **Perfect vs Working** | Working wins | Ship leaky abstractions that solve real problems |
@@ -119,7 +119,7 @@ For detailed principle relationships and dependency graph, see:
 ### Integration with Commands
 
 | Command | Primary Principles | Secondary Principles |
-|---------|-------------------|---------------------|
+| --- | --- | --- |
 | `/think` | SOLID, Occam's Razor | Progressive Enhancement |
 | `/research` | - | All principles for context |
 | `/code` | TDD, Baby Steps | Readable Code, DRY, AI-Assisted Development |
@@ -217,12 +217,12 @@ When in doubt:
 
 ### Core Documents
 
-- [@./reference/OCCAMS_RAZOR.md](./reference/OCCAMS_RAZOR.md) - The meta-principle
+- [@./reference/PRINCIPLES.md](./reference/PRINCIPLES.md) - Development principles (thresholds & criteria)
 - [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md) - The approach
 - [@./development/READABLE_CODE.md](./development/READABLE_CODE.md) - The baseline
 
 ### All Principles
 
-- Reference: [@./reference/](./reference/) - SOLID, DRY, Occam's Razor
+- Reference: [@./reference/PRINCIPLES.md](./reference/PRINCIPLES.md) - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI
 - Development: [@./development/](./development/) - All practical principles
 - Commands: [@../docs/COMMANDS.md](../docs/COMMANDS.md) - Integrated workflows

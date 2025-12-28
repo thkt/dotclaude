@@ -136,7 +136,7 @@ function processOrder(order) {
 
 ### オッカムの剃刀との関係
 
-[@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md)
+[@~/.claude/ja/rules/reference/PRINCIPLES.md](~/.claude/ja/rules/reference/PRINCIPLES.md)
 
 - AIは過度な設計をしがち
 - 人間がシンプルさの原則を適用

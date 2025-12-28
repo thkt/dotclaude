@@ -288,8 +288,8 @@ Generate ACTIVE regression tests:
 ### Principles (rules/)
 
 - [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Full TDD methodology
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplest solution
-- [@~/.claude/rules/reference/YAGNI.md](~/.claude/rules/reference/YAGNI.md) - Build only what's needed
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Simplest solution
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Build only what's needed
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Incremental complexity
 
 ### Implementation Details

@@ -445,7 +445,7 @@ npm run lint | grep -E "problems\|warnings"
 
 ### オッカムの剃刀
 
-[@~/.claude/ja/rules/reference/OCCAMS_RAZOR.md](~/.claude/ja/rules/reference/OCCAMS_RAZOR.md) - 「必要なしに存在を増やすべきではない」
+[@~/.claude/ja/rules/reference/PRINCIPLES.md](~/.claude/ja/rules/reference/PRINCIPLES.md) - 「必要なしに存在を増やすべきではない」
 
 修正時の適用:
 

@@ -11,7 +11,7 @@ Apply the fix with appropriate defensive measures based on confidence in root ca
 Choose implementation strategy based on confidence from Phase 1:
 
 | Confidence | Strategy | Approach |
-|------------|----------|----------|
+| --- | --- | --- |
 | **High (>0.9)** | Direct fix | Implement straightforward solution |
 | **Medium (0.7-0.9)** | Defensive fix | Add checks and guards |
 | **Low (<0.7)** | Escalate | Switch to `/research` or `/think` |
@@ -223,5 +223,5 @@ Next: Verification (Phase 3)
 
 ## References
 
-- [@~/.claude/rules/reference/OCCAMS_RAZOR.md](~/.claude/rules/reference/OCCAMS_RAZOR.md) - Simplicity principle
+- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Simplicity principle
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first approach
