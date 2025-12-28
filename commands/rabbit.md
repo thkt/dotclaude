@@ -12,6 +12,23 @@ dependencies: [utilizing-cli-tools]
 
 Run CodeRabbit CLI for external AI code review. Provides a second opinion from an independent AI system with different analysis patterns.
 
+## Authentication (Recommended)
+
+For enhanced reviews, authenticate first:
+
+```bash
+coderabbit auth login
+```
+
+**Benefits of authentication:**
+
+- Team learnings applied to reviews
+- Full contextual analysis
+- Team standards enforcement
+- Personalized recommendations
+
+Check auth status in Error Handling section if issues occur.
+
 ## When to Use
 
 | Use `/rabbit` | Use other command |
@@ -29,6 +46,34 @@ Run CodeRabbit CLI for external AI code review. Provides a second opinion from a
 | Speed | Fast (10-30s) | Slower (multi-agent) |
 | Focus | General code quality | Project-specific rules |
 | Best for | Quick sanity check | Comprehensive review |
+
+## Execution Time
+
+Review time varies by scope:
+
+| Scope | Time | Recommendation |
+| --- | --- | --- |
+| Small (< 10 files) | 10-30 seconds | Run inline |
+| Medium (10-50 files) | 1-5 minutes | Run inline or background |
+| Large (50+ files) | 7-30+ minutes | **Run in background** |
+
+For large reviews, tell your AI agent to run CodeRabbit in the background and check back later.
+
+## AI Agent Best Practices
+
+When using `/rabbit` with AI agents (Claude Code, Cursor, etc.):
+
+1. **Loop limits**: Limit to 2-3 review cycles to prevent infinite fix loops
+2. **Background for large PRs**: Use `run_in_background: true` for 50+ file changes
+3. **Don't chase perfection**: Fix critical issues, accept minor suggestions as-is
+
+```markdown
+Recommended workflow:
+/rabbit → /fix (critical only) → /rabbit (verify) → /commit
+
+NOT:
+/rabbit → /fix → /rabbit → /fix → /rabbit → ... (infinite loop)
+```
 
 ## Usage
 

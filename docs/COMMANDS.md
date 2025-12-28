@@ -171,10 +171,12 @@ Choose based on complexity:
 ### /rabbit - CodeRabbit AI Review
 
 - External AI code review via CodeRabbit CLI
-- Fast execution (10-30 seconds)
+- Fast execution (10-30s small, 7-30min+ large)
 - Provides second opinion from independent AI
 - Options: `--base <branch>`, `--type <all|committed|uncommitted>`
 - Complements `/audit` with external perspective
+- **Recommended**: Run `coderabbit auth login` for team learnings
+- **Large PRs**: Use background execution for 50+ files
 
 ### /audit - Code Review
 
