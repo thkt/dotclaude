@@ -16,7 +16,7 @@ Create Architecture Decision Records in MADR format through a structured 6-phase
 ## 6-Phase Process Overview
 
 | Phase | Purpose | Key Actions |
-|-------|---------|-------------|
+| --- | --- | --- |
 | 1. Pre-Check | Prevent duplicates | Check existing ADRs, validate naming, verify directory |
 | 2. Template | Select structure | Choose from 4 templates based on decision type |
 | 3. References | Gather evidence | Collect project docs, issues, PRs, external resources |
@@ -27,7 +27,7 @@ Create Architecture Decision Records in MADR format through a structured 6-phase
 ## Template Selection
 
 | Template | Use Case |
-|----------|----------|
+| --- | --- |
 | technology-selection | Library, framework, language choices |
 | architecture-pattern | Structure, design policy decisions |
 | process-change | Workflow, rule changes |

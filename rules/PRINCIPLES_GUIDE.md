@@ -217,12 +217,12 @@ When in doubt:
 
 ### Core Documents
 
-- [@./reference/PRINCIPLES.md](./reference/PRINCIPLES.md) - Development principles (thresholds & criteria)
+- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Principles with thresholds
 - [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md) - The approach
 - [@./development/READABLE_CODE.md](./development/READABLE_CODE.md) - The baseline
 
 ### All Principles
 
-- Reference: [@./reference/PRINCIPLES.md](./reference/PRINCIPLES.md) - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI
-- Development: [@./development/](./development/) - All practical principles
+- Skill: [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI
+- Development: [@./development/](./development/) - Practical principles
 - Commands: [@../docs/COMMANDS.md](../docs/COMMANDS.md) - Integrated workflows

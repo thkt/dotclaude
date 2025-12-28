@@ -97,7 +97,7 @@ Keywords and contexts that should trigger this skill:
 ## Rule Type Reference
 
 | Type | Action | Use Case |
-|------|--------|----------|
+| --- | --- | --- |
 | block | Prevents operation | Dangerous commands, security violations |
 | warn | Shows warning, allows proceed | Code style, best practices |
 

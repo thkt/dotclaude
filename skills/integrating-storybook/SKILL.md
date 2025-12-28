@@ -16,7 +16,7 @@ Auto-generate Stories skeletons from Component API specifications in spec.md.
 ## Core Concepts
 
 | Concept | Description |
-|---------|-------------|
+| --- | --- |
 | Component API | Props, Variants, States defined in spec.md |
 | CSF3 | Component Story Format 3 + autodocs |
 | Auto-generation | `/code` generates Stories from spec.md |
@@ -37,7 +37,7 @@ Added automatically when `/think` detects frontend feature.
 ## Workflow
 
 | Command | Action |
-|---------|--------|
+| --- | --- |
 | `/think "Add Button"` | Adds Component API section to spec.md |
 | `/code` | Generates `Button.stories.tsx` from spec |
 
@@ -46,7 +46,7 @@ Added automatically when `/think` detects frontend feature.
 When Stories file exists:
 
 | Option | Action |
-|--------|--------|
+| --- | --- |
 | [O] Overwrite | Replace existing file |
 | [S] Skip | Keep existing file |
 | [M] Merge | Show diff, manual integration |

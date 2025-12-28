@@ -287,8 +287,6 @@ code.md already uses hybrid approach:
 
 - [Zenn記事: Spec駆動開発におけるコンテキストエンジニアリング](https://zenn.dev/kiokisun/articles/cb5ac3d50145ac)
 - [調査結果](../../workspace/planning/2025-12-16-workflow-improvement/)
-- [Miller's Law](../../rules/reference/PRINCIPLES.md)
-- [SOLID Principles](../../rules/reference/PRINCIPLES.md)
 
 ---
 

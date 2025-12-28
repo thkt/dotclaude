@@ -34,7 +34,7 @@ Message shown when pattern matches (supports **Markdown**).
 ## Event Types
 
 | Event | When Triggered | Use Case |
-|-------|---------------|----------|
+| --- | --- | --- |
 | `file` | Edit/Write | Code patterns, debug code |
 | `bash` | Bash commands | Dangerous commands |
 | `stop` | Claude stops | Require tests before done |
@@ -43,14 +43,14 @@ Message shown when pattern matches (supports **Markdown**).
 ## Actions
 
 | Action | Behavior | Exit Code |
-|--------|----------|-----------|
+| --- | --- | --- |
 | `warn` | Show message, continue | 0 |
 | `block` | Show message, stop | 2 |
 
 ## Field Reference
 
 | Event | Fields |
-|-------|--------|
+| --- | --- |
 | file | `file_path`, `new_text`, `old_text`, `content` |
 | bash | `command` |
 | prompt | `user_prompt` |
@@ -59,7 +59,7 @@ Message shown when pattern matches (supports **Markdown**).
 ## Common Patterns
 
 | Pattern | Matches |
-|---------|---------|
+| --- | --- |
 | `rm\s+-rf` | rm -rf commands |
 | `console\.log\(` | console.log statements |
 | `\.env$` | .env files |
@@ -68,7 +68,7 @@ Message shown when pattern matches (supports **Markdown**).
 ## Rule Management
 
 | Location | Scope |
-|----------|-------|
+| --- | --- |
 | `.claude/hookify.*.local.md` | Project |
 | `~/.claude/hookify.*.local.md` | Global |
 

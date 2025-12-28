@@ -190,7 +190,6 @@ All reviewers should check:
 
 ## References
 
-- [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md] - Output Verifiability (Principle #4)
 - [@~/.claude/skills/applying-code-principles/SKILL.md] - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - HTML-first approach
 - [@~/.claude/rules/development/READABLE_CODE.md] - Code readability principles

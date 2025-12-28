@@ -25,7 +25,7 @@ decision_question: "Are test cases covering all meaningful scenarios efficiently
 ## Test Design Techniques
 
 | Technique | Concept | Pattern | Example |
-|-----------|---------|---------|---------|
+| --- | --- | --- | --- |
 | **Equivalence Partitioning** | Divide inputs into groups that behave similarly | Test one value from each partition | Age validation: <18 (invalid), 18-120 (valid), >120 (invalid) → Test 17, 30, 121 |
 | **Boundary Value Analysis** | Test at partition edges where bugs hide | Test [min-1, min, max, max+1] | Age boundaries 18, 120 → Test 17, 18, 120, 121 |
 | **Decision Tables** | Map all condition combinations for complex logic (3+ conditions) | Create truth table, derive tests | Access control: isLoggedIn × isPremium × isActive → 5 meaningful combinations to test |
@@ -136,7 +136,7 @@ describe('validateAge', () => {
 ## Integration with Other Principles
 
 | Principle | Apply to Tests | Key Pattern |
-|-----------|---------------|-------------|
+| --- | --- | --- |
 | **Occam's Razor** | Avoid test builders, helpers for simple cases | Direct test > complex test infrastructure |
 | **Readable Code** | Clear naming, one focus per test, Arrange-Act-Assert structure, minimal setup | Test names describe what they verify |
 | **Miller's Law** | Group tests into categories (7±2 limit) | `describe('validation', () => { describe('email', ...), describe('password', ...) })` |
@@ -144,7 +144,7 @@ describe('validateAge', () => {
 ## Framework-Agnostic Patterns
 
 | Framework | Structure | Assertion |
-|-----------|-----------|-----------|
+| --- | --- | --- |
 | **Jest/Vitest** | `describe('unit', () => { test('behavior', () => {...}) })` | `expect(actual).toBe(expected)` |
 | **Mocha/Chai** | `describe('unit', () => { it('should behavior', () => {...}) })` | `expect(actual).to.equal(expected)` |
 | **Pytest** | `class TestUnit: def test_behavior(self): ...` | `assert actual == expected` |
@@ -153,7 +153,7 @@ describe('validateAge', () => {
 ## Common Pitfalls
 
 | Pitfall | Problem | Solution |
-|---------|---------|----------|
+| --- | --- | --- |
 | **Random Testing** | Testing arbitrary values (25, 50, 75) without rationale - misses boundaries | Use systematic design: test boundaries (min-1, min, max, max+1) + one equivalence value |
 | **Testing Implementation** | Spying on internal method calls - brittle, couples to implementation | Test behavior: verify outcomes, not how they're achieved |
 | **Incomplete Coverage** | Only testing happy path - missing edge cases | Cover all partitions + boundaries: [min-1, min, valid, max, max+1] |
@@ -176,7 +176,7 @@ For each public method/function:
 ### When to Use Each Technique
 
 | Technique | When to Use | Example |
-|-----------|-------------|---------|
+| --- | --- | --- |
 | Equivalence Partitioning | Input ranges, categories | Age validation, user roles |
 | Boundary Value Analysis | Numeric ranges, limits | Min/max values, array bounds |
 | Decision Tables | Multiple conditions (3+) | Access control, state machines |

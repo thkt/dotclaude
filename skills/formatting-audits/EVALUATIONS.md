@@ -97,7 +97,7 @@ Keywords and contexts that should trigger this skill:
 ## Scoring Criteria Reference
 
 | Category | Max Points | Key Checks |
-|----------|-----------|------------|
+| --- | --- | --- |
 | Accuracy | 25 | Confidence markers, evidence, fact/inference distinction |
 | Completeness | 25 | Acceptance criteria, risks, dependencies |
 | Clarity | 25 | Readability, unambiguous language, structure |

@@ -98,7 +98,7 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 ### Transition Plan
 
 | Phase | Duration | Activities | Success Criteria |
-|-------|----------|------------|------------------|
+| --- | --- | --- | --- |
 | Preparation | {{PHASE_1_DURATION}} | {{PHASE_1_ACTIVITIES}} | {{PHASE_1_CRITERIA}} |
 | Pilot | {{PHASE_2_DURATION}} | {{PHASE_2_ACTIVITIES}} | {{PHASE_2_CRITERIA}} |
 | Full Rollout | {{PHASE_3_DURATION}} | {{PHASE_3_ACTIVITIES}} | {{PHASE_3_CRITERIA}} |

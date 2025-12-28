@@ -134,7 +134,6 @@ function createUserService(deps: { http: HttpClient; storage: StorageService }):
 
 ### SOLID - Dependency Inversion Principle
 
-[@~/.claude/rules/reference/PRINCIPLES.md] - "Depend on abstractions, not concretions"
 
 Key questions:
 
@@ -143,7 +142,6 @@ Key questions:
 
 ### Occam's Razor
 
-[@~/.claude/rules/reference/PRINCIPLES.md]
 
 If code is hard to test, it's often too complex. Simplify the code, not the test approach.
 

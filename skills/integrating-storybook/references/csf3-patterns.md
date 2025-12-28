@@ -345,7 +345,7 @@ ${stateStories}
 Conversion rules from Props types to argTypes:
 
 | TypeScript Type | argTypes control |
-|----------------|------------------|
+| --- | --- |
 | `string` | `control: 'text'` |
 | `number` | `control: 'number'` |
 | `boolean` | `control: 'boolean'` |

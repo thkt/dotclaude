@@ -175,7 +175,6 @@ Key questions:
 
 ### Occam's Razor
 
-[@~/.claude/rules/reference/PRINCIPLES.md] - Prefer semantic HTML over complex ARIA
 
 ## Output Format
 

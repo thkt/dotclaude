@@ -46,7 +46,7 @@ The abstraction leaked. You needed SQL knowledge anyway.
 ## Common Leaky Abstractions
 
 | Abstraction | How it Leaks | Solution |
-|-------------|--------------|----------|
+| --- | --- | --- |
 | **ORMs** | N+1 queries, no SQL control | Provide raw query escape hatch |
 | **Network Calls** | Pretends local, fails unpredictably | Add timeout, retry, error handling |
 | **Cross-Platform** | Platform-specific paths/APIs | Use platform-aware libraries |
@@ -54,7 +54,7 @@ The abstraction leaked. You needed SQL knowledge anyway.
 ## Designing with Leaks in Mind
 
 | Strategy | How | When |
-|----------|-----|------|
+| --- | --- | --- |
 | **Progressive Abstraction** | Simple API for 80%, raw access for 20% | `findUsers(criteria)` + `findUsersRaw(sql)` |
 | **Escape Hatches** | Expose underlying client | `get rawClient()` for direct access |
 | **Document Boundaries** | JSDoc with limits | Max response: 5MB, timeout: 30s |

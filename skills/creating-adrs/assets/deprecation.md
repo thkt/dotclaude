@@ -86,7 +86,7 @@ Chosen option: "Deprecate {{DEPRECATED_TECH_NAME}} and migrate to {{REPLACEMENT_
 ### Timeline
 
 | Phase | Period | Goal | Success Criteria |
-|-------|--------|------|------------------|
+| --- | --- | --- | --- |
 | Phase 1: Preparation | {{PHASE_1_PERIOD}} | {{PHASE_1_GOAL}} | {{PHASE_1_CRITERIA}} |
 | Phase 2: Pilot Migration | {{PHASE_2_PERIOD}} | {{PHASE_2_GOAL}} | {{PHASE_2_CRITERIA}} |
 | Phase 3: Gradual Migration | {{PHASE_3_PERIOD}} | {{PHASE_3_GOAL}} | {{PHASE_3_CRITERIA}} |
@@ -185,7 +185,7 @@ Chosen option: "Deprecate {{DEPRECATED_TECH_NAME}} and migrate to {{REPLACEMENT_
 ### Announcements
 
 | Date | Content | Audience | Channel |
-|------|---------|----------|---------|
+| --- | --- | --- | --- |
 | {{ANNOUNCE_DATE_1}} | Deprecation notice | All developers | {{CHANNEL_1}} |
 | {{ANNOUNCE_DATE_2}} | Migration start | Related teams | {{CHANNEL_2}} |
 | {{ANNOUNCE_DATE_3}} | Completion report | All developers | {{CHANNEL_3}} |

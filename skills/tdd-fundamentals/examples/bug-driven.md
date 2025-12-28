@@ -352,7 +352,7 @@ if (discount > price) {
 ## Comparison with Feature-Driven TDD
 
 | Aspect | Bug-Driven | Feature-Driven |
-|--------|-----------|----------------|
+| --- | --- | --- |
 | **Trigger** | Bug report | Specification |
 | **Test state** | Active (not skipped) | Skip state initially |
 | **Test count** | 1 main + edge cases | All tests generated upfront |

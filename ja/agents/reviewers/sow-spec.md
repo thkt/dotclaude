@@ -219,7 +219,6 @@ SOW/Specレビューでの適用:
 
 ### 出力の検証可能性
 
-[@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md] - 原則 #4
 
 SOW/Specレビューでの適用:
 

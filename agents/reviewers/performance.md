@@ -125,7 +125,6 @@ Target thresholds:
 
 ### Occam's Razor
 
-[@~/.claude/rules/reference/PRINCIPLES.md] - Identify premature optimizations
 
 Key questions:
 

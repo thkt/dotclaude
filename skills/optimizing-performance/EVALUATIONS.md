@@ -99,7 +99,7 @@ Keywords and contexts that should trigger this skill:
 This skill uses section-based content. Verify correct section loading:
 
 | Query Contains | Expected Section Loaded |
-|---------------|------------------------|
+| --- | --- |
 | LCP, FID, CLS, Web Vitals | references/web-vitals.md |
 | React, useMemo, useCallback, re-render | references/react-optimization.md |
 | bundle, code splitting, lazy | references/bundle-optimization.md |

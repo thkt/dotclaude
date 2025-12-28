@@ -99,7 +99,7 @@ Keywords and contexts that should trigger this skill:
 This skill uses section-based content. Verify correct section loading:
 
 | Query Contains | Expected Section Loaded |
-|---------------|------------------------|
+| --- | --- |
 | XSS, injection, CSRF, input | references/owasp-basic.md |
 | authentication, password, session, JWT | references/authentication.md |
 | access control, authorization, IDOR | references/access-control.md |

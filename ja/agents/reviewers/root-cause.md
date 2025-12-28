@@ -103,7 +103,6 @@ return <Child onValueChange={setValue} />
 
 ### Occam's Razor
 
-[@~/.claude/rules/reference/PRINCIPLES.md] - Root cause solutions are almost always simpler than patches
 
 ## Output Format
 

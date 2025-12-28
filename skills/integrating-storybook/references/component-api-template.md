@@ -14,7 +14,7 @@ Component API template added to the `## 4. UI Specification` section of spec.md.
 #### Props
 
 | Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
+| --- | --- | --- | --- | --- |
 | children | ReactNode | ✓ | - | Content to display |
 | variant | 'primary' \| 'secondary' | - | 'primary' | Visual style variant |
 | size | 'sm' \| 'md' \| 'lg' | - | 'md' | Size of the component |
@@ -36,7 +36,7 @@ Component API template added to the `## 4. UI Specification` section of spec.md.
 #### States
 
 | State | Description | Visual Change |
-|-------|-------------|---------------|
+| --- | --- | --- |
 | default | Normal state | Base styling |
 | hover | Mouse hover | Slightly lighter background |
 | active | Being pressed | Darker background |
@@ -241,7 +241,7 @@ Used for article previews, product cards, user profiles, etc.
 ## Template Variables
 
 | Variable | Description | Example |
-|----------|-------------|---------|
+| --- | --- | --- |
 | `[ComponentName]` | Component name (PascalCase) | `Button`, `Card` |
 | `[Description]` | 1-2 sentence description | "Interactive button for..." |
 | Props table | Markdown table | See above |

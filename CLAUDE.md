@@ -50,8 +50,9 @@ Complete guide: [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
 ### [P4] OPTIONAL - File Deletion Behavior
 
 - **NEVER use rm command**: rm is disabled in settings.json
+- **NEVER use git rm**: Also deletes files permanently
 - **Always use Trash**: Move files to ~/.Trash/ instead of permanent deletion
-- **Command**: Use `mv [file] ~/.Trash/` for file deletion
+- **Command**: Use `mv [file] ~/.Trash/` then `git add -A` to record deletion
 - **Rationale**: Safety - enables recovery of accidentally deleted files
 
 ## Work Completion Guidelines

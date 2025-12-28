@@ -142,7 +142,6 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 ### Occam's Razor
 
-[@~/.claude/rules/reference/PRINCIPLES.md] - Applied to types
 
 - Let TypeScript infer when obvious
 - Avoid over-typing what's already clear

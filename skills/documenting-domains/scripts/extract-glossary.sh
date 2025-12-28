@@ -24,7 +24,7 @@ extract_terms() {
     echo "### Domain Term Candidates"
     echo ""
     echo "| Term | Occurrences | Kind |"
-    echo "|------|-------------|------|"
+    echo "| --- | --- | --- |"
 
     # Extract from class names
     local class_names=$(grep -roh --include="*.ts" --include="*.tsx" --include="*.py" -E '(class|interface)\s+[A-Z][a-zA-Z0-9]+' "$TARGET_DIR" 2>/dev/null | \

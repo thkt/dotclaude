@@ -51,7 +51,7 @@ Skill names should use gerund form to clearly describe the activity:
 **Current skill examples**:
 
 | Gerund Form | Meaning |
-|-------------|---------|
+| --- | --- |
 | `creating-adrs` | ADRを作成する |
 | `optimizing-performance` | パフォーマンスを最適化する |
 | `reviewing-security` | セキュリティをレビューする |

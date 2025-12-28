@@ -9,11 +9,9 @@ allowed-tools: Read, Grep, Glob
 
 # Code Principles
 
-## Purpose
+Claude knows all principles. This file defines project-specific thresholds and priority.
 
-Apply SOLID, DRY, Occam's Razor, Miller's Law, YAGNI with project-specific priority.
-
-## Project Priority Order
+## Priority Order
 
 When principles conflict:
 
@@ -30,19 +28,32 @@ When principles conflict:
 - "Understandable in <1 min?" (Miller's Law)
 - "Duplicating knowledge?" (DRY)
 - "Needed now?" (YAGNI)
+- "Single reason to change?" (SOLID/SRP)
 
-## References
+## Thresholds
 
-### Principles (rules/)
+### Miller's Law
 
-- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Development principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI)
+| Target | Ideal | Max | Limit |
+| --- | --- | --- | --- |
+| Function args | 3 | 5 | 7 |
+| Class methods | 5 | 7 | 9 |
+| Conditionals | 3 | 5 | 7 |
 
-### Related Skills
+### DRY
 
-- `generating-tdd-tests` - 原則を適用したテスト設計
-- `reviewing-readability` - 可読性レビュー
+- **Rule of Three**: Abstract on 3rd duplication
 
-### Used by Commands
+### SOLID
 
-- `/code` - TDD実装時の原則適用
-- `/audit` - コードレビュー基準
+- Create interface only when 2nd implementation appears
+- No single-implementation interfaces
+
+### YAGNI
+
+Before adding, confirm:
+
+1. Problem exists now? → No = don't build
+2. Failed in production? → No = no error handling yet
+3. User requested? → No = no feature yet
+4. Measured evidence? → No = no optimization yet

@@ -101,7 +101,7 @@ Never skip step 2-3.
 ## Integration with Development Principles
 
 | Principle | AI Role | Human Role | Key Insight |
-|-----------|---------|------------|-------------|
+| --- | --- | --- | --- |
 | **TDD/Baby Steps** [@./TDD_RGRC.md] | Generate test scaffolding | Write assertions from requirements | Baby steps still apply - one test at a time |
 | **Occam's Razor** [@../reference/OCCAMS_RAZOR.md] | Generates solutions | Applies simplicity filter | AI tends to over-engineer - question every abstraction |
 | **Progressive Enhancement** [@./PROGRESSIVE_ENHANCEMENT.md] | Generate simple version | Enhance based on real needs | Don't implement "future-proof" suggestions |
@@ -110,14 +110,14 @@ Never skip step 2-3.
 ## Warning Signs
 
 | Warning Type | Signs |
-|--------------|-------|
+| --- | --- |
 | **Over-Reliance** | Accepting without review, not understanding code, skipping testing, treating as infallible |
 | **Under-Utilizing** | Writing all boilerplate manually, not exploring with AI, ignoring suggestions, insufficient context |
 
 ## Best Practices
 
 | Practice | How | When |
-|----------|-----|------|
+| --- | --- | --- |
 | **Rich Context** | Provide: task details, existing patterns (link/paste), business rules, edge cases, testing framework, constraints | Every AI request - specificity = quality |
 | **Iterative Refinement** | Generate → Review → Refine prompt → Regenerate → Repeat | When initial output needs improvement |
 | **Learn from Outputs** | Good code: analyze why, note prompt, reuse pattern<br>Poor code: identify prompt gap, note for future, improve technique | After every AI interaction |
@@ -125,7 +125,7 @@ Never skip step 2-3.
 ## Guardrails
 
 | Category | Rules |
-|----------|-------|
+| --- | --- |
 | **Prohibit** | Committing without review, security-critical without expert review, blindly accepting architecture, skipping tests |
 | **Require** | Human review always, test AI code, understand before use, document AI assistance |
 

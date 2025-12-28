@@ -220,7 +220,6 @@ Key questions:
 
 ### Output Verifiability
 
-[@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md] - Principle #4
 
 Application in SOW/Spec review:
 

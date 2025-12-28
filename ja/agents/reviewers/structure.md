@@ -105,11 +105,9 @@ function Modal() { const [isOpen, setIsOpen] = useState(false) } // Component: U
 
 ### Occam's Razor
 
-[@~/.claude/rules/reference/PRINCIPLES.md] - "Entities should not be multiplied without necessity"
 
 ### DRY Principle
 
-[@~/.claude/rules/reference/PRINCIPLES.md] - "Every piece of knowledge must have a single, unambiguous, authoritative representation"
 
 ## Output Format
 

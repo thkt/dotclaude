@@ -87,7 +87,7 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 ### Quality Attributes
 
 | Attribute | Priority | Approach |
-|-----------|----------|----------|
+| --- | --- | --- |
 | {{QA_1}} | {{QA_1_PRIORITY}} | {{QA_1_METHOD}} |
 | {{QA_2}} | {{QA_2_PRIORITY}} | {{QA_2_METHOD}} |
 
