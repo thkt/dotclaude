@@ -134,14 +134,12 @@ function createUserService(deps: { http: HttpClient; storage: StorageService }):
 
 ### SOLID - Dependency Inversion Principle
 
-
 Key questions:
 
 1. Can this be tested without real external dependencies?
 2. Are dependencies explicit (parameters/props) or hidden (imports)?
 
 ### Occam's Razor
-
 
 If code is hard to test, it's often too complex. Simplify the code, not the test approach.
 

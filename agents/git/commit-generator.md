@@ -49,7 +49,7 @@ git diff --staged --numstat
 Analyze changes to determine commit type:
 
 | Type | Description | Trigger Patterns |
-|------|-------------|------------------|
+| --- | --- | --- |
 | `feat` | New feature | New files, new functions, new components |
 | `fix` | Bug fix | Error handling, validation fixes, corrections |
 | `docs` | Documentation | .md files, comments, README updates |

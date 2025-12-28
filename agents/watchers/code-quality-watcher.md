@@ -51,7 +51,7 @@ When invoked, analyze recent changes:
 ### 2. Reviewer Selection Matrix
 
 | File Type | Primary Reviewer | Secondary |
-|-----------|-----------------|-----------|
+| --- | --- | --- |
 | `*.tsx`, `*.jsx` | performance-reviewer | accessibility-reviewer |
 | `*.ts`, `*.js` | type-safety-reviewer | readability-reviewer |
 | `*.css`, `*.scss` | progressive-enhancer | - |

@@ -125,7 +125,6 @@ Target thresholds:
 
 ### Occam's Razor
 
-
 Key questions:
 
 1. Is this optimization solving a measured problem?

@@ -456,7 +456,6 @@ Before completing test generation:
 
 ### Occam's Razor
 
-
 - **Simplest tests that verify behavior**
 - **No complex test utilities unless proven necessary**
 - **Direct mocks over elaborate frameworks**
@@ -479,7 +478,6 @@ Before completing test generation:
 - **Commit**: After each test passes
 
 ### DRY (Rule of Three)
-
 
 - **First time**: Write test inline
 - **Second time**: Note duplication

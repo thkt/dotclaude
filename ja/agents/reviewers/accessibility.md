@@ -175,7 +175,6 @@ Key questions:
 
 ### Occam's Razor
 
-
 ## Output Format
 
 Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specific metrics:

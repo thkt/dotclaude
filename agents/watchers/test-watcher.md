@@ -48,7 +48,7 @@ Monitor code changes and execute relevant tests in the background, providing ear
 ### 2. Test File Mapping
 
 | Source Pattern | Test Pattern |
-|----------------|--------------|
+| --- | --- |
 | `src/components/Foo.tsx` | `src/components/Foo.test.tsx` |
 | `src/utils/bar.ts` | `src/utils/bar.test.ts`, `src/utils/__tests__/bar.ts` |
 | `lib/module.js` | `test/module.test.js`, `lib/module.spec.js` |

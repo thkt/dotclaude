@@ -91,7 +91,7 @@ Quality Score: 92% | Confidence: HIGH
 ### Common Implementation Risks
 
 | Risk | Probability | Impact | Mitigation | Confidence |
-|------|------------|--------|------------|------------|
+| --- | --- | --- | --- | --- |
 | Breaking existing tests | Medium | High | Run full suite before/after | 0.95 |
 | Performance regression | Low | High | Profile critical paths | 0.88 |
 | Security vulnerability | Low | Critical | Security scan + review | 0.92 |

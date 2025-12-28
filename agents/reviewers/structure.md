@@ -105,9 +105,7 @@ function Modal() { const [isOpen, setIsOpen] = useState(false) } // Component: U
 
 ### Occam's Razor
 
-
 ### DRY Principle
-
 
 ## Output Format
 

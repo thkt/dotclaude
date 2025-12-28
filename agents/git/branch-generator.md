@@ -46,7 +46,7 @@ git log --oneline -5
 Determine branch type from changes:
 
 | Prefix | Use Case | Trigger Patterns |
-|--------|----------|------------------|
+| --- | --- | --- |
 | `feature/` | New functionality | New files, new components, new features |
 | `fix/` | Bug fixes (including urgent) | Error corrections, validation fixes |
 | `refactor/` | Code improvements | Restructuring, optimization |

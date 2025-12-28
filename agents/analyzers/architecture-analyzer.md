@@ -108,7 +108,7 @@ and generate Markdown documentation.
 ## Error Handling
 
 | Error | Action |
-|-------|--------|
+| --- | --- |
 | tree-sitter-analyzer not installed | Fallback to Grep/Read |
 | Unsupported language | Output statistics only |
 | Large-scale project | Sample top 100 files |
@@ -127,7 +127,7 @@ Task(subagent_type="architecture-analyzer", prompt="Analyze the architecture of 
 ## Performance Guidelines
 
 | Project Size | File Count | Analysis Time |
-|--------------|------------|---------------|
+| --- | --- | --- |
 | Small | ~50 | ~30 sec |
 | Medium | ~200 | ~2 min |
 | Large | ~1000 | ~5 min |

@@ -62,7 +62,7 @@ git diff BASE_BRANCH...HEAD --numstat
 ### Examples
 
 | Context | Title |
-|---------|-------|
+| --- | --- |
 | Issue: [Bug] Login fails on Safari | `[Bug] Login fails on Safari` |
 | Issue: [Feature] Add dark mode | `[Feature] Add dark mode` |
 | No Issue, auth feature | `Add OAuth authentication support` |
@@ -270,6 +270,7 @@ gh pr create --title "[PR Title]" --body "[Generated Description]"
 ### Issue Reference Extraction
 
 Detect issue numbers from:
+
 ```bash
 # From commit messages
 git log $BASE_BRANCH..HEAD --format=%s | grep -oE "#[0-9]+" | sort -u

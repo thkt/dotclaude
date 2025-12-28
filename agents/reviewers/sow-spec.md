@@ -134,7 +134,7 @@ This agent references the following Skills knowledge base:
 **Judgment Criteria**:
 
 | Score | Judgment | Action |
-|-------|----------|--------|
+| --- | --- | --- |
 | 90-100 | ✅ PASS | Can proceed to next phase (/code) |
 | 70-89 | ⚠️ CONDITIONAL | Re-review after fixing issues |
 | 0-69 | ❌ FAIL | Major revision needed (re-run /think) |
@@ -219,7 +219,6 @@ Key questions:
 2. Is there a simpler solution?
 
 ### Output Verifiability
-
 
 Application in SOW/Spec review:
 
