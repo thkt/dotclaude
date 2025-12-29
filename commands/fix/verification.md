@@ -134,7 +134,7 @@ npm run dev
 ## Quality Gates Summary
 
 | Check | Status | Action |
-|-------|--------|--------|
+| --- | --- | --- |
 | Tests | ✅ All pass | Proceed |
 | Tests | ❌ Some fail | Fix immediately |
 | Lint | ✅ 0 errors | Proceed |

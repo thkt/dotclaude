@@ -31,11 +31,11 @@ Claude Codeは便利ですが、運用が複雑化するにつれてCLAUDE.mdに
 私たちは以下の三層で機能を整理しています。
 
 | 層 | 役割 | 例 | 特徴 |
-|----|------|-----|------|
+| --- | --- | --- | --- |
 | **Commands** | ユーザーが直接呼び出すワークフロー | /audit, /code, /think | 薄いラッパー、Agents や Skills を調整 |
-| ↓ 呼び出す ||||
+| ↓ 呼び出す | | | |
 | **Agents** | 専門分析・レビュー | performance-reviewer, accessibility-reviewer | 特定タスク実行、短期的 |
-| ↓ 参照する ||||
+| ↓ 参照する | | | |
 | **Skills** | 知識ベース・ガイド | code-principles, progressive-enhancement | 永続的知識、キーワードで自動トリガー |
 
 ### 協調動作の例: パフォーマンス最適化
@@ -143,7 +143,7 @@ Core principles via `code-principles` skill:
 新しい機能を追加するとき、「どこに書くか」で迷ったらこう判断する：
 
 | 問い | Yes なら |
-|------|----------|
+| --- | --- |
 | ユーザーが `/xxx` で呼び出す？ | → **Commands** |
 | 特定のレビュー・分析タスク？ | → **Agents** |
 | 複数の場面で参照される知識？ | → **Skills** |

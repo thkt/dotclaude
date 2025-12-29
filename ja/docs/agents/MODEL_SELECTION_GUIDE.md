@@ -3,7 +3,7 @@
 ## 選択基準
 
 | 条件 | モデル | コスト | 速度 |
-|------|--------|--------|------|
+| --- | --- | --- | --- |
 | 複数エージェント調整 | opus | High | Slow |
 | 深いコンテキスト理解 | sonnet | Medium | Medium |
 | パターンベースの処理 | haiku | Low | Fast |
@@ -59,4 +59,4 @@
 ## 関連ドキュメント
 
 - [agents/README.md](./README.md) - ディレクトリ構造と作成手順
-- [Skills README](../skills/README.md) - スキルとの連携
+- [Skills README](../../skills/README.md) - スキルとの連携

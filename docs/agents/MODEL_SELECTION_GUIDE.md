@@ -3,7 +3,7 @@
 ## Selection Criteria
 
 | Condition | Model | Cost | Speed |
-|-----------|-------|------|-------|
+| --- | --- | --- | --- |
 | Multi-agent coordination | opus | High | Slow |
 | Deep context understanding | sonnet | Medium | Medium |
 | Pattern-based processing | haiku | Low | Fast |

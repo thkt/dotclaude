@@ -74,7 +74,7 @@ Agentは以下の方法で動的に発見される:
 ## カテゴリ説明
 
 | カテゴリ | 用途 | 推奨モデル |
-|----------|------|-----------|
+| --- | --- | --- |
 | reviewers | コードレビュー・分析 | sonnet/haiku |
 | generators | コンテンツ生成 | haiku/sonnet |
 | orchestrators | 複数エージェント調整 | opus |
@@ -85,4 +85,4 @@ Agentは以下の方法で動的に発見される:
 
 - [MODEL_SELECTION_GUIDE.md](./MODEL_SELECTION_GUIDE.md) - モデル選択基準
 - [reviewers/_base-template.md](./reviewers/_base-template.md) - レビュアーテンプレート
-- [Skills README](../skills/README.md) - スキルとの連携
+- [Skills README](../../skills/README.md) - スキルとの連携

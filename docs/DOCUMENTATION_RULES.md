@@ -122,7 +122,10 @@ The following files exist only in Japanese (no English version):
 - `ja/docs/ARCHITECTURE.md` - System architecture overview
 - `ja/docs/WORKFLOW_GUIDE.md` - Quick start guide
 - `ja/docs/DEVELOPMENT_WORKFLOW.md` - Practical development workflow
+- `ja/docs/PROJECT_SETUP.md` - Project-specific setup guide
 - `ja/commands/git/worktree-setup.md` - Git worktree setup guide
+- `ja/commands/context.md` - Context management command
+- `ja/skills/generating-esa-reports/` - esa daily report automation skill
 
 **Rationale**: These documents serve Japanese-speaking users and creating English versions would require significant translation effort without clear benefit. They are properly referenced within the Japanese documentation tree.
 

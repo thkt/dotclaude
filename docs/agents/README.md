@@ -73,7 +73,7 @@ Agents are dynamically discovered via:
 ## Category Descriptions
 
 | Category | Purpose | Recommended Model |
-|----------|---------|-------------------|
+| --- | --- | --- |
 | reviewers | Code review & analysis | sonnet/haiku |
 | generators | Content generation | haiku/sonnet |
 | orchestrators | Multi-agent coordination | opus |

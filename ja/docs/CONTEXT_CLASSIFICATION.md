@@ -11,7 +11,7 @@
 実装タスクで**常に必要**なコンテキスト。
 
 | ファイル | 行数 | 目的 |
-|------|-------|---------|
+| --- | --- | --- |
 | `skills/generating-tdd-tests/SKILL.md` | 258 | TDD/RGRC実装サイクル |
 | `rules/core/ESSENTIAL_PRINCIPLES.md` | 約50 | クイック判断質問 |
 | **合計** | **約310** | |
@@ -27,7 +27,7 @@
 特定のタスクタイプが必要な場合のみ読み込まれるコンテキスト。
 
 | フラグ | ファイル | 行数 | 読み込みタイミング |
-|------|------|-------|--------------|
+| --- | --- | --- | --- |
 | `--frontend` | `skills/applying-frontend-patterns/SKILL.md` | 362 | React/UIコンポーネント作業 |
 | `--principles` | `skills/applying-code-principles/SKILL.md` | 430 | 設計決定、リファクタリング |
 | `--storybook` | `skills/integrating-storybook/SKILL.md` | 270 | コンポーネントStories生成 |

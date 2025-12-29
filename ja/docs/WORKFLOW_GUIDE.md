@@ -31,7 +31,7 @@ AI支援による体系的なソフトウェア開発ツール。コマンド、
 └── ja/docs/           # ドキュメント（日本語）
     ├── WORKFLOW_GUIDE.md       # このファイル
     ├── DEVELOPMENT_WORKFLOW.md # 実践ガイド
-    ├── AGENTS.md               # エージェント詳細
+    ├── agents/                  # エージェント詳細
     ├── COMMANDS.md             # コマンドリファレンス
     ├── ARCHITECTURE.md         # アーキテクチャ
     └── [その他]
@@ -46,7 +46,7 @@ AI支援による体系的なソフトウェア開発ツール。コマンド、
 ### コア開発コマンド（7個）
 
 | コマンド | 目的 | 詳細 |
-|---------|------|------|
+| --- | --- | --- |
 | `/think` | SOW作成 | 検証可能な作業計画書を生成 |
 | `/research` | 調査 | コードベースの理解、問題調査 |
 | `/code` | 実装 | TDD/RGRCサイクルで実装 |
@@ -58,13 +58,13 @@ AI支援による体系的なソフトウェア開発ツール。コマンド、
 ### クイックアクション（1個）
 
 | コマンド | 目的 | 使用場面 |
-|---------|------|----------|
+| --- | --- | --- |
 | `/fix` | バグ修正 | 開発環境の小規模な問題（緊急含む） |
 
 ### 自動化コマンド（2個）
 
 | コマンド | 目的 | 要件 |
-|---------|------|------|
+| --- | --- | --- |
 | `/auto-test` | 自動テスト | ファイル変更時に自動実行 |
 | `/full-cycle` | 完全自動化 | research→think→code→test→review→validate |
 
@@ -88,7 +88,7 @@ Phase 2: 品質（3-4エージェント、45秒）
 Phase 3: 本番（3エージェント、60秒）
 ```
 
-**詳細**: エージェントの役割と使用法は [@./AGENTS.md](./AGENTS.md) を参照
+**詳細**: エージェントの役割と使用法は [@./agents/README.md](./agents/README.md) を参照
 
 ---
 
@@ -240,7 +240,7 @@ sow.md + spec.md 生成
 ### 中級者（1ヶ月）
 
 1. 完全なワークフローを実践（/think → /validate）
-2. [@./AGENTS.md](./AGENTS.md) でレビュープロセスを理解
+2. [@./agents/README.md](./agents/README.md) でレビュープロセスを理解
 3. `/audit` の結果を活用してコード品質を向上
 
 ### 上級者（継続的）
@@ -254,7 +254,7 @@ sow.md + spec.md 生成
 ## 📋 コマンド選択ガイド
 
 | 状況 | 推奨コマンド |
-|------|-------------|
+| --- | --- |
 | 新機能を開始 | `/think` |
 | コードを理解したい | `/research` |
 | 実装する | `/code` |
@@ -294,13 +294,13 @@ sow.md + spec.md 生成
 - **このファイル（WORKFLOW_GUIDE.md）**: クイックスタート・概要
 - **[@./DEVELOPMENT_WORKFLOW.md](./DEVELOPMENT_WORKFLOW.md)**: 実践的なワークフロー手順
 - **[@./COMMANDS.md](./COMMANDS.md)**: コマンドリファレンス
-- **[@./AGENTS.md](./AGENTS.md)**: エージェント詳細
+- **[@./agents/README.md](./agents/README.md)**: エージェント詳細
 - **[@./ARCHITECTURE.md](./ARCHITECTURE.md)**: システムアーキテクチャ
 
 ### 管理ドキュメント
 
 - **[@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md)**: ドキュメント管理ルール
-- **[@./MODEL_SELECTION.md](./MODEL_SELECTION.md)**: モデル選択ガイドライン
+- **[@./agents/MODEL_SELECTION_GUIDE.md](./agents/MODEL_SELECTION_GUIDE.md)**: モデル選択ガイドライン
 - **[@./PROJECT_SETUP.md](./PROJECT_SETUP.md)**: プロジェクトセットアップ
 
 ---
