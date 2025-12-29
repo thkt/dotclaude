@@ -135,8 +135,10 @@ The following files exist only in English (no Japanese version):
 
 - `skills/automating-browser/` - Browser automation skill (technical reference)
 - `skills/utilizing-cli-tools/` - CLI tools guide skill (technical reference)
+- `rules/core/PRE_TASK_CHECK_COMPACT.md` - Hook-injected task verification rules
+- `rules/core/PRE_TASK_CHECK_VERBOSE.md` - Detailed PRE_TASK_CHECK specification
 
-**Rationale**: These are technical reference skills that primarily document tool APIs and command syntax. The content is largely code examples and tool names that don't require translation. Creating Japanese versions would add maintenance burden without proportional benefit.
+**Rationale**: These are technical reference skills that primarily document tool APIs and command syntax. The content is largely code examples and tool names that don't require translation. PRE_TASK_CHECK files are injected via hook and referenced from both EN/JA CLAUDE.md - maintaining a single English source prevents synchronization issues. Creating Japanese versions would add maintenance burden without proportional benefit.
 
 ## Update Procedures
 

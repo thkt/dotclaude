@@ -314,9 +314,9 @@ commands/code/
 ## 参照
 
 - [ADR 0001](./0001-code-command-responsibility-separation.md) - `/code` モジュール化パターン
-- [Miller's Law](../../rules/reference/PRINCIPLES.md) - 認知負荷原則
-- [DRY 原則](../../rules/reference/PRINCIPLES.md) - 知識重複
-- [SOLID 原則](../../rules/reference/PRINCIPLES.md) - SRP 適用
+- [Miller's Law](../../skills/applying-code-principles/SKILL.md) - 認知負荷原則
+- [DRY 原則](../../skills/applying-code-principles/SKILL.md) - 知識重複
+- [SOLID 原則](../../skills/applying-code-principles/SKILL.md) - SRP 適用
 - [COMMANDS.md](../COMMANDS.md) - コマンドドキュメント
 
 ## 将来の検討事項

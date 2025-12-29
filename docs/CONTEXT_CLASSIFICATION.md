@@ -6,20 +6,19 @@ Classify context references into Essential (always load) and Reference (load on 
 
 ## Classification
 
-### Essential (Always Load) - ~310 lines
+### Essential (Always Load) - ~260 lines
 
 Context that is **always needed** for implementation tasks.
 
 | File | Lines | Purpose |
 | --- | --- | --- |
 | `skills/generating-tdd-tests/SKILL.md` | 258 | TDD/RGRC implementation cycle |
-| `rules/core/ESSENTIAL_PRINCIPLES.md` | ~50 | Quick Decision Questions |
-| **Total** | **~310** | |
+| **Total** | **~260** | |
 
 **Rationale:**
 
 - TDD/RGRC provides the "how to work" structure
-- Quick Decision Questions provide "what to consider" checklist
+- Quick Decision Questions available via `applying-code-principles` skill (auto-triggered)
 - These are actionable and apply to every implementation task
 
 ### Reference (Load on Demand) - ~2,000+ lines
@@ -92,6 +91,5 @@ When adding new principles or patterns:
 
 ## Related Documents
 
-- [ESSENTIAL_PRINCIPLES.md](../rules/core/ESSENTIAL_PRINCIPLES.md) - Quick Decision Questions
 - [/code command](../commands/code.md) - Implementation command
-- [code-principles SKILL](../skills/applying-code-principles/SKILL.md) - Full principles reference
+- [code-principles SKILL](../skills/applying-code-principles/SKILL.md) - Full principles reference (includes Quick Decision Questions)

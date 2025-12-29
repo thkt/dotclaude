@@ -2,48 +2,23 @@
 
 Definition of Done and output formatting for `/fix` command.
 
-## Definition of Done
+→ **Common criteria**: [@~/.claude/rules/development/COMPLETION_CRITERIA.md](~/.claude/rules/development/COMPLETION_CRITERIA.md)
+
+## /fix Specific Criteria
 
 **Confidence Target**: Overall ≥0.9
 
-A bug fix is complete when ALL criteria are met:
+A bug fix is complete when:
 
-### Critical Criteria (Must Pass)
-
-- ✅ **Root cause identified** (not just symptom)
-  - 5 Whys methodology applied
-  - Confidence marker: [✓]
-
-- ✅ **Minimal complexity solution**
-  - Occam's Razor applied
-  - No unnecessary abstraction
-  - Code is readable
-
-- ✅ **All related tests pass**
-  - Regression test passes
-  - Existing tests unbroken
-  - Exit code: 0
-
-- ✅ **No new lint errors**
-  - `npm run lint` passes
-  - 0 errors (warnings <5 acceptable)
-
+- ✅ **Root cause identified** (not just symptom, 5 Whys applied)
+- ✅ **Minimal complexity solution** (Occam's Razor)
+- ✅ **Quality gates passed** (see shared criteria)
 - ✅ **No regressions detected**
-  - Manual spot check performed
-  - Related features work
-  - No new bugs introduced
 
-### Optional Criteria (Recommended)
+### Optional (Recommended)
 
-- ⭐ **Additional tests generated** (Phase 3.5)
-  - Edge cases covered
-  - Integration tests added
-  - Coverage improved
-
-- ⭐ **Documentation updated**
-  - Comments explain non-obvious fixes
-  - README updated if behavior changed
-  - Changelog entry added
+- ⭐ Additional tests generated (Phase 3.5)
+- ⭐ Documentation updated if behavior changed
 
 ## Output Format
 
@@ -259,6 +234,6 @@ Before marking as complete:
 
 ## References
 
-- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - Simplicity
+- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Simplicity (Occam's Razor)
 - [@~/.claude/rules/development/TIDYINGS.md](~/.claude/rules/development/TIDYINGS.md) - Clean as you go
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first

@@ -2,48 +2,23 @@
 
 `/fix` コマンドの完了定義と出力フォーマット。
 
-## 完了定義
+→ **共通基準**: [@~/.claude/ja/rules/development/COMPLETION_CRITERIA.md](~/.claude/ja/rules/development/COMPLETION_CRITERIA.md)
+
+## /fix 固有の基準
 
 **信頼度目標**: 全体 ≥0.9
 
-バグ修正が完了するのは、以下のすべての基準を満たした場合：
+バグ修正完了の条件：
 
-### 必須基準（必ず合格）
-
-- ✅ **根本原因を特定**（症状だけでなく）
-  - 5 Whys 手法を適用
-  - 信頼度マーカー: [✓]
-
-- ✅ **最小複雑性の解決策**
-  - オッカムの剃刀を適用
-  - 不要な抽象化なし
-  - コードが読みやすい
-
-- ✅ **すべての関連テストが合格**
-  - 回帰テストが合格
-  - 既存テストが壊れていない
-  - 終了コード: 0
-
-- ✅ **新しいリントエラーなし**
-  - `npm run lint` が合格
-  - 0エラー（警告5未満は許容）
-
+- ✅ **根本原因を特定**（症状だけでなく、5 Whys適用）
+- ✅ **最小複雑性の解決策**（オッカムの剃刀）
+- ✅ **品質ゲート合格**（共通基準参照）
 - ✅ **回帰が検出されない**
-  - 手動スポットチェック実施
-  - 関連機能が動作
-  - 新しいバグが導入されていない
 
-### オプション基準（推奨）
+### オプション（推奨）
 
-- ⭐ **追加テストを生成**（Phase 3.5）
-  - エッジケースをカバー
-  - 統合テストを追加
-  - カバレッジが向上
-
-- ⭐ **ドキュメントを更新**
-  - コメントで非自明な修正を説明
-  - 動作変更時にREADMEを更新
-  - 変更履歴エントリを追加
+- ⭐ 追加テストを生成（Phase 3.5）
+- ⭐ 動作変更時にドキュメントを更新
 
 ## 出力フォーマット
 
@@ -259,6 +234,6 @@
 
 ## 参照
 
-- [@~/.claude/rules/reference/PRINCIPLES.md](~/.claude/rules/reference/PRINCIPLES.md) - シンプルさ
+- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - シンプルさ
 - [@~/.claude/rules/development/TIDYINGS.md](~/.claude/rules/development/TIDYINGS.md) - 進行中のクリーンアップ
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS優先

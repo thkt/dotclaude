@@ -109,8 +109,8 @@ function Select<T>({ value, options, onChange }: SelectProps<T>) { /* ... */ }
 
 ### Core Principles
 
-- [@~/.claude/rules/reference/PRINCIPLES.md](../../rules/reference/PRINCIPLES.md) - Don't over-type
-- [@~/.claude/rules/reference/PRINCIPLES.md](../../rules/reference/PRINCIPLES.md) - Type interfaces follow ISP
+- [@~/.claude/skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Don't over-type
+- [@~/.claude/skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Type interfaces follow ISP
 
 ### Related Skills
 

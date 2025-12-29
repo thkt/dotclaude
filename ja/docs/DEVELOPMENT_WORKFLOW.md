@@ -18,35 +18,26 @@ Claude Codeを使用した日常的な開発フローの実践ガイド
 
 ## 開発フローの全体像
 
+→ **システムアーキテクチャ詳細**: [@./ARCHITECTURE.md](./ARCHITECTURE.md)
+→ **コマンドリファレンス**: [@./COMMANDS.md](./COMMANDS.md)
+
 ### 標準開発サイクル
 
 ```mermaid
-graph TB
-    START[タスク開始] --> RESEARCH[Phase 1: 調査]
-    RESEARCH --> THINK[Phase 2: 計画]
-    THINK --> CODE[Phase 3: 実装]
-    CODE --> TEST[Phase 4: テスト]
-    TEST --> REVIEW[Phase 5: レビュー]
-    REVIEW --> VALIDATE[Phase 6: 検証]
-    VALIDATE --> DONE[完了]
+graph LR
+    R["/research<br/>調査"] --> T["/think<br/>計画"]
+    T --> C["/code<br/>実装"]
+    C --> TE["/test<br/>テスト"]
+    TE --> A["/audit<br/>レビュー"]
+    A --> V["/validate<br/>検証"]
 
-    RESEARCH -.->|進捗確認| SOW[進捗確認コマンド]
-    THINK -.->|進捗確認| SOW
-    CODE -.->|進捗確認| SOW
-    TEST -.->|進捗確認| SOW
-    REVIEW -.->|進捗確認| SOW
+    SOW["/sow<br/>進捗確認"]
+    R -.-> SOW
+    T -.-> SOW
+    C -.-> SOW
+    TE -.-> SOW
+    A -.-> SOW
 ```
-
-### 各フェーズの目的
-
-| フェーズ | コマンド | 目的 | 成果物 |
-| --- | --- | --- | --- |
-| 調査 | `/research` | 既存コードの理解 | 調査結果 |
-| 計画 | `/think` | SOW作成 | SOW文書 |
-| 実装 | `/code` | TDD実装 | コード + テスト |
-| テスト | `/test` | 動作検証 | テスト結果 |
-| レビュー | `/audit` | 品質確認 | レビュー結果 |
-| 検証 | `/validate` | 適合性確認 | 検証レポート |
 
 ---
 

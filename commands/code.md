@@ -24,7 +24,6 @@ Implement code with TDD/RGRC cycle and quality checks.
 ## Essential Context (Always Loaded)
 
 - [@~/.claude/skills/generating-tdd-tests/SKILL.md] - TDD/RGRC cycle, Baby Steps
-- [@~/.claude/rules/core/ESSENTIAL_PRINCIPLES.md] - Quick Decision Questions
 
 ## Conditional Context (Flag-based)
 

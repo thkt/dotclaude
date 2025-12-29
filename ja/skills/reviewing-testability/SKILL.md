@@ -131,8 +131,8 @@ function SearchBox({ query, results, onQueryChange }: SearchBoxProps) {
 
 ### コア原則
 
-- [@~/.claude/rules/reference/PRINCIPLES.md](../../../rules/reference/PRINCIPLES.md) - 依存性逆転の原則
-- [@~/.claude/rules/reference/PRINCIPLES.md](../../../rules/reference/PRINCIPLES.md) - テスト困難ならシンプルに
+- [@~/.claude/skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 依存性逆転の原則
+- [@~/.claude/skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - テスト困難ならシンプルに
 
 ### 関連スキル
 

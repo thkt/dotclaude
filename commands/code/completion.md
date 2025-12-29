@@ -1,39 +1,17 @@
 # Definition of Done & Decision Framework
 
-This module defines completion criteria and decision support.
+This module defines completion criteria and decision support for `/code` command.
 
-## Definition of Done with Confidence Metrics
+→ **Common criteria**: [@~/.claude/rules/development/COMPLETION_CRITERIA.md](~/.claude/rules/development/COMPLETION_CRITERIA.md)
 
-Implementation complete when all metrics achieved:
+## /code Specific Criteria
 
-```markdown
-## Completion Checklist
-### Core Implementation
-- ✅ All RGRC cycles complete [C: 0.95]
-- ✅ Feature works as specified [C: 0.93]
-- ✅ Edge cases handled [C: 0.88]
+Implementation complete when:
 
-### Quality Metrics
-- ✅ All tests passing (47/47) [C: 1.0]
-- ✅ Coverage ≥ 80% (current: 82%) [C: 0.95]
-- ✅ Zero lint errors [C: 0.98]
-- ✅ Zero type errors [C: 1.0]
-- ⚠️ 2 lint warnings (documented) [C: 0.85]
-
-### Code Quality
-- ✅ SOLID principles applied [C: 0.90]
-- ✅ DRY - No duplication [C: 0.92]
-- ✅ Readable code standards [C: 0.88]
-- ✅ Consistent with codebase [C: 0.94]
-
-### Documentation
-- ✅ Code comments where needed [C: 0.85]
-- ✅ README updated if required [C: 0.90]
-- ✅ API docs current [C: 0.87]
-
-### Overall Confidence: 0.92 (HIGH)
-Status: ✅ READY FOR REVIEW
-```
+- ✅ All RGRC cycles complete
+- ✅ Feature works as specified
+- ✅ Edge cases handled
+- ✅ Quality gates passed (see shared criteria)
 
 If confidence < 0.8 on any critical metric, continue improving.
 

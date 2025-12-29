@@ -200,7 +200,7 @@ Save to: `.claude/workspace/qa/[timestamp]-[topic].md`
 
 ### Step 1: Implementation Design Exploration
 
-**Purpose**: Automated implementation approach analysis using Plan agent with Opus.
+**Purpose**: Automated implementation approach analysis using Plan agent with Opus, aligned with SOW/Spec quality criteria.
 
 **Execution**:
 
@@ -208,61 +208,147 @@ Save to: `.claude/workspace/qa/[timestamp]-[topic].md`
 Task({
   subagent_type: "Plan",
   model: "opus",
-  description: "実装アプローチの検討と設計",
+  description: "SOW/Spec-aligned implementation analysis",
   prompt: `
 Feature: "${featureDescription}"
 
 ${qaResults ? `Based on Q&A results:\n${qaResults}\n` : ''}
 
-Tasks:
-1. Analyze codebase for similar patterns and existing implementations
-2. Identify affected modules, files, and dependencies
-3. Evaluate multiple implementation approaches with trade-offs
-4. Consider architectural implications and design decisions
-5. Recommend optimal approach with clear rationale
-6. Identify potential risks and mitigation strategies
+## Information Collection (SOW Quality Criteria Alignment)
 
-Output requirements:
-- Use confidence markers: [✓] verified, [→] inferred, [?] unknown
-- Provide concrete file paths and code references
-- Include alternative approaches with trade-offs
-- Flag important decisions requiring attention
+Collect information for each SOW/Spec section. ALL items MUST include confidence markers.
+
+### 1. Current State Analysis [✓ required]
+Collect quantitative baseline data:
+- File count and paths (verify with ls, find)
+- Line counts (verify with wc -l)
+- Existing patterns (quote specific code)
+- Current metrics (size, complexity, dependencies)
+
+Output format:
+| Metric | Current Value | Evidence |
+| --- | --- | --- |
+| [✓] File count | N files | \`find ... | wc -l\` |
+
+### 2. Problem Classification
+Classify issues by confidence level:
+
+**[✓] Verified Issues** (evidence required):
+- Issue description - Evidence: file_path:line_number or command output
+
+**[→] Inferred Problems** (reasoning required):
+- Issue description - Reasoning: logical basis for inference
+
+**[?] Suspected Issues** (investigation needed):
+- Issue description - Investigation: what needs to be checked
+
+### 3. Solution Design
+Evaluate 3 alternatives in table format:
+
+| Option | Approach | Pros | Cons | Recommendation |
+| --- | --- | --- | --- | --- |
+| [→] A | Description | + benefits | - drawbacks | **Recommended** / Rejected |
+| [→] B | Description | + benefits | - drawbacks | Rejected |
+| [→] C | Description | + benefits | - drawbacks | Rejected |
+
+Recommendation rationale: [2-3 sentences explaining why Option A]
+
+### 4. Implementation Scope
+Define concrete scope:
+
+**Files to Modify** (2-5 files with paths):
+- [✓] path/to/file.ts - Change description
+
+**Dependencies & Impact**:
+- [→] Affected modules: list
+- [→] Breaking changes: yes/no + details
+
+**Phase Plan** (Day-based):
+- Day 1: [Concrete tasks]
+- Day 2: [Concrete tasks]
+
+### 5. Acceptance Criteria Draft
+Propose measurable criteria:
+- [ ] [✓/→/?] Criterion with specific metric
+  - Verification: How to measure/test
+
+### 6. Risk Assessment
+Classify risks by confidence:
+
+**[✓] Confirmed Risks**:
+| Risk | Impact | Mitigation |
+| --- | --- | --- |
+
+**[→] Potential Risks**:
+| Risk | Impact | Mitigation |
+
+**[?] Unknown Risks**:
+| Risk | Monitoring Approach |
+
+## Output Requirements
+
+CRITICAL: Every item must include:
+1. Confidence marker: [✓] [→] or [?]
+2. Evidence: file path, command output, or code quote
+3. Quantification: numbers where possible (lines, %, count)
+
+This structured output enables high-quality SOW/Spec generation.
   `
 })
 ```
 
 **Why Opus**: Implementation design requires deep architectural understanding, comprehensive trade-off analysis, and high-quality decision-making. Opus provides the best analysis quality for this critical planning phase.
 
+**Why This Structure**: The prompt sections directly map to SOW/Spec required sections, enabling:
+
+- Direct transfer of analyzed data to SOW Problem Analysis
+- Pre-classified risks ready for Risk Assessment section
+- Measurable acceptance criteria ready for SOW/Spec
+
 ### Step 2: Display Analysis Results
 
-**Purpose**: Show Plan agent's analysis results to user (non-blocking).
+**Purpose**: Show Plan agent's structured analysis results to user (non-blocking).
 
 **Display Format**:
 
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 Implementation Approach Analysis
+🎯 Implementation Analysis (SOW/Spec Ready)
 
-**Recommended Approach**: [Approach name]
-[Brief description and rationale]
+## Current State
+| Metric | Value | Evidence |
+| --- | --- | --- |
+| [✓] Files | N | `command output` |
+| [✓] Lines | N | `wc -l` |
 
-**Alternative Approaches**:
-- Option B: [Trade-offs]
-- Option C: [Trade-offs]
+## Problem Summary
+- [✓] Verified: [Issue with evidence]
+- [→] Inferred: [Issue with reasoning]
+- [?] Suspected: [Issue needing investigation]
 
-**Affected Scope**:
-- Files to modify: [2-5 key files with paths]
-- Impacted modules: [Module names]
-- Dependencies: [Key dependencies]
+## Recommended Approach
+**[→] Option A**: [Name]
+- Rationale: [Why this approach]
+- Trade-offs: [Key considerations]
 
-**Key Decisions**:
-- [✓] Decision 1: [Confirmed choice]
-- [→] Decision 2: [Inferred recommendation]
-- [?] Decision 3: [Requires attention]
+Alternatives rejected:
+- Option B: [Reason]
+- Option C: [Reason]
 
-**Risks & Mitigations**:
-- Risk 1: [Description] → Mitigation: [Strategy]
-- Risk 2: [Description] → Mitigation: [Strategy]
+## Implementation Scope
+**Files to Modify**:
+- [✓] path/to/file.ts - [Change]
+- [✓] path/to/other.ts - [Change]
+
+**Phase Plan**:
+- Day 1: [Tasks]
+- Day 2: [Tasks]
+
+## Key Risks
+| Risk | Impact | Mitigation |
+| --- | --- | --- |
+| [✓] Risk 1 | High/Med/Low | Strategy |
+| [→] Risk 2 | High/Med/Low | Strategy |
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -270,6 +356,14 @@ Proceeding with SOW generation based on this analysis...
 ```
 
 **User Experience**: Results are displayed for visibility, but execution continues automatically. No user confirmation required.
+
+**Data Flow**: The structured analysis directly maps to SOW sections:
+
+- Current State → SOW Problem Analysis
+- Problem Summary → SOW Verified/Inferred/Suspected Issues
+- Recommended Approach → SOW Solution Design
+- Implementation Scope → SOW Implementation Plan
+- Key Risks → SOW Risks & Mitigations
 
 ### Step 3: Generate SOW
 
@@ -356,7 +450,7 @@ Display after completion:
 ## When to Use
 
 | Situation | Command |
-|-----------|---------|
+| --- | --- |
 | Full planning (after research) | `/research` → `/think` |
 | Full planning (explicit) | `/think "task description"` |
 | SOW only | `/sow` or `/sow "task"` |

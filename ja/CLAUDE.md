@@ -7,7 +7,7 @@
 **常時適用** - すべてのユーザーメッセージで適用、他のすべてのルールに優先
 
 コア原則: [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md)
-PRE_TASK_CHECK: `UserPromptSubmit`フック経由で注入（毎メッセージ）
+タスク検証: [@~/.claude/rules/core/PRE_TASK_CHECK_COMPACT.md](~/.claude/rules/core/PRE_TASK_CHECK_COMPACT.md)（フック経由で注入）
 
 ### [P1] REQUIRED - 言語設定
 

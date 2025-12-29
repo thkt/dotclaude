@@ -314,9 +314,9 @@ This architecture enables:
 ## References
 
 - [ADR 0001](./0001-code-command-responsibility-separation.md) - `/code` modularization pattern
-- [Miller's Law](../../rules/reference/PRINCIPLES.md) - Cognitive load principle
-- [DRY Principle](../../rules/reference/PRINCIPLES.md) - Knowledge duplication
-- [SOLID Principles](../../rules/reference/PRINCIPLES.md) - SRP application
+- [Miller's Law](../../skills/applying-code-principles/SKILL.md) - Cognitive load principle
+- [DRY Principle](../../skills/applying-code-principles/SKILL.md) - Knowledge duplication
+- [SOLID Principles](../../skills/applying-code-principles/SKILL.md) - SRP application
 - [COMMANDS.md](../COMMANDS.md) - Command documentation
 
 ## Future Considerations

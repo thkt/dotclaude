@@ -6,20 +6,19 @@
 
 ## 分類
 
-### Essential（常に読み込み） - 約310行
+### Essential（常に読み込み） - 約260行
 
 実装タスクで**常に必要**なコンテキスト。
 
 | ファイル | 行数 | 目的 |
 | --- | --- | --- |
 | `skills/generating-tdd-tests/SKILL.md` | 258 | TDD/RGRC実装サイクル |
-| `rules/core/ESSENTIAL_PRINCIPLES.md` | 約50 | クイック判断質問 |
-| **合計** | **約310** | |
+| **合計** | **約260** | |
 
 **理由:**
 
 - TDD/RGRCは「作業方法」の構造を提供
-- クイック判断質問は「考慮すべきこと」のチェックリストを提供
+- クイック判断質問は `applying-code-principles` スキル経由で利用可能（自動トリガー）
 - これらは実行可能で、すべての実装タスクに適用される
 
 ### Reference（オンデマンド読み込み） - 2,000行以上
@@ -92,6 +91,5 @@
 
 ## 関連ドキュメント
 
-- [ESSENTIAL_PRINCIPLES.md](../rules/core/ESSENTIAL_PRINCIPLES.md) - クイック判断質問
 - [/code コマンド](../commands/code.md) - 実装コマンド
-- [code-principles SKILL](../skills/applying-code-principles/SKILL.md) - 完全な原則リファレンス
+- [code-principles SKILL](../skills/applying-code-principles/SKILL.md) - 完全な原則リファレンス（クイック判断質問を含む）

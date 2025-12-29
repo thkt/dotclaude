@@ -109,8 +109,8 @@ function Select<T>({ value, options, onChange }: SelectProps<T>) { /* ... */ }
 
 ### コア原則
 
-- [@~/.claude/rules/reference/PRINCIPLES.md](../../../rules/reference/PRINCIPLES.md) - 過度な型付けを避ける
-- [@~/.claude/rules/reference/PRINCIPLES.md](../../../rules/reference/PRINCIPLES.md) - 型インターフェースはISPに従う
+- [@~/.claude/skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 過度な型付けを避ける
+- [@~/.claude/skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 型インターフェースはISPに従う
 
 ### 関連スキル
 

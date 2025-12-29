@@ -7,7 +7,7 @@
 **ALWAYS ACTIVE** - Applied on every user message, supersedes all other rules
 
 Core principles: [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)
-PRE_TASK_CHECK: Injected via `UserPromptSubmit` hook (every message)
+Task verification: [@~/.claude/rules/core/PRE_TASK_CHECK_COMPACT.md](./rules/core/PRE_TASK_CHECK_COMPACT.md) (injected via hook)
 
 ### [P1] REQUIRED - Language Settings
 

@@ -3,7 +3,7 @@
 ## Internal Rules
 
 Priority: Top-level (supersedes all)
-**Application**: Applied internally via hooks on every user message
+**Application**: Applied internally on every user message
 
 ## Core Principles
 
@@ -75,10 +75,8 @@ In most cases, use a **phased approach**: "Start with YAGNI, validate with Impac
 
 **CRITICAL**: PRE_TASK_CHECK must be executed for file operations and complex tasks.
 
-Full specification: [@./PRE_TASK_CHECK_COMPACT.md](./PRE_TASK_CHECK_COMPACT.md)
+Full specification: [@./PRE_TASK_CHECK_VERBOSE.md](./PRE_TASK_CHECK_VERBOSE.md)
 
 - Principles are applied before PRE_TASK_CHECK
-- Understanding confirmation and execution planning are now integrated into PRE_TASK_CHECK
-- This ensures a single, coherent workflow for all operations
-- File operations and command executions require explicit execution plan within PRE_TASK_CHECK
+- Understanding confirmation and execution planning are integrated into PRE_TASK_CHECK
 - Workflow order: Apply principles → PRE_TASK_CHECK → Wait for confirmation

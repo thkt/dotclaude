@@ -119,14 +119,14 @@ Coordinate with:
 
 ## Applied Development Principles Section
 
-Reference relevant principles from `~/.claude/rules/reference/`:
+Reference relevant principles from `~/.claude/skills/applying-code-principles/SKILL.md` or `~/.claude/rules/development/`:
 
 ```markdown
 ## Applied Development Principles
 
 ### {Principle Name}
 
-[@~/.claude/rules/reference/{PRINCIPLE}.md] - "{Core quote}"
+[@~/.claude/skills/applying-code-principles/SKILL.md] - "{Core quote}"
 
 Application in reviews:
 

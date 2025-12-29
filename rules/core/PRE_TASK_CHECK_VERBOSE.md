@@ -1,69 +1,8 @@
-# Pre-Task Understanding Check
+# PRE_TASK_CHECK Detailed Specification
 
-Technical specification for understanding check and execution planning.
+Technical specification for understanding check and execution planning. For basic rules, see PRE_TASK_CHECK_COMPACT.md.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## ⚡ QUICK REFERENCE (Read This First)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### 🔴 CRITICAL: 95% Understanding Rule
-
-**Never proceed with confidence <95%**. Always ask for clarification first.
-
-### Decision Tree
-
-```mermaid
-flowchart TD
-    START([START]) --> A{Will modify files?}
-    A -->|YES| EXEC[EXECUTE CHECK]
-    A -->|NO| B{Will run commands?}
-    B -->|YES| EXEC
-    B -->|NO| C{"Understanding < 95%?"}
-    C -->|YES| EXEC
-    C -->|NO| D{Multi-step workflow?}
-    D -->|YES| EXEC
-    D -->|NO| SKIP[SKIP CHECK]
-    SKIP -.- NOTE[Simple question, confirmation, or read-only query]
-```
-
-### Decision Matrix
-
-| Condition | Action | Example |
-| --- | --- | --- |
-| **Execute Check** | | |
-| File modification | → Execute | Create/edit CLAUDE.md |
-| Command execution | → Execute | Run `npm test` |
-| Understanding <95% | → Execute | Ambiguous user request |
-| Multi-step workflow | → Execute | Feature implementation |
-| **Skip Check** | | |
-| Simple question | → Skip | "What is PRE_TASK_CHECK?" |
-| Confirmation | → Skip | "yes", "ok", "y" |
-| Read-only query | → Skip | Read file, Grep search |
-| Follow-up clarification | → Skip | Additional context |
-
-### Basic Flow (5 Steps)
-
-1. **Analyze** → Mark confidence (✓/→/?)
-2. **If <95%** → Ask questions → STOP
-3. **If ≥95%** → Display check → Wait for Y
-4. **Show Impact** → Execution Plan → Wait for final Y
-5. **Execute**
-
-### Confidence Markers
-
-- **[✓]** = High (directly verified from files/context)
-- **[→]** = Medium (reasonable inference)
-- **[?]** = Low (assumption needing confirmation)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 📖 DETAILED RULES (Reference as Needed)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## Execution Rule
+## Execution Rules
 
 **PRIMARY**: PRE_TASK_CHECK is executed for tasks that involve:
 
@@ -353,7 +292,6 @@ Expected changes:
 • Affected components: AuthService, UserSession, LoginPage
 • Risk level: 🟡 Medium (authentication flow change)
 • Note: Existing user sessions may require re-login, update tests for new flow
-
 ```
 
 **Skip conditions** (apply Impact Simulation ONLY when these are FALSE):

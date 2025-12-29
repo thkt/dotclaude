@@ -124,7 +124,7 @@ Core principles via `code-principles` skill:
     └── research/         # 調査結果
 ```
 
-> **Note**: これは基本構造です。運用が進むと `agents/` 配下に `reviewers/`, `generators/`, `watchers/` などのサブディレクトリが追加されていきます。
+> **Note**: これは基本構造です。運用が進むと `agents/` 配下に `reviewers/`, `generators/`, `orchestrators/` などのサブディレクトリが追加されていきます。
 
 ---
 

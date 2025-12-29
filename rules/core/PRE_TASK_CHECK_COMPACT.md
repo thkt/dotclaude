@@ -44,6 +44,6 @@ Proceed after confirmation (Y/n)
 4. Show impact → execution plan → wait for Y
 5. Execute
 
-## Full Details
+## Details
 
-For comprehensive guide: [@./PRE_TASK_CHECK_VERBOSE.md](./PRE_TASK_CHECK_VERBOSE.md)
+Comprehensive guide: [@./PRE_TASK_CHECK_VERBOSE.md](./PRE_TASK_CHECK_VERBOSE.md)
