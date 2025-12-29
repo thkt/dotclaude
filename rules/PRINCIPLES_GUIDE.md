@@ -27,12 +27,16 @@
 
 ### Decision Flow
 
-```markdown
-New Task?
-├─→ Apply Occam's Razor (simplest approach?)
-├─→ Use Progressive Enhancement (can build incrementally?)
-├─→ Ensure Readable Code (will others understand?)
-└─→ Apply other principles as needed
+```mermaid
+flowchart TD
+    A[New Task?] --> B[Apply Occam's Razor]
+    B --> C[Use Progressive Enhancement]
+    C --> D[Ensure Readable Code]
+    D --> E[Apply other principles as needed]
+
+    B -.- B1((simplest approach?))
+    C -.- C1((can build incrementally?))
+    D -.- D1((will others understand?))
 ```
 
 ### Conflict Resolution

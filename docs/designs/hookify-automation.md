@@ -30,27 +30,23 @@ Hookify ルールをコマンド実行時に自動的に評価し、パターン
 
 ### 2.1 アーキテクチャ
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ コマンド実行フロー                                           │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  /commit or /code                                           │
-│       ↓                                                     │
-│  PreToolUse Hook (settings.json)                           │
-│       ↓                                                     │
-│  ┌─────────────────────────────────────────┐               │
-│  │ Hookify Rule Engine                      │               │
-│  │  ├─ load_rules(event='file'|'bash')     │               │
-│  │  ├─ evaluate_rules(rules, tool_input)   │               │
-│  │  └─ return {decision, message}          │               │
-│  └─────────────────────────────────────────┘               │
-│       ↓                                                     │
-│  Tool Execution (if not blocked)                           │
-│       ↓                                                     │
-│  PostToolUse Hook                                          │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph CommandFlow["コマンド実行フロー"]
+        A["/commit or /code"] --> B["PreToolUse Hook<br/>(settings.json)"]
+        B --> C
+
+        subgraph RuleEngine["Hookify Rule Engine"]
+            C["load_rules(event='file'|'bash')"]
+            C --> D["evaluate_rules(rules, tool_input)"]
+            D --> E["return {decision, message}"]
+        end
+
+        E --> F{"blocked?"}
+        F -->|NO| G["Tool Execution"]
+        F -->|YES| H["Operation Blocked"]
+        G --> I["PostToolUse Hook"]
+    end
 ```
 
 ### 2.2 統合ポイント

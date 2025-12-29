@@ -180,39 +180,35 @@ description: >
 
 ### Performance最適化の協調動作
 
-```text
-User: "このページが遅い"
-    ↓
-Skill (auto-trigger): performance-optimization
-    → Web Vitalsの知識を提供
-    → 測定方法を提案
-    ↓
-User: "/audit"
-    ↓
-Command: /audit
-    ↓
-Agent: performance-reviewer
-    → 実際のコードを分析
-    → performance-optimization skillを参照
-    → ボトルネックを特定
-    ↓
-Output: 具体的な改善提案
-    （Skillの知識 + Agentの分析）
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant S as Skill
+    participant C as Command
+    participant A as Agent
+
+    U->>S: "このページが遅い"
+    S-->>U: performance-optimization 自動トリガー<br/>Web Vitalsの知識を提供<br/>測定方法を提案
+    U->>C: /audit
+    C->>A: performance-reviewer
+    A->>S: performance-optimization skillを参照
+    A-->>C: ボトルネックを特定
+    C-->>U: 具体的な改善提案<br/>（Skillの知識 + Agentの分析）
 ```
 
 ### Security関連の協調動作
 
-```text
-User: "セキュリティをレビューして"
-    ↓
-Command: /audit
-    ↓
-/audit が security-review skillを参照
-    → OWASP Top 10の知識を活用
-    → 脆弱性パターンを検出
-    ↓
-Output: セキュリティレビュー結果
-    （Skillの知識ベースに基づく分析）
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant C as Command
+    participant S as Skill
+
+    U->>C: "セキュリティをレビューして" → /audit
+    C->>S: security-review skillを参照
+    Note over S: OWASP Top 10の知識を活用<br/>脆弱性パターンを検出
+    S-->>C: セキュリティ分析
+    C-->>U: セキュリティレビュー結果<br/>（Skillの知識ベースに基づく分析）
 ```
 
 ## よくある質問

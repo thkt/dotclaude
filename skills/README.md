@@ -371,39 +371,35 @@ High-quality Skill implementation examples:
 
 ### Performance Optimization Collaboration
 
-```text
-User: "This page is slow"
-    ↓
-Skill (auto-trigger): optimizing-performance
-    → Provides Web Vitals knowledge
-    → Suggests measurement methods
-    ↓
-User: "/audit"
-    ↓
-Command: /audit
-    ↓
-Agent: performance-reviewer
-    → Analyzes actual code
-    → References optimizing-performance skill
-    → Identifies bottlenecks
-    ↓
-Output: Specific improvement suggestions
-    (Skill knowledge + Agent analysis)
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant S as Skill
+    participant C as Command
+    participant A as Agent
+
+    U->>S: "This page is slow"
+    S-->>U: optimizing-performance auto-trigger<br/>Provides Web Vitals knowledge<br/>Suggests measurement methods
+    U->>C: /audit
+    C->>A: performance-reviewer
+    A->>S: References optimizing-performance skill
+    A-->>C: Identifies bottlenecks
+    C-->>U: Specific improvement suggestions<br/>(Skill knowledge + Agent analysis)
 ```
 
 ### Security-Related Collaboration
 
-```text
-User: "Review security"
-    ↓
-Command: /audit
-    ↓
-/audit references reviewing-security skill
-    → Uses OWASP Top 10 knowledge
-    → Detects vulnerability patterns
-    ↓
-Output: Security review results
-    (Analysis based on Skill knowledge base)
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant C as Command
+    participant S as Skill
+
+    U->>C: "Review security" → /audit
+    C->>S: References reviewing-security skill
+    Note over S: Uses OWASP Top 10 knowledge<br/>Detects vulnerability patterns
+    S-->>C: Security analysis
+    C-->>U: Security review results<br/>(Analysis based on Skill knowledge base)
 ```
 
 ## FAQ

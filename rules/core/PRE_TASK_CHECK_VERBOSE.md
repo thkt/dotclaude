@@ -14,18 +14,18 @@ Technical specification for understanding check and execution planning.
 
 ### Decision Tree
 
-```text
-START
-  ↓
-Will modify files? ──YES──→ [EXECUTE CHECK]
-  ↓ NO
-Will run commands? ──YES──→ [EXECUTE CHECK]
-  ↓ NO
-Understanding <95%? ──YES──→ [EXECUTE CHECK]
-  ↓ NO
-Multi-step workflow? ──YES──→ [EXECUTE CHECK]
-  ↓ NO
-[SKIP CHECK] ← Simple question, confirmation, or read-only query
+```mermaid
+flowchart TD
+    START([START]) --> A{Will modify files?}
+    A -->|YES| EXEC[EXECUTE CHECK]
+    A -->|NO| B{Will run commands?}
+    B -->|YES| EXEC
+    B -->|NO| C{"Understanding < 95%?"}
+    C -->|YES| EXEC
+    C -->|NO| D{Multi-step workflow?}
+    D -->|YES| EXEC
+    D -->|NO| SKIP[SKIP CHECK]
+    SKIP -.- NOTE[Simple question, confirmation, or read-only query]
 ```
 
 ### Decision Matrix

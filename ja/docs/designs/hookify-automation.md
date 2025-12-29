@@ -30,33 +30,29 @@ Hookify ルールをコマンド実行時に自動的に評価し、パターン
 
 ### 2.1 アーキテクチャ
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ コマンド実行フロー                                           │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  /commit or /code                                           │
-│       ↓                                                     │
-│  PreToolUse Hook (settings.json)                           │
-│       ↓                                                     │
-│  ┌─────────────────────────────────────────┐               │
-│  │ Hookify Rule Engine                      │               │
-│  │  ├─ load_rules(event='file'|'bash')     │               │
-│  │  ├─ evaluate_rules(rules, tool_input)   │               │
-│  │  └─ return {decision, message}          │               │
-│  └─────────────────────────────────────────┘               │
-│       ↓                                                     │
-│  Tool Execution (if not blocked)                           │
-│       ↓                                                     │
-│  PostToolUse Hook                                          │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph CommandFlow["コマンド実行フロー"]
+        A["/commit or /code"] --> B["PreToolUse Hook<br/>(settings.json)"]
+        B --> C
+
+        subgraph RuleEngine["Hookify Rule Engine"]
+            C["load_rules(event='file'|'bash')"]
+            C --> D["evaluate_rules(rules, tool_input)"]
+            D --> E["return {decision, message}"]
+        end
+
+        E --> F{"blocked?"}
+        F -->|NO| G["Tool Execution"]
+        F -->|YES| H["Operation Blocked"]
+        G --> I["PostToolUse Hook"]
+    end
 ```
 
 ### 2.2 統合ポイント
 
 | コマンド | 統合方法 | トリガータイミング |
-|----------|----------|-------------------|
+| --- | --- | --- |
 | /commit | PreToolUse (git commit) | コミット前に差分をチェック |
 | /code | PreToolUse (Edit/Write) | ファイル編集前にパターンチェック |
 | /fix | PostToolUse (Edit) | 修正後のコード品質チェック |
@@ -68,7 +64,7 @@ Hookify ルールをコマンド実行時に自動的に評価し、パターン
 ### 3.1 実装アプローチ選択
 
 | アプローチ | メリット | デメリット | 採用 |
-|-----------|---------|----------|------|
+| --- | --- | --- | --- |
 | **A: 既存Pythonフック拡張** | 実装済み基盤活用、一貫性 | Python依存 | ✅ 採用 |
 | B: Bashスクリプト | シンプル、ポータブル | パターンマッチング制限 | ❌ |
 | C: Node.js組み込み | パフォーマンス最適 | Claude Code内部変更必要 | ❌ |
@@ -140,7 +136,7 @@ settings.json での PreToolUse フック設定:
 ### 5.1 技術的リスク
 
 | リスク | 影響 | 確率 | 緩和策 |
-|--------|------|------|--------|
+| --- | --- | --- | --- |
 | [→] Python未インストール環境 | フック不動作 | 低 | エラー時は操作許可（既存実装済み） |
 | [→] ルール評価エラー | 誤ブロック | 低 | try-except + exit(0)（既存実装済み） |
 | [?] パス解決エラー | インポート失敗 | 中 | PLUGIN_ROOT環境変数確認ガイド |
@@ -170,7 +166,7 @@ finally:
 ### 6.1 オーバーヘッド見積もり
 
 | 処理 | 予想時間 | 根拠 |
-|------|---------|------|
+| --- | --- | --- |
 | Python起動 | ~50ms | Python 3インタプリタ初期化 |
 | ルールファイル読込 | ~10ms | 5-10ファイル × Glob + Read |
 | パターンマッチング | ~5ms | Python re モジュール |
@@ -194,7 +190,7 @@ finally:
 ### Phase 2 期間内（3-5日）
 
 | 日 | タスク | 成果物 |
-|----|--------|--------|
+| --- | --- | --- |
 | 1 | 設計レビュー、既存実装確認 | この設計ドキュメント |
 | 2 | settings.json フック設定 | 動作確認済み設定 |
 | 3 | /commit 統合テスト | テストルール + 動作確認 |

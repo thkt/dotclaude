@@ -15,6 +15,8 @@ Custom commands for systematic software development support.
 | `/audit` | Code review via agents | Quality phase |
 | `/sow` | Display SOW progress | Monitoring phase |
 | `/validate` | Validate SOW conformance | Verification phase |
+| `/plans` | List and view planning documents (SOW/Spec) | Monitoring phase |
+| `/spec` | Generate Spec only (implementation details) | Analysis phase |
 
 ### Quick Action Commands
 
@@ -47,6 +49,19 @@ Custom commands for systematic software development support.
 | --- | --- | --- |
 | `/adr [title]` | Create Architecture Decision Record in MADR format | 📝 Documentation |
 | `/rulify <number>` | Generate project rule from ADR | 📝 Documentation |
+| `/docs:architecture` | Generate architecture overview documentation | 📝 Documentation |
+| `/docs:api` | Generate API specification documentation | 📝 Documentation |
+| `/docs:setup` | Generate environment setup guide | 📝 Documentation |
+| `/docs:domain` | Generate domain understanding documentation | 📝 Documentation |
+
+### Git Operations Commands
+
+| Command | Purpose | Environment |
+| --- | --- | --- |
+| `/branch` | Analyze changes and suggest branch names | 🔀 Git |
+| `/commit` | Generate Conventional Commits messages | 🔀 Git |
+| `/pr` | Generate comprehensive PR descriptions | 🔀 Git |
+| `/issue` | Generate structured GitHub Issues | 🔀 Git |
 
 ## 🔍 Dry-run Impact Simulation
 
@@ -249,6 +264,73 @@ Choose based on complexity:
 - Supports navigation, clicking, form filling, waiting, screenshots
 - Workflows saved to `.claude/commands/workflows/`
 - Human-editable Markdown format
+
+### /plans - Planning Document Viewer
+
+- Lists and views planning documents (SOW/Spec) in workspace
+- Searches both project-specific (`.claude/workspace/`) and global (`~/.claude/workspace/`)
+- Read-only viewer for planning documents
+- Options: `--latest` for most recent, `"feature-name"` for specific plan
+
+### /spec - Specification Generator
+
+- Generates spec.md only (single artifact) with implementation-ready details
+- Auto-detects latest SOW if not specified
+- Follows Golden Master structure for consistency
+- Includes: Functional Requirements, Data Model, Test Scenarios, NFRs
+- Auto-detects frontend features and includes Component API section
+- Saves to same directory as SOW
+
+### /branch - Git Branch Name Generator
+
+- Analyzes current Git changes and suggests branch names
+- Follows conventional patterns (feature/, fix/, refactor/, etc.)
+- Uses specialized `branch-generator` subagent for efficiency
+- 90% context reduction - only git operations, no codebase loading
+- Options: With context description, with ticket number
+
+### /commit - Git Commit Message Generator
+
+- Analyzes staged changes and generates Conventional Commits messages
+- Uses specialized `commit-generator` subagent for efficiency
+- Supports: feat, fix, docs, style, refactor, perf, test, chore, ci, build
+- Options: With context, with issue number
+
+### /pr - Pull Request Description Generator
+
+- Analyzes all changes compared to base branch
+- Generates comprehensive PR descriptions with Summary, Motivation, Changes, Testing
+- Auto-detects base branch (main/master/develop)
+- Uses specialized `pr-generator` subagent for efficiency
+- Options: With issue reference, with custom context
+
+### /issue - GitHub Issue Generator
+
+- Generates well-structured GitHub Issues
+- Creates title with type prefix ([Bug], [Feature], [Docs])
+- Generates body with Description, Steps to Reproduce, Acceptance Criteria
+- Optionally creates issue via `gh issue create`
+- Options: `bug`, `feature`, `--create`
+
+### /docs:architecture - Architecture Documentation
+
+- Generates architecture overview from codebase analysis
+- Includes system structure, component relationships, data flow
+
+### /docs:api - API Documentation
+
+- Generates API specification from codebase analysis
+- Includes endpoints, request/response formats, authentication
+
+### /docs:setup - Setup Guide
+
+- Generates environment setup guide from codebase analysis
+- Includes prerequisites, installation steps, configuration
+
+### /docs:domain - Domain Documentation
+
+- Generates domain understanding documentation
+- Includes business concepts, terminology, domain model
 
 ## 📂 Workspace Structure
 
