@@ -69,4 +69,4 @@ If any answer is "no" → reconsider approach
 ## Reference
 
 For detailed explanations, see:
-[@../PRINCIPLES_GUIDE.md](../PRINCIPLES_GUIDE.md) or individual principle files in [@../reference/](../reference/)
+[@../PRINCIPLES_GUIDE.md](../PRINCIPLES_GUIDE.md) or [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md)

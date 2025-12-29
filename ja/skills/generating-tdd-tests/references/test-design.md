@@ -400,7 +400,7 @@ test('rejects above maximum', () => expect(validateAge(121)).toBe(false))
 ### 各技法を使用する場合
 
 | 技法 | 使用する場合 | 例 |
-|------|------------|-----|
+| --- | --- | --- |
 | 同値分割 | 入力範囲、カテゴリ | 年齢検証、ユーザーロール |
 | 境界値分析 | 数値範囲、制限 | 最小/最大値、配列境界 |
 | デシジョンテーブル | 複数条件（3つ以上） | アクセス制御、状態マシン |
@@ -409,8 +409,7 @@ test('rejects above maximum', () => expect(validateAge(121)).toBe(false))
 
 ### コア原則
 
-- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - テストをシンプルで焦点を絞ったものに
-- [@../reference/MILLERS_LAW.md](../reference/MILLERS_LAW.md) - テストケースの複雑さを制限
+- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - オッカムの剃刀（シンプルさ）、Miller's Law（複雑さ制限）
 
 ### 開発プラクティス
 

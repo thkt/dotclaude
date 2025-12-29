@@ -69,4 +69,4 @@
 ## 参照
 
 詳細な説明については、以下を参照：
-[@../PRINCIPLES_GUIDE.md](../PRINCIPLES_GUIDE.md) または [@../reference/](../reference/) の個別の原則ファイル
+[@../PRINCIPLES_GUIDE.md](../PRINCIPLES_GUIDE.md) または [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md)

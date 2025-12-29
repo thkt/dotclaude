@@ -1,28 +1,40 @@
 ---
 name: automating-browser
 description: >
-  Browser automation using claude-in-chrome MCP tools.
-  Comprehensive guide for E2E testing, screenshots, and web interactions.
-  Triggers: browser automation, ブラウザ自動化, E2E test, E2Eテスト,
-  screenshot, スクリーンショット, form fill, フォーム入力,
-  click, navigate, web scraping, クローリング, GIF recording,
-  GIF録画, Playwright, Puppeteer, ブラウザ操作, Chrome.
+  Interactive browser automation using claude-in-chrome MCP tools.
+  Best for: demos, documentation GIFs, manual testing, live browser control.
+  For automated E2E testing in CI/CD, use webapp-testing skill instead.
+  Triggers: browser automation, ブラウザ自動化, screenshot, スクリーンショット,
+  form fill, フォーム入力, click, navigate, GIF recording, GIF録画,
+  ブラウザ操作, Chrome, demo, デモ, live browser.
 allowed-tools: Read, Glob, mcp__claude-in-chrome__*
 ---
 
 # Browser Automation Guide
 
-Comprehensive guide for browser automation using claude-in-chrome MCP.
+Interactive browser control using claude-in-chrome MCP extension.
 
 ## Purpose
 
-Enable effective browser automation for:
+Enable **interactive** browser automation for:
 
-- E2E testing workflows
-- Screenshot capture and analysis
-- Form filling and interaction
-- GIF recording for documentation
-- Web data extraction
+- Demo recordings and GIF documentation
+- Manual testing with live browser feedback
+- Form filling and real-time interaction
+- Screenshot capture for visual verification
+- Web data extraction from current browser
+
+## When to Use This Skill
+
+| Use Case | This Skill | webapp-testing (official) |
+| --- | --- | --- |
+| GIF recording / demos | ✅ Best | ❌ Not supported |
+| Manual testing / verification | ✅ Best | △ |
+| CI/CD automated testing | △ | ✅ Best |
+| Testing with server lifecycle | ❌ | ✅ with_server.py |
+| Using existing Chrome session | ✅ | ❌ |
+
+**Quick decision**: "Show & verify" → this skill, "Automate & run" → webapp-testing
 
 ## Getting Started
 
@@ -165,6 +177,7 @@ mcp__claude-in-chrome__gif_creator
 
 ### Related Skills
 
+- `webapp-testing` (official) - Playwright E2E automated testing (CI/CD optimized)
 - `utilizing-cli-tools` - CLI tools guide
 - `generating-tdd-tests` - Test design
 
@@ -172,3 +185,7 @@ mcp__claude-in-chrome__gif_creator
 
 - `/workflow:create` - Browser workflow creation
 - `/test` - E2E test execution (includes browser testing)
+
+### See Also
+
+- `/example-skills:webapp-testing` - Official skill (Playwright + with_server.py)

@@ -42,7 +42,7 @@ flowchart TD
 ### 競合の解決
 
 | 競合 | 解決 | 例 |
-| --- | --- | --- |s
+| --- | --- | --- |
 | **DRY vs 可読性** | 可読性が優先 | 抽象化が明確さを損なうなら重複を受け入れる |
 | **SOLID vs シンプル** | シンプルが優先 | 想像上の未来のために過度な設計をしない |
 | **完璧 vs 動作** | 動作が優先 | 実際の問題を解決する漏れのある抽象化を出荷 |
@@ -411,12 +411,12 @@ class UserService {
 
 ### 中心文書
 
-- [@./reference/OCCAMS_RAZOR.md](./reference/OCCAMS_RAZOR.md) - メタ原則
+- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - コア原則（オッカムの剃刀、SOLID、DRY、Miller's Law、YAGNI）
 - [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md) - アプローチ
 - [@./development/READABLE_CODE.md](./development/READABLE_CODE.md) - ベースライン
 
 ### すべての原則
 
-- Reference: [@./reference/](./reference/) - SOLID、DRY、オッカムの剃刀
+- Skills: [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - SOLID、DRY、オッカムの剃刀
 - Development: [@./development/](./development/) - すべての実践的原則
 - Commands: [@../docs/COMMANDS.md](../docs/COMMANDS.md) - 統合されたワークフロー

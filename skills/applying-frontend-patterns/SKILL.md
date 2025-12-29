@@ -97,10 +97,15 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 
 ### Related Skills
 
+- `frontend-design` (official) - Visual design quality (typography, color, animation)
 - `enhancing-progressively` - CSS-first progressive enhancement
-- `integrating-storybook` - コンポーネント可視化
+- `integrating-storybook` - Component visualization
 
 ### Used by Commands
 
-- `/code --frontend` - Reactコンポーネント実装
-- `/audit` - フロントエンドパターン確認
+- `/code --frontend` - React component implementation
+- `/audit` - Frontend pattern verification
+
+### See Also
+
+- `/example-skills:frontend-design` - Official skill for distinctive UI aesthetics

@@ -80,10 +80,11 @@ Skills are used for:
 | --- | --- | --- | --- |
 | **TDD/Testing** | `generating-tdd-tests` | TDD/RGRCサイクル、テスト設計 | /code |
 | | `tdd-fundamentals` | TDD基礎原則、例 | /code, /fix |
-| **Code Quality** | `applying-code-principles` | SOLID, DRY, YAGNI原則 | /code |
-| | `applying-frontend-patterns` | React/UIパターン | /code --frontend |
-| | `integrating-storybook` | Storybookコンポーネント開発 | /code --storybook |
-| | `enhancing-progressively` | CSS-first, 段階的強化 | /code |
+| **Code Quality** | `applying-code-principles` | SOLID, DRY, YAGNI principles | /code |
+| | `applying-frontend-patterns` | React/UI patterns (structure) | /code --frontend |
+| | `integrating-storybook` | Storybook component development | /code --storybook |
+| | `enhancing-progressively` | CSS-first, progressive enhancement | /code |
+| | ↳ `frontend-design` (official) | Visual design quality (aesthetics) | plugin |
 | **Review** | `reviewing-security` | セキュリティレビュー（OWASP） | /audit |
 | | `reviewing-readability` | 可読性レビュー | /audit |
 | | `reviewing-type-safety` | 型安全性レビュー（TypeScript） | /audit |
@@ -97,9 +98,10 @@ Skills are used for:
 | | `documenting-apis` | API仕様ドキュメント | /docs:api |
 | | `documenting-domains` | ドメイン理解ドキュメント | /docs:domain |
 | | `setting-up-docs` | 環境セットアップガイド | /docs:setup |
-| **Automation** | `automating-browser` | ブラウザ自動化 | /workflow:create |
-| | `utilizing-cli-tools` | CLI活用（gh, git等） | /commit, /pr, /branch, /issue, /rabbit |
-| | `creating-hooks` | カスタムフック作成 | /hookify |
+| **Automation** | `automating-browser` | Interactive browser control (demos, GIFs) | /workflow:create |
+| | ↳ `webapp-testing` (official) | Playwright E2E testing (CI/CD) | plugin |
+| | `utilizing-cli-tools` | CLI tools (gh, git, etc.) | /commit, /pr, /branch, /issue, /rabbit |
+| | `creating-hooks` | Custom hooks creation | /hookify |
 
 ### Naming Convention
 

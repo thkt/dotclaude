@@ -301,6 +301,55 @@ description: >
 - **1.0.0** (2024-11-01): Initial release
 ```
 
+### 5. Context Efficiency (from official skill-creator)
+
+**Principle**: "The context window is a public good"
+
+- ✅ Keep SKILL.md concise (< 500 lines recommended)
+- ✅ Move detailed content to `references/` or `sections/`
+- ✅ Avoid explaining what Claude already knows
+- ❌ Don't repeat general programming knowledge
+
+**Progressive Loading**:
+
+| Stage | Content | When Loaded |
+| --- | --- | --- |
+| 1. Metadata | name + description | Always (for discovery) |
+| 2. SKILL.md | Core instructions | When skill activates |
+| 3. References | Detailed guides | On explicit reference |
+
+### 6. Flexibility Levels (from official skill-creator)
+
+Match instruction specificity to error risk:
+
+| Level | Format | Use When |
+| --- | --- | --- |
+| **High flexibility** | Text instructions | Multiple approaches valid |
+| **Medium** | Pseudocode / parameters | Some structure needed |
+| **Low flexibility** | Specific scripts | Errors are costly |
+
+**Example**:
+
+```markdown
+# High flexibility (creative tasks)
+"Generate a component that displays user data attractively"
+
+# Low flexibility (error-prone tasks)
+"Execute: scripts/generate-adr.sh --format=madr --number=auto"
+```
+
+### 7. Anti-Patterns: Files to Avoid
+
+**Do NOT include these files** in skill directories:
+
+- ❌ `README.md` - Use SKILL.md for all documentation
+- ❌ `INSTALLATION_GUIDE.md` - Not needed for AI agents
+- ❌ `QUICK_REFERENCE.md` - Merge into SKILL.md
+- ❌ `CHANGELOG.md` - Use inline version history
+
+**Reason**: Skills should only contain information needed for AI execution.
+Human-oriented documentation belongs elsewhere.
+
 ## Common Patterns
 
 ### Pattern 1: Section-Based Skill

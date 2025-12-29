@@ -49,7 +49,7 @@ Layout, positioning, show/hide, responsive, animations, visual states
 
 ## Related Principles
 
-- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - The simplicity principle underlying Progressive Enhancement
+- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Occam's Razor and simplicity principles
 
 ## Outcome-First Development
 

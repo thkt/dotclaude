@@ -169,5 +169,5 @@ test('accepts sufficient age and balance', () => expect(canPurchase(20, 10)).toB
 
 ## 関連する原則
 
-- [@../reference/OCCAMS_RAZOR.md](../reference/OCCAMS_RAZOR.md) - Baby Stepsはシンプルさの原則を体現
+- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - オッカムの剃刀（Baby Stepsはシンプルさの原則を体現）
 - [@./TEST_GENERATION.md](./TEST_GENERATION.md) - 体系的なテスト設計技法

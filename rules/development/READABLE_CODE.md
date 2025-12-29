@@ -28,7 +28,7 @@ Miller's Law (7±2) demonstrates that human cognitive capacity is limited. When 
 
 This scientific backing explains WHY readable code matters: our brains literally cannot process too much complexity at once.
 
-→ See [@../reference/MILLERS_LAW.md](../reference/MILLERS_LAW.md) for the cognitive science behind readable code
+→ See [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) for Miller's Law thresholds
 
 ## Key Practices
 

@@ -103,7 +103,7 @@ Never skip step 2-3.
 | Principle | AI Role | Human Role | Key Insight |
 | --- | --- | --- | --- |
 | **TDD/Baby Steps** [@./TDD_RGRC.md] | Generate test scaffolding | Write assertions from requirements | Baby steps still apply - one test at a time |
-| **Occam's Razor** [@../reference/OCCAMS_RAZOR.md] | Generates solutions | Applies simplicity filter | AI tends to over-engineer - question every abstraction |
+| **Occam's Razor** | Generates solutions | Applies simplicity filter | AI tends to over-engineer - question every abstraction |
 | **Progressive Enhancement** [@./PROGRESSIVE_ENHANCEMENT.md] | Generate simple version | Enhance based on real needs | Don't implement "future-proof" suggestions |
 | **Readable Code** [@./READABLE_CODE.md] | May generate clever code | Ensures readability | Refactor for clarity over cleverness |
 
