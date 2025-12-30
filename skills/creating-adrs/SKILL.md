@@ -48,7 +48,7 @@ Create Architecture Decision Records in MADR format through a structured 6-phase
 
 ## Skill vs Rule Decision
 
-| Aspect | /adr:rule | /adr:skill |
+| Aspect | /rulify | /adr:skill |
 | --- | --- | --- |
 | Purpose | Enforce constraints | Suggest patterns |
 | Application | Always active | Triggered by keywords |

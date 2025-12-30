@@ -36,7 +36,7 @@ Convert Architecture Decision Record (ADR) into an executable skill format with 
 
 ### Skill vs Rule Decision
 
-| Aspect | /adr:rule | /adr:skill |
+| Aspect | /rulify | /adr:skill |
 | --- | --- | --- |
 | Purpose | Enforce constraints | Suggest patterns |
 | Application | Always active | Triggered by keywords |
@@ -51,7 +51,7 @@ Convert Architecture Decision Record (ADR) into an executable skill format with 
 - Context-dependent guidance
 - Detailed examples needed
 
-**Use `/adr:rule`:**
+**Use `/rulify`:**
 
 - Absolute constraints ("MUST NOT")
 - Security requirements
@@ -60,7 +60,7 @@ Convert Architecture Decision Record (ADR) into an executable skill format with 
 ### Both Can Coexist
 
 ```bash
-/adr:rule 0001   # "Must use React Query"
+/rulify 0001     # "Must use React Query"
 /adr:skill 0001  # "How to use React Query"
 ```
 
@@ -91,5 +91,5 @@ For complete execution flow, templates, and error handling:
 ## Related Commands
 
 - `/adr [title]` - Create ADR
-- `/adr:rule <number>` - Generate enforcement rule
+- `/rulify <number>` - Generate enforcement rule
 - `/research` - Technical research for ADR

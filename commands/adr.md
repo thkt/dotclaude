@@ -117,7 +117,7 @@ ADR_AUTO_INDEX="true"              # Auto-index update
 
 ## Related Commands
 
-- `/adr:rule <number>` - Generate project rule from ADR
+- `/rulify <number>` - Generate project rule from ADR
 - `/research` - Technical investigation before ADR creation
 - `/think` - Planning before major decisions
 

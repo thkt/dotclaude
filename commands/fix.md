@@ -45,7 +45,7 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Phase 1: Root Cause Analysis
 
-[@./fix/root-cause-analysis.md](./fix/root-cause-analysis.md)
+[@~/.claude/references/commands/fix/root-cause-analysis.md](~/.claude/references/commands/fix/root-cause-analysis.md)
 
 - Dynamic context (git diff, test status)
 - Explore agent for 5 Whys
@@ -56,7 +56,7 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Phase 1.5: Regression Test First (Recommended)
 
-[@./fix/regression-test.md](./fix/regression-test.md)
+[@~/.claude/references/commands/fix/regression-test.md](~/.claude/references/commands/fix/regression-test.md)
 
 - TDD approach to bug fixes
 - Write failing test that reproduces bug
@@ -74,7 +74,7 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Phase 2: Implementation
 
-[@./fix/implementation.md](./fix/implementation.md)
+[@~/.claude/references/commands/fix/implementation.md](~/.claude/references/commands/fix/implementation.md)
 
 - Confidence-based approach:
   - High (>0.9): Direct fix
@@ -88,7 +88,7 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Phase 3: Verification
 
-[@./fix/verification.md](./fix/verification.md)
+[@~/.claude/references/commands/fix/verification.md](~/.claude/references/commands/fix/verification.md)
 
 - Run quality checks in parallel:
   - Tests (regression + all)
@@ -101,7 +101,7 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Phase 3.5: Test Generation (Optional)
 
-[@./fix/test-generation.md](./fix/test-generation.md)
+[@~/.claude/references/commands/fix/test-generation.md](~/.claude/references/commands/fix/test-generation.md)
 
 - Use test-generator for edge cases
 - References: [@~/.claude/references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md)
@@ -116,7 +116,7 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Definition of Done
 
-[@./fix/completion.md](./fix/completion.md)
+[@~/.claude/references/commands/fix/completion.md](~/.claude/references/commands/fix/completion.md)
 
 - Completion criteria
 - Output formatting

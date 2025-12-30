@@ -44,7 +44,7 @@ Load with flags when needed:
 
 ## Specification Context
 
-For spec.md detection: [@./code/spec-context.md](./code/spec-context.md)
+For spec.md detection: [@~/.claude/references/commands/code/spec-context.md](~/.claude/references/commands/code/spec-context.md)
 
 ## Implementation Cycle
 
@@ -57,19 +57,19 @@ For spec.md detection: [@./code/spec-context.md](./code/spec-context.md)
 
 ### Phase 0: Test Preparation
 
-For spec-driven test generation: [@./code/test-preparation.md](./code/test-preparation.md)
+For spec-driven test generation: [@~/.claude/references/commands/code/test-preparation.md](~/.claude/references/commands/code/test-preparation.md)
 
 ### RGRC Cycle Details
 
-For detailed cycle: [@./code/rgrc-cycle.md](./code/rgrc-cycle.md)
+For detailed cycle: [@~/.claude/references/commands/code/rgrc-cycle.md](~/.claude/references/commands/code/rgrc-cycle.md)
 
 ## Quality Gates
 
-For quality checks and verification: [@./code/quality-gates.md](./code/quality-gates.md)
+For quality checks and verification: [@~/.claude/references/commands/code/quality-gates.md](~/.claude/references/commands/code/quality-gates.md)
 
 ## Completion Criteria
 
-For definition of done: [@./code/completion.md](./code/completion.md)
+For definition of done: [@~/.claude/references/commands/code/completion.md](~/.claude/references/commands/code/completion.md)
 
 ## Quick Decision Questions (Always Apply)
 

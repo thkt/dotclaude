@@ -39,6 +39,13 @@ This repository contains personal configurations for Claude AI, including:
 ├── skills/               # Skill-based knowledge modules
 │   ├── optimizing-performance/    # Web performance knowledge
 │   └── generating-tdd-tests/      # TDD methodology
+├── agents/               # Specialized AI agents
+│   ├── analyzers/        # Architecture analyzers
+│   ├── enhancers/        # Code enhancers
+│   ├── generators/       # Code/test generators
+│   ├── git/              # Git operation agents
+│   ├── orchestrators/    # Multi-agent coordinators
+│   └── reviewers/        # Code review agents (13 types)
 ├── references/           # Reference documents (not loaded as commands)
 │   └── commands/         # Command reference materials
 └── ja/                    # Japanese translations
@@ -72,7 +79,7 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
    /plugin install quick-actions             # /fix
    /plugin install automation-commands       # /auto-test, /full-cycle
    /plugin install git-utilities             # /commit, /branch, /pr
-   /plugin install documentation-tools       # /adr, /adr:rule
+   /plugin install documentation-tools       # /adr, /rulify
    /plugin install browser-workflows         # /workflow:create
    /plugin install utilities                 # /context
    ```
@@ -183,7 +190,7 @@ Claude Code provides 15 specialized commands organized into 5 categories:
   - `/auto-test`, `/full-cycle`
 
 - **Documentation** (2 commands): Architecture decisions and rules
-  - `/adr`, `/adr:rule`
+  - `/adr`, `/rulify`
 
 - **External Tools** (1 command): Browser automation
   - `/workflow:create`
