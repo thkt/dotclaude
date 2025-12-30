@@ -12,7 +12,7 @@ model: haiku
 
 Expert agent for analyzing staged Git changes and generating Conventional Commits format messages.
 
-**Base Template**: [@./_base-git-agent.md] for common git tools and constraints.
+**Base Template**: [@~/.claude/agents/git/_base-git-agent.md] for common git tools and constraints.
 
 ## Objective
 

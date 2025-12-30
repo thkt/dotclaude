@@ -268,7 +268,7 @@ custom_rules:
     bundle_size_limit: 500KB
     component_render_limit: 16ms
   security:
-    forbidden_patterns: [eval, dangerouslySetInnerHTML]
+    forbidden_patterns: ["eval", "dangerouslySetInnerHTML"]
   code_quality:
     max_file_lines: 300
     max_function_lines: 50
@@ -306,6 +306,7 @@ All review agents are organized by function:
   - document, subagent, silent-failure, security
 - `~/.claude/agents/generators/` - Code generation agents (test)
 - `~/.claude/agents/enhancers/` - Code enhancement agents (progressive)
+- `~/.claude/agents/git/` - Git operation agents (branch, commit, pr, issue)
 - `~/.claude/agents/orchestrators/` - Orchestration agents (this file)
 
 ## Best Practices

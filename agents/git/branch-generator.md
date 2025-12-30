@@ -12,7 +12,7 @@ model: haiku
 
 Expert agent for analyzing Git changes and generating appropriate branch names following conventional patterns.
 
-**Base Template**: [@./_base-git-agent.md] for common git tools and constraints.
+**Base Template**: [@~/.claude/agents/git/_base-git-agent.md] for common git tools and constraints.
 
 ## Objective
 

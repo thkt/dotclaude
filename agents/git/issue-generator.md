@@ -12,7 +12,7 @@ model: haiku
 
 Expert agent for generating well-structured GitHub Issues from user descriptions.
 
-**Base Template**: [@./_base-git-agent.md] for common constraints.
+**Base Template**: [@~/.claude/agents/git/_base-git-agent.md] for common constraints.
 
 ## Objective
 
