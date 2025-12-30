@@ -155,12 +155,12 @@ Lower priority:
 Break down to testable units (typically public methods):
 
 ```typescript
-// ✅ Good: Test one method at a time
+// Good: Good: Test one method at a time
 describe('UserService.validateAge', () => {
   // Tests for validateAge
 })
 
-// ❌ Avoid: Testing entire class at once
+// Bad: Avoid: Testing entire class at once
 describe('UserService', () => {
   // Mixing tests for multiple methods
 })
@@ -216,14 +216,14 @@ describe('validateAge', () => {
 ### Occam's Razor Applied to Tests
 
 ```typescript
-// ❌ Over-engineered
+// Bad: Over-engineered
 class AgeValidatorTestBuilder {
   withAge(age: number) { ... }
   withContext(ctx: any) { ... }
   build() { ... }
 }
 
-// ✅ Simple and direct
+// Good: Simple and direct
 test('validates age correctly', () => {
   expect(validateAge(30)).toBe(true)
 })
@@ -239,7 +239,7 @@ Follow the same readability principles as production code:
 - **Minimal setup**: Only what's needed for the test
 
 ```typescript
-// ✅ Readable test
+// Good: Readable test
 test('denies access to inactive users', () => {
   // Arrange
   const user = { isActive: false, isPremium: true }
@@ -257,14 +257,14 @@ test('denies access to inactive users', () => {
 Respect cognitive limits (7±2 items):
 
 ```typescript
-// ❌ Too many test cases in one describe
+// Bad: Too many test cases in one describe
 describe('validation', () => {
   test('case 1', ...)
   test('case 2', ...)
   // ... 15 more tests
 })
 
-// ✅ Grouped into categories
+// Good: Grouped into categories
 describe('validation', () => {
   describe('email validation', () => {
     // 3-5 tests
@@ -327,7 +327,7 @@ end
 ### 1. Random Testing
 
 ```typescript
-// ❌ No systematic approach
+// Bad: No systematic approach
 test('it works', () => {
   expect(validateAge(25)).toBe(true)
   expect(validateAge(50)).toBe(true)
@@ -335,7 +335,7 @@ test('it works', () => {
   // Why these numbers? Missing boundaries!
 })
 
-// ✅ Systematic design
+// Good: Systematic design
 test('accepts minimum valid age (boundary)', () => {
   expect(validateAge(18)).toBe(true)
 })
@@ -352,14 +352,14 @@ test('accepts maximum valid age (boundary)', () => {
 ### 2. Testing Implementation Instead of Behavior
 
 ```typescript
-// ❌ Coupled to implementation
+// Bad: Coupled to implementation
 test('calls validateAge internally', () => {
   const spy = jest.spyOn(service, 'validateAge')
   service.registerUser({ age: 30 })
   expect(spy).toHaveBeenCalled()  // Brittle!
 })
 
-// ✅ Test behavior
+// Good: Test behavior
 test('registers users with valid age', () => {
   const result = service.registerUser({ age: 30 })
   expect(result.success).toBe(true)
@@ -369,12 +369,12 @@ test('registers users with valid age', () => {
 ### 3. Incomplete Coverage
 
 ```typescript
-// ❌ Missing boundary cases
+// Bad: Missing boundary cases
 test('validates age', () => {
   expect(validateAge(30)).toBe(true)  // Only happy path
 })
 
-// ✅ Comprehensive coverage
+// Good: Comprehensive coverage
 test('rejects below minimum', () => expect(validateAge(17)).toBe(false))
 test('accepts minimum', () => expect(validateAge(18)).toBe(true))
 test('accepts valid age', () => expect(validateAge(30)).toBe(true))

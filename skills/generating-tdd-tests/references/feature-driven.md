@@ -210,7 +210,7 @@ PASS  src/discount.test.ts
 
 ## Common Pitfalls
 
-### ❌ Activating Multiple Tests at Once
+### Bad: Activating Multiple Tests at Once
 
 ```typescript
 // Don't do this:
@@ -223,7 +223,7 @@ it.skip('test 3', () => { })
 
 **Fix**: Activate one test at a time.
 
-### ❌ Writing Implementation Before Test
+### Bad: Writing Implementation Before Test
 
 ```typescript
 // Don't do this:
@@ -237,7 +237,7 @@ it.skip('test 3', () => { })
 // 4. Next test
 ```
 
-### ❌ Skipping Refactor Phase
+### Bad: Skipping Refactor Phase
 
 ```typescript
 // After Green phase:

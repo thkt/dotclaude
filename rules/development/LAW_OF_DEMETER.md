@@ -24,13 +24,13 @@ An object should only interact with:
 ## The Problem It Solves
 
 ```typescript
-// ❌ Train wreck - violates Law of Demeter
+// Bad: Train wreck - violates Law of Demeter
 const street = user.getAddress().getCity().getStreet().getName()
 if (order.getCustomer().getPaymentMethod().isValid()) {
   order.getCustomer().getPaymentMethod().charge(amount)
 }
 
-// ✅ Direct interaction only
+// Good: Direct interaction only
 const street = user.getStreetName()
 if (order.canCharge()) {
   order.charge(amount)
@@ -49,12 +49,12 @@ Issues solved:
 ### 1. Tell, Don't Ask
 
 ```typescript
-// ❌ Asking for data to make decisions
+// Bad: Asking for data to make decisions
 if (employee.getDepartment().getBudget() > amount) {
   employee.getDepartment().getBudget().subtract(amount)
 }
 
-// ✅ Tell the object what to do
+// Good: Tell the object what to do
 if (employee.canExpense(amount)) {
   employee.expense(amount)
 }
@@ -63,13 +63,13 @@ if (employee.canExpense(amount)) {
 ### 2. Hide Delegate
 
 ```typescript
-// ❌ Exposing internal structure
+// Bad: Exposing internal structure
 class Order {
   getCustomer(): Customer { return this.customer }
 }
 // Usage: order.getCustomer().getName()
 
-// ✅ Hide the delegation
+// Good: Hide the delegation
 class Order {
   getCustomerName(): string {
     return this.customer.getName()
@@ -83,12 +83,12 @@ class Order {
 ### React Components
 
 ```tsx
-// ❌ Component knows too much
+// Bad: Component knows too much
 function UserCard({ user }) {
   return <h2>{user.profile.info.name.displayName}</h2>
 }
 
-// ✅ Component receives what it needs
+// Good: Component receives what it needs
 function UserCard({ displayName }) {
   return <h2>{displayName}</h2>
 }
@@ -102,14 +102,14 @@ function UserCardContainer({ user }) {
 ### API Design
 
 ```typescript
-// ❌ Exposing internal structure
+// Bad: Exposing internal structure
 class BankAccount {
   getTransactions(): Transaction[] {
     return this.transactions
   }
 }
 
-// ✅ Provide specific methods
+// Good: Provide specific methods
 class BankAccount {
   getTransactionsAbove(amount: number): Transaction[] {
     return this.transactions.filter(t => t.amount > amount)
@@ -120,12 +120,12 @@ class BankAccount {
 ### Testing Benefits
 
 ```typescript
-// ❌ Complex mocking
+// Bad: Complex mocking
 const mockCity = { getTaxRate: jest.fn(() => 0.08) }
 const mockAddress = { getCity: jest.fn(() => mockCity) }
 const mockCustomer = { getAddress: jest.fn(() => mockAddress) }
 
-// ✅ Simple interface
+// Good: Simple interface
 const mockCustomer = { getTaxRate: jest.fn(() => 0.08) }
 ```
 

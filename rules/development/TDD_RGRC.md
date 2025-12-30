@@ -35,10 +35,10 @@ The foundation of TDD. Full details with examples:
 
 | Phase | Command | Focus |
 | --- | --- | --- |
-| 🔴 Red | `npm test` | Write test → Verify it fails correctly |
-| 🟢 Green | `npm test` | Minimal code to pass → "You can sin" |
-| 🔵 Refactor | `npm test` | Remove duplication → Keep tests green |
-| ✅ Commit | `git commit` | Include test + implementation |
+| [Red] | `npm test` | Write test → Verify it fails correctly |
+| [Green] | `npm test` | Minimal code to pass → "You can sin" |
+| [Refactor] | `npm test` | Remove duplication → Keep tests green |
+| [Commit] | `git commit` | Include test + implementation |
 
 For detailed phase guidance with exit criteria:
 [@~/.claude/skills/generating-tdd-tests/SKILL.md#rgrc-cycle](~/.claude/skills/generating-tdd-tests/SKILL.md#rgrc-cycle)
@@ -54,14 +54,14 @@ For detailed phase guidance with exit criteria:
 
 ```markdown
 # Test Scenario List
-1. ⏳ User can register with email and password
-2. ⏳ Registration fails with invalid email
+1. [pending] User can register with email and password
+2. [pending] Registration fails with invalid email
 
 # Current RGRC Cycle (for Scenario 1)
-1.1 ❌ Red: Write failing test
-1.2 ⏳ Green: Implement minimal logic
-1.3 ⏳ Refactor: Extract validation
-1.4 ⏳ Commit: Save implementation
+1.1 [in_progress] Red: Write failing test
+1.2 [pending] Green: Implement minimal logic
+1.3 [pending] Refactor: Extract validation
+1.4 [pending] Commit: Save implementation
 ```
 
 ## When to Skip TDD

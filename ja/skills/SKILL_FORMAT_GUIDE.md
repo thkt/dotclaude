@@ -174,11 +174,11 @@ skill-name/
 **例**:
 
 ```yaml
-# ❌ 曖昧
+# Bad: 曖昧
 description: >
   コード品質を改善します。
 
-# ✅ 具体的
+# Good: 具体的
 description: >
   「リーダブルコード」に基づくコード可読性レビュー。
   トリガーキーワード: "readability", "可読性", "naming", "命名",

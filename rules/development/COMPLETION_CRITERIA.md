@@ -20,16 +20,16 @@ All implementations must pass:
 
 ### Critical (Must Pass)
 
-- ✅ **All tests passing** - Exit code: 0
-- ✅ **No lint errors** - 0 errors (warnings <5 acceptable)
-- ✅ **No type errors** - TypeScript passes
-- ✅ **No regressions** - Related features work
+- [Required] **All tests passing** - Exit code: 0
+- [Required] **No lint errors** - 0 errors (warnings <5 acceptable)
+- [Required] **No type errors** - TypeScript passes
+- [Required] **No regressions** - Related features work
 
 ### Recommended
 
-- ⭐ **Coverage ≥80%** - For new code
-- ⭐ **Documentation updated** - If behavior changed
-- ⭐ **Consistent with codebase** - Follow existing patterns
+- [Optional] **Coverage ≥80%** - For new code
+- [Optional] **Documentation updated** - If behavior changed
+- [Optional] **Consistent with codebase** - Follow existing patterns
 
 ## Output Format
 

@@ -32,7 +32,7 @@ Root cause is clear, fix is straightforward.
 // Root cause: No check for negative result
 function calculateTotal(price, discount) {
   const result = price - discount;
-  return Math.max(0, result); // ✅ Direct fix
+  return Math.max(0, result); // Good: Direct fix
 }
 ```
 
@@ -89,7 +89,7 @@ When confidence is low, don't guess:
 
 **Principle**: Choose the simplest solution that solves the problem.
 
-### ✅ Good - Simple Solution
+### Good - Simple Solution
 
 ```typescript
 // Problem: Can return negative
@@ -99,7 +99,7 @@ function calculateTotal(price, discount) {
 }
 ```
 
-### ❌ Bad - Over-engineered
+### Bad - Over-engineered
 
 ```typescript
 // Problem: Can return negative
@@ -115,7 +115,7 @@ class PricingValidator {
 
 ## Don't Restructure Surrounding Code
 
-### ✅ Good - Targeted Fix
+### Good - Targeted Fix
 
 ```typescript
 // Only change what's needed
@@ -129,7 +129,7 @@ function applyTax(total, rate) {
 }
 ```
 
-### ❌ Bad - Unnecessary Refactoring
+### Bad - Unnecessary Refactoring
 
 ```typescript
 // Don't refactor unrelated code during bug fix
@@ -137,7 +137,7 @@ function calculateTotal(price, discount) {
   return Math.max(0, price - discount);
 }
 
-// ❌ Don't "improve" unrelated functions
+// Bad: Don't "improve" unrelated functions
 function applyTax(total, rate) {
   // Refactored for "consistency" - NOT part of the fix!
   const taxAmount = total * rate;
@@ -160,7 +160,7 @@ If the bug is UI/visual:
 ### Example
 
 ```css
-/* ✅ Good - CSS solution for layout bug */
+/* Good: - CSS solution for layout bug */
 .container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -168,7 +168,7 @@ If the bug is UI/visual:
 ```
 
 ```javascript
-// ❌ Bad - JavaScript for CSS problem
+// Bad: Bad - JavaScript for CSS problem
 function layoutFix() {
   const container = document.querySelector('.container');
   container.style.display = 'flex';

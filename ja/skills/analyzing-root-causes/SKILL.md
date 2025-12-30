@@ -72,12 +72,12 @@ allowed-tools: Read, Grep, Glob, Task
 ### タイミング問題
 
 ```typescript
-// ❌ 症状: DOMを待つためにsetTimeout
+// Bad: 症状: DOMを待つためにsetTimeout
 useEffect(() => {
   setTimeout(() => { document.getElementById('target')?.scrollIntoView() }, 100)
 }, [])
 
-// ✅ 根本原因: React refを使用
+// Good: 根本原因: React refを使用
 const targetRef = useRef<HTMLDivElement>(null)
 useEffect(() => { targetRef.current?.scrollIntoView() }, [])
 ```
@@ -85,11 +85,11 @@ useEffect(() => { targetRef.current?.scrollIntoView() }, [])
 ### 状態同期
 
 ```typescript
-// ❌ 症状: 状態を同期するための複数のeffect
+// Bad: 症状: 状態を同期するための複数のeffect
 useEffect(() => { setFilteredItems(items.filter(i => i.active)) }, [items])
 useEffect(() => { setCount(filteredItems.length) }, [filteredItems])
 
-// ✅ 根本原因: 同期ではなく導出
+// Good: 根本原因: 同期ではなく導出
 const filteredItems = useMemo(() => items.filter(i => i.active), [items])
 const count = filteredItems.length
 ```
@@ -97,13 +97,13 @@ const count = filteredItems.length
 ### 子状態のポーリング
 
 ```typescript
-// ❌ 症状: 親が子の状態をポーリング
+// Bad: 症状: 親が子の状態をポーリング
 const childRef = useRef()
 useEffect(() => {
   const interval = setInterval(() => { childRef.current?.getValue() }, 1000)
 }, [])
 
-// ✅ 根本原因: 適切なデータフロー（状態の持ち上げまたはコールバック）
+// Good: 根本原因: 適切なデータフロー（状態の持ち上げまたはコールバック）
 const [value, setValue] = useState()
 return <Child onValueChange={setValue} />
 ```

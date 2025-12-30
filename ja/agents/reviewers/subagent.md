@@ -52,7 +52,7 @@ skills: [skill-name]      # Optional: Referenced skills
 
 #### Recommended Sections
 
-- Code examples (with ❌/✅ patterns)
+- Code examples (with Bad/Good patterns)
 - Integration with other agents
 - Applied Development Principles
 
@@ -73,19 +73,19 @@ skills: [skill-name]      # Optional: Referenced skills
 - [ ] YAML frontmatter valid (name: kebab-case, tools: appropriate)
 - [ ] Required sections present
 - [ ] Clear scope boundaries
-- [ ] Code examples show ❌/✅ patterns
+- [ ] Code examples show Bad/Good patterns
 - [ ] Integration points specified
 - [ ] References use proper format: `[@~/.claude/...]`
 
 ## Common Issues
 
-### ❌ Inappropriate for Sub-Agents
+### Inappropriate for Sub-Agents
 
 - Installation instructions
 - User onboarding guides
 - External links to tutorials
 
-### ✅ Appropriate for Sub-Agents
+### Appropriate for Sub-Agents
 
 - Clear methodology
 - Specific review criteria

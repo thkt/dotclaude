@@ -29,14 +29,14 @@ Evaluate code testability, identify patterns that hinder testing, and recommend 
 ### 1. Dependency Injection
 
 ```typescript
-// ❌ Poor: Direct dependencies hard to mock
+// Bad: Poor: Direct dependencies hard to mock
 class UserService {
   async getUser(id: string) {
     return fetch(`/api/users/${id}`).then(r => r.json())
   }
 }
 
-// ✅ Good: Injectable dependencies
+// Good: Good: Injectable dependencies
 interface HttpClient { get<T>(url: string): Promise<T> }
 
 class UserService {
@@ -50,13 +50,13 @@ class UserService {
 ### 2. Pure Functions and Side Effect Isolation
 
 ```typescript
-// ❌ Poor: Mixed side effects and logic
+// Bad: Poor: Mixed side effects and logic
 function calculateDiscount(userId: string) {
   const history = api.getPurchaseHistory(userId) // Side effect
   return history.length > 10 ? 0.2 : 0.1
 }
 
-// ✅ Good: Pure function
+// Good: Good: Pure function
 function calculateDiscount(purchaseCount: number): number {
   return purchaseCount > 10 ? 0.2 : 0.1
 }
@@ -65,7 +65,7 @@ function calculateDiscount(purchaseCount: number): number {
 ### 3. Presentational Components
 
 ```typescript
-// ❌ Poor: Internal state and effects
+// Bad: Poor: Internal state and effects
 function SearchBox() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
@@ -73,7 +73,7 @@ function SearchBox() {
   return <div>...</div>
 }
 
-// ✅ Good: Controlled component (testable)
+// Good: Good: Controlled component (testable)
 interface SearchBoxProps {
   query: string
   results: SearchResult[]
@@ -92,7 +92,7 @@ function SearchBox({ query, results, onQueryChange }: SearchBoxProps) {
 ### 4. Mock-Friendly Architecture
 
 ```typescript
-// ✅ Good: Service interfaces for easy mocking
+// Good: Good: Service interfaces for easy mocking
 interface AuthService {
   login(credentials: Credentials): Promise<User>
   logout(): Promise<void>

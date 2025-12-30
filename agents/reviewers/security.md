@@ -37,31 +37,31 @@ Identify HIGH-CONFIDENCE security vulnerabilities with real exploitation potenti
 ### 1. Input Validation Vulnerabilities
 
 ```typescript
-// ❌ SQL Injection
+// Bad: SQL Injection
 const query = `SELECT * FROM users WHERE id = ${userId}`
 
-// ✅ Parameterized Query
+// Good: Parameterized Query
 const query = 'SELECT * FROM users WHERE id = ?'
 await db.query(query, [userId])
 ```
 
 ```typescript
-// ❌ Command Injection
+// Bad: Command Injection
 exec(`ping ${req.body.host}`)
 
-// ✅ Input Validation
+// Good: Input Validation
 if (!isIP(req.body.host)) throw new Error('Invalid')
 ```
 
 ### 2. Authentication & Authorization
 
 ```typescript
-// ❌ Missing Authorization Check
+// Bad: Missing Authorization Check
 app.get('/admin/users', (req, res) => {
   return db.getAllUsers()  // No auth check!
 })
 
-// ✅ Proper Authorization
+// Good: Proper Authorization
 app.get('/admin/users', requireAdmin, (req, res) => {
   return db.getAllUsers()
 })
@@ -70,10 +70,10 @@ app.get('/admin/users', requireAdmin, (req, res) => {
 ### 3. XSS Prevention (React/Frontend)
 
 ```tsx
-// ❌ Dangerous: Unescaped HTML
+// Bad: Dangerous: Unescaped HTML
 <div dangerouslySetInnerHTML={{ __html: userInput }} />
 
-// ✅ Safe: React auto-escaping or sanitization
+// Good: Safe: React auto-escaping or sanitization
 <div>{userInput}</div>
 // or with DOMPurify for HTML content
 ```
@@ -81,20 +81,20 @@ app.get('/admin/users', requireAdmin, (req, res) => {
 ### 4. Secrets & Crypto
 
 ```typescript
-// ❌ Hardcoded Secrets
+// Bad: Hardcoded Secrets
 const API_KEY = 'sk-1234567890abcdef'
 
-// ✅ Environment Variables
+// Good: Environment Variables
 const API_KEY = process.env.API_KEY
 ```
 
 ### 5. Data Exposure
 
 ```typescript
-// ❌ Sensitive Data in Logs
+// Bad: Sensitive Data in Logs
 console.log('User logged in:', { password: user.password })
 
-// ✅ Sanitized Logging
+// Good: Sanitized Logging
 console.log('User logged in:', { userId: user.id })
 ```
 

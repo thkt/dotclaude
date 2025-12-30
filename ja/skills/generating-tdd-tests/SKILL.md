@@ -224,7 +224,7 @@ dependencies: [tdd-test-generation]
 
 すべてをテストする必要はない。影響度で優先順位をつける。
 
-### ✅ 必須テスト（Priority 1）
+### 必須テスト（Priority 1）
 
 - **ビジネスロジック**: 計算、バリデーション、状態遷移
 - **Service/Repository層**: 単純なCRUD以外のデータ操作
@@ -237,7 +237,7 @@ dependencies: [tdd-test-generation]
 - **カスタムフック**: 状態管理ロジック部分
 - **変換処理**: 複雑なマッピング/整形
 
-### ❌ テストしない
+### テストしない
 
 - 単純なプロパティアクセス/getter
 - UIレイアウト/スタイリング

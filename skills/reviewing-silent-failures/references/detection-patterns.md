@@ -49,18 +49,18 @@ rg "(fetch|axios|api)\([^)]+\)$" --glob "*.{ts,tsx,js,jsx}"
 ### Empty Catch Variations
 
 ```typescript
-// ❌ Completely empty
+// Bad: Completely empty
 try { await risky() } catch (e) { }
 
-// ❌ Only comment (TODO never gets done)
+// Bad: Only comment (TODO never gets done)
 try { await risky() } catch (error) {
   // TODO: handle error
 }
 
-// ❌ Underscore doesn't make it OK
+// Bad: Underscore doesn't make it OK
 try { await risky() } catch (_) { }
 
-// ❌ Logged but not handled
+// Bad: Logged but not handled
 try { await risky() } catch (error) {
   console.log(error)
 }
@@ -69,15 +69,15 @@ try { await risky() } catch (error) {
 ### Promise Chains Without Catch
 
 ```typescript
-// ❌ No error handling
+// Bad: No error handling
 fetchUser(id).then(user => setUser(user))
 
-// ❌ Multiple then, no catch
+// Bad: Multiple then, no catch
 fetchUser(id)
   .then(user => user.profile)
   .then(profile => setProfile(profile))
 
-// ✅ With error handling
+// Good: With error handling
 fetchUser(id)
   .then(user => setUser(user))
   .catch(error => handleError(error))
@@ -86,13 +86,13 @@ fetchUser(id)
 ### Async/Await Without Try-Catch
 
 ```typescript
-// ❌ No error handling
+// Bad: No error handling
 async function loadData() {
   const data = await fetchData() // If this throws, function throws
   return processData(data)
 }
 
-// ✅ With error handling
+// Good: With error handling
 async function loadData() {
   try {
     const data = await fetchData()

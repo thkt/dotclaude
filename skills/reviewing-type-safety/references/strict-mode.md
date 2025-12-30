@@ -43,18 +43,18 @@ Enable all strict mode options in `tsconfig.json` for maximum type safety.
 ### Handling Strict Null Checks
 
 ```typescript
-// ❌ Error with strictNullChecks
+// Bad: Error with strictNullChecks
 function greet(name: string | undefined) {
   return name.toUpperCase() // Error: 'name' is possibly 'undefined'
 }
 
-// ✅ Good: Handle null/undefined
+// Good: Handle null/undefined
 function greet(name: string | undefined) {
   if (!name) return 'Guest'
   return name.toUpperCase()
 }
 
-// ✅ Good: Non-null assertion (only when you're certain)
+// Good: Non-null assertion (only when you're certain)
 function greet(name: string | undefined) {
   // Only use when you KNOW it's defined
   return name!.toUpperCase()
@@ -68,15 +68,15 @@ function greet(name: string | undefined) {
 const arr = [1, 2, 3]
 const first = arr[0] // number | undefined
 
-// ❌ Error
+// Bad: Error
 console.log(first.toFixed()) // 'first' is possibly 'undefined'
 
-// ✅ Good: Handle undefined
+// Good: Handle undefined
 if (first !== undefined) {
   console.log(first.toFixed())
 }
 
-// ✅ Good: Assert when certain
+// Good: Assert when certain
 console.log(arr[0]!.toFixed()) // Only when you KNOW index exists
 ```
 
@@ -85,13 +85,13 @@ console.log(arr[0]!.toFixed()) // Only when you KNOW index exists
 ### Function Component
 
 ```typescript
-// ❌ Poor: Loose prop types
+// Bad: Poor: Loose prop types
 interface ButtonProps {
   onClick?: any
   children?: any
 }
 
-// ✅ Good: Precise prop types
+// Good: Precise prop types
 interface ButtonProps {
   onClick: () => void
   children: React.ReactNode
@@ -110,7 +110,7 @@ function Button({ onClick, children, disabled = false }: ButtonProps) {
 ### Extending HTML Attributes
 
 ```typescript
-// ✅ Good: Extend native HTML attributes
+// Good: Extend native HTML attributes
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary'
   loading?: boolean
@@ -132,7 +132,7 @@ function Button({ variant = 'primary', loading, children, ...props }: ButtonProp
 ### Children Patterns
 
 ```typescript
-// ✅ Good: Explicit children types
+// Good: Explicit children types
 interface CardProps {
   children: React.ReactNode // Any valid JSX
 }
@@ -150,7 +150,7 @@ interface WrapperProps {
 ### Event Handlers
 
 ```typescript
-// ✅ Good: Typed event handlers
+// Good: Typed event handlers
 interface FormProps {
   onSubmit: (data: FormData) => void
 }
@@ -169,7 +169,7 @@ function Form({ onSubmit }: FormProps) {
 ### Ref Types
 
 ```typescript
-// ✅ Good: Typed refs
+// Good: Typed refs
 function InputWithFocus() {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -180,7 +180,7 @@ function InputWithFocus() {
   return <input ref={inputRef} />
 }
 
-// ✅ Good: forwardRef with types
+// Good: forwardRef with types
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string
 }

@@ -5,13 +5,13 @@
 **Most common vulnerability** - Missing or improper authorization checks
 
 ```typescript
-// ❌ Dangerous: No authorization check
+// Bad: Dangerous: No authorization check
 app.get('/api/users/:id/profile', (req, res) => {
   const profile = db.getProfile(req.params.id);
   res.json(profile);  // Anyone can access anyone's profile
 });
 
-// ✅ Secure: Ownership check
+// Good: Secure: Ownership check
 app.get('/api/users/:id/profile', authenticate, (req, res) => {
   if (req.user.id !== req.params.id && !req.user.isAdmin) {
     return res.status(403).json({ error: 'Forbidden' });
@@ -35,13 +35,13 @@ app.get('/api/users/:id/profile', authenticate, (req, res) => {
 **Insufficient protection of sensitive data** - Passwords, credit cards, personal information encryption
 
 ```typescript
-// ❌ Dangerous: Plain text password storage
+// Bad: Dangerous: Plain text password storage
 const user = {
   username: 'john',
   password: 'mypassword123'  // Stored in plain text
 };
 
-// ✅ Secure: Hashed
+// Good: Secure: Hashed
 import bcrypt from 'bcrypt';
 
 async function hashPassword(password: string): Promise<string> {
@@ -54,7 +54,7 @@ const user = {
   passwordHash: await hashPassword('mypassword123')
 };
 
-// ✅ Verification
+// Good: Verification
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
@@ -74,14 +74,14 @@ async function verifyPassword(password: string, hash: string): Promise<boolean> 
 **Weak password policies, poor session management**
 
 ```typescript
-// ❌ Dangerous: Weak session management
+// Bad: Dangerous: Weak session management
 app.use(session({
   secret: 'secret123',  // Weak secret
   resave: true,
   saveUninitialized: true
 }));
 
-// ✅ Secure: Secure session
+// Good: Secure: Secure session
 import session from 'express-session';
 import crypto from 'crypto';
 
@@ -97,7 +97,7 @@ app.use(session({
   }
 }));
 
-// ✅ Using JWT
+// Good: Using JWT
 import jwt from 'jsonwebtoken';
 
 function generateToken(user: User): string {
@@ -108,7 +108,7 @@ function generateToken(user: User): string {
   );
 }
 
-// ✅ Refresh token pattern
+// Good: Refresh token pattern
 function generateTokens(user: User) {
   const accessToken = jwt.sign(
     { id: user.id },

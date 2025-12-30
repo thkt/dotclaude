@@ -64,14 +64,14 @@ allowed-tools: Read, Grep, Glob, Task
 ### 依存性注入
 
 ```typescript
-// ❌ テスト困難: 直接依存
+// Bad: テスト困難: 直接依存
 class UserService {
   async getUser(id: string) {
     return fetch(`/api/users/${id}`).then(r => r.json())
   }
 }
 
-// ✅ テスト可能: 注入可能な依存関係
+// Good: テスト可能: 注入可能な依存関係
 interface HttpClient {
   get<T>(url: string): Promise<T>
 }
@@ -87,13 +87,13 @@ class UserService {
 ### 純粋関数
 
 ```typescript
-// ❌ テスト困難: ロジックと副作用が混在
+// Bad: テスト困難: ロジックと副作用が混在
 function calculateDiscount(userId: string) {
   const history = api.getPurchaseHistory(userId) // 副作用
   return history.length > 10 ? 0.2 : 0.1
 }
 
-// ✅ テストしやすい: 純粋関数
+// Good: テストしやすい: 純粋関数
 function calculateDiscount(purchaseCount: number): number {
   return purchaseCount > 10 ? 0.2 : 0.1
 }
@@ -102,7 +102,7 @@ function calculateDiscount(purchaseCount: number): number {
 ### プレゼンテーショナルコンポーネント
 
 ```typescript
-// ❌ テスト困難: 内部状態とエフェクト
+// Bad: テスト困難: 内部状態とエフェクト
 function SearchBox() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
@@ -110,7 +110,7 @@ function SearchBox() {
   return <div>...</div>
 }
 
-// ✅ テストしやすい: 制御されたコンポーネント
+// Good: テストしやすい: 制御されたコンポーネント
 interface SearchBoxProps {
   query: string
   results: SearchResult[]

@@ -15,13 +15,13 @@
 ## 解決する問題
 
 ```typescript
-// ❌ Train wreck - デメテルの法則違反
+// Bad: Train wreck - デメテルの法則違反
 const street = user.getAddress().getCity().getStreet().getName()
 if (order.getCustomer().getPaymentMethod().isValid()) {
   order.getCustomer().getPaymentMethod().charge(amount)
 }
 
-// ✅ 直接の相互作用のみ
+// Good: 直接の相互作用のみ
 const street = user.getStreetName()
 if (order.canCharge()) {
   order.charge(amount)
@@ -40,12 +40,12 @@ if (order.canCharge()) {
 ### 1. Tell, Don't Ask
 
 ```typescript
-// ❌ データを聞いて判断
+// Bad: データを聞いて判断
 if (employee.getDepartment().getBudget() > amount) {
   employee.getDepartment().getBudget().subtract(amount)
 }
 
-// ✅ オブジェクトに何をすべきか伝える
+// Good: オブジェクトに何をすべきか伝える
 if (employee.canExpense(amount)) {
   employee.expense(amount)
 }
@@ -54,13 +54,13 @@ if (employee.canExpense(amount)) {
 ### 2. 委譲を隠す
 
 ```typescript
-// ❌ 内部構造を露出
+// Bad: 内部構造を露出
 class Order {
   getCustomer(): Customer { return this.customer }
 }
 // 使用：order.getCustomer().getName()
 
-// ✅ 委譲を隠す
+// Good: 委譲を隠す
 class Order {
   getCustomerName(): string {
     return this.customer.getName()
@@ -74,12 +74,12 @@ class Order {
 ### Reactコンポーネント
 
 ```tsx
-// ❌ コンポーネントが知りすぎる
+// Bad: コンポーネントが知りすぎる
 function UserCard({ user }) {
   return <h2>{user.profile.info.name.displayName}</h2>
 }
 
-// ✅ コンポーネントは必要なものだけ受け取る
+// Good: コンポーネントは必要なものだけ受け取る
 function UserCard({ displayName }) {
   return <h2>{displayName}</h2>
 }
@@ -93,14 +93,14 @@ function UserCardContainer({ user }) {
 ### API設計
 
 ```typescript
-// ❌ 内部構造を露出
+// Bad: 内部構造を露出
 class BankAccount {
   getTransactions(): Transaction[] {
     return this.transactions
   }
 }
 
-// ✅ 特定のメソッドを提供
+// Good: 特定のメソッドを提供
 class BankAccount {
   getTransactionsAbove(amount: number): Transaction[] {
     return this.transactions.filter(t => t.amount > amount)
@@ -111,12 +111,12 @@ class BankAccount {
 ### テストの利点
 
 ```typescript
-// ❌ 複雑なモッキング
+// Bad: 複雑なモッキング
 const mockCity = { getTaxRate: jest.fn(() => 0.08) }
 const mockAddress = { getCity: jest.fn(() => mockCity) }
 const mockCustomer = { getAddress: jest.fn(() => mockAddress) }
 
-// ✅ シンプルなインターフェース
+// Good: シンプルなインターフェース
 const mockCustomer = { getTaxRate: jest.fn(() => 0.08) }
 ```
 

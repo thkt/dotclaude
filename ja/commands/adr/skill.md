@@ -178,7 +178,7 @@ allowed-tools:
 
 [ADRのContextとDecisionから引用]
 
-## ✅ 実装パターン
+## 実装パターン
 
 [ADR Decisionを実行可能なパターンに変換]
 
@@ -480,10 +480,10 @@ fi
 汎用的すぎるキーワードはノイズに:
 
 ```bash
-# ❌ 汎用的すぎる
+# Bad: 汎用的すぎる
 triggers: ["code", "implement", "コード"]
 
-# ✅ パターンに特化
+# Good: パターンに特化
 triggers: ["React Query", "API caching", "server state", "useQuery"]
 ```
 
@@ -492,7 +492,7 @@ triggers: ["React Query", "API caching", "server state", "useQuery"]
 具体的であるほど有用:
 
 ````markdown
-## ✅ 良い例
+## 良い例
 
 ```typescript
 // プロジェクト固有: ユーザーデータ取得

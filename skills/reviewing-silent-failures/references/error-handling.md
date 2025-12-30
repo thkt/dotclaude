@@ -68,12 +68,12 @@ function UserProfile({ userId }: { userId: string }) {
 ### Event Handler Error Handling
 
 ```typescript
-// ❌ Bad: Swallows errors
+// Bad: Bad: Swallows errors
 <button onClick={() => {
   try { submitForm() } catch (e) { }
 }}>Submit</button>
 
-// ✅ Good: Handles errors properly
+// Good: Good: Handles errors properly
 <button onClick={async () => {
   try {
     setSubmitting(true)
@@ -91,7 +91,7 @@ function UserProfile({ userId }: { userId: string }) {
 ## Promise Chain Error Handling
 
 ```typescript
-// ✅ Single catch at the end
+// Good: Single catch at the end
 fetchUser(id)
   .then(user => user.profile)
   .then(profile => setProfile(profile))
@@ -100,7 +100,7 @@ fetchUser(id)
     setError('Could not load profile')
   })
 
-// ✅ With finally for cleanup
+// Good: With finally for cleanup
 fetchData()
   .then(data => processData(data))
   .then(result => setResult(result))

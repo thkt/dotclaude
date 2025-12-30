@@ -72,12 +72,12 @@ npm test -- --watch --testNamePattern="[現在のテスト]"
 **例**:
 
 ```typescript
-// ✅ 良いGreenフェーズ - 最小限
+// Good: 良いGreenフェーズ - 最小限
 function add(a, b) {
   return a + b; // 合格するのに十分
 }
 
-// ❌ 悪いGreenフェーズ - 過剰実装
+// Bad: 悪いGreenフェーズ - 過剰実装
 function add(a, b) {
   if (typeof a !== 'number' || typeof b !== 'number') {
     throw new Error('無効な入力'); // まだテストされていない!
@@ -227,12 +227,12 @@ update
 ### テストを小さく保つ
 
 ```typescript
-// ✅ 小さく、フォーカスしたテスト
+// Good: 小さく、フォーカスしたテスト
 it('空配列の場合0を返す', () => {
   expect(sum([])).toBe(0)
 })
 
-// ❌ 大きく、複数の動作をテスト
+// Bad: 大きく、複数の動作をテスト
 it('すべてのエッジケースを処理', () => {
   expect(sum([])).toBe(0)
   expect(sum([1])).toBe(1)

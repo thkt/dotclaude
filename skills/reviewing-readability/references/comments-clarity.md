@@ -3,19 +3,19 @@
 ## Core Principle: Why, Not What
 
 ```typescript
-// ❌ What comment (redundant)
+// Bad: What comment (redundant)
 // Increment counter by 1
 counter++
 
-// ❌ What comment (obvious)
+// Bad: What comment (obvious)
 // Check if user is admin
 if (user.role === 'admin') { }
 
-// ✅ Why comment (valuable)
+// Good: Why comment (valuable)
 // Use exponential backoff to avoid overwhelming the server during retry storms
 await sleep(Math.pow(2, retryCount) * 1000)
 
-// ✅ Why comment (business context)
+// Good: Why comment (business context)
 // Legal requirement: Data must be retained for 7 years
 const DATA_RETENTION_DAYS = 7 * 365
 ```
@@ -27,13 +27,13 @@ const DATA_RETENTION_DAYS = 7 * 365
 ### Self-Documenting Code
 
 ```typescript
-// ❌ Needs comment to explain
+// Bad: Needs comment to explain
 // Check if user can access premium features
 if (u.sub && u.sub.exp > Date.now() && !u.ban) {
   // ...
 }
 
-// ✅ Code explains itself
+// Good: Code explains itself
 function canAccessPremiumFeatures(user: User): boolean {
   return user.hasActiveSubscription() &&
          !user.isBanned
@@ -49,10 +49,10 @@ if (canAccessPremiumFeatures(user)) {
 ## Make Code Look Like Intent
 
 ```typescript
-// ❌ Intent unclear
+// Bad: Intent unclear
 const p = products.filter(p => p.price > 0 && p.stock)
 
-// ✅ Intent obvious
+// Good: Intent obvious
 const availableProducts = products.filter(product =>
   product.price > 0 &&
   product.stock > 0
@@ -64,13 +64,13 @@ const availableProducts = products.filter(product =>
 ## Update or Delete Outdated Comments
 
 ```typescript
-// ❌ Outdated comment (dangerous)
+// Bad: Outdated comment (dangerous)
 // Returns user ID
 function getUser() {
   return { id: 123, name: 'John', email: 'john@example.com' }  // Returns full user object now
 }
 
-// ✅ No comment needed (type says it all)
+// Good: No comment needed (type says it all)
 function getUser(): User {
   return { id: 123, name: 'John', email: 'john@example.com' }
 }
@@ -85,7 +85,7 @@ function getUser(): User {
 ### 1. Complex Algorithms
 
 ```typescript
-// ✅ Explaining algorithm choice
+// Good: Explaining algorithm choice
 // Using Boyer-Moore algorithm for faster string matching in large texts
 // Time complexity: O(n/m) in best case vs O(n*m) for naive approach
 function searchPattern(text: string, pattern: string) {
@@ -96,7 +96,7 @@ function searchPattern(text: string, pattern: string) {
 ### 2. Non-Obvious Business Rules
 
 ```typescript
-// ✅ Business context
+// Good: Business context
 // Per legal team: Users in EU must explicitly opt-in to marketing emails (GDPR)
 // Default is false, unlike other regions where it's true
 const marketingOptIn = user.region === 'EU' ? false : true
@@ -105,7 +105,7 @@ const marketingOptIn = user.region === 'EU' ? false : true
 ### 3. Workarounds and Technical Debt
 
 ```typescript
-// ✅ Explaining workaround
+// Good: Explaining workaround
 // TODO: Remove this hack once API v2 is deployed (Target: Q2 2025)
 // Current API returns dates in inconsistent formats
 const normalizedDate = parseFlexibleDateFormat(apiResponse.date)
@@ -114,7 +114,7 @@ const normalizedDate = parseFlexibleDateFormat(apiResponse.date)
 ### 4. Performance Optimizations
 
 ```typescript
-// ✅ Explaining optimization
+// Good: Explaining optimization
 // Cache result to avoid expensive DB query on every render
 // Invalidated when user settings change
 const cachedUserPreferences = useMemo(() => {
@@ -129,14 +129,14 @@ const cachedUserPreferences = useMemo(() => {
 ### Commented-Out Code
 
 ```typescript
-// ❌ Don't keep commented code
+// Bad: Don't keep commented code
 function calculate() {
   // const oldMethod = doSomething()
   // const result = processOldWay(oldMethod)
   return newMethod()
 }
 
-// ✅ Delete it (use git history if needed)
+// Good: Delete it (use git history if needed)
 function calculate() {
   return newMethod()
 }
@@ -145,7 +145,7 @@ function calculate() {
 ### Obvious Comments
 
 ```typescript
-// ❌ Stating the obvious
+// Bad: Stating the obvious
 // Set name to 'John'
 name = 'John'
 
@@ -159,13 +159,13 @@ return true
 ### Journal Comments
 
 ```typescript
-// ❌ Change log in comments
+// Bad: Change log in comments
 // 2024-01-05: Changed validation logic - John
 // 2024-01-10: Fixed edge case - Sarah
 // 2024-01-15: Refactored - Mike
 function validate() { }
 
-// ✅ Use git commit history instead
+// Good: Use git commit history instead
 ```
 
 ---

@@ -29,14 +29,14 @@ Evaluate React design patterns usage, component organization, and state manageme
 ### 1. Presentational and Container Components
 
 ```typescript
-// ❌ Poor: Mixed concerns
+// Bad: Poor: Mixed concerns
 function UserList() {
   const [users, setUsers] = useState([])
   useEffect(() => { fetchUsers().then(setUsers) }, [])
   return <div>{users.map(u => <div key={u.id}>{u.name}</div>)}</div>
 }
 
-// ✅ Good: Separated concerns
+// Good: Good: Separated concerns
 function UserListContainer() {
   const { users, loading } = useUsers()
   return <UserListView users={users} loading={loading} />
@@ -50,7 +50,7 @@ function UserListView({ users, loading }: Props) {
 ### 2. Compound Components
 
 ```typescript
-// ✅ Good: Flexible compound component pattern
+// Good: Good: Flexible compound component pattern
 function Tabs({ children, defaultTab }: Props) {
   const [activeTab, setActiveTab] = useState(defaultTab)
   return (
@@ -66,7 +66,7 @@ Tabs.Panel = function TabPanel({ value, children }: PanelProps) { /* ... */ }
 ### 3. Custom Hook Patterns
 
 ```typescript
-// ❌ Poor: Hook doing too much
+// Bad: Poor: Hook doing too much
 function useUserData() {
   const [user, setUser] = useState(null)
   const [posts, setPosts] = useState([])
@@ -74,7 +74,7 @@ function useUserData() {
   // ...
 }
 
-// ✅ Good: Focused hooks
+// Good: Good: Focused hooks
 function useUser(userId: string) { /* fetch user */ }
 function useUserPosts(userId: string) { /* fetch posts */ }
 ```
@@ -82,13 +82,13 @@ function useUserPosts(userId: string) { /* fetch posts */ }
 ### 4. State Management Patterns
 
 ```typescript
-// ❌ Poor: Unnecessary state lifting
+// Bad: Poor: Unnecessary state lifting
 function App() {
   const [inputValue, setInputValue] = useState('')
   return <SearchForm value={inputValue} onChange={setInputValue} />
 }
 
-// ✅ Good: State where it's needed
+// Good: Good: State where it's needed
 function SearchForm() {
   const [query, setQuery] = useState('')
   return <form><input value={query} onChange={e => setQuery(e.target.value)} /></form>
@@ -102,10 +102,10 @@ function SearchForm() {
 - **Effect for derived state**: Use direct calculation or useMemo
 
 ```typescript
-// ❌ Effect for derived state
+// Bad: Effect for derived state
 useEffect(() => { setTotal(items.reduce((sum, i) => sum + i.price, 0)) }, [items])
 
-// ✅ Direct calculation
+// Good: Direct calculation
 const total = items.reduce((sum, i) => sum + i.price, 0)
 ```
 

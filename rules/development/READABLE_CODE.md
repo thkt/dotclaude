@@ -37,20 +37,20 @@ This scientific backing explains WHY readable code matters: our brains literally
 #### Names That Can't Be Misconstrued
 
 ```typescript
-// ❌ Ambiguous
+// Bad: Ambiguous
 results.filter(x => x > LIMIT)  // Greater than or equal to?
 
-// ✅ Clear intent
+// Good: Clear intent
 results.filter(x => x >= MIN_ITEMS_TO_DISPLAY)
 ```
 
 #### Prefer Concrete over Abstract
 
 ```typescript
-// ❌ Abstract
+// Bad: Abstract
 processData(data)
 
-// ✅ Concrete
+// Good: Concrete
 validateUserRegistration(formData)
 ```
 
@@ -59,7 +59,7 @@ validateUserRegistration(formData)
 #### Make Control Flow Obvious
 
 ```typescript
-// ❌ Complex nesting
+// Bad: Complex nesting
 if (user) {
   if (user.isActive) {
     if (user.hasPermission) {
@@ -68,7 +68,7 @@ if (user) {
   }
 }
 
-// ✅ Early returns
+// Good: Early returns
 if (!user) return
 if (!user.isActive) return
 if (!user.hasPermission) return
@@ -86,7 +86,7 @@ if (!user.hasPermission) return
 #### Extract Unrelated Subproblems
 
 ```typescript
-// ✅ Each function does one thing
+// Good: Each function does one thing
 function getActiveUsers(users: User[]) {
   return users.filter(isActiveUser)
 }
@@ -107,10 +107,10 @@ function isActiveUser(user: User): boolean {
 #### Make Your Code Look Like Your Intent
 
 ```typescript
-// ❌ Intent unclear
+// Bad: Intent unclear
 const p = products.filter(p => p.price > 0 && p.stock)
 
-// ✅ Intent obvious
+// Good: Intent obvious
 const availableProducts = products.filter(product =>
   product.price > 0 &&
   product.stock > 0

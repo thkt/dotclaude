@@ -101,21 +101,21 @@ Skip test writing when:
 
 ### Non-testable Changes
 
-- ❌ Documentation-only changes
-- ❌ Configuration file updates
-- ❌ README/comment fixes
+- [Skip] Documentation-only changes
+- [Skip] Configuration file updates
+- [Skip] README/comment fixes
 
 ### UI-only Fixes
 
-- ❌ Pure CSS/styling issues without logic
-- ❌ Visual alignment problems
-- ❌ Animation timing tweaks
+- [Skip] Pure CSS/styling issues without logic
+- [Skip] Visual alignment problems
+- [Skip] Animation timing tweaks
 
 ### Trivial & High-Confidence
 
-- ❌ Confidence > 0.95 AND trivial fix
-- ❌ Obvious typo in code
-- ❌ Missing null check with clear solution
+- [Skip] Confidence > 0.95 AND trivial fix
+- [Skip] Obvious typo in code
+- [Skip] Missing null check with clear solution
 
 **Important**: Even when skipping, document why:
 
@@ -132,7 +132,7 @@ if (!user) return null;
 ```typescript
 // Code with bug
 function calculateTotal(price, discount) {
-  return price - discount; // ❌ Can return negative!
+  return price - discount; // Bad: Can return negative!
 }
 
 // No test exists
@@ -144,7 +144,7 @@ function calculateTotal(price, discount) {
 // Write failing test
 it('should not return negative total', () => {
   const result = calculateTotal(100, 150);
-  expect(result).toBe(0); // ❌ FAILS: Expected 0, got -50
+  expect(result).toBe(0); // Bad: FAILS: Expected 0, got -50
 })
 ```
 
@@ -154,7 +154,7 @@ it('should not return negative total', () => {
 // Minimal fix
 function calculateTotal(price, discount) {
   const result = price - discount;
-  return Math.max(0, result); // ✅ Fix: Ensure non-negative
+  return Math.max(0, result); // Good: Fix: Ensure non-negative
 }
 
 // Test now passes ✅

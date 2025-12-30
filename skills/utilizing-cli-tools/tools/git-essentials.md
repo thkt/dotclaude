@@ -78,10 +78,10 @@ Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `style`, `perf`
 ### 3. Never Force Push to Main
 
 ```bash
-# ❌ Dangerous
+# Bad: Dangerous
 git push --force origin main
 
-# ✅ Safer alternative (only on feature branches)
+# Good: Safer alternative (only on feature branches)
 git push --force-with-lease origin feature/xxx
 ```
 

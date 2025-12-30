@@ -67,7 +67,7 @@ React実装に重点を置いたフレームワーク非依存のコンポーネ
 **React実装**：
 
 ```tsx
-// ❌ Avoid: Mixed concerns
+// Bad: Avoid: Mixed concerns
 export const UserProfile = () => {
   const [user, setUser] = useState(null)
   useEffect(() => {
@@ -76,7 +76,7 @@ export const UserProfile = () => {
   return <div>{user?.name}</div>
 }
 
-// ✅ Good: Separated
+// Good: Good: Separated
 // Container (logic)
 export const UserProfileContainer = () => {
   const [user, setUser] = useState(null)
@@ -114,12 +114,12 @@ defineProps(['user'])
 **useEffect依存関係**：
 
 ```tsx
-// ❌ Avoid: Missing dependencies
+// Bad: Avoid: Missing dependencies
 useEffect(() => {
   fetchData(userId)
 }, []) // Missing userId
 
-// ✅ Good: Complete dependencies
+// Good: Good: Complete dependencies
 useEffect(() => {
   fetchData(userId)
 }, [userId])
@@ -128,10 +128,10 @@ useEffect(() => {
 **useMemoで高コスト計算**：
 
 ```tsx
-// ❌ Avoid: Recalculated every render
+// Bad: Avoid: Recalculated every render
 const filtered = items.filter(item => item.active)
 
-// ✅ Good: Memoized
+// Good: Good: Memoized
 const filtered = useMemo(
   () => items.filter(item => item.active),
   [items]
@@ -141,10 +141,10 @@ const filtered = useMemo(
 **useCallbackで安定した関数**：
 
 ```tsx
-// ❌ Avoid: New function every render
+// Bad: Avoid: New function every render
 <Child onClick={() => handleClick(id)} />
 
-// ✅ Good: Stable reference
+// Good: Good: Stable reference
 const handleClickCallback = useCallback(
   () => handleClick(id),
   [id]
@@ -157,7 +157,7 @@ const handleClickCallback = useCallback(
 **命名規則**：常に`use`で始める
 
 ```tsx
-// ✅ Good: Reusable data fetching
+// Good: Good: Reusable data fetching
 function useFetchUser(userId) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -204,12 +204,12 @@ function useAuth() {
 **状態の粒度**：
 
 ```tsx
-// ❌ Avoid: Large state object
+// Bad: Avoid: Large state object
 const [state, setState] = useState({
   user, posts, comments, settings
 })
 
-// ✅ Good: Separate state
+// Good: Good: Separate state
 const [user, setUser] = useState()
 const [posts, setPosts] = useState()
 const [comments, setComments] = useState()
@@ -317,7 +317,7 @@ dependencies: [frontend-patterns]
 ## フレームワーク比較
 
 | パターン | React | Vue | Angular |
-|---------|-------|-----|---------|
+| --- | --- | --- | --- |
 | **Container/Presentational** | 別コンポーネント | Composition API | Smart/Dumbコンポーネント |
 | **状態** | useState、Context | ref、reactive | Services、RxJS |
 | **副作用** | useEffect | onMounted、watch | ngOnInit、rxjs |

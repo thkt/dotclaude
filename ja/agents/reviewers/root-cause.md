@@ -33,12 +33,12 @@ Identify symptom-based solutions, trace problems to root causes, and suggest fun
 ### 1. Symptom vs Root Cause Detection
 
 ```typescript
-// ❌ Symptom: Using setTimeout to wait for DOM
+// Bad: Symptom: Using setTimeout to wait for DOM
 useEffect(() => {
   setTimeout(() => { document.getElementById('target')?.scrollIntoView() }, 100)
 }, [])
 
-// ✅ Root cause: Proper React ref usage
+// Good: Root cause: Proper React ref usage
 const targetRef = useRef<HTMLDivElement>(null)
 useEffect(() => { targetRef.current?.scrollIntoView() }, [])
 ```
@@ -46,11 +46,11 @@ useEffect(() => { targetRef.current?.scrollIntoView() }, [])
 ### 2. State Synchronization Problems
 
 ```typescript
-// ❌ Symptom: Multiple effects to keep states in sync
+// Bad: Symptom: Multiple effects to keep states in sync
 useEffect(() => { setFilteredItems(items.filter(i => i.active)) }, [items])
 useEffect(() => { setCount(filteredItems.length) }, [filteredItems])
 
-// ✅ Root cause: Derive state instead of syncing
+// Good: Root cause: Derive state instead of syncing
 const filteredItems = useMemo(() => items.filter(i => i.active), [items])
 const count = filteredItems.length
 ```
@@ -58,24 +58,24 @@ const count = filteredItems.length
 ### 3. Progressive Enhancement Analysis
 
 ```typescript
-// ❌ JS for simple show/hide
+// Bad: JS for simple show/hide
 const [isVisible, setIsVisible] = useState(false)
 return <>{isVisible && <div>Content</div>}</>
 
-// ✅ CSS can handle this
+// Good: CSS can handle this
 /* .content { display: none; } .toggle:checked ~ .content { display: block; } */
 ```
 
 ### 4. Architecture-Level Root Causes
 
 ```typescript
-// ❌ Symptom: Parent polling child for state
+// Bad: Symptom: Parent polling child for state
 const childRef = useRef()
 useEffect(() => {
   const interval = setInterval(() => { childRef.current?.getValue() }, 1000)
 }, [])
 
-// ✅ Root cause: Proper data flow
+// Good: Root cause: Proper data flow
 const [value, setValue] = useState()
 return <Child onValueChange={setValue} />
 ```
@@ -102,7 +102,6 @@ return <Child onValueChange={setValue} />
 [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - Identify over-engineered JS solutions
 
 ### Occam's Razor
-
 
 ## Output Format
 

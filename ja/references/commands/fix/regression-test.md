@@ -132,7 +132,7 @@ if (!user) return null;
 ```typescript
 // バグのあるコード
 function calculateTotal(price, discount) {
-  return price - discount; // ❌ 負の値を返す可能性!
+  return price - discount; // Bad: 負の値を返す可能性!
 }
 
 // テストなし
@@ -144,7 +144,7 @@ function calculateTotal(price, discount) {
 // 失敗するテストを書く
 it('負の合計を返すべきではない', () => {
   const result = calculateTotal(100, 150);
-  expect(result).toBe(0); // ❌ 失敗: Expected 0, got -50
+  expect(result).toBe(0); // Bad: 失敗: Expected 0, got -50
 })
 ```
 
@@ -154,7 +154,7 @@ it('負の合計を返すべきではない', () => {
 // 最小限の修正
 function calculateTotal(price, discount) {
   const result = price - discount;
-  return Math.max(0, result); // ✅ 修正: 非負を保証
+  return Math.max(0, result); // Good: 修正: 非負を保証
 }
 
 // テストが合格 ✅

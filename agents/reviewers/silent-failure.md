@@ -30,14 +30,14 @@ Identify code patterns that fail silently, making bugs difficult to detect and d
 ### Representative Examples
 
 ```typescript
-// ❌ Critical: Empty catch block
+// Bad: Critical: Empty catch block
 try {
   await fetchUserData()
 } catch (e) {
   // Error disappears silently
 }
 
-// ✅ Good: Proper handling
+// Good: Good: Proper handling
 try {
   await fetchUserData()
 } catch (error) {
@@ -47,10 +47,10 @@ try {
 ```
 
 ```typescript
-// ❌ Bad: Promise without error handling
+// Bad: Bad: Promise without error handling
 fetchData().then(data => setData(data))
 
-// ✅ Good: With catch
+// Good: Good: With catch
 fetchData()
   .then(data => setData(data))
   .catch(error => handleError(error))

@@ -25,13 +25,13 @@ decision_question: "フレームワークと戦っているか、それとも協
 ## 完璧な抽象化の問題
 
 ```typescript
-// ❌ 幻想：「SQLを知る必要はない」
+// Bad: 幻想：「SQLを知る必要はない」
 const users = await User.findAll({
   where: { active: true },
   include: ['posts', 'comments']
 })
 
-// ✅ 現実：パフォーマンスがSQLの知識を強制
+// Good: 現実：パフォーマンスがSQLの知識を強制
 const users = await db.raw(`
   SELECT u.*, COUNT(p.id) as posts
   FROM users u
@@ -46,7 +46,7 @@ const users = await db.raw(`
 ## 一般的な漏れのある抽象化
 
 | 抽象化 | 漏れ方 | 解決策 |
-|--------|--------|--------|
+| --- | --- | --- |
 | **ORM** | N+1クエリ、SQL制御なし | 生のクエリエスケープハッチを提供 |
 | **ネットワーク呼び出し** | ローカルのふりをして予測不能に失敗 | タイムアウト、リトライ、エラー処理を追加 |
 | **クロスプラットフォーム** | プラットフォーム固有のパス/API | プラットフォーム対応ライブラリを使用 |
@@ -54,7 +54,7 @@ const users = await db.raw(`
 ## 漏れを念頭に置いた設計
 
 | 戦略 | 方法 | 時期 |
-|------|------|------|
+| --- | --- | --- |
 | **段階的抽象化** | 80%用のシンプルなAPI、20%用の直接アクセス | `findUsers(criteria)` + `findUsersRaw(sql)` |
 | **エスケープハッチ** | 基礎となるクライアントを公開 | 直接アクセス用の`get rawClient()` |
 | **境界の文書化** | 制限付きのJSDoc | 最大レスポンス: 5MB、タイムアウト: 30秒 |
@@ -118,7 +118,7 @@ await db.raw('SELECT * FROM posts...')
 ### コンポーネントライブラリ
 
 ```tsx
-// ✅ エスケープハッチを提供
+// Good: エスケープハッチを提供
 function Button({
   children,
   onClick,

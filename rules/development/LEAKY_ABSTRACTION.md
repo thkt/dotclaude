@@ -25,13 +25,13 @@ The goal isn't to create perfect abstractions, but to:
 ## The Problem with Perfect Abstractions
 
 ```typescript
-// ❌ The illusion: "You never need to know SQL"
+// Bad: The illusion: "You never need to know SQL"
 const users = await User.findAll({
   where: { active: true },
   include: ['posts', 'comments']
 })
 
-// ✅ The reality: Performance forces you to know SQL
+// Good: The reality: Performance forces you to know SQL
 const users = await db.raw(`
   SELECT u.*, COUNT(p.id) as posts
   FROM users u
@@ -118,7 +118,7 @@ Signs your abstraction is too leaky:
 ### Component Library
 
 ```tsx
-// ✅ Provides escape hatches
+// Good: Provides escape hatches
 function Button({
   children,
   onClick,

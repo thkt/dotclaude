@@ -86,20 +86,20 @@ test('descriptive name', () => {
 
 Not everything needs to be tested. Prioritize by impact.
 
-### ✅ Must Test (Priority 1)
+### [Priority 1] Must Test
 
 - **Business Logic**: Calculations, validation, state transitions
 - **Service/Repository Layer**: Data operations beyond simple CRUD
 - **Critical Paths**: Billing, authentication, data persistence
 - **Edge Cases**: Boundary values, null/undefined, empty arrays
 
-### 🟡 Situational (Priority 2)
+### [Priority 2] Situational
 
 - **Utility Functions**: Only complex ones
 - **Custom Hooks**: State management logic portion
 - **Transformations**: Complex mapping/formatting
 
-### ❌ Skip Testing
+### [Skip] No Testing Needed
 
 - Simple property accessors/getters
 - UI layout/styling

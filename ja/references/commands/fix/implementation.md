@@ -32,7 +32,7 @@ Phase 1 の信頼度に基づいて実装戦略を選択:
 // 根本原因: 負の結果のチェックなし
 function calculateTotal(price, discount) {
   const result = price - discount;
-  return Math.max(0, result); // ✅ 直接修正
+  return Math.max(0, result); // Good: 直接修正
 }
 ```
 
@@ -89,7 +89,7 @@ function calculateTotal(price, discount) {
 
 **原則**: 問題を解決する最もシンプルな解決策を選択。
 
-### ✅ 良い例 - シンプルな解決策
+### 良い例 - シンプルな解決策
 
 ```typescript
 // 問題: 負の値を返す可能性
@@ -99,7 +99,7 @@ function calculateTotal(price, discount) {
 }
 ```
 
-### ❌ 悪い例 - 過剰設計
+### 悪い例 - 過剰設計
 
 ```typescript
 // 問題: 負の値を返す可能性
@@ -115,7 +115,7 @@ class PricingValidator {
 
 ## 周囲のコードを再構築しない
 
-### ✅ 良い例 - 対象を絞った修正
+### 良い例 - 対象を絞った修正
 
 ```typescript
 // 必要な部分のみ変更
@@ -129,7 +129,7 @@ function applyTax(total, rate) {
 }
 ```
 
-### ❌ 悪い例 - 不要なリファクタリング
+### 悪い例 - 不要なリファクタリング
 
 ```typescript
 // バグ修正中に関係ないコードをリファクタリングしない
@@ -137,7 +137,7 @@ function calculateTotal(price, discount) {
   return Math.max(0, price - discount);
 }
 
-// ❌ 関係ない関数を「改善」しない
+// Bad: 関係ない関数を「改善」しない
 function applyTax(total, rate) {
   // 「一貫性」のためにリファクタリング - 修正の一部ではない!
   const taxAmount = total * rate;
@@ -168,7 +168,7 @@ function applyTax(total, rate) {
 ```
 
 ```javascript
-// ❌ 悪い例 - CSS問題にJavaScript
+// Bad: 悪い例 - CSS問題にJavaScript
 function layoutFix() {
   const container = document.querySelector('.container');
   container.style.display = 'flex';

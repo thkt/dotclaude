@@ -42,10 +42,10 @@ AI Role:
 Based on research findings, AI output quality heavily depends on instruction quality:
 
 ```typescript
-// ❌ Vague prompt
+// Bad: Vague prompt
 "Create a user service"
 
-// ✅ Specific prompt with context
+// Good: Specific prompt with context
 "Create a user service following our existing pattern in UserRepository.
 - Use dependency injection for database
 - Follow AAA test pattern

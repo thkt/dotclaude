@@ -81,14 +81,14 @@ rg "catch.*console\.log" --glob "*.{ts,tsx}"
 ### 空のcatch → 適切なハンドリング
 
 ```typescript
-// ❌ サイレント障害
+// Bad: サイレント障害
 try {
   await fetchUserData()
 } catch (e) {
   // ここに何もない - エラーが消える
 }
 
-// ✅ 適切なハンドリング
+// Good: 適切なハンドリング
 try {
   await fetchUserData()
 } catch (error) {
@@ -100,10 +100,10 @@ try {
 ### Promiseチェイン → エラーハンドリング
 
 ```typescript
-// ❌ 未処理のrejection
+// Bad: 未処理のrejection
 fetchData().then(data => setData(data))
 
-// ✅ エラーハンドリング付き
+// Good: エラーハンドリング付き
 fetchData()
   .then(data => setData(data))
   .catch(error => {

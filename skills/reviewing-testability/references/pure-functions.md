@@ -11,38 +11,38 @@ A pure function:
 ## Pure vs Impure
 
 ```typescript
-// ❌ Impure: Depends on external state
+// Bad: Impure: Depends on external state
 let taxRate = 0.1
 function calculateTotal(price: number): number {
   return price * (1 + taxRate) // Depends on external taxRate
 }
 
-// ✅ Pure: All inputs are parameters
+// Good: Pure: All inputs are parameters
 function calculateTotal(price: number, taxRate: number): number {
   return price * (1 + taxRate)
 }
 ```
 
 ```typescript
-// ❌ Impure: Side effect (modifies external state)
+// Bad: Impure: Side effect (modifies external state)
 function addItem(cart: Item[], item: Item): void {
   cart.push(item) // Mutates input
 }
 
-// ✅ Pure: Returns new state
+// Good: Pure: Returns new state
 function addItem(cart: Item[], item: Item): Item[] {
   return [...cart, item] // Returns new array
 }
 ```
 
 ```typescript
-// ❌ Impure: Side effect (API call)
+// Bad: Impure: Side effect (API call)
 function getDiscountedPrice(userId: string, price: number): number {
   const user = api.getUser(userId) // Side effect!
   return price * (1 - user.discount)
 }
 
-// ✅ Pure: Receives user as parameter
+// Good: Pure: Receives user as parameter
 function getDiscountedPrice(discount: number, price: number): number {
   return price * (1 - discount)
 }

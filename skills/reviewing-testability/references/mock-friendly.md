@@ -7,7 +7,7 @@ Define interfaces for external dependencies to enable easy mocking.
 ### Service Interfaces
 
 ```typescript
-// ❌ Hard to mock: Concrete class
+// Bad: Hard to mock: Concrete class
 class UserService {
   private db = new PostgresDatabase()
 
@@ -16,7 +16,7 @@ class UserService {
   }
 }
 
-// ✅ Easy to mock: Interface-based
+// Good: Easy to mock: Interface-based
 interface UserRepository {
   findById(id: string): Promise<User | null>
   save(user: User): Promise<void>
@@ -180,12 +180,12 @@ test('handles error', async () => {
 ## Time & Date Mocking
 
 ```typescript
-// ❌ Hard to test: Direct Date usage
+// Bad: Hard to test: Direct Date usage
 function isExpired(expiryDate: Date): boolean {
   return new Date() > expiryDate
 }
 
-// ✅ Testable: Inject current time
+// Good: Testable: Inject current time
 function isExpired(expiryDate: Date, now: Date = new Date()): boolean {
   return now > expiryDate
 }

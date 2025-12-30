@@ -16,14 +16,14 @@ DI makes code testable by allowing you to swap real dependencies with mocks.
 ### Constructor Injection
 
 ```typescript
-// ❌ Hard to test: Direct dependency
+// Bad: Hard to test: Direct dependency
 class UserService {
   async getUser(id: string) {
     return fetch(`/api/users/${id}`).then(r => r.json())
   }
 }
 
-// ✅ Testable: Injectable dependency
+// Good: Testable: Injectable dependency
 interface HttpClient {
   get<T>(url: string): Promise<T>
 }
@@ -46,14 +46,14 @@ const service = new UserService(mockHttp)
 ### Factory Functions
 
 ```typescript
-// ❌ Hard to test
+// Bad: Hard to test
 export function createOrderService() {
   const db = new Database()
   const mailer = new EmailService()
   return new OrderService(db, mailer)
 }
 
-// ✅ Testable
+// Good: Testable
 interface OrderServiceDeps {
   db: Database
   mailer: EmailService
@@ -119,13 +119,13 @@ render(
 ### Props Injection (Simplest)
 
 ```typescript
-// ❌ Hard to test: Hook with side effect
+// Bad: Hard to test: Hook with side effect
 function UserList() {
   const users = useUsers() // Calls API internally
   return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>
 }
 
-// ✅ Testable: Props-based
+// Good: Testable: Props-based
 interface UserListProps {
   users: User[]
   loading?: boolean

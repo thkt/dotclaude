@@ -79,13 +79,13 @@ skills: [skill-name]      # Optional: Referenced skills
 
 ## Common Issues
 
-### ❌ Inappropriate for Sub-Agents
+### Inappropriate for Sub-Agents
 
 - Installation instructions
 - User onboarding guides
 - External links to tutorials
 
-### ✅ Appropriate for Sub-Agents
+### Appropriate for Sub-Agents
 
 - Clear methodology
 - Specific review criteria

@@ -64,14 +64,14 @@ Target: Code that is easy to test without complex mocking or setup.
 ### Dependency Injection
 
 ```typescript
-// ❌ Hard to test: Direct dependency
+// Bad: Hard to test: Direct dependency
 class UserService {
   async getUser(id: string) {
     return fetch(`/api/users/${id}`).then(r => r.json())
   }
 }
 
-// ✅ Testable: Injectable dependency
+// Good: Testable: Injectable dependency
 interface HttpClient {
   get<T>(url: string): Promise<T>
 }
@@ -87,13 +87,13 @@ class UserService {
 ### Pure Functions
 
 ```typescript
-// ❌ Hard to test: Side effect mixed with logic
+// Bad: Hard to test: Side effect mixed with logic
 function calculateDiscount(userId: string) {
   const history = api.getPurchaseHistory(userId) // Side effect
   return history.length > 10 ? 0.2 : 0.1
 }
 
-// ✅ Easy to test: Pure function
+// Good: Easy to test: Pure function
 function calculateDiscount(purchaseCount: number): number {
   return purchaseCount > 10 ? 0.2 : 0.1
 }
@@ -102,7 +102,7 @@ function calculateDiscount(purchaseCount: number): number {
 ### Presentational Components
 
 ```typescript
-// ❌ Hard to test: Internal state and effects
+// Bad: Hard to test: Internal state and effects
 function SearchBox() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
@@ -110,7 +110,7 @@ function SearchBox() {
   return <div>...</div>
 }
 
-// ✅ Easy to test: Controlled component
+// Good: Easy to test: Controlled component
 interface SearchBoxProps {
   query: string
   results: SearchResult[]

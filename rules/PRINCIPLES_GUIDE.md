@@ -4,20 +4,20 @@
 
 ---
 
-## 🚀 Quick Reference
+## Quick Reference
 
 ### Priority Matrix
 
 | Priority | Principle | One-liner | When to Apply |
 | --- | --- | --- | --- |
-| 🔴 **Essential** | | | |
+| **[Critical]** | | | |
 | | Occam's Razor | Choose the simplest solution that works | Always - every decision |
 | | Progressive Enhancement | Build simple, enhance gradually | Starting any implementation |
-| 🟡 **Default** | | | |
+| **[Default]** | | | |
 | | Readable Code | Code for humans, not computers | Writing any code |
 | | TDD/Baby Steps | Small incremental changes with tests | Development process |
 | | DRY | Don't Repeat Yourself | 3+ duplications found |
-| 🟢 **Contextual** | | | |
+| **[Contextual]** | | | |
 | | SOLID | Design for change | Large-scale architecture |
 | | Container/Presentational | Separate logic from UI | React/UI components |
 | | Law of Demeter | Only talk to immediate friends | Complex dependencies |
@@ -48,7 +48,7 @@ flowchart TD
 | **Perfect vs Working** | Working wins | Ship leaky abstractions that solve real problems |
 | **Abstraction vs Concrete** | Start concrete | Abstract only when pattern emerges (3+ times) |
 
-### Red Flags 🚩
+### Red Flags
 
 - Method chains > 3 levels → Apply Law of Demeter
 - Can't understand in 1 minute → Apply Readable Code
@@ -67,7 +67,7 @@ flowchart TD
 
 ---
 
-## 📚 Detailed Guide
+## Detailed Guide
 
 ### Principle Hierarchy
 

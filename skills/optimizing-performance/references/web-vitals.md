@@ -1,6 +1,6 @@
 # Web Vitals Optimization
 
-## 📊 Google's Core Web Vitals
+## Google's Core Web Vitals
 
 ### Three Core Metrics
 
@@ -34,12 +34,12 @@ getLCP(console.log);  // Measure LCP
 
 ---
 
-## 🚀 Improving LCP (Largest Contentful Paint)
+## Improving LCP (Largest Contentful Paint)
 
 ### Priority Loading for LCP Elements
 
 ```tsx
-// ❌ Lazy loading LCP element
+// Bad: Lazy loading LCP element
 function Hero() {
   return (
     <img
@@ -50,7 +50,7 @@ function Hero() {
   );
 }
 
-// ✅ Priority loading for LCP element
+// Good: Priority loading for LCP element
 function Hero() {
   return (
     <img
@@ -62,7 +62,7 @@ function Hero() {
   );
 }
 
-// ✅ Preload (even faster)
+// Good: Preload (even faster)
 // Add to HTML <head>
 <link rel="preload" as="image" href="hero.jpg" />
 ```
@@ -70,7 +70,7 @@ function Hero() {
 ### Improving FCP with Code Splitting
 
 ```tsx
-// ❌ All modules in initial load
+// Bad: All modules in initial load
 import Dashboard from './Dashboard';
 import Settings from './Settings';
 import Profile from './Profile';
@@ -85,7 +85,7 @@ function App() {
   );
 }
 
-// ✅ Split by route
+// Good: Split by route
 const Dashboard = lazy(() => import('./Dashboard'));
 const Settings = lazy(() => import('./Settings'));
 const Profile = lazy(() => import('./Profile'));
@@ -110,7 +110,7 @@ function App() {
 ### Layout Shift Causes and Solutions
 
 ```tsx
-// ❌ Image without size → Layout shift
+// Bad: Image without size → Layout shift
 function Article() {
   return (
     <>
@@ -122,7 +122,7 @@ function Article() {
   );
 }
 
-// ✅ Specify image size
+// Good: Specify image size
 function Article() {
   return (
     <>
@@ -140,7 +140,7 @@ function Article() {
   );
 }
 
-// ✅ Maintain aspect ratio
+// Good: Maintain aspect ratio
 function Article() {
   return (
     <>
@@ -157,7 +157,7 @@ function Article() {
   );
 }
 
-// ❌ Dynamic content insertion → Layout shift
+// Bad: Dynamic content insertion → Layout shift
 function Header() {
   const [banner, setBanner] = useState(null);
 
@@ -174,7 +174,7 @@ function Header() {
   );
 }
 
-// ✅ Reserve space
+// Good: Reserve space
 function Header() {
   const [banner, setBanner] = useState(null);
 
@@ -196,7 +196,7 @@ function Header() {
 
 ---
 
-## 🔍 Profiling Tools
+## Profiling Tools
 
 ### Chrome DevTools Performance Tab
 
@@ -222,7 +222,7 @@ function Header() {
 
 ---
 
-## 📋 Web Vitals Checklist
+## Web Vitals Checklist
 
 ### Initial Load Optimization
 
@@ -246,7 +246,7 @@ function Header() {
 
 ---
 
-## 💡 Key Takeaways
+## Key Takeaways
 
 1. **LCP**: Priority load critical resources, preload hero images
 2. **FID**: Reduce JavaScript execution time, code splitting

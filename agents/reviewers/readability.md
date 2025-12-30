@@ -33,11 +33,11 @@ Apply "The Art of Readable Code" principles with TypeScript/React-specific consi
 ### 1. Component Naming
 
 ```typescript
-// ❌ Unclear
+// Bad: Unclear
 const UDC = ({ d }: { d: any }) => { ... }
 const useData = () => { ... }
 
-// ✅ Clear
+// Good: Clear
 const UserDashboardCard = ({ userData }: { userData: User }) => { ... }
 const useUserProfile = () => { ... }
 ```
@@ -45,31 +45,31 @@ const useUserProfile = () => { ... }
 ### 2. TypeScript Readability
 
 ```typescript
-// ❌ Poor type readability
+// Bad: Poor type readability
 type D = { n: string; a: number; s: 'a' | 'i' | 'd' }
 
-// ✅ Clear type definitions
+// Good: Clear type definitions
 type UserData = { name: string; age: number; status: 'active' | 'inactive' | 'deleted' }
 ```
 
 ### 3. Hook Usage Clarity
 
 ```typescript
-// ❌ Unclear dependencies
+// Bad: Unclear dependencies
 useEffect(() => { doSomething(x, y, z) }, []) // Missing dependencies!
 
-// ✅ Clear dependencies
+// Good: Clear dependencies
 useEffect(() => { fetchUserData(userId) }, [userId])
 ```
 
 ### 4. State Variable Naming
 
 ```typescript
-// ❌ Unclear state names
+// Bad: Unclear state names
 const [ld, setLd] = useState(false)
 const [flag, setFlag] = useState(true)
 
-// ✅ Clear state names
+// Good: Clear state names
 const [isLoading, setIsLoading] = useState(false)
 const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 ```
@@ -77,10 +77,10 @@ const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 ### 5. Props Interface Clarity
 
 ```typescript
-// ❌ Unclear props
+// Bad: Unclear props
 interface Props { cb: () => void; d: boolean; opts: any }
 
-// ✅ Clear props
+// Good: Clear props
 interface UserCardProps {
   onUserClick: () => void
   isDisabled: boolean

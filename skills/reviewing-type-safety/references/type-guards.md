@@ -7,7 +7,7 @@ Type guards allow TypeScript to narrow types safely at runtime.
 ### Type Predicate Functions
 
 ```typescript
-// ✅ Good: Type predicate function
+// Good: Type predicate function
 function isSuccess<T>(response: Response<T>): response is SuccessResponse<T> {
   return response.success === true
 }
@@ -49,12 +49,12 @@ function getArea(shape: Circle | Rectangle) {
 ### Avoid Unsafe Assertions
 
 ```typescript
-// ❌ Poor: Unsafe type assertion
+// Bad: Unsafe type assertion
 if ((response as SuccessResponse).data) {
   console.log((response as SuccessResponse).data)
 }
 
-// ✅ Good: Type predicate function
+// Good: Type predicate function
 if (isSuccess(response)) {
   console.log(response.data)
 }
@@ -129,7 +129,7 @@ Use generics for reusable, type-safe components.
 ### Generic Function
 
 ```typescript
-// ✅ Good: Generic type preserves input type
+// Good: Generic type preserves input type
 function first<T>(arr: T[]): T | undefined {
   return arr[0]
 }
@@ -141,7 +141,7 @@ const str = first(['a', 'b'])   // string | undefined
 ### Generic Component
 
 ```typescript
-// ✅ Good: Generic React component
+// Good: Generic React component
 interface SelectProps<T> {
   value: T
   options: T[]
@@ -171,7 +171,7 @@ function Select<T>({ value, options, onChange, getLabel }: SelectProps<T>) {
 ### Generic Constraints
 
 ```typescript
-// ✅ Good: Constrained generic
+// Good: Constrained generic
 interface HasId {
   id: string | number
 }

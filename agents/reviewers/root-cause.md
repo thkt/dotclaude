@@ -34,22 +34,22 @@ Identify symptom-based solutions, trace problems to root causes, and suggest fun
 ### Representative Examples
 
 ```typescript
-// ❌ Symptom: setTimeout to wait for DOM
+// Bad: Symptom: setTimeout to wait for DOM
 useEffect(() => {
   setTimeout(() => { document.getElementById('target')?.scrollIntoView() }, 100)
 }, [])
 
-// ✅ Root cause: Use React ref properly
+// Good: Root cause: Use React ref properly
 const targetRef = useRef<HTMLDivElement>(null)
 useEffect(() => { targetRef.current?.scrollIntoView() }, [])
 ```
 
 ```typescript
-// ❌ Symptom: Multiple effects to sync state
+// Bad: Symptom: Multiple effects to sync state
 useEffect(() => { setFilteredItems(items.filter(i => i.active)) }, [items])
 useEffect(() => { setCount(filteredItems.length) }, [filteredItems])
 
-// ✅ Root cause: Derive state, don't sync
+// Good: Root cause: Derive state, don't sync
 const filteredItems = useMemo(() => items.filter(i => i.active), [items])
 const count = filteredItems.length
 ```

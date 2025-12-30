@@ -35,10 +35,12 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── PRINCIPLES_GUIDE.md  # Complete principles guide
 │   ├── commands/         # Command selection logic
 │   ├── development/      # Development patterns & methodologies
-│   └── reference/        # Fundamental principles (SOLID, DRY, Occam's Razor)
+│   └── guidelines/       # Documentation guidelines
 ├── skills/               # Skill-based knowledge modules
-│   ├── performance-optimization/  # Web performance knowledge
-│   └── esa-daily-report/ # Project-specific automation
+│   ├── optimizing-performance/    # Web performance knowledge
+│   └── generating-tdd-tests/      # TDD methodology
+├── references/           # Reference documents (not loaded as commands)
+│   └── commands/         # Command reference materials
 └── ja/                    # Japanese translations
     ├── CLAUDE.md         # Main config (Japanese)
     ├── commands/         # Command definitions (Japanese)

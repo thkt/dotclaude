@@ -7,7 +7,7 @@
 ### Use Guard Clauses
 
 ```typescript
-// ❌ Deep nesting (4 levels)
+// Bad: Deep nesting (4 levels)
 function processOrder(order) {
   if (order) {
     if (order.isValid) {
@@ -20,7 +20,7 @@ function processOrder(order) {
   }
 }
 
-// ✅ Guard clauses (1 level)
+// Good: Guard clauses (1 level)
 function processOrder(order) {
   if (!order) return
   if (!order.isValid) return
@@ -34,7 +34,7 @@ function processOrder(order) {
 ### Early Returns
 
 ```typescript
-// ❌ Nested if-else
+// Bad: Nested if-else
 function calculateDiscount(user, amount) {
   if (user.isPremium) {
     if (amount > 100) {
@@ -47,7 +47,7 @@ function calculateDiscount(user, amount) {
   }
 }
 
-// ✅ Early returns
+// Good: Early returns
 function calculateDiscount(user, amount) {
   if (!user.isPremium) return 0
   if (amount > 100) return amount * 0.2
@@ -60,12 +60,12 @@ function calculateDiscount(user, amount) {
 ## Extract Complex Conditions
 
 ```typescript
-// ❌ Complex inline condition
+// Bad: Complex inline condition
 if (user.age >= 18 && user.hasConsent && !user.isBanned && user.country === 'US') {
   allowAccess()
 }
 
-// ✅ Extracted to well-named function
+// Good: Extracted to well-named function
 function canAccessContent(user: User): boolean {
   return user.age >= 18 &&
          user.hasConsent &&
@@ -85,13 +85,13 @@ if (canAccessContent(user)) {
 ### Function Parameters: Maximum 5
 
 ```typescript
-// ❌ Too many parameters (8)
+// Bad: Too many parameters (8)
 function createUser(
   firstName, lastName, email, phone,
   address, city, state, zipCode
 ) { }
 
-// ✅ Parameter object (3 groups)
+// Good: Parameter object (3 groups)
 function createUser(
   identity: UserIdentity,    // firstName, lastName, email
   contact: ContactInfo,      // phone, address
@@ -102,7 +102,7 @@ function createUser(
 ### Conditional Branches: Maximum 5
 
 ```typescript
-// ❌ Too many branches (7)
+// Bad: Too many branches (7)
 function getStatus(code) {
   if (code === 'A') return 'Active'
   if (code === 'P') return 'Pending'
@@ -113,7 +113,7 @@ function getStatus(code) {
   if (code === 'V') return 'Verified'
 }
 
-// ✅ Use data structure
+// Good: Use data structure
 const STATUS_MAP = {
   A: 'Active',
   P: 'Pending',
@@ -132,7 +132,7 @@ function getStatus(code) {
 ### Function Length: 5-15 Lines
 
 ```typescript
-// ✅ Ideal function length
+// Good: Ideal function length
 function validateEmail(email: string): boolean {
   if (!email) return false
 
@@ -150,10 +150,10 @@ function validateEmail(email: string): boolean {
 ### Avoid Clever Tricks
 
 ```typescript
-// ❌ Clever but confusing
+// Bad: Clever but confusing
 const result = condition ? value1 : value2 || value3 && value4
 
-// ✅ Obvious intent
+// Good: Obvious intent
 let result
 if (condition) {
   result = value1
@@ -169,7 +169,7 @@ if (condition) {
 ### Consistent Patterns
 
 ```typescript
-// ✅ Consistent early return pattern
+// Good: Consistent early return pattern
 function processA() {
   if (!valid) return null
   // process

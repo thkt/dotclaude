@@ -39,13 +39,13 @@ allowed-tools: Read, Grep, Glob, Task
 **最も一般的な脆弱性** - 認可チェックの欠如または不適切な実装
 
 ```typescript
-// ❌ 危険: 認可チェックなし
+// Bad: 危険: 認可チェックなし
 app.get('/api/users/:id/profile', (req, res) => {
   const profile = db.getProfile(req.params.id);
   res.json(profile);  // 誰でも他人のプロフィールにアクセス可能
 });
 
-// ✅ 安全: 所有権チェック
+// Good: 安全: 所有権チェック
 app.get('/api/users/:id/profile', authenticate, (req, res) => {
   if (req.user.id !== req.params.id && !req.user.isAdmin) {
     return res.status(403).json({ error: 'Forbidden' });
@@ -69,13 +69,13 @@ app.get('/api/users/:id/profile', authenticate, (req, res) => {
 **機密データの不十分な保護** - パスワード、クレジットカード、個人情報の暗号化
 
 ```typescript
-// ❌ 危険: 平文パスワード保存
+// Bad: 危険: 平文パスワード保存
 const user = {
   username: 'john',
   password: 'mypassword123'  // 平文で保存
 };
 
-// ✅ 安全: ハッシュ化
+// Good: 安全: ハッシュ化
 import bcrypt from 'bcrypt';
 
 async function hashPassword(password: string): Promise<string> {
@@ -88,7 +88,7 @@ const user = {
   passwordHash: await hashPassword('mypassword123')
 };
 
-// ✅ 検証
+// Good: 検証
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
@@ -110,28 +110,28 @@ async function verifyPassword(password: string, hash: string): Promise<boolean> 
 #### SQL インジェクション
 
 ```typescript
-// ❌ 危険: 文字列連結
+// Bad: 危険: 文字列連結
 const userId = req.params.id;
 const query = `SELECT * FROM users WHERE id = ${userId}`;
 // 攻撃: /api/users/1 OR 1=1--
 
-// ✅ 安全: パラメータ化クエリ
+// Good: 安全: パラメータ化クエリ
 const query = 'SELECT * FROM users WHERE id = ?';
 const result = await db.query(query, [userId]);
 
-// ✅ 安全: ORM使用
+// Good: 安全: ORM使用
 const user = await User.findById(userId);
 ```
 
 #### NoSQL インジェクション
 
 ```typescript
-// ❌ 危険: ユーザー入力を直接使用
+// Bad: 危険: ユーザー入力を直接使用
 const user = await User.findOne({ username: req.body.username });
 
 // 攻撃: { "username": { "$ne": null } } で全ユーザーを取得
 
-// ✅ 安全: 入力検証
+// Good: 安全: 入力検証
 function sanitizeMongoQuery(input: any): string {
   if (typeof input !== 'string') {
     throw new Error('Invalid input');
@@ -147,12 +147,12 @@ const user = await User.findOne({
 #### コマンドインジェクション
 
 ```typescript
-// ❌ 危険: シェルコマンドへの直接入力
+// Bad: 危険: シェルコマンドへの直接入力
 const { exec } = require('child_process');
 exec(`ping ${req.body.host}`);
 // 攻撃: "google.com; rm -rf /"
 
-// ✅ 安全: ライブラリ使用または検証
+// Good: 安全: ライブラリ使用または検証
 import { isIP } from 'net';
 
 if (!isIP(req.body.host)) {
@@ -175,13 +175,13 @@ if (!isIP(req.body.host)) {
 **設計レベルのセキュリティ欠陥** - レート制限、ビジネスロジックの脆弱性
 
 ```typescript
-// ❌ 危険: レート制限なし
+// Bad: 危険: レート制限なし
 app.post('/api/login', async (req, res) => {
   // ブルートフォース攻撃が可能
   const user = await authenticateUser(req.body.username, req.body.password);
 });
 
-// ✅ 安全: レート制限
+// Good: 安全: レート制限
 import rateLimit from 'express-rate-limit';
 
 const loginLimiter = rateLimit({
@@ -194,7 +194,7 @@ app.post('/api/login', loginLimiter, async (req, res) => {
   const user = await authenticateUser(req.body.username, req.body.password);
 });
 
-// ✅ より安全: アカウントロックアウト
+// Good: より安全: アカウントロックアウト
 async function authenticateWithLockout(username: string, password: string) {
   const account = await getAccount(username);
 
@@ -233,13 +233,13 @@ async function authenticateWithLockout(username: string, password: string) {
 **デフォルト設定、不要な機能の有効化**
 
 ```typescript
-// ❌ 危険: デバッグモード有効
+// Bad: 危険: デバッグモード有効
 app.use(errorHandler({
   dumpExceptions: true,  // スタックトレース公開
   showStack: true
 }));
 
-// ✅ 安全: 環境ベースの設定
+// Good: 安全: 環境ベースの設定
 if (process.env.NODE_ENV === 'production') {
   app.use(errorHandler({
     dumpExceptions: false,
@@ -252,16 +252,16 @@ if (process.env.NODE_ENV === 'production') {
   }));
 }
 
-// ❌ 危険: すべてのCORSを許可
+// Bad: 危険: すべてのCORSを許可
 app.use(cors({ origin: '*' }));
 
-// ✅ 安全: 許可されたオリジンのみ
+// Good: 安全: 許可されたオリジンのみ
 app.use(cors({
   origin: ['https://example.com', 'https://app.example.com'],
   credentials: true
 }));
 
-// ✅ セキュリティヘッダー
+// Good: セキュリティヘッダー
 import helmet from 'helmet';
 app.use(helmet());
 ```
@@ -305,14 +305,14 @@ npx snyk test
 **弱いパスワードポリシー、不適切なセッション管理**
 
 ```typescript
-// ❌ 危険: 弱いセッション管理
+// Bad: 危険: 弱いセッション管理
 app.use(session({
   secret: 'secret123',  // 弱いシークレット
   resave: true,
   saveUninitialized: true
 }));
 
-// ✅ 安全: 安全なセッション
+// Good: 安全: 安全なセッション
 import session from 'express-session';
 import crypto from 'crypto';
 
@@ -328,7 +328,7 @@ app.use(session({
   }
 }));
 
-// ✅ JWT使用
+// Good: JWT使用
 import jwt from 'jsonwebtoken';
 
 function generateToken(user: User): string {
@@ -339,7 +339,7 @@ function generateToken(user: User): string {
   );
 }
 
-// ✅ リフレッシュトークンパターン
+// Good: リフレッシュトークンパターン
 function generateTokens(user: User) {
   const accessToken = jwt.sign(
     { id: user.id },
@@ -395,13 +395,13 @@ function generateTokens(user: User) {
 **セキュリティイベントの不十分なログ記録**
 
 ```typescript
-// ❌ 危険: ログなし
+// Bad: 危険: ログなし
 app.post('/api/login', async (req, res) => {
   const user = await authenticateUser(req.body.username, req.body.password);
   // 成功・失敗のログなし
 });
 
-// ✅ 安全: セキュリティイベントのログ記録
+// Good: 安全: セキュリティイベントのログ記録
 import winston from 'winston';
 
 const logger = winston.createLogger({
@@ -435,10 +435,10 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// ❌ 危険: 機密情報のログ記録
+// Bad: 危険: 機密情報のログ記録
 logger.info('ユーザーデータ', { password: user.password });  // 絶対にNG
 
-// ✅ 安全: 機密情報を除外
+// Good: 安全: 機密情報を除外
 logger.info('ユーザーデータ', {
   username: user.username,
   email: user.email
@@ -460,7 +460,7 @@ logger.info('ユーザーデータ', {
 **サーバー側からの意図しないリクエスト**
 
 ```typescript
-// ❌ 危険: ユーザー指定URLへのリクエスト
+// Bad: 危険: ユーザー指定URLへのリクエスト
 app.get('/api/fetch', async (req, res) => {
   const url = req.query.url;  // ユーザー入力
   const response = await fetch(url);  // 内部リソースにアクセス可能
@@ -468,7 +468,7 @@ app.get('/api/fetch', async (req, res) => {
 });
 // 攻撃: /api/fetch?url=http://localhost:6379/ (Redis)
 
-// ✅ 安全: URL検証
+// Good: 安全: URL検証
 function isAllowedUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
@@ -523,18 +523,18 @@ app.get('/api/fetch', async (req, res) => {
 ### XSS (クロスサイトスクリプティング) 対策
 
 ```tsx
-// ❌ 危険: dangerouslySetInnerHTML
+// Bad: 危険: dangerouslySetInnerHTML
 function UserComment({ comment }: { comment: string }) {
   return <div dangerouslySetInnerHTML={{ __html: comment }} />;
   // 攻撃: "<script>alert('XSS')</script>"
 }
 
-// ✅ 安全: デフォルトのエスケープ
+// Good: 安全: デフォルトのエスケープ
 function UserComment({ comment }: { comment: string }) {
   return <div>{comment}</div>;  // React が自動的にエスケープ
 }
 
-// ✅ HTMLが必要な場合: サニタイズ
+// Good: HTMLが必要な場合: サニタイズ
 import DOMPurify from 'dompurify';
 
 function UserComment({ comment }: { comment: string }) {
@@ -550,7 +550,7 @@ function UserComment({ comment }: { comment: string }) {
 ### CSRF (クロスサイトリクエストフォージェリ) 対策
 
 ```typescript
-// ✅ CSRFトークン
+// Good: CSRFトークン
 import csrf from 'csurf';
 
 const csrfProtection = csrf({ cookie: true });
@@ -563,7 +563,7 @@ app.post('/api/transfer', csrfProtection, (req, res) => {
   // CSRFトークンが検証される
 });
 
-// ✅ SameSite Cookie(追加の防御)
+// Good: SameSite Cookie(追加の防御)
 app.use(session({
   cookie: {
     sameSite: 'strict'  // または 'lax'

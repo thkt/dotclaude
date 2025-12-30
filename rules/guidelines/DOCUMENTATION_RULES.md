@@ -20,7 +20,7 @@ Guidelines for maintaining consistent, well-organized documentation in the Claud
 │   ├── PRE_TASK_CHECK_COMPACT.md   # Task verification (compact)
 │   └── PRE_TASK_CHECK_VERBOSE.md   # Task verification (detailed)
 │
-├── reference/        # Principles & Theory
+├── guidelines/       # Documentation Guidelines
 │   └── DOCUMENTATION_RULES.md      # This file
 │
 ├── development/      # Practical Application
@@ -177,16 +177,16 @@ Links to related documentation
 
 1. **Headers**: Use sentence case, not CAPS
 2. **Examples**: Include practical code examples
-3. **Comparisons**: Show ❌ Bad vs ✅ Good
+3. **Comparisons**: Show Bad vs Good
 4. **Summaries**: Key points in bullet lists
 
 ### Code Examples
 
 ```typescript
-// ❌ Avoid: Complex example first
+// Bad: Avoid: Complex example first
 complexImplementation()
 
-// ✅ Prefer: Simple example first
+// Good: Prefer: Simple example first
 simpleImplementation()
 
 // Then show progression to complex
@@ -198,19 +198,19 @@ advancedImplementation()
 - [ ] EN/JP synchronized
 - [ ] All links tested
 - [ ] No circular references
-- [ ] Correct placement (reference/ vs development/)
+- [ ] Correct placement (guidelines/ vs development/)
 
 ## Common Patterns
 
 | Pattern | Steps |
 | --- | --- |
-| New Principle | Create EN/JP in reference/ → Add to CLAUDE.md |
+| New Principle | Create EN/JP in guidelines/ → Add to CLAUDE.md |
 | New Practice | Create EN/JP in development/ → Reference from principles |
 | New Command | Create EN/JP in commands/ → Add to COMMANDS.md |
 
 ## Anti-Patterns
 
-| ❌ Avoid | ✅ Instead |
+| Avoid | Instead |
 | --- | --- |
 | Single language updates | Synchronized updates (EN/JP together) |
 | Deep nesting (>3 levels) | Flat hierarchy |

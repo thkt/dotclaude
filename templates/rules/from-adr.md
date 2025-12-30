@@ -1,22 +1,4 @@
-<!--
-Golden Master: Rule from ADR Template
-
-Selection criteria:
-- Template for /rulify output format
-- Clear priority and source tracking
-- Actionable requirements and prohibitions
-
-Features:
-- Derived from ADR structure
-- Good/bad examples included
-- Verification method defined
-
-Source: Template (not from actual ADR)
-
-Last Reviewed: 2025-12-17
-Update Reason: Added maintenance metadata fields
-Previous Version: N/A
--->
+<!-- Template: /rulify output format | Updated: 2025-12-17 -->
 
 # [RULE_NAME_UPPER_SNAKE_CASE]
 
@@ -42,13 +24,13 @@ Created: [YYYY-MM-DD]
 
 ## Examples
 
-### ✅ Good Example
+### Good Example
 
 ```[language]
 [Code example following ADR decision]
 ```
 
-### ❌ Bad Example
+### Bad Example
 
 ```[language]
 [Pattern to avoid]

@@ -5,13 +5,13 @@
 **Design-level security flaws** - Rate limiting, business logic vulnerabilities
 
 ```typescript
-// ❌ Dangerous: No rate limiting
+// Bad: Dangerous: No rate limiting
 app.post('/api/login', async (req, res) => {
   // Brute force attack possible
   const user = await authenticateUser(req.body.username, req.body.password);
 });
 
-// ✅ Secure: Rate limiting
+// Good: Secure: Rate limiting
 import rateLimit from 'express-rate-limit';
 
 const loginLimiter = rateLimit({
@@ -24,7 +24,7 @@ app.post('/api/login', loginLimiter, async (req, res) => {
   const user = await authenticateUser(req.body.username, req.body.password);
 });
 
-// ✅ More secure: Account lockout
+// Good: More secure: Account lockout
 async function authenticateWithLockout(username: string, password: string) {
   const account = await getAccount(username);
 
@@ -63,13 +63,13 @@ async function authenticateWithLockout(username: string, password: string) {
 **Default settings, unnecessary features enabled**
 
 ```typescript
-// ❌ Dangerous: Debug mode enabled
+// Bad: Dangerous: Debug mode enabled
 app.use(errorHandler({
   dumpExceptions: true,  // Stack trace exposed
   showStack: true
 }));
 
-// ✅ Secure: Environment-based configuration
+// Good: Secure: Environment-based configuration
 if (process.env.NODE_ENV === 'production') {
   app.use(errorHandler({
     dumpExceptions: false,
@@ -82,16 +82,16 @@ if (process.env.NODE_ENV === 'production') {
   }));
 }
 
-// ❌ Dangerous: Allow all CORS
+// Bad: Dangerous: Allow all CORS
 app.use(cors({ origin: '*' }));
 
-// ✅ Secure: Allowed origins only
+// Good: Secure: Allowed origins only
 app.use(cors({
   origin: ['https://example.com', 'https://app.example.com'],
   credentials: true
 }));
 
-// ✅ Security headers
+// Good: Security headers
 import helmet from 'helmet';
 app.use(helmet());
 ```
@@ -159,13 +159,13 @@ npx snyk test
 **Insufficient logging of security events**
 
 ```typescript
-// ❌ Dangerous: No logging
+// Bad: Dangerous: No logging
 app.post('/api/login', async (req, res) => {
   const user = await authenticateUser(req.body.username, req.body.password);
   // No logs for success or failure
 });
 
-// ✅ Secure: Security event logging
+// Good: Secure: Security event logging
 import winston from 'winston';
 
 const logger = winston.createLogger({
@@ -199,10 +199,10 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// ❌ Dangerous: Logging sensitive information
+// Bad: Dangerous: Logging sensitive information
 logger.info('User data', { password: user.password });  // Absolutely NO
 
-// ✅ Secure: Exclude sensitive information
+// Good: Secure: Exclude sensitive information
 logger.info('User data', {
   username: user.username,
   email: user.email
@@ -224,7 +224,7 @@ logger.info('User data', {
 **Unintended requests from server side**
 
 ```typescript
-// ❌ Dangerous: Request to user-specified URL
+// Bad: Dangerous: Request to user-specified URL
 app.get('/api/fetch', async (req, res) => {
   const url = req.query.url;  // User input
   const response = await fetch(url);  // Can access internal resources
@@ -232,7 +232,7 @@ app.get('/api/fetch', async (req, res) => {
 });
 // Attack: /api/fetch?url=http://localhost:6379/ (Redis)
 
-// ✅ Secure: URL validation
+// Good: Secure: URL validation
 function isAllowedUrl(url: string): boolean {
   try {
     const parsed = new URL(url);

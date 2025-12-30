@@ -14,7 +14,7 @@ Skills are used for:
 
 ## Commands, Agents, and Skills
 
-### 📋 Commands
+### Commands
 
 **Role**: User-invoked workflows
 
@@ -24,7 +24,7 @@ Skills are used for:
 
 **Features**: Thin wrapper, coordinates Skills and Agents
 
-### 🤖 Agents
+### Agents
 
 **Role**: Specialized analysis/review (called from Commands)
 
@@ -34,7 +34,7 @@ Skills are used for:
 
 **Features**: Specific task execution, short-term, can reference Skills
 
-### 📚 Skills
+### Skills
 
 **Role**: Knowledge base, guides, automation
 
@@ -47,7 +47,7 @@ Skills are used for:
 
 ## When to Use Skills
 
-### ✅ Create Skills for
+### Create Skills for
 
 1. **Educational content**
    - Systematic best practices explanations
@@ -68,7 +68,7 @@ Skills are used for:
    - Automatically provide knowledge via keyword triggers
    - Implicitly activate in conversation flow
 
-### ❌ Not for Skills
+### Not for Skills
 
 - **Workflow execution** → Use Commands
 - **Specialized reviews** → Use Agents
@@ -272,9 +272,9 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash, Task
 
 | Field | Required | Description |
 | --- | --- | --- |
-| `name` | ✅ | Must exactly match directory name |
-| `description` | ✅ | Description including trigger keywords |
-| `allowed-tools` | ✅ | Comma-separated list of available tools |
+| `name` | Required | Must exactly match directory name |
+| `description` | Required | Description including trigger keywords |
+| `allowed-tools` | Required | Comma-separated list of available tools |
 
 #### Optional Fields
 

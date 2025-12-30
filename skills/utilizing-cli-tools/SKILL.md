@@ -81,10 +81,10 @@ EOF
 One logical change per commit:
 
 ```bash
-# ❌ Bad: Multiple unrelated changes
+# Bad: Multiple unrelated changes
 git commit -m "fix bug and add feature and update docs"
 
-# ✅ Good: One change at a time
+# Good: One change at a time
 git commit -m "fix(auth): resolve token refresh issue"
 git commit -m "feat(user): add profile settings page"
 ```

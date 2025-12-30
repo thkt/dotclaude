@@ -4,20 +4,20 @@
 
 ---
 
-## 🚀 クイックリファレンス
+## クイックリファレンス
 
 ### 優先度マトリックス
 
 | 優先度 | 原則 | 一言で | いつ適用するか |
 | --- | --- | --- | --- |
-| 🔴 **必須** | | | |
+| [Critical] **必須** | | | |
 | | オッカムの剃刀 | 動作する最もシンプルな解決策を選ぶ | 常に - すべての決定で |
 | | プログレッシブエンハンスメント | シンプルに構築、段階的に強化 | 実装開始時 |
-| 🟡 **デフォルト** | | | |
+| [Default] **デフォルト** | | | |
 | | 可読性のあるコード | コンピュータではなく人間のために書く | コードを書く時 |
 | | TDD/Baby Steps | テストと共に小さな増分変更 | 開発プロセス |
 | | DRY | 繰り返すな | 3回以上の重複発見時 |
-| 🟢 **状況依存** | | | |
+| [Contextual] **状況依存** | | | |
 | | SOLID | 変更に強い設計 | 大規模アーキテクチャ |
 | | Container/Presentational | ロジックとUIを分離 | React/UIコンポーネント |
 | | デメテルの法則 | 直接の友達とだけ話す | 複雑な依存関係 |
@@ -48,7 +48,7 @@ flowchart TD
 | **完璧 vs 動作** | 動作が優先 | 実際の問題を解決する漏れのある抽象化を出荷 |
 | **抽象 vs 具体** | 具体から開始 | パターンが現れた時（3回以上）のみ抽象化 |
 
-### 危険信号 🚩
+### 危険信号
 
 - メソッドチェーン > 3レベル → デメテルの法則を適用
 - 1分で理解できない → 可読性のあるコードを適用
@@ -67,7 +67,7 @@ flowchart TD
 
 ---
 
-## 📚 詳細ガイド
+## 詳細ガイド
 
 ### 原則階層の理解
 
@@ -146,11 +146,11 @@ graph TD
 
 **グラフの凡例:**
 
-- 🔴 **赤（メタ原則）**: オッカムの剃刀 - すべての複雑さに疑問を投げかける
-- 🔵 **青（普遍的）**: デフォルトですべての決定に適用
-- 🟢 **緑（適用された実践）**: 具体的な実装パターン
-- 🟡 **黄（文脈的）**: 状況が要求する時に適用
-- 🟣 **紫（科学的）**: 認知科学的裏付け
+- **赤（メタ原則）**: オッカムの剃刀 - すべての複雑さに疑問を投げかける
+- **青（普遍的）**: デフォルトですべての決定に適用
+- **緑（適用された実践）**: 具体的な実装パターン
+- **黄（文脈的）**: 状況が要求する時に適用
+- **紫（科学的）**: 認知科学的裏付け
 
 **主要な関係:**
 
@@ -250,14 +250,14 @@ obj.prop.prop.method() // ✗ リファクタリング
 **DRY vs 可読性のあるコード**
 
 ```typescript
-// ❌ DRYを取りすぎた
+// Bad: DRYを取りすぎた
 const processData = (data, mode) => {
   return mode === 'user'
     ? data.filter(x => x.active).map(x => ({...x, type: 'user'}))
     : data.filter(x => x.enabled).map(x => ({...x, type: 'admin'}))
 }
 
-// ✅ 可読な重複
+// Good: 可読な重複
 const processUsers = (users) => {
   return users
     .filter(user => user.active)
@@ -274,13 +274,13 @@ const processAdmins = (admins) => {
 **SOLID vs オッカムの剃刀**
 
 ```typescript
-// ❌ シンプルなニーズに対するSOLIDの過度な設計
+// Bad: シンプルなニーズに対するSOLIDの過度な設計
 interface DataProcessor { process(data: Data): Result }
 class UserProcessor implements DataProcessor { }
 class ProcessorFactory { }
 class ProcessorRegistry { }
 
-// ✅ 現在のニーズに対するシンプルな解決策
+// Good: 現在のニーズに対するシンプルな解決策
 function processUser(user) {
   return { ...user, processed: true }
 }
@@ -326,10 +326,10 @@ const calculateTotal = memo((items) => {
 #### 完璧な抽象化の罠
 
 ```typescript
-// ❌ 完璧な抽象化を作ろうとする
+// Bad: 完璧な抽象化を作ろうとする
 class AbstractDataProcessorFactoryBuilder<T> { }
 
-// ✅ 漏れを受け入れ、脱出口を提供
+// Good: 漏れを受け入れ、脱出口を提供
 class DataProcessor {
   process(data) { }
 
@@ -341,12 +341,12 @@ class DataProcessor {
 #### DRY狂信者
 
 ```typescript
-// ❌ すべてを抽出
+// Bad: すべてを抽出
 const TRUE = true
 const FALSE = false
 const ZERO = 0
 
-// ✅ 実用的なアプローチ
+// Good: 実用的なアプローチ
 // 一部の重複は問題ない
 // プログラミングリテラルではなくドメイン概念の定数
 ```
@@ -354,13 +354,13 @@ const ZERO = 0
 #### SOLID伝道者
 
 ```typescript
-// ❌ すべてにインターフェース
+// Bad: すべてにインターフェース
 interface IUserService { }
 interface IUserRepository { }
 interface IUserValidator { }
 // それぞれ実装は1つだけ
 
-// ✅ 具体的に始め、必要時に抽象化
+// Good: 具体的に始め、必要時に抽象化
 class UserService {
   // 2番目の実装が現れたらインターフェースを追加
 }

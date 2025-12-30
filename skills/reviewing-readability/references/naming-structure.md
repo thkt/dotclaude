@@ -3,10 +3,10 @@
 ## Names That Can't Be Misconstrued
 
 ```typescript
-// ❌ Ambiguous
+// Bad: Ambiguous
 results.filter(x => x > LIMIT)  // Greater than or equal to?
 
-// ✅ Clear intent
+// Good: Clear intent
 results.filter(x => x >= MIN_ITEMS_TO_DISPLAY)
 ```
 
@@ -17,12 +17,12 @@ results.filter(x => x >= MIN_ITEMS_TO_DISPLAY)
 ## Prefer Concrete over Abstract
 
 ```typescript
-// ❌ Abstract
+// Bad: Abstract
 processData(data)
 getUserInfo(id)
 handleEvent(e)
 
-// ✅ Concrete
+// Good: Concrete
 validateUserRegistration(formData)
 fetchUserProfileById(userId)
 handleLoginButtonClick(event)
@@ -37,12 +37,12 @@ handleLoginButtonClick(event)
 ### Specific > Generic
 
 ```typescript
-// ❌ Generic
+// Bad: Generic
 const data = fetchUser()
 const result = calculate()
 const temp = getValue()
 
-// ✅ Specific
+// Good: Specific
 const userProfile = fetchUser()
 const totalPrice = calculate()
 const originalUsername = getValue()
@@ -51,11 +51,11 @@ const originalUsername = getValue()
 ### Searchable
 
 ```typescript
-// ❌ Not searchable
+// Bad: Not searchable
 const DAYS_IN_WEEK = 7
 for (let i = 0; i < 7; i++)  // Magic number
 
-// ✅ Searchable
+// Good: Searchable
 const DAYS_IN_WEEK = 7
 for (let i = 0; i < DAYS_IN_WEEK; i++)
 ```
@@ -63,11 +63,11 @@ for (let i = 0; i < DAYS_IN_WEEK; i++)
 ### Pronounceable
 
 ```typescript
-// ❌ Not pronounceable
+// Bad: Not pronounceable
 const usrCstmrRcd = getRecord()
 const genymdhms = generateTimestamp()
 
-// ✅ Pronounceable
+// Good: Pronounceable
 const userCustomerRecord = getRecord()
 const generatedTimestamp = generateTimestamp()
 ```
@@ -79,12 +79,12 @@ const generatedTimestamp = generateTimestamp()
 ### Descriptive Names
 
 ```typescript
-// ❌ Unclear
+// Bad: Unclear
 function calc() { }
 function process() { }
 function handle() { }
 
-// ✅ Descriptive
+// Good: Descriptive
 function calculateTotalPrice() { }
 function validateUserInput() { }
 function handleLoginSubmit() { }
@@ -93,7 +93,7 @@ function handleLoginSubmit() { }
 ### Verb-Noun Pattern
 
 ```typescript
-// ✅ Action + Target
+// Good: Action + Target
 getUserById(id)
 createNewPost(data)
 deleteComment(commentId)
@@ -108,7 +108,7 @@ hasPermission(user, resource)
 ### One Task per Function
 
 ```typescript
-// ❌ Multiple tasks
+// Bad: Multiple tasks
 function processUser(user) {
   // Validate
   if (!user.email) throw Error()
@@ -120,7 +120,7 @@ function processUser(user) {
   sendEmail(user.email)
 }
 
-// ✅ Single responsibility
+// Good: Single responsibility
 function validateUser(user) {
   if (!user.email) throw Error()
 }
@@ -141,7 +141,7 @@ function notifyUser(user) {
 ### Extract Unrelated Subproblems
 
 ```typescript
-// ✅ Each function does one thing
+// Good: Each function does one thing
 function getActiveUsers(users: User[]) {
   return users.filter(isActiveUser)
 }

@@ -51,11 +51,11 @@ graph TD
 
 | Color | Type | Description |
 | --- | --- | --- |
-| 🔴 Red | Meta Principle | Occam's Razor - questions all complexity |
-| 🔵 Blue | Universal | Applied by default to all decisions |
-| 🟢 Green | Applied Practice | Concrete implementation patterns |
-| 🟡 Yellow | Contextual | Applied when situation demands |
-| 🟣 Purple | Scientific | Backed by cognitive science |
+| Red | Meta Principle | Occam's Razor - questions all complexity |
+| Blue | Universal | Applied by default to all decisions |
+| Green | Applied Practice | Concrete implementation patterns |
+| Yellow | Contextual | Applied when situation demands |
+| Purple | Scientific | Backed by cognitive science |
 
 ## Key Relationships
 

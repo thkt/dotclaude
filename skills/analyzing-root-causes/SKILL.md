@@ -72,12 +72,12 @@ Before implementing a fix, ask:
 ### Timing Issues
 
 ```typescript
-// ❌ Symptom: setTimeout to wait for DOM
+// Bad: Symptom: setTimeout to wait for DOM
 useEffect(() => {
   setTimeout(() => { document.getElementById('target')?.scrollIntoView() }, 100)
 }, [])
 
-// ✅ Root cause: Use React ref
+// Good: Root cause: Use React ref
 const targetRef = useRef<HTMLDivElement>(null)
 useEffect(() => { targetRef.current?.scrollIntoView() }, [])
 ```
@@ -85,11 +85,11 @@ useEffect(() => { targetRef.current?.scrollIntoView() }, [])
 ### State Synchronization
 
 ```typescript
-// ❌ Symptom: Multiple effects to sync state
+// Bad: Symptom: Multiple effects to sync state
 useEffect(() => { setFilteredItems(items.filter(i => i.active)) }, [items])
 useEffect(() => { setCount(filteredItems.length) }, [filteredItems])
 
-// ✅ Root cause: Derive state, don't sync
+// Good: Root cause: Derive state, don't sync
 const filteredItems = useMemo(() => items.filter(i => i.active), [items])
 const count = filteredItems.length
 ```
@@ -97,13 +97,13 @@ const count = filteredItems.length
 ### Polling for Child State
 
 ```typescript
-// ❌ Symptom: Parent polling child for state
+// Bad: Symptom: Parent polling child for state
 const childRef = useRef()
 useEffect(() => {
   const interval = setInterval(() => { childRef.current?.getValue() }, 1000)
 }, [])
 
-// ✅ Root cause: Proper data flow (lifting state or callbacks)
+// Good: Root cause: Proper data flow (lifting state or callbacks)
 const [value, setValue] = useState()
 return <Child onValueChange={setValue} />
 ```

@@ -27,7 +27,7 @@
 ### Baby Stepsの実践例
 
 ```typescript
-// ❌ 大きなステップ - 複数の変更を一度に
+// Bad: 大きなステップ - 複数の変更を一度に
 function calculateTotal(items, tax, discount) {
   const subtotal = items.reduce((sum, item) => sum + item.price, 0);
   const afterTax = subtotal * (1 + tax);
@@ -35,7 +35,7 @@ function calculateTotal(items, tax, discount) {
   return afterDiscount;
 }
 
-// ✅ Baby Steps - 一度に1つの変更
+// Good: Baby Steps - 一度に1つの変更
 // ステップ1: ゼロを返す（最小限でテストを通す）
 function calculateTotal(items) {
   return 0;

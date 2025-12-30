@@ -16,12 +16,12 @@ Target: All failures are visible, debuggable, and user-informed.
 
 | Pattern | Risk | Impact |
 | --- | --- | --- |
-| Empty catch block | 🔴 Critical | Errors completely hidden |
-| Promise without catch | 🔴 Critical | Unhandled rejections |
-| Fire and forget async | 🟡 High | Lost error context |
-| Console.log only | 🟡 High | No user feedback |
-| Missing Error Boundary | 🟡 High | App crash on component error |
-| Excessive optional chaining | 🟢 Medium | May mask bugs |
+| Empty catch block | [Critical] | Errors completely hidden |
+| Promise without catch | [Critical] | Unhandled rejections |
+| Fire and forget async | [High] | Lost error context |
+| Console.log only | [High] | No user feedback |
+| Missing Error Boundary | [High] | App crash on component error |
+| Excessive optional chaining | [Medium] | May mask bugs |
 
 ## Section-Based Loading
 
@@ -81,14 +81,14 @@ rg "catch.*console\.log" --glob "*.{ts,tsx}"
 ### Empty Catch → Proper Handling
 
 ```typescript
-// ❌ Silent failure
+// Bad: Silent failure
 try {
   await fetchUserData()
 } catch (e) {
   // Nothing here - error disappears
 }
 
-// ✅ Proper handling
+// Good: Proper handling
 try {
   await fetchUserData()
 } catch (error) {
@@ -100,10 +100,10 @@ try {
 ### Promise Chain → Error Handling
 
 ```typescript
-// ❌ Unhandled rejection
+// Bad: Unhandled rejection
 fetchData().then(data => setData(data))
 
-// ✅ With error handling
+// Good: With error handling
 fetchData()
   .then(data => setData(data))
   .catch(error => {

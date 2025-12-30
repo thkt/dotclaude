@@ -86,7 +86,7 @@ Actual: Total = -$50
 ```typescript
 // Current (buggy) code:
 function calculateTotal(price: number, discount: number): number {
-  return price - discount  // ❌ Can return negative!
+  return price - discount  // Bad: Can return negative!
 }
 ```
 
@@ -203,17 +203,17 @@ describe('calculateTotal - edge cases', () => {
 ```typescript
 // Before: Bug exists
 function calculateTotal(price: number, discount: number): number {
-  return price - discount  // ❌ Can return negative
+  return price - discount  // Bad: Can return negative
 }
 
 // Phase 1.5: Write failing test
 it('should return 0 when discount exceeds price', () => {
-  expect(calculateTotal(100, 150)).toBe(0)  // ❌ FAILS
+  expect(calculateTotal(100, 150)).toBe(0)  // Bad: FAILS
 })
 
 // Phase 2: Apply minimal fix
 function calculateTotal(price: number, discount: number): number {
-  return Math.max(0, price - discount)  // ✅ Fixed
+  return Math.max(0, price - discount)  // Good: Fixed
 }
 
 // Phase 3.5: Add edge cases (optional)
@@ -223,7 +223,7 @@ it('handles large discounts', () => expect(calculateTotal(10, 1000)).toBe(0))
 
 ## Common Pitfalls
 
-### ❌ Writing Test After Fixing
+### Bad: Writing Test After Fixing
 
 ```typescript
 // Don't do this:
@@ -238,7 +238,7 @@ it('handles large discounts', () => expect(calculateTotal(10, 1000)).toBe(0))
 
 **Why bad**: Test doesn't prove it catches the bug. You never saw it fail.
 
-### ❌ Test Doesn't Reproduce Bug
+### Bad: Test Doesn't Reproduce Bug
 
 ```typescript
 // Bad test - doesn't reproduce actual bug:
@@ -252,7 +252,7 @@ it('when discount > price, returns 0 not negative', () => {
 })
 ```
 
-### ❌ Over-engineering the Fix
+### Bad: Over-engineering the Fix
 
 ```typescript
 // Over-engineered:
@@ -271,16 +271,16 @@ function calculateTotal(price: number, discount: number): number {
 }
 ```
 
-### ❌ Not Verifying Test Failure
+### Bad: Not Verifying Test Failure
 
 ```typescript
 // Don't just run the test after fixing:
-$ npm test  // ✅ PASSES
+$ npm test  // Good: PASSES
 
 // Always verify test fails BEFORE fixing:
-$ npm test  // ❌ FAILS (good!)
+$ npm test  // Bad: FAILS (good!)
 // ... apply fix ...
-$ npm test  // ✅ PASSES (confirmed fix works)
+$ npm test  // Good: PASSES (confirmed fix works)
 ```
 
 ## Decision Points
@@ -305,33 +305,33 @@ $ npm test  // ✅ PASSES (confirmed fix works)
 
 **Generate when**:
 
-- ✅ Bug was subtle/complex
-- ✅ Multiple edge cases exist
-- ✅ Similar bugs possible
-- ✅ Critical business logic
+- [Yes] Bug was subtle/complex
+- [Yes] Multiple edge cases exist
+- [Yes] Similar bugs possible
+- [Yes] Critical business logic
 
 **Skip when**:
 
-- ❌ Trivial fix with high confidence
-- ❌ Comprehensive tests already exist
-- ❌ Non-testable changes (pure UI)
+- [No] Trivial fix with high confidence
+- [No] Comprehensive tests already exist
+- [No] Non-testable changes (pure UI)
 
 ### How Minimal is "Minimal Fix"?
 
 **Minimal means**:
 
-- ✅ Changes only what's necessary
-- ✅ No refactoring of unrelated code
-- ✅ No "improvements" beyond the fix
-- ✅ Occam's Razor: simplest solution
+- [Yes] Changes only what's necessary
+- [Yes] No refactoring of unrelated code
+- [Yes] No "improvements" beyond the fix
+- [Yes] Occam's Razor: simplest solution
 
 **Example**:
 
 ```typescript
-// ✅ Minimal:
+// Good: Minimal:
 return Math.max(0, price - discount)
 
-// ❌ Not minimal (unnecessary complexity):
+// Bad: Not minimal (unnecessary complexity):
 if (discount > price) {
   return 0
 } else if (discount === price) {

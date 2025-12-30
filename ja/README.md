@@ -33,11 +33,12 @@
 │   ├── PRINCIPLES_GUIDE.md  # 完全な原則ガイド
 │   ├── commands/         # コマンド選択ロジック
 │   ├── development/      # 開発パターンと方法論
-│   └── reference/        # 基本原則（SOLID、DRY、オッカムの剃刀）
+│   └── guidelines/       # ドキュメントガイドライン
 ├── skills/               # スキルベースの知識モジュール
-│   ├── pre-task-check/   # タスク理解検証（自動起動）
-│   ├── performance-optimization/  # Webパフォーマンス知識
-│   └── esa-daily-report/ # プロジェクト固有の自動化
+│   ├── optimizing-performance/    # Webパフォーマンス知識
+│   └── generating-tdd-tests/      # TDD方法論
+├── references/           # 参照ドキュメント（コマンドとして読み込まれない）
+│   └── commands/         # コマンド参照資料
 └── ja/                    # 日本語翻訳
     ├── CLAUDE.md         # メイン設定（日本語）
     ├── README.md         # このファイル

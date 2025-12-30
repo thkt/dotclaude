@@ -5,7 +5,7 @@
 ### Symptom: setTimeout to wait for DOM
 
 ```typescript
-// ❌ Symptom fix
+// Bad: Symptom fix
 useEffect(() => {
   setTimeout(() => {
     document.getElementById('modal')?.focus()
@@ -16,7 +16,7 @@ useEffect(() => {
 **Root Cause**: Not using React's rendering lifecycle properly
 
 ```typescript
-// ✅ Root cause fix
+// Good: Root cause fix
 const modalRef = useRef<HTMLDivElement>(null)
 useEffect(() => {
   modalRef.current?.focus()
@@ -26,7 +26,7 @@ useEffect(() => {
 ### Symptom: Flag to prevent double execution
 
 ```typescript
-// ❌ Symptom fix
+// Bad: Symptom fix
 let hasRun = false
 function init() {
   if (hasRun) return
@@ -38,7 +38,7 @@ function init() {
 **Root Cause**: Function being called multiple times due to React StrictMode or improper effect cleanup
 
 ```typescript
-// ✅ Root cause fix
+// Good: Root cause fix
 useEffect(() => {
   const controller = new AbortController()
   fetchData(controller.signal)
@@ -51,7 +51,7 @@ useEffect(() => {
 ### Symptom: Multiple effects to sync state
 
 ```typescript
-// ❌ Symptom fix
+// Bad: Symptom fix
 const [items, setItems] = useState([])
 const [filteredItems, setFilteredItems] = useState([])
 const [count, setCount] = useState(0)
@@ -68,7 +68,7 @@ useEffect(() => {
 **Root Cause**: Treating derived state as independent state
 
 ```typescript
-// ✅ Root cause fix
+// Good: Root cause fix
 const [items, setItems] = useState([])
 const filteredItems = useMemo(() => items.filter(i => i.active), [items])
 const count = filteredItems.length
@@ -77,7 +77,7 @@ const count = filteredItems.length
 ### Symptom: useEffect to update state after prop change
 
 ```typescript
-// ❌ Symptom fix
+// Bad: Symptom fix
 function Component({ value }) {
   const [internalValue, setInternalValue] = useState(value)
 
@@ -90,7 +90,7 @@ function Component({ value }) {
 **Root Cause**: Unnecessary internal state that mirrors props
 
 ```typescript
-// ✅ Root cause fix - Use prop directly
+// Good: Root cause fix - Use prop directly
 function Component({ value }) {
   // Just use value directly, no state needed
 }
@@ -106,7 +106,7 @@ function Component({ value }) {
 ### Symptom: Ref to access child state/methods
 
 ```typescript
-// ❌ Symptom fix
+// Bad: Symptom fix
 const childRef = useRef()
 function handleSubmit() {
   const value = childRef.current.getValue()
@@ -117,7 +117,7 @@ function handleSubmit() {
 **Root Cause**: Improper data flow (child should report state up)
 
 ```typescript
-// ✅ Root cause fix
+// Good: Root cause fix
 const [value, setValue] = useState('')
 function handleSubmit() {
   submit(value)
@@ -128,7 +128,7 @@ return <Child value={value} onChange={setValue} />
 ### Symptom: Event bus or global state for sibling communication
 
 ```typescript
-// ❌ Symptom fix
+// Bad: Symptom fix
 // Component A
 eventBus.emit('dataChanged', data)
 
@@ -142,7 +142,7 @@ useEffect(() => {
 **Root Cause**: State should be lifted to common parent
 
 ```typescript
-// ✅ Root cause fix
+// Good: Root cause fix
 function Parent() {
   const [data, setData] = useState()
   return (
@@ -159,7 +159,7 @@ function Parent() {
 ### Symptom: Memoizing everything
 
 ```typescript
-// ❌ Symptom fix
+// Bad: Symptom fix
 const value = useMemo(() => a + b, [a, b]) // Memoizing simple addition
 const callback = useCallback(() => {}, []) // Memoizing for no reason
 ```
@@ -167,7 +167,7 @@ const callback = useCallback(() => {}, []) // Memoizing for no reason
 **Root Cause**: Premature optimization without profiling
 
 ```typescript
-// ✅ Root cause fix
+// Good: Root cause fix
 const value = a + b // Simple calculation, no memo needed
 // Only memoize when:
 // 1. Profiler shows it's slow
@@ -178,7 +178,7 @@ const value = a + b // Simple calculation, no memo needed
 ### Symptom: Throttle/debounce everywhere
 
 ```typescript
-// ❌ Symptom fix
+// Bad: Symptom fix
 const handleScroll = useMemo(
   () => throttle(() => updatePosition(), 100),
   []
@@ -188,7 +188,7 @@ const handleScroll = useMemo(
 **Root Cause**: Often the underlying approach is wrong
 
 ```typescript
-// ✅ Root cause fix - Use CSS or proper event
+// Good: Root cause fix - Use CSS or proper event
 // CSS: position: sticky
 // IntersectionObserver instead of scroll listener
 // requestAnimationFrame for animations
@@ -199,7 +199,7 @@ const handleScroll = useMemo(
 ### Symptom: JavaScript for show/hide
 
 ```typescript
-// ❌ Symptom fix
+// Bad: Symptom fix
 const [isVisible, setIsVisible] = useState(false)
 return (
   <>
@@ -212,7 +212,7 @@ return (
 **Root Cause**: CSS can handle simple show/hide
 
 ```tsx
-// ✅ Root cause fix
+// Good: Root cause fix
 <details>
   <summary>Toggle</summary>
   <div>Content</div>

@@ -30,10 +30,10 @@ Ensure maximum type safety by identifying type coverage gaps, improper type usag
 ### Representative Examples
 
 ```typescript
-// ❌ Poor: any disables type checking
+// Bad: Poor: any disables type checking
 function parseData(data: any) { return data.value }
 
-// ✅ Good: Type guard with unknown
+// Good: Good: Type guard with unknown
 function parseData(data: unknown): string {
   if (typeof data === 'object' && data !== null && 'value' in data) {
     return String((data as { value: unknown }).value)
@@ -43,10 +43,10 @@ function parseData(data: unknown): string {
 ```
 
 ```typescript
-// ❌ Poor: Unsafe type assertion
+// Bad: Poor: Unsafe type assertion
 if ((response as Success).data) { /* ... */ }
 
-// ✅ Good: Type predicate function
+// Good: Good: Type predicate function
 function isSuccess(r: Response): r is Success { return r.success === true }
 if (isSuccess(response)) { console.log(response.data) }
 ```

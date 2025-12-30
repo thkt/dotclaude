@@ -32,12 +32,12 @@ Eliminate code waste, solve root problems, and follow DRY principles.
 ### 1. Code Waste Detection
 
 ```typescript
-// ❌ Wasteful: Multiple boolean states for mutually exclusive conditions
+// Bad: Wasteful: Multiple boolean states for mutually exclusive conditions
 const [isLoading, setIsLoading] = useState(false)
 const [hasError, setHasError] = useState(false)
 const [isSuccess, setIsSuccess] = useState(false)
 
-// ✅ Efficient: Single state with clear status
+// Good: Efficient: Single state with clear status
 type Status = 'idle' | 'loading' | 'error' | 'success'
 const [status, setStatus] = useState<Status>('idle')
 ```
@@ -45,14 +45,14 @@ const [status, setStatus] = useState<Status>('idle')
 ### 2. Root Cause vs Patches
 
 ```typescript
-// ❌ Patch: Adding workarounds for race conditions
+// Bad: Patch: Adding workarounds for race conditions
 useEffect(() => {
   let cancelled = false
   fetchData().then(result => { if (!cancelled) setData(result) })
   return () => { cancelled = true }
 }, [id])
 
-// ✅ Root cause: Use proper data fetching library
+// Good: Root cause: Use proper data fetching library
 import { useQuery } from '@tanstack/react-query'
 const { data } = useQuery({ queryKey: ['resource', id], queryFn: () => fetchData(id) })
 ```
@@ -60,11 +60,11 @@ const { data } = useQuery({ queryKey: ['resource', id], queryFn: () => fetchData
 ### 3. DRY Violations
 
 ```typescript
-// ❌ Repeated validation logic
+// Bad: Repeated validation logic
 function LoginForm() { const validateEmail = (email) => { /* same logic */ } }
 function SignupForm() { const validateEmail = (email) => { /* same logic */ } }
 
-// ✅ DRY: Extract validation utilities
+// Good: DRY: Extract validation utilities
 export const validators = {
   email: (value: string) => !value ? 'Required' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Invalid' : null
 }
@@ -73,11 +73,11 @@ export const validators = {
 ### 4. Component Hierarchy
 
 ```typescript
-// ❌ Props drilling
+// Bad: Props drilling
 function App() { return <Dashboard user={user} setUser={setUser} /> }
 function Dashboard({ user, setUser }) { return <UserProfile user={user} setUser={setUser} /> }
 
-// ✅ Context for cross-cutting concerns
+// Good: Context for cross-cutting concerns
 const UserContext = createContext<UserContextType>(null)
 function App() { return <UserContext.Provider value={{ user, setUser }}><Dashboard /></UserContext.Provider> }
 ```
@@ -85,10 +85,10 @@ function App() { return <UserContext.Provider value={{ user, setUser }}><Dashboa
 ### 5. State Management
 
 ```typescript
-// ❌ Everything in global state
+// Bad: Everything in global state
 const store = { user: {...}, isModalOpen: false, formData: {...}, hoveredItemId: null }
 
-// ✅ Right state in right place
+// Good: Right state in right place
 const globalStore = { user, settings } // Global: User, app settings
 function Modal() { const [isOpen, setIsOpen] = useState(false) } // Component: UI state
 ```

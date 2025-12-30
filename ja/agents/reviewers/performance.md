@@ -29,10 +29,10 @@ Identify performance bottlenecks and optimization opportunities in frontend code
 ### 1. React Rendering Optimization
 
 ```typescript
-// ❌ Poor: Inline object causes re-render
+// Bad: Poor: Inline object causes re-render
 <Component style={{ margin: 10 }} onClick={() => handleClick(id)} />
 
-// ✅ Good: Stable references
+// Good: Good: Stable references
 const style = useMemo(() => ({ margin: 10 }), [])
 const handleClickCallback = useCallback(() => handleClick(id), [id])
 ```
@@ -40,23 +40,23 @@ const handleClickCallback = useCallback(() => handleClick(id), [id])
 ### 2. Bundle Size Optimization
 
 ```typescript
-// ❌ Poor: Imports entire library
+// Bad: Poor: Imports entire library
 import * as _ from 'lodash'
 
-// ✅ Good: Tree-shakeable imports
+// Good: Good: Tree-shakeable imports
 import debounce from 'lodash/debounce'
 
-// ✅ Good: Lazy loading routes
+// Good: Good: Lazy loading routes
 const Dashboard = lazy(() => import('./Dashboard'))
 ```
 
 ### 3. State Management Performance
 
 ```typescript
-// ❌ Poor: Large state object causes full re-render
+// Bad: Poor: Large state object causes full re-render
 const [state, setState] = useState({ user, posts, comments, settings })
 
-// ✅ Good: Separate state for independent updates
+// Good: Good: Separate state for independent updates
 const [user, setUser] = useState(...)
 const [posts, setPosts] = useState(...)
 ```
@@ -64,10 +64,10 @@ const [posts, setPosts] = useState(...)
 ### 4. List Rendering Performance
 
 ```typescript
-// ❌ Poor: Index as key
+// Bad: Poor: Index as key
 items.map((item, index) => <Item key={index} />)
 
-// ✅ Good: Stable unique keys + virtualization for large lists
+// Good: Good: Stable unique keys + virtualization for large lists
 items.map(item => <Item key={item.id} />)
 <VirtualList items={items} itemHeight={50} renderItem={(item) => <Item {...item} />} />
 ```
@@ -75,10 +75,10 @@ items.map(item => <Item key={item.id} />)
 ### 5. Hook Performance
 
 ```typescript
-// ❌ Poor: Expensive computation every render
+// Bad: Poor: Expensive computation every render
 const expensiveResult = items.reduce((acc, item) => performComplexCalculation(acc, item), initial)
 
-// ✅ Good: Memoized computation
+// Good: Good: Memoized computation
 const expensiveResult = useMemo(() =>
   items.reduce((acc, item) => performComplexCalculation(acc, item), initial), [items])
 ```
@@ -124,7 +124,6 @@ Target thresholds:
 ## Applied Development Principles
 
 ### Occam's Razor
-
 
 Key questions:
 

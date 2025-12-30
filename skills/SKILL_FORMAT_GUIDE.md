@@ -27,10 +27,10 @@ allowed-tools:  # Optional but recommended
 - **Format**: Lowercase letters, numbers, hyphens only
 - **Max length**: 64 characters
 - **Examples**:
-  - ✅ `creating-adrs`
-  - ✅ `optimizing-performance`
-  - ❌ `ADR Creator` (spaces, uppercase)
-  - ❌ `adr_creator` (underscores not preferred)
+  - [Good] `creating-adrs`
+  - [Good] `optimizing-performance`
+  - [Bad] `ADR Creator` (spaces, uppercase)
+  - [Bad] `adr_creator` (underscores not preferred)
 
 ---
 
@@ -85,10 +85,10 @@ Alternative naming is acceptable:
 ### Format Rules
 
 1. **Third Person Only** (三人称のみ)
-   - ✅ Good: "Processes Excel files and generates reports"
-   - ✅ Good: "Extracts text from PDF documents"
-   - ❌ Avoid: "I can help you process Excel files"
-   - ❌ Avoid: "You can use this to process files"
+   - [Good] Good: "Processes Excel files and generates reports"
+   - [Good] Good: "Extracts text from PDF documents"
+   - [Bad] Avoid: "I can help you process Excel files"
+   - [Bad] Avoid: "You can use this to process files"
 
 2. **Character Limit**: Maximum 1024 characters
 
@@ -166,7 +166,7 @@ description: >
 
 **Important**: Fields not in official spec may not function as expected.
 
-❌ **Do NOT use these fields**:
+**Do NOT use these fields**:
 
 - `version`, `author`
 - `triggers`, `sections`, `patterns`
@@ -249,27 +249,27 @@ skill-name/
 
 ### 1. Keep Focus Narrow
 
-- ✅ One Skill = One capability
-- ❌ Avoid multi-purpose "Swiss Army knife" skills
+- [Good] One Skill = One capability
+- [Bad] Avoid multi-purpose "Swiss Army knife" skills
 
 **Example**:
 
-- ✅ `readability-review` - Code readability only
-- ❌ `code-review` - Too broad (readability + security + performance)
+- [Good] `readability-review` - Code readability only
+- [Bad] `code-review` - Too broad (readability + security + performance)
 
 ### 2. Write Specific Descriptions
 
-- ✅ Include functionality AND trigger terms
-- ❌ Vague terms like "helps with documents"
+- [Good] Include functionality AND trigger terms
+- [Bad] Vague terms like "helps with documents"
 
 **Example**:
 
 ```yaml
-# ❌ Vague
+# Bad: Vague
 description: >
   Helps improve code quality.
 
-# ✅ Specific
+# Good: Specific
 description: >
   Code readability review based on "The Art of Readable Code".
   Triggers on keywords: "readability", "可読性", "naming", "命名",
@@ -305,10 +305,10 @@ description: >
 
 **Principle**: "The context window is a public good"
 
-- ✅ Keep SKILL.md concise (< 500 lines recommended)
-- ✅ Move detailed content to `references/` or `sections/`
-- ✅ Avoid explaining what Claude already knows
-- ❌ Don't repeat general programming knowledge
+- [Good] Keep SKILL.md concise (< 500 lines recommended)
+- [Good] Move detailed content to `references/` or `sections/`
+- [Good] Avoid explaining what Claude already knows
+- [Bad] Don't repeat general programming knowledge
 
 **Progressive Loading**:
 
@@ -342,10 +342,10 @@ Match instruction specificity to error risk:
 
 **Do NOT include these files** in skill directories:
 
-- ❌ `README.md` - Use SKILL.md for all documentation
-- ❌ `INSTALLATION_GUIDE.md` - Not needed for AI agents
-- ❌ `QUICK_REFERENCE.md` - Merge into SKILL.md
-- ❌ `CHANGELOG.md` - Use inline version history
+- [Bad] `README.md` - Use SKILL.md for all documentation
+- [Bad] `INSTALLATION_GUIDE.md` - Not needed for AI agents
+- [Bad] `QUICK_REFERENCE.md` - Merge into SKILL.md
+- [Bad] `CHANGELOG.md` - Use inline version history
 
 **Reason**: Skills should only contain information needed for AI execution.
 Human-oriented documentation belongs elsewhere.

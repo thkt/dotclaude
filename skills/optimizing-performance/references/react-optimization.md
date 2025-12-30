@@ -1,24 +1,24 @@
 # React Performance Optimization
 
-## ⚡ Preventing Unnecessary Re-renders
+## Preventing Unnecessary Re-renders
 
 ### React.memo - Component Memoization
 
 ```tsx
-// ❌ Re-renders every time parent re-renders
+// Bad: Re-renders every time parent re-renders
 function ExpensiveComponent({ data }: { data: Data }) {
   // Heavy calculation
   const result = expensiveCalculation(data);
   return <div>{result}</div>;
 }
 
-// ✅ No re-render unless props change
+// Good: No re-render unless props change
 const ExpensiveComponent = React.memo(({ data }: { data: Data }) => {
   const result = expensiveCalculation(data);
   return <div>{result}</div>;
 });
 
-// ✅ Custom comparison function (when deep comparison needed)
+// Good: Custom comparison function (when deep comparison needed)
 const ExpensiveComponent = React.memo(
   ({ data }: { data: Data }) => {
     const result = expensiveCalculation(data);
@@ -34,7 +34,7 @@ const ExpensiveComponent = React.memo(
 ### useMemo - Computation Memoization
 
 ```tsx
-// ❌ Calculation runs every time
+// Bad: Calculation runs every time
 function ProductList({ products }: { products: Product[] }) {
   const sortedProducts = products.sort((a, b) => b.price - a.price);
   // Sorting runs every time parent re-renders
@@ -42,7 +42,7 @@ function ProductList({ products }: { products: Product[] }) {
   return <ul>{sortedProducts.map(...)}</ul>;
 }
 
-// ✅ No calculation unless products change
+// Good: No calculation unless products change
 function ProductList({ products }: { products: Product[] }) {
   const sortedProducts = useMemo(
     () => products.sort((a, b) => b.price - a.price),
@@ -53,17 +53,17 @@ function ProductList({ products }: { products: Product[] }) {
 }
 
 // ⚠️ Don't overuse: Unnecessary for light calculations
-// ❌ Over-optimization
+// Bad: Over-optimization
 const doubled = useMemo(() => count * 2, [count]);  // Unnecessary
 
-// ✅ Direct calculation
+// Good: Direct calculation
 const doubled = count * 2;
 ```
 
 ### useCallback - Function Memoization
 
 ```tsx
-// ❌ New function created every time
+// Bad: New function created every time
 function Parent() {
   const [count, setCount] = useState(0);
 
@@ -75,7 +75,7 @@ function Parent() {
   return <Child onClick={handleClick} />;
 }
 
-// ✅ Reuse function
+// Good: Reuse function
 function Parent() {
   const [count, setCount] = useState(0);
 
@@ -86,7 +86,7 @@ function Parent() {
   return <Child onClick={handleClick} />;
 }
 
-// ✅ With state
+// Good: With state
 function Parent() {
   const [count, setCount] = useState(0);
 
@@ -105,7 +105,7 @@ function Parent() {
 ### Virtualization
 
 ```tsx
-// ❌ Inefficient: Rendering all items
+// Bad: Inefficient: Rendering all items
 function LargeList({ items }: { items: Item[] }) {
   return (
     <div style={{ height: '500px', overflow: 'auto' }}>
@@ -115,7 +115,7 @@ function LargeList({ items }: { items: Item[] }) {
 }
 // 10,000 items = heavy initial render
 
-// ✅ Virtualization: Render only visible items
+// Good: Virtualization: Render only visible items
 import { FixedSizeList } from 'react-window';
 
 function LargeList({ items }: { items: Item[] }) {
@@ -139,12 +139,12 @@ function LargeList({ items }: { items: Item[] }) {
 
 ---
 
-## 🗂️ State Management Optimization
+## State Management Optimization
 
 ### State Separation
 
 ```tsx
-// ❌ Global state causes entire app to re-render
+// Bad: Global state causes entire app to re-render
 function App() {
   const [user, setUser] = useState({ name: '', cart: [] });
 
@@ -157,7 +157,7 @@ function App() {
 }
 // user.cart changes → Header also re-renders
 
-// ✅ Separate state
+// Good: Separate state
 function App() {
   const [userName, setUserName] = useState('');
   const [cart, setCart] = useState([]);
@@ -173,7 +173,7 @@ function App() {
 
 ---
 
-## 🔍 React DevTools Profiler
+## React DevTools Profiler
 
 ### Profiling Component Performance
 
@@ -209,7 +209,7 @@ function onRenderCallback(
 
 ---
 
-## 📋 React Optimization Checklist
+## React Optimization Checklist
 
 ### Rendering Optimization
 
@@ -228,7 +228,7 @@ function onRenderCallback(
 
 ---
 
-## 💡 Key Takeaways
+## Key Takeaways
 
 1. **React.memo**: Prevent unnecessary component re-renders
 2. **useMemo**: Cache expensive calculations
@@ -239,27 +239,27 @@ function onRenderCallback(
 
 ---
 
-## ⚠️ Common Pitfalls
+## Common Pitfalls
 
 ### Over-optimization
 
 ```tsx
-// ❌ Unnecessary memoization
+// Bad: Unnecessary memoization
 const doubled = useMemo(() => count * 2, [count]);  // Overhead > benefit
 
-// ✅ Direct calculation
+// Good: Direct calculation
 const doubled = count * 2;
 ```
 
 ### Missing Dependencies
 
 ```tsx
-// ❌ Stale closure
+// Bad: Stale closure
 const handleClick = useCallback(() => {
   console.log(count);  // Always logs 0
 }, []);  // Missing count dependency
 
-// ✅ Correct dependencies
+// Good: Correct dependencies
 const handleClick = useCallback(() => {
   console.log(count);
 }, [count]);
@@ -268,7 +268,7 @@ const handleClick = useCallback(() => {
 ### Memoizing everything
 
 ```tsx
-// ❌ Over-engineering
+// Bad: Over-engineering
 const MyComponent = React.memo(() => {
   const value1 = useMemo(() => prop1 + 1, [prop1]);
   const value2 = useMemo(() => prop2 * 2, [prop2]);
@@ -278,7 +278,7 @@ const MyComponent = React.memo(() => {
   return <div>{value1} {value2} {value3}</div>;
 });
 
-// ✅ Only memoize expensive operations
+// Good: Only memoize expensive operations
 const MyComponent = React.memo(() => {
   const expensiveValue = useMemo(
     () => performHeavyCalculation(data),
@@ -291,7 +291,7 @@ const MyComponent = React.memo(() => {
 
 ---
 
-## 🎯 Decision Framework
+## Decision Framework
 
 **When to use React.memo?**
 

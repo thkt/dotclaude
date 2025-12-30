@@ -77,12 +77,12 @@ Lower priority:
 Break down to testable units (typically public methods):
 
 ```typescript
-// ✅ Good: Test one method at a time
+// Good: Good: Test one method at a time
 describe('UserService.validateAge', () => {
   // Tests for validateAge
 })
 
-// ❌ Avoid: Testing entire class at once
+// Bad: Avoid: Testing entire class at once
 describe('UserService', () => {
   // Mixing tests for multiple methods
 })

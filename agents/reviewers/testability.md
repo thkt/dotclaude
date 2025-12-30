@@ -31,14 +31,14 @@ Evaluate code testability, identify patterns that hinder testing, and recommend 
 ### Representative Examples
 
 ```typescript
-// ❌ Hard to test: Direct dependency
+// Bad: Hard to test: Direct dependency
 class UserService {
   async getUser(id: string) {
     return fetch(`/api/users/${id}`).then(r => r.json())
   }
 }
 
-// ✅ Testable: Injectable dependency
+// Good: Testable: Injectable dependency
 interface HttpClient { get<T>(url: string): Promise<T> }
 
 class UserService {
@@ -50,13 +50,13 @@ class UserService {
 ```
 
 ```typescript
-// ❌ Hard to test: Mixed logic and side effects
+// Bad: Hard to test: Mixed logic and side effects
 function calculateDiscount(userId: string) {
   const history = api.getPurchaseHistory(userId)
   return history.length > 10 ? 0.2 : 0.1
 }
 
-// ✅ Easy to test: Pure function
+// Good: Easy to test: Pure function
 function calculateDiscount(purchaseCount: number): number {
   return purchaseCount > 10 ? 0.2 : 0.1
 }

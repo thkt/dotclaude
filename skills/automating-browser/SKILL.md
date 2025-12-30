@@ -28,11 +28,11 @@ Enable **interactive** browser automation for:
 
 | Use Case | This Skill | webapp-testing (official) |
 | --- | --- | --- |
-| GIF recording / demos | ✅ Best | ❌ Not supported |
-| Manual testing / verification | ✅ Best | △ |
-| CI/CD automated testing | △ | ✅ Best |
-| Testing with server lifecycle | ❌ | ✅ with_server.py |
-| Using existing Chrome session | ✅ | ❌ |
+| GIF recording / demos | [Best] | [Not supported] |
+| Manual testing / verification | [Best] | [OK] |
+| CI/CD automated testing | [OK] | [Best] |
+| Testing with server lifecycle | [Not supported] | [Best] with_server.py |
+| Using existing Chrome session | [Supported] | [Not supported] |
 
 **Quick decision**: "Show & verify" → this skill, "Automate & run" → webapp-testing
 

@@ -155,12 +155,12 @@ pytest --cov=src tests/         # Python
 テスト可能な単位に分解（通常はパブリックメソッド）:
 
 ```typescript
-// ✅ 良い例: 一度に1つのメソッドをテスト
+// Good: 良い例: 一度に1つのメソッドをテスト
 describe('UserService.validateAge', () => {
   // validateAgeのテスト
 })
 
-// ❌ 避ける: クラス全体を一度にテスト
+// Bad: 避ける: クラス全体を一度にテスト
 describe('UserService', () => {
   // 複数のメソッドのテストが混在
 })
@@ -216,14 +216,14 @@ describe('validateAge', () => {
 ### テストへのオッカムの剃刀適用
 
 ```typescript
-// ❌ 過度に設計
+// Bad: 過度に設計
 class AgeValidatorTestBuilder {
   withAge(age: number) { ... }
   withContext(ctx: any) { ... }
   build() { ... }
 }
 
-// ✅ シンプルで直接的
+// Good: シンプルで直接的
 test('年齢を正しく検証', () => {
   expect(validateAge(30)).toBe(true)
 })
@@ -239,7 +239,7 @@ test('年齢を正しく検証', () => {
 - **最小限のセットアップ**: テストに必要なものだけ
 
 ```typescript
-// ✅ 可読性のあるテスト
+// Good: 可読性のあるテスト
 test('非アクティブユーザーのアクセスを拒否', () => {
   // Arrange
   const user = { isActive: false, isPremium: true }
@@ -257,14 +257,14 @@ test('非アクティブユーザーのアクセスを拒否', () => {
 認知限界（7±2項目）を尊重:
 
 ```typescript
-// ❌ 1つのdescribeに多すぎるテストケース
+// Bad: 1つのdescribeに多すぎるテストケース
 describe('validation', () => {
   test('case 1', ...)
   test('case 2', ...)
   // ... さらに15個のテスト
 })
 
-// ✅ カテゴリにグループ化
+// Good: カテゴリにグループ化
 describe('validation', () => {
   describe('メール検証', () => {
     // 3-5個のテスト
@@ -327,7 +327,7 @@ end
 ### 1. ランダムテスト
 
 ```typescript
-// ❌ 体系的なアプローチなし
+// Bad: 体系的なアプローチなし
 test('動作する', () => {
   expect(validateAge(25)).toBe(true)
   expect(validateAge(50)).toBe(true)
@@ -335,7 +335,7 @@ test('動作する', () => {
   // なぜこれらの数値？境界が欠けている！
 })
 
-// ✅ 体系的な設計
+// Good: 体系的な設計
 test('最小有効年齢を受理（境界）', () => {
   expect(validateAge(18)).toBe(true)
 })
@@ -352,14 +352,14 @@ test('最大有効年齢を受理（境界）', () => {
 ### 2. 動作ではなく実装のテスト
 
 ```typescript
-// ❌ 実装と結合
+// Bad: 実装と結合
 test('内部的にvalidateAgeを呼び出す', () => {
   const spy = jest.spyOn(service, 'validateAge')
   service.registerUser({ age: 30 })
   expect(spy).toHaveBeenCalled()  // 壊れやすい！
 })
 
-// ✅ 動作をテスト
+// Good: 動作をテスト
 test('有効な年齢のユーザーを登録', () => {
   const result = service.registerUser({ age: 30 })
   expect(result.success).toBe(true)
@@ -369,12 +369,12 @@ test('有効な年齢のユーザーを登録', () => {
 ### 3. 不完全なカバレッジ
 
 ```typescript
-// ❌ 境界ケースが欠けている
+// Bad: 境界ケースが欠けている
 test('年齢を検証', () => {
   expect(validateAge(30)).toBe(true)  // ハッピーパスのみ
 })
 
-// ✅ 包括的なカバレッジ
+// Good: 包括的なカバレッジ
 test('最小値未満を拒否', () => expect(validateAge(17)).toBe(false))
 test('最小値を受理', () => expect(validateAge(18)).toBe(true))
 test('有効な年齢を受理', () => expect(validateAge(30)).toBe(true))
@@ -400,7 +400,7 @@ test('最大値超過を拒否', () => expect(validateAge(121)).toBe(false))
 ### 各技法を使うべき時
 
 | 技法 | 使用する時 | 例 |
-|------|------------|-----|
+| --- | --- | --- |
 | 同値分析 | 入力範囲、カテゴリ | 年齢検証、ユーザー役割 |
 | 境界値分析 | 数値範囲、制限 | 最小/最大値、配列境界 |
 | デシジョンテーブル | 複数条件（3以上） | アクセス制御、状態機械 |

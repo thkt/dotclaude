@@ -1,11 +1,11 @@
 # Bundle Size Optimization
 
-## 📦 Code Splitting
+## Code Splitting
 
 ### Lazy Loading Components
 
 ```tsx
-// ❌ Include everything in main.js
+// Bad: Include everything in main.js
 import HeavyComponent from './HeavyComponent';
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
 }
 // main.js includes HeavyComponent (even when not used)
 
-// ✅ Lazy loading
+// Good: Lazy loading
 import { lazy, Suspense } from 'react';
 
 const HeavyComponent = lazy(() => import('./HeavyComponent'));
@@ -45,7 +45,7 @@ function App() {
 ### Route-based Code Splitting
 
 ```tsx
-// ❌ All routes in initial bundle
+// Bad: All routes in initial bundle
 import Dashboard from './Dashboard';
 import Settings from './Settings';
 import Profile from './Profile';
@@ -60,7 +60,7 @@ function App() {
   );
 }
 
-// ✅ Split by route
+// Good: Split by route
 import { lazy, Suspense } from 'react';
 
 const Dashboard = lazy(() => import('./Dashboard'));
@@ -87,12 +87,12 @@ function App() {
 ### Import Only What You Need
 
 ```typescript
-// ❌ Import everything
+// Bad: Import everything
 import _ from 'lodash';  // Entire library included (hundreds of KB)
 
 const result = _.debounce(fn, 300);
 
-// ✅ Import only needed function
+// Good: Import only needed function
 import debounce from 'lodash/debounce';  // Only debounce
 
 const result = debounce(fn, 300);
@@ -104,18 +104,18 @@ import { debounce } from 'lodash-es';  // ES module version
 ### Library-specific Patterns
 
 ```typescript
-// ❌ Entire Material-UI
+// Bad: Entire Material-UI
 import { Button, TextField, Select } from '@mui/material';
 
-// ✅ Individual imports
+// Good: Individual imports
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
 
-// ❌ All of date-fns
+// Bad: All of date-fns
 import { format, parse, addDays } from 'date-fns';
 
-// ✅ Individual functions
+// Good: Individual functions
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import addDays from 'date-fns/addDays';
@@ -174,23 +174,23 @@ Key metrics to check:
 
 ---
 
-## 🖼️ Image Optimization
+## Image Optimization
 
 ### Choosing Appropriate Format
 
 ```html
-<!-- ❌ Inefficient: Large PNG -->
+<!-- Bad: Inefficient: Large PNG -->
 <img src="photo.png" alt="Photo" />
 <!-- 5MB PNG -->
 
-<!-- ✅ Using WebP + fallback -->
+<!-- Good: Using WebP + fallback -->
 <picture>
   <source srcset="photo.webp" type="image/webp" />
   <img src="photo.jpg" alt="Photo" />
 </picture>
 <!-- 500KB WebP -->
 
-<!-- ✅ Next.js Image component -->
+<!-- Good: Next.js Image component -->
 <Image
   src="/photo.jpg"
   alt="Photo"
@@ -204,10 +204,10 @@ Key metrics to check:
 ### Responsive Images
 
 ```html
-<!-- ❌ Fixed size: Large image even on mobile -->
+<!-- Bad: Fixed size: Large image even on mobile -->
 <img src="large-image.jpg" alt="Photo" />
 
-<!-- ✅ Multiple sizes with srcset -->
+<!-- Good: Multiple sizes with srcset -->
 <img
   src="photo-800.jpg"
   srcset="
@@ -223,7 +223,7 @@ Key metrics to check:
 
 ---
 
-## 📋 Bundle Optimization Checklist
+## Bundle Optimization Checklist
 
 ### Code Splitting
 
@@ -255,7 +255,7 @@ Key metrics to check:
 
 ---
 
-## 🎯 Bundle Size Targets
+## Bundle Size Targets
 
 ### General Guidelines
 
@@ -289,12 +289,12 @@ Key metrics to check:
 
 ---
 
-## 🔧 Advanced Techniques
+## Advanced Techniques
 
 ### Dynamic Imports for Features
 
 ```tsx
-// ✅ Load feature only when needed
+// Good: Load feature only when needed
 async function enableAnalytics() {
   const analytics = await import('./analytics');
   analytics.init();
@@ -309,7 +309,7 @@ if (userAcceptedCookies) {
 ### Prefetching Resources
 
 ```tsx
-// ✅ Prefetch likely next route
+// Good: Prefetch likely next route
 <Link
   to="/dashboard"
   onMouseEnter={() => {
@@ -322,7 +322,7 @@ if (userAcceptedCookies) {
 
 ---
 
-## 💡 Key Takeaways
+## Key Takeaways
 
 1. **Code Splitting**: Split by route and heavy components
 2. **Tree Shaking**: Import only what you need
@@ -332,25 +332,25 @@ if (userAcceptedCookies) {
 
 ---
 
-## ⚠️ Common Mistakes
+## Common Mistakes
 
 ### Splitting Too Much
 
 ```tsx
-// ❌ Over-splitting small components
+// Bad: Over-splitting small components
 const Button = lazy(() => import('./Button'));  // Button is tiny!
 
-// ✅ Only split heavy components
+// Good: Only split heavy components
 const ChartDashboard = lazy(() => import('./ChartDashboard'));
 ```
 
 ### Ignoring Vendor Bundle
 
 ```tsx
-// ❌ All vendors in one huge bundle
+// Bad: All vendors in one huge bundle
 // vendor.js: 2MB (includes everything)
 
-// ✅ Split vendors by usage
+// Good: Split vendors by usage
 // common.js: React, ReactDOM (used everywhere)
 // charts.js: Chart.js (only for analytics)
 // editor.js: Monaco Editor (only for code editor)
@@ -359,10 +359,10 @@ const ChartDashboard = lazy(() => import('./ChartDashboard'));
 ### Not Measuring
 
 ```tsx
-// ❌ Optimizing blindly
+// Bad: Optimizing blindly
 "I'll use lazy loading everywhere just in case"
 
-// ✅ Measure first, optimize second
+// Good: Measure first, optimize second
 "Bundle analyzer shows ChartComponent is 500KB → lazy load it"
 ```
 

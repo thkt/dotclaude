@@ -70,7 +70,7 @@ function calculateDiscount(count: number): number {
 #### Simple Test Structure
 
 ```typescript
-// ❌ Avoid: Over-engineered test
+// Bad: Avoid: Over-engineered test
 describe('UserService', () => {
   let service: UserService
   let mockFactory: MockFactory
@@ -85,7 +85,7 @@ describe('UserService', () => {
   // ... complex setup
 })
 
-// ✅ Prefer: Simple, direct tests
+// Good: Prefer: Simple, direct tests
 describe('UserService', () => {
   test('getUser returns user data', async () => {
     const mockHttp = { get: jest.fn().mockResolvedValue(mockUser) }
@@ -102,14 +102,14 @@ describe('UserService', () => {
 #### Avoid Premature Abstraction
 
 ```typescript
-// ❌ Avoid: Complex test utilities for 2-3 tests
+// Bad: Avoid: Complex test utilities for 2-3 tests
 class UserTestHelper {
   createMockUser() { }
   setupUserContext() { }
   assertUserDisplayed() { }
 }
 
-// ✅ Prefer: Inline simple mocks
+// Good: Prefer: Inline simple mocks
 const mockUser = { id: '1', name: 'John' }
 ```
 
@@ -153,7 +153,7 @@ grep -r "describe\|test" [target-directory] --include="*.test.ts"
 #### Example: Learning from Existing Tests
 
 ```typescript
-// ✅ Discovered pattern from existing tests:
+// Good: Discovered pattern from existing tests:
 // Project uses jest.fn() for mocks, AAA pattern, descriptive test names
 
 // Follow this pattern:
@@ -310,7 +310,7 @@ Test plans are embedded in SOW documents:
 ### Unit Tests
 
 ```typescript
-// ✅ Good: Focused unit test
+// Good: Good: Focused unit test
 describe('calculateDiscount', () => {
   test('returns 20% discount for 15 purchases', () => {
     expect(calculateDiscount(15)).toBe(0.2)
@@ -329,7 +329,7 @@ describe('calculateDiscount', () => {
 ### Integration Tests
 
 ```typescript
-// ✅ Good: Clear integration test
+// Good: Good: Clear integration test
 describe('User API', () => {
   test('POST /users creates new user', async () => {
     const response = await request(app)
@@ -348,7 +348,7 @@ describe('User API', () => {
 ### React Component Tests
 
 ```typescript
-// ✅ Good: Simple component test
+// Good: Good: Simple component test
 describe('UserCard', () => {
   test('displays user name and email', () => {
     render(<UserCard user={{ name: 'John', email: 'john@example.com' }} />)
@@ -491,26 +491,26 @@ describe('calculateDiscount', () => {
 
 ## Anti-Patterns to Avoid
 
-### ❌ Don't Add Unplanned Tests
+### Don't Add Unplanned Tests
 
 ```typescript
 // Test plan only mentions valid/invalid email
 
-// ❌ Don't add:
+// Bad: Don't add:
 test('handles special characters in email', () => { }) // Not in plan
 test('validates email domain', () => { })              // Not in plan
 
-// ✅ Only implement:
+// Good: Only implement:
 test('validates correct email format', () => { })      // In plan
 test('rejects invalid email format', () => { })        // In plan
 ```
 
-### ❌ Don't Over-Abstract
+### Don't Over-Abstract
 
 ```typescript
 // For 2-3 similar tests
 
-// ❌ Don't create:
+// Bad: Don't create:
 const testCases = [
   { input: 'valid@email.com', expected: true },
   { input: 'invalid', expected: false }
@@ -522,7 +522,7 @@ testCases.forEach(({ input, expected }) => {
   })
 })
 
-// ✅ Keep simple:
+// Good: Keep simple:
 test('accepts valid email', () => {
   expect(validateEmail('valid@email.com')).toBe(true)
 })
@@ -532,17 +532,17 @@ test('rejects invalid email', () => {
 })
 ```
 
-### ❌ Don't Test Implementation Details
+### Don't Test Implementation Details
 
 ```typescript
-// ❌ Avoid:
+// Bad: Avoid:
 test('calls setState exactly once', () => {
   const spy = jest.spyOn(component, 'setState')
   component.updateUser(user)
   expect(spy).toHaveBeenCalledTimes(1)
 })
 
-// ✅ Test behavior:
+// Good: Test behavior:
 test('updates displayed user name', () => {
   render(<UserProfile userId="123" />)
   // Verify visible output, not implementation
@@ -566,7 +566,6 @@ Before completing test generation:
 
 ### Occam's Razor
 
-
 - **Simplest tests that verify behavior**
 - **No complex test utilities unless proven necessary**
 - **Direct mocks over elaborate frameworks**
@@ -589,7 +588,6 @@ Before completing test generation:
 - **Commit**: After each test passes
 
 ### DRY (Rule of Three)
-
 
 - **First time**: Write test inline
 - **Second time**: Note duplication

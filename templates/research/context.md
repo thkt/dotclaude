@@ -1,22 +1,4 @@
-<!--
-Golden Master: Research Context Template
-
-Selection criteria:
-- Template for /research output format
-- Consistent [C: X.X] confidence marker usage
-- Clear section structure
-
-Features:
-- Purpose-driven research format
-- Prerequisites with evidence
-- Actionable next steps
-
-Source: Template (not from actual research)
-
-Last Reviewed: 2025-12-30
-Update Reason: Updated confidence markers to [C: X.X] format
-Previous Version: N/A
--->
+<!-- Template: /research context output | Updated: 2025-12-30 -->
 
 # Research Context: [Topic Name]
 

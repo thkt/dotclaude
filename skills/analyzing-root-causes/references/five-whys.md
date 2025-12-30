@@ -10,8 +10,8 @@ The 5 Whys technique repeatedly asks "Why?" to drill down to the root cause of a
 
 Start with a clear, specific problem statement.
 
-❌ Vague: "The app is slow"
-✅ Specific: "The dashboard takes 5 seconds to load"
+Bad: "The app is slow"
+Good: "The dashboard takes 5 seconds to load"
 
 ### Step 2: Ask Why (Repeatedly)
 

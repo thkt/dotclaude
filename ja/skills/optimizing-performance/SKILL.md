@@ -68,20 +68,20 @@ getLCP(console.log);  // LCP を測定
 #### React.memo - コンポーネントのメモ化
 
 ```tsx
-// ❌ 親が再レンダリングするたびに再レンダリング
+// Bad: 親が再レンダリングするたびに再レンダリング
 function ExpensiveComponent({ data }: { data: Data }) {
   // 重い計算
   const result = expensiveCalculation(data);
   return <div>{result}</div>;
 }
 
-// ✅ props が変更されない限り再レンダリングなし
+// Good: props が変更されない限り再レンダリングなし
 const ExpensiveComponent = React.memo(({ data }: { data: Data }) => {
   const result = expensiveCalculation(data);
   return <div>{result}</div>;
 });
 
-// ✅ カスタム比較関数(深い比較が必要な場合)
+// Good: カスタム比較関数(深い比較が必要な場合)
 const ExpensiveComponent = React.memo(
   ({ data }: { data: Data }) => {
     const result = expensiveCalculation(data);
@@ -97,7 +97,7 @@ const ExpensiveComponent = React.memo(
 #### useMemo - 計算のメモ化
 
 ```tsx
-// ❌ 毎回計算が実行される
+// Bad: 毎回計算が実行される
 function ProductList({ products }: { products: Product[] }) {
   const sortedProducts = products.sort((a, b) => b.price - a.price);
   // 親が再レンダリングするたびにソートが実行される
@@ -105,7 +105,7 @@ function ProductList({ products }: { products: Product[] }) {
   return <ul>{sortedProducts.map(...)}</ul>;
 }
 
-// ✅ products が変更されない限り計算なし
+// Good: products が変更されない限り計算なし
 function ProductList({ products }: { products: Product[] }) {
   const sortedProducts = useMemo(
     () => products.sort((a, b) => b.price - a.price),
@@ -116,17 +116,17 @@ function ProductList({ products }: { products: Product[] }) {
 }
 
 // ⚠️ 過度な使用は避ける: 軽い計算には不要
-// ❌ 過剰最適化
+// Bad: 過剰最適化
 const doubled = useMemo(() => count * 2, [count]);  // 不要
 
-// ✅ 直接計算
+// Good: 直接計算
 const doubled = count * 2;
 ```
 
 #### useCallback - 関数のメモ化
 
 ```tsx
-// ❌ 毎回新しい関数が作成される
+// Bad: 毎回新しい関数が作成される
 function Parent() {
   const [count, setCount] = useState(0);
 
@@ -138,7 +138,7 @@ function Parent() {
   return <Child onClick={handleClick} />;
 }
 
-// ✅ 関数を再利用
+// Good: 関数を再利用
 function Parent() {
   const [count, setCount] = useState(0);
 
@@ -149,7 +149,7 @@ function Parent() {
   return <Child onClick={handleClick} />;
 }
 
-// ✅ 状態を使用する場合
+// Good: 状態を使用する場合
 function Parent() {
   const [count, setCount] = useState(0);
 
@@ -164,7 +164,7 @@ function Parent() {
 ### 2. リストレンダリングの最適化
 
 ```tsx
-// ❌ 非効率: すべてのアイテムをレンダリング
+// Bad: 非効率: すべてのアイテムをレンダリング
 function LargeList({ items }: { items: Item[] }) {
   return (
     <div style={{ height: '500px', overflow: 'auto' }}>
@@ -174,7 +174,7 @@ function LargeList({ items }: { items: Item[] }) {
 }
 // 10,000アイテム = 初期レンダリングが重い
 
-// ✅ 仮想化: 表示されているアイテムのみレンダリング
+// Good: 仮想化: 表示されているアイテムのみレンダリング
 import { FixedSizeList } from 'react-window';
 
 function LargeList({ items }: { items: Item[] }) {
@@ -199,7 +199,7 @@ function LargeList({ items }: { items: Item[] }) {
 ### 3. 状態管理の最適化
 
 ```tsx
-// ❌ グローバル状態がアプリ全体の再レンダリングを引き起こす
+// Bad: グローバル状態がアプリ全体の再レンダリングを引き起こす
 function App() {
   const [user, setUser] = useState({ name: '', cart: [] });
 
@@ -212,7 +212,7 @@ function App() {
 }
 // user.cart が変更 → Header も再レンダリング
 
-// ✅ 状態を分離
+// Good: 状態を分離
 function App() {
   const [userName, setUserName] = useState('');
   const [cart, setCart] = useState([]);
@@ -233,7 +233,7 @@ function App() {
 ### 1. コード分割
 
 ```tsx
-// ❌ すべてを main.js に含める
+// Bad: すべてを main.js に含める
 import HeavyComponent from './HeavyComponent';
 
 function App() {
@@ -248,7 +248,7 @@ function App() {
 }
 // main.js に HeavyComponent が含まれる(未使用時も)
 
-// ✅ 遅延読み込み
+// Good: 遅延読み込み
 import { lazy, Suspense } from 'react';
 
 const HeavyComponent = lazy(() => import('./HeavyComponent'));
@@ -273,12 +273,12 @@ function App() {
 ### 2. Tree Shaking
 
 ```typescript
-// ❌ すべてをインポート
+// Bad: すべてをインポート
 import _ from 'lodash';  // ライブラリ全体が含まれる(数百KB)
 
 const result = _.debounce(fn, 300);
 
-// ✅ 必要な関数のみインポート
+// Good: 必要な関数のみインポート
 import debounce from 'lodash/debounce';  // debounce のみ
 
 const result = debounce(fn, 300);
@@ -369,7 +369,7 @@ import Image from 'next/image';
 ### 1. LCP (Largest Contentful Paint) の改善
 
 ```tsx
-// ❌ LCP 要素を遅延読み込み
+// Bad: LCP 要素を遅延読み込み
 function Hero() {
   return (
     <img
@@ -380,7 +380,7 @@ function Hero() {
   );
 }
 
-// ✅ LCP 要素を優先読み込み
+// Good: LCP 要素を優先読み込み
 function Hero() {
   return (
     <img
@@ -392,7 +392,7 @@ function Hero() {
   );
 }
 
-// ✅ プリロード(さらに速い)
+// Good: プリロード(さらに速い)
 // HTML の <head> に追加
 <link rel="preload" as="image" href="hero.jpg" />
 ```
@@ -400,7 +400,7 @@ function Hero() {
 ### 2. コード分割でFCPを改善
 
 ```tsx
-// ❌ 初期読み込みにすべてのモジュール
+// Bad: 初期読み込みにすべてのモジュール
 import Dashboard from './Dashboard';
 import Settings from './Settings';
 import Profile from './Profile';
@@ -415,7 +415,7 @@ function App() {
   );
 }
 
-// ✅ ルートごとに分割
+// Good: ルートごとに分割
 const Dashboard = lazy(() => import('./Dashboard'));
 const Settings = lazy(() => import('./Settings'));
 const Profile = lazy(() => import('./Profile'));
@@ -440,7 +440,7 @@ function App() {
 ### レイアウトシフトの原因と対策
 
 ```tsx
-// ❌ サイズ指定なしの画像 → レイアウトシフト
+// Bad: サイズ指定なしの画像 → レイアウトシフト
 function Article() {
   return (
     <>
@@ -452,7 +452,7 @@ function Article() {
   );
 }
 
-// ✅ 画像サイズを指定
+// Good: 画像サイズを指定
 function Article() {
   return (
     <>
@@ -470,7 +470,7 @@ function Article() {
   );
 }
 
-// ✅ アスペクト比を維持
+// Good: アスペクト比を維持
 function Article() {
   return (
     <>
@@ -487,7 +487,7 @@ function Article() {
   );
 }
 
-// ❌ 動的コンテンツの挿入 → レイアウトシフト
+// Bad: 動的コンテンツの挿入 → レイアウトシフト
 function Header() {
   const [banner, setBanner] = useState(null);
 
@@ -504,7 +504,7 @@ function Header() {
   );
 }
 
-// ✅ スペースを確保
+// Good: スペースを確保
 function Header() {
   const [banner, setBanner] = useState(null);
 
@@ -696,10 +696,10 @@ Performance Optimization スキルがトリガー →
 
 ```tsx
 // メモ化のコスト vs 効果
-// ❌ 軽い計算をメモ化(オーバーヘッド > 効果)
+// Bad: 軽い計算をメモ化(オーバーヘッド > 効果)
 const doubled = useMemo(() => count * 2, [count]);
 
-// ✅ 重い計算をメモ化(効果 > オーバーヘッド)
+// Good: 重い計算をメモ化(効果 > オーバーヘッド)
 const filtered = useMemo(
   () => items.filter(item => complexFilter(item)),
   [items]

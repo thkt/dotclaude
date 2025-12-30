@@ -30,14 +30,14 @@ skills:
 ### 代表的な例
 
 ```typescript
-// ❌ Critical: 空のcatchブロック
+// Bad: Critical: 空のcatchブロック
 try {
   await fetchUserData()
 } catch (e) {
   // エラーが静かに消える
 }
 
-// ✅ Good: 適切なハンドリング
+// Good: Good: 適切なハンドリング
 try {
   await fetchUserData()
 } catch (error) {
@@ -47,10 +47,10 @@ try {
 ```
 
 ```typescript
-// ❌ Bad: エラーハンドリングなしのPromise
+// Bad: Bad: エラーハンドリングなしのPromise
 fetchData().then(data => setData(data))
 
-// ✅ Good: catchあり
+// Good: Good: catchあり
 fetchData()
   .then(data => setData(data))
   .catch(error => handleError(error))

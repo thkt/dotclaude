@@ -108,15 +108,15 @@ export const TodoList = ({ todos }: TodoListProps) => {
 ## アンチパターン
 
 ```tsx
-// ❌ 避ける：Presentationalがデータを取得
+// Bad: 避ける：Presentationalがデータを取得
 export const TodoList = () => {
-  const [todos, setTodos] = useState([]); // ❌
+  const [todos, setTodos] = useState([]); // Bad:
   useEffect(() => {
-    fetch('/api/todos')... // ❌ props経由で受け取るべき
+    fetch('/api/todos')... // Bad: props経由で受け取るべき
   }, []);
 };
 
-// ❌ 避ける：装飾的スタイルを持つContainer
+// Bad: 避ける：装飾的スタイルを持つContainer
 export const TodoContainer = () => {
   return (
     <div className="bg-blue-500 shadow-xl"> {/* ❌ 装飾的 */}

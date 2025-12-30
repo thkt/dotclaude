@@ -121,13 +121,13 @@ Created: [YYYY-MM-DD]
 
 ## 例
 
-### ✅ 良い例
+### 良い例
 
 ```[言語]
 [ADRの決定に従ったコード例]
 ```
 
-### ❌ 悪い例
+### 悪い例
 
 ```[言語]
 [避けるべきパターン]
@@ -282,7 +282,7 @@ ADRの技術的内容に基づいて良い例と悪い例を自動生成：
 ````markdown
 // TypeScript strict modeの例
 
-### ✅ 良い例
+### 良い例
 
 ```typescript
 // 明確な型定義
@@ -296,7 +296,7 @@ function getUser(id: number): User {
 }
 ```
 
-### ❌ 悪い例
+### 悪い例
 
 ```typescript
 // anyを使用
@@ -470,7 +470,7 @@ TypeScriptコードを書く時、すべてのファイルに適用
 
 ## 例
 
-### ✅ 良い例
+### 良い例
 
 ```typescript
 interface User {
@@ -484,7 +484,7 @@ function getUser(id: number): User | undefined {
 }
 ```
 
-### ❌ 悪い例
+### 悪い例
 
 ```typescript
 function getUser(id: any): any {

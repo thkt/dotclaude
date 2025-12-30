@@ -2,7 +2,7 @@
 
 Custom commands for systematic software development support.
 
-## 🎯 Available Commands
+## Available Commands
 
 ### Core Development Commands
 
@@ -22,48 +22,48 @@ Custom commands for systematic software development support.
 
 | Command | Purpose | Environment | Combines |
 | --- | --- | --- | --- |
-| `/fix` | Quick bug fixes | 🔧 Development | think → code → test |
+| `/fix` | Quick bug fixes | Development | think → code → test |
 
 ### External Review Commands
 
 | Command | Purpose | Environment |
 | --- | --- | --- |
-| `/rabbit` | CodeRabbit AI review for external perspective | 🐰 Quality check |
+| `/rabbit` | CodeRabbit AI review for external perspective | Quality check |
 
 ### Automation Commands (SlashCommand Tool v1.0.123+)
 
 | Command | Purpose | Environment | Uses SlashCommand |
 | --- | --- | --- | --- |
-| `/auto-test` | Auto test runner with conditional fix | 🔧 Development | Yes - invokes `/fix` on failure |
-| `/full-cycle` | Complete development cycle automation | 🔄 Meta-command | Yes - chains multiple commands |
+| `/auto-test` | Auto test runner with conditional fix | Development | Yes - invokes `/fix` on failure |
+| `/full-cycle` | Complete development cycle automation | Meta-command | Yes - chains multiple commands |
 
 ### Browser Automation Commands
 
 | Command | Purpose | Environment |
 | --- | --- | --- |
-| `/workflow:create [name]` | Create reusable browser automation workflows | 🌐 E2E Testing |
+| `/workflow:create [name]` | Create reusable browser automation workflows | E2E Testing |
 
 ### Documentation Commands
 
 | Command | Purpose | Environment |
 | --- | --- | --- |
-| `/adr [title]` | Create Architecture Decision Record in MADR format | 📝 Documentation |
-| `/rulify <number>` | Generate project rule from ADR | 📝 Documentation |
-| `/docs:architecture` | Generate architecture overview documentation | 📝 Documentation |
-| `/docs:api` | Generate API specification documentation | 📝 Documentation |
-| `/docs:setup` | Generate environment setup guide | 📝 Documentation |
-| `/docs:domain` | Generate domain understanding documentation | 📝 Documentation |
+| `/adr [title]` | Create Architecture Decision Record in MADR format | Documentation |
+| `/rulify <number>` | Generate project rule from ADR | Documentation |
+| `/docs:architecture` | Generate architecture overview documentation | Documentation |
+| `/docs:api` | Generate API specification documentation | Documentation |
+| `/docs:setup` | Generate environment setup guide | Documentation |
+| `/docs:domain` | Generate domain understanding documentation | Documentation |
 
 ### Git Operations Commands
 
 | Command | Purpose | Environment |
 | --- | --- | --- |
-| `/branch` | Analyze changes and suggest branch names | 🔀 Git |
-| `/commit` | Generate Conventional Commits messages | 🔀 Git |
-| `/pr` | Generate comprehensive PR descriptions | 🔀 Git |
-| `/issue` | Generate structured GitHub Issues | 🔀 Git |
+| `/branch` | Analyze changes and suggest branch names | Git |
+| `/commit` | Generate Conventional Commits messages | Git |
+| `/pr` | Generate comprehensive PR descriptions | Git |
+| `/issue` | Generate structured GitHub Issues | Git |
 
-## 🔍 Dry-run Impact Simulation
+## Dry-run Impact Simulation
 
 **Automatic safety feature** integrated into PRE_TASK_CHECK workflow.
 
@@ -71,7 +71,7 @@ When confirming file operations or complex changes, Claude Code automatically di
 
 - **Files to modify**: Lists 2-5 key files
 - **Affected components**: Shows impacted modules
-- **Risk level**: 🟢 Low / 🟡 Medium / 🔴 High
+- **Risk level**: Low / Medium / High
 - **Important notes**: Highlights areas requiring attention
 
 This "Dry-run" approach previews changes without execution, helping you:
@@ -85,13 +85,13 @@ This "Dry-run" approach previews changes without execution, helping you:
 ```txt
 1. Understanding Check
 2. User Confirmation (Y) ← STOP POINT
-3. 🔍 Impact Simulation ← NEW (auto-displayed for risky changes)
+3. Impact Simulation ← NEW (auto-displayed for risky changes)
 4. Execution Plan
 5. Plan Confirmation (Y) ← STOP POINT
 6. Execute
 ```
 
-## 🔄 Standard Workflows
+## Standard Workflows
 
 ### Feature Development
 
@@ -137,7 +137,7 @@ Choose based on complexity:
 /full-cycle       # Complete automated development flow
 ```
 
-## 💡 Command Details
+## Command Details
 
 For detailed information about each command, see the individual command files in `~/.claude/commands/`.
 
@@ -148,7 +148,7 @@ For detailed information about each command, see the individual command files in
 - `/branch`, `/commit`, `/pr`, `/issue` → Git operations
 - `/adr`, `/rulify` → Architecture documentation
 
-## 🚀 Quick Start
+## Quick Start
 
 ### New Feature (Enhanced Flow)
 
@@ -168,7 +168,7 @@ For detailed information about each command, see the individual command files in
 /fix       # Quick targeted fix
 ```
 
-## 📋 Command Selection Guide
+## Command Selection Guide
 
 ### Use `/fix` when
 
@@ -240,7 +240,7 @@ For detailed information about each command, see the individual command files in
 - Want to document complex manual testing procedures
 - Need reproducible browser automation
 
-## 🏗️ Commands, Agents, Skills Architecture
+## Commands, Agents, Skills Architecture
 
 Claude Code uses a three-layer structure:
 
@@ -250,7 +250,7 @@ Claude Code uses a three-layer structure:
 | **Agents** | Specialized analysis/review | `performance-reviewer`, `audit-orchestrator` |
 | **Skills** | Knowledge base, auto-triggered guides | `applying-code-principles`, `generating-tdd-tests` |
 
-## 🔧 Configuration
+## Configuration
 
 ### Language Settings
 

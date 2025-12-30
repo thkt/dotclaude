@@ -9,12 +9,12 @@ Aim for 95%+ type coverage. Every function, parameter, and data structure should
 ### Why `any` is Dangerous
 
 ```typescript
-// ❌ Dangerous: any disables all type checking
+// Bad: Dangerous: any disables all type checking
 function processUser(data: any) {
   return data.name.toUpperCase() // No compile-time error, runtime crash
 }
 
-// ✅ Safe: TypeScript catches the error
+// Good: Safe: TypeScript catches the error
 function processUser(data: User) {
   return data.name.toUpperCase() // Compile-time check
 }
@@ -23,7 +23,7 @@ function processUser(data: User) {
 ### Using `unknown` Instead
 
 ```typescript
-// ✅ Safe: unknown requires type checking before use
+// Good: Safe: unknown requires type checking before use
 function processUnknownData(data: unknown): string {
   if (typeof data === 'object' && data !== null && 'value' in data) {
     return String((data as { value: unknown }).value)
@@ -53,17 +53,17 @@ const response: any = await externalApi.fetch()
 ### Function Return Types
 
 ```typescript
-// ❌ Poor: Implicit return type
+// Bad: Poor: Implicit return type
 function getUser(id: string) {
   return { name: 'John', age: 30 }
 }
 
-// ✅ Good: Explicit return type
+// Good: Good: Explicit return type
 function getUser(id: string): User {
   return { name: 'John', age: 30 }
 }
 
-// ✅ Good: Async functions
+// Good: Good: Async functions
 async function fetchUser(id: string): Promise<User> {
   const response = await api.get(`/users/${id}`)
   return response.data
@@ -73,10 +73,10 @@ async function fetchUser(id: string): Promise<User> {
 ### Interface Definitions
 
 ```typescript
-// ❌ Poor: Inline object types
+// Bad: Poor: Inline object types
 function createOrder(item: { id: string; price: number }) { }
 
-// ✅ Good: Named interface
+// Good: Good: Named interface
 interface OrderItem {
   id: string
   price: number
@@ -91,12 +91,12 @@ function createOrder(item: OrderItem): Order { }
 Let TypeScript infer when obvious:
 
 ```typescript
-// ✅ Good: Let TS infer simple cases
+// Good: Good: Let TS infer simple cases
 const count = 0                    // number
 const items = ['a', 'b']           // string[]
 const user = { name: 'John' }      // { name: string }
 
-// ✅ Good: Explicit when not obvious
+// Good: Good: Explicit when not obvious
 const cache: Map<string, User> = new Map()
 const config: AppConfig = loadConfig()
 ```

@@ -5,7 +5,7 @@
 ### Interface for Single Implementation
 
 ```typescript
-// ❌ AI-generated: Unnecessary interface
+// Bad: AI-generated: Unnecessary interface
 interface UserProcessor {
   process(user: User): ProcessedUser
 }
@@ -16,7 +16,7 @@ class DefaultUserProcessor implements UserProcessor {
   }
 }
 
-// ✅ Direct approach
+// Good: Direct approach
 function processUser(user: User): ProcessedUser {
   return { ...user, processed: true }
 }
@@ -33,7 +33,7 @@ function processUser(user: User): ProcessedUser {
 ### Class Wrapping Simple Function
 
 ```typescript
-// ❌ AI-generated: OOP overkill
+// Bad: AI-generated: OOP overkill
 class CSVReader {
   async read(path: string): Promise<string[][]> {
     const text = await fs.readFile(path, 'utf-8')
@@ -45,7 +45,7 @@ class CSVReader {
   }
 }
 
-// ✅ Procedural approach
+// Good: Procedural approach
 async function readCSV(path: string): Promise<string[][]> {
   const text = await fs.readFile(path, 'utf-8')
   return text.split('\n').map(line => line.split(','))
@@ -71,7 +71,7 @@ async function readCSV(path: string): Promise<string[][]> {
 ### Plugin System for Simple Logic
 
 ```typescript
-// ❌ AI-generated: Over-engineered validation
+// Bad: AI-generated: Over-engineered validation
 class ValidationEngine {
   private validators: Map<string, Validator>
 
@@ -79,7 +79,7 @@ class ValidationEngine {
   validate(data: unknown, rules: string[]): Result { }
 }
 
-// ✅ Direct validation
+// Good: Direct validation
 function validateUser(user: User): ValidationError[] {
   const errors = []
   if (!user.email) errors.push({ field: 'email', message: 'Required' })
@@ -95,7 +95,7 @@ function validateUser(user: User): ValidationError[] {
 ## Helper Functions Used Once
 
 ```typescript
-// ❌ Unnecessary helper
+// Bad: Unnecessary helper
 function getUserName(user: User): string {
   return user.name
 }
@@ -104,7 +104,7 @@ function displayUser(user: User) {
   console.log(getUserName(user))  // Used only once
 }
 
-// ✅ Direct access
+// Good: Direct access
 function displayUser(user: User) {
   console.log(user.name)
 }
@@ -119,14 +119,14 @@ function displayUser(user: User) {
 ### Factory Pattern for Simple Creation
 
 ```typescript
-// ❌ Unnecessary factory
+// Bad: Unnecessary factory
 class UserFactory {
   createUser(name: string, email: string): User {
     return { name, email, createdAt: new Date() }
   }
 }
 
-// ✅ Simple function
+// Good: Simple function
 function createUser(name: string, email: string): User {
   return { name, email, createdAt: new Date() }
 }
@@ -135,7 +135,7 @@ function createUser(name: string, email: string): User {
 ### Strategy Pattern for Static Logic
 
 ```typescript
-// ❌ Over-engineered
+// Bad: Over-engineered
 interface DiscountStrategy {
   calculate(amount: number): number
 }
@@ -146,7 +146,7 @@ class RegularDiscount implements DiscountStrategy {
   }
 }
 
-// ✅ Simple conditional
+// Good: Simple conditional
 function calculateDiscount(amount: number, userType: string): number {
   if (userType === 'premium') return amount * 0.2
   if (userType === 'regular') return amount * 0.1

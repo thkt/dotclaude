@@ -29,10 +29,10 @@ Ensure web applications are accessible to all users, including those using assis
 #### Text Alternatives
 
 ```typescript
-// ❌ Poor: Missing alt text
+// Bad: Poor: Missing alt text
 <img src="logo.png" />
 
-// ✅ Good: Descriptive alternatives
+// Good: Good: Descriptive alternatives
 <img src="logo.png" alt="Company Logo" />
 <button aria-label="Close dialog"><img src="close.png" alt="" /></button>
 ```
@@ -40,10 +40,10 @@ Ensure web applications are accessible to all users, including those using assis
 #### Color Contrast
 
 ```typescript
-// ❌ Poor: Insufficient contrast
+// Bad: Poor: Insufficient contrast
 <p style={{ color: '#999', background: '#fff' }}>Light gray text</p>
 
-// ✅ Good: WCAG AA compliant (4.5:1 for normal text)
+// Good: Good: WCAG AA compliant (4.5:1 for normal text)
 <p style={{ color: '#595959', background: '#fff' }}>Readable text</p>
 ```
 
@@ -52,10 +52,10 @@ Ensure web applications are accessible to all users, including those using assis
 #### Keyboard Accessible
 
 ```typescript
-// ❌ Poor: Click-only interaction
+// Bad: Poor: Click-only interaction
 <div onClick={handleClick}>Click me</div>
 
-// ✅ Good: Full keyboard support
+// Good: Good: Full keyboard support
 <button onClick={handleClick}>Click me</button>
 // OR
 <div role="button" tabIndex={0} onClick={handleClick}
@@ -65,10 +65,10 @@ Ensure web applications are accessible to all users, including those using assis
 #### Focus Management
 
 ```typescript
-// ❌ Poor: No focus indication
+// Bad: Poor: No focus indication
 button:focus { outline: none; }
 
-// ✅ Good: Clear focus indicators
+// Good: Good: Clear focus indicators
 button:focus-visible { outline: 2px solid #0066cc; outline-offset: 2px; }
 ```
 
@@ -77,10 +77,10 @@ button:focus-visible { outline: 2px solid #0066cc; outline-offset: 2px; }
 #### Form Labels
 
 ```typescript
-// ❌ Poor: Missing labels
+// Bad: Poor: Missing labels
 <input type="email" placeholder="Email" />
 
-// ✅ Good: Proper labeling
+// Good: Good: Proper labeling
 <label htmlFor="email">Email Address</label>
 <input id="email" type="email" />
 ```
@@ -88,10 +88,10 @@ button:focus-visible { outline: 2px solid #0066cc; outline-offset: 2px; }
 #### Error Identification
 
 ```typescript
-// ❌ Poor: Color-only error indication
+// Bad: Poor: Color-only error indication
 <input style={{ borderColor: hasError ? 'red' : 'gray' }} />
 
-// ✅ Good: Clear error messaging
+// Good: Good: Clear error messaging
 <input aria-invalid={hasError} aria-describedby={hasError ? 'email-error' : undefined} />
 {hasError && <span id="email-error" role="alert">Please enter a valid email</span>}
 ```
@@ -101,10 +101,10 @@ button:focus-visible { outline: 2px solid #0066cc; outline-offset: 2px; }
 #### Valid HTML/ARIA
 
 ```typescript
-// ❌ Poor: Invalid ARIA usage
+// Bad: Poor: Invalid ARIA usage
 <div role="heading" aria-level="7">Title</div>
 
-// ✅ Good: Semantic HTML preferred
+// Good: Good: Semantic HTML preferred
 <h2>Title</h2>
 ```
 
