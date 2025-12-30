@@ -244,8 +244,6 @@ Claude Codeは3層構造で機能を提供します:
 | **Agents** | 専門分析・レビュー | `performance-reviewer`, `audit-orchestrator` |
 | **Skills** | 知識ベース、自動トリガーガイド | `applying-code-principles`, `generating-tdd-tests` |
 
-詳細なアーキテクチャ: [Part 1: 三層設計](./guides/part1-three-layer-architecture.md)
-
 ## 🔧 設定
 
 ### 言語設定
@@ -258,14 +256,3 @@ Claude Codeは3層構造で機能を提供します:
 - `~/.claude/CLAUDE.md` - グローバル設定とルール
 - `~/.claude/rules/` - 開発原則
 - `~/.claude/settings.json` - ツール権限
-
-### 📚 ガイド
-
-ワークフローのステップバイステップガイド:
-
-- [Part 1: 三層設計](../docs/guides/part1-three-layer-architecture.md)
-- [Part 2: 調査フェーズ（/research）](../docs/guides/part2-research-investigation.md)
-- [Part 3: 計画フェーズ（/think）](../docs/guides/part3-think-sow-spec.md)
-- [Part 4: 実装フェーズ（/code）](../docs/guides/part4-code-implementation.md)
-- [Part 5: 品質フェーズ（/audit）](../docs/guides/part5-review-quality.md)
-- [Part 6: 横断的関心事（PRE_TASK_CHECK）](../docs/guides/part6-pre-task-check.md)

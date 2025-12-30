@@ -96,17 +96,17 @@ Task({
 ### Thoroughness Selection
 
 | Context | Level | Duration |
-|---------|-------|----------|
+| --- | --- | --- |
 | First exploration | quick | 30 sec |
 | Implementation prep | medium | 2-3 min |
 | Debugging/root cause | very thorough | 5 min |
 
 ## Output Requirements
 
-### Golden Master Reference
+### Template Reference
 
 Use for **structure only**:
-[@~/.claude/golden-masters/documents/research/example-context.md]
+[@~/.claude/templates/research/context.md]
 
 **IMPORTANT**:
 

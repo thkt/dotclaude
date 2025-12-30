@@ -250,8 +250,6 @@ Claude Code uses a three-layer structure:
 | **Agents** | Specialized analysis/review | `performance-reviewer`, `audit-orchestrator` |
 | **Skills** | Knowledge base, auto-triggered guides | `applying-code-principles`, `generating-tdd-tests` |
 
-For detailed architecture, see: [Part 1: Three-Layer Architecture](./guides/part1-three-layer-architecture.md)
-
 ## 🔧 Configuration
 
 ### Language Settings
@@ -264,14 +262,3 @@ For detailed architecture, see: [Part 1: Three-Layer Architecture](./guides/part
 - `~/.claude/CLAUDE.md` - Global settings and rules
 - `~/.claude/rules/` - Development principles
 - `~/.claude/settings.json` - Tool permissions
-
-### 📚 Guides
-
-Step-by-step workflow guides:
-
-- [Part 1: Three-Layer Architecture](./guides/part1-three-layer-architecture.md)
-- [Part 2: Investigation Phase (/research)](./guides/part2-research-investigation.md)
-- [Part 3: Planning Phase (/think)](./guides/part3-think-sow-spec.md)
-- [Part 4: Implementation Phase (/code)](./guides/part4-code-implementation.md)
-- [Part 5: Quality Phase (/audit)](./guides/part5-review-quality.md)
-- [Part 6: Cross-cutting Concerns (PRE_TASK_CHECK)](./guides/part6-pre-task-check.md)

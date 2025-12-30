@@ -95,5 +95,5 @@ If any check fails:
 
 ### Documentation Guidelines
 
-- Documentation rules: [@~/.claude/docs/DOCUMENTATION_RULES.md](./docs/DOCUMENTATION_RULES.md)
+- Documentation rules: [@~/.claude/rules/reference/DOCUMENTATION_RULES.md](./rules/reference/DOCUMENTATION_RULES.md)
 - Ensure absolute consistency across all documentation

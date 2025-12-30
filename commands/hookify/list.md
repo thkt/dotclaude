@@ -17,16 +17,14 @@ Display all custom hook rules created with `/hookify`.
 
 ## Output Format
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ 🔧 Hookify Rules                                            │
-├─────────────────────────────────────────────────────────────┤
-│ # │ Name              │ Event │ Action │ Enabled │ Pattern │
-├───┼───────────────────┼───────┼────────┼─────────┼─────────┤
-│ 1 │ block-dangerous   │ bash  │ block  │ ✅      │ rm -rf  │
-│ 2 │ warn-console-log  │ file  │ warn   │ ✅      │ console │
-│ 3 │ require-tests     │ stop  │ block  │ ❌      │ test    │
-└─────────────────────────────────────────────────────────────┘
+```markdown
+🔧 Hookify Rules
+
+| # | Name | Event | Action | Enabled | Pattern |
+| --- | --- | --- | --- | --- | --- |
+| 1 | block-dangerous | bash | block | ✅ | rm -rf |
+| 2 | warn-console-log | file | warn | ✅ | console |
+| 3 | require-tests | stop | block | ❌ | test |
 ```
 
 ## Instructions

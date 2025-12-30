@@ -158,6 +158,89 @@ describe('PriceCalculator', () => {
 
 **Tip**: Use descriptive names that serve as documentation
 
+## test-generator Agent Patterns
+
+The test-generator agent creates test scaffolding from specifications or bug descriptions.
+
+### Pattern 1: Spec-Driven Generation (Feature Development)
+
+**Use Case**: Generating tests from spec.md for `/code` command
+
+```typescript
+Task({
+  subagent_type: "test-generator",
+  description: "Generate skipped tests from specification",
+  prompt: `
+Feature: "${featureDescription}"
+Spec: ${specContent}
+
+Generate tests in SKIP MODE:
+1. FR-xxx requirements → skipped test cases
+2. Given-When-Then scenarios → skipped executable tests
+3. Order tests: simple → complex (Baby Steps order)
+4. Use framework-appropriate skip markers:
+   - Jest/Vitest: it.skip() + // TODO: [SKIP] comment
+  `
+})
+```
+
+### Pattern 2: Bug-Driven Generation (Bug Fixing)
+
+**Use Case**: Generating regression tests for `/fix` command
+
+```typescript
+Task({
+  subagent_type: "test-generator",
+  description: "Generate regression test for bug fix",
+  prompt: `
+Bug: "${bugDescription}"
+Root Cause: "${rootCause}"
+Fix Applied: "${fixSummary}"
+
+Generate:
+1. Test that reproduces original bug (should now pass)
+2. Edge case tests related to the fix
+3. Integration test if cross-component fix
+  `
+})
+```
+
+### Pattern 3: Coverage-Driven Generation
+
+**Use Case**: Adding tests to improve coverage
+
+```typescript
+Task({
+  subagent_type: "test-generator",
+  description: "Generate tests for uncovered code paths",
+  prompt: `
+File: ${filePath}
+Uncovered lines: ${uncoveredLines}
+Existing test style: ${testStyle}
+
+Generate tests for uncovered code paths.
+Target coverage: 80%+
+  `
+})
+```
+
+## Framework-Specific Skip Markers
+
+| Framework | Skip Syntax |
+| --- | --- |
+| Jest/Vitest | `it.skip('test', () => { // TODO: [SKIP] FR-001 })` |
+| Mocha | `it.skip('test', function() { })` or `xit('test', ...)` |
+| Unknown | Comment out with `// TODO: [SKIP]` marker |
+
+## Best Practices
+
+| Practice | Good | Bad |
+| --- | --- | --- |
+| Context | Specific requirements | "Generate tests" |
+| Markers | Clear skip marker with FR-xxx | No marker |
+| Order | Simple → Complex (Baby Steps) | Random order |
+| Focus | One behavior per test | Multiple assertions |
+
 ## References
 
 ### Principles (rules/)

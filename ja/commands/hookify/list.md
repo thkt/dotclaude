@@ -1,6 +1,6 @@
 ---
 description: すべてのhookifyルールを一覧表示
-dependencies: [hookify]
+dependencies: [creating-hooks]
 ---
 
 # /hookify:list - フックルール表示
@@ -17,16 +17,14 @@ dependencies: [hookify]
 
 ## 出力形式
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ 🔧 Hookifyルール                                            │
-├─────────────────────────────────────────────────────────────┤
-│ # │ 名前              │ イベント │ アクション │ 有効 │ パターン │
-├───┼───────────────────┼──────────┼────────────┼──────┼──────────┤
-│ 1 │ block-dangerous   │ bash     │ block      │ ✅   │ rm -rf   │
-│ 2 │ warn-console-log  │ file     │ warn       │ ✅   │ console  │
-│ 3 │ require-tests     │ stop     │ block      │ ❌   │ test     │
-└─────────────────────────────────────────────────────────────┘
+```markdown
+🔧 Hookifyルール
+
+| # | 名前 | イベント | アクション | 有効 | パターン |
+| --- | --- | --- | --- | --- | --- |
+| 1 | block-dangerous | bash | block | ✅ | rm -rf |
+| 2 | warn-console-log | file | warn | ✅ | console |
+| 3 | require-tests | stop | block | ❌ | test |
 ```
 
 ## 手順

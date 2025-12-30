@@ -21,7 +21,7 @@ This repository contains personal configurations for Claude AI, including:
 ├── README.md              # This file - Quick start guide
 ├── docs/                  # Documentation
 │   ├── COMMANDS.md       # Command reference (English)
-│   └── DOCUMENTATION_RULES.md # Documentation standards
+│   └── adr/              # Architecture Decision Records
 ├── commands/              # Command definitions
 │   ├── code.md           # TDD/RGRC implementation
 │   ├── fix.md            # Quick bug fixes
@@ -258,14 +258,13 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 
 - [Commands Reference (English)](./docs/COMMANDS.md)
 - [Commands Reference (Japanese)](./ja/docs/COMMANDS.md)
-- [System Architecture](./docs/ARCHITECTURE.md)
 - [Configuration Guide](./CLAUDE.md)
 - [Japanese Configuration](./ja/CLAUDE.md)
 
 ### Development Guides
 
 - [Principles Guide](./rules/PRINCIPLES_GUIDE.md) - Complete overview of all development principles
-- [Documentation Rules](./docs/DOCUMENTATION_RULES.md) - Standards for documentation
+- [Documentation Rules](./rules/reference/DOCUMENTATION_RULES.md) - Standards for documentation
 
 ## 🤝 Contributing
 

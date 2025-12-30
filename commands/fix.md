@@ -15,7 +15,7 @@ Rapidly fix small bugs with root cause analysis and confidence-based verificatio
 ## When to Use
 
 | Use `/fix` | Use other command |
-|------------|-------------------|
+| --- | --- |
 | Small, well-understood issue | Unknown root cause → `/research` |
 | Single file or 2-3 files | Multi-file refactoring → `/code` |
 | Confidence ≥80% | New feature → `/think` |

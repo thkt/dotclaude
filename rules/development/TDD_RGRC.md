@@ -15,162 +15,71 @@ When implementing new features or fixing bugs, think and act like t_wada - use s
 1. **Create test scenario list** - Break down into small testable units, track with TodoWrite
 2. **Execute RGRC cycles** - One scenario at a time, smallest steps, iterate quickly
 
-## Baby Steps - The Foundation of TDD
+## Baby Steps
 
-### Core Concept
+The foundation of TDD. Full details with examples:
 
-**Make the smallest possible change at each step** - This is the key to successful TDD
+[@~/.claude/skills/tdd-fundamentals/SKILL.md#baby-steps---the-foundation](~/.claude/skills/tdd-fundamentals/SKILL.md#baby-steps---the-foundation)
 
-### Why Baby Steps Matter
+**Quick Reference:**
 
-- **Immediate error localization**: When test fails, the cause is in the last tiny change
-- **Continuous working state**: Code is always seconds away from green
-- **Rapid feedback**: Each step takes 1-2 minutes max
-- **Confidence building**: Small successes compound into major features
+| Step | Time | Action |
+| --- | --- | --- |
+| 1 | 30s | Write smallest failing test |
+| 2 | 1min | Make it pass minimally |
+| 3 | 10s | Run tests |
+| 4 | 30s | Tiny refactor if needed |
+| 5 | 20s | Commit if green |
 
-### Baby Steps in Practice
+## RGRC Cycle
 
-```typescript
-// ❌ Big Step - Multiple changes at once
-function calculateTotal(items, tax, discount) {
-  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
-  const afterTax = subtotal * (1 + tax);
-  const afterDiscount = afterTax * (1 - discount);
-  return afterDiscount;
-}
+| Phase | Command | Focus |
+| --- | --- | --- |
+| 🔴 Red | `npm test` | Write test → Verify it fails correctly |
+| 🟢 Green | `npm test` | Minimal code to pass → "You can sin" |
+| 🔵 Refactor | `npm test` | Remove duplication → Keep tests green |
+| ✅ Commit | `git commit` | Include test + implementation |
 
-// ✅ Baby Steps - One change at a time
-// Step 1: Return zero (make test pass minimally)
-function calculateTotal(items) {
-  return 0;
-}
-
-// Step 2: Basic sum (next test drives this)
-function calculateTotal(items) {
-  return items.reduce((sum, item) => sum + item.price, 0);
-}
-
-// Step 3: Add tax support (only when test requires it)
-// ... continue in tiny increments
-```
-
-### Baby Steps Rhythm
-
-1. **Write smallest failing test** (30 seconds)
-2. **Make it pass with minimal code** (1 minute)
-3. **Run tests** (10 seconds)
-4. **Tiny refactor if needed** (30 seconds)
-5. **Commit if green** (20 seconds)
-
-Total cycle: ~2 minutes
-
-## RGRC Cycle Implementation
-
-1. **Red Phase - Write failing test first**
-
-   ```bash
-   npm test
-   ```
-
-   Write test → Verify it fails correctly → Be specific and focused
-
-2. **Green Phase - Minimal implementation**
-
-   ```bash
-   npm test
-   ```
-
-   Just enough code to pass → "You can sin" → Resist extra features
-
-3. **Refactor Phase - Improve code quality**
-
-   ```bash
-   npm test
-   ```
-
-   Remove duplication → Improve structure/readability → Keep tests green always
-
-4. **Commit Phase - Save progress**
-
-   ```bash
-   git add -A && git commit -m "feat: [description] (RGRC complete)"
-   ```
-
-   Include test + implementation → Reference RGRC in message
+For detailed phase guidance with exit criteria:
+[@~/.claude/skills/tdd-fundamentals/SKILL.md#rgrc-cycle](~/.claude/skills/tdd-fundamentals/SKILL.md#rgrc-cycle)
 
 ## Think Like t_wada
 
 - **Small steps**: "Why make steps small?" - Each step teaches something specific
 - **Fast iterations**: "Can we make this cycle faster?" - Speed reveals design issues early
 - **Test failure reasons**: "Is it failing for the right reason?" - Wrong failure means wrong understanding
-- **Learning through practice**: "What did we learn from this cycle?" - Each cycle is a learning opportunity, not just progress
+- **Learning through practice**: "What did we learn from this cycle?" - Each cycle is a learning opportunity
 
 ## Integration with TodoWrite
-
-Example workflow:
 
 ```markdown
 # Test Scenario List
 1. ⏳ User can register with email and password
 2. ⏳ Registration fails with invalid email
-3. ⏳ Registration fails with weak password
-4. ⏳ Cannot register with existing email
 
 # Current RGRC Cycle (for Scenario 1)
-1.1 ❌ Red: Write failing test for user registration
-1.2 ⏳ Green: Implement minimal registration logic
-1.3 ⏳ Refactor: Extract validation logic
-1.4 ⏳ Commit: Save registration implementation
+1.1 ❌ Red: Write failing test
+1.2 ⏳ Green: Implement minimal logic
+1.3 ⏳ Refactor: Extract validation
+1.4 ⏳ Commit: Save implementation
 ```
 
 ## When to Skip TDD
 
 Skip for: Prototypes, External APIs (use mocks), Throwaway scripts
 
-## Benefits in Claude Code
-
-Clear boundaries per phase, Prevents overengineering, Self-documenting tests, Natural checkpoints
-
 ## Test Design Techniques
 
-Before writing tests, apply systematic test design:
+For systematic test design (Equivalence Partitioning, Boundary Value, Decision Tables):
 
-### Quick Test Design Steps
+[@~/.claude/skills/generating-tdd-tests/SKILL.md#test-design-techniques](~/.claude/skills/generating-tdd-tests/SKILL.md#test-design-techniques)
 
-1. **Identify partitions** - What are the equivalence classes?
-2. **Find boundaries** - Where are the edges [min, max]?
-3. **Complex logic?** - Use decision tables for 3+ conditions
+**Quick Steps:**
 
-### Example: Systematic Test Design
-
-```typescript
-// Function to test
-function canPurchase(age: number, balance: number): boolean {
-  return age >= 18 && balance >= 10
-}
-
-// 1. Equivalence Partitions:
-// - age: <18, >=18
-// - balance: <10, >=10
-
-// 2. Boundaries:
-// - age: 17, 18
-// - balance: 9, 10
-
-// 3. Test Cases (Red Phase):
-test('rejects under 18', () => expect(canPurchase(17, 10)).toBe(false))  // Boundary
-test('accepts 18 with sufficient balance', () => expect(canPurchase(18, 10)).toBe(true))  // Min boundary
-test('rejects sufficient age with low balance', () => expect(canPurchase(20, 9)).toBe(false))  // Boundary
-test('accepts sufficient age and balance', () => expect(canPurchase(20, 10)).toBe(true))  // Valid partition
-```
-
-**For detailed test design techniques**, see [@./TEST_GENERATION.md](./TEST_GENERATION.md):
-
-- Equivalence Partitioning
-- Boundary Value Analysis
-- Decision Table Testing
-- Coverage Goals (C0: 80%, C1: 70%)
+1. Identify partitions (equivalence classes)
+2. Find boundaries (edges)
+3. Use decision tables for 3+ conditions
 
 ## Related Principles
 
-See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)
+See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md)

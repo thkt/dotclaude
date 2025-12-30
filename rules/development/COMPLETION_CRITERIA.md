@@ -6,11 +6,11 @@ Common completion standards used across commands.
 
 Confidence level indicates certainty about implementation:
 
-| Level | Range | Action |
-| --- | --- | --- |
-| High | >0.8 | Proceed normally |
-| Medium | 0.5-0.8 | Add defensive checks |
-| Low | <0.5 | Research before implementing |
+| Level | Marker | Range | Action |
+| --- | --- | --- | --- |
+| High | **[✓]** | >0.8 | Proceed normally |
+| Medium | **[→]** | 0.5-0.8 | Add defensive checks |
+| Low | **[?]** | <0.5 | Research before implementing |
 
 **Target**: Overall confidence ≥0.9 for completion.
 

@@ -3,6 +3,7 @@ description: SOWからSpec（仕様書）を生成、実装詳細を作成
 allowed-tools: Read, Write, Glob, Grep, LS
 model: inherit
 argument-hint: "[sowパス または 機能説明]"
+dependencies: [formatting-audits]
 ---
 
 # /spec - 仕様書ジェネレーター
@@ -11,15 +12,15 @@ argument-hint: "[sowパス または 機能説明]"
 
 spec.mdのみを生成（単一成果物）、実装可能な詳細を含む。
 
-## Golden Master 参照
+## テンプレート参照
 
 **構造とセクション順序のみ**を参考にする:
-[@~/.claude/golden-masters/documents/spec/example-workflow-improvement.md]
+[@~/.claude/templates/spec/workflow-improvement.md]
 
 **重要**:
 
-- ✅ コピー可: セクションヘッダー、FR/NFR形式、TypeScriptインターフェースパターン
-- ❌ コピー不可: 実際のコンテンツ、具体的な値、参照元の例
+- ✅ コピー可: セクション構造、ID命名（FR-001, NFR-001, T-001）、テーブル形式
+- ❌ コピー不可: 実際のコンテンツ、具体的な値
 - SOWまたは機能説明に基づいて新しいコンテンツを生成
 
 ## 入力検出
@@ -32,13 +33,23 @@ SOWが指定されていない場合、自動検出:
 
 SOWが見つかった場合、一貫性のために参照する。
 
-## Confidence Markers
+## 信頼度マーカー
 
-SOWから継承し、以下を追加:
+数値形式 `[C: X.X]` をドキュメント全体で使用:
 
-- **[✓]** FR-xxx: SOWから検証された要件
-- **[→]** FR-xxx: SOW分析から推論
-- **[?]** FR-xxx: 明確化が必要
+| 範囲 | 意味 | 必要な証拠 |
+| --- | --- | --- |
+| [C: 0.9+] | 検証済み | file:line、コマンド出力、ログ |
+| [C: 0.7-0.9] | 推論 | 推論根拠を記載 |
+| [C: <0.7] | 不確実 | 調査が必要 |
+
+## トレーサビリティ
+
+すべての要素をSOW受け入れ基準にリンク:
+
+- FR-001 `Implements: AC-001` - 機能要件がACを実装
+- T-001 `Validates: FR-001` - テストが要件を検証
+- NFR-001 `Validates: AC-002` - 非機能要件がACを検証
 
 ## 必須セクション
 

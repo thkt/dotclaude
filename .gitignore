@@ -11,12 +11,15 @@ Thumbs.db
 
 # Workspace and temporary files
 workspace/
+golden-masters/
+archive/
 debug/
 *.log
 *.tmp
 *.temp
 
 # Claude specific
+chrome/
 ide/
 projects/
 shell-snapshots/

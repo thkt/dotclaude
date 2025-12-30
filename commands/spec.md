@@ -12,15 +12,15 @@ dependencies: [formatting-audits]
 
 Generate spec.md only (single artifact) with implementation-ready details.
 
-## Golden Master Reference
+## Template Reference
 
 Use for **structure and section order ONLY**:
-[@~/.claude/golden-masters/documents/spec/example-workflow-improvement.md]
+[@~/.claude/templates/spec/workflow-improvement.md]
 
 **IMPORTANT**:
 
-- ✅ Copy: Section headers, FR/NFR format, TypeScript interface patterns
-- ❌ Do NOT copy: Actual content, specific values, examples from the reference
+- ✅ Copy: Section structure, ID naming (FR-001, NFR-001, T-001), table formats
+- ❌ Do NOT copy: Actual content, specific values
 - Generate fresh content based on SOW or feature description
 
 ## Input Detection
@@ -35,11 +35,21 @@ If SOW found, reference it for consistency.
 
 ## Confidence Markers
 
-Inherit from SOW and add:
+Use numeric format `[C: X.X]` throughout:
 
-- **[✓]** FR-xxx: Verified requirement from SOW
-- **[→]** FR-xxx: Inferred from SOW analysis
-- **[?]** FR-xxx: Needs clarification
+| Range | Meaning | Evidence Required |
+| --- | --- | --- |
+| [C: 0.9+] | Verified | file:line, command output, logs |
+| [C: 0.7-0.9] | Inferred | Reasoning basis stated |
+| [C: <0.7] | Uncertain | Needs investigation |
+
+## Traceability
+
+Link all elements to SOW Acceptance Criteria:
+
+- FR-001 `Implements: AC-001` - Functional requirement traces to AC
+- T-001 `Validates: FR-001` - Test validates requirement
+- NFR-001 `Validates: AC-002` - Non-functional requirement traces to AC
 
 ## Required Sections
 

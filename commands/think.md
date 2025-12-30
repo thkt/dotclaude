@@ -12,21 +12,13 @@ dependencies: [sow-spec-reviewer]
 
 Orchestrate implementation planning with automated design exploration followed by SOW and Spec generation.
 
-**Key Features**:
-
-- Automated implementation design exploration using Plan agent (Opus)
-- High-quality architectural analysis and approach recommendation
-- Seamless integration with SOW/Spec generation
-
-## Golden Master Reference
+## Template Reference
 
 Use for **structure and format guidance**:
 
-- SOW structure: [@~/.claude/golden-masters/documents/sow/example-workflow-improvement.md](~/.claude/golden-masters/documents/sow/example-workflow-improvement.md)
-- Spec structure: [@~/.claude/golden-masters/documents/spec/example-workflow-improvement.md](~/.claude/golden-masters/documents/spec/example-workflow-improvement.md)
-- Summary structure: [@~/.claude/golden-masters/documents/summary/example-workflow-improvement.md](~/.claude/golden-masters/documents/summary/example-workflow-improvement.md)
-
-**IMPORTANT**: Reference structures only, generate fresh content based on user's task.
+- SOW structure: [@~/.claude/templates/sow/workflow-improvement.md](~/.claude/templates/sow/workflow-improvement.md)
+- Spec structure: [@~/.claude/templates/spec/workflow-improvement.md](~/.claude/templates/spec/workflow-improvement.md)
+- Summary structure: [@~/.claude/templates/summary/review-summary.md](~/.claude/templates/summary/review-summary.md)
 
 ## Input Resolution
 
@@ -40,169 +32,38 @@ Same as /sow - see /sow.md for details:
 
 ### Step 0: Requirements Clarification (Conditional)
 
-Before generating SOW, clarify requirements through interactive Q&A.
+**Skip when**: Research context exists, detailed description provided, or follow-up task.
 
-**Skip conditions** (proceed directly to Step 1):
+**When to ask**: Vague description, missing success criteria, unknown constraints.
 
-- Research context exists with clear requirements
-- User provided detailed description with acceptance criteria
-- Follow-up task with existing SOW/Spec
+#### Questions (5-7 from categories)
 
-**When to ask** (requirements unclear):
+| Category | Question Focus |
+| --- | --- |
+| Purpose | Main goal, problem solved, who benefits |
+| Users | Primary users (end users/internal/API) |
+| Priority | MoSCoW (Must/Should/Could/Won't) |
+| Success | "Done" definition, metrics |
+| Constraints | Deadline, dependencies, restrictions |
+| Scope | What's explicitly excluded |
+| Edge Cases | Special scenarios to handle |
 
-- Vague or ambiguous task description
-- Missing success criteria
-- Unknown constraints or priorities
+#### Known Information Filter
 
-#### Questions Template (Business-focused)
+Before asking, extract known info from user input and skip already-answered questions:
 
-Ask 5-7 questions from these categories:
+```text
+Input: "Add OAuth authentication for API consumers by next sprint"
 
-```markdown
-📌 Requirements Clarification
-
-1. **Purpose**: What is the main goal of this feature?
-   - What problem does it solve?
-   - Who benefits from this?
-
-2. **Users**: Who are the primary users?
-   - End users / Internal team / API consumers?
-
-3. **Priority**: How important is this? (MoSCoW)
-   - Must have / Should have / Could have / Won't have
-
-4. **Success Criteria**: How do we know it's done?
-   - What does "working" look like?
-   - Any specific metrics?
-
-5. **Constraints**: Are there any limitations?
-   - Deadline / Dependencies / Technical restrictions?
-
-6. **Scope**: What's explicitly out of scope?
-   - What should we NOT do?
-
-7. **Edge Cases**: Any special scenarios to handle?
-   - Error states / Empty states / Edge conditions?
+Known: Purpose ✓, Users ✓, Constraints ✓
+Ask: Priority, Success Criteria, Scope, Edge Cases
 ```
 
-#### Known Information Filter (NEW)
-
-**IMPORTANT**: Before asking questions, extract known information from user input and skip already-answered questions.
-
-```typescript
-interface KnownInfo {
-  purpose?: string      // Goal mentioned in task description
-  users?: string        // User type mentioned or inferable
-  priority?: string     // Urgency indicators ("urgent", "critical", etc.)
-  criteria?: string[]   // Success criteria mentioned
-  constraints?: string[] // Deadlines, dependencies mentioned
-  scope?: string        // Exclusions mentioned
-  edgeCases?: string[]  // Edge cases mentioned
-}
-
-function extractKnownInfo(taskDescription: string): KnownInfo {
-  // Analyze task description for already-provided information
-  // Examples:
-  // "Add login button for end users" → users: "end users"
-  // "Fix critical bug by Friday" → priority: "Must have", constraints: ["Friday deadline"]
-  // "Add OAuth authentication (no SSO)" → scope: "SSO excluded"
-}
-
-function filterQuestions(allQuestions: Question[], known: KnownInfo): Question[] {
-  return allQuestions.filter(q => {
-    // Skip questions where answer is already known
-    if (q.category === 'purpose' && known.purpose) return false
-    if (q.category === 'users' && known.users) return false
-    if (q.category === 'priority' && known.priority) return false
-    // ... apply for all categories
-    return true
-  })
-}
-```
-
-**Example Application**:
-
-```markdown
-User input: "Add OAuth authentication for API consumers by next sprint"
-
-Extracted known info:
-- ✓ Purpose: OAuth authentication (inferred: secure API access)
-- ✓ Users: API consumers
-- ✓ Constraints: next sprint deadline
-
-Questions to ASK (remaining unknowns):
-1. Priority: Must have / Should have / Could have?
-2. Success Criteria: What defines "working" OAuth?
-3. Scope: Any providers to exclude? (Google/GitHub/etc.)
-4. Edge Cases: Token refresh, revocation scenarios?
-
-Questions SKIPPED (already known):
-- Purpose: ✓ Already stated
-- Users: ✓ Already stated
-- Constraints: ✓ Already stated
-```
-
-#### Q&A Flow
-
-```typescript
-// 1. Check if clarification is needed
-const needsClarification = !hasResearchContext() && !hasDetailedDescription()
-
-if (needsClarification) {
-  // 2. Extract known information from task description (NEW)
-  const knownInfo = extractKnownInfo(taskDescription)
-
-  // 3. Filter out questions that are already answered (NEW)
-  const allQuestions = getQuestionsTemplate()
-  const remainingQuestions = filterQuestions(allQuestions, knownInfo)
-
-  // 4. Display known info summary + remaining questions
-  displayKnownInfoSummary(knownInfo)  // Show what we already know
-  displayQuestions(remainingQuestions) // Ask only unknowns
-  // Wait for user response
-
-  // 5. Save Q&A for reference (includes extracted + answered)
-  const qaPath = `.claude/workspace/qa/${timestamp}-${topic}.md`
-  saveQA(qaPath, knownInfo, remainingQuestions, answers)
-
-  // 6. Confirm understanding
-  displayUnderstandingCheck()
-  // Wait for user confirmation
-}
-```
-
-#### Q&A Output Format
-
-```markdown
-# Q&A: [Topic]
-Date: [YYYY-MM-DD]
-
-## Questions & Answers
-
-### 1. Purpose
-**Q**: What is the main goal?
-**A**: [User's answer]
-
-### 2. Users
-**Q**: Who are the primary users?
-**A**: [User's answer]
-
-[... more Q&A ...]
-
-## Summary
-- **Goal**: [Extracted from answers]
-- **Priority**: [Must/Should/Could]
-- **Success Criteria**: [Key criteria]
-- **Constraints**: [Key constraints]
-```
-
-Save to: `.claude/workspace/qa/[timestamp]-[topic].md`
+Save Q&A to: `.claude/workspace/qa/[timestamp]-[topic].md`
 
 ### Step 1: Implementation Design Exploration
 
-**Purpose**: Automated implementation approach analysis using Plan agent with Opus, aligned with SOW/Spec quality criteria.
-
-**Execution**:
+Plan agent with Opus for architectural analysis:
 
 ```typescript
 Task({
@@ -211,240 +72,74 @@ Task({
   description: "SOW/Spec-aligned implementation analysis",
   prompt: `
 Feature: "${featureDescription}"
+${qaResults ? `Q&A results:\n${qaResults}\n` : ''}
 
-${qaResults ? `Based on Q&A results:\n${qaResults}\n` : ''}
+Collect with confidence markers [✓]/[→]/[?]:
 
-## Information Collection (SOW Quality Criteria Alignment)
+1. **Current State**: Quantitative baseline (file count, lines, patterns)
+2. **Problems**: Classified by confidence level
+3. **Solution Design**: 3 alternatives in table, recommendation
+4. **Scope**: Files to modify (2-5), dependencies, phase plan
+5. **Acceptance Criteria**: Measurable criteria with verification
+6. **Risks**: Classified by confirmed/potential/unknown
 
-Collect information for each SOW/Spec section. ALL items MUST include confidence markers.
-
-### 1. Current State Analysis [✓ required]
-Collect quantitative baseline data:
-- File count and paths (verify with ls, find)
-- Line counts (verify with wc -l)
-- Existing patterns (quote specific code)
-- Current metrics (size, complexity, dependencies)
-
-Output format:
-| Metric | Current Value | Evidence |
-| --- | --- | --- |
-| [✓] File count | N files | \`find ... | wc -l\` |
-
-### 2. Problem Classification
-Classify issues by confidence level:
-
-**[✓] Verified Issues** (evidence required):
-- Issue description - Evidence: file_path:line_number or command output
-
-**[→] Inferred Problems** (reasoning required):
-- Issue description - Reasoning: logical basis for inference
-
-**[?] Suspected Issues** (investigation needed):
-- Issue description - Investigation: what needs to be checked
-
-### 3. Solution Design
-Evaluate 3 alternatives in table format:
-
-| Option | Approach | Pros | Cons | Recommendation |
-| --- | --- | --- | --- | --- |
-| [→] A | Description | + benefits | - drawbacks | **Recommended** / Rejected |
-| [→] B | Description | + benefits | - drawbacks | Rejected |
-| [→] C | Description | + benefits | - drawbacks | Rejected |
-
-Recommendation rationale: [2-3 sentences explaining why Option A]
-
-### 4. Implementation Scope
-Define concrete scope:
-
-**Files to Modify** (2-5 files with paths):
-- [✓] path/to/file.ts - Change description
-
-**Dependencies & Impact**:
-- [→] Affected modules: list
-- [→] Breaking changes: yes/no + details
-
-**Phase Plan** (Day-based):
-- Day 1: [Concrete tasks]
-- Day 2: [Concrete tasks]
-
-### 5. Acceptance Criteria Draft
-Propose measurable criteria:
-- [ ] [✓/→/?] Criterion with specific metric
-  - Verification: How to measure/test
-
-### 6. Risk Assessment
-Classify risks by confidence:
-
-**[✓] Confirmed Risks**:
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-
-**[→] Potential Risks**:
-| Risk | Impact | Mitigation |
-
-**[?] Unknown Risks**:
-| Risk | Monitoring Approach |
-
-## Output Requirements
-
-CRITICAL: Every item must include:
-1. Confidence marker: [✓] [→] or [?]
-2. Evidence: file path, command output, or code quote
-3. Quantification: numbers where possible (lines, %, count)
-
-This structured output enables high-quality SOW/Spec generation.
+Output format: Tables with evidence for each item.
   `
 })
 ```
 
-**Why Opus**: Implementation design requires deep architectural understanding, comprehensive trade-off analysis, and high-quality decision-making. Opus provides the best analysis quality for this critical planning phase.
-
-**Why This Structure**: The prompt sections directly map to SOW/Spec required sections, enabling:
-
-- Direct transfer of analyzed data to SOW Problem Analysis
-- Pre-classified risks ready for Risk Assessment section
-- Measurable acceptance criteria ready for SOW/Spec
+**Why Opus**: Deep architectural analysis and comprehensive trade-off evaluation.
 
 ### Step 2: Display Analysis Results
 
-**Purpose**: Show Plan agent's structured analysis results to user (non-blocking).
+Show structured analysis (non-blocking), then auto-continue:
 
-**Display Format**:
+```text
+🎯 Implementation Analysis
 
-```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 Implementation Analysis (SOW/Spec Ready)
+## Current State | Problem Summary | Recommended Approach
+## Implementation Scope | Key Risks
 
-## Current State
-| Metric | Value | Evidence |
-| --- | --- | --- |
-| [✓] Files | N | `command output` |
-| [✓] Lines | N | `wc -l` |
-
-## Problem Summary
-- [✓] Verified: [Issue with evidence]
-- [→] Inferred: [Issue with reasoning]
-- [?] Suspected: [Issue needing investigation]
-
-## Recommended Approach
-**[→] Option A**: [Name]
-- Rationale: [Why this approach]
-- Trade-offs: [Key considerations]
-
-Alternatives rejected:
-- Option B: [Reason]
-- Option C: [Reason]
-
-## Implementation Scope
-**Files to Modify**:
-- [✓] path/to/file.ts - [Change]
-- [✓] path/to/other.ts - [Change]
-
-**Phase Plan**:
-- Day 1: [Tasks]
-- Day 2: [Tasks]
-
-## Key Risks
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| [✓] Risk 1 | High/Med/Low | Strategy |
-| [→] Risk 2 | High/Med/Low | Strategy |
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Proceeding with SOW generation based on this analysis...
+Proceeding with SOW generation...
 ```
 
-**User Experience**: Results are displayed for visibility, but execution continues automatically. No user confirmation required.
+Data maps directly to SOW sections.
 
-**Data Flow**: The structured analysis directly maps to SOW sections:
-
-- Current State → SOW Problem Analysis
-- Problem Summary → SOW Verified/Inferred/Suspected Issues
-- Recommended Approach → SOW Solution Design
-- Implementation Scope → SOW Implementation Plan
-- Key Risks → SOW Risks & Mitigations
-
-### Step 3: Generate SOW
+### Step 3-5: Generate Documents
 
 ```typescript
-// If argument provided
+// Step 3: SOW
 SlashCommand({ command: '/sow "[task description]"' })
 
-// If no argument (relies on /sow's input resolution)
-SlashCommand({ command: '/sow' })
-```
-
-### Step 4: Generate Spec
-
-```typescript
+// Step 4: Spec
 SlashCommand({ command: '/spec' })
-// Auto-detects the SOW created in Step 3
+
+// Step 5: Review (optional)
+Task({ subagent_type: "sow-spec-reviewer", model: "haiku" })
 ```
 
-### Step 5: Review (Optional)
+### Step 6: Generate Summary
 
-```typescript
-Task({
-  subagent_type: "sow-spec-reviewer",
-  model: "haiku",
-  prompt: "Review the generated SOW and Spec for quality and consistency."
-})
-```
-
-### Step 6: Generate Summary (Review Summary)
-
-After SOW and Spec are generated, create a concise summary for efficient team review.
-
-**Summary structure** (reference: [@~/.claude/golden-masters/documents/summary/example-workflow-improvement.md](~/.claude/golden-masters/documents/summary/example-workflow-improvement.md)):
+Create concise review summary following Golden Master structure:
 
 ```markdown
-# Summary: [Feature Name] (Review Summary)
+# Summary: [Feature Name]
 
-## 🎯 Purpose (1-2 sentences)
-[Extract from SOW Executive Summary]
-
-## 📋 Change Overview
-[Concise table of phases/steps]
-
-## 📁 Scope of Impact
-- Files to modify: [2-5 key files]
-- Affected components: [Impacted modules]
-
-## ❓ Discussion Points
-[Items marked with [?] in SOW/Spec + alternative choices]
-
-## ⚠️ Risks
-[High-risk items only]
-
-## ✅ Key Acceptance Criteria
-[4-5 main items from SOW Acceptance Criteria]
-
-## 🔗 Detailed Documentation
-- SOW: `sow.md`
-- Spec: `spec.md`
+## 🎯 Purpose | 📋 Change Overview | 📁 Scope
+## ❓ Discussion Points | ⚠️ Risks | ✅ Key Acceptance Criteria
+## 🔗 Links to SOW/Spec
 ```
 
-**Output**: `.claude/workspace/planning/[same-dir]/summary.md`
+Output: `.claude/workspace/planning/[same-dir]/summary.md`
 
 ## Output
 
-All documents saved to:
-`.claude/workspace/planning/[timestamp]-[feature]/`
+All documents saved to: `.claude/workspace/planning/[timestamp]-[feature]/`
 
 ```text
-├── sow.md     # Statement of Work (detailed)
-├── spec.md    # Specification (detailed)
-└── summary.md # Review Summary (for quick review)
-```
-
-Display after completion:
-
-```text
-✅ Planning complete:
-   SOW:     .claude/workspace/planning/[path]/sow.md
-   Spec:    .claude/workspace/planning/[path]/spec.md
-   Summary: .claude/workspace/planning/[path]/summary.md ← Start review here
+├── sow.md     # Statement of Work
+├── spec.md    # Specification
+└── summary.md # Review Summary ← Start here
 ```
 
 ## When to Use
@@ -453,23 +148,19 @@ Display after completion:
 | --- | --- |
 | Full planning (after research) | `/research` → `/think` |
 | Full planning (explicit) | `/think "task description"` |
-| SOW only | `/sow` or `/sow "task"` |
+| SOW only | `/sow` |
 | Spec only (SOW exists) | `/spec` |
 | View existing plans | `/plans` |
 
 ## Example
 
 ```bash
-# After /research (recommended workflow)
+# After /research (recommended)
 /research "user authentication options"
 /think  # Auto-detects research context
 
 # With explicit argument
 /think "Add user authentication with OAuth"
-
-# No context, no argument → asks for input
-/think
-# → "What would you like to plan? Please provide a task description."
 ```
 
 ## Related Commands

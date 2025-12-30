@@ -74,7 +74,7 @@ Execute code review:
 ## Review Agents
 
 | Agent | Focus |
-|-------|-------|
+| --- | --- |
 | `structure-reviewer` | Code organization, DRY, coupling |
 | `readability-reviewer` | Clarity, naming, complexity |
 | `type-safety-reviewer` | TypeScript coverage, any usage |
@@ -131,7 +131,7 @@ Recommended Actions
 ## Review Strategies
 
 | Strategy | Time | Focus | Command |
-|----------|------|-------|---------|
+| --- | --- | --- | --- |
 | Quick | 2-3 min | Security, critical bugs | `/audit --quick` |
 | Standard | 5-7 min | + Performance, types, tests | `/audit` |
 | Deep | 10+ min | + Root cause, tech debt | `/audit --deep` |

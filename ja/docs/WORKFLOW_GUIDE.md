@@ -33,7 +33,6 @@ AI支援による体系的なソフトウェア開発ツール。コマンド、
 └── ja/docs/           # ドキュメント（日本語）
     ├── WORKFLOW_GUIDE.md       # このファイル
     ├── DEVELOPMENT_WORKFLOW.md # 実践ガイド
-    ├── agents/                  # エージェント詳細
     ├── COMMANDS.md             # コマンドリファレンス
     ├── ARCHITECTURE.md         # アーキテクチャ
     └── [その他]
@@ -62,8 +61,6 @@ Phase 1: 基礎（構造、可読性、根本原因）
 Phase 2: 品質（型安全性、テスト容易性、パターン）
 Phase 3: 本番（パフォーマンス、セキュリティ、アクセシビリティ）
 ```
-
-→ **エージェント詳細**: [@./agents/README.md](./agents/README.md)
 
 ---
 
@@ -215,8 +212,7 @@ sow.md + spec.md 生成
 ### 中級者（1ヶ月）
 
 1. 完全なワークフローを実践（/think → /validate）
-2. [@./agents/README.md](./agents/README.md) でレビュープロセスを理解
-3. `/audit` の結果を活用してコード品質を向上
+2. `/audit` の結果を活用してコード品質を向上
 
 ### 上級者（継続的）
 
@@ -269,13 +265,11 @@ sow.md + spec.md 生成
 - **このファイル（WORKFLOW_GUIDE.md）**: クイックスタート・概要
 - **[@./DEVELOPMENT_WORKFLOW.md](./DEVELOPMENT_WORKFLOW.md)**: 実践的なワークフロー手順
 - **[@./COMMANDS.md](./COMMANDS.md)**: コマンドリファレンス
-- **[@./agents/README.md](./agents/README.md)**: エージェント詳細
 - **[@./ARCHITECTURE.md](./ARCHITECTURE.md)**: システムアーキテクチャ
 
 ### 管理ドキュメント
 
-- **[@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md)**: ドキュメント管理ルール
-- **[@./agents/MODEL_SELECTION_GUIDE.md](./agents/MODEL_SELECTION_GUIDE.md)**: モデル選択ガイドライン
+- **[@../../rules/reference/DOCUMENTATION_RULES.md](../../rules/reference/DOCUMENTATION_RULES.md)**: ドキュメント管理ルール
 - **[@./PROJECT_SETUP.md](./PROJECT_SETUP.md)**: プロジェクトセットアップ
 
 ---

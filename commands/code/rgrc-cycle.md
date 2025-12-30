@@ -59,50 +59,17 @@ See [@./test-preparation.md](./test-preparation.md) for interactive test activat
 
 ### Enhanced RGRC Cycle with Real-time Feedback
 
-For detailed phase guidance, see:
+For detailed phase guidance (Red/Green/Refactor/Commit steps, exit criteria, timing):
 [@~/.claude/commands/shared/tdd-cycle.md](~/.claude/commands/shared/tdd-cycle.md)
 
 **Feature-specific adaptations**:
 
-1. **Red Phase** (Confidence Target: 0.9)
-
-   ```bash
-   npm test -- --testNamePattern="[current test]" | grep -E "FAIL|PASS"
-   ```
-
-   - Write failing test with clear intent (or use generated tests)
-   - Verify failure reason matches expectation
-   - Document understanding via test assertions
-   - **Exit Criteria**: Test fails for expected reason
-
-2. **Green Phase** (Confidence Target: 0.7)
-
-   ```bash
-   npm test -- --watch --testNamePattern="[current test]"
-   ```
-
-   - Minimal implementation to pass
-   - Quick solutions acceptable
-   - Focus on functionality over form
-   - **Exit Criteria**: Test passes consistently
-
-3. **Refactor Phase** (Confidence Target: 0.95)
-
-   ```bash
-   npm test | tail -5 | grep -E "Passing|Failing"
-   ```
-
-   - Apply SOLID principles
-   - Remove duplication (DRY)
-   - Improve naming and structure
-   - Extract abstractions
-   - **Exit Criteria**: All tests green, code clean
-
-4. **Commit Phase** (Confidence Target: 1.0)
-   - Quality checks pass
-   - Coverage maintained/improved
-   - Ready for stable commit
-   - User executes git commands
+| Phase | Feature Context |
+| --- | --- |
+| Red | Use generated tests from spec.md, or write new |
+| Green | Interactive test activation (one at a time) |
+| Refactor | Apply SOLID, extract patterns |
+| Commit | User executes git commands |
 
 ## Progress Display
 

@@ -53,8 +53,8 @@ Extract from ADR:
 
 **Output**: `docs/rules/[RULE_NAME].md`
 
-**Golden Master Reference**:
-[@~/.claude/golden-masters/documents/rules/example-from-adr.md]
+**Template Reference**:
+[@~/.claude/templates/rules/from-adr.md]
 
 **IMPORTANT**:
 

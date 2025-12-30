@@ -19,7 +19,7 @@
 ├── README.md              # クイックスタートガイド（英語版）
 ├── docs/                  # ドキュメント
 │   ├── COMMANDS.md       # コマンドリファレンス（英語）
-│   └── DOCUMENTATION_RULES.md # ドキュメント標準
+│   └── adr/              # Architecture Decision Records
 ├── commands/              # コマンド定義
 │   ├── code.md           # TDD/RGRC実装
 │   ├── fix.md            # クイックバグ修正
@@ -258,14 +258,14 @@ Claude Codeは5つのカテゴリに分類された15の専門コマンドを提
 
 - [コマンドリファレンス（英語）](../docs/COMMANDS.md)
 - [コマンドリファレンス（日本語）](./docs/COMMANDS.md)
-- [システムアーキテクチャ](../docs/ARCHITECTURE.md)
+- [システムアーキテクチャ](./docs/ARCHITECTURE.md)
 - [設定ガイド](../CLAUDE.md)
 - [日本語設定](./CLAUDE.md)
 
 ### 開発ガイド
 
 - [原則ガイド](../rules/PRINCIPLES_GUIDE.md) - すべての開発原則の完全な概要
-- [ドキュメントルール](../docs/DOCUMENTATION_RULES.md) - ドキュメントの標準
+- [ドキュメントルール](./rules/reference/DOCUMENTATION_RULES.md) - ドキュメントの標準
 
 ## 🤝 貢献
 

@@ -289,12 +289,86 @@ describe('PriceCalculator', () => {
 ### 命名ガイドライン
 
 | 要素 | 良い例 | 悪い例 |
-|------|--------|--------|
+| --- | --- | --- |
 | 条件 | `空配列のとき` | `test1` |
 | 期待結果 | `0を返す` | `正しく動作する` |
 | コンテキスト | `割引適用時` | `discount` |
 
 **ヒント**: テスト名をドキュメントとして機能させる記述的な名前を使用
+
+## test-generator エージェントパターン
+
+test-generatorエージェントは仕様やバグ説明からテストスキャフォールディングを作成します。
+
+### Pattern 1: 仕様駆動生成（機能開発用）
+
+**ユースケース**: `/code`コマンド用にspec.mdからテストを生成
+
+```typescript
+Task({
+  subagent_type: "test-generator",
+  description: "Generate skipped tests from specification",
+  prompt: `
+Feature: "${featureDescription}"
+Spec: ${specContent}
+
+Generate tests in SKIP MODE:
+1. FR-xxx requirements → skipped test cases
+2. Given-When-Then scenarios → skipped executable tests
+3. Order tests: simple → complex (Baby Steps order)
+4. Use framework-appropriate skip markers:
+   - Jest/Vitest: it.skip() + // TODO: [SKIP] comment
+  `
+})
+```
+
+### Pattern 2: バグ駆動生成（バグ修正用）
+
+**ユースケース**: `/fix`コマンド用にリグレッションテストを生成
+
+```typescript
+Task({
+  subagent_type: "test-generator",
+  description: "Generate regression test for bug fix",
+  prompt: `
+Bug: "${bugDescription}"
+Root Cause: "${rootCause}"
+Fix Applied: "${fixSummary}"
+
+Generate:
+1. Test that reproduces original bug (should now pass)
+2. Edge case tests related to the fix
+3. Integration test if cross-component fix
+  `
+})
+```
+
+### Pattern 3: カバレッジ駆動生成
+
+**ユースケース**: カバレッジ向上のためのテスト追加
+
+```typescript
+Task({
+  subagent_type: "test-generator",
+  description: "Generate tests for uncovered code paths",
+  prompt: `
+File: ${filePath}
+Uncovered lines: ${uncoveredLines}
+Existing test style: ${testStyle}
+
+Generate tests for uncovered code paths.
+Target coverage: 80%+
+  `
+})
+```
+
+## フレームワーク固有のスキップマーカー
+
+| フレームワーク | スキップ構文 |
+| --- | --- |
+| Jest/Vitest | `it.skip('test', () => { // TODO: [SKIP] FR-001 })` |
+| Mocha | `it.skip('test', function() { })` または `xit('test', ...)` |
+| 不明 | `// TODO: [SKIP]` マーカーでコメントアウト |
 
 ## 成功メトリクス
 

@@ -39,24 +39,28 @@ If found:
 - Incorporate research findings into SOW
 - Display: `📄 Using research context: [filename]`
 
-## Golden Master Reference
+## Template Reference
 
 Use for **structure and section order ONLY**:
-[@~/.claude/golden-masters/documents/sow/example-workflow-improvement.md]
+[@~/.claude/templates/sow/workflow-improvement.md]
 
 **IMPORTANT**:
 
-- ✅ Copy: Section headers, marker usage (✓/→/?), table formats
-- ❌ Do NOT copy: Actual content, specific values, examples from the reference
+- ✅ Copy: Section structure, table formats, ID naming (I-001, AC-001, R-001)
+- ❌ Do NOT copy: Actual content, specific values
 - Generate fresh content based on user's feature description
 
 ## Confidence Markers
 
-Use throughout the document:
+Use numeric format `[C: X.X]` throughout:
 
-- **[✓]** Verified - Confirmed by evidence (code, logs, user reports)
-- **[→]** Inferred - Reasonable deduction from analysis
-- **[?]** Suspected - Requires investigation
+| Range | Meaning | Evidence Required |
+| --- | --- | --- |
+| [C: 0.9+] | Verified | file:line, command output, logs |
+| [C: 0.7-0.9] | Inferred | Reasoning basis stated |
+| [C: <0.7] | Uncertain | Needs investigation |
+
+**YAML frontmatter**: Include `confidence.overall` for document-level score.
 
 ## Codebase Analysis (Optional)
 
@@ -69,17 +73,17 @@ Task({
   description: "Analyze codebase for feature context",
   prompt: `Feature: "${featureDescription}"
 Investigate: existing patterns, affected modules, tech stack.
-Return with markers: [✓] verified, [→] inferred, [?] unknown.`
+Return with markers: [C: 0.9+] verified, [C: 0.7-0.9] inferred, [C: <0.7] uncertain.`
 })
 ```
 
 ## Required Sections
 
-Follow Golden Master structure:
+Follow template structure:
 
-1. **Executive Summary** - High-level overview [→]
-2. **Problem Analysis** - Current State [✓], Issues by confidence
-3. **Assumptions & Prerequisites** - Facts [✓], Assumptions [→], Unknowns [?]
+1. **Executive Summary** - High-level overview [C: 0.7]
+2. **Problem Analysis** - Current State [C: 0.9+], Issues by confidence
+3. **Assumptions & Prerequisites** - Facts [C: 0.9+], Assumptions [C: 0.7], Unknowns [C: <0.5]
 4. **Solution Design** - Approach, alternatives, recommendation
 5. **Test Plan** - Unit/Integration/E2E with priority
 6. **Acceptance Criteria** - By phase, with confidence markers

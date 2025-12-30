@@ -100,47 +100,107 @@ The four phases of Test-Driven Development:
 
 ### 🔴 Red - Write Failing Test
 
-**Goal**: Define what "done" looks like
+**Goal**: Define what "done" looks like | **Confidence Target**: 0.9
 
-- Write a test that fails
-- Verify it fails for the RIGHT reason
-- Test should be small and focused
-- Clear assertion of expected behavior
+```bash
+npm test -- --testNamePattern="[current test]" | grep -E "FAIL|PASS"
+```
 
-**Exit criteria**: Test fails as expected
+**Steps**:
+
+1. Write failing test with clear intent
+2. Verify failure reason matches expectation
+3. Document understanding via test assertions
+4. Ensure test is actually testing something
+
+**Exit criteria**: Test fails for expected reason
+
+**Common Mistakes**:
+
+- ❌ Test passes immediately (not testing anything)
+- ❌ Failure reason is unclear
+- ❌ Test is too broad
 
 ### 🟢 Green - Make it Pass
 
-**Goal**: Get to working code as fast as possible
+**Goal**: Get to working code as fast as possible | **Confidence Target**: 0.7
 
-- Write the **minimum** code to pass the test
-- Don't worry about elegance yet
-- Quick and dirty is acceptable
-- Focus on functionality, not form
+```bash
+npm test -- --watch --testNamePattern="[current test]"
+```
+
+**Steps**:
+
+1. Write **minimal** implementation to pass
+2. Quick solutions acceptable (don't optimize yet)
+3. Focus on functionality over form
+4. Hardcoding is OK if it passes
 
 **Exit criteria**: Test passes consistently
 
+**Common Mistakes**:
+
+- ❌ Over-implementing (adding untested features)
+- ❌ Premature optimization
+- ❌ Breaking existing tests
+
 ### 🔵 Refactor - Clean Up
 
-**Goal**: Improve code quality without changing behavior
+**Goal**: Improve code quality without changing behavior | **Confidence Target**: 0.95
 
-- Apply SOLID principles
-- Remove duplication (DRY)
-- Improve naming and structure
-- Extract abstractions if needed
+```bash
+npm test | tail -5 | grep -E "Passing|Failing"
+```
+
+**Steps**:
+
+1. Apply SOLID principles
+2. Remove duplication (DRY)
+3. Improve naming and structure
+4. Extract abstractions if pattern emerges (3+ times)
 
 **Exit criteria**: All tests green, code clean
 
+**Checklist**:
+
+- [ ] Names are descriptive
+- [ ] Functions are small (<20 lines)
+- [ ] No duplication (DRY applied)
+- [ ] Single Responsibility
+- [ ] All tests still passing
+
 ### ✅ Commit - Save Progress
 
-**Goal**: Create stable checkpoint
+**Goal**: Create stable checkpoint | **Confidence Target**: 1.0
 
-- All tests passing
-- Quality checks pass
-- Coverage maintained/improved
-- Ready for commit
+```bash
+npm run lint && npm test && npm run type-check
+```
 
-**Exit criteria**: Confidence = 1.0
+**Steps**:
+
+1. Verify all quality checks pass
+2. Confirm coverage maintained/improved
+3. Review changes one final time
+4. Create meaningful commit message
+
+**Exit criteria**: All checks passing, ready to commit
+
+### Cycle Timing Guidelines
+
+| Phase | Target Time | Max Time |
+| --- | --- | --- |
+| Red | 30-60 sec | 2 min |
+| Green | 1-2 min | 5 min |
+| Refactor | 30-90 sec | 3 min |
+| Commit | 20-30 sec | 1 min |
+| **Total** | **~2 min** | **10 min** |
+
+**If exceeding max time**:
+
+- Red: Test is too complex, break it down
+- Green: Implementation too ambitious, simplify
+- Refactor: Save for later, commit as-is
 
 ## test-generator Agent
 

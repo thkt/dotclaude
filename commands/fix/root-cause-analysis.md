@@ -86,11 +86,7 @@ Determine if this is:
 
 ### Confidence Markers
 
-Use throughout analysis:
-
-- **[✓]** High (>0.8) - Directly verified from code/files
-- **[→]** Medium (0.5-0.8) - Reasonable inference from evidence
-- **[?]** Low (<0.5) - Assumption requiring verification
+Use throughout analysis: [@~/.claude/rules/development/COMPLETION_CRITERIA.md#confidence-metrics]
 
 ### Example Analysis
 

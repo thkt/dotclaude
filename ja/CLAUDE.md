@@ -103,5 +103,5 @@
 
 ### ドキュメントガイドライン
 
-- ドキュメントルール: [@~/.claude/docs/DOCUMENTATION_RULES.md](~/.claude/docs/DOCUMENTATION_RULES.md)
+- ドキュメントルール: [@~/.claude/rules/reference/DOCUMENTATION_RULES.md](~/.claude/rules/reference/DOCUMENTATION_RULES.md)
 - すべてのドキュメントで絶対的な一貫性を確保
