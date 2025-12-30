@@ -97,9 +97,6 @@ Follow template structure:
 
 Include in Implementation Plan section. Enables Progress-Driven Development tracking.
 
-> **Reference**: [進捗駆動開発（PDD）](https://zenn.dev/pipipi_dev/articles/20251224-progress-driven-development)
-> PDD = 機能ごとの進捗を5段階ステップで可視化し、人間とAIが協調して効率的に開発を進める手法
-
 ### Format
 
 ```markdown
