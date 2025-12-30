@@ -6,7 +6,7 @@ Accepted (2025-12-16)
 
 ## Implementation Progress
 
-- [x] Phase 1: Validation - commands/code/ directory created
+- [x] Phase 1: Validation - references/commands/code/ directory created
 - [x] Phase 2: High-Priority Separation - test-preparation.md, storybook.md extracted
 - [x] Phase 3: Complete Separation - rgrc-cycle.md, quality-gates.md, completion.md extracted
 - [x] Phase 4: Documentation Update - COMMANDS.md, Japanese sync completed (2025-12-16)
@@ -190,7 +190,7 @@ This decision follows DRY principle by reusing existing assets rather than dupli
 
 - Maintains command structure
 - Files focus on single responsibility
-- Centralized under `/commands/code/`
+- Centralized under `/references/commands/code/`
 - No change to user experience
 
 **Cons**:
@@ -211,13 +211,13 @@ code.md already uses hybrid approach:
 | Content Type | Modularization Method | Rationale |
 | --- | --- | --- |
 | **Knowledge/Principles** | Skills (existing) | Reusable, auto-triggered |
-| **Orchestration/Process** | @-references to commands/code/ | Command-specific |
+| **Orchestration/Process** | @-references to references/commands/code/ | Command-specific |
 | **Templates/Formats** | Inline in sub-files | Single use |
 
 **Implementation Strategy**:
 
 1. **Keep existing skill references** for tdd-test-generation, code-principles, frontend-patterns
-2. **Extract large sections** (Phase 0, Progress Display) to commands/code/
+2. **Extract large sections** (Phase 0, Progress Display) to references/commands/code/
 3. **code.md becomes thin wrapper** (~200 lines) that:
    - Defines purpose and usage
    - References skills for knowledge
@@ -237,7 +237,7 @@ code.md already uses hybrid approach:
 
 ### Phase 1: Validation (1 week)
 
-1. Create commands/code/ directory
+1. Create references/commands/code/ directory
 2. Extract spec-context.md (low risk)
 3. Test @-reference behavior
 4. Verify functionality

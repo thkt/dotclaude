@@ -3,7 +3,7 @@ description: Rapidly fix small bugs and minor improvements in development enviro
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task
 model: inherit
 argument-hint: "[bug or issue description]"
-dependencies: [Explore, test-generator, tdd-fundamentals]
+dependencies: [Explore, test-generator, generating-tdd-tests]
 ---
 
 # /fix - Quick Bug Fix
@@ -61,7 +61,7 @@ Each phase has detailed guidance in dedicated modules:
 - TDD approach to bug fixes
 - Write failing test that reproduces bug
 - Verify correct failure
-- References: [@~/.claude/skills/tdd-fundamentals/SKILL.md](~/.claude/skills/tdd-fundamentals/SKILL.md)
+- References: [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md)
 
 **When to skip**:
 
@@ -104,7 +104,7 @@ Each phase has detailed guidance in dedicated modules:
 [@./fix/test-generation.md](./fix/test-generation.md)
 
 - Use test-generator for edge cases
-- References: [@~/.claude/commands/shared/test-generation.md](~/.claude/commands/shared/test-generation.md)
+- References: [@~/.claude/references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md)
 - Integration tests if needed
 
 **When to skip**:
@@ -161,6 +161,6 @@ If confidence drops below 0.7 at any phase:
 
 For TDD fundamentals and patterns:
 
-- [@~/.claude/skills/tdd-fundamentals/SKILL.md](~/.claude/skills/tdd-fundamentals/SKILL.md) - TDD philosophy
-- [@~/.claude/skills/tdd-fundamentals/examples/bug-driven.md](~/.claude/skills/tdd-fundamentals/examples/bug-driven.md) - Bug-driven TDD pattern
-- [@~/.claude/commands/shared/tdd-cycle.md](~/.claude/commands/shared/tdd-cycle.md) - RGRC cycle details
+- [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD philosophy
+- [@~/.claude/skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - Bug-driven TDD pattern
+- [@~/.claude/references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC cycle details

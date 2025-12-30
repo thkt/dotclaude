@@ -318,7 +318,7 @@ GitHub/GitLabコメント用にフォーマットされた結果
 
 ### ドキュメントルール
 
-[@~/.claude/rules/reference/DOCUMENTATION_RULES.md](~/.claude/rules/reference/DOCUMENTATION_RULES.md) - レビューレポートの形式と構造
+[@~/.claude/rules/guidelines/DOCUMENTATION_RULES.md](~/.claude/rules/guidelines/DOCUMENTATION_RULES.md) - レビューレポートの形式と構造
 
 適用方法:
 

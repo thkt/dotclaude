@@ -115,7 +115,7 @@ triggers:
 ## Markdown検証
 
 ```bash
-~/.claude/ja/skills/scripts/validate-markdown.sh {output-file}
+~/.claude/skills/scripts/validate-markdown.sh {output-file}
 ```
 
 生成されたMarkdownのフォーマット問題を検証。非ブロッキング（警告のみ）。

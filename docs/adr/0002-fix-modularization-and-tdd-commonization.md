@@ -103,13 +103,13 @@ Layer 1: Skills (Education)
      └── examples/ (patterns)
 
 Layer 2: Shared (Implementation)
-  └─ commands/shared/
+  └─ references/commands/shared/
      ├── tdd-cycle.md (RGRC details)
      └── test-generation.md (patterns)
 
 Layer 3: Commands (Execution)
   ├─ commands/fix.md + fix/ (6 modules)
-  └─ commands/code/ (reference updates)
+  └─ references/commands/code/ (reference updates)
 ```
 
 **Pros**:
@@ -165,7 +165,7 @@ skills/tdd-fundamentals/
 │   ├── feature-driven.md (75 lines)
 │   └── bug-driven.md (80 lines)
 
-commands/shared/
+references/commands/shared/
 ├── tdd-cycle.md (253 lines)
 └── test-generation.md (228 lines)
 ```
@@ -204,7 +204,7 @@ commands/
 Updated **2 files** (non-destructive):
 
 ```text
-commands/code/
+references/commands/code/
 ├── rgrc-cycle.md (+ TDD Fundamentals Reference)
 └── test-preparation.md (+ Test Generation Reference)
 ```

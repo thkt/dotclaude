@@ -265,7 +265,7 @@ Claude Codeは5つのカテゴリに分類された15の専門コマンドを提
 ### 開発ガイド
 
 - [原則ガイド](../rules/PRINCIPLES_GUIDE.md) - すべての開発原則の完全な概要
-- [ドキュメントルール](./rules/reference/DOCUMENTATION_RULES.md) - ドキュメントの標準
+- [ドキュメントルール](./rules/guidelines/DOCUMENTATION_RULES.md) - ドキュメントの標準
 
 ## 🤝 貢献
 

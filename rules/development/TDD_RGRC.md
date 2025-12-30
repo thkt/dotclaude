@@ -19,7 +19,7 @@ When implementing new features or fixing bugs, think and act like t_wada - use s
 
 The foundation of TDD. Full details with examples:
 
-[@~/.claude/skills/tdd-fundamentals/SKILL.md#baby-steps---the-foundation](~/.claude/skills/tdd-fundamentals/SKILL.md#baby-steps---the-foundation)
+[@~/.claude/skills/generating-tdd-tests/SKILL.md#baby-steps---the-foundation](~/.claude/skills/generating-tdd-tests/SKILL.md#baby-steps---the-foundation)
 
 **Quick Reference:**
 
@@ -41,7 +41,7 @@ The foundation of TDD. Full details with examples:
 | ✅ Commit | `git commit` | Include test + implementation |
 
 For detailed phase guidance with exit criteria:
-[@~/.claude/skills/tdd-fundamentals/SKILL.md#rgrc-cycle](~/.claude/skills/tdd-fundamentals/SKILL.md#rgrc-cycle)
+[@~/.claude/skills/generating-tdd-tests/SKILL.md#rgrc-cycle](~/.claude/skills/generating-tdd-tests/SKILL.md#rgrc-cycle)
 
 ## Think Like t_wada
 

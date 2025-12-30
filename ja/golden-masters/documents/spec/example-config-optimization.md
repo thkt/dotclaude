@@ -303,7 +303,7 @@ Agentは以下の方法で動的に発見される:
 
 ### 2.4 session-end.sh への追加
 
-**Path**: `~/.claude/scripts/session-end.sh`
+**Path**: `~/.claude/skills/scripts/session-end.sh`
 
 **追加コード**:
 
@@ -332,16 +332,16 @@ fi
 
 ### 2.5 SYNC_CHECKLIST.md（新規）
 
-**Path**: `~/.claude/rules/reference/SYNC_CHECKLIST.md`
+**Path**: `~/.claude/rules/guidelines/SYNC_CHECKLIST.md`
 
 ```markdown
 # Rules/Reference 同期チェックリスト
 
-## rules/reference/ を更新した場合
+## rules/guidelines/ を更新した場合
 
 ### 必須更新
 
-- [ ] 同ファイルの日本語版（ja/rules/reference/）を更新
+- [ ] 同ファイルの日本語版（ja/rules/guidelines/）を更新
 - [ ] skills/applying-code-principles/SKILL.md の該当セクションを確認
 
 ### 確認項目
@@ -364,7 +364,7 @@ fi
 ### DRY原則との整合性
 
 **意図的な構造**:
-- `rules/reference/`: 詳細な正典（単一真実源）
+- `rules/guidelines/`: 詳細な正典（単一真実源）
 - `SKILL.md`: 統合サマリー（参照リンク付き）
 
 この階層構造はDRY違反ではなく、
@@ -470,4 +470,4 @@ describe('PRE_TASK_CHECK Skip Logic', () => {
 - SOW: `sow.md`（同ディレクトリ）
 - 計画ファイル: `~/.claude/plans/synthetic-marinating-pillow.md`
 - 現行PRE_TASK_CHECK: `~/.claude/rules/core/PRE_TASK_CHECK_COMPACT.md`
-- 現行session-end.sh: `~/.claude/scripts/session-end.sh`
+- 現行session-end.sh: `~/.claude/skills/scripts/session-end.sh`

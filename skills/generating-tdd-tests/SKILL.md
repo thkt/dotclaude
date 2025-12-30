@@ -251,10 +251,11 @@ Target coverage: 80%+
 
 - [@./references/tdd-rgrc.md](./references/tdd-rgrc.md) - Complete RGRC guide
 - [@./references/test-design.md](./references/test-design.md) - Test design techniques
+- [@./references/feature-driven.md](./references/feature-driven.md) - Feature-driven TDD workflow
+- [@./references/bug-driven.md](./references/bug-driven.md) - Bug-driven TDD workflow
 
 ### Related Skills
 
-- `tdd-fundamentals` - TDD基本原則
 - `applying-code-principles` - コード原則適用
 
 ### Used by Commands

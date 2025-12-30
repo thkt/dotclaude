@@ -118,7 +118,7 @@ Format: `type(scope): description`
 
 ### Related Skills
 
-- `tdd-fundamentals` - TDD with CLI test runners
+- `generating-tdd-tests` - TDD with CLI test runners
 - `creating-hooks` - Git hooks configuration
 
 ### Used by Commands

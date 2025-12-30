@@ -264,7 +264,7 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 ### Development Guides
 
 - [Principles Guide](./rules/PRINCIPLES_GUIDE.md) - Complete overview of all development principles
-- [Documentation Rules](./rules/reference/DOCUMENTATION_RULES.md) - Standards for documentation
+- [Documentation Rules](./rules/guidelines/DOCUMENTATION_RULES.md) - Standards for documentation
 
 ## 🤝 Contributing
 

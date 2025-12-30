@@ -13,63 +13,25 @@ allowed-tools: Read, Write, Edit, Grep, Glob
 
 Prefer CSS solutions over JavaScript. "The best code is no code."
 
-## Priority
-
-1. **HTML** - Structure and semantics
-2. **CSS** - Visual presentation and layout
-3. **JavaScript** - Only when truly necessary
-
-## CSS-First Decision Flow
-
-| Need | CSS Solution | Avoid JS |
-| --- | --- | --- |
-| Layout | Grid / Flexbox | Manual position calculation |
-| Position change | `transform` (GPU accelerated) | `top/left` (causes reflow) |
-| Show/Hide | `visibility` / `opacity` | `display` toggle |
-| State change | `:target` / `:checked` / `:has()` | `setState`, `toggleClass` |
-| Responsive | Media / Container queries | `window.innerWidth` |
-| Animation | `transition` / `animation` | `requestAnimationFrame` |
-
-## Native HTML First
-
-Use built-in browser elements:
-
-- `<details>` / `<summary>` - Accordion (no JS)
-- `<dialog>` - Modal (minimal JS: `showModal()`)
-- `[data-tooltip]` + CSS `::after` - Tooltip (no JS)
-
-## When JavaScript IS Required
-
-CSS cannot handle:
-
-- API data fetching
-- Form submission / validation
-- Complex multi-interaction state
-- Dynamic content generation
-- Browser APIs (localStorage, WebSocket, etc.)
-
-## Decision Questions
+## Quick Decision
 
 Before writing JS, ask:
 
-1. **"Can CSS solve this?"** → Check the decision flow above
+1. **"Can CSS solve this?"** → Grid, Flexbox, :has(), transforms
 2. **"Is this needed now?"** (YAGNI) → No evidence = don't implement
 3. **"Simplest solution?"** (Occam's Razor) → 3 lines CSS > 50 lines JS
 
-## References
+## Reference
 
-### Principles (rules/)
+For detailed guide, see:
+[@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md)
 
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first approach, outcome-first development
-- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Simplest solution wins
-- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Build only what's needed
+## Related
 
-### Related Skills
+- `applying-code-principles` - SOLID, DRY, Occam's Razor
+- `optimizing-performance` - Performance optimization
 
-- `applying-code-principles` - SOLID, DRY原則
-- `optimizing-performance` - パフォーマンス最適化
+## Used by
 
-### Used by Commands
-
-- `/code --frontend` - フロントエンド実装時
-- `/audit` - CSS-first アプローチ確認
+- `/code --frontend` - Frontend implementation
+- `/audit` - CSS-first approach verification

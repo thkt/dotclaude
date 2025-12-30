@@ -103,13 +103,13 @@ Layer 1: Skills (教育)
      └── examples/ (パターン)
 
 Layer 2: Shared (実装)
-  └─ commands/shared/
+  └─ references/commands/shared/
      ├── tdd-cycle.md (RGRC 詳細)
      └── test-generation.md (パターン)
 
 Layer 3: Commands (実行)
   ├─ commands/fix.md + fix/ (6 モジュール)
-  └─ commands/code/ (参照更新)
+  └─ references/commands/code/ (参照更新)
 ```
 
 **利点**:
@@ -165,7 +165,7 @@ skills/tdd-fundamentals/
 │   ├── feature-driven.md (75 行)
 │   └── bug-driven.md (80 行)
 
-commands/shared/
+references/commands/shared/
 ├── tdd-cycle.md (253 行)
 └── test-generation.md (228 行)
 ```
@@ -204,7 +204,7 @@ commands/
 **2 ファイル**を更新 (非破壊):
 
 ```text
-commands/code/
+references/commands/code/
 ├── rgrc-cycle.md (+ TDD Fundamentals Reference)
 └── test-preparation.md (+ Test Generation Reference)
 ```

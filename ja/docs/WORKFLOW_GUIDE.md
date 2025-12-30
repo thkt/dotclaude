@@ -269,7 +269,7 @@ sow.md + spec.md 生成
 
 ### 管理ドキュメント
 
-- **[@../../rules/reference/DOCUMENTATION_RULES.md](../../rules/reference/DOCUMENTATION_RULES.md)**: ドキュメント管理ルール
+- **[@../../rules/guidelines/DOCUMENTATION_RULES.md](../../rules/guidelines/DOCUMENTATION_RULES.md)**: ドキュメント管理ルール
 - **[@./PROJECT_SETUP.md](./PROJECT_SETUP.md)**: プロジェクトセットアップ
 
 ---

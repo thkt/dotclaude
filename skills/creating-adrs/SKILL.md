@@ -35,166 +35,16 @@ Create Architecture Decision Records in MADR format through a structured 6-phase
 
 ## Execution Flow
 
-### Phase 1: Pre-Check
+### Phase Details
 
-```bash
-# Find existing ADRs
-ADR_DIR="docs/adr"
-ls -la ${ADR_DIR}/*.md 2>/dev/null
-
-# Check for duplicate titles
-grep -l "similar-title" ${ADR_DIR}/*.md
-
-# Get next number
-NEXT_NUM=$(ls ${ADR_DIR}/*.md | wc -l)
-NEXT_NUM=$((NEXT_NUM + 1))
-printf "%04d" $NEXT_NUM
-```
-
-### Phase 2: Template Selection
-
-Determine template from decision type:
-
-```markdown
-Decision Type Analysis:
-- Contains "use", "adopt", "select" → technology-selection
-- Contains "structure", "pattern", "design" → architecture-pattern
-- Contains "change", "update", "modify" → process-change
-- Contains "deprecate", "remove", "migrate" → deprecation
-```
-
-### Phase 3: Reference Collection
-
-Gather supporting evidence:
-
-- **Project docs**: README, existing ADRs, tech specs
-- **Issues/PRs**: Related discussions, requirements
-- **External**: Official docs, benchmark data, community feedback
-
-### Phase 4: Validation
-
-All ADRs must include these sections:
-
-| Section | Requirement | Validation |
-| --- | --- | --- |
-| Title | ADR-NNNN: [Name] | Pattern match |
-| Status | proposed/accepted/deprecated/superseded | Enum check |
-| Context | Problem statement | Min 50 chars |
-| Decision | What and why | Min 100 chars |
-| Consequences | Positive + Negative | Both required |
-
-Optional but recommended:
-
-- **Considered Options** - Min 3 for technology-selection
-- **Pros/Cons** - Comparison table
-- **Confirmation** - Verification method
-- **Related ADRs** - Cross-references
-
-### Phase 5: Index Update
-
-Auto-generate `docs/adr/README.md`:
-
-```markdown
-# Architecture Decision Records
-
-| ADR | Title | Status | Date |
-| --- | --- | --- | --- |
-| [0001](./0001-*.md) | Title | accepted | YYYY-MM-DD |
-```
-
-### Phase 6: Error Recovery
-
-| Error | Recovery Action |
+| Phase | Key Actions |
 | --- | --- |
-| Directory missing | Create `docs/adr/` |
-| Duplicate title | Suggest alternative or confirm |
-| Missing section | Prompt for input |
-| Invalid status | Default to "proposed" |
-
-## Skill File Generation Template
-
-When generating skill from ADR (`/adr:skill`):
-
-````markdown
----
-name: adr-NNNN-{kebab-case-title}
-description: >
-  {ADR decision summary}
-  Triggers on keywords: {extracted keywords}
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Grep
-  - Glob
----
-
-# {ADR Title} - Project Pattern
-
-## 🎯 Background and Decision
-
-[Quoted from ADR Context and Decision]
-
-## ✅ Implementation Pattern
-
-### Recommended Approach
-
-```{language}
-// Pattern derived from ADR
-```
-
-### Key Points
-
-- [Point 1 from ADR Decision]
-- [Point 2 from rationale]
-
-## 📋 Implementation Checklist
-
-Before implementing:
-
-- [ ] [Requirement 1 from ADR]
-- [ ] [Requirement 2]
-
-After implementation:
-
-- [ ] [Verification 1]
-- [ ] [Verification 2]
-
-## 💡 Usage Examples
-
-### Scenario 1: {Common use case}
-
-```{language}
-// Example implementation
-```
-
-## ⚠️ Important Considerations
-
-### What to Avoid
-
-- ❌ [Anti-pattern 1]
-- ❌ [Anti-pattern 2]
-
-## 🔗 References
-
-- **Source ADR**: [ADR-{number}: {title}](../../docs/adr/{NNNN}-{title}.md)
-````
-
-## Trigger Keyword Extraction
-
-Auto-extract from ADR content:
-
-```javascript
-// From title and decision sections
-const triggers = [
-  ...extractTechnicalTerms(title),
-  ...extractTechnicalTerms(decision),
-  ...getJapaneseTranslations(terms)
-];
-
-// Example: "Use React Query for API"
-// → ["React Query", "API", "fetch", "データ取得", "server state"]
-```
+| 1. Pre-Check | `ls docs/adr/*.md`, check duplicates, get next number |
+| 2. Template | Match keywords to template type |
+| 3. References | Gather project docs, issues, external resources |
+| 4. Validate | Check required sections (Title, Status, Context, Decision, Consequences) |
+| 5. Index | Auto-generate `docs/adr/README.md` |
+| 6. Recovery | Handle missing dirs, duplicates, missing sections |
 
 ## Skill vs Rule Decision
 
@@ -203,48 +53,9 @@ const triggers = [
 | Purpose | Enforce constraints | Suggest patterns |
 | Application | Always active | Triggered by keywords |
 | Output | docs/rules/ | .claude/skills/ |
-| Content | Must/Must not | How-to + checklist |
 
 **Use rule for**: Security requirements, absolute constraints
 **Use skill for**: Implementation patterns, context-dependent guidance
-
-## Error Messages
-
-### ADR Not Found
-
-```text
-❌ Error: ADR-0001 not found
-
-Searched in: docs/adr/
-Available ADRs:
-- 0002-authentication-strategy.md
-- 0003-monorepo-structure.md
-```
-
-### Skill Already Exists
-
-```text
-⚠️  Skill already exists: .claude/skills/adr-0001-*/
-
-Options:
-1. Overwrite (y)
-2. Create with different name (n)
-3. Cancel (c)
-```
-
-### Duplicate Detection
-
-```text
-⚠️  Similar skill detected
-
-Existing skill: api-fetching (overlap: 65%)
-Shared triggers: "API", "fetch"
-
-Recommendations:
-1. Merge into existing
-2. Use different triggers
-3. Proceed anyway
-```
 
 ## Best Practices
 

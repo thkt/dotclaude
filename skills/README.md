@@ -74,12 +74,11 @@ Skills are used for:
 - **Specialized reviews** → Use Agents
 - **Temporary tasks** → Execute directly
 
-## Complete Skill Inventory (22 Skills)
+## Complete Skill Inventory (21 Skills)
 
 | Category | Skill Name | Description | Used by |
 | --- | --- | --- | --- |
-| **TDD/Testing** | `generating-tdd-tests` | TDD/RGRCサイクル、テスト設計 | /code |
-| | `tdd-fundamentals` | TDD基礎原則、例 | /code, /fix |
+| **TDD/Testing** | `generating-tdd-tests` | TDD/RGRCサイクル、テスト設計、基礎原則 | /code, /fix |
 | **Code Quality** | `applying-code-principles` | SOLID, DRY, YAGNI principles | /code |
 | | `applying-frontend-patterns` | React/UI patterns (structure) | /code --frontend |
 | | `integrating-storybook` | Storybook component development | /code --storybook |
