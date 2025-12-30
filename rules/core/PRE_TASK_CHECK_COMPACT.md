@@ -4,7 +4,7 @@
 
 ### 95% Understanding Rule
 
-**Never proceed with confidence <95%**. Ask clarification questions first.
+**Never proceed with confidence <95%**. Use `AskUserQuestion` for clarification first.
 
 ### When to Execute Check
 
@@ -15,7 +15,7 @@
 
 ### When to Skip
 
-- Simple questions, confirmations (y/yes/ok)
+- Simple questions, confirmations
 - Read-only queries, follow-up clarifications
 
 ## Confidence Markers
@@ -32,18 +32,16 @@
 ❓ Unclear: [?] items
 💡 Recommended: /command
 ⚡ Feasibility: 🟢/🟡/🔴
-
-Proceed after confirmation (Y/n)
 ```
+
+## Confirmation
+
+Use `AskUserQuestion` tool for all confirmations and clarifications.
 
 ## Flow
 
 1. Analyze → mark confidence
-2. If <95% → ask questions → STOP
-3. If ≥95% → show check → wait for Y
-4. Show impact → execution plan → wait for Y
+2. If <95% → AskUserQuestion for clarification → STOP
+3. If ≥95% → show check → AskUserQuestion to confirm
+4. Show impact/plan → AskUserQuestion to confirm
 5. Execute
-
-## Details
-
-Comprehensive guide: [@./PRE_TASK_CHECK_VERBOSE.md](./PRE_TASK_CHECK_VERBOSE.md)

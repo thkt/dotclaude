@@ -138,10 +138,9 @@ Is this definition correct? Please point out any missing or incorrect items.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Is this understanding correct? An execution plan will be shown if needed. (Y/n/i)
 ```
 
-**[STOP HERE - Wait for user response]**
+**[Use `AskUserQuestion` to confirm understanding before proceeding]**
 
 Note: Output labels will be translated to Japanese per CLAUDE.md P1 rule
 
@@ -208,32 +207,15 @@ See: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/commands/C
 
 ### Output Format
 
-**IMPORTANT**: Command field MUST contain ONLY slash commands or "N/A". Never put descriptions or other text.
-
-**Single command**:
+**IMPORTANT**: Command field MUST contain ONLY slash commands or "N/A".
 
 ```markdown
 💡 Suggested approach:
-- Command: /fix
-- Reason: Best match for small fix, 90% understanding
+- Command: [/command or N/A]
+- Reason: [Brief explanation]
 ```
 
-**Workflow** (multi-action detected):
-
-```markdown
-💡 Suggested workflow:
-- Steps: /think → /code → /test
-- Reason: Complex task requiring planning
-- TodoWrite: Will create 3 tasks automatically
-```
-
-**No command match**:
-
-```markdown
-💡 Suggested approach:
-- Command: N/A
-- Reason: No specific command needed for this task
-```
+For workflows: `Steps: /think → /code → /test`
 
 ## Standard Workflows
 
@@ -244,11 +226,7 @@ Details: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/comman
 
 ## User Response Handling
 
-**Important: Always wait for user response after showing understanding check**
-
-- Y: Proceed with implementation (show impact simulation if needed)
-- n: Re-evaluate task understanding
-- i: Wait for additional information
+Use `AskUserQuestion` tool for all confirmations. Response interpretation is handled automatically.
 
 ## Impact Simulation (Dry-run)
 
@@ -306,36 +284,6 @@ If any of the following apply, ALWAYS show Impact Simulation:
 - Changing 3+ files simultaneously
 - Affecting authentication, security, or data integrity logic
 
-### Combined Display Format
-
-**Format**:
-
-```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🔍 Impact Simulation (Dry-run)
-
-Expected changes:
-• Files to modify: [list 2-5 key files]
-• Affected components: [list impacted modules/components]
-• Risk level: 🟢 Low / 🟡 Medium / 🔴 High
-• Note: [Any important considerations]
-
-─────────────────────────────────────────────────
-
-📝 Execution Plan
-
-Will execute the following:
-1. [Specific action]
-2. [Specific action]
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Proceed with this plan? (Y/n/i)
-```
-
-**Notes**: Single outer box with thin separator (─) between sections for cleaner visual hierarchy.
-
 ## Execution Plan (After Impact Simulation)
 
 Display for operations that will modify files or execute commands.
@@ -352,10 +300,9 @@ Will execute the following:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Proceed with this plan? (Y/n/i)
 ```
 
-**[STOP HERE - Wait for user response]**
+**[Use `AskUserQuestion` to confirm execution plan before proceeding]**
 
 **Examples**:
 
@@ -363,7 +310,7 @@ Proceed with this plan? (Y/n/i)
 - File edit: "Edit /path/to/file.js - add error handling"
 - Command execution: "Run npm test to verify changes"
 
-**Important: Wait for user confirmation before proceeding.**
+**Combined display**: When showing both, use thin separator (─) between Impact Simulation and Execution Plan within single outer box (━).
 
 ## Edge Cases
 
@@ -374,10 +321,10 @@ Proceed with this plan? (Y/n/i)
 ## Integrated Workflow
 
 1. **Understanding Check**: Assess comprehension & suggest approach
-2. **User Confirmation**: Wait for Y/n/i ← **STOP POINT**
-3. **Impact Simulation** (if Y and complex/risky changes): Show dry-run preview
-4. **Execution Plan** (if Y and file/command ops): Show specific actions
-5. **Plan Confirmation**: Wait for final Y/n/i ← **STOP POINT**
+2. **User Confirmation**: Use `AskUserQuestion` ← **STOP POINT**
+3. **Impact Simulation** (if confirmed and complex/risky changes): Show dry-run preview
+4. **Execution Plan** (if confirmed and file/command ops): Show specific actions
+5. **Plan Confirmation**: Use `AskUserQuestion` ← **STOP POINT**
 6. **Execute**: Perform the approved actions
 
 ## Integration with Output Verifiability

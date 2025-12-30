@@ -99,20 +99,13 @@ When updating documentation:
 ☐ Test cross-references work
 ```
 
-### Path Differences
+### Path References
 
-English references:
-
-```markdown
-[@./SOLID.md](./SOLID.md)                    # Same directory
-[@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # Up one, into development
-```
-
-Japanese references:
+Both EN and JP use identical relative path patterns within their respective directories:
 
 ```markdown
 [@./SOLID.md](./SOLID.md)                    # Same directory
-[@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # Up one, into development
+[@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # Up one level
 ```
 
 ### Exceptions: Japanese-Only Documentation
@@ -142,69 +135,11 @@ The following files exist only in English (no Japanese version):
 
 ## Update Procedures
 
-### Adding New Principles
-
-1. **Evaluate Placement**
-   - Theory/Principle → `/rules/reference/`
-   - Practice/Method → `/rules/development/`
-
-2. **Create Both Versions**
-
-   ```bash
-   # English
-   /rules/reference/NEW_PRINCIPLE.md
-   # Japanese
-   /ja/rules/reference/NEW_PRINCIPLE.md
-   ```
-
-3. **Add References**
-   - Add to CLAUDE.md if core principle
-   - Add to relevant commands if applicable
-   - Cross-reference with related docs
-
-4. **Update Index**
-   - Add to COMMANDS.md if relevant
-   - Update any overview documents
-
-### Modifying Existing Documentation
-
-1. **Check Dependencies**
-
-   ```bash
-   # Find all references
-   grep -r "FILENAME" ~/.claude/
-   ```
-
-2. **Update Both Languages**
-   - Make changes to English version
-   - Apply same changes to Japanese version
-   - Maintain structural parity
-
-3. **Verify References**
-   - Test all incoming references still valid
-   - Check outgoing references still correct
-   - No broken links
-
-### Moving Files
-
-1. **Plan the Move**
-
-   ```markdown
-   Current: /rules/reference/FILE.md
-   Target:  /rules/development/FILE.md
-   ```
-
-2. **Find All References**
-
-   ```bash
-   grep -r "FILE\.md" ~/.claude/
-   ```
-
-3. **Execute in Order**
-   - Move English file
-   - Move Japanese file
-   - Update all references
-   - Verify no broken links
+| Operation | Steps |
+| --- | --- |
+| **Add New** | 1. Create EN/JP both 2. Add ref to CLAUDE.md 3. Update related docs |
+| **Modify** | 1. `grep -r "FILENAME"` check refs 2. Update EN/JP together 3. Verify links |
+| **Move File** | 1. Search refs 2. Move EN/JP 3. Update all refs |
 
 ## Documentation Standards
 
@@ -248,88 +183,28 @@ advancedImplementation()
 
 ## Quality Checklist
 
-Before committing documentation:
-
-```markdown
-## Structure
-☐ Follows standard file structure
-☐ Clear hierarchy of information
-☐ Logical flow from simple to complex
-
-## Content
-☐ Examples are practical and clear
-☐ No unnecessary complexity
-☐ Applies Occam's Razor
-
-## References
-☐ All links tested and working
-☐ No circular dependencies
-☐ Appropriate reference depth
-
-## Synchronization
-☐ English version complete
-☐ Japanese version complete
-☐ Structure matches exactly
-☐ References adjusted for paths
-
-## Integration
-☐ Added to appropriate index
-☐ Referenced from CLAUDE.md if core
-☐ Cross-referenced with related docs
-```
+- [ ] EN/JP synchronized
+- [ ] All links tested
+- [ ] No circular references
+- [ ] Correct placement (reference/ vs development/)
 
 ## Common Patterns
 
-### Adding a New Core Principle
+| Pattern | Steps |
+| --- | --- |
+| New Principle | Create EN/JP in reference/ → Add to CLAUDE.md |
+| New Practice | Create EN/JP in development/ → Reference from principles |
+| New Command | Create EN/JP in commands/ → Add to COMMANDS.md |
 
-```bash
-1. Create /rules/reference/PRINCIPLE.md
-2. Create /ja/rules/reference/PRINCIPLE.md
-3. Add to CLAUDE.md:
-   - **Core principle**: Name → [@path](path)
-4. Find related practices
-5. Add cross-references
-```
+## Anti-Patterns
 
-### Adding a New Practice
-
-```bash
-1. Create /rules/development/PRACTICE.md
-2. Create /ja/rules/development/PRACTICE.md
-3. Reference from relevant principles
-4. Add to command docs if applicable
-```
-
-### Creating Command Documentation
-
-```bash
-1. Create /commands/COMMAND.md
-2. Create /ja/commands/COMMAND.md
-3. Add to COMMANDS.md index
-4. Reference relevant principles/practices
-```
-
-## Anti-Patterns to Avoid
-
-### ❌ Don't Do This
-
-1. **Single language updates** - Always update both EN/JP
-2. **Deep nesting** - Max 3 levels of references
-3. **Orphan documents** - Everything should be referenced
-4. **Circular references** - A → B → A
-5. **Misplaced files** - Principles in development/ folder
-6. **Broken links** - Test all references
-7. **Inconsistent structure** - EN/JP must match
-
-### ✅ Do This Instead
-
-1. **Synchronized updates** - Both languages together
-2. **Flat hierarchy** - Direct references when possible
-3. **Connected graph** - All docs referenced somewhere
-4. **Tree structure** - Clear parent-child relationships
-5. **Correct placement** - Follow decision framework
-6. **Verified links** - Test before committing
-7. **Matching structure** - Identical organization
+| ❌ Avoid | ✅ Instead |
+| --- | --- |
+| Single language updates | Synchronized updates (EN/JP together) |
+| Deep nesting (>3 levels) | Flat hierarchy |
+| Orphan documents | Connected graph |
+| Circular references | Tree structure |
+| Misplaced files | Follow decision framework |
 
 ## Maintenance Tasks
 
@@ -357,30 +232,11 @@ Consider refactoring when:
 - EN/JP drift in structure
 - Too many cross-references (>5 per doc)
 
-## Tools and Commands
-
-### Useful Commands
+## Tools
 
 ```bash
-# Find all references to a file
-grep -r "FILENAME" ~/.claude/
-
-# Check EN/JP structure match
-diff <(ls /rules/) <(ls /ja/rules/)
-
-# Find orphaned documents
-# (Files with no incoming references)
-for file in $(find /rules -name "*.md"); do
-  basename=$(basename $file)
-  count=$(grep -r "$basename" ~/.claude/ | wc -l)
-  if [ $count -eq 0 ]; then echo "Orphaned: $file"; fi
-done
-
-# Verify all links
-# (Simple broken link checker)
-grep -r "@\[.*\]" ~/.claude/ | while read line; do
-  # Extract and verify each link
-done
+grep -r "FILENAME" ~/.claude/           # Find references
+diff <(ls /rules/) <(ls /ja/rules/)     # Check EN/JP match
 ```
 
 ## Evolution Guidelines
@@ -429,4 +285,4 @@ Keep it:
 
 ---
 
-*Last updated: 2025-09-30*
+*Last updated: 2025-12-30*
