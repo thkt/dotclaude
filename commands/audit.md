@@ -56,11 +56,21 @@ Execute code review:
 2. Parallel Reviews: Launch specialized agents concurrently
 3. Filter & Consolidate: Apply confidence filters (>0.7)
 
-### Agents to Invoke
-- structure-reviewer, readability-reviewer
-- type-safety-reviewer, testability-reviewer
-- performance-reviewer, accessibility-reviewer
-- design-pattern-reviewer, progressive-enhancer
+### Agents to Invoke (Full Review Mode)
+
+All agents run on every audit for maximum accuracy:
+
+**Core Agents**:
+- structure-reviewer, readability-reviewer, progressive-enhancer
+- type-safety-reviewer, design-pattern-reviewer, testability-reviewer
+- silent-failure-reviewer, root-cause-reviewer
+
+**Enhanced Agents (pr-review-toolkit)**:
+- silent-failure-hunter, comment-analyzer
+- type-design-analyzer, code-simplifier
+
+**Production Agents**:
+- security-reviewer, performance-reviewer, accessibility-reviewer
 
 ### Output Requirements
 - Evidence required: file:line for all findings
@@ -71,18 +81,37 @@ Execute code review:
 })
 ```
 
-## Review Agents
+## Review Agents (15 total)
+
+### Core Agents (8)
 
 | Agent | Focus |
 | --- | --- |
 | `structure-reviewer` | Code organization, DRY, coupling |
 | `readability-reviewer` | Clarity, naming, complexity |
 | `type-safety-reviewer` | TypeScript coverage, any usage |
-| `testability-reviewer` | Test design, coverage gaps |
-| `performance-reviewer` | Bottlenecks, bundle size |
-| `accessibility-reviewer` | WCAG, keyboard nav, ARIA |
+| `silent-failure-reviewer` | Empty catch, unhandled Promise |
 | `design-pattern-reviewer` | Pattern consistency |
 | `progressive-enhancer` | CSS-first solutions |
+| `testability-reviewer` | Test design, coverage gaps |
+| `root-cause-reviewer` | Root cause analysis |
+
+### Enhanced Agents - pr-review-toolkit (4)
+
+| Agent | Focus | Complements |
+| --- | --- | --- |
+| `silent-failure-hunter` | Detailed error handling analysis | silent-failure-reviewer |
+| `comment-analyzer` | Comment quality, documentation rot | (new category) |
+| `type-design-analyzer` | Type design (invariants, encapsulation) | type-safety-reviewer |
+| `code-simplifier` | Simplification suggestions | readability-reviewer |
+
+### Production Agents (3)
+
+| Agent | Focus |
+| --- | --- |
+| `security-reviewer` | OWASP, vulnerabilities |
+| `performance-reviewer` | Bottlenecks, bundle size |
+| `accessibility-reviewer` | WCAG, keyboard nav, ARIA |
 
 ## Confidence Markers
 
@@ -128,29 +157,25 @@ Recommended Actions
 3. Backlog [→]: [improvements]
 ```
 
-## Review Strategies
+## Execution Time
 
-| Strategy | Time | Focus | Command |
-| --- | --- | --- | --- |
-| Quick | 2-3 min | Security, critical bugs | `/audit --quick` |
-| Standard | 5-7 min | + Performance, types, tests | `/audit` |
-| Deep | 10+ min | + Root cause, tech debt | `/audit --deep` |
-| Focused | varies | Specific area | `/audit --security` |
+| Category | Agents |
+| --- | --- |
+| Core | 8 |
+| pr-review-toolkit | 4 |
+| Production | 3 |
+| **Total** | **15** |
+
+*Agents run in parallel. Typical execution: ~3-5 min.*
 
 ## Usage Examples
 
 ```bash
-# Standard review
+# Full review (all 15 agents)
 /audit
 
-# Security audit
-/audit --security --deep
-
-# Target scope
+# Target specific scope
 /audit "src/components"
-
-# Compare to main
-/audit --compare main
 ```
 
 ## Best Practices

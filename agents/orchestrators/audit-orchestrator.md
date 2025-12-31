@@ -36,6 +36,14 @@ execution_plan:
     execution_mode: parallel
     group_timeout: 50
 
+  parallel_group_2b:  # Enhanced Analysis (pr-review-toolkit)
+    agents:
+      - silent-failure-hunter  # Detailed error handling analysis
+      - comment-analyzer       # Comment quality & rot detection
+    execution_mode: parallel
+    group_timeout: 50
+    source: pr-review-toolkit
+
   sequential_analysis:  # Root Cause (depends on foundation)
     agents: [root-cause-reviewer]
     dependencies: [structure-reviewer, readability-reviewer]
@@ -45,6 +53,14 @@ execution_plan:
     agents: [security-reviewer, performance-reviewer, accessibility-reviewer]
     execution_mode: parallel
     group_timeout: 65
+
+  parallel_group_3b:  # Design Quality (pr-review-toolkit)
+    agents:
+      - type-design-analyzer   # Type design quality (invariants, encapsulation)
+      - code-simplifier        # Simplification suggestions
+    execution_mode: parallel
+    group_timeout: 60
+    source: pr-review-toolkit
 
   conditional_group:  # Documentation (only if .md files exist)
     agents: [document-reviewer]
@@ -89,7 +105,6 @@ execution_plan:
 | fileTypes | string[] | .ts, .tsx | Supported extensions |
 | excludePatterns | string[] | node_modules, dist, build | Ignored paths |
 | maxFileSize | number | 100KB | Skip larger files |
-| reviewDepth | enum | comprehensive | shallow / deep / comprehensive |
 
 **Enriched Context** (auto-detected): projectType, dependencies, tsConfig, eslintConfig, customRules
 
@@ -128,9 +143,9 @@ Based on [@~/.claude/rules/PRINCIPLES_GUIDE.md] priority matrix:
 
 | Priority | Violations | Examples |
 | --- | --- | --- |
-| 🔴 Essential | Occam's Razor, Progressive Enhancement | Unnecessary complexity, over-engineering |
-| 🟡 Default | Readable Code, DRY, TDD/Baby Steps | Hard to understand, duplication, large changes |
-| 🟢 Contextual | SOLID, Law of Demeter | Context-dependent, excessive coupling |
+| Essential | Occam's Razor, Progressive Enhancement | Unnecessary complexity, over-engineering |
+| Default | Readable Code, DRY, TDD/Baby Steps | Hard to understand, duplication, large changes |
+| Contextual | SOLID, Law of Demeter | Context-dependent, excessive coupling |
 
 #### Severity Weighting
 
@@ -300,14 +315,52 @@ custom_rules:
 
 All review agents are organized by function:
 
-- `~/.claude/agents/reviewers/` - All review agents
+- `~/.claude/agents/reviewers/` - Core review agents
   - structure, readability, root-cause, type-safety
   - design-pattern, testability, performance, accessibility
   - document, subagent, silent-failure, security
+- `~/.claude/plugins/marketplaces/claude-plugins-official/plugins/pr-review-toolkit/agents/` - Enhanced review agents
+  - silent-failure-hunter, comment-analyzer
+  - type-design-analyzer, code-simplifier
 - `~/.claude/agents/generators/` - Code generation agents (test)
-- `~/.claude/agents/enhancers/` - Code enhancement agents (progressive)
+- `~/.claude/agents/enhancers/` - Code enhancement agents
+  - progressive-enhancer (used in audit as review agent)
 - `~/.claude/agents/git/` - Git operation agents (branch, commit, pr, issue)
 - `~/.claude/agents/orchestrators/` - Orchestration agents (this file)
+
+**Note**: `progressive-enhancer` is located in `enhancers/` but participates in audit reviews for CSS-first solution detection.
+
+## Agent Role Matrix
+
+### Core Agents
+
+| Agent | Role | Focus |
+| --- | --- | --- |
+| structure-reviewer | Code organization | DRY, coupling, architecture |
+| readability-reviewer | Readability evaluation | Naming, clarity, scoring |
+| type-safety-reviewer | Type coverage | any usage, type assertions |
+| silent-failure-reviewer | Pattern detection | Empty catch, unhandled Promise |
+| design-pattern-reviewer | Pattern consistency | SOLID, frontend patterns |
+| testability-reviewer | Test design | Coverage gaps, test quality |
+| progressive-enhancer | CSS-first solutions | JS → CSS opportunities |
+| root-cause-reviewer | Root cause analysis | Deep problem investigation |
+
+### Enhanced Agents (pr-review-toolkit)
+
+| Agent | Role | Complements |
+| --- | --- | --- |
+| silent-failure-hunter | Detailed error analysis | silent-failure-reviewer |
+| comment-analyzer | Comment quality & rot | (new category) |
+| type-design-analyzer | Type design quality | type-safety-reviewer |
+| code-simplifier | Simplification suggestions | readability-reviewer |
+
+### Production Agents
+
+| Agent | Role | Focus |
+| --- | --- | --- |
+| security-reviewer | Security audit | OWASP, vulnerabilities |
+| performance-reviewer | Performance analysis | Bottlenecks, bundle size |
+| accessibility-reviewer | Accessibility check | WCAG, ARIA, keyboard nav |
 
 ## Best Practices
 

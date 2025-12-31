@@ -18,7 +18,7 @@ Specialized agent for applying Progressive Enhancement principles to web develop
 
 ## Integration with Skills
 
-**Knowledge Base**: [@~/.claude/skills/enhancing-progressively/SKILL.md]
+**Knowledge Base**: [@~/.claude/skills/enhancing-progressively/SKILL.md](~/.claude/skills/enhancing-progressively/SKILL.md)
 
 - CSS-first approach and priority hierarchy (HTML → CSS → JS)
 - CSS-first decision flow and patterns

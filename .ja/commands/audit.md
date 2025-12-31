@@ -57,10 +57,18 @@ Task({
 3. フィルタ＆統合: 信頼度フィルタを適用（>0.7）
 
 ### 呼び出すエージェント
-- structure-reviewer, readability-reviewer
-- type-safety-reviewer, testability-reviewer
-- performance-reviewer, accessibility-reviewer
-- design-pattern-reviewer, progressive-enhancer
+
+**コアエージェント**:
+- structure-reviewer, readability-reviewer, progressive-enhancer
+- type-safety-reviewer, design-pattern-reviewer, testability-reviewer
+- silent-failure-reviewer, root-cause-reviewer
+
+**拡張エージェント (pr-review-toolkit)**:
+- silent-failure-hunter, comment-analyzer
+- type-design-analyzer, code-simplifier
+
+**本番エージェント**:
+- security-reviewer, performance-reviewer, accessibility-reviewer
 
 ### 出力要件
 - エビデンス必須: すべての指摘にfile:line
@@ -71,18 +79,37 @@ Task({
 })
 ```
 
-## レビューエージェント
+## レビューエージェント（計15）
+
+### コアエージェント（8）
 
 | エージェント | フォーカス |
 | --- | --- |
 | `structure-reviewer` | コード構成、DRY、結合度 |
 | `readability-reviewer` | 明確性、命名、複雑性 |
 | `type-safety-reviewer` | TypeScriptカバレッジ、any使用 |
-| `testability-reviewer` | テスト設計、カバレッジギャップ |
-| `performance-reviewer` | ボトルネック、バンドルサイズ |
-| `accessibility-reviewer` | WCAG、キーボードナビ、ARIA |
+| `silent-failure-reviewer` | 空catch、未処理Promise |
 | `design-pattern-reviewer` | パターン一貫性 |
 | `progressive-enhancer` | CSS-firstソリューション |
+| `testability-reviewer` | テスト設計、カバレッジギャップ |
+| `root-cause-reviewer` | 根本原因分析 |
+
+### 拡張エージェント - pr-review-toolkit（4）
+
+| エージェント | フォーカス | 補完対象 |
+| --- | --- | --- |
+| `silent-failure-hunter` | 詳細なエラーハンドリング分析 | silent-failure-reviewer |
+| `comment-analyzer` | コメント品質、ドキュメント腐敗 | (新カテゴリ) |
+| `type-design-analyzer` | 型設計（不変条件、カプセル化） | type-safety-reviewer |
+| `code-simplifier` | 簡素化提案 | readability-reviewer |
+
+### 本番エージェント（3）
+
+| エージェント | フォーカス |
+| --- | --- |
+| `security-reviewer` | OWASP、脆弱性 |
+| `performance-reviewer` | ボトルネック、バンドルサイズ |
+| `accessibility-reviewer` | WCAG、キーボードナビ、ARIA |
 
 ## 信頼度マーカー
 
@@ -128,29 +155,25 @@ Task({
 3. バックログ [→]: [improvements]
 ```
 
-## レビュー戦略
+## 実行時間
 
-| 戦略 | 時間 | フォーカス | コマンド |
-| --- | --- | --- | --- |
-| クイック | 2-3分 | セキュリティ、重大バグ | `/audit --quick` |
-| 標準 | 5-7分 | + パフォーマンス、型、テスト | `/audit` |
-| 深掘り | 10分以上 | + 根本原因、技術的負債 | `/audit --deep` |
-| 焦点 | 可変 | 特定領域 | `/audit --security` |
+| カテゴリ | エージェント数 |
+| --- | --- |
+| コア | 8 |
+| pr-review-toolkit | 4 |
+| 本番 | 3 |
+| **合計** | **15** |
+
+*エージェントは並列実行。通常の実行時間: 約3-5分。*
 
 ## 使用例
 
 ```bash
-# 標準レビュー
+# フルレビュー（15エージェント）
 /audit
 
-# セキュリティ監査
-/audit --security --deep
-
-# 対象スコープ
+# 対象スコープを指定
 /audit "src/components"
-
-# mainと比較
-/audit --compare main
 ```
 
 ## ベストプラクティス
