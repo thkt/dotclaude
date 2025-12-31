@@ -128,19 +128,19 @@ git log --oneline -5
 ## 良い例
 
 ```markdown
-[GOOD] feat(auth): add OAuth2 authentication support
-[GOOD] fix(api): resolve timeout in user endpoint
-[GOOD] docs(readme): update installation instructions
-[GOOD] perf(search): optimize database queries
+✅ feat(auth): add OAuth2 authentication support
+✅ fix(api): resolve timeout in user endpoint
+✅ docs(readme): update installation instructions
+✅ perf(search): optimize database queries
 ```
 
 ## 悪い例
 
 ```markdown
-[BAD] Fixed bug (タイプなし、曖昧すぎる)
-[BAD] feat: Added new feature. (大文字、ピリオド)
-[BAD] update code (タイプなし、具体的でない)
-[BAD] FEAT(AUTH): ADD LOGIN (全て大文字)
+❌ Fixed bug (タイプなし、曖昧すぎる)
+❌ feat: Added new feature. (大文字、ピリオド)
+❌ update code (タイプなし、具体的でない)
+❌ FEAT(AUTH): ADD LOGIN (全て大文字)
 ```
 
 ## コンテキスト統合

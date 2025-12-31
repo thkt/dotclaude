@@ -127,9 +127,9 @@ Follow TDD cycle from Skill:
 ```markdown
 ## Test Generation Summary
 
-[DONE] Created: 5 unit tests
-[DONE] Created: 2 integration tests
-[SKIP] Skipped: E2E tests (Priority: Low)
+✅ Created: 5 unit tests
+✅ Created: 2 integration tests
+⚠️ Skipped: E2E tests (Priority: Low)
 
 Suggested additions (not implemented):
 - Edge case: negative purchase count
@@ -139,9 +139,9 @@ Suggested additions (not implemented):
 
 | Condition | Response |
 | --- | --- |
-| SOW not found | "[WARN] No SOW found. Skipping test generation." |
-| No Test Plan section | "[INFO] No test plan in SOW. Manual creation required." |
-| Unknown test framework | "[WARN] No test framework detected. Cannot generate." |
+| SOW not found | "⚠️ No SOW found. Skipping test generation." |
+| No Test Plan section | "ℹ️ No test plan in SOW. Manual creation required." |
+| Unknown test framework | "⚠️ No test framework detected. Cannot generate." |
 
 ## Constraints
 
@@ -169,8 +169,8 @@ Suggested additions (not implemented):
 
 ## Success Criteria
 
-1. All planned tests implemented
-2. No unplanned tests added
-3. Tests are simple and maintainable
-4. Tests follow project conventions
-5. Coverage report shows plan completion
+1. ✅ All planned tests implemented
+2. ✅ No unplanned tests added
+3. ✅ Tests are simple and maintainable
+4. ✅ Tests follow project conventions
+5. ✅ Coverage report shows plan completion

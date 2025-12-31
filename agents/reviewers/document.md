@@ -84,12 +84,12 @@ Review documentation for quality, clarity, structure, and audience appropriatene
 ## Output Format
 
 ```markdown
-## Documentation Review Results
+## 📚 Documentation Review Results
 
 ### Understanding Score: XX%
 **Overall Confidence**: [✓/→] [0.X]
 
-### Strengths
+### ✅ Strengths
 - [✓] [What documentation does well with section/line references]
 
 ### Areas for Improvement

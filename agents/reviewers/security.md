@@ -170,7 +170,7 @@ console.log('User logged in:', { userId: user.id })
 
 ---
 
-## High Priority (Confidence 0.8-0.9)
+## ⚠️ High Priority (Confidence 0.8-0.9)
 
 [Similar format...]
 

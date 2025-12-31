@@ -74,9 +74,9 @@ Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specifi
 - Should Be Typed: Z instances [list with file:line]
 
 ### Strict Mode Compliance
-- strictNullChecks: [PASS]/[FAIL]
-- noImplicitAny: [PASS]/[FAIL]
-- strictFunctionTypes: [PASS]/[FAIL]
+- strictNullChecks: ✅/❌
+- noImplicitAny: ✅/❌
+- strictFunctionTypes: ✅/❌
 ```
 
 ## Integration with Other Agents

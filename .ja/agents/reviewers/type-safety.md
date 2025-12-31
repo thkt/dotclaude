@@ -74,9 +74,9 @@ if (isSuccess(response)) { console.log(response.data) }
 - 型付けすべき: Zインスタンス [file:lineリスト]
 
 ### 厳格モード準拠
-- strictNullChecks: [PASS]/[FAIL]
-- noImplicitAny: [PASS]/[FAIL]
-- strictFunctionTypes: [PASS]/[FAIL]
+- strictNullChecks: ✅/❌
+- noImplicitAny: ✅/❌
+- strictFunctionTypes: ✅/❌
 ```
 
 ## 他のエージェントとの統合
