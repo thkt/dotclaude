@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, LS, Task
 model: sonnet
 skills:
   - reviewing-silent-failures
-  - code-principles
+  - applying-code-principles
 ---
 
 # サイレント障害レビューアー

@@ -6,8 +6,8 @@ description: >
 tools: Task, Read, Grep, Glob, LS
 model: sonnet
 skills:
-  - readability-review
-  - code-principles
+  - reviewing-readability
+  - applying-code-principles
 ---
 
 # ドキュメントレビューアー

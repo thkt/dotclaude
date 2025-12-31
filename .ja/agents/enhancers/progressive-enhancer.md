@@ -7,8 +7,8 @@ description: >
 tools: Read, Grep, Glob, LS, mcp__mdn__*
 model: sonnet
 skills:
-  - progressive-enhancement
-  - code-principles
+  - enhancing-progressively
+  - applying-code-principles
 ---
 
 # プログレッシブエンハンスメントエージェント

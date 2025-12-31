@@ -7,7 +7,7 @@ description: >
 tools: Read, Grep, Glob, LS, Task
 model: haiku
 skills:
-  - code-principles
+  - applying-code-principles
 ---
 
 # フロントエンド構造レビューアー

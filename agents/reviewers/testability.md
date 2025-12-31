@@ -9,7 +9,7 @@ model: sonnet
 skills:
   - reviewing-testability
   - generating-tdd-tests
-  - code-principles
+  - applying-code-principles
 ---
 
 # Testability Reviewer

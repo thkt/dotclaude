@@ -8,9 +8,9 @@ description: >
 tools: Read, Grep, Glob, LS, Task
 model: sonnet
 skills:
-  - audit-format
-  - readability-review
-  - code-principles
+  - formatting-audits
+  - reviewing-readability
+  - applying-code-principles
 ---
 
 # SOW/Spec Reviewer

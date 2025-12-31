@@ -8,7 +8,7 @@ tools: Read, Grep, Glob, LS, Task
 model: opus
 skills:
   - analyzing-root-causes
-  - code-principles
+  - applying-code-principles
 ---
 
 # Frontend Root Cause Reviewer

@@ -7,8 +7,8 @@ description: >
 tools: Read, Grep, Glob, LS, Task
 model: sonnet
 skills:
-  - code-principles
-  - frontend-patterns
+  - applying-code-principles
+  - applying-frontend-patterns
 ---
 
 # デザインパターンレビューアー

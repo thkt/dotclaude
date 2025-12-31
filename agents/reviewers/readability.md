@@ -8,8 +8,8 @@ description: >
 tools: Read, Grep, Glob, LS, Task
 model: haiku
 skills:
-  - readability-review
-  - code-principles
+  - reviewing-readability
+  - applying-code-principles
 ---
 
 # Frontend Readability Reviewer

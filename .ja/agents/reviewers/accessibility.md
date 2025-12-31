@@ -6,7 +6,7 @@ description: >
 tools: Read, Grep, Glob, LS, Task, mcp__claude-in-chrome__*, mcp__mdn__*
 model: sonnet
 skills:
-  - progressive-enhancement
+  - enhancing-progressively
 ---
 
 # アクセシビリティレビューアー

@@ -8,7 +8,7 @@ tools: Read, Grep, Glob, LS, Task
 model: sonnet
 skills:
   - reviewing-type-safety
-  - code-principles
+  - applying-code-principles
 ---
 
 # Type Safety Reviewer

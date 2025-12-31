@@ -8,8 +8,8 @@ description: >
 tools: Read, Write, Grep, Glob, LS
 model: sonnet
 skills:
-  - tdd-test-generation
-  - code-principles
+  - generating-tdd-tests
+  - applying-code-principles
 ---
 
 # テストジェネレーター

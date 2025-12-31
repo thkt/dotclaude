@@ -7,7 +7,7 @@ description: >
 tools: Bash, Read, Grep, Glob, LS
 model: sonnet
 skills:
-  - docs:architecture
+  - documenting-architecture
 ---
 
 # アーキテクチャアナライザー

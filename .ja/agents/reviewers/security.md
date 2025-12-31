@@ -8,7 +8,7 @@ tools: Read, Grep, Glob, LS, Task
 model: sonnet
 skills:
   - reviewing-security
-  - code-principles
+  - applying-code-principles
 ---
 
 # セキュリティレビューアー

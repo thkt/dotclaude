@@ -7,7 +7,7 @@ description: >
 tools: Read, Grep, Glob, LS
 model: opus
 skills:
-  - code-principles
+  - applying-code-principles
 ---
 
 # Sub-Agent Reviewer
