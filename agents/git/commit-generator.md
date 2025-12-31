@@ -3,7 +3,6 @@ name: commit-generator
 description: >
   Expert agent for analyzing staged Git changes and generating Conventional Commits format messages.
   Analyzes git diff and generates appropriate, well-structured commit messages.
-  Git差分を分析してConventional Commits形式のメッセージを自動生成する専門エージェント。
 tools: Bash
 model: haiku
 ---

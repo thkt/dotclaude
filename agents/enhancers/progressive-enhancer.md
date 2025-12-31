@@ -4,7 +4,6 @@ description: >
   Specialized agent for applying Progressive Enhancement principles to web development tasks.
   Reviews and suggests CSS-first approaches for UI/UX design.
   References [@~/.claude/skills/enhancing-progressively/SKILL.md] for Progressive Enhancement and CSS-first approach knowledge.
-  UI/UX設計に対してプログレッシブエンハンスメントのアプローチをレビュー・提案します。
 tools: Read, Grep, Glob, LS, mcp__mdn__*
 model: sonnet
 skills:

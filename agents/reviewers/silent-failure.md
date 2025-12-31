@@ -3,7 +3,6 @@ name: silent-failure-reviewer
 description: >
   Expert reviewer for detecting silent failures and improper error handling in frontend code.
   Identifies empty catch blocks, unhandled Promise rejections, and missing error boundaries.
-  フロントエンドコードのサイレント障害を検出し、空のcatchブロック、未処理のPromise、エラーバウンダリの欠如などを特定します。
 tools: Read, Grep, Glob, LS, Task
 model: sonnet
 skills:

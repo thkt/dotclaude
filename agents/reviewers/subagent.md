@@ -3,7 +3,6 @@ name: subagent-reviewer
 description: >
   Specialized reviewer for sub-agent definition files ensuring proper format, structure, and quality standards.
   Reviews agent system specifications for capabilities, boundaries, review focus areas, and integration points.
-  サブエージェント定義ファイルの形式、構造、品質をレビューします。
 tools: Read, Grep, Glob, LS
 model: opus
 skills:
@@ -34,7 +33,7 @@ Sub-agent files are **system specifications**, not end-user documentation. They 
 ```yaml
 ---
 name: agent-name          # Required: kebab-case
-description: 日本語での説明  # Required: Japanese, concise
+description: Brief description  # Required: concise
 tools: Tool1, Tool2       # Required: Valid tool names
 model: sonnet|haiku|opus  # Optional: Model preference
 skills: [skill-name]      # Optional: Referenced skills

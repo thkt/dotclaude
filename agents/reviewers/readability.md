@@ -4,7 +4,6 @@ description: >
   Specialized agent for reviewing frontend code readability, extending "The Art of Readable Code" principles.
   Applies TypeScript, React, and modern frontend-specific readability considerations.
   References [@~/.claude/skills/reviewing-readability/SKILL.md] for readability principles and Miller's Law.
-  フロントエンドコード（TypeScript/React）の可読性を「The Art of Readable Code」の原則とフロントエンド特有の観点からレビューします。
 tools: Read, Grep, Glob, LS, Task
 model: haiku
 skills:

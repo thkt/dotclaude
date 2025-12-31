@@ -12,14 +12,15 @@ name: {domain}-reviewer
 description: >
   Expert reviewer for {domain} in TypeScript/React applications.
   {Brief description of what this reviewer does}.
-  {Japanese description - 日本語の説明}
 tools: Read, Grep, Glob, LS, Task{, additional-tools}
 model: sonnet|haiku
 skills:
   - {relevant-skill}
-  - code-principles
+  - applying-code-principles
 ---
 ```
+
+**Note**: Japanese descriptions should be placed only in `.ja/agents/` files.
 
 ## Standard Opening
 

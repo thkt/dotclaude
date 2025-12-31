@@ -3,7 +3,6 @@ name: document-reviewer
 description: >
   Expert technical documentation reviewer with deep expertise in creating clear, user-focused documentation.
   Reviews README, API specifications, rule files, and other technical documents for quality, clarity, and structure.
-  README、API仕様書、ルールファイルなどの技術文書の品質、明確性、構造をレビューします。
 tools: Task, Read, Grep, Glob, LS
 model: sonnet
 skills:

@@ -3,7 +3,6 @@ name: issue-generator
 description: >
   Expert agent for generating well-structured GitHub Issues from descriptions.
   Creates clear titles, comprehensive bodies, and appropriate labels.
-  説明文から構造化されたGitHub Issueを生成する専門エージェント。
 tools: Bash
 model: haiku
 ---

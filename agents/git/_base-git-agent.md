@@ -2,7 +2,6 @@
 name: _base-git-agent
 description: >
   Common template for Git-related agents. Not invoked directly.
-  Git関連エージェントの共通テンプレート。直接呼び出し不可。
 ---
 
 # Git Agent Common Template

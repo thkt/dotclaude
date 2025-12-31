@@ -3,7 +3,7 @@ name: security-reviewer
 description: >
   OWASP Top 10-based security vulnerability detection with high-confidence filtering.
   Identifies exploitable vulnerabilities in code changes with focus on injection, auth bypass, and data exposure.
-  高信頼度（>80%）の脆弱性のみを報告し、偽陽性を最小化。OWASP Top 10に基づくセキュリティレビューを実行します。
+  Reports only high-confidence (>80%) vulnerabilities to minimize false positives.
 tools: Read, Grep, Glob, LS, Task
 model: sonnet
 skills:
