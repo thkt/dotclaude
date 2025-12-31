@@ -6,15 +6,15 @@
     "url": "https://github.com/thkt"
   },
   "metadata": {
-    "description": "Comprehensive TDD/RGRC workflow system with bilingual (EN/JP) documentation and specialized review agents",
-    "version": "1.1.0"
+    "description": "Comprehensive TDD/RGRC workflow system with specialized review agents and development skills",
+    "version": "2.0.0"
   },
   "plugins": [
     {
       "name": "complete-workflow-system",
       "source": "./",
       "description": "Full development workflow: /think → /code → /test → /audit → /validate with SOW-based validation",
-      "version": "1.1.0",
+      "version": "2.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -24,11 +24,10 @@
         "tdd",
         "rgrc",
         "workflow",
-        "japanese",
         "sow",
+        "spec",
         "validation",
-        "review",
-        "bilingual"
+        "review"
       ],
       "category": "Complete Workflow Systems",
       "commands": [
@@ -38,17 +37,13 @@
         "./commands/audit.md",
         "./commands/validate.md",
         "./commands/sow.md",
+        "./commands/spec.md",
         "./commands/research.md",
-        "./ja/commands/think.md",
-        "./ja/commands/code.md",
-        "./ja/commands/test.md",
-        "./ja/commands/audit.md",
-        "./ja/commands/validate.md",
-        "./ja/commands/sow.md",
-        "./ja/commands/research.md"
+        "./commands/plans.md"
       ],
       "agents": [
         "./agents/orchestrators/audit-orchestrator.md",
+        "./agents/analyzers/architecture-analyzer.md",
         "./agents/generators/test.md",
         "./agents/enhancers/progressive.md",
         "./agents/reviewers/subagent.md",
@@ -60,18 +55,22 @@
         "./agents/reviewers/type-safety.md",
         "./agents/reviewers/readability.md",
         "./agents/reviewers/accessibility.md",
-        "./agents/reviewers/design-pattern.md"
+        "./agents/reviewers/design-pattern.md",
+        "./agents/reviewers/security.md",
+        "./agents/reviewers/silent-failure.md",
+        "./agents/reviewers/sow-spec.md"
       ],
       "rules": [
         "./rules/development/TEST_GENERATION.md",
-        "./ja/rules/development/TEST_GENERATION.md"
+        "./rules/development/TDD_RGRC.md",
+        "./rules/development/COMPLETION_CRITERIA.md"
       ]
     },
     {
       "name": "quick-actions",
       "source": "./",
-      "description": "Fast bug fixes and emergency hotfixes: /fix for development, /hotfix for production",
-      "version": "1.1.0",
+      "description": "Fast bug fixes and external code review: /fix for rapid fixes, /rabbit for CodeRabbit AI review",
+      "version": "2.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -79,24 +78,21 @@
       "license": "MIT",
       "keywords": [
         "fix",
-        "hotfix",
         "quick",
-        "emergency",
-        "production"
+        "coderabbit",
+        "review"
       ],
       "category": "Quick Actions",
       "commands": [
         "./commands/fix.md",
-        "./commands/hotfix.md",
-        "./ja/commands/fix.md",
-        "./ja/commands/hotfix.md"
+        "./commands/rabbit.md"
       ]
     },
     {
       "name": "automation-commands",
       "source": "./",
       "description": "Automated development cycle: /auto-test for continuous testing, /full-cycle for complete automation",
-      "version": "1.1.0",
+      "version": "2.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -111,16 +107,14 @@
       "category": "Automation",
       "commands": [
         "./commands/auto-test.md",
-        "./commands/full-cycle.md",
-        "./ja/commands/auto-test.md",
-        "./ja/commands/full-cycle.md"
+        "./commands/full-cycle.md"
       ]
     },
     {
       "name": "git-utilities",
       "source": "./",
-      "description": "Git workflow helpers: /commit (Conventional Commits), /branch (naming), /pr (pull request)",
-      "version": "1.1.0",
+      "description": "Git workflow helpers: /commit (Conventional Commits), /branch (naming), /pr (pull request), /issue (GitHub issues)",
+      "version": "2.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -131,6 +125,7 @@
         "commit",
         "branch",
         "pr",
+        "issue",
         "conventional-commits"
       ],
       "category": "Git Utilities",
@@ -138,24 +133,20 @@
         "./commands/commit.md",
         "./commands/branch.md",
         "./commands/pr.md",
-        "./ja/commands/commit.md",
-        "./ja/commands/branch.md",
-        "./ja/commands/pr.md"
+        "./commands/issue.md"
       ],
       "agents": [
         "./agents/git/branch-generator.md",
         "./agents/git/commit-generator.md",
         "./agents/git/pr-generator.md",
-        "./ja/agents/git/branch-generator.md",
-        "./ja/agents/git/commit-generator.md",
-        "./ja/agents/git/pr-generator.md"
+        "./agents/git/issue-generator.md"
       ]
     },
     {
       "name": "documentation-tools",
       "source": "./",
-      "description": "Architecture Decision Records (ADR) in MADR format with automatic rule generation",
-      "version": "1.1.0",
+      "description": "Documentation generators: ADR (MADR format), rulify, and automated docs generation for architecture, API, setup, domain",
+      "version": "2.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -166,21 +157,26 @@
         "madr",
         "documentation",
         "architecture",
-        "decision-records"
+        "api",
+        "decision-records",
+        "rulify"
       ],
       "category": "Documentation",
       "commands": [
         "./commands/adr.md",
-        "./commands/adr/rule.md",
-        "./ja/commands/adr.md",
-        "./ja/commands/adr/rule.md"
+        "./commands/adr/skill.md",
+        "./commands/rulify.md",
+        "./commands/docs/architecture.md",
+        "./commands/docs/api.md",
+        "./commands/docs/setup.md",
+        "./commands/docs/domain.md"
       ]
     },
     {
       "name": "browser-workflows",
       "source": "./",
       "description": "Browser automation workflow generator for E2E testing and monitoring",
-      "version": "1.1.0",
+      "version": "2.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -199,24 +195,107 @@
       ]
     },
     {
-      "name": "utilities",
+      "name": "hookify-system",
       "source": "./",
-      "description": "Development utilities: /context for diagnostics",
-      "version": "1.1.0",
+      "description": "Hook creation and management system: /hookify for creating hooks, /hookify:list and /hookify:configure for management",
+      "version": "2.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
       "keywords": [
-        "context",
-        "diagnostics",
-        "utilities"
+        "hooks",
+        "automation",
+        "configuration",
+        "claude-code"
       ],
-      "category": "Utilities",
+      "category": "Development Tools",
       "commands": [
-        "./commands/context.md",
-        "./ja/commands/context.md"
+        "./commands/hookify.md",
+        "./commands/hookify/list.md",
+        "./commands/hookify/configure.md"
+      ]
+    },
+    {
+      "name": "development-skills",
+      "source": "./",
+      "description": "Comprehensive development skills: TDD, code principles, frontend patterns, performance, security, readability, and more",
+      "version": "2.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "skills",
+        "tdd",
+        "principles",
+        "patterns",
+        "security",
+        "performance",
+        "readability",
+        "testing"
+      ],
+      "category": "Development Skills",
+      "skills": [
+        "./skills/analyzing-root-causes/SKILL.md",
+        "./skills/applying-code-principles/SKILL.md",
+        "./skills/applying-frontend-patterns/SKILL.md",
+        "./skills/automating-browser/SKILL.md",
+        "./skills/creating-adrs/SKILL.md",
+        "./skills/creating-hooks/SKILL.md",
+        "./skills/documenting-apis/SKILL.md",
+        "./skills/documenting-architecture/SKILL.md",
+        "./skills/documenting-domains/SKILL.md",
+        "./skills/enhancing-progressively/SKILL.md",
+        "./skills/formatting-audits/SKILL.md",
+        "./skills/generating-tdd-tests/SKILL.md",
+        "./skills/integrating-storybook/SKILL.md",
+        "./skills/optimizing-performance/SKILL.md",
+        "./skills/reviewing-readability/SKILL.md",
+        "./skills/reviewing-security/SKILL.md",
+        "./skills/reviewing-silent-failures/SKILL.md",
+        "./skills/reviewing-testability/SKILL.md",
+        "./skills/reviewing-type-safety/SKILL.md",
+        "./skills/setting-up-docs/SKILL.md",
+        "./skills/utilizing-cli-tools/SKILL.md"
+      ]
+    },
+    {
+      "name": "development-rules",
+      "source": "./",
+      "description": "Development rules and guidelines: core principles, progressive enhancement, readable code, SOLID, DRY, and more",
+      "version": "2.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "rules",
+        "guidelines",
+        "principles",
+        "solid",
+        "dry",
+        "clean-code"
+      ],
+      "category": "Development Rules",
+      "rules": [
+        "./rules/core/AI_OPERATION_PRINCIPLES.md",
+        "./rules/core/PRE_TASK_CHECK_COMPACT.md",
+        "./rules/core/PRE_TASK_CHECK_VERBOSE.md",
+        "./rules/development/AI_ASSISTED_DEVELOPMENT.md",
+        "./rules/development/CONTAINER_PRESENTATIONAL.md",
+        "./rules/development/LAW_OF_DEMETER.md",
+        "./rules/development/LEAKY_ABSTRACTION.md",
+        "./rules/development/PROGRESSIVE_ENHANCEMENT.md",
+        "./rules/development/READABLE_CODE.md",
+        "./rules/development/TIDYINGS.md",
+        "./rules/guidelines/DOCUMENTATION_RULES.md",
+        "./rules/commands/COMMAND_WORKFLOWS.md",
+        "./rules/PRINCIPLES_GUIDE.md",
+        "./rules/PRINCIPLE_RELATIONSHIPS.md"
       ]
     }
   ]
