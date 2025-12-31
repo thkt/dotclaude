@@ -174,6 +174,31 @@ srt --version
 
 詳細は[公式ブログ記事](https://azukiazusa.dev/blog/claude-code-sandbox-feature/)を参照。
 
+### 必要なプラグイン
+
+一部のコマンドはこのリポジトリに含まれていない外部プラグインに依存しています。クローン後に手動でインストールしてください:
+
+| プラグイン | 使用コマンド | 用途 | インストールコマンド |
+| --- | --- | --- | --- |
+| `pr-review-toolkit` | `/audit`, `/research` | 拡張コードレビューエージェント | `/plugin install pr-review-toolkit` |
+| `feature-dev` | `/research`, `/think` | コード探索・アーキテクチャエージェント | `/plugin install feature-dev` |
+| `ralph-wiggum` | `/code` | TDD Greenフェーズ自動反復 | `/plugin install ralph-wiggum` |
+
+**一括インストール（必要なプラグインすべて）**:
+
+```bash
+/plugin install pr-review-toolkit feature-dev ralph-wiggum
+```
+
+**オプションプラグイン**（完全な機能のために推奨）:
+
+| プラグイン | 用途 |
+| --- | --- |
+| `example-skills` | PDF、XLSX、PPTX処理、フロントエンドデザイン |
+| `typescript-lsp` | TypeScript言語サーバー統合 |
+
+**注**: プラグインは `~/.claude/plugins/` に保存され、gitから除外されています。各ユーザーが個別にインストールする必要があります。
+
 ## 📝 利用可能なコマンド
 
 Claude Codeは5つのカテゴリに整理された15の専門コマンドを提供:
@@ -197,7 +222,8 @@ Claude Codeは5つのカテゴリに整理された15の専門コマンドを提
 
 **📚 詳細リファレンス**: 完全なコマンドドキュメントは:
 
-- [コマンドリファレンス](./docs/COMMANDS.md)
+- [コマンドリファレンス（日本語）](./docs/COMMANDS.md)
+- [English Command Reference](../docs/COMMANDS.md)
 
 ## 🔄 標準ワークフロー
 

@@ -63,7 +63,9 @@ Save Q&A to: `.claude/workspace/qa/[timestamp]-[topic].md`
 
 ### Step 1: Implementation Design Exploration
 
-Plan agent with Opus for architectural analysis:
+#### Step 1a: Recommended Approach with Plan Agent (Opus)
+
+First, get a recommended approach with deep analysis:
 
 ```typescript
 Task({
@@ -78,7 +80,7 @@ Collect with confidence markers [✓]/[→]/[?]:
 
 1. **Current State**: Quantitative baseline (file count, lines, patterns)
 2. **Problems**: Classified by confidence level
-3. **Solution Design**: 3 alternatives in table, recommendation
+3. **Solution Design**: Recommended approach with rationale
 4. **Scope**: Files to modify (2-5), dependencies, phase plan
 5. **Acceptance Criteria**: Measurable criteria with verification
 6. **Risks**: Classified by confirmed/potential/unknown
@@ -89,6 +91,70 @@ Output format: Tables with evidence for each item.
 ```
 
 **Why Opus**: Deep architectural analysis and comprehensive trade-off evaluation.
+
+#### Step 1b: Alternative Approaches with code-architect Agents
+
+Then, launch 3 code-architect agents in parallel for comparison:
+
+```typescript
+// Agent 1: Minimal changes approach
+Task({
+  subagent_type: "feature-dev:code-architect",
+  description: "Minimal changes approach",
+  prompt: `
+Feature: "${featureDescription}"
+${qaResults ? `Q&A results:\n${qaResults}\n` : ''}
+
+Design with MINIMAL CHANGES focus:
+- Smallest change, maximum reuse
+- Extend existing components where possible
+- Minimal refactoring required
+
+Output: Complete blueprint with file:line references
+  `
+})
+
+// Agent 2: Clean architecture approach
+Task({
+  subagent_type: "feature-dev:code-architect",
+  description: "Clean architecture approach",
+  prompt: `
+Feature: "${featureDescription}"
+${qaResults ? `Q&A results:\n${qaResults}\n` : ''}
+
+Design with CLEAN ARCHITECTURE focus:
+- New abstractions and interfaces
+- Clear separation of concerns
+- Testable, maintainable structure
+
+Output: Complete blueprint with file:line references
+  `
+})
+
+// Agent 3: Pragmatic balance approach
+Task({
+  subagent_type: "feature-dev:code-architect",
+  description: "Pragmatic balance approach",
+  prompt: `
+Feature: "${featureDescription}"
+${qaResults ? `Q&A results:\n${qaResults}\n` : ''}
+
+Design with PRAGMATIC BALANCE focus:
+- Speed + quality balance
+- Good boundaries without over-engineering
+- Fits existing architecture
+
+Output: Complete blueprint with file:line references
+  `
+})
+```
+
+### After Agents Complete
+
+1. **Review Plan recommendation** - Opus-powered deep analysis
+2. **Compare with alternatives** - code-architect approaches
+3. **Present comparison** - Show trade-offs table with Plan recommendation highlighted
+4. **Ask user** - Which approach to proceed with
 
 ### Step 2: Display Analysis Results
 

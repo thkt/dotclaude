@@ -112,6 +112,36 @@ Choose based on complexity:
 
 **Note**: `/research` is optional before Plan Mode when deep investigation with persistent documentation is needed.
 
+### Agent-Enhanced Workflow
+
+`/research` and `/think` use both built-in and feature-dev agents:
+
+```mermaid
+flowchart LR
+    subgraph R["/research"]
+        direction TB
+        R1[Explore]
+        R2[code-explorer]
+    end
+
+    subgraph T["/think"]
+        direction TB
+        T1[Plan Opus]
+        T2[code-architect]
+    end
+
+    R --> T --> C["/code"] --> TE["/test"] --> A["/audit"] --> V["/validate"]
+```
+
+**What this provides**:
+
+- `/research`:
+  - Step 1: Explore agent for quick overview
+  - Step 2: code-explorer agents (2-3 parallel) for deep tracing
+- `/think`:
+  - Step 1a: Plan agent (Opus) for recommended approach
+  - Step 1b: code-architect agents (3 parallel) for alternatives
+
 ### Progress Monitoring
 
 ```txt
@@ -153,12 +183,12 @@ For detailed information about each command, see the individual command files in
 ### New Feature (Enhanced Flow)
 
 ```bash
-/think "Feature description"  # Create verifiable SOW
-/research                      # Understand codebase
-/code                         # Implement with TDD
-/test                         # Verify tests pass
-/sow                          # Check progress
-/validate                     # Validate conformance
+/research "Feature description"  # Understand codebase with agents
+/think                           # Create verifiable SOW with architecture options
+/code                            # Implement with TDD
+/test                            # Verify tests pass
+/plans                           # Check progress
+/validate                        # Validate conformance
 ```
 
 ### Bug Fix

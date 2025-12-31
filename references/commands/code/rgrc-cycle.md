@@ -67,9 +67,49 @@ For detailed phase guidance (Red/Green/Refactor/Commit steps, exit criteria, tim
 | Phase | Feature Context |
 | --- | --- |
 | Red | Use generated tests from spec.md, or write new |
-| Green | Interactive test activation (one at a time) |
+| Green | **Ralph-loop auto-iteration** until tests pass |
 | Refactor | Apply SOLID, extract patterns |
 | Commit | User executes git commands |
+
+## Ralph-loop Integration (Green Phase)
+
+During Green Phase, automatic iterative implementation runs until tests pass.
+
+### Auto-iteration Mechanism
+
+```markdown
+1. Confirm test failure (Red Phase complete)
+2. Ralph-loop auto-activates
+3. Implement → Run tests → Retry if failed
+4. Output <promise>GREEN</promise> when all tests pass
+5. Transition to Refactor Phase
+```
+
+### Internal Behavior
+
+```bash
+# During /code command execution, Green Phase auto-runs:
+/ralph-loop "
+Implement minimal code to pass current tests.
+Output <promise>GREEN</promise> when all tests pass.
+" --completion-promise "GREEN" --max-iterations 10
+```
+
+### Completion Conditions
+
+| Condition | Action |
+| --- | --- |
+| All tests pass | Output `<promise>GREEN</promise>` and exit |
+| Max iterations reached | Stop and report to user |
+| Critical error | Immediate stop, request manual intervention |
+
+### Baby Steps Integration
+
+Ralph-loop attempts **minimal changes** in each iteration:
+
+- Pass one test at a time
+- Learn from past failures (reference file history)
+- Split complex implementations into stages
 
 ## Progress Display
 

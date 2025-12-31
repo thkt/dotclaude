@@ -112,6 +112,36 @@
 
 **注**: `/research`はPlan Mode前に、永続的なドキュメント付きの深い調査が必要な場合にオプションで使用。
 
+### エージェント強化ワークフロー
+
+`/research` と `/think` はビルトインと feature-dev の両エージェントを使用：
+
+```mermaid
+flowchart LR
+    subgraph R["/research"]
+        direction TB
+        R1[Explore]
+        R2[code-explorer]
+    end
+
+    subgraph T["/think"]
+        direction TB
+        T1[Plan Opus]
+        T2[code-architect]
+    end
+
+    R --> T --> C["/code"] --> TE["/test"] --> A["/audit"] --> V["/validate"]
+```
+
+**これにより提供される機能**:
+
+- `/research`:
+  - Step 1: Explore エージェントで概要把握
+  - Step 2: code-explorer エージェント（2-3並列）で深掘り
+- `/think`:
+  - Step 1a: Plan エージェント（Opus）で推奨アプローチ
+  - Step 1b: code-architect エージェント（3並列）で代替案比較
+
 ### 進捗モニタリング
 
 ```txt
@@ -153,12 +183,12 @@
 ### 新機能（強化フロー）
 
 ```bash
-/think "機能の説明"  # 検証可能なSOW作成
-/research            # コードベースの理解
-/code               # TDDで実装
-/test               # テストパス確認
-/sow                # 進捗確認
-/validate           # 適合性検証
+/research "機能の説明"  # エージェントでコードベースを理解
+/think                  # アーキテクチャ選択肢付きで検証可能なSOW作成
+/code                   # TDDで実装
+/test                   # テストパス確認
+/plans                  # 進捗確認
+/validate               # 適合性検証
 ```
 
 ### バグ修正

@@ -63,7 +63,9 @@ Q&Aを保存: `.claude/workspace/qa/[timestamp]-[topic].md`
 
 ### ステップ1: 実装設計探索
 
-アーキテクチャ分析のためにOpusでPlanエージェント:
+#### ステップ1a: Planエージェント（Opus）で推奨アプローチ
+
+まず、深い分析で推奨アプローチを取得:
 
 ```typescript
 Task({
@@ -78,7 +80,7 @@ ${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
 
 1. **現状**: 定量的ベースライン（ファイル数、行数、パターン）
 2. **問題**: 信頼度レベルで分類
-3. **ソリューション設計**: 表形式で3つの代替案、推奨
+3. **ソリューション設計**: 推奨アプローチと根拠
 4. **スコープ**: 変更ファイル（2-5）、依存関係、フェーズ計画
 5. **受け入れ基準**: 検証付きの測定可能な基準
 6. **リスク**: 確認済み/潜在的/不明で分類
@@ -89,6 +91,70 @@ ${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
 ```
 
 **Opusを使う理由**: 深いアーキテクチャ分析と包括的なトレードオフ評価。
+
+#### ステップ1b: code-architectエージェントで代替案
+
+次に、3個のcode-architectエージェントを並列起動して比較:
+
+```typescript
+// エージェント1: 最小変更アプローチ
+Task({
+  subagent_type: "feature-dev:code-architect",
+  description: "最小変更アプローチ",
+  prompt: `
+機能: "${featureDescription}"
+${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
+
+最小変更フォーカスで設計:
+- 最小の変更、最大の再利用
+- 可能な限り既存コンポーネントを拡張
+- 最小限のリファクタリング
+
+出力: file:line参照付きの完全な設計図
+  `
+})
+
+// エージェント2: クリーンアーキテクチャアプローチ
+Task({
+  subagent_type: "feature-dev:code-architect",
+  description: "クリーンアーキテクチャアプローチ",
+  prompt: `
+機能: "${featureDescription}"
+${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
+
+クリーンアーキテクチャフォーカスで設計:
+- 新しい抽象化とインターフェース
+- 関心の明確な分離
+- テスト可能で保守しやすい構造
+
+出力: file:line参照付きの完全な設計図
+  `
+})
+
+// エージェント3: プラグマティックバランスアプローチ
+Task({
+  subagent_type: "feature-dev:code-architect",
+  description: "プラグマティックバランスアプローチ",
+  prompt: `
+機能: "${featureDescription}"
+${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
+
+プラグマティックバランスフォーカスで設計:
+- スピード + 品質のバランス
+- 過度なエンジニアリングなしの良い境界
+- 既存アーキテクチャに適合
+
+出力: file:line参照付きの完全な設計図
+  `
+})
+```
+
+### エージェント完了後
+
+1. **Planの推奨をレビュー** - Opus駆動の深い分析
+2. **代替案と比較** - code-architectアプローチ
+3. **比較を提示** - Plan推奨をハイライトしたトレードオフ表を表示
+4. **ユーザーに質問** - どのアプローチで進めるか
 
 ### ステップ2: 分析結果を表示
 

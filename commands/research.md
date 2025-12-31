@@ -68,14 +68,16 @@ Use throughout all findings:
 
 ## Task Agent Usage
 
-Use Explore agent for complex investigations:
+### Step 1: Overview with Explore Agent
+
+First, get a quick overview of the codebase:
 
 ```typescript
 Task({
   subagent_type: "Explore",
-  thoroughness: "medium", // "quick" | "medium" | "very thorough"
-  description: "Codebase investigation",
+  description: "Codebase overview",
   prompt: `
+    Thoroughness: medium (options: quick | medium | very thorough)
     Topic: "${researchTopic}"
 
     Investigate:
@@ -85,21 +87,73 @@ Task({
     4. Patterns: conventions, practices [→]
     5. Unknowns: what needs verification [?]
 
-    Return findings with:
-    - Confidence markers (✓/→/?)
-    - Evidence (file:line references)
-    - Clear facts vs inferences distinction
+    Return findings with confidence markers (✓/→/?).
   `
 })
 ```
 
-### Thoroughness Selection
+### Step 2: Deep Dive with code-explorer Agents
 
-| Context | Level | Duration |
-| --- | --- | --- |
-| First exploration | quick | 30 sec |
-| Implementation prep | medium | 2-3 min |
-| Debugging/root cause | very thorough | 5 min |
+Then, launch 2-3 code-explorer agents in parallel for detailed analysis:
+
+```typescript
+// Agent 1: Similar features
+Task({
+  subagent_type: "feature-dev:code-explorer",
+  description: "Find similar features",
+  prompt: `
+    Topic: "${researchTopic}"
+
+    Find features similar to this topic and trace their implementation comprehensively.
+
+    Output:
+    - Entry points with file:line references
+    - Step-by-step execution flow
+    - Key components and responsibilities
+    - List of 5-10 essential files to read
+  `
+})
+
+// Agent 2: Architecture mapping
+Task({
+  subagent_type: "feature-dev:code-explorer",
+  description: "Map architecture",
+  prompt: `
+    Topic: "${researchTopic}"
+
+    Map the architecture and abstractions for this area, tracing through the code comprehensively.
+
+    Output:
+    - Architecture layers (presentation → business → data)
+    - Design patterns and decisions
+    - Dependencies and integrations
+    - List of 5-10 essential files to read
+  `
+})
+
+// Agent 3: Current implementation (if applicable)
+Task({
+  subagent_type: "feature-dev:code-explorer",
+  description: "Analyze current implementation",
+  prompt: `
+    Topic: "${researchTopic}"
+
+    Analyze the current implementation of related features.
+
+    Output:
+    - Data flow and transformations
+    - State changes and side effects
+    - Error handling patterns
+    - List of 5-10 essential files to read
+  `
+})
+```
+
+### Step 3: Synthesis
+
+1. **Read all identified files** - Build deep understanding from agent outputs
+2. **Synthesize findings** - Combine Explore overview + code-explorer details
+3. **Document unknowns** - Explicitly list gaps requiring verification
 
 ## Output Requirements
 
@@ -110,8 +164,8 @@ Use for **structure only**:
 
 **IMPORTANT**:
 
-- ✅ Copy: Section structure, marker usage (✓/→/?), format
-- ❌ Do NOT copy: Actual content from the reference
+- Copy: Section structure, marker usage (✓/→/?), format
+- Do NOT copy: Actual content from the reference
 
 ### Required Sections
 

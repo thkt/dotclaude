@@ -3,7 +3,7 @@ description: Implement code following TDD/RGRC cycle with real-time test feedbac
 allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
 model: inherit
 argument-hint: "[implementation description] [--frontend] [--principles] [--storybook]"
-dependencies: [generating-tdd-tests, applying-frontend-patterns, applying-code-principles, integrating-storybook]
+dependencies: [generating-tdd-tests, applying-frontend-patterns, applying-code-principles, integrating-storybook, ralph-wiggum]
 ---
 
 # /code - TDD Implementation
@@ -51,7 +51,7 @@ For spec.md detection: [@~/.claude/references/commands/code/spec-context.md](~/.
 ### TDD/RGRC (Primary)
 
 1. **Red**: Write failing test
-2. **Green**: Minimal code to pass
+2. **Green**: Minimal code to pass (auto-iterated via ralph-wiggum)
 3. **Refactor**: Apply principles (Quick Decision Questions)
 4. **Commit**: Save stable state
 

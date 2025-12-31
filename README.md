@@ -174,6 +174,31 @@ Create `~/.srt-settings.json` for custom settings:
 
 See the [official blog post](https://azukiazusa.dev/blog/claude-code-sandbox-feature/) for more details.
 
+### Required Plugins
+
+Some commands depend on external plugins that are not included in this repository. Install them manually after cloning:
+
+| Plugin | Required By | Purpose | Install Command |
+| --- | --- | --- | --- |
+| `pr-review-toolkit` | `/audit`, `/research` | Enhanced code review agents | `/plugin install pr-review-toolkit` |
+| `feature-dev` | `/research`, `/think` | Code exploration and architecture agents | `/plugin install feature-dev` |
+| `ralph-wiggum` | `/code` | TDD Green Phase auto-iteration | `/plugin install ralph-wiggum` |
+
+**Quick Install (all required plugins)**:
+
+```bash
+/plugin install pr-review-toolkit feature-dev ralph-wiggum
+```
+
+**Optional Plugins** (recommended for full functionality):
+
+| Plugin | Purpose |
+| --- | --- |
+| `example-skills` | PDF, XLSX, PPTX handling, frontend design |
+| `typescript-lsp` | TypeScript language server integration |
+
+**Note**: Plugins are stored in `~/.claude/plugins/` which is excluded from git. Each user must install plugins independently.
+
 ## 📝 Available Commands
 
 Claude Code provides 15 specialized commands organized into 5 categories:
