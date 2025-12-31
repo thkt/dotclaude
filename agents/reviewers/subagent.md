@@ -51,7 +51,7 @@ skills: [skill-name]      # Optional: Referenced skills
 
 #### Recommended Sections
 
-- Code examples (with ❌/✅ patterns)
+- Code examples (with [BAD]/[GOOD] patterns)
 - Integration with other agents
 - Applied Development Principles
 
@@ -72,7 +72,7 @@ skills: [skill-name]      # Optional: Referenced skills
 - [ ] YAML frontmatter valid (name: kebab-case, tools: appropriate)
 - [ ] Required sections present
 - [ ] Clear scope boundaries
-- [ ] Code examples show ❌/✅ patterns
+- [ ] Code examples show [BAD]/[GOOD] patterns
 - [ ] Integration points specified
 - [ ] References use proper format: `[@~/.claude/...]`
 
@@ -97,9 +97,9 @@ Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specifi
 
 ```markdown
 ### Compliance Summary
-- Structure: ✅/⚠️/❌
-- Technical Accuracy: ✅/⚠️/❌
-- Integration: ✅/⚠️/❌
+- Structure: [PASS]/[WARN]/[FAIL]
+- Technical Accuracy: [PASS]/[WARN]/[FAIL]
+- Integration: [PASS]/[WARN]/[FAIL]
 
 ### Required Changes
 1. [Format/structure violation with location]

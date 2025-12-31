@@ -163,18 +163,18 @@ EOF
 ## Good Examples
 
 ```text
-✅ [Bug] Login fails with OAuth on Safari mobile
-✅ [Bug] API returns 500 when input is empty
-✅ [Feature] Add CSV export for reports
-✅ [Feature] Support multi-factor authentication
+[GOOD] [Bug] Login fails with OAuth on Safari mobile
+[GOOD] [Bug] API returns 500 when input is empty
+[GOOD] [Feature] Add CSV export for reports
+[GOOD] [Feature] Support multi-factor authentication
 ```
 
 ## Bad Examples
 
 ```text
-❌ Bug (no description)
-❌ [Bug] It doesn't work (too vague)
-❌ Please fix the login issue that happens sometimes... (too long)
+[BAD] Bug (no description)
+[BAD] [Bug] It doesn't work (too vague)
+[BAD] Please fix the login issue that happens sometimes... (too long)
 ```
 
 ## Label Suggestions

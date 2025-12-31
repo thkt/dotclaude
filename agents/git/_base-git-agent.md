@@ -49,10 +49,10 @@ git diff --staged --shortstat
 
 A successful output:
 
-1. ✅ Accurately reflects git state
-2. ✅ Follows specified format
-3. ✅ Is clear to reviewers
-4. ✅ Includes relevant references
+1. Accurately reflects git state
+2. Follows specified format
+3. Is clear to reviewers
+4. Includes relevant references
 
 ## Integration Points
 

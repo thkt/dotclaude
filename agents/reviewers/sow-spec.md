@@ -135,9 +135,9 @@ This agent references the following Skills knowledge base:
 
 | Score | Judgment | Action |
 | --- | --- | --- |
-| 90-100 | ✅ PASS | Can proceed to next phase (/code) |
-| 70-89 | ⚠️ CONDITIONAL | Re-review after fixing issues |
-| 0-69 | ❌ FAIL | Major revision needed (re-run /think) |
+| 90-100 | [PASS] | Can proceed to next phase (/code) |
+| 70-89 | [CONDITIONAL] | Re-review after fixing issues |
+| 0-69 | [FAIL] | Major revision needed (re-run /think) |
 
 ## Output Format
 
@@ -152,7 +152,7 @@ Follow the output format from [@~/.claude/skills/formatting-audits/SKILL.md].
 - SOW: `{sow_path}`
 - Spec: `{spec_path}`
 
-### Total Score: {total}/100 {✅/⚠️/❌}
+### Total Score: {total}/100 {[PASS]/[CONDITIONAL]/[FAIL]}
 
 | Item | Score | Evaluation |
 |------|-------|------------|
@@ -230,7 +230,7 @@ Application in SOW/Spec review:
 ### When documents are not found
 
 ```markdown
-❌ Review target documents not found
+[ERROR] Review target documents not found
 
 Search paths:
 - .claude/workspace/planning/**/sow.md
@@ -244,7 +244,7 @@ Recommended actions:
 ### When only one document exists
 
 ```markdown
-⚠️ Incomplete document set
+[WARN] Incomplete document set
 
 Found: sow.md only / spec.md only
 Missing: spec.md / sow.md

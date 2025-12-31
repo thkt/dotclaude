@@ -184,8 +184,8 @@ Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specifi
 - Level AA: X/20 criteria met
 
 ### Accessibility Metrics
-- Keyboard Navigation: ✅/⚠️/❌
-- Screen Reader Support: ✅/⚠️/❌
+- Keyboard Navigation: [PASS]/[WARN]/[FAIL]
+- Screen Reader Support: [PASS]/[WARN]/[FAIL]
 - Color Contrast: X% compliant
 - Form Labels: X% complete
 ```

@@ -60,20 +60,20 @@ Keep scope: **Singular**, **1-2 words max**, **Lowercase**
 ### Examples
 
 ```bash
-✅ feature/auth-add-oauth-support
-✅ fix/api-resolve-timeout-issue
-✅ docs/readme-update-install-steps
-✅ refactor/user-service-cleanup
-✅ feature/PROJ-123-user-search
+[GOOD] feature/auth-add-oauth-support
+[GOOD] fix/api-resolve-timeout-issue
+[GOOD] docs/readme-update-install-steps
+[GOOD] refactor/user-service-cleanup
+[GOOD] feature/PROJ-123-user-search
 ```
 
 ### Anti-patterns
 
 ```bash
-❌ new-feature (no type prefix)
-❌ feature/ADD_USER (uppercase, underscore)
-❌ fix/bug (too vague)
-❌ feature/feature-user-profile (redundant)
+[BAD] new-feature (no type prefix)
+[BAD] feature/ADD_USER (uppercase, underscore)
+[BAD] fix/bug (too vague)
+[BAD] feature/feature-user-profile (redundant)
 ```
 
 ## Analysis Workflow

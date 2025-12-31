@@ -128,19 +128,19 @@ Commit Message Generator
 ## Good Examples
 
 ```markdown
-✅ feat(auth): add OAuth2 authentication support
-✅ fix(api): resolve timeout in user endpoint
-✅ docs(readme): update installation instructions
-✅ perf(search): optimize database queries
+[GOOD] feat(auth): add OAuth2 authentication support
+[GOOD] fix(api): resolve timeout in user endpoint
+[GOOD] docs(readme): update installation instructions
+[GOOD] perf(search): optimize database queries
 ```
 
 ## Bad Examples
 
 ```markdown
-❌ Fixed bug (no type, too vague)
-❌ feat: Added new feature. (capitalized, period)
-❌ update code (no type, not specific)
-❌ FEAT(AUTH): ADD LOGIN (all caps)
+[BAD] Fixed bug (no type, too vague)
+[BAD] feat: Added new feature. (capitalized, period)
+[BAD] update code (no type, not specific)
+[BAD] FEAT(AUTH): ADD LOGIN (all caps)
 ```
 
 ## Context Integration

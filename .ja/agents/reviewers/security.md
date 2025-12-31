@@ -150,7 +150,7 @@ console.log('User logged in:', { userId: user.id })
 
 ---
 
-## ⚠️ High優先度（信頼度 0.8-0.9）
+## High優先度（信頼度 0.8-0.9）
 
 [同様の形式...]
 
