@@ -4,7 +4,7 @@ description: >
   Integrates findings from multiple review agents, detects systemic patterns,
   identifies root causes, and generates actionable improvement plans.
   Transforms individual issues into strategic insights.
-tools: Read, Grep, Glob, LS
+tools: Read, Grep, Glob, LS, Task
 model: opus
 skills:
   - applying-code-principles
@@ -198,16 +198,9 @@ Where:
 
 ## Integration with audit-orchestrator
 
-This agent runs as the **final phase** after all review agents complete:
+This agent runs as the **final phase** after all review agents complete.
 
-```yaml
-integration_phase:
-  agent: finding-integrator
-  dependencies: [all_review_agents]
-  execution_mode: sequential
-  timeout: 120  # Longer timeout for analysis
-  input: aggregated_findings_from_all_agents
-```
+See [@~/.claude/agents/orchestrators/audit-orchestrator.md] for the `integration_phase` configuration.
 
 ## Applied Development Principles
 

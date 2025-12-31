@@ -140,7 +140,7 @@ execution_plan:
 | line | number | - | Line number |
 | message | string | ✓ | Issue description |
 | confidence | number | ✓ | 0.0-1.0 score |
-| confidenceMarker | enum | ✓ | ✓ (>0.9) / → (0.7-0.9) / ? (<0.7) |
+| confidenceMarker | enum | ✓ | ✓ (>0.8) / → (0.5-0.8) / ? (<0.5) |
 | evidence | string | ✓ | Code reference or pattern |
 | reasoning | string | ✓ | Why this is problematic |
 

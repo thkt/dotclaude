@@ -46,9 +46,11 @@ This agent references the following Skills knowledge base:
 
 Use these markers consistently:
 
-- **[✓]** = High confidence (>0.9) - directly verified from code
-- **[→]** = Medium confidence (0.7-0.9) - reasonable inference
-- **[?]** = Low confidence (<0.7) - assumption needing confirmation
+- **[✓]** = High confidence (>0.8) - directly verified from code
+- **[→]** = Medium confidence (0.5-0.8) - reasonable inference
+- **[?]** = Low confidence (<0.5) - assumption needing confirmation
+
+See [@~/.claude/rules/development/COMPLETION_CRITERIA.md] for canonical definition.
 
 ## Output Format Template
 

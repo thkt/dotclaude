@@ -4,7 +4,7 @@ description: >
   複数のレビューエージェントからの指摘を統合し、システミックなパターンを検出、
   根本原因を特定し、実行可能な改善計画を生成します。
   個別の問題を戦略的なインサイトに変換します。
-tools: Read, Grep, Glob, LS
+tools: Read, Grep, Glob, LS, Task
 model: opus
 skills:
   - applying-code-principles
@@ -198,16 +198,9 @@ pattern:
 
 ## audit-orchestratorとの統合
 
-このエージェントは、すべてのレビューエージェント完了後の**最終フェーズ**として実行されます：
+このエージェントは、すべてのレビューエージェント完了後の**最終フェーズ**として実行されます。
 
-```yaml
-integration_phase:
-  agent: finding-integrator
-  dependencies: [all_review_agents]
-  execution_mode: sequential
-  timeout: 120  # 分析のため長めのタイムアウト
-  input: aggregated_findings_from_all_agents
-```
+`integration_phase`の設定は [@~/.claude/agents/orchestrators/audit-orchestrator.md] を参照。
 
 ## 適用される開発原則
 

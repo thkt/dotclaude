@@ -141,7 +141,7 @@ execution_plan:
 | line | number | - | 行番号 |
 | message | string | ✓ | 問題の説明 |
 | confidence | number | ✓ | 0.0-1.0スコア |
-| confidenceMarker | enum | ✓ | ✓ (>0.9) / → (0.7-0.9) / ? (<0.7) |
+| confidenceMarker | enum | ✓ | ✓ (>0.8) / → (0.5-0.8) / ? (<0.5) |
 | evidence | string | ✓ | コード参照またはパターン |
 | reasoning | string | ✓ | なぜこれが問題か |
 
