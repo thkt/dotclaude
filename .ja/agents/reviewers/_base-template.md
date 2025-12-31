@@ -12,14 +12,15 @@ name: {domain}-reviewer
 description: >
   TypeScript/Reactアプリケーションにおける{domain}の専門レビューアー。
   {このレビューアーが行うことの簡単な説明}。
-  {日本語の説明}
 tools: Read, Grep, Glob, LS, Task{, additional-tools}
 model: sonnet|haiku
 skills:
   - {relevant-skill}
-  - code-principles
+  - applying-code-principles
 ---
 ```
+
+**注**: 英語版の説明は `agents/` ファイルにのみ配置してください。
 
 ## 標準的な導入部
 
