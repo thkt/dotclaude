@@ -8,6 +8,7 @@ Guidelines for maintaining consistent, well-organized documentation in the Claud
 2. **Consistency Across Languages** - Maintain EN/JP synchronization
 3. **Logical Hierarchy** - Clear separation between principles and practices
 4. **No Circular References** - Maintain clean dependency graphs
+5. **No Visual Effects for AI** - Emojis are unnecessary in AI-consumed documents
 
 ## Directory Structure
 
@@ -162,6 +163,10 @@ Links to related documentation
 2. **Examples**: Include practical code examples
 3. **Comparisons**: Show Bad vs Good
 4. **Summaries**: Key points in bullet lists
+5. **No Emojis in AI Documents**: Agent/skill/rule files are consumed by AI, not humans. Use text labels instead:
+   - Priority levels: `Critical`, `High`, `Medium`, `Low` (not emojis)
+   - Status indicators: `[PASS]`, `[FAIL]`, `[WARN]` (not checkmarks/crosses)
+   - Section markers: Use Markdown headers or text prefixes
 
 ### Code Examples
 

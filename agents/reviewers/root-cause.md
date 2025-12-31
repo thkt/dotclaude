@@ -77,7 +77,7 @@ Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specifi
 **Root Cause**: [Identified fundamental issue]
 **Recommended Fix**: [Solution that addresses root cause]
 
-### Progressive Enhancement Opportunities 🎯
+### Progressive Enhancement Opportunities
 - [JS solving CSS-capable problem]: [simpler approach]
 ```
 

@@ -146,7 +146,7 @@ Follow the output format from [@~/.claude/skills/formatting-audits/SKILL.md].
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## 📋 Design Document Review Result
+## Design Document Review Result
 
 ### Target Documents
 - SOW: `{sow_path}`
@@ -165,24 +165,24 @@ Follow the output format from [@~/.claude/skills/formatting-audits/SKILL.md].
 
 ---
 
-### 📊 Detailed Evaluation
+### Detailed Evaluation
 
 [Detailed evaluation for each item...]
 
 ---
 
-### 🔗 SOW ↔ Spec Consistency Check
+### SOW - Spec Consistency Check
 
 [Consistency check results...]
 
 ---
 
-### 📝 Requested Modifications
+### Requested Modifications
 
-#### 🔴 Required Fixes (Pass Condition)
+#### Required Fixes (Pass Condition)
 1. {Specific modification content}
 
-#### 🟡 Recommended Fixes
+#### Recommended Fixes
 1. {Improvement suggestion}
 
 ---

@@ -65,6 +65,18 @@ execution_plan:
   conditional_group:  # ドキュメント（.mdファイルが存在する場合のみ）
     agents: [document-reviewer]
     condition: "*.md files present"
+
+  integration_phase:  # 最終フェーズ - 全指摘の統合
+    agent: finding-integrator
+    dependencies: [all_previous_groups]
+    execution_mode: sequential
+    timeout: 120
+    tasks:
+      - レビューエージェントから全指摘を収集
+      - 指摘間のシステミックパターンを検出
+      - 5つのなぜ技法で根本原因を特定
+      - 戦略的優先順位を生成
+      - 実行可能な改善計画を作成
 ```
 
 #### 並列実行のメリット
@@ -129,7 +141,7 @@ execution_plan:
 | line | number | - | 行番号 |
 | message | string | ✓ | 問題の説明 |
 | confidence | number | ✓ | 0.0-1.0スコア |
-| confidenceMarker | enum | ✓ | ✓ (>0.8) / → (0.5-0.8) / ? (<0.5) |
+| confidenceMarker | enum | ✓ | ✓ (>0.9) / → (0.7-0.9) / ? (<0.7) |
 | evidence | string | ✓ | コード参照またはパターン |
 | reasoning | string | ✓ | なぜこれが問題か |
 
@@ -174,13 +186,13 @@ execution_plan:
 
 ## 主要な発見事項
 
-### 🚨 即時対応が必要なクリティカル問題
+### 即時対応が必要なクリティカル問題
 {{criticalFindings}}
 
-### ⚠️ 高優先度の改善
+### 高優先度の改善
 {{highPriorityFindings}}
 
-### 💡 コード品質向上のための推奨事項
+### コード品質向上のための推奨事項
 {{recommendations}}
 
 ## メトリクス概要
@@ -309,7 +321,7 @@ custom_rules:
 1. **信頼度マーカー**: すべての発見事項に数値スコア（0.0-1.0）と視覚マーカー（✓/→/?）を含める
 2. **証拠要件**: 行番号付きファイルパス、具体的なコードスニペット、明確な理由付け
 3. **参照**: ドキュメント、関連標準（WCAG、OWASPなど）へのリンク
-4. **フィルタリング**: 信頼度0.5未満の発見事項は最終出力に含めない
+4. **フィルタリング**: 信頼度0.7未満の発見事項は最終出力に含めない
 
 ## エージェントの場所
 
@@ -327,6 +339,8 @@ custom_rules:
   - progressive-enhancer（監査でレビューエージェントとして使用）
 - `~/.claude/agents/git/` - Git操作エージェント（branch、commit、pr、issue）
 - `~/.claude/agents/orchestrators/` - オーケストレーションエージェント（このファイル）
+- `~/.claude/agents/integrators/` - 指摘統合エージェント
+  - finding-integrator（最終フェーズ統合）
 
 **注意**: `progressive-enhancer`は`enhancers/`にありますが、CSS-firstソリューション検出のために監査レビューに参加します。
 
@@ -361,6 +375,12 @@ custom_rules:
 | security-reviewer | セキュリティ監査 | OWASP、脆弱性 |
 | performance-reviewer | パフォーマンス分析 | ボトルネック、バンドルサイズ |
 | accessibility-reviewer | アクセシビリティチェック | WCAG、ARIA、キーボードナビゲーション |
+
+### 統合エージェント
+
+| エージェント | 役割 | フォーカス |
+| --- | --- | --- |
+| finding-integrator | 最終統合 | パターン検出、根本原因分析、アクションプラン |
 
 ## ベストプラクティス
 

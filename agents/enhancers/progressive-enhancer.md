@@ -71,7 +71,7 @@ Check existing code for:
 
 ### ✓ Issues Identified
 
-#### Over-engineered Solutions 🔴
+#### Over-engineered Solutions
 1. **[JavaScript for CSS-capable task]**
    - **File**: path:line
    - **Evidence**: [JS doing visual/layout work]

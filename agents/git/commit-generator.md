@@ -102,7 +102,7 @@ Provide multiple alternatives:
 
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📝 Commit Message Generator
+Commit Message Generator
 
 ## Analysis Summary
 - **Files changed**: [count]
@@ -114,12 +114,12 @@ Provide multiple alternatives:
 
 ## Suggested Commit Messages
 
-### 🎯 Recommended
+### Recommended
 \`\`\`text
 [type]([scope]): [subject]
 \`\`\`
 
-### 📋 Alternatives
+### Alternatives
 [Detailed / Simple / With Issue versions]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

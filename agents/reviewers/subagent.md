@@ -101,7 +101,7 @@ Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specifi
 - Technical Accuracy: ✅/⚠️/❌
 - Integration: ✅/⚠️/❌
 
-### Required Changes 🔴
+### Required Changes
 1. [Format/structure violation with location]
 
 ### Integration Notes

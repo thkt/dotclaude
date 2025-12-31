@@ -157,7 +157,7 @@ console.log('User logged in:', { userId: user.id })
 
 ---
 
-## 🚨 Critical Issues (Confidence > 0.9)
+## Critical Issues (Confidence > 0.9)
 
 ### Vuln #1: [Category] - `file.ts:42`
 

@@ -132,7 +132,7 @@ After reading this document, the reader will be able to [specific capability].
 
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 Issue Generator
+Issue Generator
 
 ## Generated Issue
 

@@ -122,10 +122,10 @@ Provide alternatives:
 
 ## Recommended Branch Names
 
-### 🎯 Primary Recommendation
+### Primary Recommendation
 `[generated-branch-name]`
 
-### 📝 Alternatives
+### Alternatives
 1. **With scope**: `[alternative]`
 2. **Descriptive**: `[alternative]`
 3. **Concise**: `[alternative]`

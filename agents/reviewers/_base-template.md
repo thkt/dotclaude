@@ -66,7 +66,7 @@ All reviewer agents MUST follow this output structure:
 - [Domain-specific metric]: Y [✓/→]
 - Total Issues: N (✓: X, →: Y)
 
-### ✓ Critical Issues 🔴 (Confidence > 0.9)
+### Critical Issues (Confidence > 0.9)
 1. **[✓]** **[Issue Type]**: [Description]
    - **File**: path/to/file.tsx:42
    - **Confidence**: 0.95
@@ -76,28 +76,28 @@ All reviewer agents MUST follow this output structure:
    - **Suggested**: `[improved code]`
    - **Effort**: [Low/Medium/High]
 
-### ✓ High Priority Issues 🟠 (Confidence > 0.8)
+### High Priority Issues (Confidence > 0.8)
 1. **[✓]** **[Issue Type]**: [Description]
    - **File**: path/to/file.tsx:123
    - **Confidence**: 0.85
    - **Evidence**: [Observable pattern]
    - **Solution**: [Specific fix]
 
-### → Medium Priority Issues 🟡 (Confidence 0.7-0.8)
+### Medium Priority Issues (Confidence 0.7-0.8)
 1. **[→]** **[Issue Type]**: [Description]
    - **File**: path/to/file.tsx:200
    - **Confidence**: 0.75
    - **Inference**: [Reasoning for this finding]
    - **Note**: [Verification needed]
 
-### Best Practices 🟢
+### Best Practices
 1. **[Good pattern found]**: [Description]
    - Example: [Code showing good practice]
 
 ### Priority Actions
-1. 🚨 **CRITICAL** [✓] - [Immediate fix needed]
-2. ⚠️ **HIGH** [✓] - [Should address soon]
-3. 💡 **MEDIUM** [→] - [When time permits]
+1. **CRITICAL** [✓] - [Immediate fix needed]
+2. **HIGH** [✓] - [Should address soon]
+3. **MEDIUM** [→] - [When time permits]
 
 ### Verification Notes
 - **Verified Issues**: [List with evidence]

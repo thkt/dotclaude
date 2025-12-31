@@ -64,6 +64,18 @@ execution_plan:
   conditional_group:  # Documentation (only if .md files exist)
     agents: [document-reviewer]
     condition: "*.md files present"
+
+  integration_phase:  # Final phase - integrate all findings
+    agent: finding-integrator
+    dependencies: [all_previous_groups]
+    execution_mode: sequential
+    timeout: 120
+    tasks:
+      - Collect all findings from review agents
+      - Detect systemic patterns across findings
+      - Identify root causes using 5 Whys
+      - Generate strategic priorities
+      - Create actionable improvement plans
 ```
 
 #### Parallel Execution Benefits
@@ -128,7 +140,7 @@ execution_plan:
 | line | number | - | Line number |
 | message | string | ✓ | Issue description |
 | confidence | number | ✓ | 0.0-1.0 score |
-| confidenceMarker | enum | ✓ | ✓ (>0.8) / → (0.5-0.8) / ? (<0.5) |
+| confidenceMarker | enum | ✓ | ✓ (>0.9) / → (0.7-0.9) / ? (<0.7) |
 | evidence | string | ✓ | Code reference or pattern |
 | reasoning | string | ✓ | Why this is problematic |
 
@@ -173,13 +185,13 @@ Based on [@~/.claude/rules/PRINCIPLES_GUIDE.md] priority matrix:
 
 ## Key Findings
 
-### 🚨 Critical Issues Requiring Immediate Attention
+### Critical Issues Requiring Immediate Attention
 {{criticalFindings}}
 
-### ⚠️ High Priority Improvements
+### High Priority Improvements
 {{highPriorityFindings}}
 
-### 💡 Recommendations for Better Code Quality
+### Recommendations for Better Code Quality
 {{recommendations}}
 
 ## Metrics Overview
@@ -308,7 +320,7 @@ custom_rules:
 1. **Confidence Markers**: Every finding MUST include numeric score (0.0-1.0) and visual marker (✓/→/?)
 2. **Evidence Requirement**: File path with line number, specific code snippet, clear reasoning
 3. **References**: Links to documentation, related standards (WCAG, OWASP, etc.)
-4. **Filtering**: Do NOT include findings with confidence < 0.5 in final output
+4. **Filtering**: Do NOT include findings with confidence < 0.7 in final output
 
 ## Agent Locations
 
@@ -326,6 +338,8 @@ All review agents are organized by function:
   - progressive-enhancer (used in audit as review agent)
 - `~/.claude/agents/git/` - Git operation agents (branch, commit, pr, issue)
 - `~/.claude/agents/orchestrators/` - Orchestration agents (this file)
+- `~/.claude/agents/integrators/` - Finding integration agents
+  - finding-integrator (final phase synthesis)
 
 **Note**: `progressive-enhancer` is located in `enhancers/` but participates in audit reviews for CSS-first solution detection.
 
@@ -360,6 +374,12 @@ All review agents are organized by function:
 | security-reviewer | Security audit | OWASP, vulnerabilities |
 | performance-reviewer | Performance analysis | Bottlenecks, bundle size |
 | accessibility-reviewer | Accessibility check | WCAG, ARIA, keyboard nav |
+
+### Integration Agents
+
+| Agent | Role | Focus |
+| --- | --- | --- |
+| finding-integrator | Final synthesis | Pattern detection, root cause analysis, action plans |
 
 ## Best Practices
 
