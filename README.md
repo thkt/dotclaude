@@ -2,7 +2,7 @@
 
 A comprehensive configuration system for Claude AI with custom commands, development principles, and workflow optimizations.
 
-📌 **[日本語版](./ja/README.md)**
+📌 **[日本語版](./.ja/README.md)**
 
 ## 🎯 Overview
 
@@ -48,7 +48,7 @@ This repository contains personal configurations for Claude AI, including:
 │   └── reviewers/        # Code review agents (13 types)
 ├── references/           # Reference documents (not loaded as commands)
 │   └── commands/         # Command reference materials
-└── ja/                    # Japanese translations
+└── .ja/                   # Japanese translations (hidden directory)
     ├── CLAUDE.md         # Main config (Japanese)
     ├── commands/         # Command definitions (Japanese)
     └── rules/            # Rule definitions (Japanese)
@@ -198,7 +198,7 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 **📚 Detailed Reference**: For complete command documentation, see:
 
 - [English Command Reference](./docs/COMMANDS.md)
-- [日本語コマンドリファレンス](./ja/docs/COMMANDS.md)
+- [日本語コマンドリファレンス](./.ja/docs/COMMANDS.md)
 
 ## 🔄 Standard Workflows
 
@@ -266,9 +266,9 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 ### Core Documentation
 
 - [Commands Reference (English)](./docs/COMMANDS.md)
-- [Commands Reference (Japanese)](./ja/docs/COMMANDS.md)
+- [Commands Reference (Japanese)](./.ja/docs/COMMANDS.md)
 - [Configuration Guide](./CLAUDE.md)
-- [Japanese Configuration](./ja/CLAUDE.md)
+- [Japanese Configuration](./.ja/CLAUDE.md)
 
 ### Development Guides
 

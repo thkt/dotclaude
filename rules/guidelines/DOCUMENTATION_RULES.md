@@ -96,7 +96,7 @@ Level 1: CLAUDE.md (Top-level configuration)
 **Every documentation file MUST have:**
 
 - English version: `/path/to/FILE.md`
-- Japanese version: `/ja/path/to/FILE.md`
+- Japanese version: `/.ja/path/to/FILE.md`
 
 ### Synchronization Checklist
 
@@ -120,30 +120,13 @@ Both EN and JP use identical relative path patterns within their respective dire
 [@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # Up one level
 ```
 
-### Exceptions: Japanese-Only Documentation
+### Language Exceptions
 
-The following files exist only in Japanese (no English version):
+**ADR (Architecture Decision Records)**:
 
-- `ja/docs/ARCHITECTURE.md` - System architecture overview
-- `ja/docs/WORKFLOW_GUIDE.md` - Quick start guide
-- `ja/docs/DEVELOPMENT_WORKFLOW.md` - Practical development workflow
-- `ja/docs/PROJECT_SETUP.md` - Project-specific setup guide
-- `ja/commands/git/worktree-setup.md` - Git worktree setup guide
-- `ja/commands/context.md` - Context management command
-- `ja/skills/generating-esa-reports/` - esa daily report automation skill
-
-**Rationale**: These documents serve Japanese-speaking users and creating English versions would require significant translation effort without clear benefit. They are properly referenced within the Japanese documentation tree.
-
-### Exceptions: English-Only Documentation
-
-The following files exist only in English (no Japanese version):
-
-- `skills/automating-browser/` - Browser automation skill (technical reference)
-- `skills/utilizing-cli-tools/` - CLI tools guide skill (technical reference)
-- `rules/core/PRE_TASK_CHECK_COMPACT.md` - Hook-injected task verification rules
-- `rules/core/PRE_TASK_CHECK_VERBOSE.md` - Detailed PRE_TASK_CHECK specification
-
-**Rationale**: These are technical reference skills that primarily document tool APIs and command syntax. The content is largely code examples and tool names that don't require translation. PRE_TASK_CHECK files are injected via hook and referenced from both EN/JA CLAUDE.md - maintaining a single English source prevents synchronization issues. Creating Japanese versions would add maintenance burden without proportional benefit.
+- `docs/adr/*.md` files are written in Japanese by default (per CLAUDE.md P1 rule)
+- No `.ja/` translation needed as the source is already in Japanese
+- ADR output language follows the project's language settings
 
 ## Update Procedures
 
@@ -248,7 +231,7 @@ Consider refactoring when:
 
 ```bash
 grep -r "FILENAME" ~/.claude/           # Find references
-diff <(ls /rules/) <(ls /ja/rules/)     # Check EN/JP match
+diff <(ls /rules/) <(ls /.ja/rules/)    # Check EN/JP match
 ```
 
 ## Evolution Guidelines

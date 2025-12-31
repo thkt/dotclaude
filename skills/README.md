@@ -298,7 +298,7 @@ config:
 
 ```text
 ~/.claude/skills/your-skill/SKILL.md        # EN version (required)
-~/.claude/ja/skills/your-skill/SKILL.md     # JP version (recommended)
+~/.claude/.ja/skills/your-skill/SKILL.md    # JP version (recommended)
 ```
 
 #### Sync Checklist

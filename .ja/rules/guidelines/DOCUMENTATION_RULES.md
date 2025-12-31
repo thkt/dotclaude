@@ -96,7 +96,7 @@ Claude Codeエコシステムにおける一貫性があり、よく整理され
 **すべてのドキュメントファイルは以下を持つ必要がある:**
 
 - 英語版: `/path/to/FILE.md`
-- 日本語版: `/ja/path/to/FILE.md`
+- 日本語版: `/.ja/path/to/FILE.md`
 
 ### 同期チェックリスト
 
@@ -120,30 +120,13 @@ ENとJPは各ディレクトリ内で同一の相対パスパターンを使用:
 [@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # 1レベル上
 ```
 
-### 例外: 日本語のみのドキュメント
+### 言語例外
 
-以下のファイルは日本語のみ存在（英語版なし）:
+**ADR（アーキテクチャ決定記録）**:
 
-- `ja/docs/ARCHITECTURE.md` - システムアーキテクチャ概要
-- `ja/docs/WORKFLOW_GUIDE.md` - クイックスタートガイド
-- `ja/docs/DEVELOPMENT_WORKFLOW.md` - 実践的な開発ワークフロー
-- `ja/docs/PROJECT_SETUP.md` - プロジェクト固有のセットアップガイド
-- `ja/commands/git/worktree-setup.md` - Git worktreeセットアップガイド
-- `ja/commands/context.md` - コンテキスト管理コマンド
-- `ja/skills/generating-esa-reports/` - esa日報自動化スキル
-
-**理由**: これらのドキュメントは日本語を話すユーザーにサービスを提供し、英語版を作成するには明確な利点なしに多大な翻訳作業が必要。日本語ドキュメントツリー内で適切に参照されている。
-
-### 例外: 英語のみのドキュメント
-
-以下のファイルは英語のみ存在（日本語版なし）:
-
-- `skills/automating-browser/` - ブラウザ自動化スキル（技術リファレンス）
-- `skills/utilizing-cli-tools/` - CLIツールガイドスキル（技術リファレンス）
-- `rules/core/PRE_TASK_CHECK_COMPACT.md` - hook注入タスク検証ルール
-- `rules/core/PRE_TASK_CHECK_VERBOSE.md` - 詳細PRE_TASK_CHECK仕様
-
-**理由**: これらはツールAPIとコマンド構文を主にドキュメント化する技術リファレンススキル。内容はほとんどがコード例とツール名で翻訳が不要。PRE_TASK_CHECKファイルはhook経由で注入され、EN/JA両方のCLAUDE.mdから参照される - 単一の英語ソースを維持することで同期問題を防ぐ。日本語版を作成することは比例した利点なしにメンテナンス負担を増やす。
+- `docs/adr/*.md` ファイルはCLAUDE.md P1ルールに従いデフォルトで日本語出力
+- ソースが既に日本語のため `.ja/` への翻訳は不要
+- ADR出力言語はプロジェクトの言語設定に従う
 
 ## 更新手順
 
@@ -248,7 +231,7 @@ advancedImplementation()
 
 ```bash
 grep -r "FILENAME" ~/.claude/           # 参照を検索
-diff <(ls /rules/) <(ls /ja/rules/)     # EN/JP一致をチェック
+diff <(ls /rules/) <(ls /.ja/rules/)    # EN/JP一致をチェック
 ```
 
 ## 進化ガイドライン
