@@ -45,7 +45,7 @@
         "./agents/orchestrators/audit-orchestrator.md",
         "./agents/analyzers/architecture-analyzer.md",
         "./agents/generators/test.md",
-        "./agents/enhancers/progressive.md",
+        "./agents/enhancers/progressive-enhancer.md",
         "./agents/reviewers/subagent.md",
         "./agents/reviewers/document.md",
         "./agents/reviewers/testability.md",
