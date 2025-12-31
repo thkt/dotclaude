@@ -10,15 +10,15 @@ Definition of Done and output formatting for `/fix` command.
 
 A bug fix is complete when:
 
-- ✅ **Root cause identified** (not just symptom, 5 Whys applied)
-- ✅ **Minimal complexity solution** (Occam's Razor)
-- ✅ **Quality gates passed** (see shared criteria)
-- ✅ **No regressions detected**
+- [x] **Root cause identified** (not just symptom, 5 Whys applied)
+- [x] **Minimal complexity solution** (Occam's Razor)
+- [x] **Quality gates passed** (see shared criteria)
+- [x] **No regressions detected**
 
 ### Optional (Recommended)
 
-- ⭐ Additional tests generated (Phase 3.5)
-- ⭐ Documentation updated if behavior changed
+- [Recommended] Additional tests generated (Phase 3.5)
+- [Recommended] Documentation updated if behavior changed
 
 ## Output Format
 
@@ -27,7 +27,7 @@ A bug fix is complete when:
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔧 Fix Summary
+Fix Summary
 
 Problem: [User-facing description]
 Root Cause: [Why it happened]
@@ -39,12 +39,12 @@ Solution:
 - Changes: [Brief description]
 
 Verification:
-- Tests: ✅ XX/XX passing
-- Lint: ✅ No issues
-- Types: ✅ Valid
-- Manual: ✅ Verified
+- Tests: PASS XX/XX passing
+- Lint: PASS No issues
+- Types: PASS Valid
+- Manual: PASS Verified
 
-Status: ✅ COMPLETE (Confidence: 0.XX)
+Status: COMPLETE (Confidence: 0.XX)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -54,7 +54,7 @@ Status: ✅ COMPLETE (Confidence: 0.XX)
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⚠️ Fix Partially Complete
+[WARN] Fix Partially Complete
 
 Problem: [Description]
 Root Cause: [Identified cause]
@@ -65,16 +65,16 @@ Solution Applied:
 - Approach: [strategy used]
 
 Verification:
-- Tests: ✅ XX/XX passing
-- Lint: ⚠️ 2 warnings (acceptable)
-- Types: ✅ Valid
-- Manual: ✅ Verified
+- Tests: PASS XX/XX passing
+- Lint: WARN 2 warnings (acceptable)
+- Types: PASS Valid
+- Manual: PASS Verified
 
 Remaining:
 - [ ] [Task 1]
 - [ ] [Task 2]
 
-Status: ⏳ IN PROGRESS (Confidence: 0.XX)
+Status: IN PROGRESS (Confidence: 0.XX)
 
 Next Steps:
 1. [Action 1]
@@ -92,7 +92,7 @@ Next Steps:
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⚠️ Low Confidence - Recommend Escalation
+[WARN] Low Confidence - Recommend Escalation
 
 Problem: [Description]
 Current Confidence: 0.XX (below threshold of 0.7)
@@ -103,9 +103,9 @@ Analysis:
 - Scope: [Multiple components]
 
 Recommended Escalation:
-→ /research - For deeper investigation
-→ /think - For comprehensive solution planning
-→ /code - For proper implementation with TDD
+-> /research - For deeper investigation
+-> /think - For comprehensive solution planning
+-> /code - For proper implementation with TDD
 
 Reason: [Why /fix is insufficient]
 
@@ -172,7 +172,7 @@ Document which principles guided the fix:
 ### What Went Well
 
 ```markdown
-✅ Learnings:
+Learnings:
 - Root cause quickly identified with Explore agent
 - Regression test caught the exact issue
 - Minimal fix resolved problem efficiently
@@ -181,7 +181,7 @@ Document which principles guided the fix:
 ### What Could Improve
 
 ```markdown
-💡 Improvements:
+Improvements:
 - Could add validation earlier in the flow
 - Consider extracting discount logic to shared utility
 - Update documentation about discount edge cases
@@ -190,7 +190,7 @@ Document which principles guided the fix:
 ### Future Prevention
 
 ```markdown
-🛡️ Prevention:
+Prevention:
 - Add similar checks to other discount calculations
 - Document edge case handling in README
 - Add pre-commit hook for negative value detection
@@ -215,7 +215,7 @@ After fix is complete:
 
 ### No Further Action
 
-Bug fixed, tests pass, done! 🎉
+Bug fixed, tests pass, done!
 
 ## Completion Checklist
 
@@ -230,7 +230,7 @@ Before marking as complete:
 - [ ] Confidence ≥ 0.9
 - [ ] No regressions introduced
 
-**If all checked**: ✅ Bug fix complete!
+**If all checked**: Bug fix complete!
 
 ## References
 

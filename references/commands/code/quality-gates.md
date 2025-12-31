@@ -32,7 +32,7 @@ const qualityChecks = [
 npm run lint | tail -5
 ```
 
-- Status: ✅ Passing
+- Status: PASS
 - Issues: 0 errors, 2 warnings
 - Time: 1.2s
 
@@ -42,7 +42,7 @@ npm run lint | tail -5
 npm run type-check | tail -5
 ```
 
-- Status: ✅ All types valid
+- Status: PASS - All types valid
 - Files checked: 47
 - Time: 3.4s
 
@@ -52,7 +52,7 @@ npm run type-check | tail -5
 npm test -- --passWithNoTests | grep -E "Tests:|Snapshots:"
 ```
 
-- Status: ✅ 45/45 passing
+- Status: PASS - 45/45 passing
 - Coverage: 82%
 - Time: 8.7s
 
@@ -62,7 +62,7 @@ npm test -- --passWithNoTests | grep -E "Tests:|Snapshots:"
 npm run format:check | tail -3
 ```
 
-- Status: ⚠️ 3 files need formatting
+- Status: WARN - 3 files need formatting
 - Auto-fixable: Yes
 - Time: 0.8s
 
@@ -77,11 +77,11 @@ Confidence Level: HIGH - Ready for commit
 
 ```markdown
 Quality checks in progress:
-├─ 🧪 Tests      [████████████] ✅ 45/45 passing
-├─ 📊 Coverage   [████████░░░░] ⚠️ 78% (Target: 80%)
-├─ 🔍 Lint       [████████████] ✅ 0 errors, 2 warnings
-├─ 🔷 TypeCheck  [████████████] ✅ All types valid
-└─ 🎨 Format     [████████████] ✅ Formatted
+├─ Tests      [████████████] PASS 45/45 passing
+├─ Coverage   [████████░░░░] WARN 78% (Target: 80%)
+├─ Lint       [████████████] PASS 0 errors, 2 warnings
+├─ TypeCheck  [████████████] PASS All types valid
+└─ Format     [████████████] PASS Formatted
 
 Quality Score: 92% | Confidence: HIGH
 ```
@@ -134,9 +134,9 @@ Current: 78% (-2% from main)
 Uncovered lines: src/auth/validator.ts:45-52
 
 Actions:
-1. ❌ Add tests for uncovered lines
-2. ⏳ Or document why not testable
-3. ⏳ Or adjust threshold (not recommended)
+1. [TODO] Add tests for uncovered lines
+2. [PENDING] Or document why not testable
+3. [PENDING] Or adjust threshold (not recommended)
 
 Proceeding without resolution? (y/N)
 ```

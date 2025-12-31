@@ -80,9 +80,9 @@ Identify and classify:
 
 Determine if this is:
 
-- ✅ **Isolated issue**: One-off bug in specific condition
-- ⚠️ **Pattern issue**: Same problem in multiple places
-- 🚨 **Systematic issue**: Design flaw requiring refactor
+- [Isolated] **Isolated issue**: One-off bug in specific condition
+- [Pattern] **Pattern issue**: Same problem in multiple places
+- [Critical] **Systematic issue**: Design flaw requiring refactor
 
 ### Confidence Markers
 
@@ -91,7 +91,7 @@ Use throughout analysis: [@~/.claude/rules/development/COMPLETION_CRITERIA.md#co
 ### Example Analysis
 
 ```markdown
-🔍 Root Cause Analysis
+Root Cause Analysis
 
 **Symptom**:
 - [✓] User sees negative total when discount > price
@@ -109,7 +109,7 @@ Use throughout analysis: [@~/.claude/rules/development/COMPLETION_CRITERIA.md#co
 - [→] Similar pattern in: src/checkout/discount.ts
 - [?] May affect: src/reports/sales.ts
 
-**Pattern**: ⚠️ Potential pattern - need to check other discount logic
+**Pattern**: [Pattern] Potential pattern - need to check other discount logic
 **Confidence**: 0.85
 ```
 
@@ -138,12 +138,12 @@ If root cause analysis reveals:
 ## Output Format
 
 ```markdown
-📋 Root Cause Analysis Complete
+Root Cause Analysis Complete
 
-🐛 Bug: [Description]
-🎯 Root Cause: [Identified cause] [Confidence: 0.XX]
-📁 Affected: [Files]
-⚠️ Pattern: [Isolated/Pattern/Systematic]
+Bug: [Description]
+Root Cause: [Identified cause] [Confidence: 0.XX]
+Affected: [Files]
+Pattern: [Isolated/Pattern/Systematic]
 
 Next: Write regression test
 ```

@@ -78,25 +78,25 @@ Skills are used for:
 
 | Category | Skill Name | Description | Used by |
 | --- | --- | --- | --- |
-| **TDD/Testing** | `generating-tdd-tests` | TDD/RGRCサイクル、テスト設計、基礎原則 | /code, /fix |
+| **TDD/Testing** | `generating-tdd-tests` | TDD/RGRC cycle, test design, core principles | /code, /fix |
 | **Code Quality** | `applying-code-principles` | SOLID, DRY, YAGNI principles | /code |
 | | `applying-frontend-patterns` | React/UI patterns (structure) | /code --frontend |
 | | `integrating-storybook` | Storybook component development | /code --storybook |
 | | `enhancing-progressively` | CSS-first, progressive enhancement | /code |
 | | ↳ `frontend-design` (official) | Visual design quality (aesthetics) | plugin |
-| **Review** | `reviewing-security` | セキュリティレビュー（OWASP） | /audit |
-| | `reviewing-readability` | 可読性レビュー | /audit |
-| | `reviewing-type-safety` | 型安全性レビュー（TypeScript） | /audit |
-| | `reviewing-silent-failures` | サイレント障害検出 | /audit |
-| | `reviewing-testability` | テスタビリティレビュー | /audit |
-| | `analyzing-root-causes` | 根本原因分析（5 Whys） | /audit |
-| | `optimizing-performance` | パフォーマンス最適化 | /audit |
-| **Documentation** | `creating-adrs` | ADR作成ガイド | /adr, /rulify |
-| | `formatting-audits` | ドキュメントフォーマット | /sow, /spec |
-| | `documenting-architecture` | アーキテクチャドキュメント | /docs:architecture |
-| | `documenting-apis` | API仕様ドキュメント | /docs:api |
-| | `documenting-domains` | ドメイン理解ドキュメント | /docs:domain |
-| | `setting-up-docs` | 環境セットアップガイド | /docs:setup |
+| **Review** | `reviewing-security` | Security review (OWASP) | /audit |
+| | `reviewing-readability` | Readability review | /audit |
+| | `reviewing-type-safety` | Type safety review (TypeScript) | /audit |
+| | `reviewing-silent-failures` | Silent failure detection | /audit |
+| | `reviewing-testability` | Testability review | /audit |
+| | `analyzing-root-causes` | Root cause analysis (5 Whys) | /audit |
+| | `optimizing-performance` | Performance optimization | /audit |
+| **Documentation** | `creating-adrs` | ADR creation guide | /adr, /rulify |
+| | `formatting-audits` | Document formatting | /sow, /spec |
+| | `documenting-architecture` | Architecture documentation | /docs:architecture |
+| | `documenting-apis` | API specification documentation | /docs:api |
+| | `documenting-domains` | Domain understanding documentation | /docs:domain |
+| | `setting-up-docs` | Environment setup guide | /docs:setup |
 | **Automation** | `automating-browser` | Interactive browser control (demos, GIFs) | /workflow:create |
 | | ↳ `webapp-testing` (official) | Playwright E2E testing (CI/CD) | plugin |
 | | `utilizing-cli-tools` | CLI tools (gh, git, etc.) | /commit, /pr, /branch, /issue, /rabbit |
@@ -104,9 +104,9 @@ Skills are used for:
 
 ### Naming Convention
 
-- **Format**: gerund form (動名詞形式) - e.g., `generating-*`, `applying-*`, `creating-*`
-- **Reason**: スキル（能力）を表現する〜ing形式が適切
-- **Consistency**: ディレクトリ名とdependencies配列で同一名を使用
+- **Format**: gerund form - e.g., `generating-*`, `applying-*`, `creating-*`
+- **Reason**: The -ing form appropriately expresses skills (capabilities)
+- **Consistency**: Use the same name for directory names and dependencies arrays
 
 ---
 
@@ -146,7 +146,7 @@ Skills are used for:
 - Strict mode configuration checklist
 - Common type safety anti-patterns
 
-**Usage**: Auto-triggers on keywords like "型安全", "type safety", "any", "unknown", "type guard"
+**Usage**: Auto-triggers on keywords like "type safety", "any", "unknown", "type guard"
 
 **Agent integration**: `type-safety-reviewer` agent references this Skill
 

@@ -37,7 +37,7 @@ Options when existing Stories file is found:
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⚠️ Existing Stories file detected
+[WARN] Existing Stories file detected
 
 File: [path/to/Component.stories.tsx]
 Stories count: [count]

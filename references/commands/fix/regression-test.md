@@ -17,10 +17,10 @@ For TDD principles and RGRC cycle details:
 ## TDD Approach to Bug Fixes
 
 ```text
-1. 🔴 Red   - Write test that reproduces the bug (should FAIL)
-2. ✅ Verify - Confirm test fails for the RIGHT reason
-3. 🟢 Green - Implement minimal fix (test should PASS)
-4. 🔵 Refactor - Clean up if needed (keep test green)
+1. Red   - Write test that reproduces the bug (should FAIL)
+2. Verify - Confirm test fails for the RIGHT reason
+3. Green - Implement minimal fix (test should PASS)
+4. Refactor - Clean up if needed (keep test green)
 ```
 
 ## Step-by-Step Process
@@ -55,9 +55,9 @@ npm test -- --testNamePattern="discount exceeds total"
 
 **Verify**:
 
-- ✅ Test **fails** (proves bug exists)
-- ✅ Failure reason matches bug description
-- ✅ Error message is clear
+- [x] Test **fails** (proves bug exists)
+- [x] Failure reason matches bug description
+- [x] Error message is clear
 
 **Example**:
 
@@ -79,19 +79,19 @@ Once test fails correctly, proceed to Phase 2 (Implementation).
 
 ## Benefits
 
-- **[✓] Confirms bug is reproducible**
+- **Confirms bug is reproducible**
   - No guessing if fix works
   - Clear pass/fail criteria
 
-- **[✓] Prevents regression forever**
+- **Prevents regression forever**
   - Test stays in suite
   - CI catches if bug reappears
 
-- **[✓] Documents expected behavior**
+- **Documents expected behavior**
   - Test serves as specification
   - Future developers understand intent
 
-- **[✓] Enables confident refactoring**
+- **Enables confident refactoring**
   - Can improve code safely
   - Tests catch breaking changes
 
@@ -190,12 +190,12 @@ Definition of Done
 ## Output Format
 
 ```markdown
-✅ Regression Test Written
+Regression Test Written
 
-📝 Test: [test name]
-📁 File: [path/to/test.ts:line]
-🔴 Status: FAILING (as expected)
-🎯 Reproduces: [bug description]
+Test: [test name]
+File: [path/to/test.ts:line]
+Status: FAILING (as expected)
+Reproduces: [bug description]
 
 Next: Implement fix (Phase 2)
 ```

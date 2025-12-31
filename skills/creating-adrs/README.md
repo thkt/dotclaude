@@ -43,6 +43,12 @@ Scripts are automatically called by the `/adr` command:
 | 5 | `validate-adr.sh` | Verify required sections, metadata, content quality |
 | 6 | `update-index.sh` | Update docs/adr/README.md index |
 
+## Output Language
+
+**ADRs are generated in Japanese.**
+
+Templates are in English for MADR standard compatibility, but content is translated to Japanese during generation. This is because ADRs are documents reviewed by humans.
+
 ## Related Commands
 
 - `/adr` - Create ADR (calls scripts automatically)

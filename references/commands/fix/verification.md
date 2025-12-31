@@ -41,9 +41,9 @@ npm run type-check
 
 ### 1. Tests Pass
 
-- ✅ Regression test passes (bug fixed)
-- ✅ All existing tests still pass (no regressions)
-- ✅ Related tests pass (affected areas)
+- [x] Regression test passes (bug fixed)
+- [x] All existing tests still pass (no regressions)
+- [x] Related tests pass (affected areas)
 
 **Command**:
 
@@ -69,9 +69,9 @@ Tests:       3 passed, 3 total
 
 ### 2. Lint Passes
 
-- ✅ No new lint errors
-- ✅ Auto-fixable issues resolved
-- ⚠️ Warnings acceptable if <5
+- [x] No new lint errors
+- [x] Auto-fixable issues resolved
+- [WARN] Warnings acceptable if <5
 
 **Command**:
 
@@ -82,7 +82,7 @@ npm run lint -- --fix
 **Expected**:
 
 ```text
-✨ 0 errors, 2 warnings
+0 errors, 2 warnings
 ```
 
 **Action if errors**:
@@ -93,9 +93,9 @@ npm run lint -- --fix
 
 ### 3. Type Check Passes
 
-- ✅ No type errors in modified files
-- ✅ No type errors in related files
-- ✅ TypeScript compilation succeeds
+- [x] No type errors in modified files
+- [x] No type errors in related files
+- [x] TypeScript compilation succeeds
 
 **Command**:
 
@@ -107,7 +107,7 @@ npm run type-check
 **Expected**:
 
 ```text
-✨ No type errors
+No type errors
 ```
 
 ### 4. No Regressions Detected
@@ -135,15 +135,15 @@ npm run dev
 
 | Check | Status | Action |
 | --- | --- | --- |
-| Tests | ✅ All pass | Proceed |
-| Tests | ❌ Some fail | Fix immediately |
-| Lint | ✅ 0 errors | Proceed |
-| Lint | ❌ Errors | Fix all errors |
-| Lint | ⚠️ <5 warnings | Acceptable |
-| Types | ✅ No errors | Proceed |
-| Types | ❌ Errors | Fix immediately |
-| Manual | ✅ Works | Proceed |
-| Manual | ❌ Issues | Debug & fix |
+| Tests | PASS All pass | Proceed |
+| Tests | FAIL Some fail | Fix immediately |
+| Lint | PASS 0 errors | Proceed |
+| Lint | FAIL Errors | Fix all errors |
+| Lint | WARN <5 warnings | Acceptable |
+| Types | PASS No errors | Proceed |
+| Types | FAIL Errors | Fix immediately |
+| Manual | PASS Works | Proceed |
+| Manual | FAIL Issues | Debug & fix |
 
 ## When Verification Fails
 
@@ -192,22 +192,22 @@ npm run type-check
 ## Verification Output
 
 ```markdown
-✅ Verification Complete
+Verification Complete
 
-🧪 Tests:
-- Regression test: ✅ PASS
-- All tests: ✅ 18/18 passing
-- Related tests: ✅ 5/5 passing
+Tests:
+- Regression test: PASS
+- All tests: PASS 18/18 passing
+- Related tests: PASS 5/5 passing
 
-📊 Quality:
-- Lint: ✅ 0 errors, 2 warnings
-- Types: ✅ No errors
+Quality:
+- Lint: PASS 0 errors, 2 warnings
+- Types: PASS No errors
 - Coverage: 78% (maintained)
 
-🔍 Manual Check:
-- Feature works: ✅
-- No console errors: ✅
-- Related features: ✅
+Manual Check:
+- Feature works: PASS
+- No console errors: PASS
+- Related features: PASS
 
 Next: Test Generation (Phase 3.5) or Definition of Done
 ```

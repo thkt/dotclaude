@@ -200,12 +200,12 @@ If answer to any is "no" or "unsure" → revisit approach.
 ## Output Format
 
 ```markdown
-✅ Fix Implemented
+Fix Implemented
 
-🔧 Approach: [Direct/Defensive]
-📝 Changes: [Brief description]
-📁 Files: [Modified files]
-🎯 Confidence: 0.XX
+Approach: [Direct/Defensive]
+Changes: [Brief description]
+Files: [Modified files]
+Confidence: 0.XX
 
 Status:
 - [✓] Regression test passes

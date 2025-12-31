@@ -1,344 +1,344 @@
-# ADR 0002: /fix Modularization and TDD Commonization
+# ADR 0002: /fix モジュール化とTDD共通化
 
-## Status
+## ステータス
 
-Accepted (2025-12-24)
+承認済み (2025-12-24)
 
-## Implementation Progress
+## 実装進捗
 
-- [x] Phase 1: TDD基礎の共通化（skills + shared） - Completed
-- [x] Phase 2: /fix のモジュール化（6モジュール） - Completed
-- [x] Phase 3: /code の参照更新（機能維持） - Completed
-- [x] Phase 4: テストと検証（動作確認） - Completed
-- [x] Phase 5: ADR作成とドキュメント更新 - In Progress
+- [x] フェーズ1: TDD基礎の共通化（skills + shared） - 完了
+- [x] フェーズ2: /fix のモジュール化（6モジュール） - 完了
+- [x] フェーズ3: /code の参照更新（機能維持） - 完了
+- [x] フェーズ4: テストと検証（動作確認） - 完了
+- [x] フェーズ5: ADR作成とドキュメント更新 - 進行中
 
-## Context
+## コンテキスト
 
-### Problem 1: /fix Command Complexity
+### 問題1: /fix コマンドの複雑さ
 
-`/fix` command (`~/.claude/commands/fix.md`) was 239 lines with 10+ responsibilities, violating Miller's Law (7±2):
+`/fix` コマンド (`~/.claude/commands/fix.md`) は239行で10以上の責任を持ち、ミラーの法則 (7±2) に違反:
 
-| # | Responsibility | Lines |
+| # | 責任 | 行数 |
 | --- | --- | --- |
-| 1 | Dynamic Context | ~15 |
-| 2 | Root Cause Analysis (Phase 1) | ~30 |
-| 3 | Regression Test First (Phase 1.5) | ~45 |
-| 4 | Implementation (Phase 2) | ~35 |
-| 5 | Verification (Phase 3) | ~40 |
-| 6 | Test Generation (Phase 3.5) | ~30 |
-| 7 | Definition of Done | ~20 |
-| 8 | Output Format | ~10 |
-| 9 | Escalation | ~10 |
-| 10 | Applied Principles | ~4 |
+| 1 | 動的コンテキスト | ~15 |
+| 2 | 根本原因分析 (フェーズ1) | ~30 |
+| 3 | リグレッションテストファースト (フェーズ1.5) | ~45 |
+| 4 | 実装 (フェーズ2) | ~35 |
+| 5 | 検証 (フェーズ3) | ~40 |
+| 6 | テスト生成 (フェーズ3.5) | ~30 |
+| 7 | 完了定義 | ~20 |
+| 8 | 出力フォーマット | ~10 |
+| 9 | エスカレーション | ~10 |
+| 10 | 適用される原則 | ~4 |
 
-### Problem 2: DRY Violation (TDD Knowledge Duplication)
+### 問題2: DRY違反（TDD知識の重複）
 
-TDD fundamentals were duplicated across commands:
+TDD基礎がコマンド間で重複:
 
-| Element | `/code/rgrc-cycle.md` | `/fix` Phase 1.5/3.5 | Duplication |
+| 要素 | `/code/rgrc-cycle.md` | `/fix` フェーズ1.5/3.5 | 重複率 |
 | --- | --- | --- | --- |
-| RGRC Cycle | 198 lines | Implicit | ~90% |
-| Baby Steps | Detailed | Implied | ~60% |
-| test-generator | Pattern 1 | Pattern 2 | ~70% |
+| RGRCサイクル | 198行 | 暗黙的 | ~90% |
+| ベイビーステップ | 詳細 | 暗示 | ~60% |
+| test-generator | パターン1 | パターン2 | ~70% |
 
-### Issues
+### 課題
 
-- **Miller's Law violation**: 10 responsibilities > 7±2 cognitive limit
-- **DRY violation**: TDD knowledge duplicated
-- **Maintainability**: Changes require updates in multiple places
-- **Discoverability**: Hard to find TDD guidance
-- **Consistency**: Risk of divergence between commands
+- **ミラーの法則違反**: 10の責任 > 7±2の認知限界
+- **DRY違反**: TDD知識が重複
+- **保守性**: 変更には複数箇所の更新が必要
+- **発見可能性**: TDDガイダンスを見つけにくい
+- **一貫性**: コマンド間で乖離するリスク
 
-## Decision Drivers
+## 決定要因
 
-1. **Miller's Law (7±2)** - Reduce cognitive load
-2. **DRY Principle** - Single source of truth for TDD knowledge
-3. **Maintainability** - Easier to update and extend
-4. **Reusability** - Share TDD fundamentals across commands
-5. **User Experience** - Maintain `/code` and `/fix` functionality
-6. **Consistency** - Follow ADR 0001 pattern
+1. **ミラーの法則 (7±2)** - 認知負荷を軽減
+2. **DRY原則** - TDD知識の単一真実源
+3. **保守性** - 更新と拡張が容易
+4. **再利用性** - コマンド間でTDD基礎を共有
+5. **ユーザー体験** - `/code` と `/fix` の機能を維持
+6. **一貫性** - ADR 0001のパターンに従う
 
-## Considered Options
+## 検討したオプション
 
-### Option A: Status Quo (Do Nothing)
+### オプションA: 現状維持（何もしない）
 
-**Pros**:
+**利点**:
 
-- No implementation cost
-- No risk of breaking changes
-- No learning curve
+- 実装コストなし
+- 破壊的変更のリスクなし
+- 学習曲線なし
 
-**Cons**:
+**欠点**:
 
-- Miller's Law violation continues
-- DRY violation persists
-- Maintenance burden grows
-- Inconsistency risk increases
+- ミラーの法則違反が継続
+- DRY違反が持続
+- 保守負担が増大
+- 不整合リスクが増加
 
-### Option B: Complete Integration
+### オプションB: 完全統合
 
-Merge `/code` and `/fix` TDD logic into single unified module.
+`/code` と `/fix` のTDDロジックを単一の統合モジュールにマージ。
 
-**Pros**:
+**利点**:
 
-- Maximum DRY compliance
-- Single source of truth
-- Centralized maintenance
+- 最大限のDRY準拠
+- 単一真実源
+- 一元化された保守
 
-**Cons**:
+**欠点**:
 
-- Context confusion (feature vs bug)
-- Conditional logic complexity
-- Readable Code violation
-- Difficult to understand
+- コンテキスト混乱（機能 vs バグ）
+- 条件ロジックの複雑さ
+- 読みやすいコード違反
+- 理解困難
 
-### Option C: Hybrid Modularization (Chosen)
+### オプションC: ハイブリッドモジュール化（選択）
 
-**Three-layer architecture**:
+**3層アーキテクチャ**:
 
 ```text
-Layer 1: Skills (Education)
+レイヤー1: スキル（教育）
   └─ skills/tdd-fundamentals/
-     ├── SKILL.md (principles)
-     └── examples/ (patterns)
+     ├── SKILL.md（原則）
+     └── examples/（パターン）
 
-Layer 2: Shared (Implementation)
+レイヤー2: 共有（実装）
   └─ references/commands/shared/
-     ├── tdd-cycle.md (RGRC details)
-     └── test-generation.md (patterns)
+     ├── tdd-cycle.md（RGRC詳細）
+     └── test-generation.md（パターン）
 
-Layer 3: Commands (Execution)
-  ├─ commands/fix.md + fix/ (6 modules)
-  └─ references/commands/code/ (reference updates)
+レイヤー3: コマンド（実行）
+  ├─ commands/fix.md + fix/（6モジュール）
+  └─ references/commands/code/（参照更新）
 ```
 
-**Pros**:
+**利点**:
 
-- ✅ DRY for principles, context-specific for application
-- ✅ Miller's Law compliant (6 modules < 7±2)
-- ✅ Readable Code maintained (clear separation)
-- ✅ Follows ADR 0001 pattern (consistency)
-- ✅ Reusable across commands
-- ✅ User experience unchanged
+- ✅ 原則はDRY、適用はコンテキスト固有
+- ✅ ミラーの法則準拠（6モジュール < 7±2）
+- ✅ 読みやすいコードを維持（明確な分離）
+- ✅ ADR 0001パターンに従う（一貫性）
+- ✅ コマンド間で再利用可能
+- ✅ ユーザー体験は変更なし
 
-**Cons**:
+**欠点**:
 
-- Implementation cost (5 phases)
-- More files to navigate
-- Reference management needed
+- 実装コスト（5フェーズ）
+- ナビゲートするファイルが増加
+- 参照管理が必要
 
-## Decision Outcome
+## 決定結果
 
-**Chosen Option**: Option C (Hybrid Modularization)
+**選択されたオプション**: オプションC（ハイブリッドモジュール化）
 
-### Rationale
+### 根拠
 
-1. **DRY + Readable Balance**
-   - Common principles → shared
-   - Context-specific logic → separated
-   - Best of both worlds
+1. **DRY + 読みやすさのバランス**
+   - 共通原則 → 共有
+   - コンテキスト固有のロジック → 分離
+   - 両方の良いところを取る
 
-2. **Miller's Law Compliance**
-   - `/fix`: 10 responsibilities → 6 modules (within 7±2)
-   - Each module: 150-270 lines (readable size)
+2. **ミラーの法則準拠**
+   - `/fix`: 10の責任 → 6モジュール（7±2以内）
+   - 各モジュール: 150-270行（読みやすいサイズ）
 
-3. **Consistency with ADR 0001**
-   - Same pattern as `/code` modularization
-   - Proven approach
-   - Familiar structure
+3. **ADR 0001との一貫性**
+   - `/code` モジュール化と同じパターン
+   - 実証済みのアプローチ
+   - 馴染みのある構造
 
-4. **Future-proof**
-   - Easy to add new commands
-   - TDD fundamentals reusable
-   - Extensible architecture
+4. **将来対応**
+   - 新しいコマンドの追加が容易
+   - TDD基礎が再利用可能
+   - 拡張可能なアーキテクチャ
 
-### Implementation Strategy
+### 実装戦略
 
-#### Phase 1: TDD基礎の共通化
+#### フェーズ1: TDD基礎の共通化
 
-Created **5 files**:
+**5ファイル**を作成:
 
 ```text
 skills/tdd-fundamentals/
-├── SKILL.md (285 lines)
+├── SKILL.md（285行）
 ├── examples/
-│   ├── feature-driven.md (75 lines)
-│   └── bug-driven.md (80 lines)
+│   ├── feature-driven.md（75行）
+│   └── bug-driven.md（80行）
 
 references/commands/shared/
-├── tdd-cycle.md (253 lines)
-└── test-generation.md (228 lines)
+├── tdd-cycle.md（253行）
+└── test-generation.md（228行）
 ```
 
-**Content extracted**:
+**抽出されたコンテンツ**:
 
-- TDD philosophy (t_wada, Kent Beck)
-- Baby Steps principle and rhythm
-- RGRC cycle implementation
-- test-generator patterns
+- TDD哲学（t_wada、Kent Beck）
+- ベイビーステップの原則とリズム
+- RGRCサイクルの実装
+- test-generatorパターン
 
-#### Phase 2: /fix のモジュール化
+#### フェーズ2: /fix のモジュール化
 
-Created **7 files** (1 main + 6 modules):
+**7ファイル**を作成（1メイン + 6モジュール）:
 
 ```text
 commands/
-├── fix.md (164 lines) ← Thin wrapper
+├── fix.md（164行）← 薄いラッパー
 └── fix/
-    ├── root-cause-analysis.md (153 lines)
-    ├── regression-test.md (204 lines)
-    ├── implementation.md (225 lines)
-    ├── verification.md (248 lines)
-    ├── test-generation.md (224 lines)
-    └── completion.md (264 lines)
+    ├── root-cause-analysis.md（153行）
+    ├── regression-test.md（204行）
+    ├── implementation.md（225行）
+    ├── verification.md（248行）
+    ├── test-generation.md（224行）
+    └── completion.md（264行）
 ```
 
-**Before vs After**:
+**ビフォー vs アフター**:
 
-- Lines: 239 → 164 (main file, 31% reduction)
-- Responsibilities: 10 → 6 modules
-- Miller's Law: ❌ Violated → ✅ Compliant
+- 行数: 239 → 164（メインファイル、31%削減）
+- 責任: 10 → 6モジュール
+- ミラーの法則: ❌ 違反 → ✅ 準拠
 
-#### Phase 3: /code の参照更新
+#### フェーズ3: /code の参照更新
 
-Updated **2 files** (non-destructive):
+**2ファイル**を更新（非破壊的）:
 
 ```text
 references/commands/code/
-├── rgrc-cycle.md (+ TDD Fundamentals Reference)
-└── test-preparation.md (+ Test Generation Reference)
+├── rgrc-cycle.md（+ TDD基礎リファレンス）
+└── test-preparation.md（+ テスト生成リファレンス）
 ```
 
-**Key principle**: Add references only, no logic changes.
+**重要な原則**: 参照のみ追加、ロジック変更なし。
 
-**Result**: `/code` functionality 100% maintained.
+**結果**: `/code` 機能100%維持。
 
-#### Phase 4: テストと検証
+#### フェーズ4: テストと検証
 
-**Verification results**:
+**検証結果**:
 
-- ✅ All files created (13 files)
-- ✅ References valid (30 cross-references)
-- ✅ Structure correct (3-layer architecture)
-- ✅ `/code` functionality preserved
+- ✅ すべてのファイル作成（13ファイル）
+- ✅ 参照が有効（30のクロスリファレンス）
+- ✅ 構造が正確（3層アーキテクチャ）
+- ✅ `/code` 機能が維持
 
-#### Phase 5: ADR作成とドキュメント更新
+#### フェーズ5: ADR作成とドキュメント更新
 
-This document + COMMANDS.md updates.
+このドキュメント + COMMANDS.md更新。
 
-## Consequences
+## 結果
 
-### Positive
+### ポジティブ
 
-**Immediate**:
+**即時**:
 
-- ✅ Miller's Law compliant
-- ✅ DRY principle applied
-- ✅ Maintainability improved
-- ✅ Reusability enabled
+- ✅ ミラーの法則準拠
+- ✅ DRY原則適用
+- ✅ 保守性向上
+- ✅ 再利用性実現
 
-**Long-term**:
+**長期**:
 
-- ✅ Easy to add new commands (e.g., `/hotfix` modularization)
-- ✅ TDD guidance centralized and discoverable
-- ✅ Consistency across codebase
-- ✅ Knowledge base for users
+- ✅ 新しいコマンドの追加が容易（例: `/hotfix` モジュール化）
+- ✅ TDDガイダンスが一元化され発見可能
+- ✅ コードベース全体で一貫性
+- ✅ ユーザーのためのナレッジベース
 
-### Negative
+### ネガティブ
 
-**Immediate**:
+**即時**:
 
-- ⚠️ More files to navigate (13 new files)
-- ⚠️ Learning curve for new structure
-- ⚠️ Reference management overhead
+- ⚠️ ナビゲートするファイルが増加（13の新ファイル）
+- ⚠️ 新しい構造の学習曲線
+- ⚠️ 参照管理のオーバーヘッド
 
-**Long-term**:
+**長期**:
 
-- ⚠️ Risk of circular references (mitigation: careful design)
-- ⚠️ Need to maintain EN/JA sync (existing issue)
+- ⚠️ 循環参照のリスク（軽減策: 慎重な設計）
+- ⚠️ EN/JA同期の維持が必要（既存の課題）
 
-### Risks and Mitigations
+### リスクと軽減策
 
-| Risk | Likelihood | Impact | Mitigation |
+| リスク | 可能性 | 影響 | 軽減策 |
 | --- | --- | --- | --- |
-| `/code` functionality broken | Low | High | Non-destructive updates, references only |
-| Circular references | Medium | Medium | Clear hierarchy (Skills → Shared → Commands) |
-| EN/JA drift | High | Low | Existing process, not new |
-| User confusion | Low | Low | Clear structure, good documentation |
+| `/code` 機能の破壊 | 低 | 高 | 非破壊的更新、参照のみ |
+| 循環参照 | 中 | 中 | 明確な階層（Skills → Shared → Commands） |
+| EN/JAの乖離 | 高 | 低 | 既存のプロセス、新規ではない |
+| ユーザーの混乱 | 低 | 低 | 明確な構造、良いドキュメント |
 
-## Metrics
+## メトリクス
 
-### Before
+### ビフォー
 
-| Command | Main File | Responsibilities | Miller's Law |
+| コマンド | メインファイル | 責任 | ミラーの法則 |
 | --- | --- | --- | --- |
-| `/code` | 89 lines | 4-5 | ✅ Compliant |
-| `/fix` | 239 lines | 10+ | ❌ Violated |
+| `/code` | 89行 | 4-5 | ✅ 準拠 |
+| `/fix` | 239行 | 10+ | ❌ 違反 |
 
-### After
+### アフター
 
-| Command | Main File | Modules | Total Lines | Miller's Law |
+| コマンド | メインファイル | モジュール | 総行数 | ミラーの法則 |
 | --- | --- | --- | --- | --- |
-| `/code` | 89 lines | 6 | 807 lines | ✅ Compliant |
-| `/fix` | 164 lines | 6 | 1,482 lines | ✅ Compliant |
+| `/code` | 89行 | 6 | 807行 | ✅ 準拠 |
+| `/fix` | 164行 | 6 | 1,482行 | ✅ 準拠 |
 
-**Key metrics**:
+**主要メトリクス**:
 
-- `/fix` complexity reduction: 10 responsibilities → 6 modules
-- DRY improvement: 3 sources of TDD knowledge → 1 (Skills + Shared)
-- Reusability: 0 shared modules → 2 (tdd-cycle, test-generation)
-- Cross-references: 0 → 30 (strong network)
+- `/fix` 複雑度削減: 10の責任 → 6モジュール
+- DRY改善: TDD知識の3ソース → 1（Skills + Shared）
+- 再利用性: 0の共有モジュール → 2（tdd-cycle、test-generation）
+- クロスリファレンス: 0 → 30（強力なネットワーク）
 
-## Integration Points
+## 統合ポイント
 
-### With ADR 0001
+### ADR 0001との関係
 
-This ADR follows the same pattern as ADR 0001:
+このADRはADR 0001と同じパターンに従う:
 
-- Thin wrapper pattern
-- Module-based separation
-- Reference-based integration
-- Non-destructive updates
+- 薄いラッパーパターン
+- モジュールベースの分離
+- 参照ベースの統合
+- 非破壊的更新
 
-**Consistency**: Both `/code` and `/fix` now follow the same architecture.
+**一貫性**: `/code` と `/fix` は同じアーキテクチャに従う。
 
-### With Future Commands
+### 将来のコマンドとの関係
 
-This architecture enables:
+このアーキテクチャにより以下が可能:
 
-- `/hotfix` modularization (if needed)
-- New TDD-based commands
-- Shared TDD fundamentals
-- Consistent user experience
+- `/hotfix` モジュール化（必要な場合）
+- 新しいTDDベースのコマンド
+- 共有TDD基礎
+- 一貫したユーザー体験
 
-## References
+## リファレンス
 
-- [ADR 0001](./0001-code-command-responsibility-separation.md) - `/code` modularization pattern
-- [Miller's Law](../../skills/applying-code-principles/SKILL.md) - Cognitive load principle
-- [DRY Principle](../../skills/applying-code-principles/SKILL.md) - Knowledge duplication
-- [SOLID Principles](../../skills/applying-code-principles/SKILL.md) - SRP application
-- [COMMANDS.md](../COMMANDS.md) - Command documentation
+- [ADR 0001](./0001-code-command-responsibility-separation.md) - `/code` モジュール化パターン
+- [ミラーの法則](../../skills/applying-code-principles/SKILL.md) - 認知負荷原則
+- [DRY原則](../../skills/applying-code-principles/SKILL.md) - 知識の重複
+- [SOLID原則](../../skills/applying-code-principles/SKILL.md) - SRPの適用
+- [COMMANDS.md](../COMMANDS.md) - コマンドドキュメント
 
-## Future Considerations
+## 将来の検討事項
 
-### Potential Enhancements
+### 潜在的な改善
 
-1. **Japanese versions**: Create JA versions of new files
-2. **`/hotfix` modularization**: Apply same pattern if complexity grows
-3. **More shared modules**: Extract other common patterns (e.g., quality-gates)
-4. **Skill auto-trigger**: Enable keyword-based TDD skill activation
+1. **日本語版**: 新ファイルのJA版を作成
+2. **`/hotfix` モジュール化**: 複雑さが増した場合は同じパターンを適用
+3. **より多くの共有モジュール**: 他の共通パターンを抽出（例: quality-gates）
+4. **スキル自動トリガー**: キーワードベースのTDDスキル起動を有効化
 
-### Review Criteria
+### レビュー基準
 
-Review this decision if:
+以下の場合にこの決定をレビュー:
 
-- `/fix` or `/code` undergo major changes
-- Miller's Law violated again (>7±2 modules)
-- User feedback indicates confusion
-- DRY violations reappear
+- `/fix` または `/code` が大きな変更を受ける
+- ミラーの法則が再び違反される（>7±2モジュール）
+- ユーザーフィードバックが混乱を示す
+- DRY違反が再発する
 
 ---
 
-*Created: 2025-12-24*
-*Author: Claude Code*
-*Status: Accepted*
+*作成日: 2025-12-24*
+*著者: Claude Code*
+*ステータス: 承認済み*

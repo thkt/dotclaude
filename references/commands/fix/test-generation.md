@@ -10,19 +10,19 @@ Use test-generator to create comprehensive test coverage for the bug and related
 
 Generate additional tests when:
 
-- ✅ Bug fix is testable (has logic)
-- ✅ Edge cases exist beyond initial regression test
-- ✅ Similar bugs possible in related code
-- ✅ Integration testing needed
+- [x] Bug fix is testable (has logic)
+- [x] Edge cases exist beyond initial regression test
+- [x] Similar bugs possible in related code
+- [x] Integration testing needed
 
 ## When to Skip
 
 Skip test generation when:
 
-- ❌ Documentation-only changes
-- ❌ Configuration file updates
-- ❌ Pure UI/CSS changes without logic
-- ❌ Trivial fix with comprehensive existing tests
+- [ ] Documentation-only changes
+- [ ] Configuration file updates
+- [ ] Pure UI/CSS changes without logic
+- [ ] Trivial fix with comprehensive existing tests
 
 ## Test Generation Reference
 
@@ -96,11 +96,11 @@ it('checkout flow with large discount', () => {
 
 Ensure generated tests have:
 
-- ✅ **Clear names**: Describe what is being tested
-- ✅ **Single focus**: One behavior per test
-- ✅ **AAA pattern**: Arrange, Act, Assert
-- ✅ **Edge coverage**: Boundary conditions
-- ✅ **Comments**: Explain non-obvious cases
+- [x] **Clear names**: Describe what is being tested
+- [x] **Single focus**: One behavior per test
+- [x] **AAA pattern**: Arrange, Act, Assert
+- [x] **Edge coverage**: Boundary conditions
+- [x] **Comments**: Explain non-obvious cases
 
 ## Example: Complete Generation
 
@@ -183,10 +183,10 @@ Choose based on:
 ## Output Format
 
 ```markdown
-✅ Additional Tests Generated
+Additional Tests Generated
 
-📝 Tests Added: 5
-📁 File: src/utils/pricing.test.ts
+Tests Added: 5
+File: src/utils/pricing.test.ts
 
 Coverage:
 - Edge cases: [✓] Zero values, boundary conditions
@@ -194,8 +194,8 @@ Coverage:
 - Negative cases: [✓] Invalid inputs
 
 Status:
-- All tests passing: ✅
-- Coverage improved: 78% → 85%
+- All tests passing: PASS
+- Coverage improved: 78% -> 85%
 
 Next: Definition of Done
 ```

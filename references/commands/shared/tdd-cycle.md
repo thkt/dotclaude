@@ -10,10 +10,10 @@ Quick reference for RGRC cycle. Full details in skill file.
 
 | Phase | Goal | Confidence | Max Time |
 | --- | --- | --- | --- |
-| 🔴 Red | Test fails for expected reason | 0.9 | 2 min |
-| 🟢 Green | Minimal code to pass | 0.7 | 5 min |
-| 🔵 Refactor | Clean without behavior change | 0.95 | 3 min |
-| ✅ Commit | All checks pass | 1.0 | 1 min |
+| Red | Test fails for expected reason | 0.9 | 2 min |
+| Green | Minimal code to pass | 0.7 | 5 min |
+| Refactor | Clean without behavior change | 0.95 | 3 min |
+| Commit | All checks pass | 1.0 | 1 min |
 
 ## Key Commands
 

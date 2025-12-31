@@ -78,15 +78,15 @@ For detailed phase guidance (Red/Green/Refactor/Commit steps, exit criteria, tim
 Display TDD cycle progress with real-time updates:
 
 ```markdown
-📋 Implementation Task: User Authentication Feature
-🔴 Red → 🟢 Green → 🔵 Refactor → ✅ Commit
+Implementation Task: User Authentication Feature
+Red -> Green -> Refactor -> Commit
 
 Current Cycle: Scenario 2/5
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔴 Red Phase    [████████████] Complete
-🟢 Green Phase  [████████░░░░] 70%
-🔵 Refactor     [░░░░░░░░░░░░] Waiting
-✅ Commit       [░░░░░░░░░░░░] Waiting
+Red Phase    [████████████] Complete
+Green Phase  [████████░░░░] 70%
+Refactor     [░░░░░░░░░░░░] Waiting
+Commit       [░░░░░░░░░░░░] Waiting
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Current: Minimal implementation until test passes...
@@ -98,16 +98,16 @@ Elapsed: 8 min | Remaining scenarios: 3
 #### TDD Mode (Default)
 
 ```markdown
-📋 TDD Progress:
+TDD Progress:
 Cycle 3/8: Green Phase
-⏳ Current test: should handle edge cases
-📝 Lines written: 125 | Tests: 18/20
+[ACTIVE] Current test: should handle edge cases
+Lines written: 125 | Tests: 18/20
 ```
 
 #### Quick Implementation Mode
 
 ```markdown
-⚡ Quick implementation... [████████░░] 80%
+[FAST] Quick implementation... [████████░░] 80%
 Skipping some quality checks for speed
 ```
 
@@ -118,26 +118,26 @@ Real-time tracking with confidence scoring:
 ```markdown
 # Implementation: [Feature Name]
 ## Scenarios (Total Confidence: 0.85)
-1. ⏳ User registration with valid email [C: 0.9]
-2. ⏳ Registration fails with invalid email [C: 0.8]
-3. ⏳ Duplicate email prevention [C: 0.85]
+1. [PENDING] User registration with valid email [C: 0.9]
+2. [PENDING] Registration fails with invalid email [C: 0.8]
+3. [PENDING] Duplicate email prevention [C: 0.85]
 
 ## Current RGRC Cycle - Scenario 1
 ### Red Phase (Started: 14:23)
-1.1 ✅ Write failing test [C: 0.95] ✓ 2 min
-1.2 ✅ Verify correct failure [C: 0.9] ✓ 30 sec
+1.1 [DONE] Write failing test [C: 0.95] 2 min
+1.2 [DONE] Verify correct failure [C: 0.9] 30 sec
 
 ### Green Phase (Active: 14:26)
-1.3 ❌ Implement registration logic [C: 0.7] ⏱️ 3 min
-1.4 ⏳ Test passes consistently [C: pending]
+1.3 [FAIL] Implement registration logic [C: 0.7] 3 min
+1.4 [PENDING] Test passes consistently [C: pending]
 
 ### Refactor Phase (Pending)
-1.5 ⏳ Apply SOLID principles [C: pending]
-1.6 ⏳ Extract validation logic [C: pending]
+1.5 [PENDING] Apply SOLID principles [C: pending]
+1.6 [PENDING] Extract validation logic [C: pending]
 
 ### Quality Gates
-- 🧪 Tests: 12/14 passing
-- 📊 Coverage: 78% (target: 80%)
-- 🔍 Lint: 2 warnings
-- 🔷 Types: All passing
+- Tests: 12/14 passing
+- Coverage: 78% (target: 80%)
+- Lint: 2 warnings
+- Types: All passing
 ```

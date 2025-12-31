@@ -8,10 +8,10 @@ This module defines completion criteria and decision support for `/code` command
 
 Implementation complete when:
 
-- ✅ All RGRC cycles complete
-- ✅ Feature works as specified
-- ✅ Edge cases handled
-- ✅ Quality gates passed (see shared criteria)
+- [x] All RGRC cycles complete
+- [x] Feature works as specified
+- [x] Edge cases handled
+- [x] Quality gates passed (see shared criteria)
 
 If confidence < 0.8 on any critical metric, continue improving.
 

@@ -1,26 +1,26 @@
 # Shared Scripts
 
-スキル間で共有される検証ユーティリティ。
+Validation utilities shared across skills.
 
-**注意**: これはスキルではありません。SKILL.mdは意図的に存在しません。
+**Note**: This is NOT a skill. SKILL.md is intentionally absent.
 
-## 使用方法
+## Usage
 
 ```bash
-# 単一スキルの検証
+# Validate a single skill
 bash ~/.claude/skills/scripts/validate-template.sh ~/.claude/skills/[skill-name]
 
-# 全スキルの検証
+# Validate all skills
 bash ~/.claude/skills/scripts/validate-all.sh
 
-# Markdownの検証
+# Validate Markdown files
 bash ~/.claude/skills/scripts/validate-markdown.sh [file.md]
 ```
 
-## ファイル
+## Files
 
-| ファイル | 用途 |
+| File | Purpose |
 | --- | --- |
-| `validate-template.sh` | スキル構造検証（SKILL.md、フロントマター） |
-| `validate-all.sh` | 全スキル一括検証 |
-| `validate-markdown.sh` | Markdownファイル検証 |
+| `validate-template.sh` | Skill structure validation (SKILL.md, frontmatter) |
+| `validate-all.sh` | Batch validation for all skills |
+| `validate-markdown.sh` | Markdown file validation |

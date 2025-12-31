@@ -62,14 +62,14 @@ After generation, display the test activation queue:
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📋 Test Queue (Baby Steps Order)
+Test Queue (Baby Steps Order)
 
 | # | Test Name | Status | Complexity |
 |---|-----------|--------|------------|
-| 1 | handles zero input | ⏸️ SKIP | Simple |
-| 2 | calculates basic case | ⏸️ SKIP | Basic |
-| 3 | applies threshold logic | ⏸️ SKIP | Medium |
-| 4 | handles edge cases | ⏸️ SKIP | Complex |
+| 1 | handles zero input | SKIP | Simple |
+| 2 | calculates basic case | SKIP | Basic |
+| 3 | applies threshold logic | SKIP | Medium |
+| 4 | handles edge cases | SKIP | Complex |
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -81,13 +81,13 @@ For each test in the queue, prompt user before activation:
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔄 RGRC Cycle 1/4
+RGRC Cycle 1/4
 
 Activate the next test?
 
-📝 Test: "handles zero input"
-📁 File: src/utils/discount.test.ts:15
-📋 From: FR-001 (Zero purchase handling)
+Test: "handles zero input"
+File: src/utils/discount.test.ts:15
+From: FR-001 (Zero purchase handling)
 
 ```typescript
 it('handles zero input', () => {
@@ -133,16 +133,16 @@ Display progress after each cycle:
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📊 Progress: 2/4 tests complete
+Progress: 2/4 tests complete
 
 | # | Test Name | Status |
 |---|-----------|--------|
-| 1 | handles zero input | ✅ PASS |
-| 2 | calculates basic case | ✅ PASS |
-| 3 | applies threshold logic | ⏸️ SKIP |
-| 4 | handles edge cases | ⏸️ SKIP |
+| 1 | handles zero input | PASS |
+| 2 | calculates basic case | PASS |
+| 3 | applies threshold logic | SKIP |
+| 4 | handles edge cases | SKIP |
 
-🔴 Red → 🟢 Green → 🔵 Refactor → ✅ Commit
+Red -> Green -> Refactor -> Commit
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
