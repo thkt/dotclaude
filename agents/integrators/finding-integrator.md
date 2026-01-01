@@ -43,6 +43,24 @@ finding:
   evidence: string       # Code reference
 ```
 
+### Phase 1.5: Finding Exclusion Rules
+
+Filter out false positives before pattern analysis:
+
+#### JP/EN Translation Comparison
+
+Exclude findings that compare English and Japanese translation files:
+
+| Finding Type | Action |
+| --- | --- |
+| Content mismatch between `*.md` and `.ja/*.md` | **Exclude** - Expected translation difference |
+| Structure mismatch (sections missing) | **Keep** - Valid structural issue |
+| Link/reference broken in translation | **Keep** - Valid issue |
+
+**Detection**: If finding involves files with paths `path/file.md` AND `.ja/path/file.md`, and category is "content inconsistency" or similar → Exclude
+
+See: [@~/.claude/agents/orchestrators/audit-orchestrator.md] Section 2.5 for full JP/EN rules.
+
 ### Phase 2: Pattern Detection
 
 #### Clustering Rules

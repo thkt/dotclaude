@@ -124,6 +124,23 @@ Evaluate whether the document properly prioritizes **non-reversible information*
 
 "The best documentation is not the most technically complete, but the most useful to its readers."
 
+## JP/EN Translation File Handling
+
+Files under `.ja/` are Japanese translations. Follow orchestrator rules:
+
+| File Location | Review Mode |
+| --- | --- |
+| `commands/*.md`, `docs/*.md` | Full review |
+| `.ja/commands/*.md`, `.ja/docs/*.md` | Structure-only |
+
+**DO NOT flag as issues**:
+
+- Different keywords in examples (`Navigate to` vs `に移動`)
+- Translated content (descriptions, explanations)
+- Localized formats
+
+See: [@~/.claude/agents/orchestrators/audit-orchestrator.md] Section 2.5
+
 ## Integration with Other Agents
 
 - **structure-reviewer**: Documentation mirrors code structure

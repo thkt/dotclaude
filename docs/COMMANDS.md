@@ -42,6 +42,7 @@ Custom commands for systematic software development support.
 | Command | Purpose | Environment |
 | --- | --- | --- |
 | `/workflow:create [name]` | Create reusable browser automation workflows | E2E Testing |
+| `/workflow:export <name>` | Export Markdown workflow to Playwright test code | E2E Testing |
 
 ### Documentation Commands
 
@@ -269,6 +270,13 @@ For detailed information about each command, see the individual command files in
 - Building data collection workflows
 - Want to document complex manual testing procedures
 - Need reproducible browser automation
+
+### Use `/workflow:export` when
+
+- Have a stable workflow from `/workflow:create`
+- Want to run browser tests in CI/CD
+- Need Playwright test code for regression testing
+- Converting exploratory testing to automated tests
 
 ## Commands, Agents, Skills Architecture
 
