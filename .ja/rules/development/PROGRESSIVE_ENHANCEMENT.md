@@ -49,7 +49,7 @@ decision_question: "これは今存在する実際の問題を解決している
 
 ## 関連原則
 
-- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - オッカムの剃刀とシンプルさの原則
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - オッカムの剃刀とシンプルさの原則
 
 ## アウトカムファースト開発
 

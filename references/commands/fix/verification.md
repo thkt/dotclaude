@@ -244,7 +244,7 @@ npm run dev
 - **Next**: Phase 3.5 (Test Generation) or Completion
 - **If fails**: Return to Phase 2
 
-## References
+## Related Principles
 
 - [@~/.claude/references/commands/code/quality-gates.md](~/.claude/references/commands/code/quality-gates.md) - Detailed quality gates
 - [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md) - Quality standards

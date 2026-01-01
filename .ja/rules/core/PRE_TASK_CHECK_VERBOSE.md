@@ -2,6 +2,22 @@
 
 理解度チェックと実行計画のための技術仕様。基本ルールはPRE_TASK_CHECK_COMPACT.mdを参照。
 
+## 概要
+
+| セクション | 目的 |
+| --- | --- |
+| 実行ルール | チェック実行条件 |
+| 分析方法 | 分析方法 |
+| 95%理解ルール | コア判断閾値 |
+| 表示フォーマット | 出力テンプレート |
+| コマンド提案システム | ワークフロー選択 |
+| インパクトシミュレーション | ドライランプレビュー |
+| 実行計画 | アクションリスト |
+| エッジケース | 特殊な状況 |
+| 統合ワークフロー | 完全なプロセス |
+
+---
+
 ## 実行ルール
 
 **主要条件**: PRE_TASK_CHECKは以下のタスクで実行される:
@@ -201,7 +217,7 @@ bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 ### タスク分析
 
 実際のタスク意図と要件の理解に基づく。
-詳細アルゴリズム: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/commands/COMMAND_WORKFLOWS.md) を参照
+詳細アルゴリズム: [@../commands/COMMAND_WORKFLOWS.md](../commands/COMMAND_WORKFLOWS.md) を参照
 
 ### 出力フォーマット
 
@@ -220,7 +236,7 @@ bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 - **バグ修正**: 調査+修正 → `/research → /fix`
 - **機能**: 実装+テスト → `/research → /think → /code → /test → /audit → /validate`
 
-詳細: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/commands/COMMAND_WORKFLOWS.md)
+詳細: [@../commands/COMMAND_WORKFLOWS.md](../commands/COMMAND_WORKFLOWS.md)
 
 ## ユーザーレスポンス処理
 

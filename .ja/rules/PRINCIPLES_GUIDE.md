@@ -17,10 +17,11 @@
 | | 読みやすいコード | コンピュータではなく人間のためのコード | コードを書くとき |
 | | TDD/ベイビーステップ | テスト付きの小さな増分変更 | 開発プロセス |
 | | DRY | 自分自身を繰り返さない | 3回以上の重複発見時 |
-| **[コンテキスト依存]** | | | |
+| **[コンテキスト依存 - アーキテクチャ]** | | | |
 | | SOLID | 変更に対応した設計 | 大規模アーキテクチャ |
 | | Container/Presentational | ロジックとUIを分離 | React/UIコンポーネント |
 | | デメテルの法則 | 直接の友人とだけ話す | 複雑な依存関係 |
+| **[コンテキスト依存 - 実践]** | | | |
 | | リーキー抽象化 | 不完全な抽象化を受け入れる | 抽象化の評価時 |
 | | AI支援開発 | AIが生成、人間が検証 | AIツール使用時 |
 | | TIDYINGS | 作業しながらクリーン | 開発中 |
@@ -105,7 +106,7 @@ flowchart TD
 
 **主要な例**: 単一実装のインターフェース、1つの関数をラップするクラス、「将来対応」の抽象化
 
-詳細: [@~/.claude/skills/reviewing-readability/references/ai-antipatterns.md](../../skills/reviewing-readability/references/ai-antipatterns.md)
+詳細: [@../skills/reviewing-readability/references/ai-antipatterns.md](../skills/reviewing-readability/references/ai-antipatterns.md)
 
 ## 最終的な知恵
 
@@ -121,16 +122,16 @@ flowchart TD
 
 覚えておく: **原則はルールではなくツール**。目標は動作する保守可能なソフトウェア。
 
-## リファレンス
+## 関連原則
 
 ### コアドキュメント
 
-- [@~/.claude/skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - 閾値付きの原則
+- [@../skills/applying-code-principles/SKILL.md](../skills/applying-code-principles/SKILL.md) - 閾値付きの原則
 - [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md) - アプローチ
 - [@./development/READABLE_CODE.md](./development/READABLE_CODE.md) - ベースライン
 
 ### すべての原則
 
-- スキル: [@~/.claude/skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - SOLID、DRY、オッカムの剃刀、ミラーの法則、YAGNI
+- スキル: [@../skills/applying-code-principles/SKILL.md](../skills/applying-code-principles/SKILL.md) - SOLID、DRY、オッカムの剃刀、ミラーの法則、YAGNI
 - 開発: [@./development/](./development/) - 実践的な原則
 - コマンド: [@../docs/COMMANDS.md](../docs/COMMANDS.md) - 統合ワークフロー

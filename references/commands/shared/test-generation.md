@@ -47,6 +47,6 @@ Task({
 - Baby Steps order (simple → complex)
 - Clear skip markers with FR-xxx
 
-## References
+## Related Principles
 
 - [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD principles and patterns

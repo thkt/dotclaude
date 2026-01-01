@@ -17,10 +17,11 @@
 | | Readable Code | Code for humans, not computers | Writing any code |
 | | TDD/Baby Steps | Small incremental changes with tests | Development process |
 | | DRY | Don't Repeat Yourself | 3+ duplications found |
-| **[Contextual]** | | | |
+| **[Contextual - Architecture]** | | | |
 | | SOLID | Design for change | Large-scale architecture |
 | | Container/Presentational | Separate logic from UI | React/UI components |
 | | Law of Demeter | Only talk to immediate friends | Complex dependencies |
+| **[Contextual - Practice]** | | | |
 | | Leaky Abstraction | Accept imperfect abstractions | Evaluating abstractions |
 | | AI-Assisted Development | AI generates, humans validate | When using AI tools |
 | | TIDYINGS | Clean as you go | During development |
@@ -105,7 +106,7 @@ For detailed principle relationships and dependency graph, see:
 
 **Key examples**: Single-implementation interfaces, classes wrapping one function, "future-proof" abstractions
 
-Details: [@~/.claude/skills/reviewing-readability/references/ai-antipatterns.md](~/.claude/skills/reviewing-readability/references/ai-antipatterns.md)
+Details: [@../skills/reviewing-readability/references/ai-antipatterns.md](../skills/reviewing-readability/references/ai-antipatterns.md)
 
 ## Final Wisdom
 
@@ -121,16 +122,16 @@ When in doubt:
 
 Remember: **Principles are tools, not rules**. The goal is working, maintainable software.
 
-## References
+## Related Principles
 
 ### Core Documents
 
-- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Principles with thresholds
+- [@../skills/applying-code-principles/SKILL.md](../skills/applying-code-principles/SKILL.md) - Principles with thresholds
 - [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md) - The approach
 - [@./development/READABLE_CODE.md](./development/READABLE_CODE.md) - The baseline
 
 ### All Principles
 
-- Skill: [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI
+- Skill: [@../skills/applying-code-principles/SKILL.md](../skills/applying-code-principles/SKILL.md) - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI
 - Development: [@./development/](./development/) - Practical principles
 - Commands: [@../docs/COMMANDS.md](../docs/COMMANDS.md) - Integrated workflows

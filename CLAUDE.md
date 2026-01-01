@@ -40,6 +40,7 @@ Skills auto-activate on relevant keywords. Full details: [@~/.claude/skills/appl
 
 - Code tasks: Available via `enhancing-progressively` skill
 - React/UI: Available via `applying-frontend-patterns` skill
+- Component design: [Container/Presentational](./rules/development/CONTAINER_PRESENTATIONAL.md)
 - Large-scale: [Law of Demeter](./rules/development/LAW_OF_DEMETER.md)
 - Testing: Available via `generating-tdd-tests` skill
 

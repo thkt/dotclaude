@@ -206,7 +206,7 @@ Next: Definition of Done
 - **Next**: Completion (Definition of Done)
 - **References**: shared/test-generation.md
 
-## References
+## Related Principles
 
 - [@~/.claude/references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - Test patterns
 - [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD fundamentals

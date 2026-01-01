@@ -43,7 +43,7 @@ npm run lint && npm test && npm run type-check
 | Green | Over-implementing | Write only what test requires |
 | Refactor | Changing behavior | Only structure changes |
 
-## References
+## Related Principles
 
 - [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - Full TDD guide
 - [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Methodology

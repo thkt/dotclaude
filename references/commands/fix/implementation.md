@@ -221,7 +221,7 @@ Next: Verification (Phase 3)
 - **Next**: Phase 3 (Verification)
 - **Escalate**: `/research` or `/think` if confidence < 0.7
 
-## References
+## Related Principles
 
 - [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Simplicity principle
 - [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first approach

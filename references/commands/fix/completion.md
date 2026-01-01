@@ -232,7 +232,7 @@ Before marking as complete:
 
 **If all checked**: Bug fix complete!
 
-## References
+## Related Principles
 
 - [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Simplicity (Occam's Razor)
 - [@~/.claude/rules/development/TIDYINGS.md](~/.claude/rules/development/TIDYINGS.md) - Clean as you go

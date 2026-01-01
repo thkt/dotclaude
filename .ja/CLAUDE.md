@@ -40,6 +40,7 @@
 
 - コードタスク: `enhancing-progressively` スキルで利用可能
 - React/UI: `applying-frontend-patterns` スキルで利用可能
+- コンポーネント設計: [Container/Presentational](../rules/development/CONTAINER_PRESENTATIONAL.md)
 - 大規模: [デメテルの法則](../rules/development/LAW_OF_DEMETER.md)
 - テスト: `generating-tdd-tests` スキルで利用可能
 

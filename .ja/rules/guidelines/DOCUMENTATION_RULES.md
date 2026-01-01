@@ -84,13 +84,22 @@ Claude Codeエコシステムにおける一貫性があり、よく整理され
 ```markdown
 ## 関連原則
 
-### コア原則（同レベル）
-- [@./SOLID.md](./SOLID.md) - 説明
-- [@./DRY.md](./DRY.md) - 説明
+### コア原則（skills/から）
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - SOLID, DRY, YAGNI原則
 
 ### 実践で適用
-- [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - 説明
+- [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - TDD方法論
 ```
+
+### 標準セクション名
+
+| 目的 | 標準名 | 非推奨 |
+| --- | --- | --- |
+| 関連ドキュメント | `## Related Principles` | `## References`, `## See Also` |
+| コード例 | `## Examples` | - |
+| APIドキュメント | `## API Reference` | - |
+
+**注**: すべてのドキュメントファイルの末尾で `## Related Principles` を一貫して使用すること。
 
 ## 言語同期
 
@@ -119,7 +128,7 @@ Claude Codeエコシステムにおける一貫性があり、よく整理され
 ENとJPは各ディレクトリ内で同一の相対パスパターンを使用:
 
 ```markdown
-[@./SOLID.md](./SOLID.md)                    # 同じディレクトリ
+[@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md)        # 同じディレクトリ
 [@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # 1レベル上
 ```
 

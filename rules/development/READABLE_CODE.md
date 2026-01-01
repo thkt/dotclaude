@@ -28,7 +28,7 @@ Miller's Law (7±2) demonstrates that human cognitive capacity is limited. When 
 
 This scientific backing explains WHY readable code matters: our brains literally cannot process too much complexity at once.
 
-→ See [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) for Miller's Law thresholds
+→ See [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) for Miller's Law thresholds
 
 ## Key Practices
 
@@ -169,7 +169,7 @@ When reviewing AI-generated code (including your own), watch for these common ov
 2. Start with the most direct solution
 3. Add complexity only when pattern appears 3+ times
 
-→ **Detailed examples and detection checklist**: [@~/.claude/skills/reviewing-readability/references/ai-antipatterns.md](~/.claude/skills/reviewing-readability/references/ai-antipatterns.md)
+→ **Detailed examples and detection checklist**: [@../../skills/reviewing-readability/references/ai-antipatterns.md](../../skills/reviewing-readability/references/ai-antipatterns.md)
 
 ## Remember
 

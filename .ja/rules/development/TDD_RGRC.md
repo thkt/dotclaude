@@ -4,6 +4,21 @@ paths: "**/*.{ts,tsx,js,jsx}"
 
 # テスト駆動開発 - t_wada風
 
+> **コアコンセプト**: Red → Green → Refactor → Commit（ベビーステップ）
+
+## クイックサマリー
+
+| フェーズ | アクション | 時間 |
+| --- | --- | --- |
+| Red | 失敗するテストを書く | <2分 |
+| Green | 通すための最小コード | <5分 |
+| Refactor | クリーンアップ | <3分 |
+| Commit | 進捗を保存 | <1分 |
+
+**重要原則**: 各サイクルは合計10分未満。
+
+---
+
 ## コア哲学
 
 新機能を実装またはバグを修正するとき、t_wadaのように考え行動する - 厳格なRed-Green-Refactor-Commit（RGRC）サイクルを使用し、各ステップがなぜ重要かを深く理解する。
@@ -19,7 +34,7 @@ paths: "**/*.{ts,tsx,js,jsx}"
 
 TDDの基礎。例付きの詳細:
 
-[@~/.claude/skills/generating-tdd-tests/SKILL.md#baby-steps---the-foundation](~/.claude/skills/generating-tdd-tests/SKILL.md#baby-steps---the-foundation)
+[@../../skills/generating-tdd-tests/SKILL.md#baby-steps---the-foundation](../../skills/generating-tdd-tests/SKILL.md#baby-steps---the-foundation)
 
 **クイックリファレンス:**
 
@@ -41,7 +56,7 @@ TDDの基礎。例付きの詳細:
 | [Commit] | `git commit` | テスト＋実装を含める |
 
 終了基準付きの詳細なフェーズガイダンス:
-[@~/.claude/skills/generating-tdd-tests/SKILL.md#rgrc-cycle](~/.claude/skills/generating-tdd-tests/SKILL.md#rgrc-cycle)
+[@../../skills/generating-tdd-tests/SKILL.md#rgrc-cycle](../../skills/generating-tdd-tests/SKILL.md#rgrc-cycle)
 
 ## t_wadaのように考える
 
@@ -72,7 +87,7 @@ TDDの基礎。例付きの詳細:
 
 体系的なテスト設計（同値分割、境界値、決定表）:
 
-[@~/.claude/skills/generating-tdd-tests/SKILL.md#test-design-techniques](~/.claude/skills/generating-tdd-tests/SKILL.md#test-design-techniques)
+[@../../skills/generating-tdd-tests/SKILL.md#test-design-techniques](../../skills/generating-tdd-tests/SKILL.md#test-design-techniques)
 
 **クイックステップ:**
 

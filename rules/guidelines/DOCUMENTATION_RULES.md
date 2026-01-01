@@ -84,13 +84,22 @@ Level 1: CLAUDE.md (Top-level configuration)
 ```markdown
 ## Related Principles
 
-### Core Principles (Same Level)
-- [@./SOLID.md](./SOLID.md) - Description
-- [@./DRY.md](./DRY.md) - Description
+### Core Principles (From skills/)
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - SOLID, DRY, YAGNI principles
 
 ### Applied in Practice
-- [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - Description
+- [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - TDD methodology
 ```
+
+### Standard Section Names
+
+| Purpose | Standard Name | Deprecated |
+| --- | --- | --- |
+| Related documents | `## Related Principles` | `## References`, `## See Also` |
+| Code examples | `## Examples` | - |
+| API documentation | `## API Reference` | - |
+
+**Note**: Use `## Related Principles` consistently at the end of all documentation files.
 
 ## Language Synchronization
 
@@ -119,7 +128,7 @@ When updating documentation:
 Both EN and JP use identical relative path patterns within their respective directories:
 
 ```markdown
-[@./SOLID.md](./SOLID.md)                    # Same directory
+[@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md)        # Same directory
 [@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # Up one level
 ```
 

@@ -200,7 +200,7 @@ Reproduces: [bug description]
 Next: Implement fix (Phase 2)
 ```
 
-## References
+## Related Principles
 
 - [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD fundamentals
 - [@~/.claude/references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC details

@@ -2,6 +2,22 @@
 
 Technical specification for understanding check and execution planning. For basic rules, see PRE_TASK_CHECK_COMPACT.md.
 
+## Overview
+
+| Section | Purpose |
+| --- | --- |
+| Execution Rules | When to run check |
+| Analysis Method | How to analyze |
+| 95% Understanding Rule | Core decision threshold |
+| Display Format | Output template |
+| Command Suggestion System | Workflow selection |
+| Impact Simulation | Dry-run preview |
+| Execution Plan | Action list |
+| Edge Cases | Special situations |
+| Integrated Workflow | Full process |
+
+---
+
 ## Execution Rules
 
 **PRIMARY**: PRE_TASK_CHECK is executed for tasks that involve:
@@ -203,7 +219,7 @@ bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 ### Task Analysis
 
 Based on understanding the actual task intent and requirements.
-See: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/commands/COMMAND_WORKFLOWS.md) for detailed algorithm
+See: [@../commands/COMMAND_WORKFLOWS.md](../commands/COMMAND_WORKFLOWS.md) for detailed algorithm
 
 ### Output Format
 
@@ -222,7 +238,7 @@ For workflows: `Steps: /think → /code → /test`
 - **Bug Fix**: Investigate+Fix → `/research → /fix`
 - **Feature**: Implement+Test → `/research → /think → /code → /test → /audit → /validate`
 
-Details: [@~/.claude/rules/commands/COMMAND_WORKFLOWS.md](~/.claude/rules/commands/COMMAND_WORKFLOWS.md)
+Details: [@../commands/COMMAND_WORKFLOWS.md](../commands/COMMAND_WORKFLOWS.md)
 
 ## User Response Handling
 

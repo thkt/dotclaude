@@ -4,6 +4,21 @@ paths: "**/*.{ts,tsx,js,jsx}"
 
 # Test-Driven Development like t_wada
 
+> **Core Concept**: Red → Green → Refactor → Commit (Baby Steps)
+
+## Quick Summary
+
+| Phase | Action | Duration |
+| --- | --- | --- |
+| Red | Write failing test | <2 min |
+| Green | Minimal code to pass | <5 min |
+| Refactor | Clean up | <3 min |
+| Commit | Save progress | <1 min |
+
+**Key Principle**: Each cycle should be <10 minutes total.
+
+---
+
 ## Core Philosophy
 
 When implementing new features or fixing bugs, think and act like t_wada - use strict Red-Green-Refactor-Commit (RGRC) cycles and understand deeply why each step matters.
@@ -19,7 +34,7 @@ When implementing new features or fixing bugs, think and act like t_wada - use s
 
 The foundation of TDD. Full details with examples:
 
-[@~/.claude/skills/generating-tdd-tests/SKILL.md#baby-steps---the-foundation](~/.claude/skills/generating-tdd-tests/SKILL.md#baby-steps---the-foundation)
+[@../../skills/generating-tdd-tests/SKILL.md#baby-steps---the-foundation](../../skills/generating-tdd-tests/SKILL.md#baby-steps---the-foundation)
 
 **Quick Reference:**
 
@@ -41,7 +56,7 @@ The foundation of TDD. Full details with examples:
 | [Commit] | `git commit` | Include test + implementation |
 
 For detailed phase guidance with exit criteria:
-[@~/.claude/skills/generating-tdd-tests/SKILL.md#rgrc-cycle](~/.claude/skills/generating-tdd-tests/SKILL.md#rgrc-cycle)
+[@../../skills/generating-tdd-tests/SKILL.md#rgrc-cycle](../../skills/generating-tdd-tests/SKILL.md#rgrc-cycle)
 
 ## Think Like t_wada
 
@@ -72,7 +87,7 @@ Skip for: Prototypes, External APIs (use mocks), Throwaway scripts
 
 For systematic test design (Equivalence Partitioning, Boundary Value, Decision Tables):
 
-[@~/.claude/skills/generating-tdd-tests/SKILL.md#test-design-techniques](~/.claude/skills/generating-tdd-tests/SKILL.md#test-design-techniques)
+[@../../skills/generating-tdd-tests/SKILL.md#test-design-techniques](../../skills/generating-tdd-tests/SKILL.md#test-design-techniques)
 
 **Quick Steps:**
 

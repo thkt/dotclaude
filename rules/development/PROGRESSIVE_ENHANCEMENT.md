@@ -49,7 +49,7 @@ Layout, positioning, show/hide, responsive, animations, visual states
 
 ## Related Principles
 
-- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Occam's Razor and simplicity principles
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Occam's Razor and simplicity principles
 
 ## Outcome-First Development
 
