@@ -13,6 +13,7 @@ Custom commands for systematic software development support.
 | `/code` | TDD/RGRC implementation | Development phase |
 | `/test` | Comprehensive testing | Verification phase |
 | `/audit` | Code review via agents | Quality phase |
+| `/polish` | Remove AI-generated slop from code | Quality phase |
 | `/sow` | Display SOW progress | Monitoring phase |
 | `/validate` | Validate SOW conformance | Verification phase |
 | `/plans` | List and view planning documents (SOW/Spec) | Monitoring phase |
@@ -248,6 +249,13 @@ For detailed information about each command, see the individual command files in
 - Need fast CLI-based review (10-30 seconds)
 - Looking for quick sanity check before commit/PR
 - Supplementing `/audit` with second opinion
+
+### Use `/polish` when
+
+- After `/audit` to auto-fix AI-generated slop
+- Before `/commit` to ensure clean code
+- Removing unnecessary comments, defensive code, over-engineering
+- Aligning code style with existing codebase
 
 ### Use `/adr` when
 
