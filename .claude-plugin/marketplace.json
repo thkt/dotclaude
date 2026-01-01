@@ -58,7 +58,8 @@
         "./agents/reviewers/design-pattern.md",
         "./agents/reviewers/security.md",
         "./agents/reviewers/silent-failure.md",
-        "./agents/reviewers/sow-spec.md"
+        "./agents/reviewers/sow-spec.md",
+        "./agents/integrators/finding-integrator.md"
       ],
       "rules": [
         "./rules/development/TEST_GENERATION.md",
