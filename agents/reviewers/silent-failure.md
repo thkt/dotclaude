@@ -57,11 +57,11 @@ fetchData()
 
 ### Detailed Patterns
 
-For comprehensive patterns and detection commands, see:
+For comprehensive patterns and detection commands, see the knowledge base:
 
-- `references/detection-patterns.md` - Regex patterns, search commands
-- `references/error-handling.md` - Proper error handling patterns
-- `references/error-boundaries.md` - React Error Boundary patterns
+- [@~/.claude/skills/reviewing-silent-failures/references/detection-patterns.md] - Regex patterns, search commands
+- [@~/.claude/skills/reviewing-silent-failures/references/error-handling.md] - Proper error handling patterns
+- [@~/.claude/skills/reviewing-silent-failures/references/error-boundaries.md] - React Error Boundary patterns
 
 ## Output Format
 
@@ -95,3 +95,7 @@ Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specifi
 - **testability-reviewer**: Tests should verify error paths
 - **accessibility-reviewer**: Error states need accessible announcements
 - **performance-reviewer**: Error handling shouldn't impact performance
+
+## Related Principles
+
+- [@~/.claude/rules/development/RESULT_TYPE_HANDLING.md] - Result type pattern for compile-time error handling enforcement

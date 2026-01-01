@@ -66,6 +66,22 @@ Review documentation for quality, clarity, structure, and audience appropriatene
 - Explanation depth
 - Example complexity
 
+### 6. Information Reversibility
+
+Evaluate whether the document properly prioritizes **non-reversible information** (What/Why) over **reversible information** (How).
+
+| Type | Examples | Priority |
+| --- | --- | --- |
+| **Non-reversible (What/Why)** | Purpose, rationale, constraints, business rules | High - Cannot be regenerated |
+| **Reversible (How)** | Procedures, scripts, commands, step-by-step | Low - AI can regenerate from purpose |
+
+**Review questions**:
+
+- Does the document clearly state the purpose (What) and rationale (Why)?
+- Are procedural details (How) over-documented at the expense of intent?
+- Would someone with AI assistance be able to execute without explicit procedures?
+- Is non-reversible context (decisions, constraints) adequately preserved?
+
 ## Document-Type Specific
 
 **README Files**: Quick start, installation, examples, project overview
@@ -80,16 +96,17 @@ Review documentation for quality, clarity, structure, and audience appropriatene
 - **Structure**: Is organization logical and navigable?
 - **Examples**: Are examples helpful, correct, sufficient?
 - **Accessibility**: Is it appropriate for target audience?
+- **Reversibility**: Does it prioritize What/Why over How?
 
 ## Output Format
 
 ```markdown
-## 📚 Documentation Review Results
+## Documentation Review Results
 
 ### Understanding Score: XX%
 **Overall Confidence**: [✓/→] [0.X]
 
-### ✅ Strengths
+### Strengths
 - [✓] [What documentation does well with section/line references]
 
 ### Areas for Improvement
@@ -97,7 +114,7 @@ Review documentation for quality, clarity, structure, and audience appropriatene
 1. **[✓]** [Issue]: [description with location, evidence, suggestion]
 
 ### Quality Metrics
-- Clarity: X/10, Completeness: X/10, Structure: X/10, Examples: X/10, Accessibility: X/10
+- Clarity: X/10, Completeness: X/10, Structure: X/10, Examples: X/10, Accessibility: X/10, Reversibility: X/10
 
 ### Prioritized Action Items
 1. [Action with priority and location]

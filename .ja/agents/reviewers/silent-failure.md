@@ -57,11 +57,11 @@ fetchData()
 
 ### 詳細パターン
 
-包括的なパターンと検出コマンドについては以下を参照：
+包括的なパターンと検出コマンドについては、ナレッジベースを参照：
 
-- `references/detection-patterns.md` - 正規表現パターン、検索コマンド
-- `references/error-handling.md` - 適切なエラーハンドリングパターン
-- `references/error-boundaries.md` - React Error Boundaryパターン
+- [@~/.claude/skills/reviewing-silent-failures/references/detection-patterns.md] - 正規表現パターン、検索コマンド
+- [@~/.claude/skills/reviewing-silent-failures/references/error-handling.md] - 適切なエラーハンドリングパターン
+- [@~/.claude/skills/reviewing-silent-failures/references/error-boundaries.md] - React Error Boundaryパターン
 
 ## 出力形式
 
@@ -95,3 +95,7 @@ fetchData()
 - **testability-reviewer**: テストがエラーパスを検証すべき
 - **accessibility-reviewer**: エラー状態にアクセシブルなアナウンスが必要
 - **performance-reviewer**: エラーハンドリングがパフォーマンスに影響しないこと
+
+## 関連原則
+
+- [@~/.claude/rules/development/RESULT_TYPE_HANDLING.md] - コンパイル時エラーハンドリング強制のためのResult型パターン

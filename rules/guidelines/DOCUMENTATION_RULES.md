@@ -11,6 +11,9 @@ Guidelines for maintaining consistent, well-organized documentation in the Claud
 5. **Emoji Usage Policy** - Distinguish between human output and AI documentation:
    - **Human-facing output templates**: Emojis allowed (✅/❌/⚠️ for visual effect)
    - **AI-consumed documentation**: Use text labels instead of emojis
+6. **Diagram Format Policy** - Prefer Mermaid and tables over ASCII art:
+   - **New documentation**: Use Mermaid diagrams or Markdown tables (required)
+   - **Existing documentation**: Migrate ASCII diagrams to Mermaid/tables when editing
 
 ## Directory Structure
 
@@ -178,6 +181,49 @@ Links to related documentation
    - Output templates for humans: Keep emojis for visual effect
    - AI documentation sections: Use text labels instead
 
+### Diagram Format
+
+Apply Core Principle #6 when creating visual representations:
+
+**Use Mermaid for flowcharts and relationships:**
+
+```markdown
+<!-- Bad: ASCII art -->
++--------+     +--------+
+| User   | --> | Server |
++--------+     +--------+
+
+<!-- Good: Mermaid diagram -->
+```mermaid
+flowchart LR
+    User --> Server
+```
+
+**Use tables for structured data:**
+
+```markdown
+<!-- Bad: ASCII table -->
++----------+--------+---------+
+| Name     | Type   | Default |
++----------+--------+---------+
+| timeout  | number | 30000   |
++----------+--------+---------+
+
+<!-- Good: Markdown table -->
+| Name    | Type   | Default |
+| ------- | ------ | ------- |
+| timeout | number | 30000   |
+```
+
+**Migration priority:**
+
+| Priority | Pattern | Action |
+| --- | --- | --- |
+| High | Flowcharts, decision trees | Convert to Mermaid |
+| High | Data tables | Convert to Markdown tables |
+| Medium | Directory structures | Keep as code blocks (exception) |
+| Low | Simple inline diagrams | Evaluate case by case |
+
 ### Code Examples
 
 ```typescript
@@ -197,6 +243,7 @@ advancedImplementation()
 - [ ] All links tested
 - [ ] No circular references
 - [ ] Correct placement (guidelines/ vs development/)
+- [ ] Diagrams use Mermaid or tables (no ASCII art)
 
 ## Common Patterns
 
@@ -215,6 +262,7 @@ advancedImplementation()
 | Orphan documents | Connected graph |
 | Circular references | Tree structure |
 | Misplaced files | Follow decision framework |
+| ASCII art diagrams | Mermaid diagrams or Markdown tables |
 
 ## Maintenance Tasks
 
@@ -295,4 +343,4 @@ Keep it:
 
 ---
 
-*Last updated: 2025-12-30*
+*Last updated: 2026-01-01*
