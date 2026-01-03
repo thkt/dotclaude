@@ -98,6 +98,15 @@ Infer actual selectors from claude-in-chrome's `ref` (e.g., `ref_5`):
 - Identify elements from accessibility tree
 - Select optimal selector from id, name, role, text, etc.
 
+## Error Handling
+
+| Scenario | Behavior |
+| --- | --- |
+| No claude-in-chrome operations in conversation | Error: "No browser operations found. Please execute browser operations first." |
+| Selector inference fails | Fallback to generic selectors (e.g., `text=`, `role=`) with warning |
+| Screenshot not available | Document step without image, add note "[Screenshot not captured]" |
+| tests/ directory does not exist | Auto-create `tests/e2e/[name]/` structure |
+
 ## Related Tools
 
 - `claude-in-chrome` - Interactive browser operations
