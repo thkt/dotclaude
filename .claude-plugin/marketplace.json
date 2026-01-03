@@ -1,4 +1,5 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "thkt-development-workflows",
   "owner": {
     "name": "thkt",
@@ -6,8 +7,10 @@
     "url": "https://github.com/thkt"
   },
   "metadata": {
-    "description": "Comprehensive TDD/RGRC workflow system with specialized review agents and development skills",
-    "version": "2.0.0"
+    "description": "Comprehensive TDD/RGRC development workflow system. Provides 9 integrated plugins sharing a common codebase: workflow commands (/think, /code, /audit), git utilities (/commit, /pr), documentation tools (/adr), and specialized review agents. Architecture: Monorepo marketplace with shared source (ADR-0003).",
+    "version": "2.0.0",
+    "architecture": "monorepo-marketplace",
+    "adr": "docs/adr/0003-marketplace.md"
   },
   "plugins": [
     {
