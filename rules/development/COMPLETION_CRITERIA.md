@@ -59,7 +59,7 @@ When confidence < 0.7:
 | `/fix` | → `/research` or `/think` |
 | `/code` | → `/research` for deeper understanding |
 
-## References
+## Related Principles
 
 - [@./PROGRESSIVE_ENHANCEMENT.md](./PROGRESSIVE_ENHANCEMENT.md)
 - [@./TIDYINGS.md](./TIDYINGS.md)

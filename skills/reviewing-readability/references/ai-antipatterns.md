@@ -222,6 +222,18 @@ Before accepting AI-generated code:
 
 ---
 
+## Comprehension Debt Check
+
+Before merging AI-generated code, ask:
+
+1. **Can I explain WHY this code exists?** → Not just what it does
+2. **Would I write this from scratch?** → If not, refactor it
+3. **Is there simpler code achieving the same?** → Apply Occam's Razor
+
+If NO to any → refactor or reject. Code you can't explain is a liability.
+
+---
+
 ## Remember
 
 > "The best code is code that doesn't need to exist yet" - Progressive Enhancement

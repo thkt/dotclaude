@@ -17,6 +17,12 @@ set -euo pipefail
 # Read JSON input
 INPUT=$(cat)
 
+# Guard against empty input
+if [[ -z "$INPUT" ]]; then
+  echo '{"decision": "ask", "reason": "Empty input received"}'
+  exit 0
+fi
+
 # Parse tool name and input
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // "unknown"')
 TOOL_INPUT=$(echo "$INPUT" | jq -c '.tool_input // {}')
@@ -56,7 +62,7 @@ if [[ "$TOOL_NAME" == "Bash" ]]; then
   COMMAND=$(echo "$TOOL_INPUT" | jq -r '.command // ""')
 
   # Test commands
-  if echo "$COMMAND" | grep -qE "^(npm|yarn|pnpm|bun) (test|t) "; then
+  if echo "$COMMAND" | grep -qE "^(npm|yarn|pnpm|bun) (test|t)($| )"; then
     echo '{"decision": "approve", "reason": "Test command"}'
     exit 0
   fi
