@@ -2,7 +2,7 @@
 description: 包括的なコード品質評価のため専門レビューエージェントをオーケストレートする
 aliases: [review]
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Read, Glob, Grep, LS, Task
-model: inherit
+model: opus
 argument-hint: "[対象ファイルまたはスコープ]"
 dependencies: [audit-orchestrator]
 ---
@@ -18,13 +18,13 @@ dependencies: [audit-orchestrator]
 ### Git状態
 
 ```bash
-\!`git status --porcelain 2>/dev/null || echo "(gitリポジトリではありません)"`
+!`git status --porcelain 2>/dev/null || echo "(gitリポジトリではありません)"`
 ```
 
 ### 変更ファイル
 
 ```bash
-\!`git diff --name-only HEAD 2>/dev/null | head -10`
+!`git diff --name-only HEAD 2>/dev/null | head -10`
 ```
 
 ### Spec参照（自動検出）

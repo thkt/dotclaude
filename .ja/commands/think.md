@@ -1,7 +1,7 @@
 ---
 description: 包括的な計画のためにSOWとSpec生成をオーケストレーション
 allowed-tools: SlashCommand, Read, Write, Glob, Task
-model: inherit
+model: opus
 argument-hint: "[タスク説明] (リサーチコンテキストがあればオプション)"
 dependencies: [sow-spec-reviewer]
 ---

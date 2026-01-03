@@ -1,7 +1,7 @@
 ---
 description: TDD/RGRCサイクルとリアルタイムテストフィードバックでコードを実装
 allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
-model: inherit
+model: opus
 argument-hint: "[実装の説明] [--frontend] [--principles] [--storybook]"
 dependencies: [generating-tdd-tests, applying-frontend-patterns, applying-code-principles, integrating-storybook, ralph-wiggum]
 ---

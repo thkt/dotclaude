@@ -2,7 +2,7 @@
 description: Orchestrate specialized review agents for comprehensive code quality assessment
 aliases: [review]
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Read, Glob, Grep, LS, Task
-model: inherit
+model: opus
 argument-hint: "[target files or scope]"
 dependencies: [audit-orchestrator]
 ---

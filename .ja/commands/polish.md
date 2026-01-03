@@ -1,21 +1,27 @@
 ---
-description: ブランチ内のAI生成コードから不要な要素を除去
+description: AI生成スロップの除去とコード簡素化による明確性・保守性の向上
 allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, MultiEdit, Grep, Glob
-model: inherit
+model: opus
 ---
 
-# /polish - AIコードスロップの除去
+# /polish - コード簡素化 & AIスロップ除去
 
 ## 目的
 
-AI生成コードから、プロジェクトの既存スタイルに合わない不要な追加を除去。コミット前に実行して、人間が書いたようなクリーンなコードを確保。
+以下の方法でコードをクリーンアップ・簡素化:
+
+1. AI生成スロップの除去（不要な追加）
+2. 明確性のためのコード構造簡素化（code-simplifier統合）
+3. プロジェクト標準との一貫性確保
+
+コミット前に実行して、クリーンで保守しやすいコードを確保。
 
 ## 使用タイミング
 
 ```text
 /audit → 問題発見
    ↓
-/polish → AIスロップを除去 ← ここ
+/polish → 簡素化 & スロップ除去 ← ここ
    ↓
 /commit → クリーンな状態で
 ```
@@ -73,6 +79,24 @@ function processUser(user: User) {
 - プロジェクトに合わない命名規則
 - ファイルと一貫性のないインポート順序
 
+### 5. コードの複雑さ（code-simplifierより）
+
+```typescript
+// Bad: ネストされた三項演算子
+const status = isActive ? (isPremium ? 'vip' : 'active') : 'inactive'
+
+// Good: 明示的なswitch/if-else
+function getStatus(isActive: boolean, isPremium: boolean): string {
+  if (!isActive) return 'inactive'
+  return isPremium ? 'vip' : 'active'
+}
+```
+
+- ネストされた三項演算子 → Switch/if-elseチェーン
+- 深いネスト → 早期リターン
+- 過度にコンパクトな1行 → 読みやすい明示的コード
+- 冗長な抽象化 → 直接的な実装
+
 ## プロセス
 
 1. **ブランチのdiffを取得**
@@ -104,11 +128,21 @@ function processUser(user: User) {
    ファイル: src/api.ts, src/utils.ts
    ```
 
+## 簡素化ガイドライン（code-simplifierより）
+
+簡素化時の優先事項:
+
+1. **機能を維持**: コードの動作は変えない、方法だけを変える
+2. **明確性 > 簡潔性**: 明示的コード > 過度にコンパクトなコード
+3. **プロジェクト標準**: CLAUDE.mdの規約に従う
+4. **バランス**: 保守性を損なう過度な簡素化を避ける
+
 ## 適用原則
 
 - **オッカムの剃刀**: 最もシンプルな解決策が勝つ
 - **TIDYINGS**: 変更したコードのみクリーンに
 - **一貫性**: 既存のファイルスタイルに合わせる
+- **可読性**: 1分以内に理解できる
 
 ## やってはいけないこと
 

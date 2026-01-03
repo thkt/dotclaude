@@ -1,7 +1,7 @@
 ---
 description: Orchestrate SOW and Spec generation for comprehensive planning
 allowed-tools: SlashCommand, Read, Write, Glob, Task
-model: inherit
+model: opus
 argument-hint: "[task description] (optional if research context exists)"
 dependencies: [sow-spec-reviewer]
 ---

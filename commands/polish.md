@@ -1,21 +1,27 @@
 ---
-description: Remove AI-generated slop from code changes in the current branch
+description: Remove AI-generated slop and simplify code for clarity and maintainability
 allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, MultiEdit, Grep, Glob
-model: inherit
+model: opus
 ---
 
-# /polish - Remove AI Code Slop
+# /polish - Code Simplification & AI Slop Removal
 
 ## Purpose
 
-Clean up AI-generated code by removing unnecessary additions that don't match the project's existing style. Run this before committing to ensure clean, human-like code.
+Clean up and simplify code by:
+
+1. Removing AI-generated slop (unnecessary additions)
+2. Simplifying code structure for clarity (code-simplifier integrated)
+3. Ensuring consistency with project standards
+
+Run this before committing to ensure clean, maintainable code.
 
 ## When to Use
 
 ```text
 /audit → Find issues
    ↓
-/polish → Remove AI slop ← Here
+/polish → Simplify & remove slop ← Here
    ↓
 /commit → Clean state
 ```
@@ -73,6 +79,24 @@ Refer to: [@~/.claude/skills/reviewing-readability/references/ai-antipatterns.md
 - Naming conventions that don't match project
 - Import ordering inconsistent with file
 
+### 5. Code Complexity (from code-simplifier)
+
+```typescript
+// Bad: Nested ternary
+const status = isActive ? (isPremium ? 'vip' : 'active') : 'inactive'
+
+// Good: Explicit switch/if-else
+function getStatus(isActive: boolean, isPremium: boolean): string {
+  if (!isActive) return 'inactive'
+  return isPremium ? 'vip' : 'active'
+}
+```
+
+- Nested ternary operators → Switch/if-else chains
+- Deep nesting → Early returns
+- Overly compact one-liners → Readable explicit code
+- Redundant abstractions → Direct implementation
+
 ## Process
 
 1. **Get branch diff**
@@ -104,11 +128,21 @@ Refer to: [@~/.claude/skills/reviewing-readability/references/ai-antipatterns.md
    Files: src/api.ts, src/utils.ts
    ```
 
+## Simplification Guidelines (from code-simplifier)
+
+When simplifying, prioritize:
+
+1. **Preserve Functionality**: Never change what code does, only how
+2. **Clarity over Brevity**: Explicit code > overly compact code
+3. **Project Standards**: Follow CLAUDE.md conventions
+4. **Balance**: Avoid over-simplification that hurts maintainability
+
 ## Principles Applied
 
 - **Occam's Razor**: Simplest solution wins
 - **TIDYINGS**: Clean only changed code
 - **Consistency**: Match existing file style
+- **Readability**: Understandable in <1 minute
 
 ## What NOT to Do
 
