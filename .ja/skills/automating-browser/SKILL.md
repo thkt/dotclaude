@@ -26,13 +26,13 @@ claude-in-chrome MCP拡張機能を使用したインタラクティブなブラ
 
 ## このスキルの使用タイミング
 
-| ユースケース | このスキル | webapp-testing（公式） |
-| --- | --- | --- |
-| GIF録画/デモ | [最適] | [非対応] |
-| 手動テスト/検証 | [最適] | [OK] |
-| CI/CD自動テスト | [OK] | [最適] |
-| サーバーライフサイクル付きテスト | [非対応] | [最適] with_server.py |
-| 既存Chromeセッションの使用 | [対応] | [非対応] |
+| ユースケース                     | このスキル | webapp-testing（公式） |
+| -------------------------------- | ---------- | ---------------------- |
+| GIF録画/デモ                     | [最適]     | [非対応]               |
+| 手動テスト/検証                  | [最適]     | [OK]                   |
+| CI/CD自動テスト                  | [OK]       | [最適]                 |
+| サーバーライフサイクル付きテスト | [非対応]   | [最適] with_server.py  |
+| 既存Chromeセッションの使用       | [対応]     | [非対応]               |
 
 **クイック判断**: 「見せて検証」→このスキル、「自動化して実行」→webapp-testing
 
@@ -52,7 +52,8 @@ mcp__claude-in-chrome__tabs_context_mcp
 
 ```markdown
 # 新しいタブを作成
-mcp__claude-in-chrome__tabs_create_mcp
+
+mcp**claude-in-chrome**tabs_create_mcp
 
 # またはコンテキストから既存のタブを使用
 ```
@@ -67,26 +68,26 @@ mcp__claude-in-chrome__navigate
 
 ## コアツール
 
-| ツール | 目的 |
-| --- | --- |
-| `tabs_context_mcp` | 利用可能なタブを取得 |
-| `tabs_create_mcp` | 新しいタブを作成 |
-| `navigate` | URLに移動 |
-| `read_page` | ページ構造を取得 |
-| `find` | 自然言語での要素検索 |
-| `form_input` | フォームフィールドを入力 |
-| `computer` | マウス/キーボードアクション |
-| `get_page_text` | テキストコンテンツを抽出 |
-| `gif_creator` | インタラクションを録画 |
+| ツール             | 目的                        |
+| ------------------ | --------------------------- |
+| `tabs_context_mcp` | 利用可能なタブを取得        |
+| `tabs_create_mcp`  | 新しいタブを作成            |
+| `navigate`         | URLに移動                   |
+| `read_page`        | ページ構造を取得            |
+| `find`             | 自然言語での要素検索        |
+| `form_input`       | フォームフィールドを入力    |
+| `computer`         | マウス/キーボードアクション |
+| `get_page_text`    | テキストコンテンツを抽出    |
+| `gif_creator`      | インタラクションを録画      |
 
 ## ページコンテンツの読み取り
 
-| ツール | ユースケース |
-| --- | --- |
-| `read_page` | アクセシビリティツリー（DOM構造）を取得 |
-| `read_page` with `filter: "interactive"` | ボタン、リンク、入力のみ |
-| `find` | 自然言語での要素検索 |
-| `get_page_text` | 記事/メインテキストを抽出 |
+| ツール                                   | ユースケース                            |
+| ---------------------------------------- | --------------------------------------- |
+| `read_page`                              | アクセシビリティツリー（DOM構造）を取得 |
+| `read_page` with `filter: "interactive"` | ボタン、リンク、入力のみ                |
+| `find`                                   | 自然言語での要素検索                    |
+| `get_page_text`                          | 記事/メインテキストを抽出               |
 
 ### 例: インタラクティブ要素の読み取り
 
@@ -139,32 +140,35 @@ mcp__claude-in-chrome__computer
 
 ```markdown
 # 開始
-mcp__claude-in-chrome__gif_creator
-  tabId: 123
-  action: "start_recording"
+
+mcp**claude-in-chrome**gif_creator
+tabId: 123
+action: "start_recording"
 
 # ... スクリーンショット付きでアクション実行 ...
 
 # 停止
-mcp__claude-in-chrome__gif_creator
-  tabId: 123
-  action: "stop_recording"
+
+mcp**claude-in-chrome**gif_creator
+tabId: 123
+action: "stop_recording"
 
 # エクスポート
-mcp__claude-in-chrome__gif_creator
-  tabId: 123
-  action: "export"
-  download: true
-  filename: "workflow-demo.gif"
+
+mcp**claude-in-chrome**gif_creator
+tabId: 123
+action: "export"
+download: true
+filename: "workflow-demo.gif"
 ```
 
 ## 詳細参照
 
-| 参照 | 目的 |
-| --- | --- |
-| [@./references/claude-in-chrome-tools.md](./references/claude-in-chrome-tools.md) | 完全なツールドキュメント |
-| [@./references/common-patterns.md](./references/common-patterns.md) | 再利用可能なワークフローパターン |
-| [@./references/e2e-testing.md](./references/e2e-testing.md) | E2Eテスト方法論 |
+| 参照                                                                              | 目的                             |
+| --------------------------------------------------------------------------------- | -------------------------------- |
+| [@./references/claude-in-chrome-tools.md](./references/claude-in-chrome-tools.md) | 完全なツールドキュメント         |
+| [@./references/common-patterns.md](./references/common-patterns.md)               | 再利用可能なワークフローパターン |
+| [@./references/e2e-testing.md](./references/e2e-testing.md)                       | E2Eテスト方法論                  |
 
 ## セキュリティ注意事項
 
@@ -183,7 +187,7 @@ mcp__claude-in-chrome__gif_creator
 
 ### 使用コマンド
 
-- `/workflow:create` - ブラウザワークフロー作成
+- `/e2e` - E2Eテスト + ドキュメント生成
 - `/test` - E2Eテスト実行（ブラウザテスト含む）
 
 ### 参照

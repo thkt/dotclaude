@@ -76,31 +76,31 @@
 
 ## 完全なスキル一覧（21スキル）
 
-| カテゴリ | スキル名 | 説明 | 使用元 |
-| --- | --- | --- | --- |
-| **TDD/テスト** | `generating-tdd-tests` | TDD/RGRCサイクル、テスト設計、基礎原則 | /code, /fix |
-| **コード品質** | `applying-code-principles` | SOLID、DRY、YAGNI原則 | /code |
-| | `applying-frontend-patterns` | React/UIパターン（構造） | /code --frontend |
-| | `integrating-storybook` | Storybookコンポーネント開発 | /code --storybook |
-| | `enhancing-progressively` | CSSファースト、プログレッシブエンハンスメント | /code |
-| | ↳ `frontend-design` (公式) | ビジュアルデザイン品質（美学） | plugin |
-| **レビュー** | `reviewing-security` | セキュリティレビュー（OWASP） | /audit |
-| | `reviewing-readability` | 可読性レビュー | /audit |
-| | `reviewing-type-safety` | 型安全性レビュー（TypeScript） | /audit |
-| | `reviewing-silent-failures` | サイレント障害検出 | /audit |
-| | `reviewing-testability` | テスタビリティレビュー | /audit |
-| | `analyzing-root-causes` | 根本原因分析（5 Whys） | /audit |
-| | `optimizing-performance` | パフォーマンス最適化 | /audit |
-| **ドキュメント** | `creating-adrs` | ADR作成ガイド | /adr, /rulify |
-| | `formatting-audits` | ドキュメントフォーマット | /sow, /spec |
-| | `documenting-architecture` | アーキテクチャドキュメント | /docs:architecture |
-| | `documenting-apis` | API仕様ドキュメント | /docs:api |
-| | `documenting-domains` | ドメイン理解ドキュメント | /docs:domain |
-| | `setting-up-docs` | 環境セットアップガイド | /docs:setup |
-| **自動化** | `automating-browser` | インタラクティブブラウザ制御（デモ、GIF） | /workflow:create |
-| | ↳ `webapp-testing` (公式) | Playwright E2Eテスト（CI/CD） | plugin |
-| | `utilizing-cli-tools` | CLIツール（gh、git等） | /commit, /pr, /branch, /issue, /rabbit |
-| | `creating-hooks` | カスタムフック作成 | /hookify |
+| カテゴリ         | スキル名                     | 説明                                          | 使用元                                 |
+| ---------------- | ---------------------------- | --------------------------------------------- | -------------------------------------- |
+| **TDD/テスト**   | `generating-tdd-tests`       | TDD/RGRCサイクル、テスト設計、基礎原則        | /code, /fix                            |
+| **コード品質**   | `applying-code-principles`   | SOLID、DRY、YAGNI原則                         | /code                                  |
+|                  | `applying-frontend-patterns` | React/UIパターン（構造）                      | /code --frontend                       |
+|                  | `integrating-storybook`      | Storybookコンポーネント開発                   | /code --storybook                      |
+|                  | `enhancing-progressively`    | CSSファースト、プログレッシブエンハンスメント | /code                                  |
+|                  | ↳ `frontend-design` (公式)   | ビジュアルデザイン品質（美学）                | plugin                                 |
+| **レビュー**     | `reviewing-security`         | セキュリティレビュー（OWASP）                 | /audit                                 |
+|                  | `reviewing-readability`      | 可読性レビュー                                | /audit                                 |
+|                  | `reviewing-type-safety`      | 型安全性レビュー（TypeScript）                | /audit                                 |
+|                  | `reviewing-silent-failures`  | サイレント障害検出                            | /audit                                 |
+|                  | `reviewing-testability`      | テスタビリティレビュー                        | /audit                                 |
+|                  | `analyzing-root-causes`      | 根本原因分析（5 Whys）                        | /audit                                 |
+|                  | `optimizing-performance`     | パフォーマンス最適化                          | /audit                                 |
+| **ドキュメント** | `creating-adrs`              | ADR作成ガイド                                 | /adr, /rulify                          |
+|                  | `formatting-audits`          | ドキュメントフォーマット                      | /sow, /spec                            |
+|                  | `documenting-architecture`   | アーキテクチャドキュメント                    | /docs:architecture                     |
+|                  | `documenting-apis`           | API仕様ドキュメント                           | /docs:api                              |
+|                  | `documenting-domains`        | ドメイン理解ドキュメント                      | /docs:domain                           |
+|                  | `setting-up-docs`            | 環境セットアップガイド                        | /docs:setup                            |
+| **自動化**       | `automating-browser`         | インタラクティブブラウザ制御（デモ、GIF）     | /e2e                                   |
+|                  | ↳ `webapp-testing` (公式)    | Playwright E2Eテスト（CI/CD）                 | plugin                                 |
+|                  | `utilizing-cli-tools`        | CLIツール（gh、git等）                        | /commit, /pr, /branch, /issue, /rabbit |
+|                  | `creating-hooks`             | カスタムフック作成                            | /hookify                               |
 
 ### 命名規則
 
@@ -157,7 +157,7 @@ skills/
 
 ```yaml
 ---
-name: your-skill-name          # ディレクトリ名と一致必須
+name: your-skill-name # ディレクトリ名と一致必須
 description: >
   スキルの目的と機能の簡潔な説明。
   トリガーキーワードを含める（例: "ADR", "decision record", "技術選定"）
@@ -169,10 +169,10 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash, Task
 
 #### 基本ルール
 
-| 項目 | 要件 |
-| --- | --- |
-| EN版 | **必須** - 常に英語版を最初に作成 |
-| JP版 | **推奨** - 日本語ユーザー向けに作成 |
+| 項目       | 要件                                         |
+| ---------- | -------------------------------------------- |
+| EN版       | **必須** - 常に英語版を最初に作成            |
+| JP版       | **推奨** - 日本語ユーザー向けに作成          |
 | 構造の同期 | 両方存在する場合、セクション構造を一致させる |
 
 #### ディレクトリ構造

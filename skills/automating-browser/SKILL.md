@@ -26,13 +26,13 @@ Enable **interactive** browser automation for:
 
 ## When to Use This Skill
 
-| Use Case | This Skill | webapp-testing (official) |
-| --- | --- | --- |
-| GIF recording / demos | [Best] | [Not supported] |
-| Manual testing / verification | [Best] | [OK] |
-| CI/CD automated testing | [OK] | [Best] |
-| Testing with server lifecycle | [Not supported] | [Best] with_server.py |
-| Using existing Chrome session | [Supported] | [Not supported] |
+| Use Case                      | This Skill      | webapp-testing (official) |
+| ----------------------------- | --------------- | ------------------------- |
+| GIF recording / demos         | [Best]          | [Not supported]           |
+| Manual testing / verification | [Best]          | [OK]                      |
+| CI/CD automated testing       | [OK]            | [Best]                    |
+| Testing with server lifecycle | [Not supported] | [Best] with_server.py     |
+| Using existing Chrome session | [Supported]     | [Not supported]           |
 
 **Quick decision**: "Show & verify" → this skill, "Automate & run" → webapp-testing
 
@@ -52,7 +52,8 @@ This provides available tab IDs for subsequent operations.
 
 ```markdown
 # Create new tab
-mcp__claude-in-chrome__tabs_create_mcp
+
+mcp**claude-in-chrome**tabs_create_mcp
 
 # Or use existing tab from context
 ```
@@ -67,26 +68,26 @@ mcp__claude-in-chrome__navigate
 
 ## Core Tools
 
-| Tool | Purpose |
-| --- | --- |
-| `tabs_context_mcp` | Get available tabs |
-| `tabs_create_mcp` | Create new tab |
-| `navigate` | Go to URL |
-| `read_page` | Get page structure |
-| `find` | Natural language element search |
-| `form_input` | Fill form fields |
-| `computer` | Mouse/keyboard actions |
-| `get_page_text` | Extract text content |
-| `gif_creator` | Record interactions |
+| Tool               | Purpose                         |
+| ------------------ | ------------------------------- |
+| `tabs_context_mcp` | Get available tabs              |
+| `tabs_create_mcp`  | Create new tab                  |
+| `navigate`         | Go to URL                       |
+| `read_page`        | Get page structure              |
+| `find`             | Natural language element search |
+| `form_input`       | Fill form fields                |
+| `computer`         | Mouse/keyboard actions          |
+| `get_page_text`    | Extract text content            |
+| `gif_creator`      | Record interactions             |
 
 ## Reading Page Content
 
-| Tool | Use Case |
-| --- | --- |
-| `read_page` | Get accessibility tree (DOM structure) |
-| `read_page` with `filter: "interactive"` | Buttons, links, inputs only |
-| `find` | Natural language element search |
-| `get_page_text` | Extract article/main text |
+| Tool                                     | Use Case                               |
+| ---------------------------------------- | -------------------------------------- |
+| `read_page`                              | Get accessibility tree (DOM structure) |
+| `read_page` with `filter: "interactive"` | Buttons, links, inputs only            |
+| `find`                                   | Natural language element search        |
+| `get_page_text`                          | Extract article/main text              |
 
 ### Example: Read Interactive Elements
 
@@ -139,32 +140,35 @@ mcp__claude-in-chrome__computer
 
 ```markdown
 # Start
-mcp__claude-in-chrome__gif_creator
-  tabId: 123
-  action: "start_recording"
+
+mcp**claude-in-chrome**gif_creator
+tabId: 123
+action: "start_recording"
 
 # ... perform actions with screenshots ...
 
 # Stop
-mcp__claude-in-chrome__gif_creator
-  tabId: 123
-  action: "stop_recording"
+
+mcp**claude-in-chrome**gif_creator
+tabId: 123
+action: "stop_recording"
 
 # Export
-mcp__claude-in-chrome__gif_creator
-  tabId: 123
-  action: "export"
-  download: true
-  filename: "workflow-demo.gif"
+
+mcp**claude-in-chrome**gif_creator
+tabId: 123
+action: "export"
+download: true
+filename: "workflow-demo.gif"
 ```
 
 ## Detailed References
 
-| Reference | Purpose |
-| --- | --- |
+| Reference                                                                         | Purpose                     |
+| --------------------------------------------------------------------------------- | --------------------------- |
 | [@./references/claude-in-chrome-tools.md](./references/claude-in-chrome-tools.md) | Complete tool documentation |
-| [@./references/common-patterns.md](./references/common-patterns.md) | Reusable workflow patterns |
-| [@./references/e2e-testing.md](./references/e2e-testing.md) | E2E testing methodology |
+| [@./references/common-patterns.md](./references/common-patterns.md)               | Reusable workflow patterns  |
+| [@./references/e2e-testing.md](./references/e2e-testing.md)                       | E2E testing methodology     |
 
 ## Security Notes
 
@@ -183,7 +187,7 @@ mcp__claude-in-chrome__gif_creator
 
 ### Used by Commands
 
-- `/workflow:create` - Browser workflow creation
+- `/e2e` - E2E test + documentation generation
 - `/test` - E2E test execution (includes browser testing)
 
 ### See Also

@@ -80,7 +80,7 @@
    /plugin install automation-commands       # /auto-test, /full-cycle
    /plugin install git-utilities             # /commit, /branch, /pr
    /plugin install documentation-tools       # /adr, /rulify
-   /plugin install browser-workflows         # /workflow:create
+   /plugin install browser-workflows         # /e2e
    /plugin install utilities                 # /context
    ```
 
@@ -178,11 +178,11 @@ srt --version
 
 一部のコマンドはこのリポジトリに含まれていない外部プラグインに依存しています。クローン後に手動でインストールしてください:
 
-| プラグイン | 使用コマンド | 用途 | インストールコマンド |
-| --- | --- | --- | --- |
-| `pr-review-toolkit` | `/audit`, `/research` | 拡張コードレビューエージェント | `/plugin install pr-review-toolkit` |
-| `feature-dev` | `/research`, `/think` | コード探索・アーキテクチャエージェント | `/plugin install feature-dev` |
-| `ralph-wiggum` | `/code` | TDD Greenフェーズ自動反復 | `/plugin install ralph-wiggum` |
+| プラグイン          | 使用コマンド          | 用途                                   | インストールコマンド                |
+| ------------------- | --------------------- | -------------------------------------- | ----------------------------------- |
+| `pr-review-toolkit` | `/audit`, `/research` | 拡張コードレビューエージェント         | `/plugin install pr-review-toolkit` |
+| `feature-dev`       | `/research`, `/think` | コード探索・アーキテクチャエージェント | `/plugin install feature-dev`       |
+| `ralph-wiggum`      | `/code`               | TDD Greenフェーズ自動反復              | `/plugin install ralph-wiggum`      |
 
 **一括インストール（必要なプラグインすべて）**:
 
@@ -192,10 +192,10 @@ srt --version
 
 **オプションプラグイン**（完全な機能のために推奨）:
 
-| プラグイン | 用途 |
-| --- | --- |
+| プラグイン       | 用途                                        |
+| ---------------- | ------------------------------------------- |
 | `example-skills` | PDF、XLSX、PPTX処理、フロントエンドデザイン |
-| `typescript-lsp` | TypeScript言語サーバー統合 |
+| `typescript-lsp` | TypeScript言語サーバー統合                  |
 
 **注**: プラグインは `~/.claude/plugins/` に保存され、gitから除外されています。各ユーザーが個別にインストールする必要があります。
 
@@ -218,7 +218,7 @@ Claude Codeは5つのカテゴリに整理された15の専門コマンドを提
   - `/adr`, `/rulify`
 
 - **外部ツール**（1コマンド）: ブラウザ自動化
-  - `/workflow:create`
+  - `/e2e`
 
 **📚 詳細リファレンス**: 完全なコマンドドキュメントは:
 
@@ -330,4 +330,4 @@ Your Name
 
 ---
 
-*この設定は、品質、可読性、保守性に重点を置いた体系的なソフトウェア開発のためにClaude AIの機能を強化します。*
+_この設定は、品質、可読性、保守性に重点を置いた体系的なソフトウェア開発のためにClaude AIの機能を強化します。_

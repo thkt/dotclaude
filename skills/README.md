@@ -76,31 +76,31 @@ Skills are used for:
 
 ## Complete Skill Inventory (21 Skills)
 
-| Category | Skill Name | Description | Used by |
-| --- | --- | --- | --- |
-| **TDD/Testing** | `generating-tdd-tests` | TDD/RGRC cycle, test design, core principles | /code, /fix |
-| **Code Quality** | `applying-code-principles` | SOLID, DRY, YAGNI principles | /code |
-| | `applying-frontend-patterns` | React/UI patterns (structure) | /code --frontend |
-| | `integrating-storybook` | Storybook component development | /code --storybook |
-| | `enhancing-progressively` | CSS-first, progressive enhancement | /code |
-| | ↳ `frontend-design` (official) | Visual design quality (aesthetics) | plugin |
-| **Review** | `reviewing-security` | Security review (OWASP) | /audit |
-| | `reviewing-readability` | Readability review | /audit |
-| | `reviewing-type-safety` | Type safety review (TypeScript) | /audit |
-| | `reviewing-silent-failures` | Silent failure detection | /audit |
-| | `reviewing-testability` | Testability review | /audit |
-| | `analyzing-root-causes` | Root cause analysis (5 Whys) | /audit |
-| | `optimizing-performance` | Performance optimization | /audit |
-| **Documentation** | `creating-adrs` | ADR creation guide | /adr, /rulify |
-| | `formatting-audits` | Document formatting | /sow, /spec |
-| | `documenting-architecture` | Architecture documentation | /docs:architecture |
-| | `documenting-apis` | API specification documentation | /docs:api |
-| | `documenting-domains` | Domain understanding documentation | /docs:domain |
-| | `setting-up-docs` | Environment setup guide | /docs:setup |
-| **Automation** | `automating-browser` | Interactive browser control (demos, GIFs) | /workflow:create |
-| | ↳ `webapp-testing` (official) | Playwright E2E testing (CI/CD) | plugin |
-| | `utilizing-cli-tools` | CLI tools (gh, git, etc.) | /commit, /pr, /branch, /issue, /rabbit |
-| | `creating-hooks` | Custom hooks creation | /hookify |
+| Category          | Skill Name                     | Description                                  | Used by                                |
+| ----------------- | ------------------------------ | -------------------------------------------- | -------------------------------------- |
+| **TDD/Testing**   | `generating-tdd-tests`         | TDD/RGRC cycle, test design, core principles | /code, /fix                            |
+| **Code Quality**  | `applying-code-principles`     | SOLID, DRY, YAGNI principles                 | /code                                  |
+|                   | `applying-frontend-patterns`   | React/UI patterns (structure)                | /code --frontend                       |
+|                   | `integrating-storybook`        | Storybook component development              | /code --storybook                      |
+|                   | `enhancing-progressively`      | CSS-first, progressive enhancement           | /code                                  |
+|                   | ↳ `frontend-design` (official) | Visual design quality (aesthetics)           | plugin                                 |
+| **Review**        | `reviewing-security`           | Security review (OWASP)                      | /audit                                 |
+|                   | `reviewing-readability`        | Readability review                           | /audit                                 |
+|                   | `reviewing-type-safety`        | Type safety review (TypeScript)              | /audit                                 |
+|                   | `reviewing-silent-failures`    | Silent failure detection                     | /audit                                 |
+|                   | `reviewing-testability`        | Testability review                           | /audit                                 |
+|                   | `analyzing-root-causes`        | Root cause analysis (5 Whys)                 | /audit                                 |
+|                   | `optimizing-performance`       | Performance optimization                     | /audit                                 |
+| **Documentation** | `creating-adrs`                | ADR creation guide                           | /adr, /rulify                          |
+|                   | `formatting-audits`            | Document formatting                          | /sow, /spec                            |
+|                   | `documenting-architecture`     | Architecture documentation                   | /docs:architecture                     |
+|                   | `documenting-apis`             | API specification documentation              | /docs:api                              |
+|                   | `documenting-domains`          | Domain understanding documentation           | /docs:domain                           |
+|                   | `setting-up-docs`              | Environment setup guide                      | /docs:setup                            |
+| **Automation**    | `automating-browser`           | Interactive browser control (demos, GIFs)    | /e2e                                   |
+|                   | ↳ `webapp-testing` (official)  | Playwright E2E testing (CI/CD)               | plugin                                 |
+|                   | `utilizing-cli-tools`          | CLI tools (gh, git, etc.)                    | /commit, /pr, /branch, /issue, /rabbit |
+|                   | `creating-hooks`               | Custom hooks creation                        | /hookify                               |
 
 ### Naming Convention
 
@@ -260,7 +260,7 @@ skills/
 
 ```yaml
 ---
-name: your-skill-name          # Must match directory name
+name: your-skill-name # Must match directory name
 description: >
   Concise description of Skill purpose and functionality.
   Include trigger keywords (e.g., "ADR", "decision record", "technology selection")
@@ -270,29 +270,29 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash, Task
 
 **Field requirements**:
 
-| Field | Required | Description |
-| --- | --- | --- |
-| `name` | Required | Must exactly match directory name |
-| `description` | Required | Description including trigger keywords |
+| Field           | Required | Description                             |
+| --------------- | -------- | --------------------------------------- |
+| `name`          | Required | Must exactly match directory name       |
+| `description`   | Required | Description including trigger keywords  |
 | `allowed-tools` | Required | Comma-separated list of available tools |
 
 #### Optional Fields
 
 ```yaml
 config:
-  strict_mode: true        # Optional config items
-  auto_collect: true       # Skill-specific settings
+  strict_mode: true # Optional config items
+  auto_collect: true # Skill-specific settings
 ```
 
 ### Language Support (EN/JP Sync)
 
 #### Basic Rules
 
-| Item | Requirement |
-| --- | --- |
-| EN version | **Required** - Always create English version first |
-| JP version | **Recommended** - Create for Japanese users |
-| Structure sync | When both exist, match section structure |
+| Item           | Requirement                                        |
+| -------------- | -------------------------------------------------- |
+| EN version     | **Required** - Always create English version first |
+| JP version     | **Recommended** - Create for Japanese users        |
+| Structure sync | When both exist, match section structure           |
 
 #### Directory Structure
 
@@ -362,11 +362,11 @@ The problem this Skill solves or value it provides
 
 High-quality Skill implementation examples:
 
-| Skill | Structure Level | Features |
-| --- | --- | --- |
-| **creating-adrs** | Comprehensive | 6-phase process, scripts, assets, EN/JP both |
-| **generating-tdd-tests** | Comprehensive | RGRC cycle, reference docs, scripts |
-| **applying-code-principles** | Standard | Systematic 5-principle explanation, reference docs |
+| Skill                        | Structure Level | Features                                           |
+| ---------------------------- | --------------- | -------------------------------------------------- |
+| **creating-adrs**            | Comprehensive   | 6-phase process, scripts, assets, EN/JP both       |
+| **generating-tdd-tests**     | Comprehensive   | RGRC cycle, reference docs, scripts                |
+| **applying-code-principles** | Standard        | Systematic 5-principle explanation, reference docs |
 
 ## Collaboration Examples
 

@@ -80,7 +80,7 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
    /plugin install automation-commands       # /auto-test, /full-cycle
    /plugin install git-utilities             # /commit, /branch, /pr
    /plugin install documentation-tools       # /adr, /rulify
-   /plugin install browser-workflows         # /workflow:create
+   /plugin install browser-workflows         # /e2e
    /plugin install utilities                 # /context
    ```
 
@@ -178,11 +178,11 @@ See the [official blog post](https://azukiazusa.dev/blog/claude-code-sandbox-fea
 
 Some commands depend on external plugins that are not included in this repository. Install them manually after cloning:
 
-| Plugin | Required By | Purpose | Install Command |
-| --- | --- | --- | --- |
-| `pr-review-toolkit` | `/audit`, `/research` | Enhanced code review agents | `/plugin install pr-review-toolkit` |
-| `feature-dev` | `/research`, `/think` | Code exploration and architecture agents | `/plugin install feature-dev` |
-| `ralph-wiggum` | `/code` | TDD Green Phase auto-iteration | `/plugin install ralph-wiggum` |
+| Plugin              | Required By           | Purpose                                  | Install Command                     |
+| ------------------- | --------------------- | ---------------------------------------- | ----------------------------------- |
+| `pr-review-toolkit` | `/audit`, `/research` | Enhanced code review agents              | `/plugin install pr-review-toolkit` |
+| `feature-dev`       | `/research`, `/think` | Code exploration and architecture agents | `/plugin install feature-dev`       |
+| `ralph-wiggum`      | `/code`               | TDD Green Phase auto-iteration           | `/plugin install ralph-wiggum`      |
 
 **Quick Install (all required plugins)**:
 
@@ -192,10 +192,10 @@ Some commands depend on external plugins that are not included in this repositor
 
 **Optional Plugins** (recommended for full functionality):
 
-| Plugin | Purpose |
-| --- | --- |
+| Plugin           | Purpose                                   |
+| ---------------- | ----------------------------------------- |
 | `example-skills` | PDF, XLSX, PPTX handling, frontend design |
-| `typescript-lsp` | TypeScript language server integration |
+| `typescript-lsp` | TypeScript language server integration    |
 
 **Note**: Plugins are stored in `~/.claude/plugins/` which is excluded from git. Each user must install plugins independently.
 
@@ -218,7 +218,7 @@ Claude Code provides 15 specialized commands organized into 5 categories:
   - `/adr`, `/rulify`
 
 - **External Tools** (1 command): Browser automation
-  - `/workflow:create`
+  - `/e2e`
 
 **📚 Detailed Reference**: For complete command documentation, see:
 
@@ -332,4 +332,4 @@ Your Name
 
 ---
 
-*This configuration enhances Claude AI's capabilities for systematic software development with a focus on quality, readability, and maintainability.*
+_This configuration enhances Claude AI's capabilities for systematic software development with a focus on quality, readability, and maintainability._
