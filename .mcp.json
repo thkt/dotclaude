@@ -1,3 +1,11 @@
 {
-  "mcpServers": {}
+  "mcpServers": {
+    "playwright": {
+      "command": "bash",
+      "args": [
+        "-c",
+        "docker run -i --rm --init --pull=always -v ~/.claude/workspace/playwright:/tmp/playwright-output mcr.microsoft.com/playwright/mcp"
+      ]
+    }
+  }
 }

@@ -179,7 +179,7 @@
     {
       "name": "browser-workflows",
       "source": "./",
-      "description": "Browser automation workflow generator for E2E testing and monitoring",
+      "description": "E2E test and documentation generator from claude-in-chrome operations",
       "version": "2.0.0",
       "author": {
         "name": "thkt",
@@ -189,13 +189,13 @@
       "keywords": [
         "browser",
         "e2e",
-        "automation",
-        "workflow",
-        "testing"
+        "playwright",
+        "testing",
+        "documentation"
       ],
       "category": "Browser Automation",
       "commands": [
-        "./commands/workflow/create.md"
+        "./commands/e2e.md"
       ]
     },
     {
