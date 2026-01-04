@@ -49,28 +49,28 @@ graph TD
 
 ## Graph Legend
 
-| Color | Type | Description |
-| --- | --- | --- |
-| Red | Meta Principle | Occam's Razor - questions all complexity |
-| Blue | Universal | Applied by default to all decisions |
-| Green | Applied Practice | Concrete implementation patterns |
-| Yellow | Contextual | Applied when situation demands |
-| Purple | Scientific | Backed by cognitive science |
+| Color  | Type             | Description                              |
+| ------ | ---------------- | ---------------------------------------- |
+| Red    | Meta Principle   | Occam's Razor - questions all complexity |
+| Blue   | Universal        | Applied by default to all decisions      |
+| Green  | Applied Practice | Concrete implementation patterns         |
+| Yellow | Contextual       | Applied when situation demands           |
+| Purple | Scientific       | Backed by cognitive science              |
 
 ## Key Relationships
 
-| # | Relationship | Explanation |
-| --- | --- | --- |
-| 1 | **Occam's Razor → All** | Meta principle that questions all complexity |
-| 2 | **Occam's Razor → Progressive Enhancement** | Start simple, add complexity only when needed |
-| 3 | **Occam's Razor → DRY** | Balance abstraction (DRY) vs simplicity (Occam) |
-| 4 | **Occam's Razor ⟷ SOLID** | Balance: SOLID for structure, Occam prevents over-engineering |
-| 5 | **Progressive Enhancement → TDD/Baby Steps** | Both emphasize incremental development |
-| 6 | **Readable Code → Miller's Law** | Cognitive science backing for readability limits (7±2 items) |
-| 7 | **SOLID → Container/Presentational** | SRP (Single Responsibility) drives UI/logic separation |
-| 8 | **SOLID → Law of Demeter** | Both manage dependencies and coupling |
-| 9 | **Readable Code + DRY → TIDYINGS** | Practical application of keeping code clean |
-| 10 | **Occam's Razor → Leaky Abstraction** | Accept imperfect abstractions for simplicity |
+| #   | Relationship                                 | Explanation                                                   |
+| --- | -------------------------------------------- | ------------------------------------------------------------- |
+| 1   | **Occam's Razor → All**                      | Meta principle that questions all complexity                  |
+| 2   | **Occam's Razor → Progressive Enhancement**  | Start simple, add complexity only when needed                 |
+| 3   | **Occam's Razor → DRY**                      | Balance abstraction (DRY) vs simplicity (Occam)               |
+| 4   | **Occam's Razor ⟷ SOLID**                    | Balance: SOLID for structure, Occam prevents over-engineering |
+| 5   | **Progressive Enhancement → TDD/Baby Steps** | Both emphasize incremental development                        |
+| 6   | **Readable Code → Miller's Law**             | Cognitive science backing for readability limits (7±2 items)  |
+| 7   | **SOLID → Container/Presentational**         | SRP (Single Responsibility) drives UI/logic separation        |
+| 8   | **SOLID → Law of Demeter**                   | Both manage dependencies and coupling                         |
+| 9   | **Readable Code + DRY → TIDYINGS**           | Practical application of keeping code clean                   |
+| 10  | **Occam's Razor → Leaky Abstraction**        | Accept imperfect abstractions for simplicity                  |
 
 ## How to Use This Graph
 
@@ -79,6 +79,20 @@ graph TD
 3. **Implement**: Use applied practices (green) - TDD, Container/Presentational, TIDYINGS
 4. **Specific Context**: Apply contextual principles (yellow) - SOLID, Law of Demeter only when needed
 5. **Resolve Conflicts**: When principles conflict, trace back to Occam's Razor at the top
+
+## Development Practices
+
+Detailed implementation guides for each practice:
+
+| Practice                 | File                                                                                    | Focus                     |
+| ------------------------ | --------------------------------------------------------------------------------------- | ------------------------- |
+| Progressive Enhancement  | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)   | CSS-first, outcome-driven |
+| Readable Code            | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                       | Clarity over cleverness   |
+| TDD/RGRC                 | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                 | Red-Green-Refactor cycle  |
+| Container/Presentational | [@./development/CONTAINER_PRESENTATIONAL.md](./development/CONTAINER_PRESENTATIONAL.md) | UI/logic separation       |
+| Law of Demeter           | [@./development/LAW_OF_DEMETER.md](./development/LAW_OF_DEMETER.md)                     | Minimal coupling          |
+| Leaky Abstraction        | [@./development/LEAKY_ABSTRACTION.md](./development/LEAKY_ABSTRACTION.md)               | Pragmatic abstractions    |
+| TIDYINGS                 | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                 | Micro-improvements        |
 
 ## Related Documentation
 
