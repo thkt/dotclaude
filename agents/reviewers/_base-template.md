@@ -1,3 +1,8 @@
+---
+name: _base-template
+description: Template file - not an executable agent
+---
+
 # Reviewer Agent Base Template
 
 This template defines common patterns and sections shared across all reviewer agents.
@@ -60,15 +65,18 @@ All reviewer agents MUST follow this output structure:
 ## {Domain} Review Results
 
 ### Summary
+
 [Overall assessment]
 **Overall Confidence**: [✓/→] [0.X]
 
 ### Metrics
+
 - [Domain-specific metric]: X [✓]
 - [Domain-specific metric]: Y [✓/→]
 - Total Issues: N (✓: X, →: Y)
 
 ### Critical Issues (Confidence > 0.9)
+
 1. **[✓]** **[Issue Type]**: [Description]
    - **File**: path/to/file.tsx:42
    - **Confidence**: 0.95
@@ -79,6 +87,7 @@ All reviewer agents MUST follow this output structure:
    - **Effort**: [Low/Medium/High]
 
 ### High Priority Issues (Confidence > 0.8)
+
 1. **[✓]** **[Issue Type]**: [Description]
    - **File**: path/to/file.tsx:123
    - **Confidence**: 0.85
@@ -86,6 +95,7 @@ All reviewer agents MUST follow this output structure:
    - **Solution**: [Specific fix]
 
 ### Medium Priority Issues (Confidence 0.7-0.8)
+
 1. **[→]** **[Issue Type]**: [Description]
    - **File**: path/to/file.tsx:200
    - **Confidence**: 0.75
@@ -93,15 +103,18 @@ All reviewer agents MUST follow this output structure:
    - **Note**: [Verification needed]
 
 ### Best Practices
+
 1. **[Good pattern found]**: [Description]
    - Example: [Code showing good practice]
 
 ### Priority Actions
+
 1. **CRITICAL** [✓] - [Immediate fix needed]
 2. **HIGH** [✓] - [Should address soon]
 3. **MEDIUM** [→] - [When time permits]
 
 ### Verification Notes
+
 - **Verified Issues**: [List with evidence]
 - **Inferred Issues**: [List with reasoning]
 - **Need Investigation**: [Areas requiring deeper analysis]
