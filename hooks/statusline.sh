@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Claude Code Custom Status Line
 # Features:
@@ -9,6 +10,7 @@
 # - Last used tool name
 
 # Read JSON input from stdin
+STDIN_INPUT=""
 if [ ! -t 0 ]; then
     STDIN_INPUT=$(cat)
 fi

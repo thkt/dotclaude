@@ -140,8 +140,9 @@ def load_rules(event_type: str) -> list[dict]:
                     "message": message,
                     "file": str(rule_file),
                 })
-            except Exception:
-                continue  # Skip malformed rules
+            except Exception as e:
+                print(f"Warning: Skipped malformed rule {rule_file}: {e}", file=sys.stderr)
+                continue
 
     return rules
 
@@ -308,9 +309,11 @@ def main():
         else:
             sys.exit(0)
 
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(f"Warning: Invalid JSON input: {e}", file=sys.stderr)
         sys.exit(0)  # Don't block on parse errors
-    except Exception:
+    except Exception as e:
+        print(f"Warning: Unexpected error in hookify-processor: {e}", file=sys.stderr)
         sys.exit(0)  # Don't block on unexpected errors
 
 

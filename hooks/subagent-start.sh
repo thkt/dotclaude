@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # SubagentStart hook script
 # Logs subagent start events and plays a notification sound
@@ -14,6 +15,9 @@ INPUT=$(cat)
 # Extract agent information from JSON
 AGENT_ID=$(echo "$INPUT" | jq -r '.agent_id // "unknown"')
 AGENT_TYPE=$(echo "$INPUT" | jq -r '.subagent_type // "unknown"')
+
+# Ensure log directory exists
+mkdir -p "$(dirname "$LOG_FILE")"
 
 # Log the start event
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Subagent started: $AGENT_TYPE (id: $AGENT_ID)" >> "$LOG_FILE"

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # SubagentStop Hook Script
 # 目的: サブエージェント実行ログを自動保存
@@ -59,10 +60,10 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
 EOF
   chmod 600 "$META_LOG"
 
-  # 古いログを削除（30日以上前のものを削除）
-  find "$AGENT_LOG_DIR" -name "full-*.json" -mtime +30 -delete 2>/dev/null
-  find "$AGENT_LOG_DIR" -name "summary-*.json" -mtime +30 -delete 2>/dev/null
-  find "$AGENT_LOG_DIR" -name "meta-*.json" -mtime +30 -delete 2>/dev/null
+  # 古いログをTrashへ移動（30日以上前のもの）
+  find "$AGENT_LOG_DIR" -name "full-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
+  find "$AGENT_LOG_DIR" -name "summary-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
+  find "$AGENT_LOG_DIR" -name "meta-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
 
   # 成功メッセージ（オプション: 静かにしたい場合はコメントアウト）
   echo "✓ Agent log saved: $AGENT_ID (${LINE_COUNT} lines, ${FILE_SIZE} bytes)"

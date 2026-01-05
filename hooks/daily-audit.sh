@@ -5,6 +5,7 @@
 set -euo pipefail
 
 # 設定
+CLAUDE_CMD="/opt/homebrew/bin/claude"
 PROJECT_DIR="$HOME/.claude"
 OUTPUT_DIR="$PROJECT_DIR/workspace/audit"
 DATE=$(date +%Y-%m-%d)
@@ -47,7 +48,7 @@ PROMPT="このClaude Code設定リポジトリを監査してください。
   echo ""
 
   # Claude CLI実行（--print で非対話モード、MCP無効化）
-  if claude --print --mcp-config '{"mcpServers":{}}' --strict-mcp-config "$PROMPT" 2>&1; then
+  if "$CLAUDE_CMD" --print --mcp-config '{"mcpServers":{}}' --strict-mcp-config "$PROMPT" 2>&1; then
     log "Audit completed successfully"
   else
     echo "⚠️ Audit failed with exit code $?"
@@ -57,7 +58,7 @@ PROMPT="このClaude Code設定リポジトリを監査してください。
 
 log "Report saved to $OUTPUT_FILE"
 
-# 直近7日分のみ保持（オプション）
-# find "$OUTPUT_DIR" -name "*.md" -mtime +7 -delete
+# 直近7日分のみ保持（オプション - Trashへ移動）
+# find "$OUTPUT_DIR" -name "*.md" -mtime +7 -exec mv {} ~/.Trash/ \;
 
 echo "Done. See: $OUTPUT_FILE"

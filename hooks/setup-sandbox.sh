@@ -2,7 +2,7 @@
 # Claude Code Sandbox Setup Script
 # This script sets up the sandbox runtime for secure command execution
 
-set -e
+set -euo pipefail
 
 echo "🔧 Setting up Claude Code sandbox feature..."
 echo ""

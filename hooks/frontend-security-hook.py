@@ -60,6 +60,41 @@ FRONTEND_PATTERNS = {
         "message": "XSS Risk: Direct outerHTML assignment detected",
         "recommendation": "Use DOM methods for element manipulation",
         "severity": "medium"
+    },
+    "setTimeout-string": {
+        "pattern": r"setTimeout\s*\(\s*['\"`]",
+        "file_pattern": r"\.(jsx?|tsx?)$",
+        "message": "Code Injection Risk: setTimeout with string argument detected",
+        "recommendation": "Use function reference instead of string: setTimeout(() => { ... }, delay)",
+        "severity": "high"
+    },
+    "setInterval-string": {
+        "pattern": r"setInterval\s*\(\s*['\"`]",
+        "file_pattern": r"\.(jsx?|tsx?)$",
+        "message": "Code Injection Risk: setInterval with string argument detected",
+        "recommendation": "Use function reference instead of string: setInterval(() => { ... }, delay)",
+        "severity": "high"
+    },
+    "postMessage-unsafe": {
+        "pattern": r"\.postMessage\s*\([^,]+,\s*['\"`]\*['\"`]\s*\)",
+        "file_pattern": r"\.(jsx?|tsx?)$",
+        "message": "Security Risk: postMessage with '*' targetOrigin detected",
+        "recommendation": "Specify exact origin instead of '*' to prevent data leakage to malicious sites",
+        "severity": "high"
+    },
+    "localStorage-sensitive": {
+        "pattern": r"localStorage\.(setItem|getItem)\s*\(\s*['\"`](token|password|secret|key|auth|credential)",
+        "file_pattern": r"\.(jsx?|tsx?)$",
+        "message": "Security Risk: Sensitive data stored in localStorage",
+        "recommendation": "Use httpOnly cookies for tokens/credentials, or encrypt sensitive data before storage",
+        "severity": "medium"
+    },
+    "sessionStorage-sensitive": {
+        "pattern": r"sessionStorage\.(setItem|getItem)\s*\(\s*['\"`](token|password|secret|key|auth|credential)",
+        "file_pattern": r"\.(jsx?|tsx?)$",
+        "message": "Security Risk: Sensitive data stored in sessionStorage",
+        "recommendation": "Use httpOnly cookies for tokens/credentials, or encrypt sensitive data before storage",
+        "severity": "medium"
     }
 }
 
@@ -93,10 +128,13 @@ def load_warnings() -> set:
 
 def save_warning(warning_key: str) -> None:
     """Save a warning to avoid showing it again."""
-    state_file = get_state_file()
-    warnings = load_warnings()
-    warnings.add(warning_key)
-    state_file.write_text(json.dumps({"warnings": list(warnings)}))
+    try:
+        state_file = get_state_file()
+        warnings = load_warnings()
+        warnings.add(warning_key)
+        state_file.write_text(json.dumps({"warnings": list(warnings)}))
+    except OSError:
+        pass  # Ignore write errors - duplicate warnings are acceptable
 
 
 def log_check(message: str) -> None:

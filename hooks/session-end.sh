@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # SessionEnd Hook Script
 # Purpose: Save session statistics on session end
@@ -27,15 +28,15 @@ EOF
 cp "$SESSION_FILE" "$SESSION_LOG_DIR/latest-session.json"
 
 # Move old logs to Trash (older than 30 days)
-find "$SESSION_LOG_DIR" -name "session-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null
+find "$SESSION_LOG_DIR" -name "session-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
 
 # Agent logs rotation - keep last 50 directories
 AGENT_LOG_DIR="$HOME/.claude/logs/agents"
 if [ -d "$AGENT_LOG_DIR" ]; then
   agent_count=$(ls -1 "$AGENT_LOG_DIR" 2>/dev/null | wc -l)
   if [ "$agent_count" -gt 50 ]; then
-    ls -1t "$AGENT_LOG_DIR" | tail -n +51 | while read dir; do
-      mv "$AGENT_LOG_DIR/$dir" ~/.Trash/ 2>/dev/null
+    ls -1t "$AGENT_LOG_DIR" | tail -n +51 | while IFS= read -r dir; do
+      mv "$AGENT_LOG_DIR/$dir" ~/.Trash/ 2>/dev/null || true
     done
   fi
 fi
