@@ -89,7 +89,7 @@ allowed-tools: Read, Grep, Glob, Task
 
 ### 原則（rules/）
 
-- [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md) - コンポーネント分離パターン
+- [@../../../rules/development/CONTAINER_PRESENTATIONAL.md](~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md) - コンポーネント分離パターン
 
 ### スキル参照
 

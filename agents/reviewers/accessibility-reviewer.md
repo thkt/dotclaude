@@ -13,7 +13,7 @@ skills:
 
 Expert reviewer for web accessibility compliance and inclusive design in TypeScript/React applications.
 
-**Base Template**: [@~/.claude/agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
 
 ## Objective
 
@@ -165,7 +165,7 @@ function Modal({ isOpen, onClose, children }) {
 
 ### Progressive Enhancement
 
-[@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - "HTML first, CSS for styling, JavaScript only when necessary"
+[@../../rules/development/PROGRESSIVE_ENHANCEMENT.md] - "HTML first, CSS for styling, JavaScript only when necessary"
 
 Key questions:
 
@@ -176,7 +176,7 @@ Key questions:
 
 ## Output Format
 
-Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specific metrics:
+Follow [@../../agents/reviewers/_base-template.md] with these domain-specific metrics:
 
 ```markdown
 ### WCAG Compliance Score: XX%

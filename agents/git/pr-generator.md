@@ -11,7 +11,7 @@ model: haiku
 
 Expert agent for analyzing all branch changes and generating comprehensive PR descriptions.
 
-**Base Template**: [@~/.claude/agents/git/_base-git-agent.md] for common git tools and constraints.
+**Base Template**: [@../../agents/git/_base-git-agent.md] for common git tools and constraints.
 
 ## Objective
 

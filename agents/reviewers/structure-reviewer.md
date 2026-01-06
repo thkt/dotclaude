@@ -3,7 +3,7 @@ name: structure-reviewer
 description: >
   Specialized agent for reviewing frontend code structure with focus on eliminating waste and ensuring DRY principles.
   Verifies that code addresses root problems rather than applying patches.
-  References [@~/.claude/skills/applying-code-principles/SKILL.md] for fundamental development principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI).
+  References [@../../skills/applying-code-principles/SKILL.md] for fundamental development principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI).
 tools: Read, Grep, Glob, LS, Task
 model: haiku
 skills:
@@ -14,7 +14,7 @@ skills:
 
 Specialized agent for reviewing frontend code structure with focus on eliminating waste and ensuring DRY principles.
 
-**Base Template**: [@~/.claude/agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
 
 ## Core Philosophy
 
@@ -108,7 +108,7 @@ function Modal() { const [isOpen, setIsOpen] = useState(false) } // Component: U
 
 ## Output Format
 
-Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specific metrics:
+Follow [@../../agents/reviewers/_base-template.md] with these domain-specific metrics:
 
 ```markdown
 ### Metrics

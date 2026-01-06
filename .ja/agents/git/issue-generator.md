@@ -11,7 +11,7 @@ model: haiku
 
 ユーザーの説明から構造化されたGitHub Issueを生成する専門エージェントです。
 
-**ベーステンプレート**: [@~/.claude/agents/git/_base-git-agent.md] 共通の制約について。
+**ベーステンプレート**: [@../../../agents/git/_base-git-agent.md] 共通の制約について。
 
 ## 目的
 

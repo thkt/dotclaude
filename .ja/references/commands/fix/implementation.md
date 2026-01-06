@@ -223,5 +223,5 @@ function layoutFix() {
 
 ## リファレンス
 
-- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - シンプルさの原則
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSSファーストアプローチ
+- [@../../../../skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - シンプルさの原則
+- [@../../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSSファーストアプローチ

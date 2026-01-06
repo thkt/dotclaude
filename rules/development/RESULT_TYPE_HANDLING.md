@@ -12,23 +12,23 @@ Inspired by: [Result型とESLintでエラーハンドリング漏れを検出す
 
 ### Three-Pattern Classification
 
-| Type | Meaning | Caller Responsibility |
-| --- | --- | --- |
-| `Ok<T>` | Success | Use the value |
-| `Err<Error>` | Failure - handling required | **Must handle explicitly** |
-| `Err<null>` | Failure - already handled internally | Optional handling |
+| Type         | Meaning                              | Caller Responsibility      |
+| ------------ | ------------------------------------ | -------------------------- |
+| `Ok<T>`      | Success                              | Use the value              |
+| `Err<Error>` | Failure - handling required          | **Must handle explicitly** |
+| `Err<null>`  | Failure - already handled internally | Optional handling          |
 
 ### Implementation Example
 
 ```typescript
 // Type definitions
-type Ok<T> = { ok: true; value: T }
-type Err<E> = { ok: false; error: E }
-type Result<T, E> = Ok<T> | Err<E>
+type Ok<T> = { ok: true; value: T };
+type Err<E> = { ok: false; error: E };
+type Result<T, E> = Ok<T> | Err<E>;
 
 // Helper functions
-const ok = <T>(value: T): Ok<T> => ({ ok: true, value })
-const err = <E>(error: E): Err<E> => ({ ok: false, error })
+const ok = <T>(value: T): Ok<T> => ({ ok: true, value });
+const err = <E>(error: E): Err<E> => ({ ok: false, error });
 ```
 
 ### Usage Pattern
@@ -37,19 +37,19 @@ const err = <E>(error: E): Err<E> => ({ ok: false, error })
 // Usecase layer returns Result type
 async function fetchUser(id: string): Promise<Result<User, ApiError>> {
   try {
-    const user = await api.getUser(id)
-    return ok(user)
+    const user = await api.getUser(id);
+    return ok(user);
   } catch (e) {
-    return err(new ApiError('Failed to fetch user', e))
+    return err(new ApiError("Failed to fetch user", e));
   }
 }
 
 // Caller MUST handle the error
-const result = await fetchUser(userId)
+const result = await fetchUser(userId);
 if (!result.ok) {
   // ESLint enforces this block exists
-  showErrorToast(result.error.message)
-  return
+  showErrorToast(result.error.message);
+  return;
 }
 // result.value is now safely typed as User
 ```
@@ -63,16 +63,19 @@ Using `eslint-plugin-return-type` for enforcement:
 ```javascript
 // .eslintrc.js
 module.exports = {
-  plugins: ['return-type'],
+  plugins: ["return-type"],
   rules: {
-    'return-type/enforce-access': ['error', {
-      // Regex pattern for types requiring access
-      targetTypePattern: 'Err<(?!null)[^>]+>',
-      // Properties that satisfy the access requirement
-      accessProperties: ['error', 'ok']
-    }]
-  }
-}
+    "return-type/enforce-access": [
+      "error",
+      {
+        // Regex pattern for types requiring access
+        targetTypePattern: "Err<(?!null)[^>]+>",
+        // Properties that satisfy the access requirement
+        accessProperties: ["error", "ok"],
+      },
+    ],
+  },
+};
 ```
 
 ### Biome Configuration
@@ -86,14 +89,14 @@ Biome doesn't have a direct equivalent, but alternative approaches:
     "rules": {
       "suspicious": {
         // Catch unused variables (including unhandled Results)
-        "noUnusedVariables": "error"
+        "noUnusedVariables": "error",
       },
       "correctness": {
         // Catch floating promises
-        "noVoid": "error"
-      }
-    }
-  }
+        "noVoid": "error",
+      },
+    },
+  },
 }
 ```
 
@@ -110,15 +113,15 @@ Without custom lint rules, use TypeScript's type system:
 ```typescript
 // Force exhaustive handling with never type
 function assertNever(x: never): never {
-  throw new Error('Unexpected value: ' + x)
+  throw new Error("Unexpected value: " + x);
 }
 
 function handleResult<T>(result: Result<T, Error>): T {
   if (result.ok) {
-    return result.value
+    return result.value;
   }
   // Must handle error case - TypeScript enforces this
-  throw result.error
+  throw result.error;
 }
 ```
 
@@ -129,24 +132,24 @@ function handleResult<T>(result: Result<T, Error>): T {
 ```tsx
 // Result type works well with Error Boundaries
 function UserProfile({ userId }: { userId: string }) {
-  const result = useUserQuery(userId)
+  const result = useUserQuery(userId);
 
   if (!result.ok) {
     // Explicit error handling - not silent
-    return <ErrorDisplay error={result.error} />
+    return <ErrorDisplay error={result.error} />;
   }
 
-  return <ProfileCard user={result.value} />
+  return <ProfileCard user={result.value} />;
 }
 ```
 
 ## When to Apply
 
-| Scenario | Approach |
-| --- | --- |
-| API calls | Always use Result type |
-| Form validation | Result with validation errors |
-| File operations | Result with IO errors |
+| Scenario           | Approach                       |
+| ------------------ | ------------------------------ |
+| API calls          | Always use Result type         |
+| Form validation    | Result with validation errors  |
+| File operations    | Result with IO errors          |
 | Internal utilities | Simple throw/catch may suffice |
 
 ## Benefits
@@ -179,5 +182,5 @@ Example project config (`.claude/rules/error-handling.md`):
 ## Related Principles
 
 - [@./COMPLETION_CRITERIA.md](./COMPLETION_CRITERIA.md) - Quality gates include error handling
-- [@../../agents/reviewers/silent-failure.md](../../agents/reviewers/silent-failure.md) - Detects silent failures
+- [@../../agents/reviewers/silent-failure-reviewer.md](../../agents/reviewers/silent-failure-reviewer.md) - Detects silent failures
 - [@../../skills/reviewing-silent-failures/SKILL.md](../../skills/reviewing-silent-failures/SKILL.md) - Silent failure patterns

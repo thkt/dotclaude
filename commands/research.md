@@ -160,7 +160,7 @@ Task({
 ### Template Reference
 
 Use for **structure only**:
-[@~/.claude/templates/research/context.md]
+[@../templates/research/context.md]
 
 **IMPORTANT**:
 

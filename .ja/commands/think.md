@@ -16,9 +16,9 @@ dependencies: [sow-spec-reviewer]
 
 **構造とフォーマットのガイダンス**に使用:
 
-- SOW構造: [@~/.claude/templates/sow/workflow-improvement.md](~/.claude/templates/sow/workflow-improvement.md)
-- Spec構造: [@~/.claude/templates/spec/workflow-improvement.md](~/.claude/templates/spec/workflow-improvement.md)
-- サマリー構造: [@~/.claude/templates/summary/review-summary.md](~/.claude/templates/summary/review-summary.md)
+- SOW構造: [@../../templates/sow/workflow-improvement.md](~/.claude/templates/sow/workflow-improvement.md)
+- Spec構造: [@../../templates/spec/workflow-improvement.md](~/.claude/templates/spec/workflow-improvement.md)
+- サマリー構造: [@../../templates/summary/review-summary.md](~/.claude/templates/summary/review-summary.md)
 
 ## 入力解決
 

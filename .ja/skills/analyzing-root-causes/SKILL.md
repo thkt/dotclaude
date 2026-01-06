@@ -112,8 +112,8 @@ return <Child onValueChange={setValue} />
 
 ### コア原則
 
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - シンプル優先
-- [@~/.claude/skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - 最もシンプルな解決
+- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - シンプル優先
+- [@../../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - 最もシンプルな解決
 
 ### 関連スキル
 

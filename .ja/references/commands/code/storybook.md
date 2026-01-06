@@ -75,4 +75,4 @@ export const Default: Story = { args: { /* Usage Examplesから */ } };
 
 ## 完全なテンプレート
 
-参照: [@~/.claude/skills/integrating-storybook/SKILL.md] 完全なテンプレートと高度なオプション。
+参照: [@../../../../skills/integrating-storybook/SKILL.md] 完全なテンプレートと高度なオプション。

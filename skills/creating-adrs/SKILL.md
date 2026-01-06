@@ -84,5 +84,5 @@ docs/adr/
 ## References
 
 - [MADR Official](https://adr.github.io/madr/)
-- [@~/.claude/commands/adr.md](~/.claude/commands/adr.md) - /adr command
-- [@~/.claude/commands/adr/skill.md](~/.claude/commands/adr/skill.md) - /adr:skill quick reference
+- [@../../commands/adr.md](~/.claude/commands/adr.md) - /adr command
+- [@../../commands/adr/skill.md](~/.claude/commands/adr/skill.md) - /adr:skill quick reference

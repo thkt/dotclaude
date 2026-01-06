@@ -12,7 +12,7 @@ dependencies: [creating-adrs]
 
 ADR Creator Skillを使用した高品質なアーキテクチャ決定記録の作成コマンド。
 
-**詳細プロセス**: [@~/.claude/skills/creating-adrs/SKILL.md]
+**詳細プロセス**: [@../../skills/creating-adrs/SKILL.md]
 
 ## 使い方
 

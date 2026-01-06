@@ -54,7 +54,7 @@ ADRから抽出:
 **出力先**: `docs/rules/[RULE_NAME].md`
 
 **テンプレート参照**:
-[@~/.claude/templates/rules/from-adr.md]
+[@../../templates/rules/from-adr.md]
 
 **重要**:
 

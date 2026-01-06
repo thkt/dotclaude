@@ -3,7 +3,7 @@ name: readability-reviewer
 description: >
   「The Art of Readable Code」の原則を拡張した、フロントエンドコードの読みやすさレビューの専門エージェント。
   TypeScript、React、モダンフロントエンド固有の読みやすさの考慮事項を適用します。
-  読みやすさの原則とミラーの法則については[@~/.claude/skills/reviewing-readability/SKILL.md]を参照。
+  読みやすさの原則とミラーの法則については[@../../../skills/reviewing-readability/SKILL.md]を参照。
 tools: Read, Grep, Glob, LS, Task
 model: haiku
 skills:
@@ -15,7 +15,7 @@ skills:
 
 TypeScript、React、モダンフロントエンド固有の考慮事項を含む、フロントエンドコードの読みやすさレビューの専門エージェントです。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## コア哲学
 
@@ -100,7 +100,7 @@ interface UserCardProps {
 
 ### The Art of Readable Code
 
-[@~/.claude/rules/development/READABLE_CODE.md] - "コードは理解時間を最小化すべき"
+[@../../../rules/development/READABLE_CODE.md] - "コードは理解時間を最小化すべき"
 
 主要な質問：
 
@@ -110,7 +110,7 @@ interface UserCardProps {
 
 ## 出力形式
 
-[@~/.claude/agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
+[@../../../agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
 
 ```markdown
 ### 読みやすさスコア

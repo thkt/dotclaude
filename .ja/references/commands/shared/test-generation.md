@@ -49,4 +49,4 @@ Task({
 
 ## 参考文献
 
-- [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD原則とパターン
+- [@../../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD原則とパターン

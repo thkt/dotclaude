@@ -30,17 +30,17 @@ Implement code with TDD/RGRC cycle and quality checks.
 
 ## Essential Context (Always Loaded)
 
-- [@~/.claude/skills/generating-tdd-tests/SKILL.md] - TDD/RGRC cycle, Baby Steps
+- [@../skills/generating-tdd-tests/SKILL.md] - TDD/RGRC cycle, Baby Steps
 
 ## Conditional Context (Flag-based)
 
 Load with flags when needed:
 
-| Flag           | Context                                                 | When to Use                   |
-| -------------- | ------------------------------------------------------- | ----------------------------- |
-| `--frontend`   | [@~/.claude/skills/applying-frontend-patterns/SKILL.md] | React/UI components           |
-| `--principles` | [@~/.claude/skills/applying-code-principles/SKILL.md]   | Design decisions, refactoring |
-| `--storybook`  | [@~/.claude/skills/integrating-storybook/SKILL.md]      | Component Stories             |
+| Flag           | Context                                          | When to Use                   |
+| -------------- | ------------------------------------------------ | ----------------------------- |
+| `--frontend`   | [@../skills/applying-frontend-patterns/SKILL.md] | React/UI components           |
+| `--principles` | [@../skills/applying-code-principles/SKILL.md]   | Design decisions, refactoring |
+| `--storybook`  | [@../skills/integrating-storybook/SKILL.md]      | Component Stories             |
 
 ## Project Context (Auto-detected)
 
@@ -51,7 +51,7 @@ Load with flags when needed:
 
 ## Specification Context
 
-For spec.md detection: [@~/.claude/references/commands/code/spec-context.md](~/.claude/references/commands/code/spec-context.md)
+For spec.md detection: [@../references/commands/code/spec-context.md](~/.claude/references/commands/code/spec-context.md)
 
 ## Implementation Cycle
 
@@ -64,19 +64,19 @@ For spec.md detection: [@~/.claude/references/commands/code/spec-context.md](~/.
 
 ### Phase 0: Test Preparation
 
-For spec-driven test generation: [@~/.claude/references/commands/code/test-preparation.md](~/.claude/references/commands/code/test-preparation.md)
+For spec-driven test generation: [@../references/commands/code/test-preparation.md](~/.claude/references/commands/code/test-preparation.md)
 
 ### RGRC Cycle Details
 
-For detailed cycle: [@~/.claude/references/commands/code/rgrc-cycle.md](~/.claude/references/commands/code/rgrc-cycle.md)
+For detailed cycle: [@../references/commands/code/rgrc-cycle.md](~/.claude/references/commands/code/rgrc-cycle.md)
 
 ## Quality Gates
 
-For quality checks and verification: [@~/.claude/references/commands/code/quality-gates.md](~/.claude/references/commands/code/quality-gates.md)
+For quality checks and verification: [@../references/commands/code/quality-gates.md](~/.claude/references/commands/code/quality-gates.md)
 
 ## Completion Criteria
 
-For definition of done: [@~/.claude/references/commands/code/completion.md](~/.claude/references/commands/code/completion.md)
+For definition of done: [@../references/commands/code/completion.md](~/.claude/references/commands/code/completion.md)
 
 ## Quick Decision Questions (Always Apply)
 
@@ -107,7 +107,7 @@ Spec check: ~/.claude/workspace/planning/**/spec.md → Section 11
 
 ### IDR Detection & Generation
 
-For detailed logic: [@~/.claude/references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+For detailed logic: [@../references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
 
 1. **Search for SOW**:
 

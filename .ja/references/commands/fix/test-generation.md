@@ -28,8 +28,8 @@ test-generatorを使用してバグと関連エッジケースの包括的なテ
 
 test-generatorパターンとベストプラクティス:
 
-- [@~/.claude/references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - 詳細なパターン
-- [@~/.claude/skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - バグ駆動アプローチ
+- [@../../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - 詳細なパターン
+- [@../../../../skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - バグ駆動アプローチ
 
 ## test-generatorの使用
 
@@ -208,5 +208,5 @@ describe('calculateTotal - discount edge cases', () => {
 
 ## リファレンス
 
-- [@~/.claude/references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - テストパターン
-- [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD基礎
+- [@../../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - テストパターン
+- [@../../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD基礎

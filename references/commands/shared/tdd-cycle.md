@@ -45,5 +45,5 @@ npm run lint && npm test && npm run type-check
 
 ## Related Principles
 
-- [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - Full TDD guide
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Methodology
+- [@../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - Full TDD guide
+- [@../../../rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Methodology

@@ -15,9 +15,9 @@ skills:
 
 TypeScript/Reactアプリケーションにおけるテスト可能なコード設計とテストフレンドリーパターンの専門レビューアーです。
 
-**ナレッジベース**: 詳細なパターン、チェックリスト、例については[@~/.claude/skills/reviewing-testability/SKILL.md]を参照。
+**ナレッジベース**: 詳細なパターン、チェックリスト、例については[@../../../skills/reviewing-testability/SKILL.md]を参照。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## 目的
 
@@ -71,7 +71,7 @@ function calculateDiscount(purchaseCount: number): number {
 
 ## 出力形式
 
-[@~/.claude/agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
+[@../../../agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
 
 ```markdown
 ### テスタビリティスコア

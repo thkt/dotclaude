@@ -42,7 +42,7 @@ If found:
 ## Template Reference
 
 Use for **structure and section order ONLY**:
-[@~/.claude/templates/sow/workflow-improvement.md]
+[@../templates/sow/workflow-improvement.md]
 
 **IMPORTANT**:
 

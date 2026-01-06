@@ -180,7 +180,7 @@ execution_plan:
 
 #### 原則に基づく優先度付け
 
-[@~/.claude/rules/PRINCIPLES_GUIDE.md]の優先度マトリックスに基づく：
+[@../../../rules/PRINCIPLES_GUIDE.md]の優先度マトリックスに基づく：
 
 | 優先度 | 違反 | 例 |
 | --- | --- | --- |

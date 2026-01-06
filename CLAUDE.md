@@ -6,8 +6,8 @@
 
 **ALWAYS ACTIVE** - Applied on every user message, supersedes all other rules
 
-Core principles: [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)
-Task verification: [@~/.claude/rules/core/PRE_TASK_CHECK_COMPACT.md](./rules/core/PRE_TASK_CHECK_COMPACT.md) (injected via hook)
+Core principles: [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)
+Task verification: [@./rules/core/PRE_TASK_CHECK_COMPACT.md](./rules/core/PRE_TASK_CHECK_COMPACT.md) (injected via hook)
 
 ### [P1] REQUIRED - Language Settings
 
@@ -32,7 +32,7 @@ Essential principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI) available 
 - "Duplicating knowledge?" (DRY)
 - "Needed now?" (YAGNI)
 
-Skills auto-activate on relevant keywords. Full details: [@~/.claude/skills/applying-code-principles/SKILL.md](./skills/applying-code-principles/SKILL.md)
+Skills auto-activate on relevant keywords. Full details: [@./skills/applying-code-principles/SKILL.md](./skills/applying-code-principles/SKILL.md)
 
 ### [P3] CONTEXTUAL - Just-in-Time References
 
@@ -92,9 +92,9 @@ If any check fails:
 
 ### Commands Reference
 
-- Command list: [@~/.claude/docs/COMMANDS.md](./docs/COMMANDS.md)
+- Command list: [@./docs/COMMANDS.md](./docs/COMMANDS.md)
 
 ### Documentation Guidelines
 
-- Documentation rules: [@~/.claude/rules/guidelines/DOCUMENTATION_RULES.md](./rules/guidelines/DOCUMENTATION_RULES.md)
+- Documentation rules: [@./rules/guidelines/DOCUMENTATION_RULES.md](./rules/guidelines/DOCUMENTATION_RULES.md)
 - Ensure absolute consistency across all documentation

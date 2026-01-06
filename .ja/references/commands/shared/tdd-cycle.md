@@ -45,5 +45,5 @@ npm run lint && npm test && npm run type-check
 
 ## 参考文献
 
-- [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - 完全なTDDガイド
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - 方法論
+- [@../../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - 完全なTDDガイド
+- [@../../../../rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - 方法論

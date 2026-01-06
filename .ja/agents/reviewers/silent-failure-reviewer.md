@@ -14,9 +14,9 @@ skills:
 
 サイレント障害と不適切なエラーハンドリングパターンを検出する専門レビューアーです。
 
-**ナレッジベース**: 詳細なパターン、検出コマンド、チェックリストについては[@~/.claude/skills/reviewing-silent-failures/SKILL.md]を参照。
+**ナレッジベース**: 詳細なパターン、検出コマンド、チェックリストについては[@../../../skills/reviewing-silent-failures/SKILL.md]を参照。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## 目的
 
@@ -59,13 +59,13 @@ fetchData()
 
 包括的なパターンと検出コマンドについては、ナレッジベースを参照：
 
-- [@~/.claude/skills/reviewing-silent-failures/references/detection-patterns.md] - 正規表現パターン、検索コマンド
-- [@~/.claude/skills/reviewing-silent-failures/references/error-handling.md] - 適切なエラーハンドリングパターン
-- [@~/.claude/skills/reviewing-silent-failures/references/error-boundaries.md] - React Error Boundaryパターン
+- [@../../../skills/reviewing-silent-failures/references/detection-patterns.md] - 正規表現パターン、検索コマンド
+- [@../../../skills/reviewing-silent-failures/references/error-handling.md] - 適切なエラーハンドリングパターン
+- [@../../../skills/reviewing-silent-failures/references/error-boundaries.md] - React Error Boundaryパターン
 
 ## 出力形式
 
-[@~/.claude/agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
+[@../../../agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
 
 ```markdown
 ### サイレント障害分析
@@ -98,4 +98,4 @@ fetchData()
 
 ## 関連原則
 
-- [@~/.claude/rules/development/RESULT_TYPE_HANDLING.md] - コンパイル時エラーハンドリング強制のためのResult型パターン
+- [@../../../rules/development/RESULT_TYPE_HANDLING.md] - コンパイル時エラーハンドリング強制のためのResult型パターン

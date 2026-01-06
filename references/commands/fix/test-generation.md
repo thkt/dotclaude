@@ -28,8 +28,8 @@ Skip test generation when:
 
 For test-generator patterns and best practices:
 
-- [@~/.claude/references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - Detailed patterns
-- [@~/.claude/skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - Bug-driven approach
+- [@../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - Detailed patterns
+- [@../../../skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - Bug-driven approach
 
 ## Using test-generator
 
@@ -208,5 +208,5 @@ Next: Definition of Done
 
 ## Related Principles
 
-- [@~/.claude/references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - Test patterns
-- [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD fundamentals
+- [@../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - Test patterns
+- [@../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD fundamentals

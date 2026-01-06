@@ -15,9 +15,9 @@ skills:
 
 OWASP Top 10-based security vulnerability detection with high-confidence filtering.
 
-**Knowledge Base**: See [@~/.claude/skills/reviewing-security/SKILL.md] for detailed patterns and OWASP references.
+**Knowledge Base**: See [@../../skills/reviewing-security/SKILL.md] for detailed patterns and OWASP references.
 
-**Base Template**: [@~/.claude/agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
 
 ## Objective
 

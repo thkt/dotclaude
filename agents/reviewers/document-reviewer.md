@@ -14,7 +14,7 @@ skills:
 
 Expert technical documentation reviewer for clear, user-focused documentation.
 
-**Base Template**: [@~/.claude/agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
 
 ## Objective
 
@@ -139,7 +139,7 @@ Files under `.ja/` are Japanese translations. Follow orchestrator rules:
 - Translated content (descriptions, explanations)
 - Localized formats
 
-See: [@~/.claude/agents/orchestrators/audit-orchestrator.md] Section 2.5
+See: [@../../agents/orchestrators/audit-orchestrator.md] Section 2.5
 
 ## Integration with Other Agents
 

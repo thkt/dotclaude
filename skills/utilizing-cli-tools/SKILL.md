@@ -114,7 +114,7 @@ Format: `type(scope): description`
 
 ### Principles (rules/)
 
-- [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md) - Safety first operations
+- [@../../rules/core/AI_OPERATION_PRINCIPLES.md](~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md) - Safety first operations
 
 ### Related Skills
 

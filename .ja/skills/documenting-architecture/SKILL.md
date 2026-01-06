@@ -70,5 +70,5 @@ grep -r "^import\|^from.*import" --include="*.py"
 
 ## 参照
 
-- [@~/.claude/agents/analyzers/architecture-analyzer.md] - architecture-analyzerエージェント
+- [@../../../agents/analyzers/architecture-analyzer.md] - architecture-analyzerエージェント
 - コマンド: `/docs:architecture`

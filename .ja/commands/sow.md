@@ -42,7 +42,7 @@ dependencies: [formatting-audits]
 ## テンプレート参照
 
 **構造とセクション順序のみ**に使用:
-[@~/.claude/templates/sow/workflow-improvement.md]
+[@../../templates/sow/workflow-improvement.md]
 
 **重要**:
 

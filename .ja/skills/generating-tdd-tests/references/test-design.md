@@ -409,14 +409,14 @@ test('最大超過を拒否', () => expect(validateAge(121)).toBe(false))
 
 ### コア原則
 
-- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - テストをシンプルでフォーカスしたものに
-- [@~/.claude/skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - テストケースの複雑さを制限
+- [@../../../../skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - テストをシンプルでフォーカスしたものに
+- [@../../../../skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - テストケースの複雑さを制限
 
 ### 開発プラクティス
 
 - [@./tdd-rgrc.md](./tdd-rgrc.md) - 実装のためのテストファーストアプローチ
-- [@~/.claude/rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - テストコードの明確さ
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - シンプルに始めて、徐々にカバレッジを強化
+- [@../../../../rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - テストコードの明確さ
+- [@../../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - シンプルに始めて、徐々にカバレッジを強化
 
 ## 覚えておくこと
 

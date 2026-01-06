@@ -14,9 +14,9 @@ skills:
 
 根本原因を特定し、パッチのような解決策を検出する専門エージェントです。
 
-**ナレッジベース**: 5 Whys手法、症状パターン、例については[@~/.claude/skills/analyzing-root-causes/SKILL.md]を参照。
+**ナレッジベース**: 5 Whys手法、症状パターン、例については[@../../../skills/analyzing-root-causes/SKILL.md]を参照。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## コア哲学
 
@@ -62,7 +62,7 @@ const count = filteredItems.length
 
 ## 出力形式
 
-[@~/.claude/agents/reviewers/_base-template.md]に従い、以下のドメイン固有セクションを使用：
+[@../../../agents/reviewers/_base-template.md]に従い、以下のドメイン固有セクションを使用：
 
 ```markdown
 ### 検出された症状ベースの解決策 🩹

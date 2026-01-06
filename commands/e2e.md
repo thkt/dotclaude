@@ -225,7 +225,7 @@ Apply fix? (y/n)
 
 - `claude-in-chrome` - Interactive browser operations
 - `Playwright MCP` - Headless execution, CI integration, verification
-- [@~/.claude/skills/automating-browser/SKILL.md](~/.claude/skills/automating-browser/SKILL.md) - Browser automation guide
+- [@../skills/automating-browser/SKILL.md](~/.claude/skills/automating-browser/SKILL.md) - Browser automation guide
 
 ## Notes
 

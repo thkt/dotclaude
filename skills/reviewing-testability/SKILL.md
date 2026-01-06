@@ -131,8 +131,8 @@ function SearchBox({ query, results, onQueryChange }: SearchBoxProps) {
 
 ### Core Principles
 
-- [@~/.claude/skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Dependency Inversion Principle
-- [@~/.claude/skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - If hard to test, simplify
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Dependency Inversion Principle
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - If hard to test, simplify
 
 ### Related Skills
 

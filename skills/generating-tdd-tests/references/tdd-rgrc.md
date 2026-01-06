@@ -4,8 +4,8 @@ Quick reference for generating-tdd-tests skill. Full methodology in primary sour
 
 ## Full References
 
-- [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - Complete TDD guide
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - TDD rules
+- [@../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - Complete TDD guide
+- [@../../../rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - TDD rules
 
 ## Baby Steps (2-Minute Cycle)
 

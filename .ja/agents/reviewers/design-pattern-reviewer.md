@@ -3,7 +3,7 @@ name: design-pattern-reviewer
 description: >
   Reactデザインパターン、コンポーネントアーキテクチャ、アプリケーション構造の専門レビューアー。
   Reactデザインパターンの使用、コンポーネント構成、状態管理アプローチを評価します。
-  フレームワークに依存しないフロントエンドパターンとReact実装については[@~/.claude/skills/applying-frontend-patterns/SKILL.md]を参照。
+  フレームワークに依存しないフロントエンドパターンとReact実装については[@../../../skills/applying-frontend-patterns/SKILL.md]を参照。
 tools: Read, Grep, Glob, LS, Task
 model: sonnet
 skills:
@@ -15,7 +15,7 @@ skills:
 
 Reactデザインパターンとコンポーネントアーキテクチャの専門レビューアーです。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## 目的
 
@@ -124,11 +124,11 @@ const total = items.reduce((sum, i) => sum + i.price, 0)
 
 ## 適用される開発原則
 
-参照: [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md] コンポーネント分離について
+参照: [@../../../rules/development/CONTAINER_PRESENTATIONAL.md] コンポーネント分離について
 
 ## 出力形式
 
-[@~/.claude/agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
+[@../../../agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
 
 ```markdown
 ### パターン使用スコア: XX/10

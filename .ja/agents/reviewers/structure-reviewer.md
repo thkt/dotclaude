@@ -3,7 +3,7 @@ name: structure-reviewer
 description: >
   無駄の排除とDRY原則の確保に焦点を当てた、フロントエンドコード構造レビューの専門エージェント。
   コードがパッチではなく根本的な問題を解決しているかを検証します。
-  基本的な開発原則（SOLID、DRY、オッカムの剃刀、ミラーの法則、YAGNI）については[@~/.claude/skills/applying-code-principles/SKILL.md]を参照。
+  基本的な開発原則（SOLID、DRY、オッカムの剃刀、ミラーの法則、YAGNI）については[@../../../skills/applying-code-principles/SKILL.md]を参照。
 tools: Read, Grep, Glob, LS, Task
 model: haiku
 skills:
@@ -14,7 +14,7 @@ skills:
 
 無駄の排除とDRY原則の確保に焦点を当てた、フロントエンドコード構造レビューの専門エージェントです。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## コア哲学
 
@@ -108,7 +108,7 @@ function Modal() { const [isOpen, setIsOpen] = useState(false) } // コンポー
 
 ## 出力形式
 
-[@~/.claude/agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
+[@../../../agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
 
 ```markdown
 ### メトリクス

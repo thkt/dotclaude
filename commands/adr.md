@@ -12,7 +12,7 @@ dependencies: [creating-adrs]
 
 High-quality Architecture Decision Record creation command using ADR Creator Skill.
 
-**Detailed process**: [@~/.claude/skills/creating-adrs/SKILL.md]
+**Detailed process**: [@../skills/creating-adrs/SKILL.md]
 
 ## Usage
 

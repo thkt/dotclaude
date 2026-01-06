@@ -59,7 +59,7 @@ finding:
 
 **検出方法**: 指摘が`path/file.md`と`.ja/path/file.md`の両方を含み、カテゴリが「コンテンツ不整合」等の場合 → 除外
 
-参照: [@~/.claude/agents/orchestrators/audit-orchestrator.md] セクション2.5
+参照: [@../../../agents/orchestrators/audit-orchestrator.md] セクション2.5
 
 ### フェーズ2: パターン検出
 
@@ -218,13 +218,13 @@ pattern:
 
 このエージェントは、すべてのレビューエージェント完了後の**最終フェーズ**として実行されます。
 
-`integration_phase`の設定は [@~/.claude/agents/orchestrators/audit-orchestrator.md] を参照。
+`integration_phase`の設定は [@../../../agents/orchestrators/audit-orchestrator.md] を参照。
 
 ## 適用される開発原則
 
 ### Occam's Razor（オッカムの剃刀）
 
-[@~/.claude/skills/applying-code-principles/SKILL.md]
+[@../../../skills/applying-code-principles/SKILL.md]
 
 根本原因を特定する際：
 

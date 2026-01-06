@@ -6,8 +6,8 @@
 
 **常時有効** - すべてのユーザーメッセージに適用、他のすべてのルールより優先
 
-コア原則: [@~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
-タスク検証: [@~/.claude/rules/core/PRE_TASK_CHECK_COMPACT.md](../rules/core/PRE_TASK_CHECK_COMPACT.md) (hook経由で注入)
+コア原則: [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
+タスク検証: [@../rules/core/PRE_TASK_CHECK_COMPACT.md](../rules/core/PRE_TASK_CHECK_COMPACT.md) (hook経由で注入)
 
 ### [P1] 必須 - 言語設定
 
@@ -32,7 +32,7 @@
 - 「知識を重複させていない？」（DRY）
 - 「今必要？」（YAGNI）
 
-スキルは関連キーワードで自動起動。詳細: [@~/.claude/skills/applying-code-principles/SKILL.md](../skills/applying-code-principles/SKILL.md)
+スキルは関連キーワードで自動起動。詳細: [@../skills/applying-code-principles/SKILL.md](../skills/applying-code-principles/SKILL.md)
 
 ### [P3] コンテキスト依存 - 必要時参照
 
@@ -92,9 +92,9 @@
 
 ### コマンドリファレンス
 
-- コマンド一覧: [@~/.claude/docs/COMMANDS.md](../docs/COMMANDS.md)
+- コマンド一覧: [@../docs/COMMANDS.md](../docs/COMMANDS.md)
 
 ### ドキュメントガイドライン
 
-- ドキュメントルール: [@~/.claude/rules/guidelines/DOCUMENTATION_RULES.md](../rules/guidelines/DOCUMENTATION_RULES.md)
+- ドキュメントルール: [@../rules/guidelines/DOCUMENTATION_RULES.md](../rules/guidelines/DOCUMENTATION_RULES.md)
 - すべてのドキュメントで絶対的な一貫性を確保

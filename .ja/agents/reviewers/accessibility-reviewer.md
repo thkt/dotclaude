@@ -13,7 +13,7 @@ skills:
 
 TypeScript/Reactアプリケーションにおけるウェブアクセシビリティ準拠とインクルーシブデザインの専門レビューアーです。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## 目的
 
@@ -165,7 +165,7 @@ function Modal({ isOpen, onClose, children }) {
 
 ### プログレッシブエンハンスメント
 
-[@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - "HTMLファースト、CSSでスタイリング、JavaScriptは必要な場合のみ"
+[@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md] - "HTMLファースト、CSSでスタイリング、JavaScriptは必要な場合のみ"
 
 主要な質問：
 
@@ -176,7 +176,7 @@ function Modal({ isOpen, onClose, children }) {
 
 ## 出力形式
 
-[@~/.claude/agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
+[@../../../agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
 
 ```markdown
 ### WCAG準拠スコア: XX%

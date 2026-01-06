@@ -70,5 +70,5 @@ Non-blocking (warnings only) - style issues don't block document creation.
 
 ## References
 
-- [@~/.claude/agents/analyzers/architecture-analyzer.md] - architecture-analyzer agent
+- [@../../agents/analyzers/architecture-analyzer.md] - architecture-analyzer agent
 - Command: `/docs:architecture`

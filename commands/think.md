@@ -16,9 +16,9 @@ Orchestrate implementation planning with automated design exploration followed b
 
 Use for **structure and format guidance**:
 
-- SOW structure: [@~/.claude/templates/sow/workflow-improvement.md](~/.claude/templates/sow/workflow-improvement.md)
-- Spec structure: [@~/.claude/templates/spec/workflow-improvement.md](~/.claude/templates/spec/workflow-improvement.md)
-- Summary structure: [@~/.claude/templates/summary/review-summary.md](~/.claude/templates/summary/review-summary.md)
+- SOW structure: [@../templates/sow/workflow-improvement.md](~/.claude/templates/sow/workflow-improvement.md)
+- Spec structure: [@../templates/spec/workflow-improvement.md](~/.claude/templates/spec/workflow-improvement.md)
+- Summary structure: [@../templates/summary/review-summary.md](~/.claude/templates/summary/review-summary.md)
 
 ## Input Resolution
 

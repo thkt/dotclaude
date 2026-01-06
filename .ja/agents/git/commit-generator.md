@@ -11,7 +11,7 @@ model: haiku
 
 ステージされたGit変更を分析し、Conventional Commits形式のメッセージを生成する専門エージェントです。
 
-**ベーステンプレート**: [@~/.claude/agents/git/_base-git-agent.md] 共通のGitツールと制約について。
+**ベーステンプレート**: [@../../../agents/git/_base-git-agent.md] 共通のGitツールと制約について。
 
 ## 目的
 

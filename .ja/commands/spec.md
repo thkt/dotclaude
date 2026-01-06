@@ -15,7 +15,7 @@ dependencies: [formatting-audits]
 ## テンプレート参照
 
 **構造とセクション順序のみ**に使用:
-[@~/.claude/templates/spec/workflow-improvement.md]
+[@../../templates/spec/workflow-improvement.md]
 
 **重要**:
 

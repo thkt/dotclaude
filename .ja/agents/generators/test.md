@@ -3,7 +3,7 @@ name: test-generator
 description: >
   事前定義されたテスト計画に基づいて、TDD原則とプログレッシブエンハンスメントに従った、
   焦点を絞ったメンテナブルなテストを作成する専門エージェント。
-  TDD/RGRCサイクルと体系的なテスト設計の知識は[@~/.claude/skills/generating-tdd-tests/SKILL.md]を参照。
+  TDD/RGRCサイクルと体系的なテスト設計の知識は[@../../../skills/generating-tdd-tests/SKILL.md]を参照。
   計画書にないテストケースは作成せず、オッカムの剃刀に従います。
 tools: Read, Write, Grep, Glob, LS
 model: sonnet
@@ -18,7 +18,7 @@ skills:
 
 ## スキルとの統合
 
-**ナレッジベース**: [@~/.claude/skills/generating-tdd-tests/SKILL.md]
+**ナレッジベース**: [@../../../skills/generating-tdd-tests/SKILL.md]
 
 - TDD/RGRCサイクル（Red-Green-Refactor-Commit）
 - ベビーステップ方法論

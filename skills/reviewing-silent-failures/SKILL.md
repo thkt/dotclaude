@@ -116,7 +116,7 @@ fetchData()
 
 ### Core Principles
 
-- [@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - Graceful degradation
+- [@../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - Graceful degradation
 
 ### Related Skills
 

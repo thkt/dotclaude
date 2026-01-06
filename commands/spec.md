@@ -15,7 +15,7 @@ Generate spec.md only (single artifact) with implementation-ready details.
 ## Template Reference
 
 Use for **structure and section order ONLY**:
-[@~/.claude/templates/spec/workflow-improvement.md]
+[@../templates/spec/workflow-improvement.md]
 
 **IMPORTANT**:
 

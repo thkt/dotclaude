@@ -66,7 +66,7 @@ function processUser(user: User) {
 
 ### 3. Over-Engineering Patterns
 
-Refer to: [@~/.claude/skills/reviewing-readability/references/ai-antipatterns.md](~/.claude/skills/reviewing-readability/references/ai-antipatterns.md)
+Refer to: [@../skills/reviewing-readability/references/ai-antipatterns.md](~/.claude/skills/reviewing-readability/references/ai-antipatterns.md)
 
 - Interfaces with single implementation → Remove interface
 - Classes wrapping one function → Convert to function
@@ -174,7 +174,7 @@ Before updating IDR, check if it's required:
 
 ### IDR Detection
 
-For detailed logic: [@~/.claude/references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+For detailed logic: [@../references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
 
 Search for existing IDR:
 

@@ -13,7 +13,7 @@ skills:
 
 Specialized reviewer for sub-agent definition files ensuring proper format, structure, and quality standards.
 
-**Base Template**: [@~/.claude/agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
 
 ## Core Understanding
 
@@ -93,7 +93,7 @@ skills: [skill-name]      # Optional: Referenced skills
 
 ## Output Format
 
-Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specific metrics:
+Follow [@../../agents/reviewers/_base-template.md] with these domain-specific metrics:
 
 ```markdown
 ### Compliance Summary

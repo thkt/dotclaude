@@ -14,7 +14,7 @@ skills:
 
 明確でユーザー中心のドキュメント作成の専門技術文書レビューアーです。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## 目的
 
@@ -139,7 +139,7 @@ skills:
 - 翻訳されたコンテンツ（説明文）
 - ローカライズされたフォーマット
 
-参照: [@~/.claude/agents/orchestrators/audit-orchestrator.md] セクション2.5
+参照: [@../../../agents/orchestrators/audit-orchestrator.md] セクション2.5
 
 ## 他のエージェントとの統合
 

@@ -67,6 +67,6 @@ Target: New team member understands code in < 1 minute.
 
 ## References
 
-- [@~/.claude/skills/applying-code-principles/SKILL.md] - Cognitive limits science
-- [@~/.claude/rules/development/READABLE_CODE.md] - Detailed guidelines
+- [@../../skills/applying-code-principles/SKILL.md] - Cognitive limits science
+- [@../../rules/development/READABLE_CODE.md] - Detailed guidelines
 - [@./references/ai-antipatterns.md](./references/ai-antipatterns.md) - AI over-engineering patterns

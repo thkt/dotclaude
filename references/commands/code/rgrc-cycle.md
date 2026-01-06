@@ -6,9 +6,9 @@ This module provides detailed TDD implementation guidance for feature developmen
 
 For core TDD principles, Baby Steps, and RGRC cycle basics:
 
-- [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD philosophy and principles
-- [@~/.claude/skills/generating-tdd-tests/references/feature-driven.md](~/.claude/skills/generating-tdd-tests/references/feature-driven.md) - Feature-driven TDD pattern
-- [@~/.claude/references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC implementation details
+- [@../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD philosophy and principles
+- [@../../../skills/generating-tdd-tests/references/feature-driven.md](~/.claude/skills/generating-tdd-tests/references/feature-driven.md) - Feature-driven TDD pattern
+- [@../../../references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC implementation details
 
 ## Feature-Driven TDD Context
 
@@ -28,7 +28,7 @@ This module focuses on **spec-driven feature development** with interactive test
 Before entering the RGRC cycle, automatically generate tests from spec.md.
 
 **For detailed test generation patterns**:
-[@~/.claude/references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md)
+[@../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md)
 
 **Spec-driven generation** (Phase 0):
 See [@./test-preparation.md](./test-preparation.md) for interactive test activation workflow.
@@ -60,7 +60,7 @@ See [@./test-preparation.md](./test-preparation.md) for interactive test activat
 ### Enhanced RGRC Cycle with Real-time Feedback
 
 For detailed phase guidance (Red/Green/Refactor/Commit steps, exit criteria, timing):
-[@~/.claude/references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md)
+[@../../../references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md)
 
 **Feature-specific adaptations**:
 

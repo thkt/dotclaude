@@ -19,7 +19,7 @@ references/
 コマンドやスキルから参照:
 
 ```markdown
-[@~/.claude/references/commands/code/quality-gates.md]
+[@../../references/commands/code/quality-gates.md]
 ```
 
 ## 将来の拡張

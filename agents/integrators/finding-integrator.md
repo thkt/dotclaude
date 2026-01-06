@@ -59,7 +59,7 @@ Exclude findings that compare English and Japanese translation files:
 
 **Detection**: If finding involves files with paths `path/file.md` AND `.ja/path/file.md`, and category is "content inconsistency" or similar → Exclude
 
-See: [@~/.claude/agents/orchestrators/audit-orchestrator.md] Section 2.5 for full JP/EN rules.
+See: [@../../agents/orchestrators/audit-orchestrator.md] Section 2.5 for full JP/EN rules.
 
 ### Phase 2: Pattern Detection
 
@@ -218,13 +218,13 @@ Where:
 
 This agent runs as the **final phase** after all review agents complete.
 
-See [@~/.claude/agents/orchestrators/audit-orchestrator.md] for the `integration_phase` configuration.
+See [@../../agents/orchestrators/audit-orchestrator.md] for the `integration_phase` configuration.
 
 ## Applied Development Principles
 
 ### Occam's Razor
 
-[@~/.claude/skills/applying-code-principles/SKILL.md]
+[@../../skills/applying-code-principles/SKILL.md]
 
 When identifying root causes:
 

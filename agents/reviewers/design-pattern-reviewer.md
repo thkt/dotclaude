@@ -3,7 +3,7 @@ name: design-pattern-reviewer
 description: >
   Expert reviewer for React design patterns, component architecture, and application structure.
   Evaluates React design patterns usage, component organization, and state management approaches.
-  References [@~/.claude/skills/applying-frontend-patterns/SKILL.md] for framework-agnostic frontend patterns with React implementations.
+  References [@../../skills/applying-frontend-patterns/SKILL.md] for framework-agnostic frontend patterns with React implementations.
 tools: Read, Grep, Glob, LS, Task
 model: sonnet
 skills:
@@ -15,7 +15,7 @@ skills:
 
 Expert reviewer for React design patterns and component architecture.
 
-**Base Template**: [@~/.claude/agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
 
 ## Objective
 
@@ -124,11 +124,11 @@ const total = items.reduce((sum, i) => sum + i.price, 0)
 
 ## Applied Development Principles
 
-Reference: [@~/.claude/rules/development/CONTAINER_PRESENTATIONAL.md] for component separation
+Reference: [@../../rules/development/CONTAINER_PRESENTATIONAL.md] for component separation
 
 ## Output Format
 
-Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specific metrics:
+Follow [@../../agents/reviewers/_base-template.md] with these domain-specific metrics:
 
 ```markdown
 ### Pattern Usage Score: XX/10

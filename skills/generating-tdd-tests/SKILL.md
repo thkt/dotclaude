@@ -245,7 +245,7 @@ Target coverage: 80%+
 
 ### Principles (rules/)
 
-- [@~/.claude/rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Full TDD methodology
+- [@../../rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - Full TDD methodology
 
 ### Skill References
 

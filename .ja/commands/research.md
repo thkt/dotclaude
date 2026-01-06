@@ -160,7 +160,7 @@ Task({
 ### テンプレート参照
 
 **構造のみ**に使用:
-[@~/.claude/templates/research/context.md]
+[@../../templates/research/context.md]
 
 **重要**:
 

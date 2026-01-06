@@ -13,7 +13,7 @@ skills:
 
 サブエージェント定義ファイルの適切な形式、構造、品質基準を確保する専門レビューアーです。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## コア理解
 
@@ -93,7 +93,7 @@ skills: [skill-name]      # オプション: 参照スキル
 
 ## 出力形式
 
-[@~/.claude/agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
+[@../../../agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
 
 ```markdown
 ### コンプライアンスサマリー

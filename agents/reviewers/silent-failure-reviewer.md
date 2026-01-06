@@ -14,9 +14,9 @@ skills:
 
 Expert reviewer for detecting silent failures and improper error handling patterns.
 
-**Knowledge Base**: See [@~/.claude/skills/reviewing-silent-failures/SKILL.md] for detailed patterns, detection commands, and checklists.
+**Knowledge Base**: See [@../../skills/reviewing-silent-failures/SKILL.md] for detailed patterns, detection commands, and checklists.
 
-**Base Template**: [@~/.claude/agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
 
 ## Objective
 
@@ -59,13 +59,13 @@ fetchData()
 
 For comprehensive patterns and detection commands, see the knowledge base:
 
-- [@~/.claude/skills/reviewing-silent-failures/references/detection-patterns.md] - Regex patterns, search commands
-- [@~/.claude/skills/reviewing-silent-failures/references/error-handling.md] - Proper error handling patterns
-- [@~/.claude/skills/reviewing-silent-failures/references/error-boundaries.md] - React Error Boundary patterns
+- [@../../skills/reviewing-silent-failures/references/detection-patterns.md] - Regex patterns, search commands
+- [@../../skills/reviewing-silent-failures/references/error-handling.md] - Proper error handling patterns
+- [@../../skills/reviewing-silent-failures/references/error-boundaries.md] - React Error Boundary patterns
 
 ## Output Format
 
-Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specific metrics:
+Follow [@../../agents/reviewers/_base-template.md] with these domain-specific metrics:
 
 ```markdown
 ### Silent Failure Analysis
@@ -98,4 +98,4 @@ Follow [@~/.claude/agents/reviewers/_base-template.md] with these domain-specifi
 
 ## Related Principles
 
-- [@~/.claude/rules/development/RESULT_TYPE_HANDLING.md] - Result type pattern for compile-time error handling enforcement
+- [@../../rules/development/RESULT_TYPE_HANDLING.md] - Result type pattern for compile-time error handling enforcement

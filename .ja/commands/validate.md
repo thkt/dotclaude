@@ -146,7 +146,7 @@ IDRを更新する前に、必要かどうかを確認:
 
 ### IDR検出
 
-詳細ロジック: [@~/.claude/references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+詳細ロジック: [@../../references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
 
 既存のIDRを検索:
 

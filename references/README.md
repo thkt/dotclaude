@@ -19,7 +19,7 @@ references/
 Reference from commands or skills:
 
 ```markdown
-[@~/.claude/references/commands/code/quality-gates.md]
+[@../references/commands/code/quality-gates.md]
 ```
 
 ## Future Extensions

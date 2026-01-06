@@ -6,9 +6,9 @@
 
 コアTDD原則、Baby Steps、RGRCサイクルの基礎:
 
-- [@~/.claude/skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD哲学と原則
-- [@~/.claude/skills/generating-tdd-tests/references/feature-driven.md](~/.claude/skills/generating-tdd-tests/references/feature-driven.md) - 機能駆動TDDパターン
-- [@~/.claude/references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC実装詳細
+- [@../../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD哲学と原則
+- [@../../../../skills/generating-tdd-tests/references/feature-driven.md](~/.claude/skills/generating-tdd-tests/references/feature-driven.md) - 機能駆動TDDパターン
+- [@../../../../references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC実装詳細
 
 ## 機能駆動TDDコンテキスト
 
@@ -28,7 +28,7 @@
 RGRCサイクルに入る前に、spec.mdから自動的にテストを生成。
 
 **詳細なテスト生成パターン**:
-[@~/.claude/references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md)
+[@../../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md)
 
 **Spec駆動生成**（フェーズ0）:
 インタラクティブなテストアクティベーションワークフローは[@./test-preparation.md](./test-preparation.md)を参照。
@@ -60,7 +60,7 @@ RGRCサイクルに入る前に、spec.mdから自動的にテストを生成。
 ### リアルタイムフィードバック付き拡張RGRCサイクル
 
 詳細なフェーズガイダンス（Red/Green/Refactorステップ、終了基準、タイミング）:
-[@~/.claude/references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md)
+[@../../../../references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md)
 
 **機能固有の適応**:
 

@@ -15,9 +15,9 @@ skills:
 
 高信頼度フィルタリングを備えたOWASP Top 10ベースのセキュリティ脆弱性検出。
 
-**ナレッジベース**: 詳細なパターンとOWASP参照については[@~/.claude/skills/reviewing-security/SKILL.md]を参照。
+**ナレッジベース**: 詳細なパターンとOWASP参照については[@../../../skills/reviewing-security/SKILL.md]を参照。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## 目的
 

@@ -24,7 +24,7 @@ JSを書く前に確認:
 ## 参照
 
 詳細ガイドは以下を参照:
-[@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md)
+[@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md)
 
 ## 関連
 

@@ -30,17 +30,17 @@ TDD/RGRCサイクルと品質チェックでコードを実装。
 
 ## 必須コンテキスト（常時ロード）
 
-- [@~/.claude/skills/generating-tdd-tests/SKILL.md] - TDD/RGRCサイクル、ベビーステップ
+- [@../../skills/generating-tdd-tests/SKILL.md] - TDD/RGRCサイクル、ベビーステップ
 
 ## 条件付きコンテキスト（フラグベース）
 
 必要に応じてフラグでロード:
 
-| フラグ         | コンテキスト                                            | 使用タイミング             |
-| -------------- | ------------------------------------------------------- | -------------------------- |
-| `--frontend`   | [@~/.claude/skills/applying-frontend-patterns/SKILL.md] | React/UIコンポーネント     |
-| `--principles` | [@~/.claude/skills/applying-code-principles/SKILL.md]   | 設計決定、リファクタリング |
-| `--storybook`  | [@~/.claude/skills/integrating-storybook/SKILL.md]      | コンポーネントStories      |
+| フラグ         | コンテキスト                                        | 使用タイミング             |
+| -------------- | --------------------------------------------------- | -------------------------- |
+| `--frontend`   | [@../../skills/applying-frontend-patterns/SKILL.md] | React/UIコンポーネント     |
+| `--principles` | [@../../skills/applying-code-principles/SKILL.md]   | 設計決定、リファクタリング |
+| `--storybook`  | [@../../skills/integrating-storybook/SKILL.md]      | コンポーネントStories      |
 
 ## プロジェクトコンテキスト（自動検出）
 
@@ -51,7 +51,7 @@ TDD/RGRCサイクルと品質チェックでコードを実装。
 
 ## 仕様コンテキスト
 
-spec.md検出: [@~/.claude/references/commands/code/spec-context.md](~/.claude/references/commands/code/spec-context.md)
+spec.md検出: [@../../references/commands/code/spec-context.md](~/.claude/references/commands/code/spec-context.md)
 
 ## 実装サイクル
 
@@ -64,19 +64,19 @@ spec.md検出: [@~/.claude/references/commands/code/spec-context.md](~/.claude/r
 
 ### フェーズ0: テスト準備
 
-spec駆動テスト生成: [@~/.claude/references/commands/code/test-preparation.md](~/.claude/references/commands/code/test-preparation.md)
+spec駆動テスト生成: [@../../references/commands/code/test-preparation.md](~/.claude/references/commands/code/test-preparation.md)
 
 ### RGRCサイクル詳細
 
-詳細なサイクル: [@~/.claude/references/commands/code/rgrc-cycle.md](~/.claude/references/commands/code/rgrc-cycle.md)
+詳細なサイクル: [@../../references/commands/code/rgrc-cycle.md](~/.claude/references/commands/code/rgrc-cycle.md)
 
 ## 品質ゲート
 
-品質チェックと検証: [@~/.claude/references/commands/code/quality-gates.md](~/.claude/references/commands/code/quality-gates.md)
+品質チェックと検証: [@../../references/commands/code/quality-gates.md](~/.claude/references/commands/code/quality-gates.md)
 
 ## 完了基準
 
-完了定義: [@~/.claude/references/commands/code/completion.md](~/.claude/references/commands/code/completion.md)
+完了定義: [@../../references/commands/code/completion.md](~/.claude/references/commands/code/completion.md)
 
 ## クイック判断質問（常時適用）
 
@@ -107,7 +107,7 @@ Specチェック: ~/.claude/workspace/planning/**/spec.md → セクション11
 
 ### IDR検出と生成
 
-詳細ロジック: [@~/.claude/references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+詳細ロジック: [@../../references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
 
 1. **SOW検索**:
 

@@ -67,6 +67,6 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## 参照
 
-- [@~/.claude/skills/applying-code-principles/SKILL.md] - 認知限界の科学
-- [@~/.claude/rules/development/READABLE_CODE.md] - 詳細ガイドライン
+- [@../../../skills/applying-code-principles/SKILL.md] - 認知限界の科学
+- [@../../../rules/development/READABLE_CODE.md] - 詳細ガイドライン
 - [@./references/ai-antipatterns.md](./references/ai-antipatterns.md) - AI過剰設計パターン

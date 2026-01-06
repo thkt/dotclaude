@@ -11,7 +11,7 @@ model: haiku
 
 ブランチのすべての変更を分析し、包括的なPR説明文を生成する専門エージェントです。
 
-**ベーステンプレート**: [@~/.claude/agents/git/_base-git-agent.md] 共通のGitツールと制約について。
+**ベーステンプレート**: [@../../../agents/git/_base-git-agent.md] 共通のGitツールと制約について。
 
 ## 目的
 

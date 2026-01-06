@@ -3,7 +3,7 @@ name: performance-reviewer
 description: >
   TypeScript/Reactアプリケーションにおけるフロントエンドパフォーマンス最適化の専門レビューアー。
   フロントエンドコードのパフォーマンスを分析し、Reactの再レンダリング、バンドルサイズ、遅延ローディング、メモ化などの最適化機会を特定します。
-  体系的なWeb Vitalsとreact最適化の知識については[@~/.claude/skills/optimizing-performance/SKILL.md]を参照。
+  体系的なWeb Vitalsとreact最適化の知識については[@../../../skills/optimizing-performance/SKILL.md]を参照。
 tools: Read, Grep, Glob, LS, Task, mcp__claude-in-chrome__*, mcp__mdn__*
 model: sonnet
 skills:
@@ -15,7 +15,7 @@ skills:
 
 TypeScript/Reactアプリケーションにおけるフロントエンドパフォーマンス最適化の専門レビューアーです。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## 目的
 
@@ -131,11 +131,11 @@ const expensiveResult = useMemo(() =>
 
 ### プログレッシブエンハンスメント
 
-[@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md] - まずベースラインのパフォーマンス
+[@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md] - まずベースラインのパフォーマンス
 
 ## 出力形式
 
-[@~/.claude/agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
+[@../../../agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
 
 ```markdown
 ### パフォーマンスメトリクスインパクト

@@ -25,47 +25,53 @@ Manage the execution of multiple specialized review agents, integrate their find
 
 ```yaml
 execution_plan:
-  parallel_group_1:  # Foundation Analysis (max 30s each)
+  parallel_group_1: # Foundation Analysis (max 30s each)
     agents: [structure-reviewer, readability-reviewer, progressive-enhancer]
     execution_mode: parallel
     group_timeout: 35
 
-  parallel_group_2:  # Type & Design Analysis (max 45s each)
-    agents: [type-safety-reviewer, design-pattern-reviewer, testability-reviewer, silent-failure-reviewer]
+  parallel_group_2: # Type & Design Analysis (max 45s each)
+    agents:
+      [
+        type-safety-reviewer,
+        design-pattern-reviewer,
+        testability-reviewer,
+        silent-failure-reviewer,
+      ]
     execution_mode: parallel
     group_timeout: 50
 
-  parallel_group_2b:  # Enhanced Analysis (pr-review-toolkit)
+  parallel_group_2b: # Enhanced Analysis (pr-review-toolkit)
     agents:
-      - silent-failure-hunter  # Detailed error handling analysis
-      - comment-analyzer       # Comment quality & rot detection
+      - silent-failure-hunter # Detailed error handling analysis
+      - comment-analyzer # Comment quality & rot detection
     execution_mode: parallel
     group_timeout: 50
     source: pr-review-toolkit
 
-  sequential_analysis:  # Root Cause (depends on foundation)
+  sequential_analysis: # Root Cause (depends on foundation)
     agents: [root-cause-reviewer]
     dependencies: [structure-reviewer, readability-reviewer]
     execution_mode: sequential
 
-  parallel_group_3:  # Production Readiness (max 60s each)
+  parallel_group_3: # Production Readiness (max 60s each)
     agents: [security-reviewer, performance-reviewer, accessibility-reviewer]
     execution_mode: parallel
     group_timeout: 65
 
-  parallel_group_3b:  # Design Quality (pr-review-toolkit)
+  parallel_group_3b: # Design Quality (pr-review-toolkit)
     agents:
-      - type-design-analyzer   # Type design quality (invariants, encapsulation)
-      - code-simplifier        # Simplification suggestions
+      - type-design-analyzer # Type design quality (invariants, encapsulation)
+      - code-simplifier # Simplification suggestions
     execution_mode: parallel
     group_timeout: 60
     source: pr-review-toolkit
 
-  conditional_group:  # Documentation (only if .md files exist)
+  conditional_group: # Documentation (only if .md files exist)
     agents: [document-reviewer]
     condition: "*.md files present"
 
-  integration_phase:  # Final phase - integrate all findings
+  integration_phase: # Final phase - integrate all findings
     agent: finding-integrator
     dependencies: [all_previous_groups]
     execution_mode: sequential
@@ -87,45 +93,45 @@ execution_plan:
 
 #### Agent Metadata Structure
 
-| Property | Type | Description |
-| --- | --- | --- |
-| name | string | Agent identifier (kebab-case) |
-| max_execution_time | number | Timeout in seconds (30-60) |
-| dependencies | string[] | Agents that must complete first |
-| parallel_group | enum | foundation / quality / production / sequential / optional |
-| status | enum | pending / running / completed / failed / timeout |
+| Property           | Type     | Description                                               |
+| ------------------ | -------- | --------------------------------------------------------- |
+| name               | string   | Agent identifier (kebab-case)                             |
+| max_execution_time | number   | Timeout in seconds (30-60)                                |
+| dependencies       | string[] | Agents that must complete first                           |
+| parallel_group     | enum     | foundation / quality / production / sequential / optional |
+| status             | enum     | pending / running / completed / failed / timeout          |
 
 **Validation Flow**: Load agent file → Extract metadata → Verify dependencies → Set status to pending → Execute with timeout
 
 #### Parallel Execution Flow
 
-| Step | Action | On Success | On Failure |
-| --- | --- | --- | --- |
-| 1 | Start all agents in group | Continue | - |
-| 2 | Track status per agent | Mark completed | Mark failed/timeout |
-| 3 | Wait for all (Promise.allSettled) | Collect results | Log errors |
-| 4 | Return results map | Next group | Continue with partial |
+| Step | Action                            | On Success      | On Failure            |
+| ---- | --------------------------------- | --------------- | --------------------- |
+| 1    | Start all agents in group         | Continue        | -                     |
+| 2    | Track status per agent            | Mark completed  | Mark failed/timeout   |
+| 3    | Wait for all (Promise.allSettled) | Collect results | Log errors            |
+| 4    | Return results map                | Next group      | Continue with partial |
 
 ### 2. Context Preparation
 
 #### Review Context Configuration
 
-| Property | Type | Default | Description |
-| --- | --- | --- | --- |
-| targetFiles | string[] | - | Files to review (from glob) |
-| fileTypes | string[] | .ts, .tsx | Supported extensions |
-| excludePatterns | string[] | node_modules, dist, build | Ignored paths |
-| maxFileSize | number | 100KB | Skip larger files |
+| Property        | Type     | Default                   | Description                 |
+| --------------- | -------- | ------------------------- | --------------------------- |
+| targetFiles     | string[] | -                         | Files to review (from glob) |
+| fileTypes       | string[] | .ts, .tsx                 | Supported extensions        |
+| excludePatterns | string[] | node_modules, dist, build | Ignored paths               |
+| maxFileSize     | number   | 100KB                     | Skip larger files           |
 
 **Enriched Context** (auto-detected): projectType, dependencies, tsConfig, eslintConfig, customRules
 
 #### Conditional Agent Selection
 
-| Condition | Action |
-| --- | --- |
-| *.md files present | Include document-reviewer |
-| Security-sensitive paths | Prioritize security-reviewer |
-| Performance-critical | Extend performance-reviewer timeout |
+| Condition                | Action                              |
+| ------------------------ | ----------------------------------- |
+| \*.md files present      | Include document-reviewer           |
+| Security-sensitive paths | Prioritize security-reviewer        |
+| Performance-critical     | Extend performance-reviewer timeout |
 
 ### 2.5. JP/EN Translation File Handling
 
@@ -133,12 +139,12 @@ execution_plan:
 
 Files under `.ja/` directory are **Japanese translations** of corresponding English files. They should NOT be compared for content consistency.
 
-| Path Pattern | Type | Treatment |
-| --- | --- | --- |
-| `commands/*.md` | EN source | Primary review target |
+| Path Pattern        | Type           | Treatment             |
+| ------------------- | -------------- | --------------------- |
+| `commands/*.md`     | EN source      | Primary review target |
 | `.ja/commands/*.md` | JP translation | Structure-only review |
-| `docs/*.md` | EN source | Primary review target |
-| `.ja/docs/*.md` | JP translation | Structure-only review |
+| `docs/*.md`         | EN source      | Primary review target |
+| `.ja/docs/*.md`     | JP translation | Structure-only review |
 
 #### Review Rules for Translation Files
 
@@ -182,9 +188,9 @@ review_strategy:
 This is **NOT an issue**:
 
 | EN (`commands/workflow/create.md`) | JP (`.ja/commands/workflow/create.md`) |
-| --- | --- |
-| `Navigate to https://example.com` | `https://example.com に移動` |
-| `Click element (uid: abc)` | `要素をクリック（uid: abc）` |
+| ---------------------------------- | -------------------------------------- |
+| `Navigate to https://example.com`  | `https://example.com に移動`           |
+| `Click element (uid: abc)`         | `要素をクリック（uid: abc）`           |
 
 Both express the same action in their respective languages.
 
@@ -192,18 +198,18 @@ Both express the same action in their respective languages.
 
 #### Finding Structure
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| agent | string | ✓ | Source agent name |
-| severity | enum | ✓ | critical / high / medium / low |
-| category | string | ✓ | security, performance, etc. |
-| file | string | ✓ | File path |
-| line | number | - | Line number |
-| message | string | ✓ | Issue description |
-| confidence | number | ✓ | 0.0-1.0 score |
-| confidenceMarker | enum | ✓ | ✓ (>0.8) / → (0.5-0.8) / ? (<0.5) |
-| evidence | string | ✓ | Code reference or pattern |
-| reasoning | string | ✓ | Why this is problematic |
+| Field            | Type   | Required | Description                       |
+| ---------------- | ------ | -------- | --------------------------------- |
+| agent            | string | ✓        | Source agent name                 |
+| severity         | enum   | ✓        | critical / high / medium / low    |
+| category         | string | ✓        | security, performance, etc.       |
+| file             | string | ✓        | File path                         |
+| line             | number | -        | Line number                       |
+| message          | string | ✓        | Issue description                 |
+| confidence       | number | ✓        | 0.0-1.0 score                     |
+| confidenceMarker | enum   | ✓        | ✓ (>0.8) / → (0.5-0.8) / ? (<0.5) |
+| evidence         | string | ✓        | Code reference or pattern         |
+| reasoning        | string | ✓        | Why this is problematic           |
 
 **Deduplication**: Group by `file:line:category` → Keep highest severity
 
@@ -211,24 +217,24 @@ Both express the same action in their respective languages.
 
 #### Principle-Based Prioritization
 
-Based on [@~/.claude/rules/PRINCIPLES_GUIDE.md] priority matrix:
+Based on [@../../rules/PRINCIPLES_GUIDE.md] priority matrix:
 
-| Priority | Violations | Examples |
-| --- | --- | --- |
-| Essential | Occam's Razor, Progressive Enhancement | Unnecessary complexity, over-engineering |
-| Default | Readable Code, DRY, TDD/Baby Steps | Hard to understand, duplication, large changes |
-| Contextual | SOLID, Law of Demeter | Context-dependent, excessive coupling |
+| Priority   | Violations                             | Examples                                       |
+| ---------- | -------------------------------------- | ---------------------------------------------- |
+| Essential  | Occam's Razor, Progressive Enhancement | Unnecessary complexity, over-engineering       |
+| Default    | Readable Code, DRY, TDD/Baby Steps     | Hard to understand, duplication, large changes |
+| Contextual | SOLID, Law of Demeter                  | Context-dependent, excessive coupling          |
 
 #### Severity Weighting
 
-| Severity | Weight | Category | Multiplier |
-| --- | --- | --- | --- |
-| critical | 1000 | security | 10 |
-| high | 100 | accessibility | 8 |
-| medium | 10 | performance | 6 |
-| low | 1 | functionality | 5 |
-| - | - | maintainability | 3 |
-| - | - | style | 1 |
+| Severity | Weight | Category        | Multiplier |
+| -------- | ------ | --------------- | ---------- |
+| critical | 1000   | security        | 10         |
+| high     | 100    | accessibility   | 8          |
+| medium   | 10     | performance     | 6          |
+| low      | 1      | functionality   | 5          |
+| -        | -      | maintainability | 3          |
+| -        | -      | style           | 1          |
 
 **Priority Score** = Severity Weight × Category Multiplier
 
@@ -247,15 +253,19 @@ Based on [@~/.claude/rules/PRINCIPLES_GUIDE.md] priority matrix:
 ## Key Findings
 
 ### Critical Issues Requiring Immediate Attention
+
 {{criticalFindings}}
 
 ### High Priority Improvements
+
 {{highPriorityFindings}}
 
 ### Recommendations for Better Code Quality
+
 {{recommendations}}
 
 ## Metrics Overview
+
 - **Type Coverage**: {{typeCoverage}}%
 - **Accessibility Score**: {{a11yScore}}/100
 - **Security Issues**: {{securityCount}}
@@ -270,18 +280,23 @@ Based on [@~/.claude/rules/PRINCIPLES_GUIDE.md] priority matrix:
 ## Detailed Findings by Category
 
 ### Security ({{securityCount}} issues)
+
 {{securityFindings}}
 
 ### Performance ({{performanceCount}} issues)
+
 {{performanceFindings}}
 
 ### Type Safety ({{typeCount}} issues)
+
 {{typeFindings}}
 
 ### Code Quality ({{qualityCount}} issues)
+
 {{qualityFindings}}
 
 ## Action Plan
+
 1. **Immediate Actions** (Critical/Security)
 2. **Short-term Improvements** (1-2 sprints)
 3. **Long-term Refactoring** (Technical debt)
@@ -291,21 +306,21 @@ Based on [@~/.claude/rules/PRINCIPLES_GUIDE.md] priority matrix:
 
 #### Pattern Recognition
 
-| Pattern Detected | Recommendation | Impact | Effort |
-| --- | --- | --- | --- |
-| Multiple type errors | Enable TypeScript Strict Mode | high | medium |
-| Prop drilling | Implement Context or State Management | medium | high |
-| Missing error boundaries | Add React Error Boundaries | high | low |
-| Inline styles | Extract to CSS modules or styled-components | low | medium |
+| Pattern Detected         | Recommendation                              | Impact | Effort |
+| ------------------------ | ------------------------------------------- | ------ | ------ |
+| Multiple type errors     | Enable TypeScript Strict Mode               | high   | medium |
+| Prop drilling            | Implement Context or State Management       | medium | high   |
+| Missing error boundaries | Add React Error Boundaries                  | high   | low    |
+| Inline styles            | Extract to CSS modules or styled-components | low    | medium |
 
 ### 7. Error Handling Strategy
 
-| Strategy | Critical Agents | Optional Agents |
-| --- | --- | --- |
-| Retry | Yes (2 attempts) | No |
-| Continue on error | No | Yes |
-| Log level | error | warn |
-| Fallback agent | If available | - |
+| Strategy          | Critical Agents  | Optional Agents |
+| ----------------- | ---------------- | --------------- |
+| Retry             | Yes (2 attempts) | No              |
+| Continue on error | No               | Yes             |
+| Log level         | error            | warn            |
+| Fallback agent    | If available     | -               |
 
 ## Execution Workflow
 
@@ -388,9 +403,9 @@ custom_rules:
 All review agents are organized by function:
 
 - `~/.claude/agents/reviewers/` - Core review agents
-  - structure, readability, root-cause, type-safety
-  - design-pattern, testability, performance, accessibility
-  - document, subagent, silent-failure, security
+  - structure-reviewer, readability-reviewer, root-cause-reviewer, type-safety-reviewer
+  - design-pattern-reviewer, testability-reviewer, performance-reviewer, accessibility-reviewer
+  - document-reviewer, subagent-reviewer, silent-failure-reviewer, security-reviewer
 - `~/.claude/plugins/marketplaces/claude-plugins-official/plugins/pr-review-toolkit/agents/` - Enhanced review agents
   - silent-failure-hunter, comment-analyzer
   - type-design-analyzer, code-simplifier
@@ -408,38 +423,38 @@ All review agents are organized by function:
 
 ### Core Agents
 
-| Agent | Role | Focus |
-| --- | --- | --- |
-| structure-reviewer | Code organization | DRY, coupling, architecture |
-| readability-reviewer | Readability evaluation | Naming, clarity, scoring |
-| type-safety-reviewer | Type coverage | any usage, type assertions |
-| silent-failure-reviewer | Pattern detection | Empty catch, unhandled Promise |
-| design-pattern-reviewer | Pattern consistency | SOLID, frontend patterns |
-| testability-reviewer | Test design | Coverage gaps, test quality |
-| progressive-enhancer | CSS-first solutions | JS → CSS opportunities |
-| root-cause-reviewer | Root cause analysis | Deep problem investigation |
+| Agent                   | Role                   | Focus                          |
+| ----------------------- | ---------------------- | ------------------------------ |
+| structure-reviewer      | Code organization      | DRY, coupling, architecture    |
+| readability-reviewer    | Readability evaluation | Naming, clarity, scoring       |
+| type-safety-reviewer    | Type coverage          | any usage, type assertions     |
+| silent-failure-reviewer | Pattern detection      | Empty catch, unhandled Promise |
+| design-pattern-reviewer | Pattern consistency    | SOLID, frontend patterns       |
+| testability-reviewer    | Test design            | Coverage gaps, test quality    |
+| progressive-enhancer    | CSS-first solutions    | JS → CSS opportunities         |
+| root-cause-reviewer     | Root cause analysis    | Deep problem investigation     |
 
 ### Enhanced Agents (pr-review-toolkit)
 
-| Agent | Role | Complements |
-| --- | --- | --- |
-| silent-failure-hunter | Detailed error analysis | silent-failure-reviewer |
-| comment-analyzer | Comment quality & rot | (new category) |
-| type-design-analyzer | Type design quality | type-safety-reviewer |
-| code-simplifier | Simplification suggestions | readability-reviewer |
+| Agent                 | Role                       | Complements             |
+| --------------------- | -------------------------- | ----------------------- |
+| silent-failure-hunter | Detailed error analysis    | silent-failure-reviewer |
+| comment-analyzer      | Comment quality & rot      | (new category)          |
+| type-design-analyzer  | Type design quality        | type-safety-reviewer    |
+| code-simplifier       | Simplification suggestions | readability-reviewer    |
 
 ### Production Agents
 
-| Agent | Role | Focus |
-| --- | --- | --- |
-| security-reviewer | Security audit | OWASP, vulnerabilities |
-| performance-reviewer | Performance analysis | Bottlenecks, bundle size |
-| accessibility-reviewer | Accessibility check | WCAG, ARIA, keyboard nav |
+| Agent                  | Role                 | Focus                    |
+| ---------------------- | -------------------- | ------------------------ |
+| security-reviewer      | Security audit       | OWASP, vulnerabilities   |
+| performance-reviewer   | Performance analysis | Bottlenecks, bundle size |
+| accessibility-reviewer | Accessibility check  | WCAG, ARIA, keyboard nav |
 
 ### Integration Agents
 
-| Agent | Role | Focus |
-| --- | --- | --- |
+| Agent              | Role            | Focus                                                |
+| ------------------ | --------------- | ---------------------------------------------------- |
 | finding-integrator | Final synthesis | Pattern detection, root cause analysis, action plans |
 
 ## Best Practices

@@ -54,7 +54,7 @@ Extract from ADR:
 **Output**: `docs/rules/[RULE_NAME].md`
 
 **Template Reference**:
-[@~/.claude/templates/rules/from-adr.md]
+[@../templates/rules/from-adr.md]
 
 **IMPORTANT**:
 

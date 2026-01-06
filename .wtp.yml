@@ -1,0 +1,15 @@
+# Worktree Plus Configuration
+version: "1.0"
+
+# Default settings for worktrees
+defaults:
+  # Base directory for worktrees (relative to repository root)
+  base_dir: ../worktrees
+
+# Hooks that run after creating a worktree
+hooks:
+  post_add:
+    # Copy .env from main worktree to new worktree
+    - type: copy
+      from: ./.env
+      to: ./.env

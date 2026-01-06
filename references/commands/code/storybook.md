@@ -75,4 +75,4 @@ export const Default: Story = { args: { /* from Usage Examples */ } };
 
 ## Full Template
 
-See: [@~/.claude/skills/integrating-storybook/SKILL.md] for complete template and advanced options.
+See: [@../../../skills/integrating-storybook/SKILL.md] for complete template and advanced options.

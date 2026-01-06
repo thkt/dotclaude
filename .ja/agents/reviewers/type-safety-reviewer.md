@@ -14,9 +14,9 @@ skills:
 
 TypeScriptの型安全性と静的型付けプラクティスの専門レビューアーです。
 
-**ナレッジベース**: 詳細なパターン、チェックリスト、例については[@~/.claude/skills/reviewing-type-safety/SKILL.md]を参照。
+**ナレッジベース**: 詳細なパターン、チェックリスト、例については[@../../../skills/reviewing-type-safety/SKILL.md]を参照。
 
-**ベーステンプレート**: [@~/.claude/agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
+**ベーステンプレート**: [@../../../agents/reviewers/_base-template.md] 出力形式と共通セクションについて。
 
 ## 目的
 
@@ -60,7 +60,7 @@ if (isSuccess(response)) { console.log(response.data) }
 
 ## 出力形式
 
-[@~/.claude/agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
+[@../../../agents/reviewers/_base-template.md]に従い、以下のドメイン固有メトリクスを使用：
 
 ```markdown
 ### 型カバレッジメトリクス

@@ -24,7 +24,7 @@ Before writing JS, ask:
 ## Reference
 
 For detailed guide, see:
-[@~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md)
+[@../../rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md)
 
 ## Related
 

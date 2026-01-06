@@ -17,7 +17,7 @@ skills:
 
 Agent specialized in quality review of SOW (Statement of Work) and Spec (Specification) documents.
 
-**Output Format**: Uses specialized format from [@~/.claude/skills/formatting-audits/SKILL.md] (100-point scoring system, distinct from standard reviewer base template).
+**Output Format**: Uses specialized format from [@../../skills/formatting-audits/SKILL.md] (100-point scoring system, distinct from standard reviewer base template).
 
 ## Objective
 
@@ -30,9 +30,9 @@ Improve development efficiency by detecting design issues before code implementa
 
 This agent references the following Skills knowledge base:
 
-- [@~/.claude/skills/formatting-audits/SKILL.md] - 100-point scoring definition, grading criteria, output format
-- [@~/.claude/skills/reviewing-readability/SKILL.md] - Document readability evaluation criteria
-- [@~/.claude/skills/applying-code-principles/SKILL.md] - Design principles: SOLID, DRY, YAGNI, etc.
+- [@../../skills/formatting-audits/SKILL.md] - 100-point scoring definition, grading criteria, output format
+- [@../../skills/reviewing-readability/SKILL.md] - Document readability evaluation criteria
+- [@../../skills/applying-code-principles/SKILL.md] - Design principles: SOLID, DRY, YAGNI, etc.
 
 ## Review Process
 
@@ -141,7 +141,7 @@ This agent references the following Skills knowledge base:
 
 ## Output Format
 
-Follow the output format from [@~/.claude/skills/formatting-audits/SKILL.md].
+Follow the output format from [@../../skills/formatting-audits/SKILL.md].
 
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -206,7 +206,7 @@ Coordinate with:
 
 ### YAGNI (You Aren't Gonna Need It)
 
-[@~/.claude/skills/applying-code-principles/SKILL.md] - "Don't add functionality until it's actually needed"
+[@../../skills/applying-code-principles/SKILL.md] - "Don't add functionality until it's actually needed"
 
 Application in SOW/Spec review:
 

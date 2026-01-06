@@ -85,7 +85,7 @@ Convert Architecture Decision Record (ADR) into an executable skill format with 
 
 For complete execution flow, templates, and error handling:
 
-[@~/.claude/skills/creating-adrs/SKILL.md](~/.claude/skills/creating-adrs/SKILL.md)
+[@../../skills/creating-adrs/SKILL.md](~/.claude/skills/creating-adrs/SKILL.md)
 
 ## Related Commands
 
