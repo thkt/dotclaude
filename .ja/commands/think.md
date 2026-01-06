@@ -38,15 +38,15 @@ dependencies: [sow-spec-reviewer]
 
 #### 質問（カテゴリから5-7個）
 
-| カテゴリ | 質問の焦点 |
-| --- | --- |
-| 目的 | 主な目標、解決する問題、誰が恩恵を受けるか |
-| ユーザー | 主要ユーザー（エンドユーザー/内部/API） |
-| 優先度 | MoSCoW（Must/Should/Could/Won't） |
-| 成功 | 「完了」の定義、メトリクス |
-| 制約 | 締め切り、依存関係、制限 |
-| スコープ | 明示的に除外されるもの |
-| エッジケース | 処理すべき特殊シナリオ |
+| カテゴリ     | 質問の焦点                                 |
+| ------------ | ------------------------------------------ |
+| 目的         | 主な目標、解決する問題、誰が恩恵を受けるか |
+| ユーザー     | 主要ユーザー（エンドユーザー/内部/API）    |
+| 優先度       | MoSCoW（Must/Should/Could/Won't）          |
+| 成功         | 「完了」の定義、メトリクス                 |
+| 制約         | 締め切り、依存関係、制限                   |
+| スコープ     | 明示的に除外されるもの                     |
+| エッジケース | 処理すべき特殊シナリオ                     |
 
 #### 既知情報フィルター
 
@@ -74,7 +74,7 @@ Task({
   description: "SOW/Spec整合の実装分析",
   prompt: `
 機能: "${featureDescription}"
-${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
+${qaResults ? `Q&A結果:\n${qaResults}\n` : ""}
 
 信頼度マーカー [✓]/[→]/[?] 付きで収集:
 
@@ -86,8 +86,8 @@ ${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
 6. **リスク**: 確認済み/潜在的/不明で分類
 
 出力形式: 各項目に証拠を含む表形式。
-  `
-})
+  `,
+});
 ```
 
 **Opusを使う理由**: 深いアーキテクチャ分析と包括的なトレードオフ評価。
@@ -103,7 +103,7 @@ Task({
   description: "最小変更アプローチ",
   prompt: `
 機能: "${featureDescription}"
-${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
+${qaResults ? `Q&A結果:\n${qaResults}\n` : ""}
 
 最小変更フォーカスで設計:
 - 最小の変更、最大の再利用
@@ -111,8 +111,8 @@ ${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
 - 最小限のリファクタリング
 
 出力: file:line参照付きの完全な設計図
-  `
-})
+  `,
+});
 
 // エージェント2: クリーンアーキテクチャアプローチ
 Task({
@@ -120,7 +120,7 @@ Task({
   description: "クリーンアーキテクチャアプローチ",
   prompt: `
 機能: "${featureDescription}"
-${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
+${qaResults ? `Q&A結果:\n${qaResults}\n` : ""}
 
 クリーンアーキテクチャフォーカスで設計:
 - 新しい抽象化とインターフェース
@@ -128,8 +128,8 @@ ${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
 - テスト可能で保守しやすい構造
 
 出力: file:line参照付きの完全な設計図
-  `
-})
+  `,
+});
 
 // エージェント3: プラグマティックバランスアプローチ
 Task({
@@ -137,7 +137,7 @@ Task({
   description: "プラグマティックバランスアプローチ",
   prompt: `
 機能: "${featureDescription}"
-${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
+${qaResults ? `Q&A結果:\n${qaResults}\n` : ""}
 
 プラグマティックバランスフォーカスで設計:
 - スピード + 品質のバランス
@@ -145,8 +145,8 @@ ${qaResults ? `Q&A結果:\n${qaResults}\n` : ''}
 - 既存アーキテクチャに適合
 
 出力: file:line参照付きの完全な設計図
-  `
-})
+  `,
+});
 ```
 
 ### エージェント完了後
@@ -175,14 +175,36 @@ SOW生成に進みます...
 
 ```typescript
 // ステップ3: SOW
-SlashCommand({ command: '/sow "[タスク説明]"' })
+SlashCommand({ command: '/sow "[タスク説明]"' });
 
 // ステップ4: Spec
-SlashCommand({ command: '/spec' })
+SlashCommand({ command: "/spec" });
 
 // ステップ5: レビュー（オプション）
-Task({ subagent_type: "sow-spec-reviewer", model: "haiku" })
+Task({ subagent_type: "sow-spec-reviewer", model: "haiku" });
 ```
+
+### ステップ4a: IDR要件判断
+
+Spec生成時に、以下の基準でIDR要件を判断:
+
+```markdown
+## IDR判断ロジック
+
+以下の条件をチェック:
+
+1. **SOWが存在する？** → はい = IDR必須（追跡性のため）
+2. **変更ファイル ≥ 3？** → はい = IDR必須（複雑性のため）
+3. **アーキテクチャ決定がある？** → はい = IDR必須（文書化のため）
+4. **新しいパターンを導入？** → はい = IDR必須（知識移転のため）
+
+上記のいずれにも該当しない → IDRをスキップ可能
+
+spec.md セクション11に出力:
+| idr_required | true/false | [具体的な理由] |
+```
+
+この判断は `/code`、`/audit`、`/polish`、`/validate` で使用されます。
 
 ### ステップ6: サマリー生成
 
@@ -192,7 +214,9 @@ Golden Master構造に従って簡潔なレビューサマリーを作成:
 # サマリー: [機能名]
 
 ## 🎯 目的 | 📋 変更概要 | 📁 スコープ
+
 ## ❓ 議論ポイント | ⚠️ リスク | ✅ 主要受け入れ基準
+
 ## 🔗 SOW/Specへのリンク
 ```
 
@@ -210,13 +234,13 @@ Golden Master構造に従って簡潔なレビューサマリーを作成:
 
 ## 使用タイミング
 
-| 状況 | コマンド |
-| --- | --- |
+| 状況                     | コマンド               |
+| ------------------------ | ---------------------- |
 | 完全な計画（リサーチ後） | `/research` → `/think` |
-| 完全な計画（明示的） | `/think "タスク説明"` |
-| SOWのみ | `/sow` |
-| Specのみ（SOWが存在） | `/spec` |
-| 既存の計画を表示 | `/plans` |
+| 完全な計画（明示的）     | `/think "タスク説明"`  |
+| SOWのみ                  | `/sow`                 |
+| Specのみ（SOWが存在）    | `/spec`                |
+| 既存の計画を表示         | `/plans`               |
 
 ## 例
 

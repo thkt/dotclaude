@@ -75,41 +75,41 @@ Task({
 - 信頼度マーカー: ✓ (>0.8), → (0.5-0.8)
 - 重要度でグループ化: Critical, High, Medium, Low
 - 日本語でレポート
-  `
-})
+  `,
+});
 ```
 
 ## レビューエージェント（計15）
 
 ### コアエージェント（8）
 
-| エージェント | フォーカス |
-| --- | --- |
-| `structure-reviewer` | コード構成、DRY、結合度 |
-| `readability-reviewer` | 明確性、命名、複雑性 |
-| `type-safety-reviewer` | TypeScriptカバレッジ、any使用 |
-| `silent-failure-reviewer` | 空catch、未処理Promise |
-| `design-pattern-reviewer` | パターン一貫性 |
-| `progressive-enhancer` | CSS-firstソリューション |
-| `testability-reviewer` | テスト設計、カバレッジギャップ |
-| `root-cause-reviewer` | 根本原因分析 |
+| エージェント              | フォーカス                     |
+| ------------------------- | ------------------------------ |
+| `structure-reviewer`      | コード構成、DRY、結合度        |
+| `readability-reviewer`    | 明確性、命名、複雑性           |
+| `type-safety-reviewer`    | TypeScriptカバレッジ、any使用  |
+| `silent-failure-reviewer` | 空catch、未処理Promise         |
+| `design-pattern-reviewer` | パターン一貫性                 |
+| `progressive-enhancer`    | CSS-firstソリューション        |
+| `testability-reviewer`    | テスト設計、カバレッジギャップ |
+| `root-cause-reviewer`     | 根本原因分析                   |
 
 ### 拡張エージェント - pr-review-toolkit（4）
 
-| エージェント | フォーカス | 補完対象 |
-| --- | --- | --- |
-| `silent-failure-hunter` | 詳細なエラーハンドリング分析 | silent-failure-reviewer |
-| `comment-analyzer` | コメント品質、ドキュメント腐敗 | (新カテゴリ) |
-| `type-design-analyzer` | 型設計（不変条件、カプセル化） | type-safety-reviewer |
-| `code-simplifier` | 簡素化提案 | readability-reviewer |
+| エージェント            | フォーカス                     | 補完対象                |
+| ----------------------- | ------------------------------ | ----------------------- |
+| `silent-failure-hunter` | 詳細なエラーハンドリング分析   | silent-failure-reviewer |
+| `comment-analyzer`      | コメント品質、ドキュメント腐敗 | (新カテゴリ)            |
+| `type-design-analyzer`  | 型設計（不変条件、カプセル化） | type-safety-reviewer    |
+| `code-simplifier`       | 簡素化提案                     | readability-reviewer    |
 
 ### 本番エージェント（3）
 
-| エージェント | フォーカス |
-| --- | --- |
-| `security-reviewer` | OWASP、脆弱性 |
-| `performance-reviewer` | ボトルネック、バンドルサイズ |
-| `accessibility-reviewer` | WCAG、キーボードナビ、ARIA |
+| エージェント             | フォーカス                   |
+| ------------------------ | ---------------------------- |
+| `security-reviewer`      | OWASP、脆弱性                |
+| `performance-reviewer`   | ボトルネック、バンドルサイズ |
+| `accessibility-reviewer` | WCAG、キーボードナビ、ARIA   |
 
 ## 信頼度マーカー
 
@@ -157,14 +157,14 @@ Task({
 
 ## 実行時間
 
-| カテゴリ | エージェント数 |
-| --- | --- |
-| コア | 8 |
-| pr-review-toolkit | 4 |
-| 本番 | 3 |
-| **合計** | **15** |
+| カテゴリ          | エージェント数 |
+| ----------------- | -------------- |
+| コア              | 8              |
+| pr-review-toolkit | 4              |
+| 本番              | 3              |
+| **合計**          | **15**         |
 
-*エージェントは並列実行。通常の実行時間: 約3-5分。*
+_エージェントは並列実行。通常の実行時間: 約3-5分。_
 
 ## 使用例
 
@@ -183,6 +183,52 @@ Task({
 3. **高信頼度に集中**: ✓の問題を優先
 4. **推論を検証**: →の指摘は修正前に確認
 5. **段階的にレビュー**: 大きく稀にではなく、小さく頻繁に
+
+## IDR更新
+
+レビュー完了後、IDR（Implementation Decision Record）を監査結果で更新します。
+
+### IDR要件チェック
+
+IDRを更新する前に、必要かどうかを確認:
+
+1. **spec.md** の `idr_required` フィールドを確認（セクション11）
+2. **`idr_required: false`** → IDR更新をスキップ
+3. **`idr_required: true` またはspecなし** → IDRを更新
+
+### IDR検出
+
+詳細ロジック: [@~/.claude/references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+
+既存のIDRを検索:
+
+1. `~/.claude/workspace/planning/**/idr.md`（SOW関連）
+2. `~/.claude/workspace/idr/**/idr.md`（スタンドアロン）
+
+### IDRセクション追加
+
+IDRに`/audit`セクションを追加:
+
+```markdown
+## /audit - [YYYY-MM-DD HH:MM]
+
+### レビュー概要
+
+| Severity | Count | Resolved |
+| -------- | ----- | -------- |
+| Critical | X     | X        |
+| High     | X     | X        |
+
+### 問題点と対応
+
+| #   | Issue    | Severity | File:Line    | Action         |
+| --- | -------- | -------- | ------------ | -------------- |
+| 1   | [問題点] | High     | src/xxx.ts:1 | Fixed/Deferred |
+
+### 適用した推奨事項
+
+- [適用した推奨事項]
+```
 
 ## 次のステップ
 

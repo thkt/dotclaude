@@ -3,7 +3,14 @@ description: Implement code following TDD/RGRC cycle with real-time test feedbac
 allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
 model: opus
 argument-hint: "[implementation description] [--frontend] [--principles] [--storybook]"
-dependencies: [generating-tdd-tests, applying-frontend-patterns, applying-code-principles, integrating-storybook, ralph-wiggum]
+dependencies:
+  [
+    generating-tdd-tests,
+    applying-frontend-patterns,
+    applying-code-principles,
+    integrating-storybook,
+    ralph-wiggum,
+  ]
 ---
 
 # /code - TDD Implementation
@@ -29,11 +36,11 @@ Implement code with TDD/RGRC cycle and quality checks.
 
 Load with flags when needed:
 
-| Flag | Context | When to Use |
-| --- | --- | --- |
-| `--frontend` | [@~/.claude/skills/applying-frontend-patterns/SKILL.md] | React/UI components |
-| `--principles` | [@~/.claude/skills/applying-code-principles/SKILL.md] | Design decisions, refactoring |
-| `--storybook` | [@~/.claude/skills/integrating-storybook/SKILL.md] | Component Stories |
+| Flag           | Context                                                 | When to Use                   |
+| -------------- | ------------------------------------------------------- | ----------------------------- |
+| `--frontend`   | [@~/.claude/skills/applying-frontend-patterns/SKILL.md] | React/UI components           |
+| `--principles` | [@~/.claude/skills/applying-code-principles/SKILL.md]   | Design decisions, refactoring |
+| `--storybook`  | [@~/.claude/skills/integrating-storybook/SKILL.md]      | Component Stories             |
 
 ## Project Context (Auto-detected)
 
@@ -80,6 +87,83 @@ Before writing code, ask:
 3. **One responsibility?** - Single reason to change?
 4. **Understandable?** - Can someone understand in <1 minute?
 5. **Needed now?** - Is this solving a real problem?
+
+## IDR Generation
+
+After implementation is complete, generate an IDR (Implementation Decision Record) to document implementation decisions.
+
+### IDR Requirement Check
+
+Before generating IDR, check if it's required:
+
+1. **Check spec.md** for `idr_required` field (Section 11)
+2. **If spec exists and `idr_required: false`** → Skip IDR generation
+3. **If spec exists and `idr_required: true`** → Generate IDR
+4. **If no spec exists** → Apply default logic (generate if SOW exists)
+
+```text
+Spec check: ~/.claude/workspace/planning/**/spec.md → Section 11
+```
+
+### IDR Detection & Generation
+
+For detailed logic: [@~/.claude/references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+
+1. **Search for SOW**:
+
+   ```text
+   Glob pattern: ~/.claude/workspace/planning/**/sow.md
+   ```
+
+2. **If SOW found**:
+   - IDR path: `[SOW directory]/idr.md`
+   - Create or update IDR
+
+3. **If SOW not found (standalone mode)**:
+   - IDR path: `~/.claude/workspace/idr/[feature-name]/idr.md`
+   - Create standalone IDR
+
+### IDR Content Generation
+
+Generate `/code` section with:
+
+- **Changed Files**: From git diff or tool results
+- **Implementation Decisions**: Key choices made
+- **Attention Points**: Gotchas, edge cases, review notes
+- **Applied Principles**: TDD, Occam's Razor, SOLID, etc.
+- **Confidence score**
+
+### IDR Output Format
+
+```markdown
+## /code - [YYYY-MM-DD HH:MM]
+
+### Changed Files
+
+| File            | Change Type      | Description |
+| --------------- | ---------------- | ----------- |
+| path/to/file.ts | Created/Modified | [summary]   |
+
+### Implementation Decisions
+
+| Decision   | Rationale   | Alternatives Considered |
+| ---------- | ----------- | ----------------------- |
+| [decision] | [rationale] | [alternatives]          |
+
+### Attention Points
+
+- [attention points]
+
+### Applied Principles
+
+- [applied principles]
+
+### Confidence: [C: 0.XX]
+```
+
+### SOW Update
+
+If SOW exists, update its Implementation Records section with IDR link and status.
 
 ## Next Steps
 

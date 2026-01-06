@@ -1,7 +1,6 @@
 ---
 description: >
   Generate project-specific skill from ADR for context-aware implementation guidance.
-  ADRからプロジェクト固有のスキルを生成し、コンテキストに応じた実装ガイダンスを提供。
 allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(mkdir:*), Grep, Glob
 model: inherit
 argument-hint: "[ADR number]"
@@ -26,22 +25,22 @@ Convert Architecture Decision Record (ADR) into an executable skill format with 
 
 **Options:**
 
-| Option | Description |
-| --- | --- |
-| `--global` | Create in `~/.claude/skills/` |
-| `--name <name>` | Override auto-generated name |
-| `--preview` | Show without saving |
+| Option          | Description                   |
+| --------------- | ----------------------------- |
+| `--global`      | Create in `~/.claude/skills/` |
+| `--name <name>` | Override auto-generated name  |
+| `--preview`     | Show without saving           |
 
 ## Quick Reference
 
 ### Skill vs Rule Decision
 
-| Aspect | /rulify | /adr:skill |
-| --- | --- | --- |
-| Purpose | Enforce constraints | Suggest patterns |
-| Application | Always active | Triggered by keywords |
-| Output | docs/rules/ | .claude/skills/ |
-| Use for | Security, absolute rules | Implementation patterns |
+| Aspect      | /rulify                  | /adr:skill              |
+| ----------- | ------------------------ | ----------------------- |
+| Purpose     | Enforce constraints      | Suggest patterns        |
+| Application | Always active            | Triggered by keywords   |
+| Output      | docs/rules/              | .claude/skills/         |
+| Use for     | Security, absolute rules | Implementation patterns |
 
 ### When to Use
 
@@ -79,7 +78,7 @@ Convert Architecture Decision Record (ADR) into an executable skill format with 
 
 📄 Source: docs/adr/0001-use-react-query.md
 🎯 Skill: .claude/skills/adr-0001-use-react-query/SKILL.md
-🔑 Triggers: React Query, API, fetch, データ取得
+🔑 Triggers: React Query, API, fetch, data fetching
 ```
 
 ## Detailed Reference

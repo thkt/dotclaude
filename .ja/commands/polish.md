@@ -33,10 +33,10 @@ model: opus
 ```typescript
 // Bad: AIが追加する自明なコメント
 // ユーザーオブジェクトからユーザー名を取得
-const name = user.name
+const name = user.name;
 
 // Good: 自明なコードにコメント不要
-const name = user.name
+const name = user.name;
 ```
 
 - コードの「何を」するかを説明するコメント（「なぜ」ではなく）
@@ -48,15 +48,15 @@ const name = user.name
 ```typescript
 // Bad: 信頼できるコンテキストでの過剰防御
 function processUser(user: User) {
-  if (!user) throw new Error('User is required')
-  if (!user.name) throw new Error('Name is required')
-  if (typeof user.name !== 'string') throw new Error('Name must be string')
+  if (!user) throw new Error("User is required");
+  if (!user.name) throw new Error("Name is required");
+  if (typeof user.name !== "string") throw new Error("Name must be string");
   // ... 呼び出し元で既に検証済みなのに
 }
 
 // Good: 内部呼び出し元を信頼
 function processUser(user: User) {
-  return { ...user, processed: true }
+  return { ...user, processed: true };
 }
 ```
 
@@ -83,12 +83,12 @@ function processUser(user: User) {
 
 ```typescript
 // Bad: ネストされた三項演算子
-const status = isActive ? (isPremium ? 'vip' : 'active') : 'inactive'
+const status = isActive ? (isPremium ? "vip" : "active") : "inactive";
 
 // Good: 明示的なswitch/if-else
 function getStatus(isActive: boolean, isPremium: boolean): string {
-  if (!isActive) return 'inactive'
-  return isPremium ? 'vip' : 'active'
+  if (!isActive) return "inactive";
+  return isPremium ? "vip" : "active";
 }
 ```
 
@@ -121,6 +121,7 @@ function getStatus(isActive: boolean, isPremium: boolean): string {
    ## Polish サマリー
 
    除去:
+
    - 不要なコメント 3件
    - 冗長なtry-catch 1件
    - シングルユースヘルパーのインライン化 2件
@@ -158,3 +159,50 @@ function getStatus(isActive: boolean, isPremium: boolean): string {
 ```text
 ✨ Polished: src/api.tsで5件の不要なコメントを削除、2件のシングルユースヘルパーをインライン化
 ```
+
+## IDR更新
+
+polish完了後、IDR（Implementation Decision Record）を簡素化結果で更新します。
+
+### IDR要件チェック
+
+IDRを更新する前に、必要かどうかを確認:
+
+1. **spec.md** の `idr_required` フィールドを確認（セクション11）
+2. **`idr_required: false`** → IDR更新をスキップ
+3. **`idr_required: true` またはspecなし** → IDRを更新
+
+### IDR検出
+
+詳細ロジック: [@~/.claude/references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+
+既存のIDRを検索:
+
+1. `~/.claude/workspace/planning/**/idr.md`（SOW関連）
+2. `~/.claude/workspace/idr/**/idr.md`（スタンドアロン）
+
+### IDRセクション追加
+
+IDRに`/polish`セクションを追加:
+
+```markdown
+## /polish - [YYYY-MM-DD HH:MM]
+
+### 削除内容
+
+| Item       | Type                | Reason |
+| ---------- | ------------------- | ------ |
+| [削除項目] | Comment/Code/Helper | [理由] |
+
+### 簡素化内容
+
+- [簡素化した内容と根拠]
+```
+
+## 次のステップ
+
+polish後:
+
+- **コミット準備完了** → `/commit`
+- **検証が必要** → `/validate`
+- **更にクリーンアップが必要** → `/audit` を再実行

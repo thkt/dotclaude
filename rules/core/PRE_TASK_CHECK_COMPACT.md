@@ -18,6 +18,23 @@
 - Simple questions, confirmations
 - Read-only queries, follow-up clarifications
 
+### Bug Investigation Context
+
+**When to activate**: User reports a problem or unexpected behavior
+
+Context-based criteria:
+
+- Something isn't working as expected
+- An error or failure is occurring
+- A regression (worked before, not now)
+- Unexpected or confusing behavior
+
+When bug context detected, **always ask**:
+
+1. **Reproduction steps**: How to reproduce? (preconditions → steps → error)
+2. **Normal case**: When does it work correctly? (for diff detection)
+3. **Log information**: Any error logs or console output?
+
 ## Confidence Markers
 
 - **[✓]** High - directly verified

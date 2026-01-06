@@ -6,63 +6,63 @@ Custom commands for systematic software development support.
 
 ### Core Development Commands
 
-| Command | Purpose | Environment |
-| --- | --- | --- |
-| `/think` | Verifiable SOW creation with validation | Analysis phase |
-| `/research` | Investigation without implementation | Understanding phase |
-| `/code` | TDD/RGRC implementation | Development phase |
-| `/test` | Comprehensive testing | Verification phase |
-| `/audit` | Code review via agents | Quality phase |
-| `/polish` | Remove AI-generated slop from code | Quality phase |
-| `/sow` | Display SOW progress | Monitoring phase |
-| `/validate` | Validate SOW conformance | Verification phase |
-| `/plans` | List and view planning documents (SOW/Spec) | Monitoring phase |
-| `/spec` | Generate Spec only (implementation details) | Analysis phase |
+| Command     | Purpose                                     | Environment         |
+| ----------- | ------------------------------------------- | ------------------- |
+| `/think`    | Verifiable SOW creation with validation     | Analysis phase      |
+| `/research` | Investigation without implementation        | Understanding phase |
+| `/code`     | TDD/RGRC implementation + IDR generation    | Development phase   |
+| `/test`     | Comprehensive testing                       | Verification phase  |
+| `/audit`    | Code review via agents + IDR update         | Quality phase       |
+| `/polish`   | Remove AI-generated slop + IDR update       | Quality phase       |
+| `/sow`      | Display SOW progress                        | Monitoring phase    |
+| `/validate` | Validate SOW conformance + IDR reconcile    | Verification phase  |
+| `/plans`    | List and view planning documents (SOW/Spec) | Monitoring phase    |
+| `/spec`     | Generate Spec only (implementation details) | Analysis phase      |
 
 ### Quick Action Commands
 
-| Command | Purpose | Environment | Combines |
-| --- | --- | --- | --- |
-| `/fix` | Quick bug fixes | Development | think → code → test |
+| Command | Purpose         | Environment | Combines            |
+| ------- | --------------- | ----------- | ------------------- |
+| `/fix`  | Quick bug fixes | Development | think → code → test |
 
 ### External Review Commands
 
-| Command | Purpose | Environment |
-| --- | --- | --- |
+| Command   | Purpose                                       | Environment   |
+| --------- | --------------------------------------------- | ------------- |
 | `/rabbit` | CodeRabbit AI review for external perspective | Quality check |
 
 ### Automation Commands (SlashCommand Tool v1.0.123+)
 
-| Command | Purpose | Environment | Uses SlashCommand |
-| --- | --- | --- | --- |
-| `/auto-test` | Auto test runner with conditional fix | Development | Yes - invokes `/fix` on failure |
-| `/full-cycle` | Complete development cycle automation | Meta-command | Yes - chains multiple commands |
+| Command       | Purpose                               | Environment  | Uses SlashCommand               |
+| ------------- | ------------------------------------- | ------------ | ------------------------------- |
+| `/auto-test`  | Auto test runner with conditional fix | Development  | Yes - invokes `/fix` on failure |
+| `/full-cycle` | Complete development cycle automation | Meta-command | Yes - chains multiple commands  |
 
 ### Browser Automation Commands
 
-| Command | Purpose | Environment |
-| --- | --- | --- |
+| Command       | Purpose                                                            | Environment |
+| ------------- | ------------------------------------------------------------------ | ----------- |
 | `/e2e [name]` | Generate E2E test + documentation from claude-in-chrome operations | E2E Testing |
 
 ### Documentation Commands
 
-| Command | Purpose | Environment |
-| --- | --- | --- |
-| `/adr [title]` | Create Architecture Decision Record in MADR format | Documentation |
-| `/rulify <number>` | Generate project rule from ADR | Documentation |
-| `/docs:architecture` | Generate architecture overview documentation | Documentation |
-| `/docs:api` | Generate API specification documentation | Documentation |
-| `/docs:setup` | Generate environment setup guide | Documentation |
-| `/docs:domain` | Generate domain understanding documentation | Documentation |
+| Command              | Purpose                                            | Environment   |
+| -------------------- | -------------------------------------------------- | ------------- |
+| `/adr [title]`       | Create Architecture Decision Record in MADR format | Documentation |
+| `/rulify <number>`   | Generate project rule from ADR                     | Documentation |
+| `/docs:architecture` | Generate architecture overview documentation       | Documentation |
+| `/docs:api`          | Generate API specification documentation           | Documentation |
+| `/docs:setup`        | Generate environment setup guide                   | Documentation |
+| `/docs:domain`       | Generate domain understanding documentation        | Documentation |
 
 ### Git Operations Commands
 
-| Command | Purpose | Environment |
-| --- | --- | --- |
-| `/branch` | Analyze changes and suggest branch names | Git |
-| `/commit` | Generate Conventional Commits messages | Git |
-| `/pr` | Generate comprehensive PR descriptions | Git |
-| `/issue` | Generate structured GitHub Issues | Git |
+| Command   | Purpose                                  | Environment |
+| --------- | ---------------------------------------- | ----------- |
+| `/branch` | Analyze changes and suggest branch names | Git         |
+| `/commit` | Generate Conventional Commits messages   | Git         |
+| `/pr`     | Generate comprehensive PR descriptions   | Git         |
+| `/issue`  | Generate structured GitHub Issues        | Git         |
 
 ## Dry-run Impact Simulation
 
@@ -91,6 +91,45 @@ This "Dry-run" approach previews changes without execution, helping you:
 5. Plan Confirmation (Y) ← STOP POINT
 6. Execute
 ```
+
+## IDR (Implementation Decision Record)
+
+**Automatic documentation** for tracking implementation decisions through the development lifecycle.
+
+### What is IDR?
+
+IDR is a single document (`idr.md`) that records:
+
+- **Implementation decisions**: What was implemented and why
+- **Review findings**: Issues found by `/audit` and how they were addressed
+- **Simplifications**: What `/polish` removed and why
+- **Validation results**: SOW acceptance criteria pass/fail status
+
+### How IDR Works
+
+```txt
+/code     → Creates IDR with implementation decisions
+    ↓
+/audit    → Appends review findings and actions
+    ↓
+/polish   → Appends removals and simplifications
+    ↓
+/validate → Reconciles SOW AC with IDR, appends results
+```
+
+### IDR Location
+
+| Scenario   | IDR Path                                        |
+| ---------- | ----------------------------------------------- |
+| SOW exists | `~/.claude/workspace/planning/[feature]/idr.md` |
+| Standalone | `~/.claude/workspace/idr/[feature]/idr.md`      |
+
+### Benefits
+
+- **Code Review**: Reviewers understand implementation context
+- **Traceability**: SOW → Implementation → Validation flow
+- **Audit Trail**: All changes documented with rationale
+- **Knowledge Transfer**: Future maintainers understand decisions
 
 ## Standard Workflows
 
@@ -131,7 +170,19 @@ flowchart LR
         T2[code-architect]
     end
 
-    R --> T --> C["/code"] --> TE["/test"] --> A["/audit"] --> V["/validate"]
+    subgraph IDR[IDR Document]
+        direction TB
+        I1[/code creates]
+        I2[/audit updates]
+        I3[/polish updates]
+        I4[/validate reconciles]
+    end
+
+    R --> T --> C["/code"] --> TE["/test"] --> A["/audit"] --> P["/polish"] --> V["/validate"]
+    C -.-> IDR
+    A -.-> IDR
+    P -.-> IDR
+    V -.-> IDR
 ```
 
 **What this provides**:
@@ -176,6 +227,7 @@ For detailed information about each command, see the individual command files in
 
 - `/think`, `/code`, `/fix` → Core development workflow
 - `/research`, `/audit`, `/validate` → Investigation and quality
+- `/code`, `/audit`, `/polish`, `/validate` → IDR generation/update
 - `/branch`, `/commit`, `/pr`, `/issue` → Git operations
 - `/adr`, `/rulify` → Architecture documentation
 
@@ -186,11 +238,14 @@ For detailed information about each command, see the individual command files in
 ```bash
 /research "Feature description"  # Understand codebase with agents
 /think                           # Create verifiable SOW with architecture options
-/code                            # Implement with TDD
+/code                            # Implement with TDD → IDR created
 /test                            # Verify tests pass
-/plans                           # Check progress
-/validate                        # Validate conformance
+/audit                           # Code review → IDR updated
+/polish                          # Clean up → IDR updated
+/validate                        # Validate conformance → IDR reconciled with SOW AC
 ```
+
+**Note**: IDR is automatically generated/updated at each step for traceability.
 
 ### Bug Fix
 
@@ -281,11 +336,11 @@ For detailed information about each command, see the individual command files in
 
 Claude Code uses a three-layer structure:
 
-| Layer | Role | Examples |
-| --- | --- | --- |
-| **Commands** | User-invoked workflows (`/command`) | `/code`, `/audit`, `/adr` |
-| **Agents** | Specialized analysis/review | `performance-reviewer`, `audit-orchestrator` |
-| **Skills** | Knowledge base, auto-triggered guides | `applying-code-principles`, `generating-tdd-tests` |
+| Layer        | Role                                  | Examples                                           |
+| ------------ | ------------------------------------- | -------------------------------------------------- |
+| **Commands** | User-invoked workflows (`/command`)   | `/code`, `/audit`, `/adr`                          |
+| **Agents**   | Specialized analysis/review           | `performance-reviewer`, `audit-orchestrator`       |
+| **Skills**   | Knowledge base, auto-triggered guides | `applying-code-principles`, `generating-tdd-tests` |
 
 ## Configuration
 
@@ -299,3 +354,5 @@ Claude Code uses a three-layer structure:
 - `~/.claude/CLAUDE.md` - Global settings and rules
 - `~/.claude/rules/` - Development principles
 - `~/.claude/settings.json` - Tool permissions
+- `~/.claude/templates/idr/` - IDR templates
+- `~/.claude/references/commands/shared/idr-generation.md` - IDR generation logic

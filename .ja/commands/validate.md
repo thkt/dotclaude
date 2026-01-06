@@ -47,20 +47,21 @@ dependencies: [sow-spec-reviewer]
 ## 受け入れ基準:
 
 □ AC-01: メールでのユーザー登録
-  → 確認: 登録フォームが存在する？
-  → 確認: メールバリデーションが実装されている？
+→ 確認: 登録フォームが存在する？
+→ 確認: メールバリデーションが実装されている？
 
 □ AC-02: パスワード要件の強制
-  → 確認: 最小8文字？
-  → 確認: 特殊文字が必要？
+→ 確認: 最小8文字？
+→ 確認: 特殊文字が必要？
 
 □ AC-03: OAuth統合
-  → 確認: Google OAuthが動作する？
-  → 確認: GitHub OAuthが動作する？
+→ 確認: Google OAuthが動作する？
+→ 確認: GitHub OAuthが動作する？
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 手動レビューが必要:
+
 - 各機能をテスト
 - 基準と照合
 - ギャップを記録
@@ -130,6 +131,65 @@ dependencies: [sow-spec-reviewer]
 - `/think` - 基準付きのSOWを作成
 - `/sow` - 完全なSOWドキュメントを表示
 - `/test` - 自動テストを実行
+
+## IDR更新 & SOW AC照合
+
+検証完了後、IDRを検証結果で更新し、SOW受け入れ基準と照合します。
+
+### IDR要件チェック
+
+IDRを更新する前に、必要かどうかを確認:
+
+1. **spec.md** の `idr_required` フィールドを確認（セクション11）
+2. **`idr_required: false`** → IDR更新をスキップ（ただしACステータスは表示）
+3. **`idr_required: true` またはspecなし** → IDRを更新
+
+### IDR検出
+
+詳細ロジック: [@~/.claude/references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+
+既存のIDRを検索:
+
+1. `~/.claude/workspace/planning/**/idr.md`（SOW関連）
+2. `~/.claude/workspace/idr/**/idr.md`（スタンドアロン）
+
+### SOW AC ↔ IDR照合
+
+1. **SOW受け入れ基準セクションを読み込み**
+2. **IDR実装記録を読み込み**
+3. **各ACについて**:
+   - IDRに実装エビデンスが存在するか確認
+   - PASS/FAILステータスを判定
+4. **検証レポートを生成**
+5. **IDRの/validateセクションに追加**
+
+### IDRセクション追加
+
+IDRに`/validate`セクションを追加:
+
+```markdown
+## /validate - [YYYY-MM-DD HH:MM]
+
+### SOW受け入れ基準検証
+
+| AC ID  | Description | Status | Evidence   |
+| ------ | ----------- | ------ | ---------- |
+| AC-001 | [概要]      | PASS   | [検証内容] |
+| AC-002 | [概要]      | FAIL   | [検証内容] |
+
+### 特定されたギャップ
+
+- [SOWとのギャップ]
+
+### サインオフ
+
+- Validator: AI
+- Confidence: [C: 0.XX]
+```
+
+### SOW更新
+
+SOWのImplementation Recordsセクションを検証ステータスで更新します。
 
 ## 適用した原則
 

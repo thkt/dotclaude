@@ -38,15 +38,15 @@ Same as /sow - see /sow.md for details:
 
 #### Questions (5-7 from categories)
 
-| Category | Question Focus |
-| --- | --- |
-| Purpose | Main goal, problem solved, who benefits |
-| Users | Primary users (end users/internal/API) |
-| Priority | MoSCoW (Must/Should/Could/Won't) |
-| Success | "Done" definition, metrics |
-| Constraints | Deadline, dependencies, restrictions |
-| Scope | What's explicitly excluded |
-| Edge Cases | Special scenarios to handle |
+| Category    | Question Focus                          |
+| ----------- | --------------------------------------- |
+| Purpose     | Main goal, problem solved, who benefits |
+| Users       | Primary users (end users/internal/API)  |
+| Priority    | MoSCoW (Must/Should/Could/Won't)        |
+| Success     | "Done" definition, metrics              |
+| Constraints | Deadline, dependencies, restrictions    |
+| Scope       | What's explicitly excluded              |
+| Edge Cases  | Special scenarios to handle             |
 
 #### Known Information Filter
 
@@ -74,7 +74,7 @@ Task({
   description: "SOW/Spec-aligned implementation analysis",
   prompt: `
 Feature: "${featureDescription}"
-${qaResults ? `Q&A results:\n${qaResults}\n` : ''}
+${qaResults ? `Q&A results:\n${qaResults}\n` : ""}
 
 Collect with confidence markers [✓]/[→]/[?]:
 
@@ -86,8 +86,8 @@ Collect with confidence markers [✓]/[→]/[?]:
 6. **Risks**: Classified by confirmed/potential/unknown
 
 Output format: Tables with evidence for each item.
-  `
-})
+  `,
+});
 ```
 
 **Why Opus**: Deep architectural analysis and comprehensive trade-off evaluation.
@@ -103,7 +103,7 @@ Task({
   description: "Minimal changes approach",
   prompt: `
 Feature: "${featureDescription}"
-${qaResults ? `Q&A results:\n${qaResults}\n` : ''}
+${qaResults ? `Q&A results:\n${qaResults}\n` : ""}
 
 Design with MINIMAL CHANGES focus:
 - Smallest change, maximum reuse
@@ -111,8 +111,8 @@ Design with MINIMAL CHANGES focus:
 - Minimal refactoring required
 
 Output: Complete blueprint with file:line references
-  `
-})
+  `,
+});
 
 // Agent 2: Clean architecture approach
 Task({
@@ -120,7 +120,7 @@ Task({
   description: "Clean architecture approach",
   prompt: `
 Feature: "${featureDescription}"
-${qaResults ? `Q&A results:\n${qaResults}\n` : ''}
+${qaResults ? `Q&A results:\n${qaResults}\n` : ""}
 
 Design with CLEAN ARCHITECTURE focus:
 - New abstractions and interfaces
@@ -128,8 +128,8 @@ Design with CLEAN ARCHITECTURE focus:
 - Testable, maintainable structure
 
 Output: Complete blueprint with file:line references
-  `
-})
+  `,
+});
 
 // Agent 3: Pragmatic balance approach
 Task({
@@ -137,7 +137,7 @@ Task({
   description: "Pragmatic balance approach",
   prompt: `
 Feature: "${featureDescription}"
-${qaResults ? `Q&A results:\n${qaResults}\n` : ''}
+${qaResults ? `Q&A results:\n${qaResults}\n` : ""}
 
 Design with PRAGMATIC BALANCE focus:
 - Speed + quality balance
@@ -145,8 +145,8 @@ Design with PRAGMATIC BALANCE focus:
 - Fits existing architecture
 
 Output: Complete blueprint with file:line references
-  `
-})
+  `,
+});
 ```
 
 ### After Agents Complete
@@ -175,14 +175,36 @@ Data maps directly to SOW sections.
 
 ```typescript
 // Step 3: SOW
-SlashCommand({ command: '/sow "[task description]"' })
+SlashCommand({ command: '/sow "[task description]"' });
 
-// Step 4: Spec
-SlashCommand({ command: '/spec' })
+// Step 4: Spec (includes IDR determination)
+SlashCommand({ command: "/spec" });
 
 // Step 5: Review (optional)
-Task({ subagent_type: "sow-spec-reviewer", model: "haiku" })
+Task({ subagent_type: "sow-spec-reviewer", model: "haiku" });
 ```
+
+### Step 4a: IDR Requirement Determination
+
+During Spec generation, determine IDR requirement based on:
+
+```markdown
+## IDR Determination Logic
+
+Check these conditions:
+
+1. **SOW exists?** → If yes, IDR required (traceability)
+2. **Files to modify ≥ 3?** → If yes, IDR required (complexity)
+3. **Architectural decisions?** → If yes, IDR required (documentation)
+4. **New patterns introduced?** → If yes, IDR required (knowledge transfer)
+
+If NONE of above → IDR can be skipped
+
+Output to spec.md Section 11:
+| idr_required | true/false | [specific reason] |
+```
+
+This determination is then used by `/code`, `/audit`, `/polish`, `/validate`.
 
 ### Step 6: Generate Summary
 
@@ -192,7 +214,9 @@ Create concise review summary following Golden Master structure:
 # Summary: [Feature Name]
 
 ## 🎯 Purpose | 📋 Change Overview | 📁 Scope
+
 ## ❓ Discussion Points | ⚠️ Risks | ✅ Key Acceptance Criteria
+
 ## 🔗 Links to SOW/Spec
 ```
 
@@ -210,13 +234,13 @@ All documents saved to: `.claude/workspace/planning/[timestamp]-[feature]/`
 
 ## When to Use
 
-| Situation | Command |
-| --- | --- |
-| Full planning (after research) | `/research` → `/think` |
-| Full planning (explicit) | `/think "task description"` |
-| SOW only | `/sow` |
-| Spec only (SOW exists) | `/spec` |
-| View existing plans | `/plans` |
+| Situation                      | Command                     |
+| ------------------------------ | --------------------------- |
+| Full planning (after research) | `/research` → `/think`      |
+| Full planning (explicit)       | `/think "task description"` |
+| SOW only                       | `/sow`                      |
+| Spec only (SOW exists)         | `/spec`                     |
+| View existing plans            | `/plans`                    |
 
 ## Example
 

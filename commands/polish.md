@@ -33,10 +33,10 @@ Run this before committing to ensure clean, maintainable code.
 ```typescript
 // Bad: AI adds obvious comments
 // Get the user name from the user object
-const name = user.name
+const name = user.name;
 
 // Good: Self-explanatory code needs no comment
-const name = user.name
+const name = user.name;
 ```
 
 - Comments explaining what code does (not why)
@@ -48,15 +48,15 @@ const name = user.name
 ```typescript
 // Bad: Over-defensive in trusted context
 function processUser(user: User) {
-  if (!user) throw new Error('User is required')
-  if (!user.name) throw new Error('Name is required')
-  if (typeof user.name !== 'string') throw new Error('Name must be string')
+  if (!user) throw new Error("User is required");
+  if (!user.name) throw new Error("Name is required");
+  if (typeof user.name !== "string") throw new Error("Name must be string");
   // ... when caller already validates
 }
 
 // Good: Trust internal callers
 function processUser(user: User) {
-  return { ...user, processed: true }
+  return { ...user, processed: true };
 }
 ```
 
@@ -83,12 +83,12 @@ Refer to: [@~/.claude/skills/reviewing-readability/references/ai-antipatterns.md
 
 ```typescript
 // Bad: Nested ternary
-const status = isActive ? (isPremium ? 'vip' : 'active') : 'inactive'
+const status = isActive ? (isPremium ? "vip" : "active") : "inactive";
 
 // Good: Explicit switch/if-else
 function getStatus(isActive: boolean, isPremium: boolean): string {
-  if (!isActive) return 'inactive'
-  return isPremium ? 'vip' : 'active'
+  if (!isActive) return "inactive";
+  return isPremium ? "vip" : "active";
 }
 ```
 
@@ -121,6 +121,7 @@ function getStatus(isActive: boolean, isPremium: boolean): string {
    ## Polish Summary
 
    Removed:
+
    - 3 unnecessary comments
    - 1 redundant try-catch
    - 2 single-use helpers inlined
@@ -158,3 +159,50 @@ Keep summary brief (1-3 sentences):
 ```text
 ✨ Polished: Removed 5 unnecessary comments and inlined 2 single-use helpers in src/api.ts
 ```
+
+## IDR Update
+
+After polish is complete, update the IDR (Implementation Decision Record) with simplification results.
+
+### IDR Requirement Check
+
+Before updating IDR, check if it's required:
+
+1. **Check spec.md** for `idr_required` field (Section 11)
+2. **If `idr_required: false`** → Skip IDR update
+3. **If `idr_required: true` or no spec** → Update IDR
+
+### IDR Detection
+
+For detailed logic: [@~/.claude/references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+
+Search for existing IDR:
+
+1. `~/.claude/workspace/planning/**/idr.md` (SOW-related)
+2. `~/.claude/workspace/idr/**/idr.md` (standalone)
+
+### IDR Section Addition
+
+Append `/polish` section to IDR:
+
+```markdown
+## /polish - [YYYY-MM-DD HH:MM]
+
+### Removals
+
+| Item           | Type                | Reason   |
+| -------------- | ------------------- | -------- |
+| [removed item] | Comment/Code/Helper | [reason] |
+
+### Simplifications
+
+- [simplified content and rationale]
+```
+
+## Next Steps
+
+After polish:
+
+- **Ready to commit** → `/commit`
+- **Need validation** → `/validate`
+- **More cleanup needed** → Run `/audit` again

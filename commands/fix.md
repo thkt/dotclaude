@@ -14,11 +14,11 @@ Rapidly fix small bugs with root cause analysis and confidence-based verificatio
 
 ## When to Use
 
-| Use `/fix` | Use other command |
-| --- | --- |
+| Use `/fix`                   | Use other command                |
+| ---------------------------- | -------------------------------- |
 | Small, well-understood issue | Unknown root cause → `/research` |
-| Single file or 2-3 files | Multi-file refactoring → `/code` |
-| Confidence ≥80% | New feature → `/think` |
+| Single file or 2-3 files     | Multi-file refactoring → `/code` |
+| Confidence ≥80%              | New feature → `/think`           |
 
 ## Fix Process Overview
 
@@ -143,6 +143,16 @@ If confidence drops below 0.7 at any phase:
 - /think - Plan comprehensive solution
 - /code - Implement with full TDD
 ```
+
+## IDR (Intentionally Skipped)
+
+`/fix` does **NOT** generate IDR because:
+
+- Small bug fixes don't need extensive decision documentation
+- IDR is designed for complex features with SOW tracking
+- Quick iteration is prioritized over documentation overhead
+
+**When to use IDR**: Use `/code` for features requiring decision tracking.
 
 ## Applied Principles
 

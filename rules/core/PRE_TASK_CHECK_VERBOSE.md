@@ -4,17 +4,17 @@ Technical specification for understanding check and execution planning. For basi
 
 ## Overview
 
-| Section | Purpose |
-| --- | --- |
-| Execution Rules | When to run check |
-| Analysis Method | How to analyze |
-| 95% Understanding Rule | Core decision threshold |
-| Display Format | Output template |
-| Command Suggestion System | Workflow selection |
-| Impact Simulation | Dry-run preview |
-| Execution Plan | Action list |
-| Edge Cases | Special situations |
-| Integrated Workflow | Full process |
+| Section                   | Purpose                 |
+| ------------------------- | ----------------------- |
+| Execution Rules           | When to run check       |
+| Analysis Method           | How to analyze          |
+| 95% Understanding Rule    | Core decision threshold |
+| Display Format            | Output template         |
+| Command Suggestion System | Workflow selection      |
+| Impact Simulation         | Dry-run preview         |
+| Execution Plan            | Action list             |
+| Edge Cases                | Special situations      |
+| Integrated Workflow       | Full process            |
 
 ---
 
@@ -45,6 +45,59 @@ Technical specification for understanding check and execution planning. For basi
 - System commands execution
 - Tasks requiring /commands
 - When user explicitly requests planning
+
+## Bug Investigation Context Expansion
+
+**Purpose**: Improve bug fix success rate by gathering essential diagnostic information upfront.
+
+**Source**: Based on "7 conditions for improving AI bug investigation accuracy" - practical insights from real-world bug investigation experience.
+
+### When to Activate (Context-Based)
+
+Activate bug investigation context when user reports **any** of the following:
+
+| Criteria                | Description                         | Examples                                         |
+| ----------------------- | ----------------------------------- | ------------------------------------------------ |
+| **Unexpected behavior** | Something isn't working as expected | "doesn't do what I expect", "weird behavior"     |
+| **Error/Failure**       | An error or failure is occurring    | "getting an error", "it fails when..."           |
+| **Regression**          | Worked before, not working now      | "it was working yesterday", "broke after update" |
+| **Confusion**           | Unexpected or confusing behavior    | "I don't understand why...", "strange result"    |
+
+**Note**: This is context-based judgment, not keyword matching. Focus on user intent, not specific words.
+
+### Required Questions (Always Ask)
+
+When bug context is detected, **always** include these questions in the understanding check:
+
+| #   | Question                                                                  | Purpose                           | AI Strength Utilized |
+| --- | ------------------------------------------------------------------------- | --------------------------------- | -------------------- |
+| 1   | **Reproduction steps**: How to reproduce? (preconditions → steps → error) | Understand exact failure scenario | Pattern recognition  |
+| 2   | **Normal case**: When does it work correctly?                             | Enable diff-based analysis        | **Diff detection**   |
+| 3   | **Log information**: Any error logs or console output?                    | Direct diagnostic data            | Log parsing          |
+
+### Optional Questions (Ask If Relevant)
+
+| Question                                | When to Ask             |
+| --------------------------------------- | ----------------------- |
+| Last known working state? (commit/date) | If regression suspected |
+| Related recent changes?                 | If cause unclear        |
+| Environment differences?                | If works elsewhere      |
+
+### Display Format for Bug Investigation
+
+```markdown
+🐛 Bug Investigation Context:
+
+- Reproduction steps: [?] Not yet provided
+- Normal case: [?] Not yet provided ← Key for diff analysis
+- Log information: [?] Not yet provided
+```
+
+### Rationale
+
+"AI is good at finding differences" - comparing working vs broken cases leverages AI's pattern matching strength. Without normal case information, AI must guess; with it, AI can focus on the delta.
+
+---
 
 ## Analysis Method
 
@@ -100,6 +153,7 @@ When understanding is below 95%, explicitly state what needs clarification:
 
 ```markdown
 🤔 Questions to reach 95% confidence:
+
 1. [Specific question about unclear element]
 2. [Specific question about assumed element]
 3. [Specific question about implementation approach]
@@ -129,17 +183,21 @@ Standard format for understanding check (when required):
 🧠 Understanding Level: [progress bar] XX%
 
 ✅ Elements I understand clearly:
+
 - [✓] [Items with direct evidence from files/context]
 - [→] [Items based on reasonable inference]
 
 ❓ Unclear or assumed elements:
+
 - [?] [Ambiguous parts requiring confirmation]
 - [?] [Assumptions that may be incorrect]
 
 📋 Additional information I'd like to confirm:
+
 - [Required specifications]
 
 🎯 Done Definition:
+
 - [ ] [Inferred completion criterion 1]
 - [ ] [Inferred completion criterion 2]
 - [ ] [Inferred completion criterion 3]
@@ -147,13 +205,13 @@ Standard format for understanding check (when required):
 Is this definition correct? Please point out any missing or incorrect items.
 
 💡 Suggested approach:
+
 - Command: [/command or N/A]
 - Reason: [Brief explanation]
 
 ⚡ Feasibility: 🟢 Immediately executable / 🟡 Additional info needed / 🔴 Significant gap
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 ```
 
 **[Use `AskUserQuestion` to confirm understanding before proceeding]**
@@ -195,10 +253,12 @@ bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 
 ```markdown
 ✅ Elements I understand clearly:
+
 - [✓] Target file is `src/components/Button.tsx` (user specified)
 - [→] Project uses TypeScript (inferred from .tsx extension)
 
 ❓ Unclear or assumed elements:
+
 - [?] Testing framework preference (Jest? Vitest? Not specified)
 - [?] Style approach (styled-components? CSS modules? Unknown)
 ```
@@ -211,7 +271,7 @@ bar = "█".repeat(filled_count) + "░".repeat(empty_count)
 
 ### Dynamic Discovery
 
-1. Scan directories for *.md files
+1. Scan directories for \*.md files
 2. Extract YAML metadata (if present)
 3. Analyze task characteristics
 4. Score & rank commands
@@ -227,6 +287,7 @@ See: [@../commands/COMMAND_WORKFLOWS.md](../commands/COMMAND_WORKFLOWS.md) for d
 
 ```markdown
 💡 Suggested approach:
+
 - Command: [/command or N/A]
 - Reason: [Brief explanation]
 ```
@@ -291,7 +352,7 @@ Expected changes:
 **Skip conditions** (apply Impact Simulation ONLY when these are FALSE):
 
 - **Simple file reads**: Read tool with no modifications
-- **Documentation updates**: Only *.md files affected, no code changes
+- **Documentation updates**: Only \*.md files affected, no code changes
 - **Obvious low-risk changes**: Single file, <10 lines changed, no dependencies affected
 
 If any of the following apply, ALWAYS show Impact Simulation:
@@ -311,11 +372,11 @@ Skip for pure read operations (Read, Grep, LS).
 📝 Execution Plan
 
 Will execute the following:
+
 1. [Specific action]
 2. [Specific action]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 ```
 
 **[Use `AskUserQuestion` to confirm execution plan before proceeding]**

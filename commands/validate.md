@@ -47,20 +47,21 @@ Created: 2025-01-14
 ## Acceptance Criteria:
 
 □ AC-01: User registration with email
-  → Check: Does registration form exist?
-  → Check: Email validation implemented?
+→ Check: Does registration form exist?
+→ Check: Email validation implemented?
 
 □ AC-02: Password requirements enforced
-  → Check: Min 8 characters?
-  → Check: Special character required?
+→ Check: Min 8 characters?
+→ Check: Special character required?
 
 □ AC-03: OAuth integration
-  → Check: Google OAuth working?
-  → Check: GitHub OAuth working?
+→ Check: Google OAuth working?
+→ Check: GitHub OAuth working?
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Manual Review Required:
+
 - Test each feature
 - Verify against criteria
 - Document any gaps
@@ -130,6 +131,65 @@ Shows criteria for specific feature.
 - `/think` - Create SOW with criteria
 - `/sow` - View full SOW document
 - `/test` - Run automated tests
+
+## IDR Update & SOW AC Reconciliation
+
+After validation is complete, update the IDR with validation results and reconcile with SOW Acceptance Criteria.
+
+### IDR Requirement Check
+
+Before updating IDR, check if it's required:
+
+1. **Check spec.md** for `idr_required` field (Section 11)
+2. **If `idr_required: false`** → Skip IDR update (but still show AC status)
+3. **If `idr_required: true` or no spec** → Update IDR
+
+### IDR Detection
+
+For detailed logic: [@~/.claude/references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+
+Search for existing IDR:
+
+1. `~/.claude/workspace/planning/**/idr.md` (SOW-related)
+2. `~/.claude/workspace/idr/**/idr.md` (standalone)
+
+### SOW AC ↔ IDR Reconciliation
+
+1. **Read SOW Acceptance Criteria section**
+2. **Read IDR implementation records**
+3. **For each AC**:
+   - Check if implementation evidence exists in IDR
+   - Determine PASS/FAIL status
+4. **Generate validation report**
+5. **Append to IDR /validate section**
+
+### IDR Section Addition
+
+Append `/validate` section to IDR:
+
+```markdown
+## /validate - [YYYY-MM-DD HH:MM]
+
+### SOW Acceptance Criteria Validation
+
+| AC ID  | Description | Status | Evidence     |
+| ------ | ----------- | ------ | ------------ |
+| AC-001 | [summary]   | PASS   | [validation] |
+| AC-002 | [summary]   | FAIL   | [validation] |
+
+### Gaps Identified
+
+- [gaps from SOW]
+
+### Sign-off
+
+- Validator: AI
+- Confidence: [C: 0.XX]
+```
+
+### SOW Update
+
+Update SOW's Implementation Records section with validation status.
 
 ## Applied Principles
 
