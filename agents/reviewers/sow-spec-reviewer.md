@@ -61,7 +61,7 @@ This agent references the following Skills knowledge base:
 - [ ] Inferences (→) have clearly stated logical basis
 - [ ] Uncertain items (?) are explicitly marked
 
-**Scoring Criteria**: See [@~/.claude/skills/formatting-audits/SKILL.md#Accuracy Evaluation Criteria]
+**Scoring Criteria**: See [@../../skills/formatting-audits/SKILL.md#Accuracy Evaluation Criteria](../../skills/formatting-audits/SKILL.md#Accuracy Evaluation Criteria)
 
 #### 2.2 Completeness Evaluation
 
@@ -85,7 +85,7 @@ This agent references the following Skills knowledge base:
 - [ ] Test Scenarios (Given-When-Then format)
 - [ ] Dependencies
 
-**Scoring Criteria**: See [@~/.claude/skills/formatting-audits/SKILL.md#Completeness Evaluation Criteria]
+**Scoring Criteria**: See [@../../skills/formatting-audits/SKILL.md#Completeness Evaluation Criteria](../../skills/formatting-audits/SKILL.md#Completeness Evaluation Criteria)
 
 #### 2.3 Relevance Evaluation
 
@@ -96,7 +96,7 @@ This agent references the following Skills knowledge base:
 - [ ] No unnecessary features included (YAGNI principle)
 - [ ] Priorities are appropriately set
 
-**Scoring Criteria**: See [@~/.claude/skills/formatting-audits/SKILL.md#Relevance Evaluation Criteria]
+**Scoring Criteria**: See [@../../skills/formatting-audits/SKILL.md#Relevance Evaluation Criteria](../../skills/formatting-audits/SKILL.md#Relevance Evaluation Criteria)
 
 #### 2.4 Actionability Evaluation
 
@@ -107,7 +107,7 @@ This agent references the following Skills knowledge base:
 - [ ] Dependencies are resolvable
 - [ ] Next actions are clear
 
-**Scoring Criteria**: See [@~/.claude/skills/formatting-audits/SKILL.md#Actionability Evaluation Criteria]
+**Scoring Criteria**: See [@../../skills/formatting-audits/SKILL.md#Actionability Evaluation Criteria](../../skills/formatting-audits/SKILL.md#Actionability Evaluation Criteria)
 
 ### Phase 3: SOW ↔ Spec Consistency Check
 
@@ -133,11 +133,11 @@ This agent references the following Skills knowledge base:
 
 **Judgment Criteria**:
 
-| Score | Judgment | Action |
-| --- | --- | --- |
-| 90-100 | ✅ PASS | Can proceed to next phase (/code) |
-| 70-89 | ⚠️ CONDITIONAL | Re-review after fixing issues |
-| 0-69 | ❌ FAIL | Major revision needed (re-run /think) |
+| Score  | Judgment       | Action                                |
+| ------ | -------------- | ------------------------------------- |
+| 90-100 | ✅ PASS        | Can proceed to next phase (/code)     |
+| 70-89  | ⚠️ CONDITIONAL | Re-review after fixing issues         |
+| 0-69   | ❌ FAIL        | Major revision needed (re-run /think) |
 
 ## Output Format
 
@@ -149,17 +149,18 @@ Follow the output format from [@../../skills/formatting-audits/SKILL.md].
 ## Design Document Review Result
 
 ### Target Documents
+
 - SOW: `{sow_path}`
 - Spec: `{spec_path}`
 
 ### Total Score: {total}/100 {✅/⚠️/❌}
 
-| Item | Score | Evaluation |
-|------|-------|------------|
-| Accuracy | {accuracy}/25 | {✓/→/?} |
-| Completeness | {completeness}/25 | {✓/→/?} |
-| Relevance | {relevance}/25 | {✓/→/?} |
-| Actionability | {actionability}/25 | {✓/→/?} |
+| Item          | Score              | Evaluation |
+| ------------- | ------------------ | ---------- |
+| Accuracy      | {accuracy}/25      | {✓/→/?}    |
+| Completeness  | {completeness}/25  | {✓/→/?}    |
+| Relevance     | {relevance}/25     | {✓/→/?}    |
+| Actionability | {actionability}/25 | {✓/→/?}    |
 
 ### Judgment: {PASS/CONDITIONAL/FAIL}
 
@@ -180,9 +181,11 @@ Follow the output format from [@../../skills/formatting-audits/SKILL.md].
 ### Requested Modifications
 
 #### Required Fixes (Pass Condition)
+
 1. {Specific modification content}
 
 #### Recommended Fixes
+
 1. {Improvement suggestion}
 
 ---
@@ -233,10 +236,12 @@ Application in SOW/Spec review:
 ❌ Review target documents not found
 
 Search paths:
-- .claude/workspace/planning/**/sow.md
-- .claude/workspace/planning/**/spec.md
+
+- .claude/workspace/planning/\*\*/sow.md
+- .claude/workspace/planning/\*\*/spec.md
 
 Recommended actions:
+
 1. Generate SOW/Spec using /think command
 2. Specify existing document path
 ```
@@ -250,6 +255,7 @@ Found: sow.md only / spec.md only
 Missing: spec.md / sow.md
 
 Recommended actions:
+
 - Generate both documents using /think command
 - If continuing with single document review, consistency check will be skipped
 ```
@@ -280,8 +286,8 @@ Task({
     Apply 100-point scoring with 90-point pass threshold.
     Check SOW ↔ Spec consistency.
     Report in Japanese.
-  `
-})
+  `,
+});
 ```
 
 ## Best Practices

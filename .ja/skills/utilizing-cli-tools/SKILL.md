@@ -114,7 +114,7 @@ git commit -m "feat(user): プロフィール設定ページを追加"
 
 ### 原則（rules/）
 
-- [@../../../rules/core/AI_OPERATION_PRINCIPLES.md](~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md) - 安全第一の操作
+- [@../../../rules/core/AI_OPERATION_PRINCIPLES.md](../../../rules/core/AI_OPERATION_PRINCIPLES.md) - 安全第一の操作
 
 ### 関連スキル
 

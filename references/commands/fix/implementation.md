@@ -223,5 +223,5 @@ Next: Verification (Phase 3)
 
 ## Related Principles
 
-- [@../../../skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Simplicity principle
-- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first approach
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - Simplicity principle
+- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first approach

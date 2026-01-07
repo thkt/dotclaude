@@ -120,4 +120,4 @@ conditions:
 
 ## スキル参照
 
-[@../../.ja/skills/creating-hooks/SKILL.md](~/.claude/.ja/skills/creating-hooks/SKILL.md)
+[@../../.ja/skills/creating-hooks/SKILL.md](../../.ja/skills/creating-hooks/SKILL.md)

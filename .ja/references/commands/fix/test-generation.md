@@ -28,13 +28,13 @@ test-generatorを使用してバグと関連エッジケースの包括的なテ
 
 test-generatorパターンとベストプラクティス:
 
-- [@../../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - 詳細なパターン
-- [@../../../../skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - バグ駆動アプローチ
+- [@../../../../references/commands/shared/test-generation.md](../../../../references/commands/shared/test-generation.md) - 詳細なパターン
+- [@../../../../skills/generating-tdd-tests/references/bug-driven.md](../../../../skills/generating-tdd-tests/references/bug-driven.md) - バグ駆動アプローチ
 
 ## test-generatorの使用
 
 詳細な呼び出しパターン:
-[@~/.claude/references/commands/shared/test-generation.md#pattern-2-bug-driven-generation-bug-fixing](~/.claude/references/commands/shared/test-generation.md#pattern-2-bug-driven-generation-bug-fixing)
+[@../shared/test-generation.md#pattern-2-bug-driven-generation-bug-fixing](../shared/test-generation.md#pattern-2-bug-driven-generation-bug-fixing)
 
 **クイックリファレンス**: パターン2（バグ駆動生成）を以下で使用:
 
@@ -49,10 +49,10 @@ test-generatorパターンとベストプラクティス:
 フェーズ1.5で既に作成済みだが、包括的か確認:
 
 ```typescript
-it('when discount exceeds total, should return 0 not negative', () => {
+it("when discount exceeds total, should return 0 not negative", () => {
   // ✓ フェーズ1.5から既に存在
-  expect(calculateTotal(100, 150)).toBe(0)
-})
+  expect(calculateTotal(100, 150)).toBe(0);
+});
 ```
 
 ### 2. エッジケース
@@ -62,21 +62,21 @@ it('when discount exceeds total, should return 0 not negative', () => {
 ```typescript
 // test-generatorで生成:
 
-it('handles zero price with discount', () => {
-  expect(calculateTotal(0, 50)).toBe(0)
-})
+it("handles zero price with discount", () => {
+  expect(calculateTotal(0, 50)).toBe(0);
+});
 
-it('handles zero discount', () => {
-  expect(calculateTotal(100, 0)).toBe(100)
-})
+it("handles zero discount", () => {
+  expect(calculateTotal(100, 0)).toBe(100);
+});
 
-it('handles equal price and discount', () => {
-  expect(calculateTotal(100, 100)).toBe(0)
-})
+it("handles equal price and discount", () => {
+  expect(calculateTotal(100, 100)).toBe(0);
+});
 
-it('handles very large discounts', () => {
-  expect(calculateTotal(100, 1000000)).toBe(0)
-})
+it("handles very large discounts", () => {
+  expect(calculateTotal(100, 1000000)).toBe(0);
+});
 ```
 
 ### 3. 統合テスト（必要な場合）
@@ -84,12 +84,12 @@ it('handles very large discounts', () => {
 修正が複数コンポーネントにまたがる場合:
 
 ```typescript
-it('checkout flow with large discount', () => {
+it("checkout flow with large discount", () => {
   const cart = createCart([item1, item2]); // price: 100
   cart.applyDiscount(150);
   const total = cart.calculateTotal();
   expect(total).toBe(0); // ✓ 統合が動作
-})
+});
 ```
 
 ## 生成されたテストの特徴
@@ -117,31 +117,31 @@ it('checkout flow with large discount', () => {
 ### 生成された出力
 
 ```typescript
-describe('calculateTotal - discount edge cases', () => {
+describe("calculateTotal - discount edge cases", () => {
   // メインリグレッションテスト（フェーズ1.5から）
-  it('returns 0 when discount exceeds price', () => {
+  it("returns 0 when discount exceeds price", () => {
     expect(calculateTotal(100, 150)).toBe(0);
   });
 
   // エッジケース（生成）
-  it('handles zero price', () => {
+  it("handles zero price", () => {
     expect(calculateTotal(0, 50)).toBe(0);
   });
 
-  it('handles zero discount', () => {
+  it("handles zero discount", () => {
     expect(calculateTotal(100, 0)).toBe(100);
   });
 
-  it('handles equal values', () => {
+  it("handles equal values", () => {
     expect(calculateTotal(100, 100)).toBe(0);
   });
 
-  it('handles boundary conditions', () => {
+  it("handles boundary conditions", () => {
     expect(calculateTotal(0.01, 0.02)).toBe(0);
     expect(calculateTotal(100, 99.99)).toBeCloseTo(0.01);
   });
 
-  it('maintains precision', () => {
+  it("maintains precision", () => {
     expect(calculateTotal(10.5, 5.25)).toBe(5.25);
   });
 });
@@ -189,11 +189,13 @@ describe('calculateTotal - discount edge cases', () => {
 ファイル: src/utils/pricing.test.ts
 
 カバレッジ:
+
 - エッジケース: [✓] ゼロ値、境界条件
 - 統合: [✓] チェックアウトフロー
 - 負のケース: [✓] 無効な入力
 
 ステータス:
+
 - 全テスト合格: PASS
 - カバレッジ改善: 78% → 85%
 
@@ -208,5 +210,5 @@ describe('calculateTotal - discount edge cases', () => {
 
 ## リファレンス
 
-- [@../../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - テストパターン
-- [@../../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD基礎
+- [@../../../../references/commands/shared/test-generation.md](../../../../references/commands/shared/test-generation.md) - テストパターン
+- [@../../../../skills/generating-tdd-tests/SKILL.md](../../../../skills/generating-tdd-tests/SKILL.md) - TDD基礎

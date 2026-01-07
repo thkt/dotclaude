@@ -245,7 +245,7 @@ Task({
 
 ### 原則（rules/）
 
-- [@../../../rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - 完全なTDD方法論
+- [@../../../rules/development/TDD_RGRC.md](../../../rules/development/TDD_RGRC.md) - 完全なTDD方法論
 
 ### スキル参照
 

@@ -409,14 +409,14 @@ For each public method/function:
 
 ### Core Principles
 
-- [@../../../skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Keep tests simple and focused
-- [@../../../skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Limit test case complexity
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - Keep tests simple and focused
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - Limit test case complexity
 
 ### Development Practices
 
 - [@./tdd-rgrc.md](./tdd-rgrc.md) - Test-first approach for implementation
-- [@../../../rules/development/READABLE_CODE.md](~/.claude/rules/development/READABLE_CODE.md) - Clarity in test code
-- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - Start simple, enhance coverage gradually
+- [@../../../rules/development/READABLE_CODE.md](../../../rules/development/READABLE_CODE.md) - Clarity in test code
+- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - Start simple, enhance coverage gradually
 
 ## Remember
 

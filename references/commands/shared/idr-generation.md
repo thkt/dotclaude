@@ -50,7 +50,7 @@ Common IDR (Implementation Decision Record) generation and update logic.
    - Confidence score
 
 4. Write to idr.md using template:
-   [@../../../templates/idr/implementation.md](~/.claude/templates/idr/implementation.md)
+   [@../../../templates/idr/implementation.md](../../../templates/idr/implementation.md)
 ```
 
 ### Changed Files Detection

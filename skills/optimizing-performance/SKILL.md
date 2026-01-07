@@ -58,7 +58,7 @@ Data-driven frontend optimization. **"Measure before optimizing"** - Donald Knut
 
 ### Principles (rules/)
 
-- [@../../skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Avoid premature optimization
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Avoid premature optimization
 
 ### Related Skills
 

@@ -66,7 +66,7 @@ function processUser(user: User) {
 
 ### 3. 過剰設計パターン
 
-参照: [@../../skills/reviewing-readability/references/ai-antipatterns.md](~/.claude/skills/reviewing-readability/references/ai-antipatterns.md)
+参照: [@../../skills/reviewing-readability/references/ai-antipatterns.md](../../skills/reviewing-readability/references/ai-antipatterns.md)
 
 - 単一実装のインターフェース → インターフェースを削除
 - 関数1つをラップするクラス → 関数に変換
@@ -174,7 +174,7 @@ IDRを更新する前に、必要かどうかを確認:
 
 ### IDR検出
 
-詳細ロジック: [@../../references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+詳細ロジック: [@../../references/commands/shared/idr-generation.md](../../references/commands/shared/idr-generation.md)
 
 既存のIDRを検索:
 

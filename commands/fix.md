@@ -45,7 +45,7 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Phase 1: Root Cause Analysis
 
-[@../references/commands/fix/root-cause-analysis.md](~/.claude/references/commands/fix/root-cause-analysis.md)
+[@../references/commands/fix/root-cause-analysis.md](../references/commands/fix/root-cause-analysis.md)
 
 - Dynamic context (git diff, test status)
 - Explore agent for 5 Whys
@@ -56,12 +56,12 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Phase 1.5: Regression Test First (Recommended)
 
-[@../references/commands/fix/regression-test.md](~/.claude/references/commands/fix/regression-test.md)
+[@../references/commands/fix/regression-test.md](../references/commands/fix/regression-test.md)
 
 - TDD approach to bug fixes
 - Write failing test that reproduces bug
 - Verify correct failure
-- References: [@../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md)
+- References: [@../skills/generating-tdd-tests/SKILL.md](../skills/generating-tdd-tests/SKILL.md)
 
 **When to skip**:
 
@@ -74,7 +74,7 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Phase 2: Implementation
 
-[@../references/commands/fix/implementation.md](~/.claude/references/commands/fix/implementation.md)
+[@../references/commands/fix/implementation.md](../references/commands/fix/implementation.md)
 
 - Confidence-based approach:
   - High (>0.9): Direct fix
@@ -88,7 +88,7 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Phase 3: Verification
 
-[@../references/commands/fix/verification.md](~/.claude/references/commands/fix/verification.md)
+[@../references/commands/fix/verification.md](../references/commands/fix/verification.md)
 
 - Run quality checks in parallel:
   - Tests (regression + all)
@@ -101,10 +101,10 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Phase 3.5: Test Generation (Optional)
 
-[@../references/commands/fix/test-generation.md](~/.claude/references/commands/fix/test-generation.md)
+[@../references/commands/fix/test-generation.md](../references/commands/fix/test-generation.md)
 
 - Use test-generator for edge cases
-- References: [@../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md)
+- References: [@../references/commands/shared/test-generation.md](../references/commands/shared/test-generation.md)
 - Integration tests if needed
 
 **When to skip**:
@@ -116,7 +116,7 @@ Each phase has detailed guidance in dedicated modules:
 
 ### Definition of Done
 
-[@../references/commands/fix/completion.md](~/.claude/references/commands/fix/completion.md)
+[@../references/commands/fix/completion.md](../references/commands/fix/completion.md)
 
 - Completion criteria
 - Output formatting
@@ -171,6 +171,6 @@ If confidence drops below 0.7 at any phase:
 
 For TDD fundamentals and patterns:
 
-- [@../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD philosophy
-- [@../skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - Bug-driven TDD pattern
-- [@../references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC cycle details
+- [@../skills/generating-tdd-tests/SKILL.md](../skills/generating-tdd-tests/SKILL.md) - TDD philosophy
+- [@../skills/generating-tdd-tests/references/bug-driven.md](../skills/generating-tdd-tests/references/bug-driven.md) - Bug-driven TDD pattern
+- [@../references/commands/shared/tdd-cycle.md](../references/commands/shared/tdd-cycle.md) - RGRC cycle details

@@ -11,6 +11,35 @@ argument-hint: "[feature or task description]"
 
 Systematically orchestrate the complete development cycle through SlashCommand tool integration, rigorously executing from research through implementation, testing, and validation phases.
 
+## Workflow Overview
+
+```mermaid
+flowchart TD
+    Start(["/full-cycle"]) --> R["/research"]
+    R -->|Success| T["/think"]
+    R -->|Fail| AskUser1[Ask User]
+
+    T -->|Success| DR{sow-spec-reviewer}
+    T -->|Fail| AskUser2[Ask User]
+
+    DR -->|PASS ≥90| C["/code"]
+    DR -->|CONDITIONAL 70-89| FixDocs[Fix SOW/Spec]
+    DR -->|FAIL <70| T
+    FixDocs --> DR
+
+    C -->|Success| Test["/test"]
+    C -->|Fail| Fix1["/fix"]
+    Fix1 --> C
+
+    Test -->|Pass| A["/audit"]
+    Test -->|Fail| Fix2["/fix"]
+    Fix2 --> Test
+
+    A --> V["/validate"]
+    V -->|All Criteria Met| Done([Complete ✓])
+    V -->|Criteria Failed| Report[Report Issues]
+```
+
 ## Workflow Instructions
 
 Follow this command sequence when invoked. Use the **SlashCommand tool** to execute each command:
@@ -51,8 +80,8 @@ Task({
     Apply 100-point scoring (90-point pass threshold).
     Check SOW ↔ Spec consistency.
     Report results in Japanese.
-  `
-})
+  `,
+});
 ```
 
 ### Phase 3: Implementation
@@ -93,6 +122,7 @@ Use **TodoWrite** tool throughout to track progress:
 
 ```markdown
 Development Cycle Progress:
+
 - [ ] Research phase (Use SlashCommand: /research)
 - [ ] Planning phase (Use SlashCommand: /think)
 - [ ] Design review phase (Use Task: sow-spec-reviewer)
@@ -140,11 +170,12 @@ Claude: Starting full development cycle...
 
 [Uses Task to invoke: sow-spec-reviewer]
 📋 Design Review Score: 92/100 ✅ PASS
+
 - Accuracy: 23/25 ✓
 - Completeness: 24/25 ✓
 - Relevance: 22/25 ✓
 - Actionability: 23/25 ✓
-✓ Proceeding to implementation
+  ✓ Proceeding to implementation
 
 [Uses SlashCommand to execute: /code Implement OAuth2 login flow]
 ✓ Implementation complete - 15 files modified

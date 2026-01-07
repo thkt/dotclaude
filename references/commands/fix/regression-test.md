@@ -10,9 +10,9 @@ Apply TDD to bug fixing: Red (reproduce) → Green (fix) → Refactor (clean) �
 
 For TDD principles and RGRC cycle details:
 
-- [@../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD philosophy
-- [@../../../skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - Bug-driven TDD pattern
-- [@../../../references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC implementation
+- [@../../../skills/generating-tdd-tests/SKILL.md](../../../skills/generating-tdd-tests/SKILL.md) - TDD philosophy
+- [@../../../skills/generating-tdd-tests/references/bug-driven.md](../../../skills/generating-tdd-tests/references/bug-driven.md) - Bug-driven TDD pattern
+- [@../../../references/commands/shared/tdd-cycle.md](../../../references/commands/shared/tdd-cycle.md) - RGRC implementation
 
 ## TDD Approach to Bug Fixes
 
@@ -202,6 +202,6 @@ Next: Implement fix (Phase 2)
 
 ## Related Principles
 
-- [@../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD fundamentals
-- [@../../../references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC details
-- [@../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - Test patterns
+- [@../../../skills/generating-tdd-tests/SKILL.md](../../../skills/generating-tdd-tests/SKILL.md) - TDD fundamentals
+- [@../../../references/commands/shared/tdd-cycle.md](../../../references/commands/shared/tdd-cycle.md) - RGRC details
+- [@../../../references/commands/shared/test-generation.md](../../../references/commands/shared/test-generation.md) - Test patterns

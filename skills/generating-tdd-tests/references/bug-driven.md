@@ -86,7 +86,7 @@ Actual: Total = -$50
 ```typescript
 // Current (buggy) code:
 function calculateTotal(price: number, discount: number): number {
-  return price - discount  // Bad: Can return negative!
+  return price - discount; // Bad: Can return negative!
 }
 ```
 
@@ -102,13 +102,13 @@ function calculateTotal(price: number, discount: number): number {
 
 ```typescript
 // src/cart.test.ts
-describe('calculateTotal', () => {
-  it('when discount exceeds price, should return 0 not negative', () => {
+describe("calculateTotal", () => {
+  it("when discount exceeds price, should return 0 not negative", () => {
     // This was the bug: returned -50 instead of 0
-    const result = calculateTotal(100, 150)
-    expect(result).toBe(0) // Expected: 0, Received: -50
-  })
-})
+    const result = calculateTotal(100, 150);
+    expect(result).toBe(0); // Expected: 0, Received: -50
+  });
+});
 ```
 
 **Step 2: Run test and verify failure**
@@ -136,8 +136,8 @@ FAIL  src/cart.test.ts
 ```typescript
 // src/cart.ts
 function calculateTotal(price: number, discount: number): number {
-  const result = price - discount
-  return Math.max(0, result)  // ← Fix: ensure non-negative
+  const result = price - discount;
+  return Math.max(0, result); // ← Fix: ensure non-negative
 }
 ```
 
@@ -176,26 +176,26 @@ Tests:       3 passed, 3 total
 **Use test-generator for additional edge cases**:
 
 For detailed test-generator patterns, see:
-[@~/.claude/references/commands/shared/test-generation.md#pattern-2-bug-driven-generation](~/.claude/references/commands/shared/test-generation.md#pattern-2-bug-driven-generation)
+[@../../../references/commands/shared/test-generation.md#pattern-2-bug-driven-generation](../../../references/commands/shared/test-generation.md#pattern-2-bug-driven-generation)
 
 **Example generated tests**:
 
 ```typescript
-describe('calculateTotal - edge cases', () => {
-  it('returns 0 when discount exceeds price', () => {
-    expect(calculateTotal(100, 150)).toBe(0)
-  })
+describe("calculateTotal - edge cases", () => {
+  it("returns 0 when discount exceeds price", () => {
+    expect(calculateTotal(100, 150)).toBe(0);
+  });
 
-  it('handles zero price with discount', () => {
-    expect(calculateTotal(0, 50)).toBe(0)
-  })
+  it("handles zero price with discount", () => {
+    expect(calculateTotal(0, 50)).toBe(0);
+  });
 
-  it('handles equal price and discount', () => {
-    expect(calculateTotal(100, 100)).toBe(0)
-  })
+  it("handles equal price and discount", () => {
+    expect(calculateTotal(100, 100)).toBe(0);
+  });
 
   // ... other edge cases
-})
+});
 ```
 
 ## Complete Example Flow
@@ -203,22 +203,22 @@ describe('calculateTotal - edge cases', () => {
 ```typescript
 // Before: Bug exists
 function calculateTotal(price: number, discount: number): number {
-  return price - discount  // Bad: Can return negative
+  return price - discount; // Bad: Can return negative
 }
 
 // Phase 1.5: Write failing test
-it('should return 0 when discount exceeds price', () => {
-  expect(calculateTotal(100, 150)).toBe(0)  // Bad: FAILS
-})
+it("should return 0 when discount exceeds price", () => {
+  expect(calculateTotal(100, 150)).toBe(0); // Bad: FAILS
+});
 
 // Phase 2: Apply minimal fix
 function calculateTotal(price: number, discount: number): number {
-  return Math.max(0, price - discount)  // Good: Fixed
+  return Math.max(0, price - discount); // Good: Fixed
 }
 
 // Phase 3.5: Add edge cases (optional)
-it('handles zero price', () => expect(calculateTotal(0, 50)).toBe(0))
-it('handles large discounts', () => expect(calculateTotal(10, 1000)).toBe(0))
+it("handles zero price", () => expect(calculateTotal(0, 50)).toBe(0));
+it("handles large discounts", () => expect(calculateTotal(10, 1000)).toBe(0));
 ```
 
 ## Common Pitfalls
@@ -242,14 +242,14 @@ it('handles large discounts', () => expect(calculateTotal(10, 1000)).toBe(0))
 
 ```typescript
 // Bad test - doesn't reproduce actual bug:
-it('calculates discount correctly', () => {
-  expect(calculateTotal(100, 50)).toBe(50)  // This always worked!
-})
+it("calculates discount correctly", () => {
+  expect(calculateTotal(100, 50)).toBe(50); // This always worked!
+});
 
 // Good test - reproduces exact bug:
-it('when discount > price, returns 0 not negative', () => {
-  expect(calculateTotal(100, 150)).toBe(0)  // This was failing
-})
+it("when discount > price, returns 0 not negative", () => {
+  expect(calculateTotal(100, 150)).toBe(0); // This was failing
+});
 ```
 
 ### Bad: Over-engineering the Fix
@@ -257,17 +257,17 @@ it('when discount > price, returns 0 not negative', () => {
 ```typescript
 // Over-engineered:
 class DiscountValidator {
-  validate(price: number, discount: number): ValidationResult { }
+  validate(price: number, discount: number): ValidationResult {}
 }
 
 class TotalCalculator {
-  constructor(private validator: DiscountValidator) { }
-  calculate(price: number, discount: number): number { }
+  constructor(private validator: DiscountValidator) {}
+  calculate(price: number, discount: number): number {}
 }
 
 // Minimal fix (Occam's Razor):
 function calculateTotal(price: number, discount: number): number {
-  return Math.max(0, price - discount)
+  return Math.max(0, price - discount);
 }
 ```
 
@@ -329,15 +329,15 @@ $ npm test  // Good: PASSES (confirmed fix works)
 
 ```typescript
 // Good: Minimal:
-return Math.max(0, price - discount)
+return Math.max(0, price - discount);
 
 // Bad: Not minimal (unnecessary complexity):
 if (discount > price) {
-  return 0
+  return 0;
 } else if (discount === price) {
-  return 0
+  return 0;
 } else {
-  return price - discount
+  return price - discount;
 }
 ```
 
@@ -351,14 +351,14 @@ if (discount > price) {
 
 ## Comparison with Feature-Driven TDD
 
-| Aspect | Bug-Driven | Feature-Driven |
-| --- | --- | --- |
-| **Trigger** | Bug report | Specification |
-| **Test state** | Active (not skipped) | Skip state initially |
-| **Test count** | 1 main + edge cases | All tests generated upfront |
-| **Activation** | Immediate | User-controlled |
-| **Focus** | Regression prevention | Feature completion |
-| **Speed** | Fast (reactive) | Methodical (proactive) |
+| Aspect         | Bug-Driven            | Feature-Driven              |
+| -------------- | --------------------- | --------------------------- |
+| **Trigger**    | Bug report            | Specification               |
+| **Test state** | Active (not skipped)  | Skip state initially        |
+| **Test count** | 1 main + edge cases   | All tests generated upfront |
+| **Activation** | Immediate             | User-controlled             |
+| **Focus**      | Regression prevention | Feature completion          |
+| **Speed**      | Fast (reactive)       | Methodical (proactive)      |
 
 ## Used By
 

@@ -146,7 +146,7 @@ Before updating IDR, check if it's required:
 
 ### IDR Detection
 
-For detailed logic: [@../references/commands/shared/idr-generation.md](~/.claude/references/commands/shared/idr-generation.md)
+For detailed logic: [@../references/commands/shared/idr-generation.md](../references/commands/shared/idr-generation.md)
 
 Search for existing IDR:
 

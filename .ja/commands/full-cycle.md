@@ -11,6 +11,35 @@ argument-hint: "[機能またはタスクの説明]"
 
 SlashCommandツール統合を通じて完全な開発サイクルを体系的にオーケストレーションし、リサーチから実装、テスト、バリデーションフェーズまで厳格に実行。
 
+## ワークフロー概要
+
+```mermaid
+flowchart TD
+    Start(["/full-cycle"]) --> R["/research"]
+    R -->|成功| T["/think"]
+    R -->|失敗| AskUser1[ユーザーに確認]
+
+    T -->|成功| DR{sow-spec-reviewer}
+    T -->|失敗| AskUser2[ユーザーに確認]
+
+    DR -->|PASS ≥90| C["/code"]
+    DR -->|CONDITIONAL 70-89| FixDocs[SOW/Spec修正]
+    DR -->|FAIL <70| T
+    FixDocs --> DR
+
+    C -->|成功| Test["/test"]
+    C -->|失敗| Fix1["/fix"]
+    Fix1 --> C
+
+    Test -->|合格| A["/audit"]
+    Test -->|失敗| Fix2["/fix"]
+    Fix2 --> Test
+
+    A --> V["/validate"]
+    V -->|全基準達成| Done([完了 ✓])
+    V -->|基準未達| Report[問題報告]
+```
+
 ## ワークフロー指示
 
 呼び出し時にこのコマンドシーケンスに従う。各コマンドの実行には**SlashCommandツール**を使用:
@@ -51,8 +80,8 @@ Task({
     100点満点採点（90点合格閾値）を適用。
     SOW ↔ Spec整合性をチェック。
     結果を日本語で報告。
-  `
-})
+  `,
+});
 ```
 
 ### フェーズ3: 実装
@@ -93,6 +122,7 @@ Task({
 
 ```markdown
 開発サイクル進捗:
+
 - [ ] リサーチフェーズ（SlashCommandで/researchを使用）
 - [ ] 計画フェーズ（SlashCommandで/thinkを使用）
 - [ ] 設計レビューフェーズ（Taskでsow-spec-reviewerを使用）
@@ -140,11 +170,12 @@ Claude: 完全開発サイクルを開始...
 
 [Taskで呼び出し: sow-spec-reviewer]
 📋 設計レビュースコア: 92/100 ✅ PASS
+
 - 正確性: 23/25 ✓
 - 完全性: 24/25 ✓
 - 関連性: 22/25 ✓
 - 実行可能性: 23/25 ✓
-✓ 実装に進行
+  ✓ 実装に進行
 
 [SlashCommandで実行: /code OAuth2ログインフローを実装]
 ✓ 実装完了 - 15ファイルを変更

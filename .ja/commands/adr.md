@@ -139,5 +139,5 @@ ADR_AUTO_INDEX="true"              # 自動インデックス更新
 
 ## 参照
 
-- [ADR Creator Skill](~/.claude/skills/creating-adrs/SKILL.md) - 詳細ドキュメント
+- [ADR Creator Skill](../skills/creating-adrs/SKILL.md) - 詳細ドキュメント
 - [MADR公式サイト](https://adr.github.io/madr/)

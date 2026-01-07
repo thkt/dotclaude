@@ -46,8 +46,8 @@ Task({
     検索: 関連ファイル、依存関係、最近のコミット
     5 Whysを適用: 症状ではなく根本原因を特定
     返却: [✓/→/?]マーカー付きの所見
-  `
-})
+  `,
+});
 ```
 
 ### キー質問（5 Whys）
@@ -86,7 +86,7 @@ Task({
 
 ### 信頼度マーカー
 
-分析全体で使用: [@~/.claude/rules/development/COMPLETION_CRITERIA.md#confidence-metrics]
+分析全体で使用: [@../../../rules/development/COMPLETION_CRITERIA.md#confidence-metrics](../../../rules/development/COMPLETION_CRITERIA.md#confidence-metrics)
 
 ### 分析例
 
@@ -94,17 +94,21 @@ Task({
 根本原因分析
 
 **症状**:
+
 - [✓] 割引 > 価格の場合にユーザーに負の合計が表示される
 
 **直接の原因**:
+
 - [✓] calculateTotalがチェックなしでprice - discountを返す
 
 **根本原因**:
+
 - [✓] 割引が価格を超える場合のバリデーションがない
 - [→] 要件がこのエッジケースを指定していなかった
 - [?] 他の割引計算も同じ問題がある可能性
 
 **スコープ**:
+
 - [✓] ファイル: src/utils/pricing.ts:42
 - [→] 類似パターン: src/checkout/discount.ts
 - [?] 影響の可能性: src/reports/sales.ts

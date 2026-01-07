@@ -4,15 +4,15 @@ test-generatorエージェントのクイックリファレンス。詳細はス
 
 ## 完全リファレンス
 
-[@~/.claude/skills/generating-tdd-tests/SKILL.md#test-generator-agent-patterns](~/.claude/skills/generating-tdd-tests/SKILL.md#test-generator-agent-patterns)
+[@../../../skills/generating-tdd-tests/SKILL.md#test-generator-agent-patterns](../../../skills/generating-tdd-tests/SKILL.md#test-generator-agent-patterns)
 
 ## パターン概要
 
-| パターン | ユースケース | テスト状態 |
-| --- | --- | --- |
-| Spec-Driven | 機能開発（`/code`） | Skipモード |
-| Bug-Driven | バグ修正（`/fix`） | Activeモード |
-| Coverage-Driven | カバレッジ向上 | Activeモード |
+| パターン        | ユースケース        | テスト状態   |
+| --------------- | ------------------- | ------------ |
+| Spec-Driven     | 機能開発（`/code`） | Skipモード   |
+| Bug-Driven      | バグ修正（`/fix`）  | Activeモード |
+| Coverage-Driven | カバレッジ向上      | Activeモード |
 
 ## 基本的な呼び出し
 
@@ -21,24 +21,24 @@ Task({
   subagent_type: "test-generator",
   model: "haiku",
   description: "[source]からテストを生成",
-  prompt: `[コンテキストを含む詳細なプロンプト]`
-})
+  prompt: `[コンテキストを含む詳細なプロンプト]`,
+});
 ```
 
 ## Skipマーカー
 
-| フレームワーク | 構文 |
-| --- | --- |
-| Jest/Vitest | `it.skip('test', () => { // TODO: [SKIP] FR-001 })` |
-| Mocha | `it.skip()` または `xit()` |
-| Unknown | `// TODO: [SKIP]` でコメントアウト |
+| フレームワーク | 構文                                                |
+| -------------- | --------------------------------------------------- |
+| Jest/Vitest    | `it.skip('test', () => { // TODO: [SKIP] FR-001 })` |
+| Mocha          | `it.skip()` または `xit()`                          |
+| Unknown        | `// TODO: [SKIP]` でコメントアウト                  |
 
 ## コマンド統合
 
-| コマンド | パターン | モード |
-| --- | --- | --- |
-| `/code` | Spec-Driven | Phase 0: skip、1つずつ有効化 |
-| `/fix` | Bug-Driven | Phase 1.5: activeリグレッションテスト |
+| コマンド | パターン    | モード                                |
+| -------- | ----------- | ------------------------------------- |
+| `/code`  | Spec-Driven | Phase 0: skip、1つずつ有効化          |
+| `/fix`   | Bug-Driven  | Phase 1.5: activeリグレッションテスト |
 
 ## ベストプラクティス
 
@@ -49,4 +49,4 @@ Task({
 
 ## 参考文献
 
-- [@../../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD原則とパターン
+- [@../../../../skills/generating-tdd-tests/SKILL.md](../../../../skills/generating-tdd-tests/SKILL.md) - TDD原則とパターン

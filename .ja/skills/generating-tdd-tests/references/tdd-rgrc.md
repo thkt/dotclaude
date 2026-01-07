@@ -4,8 +4,8 @@ generating-tdd-testsスキルのクイックリファレンス。完全な方法
 
 ## 完全なリファレンス
 
-- [@../../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - 完全なTDDガイド
-- [@../../../../rules/development/TDD_RGRC.md](~/.claude/rules/development/TDD_RGRC.md) - TDDルール
+- [@../../../../skills/generating-tdd-tests/SKILL.md](../../../../skills/generating-tdd-tests/SKILL.md) - 完全なTDDガイド
+- [@../../../../rules/development/TDD_RGRC.md](../../../../rules/development/TDD_RGRC.md) - TDDルール
 
 ## Baby Steps（2分サイクル）
 

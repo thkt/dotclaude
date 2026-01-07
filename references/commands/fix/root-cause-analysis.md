@@ -46,8 +46,8 @@ Task({
     Find: Related files, dependencies, recent commits
     Apply 5 Whys: Identify root cause, not just symptom
     Return: Findings with [✓/→/?] markers
-  `
-})
+  `,
+});
 ```
 
 ### Key Questions (5 Whys)
@@ -86,7 +86,7 @@ Determine if this is:
 
 ### Confidence Markers
 
-Use throughout analysis: [@~/.claude/rules/development/COMPLETION_CRITERIA.md#confidence-metrics]
+Use throughout analysis: [@../../../rules/development/COMPLETION_CRITERIA.md#confidence-metrics](../../../rules/development/COMPLETION_CRITERIA.md#confidence-metrics)
 
 ### Example Analysis
 
@@ -94,17 +94,21 @@ Use throughout analysis: [@~/.claude/rules/development/COMPLETION_CRITERIA.md#co
 Root Cause Analysis
 
 **Symptom**:
+
 - [✓] User sees negative total when discount > price
 
 **Proximate Cause**:
+
 - [✓] calculateTotal returns price - discount without check
 
 **Root Cause**:
+
 - [✓] No validation for discount exceeding price
 - [→] Requirements didn't specify this edge case
 - [?] Other discount calculations may have same issue
 
 **Scope**:
+
 - [✓] File: src/utils/pricing.ts:42
 - [→] Similar pattern in: src/checkout/discount.ts
 - [?] May affect: src/reports/sales.ts

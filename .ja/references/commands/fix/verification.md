@@ -246,5 +246,5 @@ npm run dev
 
 ## リファレンス
 
-- [@../../../../references/commands/code/quality-gates.md](~/.claude/references/commands/code/quality-gates.md) - 詳細な品質ゲート
-- [@../../../../rules/core/AI_OPERATION_PRINCIPLES.md](~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md) - 品質基準
+- [@../../../../references/commands/code/quality-gates.md](../../../../references/commands/code/quality-gates.md) - 詳細な品質ゲート
+- [@../../../../rules/core/AI_OPERATION_PRINCIPLES.md](../../../../rules/core/AI_OPERATION_PRINCIPLES.md) - 品質基準

@@ -10,9 +10,9 @@
 
 TDD原則とRGRCサイクルの詳細:
 
-- [@../../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD哲学
-- [@../../../../skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - バグ駆動TDDパターン
-- [@../../../../references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC実装
+- [@../../../../skills/generating-tdd-tests/SKILL.md](../../../../skills/generating-tdd-tests/SKILL.md) - TDD哲学
+- [@../../../../skills/generating-tdd-tests/references/bug-driven.md](../../../../skills/generating-tdd-tests/references/bug-driven.md) - バグ駆動TDDパターン
+- [@../../../../references/commands/shared/tdd-cycle.md](../../../../references/commands/shared/tdd-cycle.md) - RGRC実装
 
 ## バグ修正へのTDDアプローチ
 
@@ -202,6 +202,6 @@ function calculateTotal(price, discount) {
 
 ## リファレンス
 
-- [@../../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD基礎
-- [@../../../../references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRC詳細
-- [@../../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - テストパターン
+- [@../../../../skills/generating-tdd-tests/SKILL.md](../../../../skills/generating-tdd-tests/SKILL.md) - TDD基礎
+- [@../../../../references/commands/shared/tdd-cycle.md](../../../../references/commands/shared/tdd-cycle.md) - RGRC詳細
+- [@../../../../references/commands/shared/test-generation.md](../../../../references/commands/shared/test-generation.md) - テストパターン

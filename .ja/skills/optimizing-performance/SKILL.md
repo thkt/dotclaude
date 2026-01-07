@@ -58,7 +58,7 @@ allowed-tools: Read, Grep, Glob, Task, mcp__claude-in-chrome__*, mcp__mdn__*
 
 ### 原則（rules/）
 
-- [@../../../skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - 早すぎる最適化を避ける
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 早すぎる最適化を避ける
 
 ### 関連スキル
 

@@ -139,5 +139,5 @@ Actions: Change title / Review similar ADR / Consider consolidation
 
 ## References
 
-- [ADR Creator Skill](~/.claude/skills/creating-adrs/SKILL.md) - Detailed documentation
+- [ADR Creator Skill](../skills/creating-adrs/SKILL.md) - Detailed documentation
 - [MADR Official Site](https://adr.github.io/madr/)

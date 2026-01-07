@@ -2,7 +2,7 @@
 
 このモジュールは`/code`コマンドの完了基準と判断サポートを定義します。
 
-→ **共通基準**: [@../../../../rules/development/COMPLETION_CRITERIA.md](~/.claude/rules/development/COMPLETION_CRITERIA.md)
+→ **共通基準**: [@../../../../rules/development/COMPLETION_CRITERIA.md](../../../../rules/development/COMPLETION_CRITERIA.md)
 
 ## /code固有の基準
 

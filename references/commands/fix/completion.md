@@ -2,7 +2,7 @@
 
 Definition of Done and output formatting for `/fix` command.
 
-→ **Common criteria**: [@../../../rules/development/COMPLETION_CRITERIA.md](~/.claude/rules/development/COMPLETION_CRITERIA.md)
+→ **Common criteria**: [@../../../rules/development/COMPLETION_CRITERIA.md](../../../rules/development/COMPLETION_CRITERIA.md)
 
 ## /fix Specific Criteria
 
@@ -234,6 +234,6 @@ Before marking as complete:
 
 ## Related Principles
 
-- [@../../../skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - Simplicity (Occam's Razor)
-- [@../../../rules/development/TIDYINGS.md](~/.claude/rules/development/TIDYINGS.md) - Clean as you go
-- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - Simplicity (Occam's Razor)
+- [@../../../rules/development/TIDYINGS.md](../../../rules/development/TIDYINGS.md) - Clean as you go
+- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSS-first

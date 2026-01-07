@@ -246,5 +246,5 @@ npm run dev
 
 ## Related Principles
 
-- [@../../../references/commands/code/quality-gates.md](~/.claude/references/commands/code/quality-gates.md) - Detailed quality gates
-- [@../../../rules/core/AI_OPERATION_PRINCIPLES.md](~/.claude/rules/core/AI_OPERATION_PRINCIPLES.md) - Quality standards
+- [@../../../references/commands/code/quality-gates.md](../../../references/commands/code/quality-gates.md) - Detailed quality gates
+- [@../../../rules/core/AI_OPERATION_PRINCIPLES.md](../../../rules/core/AI_OPERATION_PRINCIPLES.md) - Quality standards

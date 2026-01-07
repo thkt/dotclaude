@@ -28,13 +28,13 @@ Skip test generation when:
 
 For test-generator patterns and best practices:
 
-- [@../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - Detailed patterns
-- [@../../../skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - Bug-driven approach
+- [@../../../references/commands/shared/test-generation.md](../../../references/commands/shared/test-generation.md) - Detailed patterns
+- [@../../../skills/generating-tdd-tests/references/bug-driven.md](../../../skills/generating-tdd-tests/references/bug-driven.md) - Bug-driven approach
 
 ## Using test-generator
 
 For detailed invocation patterns:
-[@~/.claude/references/commands/shared/test-generation.md#pattern-2-bug-driven-generation-bug-fixing](~/.claude/references/commands/shared/test-generation.md#pattern-2-bug-driven-generation-bug-fixing)
+[@../shared/test-generation.md#pattern-2-bug-driven-generation-bug-fixing](../shared/test-generation.md#pattern-2-bug-driven-generation-bug-fixing)
 
 **Quick reference**: Use Pattern 2 (Bug-Driven Generation) with:
 
@@ -49,10 +49,10 @@ For detailed invocation patterns:
 Already written in Phase 1.5, but verify it's comprehensive:
 
 ```typescript
-it('when discount exceeds total, should return 0 not negative', () => {
+it("when discount exceeds total, should return 0 not negative", () => {
   // ✓ Already exists from Phase 1.5
-  expect(calculateTotal(100, 150)).toBe(0)
-})
+  expect(calculateTotal(100, 150)).toBe(0);
+});
 ```
 
 ### 2. Edge Cases
@@ -62,21 +62,21 @@ Generate tests for related edge cases:
 ```typescript
 // Generate these via test-generator:
 
-it('handles zero price with discount', () => {
-  expect(calculateTotal(0, 50)).toBe(0)
-})
+it("handles zero price with discount", () => {
+  expect(calculateTotal(0, 50)).toBe(0);
+});
 
-it('handles zero discount', () => {
-  expect(calculateTotal(100, 0)).toBe(100)
-})
+it("handles zero discount", () => {
+  expect(calculateTotal(100, 0)).toBe(100);
+});
 
-it('handles equal price and discount', () => {
-  expect(calculateTotal(100, 100)).toBe(0)
-})
+it("handles equal price and discount", () => {
+  expect(calculateTotal(100, 100)).toBe(0);
+});
 
-it('handles very large discounts', () => {
-  expect(calculateTotal(100, 1000000)).toBe(0)
-})
+it("handles very large discounts", () => {
+  expect(calculateTotal(100, 1000000)).toBe(0);
+});
 ```
 
 ### 3. Integration Tests (If Needed)
@@ -84,12 +84,12 @@ it('handles very large discounts', () => {
 If fix spans multiple components:
 
 ```typescript
-it('checkout flow with large discount', () => {
+it("checkout flow with large discount", () => {
   const cart = createCart([item1, item2]); // price: 100
   cart.applyDiscount(150);
   const total = cart.calculateTotal();
   expect(total).toBe(0); // ✓ Integration works
-})
+});
 ```
 
 ## Generated Test Characteristics
@@ -117,31 +117,31 @@ Generate edge case tests.
 ### Generated Output
 
 ```typescript
-describe('calculateTotal - discount edge cases', () => {
+describe("calculateTotal - discount edge cases", () => {
   // Main regression test (from Phase 1.5)
-  it('returns 0 when discount exceeds price', () => {
+  it("returns 0 when discount exceeds price", () => {
     expect(calculateTotal(100, 150)).toBe(0);
   });
 
   // Edge cases (generated)
-  it('handles zero price', () => {
+  it("handles zero price", () => {
     expect(calculateTotal(0, 50)).toBe(0);
   });
 
-  it('handles zero discount', () => {
+  it("handles zero discount", () => {
     expect(calculateTotal(100, 0)).toBe(100);
   });
 
-  it('handles equal values', () => {
+  it("handles equal values", () => {
     expect(calculateTotal(100, 100)).toBe(0);
   });
 
-  it('handles boundary conditions', () => {
+  it("handles boundary conditions", () => {
     expect(calculateTotal(0.01, 0.02)).toBe(0);
     expect(calculateTotal(100, 99.99)).toBeCloseTo(0.01);
   });
 
-  it('maintains precision', () => {
+  it("maintains precision", () => {
     expect(calculateTotal(10.5, 5.25)).toBe(5.25);
   });
 });
@@ -189,11 +189,13 @@ Tests Added: 5
 File: src/utils/pricing.test.ts
 
 Coverage:
+
 - Edge cases: [✓] Zero values, boundary conditions
 - Integration: [✓] Checkout flow
 - Negative cases: [✓] Invalid inputs
 
 Status:
+
 - All tests passing: PASS
 - Coverage improved: 78% -> 85%
 
@@ -208,5 +210,5 @@ Next: Definition of Done
 
 ## Related Principles
 
-- [@../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - Test patterns
-- [@../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD fundamentals
+- [@../../../references/commands/shared/test-generation.md](../../../references/commands/shared/test-generation.md) - Test patterns
+- [@../../../skills/generating-tdd-tests/SKILL.md](../../../skills/generating-tdd-tests/SKILL.md) - TDD fundamentals

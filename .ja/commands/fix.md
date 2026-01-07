@@ -45,7 +45,7 @@ dependencies: [Explore, test-generator, generating-tdd-tests]
 
 ### フェーズ1: 根本原因分析
 
-[@../../references/commands/fix/root-cause-analysis.md](~/.claude/references/commands/fix/root-cause-analysis.md)
+[@../../references/commands/fix/root-cause-analysis.md](../../references/commands/fix/root-cause-analysis.md)
 
 - 動的コンテキスト（git diff、テストステータス）
 - 5 Whysのための Explore エージェント
@@ -56,12 +56,12 @@ dependencies: [Explore, test-generator, generating-tdd-tests]
 
 ### フェーズ1.5: 回帰テスト先行（推奨）
 
-[@../../references/commands/fix/regression-test.md](~/.claude/references/commands/fix/regression-test.md)
+[@../../references/commands/fix/regression-test.md](../../references/commands/fix/regression-test.md)
 
 - バグ修正へのTDDアプローチ
 - バグを再現する失敗テストを書く
 - 正しい失敗を確認
-- 参照: [@../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md)
+- 参照: [@../../skills/generating-tdd-tests/SKILL.md](../../skills/generating-tdd-tests/SKILL.md)
 
 **スキップする場合**:
 
@@ -74,7 +74,7 @@ dependencies: [Explore, test-generator, generating-tdd-tests]
 
 ### フェーズ2: 実装
 
-[@../../references/commands/fix/implementation.md](~/.claude/references/commands/fix/implementation.md)
+[@../../references/commands/fix/implementation.md](../../references/commands/fix/implementation.md)
 
 - 信頼度ベースのアプローチ:
   - 高 (>0.9): 直接修正
@@ -88,7 +88,7 @@ dependencies: [Explore, test-generator, generating-tdd-tests]
 
 ### フェーズ3: 検証
 
-[@../../references/commands/fix/verification.md](~/.claude/references/commands/fix/verification.md)
+[@../../references/commands/fix/verification.md](../../references/commands/fix/verification.md)
 
 - 品質チェックを並行実行:
   - テスト（回帰 + すべて）
@@ -101,10 +101,10 @@ dependencies: [Explore, test-generator, generating-tdd-tests]
 
 ### フェーズ3.5: テスト生成（オプション）
 
-[@../../references/commands/fix/test-generation.md](~/.claude/references/commands/fix/test-generation.md)
+[@../../references/commands/fix/test-generation.md](../../references/commands/fix/test-generation.md)
 
 - エッジケース用にtest-generatorを使用
-- 参照: [@../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md)
+- 参照: [@../../references/commands/shared/test-generation.md](../../references/commands/shared/test-generation.md)
 - 必要に応じて統合テスト
 
 **スキップする場合**:
@@ -116,7 +116,7 @@ dependencies: [Explore, test-generator, generating-tdd-tests]
 
 ### 完了定義
 
-[@../../references/commands/fix/completion.md](~/.claude/references/commands/fix/completion.md)
+[@../../references/commands/fix/completion.md](../../references/commands/fix/completion.md)
 
 - 完了基準
 - 出力フォーマット
@@ -171,6 +171,6 @@ dependencies: [Explore, test-generator, generating-tdd-tests]
 
 TDDの基礎とパターン:
 
-- [@../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD哲学
-- [@../../skills/generating-tdd-tests/references/bug-driven.md](~/.claude/skills/generating-tdd-tests/references/bug-driven.md) - バグ駆動TDDパターン
-- [@../../references/commands/shared/tdd-cycle.md](~/.claude/references/commands/shared/tdd-cycle.md) - RGRCサイクル詳細
+- [@../../skills/generating-tdd-tests/SKILL.md](../../skills/generating-tdd-tests/SKILL.md) - TDD哲学
+- [@../../skills/generating-tdd-tests/references/bug-driven.md](../../skills/generating-tdd-tests/references/bug-driven.md) - バグ駆動TDDパターン
+- [@../../references/commands/shared/tdd-cycle.md](../../references/commands/shared/tdd-cycle.md) - RGRCサイクル詳細

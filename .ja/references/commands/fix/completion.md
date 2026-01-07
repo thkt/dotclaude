@@ -2,7 +2,7 @@
 
 `/fix`コマンドの完了定義と出力フォーマット。
 
-→ **共通基準**: [@../../../../rules/development/COMPLETION_CRITERIA.md](~/.claude/rules/development/COMPLETION_CRITERIA.md)
+→ **共通基準**: [@../../../../rules/development/COMPLETION_CRITERIA.md](../../../../rules/development/COMPLETION_CRITERIA.md)
 
 ## /fix固有の基準
 
@@ -234,6 +234,6 @@
 
 ## リファレンス
 
-- [@../../../../skills/applying-code-principles/SKILL.md](~/.claude/skills/applying-code-principles/SKILL.md) - シンプルさ（オッカムの剃刀）
-- [@../../../../rules/development/TIDYINGS.md](~/.claude/rules/development/TIDYINGS.md) - 随時クリーン
-- [@../../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](~/.claude/rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSSファースト
+- [@../../../../skills/applying-code-principles/SKILL.md](../../../../skills/applying-code-principles/SKILL.md) - シンプルさ（オッカムの剃刀）
+- [@../../../../rules/development/TIDYINGS.md](../../../../rules/development/TIDYINGS.md) - 随時クリーン
+- [@../../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - CSSファースト

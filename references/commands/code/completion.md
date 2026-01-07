@@ -2,7 +2,7 @@
 
 This module defines completion criteria and decision support for `/code` command.
 
-→ **Common criteria**: [@../../../rules/development/COMPLETION_CRITERIA.md](~/.claude/rules/development/COMPLETION_CRITERIA.md)
+→ **Common criteria**: [@../../../rules/development/COMPLETION_CRITERIA.md](../../../rules/development/COMPLETION_CRITERIA.md)
 
 ## /code Specific Criteria
 

@@ -10,9 +10,9 @@ Generate test cases in **skip state** from specification, then activate one-by-o
 
 For core TDD concepts and test generation patterns:
 
-- [@../../../skills/generating-tdd-tests/SKILL.md](~/.claude/skills/generating-tdd-tests/SKILL.md) - TDD philosophy
-- [@../../../skills/generating-tdd-tests/references/feature-driven.md](~/.claude/skills/generating-tdd-tests/references/feature-driven.md) - Feature-driven pattern
-- [@../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md) - Test generation patterns
+- [@../../../skills/generating-tdd-tests/SKILL.md](../../../skills/generating-tdd-tests/SKILL.md) - TDD philosophy
+- [@../../../skills/generating-tdd-tests/references/feature-driven.md](../../../skills/generating-tdd-tests/references/feature-driven.md) - Feature-driven pattern
+- [@../../../references/commands/shared/test-generation.md](../../../references/commands/shared/test-generation.md) - Test generation patterns
 
 ## When to Use
 
@@ -23,7 +23,7 @@ When spec.md exists and contains FR-xxx requirements or Given-When-Then scenario
 Use test-generator with skip mode to create test scaffold.
 
 **For detailed test-generator patterns**:
-[@../../../references/commands/shared/test-generation.md](~/.claude/references/commands/shared/test-generation.md#pattern-1-spec-driven-generation-feature-development)
+[@../../../references/commands/shared/test-generation.md](../../../references/commands/shared/test-generation.md)
 
 **Quick invocation**:
 

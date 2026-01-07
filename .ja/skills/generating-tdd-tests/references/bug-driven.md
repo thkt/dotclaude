@@ -86,7 +86,7 @@ it('負の入力を処理', () => { ... })
 ```typescript
 // 現在の（バグのある）コード:
 function calculateTotal(price: number, discount: number): number {
-  return price - discount  // Bad: 負を返す可能性がある！
+  return price - discount; // Bad: 負を返す可能性がある！
 }
 ```
 
@@ -102,13 +102,13 @@ function calculateTotal(price: number, discount: number): number {
 
 ```typescript
 // src/cart.test.ts
-describe('calculateTotal', () => {
-  it('割引が価格を超えた場合、負ではなく0を返すべき', () => {
+describe("calculateTotal", () => {
+  it("割引が価格を超えた場合、負ではなく0を返すべき", () => {
     // これがバグ: 0ではなく-50を返していた
-    const result = calculateTotal(100, 150)
-    expect(result).toBe(0) // Expected: 0, Received: -50
-  })
-})
+    const result = calculateTotal(100, 150);
+    expect(result).toBe(0); // Expected: 0, Received: -50
+  });
+});
 ```
 
 **ステップ2: テストを実行して失敗を確認**
@@ -136,8 +136,8 @@ FAIL  src/cart.test.ts
 ```typescript
 // src/cart.ts
 function calculateTotal(price: number, discount: number): number {
-  const result = price - discount
-  return Math.max(0, result)  // ← 修正: 非負を保証
+  const result = price - discount;
+  return Math.max(0, result); // ← 修正: 非負を保証
 }
 ```
 
@@ -176,26 +176,26 @@ Tests:       3 passed, 3 total
 **追加エッジケース用にtest-generatorを使用**:
 
 詳細なtest-generatorパターンについては、以下を参照:
-[@~/.claude/references/commands/shared/test-generation.md#pattern-2-bug-driven-generation](~/.claude/references/commands/shared/test-generation.md#pattern-2-bug-driven-generation)
+[@../../../references/commands/shared/test-generation.md#pattern-2-bug-driven-generation](../../../references/commands/shared/test-generation.md#pattern-2-bug-driven-generation)
 
 **生成されたテストの例**:
 
 ```typescript
-describe('calculateTotal - エッジケース', () => {
-  it('割引が価格を超えた場合は0を返す', () => {
-    expect(calculateTotal(100, 150)).toBe(0)
-  })
+describe("calculateTotal - エッジケース", () => {
+  it("割引が価格を超えた場合は0を返す", () => {
+    expect(calculateTotal(100, 150)).toBe(0);
+  });
 
-  it('割引付きのゼロ価格を処理', () => {
-    expect(calculateTotal(0, 50)).toBe(0)
-  })
+  it("割引付きのゼロ価格を処理", () => {
+    expect(calculateTotal(0, 50)).toBe(0);
+  });
 
-  it('価格と割引が等しい場合を処理', () => {
-    expect(calculateTotal(100, 100)).toBe(0)
-  })
+  it("価格と割引が等しい場合を処理", () => {
+    expect(calculateTotal(100, 100)).toBe(0);
+  });
 
   // ... その他のエッジケース
-})
+});
 ```
 
 ## 完全な例の流れ
@@ -203,22 +203,22 @@ describe('calculateTotal - エッジケース', () => {
 ```typescript
 // 修正前: バグが存在
 function calculateTotal(price: number, discount: number): number {
-  return price - discount  // Bad: 負を返す可能性がある
+  return price - discount; // Bad: 負を返す可能性がある
 }
 
 // フェーズ1.5: 失敗テストを書く
-it('割引が価格を超えた場合は0を返すべき', () => {
-  expect(calculateTotal(100, 150)).toBe(0)  // Bad: 失敗
-})
+it("割引が価格を超えた場合は0を返すべき", () => {
+  expect(calculateTotal(100, 150)).toBe(0); // Bad: 失敗
+});
 
 // フェーズ2: 最小限の修正を適用
 function calculateTotal(price: number, discount: number): number {
-  return Math.max(0, price - discount)  // Good: 修正済み
+  return Math.max(0, price - discount); // Good: 修正済み
 }
 
 // フェーズ3.5: エッジケースを追加（オプション）
-it('ゼロ価格を処理', () => expect(calculateTotal(0, 50)).toBe(0))
-it('大きな割引を処理', () => expect(calculateTotal(10, 1000)).toBe(0))
+it("ゼロ価格を処理", () => expect(calculateTotal(0, 50)).toBe(0));
+it("大きな割引を処理", () => expect(calculateTotal(10, 1000)).toBe(0));
 ```
 
 ## よくある落とし穴
@@ -242,14 +242,14 @@ it('大きな割引を処理', () => expect(calculateTotal(10, 1000)).toBe(0))
 
 ```typescript
 // 悪いテスト - 実際のバグを再現しない:
-it('割引を正しく計算', () => {
-  expect(calculateTotal(100, 50)).toBe(50)  // これは常に動いていた！
-})
+it("割引を正しく計算", () => {
+  expect(calculateTotal(100, 50)).toBe(50); // これは常に動いていた！
+});
 
 // 良いテスト - 正確なバグを再現:
-it('割引 > 価格の場合、負ではなく0を返す', () => {
-  expect(calculateTotal(100, 150)).toBe(0)  // これが失敗していた
-})
+it("割引 > 価格の場合、負ではなく0を返す", () => {
+  expect(calculateTotal(100, 150)).toBe(0); // これが失敗していた
+});
 ```
 
 ### 悪い例: 修正の過剰エンジニアリング
@@ -257,17 +257,17 @@ it('割引 > 価格の場合、負ではなく0を返す', () => {
 ```typescript
 // 過剰エンジニアリング:
 class DiscountValidator {
-  validate(price: number, discount: number): ValidationResult { }
+  validate(price: number, discount: number): ValidationResult {}
 }
 
 class TotalCalculator {
-  constructor(private validator: DiscountValidator) { }
-  calculate(price: number, discount: number): number { }
+  constructor(private validator: DiscountValidator) {}
+  calculate(price: number, discount: number): number {}
 }
 
 // 最小限の修正（オッカムの剃刀）:
 function calculateTotal(price: number, discount: number): number {
-  return Math.max(0, price - discount)
+  return Math.max(0, price - discount);
 }
 ```
 
@@ -329,15 +329,15 @@ $ npm test  // Good: PASSES（修正が動作することを確認）
 
 ```typescript
 // Good: 最小限:
-return Math.max(0, price - discount)
+return Math.max(0, price - discount);
 
 // Bad: 最小限でない（不必要な複雑さ）:
 if (discount > price) {
-  return 0
+  return 0;
 } else if (discount === price) {
-  return 0
+  return 0;
 } else {
-  return price - discount
+  return price - discount;
 }
 ```
 
@@ -351,14 +351,14 @@ if (discount > price) {
 
 ## 機能駆動TDDとの比較
 
-| 側面 | バグ駆動 | 機能駆動 |
-| --- | --- | --- |
-| **トリガー** | バグレポート | 仕様 |
-| **テスト状態** | アクティブ（スキップしない） | 最初はスキップ状態 |
-| **テスト数** | 1つのメイン + エッジケース | すべてのテストを事前に生成 |
-| **アクティベーション** | 即時 | ユーザー制御 |
-| **フォーカス** | リグレッション防止 | 機能完成 |
-| **速度** | 高速（リアクティブ） | 系統的（プロアクティブ） |
+| 側面                   | バグ駆動                     | 機能駆動                   |
+| ---------------------- | ---------------------------- | -------------------------- |
+| **トリガー**           | バグレポート                 | 仕様                       |
+| **テスト状態**         | アクティブ（スキップしない） | 最初はスキップ状態         |
+| **テスト数**           | 1つのメイン + エッジケース   | すべてのテストを事前に生成 |
+| **アクティベーション** | 即時                         | ユーザー制御               |
+| **フォーカス**         | リグレッション防止           | 機能完成                   |
+| **速度**               | 高速（リアクティブ）         | 系統的（プロアクティブ）   |
 
 ## 使用者
 

@@ -84,5 +84,5 @@ docs/adr/
 ## 参照
 
 - [MADR公式](https://adr.github.io/madr/)
-- [@../../../commands/adr.md](~/.claude/commands/adr.md) - /adrコマンド
-- [@../../../commands/adr/skill.md](~/.claude/commands/adr/skill.md) - /adr:skillクイックリファレンス
+- [@../../../commands/adr.md](../../../commands/adr.md) - /adrコマンド
+- [@../../../commands/adr/skill.md](../../../commands/adr/skill.md) - /adr:skillクイックリファレンス

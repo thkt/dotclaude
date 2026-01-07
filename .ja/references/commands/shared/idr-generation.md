@@ -50,7 +50,7 @@ IDR（Implementation Decision Record）の共通生成・更新ロジック。
    - 信頼度スコア
 
 4. idr.mdにテンプレートを使用して書き込み:
-   [@../../../../templates/idr/implementation.md](~/.claude/templates/idr/implementation.md)
+   [@../../../../templates/idr/implementation.md](../../../../templates/idr/implementation.md)
 ```
 
 ### 変更ファイル検出

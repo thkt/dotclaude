@@ -36,7 +36,9 @@ Generate test code that strictly adheres to a test plan document, avoiding over-
 
 ```markdown
 # Test Plan (in SOW document)
+
 ## Unit Tests
+
 - ✓ `calculateDiscount()` with valid purchase count
 - ✓ `calculateDiscount()` with zero purchases
 - ✓ `calculateDiscount()` with negative value (edge case)
@@ -48,17 +50,17 @@ Generate test code that strictly adheres to a test plan document, avoiding over-
 
 **Always reference existing tests before creating new ones**
 
-| Step | Action | Purpose |
-| --- | --- | --- |
-| 1 | Find tests in same directory/module | Learn project conventions |
-| 2 | Analyze test patterns and style | Mock setup, assertions, structure |
-| 3 | Follow project-specific conventions | Consistency, maintainability |
+| Step | Action                              | Purpose                           |
+| ---- | ----------------------------------- | --------------------------------- |
+| 1    | Find tests in same directory/module | Learn project conventions         |
+| 2    | Analyze test patterns and style     | Mock setup, assertions, structure |
+| 3    | Follow project-specific conventions | Consistency, maintainability      |
 
 **Why**: Output quality = Instruction quality. Concrete examples > abstract rules.
 
 ### 3. Occam's Razor for Tests
 
-See [@~/.claude/skills/generating-tdd-tests/SKILL.md#simplicity] for patterns.
+See [@../../skills/generating-tdd-tests/SKILL.md#simplicity](../../skills/generating-tdd-tests/SKILL.md#simplicity) for patterns.
 
 Key rules:
 
@@ -76,13 +78,16 @@ Test plans are embedded in SOW documents:
 ## Test Plan
 
 ### Unit Tests (Priority: High)
+
 - [ ] Function: `validateEmail()` - Valid email format
 - [ ] Function: `validateEmail()` - Invalid email format
 
 ### Integration Tests (Priority: Medium)
+
 - [ ] API endpoint: POST /users - Successful creation
 
 ### E2E Tests (Priority: Low)
+
 - [ ] User registration flow - Happy path
 ```
 
@@ -107,11 +112,11 @@ grep -r "describe\|test" . --include="*.test.ts"
 
 ### Step 3: Analyze Patterns & Check Duplicates
 
-| Situation | Action |
-| --- | --- |
-| File exists + Test exists | Skip (report as "already covered") |
-| File exists + Test missing | Append using discovered patterns |
-| File missing | Create new file using discovered patterns |
+| Situation                  | Action                                    |
+| -------------------------- | ----------------------------------------- |
+| File exists + Test exists  | Skip (report as "already covered")        |
+| File exists + Test missing | Append using discovered patterns          |
+| File missing               | Create new file using discovered patterns |
 
 ### Step 4: Generate Tests
 
@@ -132,16 +137,17 @@ Follow TDD cycle from Skill:
 ⚠️ Skipped: E2E tests (Priority: Low)
 
 Suggested additions (not implemented):
+
 - Edge case: negative purchase count
 ```
 
 ## Error Handling
 
-| Condition | Response |
-| --- | --- |
-| SOW not found | "⚠️ No SOW found. Skipping test generation." |
-| No Test Plan section | "ℹ️ No test plan in SOW. Manual creation required." |
-| Unknown test framework | "⚠️ No test framework detected. Cannot generate." |
+| Condition              | Response                                            |
+| ---------------------- | --------------------------------------------------- |
+| SOW not found          | "⚠️ No SOW found. Skipping test generation."        |
+| No Test Plan section   | "ℹ️ No test plan in SOW. Manual creation required." |
+| Unknown test framework | "⚠️ No test framework detected. Cannot generate."   |
 
 ## Constraints
 
