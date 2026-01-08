@@ -24,11 +24,11 @@ decision_question: "Are test cases covering all meaningful scenarios efficiently
 
 ## Test Design Techniques
 
-| Technique | Concept | Pattern | Example |
-| --- | --- | --- | --- |
-| **Equivalence Partitioning** | Divide inputs into groups that behave similarly | Test one value from each partition | Age validation: <18 (invalid), 18-120 (valid), >120 (invalid) → Test 17, 30, 121 |
-| **Boundary Value Analysis** | Test at partition edges where bugs hide | Test [min-1, min, max, max+1] | Age boundaries 18, 120 → Test 17, 18, 120, 121 |
-| **Decision Tables** | Map all condition combinations for complex logic (3+ conditions) | Create truth table, derive tests | Access control: isLoggedIn × isPremium × isActive → 5 meaningful combinations to test |
+| Technique                    | Concept                                                          | Pattern                            | Example                                                                               |
+| ---------------------------- | ---------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------- |
+| **Equivalence Partitioning** | Divide inputs into groups that behave similarly                  | Test one value from each partition | Age validation: <18 (invalid), 18-120 (valid), >120 (invalid) → Test 17, 30, 121      |
+| **Boundary Value Analysis**  | Test at partition edges where bugs hide                          | Test [min-1, min, max, max+1]      | Age boundaries 18, 120 → Test 17, 18, 120, 121                                        |
+| **Decision Tables**          | Map all condition combinations for complex logic (3+ conditions) | Create truth table, derive tests   | Access control: isLoggedIn × isPremium × isActive → 5 meaningful combinations to test |
 
 ## Coverage Goals
 
@@ -58,12 +58,14 @@ pytest --cov=src tests/         # Python
 
 ```markdown
 Priority coverage areas:
+
 1. **Critical business logic** - payment, authentication, data integrity
 2. **Public APIs** - all exposed interfaces
 3. **Error handlers** - exception paths
 4. **Complex conditionals** - decision points
 
 Lower priority:
+
 - Getters/setters without logic
 - Framework-generated code
 - Simple data structures
@@ -78,85 +80,80 @@ Break down to testable units (typically public methods):
 
 ```typescript
 // Good: Good: Test one method at a time
-describe('UserService.validateAge', () => {
+describe("UserService.validateAge", () => {
   // Tests for validateAge
-})
+});
 
 // Bad: Avoid: Testing entire class at once
-describe('UserService', () => {
+describe("UserService", () => {
   // Mixing tests for multiple methods
-})
+});
 ```
 
 ### Step 2: Design Test Scenarios
 
-For each unit:
-
-1. **List equivalence partitions**
-2. **Identify boundary values**
-3. **Create decision table if complex logic**
-4. **Derive test cases systematically**
+Apply techniques from the **Test Design Techniques** table above for each unit.
 
 ### Step 3: Write Test Cases
 
 ```typescript
 // Clear test structure - one assertion focus per test
-describe('validateAge', () => {
+describe("validateAge", () => {
   // Equivalence partitions
-  describe('invalid ages', () => {
-    test('rejects negative age', () => {
-      expect(validateAge(-1)).toBe(false)
-    })
+  describe("invalid ages", () => {
+    test("rejects negative age", () => {
+      expect(validateAge(-1)).toBe(false);
+    });
 
-    test('rejects age above maximum', () => {
-      expect(validateAge(150)).toBe(false)
-    })
-  })
+    test("rejects age above maximum", () => {
+      expect(validateAge(150)).toBe(false);
+    });
+  });
 
   // Boundary values
-  describe('boundary conditions', () => {
-    test('accepts minimum valid age', () => {
-      expect(validateAge(18)).toBe(true)
-    })
+  describe("boundary conditions", () => {
+    test("accepts minimum valid age", () => {
+      expect(validateAge(18)).toBe(true);
+    });
 
-    test('rejects one below minimum', () => {
-      expect(validateAge(17)).toBe(false)
-    })
-  })
+    test("rejects one below minimum", () => {
+      expect(validateAge(17)).toBe(false);
+    });
+  });
 
   // Valid partition
-  describe('valid ages', () => {
-    test('accepts typical adult age', () => {
-      expect(validateAge(30)).toBe(true)
-    })
-  })
-})
+  describe("valid ages", () => {
+    test("accepts typical adult age", () => {
+      expect(validateAge(30)).toBe(true);
+    });
+  });
+});
 ```
 
 ## Integration with Other Principles
 
-| Principle | Apply to Tests | Key Pattern |
-| --- | --- | --- |
-| **Occam's Razor** | Avoid test builders, helpers for simple cases | Direct test > complex test infrastructure |
-| **Readable Code** | Clear naming, one focus per test, Arrange-Act-Assert structure, minimal setup | Test names describe what they verify |
-| **Miller's Law** | Group tests into categories (7±2 limit) | `describe('validation', () => { describe('email', ...), describe('password', ...) })` |
+| Principle         | Apply to Tests                                                                | Key Pattern                                                                           |
+| ----------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Occam's Razor** | Avoid test builders, helpers for simple cases                                 | Direct test > complex test infrastructure                                             |
+| **Readable Code** | Clear naming, one focus per test, Arrange-Act-Assert structure, minimal setup | Test names describe what they verify                                                  |
+| **Miller's Law**  | Group tests into categories (7±2 limit)                                       | `describe('validation', () => { describe('email', ...), describe('password', ...) })` |
 
 ## Framework-Agnostic Patterns
 
-| Framework | Structure | Assertion |
-| --- | --- | --- |
-| **Jest/Vitest** | `describe('unit', () => { test('behavior', () => {...}) })` | `expect(actual).toBe(expected)` |
-| **Mocha/Chai** | `describe('unit', () => { it('should behavior', () => {...}) })` | `expect(actual).to.equal(expected)` |
-| **Pytest** | `class TestUnit: def test_behavior(self): ...` | `assert actual == expected` |
-| **RSpec** | `describe 'unit' do it 'behavior' do ... end end` | `expect(actual).to eq(expected)` |
+| Framework       | Structure                                                        | Assertion                           |
+| --------------- | ---------------------------------------------------------------- | ----------------------------------- |
+| **Jest/Vitest** | `describe('unit', () => { test('behavior', () => {...}) })`      | `expect(actual).toBe(expected)`     |
+| **Mocha/Chai**  | `describe('unit', () => { it('should behavior', () => {...}) })` | `expect(actual).to.equal(expected)` |
+| **Pytest**      | `class TestUnit: def test_behavior(self): ...`                   | `assert actual == expected`         |
+| **RSpec**       | `describe 'unit' do it 'behavior' do ... end end`                | `expect(actual).to eq(expected)`    |
 
 ## Common Pitfalls
 
-| Pitfall | Problem | Solution |
-| --- | --- | --- |
-| **Random Testing** | Testing arbitrary values (25, 50, 75) without rationale - misses boundaries | Use systematic design: test boundaries (min-1, min, max, max+1) + one equivalence value |
-| **Testing Implementation** | Spying on internal method calls - brittle, couples to implementation | Test behavior: verify outcomes, not how they're achieved |
-| **Incomplete Coverage** | Only testing happy path - missing edge cases | Cover all partitions + boundaries: [min-1, min, valid, max, max+1] |
+| Pitfall                    | Problem                                                                     | Solution                                                                                |
+| -------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Random Testing**         | Testing arbitrary values (25, 50, 75) without rationale - misses boundaries | Use systematic design: test boundaries (min-1, min, max, max+1) + one equivalence value |
+| **Testing Implementation** | Spying on internal method calls - brittle, couples to implementation        | Test behavior: verify outcomes, not how they're achieved                                |
+| **Incomplete Coverage**    | Only testing happy path - missing edge cases                                | Cover all partitions + boundaries: [min-1, min, valid, max, max+1]                      |
 
 ## Quick Reference
 
@@ -172,14 +169,6 @@ For each public method/function:
 - [ ] Verify C0 coverage ≥ 80%
 - [ ] Verify C1 coverage ≥ 70%
 - [ ] Tests are readable and maintainable
-
-### When to Use Each Technique
-
-| Technique | When to Use | Example |
-| --- | --- | --- |
-| Equivalence Partitioning | Input ranges, categories | Age validation, user roles |
-| Boundary Value Analysis | Numeric ranges, limits | Min/max values, array bounds |
-| Decision Tables | Multiple conditions (3+) | Access control, state machines |
 
 ## Related Principles
 
