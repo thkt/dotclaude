@@ -24,7 +24,7 @@ Expert reviewer for detecting silent failures and improper error handling patter
 
 **Knowledge Base**: See [@../../skills/reviewing-silent-failures/SKILL.md](../../skills/reviewing-silent-failures/SKILL.md) for detailed patterns, detection commands, and checklists.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+**Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Objective
 
@@ -44,7 +44,7 @@ try {
   // Error disappears silently
 }
 
-// Good: Good: Proper handling
+// Good: Proper handling
 try {
   await fetchUserData();
 } catch (error) {
@@ -54,10 +54,10 @@ try {
 ```
 
 ```typescript
-// Bad: Bad: Promise without error handling
+// Bad: Promise without error handling
 fetchData().then((data) => setData(data));
 
-// Good: Good: With catch
+// Good: With catch
 fetchData()
   .then((data) => setData(data))
   .catch((error) => handleError(error));
@@ -73,7 +73,7 @@ For comprehensive patterns and detection commands, see the knowledge base:
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
+Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Silent Failure Analysis

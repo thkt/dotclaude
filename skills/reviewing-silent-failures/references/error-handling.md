@@ -13,21 +13,21 @@
 
 ```typescript
 try {
-  await riskyOperation()
+  await riskyOperation();
 } catch (error) {
   // 1. Log with context
-  logger.error('Operation failed', {
+  logger.error("Operation failed", {
     error,
     userId: user.id,
-    action: 'riskyOperation',
-    timestamp: new Date().toISOString()
-  })
+    action: "riskyOperation",
+    timestamp: new Date().toISOString(),
+  });
 
   // 2. Inform user
-  showError('Operation failed. Please try again.')
+  showError("Operation failed. Please try again.");
 
   // 3. Optional: Report to monitoring
-  reportError(error)
+  reportError(error);
 }
 ```
 
@@ -68,12 +68,12 @@ function UserProfile({ userId }: { userId: string }) {
 ### Event Handler Error Handling
 
 ```typescript
-// Bad: Bad: Swallows errors
+// Bad: Swallows errors
 <button onClick={() => {
   try { submitForm() } catch (e) { }
 }}>Submit</button>
 
-// Good: Good: Handles errors properly
+// Good: Handles errors properly
 <button onClick={async () => {
   try {
     setSubmitting(true)
@@ -93,19 +93,19 @@ function UserProfile({ userId }: { userId: string }) {
 ```typescript
 // Good: Single catch at the end
 fetchUser(id)
-  .then(user => user.profile)
-  .then(profile => setProfile(profile))
-  .catch(error => {
-    logger.error('Failed to load profile', error)
-    setError('Could not load profile')
-  })
+  .then((user) => user.profile)
+  .then((profile) => setProfile(profile))
+  .catch((error) => {
+    logger.error("Failed to load profile", error);
+    setError("Could not load profile");
+  });
 
 // Good: With finally for cleanup
 fetchData()
-  .then(data => processData(data))
-  .then(result => setResult(result))
-  .catch(error => setError(error.message))
-  .finally(() => setLoading(false))
+  .then((data) => processData(data))
+  .then((result) => setResult(result))
+  .catch((error) => setError(error.message))
+  .finally(() => setLoading(false));
 ```
 
 ## Custom Error Classes
@@ -115,10 +115,10 @@ class ApiError extends Error {
   constructor(
     message: string,
     public statusCode: number,
-    public endpoint: string
+    public endpoint: string,
   ) {
-    super(message)
-    this.name = 'ApiError'
+    super(message);
+    this.name = "ApiError";
   }
 }
 
@@ -126,27 +126,27 @@ class ValidationError extends Error {
   constructor(
     message: string,
     public field: string,
-    public value: unknown
+    public value: unknown,
   ) {
-    super(message)
-    this.name = 'ValidationError'
+    super(message);
+    this.name = "ValidationError";
   }
 }
 
 // Usage
 try {
-  await saveUser(user)
+  await saveUser(user);
 } catch (error) {
   if (error instanceof ValidationError) {
-    showFieldError(error.field, error.message)
+    showFieldError(error.field, error.message);
   } else if (error instanceof ApiError) {
     if (error.statusCode === 401) {
-      redirectToLogin()
+      redirectToLogin();
     } else {
-      showError('Server error. Please try again.')
+      showError("Server error. Please try again.");
     }
   } else {
-    showError('An unexpected error occurred.')
+    showError("An unexpected error occurred.");
   }
 }
 ```
@@ -156,14 +156,14 @@ try {
 ```typescript
 function reportError(error: unknown, context?: Record<string, unknown>) {
   // Log to console in development
-  if (process.env.NODE_ENV === 'development') {
-    console.error('Error:', error, 'Context:', context)
+  if (process.env.NODE_ENV === "development") {
+    console.error("Error:", error, "Context:", context);
   }
 
   // Report to monitoring service in production
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     // Sentry, Bugsnag, etc.
-    errorReporter.captureException(error, { extra: context })
+    errorReporter.captureException(error, { extra: context });
   }
 }
 ```

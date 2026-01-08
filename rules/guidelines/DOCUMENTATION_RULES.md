@@ -238,10 +238,10 @@ flowchart LR
 ### Code Examples
 
 ```typescript
-// Bad: Avoid: Complex example first
+// Bad: Complex example first
 complexImplementation();
 
-// Good: Prefer: Simple example first
+// Good: Simple example first
 simpleImplementation();
 
 // Then show progression to complex

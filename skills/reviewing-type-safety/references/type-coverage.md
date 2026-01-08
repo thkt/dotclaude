@@ -11,12 +11,12 @@ Aim for 95%+ type coverage. Every function, parameter, and data structure should
 ```typescript
 // Bad: Dangerous: any disables all type checking
 function processUser(data: any) {
-  return data.name.toUpperCase() // No compile-time error, runtime crash
+  return data.name.toUpperCase(); // No compile-time error, runtime crash
 }
 
 // Good: Safe: TypeScript catches the error
 function processUser(data: User) {
-  return data.name.toUpperCase() // Compile-time check
+  return data.name.toUpperCase(); // Compile-time check
 }
 ```
 
@@ -25,10 +25,10 @@ function processUser(data: User) {
 ```typescript
 // Good: Safe: unknown requires type checking before use
 function processUnknownData(data: unknown): string {
-  if (typeof data === 'object' && data !== null && 'value' in data) {
-    return String((data as { value: unknown }).value)
+  if (typeof data === "object" && data !== null && "value" in data) {
+    return String((data as { value: unknown }).value);
   }
-  throw new Error('Invalid data format')
+  throw new Error("Invalid data format");
 }
 ```
 
@@ -45,7 +45,7 @@ Always document:
 ```typescript
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 // Reason: External API returns dynamic structure, validated at runtime
-const response: any = await externalApi.fetch()
+const response: any = await externalApi.fetch();
 ```
 
 ## Explicit Type Annotations
@@ -53,37 +53,37 @@ const response: any = await externalApi.fetch()
 ### Function Return Types
 
 ```typescript
-// Bad: Poor: Implicit return type
+// Bad: Implicit return type
 function getUser(id: string) {
-  return { name: 'John', age: 30 }
+  return { name: "John", age: 30 };
 }
 
-// Good: Good: Explicit return type
+// Good: Explicit return type
 function getUser(id: string): User {
-  return { name: 'John', age: 30 }
+  return { name: "John", age: 30 };
 }
 
-// Good: Good: Async functions
+// Good: Async functions
 async function fetchUser(id: string): Promise<User> {
-  const response = await api.get(`/users/${id}`)
-  return response.data
+  const response = await api.get(`/users/${id}`);
+  return response.data;
 }
 ```
 
 ### Interface Definitions
 
 ```typescript
-// Bad: Poor: Inline object types
-function createOrder(item: { id: string; price: number }) { }
+// Bad: Inline object types
+function createOrder(item: { id: string; price: number }) {}
 
-// Good: Good: Named interface
+// Good: Named interface
 interface OrderItem {
-  id: string
-  price: number
-  quantity: number
+  id: string;
+  price: number;
+  quantity: number;
 }
 
-function createOrder(item: OrderItem): Order { }
+function createOrder(item: OrderItem): Order {}
 ```
 
 ## Type Inference Balance
@@ -91,14 +91,14 @@ function createOrder(item: OrderItem): Order { }
 Let TypeScript infer when obvious:
 
 ```typescript
-// Good: Good: Let TS infer simple cases
-const count = 0                    // number
-const items = ['a', 'b']           // string[]
-const user = { name: 'John' }      // { name: string }
+// Good: Let TS infer simple cases
+const count = 0; // number
+const items = ["a", "b"]; // string[]
+const user = { name: "John" }; // { name: string }
 
-// Good: Good: Explicit when not obvious
-const cache: Map<string, User> = new Map()
-const config: AppConfig = loadConfig()
+// Good: Explicit when not obvious
+const cache: Map<string, User> = new Map();
+const config: AppConfig = loadConfig();
 ```
 
 ## Checklist

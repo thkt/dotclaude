@@ -32,32 +32,32 @@ Enable all strict mode options in `tsconfig.json` for maximum type safety.
 
 ### Key Options Explained
 
-| Option | Effect |
-| --- | --- |
-| `strictNullChecks` | `null` and `undefined` are distinct types |
-| `noImplicitAny` | Error on implicit `any` type |
-| `strictFunctionTypes` | Stricter function type checking |
-| `noUncheckedIndexedAccess` | Array/object access returns `T \| undefined` |
-| `useUnknownInCatchVariables` | `catch (e)` uses `unknown` instead of `any` |
+| Option                       | Effect                                       |
+| ---------------------------- | -------------------------------------------- |
+| `strictNullChecks`           | `null` and `undefined` are distinct types    |
+| `noImplicitAny`              | Error on implicit `any` type                 |
+| `strictFunctionTypes`        | Stricter function type checking              |
+| `noUncheckedIndexedAccess`   | Array/object access returns `T \| undefined` |
+| `useUnknownInCatchVariables` | `catch (e)` uses `unknown` instead of `any`  |
 
 ### Handling Strict Null Checks
 
 ```typescript
 // Bad: Error with strictNullChecks
 function greet(name: string | undefined) {
-  return name.toUpperCase() // Error: 'name' is possibly 'undefined'
+  return name.toUpperCase(); // Error: 'name' is possibly 'undefined'
 }
 
 // Good: Handle null/undefined
 function greet(name: string | undefined) {
-  if (!name) return 'Guest'
-  return name.toUpperCase()
+  if (!name) return "Guest";
+  return name.toUpperCase();
 }
 
 // Good: Non-null assertion (only when you're certain)
 function greet(name: string | undefined) {
   // Only use when you KNOW it's defined
-  return name!.toUpperCase()
+  return name!.toUpperCase();
 }
 ```
 
@@ -65,19 +65,19 @@ function greet(name: string | undefined) {
 
 ```typescript
 // With noUncheckedIndexedAccess: true
-const arr = [1, 2, 3]
-const first = arr[0] // number | undefined
+const arr = [1, 2, 3];
+const first = arr[0]; // number | undefined
 
 // Bad: Error
-console.log(first.toFixed()) // 'first' is possibly 'undefined'
+console.log(first.toFixed()); // 'first' is possibly 'undefined'
 
 // Good: Handle undefined
 if (first !== undefined) {
-  console.log(first.toFixed())
+  console.log(first.toFixed());
 }
 
 // Good: Assert when certain
-console.log(arr[0]!.toFixed()) // Only when you KNOW index exists
+console.log(arr[0]!.toFixed()); // Only when you KNOW index exists
 ```
 
 ## React Component Types
@@ -85,7 +85,7 @@ console.log(arr[0]!.toFixed()) // Only when you KNOW index exists
 ### Function Component
 
 ```typescript
-// Bad: Poor: Loose prop types
+// Bad: Loose prop types
 interface ButtonProps {
   onClick?: any
   children?: any
@@ -134,16 +134,16 @@ function Button({ variant = 'primary', loading, children, ...props }: ButtonProp
 ```typescript
 // Good: Explicit children types
 interface CardProps {
-  children: React.ReactNode // Any valid JSX
+  children: React.ReactNode; // Any valid JSX
 }
 
 interface ListProps<T> {
-  items: T[]
-  children: (item: T) => React.ReactElement // Render prop
+  items: T[];
+  children: (item: T) => React.ReactElement; // Render prop
 }
 
 interface WrapperProps {
-  children: React.ReactElement // Single element only
+  children: React.ReactElement; // Single element only
 }
 ```
 

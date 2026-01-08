@@ -24,7 +24,7 @@ hooks:
 
 Expert reviewer for web accessibility compliance and inclusive design in TypeScript/React applications.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+**Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Objective
 
@@ -39,10 +39,10 @@ Ensure web applications are accessible to all users, including those using assis
 #### Text Alternatives
 
 ```typescript
-// Bad: Poor: Missing alt text
+// Bad: Missing alt text
 <img src="logo.png" />
 
-// Good: Good: Descriptive alternatives
+// Good: Descriptive alternatives
 <img src="logo.png" alt="Company Logo" />
 <button aria-label="Close dialog"><img src="close.png" alt="" /></button>
 ```
@@ -50,10 +50,10 @@ Ensure web applications are accessible to all users, including those using assis
 #### Color Contrast
 
 ```typescript
-// Bad: Poor: Insufficient contrast
+// Bad: Insufficient contrast
 <p style={{ color: '#999', background: '#fff' }}>Light gray text</p>
 
-// Good: Good: WCAG AA compliant (4.5:1 for normal text)
+// Good: WCAG AA compliant (4.5:1 for normal text)
 <p style={{ color: '#595959', background: '#fff' }}>Readable text</p>
 ```
 
@@ -62,10 +62,10 @@ Ensure web applications are accessible to all users, including those using assis
 #### Keyboard Accessible
 
 ```typescript
-// Bad: Poor: Click-only interaction
+// Bad: Click-only interaction
 <div onClick={handleClick}>Click me</div>
 
-// Good: Good: Full keyboard support
+// Good: Full keyboard support
 <button onClick={handleClick}>Click me</button>
 // OR
 <div role="button" tabIndex={0} onClick={handleClick}
@@ -75,10 +75,10 @@ Ensure web applications are accessible to all users, including those using assis
 #### Focus Management
 
 ```typescript
-// Bad: Poor: No focus indication
+// Bad: No focus indication
 button:focus { outline: none; }
 
-// Good: Good: Clear focus indicators
+// Good: Clear focus indicators
 button:focus-visible { outline: 2px solid #0066cc; outline-offset: 2px; }
 ```
 
@@ -87,10 +87,10 @@ button:focus-visible { outline: 2px solid #0066cc; outline-offset: 2px; }
 #### Form Labels
 
 ```typescript
-// Bad: Poor: Missing labels
+// Bad: Missing labels
 <input type="email" placeholder="Email" />
 
-// Good: Good: Proper labeling
+// Good: Proper labeling
 <label htmlFor="email">Email Address</label>
 <input id="email" type="email" />
 ```
@@ -98,10 +98,10 @@ button:focus-visible { outline: 2px solid #0066cc; outline-offset: 2px; }
 #### Error Identification
 
 ```typescript
-// Bad: Poor: Color-only error indication
+// Bad: Color-only error indication
 <input style={{ borderColor: hasError ? 'red' : 'gray' }} />
 
-// Good: Good: Clear error messaging
+// Good: Clear error messaging
 <input aria-invalid={hasError} aria-describedby={hasError ? 'email-error' : undefined} />
 {hasError && <span id="email-error" role="alert">Please enter a valid email</span>}
 ```
@@ -111,10 +111,10 @@ button:focus-visible { outline: 2px solid #0066cc; outline-offset: 2px; }
 #### Valid HTML/ARIA
 
 ```typescript
-// Bad: Poor: Invalid ARIA usage
+// Bad: Invalid ARIA usage
 <div role="heading" aria-level="7">Title</div>
 
-// Good: Good: Semantic HTML preferred
+// Good: Semantic HTML preferred
 <h2>Title</h2>
 ```
 
@@ -187,7 +187,7 @@ Key questions:
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
+Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### WCAG Compliance Score: XX%

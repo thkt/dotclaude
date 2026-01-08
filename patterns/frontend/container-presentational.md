@@ -113,7 +113,7 @@ export const TodoList = ({ todos }: TodoListProps) => {
 ## Anti-patterns
 
 ```tsx
-// Bad: Avoid: Presentational fetching data
+// Bad: Presentational fetching data
 export const TodoList = () => {
   const [todos, setTodos] = useState([]); // Bad:
   useEffect(() => {
@@ -121,7 +121,7 @@ export const TodoList = () => {
   }, []);
 };
 
-// Bad: Avoid: Container with decorative styles
+// Bad: Container with decorative styles
 export const TodoContainer = () => {
   return (
     <div className="bg-blue-500 shadow-xl"> {/* ❌ Decorative */}

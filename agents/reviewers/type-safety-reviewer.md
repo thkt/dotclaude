@@ -24,7 +24,7 @@ Expert reviewer for TypeScript type safety and static typing practices.
 
 **Knowledge Base**: See [@../../skills/reviewing-type-safety/SKILL.md](../../skills/reviewing-type-safety/SKILL.md) for detailed patterns, checklists, and examples.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+**Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Objective
 
@@ -37,12 +37,12 @@ Ensure maximum type safety by identifying type coverage gaps, improper type usag
 ### Representative Examples
 
 ```typescript
-// Bad: Poor: any disables type checking
+// Bad: any disables type checking
 function parseData(data: any) {
   return data.value;
 }
 
-// Good: Good: Type guard with unknown
+// Good: Type guard with unknown
 function parseData(data: unknown): string {
   if (typeof data === "object" && data !== null && "value" in data) {
     return String((data as { value: unknown }).value);
@@ -52,12 +52,12 @@ function parseData(data: unknown): string {
 ```
 
 ```typescript
-// Bad: Poor: Unsafe type assertion
+// Bad: Unsafe type assertion
 if ((response as Success).data) {
   /* ... */
 }
 
-// Good: Good: Type predicate function
+// Good: Type predicate function
 function isSuccess(r: Response): r is Success {
   return r.success === true;
 }
@@ -76,7 +76,7 @@ For comprehensive patterns and checklists, see:
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
+Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Type Coverage Metrics

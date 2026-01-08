@@ -25,7 +25,7 @@ hooks:
 
 Expert reviewer for frontend performance optimization in TypeScript/React applications.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+**Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Objective
 
@@ -38,10 +38,10 @@ Identify performance bottlenecks and optimization opportunities in frontend code
 ### 1. React Rendering Optimization
 
 ```typescript
-// Bad: Poor: Inline object causes re-render
+// Bad: Inline object causes re-render
 <Component style={{ margin: 10 }} onClick={() => handleClick(id)} />
 
-// Good: Good: Stable references
+// Good: Stable references
 const style = useMemo(() => ({ margin: 10 }), [])
 const handleClickCallback = useCallback(() => handleClick(id), [id])
 ```
@@ -49,23 +49,23 @@ const handleClickCallback = useCallback(() => handleClick(id), [id])
 ### 2. Bundle Size Optimization
 
 ```typescript
-// Bad: Poor: Imports entire library
+// Bad: Imports entire library
 import * as _ from "lodash";
 
-// Good: Good: Tree-shakeable imports
+// Good: Tree-shakeable imports
 import debounce from "lodash/debounce";
 
-// Good: Good: Lazy loading routes
+// Good: Lazy loading routes
 const Dashboard = lazy(() => import("./Dashboard"));
 ```
 
 ### 3. State Management Performance
 
 ```typescript
-// Bad: Poor: Large state object causes full re-render
+// Bad: Large state object causes full re-render
 const [state, setState] = useState({ user, posts, comments, settings })
 
-// Good: Good: Separate state for independent updates
+// Good: Separate state for independent updates
 const [user, setUser] = useState(...)
 const [posts, setPosts] = useState(...)
 ```
@@ -73,10 +73,10 @@ const [posts, setPosts] = useState(...)
 ### 4. List Rendering Performance
 
 ```typescript
-// Bad: Poor: Index as key
+// Bad: Index as key
 items.map((item, index) => <Item key={index} />)
 
-// Good: Good: Stable unique keys + virtualization for large lists
+// Good: Stable unique keys + virtualization for large lists
 items.map(item => <Item key={item.id} />)
 <VirtualList items={items} itemHeight={50} renderItem={(item) => <Item {...item} />} />
 ```
@@ -84,13 +84,13 @@ items.map(item => <Item key={item.id} />)
 ### 5. Hook Performance
 
 ```typescript
-// Bad: Poor: Expensive computation every render
+// Bad: Expensive computation every render
 const expensiveResult = items.reduce(
   (acc, item) => performComplexCalculation(acc, item),
   initial,
 );
 
-// Good: Good: Memoized computation
+// Good: Memoized computation
 const expensiveResult = useMemo(
   () =>
     items.reduce((acc, item) => performComplexCalculation(acc, item), initial),
@@ -151,7 +151,7 @@ Key questions:
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
+Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Performance Metrics Impact

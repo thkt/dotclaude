@@ -36,14 +36,14 @@ Evaluate React design patterns usage, component organization, and state manageme
 ### 1. Presentational and Container Components
 
 ```typescript
-// Bad: Poor: Mixed concerns
+// Bad: Mixed concerns
 function UserList() {
   const [users, setUsers] = useState([])
   useEffect(() => { fetchUsers().then(setUsers) }, [])
   return <div>{users.map(u => <div key={u.id}>{u.name}</div>)}</div>
 }
 
-// Good: Good: Separated concerns
+// Good: Separated concerns
 function UserListContainer() {
   const { users, loading } = useUsers()
   return <UserListView users={users} loading={loading} />
@@ -57,7 +57,7 @@ function UserListView({ users, loading }: Props) {
 ### 2. Compound Components
 
 ```typescript
-// Good: Good: Flexible compound component pattern
+// Good: Flexible compound component pattern
 function Tabs({ children, defaultTab }: Props) {
   const [activeTab, setActiveTab] = useState(defaultTab)
   return (
@@ -73,7 +73,7 @@ Tabs.Panel = function TabPanel({ value, children }: PanelProps) { /* ... */ }
 ### 3. Custom Hook Patterns
 
 ```typescript
-// Bad: Poor: Hook doing too much
+// Bad: Hook doing too much
 function useUserData() {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -81,7 +81,7 @@ function useUserData() {
   // ...
 }
 
-// Good: Good: Focused hooks
+// Good: Focused hooks
 function useUser(userId: string) {
   /* fetch user */
 }
@@ -93,13 +93,13 @@ function useUserPosts(userId: string) {
 ### 4. State Management Patterns
 
 ```typescript
-// Bad: Poor: Unnecessary state lifting
+// Bad: Unnecessary state lifting
 function App() {
   const [inputValue, setInputValue] = useState('')
   return <SearchForm value={inputValue} onChange={setInputValue} />
 }
 
-// Good: Good: State where it's needed
+// Good: State where it's needed
 function SearchForm() {
   const [query, setQuery] = useState('')
   return <form><input value={query} onChange={e => setQuery(e.target.value)} /></form>

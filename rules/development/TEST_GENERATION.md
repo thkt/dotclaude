@@ -84,7 +84,7 @@ describe("UserService.validateAge", () => {
   // Tests for validateAge
 });
 
-// Bad: Avoid: Testing entire class at once
+// Bad: Testing entire class at once
 describe("UserService", () => {
   // Mixing tests for multiple methods
 });
