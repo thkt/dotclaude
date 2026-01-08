@@ -5,6 +5,7 @@ description: >
   Triggers: 原則, シンプル, 複雑, アーキテクチャ, リファクタリング, 保守性, コード品質,
   design pattern, best practice, clean code
 allowed-tools: Read, Grep, Glob
+user-invocable: false
 ---
 
 # Code Principles
@@ -34,11 +35,11 @@ When principles conflict:
 
 ### Miller's Law
 
-| Target | Ideal | Max | Limit |
-| --- | --- | --- | --- |
-| Function args | 3 | 5 | 7 |
-| Class methods | 5 | 7 | 9 |
-| Conditionals | 3 | 5 | 7 |
+| Target        | Ideal | Max | Limit |
+| ------------- | ----- | --- | ----- |
+| Function args | 3     | 5   | 7     |
+| Class methods | 5     | 7   | 9     |
+| Conditionals  | 3     | 5   | 7     |
 
 ### DRY
 

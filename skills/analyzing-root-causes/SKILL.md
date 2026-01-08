@@ -11,6 +11,7 @@ allowed-tools:
   - Glob
   - Task
 context: fork
+user-invocable: false
 ---
 
 # Root Cause Analysis - 5 Whys Methodology

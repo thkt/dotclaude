@@ -5,6 +5,7 @@ description: >
   位置, アニメーション, 表示/非表示, トグル, レスポンシブ, CSS Grid, Flexbox,
   transforms, transitions, CSSのみ, JavaScript不要, シンプル
 allowed-tools: Read, Write, Edit, Grep, Glob
+user-invocable: false
 ---
 
 # Progressive Enhancement

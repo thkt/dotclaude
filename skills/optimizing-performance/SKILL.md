@@ -12,6 +12,7 @@ allowed-tools:
   - mcp__claude-in-chrome__*
   - mcp__mdn__*
 agent: performance-reviewer
+user-invocable: false
 ---
 
 # Performance Optimization

@@ -7,6 +7,7 @@ description: >
   コマンドライン, ターミナル, GitHub CLI, package manager,
   パッケージマネージャ, Conventional Commits, HEREDOC, シェル.
 allowed-tools: Bash, Read, Glob
+user-invocable: false
 ---
 
 # CLI Tools Guide
@@ -24,24 +25,24 @@ Provide guidance on effective CLI tool usage for:
 
 ## Tool Categories
 
-| Category | Tools | Reference |
-| --- | --- | --- |
-| Version Control | git | [@./tools/git-essentials.md](./tools/git-essentials.md) |
-| GitHub | gh | [@./tools/gh-github-cli.md](./tools/gh-github-cli.md) |
-| Package Management | npm, yarn, pnpm | [@./tools/npm-scripts.md](./tools/npm-scripts.md) |
-| Code Review | coderabbit | [@./tools/coderabbit.md](./tools/coderabbit.md) |
+| Category           | Tools           | Reference                                               |
+| ------------------ | --------------- | ------------------------------------------------------- |
+| Version Control    | git             | [@./tools/git-essentials.md](./tools/git-essentials.md) |
+| GitHub             | gh              | [@./tools/gh-github-cli.md](./tools/gh-github-cli.md)   |
+| Package Management | npm, yarn, pnpm | [@./tools/npm-scripts.md](./tools/npm-scripts.md)       |
+| Code Review        | coderabbit      | [@./tools/coderabbit.md](./tools/coderabbit.md)         |
 
 ## Quick Reference
 
 ### Git
 
-| Action | Command |
-| --- | --- |
-| Status | `git status --short` |
-| Diff | `git diff --staged` |
-| Branch | `git branch --show-current` |
-| Log | `git log --oneline -10` |
-| Commit (HEREDOC) | See below |
+| Action           | Command                     |
+| ---------------- | --------------------------- |
+| Status           | `git status --short`        |
+| Diff             | `git diff --staged`         |
+| Branch           | `git branch --show-current` |
+| Log              | `git log --oneline -10`     |
+| Commit (HEREDOC) | See below                   |
 
 **HEREDOC Commit (avoids shell escaping issues)**:
 
@@ -57,22 +58,22 @@ EOF
 
 ### GitHub CLI (gh)
 
-| Action | Command |
-| --- | --- |
-| Create PR | `gh pr create --title "..." --body "..."` |
+| Action       | Command                                      |
+| ------------ | -------------------------------------------- |
+| Create PR    | `gh pr create --title "..." --body "..."`    |
 | Create Issue | `gh issue create --title "..." --body "..."` |
-| View PR | `gh pr view [number]` |
-| PR Status | `gh pr status` |
-| Check Runs | `gh pr checks` |
+| View PR      | `gh pr view [number]`                        |
+| PR Status    | `gh pr status`                               |
+| Check Runs   | `gh pr checks`                               |
 
 ### npm/yarn/pnpm
 
-| Action | npm | yarn | pnpm |
-| --- | --- | --- | --- |
-| Install | `npm install` | `yarn` | `pnpm install` |
-| Run script | `npm run <script>` | `yarn <script>` | `pnpm <script>` |
-| Add dep | `npm install <pkg>` | `yarn add <pkg>` | `pnpm add <pkg>` |
-| Dev dep | `npm install -D <pkg>` | `yarn add -D <pkg>` | `pnpm add -D <pkg>` |
+| Action     | npm                    | yarn                | pnpm                |
+| ---------- | ---------------------- | ------------------- | ------------------- |
+| Install    | `npm install`          | `yarn`              | `pnpm install`      |
+| Run script | `npm run <script>`     | `yarn <script>`     | `pnpm <script>`     |
+| Add dep    | `npm install <pkg>`    | `yarn add <pkg>`    | `pnpm add <pkg>`    |
+| Dev dep    | `npm install -D <pkg>` | `yarn add -D <pkg>` | `pnpm add -D <pkg>` |
 
 ## Best Practices
 
@@ -93,14 +94,14 @@ git commit -m "feat(user): add profile settings page"
 
 Format: `type(scope): description`
 
-| Type | Purpose |
-| --- | --- |
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation |
+| Type       | Purpose            |
+| ---------- | ------------------ |
+| `feat`     | New feature        |
+| `fix`      | Bug fix            |
+| `docs`     | Documentation      |
 | `refactor` | Code restructuring |
-| `test` | Test changes |
-| `chore` | Build/tooling |
+| `test`     | Test changes       |
+| `chore`    | Build/tooling      |
 
 ### 3. Safety First
 

@@ -11,6 +11,7 @@ allowed-tools:
   - Glob
   - Task
 agent: security-reviewer
+user-invocable: false
 ---
 
 # Security Review - OWASP Top 10 Based

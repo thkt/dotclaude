@@ -11,6 +11,7 @@ allowed-tools:
   - Glob
   - Task
 agent: readability-reviewer
+user-invocable: false
 ---
 
 # Readability Review - Code Clarity & Cognitive Load

@@ -11,6 +11,7 @@ allowed-tools:
   - Glob
   - Task
 agent: type-safety-reviewer
+user-invocable: false
 ---
 
 # Type Safety Review - TypeScript Best Practices

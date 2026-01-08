@@ -11,6 +11,7 @@ allowed-tools:
   - Glob
   - Task
 agent: silent-failure-reviewer
+user-invocable: false
 ---
 
 # Silent Failure Review - Error Visibility & Handling

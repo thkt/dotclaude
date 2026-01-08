@@ -11,6 +11,7 @@ allowed-tools:
   - Glob
   - Task
 agent: testability-reviewer
+user-invocable: false
 ---
 
 # Testability Review - Test-Friendly Code Design
