@@ -81,6 +81,17 @@ Auto-generated document tracking implementation through the lifecycle.
 | **Agents**   | Specialized analysis         | `audit-orchestrator`   |
 | **Skills**   | Knowledge base, auto-trigger | `generating-tdd-tests` |
 
+## Command Selection
+
+| Situation            | Command                 | Reason              |
+| -------------------- | ----------------------- | ------------------- |
+| Small bug, clear fix | `/fix`                  | Quick iteration     |
+| Unknown cause        | `/research` → `/fix`    | Investigate first   |
+| New feature          | `/think` → `/code`      | Plan then implement |
+| Complex architecture | Plan Mode (`Shift+Tab`) | Get approval first  |
+| Code review needed   | `/audit`                | Agent-based review  |
+| Before commit        | `/polish`               | Remove AI slop      |
+
 ## Related Files
 
 - `~/.claude/CLAUDE.md` - Global settings
