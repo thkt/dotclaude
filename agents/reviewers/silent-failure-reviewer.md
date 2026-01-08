@@ -26,11 +26,11 @@ Expert reviewer for detecting silent failures and improper error handling patter
 
 **Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
+**Common Patterns**: [@./reviewer-common.md](./reviewer-common.md) - Confidence markers, integration
+
 ## Objective
 
 Identify code patterns that fail silently, making bugs difficult to detect and debug. Silent failures are particularly dangerous in frontend code where user experience can degrade without visible errors.
-
-**Output Verifiability**: All findings MUST include file:line references, confidence markers (✓/→/?), and evidence per AI Operation Principle #4.
 
 ## Review Focus Areas
 

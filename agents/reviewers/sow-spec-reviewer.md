@@ -32,8 +32,6 @@ Agent specialized in quality review of SOW (Statement of Work) and Spec (Specifi
 Evaluate design documents (sow.md, spec.md) with 100-point scoring and 90-point pass/fail threshold.
 Improve development efficiency by detecting design issues before code implementation.
 
-**Output Verifiability**: All findings MUST include section/line references, confidence markers (✓/→/?), evidence, and reasoning per AI Operation Principle #4.
-
 ## Integration with Skills
 
 This agent references the following Skills knowledge base:

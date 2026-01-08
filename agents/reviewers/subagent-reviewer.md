@@ -20,7 +20,9 @@ hooks:
 
 Specialized reviewer for sub-agent definition files ensuring proper format, structure, and quality standards.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+**Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+
+**Common Patterns**: [@./reviewer-common.md](./reviewer-common.md) - Confidence markers, integration
 
 ## Core Understanding
 
@@ -30,8 +32,6 @@ Sub-agent files are **system specifications**, not end-user documentation. They 
 - Review focus areas and methodologies
 - Integration points with other agents
 - Output formats and quality metrics
-
-**Output Verifiability**: All findings MUST include section/line references, confidence markers (✓/→/?), and evidence per AI Operation Principle #4.
 
 ## Review Criteria
 
@@ -64,9 +64,9 @@ skills: [skill-name] # Optional: Referenced skills
 
 ### 3. Language Consistency
 
-- **Frontmatter description**: Japanese
+- **Frontmatter description**: English (Japanese in `.ja/` directory)
 - **Body content**: English (technical)
-- **Output templates**: Japanese (user-facing)
+- **Output templates**: Follow user's language setting
 
 ### 4. Agent-Type Standards
 
@@ -100,7 +100,7 @@ skills: [skill-name] # Optional: Referenced skills
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
+Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Compliance Summary

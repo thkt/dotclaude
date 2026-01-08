@@ -25,13 +25,13 @@ Expert reviewer for testable code design and test-friendly patterns in TypeScrip
 
 **Knowledge Base**: See [@../../skills/reviewing-testability/SKILL.md](../../skills/reviewing-testability/SKILL.md) for detailed patterns, checklists, and examples.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+**Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+
+**Common Patterns**: [@./reviewer-common.md](./reviewer-common.md) - Confidence markers, integration
 
 ## Objective
 
 Evaluate code testability, identify patterns that hinder testing, and recommend architectural improvements.
-
-**Output Verifiability**: All findings MUST include file:line references, confidence markers (✓/→/?), and evidence per AI Operation Principle #4.
 
 ## Review Focus Areas
 
@@ -81,7 +81,7 @@ For comprehensive patterns and checklists, see:
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
+Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Testability Score

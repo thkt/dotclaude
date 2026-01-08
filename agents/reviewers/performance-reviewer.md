@@ -23,135 +23,46 @@ hooks:
 
 # Performance Reviewer
 
-Expert reviewer for frontend performance optimization in TypeScript/React applications.
+Optimize React rendering efficiency, bundle size, and runtime performance.
 
-**Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+**Knowledge Base**: [@../../skills/optimizing-performance/SKILL.md](../../skills/optimizing-performance/SKILL.md) - Web Vitals, React optimization
+**Common Patterns**: [@./reviewer-common.md](./reviewer-common.md) - Confidence markers, integration
 
-## Objective
+## Review Focus
 
-Identify performance bottlenecks and optimization opportunities in frontend code, focusing on React rendering efficiency, bundle size optimization, and runtime performance.
+React rendering, Bundle size, Runtime performance
 
-**Output Verifiability**: All findings MUST include file:line references, confidence markers (✓/→/?), measurable impact metrics, and evidence per AI Operation Principle #4.
+### Representative Example: Stable References
 
-## Core Performance Areas
-
-### 1. React Rendering Optimization
-
-```typescript
+```tsx
 // Bad: Inline object causes re-render
 <Component style={{ margin: 10 }} onClick={() => handleClick(id)} />
 
 // Good: Stable references
 const style = useMemo(() => ({ margin: 10 }), [])
-const handleClickCallback = useCallback(() => handleClick(id), [id])
+const handleClickCb = useCallback(() => handleClick(id), [id])
+<Component style={style} onClick={handleClickCb} />
 ```
 
-### 2. Bundle Size Optimization
+### Representative Example: Code Splitting
 
-```typescript
-// Bad: Imports entire library
-import * as _ from "lodash";
+```tsx
+// Bad: Import everything upfront
+import { HeavyChart } from "./charts";
 
-// Good: Tree-shakeable imports
-import debounce from "lodash/debounce";
-
-// Good: Lazy loading routes
-const Dashboard = lazy(() => import("./Dashboard"));
+// Good: Lazy load on demand
+const HeavyChart = lazy(() => import("./charts"));
 ```
 
-### 3. State Management Performance
+## Target Thresholds
 
-```typescript
-// Bad: Large state object causes full re-render
-const [state, setState] = useState({ user, posts, comments, settings })
-
-// Good: Separate state for independent updates
-const [user, setUser] = useState(...)
-const [posts, setPosts] = useState(...)
-```
-
-### 4. List Rendering Performance
-
-```typescript
-// Bad: Index as key
-items.map((item, index) => <Item key={index} />)
-
-// Good: Stable unique keys + virtualization for large lists
-items.map(item => <Item key={item.id} />)
-<VirtualList items={items} itemHeight={50} renderItem={(item) => <Item {...item} />} />
-```
-
-### 5. Hook Performance
-
-```typescript
-// Bad: Expensive computation every render
-const expensiveResult = items.reduce(
-  (acc, item) => performComplexCalculation(acc, item),
-  initial,
-);
-
-// Good: Memoized computation
-const expensiveResult = useMemo(
-  () =>
-    items.reduce((acc, item) => performComplexCalculation(acc, item), initial),
-  [items],
-);
-```
-
-## Review Checklist
-
-### Rendering
-
-- [ ] Components properly memoized with React.memo
-- [ ] Callbacks wrapped in useCallback where needed
-- [ ] Values memoized with useMemo for expensive computations
-- [ ] Stable keys used in lists
-
-### Bundle
-
-- [ ] Tree-shakeable imports used
-- [ ] Dynamic imports for code splitting
-- [ ] Unnecessary dependencies removed
-
-### Runtime
-
-- [ ] Debouncing/throttling for frequent events
-- [ ] Web Workers for CPU-intensive tasks
-- [ ] Intersection Observer for visibility detection
-
-## Performance Metrics
-
-Target thresholds:
-
-- **FCP**: < 1.8s
-- **LCP**: < 2.5s
-- **TTI**: < 3.8s
-- **TBT**: < 200ms
-- **CLS**: < 0.1
-
-## Browser Measurement (Optional)
-
-**When Chrome DevTools MCP is available**, measure actual runtime performance.
-
-**Use when**: Complex React components, bundle size concerns, suspected memory leaks
-**Skip when**: Simple utility functions, no dev server
-
-## Applied Development Principles
-
-### Occam's Razor
-
-Key questions:
-
-1. Is this optimization solving a measured problem?
-2. Is the complexity justified by the performance gain?
-
-### Progressive Enhancement
-
-[@../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - Baseline performance first
+| Metric | Target |
+| ------ | ------ |
+| FCP    | < 1.8s |
+| LCP    | < 2.5s |
+| CLS    | < 0.1  |
 
 ## Output Format
-
-Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Performance Metrics Impact
@@ -160,12 +71,6 @@ Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base
 - Potential Reduction: Y KB (Z%) [✓/→]
 - Render Time Impact: ~Xms improvement [✓/→]
 
-### Bundle Analysis
-
-- Main bundle: X KB
-- Lazy-loaded chunks: Y KB
-- Large dependencies: [list]
-
 ### Rendering Analysis
 
 - Components needing memo: X
@@ -173,8 +78,7 @@ Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base
 - Expensive re-renders: Z components
 ```
 
-## Integration with Other Agents
+## Integration
 
 - **structure-reviewer**: Architectural performance implications
-- **type-safety-reviewer**: Type-related performance optimizations
 - **accessibility-reviewer**: Balance performance with accessibility

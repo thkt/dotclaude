@@ -26,11 +26,11 @@ Expert reviewer for TypeScript type safety and static typing practices.
 
 **Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
+**Common Patterns**: [@./reviewer-common.md](./reviewer-common.md) - Confidence markers, integration
+
 ## Objective
 
 Ensure maximum type safety by identifying type coverage gaps, improper type usage, and opportunities to leverage TypeScript's type system.
-
-**Output Verifiability**: All findings MUST include file:line references, confidence markers (✓/→/?), and evidence per AI Operation Principle #4.
 
 ## Review Focus Areas
 
