@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # 設定
-CLAUDE_CMD="/opt/homebrew/bin/claude"
+CLAUDE_CMD="${CLAUDE_CMD:-$(command -v claude 2>/dev/null || echo '/opt/homebrew/bin/claude')}"
 PROJECT_DIR="$HOME/.claude"
 OUTPUT_DIR="$PROJECT_DIR/workspace/audit"
 DATE=$(date +%Y-%m-%d)
@@ -14,9 +14,6 @@ OUTPUT_FILE="$OUTPUT_DIR/$DATE.md"
 # 検証ログの永続化（Claude 4 BP - State Management）
 STATE_FILE="$OUTPUT_DIR/.audit-state.json"
 HISTORY_FILE="$OUTPUT_DIR/.audit-history.json"
-
-# モデル設定（環境変数で上書き可能）
-MODEL="${CLAUDE_MODEL:-sonnet}"
 
 # ログ関数
 log() {
@@ -36,8 +33,8 @@ cd "$PROJECT_DIR"
 # Ref: https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-4-best-practices
 # Ref: https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
 
-# Base prompt (English for better Claude 4 accuracy)
-PROMPT_BASE='<context>
+# Prompt (English for better Claude 4 accuracy)
+PROMPT='<context>
 This repository contains Claude Code (CLI) personal configuration.
 It manages 22 skills, 14 reviewer agents, and 25 commands.
 Configuration consistency directly impacts development efficiency.
@@ -117,42 +114,11 @@ Before reporting any issue:
 4. If confidence < 80%, list separately as "Needs Confirmation"
 </feedback_loop>'
 
-# Model-specific optimization (Skills BP)
-# Haiku needs more detailed instructions, Opus can be more concise
-PROMPT_HAIKU_EXTRA='
-<model_guidance>
-You are running as Haiku. Be thorough in your file reading and verification steps.
-Execute each step explicitly and report what you found.
-</model_guidance>'
-
-PROMPT_OPUS_EXTRA='
-<model_guidance>
-You are running as Opus. Be efficient and focus on significant issues only.
-Skip minor formatting inconsistencies unless they impact functionality.
-</model_guidance>'
-
-# Select prompt based on model
-case "$MODEL" in
-  haiku)
-    PROMPT="${PROMPT_BASE}${PROMPT_HAIKU_EXTRA}"
-    log "Using Haiku-optimized prompt"
-    ;;
-  opus)
-    PROMPT="${PROMPT_BASE}${PROMPT_OPUS_EXTRA}"
-    log "Using Opus-optimized prompt"
-    ;;
-  *)
-    PROMPT="$PROMPT_BASE"
-    log "Using standard prompt (model: $MODEL)"
-    ;;
-esac
-
 # Execute and output
 {
   echo "# Daily Audit Report - $DATE"
   echo ""
   echo "## Target: $PROJECT_DIR"
-  echo "## Model: $MODEL"
   echo ""
   echo "---"
   echo ""
@@ -171,26 +137,37 @@ log "Report saved to $OUTPUT_FILE"
 # Extract JSON state from report and save (Claude 4 BP - State Management)
 extract_json_state() {
   local json_block
-  json_block=$(sed -n '/```json/,/```/p' "$OUTPUT_FILE" | sed '1d;$d')
 
-  if [ -n "$json_block" ]; then
-    # Save current state
-    echo "$json_block" > "$STATE_FILE"
-    log "State saved to $STATE_FILE"
+  # Extract last JSON block (reverse search for robustness)
+  json_block=$(tac "$OUTPUT_FILE" | sed -n '/^```$/,/^```json$/p' | tac | sed '1d;$d')
 
-    # Append to history (keep last 30 entries)
-    if [ -f "$HISTORY_FILE" ]; then
-      # Add new entry to existing history
-      jq --argjson new "$json_block" '. + [$new] | .[-30:]' "$HISTORY_FILE" > "${HISTORY_FILE}.tmp" 2>/dev/null \
-        && mv "${HISTORY_FILE}.tmp" "$HISTORY_FILE" \
-        || echo "[$json_block]" > "$HISTORY_FILE"
+  if [ -z "$json_block" ]; then
+    log "Warning: No JSON state found in report"
+    return
+  fi
+
+  # Validate JSON before saving
+  if ! echo "$json_block" | jq . >/dev/null 2>&1; then
+    log "Warning: Invalid JSON state, skipping save"
+    return
+  fi
+
+  # Save current state
+  echo "$json_block" > "$STATE_FILE"
+  log "State saved to $STATE_FILE"
+
+  # Append to history (keep last 30 entries)
+  if [ -f "$HISTORY_FILE" ]; then
+    if jq --argjson new "$json_block" '. + [$new] | .[-30:]' "$HISTORY_FILE" > "${HISTORY_FILE}.tmp" 2>&1; then
+      mv "${HISTORY_FILE}.tmp" "$HISTORY_FILE"
     else
+      log "Warning: Failed to update history, reinitializing"
       echo "[$json_block]" > "$HISTORY_FILE"
     fi
-    log "History updated in $HISTORY_FILE"
   else
-    log "Warning: No JSON state found in report"
+    echo "[$json_block]" > "$HISTORY_FILE"
   fi
+  log "History updated in $HISTORY_FILE"
 }
 
 extract_json_state
