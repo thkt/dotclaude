@@ -80,17 +80,9 @@
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": [
-        "fix",
-        "quick",
-        "coderabbit",
-        "review"
-      ],
+      "keywords": ["fix", "quick", "coderabbit", "review"],
       "category": "Quick Actions",
-      "commands": [
-        "./commands/fix.md",
-        "./commands/rabbit.md"
-      ]
+      "commands": ["./commands/fix.md", "./commands/rabbit.md"]
     },
     {
       "name": "automation-commands",
@@ -102,17 +94,9 @@
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": [
-        "automation",
-        "auto-test",
-        "full-cycle",
-        "continuous"
-      ],
+      "keywords": ["automation", "auto-test", "full-cycle", "continuous"],
       "category": "Automation",
-      "commands": [
-        "./commands/auto-test.md",
-        "./commands/full-cycle.md"
-      ]
+      "commands": ["./commands/auto-test.md", "./commands/full-cycle.md"]
     },
     {
       "name": "git-utilities",
@@ -186,17 +170,9 @@
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": [
-        "browser",
-        "e2e",
-        "playwright",
-        "testing",
-        "documentation"
-      ],
+      "keywords": ["browser", "e2e", "playwright", "testing", "documentation"],
       "category": "Browser Automation",
-      "commands": [
-        "./commands/e2e.md"
-      ]
+      "commands": ["./commands/e2e.md"]
     },
     {
       "name": "hookify-system",
@@ -208,12 +184,7 @@
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": [
-        "hooks",
-        "automation",
-        "configuration",
-        "claude-code"
-      ],
+      "keywords": ["hooks", "automation", "configuration", "claude-code"],
       "category": "Development Tools",
       "commands": [
         "./commands/hookify.md",
@@ -290,7 +261,7 @@
         "./rules/core/PRE_TASK_CHECK_COMPACT.md",
         "./rules/core/PRE_TASK_CHECK_VERBOSE.md",
         "./rules/development/AI_ASSISTED_DEVELOPMENT.md",
-        "./rules/development/CONTAINER_PRESENTATIONAL.md",
+        "./patterns/frontend/container-presentational.md",
         "./rules/development/LAW_OF_DEMETER.md",
         "./rules/development/LEAKY_ABSTRACTION.md",
         "./rules/development/PROGRESSIVE_ENHANCEMENT.md",

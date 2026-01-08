@@ -67,15 +67,19 @@ Tabs.Panel = function TabPanel({ value, children }: PanelProps) { /* ... */ }
 ```typescript
 // Bad: 悪い例: フックがやりすぎ
 function useUserData() {
-  const [user, setUser] = useState(null)
-  const [posts, setPosts] = useState([])
-  const [comments, setComments] = useState([])
+  const [user, setUser] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [comments, setComments] = useState([]);
   // ...
 }
 
 // Good: 良い例: 焦点を絞ったフック
-function useUser(userId: string) { /* ユーザーを取得 */ }
-function useUserPosts(userId: string) { /* 投稿を取得 */ }
+function useUser(userId: string) {
+  /* ユーザーを取得 */
+}
+function useUserPosts(userId: string) {
+  /* 投稿を取得 */
+}
 ```
 
 ### 4. 状態管理パターン
@@ -102,10 +106,12 @@ function SearchForm() {
 
 ```typescript
 // Bad: 派生状態のためのEffect
-useEffect(() => { setTotal(items.reduce((sum, i) => sum + i.price, 0)) }, [items])
+useEffect(() => {
+  setTotal(items.reduce((sum, i) => sum + i.price, 0));
+}, [items]);
 
 // Good: 直接計算
-const total = items.reduce((sum, i) => sum + i.price, 0)
+const total = items.reduce((sum, i) => sum + i.price, 0);
 ```
 
 ## レビューチェックリスト
@@ -124,7 +130,7 @@ const total = items.reduce((sum, i) => sum + i.price, 0)
 
 ## 適用される開発原則
 
-参照: [@../../../rules/development/CONTAINER_PRESENTATIONAL.md] コンポーネント分離について
+参照: [@../../../patterns/frontend/container-presentational.md](../../../patterns/frontend/container-presentational.md) コンポーネント分離について
 
 ## 出力形式
 
@@ -132,15 +138,18 @@ const total = items.reduce((sum, i) => sum + i.price, 0)
 
 ```markdown
 ### パターン使用スコア: XX/10
+
 - 適切なパターン選択: X/5
 - 一貫した実装: X/5
 
 ### コンテナ/プレゼンテーショナル分析
+
 - コンテナ: X コンポーネント
 - プレゼンテーショナル: Y コンポーネント
 - 関心事が混在: Z（要リファクタリング）
 
 ### カスタムフック分析
+
 - 合計: X, 単一責任: Y/X, 合成可能: Z/X
 ```
 

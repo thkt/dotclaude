@@ -23,7 +23,7 @@ hooks:
 
 Expert reviewer for React design patterns and component architecture.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+**Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Objective
 
@@ -138,11 +138,11 @@ const total = items.reduce((sum, i) => sum + i.price, 0);
 
 ## Applied Development Principles
 
-Reference: [@../../rules/development/CONTAINER_PRESENTATIONAL.md](../../rules/development/CONTAINER_PRESENTATIONAL.md) for component separation
+Reference: [@../../patterns/frontend/container-presentational.md](../../patterns/frontend/container-presentational.md) for component separation
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
+Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Pattern Usage Score: XX/10

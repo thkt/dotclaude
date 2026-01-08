@@ -88,13 +88,9 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 
 ## References
 
-### Principles (rules/)
+### Patterns
 
-- [@../../rules/development/CONTAINER_PRESENTATIONAL.md](../../rules/development/CONTAINER_PRESENTATIONAL.md) - Component separation pattern
-
-### Skill References
-
-- [@./references/container-presentational.md](./references/container-presentational.md) - Detailed separation guide
+- [@../../patterns/frontend/container-presentational.md](../../patterns/frontend/container-presentational.md) - Detailed separation guide
 
 ### Related Skills
 

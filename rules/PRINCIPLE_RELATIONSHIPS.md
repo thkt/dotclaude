@@ -84,15 +84,15 @@ graph TD
 
 Detailed implementation guides for each practice:
 
-| Practice                 | File                                                                                    | Focus                     |
-| ------------------------ | --------------------------------------------------------------------------------------- | ------------------------- |
-| Progressive Enhancement  | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)   | CSS-first, outcome-driven |
-| Readable Code            | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                       | Clarity over cleverness   |
-| TDD/RGRC                 | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                 | Red-Green-Refactor cycle  |
-| Container/Presentational | [@./development/CONTAINER_PRESENTATIONAL.md](./development/CONTAINER_PRESENTATIONAL.md) | UI/logic separation       |
-| Law of Demeter           | [@./development/LAW_OF_DEMETER.md](./development/LAW_OF_DEMETER.md)                     | Minimal coupling          |
-| Leaky Abstraction        | [@./development/LEAKY_ABSTRACTION.md](./development/LEAKY_ABSTRACTION.md)               | Pragmatic abstractions    |
-| TIDYINGS                 | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                 | Micro-improvements        |
+| Practice                 | File                                                                                                  | Focus                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- | ------------------------- |
+| Progressive Enhancement  | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)                 | CSS-first, outcome-driven |
+| Readable Code            | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                                     | Clarity over cleverness   |
+| TDD/RGRC                 | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                               | Red-Green-Refactor cycle  |
+| Container/Presentational | [@../patterns/frontend/container-presentational.md](../patterns/frontend/container-presentational.md) | UI/logic separation       |
+| Law of Demeter           | [@./development/LAW_OF_DEMETER.md](./development/LAW_OF_DEMETER.md)                                   | Minimal coupling          |
+| Leaky Abstraction        | [@./development/LEAKY_ABSTRACTION.md](./development/LEAKY_ABSTRACTION.md)                             | Pragmatic abstractions    |
+| TIDYINGS                 | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                               | Micro-improvements        |
 
 ## Related Documentation
 

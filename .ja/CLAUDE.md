@@ -40,7 +40,7 @@
 
 - コードタスク: `enhancing-progressively` スキルで利用可能
 - React/UI: `applying-frontend-patterns` スキルで利用可能
-- コンポーネント設計: [Container/Presentational](../rules/development/CONTAINER_PRESENTATIONAL.md)
+- コンポーネント設計: [Container/Presentational](../patterns/frontend/container-presentational.md)
 - 大規模: [デメテルの法則](../rules/development/LAW_OF_DEMETER.md)
 - テスト: `generating-tdd-tests` スキルで利用可能
 
@@ -81,7 +81,7 @@
 - **コマンド発見**（優先順に実行）:
   1. **最初**: README.mdを読み、"Scripts"または"Commands"セクションを確認
   2. **次に**: パッケージマネージャ設定を調査（package.json > scripts、pubspec.yaml > scripts）
-  3. **その次**: 一般的なテストファイルを検索（*.test.*、*.spec.*、test/、spec/）
+  3. **その次**: 一般的なテストファイルを検索（_.test._、_.spec._、test/、spec/）
   4. **最後の手段**: 手順1-3で結果がない場合、以下の形式でユーザーに質問:
      「テストコマンドが見つかりませんでした。テスト実行コマンドを指定してください（例: npm test, yarn test）。」
 

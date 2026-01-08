@@ -54,14 +54,16 @@ src/
 
 ```tsx
 // TodoContainer/index.tsx
-import { useTodos } from '@/hooks/useTodos';
-import { TodoList } from '@/components/TodoList';
+import { useTodos } from "@/hooks/useTodos";
+import { TodoList } from "@/components/TodoList";
 
 export const TodoContainer = () => {
   const todos = useTodos();
 
   return (
-    <div className="p-4 max-w-4xl mx-auto"> {/* Layout only */}
+    <div className="p-4 max-w-4xl mx-auto">
+      {" "}
+      {/* Layout only */}
       <TodoList todos={todos} />
     </div>
   );
@@ -78,8 +80,10 @@ type TodoListProps = {
 
 export const TodoList = ({ todos }: TodoListProps) => {
   return (
-    <ul className="bg-white rounded-lg shadow"> {/* Decorative styles */}
-      {todos.map(todo => (
+    <ul className="bg-white rounded-lg shadow">
+      {" "}
+      {/* Decorative styles */}
+      {todos.map((todo) => (
         <li key={todo.id} className="p-3 border-b">
           {todo.title}
         </li>
@@ -143,4 +147,6 @@ export const TodoContainer = () => {
 
 ## Related Principles
 
-See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)
+- [@../rules/development/LAW_OF_DEMETER.md](../rules/development/LAW_OF_DEMETER.md) - Props-only pattern naturally follows Law of Demeter
+- [@../rules/development/READABLE_CODE.md](../rules/development/READABLE_CODE.md) - Clear separation improves code understanding
+- [@../rules/PRINCIPLE_RELATIONSHIPS.md](../rules/PRINCIPLE_RELATIONSHIPS.md#development-practices)

@@ -84,15 +84,15 @@ graph TD
 
 各プラクティスの詳細な実装ガイド:
 
-| プラクティス                   | ファイル                                                                                | フォーカス                 |
-| ------------------------------ | --------------------------------------------------------------------------------------- | -------------------------- |
-| プログレッシブエンハンスメント | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)   | CSS優先、成果駆動          |
-| 読みやすいコード               | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                       | 巧妙さより明瞭さ           |
-| TDD/RGRC                       | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                 | Red-Green-Refactorサイクル |
-| Container/Presentational       | [@./development/CONTAINER_PRESENTATIONAL.md](./development/CONTAINER_PRESENTATIONAL.md) | UI/ロジック分離            |
-| デメテルの法則                 | [@./development/LAW_OF_DEMETER.md](./development/LAW_OF_DEMETER.md)                     | 最小結合                   |
-| リーキー抽象化                 | [@./development/LEAKY_ABSTRACTION.md](./development/LEAKY_ABSTRACTION.md)               | 実用的な抽象化             |
-| TIDYINGS                       | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                 | マイクロ改善               |
+| プラクティス                   | ファイル                                                                                                    | フォーカス                 |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------- | -------------------------- |
+| プログレッシブエンハンスメント | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)                       | CSS優先、成果駆動          |
+| 読みやすいコード               | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                                           | 巧妙さより明瞭さ           |
+| TDD/RGRC                       | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                                     | Red-Green-Refactorサイクル |
+| Container/Presentational       | [@../../patterns/frontend/container-presentational.md](../../patterns/frontend/container-presentational.md) | UI/ロジック分離            |
+| デメテルの法則                 | [@./development/LAW_OF_DEMETER.md](./development/LAW_OF_DEMETER.md)                                         | 最小結合                   |
+| リーキー抽象化                 | [@./development/LEAKY_ABSTRACTION.md](./development/LEAKY_ABSTRACTION.md)                                   | 実用的な抽象化             |
+| TIDYINGS                       | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                                     | マイクロ改善               |
 
 ## 関連ドキュメント
 

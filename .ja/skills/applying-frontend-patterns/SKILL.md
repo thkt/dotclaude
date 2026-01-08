@@ -15,23 +15,23 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## コアパターン概要
 
-| パターン | コンセプト | 使用タイミング |
-| --- | --- | --- |
-| Container/Presentational | ロジックとUIの分離 | データ取得 + 表示 |
-| カスタムフック（React） | 再利用可能なステートフルロジック | コンポーネント間で共有する振る舞い |
-| コンポジション | シンプルから複雑を構築 | 柔軟で再利用可能なコンポーネント |
-| 状態管理 | アプリケーションデータの整理 | ローカル → 共有 → グローバル |
+| パターン                 | コンセプト                       | 使用タイミング                     |
+| ------------------------ | -------------------------------- | ---------------------------------- |
+| Container/Presentational | ロジックとUIの分離               | データ取得 + 表示                  |
+| カスタムフック（React）  | 再利用可能なステートフルロジック | コンポーネント間で共有する振る舞い |
+| コンポジション           | シンプルから複雑を構築           | 柔軟で再利用可能なコンポーネント   |
+| 状態管理                 | アプリケーションデータの整理     | ローカル → 共有 → グローバル       |
 
 ## Container/Presentationalパターン
 
 **主要原則**: 関心の分離
 
-| Container（ロジック） | Presentational（UI） |
-| --- | --- |
-| データを取得 | propsでデータを受け取る |
-| 状態を管理 | ステートレス（理想） |
-| イベントを処理 | コールバックpropsを呼び出す |
-| スタイリングなし | すべてのスタイリングがここ |
+| Container（ロジック） | Presentational（UI）        |
+| --------------------- | --------------------------- |
+| データを取得          | propsでデータを受け取る     |
+| 状態を管理            | ステートレス（理想）        |
+| イベントを処理        | コールバックpropsを呼び出す |
+| スタイリングなし      | すべてのスタイリングがここ  |
 
 **適用ルール**:
 
@@ -41,41 +41,41 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## Hooksガイドライン（React）
 
-| Hook | 用途 | 避けるべき落とし穴 |
-| --- | --- | --- |
-| useEffect | 副作用 | 依存関係の欠落 |
-| useMemo | 高コストな計算 | 早すぎる最適化 |
-| useCallback | 安定した関数参照 | 過度なメモ化 |
-| カスタムフック | 再利用可能なロジック | `use`で始めない |
+| Hook           | 用途                 | 避けるべき落とし穴 |
+| -------------- | -------------------- | ------------------ |
+| useEffect      | 副作用               | 依存関係の欠落     |
+| useMemo        | 高コストな計算       | 早すぎる最適化     |
+| useCallback    | 安定した関数参照     | 過度なメモ化       |
+| カスタムフック | 再利用可能なロジック | `use`で始めない    |
 
 **依存関係ルール**: effect内で使用するすべての値を常に含める。
 
 ## 状態管理戦略
 
-| スコープ | ツール（React） | 例 |
-| --- | --- | --- |
-| ローカル | useState | フォーム入力、トグル |
-| 共有 | Context | テーマ、認証状態 |
-| グローバル | Zustand/Redux | アプリ全体のキャッシュ |
+| スコープ   | ツール（React） | 例                     |
+| ---------- | --------------- | ---------------------- |
+| ローカル   | useState        | フォーム入力、トグル   |
+| 共有       | Context         | テーマ、認証状態       |
+| グローバル | Zustand/Redux   | アプリ全体のキャッシュ |
 
 **粒度ルール**: 大きな状態オブジェクトは別々の状態に分割。
 
 ## コンポジションパターン
 
-| パターン | ユースケース |
-| --- | --- |
-| children | ラッパーコンポーネント、カード、モーダル |
-| render props | データに基づく動的レンダリング |
-| HOC | 横断的関心事（認証、ロギング） |
+| パターン     | ユースケース                             |
+| ------------ | ---------------------------------------- |
+| children     | ラッパーコンポーネント、カード、モーダル |
+| render props | データに基づく動的レンダリング           |
+| HOC          | 横断的関心事（認証、ロギング）           |
 
 ## フレームワーク比較
 
-| パターン | React | Vue | Angular |
-| --- | --- | --- | --- |
-| 分離 | Container/Presentational | Composition API | Smart/Dumb |
-| 状態 | useState, Context | ref, reactive | Services |
-| 副作用 | useEffect | watch, onMounted | ngOnInit |
-| スロット | children | slots | ng-content |
+| パターン | React                    | Vue              | Angular    |
+| -------- | ------------------------ | ---------------- | ---------- |
+| 分離     | Container/Presentational | Composition API  | Smart/Dumb |
+| 状態     | useState, Context        | ref, reactive    | Services   |
+| 副作用   | useEffect                | watch, onMounted | ngOnInit   |
+| スロット | children                 | slots            | ng-content |
 
 ## パターンを使わないとき
 
@@ -87,13 +87,9 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## 参照
 
-### 原則（rules/）
+### パターン
 
-- [@../../../rules/development/CONTAINER_PRESENTATIONAL.md](../../../rules/development/CONTAINER_PRESENTATIONAL.md) - コンポーネント分離パターン
-
-### スキル参照
-
-- [@./references/container-presentational.md](./references/container-presentational.md) - 詳細な分離ガイド
+- [@../../../patterns/frontend/container-presentational.md](../../../patterns/frontend/container-presentational.md) - 詳細な分離ガイド
 
 ### 関連スキル
 
