@@ -54,6 +54,15 @@ Guidelines for consistent documentation in the Claude Code ecosystem.
 - Diagrams: Mermaid or tables (no ASCII)
 - Comments: Use text labels in AI docs, emojis OK in human output
 
+## Anti-Patterns
+
+| Avoid                    | Instead        |
+| ------------------------ | -------------- |
+| Single language updates  | EN/JP together |
+| Deep nesting (>3 levels) | Flat hierarchy |
+| Circular references      | Tree structure |
+| ASCII art diagrams       | Mermaid/tables |
+
 ## Quality Checklist
 
 - [ ] EN/JP synchronized
