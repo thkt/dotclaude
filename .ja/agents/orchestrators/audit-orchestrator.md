@@ -4,8 +4,17 @@ description: >
   フロントエンドコードレビューの全体を統括するマスターオーケストレーター。
   専門エージェントの調整と結果の統合を行います。
   複数の専門レビューエージェントの実行管理、結果統合、優先度付け、実行可能な改善提案の生成を行います。
-tools: Task, Grep, Glob, LS, Read
+tools:
+  - Task
+  - Grep
+  - Glob
+  - LS
+  - Read
 model: opus
+hooks:
+  PreToolUse:
+    - matcher: "Task"
+      command: "echo '[audit] Launching sub-agent'"
 ---
 
 # レビューオーケストレーター
@@ -137,7 +146,7 @@ execution_plan:
 ### 2.5. JP/EN翻訳ファイルの取り扱い
 
 バイリンガルドキュメントのレビューガイドラインの詳細は以下を参照:
-[@../../../rules/guidelines/JP_EN_TRANSLATION_RULES.md](../../../rules/guidelines/JP_EN_TRANSLATION_RULES.md)
+[@../../rules/guidelines/JP_EN_TRANSLATION_RULES.md](../../rules/guidelines/JP_EN_TRANSLATION_RULES.md)
 
 **要点**:
 

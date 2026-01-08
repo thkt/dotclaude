@@ -79,7 +79,7 @@ Lower priority:
 Break down to testable units (typically public methods):
 
 ```typescript
-// Good: Good: Test one method at a time
+// Good: Test one method at a time
 describe("UserService.validateAge", () => {
   // Tests for validateAge
 });
