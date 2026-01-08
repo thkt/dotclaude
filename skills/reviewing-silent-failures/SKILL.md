@@ -31,11 +31,9 @@ Target: All failures are visible, debuggable, and user-informed.
 
 ## Section-Based Loading
 
-| Section    | File                               | Focus                           | Triggers               |
-| ---------- | ---------------------------------- | ------------------------------- | ---------------------- |
-| Detection  | `references/detection-patterns.md` | Regex patterns, search commands | 空のcatch, empty catch |
-| Handling   | `references/error-handling.md`     | Proper error handling patterns  | エラーハンドリング     |
-| Boundaries | `references/error-boundaries.md`   | React Error Boundary            | Error Boundary         |
+| Section   | File                               | Focus                           | Triggers               |
+| --------- | ---------------------------------- | ------------------------------- | ---------------------- |
+| Detection | `references/detection-patterns.md` | Regex patterns, search commands | 空のcatch, empty catch |
 
 ## Quick Checklist
 

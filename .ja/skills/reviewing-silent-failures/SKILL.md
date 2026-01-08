@@ -14,22 +14,20 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## サイレント障害リスクレベル
 
-| パターン | リスク | 影響 |
-| --- | --- | --- |
-| 空のcatchブロック | [クリティカル] | エラーが完全に隠される |
-| catchなしのPromise | [クリティカル] | 未処理のrejection |
-| Fire and forget async | [高] | エラーコンテキストが失われる |
-| Console.logのみ | [高] | ユーザーフィードバックなし |
-| Error Boundaryなし | [高] | コンポーネントエラーでアプリがクラッシュ |
-| 過度なオプショナルチェーン | [中] | バグを隠す可能性 |
+| パターン                   | リスク         | 影響                                     |
+| -------------------------- | -------------- | ---------------------------------------- |
+| 空のcatchブロック          | [クリティカル] | エラーが完全に隠される                   |
+| catchなしのPromise         | [クリティカル] | 未処理のrejection                        |
+| Fire and forget async      | [高]           | エラーコンテキストが失われる             |
+| Console.logのみ            | [高]           | ユーザーフィードバックなし               |
+| Error Boundaryなし         | [高]           | コンポーネントエラーでアプリがクラッシュ |
+| 過度なオプショナルチェーン | [中]           | バグを隠す可能性                         |
 
 ## セクションベースのロード
 
-| セクション | ファイル | フォーカス | トリガー |
-| --- | --- | --- | --- |
-| 検出 | `references/detection-patterns.md` | Regexパターン、検索コマンド | 空のcatch, empty catch |
-| ハンドリング | `references/error-handling.md` | 適切なエラーハンドリングパターン | エラーハンドリング |
-| Boundaries | `references/error-boundaries.md` | React Error Boundary | Error Boundary |
+| セクション | ファイル                           | フォーカス                  | トリガー               |
+| ---------- | ---------------------------------- | --------------------------- | ---------------------- |
+| 検出       | `references/detection-patterns.md` | Regexパターン、検索コマンド | 空のcatch, empty catch |
 
 ## クイックチェックリスト
 
@@ -56,11 +54,11 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## 主要原則
 
-| 原則 | 適用 |
-| --- | --- |
-| Fail Fast | 障害を可視化し即座に検出 |
-| ユーザーフィードバック | 障害を常にユーザーに通知 |
-| コンテキストロギング | デバッグに十分な情報をログ |
+| 原則                         | 適用                         |
+| ---------------------------- | ---------------------------- |
+| Fail Fast                    | 障害を可視化し即座に検出     |
+| ユーザーフィードバック       | 障害を常にユーザーに通知     |
+| コンテキストロギング         | デバッグに十分な情報をログ   |
 | グレースフルデグラデーション | サイレントではなく優雅に失敗 |
 
 ## 検出コマンド
@@ -83,17 +81,17 @@ rg "catch.*console\.log" --glob "*.{ts,tsx}"
 ```typescript
 // Bad: サイレント障害
 try {
-  await fetchUserData()
+  await fetchUserData();
 } catch (e) {
   // ここに何もない - エラーが消える
 }
 
 // Good: 適切なハンドリング
 try {
-  await fetchUserData()
+  await fetchUserData();
 } catch (error) {
-  logger.error('Failed to fetch user data', { error })
-  setError('ユーザーデータを読み込めませんでした。再試行してください。')
+  logger.error("Failed to fetch user data", { error });
+  setError("ユーザーデータを読み込めませんでした。再試行してください。");
 }
 ```
 
@@ -101,15 +99,15 @@ try {
 
 ```typescript
 // Bad: 未処理のrejection
-fetchData().then(data => setData(data))
+fetchData().then((data) => setData(data));
 
 // Good: エラーハンドリング付き
 fetchData()
-  .then(data => setData(data))
-  .catch(error => {
-    logger.error('Failed to fetch data', error)
-    setError('読み込みに失敗しました')
-  })
+  .then((data) => setData(data))
+  .catch((error) => {
+    logger.error("Failed to fetch data", error);
+    setError("読み込みに失敗しました");
+  });
 ```
 
 ## 参照

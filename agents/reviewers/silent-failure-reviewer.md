@@ -68,8 +68,6 @@ fetchData()
 For comprehensive patterns and detection commands, see the knowledge base:
 
 - [@../../skills/reviewing-silent-failures/references/detection-patterns.md](../../skills/reviewing-silent-failures/references/detection-patterns.md) - Regex patterns, search commands
-- [@../../skills/reviewing-silent-failures/references/error-handling.md](../../skills/reviewing-silent-failures/references/error-handling.md) - Proper error handling patterns
-- [@../../skills/reviewing-silent-failures/references/error-boundaries.md](../../skills/reviewing-silent-failures/references/error-boundaries.md) - React Error Boundary patterns
 
 ## Output Format
 

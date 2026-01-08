@@ -28,10 +28,6 @@ graph TD
     SOLID[SOLID<br/>原則<br/>'変更に対応した<br/>設計']
     OR -->|バランス| SOLID
     SOLID -->|情報提供| CP
-    SOLID -->|情報提供| LOD[デメテルの法則<br/>'直接の友人とだけ<br/>話す']
-
-    %% リーキー抽象化
-    OR -->|受け入れ| LA[リーキー<br/>抽象化<br/>'完璧より<br/>実用的']
 
     %% AI支援開発
     TDD -->|強化| AI[AI支援開発<br/>'AIが生成、<br/>人間が検証']
@@ -51,7 +47,7 @@ graph TD
 
     class OR metaPrinciple
     class PE,RC,DRY universalPrinciple
-    class TDD,CP,TIDY,LOD,LA,AI,TD,RT appliedPractice
+    class TDD,CP,TIDY,AI,TD,RT appliedPractice
     class SOLID contextual
     class ML scientific
 ```
@@ -77,19 +73,17 @@ graph TD
 | 5   | **プログレッシブエンハンスメント → TDD/ベイビーステップ** | 両方とも増分開発を重視                                  |
 | 6   | **読みやすいコード → ミラーの法則**                       | 読みやすさの限界に対する認知科学の裏付け（7±2アイテム） |
 | 7   | **SOLID → Container/Presentational**                      | SRP（単一責任）がUI/ロジック分離を推進                  |
-| 8   | **SOLID → デメテルの法則**                                | 両方とも依存関係と結合を管理                            |
-| 9   | **読みやすいコード + DRY → TIDYINGS**                     | コードをクリーンに保つ実践的な適用                      |
-| 10  | **オッカムの剃刀 → リーキー抽象化**                       | シンプルさのために不完全な抽象化を受け入れる            |
-| 11  | **TDD → AI支援開発**                                      | AIがTDDサイクルを加速、人間が検証                       |
-| 12  | **TDD → テスト設計**                                      | テストケース設計のための体系的手法                      |
-| 13  | **読みやすいコード → Result型**                           | 明示的なエラーハンドリングでコードの意図を明確に        |
+| 8   | **読みやすいコード + DRY → TIDYINGS**                     | コードをクリーンに保つ実践的な適用                      |
+| 9   | **TDD → AI支援開発**                                      | AIがTDDサイクルを加速、人間が検証                       |
+| 10  | **TDD → テスト設計**                                      | テストケース設計のための体系的手法                      |
+| 11  | **読みやすいコード → Result型**                           | 明示的なエラーハンドリングでコードの意図を明確に        |
 
 ## このグラフの使い方
 
 1. **開始点**: すべての判断でオッカムの剃刀（赤）から始める
 2. **構築**: 普遍的原則（青）を適用 - プログレッシブエンハンスメント、読みやすいコード、DRY
 3. **実装**: 適用されるプラクティス（緑）を使用 - TDD、Container/Presentational、TIDYINGS
-4. **特定のコンテキスト**: コンテキスト依存原則（黄）を適用 - SOLID、デメテルの法則は必要なときのみ
+4. **特定のコンテキスト**: コンテキスト依存原則（黄）を適用 - SOLIDは必要なときのみ
 5. **競合解決**: 原則が競合したら、最上部のオッカムの剃刀に戻る
 
 ## 開発プラクティス
@@ -103,8 +97,6 @@ graph TD
 | TDD/RGRC                       | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                               | Red-Green-Refactorサイクル |
 | テスト設計                     | [@./development/TEST_GENERATION.md](./development/TEST_GENERATION.md)                                 | 体系的テスト技法           |
 | Container/Presentational       | [@../patterns/frontend/container-presentational.md](../patterns/frontend/container-presentational.md) | UI/ロジック分離            |
-| デメテルの法則                 | [@./development/LAW_OF_DEMETER.md](./development/LAW_OF_DEMETER.md)                                   | 最小結合                   |
-| リーキー抽象化                 | [@./development/LEAKY_ABSTRACTION.md](./development/LEAKY_ABSTRACTION.md)                             | 実用的な抽象化             |
 | TIDYINGS                       | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                               | マイクロ改善               |
 | AI支援開発                     | [@./development/AI_ASSISTED_DEVELOPMENT.md](./development/AI_ASSISTED_DEVELOPMENT.md)                 | AIが生成、人間が検証       |
 | Result型ハンドリング           | [@./development/RESULT_TYPE_HANDLING.md](./development/RESULT_TYPE_HANDLING.md)                       | 明示的エラーハンドリング   |

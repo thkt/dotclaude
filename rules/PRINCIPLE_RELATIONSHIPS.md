@@ -28,10 +28,6 @@ graph TD
     SOLID[SOLID<br/>Principles<br/>'Design for<br/>change']
     OR -->|balances| SOLID
     SOLID -->|informs| CP
-    SOLID -->|informs| LOD[Law of Demeter<br/>'Only talk to<br/>immediate friends']
-
-    %% Leaky Abstraction
-    OR -->|accepts| LA[Leaky<br/>Abstraction<br/>'Pragmatic over<br/>perfect']
 
     %% AI-Assisted Development
     TDD -->|enhanced by| AI[AI-Assisted<br/>Development<br/>'AI generates,<br/>humans validate']
@@ -51,7 +47,7 @@ graph TD
 
     class OR metaPrinciple
     class PE,RC,DRY universalPrinciple
-    class TDD,CP,TIDY,LOD,LA,AI,TD,RT appliedPractice
+    class TDD,CP,TIDY,AI,TD,RT appliedPractice
     class SOLID contextual
     class ML scientific
 ```
@@ -77,19 +73,17 @@ graph TD
 | 5   | **Progressive Enhancement → TDD/Baby Steps** | Both emphasize incremental development                        |
 | 6   | **Readable Code → Miller's Law**             | Cognitive science backing for readability limits (7±2 items)  |
 | 7   | **SOLID → Container/Presentational**         | SRP (Single Responsibility) drives UI/logic separation        |
-| 8   | **SOLID → Law of Demeter**                   | Both manage dependencies and coupling                         |
-| 9   | **Readable Code + DRY → TIDYINGS**           | Practical application of keeping code clean                   |
-| 10  | **Occam's Razor → Leaky Abstraction**        | Accept imperfect abstractions for simplicity                  |
-| 11  | **TDD → AI-Assisted Development**            | AI accelerates TDD cycles, humans validate                    |
-| 12  | **TDD → Test Design**                        | Systematic techniques for designing test cases                |
-| 13  | **Readable Code → Result Type**              | Explicit error handling makes code intentions clear           |
+| 8   | **Readable Code + DRY → TIDYINGS**           | Practical application of keeping code clean                   |
+| 9   | **TDD → AI-Assisted Development**            | AI accelerates TDD cycles, humans validate                    |
+| 10  | **TDD → Test Design**                        | Systematic techniques for designing test cases                |
+| 11  | **Readable Code → Result Type**              | Explicit error handling makes code intentions clear           |
 
 ## How to Use This Graph
 
 1. **Starting Point**: Begin with Occam's Razor (red) for every decision
 2. **Build Up**: Apply universal principles (blue) - Progressive Enhancement, Readable Code, DRY
 3. **Implement**: Use applied practices (green) - TDD, Container/Presentational, TIDYINGS
-4. **Specific Context**: Apply contextual principles (yellow) - SOLID, Law of Demeter only when needed
+4. **Specific Context**: Apply contextual principles (yellow) - SOLID only when needed
 5. **Resolve Conflicts**: When principles conflict, trace back to Occam's Razor at the top
 
 ## Development Practices
@@ -103,8 +97,6 @@ Detailed implementation guides for each practice:
 | TDD/RGRC                 | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                               | Red-Green-Refactor cycle      |
 | Test Design              | [@./development/TEST_GENERATION.md](./development/TEST_GENERATION.md)                                 | Systematic test techniques    |
 | Container/Presentational | [@../patterns/frontend/container-presentational.md](../patterns/frontend/container-presentational.md) | UI/logic separation           |
-| Law of Demeter           | [@./development/LAW_OF_DEMETER.md](./development/LAW_OF_DEMETER.md)                                   | Minimal coupling              |
-| Leaky Abstraction        | [@./development/LEAKY_ABSTRACTION.md](./development/LEAKY_ABSTRACTION.md)                             | Pragmatic abstractions        |
 | TIDYINGS                 | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                               | Micro-improvements            |
 | AI-Assisted Development  | [@./development/AI_ASSISTED_DEVELOPMENT.md](./development/AI_ASSISTED_DEVELOPMENT.md)                 | AI generates, humans validate |
 | Result Type Handling     | [@./development/RESULT_TYPE_HANDLING.md](./development/RESULT_TYPE_HANDLING.md)                       | Explicit error handling       |

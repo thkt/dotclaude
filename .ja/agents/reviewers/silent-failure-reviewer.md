@@ -31,28 +31,28 @@ skills:
 ```typescript
 // Bad: 致命的: 空のcatchブロック
 try {
-  await fetchUserData()
+  await fetchUserData();
 } catch (e) {
   // エラーが静かに消える
 }
 
 // Good: 良い: 適切なハンドリング
 try {
-  await fetchUserData()
+  await fetchUserData();
 } catch (error) {
-  logger.error('Failed to fetch user data', { error })
-  setError('Unable to load user data. Please try again.')
+  logger.error("Failed to fetch user data", { error });
+  setError("Unable to load user data. Please try again.");
 }
 ```
 
 ```typescript
 // Bad: 悪い: エラーハンドリングのないPromise
-fetchData().then(data => setData(data))
+fetchData().then((data) => setData(data));
 
 // Good: 良い: catchあり
 fetchData()
-  .then(data => setData(data))
-  .catch(error => handleError(error))
+  .then((data) => setData(data))
+  .catch((error) => handleError(error));
 ```
 
 ### 詳細パターン
@@ -60,8 +60,6 @@ fetchData()
 包括的なパターンと検出コマンドについては、ナレッジベースを参照：
 
 - [@../../../skills/reviewing-silent-failures/references/detection-patterns.md] - 正規表現パターン、検索コマンド
-- [@../../../skills/reviewing-silent-failures/references/error-handling.md] - 適切なエラーハンドリングパターン
-- [@../../../skills/reviewing-silent-failures/references/error-boundaries.md] - React Error Boundaryパターン
 
 ## 出力形式
 
@@ -71,6 +69,7 @@ fetchData()
 ### サイレント障害分析
 
 **検出サマリー**
+
 - 空のcatchブロック: Xインスタンス
 - 未処理のPromise: Yインスタンス
 - エラーバウンダリの欠如: Zセクション
@@ -78,9 +77,9 @@ fetchData()
 
 ### クリティカル問題（修正必須）
 
-| # | ファイル:行 | パターン | リスク | 推奨 |
-|---|-----------|---------|------|----------------|
-| 1 | src/api.ts:45 | 空catch | 高 | ログ + ユーザー通知を追加 |
+| #   | ファイル:行   | パターン | リスク | 推奨                      |
+| --- | ------------- | -------- | ------ | ------------------------- |
+| 1   | src/api.ts:45 | 空catch  | 高     | ログ + ユーザー通知を追加 |
 
 ### 推奨事項
 
