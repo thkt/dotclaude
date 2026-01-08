@@ -33,6 +33,15 @@ graph TD
     %% リーキー抽象化
     OR -->|受け入れ| LA[リーキー<br/>抽象化<br/>'完璧より<br/>実用的']
 
+    %% AI支援開発
+    TDD -->|強化| AI[AI支援開発<br/>'AIが生成、<br/>人間が検証']
+
+    %% テスト設計（TDDから）
+    TDD -->|使用| TD[テスト設計<br/>'体系的な<br/>テスト技法']
+
+    %% Result型（読みやすいコードから）
+    RC -->|適用| RT[Result型<br/>'明示的な<br/>エラーハンドリング']
+
     %% 異なる原則タイプのスタイリング
     classDef metaPrinciple fill:#ff6b6b,stroke:#c92a2a,stroke-width:3px,color:#fff
     classDef universalPrinciple fill:#4dabf7,stroke:#1971c2,stroke-width:2px,color:#fff
@@ -42,7 +51,7 @@ graph TD
 
     class OR metaPrinciple
     class PE,RC,DRY universalPrinciple
-    class TDD,CP,TIDY,LOD,LA appliedPractice
+    class TDD,CP,TIDY,LOD,LA,AI,TD,RT appliedPractice
     class SOLID contextual
     class ML scientific
 ```
@@ -71,6 +80,9 @@ graph TD
 | 8   | **SOLID → デメテルの法則**                                | 両方とも依存関係と結合を管理                            |
 | 9   | **読みやすいコード + DRY → TIDYINGS**                     | コードをクリーンに保つ実践的な適用                      |
 | 10  | **オッカムの剃刀 → リーキー抽象化**                       | シンプルさのために不完全な抽象化を受け入れる            |
+| 11  | **TDD → AI支援開発**                                      | AIがTDDサイクルを加速、人間が検証                       |
+| 12  | **TDD → テスト設計**                                      | テストケース設計のための体系的手法                      |
+| 13  | **読みやすいコード → Result型**                           | 明示的なエラーハンドリングでコードの意図を明確に        |
 
 ## このグラフの使い方
 
@@ -89,10 +101,13 @@ graph TD
 | プログレッシブエンハンスメント | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)                       | CSS優先、成果駆動          |
 | 読みやすいコード               | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                                           | 巧妙さより明瞭さ           |
 | TDD/RGRC                       | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                                     | Red-Green-Refactorサイクル |
+| テスト設計                     | [@./development/TEST_GENERATION.md](./development/TEST_GENERATION.md)                                       | 体系的テスト技法           |
 | Container/Presentational       | [@../../patterns/frontend/container-presentational.md](../../patterns/frontend/container-presentational.md) | UI/ロジック分離            |
 | デメテルの法則                 | [@./development/LAW_OF_DEMETER.md](./development/LAW_OF_DEMETER.md)                                         | 最小結合                   |
 | リーキー抽象化                 | [@./development/LEAKY_ABSTRACTION.md](./development/LEAKY_ABSTRACTION.md)                                   | 実用的な抽象化             |
 | TIDYINGS                       | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                                     | マイクロ改善               |
+| AI支援開発                     | [@./development/AI_ASSISTED_DEVELOPMENT.md](./development/AI_ASSISTED_DEVELOPMENT.md)                       | AIが生成、人間が検証       |
+| Result型ハンドリング           | [@./development/RESULT_TYPE_HANDLING.md](./development/RESULT_TYPE_HANDLING.md)                             | 明示的エラーハンドリング   |
 
 ## 関連ドキュメント
 

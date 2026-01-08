@@ -33,6 +33,15 @@ graph TD
     %% Leaky Abstraction
     OR -->|accepts| LA[Leaky<br/>Abstraction<br/>'Pragmatic over<br/>perfect']
 
+    %% AI-Assisted Development
+    TDD -->|enhanced by| AI[AI-Assisted<br/>Development<br/>'AI generates,<br/>humans validate']
+
+    %% Test Design (from TDD)
+    TDD -->|uses| TD[Test Design<br/>'Systematic<br/>test techniques']
+
+    %% Result Type (from Readable Code)
+    RC -->|applied in| RT[Result Type<br/>'Explicit error<br/>handling']
+
     %% Styling for different principle types
     classDef metaPrinciple fill:#ff6b6b,stroke:#c92a2a,stroke-width:3px,color:#fff
     classDef universalPrinciple fill:#4dabf7,stroke:#1971c2,stroke-width:2px,color:#fff
@@ -42,7 +51,7 @@ graph TD
 
     class OR metaPrinciple
     class PE,RC,DRY universalPrinciple
-    class TDD,CP,TIDY,LOD,LA appliedPractice
+    class TDD,CP,TIDY,LOD,LA,AI,TD,RT appliedPractice
     class SOLID contextual
     class ML scientific
 ```
@@ -71,6 +80,9 @@ graph TD
 | 8   | **SOLID → Law of Demeter**                   | Both manage dependencies and coupling                         |
 | 9   | **Readable Code + DRY → TIDYINGS**           | Practical application of keeping code clean                   |
 | 10  | **Occam's Razor → Leaky Abstraction**        | Accept imperfect abstractions for simplicity                  |
+| 11  | **TDD → AI-Assisted Development**            | AI accelerates TDD cycles, humans validate                    |
+| 12  | **TDD → Test Design**                        | Systematic techniques for designing test cases                |
+| 13  | **Readable Code → Result Type**              | Explicit error handling makes code intentions clear           |
 
 ## How to Use This Graph
 
@@ -84,15 +96,18 @@ graph TD
 
 Detailed implementation guides for each practice:
 
-| Practice                 | File                                                                                                  | Focus                     |
-| ------------------------ | ----------------------------------------------------------------------------------------------------- | ------------------------- |
-| Progressive Enhancement  | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)                 | CSS-first, outcome-driven |
-| Readable Code            | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                                     | Clarity over cleverness   |
-| TDD/RGRC                 | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                               | Red-Green-Refactor cycle  |
-| Container/Presentational | [@../patterns/frontend/container-presentational.md](../patterns/frontend/container-presentational.md) | UI/logic separation       |
-| Law of Demeter           | [@./development/LAW_OF_DEMETER.md](./development/LAW_OF_DEMETER.md)                                   | Minimal coupling          |
-| Leaky Abstraction        | [@./development/LEAKY_ABSTRACTION.md](./development/LEAKY_ABSTRACTION.md)                             | Pragmatic abstractions    |
-| TIDYINGS                 | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                               | Micro-improvements        |
+| Practice                 | File                                                                                                  | Focus                         |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- | ----------------------------- |
+| Progressive Enhancement  | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)                 | CSS-first, outcome-driven     |
+| Readable Code            | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                                     | Clarity over cleverness       |
+| TDD/RGRC                 | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                               | Red-Green-Refactor cycle      |
+| Test Design              | [@./development/TEST_GENERATION.md](./development/TEST_GENERATION.md)                                 | Systematic test techniques    |
+| Container/Presentational | [@../patterns/frontend/container-presentational.md](../patterns/frontend/container-presentational.md) | UI/logic separation           |
+| Law of Demeter           | [@./development/LAW_OF_DEMETER.md](./development/LAW_OF_DEMETER.md)                                   | Minimal coupling              |
+| Leaky Abstraction        | [@./development/LEAKY_ABSTRACTION.md](./development/LEAKY_ABSTRACTION.md)                             | Pragmatic abstractions        |
+| TIDYINGS                 | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                               | Micro-improvements            |
+| AI-Assisted Development  | [@./development/AI_ASSISTED_DEVELOPMENT.md](./development/AI_ASSISTED_DEVELOPMENT.md)                 | AI generates, humans validate |
+| Result Type Handling     | [@./development/RESULT_TYPE_HANDLING.md](./development/RESULT_TYPE_HANDLING.md)                       | Explicit error handling       |
 
 ## Related Documentation
 
