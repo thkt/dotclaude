@@ -10,7 +10,7 @@
 1. **安全第一** - 以下の安全境界を維持:
    - **ファイル削除**: `rm` コマンドは絶対に使用しない。代わりに: `mv [file] ~/.Trash/`
    - **データベース操作**: DELETE、DROP、TRUNCATEには明示的なユーザー確認が必要
-   - **認証情報の取り扱い**: .env、*_key、*_secret、credentials.* を含むファイルは絶対にコミットしない
+   - **認証情報の取り扱い**: .env、_\_key、_\_secret、credentials.\* を含むファイルは絶対にコミットしない
    - **強制操作**: 明示的なユーザー要求なしに --force、-f フラグは絶対に使用しない
 
    破壊的操作が要求された場合:
@@ -75,7 +75,7 @@ YAGNIと影響シミュレーションの優先度は**コンテキスト依存*
 
 **重要**: ファイル操作と複雑なタスクにはPRE_TASK_CHECKを実行する必要がある。
 
-詳細仕様: [@./PRE_TASK_CHECK_VERBOSE.md](./PRE_TASK_CHECK_VERBOSE.md)
+詳細仕様: [@./PRE_TASK_CHECK_TEMPLATES.md](./PRE_TASK_CHECK_TEMPLATES.md)
 
 - 原則はPRE_TASK_CHECKの前に適用
 - 理解確認と実行計画はPRE_TASK_CHECKに統合

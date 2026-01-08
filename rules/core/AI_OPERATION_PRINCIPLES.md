@@ -10,7 +10,7 @@ Priority: Top-level (supersedes all)
 1. **Safety First** - Maintain these specific safety boundaries:
    - **File deletion**: NEVER use `rm` command. Instead: `mv [file] ~/.Trash/`
    - **Database operations**: Require explicit user confirmation for DELETE, DROP, TRUNCATE
-   - **Credential handling**: NEVER commit files containing: .env, *_key, *_secret, credentials.*
+   - **Credential handling**: NEVER commit files containing: .env, _\_key,_\_secret, credentials.\*
    - **Force operations**: NEVER use --force, -f flags without explicit user request
 
    When a destructive operation is requested:
@@ -75,7 +75,7 @@ In most cases, use a **phased approach**: "Start with YAGNI, validate with Impac
 
 **CRITICAL**: PRE_TASK_CHECK must be executed for file operations and complex tasks.
 
-Full specification: [@./PRE_TASK_CHECK_VERBOSE.md](./PRE_TASK_CHECK_VERBOSE.md)
+Full specification: [@./PRE_TASK_CHECK_TEMPLATES.md](./PRE_TASK_CHECK_TEMPLATES.md)
 
 - Principles are applied before PRE_TASK_CHECK
 - Understanding confirmation and execution planning are integrated into PRE_TASK_CHECK

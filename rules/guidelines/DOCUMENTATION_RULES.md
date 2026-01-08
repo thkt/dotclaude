@@ -21,25 +21,25 @@ Guidelines for maintaining consistent, well-organized documentation in the Claud
 
 ```markdown
 /rules/
-├── core/             # AI Operation Rules (hook-injected)
-│   ├── AI_OPERATION_PRINCIPLES.md  # Safety, authority, workflow
-│   ├── PRE_TASK_CHECK_COMPACT.md   # Task verification (compact)
-│   └── PRE_TASK_CHECK_VERBOSE.md   # Task verification (detailed)
+├── core/ # AI Operation Rules (hook-injected)
+│ ├── AI_OPERATION_PRINCIPLES.md # Safety, authority, workflow
+│ ├── PRE_TASK_CHECK_RULES.md # Task verification (rules)
+│ └── PRE_TASK_CHECK_TEMPLATES.md # Task verification (templates)
 │
-├── guidelines/       # Documentation Guidelines
-│   └── DOCUMENTATION_RULES.md      # This file
+├── guidelines/ # Documentation Guidelines
+│ └── DOCUMENTATION_RULES.md # This file
 │
-├── development/      # Practical Application
-│   ├── TDD_RGRC.md                 # TDD cycle
-│   ├── PROGRESSIVE_ENHANCEMENT.md  # CSS-first approach
-│   ├── READABLE_CODE.md            # Code clarity
-│   └── TIDYINGS.md                 # Micro-improvements
+├── development/ # Practical Application
+│ ├── TDD_RGRC.md # TDD cycle
+│ ├── PROGRESSIVE_ENHANCEMENT.md # CSS-first approach
+│ ├── READABLE_CODE.md # Code clarity
+│ └── TIDYINGS.md # Micro-improvements
 │
-├── commands/         # Command-specific rules
-│   └── COMMAND_WORKFLOWS.md        # Workflow selection
+├── commands/ # Command-specific rules
+│ └── COMMAND_WORKFLOWS.md # Workflow selection
 │
-├── PRINCIPLES_GUIDE.md             # Quick reference
-└── PRINCIPLE_RELATIONSHIPS.md      # Principle dependencies
+├── PRINCIPLES_GUIDE.md # Quick reference
+└── PRINCIPLE_RELATIONSHIPS.md # Principle dependencies
 
 Note: Core principles (SOLID, DRY, Occam's Razor) are in:
 → /skills/applying-code-principles/SKILL.md
@@ -51,16 +51,16 @@ When adding new documentation:
 
 ```markdown
 Is it a fundamental principle or theory?
-  YES → /rules/guidelines/
-  NO  → Continue
+YES → /rules/guidelines/
+NO → Continue
 
 Is it a practical method or technique?
-  YES → /rules/development/
-  NO  → Continue
+YES → /rules/development/
+NO → Continue
 
 Is it a command or tool?
-  YES → /commands/
-  NO  → /docs/
+YES → /commands/
+NO → /docs/
 ```
 
 ## Reference Management
@@ -69,10 +69,10 @@ Is it a command or tool?
 
 ```markdown
 Level 1: CLAUDE.md (Top-level configuration)
-  ├─→ Level 2: Core Principles (/rules/guidelines/)
-  ├─→ Level 2: Development Practices (/rules/development/)
-  └─→ Level 2: Commands (/commands/)
-      └─→ Level 3: Cross-references between docs
+├─→ Level 2: Core Principles (/rules/guidelines/)
+├─→ Level 2: Development Practices (/rules/development/)
+└─→ Level 2: Commands (/commands/)
+└─→ Level 3: Cross-references between docs
 ```
 
 ### Reference Rules
@@ -88,19 +88,21 @@ Level 1: CLAUDE.md (Top-level configuration)
 ## Related Principles
 
 ### Core Principles (From skills/)
+
 - [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - SOLID, DRY, YAGNI principles
 
 ### Applied in Practice
+
 - [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - TDD methodology
 ```
 
 ### Standard Section Names
 
-| Purpose | Standard Name | Deprecated |
-| --- | --- | --- |
+| Purpose           | Standard Name           | Deprecated                     |
+| ----------------- | ----------------------- | ------------------------------ |
 | Related documents | `## Related Principles` | `## References`, `## See Also` |
-| Code examples | `## Examples` | - |
-| API documentation | `## API Reference` | - |
+| Code examples     | `## Examples`           | -                              |
+| API documentation | `## API Reference`      | -                              |
 
 **Note**: Use `## Related Principles` consistently at the end of all documentation files.
 
@@ -131,8 +133,8 @@ When updating documentation:
 Both EN and JP use identical relative path patterns within their respective directories:
 
 ```markdown
-[@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md)        # Same directory
-[@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # Up one level
+[@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md) # Same directory
+[@../development/TDD_RGRC.md](../development/TDD_RGRC.md) # Up one level
 ```
 
 ### Language Exceptions
@@ -145,11 +147,11 @@ Both EN and JP use identical relative path patterns within their respective dire
 
 ## Update Procedures
 
-| Operation | Steps |
-| --- | --- |
-| **Add New** | 1. Create EN/JP both 2. Add ref to CLAUDE.md 3. Update related docs |
-| **Modify** | 1. `grep -r "FILENAME"` check refs 2. Update EN/JP together 3. Verify links |
-| **Move File** | 1. Search refs 2. Move EN/JP 3. Update all refs |
+| Operation     | Steps                                                                       |
+| ------------- | --------------------------------------------------------------------------- |
+| **Add New**   | 1. Create EN/JP both 2. Add ref to CLAUDE.md 3. Update related docs         |
+| **Modify**    | 1. `grep -r "FILENAME"` check refs 2. Update EN/JP together 3. Verify links |
+| **Move File** | 1. Search refs 2. Move EN/JP 3. Update all refs                             |
 
 ## Documentation Standards
 
@@ -159,15 +161,19 @@ Both EN and JP use identical relative path patterns within their respective dire
 # Title - Clear and Descriptive
 
 ## Core Philosophy
+
 Brief explanation of why this exists
 
 ## Key Concepts
+
 Main ideas, clearly explained
 
 ## Practical Application
+
 Examples and use cases
 
 ## Related Principles
+
 Links to related documentation
 ```
 
@@ -187,29 +193,34 @@ Apply Core Principle #6 when creating visual representations:
 
 **Use Mermaid for flowcharts and relationships:**
 
-```markdown
+````markdown
 <!-- Bad: ASCII art -->
-+--------+     +--------+
-| User   | --> | Server |
-+--------+     +--------+
+
++--------+ +--------+
+| User | --> | Server |
++--------+ +--------+
 
 <!-- Good: Mermaid diagram -->
+
 ```mermaid
 flowchart LR
     User --> Server
 ```
+````
 
 **Use tables for structured data:**
 
 ```markdown
 <!-- Bad: ASCII table -->
+
 +----------+--------+---------+
-| Name     | Type   | Default |
+| Name | Type | Default |
 +----------+--------+---------+
-| timeout  | number | 30000   |
+| timeout | number | 30000 |
 +----------+--------+---------+
 
 <!-- Good: Markdown table -->
+
 | Name    | Type   | Default |
 | ------- | ------ | ------- |
 | timeout | number | 30000   |
@@ -217,24 +228,24 @@ flowchart LR
 
 **Migration priority:**
 
-| Priority | Pattern | Action |
-| --- | --- | --- |
-| High | Flowcharts, decision trees | Convert to Mermaid |
-| High | Data tables | Convert to Markdown tables |
-| Medium | Directory structures | Keep as code blocks (exception) |
-| Low | Simple inline diagrams | Evaluate case by case |
+| Priority | Pattern                    | Action                          |
+| -------- | -------------------------- | ------------------------------- |
+| High     | Flowcharts, decision trees | Convert to Mermaid              |
+| High     | Data tables                | Convert to Markdown tables      |
+| Medium   | Directory structures       | Keep as code blocks (exception) |
+| Low      | Simple inline diagrams     | Evaluate case by case           |
 
 ### Code Examples
 
 ```typescript
 // Bad: Avoid: Complex example first
-complexImplementation()
+complexImplementation();
 
 // Good: Prefer: Simple example first
-simpleImplementation()
+simpleImplementation();
 
 // Then show progression to complex
-advancedImplementation()
+advancedImplementation();
 ```
 
 ## Quality Checklist
@@ -247,22 +258,22 @@ advancedImplementation()
 
 ## Common Patterns
 
-| Pattern | Steps |
-| --- | --- |
-| New Principle | Create EN/JP in guidelines/ → Add to CLAUDE.md |
-| New Practice | Create EN/JP in development/ → Reference from principles |
-| New Command | Create EN/JP in commands/ → Add to COMMANDS.md |
+| Pattern       | Steps                                                    |
+| ------------- | -------------------------------------------------------- |
+| New Principle | Create EN/JP in guidelines/ → Add to CLAUDE.md           |
+| New Practice  | Create EN/JP in development/ → Reference from principles |
+| New Command   | Create EN/JP in commands/ → Add to COMMANDS.md           |
 
 ## Anti-Patterns
 
-| Avoid | Instead |
-| --- | --- |
-| Single language updates | Synchronized updates (EN/JP together) |
-| Deep nesting (>3 levels) | Flat hierarchy |
-| Orphan documents | Connected graph |
-| Circular references | Tree structure |
-| Misplaced files | Follow decision framework |
-| ASCII art diagrams | Mermaid diagrams or Markdown tables |
+| Avoid                    | Instead                               |
+| ------------------------ | ------------------------------------- |
+| Single language updates  | Synchronized updates (EN/JP together) |
+| Deep nesting (>3 levels) | Flat hierarchy                        |
+| Orphan documents         | Connected graph                       |
+| Circular references      | Tree structure                        |
+| Misplaced files          | Follow decision framework             |
+| ASCII art diagrams       | Mermaid diagrams or Markdown tables   |
 
 ## Maintenance Tasks
 
@@ -343,4 +354,4 @@ Keep it:
 
 ---
 
-*Last updated: 2026-01-01*
+_Last updated: 2026-01-01_

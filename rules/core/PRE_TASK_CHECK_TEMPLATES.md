@@ -1,101 +1,6 @@
 # PRE_TASK_CHECK Detailed Specification
 
-Technical specification for understanding check and execution planning. For basic rules, see PRE_TASK_CHECK_COMPACT.md.
-
-## Overview
-
-| Section                   | Purpose                 |
-| ------------------------- | ----------------------- |
-| Execution Rules           | When to run check       |
-| Analysis Method           | How to analyze          |
-| 95% Understanding Rule    | Core decision threshold |
-| Display Format            | Output template         |
-| Command Suggestion System | Workflow selection      |
-| Impact Simulation         | Dry-run preview         |
-| Execution Plan            | Action list             |
-| Edge Cases                | Special situations      |
-| Integrated Workflow       | Full process            |
-
----
-
-## Execution Rules
-
-**PRIMARY**: PRE_TASK_CHECK is executed for tasks that involve:
-
-- File operations (create/edit/delete)
-- Command executions (bash, npm, etc.)
-- Multi-step workflows
-- Requests meeting ANY of these criteria:
-  - **Ambiguous**: Contains pronouns without clear referents ("it", "that") OR vague quantities ("some", "a few")
-  - **Complex**: Requires 3+ distinct actions OR affects 5+ files OR involves 2+ subsystems
-- When understanding is below 95%
-
-**SKIP CONDITIONS** (AI judgment allowed):
-
-- Simple factual questions ("What is X?")
-- Confirmation responses ("y", "yes", "ok")
-- Direct information queries about existing content
-- Follow-up clarifications that don't require action
-- Requests for explanations or documentation
-
-**ALWAYS REQUIRED FOR**:
-
-- Any file system modifications
-- Code implementation requests
-- System commands execution
-- Tasks requiring /commands
-- When user explicitly requests planning
-
-## Bug Investigation Context Expansion
-
-**Purpose**: Improve bug fix success rate by gathering essential diagnostic information upfront.
-
-**Source**: Based on "7 conditions for improving AI bug investigation accuracy" - practical insights from real-world bug investigation experience.
-
-### When to Activate (Context-Based)
-
-Activate bug investigation context when user reports **any** of the following:
-
-| Criteria                | Description                         | Examples                                         |
-| ----------------------- | ----------------------------------- | ------------------------------------------------ |
-| **Unexpected behavior** | Something isn't working as expected | "doesn't do what I expect", "weird behavior"     |
-| **Error/Failure**       | An error or failure is occurring    | "getting an error", "it fails when..."           |
-| **Regression**          | Worked before, not working now      | "it was working yesterday", "broke after update" |
-| **Confusion**           | Unexpected or confusing behavior    | "I don't understand why...", "strange result"    |
-
-**Note**: This is context-based judgment, not keyword matching. Focus on user intent, not specific words.
-
-### Required Questions (Always Ask)
-
-When bug context is detected, **always** include these questions in the understanding check:
-
-| #   | Question                                                                  | Purpose                           | AI Strength Utilized |
-| --- | ------------------------------------------------------------------------- | --------------------------------- | -------------------- |
-| 1   | **Reproduction steps**: How to reproduce? (preconditions → steps → error) | Understand exact failure scenario | Pattern recognition  |
-| 2   | **Normal case**: When does it work correctly?                             | Enable diff-based analysis        | **Diff detection**   |
-| 3   | **Log information**: Any error logs or console output?                    | Direct diagnostic data            | Log parsing          |
-
-### Optional Questions (Ask If Relevant)
-
-| Question                                | When to Ask             |
-| --------------------------------------- | ----------------------- |
-| Last known working state? (commit/date) | If regression suspected |
-| Related recent changes?                 | If cause unclear        |
-| Environment differences?                | If works elsewhere      |
-
-### Display Format for Bug Investigation
-
-```markdown
-🐛 Bug Investigation Context:
-
-- Reproduction steps: [?] Not yet provided
-- Normal case: [?] Not yet provided ← Key for diff analysis
-- Log information: [?] Not yet provided
-```
-
-### Rationale
-
-"AI is good at finding differences" - comparing working vs broken cases leverages AI's pattern matching strength. Without normal case information, AI must guess; with it, AI can focus on the delta.
+Technical specification for understanding check and execution planning. For basic rules, see PRE_TASK_CHECK_RULES.md.
 
 ---
 
@@ -124,54 +29,6 @@ For each element in the understanding check, assess:
 - ✓ = High confidence (directly verified from files/context)
 - → = Medium confidence (reasonable inference)
 - ? = Low confidence (assumption that needs confirmation)
-
-## 95% Understanding Rule
-
-**Core principle from evidence-based practice:**
-
-Never proceed with implementation below 95% understanding. This threshold is evidence-based (see Rationale below).
-
-### When to Apply
-
-**ALWAYS ask clarifying questions when:**
-
-- Average confidence across elements is below 95%
-- Any critical element is marked with [?] (Low confidence)
-- Multiple elements are marked with [→] (Medium confidence)
-- User requirements contain ambiguity
-- Implementation approach meets ANY of these unclear conditions:
-  - Cannot identify specific files to modify within 30 seconds of analysis
-  - Multiple valid approaches exist with no clear selection criteria
-  - Required technology/framework is not explicitly stated
-  - Success criteria cannot be defined in measurable terms
-
-**Rule**: If weighted average confidence < 95%, display follow-up questions and wait for user response before proceeding.
-
-### Follow-Up Question Format
-
-When understanding is below 95%, explicitly state what needs clarification:
-
-```markdown
-🤔 Questions to reach 95% confidence:
-
-1. [Specific question about unclear element]
-2. [Specific question about assumed element]
-3. [Specific question about implementation approach]
-
-These clarifications are needed before proceeding.
-```
-
-### Integration with Analysis Method
-
-1. **Analyze** user request → determine confidence for each element
-2. **Calculate** weighted average confidence
-3. **If <95%**: Display clarifying questions and wait
-4. **If ≥95%**: Proceed with understanding check display
-5. **Always**: Mark confidence explicitly with ✓/→/? markers
-
-**Rationale**: Implementation below 95% confidence frequently requires rework. Asking upfront saves time and builds trust.
-
-**Remember**: Asking for clarification is always better than assuming incorrectly.
 
 ## Display Format
 
@@ -237,14 +94,6 @@ Note: Output labels will be translated to Japanese per CLAUDE.md P1 rule
   0% → ░░░░░░░░░░   0%  (10 empty)
 ```
 
-**Implementation pattern**:
-
-```text
-filled_count = Math.floor(percentage / 10)
-empty_count = 10 - filled_count
-bar = "█".repeat(filled_count) + "░".repeat(empty_count)
-```
-
 **Done Definition Section**: Display only for implementation/fix tasks (/code, /fix commands). This section is separate from TodoWrite - Done Definition represents the goal (what to achieve), while TodoWrite tracks execution steps (how to achieve it).
 
 ### Example: Output Verifiability in Practice
@@ -300,10 +149,6 @@ For workflows: `Steps: /think → /code → /test`
 - **Feature**: Implement+Test → `/research → /think → /code → /test → /audit → /validate`
 
 Details: [@../commands/COMMAND_WORKFLOWS.md](../commands/COMMAND_WORKFLOWS.md)
-
-## User Response Handling
-
-Use `AskUserQuestion` tool for all confirmations. Response interpretation is handled automatically.
 
 ## Impact Simulation (Dry-run)
 
@@ -389,12 +234,6 @@ Will execute the following:
 
 **Combined display**: When showing both, use thin separator (─) between Impact Simulation and Execution Plan within single outer box (━).
 
-## Edge Cases
-
-- No match (score <30): "Command: N/A"
-- Complex task: Suggest workflow
-- New commands: Auto-discovered if in command dirs
-
 ## Integrated Workflow
 
 1. **Understanding Check**: Assess comprehension & suggest approach
@@ -403,7 +242,3 @@ Will execute the following:
 4. **Execution Plan** (if confirmed and file/command ops): Show specific actions
 5. **Plan Confirmation**: Use `AskUserQuestion` ← **STOP POINT**
 6. **Execute**: Perform the approved actions
-
-## Integration with Output Verifiability
-
-Implements AI Operation Principle #4 using ✓/→/? markers to distinguish facts from assumptions and acknowledge uncertainty.

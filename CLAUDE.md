@@ -7,7 +7,7 @@
 **ALWAYS ACTIVE** - Applied on every user message, supersedes all other rules
 
 Core principles: [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)
-Task verification: [@./rules/core/PRE_TASK_CHECK_COMPACT.md](./rules/core/PRE_TASK_CHECK_COMPACT.md) (injected via hook)
+Task verification: [@./rules/core/PRE_TASK_CHECK_RULES.md](./rules/core/PRE_TASK_CHECK_RULES.md) (injected via hook)
 
 ### [P1] REQUIRED - Language Settings
 

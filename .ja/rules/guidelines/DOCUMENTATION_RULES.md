@@ -21,25 +21,25 @@ Claude Codeエコシステムにおける一貫性があり、よく整理され
 
 ```markdown
 /rules/
-├── core/             # AI動作ルール（hook注入）
-│   ├── AI_OPERATION_PRINCIPLES.md  # 安全性、権限、ワークフロー
-│   ├── PRE_TASK_CHECK_COMPACT.md   # タスク検証（コンパクト）
-│   └── PRE_TASK_CHECK_VERBOSE.md   # タスク検証（詳細）
+├── core/ # AI動作ルール（hook注入）
+│ ├── AI_OPERATION_PRINCIPLES.md # 安全性、権限、ワークフロー
+│ ├── PRE_TASK_CHECK_RULES.md # タスク検証（ルール）
+│ └── PRE_TASK_CHECK_TEMPLATES.md # タスク検証（テンプレート）
 │
-├── guidelines/       # ドキュメントガイドライン
-│   └── DOCUMENTATION_RULES.md      # このファイル
+├── guidelines/ # ドキュメントガイドライン
+│ └── DOCUMENTATION_RULES.md # このファイル
 │
-├── development/      # 実践的な適用
-│   ├── TDD_RGRC.md                 # TDDサイクル
-│   ├── PROGRESSIVE_ENHANCEMENT.md  # CSS優先アプローチ
-│   ├── READABLE_CODE.md            # コードの明確性
-│   └── TIDYINGS.md                 # マイクロ改善
+├── development/ # 実践的な適用
+│ ├── TDD_RGRC.md # TDDサイクル
+│ ├── PROGRESSIVE_ENHANCEMENT.md # CSS優先アプローチ
+│ ├── READABLE_CODE.md # コードの明確性
+│ └── TIDYINGS.md # マイクロ改善
 │
-├── commands/         # コマンド固有ルール
-│   └── COMMAND_WORKFLOWS.md        # ワークフロー選択
+├── commands/ # コマンド固有ルール
+│ └── COMMAND_WORKFLOWS.md # ワークフロー選択
 │
-├── PRINCIPLES_GUIDE.md             # クイックリファレンス
-└── PRINCIPLE_RELATIONSHIPS.md      # 原則の依存関係
+├── PRINCIPLES_GUIDE.md # クイックリファレンス
+└── PRINCIPLE_RELATIONSHIPS.md # 原則の依存関係
 
 注: コア原則（SOLID、DRY、オッカムの剃刀）は以下にある:
 → /skills/applying-code-principles/SKILL.md
@@ -51,16 +51,16 @@ Claude Codeエコシステムにおける一貫性があり、よく整理され
 
 ```markdown
 基本的な原則または理論か？
-  YES → /rules/guidelines/
-  NO  → 続行
+YES → /rules/guidelines/
+NO → 続行
 
 実践的な方法または技法か？
-  YES → /rules/development/
-  NO  → 続行
+YES → /rules/development/
+NO → 続行
 
 コマンドまたはツールか？
-  YES → /commands/
-  NO  → /docs/
+YES → /commands/
+NO → /docs/
 ```
 
 ## 参照管理
@@ -69,10 +69,10 @@ Claude Codeエコシステムにおける一貫性があり、よく整理され
 
 ```markdown
 レベル1: CLAUDE.md（トップレベル設定）
-  ├─→ レベル2: コア原則（/rules/guidelines/）
-  ├─→ レベル2: 開発プラクティス（/rules/development/）
-  └─→ レベル2: コマンド（/commands/）
-      └─→ レベル3: ドキュメント間のクロスリファレンス
+├─→ レベル2: コア原則（/rules/guidelines/）
+├─→ レベル2: 開発プラクティス（/rules/development/）
+└─→ レベル2: コマンド（/commands/）
+└─→ レベル3: ドキュメント間のクロスリファレンス
 ```
 
 ### 参照ルール
@@ -88,19 +88,21 @@ Claude Codeエコシステムにおける一貫性があり、よく整理され
 ## 関連原則
 
 ### コア原則（skills/から）
+
 - [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - SOLID, DRY, YAGNI原則
 
 ### 実践で適用
+
 - [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - TDD方法論
 ```
 
 ### 標準セクション名
 
-| 目的 | 標準名 | 非推奨 |
-| --- | --- | --- |
+| 目的             | 標準名                  | 非推奨                         |
+| ---------------- | ----------------------- | ------------------------------ |
 | 関連ドキュメント | `## Related Principles` | `## References`, `## See Also` |
-| コード例 | `## Examples` | - |
-| APIドキュメント | `## API Reference` | - |
+| コード例         | `## Examples`           | -                              |
+| APIドキュメント  | `## API Reference`      | -                              |
 
 **注**: すべてのドキュメントファイルの末尾で `## Related Principles` を一貫して使用すること。
 
@@ -131,8 +133,8 @@ Claude Codeエコシステムにおける一貫性があり、よく整理され
 ENとJPは各ディレクトリ内で同一の相対パスパターンを使用:
 
 ```markdown
-[@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md)        # 同じディレクトリ
-[@../development/TDD_RGRC.md](../development/TDD_RGRC.md)    # 1レベル上
+[@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md) # 同じディレクトリ
+[@../development/TDD_RGRC.md](../development/TDD_RGRC.md) # 1レベル上
 ```
 
 ### 言語例外
@@ -145,11 +147,11 @@ ENとJPは各ディレクトリ内で同一の相対パスパターンを使用:
 
 ## 更新手順
 
-| 操作 | ステップ |
-| --- | --- |
-| **新規追加** | 1. EN/JP両方を作成 2. CLAUDE.mdに参照追加 3. 関連ドキュメント更新 |
-| **変更** | 1. `grep -r "FILENAME"` で参照確認 2. EN/JPを一緒に更新 3. リンク確認 |
-| **ファイル移動** | 1. 参照検索 2. EN/JP移動 3. すべての参照更新 |
+| 操作             | ステップ                                                              |
+| ---------------- | --------------------------------------------------------------------- |
+| **新規追加**     | 1. EN/JP両方を作成 2. CLAUDE.mdに参照追加 3. 関連ドキュメント更新     |
+| **変更**         | 1. `grep -r "FILENAME"` で参照確認 2. EN/JPを一緒に更新 3. リンク確認 |
+| **ファイル移動** | 1. 参照検索 2. EN/JP移動 3. すべての参照更新                          |
 
 ## ドキュメント標準
 
@@ -159,15 +161,19 @@ ENとJPは各ディレクトリ内で同一の相対パスパターンを使用:
 # タイトル - 明確で説明的
 
 ## コア哲学
+
 なぜこれが存在するかの簡潔な説明
 
 ## 主要概念
+
 主なアイデア、明確に説明
 
 ## 実践的な適用
+
 例とユースケース
 
 ## 関連原則
+
 関連ドキュメントへのリンク
 ```
 
@@ -187,29 +193,34 @@ ENとJPは各ディレクトリ内で同一の相対パスパターンを使用:
 
 **フローチャートや関係図にはMermaidを使用:**
 
-```markdown
+````markdown
 <!-- 悪い例: ASCII図 -->
-+--------+     +--------+
-| User   | --> | Server |
-+--------+     +--------+
+
++--------+ +--------+
+| User | --> | Server |
++--------+ +--------+
 
 <!-- 良い例: Mermaidダイアグラム -->
+
 ```mermaid
 flowchart LR
     User --> Server
 ```
+````
 
 **構造化データにはテーブルを使用:**
 
 ```markdown
 <!-- 悪い例: ASCIIテーブル -->
+
 +----------+--------+---------+
-| Name     | Type   | Default |
+| Name | Type | Default |
 +----------+--------+---------+
-| timeout  | number | 30000   |
+| timeout | number | 30000 |
 +----------+--------+---------+
 
 <!-- 良い例: マークダウンテーブル -->
+
 | Name    | Type   | Default |
 | ------- | ------ | ------- |
 | timeout | number | 30000   |
@@ -217,24 +228,24 @@ flowchart LR
 
 **移行優先度:**
 
-| 優先度 | パターン | アクション |
-| --- | --- | --- |
-| 高 | フローチャート、決定木 | Mermaidに変換 |
-| 高 | データテーブル | マークダウンテーブルに変換 |
-| 中 | ディレクトリ構造 | コードブロックのまま維持（例外） |
-| 低 | シンプルなインライン図 | ケースバイケースで評価 |
+| 優先度 | パターン               | アクション                       |
+| ------ | ---------------------- | -------------------------------- |
+| 高     | フローチャート、決定木 | Mermaidに変換                    |
+| 高     | データテーブル         | マークダウンテーブルに変換       |
+| 中     | ディレクトリ構造       | コードブロックのまま維持（例外） |
+| 低     | シンプルなインライン図 | ケースバイケースで評価           |
 
 ### コード例
 
 ```typescript
 // 悪い例: 複雑な例を最初に
-complexImplementation()
+complexImplementation();
 
 // 良い例: シンプルな例を最初に
-simpleImplementation()
+simpleImplementation();
 
 // その後、複雑への進行を示す
-advancedImplementation()
+advancedImplementation();
 ```
 
 ## 品質チェックリスト
@@ -247,22 +258,22 @@ advancedImplementation()
 
 ## 一般的なパターン
 
-| パターン | ステップ |
-| --- | --- |
-| 新原則 | guidelines/にEN/JPを作成 → CLAUDE.mdに追加 |
-| 新プラクティス | development/にEN/JPを作成 → 原則から参照 |
-| 新コマンド | commands/にEN/JPを作成 → COMMANDS.mdに追加 |
+| パターン       | ステップ                                   |
+| -------------- | ------------------------------------------ |
+| 新原則         | guidelines/にEN/JPを作成 → CLAUDE.mdに追加 |
+| 新プラクティス | development/にEN/JPを作成 → 原則から参照   |
+| 新コマンド     | commands/にEN/JPを作成 → COMMANDS.mdに追加 |
 
 ## アンチパターン
 
-| 避ける | 代わりに |
-| --- | --- |
-| 単一言語の更新 | 同期更新（EN/JP一緒に） |
-| 深いネスト（3レベル超） | フラット階層 |
-| 孤立したドキュメント | 接続されたグラフ |
-| 循環参照 | ツリー構造 |
-| 配置の誤り | 判断フレームワークに従う |
-| ASCII図 | MermaidダイアグラムまたはMarkdownテーブル |
+| 避ける                  | 代わりに                                  |
+| ----------------------- | ----------------------------------------- |
+| 単一言語の更新          | 同期更新（EN/JP一緒に）                   |
+| 深いネスト（3レベル超） | フラット階層                              |
+| 孤立したドキュメント    | 接続されたグラフ                          |
+| 循環参照                | ツリー構造                                |
+| 配置の誤り              | 判断フレームワークに従う                  |
+| ASCII図                 | MermaidダイアグラムまたはMarkdownテーブル |
 
 ## メンテナンスタスク
 
@@ -343,4 +354,4 @@ refactor: 原則ドキュメント構造を再編成
 
 ---
 
-*最終更新: 2026-01-01*
+_最終更新: 2026-01-01_

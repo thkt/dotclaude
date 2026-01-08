@@ -7,7 +7,7 @@
 **常時有効** - すべてのユーザーメッセージに適用、他のすべてのルールより優先
 
 コア原則: [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
-タスク検証: [@../rules/core/PRE_TASK_CHECK_COMPACT.md](../rules/core/PRE_TASK_CHECK_COMPACT.md) (hook経由で注入)
+タスク検証: [@../rules/core/PRE_TASK_CHECK_RULES.md](../rules/core/PRE_TASK_CHECK_RULES.md) (hook経由で注入)
 
 ### [P1] 必須 - 言語設定
 

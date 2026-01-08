@@ -258,8 +258,8 @@
       "category": "Development Rules",
       "rules": [
         "./rules/core/AI_OPERATION_PRINCIPLES.md",
-        "./rules/core/PRE_TASK_CHECK_COMPACT.md",
-        "./rules/core/PRE_TASK_CHECK_VERBOSE.md",
+        "./rules/core/PRE_TASK_CHECK_RULES.md",
+        "./rules/core/PRE_TASK_CHECK_TEMPLATES.md",
         "./rules/development/AI_ASSISTED_DEVELOPMENT.md",
         "./patterns/frontend/container-presentational.md",
         "./rules/development/LAW_OF_DEMETER.md",
