@@ -30,12 +30,13 @@ Target: New team member understands code in < 1 minute.
 
 ## Section-Based Loading
 
-| Section         | File                             | Focus                         | Triggers               |
-| --------------- | -------------------------------- | ----------------------------- | ---------------------- |
-| Naming          | `references/naming-structure.md` | Concrete names, searchability | 命名, 変数名, 関数名   |
-| Control Flow    | `references/control-flow.md`     | Nesting, guard clauses        | ネスト, Miller's Law   |
-| Comments        | `references/comments-clarity.md` | Why not What, intent          | コメント, 意図         |
-| AI Antipatterns | `references/ai-antipatterns.md`  | Over-engineering detection    | AI-generated, 過剰設計 |
+| Section         | File                             | Focus                      | Triggers               |
+| --------------- | -------------------------------- | -------------------------- | ---------------------- |
+| Control Flow    | `references/control-flow.md`     | Nesting, guard clauses     | ネスト, Miller's Law   |
+| Comments        | `references/comments-clarity.md` | Why not What, intent       | コメント, 意図         |
+| AI Antipatterns | `references/ai-antipatterns.md`  | Over-engineering detection | AI-generated, 過剰設計 |
+
+**Note**: Naming conventions are covered in [@../../rules/development/READABLE_CODE.md](../../rules/development/READABLE_CODE.md)
 
 ## Quick Checklist
 
