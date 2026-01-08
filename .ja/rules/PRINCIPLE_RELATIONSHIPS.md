@@ -94,7 +94,7 @@ graph TD
 | ------------------------------ | ----------------------------------------------------------------------------------------------------- | -------------------------- |
 | プログレッシブエンハンスメント | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)                 | CSS優先、成果駆動          |
 | 読みやすいコード               | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                                     | 巧妙さより明瞭さ           |
-| TDD/RGRC                       | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                               | Red-Green-Refactorサイクル |
+| TDD/RGRC                       | [@../skills/generating-tdd-tests/SKILL.md](../skills/generating-tdd-tests/SKILL.md)                   | Red-Green-Refactorサイクル |
 | テスト設計                     | [@./development/TEST_GENERATION.md](./development/TEST_GENERATION.md)                                 | 体系的テスト技法           |
 | Container/Presentational       | [@../patterns/frontend/container-presentational.md](../patterns/frontend/container-presentational.md) | UI/ロジック分離            |
 | TIDYINGS                       | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                               | マイクロ改善               |

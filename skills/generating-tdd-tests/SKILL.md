@@ -255,7 +255,6 @@ Target coverage: 80%+
 
 ### Principles (rules/)
 
-- [@../../rules/development/TDD_RGRC.md](../../rules/development/TDD_RGRC.md) - Full TDD methodology
 - [@../../rules/development/TEST_GENERATION.md](../../rules/development/TEST_GENERATION.md) - Test design techniques
 
 ### Skill References

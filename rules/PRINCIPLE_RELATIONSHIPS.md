@@ -94,7 +94,7 @@ Detailed implementation guides for each practice:
 | ------------------------ | ----------------------------------------------------------------------------------------------------- | ----------------------------- |
 | Progressive Enhancement  | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)                 | CSS-first, outcome-driven     |
 | Readable Code            | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                                     | Clarity over cleverness       |
-| TDD/RGRC                 | [@./development/TDD_RGRC.md](./development/TDD_RGRC.md)                                               | Red-Green-Refactor cycle      |
+| TDD/RGRC                 | [@../skills/generating-tdd-tests/SKILL.md](../skills/generating-tdd-tests/SKILL.md)                   | Red-Green-Refactor cycle      |
 | Test Design              | [@./development/TEST_GENERATION.md](./development/TEST_GENERATION.md)                                 | Systematic test techniques    |
 | Container/Presentational | [@../patterns/frontend/container-presentational.md](../patterns/frontend/container-presentational.md) | UI/logic separation           |
 | TIDYINGS                 | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                               | Micro-improvements            |

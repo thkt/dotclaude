@@ -30,7 +30,6 @@ Guidelines for maintaining consistent, well-organized documentation in the Claud
 │ └── DOCUMENTATION_RULES.md # This file
 │
 ├── development/ # Practical Application
-│ ├── TDD_RGRC.md # TDD cycle
 │ ├── PROGRESSIVE_ENHANCEMENT.md # CSS-first approach
 │ ├── READABLE_CODE.md # Code clarity
 │ └── TIDYINGS.md # Micro-improvements
@@ -93,7 +92,7 @@ Level 1: CLAUDE.md (Top-level configuration)
 
 ### Applied in Practice
 
-- [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - TDD methodology
+- [@../../skills/generating-tdd-tests/SKILL.md](../../skills/generating-tdd-tests/SKILL.md) - TDD methodology
 ```
 
 ### Standard Section Names
@@ -134,7 +133,7 @@ Both EN and JP use identical relative path patterns within their respective dire
 
 ```markdown
 [@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md) # Same directory
-[@../development/TDD_RGRC.md](../development/TDD_RGRC.md) # Up one level
+[@../development/READABLE_CODE.md](../development/READABLE_CODE.md) # Up one level
 ```
 
 ### Language Exceptions
@@ -333,7 +332,7 @@ Always commit with clear messages:
 ```bash
 # Good commit messages
 docs: add Occam's Razor principle to reference
-docs: synchronize EN/JP for TDD_RGRC
+docs: synchronize EN/JP for READABLE_CODE
 docs: move TIDYINGS from reference to development
 refactor: reorganize principle documentation structure
 

@@ -30,7 +30,6 @@ Claude Codeエコシステムにおける一貫性があり、よく整理され
 │ └── DOCUMENTATION_RULES.md # このファイル
 │
 ├── development/ # 実践的な適用
-│ ├── TDD_RGRC.md # TDDサイクル
 │ ├── PROGRESSIVE_ENHANCEMENT.md # CSS優先アプローチ
 │ ├── READABLE_CODE.md # コードの明確性
 │ └── TIDYINGS.md # マイクロ改善
@@ -93,7 +92,7 @@ NO → /docs/
 
 ### 実践で適用
 
-- [@../development/TDD_RGRC.md](../development/TDD_RGRC.md) - TDD方法論
+- [@../../skills/generating-tdd-tests/SKILL.md](../../skills/generating-tdd-tests/SKILL.md) - TDD方法論
 ```
 
 ### 標準セクション名
@@ -134,7 +133,7 @@ ENとJPは各ディレクトリ内で同一の相対パスパターンを使用:
 
 ```markdown
 [@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md) # 同じディレクトリ
-[@../development/TDD_RGRC.md](../development/TDD_RGRC.md) # 1レベル上
+[@../development/READABLE_CODE.md](../development/READABLE_CODE.md) # 1レベル上
 ```
 
 ### 言語例外
@@ -333,7 +332,7 @@ diff <(ls /rules/) <(ls /.ja/rules/)    # EN/JP一致をチェック
 ```bash
 # 良いコミットメッセージ
 docs: オッカムの剃刀原則をリファレンスに追加
-docs: TDD_RGRCのEN/JPを同期
+docs: READABLE_CODEのEN/JPを同期
 docs: TIDYINGSをreferenceからdevelopmentへ移動
 refactor: 原則ドキュメント構造を再編成
 

@@ -248,7 +248,6 @@ Task({
 
 ### 原則（rules/）
 
-- [@../../../rules/development/TDD_RGRC.md](../../../rules/development/TDD_RGRC.md) - 完全なTDD方法論
 - [@../../../rules/development/TEST_GENERATION.md](../../../rules/development/TEST_GENERATION.md) - テスト設計技法
 
 ### スキル参照
