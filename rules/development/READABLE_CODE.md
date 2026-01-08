@@ -38,20 +38,20 @@ This scientific backing explains WHY readable code matters: our brains literally
 
 ```typescript
 // Bad: Ambiguous
-results.filter(x => x > LIMIT)  // Greater than or equal to?
+results.filter((x) => x > LIMIT); // Greater than or equal to?
 
 // Good: Clear intent
-results.filter(x => x >= MIN_ITEMS_TO_DISPLAY)
+results.filter((x) => x >= MIN_ITEMS_TO_DISPLAY);
 ```
 
 #### Prefer Concrete over Abstract
 
 ```typescript
 // Bad: Abstract
-processData(data)
+processData(data);
 
 // Good: Concrete
-validateUserRegistration(formData)
+validateUserRegistration(formData);
 ```
 
 ### 2. Simplifying Loops and Logic
@@ -69,9 +69,9 @@ if (user) {
 }
 
 // Good: Early returns
-if (!user) return
-if (!user.isActive) return
-if (!user.hasPermission) return
+if (!user) return;
+if (!user.isActive) return;
+if (!user.hasPermission) return;
 // do something
 ```
 
@@ -88,11 +88,11 @@ if (!user.hasPermission) return
 ```typescript
 // Good: Each function does one thing
 function getActiveUsers(users: User[]) {
-  return users.filter(isActiveUser)
+  return users.filter(isActiveUser);
 }
 
 function isActiveUser(user: User): boolean {
-  return user.status === 'active' && user.lastLogin > thirtyDaysAgo()
+  return user.status === "active" && user.lastLogin > thirtyDaysAgo();
 }
 ```
 
@@ -108,13 +108,12 @@ function isActiveUser(user: User): boolean {
 
 ```typescript
 // Bad: Intent unclear
-const p = products.filter(p => p.price > 0 && p.stock)
+const p = products.filter((p) => p.price > 0 && p.stock);
 
 // Good: Intent obvious
-const availableProducts = products.filter(product =>
-  product.price > 0 &&
-  product.stock > 0
-)
+const availableProducts = products.filter(
+  (product) => product.price > 0 && product.stock > 0,
+);
 ```
 
 ### 5. Key Questions Before Writing
@@ -127,23 +126,17 @@ Ask yourself:
 
 ## Practical Application
 
-### Variable Naming
-
-- **Specific > Generic**: `userEmail` not `data`
-- **Searchable**: `MAX_RETRY_COUNT` not `7`
-- **Pronounceable**: `customer` not `cstmr`
-
-### Function Design
-
-- **Small & Focused**: 5-10 lines ideal
-- **Descriptive Names**: `calculateTotalPrice()` not `calc()`
-- **Consistent Level**: Don't mix high and low-level operations
-
-### Comments
-
-- **Why, not What**: Explain decisions, not mechanics
-- **Update or Delete**: Outdated comments are worse than none
-- **Code First**: If you need to explain what, rewrite the code
+| Category      | Principle          | Example                              |
+| ------------- | ------------------ | ------------------------------------ |
+| **Naming**    | Specific > Generic | `userEmail` not `data`               |
+|               | Searchable         | `MAX_RETRY_COUNT` not `7`            |
+|               | Pronounceable      | `customer` not `cstmr`               |
+| **Functions** | Small & Focused    | 5-10 lines ideal                     |
+|               | Descriptive Names  | `calculateTotalPrice()` not `calc()` |
+|               | Same Abstraction   | Don't mix high/low-level operations  |
+| **Comments**  | Why, not What      | Explain decisions                    |
+|               | Update or Delete   | Outdated = worse than none           |
+|               | Code First         | Unclear? Rewrite the code            |
 
 ## The Final Test
 
@@ -153,23 +146,23 @@ If not, simplify further.
 
 ## AI Code Smells
 
-When reviewing AI-generated code (including your own), watch for these common over-engineering patterns:
+When reviewing AI-generated code, watch for over-engineering:
 
-**Red flags:**
+| Red Flag                 | Symptom                                |
+| ------------------------ | -------------------------------------- |
+| Single-impl interface    | Interface with only one implementation |
+| Wrapper class            | Class wrapping a single function       |
+| Future-proof abstraction | No concrete use case                   |
+| One-time helper          | Function used exactly once             |
+| Forced pattern           | Design pattern without clear need      |
 
-- Interfaces with single implementation
-- Classes wrapping single functions
-- "Future-proof" abstractions with no concrete use case
-- Helper functions used exactly once
-- Design patterns without clear need
+| Fix Step | Action                                                |
+| -------- | ----------------------------------------------------- |
+| 1        | Apply Occam's Razor - delete unnecessary abstractions |
+| 2        | Start with the most direct solution                   |
+| 3        | Add complexity only when pattern appears 3+ times     |
 
-**Fix strategy:**
-
-1. Apply Occam's Razor - delete unnecessary abstractions
-2. Start with the most direct solution
-3. Add complexity only when pattern appears 3+ times
-
-→ **Detailed examples and detection checklist**: [@../../skills/reviewing-readability/references/ai-antipatterns.md](../../skills/reviewing-readability/references/ai-antipatterns.md)
+→ **Details**: [@../../skills/reviewing-readability/references/ai-antipatterns.md](../../skills/reviewing-readability/references/ai-antipatterns.md)
 
 ## Remember
 

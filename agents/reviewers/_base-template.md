@@ -197,12 +197,12 @@ For reviewers that can use Chrome DevTools MCP (accessibility, performance):
 
 ## Common Checklist Items
 
-All reviewers should check:
-
-- [ ] Code follows project conventions
-- [ ] No obvious security issues
-- [ ] Dependencies are appropriate
-- [ ] Changes are minimal and focused
+| Check               | Description                       |
+| ------------------- | --------------------------------- |
+| Project conventions | Code follows established patterns |
+| Security            | No obvious vulnerabilities        |
+| Dependencies        | Appropriate and minimal           |
+| Change scope        | Minimal and focused               |
 
 ## References
 

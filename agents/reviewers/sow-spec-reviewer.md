@@ -60,80 +60,68 @@ This agent references the following Skills knowledge base:
 
 #### 2.1 Accuracy Evaluation
 
-**Check Items**:
+| Check              | Requirement                         |
+| ------------------ | ----------------------------------- |
+| Confidence markers | ✓/→/? appropriately used            |
+| Evidence           | File paths, line numbers for claims |
+| Inference basis    | → markers have logical reasoning    |
+| Uncertainty        | ? items explicitly marked           |
 
-- [ ] Confidence markers (✓/→/?) are appropriately used
-- [ ] Claims have specific evidence such as file paths and line numbers
-- [ ] Inferences (→) have clearly stated logical basis
-- [ ] Uncertain items (?) are explicitly marked
-
-**Scoring Criteria**: See [@../../skills/formatting-audits/SKILL.md#Accuracy Evaluation Criteria](../../skills/formatting-audits/SKILL.md#Accuracy Evaluation Criteria)
+**Scoring**: See [@../../skills/formatting-audits/SKILL.md](../../skills/formatting-audits/SKILL.md)
 
 #### 2.2 Completeness Evaluation
 
-**Required SOW Sections**:
+| Document | Required Section            | Note               |
+| -------- | --------------------------- | ------------------ |
+| **SOW**  | Executive Summary           |                    |
+|          | Problem Analysis            | with ✓/→/? markers |
+|          | Assumptions & Prerequisites |                    |
+|          | Solution Design             |                    |
+|          | Acceptance Criteria         | testable format    |
+|          | Risks & Mitigations         |                    |
+|          | Implementation Plan         |                    |
+| **Spec** | Functional Requirements     | FR-xxx format      |
+|          | API Specification           | if applicable      |
+|          | Data Model                  |                    |
+|          | UI Specification            | if applicable      |
+|          | Non-Functional Requirements |                    |
+|          | Test Scenarios              | Given-When-Then    |
+|          | Dependencies                |                    |
 
-- [ ] Executive Summary
-- [ ] Problem Analysis (with ✓/→/? markers)
-- [ ] Assumptions & Prerequisites
-- [ ] Solution Design
-- [ ] Acceptance Criteria (in testable format)
-- [ ] Risks & Mitigations
-- [ ] Implementation Plan
-
-**Required Spec Sections**:
-
-- [ ] Functional Requirements (FR-xxx format)
-- [ ] API Specification (if applicable)
-- [ ] Data Model
-- [ ] UI Specification (if applicable)
-- [ ] Non-Functional Requirements
-- [ ] Test Scenarios (Given-When-Then format)
-- [ ] Dependencies
-
-**Scoring Criteria**: See [@../../skills/formatting-audits/SKILL.md#Completeness Evaluation Criteria](../../skills/formatting-audits/SKILL.md#Completeness Evaluation Criteria)
+**Scoring**: See [@../../skills/formatting-audits/SKILL.md](../../skills/formatting-audits/SKILL.md)
 
 #### 2.3 Relevance Evaluation
 
-**Check Items**:
+| Check      | Requirement                    |
+| ---------- | ------------------------------ |
+| Alignment  | Goals and solutions match      |
+| Scope      | Clear, no excess or deficiency |
+| YAGNI      | No unnecessary features        |
+| Priorities | Appropriately set              |
 
-- [ ] Goals and solutions are aligned
-- [ ] Scope is clear without excess or deficiency
-- [ ] No unnecessary features included (YAGNI principle)
-- [ ] Priorities are appropriately set
-
-**Scoring Criteria**: See [@../../skills/formatting-audits/SKILL.md#Relevance Evaluation Criteria](../../skills/formatting-audits/SKILL.md#Relevance Evaluation Criteria)
+**Scoring**: See [@../../skills/formatting-audits/SKILL.md](../../skills/formatting-audits/SKILL.md)
 
 #### 2.4 Actionability Evaluation
 
-**Check Items**:
+| Check          | Requirement                  |
+| -------------- | ---------------------------- |
+| Implementation | Steps are specific           |
+| Feasibility    | Technical viability verified |
+| Dependencies   | Resolvable                   |
+| Next actions   | Clear                        |
 
-- [ ] Implementation steps are specific
-- [ ] Technical feasibility is verified
-- [ ] Dependencies are resolvable
-- [ ] Next actions are clear
-
-**Scoring Criteria**: See [@../../skills/formatting-audits/SKILL.md#Actionability Evaluation Criteria](../../skills/formatting-audits/SKILL.md#Actionability Evaluation Criteria)
+**Scoring**: See [@../../skills/formatting-audits/SKILL.md](../../skills/formatting-audits/SKILL.md)
 
 ### Phase 3: SOW ↔ Spec Consistency Check
 
-**Required Check Items**:
+| Check                | Action                      | Default Marker |
+| -------------------- | --------------------------- | -------------- |
+| AC → FR Mapping      | Each SOW AC maps to FR-xxx  | [?] unverified |
+| Risks → Mitigations  | SOW risks addressed in Spec | [?] unverified |
+| Dependency Alignment | SOW deps match Spec section | [→] inferred   |
+| Test Plan Coverage   | AC covered by Spec tests    | [?] unverified |
 
-1. **Acceptance Criteria → Functional Requirements Mapping**
-   - Verify each acceptance criterion in SOW maps to FR-xxx in Spec
-   - Mark mapping gaps with [?]
-
-2. **Risks → Mitigations Correspondence**
-   - Verify risks identified in SOW are addressed in Spec
-   - Mark unaddressed risks with [?]
-
-3. **Dependency Alignment**
-   - Verify SOW dependencies match Spec dependency section
-   - Mark discrepancies with [→]
-
-4. **Test Plan Coverage**
-   - Verify SOW acceptance criteria are covered by Spec test scenarios
-   - Mark coverage gaps with [?]
+_Note: Marker indicates confidence level when gap is found._
 
 ### Phase 4: Final Judgment
 
@@ -205,34 +193,20 @@ Follow the output format from [@../../skills/formatting-audits/SKILL.md](../../s
 
 ## Integration with Other Agents
 
-Coordinate with:
-
-- **document-reviewer**: Can delegate general technical document readability evaluation
-- **structure-reviewer**: Confirm code structure and document structure alignment
-- **root-cause-reviewer**: Deep dive into fundamental design issues
+| Agent               | Coordination                            |
+| ------------------- | --------------------------------------- |
+| document-reviewer   | Delegate technical document readability |
+| structure-reviewer  | Code/document structure alignment       |
+| root-cause-reviewer | Deep dive into design issues            |
 
 ## Applied Development Principles
 
-### YAGNI (You Aren't Gonna Need It)
+| Principle                | Application                             | Key Question                          |
+| ------------------------ | --------------------------------------- | ------------------------------------- |
+| **YAGNI**                | Scope check, over-engineering detection | Is this needed now? Simpler solution? |
+| **Output Verifiability** | Evidence for evaluations, ✓/→/? markers | Is claim verified?                    |
 
-[@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - "Don't add functionality until it's actually needed"
-
-Application in SOW/Spec review:
-
-- **Scope Check**: Verify no unnecessary features are included
-- **Over-engineering Detection**: Detect overly complex solutions
-
-Key questions:
-
-1. Is this feature really needed now?
-2. Is there a simpler solution?
-
-### Output Verifiability
-
-Application in SOW/Spec review:
-
-- **Evidence Requirement**: Clearly state evidence for all evaluations
-- **Confidence Markers**: Explicitly show confidence level with ✓/→/?
+Reference: [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md)
 
 ## Error Handling
 
@@ -298,10 +272,12 @@ Task({
 
 ## Best Practices
 
-1. **Early Review**: Review before code implementation to prevent rework
-2. **Consistency Focus**: Always perform SOW ↔ Spec consistency check
-3. **Specific Modification Requests**: Present concrete modifications, not abstract feedback
-4. **Re-review Loop**: Always re-review after fixes on CONDITIONAL judgment
+| Practice          | Description                                   |
+| ----------------- | --------------------------------------------- |
+| Early Review      | Before code implementation to prevent rework  |
+| Consistency Focus | Always perform SOW ↔ Spec check               |
+| Specific Requests | Concrete modifications, not abstract feedback |
+| Re-review Loop    | Re-review after CONDITIONAL fixes             |
 
 ---
 

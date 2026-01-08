@@ -34,9 +34,14 @@ decision_question: "Is this solving a real problem that exists now?"
 ## Example
 
 ```css
-/* ✅ CSS Grid overlay */
-.container { display: grid; }
-.panel { grid-column: 1 / -1; grid-row: 1 / -1; }
+/* Good: CSS Grid overlay */
+.container {
+  display: grid;
+}
+.panel {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+}
 ```
 
 ## Apply for
@@ -57,32 +62,34 @@ Layout, positioning, show/hide, responsive, animations, visual states
 
 ### Implementation Phases
 
-1. **Make it Work** - Solve the immediate problem
-2. **Make it Resilient** - Add error handling when errors occur
-3. **Make it Fast** - Optimize when slowness is measured
-4. **Make it Flexible** - Add options when users request them
+| Phase             | Action                  | Trigger                |
+| ----------------- | ----------------------- | ---------------------- |
+| Make it Work      | Solve immediate problem | Always first           |
+| Make it Resilient | Add error handling      | When errors occur      |
+| Make it Fast      | Optimize                | When slowness measured |
+| Make it Flexible  | Add options             | When users request     |
 
 ### Decision Framework
 
-Before adding code, ask:
-
-- Is this solving a real problem that exists now?
-- Has this actually failed in production?
-- Have users complained about this?
-- Is there measured evidence of the issue?
-
-If "No" → Don't add it yet
+| Question                       | If "No"   |
+| ------------------------------ | --------- |
+| Solving a real problem now?    | Don't add |
+| Actually failed in production? | Don't add |
+| Users complained?              | Don't add |
+| Measured evidence?             | Don't add |
 
 ### The Progressive Enhancement Mindset
 
-- Start with the happy path
-- Add complexity only in response to reality
-- Every line of code is a liability
-- YAGNI is the default position
+| Principle         | Action                          |
+| ----------------- | ------------------------------- |
+| Happy path first  | Start simple                    |
+| Reality-driven    | Add complexity only when needed |
+| Code as liability | Every line has cost             |
+| YAGNI default     | Don't build speculatively       |
 
 ## Key Takeaway
 
-"The best code is code that doesn't exist yet doesn't need to"
+"The best code is code that doesn't need to exist"
 
 ## Related Principles
 

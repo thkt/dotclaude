@@ -56,21 +56,16 @@ pytest --cov=src tests/         # Python
 
 ### Coverage Analysis
 
-```markdown
-Priority coverage areas:
-
-1. **Critical business logic** - payment, authentication, data integrity
-2. **Public APIs** - all exposed interfaces
-3. **Error handlers** - exception paths
-4. **Complex conditionals** - decision points
-
-Lower priority:
-
-- Getters/setters without logic
-- Framework-generated code
-- Simple data structures
-- Configuration files
-```
+| Priority | Target                  | Reason                        |
+| -------- | ----------------------- | ----------------------------- |
+| **High** | Critical business logic | payment, auth, data integrity |
+|          | Public APIs             | exposed interfaces            |
+|          | Error handlers          | exception paths               |
+|          | Complex conditionals    | decision points               |
+| **Low**  | Getters/setters         | no logic                      |
+|          | Framework-generated     | boilerplate                   |
+|          | Simple data structures  | minimal risk                  |
+|          | Configuration files     | static                        |
 
 ## Test Design Workflow
 
@@ -178,19 +173,17 @@ See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-
 
 > "The goal of testing is not to achieve 100% coverage, but to catch bugs efficiently with well-designed tests."
 
-**Key takeaways**:
+| Principle           | Insight                                  |
+| ------------------- | ---------------------------------------- |
+| Systematic > Random | Use formal techniques, not guesswork     |
+| Quality > Quantity  | Few well-designed tests beat many random |
+| Boundaries matter   | Most bugs hide at edges                  |
+| Keep it simple      | Tests easier than production code        |
 
-- **Systematic > Random**: Use formal techniques, not guesswork
-- **Quality > Quantity**: Few well-designed tests beat many random tests
-- **Boundaries matter**: Most bugs hide at the edges
-- **Keep it simple**: Tests should be easier to understand than production code
-
-**Decision framework**:
-
-Before writing tests, ask:
-
-1. What are the equivalence partitions?
-2. What are the boundary values?
-3. Is the logic complex enough for a decision table?
-4. Are my tests covering all meaningful scenarios?
-5. Can I simplify these tests while maintaining coverage?
+| Decision Question       | Purpose                       |
+| ----------------------- | ----------------------------- |
+| Equivalence partitions? | Identify input groups         |
+| Boundary values?        | Find edge cases               |
+| Decision table needed?  | Complex logic (3+ conditions) |
+| All scenarios covered?  | Verify completeness           |
+| Can simplify?           | Maintain coverage with less   |
