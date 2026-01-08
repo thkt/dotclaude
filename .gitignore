@@ -41,8 +41,8 @@ local/
 .env
 
 # Cache
-.cache/
-*.cache
+cache/
+*cache
 stats-cache.json
 
 # Session and runtime data
