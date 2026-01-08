@@ -46,14 +46,12 @@ Custom commands for systematic software development support.
 
 ### Documentation Commands
 
-| Command              | Purpose                                            | Environment   |
-| -------------------- | -------------------------------------------------- | ------------- |
-| `/adr [title]`       | Create Architecture Decision Record in MADR format | Documentation |
-| `/rulify <number>`   | Generate project rule from ADR                     | Documentation |
-| `/docs:architecture` | Generate architecture overview documentation       | Documentation |
-| `/docs:api`          | Generate API specification documentation           | Documentation |
-| `/docs:setup`        | Generate environment setup guide                   | Documentation |
-| `/docs:domain`       | Generate domain understanding documentation        | Documentation |
+| Command            | Purpose                                            | Environment   |
+| ------------------ | -------------------------------------------------- | ------------- |
+| `/adr [title]`     | Create Architecture Decision Record in MADR format | Documentation |
+| `/rulify <number>` | Generate project rule from ADR                     | Documentation |
+
+**Note**: Documentation generation (architecture, API, domain, setup) is now available via skills with keyword triggers. Type related keywords or use `/` menu to access `documenting-*` skills.
 
 ### Git Operations Commands
 

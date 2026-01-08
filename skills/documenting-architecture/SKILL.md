@@ -14,6 +14,7 @@ allowed-tools:
   - Bash
   - Task
 context: fork
+agent: architecture-analyzer
 ---
 
 # docs:architecture - Architecture Overview Generation
