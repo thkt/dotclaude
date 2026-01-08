@@ -30,7 +30,7 @@ allowed-tools: Read, Grep, Glob, Task
 | コメント         | `references/comments-clarity.md` | WhatではなくWhy、意図 | コメント, 意図         |
 | AIアンチパターン | `references/ai-antipatterns.md`  | 過剰設計の検出        | AI-generated, 過剰設計 |
 
-**注**: 命名規則は [@../../../rules/development/READABLE_CODE.md](../../../rules/development/READABLE_CODE.md) でカバー
+**注**: 命名規則 → [@../../../patterns/code/naming.md](../../../patterns/code/naming.md)
 
 ## クイックチェックリスト
 

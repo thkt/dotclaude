@@ -36,7 +36,7 @@ Target: New team member understands code in < 1 minute.
 | Comments        | `references/comments-clarity.md` | Why not What, intent       | コメント, 意図         |
 | AI Antipatterns | `references/ai-antipatterns.md`  | Over-engineering detection | AI-generated, 過剰設計 |
 
-**Note**: Naming conventions are covered in [@../../rules/development/READABLE_CODE.md](../../rules/development/READABLE_CODE.md)
+**Note**: Naming conventions → [@../../patterns/code/naming.md](../../patterns/code/naming.md)
 
 ## Quick Checklist
 
