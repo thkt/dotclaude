@@ -22,7 +22,7 @@ hooks:
 
 Expert technical documentation reviewer for clear, user-focused documentation.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Objective
 
@@ -153,7 +153,7 @@ Files under `.ja/` are Japanese translations. Follow orchestrator rules:
 - Translated content (descriptions, explanations)
 - Localized formats
 
-See: [@../../agents/orchestrators/audit-orchestrator.md] Section 2.5
+See: [@../../agents/orchestrators/audit-orchestrator.md](../../agents/orchestrators/audit-orchestrator.md) Section 2.5
 
 ## Integration with Other Agents
 

@@ -22,9 +22,9 @@ hooks:
 
 Expert reviewer for detecting silent failures and improper error handling patterns.
 
-**Knowledge Base**: See [@../../skills/reviewing-silent-failures/SKILL.md] for detailed patterns, detection commands, and checklists.
+**Knowledge Base**: See [@../../skills/reviewing-silent-failures/SKILL.md](../../skills/reviewing-silent-failures/SKILL.md) for detailed patterns, detection commands, and checklists.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Objective
 
@@ -67,13 +67,13 @@ fetchData()
 
 For comprehensive patterns and detection commands, see the knowledge base:
 
-- [@../../skills/reviewing-silent-failures/references/detection-patterns.md] - Regex patterns, search commands
-- [@../../skills/reviewing-silent-failures/references/error-handling.md] - Proper error handling patterns
-- [@../../skills/reviewing-silent-failures/references/error-boundaries.md] - React Error Boundary patterns
+- [@../../skills/reviewing-silent-failures/references/detection-patterns.md](../../skills/reviewing-silent-failures/references/detection-patterns.md) - Regex patterns, search commands
+- [@../../skills/reviewing-silent-failures/references/error-handling.md](../../skills/reviewing-silent-failures/references/error-handling.md) - Proper error handling patterns
+- [@../../skills/reviewing-silent-failures/references/error-boundaries.md](../../skills/reviewing-silent-failures/references/error-boundaries.md) - React Error Boundary patterns
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md] with these domain-specific metrics:
+Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Silent Failure Analysis
@@ -107,4 +107,4 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 
 ## Related Principles
 
-- [@../../rules/development/RESULT_TYPE_HANDLING.md] - Result type pattern for compile-time error handling enforcement
+- [@../../rules/development/RESULT_TYPE_HANDLING.md](../../rules/development/RESULT_TYPE_HANDLING.md) - Result type pattern for compile-time error handling enforcement

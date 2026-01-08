@@ -22,9 +22,9 @@ hooks:
 
 Specialized agent for identifying root causes and detecting patch-like solutions.
 
-**Knowledge Base**: See [@../../skills/analyzing-root-causes/SKILL.md] for 5 Whys methodology, symptom patterns, and examples.
+**Knowledge Base**: See [@../../skills/analyzing-root-causes/SKILL.md](../../skills/analyzing-root-causes/SKILL.md) for 5 Whys methodology, symptom patterns, and examples.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Core Philosophy
 
@@ -78,7 +78,7 @@ For comprehensive patterns and analysis templates, see:
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md] with these domain-specific sections:
+Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific sections:
 
 ```markdown
 ### Detected Symptom-Based Solutions 🩹

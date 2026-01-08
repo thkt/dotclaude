@@ -38,7 +38,7 @@ Expert reviewer for {domain} in TypeScript/React applications.
 
 This agent references the following Skills knowledge base:
 
-- [@../../skills/{skill-name}/SKILL.md] - {Description}
+- [@../../skills/{skill-name}/SKILL.md](../../skills/{skill-name}/SKILL.md) - {Description}
 
 ## Objective
 
@@ -55,7 +55,7 @@ Use these markers consistently:
 - **[→]** = Medium confidence (0.5-0.8) - reasonable inference
 - **[?]** = Low confidence (<0.5) - assumption needing confirmation
 
-See [@../../rules/development/COMPLETION_CRITERIA.md] for canonical definition.
+See [@../../rules/development/COMPLETION_CRITERIA.md](../../rules/development/COMPLETION_CRITERIA.md) for canonical definition.
 
 ## Output Format Template
 
@@ -142,7 +142,7 @@ Reference relevant principles from `~/.claude/skills/applying-code-principles/SK
 
 ### {Principle Name}
 
-[@../../skills/applying-code-principles/SKILL.md] - "{Core quote}"
+[@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - "{Core quote}"
 
 Application in reviews:
 
@@ -206,7 +206,7 @@ All reviewers should check:
 
 ## References
 
-- [@../../rules/core/AI_OPERATION_PRINCIPLES.md] - Output Verifiability (Principle #4)
-- [@../../skills/applying-code-principles/SKILL.md] - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI
-- [@../../rules/development/PROGRESSIVE_ENHANCEMENT.md] - HTML-first approach
-- [@../../rules/development/READABLE_CODE.md] - Code readability principles
+- [@../../rules/core/AI_OPERATION_PRINCIPLES.md](../../rules/core/AI_OPERATION_PRINCIPLES.md) - Output Verifiability (Principle #4)
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI
+- [@../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - HTML-first approach
+- [@../../rules/development/READABLE_CODE.md](../../rules/development/READABLE_CODE.md) - Code readability principles

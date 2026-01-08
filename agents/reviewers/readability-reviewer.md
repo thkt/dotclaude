@@ -3,7 +3,7 @@ name: readability-reviewer
 description: >
   Specialized agent for reviewing frontend code readability, extending "The Art of Readable Code" principles.
   Applies TypeScript, React, and modern frontend-specific readability considerations.
-  References [@../../skills/reviewing-readability/SKILL.md] for readability principles and Miller's Law.
+  References [@../../skills/reviewing-readability/SKILL.md](../../skills/reviewing-readability/SKILL.md) for readability principles and Miller's Law.
 tools:
   - Read
   - Grep
@@ -23,7 +23,7 @@ hooks:
 
 Specialized agent for reviewing frontend code readability with TypeScript, React, and modern frontend-specific considerations.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Core Philosophy
 
@@ -120,7 +120,7 @@ interface UserCardProps {
 
 ### The Art of Readable Code
 
-[@../../rules/development/READABLE_CODE.md] - "Code should minimize understanding time"
+[@../../rules/development/READABLE_CODE.md](../../rules/development/READABLE_CODE.md) - "Code should minimize understanding time"
 
 Key questions:
 
@@ -130,7 +130,7 @@ Key questions:
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md] with these domain-specific metrics:
+Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Readability Score

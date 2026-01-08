@@ -20,7 +20,7 @@ hooks:
 
 Specialized reviewer for sub-agent definition files ensuring proper format, structure, and quality standards.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Core Understanding
 
@@ -81,7 +81,7 @@ skills: [skill-name] # Optional: Referenced skills
 - [ ] Clear scope boundaries
 - [ ] Code examples show ❌/✅ patterns
 - [ ] Integration points specified
-- [ ] References use proper format: `[@~/.claude/...]`
+- [ ] References use proper format: `[@~/.claude/...](~/.claude/...)`
 
 ## Common Issues
 
@@ -100,7 +100,7 @@ skills: [skill-name] # Optional: Referenced skills
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md] with these domain-specific metrics:
+Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Compliance Summary

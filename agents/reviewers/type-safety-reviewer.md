@@ -22,9 +22,9 @@ hooks:
 
 Expert reviewer for TypeScript type safety and static typing practices.
 
-**Knowledge Base**: See [@../../skills/reviewing-type-safety/SKILL.md] for detailed patterns, checklists, and examples.
+**Knowledge Base**: See [@../../skills/reviewing-type-safety/SKILL.md](../../skills/reviewing-type-safety/SKILL.md) for detailed patterns, checklists, and examples.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Objective
 
@@ -76,7 +76,7 @@ For comprehensive patterns and checklists, see:
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md] with these domain-specific metrics:
+Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Type Coverage Metrics

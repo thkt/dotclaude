@@ -3,7 +3,7 @@ name: performance-reviewer
 description: >
   Expert reviewer for frontend performance optimization in TypeScript/React applications.
   Analyzes frontend code performance and identifies optimization opportunities for React re-rendering, bundle size, lazy loading, memoization, etc.
-  References [@../../skills/optimizing-performance/SKILL.md] for systematic Web Vitals and React optimization knowledge.
+  References [@../../skills/optimizing-performance/SKILL.md](../../skills/optimizing-performance/SKILL.md) for systematic Web Vitals and React optimization knowledge.
 tools:
   - Read
   - Grep
@@ -25,7 +25,7 @@ hooks:
 
 Expert reviewer for frontend performance optimization in TypeScript/React applications.
 
-**Base Template**: [@../../agents/reviewers/_base-template.md] for output format and common sections.
+**Base Template**: [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
 
 ## Objective
 
@@ -147,11 +147,11 @@ Key questions:
 
 ### Progressive Enhancement
 
-[@../../rules/development/PROGRESSIVE_ENHANCEMENT.md] - Baseline performance first
+[@../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - Baseline performance first
 
 ## Output Format
 
-Follow [@../../agents/reviewers/_base-template.md] with these domain-specific metrics:
+Follow [@../../agents/reviewers/_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
 
 ```markdown
 ### Performance Metrics Impact
