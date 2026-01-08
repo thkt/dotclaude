@@ -23,6 +23,22 @@
 | `hooks`          | -        | object | Lifecycle hooks               |
 | `user-invocable` | -        | bool   | Show in menu (default: true)  |
 
+### Key Field Details
+
+**`description` with Triggers**: Include keywords that auto-activate the skill.
+
+```yaml
+description: >
+  What this skill does.
+  Triggers: keyword1, keyword2, キーワード1
+```
+
+**`context: fork`**: Runs in isolated sub-agent context. Use for:
+
+- Long-running analysis
+- Large codebase exploration
+- Memory-intensive operations
+
 ## Agent Fields
 
 | Field             | Required | Type   | Description                   |
@@ -70,6 +86,16 @@
 | `git/`           | -             | -                        |
 
 ## Hooks Structure
+
+### Hook Types
+
+| Type          | Timing                    | Use Case                        |
+| ------------- | ------------------------- | ------------------------------- |
+| `PreToolUse`  | Before tool execution     | Validation, logging, middleware |
+| `PostToolUse` | After tool execution      | Formatting, notifications       |
+| `Stop`        | On skill/agent completion | Completion notification         |
+
+### YAML Format
 
 ```yaml
 hooks:

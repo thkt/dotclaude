@@ -14,6 +14,7 @@ tools:
 model: sonnet
 skills:
   - enhancing-progressively
+  - applying-code-principles
 hooks:
   Stop:
     - command: "echo '[accessibility-reviewer] Review completed'"
