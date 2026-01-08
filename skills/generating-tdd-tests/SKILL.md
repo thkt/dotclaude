@@ -256,11 +256,10 @@ Target coverage: 80%+
 ### Principles (rules/)
 
 - [@../../rules/development/TDD_RGRC.md](../../rules/development/TDD_RGRC.md) - Full TDD methodology
+- [@../../rules/development/TEST_GENERATION.md](../../rules/development/TEST_GENERATION.md) - Test design techniques
 
 ### Skill References
 
-- [@./references/tdd-rgrc.md](./references/tdd-rgrc.md) - Complete RGRC guide
-- [@./references/test-design.md](./references/test-design.md) - Test design techniques
 - [@./references/feature-driven.md](./references/feature-driven.md) - Feature-driven TDD workflow
 - [@./references/bug-driven.md](./references/bug-driven.md) - Bug-driven TDD workflow
 

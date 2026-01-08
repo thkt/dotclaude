@@ -33,8 +33,8 @@ tdd-test-generation/
 │   ├── vitest.config.ts   # Vitest config template
 │   └── jest.config.js     # Jest config template
 └── references/        # Guides
-    ├── tdd-rgrc.md        # RGRC cycle methodology
-    └── test-design.md     # Test design techniques
+    ├── feature-driven.md  # Feature-driven TDD workflow
+    └── bug-driven.md      # Bug-driven TDD workflow
 ```
 
 ## Test Framework Detection
@@ -50,16 +50,16 @@ Claude auto-detects the test framework from package.json:
 Tests follow the AAA (Arrange-Act-Assert) pattern:
 
 ```typescript
-it('should calculate total correctly', () => {
+it("should calculate total correctly", () => {
   // Arrange
-  const items = [{ price: 100 }, { price: 200 }]
+  const items = [{ price: 100 }, { price: 200 }];
 
   // Act
-  const result = calculateTotal(items)
+  const result = calculateTotal(items);
 
   // Assert
-  expect(result).toBe(300)
-})
+  expect(result).toBe(300);
+});
 ```
 
 ## Related Commands

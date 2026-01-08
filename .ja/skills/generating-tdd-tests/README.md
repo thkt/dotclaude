@@ -33,8 +33,8 @@ tdd-test-generation/
 │   ├── vitest.config.ts   # Vitest設定テンプレート
 │   └── jest.config.js     # Jest設定テンプレート
 └── references/        # ガイド
-    ├── tdd-rgrc.md        # RGRCサイクル方法論
-    └── test-design.md     # テスト設計技法
+    ├── feature-driven.md  # 機能駆動TDDワークフロー
+    └── bug-driven.md      # バグ駆動TDDワークフロー
 ```
 
 ## テストフレームワーク検出
@@ -50,16 +50,16 @@ Claudeはpackage.jsonからテストフレームワークを自動検出:
 テストはAAA（Arrange-Act-Assert）パターンに従う:
 
 ```typescript
-it('should calculate total correctly', () => {
+it("should calculate total correctly", () => {
   // Arrange
-  const items = [{ price: 100 }, { price: 200 }]
+  const items = [{ price: 100 }, { price: 200 }];
 
   // Act
-  const result = calculateTotal(items)
+  const result = calculateTotal(items);
 
   // Assert
-  expect(result).toBe(300)
-})
+  expect(result).toBe(300);
+});
 ```
 
 ## 関連コマンド

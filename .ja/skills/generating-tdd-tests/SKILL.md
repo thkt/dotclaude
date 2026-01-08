@@ -17,13 +17,13 @@ RGRCサイクル、Baby Steps、テスト設計技法を組み合わせた体系
 
 **「各ステップで可能な最小の変更を行う」** - t_wada
 
-| ステップ | 時間 | アクション |
-| --- | --- | --- |
-| 1 | 30秒 | 最小の失敗テストを作成 |
-| 2 | 1分 | 最小限でパスさせる |
-| 3 | 10秒 | テスト実行 |
-| 4 | 30秒 | 小さなリファクタ（必要なら） |
-| 5 | 20秒 | グリーンならコミット |
+| ステップ | 時間 | アクション                   |
+| -------- | ---- | ---------------------------- |
+| 1        | 30秒 | 最小の失敗テストを作成       |
+| 2        | 1分  | 最小限でパスさせる           |
+| 3        | 10秒 | テスト実行                   |
+| 4        | 30秒 | 小さなリファクタ（必要なら） |
+| 5        | 20秒 | グリーンならコミット         |
 
 **理由**: バグは常に最後の2分の変更にある。常にグリーンまで数秒。
 
@@ -33,6 +33,7 @@ RGRCサイクル、Baby Steps、テスト設計技法を組み合わせた体系
 
 ```markdown
 TDDサイクル:
+
 - [ ] Red - 失敗するテスト作成（正しい失敗理由を確認）
 - [ ] Green - 最小限のコードで通過（dirtyでもOK）
 - [ ] Refactor - コード改善（テストをグリーンに保つ）
@@ -41,38 +42,38 @@ TDDサイクル:
 
 ### フェーズ詳細
 
-| フェーズ | 目標 | ルール |
-| --- | --- | --- |
-| Red | 失敗テスト | 失敗理由が正しいことを確認 |
-| Green | テストをパス | 「罪を犯してよい」- quick/dirty OK |
-| Refactor | クリーンなコード | SOLID/DRYを適用、グリーンを保つ |
-| Commit | 状態を保存 | すべてのチェックをパス |
+| フェーズ | 目標             | ルール                             |
+| -------- | ---------------- | ---------------------------------- |
+| Red      | 失敗テスト       | 失敗理由が正しいことを確認         |
+| Green    | テストをパス     | 「罪を犯してよい」- quick/dirty OK |
+| Refactor | クリーンなコード | SOLID/DRYを適用、グリーンを保つ    |
+| Commit   | 状態を保存       | すべてのチェックをパス             |
 
 ## テスト設計技法
 
-| 技法 | 用途 | 例 |
-| --- | --- | --- |
-| 同値分割 | 同じ振る舞いの入力をグループ化 | 年齢: <18, 18-120, >120 |
-| 境界値 | 境界をテスト | 17, 18, 120, 121 |
-| 決定表 | 複雑な複数条件ロジック | isLoggedIn × isPremium → access |
+| 技法     | 用途                           | 例                              |
+| -------- | ------------------------------ | ------------------------------- |
+| 同値分割 | 同じ振る舞いの入力をグループ化 | 年齢: <18, 18-120, >120         |
+| 境界値   | 境界をテスト                   | 17, 18, 120, 121                |
+| 決定表   | 複雑な複数条件ロジック         | isLoggedIn × isPremium → access |
 
 ## カバレッジ目標
 
-| レベル | ターゲット | フォーカス |
-| --- | --- | --- |
-| C0（ステートメント） | 80% | すべての行を実行 |
-| C1（ブランチ） | 70% | すべてのブランチを通過 |
+| レベル               | ターゲット | フォーカス             |
+| -------------------- | ---------- | ---------------------- |
+| C0（ステートメント） | 80%        | すべての行を実行       |
+| C1（ブランチ）       | 70%        | すべてのブランチを通過 |
 
 **これらのターゲットの理由**: コスト効果バランス、クリティカルパスにフォーカス。
 
 ## AAAパターン
 
 ```typescript
-test('説明的な名前', () => {
+test("説明的な名前", () => {
   // Arrange - セットアップ
   // Act - 実行
   // Assert - 検証
-})
+});
 ```
 
 ## TDDを使わないとき
@@ -117,44 +118,46 @@ test('説明的な名前', () => {
 ### 推奨パターン
 
 ```typescript
-describe('[対象クラス/関数名]', () => {
-  describe('[メソッド名/シナリオ]', () => {
-    it('when [条件], should [期待結果]', () => {
+describe("[対象クラス/関数名]", () => {
+  describe("[メソッド名/シナリオ]", () => {
+    it("when [条件], should [期待結果]", () => {
       // Arrange - Act - Assert
-    })
-  })
-})
+    });
+  });
+});
 ```
 
 ### 例
 
 ```typescript
-describe('PriceCalculator', () => {
-  describe('calculateTotal', () => {
-    it('when empty array, should return 0', () => {
-      expect(calculator.calculateTotal([])).toBe(0)
-    })
+describe("PriceCalculator", () => {
+  describe("calculateTotal", () => {
+    it("when empty array, should return 0", () => {
+      expect(calculator.calculateTotal([])).toBe(0);
+    });
 
-    it('when discount code applied, should return discounted total', () => {
-      const items = [{ price: 1000, quantity: 2 }]
-      expect(calculator.calculateTotal(items, 'SAVE10')).toBe(1800)
-    })
+    it("when discount code applied, should return discounted total", () => {
+      const items = [{ price: 1000, quantity: 2 }];
+      expect(calculator.calculateTotal(items, "SAVE10")).toBe(1800);
+    });
 
-    it('when tax included, should return total with correct tax', () => {
-      const items = [{ price: 1000, quantity: 1 }]
-      expect(calculator.calculateTotal(items, null, { includeTax: true })).toBe(1100)
-    })
-  })
-})
+    it("when tax included, should return total with correct tax", () => {
+      const items = [{ price: 1000, quantity: 1 }];
+      expect(calculator.calculateTotal(items, null, { includeTax: true })).toBe(
+        1100,
+      );
+    });
+  });
+});
 ```
 
 ### 命名ガイドライン
 
-| 要素 | 良い | 悪い |
-| --- | --- | --- |
-| 条件 | `when empty array` | `test1` |
-| 期待 | `should return 0` | `works correctly` |
-| コンテキスト | `when discount applied` | `discount` |
+| 要素         | 良い                    | 悪い              |
+| ------------ | ----------------------- | ----------------- |
+| 条件         | `when empty array`      | `test1`           |
+| 期待         | `should return 0`       | `works correctly` |
+| コンテキスト | `when discount applied` | `discount`        |
 
 **ヒント**: ドキュメントとして機能する説明的な名前を使用
 
@@ -180,8 +183,8 @@ SKIPモードでテストを生成:
 3. テスト順序: シンプル → 複雑（Baby Steps順）
 4. フレームワーク適切なスキップマーカーを使用:
    - Jest/Vitest: it.skip() + // TODO: [SKIP]コメント
-  `
-})
+  `,
+});
 ```
 
 ### パターン2: バグ駆動生成（バグ修正）
@@ -201,8 +204,8 @@ Task({
 1. 元のバグを再現するテスト（今は通るはず）
 2. 修正に関連するエッジケーステスト
 3. コンポーネント間修正の場合は統合テスト
-  `
-})
+  `,
+});
 ```
 
 ### パターン3: カバレッジ駆動生成
@@ -220,37 +223,36 @@ Task({
 
 未カバーコードパスのテストを生成。
 目標カバレッジ: 80%+
-  `
-})
+  `,
+});
 ```
 
 ## フレームワーク別スキップマーカー
 
-| フレームワーク | スキップ構文 |
-| --- | --- |
-| Jest/Vitest | `it.skip('test', () => { // TODO: [SKIP] FR-001 })` |
-| Mocha | `it.skip('test', function() { })` または `xit('test', ...)` |
-| 不明 | `// TODO: [SKIP]`マーカー付きでコメントアウト |
+| フレームワーク | スキップ構文                                                |
+| -------------- | ----------------------------------------------------------- |
+| Jest/Vitest    | `it.skip('test', () => { // TODO: [SKIP] FR-001 })`         |
+| Mocha          | `it.skip('test', function() { })` または `xit('test', ...)` |
+| 不明           | `// TODO: [SKIP]`マーカー付きでコメントアウト               |
 
 ## ベストプラクティス
 
-| プラクティス | 良い | 悪い |
-| --- | --- | --- |
-| コンテキスト | 具体的な要件 | 「テストを生成」 |
-| マーカー | FR-xxx付きの明確なスキップマーカー | マーカーなし |
-| 順序 | シンプル → 複雑（Baby Steps） | ランダム順 |
-| フォーカス | テストごとに1つの振る舞い | 複数のアサーション |
+| プラクティス | 良い                               | 悪い               |
+| ------------ | ---------------------------------- | ------------------ |
+| コンテキスト | 具体的な要件                       | 「テストを生成」   |
+| マーカー     | FR-xxx付きの明確なスキップマーカー | マーカーなし       |
+| 順序         | シンプル → 複雑（Baby Steps）      | ランダム順         |
+| フォーカス   | テストごとに1つの振る舞い          | 複数のアサーション |
 
 ## 参照
 
 ### 原則（rules/）
 
 - [@../../../rules/development/TDD_RGRC.md](../../../rules/development/TDD_RGRC.md) - 完全なTDD方法論
+- [@../../../rules/development/TEST_GENERATION.md](../../../rules/development/TEST_GENERATION.md) - テスト設計技法
 
 ### スキル参照
 
-- [@./references/tdd-rgrc.md](./references/tdd-rgrc.md) - 完全なRGRCガイド
-- [@./references/test-design.md](./references/test-design.md) - テスト設計技法
 - [@./references/feature-driven.md](./references/feature-driven.md) - 機能駆動TDDワークフロー
 - [@./references/bug-driven.md](./references/bug-driven.md) - バグ駆動TDDワークフロー
 
