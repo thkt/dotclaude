@@ -26,47 +26,53 @@ model: opus
 
 ```yaml
 execution_plan:
-  parallel_group_1:  # 基盤分析（各最大30秒）
+  parallel_group_1: # 基盤分析（各最大30秒）
     agents: [structure-reviewer, readability-reviewer, progressive-enhancer]
     execution_mode: parallel
     group_timeout: 35
 
-  parallel_group_2:  # 型とデザイン分析（各最大45秒）
-    agents: [type-safety-reviewer, design-pattern-reviewer, testability-reviewer, silent-failure-reviewer]
+  parallel_group_2: # 型とデザイン分析（各最大45秒）
+    agents:
+      [
+        type-safety-reviewer,
+        design-pattern-reviewer,
+        testability-reviewer,
+        silent-failure-reviewer,
+      ]
     execution_mode: parallel
     group_timeout: 50
 
-  parallel_group_2b:  # 強化分析（pr-review-toolkit）
+  parallel_group_2b: # 強化分析（pr-review-toolkit）
     agents:
-      - silent-failure-hunter  # 詳細なエラーハンドリング分析
-      - comment-analyzer       # コメント品質と劣化検出
+      - silent-failure-hunter # 詳細なエラーハンドリング分析
+      - comment-analyzer # コメント品質と劣化検出
     execution_mode: parallel
     group_timeout: 50
     source: pr-review-toolkit
 
-  sequential_analysis:  # 根本原因（基盤に依存）
+  sequential_analysis: # 根本原因（基盤に依存）
     agents: [root-cause-reviewer]
     dependencies: [structure-reviewer, readability-reviewer]
     execution_mode: sequential
 
-  parallel_group_3:  # 本番準備（各最大60秒）
+  parallel_group_3: # 本番準備（各最大60秒）
     agents: [security-reviewer, performance-reviewer, accessibility-reviewer]
     execution_mode: parallel
     group_timeout: 65
 
-  parallel_group_3b:  # デザイン品質（pr-review-toolkit）
+  parallel_group_3b: # デザイン品質（pr-review-toolkit）
     agents:
-      - type-design-analyzer   # 型設計品質（不変条件、カプセル化）
-      - code-simplifier        # 簡素化提案
+      - type-design-analyzer # 型設計品質（不変条件、カプセル化）
+      - code-simplifier # 簡素化提案
     execution_mode: parallel
     group_timeout: 60
     source: pr-review-toolkit
 
-  conditional_group:  # ドキュメント（.mdファイルが存在する場合のみ）
+  conditional_group: # ドキュメント（.mdファイルが存在する場合のみ）
     agents: [document-reviewer]
     condition: "*.md files present"
 
-  integration_phase:  # 最終フェーズ - 全指摘の統合
+  integration_phase: # 最終フェーズ - 全指摘の統合
     agent: finding-integrator
     dependencies: [all_previous_groups]
     execution_mode: sequential
@@ -88,91 +94,73 @@ execution_plan:
 
 #### エージェントメタデータ構造
 
-| プロパティ | 型 | 説明 |
-| --- | --- | --- |
-| name | string | エージェント識別子（ケバブケース） |
-| max_execution_time | number | タイムアウト秒数（30-60） |
-| dependencies | string[] | 先に完了する必要があるエージェント |
-| parallel_group | enum | foundation / quality / production / sequential / optional |
-| status | enum | pending / running / completed / failed / timeout |
+| プロパティ         | 型       | 説明                                                      |
+| ------------------ | -------- | --------------------------------------------------------- |
+| name               | string   | エージェント識別子（ケバブケース）                        |
+| max_execution_time | number   | タイムアウト秒数（30-60）                                 |
+| dependencies       | string[] | 先に完了する必要があるエージェント                        |
+| parallel_group     | enum     | foundation / quality / production / sequential / optional |
+| status             | enum     | pending / running / completed / failed / timeout          |
 
 **検証フロー**: エージェントファイル読み込み → メタデータ抽出 → 依存関係検証 → ステータスをpendingに設定 → タイムアウト付きで実行
 
 #### 並列実行フロー
 
-| ステップ | アクション | 成功時 | 失敗時 |
-| --- | --- | --- | --- |
-| 1 | グループ内の全エージェント開始 | 続行 | - |
-| 2 | エージェントごとのステータス追跡 | 完了マーク | failed/timeoutマーク |
-| 3 | 全員待機（Promise.allSettled） | 結果収集 | エラーログ |
-| 4 | 結果マップを返す | 次のグループへ | 部分結果で続行 |
+| ステップ | アクション                       | 成功時         | 失敗時               |
+| -------- | -------------------------------- | -------------- | -------------------- |
+| 1        | グループ内の全エージェント開始   | 続行           | -                    |
+| 2        | エージェントごとのステータス追跡 | 完了マーク     | failed/timeoutマーク |
+| 3        | 全員待機（Promise.allSettled）   | 結果収集       | エラーログ           |
+| 4        | 結果マップを返す                 | 次のグループへ | 部分結果で続行       |
 
 ### 2. コンテキスト準備
 
 #### レビューコンテキスト設定
 
-| プロパティ | 型 | デフォルト | 説明 |
-| --- | --- | --- | --- |
-| targetFiles | string[] | - | レビュー対象ファイル（globから） |
-| fileTypes | string[] | .ts, .tsx | サポートされる拡張子 |
-| excludePatterns | string[] | node_modules, dist, build | 無視するパス |
-| maxFileSize | number | 100KB | より大きなファイルはスキップ |
+| プロパティ      | 型       | デフォルト                | 説明                             |
+| --------------- | -------- | ------------------------- | -------------------------------- |
+| targetFiles     | string[] | -                         | レビュー対象ファイル（globから） |
+| fileTypes       | string[] | .ts, .tsx                 | サポートされる拡張子             |
+| excludePatterns | string[] | node_modules, dist, build | 無視するパス                     |
+| maxFileSize     | number   | 100KB                     | より大きなファイルはスキップ     |
 
 **強化コンテキスト**（自動検出）: projectType、dependencies、tsConfig、eslintConfig、customRules
 
 #### 条件付きエージェント選択
 
-| 条件 | アクション |
-| --- | --- |
-| *.mdファイルあり | document-reviewerを含める |
-| セキュリティに敏感なパス | security-reviewerを優先 |
+| 条件                       | アクション                               |
+| -------------------------- | ---------------------------------------- |
+| \*.mdファイルあり          | document-reviewerを含める                |
+| セキュリティに敏感なパス   | security-reviewerを優先                  |
 | パフォーマンスクリティカル | performance-reviewerのタイムアウトを延長 |
 
 ### 2.5. JP/EN翻訳ファイルの取り扱い
 
-#### 翻訳ファイルの認識
+バイリンガルドキュメントのレビューガイドラインの詳細は以下を参照:
+[@../../../rules/guidelines/JP_EN_TRANSLATION_RULES.md](../../../rules/guidelines/JP_EN_TRANSLATION_RULES.md)
 
-`.ja/`ディレクトリ配下のファイルは対応する英語ファイルの**日本語翻訳**です。内容の一貫性比較を行うべきではありません。
+**要点**:
 
-| パスパターン | タイプ | 扱い |
-| --- | --- | --- |
-| `commands/*.md` | ENソース | 主レビュー対象 |
-| `.ja/commands/*.md` | JP翻訳 | 構造のみレビュー |
-| `docs/*.md` | ENソース | 主レビュー対象 |
-| `.ja/docs/*.md` | JP翻訳 | 構造のみレビュー |
-
-#### 翻訳ファイルのレビュールール
-
-**レビュー対象**:
-
-- 構造の一貫性（同じセクションが存在）
-- YAMLフロントマターのフィールド一致
-- Mermaidダイアグラムの等価性
-- リンク/参照の有効性
-
-**問題としてフラグしない**:
-
-- 例文中のキーワードの違い（例: `Navigate to` vs `に移動`）
-- 翻訳されたコンテンツ（説明文）
-- ローカライズされた日付/数値フォーマット
-- 異なる自然言語表現
+- `.ja/`配下のファイルは日本語翻訳（構造のみレビュー）
+- ENコンテンツとJPコンテンツを比較しない
+- 構造/リンクの一致を確認、翻訳テキストは比較しない
 
 ### 3. 結果統合
 
 #### 発見事項構造
 
-| フィールド | 型 | 必須 | 説明 |
-| --- | --- | --- | --- |
-| agent | string | ✓ | ソースエージェント名 |
-| severity | enum | ✓ | critical / high / medium / low |
-| category | string | ✓ | security、performanceなど |
-| file | string | ✓ | ファイルパス |
-| line | number | - | 行番号 |
-| message | string | ✓ | 問題の説明 |
-| confidence | number | ✓ | 0.0-1.0スコア |
-| confidenceMarker | enum | ✓ | ✓ (>0.8) / → (0.5-0.8) / ? (<0.5) |
-| evidence | string | ✓ | コード参照またはパターン |
-| reasoning | string | ✓ | なぜこれが問題か |
+| フィールド       | 型     | 必須 | 説明                              |
+| ---------------- | ------ | ---- | --------------------------------- |
+| agent            | string | ✓    | ソースエージェント名              |
+| severity         | enum   | ✓    | critical / high / medium / low    |
+| category         | string | ✓    | security、performanceなど         |
+| file             | string | ✓    | ファイルパス                      |
+| line             | number | -    | 行番号                            |
+| message          | string | ✓    | 問題の説明                        |
+| confidence       | number | ✓    | 0.0-1.0スコア                     |
+| confidenceMarker | enum   | ✓    | ✓ (>0.8) / → (0.5-0.8) / ? (<0.5) |
+| evidence         | string | ✓    | コード参照またはパターン          |
+| reasoning        | string | ✓    | なぜこれが問題か                  |
 
 **重複排除**: `file:line:category`でグループ化 → 最高重大度を保持
 
@@ -182,22 +170,22 @@ execution_plan:
 
 [@../../../rules/PRINCIPLES_GUIDE.md]の優先度マトリックスに基づく：
 
-| 優先度 | 違反 | 例 |
-| --- | --- | --- |
-| Essential | オッカムの剃刀、プログレッシブエンハンスメント | 不要な複雑さ、過剰エンジニアリング |
-| Default | 読みやすいコード、DRY、TDD/ベビーステップ | 理解しにくい、重複、大きな変更 |
-| Contextual | SOLID、デメテルの法則 | コンテキスト依存、過度な結合 |
+| 優先度     | 違反                                           | 例                                 |
+| ---------- | ---------------------------------------------- | ---------------------------------- |
+| Essential  | オッカムの剃刀、プログレッシブエンハンスメント | 不要な複雑さ、過剰エンジニアリング |
+| Default    | 読みやすいコード、DRY、TDD/ベビーステップ      | 理解しにくい、重複、大きな変更     |
+| Contextual | SOLID、デメテルの法則                          | コンテキスト依存、過度な結合       |
 
 #### 重大度の重み付け
 
-| 重大度 | 重み | カテゴリ | 乗数 |
-| --- | --- | --- | --- |
-| critical | 1000 | security | 10 |
-| high | 100 | accessibility | 8 |
-| medium | 10 | performance | 6 |
-| low | 1 | functionality | 5 |
-| - | - | maintainability | 3 |
-| - | - | style | 1 |
+| 重大度   | 重み | カテゴリ        | 乗数 |
+| -------- | ---- | --------------- | ---- |
+| critical | 1000 | security        | 10   |
+| high     | 100  | accessibility   | 8    |
+| medium   | 10   | performance     | 6    |
+| low      | 1    | functionality   | 5    |
+| -        | -    | maintainability | 3    |
+| -        | -    | style           | 1    |
 
 **優先度スコア** = 重大度の重み × カテゴリ乗数
 
@@ -216,15 +204,19 @@ execution_plan:
 ## 主要な発見事項
 
 ### 即時対応が必要なクリティカル問題
+
 {{criticalFindings}}
 
 ### 高優先度の改善
+
 {{highPriorityFindings}}
 
 ### コード品質向上のための推奨事項
+
 {{recommendations}}
 
 ## メトリクス概要
+
 - **型カバレッジ**: {{typeCoverage}}%
 - **アクセシビリティスコア**: {{a11yScore}}/100
 - **セキュリティ問題**: {{securityCount}}
@@ -239,18 +231,23 @@ execution_plan:
 ## カテゴリ別詳細発見事項
 
 ### セキュリティ（{{securityCount}}件）
+
 {{securityFindings}}
 
 ### パフォーマンス（{{performanceCount}}件）
+
 {{performanceFindings}}
 
 ### 型安全性（{{typeCount}}件）
+
 {{typeFindings}}
 
 ### コード品質（{{qualityCount}}件）
+
 {{qualityFindings}}
 
 ## アクションプラン
+
 1. **即時対応**（Critical/Security）
 2. **短期改善**（1-2スプリント）
 3. **長期リファクタリング**（技術的負債）
@@ -260,21 +257,21 @@ execution_plan:
 
 #### パターン認識
 
-| 検出されたパターン | 推奨事項 | インパクト | 工数 |
-| --- | --- | --- | --- |
-| 複数の型エラー | TypeScript厳格モードを有効化 | 高 | 中 |
-| Props drilling | ContextまたはState管理を実装 | 中 | 高 |
-| Error boundaryなし | React Error Boundariesを追加 | 高 | 低 |
-| インラインスタイル | CSSモジュールまたはstyled-componentsに抽出 | 低 | 中 |
+| 検出されたパターン | 推奨事項                                   | インパクト | 工数 |
+| ------------------ | ------------------------------------------ | ---------- | ---- |
+| 複数の型エラー     | TypeScript厳格モードを有効化               | 高         | 中   |
+| Props drilling     | ContextまたはState管理を実装               | 中         | 高   |
+| Error boundaryなし | React Error Boundariesを追加               | 高         | 低   |
+| インラインスタイル | CSSモジュールまたはstyled-componentsに抽出 | 低         | 中   |
 
 ### 7. エラーハンドリング戦略
 
-| 戦略 | クリティカルエージェント | オプションエージェント |
-| --- | --- | --- |
-| リトライ | はい（2回） | なし |
-| エラー時続行 | なし | はい |
-| ログレベル | error | warn |
-| フォールバックエージェント | 利用可能な場合 | - |
+| 戦略                       | クリティカルエージェント | オプションエージェント |
+| -------------------------- | ------------------------ | ---------------------- |
+| リトライ                   | はい（2回）              | なし                   |
+| エラー時続行               | なし                     | はい                   |
+| ログレベル                 | error                    | warn                   |
+| フォールバックエージェント | 利用可能な場合           | -                      |
 
 ## 実行ワークフロー
 
@@ -377,38 +374,38 @@ custom_rules:
 
 ### コアエージェント
 
-| エージェント | 役割 | フォーカス |
-| --- | --- | --- |
-| structure-reviewer | コード構成 | DRY、結合、アーキテクチャ |
-| readability-reviewer | 読みやすさ評価 | 命名、明確さ、スコアリング |
-| type-safety-reviewer | 型カバレッジ | any使用、型アサーション |
-| silent-failure-reviewer | パターン検出 | 空catch、未処理Promise |
-| design-pattern-reviewer | パターン一貫性 | SOLID、フロントエンドパターン |
-| testability-reviewer | テスト設計 | カバレッジギャップ、テスト品質 |
-| progressive-enhancer | CSS-firstソリューション | JS → CSSの機会 |
-| root-cause-reviewer | 根本原因分析 | 深い問題調査 |
+| エージェント            | 役割                    | フォーカス                     |
+| ----------------------- | ----------------------- | ------------------------------ |
+| structure-reviewer      | コード構成              | DRY、結合、アーキテクチャ      |
+| readability-reviewer    | 読みやすさ評価          | 命名、明確さ、スコアリング     |
+| type-safety-reviewer    | 型カバレッジ            | any使用、型アサーション        |
+| silent-failure-reviewer | パターン検出            | 空catch、未処理Promise         |
+| design-pattern-reviewer | パターン一貫性          | SOLID、フロントエンドパターン  |
+| testability-reviewer    | テスト設計              | カバレッジギャップ、テスト品質 |
+| progressive-enhancer    | CSS-firstソリューション | JS → CSSの機会                 |
+| root-cause-reviewer     | 根本原因分析            | 深い問題調査                   |
 
 ### 強化エージェント（pr-review-toolkit）
 
-| エージェント | 役割 | 補完対象 |
-| --- | --- | --- |
-| silent-failure-hunter | 詳細エラー分析 | silent-failure-reviewer |
-| comment-analyzer | コメント品質と劣化 | （新カテゴリ） |
-| type-design-analyzer | 型設計品質 | type-safety-reviewer |
-| code-simplifier | 簡素化提案 | readability-reviewer |
+| エージェント          | 役割               | 補完対象                |
+| --------------------- | ------------------ | ----------------------- |
+| silent-failure-hunter | 詳細エラー分析     | silent-failure-reviewer |
+| comment-analyzer      | コメント品質と劣化 | （新カテゴリ）          |
+| type-design-analyzer  | 型設計品質         | type-safety-reviewer    |
+| code-simplifier       | 簡素化提案         | readability-reviewer    |
 
 ### 本番エージェント
 
-| エージェント | 役割 | フォーカス |
-| --- | --- | --- |
-| security-reviewer | セキュリティ監査 | OWASP、脆弱性 |
-| performance-reviewer | パフォーマンス分析 | ボトルネック、バンドルサイズ |
+| エージェント           | 役割                     | フォーカス                           |
+| ---------------------- | ------------------------ | ------------------------------------ |
+| security-reviewer      | セキュリティ監査         | OWASP、脆弱性                        |
+| performance-reviewer   | パフォーマンス分析       | ボトルネック、バンドルサイズ         |
 | accessibility-reviewer | アクセシビリティチェック | WCAG、ARIA、キーボードナビゲーション |
 
 ### 統合エージェント
 
-| エージェント | 役割 | フォーカス |
-| --- | --- | --- |
+| エージェント       | 役割     | フォーカス                                   |
+| ------------------ | -------- | -------------------------------------------- |
 | finding-integrator | 最終統合 | パターン検出、根本原因分析、アクションプラン |
 
 ## ベストプラクティス
