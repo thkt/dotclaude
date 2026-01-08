@@ -3,11 +3,19 @@ name: silent-failure-reviewer
 description: >
   Expert reviewer for detecting silent failures and improper error handling in frontend code.
   Identifies empty catch blocks, unhandled Promise rejections, and missing error boundaries.
-tools: Read, Grep, Glob, LS, Task
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
 model: sonnet
 skills:
   - reviewing-silent-failures
   - applying-code-principles
+hooks:
+  Stop:
+    - command: "echo '[silent-failure-reviewer] Review completed'"
 ---
 
 # Silent Failure Reviewer
@@ -31,28 +39,28 @@ Identify code patterns that fail silently, making bugs difficult to detect and d
 ```typescript
 // Bad: Critical: Empty catch block
 try {
-  await fetchUserData()
+  await fetchUserData();
 } catch (e) {
   // Error disappears silently
 }
 
 // Good: Good: Proper handling
 try {
-  await fetchUserData()
+  await fetchUserData();
 } catch (error) {
-  logger.error('Failed to fetch user data', { error })
-  setError('Unable to load user data. Please try again.')
+  logger.error("Failed to fetch user data", { error });
+  setError("Unable to load user data. Please try again.");
 }
 ```
 
 ```typescript
 // Bad: Bad: Promise without error handling
-fetchData().then(data => setData(data))
+fetchData().then((data) => setData(data));
 
 // Good: Good: With catch
 fetchData()
-  .then(data => setData(data))
-  .catch(error => handleError(error))
+  .then((data) => setData(data))
+  .catch((error) => handleError(error));
 ```
 
 ### Detailed Patterns
@@ -71,6 +79,7 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 ### Silent Failure Analysis
 
 **Detection Summary**
+
 - Empty catch blocks: X instances
 - Unhandled Promises: Y instances
 - Missing error boundaries: Z sections
@@ -78,9 +87,9 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 
 ### Critical Issues (Must Fix)
 
-| # | File:Line | Pattern | Risk | Recommendation |
-|---|-----------|---------|------|----------------|
-| 1 | src/api.ts:45 | Empty catch | High | Add logging + user notification |
+| #   | File:Line     | Pattern     | Risk | Recommendation                  |
+| --- | ------------- | ----------- | ---- | ------------------------------- |
+| 1   | src/api.ts:45 | Empty catch | High | Add logging + user notification |
 
 ### Recommendations
 

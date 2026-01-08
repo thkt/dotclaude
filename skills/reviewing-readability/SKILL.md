@@ -5,7 +5,12 @@ description: >
   Triggers: 可読性, 理解しやすい, わかりやすい, 明確, 命名, 変数名, 関数名,
   ネスト, 深いネスト, 関数設計, コメント, 複雑, 難しい, 難読,
   Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計.
-allowed-tools: Read, Grep, Glob, Task
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
+  - Task
+agent: readability-reviewer
 ---
 
 # Readability Review - Code Clarity & Cognitive Load
@@ -14,22 +19,22 @@ Target: New team member understands code in < 1 minute.
 
 ## Miller's Law Limits (7±2)
 
-| Context | Ideal | Maximum |
-| --- | --- | --- |
-| Function arguments | 3 | 5 |
-| Class methods | 5 | 7 |
-| Conditional branches | 3 | 5 |
-| Function length | 5-10 lines | 15 lines |
-| Nesting depth | 2 | 3 |
+| Context              | Ideal      | Maximum  |
+| -------------------- | ---------- | -------- |
+| Function arguments   | 3          | 5        |
+| Class methods        | 5          | 7        |
+| Conditional branches | 3          | 5        |
+| Function length      | 5-10 lines | 15 lines |
+| Nesting depth        | 2          | 3        |
 
 ## Section-Based Loading
 
-| Section | File | Focus | Triggers |
-| --- | --- | --- | --- |
-| Naming | `references/naming-structure.md` | Concrete names, searchability | 命名, 変数名, 関数名 |
-| Control Flow | `references/control-flow.md` | Nesting, guard clauses | ネスト, Miller's Law |
-| Comments | `references/comments-clarity.md` | Why not What, intent | コメント, 意図 |
-| AI Antipatterns | `references/ai-antipatterns.md` | Over-engineering detection | AI-generated, 過剰設計 |
+| Section         | File                             | Focus                         | Triggers               |
+| --------------- | -------------------------------- | ----------------------------- | ---------------------- |
+| Naming          | `references/naming-structure.md` | Concrete names, searchability | 命名, 変数名, 関数名   |
+| Control Flow    | `references/control-flow.md`     | Nesting, guard clauses        | ネスト, Miller's Law   |
+| Comments        | `references/comments-clarity.md` | Why not What, intent          | コメント, 意図         |
+| AI Antipatterns | `references/ai-antipatterns.md`  | Over-engineering detection    | AI-generated, 過剰設計 |
 
 ## Quick Checklist
 
@@ -59,11 +64,11 @@ Target: New team member understands code in < 1 minute.
 
 ## Key Principles
 
-| Principle | Application |
-| --- | --- |
-| Clarity > Cleverness | Simple code wins |
-| Respect 7±2 limit | Break into chunks |
-| Tell, Don't Ask | Direct method calls |
+| Principle            | Application         |
+| -------------------- | ------------------- |
+| Clarity > Cleverness | Simple code wins    |
+| Respect 7±2 limit    | Break into chunks   |
+| Tell, Don't Ask      | Direct method calls |
 
 ## References
 

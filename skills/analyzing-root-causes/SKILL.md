@@ -5,7 +5,12 @@ description: >
   Triggers: 根本原因, root cause, 5 Whys, なぜなぜ分析, 対症療法, patch,
   symptom, 症状, 表面的, workaround, ワークアラウンド, 本質的,
   応急処置, bandaid, quick fix.
-allowed-tools: Read, Grep, Glob, Task
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
+  - Task
+context: fork
 ---
 
 # Root Cause Analysis - 5 Whys Methodology
@@ -14,18 +19,18 @@ Target: Solve problems once and properly by addressing root causes, not symptoms
 
 ## Symptom vs Root Cause
 
-| Type | Example | Result |
-| --- | --- | --- |
-| Symptom Fix | Add setTimeout to wait for DOM | Works now, breaks later |
-| Root Cause Fix | Use React ref properly | Permanent solution |
-| Symptom Fix | Add flag to prevent double-submit | Complexity grows |
-| Root Cause Fix | Disable button during submission | Simple, reliable |
+| Type           | Example                           | Result                  |
+| -------------- | --------------------------------- | ----------------------- |
+| Symptom Fix    | Add setTimeout to wait for DOM    | Works now, breaks later |
+| Root Cause Fix | Use React ref properly            | Permanent solution      |
+| Symptom Fix    | Add flag to prevent double-submit | Complexity grows        |
+| Root Cause Fix | Disable button during submission  | Simple, reliable        |
 
 ## Section-Based Loading
 
-| Section | File | Focus | Triggers |
-| --- | --- | --- | --- |
-| 5 Whys | `references/five-whys.md` | Analysis process, templates | 5 Whys, なぜなぜ |
+| Section  | File                             | Focus                         | Triggers             |
+| -------- | -------------------------------- | ----------------------------- | -------------------- |
+| 5 Whys   | `references/five-whys.md`        | Analysis process, templates   | 5 Whys, なぜなぜ     |
 | Patterns | `references/symptom-patterns.md` | Common symptom→cause patterns | 対症療法, workaround |
 
 ## Quick Checklist
@@ -60,12 +65,12 @@ Before implementing a fix, ask:
 
 ## Key Principles
 
-| Principle | Application |
-| --- | --- |
-| Prevention > Patching | Best fix prevents the problem entirely |
-| Simple > Complex | Root cause solutions are usually simpler |
-| Ask Why | Don't accept the first answer |
-| Progressive Enhancement | Can CSS/HTML solve this? |
+| Principle               | Application                              |
+| ----------------------- | ---------------------------------------- |
+| Prevention > Patching   | Best fix prevents the problem entirely   |
+| Simple > Complex        | Root cause solutions are usually simpler |
+| Ask Why                 | Don't accept the first answer            |
+| Progressive Enhancement | Can CSS/HTML solve this?                 |
 
 ## Common Symptom Patterns
 
@@ -74,24 +79,32 @@ Before implementing a fix, ask:
 ```typescript
 // Bad: Symptom: setTimeout to wait for DOM
 useEffect(() => {
-  setTimeout(() => { document.getElementById('target')?.scrollIntoView() }, 100)
-}, [])
+  setTimeout(() => {
+    document.getElementById("target")?.scrollIntoView();
+  }, 100);
+}, []);
 
 // Good: Root cause: Use React ref
-const targetRef = useRef<HTMLDivElement>(null)
-useEffect(() => { targetRef.current?.scrollIntoView() }, [])
+const targetRef = useRef<HTMLDivElement>(null);
+useEffect(() => {
+  targetRef.current?.scrollIntoView();
+}, []);
 ```
 
 ### State Synchronization
 
 ```typescript
 // Bad: Symptom: Multiple effects to sync state
-useEffect(() => { setFilteredItems(items.filter(i => i.active)) }, [items])
-useEffect(() => { setCount(filteredItems.length) }, [filteredItems])
+useEffect(() => {
+  setFilteredItems(items.filter((i) => i.active));
+}, [items]);
+useEffect(() => {
+  setCount(filteredItems.length);
+}, [filteredItems]);
 
 // Good: Root cause: Derive state, don't sync
-const filteredItems = useMemo(() => items.filter(i => i.active), [items])
-const count = filteredItems.length
+const filteredItems = useMemo(() => items.filter((i) => i.active), [items]);
+const count = filteredItems.length;
 ```
 
 ### Polling for Child State

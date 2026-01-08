@@ -5,7 +5,12 @@ description: >
   セキュリティ, 脆弱性, XSS, SQL injection, SQLインジェクション, CSRF,
   認証, 認可, 暗号化, OWASP, SSRF, パスワード, セッション, rate limiting,
   brute force, command injection, security misconfiguration.
-allowed-tools: Read, Grep, Glob, Task
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
+  - Task
+agent: security-reviewer
 ---
 
 # Security Review - OWASP Top 10 Based
@@ -14,11 +19,11 @@ OWASP Top 10-based vulnerability detection and secure implementation guidance.
 
 ## Section-Based Loading
 
-| Section | File | Focus | Triggers |
-| --- | --- | --- | --- |
-| Basic Security | `references/owasp-basic.md` | OWASP 1,2,7: Access Control, Crypto, Auth | auth, password, session |
-| Injection | `references/owasp-injection.md` | OWASP 3: SQL/NoSQL/Command, XSS, CSRF | injection, XSS, CSRF |
-| Advanced | `references/owasp-advanced.md` | OWASP 4-6,8-10: Design, Config, Monitoring, SSRF | rate limiting, SSRF, logging |
+| Section        | File                            | Focus                                            | Triggers                     |
+| -------------- | ------------------------------- | ------------------------------------------------ | ---------------------------- |
+| Basic Security | `references/owasp-basic.md`     | OWASP 1,2,7: Access Control, Crypto, Auth        | auth, password, session      |
+| Injection      | `references/owasp-injection.md` | OWASP 3: SQL/NoSQL/Command, XSS, CSRF            | injection, XSS, CSRF         |
+| Advanced       | `references/owasp-advanced.md`  | OWASP 4-6,8-10: Design, Config, Monitoring, SSRF | rate limiting, SSRF, logging |
 
 ## Security Review Checklist
 
@@ -49,20 +54,23 @@ OWASP Top 10-based vulnerability detection and secure implementation guidance.
 
 ### Step 5: Dependencies
 
-```bash
-npm audit  # or yarn audit
-```
+Run audit command for your package manager:
+
+- npm: `npm audit`
+- yarn: `yarn audit`
+- pnpm: `pnpm audit`
+- bun: `bun pm trust` (or check lockfile)
 
 - [ ] No known vulnerabilities
 
 ## Key Principles
 
-| Principle | Description |
-| --- | --- |
-| Defense in Depth | Don't rely on single measure |
-| Least Privilege | Minimal permissions |
-| Fail Securely | Safe even when failing |
-| Security by Default | Secure by default |
+| Principle           | Description                  |
+| ------------------- | ---------------------------- |
+| Defense in Depth    | Don't rely on single measure |
+| Least Privilege     | Minimal permissions          |
+| Fail Securely       | Safe even when failing       |
+| Security by Default | Secure by default            |
 
 ## References
 

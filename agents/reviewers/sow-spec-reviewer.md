@@ -5,12 +5,20 @@ description: >
   Executes quality evaluation with 100-point scoring, SOW↔Spec consistency checks, and 90-point pass/fail judgment.
   Prevents rework by detecting design issues early, before code implementation.
   Serves as the quality gate for design documents as a specialized SOW/Spec reviewer.
-tools: Read, Grep, Glob, LS, Task
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
 model: sonnet
 skills:
   - formatting-audits
   - reviewing-readability
   - applying-code-principles
+hooks:
+  Stop:
+    - command: "echo '[sow-spec-reviewer] Review completed'"
 ---
 
 # SOW/Spec Reviewer

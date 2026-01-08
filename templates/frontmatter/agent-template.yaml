@@ -1,0 +1,84 @@
+# ============================================================================
+# AGENT FRONTMATTER TEMPLATE
+# ============================================================================
+#
+# Usage:
+#   1. Copy this template to ~/.claude/agents/<category>/<agent-name>.md
+#   2. Uncomment and fill in required fields
+#   3. Optionally enable 2.1.0 features as needed
+#
+# Categories: reviewers/, analyzers/, orchestrators/, generators/, git/
+#
+# ============================================================================
+
+---
+# ============ Required Fields ============
+name: agent-name # kebab-case, unique identifier
+description: >
+  Agent description and purpose.
+
+# ============ Tools ============
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
+  # Add as needed:
+  # - Bash
+  # - Write
+  # - Edit
+  # - WebFetch
+  # - WebSearch
+  # - mcp__server__tool
+
+# ============ Model ============
+model: haiku # haiku | sonnet | opus
+
+# ============ Skills ============
+# Skills to auto-load when agent is invoked
+skills:
+  - skill-name-1
+  # - skill-name-2
+
+
+# ============ 2.1.0 New Features ============
+
+# --- context: fork ---
+# Runs agent in isolated context
+# Use for: Long-running analysis, large codebase exploration
+# Recommended categories: analyzers/, generators/
+#
+# context: fork
+
+# ============ Hooks (2.1.0) ============
+# Define agent-specific lifecycle hooks
+#
+# hooks:
+#   PreToolUse:
+#     - matcher: "Bash"
+#       command: "echo '[agent] Pre-bash validation'"
+#   PostToolUse:
+#     - matcher: "Task"
+#       command: "echo '[agent] Subagent completed'"
+#   Stop:
+#     - command: "~/.claude/hooks/notify.sh 'Agent completed'"
+
+# ============ Permissions (2.1.0) ============
+# permissionMode: default           # default | auto-accept
+
+# ============ Disallowed Tools ============
+# Explicitly block specific tools for this agent
+# disallowedTools:
+#   - Write
+#   - Bash
+
+---
+# Agent instructions start here...
+#
+# Recommended structure:
+# 1. Objective
+# 2. Review Focus Areas / Responsibilities
+# 3. Output Format
+# 4. Integration with Other Agents (if applicable)
+# 5. Related Principles

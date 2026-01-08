@@ -3,8 +3,17 @@ name: audit-orchestrator
 description: >
   Master orchestrator for comprehensive frontend code reviews, coordinating specialized agents and synthesizing findings.
   Manages execution of multiple specialized review agents, integrates findings, prioritizes issues, and generates comprehensive reports.
-tools: Task, Grep, Glob, LS, Read
+tools:
+  - Task
+  - Grep
+  - Glob
+  - LS
+  - Read
 model: opus
+hooks:
+  PreToolUse:
+    - matcher: "Task"
+      command: "echo '[audit] Launching sub-agent'"
 ---
 
 # Review Orchestrator

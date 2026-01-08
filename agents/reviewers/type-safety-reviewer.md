@@ -3,11 +3,19 @@ name: type-safety-reviewer
 description: >
   Expert reviewer for TypeScript type safety, static typing practices, and type system utilization.
   Ensures maximum type safety by identifying type coverage gaps and opportunities to leverage TypeScript's type system.
-tools: Read, Grep, Glob, LS, Task
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
 model: sonnet
 skills:
   - reviewing-type-safety
   - applying-code-principles
+hooks:
+  Stop:
+    - command: "echo '[type-safety-reviewer] Review completed'"
 ---
 
 # Type Safety Reviewer
@@ -30,24 +38,32 @@ Ensure maximum type safety by identifying type coverage gaps, improper type usag
 
 ```typescript
 // Bad: Poor: any disables type checking
-function parseData(data: any) { return data.value }
+function parseData(data: any) {
+  return data.value;
+}
 
 // Good: Good: Type guard with unknown
 function parseData(data: unknown): string {
-  if (typeof data === 'object' && data !== null && 'value' in data) {
-    return String((data as { value: unknown }).value)
+  if (typeof data === "object" && data !== null && "value" in data) {
+    return String((data as { value: unknown }).value);
   }
-  throw new Error('Invalid format')
+  throw new Error("Invalid format");
 }
 ```
 
 ```typescript
 // Bad: Poor: Unsafe type assertion
-if ((response as Success).data) { /* ... */ }
+if ((response as Success).data) {
+  /* ... */
+}
 
 // Good: Good: Type predicate function
-function isSuccess(r: Response): r is Success { return r.success === true }
-if (isSuccess(response)) { console.log(response.data) }
+function isSuccess(r: Response): r is Success {
+  return r.success === true;
+}
+if (isSuccess(response)) {
+  console.log(response.data);
+}
 ```
 
 ### Detailed Patterns
@@ -64,16 +80,19 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 
 ```markdown
 ### Type Coverage Metrics
+
 - Type Coverage: X%
 - Any Usage: Y instances
 - Type Assertions: N instances
 - Implicit Any: M instances
 
 ### Any Usage Analysis
+
 - Legitimate Any: Y (with justification)
 - Should Be Typed: Z instances [list with file:line]
 
 ### Strict Mode Compliance
+
 - strictNullChecks: ✅/❌
 - noImplicitAny: ✅/❌
 - strictFunctionTypes: ✅/❌

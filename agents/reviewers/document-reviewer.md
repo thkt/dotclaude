@@ -3,11 +3,19 @@ name: document-reviewer
 description: >
   Expert technical documentation reviewer with deep expertise in creating clear, user-focused documentation.
   Reviews README, API specifications, rule files, and other technical documents for quality, clarity, and structure.
-tools: Task, Read, Grep, Glob, LS
+tools:
+  - Task
+  - Read
+  - Grep
+  - Glob
+  - LS
 model: sonnet
 skills:
   - reviewing-readability
   - applying-code-principles
+hooks:
+  Stop:
+    - command: "echo '[document-reviewer] Review completed'"
 ---
 
 # Document Reviewer
@@ -70,10 +78,10 @@ Review documentation for quality, clarity, structure, and audience appropriatene
 
 Evaluate whether the document properly prioritizes **non-reversible information** (What/Why) over **reversible information** (How).
 
-| Type | Examples | Priority |
-| --- | --- | --- |
-| **Non-reversible (What/Why)** | Purpose, rationale, constraints, business rules | High - Cannot be regenerated |
-| **Reversible (How)** | Procedures, scripts, commands, step-by-step | Low - AI can regenerate from purpose |
+| Type                          | Examples                                        | Priority                             |
+| ----------------------------- | ----------------------------------------------- | ------------------------------------ |
+| **Non-reversible (What/Why)** | Purpose, rationale, constraints, business rules | High - Cannot be regenerated         |
+| **Reversible (How)**          | Procedures, scripts, commands, step-by-step     | Low - AI can regenerate from purpose |
 
 **Review questions**:
 
@@ -104,19 +112,25 @@ Evaluate whether the document properly prioritizes **non-reversible information*
 ## Documentation Review Results
 
 ### Understanding Score: XX%
+
 **Overall Confidence**: [✓/→] [0.X]
 
 ### Strengths
+
 - [✓] [What documentation does well with section/line references]
 
 ### Areas for Improvement
+
 #### High Priority
+
 1. **[✓]** [Issue]: [description with location, evidence, suggestion]
 
 ### Quality Metrics
+
 - Clarity: X/10, Completeness: X/10, Structure: X/10, Examples: X/10, Accessibility: X/10, Reversibility: X/10
 
 ### Prioritized Action Items
+
 1. [Action with priority and location]
 ```
 
@@ -128,9 +142,9 @@ Evaluate whether the document properly prioritizes **non-reversible information*
 
 Files under `.ja/` are Japanese translations. Follow orchestrator rules:
 
-| File Location | Review Mode |
-| --- | --- |
-| `commands/*.md`, `docs/*.md` | Full review |
+| File Location                        | Review Mode    |
+| ------------------------------------ | -------------- |
+| `commands/*.md`, `docs/*.md`         | Full review    |
 | `.ja/commands/*.md`, `.ja/docs/*.md` | Structure-only |
 
 **DO NOT flag as issues**:

@@ -4,7 +4,14 @@ description: >
   TDD with RGRC cycle and Baby Steps methodology. Triggers: TDD, テスト駆動開発,
   Red-Green-Refactor, Baby Steps, test generation, テスト生成, テスト設計,
   テストケース, boundary value, 境界値分析, coverage, カバレッジ, unit test
-allowed-tools: Read, Write, Edit, Grep, Glob, Task
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Grep
+  - Glob
+  - Task
+context: fork
 ---
 
 # TDD Test Generation
@@ -17,13 +24,13 @@ Systematic Test-Driven Development combining RGRC cycle, Baby Steps, and test de
 
 **"Make the smallest possible change at each step"** - t_wada
 
-| Step | Time | Action |
-| --- | --- | --- |
-| 1 | 30s | Write smallest failing test |
-| 2 | 1min | Make it pass minimally |
-| 3 | 10s | Run tests |
-| 4 | 30s | Tiny refactor (if needed) |
-| 5 | 20s | Commit if green |
+| Step | Time | Action                      |
+| ---- | ---- | --------------------------- |
+| 1    | 30s  | Write smallest failing test |
+| 2    | 1min | Make it pass minimally      |
+| 3    | 10s  | Run tests                   |
+| 4    | 30s  | Tiny refactor (if needed)   |
+| 5    | 20s  | Commit if green             |
 
 **Why**: Bug is always in last 2-minute change. Always seconds from green.
 
@@ -33,6 +40,7 @@ Copy and track progress:
 
 ```markdown
 TDD Cycle:
+
 - [ ] Red - 失敗するテスト作成 (verify correct failure reason)
 - [ ] Green - 最小限のコードで通過 (dirty OK)
 - [ ] Refactor - コード改善 (keep tests green)
@@ -41,38 +49,38 @@ TDD Cycle:
 
 ### Phase Details
 
-| Phase | Goal | Rule |
-| --- | --- | --- |
-| Red | Failing test | Verify failure reason is correct |
-| Green | Pass test | "You can sin" - quick/dirty OK |
-| Refactor | Clean code | Apply SOLID/DRY, keep green |
-| Commit | Save state | All checks pass |
+| Phase    | Goal         | Rule                             |
+| -------- | ------------ | -------------------------------- |
+| Red      | Failing test | Verify failure reason is correct |
+| Green    | Pass test    | "You can sin" - quick/dirty OK   |
+| Refactor | Clean code   | Apply SOLID/DRY, keep green      |
+| Commit   | Save state   | All checks pass                  |
 
 ## Test Design Techniques
 
-| Technique | Use For | Example |
-| --- | --- | --- |
-| Equivalence Partitioning | Group inputs with same behavior | Age: <18, 18-120, >120 |
-| Boundary Value | Test edges | 17, 18, 120, 121 |
-| Decision Table | Complex multi-condition logic | isLoggedIn × isPremium → access |
+| Technique                | Use For                         | Example                         |
+| ------------------------ | ------------------------------- | ------------------------------- |
+| Equivalence Partitioning | Group inputs with same behavior | Age: <18, 18-120, >120          |
+| Boundary Value           | Test edges                      | 17, 18, 120, 121                |
+| Decision Table           | Complex multi-condition logic   | isLoggedIn × isPremium → access |
 
 ## Coverage Goals
 
-| Level | Target | Focus |
-| --- | --- | --- |
-| C0 (Statement) | 80% | All lines executed |
-| C1 (Branch) | 70% | All branches taken |
+| Level          | Target | Focus              |
+| -------------- | ------ | ------------------ |
+| C0 (Statement) | 80%    | All lines executed |
+| C1 (Branch)    | 70%    | All branches taken |
 
 **Why these targets**: Cost-benefit balance, focus on critical paths.
 
 ## AAA Pattern
 
 ```typescript
-test('descriptive name', () => {
+test("descriptive name", () => {
   // Arrange - Setup
   // Act - Execute
   // Assert - Verify
-})
+});
 ```
 
 ## When NOT to Use TDD
@@ -117,44 +125,46 @@ Consistent naming makes test intent clear.
 ### Recommended Pattern
 
 ```typescript
-describe('[TargetClass/FunctionName]', () => {
-  describe('[MethodName/Scenario]', () => {
-    it('when [condition], should [expected result]', () => {
+describe("[TargetClass/FunctionName]", () => {
+  describe("[MethodName/Scenario]", () => {
+    it("when [condition], should [expected result]", () => {
       // Arrange - Act - Assert
-    })
-  })
-})
+    });
+  });
+});
 ```
 
 ### Examples
 
 ```typescript
-describe('PriceCalculator', () => {
-  describe('calculateTotal', () => {
-    it('when empty array, should return 0', () => {
-      expect(calculator.calculateTotal([])).toBe(0)
-    })
+describe("PriceCalculator", () => {
+  describe("calculateTotal", () => {
+    it("when empty array, should return 0", () => {
+      expect(calculator.calculateTotal([])).toBe(0);
+    });
 
-    it('when discount code applied, should return discounted total', () => {
-      const items = [{ price: 1000, quantity: 2 }]
-      expect(calculator.calculateTotal(items, 'SAVE10')).toBe(1800)
-    })
+    it("when discount code applied, should return discounted total", () => {
+      const items = [{ price: 1000, quantity: 2 }];
+      expect(calculator.calculateTotal(items, "SAVE10")).toBe(1800);
+    });
 
-    it('when tax included, should return total with correct tax', () => {
-      const items = [{ price: 1000, quantity: 1 }]
-      expect(calculator.calculateTotal(items, null, { includeTax: true })).toBe(1100)
-    })
-  })
-})
+    it("when tax included, should return total with correct tax", () => {
+      const items = [{ price: 1000, quantity: 1 }];
+      expect(calculator.calculateTotal(items, null, { includeTax: true })).toBe(
+        1100,
+      );
+    });
+  });
+});
 ```
 
 ### Naming Guidelines
 
-| Element | Good | Bad |
-| --- | --- | --- |
-| Condition | `when empty array` | `test1` |
-| Expected | `should return 0` | `works correctly` |
-| Context | `when discount applied` | `discount` |
+| Element   | Good                    | Bad               |
+| --------- | ----------------------- | ----------------- |
+| Condition | `when empty array`      | `test1`           |
+| Expected  | `should return 0`       | `works correctly` |
+| Context   | `when discount applied` | `discount`        |
 
 **Tip**: Use descriptive names that serve as documentation
 
@@ -180,8 +190,8 @@ Generate tests in SKIP MODE:
 3. Order tests: simple → complex (Baby Steps order)
 4. Use framework-appropriate skip markers:
    - Jest/Vitest: it.skip() + // TODO: [SKIP] comment
-  `
-})
+  `,
+});
 ```
 
 ### Pattern 2: Bug-Driven Generation (Bug Fixing)
@@ -201,8 +211,8 @@ Generate:
 1. Test that reproduces original bug (should now pass)
 2. Edge case tests related to the fix
 3. Integration test if cross-component fix
-  `
-})
+  `,
+});
 ```
 
 ### Pattern 3: Coverage-Driven Generation
@@ -220,26 +230,26 @@ Existing test style: ${testStyle}
 
 Generate tests for uncovered code paths.
 Target coverage: 80%+
-  `
-})
+  `,
+});
 ```
 
 ## Framework-Specific Skip Markers
 
-| Framework | Skip Syntax |
-| --- | --- |
-| Jest/Vitest | `it.skip('test', () => { // TODO: [SKIP] FR-001 })` |
-| Mocha | `it.skip('test', function() { })` or `xit('test', ...)` |
-| Unknown | Comment out with `// TODO: [SKIP]` marker |
+| Framework   | Skip Syntax                                             |
+| ----------- | ------------------------------------------------------- |
+| Jest/Vitest | `it.skip('test', () => { // TODO: [SKIP] FR-001 })`     |
+| Mocha       | `it.skip('test', function() { })` or `xit('test', ...)` |
+| Unknown     | Comment out with `// TODO: [SKIP]` marker               |
 
 ## Best Practices
 
-| Practice | Good | Bad |
-| --- | --- | --- |
-| Context | Specific requirements | "Generate tests" |
-| Markers | Clear skip marker with FR-xxx | No marker |
-| Order | Simple → Complex (Baby Steps) | Random order |
-| Focus | One behavior per test | Multiple assertions |
+| Practice | Good                          | Bad                 |
+| -------- | ----------------------------- | ------------------- |
+| Context  | Specific requirements         | "Generate tests"    |
+| Markers  | Clear skip marker with FR-xxx | No marker           |
+| Order    | Simple → Complex (Baby Steps) | Random order        |
+| Focus    | One behavior per test         | Multiple assertions |
 
 ## References
 

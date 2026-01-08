@@ -7,7 +7,11 @@ description: >
   Triggers: browser automation, ブラウザ自動化, screenshot, スクリーンショット,
   form fill, フォーム入力, click, navigate, GIF recording, GIF録画,
   ブラウザ操作, Chrome, demo, デモ, live browser.
-allowed-tools: Read, Glob, mcp__claude-in-chrome__*
+allowed-tools:
+  - Read
+  - Glob
+  - mcp__claude-in-chrome__*
+context: fork
 ---
 
 # Browser Automation Guide

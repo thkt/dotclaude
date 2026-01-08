@@ -4,7 +4,14 @@ description: >
   Frontend performance optimization with data-driven approach. Triggers: パフォーマンス,
   遅い, 最適化, レンダリング, バンドルサイズ, Web Vitals, LCP, FID, CLS, 再レンダリング,
   メモ化, useMemo, useCallback, React.memo, 重い, 高速化, lazy loading, code splitting
-allowed-tools: Read, Grep, Glob, Task, mcp__claude-in-chrome__*, mcp__mdn__*
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
+  - Task
+  - mcp__claude-in-chrome__*
+  - mcp__mdn__*
+agent: performance-reviewer
 ---
 
 # Performance Optimization
@@ -15,19 +22,19 @@ Data-driven frontend optimization. **"Measure before optimizing"** - Donald Knut
 
 ## Section-Based Loading
 
-| Section | File | Focus | Load When |
-| --- | --- | --- | --- |
-| Web Vitals | `references/web-vitals.md` | LCP, FID, CLS | Loading speed, layout shifts |
-| React | `references/react-optimization.md` | memo, useMemo, useCallback | Re-renders |
-| Bundle | `references/bundle-optimization.md` | Code splitting, tree shaking | Bundle size |
+| Section    | File                                | Focus                        | Load When                    |
+| ---------- | ----------------------------------- | ---------------------------- | ---------------------------- |
+| Web Vitals | `references/web-vitals.md`          | LCP, FID, CLS                | Loading speed, layout shifts |
+| React      | `references/react-optimization.md`  | memo, useMemo, useCallback   | Re-renders                   |
+| Bundle     | `references/bundle-optimization.md` | Code splitting, tree shaking | Bundle size                  |
 
 ## Core Web Vitals Targets
 
-| Metric | Target | What It Measures |
-| --- | --- | --- |
-| LCP | <2.5s | Largest Contentful Paint |
-| FID | <100ms | First Input Delay |
-| CLS | <0.1 | Cumulative Layout Shift |
+| Metric | Target | What It Measures         |
+| ------ | ------ | ------------------------ |
+| LCP    | <2.5s  | Largest Contentful Paint |
+| FID    | <100ms | First Input Delay        |
+| CLS    | <0.1   | Cumulative Layout Shift  |
 
 ## Optimization Workflow
 
@@ -48,10 +55,10 @@ Data-driven frontend optimization. **"Measure before optimizing"** - Donald Knut
 
 ## Detailed References
 
-| Reference | Purpose |
-| --- | --- |
-| [@./references/web-vitals.md](./references/web-vitals.md) | LCP, FID, CLS optimization |
-| [@./references/react-optimization.md](./references/react-optimization.md) | memo, useMemo, useCallback |
+| Reference                                                                   | Purpose                      |
+| --------------------------------------------------------------------------- | ---------------------------- |
+| [@./references/web-vitals.md](./references/web-vitals.md)                   | LCP, FID, CLS optimization   |
+| [@./references/react-optimization.md](./references/react-optimization.md)   | memo, useMemo, useCallback   |
 | [@./references/bundle-optimization.md](./references/bundle-optimization.md) | Code splitting, tree shaking |
 
 ## References

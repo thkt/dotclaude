@@ -4,11 +4,19 @@ description: >
   Specialized agent for reviewing frontend code readability, extending "The Art of Readable Code" principles.
   Applies TypeScript, React, and modern frontend-specific readability considerations.
   References [@../../skills/reviewing-readability/SKILL.md] for readability principles and Miller's Law.
-tools: Read, Grep, Glob, LS, Task
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
 model: haiku
 skills:
   - reviewing-readability
   - applying-code-principles
+hooks:
+  Stop:
+    - command: "echo '[readability-reviewer] Review completed'"
 ---
 
 # Frontend Readability Reviewer
@@ -45,45 +53,57 @@ const useUserProfile = () => { ... }
 
 ```typescript
 // Bad: Poor type readability
-type D = { n: string; a: number; s: 'a' | 'i' | 'd' }
+type D = { n: string; a: number; s: "a" | "i" | "d" };
 
 // Good: Clear type definitions
-type UserData = { name: string; age: number; status: 'active' | 'inactive' | 'deleted' }
+type UserData = {
+  name: string;
+  age: number;
+  status: "active" | "inactive" | "deleted";
+};
 ```
 
 ### 3. Hook Usage Clarity
 
 ```typescript
 // Bad: Unclear dependencies
-useEffect(() => { doSomething(x, y, z) }, []) // Missing dependencies!
+useEffect(() => {
+  doSomething(x, y, z);
+}, []); // Missing dependencies!
 
 // Good: Clear dependencies
-useEffect(() => { fetchUserData(userId) }, [userId])
+useEffect(() => {
+  fetchUserData(userId);
+}, [userId]);
 ```
 
 ### 4. State Variable Naming
 
 ```typescript
 // Bad: Unclear state names
-const [ld, setLd] = useState(false)
-const [flag, setFlag] = useState(true)
+const [ld, setLd] = useState(false);
+const [flag, setFlag] = useState(true);
 
 // Good: Clear state names
-const [isLoading, setIsLoading] = useState(false)
-const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+const [isLoading, setIsLoading] = useState(false);
+const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 ```
 
 ### 5. Props Interface Clarity
 
 ```typescript
 // Bad: Unclear props
-interface Props { cb: () => void; d: boolean; opts: any }
+interface Props {
+  cb: () => void;
+  d: boolean;
+  opts: any;
+}
 
 // Good: Clear props
 interface UserCardProps {
-  onUserClick: () => void
-  isDisabled: boolean
-  displayOptions: { showAvatar: boolean; showBadge: boolean }
+  onUserClick: () => void;
+  isDisabled: boolean;
+  displayOptions: { showAvatar: boolean; showBadge: boolean };
 }
 ```
 
@@ -114,11 +134,13 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 
 ```markdown
 ### Readability Score
+
 - General: X/10
 - TypeScript: X/10
 - React Patterns: X/10
 
 ### Naming Conventions
+
 - Variables: X unclear names [list]
 - Components: Y poorly named [list]
 - Types: Z confusing [list]

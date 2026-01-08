@@ -5,7 +5,12 @@ description: >
   Triggers: 型安全, type safety, any, unknown, 型推論, 型ガード, type guard,
   discriminated union, 判別可能なUnion, strictNullChecks, 型定義, 型カバレッジ,
   TypeScript, 暗黙のany, implicit any, 型アサーション, type assertion.
-allowed-tools: Read, Grep, Glob, Task
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
+  - Task
+agent: type-safety-reviewer
 ---
 
 # Type Safety Review - TypeScript Best Practices
@@ -14,21 +19,21 @@ Target: Maximum type safety with minimal type gymnastics.
 
 ## Type Safety Metrics
 
-| Context | Target | Warning |
-| --- | --- | --- |
-| Type coverage | 95%+ | < 90% |
-| Any usage | 0 (justified only) | > 5 instances |
-| Type assertions | Minimal | > 10 instances |
-| Implicit any | 0 | Any > 0 |
-| Strict mode | All enabled | Any disabled |
+| Context         | Target             | Warning        |
+| --------------- | ------------------ | -------------- |
+| Type coverage   | 95%+               | < 90%          |
+| Any usage       | 0 (justified only) | > 5 instances  |
+| Type assertions | Minimal            | > 10 instances |
+| Implicit any    | 0                  | Any > 0        |
+| Strict mode     | All enabled        | Any disabled   |
 
 ## Section-Based Loading
 
-| Section | File | Focus | Triggers |
-| --- | --- | --- | --- |
-| Coverage | `references/type-coverage.md` | Explicit types, avoiding any | any, unknown, 型カバレッジ |
-| Guards | `references/type-guards.md` | Narrowing, discriminated unions | 型ガード, type guard |
-| Strict | `references/strict-mode.md` | tsconfig, React types | strictNullChecks, React |
+| Section  | File                          | Focus                           | Triggers                   |
+| -------- | ----------------------------- | ------------------------------- | -------------------------- |
+| Coverage | `references/type-coverage.md` | Explicit types, avoiding any    | any, unknown, 型カバレッジ |
+| Guards   | `references/type-guards.md`   | Narrowing, discriminated unions | 型ガード, type guard       |
+| Strict   | `references/strict-mode.md`   | tsconfig, React types           | strictNullChecks, React    |
 
 ## Quick Checklist
 
@@ -55,11 +60,11 @@ Target: Maximum type safety with minimal type gymnastics.
 
 ## Key Principles
 
-| Principle | Application |
-| --- | --- |
-| Fail Fast | Catch errors at compile-time, not runtime |
-| Let TS Infer | Don't over-type what's already clear |
-| Types as Docs | Good types serve as documentation |
+| Principle      | Application                                 |
+| -------------- | ------------------------------------------- |
+| Fail Fast      | Catch errors at compile-time, not runtime   |
+| Let TS Infer   | Don't over-type what's already clear        |
+| Types as Docs  | Good types serve as documentation           |
 | Prefer unknown | Use `unknown` over `any` for safer handling |
 
 ## Common Patterns
@@ -68,7 +73,7 @@ Target: Maximum type safety with minimal type gymnastics.
 
 ```typescript
 function isSuccess<T>(response: Response<T>): response is SuccessResponse<T> {
-  return response.success === true
+  return response.success === true;
 }
 ```
 
@@ -76,19 +81,22 @@ function isSuccess<T>(response: Response<T>): response is SuccessResponse<T> {
 
 ```typescript
 type Action =
-  | { type: 'INCREMENT'; payload: number }
-  | { type: 'DECREMENT'; payload: number }
-  | { type: 'RESET' }
+  | { type: "INCREMENT"; payload: number }
+  | { type: "DECREMENT"; payload: number }
+  | { type: "RESET" };
 
 // Exhaustive check
 function reducer(action: Action): number {
   switch (action.type) {
-    case 'INCREMENT': return action.payload
-    case 'DECREMENT': return -action.payload
-    case 'RESET': return 0
+    case "INCREMENT":
+      return action.payload;
+    case "DECREMENT":
+      return -action.payload;
+    case "RESET":
+      return 0;
     default:
-      const _exhaustive: never = action
-      return _exhaustive
+      const _exhaustive: never = action;
+      return _exhaustive;
   }
 }
 ```
@@ -97,12 +105,14 @@ function reducer(action: Action): number {
 
 ```typescript
 interface SelectProps<T> {
-  value: T
-  options: T[]
-  onChange: (value: T) => void
+  value: T;
+  options: T[];
+  onChange: (value: T) => void;
 }
 
-function Select<T>({ value, options, onChange }: SelectProps<T>) { /* ... */ }
+function Select<T>({ value, options, onChange }: SelectProps<T>) {
+  /* ... */
+}
 ```
 
 ## References

@@ -4,11 +4,21 @@ description: >
   Expert reviewer for frontend performance optimization in TypeScript/React applications.
   Analyzes frontend code performance and identifies optimization opportunities for React re-rendering, bundle size, lazy loading, memoization, etc.
   References [@../../skills/optimizing-performance/SKILL.md] for systematic Web Vitals and React optimization knowledge.
-tools: Read, Grep, Glob, LS, Task, mcp__claude-in-chrome__*, mcp__mdn__*
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
+  - mcp__claude-in-chrome__*
+  - mcp__mdn__*
 model: sonnet
 skills:
   - optimizing-performance
   - applying-code-principles
+hooks:
+  Stop:
+    - command: "echo '[performance-reviewer] Review completed'"
 ---
 
 # Performance Reviewer
@@ -40,13 +50,13 @@ const handleClickCallback = useCallback(() => handleClick(id), [id])
 
 ```typescript
 // Bad: Poor: Imports entire library
-import * as _ from 'lodash'
+import * as _ from "lodash";
 
 // Good: Good: Tree-shakeable imports
-import debounce from 'lodash/debounce'
+import debounce from "lodash/debounce";
 
 // Good: Good: Lazy loading routes
-const Dashboard = lazy(() => import('./Dashboard'))
+const Dashboard = lazy(() => import("./Dashboard"));
 ```
 
 ### 3. State Management Performance
@@ -75,11 +85,17 @@ items.map(item => <Item key={item.id} />)
 
 ```typescript
 // Bad: Poor: Expensive computation every render
-const expensiveResult = items.reduce((acc, item) => performComplexCalculation(acc, item), initial)
+const expensiveResult = items.reduce(
+  (acc, item) => performComplexCalculation(acc, item),
+  initial,
+);
 
 // Good: Good: Memoized computation
-const expensiveResult = useMemo(() =>
-  items.reduce((acc, item) => performComplexCalculation(acc, item), initial), [items])
+const expensiveResult = useMemo(
+  () =>
+    items.reduce((acc, item) => performComplexCalculation(acc, item), initial),
+  [items],
+);
 ```
 
 ## Review Checklist
@@ -139,16 +155,19 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 
 ```markdown
 ### Performance Metrics Impact
+
 - Current Bundle Size: X KB [✓]
 - Potential Reduction: Y KB (Z%) [✓/→]
 - Render Time Impact: ~Xms improvement [✓/→]
 
 ### Bundle Analysis
+
 - Main bundle: X KB
 - Lazy-loaded chunks: Y KB
 - Large dependencies: [list]
 
 ### Rendering Analysis
+
 - Components needing memo: X
 - Missing useCallback: Y instances
 - Expensive re-renders: Z components

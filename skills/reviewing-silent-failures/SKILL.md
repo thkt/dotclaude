@@ -5,7 +5,12 @@ description: >
   Triggers: サイレント障害, silent failure, 空のcatch, empty catch,
   未処理Promise, unhandled rejection, unhandled promise, Error Boundary,
   fire and forget, エラーハンドリング, error handling, try-catch.
-allowed-tools: Read, Grep, Glob, Task
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
+  - Task
+agent: silent-failure-reviewer
 ---
 
 # Silent Failure Review - Error Visibility & Handling
@@ -14,22 +19,22 @@ Target: All failures are visible, debuggable, and user-informed.
 
 ## Silent Failure Risk Levels
 
-| Pattern | Risk | Impact |
-| --- | --- | --- |
-| Empty catch block | [Critical] | Errors completely hidden |
-| Promise without catch | [Critical] | Unhandled rejections |
-| Fire and forget async | [High] | Lost error context |
-| Console.log only | [High] | No user feedback |
-| Missing Error Boundary | [High] | App crash on component error |
-| Excessive optional chaining | [Medium] | May mask bugs |
+| Pattern                     | Risk       | Impact                       |
+| --------------------------- | ---------- | ---------------------------- |
+| Empty catch block           | [Critical] | Errors completely hidden     |
+| Promise without catch       | [Critical] | Unhandled rejections         |
+| Fire and forget async       | [High]     | Lost error context           |
+| Console.log only            | [High]     | No user feedback             |
+| Missing Error Boundary      | [High]     | App crash on component error |
+| Excessive optional chaining | [Medium]   | May mask bugs                |
 
 ## Section-Based Loading
 
-| Section | File | Focus | Triggers |
-| --- | --- | --- | --- |
-| Detection | `references/detection-patterns.md` | Regex patterns, search commands | 空のcatch, empty catch |
-| Handling | `references/error-handling.md` | Proper error handling patterns | エラーハンドリング |
-| Boundaries | `references/error-boundaries.md` | React Error Boundary | Error Boundary |
+| Section    | File                               | Focus                           | Triggers               |
+| ---------- | ---------------------------------- | ------------------------------- | ---------------------- |
+| Detection  | `references/detection-patterns.md` | Regex patterns, search commands | 空のcatch, empty catch |
+| Handling   | `references/error-handling.md`     | Proper error handling patterns  | エラーハンドリング     |
+| Boundaries | `references/error-boundaries.md`   | React Error Boundary            | Error Boundary         |
 
 ## Quick Checklist
 
@@ -56,12 +61,12 @@ Target: All failures are visible, debuggable, and user-informed.
 
 ## Key Principles
 
-| Principle | Application |
-| --- | --- |
-| Fail Fast | Make failures visible and immediate |
-| User Feedback | Always inform users of failures |
-| Context Logging | Log with enough info to debug |
-| Graceful Degradation | Fail gracefully, not silently |
+| Principle            | Application                         |
+| -------------------- | ----------------------------------- |
+| Fail Fast            | Make failures visible and immediate |
+| User Feedback        | Always inform users of failures     |
+| Context Logging      | Log with enough info to debug       |
+| Graceful Degradation | Fail gracefully, not silently       |
 
 ## Detection Commands
 
@@ -83,17 +88,17 @@ rg "catch.*console\.log" --glob "*.{ts,tsx}"
 ```typescript
 // Bad: Silent failure
 try {
-  await fetchUserData()
+  await fetchUserData();
 } catch (e) {
   // Nothing here - error disappears
 }
 
 // Good: Proper handling
 try {
-  await fetchUserData()
+  await fetchUserData();
 } catch (error) {
-  logger.error('Failed to fetch user data', { error })
-  setError('Unable to load user data. Please try again.')
+  logger.error("Failed to fetch user data", { error });
+  setError("Unable to load user data. Please try again.");
 }
 ```
 
@@ -101,15 +106,15 @@ try {
 
 ```typescript
 // Bad: Unhandled rejection
-fetchData().then(data => setData(data))
+fetchData().then((data) => setData(data));
 
 // Good: With error handling
 fetchData()
-  .then(data => setData(data))
-  .catch(error => {
-    logger.error('Failed to fetch data', error)
-    setError('Loading failed')
-  })
+  .then((data) => setData(data))
+  .catch((error) => {
+    logger.error("Failed to fetch data", error);
+    setError("Loading failed");
+  });
 ```
 
 ## References

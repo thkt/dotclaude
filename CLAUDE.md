@@ -11,13 +11,12 @@ Task verification: [@./rules/core/PRE_TASK_CHECK_COMPACT.md](./rules/core/PRE_TA
 
 ### [P1] REQUIRED - Language Settings
 
-**ALWAYS ENFORCE** - Output must be Japanese
+**Primary**: `settings.json` → `language: "japanese"`
 
-- Input: Japanese from user
-- Process: English internally
-- Output: **JAPANESE ONLY** - Strictly prohibit English output
-- Translate all templates, messages, labels to Japanese
-- Critical: Maintain Japanese output even when rule files are English
+**Supplementary rules**:
+
+- Process: English internally for reasoning
+- Maintain Japanese output even when rule files are English
 
 ### [P2] DEFAULT - Development Approach
 
@@ -81,7 +80,7 @@ If any check fails:
 - **Command Discovery** (execute in this priority order):
   1. **First**: Read README.md, check "Scripts" or "Commands" section
   2. **Second**: Inspect package manager config (package.json > scripts, pubspec.yaml > scripts)
-  3. **Third**: Search for common test files (*.test.*, *.spec.*, test/, spec/)
+  3. **Third**: Search for common test files (_.test._, _.spec._, test/, spec/)
   4. **Last resort**: If steps 1-3 yield no results, ask user with format:
      "Could not find test command. Please specify the command to run tests (e.g., npm test, yarn test)."
 

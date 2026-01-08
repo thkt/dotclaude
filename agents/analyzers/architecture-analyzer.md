@@ -4,10 +4,16 @@ description: >
   Analyze codebase structure and generate architecture documentation.
   Uses tree-sitter-analyzer (via Bash) for precise code structure extraction.
   Generates Mermaid diagrams for module relationships and dependencies.
-tools: Bash, Read, Grep, Glob, LS
+tools:
+  - Bash
+  - Read
+  - Grep
+  - Glob
+  - LS
 model: sonnet
 skills:
   - documenting-architecture
+context: fork
 ---
 
 # Architecture Analyzer
@@ -86,10 +92,15 @@ and generate Markdown documentation.
 # Project Name - Architecture Overview
 
 ## Technology Stack
+
 ## Directory Structure
+
 ## Module Structure (Mermaid Diagram)
+
 ## Key Components
+
 ## Dependencies
+
 ## Statistics
 ```
 
@@ -107,12 +118,12 @@ and generate Markdown documentation.
 
 ## Error Handling
 
-| Error | Action |
-| --- | --- |
-| tree-sitter-analyzer not installed | Fallback to Grep/Read |
-| Unsupported language | Output statistics only |
-| Large-scale project | Sample top 100 files |
-| Permission error | Skip and log |
+| Error                              | Action                 |
+| ---------------------------------- | ---------------------- |
+| tree-sitter-analyzer not installed | Fallback to Grep/Read  |
+| Unsupported language               | Output statistics only |
+| Large-scale project                | Sample top 100 files   |
+| Permission error                   | Skip and log           |
 
 ## Usage Examples
 
@@ -127,10 +138,10 @@ Task(subagent_type="architecture-analyzer", prompt="Analyze the architecture of 
 ## Performance Guidelines
 
 | Project Size | File Count | Analysis Time |
-| --- | --- | --- |
-| Small | ~50 | ~30 sec |
-| Medium | ~200 | ~2 min |
-| Large | ~1000 | ~5 min |
+| ------------ | ---------- | ------------- |
+| Small        | ~50        | ~30 sec       |
+| Medium       | ~200       | ~2 min        |
+| Large        | ~1000      | ~5 min        |
 
 ## Related
 

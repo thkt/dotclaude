@@ -3,12 +3,20 @@ name: testability-reviewer
 description: >
   Expert reviewer for testable code design, mocking strategies, and test-friendly patterns in TypeScript/React applications.
   Evaluates code testability and identifies patterns that hinder testing, recommending architectural improvements.
-tools: Read, Grep, Glob, LS, Task
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
 model: sonnet
 skills:
   - reviewing-testability
   - generating-tdd-tests
   - applying-code-principles
+hooks:
+  Stop:
+    - command: "echo '[testability-reviewer] Review completed'"
 ---
 
 # Testability Reviewer
@@ -33,17 +41,19 @@ Evaluate code testability, identify patterns that hinder testing, and recommend 
 // Bad: Hard to test: Direct dependency
 class UserService {
   async getUser(id: string) {
-    return fetch(`/api/users/${id}`).then(r => r.json())
+    return fetch(`/api/users/${id}`).then((r) => r.json());
   }
 }
 
 // Good: Testable: Injectable dependency
-interface HttpClient { get<T>(url: string): Promise<T> }
+interface HttpClient {
+  get<T>(url: string): Promise<T>;
+}
 
 class UserService {
   constructor(private http: HttpClient) {}
   async getUser(id: string) {
-    return this.http.get<User>(`/api/users/${id}`)
+    return this.http.get<User>(`/api/users/${id}`);
   }
 }
 ```
@@ -51,13 +61,13 @@ class UserService {
 ```typescript
 // Bad: Hard to test: Mixed logic and side effects
 function calculateDiscount(userId: string) {
-  const history = api.getPurchaseHistory(userId)
-  return history.length > 10 ? 0.2 : 0.1
+  const history = api.getPurchaseHistory(userId);
+  return history.length > 10 ? 0.2 : 0.1;
 }
 
 // Good: Easy to test: Pure function
 function calculateDiscount(purchaseCount: number): number {
-  return purchaseCount > 10 ? 0.2 : 0.1
+  return purchaseCount > 10 ? 0.2 : 0.1;
 }
 ```
 
@@ -75,12 +85,14 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 
 ```markdown
 ### Testability Score
+
 - Dependency Injection: X/10 [✓/→]
 - Pure Functions: X/10 [✓/→]
 - Component Testability: X/10 [✓/→]
 - Mock-Friendliness: X/10 [✓/→]
 
 ### Test-Hostile Patterns Detected 🚫
+
 - Global State Usage: [files]
 - Hard-Coded Time Dependencies: [files]
 - Inline Complex Logic: [files]

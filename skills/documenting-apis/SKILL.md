@@ -5,7 +5,14 @@ description: >
   Detects REST endpoints, function signatures, type definitions, and schemas.
   Triggers: API specification, endpoints, REST API, type definitions,
   OpenAPI, Swagger, API documentation.
-allowed-tools: Read, Write, Grep, Glob, Bash, Task
+allowed-tools:
+  - Read
+  - Write
+  - Grep
+  - Glob
+  - Bash
+  - Task
+context: fork
 ---
 
 # docs:api - API Specification Generation
@@ -14,29 +21,29 @@ Auto-generate API documentation from codebase analysis.
 
 ## Detection Items
 
-| Category | Targets |
-| --- | --- |
+| Category       | Targets                                                      |
+| -------------- | ------------------------------------------------------------ |
 | REST Endpoints | Express, Fastify, Hono, Next.js, Flask, FastAPI, Django REST |
-| Functions | tree-sitter extraction, TypeScript types, JSDoc, docstrings |
-| Types | interface, type, Zod, Yup, dataclass, Pydantic |
-| OpenAPI | openapi.yaml/json, swagger.yaml/json |
+| Functions      | tree-sitter extraction, TypeScript types, JSDoc, docstrings  |
+| Types          | interface, type, Zod, Yup, dataclass, Pydantic               |
+| OpenAPI        | openapi.yaml/json, swagger.yaml/json                         |
 
 ## Framework Detection Patterns
 
-| Framework | Pattern |
-| --- | --- |
-| Express/Fastify/Hono | `app.get()`, `router.post()` |
-| Next.js | `app/api/**/route.ts`, `pages/api/**/*.ts` |
-| Flask | `@app.route()` |
-| FastAPI | `@app.get()`, `@app.post()` |
-| Django REST | `@api_view` |
+| Framework            | Pattern                                    |
+| -------------------- | ------------------------------------------ |
+| Express/Fastify/Hono | `app.get()`, `router.post()`               |
+| Next.js              | `app/api/**/route.ts`, `pages/api/**/*.ts` |
+| Flask                | `@app.route()`                             |
+| FastAPI              | `@app.get()`, `@app.post()`                |
+| Django REST          | `@api_view`                                |
 
 ## Analysis Scripts
 
-| Script | Purpose |
-| --- | --- |
+| Script                        | Purpose                                   |
+| ----------------------------- | ----------------------------------------- |
 | `scripts/detect-endpoints.sh` | HTTP method, path, handler, file location |
-| `scripts/extract-types.sh` | Type name, fields, related types |
+| `scripts/extract-types.sh`    | Type name, fields, related types          |
 
 ## Generated Structure
 
@@ -44,12 +51,16 @@ Auto-generate API documentation from codebase analysis.
 # API Specification
 
 ## Endpoint List
+
 ### GET /api/users
+
 **Request**: params table
 **Response**: JSON example
 
 ## Type Definitions
+
 ### User
+
 | Field | Type | Description |
 ```
 

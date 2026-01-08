@@ -3,10 +3,17 @@ name: subagent-reviewer
 description: >
   Specialized reviewer for sub-agent definition files ensuring proper format, structure, and quality standards.
   Reviews agent system specifications for capabilities, boundaries, review focus areas, and integration points.
-tools: Read, Grep, Glob, LS
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
 model: opus
 skills:
   - applying-code-principles
+hooks:
+  Stop:
+    - command: "echo '[subagent-reviewer] Review completed'"
 ---
 
 # Sub-Agent Reviewer
@@ -32,11 +39,11 @@ Sub-agent files are **system specifications**, not end-user documentation. They 
 
 ```yaml
 ---
-name: agent-name          # Required: kebab-case
-description: Brief description  # Required: concise
-tools: Tool1, Tool2       # Required: Valid tool names
-model: sonnet|haiku|opus  # Optional: Model preference
-skills: [skill-name]      # Optional: Referenced skills
+name: agent-name # Required: kebab-case
+description: Brief description # Required: concise
+tools: Tool1, Tool2 # Required: Valid tool names
+model: sonnet|haiku|opus # Optional: Model preference
+skills: [skill-name] # Optional: Referenced skills
 ---
 ```
 
@@ -97,14 +104,17 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 
 ```markdown
 ### Compliance Summary
+
 - Structure: ✅/⚠️/❌
 - Technical Accuracy: ✅/⚠️/❌
 - Integration: ✅/⚠️/❌
 
 ### Required Changes
+
 1. [Format/structure violation with location]
 
 ### Integration Notes
+
 - Works well with: [agent names]
 - Missing integrations: [if any]
 ```

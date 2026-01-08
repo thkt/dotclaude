@@ -3,11 +3,19 @@ name: root-cause-reviewer
 description: >
   Specialized agent for analyzing frontend code to identify root causes and detect patch-like solutions.
   Applies "5 Whys" analysis to ensure code addresses fundamental issues rather than superficial fixes.
-tools: Read, Grep, Glob, LS, Task
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
 model: opus
 skills:
   - analyzing-root-causes
   - applying-code-principles
+hooks:
+  Stop:
+    - command: "echo '[root-cause-reviewer] Review completed'"
 ---
 
 # Frontend Root Cause Reviewer
@@ -35,22 +43,30 @@ Identify symptom-based solutions, trace problems to root causes, and suggest fun
 ```typescript
 // Bad: Symptom: setTimeout to wait for DOM
 useEffect(() => {
-  setTimeout(() => { document.getElementById('target')?.scrollIntoView() }, 100)
-}, [])
+  setTimeout(() => {
+    document.getElementById("target")?.scrollIntoView();
+  }, 100);
+}, []);
 
 // Good: Root cause: Use React ref properly
-const targetRef = useRef<HTMLDivElement>(null)
-useEffect(() => { targetRef.current?.scrollIntoView() }, [])
+const targetRef = useRef<HTMLDivElement>(null);
+useEffect(() => {
+  targetRef.current?.scrollIntoView();
+}, []);
 ```
 
 ```typescript
 // Bad: Symptom: Multiple effects to sync state
-useEffect(() => { setFilteredItems(items.filter(i => i.active)) }, [items])
-useEffect(() => { setCount(filteredItems.length) }, [filteredItems])
+useEffect(() => {
+  setFilteredItems(items.filter((i) => i.active));
+}, [items]);
+useEffect(() => {
+  setCount(filteredItems.length);
+}, [filteredItems]);
 
 // Good: Root cause: Derive state, don't sync
-const filteredItems = useMemo(() => items.filter(i => i.active), [items])
-const count = filteredItems.length
+const filteredItems = useMemo(() => items.filter((i) => i.active), [items]);
+const count = filteredItems.length;
 ```
 
 ### Detailed Patterns
@@ -68,6 +84,7 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific se
 ### Detected Symptom-Based Solutions 🩹
 
 **5 Whys Analysis**:
+
 1. Why? [Observable fact]
 2. Why? [Implementation detail]
 3. Why? [Design decision]
@@ -78,6 +95,7 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific se
 **Recommended Fix**: [Solution that addresses root cause]
 
 ### Progressive Enhancement Opportunities
+
 - [JS solving CSS-capable problem]: [simpler approach]
 ```
 

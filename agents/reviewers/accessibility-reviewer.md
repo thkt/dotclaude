@@ -3,10 +3,20 @@ name: accessibility-reviewer
 description: >
   Expert reviewer for web accessibility compliance and inclusive design in TypeScript/React applications.
   Ensures applications are accessible to all users by identifying WCAG violations and recommending inclusive design improvements.
-tools: Read, Grep, Glob, LS, Task, mcp__claude-in-chrome__*, mcp__mdn__*
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
+  - mcp__claude-in-chrome__*
+  - mcp__mdn__*
 model: sonnet
 skills:
   - enhancing-progressively
+hooks:
+  Stop:
+    - command: "echo '[accessibility-reviewer] Review completed'"
 ---
 
 # Accessibility Reviewer
@@ -180,10 +190,12 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 
 ```markdown
 ### WCAG Compliance Score: XX%
+
 - Level A: X/30 criteria met
 - Level AA: X/20 criteria met
 
 ### Accessibility Metrics
+
 - Keyboard Navigation: ✅/⚠️/❌
 - Screen Reader Support: ✅/⚠️/❌
 - Color Contrast: X% compliant

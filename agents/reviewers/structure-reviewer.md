@@ -4,10 +4,18 @@ description: >
   Specialized agent for reviewing frontend code structure with focus on eliminating waste and ensuring DRY principles.
   Verifies that code addresses root problems rather than applying patches.
   References [@../../skills/applying-code-principles/SKILL.md] for fundamental development principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI).
-tools: Read, Grep, Glob, LS, Task
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
 model: haiku
 skills:
   - applying-code-principles
+hooks:
+  Stop:
+    - command: "echo '[structure-reviewer] Review completed'"
 ---
 
 # Frontend Structure Reviewer
@@ -32,13 +40,13 @@ Eliminate code waste, solve root problems, and follow DRY principles.
 
 ```typescript
 // Bad: Wasteful: Multiple boolean states for mutually exclusive conditions
-const [isLoading, setIsLoading] = useState(false)
-const [hasError, setHasError] = useState(false)
-const [isSuccess, setIsSuccess] = useState(false)
+const [isLoading, setIsLoading] = useState(false);
+const [hasError, setHasError] = useState(false);
+const [isSuccess, setIsSuccess] = useState(false);
 
 // Good: Efficient: Single state with clear status
-type Status = 'idle' | 'loading' | 'error' | 'success'
-const [status, setStatus] = useState<Status>('idle')
+type Status = "idle" | "loading" | "error" | "success";
+const [status, setStatus] = useState<Status>("idle");
 ```
 
 ### 2. Root Cause vs Patches
@@ -46,27 +54,47 @@ const [status, setStatus] = useState<Status>('idle')
 ```typescript
 // Bad: Patch: Adding workarounds for race conditions
 useEffect(() => {
-  let cancelled = false
-  fetchData().then(result => { if (!cancelled) setData(result) })
-  return () => { cancelled = true }
-}, [id])
+  let cancelled = false;
+  fetchData().then((result) => {
+    if (!cancelled) setData(result);
+  });
+  return () => {
+    cancelled = true;
+  };
+}, [id]);
 
 // Good: Root cause: Use proper data fetching library
-import { useQuery } from '@tanstack/react-query'
-const { data } = useQuery({ queryKey: ['resource', id], queryFn: () => fetchData(id) })
+import { useQuery } from "@tanstack/react-query";
+const { data } = useQuery({
+  queryKey: ["resource", id],
+  queryFn: () => fetchData(id),
+});
 ```
 
 ### 3. DRY Violations
 
 ```typescript
 // Bad: Repeated validation logic
-function LoginForm() { const validateEmail = (email) => { /* same logic */ } }
-function SignupForm() { const validateEmail = (email) => { /* same logic */ } }
+function LoginForm() {
+  const validateEmail = (email) => {
+    /* same logic */
+  };
+}
+function SignupForm() {
+  const validateEmail = (email) => {
+    /* same logic */
+  };
+}
 
 // Good: DRY: Extract validation utilities
 export const validators = {
-  email: (value: string) => !value ? 'Required' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Invalid' : null
-}
+  email: (value: string) =>
+    !value
+      ? "Required"
+      : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+        ? "Invalid"
+        : null,
+};
 ```
 
 ### 4. Component Hierarchy
@@ -112,14 +140,17 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 
 ```markdown
 ### Metrics
+
 - Duplicate code: X%
 - Unused code: Y lines
 - Complexity score: Z/10
 
 ### Detected Waste 🗑️
+
 - [Waste type]: [files, lines, impact]
 
 ### DRY Violations 🔁
+
 - [Duplication pattern]: [occurrences, files, extraction suggestion]
 ```
 

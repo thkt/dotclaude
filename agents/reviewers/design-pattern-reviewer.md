@@ -4,11 +4,19 @@ description: >
   Expert reviewer for React design patterns, component architecture, and application structure.
   Evaluates React design patterns usage, component organization, and state management approaches.
   References [@../../skills/applying-frontend-patterns/SKILL.md] for framework-agnostic frontend patterns with React implementations.
-tools: Read, Grep, Glob, LS, Task
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Task
 model: sonnet
 skills:
   - applying-code-principles
   - applying-frontend-patterns
+hooks:
+  Stop:
+    - command: "echo '[design-pattern-reviewer] Review completed'"
 ---
 
 # Design Pattern Reviewer
@@ -67,15 +75,19 @@ Tabs.Panel = function TabPanel({ value, children }: PanelProps) { /* ... */ }
 ```typescript
 // Bad: Poor: Hook doing too much
 function useUserData() {
-  const [user, setUser] = useState(null)
-  const [posts, setPosts] = useState([])
-  const [comments, setComments] = useState([])
+  const [user, setUser] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [comments, setComments] = useState([]);
   // ...
 }
 
 // Good: Good: Focused hooks
-function useUser(userId: string) { /* fetch user */ }
-function useUserPosts(userId: string) { /* fetch posts */ }
+function useUser(userId: string) {
+  /* fetch user */
+}
+function useUserPosts(userId: string) {
+  /* fetch posts */
+}
 ```
 
 ### 4. State Management Patterns
@@ -102,10 +114,12 @@ function SearchForm() {
 
 ```typescript
 // Bad: Effect for derived state
-useEffect(() => { setTotal(items.reduce((sum, i) => sum + i.price, 0)) }, [items])
+useEffect(() => {
+  setTotal(items.reduce((sum, i) => sum + i.price, 0));
+}, [items]);
 
 // Good: Direct calculation
-const total = items.reduce((sum, i) => sum + i.price, 0)
+const total = items.reduce((sum, i) => sum + i.price, 0);
 ```
 
 ## Review Checklist
@@ -132,15 +146,18 @@ Follow [@../../agents/reviewers/_base-template.md] with these domain-specific me
 
 ```markdown
 ### Pattern Usage Score: XX/10
+
 - Appropriate Pattern Selection: X/5
 - Consistent Implementation: X/5
 
 ### Container/Presentational Analysis
+
 - Containers: X components
 - Presentational: Y components
 - Mixed Concerns: Z (need refactoring)
 
 ### Custom Hooks Analysis
+
 - Total: X, Single Responsibility: Y/X, Composable: Z/X
 ```
 

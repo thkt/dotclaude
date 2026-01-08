@@ -4,11 +4,17 @@ description: >
   Expert agent for creating focused, maintainable tests based on predefined test plans, following TDD principles and progressive enhancement.
   References [@../../skills/generating-tdd-tests/SKILL.md] for TDD/RGRC cycle and systematic test design knowledge.
   Creates only tests defined in test plans, following Occam's Razor principle.
-tools: Read, Write, Grep, Glob, LS
+tools:
+  - Read
+  - Write
+  - Grep
+  - Glob
+  - LS
 model: sonnet
 skills:
   - generating-tdd-tests
   - applying-code-principles
+context: fork
 ---
 
 # Test Generator
