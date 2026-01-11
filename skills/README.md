@@ -2,11 +2,12 @@
 
 Skills provide knowledge bases, guides, and automation workflows for Claude Code.
 
-## Skill Inventory (21 Skills)
+## Skill Inventory (26 Skills)
 
 | Category          | Skill                        | Description                   | Used by               |
 | ----------------- | ---------------------------- | ----------------------------- | --------------------- |
 | **TDD/Testing**   | `generating-tdd-tests`       | TDD/RGRC cycle, test design   | /code, /fix           |
+|                   | `managing-testing`           | Test workflow orchestration   | /auto-test, /e2e      |
 | **Code Quality**  | `applying-code-principles`   | SOLID, DRY, YAGNI principles  | /code                 |
 |                   | `applying-frontend-patterns` | React/UI patterns             | /code --frontend      |
 |                   | `integrating-storybook`      | Storybook development         | /code --storybook     |
@@ -24,9 +25,13 @@ Skills provide knowledge bases, guides, and automation workflows for Claude Code
 |                   | `documenting-apis`           | API specification             | skill                 |
 |                   | `documenting-domains`        | Domain understanding          | skill                 |
 |                   | `setting-up-docs`            | Environment setup guide       | skill                 |
+|                   | `managing-documentation`     | Documentation workflows       | /adr, /rulify         |
 | **Automation**    | `automating-browser`         | Browser control (demos, GIFs) | /e2e                  |
 |                   | `utilizing-cli-tools`        | CLI tools (gh, git)           | /commit, /pr, /branch |
 |                   | `creating-hooks`             | Custom hooks creation         | /hookify              |
+| **Workflows**     | `orchestrating-workflows`    | Command workflow patterns     | /code, /fix, /audit   |
+|                   | `managing-planning`          | SOW/Spec generation           | /think, /sow, /spec   |
+|                   | `managing-git-workflows`     | Git operation patterns        | /commit, /pr, /branch |
 
 ## Naming Convention
 
@@ -43,5 +48,5 @@ See: [SKILL_FORMAT_GUIDE.md](./SKILL_FORMAT_GUIDE.md)
 
 ## Related
 
-- [COMMANDS.md](../docs/COMMANDS.md) - Commands reference
+- [COMMAND_WORKFLOWS.md](../rules/commands/COMMAND_WORKFLOWS.md) - Commands reference
 - [CLAUDE.md](../CLAUDE.md) - Global settings

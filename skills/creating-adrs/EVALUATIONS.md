@@ -83,7 +83,7 @@ Keywords and contexts that should trigger this skill:
 {
   "skills": ["creating-adrs"],
   "query": "既存のADRを更新してステータスを変更したい",
-  "files": ["docs/adr/0001-use-typescript.md"],
+  "files": ["adr/0001-use-typescript.md"],
   "expected_behavior": [
     "Skill is triggered by 'ADR' and '更新'",
     "Explains ADR update best practices",

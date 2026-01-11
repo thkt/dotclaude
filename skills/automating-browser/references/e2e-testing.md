@@ -19,19 +19,22 @@ End-to-end testing patterns using claude-in-chrome MCP.
 Test: User can log in and view dashboard
 
 Setup:
-  - navigate to "/login"
-  - wait duration: 2
+
+- navigate to "/login"
+- wait duration: 2
 
 Execute:
-  - form_input username
-  - form_input password
-  - click login button
-  - wait duration: 3
+
+- form_input username
+- form_input password
+- click login button
+- wait duration: 3
 
 Verify:
-  - read_page
-  - Check for dashboard elements
-  - Screenshot for evidence
+
+- read_page
+- Check for dashboard elements
+- Screenshot for evidence
 ```
 
 ## Common Test Scenarios
@@ -88,6 +91,17 @@ Verify:
 2. Compare with expected layout
 3. Check for missing elements
 ```
+
+**Visual Regression Testing** (Playwright):
+
+For automated visual comparison, use Playwright's `toHaveScreenshot()`:
+
+```typescript
+// Baseline comparison - detects unintended UI changes
+await expect(page).toHaveScreenshot("component-name.png");
+```
+
+See `/e2e` command for full visual regression workflow with baseline management.
 
 ### Content Verification
 
@@ -171,6 +185,7 @@ Verify:
 
 ```markdown
 For each test:
+
 1. Screenshot: Initial state
 2. Screenshot: After key actions
 3. Screenshot: Final state
@@ -181,6 +196,7 @@ For each test:
 
 ```markdown
 For complex flows:
+
 1. Start GIF recording
 2. Perform test steps with screenshots
 3. Stop recording
@@ -258,6 +274,7 @@ The `/test` command can execute browser tests:
 # E2E Test Report
 
 ## Summary
+
 - Total: 10
 - Passed: 8
 - Failed: 2
@@ -265,11 +282,13 @@ The `/test` command can execute browser tests:
 ## Failed Tests
 
 ### Login with invalid credentials
+
 - Expected: Error message
 - Actual: Page crashed
 - Screenshot: [attached]
 
 ### Search pagination
+
 - Expected: 10 results per page
 - Actual: 15 results shown
 - Screenshot: [attached]

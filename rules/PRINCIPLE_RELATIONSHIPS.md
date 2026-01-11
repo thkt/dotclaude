@@ -90,16 +90,16 @@ graph TD
 
 Detailed implementation guides for each practice:
 
-| Practice                 | File                                                                                                  | Focus                         |
-| ------------------------ | ----------------------------------------------------------------------------------------------------- | ----------------------------- |
-| Progressive Enhancement  | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)                 | CSS-first, outcome-driven     |
-| Readable Code            | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                                     | Clarity over cleverness       |
-| TDD/RGRC                 | [@../skills/generating-tdd-tests/SKILL.md](../skills/generating-tdd-tests/SKILL.md)                   | Red-Green-Refactor cycle      |
-| Test Design              | [@./development/TEST_GENERATION.md](./development/TEST_GENERATION.md)                                 | Systematic test techniques    |
-| Container/Presentational | [@../patterns/frontend/container-presentational.md](../patterns/frontend/container-presentational.md) | UI/logic separation           |
-| TIDYINGS                 | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                               | Micro-improvements            |
-| AI-Assisted Development  | [@./development/AI_ASSISTED_DEVELOPMENT.md](./development/AI_ASSISTED_DEVELOPMENT.md)                 | AI generates, humans validate |
-| Result Type Handling     | [@./development/RESULT_TYPE_HANDLING.md](./development/RESULT_TYPE_HANDLING.md)                       | Explicit error handling       |
+| Practice                 | File                                                                                                                                                        | Focus                         |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| Progressive Enhancement  | [@./development/PROGRESSIVE_ENHANCEMENT.md](./development/PROGRESSIVE_ENHANCEMENT.md)                                                                       | CSS-first, outcome-driven     |
+| Readable Code            | [@./development/READABLE_CODE.md](./development/READABLE_CODE.md)                                                                                           | Clarity over cleverness       |
+| TDD/RGRC                 | [@../skills/generating-tdd-tests/SKILL.md](../skills/generating-tdd-tests/SKILL.md)                                                                         | Red-Green-Refactor cycle      |
+| Test Design              | [@./development/TEST_GENERATION.md](./development/TEST_GENERATION.md)                                                                                       | Systematic test techniques    |
+| Container/Presentational | [@../skills/applying-frontend-patterns/references/container-presentational.md](../skills/applying-frontend-patterns/references/container-presentational.md) | UI/logic separation           |
+| TIDYINGS                 | [@./development/TIDYINGS.md](./development/TIDYINGS.md)                                                                                                     | Micro-improvements            |
+| AI-Assisted Development  | [@./development/AI_ASSISTED_DEVELOPMENT.md](./development/AI_ASSISTED_DEVELOPMENT.md)                                                                       | AI generates, humans validate |
+| Result Type Handling     | [@./development/RESULT_TYPE_HANDLING.md](./development/RESULT_TYPE_HANDLING.md)                                                                             | Explicit error handling       |
 
 ## Related Documentation
 

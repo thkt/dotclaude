@@ -114,7 +114,7 @@ fetchData()
 
 ### コア原則
 
-- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - グレースフルデグラデーション
+- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - グレースフルデグラデーション
 
 ### 関連スキル
 

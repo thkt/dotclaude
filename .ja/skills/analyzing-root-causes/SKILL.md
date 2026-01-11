@@ -14,19 +14,19 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## 症状 vs 根本原因
 
-| タイプ | 例 | 結果 |
-| --- | --- | --- |
-| 症状修正 | DOMを待つためにsetTimeoutを追加 | 今は動くが、後で壊れる |
-| 根本原因修正 | React refを適切に使用 | 恒久的な解決 |
-| 症状修正 | 二重送信を防ぐフラグを追加 | 複雑性が増大 |
-| 根本原因修正 | 送信中にボタンを無効化 | シンプルで信頼性が高い |
+| タイプ       | 例                              | 結果                   |
+| ------------ | ------------------------------- | ---------------------- |
+| 症状修正     | DOMを待つためにsetTimeoutを追加 | 今は動くが、後で壊れる |
+| 根本原因修正 | React refを適切に使用           | 恒久的な解決           |
+| 症状修正     | 二重送信を防ぐフラグを追加      | 複雑性が増大           |
+| 根本原因修正 | 送信中にボタンを無効化          | シンプルで信頼性が高い |
 
 ## セクションベースのロード
 
-| セクション | ファイル | フォーカス | トリガー |
-| --- | --- | --- | --- |
-| 5 Whys | `references/five-whys.md` | 分析プロセス、テンプレート | 5 Whys, なぜなぜ |
-| パターン | `references/symptom-patterns.md` | 一般的な症状→原因パターン | 対症療法, workaround |
+| セクション | ファイル                         | フォーカス                 | トリガー             |
+| ---------- | -------------------------------- | -------------------------- | -------------------- |
+| 5 Whys     | `references/five-whys.md`        | 分析プロセス、テンプレート | 5 Whys, なぜなぜ     |
+| パターン   | `references/symptom-patterns.md` | 一般的な症状→原因パターン  | 対症療法, workaround |
 
 ## クイックチェックリスト
 
@@ -60,12 +60,12 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## 主要原則
 
-| 原則 | 適用 |
-| --- | --- |
-| 予防 > パッチ | 最良の修正は問題を完全に防ぐ |
-| シンプル > 複雑 | 根本原因の解決は通常よりシンプル |
-| Whyを問う | 最初の答えを受け入れない |
-| プログレッシブエンハンスメント | CSS/HTMLで解決できるか？ |
+| 原則                           | 適用                             |
+| ------------------------------ | -------------------------------- |
+| 予防 > パッチ                  | 最良の修正は問題を完全に防ぐ     |
+| シンプル > 複雑                | 根本原因の解決は通常よりシンプル |
+| Whyを問う                      | 最初の答えを受け入れない         |
+| プログレッシブエンハンスメント | CSS/HTMLで解決できるか？         |
 
 ## 一般的な症状パターン
 
@@ -74,24 +74,32 @@ allowed-tools: Read, Grep, Glob, Task
 ```typescript
 // Bad: 症状: DOMを待つためのsetTimeout
 useEffect(() => {
-  setTimeout(() => { document.getElementById('target')?.scrollIntoView() }, 100)
-}, [])
+  setTimeout(() => {
+    document.getElementById("target")?.scrollIntoView();
+  }, 100);
+}, []);
 
 // Good: 根本原因: React refを使用
-const targetRef = useRef<HTMLDivElement>(null)
-useEffect(() => { targetRef.current?.scrollIntoView() }, [])
+const targetRef = useRef<HTMLDivElement>(null);
+useEffect(() => {
+  targetRef.current?.scrollIntoView();
+}, []);
 ```
 
 ### 状態同期
 
 ```typescript
 // Bad: 症状: 状態を同期する複数のeffect
-useEffect(() => { setFilteredItems(items.filter(i => i.active)) }, [items])
-useEffect(() => { setCount(filteredItems.length) }, [filteredItems])
+useEffect(() => {
+  setFilteredItems(items.filter((i) => i.active));
+}, [items]);
+useEffect(() => {
+  setCount(filteredItems.length);
+}, [filteredItems]);
 
 // Good: 根本原因: 同期ではなく状態を導出
-const filteredItems = useMemo(() => items.filter(i => i.active), [items])
-const count = filteredItems.length
+const filteredItems = useMemo(() => items.filter((i) => i.active), [items]);
+const count = filteredItems.length;
 ```
 
 ### 子状態のポーリング
@@ -112,8 +120,8 @@ return <Child onValueChange={setValue} />
 
 ### コア原則
 
-- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - シンプル優先
-- [@../../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - 最もシンプルな解決
+- [@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - シンプル優先
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 最もシンプルな解決
 
 ### 関連スキル
 

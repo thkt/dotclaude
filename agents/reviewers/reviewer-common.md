@@ -1,3 +1,8 @@
+---
+name: reviewer-common
+description: Common patterns referenced by all reviewer agents (not a standalone agent)
+---
+
 # Reviewer Common Patterns
 
 Common patterns referenced by all reviewer agents.

@@ -222,8 +222,8 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 
 **📚 Detailed Reference**: For complete command documentation, see:
 
-- [English Command Reference](./docs/COMMANDS.md)
-- [日本語コマンドリファレンス](./.ja/docs/COMMANDS.md)
+- [English Command Reference](./rules/commands/COMMAND_WORKFLOWS.md)
+- [日本語コマンドリファレンス](./.ja/rules/commands/COMMAND_WORKFLOWS.md)
 
 ## 🔄 Standard Workflows
 
@@ -290,8 +290,8 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 
 ### Core Documentation
 
-- [Commands Reference (English)](./docs/COMMANDS.md)
-- [Commands Reference (Japanese)](./.ja/docs/COMMANDS.md)
+- [Commands Reference (English)](./rules/commands/COMMAND_WORKFLOWS.md)
+- [Commands Reference (Japanese)](./.ja/rules/commands/COMMAND_WORKFLOWS.md)
 - [Configuration Guide](./CLAUDE.md)
 - [Japanese Configuration](./.ja/CLAUDE.md)
 

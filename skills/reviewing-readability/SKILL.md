@@ -36,7 +36,7 @@ Target: New team member understands code in < 1 minute.
 | Comments        | `references/comments-clarity.md` | Why not What, intent       | コメント, 意図         |
 | AI Antipatterns | `references/ai-antipatterns.md`  | Over-engineering detection | AI-generated, 過剰設計 |
 
-**Note**: Naming conventions → [@../../patterns/code/naming.md](../../patterns/code/naming.md)
+**Note**: Naming conventions → [@./references/naming.md](./references/naming.md)
 
 ## Quick Checklist
 
@@ -74,6 +74,6 @@ Target: New team member understands code in < 1 minute.
 
 ## References
 
-- [@../../skills/applying-code-principles/SKILL.md] - Cognitive limits science
-- [@../../rules/development/READABLE_CODE.md] - Detailed guidelines
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Cognitive limits science
+- [@../../rules/development/READABLE_CODE.md](../../rules/development/READABLE_CODE.md) - Detailed guidelines
 - [@./references/ai-antipatterns.md](./references/ai-antipatterns.md) - AI over-engineering patterns

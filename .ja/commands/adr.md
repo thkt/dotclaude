@@ -62,7 +62,7 @@ ADR Creator Skillを使用した高品質なアーキテクチャ決定記録の
 
 ```bash
 # 必須セクション、メタデータ、コンテンツ品質を検証
-~/.claude/skills/creating-adrs/scripts/validate-adr.sh docs/adr/XXXX-slug.md
+~/.claude/skills/creating-adrs/scripts/validate-adr.sh adr/XXXX-slug.md
 ```
 
 検証失敗時 → 問題を表示し修正を許可。
@@ -72,14 +72,14 @@ ADR Creator Skillを使用した高品質なアーキテクチャ決定記録の
 **スクリプト実行**: `~/.claude/skills/creating-adrs/scripts/update-index.sh`
 
 ```bash
-# docs/adr/README.mdをすべてのADRで更新
-~/.claude/skills/creating-adrs/scripts/update-index.sh docs/adr
+# adr/README.mdをすべてのADRで更新
+~/.claude/skills/creating-adrs/scripts/update-index.sh adr
 ```
 
 ## 出力
 
 ```text
-docs/adr/
+adr/
 ├── README.md              (自動更新)
 ├── 0001-initial-tech.md
 ├── 0002-adopt-react.md
@@ -91,7 +91,7 @@ docs/adr/
 環境変数でカスタマイズ可能:
 
 ```bash
-ADR_DIRECTORY="docs/adr"           # ADR保存場所
+ADR_DIRECTORY="adr"                # ADR保存場所
 ADR_DUPLICATE_THRESHOLD="0.7"      # 重複検出閾値
 ADR_AUTO_VALIDATE="true"           # 自動検証
 ADR_AUTO_INDEX="true"              # 自動インデックス更新

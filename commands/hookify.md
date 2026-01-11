@@ -1,36 +1,25 @@
 ---
 description: Create custom hooks to prevent unwanted behaviors
+allowed-tools: Read, Write, Glob
+model: inherit
 dependencies: [creating-hooks]
 ---
 
 # /hookify - Custom Hook Creator
 
-Create hooks that block or warn about specific patterns in code.
+Create hooks that block or warn about specific patterns.
+
+## Workflow Reference
+
+**Skill details**: [@../skills/creating-hooks/SKILL.md](../skills/creating-hooks/SKILL.md)
 
 ## Usage
 
-### With argument (explicit instruction)
-
-```text
+```bash
 /hookify Don't use console.log in TypeScript files
+/hookify Block rm -rf commands
+/hookify                    # Auto-detect from conversation
 ```
-
-Creates a hook rule file at `.claude/hookify.{name}.local.md`
-
-### Without argument (auto-detect from conversation)
-
-```text
-/hookify
-```
-
-Analyzes recent conversation to detect patterns you've corrected and creates rules.
-
-## Process
-
-1. **Analyze request**: Understand what pattern to detect
-2. **Generate rule**: Create hook configuration in YAML frontmatter + Markdown
-3. **Save file**: Write to `.claude/hookify.{rule-name}.local.md`
-4. **Confirm**: Show the created rule
 
 ## Rule File Format
 
@@ -41,65 +30,45 @@ enabled: true
 event: file|bash|stop|prompt
 pattern: regex-pattern
 action: warn|block
-conditions:  # optional, for complex rules
+conditions: # optional
   - field: file_path|new_text|command
-    operator: regex_match|contains|not_contains
+    operator: regex_match|contains
     pattern: pattern
 ---
-
 Message shown when pattern is detected.
-Markdown formatting supported.
 ```
 
 ## Events
 
-| Event | Trigger |
-| --- | --- |
-| `file` | Edit/Write/MultiEdit operations |
-| `bash` | Bash command execution |
-| `stop` | When Claude wants to stop |
-| `prompt` | User prompt submission |
+| Event    | Trigger                   |
+| -------- | ------------------------- |
+| `file`   | Edit/Write operations     |
+| `bash`   | Bash command execution    |
+| `stop`   | When Claude wants to stop |
+| `prompt` | User prompt submission    |
 
 ## Actions
 
-| Action | Behavior |
-| --- | --- |
-| `warn` | Show warning, continue operation |
-| `block` | Block operation, require fix |
+| Action  | Behavior               |
+| ------- | ---------------------- |
+| `warn`  | Show warning, continue |
+| `block` | Block operation        |
 
 ## Examples
 
-### Block dangerous commands
-
-```text
-/hookify Block rm -rf commands
-```
-
-Creates:
+**Block dangerous commands**:
 
 ```yaml
----
 name: block-dangerous-rm
-enabled: true
 event: bash
 pattern: rm\s+-rf
 action: block
----
-Dangerous rm -rf command detected! Use safer alternatives.
 ```
 
-### Warn about debug code
-
-```text
-/hookify Warn when console.log is added to TypeScript files
-```
-
-Creates:
+**Warn about debug code**:
 
 ```yaml
----
 name: warn-console-log
-enabled: true
 event: file
 action: warn
 conditions:
@@ -109,15 +78,9 @@ conditions:
   - field: new_text
     operator: contains
     pattern: console\.log
----
-Debug code detected! Remember to remove before committing.
 ```
 
-## Related Commands
+## Related
 
-- `/hookify:list` - Show all hook rules
-- `/hookify:configure` - Enable/disable rules interactively
-
-## Skill Reference
-
-[@../skills/creating-hooks/SKILL.md](../skills/creating-hooks/SKILL.md)
+- `/hookify:list` - Show all rules
+- `/hookify:configure` - Enable/disable rules

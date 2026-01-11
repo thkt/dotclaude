@@ -83,7 +83,7 @@
 {
   "skills": ["creating-adrs"],
   "query": "既存のADRを更新してステータスを変更したい",
-  "files": ["docs/adr/0001-use-typescript.md"],
+  "files": ["adr/0001-use-typescript.md"],
   "expected_behavior": [
     "スキルが'ADR'と'更新'でトリガーされる",
     "ADR更新のベストプラクティスを説明",

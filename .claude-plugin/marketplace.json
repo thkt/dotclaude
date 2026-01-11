@@ -7,10 +7,10 @@
     "url": "https://github.com/thkt"
   },
   "metadata": {
-    "description": "Comprehensive TDD/RGRC development workflow system. Provides 9 integrated plugins sharing a common codebase: workflow commands (/think, /code, /audit), git utilities (/commit, /pr), documentation tools (/adr), and specialized review agents. Architecture: Monorepo marketplace with shared source (ADR-0003).",
+    "description": "Comprehensive TDD/RGRC development workflow system. Provides 9 integrated plugins sharing a common codebase: workflow commands (/think, /code, /audit), git utilities (/commit, /pr), documentation tools (/adr), and specialized review agents. Architecture: Monorepo marketplace with shared source (see rules/guidelines/PLUGIN_STRUCTURE.md).",
     "version": "2.0.0",
     "architecture": "monorepo-marketplace",
-    "adr": "docs/adr/0003-marketplace.md"
+    "adr": "adr/0003-marketplace.md"
   },
   "plugins": [
     {
@@ -49,19 +49,19 @@
         "./agents/analyzers/architecture-analyzer.md",
         "./agents/generators/test.md",
         "./agents/enhancers/progressive-enhancer.md",
-        "./agents/reviewers/subagent.md",
-        "./agents/reviewers/document.md",
-        "./agents/reviewers/testability.md",
-        "./agents/reviewers/root-cause.md",
-        "./agents/reviewers/structure.md",
-        "./agents/reviewers/performance.md",
-        "./agents/reviewers/type-safety.md",
-        "./agents/reviewers/readability.md",
-        "./agents/reviewers/accessibility.md",
-        "./agents/reviewers/design-pattern.md",
-        "./agents/reviewers/security.md",
-        "./agents/reviewers/silent-failure.md",
-        "./agents/reviewers/sow-spec.md",
+        "./agents/reviewers/subagent-reviewer.md",
+        "./agents/reviewers/document-reviewer.md",
+        "./agents/reviewers/testability-reviewer.md",
+        "./agents/reviewers/root-cause-reviewer.md",
+        "./agents/reviewers/structure-reviewer.md",
+        "./agents/reviewers/performance-reviewer.md",
+        "./agents/reviewers/type-safety-reviewer.md",
+        "./agents/reviewers/readability-reviewer.md",
+        "./agents/reviewers/accessibility-reviewer.md",
+        "./agents/reviewers/design-pattern-reviewer.md",
+        "./agents/reviewers/security-reviewer.md",
+        "./agents/reviewers/silent-failure-reviewer.md",
+        "./agents/reviewers/sow-spec-reviewer.md",
         "./agents/integrators/finding-integrator.md"
       ],
       "rules": [
@@ -152,11 +152,7 @@
       "commands": [
         "./commands/adr.md",
         "./commands/adr/skill.md",
-        "./commands/rulify.md",
-        "./commands/docs/architecture.md",
-        "./commands/docs/api.md",
-        "./commands/docs/setup.md",
-        "./commands/docs/domain.md"
+        "./commands/rulify.md"
       ]
     },
     {
@@ -226,7 +222,12 @@
         "./skills/formatting-audits/SKILL.md",
         "./skills/generating-tdd-tests/SKILL.md",
         "./skills/integrating-storybook/SKILL.md",
+        "./skills/managing-documentation/SKILL.md",
+        "./skills/managing-git-workflows/SKILL.md",
+        "./skills/managing-planning/SKILL.md",
+        "./skills/managing-testing/SKILL.md",
         "./skills/optimizing-performance/SKILL.md",
+        "./skills/orchestrating-workflows/SKILL.md",
         "./skills/reviewing-readability/SKILL.md",
         "./skills/reviewing-security/SKILL.md",
         "./skills/reviewing-silent-failures/SKILL.md",
@@ -260,12 +261,14 @@
         "./rules/core/PRE_TASK_CHECK_RULES.md",
         "./rules/core/PRE_TASK_CHECK_TEMPLATES.md",
         "./rules/development/AI_ASSISTED_DEVELOPMENT.md",
-        "./patterns/frontend/container-presentational.md",
+        "./skills/applying-frontend-patterns/references/container-presentational.md",
         "./rules/development/PROGRESSIVE_ENHANCEMENT.md",
         "./rules/development/READABLE_CODE.md",
         "./rules/development/TIDYINGS.md",
         "./rules/guidelines/DOCUMENTATION_RULES.md",
+        "./rules/guidelines/PLUGIN_STRUCTURE.md",
         "./rules/commands/COMMAND_WORKFLOWS.md",
+        "./rules/commands/COMMAND_MODULARIZATION.md",
         "./rules/PRINCIPLES_GUIDE.md",
         "./rules/PRINCIPLE_RELATIONSHIPS.md"
       ]

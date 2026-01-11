@@ -74,11 +74,11 @@ Convert Architecture Decision Record (ADR) into an executable skill format with 
 ## Output
 
 ```text
-✅ Skill Generated
+Skill Generated
 
-📄 Source: docs/adr/0001-use-react-query.md
-🎯 Skill: .claude/skills/adr-0001-use-react-query/SKILL.md
-🔑 Triggers: React Query, API, fetch, data fetching
+Source: adr/0001-use-react-query.md
+Skill: .claude/skills/adr-0001-use-react-query/SKILL.md
+Triggers: React Query, API, fetch, data fetching
 ```
 
 ## Detailed Reference

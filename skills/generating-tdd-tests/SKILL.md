@@ -11,6 +11,7 @@ allowed-tools:
   - Grep
   - Glob
   - Task
+user-invocable: false
 context: fork
 ---
 

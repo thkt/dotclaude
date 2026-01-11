@@ -222,8 +222,8 @@ Claude Codeは5つのカテゴリに整理された15の専門コマンドを提
 
 **📚 詳細リファレンス**: 完全なコマンドドキュメントは:
 
-- [コマンドリファレンス（日本語）](./docs/COMMANDS.md)
-- [English Command Reference](../docs/COMMANDS.md)
+- [コマンドリファレンス（日本語）](./rules/commands/COMMAND_WORKFLOWS.md)
+- [English Command Reference](../rules/commands/COMMAND_WORKFLOWS.md)
 
 ## 🔄 標準ワークフロー
 
@@ -290,7 +290,7 @@ Claude Codeは5つのカテゴリに整理された15の専門コマンドを提
 
 ### コアドキュメント
 
-- [コマンドリファレンス](./docs/COMMANDS.md)
+- [コマンドリファレンス](./rules/commands/COMMAND_WORKFLOWS.md)
 - [設定ガイド](./CLAUDE.md)
 
 ### 開発ガイド

@@ -2,116 +2,64 @@
 description: Generate GitHub Issue with structured title and body
 allowed-tools: Task
 model: inherit
-dependencies: [issue-generator, utilizing-cli-tools]
+dependencies: [issue-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /issue - GitHub Issue Generator
 
-Generate well-structured GitHub Issues with clear titles and comprehensive bodies.
+Generate well-structured GitHub Issues.
 
-**Implementation**: This command delegates to the specialized `issue-generator` subagent for optimal performance and context efficiency.
+## Workflow Reference
+
+**Full format**: [@../skills/managing-git-workflows/references/issue-templates.md](../skills/managing-git-workflows/references/issue-templates.md)
 
 ## How It Works
 
-When invoked, this command:
+Delegates to `issue-generator` subagent:
 
-1. Launches the `issue-generator` subagent via Task tool
-2. Subagent analyzes the provided description
-3. Generates structured issue title and body
-4. Optionally creates the issue via `gh issue create`
+1. Analyzes provided description
+2. Generates structured title and body
+3. Optionally creates via `gh issue create`
 
 ## Usage
 
-### Basic Usage
-
 ```bash
-/issue "Login button not working on mobile"
+/issue "Login button not working"          # Basic
+/issue bug "API returns 500"               # With type
+/issue --create "Database timeout"         # Create directly
 ```
 
-Generates issue from description.
+## Issue Format
 
-### With Type
-
-```bash
-/issue bug "API returns 500 on empty input"
-/issue feature "Add dark mode support"
-```
-
-Specifies issue type explicitly.
-
-### Create Directly
-
-```bash
-/issue --create "Database connection timeout"
-```
-
-Creates issue immediately via `gh` CLI.
-
-## Issue Structure
-
-### Title Format
+### Title
 
 ```text
 [type] Brief, specific description
 ```
 
-Examples:
-
-- `[Bug] Login fails on Safari mobile`
-- `[Feature] Add export to CSV functionality`
-- `[Docs] Update API authentication guide`
-
-### Body Format
+### Body
 
 ```markdown
 ## Description
-[Clear problem statement or feature request]
+
+[Problem statement]
 
 ## Steps to Reproduce (for bugs)
-1. [Step 1]
-2. [Step 2]
-3. [Expected vs Actual]
+
+1. [Step]
 
 ## Acceptance Criteria
-- [ ] [Criterion 1]
-- [ ] [Criterion 2]
 
-## Additional Context
-[Screenshots, logs, related issues]
+- [ ] [Criterion]
 ```
 
-## Output Format
+## Context Efficiency
 
-The command provides:
+- No codebase files loaded
+- Fast execution (<5 seconds)
 
-- **Issue Title**: Formatted with type prefix
-- **Issue Body**: Structured markdown
-- **Labels**: Suggested labels based on content
-- **gh Command**: Ready-to-run command
-
-## Integration with Workflow
-
-Works seamlessly with:
+## Related
 
 - `/branch` - Create branch from issue
 - `/commit` - Reference issue in commits
 - `/pr` - Link PR to issue
-
-## Related Commands
-
-- `/branch` - Generate branch names
-- `/commit` - Generate commit messages
-- `/pr` - Create PR descriptions
-
-## Context Efficiency
-
-This command is optimized for minimal context usage:
-
-- ✅ No codebase files loaded
-- ✅ Only description analyzed
-- ✅ Fast execution (<5 seconds)
-- ✅ Can run in parallel with other tasks
-
----
-
-**Note**: For implementation details, see `.claude/agents/git/issue-generator.md`

@@ -19,16 +19,17 @@ debug/
 *.temp
 
 # Claude specific
+.claude/
+.credentials.json
 chrome/
 ide/
 projects/
+settings.json
 shell-snapshots/
 sounds/
 statsig/
+telemetry/
 todos/
-.claude/
-.credentials.json
-settings.json
 
 # Claude session history
 history.jsonl

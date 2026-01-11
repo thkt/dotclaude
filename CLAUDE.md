@@ -39,7 +39,7 @@ Skills auto-activate on relevant keywords. Full details: [@./skills/applying-cod
 
 - Code tasks: Available via `enhancing-progressively` skill
 - React/UI: Available via `applying-frontend-patterns` skill
-- Component design: [Container/Presentational](./patterns/frontend/container-presentational.md)
+- Component design: [Container/Presentational](./skills/applying-frontend-patterns/references/container-presentational.md)
 - Testing: Available via `generating-tdd-tests` skill
 
 **Note**: Skills are automatically activated based on context and keywords.
@@ -90,7 +90,7 @@ If any check fails:
 
 ### Commands Reference
 
-- Command list: [@./docs/COMMANDS.md](./docs/COMMANDS.md)
+- Command list: [@./rules/commands/COMMAND_WORKFLOWS.md](./rules/commands/COMMAND_WORKFLOWS.md)
 
 ### Documentation Guidelines
 

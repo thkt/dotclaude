@@ -40,7 +40,7 @@
 
 - コードタスク: `enhancing-progressively` スキルで利用可能
 - React/UI: `applying-frontend-patterns` スキルで利用可能
-- コンポーネント設計: [Container/Presentational](../patterns/frontend/container-presentational.md)
+- コンポーネント設計: [Container/Presentational](../skills/applying-frontend-patterns/references/container-presentational.md)
 - テスト: `generating-tdd-tests` スキルで利用可能
 
 **注**: スキルはコンテキストとキーワードに基づいて自動起動。
@@ -91,7 +91,7 @@
 
 ### コマンドリファレンス
 
-- コマンド一覧: [@../docs/COMMANDS.md](../docs/COMMANDS.md)
+- コマンド一覧: [@../rules/commands/COMMAND_WORKFLOWS.md](../rules/commands/COMMAND_WORKFLOWS.md)
 
 ### ドキュメントガイドライン
 

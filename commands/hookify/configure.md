@@ -27,14 +27,14 @@ Which rule would you like to configure?
 Selected: warn-console-log
 
 What would you like to do?
-1. Enable (currently: ❌)
+1. Enable (currently: disabled)
 2. Delete rule
 3. Edit pattern
 4. Cancel
 
 > 1
 
-✅ Rule 'warn-console-log' has been enabled.
+Rule 'warn-console-log' has been enabled.
 ```
 
 ## Instructions

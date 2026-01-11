@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+# 依存コマンドチェック
+command -v jq >/dev/null 2>&1 || { echo "Error: jq is required but not installed. Install with: brew install jq" >&2; exit 1; }
+
 # 設定
 CLAUDE_CMD="${CLAUDE_CMD:-$(command -v claude 2>/dev/null || echo '/opt/homebrew/bin/claude')}"
 PROJECT_DIR="$HOME/.claude"
@@ -123,8 +126,11 @@ Before reporting any issue:
   echo "---"
   echo ""
 
-  # Claude CLI execution (--print for non-interactive mode, MCP disabled)
-  if "$CLAUDE_CMD" --print --mcp-config '{"mcpServers":{}}' --strict-mcp-config "$PROMPT" 2>&1; then
+  # Claude CLI execution (--print for non-interactive mode, with tool permissions)
+  # --dangerously-skip-permissions: Allow tool execution in non-interactive mode
+  # --tools: Explicitly enable required tools for audit tasks
+  # --mcp-config + --strict-mcp-config: Disable MCP servers (not needed for audit)
+  if "$CLAUDE_CMD" --print --dangerously-skip-permissions --tools "Read,Grep,Glob,LS" --mcp-config '{"mcpServers":{}}' --strict-mcp-config --output-format text "$PROMPT" 2>&1; then
     log "Audit completed successfully"
   else
     echo "⚠️ Audit failed with exit code $?"
@@ -139,7 +145,8 @@ extract_json_state() {
   local json_block
 
   # Extract last JSON block (reverse search for robustness)
-  json_block=$(tac "$OUTPUT_FILE" | sed -n '/^```$/,/^```json$/p' | tac | sed '1d;$d')
+  # Note: macOS uses 'tail -r' instead of 'tac'
+  json_block=$(tail -r "$OUTPUT_FILE" | sed -n '/^```$/,/^```json$/p' | tail -r | sed '1d;$d')
 
   if [ -z "$json_block" ]; then
     log "Warning: No JSON state found in report"

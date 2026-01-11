@@ -2,142 +2,67 @@
 description: Automatically execute tests and invoke /fix if tests fail
 allowed-tools: SlashCommand, Bash(npm test:*), Bash(yarn test:*), Bash(pnpm test:*)
 model: inherit
+dependencies: [managing-testing]
 ---
 
-# /auto-test - Automatic Test Runner with SlashCommand Integration
+# /auto-test - Automatic Test Runner
 
-## Purpose
+Execute tests and auto-fix failures.
 
-Systematically execute tests after file modifications and explicitly invoke `/fix` command when issues are detected through automated workflow orchestration.
+## Workflow Reference
 
-## Workflow Instructions
+**Full workflow**: [@../skills/managing-testing/references/auto-test-workflow.md](../skills/managing-testing/references/auto-test-workflow.md)
 
-Follow this sequence when invoked:
-
-### Step 1: Execute Tests
-
-Run the project's test command:
+## Usage
 
 ```bash
-# Auto-detect and run tests
-if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
-  npm test || yarn test || pnpm test
-elif [ -f "pubspec.yaml" ]; then
-  flutter test
-elif [ -f "Makefile" ] && grep -q "test:" Makefile; then
-  make test
-else
-  echo "No test command found"
-  exit 1
-fi
-```
-
-### Step 2: Analyze Test Results
-
-After test execution:
-
-- Parse the output for test failures
-- Count failed tests
-- Extract error messages and stack traces
-
-### Step 3: Invoke /fix if Tests Fail
-
-**IMPORTANT**: If any tests fail, you MUST use the SlashCommand tool to invoke `/fix`:
-
-1. Prepare context for /fix:
-   - Failed test names
-   - Error messages
-   - Relevant file paths
-
-2. **Use SlashCommand tool with this exact format**:
-
-    ```markdown
-    Use the SlashCommand tool to execute: /fix
-
-    Context to pass to /fix:
-    - Failed tests: [list test names]
-    - Error messages: [specific error details]
-    - Affected files: [file paths from stack traces]
-    ```
-
-3. Wait for /fix command to complete
-
-4. Re-run tests to verify fixes
-
-## Example Execution
-
-```markdown
-User: /auto-test
-
-Claude: Running tests...
-[Executes: npm test]
-
-Result: 3 tests failed out of 15 total
-
-Claude: Tests failed. Using SlashCommand tool to invoke /fix...
-[Uses SlashCommand tool to call: /fix]
-
-Context passed to /fix:
-- Failed tests: auth.test.ts::login, auth.test.ts::logout, user.test.ts::profile
-- Error messages:
-  - Expected 200, got 401 in auth.test.ts:42
-  - Undefined user object in user.test.ts:28
-- Affected files: src/auth.ts, src/user.ts
-
-[/fix command executes and applies fixes]
-
-Claude: Re-running tests...
-[Executes: npm test]
-
-Result: All 15 tests passed ✓
-```
-
-## Requirements for SlashCommand Tool
-
-- `/fix` command must be available in `.claude/commands/`
-- `/fix` must have proper `allowed-tools` configured
-- This command requires `SlashCommand` to be in the allow list in settings.json permissions
-
-## Usage Patterns
-
-```bash
-# Manual execution
 /auto-test
-
-# Automatic trigger after file modifications (via hooks)
-# Explicitly enable by configuring settings.json
 ```
 
-## Hook Integration Configuration
+## Workflow
 
-Explicitly enable automatic execution by adding to settings.json:
+```text
+1. Execute Tests
+   └─ Auto-detect: npm/yarn/pnpm test
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "claude --command '/auto-test'"
-          }
-        ]
-      }
-    ]
-  }
-}
+2. Analyze Results
+   └─ Parse failures, extract errors
+
+3. If Failures → Invoke /fix
+   └─ Pass context: tests, errors, files
+
+4. Re-run Tests
+   └─ Repeat until green or max iterations
 ```
 
-## Key Benefits
+## Test Discovery
 
-- 🚀 **Complete Automation**: Eliminates manual test execution after file changes
-- 🔄 **Continuous Execution**: Automatically attempts fixes upon test failures
-- 📊 **Maximized Efficiency**: Accelerates development cycle significantly
+| Package Manager | Command        |
+| --------------- | -------------- |
+| npm             | `npm test`     |
+| yarn            | `yarn test`    |
+| pnpm            | `pnpm test`    |
+| flutter         | `flutter test` |
+| make            | `make test`    |
 
-## Critical Notes
+## Example Flow
 
-- Strictly requires SlashCommand tool availability
-- Test commands are intelligently auto-detected based on environment
-- `/fix` command is explicitly invoked when corrections are necessary
+```text
+/auto-test
+  → npm test
+  → 3 tests failed
+  → /fix invoked with context
+  → fixes applied
+  → npm test
+  → All 15 tests passed ✓
+```
+
+## Integration
+
+Works with hooks for automatic execution after file changes.
+
+## Related
+
+- `/fix` - Bug fix command
+- `/test` - Manual test execution
+- `/code` - TDD implementation

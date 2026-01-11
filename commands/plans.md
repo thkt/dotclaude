@@ -2,107 +2,57 @@
 description: List and view planning documents (SOW/Spec) in workspace
 allowed-tools: Read, Glob
 model: inherit
-dependencies: []
+dependencies: [managing-planning]
 ---
 
 # /plans - Planning Document Viewer
 
-## Purpose
-
-List and view planning documents (SOW and Spec) stored in the workspace.
-
-**Read-only**: Viewer for planning documents.
+List and view planning documents (SOW/Spec).
 
 ## Functionality
 
-### List SOWs
-
-Use Glob tool to find all SOW documents from both locations:
-
-```markdown
-# Global workspace (user-level)
-Glob pattern: ~/.claude/workspace/planning/**/sow.md
-
-# Project-specific workspace (current project)
-Glob pattern: .claude/workspace/planning/**/sow.md
-```
-
-**Search Priority**: Project-specific SOWs are shown first, then global SOWs.
-
-### View Latest SOW
-
-1. Use Glob to find SOW files (sorted by modification time)
-2. Use Read tool on the most recent file
-
-### View Specific SOW
-
-Use Read tool with the specific path:
+### Find Documents
 
 ```text
-Read: ~/.claude/workspace/planning/[directory]/sow.md
+# Project-specific (searched first)
+.claude/workspace/planning/**/sow.md
+
+# Global
+~/.claude/workspace/planning/**/sow.md
 ```
 
 ## Output Format
 
-```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```text
+Available SOW Documents
 
-📚 Available SOW Documents
+[Project] .claude/workspace/
+  1. 2025-01-14-oauth-authentication (2025-01-14)
 
-📁 Project-specific (.claude/workspace/)
-1. 2025-01-14-oauth-authentication
-   Created: 2025-01-14
-   Status: Draft
-
-📁 Global (~/.claude/workspace/)
-2. 2025-01-13-api-refactor
-   Created: 2025-01-13
-   Status: Active
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-To view a specific document:
-/plans "oauth-authentication"
+[Global] ~/.claude/workspace/
+  2. 2025-01-13-api-refactor (2025-01-13)
 ```
 
-## Usage Examples
-
-### List All Plans
+## Usage
 
 ```bash
-/plans
+/plans                   # List all
+/plans --latest          # View latest
+/plans "feature-name"    # View specific
 ```
 
-Shows all available planning documents with creation dates.
-
-### View Latest
-
-```bash
-/plans --latest
-```
-
-Displays the most recently created plan.
-
-### View Specific Plan
-
-```bash
-/plans "feature-name"
-```
-
-Shows the planning documents for a specific feature.
-
-## Integration with Workflow
+## Integration
 
 ```text
-1. Create: /sow "feature" or /think "feature"
+1. Create: /think "feature"
 2. View: /plans
 3. Implement: /code
 4. Validate: /validate
 ```
 
-## Related Commands
+## Related
 
-- `/sow` - Create SOW only
-- `/spec` - Create Spec only
-- `/think` - Create SOW + Spec (orchestrator)
-- `/validate` - Validate implementation against plan
+- `/sow` - Create SOW
+- `/spec` - Create Spec
+- `/think` - Create SOW + Spec
+- `/validate` - Validate implementation

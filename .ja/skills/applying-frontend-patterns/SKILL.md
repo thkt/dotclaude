@@ -89,7 +89,7 @@ allowed-tools: Read, Grep, Glob, Task
 
 ### パターン
 
-- [@../../../patterns/frontend/container-presentational.md](../../../patterns/frontend/container-presentational.md) - 詳細な分離ガイド
+- [@./references/container-presentational.md](./references/container-presentational.md) - 詳細な分離ガイド
 
 ### 関連スキル
 

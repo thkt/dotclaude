@@ -30,7 +30,7 @@ allowed-tools: Read, Grep, Glob, Task
 | コメント         | `references/comments-clarity.md` | WhatではなくWhy、意図 | コメント, 意図         |
 | AIアンチパターン | `references/ai-antipatterns.md`  | 過剰設計の検出        | AI-generated, 過剰設計 |
 
-**注**: 命名規則 → [@../../../patterns/code/naming.md](../../../patterns/code/naming.md)
+**注**: 命名規則 → [@./references/naming.md](./references/naming.md)
 
 ## クイックチェックリスト
 
@@ -68,6 +68,6 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## 参照
 
-- [@../../../skills/applying-code-principles/SKILL.md] - 認知限界の科学
-- [@../../../rules/development/READABLE_CODE.md] - 詳細ガイドライン
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 認知限界の科学
+- [@../../../rules/development/READABLE_CODE.md](../../../rules/development/READABLE_CODE.md) - 詳細ガイドライン
 - [@./references/ai-antipatterns.md](./references/ai-antipatterns.md) - AI過剰設計パターン

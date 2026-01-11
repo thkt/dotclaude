@@ -176,7 +176,7 @@ Tests:       3 passed, 3 total
 **Use test-generator for additional edge cases**:
 
 For detailed test-generator patterns, see:
-[@../../../references/commands/shared/test-generation.md#pattern-2-bug-driven-generation](../../../references/commands/shared/test-generation.md#pattern-2-bug-driven-generation)
+[@../../orchestrating-workflows/references/shared/test-generation.md#pattern-2-bug-driven-bug-fixing](../../orchestrating-workflows/references/shared/test-generation.md#pattern-2-bug-driven-bug-fixing)
 
 **Example generated tests**:
 

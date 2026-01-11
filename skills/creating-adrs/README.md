@@ -37,11 +37,11 @@ adr-creator/
 
 Scripts are automatically called by the `/adr` command:
 
-| Phase | Script | Purpose |
-| --- | --- | --- |
-| 1 | `pre-check.sh` | Validate title, check duplicates, assign ADR number |
-| 5 | `validate-adr.sh` | Verify required sections, metadata, content quality |
-| 6 | `update-index.sh` | Update docs/adr/README.md index |
+| Phase | Script            | Purpose                                             |
+| ----- | ----------------- | --------------------------------------------------- |
+| 1     | `pre-check.sh`    | Validate title, check duplicates, assign ADR number |
+| 5     | `validate-adr.sh` | Verify required sections, metadata, content quality |
+| 6     | `update-index.sh` | Update adr/README.md index                          |
 
 ## Output Language
 

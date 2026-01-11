@@ -176,7 +176,7 @@ Tests:       3 passed, 3 total
 **追加エッジケース用にtest-generatorを使用**:
 
 詳細なtest-generatorパターンについては、以下を参照:
-[@../../../references/commands/shared/test-generation.md#pattern-2-bug-driven-generation](../../../references/commands/shared/test-generation.md#pattern-2-bug-driven-generation)
+[@../../orchestrating-workflows/references/shared/test-generation.md#pattern-2-bug-driven-bug-fixing](../../orchestrating-workflows/references/shared/test-generation.md#pattern-2-bug-driven-bug-fixing)
 
 **生成されたテストの例**:
 

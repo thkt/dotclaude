@@ -14,21 +14,21 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## テスタビリティ指標
 
-| 指標 | 良い | 警告 |
-| --- | --- | --- |
-| モック複雑性 | シンプルなスタブ | 深いモックチェーン |
-| テストセットアップ | < 10行 | > 30行 |
-| 依存関係 | 明示的（パラメータ/props） | 隠れた（インポート） |
-| 副作用 | 分離されている | ロジックと混在 |
-| 状態 | 予測可能 | グローバル/ミュータブル |
+| 指標               | 良い                       | 警告                    |
+| ------------------ | -------------------------- | ----------------------- |
+| モック複雑性       | シンプルなスタブ           | 深いモックチェーン      |
+| テストセットアップ | < 10行                     | > 30行                  |
+| 依存関係           | 明示的（パラメータ/props） | 隠れた（インポート）    |
+| 副作用             | 分離されている             | ロジックと混在          |
+| 状態               | 予測可能                   | グローバル/ミュータブル |
 
 ## セクションベースのロード
 
-| セクション | ファイル | フォーカス | トリガー |
-| --- | --- | --- | --- |
-| DI | `references/dependency-injection.md` | 注入可能な依存関係 | 依存性注入, DI, mock |
-| 純粋 | `references/pure-functions.md` | 純粋関数、副作用分離 | 純粋関数, 副作用 |
-| モックフレンドリー | `references/mock-friendly.md` | インターフェース、ファクトリパターン | モック, テスト困難 |
+| セクション         | ファイル                             | フォーカス                           | トリガー             |
+| ------------------ | ------------------------------------ | ------------------------------------ | -------------------- |
+| DI                 | `references/dependency-injection.md` | 注入可能な依存関係                   | 依存性注入, DI, mock |
+| 純粋               | `references/pure-functions.md`       | 純粋関数、副作用分離                 | 純粋関数, 副作用     |
+| モックフレンドリー | `references/mock-friendly.md`        | インターフェース、ファクトリパターン | モック, テスト困難   |
 
 ## クイックチェックリスト
 
@@ -52,12 +52,12 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## 主要原則
 
-| 原則 | 適用 |
-| --- | --- |
-| DIP（SOLID） | 具象ではなく抽象に依存 |
-| 純粋関数 | 同じ入力 = 同じ出力、副作用なし |
-| 明示的依存関係 | 依存関係をパラメータとして渡す |
-| 単一責任 | テストする理由は1つ、モックするものは1つ |
+| 原則           | 適用                                     |
+| -------------- | ---------------------------------------- |
+| DIP（SOLID）   | 具象ではなく抽象に依存                   |
+| 純粋関数       | 同じ入力 = 同じ出力、副作用なし          |
+| 明示的依存関係 | 依存関係をパラメータとして渡す           |
+| 単一責任       | テストする理由は1つ、モックするものは1つ |
 
 ## 一般的なパターン
 
@@ -67,19 +67,19 @@ allowed-tools: Read, Grep, Glob, Task
 // Bad: テスト困難: 直接依存
 class UserService {
   async getUser(id: string) {
-    return fetch(`/api/users/${id}`).then(r => r.json())
+    return fetch(`/api/users/${id}`).then((r) => r.json());
   }
 }
 
 // Good: テスト可能: 注入可能な依存関係
 interface HttpClient {
-  get<T>(url: string): Promise<T>
+  get<T>(url: string): Promise<T>;
 }
 
 class UserService {
   constructor(private http: HttpClient) {}
   async getUser(id: string) {
-    return this.http.get<User>(`/api/users/${id}`)
+    return this.http.get<User>(`/api/users/${id}`);
   }
 }
 ```
@@ -89,13 +89,13 @@ class UserService {
 ```typescript
 // Bad: テスト困難: 副作用がロジックと混在
 function calculateDiscount(userId: string) {
-  const history = api.getPurchaseHistory(userId) // 副作用
-  return history.length > 10 ? 0.2 : 0.1
+  const history = api.getPurchaseHistory(userId); // 副作用
+  return history.length > 10 ? 0.2 : 0.1;
 }
 
 // Good: テストしやすい: 純粋関数
 function calculateDiscount(purchaseCount: number): number {
-  return purchaseCount > 10 ? 0.2 : 0.1
+  return purchaseCount > 10 ? 0.2 : 0.1;
 }
 ```
 
@@ -131,8 +131,8 @@ function SearchBox({ query, results, onQueryChange }: SearchBoxProps) {
 
 ### コア原則
 
-- [@../../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - 依存性逆転の原則
-- [@../../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - テスト困難ならシンプルに
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 依存性逆転の原則
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - テスト困難ならシンプルに
 
 ### 関連スキル
 

@@ -18,13 +18,13 @@ Display all custom hook rules created with `/hookify`.
 ## Output Format
 
 ```markdown
-🔧 Hookify Rules
+Hookify Rules
 
-| # | Name | Event | Action | Enabled | Pattern |
-| --- | --- | --- | --- | --- | --- |
-| 1 | block-dangerous | bash | block | ✅ | rm -rf |
-| 2 | warn-console-log | file | warn | ✅ | console |
-| 3 | require-tests | stop | block | ❌ | test |
+| #   | Name             | Event | Action | Enabled | Pattern |
+| --- | ---------------- | ----- | ------ | ------- | ------- |
+| 1   | block-dangerous  | bash  | block  | yes     | rm -rf  |
+| 2   | warn-console-log | file  | warn   | yes     | console |
+| 3   | require-tests    | stop  | block  | no      | test    |
 ```
 
 ## Instructions
@@ -32,4 +32,4 @@ Display all custom hook rules created with `/hookify`.
 1. Use Glob to find all `.claude/hookify.*.local.md` files
 2. Read each file and extract YAML frontmatter
 3. Display formatted table with rule information
-4. Show ✅ for enabled, ❌ for disabled
+4. Show `yes` for enabled, `no` for disabled

@@ -130,7 +130,7 @@ const total = items.reduce((sum, i) => sum + i.price, 0);
 
 ## 適用される開発原則
 
-参照: [@../../../patterns/frontend/container-presentational.md](../../../patterns/frontend/container-presentational.md) コンポーネント分離について
+参照: [@../../skills/applying-frontend-patterns/references/container-presentational.md](../../skills/applying-frontend-patterns/references/container-presentational.md) コンポーネント分離について
 
 ## 出力形式
 

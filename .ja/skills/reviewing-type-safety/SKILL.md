@@ -14,21 +14,21 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## 型安全メトリクス
 
-| コンテキスト | ターゲット | 警告 |
-| --- | --- | --- |
-| 型カバレッジ | 95%+ | < 90% |
-| Any使用 | 0（正当化がある場合のみ） | > 5インスタンス |
-| 型アサーション | 最小限 | > 10インスタンス |
-| 暗黙のany | 0 | Any > 0 |
-| Strictモード | すべて有効 | いずれか無効 |
+| コンテキスト   | ターゲット                | 警告             |
+| -------------- | ------------------------- | ---------------- |
+| 型カバレッジ   | 95%+                      | < 90%            |
+| Any使用        | 0（正当化がある場合のみ） | > 5インスタンス  |
+| 型アサーション | 最小限                    | > 10インスタンス |
+| 暗黙のany      | 0                         | Any > 0          |
+| Strictモード   | すべて有効                | いずれか無効     |
 
 ## セクションベースのロード
 
-| セクション | ファイル | フォーカス | トリガー |
-| --- | --- | --- | --- |
-| カバレッジ | `references/type-coverage.md` | 明示的な型、anyを避ける | any, unknown, 型カバレッジ |
-| ガード | `references/type-guards.md` | ナローイング、判別可能なUnion | 型ガード, type guard |
-| Strict | `references/strict-mode.md` | tsconfig、React型 | strictNullChecks, React |
+| セクション | ファイル                      | フォーカス                    | トリガー                   |
+| ---------- | ----------------------------- | ----------------------------- | -------------------------- |
+| カバレッジ | `references/type-coverage.md` | 明示的な型、anyを避ける       | any, unknown, 型カバレッジ |
+| ガード     | `references/type-guards.md`   | ナローイング、判別可能なUnion | 型ガード, type guard       |
+| Strict     | `references/strict-mode.md`   | tsconfig、React型             | strictNullChecks, React    |
 
 ## クイックチェックリスト
 
@@ -55,12 +55,12 @@ allowed-tools: Read, Grep, Glob, Task
 
 ## 主要原則
 
-| 原則 | 適用 |
-| --- | --- |
-| Fail Fast | 実行時ではなくコンパイル時にエラーをキャッチ |
-| TSに推論させる | 既に明確なものを過度に型付けしない |
-| 型はドキュメント | 良い型はドキュメントとして機能 |
-| unknownを優先 | より安全なハンドリングのために`any`より`unknown`を使用 |
+| 原則             | 適用                                                   |
+| ---------------- | ------------------------------------------------------ |
+| Fail Fast        | 実行時ではなくコンパイル時にエラーをキャッチ           |
+| TSに推論させる   | 既に明確なものを過度に型付けしない                     |
+| 型はドキュメント | 良い型はドキュメントとして機能                         |
+| unknownを優先    | より安全なハンドリングのために`any`より`unknown`を使用 |
 
 ## 一般的なパターン
 
@@ -68,7 +68,7 @@ allowed-tools: Read, Grep, Glob, Task
 
 ```typescript
 function isSuccess<T>(response: Response<T>): response is SuccessResponse<T> {
-  return response.success === true
+  return response.success === true;
 }
 ```
 
@@ -76,19 +76,22 @@ function isSuccess<T>(response: Response<T>): response is SuccessResponse<T> {
 
 ```typescript
 type Action =
-  | { type: 'INCREMENT'; payload: number }
-  | { type: 'DECREMENT'; payload: number }
-  | { type: 'RESET' }
+  | { type: "INCREMENT"; payload: number }
+  | { type: "DECREMENT"; payload: number }
+  | { type: "RESET" };
 
 // 網羅的チェック
 function reducer(action: Action): number {
   switch (action.type) {
-    case 'INCREMENT': return action.payload
-    case 'DECREMENT': return -action.payload
-    case 'RESET': return 0
+    case "INCREMENT":
+      return action.payload;
+    case "DECREMENT":
+      return -action.payload;
+    case "RESET":
+      return 0;
     default:
-      const _exhaustive: never = action
-      return _exhaustive
+      const _exhaustive: never = action;
+      return _exhaustive;
   }
 }
 ```
@@ -97,20 +100,22 @@ function reducer(action: Action): number {
 
 ```typescript
 interface SelectProps<T> {
-  value: T
-  options: T[]
-  onChange: (value: T) => void
+  value: T;
+  options: T[];
+  onChange: (value: T) => void;
 }
 
-function Select<T>({ value, options, onChange }: SelectProps<T>) { /* ... */ }
+function Select<T>({ value, options, onChange }: SelectProps<T>) {
+  /* ... */
+}
 ```
 
 ## 参照
 
 ### コア原則
 
-- [@../../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - 過度な型付けをしない
-- [@../../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - 型インターフェースはISPに従う
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 過度な型付けをしない
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 型インターフェースはISPに従う
 
 ### 関連スキル
 

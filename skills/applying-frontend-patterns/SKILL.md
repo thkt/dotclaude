@@ -90,7 +90,7 @@ Component design patterns for maintainable frontend architecture. Patterns are u
 
 ### Patterns
 
-- [@../../patterns/frontend/container-presentational.md](../../patterns/frontend/container-presentational.md) - Detailed separation guide
+- [@./references/container-presentational.md](./references/container-presentational.md) - Detailed separation guide
 
 ### Related Skills
 
