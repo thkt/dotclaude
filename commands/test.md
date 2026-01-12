@@ -1,7 +1,7 @@
 ---
 description: Run project tests and validate code quality through comprehensive testing
 allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, TodoWrite, Task
-model: inherit
+model: opus
 argument-hint: "[test scope or specific tests]"
 dependencies: [test-generator, managing-testing]
 ---
@@ -10,75 +10,32 @@ dependencies: [test-generator, managing-testing]
 
 Run project tests with gap analysis and quality checks.
 
-## Process
+## Input
 
-```text
-1. Run Tests
-   └─ npm/yarn/pnpm/bun test
+- No argument: run all tests
+- Argument: specific test scope or file pattern
 
-2. Coverage Analysis
-   └─ npm test -- --coverage
+## Execution
 
-3. Gap Analysis (test-generator)
-   └─ Identify uncovered paths
+1. Run tests (npm/yarn/pnpm/bun)
+2. Coverage analysis
+3. Gap analysis via `test-generator` (uncovered paths)
+4. Quality checks (lint, type-check)
 
-4. Quality Checks
-   └─ lint, type-check, format
-```
-
-## Test Commands
-
-| Package Manager | Command     |
-| --------------- | ----------- |
-| npm             | `npm test`  |
-| yarn            | `yarn test` |
-| pnpm            | `pnpm test` |
-| bun             | `bun test`  |
-
-## Gap Analysis
-
-Uses test-generator agent:
-
-```typescript
-Task({
-  subagent_type: "test-generator",
-  description: "Analyze test coverage gaps",
-  prompt: `...analyze uncovered paths...`,
-});
-```
-
-### Output
+## Output
 
 ```markdown
-## Test Coverage Gaps
+## Test Results
 
-### High Priority (< 50% coverage)
+| Metric   | Value |
+| -------- | ----- |
+| Total    | XX    |
+| Passed   | XX    |
+| Failed   | XX    |
+| Coverage | XX%   |
+| Time     | X.Xs  |
 
-- **File**: src/utils/validation.ts
-  - **Lines**: 45-67
-  - **Suggested Test**: [code snippet]
+### Gaps Identified
 
-### Estimated Impact
-
-- Current: 65% → Target: 85%
+[if any]
 ```
-
-## Quality Checks
-
-```bash
-npm run lint
-npm run type-check
-npx tsc --noEmit
-```
-
-## Result Summary
-
-- Total tests / Passed / Failed
-- Coverage percentage
-- Execution time
-
-## Next Steps
-
-- **Failed** → `/fix`
-- **Low coverage** → Add tests
-- **All green** → `/commit`

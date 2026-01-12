@@ -1,7 +1,7 @@
 ---
 description: Run CodeRabbit AI code review for external perspective analysis
 allowed-tools: Bash(coderabbit:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Read, Glob
-model: inherit
+model: opus
 argument-hint: "[--base <branch>] [--type <all|committed|uncommitted>]"
 dependencies: [utilizing-cli-tools]
 ---
@@ -10,24 +10,13 @@ dependencies: [utilizing-cli-tools]
 
 Run external AI code review with CodeRabbit CLI.
 
-## When to Use
+## Input
 
-| `/rabbit`             | `/audit`               |
-| --------------------- | ---------------------- |
-| Quick external review | Comprehensive review   |
-| Second opinion        | Project-specific rules |
-| Before commit/PR      | Architecture review    |
-| Fast (10-30s)         | Slower (multi-agent)   |
+- No argument: review all changes
+- `--base <branch>`: compare against specific branch
+- `--type`: `all`, `committed`, `uncommitted`
 
-## Usage
-
-```bash
-/rabbit                     # Review all changes
-/rabbit --base main         # Against specific branch
-/rabbit --type uncommitted  # Only uncommitted
-```
-
-## Sandbox Requirement
+## Execution
 
 **CRITICAL**: Requires `dangerouslyDisableSandbox: true` for TTY support.
 
@@ -38,32 +27,34 @@ Bash({
 });
 ```
 
-## Execution Time
+### Scope-based Execution
 
-| Scope       | Time      | Recommendation        |
-| ----------- | --------- | --------------------- |
-| < 10 files  | 10-30s    | Run inline            |
-| 10-50 files | 1-5 min   | Inline or background  |
-| 50+ files   | 7-30+ min | **Run in background** |
+| Scope       | Time      | Mode                |
+| ----------- | --------- | ------------------- |
+| < 10 files  | 10-30s    | Inline              |
+| 10-50 files | 1-5 min   | Optional background |
+| 50+ files   | 7-30+ min | Background          |
 
-## Output Format
+## Output
 
-```text
-CodeRabbit found N issues:
+```markdown
+## CodeRabbit Review
 
-path/to/file.ts
-  L42 [refactor] Description
-  L78 [issue] Problem description
+| Metric   | Value           |
+| -------- | --------------- |
+| Files    | X               |
+| Issues   | X               |
+| Severity | High/Medium/Low |
 
-Recommendation: Run /fix to address
-```
+### Issues Found
 
-## Best Practices
+| File        | Line | Issue         | Severity |
+| ----------- | ---- | ------------- | -------- |
+| src/auth.ts | 42   | [description] | High     |
 
-```text
-/rabbit → /fix (critical) → /rabbit (verify) → /commit
+### Recommendations
 
-NOT: /rabbit → /fix → /rabbit → /fix → ... (infinite loop)
+[Actionable suggestions]
 ```
 
 ## Error Handling
@@ -73,10 +64,3 @@ NOT: /rabbit → /fix → /rabbit → /fix → ... (infinite loop)
 | Not a git repo | Suggest `git init`      |
 | Auth required  | `coderabbit auth login` |
 | No changes     | "Nothing to review"     |
-
-## Integration
-
-```text
-Dev:  /code → /rabbit → /fix → /commit
-PR:   /rabbit --base main → /audit → /pr
-```

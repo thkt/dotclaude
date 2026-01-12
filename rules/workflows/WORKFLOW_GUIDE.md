@@ -28,11 +28,9 @@ Guide for **using** commands. User reference for command selection and workflow 
 
 ### Automation
 
-| Command       | Purpose                               |
-| ------------- | ------------------------------------- |
-| `/auto-test`  | Auto test runner with conditional fix |
-| `/full-cycle` | Complete development cycle            |
-| `/hookify`    | Create and manage custom hooks        |
+| Command       | Purpose                    |
+| ------------- | -------------------------- |
+| `/full-cycle` | Complete development cycle |
 
 ### Browser & Documentation
 
@@ -62,7 +60,7 @@ Guide for **using** commands. User reference for command selection and workflow 
 
 ## Command Selection
 
-| Criteria          | High Priority         | Medium Priority      | Low Priority        |
+| Criteria          | [✓] High Priority     | [→] Medium Priority  | [?] Low Priority    |
 | ----------------- | --------------------- | -------------------- | ------------------- |
 | **Understanding** | ≥95% → direct         | 70-94% → `/think`    | <70% → `/research`  |
 | **Complexity**    | Multi-step → workflow | Single file → `/fix` | Unclear → `/think`  |

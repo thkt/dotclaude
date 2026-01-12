@@ -1,9 +1,9 @@
 ---
 name: managing-testing
 description: >
-  テストワークフローパターン：自動テストランナー、E2Eテスト生成、テストオーケストレーション。
+  テストワークフローパターン：E2Eテスト生成、テストオーケストレーション。
   自動テストのためのテンプレートとプロセスを提供。
-  トリガー: testing, auto-test, E2E, end-to-end, playwright, test runner, テストオーケストレーション。
+  トリガー: testing, E2E, end-to-end, playwright, test runner, テストオーケストレーション。
 allowed-tools: Read, Write, Glob, Task, Bash
 user-invocable: false
 ---
@@ -19,24 +19,13 @@ user-invocable: false
 
 ## ワークフローリファレンス
 
-| ワークフロー | リファレンス                                                                                                                      | コマンド   |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| 自動テスト   | [@../../skills/managing-testing/references/auto-test-workflow.md](../../skills/managing-testing/references/auto-test-workflow.md) | /auto-test |
-| E2Eテスト    | [@../../skills/managing-testing/references/e2e-workflow.md](../../skills/managing-testing/references/e2e-workflow.md)             | /e2e       |
+| ワークフロー | リファレンス                                                                                                          | コマンド |
+| ------------ | --------------------------------------------------------------------------------------------------------------------- | -------- |
+| E2Eテスト    | [@../../skills/managing-testing/references/e2e-workflow.md](../../skills/managing-testing/references/e2e-workflow.md) | /e2e     |
+
+**注**: 自動テストイテレーションには `/ralph-loop`（公式プラグイン）を使用。
 
 ## クイックリファレンス
-
-### 自動テストフロー
-
-```text
-1. テストコマンドを発見 (package.json, README)
-2. テスト実行
-3. 失敗した場合:
-   a. エラーを分析
-   b. /fix を適用
-   c. テストを再実行
-4. グリーンになるか最大イテレーションまで繰り返し
-```
 
 ### E2Eテストフロー
 
@@ -66,7 +55,7 @@ user-invocable: false
 
 ## TDDとの統合
 
-### RGRC + 自動テスト
+### RGRC + Ralph Loop
 
 ```text
 /code (RGRCサイクル)
@@ -76,11 +65,11 @@ user-invocable: false
     ├── Refactor: 原則を適用
     └── Commit: 状態を保存
 
-/auto-test (自動イテレーション)
+/ralph-loop (自動イテレーション)
     │
     ├── テスト実行
-    ├── 失敗を修正 (/fix経由)
-    └── グリーンになるまで繰り返し
+    ├── 失敗を修正
+    └── completion-promiseまで繰り返し
 ```
 
 ## ブラウザ自動化 (E2E)
@@ -122,6 +111,6 @@ test("user can login", async ({ page }) => {
 
 ### 使用元コマンド
 
-- `/auto-test` - 自動テストランナー
 - `/e2e` - E2Eテスト生成
 - `/test` - 手動テスト実行
+- `/ralph-loop` - 自動イテレーション（公式プラグイン）

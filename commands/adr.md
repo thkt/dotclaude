@@ -1,60 +1,26 @@
 ---
 description: Create Architecture Decision Records (ADR) in MADR format with auto-numbering
 allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Bash(~/.claude/skills/creating-adrs/scripts/*), Grep, Glob
-model: inherit
+model: opus
 argument-hint: "[decision title]"
 dependencies: [creating-adrs, managing-documentation]
 ---
 
 # /adr - Architecture Decision Record Creator
 
-Create ADRs in MADR format with automation.
+Create ADR in MADR format with auto-numbering.
 
-## Workflow Reference
+## Input
 
-**Full workflow**: [@../skills/managing-documentation/references/adr-workflow.md](../skills/managing-documentation/references/adr-workflow.md)
+- Argument: decision title (required, specific action like "Adopt X for Y")
+- If missing: prompt via AskUserQuestion
+- Prerequisites: `adr/` directory (create if missing)
 
-**Skill details**: [@../skills/creating-adrs/SKILL.md](../skills/creating-adrs/SKILL.md)
+## Execution
 
-## Usage
-
-```bash
-/adr "Adopt TypeScript strict mode"
-/adr "Use Auth.js for authentication"
-```
-
-## Execution Phases
-
-1. **Pre-Check** - Validates title, checks duplicates, assigns number
-2. **Template Selection** - Tech/Architecture/Process/Default
-3. **Information Collection** - Context, Options, Decision
-4. **ADR Generation** - MADR format
-5. **Validation** - Required sections check
-6. **Index Update** - Updates README.md
+Delegates to `creating-adrs` skill (templates, validation, scripts defined there).
 
 ## Output
 
-```text
-adr/
-├── README.md              (auto-updated)
-└── 0023-your-new-adr.md   (newly created)
-```
-
-## Title Guidelines
-
-```text
-[good] "Adopt Zustand for State Management"
-[bad]  "State Management" (too abstract)
-```
-
-## Status Values
-
-- `proposed` → Under consideration
-- `accepted` → Approved
-- `deprecated` → No longer recommended
-- `superseded` → Replaced by another
-
-## Related
-
-- `/rulify` - Generate rule from ADR
-- `/research` - Investigation before ADR
+- `adr/XXXX-slug.md` (ADR file)
+- `adr/README.md` (index update)

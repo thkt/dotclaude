@@ -1,117 +1,42 @@
 ---
-description: 構造化されたタイトルと本文でGitHub Issueを生成する
+description: 構造化されたタイトルと本文でGitHub Issueを生成
 allowed-tools: Task
-model: inherit
-dependencies: [issue-generator, utilizing-cli-tools]
+model: opus
+argument-hint: "[Issue説明] [--create]"
+dependencies: [issue-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /issue - GitHub Issue生成
 
-明確なタイトルと包括的な本文を持つ、よく構造化されたGitHub Issueを生成します。
+構造化されたGitHub Issueを生成。
 
-**実装**: このコマンドは最適なパフォーマンスとコンテキスト効率のため、専門の `issue-generator` サブエージェントに委譲します。
+## 入力
 
-## 動作概要
+- 引数: Issue説明（必須）
+- 未指定時: AskUserQuestionで確認
+- タイププレフィックス: `bug`, `feature`, `docs`（任意）
+- フラグ: `--create` で`gh issue create`により直接作成
 
-このコマンドを実行すると:
+## 実行
 
-1. Taskツールで `issue-generator` サブエージェントを起動
-2. サブエージェントが提供された説明を分析
-3. 構造化されたIssueタイトルと本文を生成
-4. オプションで `gh issue create` でIssueを作成
+`issue-generator`サブエージェントに委譲（フォーマットとテンプレートはそちらで定義）。
 
-## 使い方
-
-### 基本的な使い方
-
-```bash
-/issue "モバイルでログインボタンが動かない"
-```
-
-説明からIssueを生成します。
-
-### タイプ付き
-
-```bash
-/issue bug "空の入力でAPIが500を返す"
-/issue feature "ダークモードサポートを追加"
-```
-
-Issueタイプを明示的に指定します。
-
-### 直接作成
-
-```bash
-/issue --create "データベース接続タイムアウト"
-```
-
-`gh` CLIで即座にIssueを作成します。
-
-## Issueの構造
-
-### タイトル形式
-
-```text
-[type] 簡潔で具体的な説明
-```
-
-例:
-
-- `[Bug] Safariモバイルでログインが失敗する`
-- `[Feature] CSVエクスポート機能を追加`
-- `[Docs] API認証ガイドを更新`
-
-### 本文形式
+## 出力
 
 ```markdown
-## 説明
-[明確な問題説明または機能リクエスト]
+## GitHub Issue
 
-## 再現手順 (バグの場合)
-1. [ステップ1]
-2. [ステップ2]
-3. [期待される動作 vs 実際の動作]
+| フィールド | 値               |
+| ---------- | ---------------- |
+| タイトル   | [type]: [title]  |
+| ラベル     | bug, enhancement |
 
-## 受入基準
+### 説明
+
+[コンテキスト付き構造化Issue本文]
+
+### 受け入れ基準
+
 - [ ] [基準1]
 - [ ] [基準2]
-
-## 追加コンテキスト
-[スクリーンショット、ログ、関連Issue]
 ```
-
-## 出力形式
-
-コマンドは以下を提供します:
-
-- **Issueタイトル**: タイプ接頭辞付きでフォーマット
-- **Issue本文**: 構造化されたマークダウン
-- **ラベル**: コンテンツに基づいた推奨ラベル
-- **ghコマンド**: 実行可能なコマンド
-
-## ワークフローとの統合
-
-以下とシームレスに連携:
-
-- `/branch` - Issueからブランチを作成
-- `/commit` - コミットでIssueを参照
-- `/pr` - PRをIssueにリンク
-
-## 関連コマンド
-
-- `/branch` - ブランチ名を生成
-- `/commit` - コミットメッセージを生成
-- `/pr` - PR説明を作成
-
-## コンテキスト効率
-
-このコマンドは最小限のコンテキスト使用に最適化:
-
-- ✅ コードベースファイルの読み込みなし
-- ✅ 説明のみを分析
-- ✅ 高速実行（5秒未満）
-- ✅ 他のタスクと並列実行可能
-
----
-
-**注**: 実装詳細は `.claude/agents/git/issue-generator.md` を参照してください

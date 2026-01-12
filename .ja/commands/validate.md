@@ -1,7 +1,8 @@
 ---
 description: SOW受け入れ基準に対して実装を検証
 allowed-tools: Read, Glob, Grep
-model: inherit
+model: opus
+argument-hint: "[機能名]"
 dependencies: [sow-spec-reviewer, managing-planning]
 ---
 
@@ -9,48 +10,31 @@ dependencies: [sow-spec-reviewer, managing-planning]
 
 手動検証のためにSOW受け入れ基準を表示。
 
-## ワークフロー参照
+## 入力
 
-**完全ワークフロー**: [@../skills/managing-planning/references/validation-criteria.md](../skills/managing-planning/references/validation-criteria.md)
+- 引数なし: 最新SOW
+- 引数あり: 特定の機能名
 
-## 機能
+## 実行
 
-1. Globで最新SOWを検索
+1. Globで SOWを検索（`.claude/workspace/planning/*/sow.md`）
 2. 受け入れ基準セクションを抽出
 3. チェックリストとして表示
 
-## 出力形式
+## 出力
 
-```text
-SOW検証チェックリスト
+```markdown
+## SOW検証: [機能名]
 
-機能: [機能名]
-
-受け入れ基準:
-
-[ ] AC-01: [説明]
-    確認: [検証ポイント]
-
-[ ] AC-02: [説明]
-    確認: [検証ポイント]
+| AC ID  | 説明   | 確認       | Status |
+| ------ | ------ | ---------- | ------ |
+| AC-001 | [説明] | [検証内容] | [ ]    |
+| AC-002 | [説明] | [検証内容] | [ ]    |
 ```
 
-## 手動プロセス
+## IDR
 
-```text
-1. 基準をレビュー
-   └─ 各ACを読む
-
-2. 実装をテスト
-   └─ 各機能を実行・確認
-
-3. 結果を比較
-   └─ 動作と基準を照合
-```
-
-## IDR更新
-
-検証後:
+IDRに`/validate`セクションを追記:
 
 ```markdown
 ## /validate - [YYYY-MM-DD]
@@ -60,16 +44,3 @@ SOW検証チェックリスト
 | AC-001 | PASS   | [検証内容] |
 | AC-002 | FAIL   | [検証内容] |
 ```
-
-## 使用方法
-
-```bash
-/validate                 # 最新SOW
-/validate "feature-name"  # 特定機能
-```
-
-## 関連
-
-- `/think` - SOW作成
-- `/sow` - SOW表示
-- `/test` - 自動テスト

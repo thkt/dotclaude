@@ -10,7 +10,7 @@ dependencies:
     applying-code-principles,
     integrating-storybook,
     orchestrating-workflows,
-    ralph-wiggum,
+    ralph-loop,
   ]
 ---
 
@@ -18,55 +18,24 @@ dependencies:
 
 Implement code with TDD/RGRC cycle and quality checks.
 
-## Workflow Reference
+## Input
 
-**Full workflow**: [@../skills/orchestrating-workflows/references/code-workflow.md](../skills/orchestrating-workflows/references/code-workflow.md)
-
-## Usage
-
-```bash
-/code "implement user validation"           # Default mode
-/code --frontend "implement LoginForm"      # + Frontend patterns
-/code --principles "refactor auth module"   # + Full principles
-/code --storybook "implement Button"        # + Storybook integration
-```
+- Argument: implementation description (required)
+- If missing: prompt via AskUserQuestion
+- Flags: `--frontend`, `--principles`, `--storybook` (optional)
 
 ## Conditional Context
 
-| Flag           | Context                    | When        |
+| Flag           | Loads                      | Use Case    |
 | -------------- | -------------------------- | ----------- |
 | `--frontend`   | applying-frontend-patterns | React/UI    |
 | `--principles` | applying-code-principles   | Refactoring |
 | `--storybook`  | integrating-storybook      | Stories     |
 
-## Quick Decision Questions
+## Execution
 
-Before writing code:
+TDD implementation via RGRC cycle with `ralph-loop` auto-iteration.
 
-1. **Simplest solution?** - Is there a simpler way?
-2. **Already exists?** - Am I duplicating knowledge?
-3. **One responsibility?** - Single reason to change?
-4. **Understandable?** - Can someone understand in <1 minute?
+## IDR
 
-## RGRC Cycle
-
-```text
-1. Red    - Write failing test
-2. Green  - Minimal code to pass (ralph-wiggum auto-iteration)
-3. Refactor - Apply principles
-4. Commit - Save stable state
-```
-
-**Details**: [@../skills/orchestrating-workflows/references/shared/tdd-cycle.md](../skills/orchestrating-workflows/references/shared/tdd-cycle.md)
-
-## IDR Generation
-
-After implementation, generate IDR if SOW exists.
-
-**IDR logic**: [@../skills/orchestrating-workflows/references/shared/idr-generation.md](../skills/orchestrating-workflows/references/shared/idr-generation.md)
-
-## Next Steps
-
-- **All tests pass** → `/test` or `/audit`
-- **Quality issues** → Fix before proceeding
-- **Unclear** → `/research` first
+After implementation, generate IDR if SOW exists (skip if no SOW).

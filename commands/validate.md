@@ -1,7 +1,8 @@
 ---
 description: Validate implementation against SOW acceptance criteria
 allowed-tools: Read, Glob, Grep
-model: inherit
+model: opus
+argument-hint: "[feature name]"
 dependencies: [sow-spec-reviewer, managing-planning]
 ---
 
@@ -9,48 +10,31 @@ dependencies: [sow-spec-reviewer, managing-planning]
 
 Display SOW acceptance criteria for manual verification.
 
-## Workflow Reference
+## Input
 
-**Full workflow**: [@../skills/managing-planning/references/validation-criteria.md](../skills/managing-planning/references/validation-criteria.md)
+- No argument: latest SOW
+- Argument: specific feature name
 
-## Functionality
+## Execution
 
-1. Find latest SOW via Glob
+1. Find SOW via Glob (`.claude/workspace/planning/*/sow.md`)
 2. Extract Acceptance Criteria section
 3. Display as checklist
 
-## Output Format
+## Output
 
-```text
-SOW Validation Checklist
+```markdown
+## SOW Validation: [Feature Name]
 
-Feature: [Feature Name]
-
-Acceptance Criteria:
-
-[ ] AC-01: [Description]
-    Check: [Verification point]
-
-[ ] AC-02: [Description]
-    Check: [Verification point]
+| AC ID  | Description   | Check          | Status |
+| ------ | ------------- | -------------- | ------ |
+| AC-001 | [description] | [verification] | [ ]    |
+| AC-002 | [description] | [verification] | [ ]    |
 ```
 
-## Manual Process
+## IDR
 
-```text
-1. Review Criteria
-   └─ Read each AC
-
-2. Test Implementation
-   └─ Run and verify each feature
-
-3. Compare Results
-   └─ Match behavior to criteria
-```
-
-## IDR Update
-
-After validation:
+Append `/validate` section to IDR:
 
 ```markdown
 ## /validate - [YYYY-MM-DD]
@@ -60,16 +44,3 @@ After validation:
 | AC-001 | PASS   | [validation] |
 | AC-002 | FAIL   | [validation] |
 ```
-
-## Usage
-
-```bash
-/validate                 # Latest SOW
-/validate "feature-name"  # Specific feature
-```
-
-## Related
-
-- `/think` - Create SOW
-- `/sow` - View SOW
-- `/test` - Automated tests

@@ -1,8 +1,8 @@
 ---
 description: Generate Statement of Work (SOW) for planning complex tasks
 allowed-tools: Bash(git log:*), Bash(git diff:*), Read, Write, Glob, Grep, LS, Task
-model: inherit
-argument-hint: "[task description] (optional if research context exists)"
+model: opus
+argument-hint: "[task description]"
 dependencies: [formatting-audits, managing-planning]
 ---
 
@@ -10,34 +10,22 @@ dependencies: [formatting-audits, managing-planning]
 
 Generate sow.md for planning and analysis.
 
-## Workflow Reference
+## Input
 
-**Full workflow**: [@../skills/managing-planning/references/sow-generation.md](../skills/managing-planning/references/sow-generation.md)
+- Argument: task description (optional)
+- If missing: use research context or prompt via AskUserQuestion
 
-## Input Resolution
+### Resolution Order
 
-```text
-/sow execution
-    ├─ Argument provided? → Use as task description
-    └─ No argument
-          ├─ Research context exists? → Use research findings
-          └─ None → Ask user for description
-```
+1. Argument provided → use as task description
+2. Research context exists → use `.claude/workspace/research/*-context.md`
+3. None → prompt via AskUserQuestion
 
-## Research Context
+## Execution
 
-```bash
-!`ls -t .claude/workspace/research/*-context.md 2>/dev/null | head -1 || echo "(no research)"`
-```
+Generate SOW using template structure from `managing-planning` skill (ID format: I-001, AC-001, R-001).
 
-## Template
-
-**Structure**: [@../templates/sow/workflow-improvement.md](../templates/sow/workflow-improvement.md)
-
-- Copy: Section structure, ID naming (I-001, AC-001, R-001)
-- Do NOT copy: Actual content
-
-## Required Sections
+### Required Sections
 
 1. Executive Summary
 2. Problem Analysis
@@ -50,21 +38,8 @@ Generate sow.md for planning and analysis.
 9. Risks & Mitigations
 10. Verification Checklist
 
-## Confidence Markers
-
-| Range        | Meaning              |
-| ------------ | -------------------- |
-| [C: 0.9+]    | Verified (file:line) |
-| [C: 0.7-0.9] | Inferred             |
-| [C: <0.7]    | Uncertain            |
-
 ## Output
 
 ```text
-Save to: .claude/workspace/planning/[timestamp]-[feature]/sow.md
+.claude/workspace/planning/[timestamp]-[feature]/sow.md
 ```
-
-## Next Steps
-
-- `/spec` - Generate implementation specification
-- `/plans` - View created documents

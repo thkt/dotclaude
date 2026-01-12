@@ -1,7 +1,8 @@
 ---
 description: Analyze branch changes and generate comprehensive PR description
 allowed-tools: Task
-model: inherit
+model: opus
+argument-hint: "[issue reference or context]"
 dependencies: [pr-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
@@ -9,51 +10,39 @@ dependencies: [pr-generator, utilizing-cli-tools, managing-git-workflows]
 
 Analyze all changes in the current branch and generate comprehensive PR descriptions.
 
-## Workflow Reference
+## Input
 
-**Full format**: [@../skills/managing-git-workflows/references/pr-descriptions.md](../skills/managing-git-workflows/references/pr-descriptions.md)
+- No argument: generate from current branch
+- Argument: issue reference (`#456`) or additional context
 
-## How It Works
+## Execution
 
-Delegates to `pr-generator` subagent:
+Delegates to `pr-generator` subagent (PR format and structure defined there).
 
-1. Detects base branch (main/master/develop)
-2. Analyzes git diff, commit history, file changes
-3. Generates PR description with alternatives
+## Output
 
-## Usage
+```markdown
+## Pull Request
 
-```bash
-/pr                    # Generate from current branch
-/pr "#456"             # Link to issue
-/pr "Context..."       # Add custom context
+| Field  | Value           |
+| ------ | --------------- |
+| Title  | [type]: [title] |
+| Base   | main            |
+| Branch | feature/xxx     |
+| Closes | #123            |
+
+### Summary
+
+[2-3 bullet points]
+
+### Changes
+
+| File        | Change       |
+| ----------- | ------------ |
+| src/auth.ts | Add OAuth2   |
+| src/user.ts | Update types |
+
+### Test Plan
+
+- [ ] [Test item]
 ```
-
-## PR Structure
-
-| Section        | Content             |
-| -------------- | ------------------- |
-| **Summary**    | High-level overview |
-| **Motivation** | Why these changes   |
-| **Changes**    | Detailed breakdown  |
-| **Testing**    | Verification steps  |
-| **Related**    | Linked issues/PRs   |
-
-## Optional Sections
-
-- Screenshots (UI changes)
-- Breaking Changes (API)
-- Performance Impact
-- Migration Guide
-
-## Context Efficiency
-
-- No codebase files loaded
-- Only git metadata analyzed
-- Fast execution (<10 seconds)
-
-## Related
-
-- `/branch` - Branch names
-- `/commit` - Commit messages
-- `/audit` - Code review after PR

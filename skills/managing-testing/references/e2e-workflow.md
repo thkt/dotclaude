@@ -113,10 +113,9 @@ project/
 Works with:
 
 - `/test` - Run generated tests
-- `/auto-test` - Auto-fix failures
+- `/ralph-loop` - Automated iteration
 - `/audit` - Review test coverage
 
 ## Related
 
 - Browser automation: [@../../automating-browser/SKILL.md](../../automating-browser/SKILL.md)
-- Auto-test: [@./auto-test-workflow.md](./auto-test-workflow.md)

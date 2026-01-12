@@ -2,76 +2,37 @@
 description: Remove AI-generated slop and simplify code for clarity and maintainability
 allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, MultiEdit, Grep, Glob
 model: opus
-dependencies: [orchestrating-workflows]
+argument-hint: "[target scope]"
+dependencies: [orchestrating-workflows, reviewing-readability]
 ---
 
 # /polish - Code Simplification & AI Slop Removal
 
 Remove AI-generated slop and simplify code before commit.
 
-## What to Remove
+## Input
 
-### 1. Unnecessary Comments
+- Argument: target scope (optional)
+- If missing: analyze `git diff main...HEAD`
 
-```typescript
-// Bad: AI adds obvious comments
-// Get the user name
-const name = user.name;
+## Execution
 
-// Good: Self-explanatory
-const name = user.name;
-```
+Analyze diff for AI patterns, apply fixes, report summary.
 
-### 2. Excessive Defensive Code
+### Removal Targets
 
-```typescript
-// Bad: Over-defensive
-if (!user) throw new Error("...");
-if (!user.name) throw new Error("...");
-
-// Good: Trust internal callers
-return { ...user, processed: true };
-```
-
-### 3. Over-Engineering
-
-**Reference**: [@../skills/reviewing-readability/references/ai-antipatterns.md](../skills/reviewing-readability/references/ai-antipatterns.md)
-
-- Single-implementation interfaces → Remove
-- Classes wrapping one function → Convert to function
-- Helper functions used once → Inline
-
-### 4. Code Complexity
-
-- Nested ternary → Switch/if-else
-- Deep nesting → Early returns
-
-## Process
-
-```text
-1. Get diff: git diff main...HEAD
-2. Analyze for AI patterns
-3. Apply fixes
-4. Report summary
-```
-
-## Principles
-
-- **Occam's Razor**: Simplest solution
-- **TIDYINGS**: Clean only changed code
-- **Consistency**: Match existing style
+- Unnecessary comments (obvious/redundant)
+- Excessive defensive code (internal callers)
+- Over-engineering (single-impl interfaces, wrapper classes, one-time helpers)
+- Code complexity (nested ternary, deep nesting)
 
 ## Output
 
 ```text
-Polished: Removed 5 comments, inlined 2 helpers
+Polished: Removed X comments, inlined Y helpers
 ```
 
-## IDR Update
+## IDR
 
-Append `/polish` section to IDR with removals and simplifications.
-
-## Next Steps
-
-- **Ready** → `/commit`
-- **More cleanup** → `/audit`
+- If IDR exists: append `/polish` section with removals and simplifications
+- If no IDR: skip (terminal output only)

@@ -37,11 +37,11 @@ When bug context detected, **always ask**:
 
 ## Command Selection
 
-| Understanding | Action            | Rationale                |
-| ------------- | ----------------- | ------------------------ |
-| <70%          | `/research`       | Too uncertain to plan    |
-| 70-94%        | `/think`          | Plan before implementing |
-| ≥95%          | `/code` or direct | Clear enough to proceed  |
+| Marker | Confidence | Action            | Rationale                |
+| ------ | ---------- | ----------------- | ------------------------ |
+| [?]    | <70%       | `/research`       | Too uncertain to plan    |
+| [→]    | 70-94%     | `/think`          | Plan before implementing |
+| [✓]    | ≥95%       | `/code` or direct | Clear enough to proceed  |
 
 ## Confirmation
 

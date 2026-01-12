@@ -1,7 +1,7 @@
 ---
 description: Generate Specification (spec.md) with implementation-ready details
 allowed-tools: Read, Write, Glob, Grep, LS
-model: inherit
+model: opus
 argument-hint: "[sow path or feature description]"
 dependencies: [formatting-audits, managing-planning]
 ---
@@ -10,25 +10,16 @@ dependencies: [formatting-audits, managing-planning]
 
 Generate spec.md with implementation-ready details.
 
-## Workflow Reference
+## Input
 
-**Full workflow**: [@../skills/managing-planning/references/spec-generation.md](../skills/managing-planning/references/spec-generation.md)
+- Argument: SOW path or feature description (optional)
+- If missing: auto-detect latest `.claude/workspace/planning/*/sow.md`
 
-## Input Resolution
+## Execution
 
-```text
-/spec execution
-    ├─ Argument provided? → Use as input
-    └─ No argument → Auto-detect latest SOW
-```
+Generate spec from SOW using `managing-planning` skill templates.
 
-## SOW Auto-Detection
-
-```bash
-!`ls -t .claude/workspace/planning/*/sow.md 2>/dev/null | head -1 || echo "(no SOW)"`
-```
-
-## Required Sections
+### Required Sections
 
 1. Functional Requirements (FR-001...)
 2. Data Model (TypeScript interfaces)
@@ -38,15 +29,7 @@ Generate spec.md with implementation-ready details.
 6. Dependencies
 7. Implementation Checklist
 
-## Confidence Markers
-
-| Range        | Meaning              |
-| ------------ | -------------------- |
-| [C: 0.9+]    | Verified (file:line) |
-| [C: 0.7-0.9] | Inferred             |
-| [C: <0.7]    | Uncertain            |
-
-## Traceability
+### Traceability
 
 - FR-001 `Implements: AC-001` → Links to SOW AC
 - T-001 `Validates: FR-001` → Test validates requirement
@@ -54,10 +37,5 @@ Generate spec.md with implementation-ready details.
 ## Output
 
 ```text
-Save to: .claude/workspace/planning/[same-dir]/spec.md
+.claude/workspace/planning/[same-dir]/spec.md
 ```
-
-## Next Steps
-
-- `/code` - Implement based on spec
-- `/plans` - View created documents

@@ -1,9 +1,9 @@
 ---
 name: managing-testing
 description: >
-  Testing workflow patterns: auto-test runner, E2E test generation, test orchestration.
+  Testing workflow patterns: E2E test generation, test orchestration.
   Provides templates and processes for automated testing.
-  Triggers: testing, auto-test, E2E, end-to-end, playwright, test runner, test orchestration.
+  Triggers: testing, E2E, end-to-end, playwright, test runner, test orchestration.
 allowed-tools: Read, Write, Glob, Task, Bash
 user-invocable: false
 ---
@@ -19,24 +19,13 @@ Commands become thin orchestrators that reference this skill for testing logic.
 
 ## Workflow References
 
-| Workflow    | Reference                                                                 | Command    |
-| ----------- | ------------------------------------------------------------------------- | ---------- |
-| Auto-Test   | [@./references/auto-test-workflow.md](./references/auto-test-workflow.md) | /auto-test |
-| E2E Testing | [@./references/e2e-workflow.md](./references/e2e-workflow.md)             | /e2e       |
+| Workflow    | Reference                                                     | Command |
+| ----------- | ------------------------------------------------------------- | ------- |
+| E2E Testing | [@./references/e2e-workflow.md](./references/e2e-workflow.md) | /e2e    |
+
+**Note**: For automated test iteration, use `/ralph-loop` (official plugin).
 
 ## Quick Reference
-
-### Auto-Test Flow
-
-```text
-1. Discover test command (package.json, README)
-2. Run tests
-3. If failures:
-   a. Analyze error
-   b. Apply /fix
-   c. Re-run tests
-4. Repeat until green or max iterations
-```
 
 ### E2E Testing Flow
 
@@ -66,7 +55,7 @@ Commands become thin orchestrators that reference this skill for testing logic.
 
 ## Integration with TDD
 
-### RGRC + Auto-Test
+### RGRC + Ralph Loop
 
 ```text
 /code (RGRC cycle)
@@ -76,11 +65,11 @@ Commands become thin orchestrators that reference this skill for testing logic.
     ├── Refactor: Apply principles
     └── Commit: Save state
 
-/auto-test (automated iteration)
+/ralph-loop (automated iteration)
     │
     ├── Run tests
-    ├── Fix failures (via /fix)
-    └── Repeat until green
+    ├── Fix failures
+    └── Repeat until completion-promise
 ```
 
 ## Browser Automation (E2E)
@@ -122,6 +111,6 @@ test("user can login", async ({ page }) => {
 
 ### Used by Commands
 
-- `/auto-test` - Automated test runner
 - `/e2e` - E2E test generation
 - `/test` - Manual test execution
+- `/ralph-loop` - Automated iteration (official plugin)

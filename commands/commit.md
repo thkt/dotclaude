@@ -1,7 +1,8 @@
 ---
 description: Analyze Git diff and generate Conventional Commits format messages
 allowed-tools: Task
-model: inherit
+model: opus
+argument-hint: "[context or issue reference]"
 dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
@@ -9,54 +10,31 @@ dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
 
 Analyze staged changes and generate Conventional Commits messages.
 
-## Workflow Reference
+## Input
 
-**Full format**: [@../skills/managing-git-workflows/references/commit-messages.md](../skills/managing-git-workflows/references/commit-messages.md)
+- Argument: context or issue reference (optional)
+- If missing: analyze staged changes only
 
-## How It Works
+## Execution
 
-Delegates to `commit-generator` subagent:
+Delegates to `commit-generator` subagent (Conventional Commits format defined there).
 
-1. Analyzes git diff and status
-2. Generates Conventional Commits format
-3. Returns message alternatives
+## Output
 
-## Usage
+````markdown
+## Commit Message
 
-```bash
-/commit                            # Analyze staged changes
-/commit "Related to auth flow"     # With context
-/commit "#123"                     # With issue reference
-```
-
-## Conventional Commits Format
+| Field   | Value                                       |
+| ------- | ------------------------------------------- |
+| Type    | feat / fix / refactor / docs / chore / test |
+| Scope   | (component)                                 |
+| Subject | short description                           |
 
 ```text
-<type>(<scope>): <subject>
+feat(auth): add OAuth2 login support
+
+- Add Google OAuth provider
+- Implement token refresh flow
+- Update user session handling
 ```
-
-| Type       | Use Case      |
-| ---------- | ------------- |
-| `feat`     | New feature   |
-| `fix`      | Bug fix       |
-| `docs`     | Documentation |
-| `refactor` | Restructuring |
-| `test`     | Testing       |
-| `chore`    | Maintenance   |
-
-## Subject Line Rules
-
-1. Limit to 72 characters
-2. Use imperative mood ("add" not "added")
-3. No period at the end
-
-## Context Efficiency
-
-- No codebase files loaded
-- Only git metadata analyzed
-- Fast execution (<5 seconds)
-
-## Related
-
-- `/branch` - Branch names
-- `/pr` - PR descriptions
+````

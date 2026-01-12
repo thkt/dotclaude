@@ -1,7 +1,7 @@
 ---
 description: Perform project research and technical investigation without implementation
 allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task
-model: inherit
+model: opus
 context: fork
 argument-hint: "[research topic or question]"
 dependencies: [Explore]
@@ -11,37 +11,16 @@ dependencies: [Explore]
 
 Investigate codebase with confidence-based findings, without implementation.
 
-## Process
+## Input
 
-```text
-Phase 1: Scope Discovery (30 sec)
-    └─ Project structure, tech stack, entry points
+- Argument: research topic or question (required)
+- If missing: prompt via AskUserQuestion
 
-Phase 2: Investigation (1-3 min)
-    ├─ Explore agent (overview)
-    └─ 2-3 code-explorer agents (deep dive)
+## Execution
 
-Phase 3: Synthesis (1 min)
-    └─ Score findings, document unknowns
-```
-
-## Confidence Markers
-
-| Marker | Confidence | Usage                       |
-| ------ | ---------- | --------------------------- |
-| [✓]    | ≥95%       | Directly verified from code |
-| [→]    | 70-94%     | Reasonable inference        |
-| [?]    | <70%       | Assumption needing verify   |
-
-## Agent Usage
-
-```typescript
-// Step 1: Overview
-Task({ subagent_type: "Explore", ... })
-
-// Step 2: Deep dive (parallel)
-Task({ subagent_type: "feature-dev:code-explorer", ... })
-```
+1. Scope discovery (project structure, tech stack)
+2. Investigation via `Explore` and `code-explorer` agents
+3. Synthesis with confidence markers (✓/→/?)
 
 ## Output
 
@@ -51,7 +30,7 @@ Task({ subagent_type: "feature-dev:code-explorer", ... })
 └── YYYY-MM-DD-[topic]-context.md  # For /think integration
 ```
 
-## Required Sections
+### Required Sections
 
 1. Purpose
 2. Prerequisites (✓/→/?)
@@ -59,17 +38,3 @@ Task({ subagent_type: "feature-dev:code-explorer", ... })
 4. Constraints
 5. Key Findings
 6. References
-
-## Usage
-
-```bash
-/research "authentication system"
-/research --quick "API structure"
-/research --deep "complete architecture"
-```
-
-## Next Steps
-
-- **Need planning** → `/think`
-- **Found issues** → `/fix`
-- **Ready to build** → `/code`

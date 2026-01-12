@@ -1,7 +1,7 @@
 ---
 description: Rapidly fix small bugs and minor improvements in development environment
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task
-model: inherit
+model: opus
 argument-hint: "[bug or issue description]"
 dependencies:
   [Explore, test-generator, generating-tdd-tests, orchestrating-workflows]
@@ -11,55 +11,26 @@ dependencies:
 
 Rapidly fix small bugs with root cause analysis and TDD verification.
 
-## Workflow Reference
+## Input
 
-**Full workflow**: [@../skills/orchestrating-workflows/references/fix-workflow.md](../skills/orchestrating-workflows/references/fix-workflow.md)
+- Argument: bug or issue description (required)
+- If missing: prompt via AskUserQuestion
+- Scope: small, well-understood issues (1-3 files)
 
-## When to Use
+## Execution
 
-| Use `/fix`                   | Use other command           |
-| ---------------------------- | --------------------------- |
-| Small, well-understood issue | Unknown cause → `/research` |
-| Single file or 2-3 files     | Multi-file → `/code`        |
-| Confidence ≥80%              | New feature → `/think`      |
+Root cause analysis (5 Whys) → Regression test first → Fix → Verify.
 
-## Fix Process
+Workflow details in `orchestrating-workflows`.
 
-```text
-Phase 1: Root Cause Analysis (5 Whys)
-    ↓
-Phase 1.5: Regression Test First
-    ↓
-Phase 2: Implementation (confidence-based)
-    ↓
-Phase 3: Verification
-    ↓
-Phase 3.5: Additional Tests (optional)
-    ↓
-Definition of Done
-```
+## Escalation
 
-## Confidence-Based Approach
-
-| Confidence | Strategy                   |
-| ---------- | -------------------------- |
-| ≥90%       | Direct fix                 |
-| 70-89%     | Defensive fix (add guards) |
-| <70%       | Escalate → `/research`     |
-
-## Applied Principles
-
-- **Occam's Razor**: Simplest solution
-- **TIDYINGS**: Clean only what you touch
-- **CSS-first**: For UI issues
-- **TDD**: Test-first for bugs
+| Confidence | Action                 |
+| ---------- | ---------------------- |
+| [?] <70%   | Escalate → `/research` |
+| Complex    | Multi-file → `/code`   |
+| New scope  | Feature → `/think`     |
 
 ## IDR
 
 `/fix` does NOT generate IDR - use `/code` for features needing decision tracking.
-
-## Next Steps
-
-- **Success** → Commit changes
-- **Partial** → Follow-up `/fix`
-- **Escalation** → `/think` → `/code`

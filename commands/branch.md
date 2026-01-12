@@ -1,7 +1,8 @@
 ---
 description: Analyze Git changes and suggest appropriate branch names
 allowed-tools: Task
-model: inherit
+model: opus
+argument-hint: "[context or ticket number]"
 dependencies: [branch-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
@@ -9,58 +10,23 @@ dependencies: [branch-generator, utilizing-cli-tools, managing-git-workflows]
 
 Analyze current Git changes and suggest appropriate branch names.
 
-## Workflow Reference
+## Input
 
-**Full format**: [@../skills/managing-git-workflows/references/branch-naming.md](../skills/managing-git-workflows/references/branch-naming.md)
+- Argument: context or ticket number (optional)
+- If missing: analyze git diff/status only
 
-## How It Works
+## Execution
 
-Delegates to `branch-generator` subagent:
+Delegates to `branch-generator` subagent (naming conventions defined there).
 
-1. Analyzes git diff and status
-2. Generates conventional branch names
-3. Returns naming alternatives
+## Output
 
-## Usage
+```markdown
+## Suggested Branch Names
 
-```bash
-/branch                                    # Analyze current changes
-/branch "Adding user authentication"       # With context
-/branch "PROJ-456"                         # With ticket number
+| Type    | Name                      | Reason           |
+| ------- | ------------------------- | ---------------- |
+| Primary | feature/add-oauth-support | Matches changes  |
+| Alt 1   | feat/oauth-integration    | Short form       |
+| Alt 2   | feat/auth-provider        | More abstraction |
 ```
-
-## Branch Format
-
-```text
-<type>/<scope>-<description>
-<type>/<ticket>-<description>
-```
-
-| Type        | Use Case          |
-| ----------- | ----------------- |
-| `feature/`  | New functionality |
-| `fix/`      | Bug fixes         |
-| `refactor/` | Code improvements |
-| `docs/`     | Documentation     |
-| `test/`     | Test additions    |
-| `chore/`    | Maintenance       |
-
-## Examples
-
-```bash
-[good] feature/auth-add-oauth-support
-[good] fix/PROJ-123-resolve-timeout
-[bad]  new-feature (no type prefix)
-[bad]  fix/bug (too vague)
-```
-
-## Context Efficiency
-
-- No codebase files loaded
-- Only git metadata analyzed
-- Fast execution (<5 seconds)
-
-## Related
-
-- `/commit` - Commit messages
-- `/pr` - PR descriptions

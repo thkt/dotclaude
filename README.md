@@ -26,7 +26,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── conventions/      # Documentation conventions
 │   ├── development/      # Development patterns & methodologies
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (26 skills)
+├── skills/               # Skill-based knowledge modules (25 skills)
 ├── agents/               # Specialized AI agents
 │   ├── analyzers/        # Architecture analyzers
 │   ├── enhancers/        # Code enhancers
@@ -65,7 +65,6 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
    /plugin install git-utilities             # /commit, /branch, /pr, /issue
    /plugin install documentation-tools       # /adr, /rulify
    /plugin install browser-workflows         # /e2e
-   /plugin install hookify-system            # /hookify
    ```
 
 **Available Plugins**:
@@ -76,7 +75,6 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 - **git-utilities**: Git workflow helpers (commit, branch, PR, issue)
 - **documentation-tools**: ADR creation and rule generation
 - **browser-workflows**: E2E testing and automation
-- **hookify-system**: Custom hook creation and management
 
 ### Option 2: Manual Installation (Full Configuration)
 

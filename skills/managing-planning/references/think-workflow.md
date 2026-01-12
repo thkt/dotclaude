@@ -35,14 +35,17 @@ If not found, suggest: `/research [topic]` first.
 
 ## Phase 2: Q&A Clarification
 
-Before generating documents, clarify:
+Before generating documents, clarify via `AskUserQuestion`:
 
-1. **Scope**: What's included/excluded?
-2. **Constraints**: Technical, time, resource?
-3. **Priorities**: Must-have vs nice-to-have?
-4. **Risks**: Known concerns?
-
-Use `AskUserQuestion` for interactive clarification.
+| Category    | Focus                         |
+| ----------- | ----------------------------- |
+| Purpose     | Goal, problem, beneficiary    |
+| Users       | Primary users                 |
+| Scope       | What's included/excluded      |
+| Priority    | MoSCoW                        |
+| Success     | "Done" definition             |
+| Constraints | Technical, time, dependencies |
+| Risks       | Known concerns                |
 
 ## Phase 3: SOW Generation
 

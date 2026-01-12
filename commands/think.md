@@ -2,7 +2,7 @@
 description: Orchestrate SOW and Spec generation for comprehensive planning
 allowed-tools: SlashCommand, Read, Write, Glob, Task
 model: opus
-argument-hint: "[task description] (optional if research context exists)"
+argument-hint: "[task description]"
 dependencies: [sow-spec-reviewer, managing-planning]
 ---
 
@@ -10,48 +10,22 @@ dependencies: [sow-spec-reviewer, managing-planning]
 
 Orchestrate implementation planning with SOW and Spec generation.
 
-## Workflow Reference
+## Input
 
-**Full workflow**: [@../skills/managing-planning/references/think-workflow.md](../skills/managing-planning/references/think-workflow.md)
+- Argument: task description (optional)
+- If missing: use research context or prompt via AskUserQuestion
 
-## Input Resolution
+## Execution
 
-```text
-/think execution
-    ├─ Argument provided? → Use as task description
-    ├─ Research context exists? → Use research findings
-    └─ None → Ask user for description
-```
-
-## Execution Flow
-
-```text
-Step 0: Requirements Clarification (Conditional)
-    ↓
-Step 1: Implementation Design Exploration
-    ├─ Plan Agent (Opus) - Recommended approach
-    └─ 3x code-architect - Alternative approaches
-    ↓
-Step 2: Display Analysis & User Selection
-    ↓
-Step 3: /sow → Generate SOW
-    ↓
-Step 4: /spec → Generate Spec (+ IDR determination)
-    ↓
-Step 5: sow-spec-reviewer (optional)
-    ↓
-Step 6: Generate Summary
-```
-
-## Questions (Step 0)
-
-| Category    | Focus                      |
-| ----------- | -------------------------- |
-| Purpose     | Goal, problem, beneficiary |
-| Users       | Primary users              |
-| Priority    | MoSCoW                     |
-| Success     | "Done" definition          |
-| Constraints | Deadline, dependencies     |
+| Step | Action                  | Output          |
+| ---- | ----------------------- | --------------- |
+| 0    | Q&A Clarification       | (if unclear)    |
+| 1    | Design Exploration      | 4 approaches    |
+| 2    | User Selection          | chosen approach |
+| 3    | /sow                    | sow.md          |
+| 4    | /spec                   | spec.md         |
+| 5    | sow-spec-reviewer (≥90) | (optional)      |
+| 6    | Generate Summary        | summary.md      |
 
 ## Output
 
@@ -61,17 +35,3 @@ Step 6: Generate Summary
 ├── spec.md    # Specification
 └── summary.md # Review Summary ← Start here
 ```
-
-## Usage
-
-```bash
-/think "Add user authentication"
-/research "auth options" && /think  # After research
-```
-
-## Related
-
-- `/sow` - SOW only
-- `/spec` - Spec only
-- `/plans` - View documents
-- `/code` - Implement

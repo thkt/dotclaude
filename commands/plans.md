@@ -1,7 +1,8 @@
 ---
 description: List and view planning documents (SOW/Spec) in workspace
 allowed-tools: Read, Glob
-model: inherit
+model: opus
+argument-hint: "[feature-name]"
 dependencies: [managing-planning]
 ---
 
@@ -9,50 +10,27 @@ dependencies: [managing-planning]
 
 List and view planning documents (SOW/Spec).
 
-## Functionality
+## Input
 
-### Find Documents
+- No argument: list all SOW documents
+- Argument: specific feature name to view
+
+## Execution
+
+Search paths (project-specific first):
 
 ```text
-# Project-specific (searched first)
 .claude/workspace/planning/**/sow.md
-
-# Global
 ~/.claude/workspace/planning/**/sow.md
 ```
 
-## Output Format
+## Output
 
-```text
-Available SOW Documents
+```markdown
+## Available SOW Documents
 
-[Project] .claude/workspace/
-  1. 2025-01-14-oauth-authentication (2025-01-14)
-
-[Global] ~/.claude/workspace/
-  2. 2025-01-13-api-refactor (2025-01-13)
+| #   | Location | Feature       | Date       |
+| --- | -------- | ------------- | ---------- |
+| 1   | Project  | feature-name  | 2025-01-14 |
+| 2   | Global   | other-feature | 2025-01-13 |
 ```
-
-## Usage
-
-```bash
-/plans                   # List all
-/plans --latest          # View latest
-/plans "feature-name"    # View specific
-```
-
-## Integration
-
-```text
-1. Create: /think "feature"
-2. View: /plans
-3. Implement: /code
-4. Validate: /validate
-```
-
-## Related
-
-- `/sow` - Create SOW
-- `/spec` - Create Spec
-- `/think` - Create SOW + Spec
-- `/validate` - Validate implementation

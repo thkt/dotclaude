@@ -1,7 +1,7 @@
 ---
 description: Generate project rules from ADR and integrate with CLAUDE.md
 allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob
-model: inherit
+model: opus
 argument-hint: "[ADR number]"
 dependencies: [creating-adrs, managing-documentation]
 ---
@@ -10,28 +10,16 @@ dependencies: [creating-adrs, managing-documentation]
 
 Convert ADR into AI-executable rule format.
 
-## Workflow Reference
+## Input
 
-**Full workflow**: [@../skills/managing-documentation/references/rulify-workflow.md](../skills/managing-documentation/references/rulify-workflow.md)
+- Argument: ADR number (required, e.g., `1` or `0001`)
+- If missing: prompt via AskUserQuestion
 
-## Usage
+## Execution
 
-```bash
-/rulify 1
-/rulify 0001
-```
+Parse ADR → Determine priority → Generate rule → Integrate with CLAUDE.md.
 
-## Execution Flow
-
-```text
-1. Find ADR file (adr/XXXX-*.md)
-2. Parse content (Title, Decision, Rationale)
-3. Determine priority (P0-P3)
-4. Generate rule file (docs/rules/[NAME].md)
-5. Integrate with .claude/CLAUDE.md
-```
-
-## Priority Mapping
+### Priority Mapping
 
 | Condition                 | Priority |
 | ------------------------- | -------- |
@@ -42,12 +30,14 @@ Convert ADR into AI-executable rule format.
 
 ## Output
 
-```text
-Rule Generated
+```markdown
+## Rule Generated
 
-  ADR: adr/0001-title.md
-  Rule: docs/rules/RULE_NAME.md
-  Integrated: .claude/CLAUDE.md
+| Item       | Path                    |
+| ---------- | ----------------------- |
+| ADR        | adr/0001-title.md       |
+| Rule       | docs/rules/RULE_NAME.md |
+| Integrated | .claude/CLAUDE.md       |
 ```
 
 ## Error Handling
@@ -57,19 +47,3 @@ Rule Generated
 | ADR not found | Check `adr/`      |
 | Rule exists   | Confirm overwrite |
 | No CLAUDE.md  | Create new file   |
-
-## Best Practices
-
-1. Convert immediately after ADR creation
-2. Verify generated priority level
-3. Git commit rule files
-
-```bash
-git add docs/rules/*.md .claude/CLAUDE.md
-git commit -m "docs: add rule from ADR-XXXX"
-```
-
-## Related
-
-- `/adr` - Create ADR
-- `/audit` - Review rule application

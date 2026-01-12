@@ -1,7 +1,8 @@
 ---
 description: Generate GitHub Issue with structured title and body
 allowed-tools: Task
-model: inherit
+model: opus
+argument-hint: "[issue description] [--create]"
 dependencies: [issue-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
@@ -9,57 +10,33 @@ dependencies: [issue-generator, utilizing-cli-tools, managing-git-workflows]
 
 Generate well-structured GitHub Issues.
 
-## Workflow Reference
+## Input
 
-**Full format**: [@../skills/managing-git-workflows/references/issue-templates.md](../skills/managing-git-workflows/references/issue-templates.md)
+- Argument: issue description (required)
+- If missing: prompt via AskUserQuestion
+- Type prefix: `bug`, `feature`, `docs` (optional)
+- Flag: `--create` to create directly via `gh issue create`
 
-## How It Works
+## Execution
 
-Delegates to `issue-generator` subagent:
+Delegates to `issue-generator` subagent (format and templates defined there).
 
-1. Analyzes provided description
-2. Generates structured title and body
-3. Optionally creates via `gh issue create`
-
-## Usage
-
-```bash
-/issue "Login button not working"          # Basic
-/issue bug "API returns 500"               # With type
-/issue --create "Database timeout"         # Create directly
-```
-
-## Issue Format
-
-### Title
-
-```text
-[type] Brief, specific description
-```
-
-### Body
+## Output
 
 ```markdown
-## Description
+## GitHub Issue
 
-[Problem statement]
+| Field  | Value            |
+| ------ | ---------------- |
+| Title  | [type]: [title]  |
+| Labels | bug, enhancement |
 
-## Steps to Reproduce (for bugs)
+### Description
 
-1. [Step]
+[Structured issue body with context]
 
-## Acceptance Criteria
+### Acceptance Criteria
 
-- [ ] [Criterion]
+- [ ] [Criterion 1]
+- [ ] [Criterion 2]
 ```
-
-## Context Efficiency
-
-- No codebase files loaded
-- Fast execution (<5 seconds)
-
-## Related
-
-- `/branch` - Create branch from issue
-- `/commit` - Reference issue in commits
-- `/pr` - Link PR to issue

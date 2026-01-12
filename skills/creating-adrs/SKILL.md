@@ -35,8 +35,6 @@ Create Architecture Decision Records in MADR format through a structured 6-phase
 
 ## Execution Flow
 
-### Phase Details
-
 | Phase         | Key Actions                                                              |
 | ------------- | ------------------------------------------------------------------------ |
 | 1. Pre-Check  | `ls adr/*.md`, check duplicates, get next number                         |
@@ -46,26 +44,6 @@ Create Architecture Decision Records in MADR format through a structured 6-phase
 | 5. Index      | Auto-generate `adr/README.md`                                            |
 | 6. Recovery   | Handle missing dirs, duplicates, missing sections                        |
 
-## Skill vs Rule Decision
-
-| Aspect      | /rulify             | /adr:skill            |
-| ----------- | ------------------- | --------------------- |
-| Purpose     | Enforce constraints | Suggest patterns      |
-| Application | Always active       | Triggered by keywords |
-| Output      | docs/rules/         | .claude/skills/       |
-
-**Use rule for**: Security requirements, absolute constraints
-**Use skill for**: Implementation patterns, context-dependent guidance
-
-## Best Practices
-
-| Practice  | Do                                        | Don't                        |
-| --------- | ----------------------------------------- | ---------------------------- |
-| Triggers  | Specific terms: "React Query", "useQuery" | Generic: "code", "implement" |
-| Examples  | Project-specific code                     | Generic samples              |
-| Checklist | Actionable items                          | Vague guidance               |
-| Updates   | Regenerate when ADR changes               | Keep stale skills            |
-
 ## Directory Structure
 
 ```text
@@ -73,16 +51,9 @@ adr/
 ├── README.md          # Auto-generated index
 ├── 0001-*.md         # Sequential numbering
 └── 0002-*.md
-
-.claude/skills/
-├── adr-0001-*/       # Generated skills
-│   └── SKILL.md
-└── adr-0002-*/
-    └── SKILL.md
 ```
 
 ## References
 
 - [MADR Official](https://adr.github.io/madr/)
 - [@../../commands/adr.md](../../commands/adr.md) - /adr command
-- [@../../commands/adr/skill.md](../../commands/adr/skill.md) - /adr:skill quick reference

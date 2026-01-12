@@ -26,7 +26,7 @@
 │   ├── conventions/      # ドキュメント規約
 │   ├── development/      # 開発パターン & 方法論
 │   └── workflows/        # ワークフローガイド
-├── skills/               # スキルベースの知識モジュール（26スキル）
+├── skills/               # スキルベースの知識モジュール（25スキル）
 ├── agents/               # 専門AIエージェント
 │   ├── analyzers/        # アーキテクチャ分析
 │   ├── enhancers/        # コード改善
@@ -65,7 +65,6 @@
    /plugin install git-utilities             # /commit, /branch, /pr, /issue
    /plugin install documentation-tools       # /adr, /rulify
    /plugin install browser-workflows         # /e2e
-   /plugin install hookify-system            # /hookify
    ```
 
 **利用可能なプラグイン**:
@@ -76,7 +75,6 @@
 - **git-utilities**: Gitワークフローヘルパー (commit, branch, PR, issue)
 - **documentation-tools**: ADR作成とルール生成
 - **browser-workflows**: E2Eテストと自動化
-- **hookify-system**: カスタムフック作成・管理
 
 ### オプション2: 手動インストール（フル設定）
 

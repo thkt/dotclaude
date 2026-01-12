@@ -11,87 +11,37 @@ dependencies: [audit-orchestrator, orchestrating-workflows]
 
 信頼度ベースフィルタリングで専門レビューエージェントをオーケストレート。
 
+## 入力
+
+- 引数: 対象スコープ（任意）
+- 未指定時: ステージ済み/変更ファイルをレビュー（`git diff --name-only`経由）
+
 ## 実行
 
-```typescript
-Task({
-  subagent_type: "audit-orchestrator",
-  description: "Comprehensive code review",
-  prompt: `...`,
-});
-```
+`audit-orchestrator`サブエージェントに委譲（15エージェント: コア8 + pr-review-toolkit 4 + 本番用3）。
 
-## レビューエージェント (15種)
+## 出力
 
-### コア (8)
+```markdown
+# レビューサマリー
 
-| エージェント              | フォーカス              |
-| ------------------------- | ----------------------- |
-| `structure-reviewer`      | DRY、結合度             |
-| `readability-reviewer`    | 明確さ、命名            |
-| `type-safety-reviewer`    | TypeScriptカバレッジ    |
-| `silent-failure-reviewer` | 空のcatch、Promise      |
-| `design-pattern-reviewer` | パターン一貫性          |
-| `progressive-enhancer`    | CSS-firstソリューション |
-| `testability-reviewer`    | テスト設計、カバレッジ  |
-| `root-cause-reviewer`     | 根本原因分析            |
-
-### pr-review-toolkit (4)
-
-| エージェント            | フォーカス         |
-| ----------------------- | ------------------ |
-| `silent-failure-hunter` | エラーハンドリング |
-| `comment-analyzer`      | ドキュメント品質   |
-| `type-design-analyzer`  | 型の不変条件       |
-| `code-simplifier`       | 簡素化             |
-
-### 本番用 (3)
-
-| エージェント             | フォーカス     |
-| ------------------------ | -------------- |
-| `security-reviewer`      | OWASP          |
-| `performance-reviewer`   | バンドル、描画 |
-| `accessibility-reviewer` | WCAG、ARIA     |
-
-## 信頼度マーカー
-
-- [✓] ≥95% - コード証拠で検証済み
-- [→] 70-94% - 推論付きで推定
-- [?] <70% - 含まれない
-
-## 出力形式
-
-```text
-レビューサマリー
 - ファイル: [件数] | Critical [X] / High [X] / Medium [X]
 
 ## 重大な問題
+
 [file:line付き問題]
 
 ## 中程度の優先度
+
 [推論付き問題]
 
-推奨アクション
+## 推奨アクション
+
 1. 即時 [✓]
 2. 次のスプリント [→]
 ```
 
-## IDR更新
+## IDR
 
-レビュー後、以下を含む`/audit`セクションをIDRに追記:
-
-- レビューサマリー
-- 問題とアクション
-- 適用した推奨事項
-
-## 使用方法
-
-```bash
-/audit                    # フルレビュー
-/audit "src/components"   # 対象スコープ
-```
-
-## 次のステップ
-
-- **Critical** → `/fix`
-- **リファクタリング** → `/think` → `/code`
+- IDRあり: `/audit`セクションを追記（レビューサマリー、問題、推奨事項）
+- IDRなし: スキップ（ターミナル出力のみ）
