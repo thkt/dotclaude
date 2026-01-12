@@ -92,7 +92,7 @@
       "license": "MIT",
       "keywords": ["automation", "auto-test", "full-cycle", "continuous"],
       "category": "Automation",
-      "commands": ["./commands/auto-test.md", "./commands/full-cycle.md"]
+      "commands": ["./commands/full-cycle.md"]
     },
     {
       "name": "git-utilities",
@@ -146,11 +146,7 @@
         "rulify"
       ],
       "category": "Documentation",
-      "commands": [
-        "./commands/adr.md",
-        "./commands/adr/skill.md",
-        "./commands/rulify.md"
-      ]
+      "commands": ["./commands/adr.md", "./commands/rulify.md"]
     },
     {
       "name": "browser-workflows",
@@ -165,24 +161,6 @@
       "keywords": ["browser", "e2e", "playwright", "testing", "documentation"],
       "category": "Browser Automation",
       "commands": ["./commands/e2e.md"]
-    },
-    {
-      "name": "hookify-system",
-      "source": "./",
-      "description": "Hook creation and management system: /hookify for creating hooks, /hookify:list and /hookify:configure for management",
-      "version": "2.0.0",
-      "author": {
-        "name": "thkt",
-        "url": "https://github.com/thkt"
-      },
-      "license": "MIT",
-      "keywords": ["hooks", "automation", "configuration", "claude-code"],
-      "category": "Development Tools",
-      "commands": [
-        "./commands/hookify.md",
-        "./commands/hookify/list.md",
-        "./commands/hookify/configure.md"
-      ]
     },
     {
       "name": "development-skills",
@@ -211,7 +189,6 @@
         "./skills/applying-frontend-patterns/SKILL.md",
         "./skills/automating-browser/SKILL.md",
         "./skills/creating-adrs/SKILL.md",
-        "./skills/creating-hooks/SKILL.md",
         "./skills/documenting-apis/SKILL.md",
         "./skills/documenting-architecture/SKILL.md",
         "./skills/documenting-domains/SKILL.md",
