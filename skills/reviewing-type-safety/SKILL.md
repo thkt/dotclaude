@@ -118,10 +118,13 @@ function Select<T>({ value, options, onChange }: SelectProps<T>) {
 
 ## References
 
+### Skill References
+
+- [@./references/result-type.md](./references/result-type.md) - Result type error handling pattern
+
 ### Core Principles
 
-- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Don't over-type
-- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Type interfaces follow ISP
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Don't over-type, ISP for type interfaces
 
 ### Related Skills
 

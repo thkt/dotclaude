@@ -69,10 +69,10 @@ TDD Cycle:
 
 | Level          | Target | Focus              |
 | -------------- | ------ | ------------------ |
-| C0 (Statement) | 80%    | All lines executed |
-| C1 (Branch)    | 70%    | All branches taken |
+| C0 (Statement) | 90%    | All lines executed |
+| C1 (Branch)    | 80%    | All branches taken |
 
-**Why these targets**: Cost-benefit balance, focus on critical paths.
+**Why these targets**: High coverage for quality, sustainable effort.
 
 ## AAA Pattern
 
@@ -230,7 +230,7 @@ Uncovered lines: ${uncoveredLines}
 Existing test style: ${testStyle}
 
 Generate tests for uncovered code paths.
-Target coverage: 80%+
+Target: C0 ≥90%, C1 ≥80%
   `,
 });
 ```
@@ -254,12 +254,9 @@ Target coverage: 80%+
 
 ## References
 
-### Principles (rules/)
-
-- [@../../rules/development/TEST_GENERATION.md](../../rules/development/TEST_GENERATION.md) - Test design techniques
-
 ### Skill References
 
+- [@./references/test-design.md](./references/test-design.md) - Test design techniques
 - [@./references/feature-driven.md](./references/feature-driven.md) - Feature-driven TDD workflow
 - [@./references/bug-driven.md](./references/bug-driven.md) - Bug-driven TDD workflow
 

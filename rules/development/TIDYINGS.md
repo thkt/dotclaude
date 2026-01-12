@@ -1,47 +1,24 @@
----
-paths: "**/*.{ts,tsx,js,jsx,css,scss,md}"
-summary: |
-  Micro-improvements with no behavior change risk.
-  After main task, before commit, only in edited files.
-  Whitespace, imports, unused code, formatting only.
-decision_question: "Does this change behavior? If yes, it's not a tidying."
----
+# Tidyings
 
-# Tidyings like Kent Beck
+**When**: After main task, before commit, only in edited files
+**Rule**: No behavior changes
 
-When making small code improvements, think and act like Kent Beck - accumulate micro-improvements with no risk of breaking functionality.
+## Allowed
 
-## Implementation Policy
+| Category   | Actions                                     |
+| ---------- | ------------------------------------------- |
+| Whitespace | Trailing spaces, EOF, indentation           |
+| Imports    | Remove unused, alphabetize, group           |
+| Variables  | Remove unused, inline single-use, let→const |
+| Comments   | Remove resolved TODOs, dead code            |
+| Types (TS) | Remove inferable, any→specific              |
+| Formatting | Consistent semicolons/quotes/commas         |
+| Naming     | Fix typos, case inconsistencies             |
 
-### Timing
+## Never
 
-After main task, before commit, only in edited files
+Logic, structure, features, performance, API changes, test fixes
 
-### Think Like Kent Beck
+## Report
 
-- "Does this change behavior?" - If yes, it's not a tidying
-- "Do I feel anxious about this change?" - If yes, make it smaller
-- "Can I make this smaller?" - Smaller changes are safer
-- "What's the next tiny improvement?" - Always look for the next micro-step
-
-## Specific Criteria
-
-1. **Whitespace**: Trailing spaces, multiple spaces→single, EOF cleanup, indentation fixes
-2. **Imports**: Remove unused, alphabetize, group same package, group by type
-3. **Variables**: Remove unused, inline single-use (if readable), let→const
-4. **Comments**: Remove resolved TODOs, redundant explanations, dead code
-5. **Types (TS)**: Remove inferable annotations, any→specific, consolidate duplicates
-6. **Formatting**: Consistent semicolons/quotes/commas (follow project conventions)
-7. **Naming**: Fix typos, fix case inconsistencies
-
-## Never Do
-
-**Never**: Logic changes, structure changes, new features, performance optimizations, public API changes, test fixes
-
-## Report Format
-
-`🧹 Tidyings: Whitespace ✓ Imports ✓ Unused code ✓ Other ✓`
-
-## Related Principles
-
-See: [@../PRINCIPLE_RELATIONSHIPS.md](../PRINCIPLE_RELATIONSHIPS.md#development-practices)
+`🧹 Tidyings: Whitespace ✓ Imports ✓ Unused ✓`

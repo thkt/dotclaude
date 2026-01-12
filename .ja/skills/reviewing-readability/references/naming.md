@@ -167,5 +167,5 @@ function thirtyDaysAgo(): Date {
 
 ## 関連
 
-- [@../../../rules/development/READABLE_CODE.md](../../../rules/development/READABLE_CODE.md) - 完全な可読性原則
-- [@../frontend/container-presentational.md](../frontend/container-presentational.md) - コンポーネント命名パターン
+- [@../../../../skills/applying-code-principles/SKILL.md](../../../../skills/applying-code-principles/SKILL.md) - 完全な可読性原則
+- [@../../applying-frontend-patterns/references/container-presentational.md](../../applying-frontend-patterns/references/container-presentational.md) - コンポーネント命名パターン

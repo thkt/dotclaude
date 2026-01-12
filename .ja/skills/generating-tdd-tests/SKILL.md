@@ -61,10 +61,10 @@ TDDサイクル:
 
 | レベル               | ターゲット | フォーカス             |
 | -------------------- | ---------- | ---------------------- |
-| C0（ステートメント） | 80%        | すべての行を実行       |
-| C1（ブランチ）       | 70%        | すべてのブランチを通過 |
+| C0（ステートメント） | 90%        | すべての行を実行       |
+| C1（ブランチ）       | 80%        | すべてのブランチを通過 |
 
-**これらのターゲットの理由**: コスト効果バランス、クリティカルパスにフォーカス。
+**これらのターゲットの理由**: 高カバレッジで品質確保、持続可能な努力。
 
 ## AAAパターン
 
@@ -222,7 +222,7 @@ Task({
 既存テストスタイル: ${testStyle}
 
 未カバーコードパスのテストを生成。
-目標カバレッジ: 80%+
+目標: C0 ≥90%, C1 ≥80%
   `,
 });
 ```
@@ -246,12 +246,9 @@ Task({
 
 ## 参照
 
-### 原則（rules/）
-
-- [@../../../rules/development/TEST_GENERATION.md](../../../rules/development/TEST_GENERATION.md) - テスト設計技法
-
 ### スキル参照
 
+- [@./references/test-design.md](./references/test-design.md) - テスト設計技法
 - [@./references/feature-driven.md](./references/feature-driven.md) - 機能駆動TDDワークフロー
 - [@./references/bug-driven.md](./references/bug-driven.md) - バグ駆動TDDワークフロー
 

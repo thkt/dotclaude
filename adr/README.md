@@ -10,13 +10,14 @@ Claude Codeプラグインのアーキテクチャ決定を記録するドキュ
 | [0002](./0002-fix-modularization-and-tdd-commonization.md) | /fix モジュール化とTDD共通化       | accepted   |
 | [0003](./0003-marketplace.md)                              | Marketplace構造の維持              | accepted   |
 | [0004](./0004-skill-centric-architecture-restructuring.md) | スキル中心アーキテクチャへの再構成 | accepted   |
+| [0005](./0005-documentation-role-separation.md)            | ドキュメントの役割分離とAI最適化   | accepted   |
 
 ## 関連ルール
 
 ADRから抽出された強制ルール：
 
-- [COMMAND_MODULARIZATION.md](../rules/commands/COMMAND_MODULARIZATION.md) - ADR 0001, 0002
-- [PLUGIN_STRUCTURE.md](../rules/guidelines/PLUGIN_STRUCTURE.md) - ADR 0003
+- [COMMAND_MODULARIZATION.md](../rules/workflows/MODULARIZATION_RULES.md) - ADR 0001, 0002
+- [PLUGIN_ARCHITECTURE.md](../rules/conventions/PLUGIN_ARCHITECTURE.md) - ADR 0003
 
 ## 参照
 

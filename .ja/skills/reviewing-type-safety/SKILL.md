@@ -112,10 +112,13 @@ function Select<T>({ value, options, onChange }: SelectProps<T>) {
 
 ## 参照
 
+### スキル参照
+
+- [@./references/result-type.md](./references/result-type.md) - Result型エラーハンドリングパターン
+
 ### コア原則
 
-- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 過度な型付けをしない
-- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 型インターフェースはISPに従う
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 過度な型付けをしない、ISPに従う
 
 ### 関連スキル
 

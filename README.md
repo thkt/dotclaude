@@ -15,43 +15,27 @@ This repository contains personal configurations for Claude AI, including:
 
 ## 📁 Structure
 
-```txt
+```text
 .claude/
 ├── CLAUDE.md              # Main configuration (AI reads this)
 ├── README.md              # This file - Quick start guide
-├── docs/                  # Documentation
-│   ├── COMMANDS.md       # Command reference (English)
-│   └── adr/              # Architecture Decision Records
-├── commands/              # Command definitions
-│   ├── code.md           # TDD/RGRC implementation
-│   ├── fix.md            # Quick bug fixes
-│   ├── research.md       # Investigation without implementation
-│   ├── audit.md          # Code review orchestration
-│   ├── test.md           # Comprehensive testing
-│   └── think.md          # Planning & SOW creation
-├── rules/                 # English rule definitions
-│   ├── core/             # [P0] Core AI operation principles
-│   │   └── AI_OPERATION_PRINCIPLES.md
-│   ├── PRINCIPLES_GUIDE.md  # Complete principles guide
-│   ├── commands/         # Command selection logic
+├── adr/                   # Architecture Decision Records
+├── commands/              # Command definitions (/code, /fix, /think, etc.)
+├── rules/                 # Rule definitions
+│   ├── core/             # Core AI operation principles
+│   ├── conventions/      # Documentation conventions
 │   ├── development/      # Development patterns & methodologies
-│   └── guidelines/       # Documentation guidelines
-├── skills/               # Skill-based knowledge modules
-│   ├── optimizing-performance/    # Web performance knowledge
-│   └── generating-tdd-tests/      # TDD methodology
+│   └── workflows/        # Workflow guides
+├── skills/               # Skill-based knowledge modules (26 skills)
 ├── agents/               # Specialized AI agents
 │   ├── analyzers/        # Architecture analyzers
 │   ├── enhancers/        # Code enhancers
 │   ├── generators/       # Code/test generators
 │   ├── git/              # Git operation agents
 │   ├── orchestrators/    # Multi-agent coordinators
+│   ├── integrators/      # Finding integrators
 │   └── reviewers/        # Code review agents (13 types)
-├── references/           # Reference documents (not loaded as commands)
-│   └── commands/         # Command reference materials
-└── .ja/                   # Japanese translations (hidden directory)
-    ├── CLAUDE.md         # Main config (Japanese)
-    ├── commands/         # Command definitions (Japanese)
-    └── rules/            # Rule definitions (Japanese)
+└── .ja/                   # Japanese translations
 ```
 
 ## 🚀 Quick Start
@@ -76,23 +60,23 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 
    ```bash
    /plugin install complete-workflow-system  # Full TDD/RGRC workflow
-   /plugin install quick-actions             # /fix
+   /plugin install quick-actions             # /fix, /rabbit
    /plugin install automation-commands       # /auto-test, /full-cycle
-   /plugin install git-utilities             # /commit, /branch, /pr
+   /plugin install git-utilities             # /commit, /branch, /pr, /issue
    /plugin install documentation-tools       # /adr, /rulify
    /plugin install browser-workflows         # /e2e
-   /plugin install utilities                 # /context
+   /plugin install hookify-system            # /hookify
    ```
 
 **Available Plugins**:
 
 - **complete-workflow-system**: Full development workflow with 16 specialized agents
-- **quick-actions**: Fast bug fixes (/fix)
+- **quick-actions**: Fast bug fixes (/fix) and CodeRabbit review (/rabbit)
 - **automation-commands**: Auto-test and full-cycle automation
-- **git-utilities**: Git workflow helpers (commit, branch, PR)
+- **git-utilities**: Git workflow helpers (commit, branch, PR, issue)
 - **documentation-tools**: ADR creation and rule generation
 - **browser-workflows**: E2E testing and automation
-- **utilities**: Development diagnostics tools
+- **hookify-system**: Custom hook creation and management
 
 ### Option 2: Manual Installation (Full Configuration)
 
@@ -182,20 +166,20 @@ Some commands depend on external plugins that are not included in this repositor
 | ------------------- | --------------------- | ---------------------------------------- | ----------------------------------- |
 | `pr-review-toolkit` | `/audit`, `/research` | Enhanced code review agents              | `/plugin install pr-review-toolkit` |
 | `feature-dev`       | `/research`, `/think` | Code exploration and architecture agents | `/plugin install feature-dev`       |
-| `ralph-wiggum`      | `/code`               | TDD Green Phase auto-iteration           | `/plugin install ralph-wiggum`      |
+| `ralph-loop`        | `/code`               | TDD Green Phase auto-iteration           | `/plugin install ralph-loop`        |
 
 **Quick Install (all required plugins)**:
 
 ```bash
-/plugin install pr-review-toolkit feature-dev ralph-wiggum
+/plugin install pr-review-toolkit feature-dev ralph-loop
 ```
 
 **Optional Plugins** (recommended for full functionality):
 
-| Plugin           | Purpose                                   |
-| ---------------- | ----------------------------------------- |
-| `example-skills` | PDF, XLSX, PPTX handling, frontend design |
-| `typescript-lsp` | TypeScript language server integration    |
+| Plugin              | Purpose                                             |
+| ------------------- | --------------------------------------------------- |
+| `example-skills`    | PDF, XLSX, PPTX handling, frontend design           |
+| `security-guidance` | Security best practices and vulnerability detection |
 
 **Note**: Plugins are stored in `~/.claude/plugins/` which is excluded from git. Each user must install plugins independently.
 
@@ -222,8 +206,8 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 
 **📚 Detailed Reference**: For complete command documentation, see:
 
-- [English Command Reference](./rules/commands/COMMAND_WORKFLOWS.md)
-- [日本語コマンドリファレンス](./.ja/rules/commands/COMMAND_WORKFLOWS.md)
+- [English Command Reference](./rules/workflows/WORKFLOW_GUIDE.md)
+- [日本語コマンドリファレンス](./.ja/rules/workflows/WORKFLOW_GUIDE.md)
 
 ## 🔄 Standard Workflows
 
@@ -260,45 +244,33 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 
 ## 🛠️ Key Features
 
-### Core AI Operation Principles
+### Core AI Principles
 
-- **Safety First**: Maintain safety boundaries for destructive operations
-- **User Authority**: User instructions are the ultimate authority
-- **Workflow Integration**: Follow PRE_TASK_CHECK for structured operations
-- **Output Verifiability**: Ensure outputs are verifiable and transparent
-  - Distinguish between facts and assumptions
-  - Provide evidence for claims (file paths, line numbers, references)
-  - Explicitly state confidence levels when uncertain
+- **Safety First**: File deletion uses trash (`~/.Trash/`), destructive operations require confirmation
+- **User Authority**: Your instructions are the ultimate authority
+- **Output Verifiability**: Claims backed by evidence (file paths, confidence markers ✓/→/?)
 
-### Development Principles
+### Development Approach
 
-- **Occam's Razor**: Choose the simplest solution that works (meta-principle)
-- **Progressive Enhancement**: CSS-first approach, build simple → enhance
-- **Code Readability**: Based on "The Art of Readable Code"
-- **Container/Presentational**: React component pattern
-- **SOLID, DRY, TDD/RGRC**: Industry best practices
-- **Comprehensive Guide**: See [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md) for all principles
+- **Occam's Razor**: Choose the simplest solution that works
+- **Progressive Enhancement**: Build simple, enhance gradually
+- **TDD/RGRC**: Red-Green-Refactor-Commit cycle for reliable code
 
-### Safety Features
-
-- File deletion uses trash (`~/.Trash/`) instead of permanent deletion
-- Pre-task understanding checks with confidence level markers (✓/→/?)
-- User confirmation required for file modifications
-- Execution planning before destructive operations
+Full details: [PRINCIPLES.md](./rules/PRINCIPLES.md)
 
 ## 📚 Documentation
 
 ### Core Documentation
 
-- [Commands Reference (English)](./rules/commands/COMMAND_WORKFLOWS.md)
-- [Commands Reference (Japanese)](./.ja/rules/commands/COMMAND_WORKFLOWS.md)
+- [Commands Reference (English)](./rules/workflows/WORKFLOW_GUIDE.md)
+- [Commands Reference (Japanese)](./.ja/rules/workflows/WORKFLOW_GUIDE.md)
 - [Configuration Guide](./CLAUDE.md)
 - [Japanese Configuration](./.ja/CLAUDE.md)
 
 ### Development Guides
 
-- [Principles Guide](./rules/PRINCIPLES_GUIDE.md) - Complete overview of all development principles
-- [Documentation Rules](./rules/guidelines/DOCUMENTATION_RULES.md) - Standards for documentation
+- [Principles Guide](./rules/PRINCIPLES.md) - Complete overview of all development principles
+- [Documentation Rules](./rules/conventions/DOCUMENTATION.md) - Standards for documentation
 
 ## 🤝 Contributing
 
@@ -308,27 +280,9 @@ Feel free to fork this repository and customize it for your needs. Pull requests
 
 MIT License - Feel free to use and modify as needed.
 
-## 📅 Recent Updates
-
-**2025-10-02** - Documentation Synchronization & Core Rules Enhancement
-
-- Added [P0] Core AI Operation Rules to all documentation
-- Synchronized English and Japanese versions completely
-- Added Output Verifiability principle with confidence markers
-- Enhanced PRE_TASK_CHECK with verifiable output requirements
-- Added Mermaid principle dependency graph to PRINCIPLES_GUIDE.md
-
-**2025-01-09** - Documentation Enhancement
-
-- Added comprehensive [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md) for all development principles
-- Reorganized `rules/` directory structure (reference → development)
-- Standardized terminology across all documentation (Core Philosophy, Core Principles)
-- Added principle references to all agents and commands
-- Improved consistency between English and Japanese versions
-
 ## 👤 Author
 
-Your Name
+thkt
 
 ---
 

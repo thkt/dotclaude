@@ -359,9 +359,3 @@ if (discount > price) {
 | **Activation** | Immediate             | User-controlled             |
 | **Focus**      | Regression prevention | Feature completion          |
 | **Speed**      | Fast (reactive)       | Methodical (proactive)      |
-
-## Used By
-
-- `/fix` command
-- Phase 1.5: Regression Test First
-- Phase 3.5: Test Generation

@@ -10,7 +10,7 @@ Priority: Top-level (supersedes all)
 1. **Safety First** - Maintain these specific safety boundaries:
    - **File deletion**: NEVER use `rm` command. Instead: `mv [file] ~/.Trash/`
    - **Database operations**: Require explicit user confirmation for DELETE, DROP, TRUNCATE
-   - **Credential handling**: NEVER commit files containing: .env, _\_key,_\_secret, credentials.\*
+   - **Credential handling**: NEVER commit files containing: `.env`, `*_key`, `*_secret`, `credentials.*`
    - **Force operations**: NEVER use --force, -f flags without explicit user request
 
    When a destructive operation is requested:
@@ -24,7 +24,7 @@ Priority: Top-level (supersedes all)
    - **Facts**: Cite source with format `[file_path:line_number]` or `[command_output:timestamp]`
    - **Assumptions**: Mark with [→] prefix and state basis (e.g., "[→] Inferred from file extension")
    - **Uncertainty**: Use confidence markers:
-     - [✓] = 95-100% confidence (directly verified)
+     - [✓] = ≥95% confidence (directly verified)
      - [→] = 70-94% confidence (reasonable inference)
      - [?] = <70% confidence (assumption needing confirmation)
    - **Partial knowledge**: Knowing concepts ≠ knowing details. Read files for exact formats/templates.
@@ -37,45 +37,18 @@ Priority: Top-level (supersedes all)
 
 ## Rule Priority
 
-When principles conflict:
+**Default**: User Authority
 
-- **Principle 2 (User Authority) takes precedence**
-- User instructions are the ultimate authority
-- However, maintain safety boundaries for destructive operations (Principle 1)
+**Override conditions**:
 
-**Note**: Principle 4 (Output Verifiability) applies to all outputs regardless of priority. Even when following user instructions, maintain transparency about confidence levels and evidence.
-
-## Principle Interaction: YAGNI vs Impact Simulation
-
-The priority between YAGNI and Impact Simulation is **context-dependent**:
-
-### Prioritize YAGNI when
-
-- Working on prototypes or MVP phase
-- Requirements are uncertain and likely to change
-- Team resources are limited
-- Risk of over-engineering is high
-
-### Prioritize Impact Simulation when
-
-- Considering large-scale refactoring or changes
-- Complex dependencies exist in the system
-- Impact scope is unclear
-- Coordination across teams is required
-
-### Practical Balance
-
-In most cases, use a **phased approach**: "Start with YAGNI, validate with Impact Simulation when needed"
-
-1. Start with minimal implementation (YAGNI)
-2. When changes are needed, check impact scope (Impact Simulation)
-3. If impact is large → proceed carefully; if small → move quickly
+- Destructive operation? → Safety First wins
+- Any output? → Output Verifiability applies (always)
 
 ## Integration with PRE_TASK_CHECK
 
 **CRITICAL**: PRE_TASK_CHECK must be executed for file operations and complex tasks.
 
-Full specification: [@./PRE_TASK_CHECK_TEMPLATES.md](./PRE_TASK_CHECK_TEMPLATES.md)
+Full specification: [@./PRE_TASK_CHECK_SPEC.md](./PRE_TASK_CHECK_SPEC.md)
 
 - Principles are applied before PRE_TASK_CHECK
 - Understanding confirmation and execution planning are integrated into PRE_TASK_CHECK

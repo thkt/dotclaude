@@ -51,11 +51,9 @@ This agent references the following Skills knowledge base:
 
 Use these markers consistently:
 
-- **[✓]** = High confidence (>0.8) - directly verified from code
-- **[→]** = Medium confidence (0.5-0.8) - reasonable inference
-- **[?]** = Low confidence (<0.5) - assumption needing confirmation
-
-See [@../../rules/development/COMPLETION_CRITERIA.md](../../rules/development/COMPLETION_CRITERIA.md) for canonical definition.
+- [✓] = High confidence (≥95%) - directly verified from code
+- [→] = Medium confidence (70-94%) - reasonable inference
+- [?] = Low confidence (<70%) - assumption needing confirmation
 
 ## Output Format Template
 
@@ -67,7 +65,7 @@ All reviewer agents MUST follow this output structure:
 ### Summary
 
 [Overall assessment]
-**Overall Confidence**: [✓/→] [0.X]
+**Overall Confidence**: [✓/→] [XX%]
 
 ### Metrics
 
@@ -75,30 +73,30 @@ All reviewer agents MUST follow this output structure:
 - [Domain-specific metric]: Y [✓/→]
 - Total Issues: N (✓: X, →: Y)
 
-### Critical Issues (Confidence > 0.9)
+### Critical Issues (Confidence ≥95%)
 
-1. **[✓]** **[Issue Type]**: [Description]
+1. [✓] **[Issue Type]**: [Description]
    - **File**: path/to/file.tsx:42
-   - **Confidence**: 0.95
+   - **Confidence**: 95%
    - **Evidence**: [Specific observation from code]
    - **Impact**: [Quantified effect]
    - **Current**: `[problematic code]`
    - **Suggested**: `[improved code]`
    - **Effort**: [Low/Medium/High]
 
-### High Priority Issues (Confidence > 0.8)
+### High Priority Issues (Confidence 85-94%)
 
-1. **[✓]** **[Issue Type]**: [Description]
+1. [✓] **[Issue Type]**: [Description]
    - **File**: path/to/file.tsx:123
-   - **Confidence**: 0.85
+   - **Confidence**: 85%
    - **Evidence**: [Observable pattern]
    - **Solution**: [Specific fix]
 
-### Medium Priority Issues (Confidence 0.7-0.8)
+### Medium Priority Issues (Confidence 70-84%)
 
-1. **[→]** **[Issue Type]**: [Description]
+1. [→] **[Issue Type]**: [Description]
    - **File**: path/to/file.tsx:200
-   - **Confidence**: 0.75
+   - **Confidence**: 75%
    - **Inference**: [Reasoning for this finding]
    - **Note**: [Verification needed]
 
@@ -207,6 +205,5 @@ For reviewers that can use Chrome DevTools MCP (accessibility, performance):
 ## References
 
 - [@../../rules/core/AI_OPERATION_PRINCIPLES.md](../../rules/core/AI_OPERATION_PRINCIPLES.md) - Output Verifiability (Principle #4)
-- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI
+- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI, Readable Code
 - [@../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - HTML-first approach
-- [@../../rules/development/READABLE_CODE.md](../../rules/development/READABLE_CODE.md) - Code readability principles

@@ -108,10 +108,10 @@ skills/
 
 ADR 0001/0002/0003から強制ルールを抽出：
 
-| 生成ルール                  | 抽出元         | 配置先              |
-| --------------------------- | -------------- | ------------------- |
-| `COMMAND_MODULARIZATION.md` | ADR 0001, 0002 | `rules/commands/`   |
-| `PLUGIN_STRUCTURE.md`       | ADR 0003       | `rules/guidelines/` |
+| 生成ルール                  | 抽出元         | 配置先               |
+| --------------------------- | -------------- | -------------------- |
+| `COMMAND_MODULARIZATION.md` | ADR 0001, 0002 | `rules/workflows/`   |
+| `PLUGIN_ARCHITECTURE.md`    | ADR 0003       | `rules/conventions/` |
 
 ## 結果
 
@@ -156,5 +156,5 @@ ADR 0001/0002/0003から強制ルールを抽出：
 
 ## 関連ルール
 
-- [COMMAND_MODULARIZATION.md](../rules/commands/COMMAND_MODULARIZATION.md)
-- [PLUGIN_STRUCTURE.md](../rules/guidelines/PLUGIN_STRUCTURE.md)
+- [COMMAND_MODULARIZATION.md](../rules/workflows/MODULARIZATION_RULES.md)
+- [PLUGIN_ARCHITECTURE.md](../rules/conventions/PLUGIN_ARCHITECTURE.md)

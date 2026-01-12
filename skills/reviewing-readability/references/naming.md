@@ -85,5 +85,5 @@ If not, make it more specific.
 
 ## Related
 
-- [@../../rules/development/READABLE_CODE.md](../../rules/development/READABLE_CODE.md) - Full readability principles
-- [@../frontend/container-presentational.md](../frontend/container-presentational.md) - Component naming patterns
+- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - Full readability principles
+- [@../../applying-frontend-patterns/references/container-presentational.md](../../applying-frontend-patterns/references/container-presentational.md) - Component naming patterns

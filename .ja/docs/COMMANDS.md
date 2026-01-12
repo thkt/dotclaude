@@ -92,8 +92,3 @@
 | 複雑なアーキテクチャ | Plan Mode (`Shift+Tab`) | 承認を先に           |
 | コードレビュー必要   | `/audit`                | エージェントレビュー |
 | コミット前           | `/polish`               | AIスロップ除去       |
-
-## 関連ファイル
-
-- `~/.claude/CLAUDE.md` - グローバル設定
-- `~/.claude/settings.json` - ツール権限

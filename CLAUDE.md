@@ -1,98 +1,32 @@
 # CLAUDE.md
 
-## Priority Rules (FOLLOW IN ORDER)
+## Rules
 
-### [P0] CRITICAL - Core AI Operation Rules
+| Rule       | Reference                                                                           |
+| ---------- | ----------------------------------------------------------------------------------- |
+| Core       | [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md) |
+| Task       | [@./rules/core/PRE_TASK_CHECK_SPEC.md](./rules/core/PRE_TASK_CHECK_SPEC.md)         |
+| Principles | [@./rules/PRINCIPLES.md](./rules/PRINCIPLES.md)                                     |
+| Delete     | `mv [file] ~/.Trash/ && git add -A`                                                 |
 
-**ALWAYS ACTIVE** - Applied on every user message, supersedes all other rules
+## Development Checks
 
-Core principles: [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)
-Task verification: [@./rules/core/PRE_TASK_CHECK_RULES.md](./rules/core/PRE_TASK_CHECK_RULES.md) (injected via hook)
+| Question              | Principle     |
+| --------------------- | ------------- |
+| Simpler way?          | Occam's Razor |
+| <1 min to understand? | Miller's Law  |
+| Duplicating?          | DRY           |
+| Needed now?           | YAGNI         |
 
-### [P1] REQUIRED - Language Settings
+Skills auto-activate. Details: [@./skills/applying-code-principles/SKILL.md](./skills/applying-code-principles/SKILL.md)
 
-**Primary**: `settings.json` → `language: "japanese"`
+## Completion
 
-**Supplementary rules**:
+Before reporting: tests pass, build pass, lint pass
 
-- Process: English internally for reasoning
-- Maintain Japanese output even when rule files are English
+Never complete with: failing tests, build errors, unresolved errors
 
-### [P2] DEFAULT - Development Approach
+Command discovery: README.md → package.json → ask user
 
-**ALWAYS APPLY** - Core principles for all development
-
-Essential principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI) available via `applying-code-principles` skill.
-
-**Quick Decision Questions** (apply before every implementation):
-
-- "Is there a simpler way?" (Occam's Razor)
-- "Understandable in <1 min?" (Miller's Law)
-- "Duplicating knowledge?" (DRY)
-- "Needed now?" (YAGNI)
-
-Skills auto-activate on relevant keywords. Full details: [@./skills/applying-code-principles/SKILL.md](./skills/applying-code-principles/SKILL.md)
-
-### [P3] CONTEXTUAL - Just-in-Time References
-
-**APPLY AS NEEDED** - Load based on task type
-
-- Code tasks: Available via `enhancing-progressively` skill
-- React/UI: Available via `applying-frontend-patterns` skill
-- Component design: [Container/Presentational](./skills/applying-frontend-patterns/references/container-presentational.md)
-- Testing: Available via `generating-tdd-tests` skill
-
-**Note**: Skills are automatically activated based on context and keywords.
-
-Complete guide: [PRINCIPLES_GUIDE.md](./rules/PRINCIPLES_GUIDE.md)
-
-### [P4] OPTIONAL - File Deletion Behavior
-
-- **NEVER use rm command**: rm is disabled in settings.json
-- **NEVER use git rm**: Also deletes files permanently
-- **Always use Trash**: Move files to ~/.Trash/ instead of permanent deletion
-- **Command**: Use `mv [file] ~/.Trash/` then `git add -A` to record deletion
-- **Rationale**: Safety - enables recovery of accidentally deleted files
-
-## Work Completion Guidelines
-
-**Critical**: Verify all work meets these specific criteria before reporting completion:
-
-- **Test Creation**: After creating tests, execute ALL of the following checks:
-  1. Run project's test command (discover from package.json/pubspec.yaml/etc.)
-  2. Verify exit code is 0 (all tests passed)
-  3. Common patterns: `npm test`, `yarn test`, `flutter test`, `vitest`, etc.
-
-- **Code Implementation**: After writing code, execute ALL of the following checks:
-  1. Build/compile succeeds (exit code 0)
-  2. Linter passes with 0 errors (warnings acceptable if <5)
-  3. All related tests pass (0 failures)
-  4. Manual smoke test for critical paths (document steps taken)
-
-If any check fails:
-
-- For build errors: Fix immediately, do not proceed
-- For linter errors: Fix all errors, address warnings if time permits
-- For test failures: Fix root cause, do not disable tests
-- For smoke test failures: Debug and re-test until green
-
-- **Command Discovery** (execute in this priority order):
-  1. **First**: Read README.md, check "Scripts" or "Commands" section
-  2. **Second**: Inspect package manager config (package.json > scripts, pubspec.yaml > scripts)
-  3. **Third**: Search for common test files (_.test._, _.spec._, test/, spec/)
-  4. **Last resort**: If steps 1-3 yield no results, ask user with format:
-     "Could not find test command. Please specify the command to run tests (e.g., npm test, yarn test)."
-
-- **STRICTLY PROHIBIT completion reporting** with:
-  - Failing tests (unless explicitly creating tests for unimplemented features)
-  - Compilation/build errors
-  - Unresolved errors from previous attempts
-
-### Commands Reference
-
-- Command list: [@./rules/commands/COMMAND_WORKFLOWS.md](./rules/commands/COMMAND_WORKFLOWS.md)
-
-### Documentation Guidelines
-
-- Documentation rules: [@./rules/guidelines/DOCUMENTATION_RULES.md](./rules/guidelines/DOCUMENTATION_RULES.md)
-- Ensure absolute consistency across all documentation
+Commands: [@./rules/workflows/WORKFLOW_GUIDE.md](./rules/workflows/WORKFLOW_GUIDE.md)
+Docs: [@./rules/conventions/DOCUMENTATION.md](./rules/conventions/DOCUMENTATION.md)

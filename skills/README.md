@@ -48,5 +48,4 @@ See: [SKILL_FORMAT_GUIDE.md](./SKILL_FORMAT_GUIDE.md)
 
 ## Related
 
-- [COMMAND_WORKFLOWS.md](../rules/commands/COMMAND_WORKFLOWS.md) - Commands reference
-- [CLAUDE.md](../CLAUDE.md) - Global settings
+- [WORKFLOW_GUIDE.md](../rules/workflows/WORKFLOW_GUIDE.md) - Commands reference

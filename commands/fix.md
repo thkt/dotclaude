@@ -43,9 +43,9 @@ Definition of Done
 
 | Confidence | Strategy                   |
 | ---------- | -------------------------- |
-| >0.9       | Direct fix                 |
-| 0.7-0.9    | Defensive fix (add guards) |
-| <0.7       | Escalate → `/research`     |
+| ≥90%       | Direct fix                 |
+| 70-89%     | Defensive fix (add guards) |
+| <70%       | Escalate → `/research`     |
 
 ## Applied Principles
 

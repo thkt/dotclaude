@@ -45,45 +45,57 @@ const useUserProfile = () => { ... }
 
 ```typescript
 // Bad: 読みにくい型
-type D = { n: string; a: number; s: 'a' | 'i' | 'd' }
+type D = { n: string; a: number; s: "a" | "i" | "d" };
 
 // Good: 明確な型定義
-type UserData = { name: string; age: number; status: 'active' | 'inactive' | 'deleted' }
+type UserData = {
+  name: string;
+  age: number;
+  status: "active" | "inactive" | "deleted";
+};
 ```
 
 ### 3. フック使用の明確性
 
 ```typescript
 // Bad: 不明確な依存関係
-useEffect(() => { doSomething(x, y, z) }, []) // 依存関係が不足！
+useEffect(() => {
+  doSomething(x, y, z);
+}, []); // 依存関係が不足！
 
 // Good: 明確な依存関係
-useEffect(() => { fetchUserData(userId) }, [userId])
+useEffect(() => {
+  fetchUserData(userId);
+}, [userId]);
 ```
 
 ### 4. 状態変数の命名
 
 ```typescript
 // Bad: 不明確な状態名
-const [ld, setLd] = useState(false)
-const [flag, setFlag] = useState(true)
+const [ld, setLd] = useState(false);
+const [flag, setFlag] = useState(true);
 
 // Good: 明確な状態名
-const [isLoading, setIsLoading] = useState(false)
-const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+const [isLoading, setIsLoading] = useState(false);
+const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 ```
 
 ### 5. Propsインターフェースの明確性
 
 ```typescript
 // Bad: 不明確なprops
-interface Props { cb: () => void; d: boolean; opts: any }
+interface Props {
+  cb: () => void;
+  d: boolean;
+  opts: any;
+}
 
 // Good: 明確なprops
 interface UserCardProps {
-  onUserClick: () => void
-  isDisabled: boolean
-  displayOptions: { showAvatar: boolean; showBadge: boolean }
+  onUserClick: () => void;
+  isDisabled: boolean;
+  displayOptions: { showAvatar: boolean; showBadge: boolean };
 }
 ```
 
@@ -100,7 +112,7 @@ interface UserCardProps {
 
 ### The Art of Readable Code
 
-[@../../../rules/development/READABLE_CODE.md] - "コードは理解時間を最小化すべき"
+[@../../../skills/applying-code-principles/SKILL.md] - "コードは理解時間を最小化すべき"
 
 主要な質問：
 
@@ -114,11 +126,13 @@ interface UserCardProps {
 
 ```markdown
 ### 読みやすさスコア
+
 - 全般: X/10
 - TypeScript: X/10
 - Reactパターン: X/10
 
 ### 命名規則
+
 - 変数: X 不明確な名前 [リスト]
 - コンポーネント: Y 不適切な名前 [リスト]
 - 型: Z 混乱する名前 [リスト]

@@ -94,7 +94,3 @@ fetchData()
 - **testability-reviewer**: テストがエラーパスを検証すべき
 - **accessibility-reviewer**: エラー状態にアクセシブルなアナウンスが必要
 - **performance-reviewer**: エラーハンドリングがパフォーマンスに影響しないこと
-
-## 関連原則
-
-- [@../../../rules/development/RESULT_TYPE_HANDLING.md] - コンパイル時エラーハンドリング強制のためのResult型パターン

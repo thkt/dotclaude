@@ -44,9 +44,9 @@ Master orchestrator for comprehensive frontend code reviews.
 
 | Marker | Confidence | Requirement         |
 | ------ | ---------- | ------------------- |
-| ✓      | >0.8       | Include in output   |
-| →      | 0.5-0.8    | Include with note   |
-| ?      | <0.5       | Exclude from output |
+| ✓      | ≥95%       | Include in output   |
+| →      | 70-94%     | Include with note   |
+| ?      | <70%       | Exclude from output |
 
 ### Finding Structure
 
@@ -107,5 +107,5 @@ Every finding MUST include:
 
 ## Related
 
-- [@../../rules/guidelines/JP_EN_TRANSLATION_RULES.md](../../rules/guidelines/JP_EN_TRANSLATION_RULES.md) - Bilingual review handling
-- [@../../rules/PRINCIPLES_GUIDE.md](../../rules/PRINCIPLES_GUIDE.md) - Priority matrix
+- [@../../rules/conventions/TRANSLATION.md](../../rules/conventions/TRANSLATION.md) - Bilingual review handling
+- [@../../rules/PRINCIPLES.md](../../rules/PRINCIPLES.md) - Priority matrix

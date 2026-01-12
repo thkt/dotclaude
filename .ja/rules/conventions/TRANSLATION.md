@@ -2,6 +2,13 @@
 
 英語ソースと日本語翻訳を持つバイリンガルドキュメントのレビューガイドライン。
 
+## ファイルパス規則
+
+- EN: `/path/to/FILE.md`
+- JP: `/.ja/path/to/FILE.md`
+
+**ADR例外**: デフォルトで日本語出力、`.ja/` 不要。
+
 ## 翻訳ファイルの認識
 
 `.ja/`ディレクトリ配下のファイルは、対応する英語ファイルの**日本語翻訳**です。コンテンツの一貫性を比較すべきではありません。
@@ -29,27 +36,6 @@
 - ローカライズされた日付/数値形式
 - 異なる自然言語表現
 
-## 実装
-
-ドキュメントファイルをレビューする際:
-
-```yaml
-review_strategy:
-  en_files:
-    path_pattern: "!.ja/**/*.md"
-    review_mode: full
-
-  ja_files:
-    path_pattern: ".ja/**/*.md"
-    review_mode: structure_only
-    skip_content_comparison: true
-
-  comparison_rules:
-    - ENコンテンツとJPコンテンツを比較しない
-    - セクション見出しが存在することを確認（構造一致）
-    - 両方のバージョンでリンクが有効であることを確認
-```
-
 ## 例: 有効なEN/JP差異
 
 これは**問題ではありません**:
@@ -58,9 +44,3 @@ review_strategy:
 | ---------------------------------- | -------------------------------------- |
 | `Navigate to https://example.com`  | `https://example.com に移動`           |
 | `Click element (uid: abc)`         | `要素をクリック（uid: abc）`           |
-
-両方とも同じアクションをそれぞれの言語で表現しています。
-
-## 関連
-
-- [@./DOCUMENTATION_RULES.md](./DOCUMENTATION_RULES.md) - 一般的なドキュメントガイドライン

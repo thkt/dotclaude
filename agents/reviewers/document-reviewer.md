@@ -123,7 +123,7 @@ Evaluate whether the document properly prioritizes **non-reversible information*
 
 #### High Priority
 
-1. **[✓]** [Issue]: [description with location, evidence, suggestion]
+1. [✓] [Issue]: [description with location, evidence, suggestion]
 
 ### Quality Metrics
 

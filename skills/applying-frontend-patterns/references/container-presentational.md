@@ -144,8 +144,3 @@ export const TodoContainer = () => {
 - Presentational components are props-only
 - Keep Presentational components pure
 - When in doubt, favor Presentational
-
-## Related Principles
-
-- [@../../rules/development/READABLE_CODE.md](../../rules/development/READABLE_CODE.md) - Clear separation improves code understanding
-- [@../../rules/PRINCIPLE_RELATIONSHIPS.md](../../rules/PRINCIPLE_RELATIONSHIPS.md#development-practices)

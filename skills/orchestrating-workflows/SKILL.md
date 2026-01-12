@@ -47,12 +47,12 @@ Commands become thin orchestrators that reference this skill for execution logic
 
 ### Quality Gates
 
-| Gate     | Target      | Verification               |
-| -------- | ----------- | -------------------------- |
-| Tests    | All passing | `npm test` exit code 0     |
-| Lint     | 0 errors    | `npm run lint` exit code 0 |
-| Types    | No errors   | `tsc --noEmit` exit code 0 |
-| Coverage | ≥80%        | Coverage report            |
+| Gate     | Target           | Verification               |
+| -------- | ---------------- | -------------------------- |
+| Tests    | All passing      | `npm test` exit code 0     |
+| Lint     | 0 errors         | `npm run lint` exit code 0 |
+| Types    | No errors        | `tsc --noEmit` exit code 0 |
+| Coverage | C0 ≥90%, C1 ≥80% | Coverage report            |
 
 ### Completion Criteria
 

@@ -96,8 +96,8 @@ ADR (decision) → Rule (enforcement) → CLAUDE.md (integration)
 
 ### Principles (rules/)
 
-- [@../../rules/guidelines/DOCUMENTATION_RULES.md](../../rules/guidelines/DOCUMENTATION_RULES.md) - Documentation guidelines
-- [@../../rules/guidelines/JP_EN_TRANSLATION_RULES.md](../../rules/guidelines/JP_EN_TRANSLATION_RULES.md) - Translation rules
+- [@../../rules/conventions/DOCUMENTATION.md](../../rules/conventions/DOCUMENTATION.md) - Documentation guidelines
+- [@../../rules/conventions/TRANSLATION.md](../../rules/conventions/TRANSLATION.md) - Translation rules
 
 ### Related Skills
 

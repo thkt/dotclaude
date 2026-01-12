@@ -62,12 +62,12 @@ Task({
 ### When to Skip
 
 - Trivial fixes (typos, obvious missing checks)
-- High confidence (>0.95)
+- High confidence (≥95%)
 - Production hotfix with known cause
 
 ### When to Escalate
 
-- Confidence < 0.7 → `/research`
+- Confidence <70% → `/research`
 - Systematic issue → `/think` → `/code`
 - Multiple components → complexity exceeds quick fix
 
@@ -114,9 +114,9 @@ If test passes immediately → test doesn't reproduce bug → revise.
 
 | Confidence | Strategy      | Approach                 |
 | ---------- | ------------- | ------------------------ |
-| >0.9       | Direct fix    | Straightforward solution |
-| 0.7-0.9    | Defensive fix | Add checks and guards    |
-| <0.7       | Escalate      | → /research or /think    |
+| ≥90%       | Direct fix    | Straightforward solution |
+| 70-89%     | Defensive fix | Add checks and guards    |
+| <70%       | Escalate      | → /research or /think    |
 
 ### Apply Occam's Razor
 
@@ -229,10 +229,10 @@ Status: COMPLETE
 
 | Confidence | Phase          | Action                            |
 | ---------- | -------------- | --------------------------------- |
-| <0.5       | Root Cause     | → /research immediately           |
-| 0.5-0.7    | Any            | → Ask user: continue or escalate? |
-| 0.7-0.8    | Implementation | Proceed with defensive approach   |
-| >0.8       | Any            | Proceed normally                  |
+| <50%       | Root Cause     | → /research immediately           |
+| 50-69%     | Any            | → Ask user: continue or escalate? |
+| 70-79%     | Implementation | Proceed with defensive approach   |
+| ≥80%       | Any            | Proceed normally                  |
 
 ## Related
 

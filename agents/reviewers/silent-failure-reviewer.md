@@ -102,7 +102,3 @@ Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base
 - **testability-reviewer**: Tests should verify error paths
 - **accessibility-reviewer**: Error states need accessible announcements
 - **performance-reviewer**: Error handling shouldn't impact performance
-
-## Related Principles
-
-- [@../../rules/development/RESULT_TYPE_HANDLING.md](../../rules/development/RESULT_TYPE_HANDLING.md) - Result type pattern for compile-time error handling enforcement

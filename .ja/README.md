@@ -15,43 +15,27 @@
 
 ## 📁 構造
 
-```txt
+```text
 .claude/
 ├── CLAUDE.md              # メイン設定（AIが読み込む）
 ├── README.md              # このファイル - クイックスタートガイド
-├── docs/                  # ドキュメント
-│   ├── COMMANDS.md       # コマンドリファレンス
-│   └── adr/              # アーキテクチャ決定記録
-├── commands/              # コマンド定義
-│   ├── code.md           # TDD/RGRC実装
-│   ├── fix.md            # クイックバグ修正
-│   ├── research.md       # 実装なしの調査
-│   ├── audit.md          # コードレビュー統括
-│   ├── test.md           # 包括的テスト
-│   └── think.md          # 計画 & SOW作成
+├── adr/                   # アーキテクチャ決定記録
+├── commands/              # コマンド定義 (/code, /fix, /think など)
 ├── rules/                 # ルール定義
-│   ├── core/             # [P0] コアAI動作原則
-│   │   └── AI_OPERATION_PRINCIPLES.md
-│   ├── PRINCIPLES_GUIDE.md  # 完全な原則ガイド
-│   ├── commands/         # コマンド選択ロジック
+│   ├── core/             # コアAI動作原則
+│   ├── conventions/      # ドキュメント規約
 │   ├── development/      # 開発パターン & 方法論
-│   └── guidelines/       # ドキュメントガイドライン
-├── skills/               # スキルベースの知識モジュール
-│   ├── optimizing-performance/    # Webパフォーマンス知識
-│   └── generating-tdd-tests/      # TDD方法論
+│   └── workflows/        # ワークフローガイド
+├── skills/               # スキルベースの知識モジュール（26スキル）
 ├── agents/               # 専門AIエージェント
 │   ├── analyzers/        # アーキテクチャ分析
 │   ├── enhancers/        # コード改善
 │   ├── generators/       # コード/テスト生成
 │   ├── git/              # Git操作エージェント
 │   ├── orchestrators/    # マルチエージェント調整
+│   ├── integrators/      # 発見統合
 │   └── reviewers/        # コードレビューエージェント（13種類）
-├── references/           # 参照ドキュメント（コマンドとしてロードされない）
-│   └── commands/         # コマンド参照資料
 └── .ja/                   # 日本語翻訳
-    ├── CLAUDE.md         # メイン設定（日本語）
-    ├── commands/         # コマンド定義（日本語）
-    └── rules/            # ルール定義（日本語）
 ```
 
 ## 🚀 クイックスタート
@@ -76,23 +60,23 @@
 
    ```bash
    /plugin install complete-workflow-system  # フルTDD/RGRCワークフロー
-   /plugin install quick-actions             # /fix
+   /plugin install quick-actions             # /fix, /rabbit
    /plugin install automation-commands       # /auto-test, /full-cycle
-   /plugin install git-utilities             # /commit, /branch, /pr
+   /plugin install git-utilities             # /commit, /branch, /pr, /issue
    /plugin install documentation-tools       # /adr, /rulify
    /plugin install browser-workflows         # /e2e
-   /plugin install utilities                 # /context
+   /plugin install hookify-system            # /hookify
    ```
 
 **利用可能なプラグイン**:
 
 - **complete-workflow-system**: 16の専門エージェントを含むフル開発ワークフロー
-- **quick-actions**: 高速バグ修正 (/fix)
+- **quick-actions**: 高速バグ修正 (/fix) と CodeRabbit レビュー (/rabbit)
 - **automation-commands**: 自動テストとフルサイクル自動化
-- **git-utilities**: Gitワークフローヘルパー (commit, branch, PR)
+- **git-utilities**: Gitワークフローヘルパー (commit, branch, PR, issue)
 - **documentation-tools**: ADR作成とルール生成
 - **browser-workflows**: E2Eテストと自動化
-- **utilities**: 開発診断ツール
+- **hookify-system**: カスタムフック作成・管理
 
 ### オプション2: 手動インストール（フル設定）
 
@@ -182,20 +166,20 @@ srt --version
 | ------------------- | --------------------- | -------------------------------------- | ----------------------------------- |
 | `pr-review-toolkit` | `/audit`, `/research` | 拡張コードレビューエージェント         | `/plugin install pr-review-toolkit` |
 | `feature-dev`       | `/research`, `/think` | コード探索・アーキテクチャエージェント | `/plugin install feature-dev`       |
-| `ralph-wiggum`      | `/code`               | TDD Greenフェーズ自動反復              | `/plugin install ralph-wiggum`      |
+| `ralph-loop`        | `/code`               | TDD Greenフェーズ自動反復              | `/plugin install ralph-loop`        |
 
 **一括インストール（必要なプラグインすべて）**:
 
 ```bash
-/plugin install pr-review-toolkit feature-dev ralph-wiggum
+/plugin install pr-review-toolkit feature-dev ralph-loop
 ```
 
 **オプションプラグイン**（完全な機能のために推奨）:
 
-| プラグイン       | 用途                                        |
-| ---------------- | ------------------------------------------- |
-| `example-skills` | PDF、XLSX、PPTX処理、フロントエンドデザイン |
-| `typescript-lsp` | TypeScript言語サーバー統合                  |
+| プラグイン          | 用途                                        |
+| ------------------- | ------------------------------------------- |
+| `example-skills`    | PDF、XLSX、PPTX処理、フロントエンドデザイン |
+| `security-guidance` | セキュリティベストプラクティスと脆弱性検出  |
 
 **注**: プラグインは `~/.claude/plugins/` に保存され、gitから除外されています。各ユーザーが個別にインストールする必要があります。
 
@@ -222,8 +206,8 @@ Claude Codeは5つのカテゴリに整理された15の専門コマンドを提
 
 **📚 詳細リファレンス**: 完全なコマンドドキュメントは:
 
-- [コマンドリファレンス（日本語）](./rules/commands/COMMAND_WORKFLOWS.md)
-- [English Command Reference](../rules/commands/COMMAND_WORKFLOWS.md)
+- [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOW_GUIDE.md)
+- [English Command Reference](../rules/workflows/WORKFLOW_GUIDE.md)
 
 ## 🔄 標準ワークフロー
 
@@ -260,43 +244,33 @@ Claude Codeは5つのカテゴリに整理された15の専門コマンドを提
 
 ## 🛠️ 主要機能
 
-### コアAI動作原則
+### コアAI原則
 
-- **安全第一**: 破壊的操作に対する安全境界を維持
+- **安全第一**: ファイル削除はゴミ箱（`~/.Trash/`）を使用、破壊的操作は確認が必要
 - **ユーザー権限**: ユーザー指示が最終的な権限
-- **ワークフロー統合**: 構造化された操作のためPRE_TASK_CHECKに従う
-- **出力検証可能性**: 出力が検証可能で透明であることを確保
-  - 事実と仮定を区別
-  - 主張の証拠を提供（ファイルパス、行番号、参照）
-  - 不確かな場合は信頼度レベルを明示
+- **出力検証可能性**: 主張は証拠に基づく（ファイルパス、信頼度マーカー ✓/→/?）
 
-### 開発原則
+### 開発アプローチ
 
-- **オッカムの剃刀**: 機能する最もシンプルな解決策を選択（メタ原則）
-- **プログレッシブエンハンスメント**: CSSファーストアプローチ、シンプル → 強化
-- **コード可読性**: 「リーダブルコード」に基づく
-- **Container/Presentational**: Reactコンポーネントパターン
-- **SOLID、DRY、TDD/RGRC**: 業界ベストプラクティス
-- **包括的ガイド**: すべての原則は [PRINCIPLES_GUIDE.md](../rules/PRINCIPLES_GUIDE.md) を参照
+- **オッカムの剃刀**: 機能する最もシンプルな解決策を選択
+- **プログレッシブエンハンスメント**: シンプルに作り、徐々に強化
+- **TDD/RGRC**: Red-Green-Refactor-Commit サイクルで信頼性の高いコード
 
-### 安全機能
-
-- ファイル削除は恒久削除の代わりにゴミ箱（`~/.Trash/`）を使用
-- 信頼度マーカー（✓/→/?）付きのタスク前理解チェック
-- ファイル変更にはユーザー確認が必要
-- 破壊的操作前の実行計画
+詳細: [PRINCIPLES.md](../rules/PRINCIPLES.md)
 
 ## 📚 ドキュメント
 
 ### コアドキュメント
 
-- [コマンドリファレンス](./rules/commands/COMMAND_WORKFLOWS.md)
-- [設定ガイド](./CLAUDE.md)
+- [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOW_GUIDE.md)
+- [コマンドリファレンス（英語）](../rules/workflows/WORKFLOW_GUIDE.md)
+- [設定ガイド（日本語）](./CLAUDE.md)
+- [設定ガイド（英語）](../CLAUDE.md)
 
 ### 開発ガイド
 
-- [原則ガイド](../rules/PRINCIPLES_GUIDE.md) - すべての開発原則の完全な概要
-- [ドキュメントルール](../rules/guidelines/DOCUMENTATION_RULES.md) - ドキュメントの標準
+- [原則ガイド](../rules/PRINCIPLES.md) - すべての開発原則の完全な概要
+- [ドキュメントルール](../rules/conventions/DOCUMENTATION.md) - ドキュメントの標準
 
 ## 🤝 貢献
 
@@ -306,27 +280,9 @@ Claude Codeは5つのカテゴリに整理された15の専門コマンドを提
 
 MITライセンス - 自由に使用・変更してください。
 
-## 📅 最近の更新
-
-**2025-10-02** - ドキュメント同期 & コアルール強化
-
-- すべてのドキュメントに [P0] コアAI動作ルールを追加
-- 英語版と日本語版を完全に同期
-- 信頼度マーカー付きの出力検証可能性原則を追加
-- 検証可能な出力要件でPRE_TASK_CHECKを強化
-- PRINCIPLES_GUIDE.mdにMermaid原則依存グラフを追加
-
-**2025-01-09** - ドキュメント強化
-
-- すべての開発原則のための包括的な [PRINCIPLES_GUIDE.md](../rules/PRINCIPLES_GUIDE.md) を追加
-- `rules/` ディレクトリ構造を再編成（reference → development）
-- すべてのドキュメントで用語を標準化（Core Philosophy、Core Principles）
-- すべてのエージェントとコマンドに原則参照を追加
-- 英語版と日本語版の一貫性を改善
-
 ## 👤 作者
 
-Your Name
+thkt
 
 ---
 

@@ -55,9 +55,9 @@ Task({
 
 ## Confidence Markers
 
-- **[✓]** >0.8 - Verified with code evidence
-- **[→]** 0.5-0.8 - Inferred with reasoning
-- **[?]** <0.5 - Not included
+- [✓] ≥95% - Verified with code evidence
+- [→] 70-94% - Inferred with reasoning
+- [?] <70% - Not included
 
 ## Output Format
 

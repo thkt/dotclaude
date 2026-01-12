@@ -48,5 +48,4 @@ Claude Codeのナレッジベース、ガイド、自動化ワークフローを
 
 ## 関連
 
-- [COMMAND_WORKFLOWS.md](../rules/commands/COMMAND_WORKFLOWS.md) - コマンドリファレンス
-- [CLAUDE.md](../CLAUDE.md) - グローバル設定
+- [WORKFLOW_GUIDE.md](../rules/workflows/WORKFLOW_GUIDE.md) - コマンドリファレンス

@@ -78,7 +78,7 @@ Uncovered lines: ${uncoveredLines}
 Existing test style: ${testStyle}
 
 Generate tests for uncovered code paths.
-Target coverage: 80%+
+Target: C0 ≥90%, C1 ≥80%
   `,
 });
 ```
@@ -134,8 +134,8 @@ describe("[TargetClass/FunctionName]", () => {
 
 | Level          | Target | Focus              |
 | -------------- | ------ | ------------------ |
-| C0 (Statement) | 80%    | All lines executed |
-| C1 (Branch)    | 70%    | All branches taken |
+| C0 (Statement) | 90%    | All lines executed |
+| C1 (Branch)    | 80%    | All branches taken |
 
 ## Test Priority Matrix
 

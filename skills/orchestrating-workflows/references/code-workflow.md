@@ -112,12 +112,12 @@ wait
 
 ### Gate Thresholds
 
-| Check    | Target    | Action      |
-| -------- | --------- | ----------- |
-| Tests    | All pass  | Required    |
-| Lint     | 0 errors  | Required    |
-| Types    | No errors | Required    |
-| Coverage | ≥80%      | Recommended |
+| Check    | Target           | Action      |
+| -------- | ---------------- | ----------- |
+| Tests    | All pass         | Required    |
+| Lint     | 0 errors         | Required    |
+| Types    | No errors        | Required    |
+| Coverage | C0 ≥90%, C1 ≥80% | Recommended |
 
 ### Progress Display
 
@@ -156,9 +156,9 @@ wait
 
 | Confidence | Action                      |
 | ---------- | --------------------------- |
-| >0.8       | Proceed with implementation |
-| 0.5-0.8    | Add defensive checks        |
-| <0.5       | → /research first           |
+| ≥80%       | Proceed with implementation |
+| 50-79%     | Add defensive checks        |
+| <50%       | → /research first           |
 
 ## IDR Generation
 

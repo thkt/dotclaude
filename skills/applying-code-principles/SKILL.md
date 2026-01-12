@@ -1,7 +1,7 @@
 ---
 name: applying-code-principles
 description: >
-  Fundamental software principles - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI.
+  Fundamental software principles - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI, Readable Code.
   Triggers: 原則, シンプル, 複雑, アーキテクチャ, リファクタリング, 保守性, コード品質,
   design pattern, best practice, clean code
 allowed-tools: Read, Grep, Glob
@@ -58,3 +58,10 @@ Before adding, confirm:
 2. Failed in production? → No = no error handling yet
 3. User requested? → No = no feature yet
 4. Measured evidence? → No = no optimization yet
+
+### Readable Code
+
+**"Code should be written to minimize the time it would take for someone else to understand it"**
+— Dustin Boswell & Trevor Foucher
+
+Test: "Would a new team member understand this in < 1 minute?"

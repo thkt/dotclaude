@@ -96,8 +96,8 @@ ADR (決定) → Rule (強制) → CLAUDE.md (統合)
 
 ### 原則 (rules/)
 
-- [@../../rules/guidelines/DOCUMENTATION_RULES.md](../../rules/guidelines/DOCUMENTATION_RULES.md) - ドキュメントガイドライン
-- [@../../rules/guidelines/JP_EN_TRANSLATION_RULES.md](../../rules/guidelines/JP_EN_TRANSLATION_RULES.md) - 翻訳ルール
+- [@../../rules/conventions/DOCUMENTATION.md](../../rules/conventions/DOCUMENTATION.md) - ドキュメントガイドライン
+- [@../../rules/conventions/TRANSLATION.md](../../rules/conventions/TRANSLATION.md) - 翻訳ルール
 
 ### 関連スキル
 

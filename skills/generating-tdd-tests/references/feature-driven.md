@@ -34,15 +34,15 @@ How `/code` command uses TDD for new feature development.
 ```typescript
 // Generated from spec.md (all skipped):
 
-it.skip('handles zero input', () => {
+it.skip("handles zero input", () => {
   // TODO: [SKIP] FR-001
-  expect(calculateDiscount(0)).toBe(0.1)
-})
+  expect(calculateDiscount(0)).toBe(0.1);
+});
 
-it.skip('calculates basic case', () => {
+it.skip("calculates basic case", () => {
   // TODO: [SKIP] FR-002
-  expect(calculateDiscount(100)).toBe(10)
-})
+  expect(calculateDiscount(100)).toBe(10);
+});
 
 // User activates first test:
 // Step 1: Remove .skip
@@ -68,19 +68,19 @@ it.skip('calculates basic case', () => {
 **From spec.md** (FR-001, FR-002, FR-003), test-generator creates:
 
 ```typescript
-describe('Discount Calculator', () => {
-  it.skip('handles zero purchase (FR-001)', () => {
-    expect(calculateDiscount(0)).toBe(0.1)
-  })
+describe("Discount Calculator", () => {
+  it.skip("handles zero purchase (FR-001)", () => {
+    expect(calculateDiscount(0)).toBe(0.1);
+  });
 
-  it.skip('calculates standard discount (FR-002)', () => {
-    expect(calculateDiscount(50)).toBe(5)
-  })
+  it.skip("calculates standard discount (FR-002)", () => {
+    expect(calculateDiscount(50)).toBe(5);
+  });
 
-  it.skip('applies bulk discount (FR-003)', () => {
-    expect(calculateDiscount(200)).toBe(30)
-  })
-})
+  it.skip("applies bulk discount (FR-003)", () => {
+    expect(calculateDiscount(200)).toBe(30);
+  });
+});
 ```
 
 All tests in skip state, ordered simple → complex (Baby Steps).
@@ -89,7 +89,7 @@ All tests in skip state, ordered simple → complex (Baby Steps).
 
 **Cycle 1: Activate First Test**
 
-```text
+````text
 🔄 RGRC Cycle 1/3
 
 Activate the next test?
@@ -102,13 +102,13 @@ Activate the next test?
 it('handles zero purchase (FR-001)', () => {
   expect(calculateDiscount(0)).toBe(0.1)
 })
-```
+````
 
 [Y] Activate and enter Red phase
 [S] Skip to next test
 [Q] Quit
 
-```text
+````text
 **User chooses: Y**
 
 **🔴 Red Phase**:
@@ -127,7 +127,7 @@ FAIL  src/discount.test.ts
     ReferenceError: calculateDiscount is not defined
 
 → Test fails for RIGHT reason: function doesn't exist yet
-```
+````
 
 **🟢 Green Phase - Minimal Implementation**:
 
@@ -214,9 +214,9 @@ PASS  src/discount.test.ts
 
 ```typescript
 // Don't do this:
-it('test 1', () => { })  // Activated
-it('test 2', () => { })  // Activated <- Multiple at once!
-it.skip('test 3', () => { })
+it("test 1", () => {}); // Activated
+it("test 2", () => {}); // Activated <- Multiple at once!
+it.skip("test 3", () => {});
 ```
 
 **Why bad**: Violates Baby Steps. If tests fail, you don't know which change caused it.
@@ -242,17 +242,17 @@ it.skip('test 3', () => { })
 ```typescript
 // After Green phase:
 export function calculateDiscount(amount: number): number {
-  if (amount === 0) return 0.1
-  if (amount > 0 && amount <= 100) return amount * 0.1
-  if (amount > 100) return amount * 0.15
-  return 0  // Dead code!
+  if (amount === 0) return 0.1;
+  if (amount > 0 && amount <= 100) return amount * 0.1;
+  if (amount > 100) return amount * 0.15;
+  return 0; // Dead code!
 }
 
 // Should refactor to:
 export function calculateDiscount(amount: number): number {
-  if (amount === 0) return 0.1
-  const rate = amount > 100 ? 0.15 : 0.1
-  return amount * rate
+  if (amount === 0) return 0.1;
+  const rate = amount > 100 ? 0.15 : 0.1;
+  return amount * rate;
 }
 ```
 
@@ -280,8 +280,3 @@ export function calculateDiscount(amount: number): number {
 - **No surprises**: User controls pace
 - **Always green**: Frequent commits with passing tests
 - **Clear progress**: Visual test queue shows remaining work
-
-## Used By
-
-- `/code` command
-- Phase 0: Test Preparation

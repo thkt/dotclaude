@@ -1,4 +1,4 @@
-# PRE_TASK_CHECK (Compact)
+# PRE_TASK_CHECK Rules
 
 ## Core Rules
 
@@ -35,21 +35,13 @@ When bug context detected, **always ask**:
 2. **Normal case**: When does it work correctly? (for diff detection)
 3. **Log information**: Any error logs or console output?
 
-## Confidence Markers
+## Command Selection
 
-- **[✓]** High - directly verified
-- **[→]** Medium - reasonable inference
-- **[?]** Low - needs confirmation
-
-## Output Format
-
-```text
-🧠 Understanding: [██████████] XX%
-✅ Clear: [✓]/[→] items
-❓ Unclear: [?] items
-💡 Recommended: /command
-⚡ Feasibility: 🟢/🟡/🔴
-```
+| Understanding | Action            | Rationale                |
+| ------------- | ----------------- | ------------------------ |
+| <70%          | `/research`       | Too uncertain to plan    |
+| 70-94%        | `/think`          | Plan before implementing |
+| ≥95%          | `/code` or direct | Clear enough to proceed  |
 
 ## Confirmation
 
@@ -60,5 +52,12 @@ Use `AskUserQuestion` tool for all confirmations and clarifications.
 1. Analyze → mark confidence
 2. If <95% → AskUserQuestion for clarification → STOP
 3. If ≥95% → show check → AskUserQuestion to confirm
-4. Show impact/plan → AskUserQuestion to confirm
+4. Dry-run / Plan → show based on conditions
 5. Execute
+
+### Dry-run Conditions
+
+| Condition                               | Display               |
+| --------------------------------------- | --------------------- |
+| 3+ files, core config, auth/security    | Full (Dry-run + Plan) |
+| Simple, doc-only, single file <10 lines | Plan only             |

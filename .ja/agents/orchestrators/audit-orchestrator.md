@@ -42,11 +42,11 @@ model: opus
 
 ### 信頼度マーカー
 
-| マーカー | 信頼度  | 要件             |
-| -------- | ------- | ---------------- |
-| ✓        | >0.8    | 出力に含める     |
-| →        | 0.5-0.8 | 注記付きで含める |
-| ?        | <0.5    | 出力から除外     |
+| マーカー | 信頼度 | 要件             |
+| -------- | ------ | ---------------- |
+| ✓        | ≥95%   | 出力に含める     |
+| →        | 70-94% | 注記付きで含める |
+| ?        | <70%   | 出力から除外     |
 
 ### 発見事項の構造
 
@@ -107,5 +107,5 @@ model: opus
 
 ## 関連
 
-- [@../../rules/guidelines/JP_EN_TRANSLATION_RULES.md](../../rules/guidelines/JP_EN_TRANSLATION_RULES.md) - バイリンガルレビュー処理
-- [@../../rules/PRINCIPLES_GUIDE.md](../../rules/PRINCIPLES_GUIDE.md) - 優先度マトリックス
+- [@../../rules/conventions/TRANSLATION.md](../../rules/conventions/TRANSLATION.md) - バイリンガルレビュー処理
+- [@../../rules/PRINCIPLES.md](../../rules/PRINCIPLES.md) - 優先度マトリックス

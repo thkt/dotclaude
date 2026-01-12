@@ -29,9 +29,9 @@ Phase 3: Synthesis (1 min)
 
 | Marker | Confidence | Usage                       |
 | ------ | ---------- | --------------------------- |
-| [✓]    | >0.8       | Directly verified from code |
-| [→]    | 0.5-0.8    | Reasonable inference        |
-| [?]    | <0.5       | Assumption needing verify   |
+| [✓]    | ≥95%       | Directly verified from code |
+| [→]    | 70-94%     | Reasonable inference        |
+| [?]    | <70%       | Assumption needing verify   |
 
 ## Agent Usage
 

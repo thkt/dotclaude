@@ -23,7 +23,7 @@ skills:
 
 実際の悪用可能性を持つ高信頼度のセキュリティ脆弱性を特定します。不正アクセス、データ漏洩、システム侵害につながる可能性のある脆弱性に焦点を当てます。
 
-**出力検証可能性**: すべての発見事項にはAI動作原則#4に従って、file:line参照、信頼度スコア（0.8-1.0）、悪用シナリオ、証拠を含める必要があります。
+**出力検証可能性**: すべての発見事項にはAI動作原則#4に従って、file:line参照、信頼度スコア（80-100%）、悪用シナリオ、証拠を含める必要があります。
 
 ## コア原則
 
@@ -38,33 +38,33 @@ skills:
 
 ```typescript
 // Bad: SQLインジェクション
-const query = `SELECT * FROM users WHERE id = ${userId}`
+const query = `SELECT * FROM users WHERE id = ${userId}`;
 
 // Good: パラメータ化クエリ
-const query = 'SELECT * FROM users WHERE id = ?'
-await db.query(query, [userId])
+const query = "SELECT * FROM users WHERE id = ?";
+await db.query(query, [userId]);
 ```
 
 ```typescript
 // Bad: コマンドインジェクション
-exec(`ping ${req.body.host}`)
+exec(`ping ${req.body.host}`);
 
 // Good: 入力バリデーション
-if (!isIP(req.body.host)) throw new Error('Invalid')
+if (!isIP(req.body.host)) throw new Error("Invalid");
 ```
 
 ### 2. 認証と認可
 
 ```typescript
 // Bad: 認可チェックなし
-app.get('/admin/users', (req, res) => {
-  return db.getAllUsers()  // 認証チェックなし！
-})
+app.get("/admin/users", (req, res) => {
+  return db.getAllUsers(); // 認証チェックなし！
+});
 
 // Good: 適切な認可
-app.get('/admin/users', requireAdmin, (req, res) => {
-  return db.getAllUsers()
-})
+app.get("/admin/users", requireAdmin, (req, res) => {
+  return db.getAllUsers();
+});
 ```
 
 ### 3. XSS防止（React/フロントエンド）
@@ -82,30 +82,30 @@ app.get('/admin/users', requireAdmin, (req, res) => {
 
 ```typescript
 // Bad: ハードコードされたシークレット
-const API_KEY = 'sk-1234567890abcdef'
+const API_KEY = "sk-1234567890abcdef";
 
 // Good: 環境変数
-const API_KEY = process.env.API_KEY
+const API_KEY = process.env.API_KEY;
 ```
 
 ### 5. データ漏洩
 
 ```typescript
 // Bad: ログに機密データ
-console.log('User logged in:', { password: user.password })
+console.log("User logged in:", { password: user.password });
 
 // Good: サニタイズされたログ
-console.log('User logged in:', { userId: user.id })
+console.log("User logged in:", { userId: user.id });
 ```
 
 ## 信頼度スコアリング
 
-| スコア | 説明 | アクション |
-| --- | --- | --- |
-| **0.9-1.0** | 確実な悪用パスが特定された | Criticalとして報告 |
-| **0.8-0.9** | 明確な脆弱性パターン | Highとして報告 |
-| **0.7-0.8** | 疑わしいパターン、特定の条件 | Mediumとして報告 |
-| **< 0.7** | 推測的 | **報告しない** |
+| スコア     | 説明                         | アクション         |
+| ---------- | ---------------------------- | ------------------ |
+| **≥95%**   | 確実な悪用パスが特定された   | Criticalとして報告 |
+| **85-94%** | 明確な脆弱性パターン         | Highとして報告     |
+| **70-84%** | 疑わしいパターン、特定の条件 | Mediumとして報告   |
+| **<70%**   | 推測的                       | **報告しない**     |
 
 ## 除外ルール
 
@@ -137,12 +137,12 @@ console.log('User logged in:', { userId: user.id })
 
 ---
 
-## 🚨 Critical問題（信頼度 > 0.9）
+## 🚨 Critical問題（信頼度 ≥95%）
 
 ### 脆弱性 #1: [カテゴリ] - `file.ts:42`
 
 - **重大度**: Critical
-- **信頼度**: 0.95 [✓]
+- **信頼度**: 95% [✓]
 - **説明**: [何が脆弱か]
 - **証拠**: [具体的なコードスニペット]
 - **悪用シナリオ**: [攻撃者がこれをどう悪用できるか]
@@ -150,7 +150,7 @@ console.log('User logged in:', { userId: user.id })
 
 ---
 
-## ⚠️ High優先度（信頼度 0.8-0.9）
+## ⚠️ High優先度（信頼度 85-94%）
 
 [同様の形式...]
 

@@ -1,6 +1,6 @@
-# Command Workflows
+# Workflow Guide
 
-Custom commands for systematic software development support.
+Guide for **using** commands. User reference for command selection and workflow patterns.
 
 ## Available Commands
 
@@ -32,6 +32,7 @@ Custom commands for systematic software development support.
 | ------------- | ------------------------------------- |
 | `/auto-test`  | Auto test runner with conditional fix |
 | `/full-cycle` | Complete development cycle            |
+| `/hookify`    | Create and manage custom hooks        |
 
 ### Browser & Documentation
 
@@ -59,13 +60,11 @@ Custom commands for systematic software development support.
 | Feature       | `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate` | New capability       |
 | Simple        | `/code` → `/test`                                                   | Clear implementation |
 
-**Plan Mode**: `Shift+Tab` for architecture decisions before implementation.
-
 ## Command Selection
 
 | Criteria          | High Priority         | Medium Priority      | Low Priority        |
 | ----------------- | --------------------- | -------------------- | ------------------- |
-| **Understanding** | ≥95% → direct         | 70-94% → `/research` | <70% → clarify      |
+| **Understanding** | ≥95% → direct         | 70-94% → `/think`    | <70% → `/research`  |
 | **Complexity**    | Multi-step → workflow | Single file → `/fix` | Unclear → `/think`  |
 | **Urgency**       | Critical → `/fix`     | Normal → standard    | Planning → `/think` |
 
@@ -89,6 +88,8 @@ Custom commands for systematic software development support.
 
 Auto-generated document tracking implementation through the lifecycle.
 
+See [@../../skills/orchestrating-workflows/references/shared/idr-generation.md](../../skills/orchestrating-workflows/references/shared/idr-generation.md)
+
 | Command     | IDR Action              |
 | ----------- | ----------------------- |
 | `/code`     | Creates with decisions  |
@@ -100,12 +101,11 @@ Auto-generated document tracking implementation through the lifecycle.
 
 ## Architecture
 
-| Layer      | Role                              | Examples                                  |
-| ---------- | --------------------------------- | ----------------------------------------- |
-| **Skills** | User workflows and knowledge base | `/code`, `/audit`, `generating-tdd-tests` |
-| **Agents** | Specialized analysis              | `audit-orchestrator`                      |
-
-**Note**: As of v2.1.3, slash commands and skills are unified. Skills can be invoked via `/skill-name` and also auto-trigger based on keywords.
+| Layer       | Location            | Role                  |
+| ----------- | ------------------- | --------------------- |
+| **Command** | `commands/*.md`     | User-facing workflows |
+| **Skill**   | `skills/*/SKILL.md` | Knowledge base        |
+| **Agent**   | `agents/*.md`       | Specialized analysis  |
 
 ## Edge Cases
 
@@ -116,8 +116,3 @@ Auto-generated document tracking implementation through the lifecycle.
 | Multiple valid approaches | Present options for user choice                        |
 | Unclear requirements      | Start with `/research`                                 |
 | Complex multi-part        | Break into sub-workflows                               |
-
-## Related Files
-
-- `~/.claude/CLAUDE.md` - Global settings
-- `~/.claude/settings.json` - Tool permissions

@@ -144,8 +144,3 @@ export const TodoContainer = () => {
 - Presentationalコンポーネントはpropsのみ
 - Presentationalコンポーネントをピュアに保つ
 - 迷ったらPresentationalを優先
-
-## 関連原則
-
-- [@../../rules/development/READABLE_CODE.md](../../rules/development/READABLE_CODE.md) - 明確な分離はコード理解を改善
-- [@../../rules/PRINCIPLE_RELATIONSHIPS.md](../../rules/PRINCIPLE_RELATIONSHIPS.md#development-practices)

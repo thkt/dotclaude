@@ -67,9 +67,9 @@ Commands become thin orchestrators that reference this skill for planning logic.
 
 | Marker | Confidence | Usage                           |
 | ------ | ---------- | ------------------------------- |
-| [✓]    | >0.8       | Verified (file:line required)   |
-| [→]    | 0.5-0.8    | Inferred (state reasoning)      |
-| [?]    | <0.5       | Hypothesis (needs confirmation) |
+| [✓]    | ≥95%       | Verified (file:line required)   |
+| [→]    | 70-94%     | Inferred (state reasoning)      |
+| [?]    | <70%       | Hypothesis (needs confirmation) |
 
 ## Templates
 
