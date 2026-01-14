@@ -4,7 +4,8 @@ description: >
   基本的なソフトウェア原則 - SOLID、DRY、オッカムの剃刀、ミラーの法則、YAGNI、リーダブルコード。
   トリガー: 原則, シンプル, 複雑, アーキテクチャ, リファクタリング, 保守性, コード品質,
   design pattern, best practice, clean code
-allowed-tools: Read, Grep, Glob
+allowed-tools: [Read, Grep, Glob]
+user-invocable: false
 ---
 
 # コード原則

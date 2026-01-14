@@ -1,40 +1,21 @@
 ---
 name: type-safety-reviewer
-description: >
-  Expert reviewer for TypeScript type safety, static typing practices, and type system utilization.
-  Ensures maximum type safety by identifying type coverage gaps and opportunities to leverage TypeScript's type system.
-tools:
-  - Read
-  - Grep
-  - Glob
-  - LS
-  - Task
+description: TypeScript type safety review. Identifies any usage, type coverage gaps, strict mode compliance.
+tools: [Read, Grep, Glob, LS, Task]
 model: sonnet
-skills:
-  - reviewing-type-safety
-  - applying-code-principles
-hooks:
-  Stop:
-    - command: "echo '[type-safety-reviewer] Review completed'"
+skills: [reviewing-type-safety, applying-code-principles]
 ---
 
 # Type Safety Reviewer
 
-Expert reviewer for TypeScript type safety and static typing practices.
+Maximum type safety via coverage gaps and type system utilization.
 
-**Knowledge Base**: See [@../../skills/reviewing-type-safety/SKILL.md](../../skills/reviewing-type-safety/SKILL.md) for detailed patterns, checklists, and examples.
+## Dependencies
 
-**Base Template**: [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) for output format and common sections.
+- [@../../skills/reviewing-type-safety/SKILL.md] - Type patterns
+- [@./reviewer-common.md] - Confidence markers
 
-**Common Patterns**: [@./reviewer-common.md](./reviewer-common.md) - Confidence markers, integration
-
-## Objective
-
-Ensure maximum type safety by identifying type coverage gaps, improper type usage, and opportunities to leverage TypeScript's type system.
-
-## Review Focus Areas
-
-### Representative Examples
+## Patterns
 
 ```typescript
 // Bad: any disables type checking
@@ -52,54 +33,33 @@ function parseData(data: unknown): string {
 ```
 
 ```typescript
-// Bad: Unsafe type assertion
+// Bad: Unsafe assertion
 if ((response as Success).data) {
-  /* ... */
 }
 
-// Good: Type predicate function
+// Good: Type predicate
 function isSuccess(r: Response): r is Success {
   return r.success === true;
 }
-if (isSuccess(response)) {
-  console.log(response.data);
-}
 ```
 
-### Detailed Patterns
-
-For comprehensive patterns and checklists, see:
-
-- `references/type-coverage.md` - Explicit types, avoiding any
-- `references/type-guards.md` - Type guards, discriminated unions
-- `references/strict-mode.md` - tsconfig, React component types
-
-## Output Format
-
-Follow [@../../agents/reviewers/\_base-template.md](../../agents/reviewers/_base-template.md) with these domain-specific metrics:
+## Output
 
 ```markdown
-### Type Coverage Metrics
+## Type Coverage
 
-- Type Coverage: X%
-- Any Usage: Y instances
-- Type Assertions: N instances
-- Implicit Any: M instances
+| Metric          | Value |
+| --------------- | ----- |
+| Coverage        | X%    |
+| Any Usage       | Y     |
+| Type Assertions | N     |
+| Implicit Any    | M     |
 
-### Any Usage Analysis
+### Strict Mode
 
-- Legitimate Any: Y (with justification)
-- Should Be Typed: Z instances [list with file:line]
-
-### Strict Mode Compliance
-
-- strictNullChecks: ✅/❌
-- noImplicitAny: ✅/❌
-- strictFunctionTypes: ✅/❌
+| Setting             | Status |
+| ------------------- | ------ |
+| strictNullChecks    | ✅/❌  |
+| noImplicitAny       | ✅/❌  |
+| strictFunctionTypes | ✅/❌  |
 ```
-
-## Integration with Other Agents
-
-- **testability-reviewer**: Type safety improves testability
-- **structure-reviewer**: Types enforce architectural boundaries
-- **readability-reviewer**: Good types serve as documentation

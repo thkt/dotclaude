@@ -24,7 +24,7 @@ Claude Codeのナレッジベース、ガイド、自動化ワークフローを
 |                  | `documenting-architecture`   | アーキテクチャドキュメント   | skill                 |
 |                  | `documenting-apis`           | API仕様                      | skill                 |
 |                  | `documenting-domains`        | ドメイン理解                 | skill                 |
-|                  | `setting-up-docs`            | 環境セットアップガイド       | skill                 |
+|                  | `documenting-setup`          | 環境セットアップガイド       | skill                 |
 |                  | `managing-documentation`     | ドキュメントワークフロー     | /adr, /rulify         |
 | **自動化**       | `automating-browser`         | ブラウザ操作(デモ、GIF)      | /e2e                  |
 |                  | `utilizing-cli-tools`        | CLIツール(gh, git)           | /commit, /pr, /branch |

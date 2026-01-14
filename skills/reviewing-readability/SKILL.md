@@ -71,8 +71,3 @@ Target: New team member understands code in < 1 minute.
 | Clarity > Cleverness | Simple code wins    |
 | Respect 7±2 limit    | Break into chunks   |
 | Tell, Don't Ask      | Direct method calls |
-
-## References
-
-- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Cognitive limits and Readable Code
-- [@./references/ai-antipatterns.md](./references/ai-antipatterns.md) - AI over-engineering patterns

@@ -36,11 +36,11 @@ NFR-001 Validates: AC-002
 
 ## Confidence Markers
 
-| Range        | Meaning   | Evidence            |
-| ------------ | --------- | ------------------- |
-| [C: 0.9+]    | Verified  | file:line           |
-| [C: 0.7-0.9] | Inferred  | Reasoning stated    |
-| [C: <0.7]    | Uncertain | Needs investigation |
+| Marker | Meaning   | Evidence            |
+| ------ | --------- | ------------------- |
+| [✓]    | Verified  | file:line           |
+| [→]    | Inferred  | Reasoning stated    |
+| [?]    | Uncertain | Needs investigation |
 
 ## Component API (Frontend Only)
 
@@ -69,7 +69,7 @@ Save to: .claude/workspace/planning/[same-dir]/spec.md
 
 ## Template
 
-Structure reference: `~/.claude/templates/spec/workflow-improvement.md`
+Structure reference: `~/.claude/templates/spec/template.md`
 
 - ✅ Copy: Section structure, ID naming
 - ❌ Do NOT copy: Actual content

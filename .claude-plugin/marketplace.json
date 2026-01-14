@@ -47,7 +47,7 @@
       "agents": [
         "./agents/orchestrators/audit-orchestrator.md",
         "./agents/analyzers/architecture-analyzer.md",
-        "./agents/generators/test.md",
+        "./agents/generators/test-generator.md",
         "./agents/enhancers/progressive-enhancer.md",
         "./agents/reviewers/subagent-reviewer.md",
         "./agents/reviewers/document-reviewer.md",
@@ -120,10 +120,10 @@
         "./commands/issue.md"
       ],
       "agents": [
-        "./agents/git/branch-generator.md",
-        "./agents/git/commit-generator.md",
-        "./agents/git/pr-generator.md",
-        "./agents/git/issue-generator.md"
+        "./agents/generators/branch-generator.md",
+        "./agents/generators/commit-generator.md",
+        "./agents/generators/pr-generator.md",
+        "./agents/generators/issue-generator.md"
       ]
     },
     {
@@ -146,7 +146,17 @@
         "rulify"
       ],
       "category": "Documentation",
-      "commands": ["./commands/adr.md", "./commands/rulify.md"]
+      "commands": [
+        "./commands/adr.md",
+        "./commands/rulify.md",
+        "./commands/docs.md"
+      ],
+      "agents": [
+        "./agents/analyzers/architecture-analyzer.md",
+        "./agents/analyzers/api-analyzer.md",
+        "./agents/analyzers/domain-analyzer.md",
+        "./agents/analyzers/setup-analyzer.md"
+      ]
     },
     {
       "name": "browser-workflows",
@@ -207,7 +217,7 @@
         "./skills/reviewing-silent-failures/SKILL.md",
         "./skills/reviewing-testability/SKILL.md",
         "./skills/reviewing-type-safety/SKILL.md",
-        "./skills/setting-up-docs/SKILL.md",
+        "./skills/documenting-setup/SKILL.md",
         "./skills/utilizing-cli-tools/SKILL.md"
       ]
     },

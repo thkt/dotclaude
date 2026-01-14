@@ -6,7 +6,6 @@ How `/code` command uses TDD for new feature development.
 
 - **Source**: spec.md with functional requirements
 - **Approach**: Generate all tests in skip state, activate one-by-one
-- **Tool**: test-generator agent
 
 ## Workflow
 
@@ -16,7 +15,7 @@ How `/code` command uses TDD for new feature development.
    └─ Identify Given-When-Then scenarios
 
 2. Generate skipped tests
-   └─ test-generator creates test scaffold
+   └─ Create test scaffold (all skipped)
    └─ ALL tests in skip state (it.skip())
    └─ Ordered simple → complex
 
@@ -65,7 +64,7 @@ it.skip("calculates basic case", () => {
 
 ### Phase 0: Test Generation
 
-**From spec.md** (FR-001, FR-002, FR-003), test-generator creates:
+**From spec.md** (FR-001, FR-002, FR-003), generate:
 
 ```typescript
 describe("Discount Calculator", () => {

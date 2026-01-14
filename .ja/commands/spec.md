@@ -17,25 +17,12 @@ dependencies: [formatting-audits, managing-planning]
 
 ## 実行
 
-`managing-planning`スキルのテンプレートでSOWからspecを生成。
+テンプレートでSOWからspecを生成（ID形式: FR-001, T-001, NFR-001）。
 
-### 必須セクション
+テンプレート: [@../../templates/spec/template.md](../../templates/spec/template.md)
 
-1. 機能要件（FR-001...）
-2. データモデル（TypeScriptインターフェース）
-3. 実装詳細
-4. テストシナリオ（Given-When-Then）
-5. 非機能要件（NFR-001...）
-6. 依存関係
-7. 実装チェックリスト
-
-### トレーサビリティ
-
-- FR-001 `Implements: AC-001` → SOWのACにリンク
-- T-001 `Validates: FR-001` → テストが要件を検証
+トレーサビリティ: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
 
 ## 出力
 
-```text
-.claude/workspace/planning/[same-dir]/spec.md
-```
+ファイル: `.claude/workspace/planning/[same-dir]/spec.md`

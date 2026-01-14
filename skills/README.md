@@ -24,7 +24,7 @@ Skills provide knowledge bases, guides, and automation workflows for Claude Code
 |                   | `documenting-architecture`   | Architecture documentation    | skill                 |
 |                   | `documenting-apis`           | API specification             | skill                 |
 |                   | `documenting-domains`        | Domain understanding          | skill                 |
-|                   | `setting-up-docs`            | Environment setup guide       | skill                 |
+|                   | `documenting-setup`          | Environment setup guide       | skill                 |
 |                   | `managing-documentation`     | Documentation workflows       | /adr, /rulify         |
 | **Automation**    | `automating-browser`         | Browser control (demos, GIFs) | /e2e                  |
 |                   | `utilizing-cli-tools`        | CLI tools (gh, git)           | /commit, /pr, /branch |

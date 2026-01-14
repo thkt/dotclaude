@@ -2,9 +2,8 @@
 name: orchestrating-workflows
 description: >
   /code, /fix, /audit などの実装コマンド用のワークフローオーケストレーションパターン。
-  ステップバイステップの実行フロー、品質ゲート、完了基準を提供。
-  Triggers: workflow, orchestration, command flow, IDR, test generation, RGRC, quality gates, completion criteria.
-allowed-tools: Read, Write, Grep, Glob, Task, Bash
+  トリガー: workflow, orchestration, command flow, IDR, test generation, RGRC, quality gates, completion criteria.
+allowed-tools: [Read, Write, Grep, Glob, Task, Bash]
 user-invocable: false
 ---
 
@@ -12,40 +11,31 @@ user-invocable: false
 
 実装コマンド用のワークフローパターンとオーケストレーションロジック。
 
-## 目的
+## ワークフローリファレンス
 
-以前 `references/commands/` に散在していたワークフロー知識を一元化。
-コマンドは薄いオーケストレーターとなり、実行ロジックはこのスキルを参照。
+| コマンド | ワークフロー参照                 | 目的                   |
+| -------- | -------------------------------- | ---------------------- |
+| `/code`  | [@./references/code-workflow.md] | RGRCサイクルでTDD実装  |
+| `/fix`   | [@./references/fix-workflow.md]  | 根本原因分析でバグ修正 |
 
-## ワークフロータイプ
+## 共有パターン
 
-### 実装ワークフロー
+| パターン    | 参照                                      | 使用先                            |
+| ----------- | ----------------------------------------- | --------------------------------- |
+| IDR生成     | [@./references/shared/idr-generation.md]  | /code, /audit, /polish, /validate |
+| TDDサイクル | [@./references/shared/tdd-cycle.md]       | /code, /fix                       |
+| テスト生成  | [@./references/shared/test-generation.md] | /code, /fix                       |
 
-| コマンド | ワークフロー参照                                                | 目的                   |
-| -------- | --------------------------------------------------------------- | ---------------------- |
-| `/code`  | [@./references/code-workflow.md](./references/code-workflow.md) | RGRCサイクルでTDD実装  |
-| `/fix`   | [@./references/fix-workflow.md](./references/fix-workflow.md)   | 根本原因分析でバグ修正 |
-
-### 共有パターン
-
-| パターン    | 参照                                                                              | 使用先                            |
-| ----------- | --------------------------------------------------------------------------------- | --------------------------------- |
-| IDR生成     | [@./references/shared/idr-generation.md](./references/shared/idr-generation.md)   | /code, /audit, /polish, /validate |
-| TDDサイクル | [@./references/shared/tdd-cycle.md](./references/shared/tdd-cycle.md)             | /code, /fix                       |
-| テスト生成  | [@./references/shared/test-generation.md](./references/shared/test-generation.md) | /code, /fix                       |
-
-## クイックリファレンス
-
-### RGRCサイクル (Red-Green-Refactor-Commit)
+## RGRCサイクル
 
 ```text
 1. Red    - 失敗するテストを作成（失敗理由を確認）
-2. Green  - 最小限のコードで通過（"罪を犯してよい" - quick/dirty OK）
+2. Green  - 最小限のコードで通過（"罪を犯してよい" - dirty OK）
 3. Refactor - 原則を適用（テストをグリーンに保つ）
 4. Commit - 安定状態を保存
 ```
 
-### 品質ゲート
+## 品質ゲート
 
 | ゲート     | 目標             | 検証方法                    |
 | ---------- | ---------------- | --------------------------- |
@@ -54,7 +44,7 @@ user-invocable: false
 | 型         | エラーなし       | `tsc --noEmit` 終了コード 0 |
 | カバレッジ | C0 ≥90%, C1 ≥80% | カバレッジレポート          |
 
-### 完了基準
+## 完了基準
 
 | チェック         | ステータス |
 | ---------------- | ---------- |
@@ -63,23 +53,3 @@ user-invocable: false
 | 型エラーなし     | 必須       |
 | ドキュメント更新 | 動作変更時 |
 | IDR生成          | SOW存在時  |
-
-## 参照
-
-### 原則 (rules/)
-
-- [@../../rules/development/COMPLETION_CRITERIA.md](../../rules/development/COMPLETION_CRITERIA.md) - 信頼度メトリクス
-- [@../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../rules/development/PROGRESSIVE_ENHANCEMENT.md) - アウトカムファースト開発
-
-### 関連スキル
-
-- `generating-tdd-tests` - TDDの基礎
-- `applying-code-principles` - 設計原則
-
-### 使用コマンド
-
-- `/code` - TDD実装
-- `/fix` - バグ修正
-- `/audit` - コードレビュー
-- `/polish` - コード簡素化
-- `/validate` - SOW検証

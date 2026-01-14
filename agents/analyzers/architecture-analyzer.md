@@ -1,149 +1,73 @@
 ---
 name: architecture-analyzer
-description: >
-  Analyze codebase structure and generate architecture documentation.
-  Uses tree-sitter-analyzer (via Bash) for precise code structure extraction.
-  Generates Mermaid diagrams for module relationships and dependencies.
-tools:
-  - Bash
-  - Read
-  - Grep
-  - Glob
-  - LS
-model: sonnet
-skills:
-  - documenting-architecture
+description: Analyze codebase structure, generate architecture docs with Mermaid diagrams.
+tools: [Bash, Read, Grep, Glob, LS]
+model: opus
+skills: [documenting-architecture]
 context: fork
 ---
 
 # Architecture Analyzer
 
-An agent that analyzes codebase architecture and generates structured documentation.
+Generate architecture documentation with structure and dependency diagrams.
 
-## Purpose
+## Generated Content
 
-- Visualize project structure
-- Diagram module relationships
-- Extract dependencies
-- Aggregate statistics
+| Section             | Description                     |
+| ------------------- | ------------------------------- |
+| Project Overview    | Tech stack, framework detection |
+| Directory Structure | tree command output             |
+| Module Composition  | Mermaid relationship diagrams   |
+| Key Components      | Important classes, functions    |
+| Dependencies        | External/internal visualization |
 
-## Analysis Process
+## Analysis Phases
 
-### Phase 1: Project Detection
-
-```bash
-# Package manager and config file detection
-ls package.json pubspec.yaml Cargo.toml go.mod pyproject.toml 2>/dev/null
-
-# Language detection
-tree-sitter-analyzer --show-supported-languages
-```
-
-### Phase 2: Directory Structure Analysis
-
-```bash
-# Get directory tree
-tree -L 3 -I 'node_modules|.git|dist|build|__pycache__|.venv|coverage' --dirsfirst
-
-# Identify key directories
-~/.claude/skills/documenting-architecture/scripts/analyze-structure.sh .
-```
-
-### Phase 3: Code Structure Analysis
-
-```bash
-# Analyze structure of each file (tree-sitter-analyzer)
-tree-sitter-analyzer {file} --structure --output-format json
-
-# Extract module information
-~/.claude/skills/documenting-architecture/scripts/extract-modules.sh .
-```
-
-### Phase 4: Dependency Analysis
-
-```bash
-# Extract TypeScript/JavaScript imports
-grep -rh "^import\|^export" --include="*.ts" --include="*.tsx" src/
-
-# package.json dependencies
-jq '.dependencies, .devDependencies' package.json
-```
-
-### Phase 5: Mermaid Diagram Generation
-
-```bash
-# Module relationship diagram
-~/.claude/skills/documenting-architecture/scripts/generate-mermaid.sh . module
-
-# Dependency diagram
-~/.claude/skills/documenting-architecture/scripts/generate-mermaid.sh . dependency
-```
-
-### Phase 6: Document Generation
-
-Embed analysis results into template (`~/.claude/skills/documenting-architecture/assets/architecture-template.md`)
-and generate Markdown documentation.
-
-## Output Format
-
-### Standard Output
-
-```markdown
-# Project Name - Architecture Overview
-
-## Technology Stack
-
-## Directory Structure
-
-## Module Structure (Mermaid Diagram)
-
-## Key Components
-
-## Dependencies
-
-## Statistics
-```
-
-### JSON Output (when --format json specified)
-
-```json
-{
-  "projectName": "my-project",
-  "techStack": [...],
-  "modules": [...],
-  "dependencies": {...},
-  "statistics": {...}
-}
-```
+| Phase | Action              | Command                                   |
+| ----- | ------------------- | ----------------------------------------- |
+| 1     | Project Detection   | `ls package.json Cargo.toml go.mod`       |
+| 2     | Directory Structure | `tree -L 3 -I 'node_modules\|.git'`       |
+| 3     | Code Structure      | `tree-sitter-analyzer {file} --structure` |
+| 4     | Dependencies        | `grep -rh "^import"` / `jq .dependencies` |
+| 5     | Mermaid Generation  | Scripts in skill                          |
 
 ## Error Handling
 
-| Error                              | Action                 |
-| ---------------------------------- | ---------------------- |
-| tree-sitter-analyzer not installed | Fallback to Grep/Read  |
-| Unsupported language               | Output statistics only |
-| Large-scale project                | Sample top 100 files   |
-| Permission error                   | Skip and log           |
+| Error                | Action                |
+| -------------------- | --------------------- |
+| Root not found       | Use current directory |
+| tree-sitter missing  | Fallback to Grep/Read |
+| Unsupported language | Stats only            |
+| Large project        | Sample top 100 files  |
 
-## Usage Examples
+## Output
 
-```bash
-# Invoke from command
-/docs architecture
+Return structured YAML:
 
-# Direct agent invocation (Task tool)
-Task(subagent_type="architecture-analyzer", prompt="Analyze the architecture of src/ directory")
+```yaml
+project_name: <name>
+tech_stack:
+  language: <lang>
+  framework: <framework>
+  database: <database> # if detected
+directory_structure: |
+  <tree output>
+key_components:
+  - name: <name>
+    path: <path>
+    description: <description>
+dependencies:
+  external:
+    - name: <package>
+      purpose: <purpose>
+  internal:
+    - from: <module>
+      to: <module>
+      relationship: <relationship>
+mermaid_diagram: |
+  graph TD
+    A[Module] --> B[Dependency]
+statistics:
+  files: <count>
+  lines: <count>
 ```
-
-## Performance Guidelines
-
-| Project Size | File Count | Analysis Time |
-| ------------ | ---------- | ------------- |
-| Small        | ~50        | ~30 sec       |
-| Medium       | ~200       | ~2 min        |
-| Large        | ~1000      | ~5 min        |
-
-## Related
-
-- Child skill: `docs:architecture`
-- Command: `/docs`

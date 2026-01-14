@@ -5,8 +5,7 @@
 ## コンテキスト
 
 - **ソース**: バグの説明と再現手順
-- **アプローチ**: バグを再現する失敗テストを書く
-- **ツール**: まず手動テスト、その後リグレッション用にtest-generator
+- **アプローチ**: バグを再現する失敗テストを書き、リグレッションテストを追加
 
 ## ワークフロー
 
@@ -20,7 +19,7 @@
    └─ テストが通る
 
 3. リグレッションを防止
-   └─ test-generatorが追加テストを作成
+   └─ エッジケース用の追加テストを生成
    └─ エッジケースと関連シナリオ
    └─ 必要に応じて統合テスト
 
@@ -51,7 +50,7 @@ function calculateTotal(price, discount) {
 // → テスト実行、0を返す、アサーション成功
 
 // ステップ5: リグレッションテストを生成
-// → test-generatorがエッジケースを追加
+// → リグレッション防止用のエッジケースを追加
 it('ゼロ価格を処理', () => { ... })
 it('ゼロ割引を処理', () => { ... })
 it('負の入力を処理', () => { ... })
@@ -173,10 +172,7 @@ Tests:       3 passed, 3 total
 
 ### フェーズ3.5: リグレッションテストを生成（オプション）
 
-**追加エッジケース用にtest-generatorを使用**:
-
-詳細なtest-generatorパターンについては、以下を参照:
-[@../../orchestrating-workflows/references/shared/test-generation.md#pattern-2-bug-driven-bug-fixing](../../orchestrating-workflows/references/shared/test-generation.md#pattern-2-bug-driven-bug-fixing)
+**リグレッション防止用のエッジケースを追加**:
 
 **生成されたテストの例**:
 

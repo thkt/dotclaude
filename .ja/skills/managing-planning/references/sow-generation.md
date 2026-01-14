@@ -20,7 +20,7 @@
 
 ```bash
 # 最近のリサーチを確認
-ls -t .claude/workspace/research/*-context.md 2>/dev/null | head -1
+ls -t .claude/workspace/research/*.md 2>/dev/null | head -1
 
 # 見つかった場合、表示:
 📄 Using research context: [filename]
@@ -28,50 +28,52 @@ ls -t .claude/workspace/research/*-context.md 2>/dev/null | head -1
 
 ## 必須セクション
 
-| セクション             | 目的                     | 信頼度             |
-| ---------------------- | ------------------------ | ------------------ |
-| エグゼクティブサマリー | 高レベル概要             | [C: 0.7]           |
-| 問題分析               | 現状、課題               | [C: 0.9+] 検証済み |
-| 前提条件               | 事実、仮定、未知         | 混合レベル         |
-| ソリューション設計     | アプローチ、代替案       | [C: 0.7-0.9]       |
-| テスト計画             | Unit/Integration/E2E     | [C: 0.8]           |
-| 受け入れ基準           | フェーズ別               | [C: 0.9+]          |
-| 実装計画               | フェーズ、進捗マトリクス | [C: 0.8]           |
-| 成功メトリクス         | 測定可能なアウトカム     | [C: 0.7]           |
-| リスクと軽減策         | 信頼度レベル別           | 混合               |
-| 検証チェックリスト     | 実装前チェック           | [C: 0.9+]          |
+| セクション             | 目的                     |
+| ---------------------- | ------------------------ |
+| エグゼクティブサマリー | 高レベル概要             |
+| 問題分析               | 現状、課題               |
+| 前提条件               | 事実、仮定、未知         |
+| ソリューション設計     | アプローチ、代替案       |
+| テスト計画             | Unit/Integration/E2E     |
+| 受け入れ基準           | フェーズ別               |
+| 実装計画               | フェーズ、マイルストーン |
+| 成功メトリクス         | 測定可能なアウトカム     |
+| リスクと軽減策         | 特定されたリスク         |
+| 検証チェックリスト     | 実装前チェック           |
 
 ## 信頼度マーカー
 
-| 範囲         | 意味     | エビデンス              |
-| ------------ | -------- | ----------------------- |
-| [C: 0.9+]    | 検証済み | file:line、コマンド出力 |
-| [C: 0.7-0.9] | 推論     | 理由を記載              |
-| [C: <0.7]    | 不確実   | 調査が必要              |
+| マーカー | 意味     | エビデンス              |
+| -------- | -------- | ----------------------- |
+| [✓]      | 検証済み | file:line、コマンド出力 |
+| [→]      | 推論     | 理由を記載              |
+| [?]      | 不確実   | 調査が必要              |
 
-## 進捗マトリクス (PDD統合)
+## コードベース分析（オプション）
 
-進捗駆動開発の追跡を有効化:
+既存プロジェクトの場合、分析:
 
-```markdown
-| 機能  | spec | design | impl | test | review | 進捗 |
-| ----- | :--: | :----: | :--: | :--: | :----: | :--: |
-| 機能A |  ⬜  |   ⬜   |  ⬜  |  ⬜  |   ⬜   |  0%  |
-
-**凡例**: ⬜ なし | 🔄 開始 | 📝 ドラフト | 👀 レビュー済 | ✅ 完了
+```typescript
+Task({
+  subagent_type: "Plan",
+  model: "haiku",
+  prompt: `Feature: "${feature}"
+Investigate: existing patterns, affected modules.
+Return with confidence markers.`,
+});
 ```
 
 ## 出力
 
 ```text
-保存先: .claude/workspace/planning/[timestamp]-[feature]/sow.md
+保存先: .claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md
 
 ✅ SOW saved to: .claude/workspace/planning/[path]/sow.md
 ```
 
 ## テンプレート
 
-構造参照: `~/.claude/templates/sow/workflow-improvement.md`
+構造参照: `~/.claude/templates/sow/template.md`
 
 - ✅ コピー: セクション構造、ID命名 (I-001, AC-001, R-001)
 - ❌ コピーしない: 実際のコンテンツ

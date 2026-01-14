@@ -18,28 +18,15 @@ Generate sow.md for planning and analysis.
 ### Resolution Order
 
 1. Argument provided → use as task description
-2. Research context exists → use `.claude/workspace/research/*-context.md`
+2. Research context exists → use `.claude/workspace/research/*.md`
 3. None → prompt via AskUserQuestion
 
 ## Execution
 
-Generate SOW using template structure from `managing-planning` skill (ID format: I-001, AC-001, R-001).
+Generate SOW using template (ID format: I-001, AC-001, R-001).
 
-### Required Sections
-
-1. Executive Summary
-2. Problem Analysis
-3. Assumptions & Prerequisites
-4. Solution Design
-5. Test Plan
-6. Acceptance Criteria
-7. Implementation Plan (with Progress Matrix)
-8. Success Metrics
-9. Risks & Mitigations
-10. Verification Checklist
+Template: [@../../templates/sow/template.md](../../templates/sow/template.md)
 
 ## Output
 
-```text
-.claude/workspace/planning/[timestamp]-[feature]/sow.md
-```
+File: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`

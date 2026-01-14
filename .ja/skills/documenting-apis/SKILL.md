@@ -1,75 +1,41 @@
 ---
 name: documenting-apis
-description: >
-  コードベース分析からAPI仕様ドキュメントを生成。
-  RESTエンドポイント、関数シグネチャ、型定義、スキーマを検出。
-  トリガー: API specification, endpoints, REST API, type definitions,
-  OpenAPI, Swagger, API documentation.
-allowed-tools: Read, Write, Grep, Glob, Bash, Task
+description: コードベースからAPI仕様を生成 - エンドポイント、型、スキーマ。
+allowed-tools: [Read, Write, Grep, Glob, Bash, Task]
+context: fork
+user-invocable: false
 ---
 
-# docs:api - API仕様生成
+# API仕様生成
 
 コードベース分析からAPIドキュメントを自動生成。
 
 ## 検出項目
 
-| カテゴリ | 対象 |
-| --- | --- |
-| RESTエンドポイント | Express, Fastify, Hono, Next.js, Flask, FastAPI, Django REST |
-| 関数 | tree-sitter抽出、TypeScript型、JSDoc、docstrings |
-| 型 | interface, type, Zod, Yup, dataclass, Pydantic |
-| OpenAPI | openapi.yaml/json, swagger.yaml/json |
+| カテゴリ       | 対象                               |
+| -------------- | ---------------------------------- |
+| エンドポイント | Express, Fastify, Next.js, Flask等 |
+| 関数           | tree-sitter, TypeScript, JSDoc     |
+| 型             | interface, type, Zod, Pydantic     |
+| OpenAPI        | openapi.yaml, swagger.yaml         |
+| ベースURL      | 環境設定、定数                     |
+| 認証           | Authミドルウェア、JWT、OAuth       |
+| エラー形式     | エラーハンドラ、フォーマッタ       |
 
-## フレームワーク検出パターン
+## 検出パターン
 
-| フレームワーク | パターン |
-| --- | --- |
-| Express/Fastify/Hono | `app.get()`, `router.post()` |
-| Next.js | `app/api/**/route.ts`, `pages/api/**/*.ts` |
-| Flask | `@app.route()` |
-| FastAPI | `@app.get()`, `@app.post()` |
-| Django REST | `@api_view` |
+| フレームワーク | パターン                     |
+| -------------- | ---------------------------- |
+| Express        | `app.get()`, `router.post()` |
+| Next.js        | `app/api/**/route.ts`        |
+| Flask          | `@app.route()`               |
+| FastAPI        | `@app.get()`, `@app.post()`  |
 
-## 分析スクリプト
+## 品質基準
 
-| スクリプト | 目的 |
-| --- | --- |
-| `scripts/detect-endpoints.sh` | HTTPメソッド、パス、ハンドラー、ファイル位置 |
-| `scripts/extract-types.sh` | 型名、フィールド、関連型 |
-
-## 生成構造
-
-```markdown
-# API仕様
-
-## エンドポイント一覧
-### GET /api/users
-**リクエスト**: paramsテーブル
-**レスポンス**: JSON例
-
-## 型定義
-### User
-| フィールド | 型 | 説明 |
-```
-
-## 使用方法
-
-```bash
-/docs:api                    # APIドキュメント生成
-"Generate API specification" # 自然言語
-```
-
-## Markdownバリデーション
-
-生成後、出力を検証:
-
-```bash
-~/.claude/skills/scripts/validate-markdown.sh {output-file}
-```
-
-ブロッキングなし（警告のみ） - スタイル問題はドキュメント作成をブロックしない。
-
-## 参照
-
-- 関連: `documenting-architecture`, `setting-up-docs`, `documenting-domains`
+| 基準                              | 目標 |
+| --------------------------------- | ---- |
+| 新メンバーが10分以内にAPI利用可能 | ✓    |
+| Request/Responseの例が存在        | ✓    |
+| エラーケースが文書化されている    | ✓    |
+| 認証要件が明確                    | ✓    |

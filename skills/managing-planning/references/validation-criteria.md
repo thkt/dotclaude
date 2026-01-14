@@ -47,7 +47,7 @@ For each acceptance criterion:
 ## Validation Report Format
 
 ```markdown
-## /validate - [timestamp]
+## /validate - [YYYY-MM-DD HH:MM]
 
 ### SOW Acceptance Criteria Validation
 

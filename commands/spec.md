@@ -17,25 +17,12 @@ Generate spec.md with implementation-ready details.
 
 ## Execution
 
-Generate spec from SOW using `managing-planning` skill templates.
+Generate spec from SOW using template (ID format: FR-001, T-001, NFR-001).
 
-### Required Sections
+Template: [@../../templates/spec/template.md](../../templates/spec/template.md)
 
-1. Functional Requirements (FR-001...)
-2. Data Model (TypeScript interfaces)
-3. Implementation Details
-4. Test Scenarios (Given-When-Then)
-5. Non-Functional Requirements (NFR-001...)
-6. Dependencies
-7. Implementation Checklist
-
-### Traceability
-
-- FR-001 `Implements: AC-001` → Links to SOW AC
-- T-001 `Validates: FR-001` → Test validates requirement
+Traceability: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
 
 ## Output
 
-```text
-.claude/workspace/planning/[same-dir]/spec.md
-```
+File: `.claude/workspace/planning/[same-dir]/spec.md`

@@ -6,7 +6,6 @@
 
 - **ソース**: 機能要件を含むspec.md
 - **アプローチ**: すべてのテストをスキップ状態で生成し、1つずつアクティベート
-- **ツール**: test-generatorエージェント
 
 ## ワークフロー
 
@@ -16,7 +15,7 @@
    └─ Given-When-Thenシナリオを特定
 
 2. スキップされたテストを生成
-   └─ test-generatorがテストスキャフォールドを作成
+   └─ テストスキャフォールドを作成（すべてスキップ）
    └─ すべてのテストがスキップ状態（it.skip()）
    └─ シンプル → 複雑の順序
 
@@ -34,15 +33,15 @@
 ```typescript
 // spec.mdから生成（すべてスキップ）:
 
-it.skip('ゼロ入力を処理', () => {
+it.skip("ゼロ入力を処理", () => {
   // TODO: [SKIP] FR-001
-  expect(calculateDiscount(0)).toBe(0.1)
-})
+  expect(calculateDiscount(0)).toBe(0.1);
+});
 
-it.skip('基本ケースを計算', () => {
+it.skip("基本ケースを計算", () => {
   // TODO: [SKIP] FR-002
-  expect(calculateDiscount(100)).toBe(10)
-})
+  expect(calculateDiscount(100)).toBe(10);
+});
 
 // ユーザーが最初のテストをアクティベート:
 // ステップ1: .skipを削除
@@ -65,22 +64,22 @@ it.skip('基本ケースを計算', () => {
 
 ### フェーズ0: テスト生成
 
-**spec.md**（FR-001, FR-002, FR-003）から、test-generatorが作成:
+**spec.md**（FR-001, FR-002, FR-003）から生成:
 
 ```typescript
-describe('Discount Calculator', () => {
-  it.skip('ゼロ購入を処理（FR-001）', () => {
-    expect(calculateDiscount(0)).toBe(0.1)
-  })
+describe("Discount Calculator", () => {
+  it.skip("ゼロ購入を処理（FR-001）", () => {
+    expect(calculateDiscount(0)).toBe(0.1);
+  });
 
-  it.skip('標準割引を計算（FR-002）', () => {
-    expect(calculateDiscount(50)).toBe(5)
-  })
+  it.skip("標準割引を計算（FR-002）", () => {
+    expect(calculateDiscount(50)).toBe(5);
+  });
 
-  it.skip('大量割引を適用（FR-003）', () => {
-    expect(calculateDiscount(200)).toBe(30)
-  })
-})
+  it.skip("大量割引を適用（FR-003）", () => {
+    expect(calculateDiscount(200)).toBe(30);
+  });
+});
 ```
 
 すべてのテストがスキップ状態、シンプル → 複雑の順序（Baby Steps）。
@@ -89,7 +88,7 @@ describe('Discount Calculator', () => {
 
 **サイクル1: 最初のテストをアクティベート**
 
-```text
+````text
 🔄 RGRCサイクル 1/3
 
 次のテストをアクティベートしますか？
@@ -102,13 +101,13 @@ describe('Discount Calculator', () => {
 it('ゼロ購入を処理（FR-001）', () => {
   expect(calculateDiscount(0)).toBe(0.1)
 })
-```
+````
 
 [Y] アクティベートしてRedフェーズに入る
 [S] 次のテストにスキップ
 [Q] 終了
 
-```text
+````text
 **ユーザーが選択: Y**
 
 **🔴 Redフェーズ**:
@@ -127,7 +126,7 @@ FAIL  src/discount.test.ts
     ReferenceError: calculateDiscount is not defined
 
 → テストは正しい理由で失敗: 関数がまだ存在しない
-```
+````
 
 **🟢 Greenフェーズ - 最小限の実装**:
 
@@ -214,9 +213,9 @@ PASS  src/discount.test.ts
 
 ```typescript
 // これをしないで:
-it('test 1', () => { })  // アクティベート済み
-it('test 2', () => { })  // アクティベート済み <- 複数を同時に！
-it.skip('test 3', () => { })
+it("test 1", () => {}); // アクティベート済み
+it("test 2", () => {}); // アクティベート済み <- 複数を同時に！
+it.skip("test 3", () => {});
 ```
 
 **なぜ悪いか**: Baby Stepsに違反。テストが失敗した場合、どの変更が原因かわからない。
@@ -242,17 +241,17 @@ it.skip('test 3', () => { })
 ```typescript
 // Greenフェーズ後:
 export function calculateDiscount(amount: number): number {
-  if (amount === 0) return 0.1
-  if (amount > 0 && amount <= 100) return amount * 0.1
-  if (amount > 100) return amount * 0.15
-  return 0  // デッドコード！
+  if (amount === 0) return 0.1;
+  if (amount > 0 && amount <= 100) return amount * 0.1;
+  if (amount > 100) return amount * 0.15;
+  return 0; // デッドコード！
 }
 
 // リファクタリングすべき:
 export function calculateDiscount(amount: number): number {
-  if (amount === 0) return 0.1
-  const rate = amount > 100 ? 0.15 : 0.1
-  return amount * rate
+  if (amount === 0) return 0.1;
+  const rate = amount > 100 ? 0.15 : 0.1;
+  return amount * rate;
 }
 ```
 

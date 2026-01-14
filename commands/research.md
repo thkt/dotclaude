@@ -4,7 +4,7 @@ allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash
 model: opus
 context: fork
 argument-hint: "[research topic or question]"
-dependencies: [Explore]
+dependencies: [architecture-analyzer, Explore]
 ---
 
 # /research - Project Research & Investigation
@@ -18,23 +18,15 @@ Investigate codebase with confidence-based findings, without implementation.
 
 ## Execution
 
-1. Scope discovery (project structure, tech stack)
-2. Investigation via `Explore` and `code-explorer` agents
-3. Synthesis with confidence markers (✓/→/?)
+| Phase | Agent                   | Focus                                    |
+| ----- | ----------------------- | ---------------------------------------- |
+| 1     | `architecture-analyzer` | Big picture: structure, tech stack       |
+| 2     | `Explore`               | Detail: code paths, patterns, edge cases |
+| 3     | (synthesis)             | Consolidate with ✓/→/? markers           |
+
+Markers: [@../../rules/core/AI_OPERATION_PRINCIPLES.md](../../rules/core/AI_OPERATION_PRINCIPLES.md)
 
 ## Output
 
-```text
-.claude/workspace/research/
-├── YYYY-MM-DD-[topic].md          # Detailed findings
-└── YYYY-MM-DD-[topic]-context.md  # For /think integration
-```
-
-### Required Sections
-
-1. Purpose
-2. Prerequisites (✓/→/?)
-3. Available Data
-4. Constraints
-5. Key Findings
-6. References
+File: `.claude/workspace/research/YYYY-MM-DD-[topic].md`
+Template: [@../../templates/research/template.md](../../templates/research/template.md)

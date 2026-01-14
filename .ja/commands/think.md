@@ -25,13 +25,11 @@ SOWとSpec生成による実装計画のオーケストレーション。
 | 3    | /sow                    | sow.md           |
 | 4    | /spec                   | spec.md          |
 | 5    | sow-spec-reviewer (≥90) | （オプション）   |
-| 6    | サマリー生成            | summary.md       |
 
 ## 出力
 
 ```text
-.claude/workspace/planning/[timestamp]-[feature]/
+.claude/workspace/planning/YYYY-MM-DD-[feature]/
 ├── sow.md     # Statement of Work
-├── spec.md    # Specification
-└── summary.md # Review Summary ← ここから開始
+└── spec.md    # Specification
 ```

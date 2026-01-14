@@ -1,6 +1,6 @@
 ---
 description: Analyze Git diff and generate Conventional Commits format messages
-allowed-tools: Task
+allowed-tools: [Task, AskUserQuestion, Bash]
 model: opus
 argument-hint: "[context or issue reference]"
 dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
@@ -17,24 +17,25 @@ Analyze staged changes and generate Conventional Commits messages.
 
 ## Execution
 
-Delegates to `commit-generator` subagent (Conventional Commits format defined there).
+1. Delegate to `commit-generator` (returns structured YAML)
+2. Format and present preview
+3. Confirm with user
+4. Execute commit
+
+## Display Format
+
+Transform agent YAML output to readable preview:
+
+```markdown
+## 📝 Commit Preview
+
+> **<type>(<scope>)**: <description>
+
+<body>
+
+`<footer>`
+```
 
 ## Output
 
-````markdown
-## Commit Message
-
-| Field   | Value                                       |
-| ------- | ------------------------------------------- |
-| Type    | feat / fix / refactor / docs / chore / test |
-| Scope   | (component)                                 |
-| Subject | short description                           |
-
-```text
-feat(auth): add OAuth2 login support
-
-- Add Google OAuth provider
-- Implement token refresh flow
-- Update user session handling
-```
-````
+**Committed**: `[short-hash]` <type>(<scope>): <description>

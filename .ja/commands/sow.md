@@ -18,28 +18,15 @@ dependencies: [formatting-audits, managing-planning]
 ### 解決順序
 
 1. 引数あり → タスク説明として使用
-2. リサーチコンテキストあり → `.claude/workspace/research/*-context.md`を使用
+2. リサーチコンテキストあり → `.claude/workspace/research/*.md`を使用
 3. なし → AskUserQuestionで確認
 
 ## 実行
 
-`managing-planning`スキルのテンプレート構造でSOWを生成（ID形式: I-001, AC-001, R-001）。
+テンプレートでSOWを生成（ID形式: I-001, AC-001, R-001）。
 
-### 必須セクション
-
-1. エグゼクティブサマリー
-2. 問題分析
-3. 前提条件と要件
-4. ソリューション設計
-5. テスト計画
-6. 受け入れ基準
-7. 実装計画（Progress Matrix含む）
-8. 成功メトリクス
-9. リスクと緩和策
-10. 検証チェックリスト
+テンプレート: [@../../templates/sow/template.md](../../templates/sow/template.md)
 
 ## 出力
 
-```text
-.claude/workspace/planning/[timestamp]-[feature]/sow.md
-```
+ファイル: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`

@@ -1,6 +1,6 @@
 ---
 description: Analyze Git changes and suggest appropriate branch names
-allowed-tools: Task
+allowed-tools: [Task, AskUserQuestion, Bash]
 model: opus
 argument-hint: "[context or ticket number]"
 dependencies: [branch-generator, utilizing-cli-tools, managing-git-workflows]
@@ -17,16 +17,10 @@ Analyze current Git changes and suggest appropriate branch names.
 
 ## Execution
 
-Delegates to `branch-generator` subagent (naming conventions defined there).
+1. Delegate to `branch-generator` (returns structured YAML)
+2. Present options via `AskUserQuestion`
+3. Create selected branch
 
 ## Output
 
-```markdown
-## Suggested Branch Names
-
-| Type    | Name                      | Reason           |
-| ------- | ------------------------- | ---------------- |
-| Primary | feature/add-oauth-support | Matches changes  |
-| Alt 1   | feat/oauth-integration    | Short form       |
-| Alt 2   | feat/auth-provider        | More abstraction |
-```
+**Created branch**: `[selected-branch-name]`

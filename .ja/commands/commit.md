@@ -1,6 +1,6 @@
 ---
 description: Git diffを分析し、Conventional Commits形式のメッセージを生成
-allowed-tools: Task
+allowed-tools: [Task, AskUserQuestion, Bash]
 model: opus
 argument-hint: "[コンテキストまたはIssue参照]"
 dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
@@ -17,24 +17,25 @@ dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
 
 ## 実行
 
-`commit-generator`サブエージェントに委譲（Conventional Commits形式はそちらで定義）。
+1. `commit-generator` に委譲（構造化YAMLを返す）
+2. フォーマットしてプレビュー表示
+3. ユーザーに確認
+4. コミット実行
+
+## 表示形式
+
+Agent YAML出力を読みやすいプレビューに変換:
+
+```markdown
+## 📝 コミットプレビュー
+
+> **<type>(<scope>)**: <description>
+
+<body>
+
+`<footer>`
+```
 
 ## 出力
 
-````markdown
-## コミットメッセージ
-
-| フィールド | 値                                          |
-| ---------- | ------------------------------------------- |
-| Type       | feat / fix / refactor / docs / chore / test |
-| Scope      | (コンポーネント)                            |
-| Subject    | 短い説明                                    |
-
-```text
-feat(auth): add OAuth2 login support
-
-- Add Google OAuth provider
-- Implement token refresh flow
-- Update user session handling
-```
-````
+**コミット完了**: `[short-hash]` <type>(<scope>): <description>

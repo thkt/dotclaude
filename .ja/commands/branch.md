@@ -1,6 +1,6 @@
 ---
 description: Git変更を分析し、適切なブランチ名を提案
-allowed-tools: Task
+allowed-tools: [Task, AskUserQuestion, Bash]
 model: opus
 argument-hint: "[コンテキストまたはチケット番号]"
 dependencies: [branch-generator, utilizing-cli-tools, managing-git-workflows]
@@ -17,16 +17,10 @@ dependencies: [branch-generator, utilizing-cli-tools, managing-git-workflows]
 
 ## 実行
 
-`branch-generator`サブエージェントに委譲（命名規約はそちらで定義）。
+1. `branch-generator` に委譲（構造化YAMLを返す）
+2. `AskUserQuestion` で選択肢を提示
+3. 選択されたブランチを作成
 
 ## 出力
 
-```markdown
-## 提案ブランチ名
-
-| 種類  | 名前                      | 理由           |
-| ----- | ------------------------- | -------------- |
-| 推奨  | feature/add-oauth-support | 変更内容に適合 |
-| 代替1 | feat/oauth-integration    | 短縮形         |
-| 代替2 | feat/auth-provider        | より抽象的     |
-```
+**ブランチ作成完了**: `[選択されたブランチ名]`

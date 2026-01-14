@@ -43,42 +43,9 @@ IDRは開発ライフサイクル全体を通じて実装決定を追跡。
 
 ### 新規IDR構造
 
-```markdown
-# IDR: [機能名]
+テンプレート: [@../../../../templates/idr/template.md](../../../../templates/idr/template.md)
 
-| メタデータ | 値               |
-| ---------- | ---------------- |
-| 作成       | YYYY-MM-DD HH:MM |
-| 更新       | YYYY-MM-DD HH:MM |
-| SOW        | ./sow.md         |
-
-## /code - [タイムスタンプ]
-
-### 変更ファイル
-
-| 状態 | ファイル        |
-| ---- | --------------- |
-| 作成 | src/new-file.ts |
-| 変更 | src/existing.ts |
-
-### 実装決定
-
-[実装中に行った主要な選択]
-
-### 注意点
-
-[落とし穴、エッジケース、レビューノート]
-
-### 適用した原則
-
-- TDD/RGRCサイクル
-- オッカムの剃刀
-- [その他の原則]
-
-### 信頼度
-
-[C: 0.XX] - [理由]
-```
+作成セクション: 変更ファイル、主要な判断、備考、レビュアー向け注意点
 
 ### 変更ファイル検出
 
@@ -106,51 +73,60 @@ git diff --name-status HEAD
 ### /audit セクション
 
 ```markdown
-## /audit - [タイムスタンプ]
+## /audit - YYYY-MM-DD HH:MM
 
-### レビューサマリー
+### サマリー
 
-[エージェントレビュー結果]
+| 重要度   | 件数 | 解決済み |
+| -------- | ---- | -------- |
+| Critical | 0    | 0        |
+| High     | 0    | 0        |
 
-### 問題と対応
+### 課題
 
-[発見した問題と対応]
+| #   | 課題   | 重要度 | 場所        | 対応      |
+| --- | ------ | ------ | ----------- | --------- |
+| 1   | [課題] | High   | [file:line] | 修正/延期 |
 
-### 適用した推奨事項
+### 備考
 
-[適用した推奨事項]
+[発見事項、観察されたパターン、将来への推奨事項]
 ```
 
 ### /polish セクション
 
 ```markdown
-## /polish - [タイムスタンプ]
+## /polish - YYYY-MM-DD HH:MM
 
 ### 削除
 
-[削除項目: コメント、コード、ヘルパー]
+| 項目   | タイプ          | 理由   |
+| ------ | --------------- | ------ |
+| [項目] | コメント/コード | [理由] |
 
 ### 簡素化
 
-[行った簡素化]
+[行った簡素化の説明]
 ```
 
 ### /validate セクション
 
 ```markdown
-## /validate - [タイムスタンプ]
+## /validate - YYYY-MM-DD HH:MM
 
-### SOW受け入れ基準検証
+### 受け入れ基準
 
-[AC検証結果]
+| AC     | ステータス | 根拠       |
+| ------ | ---------- | ---------- |
+| AC-001 | PASS/FAIL  | [検証内容] |
 
-### 特定されたギャップ
+### ギャップ
 
 [SOWと実装のギャップ]
 
 ### サインオフ
 
-[検証信頼度]
+[最終メモ、残る懸念、完了確認]
 ```
 
 ## SOW統合
@@ -160,7 +136,7 @@ git diff --name-status HEAD
 **IDR → SOW** (IDRメタデータ内):
 
 ```markdown
-| SOW | ./sow.md |
+SOW: ./sow.md
 ```
 
 **SOW → IDR** (SOW Implementation Records内):
@@ -170,11 +146,6 @@ git diff --name-status HEAD
 
 IDR: `./idr.md`
 Status: [x] In Progress
-
-| フェーズ | 日付       | 信頼度    |
-| -------- | ---------- | --------- |
-| /code    | 2026-01-06 | [C: 0.90] |
-| /audit   | 2026-01-06 | [C: 0.85] |
 ```
 
 ## 検証ロジック (/validate)
@@ -202,6 +173,6 @@ Status: [x] In Progress
 
 ## 関連ファイル
 
-- テンプレート: `~/.claude/templates/idr/implementation.md`
-- SOWテンプレート: `~/.claude/templates/sow/workflow-improvement.md`
+- テンプレート: `~/.claude/templates/idr/template.md`
+- SOWテンプレート: `~/.claude/templates/sow/template.md`
 - ワークスペース: `~/.claude/workspace/planning/`

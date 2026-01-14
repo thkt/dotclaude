@@ -20,7 +20,7 @@ Statement of Work creation process with structured sections.
 
 ```bash
 # Check for recent research
-ls -t .claude/workspace/research/*-context.md 2>/dev/null | head -1
+ls -t .claude/workspace/research/*.md 2>/dev/null | head -1
 
 # If found, display:
 📄 Using research context: [filename]
@@ -28,48 +28,26 @@ ls -t .claude/workspace/research/*-context.md 2>/dev/null | head -1
 
 ## Required Sections
 
-| Section                | Purpose                      | Confidence         |
-| ---------------------- | ---------------------------- | ------------------ |
-| Executive Summary      | High-level overview          | [C: 0.7]           |
-| Problem Analysis       | Current state, issues        | [C: 0.9+] verified |
-| Assumptions            | Facts, assumptions, unknowns | Mixed levels       |
-| Solution Design        | Approach, alternatives       | [C: 0.7-0.9]       |
-| Test Plan              | Unit/Integration/E2E         | [C: 0.8]           |
-| Acceptance Criteria    | By phase                     | [C: 0.9+]          |
-| Implementation Plan    | Phases, progress matrix      | [C: 0.8]           |
-| Success Metrics        | Measurable outcomes          | [C: 0.7]           |
-| Risks & Mitigations    | By confidence level          | Mixed              |
-| Verification Checklist | Pre-impl checks              | [C: 0.9+]          |
+| Section                | Purpose                      |
+| ---------------------- | ---------------------------- |
+| Executive Summary      | High-level overview          |
+| Problem Analysis       | Current state, issues        |
+| Assumptions            | Facts, assumptions, unknowns |
+| Solution Design        | Approach, alternatives       |
+| Test Plan              | Unit/Integration/E2E         |
+| Acceptance Criteria    | By phase                     |
+| Implementation Plan    | Phases, milestones           |
+| Success Metrics        | Measurable outcomes          |
+| Risks & Mitigations    | Identified risks             |
+| Verification Checklist | Pre-impl checks              |
 
 ## Confidence Markers
 
-| Range        | Meaning   | Evidence                  |
-| ------------ | --------- | ------------------------- |
-| [C: 0.9+]    | Verified  | file:line, command output |
-| [C: 0.7-0.9] | Inferred  | Reasoning stated          |
-| [C: <0.7]    | Uncertain | Needs investigation       |
-
-## Progress Matrix (PDD Integration)
-
-Enable Progress-Driven Development tracking:
-
-```markdown
-| Feature   | spec | design | impl | test | review | Progress |
-| --------- | :--: | :----: | :--: | :--: | :----: | :------: |
-| Feature A |  ⬜  |   ⬜   |  ⬜  |  ⬜  |   ⬜   |    0%    |
-
-**Legend**: ⬜ none | 🔄 started | 📝 draft | 👀 reviewed | ✅ done
-```
-
-### Steps
-
-| Step   | Description          | Criteria              |
-| ------ | -------------------- | --------------------- |
-| spec   | Requirements defined | SOW sections complete |
-| design | Architecture decided | Solution approved     |
-| impl   | Code implemented     | Core working          |
-| test   | Tests passing        | All green             |
-| review | Quality verified     | /audit passed         |
+| Marker | Meaning   | Evidence                  |
+| ------ | --------- | ------------------------- |
+| [✓]    | Verified  | file:line, command output |
+| [→]    | Inferred  | Reasoning stated          |
+| [?]    | Uncertain | Needs investigation       |
 
 ## Codebase Analysis (Optional)
 
@@ -88,14 +66,14 @@ Return with confidence markers.`,
 ## Output
 
 ```text
-Save to: .claude/workspace/planning/[timestamp]-[feature]/sow.md
+Save to: .claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md
 
 ✅ SOW saved to: .claude/workspace/planning/[path]/sow.md
 ```
 
 ## Template
 
-Structure reference: `~/.claude/templates/sow/workflow-improvement.md`
+Structure reference: `~/.claude/templates/sow/template.md`
 
 - ✅ Copy: Section structure, ID naming (I-001, AC-001, R-001)
 - ❌ Do NOT copy: Actual content

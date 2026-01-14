@@ -4,7 +4,7 @@ description: >
   Structured ADR creation in MADR format. Triggers: ADR, Architecture Decision,
   決定記録, 技術選定, アーキテクチャ決定, design decision, 技術的決定, 設計判断,
   deprecation, 非推奨化, process change, プロセス変更
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash, Task
+allowed-tools: [Read, Write, Edit, Grep, Glob, Bash, Task]
 ---
 
 # ADR Creator

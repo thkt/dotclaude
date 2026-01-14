@@ -3,8 +3,7 @@ description: Rapidly fix small bugs and minor improvements in development enviro
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task
 model: opus
 argument-hint: "[bug or issue description]"
-dependencies:
-  [Explore, test-generator, generating-tdd-tests, orchestrating-workflows]
+dependencies: [Explore, generating-tdd-tests, orchestrating-workflows]
 ---
 
 # /fix - Quick Bug Fix

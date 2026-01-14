@@ -5,7 +5,9 @@ description: >
   トリガー: 可読性, 理解しやすい, わかりやすい, 明確, 命名, 変数名, 関数名,
   ネスト, 深いネスト, 関数設計, コメント, 複雑, 難しい, 難読,
   Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計.
-allowed-tools: Read, Grep, Glob, Task
+allowed-tools: [Read, Grep, Glob, Task]
+agent: readability-reviewer
+user-invocable: false
 ---
 
 # 可読性レビュー - コードの明確さと認知負荷
@@ -65,8 +67,3 @@ allowed-tools: Read, Grep, Glob, Task
 | 明確さ > 賢さ   | シンプルなコードが勝つ |
 | 7±2の限界を尊重 | チャンクに分割         |
 | Tell, Don't Ask | 直接メソッド呼び出し   |
-
-## 参照
-
-- [@../../../skills/applying-code-principles/SKILL.md](../../../skills/applying-code-principles/SKILL.md) - 認知限界とリーダブルコード
-- [@./references/ai-antipatterns.md](./references/ai-antipatterns.md) - AI過剰設計パターン

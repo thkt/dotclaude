@@ -1,6 +1,6 @@
 ---
 description: Analyze branch changes and generate comprehensive PR description
-allowed-tools: Task
+allowed-tools: [Task, Bash]
 model: opus
 argument-hint: "[issue reference or context]"
 dependencies: [pr-generator, utilizing-cli-tools, managing-git-workflows]
@@ -17,7 +17,10 @@ Analyze all changes in the current branch and generate comprehensive PR descript
 
 ## Execution
 
-Delegates to `pr-generator` subagent (PR format and structure defined there).
+1. Analyze: `git status`, `git diff`, `git log` (parallel)
+2. Delegate to `pr-generator` subagent for PR description
+3. Push if needed: `git push -u origin HEAD`
+4. Create PR: `gh pr create --title "..." --body "..."`
 
 ## Output
 

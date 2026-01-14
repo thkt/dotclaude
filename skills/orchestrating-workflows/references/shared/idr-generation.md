@@ -43,42 +43,9 @@ IDR tracks implementation decisions throughout the development lifecycle.
 
 ### New IDR Structure
 
-```markdown
-# IDR: [Feature Name]
+Template: [@../../../../templates/idr/template.md](../../../../templates/idr/template.md)
 
-| Metadata | Value            |
-| -------- | ---------------- |
-| Created  | YYYY-MM-DD HH:MM |
-| Updated  | YYYY-MM-DD HH:MM |
-| SOW      | ./sow.md         |
-
-## /code - [timestamp]
-
-### Changed Files
-
-| Status   | File            |
-| -------- | --------------- |
-| Created  | src/new-file.ts |
-| Modified | src/existing.ts |
-
-### Implementation Decisions
-
-[Key choices made during implementation]
-
-### Attention Points
-
-[Gotchas, edge cases, review notes]
-
-### Applied Principles
-
-- TDD/RGRC cycle
-- Occam's Razor
-- [Other principles]
-
-### Confidence
-
-[C: 0.XX] - [reasoning]
-```
+Sections created: Changed Files, Key Decisions, Notes, Reviewer Attention
 
 ### Changed Files Detection
 
@@ -106,51 +73,60 @@ git diff --name-status HEAD
 ### /audit Section
 
 ```markdown
-## /audit - [timestamp]
+## /audit - YYYY-MM-DD HH:MM
 
-### Review Summary
+### Summary
 
-[Agent review results]
+| Severity | Count | Resolved |
+| -------- | ----- | -------- |
+| Critical | 0     | 0        |
+| High     | 0     | 0        |
 
-### Issues & Actions
+### Issues
 
-[Issues found and actions taken]
+| #   | Issue   | Severity | Location    | Action         |
+| --- | ------- | -------- | ----------- | -------------- |
+| 1   | [issue] | High     | [file:line] | Fixed/Deferred |
 
-### Recommendations Applied
+### Notes
 
-[Applied recommendations]
+[Findings, patterns observed, recommendations for future]
 ```
 
 ### /polish Section
 
 ```markdown
-## /polish - [timestamp]
+## /polish - YYYY-MM-DD HH:MM
 
 ### Removals
 
-[Items removed: comments, code, helpers]
+| Item   | Type         | Reason   |
+| ------ | ------------ | -------- |
+| [item] | Comment/Code | [reason] |
 
 ### Simplifications
 
-[Simplifications made]
+[Description of simplifications made]
 ```
 
 ### /validate Section
 
 ```markdown
-## /validate - [timestamp]
+## /validate - YYYY-MM-DD HH:MM
 
-### SOW Acceptance Criteria Validation
+### Acceptance Criteria
 
-[AC validation results]
+| AC     | Status    | Evidence     |
+| ------ | --------- | ------------ |
+| AC-001 | PASS/FAIL | [validation] |
 
-### Gaps Identified
+### Gaps
 
-[Gaps between SOW and implementation]
+[Any gaps between SOW and implementation]
 
 ### Sign-off
 
-[Validation confidence]
+[Final notes, remaining concerns, or confirmation]
 ```
 
 ## SOW Integration
@@ -160,7 +136,7 @@ git diff --name-status HEAD
 **IDR → SOW** (in IDR metadata):
 
 ```markdown
-| SOW | ./sow.md |
+SOW: ./sow.md
 ```
 
 **SOW → IDR** (in SOW Implementation Records):
@@ -170,11 +146,6 @@ git diff --name-status HEAD
 
 IDR: `./idr.md`
 Status: [x] In Progress
-
-| Phase  | Date       | Confidence |
-| ------ | ---------- | ---------- |
-| /code  | 2026-01-06 | [C: 0.90]  |
-| /audit | 2026-01-06 | [C: 0.85]  |
 ```
 
 ## Validation Logic (/validate)
@@ -202,6 +173,6 @@ Status: [x] In Progress
 
 ## Related Files
 
-- Template: `~/.claude/templates/idr/implementation.md`
-- SOW Template: `~/.claude/templates/sow/workflow-improvement.md`
+- Template: `~/.claude/templates/idr/template.md`
+- SOW Template: `~/.claude/templates/sow/template.md`
 - Workspace: `~/.claude/workspace/planning/`

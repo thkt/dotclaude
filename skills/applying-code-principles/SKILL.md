@@ -4,7 +4,7 @@ description: >
   Fundamental software principles - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI, Readable Code.
   Triggers: 原則, シンプル, 複雑, アーキテクチャ, リファクタリング, 保守性, コード品質,
   design pattern, best practice, clean code
-allowed-tools: Read, Grep, Glob
+allowed-tools: [Read, Grep, Glob]
 user-invocable: false
 ---
 

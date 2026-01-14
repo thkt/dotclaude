@@ -28,7 +28,7 @@ Full planning workflow: Research → Q&A → SOW → Spec.
 Check for existing research:
 
 ```bash
-ls -t .claude/workspace/research/*-context.md 2>/dev/null | head -1
+ls -t .claude/workspace/research/*.md 2>/dev/null | head -1
 ```
 
 If not found, suggest: `/research [topic]` first.
@@ -76,7 +76,7 @@ Key outputs:
 ## Output Location
 
 ```text
-.claude/workspace/planning/[timestamp]-[topic]/
+.claude/workspace/planning/YYYY-MM-DD-[topic]/
 ├── sow.md       # Statement of Work
 ├── spec.md      # Implementation Specification
 └── idr.md       # (Created later by /code)

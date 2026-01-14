@@ -25,13 +25,11 @@ Orchestrate implementation planning with SOW and Spec generation.
 | 3    | /sow                    | sow.md          |
 | 4    | /spec                   | spec.md         |
 | 5    | sow-spec-reviewer (≥90) | (optional)      |
-| 6    | Generate Summary        | summary.md      |
 
 ## Output
 
 ```text
-.claude/workspace/planning/[timestamp]-[feature]/
+.claude/workspace/planning/YYYY-MM-DD-[feature]/
 ├── sow.md     # Statement of Work
-├── spec.md    # Specification
-└── summary.md # Review Summary ← Start here
+└── spec.md    # Specification
 ```

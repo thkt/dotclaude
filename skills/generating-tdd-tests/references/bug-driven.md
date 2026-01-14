@@ -5,8 +5,7 @@ How `/fix` command uses TDD for bug fixes.
 ## Context
 
 - **Source**: Bug description and reproduction steps
-- **Approach**: Write failing test that reproduces bug
-- **Tool**: Manual test first, then test-generator for regression
+- **Approach**: Write failing test that reproduces bug, then add regression tests
 
 ## Workflow
 
@@ -20,7 +19,7 @@ How `/fix` command uses TDD for bug fixes.
    └─ Test passes
 
 3. Prevent regression
-   └─ test-generator creates additional tests
+   └─ Generate additional tests for edge cases
    └─ Edge cases and related scenarios
    └─ Integration tests if needed
 
@@ -51,7 +50,7 @@ function calculateTotal(price, discount) {
 // → Test runs, returns 0, assertion passes
 
 // Step 5: Generate regression tests
-// → test-generator adds edge cases
+// → Add edge cases for regression prevention
 it('handles zero price', () => { ... })
 it('handles zero discount', () => { ... })
 it('handles negative inputs', () => { ... })
@@ -173,10 +172,7 @@ Tests:       3 passed, 3 total
 
 ### Phase 3.5: Generate Regression Tests (Optional)
 
-**Use test-generator for additional edge cases**:
-
-For detailed test-generator patterns, see:
-[@../../orchestrating-workflows/references/shared/test-generation.md#pattern-2-bug-driven-bug-fixing](../../orchestrating-workflows/references/shared/test-generation.md#pattern-2-bug-driven-bug-fixing)
+**Add edge cases for regression prevention**:
 
 **Example generated tests**:
 

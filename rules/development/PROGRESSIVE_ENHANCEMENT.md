@@ -1,4 +1,4 @@
-# Progressive Enhancement - Outcome-First Development
+# Progressive Enhancement
 
 **Default approach**: Build simple → enhance progressively
 
@@ -6,7 +6,17 @@
 
 - **Root Cause**: "Why?" not "How to fix?"
 - **Prevention > Patching**: Best solution prevents the problem
-- **Simple > Complex**: Elegance = solving right problem
+- **Simple > Complex**: Elegance = solving the right problem
+
+## CSS-First Principle
+
+Before writing JavaScript, ask: "Can CSS solve this?"
+
+| Priority | Solution | Examples                           |
+| -------- | -------- | ---------------------------------- |
+| 1        | HTML     | Semantic elements, native inputs   |
+| 2        | CSS      | Grid, Flexbox, :has(), transitions |
+| 3        | JS       | Only when truly necessary          |
 
 ## Outcome-First Development
 
@@ -21,4 +31,4 @@
 
 ## Key Takeaway
 
-"The best code is code that doesn't need to exist"
+"The Best Code is No Code At All."

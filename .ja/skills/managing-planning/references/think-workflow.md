@@ -28,21 +28,24 @@
 既存リサーチを確認:
 
 ```bash
-ls -t .claude/workspace/research/*-context.md 2>/dev/null | head -1
+ls -t .claude/workspace/research/*.md 2>/dev/null | head -1
 ```
 
 見つからない場合、提案: `/research [topic]` を先に実行。
 
 ## フェーズ2: Q&A明確化
 
-ドキュメント生成前に明確化:
+ドキュメント生成前に`AskUserQuestion`で明確化:
 
-1. **スコープ**: 何が含まれる/除外される?
-2. **制約**: 技術、時間、リソース?
-3. **優先度**: 必須 vs あれば良い?
-4. **リスク**: 既知の懸念?
-
-`AskUserQuestion` を使用してインタラクティブに明確化。
+| カテゴリ | フォーカス              |
+| -------- | ----------------------- |
+| 目的     | ゴール、問題、受益者    |
+| ユーザー | 主要ユーザー            |
+| スコープ | 含まれる/除外されるもの |
+| 優先度   | MoSCoW                  |
+| 成功基準 | 「完了」の定義          |
+| 制約     | 技術、時間、依存関係    |
+| リスク   | 既知の懸念              |
 
 ## フェーズ3: SOW生成
 
@@ -73,7 +76,7 @@ SOW承認後、Specを生成:
 ## 出力場所
 
 ```text
-.claude/workspace/planning/[timestamp]-[topic]/
+.claude/workspace/planning/YYYY-MM-DD-[topic]/
 ├── sow.md       # Statement of Work
 ├── spec.md      # 実装仕様
 └── idr.md       # (/code で後に作成)

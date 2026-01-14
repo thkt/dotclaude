@@ -1,6 +1,6 @@
 ---
 description: ブランチの変更を分析し、包括的なPR説明を生成
-allowed-tools: Task
+allowed-tools: [Task, Bash]
 model: opus
 argument-hint: "[Issue参照またはコンテキスト]"
 dependencies: [pr-generator, utilizing-cli-tools, managing-git-workflows]
@@ -17,7 +17,10 @@ dependencies: [pr-generator, utilizing-cli-tools, managing-git-workflows]
 
 ## 実行
 
-`pr-generator`サブエージェントに委譲（PRフォーマットと構造はそちらで定義）。
+1. 分析: `git status`, `git diff`, `git log`（並行）
+2. `pr-generator`サブエージェントにPR説明を委譲
+3. 必要に応じてpush: `git push -u origin HEAD`
+4. PR作成: `gh pr create --title "..." --body "..."`
 
 ## 出力
 

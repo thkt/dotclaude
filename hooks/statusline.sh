@@ -82,6 +82,10 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
         fi
     fi
 
+    # New fields from v2.1.6+ (use if available, more accurate)
+    CONTEXT_USED_PCT=$(echo "$STDIN_INPUT" | jq -r '.context_window.used_percentage // empty' 2>/dev/null)
+    CONTEXT_REMAINING_PCT=$(echo "$STDIN_INPUT" | jq -r '.context_window.remaining_percentage // empty' 2>/dev/null)
+
     # === Extract last used tool from transcript ===
     LAST_TOOL=""
     TOOL_COUNT=0
@@ -140,8 +144,15 @@ if [ -z "$CONTEXT_LIMIT" ] || [ "$CONTEXT_LIMIT" = "null" ] || [ "$CONTEXT_LIMIT
 fi
 
 if [ "$CONTEXT_LIMIT" -gt 0 ] 2>/dev/null; then
-    PERCENTAGE=$((CONTEXT_TOKENS * 100 / CONTEXT_LIMIT))
-    REMAINING=$((100 - PERCENTAGE))
+    # Use new v2.1.6+ fields if available, otherwise calculate
+    if [ -n "$CONTEXT_USED_PCT" ] && [ "$CONTEXT_USED_PCT" != "null" ]; then
+        PERCENTAGE=$(printf "%.0f" "$CONTEXT_USED_PCT" 2>/dev/null || echo "$CONTEXT_USED_PCT" | cut -d. -f1)
+        REMAINING=$(printf "%.0f" "$CONTEXT_REMAINING_PCT" 2>/dev/null || echo "$CONTEXT_REMAINING_PCT" | cut -d. -f1)
+    else
+        # Fallback: calculate from tokens
+        PERCENTAGE=$((CONTEXT_TOKENS * 100 / CONTEXT_LIMIT))
+        REMAINING=$((100 - PERCENTAGE))
+    fi
     TOKENS_K=$((CONTEXT_TOKENS / 1000))
     LIMIT_K=$((CONTEXT_LIMIT / 1000))
 

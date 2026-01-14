@@ -1,80 +1,54 @@
 ---
 name: reviewing-security
-description: >
-  OWASP Top 10-based security review and vulnerability detection. Triggers:
-  セキュリティ, 脆弱性, XSS, SQL injection, SQLインジェクション, CSRF,
-  認証, 認可, 暗号化, OWASP, SSRF, パスワード, セッション, rate limiting,
-  brute force, command injection, security misconfiguration.
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Task
+description: OWASP Top 10-based security review and vulnerability detection.
+allowed-tools: [Read, Grep, Glob, Task]
 agent: security-reviewer
 user-invocable: false
 ---
 
-# Security Review - OWASP Top 10 Based
+# Security Review - OWASP Top 10
 
-OWASP Top 10-based vulnerability detection and secure implementation guidance.
+OWASP-based vulnerability detection and secure implementation guidance.
 
 ## Section-Based Loading
 
-| Section        | File                            | Focus                                            | Triggers                     |
-| -------------- | ------------------------------- | ------------------------------------------------ | ---------------------------- |
-| Basic Security | `references/owasp-basic.md`     | OWASP 1,2,7: Access Control, Crypto, Auth        | auth, password, session      |
-| Injection      | `references/owasp-injection.md` | OWASP 3: SQL/NoSQL/Command, XSS, CSRF            | injection, XSS, CSRF         |
-| Advanced       | `references/owasp-advanced.md`  | OWASP 4-6,8-10: Design, Config, Monitoring, SSRF | rate limiting, SSRF, logging |
+| Section        | File                            | Focus                        |
+| -------------- | ------------------------------- | ---------------------------- |
+| Basic Security | `references/owasp-basic.md`     | Access Control, Crypto, Auth |
+| Injection      | `references/owasp-injection.md` | SQL/XSS/CSRF                 |
+| Advanced       | `references/owasp-advanced.md`  | Design, Config, SSRF         |
 
-## Security Review Checklist
+## Quick Checklist
 
-### Step 1: Input Validation
+### Input Validation
 
-- [ ] All user input is sanitized
-- [ ] SQL queries use parameterized statements
-- [ ] User input not directly used in command execution
-- [ ] XSS protection (escaping) applied
+- [ ] All user input sanitized
+- [ ] SQL uses parameterized statements
+- [ ] No command injection
+- [ ] XSS protection applied
 
-### Step 2: Authentication & Authorization
+### Auth & Session
 
-- [ ] Passwords properly hashed (bcrypt recommended)
-- [ ] Secure session management (HttpOnly, Secure, SameSite)
-- [ ] JWT expiration properly configured
-- [ ] Authorization checks on all endpoints
+- [ ] Passwords hashed (bcrypt)
+- [ ] HttpOnly, Secure, SameSite cookies
+- [ ] JWT expiration configured
+- [ ] Authorization on all endpoints
 
-### Step 3: Data Protection
+### Data Protection
 
 - [ ] Sensitive data not logged
 - [ ] HTTPS enforced
 - [ ] API keys not hardcoded
 
-### Step 4: Error Handling
+### Dependencies
 
-- [ ] Detailed error messages hidden in production
-- [ ] Stack traces not exposed to users
-
-### Step 5: Dependencies
-
-Run audit command for your package manager:
-
-- npm: `npm audit`
-- yarn: `yarn audit`
-- pnpm: `pnpm audit`
-- bun: `bun pm trust` (or check lockfile)
-
-- [ ] No known vulnerabilities
+- [ ] `npm audit` / `yarn audit` clean
 
 ## Key Principles
 
-| Principle           | Description                  |
-| ------------------- | ---------------------------- |
-| Defense in Depth    | Don't rely on single measure |
-| Least Privilege     | Minimal permissions          |
-| Fail Securely       | Safe even when failing       |
-| Security by Default | Secure by default            |
-
-## References
-
-- [@./references/owasp-basic.md](./references/owasp-basic.md) - Access Control, Crypto, Auth
-- [@./references/owasp-injection.md](./references/owasp-injection.md) - SQL/XSS/CSRF
-- [@./references/owasp-advanced.md](./references/owasp-advanced.md) - Design, Config, Monitoring
+| Principle        | Description                  |
+| ---------------- | ---------------------------- |
+| Defense in Depth | Don't rely on single measure |
+| Least Privilege  | Minimal permissions          |
+| Fail Securely    | Safe even when failing       |
+| Security Default | Secure by default            |

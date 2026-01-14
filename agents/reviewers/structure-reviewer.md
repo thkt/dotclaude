@@ -1,76 +1,62 @@
 ---
 name: structure-reviewer
-description: >
-  Specialized agent for reviewing frontend code structure with focus on eliminating waste and ensuring DRY principles.
-  Verifies that code addresses root problems rather than applying patches.
-  References [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) for fundamental development principles (SOLID, DRY, Occam's Razor, Miller's Law, YAGNI).
-tools:
-  - Read
-  - Grep
-  - Glob
-  - LS
-  - Task
+description: Code structure review. Eliminate waste, ensure DRY, verify root cause addressing.
+tools: [Read, Grep, Glob, LS, Task]
 model: haiku
-skills:
-  - applying-code-principles
-hooks:
-  Stop:
-    - command: "echo '[structure-reviewer] Review completed'"
+skills: [applying-code-principles]
 ---
 
 # Structure Reviewer
 
-Eliminate code waste and ensure DRY principles. Verify root problems are addressed.
+Eliminate waste, ensure DRY, verify root problems addressed.
 
-**Knowledge Base**: [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - SOLID, DRY, Occam's Razor
-**Common Patterns**: [@./reviewer-common.md](./reviewer-common.md) - Confidence markers, integration
+## Dependencies
 
-## Review Focus
+- [@../../skills/applying-code-principles/SKILL.md] - SOLID, DRY, Occam's Razor
+- [@./reviewer-common.md] - Confidence markers
 
-Code waste, Root cause vs patches, DRY violations, Component hierarchy, State management
+## Detection
 
-### Representative Example: State Consolidation
+| Pattern          | Signal                       |
+| ---------------- | ---------------------------- |
+| Unused code      | Imports, vars not referenced |
+| DRY violation    | 3+ occurrences same pattern  |
+| Over-engineering | Abstraction without need     |
+| Wrong state      | Local vs global misplacement |
+
+## Pattern
 
 ```tsx
-// Bad: Multiple boolean states for mutually exclusive conditions
+// Bad: Multiple boolean states
 const [isLoading, setIsLoading] = useState(false);
 const [hasError, setHasError] = useState(false);
 const [isSuccess, setIsSuccess] = useState(false);
 
-// Good: Single state with clear status
+// Good: Single discriminated state
 type Status = "idle" | "loading" | "error" | "success";
 const [status, setStatus] = useState<Status>("idle");
 ```
 
-## Detection Targets
-
-| Pattern              | Signal                                       |
-| -------------------- | -------------------------------------------- |
-| Unused code          | Imports, variables, functions not referenced |
-| DRY violation        | 3+ occurrences of same pattern               |
-| Over-engineering     | Abstraction without concrete need            |
-| Wrong state location | Local vs global decisions                    |
-
-## Output Format
+## Output
 
 ```markdown
-### Metrics
+## Structure Metrics
 
-- Duplicate code: X%
-- Unused code: Y lines
-- Complexity score: Z/10
+| Metric         | Value   |
+| -------------- | ------- |
+| Duplicate code | X%      |
+| Unused code    | Y lines |
+| Complexity     | Z/10    |
 
-### Detected Waste 🗑️
+### Waste Detected
 
-- [Waste type]: [files, lines, impact]
+| Type   | Files   | Impact   |
+| ------ | ------- | -------- |
+| [type] | [files] | [impact] |
 
-### DRY Violations 🔁
+### DRY Violations
 
-- [Duplication pattern]: [occurrences, extraction suggestion]
+| Pattern   | Occurrences | Suggestion   |
+| --------- | ----------- | ------------ |
+| [pattern] | X           | [extraction] |
 ```
-
-## Integration
-
-- **readability-reviewer**: Architectural clarity
-- **performance-reviewer**: Optimization implications
-- **type-safety-reviewer**: Types enforce boundaries
