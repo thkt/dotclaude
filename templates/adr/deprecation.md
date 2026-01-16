@@ -10,8 +10,6 @@ Technical Story: {{TECHNICAL_STORY_LINK}}
 
 {{CONTEXT}}
 
-Deprecating existing technology requires careful planning. We must maintain system stability and team productivity during the transition period while progressively migrating to the new solution.
-
 ## Decision Drivers
 
 - {{DRIVER_1}}
@@ -85,13 +83,13 @@ Chosen option: "Deprecate {{DEPRECATED_TECH_NAME}} and migrate to {{REPLACEMENT_
 
 ### Timeline
 
-| Phase | Period | Goal | Success Criteria |
-| --- | --- | --- | --- |
-| Phase 1: Preparation | {{PHASE_1_PERIOD}} | {{PHASE_1_GOAL}} | {{PHASE_1_CRITERIA}} |
-| Phase 2: Pilot Migration | {{PHASE_2_PERIOD}} | {{PHASE_2_GOAL}} | {{PHASE_2_CRITERIA}} |
+| Phase                      | Period             | Goal             | Success Criteria     |
+| -------------------------- | ------------------ | ---------------- | -------------------- |
+| Phase 1: Preparation       | {{PHASE_1_PERIOD}} | {{PHASE_1_GOAL}} | {{PHASE_1_CRITERIA}} |
+| Phase 2: Pilot Migration   | {{PHASE_2_PERIOD}} | {{PHASE_2_GOAL}} | {{PHASE_2_CRITERIA}} |
 | Phase 3: Gradual Migration | {{PHASE_3_PERIOD}} | {{PHASE_3_GOAL}} | {{PHASE_3_CRITERIA}} |
-| Phase 4: Full Migration | {{PHASE_4_PERIOD}} | {{PHASE_4_GOAL}} | {{PHASE_4_CRITERIA}} |
-| Phase 5: Cleanup | {{PHASE_5_PERIOD}} | {{PHASE_5_GOAL}} | {{PHASE_5_CRITERIA}} |
+| Phase 4: Full Migration    | {{PHASE_4_PERIOD}} | {{PHASE_4_GOAL}} | {{PHASE_4_CRITERIA}} |
+| Phase 5: Cleanup           | {{PHASE_5_PERIOD}} | {{PHASE_5_GOAL}} | {{PHASE_5_CRITERIA}} |
 
 ### Deprecation Warning Period
 
@@ -184,11 +182,11 @@ Chosen option: "Deprecate {{DEPRECATED_TECH_NAME}} and migrate to {{REPLACEMENT_
 
 ### Announcements
 
-| Date | Content | Audience | Channel |
-| --- | --- | --- | --- |
+| Date                | Content            | Audience       | Channel       |
+| ------------------- | ------------------ | -------------- | ------------- |
 | {{ANNOUNCE_DATE_1}} | Deprecation notice | All developers | {{CHANNEL_1}} |
-| {{ANNOUNCE_DATE_2}} | Migration start | Related teams | {{CHANNEL_2}} |
-| {{ANNOUNCE_DATE_3}} | Completion report | All developers | {{CHANNEL_3}} |
+| {{ANNOUNCE_DATE_2}} | Migration start    | Related teams  | {{CHANNEL_2}} |
+| {{ANNOUNCE_DATE_3}} | Completion report  | All developers | {{CHANNEL_3}} |
 
 ### Documentation Updates
 
@@ -207,6 +205,6 @@ Chosen option: "Deprecate {{DEPRECATED_TECH_NAME}} and migrate to {{REPLACEMENT_
 
 ---
 
-*Created: {{DATE}}*
-*Author: {{AUTHOR}}*
-*ADR Number: {{NUMBER}}*
+_Created: {{DATE}}_
+_Author: {{AUTHOR}}_
+_ADR Number: {{NUMBER}}_

@@ -2,7 +2,8 @@
 name: orchestrating-workflows
 description: >
   Command workflow orchestration patterns for /code, /fix, /audit, and other implementation commands.
-  Triggers: workflow, orchestration, command flow, IDR, test generation, RGRC, quality gates, completion criteria.
+  Triggers: workflow, orchestration, command flow, IDR, test generation, RGRC, quality gates, completion criteria,
+  ワークフロー, 実装フロー, テスト生成, 品質ゲート, 完了基準.
 allowed-tools: [Read, Write, Grep, Glob, Task, Bash]
 user-invocable: false
 ---
@@ -11,18 +12,18 @@ user-invocable: false
 
 ## ワークフロー
 
-| コマンド | ワークフロー参照                 |
-| -------- | -------------------------------- |
-| `/code`  | [@./references/code-workflow.md] |
-| `/fix`   | [@./references/fix-workflow.md]  |
+| コマンド | ワークフロー参照                                                |
+| -------- | --------------------------------------------------------------- |
+| `/code`  | [@./references/code-workflow.md](./references/code-workflow.md) |
+| `/fix`   | [@./references/fix-workflow.md](./references/fix-workflow.md)   |
 
 ## パターン
 
-| パターン    | 参照                                                                |
-| ----------- | ------------------------------------------------------------------- |
-| IDR生成     | [@../../rules/workflows/IDR_GENERATION.md]                          |
-| TDDサイクル | [@./references/tdd-cycle.md](./references/tdd-cycle.md)             |
-| テスト生成  | [@./references/test-generation.md](./references/test-generation.md) |
+| パターン    | 参照                                                                                |
+| ----------- | ----------------------------------------------------------------------------------- |
+| IDR生成     | [@../../rules/workflows/IDR_GENERATION.md](../../rules/workflows/IDR_GENERATION.md) |
+| TDDサイクル | [@./references/tdd-cycle.md](./references/tdd-cycle.md)                             |
+| テスト生成  | [@./references/test-generation.md](./references/test-generation.md)                 |
 
 ## 品質ゲート
 

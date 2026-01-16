@@ -23,13 +23,7 @@ user-invocable: false
 
 ## Quick Checks
 
-| Question                  | Principle   |
-| ------------------------- | ----------- |
-| Simpler way?              | Occam       |
-| Understandable in <1 min? | Miller      |
-| Duplicating knowledge?    | DRY         |
-| Needed now?               | YAGNI       |
-| Single reason to change?  | SRP (SOLID) |
+See **CLAUDE.md → Development Checks** (always loaded, single source of truth).
 
 ## Thresholds
 

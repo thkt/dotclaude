@@ -14,8 +14,24 @@ allowed-tools: # Optional but recommended
   - Read
   - Write
   - Grep
+agent: agent-name # Optional: links to corresponding agent in agents/
+user-invocable: false # Optional: default false
 ---
 ```
+
+## Skill vs Agent Fields
+
+| Field           | Skill | Agent | Purpose                      |
+| --------------- | ----- | ----- | ---------------------------- |
+| `name`          | ✓     | ✓     | Identifier                   |
+| `description`   | ✓     | ✓     | Purpose summary              |
+| `allowed-tools` | ✓     | ✓     | Available tools              |
+| `agent`         | ✓     | -     | Links skill to agent         |
+| `context`       | -     | ✓     | Execution mode (fork/inline) |
+| `model`         | -     | ✓     | LLM model selection          |
+
+**Skills** = Knowledge base (passive, referenced)
+**Agents** = Executors (active, spawned via Task tool)
 
 ## Naming Convention
 

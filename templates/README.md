@@ -33,16 +33,29 @@ flowchart LR
 ```text
 templates/
 ├── README.md
+├── adr/               # ADR templates
+│   ├── architecture-pattern.md
+│   ├── deprecation.md
+│   ├── process-change.md
+│   └── technology-selection.md
+├── docs/              # Documentation templates
+│   ├── api.md
+│   ├── architecture.md
+│   ├── domain.md
+│   └── setup.md
+├── issue/             # GitHub Issue templates
+│   ├── bug.md
+│   ├── chore.md
+│   ├── docs.md
+│   └── feature.md
 ├── research/
 │   └── template.md    # Research findings
 ├── sow/
 │   └── template.md    # Statement of Work
 ├── spec/
 │   └── template.md    # Specification
-├── idr/
-│   └── template.md    # Implementation Decision Record
-└── rules/
-    └── from-adr.md    # Rule from ADR
+└── idr/
+    └── template.md    # Implementation Decision Record
 ```
 
 ## Document Responsibilities

@@ -10,8 +10,6 @@ Technical Story: {{TECHNICAL_STORY_LINK}}
 
 {{CONTEXT}}
 
-Development process changes directly impact team productivity and code quality.
-
 ## Decision Drivers
 
 - {{DRIVER_1}}
@@ -97,10 +95,10 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 
 ### Transition Plan
 
-| Phase | Duration | Activities | Success Criteria |
-| --- | --- | --- | --- |
-| Preparation | {{PHASE_1_DURATION}} | {{PHASE_1_ACTIVITIES}} | {{PHASE_1_CRITERIA}} |
-| Pilot | {{PHASE_2_DURATION}} | {{PHASE_2_ACTIVITIES}} | {{PHASE_2_CRITERIA}} |
+| Phase        | Duration             | Activities             | Success Criteria     |
+| ------------ | -------------------- | ---------------------- | -------------------- |
+| Preparation  | {{PHASE_1_DURATION}} | {{PHASE_1_ACTIVITIES}} | {{PHASE_1_CRITERIA}} |
+| Pilot        | {{PHASE_2_DURATION}} | {{PHASE_2_ACTIVITIES}} | {{PHASE_2_CRITERIA}} |
 | Full Rollout | {{PHASE_3_DURATION}} | {{PHASE_3_ACTIVITIES}} | {{PHASE_3_CRITERIA}} |
 
 ## Team Impact
@@ -164,6 +162,6 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 
 ---
 
-*Created: {{DATE}}*
-*Author: {{AUTHOR}}*
-*ADR Number: {{NUMBER}}*
+_Created: {{DATE}}_
+_Author: {{AUTHOR}}_
+_ADR Number: {{NUMBER}}_

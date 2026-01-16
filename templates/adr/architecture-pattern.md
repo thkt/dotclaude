@@ -10,8 +10,6 @@ Technical Story: {{TECHNICAL_STORY_LINK}}
 
 {{CONTEXT}}
 
-Architecture pattern selection has long-term impact on system structure and maintainability.
-
 ## Decision Drivers
 
 - {{DRIVER_1}}
@@ -86,10 +84,10 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 
 ### Quality Attributes
 
-| Attribute | Priority | Approach |
-| --- | --- | --- |
-| {{QA_1}} | {{QA_1_PRIORITY}} | {{QA_1_METHOD}} |
-| {{QA_2}} | {{QA_2_PRIORITY}} | {{QA_2_METHOD}} |
+| Attribute | Priority          | Approach        |
+| --------- | ----------------- | --------------- |
+| {{QA_1}}  | {{QA_1_PRIORITY}} | {{QA_1_METHOD}} |
+| {{QA_2}}  | {{QA_2_PRIORITY}} | {{QA_2_METHOD}} |
 
 ### Migration Strategy
 
@@ -129,6 +127,6 @@ This pattern trades off the following:
 
 ---
 
-*Created: {{DATE}}*
-*Author: {{AUTHOR}}*
-*ADR Number: {{NUMBER}}*
+_Created: {{DATE}}_
+_Author: {{AUTHOR}}_
+_ADR Number: {{NUMBER}}_

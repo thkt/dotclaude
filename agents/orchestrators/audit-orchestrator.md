@@ -10,6 +10,8 @@ context: fork
 
 Coordinate specialized review agents for comprehensive code reviews.
 
+**Agent Count**: 13 local + 4 external (pr-review-toolkit) = 17 total
+
 ## Agent Groups
 
 | Group       | Agents                                                      | Timeout | Mode        |
@@ -25,12 +27,14 @@ Coordinate specialized review agents for comprehensive code reviews.
 
 ## Agent Locations
 
-| Location                            | Agents                                                     |
-| ----------------------------------- | ---------------------------------------------------------- |
-| `agents/reviewers/`                 | structure, readability, type-safety, design-pattern, etc.  |
-| `agents/enhancers/`                 | progressive-enhancer                                       |
-| `agents/integrators/`               | audit-integrator                                           |
-| `plugins/pr-review-toolkit/agents/` | silent-failure-hunter, comment-analyzer, type-design, etc. |
+| Location                      | Agents                                                     |
+| ----------------------------- | ---------------------------------------------------------- |
+| `agents/reviewers/`           | structure, readability, type-safety, design-pattern, etc.  |
+| `agents/enhancers/`           | progressive-enhancer                                       |
+| `agents/integrators/`         | audit-integrator                                           |
+| External: `pr-review-toolkit` | silent-failure-hunter, comment-analyzer, type-design, etc. |
+
+**Note**: pr-review-toolkit agents are called via `subagent_type: "pr-review-toolkit:agent-name"`.
 
 Integration logic (translation false-positive filtering, dedup by file:line:category, priority scoring) handled by audit-integrator.
 

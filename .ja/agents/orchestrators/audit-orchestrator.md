@@ -10,6 +10,8 @@ context: fork
 
 包括的なコードレビューのための専門レビューエージェントを調整。
 
+**エージェント数**: ローカル13 + 外部4 (pr-review-toolkit) = 合計17
+
 ## エージェントグループ
 
 | グループ    | エージェント                                                | タイムアウト | モード      |
@@ -25,12 +27,14 @@ context: fork
 
 ## エージェント配置
 
-| 場所                                | エージェント                                               |
-| ----------------------------------- | ---------------------------------------------------------- |
-| `agents/reviewers/`                 | structure, readability, type-safety, design-pattern, etc.  |
-| `agents/enhancers/`                 | progressive-enhancer                                       |
-| `agents/integrators/`               | audit-integrator                                           |
-| `plugins/pr-review-toolkit/agents/` | silent-failure-hunter, comment-analyzer, type-design, etc. |
+| 場所                      | エージェント                                               |
+| ------------------------- | ---------------------------------------------------------- |
+| `agents/reviewers/`       | structure, readability, type-safety, design-pattern, etc.  |
+| `agents/enhancers/`       | progressive-enhancer                                       |
+| `agents/integrators/`     | audit-integrator                                           |
+| 外部: `pr-review-toolkit` | silent-failure-hunter, comment-analyzer, type-design, etc. |
+
+**Note**: pr-review-toolkit エージェントは `subagent_type: "pr-review-toolkit:agent-name"` で呼び出す。
 
 統合ロジック（翻訳偽陽性フィルタリング、file:line:categoryで重複排除、優先度スコアリング）は audit-integrator が担当。
 

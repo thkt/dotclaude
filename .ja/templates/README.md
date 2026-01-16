@@ -33,16 +33,29 @@ flowchart LR
 ```text
 templates/
 ├── README.md
+├── adr/               # ADRテンプレート
+│   ├── architecture-pattern.md
+│   ├── deprecation.md
+│   ├── process-change.md
+│   └── technology-selection.md
+├── docs/              # ドキュメントテンプレート
+│   ├── api.md
+│   ├── architecture.md
+│   ├── domain.md
+│   └── setup.md
+├── issue/             # GitHub Issueテンプレート
+│   ├── bug.md
+│   ├── chore.md
+│   ├── docs.md
+│   └── feature.md
 ├── research/
 │   └── template.md    # リサーチ結果
 ├── sow/
 │   └── template.md    # Statement of Work
 ├── spec/
 │   └── template.md    # 仕様書
-├── idr/
-│   └── template.md    # 実装判断記録
-└── rules/
-    └── from-adr.md    # ADRからのルール
+└── idr/
+    └── template.md    # 実装判断記録
 ```
 
 ## ドキュメント責務

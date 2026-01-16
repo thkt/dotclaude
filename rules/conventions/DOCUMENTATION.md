@@ -29,6 +29,10 @@ Guidelines for consistent documentation in the Claude Code ecosystem.
 | Circular refs  | Forbidden (A → B → A)                             |
 | Redundant refs | Don't reference files already loaded by CLAUDE.md |
 | Context-needed | Only reference when required for current context  |
+| Relative paths | Use `./` for same dir, `../` for one level up     |
+| Deep paths     | `../../` acceptable but document in README        |
+
+**Note**: When using `../../` or deeper paths, verify after any file reorganization.
 
 ## Language Synchronization
 
