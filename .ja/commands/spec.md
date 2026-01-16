@@ -22,6 +22,10 @@ argument-hint: "[sowパスまたは機能説明]"
 
 トレーサビリティ: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
 
+## Component API（フロントエンド）
+
+UI関連の場合: Propsテーブル、バリアント、状態、使用例を含める。
+
 ## 出力
 
 ファイル: `.claude/workspace/planning/[same-dir]/spec.md`

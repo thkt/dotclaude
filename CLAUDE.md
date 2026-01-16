@@ -2,12 +2,12 @@
 
 ## Rules
 
-| Rule       | Reference                                                                           |
-| ---------- | ----------------------------------------------------------------------------------- |
-| Core       | [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md) |
-| Task       | [@./rules/core/PRE_TASK_CHECK_SPEC.md](./rules/core/PRE_TASK_CHECK_SPEC.md)         |
-| Principles | [@./rules/PRINCIPLES.md](./rules/PRINCIPLES.md)                                     |
-| Delete     | `mv [file] ~/.Trash/ && git add -A`                                                 |
+| Rule       | Reference                                                                                          |
+| ---------- | -------------------------------------------------------------------------------------------------- |
+| Core       | [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)                |
+| Task       | [@./rules/core/PRE_TASK_CHECK_SPEC.md](./rules/core/PRE_TASK_CHECK_SPEC.md)                        |
+| Principles | [@./rules/PRINCIPLES.md](./rules/PRINCIPLES.md)                                                    |
+| Delete     | `mv [file] ~/.Trash/ && git add -A` (sandbox error → retry with `dangerouslyDisableSandbox: true`) |
 
 ## Development Checks
 

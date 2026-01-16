@@ -2,12 +2,12 @@
 
 ## ルール
 
-| ルール | 参照                                                                                  |
-| ------ | ------------------------------------------------------------------------------------- |
-| コア   | [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md) |
-| タスク | [@../rules/core/PRE_TASK_CHECK_SPEC.md](../rules/core/PRE_TASK_CHECK_SPEC.md)         |
-| 原則   | [@../rules/PRINCIPLES.md](../rules/PRINCIPLES.md)                                     |
-| 削除   | `mv [file] ~/.Trash/ && git add -A`                                                   |
+| ルール | 参照                                                                                            |
+| ------ | ----------------------------------------------------------------------------------------------- |
+| コア   | [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)           |
+| タスク | [@../rules/core/PRE_TASK_CHECK_SPEC.md](../rules/core/PRE_TASK_CHECK_SPEC.md)                   |
+| 原則   | [@../rules/PRINCIPLES.md](../rules/PRINCIPLES.md)                                               |
+| 削除   | `mv [file] ~/.Trash/ && git add -A` (sandboxエラー → `dangerouslyDisableSandbox: true`で再試行) |
 
 ## 開発チェック
 

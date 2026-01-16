@@ -42,6 +42,23 @@ context: fork
 | docs    | [@../../../templates/issue/docs.md](../../../templates/issue/docs.md)       |
 | chore   | [@../../../templates/issue/chore.md](../../../templates/issue/chore.md)     |
 
+## ラベル
+
+| タイプ  | ラベル                   |
+| ------- | ------------------------ |
+| Bug     | `bug`, `priority:*`      |
+| Feature | `enhancement`, `feature` |
+| Task    | `task`, `chore`          |
+
+## 優先度
+
+| ラベル              | 意味       |
+| ------------------- | ---------- |
+| `priority:critical` | 本番ダウン |
+| `priority:high`     | 重大な影響 |
+| `priority:medium`   | 通常       |
+| `priority:low`      | あれば良い |
+
 ## エラーハンドリング
 
 | エラー           | アクション           |

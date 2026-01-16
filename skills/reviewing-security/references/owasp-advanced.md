@@ -77,6 +77,19 @@ logger.warn("Login failed", {
 | Hostname | localhost, 127._, 192.168._, 10.\* |
 | Domain   | Not in allowlist                   |
 
+```typescript
+function isAllowedUrl(input: string, allowlist: string[]): boolean {
+  try {
+    const url = new URL(input);
+    if (!["http:", "https:"].includes(url.protocol)) return false;
+    if (/^(localhost|127\.|192\.168\.|10\.)/.test(url.hostname)) return false;
+    return allowlist.some((d) => url.hostname.endsWith(d));
+  } catch {
+    return false;
+  }
+}
+```
+
 ## Master Checklist
 
 | Category | Items                                   |

@@ -80,7 +80,7 @@ Guide for **using** commands. User reference for command selection and workflow 
 
 Auto-generated document tracking implementation through the lifecycle.
 
-See [@../../skills/orchestrating-workflows/references/shared/idr-generation.md](../../skills/orchestrating-workflows/references/shared/idr-generation.md)
+See [@./IDR_GENERATION.md](./IDR_GENERATION.md)
 
 | Command     | IDR Action              |
 | ----------- | ----------------------- |

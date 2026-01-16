@@ -150,11 +150,10 @@ echo ""
 echo "📝 6. Markdown Lint Check"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SHARED_SCRIPTS="${SCRIPT_DIR}/../../scripts"
 
-if [ -f "${SHARED_SCRIPTS}/validate-markdown.sh" ]; then
+if [ -f "${SCRIPT_DIR}/validate-markdown.sh" ]; then
   # Run lint and capture output
-  LINT_OUTPUT=$(bash "${SHARED_SCRIPTS}/validate-markdown.sh" "$ADR_FILE" 2>&1) || true
+  LINT_OUTPUT=$(bash "${SCRIPT_DIR}/validate-markdown.sh" "$ADR_FILE" 2>&1) || true
 
   # Display output (filter empty lines)
   echo "$LINT_OUTPUT" | grep -v "^$" || true

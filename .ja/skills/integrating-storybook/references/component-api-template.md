@@ -41,10 +41,3 @@ Spec.md `## 4. UI仕様`セクションテンプレート。
 | Props    | `children`は常に最初               |
 | Props    | イベントハンドラーは最後           |
 | Examples | 基本を先に、複雑なものは後         |
-
-## パースヒント
-
-```typescript
-const componentApiRegex = /### \d+\.\d+ Component API: (\w+)/;
-const propsTableRegex = /\| Prop \| Type \|[\s\S]*?(?=####|$)/;
-```

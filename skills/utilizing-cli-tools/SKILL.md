@@ -9,12 +9,11 @@ user-invocable: false
 
 ## References
 
-| Category           | Reference                    |
-| ------------------ | ---------------------------- |
-| Version Control    | [@./tools/git-essentials.md] |
-| GitHub             | [@./tools/gh-github-cli.md]  |
-| Package Management | [@./tools/npm-scripts.md]    |
-| Code Review        | [@./tools/coderabbit.md]     |
+| Category           | Reference                         |
+| ------------------ | --------------------------------- |
+| Version Control    | [@./references/git-essentials.md] |
+| GitHub             | [@./references/gh-github-cli.md]  |
+| Package Management | [@./references/npm-scripts.md]    |
 
 ## Quick Reference
 
@@ -35,8 +34,3 @@ feat(auth): add OAuth authentication
 EOF
 )"
 ```
-
-## Safety
-
-- Never `git push --force` (use `--force-with-lease`)
-- Never `rm -rf` (use `mv ~/.Trash/`)

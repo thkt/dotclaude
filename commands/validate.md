@@ -18,7 +18,25 @@ Display SOW acceptance criteria for manual verification.
 
 1. Find SOW via Glob (`.claude/workspace/planning/*/sow.md`)
 2. Extract Acceptance Criteria section
-3. Display as checklist
+3. Validate each AC
+4. Display as checklist
+
+## AC Validation
+
+| Check       | Question                     |
+| ----------- | ---------------------------- |
+| Implemented | Does code implement this AC? |
+| Tested      | Do tests validate this AC?   |
+| Documented  | Is behavior documented?      |
+| Reviewed    | Was it reviewed in /audit?   |
+
+## Pass/Fail Criteria
+
+| Score  | Status | Action                 |
+| ------ | ------ | ---------------------- |
+| 100%   | PASS   | Ready to ship          |
+| 90-99% | WARN   | Review gaps            |
+| <90%   | FAIL   | Address before release |
 
 ## Output
 

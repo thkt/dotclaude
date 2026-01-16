@@ -41,10 +41,3 @@ Spec.md `## 4. UI Specification` section template.
 | Props    | `children` always first           |
 | Props    | Event handlers last               |
 | Examples | Basic first, then complex         |
-
-## Parsing Hints
-
-```typescript
-const componentApiRegex = /### \d+\.\d+ Component API: (\w+)/;
-const propsTableRegex = /\| Prop \| Type \|[\s\S]*?(?=####|$)/;
-```

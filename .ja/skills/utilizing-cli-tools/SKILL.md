@@ -9,12 +9,11 @@ user-invocable: false
 
 ## 参照
 
-| カテゴリ       | リファレンス                 |
-| -------------- | ---------------------------- |
-| バージョン管理 | [@./tools/git-essentials.md] |
-| GitHub         | [@./tools/gh-github-cli.md]  |
-| パッケージ管理 | [@./tools/npm-scripts.md]    |
-| コードレビュー | [@./tools/coderabbit.md]     |
+| カテゴリ       | リファレンス                      |
+| -------------- | --------------------------------- |
+| バージョン管理 | [@./references/git-essentials.md] |
+| GitHub         | [@./references/gh-github-cli.md]  |
+| パッケージ管理 | [@./references/npm-scripts.md]    |
 
 ## クイックリファレンス
 
@@ -35,8 +34,3 @@ feat(auth): OAuth認証を追加
 EOF
 )"
 ```
-
-## 安全
-
-- `git push --force`は使用禁止（`--force-with-lease`を使用）
-- `rm -rf`は使用禁止（`mv ~/.Trash/`を使用）

@@ -22,6 +22,10 @@ Template: [@../../templates/spec/template.md](../../templates/spec/template.md)
 
 Traceability: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
 
+## Component API (Frontend)
+
+If UI-related, include: Props table, variants, states, usage examples.
+
 ## Output
 
 File: `.claude/workspace/planning/[same-dir]/spec.md`

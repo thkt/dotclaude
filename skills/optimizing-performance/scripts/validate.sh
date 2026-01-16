@@ -3,7 +3,7 @@
 # Usage: ./validate.sh [skill-directory]
 
 SKILL_DIR="${1:-$(dirname "$0")/..}"
-SCRIPT_DIR="$HOME/.claude/skills/scripts"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "=== Performance Optimization Skill Validation ==="
 echo ""

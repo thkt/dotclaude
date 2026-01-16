@@ -36,6 +36,15 @@ Generate branch names from git diff/status.
 | `fix/api-resolve-timeout-issue`  | `feature/ADD_USER` (uppercase) |
 | `feature/PROJ-123-user-search`   | `fix/bug` (too vague)          |
 
+## Rules
+
+| Do                        | Don't                       |
+| ------------------------- | --------------------------- |
+| Use lowercase             | Use spaces/underscores      |
+| Use hyphens as separators | Use CamelCase/PascalCase    |
+| Keep concise (2-4 words)  | Make vague names ("update") |
+| Include ticket ID         | Include dates               |
+
 ## Error Handling
 
 | Error         | Action                   |

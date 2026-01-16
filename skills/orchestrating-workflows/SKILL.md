@@ -16,13 +16,13 @@ user-invocable: false
 | `/code` | [@./references/code-workflow.md] |
 | `/fix`  | [@./references/fix-workflow.md]  |
 
-## Shared Patterns
+## Patterns
 
-| Pattern         | Reference                                 |
-| --------------- | ----------------------------------------- |
-| IDR Generation  | [@./references/shared/idr-generation.md]  |
-| TDD Cycle       | [@./references/shared/tdd-cycle.md]       |
-| Test Generation | [@./references/shared/test-generation.md] |
+| Pattern         | Reference                                                           |
+| --------------- | ------------------------------------------------------------------- |
+| IDR Generation  | [@../../rules/workflows/IDR_GENERATION.md]                          |
+| TDD Cycle       | [@./references/tdd-cycle.md](./references/tdd-cycle.md)             |
+| Test Generation | [@./references/test-generation.md](./references/test-generation.md) |
 
 ## Quality Gates
 

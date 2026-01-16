@@ -18,9 +18,14 @@ allowed-tools: [Read, Write, Glob, Grep]
 
 ## Component API場所
 
-セクション: `## 4. UI仕様`内の`### 4.x Component API: [ComponentName]`
+フロントエンドコンポーネント実装時にspec.mdへ追加。
 
-内容: Propsインターフェース（TypeScript）、Variants、States、使用例
+| 内容                  | 説明                             |
+| --------------------- | -------------------------------- |
+| Propsインターフェース | TypeScriptインターフェース       |
+| Variants              | スタイルオプション               |
+| States                | default, hover, active, disabled |
+| 使用例                | TSXコード                        |
 
 ## ワークフロー
 
@@ -37,10 +42,6 @@ allowed-tools: [Read, Write, Glob, Grep]
 | [S]        | スキップ - 既存を維持   |
 | [M]        | マージ - diff表示、手動 |
 | [D]        | diffのみ - 新規を追加   |
-
-## フロントエンド検出キーワード
-
-component, ui, button, form, modal, dialog, card, list, table
 
 ## 参照
 

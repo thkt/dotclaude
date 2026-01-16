@@ -36,6 +36,37 @@ Default to `feat` if unclear.
 | Subject | ≤72 chars, imperative, lowercase, no period          |
 | Footer  | `BREAKING CHANGE:`, `Closes #123`, `Co-authored-by:` |
 
+## Examples
+
+```text
+# Good
+feat(auth): add OAuth2 authentication support
+fix(api): resolve timeout in user endpoint
+
+# Bad
+Fixed bug          # no type, vague
+feat: Added new.   # capital, period
+```
+
+## Breaking Changes
+
+```text
+feat(api)!: remove deprecated endpoints
+
+BREAKING CHANGE: /v1/users removed. Use /v2/users.
+```
+
+## HEREDOC
+
+```bash
+git commit -m "$(cat <<'EOF'
+feat(workflow): implement test runner
+
+Multi-line description here.
+EOF
+)"
+```
+
 ## Error Handling
 
 | Error           | Action                  |

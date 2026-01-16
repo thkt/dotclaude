@@ -80,7 +80,7 @@
 
 ライフサイクル全体で実装を追跡する自動生成ドキュメント。
 
-[@../../skills/orchestrating-workflows/references/shared/idr-generation.md](../../skills/orchestrating-workflows/references/shared/idr-generation.md) を参照
+[@./IDR_GENERATION.md](./IDR_GENERATION.md) を参照
 
 | コマンド    | IDRアクション      |
 | ----------- | ------------------ |

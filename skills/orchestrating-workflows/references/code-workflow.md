@@ -29,13 +29,6 @@ For each test:
 
 ## Quality Gates
 
-| Check    | Target           | Required    |
-| -------- | ---------------- | ----------- |
-| Tests    | All pass         | ✓           |
-| Lint     | 0 errors         | ✓           |
-| Types    | No errors        | ✓           |
-| Coverage | C0 ≥90%, C1 ≥80% | Recommended |
-
 ```bash
 npm run lint & npm run type-check & npm test & wait
 ```

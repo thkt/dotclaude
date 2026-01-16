@@ -39,12 +39,23 @@ const user = await User.findOne({ username: req.body.username });
 | DOMPurify       | レンダリング前にHTMLサニタイズ  |
 | CSP             | Content-Security-Policyヘッダー |
 
+```typescript
+import DOMPurify from "dompurify";
+const sanitized = DOMPurify.sanitize(untrustedHtml);
+```
+
 ## CSRF防止
 
 | 方法     | 実装                 |
 | -------- | -------------------- |
 | トークン | `csrf()`ミドルウェア |
 | Cookie   | `sameSite: 'strict'` |
+
+```typescript
+import csrf from "csurf";
+app.use(csrf({ cookie: { sameSite: "strict" } }));
+// テンプレート: <input type="hidden" name="_csrf" value={req.csrfToken()} />
+```
 
 ## チェックリスト
 

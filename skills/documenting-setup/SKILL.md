@@ -35,6 +35,6 @@ user-invocable: false
 
 ## References
 
-| Topic           | File                            |
-| --------------- | ------------------------------- |
-| Setup Checklist | `references/setup-checklist.md` |
+| Topic       | File                        |
+| ----------- | --------------------------- |
+| Environment | `references/environment.md` |

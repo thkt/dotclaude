@@ -42,6 +42,23 @@ Default to `feature` if unclear.
 | docs    | [@../../../templates/issue/docs.md](../../../templates/issue/docs.md)       |
 | chore   | [@../../../templates/issue/chore.md](../../../templates/issue/chore.md)     |
 
+## Labels
+
+| Type    | Labels                   |
+| ------- | ------------------------ |
+| Bug     | `bug`, `priority:*`      |
+| Feature | `enhancement`, `feature` |
+| Task    | `task`, `chore`          |
+
+## Priority
+
+| Label               | Meaning            |
+| ------------------- | ------------------ |
+| `priority:critical` | Production down    |
+| `priority:high`     | Significant impact |
+| `priority:medium`   | Normal             |
+| `priority:low`      | Nice to have       |
+
 ## Error Handling
 
 | Error              | Action                 |

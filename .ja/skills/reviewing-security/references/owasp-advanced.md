@@ -77,6 +77,19 @@ logger.warn("Login failed", {
 | ホスト名   | localhost, 127._, 192.168._, 10.\* |
 | ドメイン   | 許可リストにない                   |
 
+```typescript
+function isAllowedUrl(input: string, allowlist: string[]): boolean {
+  try {
+    const url = new URL(input);
+    if (!["http:", "https:"].includes(url.protocol)) return false;
+    if (/^(localhost|127\.|192\.168\.|10\.)/.test(url.hostname)) return false;
+    return allowlist.some((d) => url.hostname.endsWith(d));
+  } catch {
+    return false;
+  }
+}
+```
+
 ## マスターチェックリスト
 
 | カテゴリ | 項目                                 |

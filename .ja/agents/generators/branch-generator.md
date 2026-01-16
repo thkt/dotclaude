@@ -36,6 +36,15 @@ git diff/statusからブランチ名を生成。
 | `fix/api-resolve-timeout-issue`  | `feature/ADD_USER` (大文字) |
 | `feature/PROJ-123-user-search`   | `fix/bug` (曖昧)            |
 
+## ルール
+
+| する               | しない                        |
+| ------------------ | ----------------------------- |
+| 小文字を使う       | スペース/アンダースコアを使う |
+| ハイフンで区切る   | CamelCase/PascalCaseを使う    |
+| 簡潔に (2-4語)     | 曖昧な名前 ("update")         |
+| チケットIDを含める | 日付を含める                  |
+
 ## エラーハンドリング
 
 | エラー           | アクション   |

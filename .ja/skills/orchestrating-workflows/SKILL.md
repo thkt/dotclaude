@@ -16,13 +16,13 @@ user-invocable: false
 | `/code`  | [@./references/code-workflow.md] |
 | `/fix`   | [@./references/fix-workflow.md]  |
 
-## 共有パターン
+## パターン
 
-| パターン    | 参照                                      |
-| ----------- | ----------------------------------------- |
-| IDR生成     | [@./references/shared/idr-generation.md]  |
-| TDDサイクル | [@./references/shared/tdd-cycle.md]       |
-| テスト生成  | [@./references/shared/test-generation.md] |
+| パターン    | 参照                                                                |
+| ----------- | ------------------------------------------------------------------- |
+| IDR生成     | [@../../rules/workflows/IDR_GENERATION.md]                          |
+| TDDサイクル | [@./references/tdd-cycle.md](./references/tdd-cycle.md)             |
+| テスト生成  | [@./references/test-generation.md](./references/test-generation.md) |
 
 ## 品質ゲート
 

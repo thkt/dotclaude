@@ -18,9 +18,14 @@ allowed-tools: [Read, Write, Glob, Grep]
 
 ## Component API Location
 
-Section: `### 4.x Component API: [ComponentName]` in `## 4. UI Specification`
+Add to spec.md when implementing frontend components.
 
-Contents: Props Interface (TypeScript), Variants, States, Usage Examples
+| Content         | Description                      |
+| --------------- | -------------------------------- |
+| Props Interface | TypeScript interface             |
+| Variants        | Style options                    |
+| States          | default, hover, active, disabled |
+| Usage Examples  | TSX code                         |
 
 ## Workflow
 
@@ -37,10 +42,6 @@ Contents: Props Interface (TypeScript), Variants, States, Usage Examples
 | [S]    | Skip - keep existing      |
 | [M]    | Merge - show diff, manual |
 | [D]    | Diff only - append new    |
-
-## Frontend Detection Keywords
-
-component, ui, button, form, modal, dialog, card, list, table
 
 ## References
 

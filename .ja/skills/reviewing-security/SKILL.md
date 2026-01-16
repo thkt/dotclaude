@@ -28,8 +28,8 @@ user-invocable: false
 
 ## 参考
 
-| トピック         | ファイル                        |
-| ---------------- | ------------------------------- |
-| 基本セキュリティ | `references/owasp-basic.md`     |
-| インジェクション | `references/owasp-injection.md` |
-| 上級             | `references/owasp-advanced.md`  |
+| トピック         | OWASP            | ファイル                        |
+| ---------------- | ---------------- | ------------------------------- |
+| 基本             | A01, A02, A07    | `references/owasp-basic.md`     |
+| インジェクション | A03              | `references/owasp-injection.md` |
+| 上級             | A04-A06, A08-A10 | `references/owasp-advanced.md`  |

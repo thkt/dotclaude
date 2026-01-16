@@ -25,6 +25,18 @@ Orchestrate implementation planning with SOW and Spec generation.
 | 4    | /spec                   | spec.md         |
 | 5    | sow-spec-reviewer (≥90) | (optional)      |
 
+## Q&A Categories
+
+| Category    | Focus                         |
+| ----------- | ----------------------------- |
+| Purpose     | Goal, problem, beneficiary    |
+| Users       | Primary users                 |
+| Scope       | Included/excluded             |
+| Priority    | MoSCoW                        |
+| Success     | "Done" definition             |
+| Constraints | Technical, time, dependencies |
+| Risks       | Known concerns                |
+
 ## Output
 
 ```text

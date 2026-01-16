@@ -8,15 +8,6 @@
 | Early returns | Nested if-else with result at deepest level | Sequential if-returns                 |
 | Extract logic | `if (a && b && !c && d === 'X') { }`        | `if (canAccessContent(user)) { }`     |
 
-## Miller's Law Limits
-
-| Target               | Ideal | Max | Action if exceeded        |
-| -------------------- | ----- | --- | ------------------------- |
-| Function parameters  | 3     | 5   | Use parameter object      |
-| Nesting depth        | 2     | 3   | Use guard clauses         |
-| Conditional branches | 3     | 5   | Use data structure/map    |
-| Function lines       | 5-15  | 20  | Extract smaller functions |
-
 ## Code Examples
 
 ### Guard Clauses
@@ -61,11 +52,11 @@ const getStatus = (code) => STATUS_MAP[code] || "Unknown";
 
 ## Checklist
 
-| Check              | Pass Criteria               |
-| ------------------ | --------------------------- |
-| Parameters         | ≤ 5 per function            |
-| Nesting            | ≤ 3 levels deep             |
-| Branches           | ≤ 5 per function            |
-| Length             | ≤ 15 lines                  |
-| Complex conditions | Extracted to named function |
-| Control flow       | Obvious, no clever tricks   |
+| Check      | Limit | Action if exceeded        |
+| ---------- | ----- | ------------------------- |
+| Parameters | ≤ 5   | Use parameter object      |
+| Nesting    | ≤ 3   | Use guard clauses         |
+| Branches   | ≤ 5   | Use data structure/map    |
+| Length     | ≤ 15  | Extract smaller functions |
+| Conditions | -     | Extract to named function |
+| Flow       | -     | No clever tricks, obvious |

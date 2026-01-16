@@ -36,6 +36,37 @@ diffの内容からタイプを推測:
 | 件名     | ≤72文字、命令形、小文字、ピリオドなし                |
 | フッター | `BREAKING CHANGE:`, `Closes #123`, `Co-authored-by:` |
 
+## 例
+
+```text
+# Good
+feat(auth): add OAuth2 authentication support
+fix(api): resolve timeout in user endpoint
+
+# Bad
+Fixed bug          # タイプなし、曖昧
+feat: Added new.   # 大文字、ピリオド
+```
+
+## 破壊的変更
+
+```text
+feat(api)!: remove deprecated endpoints
+
+BREAKING CHANGE: /v1/users removed. Use /v2/users.
+```
+
+## HEREDOC
+
+```bash
+git commit -m "$(cat <<'EOF'
+feat(workflow): implement test runner
+
+Multi-line description here.
+EOF
+)"
+```
+
 ## エラーハンドリング
 
 | エラー       | アクション               |

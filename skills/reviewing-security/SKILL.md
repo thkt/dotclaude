@@ -28,8 +28,8 @@ Report only when confidence >80%. Include: file:line, exploit scenario, fix reco
 
 ## References
 
-| Topic          | File                            |
-| -------------- | ------------------------------- |
-| Basic Security | `references/owasp-basic.md`     |
-| Injection      | `references/owasp-injection.md` |
-| Advanced       | `references/owasp-advanced.md`  |
+| Topic     | OWASP            | File                            |
+| --------- | ---------------- | ------------------------------- |
+| Basic     | A01, A02, A07    | `references/owasp-basic.md`     |
+| Injection | A03              | `references/owasp-injection.md` |
+| Advanced  | A04-A06, A08-A10 | `references/owasp-advanced.md`  |
