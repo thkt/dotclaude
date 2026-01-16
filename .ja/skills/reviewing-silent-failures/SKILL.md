@@ -1,6 +1,8 @@
 ---
 name: reviewing-silent-failures
-description: Silent failure detection patterns for frontend code.
+description: >
+  Silent failure detection patterns for frontend code.
+  Triggers: silent failure, empty catch, エラーハンドリング, 握りつぶし, swallowed error.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: silent-failure-reviewer
 user-invocable: false

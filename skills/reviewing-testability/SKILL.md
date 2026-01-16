@@ -1,6 +1,8 @@
 ---
 name: reviewing-testability
-description: Testable code design patterns for TypeScript/React applications.
+description: >
+  Testable code design patterns for TypeScript/React applications.
+  Triggers: testability, DI, dependency injection, テスト容易性, モック, mock-friendly.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: testability-reviewer
 user-invocable: false

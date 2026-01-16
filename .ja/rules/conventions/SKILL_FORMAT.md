@@ -15,6 +15,7 @@ allowed-tools: # 任意だが推奨
   - Write
   - Grep
 agent: agent-name # 任意: agents/の対応エージェントにリンク
+context: fork # 任意: サブエージェントコンテキストで実行
 user-invocable: false # 任意: デフォルトfalse
 ---
 ```
@@ -28,7 +29,7 @@ user-invocable: false # 任意: デフォルトfalse
 | `allowed-tools` | ✓      | -            | 利用可能ツール（スキル用）       |
 | `tools`         | -      | ✓            | 利用可能ツール（エージェント用） |
 | `agent`         | ✓      | -            | スキルをエージェントにリンク     |
-| `context`       | -      | ✓            | 実行モード (fork/inline)         |
+| `context`       | ✓      | ✓            | 実行モード (fork/inline)         |
 | `model`         | -      | ✓            | LLMモデル選択                    |
 
 **スキル** = 知識ベース（受動的、参照される）- `allowed-tools` を使用

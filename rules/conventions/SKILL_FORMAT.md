@@ -15,6 +15,7 @@ allowed-tools: # Optional but recommended
   - Write
   - Grep
 agent: agent-name # Optional: links to corresponding agent in agents/
+context: fork # Optional: run in forked sub-agent context
 user-invocable: false # Optional: default false
 ---
 ```
@@ -28,7 +29,7 @@ user-invocable: false # Optional: default false
 | `allowed-tools` | ✓     | -     | Available tools (skill)      |
 | `tools`         | -     | ✓     | Available tools (agent)      |
 | `agent`         | ✓     | -     | Links skill to agent         |
-| `context`       | -     | ✓     | Execution mode (fork/inline) |
+| `context`       | ✓     | ✓     | Execution mode (fork/inline) |
 | `model`         | -     | ✓     | LLM model selection          |
 
 **Skills** = Knowledge base (passive, referenced) - uses `allowed-tools`

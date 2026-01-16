@@ -1,6 +1,8 @@
 ---
 name: reviewing-security
-description: OWASP Top 10-based security review and vulnerability detection.
+description: >
+  OWASP Top 10-based security review and vulnerability detection.
+  Triggers: security, OWASP, XSS, SQL injection, セキュリティ, 脆弱性, vulnerability.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: security-reviewer
 user-invocable: false

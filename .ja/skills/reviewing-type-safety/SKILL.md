@@ -1,6 +1,8 @@
 ---
 name: reviewing-type-safety
-description: TypeScript type safety patterns and best practices for maximum type coverage.
+description: >
+  TypeScript type safety patterns and best practices for maximum type coverage.
+  Triggers: TypeScript, type safety, any, 型安全, 型カバレッジ, strict mode.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: type-safety-reviewer
 user-invocable: false

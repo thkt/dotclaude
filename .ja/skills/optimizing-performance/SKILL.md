@@ -1,6 +1,8 @@
 ---
 name: optimizing-performance
-description: Frontend performance optimization with data-driven approach.
+description: >
+  Frontend performance optimization with data-driven approach.
+  Triggers: performance, Web Vitals, LCP, FID, CLS, パフォーマンス最適化, 速度改善, bundle size.
 allowed-tools: [Read, Grep, Glob, Task, mcp__claude-in-chrome__*, mcp__mdn__*]
 agent: performance-reviewer
 user-invocable: false

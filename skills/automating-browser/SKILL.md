@@ -1,8 +1,11 @@
 ---
 name: automating-browser
-description: Interactive browser automation using claude-in-chrome MCP tools. Best for demos, GIFs, manual testing.
+description: >
+  Interactive browser automation using claude-in-chrome MCP tools. Best for demos, GIFs, manual testing.
+  Triggers: browser automation, GIF recording, ブラウザ操作, スクリーンショット, demo, manual testing.
 allowed-tools: [Read, Glob, mcp__claude-in-chrome__*]
 context: fork
+user-invocable: false
 ---
 
 # Browser Automation

@@ -1,9 +1,11 @@
 ---
 name: generating-tdd-tests
-description: TDD with RGRC cycle and Baby Steps methodology.
+description: >
+  TDD with RGRC cycle and Baby Steps methodology.
+  Triggers: TDD, test-driven, RGRC, Baby Steps, テスト駆動, Red-Green-Refactor.
 allowed-tools: [Read, Write, Edit, Grep, Glob, Task]
-user-invocable: false
 context: fork
+user-invocable: false
 ---
 
 # TDD Test Generation
