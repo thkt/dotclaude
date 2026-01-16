@@ -14,15 +14,23 @@ Analyze current Git changes and suggest appropriate branch names.
 - Argument: context or ticket number (optional)
 - If missing: analyze git diff/status only
 
+## Agent
+
+| Type  | Name             | Purpose                |
+| ----- | ---------------- | ---------------------- |
+| Agent | branch-generator | Branch name gen (fork) |
+
 ## Execution
 
-1. Delegate to `branch-generator` (returns structured YAML)
-2. Present options via `AskUserQuestion`
-3. Create selected branch
+| Step | Action                                        |
+| ---- | --------------------------------------------- |
+| 1    | `Task` with `subagent_type: branch-generator` |
+| 2    | Present options via `AskUserQuestion`         |
+| 3    | Create selected branch                        |
 
 ## Flow: Select
 
-```
+```text
 [Generator YAML] → [Options] → [User Selection] → [Execute]
 ```
 
@@ -35,3 +43,9 @@ Present generator options as choices with reasons.
 ### Success
 
 **Created branch**: `[selected-branch-name]`
+
+## Verification
+
+| Check                                                 | Required |
+| ----------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: branch-generator`? | Yes      |

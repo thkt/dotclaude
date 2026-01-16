@@ -15,9 +15,19 @@ Orchestrate specialized review agents with confidence-based filtering.
 - Argument: target scope (optional)
 - If missing: review staged/modified files (via `git diff --name-only`)
 
+## Agent
+
+| Type  | Name               | Purpose                           |
+| ----- | ------------------ | --------------------------------- |
+| Agent | audit-orchestrator | 15 reviewers orchestration (fork) |
+
 ## Execution
 
-Delegates to `audit-orchestrator` subagent (15 agents: Core 8 + pr-review-toolkit 4 + Production 3).
+| Step | Action                                                    |
+| ---- | --------------------------------------------------------- |
+| 1    | `Task` with `subagent_type: audit-orchestrator`           |
+| 2    | Orchestrator runs 15 agents (Core 8 + toolkit 4 + Prod 3) |
+| 3    | Integrator aggregates findings into structured output     |
 
 ## Flow
 
@@ -50,3 +60,9 @@ Delegates to `audit-orchestrator` subagent (15 agents: Core 8 + pr-review-toolki
 
 - If IDR exists: append `/audit` section with review summary, issues, recommendations
 - If no IDR: skip (terminal output only)
+
+## Verification
+
+| Check                                                   | Required |
+| ------------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: audit-orchestrator`? | Yes      |

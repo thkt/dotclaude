@@ -42,3 +42,9 @@ Implement code with TDD/RGRC cycle and quality checks.
 ## IDR
 
 After implementation, generate IDR if SOW exists (skip if no SOW).
+
+## Verification
+
+| Check                                               | Required |
+| --------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: test-generator`? | Yes      |

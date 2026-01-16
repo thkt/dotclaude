@@ -15,17 +15,25 @@ Generate well-structured GitHub Issues.
 - If missing: prompt via AskUserQuestion
 - Type prefix: `bug`, `feature`, `docs` (optional)
 
+## Agent
+
+| Type  | Name            | Purpose                 |
+| ----- | --------------- | ----------------------- |
+| Agent | issue-generator | GitHub Issue gen (fork) |
+
 ## Execution
 
-1. Delegate to `issue-generator` (returns structured YAML)
-2. Format and present preview
-3. Confirm with user
-4. Execute: `gh issue create --title "<title>" --body "<body>"`
-5. Capture issue URL from command output
+| Step | Action                                                |
+| ---- | ----------------------------------------------------- |
+| 1    | `Task` with `subagent_type: issue-generator`          |
+| 2    | Format and present preview                            |
+| 3    | Confirm with user                                     |
+| 4    | Execute: `gh issue create --title "..." --body "..."` |
+| 5    | Capture issue URL from command output                 |
 
 ## Flow: Preview
 
-```
+```text
 [Generator YAML] → [Preview] → [Confirm] → [Execute]
 ```
 
@@ -47,3 +55,9 @@ Generate well-structured GitHub Issues.
 
 **Created**: `#<number>` <title>
 <issue URL>
+
+## Verification
+
+| Check                                                | Required |
+| ---------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: issue-generator`? | Yes      |

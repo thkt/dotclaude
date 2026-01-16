@@ -14,16 +14,24 @@ Run project tests with gap analysis and quality checks.
 - No argument: run all tests
 - Argument: specific test scope or file pattern
 
+## Agent
+
+| Type  | Name           | Purpose             |
+| ----- | -------------- | ------------------- |
+| Agent | test-generator | Gap analysis (fork) |
+
 ## Execution
 
-1. Run tests (npm/yarn/pnpm/bun)
-2. Coverage analysis
-3. Gap analysis via `test-generator` (uncovered paths)
-4. Quality checks (lint, type-check)
+| Step | Action                                               |
+| ---- | ---------------------------------------------------- |
+| 1    | Run tests (npm/yarn/pnpm/bun)                        |
+| 2    | Coverage analysis                                    |
+| 3    | `Task` with `subagent_type: test-generator` for gaps |
+| 4    | Quality checks (lint, type-check)                    |
 
 ## Flow: Execute
 
-```
+```text
 [Execute] → [Result]
 ```
 
@@ -50,3 +58,9 @@ Run project tests with gap analysis and quality checks.
 ### Success
 
 **Tests**: ✅ XX passed | ❌ XX failed | Coverage XX%
+
+## Verification
+
+| Check                                               | Required |
+| --------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: test-generator`? | Yes      |

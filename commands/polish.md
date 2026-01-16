@@ -14,15 +14,19 @@ Remove AI-generated slop and simplify code before commit.
 - Argument: target scope (optional)
 - If missing: analyze `git diff main...HEAD`
 
-## Plugins
+## Agent
 
-| Name            | Purpose                             |
-| --------------- | ----------------------------------- |
-| code-simplifier | AI slop removal (pr-review-toolkit) |
+| Type  | Name            | Purpose                |
+| ----- | --------------- | ---------------------- |
+| Agent | code-simplifier | AI slop removal (fork) |
 
 ## Execution
 
-Delegates to `code-simplifier` agent for refinement.
+| Step | Action                                       |
+| ---- | -------------------------------------------- |
+| 1    | `Task` with `subagent_type: code-simplifier` |
+| 2    | Agent identifies and removes AI slop         |
+| 3    | Report simplifications                       |
 
 ### Removal Targets
 
@@ -41,3 +45,9 @@ Polished: Removed X comments, inlined Y helpers
 
 - If IDR exists: append `/polish` section with removals and simplifications
 - If no IDR: skip (terminal output only)
+
+## Verification
+
+| Check                                                | Required |
+| ---------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: code-simplifier`? | Yes      |

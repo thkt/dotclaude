@@ -14,16 +14,24 @@ Analyze staged changes and generate Conventional Commits messages.
 - Argument: context or issue reference (optional)
 - If missing: analyze staged changes only
 
+## Agent
+
+| Type  | Name             | Purpose                         |
+| ----- | ---------------- | ------------------------------- |
+| Agent | commit-generator | Conventional Commits gen (fork) |
+
 ## Execution
 
-1. Delegate to `commit-generator` (returns structured YAML)
-2. Format and present preview
-3. Confirm with user
-4. Execute commit
+| Step | Action                                        |
+| ---- | --------------------------------------------- |
+| 1    | `Task` with `subagent_type: commit-generator` |
+| 2    | Format and present preview                    |
+| 3    | Confirm with user                             |
+| 4    | Execute commit                                |
 
 ## Flow: Preview
 
-```
+```text
 [Generator YAML] → [Preview] → [Confirm] → [Execute]
 ```
 
@@ -44,3 +52,9 @@ Analyze staged changes and generate Conventional Commits messages.
 ### Success
 
 **Committed**: `[short-hash]` <type>(<scope>): <description>
+
+## Verification
+
+| Check                                                 | Required |
+| ----------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: commit-generator`? | Yes      |

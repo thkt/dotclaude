@@ -43,3 +43,9 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 ## IDR
 
 `/fix` does NOT generate IDR - use `/code` for features needing decision tracking.
+
+## Verification
+
+| Check                                               | Required |
+| --------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: test-generator`? | Yes      |

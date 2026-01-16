@@ -15,13 +15,21 @@ argument-hint: "[Issue説明]"
 - 未指定時: AskUserQuestionで確認
 - タイププレフィックス: `bug`, `feature`, `docs`（任意）
 
+## Agent
+
+| タイプ | 名前            | 目的                    |
+| ------ | --------------- | ----------------------- |
+| Agent  | issue-generator | GitHub Issue生成 (fork) |
+
 ## 実行
 
-1. `issue-generator` に委譲（構造化YAMLを返す）
-2. フォーマットしてプレビュー表示
-3. ユーザーに確認
-4. 実行: `gh issue create --title "<title>" --body "<body>"`
-5. コマンド出力からIssue URLを取得
+| Step | アクション                                         |
+| ---- | -------------------------------------------------- |
+| 1    | `Task`で`subagent_type: issue-generator`           |
+| 2    | フォーマットしてプレビュー表示                     |
+| 3    | ユーザーに確認                                     |
+| 4    | 実行: `gh issue create --title "..." --body "..."` |
+| 5    | コマンド出力からIssue URLを取得                    |
 
 ## フロー: Preview
 
@@ -47,3 +55,9 @@ argument-hint: "[Issue説明]"
 
 **作成完了**: `#<number>` <title>
 <issue URL>
+
+## 検証
+
+| チェック                                               | 必須 |
+| ------------------------------------------------------ | ---- |
+| `Task`で`subagent_type: issue-generator`を呼び出した？ | Yes  |

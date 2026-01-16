@@ -14,12 +14,27 @@ argument-hint: "[Issue参照またはコンテキスト]"
 - 引数なし: 現在のブランチから生成
 - 引数あり: Issue参照（`#456`）または追加コンテキスト
 
+## Agent
+
+| タイプ | 名前         | 目的              |
+| ------ | ------------ | ----------------- |
+| Agent  | pr-generator | PR説明生成 (fork) |
+
 ## 実行
 
-1. 分析: `git status`, `git diff`, `git log`（並行）
-2. `pr-generator`サブエージェントにPR説明を委譲
-3. 必要に応じてpush: `git push -u origin HEAD`
-4. PR作成: `gh pr create --title "..." --body "..."`
+| Step | アクション                                                  |
+| ---- | ----------------------------------------------------------- |
+| 1    | 分析: `git status`, `git diff`, `git log`（並行）           |
+| 2    | `Task`で`subagent_type: pr-generator`によるPRコンテンツ生成 |
+| 3    | 必要に応じてpush: `git push -u origin HEAD`                 |
+| 4    | PR作成: `gh pr create --title "..." --body "..."`           |
+
+## ルール
+
+| ルール               | 詳細                                                 |
+| -------------------- | ---------------------------------------------------- |
+| タイトル: 接頭辞なし | `feat:`, `fix:`, `refactor:`等は付けない             |
+| 本文: 直接文字列     | ヒアドキュメント（`<<EOF`）回避 - サンドボックス制限 |
 
 ## フロー: Preview
 
@@ -57,3 +72,10 @@ argument-hint: "[Issue参照またはコンテキスト]"
 
 **PR作成完了**: `#<number>` <title>
 <PR URL>
+
+## 検証
+
+| チェック                                            | 必須 |
+| --------------------------------------------------- | ---- |
+| `Task`で`subagent_type: pr-generator`を呼び出した？ | Yes  |
+| タイトルに接頭辞なし（`feat:`, `fix:`等）？         | Yes  |
