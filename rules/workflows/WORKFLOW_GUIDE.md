@@ -45,12 +45,12 @@ Guide for **using** commands. User reference for command selection and workflow 
 
 ## Standard Workflows
 
-| Pattern       | Workflow                                                            | When                 |
-| ------------- | ------------------------------------------------------------------- | -------------------- |
-| Quick Fix     | `/fix`                                                              | Small bug, dev env   |
-| Investigation | `/research` → `/fix`                                                | Unknown cause        |
-| Feature       | `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate` | New capability       |
-| Simple        | `/code` → `/test`                                                   | Clear implementation |
+| Pattern       | Workflow                                                            | When                                    |
+| ------------- | ------------------------------------------------------------------- | --------------------------------------- |
+| Quick Fix     | `/fix`                                                              | Small bug, stable codebase              |
+| Investigation | `/research` → `/fix`                                                | Unknown cause                           |
+| Feature       | `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate` | New capability, requirements unstable   |
+| Simple        | `/code` → `/test`                                                   | Clear implementation, tech stack stable |
 
 ## Command Selection
 
@@ -79,6 +79,7 @@ Guide for **using** commands. User reference for command selection and workflow 
 ## IDR (Implementation Decision Record)
 
 Auto-generated document tracking implementation through the lifecycle.
+SOW/IDR serve as structured memory: AI reads entirely, humans reference selectively.
 
 See [@./IDR_GENERATION.md](./IDR_GENERATION.md)
 
