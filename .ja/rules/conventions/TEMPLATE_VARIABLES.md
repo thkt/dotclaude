@@ -80,10 +80,10 @@ priorities:
 
 ## 使用箇所
 
-| 場所         | ファイル                                |
-| ------------ | --------------------------------------- |
-| コマンド     | `commands/audit.md`, `commands/docs.md` |
-| テンプレート | `templates/docs/*.md`                   |
+| 場所         | ファイル                                    |
+| ------------ | ------------------------------------------- |
+| コマンド     | `commands/audit.md`, `commands/docs.md`     |
+| テンプレート | `templates/docs/*.md`, `templates/adr/*.md` |
 
 ## 注意
 

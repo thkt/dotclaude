@@ -1,121 +1,126 @@
-# {{TITLE}}
+# Architecture Pattern Template
 
-- Status: {{STATUS}}
-- Deciders: {{DECIDERS}}
-- Date: {{DATE}}
+## Structure
 
-Technical Story: {{TECHNICAL_STORY_LINK}}
+````markdown
+# {title}
+
+- Status: {status}
+- Deciders: {deciders}
+- Date: {date}
+
+Technical Story: {technical_story_link}
 
 ## Context and Problem Statement
 
-{{CONTEXT}}
+{context}
 
 ## Decision Drivers
 
-- {{DRIVER_1}}
-- {{DRIVER_2}}
-- {{DRIVER_3}}
+- {driver_1}
+- {driver_2}
+- {driver_3}
 
 ## Considered Options
 
-- {{OPTION_1}}
-- {{OPTION_2}}
-- {{OPTION_3}}
+- {option_1}
+- {option_2}
+- {option_3}
 
 ## Decision Outcome
 
-Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
+Chosen option: "{chosen_option}", because {rationale}.
 
 ### Consequences
 
 #### Positive Consequences
 
-- {{POSITIVE_1}} - Clear architecture
-- {{POSITIVE_2}} - Improved maintainability
-- {{POSITIVE_3}} - Better scalability
+- {positive_1} - Clear architecture
+- {positive_2} - Improved maintainability
+- {positive_3} - Better scalability
 
 #### Negative Consequences
 
-- {{NEGATIVE_1}} - Learning curve
-- {{NEGATIVE_2}} - Initial implementation cost
+- {negative_1} - Learning curve
+- {negative_2} - Initial implementation cost
 
 ## Pros and Cons of the Options
 
-### {{OPTION_1}}
+### {option_1}
 
-{{OPTION_1_DESCRIPTION}}
+{option_1_description}
 
-- Good, because {{OPTION_1_PRO_1}}
-- Good, because {{OPTION_1_PRO_2}}
-- Neutral, because {{OPTION_1_NEUTRAL}}
-- Bad, because {{OPTION_1_CON_1}}
+- Good, because {option_1_pro_1}
+- Good, because {option_1_pro_2}
+- Neutral, because {option_1_neutral}
+- Bad, because {option_1_con_1}
 
-### {{OPTION_2}}
+### {option_2}
 
-{{OPTION_2_DESCRIPTION}}
+{option_2_description}
 
-- Good, because {{OPTION_2_PRO_1}}
-- Good, because {{OPTION_2_PRO_2}}
-- Neutral, because {{OPTION_2_NEUTRAL}}
-- Bad, because {{OPTION_2_CON_1}}
+- Good, because {option_2_pro_1}
+- Good, because {option_2_pro_2}
+- Neutral, because {option_2_neutral}
+- Bad, because {option_2_con_1}
 
-### {{OPTION_3}}
+### {option_3}
 
-{{OPTION_3_DESCRIPTION}}
+{option_3_description}
 
-- Good, because {{OPTION_3_PRO_1}}
-- Good, because {{OPTION_3_PRO_2}}
-- Neutral, because {{OPTION_3_NEUTRAL}}
-- Bad, because {{OPTION_3_CON_1}}
+- Good, because {option_3_pro_1}
+- Good, because {option_3_pro_2}
+- Neutral, because {option_3_neutral}
+- Bad, because {option_3_con_1}
 
 ## More Information
 
 ### Architecture Diagram
 
-```markdown
+```text
 [Insert architecture diagram here]
 ```
 
 ### Implementation Guidelines
 
-1. {{GUIDELINE_1}}
-2. {{GUIDELINE_2}}
-3. {{GUIDELINE_3}}
+1. {guideline_1}
+2. {guideline_2}
+3. {guideline_3}
 
 ### Quality Attributes
 
-| Attribute | Priority          | Approach        |
-| --------- | ----------------- | --------------- |
-| {{QA_1}}  | {{QA_1_PRIORITY}} | {{QA_1_METHOD}} |
-| {{QA_2}}  | {{QA_2_PRIORITY}} | {{QA_2_METHOD}} |
+| Attribute | Priority        | Approach      |
+| --------- | --------------- | ------------- |
+| {qa_1}    | {qa_1_priority} | {qa_1_method} |
+| {qa_2}    | {qa_2_priority} | {qa_2_method} |
 
 ### Migration Strategy
 
-**Phase 1**: {{MIGRATION_PHASE_1}}
+**Phase 1**: {migration_phase_1}
 
-**Phase 2**: {{MIGRATION_PHASE_2}}
+**Phase 2**: {migration_phase_2}
 
-**Phase 3**: {{MIGRATION_PHASE_3}}
+**Phase 3**: {migration_phase_3}
 
 ### Trade-offs
 
 This pattern trades off the following:
 
-- {{TRADEOFF_1}}
-- {{TRADEOFF_2}}
+- {tradeoff_1}
+- {tradeoff_2}
 
 ## Validation
 
 ### Success Criteria
 
-- {{SUCCESS_CRITERIA_1}}
-- {{SUCCESS_CRITERIA_2}}
-- {{SUCCESS_CRITERIA_3}}
+- {success_criteria_1}
+- {success_criteria_2}
+- {success_criteria_3}
 
 ### Monitoring
 
-- {{MONITORING_1}}
-- {{MONITORING_2}}
+- {monitoring_1}
+- {monitoring_2}
 
 ## Related ADRs
 
@@ -127,6 +132,7 @@ This pattern trades off the following:
 
 ---
 
-_Created: {{DATE}}_
-_Author: {{AUTHOR}}_
-_ADR Number: {{NUMBER}}_
+_Created: {date}_
+_Author: {author}_
+_ADR Number: {number}_
+````

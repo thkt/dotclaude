@@ -1,137 +1,142 @@
-# {{TITLE}}
+# Process Change Template
 
-- Status: {{STATUS}}
-- Deciders: {{DECIDERS}}
-- Date: {{DATE}}
+## Structure
 
-Technical Story: {{TECHNICAL_STORY_LINK}}
+```markdown
+# {title}
+
+- Status: {status}
+- Deciders: {deciders}
+- Date: {date}
+
+Technical Story: {technical_story_link}
 
 ## Context and Problem Statement
 
-{{CONTEXT}}
+{context}
 
 ## Decision Drivers
 
-- {{DRIVER_1}}
-- {{DRIVER_2}}
-- {{DRIVER_3}}
+- {driver_1}
+- {driver_2}
+- {driver_3}
 - Team productivity improvement
 - Quality standards maintenance
 - Onboarding cost considerations
 
 ## Considered Options
 
-- {{OPTION_1}}
-- {{OPTION_2}}
-- {{OPTION_3}}
+- {option_1}
+- {option_2}
+- {option_3}
 
 ## Decision Outcome
 
-Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
+Chosen option: "{chosen_option}", because {rationale}.
 
 ### Consequences
 
 #### Positive Consequences
 
-- {{POSITIVE_1}} - Process improvement
-- {{POSITIVE_2}} - Efficiency gains
-- {{POSITIVE_3}} - Quality improvement
+- {positive_1} - Process improvement
+- {positive_2} - Efficiency gains
+- {positive_3} - Quality improvement
 
 #### Negative Consequences
 
-- {{NEGATIVE_1}} - Learning cost
-- {{NEGATIVE_2}} - Productivity dip during transition
+- {negative_1} - Learning cost
+- {negative_2} - Productivity dip during transition
 
 ## Pros and Cons of the Options
 
-### {{OPTION_1}}
+### {option_1}
 
-{{OPTION_1_DESCRIPTION}}
+{option_1_description}
 
-- Good, because {{OPTION_1_PRO_1}}
-- Good, because {{OPTION_1_PRO_2}}
-- Bad, because {{OPTION_1_CON_1}}
-- Bad, because {{OPTION_1_CON_2}}
+- Good, because {option_1_pro_1}
+- Good, because {option_1_pro_2}
+- Bad, because {option_1_con_1}
+- Bad, because {option_1_con_2}
 
-### {{OPTION_2}}
+### {option_2}
 
-{{OPTION_2_DESCRIPTION}}
+{option_2_description}
 
-- Good, because {{OPTION_2_PRO_1}}
-- Good, because {{OPTION_2_PRO_2}}
-- Bad, because {{OPTION_2_CON_1}}
-- Bad, because {{OPTION_2_CON_2}}
+- Good, because {option_2_pro_1}
+- Good, because {option_2_pro_2}
+- Bad, because {option_2_con_1}
+- Bad, because {option_2_con_2}
 
-### {{OPTION_3}}
+### {option_3}
 
-{{OPTION_3_DESCRIPTION}}
+{option_3_description}
 
-- Good, because {{OPTION_3_PRO_1}}
-- Good, because {{OPTION_3_PRO_2}}
-- Bad, because {{OPTION_3_CON_1}}
-- Bad, because {{OPTION_3_CON_2}}
+- Good, because {option_3_pro_1}
+- Good, because {option_3_pro_2}
+- Bad, because {option_3_con_1}
+- Bad, because {option_3_con_2}
 
 ## Process Change Details
 
 ### Current Process
 
-{{CURRENT_PROCESS_DESCRIPTION}}
+{current_process_description}
 
 **Pain Points**:
 
-- {{PAIN_POINT_1}}
-- {{PAIN_POINT_2}}
-- {{PAIN_POINT_3}}
+- {pain_point_1}
+- {pain_point_2}
+- {pain_point_3}
 
 ### New Process
 
-{{NEW_PROCESS_DESCRIPTION}}
+{new_process_description}
 
 **Expected Improvements**:
 
-- {{IMPROVEMENT_1}}
-- {{IMPROVEMENT_2}}
-- {{IMPROVEMENT_3}}
+- {improvement_1}
+- {improvement_2}
+- {improvement_3}
 
 ### Transition Plan
 
-| Phase        | Duration             | Activities             | Success Criteria     |
-| ------------ | -------------------- | ---------------------- | -------------------- |
-| Preparation  | {{PHASE_1_DURATION}} | {{PHASE_1_ACTIVITIES}} | {{PHASE_1_CRITERIA}} |
-| Pilot        | {{PHASE_2_DURATION}} | {{PHASE_2_ACTIVITIES}} | {{PHASE_2_CRITERIA}} |
-| Full Rollout | {{PHASE_3_DURATION}} | {{PHASE_3_ACTIVITIES}} | {{PHASE_3_CRITERIA}} |
+| Phase        | Duration           | Activities           | Success Criteria   |
+| ------------ | ------------------ | -------------------- | ------------------ |
+| Preparation  | {phase_1_duration} | {phase_1_activities} | {phase_1_criteria} |
+| Pilot        | {phase_2_duration} | {phase_2_activities} | {phase_2_criteria} |
+| Full Rollout | {phase_3_duration} | {phase_3_activities} | {phase_3_criteria} |
 
 ## Team Impact
 
 ### Affected Teams/Roles
 
-- {{TEAM_1}}: {{TEAM_1_IMPACT}}
-- {{TEAM_2}}: {{TEAM_2_IMPACT}}
+- {team_1}: {team_1_impact}
+- {team_2}: {team_2_impact}
 
 ### Training Requirements
 
-- Training time: {{TRAINING_HOURS}} hours/person
-- Documentation updates: {{DOCS_TO_UPDATE}}
-- Workshops: {{WORKSHOP_PLAN}}
+- Training time: {training_hours} hours/person
+- Documentation updates: {docs_to_update}
+- Workshops: {workshop_plan}
 
 ### Communication Plan
 
-- {{COMMUNICATION_1}}
-- {{COMMUNICATION_2}}
-- {{COMMUNICATION_3}}
+- {communication_1}
+- {communication_2}
+- {communication_3}
 
 ## Validation
 
 ### Success Criteria
 
-- {{SUCCESS_CRITERIA_1}}
-- {{SUCCESS_CRITERIA_2}}
-- {{SUCCESS_CRITERIA_3}}
+- {success_criteria_1}
+- {success_criteria_2}
+- {success_criteria_3}
 
 ### Metrics
 
-- {{METRIC_1}}: Before {{METRIC_1_BEFORE}} → Target {{METRIC_1_TARGET}}
-- {{METRIC_2}}: Before {{METRIC_2_BEFORE}} → Target {{METRIC_2_TARGET}}
+- {metric_1}: Before {metric_1_before} → Target {metric_1_target}
+- {metric_2}: Before {metric_2_before} → Target {metric_2_target}
 
 ### Review Schedule
 
@@ -143,14 +148,14 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 
 **Trigger Conditions**:
 
-- {{ROLLBACK_TRIGGER_1}}
-- {{ROLLBACK_TRIGGER_2}}
+- {rollback_trigger_1}
+- {rollback_trigger_2}
 
 **Rollback Steps**:
 
-1. {{ROLLBACK_STEP_1}}
-2. {{ROLLBACK_STEP_2}}
-3. {{ROLLBACK_STEP_3}}
+1. {rollback_step_1}
+2. {rollback_step_2}
+3. {rollback_step_3}
 
 ## Related ADRs
 
@@ -162,6 +167,7 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 
 ---
 
-_Created: {{DATE}}_
-_Author: {{AUTHOR}}_
-_ADR Number: {{NUMBER}}_
+_Created: {date}_
+_Author: {author}_
+_ADR Number: {number}_
+```

@@ -25,13 +25,14 @@ user-invocable: false # Optional: default false
 | --------------- | ----- | ----- | ---------------------------- |
 | `name`          | ✓     | ✓     | Identifier                   |
 | `description`   | ✓     | ✓     | Purpose summary              |
-| `allowed-tools` | ✓     | ✓     | Available tools              |
+| `allowed-tools` | ✓     | -     | Available tools (skill)      |
+| `tools`         | -     | ✓     | Available tools (agent)      |
 | `agent`         | ✓     | -     | Links skill to agent         |
 | `context`       | -     | ✓     | Execution mode (fork/inline) |
 | `model`         | -     | ✓     | LLM model selection          |
 
-**Skills** = Knowledge base (passive, referenced)
-**Agents** = Executors (active, spawned via Task tool)
+**Skills** = Knowledge base (passive, referenced) - uses `allowed-tools`
+**Agents** = Executors (active, spawned via Task tool) - uses `tools`
 
 ## Naming Convention
 

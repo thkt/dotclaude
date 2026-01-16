@@ -80,10 +80,10 @@ Immediate: Fix immediately
 
 ## Usage Locations
 
-| Location  | Files                                   |
-| --------- | --------------------------------------- |
-| Commands  | `commands/audit.md`, `commands/docs.md` |
-| Templates | `templates/docs/*.md`                   |
+| Location  | Files                                       |
+| --------- | ------------------------------------------- |
+| Commands  | `commands/audit.md`, `commands/docs.md`     |
+| Templates | `templates/docs/*.md`, `templates/adr/*.md` |
 
 ## Notes
 

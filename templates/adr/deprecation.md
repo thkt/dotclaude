@@ -1,20 +1,25 @@
-# {{TITLE}}
+# Deprecation Template
 
-- Status: {{STATUS}}
-- Deciders: {{DECIDERS}}
-- Date: {{DATE}}
+## Structure
 
-Technical Story: {{TECHNICAL_STORY_LINK}}
+````markdown
+# {title}
+
+- Status: {status}
+- Deciders: {deciders}
+- Date: {date}
+
+Technical Story: {technical_story_link}
 
 ## Context and Problem Statement
 
-{{CONTEXT}}
+{context}
 
 ## Decision Drivers
 
-- {{DRIVER_1}}
-- {{DRIVER_2}}
-- {{DRIVER_3}}
+- {driver_1}
+- {driver_2}
+- {driver_3}
 - Technical debt reduction
 - Security risk mitigation
 - Maintenance cost optimization
@@ -23,94 +28,94 @@ Technical Story: {{TECHNICAL_STORY_LINK}}
 
 ### Current Technology
 
-- **Name**: {{DEPRECATED_TECH_NAME}}
-- **Version**: {{DEPRECATED_TECH_VERSION}}
-- **Start Date**: {{DEPRECATED_TECH_START_DATE}}
-- **Usage Locations**: {{USAGE_LOCATIONS}}
+- **Name**: {deprecated_tech_name}
+- **Version**: {deprecated_tech_version}
+- **Start Date**: {deprecated_tech_start_date}
+- **Usage Locations**: {usage_locations}
 
 ### Deprecation Reasons
 
-- {{DEPRECATION_REASON_1}}
-- {{DEPRECATION_REASON_2}}
-- {{DEPRECATION_REASON_3}}
+- {deprecation_reason_1}
+- {deprecation_reason_2}
+- {deprecation_reason_3}
 
 ## Replacement Technology
 
-- **Name**: {{REPLACEMENT_TECH_NAME}}
-- **Version**: {{REPLACEMENT_TECH_VERSION}}
-- **Selection Rationale**: {{REPLACEMENT_RATIONALE}}
+- **Name**: {replacement_tech_name}
+- **Version**: {replacement_tech_version}
+- **Selection Rationale**: {replacement_rationale}
 
 ## Decision Outcome
 
-Chosen option: "Deprecate {{DEPRECATED_TECH_NAME}} and migrate to {{REPLACEMENT_TECH_NAME}}", because {{RATIONALE}}.
+Chosen option: "Deprecate {deprecated_tech_name} and migrate to {replacement_tech_name}", because {rationale}.
 
 ### Consequences
 
 #### Positive Consequences
 
-- {{POSITIVE_1}} - Technical debt reduction
-- {{POSITIVE_2}} - Performance improvement
-- {{POSITIVE_3}} - Maintainability improvement
+- {positive_1} - Technical debt reduction
+- {positive_2} - Performance improvement
+- {positive_3} - Maintainability improvement
 
 #### Negative Consequences
 
-- {{NEGATIVE_1}} - Migration cost
-- {{NEGATIVE_2}} - Temporary complexity increase
+- {negative_1} - Migration cost
+- {negative_2} - Temporary complexity increase
 
 ## Impact Analysis
 
 ### Code Impact
 
-- Affected files count: {{AFFECTED_FILES_COUNT}}
+- Affected files count: {affected_files_count}
 - Major change locations:
-  - {{CHANGE_LOCATION_1}}
-  - {{CHANGE_LOCATION_2}}
-  - {{CHANGE_LOCATION_3}}
+  - {change_location_1}
+  - {change_location_2}
+  - {change_location_3}
 
 ### Dependency Impact
 
-- Direct dependencies: {{DIRECT_DEPENDENCIES}}
-- Indirect dependencies: {{INDIRECT_DEPENDENCIES}}
-- Compatibility layer needed: {{COMPATIBILITY_LAYER_NEEDED}}
+- Direct dependencies: {direct_dependencies}
+- Indirect dependencies: {indirect_dependencies}
+- Compatibility layer needed: {compatibility_layer_needed}
 
 ### Team Impact
 
-- Affected teams: {{AFFECTED_TEAMS}}
-- Required skill set: {{REQUIRED_SKILLS}}
-- Learning cost: {{LEARNING_COST}} hours/person
+- Affected teams: {affected_teams}
+- Required skill set: {required_skills}
+- Learning cost: {learning_cost} hours/person
 
 ## Migration Plan (REQUIRED)
 
 ### Timeline
 
-| Phase                      | Period             | Goal             | Success Criteria     |
-| -------------------------- | ------------------ | ---------------- | -------------------- |
-| Phase 1: Preparation       | {{PHASE_1_PERIOD}} | {{PHASE_1_GOAL}} | {{PHASE_1_CRITERIA}} |
-| Phase 2: Pilot Migration   | {{PHASE_2_PERIOD}} | {{PHASE_2_GOAL}} | {{PHASE_2_CRITERIA}} |
-| Phase 3: Gradual Migration | {{PHASE_3_PERIOD}} | {{PHASE_3_GOAL}} | {{PHASE_3_CRITERIA}} |
-| Phase 4: Full Migration    | {{PHASE_4_PERIOD}} | {{PHASE_4_GOAL}} | {{PHASE_4_CRITERIA}} |
-| Phase 5: Cleanup           | {{PHASE_5_PERIOD}} | {{PHASE_5_GOAL}} | {{PHASE_5_CRITERIA}} |
+| Phase                      | Period           | Goal           | Success Criteria   |
+| -------------------------- | ---------------- | -------------- | ------------------ |
+| Phase 1: Preparation       | {phase_1_period} | {phase_1_goal} | {phase_1_criteria} |
+| Phase 2: Pilot Migration   | {phase_2_period} | {phase_2_goal} | {phase_2_criteria} |
+| Phase 3: Gradual Migration | {phase_3_period} | {phase_3_goal} | {phase_3_criteria} |
+| Phase 4: Full Migration    | {phase_4_period} | {phase_4_goal} | {phase_4_criteria} |
+| Phase 5: Cleanup           | {phase_5_period} | {phase_5_goal} | {phase_5_criteria} |
 
 ### Deprecation Warning Period
 
-- Warning start date: {{WARNING_START_DATE}}
-- Soft deprecation: {{SOFT_DEPRECATION_DATE}} (warning logs output)
-- Hard deprecation: {{HARD_DEPRECATION_DATE}} (new usage prohibited)
-- Full removal: {{REMOVAL_DATE}}
+- Warning start date: {warning_start_date}
+- Soft deprecation: {soft_deprecation_date} (warning logs output)
+- Hard deprecation: {hard_deprecation_date} (new usage prohibited)
+- Full removal: {removal_date}
 
 ### Migration Steps
 
 #### Step 1: Create Compatibility Layer
 
 ```text
-{{COMPATIBILITY_LAYER_CODE}}
+{compatibility_layer_code}
 ```
 
 #### Step 2: Gradual Replacement
 
-- [ ] {{MIGRATION_TASK_1}}
-- [ ] {{MIGRATION_TASK_2}}
-- [ ] {{MIGRATION_TASK_3}}
+- [ ] {migration_task_1}
+- [ ] {migration_task_2}
+- [ ] {migration_task_3}
 
 #### Step 3: Verification
 
@@ -138,55 +143,55 @@ Chosen option: "Deprecate {{DEPRECATED_TECH_NAME}} and migrate to {{REPLACEMENT_
 
 ### Success Criteria
 
-- {{SUCCESS_CRITERIA_1}}
-- {{SUCCESS_CRITERIA_2}}
-- {{SUCCESS_CRITERIA_3}}
+- {success_criteria_1}
+- {success_criteria_2}
+- {success_criteria_3}
 
 ### Metrics
 
-- Performance: {{PERFORMANCE_METRIC}}
-- Error rate: {{ERROR_RATE_METRIC}}
-- Migration completion rate: {{MIGRATION_COMPLETION_METRIC}}
+- Performance: {performance_metric}
+- Error rate: {error_rate_metric}
+- Migration completion rate: {migration_completion_metric}
 
 ### Monitoring
 
-- Migration progress dashboard: {{DASHBOARD_LINK}}
-- Alert configuration: {{ALERT_CONFIG}}
+- Migration progress dashboard: {dashboard_link}
+- Alert configuration: {alert_config}
 
 ## Rollback Plan (REQUIRED)
 
 ### Trigger Conditions
 
-- {{ROLLBACK_TRIGGER_1}}
-- {{ROLLBACK_TRIGGER_2}}
-- {{ROLLBACK_TRIGGER_3}}
+- {rollback_trigger_1}
+- {rollback_trigger_2}
+- {rollback_trigger_3}
 
 ### Rollback Steps
 
-1. {{ROLLBACK_STEP_1}}
-2. {{ROLLBACK_STEP_2}}
-3. {{ROLLBACK_STEP_3}}
+1. {rollback_step_1}
+2. {rollback_step_2}
+3. {rollback_step_3}
 
 ### Rollback Timeline
 
-- Detection to decision: {{DETECTION_TO_DECISION}} minutes
-- Rollback execution: {{ROLLBACK_EXECUTION}} minutes
-- Recovery verification: {{RECOVERY_VERIFICATION}} minutes
+- Detection to decision: {detection_to_decision} minutes
+- Rollback execution: {rollback_execution} minutes
+- Recovery verification: {recovery_verification} minutes
 
 ### Data Considerations
 
-- Data migration required: {{DATA_MIGRATION_NEEDED}}
-- Data handling during rollback: {{DATA_ROLLBACK_STRATEGY}}
+- Data migration required: {data_migration_needed}
+- Data handling during rollback: {data_rollback_strategy}
 
 ## Communication
 
 ### Announcements
 
-| Date                | Content            | Audience       | Channel       |
-| ------------------- | ------------------ | -------------- | ------------- |
-| {{ANNOUNCE_DATE_1}} | Deprecation notice | All developers | {{CHANNEL_1}} |
-| {{ANNOUNCE_DATE_2}} | Migration start    | Related teams  | {{CHANNEL_2}} |
-| {{ANNOUNCE_DATE_3}} | Completion report  | All developers | {{CHANNEL_3}} |
+| Date              | Content            | Audience       | Channel     |
+| ----------------- | ------------------ | -------------- | ----------- |
+| {announce_date_1} | Deprecation notice | All developers | {channel_1} |
+| {announce_date_2} | Migration start    | Related teams  | {channel_2} |
+| {announce_date_3} | Completion report  | All developers | {channel_3} |
 
 ### Documentation Updates
 
@@ -205,6 +210,7 @@ Chosen option: "Deprecate {{DEPRECATED_TECH_NAME}} and migrate to {{REPLACEMENT_
 
 ---
 
-_Created: {{DATE}}_
-_Author: {{AUTHOR}}_
-_ADR Number: {{NUMBER}}_
+_Created: {date}_
+_Author: {author}_
+_ADR Number: {number}_
+````

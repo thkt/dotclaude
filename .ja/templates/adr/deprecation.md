@@ -1,20 +1,25 @@
-# {{TITLE}}
+# 非推奨化テンプレート
 
-- ステータス: {{STATUS}}
-- 決定者: {{DECIDERS}}
-- 日付: {{DATE}}
+## 構造
 
-技術ストーリー: {{TECHNICAL_STORY_LINK}}
+````markdown
+# {title}
+
+- ステータス: {status}
+- 決定者: {deciders}
+- 日付: {date}
+
+技術ストーリー: {technical_story_link}
 
 ## 背景と課題
 
-{{CONTEXT}}
+{context}
 
 ## 決定要因
 
-- {{DRIVER_1}}
-- {{DRIVER_2}}
-- {{DRIVER_3}}
+- {driver_1}
+- {driver_2}
+- {driver_3}
 - 技術的負債の削減
 - セキュリティリスクの軽減
 - 保守コストの最適化
@@ -23,94 +28,94 @@
 
 ### 現行技術
 
-- **名称**: {{DEPRECATED_TECH_NAME}}
-- **バージョン**: {{DEPRECATED_TECH_VERSION}}
-- **導入日**: {{DEPRECATED_TECH_START_DATE}}
-- **使用箇所**: {{USAGE_LOCATIONS}}
+- **名称**: {deprecated_tech_name}
+- **バージョン**: {deprecated_tech_version}
+- **導入日**: {deprecated_tech_start_date}
+- **使用箇所**: {usage_locations}
 
 ### 非推奨化の理由
 
-- {{DEPRECATION_REASON_1}}
-- {{DEPRECATION_REASON_2}}
-- {{DEPRECATION_REASON_3}}
+- {deprecation_reason_1}
+- {deprecation_reason_2}
+- {deprecation_reason_3}
 
 ## 代替技術
 
-- **名称**: {{REPLACEMENT_TECH_NAME}}
-- **バージョン**: {{REPLACEMENT_TECH_VERSION}}
-- **選定理由**: {{REPLACEMENT_RATIONALE}}
+- **名称**: {replacement_tech_name}
+- **バージョン**: {replacement_tech_version}
+- **選定理由**: {replacement_rationale}
 
 ## 決定結果
 
-採用オプション: "{{DEPRECATED_TECH_NAME}} を非推奨化し {{REPLACEMENT_TECH_NAME}} へ移行"、理由: {{RATIONALE}}
+採用オプション: "{deprecated_tech_name} を非推奨化し {replacement_tech_name} へ移行"、理由: {rationale}
 
 ### 結果
 
 #### ポジティブな結果
 
-- {{POSITIVE_1}} - 技術的負債の削減
-- {{POSITIVE_2}} - パフォーマンスの向上
-- {{POSITIVE_3}} - 保守性の向上
+- {positive_1} - 技術的負債の削減
+- {positive_2} - パフォーマンスの向上
+- {positive_3} - 保守性の向上
 
 #### ネガティブな結果
 
-- {{NEGATIVE_1}} - 移行コスト
-- {{NEGATIVE_2}} - 一時的な複雑性の増加
+- {negative_1} - 移行コスト
+- {negative_2} - 一時的な複雑性の増加
 
 ## 影響分析
 
 ### コードへの影響
 
-- 影響ファイル数: {{AFFECTED_FILES_COUNT}}
+- 影響ファイル数: {affected_files_count}
 - 主な変更箇所:
-  - {{CHANGE_LOCATION_1}}
-  - {{CHANGE_LOCATION_2}}
-  - {{CHANGE_LOCATION_3}}
+  - {change_location_1}
+  - {change_location_2}
+  - {change_location_3}
 
 ### 依存関係への影響
 
-- 直接依存: {{DIRECT_DEPENDENCIES}}
-- 間接依存: {{INDIRECT_DEPENDENCIES}}
-- 互換性レイヤーの必要性: {{COMPATIBILITY_LAYER_NEEDED}}
+- 直接依存: {direct_dependencies}
+- 間接依存: {indirect_dependencies}
+- 互換性レイヤーの必要性: {compatibility_layer_needed}
 
 ### チームへの影響
 
-- 影響を受けるチーム: {{AFFECTED_TEAMS}}
-- 必要なスキルセット: {{REQUIRED_SKILLS}}
-- 学習コスト: {{LEARNING_COST}} 時間/人
+- 影響を受けるチーム: {affected_teams}
+- 必要なスキルセット: {required_skills}
+- 学習コスト: {learning_cost} 時間/人
 
 ## 移行計画（必須）
 
 ### タイムライン
 
-| フェーズ                  | 期間               | 目標             | 成功基準             |
-| ------------------------- | ------------------ | ---------------- | -------------------- |
-| フェーズ1: 準備           | {{PHASE_1_PERIOD}} | {{PHASE_1_GOAL}} | {{PHASE_1_CRITERIA}} |
-| フェーズ2: パイロット移行 | {{PHASE_2_PERIOD}} | {{PHASE_2_GOAL}} | {{PHASE_2_CRITERIA}} |
-| フェーズ3: 段階的移行     | {{PHASE_3_PERIOD}} | {{PHASE_3_GOAL}} | {{PHASE_3_CRITERIA}} |
-| フェーズ4: 完全移行       | {{PHASE_4_PERIOD}} | {{PHASE_4_GOAL}} | {{PHASE_4_CRITERIA}} |
-| フェーズ5: クリーンアップ | {{PHASE_5_PERIOD}} | {{PHASE_5_GOAL}} | {{PHASE_5_CRITERIA}} |
+| フェーズ                  | 期間             | 目標           | 成功基準           |
+| ------------------------- | ---------------- | -------------- | ------------------ |
+| フェーズ1: 準備           | {phase_1_period} | {phase_1_goal} | {phase_1_criteria} |
+| フェーズ2: パイロット移行 | {phase_2_period} | {phase_2_goal} | {phase_2_criteria} |
+| フェーズ3: 段階的移行     | {phase_3_period} | {phase_3_goal} | {phase_3_criteria} |
+| フェーズ4: 完全移行       | {phase_4_period} | {phase_4_goal} | {phase_4_criteria} |
+| フェーズ5: クリーンアップ | {phase_5_period} | {phase_5_goal} | {phase_5_criteria} |
 
 ### 非推奨化警告期間
 
-- 警告開始日: {{WARNING_START_DATE}}
-- ソフト非推奨: {{SOFT_DEPRECATION_DATE}}（警告ログ出力）
-- ハード非推奨: {{HARD_DEPRECATION_DATE}}（新規使用禁止）
-- 完全削除: {{REMOVAL_DATE}}
+- 警告開始日: {warning_start_date}
+- ソフト非推奨: {soft_deprecation_date}（警告ログ出力）
+- ハード非推奨: {hard_deprecation_date}（新規使用禁止）
+- 完全削除: {removal_date}
 
 ### 移行ステップ
 
 #### ステップ1: 互換性レイヤーの作成
 
 ```text
-{{COMPATIBILITY_LAYER_CODE}}
+{compatibility_layer_code}
 ```
 
 #### ステップ2: 段階的な置換
 
-- [ ] {{MIGRATION_TASK_1}}
-- [ ] {{MIGRATION_TASK_2}}
-- [ ] {{MIGRATION_TASK_3}}
+- [ ] {migration_task_1}
+- [ ] {migration_task_2}
+- [ ] {migration_task_3}
 
 #### ステップ3: 検証
 
@@ -138,55 +143,55 @@
 
 ### 成功基準
 
-- {{SUCCESS_CRITERIA_1}}
-- {{SUCCESS_CRITERIA_2}}
-- {{SUCCESS_CRITERIA_3}}
+- {success_criteria_1}
+- {success_criteria_2}
+- {success_criteria_3}
 
 ### メトリクス
 
-- パフォーマンス: {{PERFORMANCE_METRIC}}
-- エラー率: {{ERROR_RATE_METRIC}}
-- 移行完了率: {{MIGRATION_COMPLETION_METRIC}}
+- パフォーマンス: {performance_metric}
+- エラー率: {error_rate_metric}
+- 移行完了率: {migration_completion_metric}
 
 ### モニタリング
 
-- 移行進捗ダッシュボード: {{DASHBOARD_LINK}}
-- アラート設定: {{ALERT_CONFIG}}
+- 移行進捗ダッシュボード: {dashboard_link}
+- アラート設定: {alert_config}
 
 ## ロールバック計画（必須）
 
 ### トリガー条件
 
-- {{ROLLBACK_TRIGGER_1}}
-- {{ROLLBACK_TRIGGER_2}}
-- {{ROLLBACK_TRIGGER_3}}
+- {rollback_trigger_1}
+- {rollback_trigger_2}
+- {rollback_trigger_3}
 
 ### ロールバック手順
 
-1. {{ROLLBACK_STEP_1}}
-2. {{ROLLBACK_STEP_2}}
-3. {{ROLLBACK_STEP_3}}
+1. {rollback_step_1}
+2. {rollback_step_2}
+3. {rollback_step_3}
 
 ### ロールバックタイムライン
 
-- 検知から判断まで: {{DETECTION_TO_DECISION}} 分
-- ロールバック実行: {{ROLLBACK_EXECUTION}} 分
-- 復旧確認: {{RECOVERY_VERIFICATION}} 分
+- 検知から判断まで: {detection_to_decision} 分
+- ロールバック実行: {rollback_execution} 分
+- 復旧確認: {recovery_verification} 分
 
 ### データの考慮事項
 
-- データ移行の必要性: {{DATA_MIGRATION_NEEDED}}
-- ロールバック時のデータ処理: {{DATA_ROLLBACK_STRATEGY}}
+- データ移行の必要性: {data_migration_needed}
+- ロールバック時のデータ処理: {data_rollback_strategy}
 
 ## コミュニケーション
 
 ### アナウンス
 
-| 日付                | 内容           | 対象       | チャネル      |
-| ------------------- | -------------- | ---------- | ------------- |
-| {{ANNOUNCE_DATE_1}} | 非推奨化の通知 | 全開発者   | {{CHANNEL_1}} |
-| {{ANNOUNCE_DATE_2}} | 移行開始       | 関連チーム | {{CHANNEL_2}} |
-| {{ANNOUNCE_DATE_3}} | 完了報告       | 全開発者   | {{CHANNEL_3}} |
+| 日付              | 内容           | 対象       | チャネル    |
+| ----------------- | -------------- | ---------- | ----------- |
+| {announce_date_1} | 非推奨化の通知 | 全開発者   | {channel_1} |
+| {announce_date_2} | 移行開始       | 関連チーム | {channel_2} |
+| {announce_date_3} | 完了報告       | 全開発者   | {channel_3} |
 
 ### ドキュメント更新
 
@@ -205,6 +210,7 @@
 
 ---
 
-_作成日: {{DATE}}_
-_作成者: {{AUTHOR}}_
-_ADR番号: {{NUMBER}}_
+_作成日: {date}_
+_作成者: {author}_
+_ADR番号: {number}_
+````

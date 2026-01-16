@@ -1,121 +1,126 @@
-# {{TITLE}}
+# アーキテクチャパターンテンプレート
 
-- ステータス: {{STATUS}}
-- 決定者: {{DECIDERS}}
-- 日付: {{DATE}}
+## 構造
 
-技術ストーリー: {{TECHNICAL_STORY_LINK}}
+````markdown
+# {title}
+
+- ステータス: {status}
+- 決定者: {deciders}
+- 日付: {date}
+
+技術ストーリー: {technical_story_link}
 
 ## 背景と課題
 
-{{CONTEXT}}
+{context}
 
 ## 決定要因
 
-- {{DRIVER_1}}
-- {{DRIVER_2}}
-- {{DRIVER_3}}
+- {driver_1}
+- {driver_2}
+- {driver_3}
 
 ## 検討したオプション
 
-- {{OPTION_1}}
-- {{OPTION_2}}
-- {{OPTION_3}}
+- {option_1}
+- {option_2}
+- {option_3}
 
 ## 決定結果
 
-採用オプション: "{{CHOSEN_OPTION}}"、理由: {{RATIONALE}}
+採用オプション: "{chosen_option}"、理由: {rationale}
 
 ### 結果
 
 #### ポジティブな結果
 
-- {{POSITIVE_1}} - 明確なアーキテクチャ
-- {{POSITIVE_2}} - 保守性の向上
-- {{POSITIVE_3}} - スケーラビリティの改善
+- {positive_1} - 明確なアーキテクチャ
+- {positive_2} - 保守性の向上
+- {positive_3} - スケーラビリティの改善
 
 #### ネガティブな結果
 
-- {{NEGATIVE_1}} - 学習コスト
-- {{NEGATIVE_2}} - 初期実装コスト
+- {negative_1} - 学習コスト
+- {negative_2} - 初期実装コスト
 
 ## オプションの長所と短所
 
-### {{OPTION_1}}
+### {option_1}
 
-{{OPTION_1_DESCRIPTION}}
+{option_1_description}
 
-- Good: {{OPTION_1_PRO_1}}
-- Good: {{OPTION_1_PRO_2}}
-- Neutral: {{OPTION_1_NEUTRAL}}
-- Bad: {{OPTION_1_CON_1}}
+- Good: {option_1_pro_1}
+- Good: {option_1_pro_2}
+- Neutral: {option_1_neutral}
+- Bad: {option_1_con_1}
 
-### {{OPTION_2}}
+### {option_2}
 
-{{OPTION_2_DESCRIPTION}}
+{option_2_description}
 
-- Good: {{OPTION_2_PRO_1}}
-- Good: {{OPTION_2_PRO_2}}
-- Neutral: {{OPTION_2_NEUTRAL}}
-- Bad: {{OPTION_2_CON_1}}
+- Good: {option_2_pro_1}
+- Good: {option_2_pro_2}
+- Neutral: {option_2_neutral}
+- Bad: {option_2_con_1}
 
-### {{OPTION_3}}
+### {option_3}
 
-{{OPTION_3_DESCRIPTION}}
+{option_3_description}
 
-- Good: {{OPTION_3_PRO_1}}
-- Good: {{OPTION_3_PRO_2}}
-- Neutral: {{OPTION_3_NEUTRAL}}
-- Bad: {{OPTION_3_CON_1}}
+- Good: {option_3_pro_1}
+- Good: {option_3_pro_2}
+- Neutral: {option_3_neutral}
+- Bad: {option_3_con_1}
 
 ## 追加情報
 
 ### アーキテクチャ図
 
-```markdown
+```text
 [アーキテクチャ図をここに挿入]
 ```
 
 ### 実装ガイドライン
 
-1. {{GUIDELINE_1}}
-2. {{GUIDELINE_2}}
-3. {{GUIDELINE_3}}
+1. {guideline_1}
+2. {guideline_2}
+3. {guideline_3}
 
 ### 品質属性
 
-| 属性     | 優先度            | アプローチ      |
-| -------- | ----------------- | --------------- |
-| {{QA_1}} | {{QA_1_PRIORITY}} | {{QA_1_METHOD}} |
-| {{QA_2}} | {{QA_2_PRIORITY}} | {{QA_2_METHOD}} |
+| 属性   | 優先度          | アプローチ    |
+| ------ | --------------- | ------------- |
+| {qa_1} | {qa_1_priority} | {qa_1_method} |
+| {qa_2} | {qa_2_priority} | {qa_2_method} |
 
 ### 移行戦略
 
-**フェーズ1**: {{MIGRATION_PHASE_1}}
+**フェーズ1**: {migration_phase_1}
 
-**フェーズ2**: {{MIGRATION_PHASE_2}}
+**フェーズ2**: {migration_phase_2}
 
-**フェーズ3**: {{MIGRATION_PHASE_3}}
+**フェーズ3**: {migration_phase_3}
 
 ### トレードオフ
 
 このパターンでは以下をトレードオフします:
 
-- {{TRADEOFF_1}}
-- {{TRADEOFF_2}}
+- {tradeoff_1}
+- {tradeoff_2}
 
 ## 検証
 
 ### 成功基準
 
-- {{SUCCESS_CRITERIA_1}}
-- {{SUCCESS_CRITERIA_2}}
-- {{SUCCESS_CRITERIA_3}}
+- {success_criteria_1}
+- {success_criteria_2}
+- {success_criteria_3}
 
 ### モニタリング
 
-- {{MONITORING_1}}
-- {{MONITORING_2}}
+- {monitoring_1}
+- {monitoring_2}
 
 ## 関連ADR
 
@@ -127,6 +132,7 @@
 
 ---
 
-_作成日: {{DATE}}_
-_作成者: {{AUTHOR}}_
-_ADR番号: {{NUMBER}}_
+_作成日: {date}_
+_作成者: {author}_
+_ADR番号: {number}_
+````

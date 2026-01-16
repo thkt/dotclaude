@@ -1,99 +1,104 @@
-# {{TITLE}}
+# Technology Selection Template
 
-- Status: {{STATUS}}
-- Deciders: {{DECIDERS}}
-- Date: {{DATE}}
+## Structure
 
-Technical Story: {{TECHNICAL_STORY_LINK}}
+```markdown
+# {title}
+
+- Status: {status}
+- Deciders: {deciders}
+- Date: {date}
+
+Technical Story: {technical_story_link}
 
 ## Context and Problem Statement
 
-{{CONTEXT}}
+{context}
 
 ## Decision Drivers
 
-- {{DRIVER_1}}
-- {{DRIVER_2}}
-- {{DRIVER_3}}
+- {driver_1}
+- {driver_2}
+- {driver_3}
 
 ## Considered Options
 
-- {{OPTION_1}}
-- {{OPTION_2}}
-- {{OPTION_3}}
+- {option_1}
+- {option_2}
+- {option_3}
 
 ## Decision Outcome
 
-Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
+Chosen option: "{chosen_option}", because {rationale}.
 
 ### Consequences
 
 #### Positive Consequences
 
-- {{POSITIVE_1}}
-- {{POSITIVE_2}}
-- {{POSITIVE_3}}
+- {positive_1}
+- {positive_2}
+- {positive_3}
 
 #### Negative Consequences
 
-- {{NEGATIVE_1}}
-- {{NEGATIVE_2}}
+- {negative_1}
+- {negative_2}
 
 ## Pros and Cons of the Options
 
-### {{OPTION_1}}
+### {option_1}
 
-{{OPTION_1_DESCRIPTION}}
+{option_1_description}
 
-- Good, because {{OPTION_1_PRO_1}}
-- Good, because {{OPTION_1_PRO_2}}
-- Bad, because {{OPTION_1_CON_1}}
-- Bad, because {{OPTION_1_CON_2}}
+- Good, because {option_1_pro_1}
+- Good, because {option_1_pro_2}
+- Bad, because {option_1_con_1}
+- Bad, because {option_1_con_2}
 
-### {{OPTION_2}}
+### {option_2}
 
-{{OPTION_2_DESCRIPTION}}
+{option_2_description}
 
-- Good, because {{OPTION_2_PRO_1}}
-- Good, because {{OPTION_2_PRO_2}}
-- Bad, because {{OPTION_2_CON_1}}
-- Bad, because {{OPTION_2_CON_2}}
+- Good, because {option_2_pro_1}
+- Good, because {option_2_pro_2}
+- Bad, because {option_2_con_1}
+- Bad, because {option_2_con_2}
 
-### {{OPTION_3}}
+### {option_3}
 
-{{OPTION_3_DESCRIPTION}}
+{option_3_description}
 
-- Good, because {{OPTION_3_PRO_1}}
-- Good, because {{OPTION_3_PRO_2}}
-- Bad, because {{OPTION_3_CON_1}}
-- Bad, because {{OPTION_3_CON_2}}
+- Good, because {option_3_pro_1}
+- Good, because {option_3_pro_2}
+- Bad, because {option_3_con_1}
+- Bad, because {option_3_con_2}
 
 ## More Information
 
 ### Implementation Plan
 
-{{IMPLEMENTATION_PLAN}}
+{implementation_plan}
 
 ### Migration Strategy
 
-{{MIGRATION_STRATEGY}}
+{migration_strategy}
 
 ### Rollback Plan
 
-{{ROLLBACK_PLAN}}
+{rollback_plan}
 
 ## Validation
 
 ### Success Criteria
 
-- {{SUCCESS_CRITERIA_1}}
-- {{SUCCESS_CRITERIA_2}}
-- {{SUCCESS_CRITERIA_3}}
+- {success_criteria_1}
+- {success_criteria_2}
+- {success_criteria_3}
 
 ### Metrics
 
-- {{METRIC_1}}: {{METRIC_1_TARGET}}
-- {{METRIC_2}}: {{METRIC_2_TARGET}}
+- {metric_1}: {metric_1_target}
+- {metric_2}: {metric_2_target}
 
 ## Related ADRs
 
@@ -105,6 +110,7 @@ Chosen option: "{{CHOSEN_OPTION}}", because {{RATIONALE}}.
 
 ---
 
-*Created: {{DATE}}*
-*Author: {{AUTHOR}}*
-*ADR Number: {{NUMBER}}*
+_Created: {date}_
+_Author: {author}_
+_ADR Number: {number}_
+```

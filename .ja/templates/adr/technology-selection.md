@@ -1,99 +1,104 @@
-# {{TITLE}}
+# 技術選定テンプレート
 
-- ステータス: {{STATUS}}
-- 決定者: {{DECIDERS}}
-- 日付: {{DATE}}
+## 構造
 
-技術ストーリー: {{TECHNICAL_STORY_LINK}}
+```markdown
+# {title}
+
+- ステータス: {status}
+- 決定者: {deciders}
+- 日付: {date}
+
+技術ストーリー: {technical_story_link}
 
 ## 背景と課題
 
-{{CONTEXT}}
+{context}
 
 ## 決定要因
 
-- {{DRIVER_1}}
-- {{DRIVER_2}}
-- {{DRIVER_3}}
+- {driver_1}
+- {driver_2}
+- {driver_3}
 
 ## 検討したオプション
 
-- {{OPTION_1}}
-- {{OPTION_2}}
-- {{OPTION_3}}
+- {option_1}
+- {option_2}
+- {option_3}
 
 ## 決定結果
 
-採用オプション: "{{CHOSEN_OPTION}}"、理由: {{RATIONALE}}
+採用オプション: "{chosen_option}"、理由: {rationale}
 
 ### 結果
 
 #### ポジティブな結果
 
-- {{POSITIVE_1}}
-- {{POSITIVE_2}}
-- {{POSITIVE_3}}
+- {positive_1}
+- {positive_2}
+- {positive_3}
 
 #### ネガティブな結果
 
-- {{NEGATIVE_1}}
-- {{NEGATIVE_2}}
+- {negative_1}
+- {negative_2}
 
 ## オプションの長所と短所
 
-### {{OPTION_1}}
+### {option_1}
 
-{{OPTION_1_DESCRIPTION}}
+{option_1_description}
 
-- Good: {{OPTION_1_PRO_1}}
-- Good: {{OPTION_1_PRO_2}}
-- Bad: {{OPTION_1_CON_1}}
-- Bad: {{OPTION_1_CON_2}}
+- Good: {option_1_pro_1}
+- Good: {option_1_pro_2}
+- Bad: {option_1_con_1}
+- Bad: {option_1_con_2}
 
-### {{OPTION_2}}
+### {option_2}
 
-{{OPTION_2_DESCRIPTION}}
+{option_2_description}
 
-- Good: {{OPTION_2_PRO_1}}
-- Good: {{OPTION_2_PRO_2}}
-- Bad: {{OPTION_2_CON_1}}
-- Bad: {{OPTION_2_CON_2}}
+- Good: {option_2_pro_1}
+- Good: {option_2_pro_2}
+- Bad: {option_2_con_1}
+- Bad: {option_2_con_2}
 
-### {{OPTION_3}}
+### {option_3}
 
-{{OPTION_3_DESCRIPTION}}
+{option_3_description}
 
-- Good: {{OPTION_3_PRO_1}}
-- Good: {{OPTION_3_PRO_2}}
-- Bad: {{OPTION_3_CON_1}}
-- Bad: {{OPTION_3_CON_2}}
+- Good: {option_3_pro_1}
+- Good: {option_3_pro_2}
+- Bad: {option_3_con_1}
+- Bad: {option_3_con_2}
 
 ## 追加情報
 
 ### 実装計画
 
-{{IMPLEMENTATION_PLAN}}
+{implementation_plan}
 
 ### 移行戦略
 
-{{MIGRATION_STRATEGY}}
+{migration_strategy}
 
 ### ロールバック計画
 
-{{ROLLBACK_PLAN}}
+{rollback_plan}
 
 ## 検証
 
 ### 成功基準
 
-- {{SUCCESS_CRITERIA_1}}
-- {{SUCCESS_CRITERIA_2}}
-- {{SUCCESS_CRITERIA_3}}
+- {success_criteria_1}
+- {success_criteria_2}
+- {success_criteria_3}
 
 ### メトリクス
 
-- {{METRIC_1}}: {{METRIC_1_TARGET}}
-- {{METRIC_2}}: {{METRIC_2_TARGET}}
+- {metric_1}: {metric_1_target}
+- {metric_2}: {metric_2_target}
 
 ## 関連ADR
 
@@ -105,6 +110,7 @@
 
 ---
 
-_作成日: {{DATE}}_
-_作成者: {{AUTHOR}}_
-_ADR番号: {{NUMBER}}_
+_作成日: {date}_
+_作成者: {author}_
+_ADR番号: {number}_
+```
