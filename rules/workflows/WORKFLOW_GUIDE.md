@@ -21,16 +21,9 @@ Guide for **using** commands. User reference for command selection and workflow 
 
 ### Quick Actions
 
-| Command   | Purpose                           |
-| --------- | --------------------------------- |
-| `/fix`    | Quick bug fixes (think→code→test) |
-| `/rabbit` | CodeRabbit AI external review     |
-
-### Automation
-
-| Command       | Purpose                    |
-| ------------- | -------------------------- |
-| `/full-cycle` | Complete development cycle |
+| Command | Purpose                           |
+| ------- | --------------------------------- |
+| `/fix`  | Quick bug fixes (think→code→test) |
 
 ### Browser & Documentation
 
@@ -39,6 +32,7 @@ Guide for **using** commands. User reference for command selection and workflow 
 | `/e2e`    | E2E test from browser operations |
 | `/adr`    | Architecture Decision Record     |
 | `/rulify` | Generate project rule from ADR   |
+| `/docs`   | Generate documentation from code |
 
 ### Git Operations
 
@@ -86,7 +80,7 @@ Guide for **using** commands. User reference for command selection and workflow 
 
 Auto-generated document tracking implementation through the lifecycle.
 
-See [@../../skills/orchestrating-workflows/references/shared/idr-generation.md](../../skills/orchestrating-workflows/references/shared/idr-generation.md)
+See [@./IDR_GENERATION.md](./IDR_GENERATION.md)
 
 | Command     | IDR Action              |
 | ----------- | ----------------------- |

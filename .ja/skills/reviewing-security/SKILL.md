@@ -1,71 +1,35 @@
 ---
 name: reviewing-security
-description: >
-  OWASP Top 10に基づくセキュリティレビューと脆弱性検出。トリガー:
-  セキュリティ, 脆弱性, XSS, SQL injection, SQLインジェクション, CSRF,
-  認証, 認可, 暗号化, OWASP, SSRF, パスワード, セッション, rate limiting,
-  brute force, command injection, security misconfiguration.
-allowed-tools: Read, Grep, Glob, Task
+description: OWASP Top 10-based security review and vulnerability detection.
+allowed-tools: [Read, Grep, Glob, Task]
+agent: security-reviewer
+user-invocable: false
 ---
 
-# セキュリティレビュー - OWASP Top 10ベース
+# セキュリティレビュー
 
-OWASP Top 10に基づく脆弱性検出とセキュアな実装ガイダンス。
+## 検出 (OWASP Top 10)
 
-## セクションベースのロード
+| ID  | カテゴリ         | パターン                               | 修正                                 |
+| --- | ---------------- | -------------------------------------- | ------------------------------------ |
+| A01 | アクセス制御不備 | 認証欠如、IDOR、パストラバーサル       | 認証ミドルウェア、所有権チェック     |
+| A02 | 暗号化の失敗     | `password: 'plaintext'`                | bcrypt/argon2ハッシュ                |
+| A03 | インジェクション | `db.query(\`SELECT...${id}\`)`         | パラメータ化クエリ、ORM              |
+| A03 | インジェクション | `exec(\`ping ${host}\`)`               | 入力検証、ライブラリ使用             |
+| A03 | XSS              | `dangerouslySetInnerHTML={{ __html }}` | デフォルトエスケープ、DOMPurify      |
+| A05 | セキュリティ設定 | `cors({ origin: '*' })`                | 明示的オリジン許可リスト             |
+| A05 | セキュリティ設定 | `cookie: {}` (オプションなし)          | secure, httpOnly, sameSite: 'strict' |
+| A09 | ログ記録の失敗   | `logger.info({ password })`            | 機密フィールド除外                   |
+| A10 | SSRF             | `fetch(userInputUrl)`                  | URL検証、許可リスト                  |
 
-| セクション | ファイル | フォーカス | トリガー |
-| --- | --- | --- | --- |
-| 基本セキュリティ | `references/owasp-basic.md` | OWASP 1,2,7: アクセス制御、暗号化、認証 | auth, password, session |
-| インジェクション | `references/owasp-injection.md` | OWASP 3: SQL/NoSQL/Command, XSS, CSRF | injection, XSS, CSRF |
-| 上級 | `references/owasp-advanced.md` | OWASP 4-6,8-10: 設計、設定、監視、SSRF | rate limiting, SSRF, logging |
+## 信頼度閾値
 
-## セキュリティレビューチェックリスト
+信頼度 >80% の場合のみ報告。含める: file:line、悪用シナリオ、修正推奨。
 
-### ステップ1: 入力バリデーション
+## 参考
 
-- [ ] すべてのユーザー入力がサニタイズされている
-- [ ] SQLクエリがパラメータ化ステートメントを使用
-- [ ] ユーザー入力がコマンド実行で直接使用されていない
-- [ ] XSS防御（エスケープ）が適用されている
-
-### ステップ2: 認証と認可
-
-- [ ] パスワードが適切にハッシュ化（bcrypt推奨）
-- [ ] セキュアなセッション管理（HttpOnly, Secure, SameSite）
-- [ ] JWT有効期限が適切に設定
-- [ ] すべてのエンドポイントで認可チェック
-
-### ステップ3: データ保護
-
-- [ ] 機密データがログに記録されていない
-- [ ] HTTPSが強制されている
-- [ ] APIキーがハードコードされていない
-
-### ステップ4: エラーハンドリング
-
-- [ ] 詳細なエラーメッセージが本番環境で非表示
-- [ ] スタックトレースがユーザーに露出されていない
-
-### ステップ5: 依存関係
-
-```bash
-npm audit  # または yarn audit
-```
-
-- [ ] 既知の脆弱性なし
-
-## 主要原則
-
-| 原則 | 説明 |
-| --- | --- |
-| 多層防御 | 単一の対策に依存しない |
-| 最小権限 | 最小限の権限 |
-| 安全に失敗 | 失敗時も安全 |
-| デフォルトでセキュア | デフォルトで安全 |
-
-## 参照
-
-- [@./references/owasp-basic.md](./references/owasp-basic.md) - アクセス制御、暗号化、認証
-- [@./references/owasp-injection.md](./references/owasp-injection.md) - SQL/XSS/CSRF
-- [@./references/owasp-advanced.md](./references/owasp-advanced.md) - 設計、設定、監視
+| トピック         | OWASP            | ファイル                        |
+| ---------------- | ---------------- | ------------------------------- |
+| 基本             | A01, A02, A07    | `references/owasp-basic.md`     |
+| インジェクション | A03              | `references/owasp-injection.md` |
+| 上級             | A04-A06, A08-A10 | `references/owasp-advanced.md`  |

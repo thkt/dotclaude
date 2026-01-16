@@ -3,7 +3,6 @@ description: SOW受け入れ基準に対して実装を検証
 allowed-tools: Read, Glob, Grep
 model: opus
 argument-hint: "[機能名]"
-dependencies: [sow-spec-reviewer, managing-planning]
 ---
 
 # /validate - SOW基準チェッカー
@@ -19,7 +18,25 @@ dependencies: [sow-spec-reviewer, managing-planning]
 
 1. Globで SOWを検索（`.claude/workspace/planning/*/sow.md`）
 2. 受け入れ基準セクションを抽出
-3. チェックリストとして表示
+3. 各ACを検証
+4. チェックリストとして表示
+
+## AC検証
+
+| チェック | 質問                             |
+| -------- | -------------------------------- |
+| 実装済み | コードはこのACを実装しているか？ |
+| テスト済 | テストはこのACを検証しているか？ |
+| 文書化   | 動作は文書化されているか？       |
+| レビュー | /auditでレビューされたか？       |
+
+## 合格/不合格基準
+
+| スコア | ステータス | アクション           |
+| ------ | ---------- | -------------------- |
+| 100%   | PASS       | リリース可能         |
+| 90-99% | WARN       | ギャップを確認       |
+| <90%   | FAIL       | リリース前に対処必須 |
 
 ## 出力
 

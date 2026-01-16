@@ -1,9 +1,8 @@
 ---
 description: Analyze branch changes and generate comprehensive PR description
-allowed-tools: Task
+allowed-tools: [Task, Bash]
 model: opus
 argument-hint: "[issue reference or context]"
-dependencies: [pr-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /pr - Pull Request Description Generator
@@ -15,21 +14,47 @@ Analyze all changes in the current branch and generate comprehensive PR descript
 - No argument: generate from current branch
 - Argument: issue reference (`#456`) or additional context
 
+## Agent
+
+| Type  | Name         | Purpose                          |
+| ----- | ------------ | -------------------------------- |
+| Agent | pr-generator | PR description generation (fork) |
+
 ## Execution
 
-Delegates to `pr-generator` subagent (PR format and structure defined there).
+| Step | Action                                                   |
+| ---- | -------------------------------------------------------- |
+| 1    | Analyze: `git status`, `git diff`, `git log` (parallel)  |
+| 2    | `Task` with `subagent_type: pr-generator` for PR content |
+| 3    | Push if needed: `git push -u origin HEAD`                |
+| 4    | Create PR: `gh pr create --title "..." --body "..."`     |
 
-## Output
+## Rules
+
+| Rule                | Detail                                        |
+| ------------------- | --------------------------------------------- |
+| Title: No prefix    | No `feat:`, `fix:`, `refactor:` etc.          |
+| Body: Direct string | Avoid heredoc (`<<EOF`) - sandbox restriction |
+
+## Flow: Preview
+
+```text
+[Generator YAML] → [Preview] → [Confirm] → [Execute]
+```
+
+## Display Format
+
+### Preview
 
 ```markdown
-## Pull Request
+## 🔀 PR Preview
 
-| Field  | Value           |
-| ------ | --------------- |
-| Title  | [type]: [title] |
-| Base   | main            |
-| Branch | feature/xxx     |
-| Closes | #123            |
+| Field  | Value       |
+| ------ | ----------- |
+| Title  | [title]     |
+| Base   | main        |
+| Branch | feature/xxx |
+| Closes | #123        |
 
 ### Summary
 
@@ -41,8 +66,16 @@ Delegates to `pr-generator` subagent (PR format and structure defined there).
 | ----------- | ------------ |
 | src/auth.ts | Add OAuth2   |
 | src/user.ts | Update types |
-
-### Test Plan
-
-- [ ] [Test item]
 ```
+
+### Success
+
+**Created PR**: `#<number>` <title>
+<PR URL>
+
+## Verification
+
+| Check                                             | Required |
+| ------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: pr-generator`? | Yes      |
+| Title has no prefix (`feat:`, `fix:`, etc.)?      | Yes      |

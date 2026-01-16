@@ -1,9 +1,8 @@
 ---
 description: Remove AI-generated slop and simplify code for clarity and maintainability
-allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, MultiEdit, Grep, Glob
+allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob, Task
 model: opus
 argument-hint: "[target scope]"
-dependencies: [orchestrating-workflows, reviewing-readability]
 ---
 
 # /polish - Code Simplification & AI Slop Removal
@@ -15,9 +14,19 @@ Remove AI-generated slop and simplify code before commit.
 - Argument: target scope (optional)
 - If missing: analyze `git diff main...HEAD`
 
+## Agent
+
+| Type  | Name            | Purpose                |
+| ----- | --------------- | ---------------------- |
+| Agent | code-simplifier | AI slop removal (fork) |
+
 ## Execution
 
-Analyze diff for AI patterns, apply fixes, report summary.
+| Step | Action                                       |
+| ---- | -------------------------------------------- |
+| 1    | `Task` with `subagent_type: code-simplifier` |
+| 2    | Agent identifies and removes AI slop         |
+| 3    | Report simplifications                       |
 
 ### Removal Targets
 
@@ -36,3 +45,9 @@ Polished: Removed X comments, inlined Y helpers
 
 - If IDR exists: append `/polish` section with removals and simplifications
 - If no IDR: skip (terminal output only)
+
+## Verification
+
+| Check                                                | Required |
+| ---------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: code-simplifier`? | Yes      |

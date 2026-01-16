@@ -1,203 +1,51 @@
 # Comments & Code Clarity
 
-## Core Principle: Why, Not What
+## Core Principle
 
-```typescript
-// Bad: What comment (redundant)
-// Increment counter by 1
-counter++
+**Why, not What** - Code should explain itself; comments explain intent.
 
-// Bad: What comment (obvious)
-// Check if user is admin
-if (user.role === 'admin') { }
-
-// Good: Why comment (valuable)
-// Use exponential backoff to avoid overwhelming the server during retry storms
-await sleep(Math.pow(2, retryCount) * 1000)
-
-// Good: Why comment (business context)
-// Legal requirement: Data must be retained for 7 years
-const DATA_RETENTION_DAYS = 7 * 365
-```
-
----
-
-## Code First, Comments Second
-
-### Self-Documenting Code
-
-```typescript
-// Bad: Needs comment to explain
-// Check if user can access premium features
-if (u.sub && u.sub.exp > Date.now() && !u.ban) {
-  // ...
-}
-
-// Good: Code explains itself
-function canAccessPremiumFeatures(user: User): boolean {
-  return user.hasActiveSubscription() &&
-         !user.isBanned
-}
-
-if (canAccessPremiumFeatures(user)) {
-  // ...
-}
-```
-
----
-
-## Make Code Look Like Intent
-
-```typescript
-// Bad: Intent unclear
-const p = products.filter(p => p.price > 0 && p.stock)
-
-// Good: Intent obvious
-const availableProducts = products.filter(product =>
-  product.price > 0 &&
-  product.stock > 0
-)
-```
-
----
-
-## Update or Delete Outdated Comments
-
-```typescript
-// Bad: Outdated comment (dangerous)
-// Returns user ID
-function getUser() {
-  return { id: 123, name: 'John', email: 'john@example.com' }  // Returns full user object now
-}
-
-// Good: No comment needed (type says it all)
-function getUser(): User {
-  return { id: 123, name: 'John', email: 'john@example.com' }
-}
-```
-
-**Rule**: Outdated comments are worse than no comments
-
----
+| Comment Type | Example                                               | Verdict |
+| ------------ | ----------------------------------------------------- | ------- |
+| What         | `// Increment counter by 1`                           | Bad     |
+| What         | `// Check if user is admin`                           | Bad     |
+| Why          | `// Exponential backoff to avoid overwhelming server` | Good    |
+| Why          | `// Legal: Data retained 7 years per compliance`      | Good    |
 
 ## When Comments ARE Needed
 
-### 1. Complex Algorithms
+| Context             | Example                                           |
+| ------------------- | ------------------------------------------------- |
+| Complex algorithms  | `// Boyer-Moore: O(n/m) vs naive O(n*m)`          |
+| Business rules      | `// GDPR: EU users must explicitly opt-in`        |
+| Workarounds         | `// TODO(Q2 2025): Remove when API v2 deployed`   |
+| Performance reasons | `// Cache to avoid expensive DB query per render` |
+
+## Anti-Patterns
+
+| Pattern           | Problem                         | Solution         |
+| ----------------- | ------------------------------- | ---------------- |
+| Commented code    | Dead code confusion             | Delete (use git) |
+| Obvious comments  | `// Set name to 'John'`         | Remove           |
+| Journal comments  | `// 2024-01-05: Changed - John` | Use git history  |
+| Outdated comments | Says X, code does Y             | Update or delete |
+
+## Self-Documenting Code
 
 ```typescript
-// Good: Explaining algorithm choice
-// Using Boyer-Moore algorithm for faster string matching in large texts
-// Time complexity: O(n/m) in best case vs O(n*m) for naive approach
-function searchPattern(text: string, pattern: string) {
-  // Implementation
+// Bad: Needs comment
+// Check if user can access premium features
+if (u.sub && u.sub.exp > Date.now() && !u.ban) {
+}
+
+// Good: Self-explanatory
+if (canAccessPremiumFeatures(user)) {
 }
 ```
 
-### 2. Non-Obvious Business Rules
+## Decision Test
 
-```typescript
-// Good: Business context
-// Per legal team: Users in EU must explicitly opt-in to marketing emails (GDPR)
-// Default is false, unlike other regions where it's true
-const marketingOptIn = user.region === 'EU' ? false : true
-```
-
-### 3. Workarounds and Technical Debt
-
-```typescript
-// Good: Explaining workaround
-// TODO: Remove this hack once API v2 is deployed (Target: Q2 2025)
-// Current API returns dates in inconsistent formats
-const normalizedDate = parseFlexibleDateFormat(apiResponse.date)
-```
-
-### 4. Performance Optimizations
-
-```typescript
-// Good: Explaining optimization
-// Cache result to avoid expensive DB query on every render
-// Invalidated when user settings change
-const cachedUserPreferences = useMemo(() => {
-  return computePreferences(user)
-}, [user.settings])
-```
-
----
-
-## Comment Anti-Patterns
-
-### Commented-Out Code
-
-```typescript
-// Bad: Don't keep commented code
-function calculate() {
-  // const oldMethod = doSomething()
-  // const result = processOldWay(oldMethod)
-  return newMethod()
-}
-
-// Good: Delete it (use git history if needed)
-function calculate() {
-  return newMethod()
-}
-```
-
-### Obvious Comments
-
-```typescript
-// Bad: Stating the obvious
-// Set name to 'John'
-name = 'John'
-
-// Increment i
-i++
-
-// Return true
-return true
-```
-
-### Journal Comments
-
-```typescript
-// Bad: Change log in comments
-// 2024-01-05: Changed validation logic - John
-// 2024-01-10: Fixed edge case - Sarah
-// 2024-01-15: Refactored - Mike
-function validate() { }
-
-// Good: Use git commit history instead
-```
-
----
-
-## Documentation Comments (JSDoc/TSDoc)
-
-Use for public APIs:
-
-```typescript
-/**
- * Fetches user profile by ID
- *
- * @param userId - The unique identifier for the user
- * @returns Promise resolving to user profile or null if not found
- * @throws {ValidationError} If userId is invalid
- *
- * @example
- * const user = await getUserById('user123')
- */
-async function getUserById(userId: string): Promise<User | null> {
-  // Implementation
-}
-```
-
----
-
-## The Final Test
-
-Ask yourself:
-
-1. **Can I delete this comment and make the code self-documenting instead?**
-2. **Does this comment explain WHY, not WHAT?**
-3. **Is this comment still accurate?**
-
-If any answer is unclear, refactor the code instead of relying on comments.
+| Question                                       | If No             |
+| ---------------------------------------------- | ----------------- |
+| Can I delete this and make code self-document? | Refactor code     |
+| Does this explain WHY, not WHAT?               | Remove or rewrite |
+| Is this comment still accurate?                | Update or delete  |

@@ -50,6 +50,8 @@ See [@./TRANSLATION.md](./TRANSLATION.md)
 
 ## Formatting Rules
 
+**Template Variables** - See [@./TEMPLATE_VARIABLES.md](./TEMPLATE_VARIABLES.md)
+
 **Bold (`**text**`)** - Use only with clear intent:
 
 | Valid Use             | Example                        | Purpose              |

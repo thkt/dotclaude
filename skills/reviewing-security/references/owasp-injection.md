@@ -1,121 +1,68 @@
-# OWASP Injection Attacks - SQL, NoSQL, Command Injection
+# OWASP Injection Attacks
 
-## 3. Injection
+## Injection Types
 
-**One of the most dangerous vulnerabilities** - SQL, NoSQL, OS Command, LDAP
+| Type    | Vector                        | Prevention                   |
+| ------- | ----------------------------- | ---------------------------- |
+| SQL     | String concatenation in query | Parameterized queries, ORM   |
+| NoSQL   | Object injection in query     | Type validation              |
+| Command | User input in exec/spawn      | Input validation, avoid exec |
+| XSS     | Unescaped HTML                | React auto-escape, DOMPurify |
 
-### SQL Injection
+## SQL Injection
 
 ```typescript
-// Bad: Dangerous: String concatenation
-const userId = req.params.id;
+// Bad
 const query = `SELECT * FROM users WHERE id = ${userId}`;
-// Attack: /api/users/1 OR 1=1--
 
-// Good: Secure: Parameterized query
-const query = 'SELECT * FROM users WHERE id = ?';
-const result = await db.query(query, [userId]);
-
-// Good: Secure: Using ORM
-const user = await User.findById(userId);
+// Good
+const query = "SELECT * FROM users WHERE id = ?";
+await db.query(query, [userId]);
 ```
 
-### NoSQL Injection
+## NoSQL Injection
 
 ```typescript
-// Bad: Dangerous: Direct user input
+// Bad - { "$ne": null } retrieves all
 const user = await User.findOne({ username: req.body.username });
 
-// Attack: { "username": { "$ne": null } } retrieves all users
-
-// Good: Secure: Input validation
-function sanitizeMongoQuery(input: any): string {
-  if (typeof input !== 'string') {
-    throw new Error('Invalid input');
-  }
-  return input;
-}
-
-const user = await User.findOne({
-  username: sanitizeMongoQuery(req.body.username)
-});
+// Good
+if (typeof req.body.username !== "string") throw new Error("Invalid");
+const user = await User.findOne({ username: req.body.username });
 ```
 
-### Command Injection
+## XSS Prevention
+
+| Method        | Description                    |
+| ------------- | ------------------------------ |
+| React default | Auto-escapes `{userInput}`     |
+| DOMPurify     | Sanitize HTML before rendering |
+| CSP           | Content-Security-Policy header |
 
 ```typescript
-// Bad: Dangerous: Direct input to shell command
-const { exec } = require('child_process');
-exec(`ping ${req.body.host}`);
-// Attack: "google.com; rm -rf /"
-
-// Good: Secure: Library usage or validation
-import { isIP } from 'net';
-
-if (!isIP(req.body.host)) {
-  return res.status(400).json({ error: 'Invalid IP' });
-}
-// Better: Use library instead of exec
+import DOMPurify from "dompurify";
+const sanitized = DOMPurify.sanitize(untrustedHtml);
 ```
 
-**Checkpoint**:
+## CSRF Prevention
 
-- [ ] Not using user input directly in SQL queries?
-- [ ] Using parameterized queries or ORM?
-- [ ] Not passing user input to shell commands?
-- [ ] Implementing input validation and sanitization?
-
----
-
-## Frontend XSS Prevention
-
-### XSS (Cross-Site Scripting) Prevention
-
-```tsx
-// Bad: Dangerous: dangerouslySetInnerHTML
-function UserComment({ comment }: { comment: string }) {
-  return <div dangerouslySetInnerHTML={{ __html: comment }} />;
-  // Attack: "<script>alert('XSS')</script>"
-}
-
-// Good: Secure: Default escaping
-function UserComment({ comment }: { comment: string }) {
-  return <div>{comment}</div>;  // React auto-escapes
-}
-
-// Good: When HTML is needed: Sanitize
-import DOMPurify from 'dompurify';
-
-function UserComment({ comment }: { comment: string }) {
-  const sanitized = DOMPurify.sanitize(comment, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong'],
-    ALLOWED_ATTR: []
-  });
-
-  return <div dangerouslySetInnerHTML={{ __html: sanitized }} />;
-}
-```
-
-### CSRF (Cross-Site Request Forgery) Prevention
+| Method | Implementation       |
+| ------ | -------------------- |
+| Token  | `csrf()` middleware  |
+| Cookie | `sameSite: 'strict'` |
 
 ```typescript
-// Good: CSRF token
-import csrf from 'csurf';
-
-const csrfProtection = csrf({ cookie: true });
-
-app.get('/form', csrfProtection, (req, res) => {
-  res.render('form', { csrfToken: req.csrfToken() });
-});
-
-app.post('/api/transfer', csrfProtection, (req, res) => {
-  // CSRF token validated
-});
-
-// Good: SameSite Cookie (additional defense)
-app.use(session({
-  cookie: {
-    sameSite: 'strict'  // or 'lax'
-  }
-}));
+import csrf from "csurf";
+app.use(csrf({ cookie: { sameSite: "strict" } }));
+// Template: <input type="hidden" name="_csrf" value={req.csrfToken()} />
 ```
+
+## Checklist
+
+| Check   | Requirement                  |
+| ------- | ---------------------------- |
+| SQL     | Parameterized queries or ORM |
+| NoSQL   | Type validation on input     |
+| Command | No user input in exec        |
+| XSS     | Sanitize any HTML content    |
+| CSRF    | Token + SameSite cookie      |

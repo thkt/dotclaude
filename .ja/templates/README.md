@@ -2,53 +2,59 @@
 
 コマンドで参照される構造テンプレート。
 
-## 目的
+## 計画ワークフロー
 
-- **構造ガイド**: SOW/Spec/Summaryに必要なセクションとフォーマットを定義
-- **最小限のコンテキスト**: コマンド実行時に必要な情報のみを提供
-- **品質基準**: 信頼度マーカー `[C: X.X]` フォーマットの使用例を示す
+```mermaid
+flowchart LR
+    subgraph Commands
+        R["/research"] --> T["/think"] --> C["/code"] --> A["/audit"] --> P["/polish"] --> V["/validate"]
+    end
+    subgraph Outputs
+        R -.-> F[findings]
+        T -.-> S["SOW + Spec"]
+        C -.-> I1[IDR]
+        A -.-> I2["IDR追記"]
+        P -.-> I3["IDR追記"]
+        V -.-> I4["IDR追記"]
+    end
+```
+
+| フェーズ | コマンド  | 出力            | テンプレート         |
+| -------- | --------- | --------------- | -------------------- |
+| 調査     | /research | findings        | research/template.md |
+| 計画     | /think    | sow.md, spec.md | sow/, spec/          |
+| 実装     | /code     | idr.md (作成)   | idr/template.md      |
+| レビュー | /audit    | idr.md (追記)   | -                    |
+| 整理     | /polish   | idr.md (追記)   | -                    |
+| 検証     | /validate | idr.md (追記)   | -                    |
 
 ## ディレクトリ構造
 
 ```text
 templates/
-├── README.md           # このファイル
+├── README.md
+├── research/
+│   └── template.md    # リサーチ結果
 ├── sow/
-│   └── workflow-improvement.md   # SOWテンプレート
+│   └── template.md    # Statement of Work
 ├── spec/
-│   └── workflow-improvement.md   # Specテンプレート
-├── summary/
-│   └── review-summary.md         # Summaryテンプレート
-├── rules/
-│   └── from-adr.md               # ADRからのルールテンプレート
-└── research/
-    └── context.md                # リサーチコンテキストテンプレート
+│   └── template.md    # 仕様書
+├── idr/
+│   └── template.md    # 実装判断記録
+└── rules/
+    └── from-adr.md    # ADRからのルール
 ```
 
-## コマンドでの使用
+## ドキュメント責務
 
-| コマンド | テンプレート | 目的 |
-| --- | --- | --- |
-| `/think` | sow/, spec/, summary/ | 計画ドキュメント生成 |
-| `/sow` | sow/workflow-improvement.md | SOW生成 |
-| `/spec` | spec/workflow-improvement.md | Spec生成 |
-| `/rulify` | rules/from-adr.md | ADRからのルール生成 |
-| `/research` | research/context.md | リサーチコンテキスト出力 |
-
-## golden-masters/との関係
-
-詳細: [golden-masters/README.md](../../golden-masters/README.md#relationship-with-templates)
+| ドキュメント | 役割             | 対象読者 | 更新頻度         |
+| ------------ | ---------------- | -------- | ---------------- |
+| **SOW**      | 計画、基準、設計 | AI       | 承認後は静的     |
+| **Spec**     | 実装詳細、テスト | AI       | 承認後は静的     |
+| **IDR**      | 実装記録         | Human    | 動的（追記のみ） |
 
 ## カスタマイズ
 
-テンプレートをカスタマイズする際:
-
 1. 必須セクション（## ヘッダー）を維持
-2. 信頼度マーカー `[C: X.X]` フォーマットを維持（0.0-1.0の値）
-3. プレースホルダーを適切に配置（[Feature Name]など）
-4. ID規約を維持（I-001, AC-001, FR-001など）
-
-## 参考
-
-- 品質基準: [golden-masters/QUALITY_CRITERIA.md](../../golden-masters/QUALITY_CRITERIA.md)
-- 実装例: [golden-masters/documents/](../../golden-masters/documents/)
+2. 信頼度マーカー: [✓] ≥95%, [→] 70-94%, [?] <70%
+3. ID規約: I-001, AC-001, FR-001, T-001, NFR-001

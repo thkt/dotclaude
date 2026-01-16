@@ -1,9 +1,8 @@
 ---
 description: Analyze Git changes and suggest appropriate branch names
-allowed-tools: Task
+allowed-tools: [Task, AskUserQuestion, Bash]
 model: opus
 argument-hint: "[context or ticket number]"
-dependencies: [branch-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /branch - Git Branch Name Generator
@@ -15,18 +14,38 @@ Analyze current Git changes and suggest appropriate branch names.
 - Argument: context or ticket number (optional)
 - If missing: analyze git diff/status only
 
+## Agent
+
+| Type  | Name             | Purpose                |
+| ----- | ---------------- | ---------------------- |
+| Agent | branch-generator | Branch name gen (fork) |
+
 ## Execution
 
-Delegates to `branch-generator` subagent (naming conventions defined there).
+| Step | Action                                        |
+| ---- | --------------------------------------------- |
+| 1    | `Task` with `subagent_type: branch-generator` |
+| 2    | Present options via `AskUserQuestion`         |
+| 3    | Create selected branch                        |
 
-## Output
+## Flow: Select
 
-```markdown
-## Suggested Branch Names
-
-| Type    | Name                      | Reason           |
-| ------- | ------------------------- | ---------------- |
-| Primary | feature/add-oauth-support | Matches changes  |
-| Alt 1   | feat/oauth-integration    | Short form       |
-| Alt 2   | feat/auth-provider        | More abstraction |
+```text
+[Generator YAML] → [Options] → [User Selection] → [Execute]
 ```
+
+## Display Format
+
+### Selection (via AskUserQuestion)
+
+Present generator options as choices with reasons.
+
+### Success
+
+**Created branch**: `[selected-branch-name]`
+
+## Verification
+
+| Check                                                 | Required |
+| ----------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: branch-generator`? | Yes      |

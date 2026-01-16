@@ -1,9 +1,8 @@
 ---
 description: Analyze Git diff and generate Conventional Commits format messages
-allowed-tools: Task
+allowed-tools: [Task, AskUserQuestion, Bash]
 model: opus
 argument-hint: "[context or issue reference]"
-dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /commit - Git Commit Message Generator
@@ -15,26 +14,47 @@ Analyze staged changes and generate Conventional Commits messages.
 - Argument: context or issue reference (optional)
 - If missing: analyze staged changes only
 
+## Agent
+
+| Type  | Name             | Purpose                         |
+| ----- | ---------------- | ------------------------------- |
+| Agent | commit-generator | Conventional Commits gen (fork) |
+
 ## Execution
 
-Delegates to `commit-generator` subagent (Conventional Commits format defined there).
+| Step | Action                                        |
+| ---- | --------------------------------------------- |
+| 1    | `Task` with `subagent_type: commit-generator` |
+| 2    | Format and present preview                    |
+| 3    | Confirm with user                             |
+| 4    | Execute commit                                |
 
-## Output
-
-````markdown
-## Commit Message
-
-| Field   | Value                                       |
-| ------- | ------------------------------------------- |
-| Type    | feat / fix / refactor / docs / chore / test |
-| Scope   | (component)                                 |
-| Subject | short description                           |
+## Flow: Preview
 
 ```text
-feat(auth): add OAuth2 login support
-
-- Add Google OAuth provider
-- Implement token refresh flow
-- Update user session handling
+[Generator YAML] → [Preview] → [Confirm] → [Execute]
 ```
-````
+
+## Display Format
+
+### Preview
+
+```markdown
+## 📝 Commit Preview
+
+> **<type>(<scope>)**: <description>
+
+<body>
+
+`<footer>`
+```
+
+### Success
+
+**Committed**: `[short-hash]` <type>(<scope>): <description>
+
+## Verification
+
+| Check                                                 | Required |
+| ----------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: commit-generator`? | Yes      |

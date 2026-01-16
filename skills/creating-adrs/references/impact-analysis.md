@@ -1,133 +1,55 @@
-# Impact Analysis Checklist
+# Impact Analysis Guide
 
-ADR: [Number/Title]
-Created: [YYYY-MM-DD]
+## Analysis Areas
 
-## Codebase Impact
+| Area           | Key Questions                              | Risk Indicators        |
+| -------------- | ------------------------------------------ | ---------------------- |
+| Codebase       | How many files affected? Breaking changes? | >10 files, API changes |
+| Dependencies   | Package updates? Version conflicts?        | Major version bumps    |
+| Team           | Learning cost? Training needed?            | New framework/paradigm |
+| Infrastructure | CI/CD changes? Env vars?                   | Build process changes  |
+| Performance    | Resource usage change?                     | >10% degradation       |
+| Security       | Access control changes?                    | Auth/data handling     |
 
-- [ ] Identify number of affected files (estimated: ___ files)
-- [ ] Create list of modules requiring changes
-- [ ] Confirm presence/absence of breaking changes
-- [ ] Determine need for compatibility layer
-- [ ] Consider feasibility of gradual migration
+## Risk Assessment
 
-### Details
+| Risk Level | Criteria                                          |
+| ---------- | ------------------------------------------------- |
+| Low        | <5 files, no breaking changes, familiar tech      |
+| Medium     | 5-20 files, minor breaking changes, some learning |
+| High       | >20 files, major breaking changes, new paradigm   |
 
-**Affected Files**: ___ files
+## Codebase Impact Checklist
 
-**Main Change Targets**
+| Check               | Description                   |
+| ------------------- | ----------------------------- |
+| File count          | Estimate affected files       |
+| Breaking changes    | API/interface changes         |
+| Compatibility layer | Needed for gradual migration? |
+| Migration path      | Can be done incrementally?    |
 
--
--
--
+## Dependency Impact Checklist
 
-**Breaking Changes**: [ ] Yes / [ ] No
+| Check             | Description              |
+| ----------------- | ------------------------ |
+| Package updates   | New/removed dependencies |
+| Version conflicts | Peer dependency issues   |
+| Build tools       | Bundler/compiler changes |
 
-**Compatibility Layer**: [ ] Required / [ ] Not Required
+## Team Impact Checklist
 
-## Dependency Impact
+| Check            | Description       |
+| ---------------- | ----------------- |
+| Learning cost    | Hours per person  |
+| Training         | Materials needed? |
+| Documentation    | Updates required  |
+| Migration period | Timeline estimate |
 
-- [ ] Confirm need for package.json updates
-- [ ] Check conflicts with dependent libraries
-- [ ] Verify version constraints
-- [ ] Evaluate peer dependency impact
-- [ ] Check impact on build tools
+## Infrastructure Impact Checklist
 
-### Details
-
-**Dependencies to Add**
-
--
-
-**Dependencies to Remove**
-
--
-
-**Version Constraints**
-
--
-
-## Team Impact
-
-- [ ] Identify number of affected team members (___ people)
-- [ ] Estimate learning cost (___ hours/person)
-- [ ] Determine need for training materials
-- [ ] Identify documentation update tasks
-- [ ] Estimate migration period (___ weeks)
-
-### Details
-
-**Affected Members**: ___ people
-
-**Learning Cost**: ___ hours/person
-
-**Training Plan**
-
--
-
-**Documentation Updates**
-
--
-
-## Infrastructure/Deployment Impact
-
-- [ ] Build process changes
-- [ ] CI/CD pipeline updates
-- [ ] Environment variable additions/changes
-- [ ] Deployment procedure changes
-- [ ] Monitoring configuration updates
-
-### Details
-
-**Build Changes**: [ ] Yes / [ ] No
-
-**CI/CD Updates**: [ ] Required / [ ] Not Required
-
-**Environment Variables**
-
--
-
-## Performance Impact
-
-- [ ] Performance test plan
-- [ ] Set benchmark baseline values
-- [ ] Estimate resource usage
-- [ ] Bottleneck analysis
-
-### Details
-
-**Expected Improvements**:
-
-**Potential Risks**:
-
-## Security Impact
-
-- [ ] Security review necessity
-- [ ] Vulnerability scanning
-- [ ] Access control changes
-- [ ] Data protection impact
-
-### Details
-
-**Security Risks**: [ ] Yes / [ ] No
-
-**Countermeasures**
-
--
-
-## Summary
-
-**Overall Risk Assessment**: [ ] Low / [ ] Medium / [ ] High
-
-**Implementation Priority**: [ ] P0 / [ ] P1 / [ ] P2 / [ ] P3
-
-**Recommended Implementation Timing**:
-
-**Approver**:
-
-**Approval Date**:
-
----
-
-*Checklist completed: [YYYY-MM-DD]*
-*Completed by: [Name]*
+| Check         | Description       |
+| ------------- | ----------------- |
+| Build process | Changes needed?   |
+| CI/CD         | Pipeline updates? |
+| Environment   | New env vars?     |
+| Monitoring    | Config updates?   |

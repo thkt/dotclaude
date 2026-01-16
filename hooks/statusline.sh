@@ -28,6 +28,7 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
     # Session cost (v1.0.85+)
     SESSION_COST=$(echo "$STDIN_INPUT" | jq -r '.session_cost // empty' 2>/dev/null)
 
+
     # Context window warning (v1.0.85+)
     EXCEEDS_200K=$(echo "$STDIN_INPUT" | jq -r '.exceeds_200k_tokens // false' 2>/dev/null)
 
@@ -81,6 +82,10 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
             CONTEXT_LIMIT=200000
         fi
     fi
+
+    # New fields from v2.1.6+ (use if available, more accurate)
+    CONTEXT_USED_PCT=$(echo "$STDIN_INPUT" | jq -r '.context_window.used_percentage // empty' 2>/dev/null)
+    CONTEXT_REMAINING_PCT=$(echo "$STDIN_INPUT" | jq -r '.context_window.remaining_percentage // empty' 2>/dev/null)
 
     # === Extract last used tool from transcript ===
     LAST_TOOL=""
@@ -140,8 +145,15 @@ if [ -z "$CONTEXT_LIMIT" ] || [ "$CONTEXT_LIMIT" = "null" ] || [ "$CONTEXT_LIMIT
 fi
 
 if [ "$CONTEXT_LIMIT" -gt 0 ] 2>/dev/null; then
-    PERCENTAGE=$((CONTEXT_TOKENS * 100 / CONTEXT_LIMIT))
-    REMAINING=$((100 - PERCENTAGE))
+    # Use new v2.1.6+ fields if available, otherwise calculate
+    if [ -n "$CONTEXT_USED_PCT" ] && [ "$CONTEXT_USED_PCT" != "null" ]; then
+        PERCENTAGE=$(printf "%.0f" "$CONTEXT_USED_PCT" 2>/dev/null || echo "$CONTEXT_USED_PCT" | cut -d. -f1)
+        REMAINING=$(printf "%.0f" "$CONTEXT_REMAINING_PCT" 2>/dev/null || echo "$CONTEXT_REMAINING_PCT" | cut -d. -f1)
+    else
+        # Fallback: calculate from tokens
+        PERCENTAGE=$((CONTEXT_TOKENS * 100 / CONTEXT_LIMIT))
+        REMAINING=$((100 - PERCENTAGE))
+    fi
     TOKENS_K=$((CONTEXT_TOKENS / 1000))
     LIMIT_K=$((CONTEXT_LIMIT / 1000))
 
@@ -228,28 +240,4 @@ printf '\033[96;1m%s\033[0m' "$DIR"
 
 if [ -n "$BRANCH" ]; then
     printf ' on \033[95m%s\033[0m' "$BRANCH"
-
-    # Git diff stats (added/removed lines)
-    DIFF_STAT=$(git diff --numstat 2>/dev/null | awk '{add+=$1; del+=$2} END {print add" "del}')
-    STAGED_STAT=$(git diff --cached --numstat 2>/dev/null | awk '{add+=$1; del+=$2} END {print add" "del}')
-
-    ADDED=$(echo "$DIFF_STAT $STAGED_STAT" | awk '{print $1+$3}')
-    DELETED=$(echo "$DIFF_STAT $STAGED_STAT" | awk '{print $2+$4}')
-
-    # Handle empty/null values
-    [ -z "$ADDED" ] && ADDED=0
-    [ -z "$DELETED" ] && DELETED=0
-
-    if [ "$ADDED" -gt 0 ] || [ "$DELETED" -gt 0 ]; then
-        printf ' '
-        if [ "$ADDED" -gt 0 ]; then
-            printf '\033[32m+%s\033[0m' "$ADDED"
-        fi
-        if [ "$DELETED" -gt 0 ]; then
-            if [ "$ADDED" -gt 0 ]; then
-                printf '\033[90m/\033[0m'  # Gray slash
-            fi
-            printf '\033[31m-%s\033[0m' "$DELETED"
-        fi
-    fi
 fi

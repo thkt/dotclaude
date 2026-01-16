@@ -1,146 +1,63 @@
----
-paths: "**/*.{tsx,jsx}"
-summary: |
-  ロジック（Container）とプレゼンテーション（Presentational）を分離。
-  ContainerはデータState、Presentationalはpropsのみを受け取る。
-  再利用性とテスタビリティを最大化。
-decision_question: "このコンポーネントはロジックとUIに分割できる？"
----
+# Container/Presentationalパターン
 
-# Container/Presentationalパターン - 関心の分離
+## 役割
 
-**デフォルトアプローチ**: 再利用性を最大化するためにロジックとUIを分離
+| 役割           | 責任                                       | 例                           |
+| -------------- | ------------------------------------------ | ---------------------------- |
+| Container      | データ、状態、ロジック、レイアウトスタイル | `useTodos()` → 子に渡す      |
+| Presentational | Propsのみ、UI、装飾スタイル                | props経由で`todos`を受け取る |
 
-## コア哲学
+## スタイル
 
-- **Container**: ロジック＆データ取得
-- **Presentational**: UI＆表示のみ
-- **propsのみ**: Presentationalコンポーネントはprops経由でデータを受け取る
-- **再利用性**: 同じUI、異なるデータソース
+| Containerスタイル       | Presentationalスタイル         |
+| ----------------------- | ------------------------------ |
+| レイアウト (grid, flex) | 色、背景                       |
+| 間隔 (margin, padding)  | ボーダー、シャドウ             |
+| 配置、サイジング        | タイポグラフィ、トランジション |
 
-## コンポーネントの役割
-
-### Containerコンポーネント
-
-- データを取得（API、ストア、フック）
-- 状態を管理
-- ビジネスロジックを処理
-- レイアウト/配置スタイルのみ制御
-
-### Presentationalコンポーネント
-
-- props経由でデータを受け取る
-- 直接データ取得なし
-- 装飾スタイルを処理
-- 完全に再利用可能
-
-## ディレクトリ構造
-
-```txt
-src/
-├── containers/
-│   └── TodoContainer/
-│       ├── index.tsx
-│       └── index.stories.tsx
-└── components/
-    └── TodoList/
-        ├── index.tsx
-        └── index.stories.tsx
-```
-
-## 実装例
-
-### フック付きContainer
+## 例
 
 ```tsx
-// TodoContainer/index.tsx
-import { useTodos } from "@/hooks/useTodos";
-import { TodoList } from "@/components/TodoList";
-
-export const TodoContainer = () => {
+// Container: データ + レイアウト
+const TodoContainer = () => {
   const todos = useTodos();
-
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      {" "}
-      {/* レイアウトのみ */}
+    <div className="p-4">
       <TodoList todos={todos} />
     </div>
   );
 };
+
+// Presentational: props + 装飾
+const TodoList = ({ todos }) => (
+  <ul className="bg-white shadow">
+    {todos.map((t) => (
+      <li key={t.id}>{t.title}</li>
+    ))}
+  </ul>
+);
 ```
-
-### Presentationalコンポーネント例
-
-```tsx
-// TodoList/index.tsx
-type TodoListProps = {
-  todos: Todo[];
-};
-
-export const TodoList = ({ todos }: TodoListProps) => {
-  return (
-    <ul className="bg-white rounded-lg shadow">
-      {" "}
-      {/* 装飾スタイル */}
-      {todos.map((todo) => (
-        <li key={todo.id} className="p-3 border-b">
-          {todo.title}
-        </li>
-      ))}
-    </ul>
-  );
-};
-```
-
-## スタイルの責任
-
-### Containerスタイル
-
-- レイアウト（grid、flexbox）
-- スペーシング（margin、padding）
-- 配置（absolute、z-index）
-- サイジング（width、max-width）
-
-### Presentationalスタイル
-
-- 色＆背景
-- ボーダー＆シャドウ
-- タイポグラフィ
-- ホバー/フォーカス状態
-- トランジション
 
 ## アンチパターン
 
-```tsx
-// 悪い例: Presentationalがデータを取得
-export const TodoList = () => {
-  const [todos, setTodos] = useState([]); // 悪い例:
-  useEffect(() => {
-    fetch('/api/todos')... // 悪い例: props経由で受け取るべき
-  }, []);
-};
+| Bad                                | 問題                    |
+| ---------------------------------- | ----------------------- |
+| Presentationalで`useState`/`fetch` | props経由で受け取るべき |
+| Containerに装飾スタイル            | レイアウトのみ扱うべき  |
 
-// 悪い例: Containerに装飾スタイル
-export const TodoContainer = () => {
-  return (
-    <div className="bg-blue-500 shadow-xl"> {/* ❌ 装飾 */}
-      <TodoList />
-    </div>
-  );
-};
-```
+## メリット
 
-## 利点
+| メリット     | 理由                       |
+| ------------ | -------------------------- |
+| テスト       | ロジックとUIを別々にテスト |
+| 再利用性     | 同じUI、異なるデータ       |
+| メンテナンス | 変更が分離される           |
+| 明確さ       | 関心の明確な分離           |
 
-- **テスト**: ロジックとUIを別々にテスト
-- **再利用性**: 同じコンポーネント、異なるデータソース
-- **メンテナンス**: 変更が1つのレイヤーに分離
-- **明確さ**: 関心の明確な分離
+## ルール
 
-## 覚えておく
-
-- ContainerはデータとUIを接続
-- Presentationalコンポーネントはpropsのみ
-- Presentationalコンポーネントをピュアに保つ
-- 迷ったらPresentationalを優先
+| ルール               | ガイドライン                  |
+| -------------------- | ----------------------------- |
+| Containerの役割      | データとUIを接続              |
+| Presentationalの役割 | propsのみ、データフェッチなし |
+| 迷った場合           | Presentationalを優先          |

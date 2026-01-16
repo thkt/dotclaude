@@ -1,37 +1,31 @@
 ---
 name: enhancing-progressively
 description: >
-  CSS優先アプローチ - JavaScriptの前にCSSを使用。トリガー: レイアウト, スタイル,
+  CSS-first approach - use CSS before JavaScript. Triggers: レイアウト, スタイル,
   位置, アニメーション, 表示/非表示, トグル, レスポンシブ, CSS Grid, Flexbox,
   transforms, transitions, CSSのみ, JavaScript不要, シンプル
-allowed-tools: Read, Write, Edit, Grep, Glob
+allowed-tools: [Read, Grep, Glob]
+user-invocable: false
 ---
 
 # プログレッシブエンハンスメント
 
-## 目的
+## 優先順位
 
-JavaScriptよりCSSソリューションを優先。「最良のコードはコードがないこと。」
+| 優先度 | アプローチ | 例                                 |
+| ------ | ---------- | ---------------------------------- |
+| 1      | HTML       | セマンティック要素、ネイティブ入力 |
+| 2      | CSS        | Grid, Flexbox, :has(), transitions |
+| 3      | JS         | 本当に必要な場合のみ               |
 
-## クイック判断
+## 検出
 
-JSを書く前に確認:
-
-1. **「CSSで解決できる？」** → Grid, Flexbox, :has(), transforms
-2. **「今必要？」**（YAGNI） → 証拠なし = 実装しない
-3. **「最もシンプルな解決は？」**（オッカムの剃刀） → CSS3行 > JS50行
-
-## 参照
-
-詳細ガイドは以下を参照:
-[@../../../rules/development/PROGRESSIVE_ENHANCEMENT.md](../../../rules/development/PROGRESSIVE_ENHANCEMENT.md)
-
-## 関連
-
-- `applying-code-principles` - SOLID, DRY, オッカムの剃刀
-- `optimizing-performance` - パフォーマンス最適化
-
-## 使用コマンド
-
-- `/code --frontend` - フロントエンド実装
-- `/audit` - CSS優先アプローチ検証
+| JSパターン                   | CSS代替                            |
+| ---------------------------- | ---------------------------------- |
+| `element.style.display`      | CSS `:has()`, `[open]`, `<dialog>` |
+| `addEventListener('resize')` | CSS `@media`, `clamp()`, `min()`   |
+| `getBoundingClientRect`      | CSS Grid, Flexbox, `gap`           |
+| `setInterval` アニメーション | CSS `transition`, `@keyframes`     |
+| `classList.toggle`           | CSS `:checked`, `:target`          |
+| `scrollTo`, `scrollIntoView` | CSS `scroll-behavior: smooth`      |
+| `matchMedia`                 | CSS `@media`, `@container`         |

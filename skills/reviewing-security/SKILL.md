@@ -1,80 +1,35 @@
 ---
 name: reviewing-security
-description: >
-  OWASP Top 10-based security review and vulnerability detection. Triggers:
-  セキュリティ, 脆弱性, XSS, SQL injection, SQLインジェクション, CSRF,
-  認証, 認可, 暗号化, OWASP, SSRF, パスワード, セッション, rate limiting,
-  brute force, command injection, security misconfiguration.
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Task
+description: OWASP Top 10-based security review and vulnerability detection.
+allowed-tools: [Read, Grep, Glob, Task]
 agent: security-reviewer
 user-invocable: false
 ---
 
-# Security Review - OWASP Top 10 Based
+# Security Review
 
-OWASP Top 10-based vulnerability detection and secure implementation guidance.
+## Detection (OWASP Top 10)
 
-## Section-Based Loading
+| ID  | Category                  | Pattern                                | Fix                                  |
+| --- | ------------------------- | -------------------------------------- | ------------------------------------ |
+| A01 | Broken Access Control     | Missing auth, IDOR, path traversal     | Auth middleware, ownership check     |
+| A02 | Cryptographic Failures    | `password: 'plaintext'`                | bcrypt/argon2 hashing                |
+| A03 | Injection                 | `db.query(\`SELECT...${id}\`)`         | Parameterized query, ORM             |
+| A03 | Injection                 | `exec(\`ping ${host}\`)`               | Input validation, library instead    |
+| A03 | XSS                       | `dangerouslySetInnerHTML={{ __html }}` | Default escaping, DOMPurify          |
+| A05 | Security Misconfiguration | `cors({ origin: '*' })`                | Explicit origin allowlist            |
+| A05 | Security Misconfiguration | `cookie: {}` (no options)              | secure, httpOnly, sameSite: 'strict' |
+| A09 | Logging Failures          | `logger.info({ password })`            | Exclude sensitive fields             |
+| A10 | SSRF                      | `fetch(userInputUrl)`                  | URL validation, allowlist            |
 
-| Section        | File                            | Focus                                            | Triggers                     |
-| -------------- | ------------------------------- | ------------------------------------------------ | ---------------------------- |
-| Basic Security | `references/owasp-basic.md`     | OWASP 1,2,7: Access Control, Crypto, Auth        | auth, password, session      |
-| Injection      | `references/owasp-injection.md` | OWASP 3: SQL/NoSQL/Command, XSS, CSRF            | injection, XSS, CSRF         |
-| Advanced       | `references/owasp-advanced.md`  | OWASP 4-6,8-10: Design, Config, Monitoring, SSRF | rate limiting, SSRF, logging |
+## Confidence Threshold
 
-## Security Review Checklist
-
-### Step 1: Input Validation
-
-- [ ] All user input is sanitized
-- [ ] SQL queries use parameterized statements
-- [ ] User input not directly used in command execution
-- [ ] XSS protection (escaping) applied
-
-### Step 2: Authentication & Authorization
-
-- [ ] Passwords properly hashed (bcrypt recommended)
-- [ ] Secure session management (HttpOnly, Secure, SameSite)
-- [ ] JWT expiration properly configured
-- [ ] Authorization checks on all endpoints
-
-### Step 3: Data Protection
-
-- [ ] Sensitive data not logged
-- [ ] HTTPS enforced
-- [ ] API keys not hardcoded
-
-### Step 4: Error Handling
-
-- [ ] Detailed error messages hidden in production
-- [ ] Stack traces not exposed to users
-
-### Step 5: Dependencies
-
-Run audit command for your package manager:
-
-- npm: `npm audit`
-- yarn: `yarn audit`
-- pnpm: `pnpm audit`
-- bun: `bun pm trust` (or check lockfile)
-
-- [ ] No known vulnerabilities
-
-## Key Principles
-
-| Principle           | Description                  |
-| ------------------- | ---------------------------- |
-| Defense in Depth    | Don't rely on single measure |
-| Least Privilege     | Minimal permissions          |
-| Fail Securely       | Safe even when failing       |
-| Security by Default | Secure by default            |
+Report only when confidence >80%. Include: file:line, exploit scenario, fix recommendation.
 
 ## References
 
-- [@./references/owasp-basic.md](./references/owasp-basic.md) - Access Control, Crypto, Auth
-- [@./references/owasp-injection.md](./references/owasp-injection.md) - SQL/XSS/CSRF
-- [@./references/owasp-advanced.md](./references/owasp-advanced.md) - Design, Config, Monitoring
+| Topic     | OWASP            | File                            |
+| --------- | ---------------- | ------------------------------- |
+| Basic     | A01, A02, A07    | `references/owasp-basic.md`     |
+| Injection | A03              | `references/owasp-injection.md` |
+| Advanced  | A04-A06, A08-A10 | `references/owasp-advanced.md`  |

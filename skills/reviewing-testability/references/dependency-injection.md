@@ -1,166 +1,88 @@
-# Dependency Injection - Injectable Dependencies
+# Dependency Injection
 
-## Why Dependency Injection?
+## Why DI?
 
-DI makes code testable by allowing you to swap real dependencies with mocks.
-
-| Without DI | With DI |
-| --- | --- |
-| Hard-coded imports | Injected via constructor/props |
-| Can't mock easily | Easy to mock |
-| Tests need real services | Tests use simple stubs |
-| Tight coupling | Loose coupling |
+| Without DI         | With DI             |
+| ------------------ | ------------------- |
+| Hard-coded imports | Injected parameters |
+| Can't mock         | Easy mocking        |
+| Tight coupling     | Loose coupling      |
 
 ## Patterns
 
 ### Constructor Injection
 
 ```typescript
-// Bad: Hard to test: Direct dependency
-class UserService {
-  async getUser(id: string) {
-    return fetch(`/api/users/${id}`).then(r => r.json())
-  }
-}
-
-// Good: Testable: Injectable dependency
 interface HttpClient {
-  get<T>(url: string): Promise<T>
+  get<T>(url: string): Promise<T>;
 }
 
 class UserService {
   constructor(private http: HttpClient) {}
 
-  async getUser(id: string) {
-    return this.http.get<User>(`/api/users/${id}`)
+  getUser(id: string) {
+    return this.http.get<User>(`/users/${id}`);
   }
 }
 
 // Test
-const mockHttp: HttpClient = {
-  get: jest.fn().mockResolvedValue({ id: '1', name: 'Test' })
-}
-const service = new UserService(mockHttp)
+const service = new UserService(mockHttp);
 ```
 
-### Factory Functions
+### Factory Function
 
 ```typescript
-// Bad: Hard to test
-export function createOrderService() {
-  const db = new Database()
-  const mailer = new EmailService()
-  return new OrderService(db, mailer)
-}
-
-// Good: Testable
-interface OrderServiceDeps {
-  db: Database
-  mailer: EmailService
-}
-
-export function createOrderService(deps: OrderServiceDeps) {
-  return new OrderService(deps.db, deps.mailer)
+function createOrderService(deps: { db: Database; mailer: Mailer }) {
+  return new OrderService(deps.db, deps.mailer);
 }
 
 // Test
-const service = createOrderService({
-  db: mockDatabase,
-  mailer: mockMailer
-})
+const service = createOrderService({ db: mockDb, mailer: mockMailer });
 ```
 
-### React Context for DI
+### React Context
 
 ```typescript
-// Define services interface
-interface Services {
-  api: ApiClient
-  auth: AuthService
-  storage: StorageService
-}
+const ServicesContext = createContext<Services>(null)
 
-// Create context
-const ServicesContext = createContext<Services | null>(null)
+function useServices() {
+  return useContext(ServicesContext)
+}
 
 // Provider
-function ServicesProvider({ children, services }: {
-  children: React.ReactNode
-  services: Services
-}) {
-  return (
-    <ServicesContext.Provider value={services}>
-      {children}
-    </ServicesContext.Provider>
-  )
-}
-
-// Hook
-function useServices() {
-  const services = useContext(ServicesContext)
-  if (!services) throw new Error('ServicesProvider required')
-  return services
-}
-
-// Component
-function UserProfile() {
-  const { api } = useServices()
-  // Use api...
-}
+<ServicesProvider services={{ api: realApi, auth: realAuth }}>
+  <App />
+</ServicesProvider>
 
 // Test
-render(
-  <ServicesProvider services={{ api: mockApi, auth: mockAuth, storage: mockStorage }}>
-    <UserProfile />
-  </ServicesProvider>
-)
+<ServicesProvider services={{ api: mockApi, auth: mockAuth }}>
+  <Component />
+</ServicesProvider>
 ```
 
-### Props Injection (Simplest)
+### Props Injection
 
 ```typescript
-// Bad: Hard to test: Hook with side effect
-function UserList() {
-  const users = useUsers() // Calls API internally
-  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>
-}
-
-// Good: Testable: Props-based
-interface UserListProps {
-  users: User[]
-  loading?: boolean
-  error?: string
-}
-
-function UserList({ users, loading, error }: UserListProps) {
-  if (loading) return <Spinner />
-  if (error) return <Error message={error} />
-  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>
-}
-
-// Container handles the side effect
+// Container (impure) → Presentational (pure)
 function UserListContainer() {
-  const { data, loading, error } = useUsers()
-  return <UserList users={data ?? []} loading={loading} error={error} />
+  const { data, loading } = useUsers()
+  return <UserList users={data} loading={loading} />
 }
 
-// Test
-render(<UserList users={[{ id: '1', name: 'Test' }]} />)
+function UserList({ users, loading }: Props) {
+  if (loading) return <Spinner />
+  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>
+}
+
+// Test presentational directly
+render(<UserList users={[{ id: '1', name: 'Test' }]} loading={false} />)
 ```
 
-## When to Use Each Pattern
+## Pattern Selection
 
-| Pattern | Use Case | Complexity |
-| --- | --- | --- |
-| Props Injection | Simple components | Low |
-| Constructor Injection | Services/classes | Medium |
-| Factory Functions | Complex objects | Medium |
-| React Context | App-wide services | Medium |
-
-## Checklist
-
-- [ ] Dependencies passed as parameters, not imported directly
-- [ ] Interfaces defined for external services
-- [ ] Factory functions for complex object creation
-- [ ] React Context for app-wide services
-- [ ] Simple props injection for components
+| Pattern     | Complexity | Use Case          |
+| ----------- | ---------- | ----------------- |
+| Props       | Low        | Simple components |
+| Constructor | Medium     | Services/classes  |
+| Factory     | Medium     | Complex objects   |
+| Context     | Medium     | App-wide services |

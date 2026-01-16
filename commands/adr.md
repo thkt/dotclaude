@@ -3,7 +3,6 @@ description: Create Architecture Decision Records (ADR) in MADR format with auto
 allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Bash(~/.claude/skills/creating-adrs/scripts/*), Grep, Glob
 model: opus
 argument-hint: "[decision title]"
-dependencies: [creating-adrs, managing-documentation]
 ---
 
 # /adr - Architecture Decision Record Creator
@@ -16,9 +15,11 @@ Create ADR in MADR format with auto-numbering.
 - If missing: prompt via AskUserQuestion
 - Prerequisites: `adr/` directory (create if missing)
 
-## Execution
+## Skills
 
-Delegates to `creating-adrs` skill (templates, validation, scripts defined there).
+| Name          | Purpose                        |
+| ------------- | ------------------------------ |
+| creating-adrs | Templates, validation, scripts |
 
 ## Output
 

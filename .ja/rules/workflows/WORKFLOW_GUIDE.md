@@ -21,16 +21,9 @@
 
 ### クイックアクション
 
-| コマンド  | 目的                              |
-| --------- | --------------------------------- |
-| `/fix`    | 迅速なバグ修正（think→code→test） |
-| `/rabbit` | CodeRabbit AI 外部レビュー        |
-
-### 自動化
-
-| コマンド      | 目的               |
-| ------------- | ------------------ |
-| `/full-cycle` | 完全な開発サイクル |
+| コマンド | 目的                              |
+| -------- | --------------------------------- |
+| `/fix`   | 迅速なバグ修正（think→code→test） |
 
 ### ブラウザ & ドキュメント
 
@@ -39,6 +32,7 @@
 | `/e2e`    | ブラウザ操作からのE2Eテスト     |
 | `/adr`    | アーキテクチャ決定記録          |
 | `/rulify` | ADRからのプロジェクトルール生成 |
+| `/docs`   | コードからドキュメント生成      |
 
 ### Git操作
 
@@ -86,7 +80,7 @@
 
 ライフサイクル全体で実装を追跡する自動生成ドキュメント。
 
-[@../../skills/orchestrating-workflows/references/shared/idr-generation.md](../../skills/orchestrating-workflows/references/shared/idr-generation.md) を参照
+[@./IDR_GENERATION.md](./IDR_GENERATION.md) を参照
 
 | コマンド    | IDRアクション      |
 | ----------- | ------------------ |

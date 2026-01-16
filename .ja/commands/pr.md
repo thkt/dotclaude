@@ -1,9 +1,8 @@
 ---
 description: ブランチの変更を分析し、包括的なPR説明を生成
-allowed-tools: Task
+allowed-tools: [Task, Bash]
 model: opus
 argument-hint: "[Issue参照またはコンテキスト]"
-dependencies: [pr-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /pr - プルリクエスト説明生成
@@ -15,21 +14,47 @@ dependencies: [pr-generator, utilizing-cli-tools, managing-git-workflows]
 - 引数なし: 現在のブランチから生成
 - 引数あり: Issue参照（`#456`）または追加コンテキスト
 
+## Agent
+
+| タイプ | 名前         | 目的              |
+| ------ | ------------ | ----------------- |
+| Agent  | pr-generator | PR説明生成 (fork) |
+
 ## 実行
 
-`pr-generator`サブエージェントに委譲（PRフォーマットと構造はそちらで定義）。
+| Step | アクション                                                  |
+| ---- | ----------------------------------------------------------- |
+| 1    | 分析: `git status`, `git diff`, `git log`（並行）           |
+| 2    | `Task`で`subagent_type: pr-generator`によるPRコンテンツ生成 |
+| 3    | 必要に応じてpush: `git push -u origin HEAD`                 |
+| 4    | PR作成: `gh pr create --title "..." --body "..."`           |
 
-## 出力
+## ルール
+
+| ルール               | 詳細                                                 |
+| -------------------- | ---------------------------------------------------- |
+| タイトル: 接頭辞なし | `feat:`, `fix:`, `refactor:`等は付けない             |
+| 本文: 直接文字列     | ヒアドキュメント（`<<EOF`）回避 - サンドボックス制限 |
+
+## フロー: Preview
+
+```text
+[Generator YAML] → [プレビュー] → [確認] → [実行]
+```
+
+## 表示形式
+
+### プレビュー
 
 ```markdown
-## プルリクエスト
+## 🔀 PRプレビュー
 
-| フィールド | 値              |
-| ---------- | --------------- |
-| タイトル   | [type]: [title] |
-| Base       | main            |
-| Branch     | feature/xxx     |
-| Closes     | #123            |
+| フィールド | 値          |
+| ---------- | ----------- |
+| タイトル   | [title]     |
+| Base       | main        |
+| Branch     | feature/xxx |
+| Closes     | #123        |
 
 ### 概要
 
@@ -41,8 +66,16 @@ dependencies: [pr-generator, utilizing-cli-tools, managing-git-workflows]
 | ----------- | ---------- |
 | src/auth.ts | OAuth2追加 |
 | src/user.ts | 型更新     |
-
-### テスト計画
-
-- [ ] [テスト項目]
 ```
+
+### 成功
+
+**PR作成完了**: `#<number>` <title>
+<PR URL>
+
+## 検証
+
+| チェック                                            | 必須 |
+| --------------------------------------------------- | ---- |
+| `Task`で`subagent_type: pr-generator`を呼び出した？ | Yes  |
+| タイトルに接頭辞なし（`feat:`, `fix:`等）？         | Yes  |

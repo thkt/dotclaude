@@ -3,7 +3,6 @@ description: MADR形式でアーキテクチャ決定記録（ADR）を自動採
 allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Bash(~/.claude/skills/creating-adrs/scripts/*), Grep, Glob
 model: opus
 argument-hint: "[決定タイトル]"
-dependencies: [creating-adrs, managing-documentation]
 ---
 
 # /adr - アーキテクチャ決定記録作成
@@ -16,9 +15,11 @@ MADR形式で自動採番付きADRを作成。
 - 未指定時: AskUserQuestionで確認
 - 前提条件: `adr/`ディレクトリ（なければ作成）
 
-## 実行
+## Skills
 
-`creating-adrs`スキルに委譲（テンプレート、検証、スクリプトはそちらで定義）。
+| 名前          | 目的                           |
+| ------------- | ------------------------------ |
+| creating-adrs | テンプレート、検証、スクリプト |
 
 ## 出力
 

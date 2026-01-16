@@ -1,111 +1,51 @@
-# Type Coverage - Explicit Types & Avoiding Any
+# Type Coverage
 
-## Type Coverage Goal
-
-Aim for 95%+ type coverage. Every function, parameter, and data structure should have explicit types.
+Target: 95%+ type coverage.
 
 ## Avoiding Any
 
-### Why `any` is Dangerous
+| Pattern      | Problem              | Solution                |
+| ------------ | -------------------- | ----------------------- |
+| `any` param  | No type checking     | Use specific type       |
+| Implicit any | Hidden type issues   | Add explicit annotation |
+| `any` return | Type loss propagates | Define return type      |
 
-```typescript
-// Bad: Dangerous: any disables all type checking
-function processUser(data: any) {
-  return data.name.toUpperCase(); // No compile-time error, runtime crash
-}
+### When Any is Acceptable
 
-// Good: Safe: TypeScript catches the error
-function processUser(data: User) {
-  return data.name.toUpperCase(); // Compile-time check
-}
-```
-
-### Using `unknown` Instead
-
-```typescript
-// Good: Safe: unknown requires type checking before use
-function processUnknownData(data: unknown): string {
-  if (typeof data === "object" && data !== null && "value" in data) {
-    return String((data as { value: unknown }).value);
-  }
-  throw new Error("Invalid data format");
-}
-```
-
-### When `any` is Acceptable
-
-Rare cases where `any` may be justified:
-
-1. **Third-party library without types** - Add `// TODO: Add types when @types/lib available`
-2. **Migration from JavaScript** - Temporary, with clear migration plan
-3. **Complex generic constraints** - When TypeScript's type system can't express it
-
-Always document:
+| Case                | Requirement          |
+| ------------------- | -------------------- |
+| No @types available | Add TODO comment     |
+| JS migration        | Clear migration plan |
+| Complex generics    | Document reason      |
 
 ```typescript
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-// Reason: External API returns dynamic structure, validated at runtime
+// Reason: External API returns dynamic structure
 const response: any = await externalApi.fetch();
 ```
 
-## Explicit Type Annotations
+## Explicit Types
 
-### Function Return Types
+| Rule             | Example                                    |
+| ---------------- | ------------------------------------------ |
+| Function returns | `function getUser(): User {}`              |
+| Async functions  | `async function fetch(): Promise<User> {}` |
+| Named interfaces | `interface OrderItem { ... }` vs inline    |
 
-```typescript
-// Bad: Implicit return type
-function getUser(id: string) {
-  return { name: "John", age: 30 };
-}
+## Type Inference
 
-// Good: Explicit return type
-function getUser(id: string): User {
-  return { name: "John", age: 30 };
-}
-
-// Good: Async functions
-async function fetchUser(id: string): Promise<User> {
-  const response = await api.get(`/users/${id}`);
-  return response.data;
-}
-```
-
-### Interface Definitions
-
-```typescript
-// Bad: Inline object types
-function createOrder(item: { id: string; price: number }) {}
-
-// Good: Named interface
-interface OrderItem {
-  id: string;
-  price: number;
-  quantity: number;
-}
-
-function createOrder(item: OrderItem): Order {}
-```
-
-## Type Inference Balance
-
-Let TypeScript infer when obvious:
-
-```typescript
-// Good: Let TS infer simple cases
-const count = 0; // number
-const items = ["a", "b"]; // string[]
-const user = { name: "John" }; // { name: string }
-
-// Good: Explicit when not obvious
-const cache: Map<string, User> = new Map();
-const config: AppConfig = loadConfig();
-```
+| Use Inference         | Use Explicit                                 |
+| --------------------- | -------------------------------------------- |
+| `const count = 0`     | `const cache: Map<string, User> = new Map()` |
+| `const items = ['a']` | `const config: AppConfig = loadConfig()`     |
+| Simple assignments    | Complex/generic types                        |
 
 ## Checklist
 
-- [ ] All exported functions have explicit return types
-- [ ] All function parameters are typed
-- [ ] No `any` without documented justification
-- [ ] `unknown` used instead of `any` for unknown data
-- [ ] Interface/type defined for all data structures
-- [ ] Type inference used for obvious cases only
+| Check              | Requirement              |
+| ------------------ | ------------------------ |
+| Exported functions | Explicit return types    |
+| Parameters         | All typed                |
+| Any usage          | Documented justification |
+| Unknown data       | Use `unknown` not `any`  |
+| Data structures    | Interface/type defined   |

@@ -4,7 +4,6 @@ allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash
 model: opus
 context: fork
 argument-hint: "[リサーチトピックまたは質問]"
-dependencies: [Explore]
 ---
 
 # /research - プロジェクトリサーチ＆調査
@@ -18,23 +17,15 @@ dependencies: [Explore]
 
 ## 実行
 
-1. スコープ発見（プロジェクト構造、技術スタック）
-2. `Explore`と`code-explorer`エージェントによる調査
-3. 信頼度マーカー（✓/→/?）で統合
+| フェーズ | エージェント            | フォーカス                               |
+| -------- | ----------------------- | ---------------------------------------- |
+| 1        | `architecture-analyzer` | 全体像: 構造、技術スタック               |
+| 2        | `Explore`               | 詳細: コードパス、パターン、エッジケース |
+| 3        | （統合）                | ✓/→/?マーカー付きで整理                  |
+
+マーカー: [@../../rules/core/AI_OPERATION_PRINCIPLES.md](../../rules/core/AI_OPERATION_PRINCIPLES.md)
 
 ## 出力
 
-```text
-.claude/workspace/research/
-├── YYYY-MM-DD-[topic].md          # 詳細な発見
-└── YYYY-MM-DD-[topic]-context.md  # /think統合用
-```
-
-### 必須セクション
-
-1. 目的
-2. 前提条件（✓/→/?）
-3. 利用可能なデータ
-4. 制約
-5. 主要な発見
-6. 参照
+ファイル: `.claude/workspace/research/YYYY-MM-DD-[topic].md`
+テンプレート: [@../../templates/research/template.md](../../templates/research/template.md)

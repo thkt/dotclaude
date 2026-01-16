@@ -3,7 +3,6 @@ description: 包括的な計画のためにSOWとSpec生成をオーケストレ
 allowed-tools: SlashCommand, Read, Write, Glob, Task
 model: opus
 argument-hint: "[タスク説明]"
-dependencies: [sow-spec-reviewer, managing-planning]
 ---
 
 # /think - 計画オーケストレーター
@@ -25,13 +24,23 @@ SOWとSpec生成による実装計画のオーケストレーション。
 | 3    | /sow                    | sow.md           |
 | 4    | /spec                   | spec.md          |
 | 5    | sow-spec-reviewer (≥90) | （オプション）   |
-| 6    | サマリー生成            | summary.md       |
+
+## Q&Aカテゴリ
+
+| カテゴリ | フォーカス               |
+| -------- | ------------------------ |
+| 目的     | ゴール、問題、受益者     |
+| ユーザー | 主要ユーザー             |
+| スコープ | 含む/含まない            |
+| 優先度   | MoSCoW                   |
+| 成功     | 「完了」の定義           |
+| 制約     | 技術的、時間的、依存関係 |
+| リスク   | 既知の懸念               |
 
 ## 出力
 
 ```text
-.claude/workspace/planning/[timestamp]-[feature]/
+.claude/workspace/planning/YYYY-MM-DD-[feature]/
 ├── sow.md     # Statement of Work
-├── spec.md    # Specification
-└── summary.md # Review Summary ← ここから開始
+└── spec.md    # Specification
 ```

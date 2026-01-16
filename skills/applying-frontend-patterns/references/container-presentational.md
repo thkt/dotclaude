@@ -1,146 +1,63 @@
----
-paths: "**/*.{tsx,jsx}"
-summary: |
-  Separate logic (Container) from presentation (Presentational).
-  Containers handle data/state, Presentational components receive props only.
-  Maximizes reusability and testability.
-decision_question: "Can this component be split into logic and UI?"
----
+# Container/Presentational Pattern
 
-# Container/Presentational Pattern - Separation of Concerns
+## Roles
 
-**Default approach**: Separate logic from UI for maximum reusability
+| Role           | Responsibility                    | Example                        |
+| -------------- | --------------------------------- | ------------------------------ |
+| Container      | Data, state, logic, layout styles | `useTodos()` → passes to child |
+| Presentational | Props-only, UI, decorative styles | Receives `todos` via props     |
 
-## Core Philosophy
+## Styles
 
-- **Container**: Logic & data fetching
-- **Presentational**: UI & display only
-- **Props-only**: Presentational components receive data via props
-- **Reusability**: Same UI, different data sources
+| Container Styles          | Presentational Styles   |
+| ------------------------- | ----------------------- |
+| Layout (grid, flex)       | Colors, backgrounds     |
+| Spacing (margin, padding) | Borders, shadows        |
+| Positioning, sizing       | Typography, transitions |
 
-## Component Roles
-
-### Container Component
-
-- Fetches data (API, stores, hooks)
-- Manages state
-- Handles business logic
-- Controls layout/positioning styles only
-
-### Presentational Component
-
-- Receives data via props
-- No direct data fetching
-- Handles decorative styles
-- Fully reusable
-
-## Directory Structure
-
-```txt
-src/
-├── containers/
-│   └── TodoContainer/
-│       ├── index.tsx
-│       └── index.stories.tsx
-└── components/
-    └── TodoList/
-        ├── index.tsx
-        └── index.stories.tsx
-```
-
-## Implementation Example
-
-### Container with Hooks
+## Example
 
 ```tsx
-// TodoContainer/index.tsx
-import { useTodos } from "@/hooks/useTodos";
-import { TodoList } from "@/components/TodoList";
-
-export const TodoContainer = () => {
+// Container: data + layout
+const TodoContainer = () => {
   const todos = useTodos();
-
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      {" "}
-      {/* Layout only */}
+    <div className="p-4">
       <TodoList todos={todos} />
     </div>
   );
 };
+
+// Presentational: props + decorative
+const TodoList = ({ todos }) => (
+  <ul className="bg-white shadow">
+    {todos.map((t) => (
+      <li key={t.id}>{t.title}</li>
+    ))}
+  </ul>
+);
 ```
-
-### Presentational Component Example
-
-```tsx
-// TodoList/index.tsx
-type TodoListProps = {
-  todos: Todo[];
-};
-
-export const TodoList = ({ todos }: TodoListProps) => {
-  return (
-    <ul className="bg-white rounded-lg shadow">
-      {" "}
-      {/* Decorative styles */}
-      {todos.map((todo) => (
-        <li key={todo.id} className="p-3 border-b">
-          {todo.title}
-        </li>
-      ))}
-    </ul>
-  );
-};
-```
-
-## Style Responsibilities
-
-### Container Styles
-
-- Layout (grid, flexbox)
-- Spacing (margin, padding)
-- Positioning (absolute, z-index)
-- Sizing (width, max-width)
-
-### Presentational Styles
-
-- Colors & backgrounds
-- Borders & shadows
-- Typography
-- Hover/focus states
-- Transitions
 
 ## Anti-patterns
 
-```tsx
-// Bad: Presentational fetching data
-export const TodoList = () => {
-  const [todos, setTodos] = useState([]); // Bad:
-  useEffect(() => {
-    fetch('/api/todos')... // Bad: Should receive via props
-  }, []);
-};
-
-// Bad: Container with decorative styles
-export const TodoContainer = () => {
-  return (
-    <div className="bg-blue-500 shadow-xl"> {/* ❌ Decorative */}
-      <TodoList />
-    </div>
-  );
-};
-```
+| Bad                                    | Problem                   |
+| -------------------------------------- | ------------------------- |
+| Presentational with `useState`/`fetch` | Should receive via props  |
+| Container with decorative styles       | Should handle layout only |
 
 ## Benefits
 
-- **Testing**: Logic and UI tested separately
-- **Reusability**: Same component, different data sources
-- **Maintenance**: Changes isolated to one layer
-- **Clarity**: Clear separation of concerns
+| Benefit     | Why                            |
+| ----------- | ------------------------------ |
+| Testing     | Logic and UI tested separately |
+| Reusability | Same UI, different data        |
+| Maintenance | Changes isolated               |
+| Clarity     | Clear separation               |
 
-## Remember
+## Rules
 
-- Containers connect data to UI
-- Presentational components are props-only
-- Keep Presentational components pure
-- When in doubt, favor Presentational
+| Rule                | Guideline                    |
+| ------------------- | ---------------------------- |
+| Container role      | Connect data to UI           |
+| Presentational role | Props-only, no data fetching |
+| When uncertain      | Favor Presentational         |

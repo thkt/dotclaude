@@ -46,8 +46,7 @@
       ],
       "agents": [
         "./agents/orchestrators/audit-orchestrator.md",
-        "./agents/analyzers/architecture-analyzer.md",
-        "./agents/generators/test.md",
+        "./agents/generators/test-generator.md",
         "./agents/enhancers/progressive-enhancer.md",
         "./agents/reviewers/subagent-reviewer.md",
         "./agents/reviewers/document-reviewer.md",
@@ -62,37 +61,23 @@
         "./agents/reviewers/security-reviewer.md",
         "./agents/reviewers/silent-failure-reviewer.md",
         "./agents/reviewers/sow-spec-reviewer.md",
-        "./agents/integrators/finding-integrator.md"
+        "./agents/integrators/audit-integrator.md"
       ],
       "rules": ["./rules/development/COMPLETION_CRITERIA.md"]
     },
     {
       "name": "quick-actions",
       "source": "./",
-      "description": "Fast bug fixes and external code review: /fix for rapid fixes, /rabbit for CodeRabbit AI review",
+      "description": "Fast bug fixes and code polish: /fix for rapid fixes, /polish for AI slop removal",
       "version": "2.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["fix", "quick", "coderabbit", "review"],
+      "keywords": ["fix", "quick", "polish", "simplify"],
       "category": "Quick Actions",
-      "commands": ["./commands/fix.md", "./commands/rabbit.md"]
-    },
-    {
-      "name": "automation-commands",
-      "source": "./",
-      "description": "Automated development cycle: /auto-test for continuous testing, /full-cycle for complete automation",
-      "version": "2.0.0",
-      "author": {
-        "name": "thkt",
-        "url": "https://github.com/thkt"
-      },
-      "license": "MIT",
-      "keywords": ["automation", "auto-test", "full-cycle", "continuous"],
-      "category": "Automation",
-      "commands": ["./commands/full-cycle.md"]
+      "commands": ["./commands/fix.md", "./commands/polish.md"]
     },
     {
       "name": "git-utilities",
@@ -120,10 +105,10 @@
         "./commands/issue.md"
       ],
       "agents": [
-        "./agents/git/branch-generator.md",
-        "./agents/git/commit-generator.md",
-        "./agents/git/pr-generator.md",
-        "./agents/git/issue-generator.md"
+        "./agents/generators/branch-generator.md",
+        "./agents/generators/commit-generator.md",
+        "./agents/generators/pr-generator.md",
+        "./agents/generators/issue-generator.md"
       ]
     },
     {
@@ -146,7 +131,17 @@
         "rulify"
       ],
       "category": "Documentation",
-      "commands": ["./commands/adr.md", "./commands/rulify.md"]
+      "commands": [
+        "./commands/adr.md",
+        "./commands/rulify.md",
+        "./commands/docs.md"
+      ],
+      "agents": [
+        "./agents/analyzers/architecture-analyzer.md",
+        "./agents/analyzers/api-analyzer.md",
+        "./agents/analyzers/domain-analyzer.md",
+        "./agents/analyzers/setup-analyzer.md"
+      ]
     },
     {
       "name": "browser-workflows",
@@ -196,10 +191,6 @@
         "./skills/formatting-audits/SKILL.md",
         "./skills/generating-tdd-tests/SKILL.md",
         "./skills/integrating-storybook/SKILL.md",
-        "./skills/managing-documentation/SKILL.md",
-        "./skills/managing-git-workflows/SKILL.md",
-        "./skills/managing-planning/SKILL.md",
-        "./skills/managing-testing/SKILL.md",
         "./skills/optimizing-performance/SKILL.md",
         "./skills/orchestrating-workflows/SKILL.md",
         "./skills/reviewing-readability/SKILL.md",
@@ -207,7 +198,7 @@
         "./skills/reviewing-silent-failures/SKILL.md",
         "./skills/reviewing-testability/SKILL.md",
         "./skills/reviewing-type-safety/SKILL.md",
-        "./skills/setting-up-docs/SKILL.md",
+        "./skills/documenting-setup/SKILL.md",
         "./skills/utilizing-cli-tools/SKILL.md"
       ]
     },

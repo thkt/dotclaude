@@ -1,9 +1,8 @@
 ---
 description: AI生成スロップの除去とコード簡素化による明確性・保守性の向上
-allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, MultiEdit, Grep, Glob
+allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob, Task
 model: opus
 argument-hint: "[対象スコープ]"
-dependencies: [orchestrating-workflows, reviewing-readability]
 ---
 
 # /polish - コード簡素化 & AIスロップ除去
@@ -15,9 +14,19 @@ dependencies: [orchestrating-workflows, reviewing-readability]
 - 引数: 対象スコープ（任意）
 - 未指定時: `git diff main...HEAD`を分析
 
+## Agent
+
+| タイプ | 名前            | 目的                  |
+| ------ | --------------- | --------------------- |
+| Agent  | code-simplifier | AIスロップ除去 (fork) |
+
 ## 実行
 
-diffをAIパターンで分析、修正適用、サマリー報告。
+| Step | アクション                               |
+| ---- | ---------------------------------------- |
+| 1    | `Task`で`subagent_type: code-simplifier` |
+| 2    | エージェントがAIスロップを特定・除去     |
+| 3    | 簡素化を報告                             |
 
 ### 除去対象
 
@@ -36,3 +45,9 @@ Polished: X件のコメント削除、Y件のヘルパーをインライン化
 
 - IDR存在時: `/polish`セクションを追記（削除と簡素化）
 - IDRなし: スキップ（ターミナル出力のみ）
+
+## 検証
+
+| チェック                                               | 必須 |
+| ------------------------------------------------------ | ---- |
+| `Task`で`subagent_type: code-simplifier`を呼び出した？ | Yes  |

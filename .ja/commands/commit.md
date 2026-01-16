@@ -1,9 +1,8 @@
 ---
 description: Git diffを分析し、Conventional Commits形式のメッセージを生成
-allowed-tools: Task
+allowed-tools: [Task, AskUserQuestion, Bash]
 model: opus
 argument-hint: "[コンテキストまたはIssue参照]"
-dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /commit - Gitコミットメッセージ生成
@@ -15,26 +14,47 @@ dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
 - 引数: コンテキストまたはIssue参照（任意）
 - 未指定時: ステージされた変更のみ分析
 
+## Agent
+
+| タイプ | 名前             | 目的                            |
+| ------ | ---------------- | ------------------------------- |
+| Agent  | commit-generator | Conventional Commits生成 (fork) |
+
 ## 実行
 
-`commit-generator`サブエージェントに委譲（Conventional Commits形式はそちらで定義）。
+| Step | アクション                                |
+| ---- | ----------------------------------------- |
+| 1    | `Task`で`subagent_type: commit-generator` |
+| 2    | フォーマットしてプレビュー表示            |
+| 3    | ユーザーに確認                            |
+| 4    | コミット実行                              |
 
-## 出力
-
-````markdown
-## コミットメッセージ
-
-| フィールド | 値                                          |
-| ---------- | ------------------------------------------- |
-| Type       | feat / fix / refactor / docs / chore / test |
-| Scope      | (コンポーネント)                            |
-| Subject    | 短い説明                                    |
+## フロー: Preview
 
 ```text
-feat(auth): add OAuth2 login support
-
-- Add Google OAuth provider
-- Implement token refresh flow
-- Update user session handling
+[Generator YAML] → [プレビュー] → [確認] → [実行]
 ```
-````
+
+## 表示形式
+
+### プレビュー
+
+```markdown
+## 📝 コミットプレビュー
+
+> **<type>(<scope>)**: <description>
+
+<body>
+
+`<footer>`
+```
+
+### 成功
+
+**コミット完了**: `[short-hash]` <type>(<scope>): <description>
+
+## 検証
+
+| チェック                                                | 必須 |
+| ------------------------------------------------------- | ---- |
+| `Task`で`subagent_type: commit-generator`を呼び出した？ | Yes  |

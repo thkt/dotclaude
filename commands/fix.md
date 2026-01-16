@@ -3,8 +3,6 @@ description: Rapidly fix small bugs and minor improvements in development enviro
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task
 model: opus
 argument-hint: "[bug or issue description]"
-dependencies:
-  [Explore, test-generator, generating-tdd-tests, orchestrating-workflows]
 ---
 
 # /fix - Quick Bug Fix
@@ -17,11 +15,22 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 - If missing: prompt via AskUserQuestion
 - Scope: small, well-understood issues (1-3 files)
 
+## Skills & Agents
+
+| Type  | Name                    | Purpose                         |
+| ----- | ----------------------- | ------------------------------- |
+| Skill | analyzing-root-causes   | 5 Whys methodology              |
+| Agent | test-generator          | Regression test creation (fork) |
+| Skill | orchestrating-workflows | Fix workflow definition         |
+
 ## Execution
 
-Root cause analysis (5 Whys) → Regression test first → Fix → Verify.
-
-Workflow details in `orchestrating-workflows`.
+| Step | Action                                                   |
+| ---- | -------------------------------------------------------- |
+| 1    | Root cause analysis (5 Whys)                             |
+| 2    | `Task` with `subagent_type: test-generator` for reg test |
+| 3    | Fix implementation                                       |
+| 4    | Verify all tests pass                                    |
 
 ## Escalation
 
@@ -34,3 +43,9 @@ Workflow details in `orchestrating-workflows`.
 ## IDR
 
 `/fix` does NOT generate IDR - use `/code` for features needing decision tracking.
+
+## Verification
+
+| Check                                               | Required |
+| --------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: test-generator`? | Yes      |

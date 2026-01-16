@@ -3,7 +3,6 @@ description: Generate project rules from ADR and integrate with CLAUDE.md
 allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob
 model: opus
 argument-hint: "[ADR number]"
-dependencies: [creating-adrs, managing-documentation]
 ---
 
 # /rulify - Generate Rule from ADR
@@ -19,6 +18,14 @@ Convert ADR into AI-executable rule format.
 
 Parse ADR → Determine priority → Generate rule → Integrate with CLAUDE.md.
 
+### Rule Extraction
+
+| ADR Section  | Rule Content    |
+| ------------ | --------------- |
+| Decision     | What to enforce |
+| Consequences | Why it matters  |
+| Context      | When to apply   |
+
 ### Priority Mapping
 
 | Condition                 | Priority |
@@ -30,14 +37,46 @@ Parse ADR → Determine priority → Generate rule → Integrate with CLAUDE.md.
 
 ## Output
 
-```markdown
-## Rule Generated
+| Type      | Location                     |
+| --------- | ---------------------------- |
+| Rule file | `rules/[category]/[name].md` |
+| Reference | CLAUDE.md update             |
 
-| Item       | Path                    |
-| ---------- | ----------------------- |
-| ADR        | adr/0001-title.md       |
-| Rule       | docs/rules/RULE_NAME.md |
-| Integrated | .claude/CLAUDE.md       |
+### Categories
+
+| Category       | Purpose           |
+| -------------- | ----------------- |
+| `core/`        | Fundamental rules |
+| `guidelines/`  | Best practices    |
+| `development/` | Implementation    |
+
+### Rule File Format
+
+```markdown
+# [RULE_NAME_UPPER_SNAKE_CASE]
+
+Priority: P[0-3]
+Source: ADR-[number]
+
+## Application Conditions
+
+[When to apply - from ADR "Decision Outcome"]
+
+## Requirements
+
+- [Must do - from ADR decision/rationale]
+
+## Prohibitions
+
+- [Must NOT do - anti-patterns]
+
+## Examples
+
+[Good/Bad code examples]
+
+## References
+
+- ADR: [path to ADR]
 ```
 
 ## Error Handling

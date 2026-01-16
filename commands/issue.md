@@ -2,8 +2,7 @@
 description: Generate GitHub Issue with structured title and body
 allowed-tools: Task
 model: opus
-argument-hint: "[issue description] [--create]"
-dependencies: [issue-generator, utilizing-cli-tools, managing-git-workflows]
+argument-hint: "[issue description]"
 ---
 
 # /issue - GitHub Issue Generator
@@ -15,28 +14,50 @@ Generate well-structured GitHub Issues.
 - Argument: issue description (required)
 - If missing: prompt via AskUserQuestion
 - Type prefix: `bug`, `feature`, `docs` (optional)
-- Flag: `--create` to create directly via `gh issue create`
+
+## Agent
+
+| Type  | Name            | Purpose                 |
+| ----- | --------------- | ----------------------- |
+| Agent | issue-generator | GitHub Issue gen (fork) |
 
 ## Execution
 
-Delegates to `issue-generator` subagent (format and templates defined there).
+| Step | Action                                                |
+| ---- | ----------------------------------------------------- |
+| 1    | `Task` with `subagent_type: issue-generator`          |
+| 2    | Format and present preview                            |
+| 3    | Confirm with user                                     |
+| 4    | Execute: `gh issue create --title "..." --body "..."` |
+| 5    | Capture issue URL from command output                 |
 
-## Output
+## Flow: Preview
+
+```text
+[Generator YAML] → [Preview] → [Confirm] → [Execute]
+```
+
+## Display Format
+
+### Preview
 
 ```markdown
-## GitHub Issue
+## 🎫 Issue Preview
 
-| Field  | Value            |
-| ------ | ---------------- |
-| Title  | [type]: [title]  |
-| Labels | bug, enhancement |
+> **<title>**
 
-### Description
+### Body
 
-[Structured issue body with context]
-
-### Acceptance Criteria
-
-- [ ] [Criterion 1]
-- [ ] [Criterion 2]
+<body content>
 ```
+
+### Success
+
+**Created**: `#<number>` <title>
+<issue URL>
+
+## Verification
+
+| Check                                                | Required |
+| ---------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: issue-generator`? | Yes      |

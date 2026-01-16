@@ -5,74 +5,42 @@ description: >
   Triggers: 可読性, 理解しやすい, わかりやすい, 明確, 命名, 変数名, 関数名,
   ネスト, 深いネスト, 関数設計, コメント, 複雑, 難しい, 難読,
   Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計.
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Task
+allowed-tools: [Read, Grep, Glob, Task]
 agent: readability-reviewer
 user-invocable: false
 ---
 
-# Readability Review - Code Clarity & Cognitive Load
+# Readability Review
 
-Target: New team member understands code in < 1 minute.
+## Detection
 
-## Miller's Law Limits (7±2)
+| ID  | Pattern                       | Fix                              |
+| --- | ----------------------------- | -------------------------------- |
+| RD1 | `processData()` (vague)       | `validateUserEmail()`            |
+| RD1 | Misleading identifiers        | Names reveal intent              |
+| RD2 | Nesting > 3 levels            | Guard clauses, extract functions |
+| RD2 | Function > 15 lines           | Decompose                        |
+| RD3 | Comment: `// increment i`     | Delete (self-evident)            |
+| RD3 | Comment: `// TODO: fix later` | Create issue or fix now          |
+| RD4 | Interface for single impl     | Remove until 2nd impl            |
+| RD4 | Class for stateless logic     | Pure function                    |
+| RD5 | > 5 function parameters       | Config object or decompose       |
 
-| Context              | Ideal      | Maximum  |
-| -------------------- | ---------- | -------- |
-| Function arguments   | 3          | 5        |
-| Class methods        | 5          | 7        |
-| Conditional branches | 3          | 5        |
-| Function length      | 5-10 lines | 15 lines |
-| Nesting depth        | 2          | 3        |
+## Thresholds
 
-## Section-Based Loading
-
-| Section         | File                             | Focus                      | Triggers               |
-| --------------- | -------------------------------- | -------------------------- | ---------------------- |
-| Control Flow    | `references/control-flow.md`     | Nesting, guard clauses     | ネスト, Miller's Law   |
-| Comments        | `references/comments-clarity.md` | Why not What, intent       | コメント, 意図         |
-| AI Antipatterns | `references/ai-antipatterns.md`  | Over-engineering detection | AI-generated, 過剰設計 |
-
-**Note**: Naming conventions → [@./references/naming.md](./references/naming.md)
-
-## Quick Checklist
-
-### Naming
-
-- [ ] Concrete over abstract (`validateUserEmail` not `processData`)
-- [ ] Searchable, pronounceable names
-- [ ] Intent is obvious from name
-
-### Control Flow
-
-- [ ] Nesting depth ≤ 3
-- [ ] Guard clauses for early returns
-- [ ] Complex conditions extracted to functions
-
-### Comments
-
-- [ ] Explain "why", not "what"
-- [ ] Update or delete outdated comments
-- [ ] Code is self-documenting first
-
-### AI Code Smells
-
-- [ ] No premature abstractions (interface for single impl)
-- [ ] No unnecessary classes for simple tasks
-- [ ] No "future-proof" flexibility nobody asked for
-
-## Key Principles
-
-| Principle            | Application         |
-| -------------------- | ------------------- |
-| Clarity > Cleverness | Simple code wins    |
-| Respect 7±2 limit    | Break into chunks   |
-| Tell, Don't Ask      | Direct method calls |
+| Metric               | Ideal | Max |
+| -------------------- | ----- | --- |
+| Function arguments   | 3     | 5   |
+| Class methods        | 5     | 7   |
+| Conditional branches | 3     | 5   |
+| Function length      | 10    | 15  |
+| Nesting depth        | 2     | 3   |
 
 ## References
 
-- [@../../skills/applying-code-principles/SKILL.md](../../skills/applying-code-principles/SKILL.md) - Cognitive limits and Readable Code
-- [@./references/ai-antipatterns.md](./references/ai-antipatterns.md) - AI over-engineering patterns
+| Topic           | File                             |
+| --------------- | -------------------------------- |
+| Control Flow    | `references/control-flow.md`     |
+| Comments        | `references/comments-clarity.md` |
+| AI Antipatterns | `references/ai-antipatterns.md`  |
+| Naming          | `references/naming.md`           |
