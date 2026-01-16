@@ -16,7 +16,7 @@ Claude Codeプラグインのアーキテクチャ決定を記録するドキュ
 
 ADRから抽出された強制ルール：
 
-- [COMMAND_MODULARIZATION.md](../rules/workflows/MODULARIZATION_RULES.md) - ADR 0001, 0002
+- [MODULARIZATION_RULES.md](../rules/workflows/MODULARIZATION_RULES.md) - ADR 0001, 0002
 - [PLUGIN_ARCHITECTURE.md](../rules/conventions/PLUGIN_ARCHITECTURE.md) - ADR 0003
 
 ## 参照

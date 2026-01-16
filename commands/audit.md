@@ -19,15 +19,15 @@ Orchestrate specialized review agents with confidence-based filtering.
 
 | Type  | Name               | Purpose                           |
 | ----- | ------------------ | --------------------------------- |
-| Agent | audit-orchestrator | 15 reviewers orchestration (fork) |
+| Agent | audit-orchestrator | 17 reviewers orchestration (fork) |
 
 ## Execution
 
-| Step | Action                                                    |
-| ---- | --------------------------------------------------------- |
-| 1    | `Task` with `subagent_type: audit-orchestrator`           |
-| 2    | Orchestrator runs 15 agents (Core 8 + toolkit 4 + Prod 3) |
-| 3    | Integrator aggregates findings into structured output     |
+| Step | Action                                                |
+| ---- | ----------------------------------------------------- |
+| 1    | `Task` with `subagent_type: audit-orchestrator`       |
+| 2    | Orchestrator runs 17 agents (13 local + 4 external)   |
+| 3    | Integrator aggregates findings into structured output |
 
 ## Flow
 

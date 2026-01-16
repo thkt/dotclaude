@@ -23,9 +23,9 @@ Investigate codebase with confidence-based findings, without implementation.
 | 2     | `Explore`               | Detail: code paths, patterns, edge cases |
 | 3     | (synthesis)             | Consolidate with ✓/→/? markers           |
 
-Markers: [@../../rules/core/AI_OPERATION_PRINCIPLES.md](../../rules/core/AI_OPERATION_PRINCIPLES.md)
+Markers: [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
 
 ## Output
 
 File: `.claude/workspace/research/YYYY-MM-DD-[topic].md`
-Template: [@../../templates/research/template.md](../../templates/research/template.md)
+Template: [@../templates/research/template.md](../templates/research/template.md)

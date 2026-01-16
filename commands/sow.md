@@ -24,7 +24,7 @@ Generate sow.md for planning and analysis.
 
 Generate SOW using template (ID format: I-001, AC-001, R-001).
 
-Template: [@../../templates/sow/template.md](../../templates/sow/template.md)
+Template: [@../templates/sow/template.md](../templates/sow/template.md)
 
 ## Output
 

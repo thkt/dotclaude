@@ -26,7 +26,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── conventions/      # Documentation conventions
 │   ├── development/      # Development patterns & methodologies
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (25 skills)
+├── skills/               # Skill-based knowledge modules (21 skills)
 ├── agents/               # Specialized AI agents
 │   ├── analyzers/        # Architecture analyzers
 │   ├── enhancers/        # Code enhancers

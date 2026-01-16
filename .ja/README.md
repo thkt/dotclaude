@@ -26,7 +26,7 @@
 │   ├── conventions/      # ドキュメント規約
 │   ├── development/      # 開発パターン & 方法論
 │   └── workflows/        # ワークフローガイド
-├── skills/               # スキルベースの知識モジュール（25スキル）
+├── skills/               # スキルベースの知識モジュール（21スキル）
 ├── agents/               # 専門AIエージェント
 │   ├── analyzers/        # アーキテクチャ分析
 │   ├── enhancers/        # コード改善

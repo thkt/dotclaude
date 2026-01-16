@@ -18,7 +18,7 @@ Generate spec.md with implementation-ready details.
 
 Generate spec from SOW using template (ID format: FR-001, T-001, NFR-001).
 
-Template: [@../../templates/spec/template.md](../../templates/spec/template.md)
+Template: [@../templates/spec/template.md](../templates/spec/template.md)
 
 Traceability: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
 
