@@ -7,16 +7,14 @@ user-invocable: false
 
 # Frontend Patterns
 
-Component design patterns for maintainable frontend architecture.
-
 ## Core Patterns
 
-| Pattern                  | Concept                   | When to Use             |
-| ------------------------ | ------------------------- | ----------------------- |
-| Container/Presentational | Separate logic from UI    | Data fetching + display |
-| Custom Hooks             | Reusable stateful logic   | Shared behavior         |
-| Composition              | Build complex from simple | Flexible components     |
-| State Management         | Organize app data         | Local → Shared → Global |
+| Pattern                  | When to Use             |
+| ------------------------ | ----------------------- |
+| Container/Presentational | Data fetching + display |
+| Custom Hooks             | Shared behavior         |
+| Composition              | Flexible components     |
+| State Management         | Local → Shared → Global |
 
 ## Container/Presentational
 
@@ -27,15 +25,7 @@ Component design patterns for maintainable frontend architecture.
 | Handles events    | Calls callback props    |
 | No styling        | All styling lives here  |
 
-## Hooks Guidelines (React)
-
-| Hook        | Use For              | Pitfall                |
-| ----------- | -------------------- | ---------------------- |
-| useEffect   | Side effects         | Missing dependencies   |
-| useMemo     | Expensive compute    | Premature optimization |
-| useCallback | Stable function refs | Over-memoization       |
-
-## State Management Strategy
+## State Management
 
 | Scope  | Tool          | Example            |
 | ------ | ------------- | ------------------ |
@@ -43,14 +33,12 @@ Component design patterns for maintainable frontend architecture.
 | Shared | Context       | Theme, auth status |
 | Global | Zustand/Redux | App-wide cache     |
 
-## When NOT to Use Patterns
+## When NOT to Use
 
-- Simple one-off components
-- Prototypes (YAGNI)
-- No reuse expected
-
-**Rule**: Add patterns when pain is felt, not anticipated.
+Simple one-off components, prototypes (YAGNI), no reuse expected.
 
 ## References
 
-- [@./references/container-presentational.md] - Detailed guide
+| Topic                  | File                                     |
+| ---------------------- | ---------------------------------------- |
+| Container/Presentation | `references/container-presentational.md` |

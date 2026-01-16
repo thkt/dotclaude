@@ -1,191 +1,72 @@
-# 型ガード - ナローイングと判別可能なUnion
+# Type Guards & Discriminated Unions
 
-## 型ガード
+## Type Guards
 
-型ガードにより、TypeScriptは実行時に型を安全にナローイングできます。
+| Guard Type | Use Case               | Syntax                    |
+| ---------- | ---------------------- | ------------------------- |
+| typeof     | Primitive types        | `typeof x === 'string'`   |
+| instanceof | Class instances        | `x instanceof Error`      |
+| in         | Property existence     | `'radius' in shape`       |
+| Predicate  | Complex type narrowing | `function isX(v): v is X` |
 
-### 型述語関数
+## Type Predicate Pattern
 
 ```typescript
-// Good: 型述語関数
-function isSuccess<T>(response: Response<T>): response is SuccessResponse<T> {
-  return response.success === true
+// Define
+function isSuccess<T>(res: Response<T>): res is SuccessResponse<T> {
+  return res.success === true;
 }
 
-// 使用方法
+// Use
 if (isSuccess(response)) {
-  console.log(response.data) // TypeScriptはこれがSuccessResponseだと知っている
+  console.log(response.data); // TypeScript knows type
 }
 ```
 
-### 一般的な型ガード
+## Discriminated Unions
+
+| Pattern      | Discriminant | Example                          |
+| ------------ | ------------ | -------------------------------- |
+| Action       | `type`       | `{ type: 'INCREMENT', payload }` |
+| API Response | `success`    | `{ success: true, data }`        |
+| Form State   | `status`     | `{ status: 'loading' }`          |
+
+## Exhaustive Check Pattern
 
 ```typescript
-// typeofガード
-function processValue(value: string | number) {
-  if (typeof value === 'string') {
-    return value.toUpperCase() // stringメソッドが利用可能
-  }
-  return value.toFixed(2) // numberメソッドが利用可能
-}
-
-// instanceofガード
-function handleError(error: Error | ValidationError) {
-  if (error instanceof ValidationError) {
-    return error.fields // ValidationErrorプロパティが利用可能
-  }
-  return error.message
-}
-
-// 'in'演算子ガード
-function getArea(shape: Circle | Rectangle) {
-  if ('radius' in shape) {
-    return Math.PI * shape.radius ** 2
-  }
-  return shape.width * shape.height
+switch (action.type) {
+  case "INCREMENT":
+    return state + action.payload;
+  case "DECREMENT":
+    return state - action.payload;
+  default:
+    const _exhaustive: never = action; // Compile error if case missed
+    return state;
 }
 ```
 
-### 安全でないアサーションを避ける
+## Generic Patterns
 
-```typescript
-// Bad: 安全でない型アサーション
-if ((response as SuccessResponse).data) {
-  console.log((response as SuccessResponse).data)
-}
+| Pattern    | Use Case                 | Example                          |
+| ---------- | ------------------------ | -------------------------------- |
+| Function   | Preserve input type      | `function first<T>(arr: T[]): T` |
+| Component  | Reusable typed component | `Select<T>({ value: T })`        |
+| Constraint | Require interface        | `<T extends HasId>`              |
 
-// Good: 型述語関数
-if (isSuccess(response)) {
-  console.log(response.data)
-}
-```
+## Anti-Patterns
 
-## 判別可能なUnion
+| Bad                      | Good                      |
+| ------------------------ | ------------------------- |
+| `(x as Type).prop`       | Type guard + `x.prop`     |
+| Manual type checking     | Type predicate function   |
+| Missing exhaustive check | `never` in switch default |
 
-共通のプロパティ（判別子）を使用してUnionメンバーを区別します。
+## Checklist
 
-### 基本パターン
-
-```typescript
-type Action =
-  | { type: 'INCREMENT'; payload: number }
-  | { type: 'DECREMENT'; payload: number }
-  | { type: 'RESET' }
-
-function reducer(state: number, action: Action): number {
-  switch (action.type) {
-    case 'INCREMENT':
-      return state + action.payload // payloadはnumber
-    case 'DECREMENT':
-      return state - action.payload
-    case 'RESET':
-      return 0
-    default:
-      // 網羅的チェック
-      const _exhaustive: never = action
-      return state
-  }
-}
-```
-
-### APIレスポンスパターン
-
-```typescript
-type ApiResponse<T> =
-  | { success: true; data: T }
-  | { success: false; error: string }
-
-function handleResponse<T>(response: ApiResponse<T>): T {
-  if (response.success) {
-    return response.data // TypeScriptはdataが存在することを知っている
-  }
-  throw new Error(response.error) // TypeScriptはerrorが存在することを知っている
-}
-```
-
-### フォーム状態パターン
-
-```typescript
-type FormState =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'success'; data: FormData }
-  | { status: 'error'; error: string }
-
-function renderForm(state: FormState) {
-  switch (state.status) {
-    case 'idle': return <Form />
-    case 'loading': return <Spinner />
-    case 'success': return <SuccessMessage data={state.data} />
-    case 'error': return <ErrorMessage error={state.error} />
-  }
-}
-```
-
-## ジェネリック型
-
-再利用可能で型安全なコンポーネントにジェネリクスを使用します。
-
-### ジェネリック関数
-
-```typescript
-// Good: ジェネリック型は入力型を保持
-function first<T>(arr: T[]): T | undefined {
-  return arr[0]
-}
-
-const num = first([1, 2, 3])     // number | undefined
-const str = first(['a', 'b'])   // string | undefined
-```
-
-### ジェネリックコンポーネント
-
-```typescript
-// Good: ジェネリックReactコンポーネント
-interface SelectProps<T> {
-  value: T
-  options: T[]
-  onChange: (value: T) => void
-  getLabel?: (item: T) => string
-}
-
-function Select<T>({ value, options, onChange, getLabel }: SelectProps<T>) {
-  return (
-    <select
-      value={String(value)}
-      onChange={(e) => {
-        const selected = options.find((opt) => String(opt) === e.target.value)
-        if (selected) onChange(selected)
-      }}
-    >
-      {options.map((option) => (
-        <option key={String(option)} value={String(option)}>
-          {getLabel ? getLabel(option) : String(option)}
-        </option>
-      ))}
-    </select>
-  )
-}
-```
-
-### ジェネリック制約
-
-```typescript
-// Good: 制約付きジェネリック
-interface HasId {
-  id: string | number
-}
-
-function findById<T extends HasId>(items: T[], id: T['id']): T | undefined {
-  return items.find((item) => item.id === id)
-}
-```
-
-## チェックリスト
-
-- [ ] 複雑な型ガードには型述語関数
-- [ ] 関連する型には判別可能なUnion
-- [ ] switch文で`never`を使った網羅的チェック
-- [ ] 安全でない`as`アサーションを避ける
-- [ ] 再利用可能なコンポーネントにジェネリクス
-- [ ] 必要に応じてジェネリック制約
+| Item                                   | Required |
+| -------------------------------------- | -------- |
+| Type predicate for complex guards      | Yes      |
+| Discriminated unions for related types | Yes      |
+| Exhaustive check with `never`          | Yes      |
+| Avoid unsafe `as` assertions           | Yes      |
+| Generics for reusable components       | Optional |

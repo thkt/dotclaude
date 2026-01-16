@@ -2,47 +2,36 @@
 name: formatting-audits
 description: Design document review format with 100-point scoring system for SOW/Spec.
 allowed-tools: [Read, Grep, Glob]
+agent: sow-spec-reviewer
 user-invocable: false
 ---
 
-# Review Format - Design Document Scoring
+# SOW/Spec Scoring (100-point)
 
-100-point scoring for SOW/Spec document quality evaluation.
+## Scoring
 
-## Scoring System
+| Category      | Score | Focus                       |
+| ------------- | ----- | --------------------------- |
+| Accuracy      | 0-25  | ✓/→/? markers, evidence     |
+| Completeness  | 0-25  | All sections, testable AC   |
+| Relevance     | 0-25  | Goals ↔ solutions, no YAGNI |
+| Actionability | 0-25  | Specific steps, feasibility |
 
-| Item          | Score | Focus               | Criteria                      |
-| ------------- | ----- | ------------------- | ----------------------------- |
-| Accuracy      | 0-25  | Facts vs inferences | ✓/→/? markers, evidence paths |
-| Completeness  | 0-25  | Coverage            | Testable criteria, risks      |
-| Relevance     | 0-25  | Alignment           | Goals ↔ solutions, YAGNI      |
-| Actionability | 0-25  | Implementability    | Specific steps, feasibility   |
+## Deductions
 
-## Judgment Criteria
+| Issue                    | Points |
+| ------------------------ | ------ |
+| No confidence marker     | -5     |
+| Missing required section | -10    |
+| AC without test scenario | -5     |
+| Vague action item        | -5     |
+| YAGNI violation          | -5     |
+| Inconsistent AC-FR map   | -10    |
+
+## Thresholds
 
 | Score  | Judgment    | Action                |
 | ------ | ----------- | --------------------- |
 | 90-100 | PASS        | Proceed to next phase |
 | 70-89  | CONDITIONAL | Re-review after fixes |
 | 0-69   | FAIL        | Major revision needed |
-
-## Output Format
-
-```markdown
-## 📋 Review Result
-
-### Total Score: {total}/100 {✅/⚠️/❌}
-
-| Item          | Score | Marker |
-| ------------- | ----- | ------ |
-| Accuracy      | /25   | ✓/→/?  |
-| Completeness  | /25   | ✓/→/?  |
-| Relevance     | /25   | ✓/→/?  |
-| Actionability | /25   | ✓/→/?  |
-
-### Next Action
-
-✅ PASS: /code
-⚠️ CONDITIONAL: Fix and re-review
-❌ FAIL: Re-plan with /think
-```

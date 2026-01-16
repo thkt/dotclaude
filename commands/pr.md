@@ -3,7 +3,6 @@ description: Analyze branch changes and generate comprehensive PR description
 allowed-tools: [Task, Bash]
 model: opus
 argument-hint: "[issue reference or context]"
-dependencies: [pr-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /pr - Pull Request Description Generator
@@ -22,17 +21,25 @@ Analyze all changes in the current branch and generate comprehensive PR descript
 3. Push if needed: `git push -u origin HEAD`
 4. Create PR: `gh pr create --title "..." --body "..."`
 
-## Output
+## Flow: Preview
+
+```
+[Generator YAML] → [Preview] → [Confirm] → [Execute]
+```
+
+## Display Format
+
+### Preview
 
 ```markdown
-## Pull Request
+## 🔀 PR Preview
 
-| Field  | Value           |
-| ------ | --------------- |
-| Title  | [type]: [title] |
-| Base   | main            |
-| Branch | feature/xxx     |
-| Closes | #123            |
+| Field  | Value       |
+| ------ | ----------- |
+| Title  | [title]     |
+| Base   | main        |
+| Branch | feature/xxx |
+| Closes | #123        |
 
 ### Summary
 
@@ -44,8 +51,9 @@ Analyze all changes in the current branch and generate comprehensive PR descript
 | ----------- | ------------ |
 | src/auth.ts | Add OAuth2   |
 | src/user.ts | Update types |
-
-### Test Plan
-
-- [ ] [Test item]
 ```
+
+### Success
+
+**Created PR**: `#<number>` <title>
+<PR URL>

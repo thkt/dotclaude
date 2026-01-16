@@ -2,63 +2,60 @@
 name: silent-failure-reviewer
 description: Detect silent failures, empty catch blocks, unhandled Promise rejections.
 tools: [Read, Grep, Glob, LS, Task]
-model: sonnet
+model: opus
 skills: [reviewing-silent-failures, applying-code-principles]
+context: fork
 ---
 
 # Silent Failure Reviewer
 
 Identify patterns that fail silently.
 
-## Dependencies
+## Generated Content
 
-- [@../../skills/reviewing-silent-failures/SKILL.md] - Detection patterns
-- [@./reviewer-common.md] - Confidence markers
+| Section  | Description                        |
+| -------- | ---------------------------------- |
+| findings | Silent failure patterns with fixes |
+| summary  | Counts by risk level               |
 
-## Patterns
+## Analysis Phases
 
-```typescript
-// Bad: Empty catch
-try {
-  await fetchUserData();
-} catch (e) {
-  /* silent */
-}
+| Phase | Action            | Focus                            |
+| ----- | ----------------- | -------------------------------- |
+| 1     | Catch Block Scan  | Empty catch, console.log only    |
+| 2     | Promise Check     | .then without .catch             |
+| 3     | Async Audit       | Fire-and-forget, unhandled       |
+| 4     | UI Feedback Check | Missing error states, boundaries |
+| 5     | Fallback Analysis | Silent defaults                  |
 
-// Good: Proper handling
-try {
-  await fetchUserData();
-} catch (error) {
-  logger.error("Failed to fetch", { error });
-  setError("Unable to load. Please retry.");
-}
-```
+## Error Handling
 
-```typescript
-// Bad: Unhandled promise
-fetchData().then((data) => setData(data));
-
-// Good: With catch
-fetchData()
-  .then((data) => setData(data))
-  .catch((error) => handleError(error));
-```
+| Error           | Action                     |
+| --------------- | -------------------------- |
+| No code found   | Report "No code to review" |
+| No issues found | Return empty findings      |
 
 ## Output
 
-```markdown
-## Silent Failure Analysis
+Return structured YAML:
 
-| Pattern            | Count |
-| ------------------ | ----- |
-| Empty catch        | X     |
-| Unhandled Promise  | Y     |
-| Missing boundaries | Z     |
-| Fire-and-forget    | N     |
-
-### Critical Issues
-
-| File:Line     | Pattern     | Risk | Fix                  |
-| ------------- | ----------- | ---- | -------------------- |
-| src/api.ts:45 | Empty catch | High | Add logging + notify |
+```yaml
+findings:
+  - agent: silent-failure-reviewer
+    severity: critical|high|medium
+    category: "SF1-SF5"
+    location: "<file>:<line>"
+    evidence: "<code snippet>"
+    reasoning: "<why this fails silently>"
+    fix: "<visible error handling>"
+    confidence: 0.70-1.00
+summary:
+  total_findings: <count>
+  critical: <count>
+  high: <count>
+  by_category:
+    empty_catch: <count>
+    unhandled_promise: <count>
+    missing_boundary: <count>
+  files_reviewed: <count>
 ```

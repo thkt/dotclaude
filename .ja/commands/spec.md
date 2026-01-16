@@ -3,7 +3,6 @@ description: 実装準備の詳細を含むSpecification（spec.md）を生成
 allowed-tools: Read, Write, Glob, Grep, LS
 model: opus
 argument-hint: "[sowパスまたは機能説明]"
-dependencies: [formatting-audits, managing-planning]
 ---
 
 # /spec - 仕様書ジェネレーター

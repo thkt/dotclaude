@@ -7,8 +7,6 @@ context: fork
 
 # Browser Automation
 
-Interactive browser control using claude-in-chrome MCP extension.
-
 ## When to Use
 
 | Use Case              | This Skill | webapp-testing |
@@ -32,32 +30,24 @@ Interactive browser control using claude-in-chrome MCP extension.
 
 ## Workflow
 
-1. **Start**: `tabs_context_mcp` → get tab IDs
-2. **Create/Reuse**: `tabs_create_mcp` or use existing
-3. **Navigate**: `navigate` with URL and tabId
-4. **Interact**: `read_page`, `form_input`, `computer`
-5. **Record**: `gif_creator` for demos
+| Step | Action                                |
+| ---- | ------------------------------------- |
+| 1    | `tabs_context_mcp` → get tab IDs      |
+| 2    | `tabs_create_mcp` or use existing     |
+| 3    | `navigate` with URL and tabId         |
+| 4    | `read_page`, `form_input`, `computer` |
+| 5    | `gif_creator` for demos               |
 
-## Common Patterns
+## Patterns
 
-### Form Filling
-
-```text
-1. read_page with filter: "interactive"
-2. Identify input ref_id
-3. form_input with ref and value
-```
-
-### GIF Recording
-
-```text
-1. gif_creator action: "start_recording"
-2. Perform actions with screenshots
-3. gif_creator action: "stop_recording"
-4. gif_creator action: "export"
-```
+| Pattern      | Steps                                                          |
+| ------------ | -------------------------------------------------------------- |
+| Form Filling | read_page (filter: interactive) → identify ref_id → form_input |
+| GIF Record   | start_recording → actions + screenshots → stop → export        |
 
 ## References
 
-- [@./references/claude-in-chrome-tools.md] - Complete tool docs
-- [@./references/common-patterns.md] - Reusable patterns
+| Topic    | File                                   |
+| -------- | -------------------------------------- |
+| Tools    | `references/claude-in-chrome-tools.md` |
+| Patterns | `references/common-patterns.md`        |

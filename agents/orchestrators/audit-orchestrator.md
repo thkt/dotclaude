@@ -1,8 +1,9 @@
 ---
 name: audit-orchestrator
 description: Coordinate specialized review agents and synthesize findings.
-tools: [Task, Grep, Glob, LS, Read]
+tools: [Read, Grep, Glob, LS, Task]
 model: opus
+context: fork
 ---
 
 # Review Orchestrator
@@ -20,7 +21,7 @@ Coordinate specialized review agents for comprehensive code reviews.
 | Production  | security, performance, accessibility                        | 65s     | parallel    |
 | Design      | type-design-analyzer, code-simplifier (pr-review-toolkit)   | 60s     | parallel    |
 | Conditional | document (only if \*.md present)                            | 45s     | conditional |
-| Integration | finding-integrator (final)                                  | 120s    | sequential  |
+| Integration | audit-integrator (final)                                    | 120s    | sequential  |
 
 ## Agent Locations
 
@@ -28,29 +29,18 @@ Coordinate specialized review agents for comprehensive code reviews.
 | ----------------------------------- | ---------------------------------------------------------- |
 | `agents/reviewers/`                 | structure, readability, type-safety, design-pattern, etc.  |
 | `agents/enhancers/`                 | progressive-enhancer                                       |
-| `agents/integrators/`               | finding-integrator                                         |
+| `agents/integrators/`               | audit-integrator                                           |
 | `plugins/pr-review-toolkit/agents/` | silent-failure-hunter, comment-analyzer, type-design, etc. |
 
-## Confidence & Filtering
+Integration logic (translation false-positive filtering, dedup by file:line:category, priority scoring) handled by audit-integrator.
 
-| Marker | Confidence | Action            |
-| ------ | ---------- | ----------------- |
-| ✓      | ≥95%       | Include           |
-| →      | 70-94%     | Include with note |
-| ?      | <70%       | Exclude           |
+## Error Handling
 
-- Deduplicate by `file:line:category`, keep highest severity
-- Priority Score = Severity Weight × Category Multiplier
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| Agent timeout | Continue with completed    |
+| No files      | Report "No files to audit" |
 
-## Severity Weighting
+## Output
 
-| Severity | Weight | Category        | Multiplier |
-| -------- | ------ | --------------- | ---------- |
-| critical | 1000   | security        | 10         |
-| high     | 100    | accessibility   | 8          |
-| medium   | 10     | performance     | 6          |
-| low      | 1      | maintainability | 3          |
-
-## Finding Structure
-
-Every finding requires: agent, severity, file:line, evidence, reasoning, confidence (0.0-1.0)
+Pass through `audit-integrator` YAML output directly to calling command.

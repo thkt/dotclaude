@@ -1,26 +1,12 @@
 ---
 name: generating-tdd-tests
-description: RGRCサイクルとBaby Steps方法論を用いたTDD。
+description: TDD with RGRC cycle and Baby Steps methodology.
 allowed-tools: [Read, Write, Edit, Grep, Glob, Task]
 user-invocable: false
 context: fork
 ---
 
 # TDDテスト生成
-
-RGRCサイクル、Baby Steps、テスト設計を組み合わせた体系的なTDD。
-
-## Baby Steps - 2分サイクル
-
-| ステップ | 時間 | アクション           |
-| -------- | ---- | -------------------- |
-| 1        | 30秒 | 失敗するテストを作成 |
-| 2        | 1分  | パスさせる           |
-| 3        | 10秒 | テスト実行           |
-| 4        | 30秒 | 小さなリファクタ     |
-| 5        | 20秒 | グリーンならコミット |
-
-**理由**: バグは常に最後の2分の変更にある。
 
 ## RGRCサイクル
 
@@ -31,7 +17,11 @@ RGRCサイクル、Baby Steps、テスト設計を組み合わせた体系的な
 | Refactor | クリーンコード | テストをグリーンに保つ      |
 | Commit   | 状態を保存     | 全チェックをパス            |
 
-## テスト設計技法
+## Baby Steps (2分サイクル)
+
+30秒: 失敗テスト作成 → 1分: パス → 10秒: テスト実行 → 30秒: 小さなリファクタ → 20秒: グリーンならコミット
+
+## テスト設計
 
 | 技法     | 用途                     | 例                     |
 | -------- | ------------------------ | ---------------------- |
@@ -39,45 +29,33 @@ RGRCサイクル、Baby Steps、テスト設計を組み合わせた体系的な
 | 境界値   | 境界をテスト             | 17, 18, 120, 121       |
 | 決定表   | 複数条件ロジック         | isLoggedIn × isPremium |
 
-## カバレッジ目標
+## カバレッジ
 
 | レベル | 目標 | フォーカス       |
 | ------ | ---- | ---------------- |
 | C0     | 90%  | すべての行を実行 |
 | C1     | 80%  | すべてのブランチ |
 
-## テスト優先度
+## 命名
 
-### 必須テスト
+| レベル | パターン                                |
+| ------ | --------------------------------------- |
+| Suite  | `describe("[対象]", ...)`               |
+| Group  | `describe("[メソッド]", ...)`           |
+| Test   | `it("when [条件], should [期待]", ...)` |
 
-- ビジネスロジック、Service/Repositoryレイヤー、クリティカルパス、エッジケース
+## フレームワーク検出
 
-### スキップ
-
-- シンプルなアクセサ、UIスタイリング、外部ライブラリ検証、設定読み込み
-
-## AAAパターン
-
-```typescript
-test("説明的な名前", () => {
-  // Arrange - セットアップ
-  // Act - 実行
-  // Assert - 検証
-});
-```
-
-## 命名規則
-
-```typescript
-describe("[対象]", () => {
-  describe("[メソッド]", () => {
-    it("when [条件], should [期待]", () => {});
-  });
-});
-```
+| 条件                    | フレームワーク |
+| ----------------------- | -------------- |
+| `vitest` が deps にある | Vitest         |
+| `jest` が deps にある   | Jest           |
+| `bun` がランタイム      | Bun test       |
+| フレームワークなし      | Vitest         |
 
 ## 参照
 
-- [@./references/test-design.md] - テスト設計技法
-- [@./references/feature-driven.md] - 機能駆動TDD
-- [@./references/bug-driven.md] - バグ駆動TDD
+| トピック | ファイル                       |
+| -------- | ------------------------------ |
+| 機能駆動 | `references/feature-driven.md` |
+| バグ駆動 | `references/bug-driven.md`     |

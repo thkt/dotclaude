@@ -10,21 +10,15 @@ user-invocable: false
 
 # Progressive Enhancement
 
-Prefer CSS solutions over JavaScript. "The Best Code is No Code At All."
+## Priority
 
-## Detection Items
+| Priority | Approach | Examples                           |
+| -------- | -------- | ---------------------------------- |
+| 1        | HTML     | Semantic elements, native inputs   |
+| 2        | CSS      | Grid, Flexbox, :has(), transitions |
+| 3        | JS       | Only when truly necessary          |
 
-| Category       | Targets                                  |
-| -------------- | ---------------------------------------- |
-| Layout         | JS-based positioning, sizing, spacing    |
-| Animation      | JS transitions, timers for animation     |
-| Visibility     | JS show/hide, toggle, modal control      |
-| Responsiveness | JS media query handling, resize events   |
-| State Styling  | JS class manipulation for visual changes |
-| Scrolling      | JS scroll handling, infinite scroll      |
-| Form Styling   | JS validation styling, input formatting  |
-
-## Detection Patterns
+## Detection
 
 | JS Pattern                   | CSS Alternative                    |
 | ---------------------------- | ---------------------------------- |
@@ -35,20 +29,3 @@ Prefer CSS solutions over JavaScript. "The Best Code is No Code At All."
 | `classList.toggle`           | CSS `:checked`, `:target`          |
 | `scrollTo`, `scrollIntoView` | CSS `scroll-behavior: smooth`      |
 | `matchMedia`                 | CSS `@media`, `@container`         |
-
-## Quality Criteria
-
-| Criteria                           | Target |
-| ---------------------------------- | ------ |
-| JS used only when CSS insufficient | ✓      |
-| CSS alternatives documented        | ✓      |
-| Performance impact considered      | ✓      |
-| Browser support verified           | ✓      |
-
-## Priority Order
-
-| Priority | Solution | When to Use                        |
-| -------- | -------- | ---------------------------------- |
-| 1        | HTML     | Semantic elements, native inputs   |
-| 2        | CSS      | Grid, Flexbox, :has(), transitions |
-| 3        | JS       | Only when truly necessary          |

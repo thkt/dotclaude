@@ -3,7 +3,6 @@ description: Git diffを分析し、Conventional Commits形式のメッセージ
 allowed-tools: [Task, AskUserQuestion, Bash]
 model: opus
 argument-hint: "[コンテキストまたはIssue参照]"
-dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /commit - Gitコミットメッセージ生成
@@ -22,9 +21,15 @@ dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
 3. ユーザーに確認
 4. コミット実行
 
+## フロー: Preview
+
+```text
+[Generator YAML] → [プレビュー] → [確認] → [実行]
+```
+
 ## 表示形式
 
-Agent YAML出力を読みやすいプレビューに変換:
+### プレビュー
 
 ```markdown
 ## 📝 コミットプレビュー
@@ -36,6 +41,6 @@ Agent YAML出力を読みやすいプレビューに変換:
 `<footer>`
 ```
 
-## 出力
+### 成功
 
 **コミット完了**: `[short-hash]` <type>(<scope>): <description>

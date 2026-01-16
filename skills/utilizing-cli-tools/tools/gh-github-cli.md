@@ -38,14 +38,14 @@ gh pr create --reviewer username1,username2
 
 ### View & Manage PRs
 
-| Command | Purpose |
-| --- | --- |
-| `gh pr list` | List open PRs |
-| `gh pr view [number]` | View PR details |
-| `gh pr status` | Status of your PRs |
-| `gh pr diff [number]` | View PR diff |
-| `gh pr checks [number]` | View CI status |
-| `gh pr merge [number]` | Merge PR |
+| Command                 | Purpose            |
+| ----------------------- | ------------------ |
+| `gh pr list`            | List open PRs      |
+| `gh pr view [number]`   | View PR details    |
+| `gh pr status`          | Status of your PRs |
+| `gh pr diff [number]`   | View PR diff       |
+| `gh pr checks [number]` | View CI status     |
+| `gh pr merge [number]`  | Merge PR           |
 
 ### Review PRs
 
@@ -68,29 +68,29 @@ gh issue create --title "Feature request" --label "enhancement"
 
 ### View & Manage Issues
 
-| Command | Purpose |
-| --- | --- |
-| `gh issue list` | List open issues |
-| `gh issue view [number]` | View issue details |
-| `gh issue status` | Your assigned issues |
-| `gh issue close [number]` | Close issue |
+| Command                   | Purpose              |
+| ------------------------- | -------------------- |
+| `gh issue list`           | List open issues     |
+| `gh issue view [number]`  | View issue details   |
+| `gh issue status`         | Your assigned issues |
+| `gh issue close [number]` | Close issue          |
 
 ## Repository
 
-| Command | Purpose |
-| --- | --- |
-| `gh repo view` | View current repo |
-| `gh repo clone owner/repo` | Clone repository |
-| `gh repo fork` | Fork repository |
+| Command                    | Purpose           |
+| -------------------------- | ----------------- |
+| `gh repo view`             | View current repo |
+| `gh repo clone owner/repo` | Clone repository  |
+| `gh repo fork`             | Fork repository   |
 
 ## Workflows & Actions
 
-| Command | Purpose |
-| --- | --- |
-| `gh workflow list` | List workflows |
-| `gh run list` | List workflow runs |
-| `gh run view [run-id]` | View run details |
-| `gh run watch` | Watch running workflow |
+| Command                | Purpose                |
+| ---------------------- | ---------------------- |
+| `gh workflow list`     | List workflows         |
+| `gh run list`          | List workflow runs     |
+| `gh run view [run-id]` | View run details       |
+| `gh run watch`         | Watch running workflow |
 
 ## API Access
 
@@ -126,4 +126,3 @@ gh pr create --title "fix: resolve login bug" --body "Fixes #123"
 
 - `/pr` uses `gh pr create` with HEREDOC body
 - `/issue` uses `gh issue create` for structured issues
-- `/rabbit` uses gh for PR context

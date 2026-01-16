@@ -3,7 +3,6 @@ description: Orchestrate SOW and Spec generation for comprehensive planning
 allowed-tools: SlashCommand, Read, Write, Glob, Task
 model: opus
 argument-hint: "[task description]"
-dependencies: [sow-spec-reviewer, managing-planning]
 ---
 
 # /think - Planning Orchestrator

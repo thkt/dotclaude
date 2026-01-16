@@ -3,7 +3,6 @@ description: Generate documentation and Playwright tests through guided browser 
 allowed-tools: Read, Write, Glob, Task, mcp__claude-in-chrome__*, mcp__playwright__*
 model: opus
 argument-hint: "[test-name]"
-dependencies: [automating-browser, managing-testing]
 ---
 
 # /e2e - E2E Test Generation

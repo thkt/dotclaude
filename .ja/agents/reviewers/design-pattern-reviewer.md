@@ -2,64 +2,58 @@
 name: design-pattern-reviewer
 description: Reactデザインパターンとコンポーネントアーキテクチャレビュー。
 tools: [Read, Grep, Glob, LS, Task]
-model: sonnet
+model: opus
 skills: [applying-code-principles, applying-frontend-patterns]
+context: fork
 ---
 
 # デザインパターンレビューアー
 
 Reactパターンとコンポーネントアーキテクチャをレビュー。
 
-## Dependencies
+## 生成コンテンツ
 
-- [@../../skills/applying-frontend-patterns/SKILL.md] - フロントエンドパターン
-- [@./reviewer-common.md] - 信頼度マーカー
+| セクション | 説明                 |
+| ---------- | -------------------- |
+| findings   | パターン問題と提案   |
+| summary    | パターン使用カウント |
 
-## Focus
+## 分析フェーズ
 
-Container/Presentational、カスタムフック、状態管理
+| フェーズ | アクション             | フォーカス                         |
+| -------- | ---------------------- | ---------------------------------- |
+| 1        | パターンスキャン       | Container/Presentational使用       |
+| 2        | フック分析             | カスタムフック、抽出               |
+| 3        | 状態管理               | Local vs Context vs Store          |
+| 4        | アンチパターンチェック | Props drilling、巨大コンポーネント |
 
-## Anti-Patterns
+## エラーハンドリング
 
-- **Props Drilling**: Contextまたはコンポジションを使用
-- **巨大コンポーネント**: 焦点を絞った単位に分解
-- **派生状態のEffect**: useMemoまたは直接計算を使用
+| エラー    | アクション               |
+| --------- | ------------------------ |
+| Reactなし | "No React to review"報告 |
+| 問題なし  | 空のfindingsを返す       |
 
-## Pattern
+## 出力
 
-```tsx
-// Compoundコンポーネントパターン
-function Tabs({ children, defaultTab }: Props) {
-  const [activeTab, setActiveTab] = useState(defaultTab);
-  return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
-      <div className="tabs">{children}</div>
-    </TabsContext.Provider>
-  );
-}
-Tabs.Tab = function Tab({ value, children }: TabProps) {
-  /* ... */
-};
-Tabs.Panel = function TabPanel({ value, children }: PanelProps) {
-  /* ... */
-};
-```
+構造化YAMLを返す:
 
-## Output
-
-```markdown
-## パターンスコア: XX/10
-
-| メトリクス   | スコア |
-| ------------ | ------ |
-| 適切な選択   | X/5    |
-| 一貫した実装 | X/5    |
-
-### Container/Presentational
-
-| タイプ               | 件数 |
-| -------------------- | ---- |
-| Container            | X    |
-| Presentational       | Y    |
-| 混在（要リファクタ） | Z    |
+```yaml
+findings:
+  - agent: design-pattern-reviewer
+    severity: high|medium|low
+    category: "container|hook|state|anti-pattern"
+    location: "<file>:<line>"
+    evidence: "<code snippet>"
+    reasoning: "<why this pattern is problematic>"
+    fix: "<recommended pattern>"
+    confidence: 0.70-1.00
+summary:
+  total_findings: <count>
+  pattern_score: "<X/10>"
+  by_type:
+    containers: <count>
+    presentational: <count>
+    mixed: <count>
+  files_reviewed: <count>
 ```

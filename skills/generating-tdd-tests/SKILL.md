@@ -8,20 +8,6 @@ context: fork
 
 # TDD Test Generation
 
-Systematic TDD combining RGRC cycle, Baby Steps, and test design.
-
-## Baby Steps - 2-Minute Cycle
-
-| Step | Time | Action             |
-| ---- | ---- | ------------------ |
-| 1    | 30s  | Write failing test |
-| 2    | 1min | Make it pass       |
-| 3    | 10s  | Run tests          |
-| 4    | 30s  | Tiny refactor      |
-| 5    | 20s  | Commit if green    |
-
-**Why**: Bug is always in last 2-minute change.
-
 ## RGRC Cycle
 
 | Phase    | Goal         | Rule                     |
@@ -31,7 +17,11 @@ Systematic TDD combining RGRC cycle, Baby Steps, and test design.
 | Refactor | Clean code   | Keep tests green         |
 | Commit   | Save state   | All checks pass          |
 
-## Test Design Techniques
+## Baby Steps (2-min cycle)
+
+30s: Write failing test → 1min: Make pass → 10s: Run tests → 30s: Tiny refactor → 20s: Commit if green
+
+## Test Design
 
 | Technique                | Use For               | Example                |
 | ------------------------ | --------------------- | ---------------------- |
@@ -39,45 +29,33 @@ Systematic TDD combining RGRC cycle, Baby Steps, and test design.
 | Boundary Value           | Test edges            | 17, 18, 120, 121       |
 | Decision Table           | Multi-condition logic | isLoggedIn × isPremium |
 
-## Coverage Goals
+## Coverage
 
 | Level | Target | Focus              |
 | ----- | ------ | ------------------ |
 | C0    | 90%    | All lines executed |
 | C1    | 80%    | All branches taken |
 
-## Test Priority
+## Naming
 
-### Must Test
+| Level | Pattern                                          |
+| ----- | ------------------------------------------------ |
+| Suite | `describe("[Target]", ...)`                      |
+| Group | `describe("[Method]", ...)`                      |
+| Test  | `it("when [condition], should [expected]", ...)` |
 
-- Business Logic, Service/Repository Layer, Critical Paths, Edge Cases
+## Framework Detection
 
-### Skip
-
-- Simple accessors, UI styling, External library verification, Config loading
-
-## AAA Pattern
-
-```typescript
-test("descriptive name", () => {
-  // Arrange - Setup
-  // Act - Execute
-  // Assert - Verify
-});
-```
-
-## Naming Convention
-
-```typescript
-describe("[Target]", () => {
-  describe("[Method]", () => {
-    it("when [condition], should [expected]", () => {});
-  });
-});
-```
+| Condition          | Framework |
+| ------------------ | --------- |
+| `vitest` in deps   | Vitest    |
+| `jest` in deps     | Jest      |
+| `bun` as runtime   | Bun test  |
+| No framework found | Vitest    |
 
 ## References
 
-- [@./references/test-design.md] - Test design techniques
-- [@./references/feature-driven.md] - Feature-driven TDD
-- [@./references/bug-driven.md] - Bug-driven TDD
+| Topic          | File                           |
+| -------------- | ------------------------------ |
+| Feature-driven | `references/feature-driven.md` |
+| Bug-driven     | `references/bug-driven.md`     |

@@ -1,73 +1,53 @@
-# APIテンプレート
+# API Template
 
-## 構造
+## Structure
 
 ```markdown
-# <project_name> - API仕様
+# {project_name} - API Specification
 
-## ベースURL
+## Base URL
 
-\`<base_url>\`
+\`{base_url}\`
 
-## 認証
+## Authentication
 
-| 方式   | ヘッダー | 説明          |
-| ------ | -------- | ------------- |
-| <type> | <header> | <description> |
+| Method                    | Header                    | Description                    |
+| ------------------------- | ------------------------- | ------------------------------ |
+| {authentication[].method} | {authentication[].header} | {authentication[].description} |
 
-## エンドポイント
+## Endpoints
 
-### <resource>
+### {endpoints[].resource}
 
-#### <METHOD> <path>
+#### {endpoints[].method} {endpoints[].path}
 
-**説明**: <description>
+**Description**: {endpoints[].description}
 
-**リクエスト**:
+**Request**:
 \`\`\`json
-{
-"<field>": "<type>"
-}
+{endpoints[].request.fields}
 \`\`\`
 
-**レスポンス**:
+**Response**:
 \`\`\`json
-{
-"<field>": "<type>"
-}
+{endpoints[].response.fields}
 \`\`\`
 
-**ステータスコード**:
-| コード | 説明 |
-|-------|------|
-| 200 | 成功 |
-| 400 | 不正なリクエスト |
-| 401 | 認証エラー |
+**Status Codes**:
 
-## エラー形式
+| Code                              | Description                              |
+| --------------------------------- | ---------------------------------------- |
+| {endpoints[].status_codes[].code} | {endpoints[].status_codes[].description} |
+
+## Error Format
 
 \`\`\`json
-{
-"error": {
-"code": "<error_code>",
-"message": "<message>"
-}
-}
+{error_format.structure}
 \`\`\`
 
-## 型定義
+## Types
 
-| 型名        | フィールド | 説明          |
-| ----------- | ---------- | ------------- |
-| <type_name> | <fields>   | <description> |
+| Type           | Fields           | Description           |
+| -------------- | ---------------- | --------------------- |
+| {types[].name} | {types[].fields} | {types[].description} |
 ```
-
-## ガイドライン
-
-| セクション     | 説明                                    |
-| -------------- | --------------------------------------- |
-| ベースURL      | APIのベースエンドポイント               |
-| 認証           | 認証方式とヘッダー                      |
-| エンドポイント | リソース別、リクエスト/レスポンス例付き |
-| エラー形式     | 標準エラーレスポンス構造                |
-| 型定義         | 共有データ型とスキーマ                  |

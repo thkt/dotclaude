@@ -2,49 +2,59 @@
 name: readability-reviewer
 description: Frontend code readability review with TypeScript/React considerations. Miller's Law (7±2).
 tools: [Read, Grep, Glob, LS, Task]
-model: haiku
+model: opus
 skills: [reviewing-readability, applying-code-principles]
+context: fork
 ---
 
 # Readability Reviewer
 
 Can a new team member understand this in < 1 minute?
 
-## Dependencies
+## Generated Content
 
-- [@../../skills/reviewing-readability/SKILL.md] - Readable Code principles
-- [@./reviewer-common.md] - Confidence markers
+| Section  | Description                   |
+| -------- | ----------------------------- |
+| findings | Readability issues with fixes |
+| summary  | Counts by category            |
 
-## Focus
+## Analysis Phases
 
-Component naming, TypeScript readability, Hook usage, State naming, Props interface
+| Phase | Action           | Focus                       |
+| ----- | ---------------- | --------------------------- |
+| 1     | Naming Scan      | Variables, functions, types |
+| 2     | Complexity Check | Nesting, function length    |
+| 3     | Comment Audit    | Why vs What, outdated TODOs |
+| 4     | AI Smell Check   | Over-abstraction, patterns  |
+| 5     | Miller's Law     | 7±2 violations              |
 
-## Pattern
+## Error Handling
 
-```tsx
-// Bad
-const [ld, setLd] = useState(false);
-
-// Good
-const [isLoading, setIsLoading] = useState(false);
-```
+| Error           | Action                     |
+| --------------- | -------------------------- |
+| No code found   | Report "No code to review" |
+| No issues found | Return empty findings      |
 
 ## Output
 
-```markdown
-## Readability Score
+Return structured YAML:
 
-| Area           | Score |
-| -------------- | ----- |
-| General        | X/10  |
-| TypeScript     | X/10  |
-| React Patterns | X/10  |
-
-### Issues
-
-| Type       | Count | Examples |
-| ---------- | ----- | -------- |
-| Variables  | X     | [list]   |
-| Components | Y     | [list]   |
-| Types      | Z     | [list]   |
+```yaml
+findings:
+  - agent: readability-reviewer
+    severity: high|medium|low
+    category: "RD1-RD5"
+    location: "<file>:<line>"
+    evidence: "<code snippet>"
+    reasoning: "<why this hurts readability>"
+    fix: "<specific improvement>"
+    confidence: 0.70-1.00
+summary:
+  total_findings: <count>
+  by_category:
+    naming: <count>
+    complexity: <count>
+    comments: <count>
+    ai_smells: <count>
+  files_reviewed: <count>
 ```

@@ -1,7 +1,7 @@
 ---
 name: commit-generator
 description: Analyze staged Git changes and generate Conventional Commits format messages.
-tools: Bash
+tools: [Bash]
 model: opus
 skills: [utilizing-cli-tools]
 context: fork
@@ -35,6 +35,13 @@ Default to `feat` if unclear.
 | ------- | ---------------------------------------------------- |
 | Subject | ≤72 chars, imperative, lowercase, no period          |
 | Footer  | `BREAKING CHANGE:`, `Closes #123`, `Co-authored-by:` |
+
+## Error Handling
+
+| Error           | Action                  |
+| --------------- | ----------------------- |
+| No staged files | Report "Nothing staged" |
+| Empty diff      | Return minimal message  |
 
 ## Output
 

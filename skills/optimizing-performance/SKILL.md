@@ -8,19 +8,9 @@ user-invocable: false
 
 # Performance Optimization
 
-Data-driven frontend optimization. "Measure before optimizing" - Knuth
+## Core Web Vitals
 
-## Section-Based Loading
-
-| Section    | File                                | Focus          |
-| ---------- | ----------------------------------- | -------------- |
-| Web Vitals | `references/web-vitals.md`          | LCP, FID, CLS  |
-| React      | `references/react-optimization.md`  | memo, useMemo  |
-| Bundle     | `references/bundle-optimization.md` | Code splitting |
-
-## Core Web Vitals Targets
-
-| Metric | Target | What It Measures         |
+| Metric | Target | Measure                  |
 | ------ | ------ | ------------------------ |
 | LCP    | <2.5s  | Largest Contentful Paint |
 | FID    | <100ms | First Input Delay        |
@@ -30,13 +20,13 @@ Data-driven frontend optimization. "Measure before optimizing" - Knuth
 
 1. Measure (Lighthouse/DevTools)
 2. Identify bottleneck
-3. Prioritize (Impact vs Effort)
-4. One change at a time
-5. Re-measure
+3. One change at a time
+4. Re-measure
 
-## Priority Order
+## References
 
-1. **Measure First** - Don't optimize blindly
-2. **User-Centric** - Focus on Web Vitals
-3. **Progressive** - Optimize based on data
-4. **Avoid Premature** - Only problem areas
+| Topic  | File                                |
+| ------ | ----------------------------------- |
+| Vitals | `references/web-vitals.md`          |
+| React  | `references/react-optimization.md`  |
+| Bundle | `references/bundle-optimization.md` |

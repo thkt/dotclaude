@@ -1,62 +1,50 @@
-# アーキテクチャテンプレート
+# Architecture Template
 
-## 構造
+## Structure
 
 ```markdown
-# <project_name> - アーキテクチャ概要
+# {project_name} - Architecture Overview
 
-## 技術スタック
+## Technology Stack
 
-| カテゴリ       | 技術        |
-| -------------- | ----------- |
-| 言語           | <language>  |
-| フレームワーク | <framework> |
-| データベース   | <database>  |
+| Category  | Technology             |
+| --------- | ---------------------- |
+| Language  | {tech_stack.language}  |
+| Framework | {tech_stack.framework} |
+| Database  | {tech_stack.database}  |
 
-## ディレクトリ構造
+## Directory Structure
 
 \`\`\`
-<tree出力>
+{directory_structure}
 \`\`\`
 
-## モジュール構成
+## Module Structure
 
 \`\`\`mermaid
-graph TD
-A[Module A] --> B[Module B]
-A --> C[Module C]
+{mermaid_diagram}
 \`\`\`
 
-## 主要コンポーネント
+## Key Components
 
-| コンポーネント | パス   | 説明          |
-| -------------- | ------ | ------------- |
-| <name>         | <path> | <description> |
+| Component               | Path                    | Description                    |
+| ----------------------- | ----------------------- | ------------------------------ |
+| {key_components[].name} | {key_components[].path} | {key_components[].description} |
 
-## 依存関係
+## Dependencies
 
-### 外部
+### External
 
-- <package>: <purpose>
+- {dependencies.external[].name}: {dependencies.external[].purpose}
 
-### 内部
+### Internal
 
-- <module> → <module>: <relationship>
+- {dependencies.internal[].from} → {dependencies.internal[].to}: {dependencies.internal[].relationship}
 
-## 統計
+## Statistics
 
-| 項目       | 値      |
-| ---------- | ------- |
-| ファイル数 | <count> |
-| 行数       | <count> |
+| Metric | Value              |
+| ------ | ------------------ |
+| Files  | {statistics.files} |
+| Lines  | {statistics.lines} |
 ```
-
-## ガイドライン
-
-| セクション         | 説明                               |
-| ------------------ | ---------------------------------- |
-| 技術スタック       | 使用言語、フレームワーク、DB       |
-| ディレクトリ構造   | treeコマンドによるレイアウト       |
-| モジュール構成     | 関係を示すMermaid図                |
-| 主要コンポーネント | 重要なクラス・関数                 |
-| 依存関係           | 外部パッケージと内部モジュール関係 |

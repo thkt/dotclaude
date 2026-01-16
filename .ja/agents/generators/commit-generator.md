@@ -1,7 +1,7 @@
 ---
 name: commit-generator
 description: ステージされたGit変更を分析し、Conventional Commits形式メッセージを生成。
-tools: Bash
+tools: [Bash]
 model: opus
 skills: [utilizing-cli-tools]
 context: fork
@@ -35,6 +35,13 @@ diffの内容からタイプを推測:
 | -------- | ---------------------------------------------------- |
 | 件名     | ≤72文字、命令形、小文字、ピリオドなし                |
 | フッター | `BREAKING CHANGE:`, `Closes #123`, `Co-authored-by:` |
+
+## エラーハンドリング
+
+| エラー       | アクション               |
+| ------------ | ------------------------ |
+| ステージなし | "ステージなし"を報告     |
+| 空のdiff     | 最小限のメッセージを返す |
 
 ## 出力
 

@@ -1,9 +1,8 @@
 ---
 description: AI生成スロップの除去とコード簡素化による明確性・保守性の向上
-allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, MultiEdit, Grep, Glob
+allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob, Task
 model: opus
 argument-hint: "[対象スコープ]"
-dependencies: [orchestrating-workflows, reviewing-readability]
 ---
 
 # /polish - コード簡素化 & AIスロップ除去
@@ -15,9 +14,15 @@ dependencies: [orchestrating-workflows, reviewing-readability]
 - 引数: 対象スコープ（任意）
 - 未指定時: `git diff main...HEAD`を分析
 
+## Plugins
+
+| 名前            | 目的                               |
+| --------------- | ---------------------------------- |
+| code-simplifier | AIスロップ除去 (pr-review-toolkit) |
+
 ## 実行
 
-diffをAIパターンで分析、修正適用、サマリー報告。
+`code-simplifier`エージェントに委譲してリファインメント。
 
 ### 除去対象
 

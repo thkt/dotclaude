@@ -1,14 +1,12 @@
 ---
 name: integrating-storybook
 description: >
-  spec.mdとのStorybook統合。Component APIからStoriesを自動生成。
-  トリガー: storybook, stories, component api, props, argTypes, variants, csf3.
+  Storybook integration with spec.md. Auto-generates Stories from Component API.
+  Triggers: storybook, stories, component api, props, argTypes, variants, csf3.
 allowed-tools: [Read, Write, Glob, Grep]
 ---
 
 # Storybook統合
-
-spec.mdのComponent API仕様からStoriesスケルトンを自動生成。
 
 ## コアコンセプト
 
@@ -18,9 +16,9 @@ spec.mdのComponent API仕様からStoriesスケルトンを自動生成。
 | CSF3          | Component Story Format 3 + autodocs        |
 | 自動生成      | `/code`がspec.mdからStoriesを生成          |
 
-## Component APIセクション（spec.md内）
+## Component API場所
 
-場所: `## 4. UI仕様`内の`### 4.x Component API: [ComponentName]`
+セクション: `## 4. UI仕様`内の`### 4.x Component API: [ComponentName]`
 
 内容: Propsインターフェース（TypeScript）、Variants、States、使用例
 
@@ -31,7 +29,7 @@ spec.mdのComponent API仕様からStoriesスケルトンを自動生成。
 | `/think "Add Button"` | spec.mdにComponent APIセクションを追加 |
 | `/code`               | specから`Button.stories.tsx`を生成     |
 
-## 既存Storiesとの統合
+## 既存Storiesの処理
 
 | オプション | アクション              |
 | ---------- | ----------------------- |
@@ -46,5 +44,7 @@ component, ui, button, form, modal, dialog, card, list, table
 
 ## 参照
 
-- [@./references/component-api-template.md] - Props/Variantsテンプレート
-- [@./references/csf3-patterns.md] - CSF3パターン
+| トピック      | ファイル                               |
+| ------------- | -------------------------------------- |
+| Component API | `references/component-api-template.md` |
+| CSF3パターン  | `references/csf3-patterns.md`          |

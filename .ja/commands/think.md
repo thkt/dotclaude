@@ -3,7 +3,6 @@ description: 包括的な計画のためにSOWとSpec生成をオーケストレ
 allowed-tools: SlashCommand, Read, Write, Glob, Task
 model: opus
 argument-hint: "[タスク説明]"
-dependencies: [sow-spec-reviewer, managing-planning]
 ---
 
 # /think - 計画オーケストレーター

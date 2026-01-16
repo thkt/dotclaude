@@ -3,71 +3,51 @@
 ## Structure
 
 ```markdown
-# <project_name> - API Specification
+# {project_name} - API Specification
 
 ## Base URL
 
-\`<base_url>\`
+\`{base_url}\`
 
 ## Authentication
 
-| Method | Header   | Description   |
-| ------ | -------- | ------------- |
-| <type> | <header> | <description> |
+| Method                    | Header                    | Description                    |
+| ------------------------- | ------------------------- | ------------------------------ |
+| {authentication[].method} | {authentication[].header} | {authentication[].description} |
 
 ## Endpoints
 
-### <resource>
+### {endpoints[].resource}
 
-#### <METHOD> <path>
+#### {endpoints[].method} {endpoints[].path}
 
-**Description**: <description>
+**Description**: {endpoints[].description}
 
 **Request**:
 \`\`\`json
-{
-"<field>": "<type>"
-}
+{endpoints[].request.fields}
 \`\`\`
 
 **Response**:
 \`\`\`json
-{
-"<field>": "<type>"
-}
+{endpoints[].response.fields}
 \`\`\`
 
 **Status Codes**:
-| Code | Description |
-|------|-------------|
-| 200 | Success |
-| 400 | Bad Request |
-| 401 | Unauthorized |
+
+| Code                              | Description                              |
+| --------------------------------- | ---------------------------------------- |
+| {endpoints[].status_codes[].code} | {endpoints[].status_codes[].description} |
 
 ## Error Format
 
 \`\`\`json
-{
-"error": {
-"code": "<error_code>",
-"message": "<message>"
-}
-}
+{error_format.structure}
 \`\`\`
 
 ## Types
 
-| Type        | Fields   | Description   |
-| ----------- | -------- | ------------- |
-| <type_name> | <fields> | <description> |
+| Type           | Fields           | Description           |
+| -------------- | ---------------- | --------------------- |
+| {types[].name} | {types[].fields} | {types[].description} |
 ```
-
-## Guidelines
-
-| Section        | Description                                         |
-| -------------- | --------------------------------------------------- |
-| Base URL       | API base endpoint                                   |
-| Authentication | Auth methods and headers                            |
-| Endpoints      | Grouped by resource, with request/response examples |
-| Error Format   | Standard error response structure                   |
-| Types          | Shared data types and schemas                       |

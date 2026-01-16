@@ -3,7 +3,6 @@ description: Analyze Git diff and generate Conventional Commits format messages
 allowed-tools: [Task, AskUserQuestion, Bash]
 model: opus
 argument-hint: "[context or issue reference]"
-dependencies: [commit-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /commit - Git Commit Message Generator
@@ -22,9 +21,15 @@ Analyze staged changes and generate Conventional Commits messages.
 3. Confirm with user
 4. Execute commit
 
+## Flow: Preview
+
+```
+[Generator YAML] → [Preview] → [Confirm] → [Execute]
+```
+
 ## Display Format
 
-Transform agent YAML output to readable preview:
+### Preview
 
 ```markdown
 ## 📝 Commit Preview
@@ -36,6 +41,6 @@ Transform agent YAML output to readable preview:
 `<footer>`
 ```
 
-## Output
+### Success
 
 **Committed**: `[short-hash]` <type>(<scope>): <description>

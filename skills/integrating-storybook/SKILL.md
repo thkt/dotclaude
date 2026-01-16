@@ -8,8 +8,6 @@ allowed-tools: [Read, Write, Glob, Grep]
 
 # Storybook Integration
 
-Auto-generate Stories skeletons from Component API specifications in spec.md.
-
 ## Core Concepts
 
 | Concept         | Description                                |
@@ -18,9 +16,9 @@ Auto-generate Stories skeletons from Component API specifications in spec.md.
 | CSF3            | Component Story Format 3 + autodocs        |
 | Auto-generation | `/code` generates Stories from spec.md     |
 
-## Component API Section (in spec.md)
+## Component API Location
 
-Location: `### 4.x Component API: [ComponentName]` in `## 4. UI Specification`
+Section: `### 4.x Component API: [ComponentName]` in `## 4. UI Specification`
 
 Contents: Props Interface (TypeScript), Variants, States, Usage Examples
 
@@ -31,7 +29,7 @@ Contents: Props Interface (TypeScript), Variants, States, Usage Examples
 | `/think "Add Button"` | Adds Component API section to spec.md    |
 | `/code`               | Generates `Button.stories.tsx` from spec |
 
-## Existing Stories Integration
+## Existing Stories Handling
 
 | Option | Action                    |
 | ------ | ------------------------- |
@@ -46,5 +44,7 @@ component, ui, button, form, modal, dialog, card, list, table
 
 ## References
 
-- [@./references/component-api-template.md] - Props/Variants template
-- [@./references/csf3-patterns.md] - CSF3 patterns
+| Topic         | File                                   |
+| ------------- | -------------------------------------- |
+| Component API | `references/component-api-template.md` |
+| CSF3 Patterns | `references/csf3-patterns.md`          |

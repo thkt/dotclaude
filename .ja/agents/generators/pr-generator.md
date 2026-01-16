@@ -1,9 +1,10 @@
 ---
 name: pr-generator
 description: ブランチ変更を分析し、包括的なPR説明を生成。
-tools: Bash
-model: haiku
+tools: [Bash]
+model: opus
 skills: [utilizing-cli-tools]
+context: fork
 ---
 
 # PRジェネレーター
@@ -72,32 +73,39 @@ BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remo
 # フォールバック: main → master → develop
 ```
 
+## エラーハンドリング
+
+| エラー             | アクション           |
+| ------------------ | -------------------- |
+| コミットなし       | "コミットなし"を報告 |
+| ベースブランチなし | mainをデフォルト     |
+
 ## 出力
 
-```markdown
-## ブランチ分析
+構造化YAMLを返す:
 
-| 項目     | 値              |
-| -------- | --------------- |
-| 現在     | [branch-name]   |
-| ベース   | [detected-base] |
-| コミット | [count]         |
-| 変更     | [count]ファイル |
+```yaml
+branch:
+  current: "<branch-name>"
+  base: "<detected-base>"
+  commits: <count>
+  files_changed: <count>
+pr:
+  title: "<接頭辞なし、命令形動詞>"
+  body: |
+    ## Summary
+    [1-2行]
 
-## 生成されたPR説明
+    ## Changes
+    - [変更1]
+    - [変更2]
 
-### タイトル
+    ## How to Test
+    1. [手順]
+    2. [期待結果]
 
-`簡潔な説明`（接頭辞なし、命令形動詞）
-
-### 本文
-
-[テンプレートに基づく内容]
-
-\`\`\`bash
-gh pr create --title "[title]" --body "$(cat <<'EOF'
-[body]
-EOF
-)"
-\`\`\`
+    ## Related
+    - Closes #[issue]
+command: |
+  gh pr create --title "<title>" --body "<body>"
 ```

@@ -1,39 +1,28 @@
 ---
 name: orchestrating-workflows
 description: >
-  /code, /fix, /audit などの実装コマンド用のワークフローオーケストレーションパターン。
-  トリガー: workflow, orchestration, command flow, IDR, test generation, RGRC, quality gates, completion criteria.
+  Command workflow orchestration patterns for /code, /fix, /audit, and other implementation commands.
+  Triggers: workflow, orchestration, command flow, IDR, test generation, RGRC, quality gates, completion criteria.
 allowed-tools: [Read, Write, Grep, Glob, Task, Bash]
 user-invocable: false
 ---
 
 # ワークフローオーケストレーション
 
-実装コマンド用のワークフローパターンとオーケストレーションロジック。
+## ワークフロー
 
-## ワークフローリファレンス
-
-| コマンド | ワークフロー参照                 | 目的                   |
-| -------- | -------------------------------- | ---------------------- |
-| `/code`  | [@./references/code-workflow.md] | RGRCサイクルでTDD実装  |
-| `/fix`   | [@./references/fix-workflow.md]  | 根本原因分析でバグ修正 |
+| コマンド | ワークフロー参照                 |
+| -------- | -------------------------------- |
+| `/code`  | [@./references/code-workflow.md] |
+| `/fix`   | [@./references/fix-workflow.md]  |
 
 ## 共有パターン
 
-| パターン    | 参照                                      | 使用先                            |
-| ----------- | ----------------------------------------- | --------------------------------- |
-| IDR生成     | [@./references/shared/idr-generation.md]  | /code, /audit, /polish, /validate |
-| TDDサイクル | [@./references/shared/tdd-cycle.md]       | /code, /fix                       |
-| テスト生成  | [@./references/shared/test-generation.md] | /code, /fix                       |
-
-## RGRCサイクル
-
-```text
-1. Red    - 失敗するテストを作成（失敗理由を確認）
-2. Green  - 最小限のコードで通過（"罪を犯してよい" - dirty OK）
-3. Refactor - 原則を適用（テストをグリーンに保つ）
-4. Commit - 安定状態を保存
-```
+| パターン    | 参照                                      |
+| ----------- | ----------------------------------------- |
+| IDR生成     | [@./references/shared/idr-generation.md]  |
+| TDDサイクル | [@./references/shared/tdd-cycle.md]       |
+| テスト生成  | [@./references/shared/test-generation.md] |
 
 ## 品質ゲート
 
@@ -43,13 +32,3 @@ user-invocable: false
 | リント     | エラー 0         | `npm run lint` 終了コード 0 |
 | 型         | エラーなし       | `tsc --noEmit` 終了コード 0 |
 | カバレッジ | C0 ≥90%, C1 ≥80% | カバレッジレポート          |
-
-## 完了基準
-
-| チェック         | ステータス |
-| ---------------- | ---------- |
-| 全テスト通過     | 必須       |
-| リントエラーなし | 必須       |
-| 型エラーなし     | 必須       |
-| ドキュメント更新 | 動作変更時 |
-| IDR生成          | SOW存在時  |

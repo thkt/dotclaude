@@ -1,7 +1,7 @@
 ---
 name: progressive-enhancer
 description: CSS-first approach review. Identify JS overuse.
-tools: [Read, Grep, Glob, LS, mcp__mdn__*]
+tools: [Read, Grep, Glob, LS, Task, mcp__mdn__*]
 model: opus
 skills: [enhancing-progressively]
 context: fork
@@ -31,11 +31,12 @@ Review for CSS-first approach. Identify JavaScript used where CSS/HTML suffices.
 
 ## Error Handling
 
-| Error              | Action                    |
-| ------------------ | ------------------------- |
-| No JS found        | Report "No JS to review"  |
-| Framework-specific | Note framework constraint |
-| Browser compat     | Check caniuse for CSS alt |
+| Error              | Action                      |
+| ------------------ | --------------------------- |
+| No JS found        | Report "No JS to review"    |
+| Framework-specific | Note framework constraint   |
+| Browser compat     | Check caniuse for CSS alt   |
+| MCP unavailable    | Code-only analysis (no MDN) |
 
 ## Output
 
@@ -43,11 +44,12 @@ Return structured YAML:
 
 ```yaml
 findings:
-  - severity: high|medium|low
+  - agent: progressive-enhancer
+    severity: high|medium|low
     location: "<file>:<line>"
     js_pattern: "<pattern found>"
     css_alternative: "<CSS solution>"
-    confidence: high|medium|low
+    confidence: 0.70-1.00
     reasoning: "<why CSS is better>"
 recommendations:
   - location: "<file>:<line>"

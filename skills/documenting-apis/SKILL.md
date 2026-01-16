@@ -8,21 +8,17 @@ user-invocable: false
 
 # API Specification Generation
 
-Auto-generate API documentation from codebase analysis.
+## Detection
 
-## Detection Items
-
-| Category       | Targets                                |
+| Category       | Pattern                                |
 | -------------- | -------------------------------------- |
 | Endpoints      | Express, Fastify, Next.js, Flask, etc. |
 | Functions      | tree-sitter, TypeScript, JSDoc         |
 | Types          | interface, type, Zod, Pydantic         |
 | OpenAPI        | openapi.yaml, swagger.yaml             |
-| Base URL       | Environment config, constants          |
 | Authentication | Auth middleware, JWT, OAuth patterns   |
-| Error Format   | Error handlers, response formatters    |
 
-## Detection Patterns
+## Framework Patterns
 
 | Framework | Pattern                      |
 | --------- | ---------------------------- |
@@ -30,12 +26,3 @@ Auto-generate API documentation from codebase analysis.
 | Next.js   | `app/api/**/route.ts`        |
 | Flask     | `@app.route()`               |
 | FastAPI   | `@app.get()`, `@app.post()`  |
-
-## Quality Criteria
-
-| Criteria                        | Target |
-| ------------------------------- | ------ |
-| New member can use API < 10 min | ✓      |
-| Request/Response examples exist | ✓      |
-| Error cases documented          | ✓      |
-| Auth requirements clear         | ✓      |

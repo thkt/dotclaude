@@ -31,12 +31,12 @@ coderabbit review --base main
 
 ### Review Types
 
-| Command | Scope |
-| --- | --- |
-| `coderabbit review` | All changes |
-| `coderabbit review --type committed` | Committed changes only |
-| `coderabbit review --type uncommitted` | Uncommitted changes only |
-| `coderabbit review --type all` | Both committed and uncommitted |
+| Command                                | Scope                          |
+| -------------------------------------- | ------------------------------ |
+| `coderabbit review`                    | All changes                    |
+| `coderabbit review --type committed`   | Committed changes only         |
+| `coderabbit review --type uncommitted` | Uncommitted changes only       |
+| `coderabbit review --type all`         | Both committed and uncommitted |
 
 ### Output Options
 
@@ -84,49 +84,39 @@ CodeRabbit analyzes:
 - **Logic Errors** - Potential bugs
 - **Style** - Consistency issues
 
-## Integration with Commands
+## When to Use
 
-### /rabbit Command
-
-The `/rabbit` command wraps CodeRabbit CLI:
-
-```bash
-/rabbit                    # Review all changes
-/rabbit --base develop     # Against develop branch
-/rabbit --type uncommitted # Only uncommitted
-```
-
-### When to Use
-
-| Situation | Recommendation |
-| --- | --- |
-| Before commit | `coderabbit review --type uncommitted` |
-| Before PR | `coderabbit review --base main` |
-| Quick sanity check | `/rabbit` |
-| After `/audit` | Second opinion |
+| Situation      | Recommendation                         |
+| -------------- | -------------------------------------- |
+| Before commit  | `coderabbit review --type uncommitted` |
+| Before PR      | `coderabbit review --base main`        |
+| After `/audit` | Second opinion                         |
 
 ## Output Interpretation
 
 ### Severity Levels
 
-| Level | Meaning | Action |
-| --- | --- | --- |
-| 🔴 Critical | Security/major bug | Must fix |
-| 🟠 High | Important issue | Should fix |
-| 🟡 Medium | Quality issue | Consider fixing |
-| 🟢 Low | Suggestion | Optional |
+| Level       | Meaning            | Action          |
+| ----------- | ------------------ | --------------- |
+| 🔴 Critical | Security/major bug | Must fix        |
+| 🟠 High     | Important issue    | Should fix      |
+| 🟡 Medium   | Quality issue      | Consider fixing |
+| 🟢 Low      | Suggestion         | Optional        |
 
 ### Example Output
 
 ```markdown
 ## Security Issues (1)
+
 🔴 SQL injection vulnerability in user.ts:42
 
 ## Performance (2)
+
 🟠 N+1 query detected in posts.ts:78
 🟡 Unnecessary re-render in Dashboard.tsx:23
 
 ## Best Practices (1)
+
 🟢 Consider extracting magic number to constant
 ```
 
@@ -138,7 +128,7 @@ Always run CodeRabbit before pushing to catch issues early.
 
 ### 2. Combine with /audit
 
-Use `/rabbit` for quick external perspective, `/audit` for comprehensive internal review.
+Use CodeRabbit for quick external perspective, `/audit` for comprehensive internal review.
 
 ### 3. Focus on Critical Issues
 
@@ -154,4 +144,3 @@ Address 🔴 and 🟠 issues before proceeding.
 ## References
 
 - CodeRabbit Documentation: <https://coderabbit.ai/docs>
-- `/rabbit` command: Uses this tool for AI review

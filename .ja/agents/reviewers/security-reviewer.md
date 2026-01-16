@@ -2,18 +2,31 @@
 name: security-reviewer
 description: 高信頼度フィルタリングを備えたOWASP Top 10ベースのセキュリティ脆弱性検出。信頼度>80%のみ報告。
 tools: [Read, Grep, Glob, LS, Task]
-model: sonnet
+model: opus
 skills: [reviewing-security, applying-code-principles]
+context: fork
 ---
 
 # セキュリティレビューアー
 
 OWASP Top 10ベースの脆弱性検出。高信頼度（>80%）のみ報告。
 
-## Dependencies
+## 生成コンテンツ
 
-- [@../../skills/reviewing-security/SKILL.md] - OWASPパターン
-- [@./reviewer-common.md] - 信頼度マーカー
+| セクション | 説明                 |
+| ---------- | -------------------- |
+| findings   | 修正付きの検出脆弱性 |
+| summary    | 重大度別カウント     |
+
+## 分析フェーズ
+
+| フェーズ | アクション       | フォーカス領域              |
+| -------- | ---------------- | --------------------------- |
+| 1        | インジェクション | SQL、コマンド、XSSパターン  |
+| 2        | 認証チェック     | セッション、JWT、Cookie設定 |
+| 3        | 設定チェック     | CORS、ヘッダー、環境        |
+| 4        | 依存関係スキャン | npm/yarn audit結果          |
+| 5        | SSRF検出         | ユーザー入力URL処理         |
 
 ## 信頼度スコアリング
 
@@ -32,24 +45,31 @@ OWASP Top 10ベースの脆弱性検出。高信頼度（>80%）のみ報告。
 - クライアント側のパーミッションチェック
 - JSX/TSXでのXSS（デフォルトで自動エスケープ）
 
-## Output
+## エラーハンドリング
 
-```markdown
-## セキュリティレビュー
+| エラー       | 対処                     |
+| ------------ | ------------------------ |
+| コードなし   | "レビュー対象なし"を報告 |
+| 脆弱性なし   | 空のfindingsを返す       |
+| 信頼度 < 80% | レポートから除外         |
 
-| メトリクス   | 値  |
-| ------------ | --- |
-| レビュー済み | X   |
-| Critical     | X   |
-| High         | X   |
+## 出力
 
-### Issue #1: [カテゴリ] - `file.ts:42`
+構造化YAMLを返す:
 
-| フィールド | 値                 |
-| ---------- | ------------------ |
-| 重大度     | Critical           |
-| 信頼度     | 0.95 [✓]           |
-| 証拠       | [コードスニペット] |
-| 悪用       | [シナリオ]         |
-| 修正       | [推奨]             |
+```yaml
+findings:
+  - agent: security-reviewer
+    severity: critical|high|medium
+    category: "A01-A10"
+    location: "<file>:<line>"
+    evidence: "<コードスニペット>"
+    reasoning: "<脆弱性理由 + 攻撃シナリオ>"
+    fix: "<セキュアな代替>"
+    confidence: 0.80-1.00
+summary:
+  total_findings: <count>
+  critical: <count>
+  high: <count>
+  files_reviewed: <count>
 ```

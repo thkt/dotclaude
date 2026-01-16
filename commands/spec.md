@@ -3,7 +3,6 @@ description: Generate Specification (spec.md) with implementation-ready details
 allowed-tools: Read, Write, Glob, Grep, LS
 model: opus
 argument-hint: "[sow path or feature description]"
-dependencies: [formatting-audits, managing-planning]
 ---
 
 # /spec - Specification Generator

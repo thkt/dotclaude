@@ -3,7 +3,6 @@ description: Generate project rules from ADR and integrate with CLAUDE.md
 allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob
 model: opus
 argument-hint: "[ADR number]"
-dependencies: [creating-adrs, managing-documentation]
 ---
 
 # /rulify - Generate Rule from ADR

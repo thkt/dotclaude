@@ -2,63 +2,60 @@
 name: silent-failure-reviewer
 description: サイレント障害、空のcatchブロック、未処理のPromise拒否を検出。
 tools: [Read, Grep, Glob, LS, Task]
-model: sonnet
+model: opus
 skills: [reviewing-silent-failures, applying-code-principles]
+context: fork
 ---
 
 # サイレント障害レビューアー
 
 サイレントに失敗するパターンを特定。
 
-## Dependencies
+## 生成コンテンツ
 
-- [@../../skills/reviewing-silent-failures/SKILL.md] - 検出パターン
-- [@./reviewer-common.md] - 信頼度マーカー
+| セクション | 説明                           |
+| ---------- | ------------------------------ |
+| findings   | サイレント障害パターンと修正案 |
+| summary    | リスクレベル別カウント         |
 
-## Patterns
+## 分析フェーズ
 
-```typescript
-// Bad: 空のcatch
-try {
-  await fetchUserData();
-} catch (e) {
-  /* silent */
-}
+| フェーズ | アクション               | フォーカス                 |
+| -------- | ------------------------ | -------------------------- |
+| 1        | Catchブロックスキャン    | 空のcatch、console.logのみ |
+| 2        | Promiseチェック          | .catchなしの.then          |
+| 3        | Async監査                | Fire-and-forget、未処理    |
+| 4        | UIフィードバックチェック | 欠落したエラー状態、境界   |
+| 5        | フォールバック分析       | サイレントデフォルト       |
 
-// Good: 適切なハンドリング
-try {
-  await fetchUserData();
-} catch (error) {
-  logger.error("Failed to fetch", { error });
-  setError("Unable to load. Please retry.");
-}
-```
+## エラーハンドリング
 
-```typescript
-// Bad: 未処理のPromise
-fetchData().then((data) => setData(data));
+| エラー     | アクション              |
+| ---------- | ----------------------- |
+| コードなし | "No code to review"報告 |
+| 問題なし   | 空のfindingsを返す      |
 
-// Good: catchあり
-fetchData()
-  .then((data) => setData(data))
-  .catch((error) => handleError(error));
-```
+## 出力
 
-## Output
+構造化YAMLを返す:
 
-```markdown
-## サイレント障害分析
-
-| パターン        | 件数 |
-| --------------- | ---- |
-| 空のcatch       | X    |
-| 未処理Promise   | Y    |
-| バウンダリ欠如  | Z    |
-| Fire-and-forget | N    |
-
-### Critical Issues
-
-| ファイル:行   | パターン | リスク | 修正              |
-| ------------- | -------- | ------ | ----------------- |
-| src/api.ts:45 | 空catch  | High   | ログ + 通知を追加 |
+```yaml
+findings:
+  - agent: silent-failure-reviewer
+    severity: critical|high|medium
+    category: "SF1-SF5"
+    location: "<file>:<line>"
+    evidence: "<code snippet>"
+    reasoning: "<why this fails silently>"
+    fix: "<visible error handling>"
+    confidence: 0.70-1.00
+summary:
+  total_findings: <count>
+  critical: <count>
+  high: <count>
+  by_category:
+    empty_catch: <count>
+    unhandled_promise: <count>
+    missing_boundary: <count>
+  files_reviewed: <count>
 ```

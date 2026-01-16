@@ -1,7 +1,7 @@
 ---
 name: branch-generator
 description: Git変更を分析し、規約に従ったブランチ名を生成。
-tools: Bash
+tools: [Bash]
 model: opus
 skills: [utilizing-cli-tools]
 context: fork
@@ -35,6 +35,13 @@ git diff/statusからブランチ名を生成。
 | `feature/auth-add-oauth-support` | `new-feature` (type なし)   |
 | `fix/api-resolve-timeout-issue`  | `feature/ADD_USER` (大文字) |
 | `feature/PROJ-123-user-search`   | `fix/bug` (曖昧)            |
+
+## エラーハンドリング
+
+| エラー           | アクション   |
+| ---------------- | ------------ |
+| 変更なし         | "変更なし"   |
+| ブランチ名が存在 | 代替名を提案 |
 
 ## 出力
 

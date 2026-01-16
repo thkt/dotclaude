@@ -1,8 +1,9 @@
 ---
 name: audit-orchestrator
 description: 専門レビューエージェントを調整し、発見事項を統合。
-tools: [Task, Grep, Glob, LS, Read]
+tools: [Read, Grep, Glob, LS, Task]
 model: opus
+context: fork
 ---
 
 # レビューオーケストレーター
@@ -20,7 +21,7 @@ model: opus
 | Production  | security, performance, accessibility                        | 65s          | parallel    |
 | Design      | type-design-analyzer, code-simplifier (pr-review-toolkit)   | 60s          | parallel    |
 | Conditional | document (\*.md がある場合のみ)                             | 45s          | conditional |
-| Integration | finding-integrator (最終)                                   | 120s         | sequential  |
+| Integration | audit-integrator (最終)                                     | 120s         | sequential  |
 
 ## エージェント配置
 
@@ -28,29 +29,18 @@ model: opus
 | ----------------------------------- | ---------------------------------------------------------- |
 | `agents/reviewers/`                 | structure, readability, type-safety, design-pattern, etc.  |
 | `agents/enhancers/`                 | progressive-enhancer                                       |
-| `agents/integrators/`               | finding-integrator                                         |
+| `agents/integrators/`               | audit-integrator                                           |
 | `plugins/pr-review-toolkit/agents/` | silent-failure-hunter, comment-analyzer, type-design, etc. |
 
-## 信頼度 & フィルタリング
+統合ロジック（翻訳偽陽性フィルタリング、file:line:categoryで重複排除、優先度スコアリング）は audit-integrator が担当。
 
-| マーカー | 信頼度 | アクション       |
-| -------- | ------ | ---------------- |
-| ✓        | ≥95%   | 含める           |
-| →        | 70-94% | 注記付きで含める |
-| ?        | <70%   | 除外             |
+## エラーハンドリング
 
-- `file:line:category` で重複排除、最高重大度を保持
-- 優先度スコア = 重大度ウェイト × カテゴリ乗数
+| エラー                   | アクション           |
+| ------------------------ | -------------------- |
+| エージェントタイムアウト | 完了分で続行         |
+| ファイルなし             | "監査対象なし"を報告 |
 
-## 重大度ウェイト
+## 出力
 
-| 重大度   | ウェイト | カテゴリ        | 乗数 |
-| -------- | -------- | --------------- | ---- |
-| critical | 1000     | security        | 10   |
-| high     | 100      | accessibility   | 8    |
-| medium   | 10       | performance     | 6    |
-| low      | 1        | maintainability | 3    |
-
-## 発見事項の構造
-
-すべての発見事項に必須: agent, severity, file:line, evidence, reasoning, confidence (0.0-1.0)
+`audit-integrator` の YAML 出力を呼び出し元コマンドにそのまま渡す。

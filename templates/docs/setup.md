@@ -3,13 +3,13 @@
 ## Structure
 
 ```markdown
-# <project_name> - Setup Guide
+# {project_name} - Setup Guide
 
 ## Prerequisites
 
-| Tool   | Version   | Required |
-| ------ | --------- | -------- |
-| <tool> | <version> | Yes/No   |
+| Tool                   | Version                   | Required                   |
+| ---------------------- | ------------------------- | -------------------------- |
+| {prerequisites[].tool} | {prerequisites[].version} | {prerequisites[].required} |
 
 ## Installation
 
@@ -17,62 +17,51 @@
 
 # Clone repository
 
-git clone <repo_url>
-cd <project_name>
+git clone {installation.clone_url}
+cd {project_name}
 
 # Install dependencies
 
-<install_command>
+{installation.install_command}
 \`\`\`
 
 ## Configuration
 
 ### Environment Variables
 
-| Variable   | Description   | Default   |
-| ---------- | ------------- | --------- |
-| <VAR_NAME> | <description> | <default> |
+| Variable                        | Description                            | Default                            |
+| ------------------------------- | -------------------------------------- | ---------------------------------- |
+| {configuration.env_vars[].name} | {configuration.env_vars[].description} | {configuration.env_vars[].default} |
 
 ### Config Files
 
-| File       | Purpose   |
-| ---------- | --------- |
-| <filename> | <purpose> |
+| File                                | Purpose                                |
+| ----------------------------------- | -------------------------------------- |
+| {configuration.config_files[].file} | {configuration.config_files[].purpose} |
 
 ## Running
 
 ### Development
 
 \`\`\`bash
-<dev_command>
+{running.development}
 \`\`\`
 
 ### Production
 
 \`\`\`bash
-<prod_command>
+{running.production}
 \`\`\`
 
 ## Testing
 
 \`\`\`bash
-<test_command>
+{testing.command}
 \`\`\`
 
 ## Troubleshooting
 
-| Issue   | Solution   |
-| ------- | ---------- |
-| <issue> | <solution> |
+| Issue                     | Solution                     |
+| ------------------------- | ---------------------------- |
+| {troubleshooting[].issue} | {troubleshooting[].solution} |
 ```
-
-## Guidelines
-
-| Section         | Description                            |
-| --------------- | -------------------------------------- |
-| Prerequisites   | Required tools with versions           |
-| Installation    | Step-by-step install commands          |
-| Configuration   | Environment variables and config files |
-| Running         | Dev and production startup commands    |
-| Testing         | How to run tests                       |
-| Troubleshooting | Common issues and solutions            |

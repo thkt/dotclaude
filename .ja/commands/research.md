@@ -4,7 +4,6 @@ allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash
 model: opus
 context: fork
 argument-hint: "[リサーチトピックまたは質問]"
-dependencies: [architecture-analyzer, Explore]
 ---
 
 # /research - プロジェクトリサーチ＆調査

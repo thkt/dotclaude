@@ -1,9 +1,10 @@
 ---
 name: issue-generator
 description: Generate well-structured GitHub Issues from descriptions.
-tools: Bash
-model: haiku
+tools: [Bash]
+model: opus
 skills: [utilizing-cli-tools]
+context: fork
 ---
 
 # Issue Generator
@@ -40,6 +41,13 @@ Default to `feature` if unclear.
 | feature | [@../../../templates/issue/feature.md](../../../templates/issue/feature.md) |
 | docs    | [@../../../templates/issue/docs.md](../../../templates/issue/docs.md)       |
 | chore   | [@../../../templates/issue/chore.md](../../../templates/issue/chore.md)     |
+
+## Error Handling
+
+| Error              | Action                 |
+| ------------------ | ---------------------- |
+| No description     | Prompt for description |
+| Template not found | Use default format     |
 
 ## Output
 

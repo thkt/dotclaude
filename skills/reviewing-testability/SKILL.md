@@ -8,39 +8,27 @@ user-invocable: false
 
 # Testability Review
 
-Target: Code that is easy to test without complex mocking.
+## Detection
 
-## Testability Indicators
+| ID  | Pattern                      | Fix                             |
+| --- | ---------------------------- | ------------------------------- |
+| TE1 | Direct `import { db }` usage | Inject dependency as parameter  |
+| TE1 | `new Service()` inside class | Constructor injection           |
+| TE2 | `fetch()` inside component   | Extract to hook/service, inject |
+| TE2 | Mixed side effects + logic   | Separate pure/impure            |
+| TE3 | Deep mock chains             | Simplify dependencies           |
+| TE4 | Global `config` access       | Pass config as prop/parameter   |
+| TE4 | `Date.now()` in logic        | Inject clock/time provider      |
+| TE5 | Tight coupling               | Depend on abstractions (DIP)    |
 
-| Indicator       | Good                    | Warning          |
-| --------------- | ----------------------- | ---------------- |
-| Mock complexity | Simple stubs            | Deep mock chains |
-| Test setup      | < 10 lines              | > 30 lines       |
-| Dependencies    | Explicit (params/props) | Hidden (imports) |
-| Side effects    | Isolated                | Mixed with logic |
-| State           | Predictable             | Global/mutable   |
+## Criteria
 
-## Section-Based Loading
+Test setup < 10 lines. No deep mock chains. Dependencies explicit.
 
-| Section | File                                 | Focus                   |
-| ------- | ------------------------------------ | ----------------------- |
-| DI      | `references/dependency-injection.md` | Injectable dependencies |
-| Pure    | `references/pure-functions.md`       | Side effect isolation   |
-| Mock    | `references/mock-friendly.md`        | Interfaces, factories   |
+## References
 
-## Quick Checklist
-
-- [ ] Dependencies are injectable
-- [ ] Clear separation: pure vs impure
-- [ ] Presentational components are pure
-- [ ] Side effects isolated in hooks/containers
-- [ ] No global mutable state
-
-## Key Principles
-
-| Principle             | Application              |
-| --------------------- | ------------------------ |
-| DIP (SOLID)           | Depend on abstractions   |
-| Pure Functions        | Same input = same output |
-| Explicit Dependencies | Pass as parameters       |
-| Single Responsibility | One reason to test       |
+| Topic   | File                                 |
+| ------- | ------------------------------------ |
+| DI      | `references/dependency-injection.md` |
+| Pure    | `references/pure-functions.md`       |
+| Mocking | `references/mock-friendly.md`        |

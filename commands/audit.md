@@ -4,7 +4,6 @@ aliases: [review]
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Read, Glob, Grep, LS, Task
 model: opus
 argument-hint: "[target files or scope]"
-dependencies: [audit-orchestrator, orchestrating-workflows]
 ---
 
 # /audit - Code Review Orchestrator
@@ -20,25 +19,31 @@ Orchestrate specialized review agents with confidence-based filtering.
 
 Delegates to `audit-orchestrator` subagent (15 agents: Core 8 + pr-review-toolkit 4 + Production 3).
 
+## Flow
+
+```text
+[reviewers] → [orchestrator] → [integrator YAML] → [command formats]
+```
+
 ## Output
 
 ```markdown
 # Review Summary
 
-- Files: [count] | Critical [X] / High [X] / Medium [X]
+- Findings: {summary.total_findings} | Critical {summary.by_severity.critical} / High {summary.by_severity.high} / Medium {summary.by_severity.medium}
 
 ## Critical Issues
 
-[issues with file:line]
+{priorities[priority=critical].item} - {priorities[priority=critical].action}
 
-## Medium Priority
+## Patterns Detected
 
-[issues with reasoning]
+{patterns[].name}: {patterns[].root_cause}
 
 ## Recommended Actions
 
-1. Immediate [✓]
-2. Next Sprint [→]
+1. [✓] Immediate: {priorities[timing=immediate].action}
+2. [→] This Sprint: {priorities[timing=this_sprint].action}
 ```
 
 ## IDR

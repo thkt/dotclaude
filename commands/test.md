@@ -3,7 +3,6 @@ description: Run project tests and validate code quality through comprehensive t
 allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, TodoWrite, Task
 model: opus
 argument-hint: "[test scope or specific tests]"
-dependencies: [test-generator, managing-testing]
 ---
 
 # /test - Test Execution & Quality Validation
@@ -22,10 +21,18 @@ Run project tests with gap analysis and quality checks.
 3. Gap analysis via `test-generator` (uncovered paths)
 4. Quality checks (lint, type-check)
 
-## Output
+## Flow: Execute
+
+```
+[Execute] → [Result]
+```
+
+## Display Format
+
+### Result
 
 ```markdown
-## Test Results
+## 🧪 Test Results
 
 | Metric   | Value |
 | -------- | ----- |
@@ -39,3 +46,7 @@ Run project tests with gap analysis and quality checks.
 
 [if any]
 ```
+
+### Success
+
+**Tests**: ✅ XX passed | ❌ XX failed | Coverage XX%

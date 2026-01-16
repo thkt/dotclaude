@@ -1,9 +1,10 @@
 ---
 name: issue-generator
 description: 説明から構造化されたGitHub Issueを生成。
-tools: Bash
-model: haiku
+tools: [Bash]
+model: opus
 skills: [utilizing-cli-tools]
+context: fork
 ---
 
 # Issueジェネレーター
@@ -40,6 +41,13 @@ skills: [utilizing-cli-tools]
 | feature | [@../../../templates/issue/feature.md](../../../templates/issue/feature.md) |
 | docs    | [@../../../templates/issue/docs.md](../../../templates/issue/docs.md)       |
 | chore   | [@../../../templates/issue/chore.md](../../../templates/issue/chore.md)     |
+
+## エラーハンドリング
+
+| エラー           | アクション           |
+| ---------------- | -------------------- |
+| 説明なし         | 説明を求める         |
+| テンプレート不在 | デフォルト形式を使用 |
 
 ## 出力
 

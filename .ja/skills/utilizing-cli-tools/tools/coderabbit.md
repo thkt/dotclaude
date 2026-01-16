@@ -31,12 +31,12 @@ coderabbit review --base main
 
 ### レビュータイプ
 
-| コマンド | スコープ |
-| --- | --- |
-| `coderabbit review` | すべての変更 |
-| `coderabbit review --type committed` | コミット済み変更のみ |
-| `coderabbit review --type uncommitted` | 未コミット変更のみ |
-| `coderabbit review --type all` | コミット済みと未コミット両方 |
+| コマンド                               | スコープ                     |
+| -------------------------------------- | ---------------------------- |
+| `coderabbit review`                    | すべての変更                 |
+| `coderabbit review --type committed`   | コミット済み変更のみ         |
+| `coderabbit review --type uncommitted` | 未コミット変更のみ           |
+| `coderabbit review --type all`         | コミット済みと未コミット両方 |
 
 ### 出力オプション
 
@@ -84,49 +84,39 @@ CodeRabbitが分析する項目:
 - **ロジックエラー** - 潜在的なバグ
 - **スタイル** - 一貫性の問題
 
-## コマンドとの統合
+## 使用タイミング
 
-### /rabbitコマンド
-
-`/rabbit` コマンドはCodeRabbit CLIをラップ:
-
-```bash
-/rabbit                    # すべての変更をレビュー
-/rabbit --base develop     # developブランチに対して
-/rabbit --type uncommitted # 未コミットのみ
-```
-
-### 使用タイミング
-
-| 状況 | 推奨 |
-| --- | --- |
+| 状況       | 推奨                                   |
+| ---------- | -------------------------------------- |
 | コミット前 | `coderabbit review --type uncommitted` |
-| PR前 | `coderabbit review --base main` |
-| クイックチェック | `/rabbit` |
-| `/audit`後 | セカンドオピニオン |
+| PR前       | `coderabbit review --base main`        |
+| `/audit`後 | セカンドオピニオン                     |
 
 ## 出力の解釈
 
 ### 重大度レベル
 
-| レベル | 意味 | アクション |
-| --- | --- | --- |
-| 🔴 Critical | セキュリティ/重大なバグ | 必須修正 |
-| 🟠 High | 重要な問題 | 修正すべき |
-| 🟡 Medium | 品質問題 | 修正を検討 |
-| 🟢 Low | 提案 | オプション |
+| レベル      | 意味                    | アクション |
+| ----------- | ----------------------- | ---------- |
+| 🔴 Critical | セキュリティ/重大なバグ | 必須修正   |
+| 🟠 High     | 重要な問題              | 修正すべき |
+| 🟡 Medium   | 品質問題                | 修正を検討 |
+| 🟢 Low      | 提案                    | オプション |
 
 ### 出力例
 
 ```markdown
 ## Security Issues (1)
+
 🔴 SQL injection vulnerability in user.ts:42
 
 ## Performance (2)
+
 🟠 N+1 query detected in posts.ts:78
 🟡 Unnecessary re-render in Dashboard.tsx:23
 
 ## Best Practices (1)
+
 🟢 Consider extracting magic number to constant
 ```
 
@@ -138,7 +128,7 @@ CodeRabbitが分析する項目:
 
 ### 2. /auditと組み合わせる
 
-クイックな外部視点には `/rabbit`、包括的な内部レビューには `/audit` を使用。
+クイックな外部視点には CodeRabbit、包括的な内部レビューには `/audit` を使用。
 
 ### 3. クリティカルな問題に集中
 
@@ -154,4 +144,3 @@ CodeRabbitが分析する項目:
 ## リファレンス
 
 - CodeRabbitドキュメント: <https://coderabbit.ai/docs>
-- `/rabbit` コマンド: このツールをAIレビューに使用

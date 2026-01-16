@@ -8,9 +8,7 @@ user-invocable: false
 
 # Domain Understanding Generation
 
-Auto-generate domain documentation from codebase analysis.
-
-## Detection Items
+## Detection
 
 | Category       | Targets                                        |
 | -------------- | ---------------------------------------------- |
@@ -21,7 +19,7 @@ Auto-generate domain documentation from codebase analysis.
 | Business Rules | Validators, policies, domain services          |
 | Domain Events  | Event classes, EventEmitter, pub/sub patterns  |
 
-## Detection Patterns
+## ORM Patterns
 
 | ORM/Framework | Pattern                    |
 | ------------- | -------------------------- |
@@ -30,12 +28,3 @@ Auto-generate domain documentation from codebase analysis.
 | Sequelize     | `Model.init()`             |
 | Django        | `class User(models.Model)` |
 | SQLAlchemy    | `class User(Base)`         |
-
-## Quality Criteria
-
-| Criteria                              | Target |
-| ------------------------------------- | ------ |
-| Domain terms clear to non-developers  | ✓      |
-| Entity invariants documented          | ✓      |
-| Relationships visualized (ER diagram) | ✓      |
-| Business rules traceable to code      | ✓      |

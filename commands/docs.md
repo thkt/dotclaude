@@ -3,8 +3,6 @@ description: Generate documentation from codebase analysis
 allowed-tools: [Task, Read, Write, Bash]
 model: opus
 argument-hint: "<architecture|api|domain|setup>"
-dependencies:
-  [architecture-analyzer, api-analyzer, domain-analyzer, setup-analyzer]
 ---
 
 # /docs - Documentation Generator
@@ -35,6 +33,19 @@ Generate documentation by analyzing the codebase.
 4. Format YAML output using template structure
 5. Present to user
 
+## Flow
+
+```text
+[analyzer YAML] → [template] → [markdown output]
+```
+
 ## Output
 
-Generated documentation in markdown format.
+| Type         | Template                                                                |
+| ------------ | ----------------------------------------------------------------------- |
+| architecture | [@../templates/docs/architecture.md](../templates/docs/architecture.md) |
+| api          | [@../templates/docs/api.md](../templates/docs/api.md)                   |
+| domain       | [@../templates/docs/domain.md](../templates/docs/domain.md)             |
+| setup        | [@../templates/docs/setup.md](../templates/docs/setup.md)               |
+
+Templates use `{field}`, `{object.property}`, and `{array[].property}` patterns for variable substitution.

@@ -1,13 +1,11 @@
 ---
 name: automating-browser
-description: claude-in-chrome MCPツールを使用したインタラクティブブラウザ自動化。デモ、GIF、手動テストに最適。
+description: Interactive browser automation using claude-in-chrome MCP tools. Best for demos, GIFs, manual testing.
 allowed-tools: [Read, Glob, mcp__claude-in-chrome__*]
 context: fork
 ---
 
 # ブラウザ自動化
-
-claude-in-chrome MCP拡張機能を使用したインタラクティブなブラウザ制御。
 
 ## 使用タイミング
 
@@ -32,32 +30,24 @@ claude-in-chrome MCP拡張機能を使用したインタラクティブなブラ
 
 ## ワークフロー
 
-1. **開始**: `tabs_context_mcp` → タブIDを取得
-2. **作成/再利用**: `tabs_create_mcp`または既存を使用
-3. **ナビゲート**: `navigate`でURLとtabIdを指定
-4. **操作**: `read_page`, `form_input`, `computer`
-5. **録画**: `gif_creator`でデモ作成
+| ステップ | アクション                            |
+| -------- | ------------------------------------- |
+| 1        | `tabs_context_mcp` → タブIDを取得     |
+| 2        | `tabs_create_mcp`または既存を使用     |
+| 3        | `navigate`でURLとtabIdを指定          |
+| 4        | `read_page`, `form_input`, `computer` |
+| 5        | `gif_creator`でデモ作成               |
 
-## 一般的なパターン
+## パターン
 
-### フォーム入力
-
-```text
-1. read_page with filter: "interactive"
-2. 入力のref_idを特定
-3. form_inputでrefと値を指定
-```
-
-### GIF録画
-
-```text
-1. gif_creator action: "start_recording"
-2. スクリーンショット付きでアクション実行
-3. gif_creator action: "stop_recording"
-4. gif_creator action: "export"
-```
+| パターン     | ステップ                                                          |
+| ------------ | ----------------------------------------------------------------- |
+| フォーム入力 | read_page (filter: interactive) → ref_id特定 → form_input         |
+| GIF録画      | start_recording → アクション + スクリーンショット → stop → export |
 
 ## 参照
 
-- [@./references/claude-in-chrome-tools.md] - 完全なツールドキュメント
-- [@./references/common-patterns.md] - 再利用可能なパターン
+| トピック | ファイル                               |
+| -------- | -------------------------------------- |
+| ツール   | `references/claude-in-chrome-tools.md` |
+| パターン | `references/common-patterns.md`        |

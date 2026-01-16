@@ -4,46 +4,64 @@ description: Identify root causes using 5 Whys analysis. Detect patch-like solut
 tools: [Read, Grep, Glob, LS, Task]
 model: opus
 skills: [analyzing-root-causes, applying-code-principles]
+context: fork
 ---
 
 # Root Cause Reviewer
 
 5 Whys analysis to ensure code addresses fundamental issues.
 
-## Dependencies
+## Generated Content
 
-- [@../../skills/analyzing-root-causes/SKILL.md] - 5 Whys methodology
-- [@./reviewer-common.md] - Confidence markers
+| Section  | Description                      |
+| -------- | -------------------------------- |
+| findings | Patch solutions with root causes |
+| summary  | Analysis depth metrics           |
 
-## Focus
+## Analysis Phases
 
-Symptom-based solutions, Race condition workarounds, State sync patches
+| Phase | Action           | Focus                         |
+| ----- | ---------------- | ----------------------------- |
+| 1     | Symptom Scan     | Workarounds, bandaid fixes    |
+| 2     | State Sync Check | Effects syncing derived state |
+| 3     | Race Condition   | Timing-dependent fixes        |
+| 4     | 5 Whys Trace     | Follow causality chain        |
 
-## Pattern
+## Error Handling
 
-```tsx
-// Bad: Effects to sync state
-useEffect(() => setFilteredItems(items.filter((i) => i.active)), [items]);
-useEffect(() => setCount(filteredItems.length), [filteredItems]);
-
-// Good: Derive state
-const filteredItems = useMemo(() => items.filter((i) => i.active), [items]);
-const count = filteredItems.length;
-```
+| Error           | Action                     |
+| --------------- | -------------------------- |
+| No code found   | Report "No code to review" |
+| No issues found | Return empty findings      |
 
 ## Output
 
-```markdown
-## 5 Whys Analysis
+Return structured YAML:
 
-| Level | Why?                       |
-| ----- | -------------------------- |
-| 1     | [Observable fact]          |
-| 2     | [Implementation detail]    |
-| 3     | [Design decision]          |
-| 4     | [Architectural constraint] |
-| 5     | [Root cause]               |
-
-**Root Cause**: [fundamental issue]
-**Fix**: [solution addressing root cause]
+```yaml
+findings:
+  - agent: root-cause-reviewer
+    severity: high|medium|low
+    category: "symptom|state-sync|race|workaround"
+    location: "<file>:<line>"
+    evidence: "<code snippet>"
+    five_whys:
+      - level: 1
+        why: "<observable fact>"
+      - level: 2
+        why: "<implementation detail>"
+      - level: 3
+        why: "<design decision>"
+      - level: 4
+        why: "<architectural constraint>"
+      - level: 5
+        why: "<root cause>"
+    root_cause: "<fundamental issue>"
+    fix: "<solution addressing root cause>"
+    confidence: 0.70-1.00
+summary:
+  total_findings: <count>
+  patches_detected: <count>
+  root_causes_identified: <count>
+  files_reviewed: <count>
 ```

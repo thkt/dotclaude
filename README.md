@@ -60,20 +60,18 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 
    ```bash
    /plugin install complete-workflow-system  # Full TDD/RGRC workflow
-   /plugin install quick-actions             # /fix, /rabbit
-   /plugin install automation-commands       # /auto-test, /full-cycle
+   /plugin install quick-actions             # /fix, /polish
    /plugin install git-utilities             # /commit, /branch, /pr, /issue
-   /plugin install documentation-tools       # /adr, /rulify
+   /plugin install documentation-tools       # /adr, /rulify, /docs
    /plugin install browser-workflows         # /e2e
    ```
 
 **Available Plugins**:
 
 - **complete-workflow-system**: Full development workflow with 16 specialized agents
-- **quick-actions**: Fast bug fixes (/fix) and CodeRabbit review (/rabbit)
-- **automation-commands**: Auto-test and full-cycle automation
+- **quick-actions**: Fast bug fixes (/fix) and AI slop removal (/polish)
 - **git-utilities**: Git workflow helpers (commit, branch, PR, issue)
-- **documentation-tools**: ADR creation and rule generation
+- **documentation-tools**: ADR creation, rule generation, and docs
 - **browser-workflows**: E2E testing and automation
 
 ### Option 2: Manual Installation (Full Configuration)
@@ -160,11 +158,11 @@ See the [official blog post](https://azukiazusa.dev/blog/claude-code-sandbox-fea
 
 Some commands depend on external plugins that are not included in this repository. Install them manually after cloning:
 
-| Plugin              | Required By           | Purpose                                  | Install Command                     |
-| ------------------- | --------------------- | ---------------------------------------- | ----------------------------------- |
-| `pr-review-toolkit` | `/audit`, `/research` | Enhanced code review agents              | `/plugin install pr-review-toolkit` |
-| `feature-dev`       | `/research`, `/think` | Code exploration and architecture agents | `/plugin install feature-dev`       |
-| `ralph-loop`        | `/code`               | TDD Green Phase auto-iteration           | `/plugin install ralph-loop`        |
+| Plugin              | Required By                      | Purpose                                  | Install Command                     |
+| ------------------- | -------------------------------- | ---------------------------------------- | ----------------------------------- |
+| `pr-review-toolkit` | `/audit`, `/research`, `/polish` | Enhanced code review agents              | `/plugin install pr-review-toolkit` |
+| `feature-dev`       | `/research`, `/think`            | Code exploration and architecture agents | `/plugin install feature-dev`       |
+| `ralph-loop`        | `/code`                          | TDD Green Phase auto-iteration           | `/plugin install ralph-loop`        |
 
 **Quick Install (all required plugins)**:
 
@@ -183,26 +181,7 @@ Some commands depend on external plugins that are not included in this repositor
 
 ## 📝 Available Commands
 
-Claude Code provides 15 specialized commands organized into 5 categories:
-
-### Command Categories
-
-- **Core Development** (7 commands): Complete workflow from planning to validation
-  - `/think`, `/research`, `/code`, `/test`, `/audit`, `/sow`, `/validate`
-
-- **Quick Actions** (1 command): Rapid bug fixes
-  - `/fix`
-
-- **Automation** (2 commands): Test and development cycle automation
-  - `/auto-test`, `/full-cycle`
-
-- **Documentation** (2 commands): Architecture decisions and rules
-  - `/adr`, `/rulify`
-
-- **External Tools** (1 command): Browser automation
-  - `/e2e`
-
-**📚 Detailed Reference**: For complete command documentation, see:
+See the complete command reference:
 
 - [English Command Reference](./rules/workflows/WORKFLOW_GUIDE.md)
 - [日本語コマンドリファレンス](./.ja/rules/workflows/WORKFLOW_GUIDE.md)
@@ -225,13 +204,6 @@ Claude Code provides 15 specialized commands organized into 5 categories:
 
 ```txt
 /research → /fix
-```
-
-### Automated Workflows (New with SlashCommand Tool)
-
-```txt
-/auto-test        # Automatic test → fix cycle
-/full-cycle       # Complete automated development flow
 ```
 
 ## 🌏 Language Support

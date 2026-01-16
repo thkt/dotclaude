@@ -37,16 +37,21 @@ Create tests strictly from SOW test plans. Follow TDD cycle.
 
 ## Output
 
-```markdown
-## Test Generation Summary
+Return structured YAML:
 
-| Status     | Type        | Count            |
-| ---------- | ----------- | ---------------- |
-| ✅ Created | Unit        | 5                |
-| ✅ Created | Integration | 2                |
-| ⚠️ Skipped | E2E         | 1 (Low priority) |
-
-### Suggested additions (not implemented)
-
-- [edge case not in plan]
+```yaml
+summary:
+  created:
+    unit: <count>
+    integration: <count>
+    e2e: <count>
+  skipped:
+    - type: "<test type>"
+      reason: "<why skipped>"
+files:
+  - path: "<test file path>"
+    tests: <count>
+    status: created|skipped
+suggestions:
+  - "<edge case not in plan>"
 ```

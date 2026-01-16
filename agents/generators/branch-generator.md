@@ -1,7 +1,7 @@
 ---
 name: branch-generator
 description: Analyze Git changes and generate branch names following conventional patterns.
-tools: Bash
+tools: [Bash]
 model: opus
 skills: [utilizing-cli-tools]
 context: fork
@@ -35,6 +35,13 @@ Generate branch names from git diff/status.
 | `feature/auth-add-oauth-support` | `new-feature` (no type)        |
 | `fix/api-resolve-timeout-issue`  | `feature/ADD_USER` (uppercase) |
 | `feature/PROJ-123-user-search`   | `fix/bug` (too vague)          |
+
+## Error Handling
+
+| Error         | Action                   |
+| ------------- | ------------------------ |
+| No changes    | Report "No changes"      |
+| Branch exists | Suggest alternative name |
 
 ## Output
 

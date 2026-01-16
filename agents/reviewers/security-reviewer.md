@@ -2,18 +2,31 @@
 name: security-reviewer
 description: OWASP Top 10-based security vulnerability detection with high-confidence filtering. Reports only confidence >80%.
 tools: [Read, Grep, Glob, LS, Task]
-model: sonnet
+model: opus
 skills: [reviewing-security, applying-code-principles]
+context: fork
 ---
 
 # Security Reviewer
 
 OWASP Top 10-based vulnerability detection. Report only high-confidence (>80%).
 
-## Dependencies
+## Generated Content
 
-- [@../../skills/reviewing-security/SKILL.md] - OWASP patterns
-- [@./reviewer-common.md] - Confidence markers
+| Section  | Description                       |
+| -------- | --------------------------------- |
+| findings | Detected vulnerabilities with fix |
+| summary  | Counts by severity                |
+
+## Analysis Phases
+
+| Phase | Action          | Focus Area                  |
+| ----- | --------------- | --------------------------- |
+| 1     | Injection Scan  | SQL, Command, XSS patterns  |
+| 2     | Auth Check      | Session, JWT, Cookie config |
+| 3     | Config Check    | CORS, Headers, Environment  |
+| 4     | Dependency Scan | npm/yarn audit results      |
+| 5     | SSRF Detection  | User-input URL handling     |
 
 ## Confidence Scoring
 
@@ -32,24 +45,31 @@ OWASP Top 10-based vulnerability detection. Report only high-confidence (>80%).
 - Client-side permission checks
 - XSS in JSX/TSX (auto-escaping by default)
 
+## Error Handling
+
+| Error              | Action                     |
+| ------------------ | -------------------------- |
+| No code found      | Report "No code to review" |
+| No vulnerabilities | Return empty findings      |
+| Confidence < 80%   | Exclude from report        |
+
 ## Output
 
-```markdown
-## Security Review
+Return structured YAML:
 
-| Metric         | Value |
-| -------------- | ----- |
-| Files Reviewed | X     |
-| Critical       | X     |
-| High           | X     |
-
-### Issue #1: [Category] - `file.ts:42`
-
-| Field      | Value            |
-| ---------- | ---------------- |
-| Severity   | Critical         |
-| Confidence | 0.95 [✓]         |
-| Evidence   | [code snippet]   |
-| Exploit    | [scenario]       |
-| Fix        | [recommendation] |
+```yaml
+findings:
+  - agent: security-reviewer
+    severity: critical|high|medium
+    category: "A01-A10"
+    location: "<file>:<line>"
+    evidence: "<code snippet>"
+    reasoning: "<why this is vulnerable + attack scenario>"
+    fix: "<secure alternative>"
+    confidence: 0.80-1.00
+summary:
+  total_findings: <count>
+  critical: <count>
+  high: <count>
+  files_reviewed: <count>
 ```

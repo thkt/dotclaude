@@ -3,7 +3,6 @@ description: Analyze Git changes and suggest appropriate branch names
 allowed-tools: [Task, AskUserQuestion, Bash]
 model: opus
 argument-hint: "[context or ticket number]"
-dependencies: [branch-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /branch - Git Branch Name Generator
@@ -21,6 +20,18 @@ Analyze current Git changes and suggest appropriate branch names.
 2. Present options via `AskUserQuestion`
 3. Create selected branch
 
-## Output
+## Flow: Select
+
+```
+[Generator YAML] → [Options] → [User Selection] → [Execute]
+```
+
+## Display Format
+
+### Selection (via AskUserQuestion)
+
+Present generator options as choices with reasons.
+
+### Success
 
 **Created branch**: `[selected-branch-name]`

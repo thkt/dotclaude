@@ -11,9 +11,7 @@ user-invocable: false
 
 # Environment Setup Guide Generation
 
-Auto-generate setup documentation from codebase analysis.
-
-## Detection Items
+## Detection
 
 | Category         | Targets                                                        |
 | ---------------- | -------------------------------------------------------------- |
@@ -23,10 +21,8 @@ Auto-generate setup documentation from codebase analysis.
 | Config Files     | tsconfig.json, eslint.config, vite.config, next.config         |
 | Containers       | Dockerfile, docker-compose.yml, .devcontainer/                 |
 | Commands         | package.json scripts, Makefile, README                         |
-| Testing          | jest.config, vitest.config, pytest.ini, test scripts           |
-| Troubleshooting  | README, TROUBLESHOOTING.md, FAQ, common issues in docs         |
 
-## Detection Patterns
+## Package Manager Indicators
 
 | Manager | Indicator                       |
 | ------- | ------------------------------- |
@@ -37,11 +33,8 @@ Auto-generate setup documentation from codebase analysis.
 | poetry  | `pyproject.toml`, `poetry.lock` |
 | cargo   | `Cargo.toml`, `Cargo.lock`      |
 
-## Quality Criteria
+## References
 
-| Criteria                             | Target |
-| ------------------------------------ | ------ |
-| New member can setup in < 15 min     | ✓      |
-| All env vars documented              | ✓      |
-| Troubleshooting covers common issues | ✓      |
-| Commands copy-pastable               | ✓      |
+| Topic           | File                            |
+| --------------- | ------------------------------- |
+| Setup Checklist | `references/setup-checklist.md` |

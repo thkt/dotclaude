@@ -38,14 +38,14 @@ gh pr create --reviewer username1,username2
 
 ### PRの表示と管理
 
-| コマンド | 目的 |
-| --- | --- |
-| `gh pr list` | オープンPRをリスト |
-| `gh pr view [number]` | PR詳細を表示 |
-| `gh pr status` | 自分のPRのステータス |
-| `gh pr diff [number]` | PRのdiffを表示 |
-| `gh pr checks [number]` | CIステータスを表示 |
-| `gh pr merge [number]` | PRをマージ |
+| コマンド                | 目的                 |
+| ----------------------- | -------------------- |
+| `gh pr list`            | オープンPRをリスト   |
+| `gh pr view [number]`   | PR詳細を表示         |
+| `gh pr status`          | 自分のPRのステータス |
+| `gh pr diff [number]`   | PRのdiffを表示       |
+| `gh pr checks [number]` | CIステータスを表示   |
+| `gh pr merge [number]`  | PRをマージ           |
 
 ### PRのレビュー
 
@@ -68,29 +68,29 @@ gh issue create --title "Feature request" --label "enhancement"
 
 ### Issueの表示と管理
 
-| コマンド | 目的 |
-| --- | --- |
-| `gh issue list` | オープンIssueをリスト |
-| `gh issue view [number]` | Issue詳細を表示 |
-| `gh issue status` | アサインされたIssue |
-| `gh issue close [number]` | Issueをクローズ |
+| コマンド                  | 目的                  |
+| ------------------------- | --------------------- |
+| `gh issue list`           | オープンIssueをリスト |
+| `gh issue view [number]`  | Issue詳細を表示       |
+| `gh issue status`         | アサインされたIssue   |
+| `gh issue close [number]` | Issueをクローズ       |
 
 ## リポジトリ
 
-| コマンド | 目的 |
-| --- | --- |
-| `gh repo view` | 現在のリポジトリを表示 |
-| `gh repo clone owner/repo` | リポジトリをクローン |
-| `gh repo fork` | リポジトリをフォーク |
+| コマンド                   | 目的                   |
+| -------------------------- | ---------------------- |
+| `gh repo view`             | 現在のリポジトリを表示 |
+| `gh repo clone owner/repo` | リポジトリをクローン   |
+| `gh repo fork`             | リポジトリをフォーク   |
 
 ## ワークフロー & Actions
 
-| コマンド | 目的 |
-| --- | --- |
-| `gh workflow list` | ワークフローをリスト |
-| `gh run list` | ワークフロー実行をリスト |
-| `gh run view [run-id]` | 実行詳細を表示 |
-| `gh run watch` | 実行中のワークフローを監視 |
+| コマンド               | 目的                       |
+| ---------------------- | -------------------------- |
+| `gh workflow list`     | ワークフローをリスト       |
+| `gh run list`          | ワークフロー実行をリスト   |
+| `gh run view [run-id]` | 実行詳細を表示             |
+| `gh run watch`         | 実行中のワークフローを監視 |
 
 ## APIアクセス
 
@@ -126,4 +126,3 @@ gh pr create --title "fix: resolve login bug" --body "Fixes #123"
 
 - `/pr` は `gh pr create` をHEREDOCボディで使用
 - `/issue` は `gh issue create` を構造化Issueに使用
-- `/rabbit` はPRコンテキストにghを使用

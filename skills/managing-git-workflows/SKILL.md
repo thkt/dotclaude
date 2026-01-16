@@ -7,9 +7,7 @@ user-invocable: false
 
 # Git Workflows
 
-Git workflow patterns using Conventional Commits and consistent naming.
-
-## Workflow References
+## Workflows
 
 | Workflow        | Reference                          | Command |
 | --------------- | ---------------------------------- | ------- |
@@ -20,30 +18,20 @@ Git workflow patterns using Conventional Commits and consistent naming.
 
 ## Quick Reference
 
-### Branch Naming
+Branch: `<type>/<ticket>-<description>` (e.g., feat/AUTH-123-oauth-login)
 
-```text
-<type>/<ticket>-<description>
-Examples: feat/AUTH-123-oauth-login, fix/BUG-456-null-pointer
-```
-
-### Conventional Commits
-
-```text
-<type>(<scope>): <description>
-```
+Commit: `<type>(<scope>): <description>`
 
 | Type       | Purpose            |
 | ---------- | ------------------ |
 | `feat`     | New feature        |
 | `fix`      | Bug fix            |
-| `docs`     | Documentation      |
 | `refactor` | Code restructuring |
+| `docs`     | Documentation      |
 | `test`     | Test changes       |
 | `chore`    | Build/tooling      |
 
-### Safety Rules
+## Safety
 
-- Never use `git push --force` (use `--force-with-lease`)
-- Never use `git reset --hard` without confirmation
-- Always check `git status` before commit
+- Never `git push --force` (use `--force-with-lease`)
+- Never `git reset --hard` without confirmation

@@ -2,17 +2,33 @@
 name: sow-spec-reviewer
 description: SOW/Spec quality review with 100-point scoring, 90-point pass threshold.
 tools: [Read, Grep, Glob, LS, Task]
-model: sonnet
+model: opus
 skills: [formatting-audits, reviewing-readability, applying-code-principles]
+context: fork
 ---
 
 # SOW/Spec Reviewer
 
 100-point scoring with 90-point pass threshold. Detect design issues before code.
 
-## Dependencies
+## Generated Content
 
-- [@../../skills/formatting-audits/SKILL.md] - 100-point scoring system
+| Section | Description                         |
+| ------- | ----------------------------------- |
+| scores  | 4 categories × 25 points each       |
+| fixes   | Specific issues with locations      |
+| result  | PASS/CONDITIONAL/FAIL + promise tag |
+
+## Analysis Phases
+
+| Phase | Action              | Focus                           |
+| ----- | ------------------- | ------------------------------- |
+| 1     | Document Discovery  | Find sow.md/spec.md in planning |
+| 2     | Section Check       | Required sections present       |
+| 3     | Accuracy Analysis   | ✓/→/? markers, evidence         |
+| 4     | Completeness Check  | AC, FR, Test coverage           |
+| 5     | Relevance Check     | Goals ↔ Solutions, YAGNI        |
+| 6     | Actionability Check | Specific steps, feasibility     |
 
 ## Search Paths
 
@@ -44,32 +60,47 @@ skills: [formatting-audits, reviewing-readability, applying-code-principles]
 | Risks → Mitigations | Addressed in Spec      |
 | Test Coverage       | AC covered by tests    |
 
-## Judgment
+## Error Handling
 
-| Score  | Result         | Action             |
-| ------ | -------------- | ------------------ |
-| 90-100 | ✅ PASS        | Proceed to /code   |
-| 70-89  | ⚠️ CONDITIONAL | Fix then re-review |
-| 0-69   | ❌ FAIL        | Re-run /think      |
+| Error             | Action                   |
+| ----------------- | ------------------------ |
+| No SOW/Spec found | Report "No document"     |
+| Empty document    | Return score 0           |
+| Missing sections  | Deduct from Completeness |
 
 ## Output
 
-```markdown
-## Design Document Review
+Return structured YAML with ralph-loop compatible promise tag:
 
-| Item          | Score | Eval     |
-| ------------- | ----- | -------- |
-| Accuracy      | X/25  | ✓/→/?    |
-| Completeness  | X/25  | ✓/→/?    |
-| Relevance     | X/25  | ✓/→/?    |
-| Actionability | X/25  | ✓/→/?    |
-| **Total**     | X/100 | ✅/⚠️/❌ |
+```yaml
+agent: sow-spec-reviewer
+document: "<path to reviewed document>"
+scores:
+  accuracy: <0-25>
+  completeness: <0-25>
+  relevance: <0-25>
+  actionability: <0-25>
+  total: <0-100>
+judgment: PASS|CONDITIONAL|FAIL
+fixes:
+  - location: "<section or line>"
+    issue: "<what's wrong>"
+    suggestion: "<how to fix>"
+    impact: "<score improvement>"
+next_action: "<specific action to take>"
+promise: "<promise>PASS</promise>" # Only when total >= 90
+```
 
-### Required Fixes
+## Ralph Loop Integration
 
-1. [specific fix]
+When used with ralph-loop:
 
-### Next Action
+- Score >= 90: Output `<promise>PASS</promise>` to exit loop
+- Score < 90: Output specific fixes for next iteration
+- Max iterations recommended: 5-10
 
-[based on judgment]
+Example usage:
+
+```bash
+/ralph-loop "Review SOW/Spec and fix issues until score >= 90. Output <promise>PASS</promise> when done." --completion-promise "PASS" --max-iterations 10
 ```

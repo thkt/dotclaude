@@ -3,7 +3,6 @@ description: Validate implementation against SOW acceptance criteria
 allowed-tools: Read, Glob, Grep
 model: opus
 argument-hint: "[feature name]"
-dependencies: [sow-spec-reviewer, managing-planning]
 ---
 
 # /validate - SOW Criteria Checker

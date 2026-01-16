@@ -3,54 +3,41 @@
 ## Structure
 
 ```markdown
-# <project_name> - Domain Documentation
+# {project_name} - Domain Documentation
 
 ## Glossary
 
-| Term   | Definition   | Context      |
-| ------ | ------------ | ------------ |
-| <term> | <definition> | <where used> |
+| Term              | Definition              | Context              |
+| ----------------- | ----------------------- | -------------------- |
+| {glossary[].term} | {glossary[].definition} | {glossary[].context} |
 
 ## Entities
 
-### <entity_name>
+### {entities[].name}
 
-| Field   | Type   | Description   |
-| ------- | ------ | ------------- |
-| <field> | <type> | <description> |
+| Field                      | Type                       | Description                       |
+| -------------------------- | -------------------------- | --------------------------------- |
+| {entities[].fields[].name} | {entities[].fields[].type} | {entities[].fields[].description} |
 
 **Invariants**:
 
-- <invariant 1>
-- <invariant 2>
+- {entities[].invariants[]}
 
 ## Relationships
 
 \`\`\`mermaid
-erDiagram
-EntityA ||--o{ EntityB : "has many"
-EntityB }|--|| EntityC : "belongs to"
+{relationships.mermaid}
 \`\`\`
 
 ## Business Rules
 
-| Rule        | Description   | Enforced By |
-| ----------- | ------------- | ----------- |
-| <rule_name> | <description> | <component> |
+| Rule                    | Description                    | Enforced By                    |
+| ----------------------- | ------------------------------ | ------------------------------ |
+| {business_rules[].name} | {business_rules[].description} | {business_rules[].enforced_by} |
 
 ## Domain Events
 
-| Event        | Trigger          | Subscribers   |
-| ------------ | ---------------- | ------------- |
-| <event_name> | <when triggered> | <who listens> |
+| Event                  | Trigger                   | Subscribers                   |
+| ---------------------- | ------------------------- | ----------------------------- |
+| {domain_events[].name} | {domain_events[].trigger} | {domain_events[].subscribers} |
 ```
-
-## Guidelines
-
-| Section        | Description                                    |
-| -------------- | ---------------------------------------------- |
-| Glossary       | Domain-specific terms and definitions          |
-| Entities       | Core domain objects with fields and invariants |
-| Relationships  | ER diagram showing entity connections          |
-| Business Rules | Domain rules and where they're enforced        |
-| Domain Events  | Events and their subscribers                   |

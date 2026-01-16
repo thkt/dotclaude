@@ -3,7 +3,6 @@ description: Generate GitHub Issue with structured title and body
 allowed-tools: Task
 model: opus
 argument-hint: "[issue description]"
-dependencies: [issue-generator, utilizing-cli-tools, managing-git-workflows]
 ---
 
 # /issue - GitHub Issue Generator
@@ -21,17 +20,18 @@ Generate well-structured GitHub Issues.
 1. Delegate to `issue-generator` (returns structured YAML)
 2. Format and present preview
 3. Confirm with user
-4. Execute:
-
-   ```bash
-   gh issue create --title "<title>" --body "<body>"
-   ```
-
+4. Execute: `gh issue create --title "<title>" --body "<body>"`
 5. Capture issue URL from command output
+
+## Flow: Preview
+
+```
+[Generator YAML] → [Preview] → [Confirm] → [Execute]
+```
 
 ## Display Format
 
-Transform agent YAML output to readable preview:
+### Preview
 
 ```markdown
 ## 🎫 Issue Preview
@@ -43,7 +43,7 @@ Transform agent YAML output to readable preview:
 <body content>
 ```
 
-## Output
+### Success
 
 **Created**: `#<number>` <title>
 <issue URL>

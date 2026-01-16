@@ -1,26 +1,15 @@
 # Rulify Workflow
 
-Generate enforceable rules from ADR decisions.
-
 ## Flow
 
 ```text
 ADR (decision) → Rule (enforcement) → CLAUDE.md (integration)
 
 /rulify <ADR-number>
-    │
-    ├─ Read ADR content
-    │
-    ├─ Extract enforceable rules
-    │
-    ├─ Generate rule file in rules/
-    │
-    └─ Update CLAUDE.md references
+  → Read ADR → Extract rules → Generate file → Update CLAUDE.md
 ```
 
 ## Rule Extraction
-
-From ADR sections:
 
 | ADR Section  | Rule Content    |
 | ------------ | --------------- |
@@ -30,7 +19,7 @@ From ADR sections:
 
 ## Rule Template
 
-````markdown
+```markdown
 # [Rule Title]
 
 ## Rule
@@ -39,102 +28,34 @@ From ADR sections:
 
 ## Rationale
 
-[Why this rule exists - from ADR Decision]
+[From ADR Decision]
 
 ## Examples
 
 ### Good
 
-```typescript
-[Compliant example]
-```
+[Compliant]
 
 ### Bad
 
-```typescript
-[Non-compliant example]
-```
-
-## Exceptions
-
-[When rule can be bypassed]
+[Non-compliant]
 
 ## Related
 
 - ADR: [@../adr/NNNN-slug.md]
-````
+```
 
-## Output Locations
+## Output
 
-| File Type | Location                          |
-| --------- | --------------------------------- |
-| Rule file | `rules/[category]/[rule-name].md` |
-| CLAUDE.md | Update references section         |
+| Type      | Location                     |
+| --------- | ---------------------------- |
+| Rule file | `rules/[category]/[name].md` |
+| Reference | CLAUDE.md update             |
 
 ## Categories
 
-| Category       | Purpose              |
-| -------------- | -------------------- |
-| `core/`        | Fundamental rules    |
-| `guidelines/`  | Best practices       |
-| `development/` | Implementation rules |
-| `commands/`    | Command-specific     |
-
-## CLAUDE.md Integration
-
-Add reference to CLAUDE.md:
-
-```markdown
-### [Category] Rules
-
-- [@./rules/category/rule-name.md](./rules/category/rule-name.md) - Brief description
-```
-
-## Example
-
-ADR-0015: "Adopt TypeScript strict mode"
-
-Generated rule:
-
-````markdown
-# TypeScript Strict Mode
-
-## Rule
-
-All TypeScript projects MUST enable strict mode in tsconfig.json.
-
-## Rationale
-
-Strict mode catches type errors at compile time, reducing runtime bugs.
-(From ADR-0015: Adopt TypeScript strict mode)
-
-## Examples
-
-### Good
-
-```json
-{
-  "compilerOptions": {
-    "strict": true
-  }
-}
-```
-
-### Bad
-
-```json
-{
-  "compilerOptions": {
-    "strict": false
-  }
-}
-```
-
-## Related
-
-- ADR: [@../adr/0015-adopt-typescript-strict-mode.md]
-````
-
-## Related
-
-- ADR workflow: [@./adr-workflow.md](./adr-workflow.md)
+| Category       | Purpose           |
+| -------------- | ----------------- |
+| `core/`        | Fundamental rules |
+| `guidelines/`  | Best practices    |
+| `development/` | Implementation    |

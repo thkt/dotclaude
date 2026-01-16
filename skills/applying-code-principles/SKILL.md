@@ -10,30 +10,28 @@ user-invocable: false
 
 # Code Principles
 
-Claude knows all principles. This file defines project-specific thresholds and priority.
-
 ## Priority Order
 
-When principles conflict:
+| Priority | Principle     | When to Apply                                  |
+| -------- | ------------- | ---------------------------------------------- |
+| 1        | Safety First  | Security, data integrity                       |
+| 2        | YAGNI         | Don't build what you don't need                |
+| 3        | Occam's Razor | Simplest solution                              |
+| 4        | SOLID         | For complex systems                            |
+| 5        | DRY           | Eliminate duplication (not at cost of clarity) |
+| 6        | Miller's Law  | Respect 7±2 cognitive limit                    |
 
-1. **Safety First** - Security, data integrity
-2. **YAGNI** - Don't build what you don't need
-3. **Occam's Razor** - Simplest solution
-4. **SOLID** - For complex systems
-5. **DRY** - Eliminate duplication (not at cost of clarity)
-6. **Miller's Law** - Respect 7±2 cognitive limit
+## Quick Checks
 
-## Quick Decision Questions
-
-- "Is there a simpler way?" (Occam's Razor)
-- "Understandable in <1 min?" (Miller's Law)
-- "Duplicating knowledge?" (DRY)
-- "Needed now?" (YAGNI)
-- "Single reason to change?" (SOLID/SRP)
+| Question                  | Principle   |
+| ------------------------- | ----------- |
+| Simpler way?              | Occam       |
+| Understandable in <1 min? | Miller      |
+| Duplicating knowledge?    | DRY         |
+| Needed now?               | YAGNI       |
+| Single reason to change?  | SRP (SOLID) |
 
 ## Thresholds
-
-### Miller's Law
 
 | Target        | Ideal | Max | Limit |
 | ------------- | ----- | --- | ----- |
@@ -41,27 +39,11 @@ When principles conflict:
 | Class methods | 5     | 7   | 9     |
 | Conditionals  | 3     | 5   | 7     |
 
-### DRY
+## Rules
 
-- **Rule of Three**: Abstract on 3rd duplication
-
-### SOLID
-
-- Create interface only when 2nd implementation appears
-- No single-implementation interfaces
-
-### YAGNI
-
-Before adding, confirm:
-
-1. Problem exists now? → No = don't build
-2. Failed in production? → No = no error handling yet
-3. User requested? → No = no feature yet
-4. Measured evidence? → No = no optimization yet
-
-### Readable Code
-
-**"Code should be written to minimize the time it would take for someone else to understand it"**
-— Dustin Boswell & Trevor Foucher
-
-Test: "Would a new team member understand this in < 1 minute?"
+| Principle | Rule                                           |
+| --------- | ---------------------------------------------- |
+| DRY       | Abstract on 3rd duplication (Rule of Three)    |
+| SOLID     | Interface only when 2nd implementation appears |
+| YAGNI     | Build only if problem exists now               |
+| Readable  | New team member understands in < 1 minute      |

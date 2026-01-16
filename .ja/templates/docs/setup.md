@@ -1,78 +1,67 @@
-# セットアップテンプレート
+# Setup Template
 
-## 構造
+## Structure
 
 ```markdown
-# <project_name> - セットアップガイド
+# {project_name} - Setup Guide
 
-## 前提条件
+## Prerequisites
 
-| ツール | バージョン | 必須   |
-| ------ | ---------- | ------ |
-| <tool> | <version>  | Yes/No |
+| Tool                   | Version                   | Required                   |
+| ---------------------- | ------------------------- | -------------------------- |
+| {prerequisites[].tool} | {prerequisites[].version} | {prerequisites[].required} |
 
-## インストール
-
-\`\`\`bash
-
-# リポジトリをクローン
-
-git clone <repo_url>
-cd <project_name>
-
-# 依存関係をインストール
-
-<install_command>
-\`\`\`
-
-## 設定
-
-### 環境変数
-
-| 変数       | 説明          | デフォルト |
-| ---------- | ------------- | ---------- |
-| <VAR_NAME> | <description> | <default>  |
-
-### 設定ファイル
-
-| ファイル   | 用途      |
-| ---------- | --------- |
-| <filename> | <purpose> |
-
-## 実行
-
-### 開発
+## Installation
 
 \`\`\`bash
-<dev_command>
+
+# Clone repository
+
+git clone {installation.clone_url}
+cd {project_name}
+
+# Install dependencies
+
+{installation.install_command}
 \`\`\`
 
-### 本番
+## Configuration
+
+### Environment Variables
+
+| Variable                        | Description                            | Default                            |
+| ------------------------------- | -------------------------------------- | ---------------------------------- |
+| {configuration.env_vars[].name} | {configuration.env_vars[].description} | {configuration.env_vars[].default} |
+
+### Config Files
+
+| File                                | Purpose                                |
+| ----------------------------------- | -------------------------------------- |
+| {configuration.config_files[].file} | {configuration.config_files[].purpose} |
+
+## Running
+
+### Development
 
 \`\`\`bash
-<prod_command>
+{running.development}
 \`\`\`
 
-## テスト
+### Production
 
 \`\`\`bash
-<test_command>
+{running.production}
 \`\`\`
 
-## トラブルシューティング
+## Testing
 
-| 問題    | 解決策     |
-| ------- | ---------- |
-| <issue> | <solution> |
+\`\`\`bash
+{testing.command}
+\`\`\`
+
+## Troubleshooting
+
+| Issue                     | Solution                     |
+| ------------------------- | ---------------------------- |
+| {troubleshooting[].issue} | {troubleshooting[].solution} |
 ```
-
-## ガイドライン
-
-| セクション             | 説明                       |
-| ---------------------- | -------------------------- |
-| 前提条件               | バージョン付きの必要ツール |
-| インストール           | ステップごとのコマンド     |
-| 設定                   | 環境変数と設定ファイル     |
-| 実行                   | 開発・本番の起動コマンド   |
-| テスト                 | テスト実行方法             |
-| トラブルシューティング | よくある問題と解決策       |

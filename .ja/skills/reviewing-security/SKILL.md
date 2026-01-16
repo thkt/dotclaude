@@ -1,54 +1,35 @@
 ---
 name: reviewing-security
-description: OWASP Top 10に基づくセキュリティレビューと脆弱性検出。
+description: OWASP Top 10-based security review and vulnerability detection.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: security-reviewer
 user-invocable: false
 ---
 
-# セキュリティレビュー - OWASP Top 10
+# セキュリティレビュー
 
-OWASP Top 10に基づく脆弱性検出とセキュアな実装ガイダンス。
+## 検出 (OWASP Top 10)
 
-## セクションベースのロード
+| ID  | カテゴリ         | パターン                               | 修正                                 |
+| --- | ---------------- | -------------------------------------- | ------------------------------------ |
+| A01 | アクセス制御不備 | 認証欠如、IDOR、パストラバーサル       | 認証ミドルウェア、所有権チェック     |
+| A02 | 暗号化の失敗     | `password: 'plaintext'`                | bcrypt/argon2ハッシュ                |
+| A03 | インジェクション | `db.query(\`SELECT...${id}\`)`         | パラメータ化クエリ、ORM              |
+| A03 | インジェクション | `exec(\`ping ${host}\`)`               | 入力検証、ライブラリ使用             |
+| A03 | XSS              | `dangerouslySetInnerHTML={{ __html }}` | デフォルトエスケープ、DOMPurify      |
+| A05 | セキュリティ設定 | `cors({ origin: '*' })`                | 明示的オリジン許可リスト             |
+| A05 | セキュリティ設定 | `cookie: {}` (オプションなし)          | secure, httpOnly, sameSite: 'strict' |
+| A09 | ログ記録の失敗   | `logger.info({ password })`            | 機密フィールド除外                   |
+| A10 | SSRF             | `fetch(userInputUrl)`                  | URL検証、許可リスト                  |
 
-| セクション       | ファイル                        | フォーカス                 |
-| ---------------- | ------------------------------- | -------------------------- |
-| 基本セキュリティ | `references/owasp-basic.md`     | アクセス制御、暗号化、認証 |
-| インジェクション | `references/owasp-injection.md` | SQL/XSS/CSRF               |
-| 上級             | `references/owasp-advanced.md`  | 設計、設定、SSRF           |
+## 信頼度閾値
 
-## クイックチェックリスト
+信頼度 >80% の場合のみ報告。含める: file:line、悪用シナリオ、修正推奨。
 
-### 入力バリデーション
+## 参考
 
-- [ ] すべてのユーザー入力がサニタイズされている
-- [ ] SQLがパラメータ化ステートメントを使用
-- [ ] コマンドインジェクションなし
-- [ ] XSS防御が適用されている
-
-### 認証とセッション
-
-- [ ] パスワードがハッシュ化（bcrypt）
-- [ ] HttpOnly, Secure, SameSite cookies
-- [ ] JWT有効期限が設定
-- [ ] すべてのエンドポイントで認可チェック
-
-### データ保護
-
-- [ ] 機密データがログに記録されていない
-- [ ] HTTPSが強制されている
-- [ ] APIキーがハードコードされていない
-
-### 依存関係
-
-- [ ] `npm audit` / `yarn audit` クリーン
-
-## 主要原則
-
-| 原則             | 説明                   |
-| ---------------- | ---------------------- |
-| 多層防御         | 単一の対策に依存しない |
-| 最小権限         | 最小限の権限           |
-| 安全に失敗       | 失敗時も安全           |
-| デフォルトで安全 | デフォルトでセキュア   |
+| トピック         | ファイル                        |
+| ---------------- | ------------------------------- |
+| 基本セキュリティ | `references/owasp-basic.md`     |
+| インジェクション | `references/owasp-injection.md` |
+| 上級             | `references/owasp-advanced.md`  |

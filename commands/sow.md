@@ -3,7 +3,6 @@ description: Generate Statement of Work (SOW) for planning complex tasks
 allowed-tools: Bash(git log:*), Bash(git diff:*), Read, Write, Glob, Grep, LS, Task
 model: opus
 argument-hint: "[task description]"
-dependencies: [formatting-audits, managing-planning]
 ---
 
 # /sow - SOW Generator

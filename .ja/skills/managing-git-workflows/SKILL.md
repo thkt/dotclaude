@@ -1,15 +1,13 @@
 ---
 name: managing-git-workflows
-description: Gitワークフロー自動化パターン：ブランチ命名、コミットメッセージ、PR説明。
+description: Git workflow automation patterns: branch naming, commit messages, PR descriptions.
 allowed-tools: [Bash, Read, Grep, Glob]
 user-invocable: false
 ---
 
 # Gitワークフロー
 
-Conventional Commitsと一貫した命名を使用したGitワークフローパターン。
-
-## ワークフローリファレンス
+## ワークフロー
 
 | ワークフロー       | リファレンス                       | コマンド |
 | ------------------ | ---------------------------------- | -------- |
@@ -20,30 +18,20 @@ Conventional Commitsと一貫した命名を使用したGitワークフローパ
 
 ## クイックリファレンス
 
-### ブランチ命名
+ブランチ: `<type>/<ticket>-<description>` (例: feat/AUTH-123-oauth-login)
 
-```text
-<type>/<ticket>-<description>
-例: feat/AUTH-123-oauth-login, fix/BUG-456-null-pointer
-```
-
-### Conventional Commits
-
-```text
-<type>(<scope>): <description>
-```
+コミット: `<type>(<scope>): <description>`
 
 | タイプ     | 目的                   |
 | ---------- | ---------------------- |
 | `feat`     | 新機能                 |
 | `fix`      | バグ修正               |
-| `docs`     | ドキュメント           |
 | `refactor` | コードリファクタリング |
+| `docs`     | ドキュメント           |
 | `test`     | テスト変更             |
 | `chore`    | ビルド/ツール          |
 
-### 安全ルール
+## 安全
 
 - `git push --force`は使用禁止（`--force-with-lease`を使用）
 - `git reset --hard`は確認なしで使用禁止
-- コミット前に必ず`git status`を確認

@@ -3,7 +3,6 @@ description: List and view planning documents (SOW/Spec) in workspace
 allowed-tools: Read, Glob
 model: opus
 argument-hint: "[feature-name]"
-dependencies: [managing-planning]
 ---
 
 # /plans - Planning Document Viewer

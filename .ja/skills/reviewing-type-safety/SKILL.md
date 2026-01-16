@@ -1,6 +1,6 @@
 ---
 name: reviewing-type-safety
-description: 最大の型カバレッジのためのTypeScript型安全パターンとベストプラクティス。
+description: TypeScript type safety patterns and best practices for maximum type coverage.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: type-safety-reviewer
 user-invocable: false
@@ -8,45 +8,27 @@ user-invocable: false
 
 # 型安全レビュー
 
-目標: 最小限の型の体操で最大の型安全性。
+## 検出
 
-## メトリクス
+| ID  | パターン                      | 修正                          |
+| --- | ----------------------------- | ----------------------------- |
+| TS1 | `any`                         | `unknown` + 型ガード          |
+| TS1 | 暗黙的any                     | 明示的な型アノテーション      |
+| TS2 | `value as Type`               | 型ガード関数                  |
+| TS2 | `value!` (非nullアサーション) | 明示的なnullチェック          |
+| TS3 | `function fn(data)` (型なし)  | `function fn(data: Type)`     |
+| TS3 | 戻り値型の欠如                | 明示的な `: ReturnType`       |
+| TS4 | 網羅的でない`default:`        | `default: assertNever(value)` |
 
-| コンテキスト   | ターゲット | 警告             |
-| -------------- | ---------- | ---------------- |
-| 型カバレッジ   | 95%+       | < 90%            |
-| Any使用        | 0          | > 5インスタンス  |
-| 型アサーション | 最小限     | > 10インスタンス |
-| 暗黙のany      | 0          | Any > 0          |
-| Strictモード   | すべて有効 | いずれか無効     |
+## 基準
 
-## セクションベースのロード
+型カバレッジ >= 95%。Any使用 = 0。Strictモード全て有効。
 
-| セクション | ファイル                      | フォーカス         |
-| ---------- | ----------------------------- | ------------------ |
-| カバレッジ | `references/type-coverage.md` | anyを避ける        |
-| ガード     | `references/type-guards.md`   | ナローイング、判別 |
-| Strict     | `references/strict-mode.md`   | tsconfig、React型  |
+## 参考
 
-## クイックチェックリスト
-
-- [ ] すべての関数に明示的な戻り値型
-- [ ] すべてのパラメータが型付き（暗黙のanyなし）
-- [ ] すべてのデータ構造にInterface/type
-- [ ] 正当化なしの`any`なし
-- [ ] Union型に型述語
-- [ ] `never`による網羅的チェック
-- [ ] 安全でない`as`アサーションを避ける
-
-## 主要原則
-
-| 原則             | 適用                           |
-| ---------------- | ------------------------------ |
-| Fail Fast        | コンパイル時にキャッチ         |
-| TSに推論させる   | 明確なものを過度に型付けしない |
-| 型はドキュメント | 良い型 = ドキュメント          |
-| unknownを優先    | `any`より`unknown`を使用       |
-
-## 参照
-
-- [@./references/result-type.md] - Result型エラーハンドリング
+| トピック   | ファイル                      |
+| ---------- | ----------------------------- |
+| カバレッジ | `references/type-coverage.md` |
+| ガード     | `references/type-guards.md`   |
+| Strict     | `references/strict-mode.md`   |
+| Result     | `references/result-type.md`   |

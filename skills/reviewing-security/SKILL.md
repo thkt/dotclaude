@@ -6,49 +6,30 @@ agent: security-reviewer
 user-invocable: false
 ---
 
-# Security Review - OWASP Top 10
+# Security Review
 
-OWASP-based vulnerability detection and secure implementation guidance.
+## Detection (OWASP Top 10)
 
-## Section-Based Loading
+| ID  | Category                  | Pattern                                | Fix                                  |
+| --- | ------------------------- | -------------------------------------- | ------------------------------------ |
+| A01 | Broken Access Control     | Missing auth, IDOR, path traversal     | Auth middleware, ownership check     |
+| A02 | Cryptographic Failures    | `password: 'plaintext'`                | bcrypt/argon2 hashing                |
+| A03 | Injection                 | `db.query(\`SELECT...${id}\`)`         | Parameterized query, ORM             |
+| A03 | Injection                 | `exec(\`ping ${host}\`)`               | Input validation, library instead    |
+| A03 | XSS                       | `dangerouslySetInnerHTML={{ __html }}` | Default escaping, DOMPurify          |
+| A05 | Security Misconfiguration | `cors({ origin: '*' })`                | Explicit origin allowlist            |
+| A05 | Security Misconfiguration | `cookie: {}` (no options)              | secure, httpOnly, sameSite: 'strict' |
+| A09 | Logging Failures          | `logger.info({ password })`            | Exclude sensitive fields             |
+| A10 | SSRF                      | `fetch(userInputUrl)`                  | URL validation, allowlist            |
 
-| Section        | File                            | Focus                        |
-| -------------- | ------------------------------- | ---------------------------- |
-| Basic Security | `references/owasp-basic.md`     | Access Control, Crypto, Auth |
-| Injection      | `references/owasp-injection.md` | SQL/XSS/CSRF                 |
-| Advanced       | `references/owasp-advanced.md`  | Design, Config, SSRF         |
+## Confidence Threshold
 
-## Quick Checklist
+Report only when confidence >80%. Include: file:line, exploit scenario, fix recommendation.
 
-### Input Validation
+## References
 
-- [ ] All user input sanitized
-- [ ] SQL uses parameterized statements
-- [ ] No command injection
-- [ ] XSS protection applied
-
-### Auth & Session
-
-- [ ] Passwords hashed (bcrypt)
-- [ ] HttpOnly, Secure, SameSite cookies
-- [ ] JWT expiration configured
-- [ ] Authorization on all endpoints
-
-### Data Protection
-
-- [ ] Sensitive data not logged
-- [ ] HTTPS enforced
-- [ ] API keys not hardcoded
-
-### Dependencies
-
-- [ ] `npm audit` / `yarn audit` clean
-
-## Key Principles
-
-| Principle        | Description                  |
-| ---------------- | ---------------------------- |
-| Defense in Depth | Don't rely on single measure |
-| Least Privilege  | Minimal permissions          |
-| Fail Securely    | Safe even when failing       |
-| Security Default | Secure by default            |
+| Topic          | File                            |
+| -------------- | ------------------------------- |
+| Basic Security | `references/owasp-basic.md`     |
+| Injection      | `references/owasp-injection.md` |
+| Advanced       | `references/owasp-advanced.md`  |

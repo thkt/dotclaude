@@ -3,7 +3,6 @@ description: ガイド付きブラウザ操作を通じてドキュメントとP
 allowed-tools: Read, Write, Glob, Task, mcp__claude-in-chrome__*, mcp__playwright__*
 model: opus
 argument-hint: "[テスト名]"
-dependencies: [automating-browser, managing-testing]
 ---
 
 # /e2e - E2Eテスト生成

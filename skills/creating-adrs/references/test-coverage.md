@@ -1,204 +1,72 @@
-# Test Coverage Checklist
+# Test Coverage Guide
 
-ADR: [Number/Title]
-Created: [YYYY-MM-DD]
+## Test Types
 
-## Impact on Existing Tests
+| Type        | Purpose               | Coverage Target |
+| ----------- | --------------------- | --------------- |
+| Unit        | Function/method level | ≥80%            |
+| Integration | Module interaction    | Key paths       |
+| E2E         | User flows            | Critical paths  |
+| Performance | Load/stress           | Benchmarks      |
 
-- [ ] Identify number of affected test files (estimated: ___ files)
-- [ ] Evaluate potential test failures due to breaking changes
-- [ ] Identify tests requiring mock/stub updates
-- [ ] Confirm if test data updates are needed
-- [ ] Confirm if snapshot test updates are needed
+## Impact Assessment
 
-### Details
-
-**Affected Tests**:
-
-- [ ] Unit tests: ___ files
-- [ ] Integration tests: ___ files
-- [ ] E2E tests: ___ scenarios
-- [ ] Performance tests: ___ cases
-
-**Mocks Requiring Updates**
-
--
--
+| Check            | Questions                         |
+| ---------------- | --------------------------------- |
+| Affected tests   | How many test files need updates? |
+| Breaking changes | Will existing tests fail?         |
+| Mock updates     | Which mocks need changes?         |
+| Test data        | Fixtures need updates?            |
 
 ## New Test Requirements
 
-- [ ] Unit test coverage target for new features (___%)
-- [ ] Integration test additions (___ tests)
-- [ ] E2E scenario additions (___ scenarios)
-- [ ] Edge case tests (___ tests)
-- [ ] Error handling tests (___ tests)
+| Priority | Test Type   | Focus                         |
+| -------- | ----------- | ----------------------------- |
+| P0       | Unit        | New functions, error handling |
+| P1       | Integration | API contracts, DB operations  |
+| P2       | E2E         | Critical user flows           |
+| P3       | Performance | If perf-sensitive             |
 
-### Details
+## Coverage Targets
 
-**New Unit Tests**: ___ tests
+| Metric    | Minimum | Recommended |
+| --------- | ------- | ----------- |
+| Statement | 70%     | 80%         |
+| Branch    | 60%     | 70%         |
+| Function  | 80%     | 90%         |
 
-**Priority List**:
-
-1. [P0]
-2. [P1]
-3. [P2]
-
-**Test Coverage Targets**:
-
-- Statement coverage: ___%
-- Branch coverage: ___%
-- Function coverage: ___%
-
-## Test Type Plans
+## Test Checklist by Type
 
 ### Unit Tests
 
-- [ ] Tests for newly added functions/methods
-- [ ] Boundary value tests
-- [ ] Error case tests
-- [ ] Edge case tests
-
-**Target Files**
-
--
--
+| Check          | Description        |
+| -------------- | ------------------ |
+| Happy path     | Normal operation   |
+| Edge cases     | Boundary values    |
+| Error cases    | Exception handling |
+| Null/undefined | Missing inputs     |
 
 ### Integration Tests
 
-- [ ] Inter-module integration tests
-- [ ] API integration tests
-- [ ] Database integration tests
-
-**Scenarios**
-
--
--
+| Check             | Description        |
+| ----------------- | ------------------ |
+| Module boundaries | Cross-module calls |
+| API contracts     | Request/response   |
+| DB operations     | CRUD operations    |
+| External services | Mock/stub behavior |
 
 ### E2E Tests
 
-- [ ] Complete user flow tests
-- [ ] Critical path tests
-- [ ] Regression tests
+| Check           | Description           |
+| --------------- | --------------------- |
+| Critical paths  | Login, checkout, etc. |
+| Error scenarios | Form validation, 404  |
+| Cross-browser   | If applicable         |
 
-**Scenarios**
+## Quality Gates
 
--
--
-
-### Performance Tests
-
-- [ ] Load tests
-- [ ] Stress tests
-- [ ] Benchmarks
-
-**Metrics**
-
--
--
-
-## Test Tools & Frameworks
-
-- [ ] Test framework to use: ___
-- [ ] Mock library: ___
-- [ ] Coverage tool: ___
-- [ ] E2E tool: ___
-
-### New Tools Required
-
-**Tool Name**: ___
-
-**Reason**:
-
-**Implementation Cost**: ___ hours
-
-## Test Data
-
-- [ ] Define test data preparation method
-- [ ] Create fixtures (___ fixtures)
-- [ ] Prepare seed data
-- [ ] Test data cleanup strategy
-
-### Details
-
-**Test Data Sources**:
-
-- [ ] Sanitized production data
-- [ ] Generated dummy data
-- [ ] Manually created fixtures
-
-## CI/CD Impact
-
-- [ ] Estimated test execution time in CI/CD pipeline (___ minutes)
-- [ ] Need for parallel execution
-- [ ] Alert configuration for test failures
-- [ ] Automatic coverage report generation
-
-### Details
-
-**Current CI Time**: ___ minutes
-
-**Estimated Time After Addition**: ___ minutes
-
-**Optimization Ideas**
-
--
-
-## Test Documentation
-
-- [ ] Create test plan document
-- [ ] Create test case list
-- [ ] Update test procedure document
-- [ ] Add test execution instructions to README.md
-
-### Details
-
-**Documentation List**
-
--
--
-
-## Quality Standards
-
-- [ ] Set minimum coverage threshold: ___%
-- [ ] Define required tests
-- [ ] Test failure response procedures
-- [ ] Regression prevention measures
-
-### Details
-
-**Quality Gates**:
-
-- [ ] Unit test coverage ≥ ___%
-- [ ] Integration test coverage ≥ ___%
-- [ ] All E2E scenarios pass
-- [ ] Performance benchmarks met
-
-## Estimates
-
-- [ ] Test creation effort: ___ hours
-- [ ] Test execution time: ___ minutes
-- [ ] Maintenance effort: ___ hours/month
-
-### Details
-
-**Task Assignment**:
-
-- Assignee 1: ___ hours
-- Assignee 2: ___ hours
-
-## Summary
-
-**Overall Test Coverage Assessment**: [ ] Sufficient / [ ] Needs Addition / [ ] Significantly Lacking
-
-**Implementation Priority**: [ ] P0 / [ ] P1 / [ ] P2 / [ ] P3
-
-**Recommended Implementation Timing**:
-
-**Approver**:
-
-**Approval Date**:
-
----
-
-*Checklist completed: [YYYY-MM-DD]*
-*Completed by: [Name]*
+| Gate       | Criteria               |
+| ---------- | ---------------------- |
+| PR merge   | Unit tests pass        |
+| Staging    | Integration tests pass |
+| Production | All tests + E2E pass   |

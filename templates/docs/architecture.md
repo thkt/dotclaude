@@ -3,60 +3,48 @@
 ## Structure
 
 ```markdown
-# <project_name> - Architecture Overview
+# {project_name} - Architecture Overview
 
 ## Technology Stack
 
-| Category  | Technology  |
-| --------- | ----------- |
-| Language  | <language>  |
-| Framework | <framework> |
-| Database  | <database>  |
+| Category  | Technology             |
+| --------- | ---------------------- |
+| Language  | {tech_stack.language}  |
+| Framework | {tech_stack.framework} |
+| Database  | {tech_stack.database}  |
 
 ## Directory Structure
 
 \`\`\`
-<tree output>
+{directory_structure}
 \`\`\`
 
 ## Module Structure
 
 \`\`\`mermaid
-graph TD
-A[Module A] --> B[Module B]
-A --> C[Module C]
+{mermaid_diagram}
 \`\`\`
 
 ## Key Components
 
-| Component | Path   | Description   |
-| --------- | ------ | ------------- |
-| <name>    | <path> | <description> |
+| Component               | Path                    | Description                    |
+| ----------------------- | ----------------------- | ------------------------------ |
+| {key_components[].name} | {key_components[].path} | {key_components[].description} |
 
 ## Dependencies
 
 ### External
 
-- <package>: <purpose>
+- {dependencies.external[].name}: {dependencies.external[].purpose}
 
 ### Internal
 
-- <module> → <module>: <relationship>
+- {dependencies.internal[].from} → {dependencies.internal[].to}: {dependencies.internal[].relationship}
 
 ## Statistics
 
-| Metric | Value   |
-| ------ | ------- |
-| Files  | <count> |
-| Lines  | <count> |
+| Metric | Value              |
+| ------ | ------------------ |
+| Files  | {statistics.files} |
+| Lines  | {statistics.lines} |
 ```
-
-## Guidelines
-
-| Section             | Description                                         |
-| ------------------- | --------------------------------------------------- |
-| Technology Stack    | Languages, frameworks, databases used               |
-| Directory Structure | Project layout from tree command                    |
-| Module Structure    | Mermaid diagram showing relationships               |
-| Key Components      | Important classes/functions                         |
-| Dependencies        | External packages and internal module relationships |

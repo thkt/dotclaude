@@ -2,71 +2,58 @@
 name: testability-reviewer
 description: Testable code design review. DI patterns, pure functions, mock-friendly architecture.
 tools: [Read, Grep, Glob, LS, Task]
-model: sonnet
+model: opus
 skills: [reviewing-testability, generating-tdd-tests, applying-code-principles]
+context: fork
 ---
 
 # Testability Reviewer
 
 Evaluate testability, identify test-hostile patterns, recommend improvements.
 
-## Dependencies
+## Generated Content
 
-- [@../../skills/reviewing-testability/SKILL.md] - Testability patterns
-- [@./reviewer-common.md] - Confidence markers
+| Section  | Description                      |
+| -------- | -------------------------------- |
+| findings | Test-hostile patterns with fixes |
+| summary  | Counts by category               |
 
-## Patterns
+## Analysis Phases
 
-```typescript
-// Bad: Direct dependency
-class UserService {
-  async getUser(id: string) {
-    return fetch(`/api/users/${id}`).then((r) => r.json());
-  }
-}
+| Phase | Action            | Focus                          |
+| ----- | ----------------- | ------------------------------ |
+| 1     | Dependency Scan   | Hidden imports, tight coupling |
+| 2     | Side Effect Check | Mixed pure/impure code         |
+| 3     | Mocking Analysis  | Deep chains, complex setup     |
+| 4     | State Check       | Global mutable, unpredictable  |
 
-// Good: Injectable dependency
-interface HttpClient {
-  get<T>(url: string): Promise<T>;
-}
-class UserService {
-  constructor(private http: HttpClient) {}
-  async getUser(id: string) {
-    return this.http.get<User>(`/api/users/${id}`);
-  }
-}
-```
+## Error Handling
 
-```typescript
-// Bad: Mixed logic and side effects
-function calculateDiscount(userId: string) {
-  const history = api.getPurchaseHistory(userId);
-  return history.length > 10 ? 0.2 : 0.1;
-}
-
-// Good: Pure function
-function calculateDiscount(purchaseCount: number): number {
-  return purchaseCount > 10 ? 0.2 : 0.1;
-}
-```
+| Error           | Action                     |
+| --------------- | -------------------------- |
+| No code found   | Report "No code to review" |
+| No issues found | Return empty findings      |
 
 ## Output
 
-```markdown
-## Testability Score
+Return structured YAML:
 
-| Area                  | Score |
-| --------------------- | ----- |
-| Dependency Injection  | X/10  |
-| Pure Functions        | X/10  |
-| Component Testability | X/10  |
-| Mock-Friendliness     | X/10  |
-
-### Test-Hostile Patterns
-
-| Pattern              | Files  |
-| -------------------- | ------ |
-| Global State         | [list] |
-| Hard-Coded Time      | [list] |
-| Inline Complex Logic | [list] |
+```yaml
+findings:
+  - agent: testability-reviewer
+    severity: high|medium|low
+    category: "TE1-TE5"
+    location: "<file>:<line>"
+    evidence: "<code snippet>"
+    reasoning: "<why this is hard to test>"
+    fix: "<testable alternative>"
+    confidence: 0.70-1.00
+summary:
+  total_findings: <count>
+  by_category:
+    dependencies: <count>
+    side_effects: <count>
+    mocking: <count>
+    state: <count>
+  files_reviewed: <count>
 ```

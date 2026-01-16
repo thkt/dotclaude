@@ -1,9 +1,10 @@
 ---
 name: pr-generator
 description: Analyze branch changes and generate comprehensive PR descriptions.
-tools: Bash
-model: haiku
+tools: [Bash]
+model: opus
 skills: [utilizing-cli-tools]
+context: fork
 ---
 
 # PR Description Generator
@@ -72,32 +73,39 @@ BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remo
 # Fallback: main → master → develop
 ```
 
+## Error Handling
+
+| Error          | Action              |
+| -------------- | ------------------- |
+| No commits     | Report "No commits" |
+| No base branch | Default to main     |
+
 ## Output
 
-```markdown
-## Branch Analysis
+Return structured YAML:
 
-| Item          | Value           |
-| ------------- | --------------- |
-| Current       | [branch-name]   |
-| Base          | [detected-base] |
-| Commits       | [count]         |
-| Files changed | [count]         |
+```yaml
+branch:
+  current: "<branch-name>"
+  base: "<detected-base>"
+  commits: <count>
+  files_changed: <count>
+pr:
+  title: "<title without prefix, imperative verb>"
+  body: |
+    ## Summary
+    [1-2 lines]
 
-## Generated PR Description
+    ## Changes
+    - [Change 1]
+    - [Change 2]
 
-### Title
+    ## How to Test
+    1. [Step]
+    2. [Expected result]
 
-`Brief description` (no prefix, imperative verb)
-
-### Body
-
-[Template filled with analysis]
-
-\`\`\`bash
-gh pr create --title "[title]" --body "$(cat <<'EOF'
-[body]
-EOF
-)"
-\`\`\`
+    ## Related
+    - Closes #[issue]
+command: |
+  gh pr create --title "<title>" --body "<body>"
 ```

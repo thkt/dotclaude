@@ -7,16 +7,14 @@ user-invocable: false
 
 # CLI Tools Guide
 
-Best practices for CLI tools in development workflows.
+## References
 
-## Tool References
-
-| Category           | Tools           | Reference                    |
-| ------------------ | --------------- | ---------------------------- |
-| Version Control    | git             | [@./tools/git-essentials.md] |
-| GitHub             | gh              | [@./tools/gh-github-cli.md]  |
-| Package Management | npm, yarn, pnpm | [@./tools/npm-scripts.md]    |
-| Code Review        | coderabbit      | [@./tools/coderabbit.md]     |
+| Category           | Reference                    |
+| ------------------ | ---------------------------- |
+| Version Control    | [@./tools/git-essentials.md] |
+| GitHub             | [@./tools/gh-github-cli.md]  |
+| Package Management | [@./tools/npm-scripts.md]    |
+| Code Review        | [@./tools/coderabbit.md]     |
 
 ## Quick Reference
 
@@ -38,24 +36,7 @@ EOF
 )"
 ```
 
-### GitHub CLI
+## Safety
 
-| Action       | Command                                   |
-| ------------ | ----------------------------------------- |
-| Create PR    | `gh pr create --title "..." --body "..."` |
-| Create Issue | `gh issue create --title "..."`           |
-| View PR      | `gh pr view [number]`                     |
-
-### Package Managers
-
-| Action  | npm                 | yarn             | pnpm             |
-| ------- | ------------------- | ---------------- | ---------------- |
-| Install | `npm install`       | `yarn`           | `pnpm install`   |
-| Run     | `npm run <script>`  | `yarn <script>`  | `pnpm <script>`  |
-| Add     | `npm install <pkg>` | `yarn add <pkg>` | `pnpm add <pkg>` |
-
-## Safety Rules
-
-- Never use `git push --force` (use `--force-with-lease`)
-- Never use `git reset --hard` without confirmation
-- Never use `rm -rf` (use `mv ~/.Trash/`)
+- Never `git push --force` (use `--force-with-lease`)
+- Never `rm -rf` (use `mv ~/.Trash/`)

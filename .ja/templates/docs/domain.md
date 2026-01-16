@@ -1,56 +1,43 @@
-# ドメインテンプレート
+# Domain Template
 
-## 構造
+## Structure
 
 ```markdown
-# <project_name> - ドメインドキュメント
+# {project_name} - Domain Documentation
 
-## 用語集
+## Glossary
 
-| 用語   | 定義         | 使用箇所     |
-| ------ | ------------ | ------------ |
-| <term> | <definition> | <where used> |
+| Term              | Definition              | Context              |
+| ----------------- | ----------------------- | -------------------- |
+| {glossary[].term} | {glossary[].definition} | {glossary[].context} |
 
-## エンティティ
+## Entities
 
-### <entity_name>
+### {entities[].name}
 
-| フィールド | 型     | 説明          |
-| ---------- | ------ | ------------- |
-| <field>    | <type> | <description> |
+| Field                      | Type                       | Description                       |
+| -------------------------- | -------------------------- | --------------------------------- |
+| {entities[].fields[].name} | {entities[].fields[].type} | {entities[].fields[].description} |
 
-**不変条件**:
+**Invariants**:
 
-- <invariant 1>
-- <invariant 2>
+- {entities[].invariants[]}
 
-## 関連
+## Relationships
 
 \`\`\`mermaid
-erDiagram
-EntityA ||--o{ EntityB : "has many"
-EntityB }|--|| EntityC : "belongs to"
+{relationships.mermaid}
 \`\`\`
 
-## ビジネスルール
+## Business Rules
 
-| ルール      | 説明          | 適用箇所    |
-| ----------- | ------------- | ----------- |
-| <rule_name> | <description> | <component> |
+| Rule                    | Description                    | Enforced By                    |
+| ----------------------- | ------------------------------ | ------------------------------ |
+| {business_rules[].name} | {business_rules[].description} | {business_rules[].enforced_by} |
 
-## ドメインイベント
+## Domain Events
 
-| イベント     | トリガー         | 購読者        |
-| ------------ | ---------------- | ------------- |
-| <event_name> | <when triggered> | <who listens> |
+| Event                  | Trigger                   | Subscribers                   |
+| ---------------------- | ------------------------- | ----------------------------- |
+| {domain_events[].name} | {domain_events[].trigger} | {domain_events[].subscribers} |
 ```
-
-## ガイドライン
-
-| セクション       | 説明                                   |
-| ---------------- | -------------------------------------- |
-| 用語集           | ドメイン固有の用語と定義               |
-| エンティティ     | フィールドと不変条件を持つコアオブジェ |
-| 関連             | エンティティ間の関係を示すER図         |
-| ビジネスルール   | ドメインルールとその適用箇所           |
-| ドメインイベント | イベントとその購読者                   |

@@ -8,53 +8,20 @@ user-invocable: false
 
 # Silent Failure Review
 
-Target: All failures are visible, debuggable, user-informed.
+## Detection
 
-## Risk Levels
+| ID  | Pattern                          | Fix                                    |
+| --- | -------------------------------- | -------------------------------------- |
+| SF1 | `catch (e) {}`                   | `catch (e) { logger.error(e); throw }` |
+| SF1 | `catch (e) { console.log(e) }`   | Show user feedback + log context       |
+| SF2 | `.then(fn)` without `.catch()`   | Add `.catch()` or use try/catch        |
+| SF2 | `async () => { await fn() }`     | Wrap in try/catch, handle error        |
+| SF3 | No error UI states               | Add error boundary, feedback component |
+| SF4 | `value ?? defaultValue` silently | Log when using fallback                |
+| SF4 | `data?.nested?.value`            | Check and report if unexpected null    |
 
-| Pattern                  | Risk       | Impact               |
-| ------------------------ | ---------- | -------------------- |
-| Empty catch block        | [Critical] | Errors hidden        |
-| Promise without catch    | [Critical] | Unhandled rejections |
-| Fire and forget async    | [High]     | Lost error context   |
-| Console.log only         | [High]     | No user feedback     |
-| Missing Error Boundary   | [High]     | App crash            |
-| Excessive optional chain | [Medium]   | May mask bugs        |
+## References
 
-## Section-Based Loading
-
-| Section   | File                               | Focus          |
-| --------- | ---------------------------------- | -------------- |
-| Detection | `references/detection-patterns.md` | Regex patterns |
-
-## Quick Checklist
-
-### Critical
-
-- [ ] No empty catch blocks
-- [ ] All Promises have error handling
-- [ ] No console.log as only handling
-- [ ] No swallowed errors in handlers
-
-### High Priority
-
-- [ ] Error boundaries around sections
-- [ ] Async useEffect has handling
-- [ ] API calls have error states
-- [ ] Form submissions handle failures
-
-## Key Principles
-
-| Principle            | Application                   |
-| -------------------- | ----------------------------- |
-| Fail Fast            | Make failures visible         |
-| User Feedback        | Always inform users           |
-| Context Logging      | Log with debug info           |
-| Graceful Degradation | Fail gracefully, not silently |
-
-## Detection Commands
-
-```bash
-rg "catch\s*\([^)]*\)\s*\{\s*\}" --glob "*.{ts,tsx}"  # Empty catch
-rg "\.then\([^)]+\)$" --glob "*.{ts,tsx}"             # Then without catch
-```
+| Topic     | File                               |
+| --------- | ---------------------------------- |
+| Detection | `references/detection-patterns.md` |

@@ -1,7 +1,7 @@
 ---
 name: progressive-enhancer
 description: CSSファーストアプローチレビュー。JS過剰使用を検出。
-tools: [Read, Grep, Glob, LS, mcp__mdn__*]
+tools: [Read, Grep, Glob, LS, Task, mcp__mdn__*]
 model: opus
 skills: [enhancing-progressively]
 context: fork
@@ -36,6 +36,7 @@ CSSファーストアプローチのレビュー。CSS/HTMLで十分な箇所で
 | JS未検出           | "レビュー対象JSなし"を報告 |
 | フレームワーク固有 | フレームワーク制約を記載   |
 | ブラウザ互換性     | CSS代替のcaniuseを確認     |
+| MCP利用不可        | コードのみ分析（MDNなし）  |
 
 ## 出力
 
@@ -43,11 +44,12 @@ CSSファーストアプローチのレビュー。CSS/HTMLで十分な箇所で
 
 ```yaml
 findings:
-  - severity: high|medium|low
+  - agent: progressive-enhancer
+    severity: high|medium|low
     location: "<file>:<line>"
     js_pattern: "<検出パターン>"
     css_alternative: "<CSS解決策>"
-    confidence: high|medium|low
+    confidence: 0.70-1.00
     reasoning: "<CSSが優れている理由>"
 recommendations:
   - location: "<file>:<line>"

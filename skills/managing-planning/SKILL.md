@@ -9,9 +9,7 @@ user-invocable: false
 
 # Managing Planning Workflows
 
-Planning workflow patterns for SOW, Spec, and validation processes.
-
-## Workflow References
+## Workflows
 
 | Workflow            | Reference                              | Command   |
 | ------------------- | -------------------------------------- | --------- |
@@ -22,31 +20,7 @@ Planning workflow patterns for SOW, Spec, and validation processes.
 
 ## Planning Flow
 
-```text
 /research → /think → /code → /test → /audit → /validate
-```
-
-## SOW Structure
-
-| Section             | Purpose                      |
-| ------------------- | ---------------------------- |
-| Executive Summary   | 1-2 sentence overview        |
-| Problem Analysis    | Current state, issues        |
-| Assumptions         | Facts, assumptions, unknowns |
-| Solution Design     | Approach, alternatives       |
-| Acceptance Criteria | AC-001, AC-002, ...          |
-| Implementation Plan | Phases, progress matrix      |
-| Risks               | R-001, R-002, ...            |
-
-## Spec Structure
-
-| Section                     | Purpose               |
-| --------------------------- | --------------------- |
-| Functional Requirements     | FR-001, FR-002, ...   |
-| Data Model                  | TypeScript interfaces |
-| Test Scenarios              | T-001, T-002, ...     |
-| Non-Functional Requirements | NFR-001, NFR-002, ... |
-| Traceability Matrix         | AC → FR → Test → NFR  |
 
 ## Confidence Markers
 

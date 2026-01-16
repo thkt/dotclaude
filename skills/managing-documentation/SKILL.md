@@ -9,9 +9,7 @@ user-invocable: false
 
 # Managing Documentation
 
-Documentation generation workflows for ADRs, skills, and rules.
-
-## Workflow References
+## Workflows
 
 | Workflow     | Reference                          | Command |
 | ------------ | ---------------------------------- | ------- |
@@ -40,19 +38,6 @@ Proposed | Accepted | Deprecated | Superseded
 [What are the results?]
 ```
 
-Location: `~/.claude/adr/ADR-NNNN-title.md`
-
 ## Rulify Flow
 
-```text
 ADR (decision) → Rule (enforcement) → CLAUDE.md (integration)
-```
-
-## Documentation Guidelines
-
-| Principle              | Application              |
-| ---------------------- | ------------------------ |
-| Clarity > Completeness | Apply Occam's Razor      |
-| EN/JP Sync             | Both versions must match |
-| No Circular Refs       | Max 3 levels deep        |
-| Mermaid > ASCII        | Use Mermaid diagrams     |

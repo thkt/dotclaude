@@ -8,45 +8,27 @@ user-invocable: false
 
 # Type Safety Review
 
-Target: Maximum type safety with minimal type gymnastics.
+## Detection
 
-## Metrics
+| ID  | Pattern                       | Fix                           |
+| --- | ----------------------------- | ----------------------------- |
+| TS1 | `any`                         | `unknown` + type guard        |
+| TS1 | Implicit any                  | Explicit type annotation      |
+| TS2 | `value as Type`               | Type guard function           |
+| TS2 | `value!` (non-null assertion) | Explicit null check           |
+| TS3 | `function fn(data)` (untyped) | `function fn(data: Type)`     |
+| TS3 | Missing return type           | Explicit `: ReturnType`       |
+| TS4 | `default:` without exhaustive | `default: assertNever(value)` |
 
-| Context         | Target  | Warning        |
-| --------------- | ------- | -------------- |
-| Type coverage   | 95%+    | < 90%          |
-| Any usage       | 0       | > 5 instances  |
-| Type assertions | Minimal | > 10 instances |
-| Implicit any    | 0       | Any > 0        |
-| Strict mode     | All on  | Any disabled   |
+## Criteria
 
-## Section-Based Loading
-
-| Section  | File                          | Focus                    |
-| -------- | ----------------------------- | ------------------------ |
-| Coverage | `references/type-coverage.md` | Avoiding any             |
-| Guards   | `references/type-guards.md`   | Narrowing, discriminated |
-| Strict   | `references/strict-mode.md`   | tsconfig, React types    |
-
-## Quick Checklist
-
-- [ ] All functions have explicit return types
-- [ ] All parameters typed (no implicit any)
-- [ ] Interface/type for all data structures
-- [ ] No `any` without justification
-- [ ] Type predicates for union types
-- [ ] Exhaustive checking with `never`
-- [ ] Avoid unsafe `as` assertions
-
-## Key Principles
-
-| Principle      | Application                  |
-| -------------- | ---------------------------- |
-| Fail Fast      | Catch at compile-time        |
-| Let TS Infer   | Don't over-type what's clear |
-| Types as Docs  | Good types = documentation   |
-| Prefer unknown | Use `unknown` over `any`     |
+Type coverage >= 95%. Any usage = 0. Strict mode all enabled.
 
 ## References
 
-- [@./references/result-type.md] - Result type error handling
+| Topic    | File                          |
+| -------- | ----------------------------- |
+| Coverage | `references/type-coverage.md` |
+| Guards   | `references/type-guards.md`   |
+| Strict   | `references/strict-mode.md`   |
+| Result   | `references/result-type.md`   |

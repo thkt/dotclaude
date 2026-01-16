@@ -3,7 +3,6 @@ description: SOW受け入れ基準に対して実装を検証
 allowed-tools: Read, Glob, Grep
 model: opus
 argument-hint: "[機能名]"
-dependencies: [sow-spec-reviewer, managing-planning]
 ---
 
 # /validate - SOW基準チェッカー

@@ -3,7 +3,6 @@ description: ADRからプロジェクトルールを生成しCLAUDE.mdに統合
 allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob
 model: opus
 argument-hint: "[ADR番号]"
-dependencies: [creating-adrs, managing-documentation]
 ---
 
 # /rulify - ADRからルール生成

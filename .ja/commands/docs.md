@@ -3,8 +3,6 @@ description: コードベース分析からドキュメントを生成
 allowed-tools: [Task, Read, Write, Bash]
 model: opus
 argument-hint: "<architecture|api|domain|setup>"
-dependencies:
-  [architecture-analyzer, api-analyzer, domain-analyzer, setup-analyzer]
 ---
 
 # /docs - ドキュメント生成
@@ -35,6 +33,19 @@ dependencies:
 4. テンプレート構造でYAML出力をフォーマット
 5. ユーザーに提示
 
+## フロー
+
+```text
+[analyzer YAML] → [template] → [markdown output]
+```
+
 ## 出力
 
-Markdown形式のドキュメント。
+| タイプ       | テンプレート                                                                  |
+| ------------ | ----------------------------------------------------------------------------- |
+| architecture | [@../../templates/docs/architecture.md](../../templates/docs/architecture.md) |
+| api          | [@../../templates/docs/api.md](../../templates/docs/api.md)                   |
+| domain       | [@../../templates/docs/domain.md](../../templates/docs/domain.md)             |
+| setup        | [@../../templates/docs/setup.md](../../templates/docs/setup.md)               |
+
+テンプレートは変数置換に `{field}`、`{object.property}`、`{array[].property}` パターンを使用。

@@ -46,7 +46,6 @@
       ],
       "agents": [
         "./agents/orchestrators/audit-orchestrator.md",
-        "./agents/analyzers/architecture-analyzer.md",
         "./agents/generators/test-generator.md",
         "./agents/enhancers/progressive-enhancer.md",
         "./agents/reviewers/subagent-reviewer.md",
@@ -62,37 +61,23 @@
         "./agents/reviewers/security-reviewer.md",
         "./agents/reviewers/silent-failure-reviewer.md",
         "./agents/reviewers/sow-spec-reviewer.md",
-        "./agents/integrators/finding-integrator.md"
+        "./agents/integrators/audit-integrator.md"
       ],
       "rules": ["./rules/development/COMPLETION_CRITERIA.md"]
     },
     {
       "name": "quick-actions",
       "source": "./",
-      "description": "Fast bug fixes and external code review: /fix for rapid fixes, /rabbit for CodeRabbit AI review",
+      "description": "Fast bug fixes and code polish: /fix for rapid fixes, /polish for AI slop removal",
       "version": "2.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["fix", "quick", "coderabbit", "review"],
+      "keywords": ["fix", "quick", "polish", "simplify"],
       "category": "Quick Actions",
-      "commands": ["./commands/fix.md", "./commands/rabbit.md"]
-    },
-    {
-      "name": "automation-commands",
-      "source": "./",
-      "description": "Automated development cycle: /auto-test for continuous testing, /full-cycle for complete automation",
-      "version": "2.0.0",
-      "author": {
-        "name": "thkt",
-        "url": "https://github.com/thkt"
-      },
-      "license": "MIT",
-      "keywords": ["automation", "auto-test", "full-cycle", "continuous"],
-      "category": "Automation",
-      "commands": ["./commands/full-cycle.md"]
+      "commands": ["./commands/fix.md", "./commands/polish.md"]
     },
     {
       "name": "git-utilities",

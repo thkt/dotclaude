@@ -60,18 +60,16 @@
 
    ```bash
    /plugin install complete-workflow-system  # フルTDD/RGRCワークフロー
-   /plugin install quick-actions             # /fix, /rabbit
-   /plugin install automation-commands       # /auto-test, /full-cycle
+   /plugin install quick-actions             # /fix, /polish
    /plugin install git-utilities             # /commit, /branch, /pr, /issue
-   /plugin install documentation-tools       # /adr, /rulify
+   /plugin install documentation-tools       # /adr, /rulify, /docs
    /plugin install browser-workflows         # /e2e
    ```
 
 **利用可能なプラグイン**:
 
 - **complete-workflow-system**: 16の専門エージェントを含むフル開発ワークフロー
-- **quick-actions**: 高速バグ修正 (/fix) と CodeRabbit レビュー (/rabbit)
-- **automation-commands**: 自動テストとフルサイクル自動化
+- **quick-actions**: 高速バグ修正 (/fix) と AIスロップ除去 (/polish)
 - **git-utilities**: Gitワークフローヘルパー (commit, branch, PR, issue)
 - **documentation-tools**: ADR作成とルール生成
 - **browser-workflows**: E2Eテストと自動化
@@ -160,11 +158,11 @@ srt --version
 
 一部のコマンドはこのリポジトリに含まれていない外部プラグインに依存しています。クローン後に手動でインストールしてください:
 
-| プラグイン          | 使用コマンド          | 用途                                   | インストールコマンド                |
-| ------------------- | --------------------- | -------------------------------------- | ----------------------------------- |
-| `pr-review-toolkit` | `/audit`, `/research` | 拡張コードレビューエージェント         | `/plugin install pr-review-toolkit` |
-| `feature-dev`       | `/research`, `/think` | コード探索・アーキテクチャエージェント | `/plugin install feature-dev`       |
-| `ralph-loop`        | `/code`               | TDD Greenフェーズ自動反復              | `/plugin install ralph-loop`        |
+| プラグイン          | 使用コマンド                     | 用途                                   | インストールコマンド                |
+| ------------------- | -------------------------------- | -------------------------------------- | ----------------------------------- |
+| `pr-review-toolkit` | `/audit`, `/research`, `/polish` | 拡張コードレビューエージェント         | `/plugin install pr-review-toolkit` |
+| `feature-dev`       | `/research`, `/think`            | コード探索・アーキテクチャエージェント | `/plugin install feature-dev`       |
+| `ralph-loop`        | `/code`                          | TDD Greenフェーズ自動反復              | `/plugin install ralph-loop`        |
 
 **一括インストール（必要なプラグインすべて）**:
 
@@ -183,26 +181,7 @@ srt --version
 
 ## 📝 利用可能なコマンド
 
-Claude Codeは5つのカテゴリに整理された15の専門コマンドを提供:
-
-### コマンドカテゴリ
-
-- **コア開発**（7コマンド）: 計画から検証までの完全なワークフロー
-  - `/think`, `/research`, `/code`, `/test`, `/audit`, `/sow`, `/validate`
-
-- **クイックアクション**（1コマンド）: 高速バグ修正
-  - `/fix`
-
-- **自動化**（2コマンド）: テストと開発サイクルの自動化
-  - `/auto-test`, `/full-cycle`
-
-- **ドキュメント**（2コマンド）: アーキテクチャ決定とルール
-  - `/adr`, `/rulify`
-
-- **外部ツール**（1コマンド）: ブラウザ自動化
-  - `/e2e`
-
-**📚 詳細リファレンス**: 完全なコマンドドキュメントは:
+コマンドリファレンスを参照:
 
 - [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOW_GUIDE.md)
 - [English Command Reference](../rules/workflows/WORKFLOW_GUIDE.md)
@@ -225,13 +204,6 @@ Claude Codeは5つのカテゴリに整理された15の専門コマンドを提
 
 ```txt
 /research → /fix
-```
-
-### 自動化ワークフロー（SlashCommand Toolで新規追加）
-
-```txt
-/auto-test        # 自動テスト → 修正サイクル
-/full-cycle       # 完全な自動開発フロー
 ```
 
 ## 🌏 言語サポート

@@ -1,6 +1,6 @@
 ---
 name: reviewing-silent-failures
-description: フロントエンドコードのサイレント障害検出パターン。
+description: Silent failure detection patterns for frontend code.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: silent-failure-reviewer
 user-invocable: false
@@ -8,53 +8,20 @@ user-invocable: false
 
 # サイレント障害レビュー
 
-目標: すべての障害が可視で、デバッグ可能で、ユーザーに通知される。
+## 検出
 
-## リスクレベル
+| ID  | パターン                             | 修正                                          |
+| --- | ------------------------------------ | --------------------------------------------- |
+| SF1 | `catch (e) {}`                       | `catch (e) { logger.error(e); throw }`        |
+| SF1 | `catch (e) { console.log(e) }`       | ユーザーフィードバック表示 + コンテキストログ |
+| SF2 | `.catch()`なしの`.then(fn)`          | `.catch()` 追加またはtry/catch使用            |
+| SF2 | `async () => { await fn() }`         | try/catchでラップ、エラー処理                 |
+| SF3 | エラーUI状態なし                     | Error Boundary、フィードバックコンポーネント  |
+| SF4 | サイレントな `value ?? defaultValue` | フォールバック使用時にログ                    |
+| SF4 | `data?.nested?.value`                | 予期せぬnullをチェックして報告                |
 
-| パターン                   | リスク         | 影響                       |
-| -------------------------- | -------------- | -------------------------- |
-| 空のcatchブロック          | [クリティカル] | エラーが隠される           |
-| catchなしのPromise         | [クリティカル] | 未処理のrejection          |
-| Fire and forget async      | [高]           | エラーコンテキスト喪失     |
-| Console.logのみ            | [高]           | ユーザーフィードバックなし |
-| Error Boundaryなし         | [高]           | アプリクラッシュ           |
-| 過度なオプショナルチェーン | [中]           | バグを隠す可能性           |
+## 参考
 
-## セクションベースのロード
-
-| セクション | ファイル                           | フォーカス    |
-| ---------- | ---------------------------------- | ------------- |
-| 検出       | `references/detection-patterns.md` | Regexパターン |
-
-## クイックチェックリスト
-
-### クリティカル
-
-- [ ] 空のcatchブロックなし
-- [ ] すべてのPromiseにエラーハンドリング
-- [ ] console.logのみのハンドリングなし
-- [ ] ハンドラーでエラーを飲み込まない
-
-### 高優先度
-
-- [ ] セクションにError Boundary
-- [ ] 非同期useEffectにハンドリング
-- [ ] API呼び出しにエラー状態
-- [ ] フォーム送信が失敗を処理
-
-## 主要原則
-
-| 原則                         | 適用                         |
-| ---------------------------- | ---------------------------- |
-| Fail Fast                    | 障害を可視化                 |
-| ユーザーフィードバック       | 常にユーザーに通知           |
-| コンテキストロギング         | デバッグ情報付きでログ       |
-| グレースフルデグラデーション | サイレントではなく優雅に失敗 |
-
-## 検出コマンド
-
-```bash
-rg "catch\s*\([^)]*\)\s*\{\s*\}" --glob "*.{ts,tsx}"  # 空のcatch
-rg "\.then\([^)]+\)$" --glob "*.{ts,tsx}"             # catchなしのthen
-```
+| トピック | ファイル                           |
+| -------- | ---------------------------------- |
+| 検出     | `references/detection-patterns.md` |

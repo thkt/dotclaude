@@ -1,127 +1,73 @@
-# GitHub Issue Templates
+# Issue Templates
 
-Structured templates for different issue types.
-
-## Bug Report
+## Bug Report Template
 
 ```markdown
 ## Description
 
-[Clear description of the bug]
+[Clear description]
 
 ## Steps to Reproduce
 
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
+1. [Step 1] 2. [Step 2]
 
-## Expected Behavior
+## Expected vs Actual
 
-[What should happen]
-
-## Actual Behavior
-
-[What actually happens]
+- Expected: [what should happen]
+- Actual: [what happens]
 
 ## Environment
 
-- OS: [e.g., macOS 14.0]
-- Browser: [e.g., Chrome 120]
-- Version: [e.g., v1.2.3]
-
-## Additional Context
-
-[Screenshots, logs, etc.]
+OS: [macOS 14.0] | Browser: [Chrome 120] | Version: [v1.2.3]
 ```
 
-## Feature Request
+## Feature Request Template
 
 ```markdown
 ## Summary
 
-[Brief description of the feature]
+[Brief description]
 
 ## Problem
 
-[What problem does this solve?]
+[What problem solved?]
 
 ## Proposed Solution
 
 [How should it work?]
-
-## Alternatives Considered
-
-[Other approaches you thought about]
-
-## Additional Context
-
-[Mockups, examples, references]
 ```
 
-## Task/Chore
+## Task Template
 
 ```markdown
 ## Description
 
-[What needs to be done]
+[What needs done]
 
 ## Acceptance Criteria
 
 - [ ] [Criterion 1]
 - [ ] [Criterion 2]
-- [ ] [Criterion 3]
-
-## Context
-
-[Why is this needed?]
-
-## Related
-
-- [Links to related issues/PRs]
 ```
 
-## Label Mapping
+## Labels
 
-| Issue Type    | Labels                    |
-| ------------- | ------------------------- |
-| Bug           | `bug`, `priority:*`       |
-| Feature       | `enhancement`, `feature`  |
-| Task          | `task`, `chore`           |
-| Documentation | `documentation`           |
-| Question      | `question`, `help wanted` |
+| Type    | Labels                   |
+| ------- | ------------------------ |
+| Bug     | `bug`, `priority:*`      |
+| Feature | `enhancement`, `feature` |
+| Task    | `task`, `chore`          |
 
-## Priority Labels
-
-| Label               | Meaning            |
+| Priority            | Meaning            |
 | ------------------- | ------------------ |
 | `priority:critical` | Production down    |
 | `priority:high`     | Significant impact |
-| `priority:medium`   | Normal priority    |
+| `priority:medium`   | Normal             |
 | `priority:low`      | Nice to have       |
 
-## Generation Process
-
-```text
-1. Analyze user's description
-2. Detect issue type (bug/feature/task)
-3. Extract key information
-4. Format with appropriate template
-5. Suggest labels
-```
-
-## gh CLI Commands
+## gh CLI
 
 ```bash
-# Create issue
 gh issue create --title "Title" --body "Body"
-
-# Create with labels
-gh issue create --title "Bug: X" --label "bug,priority:high"
-
-# Create from file
-gh issue create --body-file issue.md
+gh issue create --label "bug,priority:high"
 ```
-
-## Related
-
-- PR descriptions: [@./pr-descriptions.md](./pr-descriptions.md)
