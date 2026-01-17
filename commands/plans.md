@@ -27,6 +27,14 @@ For each SOW found, extract `Status:` line value.
 
 ## Output
 
+| Column   | Source                                            |
+| -------- | ------------------------------------------------- |
+| #        | Sequential number                                 |
+| Location | "Project" (`.claude/`) or "Global" (`~/.claude/`) |
+| Feature  | Directory name after date prefix                  |
+| Date     | Directory name prefix (YYYY-MM-DD)                |
+| Status   | `Status:` field value from sow.md                 |
+
 ```markdown
 ## Available SOW Documents
 
