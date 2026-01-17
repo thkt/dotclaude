@@ -1,63 +1,48 @@
 # PRE_TASK_CHECK Rules
 
-## Core Rules
+## Marker Definition
 
-### 95% Understanding Rule
+| Marker | Meaning  | Action Required               |
+| ------ | -------- | ----------------------------- |
+| [✓]    | Verified | None - proceed                |
+| [→]    | Inferred | Confirm before proceeding     |
+| [?]    | Unknown  | Investigate before proceeding |
 
-**Never proceed with confidence <95%**. Use `AskUserQuestion` for clarification first.
+**Rule**: All items must be [✓] to proceed. Any [→] or [?] requires resolution first.
 
-### When to Execute Check
+## Checklist Items (7 total)
 
-- File modification (create/edit/delete)
-- Command execution
-- Multi-step workflow
-- Understanding <95%
+| #   | Item          | Check Criteria                                           |
+| --- | ------------- | -------------------------------------------------------- |
+| 1   | Purpose       | Why needed + user's underlying intent (not just literal) |
+| 2   | Scope         | Identified target files/functions                        |
+| 3   | Constraints   | Technical requirements + limitations + dependencies      |
+| 4   | Completion    | Done criteria + verification method + edge cases         |
+| 5   | Context       | Read actual code (not guessing)                          |
+| 6   | Components    | Affected areas + potential risks                         |
+| 7   | Prerequisites | Confirmed tech stack/conventions                         |
 
-### When to Skip
+## Task Decomposition
 
-- Simple questions, confirmations
-- Read-only queries, follow-up clarifications
+**Split when ANY threshold exceeded:**
 
-### Bug Investigation Context
-
-**When to activate**: User reports a problem or unexpected behavior
-
-Context-based criteria:
-
-- Something isn't working as expected
-- An error or failure is occurring
-- A regression (worked before, not now)
-- Unexpected or confusing behavior
-
-When bug context detected, **always ask**:
-
-1. **Reproduction steps**: How to reproduce? (preconditions → steps → error)
-2. **Normal case**: When does it work correctly? (for diff detection)
-3. **Log information**: Any error logs or console output?
-
-## Command Selection
-
-| Marker | Confidence | Action            | Rationale                |
-| ------ | ---------- | ----------------- | ------------------------ |
-| [?]    | <70%       | `/research`       | Too uncertain to plan    |
-| [→]    | 70-94%     | `/think`          | Plan before implementing |
-| [✓]    | ≥95%       | `/code` or direct | Clear enough to proceed  |
-
-## Confirmation
-
-Use `AskUserQuestion` tool for all confirmations and clarifications.
+| Condition | Threshold |
+| --------- | --------- |
+| Files     | ≥5        |
+| Features  | ≥3        |
+| Layers    | ≥3        |
+| Lines     | ≥200      |
 
 ## Flow
 
-1. Analyze → mark confidence
-2. If <95% → AskUserQuestion for clarification → STOP
-3. If ≥95% → show check → AskUserQuestion to confirm
-4. Dry-run / Plan → show based on conditions
+1. Check 7 items → mark [✓]/[→]/[?]
+2. Any non-[✓]? → Resolve first (ask/read)
+3. All [✓]? → Show check → Confirm with user
+4. Threshold exceeded? → Decompose
 5. Execute
 
-### Dry-run Conditions
+## When to Skip
 
-| Condition                               | Display               |
-| --------------------------------------- | --------------------- |
-| 3+ files, core config, auth/security    | Full (Dry-run + Plan) |
-| Simple, doc-only, single file <10 lines | Plan only             |
+- Simple questions/confirmations
+- Read-only queries
+- Follow-up clarifications

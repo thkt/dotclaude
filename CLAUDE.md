@@ -30,3 +30,7 @@ Command discovery: README.md → package.json → ask user
 
 Commands: [@./rules/workflows/WORKFLOW_GUIDE.md](./rules/workflows/WORKFLOW_GUIDE.md)
 Docs: [@./rules/conventions/DOCUMENTATION.md](./rules/conventions/DOCUMENTATION.md)
+
+## Output
+
+No bold (`**`). Use backticks for emphasis instead.

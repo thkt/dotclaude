@@ -1,78 +1,90 @@
 # PRE_TASK_CHECK Specification
 
-Display formats and templates for understanding check.
+Display format and templates.
 
 ## Display Format
 
 ```markdown
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🧠 Understanding Level: [██████░░░░] XX%
+🧠 Understanding: [███████░░░] 71% (5/7 verified)
 
-✅ Clear elements:
+┌─ Checklist ────────────────────────────────────
+│ [✓] Purpose: {why this change is needed}
+│ [✓] Scope: {target files/functions}
+│ [→] Constraints: {technical constraints} ← confirm
+│ [✓] Completion: {what defines done}
+│ [✓] Context: {read existing code}
+│ [?] Components: {affected areas} ← investigate
+│ [✓] Prerequisites: {tech stack, conventions}
+└────────────────────────────────────────────────
 
-- [✓] [Verified items]
-- [→] [Inferred items]
+🎯 Done Definition: [{task_type}]
 
-❓ Unclear elements:
+- [ ] {criteria}
+- [ ] No change required if current state is sufficient
 
-- [?] [Needs confirmation]
-
-🎯 Done Definition:
-
-- [ ] [Completion criteria]
-
-💡 Suggested: /command - [reason]
-
-⚡ Feasibility: 🟢/🟡/🔴
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-Use `AskUserQuestion` to confirm before proceeding.
-
-## Dry-run / Execution Plan
-
-Simulate changes without actual execution to preview effects.
-
-**Guidelines**:
-
-- Keep concise: 3-5 bullet points maximum
-- Focus on impact: What will change, what might break
-- Risk assessment: Honest evaluation of potential issues
-
-### Pattern A: Full Display (Complex Changes)
-
-When Dry-run conditions are met (3+ files, core config, auth/security):
-
-```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🔍 Impact Simulation (Dry-run)
-
-• Files to modify: src/auth/login.ts, src/components/LoginForm.tsx
-• Affected components: AuthService, UserSession
-• Risk level: 🟡 Medium (authentication flow change)
-• Note: Existing sessions may require re-login
-
-─────────────────────────────────────────────────
-
-📝 Execution Plan
-
-1. Edit src/auth/login.ts - add OAuth2 flow
-2. Edit src/components/LoginForm.tsx - add provider buttons
-3. Run tests to verify
+⚡ Status: 🟢 Ready / 🟡 Needs confirmation / 🔴 Blocked
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-### Pattern B: Plan Only (Simple Changes)
+**Graph calculation**: `verified_count / 7 × 100%`
 
-When Dry-run is skipped (simple reads, doc-only, single file <10 lines):
+| Graph        | %    | Meaning                         |
+| ------------ | ---- | ------------------------------- |
+| [██████████] | 100% | All [✓] - Ready to proceed      |
+| [███████░░░] | 71%  | Some [→]/[?] - Needs resolution |
+| [████░░░░░░] | <50% | Many unknowns - /research first |
+
+## Done Definition Templates
+
+### Feature
 
 ```markdown
-📝 Execution Plan
+- [ ] Specified functionality works
+- [ ] No regression | Tests added
+- [ ] No change required if sufficient
+```
 
-1. Edit src/utils/helper.ts - fix typo
-2. Run tests
+### Fix
+
+```markdown
+- [ ] Issue no longer reproduces
+- [ ] Root cause resolved
+- [ ] No change required if sufficient
+```
+
+### Refactor
+
+```markdown
+- [ ] Behavior unchanged (tests pass)
+- [ ] Quality improved (measurable)
+- [ ] No change required if sufficient
+```
+
+### Investigation (Bug/Issue)
+
+```markdown
+- [ ] Reproduction steps confirmed
+- [ ] Root cause identified (not just symptoms)
+- [ ] Normal case understood (for diff detection)
+- [ ] No change required if not a bug
+```
+
+## "No Change" Verification Gate
+
+**Before reporting "No Change Required":**
+
+1. **Evidence**: Cite specific file:line read
+2. **Explanation**: Why current state meets goal
+3. **Confirmation**: AskUserQuestion to verify
+
+```markdown
+📋 No Change Analysis:
+
+- Read: src/auth/login.ts:45-67
+- Current: Already handles error case X
+- Conclusion: Existing implementation meets requirement
+  → Confirm with user before closing
 ```
