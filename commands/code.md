@@ -45,13 +45,14 @@ After implementation, generate IDR if SOW exists (skip if no SOW).
 
 ## SOW Status Update
 
-If SOW exists and Status is `draft`, update to `in-progress` at start.
+If SOW exists, update Status to `in-progress` at start.
 
-| Condition           | Action                                 |
-| ------------------- | -------------------------------------- |
-| SOW exists          | Update `Status: draft` → `in-progress` |
-| SOW not found       | Skip (no action needed)                |
-| Already in-progress | Skip (no change needed)                |
+| Current Status | Action                               |
+| -------------- | ------------------------------------ |
+| draft          | Update → `in-progress`               |
+| in-progress    | Skip (no change needed)              |
+| completed      | Update → `in-progress` (resume work) |
+| SOW not found  | Skip (no action needed)              |
 
 ## Verification
 

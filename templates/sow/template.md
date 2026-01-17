@@ -1,7 +1,7 @@
 # SOW: [Feature Name]
 
 Created: [YYYY-MM-DD]
-Status: draft <!-- draft | in-progress | completed | blocked -->
+Status: draft <!-- draft | in-progress | completed -->
 
 ## Executive Summary
 

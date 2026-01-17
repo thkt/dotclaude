@@ -43,4 +43,3 @@ For each SOW found, extract `Status:` line value.
 | draft       | Planning phase         |
 | in-progress | Implementation started |
 | completed   | All AC validated       |
-| blocked     | Waiting on dependency  |

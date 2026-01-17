@@ -1,7 +1,7 @@
 # SOW: [機能名]
 
 作成日: [YYYY-MM-DD]
-ステータス: draft
+ステータス: draft <!-- draft | in-progress | completed -->
 
 ## エグゼクティブサマリー
 
