@@ -33,9 +33,12 @@ Alternatives considered: [Option A (ADOPT), Option B (REJECT) - reasoning]
 
 ## Acceptance Criteria
 
-| ID     | Description | Validates | Confidence |
-| ------ | ----------- | --------- | ---------- |
-| AC-001 | [criterion] | I-001     | [✓/→/?]    |
+Format: `WHEN/IF/WHILE [trigger] THEN/THE system SHALL [action]`
+
+| ID     | Description                                     | Validates | Confidence |
+| ------ | ----------------------------------------------- | --------- | ---------- |
+| AC-001 | WHEN [user action] THEN system SHALL [response] | I-001     | [✓/→/?]    |
+| AC-002 | IF [error condition] THEN system SHALL [handle] | I-002     | [✓/→/?]    |
 
 ## Test Plan
 
@@ -63,7 +66,9 @@ Alternatives considered: [Option A (ADOPT), Option B (REJECT) - reasoning]
 
 ## Verification Checklist
 
-- [ ] [prerequisite check]
+- [ ] Research/investigation completed
+- [ ] Impact on existing structure confirmed
+- [ ] Backup of related files obtained (if needed)
 
 ## References
 
