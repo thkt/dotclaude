@@ -29,7 +29,7 @@ Display format and templates.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**Graph calculation**: `verified_count / 7 × 100%`
+Graph calculation: `verified_count / 7 × 100%`
 
 | Graph        | %    | Meaning                         |
 | ------------ | ---- | ------------------------------- |
@@ -72,13 +72,7 @@ Display format and templates.
 - [ ] No change required if not a bug
 ```
 
-## "No Change" Verification Gate
-
-**Before reporting "No Change Required":**
-
-1. **Evidence**: Cite specific file:line read
-2. **Explanation**: Why current state meets goal
-3. **Confirmation**: AskUserQuestion to verify
+## "No Change" Output Format
 
 ```markdown
 📋 No Change Analysis:

@@ -4,12 +4,13 @@
 
 ## 構文パターン
 
-| パターン                         | 説明               | 例                                       |
-| -------------------------------- | ------------------ | ---------------------------------------- |
-| `{field}`                        | 単純フィールド     | `{project_name}`                         |
-| `{object.property}`              | ネストプロパティ   | `{summary.total_findings}`               |
-| `{array[].property}`             | 配列イテレーション | `{endpoints[].method}`                   |
-| `{array[filter=value].property}` | フィルタ付き配列   | `{priorities[priority=critical].action}` |
+| パターン                          | 説明                     | 例                                       |
+| --------------------------------- | ------------------------ | ---------------------------------------- |
+| `{field}`                         | 単純フィールド           | `{project_name}`                         |
+| `{object.property}`               | ネストプロパティ         | `{summary.total_findings}`               |
+| `{array[].property}`              | 配列イテレーション       | `{endpoints[].method}`                   |
+| `{array[filter=value].property}`  | フィルタ付き配列（等値） | `{priorities[priority=critical].action}` |
+| `{array[filter!=value].property}` | フィルタ付き配列（除外） | `{items[fix_type!=manual].id}`           |
 
 ## 例
 
@@ -90,4 +91,5 @@ priorities:
 - 空配列は何も出力しない
 - 存在しないプロパティは空文字列
 - フィルタは最初の一致のみを返す
+- 除外フィルタ（`!=`）は値に一致しない全項目を返す
 - 全件取得には配列イテレーションを使用: `{array[].property}`

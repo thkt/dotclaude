@@ -21,6 +21,7 @@ Transform individual findings into systemic patterns and action plans.
 | 4. Analyze    | 5 Whys for root causes                                  |
 | 5. Prioritize | Score by Impact × Reach × Fixability                    |
 | 6. Plan       | Generate action plans                                   |
+| 7. Suggest    | Generate auto-fixable improvement suggestions           |
 
 ## Finding Ownership
 
@@ -79,6 +80,45 @@ Score = Impact × Reach × Fixability
 | 5-20  | Medium   | Next sprint |
 | < 5   | Low      | Backlog     |
 
+## Auto-Fixable Detection (Phase 7)
+
+Identify findings that can be automatically fixed.
+
+### Fix Types
+
+| Type     | Description               | Confidence | Example                     |
+| -------- | ------------------------- | ---------- | --------------------------- |
+| pattern  | Known fix pattern exists  | ≥90%       | Empty catch → error logging |
+| codemod  | AST-based transformation  | ≥85%       | any → specific type         |
+| lint-fix | Linter auto-fix available | ≥95%       | ESLint --fix                |
+| manual   | Requires human judgment   | N/A        | Architecture changes        |
+
+### Auto-Fixable Patterns
+
+| Category       | Pattern                   | Fix Template                           |
+| -------------- | ------------------------- | -------------------------------------- |
+| silent-failure | `catch (e) {}`            | Add error logging + rethrow            |
+| silent-failure | `catch { return null }`   | Add error logging + return Result type |
+| type-safety    | `any` type                | Infer specific type from usage         |
+| type-safety    | Missing return type       | Add explicit return type               |
+| accessibility  | Missing alt attribute     | Add descriptive alt text               |
+| accessibility  | Missing aria-label        | Add aria-label based on context        |
+| testability    | Direct dependency         | Extract to parameter (DI)              |
+| structure      | Duplicate code (3+ times) | Extract to shared function             |
+
+### Suggestion Generation
+
+Trigger: confidence ≥85% AND pattern match in table above
+
+| Step | Input                  | Output           | Logic                            |
+| ---- | ---------------------- | ---------------- | -------------------------------- |
+| 1    | finding.category       | pattern match    | Lookup in Auto-Fixable table     |
+| 2    | finding.evidence       | `before` snippet | Extract actual code              |
+| 3    | pattern.fix_template   | `after` snippet  | Apply template to before         |
+| 4    | finding.files_affected | effort estimate  | 1 file=5min, 2-3=15min, 4+=30min |
+
+Skip if: confidence <85% OR no pattern match OR fix_type=manual
+
 ## Error Handling
 
 | Error              | Action                            |
@@ -113,4 +153,24 @@ priorities:
     score: <number>
     action: "<recommended action>"
     timing: "immediate|this_sprint|next_sprint|backlog"
+
+suggestions:
+  auto_fixable_count: <count>
+  manual_count: <count>
+  items:
+    - id: "SUG-001"
+      finding_ref: "<original finding id>"
+      category: "<category>"
+      severity: critical|high|medium|low
+      fix_type: pattern|codemod|lint-fix|manual
+      confidence: 0.85-1.00
+      location:
+        file: "<file path>"
+        line: <line number>
+      before: |
+        <original code snippet>
+      after: |
+        <suggested fix snippet>
+      rationale: "<why this fix>"
+      effort: "5min|15min|30min|1h|manual"
 ```

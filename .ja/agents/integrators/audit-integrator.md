@@ -21,6 +21,7 @@ context: fork
 | 4. 分析   | 5 Whysで根本原因を特定                   |
 | 5. 優先度 | インパクト×範囲×容易性でスコア           |
 | 6. 計画   | アクションプランを生成                   |
+| 7. 提案   | 自動修正可能な改善提案を生成             |
 
 ## 発見事項の所有権
 
@@ -79,6 +80,45 @@ context: fork
 | 5-20   | 中     | 次スプリント |
 | < 5    | 低     | バックログ   |
 
+## 自動修正可能検出（フェーズ7）
+
+自動的に修正可能な発見事項を識別。
+
+### 修正タイプ
+
+| タイプ   | 説明                     | 信頼度 | 例                         |
+| -------- | ------------------------ | ------ | -------------------------- |
+| pattern  | 既知の修正パターンが存在 | ≥90%   | 空のcatch → エラーログ追加 |
+| codemod  | AST変換が可能            | ≥85%   | any → 具体的な型           |
+| lint-fix | Linter自動修正が可能     | ≥95%   | ESLint --fix               |
+| manual   | 人間の判断が必要         | N/A    | アーキテクチャ変更         |
+
+### 自動修正可能パターン
+
+| カテゴリ       | パターン                | 修正テンプレート                     |
+| -------------- | ----------------------- | ------------------------------------ |
+| silent-failure | `catch (e) {}`          | エラーログ追加 + 再スロー            |
+| silent-failure | `catch { return null }` | エラーログ追加 + Result型を返す      |
+| type-safety    | `any`型                 | 使用状況から具体的な型を推論         |
+| type-safety    | 戻り値型の欠落          | 明示的な戻り値型を追加               |
+| accessibility  | alt属性の欠落           | 説明的なalt文を追加                  |
+| accessibility  | aria-labelの欠落        | コンテキストに基づきaria-labelを追加 |
+| testability    | 直接依存                | パラメータに抽出（DI）               |
+| structure      | 重複コード（3回以上）   | 共通関数に抽出                       |
+
+### 提案生成
+
+トリガー: 信頼度 ≥85% AND 上記テーブルにパターン一致
+
+| Step | 入力                   | 出力               | ロジック                            |
+| ---- | ---------------------- | ------------------ | ----------------------------------- |
+| 1    | finding.category       | パターン一致       | 自動修正可能テーブルを検索          |
+| 2    | finding.evidence       | `before`スニペット | 実際のコードを抽出                  |
+| 3    | pattern.fix_template   | `after`スニペット  | テンプレートをbeforeに適用          |
+| 4    | finding.files_affected | 工数見積もり       | 1ファイル=5min, 2-3=15min, 4+=30min |
+
+スキップ条件: 信頼度 <85% OR パターン不一致 OR fix_type=manual
+
 ## エラーハンドリング
 
 | エラー       | アクション                |
@@ -113,4 +153,24 @@ priorities:
     score: <number>
     action: "<recommended action>"
     timing: "immediate|this_sprint|next_sprint|backlog"
+
+suggestions:
+  auto_fixable_count: <count>
+  manual_count: <count>
+  items:
+    - id: "SUG-001"
+      finding_ref: "<original finding id>"
+      category: "<category>"
+      severity: critical|high|medium|low
+      fix_type: pattern|codemod|lint-fix|manual
+      confidence: 0.85-1.00
+      location:
+        file: "<file path>"
+        line: <line number>
+      before: |
+        <original code snippet>
+      after: |
+        <suggested fix snippet>
+      rationale: "<why this fix>"
+      effort: "5min|15min|30min|1h|manual"
 ```

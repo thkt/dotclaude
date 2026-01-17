@@ -1,0 +1,51 @@
+# Audit Snapshot Schema
+#
+# Location: ~/.claude/workspace/history/audit-YYYY-MM-DD-HHmmss.yaml
+
+meta:
+  command: audit
+  timestamp: # ISO 8601
+  target: # target scope
+
+summary:
+  total_findings: # count
+  by_severity:
+    critical: # count
+    high: # count
+    medium: # count
+    low: # count
+  patterns_count: # count
+  root_causes_count: # count
+  agents_count: # count
+
+patterns:
+  - name: # pattern name
+    type: # systemic|isolated
+    files_affected: # count
+    root_cause: # description
+    confidence: # 0.80-1.00
+
+priorities:
+  - priority: # critical|high|medium|low
+    item: # description
+    score: # numeric score
+    action: # recommended action
+    timing: # immediate|this_sprint|next_sprint|backlog
+
+suggestions:
+  auto_fixable_count: # count
+  manual_count: # count
+  items:
+    - id: "SUG-001"
+      finding_ref: # original finding id
+      category: # category
+      severity: # critical|high|medium|low
+      fix_type: # pattern|codemod|lint-fix|manual
+      confidence: # 0.85-1.00
+      location:
+        file: # file path
+        line: # line number
+      before: # original code snippet
+      after: # suggested fix snippet
+      rationale: # why this fix
+      effort: # 5min|15min|30min|1h|manual

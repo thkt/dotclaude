@@ -1,0 +1,51 @@
+# Audit スナップショット スキーマ
+#
+# 保存先: ~/.claude/workspace/history/audit-YYYY-MM-DD-HHmmss.yaml
+
+meta:
+  command: audit
+  timestamp: # ISO 8601
+  target: # 対象スコープ
+
+summary:
+  total_findings: # 件数
+  by_severity:
+    critical: # 件数
+    high: # 件数
+    medium: # 件数
+    low: # 件数
+  patterns_count: # 件数
+  root_causes_count: # 件数
+  agents_count: # 件数
+
+patterns:
+  - name: # パターン名
+    type: # systemic|isolated
+    files_affected: # 件数
+    root_cause: # 説明
+    confidence: # 0.80-1.00
+
+priorities:
+  - priority: # critical|high|medium|low
+    item: # 説明
+    score: # 数値スコア
+    action: # 推奨アクション
+    timing: # immediate|this_sprint|next_sprint|backlog
+
+suggestions:
+  auto_fixable_count: # 件数
+  manual_count: # 件数
+  items:
+    - id: "SUG-001"
+      finding_ref: # 元の指摘ID
+      category: # カテゴリ
+      severity: # critical|high|medium|low
+      fix_type: # pattern|codemod|lint-fix|manual
+      confidence: # 0.85-1.00
+      location:
+        file: # ファイルパス
+        line: # 行番号
+      before: # 修正前コード
+      after: # 修正後コード
+      rationale: # 修正理由
+      effort: # 5min|15min|30min|1h|manual

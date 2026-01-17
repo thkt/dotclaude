@@ -4,12 +4,13 @@ Specification for variable substitution in templates and command outputs.
 
 ## Syntax Patterns
 
-| Pattern                          | Description     | Example                                  |
-| -------------------------------- | --------------- | ---------------------------------------- |
-| `{field}`                        | Simple field    | `{project_name}`                         |
-| `{object.property}`              | Nested property | `{summary.total_findings}`               |
-| `{array[].property}`             | Array iteration | `{endpoints[].method}`                   |
-| `{array[filter=value].property}` | Filtered array  | `{priorities[priority=critical].action}` |
+| Pattern                           | Description              | Example                                  |
+| --------------------------------- | ------------------------ | ---------------------------------------- |
+| `{field}`                         | Simple field             | `{project_name}`                         |
+| `{object.property}`               | Nested property          | `{summary.total_findings}`               |
+| `{array[].property}`              | Array iteration          | `{endpoints[].method}`                   |
+| `{array[filter=value].property}`  | Filtered array (equals)  | `{priorities[priority=critical].action}` |
+| `{array[filter!=value].property}` | Filtered array (exclude) | `{items[fix_type!=manual].id}`           |
 
 ## Examples
 
@@ -90,4 +91,5 @@ Immediate: Fix immediately
 - Empty arrays render nothing
 - Missing properties render as empty string
 - Filters match first occurrence only
+- Exclusion filters (`!=`) return all items NOT matching the value
 - For all matches, use array iteration: `{array[].property}` instead of filter

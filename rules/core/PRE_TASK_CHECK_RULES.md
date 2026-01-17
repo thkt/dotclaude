@@ -8,7 +8,7 @@
 | [→]    | Inferred | Confirm before proceeding     |
 | [?]    | Unknown  | Investigate before proceeding |
 
-**Rule**: All items must be [✓] to proceed. Any [→] or [?] requires resolution first.
+Rule: All items must be [✓] to proceed. Any [→] or [?] requires resolution first.
 
 ## Checklist Items (7 total)
 
@@ -24,7 +24,7 @@
 
 ## Task Decomposition
 
-**Split when ANY threshold exceeded:**
+Split when ANY threshold exceeded:
 
 | Condition | Threshold |
 | --------- | --------- |
@@ -46,3 +46,11 @@
 - Simple questions/confirmations
 - Read-only queries
 - Follow-up clarifications
+
+## "No Change" Verification Gate
+
+Before reporting "No Change Required":
+
+1. Evidence: Cite specific file:line read
+2. Explanation: Why current state meets goal
+3. Confirmation: AskUserQuestion to verify
