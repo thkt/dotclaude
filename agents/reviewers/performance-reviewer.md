@@ -3,7 +3,12 @@ name: performance-reviewer
 description: Frontend performance optimization for TypeScript/React. Web Vitals, rendering, bundle size.
 tools: [Read, Grep, Glob, LS, Task, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
-skills: [optimizing-performance, applying-code-principles]
+skills:
+  [
+    optimizing-performance,
+    vercel-react-best-practices,
+    applying-code-principles,
+  ]
 context: fork
 ---
 

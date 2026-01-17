@@ -3,7 +3,12 @@ name: accessibility-reviewer
 description: WCAG 2.2 compliance review. Outputs structured YAML.
 tools: [Read, Grep, Glob, LS, Task, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
-skills: [a11y-specialist-skills:a11y-review, enhancing-progressively]
+skills:
+  [
+    a11y-specialist-skills:a11y-review,
+    web-design-guidelines,
+    enhancing-progressively,
+  ]
 context: fork
 ---
 
