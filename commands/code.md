@@ -31,6 +31,10 @@ Implement code with TDD/RGRC cycle and quality checks.
 | Skill  | orchestrating-workflows | RGRC cycle definition      |
 | Plugin | ralph-loop              | Auto-iteration (external)  |
 
+### ralph-loop Fallback
+
+Without plugin: manual iteration (user confirms each RGRC step)
+
 ## Execution
 
 | Step | Action                                                |

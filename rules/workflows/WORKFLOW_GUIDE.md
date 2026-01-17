@@ -45,6 +45,19 @@ Guide for **using** commands. User reference for command selection and workflow 
 
 ## Standard Workflows
 
+```mermaid
+flowchart LR
+    subgraph Quick["Quick Fix"]
+        F["/fix"]
+    end
+    subgraph Investigate["Investigation"]
+        R1["/research"] --> F2["/fix"]
+    end
+    subgraph Feature["Feature Development"]
+        R2["/research"] --> T["/think"] --> C["/code"] --> TE["/test"] --> A["/audit"] --> V["/validate"]
+    end
+```
+
 | Pattern       | Workflow                                                            | When                                    |
 | ------------- | ------------------------------------------------------------------- | --------------------------------------- |
 | Quick Fix     | `/fix`                                                              | Small bug, stable codebase              |

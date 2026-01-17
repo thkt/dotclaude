@@ -46,6 +46,9 @@ Split when ANY threshold exceeded:
 - Simple questions/confirmations
 - Read-only queries
 - Follow-up clarifications
+- Continuation of approved plan (same session)
+- Sequential edits to same file(s)
+- User explicitly says "just do it" or "skip check"
 
 ## "No Change" Verification Gate
 

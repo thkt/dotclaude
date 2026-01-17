@@ -31,6 +31,10 @@ TDD/RGRCサイクルと品質チェックによるコード実装。
 | Skill  | orchestrating-workflows | RGRCサイクル定義              |
 | Plugin | ralph-loop              | 自動イテレーション (external) |
 
+### ralph-loop フォールバック
+
+プラグインなし: 手動イテレーション（各RGRCステップでユーザー確認）
+
 ## 実行
 
 | Step | アクション                                              |
