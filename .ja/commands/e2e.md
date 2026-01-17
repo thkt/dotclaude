@@ -1,6 +1,6 @@
 ---
 description: ガイド付きブラウザ操作を通じてドキュメントとPlaywrightテストを生成
-allowed-tools: Read, Write, Glob, Task, mcp__claude-in-chrome__*, mcp__playwright__*
+allowed-tools: Read, Write, Glob, Task, Bash(agent-browser:*)
 model: opus
 argument-hint: "[テスト名]"
 ---
@@ -16,18 +16,27 @@ argument-hint: "[テスト名]"
 
 ## 実行
 
-`claude-in-chrome`経由のブラウザ操作、その後Playwrightテストを生成。
+`agent-browser` 経由のブラウザ操作、その後Playwrightテストを生成。
 
-## ツール
+## ツール (agent-browser コマンド)
 
-| ツール        | 用途               |
-| ------------- | ------------------ |
-| `navigate`    | URLに移動          |
-| `click`       | 要素をクリック     |
-| `form_input`  | フォーム入力       |
-| `read_page`   | ページ内容を読取   |
-| `screenshot`  | スクリーンショット |
-| `gif_creator` | 操作を録画         |
+| コマンド                            | 目的                           |
+| ----------------------------------- | ------------------------------ |
+| `agent-browser --headed open <url>` | URLに移動                      |
+| `agent-browser snapshot -i`         | インタラクティブ要素を取得     |
+| `agent-browser click @ref`          | 要素をクリック                 |
+| `agent-browser fill @ref "text"`    | フォーム入力（クリアして入力） |
+| `agent-browser type @ref "text"`    | 要素に入力                     |
+| `agent-browser get text @ref`       | 要素テキストを読取             |
+| `agent-browser screenshot [path]`   | スクリーンショット             |
+| `agent-browser close`               | ブラウザセッションを閉じる     |
+
+## ワークフロー
+
+1. `agent-browser --headed open <url>` - ページを開く
+2. `agent-browser snapshot -i` - インタラクティブ要素を取得
+3. `@ref` を使って操作（click, fill, type）
+4. DOM 変更後は再度 `snapshot` を取得
 
 ## Playwright形式
 
@@ -42,10 +51,10 @@ test("user can login", async ({ page }) => {
 
 ## シナリオ形式
 
-```markdown
-**Given**: ユーザーがログインページにいる
-**When**: ユーザーが認証情報を入力して送信
-**Then**: ユーザーがダッシュボードにリダイレクト
+```gherkin
+Given ユーザーがログインページにいる
+When ユーザーが認証情報を入力して送信
+Then ユーザーがダッシュボードにリダイレクト
 ```
 
 ## ベストプラクティス

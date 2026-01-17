@@ -1,7 +1,7 @@
 ---
 name: performance-reviewer
 description: TypeScript/Reactのフロントエンドパフォーマンス最適化。Web Vitals、レンダリング、バンドルサイズ。
-tools: [Read, Grep, Glob, LS, Task, mcp__claude-in-chrome__*, mcp__mdn__*]
+tools: [Read, Grep, Glob, LS, Task, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
 skills: [optimizing-performance, applying-code-principles]
 context: fork
@@ -36,15 +36,15 @@ Reactレンダリング、バンドルサイズ、ランタイムパフォーマ
 | LCP        | < 2.5s |
 | CLS        | < 0.1  |
 
-## Browser/MCP使用
+## ブラウザ使用
 
-| MCPを使う場合        | スキップする場合 |
+| ブラウザを使う場合   | スキップする場合 |
 | -------------------- | ---------------- |
 | パフォーマンス計測   | 静的コード分析   |
 | ランタイム測定       | devサーバーなし  |
 | 実ユーザーメトリクス | バンドル分析のみ |
 
-**フォールバック**: MCP利用不可の場合、コード分析のみ（信頼度を下げる）。
+フォールバック: ブラウザ利用不可の場合、コード分析のみ（信頼度を下げる）。
 
 ## エラーハンドリング
 

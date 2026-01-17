@@ -1,7 +1,7 @@
 ---
 name: accessibility-reviewer
 description: WCAG 2.2準拠レビュー。構造化YAML出力。
-tools: [Read, Grep, Glob, LS, Task, mcp__claude-in-chrome__*, mcp__mdn__*]
+tools: [Read, Grep, Glob, LS, Task, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
 skills: [a11y-specialist-skills:a11y-review, enhancing-progressively]
 context: fork
@@ -26,15 +26,15 @@ WCAGチェックをa11y-specialist-skillsに委譲。構造化YAMLで出力。
 | enhancing-progressively | セマンティックHTML優先                                                       |
 | このエージェント        | ビジュアルチェック（コントラスト、モーション）+ YAML出力                     |
 
-## Browser/MCP使用
+## ブラウザ使用
 
-| MCPを使う場合            | スキップする場合   |
+| ブラウザを使う場合       | スキップする場合   |
 | ------------------------ | ------------------ |
 | 複雑なインタラクション   | 静的HTML/CSS       |
 | カスタムARIAウィジェット | devサーバーなし    |
 | 視覚的検証               | セマンティックのみ |
 
-**フォールバック**: MCP利用不可の場合、コード分析のみ（信頼度を下げる）。
+フォールバック: ブラウザ利用不可の場合、コード分析のみ（信頼度を下げる）。
 
 ## エラーハンドリング
 

@@ -1,6 +1,6 @@
 ---
 description: Generate documentation and Playwright tests through guided browser operations
-allowed-tools: Read, Write, Glob, Task, mcp__claude-in-chrome__*, mcp__playwright__*
+allowed-tools: Read, Write, Glob, Task, Bash(agent-browser:*)
 model: opus
 argument-hint: "[test-name]"
 ---
@@ -16,18 +16,27 @@ Generate documentation and Playwright tests through browser operations.
 
 ## Execution
 
-Browser operations via `claude-in-chrome`, then generate Playwright tests.
+Browser operations via `agent-browser`, then generate Playwright tests.
 
-## Tools
+## Tools (agent-browser commands)
 
-| Tool          | Purpose            |
-| ------------- | ------------------ |
-| `navigate`    | Go to URL          |
-| `click`       | Click element      |
-| `form_input`  | Fill form fields   |
-| `read_page`   | Read page content  |
-| `screenshot`  | Capture screenshot |
-| `gif_creator` | Record interaction |
+| Command                             | Purpose                         |
+| ----------------------------------- | ------------------------------- |
+| `agent-browser --headed open <url>` | Go to URL                       |
+| `agent-browser snapshot -i`         | Get interactive elements (refs) |
+| `agent-browser click @ref`          | Click element                   |
+| `agent-browser fill @ref "text"`    | Fill form fields (clear first)  |
+| `agent-browser type @ref "text"`    | Type into element               |
+| `agent-browser get text @ref`       | Read element text               |
+| `agent-browser screenshot [path]`   | Capture screenshot              |
+| `agent-browser close`               | Close browser session           |
+
+## Workflow
+
+1. `agent-browser --headed open <url>` - ページを開く
+2. `agent-browser snapshot -i` - インタラクティブ要素を取得
+3. `@ref` を使って操作（click, fill, type）
+4. DOM 変更後は再度 `snapshot` を取得
 
 ## Playwright Format
 
@@ -42,10 +51,10 @@ test("user can login", async ({ page }) => {
 
 ## Scenario Format
 
-```markdown
-**Given**: User is on login page
-**When**: User enters credentials and submits
-**Then**: User is redirected to dashboard
+```gherkin
+Given User is on login page
+When User enters credentials and submits
+Then User is redirected to dashboard
 ```
 
 ## Best Practices

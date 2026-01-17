@@ -1,7 +1,7 @@
 ---
 name: accessibility-reviewer
 description: WCAG 2.2 compliance review. Outputs structured YAML.
-tools: [Read, Grep, Glob, LS, Task, mcp__claude-in-chrome__*, mcp__mdn__*]
+tools: [Read, Grep, Glob, LS, Task, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
 skills: [a11y-specialist-skills:a11y-review, enhancing-progressively]
 context: fork
@@ -26,15 +26,15 @@ Delegates WCAG checks to a11y-specialist-skills. Outputs structured YAML.
 | enhancing-progressively | Semantic HTML priority                                       |
 | This agent              | Visual checks (contrast, motion) + YAML output               |
 
-## Browser/MCP Usage
+## Browser Usage
 
-| Use MCP When         | Skip MCP When           |
+| Use Browser When     | Skip Browser When       |
 | -------------------- | ----------------------- |
 | Complex interactions | Static HTML/CSS         |
 | Custom ARIA widgets  | No dev server available |
 | Visual verification  | Semantic-only review    |
 
-**Fallback**: If MCP unavailable, code-only analysis with lower confidence.
+Fallback: If browser unavailable, code-only analysis with lower confidence.
 
 ## Error Handling
 

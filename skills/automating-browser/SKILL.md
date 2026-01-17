@@ -1,56 +1,59 @@
 ---
 name: automating-browser
 description: >
-  Interactive browser automation using claude-in-chrome MCP tools. Best for demos, GIFs, manual testing.
-  Triggers: browser automation, GIF recording, ブラウザ操作, スクリーンショット, demo, manual testing.
-allowed-tools: [Read, Glob, mcp__claude-in-chrome__*]
+  Browser automation using agent-browser CLI. Best for E2E testing, demos, screenshots.
+  Triggers: browser automation, E2E test, ブラウザ操作, スクリーンショット, demo, manual testing.
+allowed-tools: [Read, Glob, Bash(agent-browser:*)]
 context: fork
 user-invocable: false
 ---
 
-# Browser Automation
+# Browser Automation (agent-browser)
 
 ## When to Use
 
-| Use Case              | This Skill | webapp-testing |
-| --------------------- | ---------- | -------------- |
-| GIF recording / demos | Best       | Not supported  |
-| Manual testing        | Best       | OK             |
-| CI/CD automation      | OK         | Best           |
+| Use Case        | agent-browser | Playwright |
+| --------------- | ------------- | ---------- |
+| CLI integration | Best          | Complex    |
+| E2E testing     | Best          | Best       |
+| Context-saving  | Best (93%↓)   | Heavy      |
+| GIF recording   | Not supported | Supported  |
 
-## Core Tools
+## Core Commands
 
-| Tool               | Purpose                |
-| ------------------ | ---------------------- |
-| `tabs_context_mcp` | Get available tabs     |
-| `tabs_create_mcp`  | Create new tab         |
-| `navigate`         | Go to URL              |
-| `read_page`        | Get page structure     |
-| `find`             | Element search         |
-| `form_input`       | Fill form fields       |
-| `computer`         | Mouse/keyboard actions |
-| `gif_creator`      | Record interactions    |
+| Command                             | Purpose                         |
+| ----------------------------------- | ------------------------------- |
+| `agent-browser --headed open <url>` | Open URL (visible browser)      |
+| `agent-browser open <url>`          | Open URL (headless)             |
+| `agent-browser snapshot -i`         | Get interactive elements (refs) |
+| `agent-browser click @ref`          | Click element                   |
+| `agent-browser fill @ref "text"`    | Clear and fill                  |
+| `agent-browser type @ref "text"`    | Type into element               |
+| `agent-browser get text @ref`       | Read element text               |
+| `agent-browser screenshot [path]`   | Capture screenshot              |
+| `agent-browser close`               | Close browser session           |
 
 ## Workflow
 
-| Step | Action                                |
-| ---- | ------------------------------------- |
-| 1    | `tabs_context_mcp` → get tab IDs      |
-| 2    | `tabs_create_mcp` or use existing     |
-| 3    | `navigate` with URL and tabId         |
-| 4    | `read_page`, `form_input`, `computer` |
-| 5    | `gif_creator` for demos               |
+| Step | Action                              |
+| ---- | ----------------------------------- |
+| 1    | `agent-browser --headed open <url>` |
+| 2    | `agent-browser snapshot -i`         |
+| 3    | Use `@ref` for operations           |
+| 4    | Re-snapshot after DOM changes       |
+
+## Key Points
+
+| Point              | Description                                  |
+| ------------------ | -------------------------------------------- |
+| Always snapshot    | Refs are only valid after snapshot           |
+| Re-snapshot on DOM | After click/fill, get new refs               |
+| Mode switch        | Close first when switching headed ↔ headless |
 
 ## Patterns
 
-| Pattern      | Steps                                                          |
-| ------------ | -------------------------------------------------------------- |
-| Form Filling | read_page (filter: interactive) → identify ref_id → form_input |
-| GIF Record   | start_recording → actions + screenshots → stop → export        |
-
-## References
-
-| Topic    | File                                   |
-| -------- | -------------------------------------- |
-| Tools    | `references/claude-in-chrome-tools.md` |
-| Patterns | `references/common-patterns.md`        |
+| Pattern      | Commands                                       |
+| ------------ | ---------------------------------------------- |
+| Form Filling | snapshot -i → fill @ref "value" → click submit |
+| Navigation   | click @ref → wait → snapshot                   |
+| Screenshot   | snapshot → screenshot path.png                 |

@@ -1,7 +1,7 @@
 ---
 name: performance-reviewer
 description: Frontend performance optimization for TypeScript/React. Web Vitals, rendering, bundle size.
-tools: [Read, Grep, Glob, LS, Task, mcp__claude-in-chrome__*, mcp__mdn__*]
+tools: [Read, Grep, Glob, LS, Task, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
 skills: [optimizing-performance, applying-code-principles]
 context: fork
@@ -36,15 +36,15 @@ Optimize React rendering, bundle size, runtime performance.
 | LCP    | < 2.5s |
 | CLS    | < 0.1  |
 
-## Browser/MCP Usage
+## Browser Usage
 
-| Use MCP When          | Skip MCP When           |
+| Use Browser When      | Skip Browser When       |
 | --------------------- | ----------------------- |
 | Performance profiling | Static code analysis    |
 | Runtime measurements  | No dev server available |
 | Real user metrics     | Bundle analysis only    |
 
-**Fallback**: If MCP unavailable, code-only analysis with lower confidence.
+Fallback: If browser unavailable, code-only analysis with lower confidence.
 
 ## Error Handling
 
