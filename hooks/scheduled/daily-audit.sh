@@ -1,35 +1,35 @@
 #!/bin/bash
-# daily-audit.sh - 毎朝の自動監査スクリプト
-# 実行: crontab -e で 0 9 * * * ~/.claude/hooks/daily-audit.sh を追加
+# daily-audit.sh - Daily automated audit script
+# Usage: Add "0 9 * * * ~/.claude/hooks/scheduled/daily-audit.sh" to crontab -e
 
 set -euo pipefail
 
-# 依存コマンドチェック
+# Check required dependencies
 command -v jq >/dev/null 2>&1 || { echo "Error: jq is required but not installed. Install with: brew install jq" >&2; exit 1; }
 
-# 設定
+# Configuration
 CLAUDE_CMD="${CLAUDE_CMD:-$(command -v claude 2>/dev/null || echo '/opt/homebrew/bin/claude')}"
 PROJECT_DIR="$HOME/.claude"
 OUTPUT_DIR="$PROJECT_DIR/workspace/audit"
 DATE=$(date +%Y-%m-%d)
 OUTPUT_FILE="$OUTPUT_DIR/$DATE.md"
 
-# 検証ログの永続化（Claude 4 BP - State Management）
+# Persistent audit state (Claude 4 BP - State Management)
 STATE_FILE="$OUTPUT_DIR/.audit-state.json"
 HISTORY_FILE="$OUTPUT_DIR/.audit-history.json"
 
-# ログ関数
+# Log function
 log() {
   echo "[$(date '+%H:%M:%S')] $1"
 }
 
-# 出力ディレクトリ確認
+# Ensure output directory exists
 mkdir -p "$OUTPUT_DIR"
 
 log "Starting daily audit for $PROJECT_DIR"
 
 
-# Claude CLIで監査実行
+# Execute audit with Claude CLI
 cd "$PROJECT_DIR"
 
 # Claude 4 Best Practices + Skills Best Practices
@@ -117,7 +117,7 @@ Before reporting any issue:
 4. If confidence < 80%, list separately as "Needs Confirmation"
 </feedback_loop>'
 
-# Execute and output
+# Execute and save output
 {
   echo "# Daily Audit Report - $DATE"
   echo ""

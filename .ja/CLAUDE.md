@@ -18,8 +18,6 @@
 | 重複していない？   | DRY            |
 | 今必要？           | YAGNI          |
 
-スキルは自動起動。詳細: [@../skills/applying-code-principles/SKILL.md](../skills/applying-code-principles/SKILL.md)
-
 ## 完了
 
 報告前: tests pass, build pass, lint pass
