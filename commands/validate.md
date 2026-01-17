@@ -38,6 +38,13 @@ Display SOW acceptance criteria for manual verification.
 | 90-99% | WARN   | Review gaps            |
 | <90%   | FAIL   | Address before release |
 
+## SOW Status Update
+
+| Score | Status Update                   |
+| ----- | ------------------------------- |
+| 100%  | Update `Status:` → `completed`  |
+| <100% | Keep current status (no change) |
+
 ## Output
 
 ```markdown

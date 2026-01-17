@@ -43,6 +43,16 @@ Implement code with TDD/RGRC cycle and quality checks.
 
 After implementation, generate IDR if SOW exists (skip if no SOW).
 
+## SOW Status Update
+
+If SOW exists and Status is `draft`, update to `in-progress` at start.
+
+| Condition           | Action                                 |
+| ------------------- | -------------------------------------- |
+| SOW exists          | Update `Status: draft` → `in-progress` |
+| SOW not found       | Skip (no action needed)                |
+| Already in-progress | Skip (no change needed)                |
+
 ## Verification
 
 | Check                                               | Required |

@@ -23,13 +23,24 @@ Search paths (project-specific first):
 ~/.claude/workspace/planning/**/sow.md
 ```
 
+For each SOW found, extract `Status:` line value.
+
 ## Output
 
 ```markdown
 ## Available SOW Documents
 
-| #   | Location | Feature       | Date       |
-| --- | -------- | ------------- | ---------- |
-| 1   | Project  | feature-name  | 2025-01-14 |
-| 2   | Global   | other-feature | 2025-01-13 |
+| #   | Location | Feature       | Date       | Status      |
+| --- | -------- | ------------- | ---------- | ----------- |
+| 1   | Project  | feature-name  | 2025-01-14 | in-progress |
+| 2   | Global   | other-feature | 2025-01-13 | draft       |
 ```
+
+### Status Legend
+
+| Status      | Meaning                |
+| ----------- | ---------------------- |
+| draft       | Planning phase         |
+| in-progress | Implementation started |
+| completed   | All AC validated       |
+| blocked     | Waiting on dependency  |
