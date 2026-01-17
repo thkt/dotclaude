@@ -30,7 +30,3 @@
 
 コマンド: [@../rules/workflows/WORKFLOW_GUIDE.md](../rules/workflows/WORKFLOW_GUIDE.md)
 ドキュメント: [@../rules/conventions/DOCUMENTATION.md](../rules/conventions/DOCUMENTATION.md)
-
-## 出力
-
-太字（`**`）禁止。強調にはバッククォートを使用。
