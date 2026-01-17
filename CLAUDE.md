@@ -18,7 +18,9 @@
 | Duplicating?          | DRY           |
 | Needed now?           | YAGNI         |
 
-Skills auto-activate. Details: [@./skills/applying-code-principles/SKILL.md](./skills/applying-code-principles/SKILL.md)
+Skills auto-activate. Details:
+- Code Principles: [@./skills/applying-code-principles/SKILL.md](./skills/applying-code-principles/SKILL.md)
+- Consulting Gemini: [@./skills/consulting-gemini/SKILL.md](./skills/consulting-gemini/SKILL.md)
 
 ## Completion
 
