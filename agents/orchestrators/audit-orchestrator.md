@@ -40,10 +40,15 @@ Integration logic (translation false-positive filtering, dedup by file:line:cate
 
 ## Error Handling
 
-| Error         | Action                     |
-| ------------- | -------------------------- |
-| Agent timeout | Continue with completed    |
-| No files      | Report "No files to audit" |
+| Error                     | Action                                   |
+| ------------------------- | ---------------------------------------- |
+| Agent timeout             | Continue with completed                  |
+| No files                  | Report "No files to audit"               |
+| pr-review-toolkit unavail | Skip Enhanced/Design groups, log warning |
+| External agent error      | Continue with local agents only          |
+
+Fallback: pr-review-toolkit unavailable → skip Enhanced/Design groups, audit with 13 local agents.
+Log: `⚠️ pr-review-toolkit not available, using local agents only (13/17)`
 
 ## Output
 

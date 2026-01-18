@@ -11,7 +11,7 @@ set -euo pipefail
 WORKSPACE_DIR="${HOME}/.claude/workspace"
 PENDING_LOG="${WORKSPACE_DIR}/.pending-idr.log"
 PLANNING_DIR="${WORKSPACE_DIR}/planning"
-CONFIRM_FILE="/tmp/idr-confirm-$(date +%s).md"
+CONFIRM_FILE="/tmp/claude/idr-confirm-$(date +%s).md"
 BLOCKER_LINE="⚠️_この行を消すとコミットされます_⚠️"
 
 # エディタ設定（優先順位: cursor > code > vim）
@@ -91,6 +91,9 @@ main() {
   # 確認質問を生成
   local questions
   questions=$(generate_questions "$diff")
+
+  # 確認ファイル用ディレクトリ作成
+  mkdir -p /tmp/claude
 
   # 確認ファイル作成
   cat > "$CONFIRM_FILE" << EOF

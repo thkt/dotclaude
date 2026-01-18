@@ -43,10 +43,15 @@ Fallback: If browser unavailable, code-only analysis with lower confidence.
 
 ## Error Handling
 
-| Error           | Action                     |
-| --------------- | -------------------------- |
-| No HTML found   | Report "No HTML to review" |
-| No issues found | Return empty findings      |
+| Error                          | Action                                 |
+| ------------------------------ | -------------------------------------- |
+| No HTML found                  | Report "No HTML to review"             |
+| No issues found                | Return empty findings                  |
+| a11y-specialist-skills unavail | Skip delegation, run local checks only |
+| External skill timeout         | Continue with completed checks         |
+
+Fallback: a11y-specialist-skills unavailable → visual-only checks (contrast, motion).
+Log: `⚠️ a11y-specialist-skills not available, WCAG semantic checks skipped`
 
 ## Output
 

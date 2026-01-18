@@ -46,6 +46,16 @@ Polished: Removed X comments, inlined Y helpers
 - If IDR exists: append `/polish` section with removals and simplifications
 - If no IDR: skip (terminal output only)
 
+## Error Handling
+
+| Error                   | Action                                     |
+| ----------------------- | ------------------------------------------ |
+| code-simplifier unavail | Log warning, skip polish (no changes made) |
+| No changes in diff      | Report "Nothing to polish"                 |
+
+Fallback: code-simplifier unavailable → exit without modifications.
+Log: `⚠️ code-simplifier not available, polish skipped`
+
 ## Verification
 
 | Check                                                | Required |

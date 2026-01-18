@@ -19,7 +19,6 @@ List and view planning documents (SOW/Spec).
 Search paths (project-specific first):
 
 ```text
-.claude/workspace/planning/**/sow.md
 ~/.claude/workspace/planning/**/sow.md
 ```
 

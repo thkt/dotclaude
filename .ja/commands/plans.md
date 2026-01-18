@@ -19,7 +19,6 @@ argument-hint: "[機能名]"
 検索パス（プロジェクト固有を先に検索）:
 
 ```text
-.claude/workspace/planning/**/sow.md
 ~/.claude/workspace/planning/**/sow.md
 ```
 

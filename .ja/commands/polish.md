@@ -46,6 +46,16 @@ Polished: X件のコメント削除、Y件のヘルパーをインライン化
 - IDR存在時: `/polish`セクションを追記（削除と簡素化）
 - IDRなし: スキップ（ターミナル出力のみ）
 
+## エラーハンドリング
+
+| エラー              | アクション                           |
+| ------------------- | ------------------------------------ |
+| code-simplifier不可 | 警告ログ、polishスキップ（変更なし） |
+| diff変更なし        | "Nothing to polish"報告              |
+
+Fallback: code-simplifier不可 → 変更なしで終了。
+Log: `⚠️ code-simplifier not available, polish skipped`
+
 ## 検証
 
 | チェック                                               | 必須 |

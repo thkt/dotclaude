@@ -16,7 +16,7 @@ Display SOW acceptance criteria for manual verification.
 
 ## Execution
 
-1. Find SOW via Glob (`.claude/workspace/planning/*/sow.md`)
+1. Find SOW via Glob (`~/.claude/workspace/planning/*/sow.md`)
 2. Extract Acceptance Criteria section
 3. Validate each AC
 4. Display as checklist

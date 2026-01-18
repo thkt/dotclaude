@@ -28,4 +28,4 @@ Template: [@../templates/sow/template.md](../templates/sow/template.md)
 
 ## Output
 
-File: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
+File: `~/.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`

@@ -43,10 +43,15 @@ WCAGチェックをa11y-specialist-skillsに委譲。構造化YAMLで出力。
 
 ## エラーハンドリング
 
-| エラー   | アクション              |
-| -------- | ----------------------- |
-| HTMLなし | "No HTML to review"報告 |
-| 問題なし | 空のfindingsを返す      |
+| エラー                     | アクション                         |
+| -------------------------- | ---------------------------------- |
+| HTMLなし                   | "No HTML to review"報告            |
+| 問題なし                   | 空のfindingsを返す                 |
+| a11y-specialist-skills不可 | 委譲スキップ、ローカルチェックのみ |
+| 外部スキルタイムアウト     | 完了分で続行                       |
+
+Fallback: a11y-specialist-skills不可 → ビジュアルチェックのみ（コントラスト、モーション）。
+Log: `⚠️ a11y-specialist-skills not available, WCAG semantic checks skipped`
 
 ## 出力
 
