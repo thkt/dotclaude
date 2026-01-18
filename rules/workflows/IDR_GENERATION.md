@@ -2,60 +2,68 @@
 
 Tracks implementation decisions throughout development lifecycle.
 
-## Command Actions
+## Recording Layers
 
-| Command     | IDR Action              |
-| ----------- | ----------------------- |
-| `/code`     | Creates with decisions  |
-| `/audit`    | Appends review findings |
-| `/polish`   | Appends simplifications |
-| `/validate` | Reconciles with SOW AC  |
+| Layer      | Trigger    | Records                    | Automatic |
+| ---------- | ---------- | -------------------------- | --------- |
+| pre-commit | git commit | 変更ファイル、確認チェック | Yes       |
+| /code      | 実装完了時 | 設計決定、トレードオフ     | Optional  |
+| /audit     | レビュー時 | 問題点、改善提案           | Optional  |
+| /polish    | 整理時     | 削除・簡略化内容           | Optional  |
+| /validate  | 検証時     | SOW適合性、ギャップ        | Optional  |
 
-Location: `~/.claude/workspace/planning/[feature]/idr.md`
+## Automatic Recording (pre-commit hook)
 
-## IDR Detection
+コミット時に自動的に以下を記録：
 
-| Scenario   | Detection                                       | Path                                       |
-| ---------- | ----------------------------------------------- | ------------------------------------------ |
-| SOW exists | Search `~/.claude/workspace/planning/**/sow.md` | `[SOW directory]/idr.md`                   |
-| No SOW     | Infer feature name from context                 | `~/.claude/workspace/idr/[feature]/idr.md` |
+| Section      | Content                        |
+| ------------ | ------------------------------ |
+| 変更ファイル | ステージされたファイル一覧     |
+| 確認内容     | Claudeが生成した確認質問の回答 |
+| メモ         | 開発者が記入したメモ           |
 
-## IDR Generation (/code)
+Location: `[IDRと同じディレクトリ]/.idr-confirm.md` (作業用)
 
-| Section            | Content                           |
-| ------------------ | --------------------------------- |
-| Changed Files      | `git diff --name-status HEAD`     |
-| Key Decisions      | Rationale for implementation      |
-| Notes              | Trade-offs, alternatives rejected |
-| Reviewer Attention | Points for code review            |
+## Manual Recording (Slash Commands)
 
-Template: `~/.claude/templates/idr/template.md`
+より詳細な記録が必要な場合にスラッシュコマンドを使用：
 
-## IDR Update Sections
+| Command   | When to Use            | Records              |
+| --------- | ---------------------- | -------------------- |
+| /code     | 重要な設計決定をした時 | 決定理由、代替案     |
+| /audit    | コードレビュー後       | 問題点、修正提案     |
+| /polish   | リファクタリング後     | 削除内容、簡略化理由 |
+| /validate | 実装完了時             | SOW適合性、残タスク  |
 
-| Command   | Section Content                                |
-| --------- | ---------------------------------------------- |
-| /audit    | Summary (severity counts), Issues table, Notes |
-| /polish   | Removals table, Simplifications description    |
-| /validate | AC validation table, Gaps, Sign-off            |
+## IDR File Location
 
-## SOW Integration
+| Scenario   | Detection                                       | Path                      |
+| ---------- | ----------------------------------------------- | ------------------------- |
+| SOW exists | Search `~/.claude/workspace/planning/**/sow.md` | `[SOW directory]/idr.md`  |
+| No SOW     | Default location                                | `planning/default/idr.md` |
 
-| Direction | Link                                      |
-| --------- | ----------------------------------------- |
-| IDR → SOW | `SOW: ./sow.md` in metadata               |
-| SOW → IDR | `IDR: ./idr.md` in Implementation Records |
+## Integration
 
-## Error Handling
+```mermaid
+flowchart LR
+    subgraph Auto["自動記録"]
+        W[Write/Edit] --> L[idr-log.sh]
+        L --> P[.pending-idr.log]
+        P --> C[git commit]
+        C --> H[pre-commit hook]
+        H --> IDR[idr.md]
+    end
 
-| Scenario          | Action                                      |
-| ----------------- | ------------------------------------------- |
-| No SOW found      | Create standalone IDR in workspace/idr/     |
-| IDR not found     | Create new (for /code) or skip (for others) |
-| SOW update fails  | Log warning, continue without SOW link      |
-| Git not available | Skip changed files, use manual input        |
+    subgraph Manual["手動記録"]
+        CODE["/code"] --> IDR
+        AUDIT["/audit"] --> IDR
+        POLISH["/polish"] --> IDR
+        VAL["/validate"] --> IDR
+    end
+```
 
 ## Related
 
-- Template: `~/.claude/templates/idr/template.md`
+- Hook: `~/.claude/hooks/lifecycle/idr-log.sh`
+- Hook: `~/.claude/hooks/lifecycle/idr-pre-commit.sh`
 - SOW Template: `~/.claude/templates/sow/template.md`

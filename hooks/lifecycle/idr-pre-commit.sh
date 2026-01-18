@@ -11,8 +11,7 @@ set -euo pipefail
 WORKSPACE_DIR="${HOME}/.claude/workspace"
 PENDING_LOG="${WORKSPACE_DIR}/.pending-idr.log"
 PLANNING_DIR="${WORKSPACE_DIR}/planning"
-CONFIRM_FILE="/tmp/claude/idr-confirm-$(date +%s).md"
-BLOCKER_LINE="⚠️_この行を消すとコミットされます_⚠️"
+BLOCKER_LINE="[ ] 確認完了（このチェックボックスをチェックして保存）"
 
 # エディタ設定（優先順位: cursor > code > vim）
 get_editor() {
@@ -28,29 +27,45 @@ get_editor() {
 # Claude CLIで確認質問を生成
 generate_questions() {
   local diff="$1"
+  local file_count="$2"
 
   # Claude CLIがない場合はスキップ
   if ! command -v claude &> /dev/null; then
-    echo "（Claude CLIが見つかりません。手動で確認してください）"
+    echo "- [ ] 変更内容を理解しましたか？"
+    echo "- [ ] テストは十分ですか？"
+    echo "- [ ] 既存機能への影響は確認しましたか？"
     return
   fi
 
-  echo "$diff" | claude -p "
-あなたはシニアエンジニアです。以下のコード変更について、開発者が理解を確認するための質問を3-5個生成してください。
-
-観点:
-- 設計意図・なぜこの実装にしたか
-- 潜在的なバグやエッジケース
-- テストで確認すべきこと
-- 既存コードへの影響
+  # 変更が少ない場合は簡易質問
+  if [ "$file_count" -le 2 ]; then
+    echo "$diff" | claude -p "
+以下の変更について、開発者が確認すべき質問を2-3個生成してください。
+チェックボックス形式で出力してください。
 
 フォーマット:
-1. [質問]
-2. [質問]
-...
+- [ ] 質問1
+- [ ] 質問2
 
 変更内容:
-" 2>/dev/null || echo "（質問生成に失敗しました。手動で確認してください）"
+" 2>/dev/null || echo "- [ ] 変更内容を確認しましたか？"
+  else
+    echo "$diff" | claude -p "
+以下の変更について、開発者が確認すべき質問を3-5個生成してください。
+チェックボックス形式で出力してください。
+
+観点:
+- 設計意図
+- エッジケース
+- テスト観点
+
+フォーマット:
+- [ ] 質問1
+- [ ] 質問2
+
+変更内容:
+" 2>/dev/null || echo "- [ ] 変更内容を確認しましたか？"
+  fi
 }
 
 # 現在のIDRファイルを特定
@@ -80,40 +95,53 @@ main() {
     exit 0
   fi
 
+  # IDRファイルの場所を特定（確認ファイルも同じディレクトリに配置）
+  local idr_file
+  idr_file=$(find_idr_file)
+  local idr_dir
+  idr_dir=$(dirname "$idr_file")
+  mkdir -p "$idr_dir"
+  local CONFIRM_FILE="${idr_dir}/.idr-confirm.md"
+
   # 蓄積された変更ファイル一覧
   local changes
   changes=$(cat "$PENDING_LOG" | cut -d'|' -f2 | sort -u)
+  local file_count
+  file_count=$(echo "$changes" | wc -l | tr -d ' ')
 
-  # git diffを取得
+  # git diffを取得（サマリー）
+  local diff_stat
+  diff_stat=$(git diff --cached --stat)
   local diff
   diff=$(git diff --cached)
 
   # 確認質問を生成
   local questions
-  questions=$(generate_questions "$diff")
-
-  # 確認ファイル用ディレクトリ作成
-  mkdir -p /tmp/claude
+  questions=$(generate_questions "$diff" "$file_count")
 
   # 確認ファイル作成
   cat > "$CONFIRM_FILE" << EOF
-# 🔍 コミット前確認
+# コミット確認
 
-## 変更ファイル一覧
+> $(date +%Y-%m-%d\ %H:%M)
+
+## 変更サマリー
 
 \`\`\`
-${changes}
+${diff_stat}
 \`\`\`
 
-## 確認質問
+## 確認項目
 
 ${questions}
 
-## あなたの回答・メモ
+## メモ（任意）
 
-（ここに回答を記入してください）
+
 
 ---
+
+### 完了確認
 
 ${BLOCKER_LINE}
 EOF
@@ -121,36 +149,46 @@ EOF
   # エディタで開く
   local editor
   editor=$(get_editor)
-  echo "📝 確認ファイルを開いています..."
+  echo "📝 確認ファイルを開いています: $CONFIRM_FILE"
   $editor "$CONFIRM_FILE"
 
-  # ブロッカー行チェック
-  if grep -q "$BLOCKER_LINE" "$CONFIRM_FILE"; then
+  # チェックボックス確認
+  if grep -q "\[ \] 確認完了" "$CONFIRM_FILE"; then
     echo ""
     echo "❌ 確認が完了していません"
-    echo "   ブロッカー行を削除してからコミットしてください"
+    echo "   チェックボックスを [x] にしてからコミットしてください"
     echo ""
-    rm -f "$CONFIRM_FILE"
     exit 1
   fi
 
-  # IDRに記録
-  local idr_file
-  idr_file=$(find_idr_file)
-  mkdir -p "$(dirname "$idr_file")"
-
+  # IDRに記録（idr_fileは既に上で定義済み）
   {
     echo ""
     echo "---"
     echo ""
-    echo "## $(date +%Y-%m-%d) コミット確認"
+    echo "## $(date +%Y-%m-%d) コミット記録"
     echo ""
-    cat "$CONFIRM_FILE"
+    echo "### 変更ファイル"
+    echo ""
+    echo "$changes" | while read -r f; do echo "- \`$f\`"; done
+    echo ""
+    echo "### 確認内容"
+    echo ""
+    grep -E "^\- \[x\]" "$CONFIRM_FILE" 2>/dev/null || echo "（確認項目なし）"
+    echo ""
+    # メモがあれば追加
+    local memo
+    memo=$(sed -n '/^## メモ/,/^---/p' "$CONFIRM_FILE" | grep -v "^##" | grep -v "^---" | grep -v "^$" || true)
+    if [ -n "$memo" ]; then
+      echo "### メモ"
+      echo ""
+      echo "$memo"
+      echo ""
+    fi
   } >> "$idr_file"
 
-  # 蓄積ログをクリア
+  # 蓄積ログをクリア（確認ファイルは残す）
   rm -f "$PENDING_LOG"
-  rm -f "$CONFIRM_FILE"
 
   echo ""
   echo "✅ IDR記録完了: $idr_file"
