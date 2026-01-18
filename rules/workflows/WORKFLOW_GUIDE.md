@@ -1,6 +1,6 @@
 # Workflow Guide
 
-Guide for **using** commands. User reference for command selection and workflow patterns.
+Guide for using commands. User reference for command selection and workflow patterns.
 
 ## Available Commands
 
@@ -67,11 +67,11 @@ flowchart LR
 
 ## Command Selection
 
-| Criteria          | [✓] High Priority     | [→] Medium Priority  | [?] Low Priority    |
-| ----------------- | --------------------- | -------------------- | ------------------- |
-| **Understanding** | ≥95% → direct         | 70-94% → `/think`    | <70% → `/research`  |
-| **Complexity**    | Multi-step → workflow | Single file → `/fix` | Unclear → `/think`  |
-| **Urgency**       | Critical → `/fix`     | Normal → standard    | Planning → `/think` |
+| Criteria      | [✓] High Priority     | [→] Medium Priority  | [?] Low Priority    |
+| ------------- | --------------------- | -------------------- | ------------------- |
+| Understanding | ≥95% → direct         | 70-94% → `/think`    | <70% → `/research`  |
+| Complexity    | Multi-step → workflow | Single file → `/fix` | Unclear → `/think`  |
+| Urgency       | Critical → `/fix`     | Normal → standard    | Planning → `/think` |
 
 ### Task Analysis
 
@@ -83,11 +83,11 @@ flowchart LR
 | "Fix typo"         | Simple & clear?     | Yes → `/fix`                       |
 | "How does Z work?" | Investigation only  | `/research` (no implementation)    |
 
-**Key Factors**:
-
-- **Scope**: Single file vs multiple components
-- **Context**: Known vs needs exploration
-- **Risk**: Dev environment vs production
+| Key Factor | Description                        |
+| ---------- | ---------------------------------- |
+| Scope      | Single file vs multiple components |
+| Context    | Known vs needs exploration         |
+| Risk       | Dev environment vs production      |
 
 ## IDR (Implementation Decision Record)
 
@@ -103,15 +103,15 @@ See [@./IDR_GENERATION.md](./IDR_GENERATION.md)
 | `/polish`   | Appends simplifications |
 | `/validate` | Reconciles with SOW AC  |
 
-**Location**: `~/.claude/workspace/planning/[feature]/idr.md`
+Location: `~/.claude/workspace/planning/[feature]/idr.md`
 
 ## Architecture
 
-| Layer       | Location            | Role                  |
-| ----------- | ------------------- | --------------------- |
-| **Command** | `commands/*.md`     | User-facing workflows |
-| **Skill**   | `skills/*/SKILL.md` | Knowledge base        |
-| **Agent**   | `agents/*.md`       | Specialized analysis  |
+| Layer   | Location            | Role                  |
+| ------- | ------------------- | --------------------- |
+| Command | `commands/*.md`     | User-facing workflows |
+| Skill   | `skills/*/SKILL.md` | Knowledge base        |
+| Agent   | `agents/*.md`       | Specialized analysis  |
 
 ## Edge Cases
 

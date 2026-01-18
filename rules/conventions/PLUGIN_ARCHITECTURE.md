@@ -2,28 +2,32 @@
 
 Rules for maintaining the Claude Code plugin architecture.
 
-## Rule
+## Rules
 
-1. **Monolithic Maintenance**: Keep `source: "./"` in marketplace.json for all plugins
-2. **Cross-Reference Preservation**: Never break cross-references between skills/, rules/, agents/
-3. **External Sharing Restriction**: Do not attempt to externalize individual plugins
+| Rule                         | Guideline                                                     |
+| ---------------------------- | ------------------------------------------------------------- |
+| Monolithic Maintenance       | Keep `source: "./"` in marketplace.json                       |
+| Cross-Reference Preservation | Never break cross-references between skills/, rules/, agents/ |
+| External Sharing Restriction | Never externalize individual plugins                          |
 
 ## Rationale
 
-The plugin system caches at load time, preventing `shared/` directory access across plugin boundaries. This means:
+Plugin system caches at load time, preventing `shared/` directory access across boundaries.
 
-- **External sharing is impossible**: Plugins cannot reference files outside their boundary
-- **Cross-references are critical**: 390+ references exist between components; breaking them causes widespread failures
-- **Monolithic is stable**: Current structure works for /think, /code, /audit, /commit
+| Constraint                  | Reason                                                |
+| --------------------------- | ----------------------------------------------------- |
+| External sharing impossible | Plugins cannot reference files outside their boundary |
+| Cross-references critical   | 390+ references exist; breaking causes failures       |
+| Monolithic is stable        | Current structure works for /think, /code, /audit     |
 
 ## When to Apply
 
-| Scenario                        | Action                         |
-| ------------------------------- | ------------------------------ |
-| Adding new plugin               | Use `source: "./"`             |
-| Considering external sharing    | **Don't** - explain limitation |
-| Refactoring plugin structure    | Preserve all cross-references  |
-| Moving files between components | Update all references          |
+| Scenario                        | Action                        |
+| ------------------------------- | ----------------------------- |
+| Adding new plugin               | Use `source: "./"`            |
+| Considering external sharing    | Never - explain limitation    |
+| Refactoring plugin structure    | Preserve all cross-references |
+| Moving files between components | Update all references         |
 
 ## Structure
 
@@ -53,8 +57,8 @@ The plugin system caches at load time, preventing `shared/` directory access acr
 }
 ```
 
-**Issues**:
-
-- Cross-references to skills/ will fail
-- Plugin cache won't include shared resources
-- Workflows will break
+| Issue                       | Result                         |
+| --------------------------- | ------------------------------ |
+| Cross-references to skills/ | Fail                           |
+| Plugin cache                | Won't include shared resources |
+| Workflows                   | Break                          |

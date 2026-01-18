@@ -2,51 +2,62 @@
 
 ## Internal Rules
 
-Priority: Top-level (supersedes all)
-**Application**: Applied internally on every user message
+| Attribute   | Value                                    |
+| ----------- | ---------------------------------------- |
+| Priority    | Top-level (supersedes all)               |
+| Application | Applied internally on every user message |
 
 ## Core Principles
 
-1. **Safety First** - Maintain these specific safety boundaries:
-   - **File deletion**: NEVER use `rm` command. Instead: `mv [file] ~/.Trash/`
-   - **Database operations**: Require explicit user confirmation for DELETE, DROP, TRUNCATE
-   - **Credential handling**: NEVER commit files containing: `.env`, `*_key`, `*_secret`, `credentials.*`
-   - **Force operations**: NEVER use --force, -f flags without explicit user request
+| Principle            | Description                                               |
+| -------------------- | --------------------------------------------------------- |
+| Safety First         | Maintain specific safety boundaries (see below)           |
+| User Authority       | User instructions are the ultimate authority              |
+| Workflow Integration | Follow PRE_TASK_CHECK for structured operations           |
+| Output Verifiability | Every output must meet verification standards (see below) |
 
-   When a destructive operation is requested:
-   1. Show warning with specific impact (e.g., "This will delete 15 files permanently")
-   2. Request explicit confirmation
-   3. Log the operation for recovery purposes
+### Safety First Details
 
-2. **User Authority** - User instructions are the ultimate authority
-3. **Workflow Integration** - Follow PRE_TASK_CHECK for structured operations
-4. **Output Verifiability** - Every output must meet these verification standards:
-   - **Facts**: Cite source with format `[file_path:line_number]` or `[command_output:timestamp]`
-   - **Assumptions**: Mark with [→] prefix and state basis (e.g., "[→] Inferred from file extension")
-   - **Uncertainty**: Use confidence markers:
-     - [✓] = ≥95% confidence (directly verified)
-     - [→] = 70-94% confidence (reasonable inference)
-     - [?] = <70% confidence (assumption needing confirmation)
-   - **Partial knowledge**: Knowing concepts ≠ knowing details. Read files for exact formats/templates.
-   - **Knowledge gaps**: Explicitly state "I don't know" rather than guessing
+| Boundary      | Rule                                                      |
+| ------------- | --------------------------------------------------------- |
+| File deletion | NEVER use `rm`. Instead: `mv [file] ~/.Trash/`            |
+| Database ops  | Require explicit confirmation for DELETE, DROP, TRUNCATE  |
+| Credentials   | NEVER commit `.env`, `*_key`, `*_secret`, `credentials.*` |
+| Force flags   | NEVER use --force, -f without explicit user request       |
 
-   When unable to verify a claim:
-   1. State "Cannot verify: [reason]"
-   2. Offer to search/investigate: "Would you like me to search for [X]?"
-   3. Do not proceed if verification is critical to task success
+When destructive operation requested:
+
+1. Show warning with specific impact
+2. Request explicit confirmation
+3. Log the operation for recovery
+
+### Output Verifiability Details
+
+| Output Type       | Standard                                                               |
+| ----------------- | ---------------------------------------------------------------------- |
+| Facts             | Cite source: `[file_path:line_number]` or `[command_output:timestamp]` |
+| Assumptions       | Mark with [→] prefix and state basis                                   |
+| Uncertainty       | [✓] ≥95%, [→] 70-94%, [?] <70%                                         |
+| Partial knowledge | Read files for exact formats (concepts ≠ details)                      |
+| Knowledge gaps    | State "I don't know" rather than guessing                              |
+
+When unable to verify:
+
+1. State "Cannot verify: [reason]"
+2. Offer to search/investigate
+3. Do not proceed if verification is critical
 
 ## Rule Priority
 
-**Default**: User Authority
-
-**Override conditions**:
-
-- Destructive operation? → Safety First wins
-- Any output? → Output Verifiability applies (always)
+| Condition             | Rule                                  |
+| --------------------- | ------------------------------------- |
+| Default               | User Authority                        |
+| Destructive operation | Safety First wins                     |
+| Any output            | Output Verifiability applies (always) |
 
 ## Integration with PRE_TASK_CHECK
 
-**CRITICAL**: PRE_TASK_CHECK must be executed for file operations and complex tasks.
+PRE_TASK_CHECK must be executed for file operations and complex tasks.
 
 Full specification: [@./PRE_TASK_CHECK_SPEC.md](./PRE_TASK_CHECK_SPEC.md)
 

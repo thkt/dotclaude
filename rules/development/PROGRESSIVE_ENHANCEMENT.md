@@ -1,12 +1,14 @@
 # Progressive Enhancement
 
-**Default approach**: Build simple → enhance progressively
+Default approach: Build simple → enhance progressively
 
 ## Core Philosophy
 
-- **Root Cause**: "Why?" not "How to fix?"
-- **Prevention > Patching**: Best solution prevents the problem
-- **Simple > Complex**: Elegance = solving the right problem
+| Principle             | Description                          |
+| --------------------- | ------------------------------------ |
+| Root Cause            | "Why?" not "How to fix?"             |
+| Prevention > Patching | Best solution prevents the problem   |
+| Simple > Complex      | Elegance = solving the right problem |
 
 ## CSS-First Principle
 
@@ -20,7 +22,7 @@ Before writing JavaScript, ask: "Can CSS solve this?"
 
 ## Outcome-First Development
 
-**Core Principle**: Ship the outcome, not the architecture
+Core Principle: Ship the outcome, not the architecture
 
 | Phase             | Action                  | Trigger                |
 | ----------------- | ----------------------- | ---------------------- |

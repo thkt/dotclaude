@@ -32,12 +32,14 @@ user-invocable: false # Optional: default false
 | `context`       | ✓     | ✓     | Execution mode (fork/inline) |
 | `model`         | -     | ✓     | LLM model selection          |
 
-**Skills** = Knowledge base (passive, referenced) - uses `allowed-tools`
-**Agents** = Executors (active, spawned via Task tool) - uses `tools`
+| Type  | Role                        | Tool field      |
+| ----- | --------------------------- | --------------- |
+| Skill | Knowledge base (passive)    | `allowed-tools` |
+| Agent | Executor (active, via Task) | `tools`         |
 
 ## Naming Convention
 
-**Use gerund form** (verb-ing):
+Use gerund form (verb-ing):
 
 | Pattern | Examples                                                        |
 | ------- | --------------------------------------------------------------- |
@@ -53,17 +55,28 @@ skill-name/
     └── detailed-guide.md
 ```
 
-**Progressive Loading**: Claude reads SKILL.md first, references only when needed.
+Progressive Loading: Claude reads SKILL.md first, references only when needed.
 
 ## Description Requirements
 
-1. **Third person only**: "Processes files" not "I can help you"
-2. **Include triggers**: List keywords in EN/JP
-3. **Max 1024 characters**
+| Rule     | Requirement            | Example                                |
+| -------- | ---------------------- | -------------------------------------- |
+| Voice    | Third person only      | "Processes files" not "I can help you" |
+| Triggers | Include EN/JP keywords | `Triggers: "security", "セキュリティ"` |
+| Length   | Max 1024 characters    | -                                      |
 
-## Non-Official Fields (Do NOT Use)
+## Ignored Fields
 
-These fields are ignored: `version`, `author`, `triggers`, `sections`, `patterns`, `tokens`
+Never use these fields (not recognized by Claude Code):
+
+| Field      | Status  |
+| ---------- | ------- |
+| `version`  | Ignored |
+| `author`   | Ignored |
+| `triggers` | Ignored |
+| `sections` | Ignored |
+| `patterns` | Ignored |
+| `tokens`   | Ignored |
 
 ## Validation Checklist
 
@@ -85,6 +98,34 @@ These fields are ignored: `version`, `author`, `triggers`, `sections`, `patterns
 - [ ] JP version exists in `.ja/skills/`
 - [ ] Structure matches EN version
 - [ ] Trigger keywords translated
+
+## Reference Depth (Skills Only)
+
+Keep references one level deep from SKILL.md to avoid partial reads.
+
+| Pattern | Example                             | Status |
+| ------- | ----------------------------------- | ------ |
+| Good    | SKILL.md → reference.md             | ✓      |
+| Bad     | SKILL.md → advanced.md → details.md | ✗      |
+
+Reason: Claude may use `head -100` for deeply nested files, resulting in incomplete information.
+
+## Content Size Guidelines
+
+| Rule            | Threshold  | Action                     |
+| --------------- | ---------- | -------------------------- |
+| SKILL.md body   | 500 lines  | Split into reference files |
+| Reference files | 100+ lines | Add TOC at top             |
+
+TOC example for long files:
+
+```markdown
+## Contents
+
+- Section 1
+- Section 2
+- Section 3
+```
 
 ## Related
 

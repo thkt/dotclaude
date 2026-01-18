@@ -1,7 +1,9 @@
 # Tidyings
 
-**When**: After main task, before commit, only in edited files
-**Rule**: No behavior changes
+| Scope | Description                                          |
+| ----- | ---------------------------------------------------- |
+| When  | After main task, before commit, only in edited files |
+| Rule  | No behavior changes                                  |
 
 ## Allowed
 

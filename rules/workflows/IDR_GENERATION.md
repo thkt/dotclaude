@@ -11,7 +11,7 @@ Tracks implementation decisions throughout development lifecycle.
 | `/polish`   | Appends simplifications |
 | `/validate` | Reconciles with SOW AC  |
 
-**Location**: `~/.claude/workspace/planning/[feature]/idr.md`
+Location: `~/.claude/workspace/planning/[feature]/idr.md`
 
 ## IDR Detection
 

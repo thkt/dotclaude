@@ -7,11 +7,11 @@ Guidelines for reviewing bilingual documentation with English sources and Japane
 - EN: `/path/to/FILE.md`
 - JP: `/.ja/path/to/FILE.md`
 
-**ADR exception**: Written in Japanese by default, no `.ja/` needed.
+ADR exception: Written in Japanese by default, no `.ja/` needed.
 
 ## Translation File Recognition
 
-Files under `.ja/` directory are **Japanese translations** of corresponding English files. They should NOT be compared for content consistency.
+Files under `.ja/` directory are Japanese translations of corresponding English files. They should NOT be compared for content consistency.
 
 | Path Pattern        | Type           | Treatment             |
 | ------------------- | -------------- | --------------------- |
@@ -22,23 +22,14 @@ Files under `.ja/` directory are **Japanese translations** of corresponding Engl
 
 ## Review Rules for Translation Files
 
-**DO Review**:
-
-- Structure consistency (same sections exist)
-- YAML frontmatter fields match
-- Mermaid diagrams are equivalent
-- Links/references are valid
-
-**DO NOT Flag as Issues**:
-
-- Different keywords in examples (e.g., `Navigate to` vs `に移動`)
-- Translated content (descriptions, explanations)
-- Localized date/number formats
-- Different natural language phrasing
+| Action      | Items                                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------------ |
+| DO review   | Structure consistency, YAML frontmatter, Mermaid diagrams, Links/references                      |
+| DO NOT flag | Different keywords in examples, Translated content, Localized formats, Natural language phrasing |
 
 ## Example: Valid EN/JP Difference
 
-This is **NOT an issue**:
+This is NOT an issue:
 
 | EN (`commands/workflow/create.md`) | JP (`.ja/commands/workflow/create.md`) |
 | ---------------------------------- | -------------------------------------- |

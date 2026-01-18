@@ -78,22 +78,22 @@ graph TD
 
 ## Key Relationships
 
-| Relationship                          | Why it matters                          |
-| ------------------------------------- | --------------------------------------- |
-| **Occam's Razor ⟷ SOLID**             | Balance: structure vs over-engineering  |
-| **Occam's Razor ⟷ Leaky Abstraction** | Accept imperfection over complexity     |
-| **Readable Code → Miller's Law**      | Cognitive science backing (7±2 limit)   |
-| **Readable Code + DRY → TIDYINGS**    | Practical combination of two principles |
-| **TDD → AI-Assisted Development**     | AI accelerates cycles, humans validate  |
+| Relationship                      | Why it matters                          |
+| --------------------------------- | --------------------------------------- |
+| Occam's Razor ⟷ SOLID             | Balance: structure vs over-engineering  |
+| Occam's Razor ⟷ Leaky Abstraction | Accept imperfection over complexity     |
+| Readable Code → Miller's Law      | Cognitive science backing (7±2 limit)   |
+| Readable Code + DRY → TIDYINGS    | Practical combination of two principles |
+| TDD → AI-Assisted Development     | AI accelerates cycles, humans validate  |
 
 ## Conflict Resolution
 
-| Conflict                    | Resolution     | Example                                          |
-| --------------------------- | -------------- | ------------------------------------------------ |
-| **DRY vs Readable**         | Readable wins  | Accept duplication if abstraction hurts clarity  |
-| **SOLID vs Simple**         | Simple wins    | Don't over-engineer for imagined futures         |
-| **Perfect vs Working**      | Working wins   | Ship leaky abstractions that solve real problems |
-| **Abstraction vs Concrete** | Start concrete | Abstract only when pattern emerges (3+ times)    |
+| Conflict                | Resolution     | Example                                          |
+| ----------------------- | -------------- | ------------------------------------------------ |
+| DRY vs Readable         | Readable wins  | Accept duplication if abstraction hurts clarity  |
+| SOLID vs Simple         | Simple wins    | Don't over-engineer for imagined futures         |
+| Perfect vs Working      | Working wins   | Ship leaky abstractions that solve real problems |
+| Abstraction vs Concrete | Start concrete | Abstract only when pattern emerges (3+ times)    |
 
 ## Red Flags
 
@@ -127,4 +127,4 @@ When in doubt:
 4. Choose clear over DRY
 5. Choose pragmatic over pure
 
-Remember: **Principles are tools, not rules**. The goal is working, maintainable software.
+Remember: Principles are tools, not rules. The goal is working, maintainable software.

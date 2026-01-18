@@ -11,7 +11,7 @@
 | `/polish`   | 簡素化内容を追記     |
 | `/validate` | SOW ACとの照合       |
 
-**場所**: `~/.claude/workspace/planning/[feature]/idr.md`
+場所: `~/.claude/workspace/planning/[feature]/idr.md`
 
 ## IDR検出
 

@@ -1,29 +1,31 @@
 # Modularization Rules
 
-Rules for **creating** command and skill files. Developer guide for file structure and responsibility separation.
+Rules for creating command and skill files. Developer guide for file structure and responsibility separation.
 
 ## Commands vs Skills
 
 This plugin distinguishes:
 
-| Type        | Location            | Purpose                     | Invocation                                     |
-| ----------- | ------------------- | --------------------------- | ---------------------------------------------- |
-| **Command** | `commands/*.md`     | User-facing workflows       | `/command-name`                                |
-| **Skill**   | `skills/*/SKILL.md` | Knowledge base + references | Auto-loaded by context or `skill-name` trigger |
+| Type    | Location            | Purpose                     | Invocation                                     |
+| ------- | ------------------- | --------------------------- | ---------------------------------------------- |
+| Command | `commands/*.md`     | User-facing workflows       | `/command-name`                                |
+| Skill   | `skills/*/SKILL.md` | Knowledge base + references | Auto-loaded by context or `skill-name` trigger |
 
 ## Rules
 
-1. **Miller's Law**: Responsibilities ≤7 (8-9: warning, >9: must split)
-2. **Thin Wrapper Pattern**: Orchestration only, no implementation details
-3. **2-Layer Architecture**: Skills → Commands (Agents are separate for analysis)
-4. **Size Limit**: ≤100 lines (101-200: warning, >200: must split)
+| Rule                 | Guideline                                            |
+| -------------------- | ---------------------------------------------------- |
+| Miller's Law         | Responsibilities ≤7 (8-9: warning, >9: must split)   |
+| Thin Wrapper Pattern | Orchestration only, no implementation details        |
+| 2-Layer Architecture | Skills → Commands (Agents are separate for analysis) |
+| Size Limit           | ≤100 lines (101-200: warning, >200: must split)      |
 
 ## When to Apply
 
 | Condition                | Action                          |
 | ------------------------ | ------------------------------- |
 | Command file > 100 lines | Consider modularization         |
-| Responsibilities > 7     | **Must modularize**             |
+| Responsibilities > 7     | Must modularize                 |
 | Multi-phase workflow     | Reference skills for each phase |
 | Reusable knowledge       | Extract to skills/              |
 
@@ -55,7 +57,7 @@ TDD implementation with RGRC cycle.
 - [@../skills/orchestrating-workflows/references/code-workflow.md]
 ```
 
-**Why good**: Orchestrates phases, delegates details to skills.
+Why good: Orchestrates phases, delegates details to skills.
 
 ### Bad: Monolithic (900 lines)
 
@@ -69,4 +71,4 @@ TDD implementation with RGRC cycle.
 ## Full test patterns here
 ```
 
-**Why bad**: Miller's Law violation, DRY violation, hard to maintain.
+Why bad: Miller's Law violation, DRY violation, hard to maintain.
