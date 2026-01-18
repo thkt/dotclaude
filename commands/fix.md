@@ -50,10 +50,6 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 | Complex    | Multi-file → `/code`   |
 | New scope  | Feature → `/think`     |
 
-## IDR
-
-`/fix` does NOT generate IDR - use `/code` for features needing decision tracking.
-
 ## Verification
 
 | Check                                               | Required |

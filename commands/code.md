@@ -43,10 +43,6 @@ Without plugin: manual iteration (user confirms each RGRC step)
 | 2    | RGRC cycle with `ralph-loop` auto-iteration           |
 | 3    | Tests run in fork context (preserves main context)    |
 
-## IDR
-
-After implementation, generate IDR if SOW exists (skip if no SOW).
-
 ## SOW Status Update
 
 If SOW exists, update Status to `in-progress` at start.

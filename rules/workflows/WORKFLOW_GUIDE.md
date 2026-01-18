@@ -6,18 +6,18 @@ Guide for using commands. User reference for command selection and workflow patt
 
 ### Core Development
 
-| Command     | Purpose                                  |
-| ----------- | ---------------------------------------- |
-| `/think`    | SOW creation with validation             |
-| `/research` | Investigation without implementation     |
-| `/code`     | TDD/RGRC implementation + IDR generation |
-| `/test`     | Comprehensive testing                    |
-| `/audit`    | Code review via agents + IDR update      |
-| `/polish`   | Remove AI-generated slop + IDR update    |
-| `/validate` | Validate SOW conformance + IDR reconcile |
-| `/plans`    | List planning documents (SOW/Spec)       |
-| `/spec`     | Generate Spec (implementation details)   |
-| `/sow`      | Display SOW progress                     |
+| Command     | Purpose                                |
+| ----------- | -------------------------------------- |
+| `/think`    | SOW creation with validation           |
+| `/research` | Investigation without implementation   |
+| `/code`     | TDD/RGRC implementation                |
+| `/test`     | Comprehensive testing                  |
+| `/audit`    | Code review via agents                 |
+| `/polish`   | Remove AI-generated slop               |
+| `/validate` | Validate SOW conformance               |
+| `/plans`    | List planning documents (SOW/Spec)     |
+| `/spec`     | Generate Spec (implementation details) |
+| `/sow`      | Display SOW progress                   |
 
 ### Quick Actions
 
@@ -96,14 +96,12 @@ SOW/IDR serve as structured memory: AI reads entirely, humans reference selectiv
 
 See [@./IDR_GENERATION.md](./IDR_GENERATION.md)
 
-| Command     | IDR Action              |
-| ----------- | ----------------------- |
-| `/code`     | Creates with decisions  |
-| `/audit`    | Appends review findings |
-| `/polish`   | Appends simplifications |
-| `/validate` | Reconciles with SOW AC  |
+| Layer       | Trigger     | Records                   | Automatic |
+| ----------- | ----------- | ------------------------- | --------- |
+| session-end | Session end | Implementation, decisions | Yes       |
+| pre-commit  | git commit  | Confirmation gate only    | Yes       |
 
-Location: `~/.claude/workspace/planning/[feature]/idr.md`
+Location: `~/.claude/workspace/planning/[feature]/idr.md` or `planning/YYYY-MM-DD/idr.md`
 
 ## Architecture
 

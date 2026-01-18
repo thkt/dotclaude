@@ -33,11 +33,6 @@ argument-hint: "[対象ファイルまたはスコープ]"
 | [@../templates/audit/output.md]     | 差分付き出力形式         |
 | [@../templates/audit/snapshot.yaml] | スナップショットスキーマ |
 
-## IDR
-
-- IDRあり: `/audit`セクションを追記
-- IDRなし: ターミナル出力のみ
-
 ## 検証
 
 | チェック                                                  | 必須 |

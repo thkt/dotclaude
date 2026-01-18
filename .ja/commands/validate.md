@@ -55,16 +55,3 @@ argument-hint: "[機能名]"
 | AC-001 | [説明] | [検証内容] | [ ]    |
 | AC-002 | [説明] | [検証内容] | [ ]    |
 ```
-
-## IDR
-
-IDRに`/validate`セクションを追記:
-
-```markdown
-## /validate - [YYYY-MM-DD]
-
-| AC ID  | Status | Evidence   |
-| ------ | ------ | ---------- |
-| AC-001 | PASS   | [検証内容] |
-| AC-002 | FAIL   | [検証内容] |
-```

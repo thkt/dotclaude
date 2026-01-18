@@ -1,19 +1,15 @@
 #!/bin/bash
+# Session end: save stats and record IDR
 set -euo pipefail
 
-# SessionEnd Hook Script
-# Purpose: Save session statistics and record implementation to IDR
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/_utils.sh"
 
 SESSION_LOG_DIR="$HOME/.claude/logs/sessions"
-WORKSPACE_DIR="$HOME/.claude/workspace"
-PENDING_LOG="$WORKSPACE_DIR/.pending-idr.log"
-PLANNING_DIR="$WORKSPACE_DIR/planning"
 SESSION_FILE="$SESSION_LOG_DIR/session-$(date +%Y%m%d-%H%M%S).json"
 
-# Create directory if not exists
 mkdir -p "$SESSION_LOG_DIR"
 
-# Save session info as JSON
 cat > "$SESSION_FILE" <<EOF
 {
   "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
@@ -27,13 +23,10 @@ cat > "$SESSION_FILE" <<EOF
 }
 EOF
 
-# Also save to latest-session.json for quick access
 cp "$SESSION_FILE" "$SESSION_LOG_DIR/latest-session.json"
 
-# Move old logs to Trash (older than 30 days)
 find "$SESSION_LOG_DIR" -name "session-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
 
-# Agent logs rotation - keep last 50 directories
 AGENT_LOG_DIR="$HOME/.claude/logs/agents"
 if [ -d "$AGENT_LOG_DIR" ]; then
   agent_count=$(ls -1 "$AGENT_LOG_DIR" 2>/dev/null | wc -l)
@@ -44,69 +37,58 @@ if [ -d "$AGENT_LOG_DIR" ]; then
   fi
 fi
 
-# Subagent log rotation - keep last 1MB
 SUBAGENT_LOG="$HOME/.claude/logs/subagent.log"
+MAX_LOG_SIZE=1048576
 if [ -f "$SUBAGENT_LOG" ]; then
-  log_size=$(stat -f%z "$SUBAGENT_LOG" 2>/dev/null || stat -c%s "$SUBAGENT_LOG" 2>/dev/null || echo 0)
-  if [ "$log_size" -gt 1048576 ]; then  # 1MB
+  log_size=$(wc -c < "$SUBAGENT_LOG" 2>/dev/null | tr -d ' ')
+  if [ "$log_size" -gt "$MAX_LOG_SIZE" ]; then
     tail -c 512000 "$SUBAGENT_LOG" > "$SUBAGENT_LOG.tmp"
     mv "$SUBAGENT_LOG.tmp" "$SUBAGENT_LOG"
   fi
 fi
 
-# IDR Recording: Summarize session implementation and record to IDR
 record_idr() {
-  # Skip if no pending log
-  if [ ! -f "$PENDING_LOG" ]; then
-    return
-  fi
+  has_session_changes || return
 
-  # Get list of changed files
-  local changes
-  changes=$(cat "$PENDING_LOG" | cut -d'|' -f2 | sort -u)
-  local file_count
-  file_count=$(echo "$changes" | wc -l | tr -d ' ')
-
-  # Skip if no changes
-  if [ "$file_count" -eq 0 ] || [ -z "$changes" ]; then
-    rm -f "$PENDING_LOG"
-    return
-  fi
-
-  # Find IDR file location
   local idr_file
-  local sow_file=$(find "$PLANNING_DIR" -name "sow.md" -type f 2>/dev/null | head -1)
-  if [ -n "$sow_file" ]; then
-    idr_file="$(dirname "$sow_file")/idr.md"
-  else
-    local date_dir="$PLANNING_DIR/$(date +%Y-%m-%d)"
-    mkdir -p "$date_dir"
-    idr_file="$date_dir/idr.md"
-  fi
+  idr_file=$(resolve_idr_file)
 
-  # Get git diff and summarize implementation
+  local session_jsonl
+  session_jsonl=$(find_session_jsonl)
+
   local summary=""
+  local context=""
+
   if command -v claude &> /dev/null; then
+    if [ -n "$session_jsonl" ] && [ -f "$HOME/.claude/tools/context-extractor.sh" ]; then
+      context=$("$HOME/.claude/tools/context-extractor.sh" "$session_jsonl" 2>/dev/null || echo "")
+    fi
+
     local diff
-    diff=$(git diff HEAD~1 HEAD 2>/dev/null || git diff 2>/dev/null || echo "")
-    if [ -n "$diff" ]; then
-      summary=$(echo "$diff" | head -500 | claude -p "
-Summarize what was implemented in this session from the diff below.
-- What was implemented/fixed
-- Key design decisions and rationale (if any)
+    diff=$(git diff HEAD 2>/dev/null | head -300 || echo "")
 
-Format:
-### Implementation
-- [Description of change 1]
-- [Description of change 2]
+    if [ -n "$context" ] || [ -n "$diff" ]; then
+      summary=$(printf "%s\n\n%s" "$context" "$diff" | claude -p "
+セッションの変更内容を詳細に記録してください。
 
-### Design Decisions (if any)
-- [Decision and rationale]
+以下のフォーマットで出力:
+
+### 意図 (Intent)
+ユーザーリクエストから、何を達成しようとしていたか
+
+### 実装内容 (Implementation)
+各ファイルの変更について:
+- ファイル名: 変更内容と理由
+
+### 設計決定 (Design Decisions)
+重要な設計判断があれば記載（なければ省略可）
+
+### 注意点 (Notes)
+将来のレビュー者への注意点があれば
 " 2>/dev/null || echo "")
     fi
   fi
 
-  # Record to IDR
   {
     echo ""
     echo "---"
@@ -118,18 +100,18 @@ Format:
     else
       echo "### Changed Files"
       echo ""
-      echo "$changes" | while read -r f; do echo "- \`$f\`"; done
+      if [ -n "$context" ]; then
+        echo "$context"
+      else
+        echo "(No changes detected)"
+      fi
     fi
     echo ""
   } >> "$idr_file"
 
-  # Clear pending log
-  rm -f "$PENDING_LOG"
-
   echo "IDR recorded: $idr_file"
 }
 
-# Execute IDR recording
 record_idr
 
 echo "Session data saved to: $SESSION_FILE"

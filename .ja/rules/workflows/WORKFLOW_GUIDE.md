@@ -6,18 +6,18 @@
 
 ### コア開発
 
-| コマンド    | 目的                                       |
-| ----------- | ------------------------------------------ |
-| `/think`    | SOW作成と検証                              |
-| `/research` | 実装なしの調査                             |
-| `/code`     | TDD/RGRC実装 + IDR生成                     |
-| `/test`     | 包括的テスト                               |
-| `/audit`    | エージェント経由のコードレビュー + IDR更新 |
-| `/polish`   | AI生成スロップの除去 + IDR更新             |
-| `/validate` | SOW準拠の検証 + IDR照合                    |
-| `/plans`    | 計画ドキュメント一覧（SOW/Spec）           |
-| `/spec`     | Spec生成（実装詳細）                       |
-| `/sow`      | SOW進捗表示                                |
+| コマンド    | 目的                             |
+| ----------- | -------------------------------- |
+| `/think`    | SOW作成と検証                    |
+| `/research` | 実装なしの調査                   |
+| `/code`     | TDD/RGRC実装                     |
+| `/test`     | 包括的テスト                     |
+| `/audit`    | エージェント経由のコードレビュー |
+| `/polish`   | AI生成スロップの除去             |
+| `/validate` | SOW準拠の検証                    |
+| `/plans`    | 計画ドキュメント一覧（SOW/Spec） |
+| `/spec`     | Spec生成（実装詳細）             |
+| `/sow`      | SOW進捗表示                      |
 
 ### クイックアクション
 
@@ -95,14 +95,12 @@ flowchart LR
 
 [@./IDR_GENERATION.md](./IDR_GENERATION.md) を参照
 
-| コマンド    | IDRアクション      |
-| ----------- | ------------------ |
-| `/code`     | 決定とともに作成   |
-| `/audit`    | レビュー結果を追記 |
-| `/polish`   | 簡略化を追記       |
-| `/validate` | SOW ACと照合       |
+| レイヤー    | トリガー       | 記録内容           | 自動 |
+| ----------- | -------------- | ------------------ | ---- |
+| session-end | セッション終了 | 実装内容、設計決定 | Yes  |
+| pre-commit  | git commit     | 確認ゲートのみ     | Yes  |
 
-場所: `~/.claude/workspace/planning/[feature]/idr.md`
+場所: `~/.claude/workspace/planning/[feature]/idr.md` または `planning/YYYY-MM-DD/idr.md`
 
 ## アーキテクチャ
 

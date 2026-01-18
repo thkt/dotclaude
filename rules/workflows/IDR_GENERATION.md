@@ -4,13 +4,10 @@ Tracks implementation decisions throughout development lifecycle.
 
 ## Recording Layers
 
-| Layer       | Trigger            | Records                          | Automatic |
-| ----------- | ------------------ | -------------------------------- | --------- |
-| session-end | Session end        | Implementation, design decisions | Yes       |
-| /code       | Implementation end | Design decisions, trade-offs     | Optional  |
-| /audit      | Review time        | Issues, improvements             | Optional  |
-| /polish     | Cleanup time       | Deletions, simplifications       | Optional  |
-| /validate   | Validation time    | SOW conformance, gaps            | Optional  |
+| Layer       | Trigger     | Records                          | Automatic |
+| ----------- | ----------- | -------------------------------- | --------- |
+| session-end | Session end | Implementation, design decisions | Yes       |
+| pre-commit  | git commit  | Confirmation gate only           | Yes       |
 
 ## Automatic Recording (session-end hook)
 
@@ -29,32 +26,32 @@ Pre-commit confirmation gate (no IDR recording):
 | ----------------- | ----------------------------- |
 | `.idr-confirm.md` | Confirmation questions (temp) |
 
-## Manual Recording (Slash Commands)
-
-Use slash commands for detailed recording:
-
-| Command   | When to Use             | Records                     |
-| --------- | ----------------------- | --------------------------- |
-| /code     | Significant decisions   | Decision rationale, options |
-| /audit    | After code review       | Issues, fix suggestions     |
-| /polish   | After refactoring       | Deletions, simplifications  |
-| /validate | Implementation complete | SOW conformance, remaining  |
-
 ## IDR File Location
 
-| Scenario   | Detection                                       | Path                         |
-| ---------- | ----------------------------------------------- | ---------------------------- |
-| SOW exists | Search `~/.claude/workspace/planning/**/sow.md` | `[SOW directory]/idr.md`     |
-| No SOW     | Date-based directory                            | `planning/YYYY-MM-DD/idr.md` |
+| Scenario           | Detection                               | Path                         |
+| ------------------ | --------------------------------------- | ---------------------------- |
+| Tracked SOW exists | Read `~/.claude/workspace/.current-sow` | `[SOW directory]/idr.md`     |
+| No tracked SOW     | Date-based directory                    | `planning/YYYY-MM-DD/idr.md` |
+
+### SOW Tracking
+
+The `.current-sow` file tracks the active SOW for the current work:
+
+```bash
+# Set current SOW (done by /think, /code commands)
+echo "/path/to/sow.md" > ~/.claude/workspace/.current-sow
+
+# Clear when work is complete
+mv ~/.claude/workspace/.current-sow ~/.Trash/
+```
 
 ## Integration
 
 ```mermaid
 flowchart LR
-    subgraph Auto["Automatic"]
-        W[Write/Edit] --> L[idr-log.sh]
-        L --> P[.pending-idr.log]
-        P --> S[session-end.sh]
+    subgraph Auto["Automatic Recording"]
+        J[Session JSONL] --> E[context-extractor.sh]
+        E --> S[session-end.sh]
         S --> IDR[idr.md]
     end
 
@@ -62,18 +59,12 @@ flowchart LR
         C[git commit] --> H[pre-commit hook]
         H --> CF[.idr-confirm.md]
     end
-
-    subgraph Manual["Manual"]
-        CODE["/code"] --> IDR
-        AUDIT["/audit"] --> IDR
-        POLISH["/polish"] --> IDR
-        VAL["/validate"] --> IDR
-    end
 ```
 
 ## Related
 
-- Hook: `~/.claude/hooks/lifecycle/idr-log.sh`
+- Utility: `~/.claude/hooks/lifecycle/_utils.sh`
+- Tool: `~/.claude/tools/context-extractor.sh`
 - Hook: `~/.claude/hooks/lifecycle/idr-pre-commit.sh`
 - Hook: `~/.claude/hooks/lifecycle/session-end.sh`
 - SOW Template: `~/.claude/templates/sow/template.md`

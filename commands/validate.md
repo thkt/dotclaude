@@ -55,16 +55,3 @@ Display SOW acceptance criteria for manual verification.
 | AC-001 | [description] | [verification] | [ ]    |
 | AC-002 | [description] | [verification] | [ ]    |
 ```
-
-## IDR
-
-Append `/validate` section to IDR:
-
-```markdown
-## /validate - [YYYY-MM-DD]
-
-| AC ID  | Status | Evidence     |
-| ------ | ------ | ------------ |
-| AC-001 | PASS   | [validation] |
-| AC-002 | FAIL   | [validation] |
-```

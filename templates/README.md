@@ -12,10 +12,9 @@ flowchart LR
     subgraph Outputs
         R -.-> F[findings]
         T -.-> S["SOW + Spec"]
-        C -.-> I1[IDR]
-        A -.-> I2["IDR append"]
-        P -.-> I3["IDR append"]
-        V -.-> I4["IDR append"]
+    end
+    subgraph Hooks
+        SE[session-end] -.-> IDR[idr.md]
     end
 ```
 
@@ -23,10 +22,11 @@ flowchart LR
 | -------------- | --------- | --------------- | -------------------- |
 | Research       | /research | findings        | research/template.md |
 | Planning       | /think    | sow.md, spec.md | sow/, spec/          |
-| Implementation | /code     | idr.md (create) | idr/template.md      |
-| Review         | /audit    | idr.md (append) | -                    |
-| Polish         | /polish   | idr.md (append) | -                    |
-| Validation     | /validate | idr.md (append) | -                    |
+| Implementation | /code     | -               | -                    |
+| Review         | /audit    | -               | -                    |
+| Polish         | /polish   | -               | -                    |
+| Validation     | /validate | -               | -                    |
+| Session End    | (hook)    | idr.md          | idr/template.md      |
 
 ## Directory Structure
 

@@ -12,21 +12,21 @@ flowchart LR
     subgraph Outputs
         R -.-> F[findings]
         T -.-> S["SOW + Spec"]
-        C -.-> I1[IDR]
-        A -.-> I2["IDR追記"]
-        P -.-> I3["IDR追記"]
-        V -.-> I4["IDR追記"]
+    end
+    subgraph Hooks
+        SE[session-end] -.-> IDR[idr.md]
     end
 ```
 
-| フェーズ | コマンド  | 出力            | テンプレート         |
-| -------- | --------- | --------------- | -------------------- |
-| 調査     | /research | findings        | research/template.md |
-| 計画     | /think    | sow.md, spec.md | sow/, spec/          |
-| 実装     | /code     | idr.md (作成)   | idr/template.md      |
-| レビュー | /audit    | idr.md (追記)   | -                    |
-| 整理     | /polish   | idr.md (追記)   | -                    |
-| 検証     | /validate | idr.md (追記)   | -                    |
+| フェーズ       | コマンド  | 出力            | テンプレート         |
+| -------------- | --------- | --------------- | -------------------- |
+| 調査           | /research | findings        | research/template.md |
+| 計画           | /think    | sow.md, spec.md | sow/, spec/          |
+| 実装           | /code     | -               | -                    |
+| レビュー       | /audit    | -               | -                    |
+| 整理           | /polish   | -               | -                    |
+| 検証           | /validate | -               | -                    |
+| セッション終了 | (hook)    | idr.md          | idr/template.md      |
 
 ## ディレクトリ構造
 

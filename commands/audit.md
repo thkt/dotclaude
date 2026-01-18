@@ -33,11 +33,6 @@ Orchestrate specialized review agents with confidence-based filtering.
 | [@../templates/audit/output.md]     | Output format with delta |
 | [@../templates/audit/snapshot.yaml] | Snapshot schema          |
 
-## IDR
-
-- If IDR exists: append `/audit` section
-- If no IDR: terminal output only
-
 ## Verification
 
 | Check                                                   | Required |

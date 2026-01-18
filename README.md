@@ -104,6 +104,7 @@ Claude Code's sandbox feature provides secure command execution with automatic p
 - macOS or Linux (Windows not yet supported)
 - Node.js with npm/npx
 - ripgrep (typically pre-installed)
+- jaq (for IDR hooks): `brew install jaq`
 
 **Quick Setup**:
 

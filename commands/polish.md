@@ -16,17 +16,17 @@ Remove AI-generated slop and simplify code before commit.
 
 ## Agent
 
-| Type  | Name            | Purpose                |
-| ----- | --------------- | ---------------------- |
-| Agent | code-simplifier | AI slop removal (fork) |
+| Type  | Name                            | Purpose                |
+| ----- | ------------------------------- | ---------------------- |
+| Agent | code-simplifier:code-simplifier | AI slop removal (fork) |
 
 ## Execution
 
-| Step | Action                                       |
-| ---- | -------------------------------------------- |
-| 1    | `Task` with `subagent_type: code-simplifier` |
-| 2    | Agent identifies and removes AI slop         |
-| 3    | Report simplifications                       |
+| Step | Action                                                       |
+| ---- | ------------------------------------------------------------ |
+| 1    | `Task` with `subagent_type: code-simplifier:code-simplifier` |
+| 2    | Agent identifies and removes AI slop                         |
+| 3    | Report simplifications                                       |
 
 ### Removal Targets
 
@@ -41,11 +41,6 @@ Remove AI-generated slop and simplify code before commit.
 Polished: Removed X comments, inlined Y helpers
 ```
 
-## IDR
-
-- If IDR exists: append `/polish` section with removals and simplifications
-- If no IDR: skip (terminal output only)
-
 ## Error Handling
 
 | Error                   | Action                                     |
@@ -58,6 +53,6 @@ Log: `⚠️ code-simplifier not available, polish skipped`
 
 ## Verification
 
-| Check                                                | Required |
-| ---------------------------------------------------- | -------- |
-| `Task` called with `subagent_type: code-simplifier`? | Yes      |
+| Check                                                                | Required |
+| -------------------------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: code-simplifier:code-simplifier`? | Yes      |
