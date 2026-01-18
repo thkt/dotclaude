@@ -22,7 +22,7 @@ Orchestrate specialized review agents with confidence-based filtering.
 | 1    | `Task` with `subagent_type: audit-orchestrator`       |
 | 2    | Orchestrator runs 17 agents (13 local + 4 external)   |
 | 3    | Integrator aggregates findings into structured output |
-| 4    | Save snapshot to `~/.claude/workspace/history/`       |
+| 4    | Save snapshot to `$HOME/.claude/workspace/history/`   |
 | 5    | Compare with previous snapshot, display delta         |
 | 6    | Output report using template                          |
 

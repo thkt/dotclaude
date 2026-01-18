@@ -27,5 +27,5 @@ argument-hint: "[リサーチトピックまたは質問]"
 
 ## 出力
 
-ファイル: `.claude/workspace/research/YYYY-MM-DD-[topic].md`
+ファイル: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md`
 テンプレート: [@../../templates/research/template.md](../../templates/research/template.md)

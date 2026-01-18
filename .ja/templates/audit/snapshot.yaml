@@ -1,6 +1,6 @@
 # Audit スナップショット スキーマ
 #
-# 保存先: ~/.claude/workspace/history/audit-YYYY-MM-DD-HHmmss.yaml
+# 保存先: $HOME/.claude/workspace/history/audit-YYYY-MM-DD-HHmmss.yaml
 
 meta:
   command: audit

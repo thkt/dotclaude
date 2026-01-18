@@ -40,7 +40,7 @@ SOWとSpec生成による実装計画のオーケストレーション。
 ## 出力
 
 ```text
-~/.claude/workspace/planning/YYYY-MM-DD-[feature]/
+$HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/
 ├── sow.md     # Statement of Work
 └── spec.md    # Specification
 ```

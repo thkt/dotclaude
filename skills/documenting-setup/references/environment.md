@@ -21,10 +21,10 @@
 
 ## Dev Container Quick Start
 
-| Step | Action                                                            |
-| ---- | ----------------------------------------------------------------- |
-| 1    | `cp -r ~/.claude/templates/devcontainer/.devcontainer [project]/` |
-| 2    | VSCode: Cmd+Shift+P → "Dev Containers: Reopen in Container"       |
+| Step | Action                                                                |
+| ---- | --------------------------------------------------------------------- |
+| 1    | `cp -r $HOME/.claude/templates/devcontainer/.devcontainer [project]/` |
+| 2    | VSCode: Cmd+Shift+P → "Dev Containers: Reopen in Container"           |
 
 ## Base Images
 

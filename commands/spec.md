@@ -12,7 +12,7 @@ Generate spec.md with implementation-ready details.
 ## Input
 
 - Argument: SOW path or feature description (optional)
-- If missing: auto-detect latest `~/.claude/workspace/planning/*/sow.md`
+- If missing: auto-detect latest `$HOME/.claude/workspace/planning/*/sow.md`
 
 ## Execution
 
@@ -28,4 +28,4 @@ If UI-related, include: Props table, variants, states, usage examples.
 
 ## Output
 
-File: `~/.claude/workspace/planning/[same-dir]/spec.md`
+File: `$HOME/.claude/workspace/planning/[same-dir]/spec.md`

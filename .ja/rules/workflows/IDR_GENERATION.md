@@ -28,10 +28,10 @@
 
 ## IDRファイルの場所
 
-| シナリオ        | 検出方法                                  | パス                         |
-| --------------- | ----------------------------------------- | ---------------------------- |
-| 追跡中のSOWあり | `~/.claude/workspace/.current-sow` を読込 | `[SOWディレクトリ]/idr.md`   |
-| 追跡中のSOWなし | 日付ベースのディレクトリ                  | `planning/YYYY-MM-DD/idr.md` |
+| シナリオ        | 検出方法                                      | パス                         |
+| --------------- | --------------------------------------------- | ---------------------------- |
+| 追跡中のSOWあり | `$HOME/.claude/workspace/.current-sow` を読込 | `[SOWディレクトリ]/idr.md`   |
+| 追跡中のSOWなし | 日付ベースのディレクトリ                      | `planning/YYYY-MM-DD/idr.md` |
 
 ### SOW追跡
 
@@ -39,10 +39,10 @@
 
 ```bash
 # SOWを設定（/think, /code コマンドで実行）
-echo "/path/to/sow.md" > ~/.claude/workspace/.current-sow
+echo "/path/to/sow.md" > "$HOME/.claude/workspace/.current-sow"
 
 # 作業完了時にクリア
-mv ~/.claude/workspace/.current-sow ~/.Trash/
+mv "$HOME/.claude/workspace/.current-sow" ~/.Trash/
 ```
 
 ## 統合
@@ -63,8 +63,8 @@ flowchart LR
 
 ## 関連
 
-- ユーティリティ: `~/.claude/hooks/lifecycle/_utils.sh`
-- ツール: `~/.claude/tools/context-extractor.sh`
-- Hook: `~/.claude/hooks/lifecycle/idr-pre-commit.sh`
-- Hook: `~/.claude/hooks/lifecycle/session-end.sh`
-- SOWテンプレート: `~/.claude/templates/sow/template.md`
+- ユーティリティ: `$HOME/.claude/hooks/lifecycle/_utils.sh`
+- ユーティリティ: `$HOME/.claude/hooks/lifecycle/_context-extractor.sh`
+- Hook: `$HOME/.claude/hooks/lifecycle/idr-pre-commit.sh`
+- Hook: `$HOME/.claude/hooks/lifecycle/session-end.sh`
+- SOWテンプレート: `$HOME/.claude/templates/sow/template.md`

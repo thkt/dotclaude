@@ -1,6 +1,6 @@
 # Audit Snapshot Schema
 #
-# Location: ~/.claude/workspace/history/audit-YYYY-MM-DD-HHmmss.yaml
+# Location: $HOME/.claude/workspace/history/audit-YYYY-MM-DD-HHmmss.yaml
 
 meta:
   command: audit

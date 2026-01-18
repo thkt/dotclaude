@@ -18,12 +18,12 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 
 ### Suggestion ID Mode (`/fix SUG-XXX`)
 
-| Step | Action                                                   |
-| ---- | -------------------------------------------------------- |
-| 1    | Read latest snapshot from `~/.claude/workspace/history/` |
-| 2    | Find matching suggestion by ID                           |
-| 3    | Apply fix directly (skip 5 Whys)                         |
-| 4    | Verify tests pass                                        |
+| Step | Action                                                       |
+| ---- | ------------------------------------------------------------ |
+| 1    | Read latest snapshot from `$HOME/.claude/workspace/history/` |
+| 2    | Find matching suggestion by ID                               |
+| 3    | Apply fix directly (skip 5 Whys)                             |
+| 4    | Verify tests pass                                            |
 
 ## Skills & Agents
 

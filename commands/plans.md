@@ -19,20 +19,20 @@ List and view planning documents (SOW/Spec).
 Search paths (project-specific first):
 
 ```text
-~/.claude/workspace/planning/**/sow.md
+$HOME/.claude/workspace/planning/**/sow.md
 ```
 
 For each SOW found, extract `Status:` line value.
 
 ## Output
 
-| Column   | Source                                            |
-| -------- | ------------------------------------------------- |
-| #        | Sequential number                                 |
-| Location | "Project" (`.claude/`) or "Global" (`~/.claude/`) |
-| Feature  | Directory name after date prefix                  |
-| Date     | Directory name prefix (YYYY-MM-DD)                |
-| Status   | `Status:` field value from sow.md                 |
+| Column   | Source                                                |
+| -------- | ----------------------------------------------------- |
+| #        | Sequential number                                     |
+| Location | "Project" (`.claude/`) or "Global" (`$HOME/.claude/`) |
+| Feature  | Directory name after date prefix                      |
+| Date     | Directory name prefix (YYYY-MM-DD)                    |
+| Status   | `Status:` field value from sow.md                     |
 
 ```markdown
 ## Available SOW Documents

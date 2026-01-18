@@ -60,8 +60,8 @@ record_idr() {
   local context=""
 
   if command -v claude &> /dev/null; then
-    if [ -n "$session_jsonl" ] && [ -f "$HOME/.claude/tools/context-extractor.sh" ]; then
-      context=$("$HOME/.claude/tools/context-extractor.sh" "$session_jsonl" 2>/dev/null || echo "")
+    if [ -n "$session_jsonl" ] && [ -f "${SCRIPT_DIR}/_context-extractor.sh" ]; then
+      context=$("${SCRIPT_DIR}/_context-extractor.sh" "$session_jsonl" 2>/dev/null || echo "")
     fi
 
     local diff

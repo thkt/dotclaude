@@ -40,7 +40,7 @@ Orchestrate implementation planning with SOW and Spec generation.
 ## Output
 
 ```text
-~/.claude/workspace/planning/YYYY-MM-DD-[feature]/
+$HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/
 ├── sow.md     # Statement of Work
 └── spec.md    # Specification
 ```

@@ -17,7 +17,7 @@ argument-hint: "[タスク説明]"
 ### 解決順序
 
 1. 引数あり → タスク説明として使用
-2. リサーチコンテキストあり → `.claude/workspace/research/*.md`を使用
+2. リサーチコンテキストあり → `$HOME/.claude/workspace/research/*.md`を使用
 3. なし → AskUserQuestionで確認
 
 ## 実行
@@ -28,4 +28,4 @@ argument-hint: "[タスク説明]"
 
 ## 出力
 
-ファイル: `~/.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
+ファイル: `$HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`

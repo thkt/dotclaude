@@ -22,7 +22,7 @@ argument-hint: "[対象ファイルまたはスコープ]"
 | 1    | `Task`で`subagent_type: audit-orchestrator`                  |
 | 2    | オーケストレーターが17エージェント実行（ローカル13 + 外部4） |
 | 3    | インテグレーターが結果を構造化出力に集約                     |
-| 4    | スナップショットを`~/.claude/workspace/history/`に保存       |
+| 4    | スナップショットを`$HOME/.claude/workspace/history/`に保存   |
 | 5    | 前回スナップショットと比較、差分を表示                       |
 | 6    | テンプレートを使用してレポート出力                           |
 

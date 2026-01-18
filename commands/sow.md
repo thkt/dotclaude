@@ -17,7 +17,7 @@ Generate sow.md for planning and analysis.
 ### Resolution Order
 
 1. Argument provided → use as task description
-2. Research context exists → use `.claude/workspace/research/*.md`
+2. Research context exists → use `$HOME/.claude/workspace/research/*.md`
 3. None → prompt via AskUserQuestion
 
 ## Execution
@@ -28,4 +28,4 @@ Template: [@../templates/sow/template.md](../templates/sow/template.md)
 
 ## Output
 
-File: `~/.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
+File: `$HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`

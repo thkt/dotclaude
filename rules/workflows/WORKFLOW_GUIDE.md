@@ -101,7 +101,7 @@ See [@./IDR_GENERATION.md](./IDR_GENERATION.md)
 | session-end | Session end | Implementation, decisions | Yes       |
 | pre-commit  | git commit  | Confirmation gate only    | Yes       |
 
-Location: `~/.claude/workspace/planning/[feature]/idr.md` or `planning/YYYY-MM-DD/idr.md`
+Location: `$HOME/.claude/workspace/planning/[feature]/idr.md` or `planning/YYYY-MM-DD/idr.md`
 
 ## Architecture
 

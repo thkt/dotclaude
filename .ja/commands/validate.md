@@ -16,7 +16,7 @@ argument-hint: "[機能名]"
 
 ## 実行
 
-1. Globで SOWを検索（`~/.claude/workspace/planning/*/sow.md`）
+1. Globで SOWを検索（`$HOME/.claude/workspace/planning/*/sow.md`）
 2. 受け入れ基準セクションを抽出
 3. 各ACを検証
 4. チェックリストとして表示

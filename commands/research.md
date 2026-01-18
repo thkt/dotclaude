@@ -27,5 +27,5 @@ Markers: [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_
 
 ## Output
 
-File: `.claude/workspace/research/YYYY-MM-DD-[topic].md`
+File: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md`
 Template: [@../templates/research/template.md](../templates/research/template.md)
