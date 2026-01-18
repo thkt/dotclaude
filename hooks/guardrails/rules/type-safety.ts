@@ -24,7 +24,7 @@ const TYPE_ISSUES = [
     severity: "medium" as const,
   },
   {
-    pattern: /!\./g,
+    pattern: /[\w\]\)]!\./g,
     what: "Non-null assertion (!) を検出",
     why: "実行時に null/undefined の可能性がある。クラッシュの原因に",
     failure: "Optional chaining (?.) とデフォルト値、または型ガードを使用",

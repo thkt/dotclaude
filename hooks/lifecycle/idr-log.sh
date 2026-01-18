@@ -25,8 +25,8 @@ mkdir -p "$WORKSPACE_DIR"
 
 # 変更を蓄積ログに追記
 # フォーマット: timestamp|file_path|tool_name
-TOOL_NAME=$(echo "$FILE_PATH" | xargs -I{} basename {} 2>/dev/null || echo "unknown")
-echo "${TIMESTAMP}|${FILE_PATH}" >> "$PENDING_LOG"
+TOOL_NAME=$(basename "$FILE_PATH" 2>/dev/null || echo "unknown")
+echo "${TIMESTAMP}|${FILE_PATH}|${TOOL_NAME}" >> "$PENDING_LOG"
 
 # サイレントに成功（開発フローを邪魔しない）
 exit 0

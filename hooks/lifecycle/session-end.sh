@@ -44,7 +44,7 @@ fi
 # Subagent log rotation - keep last 1MB
 SUBAGENT_LOG="$HOME/.claude/logs/subagent.log"
 if [ -f "$SUBAGENT_LOG" ]; then
-  log_size=$(stat -f%z "$SUBAGENT_LOG" 2>/dev/null || echo 0)
+  log_size=$(stat -f%z "$SUBAGENT_LOG" 2>/dev/null || stat -c%s "$SUBAGENT_LOG" 2>/dev/null || echo 0)
   if [ "$log_size" -gt 1048576 ]; then  # 1MB
     tail -c 512000 "$SUBAGENT_LOG" > "$SUBAGENT_LOG.tmp"
     mv "$SUBAGENT_LOG.tmp" "$SUBAGENT_LOG"
