@@ -37,7 +37,7 @@ Generates IDR with code examples at commit time (non-blocking):
 
 ## 主要な変更
 
-### path/to/file.md
+### [path/to/file.md](path/to/file.md)
 
 [Description]
 \`\`\`yaml
@@ -48,6 +48,8 @@ Generates IDR with code examples at commit time (non-blocking):
 
 [Design decisions and rationale]
 ```
+
+> File paths are markdown links for IDE/GitHub navigation.
 
 ## IDR File Location
 

@@ -37,7 +37,7 @@
 
 ## 主要な変更
 
-### path/to/file.md
+### [path/to/file.md](path/to/file.md)
 
 [説明]
 \`\`\`yaml
@@ -48,6 +48,8 @@
 
 [設計判断とその理由]
 ```
+
+> ファイルパスはmarkdownリンク形式（IDE/GitHubでクリックナビゲーション可能）
 
 ## IDRファイルの場所
 

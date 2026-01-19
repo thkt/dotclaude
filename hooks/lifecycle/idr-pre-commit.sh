@@ -93,13 +93,14 @@ Generate an Implementation Decision Record (IDR) in markdown format.
 Analyze the following diff and generate an IDR with:
 1. **変更概要** - One paragraph summary
 2. **主要な変更** - For each significant file, show:
-   - File path as heading
+   - File path as markdown link heading: ### [path/to/file.md](path/to/file.md)
    - Brief description
    - Key code snippet in code block (YAML, markdown table, or relevant syntax)
 3. **設計判断** - Key design decisions and rationale (if any)
 
 Requirements:
 - Japanese language
+- Use markdown links for file paths (enables click navigation in IDE/GitHub)
 - Use code blocks with syntax highlighting
 - Focus on WHAT and WHY, not line-by-line details
 - Keep code snippets short (3-10 lines max)
