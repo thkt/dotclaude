@@ -8,13 +8,58 @@ source "${SCRIPT_DIR}/_utils.sh"
 
 BLOCKER_LINE="- [ ] 確認完了（このチェックボックスをチェックして保存）"
 
+CLAUDE_CMD="${CLAUDE_CMD:-claude}"
+GIT_CMD="${GIT_CMD:-git}"
+DEBUG_LOG="${DEBUG_LOG:-}"
+
+run_git() {
+  local result
+  if result=$("$GIT_CMD" "$@" 2>&1); then
+    echo "$result"
+    return 0
+  else
+    local exit_code=$?
+    [ -n "$DEBUG_LOG" ] && echo "[DEBUG] git $* failed (exit $exit_code): $result" >> "$DEBUG_LOG"
+    return $exit_code
+  fi
+}
+
+run_claude() {
+  local prompt="$1"
+  local result
+  local exit_code
+
+  if ! command -v "$CLAUDE_CMD" &> /dev/null; then
+    [ -n "$DEBUG_LOG" ] && echo "[DEBUG] Claude not available" >> "$DEBUG_LOG"
+    return 1
+  fi
+
+  if result=$("$CLAUDE_CMD" -p --model haiku "$prompt" 2>&1); then
+    echo "$result"
+    return 0
+  else
+    exit_code=$?
+    [ -n "$DEBUG_LOG" ] && echo "[DEBUG] Claude failed (exit $exit_code): $result" >> "$DEBUG_LOG"
+    return $exit_code
+  fi
+}
+
 get_editor() {
   if command -v cursor &> /dev/null; then
     echo "cursor --wait"
   elif command -v code &> /dev/null; then
     echo "code --wait"
   else
-    echo "${EDITOR:-vim}"
+    local editor="${EDITOR:-vim}"
+    # SEC-01: Whitelist validation to prevent command injection
+    local allowed_editors="vim vi nvim nano emacs micro"
+    local editor_name
+    editor_name=$(basename "${editor%% *}")
+    if echo "$allowed_editors" | grep -qw "$editor_name"; then
+      echo "$editor_name"
+    else
+      echo "vim"
+    fi
   fi
 }
 
@@ -44,11 +89,16 @@ get_purpose_summary() {
   [ -z "$session_jsonl" ] && return
 
   local context=""
-  [ -f "${SCRIPT_DIR}/_context-extractor.sh" ] && \
-    context=$("${SCRIPT_DIR}/_context-extractor.sh" "$session_jsonl" 2>/dev/null || echo "")
+  if [ -f "${SCRIPT_DIR}/_context-extractor.sh" ]; then
+    if ! context=$("${SCRIPT_DIR}/_context-extractor.sh" "$session_jsonl" 2>&1); then
+      [ -n "$DEBUG_LOG" ] && echo "[DEBUG] context-extractor failed: $context" >> "$DEBUG_LOG"
+      context=""
+    fi
+  fi
 
-  if command -v claude &> /dev/null && [ -n "$context" ]; then
-    claude -p --model haiku "
+  [ -z "$context" ] && return
+
+  run_claude "
 Extract the main purpose of this session in ONE line (Japanese).
 Focus on WHAT the user wants to achieve, not HOW.
 
@@ -56,16 +106,14 @@ Context:
 $context
 
 Output format: Single line, no prefix, no explanation.
-" 2>/dev/null || echo ""
-  fi
+" || echo ""
 }
 
 get_change_summary() {
   local diff="$1"
   [ -z "$diff" ] && return
 
-  if command -v claude &> /dev/null; then
-    claude -p --model haiku "
+  run_claude "
 Summarize the following diff as bullet points (3-5 items).
 - Focus on WHAT changed, not line-by-line details
 - Japanese language
@@ -78,18 +126,14 @@ Output format:
 - Change 1
 - Change 2
 - Change 3
-" 2>/dev/null || echo "- (要約生成失敗)"
-  else
-    echo "- (Claude 不可)"
-  fi
+" || echo "- (要約生成失敗)"
 }
 
 get_review_questions() {
   local diff="$1"
   [ -z "$diff" ] && return
 
-  if command -v claude &> /dev/null; then
-    claude -p --model haiku "
+  run_claude "
 You are a senior engineer reviewing code changes.
 Generate 3-5 review questions for the following diff.
 
@@ -107,10 +151,7 @@ Output format:
 - [ ] Question 1
 - [ ] Question 2
 - [ ] Question 3
-" 2>/dev/null || get_fallback_questions
-  else
-    get_fallback_questions
-  fi
+" || get_fallback_questions
 }
 
 check_diff_size() {
@@ -128,7 +169,7 @@ check_diff_size() {
 
 main() {
   has_session_changes || exit 0
-  git diff --cached --quiet && exit 0
+  $GIT_CMD diff --cached --quiet && exit 0
 
   local idr_file idr_dir confirm_file
   idr_file=$(resolve_idr_file)
@@ -136,23 +177,20 @@ main() {
   mkdir -p "$idr_dir"
   confirm_file="${idr_dir}/.idr-confirm.md"
 
-  # Already confirmed? Skip.
   if [ -f "$confirm_file" ] && grep -q "\[x\] 確認完了" "$confirm_file"; then
     echo "✅ 確認完了。コミットを実行します"
     exit 0
   fi
 
-  # Existing but unchecked? Re-open.
   if [ -f "$confirm_file" ] && grep -q "\[ \] 確認完了" "$confirm_file"; then
     open_and_verify "$confirm_file"
     exit $?
   fi
 
-  # Generate new confirmation file
   local session_jsonl diff diff_stat
   session_jsonl=$(find_session_jsonl)
-  diff=$(git diff --cached 2>/dev/null)
-  diff_stat=$(git diff --cached --stat 2>/dev/null)
+  diff=$(run_git diff --cached) || diff=""
+  diff_stat=$(run_git diff --cached --stat) || diff_stat=""
 
   local purpose summary questions warning
   purpose=$(get_purpose_summary "$session_jsonl")
