@@ -1,5 +1,9 @@
 #!/bin/bash
+# shellcheck shell=bash
 # Shared utilities for lifecycle hooks (requires: jaq)
+
+# Debug logging (set DEBUG_LOG=/path/to/file to enable)
+DEBUG_LOG="${DEBUG_LOG:-}"
 
 WORKSPACE_DIR="${HOME}/.claude/workspace"
 
@@ -14,19 +18,37 @@ require_jaq() {
 find_session_jsonl() {
   local project_dir="$HOME/.claude/projects"
   if [ -d "$project_dir" ]; then
-    find "$project_dir" -name "*.jsonl" -mmin -30 -not -path "*/subagents/*" -print0 2>/dev/null | \
-      xargs -0 ls -t 2>/dev/null | head -1
+    local find_err result
+    find_err=$(mktemp)
+    result=$(find "$project_dir" -name "*.jsonl" -mmin -30 -not -path "*/subagents/*" -print0 2>"$find_err" | \
+      xargs -0 ls -t 2>>"$find_err" | head -1)
+    if [ -n "$DEBUG_LOG" ] && [ -s "$find_err" ]; then
+      echo "[DEBUG] find_session_jsonl errors: $(cat "$find_err")" >> "$DEBUG_LOG"
+    fi
+    rm -f "$find_err"
+    echo "$result"
   fi
 }
 
 has_session_changes() {
   require_jaq || return 1
 
-  local session_jsonl
+  local session_jsonl jaq_err
   session_jsonl=$(find_session_jsonl)
   [ -z "$session_jsonl" ] || [ ! -f "$session_jsonl" ] && return 1
 
-  jaq -e 'try (select(.message.content[]?.name == "Write" or .message.content[]?.name == "Edit")) catch empty' "$session_jsonl" >/dev/null 2>&1
+  jaq_err=$(mktemp)
+  if jaq -e 'try (select(.message.content[]?.name == "Write" or .message.content[]?.name == "Edit")) catch empty' "$session_jsonl" >/dev/null 2>"$jaq_err"; then
+    rm -f "$jaq_err"
+    return 0
+  else
+    local exit_code=$?
+    if [ -n "$DEBUG_LOG" ] && [ -s "$jaq_err" ]; then
+      echo "[DEBUG] jaq error (exit $exit_code): $(cat "$jaq_err")" >> "$DEBUG_LOG"
+    fi
+    rm -f "$jaq_err"
+    return $exit_code
+  fi
 }
 
 resolve_idr_file() {
