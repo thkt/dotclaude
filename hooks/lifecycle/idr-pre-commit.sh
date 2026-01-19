@@ -73,6 +73,29 @@ main() {
   mkdir -p "$idr_dir"
   local CONFIRM_FILE="${idr_dir}/.idr-confirm.md"
 
+  # Already confirmed? Skip.
+  if [ -f "$CONFIRM_FILE" ] && grep -q "\[x\] 確認完了" "$CONFIRM_FILE"; then
+    echo "✅ 確認完了。コミットを実行します"
+    exit 0
+  fi
+
+  # Existing but unchecked? Re-open without regenerating.
+  if [ -f "$CONFIRM_FILE" ] && grep -q "\[ \] 確認完了" "$CONFIRM_FILE"; then
+    local -a editor_cmd
+    read -ra editor_cmd <<< "$(get_editor)"
+    echo "📝 確認ファイルを開いています: $CONFIRM_FILE"
+    "${editor_cmd[@]}" "$CONFIRM_FILE"
+
+    if grep -q "\[ \] 確認完了" "$CONFIRM_FILE"; then
+      echo "❌ 確認が完了していません"
+      echo "   チェックボックスを [x] にしてからコミットしてください"
+      exit 1
+    fi
+    echo "✅ 確認完了。コミットを実行します"
+    exit 0
+  fi
+
+  # Generate new confirmation file
   local diff_stat
   diff_stat=$(git diff --cached --stat)
 

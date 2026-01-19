@@ -12,11 +12,12 @@ require_jaq() {
   fi
 }
 
-# Find recent session JSONL (excludes subagent JSONLs)
+# Find most recently modified session JSONL (excludes subagents)
 find_session_jsonl() {
   local project_dir="$HOME/.claude/projects"
   if [ -d "$project_dir" ]; then
-    find "$project_dir" -name "*.jsonl" -mmin -30 -not -path "*/subagents/*" 2>/dev/null | head -1
+    find "$project_dir" -name "*.jsonl" -mmin -30 -not -path "*/subagents/*" -print0 2>/dev/null | \
+      xargs -0 ls -t 2>/dev/null | head -1
   fi
 }
 
