@@ -1,14 +1,14 @@
 ---
-description: 包括的なコード品質評価のために専門レビューエージェントをオーケストレート
+description: 徹底的かつ包括的なコード品質評価のために専門レビューエージェントをオーケストレート
 aliases: [review]
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task
 model: opus
 argument-hint: "[対象ファイルまたはスコープ]"
 ---
 
-# /audit - コードレビューオーケストレーター
+# /audit - 徹底的コード監査オーケストレーター
 
-信頼度ベースフィルタリングで専門レビューエージェントをオーケストレート。
+徹底的な監査のために信頼度ベースフィルタリングで専門レビューエージェントをオーケストレート。
 
 ## 入力
 

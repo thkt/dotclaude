@@ -1,14 +1,14 @@
 ---
-description: Orchestrate specialized review agents for comprehensive code quality assessment
+description: Orchestrate specialized review agents for thorough, comprehensive code quality assessment
 aliases: [review]
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task
 model: opus
 argument-hint: "[target files or scope]"
 ---
 
-# /audit - Code Review Orchestrator
+# /audit - Thorough Code Audit Orchestrator
 
-Orchestrate specialized review agents with confidence-based filtering.
+Orchestrate specialized review agents for thorough audit with confidence-based filtering.
 
 ## Input
 
