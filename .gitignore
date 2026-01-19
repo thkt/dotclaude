@@ -51,8 +51,12 @@ logs/
 session-env/
 plans/
 
-# Plugin system (auto-generated)
-# Note: .claude-plugin/marketplace.json is tracked
-# This directory may contain auto-generated plugin metadata
+# Plugin system
+# Tracked: .claude-plugin/marketplace.json (plugin registry)
+# Excluded: .claude-plugin/.cache/ (auto-generated metadata)
 .claude-plugin/.cache/
-plugins/
+
+# External plugins (auto-installed)
+# Note: plugins/README.md is tracked for installation guide
+plugins/*
+!plugins/README.md

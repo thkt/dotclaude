@@ -27,13 +27,24 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 
 ## Skills & Agents
 
-| Type  | Name                    | Purpose                         |
-| ----- | ----------------------- | ------------------------------- |
-| Skill | analyzing-root-causes   | 5 Whys methodology              |
-| Agent | test-generator          | Regression test creation (fork) |
-| Skill | orchestrating-workflows | Fix workflow definition         |
+| Type  | Name                  | Purpose                         |
+| ----- | --------------------- | ------------------------------- |
+| Skill | analyzing-root-causes | 5 Whys methodology              |
+| Agent | test-generator        | Regression test creation (fork) |
+| Agent | build-error-resolver  | TypeScript/build error fix      |
 
 ## Execution
+
+### Build Check
+
+Run project build command (detect from package.json or project config).
+
+| Result       | Action                                            |
+| ------------ | ------------------------------------------------- |
+| Build errors | `Task` with `subagent_type: build-error-resolver` |
+| No errors    | Continue to Step 1                                |
+
+### Standard Flow (No Build Errors)
 
 | Step | Action                                                   |
 | ---- | -------------------------------------------------------- |
@@ -49,9 +60,3 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 | [?] <70%   | Escalate → `/research` |
 | Complex    | Multi-file → `/code`   |
 | New scope  | Feature → `/think`     |
-
-## Verification
-
-| Check                                               | Required |
-| --------------------------------------------------- | -------- |
-| `Task` called with `subagent_type: test-generator`? | Yes      |

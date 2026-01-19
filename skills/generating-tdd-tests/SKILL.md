@@ -57,7 +57,8 @@ user-invocable: false
 
 ## References
 
-| Topic          | File                           |
-| -------------- | ------------------------------ |
-| Feature-driven | `references/feature-driven.md` |
-| Bug-driven     | `references/bug-driven.md`     |
+| Topic          | File                                  |
+| -------------- | ------------------------------------- |
+| Feature-driven | `references/feature-driven.md`        |
+| Bug-driven     | `references/bug-driven.md`            |
+| Flaky tests    | `references/flaky-test-management.md` |

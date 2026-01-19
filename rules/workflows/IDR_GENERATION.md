@@ -7,7 +7,7 @@ Tracks implementation decisions throughout development lifecycle.
 | Layer       | Trigger     | Records                          | Automatic |
 | ----------- | ----------- | -------------------------------- | --------- |
 | session-end | Session end | Implementation, design decisions | Yes       |
-| pre-commit  | git commit  | Confirmation gate only           | Yes       |
+| pre-commit  | git commit  | IDR with code examples           | Yes       |
 
 ## Automatic Recording (session-end hook)
 
@@ -18,13 +18,36 @@ Records automatically at session end:
 | Implementation   | Claude summarizes changes            |
 | Design Decisions | Key decisions and rationale (if any) |
 
-## Confirmation Gate (pre-commit hook)
+## IDR Generation (pre-commit hook)
 
-Pre-commit confirmation gate (no IDR recording):
+Generates IDR with code examples at commit time (non-blocking):
 
-| File              | Purpose                       |
-| ----------------- | ----------------------------- |
-| `.idr-confirm.md` | Confirmation questions (temp) |
+| File        | Purpose                                |
+| ----------- | -------------------------------------- |
+| `.idr-N.md` | Implementation record with code blocks |
+
+### IDR Format
+
+```markdown
+# IDR: [purpose summary]
+
+## 変更概要
+
+[One paragraph summary]
+
+## 主要な変更
+
+### path/to/file.md
+
+[Description]
+\`\`\`yaml
+[Key code snippet]
+\`\`\`
+
+## 設計判断
+
+[Design decisions and rationale]
+```
 
 ## IDR File Location
 
@@ -55,9 +78,9 @@ flowchart LR
         S --> IDR[idr.md]
     end
 
-    subgraph Gate["Confirmation Gate"]
+    subgraph Gen["IDR Generation"]
         C[git commit] --> H[pre-commit hook]
-        H --> CF[.idr-confirm.md]
+        H --> CF[.idr-N.md]
     end
 ```
 

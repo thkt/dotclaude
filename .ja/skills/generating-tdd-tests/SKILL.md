@@ -57,7 +57,8 @@ user-invocable: false
 
 ## 参照
 
-| トピック | ファイル                       |
-| -------- | ------------------------------ |
-| 機能駆動 | `references/feature-driven.md` |
-| バグ駆動 | `references/bug-driven.md`     |
+| トピック         | ファイル                              |
+| ---------------- | ------------------------------------- |
+| 機能駆動         | `references/feature-driven.md`        |
+| バグ駆動         | `references/bug-driven.md`            |
+| フレーキーテスト | `references/flaky-test-management.md` |

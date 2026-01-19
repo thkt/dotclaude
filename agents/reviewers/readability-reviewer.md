@@ -18,15 +18,23 @@ Can a new team member understand this in < 1 minute?
 | findings | Readability issues with fixes |
 | summary  | Counts by category            |
 
+## Code Thresholds (Function-Level)
+
+| Target             | Recommended | Maximum |
+| ------------------ | ----------- | ------- |
+| Function lines     | ≤30         | 50      |
+| Nesting depth      | ≤3          | 4       |
+| Function arguments | ≤3          | 5       |
+
 ## Analysis Phases
 
-| Phase | Action           | Focus                       |
-| ----- | ---------------- | --------------------------- |
-| 1     | Naming Scan      | Variables, functions, types |
-| 2     | Complexity Check | Nesting, function length    |
-| 3     | Comment Audit    | Why vs What, outdated TODOs |
-| 4     | AI Smell Check   | Over-abstraction, patterns  |
-| 5     | Miller's Law     | 7±2 violations              |
+| Phase | Action           | Focus                                     |
+| ----- | ---------------- | ----------------------------------------- |
+| 1     | Naming Scan      | Variables, functions, types               |
+| 2     | Complexity Check | Nesting, function length (see thresholds) |
+| 3     | Comment Audit    | Why vs What, outdated TODOs               |
+| 4     | AI Smell Check   | Over-abstraction, patterns                |
+| 5     | Miller's Law     | 7±2 violations                            |
 
 ## Error Handling
 

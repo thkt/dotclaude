@@ -19,7 +19,7 @@ user-invocable: false
 | RD1 | `processData()` (vague)       | `validateUserEmail()`            |
 | RD1 | Misleading identifiers        | Names reveal intent              |
 | RD2 | Nesting > 3 levels            | Guard clauses, extract functions |
-| RD2 | Function > 15 lines           | Decompose                        |
+| RD2 | Function > 30 lines           | Decompose                        |
 | RD3 | Comment: `// increment i`     | Delete (self-evident)            |
 | RD3 | Comment: `// TODO: fix later` | Create issue or fix now          |
 | RD4 | Interface for single impl     | Remove until 2nd impl            |
@@ -28,13 +28,11 @@ user-invocable: false
 
 ## Thresholds
 
-| Metric               | Ideal | Max |
-| -------------------- | ----- | --- |
-| Function arguments   | 3     | 5   |
-| Class methods        | 5     | 7   |
-| Conditional branches | 3     | 5   |
-| Function length      | 10    | 15  |
-| Nesting depth        | 2     | 3   |
+| Metric             | Recommended | Maximum |
+| ------------------ | ----------- | ------- |
+| Function lines     | ≤30         | 50      |
+| Nesting depth      | ≤3          | 4       |
+| Function arguments | ≤3          | 5       |
 
 ## References
 

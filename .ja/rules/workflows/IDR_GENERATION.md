@@ -7,7 +7,7 @@
 | レイヤー    | トリガー         | 記録内容           | 自動 |
 | ----------- | ---------------- | ------------------ | ---- |
 | session-end | セッション終了時 | 実装内容、設計決定 | Yes  |
-| pre-commit  | git commit       | 確認ゲートのみ     | Yes  |
+| pre-commit  | git commit       | コード例付きIDR    | Yes  |
 
 ## 自動記録 (session-end hook)
 
@@ -18,13 +18,36 @@
 | 実装内容   | Claudeが変更内容を要約             |
 | 設計決定   | 主要な設計決定とその理由（あれば） |
 
-## 確認ゲート (pre-commit hook)
+## IDR生成 (pre-commit hook)
 
-コミット前の確認ゲート（IDRへの記録はしない）：
+コミット時にコード例付きIDRを生成（非ブロッキング）：
 
-| ファイル          | 用途                       |
-| ----------------- | -------------------------- |
-| `.idr-confirm.md` | 確認質問（一時的、作業用） |
+| ファイル    | 用途                       |
+| ----------- | -------------------------- |
+| `.idr-N.md` | コードブロック付き実装記録 |
+
+### IDRフォーマット
+
+```markdown
+# IDR: [目的要約]
+
+## 変更概要
+
+[1段落の要約]
+
+## 主要な変更
+
+### path/to/file.md
+
+[説明]
+\`\`\`yaml
+[主要コードスニペット]
+\`\`\`
+
+## 設計判断
+
+[設計判断とその理由]
+```
 
 ## IDRファイルの場所
 
@@ -55,9 +78,9 @@ flowchart LR
         S --> IDR[idr.md]
     end
 
-    subgraph Gate["確認ゲート"]
+    subgraph Gen["IDR生成"]
         C[git commit] --> H[pre-commit hook]
-        H --> CF[.idr-confirm.md]
+        H --> CF[.idr-N.md]
     end
 ```
 

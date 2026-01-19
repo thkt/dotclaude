@@ -18,14 +18,22 @@ Eliminate waste, ensure DRY, verify root problems addressed.
 | findings | Structure issues with fixes |
 | summary  | Waste and DRY metrics       |
 
+## Code Thresholds (File-Level)
+
+| Target                | Recommended | Maximum |
+| --------------------- | ----------- | ------- |
+| File lines            | ≤400        | 800     |
+| Cyclomatic complexity | ≤10         | 15      |
+
 ## Analysis Phases
 
-| Phase | Action           | Focus                        |
-| ----- | ---------------- | ---------------------------- |
-| 1     | Unused Code Scan | Dead imports, unreferenced   |
-| 2     | DRY Analysis     | 3+ occurrences of patterns   |
-| 3     | Over-engineering | Unnecessary abstractions     |
-| 4     | State Structure  | Local vs global misplacement |
+| Phase | Action           | Focus                              |
+| ----- | ---------------- | ---------------------------------- |
+| 1     | Unused Code Scan | Dead imports, unreferenced         |
+| 2     | DRY Analysis     | 3+ occurrences of patterns         |
+| 3     | Over-engineering | Unnecessary abstractions           |
+| 4     | State Structure  | Local vs global misplacement       |
+| 5     | Size Check       | File lines, complexity (see above) |
 
 ## Error Handling
 
