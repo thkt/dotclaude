@@ -10,28 +10,26 @@ user-invocable: false
 
 # ブラウザ自動化 (agent-browser)
 
-## 使用タイミング
-
-| ユースケース     | agent-browser | Playwright |
-| ---------------- | ------------- | ---------- |
-| CLI統合          | 最適          | 複雑       |
-| E2Eテスト        | 最適          | 最適       |
-| コンテキスト節約 | 最適 (93%↓)   | 重い       |
-| GIF録画          | 非対応        | 対応       |
-
 ## コアコマンド
 
-| コマンド                            | 目的                       |
-| ----------------------------------- | -------------------------- |
-| `agent-browser --headed open <url>` | URLを開く（ブラウザ表示）  |
-| `agent-browser open <url>`          | URLを開く（ヘッドレス）    |
-| `agent-browser snapshot -i`         | インタラクティブ要素を取得 |
-| `agent-browser click @ref`          | 要素をクリック             |
-| `agent-browser fill @ref "text"`    | クリアして入力             |
-| `agent-browser type @ref "text"`    | 要素に入力                 |
-| `agent-browser get text @ref`       | 要素のテキストを取得       |
-| `agent-browser screenshot [path]`   | スクリーンショットを撮影   |
-| `agent-browser close`               | ブラウザセッションを閉じる |
+| コマンド                             | 目的                          |
+| ------------------------------------ | ----------------------------- |
+| `agent-browser --headed open <url>`  | URLを開く（ブラウザ表示）     |
+| `agent-browser open <url>`           | URLを開く（ヘッドレス）       |
+| `agent-browser snapshot -i`          | インタラクティブ要素を取得    |
+| `agent-browser click @ref`           | 要素をクリック                |
+| `agent-browser fill @ref "text"`     | クリアして入力                |
+| `agent-browser type @ref "text"`     | 要素に入力                    |
+| `agent-browser press <key>`          | キー押下（Enter, Tab等）      |
+| `agent-browser get text @ref`        | 要素のテキストを取得          |
+| `agent-browser get styles @ref`      | 計算済みCSSを取得 (v0.6+)     |
+| `agent-browser wait <sel\|ms>`       | 要素または時間を待機          |
+| `agent-browser find <loc> <val> <a>` | role/text/labelで検索して操作 |
+| `agent-browser screenshot [path]`    | スクリーンショットを撮影      |
+| `agent-browser record start <path>`  | WebM録画開始 (v0.6+)          |
+| `agent-browser record stop`          | 録画停止・保存 (v0.6+)        |
+| `agent-browser connect <port>`       | CDP経由で接続 (v0.6+)         |
+| `agent-browser close`                | ブラウザセッションを閉じる    |
 
 ## ワークフロー
 

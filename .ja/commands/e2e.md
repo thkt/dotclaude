@@ -27,8 +27,12 @@ argument-hint: "[テスト名]"
 | `agent-browser click @ref`          | 要素をクリック                 |
 | `agent-browser fill @ref "text"`    | フォーム入力（クリアして入力） |
 | `agent-browser type @ref "text"`    | 要素に入力                     |
+| `agent-browser press <key>`         | キー押下（Enter, Tab等）       |
 | `agent-browser get text @ref`       | 要素テキストを読取             |
+| `agent-browser wait <sel\|ms>`      | 要素または時間を待機           |
 | `agent-browser screenshot [path]`   | スクリーンショット             |
+| `agent-browser record start <path>` | WebM録画開始 (v0.6+)           |
+| `agent-browser record stop`         | 録画停止・保存 (v0.6+)         |
 | `agent-browser close`               | ブラウザセッションを閉じる     |
 
 ## ワークフロー

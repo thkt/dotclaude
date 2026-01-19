@@ -10,28 +10,26 @@ user-invocable: false
 
 # Browser Automation (agent-browser)
 
-## When to Use
-
-| Use Case        | agent-browser | Playwright |
-| --------------- | ------------- | ---------- |
-| CLI integration | Best          | Complex    |
-| E2E testing     | Best          | Best       |
-| Context-saving  | Best (93%↓)   | Heavy      |
-| GIF recording   | Not supported | Supported  |
-
 ## Core Commands
 
-| Command                             | Purpose                         |
-| ----------------------------------- | ------------------------------- |
-| `agent-browser --headed open <url>` | Open URL (visible browser)      |
-| `agent-browser open <url>`          | Open URL (headless)             |
-| `agent-browser snapshot -i`         | Get interactive elements (refs) |
-| `agent-browser click @ref`          | Click element                   |
-| `agent-browser fill @ref "text"`    | Clear and fill                  |
-| `agent-browser type @ref "text"`    | Type into element               |
-| `agent-browser get text @ref`       | Read element text               |
-| `agent-browser screenshot [path]`   | Capture screenshot              |
-| `agent-browser close`               | Close browser session           |
+| Command                              | Purpose                         |
+| ------------------------------------ | ------------------------------- |
+| `agent-browser --headed open <url>`  | Open URL (visible browser)      |
+| `agent-browser open <url>`           | Open URL (headless)             |
+| `agent-browser snapshot -i`          | Get interactive elements (refs) |
+| `agent-browser click @ref`           | Click element                   |
+| `agent-browser fill @ref "text"`     | Clear and fill                  |
+| `agent-browser type @ref "text"`     | Type into element               |
+| `agent-browser press <key>`          | Press key (Enter, Tab, etc.)    |
+| `agent-browser get text @ref`        | Read element text               |
+| `agent-browser get styles @ref`      | Get computed CSS styles (v0.6+) |
+| `agent-browser wait <sel\|ms>`       | Wait for element or time        |
+| `agent-browser find <loc> <val> <a>` | Find by role/text/label + act   |
+| `agent-browser screenshot [path]`    | Capture screenshot              |
+| `agent-browser record start <path>`  | Start WebM recording (v0.6+)    |
+| `agent-browser record stop`          | Stop and save recording (v0.6+) |
+| `agent-browser connect <port>`       | Connect via CDP (v0.6+)         |
+| `agent-browser close`                | Close browser session           |
 
 ## Workflow
 

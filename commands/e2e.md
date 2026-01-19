@@ -27,16 +27,20 @@ Browser operations via `agent-browser`, then generate Playwright tests.
 | `agent-browser click @ref`          | Click element                   |
 | `agent-browser fill @ref "text"`    | Fill form fields (clear first)  |
 | `agent-browser type @ref "text"`    | Type into element               |
+| `agent-browser press <key>`         | Press key (Enter, Tab, etc.)    |
 | `agent-browser get text @ref`       | Read element text               |
+| `agent-browser wait <sel\|ms>`      | Wait for element or time        |
 | `agent-browser screenshot [path]`   | Capture screenshot              |
+| `agent-browser record start <path>` | Start WebM recording (v0.6+)    |
+| `agent-browser record stop`         | Stop and save recording (v0.6+) |
 | `agent-browser close`               | Close browser session           |
 
 ## Workflow
 
-1. `agent-browser --headed open <url>` - ページを開く
-2. `agent-browser snapshot -i` - インタラクティブ要素を取得
-3. `@ref` を使って操作（click, fill, type）
-4. DOM 変更後は再度 `snapshot` を取得
+1. `agent-browser --headed open <url>` - Open page
+2. `agent-browser snapshot -i` - Get interactive elements
+3. Use `@ref` for operations (click, fill, type)
+4. Re-snapshot after DOM changes
 
 ## Playwright Format
 

@@ -41,6 +41,14 @@ Delegates WCAG checks to a11y-specialist-skills. Outputs structured YAML.
 
 Fallback: If browser unavailable, code-only analysis with lower confidence.
 
+## Computed Styles (v0.6.0+)
+
+| Check          | Command           | Purpose                       |
+| -------------- | ----------------- | ----------------------------- |
+| Contrast ratio | `get styles @ref` | Get computed color/background |
+| Font size      | `get styles @ref` | Verify minimum 16px for body  |
+| Focus visible  | `get styles @ref` | Check outline on :focus       |
+
 ## Error Handling
 
 | Error                          | Action                                 |
