@@ -194,15 +194,34 @@ check_diff_size() {
   fi
 }
 
+get_next_confirm_number() {
+  local idr_dir="$1"
+  local max_num=0
+  local num f
+
+  # Find existing .idr-confirm-NN.md files and get max number
+  while IFS= read -r -d '' f; do
+    [ -f "$f" ] || continue
+    num=$(basename "$f" | sed -n 's/\.idr-confirm-\([0-9]\{1,\}\)\.md$/\1/p' | sed 's/^0*//')
+    [ -z "$num" ] && continue
+    [[ "$num" =~ ^[0-9]+$ ]] || continue
+    [ "$num" -gt "$max_num" ] && max_num="$num"
+  done < <(find "$idr_dir" -maxdepth 1 -name ".idr-confirm-*.md" -print0 2>/dev/null)
+
+  printf "%02d" $((max_num + 1))
+}
+
 main() {
   has_session_changes || exit 0
   "$GIT_CMD" diff --cached --quiet && exit 0
 
-  local idr_file idr_dir confirm_file
+  local idr_file idr_dir confirm_file next_num
   idr_file=$(resolve_idr_file)
   idr_dir=$(dirname "$idr_file")
   mkdir -p "$idr_dir"
-  confirm_file="${idr_dir}/.idr-confirm.md"
+
+  next_num=$(get_next_confirm_number "$idr_dir")
+  confirm_file="${idr_dir}/.idr-confirm-${next_num}.md"
 
   if [ -f "$confirm_file" ] && grep -q "\[x\] 確認完了" "$confirm_file"; then
     echo "✅ 確認完了。コミットを実行します"
