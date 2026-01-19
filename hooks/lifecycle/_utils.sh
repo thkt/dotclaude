@@ -1,6 +1,5 @@
 #!/bin/bash
-# Shared utilities for lifecycle hooks
-# Dependencies: jaq (install: brew install jaq)
+# Shared utilities for lifecycle hooks (requires: jaq)
 
 WORKSPACE_DIR="${HOME}/.claude/workspace"
 
@@ -12,7 +11,6 @@ require_jaq() {
   fi
 }
 
-# Find most recently modified session JSONL (excludes subagents)
 find_session_jsonl() {
   local project_dir="$HOME/.claude/projects"
   if [ -d "$project_dir" ]; then
