@@ -4,7 +4,6 @@
 
 WORKSPACE_DIR="${HOME}/.claude/workspace"
 
-# Check jaq availability (required for JSONL processing)
 require_jaq() {
   if ! command -v jaq &> /dev/null; then
     echo "Error: jaq is required but not installed." >&2
@@ -13,11 +12,11 @@ require_jaq() {
   fi
 }
 
-# Find most recently modified session JSONL (within last 30 minutes)
+# Find recent session JSONL (excludes subagent JSONLs)
 find_session_jsonl() {
   local project_dir="$HOME/.claude/projects"
   if [ -d "$project_dir" ]; then
-    find "$project_dir" -name "*.jsonl" -mmin -30 2>/dev/null | head -1
+    find "$project_dir" -name "*.jsonl" -mmin -30 -not -path "*/subagents/*" 2>/dev/null | head -1
   fi
 }
 
@@ -31,7 +30,6 @@ has_session_changes() {
   jaq -e 'try (select(.message.content[]?.name == "Write" or .message.content[]?.name == "Edit")) catch empty' "$session_jsonl" >/dev/null 2>&1
 }
 
-# Resolve IDR path: SOW-based or date-based fallback
 resolve_idr_file() {
   local current_sow_file="${WORKSPACE_DIR}/.current-sow"
 
