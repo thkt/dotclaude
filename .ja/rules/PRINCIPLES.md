@@ -45,10 +45,10 @@ graph TD
     OR -.-> SOLID & LA
 
     %% === エッジ（普遍的原則から） ===
+    RC --> ML & LoD
     PE --> TDD
-    RC --> CP & TIDY & RT
-    RC -.-> ML & LoD
-    DRY --> TIDY
+    RC --> RT & TIDY & CP
+    DRY -.-> TIDY
     SOLID --> CP
 
     %% === エッジ（適用プラクティスから） ===

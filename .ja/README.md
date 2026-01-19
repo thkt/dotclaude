@@ -26,15 +26,14 @@
 │   ├── conventions/      # ドキュメント規約
 │   ├── development/      # 開発パターン & 方法論
 │   └── workflows/        # ワークフローガイド
-├── skills/               # スキルベースの知識モジュール（21スキル）
-├── agents/               # 専門AIエージェント
+├── skills/               # スキルベースの知識モジュール（24スキル）
+├── agents/               # 専門AIエージェント（25エージェント）
 │   ├── analyzers/        # アーキテクチャ分析
 │   ├── enhancers/        # コード改善
-│   ├── generators/       # コード/テスト生成
-│   ├── git/              # Git操作エージェント
+│   ├── generators/       # コード/テスト/Git生成
 │   ├── orchestrators/    # マルチエージェント調整
 │   ├── integrators/      # 発見統合
-│   └── reviewers/        # コードレビューエージェント（13種類）
+│   └── reviewers/        # コードレビューエージェント
 └── .ja/                   # 日本語翻訳
 ```
 
@@ -68,11 +67,12 @@
 
 **利用可能なプラグイン**:
 
-- **complete-workflow-system**: 16の専門エージェントを含むフル開発ワークフロー
+- **complete-workflow-system**: 25の専門エージェントを含むフル開発ワークフロー
 - **quick-actions**: 高速バグ修正 (/fix) と AIスロップ除去 (/polish)
 - **git-utilities**: Gitワークフローヘルパー (commit, branch, PR, issue)
 - **documentation-tools**: ADR作成とルール生成
 - **browser-workflows**: E2Eテストと自動化
+- **development-skills**: TDD、原則、パターン、セキュリティなど24スキル
 
 ### オプション2: 手動インストール（フル設定）
 

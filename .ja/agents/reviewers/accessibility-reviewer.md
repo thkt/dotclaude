@@ -5,7 +5,7 @@ tools: [Read, Grep, Glob, LS, Task, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
 skills:
   [
-    a11y-specialist-skills:a11y-review,
+    a11y-specialist-skills:reviewing-a11y,
     web-design-guidelines,
     enhancing-progressively,
   ]

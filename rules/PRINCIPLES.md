@@ -41,14 +41,14 @@ graph TD
 
     %% === Edges (from Occam's Razor) ===
     OR --> PE & RC & DRY
-    OR --> YAGNI
     OR -.-> SOLID & LA
+    OR --> YAGNI
 
     %% === Edges (from Universal) ===
+    RC --> ML & LoD
     PE --> TDD
-    RC --> CP & TIDY & RT
-    RC -.-> ML & LoD
-    DRY --> TIDY
+    RC --> RT & TIDY & CP
+    DRY -.-> TIDY
     SOLID --> CP
 
     %% === Edges (from Applied) ===

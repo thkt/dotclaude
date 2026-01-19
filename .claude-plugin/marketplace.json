@@ -62,8 +62,7 @@
         "./agents/reviewers/silent-failure-reviewer.md",
         "./agents/reviewers/sow-spec-reviewer.md",
         "./agents/integrators/audit-integrator.md"
-      ],
-      "rules": ["./rules/development/COMPLETION_CRITERIA.md"]
+      ]
     },
     {
       "name": "quick-actions",
@@ -199,40 +198,10 @@
         "./skills/reviewing-testability/SKILL.md",
         "./skills/reviewing-type-safety/SKILL.md",
         "./skills/documenting-setup/SKILL.md",
-        "./skills/utilizing-cli-tools/SKILL.md"
-      ]
-    },
-    {
-      "name": "development-rules",
-      "source": "./",
-      "description": "Development rules and guidelines: core principles, progressive enhancement, readable code, SOLID, DRY, and more",
-      "version": "2.0.0",
-      "author": {
-        "name": "thkt",
-        "url": "https://github.com/thkt"
-      },
-      "license": "MIT",
-      "keywords": [
-        "rules",
-        "guidelines",
-        "principles",
-        "solid",
-        "dry",
-        "clean-code"
-      ],
-      "category": "Development Rules",
-      "rules": [
-        "./rules/core/AI_OPERATION_PRINCIPLES.md",
-        "./rules/core/PRE_TASK_CHECK_RULES.md",
-        "./rules/core/PRE_TASK_CHECK_SPEC.md",
-        "./skills/applying-frontend-patterns/references/container-presentational.md",
-        "./rules/development/PROGRESSIVE_ENHANCEMENT.md",
-        "./rules/development/TIDYINGS.md",
-        "./rules/conventions/DOCUMENTATION.md",
-        "./rules/conventions/PLUGIN_ARCHITECTURE.md",
-        "./rules/workflows/WORKFLOW_GUIDE.md",
-        "./rules/workflows/MODULARIZATION_RULES.md",
-        "./rules/PRINCIPLES.md"
+        "./skills/utilizing-cli-tools/SKILL.md",
+        "./skills/web-design-guidelines/SKILL.md",
+        "./skills/vercel-react-best-practices/SKILL.md",
+        "./skills/consulting-gemini/SKILL.md"
       ]
     }
   ]
