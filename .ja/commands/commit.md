@@ -22,12 +22,26 @@ argument-hint: "[コンテキストまたはIssue参照]"
 
 ## 実行
 
-| Step | アクション                                |
-| ---- | ----------------------------------------- |
-| 1    | `Task`で`subagent_type: commit-generator` |
-| 2    | フォーマットしてプレビュー表示            |
-| 3    | ユーザーに確認                            |
-| 4    | コミット実行                              |
+| Step | アクション                                 |
+| ---- | ------------------------------------------ |
+| 1    | `Task`で`subagent_type: commit-generator`  |
+| 2    | フォーマットしてプレビュー表示             |
+| 3    | ユーザーに確認                             |
+| 4    | コミット実行（サンドボックス互換の方法で） |
+
+### サンドボックス互換コミット
+
+```bash
+# 複数行: ファイルベース
+cat > /tmp/claude/commit-msg.txt << 'EOF'
+<message>
+EOF
+git commit -F /tmp/claude/commit-msg.txt
+mv /tmp/claude/commit-msg.txt ~/.Trash/ 2>/dev/null || true
+
+# 単一行: 複数の -m フラグ
+git commit -m "subject" -m "body"
+```
 
 ## フロー: Preview
 

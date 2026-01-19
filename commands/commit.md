@@ -27,7 +27,21 @@ Analyze staged changes and generate Conventional Commits messages.
 | 1    | `Task` with `subagent_type: commit-generator` |
 | 2    | Format and present preview                    |
 | 3    | Confirm with user                             |
-| 4    | Execute commit                                |
+| 4    | Execute commit (sandbox-compatible method)    |
+
+### Sandbox-Compatible Commit
+
+```bash
+# Multi-line: file-based
+cat > /tmp/claude/commit-msg.txt << 'EOF'
+<message>
+EOF
+git commit -F /tmp/claude/commit-msg.txt
+mv /tmp/claude/commit-msg.txt ~/.Trash/ 2>/dev/null || true
+
+# Single-line: multiple -m flags
+git commit -m "subject" -m "body"
+```
 
 ## Flow: Preview
 

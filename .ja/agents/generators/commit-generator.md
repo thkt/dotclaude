@@ -56,15 +56,33 @@ feat(api)!: remove deprecated endpoints
 BREAKING CHANGE: /v1/users removed. Use /v2/users.
 ```
 
-## HEREDOC
+## コミット実行（サンドボックス互換）
+
+sandbox は stdin リダイレクトをブロック。ファイルベースのコミットを使用:
 
 ```bash
+# ❌ 失敗: heredoc を git commit へ
 git commit -m "$(cat <<'EOF'
+message
+EOF
+)"
+
+# ✅ 動作: heredoc をファイルへ
+cat > /tmp/claude/commit-msg.txt << 'EOF'
 feat(workflow): implement test runner
 
 Multi-line description here.
 EOF
-)"
+
+git commit -F /tmp/claude/commit-msg.txt
+mv /tmp/claude/commit-msg.txt ~/.Trash/ 2>/dev/null || true
+```
+
+代替案（一時ファイル不要）:
+
+```bash
+git commit -m "feat(workflow): implement test runner" \
+           -m "Multi-line description here."
 ```
 
 ## エラーハンドリング

@@ -56,15 +56,33 @@ feat(api)!: remove deprecated endpoints
 BREAKING CHANGE: /v1/users removed. Use /v2/users.
 ```
 
-## HEREDOC
+## Commit Execution (Sandbox Compatible)
+
+Sandbox blocks stdin redirection. Use file-based commit instead:
 
 ```bash
+# ❌ Fails: heredoc to git commit
 git commit -m "$(cat <<'EOF'
+message
+EOF
+)"
+
+# ✅ Works: heredoc to file
+cat > /tmp/claude/commit-msg.txt << 'EOF'
 feat(workflow): implement test runner
 
 Multi-line description here.
 EOF
-)"
+
+git commit -F /tmp/claude/commit-msg.txt
+mv /tmp/claude/commit-msg.txt ~/.Trash/ 2>/dev/null || true
+```
+
+Alternative (no temp file):
+
+```bash
+git commit -m "feat(workflow): implement test runner" \
+           -m "Multi-line description here."
 ```
 
 ## Error Handling
