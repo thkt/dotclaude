@@ -1,6 +1,5 @@
 #!/bin/bash
-# IDR Confirmation Gate (pre-commit)
-# IDR recording happens in session-end.sh
+# IDR Confirmation Gate - recording happens in session-end.sh
 
 set -euo pipefail
 
@@ -19,46 +18,111 @@ get_editor() {
   fi
 }
 
-get_questions() {
+open_and_verify() {
+  local confirm_file="$1"
+  local -a editor_cmd
+  read -ra editor_cmd <<< "$(get_editor)"
+  echo "📝 確認ファイルを開いています: $confirm_file"
+  "${editor_cmd[@]}" "$confirm_file"
+
+  if grep -q "\[ \] 確認完了" "$confirm_file"; then
+    echo "❌ 確認が完了していません"
+    echo "   チェックボックスを [x] にしてからコミットしてください"
+    exit 1
+  fi
+  echo "✅ 確認完了。コミットを実行します"
+}
+
+get_fallback_questions() {
   echo "- [ ] 変更内容を理解しましたか？"
   echo "- [ ] テストは十分ですか？"
   echo "- [ ] 既存機能への影響は確認しましたか？"
 }
 
-get_session_context() {
-  local session_jsonl
-  session_jsonl=$(find_session_jsonl)
+get_purpose_summary() {
+  local session_jsonl="$1"
   [ -z "$session_jsonl" ] && return
 
   local context=""
   [ -f "${SCRIPT_DIR}/_context-extractor.sh" ] && \
     context=$("${SCRIPT_DIR}/_context-extractor.sh" "$session_jsonl" 2>/dev/null || echo "")
 
-  local diff
-  diff=$(git diff --cached 2>/dev/null | head -200 || echo "")
+  if command -v claude &> /dev/null && [ -n "$context" ]; then
+    claude -p --model haiku "
+Extract the main purpose of this session in ONE line (Japanese).
+Focus on WHAT the user wants to achieve, not HOW.
 
-  local summary=""
-  if command -v claude &> /dev/null && { [ -n "$context" ] || [ -n "$diff" ]; }; then
-    summary=$(printf "%s\n\n---\n\n%s" "$context" "$diff" | claude -p --model haiku "
-Summarize the changes for pre-commit review.
+Context:
+$context
 
-Output format (in Japanese):
-**目的**: One-line session purpose
-**変更内容**: Key changes (3-5 bullet points)
-**確認ポイント**: Review concerns (if any)
-
-Be concise.
-" 2>/dev/null || echo "")
+Output format: Single line, no prefix, no explanation.
+" 2>/dev/null || echo ""
   fi
+}
 
-  echo "### セッション要約"
-  echo ""
+get_change_summary() {
+  local diff="$1"
+  [ -z "$diff" ] && return
 
-  if [ -n "$summary" ]; then
-    echo "$summary"
+  if command -v claude &> /dev/null; then
+    claude -p --model haiku "
+Summarize the following diff as bullet points (3-5 items).
+- Focus on WHAT changed, not line-by-line details
+- Japanese language
+- No greetings
+
+Diff:
+$diff
+
+Output format:
+- Change 1
+- Change 2
+- Change 3
+" 2>/dev/null || echo "- (要約生成失敗)"
   else
-    echo "**変更ファイル**:"
-    jaq -r 'try (.message.content[]? | select(.name == "Write" or .name == "Edit") | .input.file_path) catch empty' "$session_jsonl" 2>/dev/null | sort -u | sed 's|^.*/\.claude/||' | sed 's/^/- /' | head -10
+    echo "- (Claude 不可)"
+  fi
+}
+
+get_review_questions() {
+  local diff="$1"
+  [ -z "$diff" ] && return
+
+  if command -v claude &> /dev/null; then
+    claude -p --model haiku "
+You are a senior engineer reviewing code changes.
+Generate 3-5 review questions for the following diff.
+
+Requirements:
+- Questions should verify the developer understands the changes
+- Include: design intent, edge cases, potential bugs, impact
+- Output as markdown checkbox list
+- Japanese language
+- No greetings or explanations
+
+Diff:
+$diff
+
+Output format:
+- [ ] Question 1
+- [ ] Question 2
+- [ ] Question 3
+" 2>/dev/null || get_fallback_questions
+  else
+    get_fallback_questions
+  fi
+}
+
+check_diff_size() {
+  local diff="$1"
+  local threshold="${2:-200}"
+
+  local line_count
+  line_count=$(echo "$diff" | wc -l | tr -d ' ')
+
+  if [ "$line_count" -gt "$threshold" ]; then
+    echo "⚠️ **警告**: 変更が${threshold}行を超えています（${line_count}行）。コミットの分割を検討してください。"
+    echo ""
   fi
 }
 
@@ -66,54 +130,49 @@ main() {
   has_session_changes || exit 0
   git diff --cached --quiet && exit 0
 
-  local idr_file
+  local idr_file idr_dir confirm_file
   idr_file=$(resolve_idr_file)
-  local idr_dir
   idr_dir=$(dirname "$idr_file")
   mkdir -p "$idr_dir"
-  local CONFIRM_FILE="${idr_dir}/.idr-confirm.md"
+  confirm_file="${idr_dir}/.idr-confirm.md"
 
   # Already confirmed? Skip.
-  if [ -f "$CONFIRM_FILE" ] && grep -q "\[x\] 確認完了" "$CONFIRM_FILE"; then
+  if [ -f "$confirm_file" ] && grep -q "\[x\] 確認完了" "$confirm_file"; then
     echo "✅ 確認完了。コミットを実行します"
     exit 0
   fi
 
-  # Existing but unchecked? Re-open without regenerating.
-  if [ -f "$CONFIRM_FILE" ] && grep -q "\[ \] 確認完了" "$CONFIRM_FILE"; then
-    local -a editor_cmd
-    read -ra editor_cmd <<< "$(get_editor)"
-    echo "📝 確認ファイルを開いています: $CONFIRM_FILE"
-    "${editor_cmd[@]}" "$CONFIRM_FILE"
-
-    if grep -q "\[ \] 確認完了" "$CONFIRM_FILE"; then
-      echo "❌ 確認が完了していません"
-      echo "   チェックボックスを [x] にしてからコミットしてください"
-      exit 1
-    fi
-    echo "✅ 確認完了。コミットを実行します"
-    exit 0
+  # Existing but unchecked? Re-open.
+  if [ -f "$confirm_file" ] && grep -q "\[ \] 確認完了" "$confirm_file"; then
+    open_and_verify "$confirm_file"
+    exit $?
   fi
 
   # Generate new confirmation file
-  local diff_stat
-  diff_stat=$(git diff --cached --stat)
+  local session_jsonl diff diff_stat
+  session_jsonl=$(find_session_jsonl)
+  diff=$(git diff --cached 2>/dev/null)
+  diff_stat=$(git diff --cached --stat 2>/dev/null)
 
-  local questions
-  questions=$(get_questions)
+  local purpose summary questions warning
+  purpose=$(get_purpose_summary "$session_jsonl")
+  summary=$(get_change_summary "$diff")
+  questions=$(get_review_questions "$diff")
+  warning=$(check_diff_size "$diff" 200)
 
-  local session_context
-  session_context=$(get_session_context)
-
-  cat > "$CONFIRM_FILE" << EOF
+  cat > "$confirm_file" << EOF
 # コミット確認
 
 > $(date +%Y-%m-%d\ %H:%M)
 
 ## 変更サマリー
 
-${session_context}
+**目的**: ${purpose:-"(目的抽出失敗)"}
 
+**変更内容**:
+${summary:-"- (要約生成失敗)"}
+
+${warning}
 ### git diff --stat
 \`\`\`
 ${diff_stat}
@@ -134,18 +193,7 @@ ${questions}
 ${BLOCKER_LINE}
 EOF
 
-  local -a editor_cmd
-  read -ra editor_cmd <<< "$(get_editor)"
-  echo "📝 確認ファイルを開いています: $CONFIRM_FILE"
-  "${editor_cmd[@]}" "$CONFIRM_FILE"
-
-  if grep -q "\[ \] 確認完了" "$CONFIRM_FILE"; then
-    echo "❌ 確認が完了していません"
-    echo "   チェックボックスを [x] にしてからコミットしてください"
-    exit 1
-  fi
-
-  echo "✅ 確認完了。コミットを実行します"
+  open_and_verify "$confirm_file"
 }
 
 main "$@"
