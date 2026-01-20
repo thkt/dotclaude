@@ -80,12 +80,9 @@ fn main() {
         }
     };
 
-    let (file_path, content) = match get_file_and_content(&input) {
-        Some(v) => v,
-        None => {
-            eprintln!("guardrails: skipping {} (unsupported or empty)", input.tool_name);
-            std::process::exit(0);
-        }
+    let Some((file_path, content)) = get_file_and_content(&input) else {
+        eprintln!("guardrails: skipping {} (unsupported or empty)", input.tool_name);
+        std::process::exit(0);
     };
 
     let rules = rules::load_rules(&config);
