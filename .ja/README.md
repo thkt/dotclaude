@@ -26,7 +26,7 @@
 │   ├── conventions/      # ドキュメント規約
 │   ├── development/      # 開発パターン & 方法論
 │   └── workflows/        # ワークフローガイド
-├── skills/               # スキルベースの知識モジュール（24スキル）
+├── skills/               # スキルベースの知識モジュール（25スキル）
 ├── agents/               # 専門AIエージェント（25エージェント）
 │   ├── analyzers/        # アーキテクチャ分析
 │   ├── enhancers/        # コード改善
@@ -72,7 +72,7 @@
 - **git-utilities**: Gitワークフローヘルパー (commit, branch, PR, issue)
 - **documentation-tools**: ADR作成とルール生成
 - **browser-workflows**: E2Eテストと自動化
-- **development-skills**: TDD、原則、パターン、セキュリティなど24スキル
+- **development-skills**: TDD、原則、パターン、セキュリティなど25スキル
 
 ### オプション2: 手動インストール（フル設定）
 

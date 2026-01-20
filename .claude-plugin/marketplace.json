@@ -201,7 +201,8 @@
         "./skills/utilizing-cli-tools/SKILL.md",
         "./skills/web-design-guidelines/SKILL.md",
         "./skills/vercel-react-best-practices/SKILL.md",
-        "./skills/consulting-gemini/SKILL.md"
+        "./skills/consulting-gemini/SKILL.md",
+        "./skills/accessing-google-workspace/SKILL.md"
       ]
     }
   ]
