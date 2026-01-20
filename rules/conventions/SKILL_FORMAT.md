@@ -7,9 +7,9 @@ Official format for Claude Code Skills. Based on <https://code.claude.com/docs/e
 ```yaml
 ---
 name: skill-name # lowercase, hyphens, max 64 chars
-description: > # max 1024 chars, include triggers
-  Brief summary with trigger keywords.
-  Triggers: "keyword1", "keyword2", "キーワード".
+description: > # max 1024 chars, include "Use when"
+  Brief summary of capabilities.
+  Use when [scenario] or when user mentions keyword1, keyword2, キーワード.
 allowed-tools: # Optional but recommended
   - Read
   - Write
@@ -59,11 +59,12 @@ Progressive Loading: Claude reads SKILL.md first, references only when needed.
 
 ## Description Requirements
 
-| Rule     | Requirement            | Example                                |
-| -------- | ---------------------- | -------------------------------------- |
-| Voice    | Third person only      | "Processes files" not "I can help you" |
-| Triggers | Include EN/JP keywords | `Triggers: "security", "セキュリティ"` |
-| Length   | Max 1024 characters    | -                                      |
+| Rule     | Requirement            | Example                                                                    |
+| -------- | ---------------------- | -------------------------------------------------------------------------- |
+| Voice    | Third person only      | "Processes files" not "I can help you"                                     |
+| Format   | Use "Use when" pattern | `Use when reviewing code for issues or when user mentions security, OWASP` |
+| Keywords | Include EN/JP trigger  | `Use when ... or when user mentions security, セキュリティ`                |
+| Length   | Max 1024 characters    | -                                                                          |
 
 ## Ignored Fields
 
@@ -83,7 +84,7 @@ Never use these fields (not recognized by Claude Code):
 ### YAML Front Matter
 
 - [ ] `name`: lowercase with hyphens, ≤64 chars
-- [ ] `description`: ≤1024 chars, includes triggers
+- [ ] `description`: ≤1024 chars, uses "Use when" pattern
 - [ ] `allowed-tools`: specified
 - [ ] No non-official fields
 

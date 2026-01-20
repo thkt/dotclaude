@@ -2,7 +2,8 @@
 name: documenting-domains
 description: >
   Generate domain documentation from codebase analysis - entities, glossary, relationships.
-  Triggers: domain model, entity diagram, ドメインモデル, 用語集, glossary, ubiquitous language.
+  Use when analyzing domain models, creating glossaries, or when user mentions
+  domain model, entity diagram, ドメインモデル, 用語集, glossary, ubiquitous language.
 allowed-tools: [Read, Write, Grep, Glob, Bash, Task]
 context: fork
 user-invocable: false

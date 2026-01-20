@@ -1,6 +1,9 @@
 ---
 name: applying-frontend-patterns
-description: Framework-agnostic frontend component design patterns.
+description: >
+  Framework-agnostic frontend component design patterns.
+  Use when designing React/Vue/Angular components, applying Container/Presentational pattern,
+  or when user mentions component patterns, フロントエンドパターン, コンポーネント設計.
 allowed-tools: [Read, Grep, Glob, Task]
 user-invocable: false
 ---

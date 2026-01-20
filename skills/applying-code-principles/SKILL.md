@@ -2,8 +2,8 @@
 name: applying-code-principles
 description: >
   Fundamental software principles - SOLID, DRY, Occam's Razor, Miller's Law, YAGNI, Readable Code.
-  Triggers: 原則, シンプル, 複雑, アーキテクチャ, リファクタリング, 保守性, コード品質,
-  design pattern, best practice, clean code
+  Use when applying design principles, refactoring code, or when user mentions
+  原則, シンプル, 複雑, リファクタリング, 保守性, clean code, best practice.
 allowed-tools: [Read, Grep, Glob]
 user-invocable: false
 ---
@@ -23,7 +23,7 @@ user-invocable: false
 
 ## Quick Checks
 
-See **CLAUDE.md → Development Checks** (always loaded, single source of truth).
+See CLAUDE.md Development Checks section (always loaded, single source of truth).
 
 ## Thresholds
 

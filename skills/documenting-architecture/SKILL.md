@@ -3,7 +3,8 @@ name: documenting-architecture
 description: >
   Generate architecture overview documentation from codebase analysis.
   Uses tree-sitter-analyzer for precise code structure extraction.
-  Triggers: architecture overview, project structure, module diagram.
+  Use when documenting project structure, creating architecture diagrams, or when user
+  mentions architecture overview, project structure, アーキテクチャ, 構成図.
 allowed-tools: [Read, Write, Grep, Glob, Bash, Task]
 context: fork
 user-invocable: false

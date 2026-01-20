@@ -2,7 +2,8 @@
 name: automating-browser
 description: >
   Browser automation using agent-browser CLI. Best for E2E testing, demos, screenshots.
-  Triggers: browser automation, E2E test, ブラウザ操作, スクリーンショット, demo, manual testing.
+  Use when automating browser interactions, creating E2E tests, or when user mentions
+  browser automation, E2E test, ブラウザ操作, スクリーンショット, demo, manual testing.
 allowed-tools: [Read, Glob, Bash(agent-browser:*)]
 context: fork
 user-invocable: false

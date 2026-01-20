@@ -2,9 +2,11 @@
 name: reviewing-type-safety
 description: >
   TypeScript type safety patterns and best practices for maximum type coverage.
-  Triggers: TypeScript, type safety, any, 型安全, 型カバレッジ, strict mode.
+  Use when reviewing TypeScript code for type issues, eliminating `any` types,
+  or when user mentions type safety, 型安全, 型カバレッジ, strict mode.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: type-safety-reviewer
+context: fork
 user-invocable: false
 ---
 

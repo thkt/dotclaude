@@ -2,9 +2,11 @@
 name: reviewing-security
 description: >
   OWASP Top 10-based security review and vulnerability detection.
-  Triggers: security, OWASP, XSS, SQL injection, セキュリティ, 脆弱性, vulnerability.
+  Use when reviewing code for security issues, performing vulnerability analysis,
+  or when user mentions security, OWASP, XSS, SQL injection, セキュリティ, 脆弱性.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: security-reviewer
+context: fork
 user-invocable: false
 ---
 

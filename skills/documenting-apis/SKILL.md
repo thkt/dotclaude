@@ -2,7 +2,8 @@
 name: documenting-apis
 description: >
   Generate API specification from codebase - endpoints, types, schemas.
-  Triggers: API docs, endpoint documentation, API仕様, OpenAPI, Swagger, REST API.
+  Use when generating API documentation, documenting endpoints, or when user mentions
+  API docs, API仕様, OpenAPI, Swagger, REST API, endpoint documentation.
 allowed-tools: [Read, Write, Grep, Glob, Bash, Task]
 context: fork
 user-invocable: false

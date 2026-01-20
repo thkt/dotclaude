@@ -3,7 +3,8 @@ name: documenting-setup
 description: >
   Generate environment setup guide documentation from codebase analysis.
   Detects package managers, required tools, environment variables, and startup commands.
-  Triggers: setup guide, environment setup, development environment.
+  Use when creating setup guides, documenting environments, or when user mentions
+  setup guide, environment setup, 環境構築, 開発環境.
 allowed-tools: [Read, Write, Grep, Glob, Bash, Task]
 context: fork
 user-invocable: false

@@ -1,9 +1,10 @@
 ---
 name: enhancing-progressively
 description: >
-  CSS-first approach - use CSS before JavaScript. Triggers: レイアウト, スタイル,
-  位置, アニメーション, 表示/非表示, トグル, レスポンシブ, CSS Grid, Flexbox,
-  transforms, transitions, CSSのみ, JavaScript不要, シンプル
+  CSS-first approach - use CSS before JavaScript.
+  Use when implementing layouts, animations, or toggles, or when user mentions
+  レイアウト, スタイル, 位置, アニメーション, 表示/非表示, トグル, レスポンシブ,
+  CSS Grid, Flexbox, transforms, transitions, CSSのみ, JavaScript不要, シンプル
 allowed-tools: [Read, Grep, Glob]
 user-invocable: false
 ---

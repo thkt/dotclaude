@@ -2,7 +2,8 @@
 name: utilizing-cli-tools
 description: >
   CLI tools guide for git, gh, npm, and other development tools.
-  Triggers: git, gh, npm, CLI, コマンドライン, バージョン管理, ブランチ, コミット.
+  Use when executing git commands, managing branches, or when user mentions
+  CLI, コマンドライン, バージョン管理, ブランチ, コミット.
 allowed-tools: [Bash, Read, Glob]
 user-invocable: false
 ---

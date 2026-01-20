@@ -2,9 +2,11 @@
 name: optimizing-performance
 description: >
   Frontend performance optimization with data-driven approach.
-  Triggers: performance, Web Vitals, LCP, FID, CLS, パフォーマンス最適化, 速度改善, bundle size.
+  Use when optimizing page load times, improving Web Vitals, or when user mentions
+  performance, Web Vitals, LCP, FID, CLS, パフォーマンス最適化, 速度改善, bundle size.
 allowed-tools: [Read, Grep, Glob, Task, Bash(agent-browser:*), mcp__mdn__*]
 agent: performance-reviewer
+context: fork
 user-invocable: false
 ---
 

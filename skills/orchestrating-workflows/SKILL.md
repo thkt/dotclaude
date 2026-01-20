@@ -2,9 +2,9 @@
 name: orchestrating-workflows
 description: >
   Command workflow orchestration patterns for /code, /fix, /audit, and other implementation commands.
-  Triggers: workflow, orchestration, command flow, IDR, test generation, RGRC, quality gates, completion criteria,
-  ワークフロー, 実装フロー, テスト生成, 品質ゲート, 完了基準.
-allowed-tools: [Read, Write, Grep, Glob, Task, Bash]
+  Use when implementing features with /code, /fix, /audit commands, or when user mentions
+  workflow, ワークフロー, RGRC, quality gates, 品質ゲート, completion criteria.
+allowed-tools: [Read, Write, Grep, Glob, Task, Bash(npm:*, npx:*, tsc:*, bun:*)]
 user-invocable: false
 ---
 

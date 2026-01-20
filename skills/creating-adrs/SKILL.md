@@ -1,10 +1,11 @@
 ---
 name: creating-adrs
 description: >
-  Structured ADR creation in MADR format. Triggers: ADR, Architecture Decision,
-  決定記録, 技術選定, アーキテクチャ決定, design decision, 技術的決定, 設計判断,
-  deprecation, 非推奨化, process change, プロセス変更
-allowed-tools: [Read, Write, Edit, Grep, Glob, Bash, Task]
+  Structured ADR creation in MADR format. Use when creating architecture decision
+  records, documenting technology choices, or when user mentions ADR, Architecture
+  Decision, 決定記録, 技術選定, アーキテクチャ決定, deprecation, 非推奨化.
+allowed-tools: [Read, Write, Edit, Grep, Glob, Bash(ls:*, mkdir:*), Task]
+user-invocable: false
 ---
 
 # ADR Creator
@@ -41,7 +42,7 @@ adr/
 ## References
 
 | Topic     | Resource                      |
-| --------- | ---------------------------   |
+| --------- | ----------------------------- |
 | MADR      | <https://adr.github.io/madr/> |
 | Command   | `../../commands/adr.md`       |
 | Templates | `../../templates/adr/`        |
