@@ -25,6 +25,8 @@ pub struct RulesConfig {
     pub error_handling: bool,
     #[serde(default = "default_true")]
     pub naming: bool,
+    #[serde(default = "default_true")]
+    pub transaction: bool,
 }
 
 impl Default for RulesConfig {
@@ -34,6 +36,7 @@ impl Default for RulesConfig {
             type_safety: true,
             error_handling: true,
             naming: true,
+            transaction: true,
         }
     }
 }

@@ -1,6 +1,7 @@
 mod architecture;
 mod error_handling;
 mod naming;
+mod transaction;
 mod type_safety;
 
 use crate::config::Config;
@@ -77,6 +78,9 @@ pub fn load_rules(config: &Config) -> Vec<Rule> {
     }
     if config.rules.naming {
         rules.push(naming::rule());
+    }
+    if config.rules.transaction {
+        rules.push(transaction::rule());
     }
 
     rules

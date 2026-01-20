@@ -1,4 +1,4 @@
-# E2Eテスト
+# agent-browserによるE2Eテスト
 
 ## テスト構造
 
@@ -20,14 +20,14 @@
 
 ## 検証テクニック
 
-| 方法              | ツール                                     | 目的                   |
-| ----------------- | ------------------------------------------ | ---------------------- |
-| Visual            | `screenshot`                               | レイアウト比較         |
-| Content           | `get_page_text`                            | 文字列確認、エラーなし |
-| Structure         | `read_page filter: "interactive"`          | 要素数/検証            |
-| Console           | `read_console_messages onlyErrors: true`   | JSエラーなし           |
-| Network           | `read_network_requests urlPattern: "/api"` | API呼び出し成功        |
-| Visual Regression | Playwright `toHaveScreenshot()`            | 意図しない変更を検出   |
+| 方法    | コマンド                         | 目的             |
+| ------- | -------------------------------- | ---------------- |
+| Visual  | `screenshot`                     | レイアウト比較   |
+| Content | `get text <sel>`                 | テキスト内容確認 |
+| State   | `snapshot -i` + refs確認         | 要素の存在確認   |
+| Console | `console` / `errors`             | JSエラーなし     |
+| Network | `network requests --filter /api` | API呼び出し成功  |
+| Trace   | `trace start` / `trace stop`     | 完全な実行記録   |
 
 ## エラーシナリオ
 
@@ -37,11 +37,36 @@
 | 空フォーム     | バリデーションエラー表示                 |
 | 404ページ      | 404表示、「ホームへ戻る」動作            |
 
+## テスト中のデバッグ
+
+```bash
+# 各アクション後にエラー確認:
+agent-browser errors
+
+# 失敗時はコンソール確認:
+agent-browser console
+
+# 不安定なテストにはtrace:
+agent-browser trace start test.zip
+# ... テストステップ実行 ...
+agent-browser trace stop
+# test.zipをPlaywright Trace Viewerで開く
+```
+
 ## ベストプラクティス
 
-| 原則            | ルール                                                  |
-| --------------- | ------------------------------------------------------- |
-| Independence    | 各テストはクリーンな状態から、依存なし                  |
-| Reliability     | 座標ではなくrefを使用、待機追加、不安定な操作をリトライ |
-| Maintainability | 目的を文書化、説明的な名前、1テスト1事項                |
-| Performance     | 待機を最小化、セットアップを再利用、並列化              |
+| 原則            | ルール                                                    |
+| --------------- | --------------------------------------------------------- |
+| Independence    | 各テストはクリーンな状態から、依存なし                    |
+| Reliability     | セレクタでなくrefsを使用、待機追加、DOM変更後は再snapshot |
+| Debugging       | 重要なアクション後に`console`/`errors`を確認              |
+| Maintainability | 目的を文書化、説明的な名前、1テスト1事項                  |
+| Performance     | `state save/load`でauth再利用、並列化                     |
+
+## テストセッション管理
+
+| パターン         | コマンド                                            |
+| ---------------- | --------------------------------------------------- |
+| クリーンスレート | `--session test-{timestamp}`で分離                  |
+| 共有認証         | `state save auth.json`を1度、各テストで`state load` |
+| 並列テスト       | テストごとに異なる`--session`で競合回避             |

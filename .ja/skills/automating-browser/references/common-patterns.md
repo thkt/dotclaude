@@ -2,44 +2,64 @@
 
 ## コアパターン
 
-| パターン | ステップ                                                                      |
-| -------- | ----------------------------------------------------------------------------- |
-| Setup    | `tabs_context_mcp` → `tabs_create_mcp` → `navigate` → `read_page`             |
-| Form     | `read_page filter: "interactive"` → `form_input`各 → `find submit` → `click`  |
-| Search   | `find "search"` → `form_input` → `key: "Enter"` → `wait` → `read_page`        |
-| Login    | Navigate → ユーザー名入力 → パスワード入力 → ログインクリック → `wait` → 検証 |
+| パターン | ステップ                                                       |
+| -------- | -------------------------------------------------------------- |
+| Setup    | `--headed open <url>` → `snapshot -i` → interact               |
+| Form     | `snapshot -i` → `fill @ref "val"` → `click @submit`            |
+| Search   | `fill @search "query"` → `press Enter` → `wait` → `snapshot`   |
+| Login    | `fill @user` → `fill @pass` → `click @login` → `wait` → verify |
+
+## デバッグワークフロー
+
+| ステップ | アクション                      | 目的            |
+| -------- | ------------------------------- | --------------- |
+| 1        | 操作を実行                      | アクション実行  |
+| 2        | `console` または `errors`       | JSエラー確認    |
+| 3        | `network requests --filter api` | API呼び出し確認 |
+| 4        | `screenshot` (必要に応じて)     | 視覚的確認      |
 
 ## 録画パターン
 
-| Step | アクション                     |
-| ---- | ------------------------------ |
-| 1    | `gif_creator start_recording`  |
-| 2    | screenshot (初期)              |
-| 3    | action + screenshot (繰り返し) |
-| 4    | screenshot (最終)              |
-| 5    | `gif_creator stop_recording`   |
-| 6    | `gif_creator export`           |
+| ステップ | アクション                    |
+| -------- | ----------------------------- |
+| 1        | `trace start recording.zip`   |
+| 2        | 操作を実行                    |
+| 3        | `trace stop`                  |
+| 4        | Playwright Trace Viewerで確認 |
 
 ## エラーハンドリング
 
-| 問題                 | 解決策                                  |
-| -------------------- | --------------------------------------- |
-| 要素が見つからない   | 代替クエリを試す、スクロール、depth増加 |
-| ページがロードしない | `wait`延長、console/networkを確認、報告 |
+| 問題                 | 診断                           | 解決策                     |
+| -------------------- | ------------------------------ | -------------------------- |
+| 要素が見つからない   | `snapshot -i`でrefsを確認      | 再snapshot、セレクタ確認   |
+| クリック無効         | `console`でJSエラー確認        | JSエラー修正、リトライ     |
+| ページがロードしない | `network requests`で失敗確認   | ネットワーク確認、wait延長 |
+| 予期しない状態       | `errors`でスタックトレース確認 | エラー元からデバッグ       |
+| 不安定な動作         | `trace start`で全て記録        | タイミング問題をtrace確認  |
 
 ## レスポンシブテスト
 
-| デバイス     | 解像度    |
-| ------------ | --------- |
-| デスクトップ | 1920x1080 |
-| タブレット   | 768x1024  |
-| モバイル     | 375x812   |
+| デバイス     | コマンド                 |
+| ------------ | ------------------------ |
+| デスクトップ | `set viewport 1920 1080` |
+| タブレット   | `set viewport 768 1024`  |
+| モバイル     | `set device "iPhone 14"` |
 
 ## ベストプラクティス
 
-| Do                                 | Don't                          |
-| ---------------------------------- | ------------------------------ |
-| `tabs_context_mcp`から開始         | タブコンテキスト確認をスキップ |
-| ページロードを待つ                 | 機密データを自動送信           |
-| `coordinate`より`ref`を使用        | ターゲット確認なしでクリック   |
-| アクション前後でスクリーンショット | CAPTCHA/ボット検出を無視       |
+| Do                               | Don't                     |
+| -------------------------------- | ------------------------- |
+| DOM変更後は`snapshot -i`         | refsが永続すると仮定      |
+| `console`/`errors`を定期的に確認 | エラーが出るまで待つ      |
+| アサーション前に`wait`           | 非同期操作と競合          |
+| デバッグ時は`--headed`を使用     | ヘッドレスでデバッグ      |
+| 複雑なシナリオでは`trace`        | タイミング問題を推測      |
+| snapshotからの`@ref`を使用       | CSSセレクタをハードコード |
+
+## セッション永続化
+
+| パターン           | コマンド                                        |
+| ------------------ | ----------------------------------------------- |
+| ログイン状態保存   | ログイン → `state save auth.json`               |
+| ログイン状態再利用 | `state load auth.json` → `open <protected-url>` |
+| 分離テスト         | `--session test1`でクロス汚染を防止             |

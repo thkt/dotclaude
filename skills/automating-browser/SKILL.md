@@ -23,14 +23,21 @@ user-invocable: false
 | `agent-browser type @ref "text"`     | Type into element               |
 | `agent-browser press <key>`          | Press key (Enter, Tab, etc.)    |
 | `agent-browser get text @ref`        | Read element text               |
-| `agent-browser get styles @ref`      | Get computed CSS styles (v0.6+) |
 | `agent-browser wait <sel\|ms>`       | Wait for element or time        |
 | `agent-browser find <loc> <val> <a>` | Find by role/text/label + act   |
 | `agent-browser screenshot [path]`    | Capture screenshot              |
-| `agent-browser record start <path>`  | Start WebM recording (v0.6+)    |
-| `agent-browser record stop`          | Stop and save recording (v0.6+) |
-| `agent-browser connect <port>`       | Connect via CDP (v0.6+)         |
 | `agent-browser close`                | Close browser session           |
+
+## Debugging Commands
+
+| Command                                       | Purpose                    |
+| --------------------------------------------- | -------------------------- |
+| `agent-browser console`                       | Display console output     |
+| `agent-browser errors`                        | Show JS error stack traces |
+| `agent-browser network requests`              | List captured requests     |
+| `agent-browser network requests --filter api` | Filter by keyword          |
+| `agent-browser trace start <path>`            | Begin recording trace      |
+| `agent-browser trace stop`                    | Save trace file            |
 
 ## Workflow
 
@@ -40,14 +47,16 @@ user-invocable: false
 | 2    | `agent-browser snapshot -i`         |
 | 3    | Use `@ref` for operations           |
 | 4    | Re-snapshot after DOM changes       |
+| 5    | Check `console`/`errors` regularly  |
 
 ## Key Points
 
-| Point              | Description                                  |
-| ------------------ | -------------------------------------------- |
-| Always snapshot    | Refs are only valid after snapshot           |
-| Re-snapshot on DOM | After click/fill, get new refs               |
-| Mode switch        | Close first when switching headed ↔ headless |
+| Point              | Description                                     |
+| ------------------ | ----------------------------------------------- |
+| Always snapshot    | Refs are only valid after snapshot              |
+| Re-snapshot on DOM | After click/fill, get new refs                  |
+| Check DevTools     | Run `console`/`errors` proactively, not on fail |
+| Mode switch        | Close first when switching headed ↔ headless    |
 
 ## Patterns
 
@@ -56,3 +65,4 @@ user-invocable: false
 | Form Filling | snapshot -i → fill @ref "value" → click submit |
 | Navigation   | click @ref → wait → snapshot                   |
 | Screenshot   | snapshot → screenshot path.png                 |
+| Debug        | action → console → errors → network requests   |

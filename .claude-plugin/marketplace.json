@@ -145,7 +145,7 @@
     {
       "name": "browser-workflows",
       "source": "./",
-      "description": "E2E test and documentation generator from claude-in-chrome operations",
+      "description": "E2E test and documentation generator from agent-browser operations",
       "version": "2.0.0",
       "author": {
         "name": "thkt",
