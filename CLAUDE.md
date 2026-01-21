@@ -2,12 +2,13 @@
 
 ## Rules
 
-| Rule       | Reference                                                                                          |
-| ---------- | -------------------------------------------------------------------------------------------------- |
-| Core       | [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)                |
-| Task       | [@./rules/core/PRE_TASK_CHECK_SPEC.md](./rules/core/PRE_TASK_CHECK_SPEC.md)                        |
-| Principles | [@./rules/PRINCIPLES.md](./rules/PRINCIPLES.md)                                                    |
-| Delete     | `mv [file] ~/.Trash/ && git add -A` (sandbox error → retry with `dangerouslyDisableSandbox: true`) |
+| Rule        | Reference                                                                                          |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| Core        | [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)                |
+| Task        | [@./rules/core/PRE_TASK_CHECK_SPEC.md](./rules/core/PRE_TASK_CHECK_SPEC.md)                        |
+| Principles  | [@./rules/PRINCIPLES.md](./rules/PRINCIPLES.md)                                                    |
+| Performance | [@./rules/development/PERFORMANCE.md](./rules/development/PERFORMANCE.md)                          |
+| Delete      | `mv [file] ~/.Trash/ && git add -A` (sandbox error → retry with `dangerouslyDisableSandbox: true`) |
 
 ## Development Checks
 
@@ -20,11 +21,13 @@
 
 ## Completion
 
-Before reporting: tests pass, build pass, lint pass
+| Condition     | Requirements                            |
+| ------------- | --------------------------------------- |
+| Before report | tests pass, build pass, lint pass       |
+| Never report  | failing tests, build errors, unresolved |
 
-Never complete with: failing tests, build errors, unresolved errors
+| Discovery | Order                               |
+| --------- | ----------------------------------- |
+| Commands  | README.md → package.json → ask user |
 
-Command discovery: README.md → package.json → ask user
-
-Commands: [@./rules/workflows/WORKFLOW_GUIDE.md](./rules/workflows/WORKFLOW_GUIDE.md)
-Docs: [@./rules/conventions/DOCUMENTATION.md](./rules/conventions/DOCUMENTATION.md)
+References: [@./rules/workflows/WORKFLOW_GUIDE.md](./rules/workflows/WORKFLOW_GUIDE.md), [@./rules/conventions/DOCUMENTATION.md](./rules/conventions/DOCUMENTATION.md)

@@ -2,12 +2,13 @@
 
 ## ルール
 
-| ルール | 参照                                                                                            |
-| ------ | ----------------------------------------------------------------------------------------------- |
-| コア   | [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)           |
-| タスク | [@../rules/core/PRE_TASK_CHECK_SPEC.md](../rules/core/PRE_TASK_CHECK_SPEC.md)                   |
-| 原則   | [@../rules/PRINCIPLES.md](../rules/PRINCIPLES.md)                                               |
-| 削除   | `mv [file] ~/.Trash/ && git add -A` (sandboxエラー → `dangerouslyDisableSandbox: true`で再試行) |
+| ルール         | 参照                                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| コア           | [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)           |
+| タスク         | [@../rules/core/PRE_TASK_CHECK_SPEC.md](../rules/core/PRE_TASK_CHECK_SPEC.md)                   |
+| 原則           | [@../rules/PRINCIPLES.md](../rules/PRINCIPLES.md)                                               |
+| パフォーマンス | [@./rules/development/PERFORMANCE.md](./rules/development/PERFORMANCE.md)                       |
+| 削除           | `mv [file] ~/.Trash/ && git add -A` (sandboxエラー → `dangerouslyDisableSandbox: true`で再試行) |
 
 ## 開発チェック
 
@@ -20,11 +21,13 @@
 
 ## 完了
 
-報告前: tests pass, build pass, lint pass
+| 条件     | 要件                                   |
+| -------- | -------------------------------------- |
+| 報告前   | tests pass, build pass, lint pass      |
+| 報告禁止 | テスト失敗、ビルドエラー、未解決エラー |
 
-完了禁止: テスト失敗、ビルドエラー、未解決エラー
+| 発見     | 順序                                      |
+| -------- | ----------------------------------------- |
+| コマンド | README.md → package.json → ユーザーに確認 |
 
-コマンド発見: README.md → package.json → ユーザーに確認
-
-コマンド: [@../rules/workflows/WORKFLOW_GUIDE.md](../rules/workflows/WORKFLOW_GUIDE.md)
-ドキュメント: [@../rules/conventions/DOCUMENTATION.md](../rules/conventions/DOCUMENTATION.md)
+参照: [@../rules/workflows/WORKFLOW_GUIDE.md](../rules/workflows/WORKFLOW_GUIDE.md), [@../rules/conventions/DOCUMENTATION.md](../rules/conventions/DOCUMENTATION.md)

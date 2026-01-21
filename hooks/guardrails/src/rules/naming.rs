@@ -1,4 +1,4 @@
-use super::{find_line_number, Rule, Severity, Violation, RE_JS_FILE};
+use super::{find_non_comment_match, Rule, Severity, Violation, RE_JS_FILE};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -83,11 +83,11 @@ pub fn rule() -> Rule {
                     }
                 }
                 if let Some(ac) = issue.additional_check {
-                    if !ac.is_match(content) {
+                    if find_non_comment_match(content, ac).is_none() {
                         continue;
                     }
                 }
-                if issue.pattern.is_match(content) {
+                if let Some(line_num) = find_non_comment_match(content, issue.pattern) {
                     violations.push(Violation {
                         rule: "naming-convention".to_string(),
                         severity: issue.severity,
@@ -95,7 +95,7 @@ pub fn rule() -> Rule {
                         why: issue.why.to_string(),
                         failure: issue.failure.to_string(),
                         file: file_path.to_string(),
-                        line: find_line_number(content, issue.pattern),
+                        line: Some(line_num),
                     });
                 }
             }

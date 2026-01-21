@@ -57,3 +57,33 @@ pub fn format_violations(violations: &[&Violation], use_emoji: bool) -> String {
 
     lines.join("\n")
 }
+
+pub fn format_warnings(violations: &[&Violation], use_emoji: bool) -> String {
+    if violations.is_empty() {
+        return String::new();
+    }
+
+    let line = "─".repeat(50);
+    let header = if use_emoji {
+        "💡 GUARDRAILS WARNING"
+    } else {
+        "GUARDRAILS WARNING"
+    };
+
+    let mut lines = vec![String::new(), line.clone(), header.to_string(), line.clone()];
+
+    for v in violations {
+        let icon = severity_icon(v.severity, use_emoji);
+        lines.push(format!("{} {}", icon, v.what));
+        let file_line = match v.line {
+            Some(l) => format!("{}:{}", v.file, l),
+            None => v.file.clone(),
+        };
+        lines.push(format!("   {}", file_line));
+    }
+
+    lines.push(line);
+    lines.push(String::new());
+
+    lines.join("\n")
+}

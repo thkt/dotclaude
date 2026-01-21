@@ -27,6 +27,10 @@ pub struct RulesConfig {
     pub naming: bool,
     #[serde(default = "default_true")]
     pub transaction: bool,
+    #[serde(rename = "consoleLog", default = "default_true")]
+    pub console_log: bool,
+    #[serde(default = "default_true")]
+    pub security: bool,
 }
 
 impl Default for RulesConfig {
@@ -37,6 +41,8 @@ impl Default for RulesConfig {
             error_handling: true,
             naming: true,
             transaction: true,
+            console_log: true,
+            security: true,
         }
     }
 }

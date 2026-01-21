@@ -1,4 +1,4 @@
-use super::{find_line_number, Rule, Severity, Violation, RE_JS_FILE};
+use super::{find_non_comment_match, Rule, Severity, Violation, RE_JS_FILE};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -56,7 +56,7 @@ pub fn rule() -> Rule {
                 if !v.from_pattern.is_match(file_path) {
                     continue;
                 }
-                if v.importing.is_match(content) {
+                if let Some(line_num) = find_non_comment_match(content, v.importing) {
                     result.push(Violation {
                         rule: "architecture".to_string(),
                         severity: Severity::High,
@@ -64,7 +64,7 @@ pub fn rule() -> Rule {
                         why: v.why.to_string(),
                         failure: v.failure.to_string(),
                         file: file_path.to_string(),
-                        line: find_line_number(content, v.importing),
+                        line: Some(line_num),
                     });
                 }
             }

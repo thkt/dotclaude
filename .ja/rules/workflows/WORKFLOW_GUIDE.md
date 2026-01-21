@@ -95,12 +95,11 @@ flowchart LR
 
 [@./IDR_GENERATION.md](./IDR_GENERATION.md) を参照
 
-| レイヤー    | トリガー       | 記録内容           | 自動 |
-| ----------- | -------------- | ------------------ | ---- |
-| session-end | セッション終了 | 実装内容、設計決定 | Yes  |
-| pre-commit  | git commit     | 確認ゲートのみ     | Yes  |
+| トリガー   | 出力        | 内容               |
+| ---------- | ----------- | ------------------ |
+| git commit | `.idr-N.md` | コード例、設計決定 |
 
-場所: `$HOME/.claude/workspace/planning/[feature]/idr.md` または `planning/YYYY-MM-DD/idr.md`
+場所: `$HOME/.claude/workspace/planning/[feature]/.idr-N.md` または `planning/YYYY-MM-DD/.idr-N.md`
 
 ## アーキテクチャ
 

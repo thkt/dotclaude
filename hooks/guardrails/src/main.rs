@@ -3,7 +3,7 @@ mod reporter;
 mod rules;
 
 use config::Config;
-use reporter::format_violations;
+use reporter::{format_violations, format_warnings};
 use rules::Violation;
 use std::io::{self, Read};
 
@@ -99,6 +99,15 @@ fn main() {
         .iter()
         .filter(|v| config.severity.block_on.contains(&v.severity))
         .collect();
+
+    let warnings: Vec<&Violation> = violations
+        .iter()
+        .filter(|v| !config.severity.block_on.contains(&v.severity))
+        .collect();
+
+    if !warnings.is_empty() {
+        eprintln!("{}", format_warnings(&warnings, config.emoji));
+    }
 
     if !blocking.is_empty() {
         eprintln!("{}", format_violations(&blocking, config.emoji));

@@ -1,4 +1,4 @@
-use super::{find_line_number, Rule, Severity, Violation, RE_JS_FILE};
+use super::{count_non_comment_matches, find_non_comment_match, Rule, Severity, Violation, RE_JS_FILE};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -12,9 +12,10 @@ static RE_WRITE_OPS: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"\.(save|create|update|delete|insert|persist)\s*\(").unwrap());
 
 // TXRULE-003/006: ORM patterns (Prisma, TypeORM, Knex, Sequelize, Drizzle)
+// TXRULE-007/009: Added \b word boundaries to prevent partial matches (e.g., unitOfWorkId)
 static RE_TX_BOUNDARY: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
-        r"(?i)(@Transactional|transaction|\$transaction|unitOfWork|runInTransaction|withTransaction|beginTransaction|QueryRunner|getManager|knex\.transaction|sequelize\.transaction|db\.transaction)",
+        r"(?i)(@Transactional|\btransaction\b|\$transaction|\bunitOfWork\b|\brunInTransaction\b|\bwithTransaction\b|\bbeginTransaction\b|\bQueryRunner\b|\bgetManager\b|knex\.transaction|sequelize\.transaction|db\.transaction)",
     )
     .unwrap()
 });
@@ -27,12 +28,13 @@ pub fn rule() -> Rule {
                 return Vec::new();
             }
 
-            let write_count = RE_WRITE_OPS.find_iter(content).count();
+            let write_count = count_non_comment_matches(content, &RE_WRITE_OPS);
             if write_count < 2 {
                 return Vec::new();
             }
 
-            if RE_TX_BOUNDARY.is_match(content) {
+            // TXRULE-008: Filter comments to avoid false negatives from TODO comments
+            if find_non_comment_match(content, &RE_TX_BOUNDARY).is_some() {
                 return Vec::new();
             }
 
@@ -46,7 +48,7 @@ pub fn rule() -> Rule {
                 why: "複数の書き込み操作が独立して実行されると、途中で失敗した場合にデータ不整合が発生する可能性がある".to_string(),
                 failure: "UnitOfWork パターン、@Transactional、または明示的なトランザクション制御を追加".to_string(),
                 file: file_path.to_string(),
-                line: find_line_number(content, &RE_WRITE_OPS),
+                line: find_non_comment_match(content, &RE_WRITE_OPS),
             }]
         }),
     }
@@ -174,5 +176,45 @@ mod tests {
         "#;
         let violations = check(content, "/src/services/handler.ts");
         assert!(violations.is_empty());
+    }
+
+    // TXRULE-007: Word boundary tests
+    #[test]
+    fn detects_when_transaction_keyword_only_in_variable_name() {
+        let content = r#"
+            async function handle(transactionId: string) {
+                await user.save();
+                await order.create();
+            }
+        "#;
+        let violations = check(content, "/src/usecases/handler.ts");
+        assert_eq!(violations.len(), 1);
+    }
+
+    // TXRULE-008: Comment filtering tests
+    #[test]
+    fn detects_when_transaction_keyword_only_in_comment() {
+        let content = r#"
+            // TODO: wrap in unitOfWork later
+            async function handle() {
+                await user.save();
+                await order.create();
+            }
+        "#;
+        let violations = check(content, "/src/usecases/handler.ts");
+        assert_eq!(violations.len(), 1);
+    }
+
+    // TXRULE-009: Word boundary for other patterns
+    #[test]
+    fn detects_when_unitofwork_only_in_variable_name() {
+        let content = r#"
+            async function handle(unitOfWorkId: string) {
+                await user.save();
+                await order.create();
+            }
+        "#;
+        let violations = check(content, "/src/usecases/handler.ts");
+        assert_eq!(violations.len(), 1);
     }
 }

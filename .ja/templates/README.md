@@ -14,19 +14,19 @@ flowchart LR
         T -.-> S["SOW + Spec"]
     end
     subgraph Hooks
-        SE[session-end] -.-> IDR[idr.md]
+        PC[pre-commit] -.-> IDR[.idr-N.md]
     end
 ```
 
-| フェーズ       | コマンド  | 出力            | テンプレート         |
-| -------------- | --------- | --------------- | -------------------- |
-| 調査           | /research | findings        | research/template.md |
-| 計画           | /think    | sow.md, spec.md | sow/, spec/          |
-| 実装           | /code     | -               | -                    |
-| レビュー       | /audit    | -               | -                    |
-| 整理           | /polish   | -               | -                    |
-| 検証           | /validate | -               | -                    |
-| セッション終了 | (hook)    | idr.md          | idr/template.md      |
+| フェーズ | コマンド  | 出力            | テンプレート         |
+| -------- | --------- | --------------- | -------------------- |
+| 調査     | /research | findings        | research/template.md |
+| 計画     | /think    | sow.md, spec.md | sow/, spec/          |
+| 実装     | /code     | -               | -                    |
+| レビュー | /audit    | -               | -                    |
+| 整理     | /polish   | -               | -                    |
+| 検証     | /validate | -               | -                    |
+| コミット | (hook)    | .idr-N.md       | -                    |
 
 ## ディレクトリ構造
 

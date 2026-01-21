@@ -1,4 +1,4 @@
-use super::{find_line_number, Rule, Severity, Violation, RE_TS_FILE};
+use super::{find_non_comment_match, Rule, Severity, Violation, RE_TS_FILE};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -54,16 +54,15 @@ pub fn rule() -> Rule {
             let mut violations = Vec::new();
 
             for issue in TYPE_ISSUES.iter() {
-                let count = issue.pattern.find_iter(content).count();
-                if count > 0 {
+                if let Some(line_num) = find_non_comment_match(content, issue.pattern) {
                     violations.push(Violation {
                         rule: "type-safety".to_string(),
                         severity: issue.severity,
-                        what: format!("{} ({} 件)", issue.what, count),
+                        what: issue.what.to_string(),
                         why: issue.why.to_string(),
                         failure: issue.failure.to_string(),
                         file: file_path.to_string(),
-                        line: find_line_number(content, issue.pattern),
+                        line: Some(line_num),
                     });
                 }
             }

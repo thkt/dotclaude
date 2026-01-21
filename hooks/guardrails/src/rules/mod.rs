@@ -1,6 +1,8 @@
 mod architecture;
+mod console_log;
 mod error_handling;
 mod naming;
+mod security;
 mod transaction;
 mod type_safety;
 
@@ -12,13 +14,29 @@ use serde::Deserialize;
 pub static RE_JS_FILE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\.(tsx?|jsx?)$").unwrap());
 pub static RE_TS_FILE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\.tsx?$").unwrap());
 
-pub fn find_line_number(content: &str, pattern: &Regex) -> Option<u32> {
+pub fn is_comment_line(line: &str) -> bool {
+    let trimmed = line.trim_start();
+    trimmed.starts_with("//") || trimmed.starts_with("/*") || trimmed.starts_with("*")
+}
+
+pub fn find_non_comment_match(content: &str, pattern: &Regex) -> Option<u32> {
     for (line_num, line) in content.lines().enumerate() {
+        if is_comment_line(line) {
+            continue;
+        }
         if pattern.is_match(line) {
             return Some((line_num + 1) as u32);
         }
     }
     None
+}
+
+pub fn count_non_comment_matches(content: &str, pattern: &Regex) -> usize {
+    content
+        .lines()
+        .filter(|line| !is_comment_line(line))
+        .filter(|line| pattern.is_match(line))
+        .count()
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
@@ -81,6 +99,12 @@ pub fn load_rules(config: &Config) -> Vec<Rule> {
     }
     if config.rules.transaction {
         rules.push(transaction::rule());
+    }
+    if config.rules.console_log {
+        rules.push(console_log::rule());
+    }
+    if config.rules.security {
+        rules.push(security::rule());
     }
 
     rules
