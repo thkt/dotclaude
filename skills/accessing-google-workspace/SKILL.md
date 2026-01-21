@@ -7,6 +7,7 @@ description: >
 allowed-tools:
   - Bash
   - Read
+user-invocable: false
 ---
 
 # Accessing Google Workspace

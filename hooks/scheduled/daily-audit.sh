@@ -1,42 +1,23 @@
 #!/bin/bash
-# daily-audit.sh - Daily automated audit script
-# Usage: Add "0 9 * * * ~/.claude/hooks/scheduled/daily-audit.sh" to crontab -e
-
+# Usage: crontab -e → "0 9 * * * ~/.claude/hooks/scheduled/daily-audit.sh"
 set -euo pipefail
 
-# Check required dependencies
-command -v jq >/dev/null 2>&1 || { echo "Error: jq is required but not installed. Install with: brew install jq" >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { echo "Error: jq required. Install: brew install jq" >&2; exit 1; }
 
-# Configuration
 CLAUDE_CMD="${CLAUDE_CMD:-$(command -v claude 2>/dev/null || echo '/opt/homebrew/bin/claude')}"
 PROJECT_DIR="$HOME/.claude"
 OUTPUT_DIR="$PROJECT_DIR/workspace/audit"
 DATE=$(date +%Y-%m-%d)
 OUTPUT_FILE="$OUTPUT_DIR/$DATE.md"
-
-# Persistent audit state (Claude 4 BP - State Management)
 STATE_FILE="$OUTPUT_DIR/.audit-state.json"
 HISTORY_FILE="$OUTPUT_DIR/.audit-history.json"
 
-# Log function
-log() {
-  echo "[$(date '+%H:%M:%S')] $1"
-}
+log() { echo "[$(date '+%H:%M:%S')] $1"; }
 
-# Ensure output directory exists
 mkdir -p "$OUTPUT_DIR"
-
-log "Starting daily audit for $PROJECT_DIR"
-
-
-# Execute audit with Claude CLI
+log "Starting audit for $PROJECT_DIR"
 cd "$PROJECT_DIR"
 
-# Claude 4 Best Practices + Skills Best Practices
-# Ref: https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-4-best-practices
-# Ref: https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
-
-# Prompt (English for better Claude 4 accuracy)
 PROMPT='<context>
 This repository contains Claude Code (CLI) personal configuration.
 It manages 22 skills, 14 reviewer agents, and 25 commands.
@@ -107,81 +88,45 @@ Output the following JSON at the end (for history tracking):
 - Be specific: Always include file path and line number for issues
 - Be concise: If no issues, just report "✅ All checks passed"
 - No over-suggesting: Only propose truly valuable improvements
-</constraints>
+</constraints>'
 
-<feedback_loop>
-Before reporting any issue:
-1. Re-read the problematic file to confirm (avoid false positives)
-2. Check related files (dependencies, imports, etc.)
-3. Only report if confidence >= 80%
-4. If confidence < 80%, list separately as "Needs Confirmation"
-</feedback_loop>'
 
-# Execute and save output
 {
   echo "# Daily Audit Report - $DATE"
-  echo ""
-  echo "## Target: $PROJECT_DIR"
-  echo ""
-  echo "---"
-  echo ""
+  echo -e "\n## Target: $PROJECT_DIR\n---\n"
 
-  # Claude CLI execution (--print for non-interactive mode, with tool permissions)
-  # --dangerously-skip-permissions: Allow tool execution in non-interactive mode
-  # --tools: Explicitly enable required tools for audit tasks
-  # --mcp-config + --strict-mcp-config: Disable MCP servers (not needed for audit)
-  if "$CLAUDE_CMD" --print --dangerously-skip-permissions --tools "Read,Grep,Glob,LS" --mcp-config '{"mcpServers":{}}' --strict-mcp-config --output-format text "$PROMPT" 2>&1; then
-    log "Audit completed successfully"
+  if "$CLAUDE_CMD" --print --dangerously-skip-permissions \
+    --tools "Read,Grep,Glob,LS" \
+    --mcp-config '{"mcpServers":{}}' --strict-mcp-config \
+    --output-format text "$PROMPT" 2>&1; then
+    log "Audit completed"
   else
-    echo "⚠️ Audit failed with exit code $?"
+    echo "Audit failed with exit code $?"
     log "Audit failed"
   fi
 } > "$OUTPUT_FILE"
 
 log "Report saved to $OUTPUT_FILE"
 
-# Extract JSON state from report and save (Claude 4 BP - State Management)
 extract_json_state() {
   local json_block
-
-  # Extract last JSON block (reverse search for robustness)
-  # Note: macOS uses 'tail -r' instead of 'tac'
+  # macOS: tail -r (not tac)
   json_block=$(tail -r "$OUTPUT_FILE" | sed -n '/^```$/,/^```json$/p' | tail -r | sed '1d;$d')
 
-  if [ -z "$json_block" ]; then
-    log "Warning: No JSON state found in report"
-    return
-  fi
+  [ -z "$json_block" ] && { log "No JSON state found"; return; }
+  echo "$json_block" | jq . >/dev/null 2>&1 || { log "Invalid JSON"; return; }
 
-  # Validate JSON before saving
-  if ! echo "$json_block" | jq . >/dev/null 2>&1; then
-    log "Warning: Invalid JSON state, skipping save"
-    return
-  fi
-
-  # Save current state
   echo "$json_block" > "$STATE_FILE"
-  log "State saved to $STATE_FILE"
 
-  # Append to history (keep last 30 entries)
   if [ -f "$HISTORY_FILE" ]; then
-    if jq --argjson new "$json_block" '. + [$new] | .[-30:]' "$HISTORY_FILE" > "${HISTORY_FILE}.tmp" 2>&1; then
-      mv "${HISTORY_FILE}.tmp" "$HISTORY_FILE"
-    else
-      log "Warning: Failed to update history, reinitializing"
-      echo "[$json_block]" > "$HISTORY_FILE"
-    fi
+    jq --argjson new "$json_block" '. + [$new] | .[-30:]' "$HISTORY_FILE" > "${HISTORY_FILE}.tmp" 2>&1 \
+      && mv "${HISTORY_FILE}.tmp" "$HISTORY_FILE" \
+      || echo "[$json_block]" > "$HISTORY_FILE"
   else
     echo "[$json_block]" > "$HISTORY_FILE"
   fi
-  log "History updated in $HISTORY_FILE"
 }
 
 extract_json_state
 
-# Keep only last 7 days of reports (optional - move to Trash)
-# find "$OUTPUT_DIR" -name "*.md" -mtime +7 -exec mv {} ~/.Trash/ \;
-
-echo "Done. See: $OUTPUT_FILE"
-echo "State: $STATE_FILE"
-echo "History: $HISTORY_FILE"
+echo "Done: $OUTPUT_FILE"
