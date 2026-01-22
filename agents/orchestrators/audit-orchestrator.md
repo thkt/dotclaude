@@ -8,9 +8,11 @@ context: fork
 
 # Review Orchestrator
 
-Coordinate specialized review agents for comprehensive code reviews.
-
-**Agent Count**: 13 local + 4 external (pr-review-toolkit) = 17 total
+| Metric          | Value                 |
+| --------------- | --------------------- |
+| Local agents    | 14                    |
+| External agents | 4 (pr-review-toolkit) |
+| Total           | 18                    |
 
 ## Agent Groups
 
@@ -23,7 +25,19 @@ Coordinate specialized review agents for comprehensive code reviews.
 | Production  | security, performance, accessibility                        | 65s     | parallel    |
 | Design      | type-design-analyzer, code-simplifier (pr-review-toolkit)   | 60s     | parallel    |
 | Conditional | document (only if \*.md present)                            | 45s     | conditional |
+| Validation  | devils-advocate (challenges all findings)                   | 90s     | sequential  |
 | Integration | audit-integrator (final)                                    | 120s    | sequential  |
+
+## Debate Pattern Flow
+
+```mermaid
+flowchart LR
+    R[16 Reviewers] --> D[Devils Advocate]
+    D --> I[Integrator]
+    R -.->|findings| D
+    D -.->|challenge/verify| I
+    I -.->|confirmed only| O[Final Report]
+```
 
 ## Agent Locations
 
@@ -31,24 +45,30 @@ Coordinate specialized review agents for comprehensive code reviews.
 | ----------------------------- | ---------------------------------------------------------- |
 | `agents/reviewers/`           | structure, readability, type-safety, design-pattern, etc.  |
 | `agents/enhancers/`           | progressive-enhancer                                       |
+| `agents/critics/`             | devils-advocate                                            |
 | `agents/integrators/`         | audit-integrator                                           |
 | External: `pr-review-toolkit` | silent-failure-hunter, comment-analyzer, type-design, etc. |
 
-**Note**: pr-review-toolkit agents are called via `subagent_type: "pr-review-toolkit:agent-name"`.
+pr-review-toolkit agents: call via `subagent_type: "pr-review-toolkit:<agent-name>"`
 
-Integration logic (translation false-positive filtering, dedup by file:line:category, priority scoring) handled by audit-integrator.
+## Validation Phase
+
+| Verdict         | Action             |
+| --------------- | ------------------ |
+| `confirmed`     | Pass to integrator |
+| `disputed`      | Remove (FP)        |
+| `downgraded`    | Adjust severity    |
+| `needs_context` | Flag for review    |
 
 ## Error Handling
 
-| Error                     | Action                                   |
-| ------------------------- | ---------------------------------------- |
-| Agent timeout             | Continue with completed                  |
-| No files                  | Report "No files to audit"               |
-| pr-review-toolkit unavail | Skip Enhanced/Design groups, log warning |
-| External agent error      | Continue with local agents only          |
-
-Fallback: pr-review-toolkit unavailable → skip Enhanced/Design groups, audit with 13 local agents.
-Log: `⚠️ pr-review-toolkit not available, using local agents only (13/17)`
+| Condition                 | Action                                           |
+| ------------------------- | ------------------------------------------------ |
+| Agent timeout             | Continue with completed agents                   |
+| No files                  | Return "No files to audit"                       |
+| pr-review-toolkit unavail | Skip Enhanced/Design, continue with 14 local     |
+| External agent error      | Continue with local agents only                  |
+| Devils Advocate unavail   | Skip validation, pass all findings to integrator |
 
 ## Output
 

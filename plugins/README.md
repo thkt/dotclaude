@@ -4,16 +4,15 @@ Installation guide for external plugins integrated into the workflow.
 
 ## Installed Plugins
 
-| Plugin                 | Marketplace             | Purpose                          |
-| ---------------------- | ----------------------- | -------------------------------- |
-| feature-dev            | claude-plugins-official | Feature development guide        |
-| pr-review-toolkit      | claude-plugins-official | PR review assistance             |
-| ralph-loop             | claude-plugins-official | Iterative execution loop         |
-| hookify                | claude-plugins-official | Hook creation assistance         |
-| code-simplifier        | claude-plugins-official | Code simplification              |
-| security-guidance      | claude-plugins-official | Security guidance                |
-| example-skills         | anthropic-agent-skills  | Example skills (PDF, PPTX, etc.) |
-| a11y-specialist-skills | a11y-specialist-skills  | Accessibility review             |
+| Plugin                 | Marketplace             | Purpose                   |
+| ---------------------- | ----------------------- | ------------------------- |
+| feature-dev            | claude-plugins-official | Feature development guide |
+| pr-review-toolkit      | claude-plugins-official | PR review assistance      |
+| ralph-loop             | claude-plugins-official | Iterative execution loop  |
+| hookify                | claude-plugins-official | Hook creation assistance  |
+| code-simplifier        | claude-plugins-official | Code simplification       |
+| security-guidance      | claude-plugins-official | Security guidance         |
+| a11y-specialist-skills | a11y-specialist-skills  | Accessibility review      |
 
 ## Installation
 
@@ -32,17 +31,7 @@ claude plugins install code-simplifier
 claude plugins install security-guidance
 ```
 
-### 2. Anthropic Example Skills
-
-```bash
-# Add marketplace
-claude plugins marketplace add https://raw.githubusercontent.com/anthropics/anthropic-agent-skills/refs/heads/main/marketplace.json
-
-# Install
-claude plugins install example-skills
-```
-
-### 3. Accessibility Skills
+### 2. Accessibility Skills
 
 ```bash
 # Add marketplace
@@ -60,7 +49,6 @@ claude plugins install a11y-specialist-skills
 
 # Add marketplaces
 claude plugins marketplace add https://raw.githubusercontent.com/anthropics/claude-code-plugins/refs/heads/main/marketplace.json
-claude plugins marketplace add https://raw.githubusercontent.com/anthropics/anthropic-agent-skills/refs/heads/main/marketplace.json
 claude plugins marketplace add https://raw.githubusercontent.com/anthropics/a11y-specialist-skills/refs/heads/main/marketplace.json
 
 # Install plugins
@@ -70,7 +58,6 @@ claude plugins install ralph-loop
 claude plugins install hookify
 claude plugins install code-simplifier
 claude plugins install security-guidance
-claude plugins install example-skills
 claude plugins install a11y-specialist-skills
 ```
 
@@ -85,10 +72,6 @@ claude plugins install a11y-specialist-skills
 | `/hookify`      | hookify           | Generate hooks from chat  |
 | `/hookify list` | hookify           | List rules                |
 | `/polish`       | code-simplifier   | Code simplification       |
-| `/pdf`          | example-skills    | PDF operations            |
-| `/pptx`         | example-skills    | PowerPoint operations     |
-| `/xlsx`         | example-skills    | Excel operations          |
-| `/docx`         | example-skills    | Word operations           |
 | `/a11y-review`  | a11y-specialist   | Accessibility review      |
 
 ## Plugin Management

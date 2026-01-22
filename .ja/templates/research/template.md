@@ -1,44 +1,61 @@
-# Research: [Topic Name]
+# Research: [トピック名]
 
 Generated: [YYYY-MM-DD]
+Intent: [機能計画 | バグ調査 | 理解]
 
-## Purpose
+## 目的
 
-[Goal of this research - 1-2 sentences]
+[この調査のゴール - 1-2文]
 
-## Prerequisites
+## 前提条件
 
-| Marker | Item            | Evidence/Basis                |
-| ------ | --------------- | ----------------------------- |
-| [✓]    | [Verified fact] | [file:line]                   |
-| [→]    | [Assumption]    | [reasoning]                   |
-| [?]    | [Unknown]       | [needs: investigation method] |
+| マーカー | 項目       | 根拠/証拠          |
+| -------- | ---------- | ------------------ |
+| [✓]      | [検証済み] | [file:line]        |
+| [→]      | [推測]     | [理由]             |
+| [?]      | [未知]     | [要調査: 調査方法] |
 
-## Available Data
+## アーキテクチャ概要 (optional)
 
-| Type | Item        | Note        |
-| ---- | ----------- | ----------- |
-| File | [path]      | [relevance] |
-| Tech | [name vX.X] | [purpose]   |
-| Code | [component] | [findings]  |
+[architecture-analyzer から]
 
-## Constraints
+## 実行フロー (optional)
 
-| Category      | Constraint              |
-| ------------- | ----------------------- |
-| Security      | [requirement or "None"] |
-| Performance   | [limitation or "None"]  |
-| Compatibility | [constraint or "None"]  |
+[code-flow-analyzer から]
 
-## Key Findings
+## 利用可能なデータ
 
-| Priority | Finding           | Next Action |
-| -------- | ----------------- | ----------- |
-| 1        | [Most important]  | [action]    |
-| 2        | [Second priority] | [action]    |
+| 種類 | 項目        | 備考     |
+| ---- | ----------- | -------- |
+| File | [path]      | [関連性] |
+| Tech | [name vX.X] | [用途]   |
+| Code | [component] | [発見]   |
 
-## References
+## 制約
 
-| Path       | Description        |
-| ---------- | ------------------ |
-| [file/URL] | [what it contains] |
+| カテゴリ      | 制約                 |
+| ------------- | -------------------- |
+| Security      | [要件 または "None"] |
+| Performance   | [制限 または "None"] |
+| Compatibility | [制約 または "None"] |
+
+## 主な発見
+
+| 優先度 | 発見          | 次のアクション |
+| ------ | ------------- | -------------- |
+| 1      | [最重要]      | [アクション]   |
+| 2      | [2番目に重要] | [アクション]   |
+
+## 参照
+
+| パス       | 説明   |
+| ---------- | ------ |
+| [file/URL] | [内容] |
+
+## 次のステップ
+
+| 意図     | 次のコマンド |
+| -------- | ------------ |
+| 機能計画 | `/think`     |
+| バグ調査 | `/fix`       |
+| 理解のみ | 完了         |

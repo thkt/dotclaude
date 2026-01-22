@@ -48,6 +48,22 @@ When unable to verify:
 2. Offer to search/investigate
 3. Do not proceed if verification is critical
 
+### Debug Investigation Protocol
+
+When investigating bugs or errors, apply additional constraints:
+
+| Phase        | Output Format   | Requirement                               |
+| ------------ | --------------- | ----------------------------------------- |
+| Observation  | `Observation:`  | Actual log/error with `[source]` citation |
+| Hypothesis   | `Hypothesis:`   | Must include `[unverified]` label         |
+| Verification | `Verification:` | Execute command + show actual result      |
+| Conclusion   | `Conclusion:`   | Only verified facts with evidence         |
+
+| Constraint               | Action                                             |
+| ------------------------ | -------------------------------------------------- |
+| Hypothesis as conclusion | Append `Verification:` with command + result first |
+| Speculation ("probably") | Follow with verification command before concluding |
+
 ## Rule Priority
 
 | Condition             | Rule                                  |

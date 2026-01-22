@@ -175,7 +175,6 @@ Some commands depend on external plugins that are not included in this repositor
 
 | Plugin              | Purpose                                             |
 | ------------------- | --------------------------------------------------- |
-| `example-skills`    | PDF, XLSX, PPTX handling, frontend design           |
 | `security-guidance` | Security best practices and vulnerability detection |
 
 **Note**: Plugins are stored in `~/.claude/plugins/` which is excluded from git. Each user must install plugins independently.

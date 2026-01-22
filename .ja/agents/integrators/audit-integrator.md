@@ -9,19 +9,28 @@ context: fork
 
 # 監査統合エージェント
 
-レビューエージェントからの発見事項を戦略的インサイトに統合。
-
 ## 統合プロセス
 
 | フェーズ  | アクション                               |
 | --------- | ---------------------------------------- |
 | 1. 収集   | 全エージェントから発見事項を収集         |
-| 2. 除外   | 翻訳の偽陽性を除外（TRANSLATION.md参照） |
-| 3. 検出   | システミックパターンを検出               |
-| 4. 分析   | 5 Whysで根本原因を特定                   |
-| 5. 優先度 | インパクト×範囲×容易性でスコア           |
-| 6. 計画   | アクションプランを生成                   |
-| 7. 提案   | 自動修正可能な改善提案を生成             |
+| 2. 検証   | Devils Advocateの判定を適用（下記参照）  |
+| 3. 除外   | 翻訳の偽陽性を除外（TRANSLATION.md参照） |
+| 4. 検出   | システミックパターンを検出               |
+| 5. 分析   | 5 Whysで根本原因を特定                   |
+| 6. 優先度 | インパクト×範囲×容易性でスコア           |
+| 7. 計画   | アクションプランを生成                   |
+| 8. 提案   | 自動修正可能な改善提案を生成             |
+
+## 検証フェーズ（フェーズ2）
+
+| 判定            | アクション                             |
+| --------------- | -------------------------------------- |
+| `confirmed`     | 発見事項を保持、次フェーズへ           |
+| `disputed`      | 発見事項を除外（偽陽性）               |
+| `downgraded`    | 重大度を`adjusted_severity`に調整      |
+| `needs_context` | 発見事項を保持、人間レビュー用にフラグ |
+| N/A (不可)      | 検証スキップ、全発見事項を処理         |
 
 ## 発見事項の所有権
 
@@ -34,7 +43,16 @@ context: fork
 
 ## 発見事項構造
 
-各エージェントがYAML出力: agent, severity, category, location, evidence, reasoning, fix, confidence
+| フィールド | 型     | 説明                     |
+| ---------- | ------ | ------------------------ |
+| agent      | string | ソースエージェント名     |
+| severity   | enum   | critical/high/medium/low |
+| category   | string | 問題カテゴリ             |
+| location   | object | file, line               |
+| evidence   | string | コードスニペット         |
+| reasoning  | string | 問題である理由           |
+| fix        | string | 修正案                   |
+| confidence | float  | 0.00-1.00                |
 
 ## 信頼度フィルタリング
 
@@ -44,7 +62,7 @@ context: fork
 | →        | 70-94% | 注記付きで含める |
 | ?        | <70%   | 除外             |
 
-- `file:line:category` で重複排除、最高重大度を保持
+重複排除: `file:line:category` で判定、最高重大度を保持
 
 ## パターン検出
 
@@ -82,8 +100,6 @@ context: fork
 
 ## 自動修正可能検出（フェーズ7）
 
-自動的に修正可能な発見事項を識別。
-
 ### 修正タイプ
 
 | タイプ   | 説明                     | 信頼度 | 例                         |
@@ -108,8 +124,6 @@ context: fork
 
 ### 提案生成
 
-トリガー: 信頼度 ≥85% AND 上記テーブルにパターン一致
-
 | Step | 入力                   | 出力               | ロジック                            |
 | ---- | ---------------------- | ------------------ | ----------------------------------- |
 | 1    | finding.category       | パターン一致       | 自動修正可能テーブルを検索          |
@@ -117,7 +131,12 @@ context: fork
 | 3    | pattern.fix_template   | `after`スニペット  | テンプレートをbeforeに適用          |
 | 4    | finding.files_affected | 工数見積もり       | 1ファイル=5min, 2-3=15min, 4+=30min |
 
-スキップ条件: 信頼度 <85% OR パターン不一致 OR fix_type=manual
+| 条件            | アクション |
+| --------------- | ---------- |
+| 信頼度 ≥85%     | 生成       |
+| 信頼度 <85%     | スキップ   |
+| パターン不一致  | スキップ   |
+| fix_type=manual | スキップ   |
 
 ## エラーハンドリング
 
@@ -127,8 +146,6 @@ context: fork
 | 全て低信頼度 | "高信頼度なし"を報告      |
 
 ## 出力
-
-構造化YAMLを返す:
 
 ```yaml
 summary:
@@ -141,6 +158,13 @@ summary:
   agents_count: <count>
   patterns_count: <count>
   root_causes_count: <count>
+  validation:
+    challenged: <count>
+    confirmed: <count>
+    disputed: <count>
+    downgraded: <count>
+    needs_context: <count>
+    false_positive_rate: "<percentage>"
 patterns:
   - name: "<pattern name>"
     type: systemic

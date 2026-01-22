@@ -8,9 +8,11 @@ context: fork
 
 # レビューオーケストレーター
 
-包括的なコードレビューのための専門レビューエージェントを調整。
-
-**エージェント数**: ローカル13 + 外部4 (pr-review-toolkit) = 合計17
+| 指標                 | 値                    |
+| -------------------- | --------------------- |
+| ローカルエージェント | 14                    |
+| 外部エージェント     | 4 (pr-review-toolkit) |
+| 合計                 | 18                    |
 
 ## エージェントグループ
 
@@ -23,7 +25,19 @@ context: fork
 | Production  | security, performance, accessibility                        | 65s          | parallel    |
 | Design      | type-design-analyzer, code-simplifier (pr-review-toolkit)   | 60s          | parallel    |
 | Conditional | document (\*.md がある場合のみ)                             | 45s          | conditional |
+| Validation  | devils-advocate (全発見事項を検証)                          | 90s          | sequential  |
 | Integration | audit-integrator (最終)                                     | 120s         | sequential  |
+
+## Debate パターンフロー
+
+```mermaid
+flowchart LR
+    R[16 Reviewers] --> D[Devils Advocate]
+    D --> I[Integrator]
+    R -.->|発見事項| D
+    D -.->|検証/反論| I
+    I -.->|確認済みのみ| O[最終レポート]
+```
 
 ## エージェント配置
 
@@ -31,24 +45,30 @@ context: fork
 | ------------------------- | ---------------------------------------------------------- |
 | `agents/reviewers/`       | structure, readability, type-safety, design-pattern, etc.  |
 | `agents/enhancers/`       | progressive-enhancer                                       |
+| `agents/critics/`         | devils-advocate                                            |
 | `agents/integrators/`     | audit-integrator                                           |
 | 外部: `pr-review-toolkit` | silent-failure-hunter, comment-analyzer, type-design, etc. |
 
-**Note**: pr-review-toolkit エージェントは `subagent_type: "pr-review-toolkit:agent-name"` で呼び出す。
+pr-review-toolkit エージェント: `subagent_type: "pr-review-toolkit:<agent-name>"` で呼び出し
 
-統合ロジック（翻訳偽陽性フィルタリング、file:line:categoryで重複排除、優先度スコアリング）は audit-integrator が担当。
+## 検証フェーズ
+
+| 判定            | アクション         |
+| --------------- | ------------------ |
+| `confirmed`     | integratorに渡す   |
+| `disputed`      | 除外（FP）         |
+| `downgraded`    | 重大度を調整       |
+| `needs_context` | レビュー用にフラグ |
 
 ## エラーハンドリング
 
-| エラー                   | アクション                                |
-| ------------------------ | ----------------------------------------- |
-| エージェントタイムアウト | 完了分で続行                              |
-| ファイルなし             | "監査対象なし"を報告                      |
-| pr-review-toolkit不可    | Enhanced/Designグループスキップ、警告ログ |
-| 外部エージェントエラー   | ローカルエージェントのみで続行            |
-
-Fallback: pr-review-toolkit不可 → Enhanced/Designグループスキップ、13エージェントで監査続行。
-Log: `⚠️ pr-review-toolkit not available, using local agents only (13/17)`
+| 条件                     | アクション                                 |
+| ------------------------ | ------------------------------------------ |
+| エージェントタイムアウト | 完了分で続行                               |
+| ファイルなし             | "監査対象なし"を返す                       |
+| pr-review-toolkit不可    | Enhanced/Designスキップ、14ローカルで続行  |
+| 外部エージェントエラー   | ローカルエージェントのみで続行             |
+| Devils Advocate不可      | 検証スキップ、全発見事項をintegratorに渡す |
 
 ## 出力
 

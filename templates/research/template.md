@@ -1,6 +1,7 @@
 # Research: [Topic Name]
 
 Generated: [YYYY-MM-DD]
+Intent: [Feature planning | Bug investigation | Understanding]
 
 ## Purpose
 
@@ -13,6 +14,14 @@ Generated: [YYYY-MM-DD]
 | [✓]    | [Verified fact] | [file:line]                   |
 | [→]    | [Assumption]    | [reasoning]                   |
 | [?]    | [Unknown]       | [needs: investigation method] |
+
+## Architecture Overview (optional)
+
+[From architecture-analyzer]
+
+## Execution Flow (optional)
+
+[From code-flow-analyzer]
 
 ## Available Data
 
@@ -42,3 +51,11 @@ Generated: [YYYY-MM-DD]
 | Path       | Description        |
 | ---------- | ------------------ |
 | [file/URL] | [what it contains] |
+
+## Next Steps
+
+| Intent             | Next Command |
+| ------------------ | ------------ |
+| Feature planning   | `/think`     |
+| Bug investigation  | `/fix`       |
+| Understanding only | complete     |

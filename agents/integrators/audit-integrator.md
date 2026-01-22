@@ -9,19 +9,28 @@ context: fork
 
 # Audit Integrator
 
-Transform individual findings into systemic patterns and action plans.
-
 ## Integration Process
 
 | Phase         | Action                                                  |
 | ------------- | ------------------------------------------------------- |
 | 1. Collect    | Gather findings from all agents                         |
-| 2. Exclude    | Remove translation false positives (see TRANSLATION.md) |
-| 3. Detect     | Identify systemic patterns                              |
-| 4. Analyze    | 5 Whys for root causes                                  |
-| 5. Prioritize | Score by Impact × Reach × Fixability                    |
-| 6. Plan       | Generate action plans                                   |
-| 7. Suggest    | Generate auto-fixable improvement suggestions           |
+| 2. Validate   | Apply Devils Advocate verdicts (see below)              |
+| 3. Exclude    | Remove translation false positives (see TRANSLATION.md) |
+| 4. Detect     | Identify systemic patterns                              |
+| 5. Analyze    | 5 Whys for root causes                                  |
+| 6. Prioritize | Score by Impact × Reach × Fixability                    |
+| 7. Plan       | Generate action plans                                   |
+| 8. Suggest    | Generate auto-fixable improvement suggestions           |
+
+## Validation Phase (Phase 2)
+
+| Verdict         | Action                                 |
+| --------------- | -------------------------------------- |
+| `confirmed`     | Keep finding, proceed to next phases   |
+| `disputed`      | Remove finding (false positive)        |
+| `downgraded`    | Adjust severity to `adjusted_severity` |
+| `needs_context` | Keep finding, flag for human review    |
+| N/A (unavail)   | Skip validation, process all findings  |
 
 ## Finding Ownership
 
@@ -34,7 +43,16 @@ Transform individual findings into systemic patterns and action plans.
 
 ## Finding Structure
 
-Each agent outputs YAML with: agent, severity, category, location, evidence, reasoning, fix, confidence.
+| Field      | Type   | Description              |
+| ---------- | ------ | ------------------------ |
+| agent      | string | Source agent name        |
+| severity   | enum   | critical/high/medium/low |
+| category   | string | Issue category           |
+| location   | object | file, line               |
+| evidence   | string | Code snippet             |
+| reasoning  | string | Why this is an issue     |
+| fix        | string | Suggested fix            |
+| confidence | float  | 0.00-1.00                |
 
 ## Confidence Filtering
 
@@ -44,7 +62,7 @@ Each agent outputs YAML with: agent, severity, category, location, evidence, rea
 | →      | 70-94%     | Include with note |
 | ?      | <70%       | Exclude           |
 
-- Deduplicate by `file:line:category`, keep highest severity
+Deduplication: by `file:line:category`, keep highest severity
 
 ## Pattern Detection
 
@@ -82,8 +100,6 @@ Score = Impact × Reach × Fixability
 
 ## Auto-Fixable Detection (Phase 7)
 
-Identify findings that can be automatically fixed.
-
 ### Fix Types
 
 | Type     | Description               | Confidence | Example                     |
@@ -108,8 +124,6 @@ Identify findings that can be automatically fixed.
 
 ### Suggestion Generation
 
-Trigger: confidence ≥85% AND pattern match in table above
-
 | Step | Input                  | Output           | Logic                            |
 | ---- | ---------------------- | ---------------- | -------------------------------- |
 | 1    | finding.category       | pattern match    | Lookup in Auto-Fixable table     |
@@ -117,7 +131,12 @@ Trigger: confidence ≥85% AND pattern match in table above
 | 3    | pattern.fix_template   | `after` snippet  | Apply template to before         |
 | 4    | finding.files_affected | effort estimate  | 1 file=5min, 2-3=15min, 4+=30min |
 
-Skip if: confidence <85% OR no pattern match OR fix_type=manual
+| Condition        | Action   |
+| ---------------- | -------- |
+| confidence ≥85%  | Generate |
+| confidence <85%  | Skip     |
+| no pattern match | Skip     |
+| fix_type=manual  | Skip     |
 
 ## Error Handling
 
@@ -127,8 +146,6 @@ Skip if: confidence <85% OR no pattern match OR fix_type=manual
 | All low confidence | Report "No high-confidence items" |
 
 ## Output
-
-Return structured YAML:
 
 ```yaml
 summary:
@@ -141,6 +158,13 @@ summary:
   agents_count: <count>
   patterns_count: <count>
   root_causes_count: <count>
+  validation:
+    challenged: <count>
+    confirmed: <count>
+    disputed: <count>
+    downgraded: <count>
+    needs_context: <count>
+    false_positive_rate: "<percentage>"
 patterns:
   - name: "<pattern name>"
     type: systemic

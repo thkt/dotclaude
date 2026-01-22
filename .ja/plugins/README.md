@@ -12,7 +12,6 @@
 | hookify                | claude-plugins-official | フック作成支援           |
 | code-simplifier        | claude-plugins-official | コード簡素化             |
 | security-guidance      | claude-plugins-official | セキュリティガイダンス   |
-| example-skills         | anthropic-agent-skills  | スキル例（PDF, PPTX等）  |
 | a11y-specialist-skills | a11y-specialist-skills  | アクセシビリティレビュー |
 
 ## インストール方法
@@ -32,17 +31,7 @@ claude plugins install code-simplifier
 claude plugins install security-guidance
 ```
 
-### 2. Anthropicスキル例
-
-```bash
-# マーケットプレース追加
-claude plugins marketplace add https://raw.githubusercontent.com/anthropics/anthropic-agent-skills/refs/heads/main/marketplace.json
-
-# インストール
-claude plugins install example-skills
-```
-
-### 3. アクセシビリティスキル
+### 2. アクセシビリティスキル
 
 ```bash
 # マーケットプレース追加
@@ -60,7 +49,6 @@ claude plugins install a11y-specialist-skills
 
 # マーケットプレース追加
 claude plugins marketplace add https://raw.githubusercontent.com/anthropics/claude-code-plugins/refs/heads/main/marketplace.json
-claude plugins marketplace add https://raw.githubusercontent.com/anthropics/anthropic-agent-skills/refs/heads/main/marketplace.json
 claude plugins marketplace add https://raw.githubusercontent.com/anthropics/a11y-specialist-skills/refs/heads/main/marketplace.json
 
 # プラグインインストール
@@ -70,7 +58,6 @@ claude plugins install ralph-loop
 claude plugins install hookify
 claude plugins install code-simplifier
 claude plugins install security-guidance
-claude plugins install example-skills
 claude plugins install a11y-specialist-skills
 ```
 
@@ -85,10 +72,6 @@ claude plugins install a11y-specialist-skills
 | `/hookify`      | hookify           | 会話からフック生成       |
 | `/hookify list` | hookify           | ルール一覧               |
 | `/polish`       | code-simplifier   | コード簡素化             |
-| `/pdf`          | example-skills    | PDF操作                  |
-| `/pptx`         | example-skills    | PowerPoint操作           |
-| `/xlsx`         | example-skills    | Excel操作                |
-| `/docx`         | example-skills    | Word操作                 |
 | `/a11y-review`  | a11y-specialist   | アクセシビリティレビュー |
 
 ## プラグイン管理
