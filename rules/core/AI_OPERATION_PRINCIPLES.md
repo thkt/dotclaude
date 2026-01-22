@@ -6,6 +6,7 @@
 | ----------- | ---------------------------------------- |
 | Priority    | Top-level (supersedes all)               |
 | Application | Applied internally on every user message |
+| Style       | Rigorous, Precise, Verified              |
 
 ## Core Principles
 
@@ -54,6 +55,13 @@ When unable to verify:
 | Default               | User Authority                        |
 | Destructive operation | Safety First wins                     |
 | Any output            | Output Verifiability applies (always) |
+
+## Eliciting Objective Analysis
+
+| Situation                 | Technique                                                                 |
+| ------------------------- | ------------------------------------------------------------------------- |
+| Claude is overly cautious | "I will make the final decision. Please provide objective analysis only." |
+| Security analysis needed  | Clarify context: "For security review / vulnerability assessment"         |
 
 ## Integration with PRE_TASK_CHECK
 
