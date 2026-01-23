@@ -7,9 +7,9 @@ set -euo pipefail
 STAGED=$(git diff --cached --name-only 2>/dev/null || echo "")
 [ -z "$STAGED" ] && exit 0
 
-NEW_FILES=$(($(git diff --cached --name-status 2>/dev/null | grep -c "^A" || echo 0)))
-ENTRY_POINT_CHANGE=$(($(echo "$STAGED" | grep -cE "(index|main|app|server|layout|page)\.(ts|tsx|js|jsx)$" || echo 0)))
-DEPS_CHANGE=$(($(echo "$STAGED" | grep -cE "(package\.json|Cargo\.toml|go\.mod|pyproject\.toml)$" || echo 0)))
+NEW_FILES=$(git diff --cached --name-status 2>/dev/null | grep "^A" | wc -l | tr -d ' ')
+ENTRY_POINT_CHANGE=$(echo "$STAGED" | grep -E "(index|main|app|server|layout|page)\.(ts|tsx|js|jsx)$" | wc -l | tr -d ' ')
+DEPS_CHANGE=$(echo "$STAGED" | grep -E "(package\.json|Cargo\.toml|go\.mod|pyproject\.toml)$" | wc -l | tr -d ' ')
 
 SHOULD_UPDATE=false
 REASON=""
