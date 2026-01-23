@@ -1,6 +1,6 @@
 ---
 description: Implement code following TDD/RGRC cycle with real-time test feedback
-allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task
+allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskList, TaskUpdate
 model: opus
 argument-hint: "[implementation description] [--frontend] [--principles] [--storybook]"
 ---
@@ -54,8 +54,17 @@ If SOW exists, update Status to `in-progress` at start.
 | completed      | Update → `in-progress` (resume work) |
 | SOW not found  | Skip (no action needed)              |
 
+## Todo Progress Tracking
+
+| Timing     | Action                                 |
+| ---------- | -------------------------------------- |
+| Start      | `TaskList` → match phase → in_progress |
+| Phase done | `TaskUpdate` → completed               |
+| Next phase | `TaskUpdate` → next → in_progress      |
+| No todos   | Skip (no `/think` ran)                 |
+
 ## Verification
 
-| Check                                               | Required |
-| --------------------------------------------------- | -------- |
-| `Task` called with `subagent_type: test-generator`? | Yes      |
+| Check                                              | Required |
+| -------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: test-generator` | Yes      |

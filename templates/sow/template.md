@@ -48,9 +48,9 @@ Format: `WHEN/IF/WHILE [trigger] THEN/THE system SHALL [action]`
 
 ## Implementation Plan
 
-| Phase | Steps   | Validates |
-| ----- | ------- | --------- |
-| 1     | [steps] | AC-001    |
+| Phase | Description   | Steps   | Validates |
+| ----- | ------------- | ------- | --------- |
+| 1     | [short title] | [steps] | AC-001    |
 
 ## Success Metrics
 

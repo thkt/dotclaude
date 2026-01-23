@@ -58,6 +58,16 @@ flowchart LR
     end
 ```
 
+## Todo Progress Tracking
+
+| Command     | Todo Action                          |
+| ----------- | ------------------------------------ |
+| `/think`    | TaskCreate from Implementation Plan  |
+| `/code`     | TaskUpdate → in_progress / completed |
+| `/test`     | (via `/code` phase)                  |
+| `/audit`    | (via `/code` phase)                  |
+| `/validate` | TaskUpdate remaining → completed     |
+
 | Pattern       | Workflow                                                            | When                                    |
 | ------------- | ------------------------------------------------------------------- | --------------------------------------- |
 | Quick Fix     | `/fix`                                                              | Small bug, stable codebase              |

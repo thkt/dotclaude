@@ -1,6 +1,6 @@
 ---
 description: Validate implementation against SOW acceptance criteria
-allowed-tools: Read, Glob, Grep
+allowed-tools: Read, Glob, Grep, TaskList, TaskUpdate
 model: opus
 argument-hint: "[feature name]"
 ---
@@ -44,6 +44,13 @@ Display SOW acceptance criteria for manual verification.
 | ----- | ------------------------------- |
 | 100%  | Update `Status:` → `completed`  |
 | <100% | Keep current status (no change) |
+
+## Todo Completion
+
+| Condition | Action                             |
+| --------- | ---------------------------------- |
+| 100% pass | `TaskUpdate` remaining → completed |
+| <100%     | Skip                               |
 
 ## Output
 

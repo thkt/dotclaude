@@ -1,6 +1,6 @@
 ---
 description: Orchestrate SOW and Spec generation for comprehensive planning
-allowed-tools: SlashCommand, Read, Write, Glob, Task
+allowed-tools: SlashCommand, Read, Write, Glob, Task, TaskCreate, TaskList
 model: opus
 argument-hint: "[task description]"
 ---
@@ -24,6 +24,14 @@ Orchestrate implementation planning with SOW and Spec generation.
 | 3    | /sow                    | sow.md          |
 | 4    | /spec                   | spec.md         |
 | 5    | sow-spec-reviewer (≥90) | (optional)      |
+| 6    | SOW → Todos             | TaskCreate      |
+
+## Todo Generation (Step 6)
+
+| Source              | subject                  | description              | activeForm        |
+| ------------------- | ------------------------ | ------------------------ | ----------------- |
+| Implementation Plan | `Phase N: [description]` | Steps + validates AC-XXX | `[description]中` |
+| Test Plan (HIGH)    | `Test: [description]`    | (if complex)             | `[description]中` |
 
 ## Q&A Categories
 
