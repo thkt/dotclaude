@@ -8,6 +8,7 @@
 | Task        | [@./rules/core/PRE_TASK_CHECK_SPEC.md](./rules/core/PRE_TASK_CHECK_SPEC.md)                        |
 | Principles  | [@./rules/PRINCIPLES.md](./rules/PRINCIPLES.md)                                                    |
 | Performance | [@./rules/development/PERFORMANCE.md](./rules/development/PERFORMANCE.md)                          |
+| Failure     | [@./rules/development/FAILURE_PATTERNS.md](./rules/development/FAILURE_PATTERNS.md)                |
 | Delete      | `mv [file] ~/.Trash/ && git add -A` (sandbox error → retry with `dangerouslyDisableSandbox: true`) |
 
 ## Development Checks

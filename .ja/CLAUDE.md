@@ -4,10 +4,11 @@
 
 | ルール         | 参照                                                                                            |
 | -------------- | ----------------------------------------------------------------------------------------------- |
-| コア           | [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)           |
-| タスク         | [@../rules/core/PRE_TASK_CHECK_SPEC.md](../rules/core/PRE_TASK_CHECK_SPEC.md)                   |
-| 原則           | [@../rules/PRINCIPLES.md](../rules/PRINCIPLES.md)                                               |
+| コア           | [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)             |
+| タスク         | [@./rules/core/PRE_TASK_CHECK_SPEC.md](./rules/core/PRE_TASK_CHECK_SPEC.md)                     |
+| 原則           | [@./rules/PRINCIPLES.md](./rules/PRINCIPLES.md)                                                 |
 | パフォーマンス | [@./rules/development/PERFORMANCE.md](./rules/development/PERFORMANCE.md)                       |
+| 失敗パターン   | [@./rules/development/FAILURE_PATTERNS.md](./rules/development/FAILURE_PATTERNS.md)             |
 | 削除           | `mv [file] ~/.Trash/ && git add -A` (sandboxエラー → `dangerouslyDisableSandbox: true`で再試行) |
 
 ## 開発チェック
@@ -30,4 +31,4 @@
 | -------- | ----------------------------------------- |
 | コマンド | README.md → package.json → ユーザーに確認 |
 
-参照: [@../rules/workflows/WORKFLOW_GUIDE.md](../rules/workflows/WORKFLOW_GUIDE.md), [@../rules/conventions/DOCUMENTATION.md](../rules/conventions/DOCUMENTATION.md)
+参照: [@./rules/workflows/WORKFLOW_GUIDE.md](./rules/workflows/WORKFLOW_GUIDE.md), [@./rules/conventions/DOCUMENTATION.md](./rules/conventions/DOCUMENTATION.md)

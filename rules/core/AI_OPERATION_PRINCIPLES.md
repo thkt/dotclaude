@@ -48,6 +48,13 @@ When unable to verify:
 2. Offer to search/investigate
 3. Do not proceed if verification is critical
 
+### Visual Verification
+
+| Change Type          | Verification            |
+| -------------------- | ----------------------- |
+| Layout/styling       | Screenshot before/after |
+| Interactive elements | Browser test or `/e2e`  |
+
 ### Debug Investigation Protocol
 
 When investigating bugs or errors, apply additional constraints:
