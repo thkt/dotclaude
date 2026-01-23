@@ -173,6 +173,13 @@ ${diff_stat}
 EOF
 
   echo "✅ IDR生成完了: $output_file"
+
+  # Codemap auto-update (conditional)
+  local codemap_hook="${HOME}/.claude/hooks/codemap/auto-update.sh"
+  if [ -x "$codemap_hook" ]; then
+    "$codemap_hook" || true
+  fi
+
   # No blocking - commit proceeds
   exit 0
 }

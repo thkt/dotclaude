@@ -17,16 +17,17 @@ Investigate codebase with confidence-based findings, without implementation.
 
 ## Execution
 
-| Phase | Agent                                          | Focus                                    |
-| ----- | ---------------------------------------------- | ---------------------------------------- |
-| 0     | (clarification)                                | Research intent → `/think` planning?     |
-| 1     | `architecture-analyzer` ∥ `code-flow-analyzer` | Structure + execution flow (parallel)    |
-| 2     | Task(Explore)                                  | Detail: code paths, patterns, edge cases |
-| 3     | (synthesis)                                    | Consolidate with ✓/→/? markers           |
+| Phase | Agent                                          | Focus                                      |
+| ----- | ---------------------------------------------- | ------------------------------------------ |
+| 0     | (codemap check)                                | Read `.codemaps/architecture.md` if exists |
+| 1     | (clarification)                                | Research intent → `/think` planning?       |
+| 2     | `architecture-analyzer` ∥ `code-flow-analyzer` | Structure + execution flow (parallel)      |
+| 3     | Task(Explore)                                  | Detail: code paths, patterns, edge cases   |
+| 4     | (synthesis)                                    | Consolidate with ✓/→/? markers             |
 
 Note: Invoke via `Task(subagent_type: Explore)`.
 
-### Phase 0: Intent Clarification
+### Phase 1: Intent Clarification
 
 Ask via AskUserQuestion:
 
@@ -35,7 +36,7 @@ Ask via AskUserQuestion:
 | Research intent  | Feature planning / Bug investigation / Understanding |
 | Planning needed? | Yes → suggest `/think` after research                |
 
-### Phase 1: Parallel Analysis
+### Phase 2: Parallel Analysis
 
 Run `architecture-analyzer` and `code-flow-analyzer` in parallel via Task.
 

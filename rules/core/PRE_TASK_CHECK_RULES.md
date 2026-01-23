@@ -18,7 +18,7 @@ Rule: All items must be [✓] to proceed. Any [→] or [?] requires resolution f
 | 2   | Scope         | Identified target files/functions                        |
 | 3   | Constraints   | Technical requirements + limitations + dependencies      |
 | 4   | Completion    | Done criteria + verification method + edge cases         |
-| 5   | Context       | Read actual code (not guessing)                          |
+| 5   | Context       | Check `.codemaps/architecture.md` first, then read code  |
 | 6   | Components    | Affected areas + potential risks                         |
 | 7   | Prerequisites | Confirmed tech stack/conventions                         |
 

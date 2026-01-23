@@ -19,14 +19,15 @@ argument-hint: "[リサーチトピックまたは質問]"
 
 | フェーズ | エージェント                                   | フォーカス                               |
 | -------- | ---------------------------------------------- | ---------------------------------------- |
-| 0        | （目的確認）                                   | 調査意図 → `/think` 計画？               |
-| 1        | `architecture-analyzer` ∥ `code-flow-analyzer` | 構造 + 実行フロー（並列）                |
-| 2        | Task(Explore)                                  | 詳細: コードパス、パターン、エッジケース |
-| 3        | （統合）                                       | ✓/→/?マーカー付きで整理                  |
+| 0        | （codemap確認）                                | `.codemaps/architecture.md` があれば読む |
+| 1        | （目的確認）                                   | 調査意図 → `/think` 計画？               |
+| 2        | `architecture-analyzer` ∥ `code-flow-analyzer` | 構造 + 実行フロー（並列）                |
+| 3        | Task(Explore)                                  | 詳細: コードパス、パターン、エッジケース |
+| 4        | （統合）                                       | ✓/→/?マーカー付きで整理                  |
 
 Note: `Task(subagent_type: Explore)` で呼び出し。
 
-### フェーズ0: 意図確認
+### フェーズ1: 意図確認
 
 AskUserQuestionで質問:
 
@@ -35,7 +36,7 @@ AskUserQuestionで質問:
 | 調査意図   | 機能計画 / バグ調査 / 理解のみ |
 | 計画必要？ | Yes → 調査後 `/think` を提案   |
 
-### フェーズ1: 並列分析
+### フェーズ2: 並列分析
 
 Taskで `architecture-analyzer` と `code-flow-analyzer` を並列実行。
 
