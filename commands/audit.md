@@ -20,11 +20,19 @@ Orchestrate specialized review agents for thorough audit with confidence-based f
 | Step | Action                                                |
 | ---- | ----------------------------------------------------- |
 | 1    | `Task` with `subagent_type: audit-orchestrator`       |
-| 2    | Orchestrator runs 18 agents (14 local + 4 external)   |
+| 2    | Orchestrator runs agents (see audit-orchestrator.md)  |
 | 3    | Integrator aggregates findings into structured output |
-| 4    | Save snapshot to `$HOME/.claude/workspace/history/`   |
+| 4    | Save snapshot (see Snapshot Naming below)             |
 | 5    | Compare with previous snapshot, display delta         |
 | 6    | Output report using template                          |
+
+## Snapshot Naming
+
+```bash
+SNAPSHOT="$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).yaml"
+```
+
+Example output: `audit-2026-01-23-031812.yaml`
 
 ## Templates
 
