@@ -232,6 +232,7 @@ Full details: [PRINCIPLES.md](./rules/PRINCIPLES.md)
 
 ### Core Documentation
 
+- [Design Philosophy](./docs/DESIGN.md) — **Why this design** (設計思想・意図)
 - [Commands Reference (English)](./rules/workflows/WORKFLOW_GUIDE.md)
 - [Commands Reference (Japanese)](./.ja/rules/workflows/WORKFLOW_GUIDE.md)
 - [Configuration Guide](./CLAUDE.md)

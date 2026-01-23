@@ -104,6 +104,7 @@ Claude Codeのサンドボックス機能は、自動的な権限処理による
 - macOSまたはLinux（Windowsはまだ未サポート）
 - Node.js with npm/npx
 - ripgrep（通常プリインストール済み）
+- jaq（IDRフック用）: `brew install jaq`
 
 **クイックセットアップ**:
 
@@ -231,6 +232,7 @@ srt --version
 
 ### コアドキュメント
 
+- [設計思想](./docs/DESIGN.md) — **なぜこの設計か**（Design Philosophy）
 - [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOW_GUIDE.md)
 - [コマンドリファレンス（英語）](../rules/workflows/WORKFLOW_GUIDE.md)
 - [設定ガイド（日本語）](./CLAUDE.md)
