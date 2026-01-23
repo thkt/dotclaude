@@ -60,6 +60,8 @@ flowchart LR
 
 ## Todo Progress Tracking
 
+Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
+
 | Command     | Todo Action                          |
 | ----------- | ------------------------------------ |
 | `/think`    | TaskCreate from Implementation Plan  |

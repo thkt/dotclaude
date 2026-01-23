@@ -31,6 +31,7 @@ sounds/
 statsig/
 telemetry/
 todos/
+tasks/
 
 # Claude session history
 history.jsonl

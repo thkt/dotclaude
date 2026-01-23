@@ -28,6 +28,8 @@ Orchestrate implementation planning with SOW and Spec generation.
 
 ## Todo Generation (Step 6)
 
+Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"` (max 10 tasks)
+
 | Source              | subject                  | description              | activeForm        |
 | ------------------- | ------------------------ | ------------------------ | ----------------- |
 | Implementation Plan | `Phase N: [description]` | Steps + validates AC-XXX | `[description]中` |

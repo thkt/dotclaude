@@ -8,7 +8,7 @@ EXCLUDE_DIRS=(
   node_modules .git dist build __pycache__ target .next coverage
   debug .codemaps file-history cache chrome projects logs
   shell-snapshots golden-masters paste-cache plans plugins ide
-  .ja statsig telemetry todos sounds session-env
+  .ja statsig telemetry todos tasks sounds session-env
 )
 
 STAGED=$(git diff --cached --name-only 2>/dev/null || echo "")
