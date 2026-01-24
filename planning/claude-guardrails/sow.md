@@ -17,6 +17,7 @@ Scope: 別リポジトリ化, biome 統合, PreToolCall フック
 | I-002 | 正規表現ベースでは精度に限界がある   | コメント内の誤検出等               | [✓]        |
 | I-003 | hooks/ 配下にソースがあり構成が不明瞭 | hooks/guardrails/src/ の存在       | [✓]        |
 | I-004 | 機能分離すると複雑になる             | Pre/Post で別ツールは意図が伝わりにくい | [✓]        |
+| I-005 | 設定の重複管理                       | guardrails と biome.json で二重管理     | [✓]        |
 
 ## Assumptions
 
@@ -67,6 +68,8 @@ biome_js_parser = "0.5"
 biome_js_analyze = "0.5"
 biome_js_syntax = "0.5"
 biome_diagnostics = "0.5"
+biome_configuration = "0.5"    # biome.json 読み込み
+biome_deserialize = "0.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ```
@@ -76,7 +79,8 @@ serde_json = "1.0"
 ```mermaid
 flowchart LR
     T[Write/Edit Tool] --> G[guardrails]
-    G --> P[biome parse]
+    G --> C[設定読み込み]
+    C --> P[biome parse]
     P --> A[biome analyze]
     A --> R{結果判定}
     R -->|Critical/High| B[BLOCK: exit 2]
@@ -84,7 +88,51 @@ flowchart LR
     R -->|問題なし| OK[PASS: exit 0]
 ```
 
-### 設定例
+### 設定読み込みフロー
+
+```mermaid
+flowchart TD
+    S[開始] --> B{biome.json 存在?}
+    B -->|Yes| R[biome.json 読み込み]
+    R --> M[設定をマージ]
+    B -->|No| D[デフォルト設定]
+    D --> M
+    M --> E[解析実行]
+```
+
+### 設定の優先順位
+
+| 優先度 | 設定ソース | 説明 |
+|--------|-----------|------|
+| 1 | プロジェクトの `biome.json` | プロジェクト固有のルール |
+| 2 | `~/.config/guardrails/config.json` | ユーザーグローバル設定 |
+| 3 | デフォルト | recommended ルール |
+
+### biome.json 例
+
+```json
+{
+  "$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noDebugger": "error"
+      },
+      "correctness": {
+        "noUnusedVariables": "warn"
+      },
+      "security": {
+        "noGlobalEval": "error"
+      }
+    }
+  }
+}
+```
+
+### guardrails 固有設定例
 
 ```json
 {
@@ -111,6 +159,8 @@ flowchart LR
 | AC-003 | IF 未使用変数検出 THEN 警告を表示して続行                      | I-002     | [✓]        |
 | AC-004 | WHEN 設定ファイルなし THEN デフォルト設定で動作                | -         | [✓]        |
 | AC-005 | IF TS/JS 以外のファイル THEN スキップして通過                  | -         | [✓]        |
+| AC-006 | WHEN biome.json 存在 THEN そのルール設定を反映                 | I-005     | [✓]        |
+| AC-007 | IF biome.json でルール無効化 THEN guardrails もそのルールをスキップ | I-005     | [✓]        |
 
 ## Test Plan
 
@@ -121,6 +171,8 @@ flowchart LR
 | HIGH     | unit        | 未使用変数で警告                   | AC-003    |
 | MEDIUM   | integration | stdin からの JSON 入力処理         | AC-001    |
 | MEDIUM   | unit        | 設定ファイル読み込み               | AC-004    |
+| MEDIUM   | unit        | biome.json 読み込み・反映          | AC-006    |
+| MEDIUM   | unit        | biome.json でルール無効時スキップ  | AC-007    |
 | LOW      | unit        | 非対応ファイルのスキップ           | AC-005    |
 
 ## Implementation Plan
@@ -129,7 +181,7 @@ flowchart LR
 | ----- | ------------------------ | ----------------------------------------------- | -------------- |
 | 1     | リポジトリ作成           | GitHub リポジトリ作成, 基本構成                 | -              |
 | 2     | biome 統合               | パース, 解析, 結果変換の実装                    | AC-001, AC-002 |
-| 3     | 設定機能                 | config.json 読み込み, ルール ON/OFF             | AC-004         |
+| 3     | 設定機能                 | biome.json 読み込み, フォールバック設定         | AC-004, AC-006, AC-007 |
 | 4     | 出力フォーマット         | エラー表示, 警告表示の整形                      | AC-002, AC-003 |
 | 5     | CI/CD                    | GitHub Actions でバイナリ自動ビルド             | -              |
 | 6     | claude-config 連携       | install スクリプト, settings.json 設定例        | -              |
@@ -143,6 +195,7 @@ flowchart LR
 | バイナリサイズ   | < 15MB        | -         |
 | biome ルール数   | 50+ 利用可能  | I-002     |
 | 誤検出率         | < 5%          | I-002     |
+| biome.json 互換  | 100%          | I-005     |
 
 ## Risks
 
