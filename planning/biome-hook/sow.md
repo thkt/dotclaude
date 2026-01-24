@@ -1,4 +1,4 @@
-# SOW: claude-guardrails
+# SOW: biome-hook
 
 Created: 2026-01-24
 Status: draft
@@ -13,11 +13,11 @@ Scope: 別リポジトリ化, biome 統合, PreToolCall フック
 
 | ID    | Issue                                | Evidence                           | Confidence |
 | ----- | ------------------------------------ | ---------------------------------- | ---------- |
-| I-001 | 現行 guardrails が動作していない     | バイナリ未ビルド, hooks 未設定     | [✓]        |
+| I-001 | 現行 biome-hook が動作していない     | バイナリ未ビルド, hooks 未設定     | [✓]        |
 | I-002 | 正規表現ベースでは精度に限界がある   | コメント内の誤検出等               | [✓]        |
-| I-003 | hooks/ 配下にソースがあり構成が不明瞭 | hooks/guardrails/src/ の存在       | [✓]        |
+| I-003 | hooks/ 配下にソースがあり構成が不明瞭 | hooks/biome-hook/src/ の存在       | [✓]        |
 | I-004 | 機能分離すると複雑になる             | Pre/Post で別ツールは意図が伝わりにくい | [✓]        |
-| I-005 | 設定の重複管理                       | guardrails と biome.json で二重管理     | [✓]        |
+| I-005 | 設定の重複管理                       | biome-hook と biome.json で二重管理     | [✓]        |
 
 ## Assumptions
 
@@ -33,7 +33,7 @@ Scope: 別リポジトリ化, biome 統合, PreToolCall フック
 
 | Phase | Description                          | Confidence |
 | ----- | ------------------------------------ | ---------- |
-| 1     | 別リポジトリ作成 (claude-guardrails) | [✓]        |
+| 1     | 別リポジトリ作成 (biome-hook) | [✓]        |
 | 2     | biome クレートで再実装               | [→]        |
 | 3     | このリポジトリから旧実装を削除       | [✓]        |
 | 4     | install スクリプト追加               | [✓]        |
@@ -51,16 +51,16 @@ Alternatives considered:
 ~/projects/
 ├── claude-config/                ← このリポジトリ
 │   └── hooks/
-│       ├── guardrails            ← ダウンロードしたバイナリ (.gitignore)
-│       └── install-guardrails.sh ← 最新版取得スクリプト
+│       ├── biome-hook            ← ダウンロードしたバイナリ (.gitignore)
+│       └── install-biome-hook.sh ← 最新版取得スクリプト
 │
-└── claude-guardrails/            ← 別リポジトリ (開発時のみ)
+└── biome-hook/            ← 別リポジトリ (開発時のみ)
 ```
 
-### 別リポジトリ (claude-guardrails)
+### 別リポジトリ (biome-hook)
 
 ```
-claude-guardrails/
+biome-hook/
 ├── src/
 │   ├── main.rs           # エントリポイント
 │   ├── config.rs         # 設定読み込み
@@ -92,7 +92,7 @@ serde_json = "1.0"
 
 ```mermaid
 flowchart LR
-    T[Write/Edit Tool] --> G[guardrails]
+    T[Write/Edit Tool] --> G[biome-hook]
     G --> C[設定読み込み]
     C --> P[biome parse]
     P --> A[biome analyze]
@@ -109,7 +109,7 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     participant C as Claude
-    participant G as guardrails
+    participant G as biome-hook
     participant B as biome
 
     C->>G: Write (問題のあるコード)
@@ -156,7 +156,7 @@ flowchart TD
 | 優先度 | 設定ソース | 説明 |
 |--------|-----------|------|
 | 1 | プロジェクトの `biome.json` | プロジェクト固有のルール |
-| 2 | `~/.config/guardrails/config.json` | ユーザーグローバル設定 |
+| 2 | `~/.config/biome-hook/config.json` | ユーザーグローバル設定 |
 | 3 | デフォルト | recommended ルール |
 
 ### biome.json 例
@@ -183,7 +183,7 @@ flowchart TD
 }
 ```
 
-### guardrails 固有設定例
+### biome-hook 固有設定例
 
 ```json
 {
@@ -205,13 +205,13 @@ flowchart TD
 
 | ID     | Description                                                    | Validates | Confidence |
 | ------ | -------------------------------------------------------------- | --------- | ---------- |
-| AC-001 | WHEN Write ツール実行 THEN guardrails がコードをチェックする   | I-001     | [✓]        |
+| AC-001 | WHEN Write ツール実行 THEN biome-hook がコードをチェックする   | I-001     | [✓]        |
 | AC-002 | IF eval() 検出 THEN ブロックして理由を表示                     | I-002     | [✓]        |
 | AC-003 | IF 未使用変数検出 THEN 警告を表示して続行                      | I-002     | [✓]        |
 | AC-004 | WHEN 設定ファイルなし THEN デフォルト設定で動作                | -         | [✓]        |
 | AC-005 | IF TS/JS 以外のファイル THEN スキップして通過                  | -         | [✓]        |
 | AC-006 | WHEN biome.json 存在 THEN そのルール設定を反映                 | I-005     | [✓]        |
-| AC-007 | IF biome.json でルール無効化 THEN guardrails もそのルールをスキップ | I-005     | [✓]        |
+| AC-007 | IF biome.json でルール無効化 THEN biome-hook もそのルールをスキップ | I-005     | [✓]        |
 | AC-008 | WHEN ブロック時 THEN stderr に修正提案を出力                       | -         | [✓]        |
 | AC-009 | IF Claude が修正提案を受信 THEN 修正版で再試行可能                 | -         | [✓]        |
 
@@ -240,7 +240,7 @@ flowchart TD
 | 4     | 出力フォーマット         | stderr 出力, Claude 向け修正提案生成            | AC-002, AC-003, AC-008, AC-009 |
 | 5     | CI/CD                    | GitHub Actions でバイナリ自動ビルド             | -              |
 | 6     | claude-config 連携       | install スクリプト, settings.json 設定例        | -              |
-| 7     | 旧実装削除               | hooks/guardrails/ を削除                        | I-003          |
+| 7     | 旧実装削除               | hooks/biome-hook/ を削除                        | I-003          |
 
 ## Success Metrics
 
@@ -263,14 +263,14 @@ flowchart TD
 ## Verification Checklist
 
 - [x] Research/investigation completed (biome クレート調査, ベンチマーク)
-- [x] Impact on existing structure confirmed (hooks/guardrails/ 削除)
+- [x] Impact on existing structure confirmed (hooks/biome-hook/ 削除)
 - [ ] Backup of related files obtained (if needed)
 
 ## References
 
 | Type     | Path                                          |
 | -------- | --------------------------------------------- |
-| 現行実装 | hooks/guardrails/                             |
+| 現行実装 | hooks/biome-hook/                             |
 | hooks 設計 | docs/HOOKS.md                                |
 | biome    | https://github.com/biomejs/biome              |
 | crates   | https://crates.io/crates/biome_js_parser      |
