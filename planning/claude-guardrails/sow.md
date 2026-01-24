@@ -1,0 +1,168 @@
+# SOW: claude-guardrails
+
+Created: 2026-01-24
+Status: draft
+
+## Executive Summary
+
+Claude Code の PreToolCall フックとして動作する、biome ベースのコード品質チェックツール。Write/Edit 操作時にコードを検証し、問題があればブロックまたは警告する。
+
+Scope: 別リポジトリ化, biome 統合, PreToolCall フック
+
+## Problem Analysis
+
+| ID    | Issue                                | Evidence                           | Confidence |
+| ----- | ------------------------------------ | ---------------------------------- | ---------- |
+| I-001 | 現行 guardrails が動作していない     | バイナリ未ビルド, hooks 未設定     | [✓]        |
+| I-002 | 正規表現ベースでは精度に限界がある   | コメント内の誤検出等               | [✓]        |
+| I-003 | hooks/ 配下にソースがあり構成が不明瞭 | hooks/guardrails/src/ の存在       | [✓]        |
+| I-004 | 機能分離すると複雑になる             | Pre/Post で別ツールは意図が伝わりにくい | [✓]        |
+
+## Assumptions
+
+| ID    | Type       | Description                              | Confidence |
+| ----- | ---------- | ---------------------------------------- | ---------- |
+| A-001 | fact       | biome は ~130ms で実行可能               | [✓]        |
+| A-002 | fact       | biome クレートは crates.io で公開済み    | [✓]        |
+| A-003 | assumption | 130ms は体感できないレベル               | [→]        |
+| A-004 | assumption | biome 一本化でシンプルに保てる           | [→]        |
+| A-005 | unknown    | biome クレートの API 安定性              | [?]        |
+
+## Solution Design
+
+| Phase | Description                          | Confidence |
+| ----- | ------------------------------------ | ---------- |
+| 1     | 別リポジトリ作成 (claude-guardrails) | [✓]        |
+| 2     | biome クレートで再実装               | [→]        |
+| 3     | このリポジトリから旧実装を削除       | [✓]        |
+| 4     | install スクリプト追加               | [✓]        |
+
+Alternatives considered:
+- Option A: biome 一本化 (ADOPT) - シンプル、130ms は許容範囲
+- Option B: 正規表現 + biome 併用 (REJECT) - 複雑、メリット薄い
+- Option C: Pre/Post 分離 (REJECT) - 同一目的なのに分散して複雑
+
+## Architecture
+
+```
+claude-guardrails (別リポジトリ)
+├── src/
+│   ├── main.rs           # エントリポイント
+│   ├── config.rs         # 設定読み込み
+│   ├── analyzer.rs       # biome 連携
+│   └── reporter.rs       # 出力フォーマット
+├── Cargo.toml
+├── config.example.json
+├── README.md
+└── .github/
+    └── workflows/
+        └── release.yml   # バイナリ自動ビルド
+```
+
+### 依存クレート
+
+```toml
+[dependencies]
+biome_js_parser = "0.5"
+biome_js_analyze = "0.5"
+biome_js_syntax = "0.5"
+biome_diagnostics = "0.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+```
+
+### 動作フロー
+
+```mermaid
+flowchart LR
+    T[Write/Edit Tool] --> G[guardrails]
+    G --> P[biome parse]
+    P --> A[biome analyze]
+    A --> R{結果判定}
+    R -->|Critical/High| B[BLOCK: exit 2]
+    R -->|Medium/Low| W[WARNING: exit 0]
+    R -->|問題なし| OK[PASS: exit 0]
+```
+
+### 設定例
+
+```json
+{
+  "enabled": true,
+  "rules": {
+    "security": true,
+    "correctness": true,
+    "suspicious": true,
+    "style": false
+  },
+  "severity": {
+    "blockOn": ["error"],
+    "warnOn": ["warning", "info"]
+  }
+}
+```
+
+## Acceptance Criteria
+
+| ID     | Description                                                    | Validates | Confidence |
+| ------ | -------------------------------------------------------------- | --------- | ---------- |
+| AC-001 | WHEN Write ツール実行 THEN guardrails がコードをチェックする   | I-001     | [✓]        |
+| AC-002 | IF eval() 検出 THEN ブロックして理由を表示                     | I-002     | [✓]        |
+| AC-003 | IF 未使用変数検出 THEN 警告を表示して続行                      | I-002     | [✓]        |
+| AC-004 | WHEN 設定ファイルなし THEN デフォルト設定で動作                | -         | [✓]        |
+| AC-005 | IF TS/JS 以外のファイル THEN スキップして通過                  | -         | [✓]        |
+
+## Test Plan
+
+| Priority | Type        | Description                        | Validates |
+| -------- | ----------- | ---------------------------------- | --------- |
+| HIGH     | unit        | biome パース成功                   | AC-001    |
+| HIGH     | unit        | eval() 検出でブロック              | AC-002    |
+| HIGH     | unit        | 未使用変数で警告                   | AC-003    |
+| MEDIUM   | integration | stdin からの JSON 入力処理         | AC-001    |
+| MEDIUM   | unit        | 設定ファイル読み込み               | AC-004    |
+| LOW      | unit        | 非対応ファイルのスキップ           | AC-005    |
+
+## Implementation Plan
+
+| Phase | Description              | Steps                                           | Validates      |
+| ----- | ------------------------ | ----------------------------------------------- | -------------- |
+| 1     | リポジトリ作成           | GitHub リポジトリ作成, 基本構成                 | -              |
+| 2     | biome 統合               | パース, 解析, 結果変換の実装                    | AC-001, AC-002 |
+| 3     | 設定機能                 | config.json 読み込み, ルール ON/OFF             | AC-004         |
+| 4     | 出力フォーマット         | エラー表示, 警告表示の整形                      | AC-002, AC-003 |
+| 5     | CI/CD                    | GitHub Actions でバイナリ自動ビルド             | -              |
+| 6     | claude-config 連携       | install スクリプト, settings.json 設定例        | -              |
+| 7     | 旧実装削除               | hooks/guardrails/ を削除                        | I-003          |
+
+## Success Metrics
+
+| Metric           | Target        | Validates |
+| ---------------- | ------------- | --------- |
+| 実行時間         | < 200ms       | A-003     |
+| バイナリサイズ   | < 15MB        | -         |
+| biome ルール数   | 50+ 利用可能  | I-002     |
+| 誤検出率         | < 5%          | I-002     |
+
+## Risks
+
+| ID    | Risk                           | Impact | Mitigation                               |
+| ----- | ------------------------------ | ------ | ---------------------------------------- |
+| R-001 | biome クレート API の破壊的変更 | MED    | バージョン固定, 定期的な更新確認         |
+| R-002 | バイナリサイズが大きすぎる     | LOW    | 必要なルールのみ有効化, strip            |
+| R-003 | パフォーマンス劣化             | LOW    | ベンチマーク監視, 閾値超えたらアラート   |
+
+## Verification Checklist
+
+- [x] Research/investigation completed (biome クレート調査, ベンチマーク)
+- [x] Impact on existing structure confirmed (hooks/guardrails/ 削除)
+- [ ] Backup of related files obtained (if needed)
+
+## References
+
+| Type     | Path                                          |
+| -------- | --------------------------------------------- |
+| 現行実装 | hooks/guardrails/                             |
+| hooks 設計 | docs/HOOKS.md                                |
+| biome    | https://github.com/biomejs/biome              |
+| crates   | https://crates.io/crates/biome_js_parser      |
