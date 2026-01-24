@@ -1,19 +1,35 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.12/schema.json",
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
-      "suspicious": {
-        "noExplicitAny": "error",
-        "noDebugger": "error"
-      },
       "correctness": {
+        "recommended": true,
         "noUnusedVariables": "warn",
         "noUnusedImports": "warn"
       },
+      "suspicious": {
+        "recommended": true,
+        "noExplicitAny": "error",
+        "noDebugger": "error",
+        "noConsole": "warn"
+      },
       "security": {
+        "recommended": true,
         "noGlobalEval": "error"
+      },
+      "a11y": {
+        "recommended": true
+      },
+      "complexity": {
+        "recommended": true
+      },
+      "style": {
+        "recommended": true
+      },
+      "performance": {
+        "recommended": true
       }
     }
   },
@@ -29,10 +45,6 @@
     }
   },
   "files": {
-    "ignore": [
-      "node_modules",
-      "dist",
-      "*.min.js"
-    ]
+    "includes": ["**", "!**/node_modules", "!**/dist", "!**/*.min.js"]
   }
 }
