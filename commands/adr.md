@@ -11,8 +11,8 @@ Create ADR in MADR format with auto-numbering.
 
 ## Input
 
-- Argument: decision title (required, specific action like "Adopt X for Y")
-- If missing: prompt via AskUserQuestion
+- Decision title: `$1` (specific action like "Adopt X for Y")
+- If `$1` is empty → prompt via AskUserQuestion
 - Prerequisites: `adr/` directory (create if missing)
 
 ## Skills

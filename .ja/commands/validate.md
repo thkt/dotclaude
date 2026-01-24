@@ -1,6 +1,6 @@
 ---
 description: SOW受け入れ基準に対して実装を検証
-allowed-tools: Read, Glob, Grep
+allowed-tools: Read, Glob, Grep, TaskList, TaskUpdate
 model: opus
 argument-hint: "[機能名]"
 ---
@@ -11,8 +11,8 @@ argument-hint: "[機能名]"
 
 ## 入力
 
-- 引数なし: 最新SOW
-- 引数あり: 特定の機能名
+- 機能名: `$1`（任意）
+- `$1`が空の場合 → 最新SOWを使用
 
 ## 実行
 
@@ -44,6 +44,13 @@ argument-hint: "[機能名]"
 | ------ | ---------------------------------- |
 | 100%   | `Status:` → `completed` に更新     |
 | <100%  | 現在のステータスを維持（変更なし） |
+
+## Todo完了
+
+| 条件  | アクション                          |
+| ----- | ----------------------------------- |
+| 100%  | `TaskUpdate` 残りすべて → completed |
+| <100% | スキップ                            |
 
 ## 出力
 

@@ -12,8 +12,8 @@ argument-hint: "[リサーチトピックまたは質問]"
 
 ## 入力
 
-- 引数: リサーチトピックまたは質問（必須）
-- 未指定時: AskUserQuestionで確認
+- リサーチトピックまたは質問: `$1`（必須）
+- `$1`が空の場合 → AskUserQuestionで確認
 
 ## 実行
 
@@ -40,12 +40,12 @@ AskUserQuestionで質問:
 
 Taskで `architecture-analyzer` と `code-flow-analyzer` を並列実行。
 
-マーカー: [@../../rules/core/AI_OPERATION_PRINCIPLES.md](../../rules/core/AI_OPERATION_PRINCIPLES.md)
+マーカー: [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
 
 ## 出力
 
 ファイル: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md`
-テンプレート: [@../../templates/research/template.md](../../templates/research/template.md)
+テンプレート: [@../templates/research/template.md](../templates/research/template.md)
 
 ## 次のステップ
 

@@ -11,9 +11,9 @@ Generate well-structured GitHub Issues.
 
 ## Input
 
-- Argument: issue description (required)
-- If missing: prompt via AskUserQuestion
-- Type prefix: `bug`, `feature`, `docs` (optional)
+- Issue description: `$1`
+- If `$1` is empty → prompt via AskUserQuestion
+- Type prefix: `bug`, `feature`, `docs` (optional, can be included in `$1`)
 
 ## Agent
 

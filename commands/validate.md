@@ -11,8 +11,8 @@ Display SOW acceptance criteria for manual verification.
 
 ## Input
 
-- No argument: latest SOW
-- Argument: specific feature name
+- Feature name: `$1` (optional)
+- If `$1` is empty → use latest SOW
 
 ## Execution
 

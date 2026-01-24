@@ -11,8 +11,8 @@ Generate documentation and Playwright tests through browser operations.
 
 ## Input
 
-- Argument: test name (required)
-- If missing: prompt via AskUserQuestion
+- Test name: `$1` (required)
+- If `$1` is empty → prompt via AskUserQuestion
 
 ## Execution
 

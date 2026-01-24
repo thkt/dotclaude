@@ -2,7 +2,7 @@
 description: コードベース分析からドキュメントを生成
 allowed-tools: [Task, Read, Write, Bash]
 model: opus
-argument-hint: "<architecture|api|domain|setup>"
+argument-hint: "[architecture|api|domain|setup]"
 ---
 
 # /docs - ドキュメント生成
@@ -11,11 +11,12 @@ argument-hint: "<architecture|api|domain|setup>"
 
 ## 入力
 
-- 引数: ドキュメントタイプ（必須）
+- ドキュメントタイプ: `$1`（必須）
   - `architecture` - Mermaid図付きアーキテクチャ概要
   - `api` - API仕様
   - `domain` - ドメイン用語と関係
   - `setup` - 環境セットアップガイド
+- `$1`が空の場合 → AskUserQuestionで確認
 
 ## 実行
 
@@ -41,11 +42,4 @@ argument-hint: "<architecture|api|domain|setup>"
 
 ## 出力
 
-| タイプ       | テンプレート                                                                  |
-| ------------ | ----------------------------------------------------------------------------- |
-| architecture | [@../../templates/docs/architecture.md](../../templates/docs/architecture.md) |
-| api          | [@../../templates/docs/api.md](../../templates/docs/api.md)                   |
-| domain       | [@../../templates/docs/domain.md](../../templates/docs/domain.md)             |
-| setup        | [@../../templates/docs/setup.md](../../templates/docs/setup.md)               |
-
-テンプレートは変数置換に `{field}`、`{object.property}`、`{array[].property}` パターンを使用。
+テンプレート構造でフォーマットされたMarkdown。変数: `{field}`、`{object.property}`、`{array[].property}`

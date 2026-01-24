@@ -11,9 +11,9 @@ Implement code with TDD/RGRC cycle and quality checks.
 
 ## Input
 
-- Argument: implementation description (required)
-- If missing: prompt via AskUserQuestion
-- Flags: `--frontend`, `--principles`, `--storybook` (optional)
+- Implementation description: `$1` (required)
+- If `$1` is empty → prompt via AskUserQuestion
+- Flags: `--frontend`, `--principles`, `--storybook` (optional, include in `$1`)
 
 ## Conditional Context
 

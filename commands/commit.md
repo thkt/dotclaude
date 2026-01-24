@@ -11,8 +11,8 @@ Analyze staged changes and generate Conventional Commits messages.
 
 ## Input
 
-- Argument: context or issue reference (optional)
-- If missing: analyze staged changes only
+- Context or issue reference: `$1` (optional)
+- If `$1` is empty → analyze staged changes only
 
 ## Agent
 

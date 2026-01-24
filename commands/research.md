@@ -12,8 +12,8 @@ Investigate codebase with confidence-based findings, without implementation.
 
 ## Input
 
-- Argument: research topic or question (required)
-- If missing: prompt via AskUserQuestion
+- Research topic or question: `$1` (required)
+- If `$1` is empty → prompt via AskUserQuestion
 
 ## Execution
 

@@ -11,8 +11,8 @@ Analyze all changes in the current branch and generate comprehensive PR descript
 
 ## Input
 
-- No argument: generate from current branch
-- Argument: issue reference (`#456`) or additional context
+- Issue reference or context: `$1` (optional, e.g., `#456`)
+- If `$1` is empty → generate from current branch only
 
 ## Agent
 

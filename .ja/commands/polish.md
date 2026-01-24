@@ -11,8 +11,8 @@ argument-hint: "[対象スコープ]"
 
 ## 入力
 
-- 引数: 対象スコープ（任意）
-- 未指定時: `git diff main...HEAD`を分析
+- 対象スコープ: `$1`（任意）
+- `$1`が空の場合 → `git diff main...HEAD`を分析
 
 ## Agent
 

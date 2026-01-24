@@ -11,8 +11,8 @@ argument-hint: "[sowパスまたは機能説明]"
 
 ## 入力
 
-- 引数: SOWパスまたは機能説明（任意）
-- 未指定時: 最新の`$HOME/.claude/workspace/planning/*/sow.md`を自動検出
+- SOWパスまたは機能説明: `$1`（任意）
+- `$1`が空の場合 → 最新の`$HOME/.claude/workspace/planning/*/sow.md`を自動検出
 
 ## 実行
 

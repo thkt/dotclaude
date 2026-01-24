@@ -11,8 +11,8 @@ Generate spec.md with implementation-ready details.
 
 ## Input
 
-- Argument: SOW path or feature description (optional)
-- If missing: auto-detect latest `$HOME/.claude/workspace/planning/*/sow.md`
+- SOW path or feature description: `$1` (optional)
+- If `$1` is empty → auto-detect latest `$HOME/.claude/workspace/planning/*/sow.md`
 
 ## Execution
 

@@ -11,9 +11,9 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 
 ## Input
 
-- Argument: bug or issue description (required)
-- OR: Suggestion ID from `/audit` output (e.g., `SUG-001`)
-- If missing: prompt via AskUserQuestion
+- Bug or issue description: `$1`
+- OR: Suggestion ID from `/audit` output (e.g., `/fix SUG-001`)
+- If `$1` is empty → prompt via AskUserQuestion
 - Scope: small, well-understood issues (1-3 files)
 
 ### Suggestion ID Mode (`/fix SUG-XXX`)

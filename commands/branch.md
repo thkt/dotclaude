@@ -11,8 +11,8 @@ Analyze current Git changes and suggest appropriate branch names.
 
 ## Input
 
-- Argument: context or ticket number (optional)
-- If missing: analyze git diff/status only
+- Context or ticket number: `$1` (optional)
+- If `$1` is empty → analyze git diff/status only
 
 ## Agent
 

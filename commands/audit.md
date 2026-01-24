@@ -12,8 +12,8 @@ Orchestrate specialized review agents for thorough audit with confidence-based f
 
 ## Input
 
-- Argument: target scope (optional)
-- If missing: review staged/modified files (via `git diff --name-only`)
+- Target scope: `$1` (optional)
+- If `$1` is empty → review staged/modified files (via `git diff --name-only`)
 
 ## Execution
 

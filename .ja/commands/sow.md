@@ -11,14 +11,9 @@ argument-hint: "[タスク説明]"
 
 ## 入力
 
-- 引数: タスク説明（任意）
-- 未指定時: リサーチコンテキストを使用またはAskUserQuestionで確認
-
-### 解決順序
-
-1. 引数あり → タスク説明として使用
-2. リサーチコンテキストあり → `$HOME/.claude/workspace/research/*.md`を使用
-3. なし → AskUserQuestionで確認
+- タスク説明: `$1`（任意）
+- `$1`が空の場合 → リサーチコンテキストを確認、なければAskUserQuestionで確認
+- 解決順序: `$1` > リサーチコンテキスト (`*.md`) > AskUserQuestion
 
 ## 実行
 

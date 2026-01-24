@@ -11,8 +11,8 @@ Orchestrate implementation planning with SOW and Spec generation.
 
 ## Input
 
-- Argument: task description (optional)
-- If missing: use research context or prompt via AskUserQuestion
+- Task description: `$1` (optional)
+- If `$1` is empty → use research context or prompt via AskUserQuestion
 
 ## Execution
 

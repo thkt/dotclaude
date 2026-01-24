@@ -11,14 +11,9 @@ Generate sow.md for planning and analysis.
 
 ## Input
 
-- Argument: task description (optional)
-- If missing: use research context or prompt via AskUserQuestion
-
-### Resolution Order
-
-1. Argument provided → use as task description
-2. Research context exists → use `$HOME/.claude/workspace/research/*.md`
-3. None → prompt via AskUserQuestion
+- Task description: `$1` (optional)
+- If `$1` is empty → check research context, then prompt via AskUserQuestion
+- Resolution: `$1` > research context (`*.md`) > AskUserQuestion
 
 ## Execution
 

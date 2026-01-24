@@ -11,9 +11,9 @@ argument-hint: "[Issue説明]"
 
 ## 入力
 
-- 引数: Issue説明（必須）
-- 未指定時: AskUserQuestionで確認
-- タイププレフィックス: `bug`, `feature`, `docs`（任意）
+- Issue説明: `$1`
+- `$1`が空の場合 → AskUserQuestionで確認
+- タイププレフィックス: `bug`, `feature`, `docs`（任意、`$1`に含める）
 
 ## Agent
 

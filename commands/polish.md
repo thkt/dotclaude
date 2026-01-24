@@ -11,8 +11,8 @@ Remove AI-generated slop and simplify code before commit.
 
 ## Input
 
-- Argument: target scope (optional)
-- If missing: analyze `git diff main...HEAD`
+- Target scope: `$1` (optional)
+- If `$1` is empty → analyze `git diff main...HEAD`
 
 ## Agent
 

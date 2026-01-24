@@ -11,8 +11,8 @@ Convert ADR into AI-executable rule format.
 
 ## Input
 
-- Argument: ADR number (required, e.g., `1` or `0001`)
-- If missing: prompt via AskUserQuestion
+- ADR number: `$1` (required, e.g., `1` or `0001`)
+- If `$1` is empty → prompt via AskUserQuestion
 
 ## Execution
 

@@ -11,8 +11,8 @@ List and view planning documents (SOW/Spec).
 
 ## Input
 
-- No argument: list all SOW documents
-- Argument: specific feature name to view
+- Feature name: `$1` (optional, to view specific feature)
+- If `$1` is empty → list all SOW documents
 
 ## Execution
 

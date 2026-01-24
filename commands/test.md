@@ -11,8 +11,8 @@ Run project tests with gap analysis and quality checks.
 
 ## Input
 
-- No argument: run all tests
-- Argument: specific test scope or file pattern
+- Test scope or file pattern: `$1` (optional)
+- If `$1` is empty → run all tests
 
 ## Agent
 

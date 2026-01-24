@@ -2,7 +2,7 @@
 description: Generate documentation from codebase analysis
 allowed-tools: [Task, Read, Write, Bash]
 model: opus
-argument-hint: "<architecture|api|domain|setup>"
+argument-hint: "[architecture|api|domain|setup]"
 ---
 
 # /docs - Documentation Generator
@@ -11,11 +11,12 @@ Generate documentation by analyzing the codebase.
 
 ## Input
 
-- Argument: documentation type (required)
+- Documentation type: `$1` (required)
   - `architecture` - Architecture overview with diagrams
   - `api` - API specification
   - `domain` - Domain glossary and relationships
   - `setup` - Environment setup guide
+- If `$1` is empty → prompt via AskUserQuestion
 
 ## Execution
 
@@ -41,11 +42,4 @@ Generate documentation by analyzing the codebase.
 
 ## Output
 
-| Type         | Template                                                                |
-| ------------ | ----------------------------------------------------------------------- |
-| architecture | [@../templates/docs/architecture.md](../templates/docs/architecture.md) |
-| api          | [@../templates/docs/api.md](../templates/docs/api.md)                   |
-| domain       | [@../templates/docs/domain.md](../templates/docs/domain.md)             |
-| setup        | [@../templates/docs/setup.md](../templates/docs/setup.md)               |
-
-Templates use `{field}`, `{object.property}`, and `{array[].property}` patterns for variable substitution.
+Formatted markdown using template structure. Variables: `{field}`, `{object.property}`, `{array[].property}`.

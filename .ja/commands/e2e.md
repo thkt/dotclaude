@@ -11,8 +11,8 @@ argument-hint: "[テスト名]"
 
 ## 入力
 
-- 引数: テスト名（必須）
-- 未指定時: AskUserQuestionで確認
+- テスト名: `$1`（必須）
+- `$1`が空の場合 → AskUserQuestionで確認
 
 ## 実行
 
