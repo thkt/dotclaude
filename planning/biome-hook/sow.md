@@ -5,272 +5,121 @@ Status: draft
 
 ## Executive Summary
 
-Claude Code の PreToolCall フックとして動作する、biome ベースのコード品質チェックツール。Write/Edit 操作時にコードを検証し、問題があればブロックまたは警告する。
+Claude Code の PreToolCall フックとして動作する、biome CLI ラッパー。Write/Edit 操作時にコードを検証し、問題があれば Claude に修正を促す。
 
-Scope: 別リポジトリ化, biome 統合, PreToolCall フック
+Scope: シェルスクリプト実装, biome CLI 連携
 
 ## Problem Analysis
 
-| ID    | Issue                                | Evidence                           | Confidence |
-| ----- | ------------------------------------ | ---------------------------------- | ---------- |
-| I-001 | 現行 biome-hook が動作していない     | バイナリ未ビルド, hooks 未設定     | [✓]        |
-| I-002 | 正規表現ベースでは精度に限界がある   | コメント内の誤検出等               | [✓]        |
-| I-003 | hooks/ 配下にソースがあり構成が不明瞭 | hooks/biome-hook/src/ の存在       | [✓]        |
-| I-004 | 機能分離すると複雑になる             | Pre/Post で別ツールは意図が伝わりにくい | [✓]        |
-| I-005 | 設定の重複管理                       | biome-hook と biome.json で二重管理     | [✓]        |
-
-## Assumptions
-
-| ID    | Type       | Description                              | Confidence |
-| ----- | ---------- | ---------------------------------------- | ---------- |
-| A-001 | fact       | biome は ~130ms で実行可能               | [✓]        |
-| A-002 | fact       | biome クレートは crates.io で公開済み    | [✓]        |
-| A-003 | assumption | 130ms は体感できないレベル               | [→]        |
-| A-004 | assumption | biome 一本化でシンプルに保てる           | [→]        |
-| A-005 | unknown    | biome クレートの API 安定性              | [?]        |
+| ID    | Issue                              | Evidence                       | Confidence |
+| ----- | ---------------------------------- | ------------------------------ | ---------- |
+| I-001 | 現行 guardrails が動作していない   | バイナリ未ビルド, hooks 未設定 | [✓]        |
+| I-002 | 正規表現ベースでは精度に限界がある | コメント内の誤検出等           | [✓]        |
 
 ## Solution Design
 
-| Phase | Description                          | Confidence |
-| ----- | ------------------------------------ | ---------- |
-| 1     | 別リポジトリ作成 (biome-hook) | [✓]        |
-| 2     | biome クレートで再実装               | [→]        |
-| 3     | このリポジトリから旧実装を削除       | [✓]        |
-| 4     | install スクリプト追加               | [✓]        |
+**シェルスクリプト + biome CLI** で実装。
 
-Alternatives considered:
-- Option A: biome 一本化 (ADOPT) - シンプル、130ms は許容範囲
-- Option B: 正規表現 + biome 併用 (REJECT) - 複雑、メリット薄い
-- Option C: Pre/Post 分離 (REJECT) - 同一目的なのに分散して複雑
+| 当初案 | 採用案 | 理由 |
+|--------|--------|------|
+| Rust + biome crate | シェル + biome CLI | 50ms 差は体感なし、実装10行 |
+| 別リポジトリ | claude-config 内 | シェルスクリプト1つで完結 |
+| 独自設定ファイル | biome.json 流用 | biome CLI が自動で読み込む |
 
 ## Architecture
 
-### リポジトリ構成 (完全分離)
-
 ```
-~/projects/
-├── claude-config/                ← このリポジトリ
-│   └── hooks/
-│       ├── biome-hook            ← ダウンロードしたバイナリ (.gitignore)
-│       └── install-biome-hook.sh ← 最新版取得スクリプト
-│
-└── biome-hook/            ← 別リポジトリ (開発時のみ)
+claude-config/
+└── hooks/
+    └── biome-hook.sh    ← これだけ
 ```
 
-### 別リポジトリ (biome-hook)
+### 実装
 
-```
-biome-hook/
-├── src/
-│   ├── main.rs           # エントリポイント
-│   ├── config.rs         # 設定読み込み
-│   ├── analyzer.rs       # biome 連携
-│   └── reporter.rs       # 出力フォーマット
-├── Cargo.toml
-├── config.example.json
-├── README.md
-└── .github/
-    └── workflows/
-        └── release.yml   # バイナリ自動ビルド
-```
+```bash
+#!/bin/bash
+INPUT=$(cat)
+CODE=$(echo "$INPUT" | jq -r '.tool_input.content')
+FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path')
 
-### 依存クレート
+RESULT=$(echo "$CODE" | biome check --stdin-file-path="$FILE" 2>&1)
+EXIT_CODE=$?
 
-```toml
-[dependencies]
-biome_js_parser = "0.5"
-biome_js_analyze = "0.5"
-biome_js_syntax = "0.5"
-biome_diagnostics = "0.5"
-biome_configuration = "0.5"    # biome.json 読み込み
-biome_deserialize = "0.5"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "$RESULT" >&2
+fi
+
+exit $EXIT_CODE
 ```
 
 ### 動作フロー
 
 ```mermaid
-flowchart LR
-    T[Write/Edit Tool] --> G[biome-hook]
-    G --> C[設定読み込み]
-    C --> P[biome parse]
-    P --> A[biome analyze]
-    A --> R{結果判定}
-    R -->|Critical/High| B[BLOCK: exit 2]
-    R -->|Medium/Low| W[WARNING: exit 0]
-    R -->|問題なし| OK[PASS: exit 0]
-```
-
-### Claude 自動修正フロー
-
-ブロック時に修正提案を stderr に出力することで、Claude が自動的に修正して再試行する。
-
-```mermaid
 sequenceDiagram
     participant C as Claude
-    participant G as biome-hook
-    participant B as biome
+    participant H as biome-hook.sh
+    participant B as biome CLI
 
-    C->>G: Write (問題のあるコード)
-    G->>B: analyze
-    B-->>G: エラー検出
-    G-->>C: stderr: 修正提案
-    Note over G: exit 2 (BLOCK)
-    Note over C: 修正提案を理解
-    C->>G: Write (修正版コード)
-    G->>B: analyze
-    B-->>G: OK
-    G-->>C: exit 0 (PASS)
+    C->>H: Write (JSON)
+    H->>H: jq で content 抽出
+    H->>B: biome check --stdin
+    B-->>H: 結果
+    alt エラーあり
+        H-->>C: stderr に出力, exit 2
+        Note over C: 修正して再試行
+    else エラーなし
+        H-->>C: exit 0 (PASS)
+    end
 ```
 
-### stderr 出力フォーマット
+### 設定
 
-```
-🛡️ BLOCKED: {rule_name}
-
-File: {file_path}:{line}
-Problem: {code_snippet}
-Why: {explanation}
-Fix: {suggestion}
-
-Please fix and retry.
-```
-
-**重要**: Claude Code は exit 2 時に **stderr のみ** を Claude に渡す。stdout は無視される。
-
-### 設定読み込みフロー
-
-```mermaid
-flowchart TD
-    S[開始] --> B{biome.json 存在?}
-    B -->|Yes| R[biome.json 読み込み]
-    R --> M[設定をマージ]
-    B -->|No| D[デフォルト設定]
-    D --> M
-    M --> E[解析実行]
-```
-
-### 設定の優先順位
-
-| 優先度 | 設定ソース | 説明 |
-|--------|-----------|------|
-| 1 | プロジェクトの `biome.json` | プロジェクト固有のルール |
-| 2 | `~/.config/biome-hook/config.json` | ユーザーグローバル設定 |
-| 3 | デフォルト | recommended ルール |
-
-### biome.json 例
+プロジェクトの `biome.json` を自動で読み込む（追加実装不要）。
 
 ```json
 {
-  "$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
   "linter": {
-    "enabled": true,
     "rules": {
-      "recommended": true,
-      "suspicious": {
-        "noExplicitAny": "error",
-        "noDebugger": "error"
-      },
-      "correctness": {
-        "noUnusedVariables": "warn"
-      },
-      "security": {
-        "noGlobalEval": "error"
-      }
+      "suspicious": { "noExplicitAny": "error" },
+      "security": { "noGlobalEval": "error" }
     }
-  }
-}
-```
-
-### biome-hook 固有設定例
-
-```json
-{
-  "enabled": true,
-  "rules": {
-    "security": true,
-    "correctness": true,
-    "suspicious": true,
-    "style": false
-  },
-  "severity": {
-    "blockOn": ["error"],
-    "warnOn": ["warning", "info"]
   }
 }
 ```
 
 ## Acceptance Criteria
 
-| ID     | Description                                                    | Validates | Confidence |
-| ------ | -------------------------------------------------------------- | --------- | ---------- |
-| AC-001 | WHEN Write ツール実行 THEN biome-hook がコードをチェックする   | I-001     | [✓]        |
-| AC-002 | IF eval() 検出 THEN ブロックして理由を表示                     | I-002     | [✓]        |
-| AC-003 | IF 未使用変数検出 THEN 警告を表示して続行                      | I-002     | [✓]        |
-| AC-004 | WHEN 設定ファイルなし THEN デフォルト設定で動作                | -         | [✓]        |
-| AC-005 | IF TS/JS 以外のファイル THEN スキップして通過                  | -         | [✓]        |
-| AC-006 | WHEN biome.json 存在 THEN そのルール設定を反映                 | I-005     | [✓]        |
-| AC-007 | IF biome.json でルール無効化 THEN biome-hook もそのルールをスキップ | I-005     | [✓]        |
-| AC-008 | WHEN ブロック時 THEN stderr に修正提案を出力                       | -         | [✓]        |
-| AC-009 | IF Claude が修正提案を受信 THEN 修正版で再試行可能                 | -         | [✓]        |
-
-## Test Plan
-
-| Priority | Type        | Description                        | Validates |
-| -------- | ----------- | ---------------------------------- | --------- |
-| HIGH     | unit        | biome パース成功                   | AC-001    |
-| HIGH     | unit        | eval() 検出でブロック              | AC-002    |
-| HIGH     | unit        | 未使用変数で警告                   | AC-003    |
-| MEDIUM   | integration | stdin からの JSON 入力処理         | AC-001    |
-| MEDIUM   | unit        | 設定ファイル読み込み               | AC-004    |
-| MEDIUM   | unit        | biome.json 読み込み・反映          | AC-006    |
-| MEDIUM   | unit        | biome.json でルール無効時スキップ  | AC-007    |
-| LOW      | unit        | 非対応ファイルのスキップ           | AC-005    |
-| HIGH     | unit        | stderr 出力フォーマット            | AC-008    |
-| HIGH     | integration | Claude 修正フロー (e2e)            | AC-009    |
+| ID     | Description                                              | Confidence |
+| ------ | -------------------------------------------------------- | ---------- |
+| AC-001 | WHEN Write ツール実行 THEN biome がコードをチェック      | [✓]        |
+| AC-002 | IF エラー検出 THEN stderr に出力して exit 2              | [✓]        |
+| AC-003 | IF biome.json 存在 THEN その設定を反映                   | [✓]        |
+| AC-004 | IF Claude がエラー受信 THEN 修正版で再試行可能           | [✓]        |
 
 ## Implementation Plan
 
-| Phase | Description              | Steps                                           | Validates      |
-| ----- | ------------------------ | ----------------------------------------------- | -------------- |
-| 1     | リポジトリ作成           | GitHub リポジトリ作成, 基本構成                 | -              |
-| 2     | biome 統合               | パース, 解析, 結果変換の実装                    | AC-001, AC-002 |
-| 3     | 設定機能                 | biome.json 読み込み, フォールバック設定         | AC-004, AC-006, AC-007 |
-| 4     | 出力フォーマット         | stderr 出力, Claude 向け修正提案生成            | AC-002, AC-003, AC-008, AC-009 |
-| 5     | CI/CD                    | GitHub Actions でバイナリ自動ビルド             | -              |
-| 6     | claude-config 連携       | install スクリプト, settings.json 設定例        | -              |
-| 7     | 旧実装削除               | hooks/biome-hook/ を削除                        | I-003          |
+| Phase | Description          | Status |
+| ----- | -------------------- | ------ |
+| 1     | biome-hook.sh 作成   | Done   |
+| 2     | settings.json に登録 | TODO   |
+| 3     | 旧 guardrails/ 削除  | TODO   |
+| 4     | ドキュメント更新     | TODO   |
+
+## Dependencies
+
+- `biome` CLI (`npm install -g @biomejs/biome`)
+- `jq` (JSON パーサー)
 
 ## Success Metrics
 
-| Metric           | Target        | Validates |
-| ---------------- | ------------- | --------- |
-| 実行時間         | < 200ms       | A-003     |
-| バイナリサイズ   | < 15MB        | -         |
-| biome ルール数   | 50+ 利用可能  | I-002     |
-| 誤検出率         | < 5%          | I-002     |
-| biome.json 互換  | 100%          | I-005     |
-
-## Risks
-
-| ID    | Risk                           | Impact | Mitigation                               |
-| ----- | ------------------------------ | ------ | ---------------------------------------- |
-| R-001 | biome クレート API の破壊的変更 | MED    | バージョン固定, 定期的な更新確認         |
-| R-002 | バイナリサイズが大きすぎる     | LOW    | 必要なルールのみ有効化, strip            |
-| R-003 | パフォーマンス劣化             | LOW    | ベンチマーク監視, 閾値超えたらアラート   |
-
-## Verification Checklist
-
-- [x] Research/investigation completed (biome クレート調査, ベンチマーク)
-- [x] Impact on existing structure confirmed (hooks/biome-hook/ 削除)
-- [ ] Backup of related files obtained (if needed)
+| Metric   | Target  |
+| -------- | ------- |
+| 実行時間 | < 300ms |
+| 実装行数 | < 20行  |
 
 ## References
 
-| Type     | Path                                          |
-| -------- | --------------------------------------------- |
-| 現行実装 | hooks/biome-hook/                             |
-| hooks 設計 | docs/HOOKS.md                                |
-| biome    | https://github.com/biomejs/biome              |
-| crates   | https://crates.io/crates/biome_js_parser      |
+| Type       | Path                |
+| ---------- | ------------------- |
+| 実装       | hooks/biome-hook.sh |
+| hooks 設計 | docs/HOOKS.md       |
