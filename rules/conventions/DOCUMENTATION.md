@@ -9,7 +9,7 @@ Guidelines for consistent documentation in the Claude Code ecosystem.
 | Clarity Over Completeness | Apply Occam's Razor                   |
 | EN/JP Synchronization     | Both versions must match structure    |
 | No Circular References    | Skills: 1 level, Rules/Docs: 3 levels |
-| Mermaid Over ASCII        | Use Mermaid diagrams, not ASCII art   |
+| Mermaid Over ASCII        | Use Mermaid in .md files only         |
 
 ## Directory Structure
 
