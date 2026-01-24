@@ -88,6 +88,43 @@ flowchart LR
     R -->|問題なし| OK[PASS: exit 0]
 ```
 
+### Claude 自動修正フロー
+
+ブロック時に修正提案を stderr に出力することで、Claude が自動的に修正して再試行する。
+
+```mermaid
+sequenceDiagram
+    participant C as Claude
+    participant G as guardrails
+    participant B as biome
+
+    C->>G: Write (問題のあるコード)
+    G->>B: analyze
+    B-->>G: エラー検出
+    G-->>C: stderr: 修正提案
+    Note over G: exit 2 (BLOCK)
+    Note over C: 修正提案を理解
+    C->>G: Write (修正版コード)
+    G->>B: analyze
+    B-->>G: OK
+    G-->>C: exit 0 (PASS)
+```
+
+### stderr 出力フォーマット
+
+```
+🛡️ BLOCKED: {rule_name}
+
+File: {file_path}:{line}
+Problem: {code_snippet}
+Why: {explanation}
+Fix: {suggestion}
+
+Please fix and retry.
+```
+
+**重要**: Claude Code は exit 2 時に **stderr のみ** を Claude に渡す。stdout は無視される。
+
 ### 設定読み込みフロー
 
 ```mermaid
@@ -161,6 +198,8 @@ flowchart TD
 | AC-005 | IF TS/JS 以外のファイル THEN スキップして通過                  | -         | [✓]        |
 | AC-006 | WHEN biome.json 存在 THEN そのルール設定を反映                 | I-005     | [✓]        |
 | AC-007 | IF biome.json でルール無効化 THEN guardrails もそのルールをスキップ | I-005     | [✓]        |
+| AC-008 | WHEN ブロック時 THEN stderr に修正提案を出力                       | -         | [✓]        |
+| AC-009 | IF Claude が修正提案を受信 THEN 修正版で再試行可能                 | -         | [✓]        |
 
 ## Test Plan
 
@@ -174,6 +213,8 @@ flowchart TD
 | MEDIUM   | unit        | biome.json 読み込み・反映          | AC-006    |
 | MEDIUM   | unit        | biome.json でルール無効時スキップ  | AC-007    |
 | LOW      | unit        | 非対応ファイルのスキップ           | AC-005    |
+| HIGH     | unit        | stderr 出力フォーマット            | AC-008    |
+| HIGH     | integration | Claude 修正フロー (e2e)            | AC-009    |
 
 ## Implementation Plan
 
@@ -182,7 +223,7 @@ flowchart TD
 | 1     | リポジトリ作成           | GitHub リポジトリ作成, 基本構成                 | -              |
 | 2     | biome 統合               | パース, 解析, 結果変換の実装                    | AC-001, AC-002 |
 | 3     | 設定機能                 | biome.json 読み込み, フォールバック設定         | AC-004, AC-006, AC-007 |
-| 4     | 出力フォーマット         | エラー表示, 警告表示の整形                      | AC-002, AC-003 |
+| 4     | 出力フォーマット         | stderr 出力, Claude 向け修正提案生成            | AC-002, AC-003, AC-008, AC-009 |
 | 5     | CI/CD                    | GitHub Actions でバイナリ自動ビルド             | -              |
 | 6     | claude-config 連携       | install スクリプト, settings.json 設定例        | -              |
 | 7     | 旧実装削除               | hooks/guardrails/ を削除                        | I-003          |
