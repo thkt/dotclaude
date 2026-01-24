@@ -45,8 +45,32 @@ Alternatives considered:
 
 ## Architecture
 
+### リポジトリ構成
+
 ```
-claude-guardrails (別リポジトリ)
+claude-config/
+├── src/
+│   └── guardrails/           ← git submodule (別リポジトリ)
+│       ├── src/
+│       │   ├── main.rs
+│       │   ├── config.rs
+│       │   ├── analyzer.rs
+│       │   └── reporter.rs
+│       ├── Cargo.toml
+│       ├── config.example.json
+│       ├── README.md
+│       └── .github/
+│           └── workflows/
+│               └── release.yml
+├── hooks/
+│   └── guardrails            ← ビルド済みバイナリ (.gitignore)
+└── .gitmodules
+```
+
+### 別リポジトリ (claude-guardrails)
+
+```
+claude-guardrails/
 ├── src/
 │   ├── main.rs           # エントリポイント
 │   ├── config.rs         # 設定読み込み
