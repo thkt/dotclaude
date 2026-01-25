@@ -13,23 +13,33 @@
         "recommended": true,
         "noExplicitAny": "error",
         "noDebugger": "error",
-        "noConsole": "warn"
+        "noConsole": "warn",
+        "noEmptyBlockStatements": "warn",
+        "noImplicitAnyLet": "error"
       },
       "security": {
         "recommended": true,
-        "noGlobalEval": "error"
+        "noGlobalEval": "error",
+        "noSecrets": "error"
       },
       "a11y": {
         "recommended": true
       },
       "complexity": {
-        "recommended": true
+        "recommended": true,
+        "noExcessiveCognitiveComplexity": "warn"
       },
       "style": {
-        "recommended": true
+        "recommended": true,
+        "noMagicNumbers": "warn",
+        "noNonNullAssertion": "warn"
       },
       "performance": {
-        "recommended": true
+        "recommended": true,
+        "noBarrelFile": "warn"
+      },
+      "nursery": {
+        "useMaxParams": "warn"
       }
     }
   },

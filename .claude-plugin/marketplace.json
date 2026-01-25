@@ -208,7 +208,7 @@
       "name": "security-tools",
       "source": "./",
       "description": "Security scanning for plugins and skills: /scan for malicious code and instruction detection",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
