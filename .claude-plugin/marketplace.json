@@ -203,6 +203,22 @@
         "./skills/consulting-gemini/SKILL.md",
         "./skills/accessing-google-workspace/SKILL.md"
       ]
+    },
+    {
+      "name": "security-tools",
+      "source": "./",
+      "description": "Security scanning for plugins and skills: /scan for malicious code and instruction detection",
+      "version": "1.0.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": ["security", "scan", "plugin", "malware", "audit"],
+      "category": "Security",
+      "commands": ["./commands/scan.md"],
+      "skills": ["./skills/scanning-plugins/SKILL.md"],
+      "agents": ["./agents/analyzers/plugin-scanner.md"]
     }
   ]
 }
