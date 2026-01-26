@@ -56,18 +56,5 @@ has_session_changes() {
 }
 
 resolve_idr_file() {
-  local current_sow_file="${WORKSPACE_DIR}/.current-sow"
-
-  if [ -f "$current_sow_file" ]; then
-    local sow_path
-    sow_path=$(cat "$current_sow_file")
-    if [ -f "$sow_path" ]; then
-      echo "$(dirname "$sow_path")/idr.md"
-      return
-    fi
-  fi
-
-  local date_dir="${WORKSPACE_DIR}/planning/$(date +%Y-%m-%d)"
-  mkdir -p "$date_dir"
-  echo "${date_dir}/idr.md"
+  "${HOME}/.claude/scripts/resolve-idr-path.sh" "$WORKSPACE_DIR"
 }

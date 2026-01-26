@@ -25,23 +25,14 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 mkdir -p "$CODEMAP_DIR"
 
+SCRIPTS_DIR="${HOME}/.claude/scripts"
+
 detect_project_type() {
-  local root="${1:-$PROJECT_ROOT}"
-  if [ -f "$root/package.json" ]; then echo "node"
-  elif [ -f "$root/Cargo.toml" ]; then echo "rust"
-  elif [ -f "$root/go.mod" ]; then echo "go"
-  elif [ -f "$root/pyproject.toml" ]; then echo "python"
-  else echo "unknown"
-  fi
+  "$SCRIPTS_DIR/detect-project-type.sh" "${1:-$PROJECT_ROOT}"
 }
 
 get_src_dir() {
-  local type="$1"
-  local root="${2:-$PROJECT_ROOT}"
-  if [ -d "$root/src" ]; then echo "src"
-  elif [ "$type" = "node" ] && [ -d "$root/app" ]; then echo "app"
-  else echo "."
-  fi
+  "$SCRIPTS_DIR/get-src-dir.sh" "$1" "${2:-$PROJECT_ROOT}"
 }
 
 generate_tree() {
@@ -77,15 +68,7 @@ find_key_exports() {
 }
 
 detect_frameworks() {
-  local root="${1:-$PROJECT_ROOT}"
-  local fw=()
-  [ -f "$root/package.json" ] && {
-    grep -q '"next"' "$root/package.json" 2>/dev/null && fw+=("Next.js")
-    grep -q '"react"' "$root/package.json" 2>/dev/null && fw+=("React")
-    grep -q '"vue"' "$root/package.json" 2>/dev/null && fw+=("Vue")
-    grep -q '"hono"' "$root/package.json" 2>/dev/null && fw+=("Hono")
-  }
-  [ ${#fw[@]} -gt 0 ] && printf '%s, ' "${fw[@]}" | sed 's/, $//' || echo "N/A"
+  "$SCRIPTS_DIR/detect-frameworks.sh" "${1:-$PROJECT_ROOT}"
 }
 
 PROJECT_TYPE=$(detect_project_type)

@@ -1,6 +1,6 @@
 # Adopt Deterministic Script Pattern
 
-- Status: proposed
+- Status: Accepted
 - Deciders: thkt
 - Date: 2026-01-27
 

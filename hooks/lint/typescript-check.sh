@@ -16,15 +16,7 @@ esac
 [[ "$FILE_PATH" == *.d.ts ]] && exit 0
 
 find_project_root() {
-  local dir="$1"
-  while [ "$dir" != "/" ]; do
-    if [ -f "$dir/tsconfig.json" ]; then
-      echo "$dir"
-      return 0
-    fi
-    dir=$(dirname "$dir")
-  done
-  return 1
+  "${HOME}/.claude/scripts/find-config-root.sh" "$1" "tsconfig.json"
 }
 
 EXPANDED_PATH="${FILE_PATH/#\~/$HOME}"
