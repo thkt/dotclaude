@@ -64,12 +64,12 @@ echo ""
 
 # 3. Numbering
 echo "🔢 3. ADR Number Assignment"
-LAST_NUM=$(ls "$ADR_DIR" 2>/dev/null | grep -E '^[0-9]{4}-' | sort -r | head -1 | cut -d'-' -f1 || echo "0000")
-NEXT_NUM=$(printf "%04d" $((10#$LAST_NUM + 1)))
+SCRIPTS_DIR="${HOME}/.claude/scripts"
+NEXT_NUM=$("$SCRIPTS_DIR/next-adr-number.sh" "$ADR_DIR")
 echo -e "${GREEN}✅ Next number: ${NEXT_NUM}${NC}"
 
 # Slug generation
-SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/ /-/g' | sed 's/[^a-z0-9-]//g')
+SLUG=$("$SCRIPTS_DIR/slugify.sh" "$TITLE")
 FILENAME="${NEXT_NUM}-${SLUG}.md"
 echo -e "${GREEN}✅ Filename: ${FILENAME}${NC}"
 echo ""

@@ -11,30 +11,13 @@ EXCLUDE_DIRS=(
   .ja statsig telemetry todos tasks sounds session-env
 )
 
-STAGED=$(git diff --cached --name-only 2>/dev/null || echo "")
-[ -z "$STAGED" ] && exit 0
+SHOULD_UPDATE=$("${HOME}/.claude/scripts/should-update-codemap.sh" 2>&1)
+RESULT=$(echo "$SHOULD_UPDATE" | head -1)
+REASON=$(echo "$SHOULD_UPDATE" | tail -1)
 
-NEW_FILES=$(git diff --cached --name-status 2>/dev/null | grep "^A" | wc -l | tr -d ' ')
-ENTRY_POINT_CHANGE=$(echo "$STAGED" | grep -E "(index|main|app|server|layout|page)\.(ts|tsx|js|jsx)$" | wc -l | tr -d ' ')
-DEPS_CHANGE=$(echo "$STAGED" | grep -E "(package\.json|Cargo\.toml|go\.mod|pyproject\.toml)$" | wc -l | tr -d ' ')
+[ "$RESULT" = "false" ] && exit 0
 
-SHOULD_UPDATE=false
-REASON=""
-
-if [ "$NEW_FILES" -ge 3 ]; then
-  SHOULD_UPDATE=true
-  REASON="${NEW_FILES} new files"
-elif [ "$ENTRY_POINT_CHANGE" -gt 0 ]; then
-  SHOULD_UPDATE=true
-  REASON="entry point change"
-elif [ "$DEPS_CHANGE" -gt 0 ]; then
-  SHOULD_UPDATE=true
-  REASON="deps change"
-fi
-
-[ "$SHOULD_UPDATE" = false ] && exit 0
-
-echo "[Codemap] Updating: $REASON"
+echo "$REASON"
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 CODEMAP_DIR="${PROJECT_ROOT}/.codemaps"

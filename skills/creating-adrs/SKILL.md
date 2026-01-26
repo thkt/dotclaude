@@ -14,14 +14,20 @@ user-invocable: false
 
 | Phase         | Actions                                                                  |
 | ------------- | ------------------------------------------------------------------------ |
-| 1. Pre-Check  | `ls adr/*.md`, check duplicates, get next number                         |
-| 2. Template   | Match keywords to template type                                          |
+| 1. Pre-Check  | Run `./scripts/pre-check.sh "$TITLE"` (uses shared scripts)              |
+| 2. Template   | Run `$HOME/.claude/scripts/select-adr-template.sh "$TITLE"`              |
 | 3. References | Gather project docs, issues, external resources                          |
 | 4. Validate   | Check required sections (Title, Status, Context, Decision, Consequences) |
 | 5. Index      | Auto-generate `adr/README.md`                                            |
 | 6. Recovery   | Handle missing dirs, duplicates, missing sections                        |
 
 ## Template Selection
+
+Use script to auto-select template:
+
+```bash
+TEMPLATE=$("$HOME/.claude/scripts/select-adr-template.sh" "$TITLE")
+```
 
 | Template             | Use Case                   | Required Sections          |
 | -------------------- | -------------------------- | -------------------------- |

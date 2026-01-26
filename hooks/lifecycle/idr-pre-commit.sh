@@ -120,18 +120,7 @@ $diff_stat
 
 get_next_idr_number() {
   local idr_dir="$1"
-  local max_num=0
-  local num f
-
-  while IFS= read -r -d '' f; do
-    [ -f "$f" ] || continue
-    num=$(basename "$f" | sed -n 's/\.idr-\([0-9]\{1,\}\)\.md$/\1/p' | sed 's/^0*//')
-    [ -z "$num" ] && continue
-    [[ "$num" =~ ^[0-9]+$ ]] || continue
-    [ "$num" -gt "$max_num" ] && max_num="$num"
-  done < <(find "$idr_dir" -maxdepth 1 -name ".idr-*.md" -print0 2>/dev/null)
-
-  printf "%02d" $((max_num + 1))
+  "${HOME}/.claude/scripts/next-idr-number.sh" "$idr_dir"
 }
 
 main() {
