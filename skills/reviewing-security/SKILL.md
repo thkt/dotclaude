@@ -3,7 +3,8 @@ name: reviewing-security
 description: >
   OWASP Top 10-based security review and vulnerability detection.
   Use when reviewing code for security issues, performing vulnerability analysis,
-  or when user mentions security, OWASP, XSS, SQL injection, セキュリティ, 脆弱性.
+  or when user mentions security, OWASP, XSS, SQL injection, セキュリティ, 脆弱性,
+  cloud security, AWS, IAM, Terraform, クラウドセキュリティ, インフラ.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: security-reviewer
 context: fork
@@ -32,8 +33,9 @@ Report only when confidence >80%. Include: file:line, exploit scenario, fix reco
 
 ## References
 
-| Topic     | OWASP            | File                            |
-| --------- | ---------------- | ------------------------------- |
-| Basic     | A01, A02, A07    | `references/owasp-basic.md`     |
-| Injection | A03              | `references/owasp-injection.md` |
-| Advanced  | A04-A06, A08-A10 | `references/owasp-advanced.md`  |
+| Topic     | Scope            | File                                 |
+| --------- | ---------------- | ------------------------------------ |
+| Basic     | A01, A02, A07    | `references/owasp-basic.md`          |
+| Injection | A03              | `references/owasp-injection.md`      |
+| Advanced  | A04-A06, A08-A10 | `references/owasp-advanced.md`       |
+| Cloud     | IAM, IaC, CI/CD  | `references/cloud-infrastructure.md` |

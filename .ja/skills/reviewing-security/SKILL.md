@@ -1,10 +1,13 @@
 ---
 name: reviewing-security
 description: >
-  OWASP Top 10-based security review and vulnerability detection.
-  Triggers: security, OWASP, XSS, SQL injection, セキュリティ, 脆弱性, vulnerability.
+  OWASP Top 10ベースのセキュリティレビューと脆弱性検出。
+  Use when セキュリティ問題のコードレビュー、脆弱性分析、
+  or when user mentions security, OWASP, XSS, SQL injection, セキュリティ, 脆弱性,
+  cloud security, AWS, IAM, Terraform, クラウドセキュリティ, インフラ.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: security-reviewer
+context: fork
 user-invocable: false
 ---
 
@@ -30,8 +33,9 @@ user-invocable: false
 
 ## 参考
 
-| トピック         | OWASP            | ファイル                        |
-| ---------------- | ---------------- | ------------------------------- |
-| 基本             | A01, A02, A07    | `references/owasp-basic.md`     |
-| インジェクション | A03              | `references/owasp-injection.md` |
-| 上級             | A04-A06, A08-A10 | `references/owasp-advanced.md`  |
+| トピック         | スコープ         | ファイル                             |
+| ---------------- | ---------------- | ------------------------------------ |
+| 基本             | A01, A02, A07    | `references/owasp-basic.md`          |
+| インジェクション | A03              | `references/owasp-injection.md`      |
+| 上級             | A04-A06, A08-A10 | `references/owasp-advanced.md`       |
+| クラウド         | IAM, IaC, CI/CD  | `references/cloud-infrastructure.md` |
