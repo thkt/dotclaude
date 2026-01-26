@@ -21,10 +21,27 @@ Orchestrate implementation planning with SOW and Spec generation.
 | 0    | Q&A Clarification       | (if unclear)    |
 | 1    | Design Exploration      | 4 approaches    |
 | 2    | User Selection          | chosen approach |
+| 2.5  | ADR Proposal            | (if needed)     |
 | 3    | /sow                    | sow.md          |
 | 4    | /spec                   | spec.md         |
 | 5    | sow-spec-reviewer (≥90) | (optional)      |
 | 6    | SOW → Todos             | TaskCreate      |
+
+## ADR Proposal (Step 2.5)
+
+After user selects an approach, evaluate if an ADR is warranted.
+
+| Condition               | Action                                           |
+| ----------------------- | ------------------------------------------------ |
+| Technical decision made | AskUserQuestion: "Create an ADR?" → Yes → `/adr` |
+| Simple feature addition | Skip                                             |
+
+ADR-worthy decisions:
+
+- Framework/library selection
+- Architecture pattern choice
+- Deprecation decisions
+- Trade-off decisions between multiple valid options
 
 ## Todo Generation (Step 6)
 
