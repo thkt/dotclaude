@@ -1,6 +1,6 @@
 # Design Philosophy
 
-この設定は **AIコーディングアシスタントの一貫性と品質を確保するためのフレームワーク** として設計されています。
+This configuration is designed as a **framework to ensure consistency and quality for AI coding assistants**.
 
 📌 **[日本語版](../.ja/docs/DESIGN.md)**
 
@@ -19,7 +19,6 @@ graph TD
 
     subgraph Development["Development Layer"]
         PERF[PERFORMANCE]
-        FAIL[FAILURE_PATTERNS]
         TIDY[TIDYINGS]
         CODE[CODE_THRESHOLDS]
         PROG[PROGRESSIVE_ENHANCEMENT]
@@ -50,27 +49,27 @@ graph TD
 
 ### 1. Core Layer — Safety & Transparency
 
-最優先で適用されるルール。AIの「暴走」を防ぎ、ユーザーが常に状況を把握できるようにする。
+Top-priority rules. Prevent AI "runaway" and ensure users always understand the situation.
 
-| File                                                                | Intent       | Key Mechanism                             |
-| ------------------------------------------------------------------- | ------------ | ----------------------------------------- |
-| [AI_OPERATION_PRINCIPLES](../rules/core/AI_OPERATION_PRINCIPLES.md) | 安全性の担保 | `rm`禁止→`mv ~/.Trash/`、破壊的操作の確認 |
-| [PRE_TASK_CHECK_SPEC](../rules/core/PRE_TASK_CHECK_SPEC.md)         | 理解の可視化 | 7項目チェックリスト、理解度グラフ         |
-| [PRE_TASK_CHECK_RULES](../rules/core/PRE_TASK_CHECK_RULES.md)       | チェック基準 | [✓]/[→]/[?]マーカー、スキップ条件         |
+| File                                                                | Intent                  | Key Mechanism                                                 |
+| ------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------- |
+| [AI_OPERATION_PRINCIPLES](../rules/core/AI_OPERATION_PRINCIPLES.md) | Ensure safety           | `rm` prohibited → `mv ~/.Trash/`, destructive op confirmation |
+| [PRE_TASK_CHECK_SPEC](../rules/core/PRE_TASK_CHECK_SPEC.md)         | Visualize understanding | 7-item checklist, understanding graph                         |
+| [PRE_TASK_CHECK_RULES](../rules/core/PRE_TASK_CHECK_RULES.md)       | Check criteria          | [✓]/[→]/[?] markers, skip conditions                          |
 
 **Why this design:**
 
-- `rm`を禁止し`mv ~/.Trash/`に置換することで、macOSのゴミ箱復元機能を活用
-- 出力検証マーカー `[✓][→][?]` でAIの確信度を明示化
-- 7項目チェックで「わかったつもり」による誤実装を防止
+- Prohibit `rm` and replace with `mv ~/.Trash/` to leverage macOS Trash recovery
+- Output verification markers `[✓][→][?]` make AI confidence explicit
+- 7-item check prevents misimplementation from "false understanding"
 
 ### 2. Design Principles — Decision Framework
 
-設計判断の優先順位と衝突時の解決ルールを定義。
+Define priority order for design decisions and conflict resolution rules.
 
-| File                                    | Intent                             |
-| --------------------------------------- | ---------------------------------- |
-| [PRINCIPLES.md](../rules/PRINCIPLES.md) | 原則の優先順位、依存関係、衝突解決 |
+| File                                    | Intent                                                |
+| --------------------------------------- | ----------------------------------------------------- |
+| [PRINCIPLES.md](../rules/PRINCIPLES.md) | Principle priority, dependencies, conflict resolution |
 
 **Principle Hierarchy:**
 
@@ -84,57 +83,65 @@ TDD / SOLID / YAGNI (Contextual)
 
 **Conflict Resolution Examples:**
 
-| Conflict           | Winner   | Reason                                   |
-| ------------------ | -------- | ---------------------------------------- |
-| DRY vs Readable    | Readable | 抽象化が理解を妨げるなら重複を許容       |
-| SOLID vs Simple    | Simple   | 将来のためのoverdesignを避ける           |
-| Perfect vs Working | Working  | 不完全な抽象化でも問題を解決するなら出荷 |
+| Conflict           | Winner   | Reason                                              |
+| ------------------ | -------- | --------------------------------------------------- |
+| DRY vs Readable    | Readable | Accept duplication if abstraction hurts clarity     |
+| SOLID vs Simple    | Simple   | Avoid overdesign for imagined futures               |
+| Perfect vs Working | Working  | Ship leaky abstractions if they solve real problems |
 
 ### 3. Development Layer — Practical Standards
 
-日々の開発で適用する具体的な基準とパターン。
+Concrete standards and patterns for daily development.
 
-| File                                                                       | Intent                            | Key Threshold                             |
-| -------------------------------------------------------------------------- | --------------------------------- | ----------------------------------------- |
-| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)                 | 定量的品質基準                    | 関数≤30行、ファイル≤400行                 |
-| [TIDYINGS](../rules/development/TIDYINGS.md)                               | 整理範囲の限定                    | 振る舞い変更禁止、編集ファイルのみ        |
-| [FAILURE_PATTERNS](../rules/development/FAILURE_PATTERNS.md)               | AI失敗パターン検知                | 3回失敗→再考、10ファイル探索→スコープ縮小 |
-| [PERFORMANCE](../rules/development/PERFORMANCE.md)                         | コンテキスト/フロントエンド最適化 | MCP≤10、LCP<2.5s                          |
-| [PROGRESSIVE_ENHANCEMENT](../rules/development/PROGRESSIVE_ENHANCEMENT.md) | 漸進的構築                        | CSS-First、Outcome-First                  |
-| [COMPLETION_CRITERIA](../rules/development/COMPLETION_CRITERIA.md)         | 完了基準                          | tests pass、lint pass、build pass         |
+| File                                                                       | Intent                        | Key Threshold                          |
+| -------------------------------------------------------------------------- | ----------------------------- | -------------------------------------- |
+| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)                 | Quantitative quality metrics  | Function ≤30 lines, File ≤400 lines    |
+| [TIDYINGS](../rules/development/TIDYINGS.md)                               | Scope cleanup limits          | No behavior changes, edited files only |
+| [PERFORMANCE](../rules/development/PERFORMANCE.md)                         | Context/frontend optimization | MCP ≤10, LCP <2.5s                     |
+| [PROGRESSIVE_ENHANCEMENT](../rules/development/PROGRESSIVE_ENHANCEMENT.md) | Incremental building          | CSS-First, Outcome-First               |
+| [COMPLETION_CRITERIA](../rules/development/COMPLETION_CRITERIA.md)         | Completion criteria           | tests pass, lint pass, build pass      |
+
+**AI Failure Patterns (inline):**
+
+| Pattern              | Trigger                  | Action                   |
+| -------------------- | ------------------------ | ------------------------ |
+| Context Bloat        | usage >70%               | `/clear` or `/compact`   |
+| Repeated Fixes       | 3rd attempt, same error  | Reframe with specificity |
+| Infinite Exploration | >10 files read, no edits | Scope down with subagent |
+| Wrong Direction      | "not what I wanted"      | `/rewind` to checkpoint  |
 
 **Why this design:**
 
-- `FAILURE_PATTERNS`でAI特有の「無限探索」「繰り返し修正」を自己検知
-- `TIDYINGS`で「何を整理してよいか」を明確化し、過剰リファクタリングを防止
-- 定量基準（30行、400行）で主観を排除
+- Self-detect AI-specific patterns like "infinite exploration" and "repeated fixes"
+- `TIDYINGS` clarifies "what can be cleaned up" to prevent over-refactoring
+- Quantitative thresholds (30 lines, 400 lines) remove subjectivity
 
 ### 4. Conventions Layer — Consistency Rules
 
-ドキュメント・プラグイン・翻訳の一貫性を保つルール。
+Rules to maintain consistency across documentation, plugins, and translations.
 
-| File                                                               | Intent              |
-| ------------------------------------------------------------------ | ------------------- |
-| [DOCUMENTATION](../rules/conventions/DOCUMENTATION.md)             | 文書構造の統一      |
-| [SKILL_FORMAT](../rules/conventions/SKILL_FORMAT.md)               | Skill定義の標準形式 |
-| [PLUGIN_ARCHITECTURE](../rules/conventions/PLUGIN_ARCHITECTURE.md) | プラグイン制約      |
-| [TRANSLATION](../rules/conventions/TRANSLATION.md)                 | EN/JP同期ルール     |
-| [TEMPLATE_VARIABLES](../rules/conventions/TEMPLATE_VARIABLES.md)   | 変数置換構文        |
+| File                                                               | Intent                       |
+| ------------------------------------------------------------------ | ---------------------------- |
+| [DOCUMENTATION](../rules/conventions/DOCUMENTATION.md)             | Document structure unity     |
+| [SKILL_FORMAT](../rules/conventions/SKILL_FORMAT.md)               | Skill definition standard    |
+| [PLUGIN_ARCHITECTURE](../rules/conventions/PLUGIN_ARCHITECTURE.md) | Plugin constraints           |
+| [TRANSLATION](../rules/conventions/TRANSLATION.md)                 | EN/JP sync rules             |
+| [TEMPLATE_VARIABLES](../rules/conventions/TEMPLATE_VARIABLES.md)   | Variable substitution syntax |
 
 **Why this design:**
 
-- 参照深度を制限（Skills: 1階層、Rules: 3階層）して部分読み込み問題を回避
-- EN/JP構造を揃えつつ、翻訳内容の差異は許容
+- Limit reference depth (Skills: 1 level, Rules: 3 levels) to avoid partial read issues
+- Align EN/JP structure while allowing translation content differences
 
 ### 5. Workflows Layer — User Interface
 
-ユーザー向けのコマンドとワークフロー体系。
+User-facing commands and workflow system.
 
-| File                                                               | Intent             |
-| ------------------------------------------------------------------ | ------------------ |
-| [WORKFLOW_GUIDE](../rules/workflows/WORKFLOW_GUIDE.md)             | コマンド選択ガイド |
-| [MODULARIZATION_RULES](../rules/workflows/MODULARIZATION_RULES.md) | コマンド分割基準   |
-| [IDR_GENERATION](../rules/workflows/IDR_GENERATION.md)             | 実装記録の自動生成 |
+| File                                                               | Intent                               |
+| ------------------------------------------------------------------ | ------------------------------------ |
+| [WORKFLOW_GUIDE](../rules/workflows/WORKFLOW_GUIDE.md)             | Command selection guide              |
+| [MODULARIZATION_RULES](../rules/workflows/MODULARIZATION_RULES.md) | Command split criteria               |
+| [IDR_GENERATION](../rules/workflows/IDR_GENERATION.md)             | Auto-generate implementation records |
 
 **Workflow Patterns:**
 
@@ -153,29 +160,29 @@ flowchart LR
 
 ## Underlying Philosophy
 
-| Philosophy       | Implementation                              |
-| ---------------- | ------------------------------------------- |
-| **Transparency** | チェックリスト、確信度マーカー、進捗可視化  |
-| **Safety**       | 破壊的操作禁止/確認、ゴミ箱移動、復元可能性 |
-| **Consistency**  | 命名規則、ファイル構成、コマンド体系        |
-| **Learnability** | Explanatory mode、Insight表示               |
+| Philosophy       | Implementation                                                      |
+| ---------------- | ------------------------------------------------------------------- |
+| **Transparency** | Checklists, confidence markers, progress visualization              |
+| **Safety**       | Destructive op prohibition/confirmation, Trash move, recoverability |
+| **Consistency**  | Naming conventions, file structure, command system                  |
+| **Learnability** | Explanatory mode, Insight display                                   |
 
-これらは「**AIは間違える**」という前提のもと、以下を実現するための仕組み：
+These mechanisms are built on the premise that "**AI makes mistakes**":
 
-- 間違いを**検知しやすく**する
-- 間違いを**修正しやすく**する
-- 間違いの**被害を最小化**する
+- Make mistakes **easy to detect**
+- Make mistakes **easy to fix**
+- **Minimize** mistake damage
 
 ## Detailed Documentation
 
-より詳細な設計意図については、以下のドキュメントを参照してください：
+For more detailed design intentions, refer to the following documents:
 
-| Document                            | Content                                      |
-| ----------------------------------- | -------------------------------------------- |
-| [COMMANDS](./COMMANDS.md)           | コマンドの設計意図と関係性                   |
-| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | スキル・エージェントの仕組みと使い分け       |
-| [HOOKS](./HOOKS.md)                 | フックシステムとIDR生成                      |
-| [TEMPLATES](./TEMPLATES.md)         | テンプレート体系とドキュメントライフサイクル |
+| Document                            | Content                                     |
+| ----------------------------------- | ------------------------------------------- |
+| [COMMANDS](./COMMANDS.md)           | Command design intentions and relationships |
+| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent mechanisms and usage            |
+| [HOOKS](./HOOKS.md)                 | Hook system and IDR generation              |
+| [TEMPLATES](./TEMPLATES.md)         | Template system and document lifecycle      |
 
 ---
 

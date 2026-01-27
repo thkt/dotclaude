@@ -128,12 +128,11 @@ agents/
 | testability-reviewer    | テスト容易性         |
 | silent-failure-reviewer | 静かな失敗検知       |
 | root-cause-reviewer     | 根本原因分析         |
-| readability-reviewer    | 可読性               |
+| code-quality-reviewer   | 構造 + 可読性        |
 | performance-reviewer    | パフォーマンス       |
 | accessibility-reviewer  | WCAG準拠             |
 | design-pattern-reviewer | Reactパターン        |
 | document-reviewer       | ドキュメント品質     |
-| structure-reviewer      | コード構造           |
 | sow-spec-reviewer       | SOW/Spec品質         |
 | subagent-reviewer       | サブエージェント定義 |
 

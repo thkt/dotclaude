@@ -10,15 +10,15 @@ context: fork
 
 | 指標                 | 値                    |
 | -------------------- | --------------------- |
-| ローカルエージェント | 14                    |
+| ローカルエージェント | 13                    |
 | 外部エージェント     | 4 (pr-review-toolkit) |
-| 合計                 | 18                    |
+| 合計                 | 17                    |
 
 ## エージェントグループ
 
 | グループ    | エージェント                                                | タイムアウト | モード      |
 | ----------- | ----------------------------------------------------------- | ------------ | ----------- |
-| Foundation  | structure, readability, progressive-enhancer                | 35s          | parallel    |
+| Foundation  | code-quality, progressive-enhancer                          | 35s          | parallel    |
 | Quality     | type-safety, design-pattern, testability, silent-failure    | 50s          | parallel    |
 | Enhanced    | silent-failure-hunter, comment-analyzer (pr-review-toolkit) | 50s          | parallel    |
 | Sequential  | root-cause (foundationに依存)                               | 60s          | sequential  |
@@ -43,7 +43,7 @@ flowchart LR
 
 | 場所                      | エージェント                                               |
 | ------------------------- | ---------------------------------------------------------- |
-| `agents/reviewers/`       | structure, readability, type-safety, design-pattern, etc.  |
+| `agents/reviewers/`       | code-quality, type-safety, design-pattern, etc.            |
 | `agents/enhancers/`       | progressive-enhancer                                       |
 | `agents/critics/`         | devils-advocate                                            |
 | `agents/integrators/`     | audit-integrator                                           |

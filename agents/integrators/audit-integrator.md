@@ -38,7 +38,7 @@ context: fork
 | ------------------- | -------------------- | -------------- |
 | Type safety + test  | type-safety-reviewer | testability    |
 | A11y + performance  | accessibility        | performance    |
-| Structure + pattern | structure-reviewer   | design-pattern |
+| Structure + pattern | code-quality         | design-pattern |
 | Silent + testable   | silent-failure       | testability    |
 
 ## Finding Structure
