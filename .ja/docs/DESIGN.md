@@ -19,7 +19,6 @@ graph TD
 
     subgraph Development["開発レイヤー"]
         PERF[PERFORMANCE]
-        FAIL[FAILURE_PATTERNS]
         TIDY[TIDYINGS]
         CODE[CODE_THRESHOLDS]
         PROG[PROGRESSIVE_ENHANCEMENT]
@@ -94,18 +93,26 @@ TDD / SOLID / YAGNI (文脈依存)
 
 日々の開発で適用する具体的な基準とパターン。
 
-| ファイル                                                                   | 意図                              | 主要な閾値                                |
-| -------------------------------------------------------------------------- | --------------------------------- | ----------------------------------------- |
-| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)                 | 定量的品質基準                    | 関数≤30行、ファイル≤400行                 |
-| [TIDYINGS](../rules/development/TIDYINGS.md)                               | 整理範囲の限定                    | 振る舞い変更禁止、編集ファイルのみ        |
-| [FAILURE_PATTERNS](../rules/development/FAILURE_PATTERNS.md)               | AI失敗パターン検知                | 3回失敗→再考、10ファイル探索→スコープ縮小 |
-| [PERFORMANCE](../rules/development/PERFORMANCE.md)                         | コンテキスト/フロントエンド最適化 | MCP≤10、LCP<2.5s                          |
-| [PROGRESSIVE_ENHANCEMENT](../rules/development/PROGRESSIVE_ENHANCEMENT.md) | 漸進的構築                        | CSS-First、Outcome-First                  |
-| [COMPLETION_CRITERIA](../rules/development/COMPLETION_CRITERIA.md)         | 完了基準                          | tests pass、lint pass、build pass         |
+| ファイル                                                                   | 意図                              | 主要な閾値                         |
+| -------------------------------------------------------------------------- | --------------------------------- | ---------------------------------- |
+| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)                 | 定量的品質基準                    | 関数≤30行、ファイル≤400行          |
+| [TIDYINGS](../rules/development/TIDYINGS.md)                               | 整理範囲の限定                    | 振る舞い変更禁止、編集ファイルのみ |
+| [PERFORMANCE](../rules/development/PERFORMANCE.md)                         | コンテキスト/フロントエンド最適化 | MCP≤10、LCP<2.5s                   |
+| [PROGRESSIVE_ENHANCEMENT](../rules/development/PROGRESSIVE_ENHANCEMENT.md) | 漸進的構築                        | CSS-First、Outcome-First           |
+| [COMPLETION_CRITERIA](../rules/development/COMPLETION_CRITERIA.md)         | 完了基準                          | tests pass、lint pass、build pass  |
+
+**AI失敗パターン (インライン):**
+
+| パターン         | トリガー                       | アクション                     |
+| ---------------- | ------------------------------ | ------------------------------ |
+| コンテキスト膨張 | 使用率 >70%                    | `/clear` または `/compact`     |
+| 繰り返し修正     | 同じエラーで3回目              | より具体的にプロンプトを再構成 |
+| 無限探索         | >10ファイル読み込み、編集なし  | subagentでスコープを絞る       |
+| 間違った方向     | 「それは望んでいたものと違う」 | `/rewind` でチェックポイントへ |
 
 **この設計の理由:**
 
-- `FAILURE_PATTERNS`でAI特有の「無限探索」「繰り返し修正」を自己検知
+- AI特有の「無限探索」「繰り返し修正」を自己検知
 - `TIDYINGS`で「何を整理してよいか」を明確化し、過剰リファクタリングを防止
 - 定量基準（30行、400行）で主観を排除
 
