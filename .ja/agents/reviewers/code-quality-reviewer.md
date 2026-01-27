@@ -59,7 +59,7 @@ findings:
   - agent: code-quality-reviewer
     severity: high|medium|low
     category: "structure|readability"
-    subcategory: "waste|dry|naming|complexity|..."
+    subcategory: "waste|dry|naming|complexity|comments|ai_smell"
     location: "<file>:<line>"
     evidence: "<code snippet>"
     reasoning: "<why this is an issue>"
