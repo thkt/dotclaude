@@ -15,13 +15,9 @@ esac
 
 [[ "$FILE_PATH" == *.d.ts ]] && exit 0
 
-find_project_root() {
-  "${HOME}/.claude/scripts/find-config-root.sh" "$1" "tsconfig.json"
-}
-
 EXPANDED_PATH="${FILE_PATH/#\~/$HOME}"
 FILE_DIR=$(dirname "$EXPANDED_PATH")
-PROJECT_ROOT=$(find_project_root "$FILE_DIR" 2>/dev/null) || exit 0
+PROJECT_ROOT=$("${HOME}/.claude/scripts/find-config-root.sh" "$FILE_DIR" "tsconfig.json" 2>/dev/null) || exit 0
 
 command -v npx &> /dev/null || exit 0
 

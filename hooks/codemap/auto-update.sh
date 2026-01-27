@@ -27,14 +27,6 @@ mkdir -p "$CODEMAP_DIR"
 
 SCRIPTS_DIR="${HOME}/.claude/scripts"
 
-detect_project_type() {
-  "$SCRIPTS_DIR/detect-project-type.sh" "${1:-$PROJECT_ROOT}"
-}
-
-get_src_dir() {
-  "$SCRIPTS_DIR/get-src-dir.sh" "$1" "${2:-$PROJECT_ROOT}"
-}
-
 generate_tree() {
   local full_path="${1:-$PROJECT_ROOT}"
   local excludes
@@ -67,13 +59,9 @@ find_key_exports() {
     awk '{print $1, $2}' | sort -u | head -20 || echo "(none)"
 }
 
-detect_frameworks() {
-  "$SCRIPTS_DIR/detect-frameworks.sh" "${1:-$PROJECT_ROOT}"
-}
-
-PROJECT_TYPE=$(detect_project_type)
-SRC_DIR=$(get_src_dir "$PROJECT_TYPE")
-FRAMEWORKS=$(detect_frameworks)
+PROJECT_TYPE=$("$SCRIPTS_DIR/detect-project-type.sh" "$PROJECT_ROOT")
+SRC_DIR=$("$SCRIPTS_DIR/get-src-dir.sh" "$PROJECT_TYPE" "$PROJECT_ROOT")
+FRAMEWORKS=$("$SCRIPTS_DIR/detect-frameworks.sh" "$PROJECT_ROOT")
 
 cat > "$CODEMAP_DIR/architecture.md" << EOF
 # Architecture - $(basename "$PROJECT_ROOT")

@@ -14,8 +14,7 @@ fi
 max_num=0
 
 while IFS= read -r -d '' f; do
-  # Extract number from .idr-01.md
-  num=$(basename "$f" | sed -n 's/\.idr-\([0-9]\{1,\}\)\.md$/\1/p' | sed 's/^0*//')
+  num=$(basename "$f" | sed -n 's/\.idr-0*\([0-9]\{1,\}\)\.md$/\1/p')
   if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -gt "$max_num" ]; then
     max_num="$num"
   fi
