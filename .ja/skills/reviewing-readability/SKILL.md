@@ -6,7 +6,7 @@ description: >
   ネスト, 深いネスト, 関数設計, コメント, 複雑, 難しい, 難読,
   Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計.
 allowed-tools: [Read, Grep, Glob, Task]
-agent: readability-reviewer
+agent: code-quality-reviewer
 user-invocable: false
 ---
 
