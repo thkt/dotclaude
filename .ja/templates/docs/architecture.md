@@ -7,11 +7,12 @@
 
 ## Technology Stack
 
-| Category  | Technology             |
-| --------- | ---------------------- |
-| Language  | {tech_stack.language}  |
-| Framework | {tech_stack.framework} |
-| Database  | {tech_stack.database}  |
+| Category  | Technology                  | Version                        |
+| --------- | --------------------------- | ------------------------------ |
+| Language  | {tech_stack.language.name}  | {tech_stack.language.version}  |
+| Framework | {tech_stack.framework.name} | {tech_stack.framework.version} |
+| Runtime   | {tech_stack.runtime.name}   | {tech_stack.runtime.version}   |
+| Database  | {tech_stack.database.name}  | {tech_stack.database.version}  |
 
 ## Directory Structure
 

@@ -1,8 +1,9 @@
 ---
 name: utilizing-cli-tools
 description: >
-  CLI tools guide for git, gh, npm, and other development tools.
-  Triggers: git, gh, npm, CLI, コマンドライン, バージョン管理, ブランチ, コミット.
+  git, gh, npm等の開発ツールガイド。
+  Use when gitコマンド実行、ブランチ管理、または
+  CLI, コマンドライン, バージョン管理, ブランチ, コミット に言及時。
 allowed-tools: [Bash, Read, Glob]
 user-invocable: false
 ---
@@ -11,11 +12,12 @@ user-invocable: false
 
 ## 参照
 
-| カテゴリ       | リファレンス                                                      |
-| -------------- | ----------------------------------------------------------------- |
-| バージョン管理 | [@./references/git-essentials.md](./references/git-essentials.md) |
-| GitHub         | [@./references/gh-github-cli.md](./references/gh-github-cli.md)   |
-| パッケージ管理 | [@./references/npm-scripts.md](./references/npm-scripts.md)       |
+| カテゴリ       | リファレンス                                                        |
+| -------------- | ------------------------------------------------------------------- |
+| バージョン管理 | [@./references/git-essentials.md](./references/git-essentials.md)   |
+| GitHub         | [@./references/gh-github-cli.md](./references/gh-github-cli.md)     |
+| パッケージ管理 | [@./references/npm-scripts.md](./references/npm-scripts.md)         |
+| CHANGELOG      | [@./references/changelog-tools.md](./references/changelog-tools.md) |
 
 ## クイックリファレンス
 

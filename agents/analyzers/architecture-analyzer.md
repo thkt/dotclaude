@@ -26,10 +26,21 @@ Generate architecture documentation with structure and dependency diagrams.
 | Phase | Action              | Command                                   |
 | ----- | ------------------- | ----------------------------------------- |
 | 1     | Project Detection   | `ls package.json Cargo.toml go.mod`       |
-| 2     | Directory Structure | `tree -L 3 -I 'node_modules\|.git'`       |
-| 3     | Code Structure      | `tree-sitter-analyzer {file} --structure` |
-| 4     | Dependencies        | `grep -rh "^import"` / `jq .dependencies` |
-| 5     | Mermaid Generation  | Scripts in skill                          |
+| 2     | Version Detection   | See Version Detection table below         |
+| 3     | Directory Structure | `tree -L 3 -I 'node_modules\|.git'`       |
+| 4     | Code Structure      | `tree-sitter-analyzer {file} --structure` |
+| 5     | Dependencies        | `grep -rh "^import"` / `jq .dependencies` |
+| 6     | Mermaid Generation  | Scripts in skill                          |
+
+## Version Detection
+
+| Target     | Source                           | Command                               |
+| ---------- | -------------------------------- | ------------------------------------- |
+| Node.js    | `.nvmrc`, `package.json engines` | `cat .nvmrc` / `jq .engines.node`     |
+| Python     | `.python-version`, `pyproject`   | `cat .python-version`                 |
+| Ruby       | `.ruby-version`                  | `cat .ruby-version`                   |
+| Framework  | `package.json dependencies`      | `jq '.dependencies["next"]'`          |
+| TypeScript | `package.json devDependencies`   | `jq '.devDependencies["typescript"]'` |
 
 ## Error Handling
 
@@ -47,9 +58,18 @@ Return structured YAML:
 ```yaml
 project_name: <name>
 tech_stack:
-  language: <lang>
-  framework: <framework>
-  database: <database> # if detected
+  language:
+    name: <lang>
+    version: <version> # from package.json engines, tsconfig, etc.
+  framework:
+    name: <framework>
+    version: <version> # from package.json dependencies
+  runtime:
+    name: <runtime> # Node.js, Python, Deno, etc.
+    version: <version> # from .nvmrc, .python-version, etc.
+  database:
+    name: <database>
+    version: <version> # if detected
 directory_structure: |
   <tree output>
 key_components:

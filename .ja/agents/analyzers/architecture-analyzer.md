@@ -26,10 +26,21 @@ context: fork
 | フェーズ | アクション       | コマンド                                  |
 | -------- | ---------------- | ----------------------------------------- |
 | 1        | プロジェクト検出 | `ls package.json Cargo.toml go.mod`       |
-| 2        | ディレクトリ構造 | `tree -L 3 -I 'node_modules\|.git'`       |
-| 3        | コード構造       | `tree-sitter-analyzer {file} --structure` |
-| 4        | 依存関係         | `grep -rh "^import"` / `jq .dependencies` |
-| 5        | Mermaid生成      | スキル内のスクリプト                      |
+| 2        | バージョン検出   | 下記のバージョン検出テーブルを参照        |
+| 3        | ディレクトリ構造 | `tree -L 3 -I 'node_modules\|.git'`       |
+| 4        | コード構造       | `tree-sitter-analyzer {file} --structure` |
+| 5        | 依存関係         | `grep -rh "^import"` / `jq .dependencies` |
+| 6        | Mermaid生成      | スキル内のスクリプト                      |
+
+## バージョン検出
+
+| 対象       | ソース                           | コマンド                              |
+| ---------- | -------------------------------- | ------------------------------------- |
+| Node.js    | `.nvmrc`, `package.json engines` | `cat .nvmrc` / `jq .engines.node`     |
+| Python     | `.python-version`, `pyproject`   | `cat .python-version`                 |
+| Ruby       | `.ruby-version`                  | `cat .ruby-version`                   |
+| Framework  | `package.json dependencies`      | `jq '.dependencies["next"]'`          |
+| TypeScript | `package.json devDependencies`   | `jq '.devDependencies["typescript"]'` |
 
 ## エラーハンドリング
 
@@ -47,9 +58,18 @@ context: fork
 ```yaml
 project_name: <name>
 tech_stack:
-  language: <lang>
-  framework: <framework>
-  database: <database> # 検出された場合
+  language:
+    name: <lang>
+    version: <version> # package.json engines, tsconfig等から
+  framework:
+    name: <framework>
+    version: <version> # package.json dependenciesから
+  runtime:
+    name: <runtime> # Node.js, Python, Deno等
+    version: <version> # .nvmrc, .python-version等から
+  database:
+    name: <database>
+    version: <version> # 検出された場合
 directory_structure: |
   <tree出力>
 key_components:
