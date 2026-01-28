@@ -1,49 +1,29 @@
 #!/bin/bash
 set -euo pipefail
 
-# Claude Code Custom Status Line
-# Features:
-# - Model name with context usage (numeric + circular symbol)
-# - Context change tracking (delta from last call)
-# - Git branch with diff stats (+/-lines)
-# - Session cost
-# - Last used tool name
+# Claude Code status line: model, context, cost, tool, git branch
 
-# Read JSON input from stdin
 STDIN_INPUT=""
 if [ ! -t 0 ]; then
     STDIN_INPUT=$(cat)
 fi
 
-# Parse JSON fields if jq is available
 if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
-    # Model info
     MODEL_NAME=$(echo "$STDIN_INPUT" | jq -r '.model.display_name // empty' 2>/dev/null)
     MODEL_ID=$(echo "$STDIN_INPUT" | jq -r '.model.id // empty' 2>/dev/null)
-
-    # Session info for state tracking
     SESSION_ID=$(echo "$STDIN_INPUT" | jq -r '.session_id // empty' 2>/dev/null)
     TRANSCRIPT_PATH=$(echo "$STDIN_INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
-
-    # Session cost (v1.0.85+)
     SESSION_COST=$(echo "$STDIN_INPUT" | jq -r '.session_cost // empty' 2>/dev/null)
-
-
-    # Context window warning (v1.0.85+)
     EXCEEDS_200K=$(echo "$STDIN_INPUT" | jq -r '.exceeds_200k_tokens // false' 2>/dev/null)
-
-    # Current usage (v2.0.70+) - most accurate source
     CURRENT_USAGE=$(echo "$STDIN_INPUT" | jq -r '.current_usage // empty' 2>/dev/null)
 
     if [ -n "$CURRENT_USAGE" ] && [ "$CURRENT_USAGE" != "null" ]; then
-        # Use current_usage for accurate context calculation
         CONTEXT_TOKENS=$(echo "$STDIN_INPUT" | jq -r '
             .current_usage.input_tokens +
             .current_usage.output_tokens +
             (.current_usage.cache_creation_input_tokens // 0) +
             (.current_usage.cache_read_input_tokens // 0)' 2>/dev/null)
     else
-        # Fallback: Try multiple possible field names (v2.0.64+)
         CONTEXT_TOKENS=$(echo "$STDIN_INPUT" | jq -r '
             .context.tokens_used //
             .context_tokens //
@@ -51,7 +31,6 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
             .usage.total_tokens //
             empty' 2>/dev/null)
 
-        # Fallback: Parse transcript if native fields unavailable
         if [ -z "$CONTEXT_TOKENS" ] || [ "$CONTEXT_TOKENS" = "null" ]; then
             if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
                 CONTEXT_TOKENS=$(tail -n 100 "$TRANSCRIPT_PATH" 2>/dev/null | \
@@ -66,7 +45,6 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
         fi
     fi
 
-    # Context limit from current_usage or fallback
     CONTEXT_LIMIT=$(echo "$STDIN_INPUT" | jq -r '
         .current_usage.context_window //
         .context.limit //
@@ -74,38 +52,25 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
         .tokens.limit //
         empty' 2>/dev/null)
 
-    # Default context limit based on model
-    if [ -z "$CONTEXT_LIMIT" ] || [ "$CONTEXT_LIMIT" = "null" ]; then
-        if [[ "$MODEL_ID" == *"[1m]"* ]] || [[ "$MODEL_NAME" == *"[1m]"* ]]; then
-            CONTEXT_LIMIT=1000000
-        else
-            CONTEXT_LIMIT=200000
-        fi
-    fi
-
-    # New fields from v2.1.6+ (use if available, more accurate)
     CONTEXT_USED_PCT=$(echo "$STDIN_INPUT" | jq -r '.context_window.used_percentage // empty' 2>/dev/null)
     CONTEXT_REMAINING_PCT=$(echo "$STDIN_INPUT" | jq -r '.context_window.remaining_percentage // empty' 2>/dev/null)
 
-    # === Extract last used tool from transcript ===
     LAST_TOOL=""
     TOOL_COUNT=0
     if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-        # Get last tool use from transcript
         TOOL_INFO=$(tail -n 200 "$TRANSCRIPT_PATH" 2>/dev/null | \
             jq -s '[.[] | select(.type == "tool_use")] | last | .name // empty' 2>/dev/null)
         if [ -n "$TOOL_INFO" ] && [ "$TOOL_INFO" != "null" ]; then
             LAST_TOOL=$(echo "$TOOL_INFO" | tr -d '"')
         fi
 
-        # Count total tool calls in session
         TOOL_COUNT=$(tail -n 500 "$TRANSCRIPT_PATH" 2>/dev/null | \
             jq -s '[.[] | select(.type == "tool_use")] | length' 2>/dev/null)
         [ -z "$TOOL_COUNT" ] && TOOL_COUNT=0
     fi
 fi
 
-# === Context change tracking with state file ===
+# Context change tracking
 STATE_FILE="/tmp/claude-context-${SESSION_ID:-default}.state"
 PREV_TOKENS=0
 CONTEXT_DELTA=0
@@ -120,9 +85,8 @@ if [ -n "$CONTEXT_TOKENS" ] && [ "$CONTEXT_TOKENS" != "null" ] && [ "$CONTEXT_TO
     echo "$CONTEXT_TOKENS" > "$STATE_FILE"
 fi
 
-# === Output ===
+# --- Output ---
 
-# 1. Model name
 if [ -n "$MODEL_NAME" ]; then
     printf '\033[94m%s\033[0m' "$MODEL_NAME"
 elif [ -n "$MODEL_ID" ]; then
@@ -130,12 +94,10 @@ elif [ -n "$MODEL_ID" ]; then
     printf '\033[94m%s\033[0m' "$MODEL_SHORT"
 fi
 
-# 2. Context window usage with circular symbol
 if [ -z "$CONTEXT_TOKENS" ] || [ "$CONTEXT_TOKENS" = "null" ]; then
     CONTEXT_TOKENS=0
 fi
 
-# Default context limit if not set
 if [ -z "$CONTEXT_LIMIT" ] || [ "$CONTEXT_LIMIT" = "null" ] || [ "$CONTEXT_LIMIT" = "0" ]; then
     if [[ "$MODEL_ID" == *"[1m]"* ]] || [[ "$MODEL_NAME" == *"[1m]"* ]]; then
         CONTEXT_LIMIT=1000000
@@ -145,20 +107,16 @@ if [ -z "$CONTEXT_LIMIT" ] || [ "$CONTEXT_LIMIT" = "null" ] || [ "$CONTEXT_LIMIT
 fi
 
 if [ "$CONTEXT_LIMIT" -gt 0 ] 2>/dev/null; then
-    # Use new v2.1.6+ fields if available, otherwise calculate
     if [ -n "$CONTEXT_USED_PCT" ] && [ "$CONTEXT_USED_PCT" != "null" ]; then
         PERCENTAGE=$(printf "%.0f" "$CONTEXT_USED_PCT" 2>/dev/null || echo "$CONTEXT_USED_PCT" | cut -d. -f1)
         REMAINING=$(printf "%.0f" "$CONTEXT_REMAINING_PCT" 2>/dev/null || echo "$CONTEXT_REMAINING_PCT" | cut -d. -f1)
     else
-        # Fallback: calculate from tokens
         PERCENTAGE=$((CONTEXT_TOKENS * 100 / CONTEXT_LIMIT))
         REMAINING=$((100 - PERCENTAGE))
     fi
     TOKENS_K=$((CONTEXT_TOKENS / 1000))
     LIMIT_K=$((CONTEXT_LIMIT / 1000))
 
-    # Circular symbol based on remaining percentage
-    # ◔ = 45%+ remaining, ◑ = 20-44% remaining, ◕ = <20% remaining
     if [ "$REMAINING" -ge 45 ]; then
         CIRCLE="◔"
     elif [ "$REMAINING" -ge 20 ]; then
@@ -167,15 +125,14 @@ if [ "$CONTEXT_LIMIT" -gt 0 ] 2>/dev/null; then
         CIRCLE="◕"
     fi
 
-    # Color based on usage
     if [ "$EXCEEDS_200K" = "true" ]; then
-        COLOR='\033[31;1m'  # Bold red for exceeds
+        COLOR='\033[31;1m'
     elif [ $PERCENTAGE -lt 60 ]; then
-        COLOR='\033[32m'    # Green
+        COLOR='\033[32m'
     elif [ $PERCENTAGE -lt 80 ]; then
-        COLOR='\033[33m'    # Yellow
+        COLOR='\033[33m'
     else
-        COLOR='\033[31m'    # Red
+        COLOR='\033[31m'
     fi
 
     if [ -n "$MODEL_NAME" ] || [ -n "$MODEL_ID" ]; then
@@ -183,32 +140,27 @@ if [ "$CONTEXT_LIMIT" -gt 0 ] 2>/dev/null; then
     fi
     printf "${COLOR}%s %dk/%dk (%d%%)\033[0m" "$CIRCLE" "$TOKENS_K" "$LIMIT_K" "$PERCENTAGE"
 
-    # Context delta (change from last call) - hide if zero
     if [ "$CONTEXT_DELTA" -ne 0 ] 2>/dev/null; then
         DELTA_K=$((CONTEXT_DELTA / 1000))
         if [ "$DELTA_K" -ne 0 ] 2>/dev/null; then
             if [ "$CONTEXT_DELTA" -gt 0 ]; then
-                printf ' \033[94m+%dk\033[0m' "$DELTA_K"  # Blue for increase
+                printf ' \033[94m+%dk\033[0m' "$DELTA_K"
             else
-                printf ' \033[35m-%dk\033[0m' "$((-DELTA_K))"  # Purple for decrease
+                printf ' \033[35m-%dk\033[0m' "$((-DELTA_K))"
             fi
         fi
     fi
 
-    # Warning if exceeds 200k
     if [ "$EXCEEDS_200K" = "true" ]; then
         printf ' \033[31;1m[!]\033[0m'
     fi
 fi
 
-# 3. Session cost (if available)
 if [ -n "$SESSION_COST" ] && [ "$SESSION_COST" != "null" ] && [ "$SESSION_COST" != "0" ]; then
     printf ' \033[90m│\033[0m \033[33m$%s\033[0m' "$SESSION_COST"
 fi
 
-# 4. Last used tool (if available)
 if [ -n "$LAST_TOOL" ] && [ "$LAST_TOOL" != "null" ]; then
-    # Shorten common tool names
     TOOL_SHORT="$LAST_TOOL"
     case "$LAST_TOOL" in
         Read) TOOL_SHORT="R" ;;
@@ -229,10 +181,8 @@ if [ -n "$LAST_TOOL" ] && [ "$LAST_TOOL" != "null" ]; then
     fi
 fi
 
-# Separator before git info
 printf ' \033[90m│\033[0m '
 
-# 5. Directory and git info with diff stats
 DIR=$(basename "$PWD")
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 
@@ -240,4 +190,58 @@ printf '\033[96;1m%s\033[0m' "$DIR"
 
 if [ -n "$BRANCH" ]; then
     printf ' on \033[95m%s\033[0m' "$BRANCH"
+
+    if command -v gh &>/dev/null && command -v jq &>/dev/null; then
+        CACHE_DIR="$HOME/.claude/cache"
+        CACHE_FILE="$CACHE_DIR/statusline-pr-cache.json"
+        CACHE_TTL_SEC="${STATUSLINE_PR_CACHE_TTL_SEC:-300}"
+        REPO=$(git remote get-url origin 2>/dev/null | sed -E 's#\.git$##; s#.*[:/](.*/.)#\1#; s#.*://[^/]*/##')
+
+        if [ -n "$REPO" ]; then
+            CACHE_KEY="${REPO}:${BRANCH}"
+            NOW=$(date +%s)
+            HIT=""
+
+            if [ -f "$CACHE_FILE" ]; then
+                CACHED=$(jq -r --arg k "$CACHE_KEY" '.[$k] // empty' "$CACHE_FILE" 2>/dev/null)
+                if [ -n "$CACHED" ]; then
+                    CACHED_AT=$(echo "$CACHED" | jq -r '.cached_at // 0')
+                    if [ $((NOW - CACHED_AT)) -lt "$CACHE_TTL_SEC" ]; then
+                        HIT=1
+                        PR_URL=$(echo "$CACHED" | jq -r '.url // empty')
+                        PR_NUM=$(echo "$CACHED" | jq -r '.number // empty')
+                        PR_STATE=$(echo "$CACHED" | jq -r '.state // empty')
+                    fi
+                fi
+            fi
+
+            if [ -z "$HIT" ]; then
+                if command -v timeout &>/dev/null; then
+                    PR_JSON=$(timeout 3 gh pr view --json url,number,state 2>/dev/null || echo '{}')
+                else
+                    PR_JSON=$(gh pr view --json url,number,state 2>/dev/null || echo '{}')
+                fi
+                PR_URL=$(echo "$PR_JSON" | jq -r '.url // empty')
+                PR_NUM=$(echo "$PR_JSON" | jq -r '.number // empty')
+                PR_STATE=$(echo "$PR_JSON" | jq -r '.state // empty')
+
+                mkdir -p "$CACHE_DIR"
+                ENTRY=$(jq -n --arg u "$PR_URL" --arg n "$PR_NUM" --arg s "$PR_STATE" --argjson t "$NOW" \
+                    '{url:$u, number:$n, state:$s, cached_at:$t}')
+                if [ -f "$CACHE_FILE" ]; then
+                    EXISTING=$(cat "$CACHE_FILE")
+                else
+                    EXISTING='{}'
+                fi
+                echo "$EXISTING" | jq --argjson t "$NOW" --arg k "$CACHE_KEY" --argjson v "$ENTRY" \
+                    '[to_entries[] | select(.value.cached_at > ($t - 86400))] | from_entries | .[$k] = $v' \
+                    > "$CACHE_FILE.tmp" 2>/dev/null \
+                    && mv "$CACHE_FILE.tmp" "$CACHE_FILE"
+            fi
+
+            if [ -n "$PR_NUM" ] && [ "$PR_NUM" != "null" ] && [ "$PR_STATE" = "OPEN" ]; then
+                printf ' \033]8;;%s\033\\\033[93m[PR#%s]\033[0m\033]8;;\033\\' "$PR_URL" "$PR_NUM"
+            fi
+        fi
+    fi
 fi
