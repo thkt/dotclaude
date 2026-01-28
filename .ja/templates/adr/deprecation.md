@@ -1,216 +1,104 @@
 # 非推奨化テンプレート
 
-## 構造
+技術の廃止と移行判断を記録するためのガイド。
 
-````markdown
-# {title}
+## 使用場面
 
-- ステータス: {status}
-- 決定者: {deciders}
-- 日付: {date}
+- ライブラリ、フレームワーク、ツールの廃止時
+- 非推奨 API やパターンの置換時
+- レガシーコードの削除計画時
 
-技術ストーリー: {technical_story_link}
+## 必須セクション
 
-## 背景と課題
+すべての ADR は以下の MADR コアセクションを含む：
 
-{context}
+1. **タイトル** — アクション指向: 「Y に代えて X を非推奨化」
+2. **ステータス** — proposed | accepted | deprecated | superseded
+3. **コンテキスト** — なぜ今この判断が必要か
+4. **決定ドライバー** — 判断に影響を与える要因
+5. **検討した選択肢** — 最低2つ（移行 vs 維持）
+6. **決定** — 「Chosen option: X, because Y」形式
+7. **結果** — ポジティブ・ネガティブな影響
 
-## 決定要因
+## テンプレート固有セクション（必須）
 
-- {driver_1}
-- {driver_2}
-- {driver_3}
-- 技術的負債の削減
-- セキュリティリスクの軽減
-- 保守コストの最適化
+非推奨化 ADR はより厳格な要件を持つ：
 
-## 非推奨化対象
+- **非推奨対象** — 何を非推奨化するか（名前、バージョン、使用箇所）
+- **代替技術** — 何で置き換え、なぜその選択か
+- **影響分析** — コード影響、依存関係影響、チーム影響
+- **移行計画（必須）** — フェーズごとの成功基準付きタイムライン
+- **非推奨警告期間** — Soft → Hard → 完全削除の日程
+- **ロールバック計画（必須）** — トリガー条件とロールバック手順
+- **コミュニケーション** — アナウンススケジュールとドキュメント更新
 
-### 現行技術
+## 例
 
-- **名称**: {deprecated_tech_name}
-- **バージョン**: {deprecated_tech_version}
-- **導入日**: {deprecated_tech_start_date}
-- **使用箇所**: {usage_locations}
+```markdown
+# moment.js の非推奨化と date-fns への移行
 
-### 非推奨化の理由
+- Status: accepted
+- Deciders: フロントエンドチーム
+- Date: 2026-01-15
 
-- {deprecation_reason_1}
-- {deprecation_reason_2}
-- {deprecation_reason_3}
+## コンテキスト
+
+moment.js はメンテナンスモードに入り、バンドルサイズ（67KB gzip）が
+アプリケーション全体の 15% を占めている。Tree-shaking 不可のため、
+使用していない機能もすべてバンドルされる。
+
+## 決定ドライバー
+
+- バンドルサイズ削減の要請
+- moment.js の公式な非推奨宣言
+- セキュリティパッチの提供終了リスク
+
+## 非推奨対象
+
+- **名前**: moment.js
+- **バージョン**: 2.29.4
+- **使用箇所**: src/utils/date.ts, src/components/Calendar/
 
 ## 代替技術
 
-- **名称**: {replacement_tech_name}
-- **バージョン**: {replacement_tech_version}
-- **選定理由**: {replacement_rationale}
+- **名前**: date-fns
+- **選定理由**: Tree-shakable、TypeScript ネイティブ、軽量
 
-## 決定結果
+## 決定
 
-採用オプション: "{deprecated_tech_name} を非推奨化し {replacement_tech_name} へ移行"、理由: {rationale}
+moment.js を非推奨とし、date-fns に段階的に移行する。
 
-### 結果
+### ポジティブな結果
 
-#### ポジティブな結果
+- バンドルサイズが約 60KB 削減
+- Tree-shaking による最適化が可能に
 
-- {positive_1} - 技術的負債の削減
-- {positive_2} - パフォーマンスの向上
-- {positive_3} - 保守性の向上
+### ネガティブな結果
 
-#### ネガティブな結果
+- 移行期間中は両ライブラリが共存
+- API の違いによる学習コスト
 
-- {negative_1} - 移行コスト
-- {negative_2} - 一時的な複雑性の増加
+## 移行計画
 
-## 影響分析
+| フェーズ   | 期間  | 目標                            | 完了条件   |
+| ---------- | ----- | ------------------------------- | ---------- |
+| 準備       | 1週間 | date-fns 導入、互換レイヤー作成 | テスト通過 |
+| 段階的移行 | 2週間 | 使用箇所を順次置換              | 80% 完了   |
+| 完全移行   | 1週間 | 残りの置換と moment.js 削除     | 0 依存     |
 
-### コードへの影響
+## 非推奨警告期間
 
-- 影響ファイル数: {affected_files_count}
-- 主な変更箇所:
-  - {change_location_1}
-  - {change_location_2}
-  - {change_location_3}
+- Soft deprecation: ESLint ルールで warning
+- Hard deprecation: CI で moment.js import を error に
+- 完全削除: package.json から除去
 
-### 依存関係への影響
+## ロールバック計画
 
-- 直接依存: {direct_dependencies}
-- 間接依存: {indirect_dependencies}
-- 互換性レイヤーの必要性: {compatibility_layer_needed}
+**トリガー条件**: date-fns で再現不可能な日付処理のバグ
 
-### チームへの影響
+**手順**:
 
-- 影響を受けるチーム: {affected_teams}
-- 必要なスキルセット: {required_skills}
-- 学習コスト: {learning_cost} 時間/人
-
-## 移行計画（必須）
-
-### タイムライン
-
-| フェーズ                  | 期間             | 目標           | 成功基準           |
-| ------------------------- | ---------------- | -------------- | ------------------ |
-| フェーズ1: 準備           | {phase_1_period} | {phase_1_goal} | {phase_1_criteria} |
-| フェーズ2: パイロット移行 | {phase_2_period} | {phase_2_goal} | {phase_2_criteria} |
-| フェーズ3: 段階的移行     | {phase_3_period} | {phase_3_goal} | {phase_3_criteria} |
-| フェーズ4: 完全移行       | {phase_4_period} | {phase_4_goal} | {phase_4_criteria} |
-| フェーズ5: クリーンアップ | {phase_5_period} | {phase_5_goal} | {phase_5_criteria} |
-
-### 非推奨化警告期間
-
-- 警告開始日: {warning_start_date}
-- ソフト非推奨: {soft_deprecation_date}（警告ログ出力）
-- ハード非推奨: {hard_deprecation_date}（新規使用禁止）
-- 完全削除: {removal_date}
-
-### 移行ステップ
-
-#### ステップ1: 互換性レイヤーの作成
-
-```text
-{compatibility_layer_code}
+1. 互換レイヤーを moment.js に戻す
+2. 移行済みファイルを revert
+3. ESLint ルールを無効化
 ```
-
-#### ステップ2: 段階的な置換
-
-- [ ] {migration_task_1}
-- [ ] {migration_task_2}
-- [ ] {migration_task_3}
-
-#### ステップ3: 検証
-
-- [ ] ユニットテストの更新
-- [ ] 統合テストの実行
-- [ ] パフォーマンスの測定
-
-#### ステップ4: レガシーコードの削除
-
-- [ ] 非推奨コードの削除
-- [ ] 互換性レイヤーの削除（該当する場合）
-- [ ] ドキュメントの更新
-
-### 移行チェックリスト
-
-- [ ] 影響範囲の特定完了
-- [ ] 移行計画のレビュー完了
-- [ ] パイロット移行の成功
-- [ ] すべてのテストがグリーン
-- [ ] パフォーマンスベースラインの達成
-- [ ] ドキュメント更新の完了
-- [ ] チームトレーニングの完了
-
-## 検証
-
-### 成功基準
-
-- {success_criteria_1}
-- {success_criteria_2}
-- {success_criteria_3}
-
-### メトリクス
-
-- パフォーマンス: {performance_metric}
-- エラー率: {error_rate_metric}
-- 移行完了率: {migration_completion_metric}
-
-### モニタリング
-
-- 移行進捗ダッシュボード: {dashboard_link}
-- アラート設定: {alert_config}
-
-## ロールバック計画（必須）
-
-### トリガー条件
-
-- {rollback_trigger_1}
-- {rollback_trigger_2}
-- {rollback_trigger_3}
-
-### ロールバック手順
-
-1. {rollback_step_1}
-2. {rollback_step_2}
-3. {rollback_step_3}
-
-### ロールバックタイムライン
-
-- 検知から判断まで: {detection_to_decision} 分
-- ロールバック実行: {rollback_execution} 分
-- 復旧確認: {recovery_verification} 分
-
-### データの考慮事項
-
-- データ移行の必要性: {data_migration_needed}
-- ロールバック時のデータ処理: {data_rollback_strategy}
-
-## コミュニケーション
-
-### アナウンス
-
-| 日付              | 内容           | 対象       | チャネル    |
-| ----------------- | -------------- | ---------- | ----------- |
-| {announce_date_1} | 非推奨化の通知 | 全開発者   | {channel_1} |
-| {announce_date_2} | 移行開始       | 関連チーム | {channel_2} |
-| {announce_date_3} | 完了報告       | 全開発者   | {channel_3} |
-
-### ドキュメント更新
-
-- [ ] README.md
-- [ ] 技術ドキュメント
-- [ ] APIドキュメント
-- [ ] 移行ガイド
-
-## 関連ADR
-
-<!-- update-index.sh により自動生成 -->
-
-## 参考文献
-
-<!-- collect-references.sh により自動収集 -->
-
----
-
-_作成日: {date}_
-_作成者: {author}_
-_ADR番号: {number}_
-````

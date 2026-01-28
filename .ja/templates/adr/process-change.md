@@ -1,173 +1,97 @@
 # プロセス変更テンプレート
 
-## 構造
+ワークフロー、ルール、プロセスの変更判断を記録するためのガイド。
+
+## 使用場面
+
+- 開発ワークフローや規約の変更時
+- レビュープロセスや品質ゲートの変更時
+- 新しいルールの導入や旧ルールの廃止時
+
+## 必須セクション
+
+すべての ADR は以下の MADR コアセクションを含む：
+
+1. **タイトル** — アクション指向: 「Y に X プロセスを採用」
+2. **ステータス** — proposed | accepted | deprecated | superseded
+3. **コンテキスト** — なぜ今この判断が必要か
+4. **決定ドライバー** — 判断に影響を与える要因
+5. **検討した選択肢** — 最低2つの選択肢と Pros/Cons
+6. **決定** — 「Chosen option: X, because Y」形式
+7. **結果** — ポジティブ・ネガティブな影響
+
+## テンプレート固有セクション
+
+コアセクションに加えて以下を含める：
+
+- **現行プロセス vs 新プロセス** — Before/After 比較
+- **移行計画** — 成功基準付きの段階的展開
+- **チームへの影響** — 影響を受ける役割、トレーニング要件
+- **ロールバック計画** — 変更失敗時の撤退方法
+- **レビュースケジュール** — 効果を評価するタイミング
+
+## 例
 
 ```markdown
-# {title}
+# 読み手別テンプレート最適化の採用
 
-- ステータス: {status}
-- 決定者: {deciders}
-- 日付: {date}
+- Status: accepted
+- Deciders: プロジェクトオーナー
+- Date: 2026-01-28
 
-技術ストーリー: {technical_story_link}
+## コンテキスト
 
-## 背景と課題
+SOW/Spec/ADR の 3 文書は異なる読み手を持つが、テンプレートが
+すべて同じ「プレースホルダ羅列」形式で統一されていた。
+結果として ADR テンプレートは実際には使われず、24 本の SOW は
+テンプレートと乖離した構造で書かれていた。
 
-{context}
+## 決定ドライバー
 
-## 決定要因
+- AI 読み手には構造化テーブルが最適
+- 人間読み手には散文とガイドラインが最適
+- テンプレートと実態の乖離が大きい
 
-- {driver_1}
-- {driver_2}
-- {driver_3}
-- チーム生産性の向上
-- 品質基準の維持
-- オンボーディングコストの考慮
+## 検討した選択肢
 
-## 検討したオプション
+### 読み手別最適化
 
-- {option_1}
-- {option_2}
-- {option_3}
+SOW/Spec は構造化テーブル維持、ADR はガイドライン形式に変更。
 
-## 決定結果
+- Good: 各文書の読み手に最適なフォーマット
+- Good: テンプレートと実態の乖離を解消
+- Bad: テンプレート間の統一感が低下
 
-採用オプション: "{chosen_option}"、理由: {rationale}
+### 全テンプレートを統一形式に
 
-### 結果
+すべてをプレースホルダ形式に統一。
 
-#### ポジティブな結果
+- Good: 一貫性がある
+- Bad: ADR の実態と乖離し続ける
 
-- {positive_1} - プロセスの改善
-- {positive_2} - 効率性の向上
-- {positive_3} - 品質の向上
+## 決定
 
-#### ネガティブな結果
+読み手別最適化を採用。
 
-- {negative_1} - 学習コスト
-- {negative_2} - 移行期間中の生産性低下
+### ポジティブな結果
 
-## オプションの長所と短所
+- テンプレートが実際に使われるようになる
+- 文書品質が向上
 
-### {option_1}
+### ネガティブな結果
 
-{option_1_description}
+- テンプレート管理の複雑性が増加
 
-- Good: {option_1_pro_1}
-- Good: {option_1_pro_2}
-- Bad: {option_1_con_1}
-- Bad: {option_1_con_2}
+## 現行プロセス vs 新プロセス
 
-### {option_2}
+| 観点             | Before                | After                   |
+| ---------------- | --------------------- | ----------------------- |
+| SOW テンプレート | 過剰な ID 体系（8種） | 実態ベース（AC-N のみ） |
+| ADR テンプレート | プレースホルダ羅列    | ガイドライン+例示       |
+| reviewer         | テンプレートと不一致  | テンプレートと同期      |
 
-{option_2_description}
+## レビュースケジュール
 
-- Good: {option_2_pro_1}
-- Good: {option_2_pro_2}
-- Bad: {option_2_con_1}
-- Bad: {option_2_con_2}
-
-### {option_3}
-
-{option_3_description}
-
-- Good: {option_3_pro_1}
-- Good: {option_3_pro_2}
-- Bad: {option_3_con_1}
-- Bad: {option_3_con_2}
-
-## プロセス変更の詳細
-
-### 現行プロセス
-
-{current_process_description}
-
-**課題点**:
-
-- {pain_point_1}
-- {pain_point_2}
-- {pain_point_3}
-
-### 新プロセス
-
-{new_process_description}
-
-**期待される改善**:
-
-- {improvement_1}
-- {improvement_2}
-- {improvement_3}
-
-### 移行計画
-
-| フェーズ   | 期間               | 活動                 | 成功基準           |
-| ---------- | ------------------ | -------------------- | ------------------ |
-| 準備       | {phase_1_duration} | {phase_1_activities} | {phase_1_criteria} |
-| パイロット | {phase_2_duration} | {phase_2_activities} | {phase_2_criteria} |
-| 全体展開   | {phase_3_duration} | {phase_3_activities} | {phase_3_criteria} |
-
-## チームへの影響
-
-### 影響を受けるチーム/役割
-
-- {team_1}: {team_1_impact}
-- {team_2}: {team_2_impact}
-
-### トレーニング要件
-
-- トレーニング時間: {training_hours} 時間/人
-- ドキュメント更新: {docs_to_update}
-- ワークショップ: {workshop_plan}
-
-### コミュニケーション計画
-
-- {communication_1}
-- {communication_2}
-- {communication_3}
-
-## 検証
-
-### 成功基準
-
-- {success_criteria_1}
-- {success_criteria_2}
-- {success_criteria_3}
-
-### メトリクス
-
-- {metric_1}: 変更前 {metric_1_before} → 目標 {metric_1_target}
-- {metric_2}: 変更前 {metric_2_before} → 目標 {metric_2_target}
-
-### レビュースケジュール
-
-- 1週間: 初期フィードバック収集
-- 1ヶ月: 定量的評価
-- 3ヶ月: 最終評価と恒久採用の判断
-
-## ロールバック計画
-
-**トリガー条件**:
-
-- {rollback_trigger_1}
-- {rollback_trigger_2}
-
-**ロールバック手順**:
-
-1. {rollback_step_1}
-2. {rollback_step_2}
-3. {rollback_step_3}
-
-## 関連ADR
-
-<!-- update-index.sh により自動生成 -->
-
-## 参考文献
-
-<!-- collect-references.sh により自動収集 -->
-
----
-
-_作成日: {date}_
-_作成者: {author}_
-_ADR番号: {number}_
+- 1 週間後: テンプレート使用感の確認
+- 1 ヶ月後: SOW/ADR 品質の定量評価
 ```

@@ -1,78 +1,56 @@
 # SOW: [Feature Name]
 
-Created: [YYYY-MM-DD]
-Status: draft <!-- draft | in-progress | completed -->
+## Status
 
-## Executive Summary
+draft <!-- draft | in-progress | completed -->
 
-[1-2 sentence overview]
+## Overview
 
-Scope: [area1, area2, area3]
+| Field     | Value                       |
+| --------- | --------------------------- |
+| Purpose   | [why this change is needed] |
+| Target    | [target files/areas]        |
+| Approach  | [approach summary]          |
+| Reference | [related docs/ADRs]         |
 
-## Problem Analysis
+## Background
 
-| ID    | Issue   | Evidence    | Confidence |
-| ----- | ------- | ----------- | ---------- |
-| I-001 | [issue] | [file:line] | [✓/→/?]    |
+[Problem context and evidence. Free-form description.]
 
-## Assumptions
+## Scope
 
-| ID    | Type       | Description          | Confidence |
-| ----- | ---------- | -------------------- | ---------- |
-| A-001 | fact       | [verified]           | [✓]        |
-| A-002 | assumption | [working]            | [→]        |
-| A-003 | unknown    | [needs verification] | [?]        |
+### In Scope
 
-## Solution Design
+| Target   | Change               | Files   |
+| -------- | -------------------- | ------- |
+| [target] | [change description] | [count] |
 
-| Phase | Description | Confidence |
-| ----- | ----------- | ---------- |
-| 1     | [approach]  | [✓/→/?]    |
+### Out of Scope
 
-Alternatives considered: [Option A (ADOPT), Option B (REJECT) - reasoning]
+- [exclusion 1]
 
 ## Acceptance Criteria
 
-Format: `WHEN/IF/WHILE [trigger] THEN/THE system SHALL [action]`
+### AC-1: [title]
 
-| ID     | Description                                     | Validates | Confidence |
-| ------ | ----------------------------------------------- | --------- | ---------- |
-| AC-001 | WHEN [user action] THEN system SHALL [response] | I-001     | [✓/→/?]    |
-| AC-002 | IF [error condition] THEN system SHALL [handle] | I-002     | [✓/→/?]    |
-
-## Test Plan
-
-| Priority | Type | Description | Validates |
-| -------- | ---- | ----------- | --------- |
-| HIGH     | unit | [test]      | AC-001    |
+- [ ] [verifiable criterion]
+- [ ] [verifiable criterion]
 
 ## Implementation Plan
 
-| Phase | Description   | Steps   | Validates |
-| ----- | ------------- | ------- | --------- |
-| 1     | [short title] | [steps] | AC-001    |
+### Phase 1: [title]
 
-## Success Metrics
+1. [step]
+2. [step]
 
-| Metric   | Target   | Validates |
-| -------- | -------- | --------- |
-| [metric] | [target] | AC-001    |
+## Test Plan
+
+| Test | Target   | Verification     |
+| ---- | -------- | ---------------- |
+| T-1  | [target] | [what to verify] |
 
 ## Risks
 
-| ID    | Risk   | Impact       | Mitigation   |
-| ----- | ------ | ------------ | ------------ |
-| R-001 | [risk] | HIGH/MED/LOW | [mitigation] |
-
-## Verification Checklist
-
-- [ ] Research/investigation completed
-- [ ] Impact on existing structure confirmed
-- [ ] Backup of related files obtained (if needed)
-
-## References
-
-| Type     | Path     |
-| -------- | -------- |
-| research | [path]   |
-| IDR      | ./idr.md |
+| Risk   | Impact       | Mitigation   |
+| ------ | ------------ | ------------ |
+| [risk] | HIGH/MED/LOW | [mitigation] |

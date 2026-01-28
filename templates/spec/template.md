@@ -51,12 +51,6 @@ interface [ModelName] {
 | -------- | ----- | --------- | ------- |
 | external | [lib] | [purpose] | FR-001  |
 
-## Assumptions
-
-| ID     | Type       | Description  | Impact |
-| ------ | ---------- | ------------ | ------ |
-| SA-001 | assumption | [assumption] | FR-001 |
-
 ## Implementation Checklist
 
 - [ ] Phase 1: [task] (FR-001)

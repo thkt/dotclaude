@@ -13,6 +13,7 @@ Claude Codeプラグインのアーキテクチャ決定を記録するドキュ
 | [0005](./0005-documentation-role-separation.md)            | ドキュメントの役割分離とAI最適化   | accepted   |
 | [0006](./0006-adopt-deterministic-script-pattern.md)       | 決定論的処理のスクリプト化パターン | accepted   |
 | [0007](./0007-configuration-optimization.md)               | Claude Code 設定の最適化           | proposed   |
+| [0008](./0008-audience-optimized-templates.md)             | 読み手別テンプレート最適化         | accepted   |
 
 ## 関連ルール
 

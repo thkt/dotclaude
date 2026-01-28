@@ -1,138 +1,104 @@
 # アーキテクチャパターンテンプレート
 
-## 構造
+アーキテクチャおよび設計パターンの判断を記録するためのガイド。
+
+## 使用場面
+
+- アーキテクチャパターンの選択時（MVC、Clean Architecture 等）
+- コンポーネント構造やモジュール境界の定義時
+- 複数ファイルに影響する設計方針の策定時
+
+## 必須セクション
+
+すべての ADR は以下の MADR コアセクションを含む：
+
+1. **タイトル** — アクション指向: 「Y に X パターンを採用」
+2. **ステータス** — proposed | accepted | deprecated | superseded
+3. **コンテキスト** — なぜ今この判断が必要か
+4. **決定ドライバー** — 判断に影響を与える要因
+5. **検討した選択肢** — 最低2つの選択肢と Pros/Cons
+6. **決定** — 「Chosen option: X, because Y」形式
+7. **結果** — ポジティブ・ネガティブな影響
+
+## テンプレート固有セクション
+
+コアセクションに加えて以下を含める：
+
+- **アーキテクチャ図** — Mermaid またはテキスト図
+- **品質属性** — 優先度テーブル（保守性、パフォーマンス等）
+- **トレードオフ** — 何を犠牲にして何を得るか
+- **実装ガイドライン** — パターン適用の具体的ルール
+- **モニタリング** — パターンが機能しているかの検証方法
+
+## 例
 
 ````markdown
-# {title}
+# スキル中心アーキテクチャの採用
 
-- ステータス: {status}
-- 決定者: {deciders}
-- 日付: {date}
+- Status: accepted
+- Deciders: プロジェクトオーナー
+- Date: 2026-01-08
 
-技術ストーリー: {technical_story_link}
+## コンテキスト
 
-## 背景と課題
+コマンドファイルが肥大化し、1ファイル 900 行を超えるものが出現。
+知識（スキル）とワークフロー（コマンド）が分離されておらず、
+DRY 違反と保守性の低下が顕著になった。
 
-{context}
+## 決定ドライバー
 
-## 決定要因
+- コマンドファイルの Miller's Law 違反（責務 > 9）
+- 同じ知識が複数コマンドに重複
+- 新機能追加時の影響範囲が不明確
 
-- {driver_1}
-- {driver_2}
-- {driver_3}
+## 検討した選択肢
 
-## 検討したオプション
+### スキル中心アーキテクチャ
 
-- {option_1}
-- {option_2}
-- {option_3}
+コマンドは薄いラッパーとし、知識をスキルに委譲。
 
-## 決定結果
+- Good: DRY を達成（知識は 1 箇所）
+- Good: コマンドが 100 行以下に収まる
+- Bad: 参照の間接性が増す
 
-採用オプション: "{chosen_option}"、理由: {rationale}
+### 現状維持（モノリシックコマンド）
 
-### 結果
+各コマンドに必要な知識をすべて含める。
 
-#### ポジティブな結果
+- Good: 1 ファイルで完結
+- Bad: 重複が増え続ける
+- Bad: 変更時の影響が読めない
 
-- {positive_1} - 明確なアーキテクチャ
-- {positive_2} - 保守性の向上
-- {positive_3} - スケーラビリティの改善
+## 決定
 
-#### ネガティブな結果
+スキル中心アーキテクチャを採用。コマンドは Thin Wrapper パターンとし、
+実装知識は skills/ に集約する。
 
-- {negative_1} - 学習コスト
-- {negative_2} - 初期実装コスト
+### ポジティブな結果
 
-## オプションの長所と短所
+- コマンドが軽量化（平均 80 行）
+- スキルの再利用が可能に
 
-### {option_1}
+### ネガティブな結果
 
-{option_1_description}
+- ファイル間のナビゲーションが増える
 
-- Good: {option_1_pro_1}
-- Good: {option_1_pro_2}
-- Neutral: {option_1_neutral}
-- Bad: {option_1_con_1}
+## アーキテクチャ図
 
-### {option_2}
+​`mermaid
+graph TD
+    CMD[commands/] --> SKILL[skills/]
+    SKILL --> REF[references/]
+​`
 
-{option_2_description}
+## 品質属性
 
-- Good: {option_2_pro_1}
-- Good: {option_2_pro_2}
-- Neutral: {option_2_neutral}
-- Bad: {option_2_con_1}
+| 属性       | 優先度 | アプローチ   |
+| ---------- | ------ | ------------ |
+| 保守性     | 高     | スキル分離   |
+| 理解容易性 | 中     | Thin Wrapper |
 
-### {option_3}
+## トレードオフ
 
-{option_3_description}
-
-- Good: {option_3_pro_1}
-- Good: {option_3_pro_2}
-- Neutral: {option_3_neutral}
-- Bad: {option_3_con_1}
-
-## 追加情報
-
-### アーキテクチャ図
-
-```text
-[アーキテクチャ図をここに挿入]
-```
-
-### 実装ガイドライン
-
-1. {guideline_1}
-2. {guideline_2}
-3. {guideline_3}
-
-### 品質属性
-
-| 属性   | 優先度          | アプローチ    |
-| ------ | --------------- | ------------- |
-| {qa_1} | {qa_1_priority} | {qa_1_method} |
-| {qa_2} | {qa_2_priority} | {qa_2_method} |
-
-### 移行戦略
-
-**フェーズ1**: {migration_phase_1}
-
-**フェーズ2**: {migration_phase_2}
-
-**フェーズ3**: {migration_phase_3}
-
-### トレードオフ
-
-このパターンでは以下をトレードオフします:
-
-- {tradeoff_1}
-- {tradeoff_2}
-
-## 検証
-
-### 成功基準
-
-- {success_criteria_1}
-- {success_criteria_2}
-- {success_criteria_3}
-
-### モニタリング
-
-- {monitoring_1}
-- {monitoring_2}
-
-## 関連ADR
-
-<!-- update-index.sh により自動生成 -->
-
-## 参考文献
-
-<!-- collect-references.sh により自動収集 -->
-
----
-
-_作成日: {date}_
-_作成者: {author}_
-_ADR番号: {number}_
+- ファイル数の増加と引き換えに、各ファイルの責務を明確化
 ````

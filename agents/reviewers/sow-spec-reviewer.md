@@ -48,9 +48,10 @@ $HOME/.claude/workspace/planning/**/spec.md
 
 ## Required Sections
 
-**SOW**: Executive Summary, Problem Analysis, Solution Design, Acceptance Criteria, Risks, Implementation Plan
-
-**Spec**: Functional Requirements (FR-xxx), API Spec, Data Model, Test Scenarios (Given-When-Then)
+| Document | Sections                                                                                                                         |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| SOW      | Overview, Background, Scope, Acceptance Criteria, Implementation Plan, Test Plan, Risks                                          |
+| Spec     | Functional Requirements (FR-xxx), Data Model, Test Scenarios (Given-When-Then), Non-Functional Requirements, Traceability Matrix |
 
 ## Consistency Check
 

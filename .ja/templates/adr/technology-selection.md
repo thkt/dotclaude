@@ -1,116 +1,101 @@
 # 技術選定テンプレート
 
-## 構造
+技術・ライブラリ・フレームワークの選定判断を記録するためのガイド。
+
+## 使用場面
+
+- ライブラリやフレームワークの選択時
+- インフラコンポーネントの選定時
+- 新しいツールやサービスの導入時
+
+## 必須セクション
+
+すべての ADR は以下の MADR コアセクションを含む：
+
+1. **タイトル** — アクション指向: 「Y のために X を採用」
+2. **ステータス** — proposed | accepted | deprecated | superseded
+3. **コンテキスト** — なぜ今この判断が必要か
+4. **決定ドライバー** — 判断に影響を与える要因
+5. **検討した選択肢** — 最低3つの選択肢と Pros/Cons
+6. **決定** — 「Chosen option: X, because Y」形式
+7. **結果** — ポジティブ・ネガティブな影響
+
+## テンプレート固有セクション
+
+コアセクションに加えて以下を含める：
+
+- **実装計画** — 技術を導入するステップ
+- **移行戦略** — 現状からの移行方法
+- **ロールバック計画** — 導入失敗時の撤退方法
+- **成功基準** — 判断を検証する測定可能な成果
+
+## 例
 
 ```markdown
-# {title}
+# React Router v7 への移行
 
-- ステータス: {status}
-- 決定者: {deciders}
-- 日付: {date}
+- Status: accepted
+- Deciders: チーム全体
+- Date: 2026-01-13
 
-技術ストーリー: {technical_story_link}
+## コンテキスト
 
-## 背景と課題
+現在の React Router v6 は保守的なアップデートのみ提供されており、
+v7 では型安全なルーティングやデータローディングの改善が含まれる。
 
-{context}
+## 決定ドライバー
 
-## 決定要因
+- 型安全性の向上が開発速度に直結
+- v6 のサポート期限が迫っている
+- チームが既に React Router に習熟している
 
-- {driver_1}
-- {driver_2}
-- {driver_3}
+## 検討した選択肢
 
-## 検討したオプション
+### React Router v7
 
-- {option_1}
-- {option_2}
-- {option_3}
+現行ルーターのメジャーアップグレード。
 
-## 決定結果
+- Good: 移行コストが最小（既存知識を活用）
+- Good: 型安全なルーティング
+- Bad: 一部 API の破壊的変更
 
-採用オプション: "{chosen_option}"、理由: {rationale}
+### TanStack Router
 
-### 結果
+型安全性に特化した新しいルーター。
 
-#### ポジティブな結果
+- Good: TypeScript ファーストの設計
+- Good: 検索パラメータの型安全性
+- Bad: 学習コストが高い
+- Bad: エコシステムが小さい
 
-- {positive_1}
-- {positive_2}
-- {positive_3}
+### Next.js App Router
 
-#### ネガティブな結果
+フルスタックフレームワークへの移行。
 
-- {negative_1}
-- {negative_2}
+- Good: SSR/SSG の統合
+- Bad: アーキテクチャの大幅な変更が必要
+- Bad: 現在の SPA 構成との互換性なし
 
-## オプションの長所と短所
+## 決定
 
-### {option_1}
+React Router v7 を採用。移行コストと得られる利益のバランスが最も良い。
 
-{option_1_description}
+### ポジティブな結果
 
-- Good: {option_1_pro_1}
-- Good: {option_1_pro_2}
-- Bad: {option_1_con_1}
-- Bad: {option_1_con_2}
+- 型安全なルーティングで実行時エラーが減少
+- チームの既存知識を最大限活用
 
-### {option_2}
+### ネガティブな結果
 
-{option_2_description}
+- 破壊的変更への対応に一定の工数が必要
 
-- Good: {option_2_pro_1}
-- Good: {option_2_pro_2}
-- Bad: {option_2_con_1}
-- Bad: {option_2_con_2}
+## 移行戦略
 
-### {option_3}
+Phase 1: 開発環境でのアップグレードと動作確認
+Phase 2: 破壊的変更の修正
+Phase 3: 本番デプロイ
 
-{option_3_description}
+## ロールバック計画
 
-- Good: {option_3_pro_1}
-- Good: {option_3_pro_2}
-- Bad: {option_3_con_1}
-- Bad: {option_3_con_2}
-
-## 追加情報
-
-### 実装計画
-
-{implementation_plan}
-
-### 移行戦略
-
-{migration_strategy}
-
-### ロールバック計画
-
-{rollback_plan}
-
-## 検証
-
-### 成功基準
-
-- {success_criteria_1}
-- {success_criteria_2}
-- {success_criteria_3}
-
-### メトリクス
-
-- {metric_1}: {metric_1_target}
-- {metric_2}: {metric_2_target}
-
-## 関連ADR
-
-<!-- update-index.sh により自動生成 -->
-
-## 参考文献
-
-<!-- collect-references.sh により自動収集 -->
-
----
-
-_作成日: {date}_
-_作成者: {author}_
-_ADR番号: {number}_
+package.json を v6 に戻し、変更した API 呼び出しを revert する。
 ```

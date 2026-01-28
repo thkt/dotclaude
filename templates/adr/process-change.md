@@ -1,173 +1,96 @@
 # Process Change Template
 
-## Structure
+Guide for documenting workflow, rule, or process change decisions.
+
+## When to Use
+
+- Changing development workflows or conventions
+- Modifying review processes or quality gates
+- Introducing new rules or deprecating old ones
+
+## Required Sections
+
+All ADRs must include these MADR core sections:
+
+1. **Title** — Action-oriented: "Adopt X process for Y"
+2. **Status** — proposed | accepted | deprecated | superseded
+3. **Context and Problem Statement** — Why this decision is needed now
+4. **Decision Drivers** — Factors influencing the choice
+5. **Considered Options** — Minimum 2 options with Pros/Cons
+6. **Decision Outcome** — "Chosen option: X, because Y"
+7. **Consequences** — Positive and Negative impacts
+
+## Template-Specific Sections
+
+In addition to the core sections, include:
+
+- **Current Process vs New Process** — Before/After comparison
+- **Transition Plan** — Phased rollout with success criteria
+- **Team Impact** — Affected roles, training needs
+- **Rollback Plan** — How to revert if the change fails
+- **Review Schedule** — When to evaluate effectiveness
+
+## Example
 
 ```markdown
-# {title}
+# Adopt Audience-Optimized Templates
 
-- Status: {status}
-- Deciders: {deciders}
-- Date: {date}
-
-Technical Story: {technical_story_link}
+- Status: accepted
+- Deciders: Project owner
+- Date: 2026-01-28
 
 ## Context and Problem Statement
 
-{context}
+SOW/Spec/ADR serve different audiences, but all templates used the
+same placeholder-list format. As a result, ADR templates were effectively
+unused, and 24 SOWs diverged from the template structure.
 
 ## Decision Drivers
 
-- {driver_1}
-- {driver_2}
-- {driver_3}
-- Team productivity improvement
-- Quality standards maintenance
-- Onboarding cost considerations
+- Structured tables are optimal for AI readers
+- Prose and guidelines are optimal for human readers
+- Large gap between templates and actual documents
 
 ## Considered Options
 
-- {option_1}
-- {option_2}
-- {option_3}
+### Audience-Optimized
+
+Keep structured tables for SOW/Spec; switch ADR to guideline format.
+
+- Good: Optimal format for each document's audience
+- Good: Eliminates template-reality gap
+- Bad: Reduced uniformity across template types
+
+### Unified Placeholder Format
+
+Keep all templates in placeholder format.
+
+- Good: Consistency
+- Bad: ADR reality gap persists
 
 ## Decision Outcome
 
-Chosen option: "{chosen_option}", because {rationale}.
+Adopted audience-optimized approach.
 
-### Consequences
+### Positive Consequences
 
-#### Positive Consequences
+- Templates are actually used in practice
+- Document quality improves
 
-- {positive_1} - Process improvement
-- {positive_2} - Efficiency gains
-- {positive_3} - Quality improvement
+### Negative Consequences
 
-#### Negative Consequences
+- Increased template management complexity
 
-- {negative_1} - Learning cost
-- {negative_2} - Productivity dip during transition
+## Current Process vs New Process
 
-## Pros and Cons of the Options
+| Aspect        | Before                   | After                 |
+| ------------- | ------------------------ | --------------------- |
+| SOW templates | Excessive IDs (8 types)  | Reality-based (AC-N)  |
+| ADR templates | Placeholder lists        | Guidelines + examples |
+| Reviewer      | Mismatched with template | Synced with template  |
 
-### {option_1}
+## Review Schedule
 
-{option_1_description}
-
-- Good, because {option_1_pro_1}
-- Good, because {option_1_pro_2}
-- Bad, because {option_1_con_1}
-- Bad, because {option_1_con_2}
-
-### {option_2}
-
-{option_2_description}
-
-- Good, because {option_2_pro_1}
-- Good, because {option_2_pro_2}
-- Bad, because {option_2_con_1}
-- Bad, because {option_2_con_2}
-
-### {option_3}
-
-{option_3_description}
-
-- Good, because {option_3_pro_1}
-- Good, because {option_3_pro_2}
-- Bad, because {option_3_con_1}
-- Bad, because {option_3_con_2}
-
-## Process Change Details
-
-### Current Process
-
-{current_process_description}
-
-**Pain Points**:
-
-- {pain_point_1}
-- {pain_point_2}
-- {pain_point_3}
-
-### New Process
-
-{new_process_description}
-
-**Expected Improvements**:
-
-- {improvement_1}
-- {improvement_2}
-- {improvement_3}
-
-### Transition Plan
-
-| Phase        | Duration           | Activities           | Success Criteria   |
-| ------------ | ------------------ | -------------------- | ------------------ |
-| Preparation  | {phase_1_duration} | {phase_1_activities} | {phase_1_criteria} |
-| Pilot        | {phase_2_duration} | {phase_2_activities} | {phase_2_criteria} |
-| Full Rollout | {phase_3_duration} | {phase_3_activities} | {phase_3_criteria} |
-
-## Team Impact
-
-### Affected Teams/Roles
-
-- {team_1}: {team_1_impact}
-- {team_2}: {team_2_impact}
-
-### Training Requirements
-
-- Training time: {training_hours} hours/person
-- Documentation updates: {docs_to_update}
-- Workshops: {workshop_plan}
-
-### Communication Plan
-
-- {communication_1}
-- {communication_2}
-- {communication_3}
-
-## Validation
-
-### Success Criteria
-
-- {success_criteria_1}
-- {success_criteria_2}
-- {success_criteria_3}
-
-### Metrics
-
-- {metric_1}: Before {metric_1_before} → Target {metric_1_target}
-- {metric_2}: Before {metric_2_before} → Target {metric_2_target}
-
-### Review Schedule
-
-- 1 week: Initial feedback collection
-- 1 month: Quantitative evaluation
-- 3 months: Final evaluation & permanent adoption decision
-
-## Rollback Plan
-
-**Trigger Conditions**:
-
-- {rollback_trigger_1}
-- {rollback_trigger_2}
-
-**Rollback Steps**:
-
-1. {rollback_step_1}
-2. {rollback_step_2}
-3. {rollback_step_3}
-
-## Related ADRs
-
-<!-- Auto-generated by update-index.sh -->
-
-## References
-
-<!-- Auto-collected by collect-references.sh -->
-
----
-
-_Created: {date}_
-_Author: {author}_
-_ADR Number: {number}_
+- 1 week: Check template usability
+- 1 month: Quantitative evaluation of SOW/ADR quality
 ```

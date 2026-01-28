@@ -1,216 +1,104 @@
 # Deprecation Template
 
-## Structure
+Guide for documenting technology retirement and migration decisions.
 
-````markdown
-# {title}
+## When to Use
 
-- Status: {status}
-- Deciders: {deciders}
-- Date: {date}
+- Retiring a library, framework, or tool
+- Replacing deprecated APIs or patterns
+- Planning removal of legacy code
 
-Technical Story: {technical_story_link}
+## Required Sections
+
+All ADRs must include these MADR core sections:
+
+1. **Title** — Action-oriented: "Deprecate X in favor of Y"
+2. **Status** — proposed | accepted | deprecated | superseded
+3. **Context and Problem Statement** — Why this decision is needed now
+4. **Decision Drivers** — Factors influencing the choice
+5. **Considered Options** — Minimum 2 options (migrate vs keep)
+6. **Decision Outcome** — "Chosen option: X, because Y"
+7. **Consequences** — Positive and Negative impacts
+
+## Template-Specific Sections (REQUIRED)
+
+Deprecation ADRs have stricter requirements:
+
+- **Deprecation Target** — What is being deprecated (name, version, usage locations)
+- **Replacement Technology** — What replaces it and why
+- **Impact Analysis** — Code impact, dependency impact, team impact
+- **Migration Plan (REQUIRED)** — Phased timeline with success criteria per phase
+- **Deprecation Warning Period** — Soft deprecation → Hard deprecation → Removal dates
+- **Rollback Plan (REQUIRED)** — Trigger conditions and rollback steps
+- **Communication** — Announcement schedule and documentation updates
+
+## Example
+
+```markdown
+# Deprecate moment.js in favor of date-fns
+
+- Status: accepted
+- Deciders: Frontend team
+- Date: 2026-01-15
 
 ## Context and Problem Statement
 
-{context}
+moment.js has entered maintenance mode and its bundle size (67KB gzip)
+accounts for 15% of the application. It is not tree-shakable, so unused
+features are included in the bundle.
 
 ## Decision Drivers
 
-- {driver_1}
-- {driver_2}
-- {driver_3}
-- Technical debt reduction
-- Security risk mitigation
-- Maintenance cost optimization
+- Demand for bundle size reduction
+- Official deprecation notice from moment.js
+- Risk of security patches ending
 
 ## Deprecation Target
 
-### Current Technology
-
-- **Name**: {deprecated_tech_name}
-- **Version**: {deprecated_tech_version}
-- **Start Date**: {deprecated_tech_start_date}
-- **Usage Locations**: {usage_locations}
-
-### Deprecation Reasons
-
-- {deprecation_reason_1}
-- {deprecation_reason_2}
-- {deprecation_reason_3}
+- **Name**: moment.js
+- **Version**: 2.29.4
+- **Usage locations**: src/utils/date.ts, src/components/Calendar/
 
 ## Replacement Technology
 
-- **Name**: {replacement_tech_name}
-- **Version**: {replacement_tech_version}
-- **Selection Rationale**: {replacement_rationale}
+- **Name**: date-fns
+- **Rationale**: Tree-shakable, TypeScript native, lightweight
 
 ## Decision Outcome
 
-Chosen option: "Deprecate {deprecated_tech_name} and migrate to {replacement_tech_name}", because {rationale}.
+Deprecate moment.js and gradually migrate to date-fns.
 
-### Consequences
+### Positive Consequences
 
-#### Positive Consequences
+- ~60KB bundle size reduction
+- Tree-shaking optimization enabled
 
-- {positive_1} - Technical debt reduction
-- {positive_2} - Performance improvement
-- {positive_3} - Maintainability improvement
+### Negative Consequences
 
-#### Negative Consequences
+- Both libraries coexist during migration
+- Learning cost due to API differences
 
-- {negative_1} - Migration cost
-- {negative_2} - Temporary complexity increase
+## Migration Plan
 
-## Impact Analysis
+| Phase             | Duration | Goal                              | Criteria       |
+| ----------------- | -------- | --------------------------------- | -------------- |
+| Preparation       | 1 week   | Add date-fns, create compat layer | Tests pass     |
+| Gradual migration | 2 weeks  | Replace usage incrementally       | 80% complete   |
+| Full migration    | 1 week   | Replace remainder, remove moment  | 0 dependencies |
 
-### Code Impact
+## Deprecation Warning Period
 
-- Affected files count: {affected_files_count}
-- Major change locations:
-  - {change_location_1}
-  - {change_location_2}
-  - {change_location_3}
+- Soft deprecation: ESLint rule as warning
+- Hard deprecation: CI blocks moment.js imports
+- Full removal: Remove from package.json
 
-### Dependency Impact
+## Rollback Plan
 
-- Direct dependencies: {direct_dependencies}
-- Indirect dependencies: {indirect_dependencies}
-- Compatibility layer needed: {compatibility_layer_needed}
+**Trigger**: Bug in date-fns that cannot reproduce moment.js behavior
 
-### Team Impact
+**Steps**:
 
-- Affected teams: {affected_teams}
-- Required skill set: {required_skills}
-- Learning cost: {learning_cost} hours/person
-
-## Migration Plan (REQUIRED)
-
-### Timeline
-
-| Phase                      | Period           | Goal           | Success Criteria   |
-| -------------------------- | ---------------- | -------------- | ------------------ |
-| Phase 1: Preparation       | {phase_1_period} | {phase_1_goal} | {phase_1_criteria} |
-| Phase 2: Pilot Migration   | {phase_2_period} | {phase_2_goal} | {phase_2_criteria} |
-| Phase 3: Gradual Migration | {phase_3_period} | {phase_3_goal} | {phase_3_criteria} |
-| Phase 4: Full Migration    | {phase_4_period} | {phase_4_goal} | {phase_4_criteria} |
-| Phase 5: Cleanup           | {phase_5_period} | {phase_5_goal} | {phase_5_criteria} |
-
-### Deprecation Warning Period
-
-- Warning start date: {warning_start_date}
-- Soft deprecation: {soft_deprecation_date} (warning logs output)
-- Hard deprecation: {hard_deprecation_date} (new usage prohibited)
-- Full removal: {removal_date}
-
-### Migration Steps
-
-#### Step 1: Create Compatibility Layer
-
-```text
-{compatibility_layer_code}
+1. Revert compat layer to moment.js
+2. Revert migrated files
+3. Disable ESLint rule
 ```
-
-#### Step 2: Gradual Replacement
-
-- [ ] {migration_task_1}
-- [ ] {migration_task_2}
-- [ ] {migration_task_3}
-
-#### Step 3: Verification
-
-- [ ] Update unit tests
-- [ ] Run integration tests
-- [ ] Measure performance
-
-#### Step 4: Remove Legacy Code
-
-- [ ] Remove deprecated code
-- [ ] Remove compatibility layer (if applicable)
-- [ ] Update documentation
-
-### Migration Checklist
-
-- [ ] Impact scope identification complete
-- [ ] Migration plan review complete
-- [ ] Pilot migration successful
-- [ ] All tests green
-- [ ] Performance baseline achieved
-- [ ] Documentation update complete
-- [ ] Team training complete
-
-## Validation
-
-### Success Criteria
-
-- {success_criteria_1}
-- {success_criteria_2}
-- {success_criteria_3}
-
-### Metrics
-
-- Performance: {performance_metric}
-- Error rate: {error_rate_metric}
-- Migration completion rate: {migration_completion_metric}
-
-### Monitoring
-
-- Migration progress dashboard: {dashboard_link}
-- Alert configuration: {alert_config}
-
-## Rollback Plan (REQUIRED)
-
-### Trigger Conditions
-
-- {rollback_trigger_1}
-- {rollback_trigger_2}
-- {rollback_trigger_3}
-
-### Rollback Steps
-
-1. {rollback_step_1}
-2. {rollback_step_2}
-3. {rollback_step_3}
-
-### Rollback Timeline
-
-- Detection to decision: {detection_to_decision} minutes
-- Rollback execution: {rollback_execution} minutes
-- Recovery verification: {recovery_verification} minutes
-
-### Data Considerations
-
-- Data migration required: {data_migration_needed}
-- Data handling during rollback: {data_rollback_strategy}
-
-## Communication
-
-### Announcements
-
-| Date              | Content            | Audience       | Channel     |
-| ----------------- | ------------------ | -------------- | ----------- |
-| {announce_date_1} | Deprecation notice | All developers | {channel_1} |
-| {announce_date_2} | Migration start    | Related teams  | {channel_2} |
-| {announce_date_3} | Completion report  | All developers | {channel_3} |
-
-### Documentation Updates
-
-- [ ] README.md
-- [ ] Technical documentation
-- [ ] API documentation
-- [ ] Migration guide
-
-## Related ADRs
-
-<!-- Auto-generated by update-index.sh -->
-
-## References
-
-<!-- Auto-collected by collect-references.sh -->
-
----
-
-_Created: {date}_
-_Author: {author}_
-_ADR Number: {number}_
-````

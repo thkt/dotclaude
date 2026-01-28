@@ -48,9 +48,10 @@ $HOME/.claude/workspace/planning/**/spec.md
 
 ## 必須セクション
 
-**SOW**: エグゼクティブサマリー、問題分析、ソリューション設計、受け入れ基準、リスク、実装計画
-
-**Spec**: 機能要件（FR-xxx）、API仕様、データモデル、テストシナリオ（Given-When-Then）
+| ドキュメント | セクション                                                                                                  |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| SOW          | Overview, Background, Scope, Acceptance Criteria, Implementation Plan, Test Plan, Risks                     |
+| Spec         | 機能要件（FR-xxx）、データモデル、テストシナリオ（Given-When-Then）、非機能要件、トレーサビリティマトリクス |
 
 ## 整合性チェック
 
