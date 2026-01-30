@@ -3,7 +3,7 @@ set -euo pipefail
 
 # SubagentStart hook script
 # Logs subagent start events and plays a notification sound
-# Input: JSON via stdin with fields: agent_id, subagent_type, etc.
+# Input: JSON via stdin with fields: agent_id, agent_type/subagent_type, etc.
 
 # Configuration
 LOG_FILE="$HOME/.claude/logs/subagent.log"
@@ -14,7 +14,7 @@ INPUT=$(cat)
 
 # Extract agent information from JSON
 AGENT_ID=$(echo "$INPUT" | jq -r '.agent_id // "unknown"')
-AGENT_TYPE=$(echo "$INPUT" | jq -r '.subagent_type // "unknown"')
+AGENT_TYPE=$(echo "$INPUT" | jq -r '.agent_type // .subagent_type // "unknown"')
 
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")"
