@@ -1,6 +1,6 @@
 ---
 description: Remove AI-generated slop and simplify code for clarity and maintainability
-allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob, Task
+allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob, Task, AskUserQuestion
 model: opus
 argument-hint: "[target scope]"
 ---
@@ -13,6 +13,12 @@ Remove AI-generated slop and simplify code before commit.
 
 - Target scope: `$1` (optional)
 - If `$1` is empty → analyze `git diff main...HEAD`
+
+### Polish Level
+
+| Question | Options                              |
+| -------- | ------------------------------------ |
+| Level    | conservative / standard / aggressive |
 
 ## Agent
 

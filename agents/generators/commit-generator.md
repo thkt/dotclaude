@@ -39,50 +39,22 @@ Default to `feat` if unclear.
 ## Examples
 
 ```text
-# Good
 feat(auth): add OAuth2 authentication support
-fix(api): resolve timeout in user endpoint
-
-# Bad
-Fixed bug          # no type, vague
-feat: Added new.   # capital, period
+feat(api)!: remove deprecated endpoints  # BREAKING CHANGE
 ```
 
-## Breaking Changes
-
-```text
-feat(api)!: remove deprecated endpoints
-
-BREAKING CHANGE: /v1/users removed. Use /v2/users.
-```
-
-## Commit Execution (Sandbox Compatible)
-
-Sandbox blocks stdin redirection. Use file-based commit instead:
+## Commit Execution
 
 ```bash
-# ❌ Fails: heredoc to git commit
-git commit -m "$(cat <<'EOF'
-message
-EOF
-)"
-
-# ✅ Works: heredoc to file
+# File-based (multi-line)
 cat > /tmp/claude/commit-msg.txt << 'EOF'
-feat(workflow): implement test runner
-
-Multi-line description here.
+<message>
 EOF
-
 git commit -F /tmp/claude/commit-msg.txt
 mv /tmp/claude/commit-msg.txt ~/.Trash/ 2>/dev/null || true
-```
 
-Alternative (no temp file):
-
-```bash
-git commit -m "feat(workflow): implement test runner" \
-           -m "Multi-line description here."
+# Single-line alternative
+git commit -m "subject" -m "body"
 ```
 
 ## Error Handling
@@ -94,13 +66,18 @@ git commit -m "feat(workflow): implement test runner" \
 
 ## Output
 
-Return structured YAML:
+Return 3 candidates as structured YAML array:
 
 ```yaml
-type: <type>
-scope: <scope> # optional
-description: <description>
-body: | # optional
-  <body text>
-footer: <footer> # optional
+candidates:
+  - type: <type>
+    scope: <scope>
+    description: <description>
+    body: <body> # optional
+    footer: <footer> # optional
+  - type: <type>
+    scope: <scope>
+    description: <description>
+  - type: <type>
+    description: <description>
 ```

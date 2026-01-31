@@ -1,6 +1,6 @@
 ---
 description: 複雑なタスクの計画のためにStatement of Work（SOW）を生成
-allowed-tools: Bash(git log:*), Bash(git diff:*), Read, Write, Glob, Grep, LS, Task
+allowed-tools: Bash(git log:*), Bash(git diff:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 argument-hint: "[タスク説明]"
 ---
@@ -12,8 +12,14 @@ argument-hint: "[タスク説明]"
 ## 入力
 
 - タスク説明: `$1`（任意）
-- `$1`が空の場合 → リサーチコンテキストを確認、なければAskUserQuestionで確認
+- `$1`が空の場合 → リサーチコンテキストを確認、なければAskUserQuestionで選択
 - 解決順序: `$1` > リサーチコンテキスト (`*.md`) > AskUserQuestion
+
+### 説明プロンプト
+
+| 質問       | 選択肢            |
+| ---------- | ----------------- |
+| タスク説明 | [Otherで自由入力] |
 
 ## 実行
 

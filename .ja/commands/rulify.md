@@ -1,6 +1,6 @@
 ---
 description: ADRからプロジェクトルールを生成しCLAUDE.mdに統合
-allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob
+allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob, AskUserQuestion
 model: opus
 argument-hint: "[ADR番号]"
 ---
@@ -12,7 +12,11 @@ ADRをAI実行可能なルール形式に変換。
 ## 入力
 
 - ADR番号: `$1`（必須、例: `1` または `0001`）
-- `$1`が空の場合 → AskUserQuestionで確認
+- `$1`が空の場合 → `adr/`のADR一覧をAskUserQuestionで選択
+
+### ADR選択
+
+`adr/`内のADR → 番号付き一覧をAskUserQuestionで提示。
 
 ## 実行
 

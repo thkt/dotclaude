@@ -1,6 +1,6 @@
 ---
 description: Generate documentation and Playwright tests through guided browser operations
-allowed-tools: Read, Write, Glob, Task, Bash(agent-browser:*)
+allowed-tools: Read, Write, Glob, Task, Bash(agent-browser:*), AskUserQuestion
 model: opus
 argument-hint: "[test-name]"
 ---
@@ -12,7 +12,14 @@ Generate documentation and Playwright tests through browser operations.
 ## Input
 
 - Test name: `$1` (required)
-- If `$1` is empty → prompt via AskUserQuestion
+- If `$1` is empty → select via AskUserQuestion
+
+### Test Setup
+
+| Question  | Options               |
+| --------- | --------------------- |
+| Test name | [free text via Other] |
+| Start URL | [free text via Other] |
 
 ## Execution
 

@@ -1,6 +1,6 @@
 ---
 description: Implement code following TDD/RGRC cycle with real-time test feedback
-allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskList, TaskUpdate
+allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskList, TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[implementation description] [--frontend] [--principles] [--storybook]"
 ---
@@ -12,8 +12,15 @@ Implement code with TDD/RGRC cycle and quality checks.
 ## Input
 
 - Implementation description: `$1` (required)
-- If `$1` is empty → prompt via AskUserQuestion
+- If `$1` is empty → select via AskUserQuestion
 - Flags: `--frontend`, `--principles`, `--storybook` (optional, include in `$1`)
+
+### Context Selection
+
+| Question           | Options                                  |
+| ------------------ | ---------------------------------------- |
+| What to implement  | [free text via Other]                    |
+| Context (optional) | frontend / principles / storybook / none |
 
 ## Conditional Context
 

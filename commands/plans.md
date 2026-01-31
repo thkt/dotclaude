@@ -1,6 +1,6 @@
 ---
 description: List and view planning documents (SOW/Spec) in workspace
-allowed-tools: Read, Glob
+allowed-tools: Read, Glob, AskUserQuestion
 model: opus
 argument-hint: "[feature-name]"
 ---
@@ -23,6 +23,10 @@ $HOME/.claude/workspace/planning/**/sow.md
 ```
 
 For each SOW found, extract `Status:` line value.
+
+### Plan Action (after listing)
+
+Present list → AskUserQuestion to select plan number for details, or skip.
 
 ## Output
 

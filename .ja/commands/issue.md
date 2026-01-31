@@ -1,6 +1,6 @@
 ---
 description: 構造化されたタイトルと本文でGitHub Issueを生成
-allowed-tools: Task
+allowed-tools: [Task, AskUserQuestion]
 model: opus
 argument-hint: "[Issue説明]"
 ---
@@ -12,8 +12,14 @@ argument-hint: "[Issue説明]"
 ## 入力
 
 - Issue説明: `$1`
-- `$1`が空の場合 → AskUserQuestionで確認
+- `$1`が空の場合 → AskUserQuestionでタイプを選択
 - タイププレフィックス: `bug`, `feature`, `docs`（任意、`$1`に含める）
+
+### タイプ選択
+
+| 質問        | 選択肢               |
+| ----------- | -------------------- |
+| Issueタイプ | bug / feature / docs |
 
 ## Agent
 

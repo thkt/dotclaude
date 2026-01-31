@@ -1,6 +1,6 @@
 ---
 description: Create Architecture Decision Records (ADR) in MADR format with auto-numbering
-allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Bash($HOME/.claude/skills/creating-adrs/scripts/*), Grep, Glob
+allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Bash($HOME/.claude/skills/creating-adrs/scripts/*), Grep, Glob, AskUserQuestion
 model: opus
 argument-hint: "[decision title]"
 ---
@@ -12,8 +12,16 @@ Create ADR in MADR format with auto-numbering.
 ## Input
 
 - Decision title: `$1` (specific action like "Adopt X for Y")
-- If `$1` is empty → prompt via AskUserQuestion
+- If `$1` is empty → select via AskUserQuestion
 - Prerequisites: `adr/` directory (create if missing)
+
+### Title Prompt
+
+| Question      | Options                        |
+| ------------- | ------------------------------ |
+| Decision type | New decision / Update existing |
+
+If "Update existing" → list recent ADRs in `adr/` for selection via AskUserQuestion.
 
 ## Skills
 

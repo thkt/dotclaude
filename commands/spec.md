@@ -1,6 +1,6 @@
 ---
 description: Generate Specification (spec.md) with implementation-ready details
-allowed-tools: Read, Write, Glob, Grep, LS
+allowed-tools: Read, Write, Glob, Grep, LS, AskUserQuestion
 model: opus
 argument-hint: "[sow path or feature description]"
 ---
@@ -12,7 +12,12 @@ Generate spec.md with implementation-ready details.
 ## Input
 
 - SOW path or feature description: `$1` (optional)
-- If `$1` is empty → auto-detect latest `$HOME/.claude/workspace/planning/*/sow.md`
+- If `$1` is empty and multiple SOWs exist → select via AskUserQuestion
+- If `$1` is empty and single SOW → auto-detect latest
+
+### SOW Selection
+
+List SOWs → present as AskUserQuestion options with feature name + status.
 
 ## Execution
 

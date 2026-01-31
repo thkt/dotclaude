@@ -1,7 +1,7 @@
 ---
 description: 徹底的かつ包括的なコード品質評価のために専門レビューエージェントをオーケストレート
 aliases: [review]
-allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task
+allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 argument-hint: "[対象ファイルまたはスコープ]"
 ---
@@ -13,7 +13,13 @@ argument-hint: "[対象ファイルまたはスコープ]"
 ## 入力
 
 - 対象スコープ: `$1`（任意）
-- `$1`が空の場合 → ステージ済み/変更ファイルをレビュー（`git diff --name-only`経由）
+- `$1`が空の場合 → AskUserQuestionでフォーカスを選択、ステージ済み/変更ファイルをレビュー
+
+### 監査フォーカス
+
+| 質問       | 選択肢                                     |
+| ---------- | ------------------------------------------ |
+| フォーカス | security / performance / readability / all |
 
 ## 実行
 

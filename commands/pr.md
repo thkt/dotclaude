@@ -1,6 +1,6 @@
 ---
 description: Analyze branch changes and generate comprehensive PR description
-allowed-tools: [Task, Bash]
+allowed-tools: [Task, Bash, AskUserQuestion]
 model: opus
 argument-hint: "[issue reference or context]"
 ---
@@ -25,9 +25,21 @@ Analyze all changes in the current branch and generate comprehensive PR descript
 | Step | Action                                                   |
 | ---- | -------------------------------------------------------- |
 | 1    | Analyze: `git status`, `git diff`, `git log` (parallel)  |
-| 2    | `Task` with `subagent_type: pr-generator` for PR content |
-| 3    | Display push command for user to run manually            |
-| 4    | Create PR: `gh pr create --title "..." --body "..."`     |
+| 2    | Select base branch via AskUserQuestion                   |
+| 3    | `Task` with `subagent_type: pr-generator` for PR content |
+| 4    | Preview PR → AskUserQuestion: "Create this PR?"          |
+| 5    | Display push command for user to run manually            |
+| 6    | Create PR: `gh pr create --title "..." --body "..."`     |
+
+### Base Branch Selection (Step 2)
+
+| Question    | Options                     |
+| ----------- | --------------------------- |
+| Base branch | main / develop / [detected] |
+
+### PR Confirmation (Step 4)
+
+Preview → AskUserQuestion: "Create this PR?"
 
 ### Push (Manual)
 
@@ -44,42 +56,10 @@ Run this to push: git push -u origin HEAD
 | Title: No prefix    | No `feat:`, `fix:`, `refactor:` etc.          |
 | Body: Direct string | Avoid heredoc (`<<EOF`) - sandbox restriction |
 
-## Flow: Preview
-
-```text
-[Generator YAML] → [Preview] → [Confirm] → [Execute]
-```
-
 ## Display Format
 
-### Preview
-
-```markdown
-## 🔀 PR Preview
-
-| Field  | Value       |
-| ------ | ----------- |
-| Title  | [title]     |
-| Base   | main        |
-| Branch | feature/xxx |
-| Closes | #123        |
-
-### Summary
-
-[2-3 bullet points]
-
-### Changes
-
-| File        | Change       |
-| ----------- | ------------ |
-| src/auth.ts | Add OAuth2   |
-| src/user.ts | Update types |
-```
-
-### Success
-
-**Created PR**: `#<number>` <title>
-<PR URL>
+Preview shows title, base branch, current branch, summary bullets, and changes table.
+Success: `**Created PR**: #<number> <title> <PR URL>`
 
 ## Verification
 

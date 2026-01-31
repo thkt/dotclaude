@@ -1,6 +1,6 @@
 ---
 description: ワークスペース内の計画ドキュメント（SOW/Spec）を一覧・表示
-allowed-tools: Read, Glob
+allowed-tools: Read, Glob, AskUserQuestion
 model: opus
 argument-hint: "[機能名]"
 ---
@@ -23,6 +23,10 @@ $HOME/.claude/workspace/planning/**/sow.md
 ```
 
 各SOWから `Status:` 行の値を抽出。
+
+### プランアクション（一覧表示後）
+
+一覧表示 → AskUserQuestionでプラン番号を選択し詳細表示、またはスキップ。
 
 ## 出力
 

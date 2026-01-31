@@ -22,12 +22,16 @@ Analyze staged changes and generate Conventional Commits messages.
 
 ## Execution
 
-| Step | Action                                        |
-| ---- | --------------------------------------------- |
-| 1    | `Task` with `subagent_type: commit-generator` |
-| 2    | Format and present preview                    |
-| 3    | Confirm with user                             |
-| 4    | Execute commit (sandbox-compatible method)    |
+| Step | Action                                           |
+| ---- | ------------------------------------------------ |
+| 1    | `Task` with `subagent_type: commit-generator`    |
+| 2    | Present 3 message candidates via AskUserQuestion |
+| 3    | User selects or customizes (Other)               |
+| 4    | Execute selected commit (sandbox-compatible)     |
+
+### Message Selection (Step 2)
+
+Present 3 generator candidates as AskUserQuestion options (varied scope/wording).
 
 ### Sandbox-Compatible Commit
 

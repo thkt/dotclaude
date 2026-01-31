@@ -1,6 +1,6 @@
 ---
 description: プロジェクトテストを実行し、包括的なテストを通じてコード品質を検証
-allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, TodoWrite, Task
+allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, Task, AskUserQuestion
 model: opus
 argument-hint: "[テストスコープまたは特定のテスト]"
 ---
@@ -12,7 +12,13 @@ argument-hint: "[テストスコープまたは特定のテスト]"
 ## 入力
 
 - テストスコープまたはファイルパターン: `$1`（任意）
-- `$1`が空の場合 → 全テストを実行
+- `$1`が空の場合 → AskUserQuestionでスコープを選択
+
+### スコープ選択
+
+| 質問     | 選択肢                         |
+| -------- | ------------------------------ |
+| スコープ | all / unit / integration / e2e |
 
 ## Agent
 

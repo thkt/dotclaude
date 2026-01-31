@@ -1,6 +1,6 @@
 ---
 description: Rapidly fix small bugs and minor improvements in development environment
-allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task
+allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task, AskUserQuestion
 model: opus
 argument-hint: "[bug or issue description]"
 ---
@@ -13,8 +13,15 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 
 - Bug or issue description: `$1`
 - OR: Suggestion ID from `/audit` output (e.g., `/fix SUG-001`)
-- If `$1` is empty → prompt via AskUserQuestion
+- If `$1` is empty → select fix type via AskUserQuestion
 - Scope: small, well-understood issues (1-3 files)
+
+### Fix Prompt
+
+| Question    | Options                                |
+| ----------- | -------------------------------------- |
+| Fix type    | Bug fix / Error message / Test failure |
+| Description | [free text via Other]                  |
 
 ### Suggestion ID Mode (`/fix SUG-XXX`)
 

@@ -1,7 +1,7 @@
 ---
 description: Orchestrate specialized review agents for thorough, comprehensive code quality assessment
 aliases: [review]
-allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task
+allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 argument-hint: "[target files or scope]"
 ---
@@ -13,7 +13,13 @@ Orchestrate specialized review agents for thorough audit with confidence-based f
 ## Input
 
 - Target scope: `$1` (optional)
-- If `$1` is empty → review staged/modified files (via `git diff --name-only`)
+- If `$1` is empty → select focus via AskUserQuestion, then review staged/modified files
+
+### Audit Focus
+
+| Question | Options                                    |
+| -------- | ------------------------------------------ |
+| Focus    | security / performance / readability / all |
 
 ## Execution
 

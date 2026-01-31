@@ -1,6 +1,6 @@
 ---
 description: Generate GitHub Issue with structured title and body
-allowed-tools: Task
+allowed-tools: [Task, AskUserQuestion]
 model: opus
 argument-hint: "[issue description]"
 ---
@@ -12,8 +12,14 @@ Generate well-structured GitHub Issues.
 ## Input
 
 - Issue description: `$1`
-- If `$1` is empty → prompt via AskUserQuestion
+- If `$1` is empty → select type via AskUserQuestion
 - Type prefix: `bug`, `feature`, `docs` (optional, can be included in `$1`)
+
+### Type Selection
+
+| Question   | Options              |
+| ---------- | -------------------- |
+| Issue type | bug / feature / docs |
 
 ## Agent
 

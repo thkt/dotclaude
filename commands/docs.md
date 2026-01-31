@@ -1,6 +1,6 @@
 ---
 description: Generate documentation from codebase analysis
-allowed-tools: [Task, Read, Write, Bash]
+allowed-tools: [Task, Read, Write, Bash, AskUserQuestion]
 model: opus
 argument-hint: "[architecture|api|domain|setup]"
 ---
@@ -16,7 +16,13 @@ Generate documentation by analyzing the codebase.
   - `api` - API specification
   - `domain` - Domain glossary and relationships
   - `setup` - Environment setup guide
-- If `$1` is empty → prompt via AskUserQuestion
+- If `$1` is empty → select type via AskUserQuestion
+
+### Type Selection
+
+| Question           | Options                             |
+| ------------------ | ----------------------------------- |
+| Documentation type | architecture / api / domain / setup |
 
 ## Execution
 

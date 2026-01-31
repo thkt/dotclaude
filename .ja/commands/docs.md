@@ -1,6 +1,6 @@
 ---
 description: コードベース分析からドキュメントを生成
-allowed-tools: [Task, Read, Write, Bash]
+allowed-tools: [Task, Read, Write, Bash, AskUserQuestion]
 model: opus
 argument-hint: "[architecture|api|domain|setup]"
 ---
@@ -16,7 +16,13 @@ argument-hint: "[architecture|api|domain|setup]"
   - `api` - API仕様
   - `domain` - ドメイン用語と関係
   - `setup` - 環境セットアップガイド
-- `$1`が空の場合 → AskUserQuestionで確認
+- `$1`が空の場合 → AskUserQuestionでタイプを選択
+
+### タイプ選択
+
+| 質問             | 選択肢                              |
+| ---------------- | ----------------------------------- |
+| ドキュメント種別 | architecture / api / domain / setup |
 
 ## 実行
 

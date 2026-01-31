@@ -1,6 +1,6 @@
 ---
 description: AI生成スロップの除去とコード簡素化による明確性・保守性の向上
-allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob, Task
+allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob, Task, AskUserQuestion
 model: opus
 argument-hint: "[対象スコープ]"
 ---
@@ -13,6 +13,12 @@ argument-hint: "[対象スコープ]"
 
 - 対象スコープ: `$1`（任意）
 - `$1`が空の場合 → `git diff main...HEAD`を分析
+
+### Polishレベル
+
+| 質問   | 選択肢                               |
+| ------ | ------------------------------------ |
+| レベル | conservative / standard / aggressive |
 
 ## Agent
 

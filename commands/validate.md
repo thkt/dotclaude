@@ -1,6 +1,6 @@
 ---
 description: Validate implementation against SOW acceptance criteria
-allowed-tools: Read, Glob, Grep, TaskList, TaskUpdate
+allowed-tools: Read, Glob, Grep, TaskList, TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[feature name]"
 ---
@@ -12,7 +12,12 @@ Display SOW acceptance criteria for manual verification.
 ## Input
 
 - Feature name: `$1` (optional)
-- If `$1` is empty → use latest SOW
+- If `$1` is empty and multiple SOWs exist → select via AskUserQuestion
+- If `$1` is empty and single SOW → use latest SOW
+
+### SOW Selection
+
+List SOWs → present as AskUserQuestion options with feature name + status.
 
 ## Execution
 

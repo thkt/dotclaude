@@ -1,6 +1,6 @@
 ---
 description: 実装準備の詳細を含むSpecification（spec.md）を生成
-allowed-tools: Read, Write, Glob, Grep, LS
+allowed-tools: Read, Write, Glob, Grep, LS, AskUserQuestion
 model: opus
 argument-hint: "[sowパスまたは機能説明]"
 ---
@@ -12,7 +12,12 @@ argument-hint: "[sowパスまたは機能説明]"
 ## 入力
 
 - SOWパスまたは機能説明: `$1`（任意）
-- `$1`が空の場合 → 最新の`$HOME/.claude/workspace/planning/*/sow.md`を自動検出
+- `$1`が空で複数SOWがある場合 → AskUserQuestionで選択
+- `$1`が空でSOWが1つの場合 → 最新を自動検出
+
+### SOW選択
+
+SOW一覧 → 機能名+ステータス付きでAskUserQuestionオプションとして提示。
 
 ## 実行
 

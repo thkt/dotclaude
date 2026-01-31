@@ -1,6 +1,6 @@
 ---
 description: SOW受け入れ基準に対して実装を検証
-allowed-tools: Read, Glob, Grep, TaskList, TaskUpdate
+allowed-tools: Read, Glob, Grep, TaskList, TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[機能名]"
 ---
@@ -12,7 +12,12 @@ argument-hint: "[機能名]"
 ## 入力
 
 - 機能名: `$1`（任意）
-- `$1`が空の場合 → 最新SOWを使用
+- `$1`が空で複数SOWがある場合 → AskUserQuestionで選択
+- `$1`が空でSOWが1つの場合 → 最新SOWを使用
+
+### SOW選択
+
+SOW一覧 → 機能名+ステータス付きでAskUserQuestionオプションとして提示。
 
 ## 実行
 

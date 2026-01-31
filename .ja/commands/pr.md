@@ -1,6 +1,6 @@
 ---
 description: ブランチの変更を分析し、包括的なPR説明を生成
-allowed-tools: [Task, Bash]
+allowed-tools: [Task, Bash, AskUserQuestion]
 model: opus
 argument-hint: "[Issue参照またはコンテキスト]"
 ---
@@ -25,9 +25,21 @@ argument-hint: "[Issue参照またはコンテキスト]"
 | Step | アクション                                                  |
 | ---- | ----------------------------------------------------------- |
 | 1    | 分析: `git status`, `git diff`, `git log`（並行）           |
-| 2    | `Task`で`subagent_type: pr-generator`によるPRコンテンツ生成 |
-| 3    | pushコマンドを表示（ユーザーが手動実行）                    |
-| 4    | PR作成: `gh pr create --title "..." --body "..."`           |
+| 2    | AskUserQuestionでbaseブランチを選択                         |
+| 3    | `Task`で`subagent_type: pr-generator`によるPRコンテンツ生成 |
+| 4    | PRプレビュー → AskUserQuestion: "このPRを作成しますか?"     |
+| 5    | pushコマンドを表示（ユーザーが手動実行）                    |
+| 6    | PR作成: `gh pr create --title "..." --body "..."`           |
+
+### Baseブランチ選択（Step 2）
+
+| 質問         | 選択肢                    |
+| ------------ | ------------------------- |
+| Baseブランチ | main / develop / [検出値] |
+
+### PR確認（Step 4）
+
+プレビュー → AskUserQuestion: "このPRを作成しますか?"
 
 ### Push（手動）
 
@@ -44,42 +56,10 @@ argument-hint: "[Issue参照またはコンテキスト]"
 | タイトル: 接頭辞なし | `feat:`, `fix:`, `refactor:`等は付けない             |
 | 本文: 直接文字列     | ヒアドキュメント（`<<EOF`）回避 - サンドボックス制限 |
 
-## フロー: Preview
-
-```text
-[Generator YAML] → [プレビュー] → [確認] → [実行]
-```
-
 ## 表示形式
 
-### プレビュー
-
-```markdown
-## 🔀 PRプレビュー
-
-| フィールド | 値          |
-| ---------- | ----------- |
-| タイトル   | [title]     |
-| Base       | main        |
-| Branch     | feature/xxx |
-| Closes     | #123        |
-
-### 概要
-
-[2-3箇条書き]
-
-### 変更内容
-
-| ファイル    | 変更内容   |
-| ----------- | ---------- |
-| src/auth.ts | OAuth2追加 |
-| src/user.ts | 型更新     |
-```
-
-### 成功
-
-**PR作成完了**: `#<number>` <title>
-<PR URL>
+プレビューはタイトル、baseブランチ、現在のブランチ、概要箇条書き、変更テーブルを表示。
+成功: `**PR作成完了**: #<number> <title> <PR URL>`
 
 ## 検証
 

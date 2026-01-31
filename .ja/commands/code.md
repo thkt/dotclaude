@@ -1,6 +1,6 @@
 ---
 description: TDD/RGRCサイクルでリアルタイムテストフィードバック付きコード実装
-allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskList, TaskUpdate
+allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Bash(cat:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskList, TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[実装内容] [--frontend] [--principles] [--storybook]"
 ---
@@ -12,8 +12,15 @@ TDD/RGRCサイクルと品質チェックによるコード実装。
 ## 入力
 
 - 実装の説明: `$1`（必須）
-- `$1`が空の場合 → AskUserQuestionで確認
+- `$1`が空の場合 → AskUserQuestionで選択
 - フラグ: `--frontend`, `--principles`, `--storybook`（任意、`$1`に含める）
+
+### コンテキスト選択
+
+| 質問                 | 選択肢                                   |
+| -------------------- | ---------------------------------------- |
+| 実装内容             | [Otherで自由入力]                        |
+| コンテキスト（任意） | frontend / principles / storybook / none |
 
 ## 条件付きコンテキスト
 

@@ -1,6 +1,6 @@
 ---
 description: Scan plugins and skills for malicious code and deceptive instructions
-allowed-tools: Bash(gh repo clone:*), Bash(mv /tmp/claude/scan-* ~/.Trash/), Read, Grep, Glob, LS, Task
+allowed-tools: Bash(gh repo clone:*), Bash(mv /tmp/claude/scan-* ~/.Trash/), Read, Grep, Glob, LS, Task, AskUserQuestion
 model: sonnet
 argument-hint: "[target: plugin name, path, or GitHub URL]"
 ---
@@ -12,9 +12,10 @@ Analyze Claude Code plugins and skills for security threats before use.
 ## Execution
 
 1. Resolve target scope from `$1`
-2. If GitHub URL → `gh repo clone` to `/tmp/claude/scan-{repo}-{timestamp}`
-3. `Task` with `subagent_type: plugin-scanner`
-4. Output agent report, cleanup temp if remote
+2. If GitHub URL → AskUserQuestion: "Clone {repo} to scan?"
+3. If Yes → `gh repo clone` to `/tmp/claude/scan-{repo}-{timestamp}`
+4. `Task` with `subagent_type: plugin-scanner`
+5. Output agent report, cleanup temp if remote
 
 ## Scope Resolution
 

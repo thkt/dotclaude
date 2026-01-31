@@ -1,6 +1,6 @@
 ---
 description: ガイド付きブラウザ操作を通じてドキュメントとPlaywrightテストを生成
-allowed-tools: Read, Write, Glob, Task, Bash(agent-browser:*)
+allowed-tools: Read, Write, Glob, Task, Bash(agent-browser:*), AskUserQuestion
 model: opus
 argument-hint: "[テスト名]"
 ---
@@ -12,7 +12,14 @@ argument-hint: "[テスト名]"
 ## 入力
 
 - テスト名: `$1`（必須）
-- `$1`が空の場合 → AskUserQuestionで確認
+- `$1`が空の場合 → AskUserQuestionで選択
+
+### テスト設定
+
+| 質問     | 選択肢            |
+| -------- | ----------------- |
+| テスト名 | [Otherで自由入力] |
+| 開始URL  | [Otherで自由入力] |
 
 ## 実行
 

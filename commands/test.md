@@ -1,6 +1,6 @@
 ---
 description: Run project tests and validate code quality through comprehensive testing
-allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, TodoWrite, Task
+allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, Task, AskUserQuestion
 model: opus
 argument-hint: "[test scope or specific tests]"
 ---
@@ -12,7 +12,13 @@ Run project tests with gap analysis and quality checks.
 ## Input
 
 - Test scope or file pattern: `$1` (optional)
-- If `$1` is empty → run all tests
+- If `$1` is empty → select scope via AskUserQuestion
+
+### Scope Selection
+
+| Question | Options                        |
+| -------- | ------------------------------ |
+| Scope    | all / unit / integration / e2e |
 
 ## Agent
 

@@ -1,6 +1,6 @@
 ---
 description: Generate project rules from ADR and integrate with CLAUDE.md
-allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob
+allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob, AskUserQuestion
 model: opus
 argument-hint: "[ADR number]"
 ---
@@ -12,7 +12,11 @@ Convert ADR into AI-executable rule format.
 ## Input
 
 - ADR number: `$1` (required, e.g., `1` or `0001`)
-- If `$1` is empty → prompt via AskUserQuestion
+- If `$1` is empty → list ADRs in `adr/` and select via AskUserQuestion
+
+### ADR Selection
+
+List ADRs in `adr/` → present numbered list via AskUserQuestion.
 
 ## Execution
 
