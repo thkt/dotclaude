@@ -26,8 +26,16 @@ Analyze all changes in the current branch and generate comprehensive PR descript
 | ---- | -------------------------------------------------------- |
 | 1    | Analyze: `git status`, `git diff`, `git log` (parallel)  |
 | 2    | `Task` with `subagent_type: pr-generator` for PR content |
-| 3    | Push if needed: `git push -u origin HEAD`                |
+| 3    | Display push command for user to run manually            |
 | 4    | Create PR: `gh pr create --title "..." --body "..."`     |
+
+### Push (Manual)
+
+Never execute `git push` directly. Display the command and wait for confirmation:
+
+```text
+Run this to push: git push -u origin HEAD
+```
 
 ## Rules
 

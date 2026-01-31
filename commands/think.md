@@ -1,6 +1,6 @@
 ---
 description: Orchestrate SOW and Spec generation for comprehensive planning
-allowed-tools: SlashCommand, Read, Write, Glob, Task, TaskCreate, TaskList
+allowed-tools: SlashCommand, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[task description]"
 ---

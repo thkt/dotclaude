@@ -43,8 +43,8 @@ graph TD
 
     %% === エッジ（オッカムの剃刀から） ===
     OR --> PE & RC & DRY
-    OR --> YAGNI
     OR -.-> SOLID & LA
+    OR --> YAGNI
     OR --> SI
 
     %% === エッジ（普遍的原則から） ===

@@ -36,10 +36,10 @@ Example output: `audit-2026-01-23-031812.yaml`
 
 ## Templates
 
-| Template                            | Purpose                  |
-| ----------------------------------- | ------------------------ |
-| [@../templates/audit/output.md]     | Output format with delta |
-| [@../templates/audit/snapshot.yaml] | Snapshot schema          |
+| Template                                                              | Purpose                  |
+| --------------------------------------------------------------------- | ------------------------ |
+| [@../templates/audit/output.md](../templates/audit/output.md)         | Output format with delta |
+| [@../templates/audit/snapshot.yaml](../templates/audit/snapshot.yaml) | Snapshot schema          |
 
 ## Verification
 

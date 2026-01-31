@@ -36,10 +36,10 @@ SNAPSHOT="$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).yaml
 
 ## テンプレート
 
-| テンプレート                        | 目的                     |
-| ----------------------------------- | ------------------------ |
-| [@../templates/audit/output.md]     | 差分付き出力形式         |
-| [@../templates/audit/snapshot.yaml] | スナップショットスキーマ |
+| テンプレート                                                          | 目的                     |
+| --------------------------------------------------------------------- | ------------------------ |
+| [@../templates/audit/output.md](../templates/audit/output.md)         | 差分付き出力形式         |
+| [@../templates/audit/snapshot.yaml](../templates/audit/snapshot.yaml) | スナップショットスキーマ |
 
 ## 検証
 

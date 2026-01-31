@@ -26,8 +26,16 @@ argument-hint: "[Issue参照またはコンテキスト]"
 | ---- | ----------------------------------------------------------- |
 | 1    | 分析: `git status`, `git diff`, `git log`（並行）           |
 | 2    | `Task`で`subagent_type: pr-generator`によるPRコンテンツ生成 |
-| 3    | 必要に応じてpush: `git push -u origin HEAD`                 |
+| 3    | pushコマンドを表示（ユーザーが手動実行）                    |
 | 4    | PR作成: `gh pr create --title "..." --body "..."`           |
+
+### Push（手動）
+
+`git push` を直接実行しない。コマンドを表示して確認を待つ:
+
+```text
+実行してください: git push -u origin HEAD
+```
 
 ## ルール
 

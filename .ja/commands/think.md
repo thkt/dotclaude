@@ -1,6 +1,6 @@
 ---
 description: 包括的な計画のためにSOWとSpec生成をオーケストレート
-allowed-tools: SlashCommand, Read, Write, Glob, Task, TaskCreate, TaskList
+allowed-tools: SlashCommand, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[タスク説明]"
 ---
