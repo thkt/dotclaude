@@ -17,13 +17,14 @@ Investigate codebase with confidence-based findings, without implementation.
 
 ## Execution
 
-| Phase | Agent                                          | Focus                                      |
-| ----- | ---------------------------------------------- | ------------------------------------------ |
-| 0     | (codemap check)                                | Read `.codemaps/architecture.md` if exists |
-| 1     | (clarification)                                | Research intent → `/think` planning?       |
-| 2     | `architecture-analyzer` ∥ `code-flow-analyzer` | Structure + execution flow (parallel)      |
-| 3     | Task(Explore)                                  | Detail: code paths, patterns, edge cases   |
-| 4     | (synthesis)                                    | Consolidate with ✓/→/? markers             |
+| Phase | Agent                                          | Focus                                            |
+| ----- | ---------------------------------------------- | ------------------------------------------------ |
+| 0     | (codemap check)                                | Read `.codemaps/architecture.md` if exists       |
+| 1     | (clarification)                                | Research intent → `/think` planning?             |
+| 2     | `architecture-analyzer` ∥ `code-flow-analyzer` | Structure + execution flow (parallel)            |
+| 3     | Task(Explore)                                  | Detail: code paths, patterns, edge cases         |
+| 3.5   | (Strong Inference)                             | ≥3 hypotheses → discriminating tests → eliminate |
+| 4     | (synthesis)                                    | Consolidate with ✓/→/? markers                   |
 
 Note: Invoke via `Task(subagent_type: Explore)`.
 
@@ -41,6 +42,12 @@ Ask via AskUserQuestion:
 Run `architecture-analyzer` and `code-flow-analyzer` in parallel via Task.
 
 Markers: [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
+
+### Phase 3.5: Strong Inference (Bug Investigation only)
+
+Apply Debug Investigation Protocol from [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md) using Phase 2-3 findings as input.
+
+Skip when: cause is obvious or intent is "Feature planning" / "Understanding".
 
 ## Output
 

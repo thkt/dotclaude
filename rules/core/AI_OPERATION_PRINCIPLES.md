@@ -59,17 +59,20 @@ When unable to verify:
 
 When investigating bugs or errors, apply additional constraints:
 
-| Phase        | Output Format   | Requirement                               |
-| ------------ | --------------- | ----------------------------------------- |
-| Observation  | `Observation:`  | Actual log/error with `[source]` citation |
-| Hypothesis   | `Hypothesis:`   | Must include `[unverified]` label         |
-| Verification | `Verification:` | Execute command + show actual result      |
-| Conclusion   | `Conclusion:`   | Only verified facts with evidence         |
+| Phase       | Output Format  | Requirement                                                                           |
+| ----------- | -------------- | ------------------------------------------------------------------------------------- |
+| Observation | `Observation:` | Actual log/error with `[source]` citation                                             |
+| Hypotheses  | `Hypotheses:`  | ≥3 competing: `H1:`, `H2:`, `H3:` + `[unverified]`                                    |
+| Elimination | `Elimination:` | Discriminating test per hypothesis, eliminate falsified (`H1: [eliminated] — reason`) |
+| Conclusion  | `Conclusion:`  | Only surviving hypothesis with evidence                                               |
+
+Skip: Obvious cause (typo, syntax error, off-by-one) → single hypothesis sufficient.
 
 | Constraint               | Action                                             |
 | ------------------------ | -------------------------------------------------- |
-| Hypothesis as conclusion | Append `Verification:` with command + result first |
+| Hypothesis as conclusion | Append `Elimination:` with test + result first     |
 | Speculation ("probably") | Follow with verification command before concluding |
+| Single hypothesis only   | Generate ≥2 alternatives before proceeding         |
 
 ## Rule Priority
 

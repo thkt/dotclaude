@@ -2,21 +2,22 @@
 
 ## Priority Matrix
 
-| Priority   | Principle                | One-liner                               | When to Apply               |
-| ---------- | ------------------------ | --------------------------------------- | --------------------------- |
-| Critical   | Occam's Razor            | Choose the simplest solution that works | Always - every decision     |
-| Critical   | Progressive Enhancement  | Build simple, enhance gradually         | Starting any implementation |
-| Default    | Readable Code            | Code for humans, not computers          | Writing any code            |
-| Default    | Miller's Law             | Respect 7±2 cognitive limit             | Designing interfaces        |
-| Default    | TDD/Baby Steps           | Small incremental changes with tests    | Development process         |
-| Default    | DRY                      | Don't Repeat Yourself                   | 3+ duplications found       |
-| Default    | YAGNI                    | You Aren't Gonna Need It                | Adding "just in case" code  |
-| Contextual | SOLID                    | Design for change                       | Large-scale architecture    |
-| Contextual | Container/Presentational | Separate logic from UI                  | React/UI components         |
-| Contextual | Law of Demeter           | Only talk to immediate friends          | Complex dependencies        |
-| Contextual | Leaky Abstraction        | Accept imperfect abstractions           | Evaluating abstractions     |
-| Contextual | AI-Assisted Development  | AI generates, humans validate           | When using AI tools         |
-| Contextual | TIDYINGS                 | Clean as you go                         | During development          |
+| Priority   | Principle                | One-liner                                  | When to Apply               |
+| ---------- | ------------------------ | ------------------------------------------ | --------------------------- |
+| Critical   | Occam's Razor            | Choose the simplest solution that works    | Always - every decision     |
+| Critical   | Progressive Enhancement  | Build simple, enhance gradually            | Starting any implementation |
+| Default    | Readable Code            | Code for humans, not computers             | Writing any code            |
+| Default    | Miller's Law             | Respect 7±2 cognitive limit                | Designing interfaces        |
+| Default    | TDD/Baby Steps           | Small incremental changes with tests       | Development process         |
+| Default    | DRY                      | Don't Repeat Yourself                      | 3+ duplications found       |
+| Default    | YAGNI                    | You Aren't Gonna Need It                   | Adding "just in case" code  |
+| Default    | Strong Inference         | Multiple hypotheses, eliminate by evidence | Investigation & analysis    |
+| Contextual | SOLID                    | Design for change                          | Large-scale architecture    |
+| Contextual | Container/Presentational | Separate logic from UI                     | React/UI components         |
+| Contextual | Law of Demeter           | Only talk to immediate friends             | Complex dependencies        |
+| Contextual | Leaky Abstraction        | Accept imperfect abstractions              | Evaluating abstractions     |
+| Contextual | AI-Assisted Development  | AI generates, humans validate              | When using AI tools         |
+| Contextual | TIDYINGS                 | Clean as you go                            | During development          |
 
 ## Dependency Graph
 
@@ -38,11 +39,13 @@ graph TD
     AI[AI-Assisted Dev]
     TD[Test Design]
     RT[Result Type]
+    SI[Strong Inference]
 
     %% === Edges (from Occam's Razor) ===
     OR --> PE & RC & DRY
     OR -.-> SOLID & LA
     OR --> YAGNI
+    OR --> SI
 
     %% === Edges (from Universal) ===
     RC --> ML & LoD
@@ -50,6 +53,7 @@ graph TD
     RC --> RT & TIDY & CP
     DRY -.-> TIDY
     SOLID --> CP
+    SI --> AI
 
     %% === Edges (from Applied) ===
     TDD --> AI & TD
@@ -62,7 +66,7 @@ graph TD
     classDef scientific fill:#e599f7,stroke:#ae3ec9,stroke-width:2px,color:#fff
 
     class OR meta
-    class PE,RC,DRY universal
+    class PE,RC,DRY,SI universal
     class TDD,CP,TIDY,AI,TD,RT applied
     class SOLID,YAGNI,LoD,LA contextual
     class ML scientific
@@ -78,13 +82,14 @@ graph TD
 
 ## Key Relationships
 
-| Relationship                      | Why it matters                          |
-| --------------------------------- | --------------------------------------- |
-| Occam's Razor ⟷ SOLID             | Balance: structure vs over-engineering  |
-| Occam's Razor ⟷ Leaky Abstraction | Accept imperfection over complexity     |
-| Readable Code → Miller's Law      | Cognitive science backing (7±2 limit)   |
-| Readable Code + DRY → TIDYINGS    | Practical combination of two principles |
-| TDD → AI-Assisted Development     | AI accelerates cycles, humans validate  |
+| Relationship                       | Why it matters                                |
+| ---------------------------------- | --------------------------------------------- |
+| Occam's Razor ⟷ SOLID              | Balance: structure vs over-engineering        |
+| Occam's Razor ⟷ Leaky Abstraction  | Accept imperfection over complexity           |
+| Readable Code → Miller's Law       | Cognitive science backing (7±2 limit)         |
+| Readable Code + DRY → TIDYINGS     | Practical combination of two principles       |
+| TDD → AI-Assisted Development      | AI accelerates cycles, humans validate        |
+| Strong Inference → AI-Assisted Dev | Multiple hypotheses prevent confirmation bias |
 
 ## Conflict Resolution
 
@@ -103,17 +108,18 @@ graph TD
 - Perfect abstraction attempt → Accept Leaky Abstraction
 - Complex solution first → Apply Occam's Razor
 - Accepting AI output without review → Apply AI-Assisted Development
+- Single hypothesis assumed correct → Apply Strong Inference
 
 ## Commands
 
 | Command     | Primary Principles   | Secondary Principles                        |
 | ----------- | -------------------- | ------------------------------------------- |
 | `/think`    | SOLID, Occam's Razor | Progressive Enhancement                     |
-| `/research` | -                    | All principles for context                  |
+| `/research` | Strong Inference     | All principles for context                  |
 | `/code`     | TDD, Baby Steps      | Readable Code, DRY, AI-Assisted Development |
 | `/test`     | TDD                  | Law of Demeter, AI-Assisted Development     |
 | `/fix`      | Occam's Razor        | TIDYINGS                                    |
-| `/audit`    | All principles       | Priority order                              |
+| `/audit`    | All principles       | Priority order, Strong Inference            |
 
 ## Final Wisdom
 

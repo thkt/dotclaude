@@ -11,6 +11,7 @@
 | デフォルト   | TDD/ベイビーステップ           | テスト付きの小さな増分変更             | 開発プロセス             |
 | デフォルト   | DRY                            | 自分自身を繰り返さない                 | 3回以上の重複発見時      |
 | デフォルト   | YAGNI                          | 必要でないものは作らない               | 「念のため」コード追加時 |
+| デフォルト   | Strong Inference               | 複数仮説を立て、証拠で棄却             | 調査・分析時             |
 | コンテキスト | SOLID                          | 変更に対応した設計                     | 大規模アーキテクチャ     |
 | コンテキスト | Container/Presentational       | ロジックとUIを分離                     | React/UIコンポーネント   |
 | コンテキスト | デメテルの法則                 | 直接の友人とだけ話す                   | 複雑な依存関係           |
@@ -38,11 +39,13 @@ graph TD
     AI[AI支援開発]
     TD[テスト設計]
     RT[Result型]
+    SI[Strong Inference]
 
     %% === エッジ（オッカムの剃刀から） ===
     OR --> PE & RC & DRY
     OR --> YAGNI
     OR -.-> SOLID & LA
+    OR --> SI
 
     %% === エッジ（普遍的原則から） ===
     RC --> ML & LoD
@@ -50,6 +53,7 @@ graph TD
     RC --> RT & TIDY & CP
     DRY -.-> TIDY
     SOLID --> CP
+    SI --> AI
 
     %% === エッジ（適用プラクティスから） ===
     TDD --> AI & TD
@@ -62,7 +66,7 @@ graph TD
     classDef scientific fill:#e599f7,stroke:#ae3ec9,stroke-width:2px,color:#fff
 
     class OR meta
-    class PE,RC,DRY universal
+    class PE,RC,DRY,SI universal
     class TDD,CP,TIDY,AI,TD,RT applied
     class SOLID,YAGNI,LoD,LA contextual
     class ML scientific
@@ -85,6 +89,7 @@ graph TD
 | 読みやすいコード → ミラーの法則   | 認知科学の裏付け（7±2制限）    |
 | 読みやすいコード + DRY → TIDYINGS | 2つの原則の実践的な組み合わせ  |
 | TDD → AI支援開発                  | AIがサイクルを加速、人間が検証 |
+| Strong Inference → AI支援開発     | 複数仮説が確証バイアスを防ぐ   |
 
 ## 競合解決
 
@@ -103,17 +108,18 @@ graph TD
 - 完璧な抽象化の試み → リーキー抽象化を受け入れる
 - 複雑な解決策を先に → オッカムの剃刀を適用
 - レビューなしでAI出力を受け入れる → AI支援開発を適用
+- 単一仮説を正しいと仮定 → Strong Inferenceを適用
 
 ## コマンド
 
 | コマンド    | 主要原則              | 副次原則                          |
 | ----------- | --------------------- | --------------------------------- |
 | `/think`    | SOLID、オッカムの剃刀 | プログレッシブエンハンスメント    |
-| `/research` | -                     | コンテキストのためのすべての原則  |
+| `/research` | Strong Inference      | コンテキストのためのすべての原則  |
 | `/code`     | TDD、ベイビーステップ | 読みやすいコード、DRY、AI支援開発 |
 | `/test`     | TDD                   | デメテルの法則、AI支援開発        |
 | `/fix`      | オッカムの剃刀        | TIDYINGS                          |
-| `/audit`    | すべての原則          | 優先順序                          |
+| `/audit`    | すべての原則          | 優先順序、Strong Inference        |
 
 ## 最終的な知恵
 

@@ -17,14 +17,14 @@ Orchestrate specialized review agents for thorough audit with confidence-based f
 
 ## Execution
 
-| Step | Action                                                |
-| ---- | ----------------------------------------------------- |
-| 1    | `Task` with `subagent_type: audit-orchestrator`       |
-| 2    | Orchestrator runs agents (see audit-orchestrator.md)  |
-| 3    | Integrator aggregates findings into structured output |
-| 4    | Save snapshot (see Snapshot Naming below)             |
-| 5    | Compare with previous snapshot, display delta         |
-| 6    | Output report using template                          |
+| Step | Action                                                                                  |
+| ---- | --------------------------------------------------------------------------------------- |
+| 1    | `Task` with `subagent_type: audit-orchestrator`                                         |
+| 2    | Orchestrator runs agents (see audit-orchestrator.md)                                    |
+| 3    | Integrator aggregates findings (Strong Inference: ≥3 root cause hypotheses → eliminate) |
+| 4    | Save snapshot (see Snapshot Naming below)                                               |
+| 5    | Compare with previous snapshot, display delta                                           |
+| 6    | Output report using template                                                            |
 
 ## Snapshot Naming
 

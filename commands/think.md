@@ -16,16 +16,16 @@ Orchestrate implementation planning with SOW and Spec generation.
 
 ## Execution
 
-| Step | Action                  | Output          |
-| ---- | ----------------------- | --------------- |
-| 0    | Q&A Clarification       | (if unclear)    |
-| 1    | Design Exploration      | 4 approaches    |
-| 2    | User Selection          | chosen approach |
-| 2.5  | ADR Proposal            | (if needed)     |
-| 3    | /sow                    | sow.md          |
-| 4    | /spec                   | spec.md         |
-| 5    | sow-spec-reviewer (≥90) | (optional)      |
-| 6    | SOW → Todos             | TaskCreate      |
+| Step | Action                  | Output                                     |
+| ---- | ----------------------- | ------------------------------------------ |
+| 0    | Q&A Clarification       | (if unclear)                               |
+| 1    | Design Exploration      | ≥3 approaches with trade-off comparison    |
+| 2    | User Selection          | chosen approach (with trade-off rationale) |
+| 2.5  | ADR Proposal            | (if needed)                                |
+| 3    | /sow                    | sow.md                                     |
+| 4    | /spec                   | spec.md                                    |
+| 5    | sow-spec-reviewer (≥90) | (optional)                                 |
+| 6    | SOW → Todos             | TaskCreate                                 |
 
 ## ADR Proposal (Step 2.5)
 

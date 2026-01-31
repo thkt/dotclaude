@@ -23,6 +23,7 @@ argument-hint: "[リサーチトピックまたは質問]"
 | 1        | （目的確認）                                   | 調査意図 → `/think` 計画？               |
 | 2        | `architecture-analyzer` ∥ `code-flow-analyzer` | 構造 + 実行フロー（並列）                |
 | 3        | Task(Explore)                                  | 詳細: コードパス、パターン、エッジケース |
+| 3.5      | （Strong Inference）                           | ≥3仮説 → 判別テスト → 棄却               |
 | 4        | （統合）                                       | ✓/→/?マーカー付きで整理                  |
 
 Note: `Task(subagent_type: Explore)` で呼び出し。
@@ -41,6 +42,12 @@ AskUserQuestionで質問:
 Taskで `architecture-analyzer` と `code-flow-analyzer` を並列実行。
 
 マーカー: [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
+
+### フェーズ3.5: Strong Inference（バグ調査時のみ）
+
+[@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md) のデバッグ調査プロトコルを適用。フェーズ2-3の発見を入力とする。
+
+スキップ: 原因が自明、または意図が「機能計画」/「理解のみ」の場合。
 
 ## 出力
 
