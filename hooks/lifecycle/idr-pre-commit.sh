@@ -123,9 +123,9 @@ get_next_idr_number() {
   "${HOME}/.claude/scripts/next-idr-number.sh" "$idr_dir"
 }
 
-main() {
-  has_session_changes || exit 0
-  "$GIT_CMD" diff --cached --quiet && exit 0
+idr_generate() {
+  local diff="$1"
+  local diff_stat="$2"
 
   local idr_file idr_dir output_file next_num
   idr_file=$(resolve_idr_file)
@@ -135,10 +135,8 @@ main() {
   next_num=$(get_next_idr_number "$idr_dir")
   output_file="${idr_dir}/.idr-${next_num}.md"
 
-  local session_jsonl diff diff_stat
+  local session_jsonl
   session_jsonl=$(find_session_jsonl)
-  diff=$(run_git diff --cached) || diff=""
-  diff_stat=$(run_git diff --cached --stat) || diff_stat=""
 
   local purpose idr_content
   purpose=$(get_purpose_summary "$session_jsonl")
@@ -170,6 +168,23 @@ EOF
   fi
 
   # No blocking - commit proceeds
+}
+
+main() {
+  has_session_changes || exit 0
+  "$GIT_CMD" diff --cached --quiet && exit 0
+
+  local diff diff_stat
+  diff=$(run_git diff --cached) || diff=""
+  diff_stat=$(run_git diff --cached --stat) || diff_stat=""
+
+  if [ "${CLAUDECODE:-}" = "1" ]; then
+    idr_generate "$diff" "$diff_stat" &
+    disown
+    exit 0
+  fi
+
+  idr_generate "$diff" "$diff_stat"
   exit 0
 }
 
