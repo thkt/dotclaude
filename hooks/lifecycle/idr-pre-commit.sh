@@ -21,7 +21,8 @@ run_git() {
     echo "$result"
     return 0
   else
-    local exit_code=$?
+    local exit_code
+    exit_code=$?
     [ -n "$DEBUG_LOG" ] && echo "[DEBUG] git $* failed (exit $exit_code): $result" >> "$DEBUG_LOG"
     return $exit_code
   fi
@@ -141,33 +142,24 @@ idr_generate() {
   local purpose idr_content
   purpose=$(get_purpose_summary "$session_jsonl")
 
-  echo "📝 IDR生成中..."
+  echo "📝 IDR生成中..." >&2
   idr_content=$(generate_idr_content "$diff" "$diff_stat")
 
-  cat > "$output_file" << EOF
-# IDR: ${purpose:-"(目的抽出失敗)"}
+  {
+    printf '# IDR: %s\n\n' "${purpose:-"(目的抽出失敗)"}"
+    printf '> %s\n\n' "$(date +%Y-%m-%d\ %H:%M)"
+    printf '%s\n\n' "$idr_content"
+    printf -- '---\n\n'
+    printf '### git diff --stat\n'
+    printf '```\n%s\n```\n' "$diff_stat"
+  } > "$output_file"
 
-> $(date +%Y-%m-%d\ %H:%M)
+  echo "✅ IDR生成完了: $output_file" >&2
 
-${idr_content}
-
----
-
-### git diff --stat
-\`\`\`
-${diff_stat}
-\`\`\`
-EOF
-
-  echo "✅ IDR生成完了: $output_file"
-
-  # Codemap auto-update (conditional)
   local codemap_hook="${HOME}/.claude/hooks/codemap/auto-update.sh"
   if [ -x "$codemap_hook" ]; then
     "$codemap_hook" || true
   fi
-
-  # No blocking - commit proceeds
 }
 
 main() {
@@ -179,13 +171,12 @@ main() {
   diff_stat=$(run_git diff --cached --stat) || diff_stat=""
 
   if [ "${CLAUDECODE:-}" = "1" ]; then
-    idr_generate "$diff" "$diff_stat" &
+    idr_generate "$diff" "$diff_stat" &>/dev/null &
     disown
     exit 0
   fi
 
   idr_generate "$diff" "$diff_stat"
-  exit 0
 }
 
 main "$@"
