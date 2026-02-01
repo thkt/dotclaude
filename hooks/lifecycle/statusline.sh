@@ -99,11 +99,7 @@ if [ -z "$CONTEXT_TOKENS" ] || [ "$CONTEXT_TOKENS" = "null" ]; then
 fi
 
 if [ -z "$CONTEXT_LIMIT" ] || [ "$CONTEXT_LIMIT" = "null" ] || [ "$CONTEXT_LIMIT" = "0" ]; then
-    if [[ "$MODEL_ID" == *"[1m]"* ]] || [[ "$MODEL_NAME" == *"[1m]"* ]]; then
-        CONTEXT_LIMIT=1000000
-    else
-        CONTEXT_LIMIT=200000
-    fi
+    CONTEXT_LIMIT=200000
 fi
 
 if [ "$CONTEXT_LIMIT" -gt 0 ] 2>/dev/null; then
@@ -191,11 +187,16 @@ printf '\033[96;1m%s\033[0m' "$DIR"
 if [ -n "$BRANCH" ]; then
     printf ' on \033[95m%s\033[0m' "$BRANCH"
 
+    { read -r GIT_DIR; read -r GIT_COMMON; } <<< "$(git rev-parse --git-dir --git-common-dir 2>/dev/null)"
+    if [ -n "$GIT_COMMON" ] && [ "$GIT_COMMON" != "$GIT_DIR" ]; then
+        printf ' \033[92m[wt]\033[0m'
+    fi
+
     if command -v gh &>/dev/null && command -v jq &>/dev/null; then
         CACHE_DIR="$HOME/.claude/cache"
         CACHE_FILE="$CACHE_DIR/statusline-pr-cache.json"
         CACHE_TTL_SEC="${STATUSLINE_PR_CACHE_TTL_SEC:-300}"
-        REPO=$(git remote get-url origin 2>/dev/null | sed -E 's#\.git$##; s#.*[:/](.*/.)#\1#; s#.*://[^/]*/##')
+        REPO=$(git remote get-url origin 2>/dev/null | sed -E 's#\.git$##; s#.*[:/](.*/.*)#\1#; s#.*://[^/]*/##')
 
         if [ -n "$REPO" ]; then
             CACHE_KEY="${REPO}:${BRANCH}"
@@ -218,6 +219,8 @@ if [ -n "$BRANCH" ]; then
             if [ -z "$HIT" ]; then
                 if command -v timeout &>/dev/null; then
                     PR_JSON=$(timeout 3 gh pr view --json url,number,state 2>/dev/null || echo '{}')
+                elif command -v perl &>/dev/null; then
+                    PR_JSON=$(perl -e 'alarm 3; exec @ARGV' gh pr view --json url,number,state 2>/dev/null || echo '{}')
                 else
                     PR_JSON=$(gh pr view --json url,number,state 2>/dev/null || echo '{}')
                 fi
