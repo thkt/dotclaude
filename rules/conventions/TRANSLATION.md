@@ -1,3 +1,8 @@
+---
+paths:
+  - ".ja/**"
+---
+
 # JP/EN Translation File Handling
 
 Guidelines for reviewing bilingual documentation with English sources and Japanese translations.

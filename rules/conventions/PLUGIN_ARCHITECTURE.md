@@ -1,3 +1,8 @@
+---
+paths:
+  - ".claude/.claude-plugin/**"
+---
+
 # Plugin Architecture
 
 Rules for maintaining the Claude Code plugin architecture.

@@ -1,3 +1,8 @@
+---
+paths:
+  - ".claude/skills/**"
+---
+
 # スキルフォーマットガイド
 
 Claude Codeスキルの公式フォーマット。<https://code.claude.com/docs/en/skills> に基づく

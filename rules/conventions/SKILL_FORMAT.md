@@ -1,3 +1,8 @@
+---
+paths:
+  - ".claude/skills/**"
+---
+
 # Skill Format Guide
 
 Official format for Claude Code Skills. Based on <https://code.claude.com/docs/en/skills>

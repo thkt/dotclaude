@@ -1,3 +1,8 @@
+---
+paths:
+  - ".claude/.claude-plugin/**"
+---
+
 # プラグインアーキテクチャ
 
 Claude Codeプラグインアーキテクチャを維持するためのルール。
