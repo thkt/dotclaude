@@ -17,7 +17,7 @@ file_path="$(echo "$input" | jq -r '.tool_input.file_path // empty')"
 case "$file_path" in
   */sow.md|*/sow-*.md|*_sow.md) ;;
   */spec.md|*/spec-*.md|*_spec.md) ;;
-  */.idr-*.md) ;;
+  */idr-*.md) ;;
   *) exit 0 ;;
 esac
 

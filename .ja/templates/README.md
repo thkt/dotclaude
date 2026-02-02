@@ -14,7 +14,7 @@ flowchart LR
         T -.-> S["SOW + Spec"]
     end
     subgraph Hooks
-        PC[pre-commit] -.-> IDR[.idr-N.md]
+        PC[pre-commit] -.-> IDR[idr-N.md]
     end
 ```
 
@@ -26,7 +26,7 @@ flowchart LR
 | レビュー | /audit    | -               | -                    |
 | 整理     | /polish   | -               | -                    |
 | 検証     | /validate | -               | -                    |
-| コミット | (hook)    | .idr-N.md       | -                    |
+| コミット | (hook)    | idr-N.md        | -                    |
 
 ## ディレクトリ構造
 

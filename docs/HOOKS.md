@@ -52,7 +52,7 @@ graph TD
 
 | Hook                | Trigger    | Output               |
 | ------------------- | ---------- | -------------------- |
-| `idr-pre-commit.sh` | git commit | `.idr-N.md` 生成     |
+| `idr-pre-commit.sh` | git commit | `idr-N.md` 生成      |
 | `statusline.sh`     | -          | ステータスライン表示 |
 | `_utils.sh`         | -          | 共通ユーティリティ   |
 
@@ -122,8 +122,8 @@ hooks は `settings.json` または `.claude/settings.local.json` で設定:
 flowchart LR
     C[git commit] --> H[idr-pre-commit.sh]
     H --> F{SOW exists?}
-    F -->|Yes| S["[SOW dir]/.idr-N.md"]
-    F -->|No| D["planning/YYYY-MM-DD/.idr-N.md"]
+    F -->|Yes| S["[SOW dir]/idr-N.md"]
+    F -->|No| D["planning/YYYY-MM-DD/idr-N.md"]
 ```
 
 ### IDR Content

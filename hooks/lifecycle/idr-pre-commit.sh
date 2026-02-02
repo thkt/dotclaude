@@ -134,7 +134,7 @@ idr_generate() {
   mkdir -p "$idr_dir"
 
   next_num=$(get_next_idr_number "$idr_dir")
-  output_file="${idr_dir}/.idr-${next_num}.md"
+  output_file="${idr_dir}/idr-${next_num}.md"
 
   local session_jsonl
   session_jsonl=$(find_session_jsonl)

@@ -108,11 +108,11 @@ SOW/IDR serve as structured memory: AI reads entirely, humans reference selectiv
 
 See [@./IDR_GENERATION.md](./IDR_GENERATION.md)
 
-| Trigger    | Output      | Content                  |
-| ---------- | ----------- | ------------------------ |
-| git commit | `.idr-N.md` | Code examples, decisions |
+| Trigger    | Output     | Content                  |
+| ---------- | ---------- | ------------------------ |
+| git commit | `idr-N.md` | Code examples, decisions |
 
-Location: `$HOME/.claude/workspace/planning/[feature]/.idr-N.md` or `planning/YYYY-MM-DD/.idr-N.md`
+Location: `$HOME/.claude/workspace/planning/[feature]/idr-N.md` or `planning/YYYY-MM-DD/idr-N.md`
 
 ## Architecture
 

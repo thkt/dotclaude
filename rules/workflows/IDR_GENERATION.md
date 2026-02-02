@@ -4,9 +4,9 @@ Tracks implementation decisions at commit time via git pre-commit hook.
 
 ## Output
 
-| File        | Purpose                                |
-| ----------- | -------------------------------------- |
-| `.idr-N.md` | Implementation record with code blocks |
+| File       | Purpose                                |
+| ---------- | -------------------------------------- |
+| `idr-N.md` | Implementation record with code blocks |
 
 ## IDR Format
 
@@ -35,17 +35,17 @@ Tracks implementation decisions at commit time via git pre-commit hook.
 
 ## File Location
 
-| Scenario           | Detection                                   | Path                            |
-| ------------------ | ------------------------------------------- | ------------------------------- |
-| Tracked SOW exists | Read `$HOME/.claude/workspace/.current-sow` | `[SOW directory]/.idr-N.md`     |
-| No tracked SOW     | Date-based directory                        | `planning/YYYY-MM-DD/.idr-N.md` |
+| Scenario           | Detection                                   | Path                           |
+| ------------------ | ------------------------------------------- | ------------------------------ |
+| Tracked SOW exists | Read `$HOME/.claude/workspace/.current-sow` | `[SOW directory]/idr-N.md`     |
+| No tracked SOW     | Date-based directory                        | `planning/YYYY-MM-DD/idr-N.md` |
 
 ## Integration
 
 ```mermaid
 flowchart LR
     C[git commit] --> H[pre-commit hook]
-    H --> CF[.idr-N.md]
+    H --> CF[idr-N.md]
 ```
 
 ## Related

@@ -14,7 +14,7 @@ flowchart LR
         T -.-> S["SOW + Spec"]
     end
     subgraph Hooks
-        PC[pre-commit] -.-> IDR[.idr-N.md]
+        PC[pre-commit] -.-> IDR[idr-N.md]
     end
 ```
 
@@ -26,7 +26,7 @@ flowchart LR
 | Review         | /audit    | -               | -                    |
 | Polish         | /polish   | -               | -                    |
 | Validation     | /validate | -               | -                    |
-| Commit         | (hook)    | .idr-N.md       | -                    |
+| Commit         | (hook)    | idr-N.md        | -                    |
 
 ## Directory Structure
 
