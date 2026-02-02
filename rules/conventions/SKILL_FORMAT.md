@@ -7,7 +7,7 @@ paths:
 
 Official format for Claude Code Skills. Based on <https://code.claude.com/docs/en/skills>
 
-## Required Fields
+## YAML Frontmatter
 
 ```yaml
 ---
@@ -15,7 +15,7 @@ name: skill-name # lowercase, hyphens, max 64 chars
 description: > # max 1024 chars, include "Use when"
   Brief summary of capabilities.
   Use when [scenario] or when user mentions keyword1, keyword2, キーワード.
-allowed-tools: # Optional but recommended
+allowed-tools: # Recommended - prevents "tool not allowed" errors
   - Read
   - Write
   - Grep
@@ -27,20 +27,16 @@ user-invocable: false # Optional: default false
 
 ## Skill vs Agent Fields
 
-| Field           | Skill | Agent | Purpose                      |
-| --------------- | ----- | ----- | ---------------------------- |
-| `name`          | ✓     | ✓     | Identifier                   |
-| `description`   | ✓     | ✓     | Purpose summary              |
-| `allowed-tools` | ✓     | -     | Available tools (skill)      |
-| `tools`         | -     | ✓     | Available tools (agent)      |
-| `agent`         | ✓     | -     | Links skill to agent         |
-| `context`       | ✓     | ✓     | Execution mode (fork/inline) |
-| `model`         | -     | ✓     | LLM model selection          |
-
-| Type  | Role                        | Tool field      |
-| ----- | --------------------------- | --------------- |
-| Skill | Knowledge base (passive)    | `allowed-tools` |
-| Agent | Executor (active, via Task) | `tools`         |
+| Field            | Skill                    | Agent      | Notes                                 |
+| ---------------- | ------------------------ | ---------- | ------------------------------------- |
+| `name`           | ✓ Required               | ✓ Required | Identifier                            |
+| `description`    | ✓ Required               | ✓ Required | Purpose, "Use when" pattern           |
+| `allowed-tools`  | Recommended              | -          | Tool permissions for skill            |
+| `tools`          | -                        | ✓ Required | Tool permissions for agent            |
+| `agent`          | Optional                 | -          | Links skill to agent                  |
+| `context`        | Optional                 | Optional   | fork = sub-agent, inline = main agent |
+| `user-invocable` | Optional (default false) | -          | Allow direct user invocation          |
+| `model`          | -                        | Optional   | LLM selection                         |
 
 ## Naming Convention
 
@@ -71,39 +67,13 @@ Progressive Loading: Claude reads SKILL.md first, references only when needed.
 | Keywords | Include EN/JP trigger  | `Use when ... or when user mentions security, セキュリティ`                |
 | Length   | Max 1024 characters    | -                                                                          |
 
-## Ignored Fields
+## Validation
 
-Never use these fields (not recognized by Claude Code):
-
-| Field      | Status  |
-| ---------- | ------- |
-| `version`  | Ignored |
-| `author`   | Ignored |
-| `triggers` | Ignored |
-| `sections` | Ignored |
-| `patterns` | Ignored |
-| `tokens`   | Ignored |
-
-## Validation Checklist
-
-### YAML Front Matter
-
-- [ ] `name`: lowercase with hyphens, ≤64 chars
-- [ ] `description`: ≤1024 chars, uses "Use when" pattern
-- [ ] `allowed-tools`: specified
-- [ ] No non-official fields
-
-### Content
-
-- [ ] Clear, narrow focus
-- [ ] Step-by-step instructions
-- [ ] Examples included
-
-### Bilingual (if applicable)
-
-- [ ] JP version exists in `.ja/skills/`
-- [ ] Structure matches EN version
-- [ ] Trigger keywords translated
+| Check               | Criteria                                            |
+| ------------------- | --------------------------------------------------- |
+| YAML Front Matter   | name ≤64 chars, description ≤1024 chars, "Use when" |
+| Content             | Narrow scope, step-by-step, examples                |
+| Bilingual Structure | `.ja/skills/` matches EN structure                  |
 
 ## Reference Depth (Skills Only)
 
@@ -132,7 +102,3 @@ TOC example for long files:
 - Section 2
 - Section 3
 ```
-
-## Related
-
-- [Official Skills Guide](https://code.claude.com/docs/en/skills)
