@@ -22,7 +22,6 @@ graph TD
         TIDY[TIDYINGS]
         CODE[CODE_THRESHOLDS]
         PROG[PROGRESSIVE_ENHANCEMENT]
-        COMP[COMPLETION_CRITERIA]
     end
 
     subgraph Conventions["Conventions Layer"]
@@ -94,11 +93,10 @@ Concrete standards and patterns for daily development.
 
 | File                                                                       | Intent                        | Key Threshold                          |
 | -------------------------------------------------------------------------- | ----------------------------- | -------------------------------------- |
-| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)                 | Quantitative quality metrics  | Function ≤30 lines, File ≤400 lines    |
+| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)                 | Quality metrics + completion  | Function ≤30 lines, tests pass         |
 | [TIDYINGS](../rules/development/TIDYINGS.md)                               | Scope cleanup limits          | No behavior changes, edited files only |
 | [PERFORMANCE](../rules/development/PERFORMANCE.md)                         | Context/frontend optimization | MCP ≤10, LCP <2.5s                     |
 | [PROGRESSIVE_ENHANCEMENT](../rules/development/PROGRESSIVE_ENHANCEMENT.md) | Incremental building          | CSS-First, Outcome-First               |
-| [COMPLETION_CRITERIA](../rules/development/COMPLETION_CRITERIA.md)         | Completion criteria           | tests pass, lint pass, build pass      |
 
 **AI Failure Patterns (inline):**
 

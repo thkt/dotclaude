@@ -22,7 +22,6 @@ graph TD
         TIDY[TIDYINGS]
         CODE[CODE_THRESHOLDS]
         PROG[PROGRESSIVE_ENHANCEMENT]
-        COMP[COMPLETION_CRITERIA]
     end
 
     subgraph Conventions["規約レイヤー"]
@@ -94,11 +93,10 @@ TDD / SOLID / YAGNI (文脈依存)
 
 | ファイル                                                                   | 意図                              | 主要な閾値                         |
 | -------------------------------------------------------------------------- | --------------------------------- | ---------------------------------- |
-| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)                 | 定量的品質基準                    | 関数≤30行、ファイル≤400行          |
+| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)                 | 品質基準 + 完了条件               | 関数≤30行、tests pass              |
 | [TIDYINGS](../rules/development/TIDYINGS.md)                               | 整理範囲の限定                    | 振る舞い変更禁止、編集ファイルのみ |
 | [PERFORMANCE](../rules/development/PERFORMANCE.md)                         | コンテキスト/フロントエンド最適化 | MCP≤10、LCP<2.5s                   |
 | [PROGRESSIVE_ENHANCEMENT](../rules/development/PROGRESSIVE_ENHANCEMENT.md) | 漸進的構築                        | CSS-First、Outcome-First           |
-| [COMPLETION_CRITERIA](../rules/development/COMPLETION_CRITERIA.md)         | 完了基準                          | tests pass、lint pass、build pass  |
 
 **AI失敗パターン (インライン):**
 
