@@ -4,6 +4,19 @@ set -euo pipefail
 # Claude Code status line: model, context, cost, tool, git branch
 
 STDIN_INPUT=""
+CONTEXT_TOKENS=""
+CONTEXT_LIMIT=""
+CONTEXT_USED_PCT=""
+CONTEXT_REMAINING_PCT=""
+MODEL_NAME=""
+MODEL_ID=""
+SESSION_ID=""
+TRANSCRIPT_PATH=""
+SESSION_COST=""
+EXCEEDS_200K="false"
+LAST_TOOL=""
+TOOL_COUNT=0
+
 if [ ! -t 0 ]; then
     STDIN_INPUT=$(cat)
 fi
@@ -180,7 +193,7 @@ fi
 printf ' \033[90m│\033[0m '
 
 DIR=$(basename "$PWD")
-BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
 
 printf '\033[96;1m%s\033[0m' "$DIR"
 
@@ -196,7 +209,7 @@ if [ -n "$BRANCH" ]; then
         CACHE_DIR="$HOME/.claude/cache"
         CACHE_FILE="$CACHE_DIR/statusline-pr-cache.json"
         CACHE_TTL_SEC="${STATUSLINE_PR_CACHE_TTL_SEC:-300}"
-        REPO=$(git remote get-url origin 2>/dev/null | sed -E 's#\.git$##; s#.*[:/](.*/.*)#\1#; s#.*://[^/]*/##')
+        REPO=$(git remote get-url origin 2>/dev/null | sed -E 's#\.git$##; s#.*[:/](.*/.*)#\1#; s#.*://[^/]*/##' || true)
 
         if [ -n "$REPO" ]; then
             CACHE_KEY="${REPO}:${BRANCH}"
