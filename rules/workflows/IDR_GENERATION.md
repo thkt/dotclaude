@@ -40,14 +40,6 @@ Tracks implementation decisions at commit time via git pre-commit hook.
 | Tracked SOW exists | Read `$HOME/.claude/workspace/.current-sow` | `[SOW directory]/idr-N.md`     |
 | No tracked SOW     | Date-based directory                        | `planning/YYYY-MM-DD/idr-N.md` |
 
-## Integration
-
-```mermaid
-flowchart LR
-    C[git commit] --> H[pre-commit hook]
-    H --> CF[idr-N.md]
-```
-
 ## Related
 
 - Hook: `$HOME/.claude/hooks/lifecycle/idr-pre-commit.sh`

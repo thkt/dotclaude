@@ -40,14 +40,6 @@ git pre-commit フックによるコミット時の実装決定記録。
 | SOWトラッキング中 | `$HOME/.claude/workspace/.current-sow` 読取 | `[SOWディレクトリ]/idr-N.md`   |
 | SOWなし           | 日付ベースディレクトリ                      | `planning/YYYY-MM-DD/idr-N.md` |
 
-## 統合
-
-```mermaid
-flowchart LR
-    C[git commit] --> H[pre-commit hook]
-    H --> CF[idr-N.md]
-```
-
 ## 関連
 
 - フック: `$HOME/.claude/hooks/lifecycle/idr-pre-commit.sh`
