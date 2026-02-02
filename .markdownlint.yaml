@@ -1,0 +1,5 @@
+# markdownlint configuration
+MD001: false # heading-increment: allow skipping heading levels
+MD013: false # line-length: allow long lines for tables and URLs
+MD024: false # no-duplicate-heading: allow duplicate headings
+MD033: false # no-inline-html: allow inline HTML
