@@ -93,8 +93,6 @@ Skip: Obvious cause (typo, syntax error, off-by-one) → single hypothesis suffi
 
 PRE_TASK_CHECK must be executed for file operations and complex tasks.
 
-Full specification: [@./PRE_TASK_CHECK_SPEC.md](./PRE_TASK_CHECK_SPEC.md)
-
 - Principles are applied before PRE_TASK_CHECK
 - Understanding confirmation and execution planning are integrated into PRE_TASK_CHECK
 - Workflow order: Apply principles → PRE_TASK_CHECK → Wait for confirmation

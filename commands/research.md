@@ -41,11 +41,11 @@ Ask via AskUserQuestion:
 
 Run `architecture-analyzer` and `code-flow-analyzer` in parallel via Task.
 
-Markers: [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
+Apply Output Verifiability markers ([✓]/[→]/[?]) to all findings.
 
 ### Phase 3.5: Strong Inference (Bug Investigation only)
 
-Apply Debug Investigation Protocol from [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md) using Phase 2-3 findings as input.
+Apply Debug Investigation Protocol using Phase 2-3 findings as input.
 
 Skip when: cause is obvious or intent is "Feature planning" / "Understanding".
 

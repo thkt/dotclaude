@@ -93,8 +93,6 @@
 
 ファイル操作と複雑なタスクにはPRE_TASK_CHECKを実行する必要がある。
 
-詳細仕様: [@./PRE_TASK_CHECK_SPEC.md](./PRE_TASK_CHECK_SPEC.md)
-
 - 原則はPRE_TASK_CHECKの前に適用
 - 理解確認と実行計画はPRE_TASK_CHECKに統合
 - ワークフロー順序: 原則を適用 → PRE_TASK_CHECK → 確認を待つ

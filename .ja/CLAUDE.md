@@ -4,8 +4,8 @@
 
 | ルール | 参照                                                                                            |
 | ------ | ----------------------------------------------------------------------------------------------- |
-| コア   | [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)             |
-| タスク | [@./rules/core/PRE_TASK_CHECK_SPEC.md](./rules/core/PRE_TASK_CHECK_SPEC.md)                     |
+| コア   | AI_OPERATION_PRINCIPLES.md (rules/core/)                                                        |
+| タスク | PRE_TASK_CHECK.md (rules/core/)                                                                 |
 | 削除   | `mv [file] ~/.Trash/ && git add -A` (sandboxエラー → `dangerouslyDisableSandbox: true`で再試行) |
 
 ## 開発チェック
@@ -28,4 +28,4 @@
 | -------- | ----------------------------------------- |
 | コマンド | README.md → package.json → ユーザーに確認 |
 
-参照: [@./rules/workflows/WORKFLOW_GUIDE.md](./rules/workflows/WORKFLOW_GUIDE.md), [@./rules/conventions/DOCUMENTATION.md](./rules/conventions/DOCUMENTATION.md)
+参照: WORKFLOW_GUIDE.md (rules/workflows/), DOCUMENTATION.md (rules/conventions/)

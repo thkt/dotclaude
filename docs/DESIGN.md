@@ -51,11 +51,10 @@ graph TD
 
 Top-priority rules. Prevent AI "runaway" and ensure users always understand the situation.
 
-| File                                                                | Intent                  | Key Mechanism                                                 |
-| ------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------- |
-| [AI_OPERATION_PRINCIPLES](../rules/core/AI_OPERATION_PRINCIPLES.md) | Ensure safety           | `rm` prohibited → `mv ~/.Trash/`, destructive op confirmation |
-| [PRE_TASK_CHECK_SPEC](../rules/core/PRE_TASK_CHECK_SPEC.md)         | Visualize understanding | 7-item checklist, understanding graph                         |
-| [PRE_TASK_CHECK_RULES](../rules/core/PRE_TASK_CHECK_RULES.md)       | Check criteria          | [✓]/[→]/[?] markers, skip conditions                          |
+| File                                                                | Intent             | Key Mechanism                                                 |
+| ------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
+| [AI_OPERATION_PRINCIPLES](../rules/core/AI_OPERATION_PRINCIPLES.md) | Ensure safety      | `rm` prohibited → `mv ~/.Trash/`, destructive op confirmation |
+| [PRE_TASK_CHECK](../rules/core/PRE_TASK_CHECK.md)                   | Task check unified | 7-item checklist, markers, skip conditions, done templates    |
 
 **Why this design:**
 

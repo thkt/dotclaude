@@ -4,8 +4,8 @@
 
 | Rule   | Reference                                                                                          |
 | ------ | -------------------------------------------------------------------------------------------------- |
-| Core   | [@./rules/core/AI_OPERATION_PRINCIPLES.md](./rules/core/AI_OPERATION_PRINCIPLES.md)                |
-| Task   | [@./rules/core/PRE_TASK_CHECK_SPEC.md](./rules/core/PRE_TASK_CHECK_SPEC.md)                        |
+| Core   | AI_OPERATION_PRINCIPLES.md (rules/core/)                                                           |
+| Task   | PRE_TASK_CHECK.md (rules/core/)                                                                    |
 | Delete | `mv [file] ~/.Trash/ && git add -A` (sandbox error → retry with `dangerouslyDisableSandbox: true`) |
 
 ## Development Checks
@@ -28,4 +28,4 @@
 | --------- | ----------------------------------- |
 | Commands  | README.md → package.json → ask user |
 
-References: [@./rules/workflows/WORKFLOW_GUIDE.md](./rules/workflows/WORKFLOW_GUIDE.md), [@./rules/conventions/DOCUMENTATION.md](./rules/conventions/DOCUMENTATION.md)
+References: WORKFLOW_GUIDE.md (rules/workflows/), DOCUMENTATION.md (rules/conventions/)

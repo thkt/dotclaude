@@ -41,11 +41,11 @@ AskUserQuestionで質問:
 
 Taskで `architecture-analyzer` と `code-flow-analyzer` を並列実行。
 
-マーカー: [@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md)
+Output Verifiability マーカー（[✓]/[→]/[?]）を全発見に適用。
 
 ### フェーズ3.5: Strong Inference（バグ調査時のみ）
 
-[@../rules/core/AI_OPERATION_PRINCIPLES.md](../rules/core/AI_OPERATION_PRINCIPLES.md) のデバッグ調査プロトコルを適用。フェーズ2-3の発見を入力とする。
+デバッグ調査プロトコルを適用。フェーズ2-3の発見を入力とする。
 
 スキップ: 原因が自明、または意図が「機能計画」/「理解のみ」の場合。
 
