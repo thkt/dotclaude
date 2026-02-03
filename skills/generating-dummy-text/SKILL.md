@@ -11,8 +11,6 @@ user-invocable: false
 
 # Generating Dummy Text
 
-Generate dummy text with exact character/word count.
-
 ## Language Detection
 
 | Keyword                      | Language |
@@ -61,4 +59,10 @@ python3 -c "print(len('GENERATED_TEXT'))"
 
 ## Output
 
-Display the generated text in a code block with character count.
+```text
+[generated text]
+```
+
+✓ Characters: N / N (verified)
+
+Regenerate if count mismatches.
