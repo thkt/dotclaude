@@ -28,6 +28,25 @@ context: fork
 | Validation  | devils-advocate (challenges all findings)                   | 90s     | sequential  |
 | Integration | audit-integrator (final)                                    | 120s    | sequential  |
 
+## Execution Rules
+
+| Mode        | Implementation                                                      |
+| ----------- | ------------------------------------------------------------------- |
+| parallel    | Call all agents in the group via multiple Task calls in one message |
+| sequential  | Wait for previous step to complete before calling Task              |
+| conditional | Execute only if condition is met (skip otherwise)                   |
+
+## Execution Flow
+
+| Step | Mode       | Groups                                                              | Input                       |
+| ---- | ---------- | ------------------------------------------------------------------- | --------------------------- |
+| 1    | parallel   | Foundation + Quality + Enhanced + Production + Design + Conditional | Target files                |
+| 2    | sequential | root-cause                                                          | Foundation results          |
+| 3    | sequential | devils-advocate                                                     | All findings from Steps 1-2 |
+| 4    | sequential | audit-integrator                                                    | Validated findings          |
+
+Step 1: Issue up to 14 Tasks in a single message.
+
 ## Debate Pattern Flow
 
 ```mermaid
@@ -66,7 +85,7 @@ pr-review-toolkit agents: call via `subagent_type: "pr-review-toolkit:<agent-nam
 | ------------------------- | ------------------------------------------------ |
 | Agent timeout             | Continue with completed agents                   |
 | No files                  | Return "No files to audit"                       |
-| pr-review-toolkit unavail | Skip Enhanced/Design, continue with 14 local     |
+| pr-review-toolkit unavail | Skip Enhanced/Design, continue with 13 local     |
 | External agent error      | Continue with local agents only                  |
 | Devils Advocate unavail   | Skip validation, pass all findings to integrator |
 
