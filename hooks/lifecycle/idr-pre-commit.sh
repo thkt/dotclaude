@@ -160,6 +160,12 @@ idr_generate() {
   if [ -x "$codemap_hook" ]; then
     "$codemap_hook" || true
   fi
+
+  local ccplanview_app="/Applications/CCPlanView.app"
+  if [ -d "$ccplanview_app" ]; then
+    open -a "$ccplanview_app" "$output_file" &>/dev/null &
+    disown 2>/dev/null || true
+  fi
 }
 
 main() {
@@ -172,7 +178,7 @@ main() {
 
   if [ "${CLAUDECODE:-}" = "1" ]; then
     idr_generate "$diff" "$diff_stat" &>/dev/null &
-    disown
+    disown 2>/dev/null || true
     exit 0
   fi
 

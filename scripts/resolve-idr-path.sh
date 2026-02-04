@@ -9,7 +9,10 @@ current_sow_file="${workspace_dir}/.current-sow"
 
 if [ -f "$current_sow_file" ]; then
   sow_path=$(cat "$current_sow_file")
-  if [ -f "$sow_path" ]; then
+  # Validate path stays within workspace
+  real_sow=$(realpath -m "$sow_path" 2>/dev/null || echo "$sow_path")
+  real_workspace=$(realpath -m "$workspace_dir" 2>/dev/null || echo "$workspace_dir")
+  if [[ "$real_sow" == "$real_workspace"/* ]] && [ -f "$sow_path" ]; then
     echo "$(dirname "$sow_path")/idr.md"
     exit 0
   fi
