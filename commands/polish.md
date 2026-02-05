@@ -16,9 +16,7 @@ Remove AI-generated slop and simplify code before commit.
 
 ### Polish Level
 
-| Question | Options                              |
-| -------- | ------------------------------------ |
-| Level    | conservative / standard / aggressive |
+`conservative` | `standard` | `aggressive`
 
 ## Agent
 
@@ -40,6 +38,11 @@ Remove AI-generated slop and simplify code before commit.
 - Excessive defensive code (internal callers)
 - Over-engineering (single-impl interfaces, wrapper classes, one-time helpers)
 - Code complexity (nested ternary, deep nesting)
+- Meaningless tests:
+  - Tautology tests (self-comparing assertions like `expect(x).toBe(x)`)
+  - Duplicate tests (identical assertions in multiple test cases)
+  - Empty/skipped tests (`it.skip()`, tests without assertions)
+  - Self-mocking tests (mocking the module under test)
 
 ## Output
 
@@ -53,12 +56,3 @@ Polished: Removed X comments, inlined Y helpers
 | ----------------------- | ------------------------------------------ |
 | code-simplifier unavail | Log warning, skip polish (no changes made) |
 | No changes in diff      | Report "Nothing to polish"                 |
-
-Fallback: code-simplifier unavailable → exit without modifications.
-Log: `⚠️ code-simplifier not available, polish skipped`
-
-## Verification
-
-| Check                                                                | Required |
-| -------------------------------------------------------------------- | -------- |
-| `Task` called with `subagent_type: code-simplifier:code-simplifier`? | Yes      |

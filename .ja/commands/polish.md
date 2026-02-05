@@ -16,9 +16,7 @@ argument-hint: "[対象スコープ]"
 
 ### Polishレベル
 
-| 質問   | 選択肢                               |
-| ------ | ------------------------------------ |
-| レベル | conservative / standard / aggressive |
+`conservative` | `standard` | `aggressive`
 
 ## Agent
 
@@ -40,6 +38,11 @@ argument-hint: "[対象スコープ]"
 - 過剰な防御的コード（内部呼び出し元）
 - 過剰設計（単一実装インターフェース、ラッパークラス、1回限りのヘルパー）
 - コードの複雑さ（ネスト三項演算子、深いネスト）
+- 無意味なテスト:
+  - トートロジーテスト（`expect(x).toBe(x)`のような自己比較）
+  - 重複テスト（複数テストケースで完全同一のアサーション）
+  - 空/スキップテスト（`it.skip()`、アサーションなし）
+  - 自己モックテスト（テスト対象モジュール自体をモック）
 
 ## 出力
 
@@ -53,12 +56,3 @@ Polished: X件のコメント削除、Y件のヘルパーをインライン化
 | ------------------- | ------------------------------------ |
 | code-simplifier不可 | 警告ログ、polishスキップ（変更なし） |
 | diff変更なし        | "Nothing to polish"報告              |
-
-Fallback: code-simplifier不可 → 変更なしで終了。
-Log: `⚠️ code-simplifier not available, polish skipped`
-
-## 検証
-
-| チェック                                                               | 必須 |
-| ---------------------------------------------------------------------- | ---- |
-| `Task`で`subagent_type: code-simplifier:code-simplifier`を呼び出した？ | Yes  |
