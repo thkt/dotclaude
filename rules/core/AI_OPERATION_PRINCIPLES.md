@@ -82,13 +82,6 @@ Skip: Obvious cause (typo, syntax error, off-by-one) → single hypothesis suffi
 | Destructive operation | Safety First wins                     |
 | Any output            | Output Verifiability applies (always) |
 
-## Eliciting Objective Analysis
-
-| Situation                 | Technique                                                                 |
-| ------------------------- | ------------------------------------------------------------------------- |
-| Claude is overly cautious | "I will make the final decision. Please provide objective analysis only." |
-| Security analysis needed  | Clarify context: "For security review / vulnerability assessment"         |
-
 ## Integration with PRE_TASK_CHECK
 
 PRE_TASK_CHECK must be executed for file operations and complex tasks.

@@ -45,18 +45,12 @@ Guide for using commands. User reference for command selection and workflow patt
 
 ## Standard Workflows
 
-```mermaid
-flowchart LR
-    subgraph Quick["Quick Fix"]
-        F["/fix"]
-    end
-    subgraph Investigate["Investigation"]
-        R1["/research"] --> F2["/fix"]
-    end
-    subgraph Feature["Feature Development"]
-        R2["/research"] --> T["/think"] --> C["/code"] --> TE["/test"] --> A["/audit"] --> V["/validate"]
-    end
-```
+| Pattern       | Workflow                                                            | When                                    |
+| ------------- | ------------------------------------------------------------------- | --------------------------------------- |
+| Quick Fix     | `/fix`                                                              | Small bug, stable codebase              |
+| Investigation | `/research` → `/fix`                                                | Unknown cause                           |
+| Feature       | `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate` | New capability, requirements unstable   |
+| Simple        | `/code` → `/test`                                                   | Clear implementation, tech stack stable |
 
 ## Todo Progress Tracking
 
@@ -69,13 +63,6 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 | `/test`     | (via `/code` phase)                  |
 | `/audit`    | (via `/code` phase)                  |
 | `/validate` | TaskUpdate remaining → completed     |
-
-| Pattern       | Workflow                                                            | When                                    |
-| ------------- | ------------------------------------------------------------------- | --------------------------------------- |
-| Quick Fix     | `/fix`                                                              | Small bug, stable codebase              |
-| Investigation | `/research` → `/fix`                                                | Unknown cause                           |
-| Feature       | `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate` | New capability, requirements unstable   |
-| Simple        | `/code` → `/test`                                                   | Clear implementation, tech stack stable |
 
 ## Command Selection
 

@@ -19,67 +19,6 @@
 | Contextual | AI-Assisted Development  | AI generates, humans validate              | When using AI tools         |
 | Contextual | TIDYINGS                 | Clean as you go                            | During development          |
 
-## Dependency Graph
-
-```mermaid
-graph TD
-    %% === Node Definitions (by tier) ===
-    OR[Occam's Razor]
-    PE[Progressive Enhancement]
-    RC[Readable Code]
-    DRY[DRY]
-    YAGNI[YAGNI]
-    SOLID[SOLID]
-    LA[Leaky Abstraction]
-    ML[Miller's Law]
-    LoD[Law of Demeter]
-    TDD[TDD/Baby Steps]
-    CP[Container/Presentational]
-    TIDY[TIDYINGS]
-    AI[AI-Assisted Dev]
-    TD[Test Design]
-    RT[Result Type]
-    SI[Strong Inference]
-
-    %% === Edges (from Occam's Razor) ===
-    OR --> PE & RC & DRY
-    OR -.-> SOLID & LA
-    OR --> YAGNI
-    OR --> SI
-
-    %% === Edges (from Universal) ===
-    RC --> ML & LoD
-    PE --> TDD
-    RC --> RT & TIDY & CP
-    DRY -.-> TIDY
-    SOLID --> CP
-    SI --> AI
-
-    %% === Edges (from Applied) ===
-    TDD --> AI & TD
-
-    %% === Styles ===
-    classDef meta fill:#ff6b6b,stroke:#c92a2a,stroke-width:3px,color:#fff
-    classDef universal fill:#4dabf7,stroke:#1971c2,stroke-width:2px,color:#fff
-    classDef applied fill:#51cf66,stroke:#2f9e44,stroke-width:2px,color:#fff
-    classDef contextual fill:#ffd43b,stroke:#fab005,stroke-width:2px,color:#000
-    classDef scientific fill:#e599f7,stroke:#ae3ec9,stroke-width:2px,color:#fff
-
-    class OR meta
-    class PE,RC,DRY,SI universal
-    class TDD,CP,TIDY,AI,TD,RT applied
-    class SOLID,YAGNI,LoD,LA contextual
-    class ML scientific
-```
-
-| Color  | Type             | Description                              |
-| ------ | ---------------- | ---------------------------------------- |
-| Red    | Meta Principle   | Occam's Razor - questions all complexity |
-| Blue   | Universal        | Applied by default to all decisions      |
-| Green  | Applied Practice | Concrete implementation patterns         |
-| Yellow | Contextual       | Applied when situation demands           |
-| Purple | Scientific       | Backed by cognitive science              |
-
 ## Key Relationships
 
 | Relationship                       | Why it matters                                |
@@ -123,14 +62,4 @@ graph TD
 
 ## Final Wisdom
 
-The best principle is knowing when not to apply a principle.
-
-When in doubt:
-
-1. Choose simple over clever
-2. Choose concrete over abstract
-3. Choose working over perfect
-4. Choose clear over DRY
-5. Choose pragmatic over pure
-
-Remember: Principles are tools, not rules. The goal is working, maintainable software.
+When in doubt: simple > clever, concrete > abstract, working > perfect, clear > DRY.

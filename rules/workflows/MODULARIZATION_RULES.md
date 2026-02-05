@@ -1,3 +1,9 @@
+---
+paths:
+  - ".claude/skills/**"
+  - ".claude/commands/**"
+---
+
 # Modularization Rules
 
 Rules for creating command and skill files. Developer guide for file structure and responsibility separation.
