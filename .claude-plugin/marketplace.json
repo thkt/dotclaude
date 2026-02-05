@@ -42,7 +42,8 @@
         "./commands/sow.md",
         "./commands/spec.md",
         "./commands/research.md",
-        "./commands/plans.md"
+        "./commands/plans.md",
+        "./commands/feature.md"
       ],
       "agents": [
         "./agents/orchestrators/audit-orchestrator.md",
@@ -60,7 +61,9 @@
         "./agents/reviewers/security-reviewer.md",
         "./agents/reviewers/silent-failure-reviewer.md",
         "./agents/reviewers/sow-spec-reviewer.md",
-        "./agents/integrators/audit-integrator.md"
+        "./agents/integrators/audit-integrator.md",
+        "./agents/explorers/feature-explorer.md",
+        "./agents/architects/feature-architect.md"
       ]
     },
     {
