@@ -38,7 +38,7 @@ Read `~/.claude/settings.json` and check the `language` field. If set, translate
 2. If `$ARGUMENTS` empty → prompt with context-aware options
 3. Execute Understanding Check (see below)
 4. If any [→] or [?] → resolve via AskUserQuestion
-5. Create todos via TaskCreate (Phase 2, 4, 5, 6, 7)
+5. Create todos via TaskCreate (Phase 2, 4, 5, 6, 7 — Phase 3 is user checkpoint, not tracked)
 
 ### Understanding Check
 
@@ -71,6 +71,8 @@ Display format:
 │ [?] Constraints: {description} ← investigate
 │ ...
 └────────────────────────────────────────────────
+
+⚡ Status: 🟢 Ready / 🟡 Needs confirmation / 🔴 Blocked
 ```
 
 ### Task Decomposition
@@ -98,8 +100,17 @@ Split when ANY threshold exceeded:
 ## Phase 2: Codebase Exploration
 
 1. Launch 3 agents via `Task` with `subagent_type: feature-explorer`
-2. Read identified files (5-10 per agent)
-3. Present summary
+2. Each agent focuses on different layer (see Focus Assignment)
+3. Read identified files (5-10 per agent)
+4. Present merged summary
+
+### Focus Assignment
+
+| Agent | Focus Area | Priority Directories               |
+| ----- | ---------- | ---------------------------------- |
+| 1     | Data layer | repos/, models/, schemas/, db/     |
+| 2     | UI/API     | components/, api/, routes/, pages/ |
+| 3     | Core logic | services/, utils/, lib/, core/     |
 
 Agent: [feature-explorer.md](../agents/explorers/feature-explorer.md)
 
@@ -115,10 +126,19 @@ If user says "whatever you think is best" → Provide recommendation → Use Pro
 ## Phase 4: Architecture Design
 
 1. Launch 3 agents via `Task` with `subagent_type: feature-architect`
-2. Present comparison table with recommendation
-3. Ask preference (see Prompt: Design Choice)
-4. If technical decision warrants → ask about ADR
-5. Execute /think → Output: SOW + Spec
+2. Each agent evaluates different approach (see Approach Assignment)
+3. Present comparison table with recommendation
+4. Ask preference (see Prompt: Design Choice)
+5. If technical decision warrants → ask about ADR
+6. Execute /think → Output: SOW + Spec
+
+### Approach Assignment
+
+| Agent | Approach           | Evaluation Focus              |
+| ----- | ------------------ | ----------------------------- |
+| 1     | Minimal Changes    | Maximum reuse, smallest diff  |
+| 2     | Clean Architecture | Maintainability, abstractions |
+| 3     | Pragmatic Balance  | Speed + quality trade-off     |
 
 Agent: [feature-architect.md](../agents/architects/feature-architect.md)
 
@@ -153,13 +173,9 @@ header: "Feature Type"
 multiSelect: false
 options:
   - label: "Add command"
-    description: "Create a new slash command"
   - label: "Add skill"
-    description: "Create a knowledge-based skill"
   - label: "Add hook"
-    description: "Create a lifecycle hook"
   - label: "Add agent"
-    description: "Create a specialized agent"
 ```
 
 #### Fallback
@@ -170,11 +186,8 @@ header: "Feature Type"
 multiSelect: false
 options:
   - label: "New Feature"
-    description: "Implement new functionality"
   - label: "Feature Extension"
-    description: "Add behavior to existing functionality"
   - label: "Refactoring"
-    description: "Improve structure without changing behavior"
 ```
 
 ### Design Choice
@@ -185,13 +198,9 @@ header: "Design"
 multiSelect: false
 options:
   - label: "Pragmatic Balance (Recommended)"
-    description: "Balance speed and quality"
   - label: "Minimal Changes"
-    description: "Maximize reuse, minimize changes"
   - label: "Clean Architecture"
-    description: "Focus on maintainability"
   - label: "Review Details"
-    description: "Explain each approach again"
 ```
 
 ### ADR Creation
@@ -202,9 +211,7 @@ header: "ADR"
 multiSelect: false
 options:
   - label: "Create ADR"
-    description: "Record architecture decision"
   - label: "Skip"
-    description: "Continue without recording"
 ```
 
 ### Start Implementation
@@ -215,11 +222,8 @@ header: "Implement"
 multiSelect: false
 options:
   - label: "Start"
-    description: "Begin TDD/RGRC cycle"
   - label: "Revise Design"
-    description: "Go back to Phase 4"
   - label: "Have Questions"
-    description: "Clarify before implementation"
 ```
 
 ### Issue Triage
@@ -230,13 +234,9 @@ header: "Triage"
 multiSelect: false
 options:
   - label: "Fix All"
-    description: "Address all issues now"
   - label: "Fix Critical Only"
-    description: "Fix Critical/High, defer others"
   - label: "Proceed As-Is"
-    description: "Issues are minor, continue"
   - label: "Review Individually"
-    description: "Decide on each issue"
 ```
 
 ### Delegation Confirm
@@ -247,9 +247,7 @@ header: "Confirm"
 multiSelect: false
 options:
   - label: "Yes, proceed"
-    description: "Accept recommendation"
   - label: "No, explain options"
-    description: "See detailed comparison"
 ```
 
 ## Error Handling
@@ -262,6 +260,15 @@ options:
 | User cancellation      | Save current phase + step to SOW metadata |
 
 ## Resume
+
+### SOW Discovery
+
+1. Check `$HOME/.claude/workspace/.current-sow` for tracked SOW path
+2. If not found → Glob for `$HOME/.claude/workspace/planning/*/sow.md`
+3. If multiple SOWs → prompt user to select via AskUserQuestion
+4. Read SOW metadata to determine resume point
+
+### Resume Actions
 
 | SOW Status          | Action                            |
 | ------------------- | --------------------------------- |

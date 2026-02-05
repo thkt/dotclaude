@@ -4,6 +4,7 @@ description: Deeply analyzes codebase features by tracing execution paths, mappi
 tools: [Glob, Grep, LS, Read]
 model: opus
 context: fork
+skills: [orchestrating-workflows]
 ---
 
 # Feature Explorer
@@ -16,22 +17,6 @@ context: fork
 | Flow Tracing | Call chains, data transforms, dependencies | Execution sequence    |
 | Architecture | Layers, patterns, interfaces               | Design map            |
 | Details      | Algorithms, error handling, performance    | Technical notes       |
-
-### Discovery
-
-Find entry points (APIs, UI components, CLI commands), core implementation files, feature boundaries, and relevant CLAUDE.md/conventions.
-
-### Flow Tracing
-
-Follow call chains from entry to output, trace data transformations, identify dependencies, and document state changes.
-
-### Architecture
-
-Map abstraction layers (presentation → business logic → data), identify patterns, document interfaces, and note cross-cutting concerns.
-
-### Details
-
-Key algorithms, error handling, edge cases, performance considerations, and technical debt.
 
 ## Output Format
 
@@ -75,12 +60,30 @@ Key algorithms, error handling, edge cases, performance considerations, and tech
 5. src/utils/validation.ts - Shared validation
 ```
 
+## Structured Summary (append to output)
+
+```yaml
+summary:
+  entry_points:
+    - path: src/api/feature.ts
+      line: 45
+      type: REST endpoint
+  essential_files:
+    - src/services/feature.ts
+    - src/repos/feature.ts
+  patterns:
+    - name: Repository + Service
+      confidence: verified
+  dependencies:
+    internal: [AuthService, Logger]
+    external: [zod, react-query]
+```
+
 ## Guidelines
 
-| Rule                 | Description                                             |
-| -------------------- | ------------------------------------------------------- |
-| Always file:line     | Every reference includes path:line                      |
-| 5-10 essential files | Prioritized list for caller to read                     |
-| Patterns over code   | Focus on abstractions, not implementation details       |
-| Confidence markers   | [✓] verified, [→] inferred, [?] needs investigation     |
-| Error handling       | Return "No files found for [pattern]" with alternatives |
+| Rule                 | Description                                         |
+| -------------------- | --------------------------------------------------- |
+| Always file:line     | Every reference includes path:line                  |
+| 5-10 essential files | Prioritized list for caller to read                 |
+| Patterns over code   | Focus on abstractions, not implementation details   |
+| Confidence markers   | [✓] verified, [→] inferred, [?] needs investigation |
