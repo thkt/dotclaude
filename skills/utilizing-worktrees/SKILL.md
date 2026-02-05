@@ -93,3 +93,10 @@ parent/
 | `.envrc`                        | `direnv allow` |
 
 Security: `direnv allow` auto-trusts `.envrc`. Verify contents before `wt-core new` in untrusted repos.
+
+## Pitfalls
+
+| Operation                                 | Risk                              | Solution                 |
+| ----------------------------------------- | --------------------------------- | ------------------------ |
+| `gh pr merge --delete-branch` in worktree | Deletes current worktree's branch | Run from main repository |
+| `wt-core rm` while inside target worktree | Directory becomes invalid         | Exit worktree first      |
