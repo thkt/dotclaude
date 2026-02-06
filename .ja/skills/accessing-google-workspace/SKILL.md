@@ -4,9 +4,7 @@ description: >
   gcloud CLI経由でGoogle SheetsとDocsにアクセスする。
   Google Sheets/DocsのURLを共有した時、または
   スプレッドシート, Sheets, Docs, Google ドキュメント に言及した時に使用。
-allowed-tools:
-  - Bash
-  - Read
+allowed-tools: [Bash, Read]
 user-invocable: false
 ---
 

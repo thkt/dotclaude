@@ -13,7 +13,7 @@ user-invocable: false
 ## コマンド
 
 ```bash
-gemini "[プロンプト]" --output-format text --approval-mode yolo
+gemini "[プロンプト]" --output-format text --sandbox
 ```
 
 ## ルール

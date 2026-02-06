@@ -59,29 +59,32 @@ skills: [applying-code-principles]
 
 ## コンポーネント設計
 
-| コンポーネント | ファイル                | 責務                  | 依存関係               |
-| -------------- | ----------------------- | --------------------- | ---------------------- |
-| FeatureService | src/services/feature.ts | ビジネスロジック      | FeatureRepo, Validator |
-| FeatureRepo    | src/repos/feature.ts    | データ永続化          | DB client              |
-| featureSchema  | src/schemas/feature.ts  | 入力バリデーション    | zod                    |
-| FeatureAPI     | src/api/feature.ts      | HTTP インターフェース | FeatureService         |
+| コンポーネント | ファイル                | 責務                  | 依存関係               | レイヤー |
+| -------------- | ----------------------- | --------------------- | ---------------------- | -------- |
+| FeatureService | src/services/feature.ts | ビジネスロジック      | FeatureRepo, Validator | logic    |
+| FeatureRepo    | src/repos/feature.ts    | データ永続化          | DB client              | logic    |
+| featureSchema  | src/schemas/feature.ts  | 入力バリデーション    | zod                    | logic    |
+| FeatureAPI     | src/api/feature.ts      | HTTP インターフェース | FeatureService         | logic    |
+| FeatureForm    | src/components/Form.tsx | ユーザー入力          | useFeature hook        | ui       |
+| Feature        | src/types/feature.ts    | 共有型                | —                      | shared   |
 
 ## 実装マップ
 
 ### 作成するファイル
 
-| ファイル                | 目的           | 行数 (見積) |
-| ----------------------- | -------------- | ----------- |
-| src/services/feature.ts | Service クラス | ~80         |
-| src/repos/feature.ts    | Repository     | ~50         |
-| src/schemas/feature.ts  | Zod スキーマ   | ~30         |
+| ファイル                | 目的             | 行数 (見積) | レイヤー |
+| ----------------------- | ---------------- | ----------- | -------- |
+| src/types/feature.ts    | 共有型           | ~20         | shared   |
+| src/services/feature.ts | Service クラス   | ~80         | logic    |
+| src/repos/feature.ts    | Repository       | ~50         | logic    |
+| src/schemas/feature.ts  | Zod スキーマ     | ~30         | logic    |
+| src/components/Form.tsx | Feature フォーム | ~60         | ui       |
 
 ### 変更するファイル
 
-| ファイル           | 変更内容                 |
-| ------------------ | ------------------------ |
-| src/api/index.ts   | feature ルートを追加     |
-| src/types/index.ts | Feature 型をエクスポート |
+| ファイル         | 変更内容             | レイヤー |
+| ---------------- | -------------------- | -------- |
+| src/api/index.ts | feature ルートを追加 | logic    |
 
 ## データフロー
 
@@ -91,6 +94,24 @@ User Input → FeatureAPI.create()
 → FeatureService.create()
 → FeatureRepo.save()
 → Response
+```
+
+## インターフェース契約
+
+```typescript
+// 共有型（並列フェーズの前に最初に実装）
+interface Feature {
+  id: string;
+  name: string;
+  status: "draft" | "active";
+}
+
+// ロジック層のエクスポート
+// useFeature(id: string): { data: Feature; loading: boolean }
+// createFeature(input: CreateFeatureInput): Promise<Feature>
+
+// UI層はロジック層からインポート
+// useFeature, createFeature
 ```
 
 ## ビルド順序
@@ -119,4 +140,4 @@ User Input → FeatureAPI.create()
 | 決断力       | 一つのアプローチを選択; トレードオフは選択したアプローチについて記述 |
 | 具体的       | ファイルパス、関数名、具体的なステップ                               |
 | パターン優先 | 既存のコードベース規約に合わせる                                     |
-| ビルド順序   | 実装のための明確なチェックリスト                                     |
+| レイヤー割当 | 各コンポーネントを logic/ui/shared に分類                            |

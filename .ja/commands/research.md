@@ -1,6 +1,6 @@
 ---
 description: 実装なしでプロジェクトリサーチと技術調査を実行
-allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task, AskUserQuestion
+allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 context: fork
 argument-hint: "[リサーチトピックまたは質問]"
@@ -63,3 +63,11 @@ Output Verifiability マーカー（[✓]/[→]/[?]）を全発見に適用。
 | 機能計画 | `/think`         |
 | バグ修正 | `/fix`           |
 | 理解のみ | 完了             |
+
+## 検証
+
+| チェック項目                                    | 必須 |
+| ----------------------------------------------- | ---- |
+| 調査結果に [✓]/[→]/[?] マーカーが付いているか？ | Yes  |
+| workspace/research/ に出力を保存したか？        | Yes  |
+| 次のステップセクションが含まれているか？        | Yes  |

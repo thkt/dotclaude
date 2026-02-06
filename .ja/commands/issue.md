@@ -1,6 +1,6 @@
 ---
 description: 構造化されたタイトルと本文でGitHub Issueを生成
-allowed-tools: [Task, AskUserQuestion]
+allowed-tools: Bash(gh issue:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[Issue説明]"
 ---

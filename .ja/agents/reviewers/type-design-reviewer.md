@@ -61,7 +61,7 @@ context: fork
 ```yaml
 findings:
   - agent: type-design-reviewer
-    severity: high|medium|low
+    severity: critical|high|medium|low
     category: "encapsulation|expression|usefulness|enforcement"
     location: "<file>:<line>"
     type_name: "<TypeName>"

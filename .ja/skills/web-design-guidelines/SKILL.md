@@ -3,7 +3,8 @@ name: web-design-guidelines
 description: >
   Web Interface Guidelinesへの準拠をUIコードでレビューする。
   "UIをレビューして", "アクセシビリティチェック", "デザイン監査", "UXレビュー",
-  "ベストプラクティスに照らしてチェック" と依頼された時に使用。
+  "ベストプラクティスに照らしてチェック" と依頼された時、またはユーザーが UIレビュー,
+  アクセシビリティ, デザイン監査, UX確認, ベストプラクティス に言及した時に使用。
 allowed-tools: [Read, Glob, WebFetch]
 user-invocable: false
 ---

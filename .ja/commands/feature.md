@@ -1,6 +1,6 @@
 ---
 description: 探索・アーキテクチャ設計・TDD・品質ゲートを含む包括的な機能開発
-allowed-tools: SlashCommand, Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion, Teammate, SendMessage
+allowed-tools: Skill, Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion, TeamCreate, SendMessage
 model: opus
 argument-hint: "[機能の説明]"
 ---
@@ -22,7 +22,7 @@ argument-hint: "[機能の説明]"
 | ----- | -------------- | ------------------------------------------- | ------------------------ |
 | 1     | Discovery      | コンテキストスキャン → PRE_TASK_CHECK       | [?] or [→] の解決        |
 | 2-4   | Team Explore   | Explorer チーム + Architect → 確認 → /think | 確認事項 + アプローチ    |
-| 5     | Implementation | /code (TDD/RGRC)                            | 開始前の承認             |
+| 5     | Implementation | 並列または逐次 TDD/RGRC                     | 承認 + モード選択        |
 | 6     | Quality        | /audit → /test → /polish                    | 課題のトリアージ         |
 | 7     | Validation     | /validate → サマリー                        | 完了                     |
 
@@ -97,8 +97,6 @@ argument-hint: "[機能の説明]"
 
 ## Phase 2-4: チーム探索 & アーキテクチャ
 
-3人の Explorer と 1人の Architect からなる協調チームを生成し、並列探索とプログレッシブなアーキテクチャ設計を実施。
-
 ### チーム構成
 
 ```text
@@ -113,7 +111,7 @@ argument-hint: "[機能の説明]"
 
 | Step | アクター  | アクション                                                             |
 | ---- | --------- | ---------------------------------------------------------------------- |
-| 1    | Leader    | `Teammate.spawnTeam("feature-{timestamp}")`                            |
+| 1    | Leader    | `TeamCreate("feature-{timestamp}")`                                    |
 | 2    | Leader    | TaskCreate x 4 (explorer-data, explorer-api, explorer-core, architect) |
 | 3    | Leader    | Task で `team_name` 指定して4つの Teammate を生成                      |
 | 4    | Explorers | 担当フォーカスエリアを調査、結果を `architect` に DM                   |
@@ -156,8 +154,60 @@ argument-hint: "[機能の説明]"
 
 ## Phase 5: 実装
 
-1. 承認を求める（プロンプト: Start Implementation 参照）
-2. 承認を得たら → /code を実行
+### 並列判定
+
+Architect の Component Design を読み取り → Layer 列で分類 → モードを決定。
+
+| 条件                               | モード | アクション                     |
+| ---------------------------------- | ------ | ------------------------------ |
+| logic_files >= 2 AND ui_files >= 2 | 並列   | プロンプト: Impl Mode を表示   |
+| それ以外                           | 逐次   | /code を実行（プロンプト省略） |
+
+### レイヤー分類
+
+| レイヤー | ディレクトリ                                                                 |
+| -------- | ---------------------------------------------------------------------------- |
+| shared   | types/, constants/, config/                                                  |
+| logic    | hooks/, utils/, services/, api/, repos/, schemas/, lib/, store/, middleware/ |
+| ui       | components/, pages/, layouts/, views/, styles/, css/                         |
+
+### 並列モード
+
+#### チーム構成
+
+```text
+/feature command (LEADER)
+├── impl-logic  (unit-implementer, logic layer)
+└── impl-ui     (unit-implementer, ui layer)
+```
+
+エージェント: [unit-implementer.md](../agents/teams/unit-implementer.md)
+
+#### ワークフロー
+
+| Step | アクター | アクション                                                 |
+| ---- | -------- | ---------------------------------------------------------- |
+| 1    | Leader   | shared レイヤーを先に実装（types/, constants/, config/）   |
+| 2    | Leader   | `Task(test-generator)`: 全テストを skip 状態で生成         |
+| 3    | Leader   | テストをレイヤーに割り当て（実装ファイルのディレクトリで） |
+| 4    | Leader   | `TeamCreate("impl-{timestamp}")`                           |
+| 5    | Leader   | TaskCreate x 2 (impl-logic, impl-ui)                       |
+| 6    | Leader   | Task で `team_name` 指定して2つの Teammate を生成          |
+| 7    | Impls    | 割り当てテストの RGRC サイクル、Leader にステータス DM     |
+| 8    | Leader   | 両 Implementer の完了を待機                                |
+| 9    | Leader   | クロスレイヤーの問題を修正（import、配線）                 |
+| 10   | Leader   | /test で全スイート + 品質ゲートを実行                      |
+| 11   | Leader   | SendMessage `shutdown_request` を全 Teammate に送信        |
+
+#### Implementer タスクプロンプト
+
+各 Implementer の Task プロンプトに含める:
+
+1. ユニット割り当て: `logic` または `ui`
+2. Architect 出力からのインターフェース契約
+3. 割り当てファイル（作成 + 変更）
+4. 割り当てテストファイル
+5. 制約: 割り当てファイルのみ変更可
 
 ## Phase 6: 品質レビュー
 
@@ -173,77 +223,73 @@ argument-hint: "[機能の説明]"
 
 ## プロンプト
 
-### Feature Type
+全プロンプトは `multiSelect: false`。
+
+### Phase 1: Feature Type
 
 検出された Context Pattern から選択肢を生成。
 
-#### Claude Code Config
-
 ```yaml
+# Claude Code config 検出時
 question: "何を追加しますか？"
 header: "Feature Type"
-multiSelect: false
 options:
   - label: "Add command"
   - label: "Add skill"
   - label: "Add hook"
   - label: "Add agent"
-```
 
-#### Fallback
-
-```yaml
+# Fallback（パターン不一致）
 question: "どのタイプの機能ですか？"
 header: "Feature Type"
-multiSelect: false
 options:
   - label: "New Feature"
   - label: "Feature Extension"
   - label: "Refactoring"
 ```
 
-### Design Choice
+### Phase 2-4: 設計 & アーキテクチャ
 
 ```yaml
+# Design Choice
 question: "どのアーキテクチャアプローチにしますか？"
 header: "Design"
-multiSelect: false
 options:
   - label: "Pragmatic Balance (推奨)"
   - label: "Minimal Changes"
   - label: "Clean Architecture"
   - label: "Review Details"
-```
 
-### ADR Creation
-
-```yaml
+# ADR Creation
 question: "ADR として記録しますか？"
 header: "ADR"
-multiSelect: false
 options:
   - label: "Create ADR"
   - label: "Skip"
+
+# Delegation Confirm（ユーザーが判断を委任した場合）
+question: "推奨: [X]。続行しますか？"
+header: "Confirm"
+options:
+  - label: "Yes, proceed"
+  - label: "No, explain options"
 ```
 
-### Start Implementation
+### Phase 5-6: 実装 & 品質
 
 ```yaml
-question: "実装を開始しますか？"
-header: "Implement"
-multiSelect: false
+# Impl Mode（並列判定 = 並列の場合のみ表示）
+question: "実装モードを選択してください"
+header: "Impl Mode"
 options:
-  - label: "Start"
+  - label: "Parallel (推奨)"
+  - label: "Sequential"
   - label: "Revise Design"
   - label: "Have Questions"
-```
 
-### Issue Triage
-
-```yaml
+# Issue Triage
 question: "課題をどう扱いますか？"
 header: "Triage"
-multiSelect: false
 options:
   - label: "Fix All"
   - label: "Fix Critical Only"
@@ -251,39 +297,29 @@ options:
   - label: "Review Individually"
 ```
 
-### Delegation Confirm
-
-```yaml
-question: "推奨: [recommendation]。続行しますか？"
-header: "Confirm"
-multiSelect: false
-options:
-  - label: "Yes, proceed"
-  - label: "No, explain options"
-```
-
 ## 検証
 
-| チェック                            | 必須 |
-| ----------------------------------- | ---- |
-| 4つの Teammate でチーム生成した？   | Yes  |
-| アーキテクチャ設計が作成された？    | Yes  |
-| ユーザーが実装を承認した？          | Yes  |
-| /code が正常に完了した？            | Yes  |
-| /audit が合格した（重大課題なし）？ | Yes  |
-| /validate が成功した？              | Yes  |
+| チェック                                   | 必須 |
+| ------------------------------------------ | ---- |
+| 4つの Teammate で Explore チーム生成した？ | Yes  |
+| アーキテクチャ設計が作成された？           | Yes  |
+| ユーザーが実装を承認した？                 | Yes  |
+| 実装完了（並列または逐次）？               | Yes  |
+| 統合後の品質ゲートパス？                   | Yes  |
+| /audit が合格した（重大課題なし）？        | Yes  |
+| /validate が成功した？                     | Yes  |
 
 ## エラーハンドリング
 
-| 条件               | アクション                                    |
-| ------------------ | --------------------------------------------- |
-| チーム作成失敗     | エラーをログ、部分的な結果を報告              |
-| Teammate 生成失敗  | 残りの Teammate で続行                        |
-| Teammate 無応答    | shutdown_request → 利用可能なデータで続行     |
-| DM 配信失敗        | 1回リトライ、その後 Leader が直接データを渡す |
-| /code 失敗         | エラーを提示、ガイダンスを求める              |
-| /audit で重大課題  | 解決されるまで Phase 7 をブロック             |
-| ユーザーキャンセル | 現在の Phase + Step を SOW メタデータに保存   |
+| 条件                        | アクション                                            |
+| --------------------------- | ----------------------------------------------------- |
+| チーム/Teammate 生成失敗    | 残りの Teammate で続行、または /code にフォールバック |
+| Teammate 無応答/DM 配信失敗 | shutdown_request、Leader が直接データを渡す           |
+| Implementer ブロック/失敗   | Leader が引き継ぎ; 両方失敗 → /code                   |
+| 統合テスト失敗              | Leader がクロスレイヤーの問題を直接修正               |
+| /code 失敗                  | エラーを提示、ガイダンスを求める                      |
+| /audit で重大課題           | 解決されるまで Phase 7 をブロック                     |
+| ユーザーキャンセル          | 現在の Phase + Step を SOW メタデータに保存           |
 
 ## レジューム
 
@@ -314,4 +350,5 @@ status:
   exploration_summary: "..."
   clarification_answers: { ... }
   selected_architecture: "pragmatic"
+  implementation_mode: "parallel"
 ```

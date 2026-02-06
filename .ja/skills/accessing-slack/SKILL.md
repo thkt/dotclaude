@@ -4,9 +4,7 @@ description: >
   Slack API経由でメッセージ、スレッド、検索にアクセスする。
   SlackのURL (xxx.slack.com/archives/...) を共有した時、または
   Slack, スラック, メッセージ取得, スレッド, Slack検索 に言及した時に使用。
-allowed-tools:
-  - Bash
-  - Read
+allowed-tools: [Bash, Read]
 user-invocable: false
 ---
 
@@ -66,7 +64,8 @@ curl -s -G -H "Authorization: Bearer $SLACK_TOKEN" \
 ```bash
 curl -s -X POST -H "Authorization: Bearer $SLACK_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"channel\":\"$CHANNEL\",\"thread_ts\":\"$TS\",\"text\":\"MESSAGE\"}" \
+  -d "$(jq -n --arg ch "$CHANNEL" --arg ts "$TS" --arg msg "MESSAGE" \
+    '{channel:$ch,thread_ts:$ts,text:$msg}')" \
   "https://slack.com/api/chat.postMessage" \
   | jq 'if .ok then "Sent" else "Error: \(.error)" end'
 ```

@@ -1,7 +1,7 @@
 ---
 description: 包括的なコード品質評価のために専門レビューエージェントをオーケストレート
 aliases: [review]
-allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion, Teammate, SendMessage
+allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion, TeamCreate, SendMessage
 model: opus
 argument-hint: "[対象ファイルまたはスコープ]"
 ---

@@ -1,6 +1,6 @@
 ---
 description: MADR形式でアーキテクチャ決定記録（ADR）を自動採番で作成
-allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Bash($HOME/.claude/skills/creating-adrs/scripts/*), Grep, Glob, AskUserQuestion
+allowed-tools: Bash(ls:*), Bash($HOME/.claude/skills/creating-adrs/scripts/*), Read, Write, Grep, Glob, AskUserQuestion
 model: opus
 argument-hint: "[決定タイトル]"
 ---

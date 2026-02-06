@@ -1,6 +1,6 @@
 ---
 description: 包括的な計画のためにSOWとSpec生成をオーケストレート
-allowed-tools: SlashCommand, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
+allowed-tools: Skill, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[タスク説明]"
 ---
@@ -71,3 +71,11 @@ $HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/
 ├── sow.md     # Statement of Work
 └── spec.md    # Specification
 ```
+
+## 検証
+
+| チェック項目                      | 必須 |
+| --------------------------------- | ---- |
+| sow.md を生成したか？             | Yes  |
+| spec.md を生成したか？            | Yes  |
+| Todo を作成したか（TaskCreate）？ | Yes  |

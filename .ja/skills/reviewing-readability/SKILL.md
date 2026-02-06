@@ -30,6 +30,8 @@ user-invocable: false
 
 ## 閾値
 
+`rules/development/CODE_THRESHOLDS.md` の正式な値を参照してください。
+
 | 対象     | 推奨 | 最大 |
 | -------- | ---- | ---- |
 | 関数行数 | ≤30  | 50   |

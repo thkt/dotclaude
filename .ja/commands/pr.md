@@ -1,6 +1,6 @@
 ---
 description: ブランチの変更を分析し、包括的なPR説明を生成
-allowed-tools: [Task, Bash, AskUserQuestion]
+allowed-tools: Bash(git:*), Bash(gh:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[Issue参照またはコンテキスト]"
 ---

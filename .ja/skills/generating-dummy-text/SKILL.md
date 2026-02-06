@@ -4,8 +4,7 @@ description: >
   指定した文字数のダミーテキストを正確に生成する。
   ダミーテキスト、ダミー文字、テスト文字列、N文字のテキスト、
   N文字ください、文字数指定、lorem ipsum、dummy text などのキーワードで起動。
-allowed-tools:
-  - Bash
+allowed-tools: [Bash]
 user-invocable: false
 ---
 

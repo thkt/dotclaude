@@ -1,6 +1,6 @@
 ---
 description: Git変更を分析し、適切なブランチ名を提案
-allowed-tools: [Task, AskUserQuestion, Bash]
+allowed-tools: Bash(git:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[コンテキストまたはチケット番号]"
 ---

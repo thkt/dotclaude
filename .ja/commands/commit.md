@@ -1,6 +1,6 @@
 ---
 description: Git diffを分析し、Conventional Commits形式のメッセージを生成
-allowed-tools: [Task, AskUserQuestion, Bash]
+allowed-tools: Bash(git:*), Bash(cat:*), Bash(mv:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[コンテキストまたはIssue参照]"
 ---

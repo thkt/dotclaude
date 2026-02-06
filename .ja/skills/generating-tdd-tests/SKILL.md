@@ -34,6 +34,8 @@ user-invocable: false
 
 ## カバレッジ
 
+`rules/development/CODE_THRESHOLDS.md` の正式な値を参照してください。
+
 | レベル | 目標 | フォーカス       |
 | ------ | ---- | ---------------- |
 | C0     | 90%  | すべての行を実行 |

@@ -1,6 +1,6 @@
 ---
 description: コードベース分析からドキュメントを生成
-allowed-tools: [Task, Read, Write, Bash, AskUserQuestion]
+allowed-tools: Read, Write, Task, AskUserQuestion
 model: opus
 argument-hint: "[architecture|api|domain|setup]"
 ---
@@ -49,3 +49,10 @@ argument-hint: "[architecture|api|domain|setup]"
 ## 出力
 
 テンプレート構造でフォーマットされたMarkdown。変数: `{field}`、`{object.property}`、`{array[].property}`
+
+## 検証
+
+| チェック項目                           | 必須 |
+| -------------------------------------- | ---- |
+| 正しいアナライザー `Task` を呼んだか？ | Yes  |
+| テンプレートを出力に適用したか？       | Yes  |
