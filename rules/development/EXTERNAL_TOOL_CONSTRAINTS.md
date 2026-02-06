@@ -1,3 +1,12 @@
+---
+paths:
+  - "**/*.test.*"
+  - "**/*.spec.*"
+  - "**/Dockerfile*"
+  - "**/docker-compose*"
+  - "**/.github/**"
+---
+
 # External Tool Constraints
 
 Rule: Check external tool constraints before implementing tests or code.

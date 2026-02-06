@@ -17,7 +17,7 @@ graph LR
     subgraph Agents["Agents (Execution)"]
         A1[test-generator]
         A2[security-reviewer]
-        A3[code-simplifier]
+        A3[compound-reviewer-quality]
     end
 
     subgraph Trigger["Invocation"]
@@ -109,17 +109,18 @@ user-invocable: false # スラッシュコマンドとして呼び出し可能�
 
 ```text
 agents/
-├── analyzers/      # コード分析 (api, architecture, domain, setup)
+├── analyzers/      # コード分析 (api, architecture, code-flow, domain, plugin-scanner, setup)
+├── architects/     # 設計 (feature-architect)
 ├── critics/        # 批判的レビュー (devils-advocate)
-├── enhancers/      # コード改善 (build-error-resolver, progressive-enhancer)
+├── enhancers/      # コード改善 (progressive-enhancer)
+├── explorers/      # 探索 (feature-explorer)
 ├── generators/     # 生成 (branch, commit, issue, pr, test)
-├── integrators/    # 統合 (audit-integrator)
-├── orchestrators/  # 調整 (audit-orchestrator)
-├── resolvers/      # 問題解決
-└── reviewers/      # レビュー (13 specialized reviewers)
+├── resolvers/      # 問題解決 (build-error-resolver)
+├── reviewers/      # レビュー (12 specialized reviewers)
+└── teams/          # 複合レビュー (compound-reviewer-*, progressive-integrator)
 ```
 
-### Reviewer Agents (13 types)
+### Reviewer Agents (12 types)
 
 | Agent                   | Focus                |
 | ----------------------- | -------------------- |
@@ -135,6 +136,15 @@ agents/
 | document-reviewer       | ドキュメント品質     |
 | sow-spec-reviewer       | SOW/Spec品質         |
 | subagent-reviewer       | サブエージェント定義 |
+
+### Team Agents (Compound Reviewers)
+
+| Agent                        | Focus                                            |
+| ---------------------------- | ------------------------------------------------ |
+| compound-reviewer-foundation | code-quality + progressive-enhancer + root-cause |
+| compound-reviewer-safety     | security + silent-failure + type-safety          |
+| compound-reviewer-quality    | design-pattern + testability + perf + a11y + doc |
+| progressive-integrator       | devil's advocate challenge + finding integration |
 
 ### Invocation via Task Tool
 

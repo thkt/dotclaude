@@ -49,17 +49,6 @@
 - Accepting AI output without review → Apply AI-Assisted Development
 - Single hypothesis assumed correct → Apply Strong Inference
 
-## Commands
-
-| Command     | Primary Principles   | Secondary Principles                        |
-| ----------- | -------------------- | ------------------------------------------- |
-| `/think`    | SOLID, Occam's Razor | Progressive Enhancement                     |
-| `/research` | Strong Inference     | All principles for context                  |
-| `/code`     | TDD, Baby Steps      | Readable Code, DRY, AI-Assisted Development |
-| `/test`     | TDD                  | Law of Demeter, AI-Assisted Development     |
-| `/fix`      | Occam's Razor        | TIDYINGS                                    |
-| `/audit`    | All principles       | Priority order, Strong Inference            |
-
 ## Final Wisdom
 
 When in doubt: simple > clever, concrete > abstract, working > perfect, clear > DRY.

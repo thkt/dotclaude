@@ -42,19 +42,16 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
 
   # Create metadata file
   META_LOG="$AGENT_LOG_DIR/meta-${TIMESTAMP}.json"
-  cat > "$META_LOG" <<METAEOF
-{
-  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "agent_id": "$AGENT_ID",
-  "transcript_path": "$TRANSCRIPT_PATH",
-  "line_count": $LINE_COUNT,
-  "file_size_bytes": $FILE_SIZE,
-  "log_files": {
-    "full": "$FULL_LOG",
-    "summary": "$SUMMARY_LOG"
-  }
-}
-METAEOF
+  jq -n \
+    --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --arg id "$AGENT_ID" \
+    --arg tp "$TRANSCRIPT_PATH" \
+    --argjson lc "$LINE_COUNT" \
+    --argjson fs "${FILE_SIZE:-0}" \
+    --arg full "$FULL_LOG" \
+    --arg summary "$SUMMARY_LOG" \
+    '{timestamp:$ts, agent_id:$id, transcript_path:$tp, line_count:$lc, file_size_bytes:$fs, log_files:{full:$full, summary:$summary}}' \
+    > "$META_LOG"
   chmod 600 "$META_LOG"
 
   # Move old logs to Trash (older than 30 days)

@@ -1,3 +1,9 @@
+---
+paths:
+  - ".claude/templates/**"
+  - ".claude/commands/**"
+---
+
 # Template Variable Syntax
 
 Variable substitution syntax for templates and command outputs.
@@ -34,7 +40,9 @@ Variable substitution syntax for templates and command outputs.
 
 ## Usage Locations
 
-| Location  | Files                                       |
-| --------- | ------------------------------------------- |
-| Commands  | `commands/audit.md`, `commands/docs.md`     |
-| Templates | `templates/docs/*.md`, `templates/adr/*.md` |
+| Location  | Files                                                                    |
+| --------- | ------------------------------------------------------------------------ |
+| Commands  | `commands/audit.md`, `commands/docs.md`                                  |
+| Templates | `templates/docs/*.md`, `templates/adr/*.md`, `templates/audit/output.md` |
+|           | `templates/sow/template.md`, `templates/spec/template.md`                |
+|           | `templates/issue/*.md`, `templates/research/template.md`                 |

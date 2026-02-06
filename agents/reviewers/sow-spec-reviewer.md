@@ -1,7 +1,7 @@
 ---
 name: sow-spec-reviewer
 description: SOW/Spec quality review with 100-point scoring, 90-point pass threshold.
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [formatting-audits, reviewing-readability, applying-code-principles]
 context: fork

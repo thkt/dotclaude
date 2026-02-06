@@ -1,6 +1,6 @@
 ---
 description: Comprehensive feature development with exploration, architecture, TDD, and quality gates
-allowed-tools: SlashCommand, Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion
+allowed-tools: SlashCommand, Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion, Teammate, SendMessage
 model: opus
 argument-hint: "[feature description]"
 ---
@@ -18,15 +18,13 @@ Read `~/.claude/settings.json` and check the `language` field. If set, translate
 
 ## Execution Flow
 
-| Phase | Name           | Action                          | User Checkpoint       |
-| ----- | -------------- | ------------------------------- | --------------------- |
-| 1     | Discovery      | Context scan → PRE_TASK_CHECK   | [?] or [→] resolution |
-| 2     | Exploration    | feature-explorer ×3 parallel    | Summary review        |
-| 3     | Clarification  | AskUserQuestion for ambiguities | Answer collection     |
-| 4     | Architecture   | feature-architect ×3 → /think   | Approach selection    |
-| 5     | Implementation | /code (TDD/RGRC)                | Approval before start |
-| 6     | Quality        | /audit → /test → /polish        | Issue triage          |
-| 7     | Validation     | /validate → Summary             | Completion            |
+| Phase | Name           | Action                                       | User Checkpoint          |
+| ----- | -------------- | -------------------------------------------- | ------------------------ |
+| 1     | Discovery      | Context scan → PRE_TASK_CHECK                | [?] or [→] resolution    |
+| 2-4   | Team Explore   | Explorer team + Architect → Clarify → /think | Clarification + Approach |
+| 5     | Implementation | /code (TDD/RGRC)                             | Approval before start    |
+| 6     | Quality        | /audit → /test → /polish                     | Issue triage             |
+| 7     | Validation     | /validate → Summary                          | Completion               |
 
 ## Phase 1: Discovery
 
@@ -38,7 +36,7 @@ Read `~/.claude/settings.json` and check the `language` field. If set, translate
 2. If `$ARGUMENTS` empty → prompt with context-aware options
 3. Execute Understanding Check (see below)
 4. If any [→] or [?] → resolve via AskUserQuestion
-5. Create todos via TaskCreate (Phase 2, 4, 5, 6, 7 — Phase 3 is user checkpoint, not tracked)
+5. Create todos via TaskCreate (Phase 2-4, 5, 6, 7)
 
 ### Understanding Check
 
@@ -97,50 +95,64 @@ Split when ANY threshold exceeded:
 | Library            | main/exports in package.json                    | Add function, Add class, Add type                |
 | Fallback           | No match                                        | New feature, Feature extension, Refactoring      |
 
-## Phase 2: Codebase Exploration
+## Phase 2-4: Team Exploration & Architecture
 
-1. Launch 3 agents via `Task` with `subagent_type: feature-explorer`
-2. Each agent focuses on different layer (see Focus Assignment)
-3. Read identified files (5-10 per agent)
-4. Present merged summary
+Spawn a coordinated team of 3 explorers and 1 architect for parallel exploration with progressive architecture design.
+
+### Team Structure
+
+```text
+/feature command (LEADER)
+├── explorer-data    (feature-explorer, Data layer)
+├── explorer-api     (feature-explorer, UI/API)
+├── explorer-core    (feature-explorer, Core logic)
+└── architect        (feature-architect, progressive mode)
+```
+
+### Workflow
+
+| Step | Actor     | Action                                                                 |
+| ---- | --------- | ---------------------------------------------------------------------- |
+| 1    | Leader    | `Teammate.spawnTeam("feature-{timestamp}")`                            |
+| 2    | Leader    | TaskCreate x 4 (explorer-data, explorer-api, explorer-core, architect) |
+| 3    | Leader    | Spawn 4 teammates via Task with `team_name`                            |
+| 4    | Explorers | Investigate assigned focus area, DM findings to `architect`            |
+| 5    | Architect | Process explorer findings incrementally                                |
+| 6    | Leader    | Wait for all explorers to complete                                     |
+| 7    | Leader    | AskUserQuestion for clarification (edge cases, error handling, etc.)   |
+| 8    | Leader    | SendMessage clarification answers to `architect`                       |
+| 9    | Architect | Produce final architecture design                                      |
+| 10   | Leader    | SendMessage `shutdown_request` to all teammates                        |
 
 ### Focus Assignment
 
-| Agent | Focus Area | Priority Directories               |
-| ----- | ---------- | ---------------------------------- |
-| 1     | Data layer | repos/, models/, schemas/, db/     |
-| 2     | UI/API     | components/, api/, routes/, pages/ |
-| 3     | Core logic | services/, utils/, lib/, core/     |
+| Teammate      | subagent_type    | Focus Area | Priority Directories               |
+| ------------- | ---------------- | ---------- | ---------------------------------- |
+| explorer-data | feature-explorer | Data layer | repos/, models/, schemas/, db/     |
+| explorer-api  | feature-explorer | UI/API     | components/, api/, routes/, pages/ |
+| explorer-core | feature-explorer | Core logic | services/, utils/, lib/, core/     |
 
 Agent: [feature-explorer.md](../agents/explorers/feature-explorer.md)
 
-## Phase 3: Clarifying Questions
+### Architect Instructions
 
-1. Review Phase 2 findings
-2. Identify unclear aspects (edge cases, error handling, integration, compatibility, performance)
-3. Present questions via AskUserQuestion
-4. Wait for all answers
+Spawn `architect` with progressive mode instructions in the Task prompt:
 
-If user says "whatever you think is best" → Provide recommendation → Use Prompt: Delegation Confirm
-
-## Phase 4: Architecture Design
-
-1. Launch 3 agents via `Task` with `subagent_type: feature-architect`
-2. Each agent evaluates different approach (see Approach Assignment)
-3. Present comparison table with recommendation
-4. Ask preference (see Prompt: Design Choice)
-5. If technical decision warrants → ask about ADR
-6. Execute /think → Output: SOW + Spec
-
-### Approach Assignment
-
-| Agent | Approach           | Evaluation Focus              |
-| ----- | ------------------ | ----------------------------- |
-| 1     | Minimal Changes    | Maximum reuse, smallest diff  |
-| 2     | Clean Architecture | Maintainability, abstractions |
-| 3     | Pragmatic Balance  | Speed + quality trade-off     |
+1. Start pattern analysis immediately (don't wait for explorers)
+2. Incorporate explorer findings as they arrive via DM
+3. After receiving Leader's clarification DM → produce final design
+4. Evaluate 3 approaches: Minimal Changes, Clean Architecture, Pragmatic Balance
 
 Agent: [feature-architect.md](../agents/architects/feature-architect.md)
+
+### Post-Team
+
+1. Present comparison table with recommendation
+2. Ask preference (see Prompt: Design Choice)
+3. If technical decision warrants → ask about ADR
+4. Execute /think → Output: SOW + Spec
+
+If user says "whatever you think is best" → Provide recommendation → Use Prompt: Delegation Confirm
 
 ## Phase 5: Implementation
 
@@ -250,14 +262,28 @@ options:
   - label: "No, explain options"
 ```
 
+## Verification
+
+| Check                               | Required |
+| ----------------------------------- | -------- |
+| Team spawned with 4 teammates?      | Yes      |
+| Architecture design produced?       | Yes      |
+| User approved implementation?       | Yes      |
+| /code completed successfully?       | Yes      |
+| /audit passed (no critical issues)? | Yes      |
+| /validate succeeded?                | Yes      |
+
 ## Error Handling
 
-| Condition              | Action                                    |
-| ---------------------- | ----------------------------------------- |
-| Agent timeout          | Continue with completed agents            |
-| /code failure          | Present error, ask for guidance           |
-| /audit critical issues | Block Phase 7 until resolved              |
-| User cancellation      | Save current phase + step to SOW metadata |
+| Condition              | Action                                         |
+| ---------------------- | ---------------------------------------------- |
+| Team creation fails    | Log error, report partial results              |
+| Teammate spawn fails   | Continue with remaining teammates              |
+| Teammate unresponsive  | shutdown_request → proceed with available data |
+| DM delivery fails      | Retry once, then leader passes data directly   |
+| /code failure          | Present error, ask for guidance                |
+| /audit critical issues | Block Phase 7 until resolved                   |
+| User cancellation      | Save current phase + step to SOW metadata      |
 
 ## Resume
 

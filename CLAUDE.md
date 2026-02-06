@@ -2,11 +2,11 @@
 
 ## Rules
 
-| Rule   | Reference                                                                                          |
-| ------ | -------------------------------------------------------------------------------------------------- |
-| Core   | AI_OPERATION_PRINCIPLES.md (rules/core/)                                                           |
-| Task   | PRE_TASK_CHECK.md (rules/core/)                                                                    |
-| Delete | `mv [file] ~/.Trash/ && git add -A` (sandbox error → retry with `dangerouslyDisableSandbox: true`) |
+| Rule   | Directive                                                                                                                                                        |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core   | Safety First, Output Verifiability, User Authority                                                                                                               |
+| Task   | PRE_TASK_CHECK before implementation (skip for questions, read-only, follow-up)                                                                                  |
+| Delete | `mv [file] ~/.Trash/ && git add [file]` (if sandbox blocks `mv ~/.Trash/` → retry with `dangerouslyDisableSandbox: true`, other sandbox errors → report to user) |
 
 ## Development Checks
 
@@ -27,5 +27,3 @@
 | Discovery | Order                               |
 | --------- | ----------------------------------- |
 | Commands  | README.md → package.json → ask user |
-
-References: WORKFLOW_GUIDE.md (rules/workflows/), DOCUMENTATION.md (rules/conventions/)

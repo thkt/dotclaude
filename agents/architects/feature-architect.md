@@ -1,7 +1,7 @@
 ---
 name: feature-architect
 description: Designs feature architectures by analyzing codebase patterns, providing implementation blueprints with specific files, component designs, and build sequences.
-tools: [Glob, Grep, LS, Read]
+tools: [Glob, Grep, LS, Read, SendMessage]
 model: opus
 context: fork
 skills: [applying-code-principles]

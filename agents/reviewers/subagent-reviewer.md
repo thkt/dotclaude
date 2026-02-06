@@ -1,7 +1,7 @@
 ---
 name: subagent-reviewer
 description: Review sub-agent definition files for format, structure, quality.
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [applying-code-principles]
 context: fork
@@ -64,7 +64,8 @@ findings:
     severity: high|medium|low
     category: "yaml|section|scope|pattern|output"
     location: "<file>:<line>"
-    issue: "<what's wrong>"
+    evidence: "<what's observed>"
+    reasoning: "<why it's a problem>"
     fix: "<how to fix>"
     confidence: 0.80-1.00
 summary:

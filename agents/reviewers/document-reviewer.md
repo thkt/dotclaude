@@ -1,7 +1,7 @@
 ---
 name: document-reviewer
 description: Technical documentation review for quality, clarity, structure.
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-readability, applying-code-principles]
 context: fork
@@ -62,7 +62,8 @@ findings:
     severity: high|medium|low
     category: "clarity|structure|completeness|technical|audience"
     location: "<file>:<section>"
-    issue: "<what's wrong>"
+    evidence: "<what's observed>"
+    reasoning: "<why it's a problem>"
     fix: "<specific improvement>"
     confidence: 0.70-1.00
 summary:

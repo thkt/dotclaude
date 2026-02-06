@@ -1,7 +1,7 @@
 ---
 description: Orchestrate specialized review agents for comprehensive code quality assessment
 aliases: [review]
-allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion
+allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion, Teammate, SendMessage
 model: opus
 argument-hint: "[target files or scope]"
 ---
@@ -23,15 +23,65 @@ Orchestrate specialized review agents with confidence-based filtering.
 
 ## Execution
 
-| Step | Action                                                                                  |
-| ---- | --------------------------------------------------------------------------------------- |
-| 1    | Run project static analysis tools (see Pre-flight below)                                |
-| 2    | `Task` with `subagent_type: audit-orchestrator` (pass pre-flight results as context)    |
-| 3    | Orchestrator runs agents (see audit-orchestrator.md)                                    |
-| 4    | Integrator aggregates findings (Strong Inference: ≥3 root cause hypotheses → eliminate) |
-| 5    | Save snapshot (see Snapshot Naming below)                                               |
-| 6    | Compare with previous snapshot, display delta                                           |
-| 7    | Output report using template                                                            |
+| Step | Action                                                   |
+| ---- | -------------------------------------------------------- |
+| 1    | Run project static analysis tools (see Pre-flight below) |
+| 2    | Spawn review team (see Team Workflow below)              |
+| 3    | Compound reviewers DM findings to integrator             |
+| 4    | Integrator challenges + integrates → final YAML          |
+| 5    | Save snapshot (see Snapshot Naming below)                |
+| 6    | Compare with previous snapshot, display delta            |
+| 7    | Output report using template                             |
+
+## Team Workflow
+
+Spawn a coordinated team of 3 compound reviewers and 1 progressive integrator.
+
+### Team Structure
+
+```text
+/audit command (LEADER)
+├── reviewer-foundation  (compound-reviewer-foundation)
+├── reviewer-safety      (compound-reviewer-safety)
+├── reviewer-quality     (compound-reviewer-quality)
+└── integrator           (progressive-integrator)
+```
+
+### Workflow
+
+| Step | Actor      | Action                                                                |
+| ---- | ---------- | --------------------------------------------------------------------- |
+| 1    | Leader     | `Teammate.spawnTeam("audit-{timestamp}")`                             |
+| 2    | Leader     | TaskCreate x 4 (3 reviewers + integrator)                             |
+| 3    | Leader     | Spawn 4 teammates via Task with `team_name`                           |
+| 4    | Reviewers  | Run domain agents internally, DM findings to `integrator`             |
+| 5    | Integrator | Challenge each batch (devils-advocate), accumulate validated findings |
+| 6    | Leader     | Wait for all reviewers to complete                                    |
+| 7    | Integrator | Produce final integrated YAML report                                  |
+| 8    | Leader     | SendMessage `shutdown_request` to all teammates                       |
+
+### Teammate Spawn
+
+| Teammate            | subagent_type                | Domains                                          |
+| ------------------- | ---------------------------- | ------------------------------------------------ |
+| reviewer-foundation | compound-reviewer-foundation | code-quality + progressive-enhancer + root-cause |
+| reviewer-safety     | compound-reviewer-safety     | security + silent-failure + type-safety          |
+| reviewer-quality    | compound-reviewer-quality    | design-pattern + testability + perf + a11y + doc |
+| integrator          | progressive-integrator       | devils-advocate challenge + integration          |
+
+Agents: [agents/teams/](../agents/teams/)
+
+### Error Handling
+
+| Error                 | Recovery                                                        |
+| --------------------- | --------------------------------------------------------------- |
+| No files to audit     | Return "No files to audit" message, skip team spawn             |
+| Team creation fails   | Log error, report partial results                               |
+| Teammate spawn fails  | Continue with remaining teammates                               |
+| Reviewer timeout      | 120s; Leader sends "proceed with partial results" to integrator |
+| Teammate unresponsive | shutdown_request → proceed with available results               |
+| DM delivery fails     | Retry once, then leader passes data directly                    |
+| All teammates fail    | Log error, report partial results                               |
 
 ## Pre-flight: Static Analysis
 
@@ -81,8 +131,10 @@ Example output: `audit-2026-01-23-031812.yaml`
 
 ## Verification
 
-| Check                                                   | Required |
-| ------------------------------------------------------- | -------- |
-| `Task` called with `subagent_type: audit-orchestrator`? | Yes      |
-| Snapshot saved?                                         | Yes      |
-| Delta comparison displayed?                             | Yes      |
+| Check                            | Required |
+| -------------------------------- | -------- |
+| Team spawned with 4 teammates?   | Yes      |
+| All reviewer findings collected? | Yes      |
+| Integrator produced final YAML?  | Yes      |
+| Snapshot saved?                  | Yes      |
+| Delta comparison displayed?      | Yes      |

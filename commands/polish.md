@@ -20,9 +20,9 @@ Remove AI-generated slop and simplify code before commit.
 
 ## Agent
 
-| Type  | Name                            | Purpose                |
-| ----- | ------------------------------- | ---------------------- |
-| Agent | code-simplifier:code-simplifier | AI slop removal (fork) |
+| Type  | Name                            | Purpose                           |
+| ----- | ------------------------------- | --------------------------------- |
+| Agent | code-simplifier:code-simplifier | AI slop removal (external plugin) |
 
 ## Execution
 

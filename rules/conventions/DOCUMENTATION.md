@@ -1,3 +1,10 @@
+---
+paths:
+  - ".claude/**/*.md"
+  - "docs/**"
+  - "**/*.mdx"
+---
+
 # Documentation Rules
 
 Guidelines for consistent documentation in the Claude Code ecosystem.

@@ -84,7 +84,9 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
 fi
 
 # Context change tracking
-STATE_FILE="/tmp/claude-context-${SESSION_ID:-default}.state"
+STATE_DIR="$HOME/.claude/cache"
+mkdir -p "$STATE_DIR"
+STATE_FILE="${STATE_DIR}/context-${SESSION_ID:-$$}.state"
 PREV_TOKENS=0
 CONTEXT_DELTA=0
 

@@ -1,7 +1,7 @@
 ---
 name: feature-explorer
 description: Deeply analyzes codebase features by tracing execution paths, mapping architecture, and documenting patterns. Returns essential file list for comprehensive understanding.
-tools: [Glob, Grep, LS, Read]
+tools: [Glob, Grep, LS, Read, SendMessage]
 model: opus
 context: fork
 skills: [orchestrating-workflows]

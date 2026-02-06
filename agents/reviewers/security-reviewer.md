@@ -1,10 +1,11 @@
 ---
 name: security-reviewer
 description: OWASP Top 10-based security vulnerability detection with high-confidence filtering. Reports only confidence >80%.
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-security, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # Security Reviewer

@@ -1,10 +1,11 @@
 ---
 name: code-quality-reviewer
 description: Unified code quality review. Structure (file-level) + Readability (function-level). DRY, waste elimination, Miller's Law.
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-readability, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # Code Quality Reviewer

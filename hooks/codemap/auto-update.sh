@@ -11,7 +11,10 @@ EXCLUDE_DIRS=(
   .ja statsig telemetry todos tasks sounds session-env
 )
 
-SHOULD_UPDATE=$("${HOME}/.claude/scripts/should-update-codemap.sh" 2>&1)
+SHOULD_UPDATE_SCRIPT="${HOME}/.claude/scripts/should-update-codemap.sh"
+[ -x "$SHOULD_UPDATE_SCRIPT" ] || exit 0
+
+SHOULD_UPDATE=$("$SHOULD_UPDATE_SCRIPT" 2>/dev/null) || exit 0
 RESULT=$(echo "$SHOULD_UPDATE" | head -1)
 REASON=$(echo "$SHOULD_UPDATE" | tail -1)
 
@@ -35,11 +38,11 @@ generate_tree() {
   if command -v tree &> /dev/null && [ -d "$full_path" ]; then
     tree -L 3 -I "$excludes" "$full_path" 2>/dev/null || echo "(tree unavailable)"
   else
-    local find_excludes=""
+    local find_args=("$full_path" -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.py' -o -name '*.rs' -o -name '*.go' \))
     for p in "${EXCLUDE_DIRS[@]}"; do
-      find_excludes="$find_excludes -not -path \"*/$p/*\""
+      find_args+=(-not -path "*/$p/*")
     done
-    eval "find \"$full_path\" -type f \\( -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.py' -o -name '*.rs' -o -name '*.go' \\) $find_excludes 2>/dev/null" | \
+    find "${find_args[@]}" 2>/dev/null | \
       head -30 | sed "s|$PROJECT_ROOT/||" | sort || echo "(no files)"
   fi
 }

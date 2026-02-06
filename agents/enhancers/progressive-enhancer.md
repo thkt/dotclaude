@@ -1,7 +1,7 @@
 ---
 name: progressive-enhancer
 description: CSS-first approach review. Identify JS overuse.
-tools: [Read, Grep, Glob, LS, Task, mcp__mdn__*]
+tools: [Read, Grep, Glob, LS, mcp__mdn__*]
 model: opus
 skills: [enhancing-progressively]
 context: fork
@@ -47,10 +47,11 @@ findings:
   - agent: progressive-enhancer
     severity: high|medium|low
     location: "<file>:<line>"
-    js_pattern: "<pattern found>"
-    css_alternative: "<CSS solution>"
-    confidence: 0.70-1.00
+    category: "layout|animation|event|style|toggle"
+    evidence: "<JS pattern found>"
     reasoning: "<why CSS is better>"
+    fix: "<CSS alternative solution>"
+    confidence: 0.70-1.00
 recommendations:
   - location: "<file>:<line>"
     action: "<specific change>"

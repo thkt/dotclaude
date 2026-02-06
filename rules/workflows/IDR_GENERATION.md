@@ -1,3 +1,9 @@
+---
+paths:
+  - ".claude/hooks/lifecycle/**"
+  - ".claude/workspace/planning/**"
+---
+
 # IDR (Implementation Decision Record) Generation
 
 Tracks implementation decisions at commit time via git pre-commit hook.

@@ -8,7 +8,7 @@
   },
   "metadata": {
     "description": "Comprehensive TDD/RGRC development workflow system. Provides 9 integrated plugins sharing a common codebase: workflow commands (/think, /code, /audit), git utilities (/commit, /pr), documentation tools (/adr), and specialized review agents. Architecture: Monorepo marketplace with shared source (see rules/conventions/PLUGIN_ARCHITECTURE.md).",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "architecture": "monorepo-marketplace",
     "adr": "adr/0003-marketplace.md"
   },
@@ -17,7 +17,7 @@
       "name": "complete-workflow-system",
       "source": "./",
       "description": "Full development workflow: /think → /code → /test → /audit → /validate with SOW-based validation",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -46,7 +46,11 @@
         "./commands/feature.md"
       ],
       "agents": [
-        "./agents/orchestrators/audit-orchestrator.md",
+        "./agents/teams/compound-reviewer-foundation.md",
+        "./agents/teams/compound-reviewer-safety.md",
+        "./agents/teams/compound-reviewer-quality.md",
+        "./agents/teams/progressive-integrator.md",
+        "./agents/critics/devils-advocate.md",
         "./agents/generators/test-generator.md",
         "./agents/enhancers/progressive-enhancer.md",
         "./agents/reviewers/subagent-reviewer.md",
@@ -61,16 +65,16 @@
         "./agents/reviewers/security-reviewer.md",
         "./agents/reviewers/silent-failure-reviewer.md",
         "./agents/reviewers/sow-spec-reviewer.md",
-        "./agents/integrators/audit-integrator.md",
         "./agents/explorers/feature-explorer.md",
-        "./agents/architects/feature-architect.md"
+        "./agents/architects/feature-architect.md",
+        "./agents/analyzers/code-flow-analyzer.md"
       ]
     },
     {
       "name": "quick-actions",
       "source": "./",
       "description": "Fast bug fixes and code polish: /fix for rapid fixes, /polish for AI slop removal",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -78,13 +82,14 @@
       "license": "MIT",
       "keywords": ["fix", "quick", "polish", "simplify"],
       "category": "Quick Actions",
-      "commands": ["./commands/fix.md", "./commands/polish.md"]
+      "commands": ["./commands/fix.md", "./commands/polish.md"],
+      "agents": ["./agents/resolvers/build-error-resolver.md"]
     },
     {
       "name": "git-utilities",
       "source": "./",
       "description": "Git workflow helpers: /commit (Conventional Commits), /branch (naming), /pr (pull request), /issue (GitHub issues)",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -116,7 +121,7 @@
       "name": "documentation-tools",
       "source": "./",
       "description": "Documentation generators: ADR (MADR format), rulify, and automated docs generation for architecture, API, setup, domain",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -148,7 +153,7 @@
       "name": "browser-workflows",
       "source": "./",
       "description": "E2E test and documentation generator from agent-browser operations",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -162,7 +167,7 @@
       "name": "development-skills",
       "source": "./",
       "description": "Comprehensive development skills: TDD, code principles, frontend patterns, performance, security, readability, and more",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
@@ -210,7 +215,7 @@
       "name": "security-tools",
       "source": "./",
       "description": "Security scanning for plugins and skills: /scan for malicious code and instruction detection",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"

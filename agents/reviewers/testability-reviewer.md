@@ -1,7 +1,7 @@
 ---
 name: testability-reviewer
 description: Testable code design review. DI patterns, pure functions, mock-friendly architecture.
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-testability, generating-tdd-tests, applying-code-principles]
 context: fork

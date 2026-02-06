@@ -95,6 +95,10 @@ Output the following JSON at the end (for history tracking):
   echo "# Daily Audit Report - $DATE"
   echo -e "\n## Target: $PROJECT_DIR\n---\n"
 
+  # SECURITY: --dangerously-skip-permissions used with mitigations:
+  #   - Tools restricted to read-only: Read,Grep,Glob,LS
+  #   - MCP servers disabled via --strict-mcp-config
+  #   - No Write/Edit/Bash tools available
   if "$CLAUDE_CMD" --print --dangerously-skip-permissions \
     --tools "Read,Grep,Glob,LS" \
     --mcp-config '{"mcpServers":{}}' --strict-mcp-config \

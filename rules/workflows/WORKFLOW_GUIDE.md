@@ -1,68 +1,15 @@
 # Workflow Guide
 
-Guide for using commands. User reference for command selection and workflow patterns.
-
-## Available Commands
-
-### Core Development
-
-| Command     | Purpose                                |
-| ----------- | -------------------------------------- |
-| `/think`    | SOW creation with validation           |
-| `/research` | Investigation without implementation   |
-| `/code`     | TDD/RGRC implementation                |
-| `/test`     | Comprehensive testing                  |
-| `/audit`    | Code review via agents                 |
-| `/polish`   | Remove AI-generated slop               |
-| `/validate` | Validate SOW conformance               |
-| `/plans`    | List planning documents (SOW/Spec)     |
-| `/spec`     | Generate Spec (implementation details) |
-| `/sow`      | Display SOW progress                   |
-
-### Quick Actions
-
-| Command | Purpose                           |
-| ------- | --------------------------------- |
-| `/fix`  | Quick bug fixes (think→code→test) |
-
-### Browser & Documentation
-
-| Command   | Purpose                          |
-| --------- | -------------------------------- |
-| `/e2e`    | E2E test from browser operations |
-| `/adr`    | Architecture Decision Record     |
-| `/rulify` | Generate project rule from ADR   |
-| `/docs`   | Generate documentation from code |
-
-### Git Operations
-
-| Command   | Purpose                       |
-| --------- | ----------------------------- |
-| `/branch` | Suggest branch names          |
-| `/commit` | Conventional Commits messages |
-| `/pr`     | PR descriptions               |
-| `/issue`  | GitHub Issues                 |
+Guide for command selection and workflow patterns.
 
 ## Standard Workflows
 
-| Pattern       | Workflow                                                            | When                                    |
-| ------------- | ------------------------------------------------------------------- | --------------------------------------- |
-| Quick Fix     | `/fix`                                                              | Small bug, stable codebase              |
-| Investigation | `/research` → `/fix`                                                | Unknown cause                           |
-| Feature       | `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate` | New capability, requirements unstable   |
-| Simple        | `/code` → `/test`                                                   | Clear implementation, tech stack stable |
-
-## Todo Progress Tracking
-
-Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
-
-| Command     | Todo Action                          |
-| ----------- | ------------------------------------ |
-| `/think`    | TaskCreate from Implementation Plan  |
-| `/code`     | TaskUpdate → in_progress / completed |
-| `/test`     | (via `/code` phase)                  |
-| `/audit`    | (via `/code` phase)                  |
-| `/validate` | TaskUpdate remaining → completed     |
+| Pattern       | Workflow                                                                             | When                                    |
+| ------------- | ------------------------------------------------------------------------------------ | --------------------------------------- |
+| Quick Fix     | `/fix`                                                                               | Small bug, stable codebase              |
+| Investigation | `/research` → `/fix`                                                                 | Unknown cause                           |
+| Feature       | `/feature` (or: `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate`) | New capability, requirements unstable   |
+| Simple        | `/code` → `/test`                                                                    | Clear implementation, tech stack stable |
 
 ## Command Selection
 
@@ -81,33 +28,6 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 | "Site is down"     | Critical?           | Yes → `/fix` (urgent)              |
 | "Fix typo"         | Simple & clear?     | Yes → `/fix`                       |
 | "How does Z work?" | Investigation only  | `/research` (no implementation)    |
-
-| Key Factor | Description                        |
-| ---------- | ---------------------------------- |
-| Scope      | Single file vs multiple components |
-| Context    | Known vs needs exploration         |
-| Risk       | Dev environment vs production      |
-
-## IDR (Implementation Decision Record)
-
-Auto-generated document tracking implementation through the lifecycle.
-SOW/IDR serve as structured memory: AI reads entirely, humans reference selectively.
-
-See [@./IDR_GENERATION.md](./IDR_GENERATION.md)
-
-| Trigger    | Output     | Content                  |
-| ---------- | ---------- | ------------------------ |
-| git commit | `idr-N.md` | Code examples, decisions |
-
-Location: `$HOME/.claude/workspace/planning/[feature]/idr-N.md` or `planning/YYYY-MM-DD/idr-N.md`
-
-## Architecture
-
-| Layer   | Location            | Role                  |
-| ------- | ------------------- | --------------------- |
-| Command | `commands/*.md`     | User-facing workflows |
-| Skill   | `skills/*/SKILL.md` | Knowledge base        |
-| Agent   | `agents/*.md`       | Specialized analysis  |
 
 ## Edge Cases
 

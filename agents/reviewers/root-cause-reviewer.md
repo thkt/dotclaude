@@ -1,7 +1,7 @@
 ---
 name: root-cause-reviewer
 description: Identify root causes using 5 Whys analysis. Detect patch-like solutions.
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [analyzing-root-causes, applying-code-principles]
 context: fork

@@ -1,10 +1,11 @@
 ---
 name: type-safety-reviewer
 description: TypeScript type safety review. Identifies any usage, type coverage gaps, strict mode compliance.
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-type-safety, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # Type Safety Reviewer

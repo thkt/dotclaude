@@ -177,7 +177,8 @@ main() {
   diff_stat=$(run_git diff --cached --stat) || diff_stat=""
 
   if [ "${CLAUDECODE:-}" = "1" ]; then
-    idr_generate "$diff" "$diff_stat" &>/dev/null &
+    mkdir -p "${HOME}/.claude/logs"
+    idr_generate "$diff" "$diff_stat" >> "${HOME}/.claude/logs/idr.log" 2>&1 &
     disown 2>/dev/null || true
     exit 0
   fi

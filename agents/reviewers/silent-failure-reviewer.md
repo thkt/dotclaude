@@ -1,10 +1,11 @@
 ---
 name: silent-failure-reviewer
 description: Detect silent failures, empty catch blocks, unhandled Promise rejections.
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-silent-failures, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # Silent Failure Reviewer
