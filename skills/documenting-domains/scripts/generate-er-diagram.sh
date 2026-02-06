@@ -52,18 +52,18 @@ generate_from_prisma() {
 
     # Extract relations
     echo ""
+    local rel_model=""
     while IFS= read -r line; do
-        if echo "$line" | grep -qE '@relation'; then
-            # Extract model name from line containing relation field
-            model_from=$(grep -B20 "$line" "$schema_file" | grep -E '^model\s+' | tail -1 | awk '{print $2}')
+        if echo "$line" | grep -qE '^model\s+\w+'; then
+            rel_model=$(echo "$line" | awk '{print $2}')
+        elif echo "$line" | grep -qE '@relation'; then
             model_to=$(echo "$line" | awk '{print $2}' | sed 's/[][]//g' | sed 's/?//g')
 
-            if [ -n "$model_from" ] && [ -n "$model_to" ]; then
-                # Determine relationship based on whether it's an array relation
+            if [ -n "$rel_model" ] && [ -n "$model_to" ]; then
                 if echo "$line" | grep -q '\[\]'; then
-                    echo "    $model_from ||--o{ $model_to : has"
+                    echo "    $rel_model ||--o{ $model_to : has"
                 else
-                    echo "    $model_from ||--o| $model_to : has"
+                    echo "    $rel_model ||--o| $model_to : has"
                 fi
             fi
         fi

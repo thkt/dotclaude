@@ -67,3 +67,10 @@ Run project build command (detect from package.json or project config).
 | [?] <70%   | Escalate → `/research` |
 | Complex    | Multi-file → `/code`   |
 | New scope  | Feature → `/think`     |
+
+## Verification
+
+| Check                  | Required |
+| ---------------------- | -------- |
+| Root cause identified? | Yes      |
+| All tests pass?        | Yes      |

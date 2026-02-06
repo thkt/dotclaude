@@ -1,6 +1,6 @@
 ---
 description: Generate documentation from codebase analysis
-allowed-tools: [Task, Read, Write, Bash, AskUserQuestion]
+allowed-tools: Read, Write, Task, AskUserQuestion
 model: opus
 argument-hint: "[architecture|api|domain|setup]"
 ---
@@ -49,3 +49,10 @@ Generate documentation by analyzing the codebase.
 ## Output
 
 Formatted markdown using template structure. Variables: `{field}`, `{object.property}`, `{array[].property}`.
+
+## Verification
+
+| Check                           | Required |
+| ------------------------------- | -------- |
+| Correct analyzer `Task` called? | Yes      |
+| Template applied to output?     | Yes      |

@@ -85,3 +85,10 @@ tests/e2e/[test-name]/
 ├── screenshots/       # Step images
 └── [name].spec.ts     # Playwright test
 ```
+
+## Verification
+
+| Check                         | Required |
+| ----------------------------- | -------- |
+| Playwright spec.ts generated? | Yes      |
+| Screenshots captured?         | Yes      |

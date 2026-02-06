@@ -61,10 +61,12 @@ Default to `feature` if unclear.
 
 ## Error Handling
 
-| Error              | Action                 |
-| ------------------ | ---------------------- |
-| No description     | Prompt for description |
-| Template not found | Use default format     |
+| Error              | Action                  |
+| ------------------ | ----------------------- |
+| No description     | Prompt for description  |
+| Template not found | Use default format      |
+| No git repository  | Report "Not a git repo" |
+| gh auth failure    | Report auth error       |
 
 ## Output
 

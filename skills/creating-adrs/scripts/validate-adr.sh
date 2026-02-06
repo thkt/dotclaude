@@ -2,7 +2,7 @@
 # ADR Validation Script
 # Usage: validate-adr.sh <adr-file>
 
-set -euo pipefail
+set -e
 
 ADR_FILE="$1"
 
@@ -12,11 +12,7 @@ if [ ! -f "$ADR_FILE" ]; then
 fi
 
 # Color definitions
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+source "$(dirname "$0")/colors.sh"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "📊 ADR Validation Report: $(basename $ADR_FILE)"

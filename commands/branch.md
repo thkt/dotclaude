@@ -1,6 +1,6 @@
 ---
 description: Analyze Git changes and suggest appropriate branch names
-allowed-tools: [Task, AskUserQuestion, Bash]
+allowed-tools: Bash(git:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[context or ticket number]"
 ---

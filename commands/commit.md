@@ -1,6 +1,6 @@
 ---
 description: Analyze Git diff and generate Conventional Commits format messages
-allowed-tools: [Task, AskUserQuestion, Bash]
+allowed-tools: Bash(git:*), Bash(cat:*), Bash(mv:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[context or issue reference]"
 ---

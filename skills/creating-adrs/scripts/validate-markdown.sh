@@ -3,17 +3,13 @@
 # Usage: validate-markdown.sh <markdown-file-or-directory>
 # Exit codes: 0 = success (including warnings), 1 = critical error
 
-set -euo pipefail
+set -e
 
 # Arguments
 TARGET="${1:-.}"
 
-# Color definitions (matching validate-adr.sh pattern)
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+# Color definitions
+source "$(dirname "$0")/colors.sh"
 
 # Check if markdownlint-cli2 is installed
 if ! command -v markdownlint-cli2 &> /dev/null; then
@@ -48,11 +44,11 @@ elif [ -f "$HOME/.claude/.markdownlint.json" ]; then
 fi
 
 # Build command
-CMD="markdownlint-cli2"
+args=(markdownlint-cli2)
 if [ -n "$CONFIG_FILE" ]; then
-  CMD="$CMD --config \"$CONFIG_FILE\""
+  args+=(--config "$CONFIG_FILE")
 fi
-CMD="$CMD \"$TARGET\""
+args+=("$TARGET")
 
 # Run lint
 if [ -n "$CONFIG_SOURCE" ]; then
@@ -62,7 +58,7 @@ else
 fi
 
 # Execute and capture result
-if eval "$CMD" 2>&1; then
+if "${args[@]}" 2>&1; then
   echo -e "${GREEN}✅ Markdown lint: OK${NC}"
   exit 0
 else

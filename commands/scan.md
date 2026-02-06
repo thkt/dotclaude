@@ -31,3 +31,9 @@ Analyze Claude Code plugins and skills for security threats before use.
 
 Agent returns structured YAML with verdict, findings, and recommendation.
 Render using markdown template from agent output.
+
+## Verification
+
+| Check                                               | Required |
+| --------------------------------------------------- | -------- |
+| `Task` called with `subagent_type: plugin-scanner`? | Yes      |

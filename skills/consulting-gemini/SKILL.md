@@ -13,7 +13,7 @@ user-invocable: false
 ## Command
 
 ```bash
-gemini "[prompt]" --output-format text --approval-mode yolo
+gemini "[prompt]" --output-format text --sandbox
 ```
 
 ## Rules

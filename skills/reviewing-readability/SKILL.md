@@ -30,6 +30,8 @@ user-invocable: false
 
 ## Thresholds
 
+See `rules/development/CODE_THRESHOLDS.md` for canonical values.
+
 | Metric             | Recommended | Maximum |
 | ------------------ | ----------- | ------- |
 | Function lines     | ≤30         | 50      |

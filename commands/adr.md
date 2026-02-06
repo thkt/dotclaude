@@ -1,6 +1,6 @@
 ---
 description: Create Architecture Decision Records (ADR) in MADR format with auto-numbering
-allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Bash($HOME/.claude/skills/creating-adrs/scripts/*), Grep, Glob, AskUserQuestion
+allowed-tools: Bash(ls:*), Bash($HOME/.claude/skills/creating-adrs/scripts/*), Read, Write, Grep, Glob, AskUserQuestion
 model: opus
 argument-hint: "[decision title]"
 ---

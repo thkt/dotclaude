@@ -38,7 +38,19 @@ Run security, silent-failure, type-safety, and type-design review domains in par
 | 1    | Check if new types/interfaces introduced in target scope        | —        |
 | 2    | Launch domains 1-3 via Task (+ domain 4 if new types present)   | parallel |
 | 3    | Collect all findings                                            | —        |
-| 4    | SendMessage to `integrator` with combined findings              | —        |
+| 4    | Normalize domain-specific fields to standard schema (see below) | —        |
+| 5    | SendMessage to `integrator` with combined findings              | —        |
+
+## Schema Normalization
+
+Domain agents may return extra fields beyond the standard schema. Map them as follows:
+
+| Agent                   | Extra Fields              | Mapping                                          |
+| ----------------------- | ------------------------- | ------------------------------------------------ |
+| type-design-reviewer    | `type_name`, `scores`     | Append to `evidence`; scores → `reasoning` note  |
+| security-reviewer       | —                         | Standard schema, no mapping needed               |
+| silent-failure-reviewer | —                         | Standard schema, no mapping needed               |
+| type-safety-reviewer    | —                         | Standard schema, no mapping needed               |
 
 ## Output
 

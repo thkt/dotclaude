@@ -60,10 +60,12 @@ git commit -m "subject" -m "body"
 
 ## Error Handling
 
-| Error           | Action                  |
-| --------------- | ----------------------- |
-| No staged files | Report "Nothing staged" |
-| Empty diff      | Return minimal message  |
+| Error             | Action                  |
+| ----------------- | ----------------------- |
+| No staged files   | Report "Nothing staged" |
+| Empty diff        | Return minimal message  |
+| No git repository | Report "Not a git repo" |
+| Pre-commit failed | Report hook error       |
 
 ## Output
 

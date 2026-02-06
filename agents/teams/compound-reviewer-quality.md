@@ -1,24 +1,10 @@
 ---
 name: compound-reviewer-quality
 description: Compound reviewer covering design patterns, testability, test coverage, performance, accessibility, and documentation.
-tools:
-  [
-    Read,
-    Grep,
-    Glob,
-    LS,
-    Task(design-pattern-reviewer),
-    Task(testability-reviewer),
-    Task(test-coverage-reviewer),
-    Task(performance-reviewer),
-    Task(accessibility-reviewer),
-    Task(document-reviewer),
-    SendMessage,
-  ]
+tools: [Read, Grep, Glob, LS, Task(design-pattern-reviewer), Task(testability-reviewer), Task(test-coverage-reviewer), Task(performance-reviewer), Task(accessibility-reviewer), Task(document-reviewer), SendMessage]
 model: sonnet
 context: fork
-skills:
-  [applying-frontend-patterns, reviewing-testability, optimizing-performance]
+skills: [applying-frontend-patterns, reviewing-testability, optimizing-performance]
 ---
 
 # Compound Reviewer: Quality

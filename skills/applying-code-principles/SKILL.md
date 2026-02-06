@@ -27,11 +27,13 @@ See CLAUDE.md Development Checks section (always loaded, single source of truth)
 
 ## Thresholds
 
-| Target        | Ideal | Max | Limit |
-| ------------- | ----- | --- | ----- |
-| Function args | 3     | 5   | 7     |
-| Class methods | 5     | 7   | 9     |
-| Conditionals  | 3     | 5   | 7     |
+See `rules/development/CODE_THRESHOLDS.md` for canonical values.
+
+| Target        | Ideal | Warning | Max |
+| ------------- | ----- | ------- | --- |
+| Function args | 3     | 4-5     | 5   |
+| Class methods | 5     | 6-7     | 9   |
+| Conditionals  | 3     | 4       | 5   |
 
 ## Rules
 

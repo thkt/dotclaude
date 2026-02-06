@@ -2,7 +2,7 @@
 # ADR Index Update Script
 # Usage: update-index.sh [adr-directory]
 
-set -euo pipefail
+set -e
 
 ADR_DIR="${1:-docs/adr}"
 
@@ -14,9 +14,7 @@ fi
 INDEX_FILE="$ADR_DIR/README.md"
 
 # Color definitions
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+source "$(dirname "$0")/colors.sh"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "📚 ADR Index Update: $ADR_DIR"

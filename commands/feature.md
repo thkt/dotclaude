@@ -1,6 +1,6 @@
 ---
 description: Comprehensive feature development with exploration, architecture, TDD, and quality gates
-allowed-tools: SlashCommand, Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion, Teammate, SendMessage
+allowed-tools: Skill, Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion, TeamCreate, SendMessage
 model: opus
 argument-hint: "[feature description]"
 ---
@@ -113,7 +113,7 @@ Spawn a coordinated team of 3 explorers and 1 architect for parallel exploration
 
 | Step | Actor     | Action                                                                 |
 | ---- | --------- | ---------------------------------------------------------------------- |
-| 1    | Leader    | `Teammate.spawnTeam("feature-{timestamp}")`                            |
+| 1    | Leader    | `TeamCreate("feature-{timestamp}")`                                    |
 | 2    | Leader    | TaskCreate x 4 (explorer-data, explorer-api, explorer-core, architect) |
 | 3    | Leader    | Spawn 4 teammates via Task with `team_name`                            |
 | 4    | Explorers | Investigate assigned focus area, DM findings to `architect`            |
@@ -173,93 +173,77 @@ If user says "whatever you think is best" → Provide recommendation → Use Pro
 
 ## Prompts
 
-### Feature Type
+All prompts use `multiSelect: false`.
 
-Options generated from detected Context Pattern.
+### Phase 1: Feature Type
 
-#### Claude Code Config
+Options are generated from detected Context Pattern.
 
 ```yaml
+# Claude Code config detected
 question: "What would you like to add?"
 header: "Feature Type"
-multiSelect: false
 options:
   - label: "Add command"
   - label: "Add skill"
   - label: "Add hook"
   - label: "Add agent"
-```
 
-#### Fallback
-
-```yaml
+# Fallback (no pattern matched)
 question: "What type of feature?"
 header: "Feature Type"
-multiSelect: false
 options:
   - label: "New Feature"
   - label: "Feature Extension"
   - label: "Refactoring"
 ```
 
-### Design Choice
+### Phase 2-4: Design & Architecture
 
 ```yaml
+# Design Choice
 question: "Which architecture approach?"
 header: "Design"
-multiSelect: false
 options:
   - label: "Pragmatic Balance (Recommended)"
   - label: "Minimal Changes"
   - label: "Clean Architecture"
   - label: "Review Details"
-```
 
-### ADR Creation
-
-```yaml
+# ADR Creation
 question: "Record as ADR?"
 header: "ADR"
-multiSelect: false
 options:
   - label: "Create ADR"
   - label: "Skip"
+
+# Delegation Confirm (when user defers decision)
+question: "Recommended: [X]. Proceed?"
+header: "Confirm"
+options:
+  - label: "Yes, proceed"
+  - label: "No, explain options"
 ```
 
-### Start Implementation
+### Phase 5-6: Implementation & Quality
 
 ```yaml
+# Start Implementation
 question: "Ready to start?"
 header: "Implement"
-multiSelect: false
 options:
   - label: "Start"
   - label: "Revise Design"
   - label: "Have Questions"
-```
 
-### Issue Triage
-
-```yaml
+# Issue Triage
 question: "How to handle issues?"
 header: "Triage"
-multiSelect: false
 options:
   - label: "Fix All"
   - label: "Fix Critical Only"
   - label: "Proceed As-Is"
   - label: "Review Individually"
-```
-
-### Delegation Confirm
-
-```yaml
-question: "Recommended: [recommendation]. Proceed?"
-header: "Confirm"
-multiSelect: false
-options:
-  - label: "Yes, proceed"
-  - label: "No, explain options"
 ```
 
 ## Verification

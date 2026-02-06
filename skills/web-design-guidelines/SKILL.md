@@ -3,7 +3,8 @@ name: web-design-guidelines
 description: >
   Review UI code for Web Interface Guidelines compliance.
   Use when asked to "review my UI", "check accessibility", "audit design", "review UX",
-  or "check my site against best practices".
+  "check my site against best practices", or when user mentions UIレビュー,
+  アクセシビリティ, デザイン監査, UX確認, ベストプラクティス.
 allowed-tools: [Read, Glob, WebFetch]
 user-invocable: false
 ---

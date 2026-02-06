@@ -47,10 +47,12 @@ Generate branch names from git diff/status.
 
 ## Error Handling
 
-| Error         | Action                   |
-| ------------- | ------------------------ |
-| No changes    | Report "No changes"      |
-| Branch exists | Suggest alternative name |
+| Error             | Action                   |
+| ----------------- | ------------------------ |
+| No changes        | Report "No changes"      |
+| Branch exists     | Suggest alternative name |
+| No git repository | Report "Not a git repo"  |
+| gh auth failure   | Report auth error        |
 
 ## Output
 

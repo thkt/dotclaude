@@ -1,6 +1,6 @@
 ---
 description: Perform project research and technical investigation without implementation
-allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(grep:*), Bash(cat:*), Bash(head:*), Bash(wc:*), Read, Glob, Grep, LS, Task, AskUserQuestion
+allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 context: fork
 argument-hint: "[research topic or question]"
@@ -63,3 +63,11 @@ Always include at end of output:
 | Feature planning | `/think`       |
 | Bug fix          | `/fix`         |
 | Understanding    | complete       |
+
+## Verification
+
+| Check                                     | Required |
+| ----------------------------------------- | -------- |
+| Findings marked with [✓]/[→]/[?] markers? | Yes      |
+| Output saved to workspace/research/?      | Yes      |
+| Next Steps section included?              | Yes      |

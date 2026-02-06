@@ -10,13 +10,8 @@ echo "=== Module Information Extraction ==="
 echo "Target: $TARGET_DIR"
 echo ""
 
-# Check if tree-sitter-analyzer is available
-if command -v tree-sitter-analyzer &> /dev/null; then
-    USE_TSA=true
-else
-    USE_TSA=false
-    echo "⚠️  tree-sitter-analyzer not found. Running in fallback mode."
-fi
+# Detect tree-sitter-analyzer
+source "$(dirname "$0")/../../lib/detect-tree-sitter.sh"
 
 # Collect source files (top 50)
 SOURCE_FILES=$(find "$TARGET_DIR" \

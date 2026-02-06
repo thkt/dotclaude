@@ -34,6 +34,8 @@ user-invocable: false
 
 ## Coverage
 
+See `rules/development/CODE_THRESHOLDS.md` for canonical values.
+
 | Level | Target | Focus              |
 | ----- | ------ | ------------------ |
 | C0    | 90%    | All lines executed |

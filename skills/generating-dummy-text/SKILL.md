@@ -4,8 +4,7 @@ description: >
   Generate dummy text with exact character count.
   Use when user mentions ダミーテキスト, ダミー文字, テスト文字列,
   N文字のテキスト, N文字ください, 文字数指定, lorem ipsum, dummy text.
-allowed-tools:
-  - Bash
+allowed-tools: [Bash]
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: Analyze branch changes and generate comprehensive PR description
-allowed-tools: [Task, Bash, AskUserQuestion]
+allowed-tools: Bash(git:*), Bash(gh:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[issue reference or context]"
 ---

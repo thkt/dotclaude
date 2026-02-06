@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set +e
 
 # Claude Code status line: model, context, cost, tool, git branch
 

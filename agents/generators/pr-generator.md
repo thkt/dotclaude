@@ -75,10 +75,12 @@ BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remo
 
 ## Error Handling
 
-| Error          | Action              |
-| -------------- | ------------------- |
-| No commits     | Report "No commits" |
-| No base branch | Default to main     |
+| Error             | Action                  |
+| ----------------- | ----------------------- |
+| No commits        | Report "No commits"     |
+| No base branch    | Default to main         |
+| No git repository | Report "Not a git repo" |
+| gh auth failure   | Report auth error       |
 
 ## Output
 

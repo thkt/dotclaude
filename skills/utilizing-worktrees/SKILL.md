@@ -4,9 +4,7 @@ description: >
   Git worktree management via wt CLI (claude-worktree).
   Use when user mentions worktree, ワークツリー, 並行開発, parallel branch,
   or wants to create/switch/list/remove worktrees.
-allowed-tools:
-  - Bash
-  - Read
+allowed-tools: [Bash, Read]
 user-invocable: false
 ---
 

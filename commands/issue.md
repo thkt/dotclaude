@@ -1,6 +1,6 @@
 ---
 description: Generate GitHub Issue with structured title and body
-allowed-tools: [Task, AskUserQuestion]
+allowed-tools: Bash(gh issue:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[issue description]"
 ---

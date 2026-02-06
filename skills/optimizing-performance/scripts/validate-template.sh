@@ -2,6 +2,8 @@
 # Skill Validation Template
 # Usage: ./validate-template.sh <skill-directory>
 
+set -e
+
 SKILL_DIR="$1"
 
 if [ -z "$SKILL_DIR" ]; then
@@ -76,6 +78,49 @@ check_description_length() {
   return 0
 }
 
+# Check shell scripts in scripts/ directory
+check_scripts() {
+  local scripts_dir="$SKILL_DIR/scripts"
+  if [ ! -d "$scripts_dir" ]; then
+    return 0
+  fi
+
+  local script_errors=0
+  for script in "$scripts_dir"/*.sh; do
+    [ -f "$script" ] || continue
+    local name=$(basename "$script")
+
+    # Syntax check
+    if ! bash -n "$script" 2>/dev/null; then
+      echo "❌ Syntax error: scripts/$name"
+      script_errors=1
+    fi
+
+    # Executable permission check
+    if [ ! -x "$script" ]; then
+      echo "⚠️ Not executable: scripts/$name"
+    fi
+  done
+  return $script_errors
+}
+
+# Check referenced files exist
+check_references() {
+  local skill_md="$SKILL_DIR/SKILL.md"
+  local ref_errors=0
+
+  # Extract file paths from References table
+  local refs=$(grep -oE '\| [a-zA-Z0-9/_.-]+\.(md|sh) \|' "$skill_md" 2>/dev/null | tr -d '| ' || true)
+
+  for ref in $refs; do
+    if [ ! -f "$SKILL_DIR/$ref" ] && [ ! -f "$SKILL_DIR/references/$ref" ]; then
+      echo "⚠️ Referenced file not found: $ref"
+      ref_errors=1
+    fi
+  done
+  return $ref_errors
+}
+
 # Main validation
 errors=0
 critical_errors=0
@@ -94,6 +139,8 @@ fi
 
 check_line_count || ((errors++))
 check_description_length || ((errors++))
+check_scripts || ((errors++))
+check_references || ((errors++))
 
 echo ""
 if [ $critical_errors -gt 0 ]; then

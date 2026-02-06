@@ -78,8 +78,8 @@ elif [ "$DIAGRAM_TYPE" = "dependency" ]; then
     echo "### External Dependency Diagram"
     echo ""
 
-    # Extract dependencies from package.json
-    if [ -f "$TARGET_DIR/package.json" ]; then
+    # Extract dependencies from package.json (requires jq)
+    if [ -f "$TARGET_DIR/package.json" ] && command -v jq &> /dev/null; then
         echo '```mermaid'
         echo 'graph LR'
         echo '    subgraph "Project"'

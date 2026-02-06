@@ -1,6 +1,6 @@
 ---
 description: Orchestrate SOW and Spec generation for comprehensive planning
-allowed-tools: SlashCommand, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
+allowed-tools: Skill, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[task description]"
 ---
@@ -71,3 +71,11 @@ $HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/
 ├── sow.md     # Statement of Work
 └── spec.md    # Specification
 ```
+
+## Verification
+
+| Check                       | Required |
+| --------------------------- | -------- |
+| sow.md generated?           | Yes      |
+| spec.md generated?          | Yes      |
+| Todos created (TaskCreate)? | Yes      |
