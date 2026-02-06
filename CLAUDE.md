@@ -7,6 +7,7 @@
 | Core   | Safety First, Output Verifiability, User Authority                                                                                                               |
 | Task   | PRE_TASK_CHECK before implementation (skip for questions, read-only, follow-up)                                                                                  |
 | Delete | `mv [file] ~/.Trash/ && git add [file]` (if sandbox blocks `mv ~/.Trash/` → retry with `dangerouslyDisableSandbox: true`, other sandbox errors → report to user) |
+| Plan   | Do NOT use EnterPlanMode. For planning, suggest `/think`. For implementation, show PRE_TASK_CHECK.                                                               |
 
 ## Development Checks
 

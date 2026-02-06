@@ -7,6 +7,7 @@
 | コア   | AI_OPERATION_PRINCIPLES.md (rules/core/)                                                        |
 | タスク | PRE_TASK_CHECK.md (rules/core/)                                                                 |
 | 削除   | `mv [file] ~/.Trash/ && git add -A` (sandboxエラー → `dangerouslyDisableSandbox: true`で再試行) |
+| 計画   | EnterPlanMode禁止。計画が必要なら `/think` を提案。実装時は PRE_TASK_CHECK を表示。             |
 
 ## 開発チェック
 
