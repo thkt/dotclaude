@@ -159,23 +159,15 @@ See the [official blog post](https://azukiazusa.dev/blog/claude-code-sandbox-fea
 
 Some commands depend on external plugins that are not included in this repository. Install them manually after cloning:
 
-| Plugin              | Required By                      | Purpose                                  | Install Command                     |
-| ------------------- | -------------------------------- | ---------------------------------------- | ----------------------------------- |
-| `pr-review-toolkit` | `/audit`, `/research`, `/polish` | Enhanced code review agents              | `/plugin install pr-review-toolkit` |
-| `feature-dev`       | `/research`, `/think`            | Code exploration and architecture agents | `/plugin install feature-dev`       |
-| `ralph-loop`        | `/code`                          | TDD Green Phase auto-iteration           | `/plugin install ralph-loop`        |
+| Plugin       | Required By | Purpose                        | Install Command              |
+| ------------ | ----------- | ------------------------------ | ---------------------------- |
+| `ralph-loop` | `/code`     | TDD Green Phase auto-iteration | `/plugin install ralph-loop` |
 
-**Quick Install (all required plugins)**:
+**Quick Install**:
 
 ```bash
-/plugin install pr-review-toolkit feature-dev ralph-loop
+/plugin install ralph-loop
 ```
-
-**Optional Plugins** (recommended for full functionality):
-
-| Plugin              | Purpose                                             |
-| ------------------- | --------------------------------------------------- |
-| `security-guidance` | Security best practices and vulnerability detection |
 
 **Note**: Plugins are stored in `~/.claude/plugins/` which is excluded from git. Each user must install plugins independently.
 

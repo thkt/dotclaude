@@ -1,6 +1,6 @@
 ---
 name: compound-reviewer-safety
-description: Compound reviewer covering security, silent failure detection, and type safety analysis.
+description: Compound reviewer covering security, silent failure detection, type safety, and type design analysis.
 tools:
   [
     Read,
@@ -10,6 +10,7 @@ tools:
     Task(security-reviewer),
     Task(silent-failure-reviewer),
     Task(type-safety-reviewer),
+    Task(type-design-reviewer),
     SendMessage,
   ]
 model: sonnet
@@ -19,23 +20,25 @@ skills: [reviewing-security, reviewing-type-safety]
 
 # Compound Reviewer: Safety
 
-Run security, silent-failure, and type-safety review domains in parallel, then DM combined findings to `integrator`.
+Run security, silent-failure, type-safety, and type-design review domains in parallel, then DM combined findings to `integrator`.
 
 ## Domains
 
-| Order | Agent          | subagent_type           | Depends On |
-| ----- | -------------- | ----------------------- | ---------- |
-| 1     | Security       | security-reviewer       | —          |
-| 2     | Silent Failure | silent-failure-reviewer | —          |
-| 3     | Type Safety    | type-safety-reviewer    | —          |
+| Order | Agent          | subagent_type           | Depends On                            |
+| ----- | -------------- | ----------------------- | ------------------------------------- |
+| 1     | Security       | security-reviewer       | —                                     |
+| 2     | Silent Failure | silent-failure-reviewer | —                                     |
+| 3     | Type Safety    | type-safety-reviewer    | —                                     |
+| 4     | Type Design    | type-design-reviewer    | Only if new types added/modified      |
 
 ## Execution
 
-| Step | Action                                             | Mode     |
-| ---- | -------------------------------------------------- | -------- |
-| 1    | Launch all 3 agents via Task                       | parallel |
-| 2    | Collect all findings                               | —        |
-| 3    | SendMessage to `integrator` with combined findings | —        |
+| Step | Action                                                          | Mode     |
+| ---- | --------------------------------------------------------------- | -------- |
+| 1    | Check if new types/interfaces introduced in target scope        | —        |
+| 2    | Launch domains 1-3 via Task (+ domain 4 if new types present)   | parallel |
+| 3    | Collect all findings                                            | —        |
+| 4    | SendMessage to `integrator` with combined findings              | —        |
 
 ## Output
 
@@ -58,6 +61,7 @@ summary:
     security: <count>
     silent_failure: <count>
     type_safety: <count>
+    type_design: <count>
 ```
 
 | Error               | Recovery                                                     |

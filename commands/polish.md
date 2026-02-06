@@ -20,17 +20,17 @@ Remove AI-generated slop and simplify code before commit.
 
 ## Agent
 
-| Type  | Name                            | Purpose                           |
-| ----- | ------------------------------- | --------------------------------- |
-| Agent | code-simplifier:code-simplifier | AI slop removal (external plugin) |
+| Type  | Name            | Purpose                          |
+| ----- | --------------- | -------------------------------- |
+| Agent | code-simplifier | AI slop removal (internal agent) |
 
 ## Execution
 
-| Step | Action                                                       |
-| ---- | ------------------------------------------------------------ |
-| 1    | `Task` with `subagent_type: code-simplifier:code-simplifier` |
-| 2    | Agent identifies and removes AI slop                         |
-| 3    | Report simplifications                                       |
+| Step | Action                                       |
+| ---- | -------------------------------------------- |
+| 1    | `Task` with `subagent_type: code-simplifier` |
+| 2    | Agent identifies and removes AI slop         |
+| 3    | Report simplifications                       |
 
 ### Removal Targets
 
@@ -52,7 +52,6 @@ Polished: Removed X comments, inlined Y helpers
 
 ## Error Handling
 
-| Error                   | Action                                     |
-| ----------------------- | ------------------------------------------ |
-| code-simplifier unavail | Log warning, skip polish (no changes made) |
-| No changes in diff      | Report "Nothing to polish"                 |
+| Error              | Action                     |
+| ------------------ | -------------------------- |
+| No changes in diff | Report "Nothing to polish" |

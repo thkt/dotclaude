@@ -6,12 +6,7 @@
 
 | プラグイン             | マーケットプレース      | 用途                     |
 | ---------------------- | ----------------------- | ------------------------ |
-| feature-dev            | claude-plugins-official | 機能開発ガイド           |
-| pr-review-toolkit      | claude-plugins-official | PR レビュー支援          |
 | ralph-loop             | claude-plugins-official | 反復実行ループ           |
-| hookify                | claude-plugins-official | フック作成支援           |
-| code-simplifier        | claude-plugins-official | コード簡素化             |
-| security-guidance      | claude-plugins-official | セキュリティガイダンス   |
 | a11y-specialist-skills | a11y-specialist-skills  | アクセシビリティレビュー |
 
 ## インストール方法
@@ -23,12 +18,7 @@
 claude plugins marketplace add https://raw.githubusercontent.com/anthropics/claude-code-plugins/refs/heads/main/marketplace.json
 
 # 各プラグインをインストール
-claude plugins install feature-dev
-claude plugins install pr-review-toolkit
 claude plugins install ralph-loop
-claude plugins install hookify
-claude plugins install code-simplifier
-claude plugins install security-guidance
 ```
 
 ### 2. アクセシビリティスキル
@@ -52,27 +42,17 @@ claude plugins marketplace add https://raw.githubusercontent.com/anthropics/clau
 claude plugins marketplace add https://raw.githubusercontent.com/anthropics/a11y-specialist-skills/refs/heads/main/marketplace.json
 
 # プラグインインストール
-claude plugins install feature-dev
-claude plugins install pr-review-toolkit
 claude plugins install ralph-loop
-claude plugins install hookify
-claude plugins install code-simplifier
-claude plugins install security-guidance
 claude plugins install a11y-specialist-skills
 ```
 
 ## 主要コマンド
 
-| コマンド        | プラグイン        | 用途                     |
-| --------------- | ----------------- | ------------------------ |
-| `/feature-dev`  | feature-dev       | 機能開発ガイド           |
-| `/review-pr`    | pr-review-toolkit | PR包括レビュー           |
-| `/ralph-loop`   | ralph-loop        | 反復実行開始             |
-| `/cancel-ralph` | ralph-loop        | ループ停止               |
-| `/hookify`      | hookify           | 会話からフック生成       |
-| `/hookify list` | hookify           | ルール一覧               |
-| `/polish`       | code-simplifier   | コード簡素化             |
-| `/a11y-review`  | a11y-specialist   | アクセシビリティレビュー |
+| コマンド        | プラグイン      | 用途                     |
+| --------------- | --------------- | ------------------------ |
+| `/ralph-loop`   | ralph-loop      | 反復実行開始             |
+| `/cancel-ralph` | ralph-loop      | ループ停止               |
+| `/a11y-review`  | a11y-specialist | アクセシビリティレビュー |
 
 ## プラグイン管理
 

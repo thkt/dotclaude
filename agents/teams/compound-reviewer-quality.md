@@ -1,6 +1,6 @@
 ---
 name: compound-reviewer-quality
-description: Compound reviewer covering design patterns, testability, performance, accessibility, and documentation.
+description: Compound reviewer covering design patterns, testability, test coverage, performance, accessibility, and documentation.
 tools:
   [
     Read,
@@ -9,6 +9,7 @@ tools:
     LS,
     Task(design-pattern-reviewer),
     Task(testability-reviewer),
+    Task(test-coverage-reviewer),
     Task(performance-reviewer),
     Task(accessibility-reviewer),
     Task(document-reviewer),
@@ -22,7 +23,7 @@ skills:
 
 # Compound Reviewer: Quality
 
-Run design-pattern, testability, performance, accessibility, and document review domains, then DM combined findings to `integrator`.
+Run design-pattern, testability, test-coverage, performance, accessibility, and document review domains, then DM combined findings to `integrator`.
 
 ## Domains
 
@@ -30,19 +31,20 @@ Run design-pattern, testability, performance, accessibility, and document review
 | ----- | -------------- | ----------------------- | -------------------------------------------- |
 | 1     | Design Pattern | design-pattern-reviewer | —                                            |
 | 2     | Testability    | testability-reviewer    | —                                            |
-| 3     | Performance    | performance-reviewer    | —                                            |
-| 4     | Accessibility  | accessibility-reviewer  | Only if \*.tsx/\*.jsx/\*.html/\*.css present |
-| 5     | Documentation  | document-reviewer       | Only if \*.md files present                  |
+| 3     | Test Coverage  | test-coverage-reviewer  | Only if test files changed                   |
+| 4     | Performance    | performance-reviewer    | —                                            |
+| 5     | Accessibility  | accessibility-reviewer  | Only if \*.tsx/\*.jsx/\*.html/\*.css present |
+| 6     | Documentation  | document-reviewer       | Only if \*.md files present                  |
 
 ## Execution
 
-| Step | Action                                                    | Mode     |
-| ---- | --------------------------------------------------------- | -------- |
-| 1    | Check for \*.md files in target scope                     | —        |
-| 2    | Launch domains 1-4 via Task (+ domain 5 if \*.md present) | parallel |
-| 3    | Collect all findings                                      | —        |
-| 4    | Normalize to standard schema (evidence/reasoning/fix)     | —        |
-| 5    | SendMessage to `integrator` with combined findings        | —        |
+| Step | Action                                                                  | Mode     |
+| ---- | ----------------------------------------------------------------------- | -------- |
+| 1    | Check for test files and \*.md files in target scope                    | —        |
+| 2    | Launch domains 1-2,4 via Task (+ conditional domains 3,5,6 as needed)   | parallel |
+| 3    | Collect all findings                                                    | —        |
+| 4    | Normalize to standard schema (evidence/reasoning/fix)                   | —        |
+| 5    | SendMessage to `integrator` with combined findings                      | —        |
 
 ## Output
 
@@ -64,6 +66,7 @@ summary:
   by_domain:
     design_pattern: <count>
     testability: <count>
+    test_coverage: <count>
     performance: <count>
     accessibility: <count>
     documentation: <count>
