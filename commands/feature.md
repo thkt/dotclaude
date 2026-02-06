@@ -22,7 +22,7 @@ Read `~/.claude/settings.json` and check the `language` field. If set, translate
 | ----- | -------------- | -------------------------------------------- | ------------------------ |
 | 1     | Discovery      | Context scan → PRE_TASK_CHECK                | [?] or [→] resolution    |
 | 2-4   | Team Explore   | Explorer team + Architect → Clarify → /think | Clarification + Approach |
-| 5     | Implementation | /code (TDD/RGRC)                             | Approval before start    |
+| 5     | Implementation | Parallel or Sequential TDD/RGRC              | Approval + mode select   |
 | 6     | Quality        | /audit → /test → /polish                     | Issue triage             |
 | 7     | Validation     | /validate → Summary                          | Completion               |
 
@@ -97,8 +97,6 @@ Split when ANY threshold exceeded:
 
 ## Phase 2-4: Team Exploration & Architecture
 
-Spawn a coordinated team of 3 explorers and 1 architect for parallel exploration with progressive architecture design.
-
 ### Team Structure
 
 ```text
@@ -156,8 +154,60 @@ If user says "whatever you think is best" → Provide recommendation → Use Pro
 
 ## Phase 5: Implementation
 
-1. Ask for approval (see Prompt: Start Implementation)
-2. On approval → Execute /code
+### Parallel Decision
+
+Read architect's Component Design → classify by Layer column → decide mode.
+
+| Condition                          | Mode       | Action                      |
+| ---------------------------------- | ---------- | --------------------------- |
+| logic_files >= 2 AND ui_files >= 2 | Parallel   | Show Prompt: Impl Mode      |
+| Otherwise                          | Sequential | Execute /code (skip prompt) |
+
+### Layer Classification
+
+| Layer  | Directories                                                                  |
+| ------ | ---------------------------------------------------------------------------- |
+| shared | types/, constants/, config/                                                  |
+| logic  | hooks/, utils/, services/, api/, repos/, schemas/, lib/, store/, middleware/ |
+| ui     | components/, pages/, layouts/, views/, styles/, css/                         |
+
+### Parallel Mode
+
+#### Team Structure
+
+```text
+/feature command (LEADER)
+├── impl-logic  (unit-implementer, logic layer)
+└── impl-ui     (unit-implementer, ui layer)
+```
+
+Agent: [unit-implementer.md](../agents/teams/unit-implementer.md)
+
+#### Workflow
+
+| Step | Actor  | Action                                                     |
+| ---- | ------ | ---------------------------------------------------------- |
+| 1    | Leader | Implement shared layer first (types/, constants/, config/) |
+| 2    | Leader | `Task(test-generator)`: generate ALL tests in skip state   |
+| 3    | Leader | Assign tests to layers (by implementation file directory)  |
+| 4    | Leader | `TeamCreate("impl-{timestamp}")`                           |
+| 5    | Leader | TaskCreate x 2 (impl-logic, impl-ui)                       |
+| 6    | Leader | Spawn 2 teammates via Task with `team_name`                |
+| 7    | Impls  | RGRC cycle for assigned tests, DM status to leader         |
+| 8    | Leader | Wait for both implementers to complete                     |
+| 9    | Leader | Fix cross-layer issues (imports, wiring)                   |
+| 10   | Leader | Execute /test for full suite + quality gates               |
+| 11   | Leader | SendMessage `shutdown_request` to all teammates            |
+
+#### Implementer Task Prompt
+
+Include in each implementer's Task prompt:
+
+1. Unit assignment: `logic` or `ui`
+2. Interface contracts from architect output
+3. Assigned files (create + modify)
+4. Assigned test files
+5. Constraint: only modify assigned files
 
 ## Phase 6: Quality Review
 
@@ -228,11 +278,12 @@ options:
 ### Phase 5-6: Implementation & Quality
 
 ```yaml
-# Start Implementation
-question: "Ready to start?"
-header: "Implement"
+# Impl Mode (shown only when Parallel Decision = Parallel)
+question: "Implementation mode?"
+header: "Impl Mode"
 options:
-  - label: "Start"
+  - label: "Parallel (Recommended)"
+  - label: "Sequential"
   - label: "Revise Design"
   - label: "Have Questions"
 
@@ -248,26 +299,27 @@ options:
 
 ## Verification
 
-| Check                               | Required |
-| ----------------------------------- | -------- |
-| Team spawned with 4 teammates?      | Yes      |
-| Architecture design produced?       | Yes      |
-| User approved implementation?       | Yes      |
-| /code completed successfully?       | Yes      |
-| /audit passed (no critical issues)? | Yes      |
-| /validate succeeded?                | Yes      |
+| Check                                       | Required |
+| ------------------------------------------- | -------- |
+| Explore team spawned with 4 teammates?      | Yes      |
+| Architecture design produced?               | Yes      |
+| User approved implementation?               | Yes      |
+| Implementation completed (parallel or seq)? | Yes      |
+| Quality gates pass after integration?       | Yes      |
+| /audit passed (no critical issues)?         | Yes      |
+| /validate succeeded?                        | Yes      |
 
 ## Error Handling
 
-| Condition              | Action                                         |
-| ---------------------- | ---------------------------------------------- |
-| Team creation fails    | Log error, report partial results              |
-| Teammate spawn fails   | Continue with remaining teammates              |
-| Teammate unresponsive  | shutdown_request → proceed with available data |
-| DM delivery fails      | Retry once, then leader passes data directly   |
-| /code failure          | Present error, ask for guidance                |
-| /audit critical issues | Block Phase 7 until resolved                   |
-| User cancellation      | Save current phase + step to SOW metadata      |
+| Condition                     | Action                                        |
+| ----------------------------- | --------------------------------------------- |
+| Team/teammate spawn fails     | Continue with remaining teammates or /code    |
+| Teammate unresponsive/DM fail | shutdown_request, leader passes data directly |
+| Implementer blocked/fails     | Leader takes over; if both fail → /code       |
+| Integration tests fail        | Leader fixes cross-layer issues directly      |
+| /code failure                 | Present error, ask for guidance               |
+| /audit critical issues        | Block Phase 7 until resolved                  |
+| User cancellation             | Save current phase + step to SOW metadata     |
 
 ## Resume
 
@@ -298,4 +350,5 @@ status:
   exploration_summary: "..."
   clarification_answers: { ... }
   selected_architecture: "pragmatic"
+  implementation_mode: "parallel"
 ```

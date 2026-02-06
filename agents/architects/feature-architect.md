@@ -59,29 +59,32 @@ skills: [applying-code-principles]
 
 ## Component Design
 
-| Component      | File                    | Responsibility   | Dependencies           |
-| -------------- | ----------------------- | ---------------- | ---------------------- |
-| FeatureService | src/services/feature.ts | Business logic   | FeatureRepo, Validator |
-| FeatureRepo    | src/repos/feature.ts    | Data persistence | DB client              |
-| featureSchema  | src/schemas/feature.ts  | Input validation | zod                    |
-| FeatureAPI     | src/api/feature.ts      | HTTP interface   | FeatureService         |
+| Component      | File                    | Responsibility   | Dependencies           | Layer  |
+| -------------- | ----------------------- | ---------------- | ---------------------- | ------ |
+| FeatureService | src/services/feature.ts | Business logic   | FeatureRepo, Validator | logic  |
+| FeatureRepo    | src/repos/feature.ts    | Data persistence | DB client              | logic  |
+| featureSchema  | src/schemas/feature.ts  | Input validation | zod                    | logic  |
+| FeatureAPI     | src/api/feature.ts      | HTTP interface   | FeatureService         | logic  |
+| FeatureForm    | src/components/Form.tsx | User input       | useFeature hook        | ui     |
+| Feature        | src/types/feature.ts    | Shared types     | —                      | shared |
 
 ## Implementation Map
 
 ### Files to Create
 
-| File                    | Purpose       | Lines (est) |
-| ----------------------- | ------------- | ----------- |
-| src/services/feature.ts | Service class | ~80         |
-| src/repos/feature.ts    | Repository    | ~50         |
-| src/schemas/feature.ts  | Zod schemas   | ~30         |
+| File                    | Purpose       | Lines (est) | Layer  |
+| ----------------------- | ------------- | ----------- | ------ |
+| src/types/feature.ts    | Shared types  | ~20         | shared |
+| src/services/feature.ts | Service class | ~80         | logic  |
+| src/repos/feature.ts    | Repository    | ~50         | logic  |
+| src/schemas/feature.ts  | Zod schemas   | ~30         | logic  |
+| src/components/Form.tsx | Feature form  | ~60         | ui     |
 
 ### Files to Modify
 
-| File               | Changes             |
-| ------------------ | ------------------- |
-| src/api/index.ts   | Add feature routes  |
-| src/types/index.ts | Export Feature type |
+| File             | Changes            | Layer |
+| ---------------- | ------------------ | ----- |
+| src/api/index.ts | Add feature routes | logic |
 
 ## Data Flow
 
@@ -91,6 +94,24 @@ User Input → FeatureAPI.create()
 → FeatureService.create()
 → FeatureRepo.save()
 → Response
+```
+
+## Interface Contracts
+
+```typescript
+// Shared types (implement first, before parallel phase)
+interface Feature {
+  id: string;
+  name: string;
+  status: "draft" | "active";
+}
+
+// Logic layer exports
+// useFeature(id: string): { data: Feature; loading: boolean }
+// createFeature(input: CreateFeatureInput): Promise<Feature>
+
+// UI layer imports from logic
+// useFeature, createFeature
 ```
 
 ## Build Sequence
@@ -114,9 +135,9 @@ User Input → FeatureAPI.create()
 
 ## Guidelines
 
-| Rule           | Description                                            |
-| -------------- | ------------------------------------------------------ |
-| Decisive       | Pick one approach; trade-offs describe chosen approach |
-| Specific       | File paths, function names, concrete steps             |
-| Patterns first | Align with existing codebase conventions               |
-| Build sequence | Clear checklist for implementation                     |
+| Rule             | Description                                            |
+| ---------------- | ------------------------------------------------------ |
+| Decisive         | Pick one approach; trade-offs describe chosen approach |
+| Specific         | File paths, function names, concrete steps             |
+| Patterns first   | Align with existing codebase conventions               |
+| Layer assignment | Classify each component as logic/ui/shared             |

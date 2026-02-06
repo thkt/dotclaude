@@ -19,20 +19,20 @@ debug/
 *.temp
 
 # Claude specific
-.claude/
-.codemaps/
-.credentials.json
-chrome/
-ide/
-projects/
-settings.json
-shell-snapshots/
-sounds/
-statsig/
-telemetry/
-teams/
-todos/
-tasks/
+/.claude/
+/.codemaps/
+/.credentials.json
+/chrome/
+/ide/
+/projects/
+/settings.json
+/shell-snapshots/
+/sounds/
+/statsig/
+/telemetry/
+/teams/
+/todos/
+/tasks/
 
 # Claude session history
 history.jsonl
