@@ -27,13 +27,16 @@
 │   ├── development/      # 開発パターン & 方法論
 │   └── workflows/        # ワークフローガイド
 ├── skills/               # スキルベースの知識モジュール（25スキル）
-├── agents/               # 専門AIエージェント（25エージェント）
-│   ├── analyzers/        # アーキテクチャ分析
-│   ├── enhancers/        # コード改善
+├── agents/               # 専門AIエージェント（35エージェント）
+│   ├── analyzers/        # アーキテクチャ & コード分析
+│   ├── architects/       # 機能アーキテクチャ設計
+│   ├── critics/          # 発見チャレンジャー（devils-advocate）
+│   ├── enhancers/        # コード改善 & シンプル化
+│   ├── explorers/        # コードベース探索エージェント
 │   ├── generators/       # コード/テスト/Git生成
-│   ├── orchestrators/    # マルチエージェント調整
-│   ├── integrators/      # 発見統合
-│   └── reviewers/        # コードレビューエージェント
+│   ├── resolvers/        # ビルドエラー解決
+│   ├── reviewers/        # コードレビューエージェント（14レビューア）
+│   └── teams/            # 複合レビューア & 統合
 └── .ja/                   # 日本語翻訳
 ```
 
@@ -67,7 +70,7 @@
 
 **利用可能なプラグイン**:
 
-- **complete-workflow-system**: 25の専門エージェントを含むフル開発ワークフロー
+- **complete-workflow-system**: 35の専門エージェントを含むフル開発ワークフロー
 - **quick-actions**: 高速バグ修正 (/fix) と AIスロップ除去 (/polish)
 - **git-utilities**: Gitワークフローヘルパー (commit, branch, PR, issue)
 - **documentation-tools**: ADR作成とルール生成
