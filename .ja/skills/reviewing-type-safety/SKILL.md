@@ -1,10 +1,12 @@
 ---
 name: reviewing-type-safety
 description: >
-  TypeScript type safety patterns and best practices for maximum type coverage.
-  Triggers: TypeScript, type safety, any, 型安全, 型カバレッジ, strict mode.
+  最大型カバレッジのためのTypeScript型安全パターンとベストプラクティス。
+  TypeScriptコードの型問題レビュー、`any`型の排除、または
+  type safety, 型安全, 型カバレッジ, strict mode に言及した時に使用。
 allowed-tools: [Read, Grep, Glob, Task]
 agent: type-safety-reviewer
+context: fork
 user-invocable: false
 ---
 
@@ -26,7 +28,7 @@ user-invocable: false
 
 型カバレッジ >= 95%。Any使用 = 0。Strictモード全て有効。
 
-## 参考
+## 参照
 
 | トピック   | ファイル                      |
 | ---------- | ----------------------------- |

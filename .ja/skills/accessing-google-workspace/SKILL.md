@@ -1,20 +1,20 @@
 ---
 name: accessing-google-workspace
 description: >
-  gcloud CLI を使用して Google Sheets/Docs にアクセス。
-  ユーザーが Google Sheets/Docs の URL を共有したとき、または
-  スプレッドシート, Sheets, Docs, Google ドキュメントに言及したときに使用。
+  gcloud CLI経由でGoogle SheetsとDocsにアクセスする。
+  Google Sheets/DocsのURLを共有した時、または
+  スプレッドシート, Sheets, Docs, Google ドキュメント に言及した時に使用。
 allowed-tools:
   - Bash
   - Read
 user-invocable: false
 ---
 
-# Google Workspace アクセス
+# Google Workspaceアクセス
 
-CLI 経由で Google Sheets/Docs にアクセスするスキル。
+CLI経由でGoogle SheetsとDocsにアクセスする。
 
-## URL 検出
+## URL検出
 
 | パターン                          | タイプ        |
 | --------------------------------- | ------------- |
@@ -45,8 +45,8 @@ gdoc "URL" md
 
 ## フォーマット選択
 
-| データ種別     | 推奨フォーマット     |
-| -------------- | -------------------- |
-| 表形式データ   | `json` (JSONL)       |
-| 文書・仕様書   | `md` (Markdown)      |
-| シンプルな取得 | デフォルト (CSV/txt) |
+| データタイプ      | 推奨フォーマット     |
+| ----------------- | -------------------- |
+| 表形式データ      | `json` (JSONL)       |
+| ドキュメント/仕様 | `md` (Markdown)      |
+| シンプルな取得    | デフォルト (CSV/txt) |

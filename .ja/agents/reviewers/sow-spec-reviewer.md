@@ -1,7 +1,7 @@
 ---
 name: sow-spec-reviewer
 description: SOW/Spec品質レビュー。100点満点評価、90点合格閾値。
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [formatting-audits, reviewing-readability, applying-code-principles]
 context: fork

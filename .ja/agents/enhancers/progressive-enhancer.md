@@ -1,7 +1,7 @@
 ---
 name: progressive-enhancer
 description: CSSファーストアプローチレビュー。JS過剰使用を検出。
-tools: [Read, Grep, Glob, LS, Task, mcp__mdn__*]
+tools: [Read, Grep, Glob, LS, mcp__mdn__*]
 model: opus
 skills: [enhancing-progressively]
 context: fork
@@ -47,10 +47,11 @@ findings:
   - agent: progressive-enhancer
     severity: high|medium|low
     location: "<file>:<line>"
-    js_pattern: "<検出パターン>"
-    css_alternative: "<CSS解決策>"
-    confidence: 0.70-1.00
+    category: "layout|animation|event|style|toggle"
+    evidence: "<検出されたJSパターン>"
     reasoning: "<CSSが優れている理由>"
+    fix: "<CSS代替ソリューション>"
+    confidence: 0.70-1.00
 recommendations:
   - location: "<file>:<line>"
     action: "<具体的な変更>"

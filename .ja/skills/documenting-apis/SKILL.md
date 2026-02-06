@@ -1,8 +1,9 @@
 ---
 name: documenting-apis
 description: >
-  Generate API specification from codebase - endpoints, types, schemas.
-  Triggers: API docs, endpoint documentation, API仕様, OpenAPI, Swagger, REST API.
+  コードベースからAPI仕様を生成 - エンドポイント、型、スキーマ。
+  APIドキュメント生成、エンドポイントのドキュメント化、または
+  API docs, API仕様, OpenAPI, Swagger, REST API, endpoint documentation に言及した時に使用。
 allowed-tools: [Read, Write, Grep, Glob, Bash, Task]
 context: fork
 user-invocable: false
@@ -14,7 +15,7 @@ user-invocable: false
 
 | カテゴリ       | パターン                             |
 | -------------- | ------------------------------------ |
-| エンドポイント | Express, Fastify, Next.js, Flask 等  |
+| エンドポイント | Express, Fastify, Next.js, Flask等   |
 | 関数           | tree-sitter, TypeScript, JSDoc       |
 | 型             | interface, type, Zod, Pydantic       |
 | OpenAPI        | openapi.yaml, swagger.yaml           |

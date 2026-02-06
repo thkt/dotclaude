@@ -1,9 +1,11 @@
 ---
 name: integrating-storybook
 description: >
-  Storybook integration with spec.md. Auto-generates Stories from Component API.
-  Triggers: storybook, stories, component api, props, argTypes, variants, csf3.
+  spec.mdとのStorybook統合。Component APIからStoriesを自動生成。
+  Storybookストーリーの作成、コンポーネントAPIの定義、または
+  storybook, stories, props, argTypes, variants, CSF3 に言及した時に使用。
 allowed-tools: [Read, Write, Glob, Grep]
+user-invocable: false
 ---
 
 # Storybook統合
@@ -16,7 +18,7 @@ allowed-tools: [Read, Write, Glob, Grep]
 | CSF3          | Component Story Format 3 + autodocs        |
 | 自動生成      | `/code`がspec.mdからStoriesを生成          |
 
-## Component API場所
+## Component APIの配置場所
 
 フロントエンドコンポーネント実装時にspec.mdへ追加。
 

@@ -1,9 +1,10 @@
 ---
 name: documenting-architecture
 description: >
-  Generate architecture overview documentation from codebase analysis.
-  Uses tree-sitter-analyzer for precise code structure extraction.
-  Triggers: architecture overview, project structure, module diagram.
+  コードベース分析からアーキテクチャ概要ドキュメントを生成。
+  tree-sitter-analyzerで正確なコード構造を抽出する。
+  プロジェクト構造のドキュメント化、アーキテクチャ図の作成、または
+  architecture overview, project structure, アーキテクチャ, 構成図 に言及した時に使用。
 allowed-tools: [Read, Write, Grep, Glob, Bash, Task]
 context: fork
 user-invocable: false
@@ -13,14 +14,14 @@ user-invocable: false
 
 ## 検出
 
-| カテゴリ           | 対象                             |
-| ------------------ | -------------------------------- |
-| プロジェクト概要   | 技術スタック、フレームワーク、DB |
-| ディレクトリ構造   | treeコマンド出力                 |
-| モジュール構成     | Mermaid関係図                    |
-| 主要コンポーネント | クラス、関数、エントリポイント   |
-| 依存関係           | 外部パッケージ、内部モジュール   |
-| 統計               | ファイル数、行数、言語比率       |
+| カテゴリ           | 対象                                       |
+| ------------------ | ------------------------------------------ |
+| プロジェクト概要   | 技術スタック、フレームワーク、データベース |
+| ディレクトリ構造   | treeコマンド出力                           |
+| モジュール構成     | Mermaid関連図                              |
+| 主要コンポーネント | クラス、関数、エントリーポイント           |
+| 依存関係           | 外部パッケージ、内部モジュール             |
+| 統計               | ファイル数、行数、言語比率                 |
 
 ## プロジェクトパターン
 

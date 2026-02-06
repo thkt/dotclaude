@@ -1,10 +1,12 @@
 ---
 name: reviewing-silent-failures
 description: >
-  Silent failure detection patterns for frontend code.
-  Triggers: silent failure, empty catch, エラーハンドリング, 握りつぶし, swallowed error.
+  フロントエンドコードのサイレント障害検出パターン。
+  エラーハンドリングのレビュー、握りつぶされたエラーの検出、または
+  silent failure, empty catch, エラーハンドリング, 握りつぶし, swallowed error に言及した時に使用。
 allowed-tools: [Read, Grep, Glob, Task]
 agent: silent-failure-reviewer
+context: fork
 user-invocable: false
 ---
 
@@ -22,7 +24,7 @@ user-invocable: false
 | SF4 | サイレントな `value ?? defaultValue` | フォールバック使用時にログ                    |
 | SF4 | `data?.nested?.value`                | 予期せぬnullをチェックして報告                |
 
-## 参考
+## 参照
 
 | トピック | ファイル                           |
 | -------- | ---------------------------------- |

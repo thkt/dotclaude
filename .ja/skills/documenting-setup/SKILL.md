@@ -1,9 +1,10 @@
 ---
 name: documenting-setup
 description: >
-  Generate environment setup guide documentation from codebase analysis.
-  Detects package managers, required tools, environment variables, and startup commands.
-  Triggers: setup guide, environment setup, development environment.
+  コードベース分析から環境セットアップガイドドキュメントを生成。
+  パッケージマネージャ、必要なツール、環境変数、起動コマンドを検出する。
+  セットアップガイド作成、環境ドキュメント化、または
+  setup guide, environment setup, 環境構築, 開発環境 に言及した時に使用。
 allowed-tools: [Read, Write, Grep, Glob, Bash, Task]
 context: fork
 user-invocable: false
@@ -33,7 +34,7 @@ user-invocable: false
 | poetry     | `pyproject.toml`, `poetry.lock` |
 | cargo      | `Cargo.toml`, `Cargo.lock`      |
 
-## 参考
+## 参照
 
 | トピック | ファイル                    |
 | -------- | --------------------------- |

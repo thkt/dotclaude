@@ -1,7 +1,7 @@
 ---
 name: testability-reviewer
 description: テスト可能なコード設計レビュー。DIパターン、純粋関数、モックフレンドリーなアーキテクチャ。
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-testability, generating-tdd-tests, applying-code-principles]
 context: fork

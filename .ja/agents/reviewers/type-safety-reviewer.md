@@ -1,10 +1,11 @@
 ---
 name: type-safety-reviewer
 description: TypeScript型安全性レビュー。any使用、型カバレッジギャップ、strictモード準拠を特定。
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-type-safety, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # 型安全性レビューアー

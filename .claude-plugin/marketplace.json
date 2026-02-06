@@ -67,7 +67,9 @@
         "./agents/reviewers/sow-spec-reviewer.md",
         "./agents/explorers/feature-explorer.md",
         "./agents/architects/feature-architect.md",
-        "./agents/analyzers/code-flow-analyzer.md"
+        "./agents/analyzers/code-flow-analyzer.md",
+        "./agents/reviewers/test-coverage-reviewer.md",
+        "./agents/reviewers/type-design-reviewer.md"
       ]
     },
     {
@@ -83,7 +85,10 @@
       "keywords": ["fix", "quick", "polish", "simplify"],
       "category": "Quick Actions",
       "commands": ["./commands/fix.md", "./commands/polish.md"],
-      "agents": ["./agents/resolvers/build-error-resolver.md"]
+      "agents": [
+        "./agents/resolvers/build-error-resolver.md",
+        "./agents/enhancers/code-simplifier.md"
+      ]
     },
     {
       "name": "git-utilities",
@@ -208,7 +213,11 @@
         "./skills/web-design-guidelines/SKILL.md",
         "./skills/vercel-react-best-practices/SKILL.md",
         "./skills/consulting-gemini/SKILL.md",
-        "./skills/accessing-google-workspace/SKILL.md"
+        "./skills/accessing-google-workspace/SKILL.md",
+        "./skills/accessing-slack/SKILL.md",
+        "./skills/generating-dummy-text/SKILL.md",
+        "./skills/utilizing-llms-txt/SKILL.md",
+        "./skills/utilizing-worktrees/SKILL.md"
       ]
     },
     {

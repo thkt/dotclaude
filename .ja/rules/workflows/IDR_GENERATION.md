@@ -1,3 +1,9 @@
+---
+paths:
+  - ".claude/hooks/lifecycle/**"
+  - ".claude/workspace/planning/**"
+---
+
 # IDR (Implementation Decision Record) 生成
 
 git pre-commit フックによるコミット時の実装決定記録。

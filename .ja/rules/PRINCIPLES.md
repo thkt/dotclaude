@@ -19,70 +19,9 @@
 | コンテキスト | AI支援開発                     | AIが生成、人間が検証                   | AIツール使用時           |
 | コンテキスト | TIDYINGS                       | 作業しながらクリーン                   | 開発中                   |
 
-## 依存グラフ
-
-```mermaid
-graph TD
-    %% === ノード定義（階層別） ===
-    OR[オッカムの剃刀]
-    PE[プログレッシブエンハンスメント]
-    RC[読みやすいコード]
-    DRY[DRY]
-    YAGNI[YAGNI]
-    SOLID[SOLID]
-    LA[リーキー抽象化]
-    ML[ミラーの法則]
-    LoD[デメテルの法則]
-    TDD[TDD/ベイビーステップ]
-    CP[Container/Presentational]
-    TIDY[TIDYINGS]
-    AI[AI支援開発]
-    TD[テスト設計]
-    RT[Result型]
-    SI[Strong Inference]
-
-    %% === エッジ（オッカムの剃刀から） ===
-    OR --> PE & RC & DRY
-    OR -.-> SOLID & LA
-    OR --> YAGNI
-    OR --> SI
-
-    %% === エッジ（普遍的原則から） ===
-    RC --> ML & LoD
-    PE --> TDD
-    RC --> RT & TIDY & CP
-    DRY -.-> TIDY
-    SOLID --> CP
-    SI --> AI
-
-    %% === エッジ（適用プラクティスから） ===
-    TDD --> AI & TD
-
-    %% === スタイル ===
-    classDef meta fill:#ff6b6b,stroke:#c92a2a,stroke-width:3px,color:#fff
-    classDef universal fill:#4dabf7,stroke:#1971c2,stroke-width:2px,color:#fff
-    classDef applied fill:#51cf66,stroke:#2f9e44,stroke-width:2px,color:#fff
-    classDef contextual fill:#ffd43b,stroke:#fab005,stroke-width:2px,color:#000
-    classDef scientific fill:#e599f7,stroke:#ae3ec9,stroke-width:2px,color:#fff
-
-    class OR meta
-    class PE,RC,DRY,SI universal
-    class TDD,CP,TIDY,AI,TD,RT applied
-    class SOLID,YAGNI,LoD,LA contextual
-    class ML scientific
-```
-
-| 色  | タイプ                 | 説明                                  |
-| --- | ---------------------- | ------------------------------------- |
-| 赤  | メタ原則               | オッカムの剃刀 - すべての複雑さを問う |
-| 青  | 普遍的                 | すべての判断にデフォルトで適用        |
-| 緑  | 適用されるプラクティス | 具体的な実装パターン                  |
-| 黄  | コンテキスト依存       | 状況が要求するときに適用              |
-| 紫  | 科学的                 | 認知科学に裏付けられている            |
-
 ## 主要な関係
 
-| 関係                              | 理由                           |
+| 関係                              | 重要な理由                     |
 | --------------------------------- | ------------------------------ |
 | オッカムの剃刀 ⟷ SOLID            | バランス: 構造 vs 過剰設計     |
 | オッカムの剃刀 ⟷ リーキー抽象化   | 複雑さより不完全さを受け入れる |
@@ -110,27 +49,6 @@ graph TD
 - レビューなしでAI出力を受け入れる → AI支援開発を適用
 - 単一仮説を正しいと仮定 → Strong Inferenceを適用
 
-## コマンド
-
-| コマンド    | 主要原則              | 副次原則                          |
-| ----------- | --------------------- | --------------------------------- |
-| `/think`    | SOLID、オッカムの剃刀 | プログレッシブエンハンスメント    |
-| `/research` | Strong Inference      | コンテキストのためのすべての原則  |
-| `/code`     | TDD、ベイビーステップ | 読みやすいコード、DRY、AI支援開発 |
-| `/test`     | TDD                   | デメテルの法則、AI支援開発        |
-| `/fix`      | オッカムの剃刀        | TIDYINGS                          |
-| `/audit`    | すべての原則          | 優先順序、Strong Inference        |
-
 ## 最終的な知恵
 
-最高の原則は、原則を適用しないときを知ることである。
-
-迷ったら:
-
-1. 巧妙よりシンプルを選ぶ
-2. 抽象より具体を選ぶ
-3. 完璧より動作を選ぶ
-4. DRYより明確さを選ぶ
-5. 純粋より実用的を選ぶ
-
-覚えておく: 原則はルールではなくツール。目標は動作する保守可能なソフトウェア。
+迷ったら: シンプル > 巧妙、具体 > 抽象、動作 > 完璧、明確 > DRY。

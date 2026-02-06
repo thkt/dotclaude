@@ -1,10 +1,12 @@
 ---
 name: optimizing-performance
 description: >
-  Frontend performance optimization with data-driven approach.
-  Triggers: performance, Web Vitals, LCP, FID, CLS, パフォーマンス最適化, 速度改善, bundle size.
+  データ駆動アプローチによるフロントエンドパフォーマンス最適化。
+  ページロード時間の最適化、Web Vitalsの改善、または
+  performance, Web Vitals, LCP, FID, CLS, パフォーマンス最適化, 速度改善, bundle size に言及した時に使用。
 allowed-tools: [Read, Grep, Glob, Task, Bash(agent-browser:*), mcp__mdn__*]
 agent: performance-reviewer
+context: fork
 user-invocable: false
 ---
 
@@ -12,11 +14,11 @@ user-invocable: false
 
 ## Core Web Vitals
 
-| メトリクス | ターゲット | 測定対象             |
-| ---------- | ---------- | -------------------- |
-| LCP        | <2.5秒     | 最大コンテンツの描画 |
-| FID        | <100ms     | 初回入力遅延         |
-| CLS        | <0.1       | 累積レイアウトシフト |
+| メトリクス | ターゲット | 測定対象                 |
+| ---------- | ---------- | ------------------------ |
+| LCP        | <2.5秒     | Largest Contentful Paint |
+| FID        | <100ms     | First Input Delay        |
+| CLS        | <0.1       | Cumulative Layout Shift  |
 
 ## ワークフロー
 
@@ -25,7 +27,7 @@ user-invocable: false
 3. 一度に一つの変更
 4. 再測定
 
-## 参考
+## 参照
 
 | トピック | ファイル                            |
 | -------- | ----------------------------------- |

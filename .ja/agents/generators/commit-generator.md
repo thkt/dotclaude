@@ -5,6 +5,7 @@ tools: [Bash]
 model: opus
 skills: [utilizing-cli-tools]
 context: fork
+memory: project
 ---
 
 # コミットメッセージジェネレーター
@@ -39,50 +40,22 @@ diffの内容からタイプを推測:
 ## 例
 
 ```text
-# Good
 feat(auth): add OAuth2 authentication support
-fix(api): resolve timeout in user endpoint
-
-# Bad
-Fixed bug          # タイプなし、曖昧
-feat: Added new.   # 大文字、ピリオド
+feat(api)!: remove deprecated endpoints  # BREAKING CHANGE
 ```
 
-## 破壊的変更
-
-```text
-feat(api)!: remove deprecated endpoints
-
-BREAKING CHANGE: /v1/users removed. Use /v2/users.
-```
-
-## コミット実行（サンドボックス互換）
-
-sandbox は stdin リダイレクトをブロック。ファイルベースのコミットを使用:
+## コミット実行
 
 ```bash
-# ❌ 失敗: heredoc を git commit へ
-git commit -m "$(cat <<'EOF'
-message
-EOF
-)"
-
-# ✅ 動作: heredoc をファイルへ
+# ファイルベース（複数行）
 cat > /tmp/claude/commit-msg.txt << 'EOF'
-feat(workflow): implement test runner
-
-Multi-line description here.
+<message>
 EOF
-
 git commit -F /tmp/claude/commit-msg.txt
 mv /tmp/claude/commit-msg.txt ~/.Trash/ 2>/dev/null || true
-```
 
-代替案（一時ファイル不要）:
-
-```bash
-git commit -m "feat(workflow): implement test runner" \
-           -m "Multi-line description here."
+# 1行の代替案
+git commit -m "subject" -m "body"
 ```
 
 ## エラーハンドリング
@@ -94,13 +67,18 @@ git commit -m "feat(workflow): implement test runner" \
 
 ## 出力
 
-構造化YAMLを返す:
+3候補を構造化YAML配列で返す:
 
 ```yaml
-type: <type>
-scope: <scope> # 任意
-description: <description>
-body: | # 任意
-  <本文>
-footer: <footer> # 任意
+candidates:
+  - type: <type>
+    scope: <scope>
+    description: <description>
+    body: <body> # 任意
+    footer: <footer> # 任意
+  - type: <type>
+    scope: <scope>
+    description: <description>
+  - type: <type>
+    description: <description>
 ```

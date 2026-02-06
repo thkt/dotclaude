@@ -1,10 +1,11 @@
 ---
 name: silent-failure-reviewer
 description: サイレント障害、空のcatchブロック、未処理のPromise拒否を検出。
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-silent-failures, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # サイレント障害レビューアー

@@ -1,7 +1,7 @@
 ---
 name: design-pattern-reviewer
 description: Reactデザインパターンとコンポーネントアーキテクチャレビュー。
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [applying-code-principles, applying-frontend-patterns]
 context: fork

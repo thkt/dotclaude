@@ -1,10 +1,11 @@
 ---
 name: security-reviewer
 description: 高信頼度フィルタリングを備えたOWASP Top 10ベースのセキュリティ脆弱性検出。信頼度>80%のみ報告。
-tools: [Read, Grep, Glob, LS, Task]
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-security, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # セキュリティレビューアー

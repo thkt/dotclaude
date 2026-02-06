@@ -1,14 +1,15 @@
 ---
 name: documenting-domains
 description: >
-  Generate domain documentation from codebase analysis - entities, glossary, relationships.
-  Triggers: domain model, entity diagram, ドメインモデル, 用語集, glossary, ubiquitous language.
+  コードベース分析からドメインドキュメントを生成 - エンティティ、用語集、関連。
+  ドメインモデル分析、用語集作成、または
+  domain model, entity diagram, ドメインモデル, 用語集, glossary, ubiquitous language に言及した時に使用。
 allowed-tools: [Read, Write, Grep, Glob, Bash, Task]
 context: fork
 user-invocable: false
 ---
 
-# ドメイン理解生成
+# ドメイン理解の生成
 
 ## 検出
 
@@ -17,7 +18,7 @@ user-invocable: false
 | エンティティ     | class, interface, dataclass, Prisma, ORM      |
 | 不変条件         | バリデーションロジック、制約、必須フィールド  |
 | ドメイン用語     | クラス/関数名、コメント、JSDoc                |
-| 関係             | エンティティ参照、継承、インポート            |
+| 関連             | エンティティ参照、継承、import                |
 | ビジネスルール   | バリデータ、ポリシー、ドメインサービス        |
 | ドメインイベント | イベントクラス、EventEmitter、pub/subパターン |
 
