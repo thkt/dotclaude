@@ -27,15 +27,16 @@ argument-hint: "[対象ファイルまたはスコープ]"
 | ---- | ---------------------------------------------------------- |
 | 1    | プロジェクトの静的解析ツールを実行（下記 Pre-flight 参照） |
 | 2    | レビューチームを生成（下記 Team Workflow 参照）            |
-| 3    | Compound Reviewer が発見事項を Integrator に DM            |
-| 4    | Integrator が反論検証 + 統合 → 最終 YAML                   |
-| 5    | スナップショット保存（下記の命名規則参照）                 |
-| 6    | 前回スナップショットと比較、差分を表示                     |
-| 7    | テンプレートを使用してレポート出力                         |
+| 3    | Compound Reviewer が発見事項を `challenger` に DM          |
+| 4    | Challenger が発見事項を検証、`integrator` に DM            |
+| 5    | Integrator が統合 → 最終 YAML                              |
+| 6    | スナップショット保存（下記の命名規則参照）                 |
+| 7    | 前回スナップショットと比較、差分を表示                     |
+| 8    | テンプレートを使用してレポート出力                         |
 
 ## Team Workflow
 
-3つの Compound Reviewer と 1つの Progressive Integrator からなる協調チームを生成。
+3つの Compound Reviewer、1つの Challenger、1つの Integrator からなる協調チームを生成。
 
 ### チーム構成
 
@@ -44,6 +45,7 @@ argument-hint: "[対象ファイルまたはスコープ]"
 ├── reviewer-foundation  (compound-reviewer-foundation)
 ├── reviewer-safety      (compound-reviewer-safety)
 ├── reviewer-quality     (compound-reviewer-quality)
+├── challenger           (devils-advocate)
 └── integrator           (progressive-integrator)
 ```
 
@@ -51,25 +53,26 @@ argument-hint: "[対象ファイルまたはスコープ]"
 
 | Step | アクター   | アクション                                                    |
 | ---- | ---------- | ------------------------------------------------------------- |
-| 1    | Leader     | `Teammate.spawnTeam("audit-{timestamp}")`                     |
-| 2    | Leader     | TaskCreate x 4（3 Reviewer + Integrator）                     |
-| 3    | Leader     | Task で `team_name` 指定して4つの Teammate を生成             |
-| 4    | Reviewers  | ドメインエージェントを内部実行、発見事項を `integrator` に DM |
-| 5    | Integrator | 各バッチを反論検証（devils-advocate）、検証済み発見事項を蓄積 |
+| 1    | Leader     | `TeamCreate("audit-{timestamp}")`                             |
+| 2    | Leader     | TaskCreate x 5（3 Reviewer + Challenger + Integrator）        |
+| 3    | Leader     | Task で `team_name` 指定して5つの Teammate を生成             |
+| 4    | Reviewers  | ドメインエージェントを内部実行、発見事項を `challenger` に DM |
+| 5    | Challenger | 各バッチを検証、チャレンジ済み結果を `integrator` に DM       |
 | 6    | Leader     | 全 Reviewer の完了を待機                                      |
 | 7    | Integrator | 最終統合 YAML レポートを作成                                  |
 | 8    | Leader     | SendMessage `shutdown_request` を全 Teammate に送信           |
 
 ### Teammate 生成
 
-| Teammate            | subagent_type                | ドメイン                                         |
+| Teammate            | subagent_type                | 役割                                             |
 | ------------------- | ---------------------------- | ------------------------------------------------ |
 | reviewer-foundation | compound-reviewer-foundation | code-quality + progressive-enhancer + root-cause |
 | reviewer-safety     | compound-reviewer-safety     | security + silent-failure + type-safety          |
 | reviewer-quality    | compound-reviewer-quality    | design-pattern + testability + perf + a11y + doc |
-| integrator          | progressive-integrator       | devils-advocate challenge + integration          |
+| challenger          | devils-advocate              | 発見事項をチャレンジし、偽陽性を削減             |
+| integrator          | progressive-integrator       | パターン検出 + 優先度付け + レポート             |
 
-エージェント: [agents/teams/](../agents/teams/)
+エージェント: [agents/teams/](../agents/teams/), [agents/critics/](../agents/critics/)
 
 ### エラーハンドリング
 
@@ -133,8 +136,9 @@ SNAPSHOT="$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).yaml
 
 | チェック                            | 必須 |
 | ----------------------------------- | ---- |
-| 4つの Teammate でチーム生成した？   | Yes  |
+| 5つの Teammate でチーム生成した？   | Yes  |
 | 全 Reviewer の発見事項を収集した？  | Yes  |
+| Challenger が発見事項を検証した？   | Yes  |
 | Integrator が最終 YAML を作成した？ | Yes  |
 | スナップショットを保存した？        | Yes  |
 | 差分比較を表示した？                | Yes  |

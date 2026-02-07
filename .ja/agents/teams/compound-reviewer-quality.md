@@ -23,7 +23,7 @@ skills:
 
 # Compound Reviewer: Quality
 
-design-pattern、testability、test-coverage、performance、accessibility、document のレビュードメインを実行し、統合された findings を `integrator` に DM します。
+design-pattern、testability、test-coverage、performance、accessibility、document のレビュードメインを実行し、統合された findings を `challenger` に DM します。
 
 ## ドメイン
 
@@ -44,11 +44,11 @@ design-pattern、testability、test-coverage、performance、accessibility、doc
 | 2        | Task でドメイン 1-2,4 を起動 (+ 必要に応じて条件付きドメイン 3,5,6) | parallel |
 | 3        | すべての findings を収集                                            | --       |
 | 4        | 標準スキーマ (evidence/reasoning/fix) に正規化                      | --       |
-| 5        | SendMessage で `integrator` に統合 findings を送信                  | --       |
+| 5        | SendMessage で `challenger` に統合 findings を送信                  | --       |
 
 ## 出力
 
-SendMessage を使用して以下の YAML フォーマットで `integrator` チームメイトに findings を送信:
+SendMessage を使用して以下の YAML フォーマットで `challenger` チームメイトに findings を送信:
 
 ```yaml
 domain: quality

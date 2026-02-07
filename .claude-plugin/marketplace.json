@@ -69,7 +69,11 @@
         "./agents/architects/feature-architect.md",
         "./agents/analyzers/code-flow-analyzer.md",
         "./agents/reviewers/test-coverage-reviewer.md",
-        "./agents/reviewers/type-design-reviewer.md"
+        "./agents/reviewers/type-design-reviewer.md",
+        "./agents/thinkers/thinker-pragmatist.md",
+        "./agents/thinkers/thinker-architect.md",
+        "./agents/thinkers/thinker-advocate.md",
+        "./agents/teams/think-synthesizer.md"
       ]
     },
     {
