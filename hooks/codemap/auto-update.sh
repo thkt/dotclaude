@@ -3,7 +3,7 @@
 # Failure mode: fail-open (skip update on error)
 # Triggers: 3+ new files, entry point changes, dependency changes
 
-set -euo pipefail
+set +e
 
 EXCLUDE_DIRS=(
   node_modules .git dist build __pycache__ target .next coverage

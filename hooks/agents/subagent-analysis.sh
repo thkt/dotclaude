@@ -8,43 +8,21 @@ LOG_DIR="$HOME/.claude/logs/agents"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
 INPUT=$(cat)
-AGENT_ID=$(echo "$INPUT" | jq -r '.agent_id // "unknown"')
-TRANSCRIPT_PATH=$(echo "$INPUT" | jq -r '.agent_transcript_path // ""')
+IFS=$'\t' read -r AGENT_ID TRANSCRIPT_PATH <<< "$(echo "$INPUT" | jq -r '[(.agent_id // "unknown"), (.agent_transcript_path // "")] | @tsv' 2>/dev/null)"
 
 if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
   AGENT_LOG_DIR="$LOG_DIR/$AGENT_ID"
   mkdir -p -m 700 "$AGENT_LOG_DIR"
 
-  FULL_LOG="$AGENT_LOG_DIR/full-${TIMESTAMP}.json"
-  cp "$TRANSCRIPT_PATH" "$FULL_LOG"
-  chmod 600 "$FULL_LOG"
+  LOG_FILE="$AGENT_LOG_DIR/transcript-${TIMESTAMP}.json"
+  cp "$TRANSCRIPT_PATH" "$LOG_FILE"
+  chmod 600 "$LOG_FILE"
+  ln -sf "$LOG_FILE" "$AGENT_LOG_DIR/latest.json"
 
-  SUMMARY_LOG="$AGENT_LOG_DIR/summary-${TIMESTAMP}.json"
-  tail -100 "$TRANSCRIPT_PATH" > "$SUMMARY_LOG"
-  chmod 600 "$SUMMARY_LOG"
-
-  ln -sf "$FULL_LOG" "$AGENT_LOG_DIR/latest-full.json"
-  ln -sf "$SUMMARY_LOG" "$AGENT_LOG_DIR/latest-summary.json"
+  find "$AGENT_LOG_DIR" -name "transcript-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
 
   LINE_COUNT=$(wc -l < "$TRANSCRIPT_PATH" | tr -d ' ')
-  FILE_SIZE=$(stat -f%z "$TRANSCRIPT_PATH" 2>/dev/null || stat -c%s "$TRANSCRIPT_PATH" 2>/dev/null || echo "unknown")
-
-  META_LOG="$AGENT_LOG_DIR/meta-${TIMESTAMP}.json"
-  jq -n \
-    --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    --arg id "$AGENT_ID" \
-    --arg tp "$TRANSCRIPT_PATH" \
-    --argjson lc "$LINE_COUNT" \
-    --argjson fs "${FILE_SIZE:-0}" \
-    --arg full "$FULL_LOG" \
-    --arg summary "$SUMMARY_LOG" \
-    '{timestamp:$ts, agent_id:$id, transcript_path:$tp, line_count:$lc, file_size_bytes:$fs, log_files:{full:$full, summary:$summary}}' \
-    > "$META_LOG"
-  chmod 600 "$META_LOG"
-
-  find "$AGENT_LOG_DIR" \( -name "full-*.json" -o -name "summary-*.json" -o -name "meta-*.json" \) -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
-
-  echo "✓ Agent log saved: $AGENT_ID (${LINE_COUNT} lines, ${FILE_SIZE} bytes)"
+  echo "✓ Agent log saved: $AGENT_ID (${LINE_COUNT} lines)"
 else
   echo "⚠ Agent transcript not found: $AGENT_ID" >&2
 fi

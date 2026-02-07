@@ -9,6 +9,8 @@ INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 
 [ -z "$FILE_PATH" ] && exit 0
-[ ! -f "$FILE_PATH" ] && exit 0
 
-[ -n "$(tail -c1 "$FILE_PATH")" ] && echo >> "$FILE_PATH"
+EXPANDED_PATH="${FILE_PATH/#\~/$HOME}"
+[ ! -f "$EXPANDED_PATH" ] && exit 0
+
+[ -n "$(tail -c1 "$EXPANDED_PATH")" ] && echo >> "$EXPANDED_PATH" 2>/dev/null || echo "warning: cannot append newline to $FILE_PATH" >&2

@@ -21,21 +21,8 @@ esac
 EXPANDED_PATH="${FILE_PATH/#\~/$HOME}"
 FILE_DIR=$(dirname "$EXPANDED_PATH")
 
-# Find config file walking up from directory
-find_config() {
-  local dir="$1"
-  shift
-  dir=$(cd "$dir" 2>/dev/null && pwd) || return 1
-  while [ "$dir" != "/" ]; do
-    for marker in "$@"; do
-      [ -f "$dir/$marker" ] && echo "$dir" && return 0
-    done
-    dir=$(dirname "$dir")
-  done
-  return 1
-}
+FIND_CONFIG="${HOME}/.claude/scripts/find-config-root.sh"
 
-# Run formatter, preferring local node_modules binary over npx
 run_fmt() {
   local name="$1"
   local root="$2"
@@ -47,12 +34,11 @@ run_fmt() {
   fi
 }
 
-BIOME_ROOT=$(find_config "$FILE_DIR" "biome.json" "biome.jsonc") || BIOME_ROOT=""
-PRETTIER_ROOT=$(find_config "$FILE_DIR" \
+BIOME_ROOT=$("$FIND_CONFIG" "$FILE_DIR" "biome.json" "biome.jsonc" 2>/dev/null) || BIOME_ROOT=""
+PRETTIER_ROOT=$("$FIND_CONFIG" "$FILE_DIR" \
   ".prettierrc" ".prettierrc.json" ".prettierrc.yaml" ".prettierrc.yml" \
-  ".prettierrc.js" ".prettierrc.cjs" "prettier.config.js" "prettier.config.cjs") || PRETTIER_ROOT=""
+  ".prettierrc.js" ".prettierrc.cjs" "prettier.config.js" "prettier.config.cjs" 2>/dev/null) || PRETTIER_ROOT=""
 
-# biome-supported extensions
 case "$EXT" in
   ts|tsx|js|jsx|json|css) BIOME_SUPPORTED=1 ;;
   *) BIOME_SUPPORTED=0 ;;

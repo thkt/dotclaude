@@ -3,7 +3,7 @@
 # Failure mode: fail-open (skip on error)
 # Reference: https://zenn.dev/st_tech/articles/897e52be12232f
 
-set -euo pipefail
+set +e
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')

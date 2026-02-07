@@ -18,6 +18,7 @@ esac
 
 EXPANDED_PATH="${FILE_PATH/#\~/$HOME}"
 FILE_DIR=$(dirname "$EXPANDED_PATH")
+[ -x "${HOME}/.claude/scripts/find-config-root.sh" ] || { echo "⚠ find-config-root.sh not found, skipping tsc" >&2; exit 0; }
 PROJECT_ROOT=$("${HOME}/.claude/scripts/find-config-root.sh" "$FILE_DIR" "tsconfig.json" 2>/dev/null) || exit 0
 
 command -v npx &> /dev/null || exit 0

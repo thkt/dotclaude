@@ -2,98 +2,134 @@
 
 フックシステムの設計意図と仕組みを説明します。
 
-📌 **[日本語版](../.ja/docs/HOOKS.md)**
-
 ## Overview
 
 ```mermaid
 graph TD
     subgraph Events["Claude Code Events"]
-        PRE[PreToolCall]
-        POST[PostToolCall]
+        PRE[PreToolUse]
+        POST[PostToolUse]
+        PERM[PermissionRequest]
         NOTIFY[Notification]
         STOP[Stop]
+        SUB_START[SubagentStart]
+        SUB_STOP[SubagentStop]
     end
 
     subgraph Hooks["Hook Categories"]
-        GUARD[guardrails/]
+        SEC[security/]
         LINT[lint/]
         FORMAT[format/]
         LIFE[lifecycle/]
-        SEC[security/]
+        CODEMAP[codemap/]
+        AGENTS[agents/]
+        VIEWER[viewer/]
         NOTIFY_H[notifications/]
     end
 
-    PRE --> GUARD
     PRE --> SEC
-    POST --> LINT
+    PRE --> LINT
     POST --> FORMAT
-    POST --> LIFE
+    POST --> LINT
+    POST --> VIEWER
+    PERM --> SEC
     STOP --> NOTIFY_H
+    SUB_START --> AGENTS
+    SUB_STOP --> AGENTS
+    LIFE -.->|statusLine| Events
 ```
 
 ## Hook Categories
 
-| Category         | Trigger      | Purpose                      |
-| ---------------- | ------------ | ---------------------------- |
-| `guardrails/`    | PreToolCall  | 危険な操作をブロック         |
-| `security/`      | PreToolCall  | セキュリティチェック         |
-| `lint/`          | PostToolCall | コード品質チェック           |
-| `format/`        | PostToolCall | フォーマット適用             |
-| `lifecycle/`     | git hooks    | IDR生成、ステータスライン    |
-| `notifications/` | Stop         | 完了通知                     |
-| `codemap/`       | PostToolCall | アーキテクチャマップ更新     |
-| `scheduled/`     | Cron         | 定期タスク                   |
-| `agents/`        | -            | エージェント用ユーティリティ |
+| Category | Trigger | Purpose |
+| --- | --- | --- |
+| `security/` | PreToolUse | Bash safety, permission control |
+| `lint/` | Pre/PostToolUse | Code quality checks |
+| `format/` | PostToolUse | Auto-formatting |
+| `lifecycle/` | statusLine | Status line, PR cache |
+| `codemap/` | PostToolUse | Architecture map update |
+| `agents/` | Subagent* | Agent logging |
+| `viewer/` | PostToolUse | SOW/Spec/IDR viewer |
+| `notifications/` | Stop | Completion notification |
 
 ## Key Hooks
 
+### security/
+
+| Hook                    | Event             | Failure Mode | Purpose                    |
+| ----------------------- | ----------------- | ------------ | -------------------------- |
+| `bash-safety.sh`        | PreToolUse(Bash)  | fail-closed  | 危険コマンドをブロック     |
+| `permission-request.sh` | PermissionRequest | fail-closed  | 自動承認/拒否の判定        |
+
+### lint/
+
+| Hook                  | Event              | Failure Mode | Purpose                |
+| --------------------- | ------------------ | ------------ | ---------------------- |
+| `pre-edit-read.sh`    | PreToolUse(Edit)   | fail-open    | Edit前にファイル読込   |
+| `typescript-check.sh` | PostToolUse(Write) | fail-open    | tsc --noEmit 実行      |
+
+### format/
+
+| Hook              | Event                      | Failure Mode | Purpose            |
+| ----------------- | -------------------------- | ------------ | ------------------ |
+| `eof-newline.sh`  | PostToolUse(Write)         | fail-open    | EOF改行を保証      |
+| `format.sh`       | PostToolUse(Write/Edit)    | fail-open    | biome/prettier実行 |
+
 ### lifecycle/
 
-| Hook                | Trigger    | Output               |
-| ------------------- | ---------- | -------------------- |
-| `idr-pre-commit.sh` | git commit | `idr-N.md` 生成      |
-| `statusline.sh`     | -          | ステータスライン表示 |
-| `_utils.sh`         | -          | 共通ユーティリティ   |
+| Hook             | Trigger    | Purpose              |
+| ---------------- | ---------- | -------------------- |
+| `statusline.sh`  | statusLine | ステータスライン表示 |
+| `_pr-cache.sh`   | (sourced)  | PR情報のキャッシュ   |
 
-### guardrails/
+### agents/
 
-危険なコマンドをブロック。
+| Hook                  | Event         | Failure Mode | Purpose              |
+| --------------------- | ------------- | ------------ | -------------------- |
+| `subagent-start.sh`   | SubagentStart | fail-open    | 開始ログ・通知音     |
+| `subagent-analysis.sh`| SubagentStop  | fail-open    | トランスクリプト保存 |
 
-```bash
-# 例: rm コマンドをブロック
-if [[ "$command" == *"rm "* ]]; then
-  echo "BLOCK: Use 'mv ~/.Trash/' instead of rm"
-  exit 1
-fi
-```
+### viewer/
+
+| Hook | Event | Failure Mode | Purpose |
+| --- | --- | --- | --- |
+| `ccplanview-open.sh` | PostToolUse(Write) | fail-open | Open SOW/Spec/IDR in viewer |
 
 ### codemap/
 
-```mermaid
-flowchart LR
-    C[Significant Commit] --> H[codemap hook]
-    H --> G[Generate .codemaps/]
-    G --> A[architecture.md]
-```
+| Hook              | Event | Failure Mode | Purpose                  |
+| ----------------- | ----- | ------------ | ------------------------ |
+| `auto-update.sh`  | -     | fail-open    | architecture.md 自動生成 |
 
 ## Configuration
 
-hooks は `settings.json` または `.claude/settings.local.json` で設定:
+hooks は `settings.json` で設定:
 
 ```json
 {
   "hooks": {
-    "PreToolCall": [
+    "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": ["~/.claude/hooks/guardrails/block-rm.sh"]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/security/bash-safety.sh",
+            "timeout": 2000
+          }
+        ]
       }
     ],
-    "PostToolCall": [
+    "PostToolUse": [
       {
-        "matcher": "Write",
-        "hooks": ["~/.claude/hooks/format/prettier.sh"]
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/format/format.sh",
+            "timeout": 5000
+          }
+        ]
       }
     ]
   }
@@ -110,44 +146,27 @@ hooks は `settings.json` または `.claude/settings.local.json` で設定:
 
 フックがエラーで終了しても、Claude Code は継続動作。
 
-### 3. Composable
+### 3. Fail-mode Convention
+
+- **fail-open** (`set +e`): エラー時はスキップして継続。大半のフックがこちら。
+- **fail-closed** (`set -euo pipefail`): エラー時はブロック。セキュリティフックのみ。
+
+### 4. Composable
 
 小さなフックを組み合わせて複雑な動作を実現。
 
 ## IDR (Implementation Decision Record)
 
-コミット時に自動生成される実装記録。
+コミット時に `claude-idr` バイナリで自動生成される実装記録。
 
 ```mermaid
 flowchart LR
-    C[git commit] --> H[idr-pre-commit.sh]
+    C[git commit] --> H[claude-idr]
     H --> F{SOW exists?}
     F -->|Yes| S["[SOW dir]/idr-N.md"]
     F -->|No| D["planning/YYYY-MM-DD/idr-N.md"]
 ```
 
-### IDR Content
-
-```markdown
-# IDR: [目的の要約]
-
-## 変更概要
-
-[1段落の要約]
-
-## 主要な変更
-
-### [file.md](file.md)
-
-[説明]
-[コードスニペット]
-
-## 設計判断
-
-[理由と代替案]
-```
-
 ## Related
 
-- [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh) — IDR生成フック
 - [Claude Code Hooks Docs](https://docs.anthropic.com/en/docs/claude-code/hooks)

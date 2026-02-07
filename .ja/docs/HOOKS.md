@@ -9,91 +9,129 @@
 ```mermaid
 graph TD
     subgraph Events["Claude Code イベント"]
-        PRE[PreToolCall]
-        POST[PostToolCall]
+        PRE[PreToolUse]
+        POST[PostToolUse]
+        PERM[PermissionRequest]
         NOTIFY[Notification]
         STOP[Stop]
+        SUB_START[SubagentStart]
+        SUB_STOP[SubagentStop]
     end
 
     subgraph Hooks["フックカテゴリ"]
-        GUARD[guardrails/]
+        SEC[security/]
         LINT[lint/]
         FORMAT[format/]
         LIFE[lifecycle/]
-        SEC[security/]
+        CODEMAP[codemap/]
+        AGENTS[agents/]
+        VIEWER[viewer/]
         NOTIFY_H[notifications/]
     end
 
-    PRE --> GUARD
     PRE --> SEC
-    POST --> LINT
+    PRE --> LINT
     POST --> FORMAT
-    POST --> LIFE
+    POST --> LINT
+    POST --> VIEWER
+    PERM --> SEC
     STOP --> NOTIFY_H
+    SUB_START --> AGENTS
+    SUB_STOP --> AGENTS
+    LIFE -.->|statusLine| Events
 ```
 
 ## フックカテゴリ
 
-| カテゴリ         | トリガー     | 目的                         |
-| ---------------- | ------------ | ---------------------------- |
-| `guardrails/`    | PreToolCall  | 危険な操作をブロック         |
-| `security/`      | PreToolCall  | セキュリティチェック         |
-| `lint/`          | PostToolCall | コード品質チェック           |
-| `format/`        | PostToolCall | フォーマット適用             |
-| `lifecycle/`     | git hooks    | IDR生成、ステータスライン    |
-| `notifications/` | Stop         | 完了通知                     |
-| `codemap/`       | PostToolCall | アーキテクチャマップ更新     |
-| `scheduled/`     | Cron         | 定期タスク                   |
-| `agents/`        | -            | エージェント用ユーティリティ |
+| カテゴリ | トリガー | 目的 |
+| --- | --- | --- |
+| `security/` | PreToolUse | Bash安全チェック、権限制御 |
+| `lint/` | Pre/PostToolUse | コード品質チェック |
+| `format/` | PostToolUse | フォーマット適用 |
+| `lifecycle/` | statusLine | ステータスライン、PRキャッシュ |
+| `codemap/` | PostToolUse | アーキテクチャマップ更新 |
+| `agents/` | Subagent* | エージェントログ・通知 |
+| `viewer/` | PostToolUse | SOW/Spec/IDRビューア連携 |
+| `notifications/` | Stop | 完了通知 |
 
 ## 主要フック
 
+### security/
+
+| フック                  | イベント          | 失敗モード  | 目的                     |
+| ----------------------- | ----------------- | ----------- | ------------------------ |
+| `bash-safety.sh`        | PreToolUse(Bash)  | fail-closed | 危険コマンドをブロック   |
+| `permission-request.sh` | PermissionRequest | fail-closed | 自動承認/拒否の判定      |
+
+### lint/
+
+| フック | イベント | 失敗モード | 目的 |
+| --- | --- | --- | --- |
+| `pre-edit-read.sh` | PreToolUse(Edit) | fail-open | Edit前にファイル読込 |
+| `typescript-check.sh` | PostToolUse(Write) | fail-open | tsc --noEmit 実行 |
+
+### format/
+
+| フック | イベント | 失敗モード | 目的 |
+| --- | --- | --- | --- |
+| `eof-newline.sh` | PostToolUse(Write) | fail-open | EOF改行を保証 |
+| `format.sh` | PostToolUse(Write/Edit) | fail-open | biome/prettier実行 |
+
 ### lifecycle/
 
-| フック              | トリガー   | 出力                 |
-| ------------------- | ---------- | -------------------- |
-| `idr-pre-commit.sh` | git commit | `idr-N.md` 生成      |
-| `statusline.sh`     | -          | ステータスライン表示 |
-| `_utils.sh`         | -          | 共通ユーティリティ   |
+| フック           | トリガー   | 目的                 |
+| ---------------- | ---------- | -------------------- |
+| `statusline.sh`  | statusLine | ステータスライン表示 |
+| `_pr-cache.sh`   | (sourced)  | PR情報のキャッシュ   |
 
-### guardrails/
+### agents/
 
-危険なコマンドをブロック。
+| フック | イベント | 失敗モード | 目的 |
+| --- | --- | --- | --- |
+| `subagent-start.sh` | SubagentStart | fail-open | 開始ログ・通知音 |
+| `subagent-analysis.sh` | SubagentStop | fail-open | トランスクリプト保存 |
 
-```bash
-# 例: rm コマンドをブロック
-if [[ "$command" == *"rm "* ]]; then
-  echo "BLOCK: Use 'mv ~/.Trash/' instead of rm"
-  exit 1
-fi
-```
+### viewer/
+
+| フック | イベント | 失敗モード | 目的 |
+| --- | --- | --- | --- |
+| `ccplanview-open.sh` | PostToolUse(Write) | fail-open | SOW/Spec/IDRをビューアで開く |
 
 ### codemap/
 
-```mermaid
-flowchart LR
-    C[重要なコミット] --> H[codemap hook]
-    H --> G[Generate .codemaps/]
-    G --> A[architecture.md]
-```
+| フック            | イベント | 失敗モード | 目的                     |
+| ----------------- | -------- | ---------- | ------------------------ |
+| `auto-update.sh`  | -        | fail-open  | architecture.md 自動生成 |
 
 ## 設定
 
-フックは `settings.json` または `.claude/settings.local.json` で設定:
+フックは `settings.json` で設定:
 
 ```json
 {
   "hooks": {
-    "PreToolCall": [
+    "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": ["~/.claude/hooks/guardrails/block-rm.sh"]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/security/bash-safety.sh",
+            "timeout": 2000
+          }
+        ]
       }
     ],
-    "PostToolCall": [
+    "PostToolUse": [
       {
-        "matcher": "Write",
-        "hooks": ["~/.claude/hooks/format/prettier.sh"]
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/format/format.sh",
+            "timeout": 5000
+          }
+        ]
       }
     ]
   }
@@ -110,44 +148,27 @@ flowchart LR
 
 フックがエラーで終了しても、Claude Code は継続動作。
 
-### 3. 組み合わせ可能
+### 3. 失敗モード規約
+
+- **fail-open** (`set +e`): エラー時はスキップして継続。大半のフックがこちら。
+- **fail-closed** (`set -euo pipefail`): エラー時はブロック。セキュリティフックのみ。
+
+### 4. 組み合わせ可能
 
 小さなフックを組み合わせて複雑な動作を実現。
 
 ## IDR（実装決定記録）
 
-コミット時に自動生成される実装記録。
+コミット時に `claude-idr` バイナリで自動生成される実装記録。
 
 ```mermaid
 flowchart LR
-    C[git commit] --> H[idr-pre-commit.sh]
+    C[git commit] --> H[claude-idr]
     H --> F{SOW exists?}
     F -->|Yes| S["[SOW dir]/idr-N.md"]
     F -->|No| D["planning/YYYY-MM-DD/idr-N.md"]
 ```
 
-### IDR の内容
-
-```markdown
-# IDR: [目的の要約]
-
-## 変更概要
-
-[1段落の要約]
-
-## 主要な変更
-
-### [file.md](file.md)
-
-[説明]
-[コードスニペット]
-
-## 設計判断
-
-[理由と代替案]
-```
-
 ## 関連
 
-- [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh) — IDR生成フック
 - [Claude Code Hooks Docs](https://docs.anthropic.com/en/docs/claude-code/hooks)

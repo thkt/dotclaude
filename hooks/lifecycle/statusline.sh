@@ -5,15 +5,6 @@ set +e
 # Failure mode: fail-open (partial display is acceptable)
 
 STDIN_INPUT=""
-CONTEXT_TOKENS=""
-CONTEXT_LIMIT=""
-CONTEXT_USED_PCT=""
-CONTEXT_REMAINING_PCT=""
-MODEL_NAME=""
-MODEL_ID=""
-SESSION_ID=""
-TRANSCRIPT_PATH=""
-SESSION_COST=""
 EXCEEDS_200K="false"
 LAST_TOOL=""
 TOOL_COUNT=0
@@ -23,7 +14,6 @@ if [ ! -t 0 ]; then
 fi
 
 if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
-    # Single jq call to extract all fields (was 12+ individual calls)
     PARSED=$(echo "$STDIN_INPUT" | jq -r '
       [
         (.model.display_name // ""),
@@ -32,14 +22,12 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
         (.transcript_path // ""),
         (.cost.total_cost_usd // ""),
         (.exceeds_200k_tokens // false),
-        # Context tokens: context_window.current_usage (v2.1+) > legacy fallbacks
         (if .context_window.current_usage != null then
           (.context_window.current_usage.input_tokens // 0) + (.context_window.current_usage.output_tokens // 0) +
           (.context_window.current_usage.cache_creation_input_tokens // 0) + (.context_window.current_usage.cache_read_input_tokens // 0)
         else
           .context.tokens_used // .context_tokens // .tokens.context // .usage.total_tokens // ""
         end),
-        # Context limit: context_window.context_window_size (v2.1+) > legacy fallbacks
         (.context_window.context_window_size // .context.limit // .context_limit // .tokens.limit // ""),
         (.context_window.used_percentage // ""),
         (.context_window.remaining_percentage // "")
@@ -50,7 +38,6 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
             EXCEEDS_200K CONTEXT_TOKENS CONTEXT_LIMIT CONTEXT_USED_PCT CONTEXT_REMAINING_PCT <<< "$PARSED"
     fi
 
-    # Fallback: read context tokens from transcript JSONL if stdin JSON had no usage data
     if { [ -z "$CONTEXT_TOKENS" ] || [ "$CONTEXT_TOKENS" = "null" ] || [ "$CONTEXT_TOKENS" = "" ]; } && \
        [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
         CONTEXT_TOKENS=$(tail -n 100 "$TRANSCRIPT_PATH" 2>/dev/null | \
@@ -64,7 +51,6 @@ if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
     fi
 fi
 
-# Context change tracking + tool info cache
 STATE_DIR="$HOME/.claude/cache"
 mkdir -p "$STATE_DIR"
 STATE_FILE="${STATE_DIR}/context-${SESSION_ID:-$$}.state"
@@ -81,7 +67,6 @@ if [ -n "$CONTEXT_TOKENS" ] && [ "$CONTEXT_TOKENS" != "null" ] && [ "$CONTEXT_TO
     CONTEXT_DELTA=$((CONTEXT_TOKENS - PREV_TOKENS))
 fi
 
-# Only read transcript when context has changed (skip costly tail+jq on cache hit)
 if [ "$CONTEXT_DELTA" -ne 0 ] 2>/dev/null && [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
     TOOL_INFO=$(tail -n 200 "$TRANSCRIPT_PATH" 2>/dev/null | \
         jq -s '[.[] | select(.type == "tool_use")] | last | .name // empty' 2>/dev/null)
@@ -96,7 +81,6 @@ else
     TOOL_COUNT="${CACHED_COUNT:-0}"
 fi
 
-# Save state (tokens + tool info)
 if [ -n "$CONTEXT_TOKENS" ] && [ "$CONTEXT_TOKENS" != "null" ] && [ "$CONTEXT_TOKENS" -gt 0 ] 2>/dev/null; then
     printf '%s\t%s\t%s\n' "$CONTEXT_TOKENS" "$LAST_TOOL" "$TOOL_COUNT" > "$STATE_FILE"
 fi
@@ -113,10 +97,12 @@ fi
 if [ -z "$CONTEXT_TOKENS" ] || [ "$CONTEXT_TOKENS" = "null" ]; then
     CONTEXT_TOKENS=0
 fi
+[[ "$CONTEXT_TOKENS" =~ ^[0-9]+$ ]] || CONTEXT_TOKENS=0
 
 if [ -z "$CONTEXT_LIMIT" ] || [ "$CONTEXT_LIMIT" = "null" ] || [ "$CONTEXT_LIMIT" = "0" ]; then
     CONTEXT_LIMIT=200000
 fi
+[[ "$CONTEXT_LIMIT" =~ ^[0-9]+$ ]] || CONTEXT_LIMIT=200000
 
 if [ "$CONTEXT_LIMIT" -gt 0 ] 2>/dev/null; then
     if [ -n "$CONTEXT_USED_PCT" ] && [ "$CONTEXT_USED_PCT" != "null" ]; then

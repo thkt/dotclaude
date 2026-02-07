@@ -23,7 +23,7 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null) || {
 }
 [[ -z "$COMMAND" ]] && exit 0
 
-# Normalize: remove quotes for bypass detection (HIGH-1 fix)
+# Strip quotes to prevent bypass via quoting
 NORMALIZED=$(echo "$COMMAND" | sed "s/['\"]//g")
 
 DANGER_PATTERNS=(
@@ -43,10 +43,16 @@ DANGER_PATTERNS=(
   '\bgit[[:space:]]+clean[[:space:]]+-[[:alnum:]]*[fd]'
   '\bgit[[:space:]]+reset[[:space:]]+--hard'
   '\bgit[[:space:]]+stash[[:space:]]+drop'
+  # Indirect deletion via xargs
+  '\bxargs[[:space:]].*\brm\b'
 )
 
+# Collapse newlines to prevent multiline bypass
+COMMAND_SINGLE=$(printf '%s' "$COMMAND" | tr '\n' ' ')
+NORMALIZED_SINGLE=$(printf '%s' "$NORMALIZED" | tr '\n' ' ')
+
 for pattern in "${DANGER_PATTERNS[@]}"; do
-  if echo "$COMMAND" | grep -qE "$pattern" || echo "$NORMALIZED" | grep -qE "$pattern"; then
+  if printf '%s' "$COMMAND_SINGLE" | grep -qE "$pattern" || printf '%s' "$NORMALIZED_SINGLE" | grep -qE "$pattern"; then
     echo "BLOCKED: dangerous command detected" >&2
     log_block "$pattern" "$COMMAND"
     exit 2
