@@ -35,7 +35,7 @@ graph TD
     subgraph Workflows["ワークフローレイヤー"]
         WG[WORKFLOW_GUIDE]
         MOD[MODULARIZATION_RULES]
-        IDR[IDR_GENERATION]
+        IDR[idr-pre-commit.sh]
     end
 
     AOP --> PTC
@@ -138,7 +138,7 @@ TDD / SOLID / YAGNI (文脈依存)
 | ------------------------------------------------------------------ | ------------------ |
 | [WORKFLOW_GUIDE](../rules/workflows/WORKFLOW_GUIDE.md)             | コマンド選択ガイド |
 | [MODULARIZATION_RULES](../rules/workflows/MODULARIZATION_RULES.md) | コマンド分割基準   |
-| [IDR_GENERATION](../rules/workflows/IDR_GENERATION.md)             | 実装記録の自動生成 |
+| [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh)          | 実装記録の自動生成 |
 
 **ワークフローパターン:**
 

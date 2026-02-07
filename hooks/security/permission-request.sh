@@ -1,7 +1,10 @@
 #!/bin/bash
 # PermissionRequest hook - auto-approve/deny based on path and tool rules
+# Failure mode: fail-closed (deny on malformed input, ask on error)
 # Output: JSON with "decision": "approve" | "deny" | "ask"
 set -euo pipefail
+
+command -v jq &>/dev/null || { echo '{"decision": "deny", "reason": "jq not available"}'; exit 0; }
 
 INPUT=$(cat)
 
@@ -18,15 +21,6 @@ fi
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // "unknown"')
 TOOL_INPUT=$(echo "$INPUT" | jq -c '.tool_input // {}')
 FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // .path // ""')
-
-# === AUTO-DENY: Dangerous Bash commands ===
-if [[ "$TOOL_NAME" == "Bash" ]]; then
-  COMMAND=$(echo "$TOOL_INPUT" | jq -r '.command // ""')
-  if [[ "$COMMAND" =~ ^(sudo|rm\ |rm$|git\ push.*--force|git\ reset\ --hard) ]]; then
-    echo '{"decision": "deny", "reason": "Dangerous command blocked"}'
-    exit 0
-  fi
-fi
 
 # === AUTO-DENY: Sensitive file writes ===
 if [[ "$TOOL_NAME" =~ ^(Write|Edit)$ ]]; then

@@ -149,5 +149,5 @@ flowchart LR
 
 ## Related
 
-- [IDR_GENERATION](../rules/workflows/IDR_GENERATION.md) — IDR仕様
+- [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh) — IDR生成フック
 - [Claude Code Hooks Docs](https://docs.anthropic.com/en/docs/claude-code/hooks)

@@ -35,7 +35,7 @@ graph TD
     subgraph Workflows["Workflow Layer"]
         WG[WORKFLOW_GUIDE]
         MOD[MODULARIZATION_RULES]
-        IDR[IDR_GENERATION]
+        IDR[idr-pre-commit.sh]
     end
 
     AOP --> PTC
@@ -138,7 +138,7 @@ User-facing commands and workflow system.
 | ------------------------------------------------------------------ | ------------------------------------ |
 | [WORKFLOW_GUIDE](../rules/workflows/WORKFLOW_GUIDE.md)             | Command selection guide              |
 | [MODULARIZATION_RULES](../rules/workflows/MODULARIZATION_RULES.md) | Command split criteria               |
-| [IDR_GENERATION](../rules/workflows/IDR_GENERATION.md)             | Auto-generate implementation records |
+| [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh)          | Auto-generate implementation records |
 
 **Workflow Patterns:**
 

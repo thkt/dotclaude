@@ -1,5 +1,7 @@
 #!/bin/bash
-set -euo pipefail
+# EOF newline hook: ensures files end with newline
+# Failure mode: fail-open (skip on error)
+set +e
 
 command -v jq &>/dev/null || exit 0
 

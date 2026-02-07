@@ -1,15 +1,12 @@
 #!/bin/bash
+# CCPlanView opener: opens SOW/Spec/IDR files in CCPlanView
+# Failure mode: fail-open (skip if app not installed)
 set -euo pipefail
 
 CCPLANVIEW_APP="/Applications/CCPlanView.app"
 
-if [[ ! -d "$CCPLANVIEW_APP" ]]; then
-  exit 0
-fi
-
-if ! command -v jq &>/dev/null; then
-  exit 0
-fi
+[[ -d "$CCPLANVIEW_APP" ]] || exit 0
+command -v jq &>/dev/null || exit 0
 
 input="$(cat)"
 file_path="$(echo "$input" | jq -r '.tool_input.file_path // empty')"

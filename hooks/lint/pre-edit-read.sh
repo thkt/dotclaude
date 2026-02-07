@@ -1,5 +1,6 @@
 #!/bin/bash
 # PreToolUse hook: Auto-read file before Edit tool execution
+# Failure mode: fail-open (skip on error)
 # Reference: https://zenn.dev/st_tech/articles/897e52be12232f
 
 set -euo pipefail

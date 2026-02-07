@@ -1,6 +1,7 @@
 #!/bin/bash
 # Bash Safety Hook - PreToolUse guard for dangerous commands
-# Exit: 0=allow, 2=block. Fail-closed design.
+# Failure mode: fail-closed (block on error)
+# Exit: 0=allow, 2=block
 set -euo pipefail
 
 LOG_FILE="$HOME/.claude/logs/bash-safety.log"

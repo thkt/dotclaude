@@ -1,8 +1,9 @@
 #!/bin/bash
 # Claude Code Sandbox Setup Script
+# Failure mode: fail-open (partial setup is acceptable)
 # This script sets up the sandbox runtime for secure command execution
 
-set -euo pipefail
+set +e
 
 echo "🔧 Setting up Claude Code sandbox feature..."
 echo ""

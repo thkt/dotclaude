@@ -1,7 +1,8 @@
 #!/bin/bash
-# PostToolUse hook: Run tsc --noEmit after editing .ts/.tsx files (non-blocking)
+# PostToolUse hook: Run tsc --noEmit after editing .ts/.tsx files
+# Failure mode: fail-open (report errors but do not block)
 
-set -euo pipefail
+set +e
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
@@ -26,21 +27,10 @@ TSC_OUTPUT=$(npx tsc --noEmit 2>&1) || true
 ERROR_COUNT=$(echo "$TSC_OUTPUT" | grep -c "error TS" || echo "0")
 
 [ "$ERROR_COUNT" -eq 0 ] && exit 0
-cat << EOF
 
-┌─────────────────────────────────────────────────┐
-│  ⚠️  TypeScript errors detected                 │
-├─────────────────────────────────────────────────┤
-│  Errors: $(printf "%-40s" "$ERROR_COUNT")│
-│  Project: $(printf "%-38s" "$(basename "$PROJECT_ROOT")")│
-├─────────────────────────────────────────────────┤
-$(echo "$TSC_OUTPUT" | grep "error TS" | head -5 | while IFS= read -r line || [[ -n "$line" ]]; do
-  truncated="${line:0:47}"
-  printf "│  %-47s│\n" "$truncated"
-done)
-│  ...                                            │
-└─────────────────────────────────────────────────┘
-
-EOF
+echo ""
+echo "⚠ TypeScript: $ERROR_COUNT errors ($(basename "$PROJECT_ROOT"))"
+echo "$TSC_OUTPUT" | grep "error TS" | head -5 | sed 's/^/  /'
+[ "$ERROR_COUNT" -gt 5 ] && echo "  ... (+$((ERROR_COUNT - 5)) more)"
 
 exit 0

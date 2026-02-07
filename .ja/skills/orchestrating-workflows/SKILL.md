@@ -21,7 +21,7 @@ user-invocable: false
 
 | パターン    | 参照                                                                                |
 | ----------- | ----------------------------------------------------------------------------------- |
-| IDR生成     | [@../../rules/workflows/IDR_GENERATION.md](../../rules/workflows/IDR_GENERATION.md) |
+| IDR生成     | [hooks/lifecycle/idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh)        |
 | TDDサイクル | [@./references/tdd-cycle.md](./references/tdd-cycle.md)                             |
 | テスト生成  | [@./references/test-generation.md](./references/test-generation.md)                 |
 

@@ -1,5 +1,6 @@
 #!/bin/bash
 # Codemap Auto-Update: generates architecture.md on significant commits
+# Failure mode: fail-open (skip update on error)
 # Triggers: 3+ new files, entry point changes, dependency changes
 
 set -euo pipefail

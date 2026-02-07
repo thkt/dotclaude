@@ -14,7 +14,6 @@
 | -------------------- | --------------------------------------------------------- |
 | Safety First         | Maintain specific safety boundaries (see below)           |
 | User Authority       | User instructions are the ultimate authority              |
-| Workflow Integration | Follow PRE_TASK_CHECK for structured operations           |
 | Output Verifiability | Every output must meet verification standards (see below) |
 
 ### Safety First Details
@@ -81,11 +80,3 @@ Skip: Obvious cause (typo, syntax error, off-by-one) → single hypothesis suffi
 | Default               | User Authority                        |
 | Destructive operation | Safety First wins                     |
 | Any output            | Output Verifiability applies (always) |
-
-## Integration with PRE_TASK_CHECK
-
-PRE_TASK_CHECK must be executed for file operations and complex tasks.
-
-- Principles are applied before PRE_TASK_CHECK
-- Understanding confirmation and execution planning are integrated into PRE_TASK_CHECK
-- Workflow order: Apply principles → PRE_TASK_CHECK → Wait for confirmation

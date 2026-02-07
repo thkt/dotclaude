@@ -2,6 +2,7 @@
 set +e
 
 # Claude Code status line: model, context, cost, tool, git branch
+# Failure mode: fail-open (partial display is acceptable)
 
 STDIN_INPUT=""
 CONTEXT_TOKENS=""
@@ -22,68 +23,48 @@ if [ ! -t 0 ]; then
 fi
 
 if [ -n "$STDIN_INPUT" ] && command -v jq &> /dev/null; then
-    MODEL_NAME=$(echo "$STDIN_INPUT" | jq -r '.model.display_name // empty' 2>/dev/null)
-    MODEL_ID=$(echo "$STDIN_INPUT" | jq -r '.model.id // empty' 2>/dev/null)
-    SESSION_ID=$(echo "$STDIN_INPUT" | jq -r '.session_id // empty' 2>/dev/null)
-    TRANSCRIPT_PATH=$(echo "$STDIN_INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
-    SESSION_COST=$(echo "$STDIN_INPUT" | jq -r '.session_cost // empty' 2>/dev/null)
-    EXCEEDS_200K=$(echo "$STDIN_INPUT" | jq -r '.exceeds_200k_tokens // false' 2>/dev/null)
-    CURRENT_USAGE=$(echo "$STDIN_INPUT" | jq -r '.current_usage // empty' 2>/dev/null)
+    # Single jq call to extract all fields (was 12+ individual calls)
+    PARSED=$(echo "$STDIN_INPUT" | jq -r '
+      [
+        (.model.display_name // ""),
+        (.model.id // ""),
+        (.session_id // ""),
+        (.transcript_path // ""),
+        (.cost.total_cost_usd // ""),
+        (.exceeds_200k_tokens // false),
+        # Context tokens: context_window.current_usage (v2.1+) > legacy fallbacks
+        (if .context_window.current_usage != null then
+          (.context_window.current_usage.input_tokens // 0) + (.context_window.current_usage.output_tokens // 0) +
+          (.context_window.current_usage.cache_creation_input_tokens // 0) + (.context_window.current_usage.cache_read_input_tokens // 0)
+        else
+          .context.tokens_used // .context_tokens // .tokens.context // .usage.total_tokens // ""
+        end),
+        # Context limit: context_window.context_window_size (v2.1+) > legacy fallbacks
+        (.context_window.context_window_size // .context.limit // .context_limit // .tokens.limit // ""),
+        (.context_window.used_percentage // ""),
+        (.context_window.remaining_percentage // "")
+      ] | map(tostring) | @tsv' 2>/dev/null)
 
-    if [ -n "$CURRENT_USAGE" ] && [ "$CURRENT_USAGE" != "null" ]; then
-        CONTEXT_TOKENS=$(echo "$STDIN_INPUT" | jq -r '
-            .current_usage.input_tokens +
-            .current_usage.output_tokens +
-            (.current_usage.cache_creation_input_tokens // 0) +
-            (.current_usage.cache_read_input_tokens // 0)' 2>/dev/null)
-    else
-        CONTEXT_TOKENS=$(echo "$STDIN_INPUT" | jq -r '
-            .context.tokens_used //
-            .context_tokens //
-            .tokens.context //
-            .usage.total_tokens //
-            empty' 2>/dev/null)
-
-        if [ -z "$CONTEXT_TOKENS" ] || [ "$CONTEXT_TOKENS" = "null" ]; then
-            if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-                CONTEXT_TOKENS=$(tail -n 100 "$TRANSCRIPT_PATH" 2>/dev/null | \
-                    jq -s 'map(select(.type == "assistant" and .message.usage)) |
-                        last |
-                        .message.usage |
-                        (.input_tokens // 0) +
-                        (.output_tokens // 0) +
-                        (.cache_creation_input_tokens // 0) +
-                        (.cache_read_input_tokens // 0)' 2>/dev/null)
-            fi
-        fi
+    if [ -n "$PARSED" ]; then
+        IFS=$'\t' read -r MODEL_NAME MODEL_ID SESSION_ID TRANSCRIPT_PATH SESSION_COST \
+            EXCEEDS_200K CONTEXT_TOKENS CONTEXT_LIMIT CONTEXT_USED_PCT CONTEXT_REMAINING_PCT <<< "$PARSED"
     fi
 
-    CONTEXT_LIMIT=$(echo "$STDIN_INPUT" | jq -r '
-        .current_usage.context_window //
-        .context.limit //
-        .context_limit //
-        .tokens.limit //
-        empty' 2>/dev/null)
-
-    CONTEXT_USED_PCT=$(echo "$STDIN_INPUT" | jq -r '.context_window.used_percentage // empty' 2>/dev/null)
-    CONTEXT_REMAINING_PCT=$(echo "$STDIN_INPUT" | jq -r '.context_window.remaining_percentage // empty' 2>/dev/null)
-
-    LAST_TOOL=""
-    TOOL_COUNT=0
-    if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-        TOOL_INFO=$(tail -n 200 "$TRANSCRIPT_PATH" 2>/dev/null | \
-            jq -s '[.[] | select(.type == "tool_use")] | last | .name // empty' 2>/dev/null)
-        if [ -n "$TOOL_INFO" ] && [ "$TOOL_INFO" != "null" ]; then
-            LAST_TOOL=$(echo "$TOOL_INFO" | tr -d '"')
-        fi
-
-        TOOL_COUNT=$(tail -n 500 "$TRANSCRIPT_PATH" 2>/dev/null | \
-            jq -s '[.[] | select(.type == "tool_use")] | length' 2>/dev/null)
-        [ -z "$TOOL_COUNT" ] && TOOL_COUNT=0
+    # Fallback: read context tokens from transcript JSONL if stdin JSON had no usage data
+    if { [ -z "$CONTEXT_TOKENS" ] || [ "$CONTEXT_TOKENS" = "null" ] || [ "$CONTEXT_TOKENS" = "" ]; } && \
+       [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
+        CONTEXT_TOKENS=$(tail -n 100 "$TRANSCRIPT_PATH" 2>/dev/null | \
+            jq -s 'map(select(.type == "assistant" and .message.usage)) |
+                last |
+                .message.usage |
+                (.input_tokens // 0) +
+                (.output_tokens // 0) +
+                (.cache_creation_input_tokens // 0) +
+                (.cache_read_input_tokens // 0)' 2>/dev/null)
     fi
 fi
 
-# Context change tracking
+# Context change tracking + tool info cache
 STATE_DIR="$HOME/.claude/cache"
 mkdir -p "$STATE_DIR"
 STATE_FILE="${STATE_DIR}/context-${SESSION_ID:-$$}.state"
@@ -91,13 +72,33 @@ PREV_TOKENS=0
 CONTEXT_DELTA=0
 
 if [ -f "$STATE_FILE" ]; then
-    PREV_TOKENS=$(cat "$STATE_FILE" 2>/dev/null)
+    IFS=$'\t' read -r PREV_TOKENS CACHED_TOOL CACHED_COUNT < "$STATE_FILE" 2>/dev/null
     [ -z "$PREV_TOKENS" ] && PREV_TOKENS=0
+    [ -z "$CACHED_COUNT" ] && CACHED_COUNT=0
 fi
 
 if [ -n "$CONTEXT_TOKENS" ] && [ "$CONTEXT_TOKENS" != "null" ] && [ "$CONTEXT_TOKENS" -gt 0 ] 2>/dev/null; then
     CONTEXT_DELTA=$((CONTEXT_TOKENS - PREV_TOKENS))
-    echo "$CONTEXT_TOKENS" > "$STATE_FILE"
+fi
+
+# Only read transcript when context has changed (skip costly tail+jq on cache hit)
+if [ "$CONTEXT_DELTA" -ne 0 ] 2>/dev/null && [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
+    TOOL_INFO=$(tail -n 200 "$TRANSCRIPT_PATH" 2>/dev/null | \
+        jq -s '[.[] | select(.type == "tool_use")] | last | .name // empty' 2>/dev/null)
+    if [ -n "$TOOL_INFO" ] && [ "$TOOL_INFO" != "null" ]; then
+        LAST_TOOL=$(echo "$TOOL_INFO" | tr -d '"')
+    fi
+    TOOL_COUNT=$(tail -n 500 "$TRANSCRIPT_PATH" 2>/dev/null | \
+        jq -s '[.[] | select(.type == "tool_use")] | length' 2>/dev/null)
+    [ -z "$TOOL_COUNT" ] && TOOL_COUNT=0
+else
+    LAST_TOOL="${CACHED_TOOL:-}"
+    TOOL_COUNT="${CACHED_COUNT:-0}"
+fi
+
+# Save state (tokens + tool info)
+if [ -n "$CONTEXT_TOKENS" ] && [ "$CONTEXT_TOKENS" != "null" ] && [ "$CONTEXT_TOKENS" -gt 0 ] 2>/dev/null; then
+    printf '%s\t%s\t%s\n' "$CONTEXT_TOKENS" "$LAST_TOOL" "$TOOL_COUNT" > "$STATE_FILE"
 fi
 
 # --- Output ---
@@ -168,7 +169,8 @@ if [ "$CONTEXT_LIMIT" -gt 0 ] 2>/dev/null; then
 fi
 
 if [ -n "$SESSION_COST" ] && [ "$SESSION_COST" != "null" ] && [ "$SESSION_COST" != "0" ]; then
-    printf ' \033[90m│\033[0m \033[33m$%s\033[0m' "$SESSION_COST"
+    COST_FMT=$(printf "%.2f" "$SESSION_COST" 2>/dev/null || echo "$SESSION_COST")
+    printf ' \033[90m│\033[0m \033[33m$%s\033[0m' "$COST_FMT"
 fi
 
 if [ -n "$LAST_TOOL" ] && [ "$LAST_TOOL" != "null" ]; then
@@ -207,59 +209,5 @@ if [ -n "$BRANCH" ]; then
         printf ' \033[92m[wt]\033[0m'
     fi
 
-    if command -v gh &>/dev/null && command -v jq &>/dev/null; then
-        CACHE_DIR="$HOME/.claude/cache"
-        CACHE_FILE="$CACHE_DIR/statusline-pr-cache.json"
-        CACHE_TTL_SEC="${STATUSLINE_PR_CACHE_TTL_SEC:-300}"
-        REPO=$(git remote get-url origin 2>/dev/null | sed -E 's#\.git$##; s#.*[:/](.*/.*)#\1#; s#.*://[^/]*/##' || true)
-
-        if [ -n "$REPO" ]; then
-            CACHE_KEY="${REPO}:${BRANCH}"
-            NOW=$(date +%s)
-            HIT=""
-
-            if [ -f "$CACHE_FILE" ]; then
-                CACHED=$(jq -r --arg k "$CACHE_KEY" '.[$k] // empty' "$CACHE_FILE" 2>/dev/null)
-                if [ -n "$CACHED" ]; then
-                    CACHED_AT=$(echo "$CACHED" | jq -r '.cached_at // 0')
-                    if [ $((NOW - CACHED_AT)) -lt "$CACHE_TTL_SEC" ]; then
-                        HIT=1
-                        PR_URL=$(echo "$CACHED" | jq -r '.url // empty')
-                        PR_NUM=$(echo "$CACHED" | jq -r '.number // empty')
-                        PR_STATE=$(echo "$CACHED" | jq -r '.state // empty')
-                    fi
-                fi
-            fi
-
-            if [ -z "$HIT" ]; then
-                if command -v timeout &>/dev/null; then
-                    PR_JSON=$(timeout 3 gh pr view --json url,number,state 2>/dev/null || echo '{}')
-                elif command -v perl &>/dev/null; then
-                    PR_JSON=$(perl -e 'alarm 3; exec @ARGV' gh pr view --json url,number,state 2>/dev/null || echo '{}')
-                else
-                    PR_JSON=$(gh pr view --json url,number,state 2>/dev/null || echo '{}')
-                fi
-                PR_URL=$(echo "$PR_JSON" | jq -r '.url // empty')
-                PR_NUM=$(echo "$PR_JSON" | jq -r '.number // empty')
-                PR_STATE=$(echo "$PR_JSON" | jq -r '.state // empty')
-
-                mkdir -p "$CACHE_DIR"
-                ENTRY=$(jq -n --arg u "$PR_URL" --arg n "$PR_NUM" --arg s "$PR_STATE" --argjson t "$NOW" \
-                    '{url:$u, number:$n, state:$s, cached_at:$t}')
-                if [ -f "$CACHE_FILE" ]; then
-                    EXISTING=$(cat "$CACHE_FILE")
-                else
-                    EXISTING='{}'
-                fi
-                echo "$EXISTING" | jq --argjson t "$NOW" --arg k "$CACHE_KEY" --argjson v "$ENTRY" \
-                    '[to_entries[] | select(.value.cached_at > ($t - 86400))] | from_entries | .[$k] = $v' \
-                    > "$CACHE_FILE.tmp" 2>/dev/null \
-                    && mv "$CACHE_FILE.tmp" "$CACHE_FILE"
-            fi
-
-            if [ -n "$PR_NUM" ] && [ "$PR_NUM" != "null" ] && [ "$PR_STATE" = "OPEN" ]; then
-                printf ' \033]8;;%s\033\\\033[93m[PR#%s]\033[0m\033]8;;\033\\' "$PR_URL" "$PR_NUM"
-            fi
-        fi
-    fi
+    source "$(dirname "$0")/_pr-cache.sh" || true
 fi

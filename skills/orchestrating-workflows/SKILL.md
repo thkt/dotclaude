@@ -21,7 +21,7 @@ user-invocable: false
 
 | Pattern         | Reference                                                                           |
 | --------------- | ----------------------------------------------------------------------------------- |
-| IDR Generation  | [@../../rules/workflows/IDR_GENERATION.md](../../rules/workflows/IDR_GENERATION.md) |
+| IDR Generation  | [hooks/lifecycle/idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh)        |
 | TDD Cycle       | [@./references/tdd-cycle.md](./references/tdd-cycle.md)                             |
 | Test Generation | [@./references/test-generation.md](./references/test-generation.md)                 |
 
