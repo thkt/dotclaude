@@ -27,15 +27,16 @@ Orchestrate specialized review agents with confidence-based filtering.
 | ---- | -------------------------------------------------------- |
 | 1    | Run project static analysis tools (see Pre-flight below) |
 | 2    | Spawn review team (see Team Workflow below)              |
-| 3    | Compound reviewers DM findings to integrator             |
-| 4    | Integrator challenges + integrates → final YAML          |
-| 5    | Save snapshot (see Snapshot Naming below)                |
-| 6    | Compare with previous snapshot, display delta            |
-| 7    | Output report using template                             |
+| 3    | Compound reviewers DM findings to `challenger`           |
+| 4    | Challenger validates findings, DMs to `integrator`       |
+| 5    | Integrator integrates → final YAML                       |
+| 6    | Save snapshot (see Snapshot Naming below)                |
+| 7    | Compare with previous snapshot, display delta            |
+| 8    | Output report using template                             |
 
 ## Team Workflow
 
-Spawn a coordinated team of 3 compound reviewers and 1 progressive integrator.
+Spawn a coordinated team of 3 compound reviewers, 1 challenger, and 1 integrator.
 
 ### Team Structure
 
@@ -44,32 +45,34 @@ Spawn a coordinated team of 3 compound reviewers and 1 progressive integrator.
 ├── reviewer-foundation  (compound-reviewer-foundation)
 ├── reviewer-safety      (compound-reviewer-safety)
 ├── reviewer-quality     (compound-reviewer-quality)
+├── challenger           (devils-advocate)
 └── integrator           (progressive-integrator)
 ```
 
 ### Workflow
 
-| Step | Actor      | Action                                                                |
-| ---- | ---------- | --------------------------------------------------------------------- |
-| 1    | Leader     | `Teammate.spawnTeam("audit-{timestamp}")`                             |
-| 2    | Leader     | TaskCreate x 4 (3 reviewers + integrator)                             |
-| 3    | Leader     | Spawn 4 teammates via Task with `team_name`                           |
-| 4    | Reviewers  | Run domain agents internally, DM findings to `integrator`             |
-| 5    | Integrator | Challenge each batch (devils-advocate), accumulate validated findings |
-| 6    | Leader     | Wait for all reviewers to complete                                    |
-| 7    | Integrator | Produce final integrated YAML report                                  |
-| 8    | Leader     | SendMessage `shutdown_request` to all teammates                       |
+| Step | Actor      | Action                                                    |
+| ---- | ---------- | --------------------------------------------------------- |
+| 1    | Leader     | `TeamCreate("audit-{timestamp}")`                         |
+| 2    | Leader     | TaskCreate x 5 (3 reviewers + challenger + integrator)    |
+| 3    | Leader     | Spawn 5 teammates via Task with `team_name`               |
+| 4    | Reviewers  | Run domain agents internally, DM findings to `challenger` |
+| 5    | Challenger | Validate each batch, DM challenged results to `integrator`|
+| 6    | Leader     | Wait for all reviewers to complete                        |
+| 7    | Integrator | Produce final integrated YAML report                      |
+| 8    | Leader     | SendMessage `shutdown_request` to all teammates           |
 
 ### Teammate Spawn
 
-| Teammate            | subagent_type                | Domains                                          |
+| Teammate            | subagent_type                | Role                                             |
 | ------------------- | ---------------------------- | ------------------------------------------------ |
 | reviewer-foundation | compound-reviewer-foundation | code-quality + progressive-enhancer + root-cause |
 | reviewer-safety     | compound-reviewer-safety     | security + silent-failure + type-safety          |
 | reviewer-quality    | compound-reviewer-quality    | design-pattern + testability + perf + a11y + doc |
-| integrator          | progressive-integrator       | devils-advocate challenge + integration          |
+| challenger          | devils-advocate              | Challenge findings, reduce false positives       |
+| integrator          | progressive-integrator       | Pattern detection + prioritization + report      |
 
-Agents: [agents/teams/](../agents/teams/)
+Agents: [agents/teams/](../agents/teams/), [agents/critics/](../agents/critics/)
 
 ### Error Handling
 
@@ -133,8 +136,9 @@ Example output: `audit-2026-01-23-031812.yaml`
 
 | Check                            | Required |
 | -------------------------------- | -------- |
-| Team spawned with 4 teammates?   | Yes      |
+| Team spawned with 5 teammates?   | Yes      |
 | All reviewer findings collected? | Yes      |
+| Challenger validated findings?   | Yes      |
 | Integrator produced final YAML?  | Yes      |
 | Snapshot saved?                  | Yes      |
 | Delta comparison displayed?      | Yes      |

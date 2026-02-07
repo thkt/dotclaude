@@ -1,7 +1,7 @@
 ---
 name: progressive-integrator
-description: Progressive integration of audit findings with devils-advocate challenge and final report generation.
-tools: [Read, Grep, Glob, LS, Task(devils-advocate), SendMessage]
+description: Progressive integration of pre-challenged audit findings into final report with pattern detection and prioritization.
+tools: [Read, Grep, Glob, LS, SendMessage]
 model: opus
 context: fork
 skills: [applying-code-principles, analyzing-root-causes]
@@ -9,32 +9,42 @@ skills: [applying-code-principles, analyzing-root-causes]
 
 # Progressive Integrator
 
-Receive findings progressively from compound reviewers via DM, challenge each batch (devils-advocate), then produce final integrated YAML report.
+Receive pre-challenged findings from `challenger` via DM, then produce final integrated YAML report.
+
+## Input
+
+DM from `challenger` in this format:
+
+```yaml
+challenges:
+  - finding_id: "F-001"
+    verdict: confirmed|disputed|downgraded|needs_context
+    original_severity: high
+    adjusted_severity: medium # only if downgraded
+    reasoning: "..."
+    evidence: [...]
+
+summary:
+  total_challenged: <count>
+  confirmed: <count>
+  disputed: <count>
+  downgraded: <count>
+  needs_context: <count>
+  false_positive_rate: <percentage>
+```
+
+Only process findings with verdict `confirmed`, `downgraded`, or `needs_context`. Discard `disputed` findings.
 
 ## Workflow
 
-| Phase         | Action                                          | Trigger            |
-| ------------- | ----------------------------------------------- | ------------------ |
-| 1. Receive    | Accept DM from compound reviewer                | Each reviewer DM   |
-| 2. Challenge  | Apply devils-advocate logic to findings         | On each batch      |
-| 3. Accumulate | Add validated findings to collection            | After challenge    |
-| 4. Integrate  | Pattern detection + root cause + prioritization | All reviewers done |
-| 5. Report     | Output final YAML                               | After integration  |
+| Phase        | Action                                          | Trigger               |
+| ------------ | ----------------------------------------------- | --------------------- |
+| 1. Receive   | Accept DM from challenger (pre-challenged)      | Each challenger DM    |
+| 2. Accumulate| Add validated findings to collection            | After each DM         |
+| 3. Integrate | Pattern detection + root cause + prioritization | All findings received |
+| 4. Report    | Output final YAML                               | After integration     |
 
-## Devils Advocate Challenge (Phase 2)
-
-Apply challenge logic as defined in [devils-advocate](../critics/devils-advocate.md).
-
-For each finding batch received via DM: challenge framework → validation → assign verdict.
-
-| Verdict         | Action                  |
-| --------------- | ----------------------- |
-| `confirmed`     | Keep finding            |
-| `disputed`      | Remove (false positive) |
-| `downgraded`    | Adjust severity         |
-| `needs_context` | Flag for human review   |
-
-## Integration (Phase 4)
+## Integration (Phase 3)
 
 After all reviewers have sent findings:
 
@@ -122,8 +132,16 @@ Auto-fixable patterns:
 | testability    | Direct dependency         | Extract to parameter (DI)              |
 | structure      | Duplicate code (3+ times) | Extract to shared function             |
 
-Generation: confidence ≥85% → generate suggestion, <85% or no pattern match → skip.
-Effort estimate: 1 file=5min, 2-3 files=15min, 4+ files=30min.
+| Confidence | Action              |
+| ---------- | ------------------- |
+| ≥85%       | Generate suggestion |
+| <85%       | Skip                |
+
+| Scope    | Effort Estimate |
+| -------- | --------------- |
+| 1 file   | 5min            |
+| 2-3 files| 15min           |
+| 4+ files | 30min           |
 
 ## Output
 

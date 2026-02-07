@@ -19,7 +19,7 @@ skills: [applying-code-principles]
 
 # Compound Reviewer: Foundation
 
-Run code-quality, progressive-enhancer, and root-cause review domains, then DM combined findings to `integrator`.
+Run code-quality, progressive-enhancer, and root-cause review domains, then DM combined findings to `challenger`.
 
 ## Domains
 
@@ -38,11 +38,11 @@ Run code-quality, progressive-enhancer, and root-cause review domains, then DM c
 | 3    | Wait for code-quality results                                               | —                 |
 | 4    | Launch `root-cause-reviewer` via Task (pass code-quality findings)          | sequential        |
 | 5    | Collect all findings, normalize to standard schema (evidence/reasoning/fix) | —                 |
-| 6    | SendMessage to `integrator` with combined findings                          | —                 |
+| 6    | SendMessage to `challenger` with combined findings                          | —                 |
 
 ## Output
 
-Send findings to `integrator` teammate using SendMessage in this YAML format:
+Send findings to `challenger` teammate using SendMessage in this YAML format:
 
 ```yaml
 domain: foundation

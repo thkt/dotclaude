@@ -20,16 +20,16 @@ skills: [reviewing-security, reviewing-type-safety]
 
 # Compound Reviewer: Safety
 
-Run security, silent-failure, type-safety, and type-design review domains in parallel, then DM combined findings to `integrator`.
+Run security, silent-failure, type-safety, and type-design review domains in parallel, then DM combined findings to `challenger`.
 
 ## Domains
 
-| Order | Agent          | subagent_type           | Depends On                            |
-| ----- | -------------- | ----------------------- | ------------------------------------- |
-| 1     | Security       | security-reviewer       | —                                     |
-| 2     | Silent Failure | silent-failure-reviewer | —                                     |
-| 3     | Type Safety    | type-safety-reviewer    | —                                     |
-| 4     | Type Design    | type-design-reviewer    | Only if new types added/modified      |
+| Order | Agent          | subagent_type           | Depends On                       |
+| ----- | -------------- | ----------------------- | -------------------------------- |
+| 1     | Security       | security-reviewer       | —                                |
+| 2     | Silent Failure | silent-failure-reviewer | —                                |
+| 3     | Type Safety    | type-safety-reviewer    | —                                |
+| 4     | Type Design    | type-design-reviewer    | Only if new types added/modified |
 
 ## Execution
 
@@ -39,22 +39,21 @@ Run security, silent-failure, type-safety, and type-design review domains in par
 | 2    | Launch domains 1-3 via Task (+ domain 4 if new types present)   | parallel |
 | 3    | Collect all findings                                            | —        |
 | 4    | Normalize domain-specific fields to standard schema (see below) | —        |
-| 5    | SendMessage to `integrator` with combined findings              | —        |
+| 5    | SendMessage to `challenger` with combined findings              | —        |
 
 ## Schema Normalization
 
-Domain agents may return extra fields beyond the standard schema. Map them as follows:
+Map domain-specific fields to standard schema:
 
-| Agent                   | Extra Fields              | Mapping                                          |
-| ----------------------- | ------------------------- | ------------------------------------------------ |
-| type-design-reviewer    | `type_name`, `scores`     | Append to `evidence`; scores → `reasoning` note  |
-| security-reviewer       | —                         | Standard schema, no mapping needed               |
-| silent-failure-reviewer | —                         | Standard schema, no mapping needed               |
-| type-safety-reviewer    | —                         | Standard schema, no mapping needed               |
+| Agent                | Extra Fields          | Mapping                                         |
+| -------------------- | --------------------- | ----------------------------------------------- |
+| type-design-reviewer | `type_name`, `scores` | Append to `evidence`; scores → `reasoning` note |
+
+Other agents use standard schema directly.
 
 ## Output
 
-Send findings to `integrator` teammate using SendMessage in this YAML format:
+Send findings to `challenger` teammate using SendMessage in this YAML format:
 
 ```yaml
 domain: safety

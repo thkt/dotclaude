@@ -9,7 +9,7 @@ skills: [applying-frontend-patterns, reviewing-testability, optimizing-performan
 
 # Compound Reviewer: Quality
 
-Run design-pattern, testability, test-coverage, performance, accessibility, and document review domains, then DM combined findings to `integrator`.
+Run design-pattern, testability, test-coverage, performance, accessibility, and document review domains, then DM combined findings to `challenger`.
 
 ## Domains
 
@@ -24,17 +24,17 @@ Run design-pattern, testability, test-coverage, performance, accessibility, and 
 
 ## Execution
 
-| Step | Action                                                                  | Mode     |
-| ---- | ----------------------------------------------------------------------- | -------- |
-| 1    | Check for test files and \*.md files in target scope                    | —        |
-| 2    | Launch domains 1-2,4 via Task (+ conditional domains 3,5,6 as needed)   | parallel |
-| 3    | Collect all findings                                                    | —        |
-| 4    | Normalize to standard schema (evidence/reasoning/fix)                   | —        |
-| 5    | SendMessage to `integrator` with combined findings                      | —        |
+| Step | Action                                                                | Mode     |
+| ---- | --------------------------------------------------------------------- | -------- |
+| 1    | Check for test files and \*.md files in target scope                  | —        |
+| 2    | Launch domains 1-2,4 via Task (+ conditional domains 3,5,6 as needed) | parallel |
+| 3    | Collect all findings                                                  | —        |
+| 4    | Normalize to standard schema (evidence/reasoning/fix)                 | —        |
+| 5    | SendMessage to `challenger` with combined findings                    | —        |
 
 ## Output
 
-Send findings to `integrator` teammate using SendMessage in this YAML format:
+Send findings to `challenger` teammate using SendMessage in this YAML format:
 
 ```yaml
 domain: quality
