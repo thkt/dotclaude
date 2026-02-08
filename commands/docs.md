@@ -31,6 +31,17 @@ If empty, use AskUserQuestion to select.
                → [template] → .analysis/{type}.md (document)
 ```
 
+## Required Keys by Type
+
+| Type         | Required Keys                                                            |
+| ------------ | ------------------------------------------------------------------------ |
+| architecture | `project_name`, `tech_stack`, `key_components`, `dependencies`           |
+| api          | `project_name`, `meta`, `endpoints`                                      |
+| domain       | `project_name`, `generated_at`, `meta`, `confidence_summary`, `entities` |
+| setup        | `project_name`, `prerequisites`, `installation`                          |
+
+Step 3 validates against this table. Missing key → report which keys are absent.
+
 ## Output
 
 Markdown formatted with template. Variables: `{field}`, `{object.property}`, `{array[].property}`.

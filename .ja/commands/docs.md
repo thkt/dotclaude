@@ -31,6 +31,17 @@ argument-hint: "[architecture|api|domain|setup]"
                → [template] → .analysis/{type}.md (ドキュメント)
 ```
 
+## 型別必須キー
+
+| 型           | 必須キー                                                                 |
+| ------------ | ------------------------------------------------------------------------ |
+| architecture | `project_name`, `tech_stack`, `key_components`, `dependencies`           |
+| api          | `project_name`, `meta`, `endpoints`                                      |
+| domain       | `project_name`, `generated_at`, `meta`, `confidence_summary`, `entities` |
+| setup        | `project_name`, `prerequisites`, `installation`                          |
+
+ステップ3でこのテーブルに基づき検証。キー欠落 → どのキーが不足しているか報告。
+
 ## 出力
 
 テンプレートでフォーマットされたMarkdown。変数: `{field}`, `{object.property}`, `{array[].property}`

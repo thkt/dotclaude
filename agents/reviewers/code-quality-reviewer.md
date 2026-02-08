@@ -31,18 +31,18 @@ Unified structure + readability review. Can a new team member understand this in
 
 ## Analysis Phases
 
-| Phase | Category    | Action           | Focus                        |
-| ----- | ----------- | ---------------- | ---------------------------- |
-| 1     | Structure   | Unused Code Scan | Dead imports, unreferenced   |
-| 2     | Structure   | DRY Analysis     | 3+ occurrences of patterns   |
-| 3     | Structure   | Over-engineering | Unnecessary abstractions     |
-| 4     | Structure   | State Structure  | Local vs global misplacement |
-| 5     | Structure   | Size Check       | File lines, complexity       |
-| 6     | Readability | Naming Scan      | Variables, functions, types  |
-| 7     | Readability | Complexity Check | Nesting, function length     |
-| 8     | Readability | Comment Audit    | Why vs What, outdated TODOs  |
-| 9     | Readability | AI Smell Check   | Over-abstraction, patterns   |
-| 10    | Readability | Miller's Law     | 7±2 violations               |
+| Phase | Category    | Action           | Focus                                                                                 |
+| ----- | ----------- | ---------------- | ------------------------------------------------------------------------------------- |
+| 1     | Structure   | Unused Code Scan | Dead imports, unreferenced                                                            |
+| 2     | Structure   | DRY Analysis     | 3+ occurrences of patterns (including same command/function with different arguments) |
+| 3     | Structure   | Over-engineering | Unnecessary abstractions                                                              |
+| 4     | Structure   | State Structure  | Local vs global misplacement                                                          |
+| 5     | Structure   | Size Check       | File lines, complexity                                                                |
+| 6     | Readability | Naming Scan      | Variables, functions, types                                                           |
+| 7     | Readability | Complexity Check | Nesting, function length                                                              |
+| 8     | Readability | Comment Audit    | Why vs What, outdated TODOs                                                           |
+| 9     | Readability | AI Smell Check   | Over-abstraction, patterns                                                            |
+| 10    | Readability | Miller's Law     | 7±2 violations                                                                        |
 
 ## Error Handling
 

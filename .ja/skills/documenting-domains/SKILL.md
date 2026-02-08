@@ -1,15 +1,22 @@
 ---
 name: documenting-domains
-description: >
-  コードベース分析からドメインドキュメントを生成 - エンティティ、用語集、関連。
-  ドメインモデル分析、用語集作成、または
-  domain model, entity diagram, ドメインモデル, 用語集, glossary, ubiquitous language に言及した時に使用。
-allowed-tools: [Read, Write, Grep, Glob, Bash, Task]
+description: コードベース分析からドメインドキュメントを生成
+tools: [Read, Write, Grep, Glob, Task]
 context: fork
 user-invocable: false
 ---
 
-# ドメイン理解の生成
+# ドメインドキュメント生成
+
+## アプローチ: スキーマファースト
+
+エンティティ/モデルファイルを信頼の源として Read する。
+
+| 優先度 | ソース                | 方法                                |
+| ------ | --------------------- | ----------------------------------- |
+| 1      | ORMスキーマファイル   | ファイル全文 Read、エンティティ解析 |
+| 2      | 型/クラスファイル     | ファイル全文 Read、フィールド抽出   |
+| 3      | Grep（フォールバック）| 発見のみ、フィールド値の取得は不可  |
 
 ## 検出
 
@@ -22,12 +29,34 @@ user-invocable: false
 | ビジネスルール   | バリデータ、ポリシー、ドメインサービス        |
 | ドメインイベント | イベントクラス、EventEmitter、pub/subパターン |
 
-## ORMパターン
+## ORM抽出ルール
 
-| ORM/フレームワーク | パターン                   |
-| ------------------ | -------------------------- |
-| Prisma             | `model User {}`            |
-| TypeORM            | `@Entity()`, `@Column()`   |
-| Sequelize          | `Model.init()`             |
-| Django             | `class User(models.Model)` |
-| SQLAlchemy         | `class User(Base)`         |
+| ORM/フレームワーク | エンティティ検出             | フィールド抽出               | 不変条件検出                          |
+| ------------------ | ---------------------------- | ---------------------------- | ------------------------------------- |
+| Prisma             | `model EntityName {`         | `fieldName Type @annotation` | `@unique`, `@default`, `@@index`      |
+| TypeORM            | `@Entity()` class            | `@Column()` property         | `@Check()`, クラスバリデータ          |
+| Sequelize          | `Model.init({...})`          | init config 内のプロパティ   | `validate:` オプション                |
+| Drizzle            | `pgTable()`, `sqliteTable()` | カラム定義                   | `.notNull()`, `.unique()`             |
+| Django             | `class X(models.Model)`      | `models.CharField(...)` 等   | `validators=`, `unique=True`          |
+| SQLAlchemy         | `class X(Base)`              | `Column(Type, ...)` 宣言     | `CheckConstraint`, `UniqueConstraint` |
+| 汎用               | `class X` / `interface X`    | プロパティ宣言 + 型          | メソッド内の throw/assert/validate    |
+
+## スキーマ読み取り
+
+| ルール           | 詳細                                          |
+| ---------------- | --------------------------------------------- |
+| ファイル全文読み | フィールド値の grep 取得は不可                |
+| 全フィールド取得 | 「重要な」ものだけでなく全フィールド          |
+| 制約の保持       | NOT NULL, required, @IsNotEmpty, バリデータ   |
+| 正確な型名保持   | 定義通りの型名を使用、正規化しない            |
+| enum値           | 宣言順で全値を抽出                            |
+| ソース位置       | 各エンティティとフィールドの file:line を記録 |
+
+## 信頼度
+
+| 証拠                   | レベル   |
+| ---------------------- | -------- |
+| スキーマ + バリデータ  | verified |
+| スキーマファイルのみ   | verified |
+| 型/クラス定義          | inferred |
+| Grepマッチのみ         | unknown  |
