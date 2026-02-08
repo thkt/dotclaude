@@ -6,27 +6,29 @@ set -euo pipefail
 
 command -v jq &>/dev/null || { echo '{"decision": "deny", "reason": "jq not available"}'; exit 0; }
 
-INPUT=$(cat)
+INPUT=$(</dev/stdin)
 
 if [[ -z "$INPUT" ]]; then
   echo '{"decision": "ask", "reason": "Empty input received"}'
   exit 0
 fi
 
-if ! echo "$INPUT" | jq empty 2>/dev/null; then
+if ! jq empty <<< "$INPUT" 2>/dev/null; then
   echo '{"decision": "deny", "reason": "Malformed input"}'
   exit 0
 fi
 
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // "unknown"')
-TOOL_INPUT=$(echo "$INPUT" | jq -c '.tool_input // {}')
-FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // .path // ""')
+eval "$(jq -r '
+  @sh "TOOL_NAME=\(.tool_name // "unknown")",
+  @sh "FILE_PATH=\(.tool_input.file_path // .tool_input.path // "")"
+' <<< "$INPUT")"
+FILE_PATH=$(realpath "$FILE_PATH" 2>/dev/null || echo "$FILE_PATH")
 
 # Sensitive file writes → deny
 if [[ "$TOOL_NAME" =~ ^(Write|Edit|MultiEdit)$ ]]; then
   if [[ "$FILE_PATH" =~ \.(env|key|secret|token|credentials)($|\.) ]] ||
-     [[ "$FILE_PATH" == *"id_rsa"* ]] || [[ "$FILE_PATH" == *"id_ed25519"* ]] ||
-     [[ "$FILE_PATH" == *"secrets"* ]]; then
+     [[ "$FILE_PATH" == *"/.ssh/id_rsa"* ]] || [[ "$FILE_PATH" == *"/.ssh/id_ed25519"* ]] ||
+     [[ "$FILE_PATH" == */secrets/* ]]; then
     echo '{"decision": "deny", "reason": "Sensitive file write blocked"}'
     exit 0
   fi

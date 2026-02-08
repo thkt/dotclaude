@@ -11,6 +11,8 @@
 
 ## フェーズ0: テスト生成
 
+前提: `/sow` → `/spec` → `/code` パイプライン。SpecにFR-xxx（機能要件）項目が含まれていること。
+
 1. workspace内の`spec.md`を自動検出
 2. FR-xxx要件をパース
 3. 全テストを**スキップ状態**で生成
@@ -20,12 +22,12 @@
 
 各テストで:
 
-| ステップ | アクション                        |
-| -------- | --------------------------------- |
-| Red      | `.skip`削除、正しい失敗を確認     |
-| Green    | 最小実装 (Ralph-loop自動リトライ) |
-| Refactor | SOLID, DRY, オッカム適用          |
-| Commit   | 全チェック通過                    |
+| ステップ | アクション                              |
+| -------- | --------------------------------------- |
+| Red      | `.skip`削除、正しい失敗を確認           |
+| Green    | 最小実装 (Ralph-loop自動リトライ、任意) |
+| Refactor | SOLID, DRY, オッカム適用                |
+| Commit   | 全チェック通過                          |
 
 ## 品質ゲート
 
@@ -43,4 +45,48 @@ npm run lint & npm run type-check & npm test & wait
 
 ## IDR生成
 
-完了後、変更ファイルと主要決定でIDRを生成。
+完了後、以下のフォーマットでIDRを生成:
+
+````markdown
+# IDR: {要約タイトル}
+
+> {YYYY-MM-DD}
+
+## Summary
+
+{変更内容と目的を2-3文で要約}
+
+## Changes
+
+### [{ファイルパス}](file:///{絶対パス})
+
+```diff
+@@ -{old_start},{old_count} +{new_start},{new_count} @@
+-削除行
++追加行
+```
+
+> [!NOTE]
+> ### 変更内容
+> - {変更点 — 箇条書き}
+
+> [!TIP]
+> ### 設計意図
+> - **{判断}**: {その判断をした理由}
+
+---
+
+### git diff --stat
+```
+ {file} | {count} {++++----}
+ N files changed, M insertions(+), D deletions(-)
+```
+````
+
+ルール:
+
+- ファイルリンク: `file:///` + 絶対パス (VS Codeでクリック可能)
+- Diff: `@@` hunkヘッダーで行番号を含める
+- ファイルごとの順序: リンク見出し → diff → `[!NOTE]` 変更内容 → `[!TIP]` 設計意図
+- 出力パス: `$IDR_DIR/idr-{NN}.md` (自動採番)
+- 出力言語: `settings.json` の `language` 設定に従う

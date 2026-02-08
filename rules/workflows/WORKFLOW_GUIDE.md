@@ -1,40 +1,42 @@
 # Workflow Guide
 
-Guide for command selection and workflow patterns.
-
 ## Standard Workflows
 
-| Pattern       | Workflow                                                                             | When                                    |
-| ------------- | ------------------------------------------------------------------------------------ | --------------------------------------- |
-| Quick Fix     | `/fix`                                                                               | Small bug, stable codebase              |
-| Investigation | `/research` → `/fix`                                                                 | Unknown cause                           |
-| Feature       | `/feature` (or: `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate`) | New capability, requirements unstable   |
-| Simple        | `/code` → `/test`                                                                    | Clear implementation, tech stack stable |
+| Pattern       | Workflow                                                                             | When                                  |
+| ------------- | ------------------------------------------------------------------------------------ | ------------------------------------- |
+| Quick Fix     | `/fix`                                                                               | Small bug, stable codebase            |
+| Investigation | `/research` → `/fix`                                                                 | Unknown cause                         |
+| Feature       | `/feature` (or: `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate`) | New capability, requirements unstable |
+| Simple        | `/code` → `/test`                                                                    | Clear implementation                  |
 
 ## Command Selection
 
-| Criteria      | [✓] High Priority     | [→] Medium Priority  | [?] Low Priority    |
-| ------------- | --------------------- | -------------------- | ------------------- |
-| Understanding | ≥95% → direct         | 70-94% → `/think`    | <70% → `/research`  |
-| Complexity    | Multi-step → workflow | Single file → `/fix` | Unclear → `/think`  |
-| Urgency       | Critical → `/fix`     | Normal → standard    | Planning → `/think` |
+| Understanding | Complexity | Result            |
+| ------------- | ---------- | ----------------- |
+| ≥95%          | Simple     | `/fix` or `/code` |
+| 70-94%        | Any        | `/think`          |
+| <70%          | Any        | `/research`       |
+| Any           | Critical   | `/fix` (urgent)   |
+| Any           | Unclear    | `/research`       |
 
-### Task Analysis
+## Team-First Principle
 
-| User Intent        | Analysis            | Result                             |
-| ------------------ | ------------------- | ---------------------------------- |
-| "X is broken"      | Need investigation? | Yes → `/research` → `/fix`         |
-| "Add Y feature"    | Multi-step?         | Yes → `/think` → `/code` → `/test` |
-| "Site is down"     | Critical?           | Yes → `/fix` (urgent)              |
-| "Fix typo"         | Simple & clear?     | Yes → `/fix`                       |
-| "How does Z work?" | Investigation only  | `/research` (no implementation)    |
+Default: Team (TeamCreate + TaskList for progress tracking)
 
-## Edge Cases
+| Command     | Mode | Notes                        |
+| ----------- | ---- | ---------------------------- |
+| `/feature`  | Team | Existing team structure      |
+| `/audit`    | Auto | Scope-based decision         |
+| `/think`    | Team | Hard to pre-judge complexity |
+| `/code`     | Auto | Scope-based decision         |
+| `/fix`      | Auto | Solo conditions below        |
+| `/research` | Solo |                              |
+| Utility     | Solo | /commit, /branch, /pr, etc.  |
 
-| Situation                 | Action                                                 |
-| ------------------------- | ------------------------------------------------------ |
-| Ambiguous intent          | Ask clarification in understanding check               |
-| No command match          | Use `Command: N/A`, proceed with direct implementation |
-| Multiple valid approaches | Present options for user choice                        |
-| Unclear requirements      | Start with `/research`                                 |
-| Complex multi-part        | Break into sub-workflows                               |
+Auto: All solo conditions met → Solo, otherwise → Team
+
+| Solo Condition             | Example                          |
+| -------------------------- | -------------------------------- |
+| 1-2 target files           | Typo fix, single function change |
+| Single phase to completion | No research or test gen needed   |
+| No agent coordination      | No dependency on other agents    |

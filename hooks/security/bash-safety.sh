@@ -6,7 +6,6 @@ set -euo pipefail
 
 LOG_FILE="$HOME/.claude/logs/bash-safety.log"
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
-[[ -d "$(dirname "$LOG_FILE")" ]] || echo "WARNING: audit log dir unavailable" >&2
 
 log_block() {
   printf '[%s] BLOCKED pattern="%s" command="%s"\n' \
@@ -16,16 +15,16 @@ log_block() {
 
 command -v jq &>/dev/null || { echo "BLOCKED: jq required" >&2; exit 2; }
 
-INPUT=$(cat)
+INPUT=$(</dev/stdin)
 [[ -z "$INPUT" ]] && { echo "BLOCKED: empty input" >&2; exit 2; }
 
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null) || {
+COMMAND=$(jq -r '.tool_input.command // ""' <<< "$INPUT" 2>/dev/null) || {
   echo "BLOCKED: invalid JSON" >&2; exit 2
 }
 [[ -z "$COMMAND" ]] && exit 0
 
 # Strip quotes to prevent bypass via quoting
-NORMALIZED=$(echo "$COMMAND" | sed "s/['\"]//g")
+NORMALIZED=${COMMAND//[\'\"]/}
 
 DANGER_PATTERNS=(
   # File deletion (project policy: use mv ~/.Trash/ instead)
@@ -59,13 +58,15 @@ DANGER_PATTERNS=(
 )
 
 # Collapse newlines to prevent multiline bypass
-COMMAND_SINGLE=$(printf '%s' "$COMMAND" | tr '\n' ' ')
-NORMALIZED_SINGLE=$(printf '%s' "$NORMALIZED" | tr '\n' ' ')
+COMMAND_SINGLE=${COMMAND//$'\n'/ }
+NORMALIZED_SINGLE=${NORMALIZED//$'\n'/ }
 
-for pattern in "${DANGER_PATTERNS[@]}"; do
-  if printf '%s' "$COMMAND_SINGLE" | grep -qE "$pattern" || printf '%s' "$NORMALIZED_SINGLE" | grep -qE "$pattern"; then
+# Combine patterns into single regex for bash builtin matching
+COMBINED_PATTERN=$(IFS='|'; echo "${DANGER_PATTERNS[*]}")
+for target in "$COMMAND_SINGLE" "$NORMALIZED_SINGLE"; do
+  if [[ "$target" =~ $COMBINED_PATTERN ]]; then
     echo "BLOCKED: dangerous command detected" >&2
-    log_block "$pattern" "$COMMAND"
+    log_block "${BASH_REMATCH[0]}" "$COMMAND"
     exit 2
   fi
 done

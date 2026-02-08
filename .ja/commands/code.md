@@ -1,6 +1,6 @@
 ---
 description: TDD/RGRCサイクルでリアルタイムテストフィードバック付きコード実装
-allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskList, TaskUpdate, AskUserQuestion
+allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, TeamCreate, SendMessage, AskUserQuestion
 model: opus
 argument-hint: "[実装内容] [--frontend] [--principles] [--storybook]"
 ---
@@ -11,67 +11,42 @@ TDD/RGRCサイクルと品質チェックによるコード実装。
 
 ## 入力
 
-- 実装の説明: `$1`（必須）
-- `$1`が空の場合 → AskUserQuestionで選択
-- フラグ: `--frontend`, `--principles`, `--storybook`（任意、`$1`に含める）
+実装の説明: `$1`（必須、空の場合はプロンプト表示）
+フラグ: `--frontend`, `--principles`, `--storybook`
 
-### コンテキスト選択
-
-| 質問                 | 選択肢                                   |
-| -------------------- | ---------------------------------------- |
-| 実装内容             | [Otherで自由入力]                        |
-| コンテキスト（任意） | frontend / principles / storybook / none |
-
-## 条件付きコンテキスト
-
-| フラグ         | 読み込み                   | 用途             |
-| -------------- | -------------------------- | ---------------- |
-| `--frontend`   | applying-frontend-patterns | React/UI         |
-| `--principles` | applying-code-principles   | リファクタリング |
-| `--storybook`  | integrating-storybook      | Stories          |
+| フラグ         | 読み込み                   |
+| -------------- | -------------------------- |
+| `--frontend`   | applying-frontend-patterns |
+| `--principles` | applying-code-principles   |
+| `--storybook`  | integrating-storybook      |
 
 ## Skills & Agents
 
-| タイプ | 名前                    | 目的                          |
-| ------ | ----------------------- | ----------------------------- |
-| Agent  | test-generator          | TDDテスト生成 (fork)          |
-| Skill  | orchestrating-workflows | RGRCサイクル定義              |
-| Plugin | ralph-loop              | 自動イテレーション (external) |
+- Agent: test-generator（TDDテスト生成、fork）
+- Skill: orchestrating-workflows（RGRCサイクル）
+- Plugin: ralph-loop（自動イテレーション、未使用時は手動フォールバック）
 
-### ralph-loop フォールバック
+## チーム構成
 
-プラグインなし: 手動イテレーション（各RGRCステップでユーザー確認）
+```text
+/code (LEADER)
+└── test-gen (test-generator, TDDテスト生成)
+```
 
 ## 実行
 
-| Step | アクション                                              |
-| ---- | ------------------------------------------------------- |
-| 1    | `Task`で`subagent_type: test-generator`によるテスト生成 |
-| 2    | `ralph-loop`自動イテレーションを伴うRGRCサイクル        |
-| 3    | テストはforkコンテキストで実行（メインを保持）          |
+1. `TeamCreate("code-{timestamp}")`
+2. `TaskCreate` でテスト生成 + RGRCフェーズを作成
+3. `test-gen` チームメイトを spawn（`subagent_type: test-generator`）
+4. test-gen から DM でテスト結果を受信
+5. `ralph-loop` 自動イテレーションを伴う RGRC サイクル
+6. フェーズ完了ごとに `TaskUpdate`
+7. `SendMessage(shutdown_request)` を test-gen に送信
 
 ## SOWステータス更新
 
-SOWが存在する場合、開始時にステータスを`in-progress`に更新。
-
-| 現在のステータス | アクション                       |
-| ---------------- | -------------------------------- |
-| draft            | 更新 → `in-progress`             |
-| in-progress      | スキップ（変更不要）             |
-| completed        | 更新 → `in-progress`（作業再開） |
-| SOW未検出        | スキップ（アクション不要）       |
+SOWが存在する場合: `draft` or `completed` → `in-progress` に更新
 
 ## Todo進捗トラッキング
 
-| タイミング   | アクション                              |
-| ------------ | --------------------------------------- |
-| 開始時       | `TaskList` → フェーズ照合 → in_progress |
-| フェーズ完了 | `TaskUpdate` → completed                |
-| 次フェーズ   | `TaskUpdate` → next → in_progress       |
-| Todo未設定   | スキップ（`/think` 未実行）             |
-
-## 検証
-
-| チェック                                              | 必須 |
-| ----------------------------------------------------- | ---- |
-| `Task`で`subagent_type: test-generator`を呼び出した？ | Yes  |
+`TaskList` + `TaskUpdate` で RGRC フェーズを追跡（`/think` から Todo が存在する場合）
