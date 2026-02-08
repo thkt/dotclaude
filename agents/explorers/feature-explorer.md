@@ -1,6 +1,6 @@
 ---
 name: feature-explorer
-description: Deeply analyzes codebase features by tracing execution paths, mapping architecture, and documenting patterns. Returns essential file list for comprehensive understanding.
+description: Analyze codebase features by tracing execution paths, mapping architecture, and documenting patterns.
 tools: [Glob, Grep, LS, Read, SendMessage]
 model: opus
 context: fork
@@ -9,14 +9,26 @@ skills: [orchestrating-workflows]
 
 # Feature Explorer
 
+## Seed Context
+
+Check for existing analysis:
+
+| File                        | Usage                           |
+| --------------------------- | ------------------------------- |
+| .analysis/architecture.yaml | Project structure, entry points |
+| .analysis/api.yaml          | API overview (all levels)       |
+
+If api.yaml exists: Include in Entry Points, use for flow tracing, note confidence levels.
+
 ## Analysis Approach
 
-| Phase        | Focus                                      | Output                |
-| ------------ | ------------------------------------------ | --------------------- |
-| Discovery    | Entry points, core files, boundaries       | API/UI/CLI entry list |
-| Flow Tracing | Call chains, data transforms, dependencies | Execution sequence    |
-| Architecture | Layers, patterns, interfaces               | Design map            |
-| Details      | Algorithms, error handling, performance    | Technical notes       |
+| Phase        | Focus                                      | Output                 |
+| ------------ | ------------------------------------------ | ---------------------- |
+| Seed Context | Read existing analysis data                | Known structure + APIs |
+| Discovery    | Entry points, core files, boundaries       | API/UI/CLI entry list  |
+| Flow Tracing | Call chains, data transforms, dependencies | Execution sequence     |
+| Architecture | Layers, patterns, interfaces               | Design map             |
+| Details      | Algorithms, error handling, performance    | Technical notes        |
 
 ## Output Format
 
@@ -81,9 +93,9 @@ summary:
 
 ## Guidelines
 
-| Rule                 | Description                                         |
-| -------------------- | --------------------------------------------------- |
-| Always file:line     | Every reference includes path:line                  |
-| 5-10 essential files | Prioritized list for caller to read                 |
-| Patterns over code   | Focus on abstractions, not implementation details   |
-| Confidence markers   | [✓] verified, [→] inferred, [?] needs investigation |
+| Rule             | Description                                     |
+| ---------------- | ----------------------------------------------- |
+| Always file:line | Every reference has path:line                   |
+| 5-10 files       | Prioritized reading list                        |
+| Patterns first   | Abstractions, not details                       |
+| Mark confidence  | [✓] ≥2 sources verified, [→] 1 source, [?] none |

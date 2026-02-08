@@ -1,7 +1,7 @@
 ---
 name: api-analyzer
-description: Analyze codebase API endpoints, generate API specification.
-tools: [Bash, Read, Grep, Glob, LS]
+description: Analyze codebase API endpoints and generate API specification.
+tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [documenting-apis]
 context: fork
@@ -9,35 +9,59 @@ context: fork
 
 # API Analyzer
 
-Generate API specification from codebase analysis.
-
-## Generated Content
-
-| Section        | Description                   |
-| -------------- | ----------------------------- |
-| Base URL       | API base endpoint detection   |
-| Authentication | Auth methods and headers      |
-| Endpoints      | Routes with request/response  |
-| Error Format   | Standard error response       |
-| Types          | Shared data types and schemas |
-
 ## Analysis Phases
 
-| Phase | Action              | Command                                      |
-| ----- | ------------------- | -------------------------------------------- |
-| 1     | Framework Detection | `grep -r "express\|fastify\|next\|flask"`    |
-| 2     | Route Discovery     | `grep -r "app.get\|router.post\|@app.route"` |
-| 3     | Auth Detection      | `grep -r "auth\|jwt\|bearer\|middleware"`    |
-| 4     | Type Extraction     | `grep -r "interface\|type\|schema"`          |
-| 5     | Error Patterns      | `grep -r "error\|exception\|catch"`          |
+| Phase | Action                   | Method                                                                  |
+| ----- | ------------------------ | ----------------------------------------------------------------------- |
+| 0     | Seed Context             | Read `.analysis/architecture.yaml` (if exists) for entry points         |
+| 1     | Framework Detection      | Glob for `package.json`, `requirements.txt`, `go.mod`; Read to identify |
+| 2     | Schema Discovery         | Glob for schema/type definition files (see patterns below)              |
+| 3     | Schema Reading           | Read each schema file, extract fields with name/type/required           |
+| 4     | Route-Schema Correlation | Glob for route/repository files; Read and match to schemas              |
+| 5     | Auth Detection           | Grep for auth middleware, JWT patterns in discovered route files        |
+| 6     | Confidence Tagging       | Assign verified/inferred/unknown per endpoint                           |
+
+### Phase 2: Schema Discovery Patterns
+
+| Framework  | Glob Pattern                                                        |
+| ---------- | ------------------------------------------------------------------- |
+| Generic    | `**/schema.ts`, `**/*.schema.ts`, `**/schema.zod.ts`, `**/types.ts` |
+| Next.js    | `app/api/**/route.ts`                                               |
+| Express    | `**/routes/**/*.ts`, `**/router/**/*.ts`                            |
+| Repository | `**/_repositories/*/schema.ts`, `**/repositories/*/schema.ts`       |
+| Python     | `**/schemas.py`, `**/models.py`, `**/*_schema.py`                   |
+
+### Phase 3: Schema Reading
+
+Read each file in full. Extract name, type, required (`?` or `.optional()` = optional).
+
+### Phase 4: Route-Schema Correlation
+
+| Framework  | Route File Pattern                                           |
+| ---------- | ------------------------------------------------------------ |
+| Repository | `**/repository.ts` — match exported methods to schemas       |
+| Express    | `**/routes/*.ts` — match `router.get/post/put/delete`        |
+| Next.js    | `app/api/**/route.ts` — match exported `GET/POST/PUT/DELETE` |
+| Flask      | `**/*.py` with `@app.route`                                  |
+| FastAPI    | `**/*.py` with `@app.get/post/put/delete`                    |
+
+### Phase 6: Confidence Rules
+
+| Condition                 | Tag      | Required Evidence                               |
+| ------------------------- | -------- | ----------------------------------------------- |
+| schema + route both match | verified | file:line from both schema.ts and repository.ts |
+| schema only               | inferred | file:line from schema.ts                        |
+| route only                | inferred | file:line from route/repository file            |
+| grep match only           | unknown  | grep pattern match (no file read)               |
 
 ## Error Handling
 
-| Error             | Action                   |
-| ----------------- | ------------------------ |
-| No API found      | Report "No API detected" |
-| Unknown framework | Use generic patterns     |
-| Large project     | Sample top 50 routes     |
+| Error             | Action                                         |
+| ----------------- | ---------------------------------------------- |
+| No schema found   | Fall back to route-only analysis, all inferred |
+| No API found      | Report "No API detected"                       |
+| Unknown framework | Use generic schema patterns                    |
+| Large project     | Sample top 50 routes, note sampling in output  |
 
 ## Output
 
@@ -46,6 +70,16 @@ Return structured YAML:
 ```yaml
 project_name: <name>
 base_url: <base_url>
+generated_at: <ISO 8601 timestamp>
+source: analyzer
+meta:
+  content_type: <detected or "application/json">
+  date_format: <detected or "ISO 8601">
+  framework: <detected framework>
+confidence_summary:
+  verified: <count>
+  inferred: <count>
+  unknown: <count>
 authentication:
   - method: <type>
     header: <header>
@@ -55,10 +89,14 @@ endpoints:
     method: <METHOD>
     path: <path>
     description: <description>
+    confidence: <verified|inferred|unknown>
+    confidence_reason: <reason string>
     request:
+      content_type: <content type>
       fields:
         - name: <field>
           type: <type>
+          required: <true|false>
     response:
       fields:
         - name: <field>
@@ -76,6 +114,9 @@ error_format:
     }
 types:
   - name: <type_name>
-    fields: <fields>
+    source_file: <file:line>
+    fields:
+      - name: <field>
+        type: <type>
     description: <description>
 ```

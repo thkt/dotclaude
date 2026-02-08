@@ -15,6 +15,7 @@ Claude Codeプラグインのアーキテクチャ決定を記録するドキュ
 | [0007](./0007-configuration-optimization.md)               | Claude Code 設定の最適化           | proposed   |
 | [0008](./0008-audience-optimized-templates.md)             | 読み手別テンプレート最適化         | accepted   |
 | [0009](./0009-externalize-idr-as-rust-binary.md)           | IDR生成の外部リポジトリ化（Rust）  | accepted   |
+| [0010](./0010-schema-first-api-documentation.md)           | Schema-First APIドキュメント生成   | accepted   |
 
 ## 関連ルール
 

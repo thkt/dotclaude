@@ -1,48 +1,36 @@
 ---
 description: Generate documentation from codebase analysis
-allowed-tools: Read, Write, Task, AskUserQuestion
+tools: [Read, Write, Task, AskUserQuestion]
 model: opus
 argument-hint: "[architecture|api|domain|setup]"
 ---
 
 # /docs - Documentation Generator
 
-Generate documentation by analyzing the codebase.
-
 ## Input
 
-- Documentation type: `$1` (required)
-  - `architecture` - Architecture overview with diagrams
-  - `api` - API specification
-  - `domain` - Domain glossary and relationships
-  - `setup` - Environment setup guide
-- If `$1` is empty → select type via AskUserQuestion
+`$1` (required): `architecture` | `api` | `domain` | `setup`
+
+If empty, use AskUserQuestion to select.
 
 ## Execution
 
-1. Call appropriate analyzer based on type:
-   - `architecture` → `architecture-analyzer`
-   - `api` → `api-analyzer`
-   - `domain` → `domain-analyzer`
-   - `setup` → `setup-analyzer`
+1. Call analyzer: `architecture-analyzer`, `api-analyzer`, `domain-analyzer`, or `setup-analyzer`
 2. Analyzer returns structured YAML
-3. If type is `architecture`: Write YAML to `{project_root}/.analysis/architecture.yaml`
-4. Load corresponding template:
-   - [@../templates/docs/architecture.md](../templates/docs/architecture.md)
-   - [@../templates/docs/api.md](../templates/docs/api.md)
-   - [@../templates/docs/domain.md](../templates/docs/domain.md)
-   - [@../templates/docs/setup.md](../templates/docs/setup.md)
-5. Format YAML output using template structure
-6. If type is `architecture`: Write to `{project_root}/.analysis/architecture.md`
-7. Present to user
+3. Validate YAML has required top-level keys (error → report "Analyzer returned invalid YAML")
+4. For `architecture` or `api`: Write YAML to `.analysis/{type}.yaml`
+5. Load template from `templates/docs/{type}.md`
+6. Format YAML using template structure
+7. For `architecture` or `api`: Write to `.analysis/{type}.md`
+8. Present to user
 
-## Flow (architecture)
+## Flow (architecture / api)
 
 ```text
-[analyzer YAML] → .analysis/architecture.yaml (data)
-               → [template] → .analysis/architecture.md (document)
+[analyzer YAML] → .analysis/{type}.yaml (data)
+               → [template] → .analysis/{type}.md (document)
 ```
 
 ## Output
 
-Formatted markdown using template structure. Variables: `{field}`, `{object.property}`, `{array[].property}`.
+Markdown formatted with template. Variables: `{field}`, `{object.property}`, `{array[].property}`.

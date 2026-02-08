@@ -5,9 +5,15 @@
 ```markdown
 # {project_name} - API Specification
 
-## Base URL
+> Generated: {generated_at} | Framework: {meta.framework} | Confidence: {confidence_summary.verified} verified, {confidence_summary.inferred} inferred, {confidence_summary.unknown} unknown
 
-\`{base_url}\`
+## Meta
+
+| Property     | Value               |
+| ------------ | ------------------- |
+| Base URL     | `{base_url}`        |
+| Content-Type | {meta.content_type} |
+| Date Format  | {meta.date_format}  |
 
 ## Authentication
 
@@ -19,19 +25,21 @@
 
 ### {endpoints[].resource}
 
-#### {endpoints[].method} {endpoints[].path}
+#### {endpoints[].method} {endpoints[].path} [{endpoints[].confidence}]
 
 **Description**: {endpoints[].description}
 
-**Request**:
-\`\`\`json
-{endpoints[].request.fields}
-\`\`\`
+**Request** ({endpoints[].request.content_type}):
+
+| Field                               | Type                                | Required                                |
+| ----------------------------------- | ----------------------------------- | --------------------------------------- |
+| {endpoints[].request.fields[].name} | {endpoints[].request.fields[].type} | {endpoints[].request.fields[].required} |
 
 **Response**:
-\`\`\`json
-{endpoints[].response.fields}
-\`\`\`
+
+| Field                                | Type                                 |
+| ------------------------------------ | ------------------------------------ |
+| {endpoints[].response.fields[].name} | {endpoints[].response.fields[].type} |
 
 **Status Codes**:
 
@@ -47,7 +55,7 @@
 
 ## Types
 
-| Type           | Fields           | Description           |
-| -------------- | ---------------- | --------------------- |
-| {types[].name} | {types[].fields} | {types[].description} |
+| Type           | Source                | Fields           | Description           |
+| -------------- | --------------------- | ---------------- | --------------------- |
+| {types[].name} | {types[].source_file} | {types[].fields} | {types[].description} |
 ```
