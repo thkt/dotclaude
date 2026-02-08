@@ -73,7 +73,8 @@
         "./agents/thinkers/thinker-pragmatist.md",
         "./agents/thinkers/thinker-architect.md",
         "./agents/thinkers/thinker-advocate.md",
-        "./agents/teams/think-synthesizer.md"
+        "./agents/teams/think-synthesizer.md",
+        "./agents/teams/unit-implementer.md"
       ]
     },
     {
