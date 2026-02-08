@@ -6,6 +6,7 @@ set -euo pipefail
 
 LOG_FILE="$HOME/.claude/logs/bash-safety.log"
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
+[[ -d "$(dirname "$LOG_FILE")" ]] || echo "WARNING: audit log dir unavailable" >&2
 
 log_block() {
   printf '[%s] BLOCKED pattern="%s" command="%s"\n' \
@@ -43,8 +44,18 @@ DANGER_PATTERNS=(
   '\bgit[[:space:]]+clean[[:space:]]+-[[:alnum:]]*[fd]'
   '\bgit[[:space:]]+reset[[:space:]]+--hard'
   '\bgit[[:space:]]+stash[[:space:]]+drop'
-  # Indirect deletion via xargs
-  '\bxargs[[:space:]].*\brm\b'
+  # Indirect deletion via xargs/find
+  '\bxargs[[:space:]].*\b(rm|rmdir|unlink|shred)\b'
+  '\bfind[[:space:]].*-exec[[:space:]].*\brm\b'
+  '\bfind[[:space:]].*-delete\b'
+  # Indirect execution and file modification
+  '\beval[[:space:]]'
+  '\bsed[[:space:]].*-i\b'
+  '\bsed[[:space:]].*--in-place\b'
+  '\bawk[[:space:]].*system\s*\('
+  # Download-then-execute
+  '\bcurl[[:space:]].*-o[[:space:]]+/tmp'
+  '\bwget[[:space:]].*-O[[:space:]]+/tmp'
 )
 
 # Collapse newlines to prevent multiline bypass

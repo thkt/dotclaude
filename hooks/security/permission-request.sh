@@ -23,7 +23,7 @@ TOOL_INPUT=$(echo "$INPUT" | jq -c '.tool_input // {}')
 FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // .path // ""')
 
 # Sensitive file writes → deny
-if [[ "$TOOL_NAME" =~ ^(Write|Edit)$ ]]; then
+if [[ "$TOOL_NAME" =~ ^(Write|Edit|MultiEdit)$ ]]; then
   if [[ "$FILE_PATH" =~ \.(env|key|secret|token|credentials)($|\.) ]] ||
      [[ "$FILE_PATH" == *"id_rsa"* ]] || [[ "$FILE_PATH" == *"id_ed25519"* ]] ||
      [[ "$FILE_PATH" == *"secrets"* ]]; then
