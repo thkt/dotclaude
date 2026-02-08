@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Purpose: Detect source directory (src or app)
 # Input: $1 = project type, $2 = project root (default: current directory)
 # Output: src|app|.

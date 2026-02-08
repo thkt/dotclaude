@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # detect-environment.sh - Environment Configuration Detection Script
 
 set -e

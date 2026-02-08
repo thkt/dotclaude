@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Markdown Lint Validation Script
 # Usage: validate-markdown.sh <markdown-file-or-directory>
 # Exit codes: 0 = success (including warnings), 1 = critical error
@@ -13,14 +13,14 @@ source "$(dirname "$0")/colors.sh"
 
 # Check if markdownlint-cli2 is installed
 if ! command -v markdownlint-cli2 &> /dev/null; then
-  echo -e "${BLUE}ℹ️  Markdown lint skipped (markdownlint-cli2 not installed)${NC}"
-  echo -e "${BLUE}   Install: npm install -g markdownlint-cli2${NC}"
+  echo "${BLUE}ℹ️  Markdown lint skipped (markdownlint-cli2 not installed)${NC}"
+  echo "${BLUE}   Install: npm install -g markdownlint-cli2${NC}"
   exit 0
 fi
 
 # Check if target exists
 if [ ! -e "$TARGET" ]; then
-  echo -e "${RED}❌ Error: Target not found: $TARGET${NC}"
+  echo "${RED}❌ Error: Target not found: $TARGET${NC}"
   exit 1
 fi
 
@@ -52,16 +52,16 @@ args+=("$TARGET")
 
 # Run lint
 if [ -n "$CONFIG_SOURCE" ]; then
-  echo -e "${BLUE}📝 Running Markdown lint (config: $CONFIG_SOURCE)...${NC}"
+  echo "${BLUE}📝 Running Markdown lint (config: $CONFIG_SOURCE)...${NC}"
 else
-  echo -e "${BLUE}📝 Running Markdown lint (default config)...${NC}"
+  echo "${BLUE}📝 Running Markdown lint (default config)...${NC}"
 fi
 
 # Execute and capture result
 if "${args[@]}" 2>&1; then
-  echo -e "${GREEN}✅ Markdown lint: OK${NC}"
+  echo "${GREEN}✅ Markdown lint: OK${NC}"
   exit 0
 else
-  echo -e "${YELLOW}⚠️  Markdown lint: Issues found (see above)${NC}"
+  echo "${YELLOW}⚠️  Markdown lint: Issues found (see above)${NC}"
   exit 0  # Non-blocking - warnings only
 fi

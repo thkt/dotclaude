@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Purpose: Calculate next ADR number
 # Input: ADR directory path (default: ./adr)
 # Output: Next number in 0001 format

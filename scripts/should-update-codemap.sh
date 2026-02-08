@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Purpose: Determine if codemap update is needed
 # Input: None (auto-detected from git diff --cached)
 # Output: true/false (stdout), reason (stderr)

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # CCPlanView opener: opens SOW/Spec/IDR files in CCPlanView
 # Failure mode: fail-open (skip if app not installed)
 set +e

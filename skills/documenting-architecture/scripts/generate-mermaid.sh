@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # generate-mermaid.sh - Mermaid Diagram Generation Script
 
 set -e

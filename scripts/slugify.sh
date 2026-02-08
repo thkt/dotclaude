@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Purpose: Convert text to slug format
 # Input: $1 or stdin
 # Output: Slug format (e.g., "My Title!" -> "my-title")

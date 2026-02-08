@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # SubagentStart hook: log start event and play notification sound
 # Failure mode: fail-open (logging/sound failure should not block agent)
 set +e

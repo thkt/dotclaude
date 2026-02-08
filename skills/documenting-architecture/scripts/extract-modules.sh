@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # extract-modules.sh - Module Information Extraction Script
 
 set -e

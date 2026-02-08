@@ -1,5 +1,4 @@
-#!/bin/bash
-# PostToolUse hook: Run tsc --noEmit after editing .ts/.tsx files
+#!/bin/zsh
 # Failure mode: fail-open (report errors but do not block)
 
 set +e
@@ -24,8 +23,14 @@ PROJECT_ROOT=$("${HOME}/.claude/scripts/find-config-root.sh" "$FILE_DIR" "tsconf
 command -v npx &> /dev/null || exit 0
 
 cd "$PROJECT_ROOT"
-TSC_OUTPUT=$(npx tsc --noEmit 2>&1) || true
+TSC_OUTPUT=$(npx tsc --noEmit 2>&1)
+TSC_EXIT=$?
 ERROR_COUNT=$(echo "$TSC_OUTPUT" | grep -c "error TS" || echo "0")
+
+if [ "$TSC_EXIT" -ne 0 ] && [ "$ERROR_COUNT" -eq 0 ]; then
+  echo "⚠ tsc failed to run (exit $TSC_EXIT): $(echo "$TSC_OUTPUT" | head -1)" >&2
+  exit 0
+fi
 
 [ "$ERROR_COUNT" -eq 0 ] && exit 0
 

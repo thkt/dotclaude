@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Bash Safety Hook - PreToolUse guard for dangerous commands
 # Failure mode: fail-closed (block on error)
 # Exit: 0=allow, 2=block
@@ -24,7 +24,11 @@ COMMAND=$(jq -r '.tool_input.command // ""' <<< "$INPUT" 2>/dev/null) || {
 [[ -z "$COMMAND" ]] && exit 0
 
 # Strip quotes to prevent bypass via quoting
-NORMALIZED=${COMMAND//[\'\"]/}
+NORMALIZED=${COMMAND//[\'\"\`]/}
+NORMALIZED=${NORMALIZED//\$\(/}
+
+# Enable PCRE for \b word boundary support
+setopt REMATCH_PCRE 2>/dev/null
 
 DANGER_PATTERNS=(
   # File deletion (project policy: use mv ~/.Trash/ instead)
@@ -55,18 +59,29 @@ DANGER_PATTERNS=(
   # Download-then-execute
   '\bcurl[[:space:]].*-o[[:space:]]+/tmp'
   '\bwget[[:space:]].*-O[[:space:]]+/tmp'
+  # Interpreter-based execution bypass
+  '\bpython[23]?[[:space:]]+-c\b'
+  '\bperl[[:space:]]+-e\b'
+  '\bruby[[:space:]]+-e\b'
+  '\bnode[[:space:]]+-e\b'
+  '\bbase64[[:space:]].*\|[[:space:]]*(bash|sh|zsh)\b'
 )
+
+# Verify regex word boundary support via combined pattern (fail-closed)
+COMBINED_PATTERN="${(j:|:)DANGER_PATTERNS}"
+if ! [[ "rm -rf" =~ $COMBINED_PATTERN ]]; then
+  echo "BLOCKED: regex engine lacks \\b support" >&2
+  exit 2
+fi
 
 # Collapse newlines to prevent multiline bypass
 COMMAND_SINGLE=${COMMAND//$'\n'/ }
 NORMALIZED_SINGLE=${NORMALIZED//$'\n'/ }
 
-# Combine patterns into single regex for bash builtin matching
-COMBINED_PATTERN=$(IFS='|'; echo "${DANGER_PATTERNS[*]}")
 for target in "$COMMAND_SINGLE" "$NORMALIZED_SINGLE"; do
   if [[ "$target" =~ $COMBINED_PATTERN ]]; then
     echo "BLOCKED: dangerous command detected" >&2
-    log_block "${BASH_REMATCH[0]}" "$COMMAND"
+    log_block "$MATCH" "$COMMAND"
     exit 2
   fi
 done

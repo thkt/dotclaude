@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # extract-entities.sh - Entity/Model Extraction Script
 
 set -e

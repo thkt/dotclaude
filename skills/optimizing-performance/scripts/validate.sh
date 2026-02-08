@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Performance Optimization Skill Validation
 # Usage: ./validate.sh [skill-directory]
 

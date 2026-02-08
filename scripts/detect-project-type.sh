@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Purpose: Detect project type based on config files
 # Input: Project root path (default: current directory)
 # Output: node|rust|go|python|unknown

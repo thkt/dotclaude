@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # generate-er-diagram.sh - Conceptual Relationship Diagram (Mermaid ER) Generation Script
 
 set -e

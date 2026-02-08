@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # detect-endpoints.sh - API Endpoint Detection Script
 
 set -e

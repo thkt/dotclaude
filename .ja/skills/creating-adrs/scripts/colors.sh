@@ -1,0 +1,1 @@
+../../../../skills/creating-adrs/scripts/colors.sh

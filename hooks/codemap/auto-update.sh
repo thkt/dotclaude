@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Failure mode: fail-open (skip update on error)
 set +e
 
@@ -12,13 +12,14 @@ EXCLUDE_DIRS=(
 SHOULD_UPDATE_SCRIPT="${HOME}/.claude/scripts/should-update-codemap.sh"
 [ -x "$SHOULD_UPDATE_SCRIPT" ] || exit 0
 
-SHOULD_UPDATE=$("$SHOULD_UPDATE_SCRIPT" 2>/dev/null) || exit 0
-RESULT=$(echo "$SHOULD_UPDATE" | head -1)
-REASON=$(echo "$SHOULD_UPDATE" | tail -1)
+STDERR_TMP=$(mktemp) || exit 0
+trap 'rm -f "$STDERR_TMP"' EXIT
+RESULT=$("$SHOULD_UPDATE_SCRIPT" 2>"$STDERR_TMP") || exit 0
+REASON=$(cat "$STDERR_TMP")
 
 [ "$RESULT" = "false" ] && exit 0
 
-echo "$REASON"
+[ -n "$REASON" ] && echo "$REASON"
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 CODEMAP_DIR="${PROJECT_ROOT}/.analysis"
@@ -31,7 +32,7 @@ SCRIPTS_DIR="${HOME}/.claude/scripts"
 generate_tree() {
   local full_path="${1:-$PROJECT_ROOT}"
   local excludes
-  excludes=$(IFS='|'; echo "${EXCLUDE_DIRS[*]}")
+  excludes="${(j:|:)EXCLUDE_DIRS}"
 
   if command -v tree &> /dev/null && [ -d "$full_path" ]; then
     tree -L 3 -I "$excludes" "$full_path" 2>/dev/null || echo "(tree unavailable)"
@@ -40,8 +41,9 @@ generate_tree() {
     for p in "${EXCLUDE_DIRS[@]}"; do
       find_args+=(-not -path "*/$p/*")
     done
-    find "${find_args[@]}" 2>/dev/null | \
-      head -30 | sed "s|$PROJECT_ROOT/||" | sort || echo "(no files)"
+    local output
+    output=$(find "${find_args[@]}" 2>/dev/null | head -30 | sed "s|$PROJECT_ROOT/||" | sort)
+    echo "${output:-(no files)}"
   fi
 }
 
@@ -60,11 +62,18 @@ find_key_exports() {
     awk '{print $1, $2}' | sort -u | head -20 || echo "(none)"
 }
 
-PROJECT_TYPE=$("$SCRIPTS_DIR/detect-project-type.sh" "$PROJECT_ROOT")
-SRC_DIR=$("$SCRIPTS_DIR/get-src-dir.sh" "$PROJECT_TYPE" "$PROJECT_ROOT")
-FRAMEWORKS=$("$SCRIPTS_DIR/detect-frameworks.sh" "$PROJECT_ROOT")
+PROJECT_TYPE=$("$SCRIPTS_DIR/detect-project-type.sh" "$PROJECT_ROOT") || PROJECT_TYPE="unknown"
+[ -z "$PROJECT_TYPE" ] && PROJECT_TYPE="unknown"
+SRC_DIR=$("$SCRIPTS_DIR/get-src-dir.sh" "$PROJECT_TYPE" "$PROJECT_ROOT") || SRC_DIR=""
+FRAMEWORKS=$("$SCRIPTS_DIR/detect-frameworks.sh" "$PROJECT_ROOT") || FRAMEWORKS="N/A"
 
-cat > "$CODEMAP_DIR/architecture.md" << EOF
+TREE_OUTPUT=$(generate_tree "$PROJECT_ROOT/$SRC_DIR")
+ENTRY_POINTS=$(find_entry_points "$PROJECT_ROOT/$SRC_DIR")
+ENTRY_POINTS_MD=$(echo "$ENTRY_POINTS" | while read -r e; do [ -n "$e" ] && echo "- \`$e\`"; done)
+KEY_EXPORTS=$(find_key_exports "$PROJECT_ROOT/$SRC_DIR")
+
+emit_markdown() {
+  cat > "$CODEMAP_DIR/architecture.md" << EOF
 # Architecture - $(basename "$PROJECT_ROOT")
 
 > Updated: $TIMESTAMP | Type: $PROJECT_TYPE | Frameworks: $FRAMEWORKS
@@ -72,31 +81,34 @@ cat > "$CODEMAP_DIR/architecture.md" << EOF
 ## Structure
 
 \`\`\`text
-$(generate_tree "$PROJECT_ROOT/$SRC_DIR")
+$TREE_OUTPUT
 \`\`\`
 
 ## Entry Points
 
-$(find_entry_points "$PROJECT_ROOT/$SRC_DIR" | while read -r e; do [ -n "$e" ] && echo "- \`$e\`"; done)
+$ENTRY_POINTS_MD
 
 ## Key Exports
 
 \`\`\`text
-$(find_key_exports "$PROJECT_ROOT/$SRC_DIR")
+$KEY_EXPORTS
 \`\`\`
 EOF
-ENTRY_POINTS=$(find_entry_points "$PROJECT_ROOT/$SRC_DIR")
-KEY_EXPORTS=$(find_key_exports "$PROJECT_ROOT/$SRC_DIR")
+}
 
-cat > "$CODEMAP_DIR/architecture.yaml" << YAMLEOF
+emit_yaml() {
+  local fw_yaml
+  fw_yaml=$(echo "$FRAMEWORKS" | tr ',' '\n' | sed 's/^ *//' | while read -r fw; do
+    [ -n "$fw" ] && [ "$fw" != "N/A" ] && echo "  - \"$fw\""
+  done)
+
+  cat > "$CODEMAP_DIR/architecture.yaml" << YAMLEOF
 project_name: "$(basename "$PROJECT_ROOT")"
 updated: "$TIMESTAMP"
 source: hook
-project_type: $PROJECT_TYPE
+project_type: "$PROJECT_TYPE"
 frameworks:
-$(echo "$FRAMEWORKS" | tr ',' '\n' | sed 's/^ *//' | while read -r fw; do
-  [ -n "$fw" ] && [ "$fw" != "N/A" ] && echo "  - \"$fw\""
-done)
+$([ -n "$fw_yaml" ] && echo "$fw_yaml" || echo "  []")
 entry_points:
 $(echo "$ENTRY_POINTS" | while read -r e; do
   [ -n "$e" ] && echo "  - \"$e\""
@@ -106,6 +118,10 @@ $(echo "$KEY_EXPORTS" | while read -r e; do
   [ -n "$e" ] && echo "  - \"$e\""
 done)
 YAMLEOF
+}
+
+emit_markdown
+emit_yaml
 
 if command -v prettier &> /dev/null; then
   prettier --write "$CODEMAP_DIR/architecture.md" 2>/dev/null || echo "[Codemap] Warning: prettier formatting failed" >&2

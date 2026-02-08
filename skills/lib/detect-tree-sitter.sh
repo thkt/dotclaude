@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Detect tree-sitter-analyzer availability
 # Sets: USE_TSA (true/false)
 

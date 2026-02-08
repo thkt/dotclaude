@@ -1,7 +1,6 @@
-#!/bin/bash
-# SubagentStop hook: auto-save subagent execution logs
+#!/bin/zsh
 # Failure mode: fail-open (log save failure should not block)
-# Uses agent_id and agent_transcript_path fields (v2.0.42+)
+# Requires agent_id + agent_transcript_path fields (v2.0.42+)
 set +e
 
 LOG_DIR="$HOME/.claude/logs/agents"
@@ -15,14 +14,17 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
   mkdir -p -m 700 "$AGENT_LOG_DIR"
 
   LOG_FILE="$AGENT_LOG_DIR/transcript-${TIMESTAMP}.json"
-  cp "$TRANSCRIPT_PATH" "$LOG_FILE"
-  chmod 600 "$LOG_FILE"
-  ln -sf "$LOG_FILE" "$AGENT_LOG_DIR/latest.json"
+  if cp "$TRANSCRIPT_PATH" "$LOG_FILE"; then
+    chmod 600 "$LOG_FILE"
+    ln -sf "$LOG_FILE" "$AGENT_LOG_DIR/latest.json"
 
-  find "$AGENT_LOG_DIR" -name "transcript-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
+    find "$AGENT_LOG_DIR" -name "transcript-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
 
-  LINE_COUNT=$(wc -l < "$TRANSCRIPT_PATH" | tr -d ' ')
-  echo "✓ Agent log saved: $AGENT_ID (${LINE_COUNT} lines)"
+    LINE_COUNT=$(wc -l < "$TRANSCRIPT_PATH" | tr -d ' ')
+    echo "✓ Agent log saved: $AGENT_ID (${LINE_COUNT} lines)"
+  else
+    echo "⚠ Failed to save agent log: $AGENT_ID" >&2
+  fi
 else
   echo "⚠ Agent transcript not found: $AGENT_ID" >&2
 fi

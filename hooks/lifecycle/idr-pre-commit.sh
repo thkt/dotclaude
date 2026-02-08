@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # IDR Pre-commit Hook — blocks git commit until IDR is generated
 # Failure mode: fail-closed (block on error)
 

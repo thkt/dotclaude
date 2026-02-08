@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Purpose: Select template based on ADR title
 # Input: $1 = ADR title
 # Output: Template name

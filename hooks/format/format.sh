@@ -1,5 +1,4 @@
-#!/bin/bash
-# Auto-format hook: detects biome/prettier per project, prefers local binary
+#!/bin/zsh
 # Failure mode: fail-open (formatting errors do not block the tool)
 set +e
 
@@ -19,9 +18,11 @@ case "$EXT" in
 esac
 
 EXPANDED_PATH="${FILE_PATH/#\~/$HOME}"
+EXPANDED_PATH="${EXPANDED_PATH:a}"
 FILE_DIR=$(dirname "$EXPANDED_PATH")
 
 FIND_CONFIG="${HOME}/.claude/scripts/find-config-root.sh"
+[ -x "$FIND_CONFIG" ] || exit 0
 
 run_fmt() {
   local name="$1"
@@ -29,8 +30,6 @@ run_fmt() {
   shift 2
   if [ -n "$root" ] && [ -x "$root/node_modules/.bin/$name" ]; then
     "$root/node_modules/.bin/$name" "$@" 2>&1 || echo "$name failed: $FILE_PATH" >&2
-  else
-    npx "$name" "$@" 2>&1 || echo "$name (npx) failed: $FILE_PATH" >&2
   fi
 }
 

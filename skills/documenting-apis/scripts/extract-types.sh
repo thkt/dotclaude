@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # extract-types.sh - Type Definition Extraction Script
 
 set -e

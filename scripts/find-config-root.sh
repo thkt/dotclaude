@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Purpose: Find project root by searching for config file(s)
 # Input: $1 = start directory, $2+ = config filenames (default: tsconfig.json)
 # Output: Project root path (exit 1 if not found)

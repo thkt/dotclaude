@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # ADR Index Update Script
 # Usage: update-index.sh [adr-directory]
 
@@ -159,7 +159,7 @@ rm -f "$TEMP_FILE.bak"
 # Replace file
 mv "$TEMP_FILE" "$INDEX_FILE"
 
-echo -e "${GREEN}✅ Index update complete: $INDEX_FILE${NC}"
+echo "${GREEN}✅ Index update complete: $INDEX_FILE${NC}"
 echo ""
 echo "📊 Statistics:"
 echo "  Proposed: $(wc -l < "$TEMP_PROPOSED" | tr -d ' ')"

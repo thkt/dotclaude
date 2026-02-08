@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Claude Code Sandbox Setup Script
 # Failure mode: fail-open (partial setup is acceptable)
 # This script sets up the sandbox runtime for secure command execution

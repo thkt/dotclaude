@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Skill Validation Template
 # Usage: ./validate-template.sh <skill-directory>
 

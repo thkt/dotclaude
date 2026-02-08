@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # PR cache for statusline: lookup current branch PR with TTL-based file cache
 # Failure mode: fail-open (no PR display on error)
 # Requires: gh, jq, BRANCH (set by caller)
@@ -18,9 +18,10 @@ NOW=$(date +%s)
 HIT=""
 
 if [ -f "$CACHE_FILE" ]; then
-    CACHED=$(jq -r --arg k "$CACHE_KEY" '.[$k] // empty | if . != "" then [(.cached_at // 0), (.url // ""), (.number // ""), (.state // "")] | map(tostring) | @tsv else empty end' "$CACHE_FILE" 2>/dev/null)
-    if [ -n "$CACHED" ]; then
-        IFS=$'\t' read -r CACHED_AT PR_URL PR_NUM PR_STATE <<< "$CACHED"
+    CACHED_RAW=$(jq -r --arg k "$CACHE_KEY" '.[$k] // empty' "$CACHE_FILE" 2>/dev/null)
+    if [ -n "$CACHED_RAW" ]; then
+        IFS=$'\t' read -r CACHED_AT PR_URL PR_NUM PR_STATE \
+            <<< "$(echo "$CACHED_RAW" | jq -r '[(.cached_at // 0), (.url // ""), (.number // ""), (.state // "")] | map(tostring) | @tsv' 2>/dev/null)"
         if [ $((NOW - CACHED_AT)) -lt "$CACHE_TTL_SEC" ]; then
             HIT=1
         fi
@@ -29,7 +30,10 @@ fi
 
 if [ -z "$HIT" ]; then
     # macOS: perl is always available; coreutils timeout may not be
-    PR_JSON=$(perl -e 'alarm 3; exec @ARGV' gh pr view --json url,number,state 2>/dev/null || echo '{}')
+    PR_JSON=$(perl -e 'alarm 3; exec @ARGV' gh pr view --json url,number,state 2>/dev/null) || {
+        # Do not cache failures; let next invocation retry
+        return 0
+    }
     IFS=$'\t' read -r PR_URL PR_NUM PR_STATE <<< "$(echo "$PR_JSON" | jq -r '[(.url // ""), (.number // ""), (.state // "")] | map(tostring) | @tsv' 2>/dev/null)"
 
     mkdir -p "$CACHE_DIR"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # extract-glossary.sh - Domain Terms Extraction Script
 
 set -e
