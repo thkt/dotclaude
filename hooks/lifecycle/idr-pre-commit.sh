@@ -32,10 +32,14 @@ resolve_path() {
 
 if [ -f "$CURRENT_SOW" ]; then
   SOW_PATH=$(cat "$CURRENT_SOW")
-  real_sow=$(resolve_path "$SOW_PATH")
-  real_workspace=$(resolve_path "$HOME/.claude/workspace")
-  if [[ "$real_sow" == "$real_workspace"/* ]] && [ -f "$SOW_PATH" ]; then
-    IDR_DIR=$(dirname "$SOW_PATH")
+  if [ -f "$SOW_PATH" ]; then
+    real_sow=$(resolve_path "$SOW_PATH")
+    real_workspace=$(resolve_path "$HOME/.claude/workspace")
+    if [[ "$real_sow" == "$real_workspace"/* ]]; then
+      IDR_DIR=$(dirname "$SOW_PATH")
+    fi
+  else
+    echo "WARNING: .current-sow points to missing file: $SOW_PATH" >&2
   fi
 fi
 
