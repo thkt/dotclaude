@@ -19,9 +19,9 @@ Investigate codebase with confidence-based findings, without implementation.
 
 | Phase | Agent                                          | Focus                                            |
 | ----- | ---------------------------------------------- | ------------------------------------------------ |
-| 0     | (codemap check)                                | Read `.codemaps/architecture.md` if exists       |
+| 0     | (codemap check)                                | Read `.analysis/architecture.md` if exists       |
 | 1     | (clarification)                                | Research intent → `/think` planning?             |
-| 2     | `architecture-analyzer` ∥ `code-flow-analyzer` | Structure + execution flow (parallel)            |
+| 2     | `architecture-analyzer` + `code-flow-analyzer` | Structure + execution flow (parallel)            |
 | 3     | Task(Explore)                                  | Detail: code paths, patterns, edge cases         |
 | 3.5   | (Strong Inference)                             | ≥3 hypotheses → discriminating tests → eliminate |
 | 4     | (synthesis)                                    | Consolidate with ✓/→/? markers                   |

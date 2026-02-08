@@ -20,7 +20,7 @@ debug/
 
 # Claude specific
 /.claude/
-/.codemaps/
+/.analysis/
 /.credentials.json
 /chrome/
 /ide/
@@ -55,11 +55,6 @@ session-env/
 plans/
 
 # Plugin system
-# Tracked: .claude-plugin/marketplace.json (plugin registry)
-# Excluded: .claude-plugin/.cache/ (auto-generated metadata)
 .claude-plugin/.cache/
-
-# External plugins (auto-installed)
-# Note: plugins/README.md is tracked for installation guide
 plugins/*
 !plugins/README.md

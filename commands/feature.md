@@ -30,12 +30,10 @@ Read `~/.claude/settings.json` and check the `language` field. If set, translate
 
 ### Steps
 
-1. Quick context scan (detect project type before prompting)
-   - Check CLAUDE.md, package.json, Cargo.toml, pyproject.toml, etc.
-   - Match against Context Patterns
+1. Quick context scan - check CLAUDE.md, package.json, Cargo.toml, etc. to match Context Patterns
 2. If `$ARGUMENTS` empty → prompt with context-aware options
-3. Execute Understanding Check (see below)
-4. If any [→] or [?] → resolve via AskUserQuestion
+3. Execute Understanding Check
+4. Resolve any [→] or [?] via AskUserQuestion
 5. Create todos via TaskCreate (Phase 2-4, 5, 6, 7)
 
 ### Understanding Check
@@ -107,13 +105,20 @@ Split when ANY threshold exceeded:
 └── architect        (feature-architect, progressive mode)
 ```
 
+### Seed Context
+
+Glob for `.analysis/architecture.yaml` in project root. If exists, include in explorer Task prompts as seed with instruction:
+
+> Architecture data as seed context. Verify independently, do not assume current.
+
 ### Workflow
 
 | Step | Actor     | Action                                                                 |
 | ---- | --------- | ---------------------------------------------------------------------- |
 | 1    | Leader    | `TeamCreate("feature-{timestamp}")`                                    |
+| 1.5  | Leader    | Read seed context (see Seed Context above)                             |
 | 2    | Leader    | TaskCreate x 4 (explorer-data, explorer-api, explorer-core, architect) |
-| 3    | Leader    | Spawn 4 teammates via Task with `team_name`                            |
+| 3    | Leader    | Spawn 4 teammates via Task with `team_name` (include seed in prompt)   |
 | 4    | Explorers | Investigate assigned focus area, DM findings to `architect`            |
 | 5    | Architect | Process explorer findings incrementally                                |
 | 6    | Leader    | Wait for all explorers to complete                                     |
@@ -296,18 +301,6 @@ options:
   - label: "Proceed As-Is"
   - label: "Review Individually"
 ```
-
-## Verification
-
-| Check                                       | Required |
-| ------------------------------------------- | -------- |
-| Explore team spawned with 4 teammates?      | Yes      |
-| Architecture design produced?               | Yes      |
-| User approved implementation?               | Yes      |
-| Implementation completed (parallel or seq)? | Yes      |
-| Quality gates pass after integration?       | Yes      |
-| /audit passed (no critical issues)?         | Yes      |
-| /validate succeeded?                        | Yes      |
 
 ## Error Handling
 

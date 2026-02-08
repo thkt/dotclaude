@@ -53,23 +53,24 @@ Generate architecture documentation with structure and dependency diagrams.
 
 ## Output
 
-Return structured YAML:
+Write YAML to `{project_root}/.analysis/architecture.yaml` with `source: analyzer`.
 
 ```yaml
 project_name: <name>
+source: analyzer
 tech_stack:
   language:
     name: <lang>
-    version: <version> # from package.json engines, tsconfig, etc.
+    version: <version>
   framework:
     name: <framework>
-    version: <version> # from package.json dependencies
+    version: <version>
   runtime:
-    name: <runtime> # Node.js, Python, Deno, etc.
-    version: <version> # from .nvmrc, .python-version, etc.
+    name: <runtime>
+    version: <version>
   database:
     name: <database>
-    version: <version> # if detected
+    version: <version>
 directory_structure: |
   <tree output>
 key_components:

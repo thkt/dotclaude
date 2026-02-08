@@ -1,13 +1,10 @@
 #!/bin/bash
-# Codemap Auto-Update: generates architecture.md on significant commits
 # Failure mode: fail-open (skip update on error)
-# Triggers: 3+ new files, entry point changes, dependency changes
-
 set +e
 
 EXCLUDE_DIRS=(
   node_modules .git dist build __pycache__ target .next coverage
-  debug .codemaps file-history cache chrome projects logs
+  debug .analysis file-history cache chrome projects logs
   shell-snapshots golden-masters paste-cache plans plugins ide
   .ja statsig telemetry todos tasks sounds session-env
 )
@@ -24,7 +21,7 @@ REASON=$(echo "$SHOULD_UPDATE" | tail -1)
 echo "$REASON"
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-CODEMAP_DIR="${PROJECT_ROOT}/.codemaps"
+CODEMAP_DIR="${PROJECT_ROOT}/.analysis"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 mkdir -p "$CODEMAP_DIR"
@@ -88,12 +85,33 @@ $(find_entry_points "$PROJECT_ROOT/$SRC_DIR" | while read -r e; do [ -n "$e" ] &
 $(find_key_exports "$PROJECT_ROOT/$SRC_DIR")
 \`\`\`
 EOF
+ENTRY_POINTS=$(find_entry_points "$PROJECT_ROOT/$SRC_DIR")
+KEY_EXPORTS=$(find_key_exports "$PROJECT_ROOT/$SRC_DIR")
+
+cat > "$CODEMAP_DIR/architecture.yaml" << YAMLEOF
+project_name: "$(basename "$PROJECT_ROOT")"
+updated: "$TIMESTAMP"
+source: hook
+project_type: $PROJECT_TYPE
+frameworks:
+$(echo "$FRAMEWORKS" | tr ',' '\n' | sed 's/^ *//' | while read -r fw; do
+  [ -n "$fw" ] && [ "$fw" != "N/A" ] && echo "  - \"$fw\""
+done)
+entry_points:
+$(echo "$ENTRY_POINTS" | while read -r e; do
+  [ -n "$e" ] && echo "  - \"$e\""
+done)
+key_exports:
+$(echo "$KEY_EXPORTS" | while read -r e; do
+  [ -n "$e" ] && echo "  - \"$e\""
+done)
+YAMLEOF
 
 if command -v prettier &> /dev/null; then
   prettier --write "$CODEMAP_DIR/architecture.md" 2>/dev/null || echo "[Codemap] Warning: prettier formatting failed" >&2
 fi
 
-git add "$CODEMAP_DIR/architecture.md" 2>/dev/null || echo "[Codemap] Warning: Failed to stage architecture.md" >&2
+git add "$CODEMAP_DIR/architecture.md" "$CODEMAP_DIR/architecture.yaml" 2>/dev/null || echo "[Codemap] Warning: Failed to stage codemap files" >&2
 
-echo "[Codemap] Done: $CODEMAP_DIR/architecture.md"
+echo "[Codemap] Done: $CODEMAP_DIR/architecture.{md,yaml}"
 exit 0

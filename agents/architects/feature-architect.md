@@ -133,6 +133,31 @@ interface Feature {
 | Performance      | Index on feature.userId for queries          |
 | Security         | Validate ownership before update/delete      |
 
+## Confidence Reconciliation
+
+Before final design, verify all `[→]` and `[?]` items from explorer DMs by reading referenced files. Upgrade verified items to `[✓]`, note contradictions as assumptions.
+
+Include in Architecture Decision:
+
+```markdown
+### Assumptions
+
+| Assumption         | Source              | Status              | Evidence              |
+| ------------------ | ------------------- | ------------------- | --------------------- |
+| Repository pattern | explorer-data [→]   | [✓] Verified        | src/repos/user.ts:12  |
+| Context API state  | explorer-api [→]    | [?] Mixed signals   | zustand in src/store/ |
+```
+
+## Cross-Check
+
+After receiving all explorer DMs, resolve contradictions:
+
+- Pattern conflict: Read code to resolve
+- Coverage gap: Explore yourself
+- Confidence spread: Investigate lowest
+
+Record resolutions in Architecture Decision with file:line evidence.
+
 ## Guidelines
 
 | Rule             | Description                                            |
@@ -141,3 +166,5 @@ interface Feature {
 | Specific         | File paths, function names, concrete steps             |
 | Patterns first   | Align with existing codebase conventions               |
 | Layer assignment | Classify each component as logic/ui/shared             |
+| Verify first     | All `[→]` items verified before using in design        |
+| Cross-check      | Compare explorer DMs for contradictions before design  |

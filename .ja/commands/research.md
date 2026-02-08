@@ -19,9 +19,9 @@ argument-hint: "[リサーチトピックまたは質問]"
 
 | フェーズ | エージェント                                   | フォーカス                               |
 | -------- | ---------------------------------------------- | ---------------------------------------- |
-| 0        | （codemap確認）                                | `.codemaps/architecture.md` があれば読む |
+| 0        | （codemap確認）                                | `.analysis/architecture.md` があれば読む |
 | 1        | （目的確認）                                   | 調査意図 → `/think` 計画？               |
-| 2        | `architecture-analyzer` ∥ `code-flow-analyzer` | 構造 + 実行フロー（並列）                |
+| 2        | `architecture-analyzer` + `code-flow-analyzer` | 構造 + 実行フロー（並列）                |
 | 3        | Task(Explore)                                  | 詳細: コードパス、パターン、エッジケース |
 | 3.5      | （Strong Inference）                           | ≥3仮説 → 判別テスト → 棄却               |
 | 4        | （統合）                                       | ✓/→/?マーカー付きで整理                  |
