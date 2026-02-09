@@ -3,65 +3,83 @@
 ## Structure
 
 ```markdown
-# {project_name} - Setup Guide
+# {project_name} - セットアップガイド
 
-## Prerequisites
+## 前提条件
 
-| Tool                   | Version                   | Required                   |
+| ツール                 | バージョン                | 必須                       |
 | ---------------------- | ------------------------- | -------------------------- |
 | {prerequisites[].tool} | {prerequisites[].version} | {prerequisites[].required} |
 
-## Installation
+## インストール
 
 \`\`\`bash
 
-# Clone repository
+# リポジトリをクローン
 
 git clone {installation.clone_url}
 cd {project_name}
 
-# Install dependencies
+# 依存関係のインストール
 
 {installation.install_command}
 \`\`\`
 
-## Configuration
+{installation.post_install_steps? (foreach)}
+\`\`\`bash
+# {installation.post_install_steps[].description}
+{installation.post_install_steps[].command}
+\`\`\`
+{/foreach}
 
-### Environment Variables
+## 設定
 
-| Variable                        | Description                            | Default                            |
-| ------------------------------- | -------------------------------------- | ---------------------------------- |
-| {configuration.env_vars[].name} | {configuration.env_vars[].description} | {configuration.env_vars[].default} |
+### 環境変数
 
-### Config Files
+| 変数                            | 説明                                   | 必須                                      | デフォルト                         | ソース                                 |
+| ------------------------------- | -------------------------------------- | ----------------------------------------- | ---------------------------------- | -------------------------------------- |
+| {configuration.env_vars[].name} | {configuration.env_vars[].description} | {configuration.env_vars[].required_level} | {configuration.env_vars[].default} | {configuration.env_vars[].source_file} |
 
-| File                                | Purpose                                |
+### 設定ファイル
+
+| ファイル                            | 用途                                   |
 | ----------------------------------- | -------------------------------------- |
 | {configuration.config_files[].file} | {configuration.config_files[].purpose} |
 
-## Running
+{configuration.config_files[].key_settings? (foreach)}
+**{configuration.config_files[].file}**:
+| 設定                                                | 値                                                 |
+| --------------------------------------------------- | -------------------------------------------------- |
+| {configuration.config_files[].key_settings[].name}  | {configuration.config_files[].key_settings[].value} |
+{/foreach}
 
-### Development
+## 実行
+
+### 開発
 
 \`\`\`bash
 {running.development}
 \`\`\`
 
-### Production
+{running.dev_url?}
+アクセス: {running.dev_url}
+{/dev_url}
+
+### 本番
 
 \`\`\`bash
 {running.production}
 \`\`\`
 
-## Testing
+## テスト
 
 \`\`\`bash
 {testing.command}
 \`\`\`
 
-## Troubleshooting
+## トラブルシューティング
 
-| Issue                     | Solution                     |
+| 問題                      | 解決策                       |
 | ------------------------- | ---------------------------- |
 | {troubleshooting[].issue} | {troubleshooting[].solution} |
 ```

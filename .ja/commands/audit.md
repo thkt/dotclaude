@@ -29,7 +29,7 @@ argument-hint: "[対象ファイルまたはスコープ]"
 | 2    | レビューチームを生成（下記 Team Workflow 参照）            |
 | 3    | Compound Reviewer が発見事項を `challenger` に DM          |
 | 4    | Challenger が発見事項を検証、`integrator` に DM            |
-| 5    | Integrator が統合 → 最終 YAML                              |
+| 5    | Integrator が根本原因を統合 → 最終 YAML                    |
 | 6    | スナップショット保存（下記の命名規則参照）                 |
 | 7    | 前回スナップショットと比較、差分を表示                     |
 | 8    | テンプレートを使用してレポート出力                         |
@@ -59,7 +59,7 @@ argument-hint: "[対象ファイルまたはスコープ]"
 | 4    | Reviewers  | ドメインエージェントを内部実行、発見事項を `challenger` に DM |
 | 5    | Challenger | 各バッチを検証、チャレンジ済み結果を `integrator` に DM       |
 | 6    | Leader     | 全 Reviewer の完了を待機                                      |
-| 7    | Integrator | 最終統合 YAML レポートを作成                                  |
+| 7    | Integrator | クロスドメイン根本原因を統合、最終 YAML レポートを作成        |
 | 8    | Leader     | SendMessage `shutdown_request` を全 Teammate に送信           |
 
 ### Teammate 生成
@@ -70,7 +70,7 @@ argument-hint: "[対象ファイルまたはスコープ]"
 | reviewer-safety     | compound-reviewer-safety     | security + silent-failure + type-safety          |
 | reviewer-quality    | compound-reviewer-quality    | design-pattern + testability + perf + a11y + doc |
 | challenger          | devils-advocate              | 発見事項をチャレンジし、偽陽性を削減             |
-| integrator          | progressive-integrator       | パターン検出 + 優先度付け + レポート             |
+| integrator          | progressive-integrator       | クロスドメイン根本原因統合 + レポート            |
 
 エージェント: [agents/teams/](../agents/teams/), [agents/critics/](../agents/critics/)
 

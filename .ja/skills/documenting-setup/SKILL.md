@@ -14,14 +14,14 @@ user-invocable: false
 
 ## 検出
 
-| カテゴリ             | 対象                                                           |
-| -------------------- | -------------------------------------------------------------- |
-| パッケージマネージャ | package.json, yarn.lock, pnpm-lock, pyproject.toml, Cargo.toml |
-| ツールバージョン     | .nvmrc, .python-version, .ruby-version, .tool-versions         |
-| 環境                 | .env.example, .env.sample, .env.template                       |
-| 設定ファイル         | tsconfig.json, eslint.config, vite.config, next.config         |
-| コンテナ             | Dockerfile, docker-compose.yml, .devcontainer/                 |
-| コマンド             | package.json scripts, Makefile, README                         |
+| カテゴリ             | 対象                                                                  |
+| -------------------- | --------------------------------------------------------------------- |
+| パッケージマネージャ | package.json, yarn.lock, pnpm-lock, pyproject.toml, Cargo.toml        |
+| ツールバージョン     | .nvmrc, .python-version, .ruby-version, .tool-versions                |
+| 環境                 | .env.example, .env.sample, .env.template (→ 存在時はコピー手順を生成) |
+| 設定ファイル         | tsconfig.json, eslint.config, vite.config, next.config                |
+| コンテナ             | Dockerfile, docker-compose.yml, .devcontainer/                        |
+| コマンド             | package.json scripts, Makefile, README                                |
 
 ## パッケージマネージャ識別子
 

@@ -29,7 +29,7 @@ Orchestrate specialized review agents with confidence-based filtering.
 | 2    | Spawn review team (see Team Workflow below)              |
 | 3    | Compound reviewers DM findings to `challenger`           |
 | 4    | Challenger validates findings, DMs to `integrator`       |
-| 5    | Integrator integrates → final YAML                       |
+| 5    | Integrator synthesizes root causes → final YAML          |
 | 6    | Save snapshot (see Snapshot Naming below)                |
 | 7    | Compare with previous snapshot, display delta            |
 | 8    | Output report using template                             |
@@ -51,16 +51,16 @@ Spawn a coordinated team of 3 compound reviewers, 1 challenger, and 1 integrator
 
 ### Workflow
 
-| Step | Actor      | Action                                                    |
-| ---- | ---------- | --------------------------------------------------------- |
-| 1    | Leader     | `TeamCreate("audit-{timestamp}")`                         |
-| 2    | Leader     | TaskCreate x 5 (3 reviewers + challenger + integrator)    |
-| 3    | Leader     | Spawn 5 teammates via Task with `team_name`               |
-| 4    | Reviewers  | Run domain agents internally, DM findings to `challenger` |
-| 5    | Challenger | Validate each batch, DM challenged results to `integrator`|
-| 6    | Leader     | Wait for all reviewers to complete                        |
-| 7    | Integrator | Produce final integrated YAML report                      |
-| 8    | Leader     | SendMessage `shutdown_request` to all teammates           |
+| Step | Actor      | Action                                                     |
+| ---- | ---------- | ---------------------------------------------------------- |
+| 1    | Leader     | `TeamCreate("audit-{timestamp}")`                          |
+| 2    | Leader     | TaskCreate x 5 (3 reviewers + challenger + integrator)     |
+| 3    | Leader     | Spawn 5 teammates via Task with `team_name`                |
+| 4    | Reviewers  | Run domain agents internally, DM findings to `challenger`  |
+| 5    | Challenger | Validate each batch, DM challenged results to `integrator` |
+| 6    | Leader     | Wait for all reviewers to complete                         |
+| 7    | Integrator | Synthesize cross-domain root causes, produce final YAML    |
+| 8    | Leader     | SendMessage `shutdown_request` to all teammates            |
 
 ### Teammate Spawn
 
@@ -70,7 +70,7 @@ Spawn a coordinated team of 3 compound reviewers, 1 challenger, and 1 integrator
 | reviewer-safety     | compound-reviewer-safety     | security + silent-failure + type-safety          |
 | reviewer-quality    | compound-reviewer-quality    | design-pattern + testability + perf + a11y + doc |
 | challenger          | devils-advocate              | Challenge findings, reduce false positives       |
-| integrator          | progressive-integrator       | Pattern detection + prioritization + report      |
+| integrator          | progressive-integrator       | Cross-domain root cause synthesis + report       |
 
 Agents: [agents/teams/](../agents/teams/), [agents/critics/](../agents/critics/)
 

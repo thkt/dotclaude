@@ -1,7 +1,7 @@
 ---
 name: documenting-apis
 description: Generate API specification from codebase - endpoints, types, schemas.
-tools: [Read, Write, Grep, Glob, Task]
+allowed-tools: Read, Write, Grep, Glob, Task
 context: fork
 user-invocable: false
 ---

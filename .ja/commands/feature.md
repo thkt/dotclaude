@@ -107,20 +107,27 @@ argument-hint: "[機能の説明]"
 └── architect        (feature-architect, progressive mode)
 ```
 
+### Seed Context
+
+プロジェクトルートで `.analysis/architecture.yaml` を Glob 検索。存在する場合、explorer の Task プロンプトに seed として含める:
+
+> Architecture data as seed context. Verify independently, do not assume current.
+
 ### ワークフロー
 
-| Step | アクター  | アクション                                                             |
-| ---- | --------- | ---------------------------------------------------------------------- |
-| 1    | Leader    | `TeamCreate("feature-{timestamp}")`                                    |
-| 2    | Leader    | TaskCreate x 4 (explorer-data, explorer-api, explorer-core, architect) |
-| 3    | Leader    | Task で `team_name` 指定して4つの Teammate を生成                      |
-| 4    | Explorers | 担当フォーカスエリアを調査、結果を `architect` に DM                   |
-| 5    | Architect | Explorer の発見を逐次処理                                              |
-| 6    | Leader    | 全 Explorer の完了を待機                                               |
-| 7    | Leader    | AskUserQuestion で確認事項を質問（エッジケース、エラー処理等）         |
-| 8    | Leader    | SendMessage で確認結果を `architect` に送信                            |
-| 9    | Architect | 最終アーキテクチャ設計を作成                                           |
-| 10   | Leader    | SendMessage `shutdown_request` を全 Teammate に送信                    |
+| Step | アクター  | アクション                                                                   |
+| ---- | --------- | ---------------------------------------------------------------------------- |
+| 1    | Leader    | `TeamCreate("feature-{timestamp}")`                                          |
+| 1.5  | Leader    | Seed context を読み込み（上記 Seed Context 参照）                            |
+| 2    | Leader    | TaskCreate x 4 (explorer-data, explorer-api, explorer-core, architect)       |
+| 3    | Leader    | Task で `team_name` 指定して4つの Teammate を生成（seed をプロンプトに含む） |
+| 4    | Explorers | 担当フォーカスエリアを調査、結果を `architect` に DM                         |
+| 5    | Architect | Explorer の発見を逐次処理                                                    |
+| 6    | Leader    | 全 Explorer の完了を待機                                                     |
+| 7    | Leader    | AskUserQuestion で確認事項を質問（エッジケース、エラー処理等）               |
+| 8    | Leader    | SendMessage で確認結果を `architect` に送信                                  |
+| 9    | Architect | 最終アーキテクチャ設計を作成                                                 |
+| 10   | Leader    | SendMessage `shutdown_request` を全 Teammate に送信                          |
 
 ### フォーカス割り当て
 
@@ -139,18 +146,18 @@ argument-hint: "[機能の説明]"
 1. パターン分析を即座に開始（Explorer を待たない）
 2. Explorer の発見を DM 受信時に逐次取り込み
 3. Leader の確認事項 DM 受信後 → 最終設計を作成
-4. 3つのアプローチを評価: Minimal Changes, Clean Architecture, Pragmatic Balance
+4. Explorer の洞察からアーキテクチャを構成（既定テンプレートから選ばない）
 
 エージェント: [feature-architect.md](../agents/architects/feature-architect.md)
 
 ### チーム後処理
 
-1. 比較表と推奨案を提示
-2. 好みを質問（プロンプト: Design Choice 参照）
+1. Explorer の洞察に遡れるトレーサビリティ付きの構成済みアーキテクチャを提示
+2. レビューを依頼（プロンプト: Design Review 参照）
 3. 技術的判断が必要な場合 → ADR について質問
 4. /think を実行 → 出力: SOW + Spec
 
-ユーザーが「お任せで」と言った場合 → 推奨案を提示 → プロンプト: Delegation Confirm を使用
+ユーザーが「お任せで」と言った場合 → 構成済みアーキテクチャで続行 → プロンプト: Delegation Confirm を使用
 
 ## Phase 5: 実装
 
@@ -251,14 +258,14 @@ options:
 ### Phase 2-4: 設計 & アーキテクチャ
 
 ```yaml
-# Design Choice
-question: "どのアーキテクチャアプローチにしますか？"
+# Design Review
+question: "構成されたアーキテクチャはいかがですか？"
 header: "Design"
 options:
-  - label: "Pragmatic Balance (推奨)"
-  - label: "Minimal Changes"
-  - label: "Clean Architecture"
+  - label: "Approve"
+  - label: "Simplify Further"
   - label: "Review Details"
+  - label: "Have Concerns"
 
 # ADR Creation
 question: "ADR として記録しますか？"
@@ -296,18 +303,6 @@ options:
   - label: "Proceed As-Is"
   - label: "Review Individually"
 ```
-
-## 検証
-
-| チェック                                   | 必須 |
-| ------------------------------------------ | ---- |
-| 4つの Teammate で Explore チーム生成した？ | Yes  |
-| アーキテクチャ設計が作成された？           | Yes  |
-| ユーザーが実装を承認した？                 | Yes  |
-| 実装完了（並列または逐次）？               | Yes  |
-| 統合後の品質ゲートパス？                   | Yes  |
-| /audit が合格した（重大課題なし）？        | Yes  |
-| /validate が成功した？                     | Yes  |
 
 ## エラーハンドリング
 

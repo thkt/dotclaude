@@ -1,6 +1,6 @@
 ---
 description: コードベース分析からドキュメントを生成
-tools: [Read, Write, Task, AskUserQuestion]
+allowed-tools: Read, Write, Task, AskUserQuestion
 model: opus
 argument-hint: "[architecture|api|domain|setup]"
 ---
@@ -21,14 +21,18 @@ argument-hint: "[architecture|api|domain|setup]"
 4. `architecture` か `api` の場合: `.analysis/{type}.yaml` に保存
 5. `templates/docs/{type}.md` からテンプレート読み込み
 6. テンプレートでYAMLをフォーマット
-7. `architecture` か `api` の場合: `.analysis/{type}.md` に保存
+7. `.analysis/{type}.md` に保存
 8. ユーザーに提示
 
-## フロー（architecture / api）
+## フロー
 
 ```text
+architecture / api:
 [analyzer YAML] → .analysis/{type}.yaml (データ)
                → [template] → .analysis/{type}.md (ドキュメント)
+
+domain / setup:
+[analyzer YAML] → [template] → .analysis/{type}.md (ドキュメント)
 ```
 
 ## 型別必須キー
@@ -44,4 +48,4 @@ argument-hint: "[architecture|api|domain|setup]"
 
 ## 出力
 
-テンプレートでフォーマットされたMarkdown。変数: `{field}`, `{object.property}`, `{array[].property}`
+テンプレートでフォーマットされたMarkdown。変数: `{field}`, `{object.property}`, `{array[].property}`。条件: `{field? (foreach)}...{/foreach}` (optional配列用)

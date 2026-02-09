@@ -144,18 +144,18 @@ Spawn `architect` with progressive mode instructions in the Task prompt:
 1. Start pattern analysis immediately (don't wait for explorers)
 2. Incorporate explorer findings as they arrive via DM
 3. After receiving Leader's clarification DM → produce final design
-4. Evaluate 3 approaches: Minimal Changes, Clean Architecture, Pragmatic Balance
+4. Compose architecture from explorer insights (don't pick from predefined templates)
 
 Agent: [feature-architect.md](../agents/architects/feature-architect.md)
 
 ### Post-Team
 
-1. Present comparison table with recommendation
-2. Ask preference (see Prompt: Design Choice)
+1. Present composed architecture with traceability to explorer insights
+2. Ask for review (see Prompt: Design Review)
 3. If technical decision warrants → ask about ADR
 4. Execute /think → Output: SOW + Spec
 
-If user says "whatever you think is best" → Provide recommendation → Use Prompt: Delegation Confirm
+If user says "whatever you think is best" → Proceed with composed architecture → Use Prompt: Delegation Confirm
 
 ## Phase 5: Implementation
 
@@ -256,14 +256,14 @@ options:
 ### Phase 2-4: Design & Architecture
 
 ```yaml
-# Design Choice
-question: "Which architecture approach?"
+# Design Review
+question: "How does the composed architecture look?"
 header: "Design"
 options:
-  - label: "Pragmatic Balance (Recommended)"
-  - label: "Minimal Changes"
-  - label: "Clean Architecture"
+  - label: "Approve"
+  - label: "Simplify Further"
   - label: "Review Details"
+  - label: "Have Concerns"
 
 # ADR Creation
 question: "Record as ADR?"

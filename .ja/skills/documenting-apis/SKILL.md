@@ -1,7 +1,7 @@
 ---
 name: documenting-apis
 description: コードベースからAPI仕様を生成 - エンドポイント、型、スキーマ。
-tools: [Read, Write, Grep, Glob, Task]
+allowed-tools: Read, Write, Grep, Glob, Task
 context: fork
 user-invocable: false
 ---

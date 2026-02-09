@@ -14,14 +14,14 @@ user-invocable: false
 
 ## Detection
 
-| Category         | Targets                                                        |
-| ---------------- | -------------------------------------------------------------- |
-| Package Managers | package.json, yarn.lock, pnpm-lock, pyproject.toml, Cargo.toml |
-| Tool Versions    | .nvmrc, .python-version, .ruby-version, .tool-versions         |
-| Environment      | .env.example, .env.sample, .env.template                       |
-| Config Files     | tsconfig.json, eslint.config, vite.config, next.config         |
-| Containers       | Dockerfile, docker-compose.yml, .devcontainer/                 |
-| Commands         | package.json scripts, Makefile, README                         |
+| Category         | Targets                                                          |
+| ---------------- | ---------------------------------------------------------------- |
+| Package Managers | package.json, yarn.lock, pnpm-lock, pyproject.toml, Cargo.toml   |
+| Tool Versions    | .nvmrc, .python-version, .ruby-version, .tool-versions           |
+| Environment      | .env.example, .env.sample, .env.template (→ copy step if exists) |
+| Config Files     | tsconfig.json, eslint.config, vite.config, next.config           |
+| Containers       | Dockerfile, docker-compose.yml, .devcontainer/                   |
+| Commands         | package.json scripts, Makefile, README                           |
 
 ## Package Manager Indicators
 

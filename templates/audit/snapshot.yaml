@@ -9,24 +9,39 @@ meta:
 
 summary:
   total_findings: # count
+  root_causes_synthesized: # count
+  standalone_findings: # count
   by_severity:
     critical: # count
     high: # count
     medium: # count
     low: # count
-  patterns_count: # count
-  root_causes_count: # count
-  agents_count: # count
+  validation:
+    challenged: # count
+    confirmed: # count
+    disputed: # count
+    downgraded: # count
+    needs_context: # count
+    false_positive_rate: # percentage
 
-patterns:
-  - name: # pattern name
-    type: # systemic|isolated
-    files_affected: # count
-    root_cause: # description
-    confidence: # 0.80-1.00
+root_causes:
+  - id: "RC-001"
+    description: # one sentence: the real problem
+    category: # architecture_gap|knowledge_gap|tooling_gap|process_gap
+    findings_resolved: # [finding IDs]
+    domains_involved: # [domain names]
+    five_whys:
+      - why: # question
+        answer: # answer
+    confidence: # float 0.70-1.00
+    action:
+      description: # unified fix
+      effort: # 5min|15min|30min|1h|manual
+      resolves_count: # count
 
 priorities:
   - priority: # critical|high|medium|low
+    root_cause_ref: # RC-001 or finding_ref for standalone
     item: # description
     score: # numeric score
     action: # recommended action
@@ -37,7 +52,7 @@ suggestions:
   manual_count: # count
   items:
     - id: "SUG-001"
-      finding_ref: # original finding id
+      root_cause_ref: # RC-001 or finding_ref for standalone
       category: # category
       severity: # critical|high|medium|low
       fix_type: # pattern|codemod|lint-fix|manual
@@ -47,5 +62,5 @@ suggestions:
         line: # line number
       before: # original code snippet
       after: # suggested fix snippet
-      rationale: # why this fix
+      rationale: # why this fix — traces to root cause
       effort: # 5min|15min|30min|1h|manual

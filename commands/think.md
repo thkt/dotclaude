@@ -22,8 +22,8 @@ Orchestrate implementation planning with multi-perspective design exploration, S
 | 1    | Spawn think team                        | Team of 5 agents                           |
 | 2    | Thinkers explore approaches             | 3 proposals from different perspectives    |
 | 3    | Challenger validates proposals          | Challenged proposals with weaknesses       |
-| 4    | Synthesizer produces comparison         | Comparison table + recommendation          |
-| 5    | User Selection                          | chosen approach (with trade-off rationale) |
+| 4    | Synthesizer composes design             | Composed design with traceability          |
+| 5    | User Review                             | Approved design (with trade-off rationale) |
 | 5.5  | ADR Proposal                            | (if needed)                                |
 | 6    | /sow                                    | sow.md                                     |
 | 7    | /spec                                   | spec.md                                    |
@@ -55,8 +55,8 @@ Spawn a coordinated team of 3 thinkers, 1 challenger, and 1 synthesizer.
 | 4    | Thinkers    | Explore codebase, DM proposal to `challenger`                   |
 | 5    | Challenger  | Challenge each proposal, DM challenged results to `synthesizer` |
 | 6    | Leader      | Wait for all thinkers to complete                               |
-| 7    | Synthesizer | Produce comparison table + recommendation, DM to leader         |
-| 8    | Leader      | Present synthesis to user for selection                         |
+| 7    | Synthesizer | Compose optimal design from all insights, DM to leader          |
+| 8    | Leader      | Present composed design to user for review                      |
 | 9    | Leader      | SendMessage `shutdown_request` to all teammates                 |
 
 ### Teammate Spawn
@@ -67,7 +67,7 @@ Spawn a coordinated team of 3 thinkers, 1 challenger, and 1 synthesizer.
 | thinker-architect  | thinker-architect  | Extensibility, patterns, clean design         |
 | thinker-advocate   | thinker-advocate   | User/developer experience, API ergonomics     |
 | challenger         | devils-advocate    | Challenge proposals, expose hidden weaknesses |
-| synthesizer        | think-synthesizer  | Integrate challenged proposals, recommend     |
+| synthesizer        | think-synthesizer  | Compose optimal design from all insights      |
 
 Agents: [agents/thinkers/](../agents/thinkers/), [agents/critics/](../agents/critics/), [agents/teams/](../agents/teams/)
 
@@ -140,11 +140,11 @@ $HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/
 
 ## Verification
 
-| Check                               | Required |
-| ----------------------------------- | -------- |
-| Think team spawned with 5 teammates?| Yes      |
-| Synthesis comparison produced?      | Yes      |
-| User selected approach?             | Yes      |
-| sow.md generated?                   | Yes      |
-| spec.md generated?                  | Yes      |
-| Todos created (TaskCreate)?         | Yes      |
+| Check                                | Required |
+| ------------------------------------ | -------- |
+| Think team spawned with 5 teammates? | Yes      |
+| Composed design produced?            | Yes      |
+| User reviewed design?                | Yes      |
+| sow.md generated?                    | Yes      |
+| spec.md generated?                   | Yes      |
+| Todos created (TaskCreate)?          | Yes      |

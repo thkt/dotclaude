@@ -17,16 +17,16 @@ Investigate codebase with confidence-based findings, without implementation.
 
 ## Execution
 
-| Phase | Agent                                          | Focus                                            |
-| ----- | ---------------------------------------------- | ------------------------------------------------ |
-| 0     | (codemap check)                                | Read `.analysis/architecture.md` if exists       |
-| 1     | (clarification)                                | Research intent → `/think` planning?             |
-| 2     | `architecture-analyzer` + `code-flow-analyzer` | Structure + execution flow (parallel)            |
-| 3     | Task(Explore)                                  | Detail: code paths, patterns, edge cases         |
-| 3.5   | (Strong Inference)                             | ≥3 hypotheses → discriminating tests → eliminate |
-| 4     | (synthesis)                                    | Consolidate with ✓/→/? markers                   |
+| Phase | Agent                              | Focus                                            |
+| ----- | ---------------------------------- | ------------------------------------------------ |
+| 0     | (codemap check)                    | Read `.analysis/architecture.yaml` if exists     |
+| 1     | (clarification)                    | Research intent + topic area                     |
+| 2     | (intent-aware analyzer selection)  | Select and run analyzers in parallel             |
+| 3     | Task(Explore)                      | Detail: code paths, patterns, edge cases         |
+| 3.5   | (Strong Inference)                 | ≥3 hypotheses → discriminating tests → eliminate |
+| 4     | (synthesis)                        | Consolidate with ✓/→/? markers                   |
 
-Note: Invoke via `Task(subagent_type: Explore)`.
+Note: Invoke analyzers via `Task(subagent_type: <analyzer-name>)`, Explore via `Task(subagent_type: Explore)`.
 
 ### Phase 1: Intent Clarification
 
@@ -35,11 +35,32 @@ Ask via AskUserQuestion:
 | Question         | Options                                              |
 | ---------------- | ---------------------------------------------------- |
 | Research intent  | Feature planning / Bug investigation / Understanding |
+| Topic area       | Data model / API / Infrastructure / General          |
 | Planning needed? | Yes → suggest `/think` after research                |
 
-### Phase 2: Parallel Analysis
+### Phase 2: Intent-Aware Parallel Analysis
 
-Run `architecture-analyzer` and `code-flow-analyzer` in parallel via Task.
+Select analyzers based on Phase 1 answers, then run all selected in parallel via Task.
+
+#### Analyzer Selection Matrix
+
+| Intent \ Topic    | General                                 | Data model | API   | Infrastructure |
+| ----------------- | --------------------------------------- | ---------- | ----- | -------------- |
+| Feature planning  | architecture + code-flow + domain + api | + domain   | + api | + setup        |
+| Bug investigation | architecture + code-flow                | + domain   | + api | + setup        |
+| Understanding     | architecture + code-flow                | + domain   | + api | + setup        |
+
+Legend: Each cell shows additional analyzers beyond the base set. `architecture` + `code-flow` always run.
+
+#### Analyzer Reference
+
+| Analyzer              | Subagent Type           | Returns                           |
+| --------------------- | ----------------------- | --------------------------------- |
+| architecture-analyzer | `architecture-analyzer` | Structure, deps, Mermaid diagrams |
+| code-flow-analyzer    | `code-flow-analyzer`    | Execution paths, data flow        |
+| domain-analyzer       | `domain-analyzer`       | Entities, relationships, rules    |
+| api-analyzer          | `api-analyzer`          | Endpoints, schemas, auth          |
+| setup-analyzer        | `setup-analyzer`        | Prerequisites, env vars, config   |
 
 Apply Output Verifiability markers ([✓]/[→]/[?]) to all findings.
 

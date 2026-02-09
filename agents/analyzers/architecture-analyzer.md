@@ -42,6 +42,22 @@ Generate architecture documentation with structure and dependency diagrams.
 | Framework  | `package.json dependencies`      | `jq '.dependencies["next"]'`          |
 | TypeScript | `package.json devDependencies`   | `jq '.devDependencies["typescript"]'` |
 
+## Dependency Enumeration Rules
+
+| Rule                   | Detail                                                                                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Compound agent members | Read `tools:` frontmatter of compound/team agents; list ALL `Task(*)` entries — never summarize or omit                      |
+| Sub-component listing  | When listing compositions (e.g. "compound-reviewer-X covers A + B + C"), enumerate every member from source, not from memory |
+
+## Mermaid Direction Rules
+
+| Relationship Type     | Arrow Direction         | Example                                               |
+| --------------------- | ----------------------- | ----------------------------------------------------- |
+| Priority / constrains | Higher priority → lower | `CONV --> DEV` (conventions constrain development)    |
+| Defines / binds       | Definer → target        | `SET --> Hooks` (settings.json defines hook bindings) |
+| Spawns / creates      | Creator → created       | `CMD --> Agent` (command spawns agent)                |
+| References / uses     | User → used             | `Agent -.-> Skill` (agent references skill)           |
+
 ## Error Handling
 
 | Error                | Action                |
@@ -81,13 +97,13 @@ dependencies:
   external:
     - name: <package>
       purpose: <purpose>
-  internal:
-    - from: <module>
-      to: <module>
+  internal: # Use full paths consistent with key_components[].path
+    - from: <dir>/<file>
+      to: <dir>/<file>
       relationship: <relationship>
-mermaid_diagram: |
+mermaid_diagram: | # Node labels must use full paths matching key_components[].path
   graph TD
-    A[Module] --> B[Dependency]
+    A["app/services/cache.ts"] --> B["app/utils/logger.ts"]
 statistics:
   files: <count>
   lines: <count>

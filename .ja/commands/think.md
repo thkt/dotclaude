@@ -22,8 +22,8 @@ argument-hint: "[タスク説明]"
 | 1    | Think チームを生成      | 5つのエージェントチーム                |
 | 2    | Thinker がアプローチ探索| 3つの異なる視点からの提案              |
 | 3    | Challenger が提案を検証 | 弱点を指摘されたチャレンジ済み提案     |
-| 4    | Synthesizer が比較作成  | 比較表 + 推奨                          |
-| 5    | ユーザー選択            | 選択アプローチ（トレードオフ根拠付き） |
+| 4    | Synthesizer が設計構成  | トレーサビリティ付き統合設計           |
+| 5    | ユーザーレビュー        | 承認された設計（トレードオフ根拠付き） |
 | 5.5  | ADR提案                 | （必要な場合）                         |
 | 6    | /sow                    | sow.md                                 |
 | 7    | /spec                   | spec.md                                |
@@ -55,8 +55,8 @@ argument-hint: "[タスク説明]"
 | 4    | Thinkers    | コードベースを探索、提案を `challenger` に DM                |
 | 5    | Challenger  | 各提案をチャレンジ、チャレンジ済み結果を `synthesizer` に DM |
 | 6    | Leader      | 全 Thinker の完了を待機                                      |
-| 7    | Synthesizer | 比較表 + 推奨を作成、Leader に DM                            |
-| 8    | Leader      | 統合結果をユーザーに提示し選択を促す                         |
+| 7    | Synthesizer | 全洞察から最適設計を構成、Leader に DM                       |
+| 8    | Leader      | 構成された設計をユーザーに提示しレビューを依頼               |
 | 9    | Leader      | SendMessage `shutdown_request` を全 Teammate に送信          |
 
 ### Teammate 生成
@@ -67,7 +67,7 @@ argument-hint: "[タスク説明]"
 | thinker-architect  | thinker-architect  | 拡張性、パターン、クリーン設計         |
 | thinker-advocate   | thinker-advocate   | ユーザー/開発者体験、APIエルゴノミクス |
 | challenger         | devils-advocate    | 提案をチャレンジし、隠れた弱点を露出   |
-| synthesizer        | think-synthesizer  | チャレンジ済み提案を統合、推奨         |
+| synthesizer        | think-synthesizer  | 全洞察から最適設計を構成               |
 
 エージェント: [agents/thinkers/](../agents/thinkers/), [agents/critics/](../agents/critics/), [agents/teams/](../agents/teams/)
 
@@ -143,8 +143,8 @@ $HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/
 | チェック                                 | 必須 |
 | ---------------------------------------- | ---- |
 | 5つの Teammate で Think チーム生成した？ | Yes  |
-| 統合比較を作成した？                     | Yes  |
-| ユーザーがアプローチを選択した？         | Yes  |
+| 統合設計を構成した？                     | Yes  |
+| ユーザーが設計をレビューした？           | Yes  |
 | sow.md を生成した？                      | Yes  |
 | spec.md を生成した？                     | Yes  |
 | Todo を作成した（TaskCreate）？          | Yes  |
