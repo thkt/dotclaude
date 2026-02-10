@@ -1,6 +1,6 @@
 ---
 name: code-quality-reviewer
-description: Code quality review. Structure (file-level) + Readability (function-level).
+description: Code quality review. Structure and readability analysis.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-readability, applying-code-principles]

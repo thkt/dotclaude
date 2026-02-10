@@ -1,6 +1,6 @@
 ---
 name: progressive-integrator
-description: Reconcile challenge and verification results into cross-domain root causes and action plans.
+description: Reconcile challenge and verification results into cross-domain root causes.
 tools: [Read, Grep, Glob, LS, SendMessage]
 model: opus
 context: fork
@@ -9,7 +9,7 @@ skills: [applying-code-principles, analyzing-root-causes]
 
 # Progressive Integrator
 
-Judge that reconciles challenge and verification evidence, then synthesizes cross-domain root causes. NOT an aggregator or deduplicator.
+Reconcile challenge and verification evidence, then synthesize cross-domain root causes.
 
 ## Input
 
@@ -31,7 +31,9 @@ Match challenger and verifier results by `finding_id`, then apply rules in order
 
 1. disputed + verified → needs_review (confidence = verifier.confidence)
 2. Any + verified → confirmed (confidence = max; if downgraded, restore original severity)
-3. All other combinations → keep challenger verdict unchanged
+3. Any + unverifiable → keep challenger verdict, degrade confidence by 0.10
+4. Any + weak_evidence → keep challenger verdict unchanged
+5. Verifier-only mode: verified→confirmed, weak_evidence→needs_context, unverifiable→exclude
 
 Key signal: Rule 1 catches false negatives — Challenger dismissed but Verifier found evidence. Flag for human review.
 
@@ -96,60 +98,11 @@ After reconciliation, process findings with final verdict `confirmed`, `downgrad
 
 ## Output
 
-DM final YAML report to leader:
+DM final YAML report to leader. Schema: `templates/audit/snapshot.yaml` (exclude `meta` — leader adds it).
+
+The `suggestions` section is integrator-specific (not in snapshot schema):
 
 ```yaml
-summary:
-  total_findings: <count>
-  root_causes_synthesized: <count>
-  standalone_findings: <count>
-  by_severity:
-    critical: <count>
-    high: <count>
-    medium: <count>
-    low: <count>
-  validation:
-    challenged: <count>
-    confirmed: <count>
-    disputed: <count>
-    downgraded: <count>
-    needs_context: <count>
-    needs_review:
-      count: <count>
-      items:
-        - finding_id: "<id>"
-          severity: critical|high|medium|low
-          agent: "<reviewer agent>"
-          location: "<file:line>"
-          challenger_reasoning: "<why disputed>"
-          verifier_evidence: "<what was found>"
-    false_positive_rate: "<percentage>"
-    verification:
-      verified: <count>
-      weak_evidence: <count>
-      unverifiable: <count>
-      verification_rate: "<percentage>"
-root_causes:
-  - id: "RC-001"
-    description: "<one sentence: the real problem>"
-    category: architecture_gap|knowledge_gap|tooling_gap|process_gap
-    findings_resolved: ["SEC-001", "SF-003", "TS-007"]
-    domains_involved: [security, type-safety, code-quality]
-    five_whys:
-      - why: "<question>"
-        answer: "<answer>"
-    confidence: 0.70-1.00
-    action:
-      description: "<unified fix that resolves all related findings>"
-      effort: "5min|15min|30min|1h|manual"
-      resolves_count: <count>
-priorities:
-  - priority: critical|high|medium|low
-    root_cause_ref: "RC-001"  # or finding_ref for standalone
-    item: "<description>"
-    score: <number>
-    action: "<recommended action>"
-    timing: "immediate|this_sprint|next_sprint|backlog"
 suggestions:
   auto_fixable_count: <count>
   manual_count: <count>

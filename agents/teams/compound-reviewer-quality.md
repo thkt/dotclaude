@@ -4,7 +4,7 @@ description: Compound reviewer covering design patterns, testability, test cover
 tools: [Read, Grep, Glob, LS, Task(design-pattern-reviewer), Task(testability-reviewer), Task(test-coverage-reviewer), Task(performance-reviewer), Task(accessibility-reviewer), Task(document-reviewer), SendMessage]
 model: sonnet
 context: fork
-skills: [applying-frontend-patterns, reviewing-testability, optimizing-performance]
+skills: [applying-frontend-patterns, reviewing-testability, optimizing-performance] # context:fork loses CLAUDE.md; skills inject domain knowledge for normalization
 ---
 
 # Compound Reviewer: Quality
@@ -33,12 +33,12 @@ Run domain agents, DM combined findings to `challenger` AND `verifier`.
 
 ## Schema Normalization
 
-| Agent                | Extra Fields | Mapping                                         |
-| -------------------- | ------------ | ----------------------------------------------- |
+| Agent                  | Extra Fields                  | Mapping                                                       |
+| ---------------------- | ----------------------------- | ------------------------------------------------------------- |
 | performance-reviewer   | `impact`                      | Append to `evidence`; impact → `reasoning` note               |
-| accessibility-reviewer | `wcag`                        | Append to `evidence`                                           |
+| accessibility-reviewer | `wcag`                        | Append to `evidence`                                          |
 | test-coverage-reviewer | `related_code`, `criticality` | `related_code` → `evidence`; `criticality` → `reasoning` note |
-| document-reviewer      | (none)                        | —                                                              |
+| document-reviewer      | (none)                        | —                                                             |
 
 | Step | Action                                                            |
 | ---- | ----------------------------------------------------------------- |

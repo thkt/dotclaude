@@ -46,7 +46,7 @@ Spawn a coordinated team of 3 compound reviewers, 1 challenger, 1 verifier, and 
 ├── reviewer-foundation  (compound-reviewer-foundation)
 ├── reviewer-safety      (compound-reviewer-safety)
 ├── reviewer-quality     (compound-reviewer-quality)
-├── challenger           (devils-advocate)
+├── challenger           (devils-advocate-audit)
 ├── verifier             (evidence-verifier)
 └── integrator           (progressive-integrator)
 ```

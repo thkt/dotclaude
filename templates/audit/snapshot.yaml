@@ -6,6 +6,12 @@ meta:
   command: audit
   timestamp: # ISO 8601
   target: # target scope
+  focus: # security|performance|readability|all
+
+pipeline_health:
+  domains_completed: # [domain names]
+  domains_skipped: # [domain names with reason]
+  verification_status: # full|partial|skipped
 
 summary:
   total_findings: # count

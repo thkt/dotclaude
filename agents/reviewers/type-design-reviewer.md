@@ -1,6 +1,6 @@
 ---
 name: type-design-reviewer
-description: Type design quality review. Encapsulation, invariant expression, enforcement scoring.
+description: Type design quality review. Encapsulation, invariants, enforcement.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-type-safety, applying-code-principles]

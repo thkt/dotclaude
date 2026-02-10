@@ -19,6 +19,9 @@ Template for /audit command output.
 Auto-fixable: {suggestions.auto_fixable_count} | Manual: {suggestions.manual_count}
 Verification: {summary.validation.verification.verified} verified | {summary.validation.verification.weak_evidence} weak | {summary.validation.verification.unverifiable} unverifiable
 
+> **Pipeline**: {pipeline_health.domains_completed} | Skipped: {pipeline_health.domains_skipped} | Verification: {pipeline_health.verification_status}
+> _(Omit this section if all domains completed and verification is full)_
+
 ---
 
 ## Quick Fixes

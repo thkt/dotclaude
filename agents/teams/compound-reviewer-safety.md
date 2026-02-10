@@ -15,7 +15,7 @@ tools:
   ]
 model: sonnet
 context: fork
-skills: [reviewing-security, reviewing-type-safety]
+skills: [reviewing-security, reviewing-type-safety] # context:fork loses CLAUDE.md; skills inject domain knowledge for normalization
 ---
 
 # Compound Reviewer: Safety
@@ -43,12 +43,9 @@ Run domain agents, DM combined findings to `challenger` AND `verifier`.
 
 ## Schema Normalization
 
-| Agent                | Extra Fields          | Mapping                                         |
-| -------------------- | --------------------- | ----------------------------------------------- |
-| security-reviewer      | (none)                | —                                                |
-| silent-failure-reviewer | (none)               | —                                                |
-| type-safety-reviewer   | (none)                | —                                                |
-| type-design-reviewer   | `type_name`, `scores` | Append to `evidence`; scores → `reasoning` note  |
+| Agent                | Extra Fields          | Mapping                                          |
+| -------------------- | --------------------- | ------------------------------------------------ |
+| type-design-reviewer | `type_name`, `scores` | Append to `evidence`; scores → `reasoning` note  |
 
 ## Output
 

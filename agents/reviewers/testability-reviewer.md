@@ -1,6 +1,6 @@
 ---
 name: testability-reviewer
-description: Testable code design review. DI patterns, pure functions, mock-friendly architecture.
+description: Testable code design review. Identify test-hostile patterns.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-testability, generating-tdd-tests, applying-code-principles]

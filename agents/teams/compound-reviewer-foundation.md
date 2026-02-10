@@ -14,7 +14,7 @@ tools:
   ]
 model: sonnet
 context: fork
-skills: [applying-code-principles]
+skills: [applying-code-principles] # context:fork loses CLAUDE.md; skill injects code principles for normalization judgment
 ---
 
 # Compound Reviewer: Foundation
@@ -41,11 +41,11 @@ Run domain agents, DM combined findings to `challenger` AND `verifier`.
 
 ## Schema Normalization
 
-| Agent               | Extra Fields         | Mapping                                                   |
-| ------------------- | -------------------- | --------------------------------------------------------- |
-| root-cause-reviewer    | `root_cause`, `five_whys` | `root_cause` → `reasoning`; `five_whys` → append to `evidence` |
-| progressive-enhancer   | `recommendations`        | Append to findings as separate items (not per-finding)         |
-| code-quality-reviewer  | `subcategory`             | Append to `category` as `category/subcategory`                 |
+| Agent                 | Extra Fields              | Mapping                                                        |
+| --------------------- | ------------------------- | -------------------------------------------------------------- |
+| root-cause-reviewer   | `root_cause`, `five_whys` | `root_cause` → `reasoning`; `five_whys` → append to `evidence` |
+| progressive-enhancer  | `recommendations`         | Append to findings as separate items (not per-finding)         |
+| code-quality-reviewer | `subcategory`             | Append to `category` as `category/subcategory`                 |
 
 | Step | Action                                                            |
 | ---- | ----------------------------------------------------------------- |

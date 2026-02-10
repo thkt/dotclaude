@@ -1,6 +1,6 @@
 ---
 name: test-coverage-reviewer
-description: Test coverage quality review. Critical gaps, missing edge cases, anti-patterns.
+description: Test coverage quality review. Behavioral gaps and test robustness.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [generating-tdd-tests, applying-code-principles]
