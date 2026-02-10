@@ -27,7 +27,7 @@ Default: Team (TeamCreate + TaskList for progress tracking)
 | ----------- | ---- | ---------------------------- |
 | `/feature`  | Team | Existing team structure      |
 | `/audit`    | Auto | Scope-based decision         |
-| `/think`    | Team | Hard to pre-judge complexity |
+| `/think`    | Solo |                              |
 | `/code`     | Auto | Scope-based decision         |
 | `/fix`      | Auto | Solo conditions below        |
 | `/research` | Solo |                              |

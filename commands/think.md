@@ -1,113 +1,86 @@
 ---
-description: Orchestrate SOW and Spec generation for comprehensive planning
-allowed-tools: Skill, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion, TeamCreate, SendMessage
+description: Design exploration with SOW and Spec generation
+allowed-tools: Skill, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[task description]"
 ---
 
-# /think - Planning Orchestrator
+# /think
 
-Orchestrate implementation planning with multi-perspective design exploration, SOW and Spec generation.
+Deep design exploration. Compare approaches, validate assumptions, generate SOW and Spec.
 
 ## Input
 
-- Task description: `$1` (optional)
-- If `$1` is empty → use research context or prompt via AskUserQuestion
+Task description from `$1`, research context, or AskUserQuestion if empty.
 
 ## Execution
 
-| Step | Action                                  | Output                                     |
-| ---- | --------------------------------------- | ------------------------------------------ |
-| 0    | Q&A Clarification                       | (if unclear)                               |
-| 1    | Spawn think team                        | Team of 5 agents                           |
-| 2    | Thinkers explore approaches             | 3 proposals from different perspectives    |
-| 3    | Challenger validates proposals          | Challenged proposals with weaknesses       |
-| 4    | Synthesizer composes design             | Composed design with traceability          |
-| 5    | User Review                             | Approved design (with trade-off rationale) |
-| 5.5  | ADR Proposal                            | (if needed)                                |
-| 6    | /sow                                    | sow.md                                     |
-| 7    | /spec                                   | spec.md                                    |
-| 8    | sow-spec-reviewer (≥90)                 | (optional)                                 |
-| 9    | SOW → Todos                             | TaskCreate                                 |
+| Step | Action               | Output                                     |
+| ---- | -------------------- | ------------------------------------------ |
+| 0    | Q&A Clarification    | (if unclear)                               |
+| 1    | Codebase exploration | Relevant code, patterns, constraints       |
+| 2    | Approach generation  | ≥2 approaches with trade-offs              |
+| 3    | Self-challenge       | Weaknesses exposed, assumptions validated  |
+| 4    | Design composition   | Optimal design with traceability           |
+| 5    | User Review          | Approved design (with trade-off rationale) |
+| 5.5  | ADR Proposal         | (if needed)                                |
+| 6    | /sow                 | sow.md                                     |
+| 7    | /spec                | spec.md                                    |
+| 8    | sow-spec-reviewer    | (optional, ≥90)                            |
+| 9    | SOW → Todos          | TaskCreate                                 |
 
-## Team Workflow (Steps 1-4)
+## Design Exploration (Steps 1-4)
 
-Spawn a coordinated team of 3 thinkers, 1 challenger, and 1 synthesizer.
+### Step 1: Codebase Exploration
 
-### Team Structure
+Read relevant code. Check `.analysis/architecture.yaml` if exists. Understand patterns, constraints, architecture, and prior art.
 
-```text
-/think command (LEADER)
-├── thinker-pragmatist   (thinker-pragmatist)
-├── thinker-architect    (thinker-architect)
-├── thinker-advocate     (thinker-advocate)
-├── challenger           (devils-advocate)
-└── synthesizer          (think-synthesizer)
+### Step 2: Approach Generation
+
+Generate ≥2 distinct approaches from different perspectives:
+
+- Pragmatist: What's the simplest solution that works?
+- Architect: What's extensible and well-structured?
+- DX Advocate: What's best for developer/user experience?
+
+### Step 3: Self-Challenge
+
+For each approach:
+
+- What assumptions are hidden?
+- What's the hidden cost?
+- How does this fail?
+- Is a simpler option missed?
+
+### Step 4: Design Composition
+
+Compose optimal design from surviving approaches.
+
+```markdown
+## Design
+
+### Key Decisions
+
+| Decision | Choice | Rationale               |
+| -------- | ------ | ----------------------- |
+| ...      | ...    | traces to [perspective] |
+
+### Implementation Sketch
+
+- Files to modify: [list with file:line]
+- Files to create: [list with purpose]
+- Estimated scope: [lines, files]
+
+### Trade-offs
+
+| Accepted           | Rejected          | Why         |
+| ------------------ | ----------------- | ----------- |
+| [what we're doing] | [what we gave up] | [rationale] |
 ```
-
-### Workflow
-
-| Step | Actor       | Action                                                          |
-| ---- | ----------- | --------------------------------------------------------------- |
-| 1    | Leader      | `TeamCreate("think-{timestamp}")`                               |
-| 2    | Leader      | TaskCreate x 5 (3 thinkers + challenger + synthesizer)          |
-| 3    | Leader      | Spawn 5 teammates via Task with `team_name`                     |
-| 4    | Thinkers    | Explore codebase, DM proposal to `challenger`                   |
-| 5    | Challenger  | Challenge each proposal, DM challenged results to `synthesizer` |
-| 6    | Leader      | Wait for all thinkers to complete                               |
-| 7    | Synthesizer | Compose optimal design from all insights, DM to leader          |
-| 8    | Leader      | Present composed design to user for review                      |
-| 9    | Leader      | SendMessage `shutdown_request` to all teammates                 |
-
-### Teammate Spawn
-
-| Teammate           | subagent_type      | Role                                          |
-| ------------------ | ------------------ | --------------------------------------------- |
-| thinker-pragmatist | thinker-pragmatist | Simplicity, shipping speed, YAGNI             |
-| thinker-architect  | thinker-architect  | Extensibility, patterns, clean design         |
-| thinker-advocate   | thinker-advocate   | User/developer experience, API ergonomics     |
-| challenger         | devils-advocate    | Challenge proposals, expose hidden weaknesses |
-| synthesizer        | think-synthesizer  | Compose optimal design from all insights      |
-
-Agents: [agents/thinkers/](../agents/thinkers/), [agents/critics/](../agents/critics/), [agents/teams/](../agents/teams/)
-
-### Error Handling
-
-| Error               | Recovery                                                      |
-| ------------------- | ------------------------------------------------------------- |
-| Team creation fails | Fall back to single-agent design exploration (original flow)  |
-| Thinker spawn fails | Continue with remaining thinkers                              |
-| Thinker timeout     | 120s; Leader proceeds with available proposals                |
-| Challenger fails    | Leader passes proposals directly to synthesizer               |
-| Synthesizer fails   | Leader synthesizes using think-synthesizer.md output template |
-| All teammates fail  | Fall back to single-agent design exploration                  |
-
-## Complexity Gate
-
-Skip team workflow for simple tasks:
-
-| Condition                   | Action                              |
-| --------------------------- | ----------------------------------- |
-| Single file change          | Skip team, single-agent exploration |
-| Obvious implementation path | Skip team, proceed to /sow directly |
-| User says "just plan it"    | Skip team, single-agent exploration |
-| Multi-file or unclear path  | Use team workflow                   |
 
 ## ADR Proposal (Step 5.5)
 
-After user selects an approach, evaluate if an ADR is warranted.
-
-| Condition               | Action                                           |
-| ----------------------- | ------------------------------------------------ |
-| Technical decision made | AskUserQuestion: "Create an ADR?" → Yes → `/adr` |
-| Simple feature addition | Skip                                             |
-
-ADR-worthy decisions:
-
-- Framework/library selection
-- Architecture pattern choice
-- Deprecation decisions
-- Trade-off decisions between multiple valid options
+After user approves design, ask if an ADR is needed for technical decisions (framework/library selection, architecture patterns, deprecations, trade-off choices). Skip for simple features.
 
 ## Todo Generation (Step 9)
 
@@ -120,31 +93,12 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"` (max 10 tasks
 
 ## Q&A Categories
 
-| Category    | Focus                         |
-| ----------- | ----------------------------- |
-| Purpose     | Goal, problem, beneficiary    |
-| Users       | Primary users                 |
-| Scope       | Included/excluded             |
-| Priority    | MoSCoW                        |
-| Success     | "Done" definition             |
-| Constraints | Technical, time, dependencies |
-| Risks       | Known concerns                |
+Purpose, Users, Scope, Priority (MoSCoW), Success criteria, Constraints, Risks.
 
 ## Output
 
-```text
-$HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/
-├── sow.md     # Statement of Work
-└── spec.md    # Specification
-```
+`$HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` and `spec.md`
 
 ## Verification
 
-| Check                                | Required |
-| ------------------------------------ | -------- |
-| Think team spawned with 5 teammates? | Yes      |
-| Composed design produced?            | Yes      |
-| User reviewed design?                | Yes      |
-| sow.md generated?                    | Yes      |
-| spec.md generated?                   | Yes      |
-| Todos created (TaskCreate)?          | Yes      |
+All steps must complete: codebase explored, ≥2 approaches compared, self-challenge applied, design composed, user reviewed, sow.md and spec.md generated, todos created.
