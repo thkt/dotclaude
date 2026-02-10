@@ -11,15 +11,15 @@ context: fork
 
 ## Analysis Phases
 
-| Phase | Action                   | Method                                                                  |
-| ----- | ------------------------ | ----------------------------------------------------------------------- |
-| 0     | Seed Context             | Read `.analysis/architecture.yaml` (if exists) for entry points         |
-| 1     | Framework Detection      | Glob for `package.json`, `requirements.txt`, `go.mod`; Read to identify |
-| 2     | Schema Discovery         | Glob for schema/type definition files (see patterns below)              |
-| 3     | Schema Reading           | Read each schema file, extract fields with name/type/required           |
-| 4     | Route-Schema Correlation | Glob for route/repository files; Read and match to schemas              |
-| 5     | Auth Detection           | Grep for auth middleware, JWT patterns in discovered route files        |
-| 6     | Confidence Tagging       | Assign verified/inferred/unknown per endpoint                           |
+| Phase | Action                   | Method                                                                          |
+| ----- | ------------------------ | ------------------------------------------------------------------------------- |
+| 0     | Seed Context             | Read `.analysis/architecture.yaml` or `.md` (if either exists) for entry points |
+| 1     | Framework Detection      | Glob for `package.json`, `requirements.txt`, `go.mod`; Read to identify         |
+| 2     | Schema Discovery         | Glob for schema/type definition files (see patterns below)                      |
+| 3     | Schema Reading           | Read each schema file, extract fields with name/type/required                   |
+| 4     | Route-Schema Correlation | Glob for route/repository files; Read and match to schemas                      |
+| 5     | Auth Detection           | Grep for auth middleware, JWT patterns in discovered route files                |
+| 6     | Confidence Tagging       | Assign verified/inferred/unknown per endpoint                                   |
 
 ### Phase 2: Schema Discovery Patterns
 
@@ -31,19 +31,29 @@ context: fork
 | Repository | `**/_repositories/*/schema.ts`, `**/repositories/*/schema.ts`       |
 | Python     | `**/schemas.py`, `**/models.py`, `**/*_schema.py`                   |
 
+After known-framework patterns, also scan generic paths to catch unlisted frameworks:
+
+| Fallback | Glob Pattern                                                  |
+| -------- | ------------------------------------------------------------- |
+| Routes   | `**/routes/**/*.{ts,tsx,js}`, `**/pages/api/**/*.{ts,tsx,js}` |
+| API dirs | `**/api/**/*.{ts,tsx,js}`, `**/endpoints/**/*.{ts,tsx,js}`    |
+
 ### Phase 3: Schema Reading
 
 Read each file in full. Extract name, type, required (`?` or `.optional()` = optional).
 
 ### Phase 4: Route-Schema Correlation
 
-| Framework  | Route File Pattern                                           |
-| ---------- | ------------------------------------------------------------ |
-| Repository | `**/repository.ts` — match exported methods to schemas       |
-| Express    | `**/routes/*.ts` — match `router.get/post/put/delete`        |
-| Next.js    | `app/api/**/route.ts` — match exported `GET/POST/PUT/DELETE` |
-| Flask      | `**/*.py` with `@app.route`                                  |
-| FastAPI    | `**/*.py` with `@app.get/post/put/delete`                    |
+| Framework  | Route File Pattern                                                        |
+| ---------- | ------------------------------------------------------------------------- |
+| Repository | `**/repository.ts` — match exported methods to schemas                    |
+| Express    | `**/routes/*.ts` — match `router.get/post/put/delete`                     |
+| Next.js    | `app/api/**/route.ts` — match exported `GET/POST/PUT/DELETE`              |
+| Flask      | `**/*.py` with `@app.route`                                               |
+| FastAPI    | `**/*.py` with `@app.get/post/put/delete`                                 |
+| Generic    | `**/routes/**/*.{ts,tsx}` — detect `export { loader, action, GET, POST }` |
+
+Above are common patterns. Use Phase 1 detection to identify additional route conventions.
 
 ### Phase 6: Confidence Rules
 

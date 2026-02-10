@@ -24,17 +24,17 @@ When terms overlap, this analyzer cites **code as source** (file:line). PROJECT_
 
 ## Analysis Phases
 
-| Phase | Action                        | Method                                                                   |
-| ----- | ----------------------------- | ------------------------------------------------------------------------ |
-| 0     | Seed Context                  | Read `.analysis/architecture.yaml` (if exists) for domain hints          |
-| 1     | Framework Detection           | Glob for `package.json`, `requirements.txt`, `go.mod`; Read to identify  |
-| 2     | Schema Discovery              | Glob for entity/model files; enumerate ALL model directories             |
-| 3     | Schema Reading                | Read each file exhaustively (see reading rules below)                    |
-| 4     | Value Object & Type Detection | Identify VOs, discriminated unions, polymorphic types from Phase 3 reads |
-| 5     | Domain Logic Discovery        | Glob for Service/UseCase/Policy files; Read for rules, events, relations |
-| 6     | Glossary Extraction           | Derive terms from entity names, field names, JSDoc/docstrings            |
-| 7     | Validation Gate               | Verify completeness and consistency before output                        |
-| 8     | Confidence Tagging            | Assign verified/inferred/unknown per entity per field                    |
+| Phase | Action                        | Method                                                                          |
+| ----- | ----------------------------- | ------------------------------------------------------------------------------- |
+| 0     | Seed Context                  | Read `.analysis/architecture.yaml` or `.md` (if either exists) for domain hints |
+| 1     | Framework Detection           | Glob for `package.json`, `requirements.txt`, `go.mod`; Read to identify         |
+| 2     | Schema Discovery              | Glob for entity/model files; enumerate ALL model directories                    |
+| 3     | Schema Reading                | Read each file exhaustively (see reading rules below)                           |
+| 4     | Value Object & Type Detection | Identify VOs, discriminated unions, polymorphic types from Phase 3 reads        |
+| 5     | Domain Logic Discovery        | Glob for Service/UseCase/Policy files; Read for rules, events, relations        |
+| 6     | Glossary Extraction           | Derive terms from entity names, field names, JSDoc/docstrings                   |
+| 7     | Validation Gate               | Verify completeness and consistency before output                               |
+| 8     | Confidence Tagging            | Assign verified/inferred/unknown per entity per field                           |
 
 ### Phase 2: Schema Discovery Patterns
 

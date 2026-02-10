@@ -73,19 +73,20 @@ context: fork
 
 ```yaml
 project_name: <name>
+source: analyzer
 tech_stack:
   language:
     name: <lang>
-    version: <version> # package.json engines, tsconfig等から
+    version: <version>
   framework:
     name: <framework>
-    version: <version> # package.json dependenciesから
+    version: <version>
   runtime:
-    name: <runtime> # Node.js, Python, Deno等
-    version: <version> # .nvmrc, .python-version等から
+    name: <runtime>
+    version: <version>
   database:
     name: <database>
-    version: <version> # 検出された場合
+    version: <version>
 directory_structure: |
   <tree出力>
 key_components:
@@ -96,13 +97,13 @@ dependencies:
   external:
     - name: <package>
       purpose: <purpose>
-  internal:
-    - from: <module>
-      to: <module>
+  internal: # key_components[].path と一致するフルパスを使用
+    - from: <dir>/<file>
+      to: <dir>/<file>
       relationship: <relationship>
-mermaid_diagram: |
+mermaid_diagram: | # ノードラベルは key_components[].path と一致するフルパスを使用
   graph TD
-    A[Module] --> B[Dependency]
+    A["app/services/cache.ts"] --> B["app/utils/logger.ts"]
 statistics:
   files: <count>
   lines: <count>

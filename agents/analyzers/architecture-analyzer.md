@@ -69,7 +69,7 @@ Generate architecture documentation with structure and dependency diagrams.
 
 ## Output
 
-Write YAML to `{project_root}/.analysis/architecture.yaml` with `source: analyzer`.
+Return structured YAML:
 
 ```yaml
 project_name: <name>
