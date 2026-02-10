@@ -17,6 +17,7 @@ Template for /audit command output.
 | Low      | {summary.by_severity.low}      | {delta.low}      |
 
 Auto-fixable: {suggestions.auto_fixable_count} | Manual: {suggestions.manual_count}
+Verification: {summary.validation.verification.verified} verified | {summary.validation.verification.weak_evidence} weak | {summary.validation.verification.unverifiable} unverifiable
 
 ---
 
@@ -35,6 +36,16 @@ Apply: `/fix <ID>`
 | Pattern           | Root Cause              |
 | ----------------- | ----------------------- |
 | {patterns[].name} | {patterns[].root_cause} |
+
+---
+
+## Needs Review
+
+> Challenger が棄却したが Verifier がエビデンスを確認。人間の判断が必要。
+
+| Finding                     | Location                  | Challenger Reason                     | Verifier Evidence                  |
+| --------------------------- | ------------------------- | ------------------------------------- | ---------------------------------- |
+| {needs_review[].finding_id} | {needs_review[].location} | {needs_review[].challenger_reasoning} | {needs_review[].verifier_evidence} |
 
 ---
 

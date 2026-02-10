@@ -23,20 +23,21 @@ Orchestrate specialized review agents with confidence-based filtering.
 
 ## Execution
 
-| Step | Action                                                   |
-| ---- | -------------------------------------------------------- |
-| 1    | Run project static analysis tools (see Pre-flight below) |
-| 2    | Spawn review team (see Team Workflow below)              |
-| 3    | Compound reviewers DM findings to `challenger`           |
-| 4    | Challenger validates findings, DMs to `integrator`       |
-| 5    | Integrator synthesizes root causes → final YAML          |
-| 6    | Save snapshot (see Snapshot Naming below)                |
-| 7    | Compare with previous snapshot, display delta            |
-| 8    | Output report using template                             |
+| Step | Action                                                        |
+| ---- | ------------------------------------------------------------- |
+| 1    | Run project static analysis tools (see Pre-flight below)      |
+| 2    | Spawn review team (see Team Workflow below)                   |
+| 3    | Compound reviewers DM findings to `challenger` AND `verifier` |
+| 4    | Challenger validates findings, DMs to `integrator`            |
+| 4b   | Verifier verifies findings, DMs to `integrator`               |
+| 5    | Integrator reconciles + synthesizes root causes → final YAML  |
+| 6    | Save snapshot (see Snapshot Naming below)                     |
+| 7    | Compare with previous snapshot, display delta                 |
+| 8    | Output report using template                                  |
 
 ## Team Workflow
 
-Spawn a coordinated team of 3 compound reviewers, 1 challenger, and 1 integrator.
+Spawn a coordinated team of 3 compound reviewers, 1 challenger, 1 verifier, and 1 integrator.
 
 ### Team Structure
 
@@ -46,33 +47,33 @@ Spawn a coordinated team of 3 compound reviewers, 1 challenger, and 1 integrator
 ├── reviewer-safety      (compound-reviewer-safety)
 ├── reviewer-quality     (compound-reviewer-quality)
 ├── challenger           (devils-advocate)
+├── verifier             (evidence-verifier)
 └── integrator           (progressive-integrator)
 ```
 
+### Spawn Context
+
+Teammates don't inherit leader's conversation history. Include in each spawn prompt:
+
+| Context            | Source                              |
+| ------------------ | ----------------------------------- |
+| Target file list   | git diff / $1 scope                 |
+| Audit focus        | security / performance / all        |
+| Pre-flight results | lint/typecheck output (if non-zero) |
+
 ### Workflow
 
-| Step | Actor      | Action                                                     |
-| ---- | ---------- | ---------------------------------------------------------- |
-| 1    | Leader     | `TeamCreate("audit-{timestamp}")`                          |
-| 2    | Leader     | TaskCreate x 5 (3 reviewers + challenger + integrator)     |
-| 3    | Leader     | Spawn 5 teammates via Task with `team_name`                |
-| 4    | Reviewers  | Run domain agents internally, DM findings to `challenger`  |
-| 5    | Challenger | Validate each batch, DM challenged results to `integrator` |
-| 6    | Leader     | Wait for all reviewers to complete                         |
-| 7    | Integrator | Synthesize cross-domain root causes, produce final YAML    |
-| 8    | Leader     | SendMessage `shutdown_request` to all teammates            |
-
-### Teammate Spawn
-
-| Teammate            | subagent_type                | Role                                             |
-| ------------------- | ---------------------------- | ------------------------------------------------ |
-| reviewer-foundation | compound-reviewer-foundation | code-quality + progressive-enhancer + root-cause |
-| reviewer-safety     | compound-reviewer-safety     | security + silent-failure + type-safety          |
-| reviewer-quality    | compound-reviewer-quality    | design-pattern + testability + perf + a11y + doc |
-| challenger          | devils-advocate              | Challenge findings, reduce false positives       |
-| integrator          | progressive-integrator       | Cross-domain root cause synthesis + report       |
-
-Agents: [agents/teams/](../agents/teams/), [agents/critics/](../agents/critics/)
+| Step | Actor      | Action                                                                   |
+| ---- | ---------- | ------------------------------------------------------------------------ |
+| 1    | Leader     | `TeamCreate("audit-{timestamp}")`                                        |
+| 2    | Leader     | TaskCreate x 6 (3 reviewers + challenger + verifier + integrator)        |
+| 3    | Leader     | Spawn 6 teammates via Task with `team_name`, passing spawn context       |
+| 4    | Reviewers  | Run domain agents internally, DM findings to `challenger` AND `verifier` |
+| 5    | Challenger | Validate each batch, DM challenged results to `integrator`               |
+| 5b   | Verifier   | Verify each batch, DM verification results to `integrator`               |
+| 6    | Leader     | Wait for all reviewers to complete                                       |
+| 7    | Integrator | Synthesize cross-domain root causes, produce final YAML                  |
+| 8    | Leader     | SendMessage `shutdown_request` to all teammates                          |
 
 ### Error Handling
 
@@ -134,11 +135,12 @@ Example output: `audit-2026-01-23-031812.yaml`
 
 ## Verification
 
-| Check                            | Required |
-| -------------------------------- | -------- |
-| Team spawned with 5 teammates?   | Yes      |
-| All reviewer findings collected? | Yes      |
-| Challenger validated findings?   | Yes      |
-| Integrator produced final YAML?  | Yes      |
-| Snapshot saved?                  | Yes      |
-| Delta comparison displayed?      | Yes      |
+| Check                                | Required |
+| ------------------------------------ | -------- |
+| Team spawned with 6 teammates?       | Yes      |
+| All reviewer findings collected?     | Yes      |
+| Challenger validated findings?       | Yes      |
+| Verifier produced verification YAML? | Yes      |
+| Integrator produced final YAML?      | Yes      |
+| Snapshot saved?                      | Yes      |
+| Delta comparison displayed?          | Yes      |

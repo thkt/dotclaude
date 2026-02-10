@@ -10,24 +10,12 @@ memory: project
 
 # Code Quality Reviewer
 
-Unified structure + readability review. Can a new team member understand this in < 1 minute?
-
 ## Generated Content
 
 | Section  | Description                           |
 | -------- | ------------------------------------- |
 | findings | Quality issues with fixes             |
 | summary  | Counts by category (structure + read) |
-
-## Thresholds
-
-| Level    | Target                | Recommended | Maximum |
-| -------- | --------------------- | ----------- | ------- |
-| File     | Lines                 | ≤400        | 800     |
-| File     | Cyclomatic complexity | ≤10         | 15      |
-| Function | Lines                 | ≤30         | 50      |
-| Function | Nesting depth         | ≤3          | 4       |
-| Function | Arguments             | ≤3          | 5       |
 
 ## Analysis Phases
 
@@ -66,6 +54,9 @@ findings:
     reasoning: "<why this is an issue>"
     fix: "<specific improvement>"
     confidence: 0.70-1.00
+    verification_hint:
+      check: pattern_search|hotpath_analysis
+      question: "<is this pattern widespread or in a critical path?>"
 summary:
   total_findings: <count>
   by_category:

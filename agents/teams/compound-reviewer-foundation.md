@@ -19,7 +19,7 @@ skills: [applying-code-principles]
 
 # Compound Reviewer: Foundation
 
-Run code-quality, progressive-enhancer, and root-cause review domains, then DM combined findings to `challenger`.
+Run domain agents, DM combined findings to `challenger` AND `verifier`.
 
 ## Domains
 
@@ -38,11 +38,9 @@ Run code-quality, progressive-enhancer, and root-cause review domains, then DM c
 | 3    | Wait for code-quality results                                               | —                 |
 | 4    | Launch `root-cause-reviewer` via Task (pass code-quality findings)          | sequential        |
 | 5    | Collect all findings, normalize to standard schema (evidence/reasoning/fix) | —                 |
-| 6    | SendMessage to `challenger` with combined findings                          | —                 |
+| 6    | SendMessage to `challenger` AND `verifier` with combined findings           | —                 |
 
 ## Output
-
-Send findings to `challenger` teammate using SendMessage in this YAML format:
 
 ```yaml
 domain: foundation
@@ -55,6 +53,9 @@ findings:
     reasoning: "<why this is an issue>"
     fix: "<suggested fix>"
     confidence: 0.70-1.00
+    verification_hint:  # pass through from reviewer if present
+      check: "<check type>"
+      question: "<what to verify>"
 summary:
   total: <count>
   by_domain:

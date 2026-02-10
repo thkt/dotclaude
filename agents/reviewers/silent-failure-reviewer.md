@@ -10,8 +10,6 @@ memory: project
 
 # Silent Failure Reviewer
 
-Identify patterns that fail silently.
-
 ## Generated Content
 
 | Section  | Description                        |
@@ -50,6 +48,9 @@ findings:
     reasoning: "<why this fails silently>"
     fix: "<visible error handling>"
     confidence: 0.70-1.00
+    verification_hint:
+      check: error_propagation|pattern_search
+      question: "<does this error surface to the user or remain silent?>"
 summary:
   total_findings: <count>
   critical: <count>

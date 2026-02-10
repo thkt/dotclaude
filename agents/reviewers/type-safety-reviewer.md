@@ -10,8 +10,6 @@ memory: project
 
 # Type Safety Reviewer
 
-Maximum type safety via coverage gaps and type system utilization.
-
 ## Generated Content
 
 | Section  | Description                   |
@@ -50,6 +48,9 @@ findings:
     reasoning: "<why this is unsafe>"
     fix: "<type-safe alternative>"
     confidence: 0.70-1.00
+    verification_hint:
+      check: call_site_check|pattern_search
+      question: "<are problematic values actually passed at call sites?>"
 summary:
   total_findings: <count>
   type_coverage: "<percentage>"

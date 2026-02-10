@@ -9,7 +9,7 @@ skills: [applying-frontend-patterns, reviewing-testability, optimizing-performan
 
 # Compound Reviewer: Quality
 
-Run design-pattern, testability, test-coverage, performance, accessibility, and document review domains, then DM combined findings to `challenger`.
+Run domain agents, DM combined findings to `challenger` AND `verifier`.
 
 ## Domains
 
@@ -30,11 +30,9 @@ Run design-pattern, testability, test-coverage, performance, accessibility, and 
 | 2    | Launch domains 1-2,4 via Task (+ conditional domains 3,5,6 as needed) | parallel |
 | 3    | Collect all findings                                                  | —        |
 | 4    | Normalize to standard schema (evidence/reasoning/fix)                 | —        |
-| 5    | SendMessage to `challenger` with combined findings                    | —        |
+| 5    | SendMessage to `challenger` AND `verifier` with combined findings     | —        |
 
 ## Output
-
-Send findings to `challenger` teammate using SendMessage in this YAML format:
 
 ```yaml
 domain: quality
@@ -47,6 +45,9 @@ findings:
     reasoning: "<why this is an issue>"
     fix: "<suggested fix>"
     confidence: 0.70-1.00
+    verification_hint:  # pass through from reviewer if present
+      check: "<check type>"
+      question: "<what to verify>"
 summary:
   total: <count>
   by_domain:

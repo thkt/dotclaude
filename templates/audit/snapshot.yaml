@@ -22,7 +22,13 @@ summary:
     disputed: # count
     downgraded: # count
     needs_context: # count
+    needs_review: # count (disputed × verified)
     false_positive_rate: # percentage
+    verification:
+      verified: # count
+      weak_evidence: # count
+      unverifiable: # count
+      verification_rate: # percentage
 
 root_causes:
   - id: "RC-001"

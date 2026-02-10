@@ -20,7 +20,7 @@ skills: [reviewing-security, reviewing-type-safety]
 
 # Compound Reviewer: Safety
 
-Run security, silent-failure, type-safety, and type-design review domains in parallel, then DM combined findings to `challenger`.
+Run domain agents, DM combined findings to `challenger` AND `verifier`.
 
 ## Domains
 
@@ -33,13 +33,13 @@ Run security, silent-failure, type-safety, and type-design review domains in par
 
 ## Execution
 
-| Step | Action                                                          | Mode     |
-| ---- | --------------------------------------------------------------- | -------- |
-| 1    | Check if new types/interfaces introduced in target scope        | —        |
-| 2    | Launch domains 1-3 via Task (+ domain 4 if new types present)   | parallel |
-| 3    | Collect all findings                                            | —        |
-| 4    | Normalize domain-specific fields to standard schema (see below) | —        |
-| 5    | SendMessage to `challenger` with combined findings              | —        |
+| Step | Action                                                            | Mode     |
+| ---- | ----------------------------------------------------------------- | -------- |
+| 1    | Check if new types/interfaces introduced in target scope          | —        |
+| 2    | Launch domains 1-3 via Task (+ domain 4 if new types present)     | parallel |
+| 3    | Collect all findings                                              | —        |
+| 4    | Normalize domain-specific fields to standard schema (see below)   | —        |
+| 5    | SendMessage to `challenger` AND `verifier` with combined findings | —        |
 
 ## Schema Normalization
 
@@ -49,11 +49,7 @@ Map domain-specific fields to standard schema:
 | -------------------- | --------------------- | ----------------------------------------------- |
 | type-design-reviewer | `type_name`, `scores` | Append to `evidence`; scores → `reasoning` note |
 
-Other agents use standard schema directly.
-
 ## Output
-
-Send findings to `challenger` teammate using SendMessage in this YAML format:
 
 ```yaml
 domain: safety
@@ -66,6 +62,9 @@ findings:
     reasoning: "<why this is an issue>"
     fix: "<suggested fix>"
     confidence: 0.70-1.00
+    verification_hint:  # pass through from reviewer if present
+      check: "<check type>"
+      question: "<what to verify>"
 summary:
   total: <count>
   by_domain:

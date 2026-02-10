@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: OWASP Top 10-based security vulnerability detection with high-confidence filtering. Reports only confidence >80%.
+description: OWASP Top 10-based security vulnerability detection. Reports confidence ≥60% with verification hints.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-security, applying-code-principles]
@@ -9,8 +9,6 @@ memory: project
 ---
 
 # Security Reviewer
-
-OWASP Top 10-based vulnerability detection. Report only high-confidence (>80%).
 
 ## Generated Content
 
@@ -35,7 +33,8 @@ OWASP Top 10-based vulnerability detection. Report only high-confidence (>80%).
 | ------- | ------------------- | ------------- |
 | 0.9-1.0 | Certain exploit     | Critical      |
 | 0.8-0.9 | Clear vulnerability | High          |
-| < 0.8   | Speculative         | Do NOT report |
+| 0.6-0.8 | Possible issue      | Report + hint |
+| < 0.6   | Speculative         | Do NOT report |
 
 ## Exclusions
 
@@ -52,7 +51,7 @@ OWASP Top 10-based vulnerability detection. Report only high-confidence (>80%).
 | ------------------ | -------------------------- |
 | No code found      | Report "No code to review" |
 | No vulnerabilities | Return empty findings      |
-| Confidence < 80%   | Exclude from report        |
+| Confidence < 60%   | Exclude from report        |
 
 ## Output
 
@@ -67,7 +66,11 @@ findings:
     evidence: "<code snippet>"
     reasoning: "<why this is vulnerable + attack scenario>"
     fix: "<secure alternative>"
-    confidence: 0.80-1.00
+    confidence: 0.60-1.00
+    verification_hint:
+      check: execution_trace|call_site_check|pattern_search
+      question: "<what to verify to confirm exploitability>"
+      entry_points: ["<file>:<line>"]  # optional, for execution_trace
 summary:
   total_findings: <count>
   critical: <count>
