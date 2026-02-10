@@ -1,6 +1,6 @@
 ---
 name: test-coverage-reviewer
-description: Test coverage quality review. Identifies critical gaps, missing edge cases, test quality issues.
+description: Test coverage quality review. Critical gaps, missing edge cases, anti-patterns.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [generating-tdd-tests, applying-code-principles]
@@ -57,11 +57,12 @@ Evaluate test coverage quality: behavioral gaps, missing edge cases, test robust
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: test-coverage-reviewer
+  - finding_id: "TC-{seq}"
+    agent: test-coverage-reviewer
     severity: critical|high|medium|low
     category: "gap|quality|negative|regression"
     location: "<test-file>:<line>"
@@ -71,6 +72,9 @@ findings:
     fix: "<suggested test case>"
     criticality: <1-10>
     confidence: 0.70-1.00
+    verification_hint:
+      check: call_site_check|pattern_search
+      question: "<is this code path actually exercised by any existing test?>"
 summary:
   total_findings: <count>
   by_criticality:

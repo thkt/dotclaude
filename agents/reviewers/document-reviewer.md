@@ -54,11 +54,12 @@ Review documentation for quality, clarity, structure, audience fit.
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: document-reviewer
+  - finding_id: "DOC-{seq}"
+    agent: document-reviewer
     severity: high|medium|low
     category: "clarity|structure|completeness|technical|audience"
     location: "<file>:<section>"
@@ -66,6 +67,9 @@ findings:
     reasoning: "<why it's a problem>"
     fix: "<specific improvement>"
     confidence: 0.70-1.00
+    verification_hint:
+      check: pattern_search
+      question: "<is this documentation issue consistent across related files?>"
 summary:
   total_findings: <count>
   score:

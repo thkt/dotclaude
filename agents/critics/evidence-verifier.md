@@ -1,6 +1,6 @@
 ---
 name: evidence-verifier
-description: Verify audit findings with positive evidence. Trace execution paths, confirm reachability, provide reproduction evidence.
+description: Verify audit findings with positive evidence.
 tools: [Read, Grep, Glob, LS, SendMessage]
 model: sonnet
 context: fork
@@ -37,8 +37,8 @@ DM from compound reviewers with findings including `verification_hint`.
 
 | Condition         | Default Action        |
 | ----------------- | --------------------- |
-| confidence ≥ 0.80 | `pattern_search`      |
-| confidence < 0.80 | Report `unverifiable` |
+| confidence ≥ 0.60 | `pattern_search`      |
+| confidence < 0.60 | Report `unverifiable` |
 
 ### Per-finding limit
 
@@ -58,17 +58,17 @@ DM verified findings to `integrator`:
 
 ```yaml
 verifications:
-  - finding_id: "F-001"
+  - finding_id: "SEC-001"
     verdict: verified|weak_evidence|unverifiable
     evidence:
-      - type: execution_trace|call_site|error_path|hotpath|pattern_match
+      - type: execution_trace|call_site_check|error_propagation|hotpath_analysis|pattern_search
         detail: "<specific finding with file:line references>"
         files_checked: ["<file1>", "<file2>"]
     confidence: 0.60-1.00
-    effort_to_reproduce: "5min|15min|30min|manual"
+    effort_to_reproduce: "5min|15min|30min|1h|manual"
 
 summary:
-  total_verified: <count>
+  total_processed: <count>
   verified: <count>
   weak_evidence: <count>
   unverifiable: <count>
@@ -77,11 +77,12 @@ summary:
 
 ## Error Handling
 
-| Error          | Action                                                 |
-| -------------- | ------------------------------------------------------ |
-| File not found | Mark `unverifiable`, note "File may have been deleted" |
-| No input       | Return empty verifications with note                   |
-| Tool limit hit | Mark `weak_evidence` with partial results              |
+| Error            | Action                                                       |
+| ---------------- | ------------------------------------------------------------ |
+| File not found   | Mark `unverifiable`, note "File may have been deleted"       |
+| No input         | Return empty verifications with note                         |
+| Tool limit hit   | Mark `weak_evidence` with partial results                    |
+| SendMessage fail | Retry once, then include findings in task completion message |
 
 ## Constraints
 

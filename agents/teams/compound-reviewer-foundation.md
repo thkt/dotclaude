@@ -31,21 +31,33 @@ Run domain agents, DM combined findings to `challenger` AND `verifier`.
 
 ## Execution
 
-| Step | Action                                                                      | Mode              |
-| ---- | --------------------------------------------------------------------------- | ----------------- |
-| 1    | Launch `code-quality-reviewer` via Task                                     | parallel          |
-| 2    | Launch `progressive-enhancer` via Task                                      | parallel (with 1) |
-| 3    | Wait for code-quality results                                               | —                 |
-| 4    | Launch `root-cause-reviewer` via Task (pass code-quality findings)          | sequential        |
-| 5    | Collect all findings, normalize to standard schema (evidence/reasoning/fix) | —                 |
-| 6    | SendMessage to `challenger` AND `verifier` with combined findings           | —                 |
+| Step | Action                                                             | Mode              |
+| ---- | ------------------------------------------------------------------ | ----------------- |
+| 1    | Launch `code-quality-reviewer` via Task                            | parallel          |
+| 2    | Launch `progressive-enhancer` via Task                             | parallel (with 1) |
+| 3    | Wait for code-quality results                                      | —                 |
+| 4    | Launch `root-cause-reviewer` via Task (pass code-quality findings) | sequential        |
+| 5    | Collect all findings, normalize to standard schema (see below)     | —                 |
+
+## Schema Normalization
+
+| Agent               | Extra Fields         | Mapping                                                   |
+| ------------------- | -------------------- | --------------------------------------------------------- |
+| root-cause-reviewer    | `root_cause`, `five_whys` | `root_cause` → `reasoning`; `five_whys` → append to `evidence` |
+| progressive-enhancer   | `recommendations`        | Append to findings as separate items (not per-finding)         |
+| code-quality-reviewer  | `subcategory`             | Append to `category` as `category/subcategory`                 |
+
+| Step | Action                                                            |
+| ---- | ----------------------------------------------------------------- |
+| 6    | SendMessage to `challenger` AND `verifier` with combined findings |
 
 ## Output
 
 ```yaml
 domain: foundation
 findings:
-  - agent: <agent-name>
+  - finding_id: "<domain>-<seq>"  # preserve from reviewer or generate as F-{domain}-{seq}
+    agent: <agent-name>
     severity: critical|high|medium|low
     category: "<category>"
     location: "<file>:<line>"

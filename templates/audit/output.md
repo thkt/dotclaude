@@ -23,19 +23,19 @@ Verification: {summary.validation.verification.verified} verified | {summary.val
 
 ## Quick Fixes
 
-| ID                                       | Location                                                                                                  | Effort                                       | Rationale                                       |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------- |
-| {suggestions.items[fix_type!=manual].id} | `{suggestions.items[fix_type!=manual].location.file}:{suggestions.items[fix_type!=manual].location.line}` | {suggestions.items[fix_type!=manual].effort} | {suggestions.items[fix_type!=manual].rationale} |
+| ID                                    | Location                                                                                            | Effort                                    | Rationale                                    |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------| ----------------------------------------- | -------------------------------------------- |
+| {suggestions.items[fix_type=auto].id} | `{suggestions.items[fix_type=auto].location.file}:{suggestions.items[fix_type=auto].location.line}` | {suggestions.items[fix_type=auto].effort} | {suggestions.items[fix_type=auto].rationale} |
 
 Apply: `/fix <ID>`
 
 ---
 
-## Patterns
+## Root Causes
 
-| Pattern           | Root Cause              |
-| ----------------- | ----------------------- |
-| {patterns[].name} | {patterns[].root_cause} |
+| Root Cause                  | Findings Resolved                                                    |
+| --------------------------- | -------------------------------------------------------------------- |
+| {root_causes[].description} | {root_causes[].findings_resolved} ({root_causes[].domains_involved}) |
 
 ---
 

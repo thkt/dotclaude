@@ -36,11 +36,12 @@ Review React patterns and component architecture.
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: design-pattern-reviewer
+  - finding_id: "DP-{seq}"
+    agent: design-pattern-reviewer
     severity: high|medium|low
     category: "container|hook|state|anti-pattern"
     location: "<file>:<line>"
@@ -48,6 +49,9 @@ findings:
     reasoning: "<why this pattern is problematic>"
     fix: "<recommended pattern>"
     confidence: 0.70-1.00
+    verification_hint:
+      check: pattern_search|call_site_check
+      question: "<is this anti-pattern used consistently or is this an isolated case?>"
 summary:
   total_findings: <count>
   pattern_score: "<X/10>"

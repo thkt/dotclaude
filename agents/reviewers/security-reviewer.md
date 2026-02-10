@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: OWASP Top 10-based security vulnerability detection. Reports confidence ≥60% with verification hints.
+description: OWASP Top 10-based security vulnerability detection.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-security, applying-code-principles]
@@ -55,11 +55,12 @@ memory: project
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: security-reviewer
+  - finding_id: "SEC-{seq}"
+    agent: security-reviewer
     severity: critical|high|medium
     category: "A01-A10"
     location: "<file>:<line>"

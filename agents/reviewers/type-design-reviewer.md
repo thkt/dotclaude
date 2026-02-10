@@ -56,11 +56,12 @@ Evaluate type design quality: encapsulation, invariants, enforcement.
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: type-design-reviewer
+  - finding_id: "TD-{seq}"
+    agent: type-design-reviewer
     severity: critical|high|medium|low
     category: "encapsulation|expression|usefulness|enforcement"
     location: "<file>:<line>"
@@ -74,6 +75,9 @@ findings:
       usefulness: <1-10>
       enforcement: <1-10>
     confidence: 0.70-1.00
+    verification_hint:
+      check: call_site_check|pattern_search
+      question: "<can invalid instances actually be constructed at call sites?>"
 summary:
   total_findings: <count>
   types_reviewed: <count>

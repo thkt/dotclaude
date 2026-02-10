@@ -22,7 +22,13 @@ summary:
     disputed: # count
     downgraded: # count
     needs_context: # count
-    needs_review: # count (disputed × verified)
+    needs_review:
+      count: # (disputed × verified)
+      items:
+        - finding_id: # id
+          location: # file:line
+          challenger_reasoning: # why disputed
+          verifier_evidence: # what was found
     false_positive_rate: # percentage
     verification:
       verified: # count
@@ -61,7 +67,7 @@ suggestions:
       root_cause_ref: # RC-001 or finding_ref for standalone
       category: # category
       severity: # critical|high|medium|low
-      fix_type: # pattern|codemod|lint-fix|manual
+      fix_type: # auto|manual
       confidence: # 0.85-1.00
       location:
         file: # file path

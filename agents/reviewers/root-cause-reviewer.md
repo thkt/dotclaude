@@ -36,11 +36,12 @@ context: fork
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: root-cause-reviewer
+  - finding_id: "RCA-{seq}"
+    agent: root-cause-reviewer
     severity: high|medium|low
     category: "symptom|state-sync|race|workaround"
     location: "<file>:<line>"
@@ -59,6 +60,9 @@ findings:
     root_cause: "<fundamental issue>"
     fix: "<solution addressing root cause>"
     confidence: 0.70-1.00
+    verification_hint:
+      check: execution_trace|pattern_search
+      question: "<does the root cause actually produce the described symptom?>"
 summary:
   total_findings: <count>
   patches_detected: <count>

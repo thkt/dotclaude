@@ -1,6 +1,6 @@
 ---
 name: compound-reviewer-safety
-description: Compound reviewer covering security, silent failure detection, type safety, and type design analysis.
+description: Compound reviewer covering security, silent failure, type safety, and type design.
 tools:
   [
     Read,
@@ -43,18 +43,20 @@ Run domain agents, DM combined findings to `challenger` AND `verifier`.
 
 ## Schema Normalization
 
-Map domain-specific fields to standard schema:
-
 | Agent                | Extra Fields          | Mapping                                         |
 | -------------------- | --------------------- | ----------------------------------------------- |
-| type-design-reviewer | `type_name`, `scores` | Append to `evidence`; scores → `reasoning` note |
+| security-reviewer      | (none)                | —                                                |
+| silent-failure-reviewer | (none)               | —                                                |
+| type-safety-reviewer   | (none)                | —                                                |
+| type-design-reviewer   | `type_name`, `scores` | Append to `evidence`; scores → `reasoning` note  |
 
 ## Output
 
 ```yaml
 domain: safety
 findings:
-  - agent: <agent-name>
+  - finding_id: "<domain>-<seq>"  # preserve from reviewer or generate as S-{domain}-{seq}
+    agent: <agent-name>
     severity: critical|high|medium|low
     category: "<category>"
     location: "<file>:<line>"

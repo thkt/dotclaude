@@ -1,0 +1,54 @@
+# Canonical Finding Schema
+#
+# Base fields shared by all 13 audit reviewers.
+# Each reviewer MUST output these fields. Domain-specific extensions are documented
+# in the reviewer's own definition and in the compound reviewer's normalization table.
+#
+# Compound reviewers normalize domain-specific fields into the base schema
+# before forwarding to challenger and verifier.
+
+# --- Base fields (required) ---
+finding:
+  finding_id: "{PREFIX}-{seq}"  # Domain prefix: SEC, SF, TS, TD, CQ, PE, RCA, DP, TEST, TC, PERF, A11Y, DOC
+  agent: "<reviewer-name>"
+  severity: critical|high|medium|low
+  category: "<domain-specific category>"
+  location: "<file>:<line>"
+  evidence: "<code snippet or observation>"
+  reasoning: "<why this is an issue>"
+  fix: "<suggested fix>"
+  confidence: 0.60-1.00  # Floor: 0.60 (ADR-0011)
+  verification_hint:
+    check: execution_trace|call_site_check|error_propagation|hotpath_analysis|pattern_search
+    question: "<what to verify>"
+
+# --- Domain-specific extensions ---
+# These fields are added by specific reviewers and normalized by compound reviewers.
+#
+# | Reviewer               | Extra Fields                  | Compound Reviewer | Normalization                                          |
+# | ---------------------- | ----------------------------- | ----------------- | ------------------------------------------------------ |
+# | root-cause-reviewer    | five_whys, root_cause         | foundation        | root_cause → reasoning; five_whys → append to evidence |
+# | progressive-enhancer   | recommendations               | foundation        | Append as separate items                               |
+# | code-quality-reviewer  | subcategory                   | foundation        | Append to category as category/subcategory             |
+# | performance-reviewer   | impact                        | quality           | Append to evidence; impact → reasoning note            |
+# | accessibility-reviewer | wcag                          | quality           | Append to evidence                                     |
+# | test-coverage-reviewer | related_code, criticality     | quality           | related_code → evidence; criticality → reasoning note  |
+# | type-design-reviewer   | type_name, scores             | safety            | Append to evidence; scores → reasoning note            |
+# | security-reviewer      | entry_points (in hint)        | safety            | Already in verification_hint                           |
+
+# --- ID prefix registry ---
+# | Prefix | Reviewer               |
+# | ------ | ---------------------- |
+# | SEC    | security-reviewer      |
+# | SF     | silent-failure-reviewer |
+# | TS     | type-safety-reviewer   |
+# | TD     | type-design-reviewer   |
+# | CQ     | code-quality-reviewer  |
+# | PE     | progressive-enhancer   |
+# | RCA    | root-cause-reviewer    |
+# | DP     | design-pattern-reviewer|
+# | TEST   | testability-reviewer   |
+# | TC     | test-coverage-reviewer |
+# | PERF   | performance-reviewer   |
+# | A11Y   | accessibility-reviewer |
+# | DOC    | document-reviewer      |

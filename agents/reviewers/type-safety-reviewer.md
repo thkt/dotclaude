@@ -36,11 +36,12 @@ memory: project
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: type-safety-reviewer
+  - finding_id: "TS-{seq}"
+    agent: type-safety-reviewer
     severity: high|medium|low
     category: "TS1-TS5"
     location: "<file>:<line>"

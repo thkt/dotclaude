@@ -29,15 +29,28 @@ Run domain agents, DM combined findings to `challenger` AND `verifier`.
 | 1    | Check for test files and \*.md files in target scope                  | —        |
 | 2    | Launch domains 1-2,4 via Task (+ conditional domains 3,5,6 as needed) | parallel |
 | 3    | Collect all findings                                                  | —        |
-| 4    | Normalize to standard schema (evidence/reasoning/fix)                 | —        |
-| 5    | SendMessage to `challenger` AND `verifier` with combined findings     | —        |
+| 4    | Normalize to standard schema (see below)                              | —        |
+
+## Schema Normalization
+
+| Agent                | Extra Fields | Mapping                                         |
+| -------------------- | ------------ | ----------------------------------------------- |
+| performance-reviewer   | `impact`                      | Append to `evidence`; impact → `reasoning` note               |
+| accessibility-reviewer | `wcag`                        | Append to `evidence`                                           |
+| test-coverage-reviewer | `related_code`, `criticality` | `related_code` → `evidence`; `criticality` → `reasoning` note |
+| document-reviewer      | (none)                        | —                                                              |
+
+| Step | Action                                                            |
+| ---- | ----------------------------------------------------------------- |
+| 5    | SendMessage to `challenger` AND `verifier` with combined findings |
 
 ## Output
 
 ```yaml
 domain: quality
 findings:
-  - agent: <agent-name>
+  - finding_id: "<domain>-<seq>"  # preserve from reviewer or generate as Q-{domain}-{seq}
+    agent: <agent-name>
     severity: critical|high|medium|low
     category: "<category>"
     location: "<file>:<line>"

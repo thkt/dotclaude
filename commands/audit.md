@@ -1,5 +1,5 @@
 ---
-description: Orchestrate specialized review agents for comprehensive code quality assessment
+description: Orchestrate specialized review agents for code quality assessment
 aliases: [review]
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion, TeamCreate, SendMessage
 model: opus
@@ -28,7 +28,7 @@ Orchestrate specialized review agents with confidence-based filtering.
 | 1    | Run project static analysis tools (see Pre-flight below)      |
 | 2    | Spawn review team (see Team Workflow below)                   |
 | 3    | Compound reviewers DM findings to `challenger` AND `verifier` |
-| 4    | Challenger validates findings, DMs to `integrator`            |
+| 4a   | Challenger validates findings, DMs to `integrator`            |
 | 4b   | Verifier verifies findings, DMs to `integrator`               |
 | 5    | Integrator reconciles + synthesizes root causes → final YAML  |
 | 6    | Save snapshot (see Snapshot Naming below)                     |
@@ -71,21 +71,23 @@ Teammates don't inherit leader's conversation history. Include in each spawn pro
 | 4    | Reviewers  | Run domain agents internally, DM findings to `challenger` AND `verifier` |
 | 5    | Challenger | Validate each batch, DM challenged results to `integrator`               |
 | 5b   | Verifier   | Verify each batch, DM verification results to `integrator`               |
-| 6    | Leader     | Wait for all reviewers to complete                                       |
+| 6    | Leader     | Wait for integrator to produce final YAML                                |
 | 7    | Integrator | Synthesize cross-domain root causes, produce final YAML                  |
 | 8    | Leader     | SendMessage `shutdown_request` to all teammates                          |
 
 ### Error Handling
 
-| Error                 | Recovery                                                        |
-| --------------------- | --------------------------------------------------------------- |
-| No files to audit     | Return "No files to audit" message, skip team spawn             |
-| Team creation fails   | Log error, report partial results                               |
-| Teammate spawn fails  | Continue with remaining teammates                               |
-| Reviewer timeout      | 120s; Leader sends "proceed with partial results" to integrator |
-| Teammate unresponsive | shutdown_request → proceed with available results               |
-| DM delivery fails     | Retry once, then leader passes data directly                    |
-| All teammates fail    | Log error, report partial results                               |
+| Error                 | Recovery                                                         |
+| --------------------- | ---------------------------------------------------------------- |
+| No files to audit     | Return "No files to audit" message, skip team spawn              |
+| Team creation fails   | Log error, report partial results                                |
+| Teammate spawn fails  | Continue with remaining teammates                                |
+| Reviewer timeout      | 120s; Leader sends "proceed with partial results" to integrator  |
+| Challenger timeout    | 120s; Leader notifies integrator to proceed with verifier only   |
+| Verifier timeout      | 120s; Leader notifies integrator to proceed with challenger only |
+| Teammate unresponsive | shutdown_request → proceed with available results                |
+| DM delivery fails     | Retry once, then leader passes data directly                     |
+| All teammates fail    | Log error, report partial results                                |
 
 ## Pre-flight: Static Analysis
 

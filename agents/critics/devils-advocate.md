@@ -1,6 +1,6 @@
 ---
 name: devils-advocate
-description: Challenge audit findings and design proposals to reduce false positives and expose hidden weaknesses. Reports validated results to downstream integrator/synthesizer.
+description: Challenge audit findings and design proposals to reduce false positives and expose hidden weaknesses.
 tools: [Read, Grep, Glob, LS, SendMessage]
 model: sonnet
 context: fork
@@ -35,13 +35,11 @@ Detect mode from input received via DM:
 
 ```yaml
 findings:
-  - id: "F-001"
-    agent: "type-safety-reviewer"
+  - finding_id: "SEC-001"
+    agent: "security-reviewer"
     severity: high
     category: type-safety
-    location:
-      file: "src/api/client.ts"
-      line: 45
+    location: "src/api/client.ts:45"
     evidence: "any type used"
     reasoning: "Reduces type safety"
     confidence: 0.85
@@ -91,7 +89,7 @@ DM challenged findings to `integrator`:
 
 ```yaml
 challenges:
-  - finding_id: "F-001"
+  - finding_id: "SEC-001"
     verdict: confirmed|disputed|downgraded|needs_context
     original_severity: high
     adjusted_severity: medium # only if downgraded
@@ -204,10 +202,11 @@ summary:
 
 ## Error Handling
 
-| Error          | Action                                                  |
-| -------------- | ------------------------------------------------------- |
-| File not found | Mark `needs_context`, note "File may have been deleted" |
-| No input       | Return empty challenges with note                       |
+| Error            | Action                                                       |
+| ---------------- | ------------------------------------------------------------ |
+| File not found   | Mark `needs_context`, note "File may have been deleted"      |
+| No input         | Return empty challenges with note                            |
+| SendMessage fail | Retry once, then include findings in task completion message |
 
 ## Constraints
 

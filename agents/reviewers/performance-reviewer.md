@@ -60,11 +60,12 @@ Fallback: If browser unavailable, code-only analysis with lower confidence.
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: performance-reviewer
+  - finding_id: "PERF-{seq}"
+    agent: performance-reviewer
     severity: high|medium|low
     category: "render|bundle|hooks|effects|data"
     location: "<file>:<line>"
@@ -73,6 +74,9 @@ findings:
     fix: "<optimized alternative>"
     impact: "<estimated improvement>"
     confidence: 0.70-1.00
+    verification_hint:
+      check: hotpath_analysis|call_site_check
+      question: "<is this code in a hot path or frequently rendered component?>"
 summary:
   total_findings: <count>
   bundle_size: "<X KB>"

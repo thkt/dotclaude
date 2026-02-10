@@ -1,6 +1,6 @@
 ---
 name: progressive-integrator
-description: Reconcile challenge and verification results, synthesize cross-domain root causes with unified action plans. Judge role.
+description: Reconcile challenge and verification results into cross-domain root causes and action plans.
 tools: [Read, Grep, Glob, LS, SendMessage]
 model: opus
 context: fork
@@ -17,34 +17,23 @@ DMs from `challenger` (challenges YAML) and `verifier` (verifications YAML). See
 
 ## Workflow
 
-| Phase         | Action                                                | Trigger                         |
-| ------------- | ----------------------------------------------------- | ------------------------------- |
-| 1. Receive    | Accept DMs from `challenger` AND `verifier`           | Each DM (expect 6 total: 3 + 3) |
-| 2. Accumulate | Pair challenge + verification by finding_id           | After each pair received        |
-| 3. Reconcile  | Apply reconciliation rules to determine final verdict | All DMs received                |
-| 4. Integrate  | Correlate + synthesize + prioritize                   | After reconciliation            |
-| 5. Report     | DM final YAML to leader                               | After integration               |
+| Phase         | Action                                                | Trigger                                         |
+| ------------- | ----------------------------------------------------- | ----------------------------------------------- |
+| 1. Receive    | Accept DMs from `challenger` AND `verifier`           | Each DM (one pair per compound reviewer domain) |
+| 2. Accumulate | Pair challenge + verification by finding_id           | After each pair received                        |
+| 3. Reconcile  | Apply reconciliation rules to determine final verdict | All DMs received                                |
+| 4. Integrate  | Correlate + synthesize + prioritize                   | After reconciliation                            |
+| 5. Report     | DM final YAML to leader                               | After integration                               |
 
 ## Reconciliation (Phase 3)
 
-Match challenger and verifier results by `finding_id`, then apply rules:
+Match challenger and verifier results by `finding_id`, then apply rules in order:
 
-| Challenger    | Verifier      | Final Verdict | Confidence Adjustment                  |
-| ------------- | ------------- | ------------- | -------------------------------------- |
-| confirmed     | verified      | confirmed     | confidence = max(challenger, verifier) |
-| confirmed     | weak_evidence | confirmed     | unchanged                              |
-| confirmed     | unverifiable  | confirmed     | unchanged                              |
-| disputed      | verified      | needs_review  | confidence = verifier.confidence       |
-| disputed      | weak_evidence | disputed      | unchanged                              |
-| disputed      | unverifiable  | disputed      | unchanged                              |
-| downgraded    | verified      | confirmed     | severity = original (restore)          |
-| downgraded    | weak_evidence | downgraded    | unchanged                              |
-| downgraded    | unverifiable  | downgraded    | unchanged                              |
-| needs_context | verified      | confirmed     | confidence = verifier.confidence       |
-| needs_context | weak_evidence | needs_context | unchanged                              |
-| needs_context | unverifiable  | needs_context | unchanged                              |
+1. disputed + verified → needs_review (confidence = verifier.confidence)
+2. Any + verified → confirmed (confidence = max; if downgraded, restore original severity)
+3. All other combinations → keep challenger verdict unchanged
 
-Key signal: disputed × verified = needs_review — Challenger dismissed but Verifier found evidence. Flag for human review.
+Key signal: Rule 1 catches false negatives — Challenger dismissed but Verifier found evidence. Flag for human review.
 
 After reconciliation, process findings with final verdict `confirmed`, `downgraded`, `needs_context`, or `needs_review`. Discard `disputed`.
 
@@ -59,10 +48,10 @@ After reconciliation, process findings with final verdict `confirmed`, `downgrad
 
 ### Clean
 
-| Step | Action                                                                   |
-| ---- | ------------------------------------------------------------------------ |
-| 1    | Deduplicate by `file:line:category` (keep highest severity)              |
-| 2    | Filter: [✓] ≥95% include, [→] 70-94% include with note, [?] <70% exclude |
+| Step | Action                                                                             |
+| ---- | ---------------------------------------------------------------------------------- |
+| 1    | Deduplicate by `file:line:category` (keep highest severity)                        |
+| 2    | Filter by finding.confidence: ≥95% include, 60-94% include with note, <60% exclude |
 
 ### Correlate
 
@@ -100,17 +89,10 @@ After reconciliation, process findings with final verdict `confirmed`, `downgrad
 
 ### Auto-Fixable Detection
 
-| fix_type | Description               | Confidence | Example                     |
-| -------- | ------------------------- | ---------- | --------------------------- |
-| pattern  | Known fix pattern exists  | ≥90%       | Empty catch → error logging |
-| codemod  | AST-based transformation  | ≥85%       | any → specific type         |
-| lint-fix | Linter auto-fix available | ≥95%       | ESLint --fix                |
-| manual   | Requires human judgment   | N/A        | Architecture changes        |
-
-| Confidence | Action              |
-| ---------- | ------------------- |
-| ≥85%       | Generate suggestion |
-| <85%       | Skip                |
+| fix_type | Description                        | Action              |
+| -------- | ---------------------------------- | ------------------- |
+| auto     | Known fix pattern, confidence ≥85% | Generate suggestion |
+| manual   | Requires human judgment            | Skip suggestion     |
 
 ## Output
 
@@ -132,7 +114,15 @@ summary:
     disputed: <count>
     downgraded: <count>
     needs_context: <count>
-    needs_review: <count>
+    needs_review:
+      count: <count>
+      items:
+        - finding_id: "<id>"
+          severity: critical|high|medium|low
+          agent: "<reviewer agent>"
+          location: "<file:line>"
+          challenger_reasoning: "<why disputed>"
+          verifier_evidence: "<what was found>"
     false_positive_rate: "<percentage>"
     verification:
       verified: <count>
@@ -143,7 +133,7 @@ root_causes:
   - id: "RC-001"
     description: "<one sentence: the real problem>"
     category: architecture_gap|knowledge_gap|tooling_gap|process_gap
-    findings_resolved: ["F-001", "F-003", "F-007"]
+    findings_resolved: ["SEC-001", "SF-003", "TS-007"]
     domains_involved: [security, type-safety, code-quality]
     five_whys:
       - why: "<question>"
@@ -168,7 +158,7 @@ suggestions:
       root_cause_ref: "RC-001"  # or finding_ref for standalone
       category: "<category>"
       severity: critical|high|medium|low
-      fix_type: pattern|codemod|lint-fix|manual
+      fix_type: auto|manual
       confidence: 0.85-1.00
       location:
         file: "<file path>"

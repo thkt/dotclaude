@@ -1,6 +1,6 @@
 ---
 name: code-quality-reviewer
-description: Unified code quality review. Structure (file-level) + Readability (function-level). DRY, waste elimination, Miller's Law.
+description: Code quality review. Structure (file-level) + Readability (function-level).
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-readability, applying-code-principles]
@@ -41,11 +41,12 @@ memory: project
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: code-quality-reviewer
+  - finding_id: "CQ-{seq}"
+    agent: code-quality-reviewer
     severity: high|medium|low
     category: "structure|readability"
     subcategory: "waste|dry|naming|complexity|comments|ai_smell"

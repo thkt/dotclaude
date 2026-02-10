@@ -36,11 +36,12 @@ Evaluate testability, identify test-hostile patterns, recommend improvements.
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: testability-reviewer
+  - finding_id: "TEST-{seq}"
+    agent: testability-reviewer
     severity: high|medium|low
     category: "TE1-TE5"
     location: "<file>:<line>"
@@ -48,6 +49,9 @@ findings:
     reasoning: "<why this is hard to test>"
     fix: "<testable alternative>"
     confidence: 0.70-1.00
+    verification_hint:
+      check: call_site_check|pattern_search
+      question: "<is this dependency actually injected or mocked in existing tests?>"
 summary:
   total_findings: <count>
   by_category:

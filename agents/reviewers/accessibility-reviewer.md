@@ -63,11 +63,12 @@ Log: `⚠️ a11y-specialist-skills not available, WCAG semantic checks skipped`
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: accessibility-reviewer
+  - finding_id: "A11Y-{seq}"
+    agent: accessibility-reviewer
     severity: critical|high|medium
     category: "semantic|keyboard|screen-reader|visual|form"
     wcag: "<success criterion e.g., 1.1.1>"
@@ -76,6 +77,9 @@ findings:
     reasoning: "<why this is accessibility barrier>"
     fix: "<accessible alternative>"
     confidence: 0.70-1.00
+    verification_hint:
+      check: execution_trace|pattern_search
+      question: "<is this element actually reachable by keyboard/screen reader?>"
 summary:
   total_findings: <count>
   wcag_compliance:

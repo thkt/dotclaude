@@ -40,11 +40,12 @@ Review for CSS-first approach. Identify JavaScript used where CSS/HTML suffices.
 
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: progressive-enhancer
+  - finding_id: "PE-{seq}"
+    agent: progressive-enhancer
     severity: high|medium|low
     location: "<file>:<line>"
     category: "layout|animation|event|style|toggle"
@@ -52,6 +53,9 @@ findings:
     reasoning: "<why CSS is better>"
     fix: "<CSS alternative solution>"
     confidence: 0.70-1.00
+    verification_hint:
+      check: pattern_search|call_site_check
+      question: "<is this JS pattern used in other components too?>"
 recommendations:
   - location: "<file>:<line>"
     action: "<specific change>"
