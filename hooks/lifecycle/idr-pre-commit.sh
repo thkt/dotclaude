@@ -1,10 +1,6 @@
 #!/bin/zsh
-# IDR Pre-commit Hook — blocks git commit until IDR is generated
-# Failure mode: fail-closed (block on error)
-
 set -euo pipefail
 
-# Fast-path: skip jq parsing for non-commit commands
 INPUT=$(</dev/stdin)
 [[ -z "$INPUT" ]] && exit 0
 [[ "$INPUT" == *"git commit"* ]] || exit 0
@@ -14,7 +10,6 @@ COMMAND=$(jq -r '.tool_input.command // ""' <<< "$INPUT") || { echo "BLOCKED: in
 [[ -z "$COMMAND" ]] && exit 0
 [[ "$COMMAND" =~ ^git[[:space:]]+commit ]] || exit 0
 
-# IDR output directory: SOW parent dir if active, otherwise planning/<date>/
 IDR_FRESHNESS_MINUTES=${IDR_FRESHNESS_MINUTES:-5}
 [[ "$IDR_FRESHNESS_MINUTES" =~ ^[0-9]+$ ]] || IDR_FRESHNESS_MINUTES=5
 TODAY="${TODAY:-$(date +%Y-%m-%d)}"
@@ -22,7 +17,6 @@ TODAY="${TODAY:-$(date +%Y-%m-%d)}"
 IDR_DIR="$HOME/.claude/workspace/planning/${TODAY}"
 CURRENT_SOW="$HOME/.claude/workspace/.current-sow"
 
-# Path traversal validation (portable: python3 fallback for macOS)
 resolve_path() {
   realpath "$1" 2>/dev/null || \
   python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$1" 2>/dev/null || \
@@ -45,13 +39,19 @@ fi
 if [[ ! -d "$IDR_DIR" ]]; then
   RECENT_IDR=""
 else
-  RECENT_IDR=$(find "$IDR_DIR" -maxdepth 1 \( -name 'idr.md' -o -name 'idr-*.md' \) -mmin "-${IDR_FRESHNESS_MINUTES}" 2>/dev/null | head -1) || true
+  RECENT_IDR=$(find "$IDR_DIR" -maxdepth 1 -name 'idr-*.md' -mmin "-${IDR_FRESHNESS_MINUTES}" 2>/dev/null | head -1) || true
 fi
 if [ -n "$RECENT_IDR" ]; then
   exit 0
 fi
 
-# Output staged diff for Claude's context
+if [[ -d "$IDR_DIR" ]]; then
+  LAST_NUM=$(find "$IDR_DIR" -maxdepth 1 -name 'idr-*.md' 2>/dev/null | sed -n 's/.*idr-\([0-9][0-9]*\)\.md$/\1/p' | sort -n | tail -1) || true
+  NEXT_NUM=$(printf "%02d" $(( ${LAST_NUM:-0} + 1 )))
+else
+  NEXT_NUM="01"
+fi
+
 echo "## Staged Changes"
 echo ""
 echo '```'
@@ -64,7 +64,7 @@ echo '```'
 echo ""
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
 echo "Repository: ${REPO_ROOT}"
-echo "IDR output: ${IDR_DIR}/"
+echo "IDR output: ${IDR_DIR}/idr-${NEXT_NUM}.md"
 echo ""
 echo "Generate an IDR based on the staged diff above and session context, then retry the commit."
 echo "Format: follow the IDR Generation section in skills/orchestrating-workflows/references/code-workflow.md"
