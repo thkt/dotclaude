@@ -7,7 +7,7 @@ LOG_DIR="$HOME/.claude/logs/agents"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
 INPUT=$(cat)
-IFS=$'\t' read -r AGENT_ID TRANSCRIPT_PATH <<< "$(echo "$INPUT" | jq -r '[(.agent_id // "unknown"), (.agent_transcript_path // "")] | @tsv' 2>/dev/null)"
+IFS=$'\t' read -r AGENT_ID TRANSCRIPT_PATH <<< "$(printf '%s' "$INPUT" | jq -r '[(.agent_id // "unknown"), (.agent_transcript_path // "")] | @tsv' 2>/dev/null)"
 
 if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
   AGENT_LOG_DIR="$LOG_DIR/$AGENT_ID"

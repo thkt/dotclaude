@@ -14,7 +14,7 @@ parse_stdin() {
     command -v jq &>/dev/null || return
 
     local parsed
-    parsed=$(echo "$stdin_input" | jq -r '
+    parsed=$(printf '%s' "$stdin_input" | jq -r '
       [
         (.model.display_name // ""),
         (.model.id // ""),

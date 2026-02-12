@@ -21,7 +21,7 @@ if [ -f "$CACHE_FILE" ]; then
     CACHED_RAW=$(jq -r --arg k "$CACHE_KEY" '.[$k] // empty' "$CACHE_FILE" 2>/dev/null)
     if [ -n "$CACHED_RAW" ]; then
         IFS=$'\t' read -r CACHED_AT PR_URL PR_NUM PR_STATE \
-            <<< "$(echo "$CACHED_RAW" | jq -r '[(.cached_at // 0), (.url // ""), (.number // ""), (.state // "")] | map(tostring) | @tsv' 2>/dev/null)"
+            <<< "$(printf '%s' "$CACHED_RAW" | jq -r '[(.cached_at // 0), (.url // ""), (.number // ""), (.state // "")] | map(tostring) | @tsv' 2>/dev/null)"
         if [ $((NOW - CACHED_AT)) -lt "$CACHE_TTL_SEC" ]; then
             HIT=1
         fi
@@ -34,7 +34,7 @@ if [ -z "$HIT" ]; then
         # Do not cache failures; let next invocation retry
         return 0
     }
-    IFS=$'\t' read -r PR_URL PR_NUM PR_STATE <<< "$(echo "$PR_JSON" | jq -r '[(.url // ""), (.number // ""), (.state // "")] | map(tostring) | @tsv' 2>/dev/null)"
+    IFS=$'\t' read -r PR_URL PR_NUM PR_STATE <<< "$(printf '%s' "$PR_JSON" | jq -r '[(.url // ""), (.number // ""), (.state // "")] | map(tostring) | @tsv' 2>/dev/null)"
 
     mkdir -p "$CACHE_DIR"
     ENTRY=$(jq -n --arg u "$PR_URL" --arg n "$PR_NUM" --arg s "$PR_STATE" --argjson t "$NOW" \
@@ -44,7 +44,7 @@ if [ -z "$HIT" ]; then
     else
         EXISTING='{}'
     fi
-    echo "$EXISTING" | jq --argjson t "$NOW" --arg k "$CACHE_KEY" --argjson v "$ENTRY" \
+    printf '%s' "$EXISTING" | jq --argjson t "$NOW" --arg k "$CACHE_KEY" --argjson v "$ENTRY" \
         '[to_entries[] | select(.value.cached_at > ($t - 86400))] | from_entries | .[$k] = $v' \
         > "$CACHE_FILE.tmp" 2>/dev/null \
         && mv "$CACHE_FILE.tmp" "$CACHE_FILE"
