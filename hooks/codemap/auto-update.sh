@@ -99,25 +99,48 @@ EOF
 emit_yaml() {
   local fw_yaml
   fw_yaml=$(echo "$FRAMEWORKS" | tr ',' '\n' | sed 's/^ *//' | while read -r fw; do
-    [ -n "$fw" ] && [ "$fw" != "N/A" ] && echo "  - \"$fw\""
+    [ -n "$fw" ] && [ "$fw" != "N/A" ] && printf '  - "%s"\n' "$fw"
   done)
 
-  cat > "$CODEMAP_DIR/architecture.yaml" << YAMLEOF
-project_name: "$(basename "$PROJECT_ROOT")"
-updated: "$TIMESTAMP"
-source: hook
-project_type: "$PROJECT_TYPE"
-frameworks:
-$([ -n "$fw_yaml" ] && echo "$fw_yaml" || echo "  []")
-entry_points:
-$(echo "$ENTRY_POINTS" | while read -r e; do
-  [ -n "$e" ] && echo "  - \"$e\""
-done)
-key_exports:
-$(echo "$KEY_EXPORTS" | while read -r e; do
-  [ -n "$e" ] && echo "  - \"$e\""
-done)
-YAMLEOF
+  local entry_yaml
+  entry_yaml=$(echo "$ENTRY_POINTS" | while read -r e; do
+    [ -n "$e" ] && printf '  - "%s"\n' "$e"
+  done)
+
+  local export_yaml
+  export_yaml=$(echo "$KEY_EXPORTS" | while read -r e; do
+    [ -n "$e" ] && printf '  - "%s"\n' "$e"
+  done)
+
+  # Sanitize values for YAML safety
+  local safe_name safe_type
+  safe_name=$(basename "$PROJECT_ROOT" | tr -d '"\\')
+  safe_type=$(printf '%s' "$PROJECT_TYPE" | tr -d '"\\')
+
+  {
+    printf 'project_name: "%s"\n' "$safe_name"
+    printf 'updated: "%s"\n' "$TIMESTAMP"
+    printf 'source: hook\n'
+    printf 'project_type: "%s"\n' "$safe_type"
+    printf 'frameworks:\n'
+    if [ -n "$fw_yaml" ]; then
+      printf '%s\n' "$fw_yaml"
+    else
+      printf '  []\n'
+    fi
+    printf 'entry_points:\n'
+    if [ -n "$entry_yaml" ]; then
+      printf '%s\n' "$entry_yaml"
+    else
+      printf '  []\n'
+    fi
+    printf 'key_exports:\n'
+    if [ -n "$export_yaml" ]; then
+      printf '%s\n' "$export_yaml"
+    else
+      printf '  []\n'
+    fi
+  } > "$CODEMAP_DIR/architecture.yaml"
 }
 
 emit_markdown

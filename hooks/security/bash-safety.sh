@@ -1,11 +1,10 @@
 #!/bin/zsh
-# Bash Safety Hook - PreToolUse guard for dangerous commands
 # Failure mode: fail-closed (block on error)
 # Exit: 0=allow, 2=block
 set -euo pipefail
 
 LOG_FILE="$HOME/.claude/logs/bash-safety.log"
-mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
+mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || echo "WARNING: log dir creation failed" >&2
 
 log_block() {
   printf '[%s] BLOCKED pattern="%s" command="%s"\n' \
@@ -26,6 +25,15 @@ COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null) 
 # Strip quotes to prevent bypass via quoting
 NORMALIZED=${COMMAND//[\'\"\`]/}
 NORMALIZED=${NORMALIZED//\$\(/}
+# Strip $IFS expansion (e.g., cmd${IFS}arg → cmd arg)
+NORMALIZED=${NORMALIZED//\$\{IFS\}/ }
+NORMALIZED=${NORMALIZED//\$IFS/ }
+# Strip brace expansion (e.g., {rm,-rf,/} → rm -rf /)
+NORMALIZED=${NORMALIZED//\{/}
+NORMALIZED=${NORMALIZED//\}/}
+NORMALIZED=${NORMALIZED//,/ }
+# Strip variable indirection (e.g., ${!var})
+NORMALIZED=${NORMALIZED//\$\{!/\$\{}
 
 # Enable PCRE for \b word boundary support
 setopt REMATCH_PCRE 2>/dev/null
@@ -67,14 +75,19 @@ DANGER_PATTERNS=(
   '\bbase64[[:space:]].*\|[[:space:]]*(bash|sh|zsh)\b'
 )
 
-# Verify regex word boundary support via combined pattern (fail-closed)
+# Self-test: verify \b word boundary works (fail-closed)
 COMBINED_PATTERN="${(j:|:)DANGER_PATTERNS}"
 if ! [[ "rm -rf" =~ $COMBINED_PATTERN ]]; then
   echo "BLOCKED: regex engine lacks \\b support" >&2
   exit 2
 fi
 
-# Collapse newlines to prevent multiline bypass
+# Self-test: \b must not match substrings (fail-closed)
+if [[ "firmware update" =~ $COMBINED_PATTERN ]]; then
+  echo "BLOCKED: regex word boundary false positive detected" >&2
+  exit 2
+fi
+
 COMMAND_SINGLE=${COMMAND//$'\n'/ }
 NORMALIZED_SINGLE=${NORMALIZED//$'\n'/ }
 
