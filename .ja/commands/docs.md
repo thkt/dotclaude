@@ -1,5 +1,5 @@
 ---
-description: コードベース分析からドキュメントを生成
+description: コードベース分析からドキュメントを生成。ユーザーがドキュメント生成, ドキュメント作って, generate docs, ドキュメント化等に言及した場合に使用。
 allowed-tools: Read, Write, Task, AskUserQuestion
 model: opus
 argument-hint: "[architecture|api|domain|setup]"

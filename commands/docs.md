@@ -1,5 +1,5 @@
 ---
-description: Generate documentation from codebase analysis
+description: Generate documentation from codebase analysis. Use when user mentions ドキュメント生成, ドキュメント作って, generate docs, ドキュメント化.
 allowed-tools: Read, Write, Task, AskUserQuestion
 model: opus
 argument-hint: "[architecture|api|domain|setup]"

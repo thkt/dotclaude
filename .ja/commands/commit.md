@@ -1,5 +1,5 @@
 ---
-description: Git diffを分析し、Conventional Commits形式のメッセージを生成
+description: Git diffを分析し、Conventional Commits形式のメッセージを生成。ユーザーがコミットして, コミット作成, commit等に言及した場合に使用。
 allowed-tools: Bash(git:*), Bash(cat:*), Bash(mv:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[コンテキストまたはIssue参照]"

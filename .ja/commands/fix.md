@@ -1,5 +1,5 @@
 ---
-description: 開発環境で小さなバグや軽微な改善を迅速に修正
+description: 開発環境で小さなバグや軽微な改善を迅速に修正。ユーザーがバグ修正, 直して, 修正して, fix bug, 不具合等に言及した場合に使用。
 allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Bash(ls:*), Edit, MultiEdit, Read, Grep, Glob, Task, AskUserQuestion
 model: opus
 argument-hint: "[バグまたは問題の説明]"

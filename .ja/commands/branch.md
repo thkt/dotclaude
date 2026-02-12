@@ -1,5 +1,5 @@
 ---
-description: Git変更を分析し、適切なブランチ名を提案
+description: Git変更を分析し、適切なブランチ名を提案。ユーザーがブランチ名, ブランチ作成, branch name等に言及した場合に使用。
 allowed-tools: Bash(git:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[コンテキストまたはチケット番号]"

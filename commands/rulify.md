@@ -1,5 +1,5 @@
 ---
-description: Generate project rules from ADR and integrate with CLAUDE.md
+description: Generate project rules from ADR and integrate with CLAUDE.md. Use when user mentions ルール生成, ルール化, ADRからルール, generate rules.
 allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob, AskUserQuestion
 model: opus
 argument-hint: "[ADR number]"

@@ -1,5 +1,5 @@
 ---
-description: プロジェクトテストを実行し、包括的なテストを通じてコード品質を検証
+description: プロジェクトテストを実行し、包括的なテストを通じてコード品質を検証。ユーザーがテスト実行, テスト走らせて, run tests, テストして等に言及した場合に使用。
 allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, Task, AskUserQuestion
 model: opus
 argument-hint: "[テストスコープまたは特定のテスト]"

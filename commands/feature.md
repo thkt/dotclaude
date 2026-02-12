@@ -1,5 +1,5 @@
 ---
-description: Comprehensive feature development with exploration, architecture, TDD, and quality gates
+description: Comprehensive feature development with exploration, architecture, TDD, and quality gates. Use when user mentions 機能開発, 新機能, 機能追加, feature development.
 allowed-tools: Skill, Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion, TeamCreate, SendMessage
 model: opus
 argument-hint: "[feature description]"

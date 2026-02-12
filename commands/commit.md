@@ -1,5 +1,5 @@
 ---
-description: Analyze Git diff and generate Conventional Commits format messages
+description: Analyze Git diff and generate Conventional Commits format messages. Use when user mentions コミットして, コミット作成, commit changes.
 allowed-tools: Bash(git:*), Bash(cat:*), Bash(mv:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[context or issue reference]"

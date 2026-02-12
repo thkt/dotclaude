@@ -1,5 +1,5 @@
 ---
-description: TDD/RGRCサイクルでリアルタイムテストフィードバック付きコード実装
+description: TDD/RGRCサイクルでリアルタイムテストフィードバック付きコード実装。ユーザーが実装して, コード書いて, implement, coding等に言及した場合に使用。
 allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git log:*), Bash(ls:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, TeamCreate, SendMessage, AskUserQuestion
 model: opus
 argument-hint: "[実装内容] [--frontend] [--principles] [--storybook]"

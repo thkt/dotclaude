@@ -1,5 +1,5 @@
 ---
-description: Generate documentation and Playwright tests through guided browser operations
+description: Generate documentation and Playwright tests through guided browser operations. Use when user mentions E2Eテスト, ブラウザテスト, Playwrightテスト, e2e test.
 allowed-tools: Read, Write, Glob, Task, Bash(agent-browser:*), AskUserQuestion
 model: opus
 argument-hint: "[test-name]"

@@ -1,5 +1,5 @@
 ---
-description: ブランチの変更を分析し、包括的なPR説明を生成
+description: ブランチの変更を分析し、包括的なPR説明を生成。ユーザーがPR作って, プルリクエスト, pull request, PR作成等に言及した場合に使用。
 allowed-tools: Bash(git:*), Bash(gh:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[Issue参照またはコンテキスト]"

@@ -1,5 +1,5 @@
 ---
-description: List and view planning documents (SOW/Spec) in workspace
+description: List and view planning documents (SOW/Spec) in workspace. Use when user mentions 計画一覧, SOW一覧, 計画を見せて, show plans.
 allowed-tools: Read, Glob, AskUserQuestion
 model: opus
 argument-hint: "[feature-name]"

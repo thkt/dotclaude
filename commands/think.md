@@ -1,5 +1,5 @@
 ---
-description: Design exploration with SOW and Spec generation
+description: Design exploration with SOW and Spec generation. Use when user mentions 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration.
 allowed-tools: Skill, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[task description]"

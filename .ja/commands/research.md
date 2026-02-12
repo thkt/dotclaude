@@ -1,5 +1,5 @@
 ---
-description: 実装なしでプロジェクトリサーチと技術調査を実行
+description: 実装なしでプロジェクトリサーチと技術調査を実行。ユーザーが調査して, 調べて, リサーチ, investigate, 分析して等に言及した場合に使用。
 allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 context: fork

@@ -1,5 +1,5 @@
 ---
-description: Scan plugins and skills for malicious code and deceptive instructions
+description: Scan plugins and skills for malicious code and deceptive instructions. Use when user mentions スキャンして, 安全性チェック, plugin scan, セキュリティスキャン.
 allowed-tools: Bash(gh repo clone:*), Bash(mv /tmp/claude/scan-* ~/.Trash/), Read, Grep, Glob, LS, Task, AskUserQuestion
 model: sonnet
 argument-hint: "[target: plugin name, path, or GitHub URL]"

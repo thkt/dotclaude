@@ -1,5 +1,5 @@
 ---
-description: Analyze Git changes and suggest appropriate branch names
+description: Analyze Git changes and suggest appropriate branch names. Use when user mentions ブランチ名, ブランチ作成, branch name.
 allowed-tools: Bash(git:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[context or ticket number]"

@@ -1,5 +1,5 @@
 ---
-description: Analyze branch changes and generate comprehensive PR description
+description: Analyze branch changes and generate comprehensive PR description. Use when user mentions PR作って, プルリクエスト, pull request, PR作成.
 allowed-tools: Bash(git:*), Bash(gh:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[issue reference or context]"

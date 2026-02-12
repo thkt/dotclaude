@@ -1,5 +1,5 @@
 ---
-description: Run project tests and validate code quality through comprehensive testing
+description: Run project tests and validate code quality through comprehensive testing. Use when user mentions テスト実行, テスト走らせて, run tests, テストして.
 allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, Task, AskUserQuestion
 model: opus
 argument-hint: "[test scope or specific tests]"

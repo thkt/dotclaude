@@ -1,5 +1,5 @@
 ---
-description: ワークスペース内の計画ドキュメント（SOW/Spec）を一覧・表示
+description: ワークスペース内の計画ドキュメント（SOW/Spec）を一覧・表示。ユーザーが計画一覧, SOW一覧, 計画を見せて, show plans等に言及した場合に使用。
 allowed-tools: Read, Glob, AskUserQuestion
 model: opus
 argument-hint: "[機能名]"

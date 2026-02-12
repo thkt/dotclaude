@@ -1,5 +1,5 @@
 ---
-description: 実装準備の詳細を含むSpecification（spec.md）を生成
+description: 実装準備の詳細を含むSpecification（spec.md）を生成。ユーザーがスペック作成, 仕様書, 詳細設計, specification等に言及した場合に使用。
 allowed-tools: Read, Write, Glob, Grep, LS, AskUserQuestion
 model: opus
 argument-hint: "[sowパスまたは機能説明]"

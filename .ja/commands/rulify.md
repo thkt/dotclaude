@@ -1,5 +1,5 @@
 ---
-description: ADRからプロジェクトルールを生成しCLAUDE.mdに統合
+description: ADRからプロジェクトルールを生成しCLAUDE.mdに統合。ユーザーがルール生成, ルール化, ADRからルール, generate rules等に言及した場合に使用。
 allowed-tools: Read, Write, Edit, Bash(ls:*), Grep, Glob, AskUserQuestion
 model: opus
 argument-hint: "[ADR番号]"

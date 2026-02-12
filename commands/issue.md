@@ -1,5 +1,5 @@
 ---
-description: Generate GitHub Issue with structured title and body
+description: Generate GitHub Issue with structured title and body. Use when user mentions Issue作って, Issue書いて, Issue作成, GitHub Issue.
 allowed-tools: Bash(gh issue:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[issue description]"

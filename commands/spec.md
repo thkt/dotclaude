@@ -1,5 +1,5 @@
 ---
-description: Generate Specification (spec.md) with implementation-ready details
+description: Generate Specification (spec.md) with implementation-ready details. Use when user mentions スペック作成, 仕様書, 詳細設計, specification.
 allowed-tools: Read, Write, Glob, Grep, LS, AskUserQuestion
 model: opus
 argument-hint: "[sow path or feature description]"

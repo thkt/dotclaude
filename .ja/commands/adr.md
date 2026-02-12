@@ -1,5 +1,5 @@
 ---
-description: MADR形式でアーキテクチャ決定記録（ADR）を自動採番で作成
+description: MADR形式でアーキテクチャ決定記録（ADR）を自動採番で作成。ユーザーがADR作成, 技術決定, アーキテクチャ決定, decision record等に言及した場合に使用。
 allowed-tools: Bash(ls:*), Bash($HOME/.claude/skills/creating-adrs/scripts/*), Read, Write, Grep, Glob, AskUserQuestion
 model: opus
 argument-hint: "[決定タイトル]"

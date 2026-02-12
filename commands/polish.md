@@ -1,5 +1,5 @@
 ---
-description: Remove AI-generated slop and simplify code for clarity and maintainability
+description: Remove AI-generated slop and simplify code for clarity and maintainability. Use when user mentions 整理して, きれいにして, コード整理, slop除去, ポリッシュ.
 allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob, Task, AskUserQuestion
 model: opus
 argument-hint: "[target scope]"

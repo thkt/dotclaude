@@ -1,5 +1,5 @@
 ---
-description: SOWとSpec生成を伴う設計探索
+description: SOWとSpec生成を伴う設計探索。ユーザーが計画して, 設計して, アプローチ検討, 方針決め, planning等に言及した場合に使用。
 allowed-tools: Skill, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[タスク説明]"

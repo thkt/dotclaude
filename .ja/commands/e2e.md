@@ -1,5 +1,5 @@
 ---
-description: ガイド付きブラウザ操作を通じてドキュメントとPlaywrightテストを生成
+description: ガイド付きブラウザ操作を通じてドキュメントとPlaywrightテストを生成。ユーザーがE2Eテスト, ブラウザテスト, Playwrightテスト, e2e test等に言及した場合に使用。
 allowed-tools: Read, Write, Glob, Task, Bash(agent-browser:*), AskUserQuestion
 model: opus
 argument-hint: "[テスト名]"

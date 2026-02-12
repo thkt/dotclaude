@@ -1,5 +1,5 @@
 ---
-description: Perform project research and technical investigation without implementation
+description: Perform project research and technical investigation without implementation. Use when user mentions 調査して, 調べて, リサーチ, investigate, 分析して.
 allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 context: fork

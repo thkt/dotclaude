@@ -1,5 +1,5 @@
 ---
-description: 構造化されたタイトルと本文でGitHub Issueを生成
+description: 構造化されたタイトルと本文でGitHub Issueを生成。ユーザーがIssue作って, Issue書いて, Issue作成等に言及した場合に使用。
 allowed-tools: Bash(gh issue:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[Issue説明]"

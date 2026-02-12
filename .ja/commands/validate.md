@@ -1,5 +1,5 @@
 ---
-description: SOW受け入れ基準に対して実装を検証
+description: SOW受け入れ基準に対して実装を検証。ユーザーが検証して, 受入確認, バリデーション, validate等に言及した場合に使用。
 allowed-tools: Read, Glob, Grep, TaskList, TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[機能名]"

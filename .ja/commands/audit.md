@@ -1,5 +1,5 @@
 ---
-description: 包括的なコード品質評価のために専門レビューエージェントをオーケストレート
+description: 包括的なコード品質評価のために専門レビューエージェントをオーケストレート。ユーザーがレビューして, コードレビュー, 品質チェック, code review等に言及した場合に使用。
 aliases: [review]
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion, TeamCreate, SendMessage
 model: opus

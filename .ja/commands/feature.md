@@ -1,5 +1,5 @@
 ---
-description: 探索・アーキテクチャ設計・TDD・品質ゲートを含む包括的な機能開発
+description: 探索・アーキテクチャ設計・TDD・品質ゲートを含む包括的な機能開発。ユーザーが機能開発, 新機能, 機能追加, feature development等に言及した場合に使用。
 allowed-tools: Skill, Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion, TeamCreate, SendMessage
 model: opus
 argument-hint: "[機能の説明]"

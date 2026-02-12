@@ -1,5 +1,5 @@
 ---
-description: Validate implementation against SOW acceptance criteria
+description: Validate implementation against SOW acceptance criteria. Use when user mentions 検証して, 受入確認, バリデーション, validate implementation.
 allowed-tools: Read, Glob, Grep, TaskList, TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[feature name]"

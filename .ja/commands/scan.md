@@ -1,5 +1,5 @@
 ---
-description: プラグインとスキルの悪意のあるコードや指示をスキャン
+description: プラグインとスキルの悪意のあるコードや指示をスキャン。ユーザーがスキャンして, 安全性チェック, plugin scan, セキュリティスキャン等に言及した場合に使用。
 allowed-tools: Bash(gh repo clone:*), Bash(mv /tmp/claude/scan-* ~/.Trash/), Read, Grep, Glob, LS, Task, AskUserQuestion
 model: sonnet
 argument-hint: "[対象: プラグイン名、パス、または GitHub URL]"

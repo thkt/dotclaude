@@ -1,5 +1,5 @@
 ---
-description: Generate Statement of Work (SOW) for planning complex tasks
+description: Generate Statement of Work (SOW) for planning complex tasks. Use when user mentions SOW作成, 要件定義, 作業計画, statement of work.
 allowed-tools: Bash(git log:*), Bash(git diff:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 argument-hint: "[task description]"
