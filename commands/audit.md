@@ -21,6 +21,16 @@ Orchestrate specialized review agents with confidence-based filtering.
 | -------- | ------------------------------------------ |
 | Focus    | security / performance / readability / all |
 
+## Scope Tier
+
+| Tier   | Files | Team                                                           |
+| ------ | ----- | -------------------------------------------------------------- |
+| Small  | 1-3   | Leader runs sub-reviewers directly                             |
+| Medium | 4-15  | 3 compound reviewers + integrator                              |
+| Large  | 16+   | 6-agent pipeline: reviewers + challenger/verifier + integrator |
+
+Glob target → count files → select tier → confirm with user.
+
 ## Execution
 
 | Step | Action                                                        |
@@ -184,12 +194,12 @@ Example output: `audit-2026-01-23-031812.yaml`
 
 ## Verification
 
-| Check                                | Required |
-| ------------------------------------ | -------- |
-| Team spawned with 6 teammates?       | Yes      |
-| All reviewer findings collected?     | Yes      |
-| Challenger validated findings?       | Yes      |
-| Verifier produced verification YAML? | Yes      |
-| Integrator produced final YAML?      | Yes      |
-| Snapshot saved?                      | Yes      |
-| Delta comparison displayed?          | Yes      |
+| Check                        | Small | Medium | Large |
+| ---------------------------- | ----- | ------ | ----- |
+| Team spawned?                | No    | Yes    | Yes   |
+| Reviewer findings collected? | Yes   | Yes    | Yes   |
+| Challenger validated?        | —     | —      | Yes   |
+| Verifier verified?           | —     | —      | Yes   |
+| Integrator produced YAML?    | —     | Yes    | Yes   |
+| Snapshot saved?              | Yes   | Yes    | Yes   |
+| Delta displayed?             | Yes   | Yes    | Yes   |

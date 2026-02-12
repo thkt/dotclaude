@@ -1,6 +1,18 @@
 # Phase 2-4: Team Exploration & Architecture
 
-## Team Structure
+## Scope Tier
+
+Estimate from Phase 1 file count. Confirm after exploration.
+
+| Tier   | Files | Team                        |
+| ------ | ----- | --------------------------- |
+| Small  | 1-3   | Leader explores + architect |
+| Medium | 4-15  | 2 explorers + architect     |
+| Large  | 16+   | 3 explorers + architect     |
+
+User can request full team on small scope.
+
+## Team Structure (Large)
 
 ```text
 /feature command (LEADER)
@@ -9,6 +21,9 @@
 ├── explorer-core    (feature-explorer, Core logic)
 └── architect        (feature-architect, progressive mode)
 ```
+
+Medium: Drop `explorer-core`, merge Core into `explorer-data`.
+Small: Leader explores directly, spawns `architect` only.
 
 ## Seed Context
 
