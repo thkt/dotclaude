@@ -112,19 +112,29 @@ Teammates don't inherit leader's conversation history. Include in each spawn pro
 | 7    | Integrator | Synthesize cross-domain root causes, produce final YAML            |
 | 8    | Leader     | SendMessage `shutdown_request` to all teammates                    |
 
+### DM Handoff Contracts
+
+| Handoff                 | Schema Source                             | Key Fields                            |
+| ----------------------- | ----------------------------------------- | ------------------------------------- |
+| Reviewer → Challenger   | `agents/teams/compound-reviewer-*.md`     | `domain`, `findings[]`, `summary`     |
+| Reviewer → Verifier     | (same as above)                           | (same as above)                       |
+| Challenger → Integrator | `agents/critics/devils-advocate-audit.md` | `challenges[]`, `summary`             |
+| Verifier → Integrator   | `agents/critics/evidence-verifier.md`     | `verifications[]`, `summary`          |
+| Integrator → Leader     | `agents/teams/progressive-integrator.md`  | Full snapshot YAML (excluding `meta`) |
+
 ### Error Handling
 
-| Error                 | Recovery                                                         |
-| --------------------- | ---------------------------------------------------------------- |
-| No files to audit     | Return "No files to audit" message, skip team spawn              |
-| Team creation fails   | Log error, report partial results                                |
-| Teammate spawn fails  | Continue with remaining teammates                                |
-| Reviewer timeout      | 120s; Leader sends "proceed with partial results" to integrator  |
-| Challenger timeout    | 120s; Leader notifies integrator to proceed with verifier only   |
-| Verifier timeout      | 120s; Leader notifies integrator to proceed with challenger only |
-| Teammate unresponsive | shutdown_request → proceed with available results                |
-| DM delivery fails     | Retry once, then leader passes data directly                     |
-| All teammates fail    | Log error, report partial results                                |
+| Error                 | Recovery                                                         | Degraded Output                             |
+| --------------------- | ---------------------------------------------------------------- | ------------------------------------------- |
+| No files to audit     | Return "No files to audit" message, skip team spawn              | No report generated                         |
+| Team creation fails   | Log error, report partial results                                | Report with available findings only         |
+| Teammate spawn fails  | Continue with remaining teammates                                | Missing domain(s) noted in pipeline_health  |
+| Reviewer timeout      | 120s; Leader sends "proceed with partial results" to integrator  | Integrator works with received domains only |
+| Challenger timeout    | 120s; Leader notifies integrator to proceed with verifier only   | Rule 5 (verifier-only mode) applied         |
+| Verifier timeout      | 120s; Leader notifies integrator to proceed with challenger only | Original challenger verdicts used as final  |
+| Teammate unresponsive | shutdown_request → proceed with available results                | Missing domain(s) noted in pipeline_health  |
+| DM delivery fails     | Retry once, then leader relays YAML via Task output              | Same schema, delivered through Task output  |
+| All teammates fail    | Log error, report partial results                                | Empty report with error note                |
 
 ## Pre-flight: Static Analysis
 

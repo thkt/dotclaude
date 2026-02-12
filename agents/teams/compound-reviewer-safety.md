@@ -15,7 +15,7 @@ tools:
   ]
 model: sonnet
 context: fork
-skills: [reviewing-security, reviewing-type-safety] # context:fork loses CLAUDE.md; skills inject domain knowledge for normalization
+skills: [reviewing-security, reviewing-type-safety]
 ---
 
 # Compound Reviewer: Safety
@@ -54,7 +54,7 @@ After normalizing, share cross-domain findings with peer compound reviewers befo
 | ---- | ----------------------------------------------------------------------- |
 | 1    | Identify P1 (critical/high at location) and P2 (pattern in 3+ files)    |
 | 2    | DM P1/P2 summary to both Council peers (names from spawn prompt)        |
-| 3    | Wait for peer summaries (timeout: 30s, proceed if no response)          |
+| 3    | Proceed without waiting (peer responses arrive asynchronously)          |
 | 4    | Add `cross_domain_context` to findings that overlap with peer locations |
 | 5    | SendMessage to `challenger` AND `verifier` with enriched findings       |
 
@@ -65,7 +65,7 @@ Conflict resolution: Safety > Foundation > Quality.
 ```yaml
 domain: safety
 findings:
-  - finding_id: "<domain>-<seq>"  # preserve from reviewer or generate as S-{domain}-{seq}
+  - finding_id: "<domain>-<seq>"
     agent: <agent-name>
     severity: critical|high|medium|low
     category: "<category>"
@@ -74,10 +74,10 @@ findings:
     reasoning: "<why this is an issue>"
     fix: "<suggested fix>"
     confidence: 0.70-1.00
-    verification_hint:  # pass through from reviewer if present
+    verification_hint:
       check: "<check type>"
       question: "<what to verify>"
-    cross_domain_context:  # from Council peers, omit if none
+    cross_domain_context:
       - peer: "<reviewer-name>"
         related_finding: "<summary>"
 summary:
@@ -89,8 +89,8 @@ summary:
     type_design: <count>
 ```
 
-| Error               | Recovery                                                     |
-| ------------------- | ------------------------------------------------------------ |
-| Agent timeout       | Continue with completed agents, DM partial results           |
-| No findings         | Include empty array for that domain                          |
-| SendMessage failure | Retry once, then include findings in task completion message |
+| Error               | Recovery                                                                                 |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| Agent timeout       | Continue with completed agents, DM partial results                                       |
+| No findings         | Include empty array for that domain                                                      |
+| SendMessage failure | Retry once, then include structured YAML (same Output schema) in task completion message |

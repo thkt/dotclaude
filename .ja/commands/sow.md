@@ -23,7 +23,7 @@ argument-hint: "[タスク説明]"
 
 ## 実行
 
-テンプレートでSOWを生成（ID形式: I-001, AC-001, R-001）。
+テンプレートでSOWを生成（ID形式: AC-N で受入基準を記述）。
 
 テンプレート: [@../../templates/sow/template.md](../../templates/sow/template.md)
 

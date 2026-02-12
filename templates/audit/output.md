@@ -44,7 +44,7 @@ Apply: `/fix <ID>`
 
 ## Needs Review
 
-> Challenger が棄却したが Verifier がエビデンスを確認。人間の判断が必要。
+> Disputed by Challenger but verified by Verifier. Requires human review.
 
 | Finding                     | Location                  | Challenger Reason                     | Verifier Evidence                  |
 | --------------------------- | ------------------------- | ------------------------------------- | ---------------------------------- |

@@ -17,24 +17,38 @@
 | Low      | {summary.by_severity.low}      | {delta.low}      |
 
 自動修正可能: {suggestions.auto_fixable_count} | 手動: {suggestions.manual_count}
+検証: {summary.validation.verification.verified} verified | {summary.validation.verification.weak_evidence} weak | {summary.validation.verification.unverifiable} unverifiable
+
+> **Pipeline**: {pipeline_health.domains_completed} | Skipped: {pipeline_health.domains_skipped} | Verification: {pipeline_health.verification_status}
+> _(全ドメイン完了かつ検証が full の場合はこのセクションを省略)_
 
 ---
 
 ## クイック修正
 
-| ID                                       | 場所                                                                                                      | 工数                                         | 理由                                            |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------- |
-| {suggestions.items[fix_type!=manual].id} | `{suggestions.items[fix_type!=manual].location.file}:{suggestions.items[fix_type!=manual].location.line}` | {suggestions.items[fix_type!=manual].effort} | {suggestions.items[fix_type!=manual].rationale} |
+| ID                                    | 場所                                                                                                | 工数                                      | 理由                                         |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------- |
+| {suggestions.items[fix_type=auto].id} | `{suggestions.items[fix_type=auto].location.file}:{suggestions.items[fix_type=auto].location.line}` | {suggestions.items[fix_type=auto].effort} | {suggestions.items[fix_type=auto].rationale} |
 
 適用: `/fix <ID>`
 
 ---
 
-## パターン
+## 根本原因
 
-| パターン          | 根本原因                |
-| ----------------- | ----------------------- |
-| {patterns[].name} | {patterns[].root_cause} |
+| 根本原因                    | 解決される発見事項                                                   |
+| --------------------------- | -------------------------------------------------------------------- |
+| {root_causes[].description} | {root_causes[].findings_resolved} ({root_causes[].domains_involved}) |
+
+---
+
+## 要レビュー
+
+> Challenger が棄却したが Verifier がエビデンスを確認。人間の判断が必要。
+
+| 発見事項                    | 場所                      | Challenger の理由                     | Verifier のエビデンス              |
+| --------------------------- | ------------------------- | ------------------------------------- | ---------------------------------- |
+| {needs_review[].finding_id} | {needs_review[].location} | {needs_review[].challenger_reasoning} | {needs_review[].verifier_evidence} |
 
 ---
 

@@ -98,9 +98,9 @@ After reconciliation, process findings with final verdict `confirmed`, `downgrad
 
 ## Output
 
-DM final YAML report to leader. Schema: `templates/audit/snapshot.yaml` (exclude `meta` — leader adds it).
+DM final YAML report to leader. Schema: `templates/audit/snapshot.yaml` (exclude `meta`; leader adds it).
 
-The `suggestions` section is integrator-specific (not in snapshot schema):
+The `suggestions` section is integrator-specific:
 
 ```yaml
 suggestions:
@@ -108,7 +108,7 @@ suggestions:
   manual_count: <count>
   items:
     - id: "SUG-001"
-      root_cause_ref: "RC-001"  # or finding_ref for standalone
+      root_cause_ref: "RC-001"
       category: "<category>"
       severity: critical|high|medium|low
       fix_type: auto|manual
@@ -126,20 +126,20 @@ suggestions:
 
 ## Synthesis Principles
 
-| Principle                     | Description                                                         |
-| ----------------------------- | ------------------------------------------------------------------- |
-| Root causes over symptoms     | Multiple findings at same location likely share one cause           |
-| Cross-domain signals are gold | 2+ domains flagging same area = high-confidence architectural issue |
-| One action, many fixes        | Best actions resolve multiple findings at once                      |
-| Traceability                  | Every root cause traces to the findings it explains                 |
-| Honest standalone             | Not every finding has a cross-domain root cause — that's fine       |
-| Evidence over opinion         | Verified findings outweigh unverified ones in prioritization        |
+| Principle                 | Description                                             |
+| ------------------------- | ------------------------------------------------------- |
+| Root causes over symptoms | Same location = likely one shared cause                 |
+| Cross-domain signals      | 2+ domains flagging same area = high-confidence issue   |
+| One action, many fixes    | Best actions resolve multiple findings at once          |
+| Traceability              | Every root cause traces to its source findings          |
+| Honest standalone         | Not every finding has a cross-domain root cause         |
+| Evidence over opinion     | Verified findings outweigh unverified in prioritization |
 
 ## Priority Score
 
 ```text
 For root causes:  findings_resolved × max_severity × fixability
-For standalone:   Impact × Reach × Fixability (original formula)
+For standalone:   Impact × Reach × Fixability
 
 - max_severity: critical=10, high=5, medium=2, low=1
 - fixability: 1 / effort (low=1, medium=2, high=3)
@@ -154,21 +154,21 @@ For standalone:   Impact × Reach × Fixability (original formula)
 
 ## Constraints
 
-| Rule                             | Description                                          |
-| -------------------------------- | ---------------------------------------------------- |
-| Wait for challenger AND verifier | Don't integrate until both perspectives received     |
-| Reconcile before integrate       | Apply reconciliation rules before dedup/correlate    |
-| Synthesize, don't list           | Cross-domain findings must be correlated, not listed |
-| Trace everything                 | Every root cause links to its source findings        |
-| Don't force correlation          | Standalone findings are valid on their own           |
+| Rule                             | Description                                       |
+| -------------------------------- | ------------------------------------------------- |
+| Wait for challenger AND verifier | Don't integrate until both perspectives received  |
+| Reconcile before integrate       | Apply reconciliation rules before dedup/correlate |
+| Synthesize, don't list           | Cross-domain findings must be correlated          |
+| Trace everything                 | Every root cause links to its source findings     |
+| Don't force correlation          | Standalone findings are valid on their own        |
 
 ## Error Handling
 
-| Error                  | Recovery                                                    |
-| ---------------------- | ----------------------------------------------------------- |
-| Challenger DM timeout  | Proceed with verifier results only (skip reconciliation)    |
-| Verifier DM timeout    | Proceed with challenger results only (original behavior)    |
-| Both timeout           | Leader sends "proceed with partial results" → start Phase 4 |
-| No findings received   | Return empty report with note                               |
-| Challenge read failure | Mark finding as `needs_context`                             |
-| All low confidence     | Report "No high-confidence items"                           |
+| Error                  | Recovery                                                    | Output                                            |
+| ---------------------- | ----------------------------------------------------------- | ------------------------------------------------- |
+| Challenger DM timeout  | Proceed with verifier results only (Rule 5 applied)         | Findings use verifier verdicts, no reconciliation |
+| Verifier DM timeout    | Proceed with challenger results only (original behavior)    | Findings use challenger verdicts unchanged        |
+| Both timeout           | Leader sends "proceed with partial results" → start Phase 4 | Raw reviewer findings, no reconciliation applied  |
+| No findings received   | Return empty report with note                               | `summary.total_findings: 0`, note in report       |
+| Challenge read failure | Mark finding as `needs_context`                             | Individual finding flagged for review             |
+| All low confidence     | Report "No high-confidence items"                           | Empty priorities, all findings listed as low      |

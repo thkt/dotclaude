@@ -55,11 +55,11 @@ proposal:
 
 ## Verdicts
 
-| Verdict          | Meaning                           | Action                        |
-| ---------------- | --------------------------------- | ----------------------------- |
-| `confirmed`      | Proposal is sound                 | Pass to synthesizer as-is     |
-| `weakened`       | Valid but with notable weaknesses | Pass with weaknesses attached |
-| `needs_revision` | Fundamental flaw found            | Pass with revision notes      |
+| Verdict          | Meaning                           | Action                              |
+| ---------------- | --------------------------------- | ----------------------------------- |
+| `confirmed`      | Proposal is sound                 | DM challenged proposal to team lead |
+| `weakened`       | Valid but with notable weaknesses | Pass with weaknesses attached       |
+| `needs_revision` | Fundamental flaw found            | Pass with revision notes            |
 
 ## Output
 
