@@ -6,11 +6,7 @@ paths:
 
 # Modularization Rules
 
-Rules for creating command and skill files. Developer guide for file structure and responsibility separation.
-
 ## Commands vs Skills
-
-This plugin distinguishes:
 
 | Type    | Location            | Purpose                     | Invocation                                     |
 | ------- | ------------------- | --------------------------- | ---------------------------------------------- |
@@ -48,6 +44,15 @@ skills/[skill-name]/
     └── [topic].md
 ```
 
+## Reference Patterns
+
+Commands reference skills in two ways:
+
+| Pattern        | Syntax                                  | Use Case                          |
+| -------------- | --------------------------------------- | --------------------------------- |
+| @import        | `[@../skills/name/references/file.md]`  | Inline content (templates, data)  |
+| Name reference | `Skill: skill-name (description)`       | Skill auto-loading by Skill tool  |
+
 ## Examples
 
 ### Good: Thin Wrapper (~80 lines)
@@ -57,10 +62,14 @@ skills/[skill-name]/
 
 TDD implementation with RGRC cycle.
 
+## Skills & Agents
+
+- Skill: orchestrating-workflows (RGRC cycle)
+- Agent: test-generator (TDD test generation, fork)
+
 ## Phase References
 
-- [@../skills/generating-tdd-tests/SKILL.md]
-- [@../skills/orchestrating-workflows/references/code-workflow.md]
+- [@../skills/orchestrating-feature/references/exploration-team.md]
 ```
 
 Why good: Orchestrates phases, delegates details to skills.
