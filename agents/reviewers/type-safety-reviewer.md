@@ -29,10 +29,11 @@ memory: project
 
 ## Error Handling
 
-| Error           | Action                   |
-| --------------- | ------------------------ |
-| No TS found     | Report "No TS to review" |
-| No issues found | Return empty findings    |
+| Error       | Action                                    |
+| ----------- | ----------------------------------------- |
+| No TS found | Report "No TS to review"                  |
+| Glob empty  | Report 0 files found, do not infer clean  |
+| Tool error  | Log error, skip file, note in summary     |
 
 ## Output
 

@@ -35,6 +35,13 @@ List SOWs → present as AskUserQuestion options with feature name + status.
 | Documented  | Is behavior documented?      |
 | Reviewed    | Was it reviewed in /audit?   |
 
+## Error Handling
+
+| Error                 | Action                                |
+| --------------------- | ------------------------------------- |
+| No SOW found          | Report "No SOW found" — do NOT pass   |
+| SOW has no AC section | Report "No acceptance criteria found" |
+
 ## Pass/Fail Criteria
 
 | Score  | Status | Action                 |

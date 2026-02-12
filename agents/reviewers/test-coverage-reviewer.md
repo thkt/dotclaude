@@ -48,10 +48,11 @@ context: fork
 
 ## Error Handling
 
-| Error           | Action                      |
-| --------------- | --------------------------- |
-| No tests found  | Report "No tests to review" |
-| No issues found | Return empty findings       |
+| Error          | Action                                   |
+| -------------- | ---------------------------------------- |
+| No tests found | Report "No tests to review"              |
+| Glob empty     | Report 0 files found, do not infer clean |
+| Tool error     | Log error, skip file, note in summary    |
 
 ## Output
 

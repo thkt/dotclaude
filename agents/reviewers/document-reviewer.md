@@ -47,10 +47,11 @@ Review documentation for quality, clarity, structure, audience fit.
 
 ## Error Handling
 
-| Error           | Action                     |
-| --------------- | -------------------------- |
-| No docs found   | Report "No docs to review" |
-| No issues found | Return empty findings      |
+| Error         | Action                                   |
+| ------------- | ---------------------------------------- |
+| No docs found | Report "No docs to review"               |
+| Glob empty    | Report 0 files found, do not infer clean |
+| Tool error    | Log error, skip file, note in summary    |
 
 ## Output
 

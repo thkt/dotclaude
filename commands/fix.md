@@ -68,6 +68,14 @@ Run project build command (detect from package.json or project config).
 | Complex    | Multi-file → `/code`   |
 | New scope  | Feature → `/think`     |
 
+## Error Handling
+
+| Error                      | Action                                 |
+| -------------------------- | -------------------------------------- |
+| build-error-resolver fails | Present error, ask user for guidance   |
+| test-generator timeout     | Skip regression test, proceed with fix |
+| Tests still fail after fix | Re-analyze root cause or escalate      |
+
 ## Verification
 
 | Check                  | Required |

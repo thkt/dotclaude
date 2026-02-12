@@ -41,6 +41,14 @@ Run project tests with gap analysis and quality checks.
 [Execute] → [Result]
 ```
 
+## Error Handling
+
+| Error                | Action                                 |
+| -------------------- | -------------------------------------- |
+| No test runner found | Report "No test runner detected", stop |
+| test-generator fails | Skip gap analysis, report test results |
+| Tests fail to run    | Check setup, report error              |
+
 ## Display Format
 
 ### Result

@@ -47,11 +47,12 @@ memory: project
 
 ## Error Handling
 
-| Error              | Action                     |
-| ------------------ | -------------------------- |
-| No code found      | Report "No code to review" |
-| No vulnerabilities | Return empty findings      |
-| Confidence < 60%   | Exclude from report        |
+| Error            | Action                                   |
+| ---------------- | ---------------------------------------- |
+| No code found    | Report "No code to review"               |
+| Confidence < 60% | Exclude from report                      |
+| Glob empty       | Report 0 files found, do not infer clean |
+| Tool error       | Log error, skip file, note in summary    |
 
 ## Output
 

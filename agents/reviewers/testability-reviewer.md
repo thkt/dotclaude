@@ -27,10 +27,11 @@ context: fork
 
 ## Error Handling
 
-| Error           | Action                     |
-| --------------- | -------------------------- |
-| No code found   | Report "No code to review" |
-| No issues found | Return empty findings      |
+| Error         | Action                                   |
+| ------------- | ---------------------------------------- |
+| No code found | Report "No code to review"               |
+| Glob empty    | Report 0 files found, do not infer clean |
+| Tool error    | Log error, skip file, note in summary    |
 
 ## Output
 

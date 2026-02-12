@@ -47,6 +47,15 @@ Flags: `--frontend`, `--principles`, `--storybook`
 
 If SOW exists: update `draft` or `completed` → `in-progress`
 
+## Error Handling
+
+| Error                     | Action                          |
+| ------------------------- | ------------------------------- |
+| test-gen DM timeout       | Leader generates tests directly |
+| test-gen produces 0 tests | Verify spec exists, ask user    |
+| Ralph-loop stalls         | Stop loop, fix manually         |
+| Quality gates fail        | Fix issues before commit        |
+
 ## Todo Progress Tracking
 
 Use `TaskList` + `TaskUpdate` to track RGRC phases (if todos exist from `/think`)

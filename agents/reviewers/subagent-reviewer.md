@@ -47,10 +47,12 @@ context: fork
 
 ## Error Handling
 
-| Error           | Action                       |
-| --------------- | ---------------------------- |
-| No agents found | Report "No agents to review" |
-| Invalid YAML    | Report with parse error      |
+| Error           | Action                                    |
+| --------------- | ----------------------------------------- |
+| No agents found | Report "No agents to review"              |
+| Invalid YAML    | Report with parse error                   |
+| Glob empty      | Report 0 agents found, do not infer clean |
+| Tool error      | Log error, skip file, note in summary     |
 
 ## Output
 

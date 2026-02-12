@@ -75,6 +75,7 @@ Read `~/.claude/settings.json` and check the `language` field. If set, translate
 | /code failure                 | Present error, ask for guidance               |
 | /audit critical issues        | Block Phase 7 until resolved                  |
 | User cancellation             | Save current phase + step to SOW metadata     |
+| All fallbacks exhausted       | Save progress to SOW, report terminal state   |
 
 ## Prompts
 
