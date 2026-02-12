@@ -119,7 +119,9 @@ Glob for `.analysis/architecture.yaml` in project root. If exists, include in ex
 | 1.5  | Leader    | Read seed context (see Seed Context above)                             |
 | 2    | Leader    | TaskCreate x 4 (explorer-data, explorer-api, explorer-core, architect) |
 | 3    | Leader    | Spawn 4 teammates via Task with `team_name` (include seed in prompt)   |
-| 4    | Explorers | Investigate assigned focus area, DM findings to `architect`            |
+| 4    | Explorers | Investigate assigned focus area                                        |
+| 4b   | Explorers | Council sharing round (see Council Protocol below)                     |
+| 4c   | Explorers | DM enriched findings to `architect`                                    |
 | 5    | Architect | Process explorer findings incrementally                                |
 | 6    | Leader    | Wait for all explorers to complete                                     |
 | 7    | Leader    | AskUserQuestion for clarification (edge cases, error handling, etc.)   |
@@ -136,6 +138,37 @@ Glob for `.analysis/architecture.yaml` in project root. If exists, include in ex
 | explorer-core | feature-explorer | Core logic | services/, utils/, lib/, core/     |
 
 Agent: [feature-explorer.md](../agents/explorers/feature-explorer.md)
+
+### Council Protocol: Explorer Council
+
+Explorers share cross-layer discoveries with peers before reporting to architect.
+
+#### Layer Priority (conflict resolution)
+
+When findings conflict, upstream constraints override downstream:
+
+| Priority | Layer | Rationale                     |
+| -------- | ----- | ----------------------------- |
+| 1        | Data  | Schema shapes all above       |
+| 2        | Core  | Business logic constrains API |
+| 3        | API   | UI adapts to both             |
+
+#### Communication Priorities (what to share)
+
+| Priority | Trigger                           | Action                          |
+| -------- | --------------------------------- | ------------------------------- |
+| P1       | Assumption-changing discovery     | DM to both peers immediately    |
+| P2       | Unexpected cross-layer dependency | DM to relevant peer             |
+| Skip     | Standard pattern within own layer | Don't share — own findings only |
+
+P1 examples: "DB uses soft-delete" → changes DELETE flow. "No auth middleware" → all layers affected.
+P2 examples: "UI calls DB directly bypassing service" → coupling concern.
+
+#### Explorer Spawn Context
+
+| Context       | Value                         |
+| ------------- | ----------------------------- |
+| Council peers | Other explorer teammate names |
 
 ### Architect Instructions
 

@@ -27,7 +27,7 @@ Orchestrate specialized review agents with confidence-based filtering.
 | ---- | ------------------------------------------------------------- |
 | 1    | Run project static analysis tools (see Pre-flight below)      |
 | 2    | Spawn review team (see Team Workflow below)                   |
-| 3    | Compound reviewers DM findings to `challenger` AND `verifier` |
+| 3    | Reviewers run agents, Council sharing round, DM to validators |
 | 4a   | Challenger validates findings, DMs to `integrator`            |
 | 4b   | Verifier verifies findings, DMs to `integrator`               |
 | 5    | Integrator reconciles + synthesizes root causes → final YAML  |
@@ -51,29 +51,66 @@ Spawn a coordinated team of 3 compound reviewers, 1 challenger, 1 verifier, and 
 └── integrator           (progressive-integrator)
 ```
 
+### Council Protocol: Reviewer Council
+
+Compound reviewers share cross-domain findings with peers before reporting to challenger/verifier.
+
+#### Domain Priority (conflict resolution)
+
+When findings overlap or conflict, higher-priority domain prevails:
+
+| Priority | Domain     | Rationale                        |
+| -------- | ---------- | -------------------------------- |
+| 1        | Safety     | Security vulnerabilities = fatal |
+| 2        | Foundation | Code quality enables everything  |
+| 3        | Quality    | Design patterns = aspirational   |
+
+#### Communication Priorities (what to share)
+
+| Priority | Trigger                            | Action                               |
+| -------- | ---------------------------------- | ------------------------------------ |
+| P1       | Critical/high at specific location | DM file:line + summary to both peers |
+| P2       | Same issue in 3+ files             | DM pattern description to both peers |
+| Skip     | Domain-isolated low/medium finding | Don't share — own findings only      |
+
+#### Sharing Format
+
+```text
+[COUNCIL] {domain} findings for peer review:
+
+P1 Hotspots:
+- {file}:{line} — {summary} ({severity})
+
+P2 Patterns:
+- {description} ({count} instances in {scope})
+```
+
 ### Spawn Context
 
 Teammates don't inherit leader's conversation history. Include in each spawn prompt:
 
-| Context            | Source                              |
-| ------------------ | ----------------------------------- |
-| Target file list   | git diff / $1 scope                 |
-| Audit focus        | security / performance / all        |
-| Pre-flight results | lint/typecheck output (if non-zero) |
+| Context            | Source                                 |
+| ------------------ | -------------------------------------- |
+| Target file list   | git diff / $1 scope                    |
+| Audit focus        | security / performance / all           |
+| Pre-flight results | lint/typecheck output (if non-zero)    |
+| Council peers      | Other compound reviewer teammate names |
 
 ### Workflow
 
-| Step | Actor      | Action                                                                   |
-| ---- | ---------- | ------------------------------------------------------------------------ |
-| 1    | Leader     | `TeamCreate("audit-{timestamp}")`                                        |
-| 2    | Leader     | TaskCreate x 6 (3 reviewers + challenger + verifier + integrator)        |
-| 3    | Leader     | Spawn 6 teammates via Task with `team_name`, passing spawn context       |
-| 4    | Reviewers  | Run domain agents internally, DM findings to `challenger` AND `verifier` |
-| 5    | Challenger | Validate each batch, DM challenged results to `integrator`               |
-| 5b   | Verifier   | Verify each batch, DM verification results to `integrator`               |
-| 6    | Leader     | Wait for integrator to produce final YAML                                |
-| 7    | Integrator | Synthesize cross-domain root causes, produce final YAML                  |
-| 8    | Leader     | SendMessage `shutdown_request` to all teammates                          |
+| Step | Actor      | Action                                                             |
+| ---- | ---------- | ------------------------------------------------------------------ |
+| 1    | Leader     | `TeamCreate("audit-{timestamp}")`                                  |
+| 2    | Leader     | TaskCreate x 6 (3 reviewers + challenger + verifier + integrator)  |
+| 3    | Leader     | Spawn 6 teammates via Task with `team_name`, passing spawn context |
+| 4    | Reviewers  | Run domain agents internally, normalize findings                   |
+| 4b   | Reviewers  | Council sharing round (see Council Protocol above)                 |
+| 4c   | Reviewers  | DM enriched findings to `challenger` AND `verifier`                |
+| 5    | Challenger | Validate each batch, DM challenged results to `integrator`         |
+| 5b   | Verifier   | Verify each batch, DM verification results to `integrator`         |
+| 6    | Leader     | Wait for integrator to produce final YAML                          |
+| 7    | Integrator | Synthesize cross-domain root causes, produce final YAML            |
+| 8    | Leader     | SendMessage `shutdown_request` to all teammates                    |
 
 ### Error Handling
 

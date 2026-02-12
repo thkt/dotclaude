@@ -18,7 +18,7 @@ command -v jq &>/dev/null || { echo "BLOCKED: jq required" >&2; exit 2; }
 INPUT=$(</dev/stdin)
 [[ -z "$INPUT" ]] && { echo "BLOCKED: empty input" >&2; exit 2; }
 
-COMMAND=$(jq -r '.tool_input.command // ""' <<< "$INPUT" 2>/dev/null) || {
+COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null) || {
   echo "BLOCKED: invalid JSON" >&2; exit 2
 }
 [[ -z "$COMMAND" ]] && exit 0

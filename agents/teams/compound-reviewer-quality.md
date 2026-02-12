@@ -40,9 +40,19 @@ Run domain agents, DM combined findings to `challenger` AND `verifier`.
 | test-coverage-reviewer | `related_code`, `criticality` | `related_code` → `evidence`; `criticality` → `reasoning` note |
 | document-reviewer      | (none)                        | —                                                             |
 
-| Step | Action                                                            |
-| ---- | ----------------------------------------------------------------- |
-| 5    | SendMessage to `challenger` AND `verifier` with combined findings |
+## Council Communication
+
+After normalizing, share cross-domain findings with peer compound reviewers before reporting.
+
+| Step | Action                                                                  |
+| ---- | ----------------------------------------------------------------------- |
+| 1    | Identify P1 (critical/high at location) and P2 (pattern in 3+ files)    |
+| 2    | DM P1/P2 summary to both Council peers (names from spawn prompt)        |
+| 3    | Wait for peer summaries (timeout: 30s, proceed if no response)          |
+| 4    | Add `cross_domain_context` to findings that overlap with peer locations |
+| 5    | SendMessage to `challenger` AND `verifier` with enriched findings       |
+
+Conflict resolution: Safety > Foundation > Quality.
 
 ## Output
 
@@ -61,6 +71,9 @@ findings:
     verification_hint:  # pass through from reviewer if present
       check: "<check type>"
       question: "<what to verify>"
+    cross_domain_context:  # from Council peers, omit if none
+      - peer: "<reviewer-name>"
+        related_finding: "<summary>"
 summary:
   total: <count>
   by_domain:

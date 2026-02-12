@@ -91,6 +91,23 @@ summary:
     external: [zod, react-query]
 ```
 
+## Council Communication
+
+If Council peer names provided, share cross-layer discoveries before reporting to architect.
+
+| Step | Action                                                            |
+| ---- | ----------------------------------------------------------------- |
+| 1    | Complete primary analysis for assigned layer                      |
+| 2    | Identify P1 (assumption-changing) and P2 (cross-layer dependency) |
+| 3    | DM P1/P2 discoveries to Council peers                             |
+| 4    | Wait for peer discoveries (timeout: 30s, then proceed)            |
+| 5    | Incorporate peer context into own findings                        |
+| 6    | DM enriched findings to `architect`                               |
+
+Share only discoveries that would change another layer's analysis.
+
+Conflict resolution: Data > Core > API (upstream overrides downstream).
+
 ## Guidelines
 
 | Rule             | Description                                     |
