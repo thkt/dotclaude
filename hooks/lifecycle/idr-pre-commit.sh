@@ -6,7 +6,7 @@ INPUT=$(</dev/stdin)
 [[ "$INPUT" == *"git commit"* ]] || exit 0
 
 command -v jq &>/dev/null || { echo "BLOCKED: jq required" >&2; exit 2; }
-COMMAND=$(jq -r '.tool_input.command // ""' <<< "$INPUT") || { echo "BLOCKED: invalid JSON" >&2; exit 2; }
+COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // ""') || { echo "BLOCKED: invalid JSON" >&2; exit 2; }
 [[ -z "$COMMAND" ]] && exit 0
 [[ "$COMMAND" =~ ^git[[:space:]]+commit ]] || exit 0
 
@@ -36,13 +36,9 @@ if [ -f "$CURRENT_SOW" ]; then
   fi
 fi
 
-if [[ ! -d "$IDR_DIR" ]]; then
-  RECENT_IDR=""
-else
+if [[ -d "$IDR_DIR" ]]; then
   RECENT_IDR=$(find "$IDR_DIR" -maxdepth 1 -name 'idr-*.md' -mmin "-${IDR_FRESHNESS_MINUTES}" 2>/dev/null | head -1) || true
-fi
-if [ -n "$RECENT_IDR" ]; then
-  exit 0
+  [[ -n "$RECENT_IDR" ]] && exit 0
 fi
 
 if [[ -d "$IDR_DIR" ]]; then
@@ -52,23 +48,46 @@ else
   NEXT_NUM="01"
 fi
 
-echo "## Staged Changes"
-echo ""
-echo '```'
-git diff --cached --stat 2>/dev/null | head -50 || true
-echo '```'
-echo ""
-echo '```diff'
-git diff --cached --no-binary 2>/dev/null | head -500 || true
-echo '```'
-echo ""
-REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
-echo "Repository: ${REPO_ROOT}"
-echo "IDR output: ${IDR_DIR}/idr-${NEXT_NUM}.md"
-echo ""
-echo "Generate an IDR based on the staged diff above and session context, then retry the commit."
-echo "Format: follow the IDR Generation section in skills/orchestrating-workflows/references/code-workflow.md"
-echo "File links: use file:///${REPO_ROOT}/... format."
+TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // ""')
+INTENT=""
+if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
+  # Skip: empty, XML/system tags, tool feedback (⏺/⎿), tool results ([{)
+  INTENT=$(jq -r '
+    select(
+      .type == "user" and .userType == "external"
+      and (.message.content | type) == "string"
+      and (.message.content | length) > 0
+      and (.message.content | test("^\\s*[⏺⎿<\\[]") | not)
+    )
+    | .message.content
+  ' "$TRANSCRIPT" 2>/dev/null \
+    | head -5) || true
+fi
 
-echo "BLOCKED: IDR not generated yet" >&2
-exit 2
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || printf '%s' "$PWD")
+DIFF_STAT=$(git diff --cached --stat 2>/dev/null | head -50) || true
+DIFF_CONTENT=$(git diff --cached --no-binary 2>/dev/null | head -500) || true
+
+NL=$'\n'
+CONTEXT="## User Intent (from session log)"
+if [[ -n "$INTENT" ]]; then
+  CONTEXT="${CONTEXT}${NL}${NL}${INTENT}"
+else
+  CONTEXT="${CONTEXT}${NL}${NL}(No user messages found in transcript)"
+fi
+CONTEXT="${CONTEXT}${NL}${NL}## Staged Changes${NL}${NL}\`\`\`${NL}${DIFF_STAT}${NL}\`\`\`${NL}${NL}\`\`\`diff${NL}${DIFF_CONTENT}${NL}\`\`\`"
+CONTEXT="${CONTEXT}${NL}${NL}Repository: ${REPO_ROOT}"
+CONTEXT="${CONTEXT}${NL}IDR output: ${IDR_DIR}/idr-${NEXT_NUM}.md"
+CONTEXT="${CONTEXT}${NL}${NL}Generate an IDR based on the staged diff and user intent above, then retry the commit."
+CONTEXT="${CONTEXT}${NL}Format: follow the IDR Generation section in skills/orchestrating-workflows/references/code-workflow.md"
+CONTEXT="${CONTEXT}${NL}File links: use file:///${REPO_ROOT}/... format."
+
+printf '%s' "$CONTEXT" | jq -Rs '{
+  hookSpecificOutput: {
+    hookEventName: "PreToolUse",
+    permissionDecision: "deny",
+    permissionDecisionReason: "IDR not generated yet",
+    additionalContext: .
+  }
+}'
+exit 0
