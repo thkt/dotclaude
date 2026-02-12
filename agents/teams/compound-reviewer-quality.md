@@ -2,7 +2,7 @@
 name: compound-reviewer-quality
 description: Design patterns, testability, test coverage, performance, accessibility, and documentation.
 tools: [Read, Grep, Glob, LS, Task(design-pattern-reviewer), Task(testability-reviewer), Task(test-coverage-reviewer), Task(performance-reviewer), Task(accessibility-reviewer), Task(document-reviewer), SendMessage]
-model: sonnet
+model: opus
 context: fork
 skills: [applying-frontend-patterns, reviewing-testability, optimizing-performance]
 ---

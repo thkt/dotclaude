@@ -12,7 +12,7 @@ tools:
     Task(root-cause-reviewer),
     SendMessage,
   ]
-model: sonnet
+model: opus
 context: fork
 skills: [applying-code-principles]
 ---

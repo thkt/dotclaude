@@ -13,7 +13,7 @@ tools:
     Task(type-design-reviewer),
     SendMessage,
   ]
-model: sonnet
+model: opus
 context: fork
 skills: [reviewing-security, reviewing-type-safety]
 ---
