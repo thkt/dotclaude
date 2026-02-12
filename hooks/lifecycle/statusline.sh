@@ -1,7 +1,7 @@
 #!/bin/zsh
 set +e
 
-# Claude Code status line: model, context, cost, tool, git branch
+# Claude Code status line: model, context, cost, usage, tool, git branch
 # Failure mode: fail-open (partial display is acceptable)
 
 sep() { printf ' \033[90m│\033[0m '; }
@@ -147,6 +147,52 @@ render_cost() {
     printf '\033[33m$%s\033[0m' "$(printf "%.2f" "$SESSION_COST" 2>/dev/null || echo "$SESSION_COST")"
 }
 
+fetch_usage() {
+    local cache_file="$HOME/.claude/cache/usage-api.cache"
+    local cache_ttl=120
+    local now=$(date +%s)
+    local cache_mtime=0
+    USAGE_5H="" USAGE_7D=""
+
+    if [ -f "$cache_file" ]; then
+        cache_mtime=$(stat -f %m "$cache_file" 2>/dev/null || printf '0')
+        IFS=$'\t' read -r USAGE_5H USAGE_7D < "$cache_file" 2>/dev/null
+    fi
+
+    if [ $((now - cache_mtime)) -ge $cache_ttl ]; then
+        {
+            local creds token response usage
+            creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) || return
+            token=$(printf '%s' "$creds" | jq -r '.claudeAiOauth.accessToken // empty') || return
+            [ -n "$token" ] || return
+            response=$(curl -s --max-time 3 \
+                -H "Authorization: Bearer $token" \
+                -H "anthropic-beta: oauth-2025-04-20" \
+                https://api.anthropic.com/api/oauth/usage) || return
+            usage=$(printf '%s' "$response" | jq -r '[.five_hour.utilization, .seven_day.utilization] | map(. // empty) | @tsv')
+            [ -n "$usage" ] && printf '%s\n' "$usage" > "$cache_file"
+        } &!
+    fi
+}
+
+render_usage() {
+    [ -n "$USAGE_5H" ] || return
+    local p5=${USAGE_5H%.*} p7=${USAGE_7D%.*}
+    [[ "$p5" =~ ^[0-9]+$ ]] || return
+    [[ "$p7" =~ ^[0-9]+$ ]] || p7=0
+
+    local c5 c7
+    if [ "$p5" -lt 50 ]; then c5='\033[32m'
+    elif [ "$p5" -lt 80 ]; then c5='\033[33m'
+    else c5='\033[31m'; fi
+    if [ "$p7" -lt 50 ]; then c7='\033[32m'
+    elif [ "$p7" -lt 80 ]; then c7='\033[33m'
+    else c7='\033[31m'; fi
+
+    sep
+    printf "${c5}5h:%d%%\033[0m ${c7}7d:%d%%\033[0m" "$p5" "$p7"
+}
+
 render_tools() {
     [ -n "$LAST_TOOL" ] && [ "$LAST_TOOL" != "null" ] || return
     local tool_short="$LAST_TOOL"
@@ -179,8 +225,10 @@ render_git() {
 
 parse_stdin
 load_state
+fetch_usage
 render_model
 render_context
 render_cost
+render_usage
 render_tools
 render_git
