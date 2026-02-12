@@ -26,7 +26,7 @@ Task description from `$1`, research context, or AskUserQuestion if empty.
 | 5.5  | ADR Proposal         | (if needed)                                |
 | 6    | /sow                 | sow.md                                     |
 | 7    | /spec                | spec.md                                    |
-| 8    | sow-spec-reviewer    | (optional, ≥90)                            |
+| 8    | sow-spec-reviewer    | (optional, ≥90/100 to pass)                |
 | 9    | SOW → Todos          | TaskCreate                                 |
 
 ## Design Exploration (Steps 1-4)

@@ -76,6 +76,7 @@ findings:
         related_finding: "<summary>"
 summary:
   total: <count>
+  skipped_domains: ["accessibility", "documentation"]
   by_domain:
     design_pattern: <count>
     testability: <count>

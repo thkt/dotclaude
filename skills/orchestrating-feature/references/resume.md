@@ -25,7 +25,7 @@ status:
   current_step: 2
   completed_phases: [1, 2, 3]
   exploration_summary: "..."
-  clarification_answers: { ... }
+  clarification_answers: {}
   selected_architecture: "pragmatic"
-  implementation_mode: "parallel"
+  implementation_mode: "parallel"  # "parallel" | "sequential"
 ```

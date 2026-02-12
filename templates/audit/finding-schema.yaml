@@ -14,7 +14,8 @@ finding:
   evidence: "<code snippet or observation>"
   reasoning: "<why this is an issue>"
   fix: "<suggested fix>"
-  confidence: 0.60-1.00  # Floor: 0.60 (ADR-0011)
+  confidence: 0.60-1.00
+  confidence_floor: 0.60
   verification_hint:
     check: execution_trace|call_site_check|error_propagation|hotpath_analysis|pattern_search
     question: "<what to verify>"

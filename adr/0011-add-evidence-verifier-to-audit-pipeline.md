@@ -80,15 +80,16 @@ After:
 
 ## Reconciliation Rules
 
-ルール（優先順に適用）:
+優先順に適用:
 
-1. disputed + verified → needs_review（confidence = verifier.confidence）
-2. Any + verified → confirmed（confidence = max; downgraded なら原 severity 復元）
+1. disputed + verified → needs_review (confidence = verifier.confidence)
+2. Any + verified → confirmed (confidence = max; downgraded なら原 severity 復元)
 3. Any + unverifiable → challenger verdict 維持、confidence を 0.10 減算
-4. Any + weak_evidence → challenger verdict 維持
-5. Verifier-only mode: verified→confirmed, weak_evidence→needs_context, unverifiable→exclude
+4. Any + weak_evidence + budget_exhausted → challenger verdict 維持、`needs_context` フラグ
+5. Any + weak_evidence → challenger verdict 維持
+6. Verifier-only mode: verified→confirmed, weak_evidence→needs_context, unverifiable→exclude
 
-詳細は [progressive-integrator.md](../agents/teams/progressive-integrator.md) の Reconciliation セクションを参照。
+詳細は [progressive-integrator.md](../agents/teams/progressive-integrator.md)。
 
 ## Rollback Plan
 
@@ -105,6 +106,18 @@ After:
 3. Integrator から reconciliation rules を削除
 4. Reviewer の confidence 閾値を ≥0.80 に戻す
 5. この ADR の Status を Deprecated に更新
+
+## Baseline Metrics (2026-02-12 初回 audit)
+
+| Metric | Value |
+| --- | --- |
+| Total findings processed | 94 |
+| Verified | 63 (67.0%) |
+| Weak evidence | 17 (18.1%) |
+| Unverifiable | 0 (0.0%) |
+| Verification rate | 78.8% |
+| False positive rate (post-reconciliation) | 21.3% |
+| disputed + verified (Rule 1 catches) | 6 |
 
 ## Related ADRs
 

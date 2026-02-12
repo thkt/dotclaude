@@ -27,11 +27,11 @@ context: fork
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                             |
+| ------------- | ---------------------------------- |
+| No code found | Report "No code to review"         |
+| Glob empty    | Report 0 files, do not infer clean |
+| Tool error    | Log, skip file, note in summary    |
 
 ## Output
 
@@ -42,7 +42,7 @@ findings:
   - finding_id: "TEST-{seq}"
     agent: testability-reviewer
     severity: high|medium|low
-    category: "TE1-TE5"
+    category: "TE1(DI)|TE2(Separation)|TE3(Mocking)|TE4(Globals)|TE5(Coupling)"
     location: "<file>:<line>"
     evidence: "<code snippet>"
     reasoning: "<why this is hard to test>"

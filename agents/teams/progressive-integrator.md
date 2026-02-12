@@ -27,17 +27,18 @@ DMs from `challenger` (challenges YAML) and `verifier` (verifications YAML). See
 
 ## Reconciliation (Phase 3)
 
-Match challenger and verifier results by `finding_id`, then apply rules in order:
+Match by `finding_id`, apply in order:
 
 1. disputed + verified → needs_review (confidence = verifier.confidence)
 2. Any + verified → confirmed (confidence = max; if downgraded, restore original severity)
 3. Any + unverifiable → keep challenger verdict, degrade confidence by 0.10
-4. Any + weak_evidence → keep challenger verdict unchanged
-5. Verifier-only mode: verified→confirmed, weak_evidence→needs_context, unverifiable→exclude
+4. Any + weak_evidence + budget_exhausted → keep challenger verdict, flag `needs_context`
+5. Any + weak_evidence → keep challenger verdict
+6. Verifier-only: verified→confirmed, weak_evidence→needs_context, unverifiable→exclude
 
-Key signal: Rule 1 catches false negatives — Challenger dismissed but Verifier found evidence. Flag for human review.
+Rule 1 catches false negatives (Challenger dismissed but Verifier found evidence).
 
-After reconciliation, process findings with final verdict `confirmed`, `downgraded`, `needs_context`, or `needs_review`. Discard `disputed`.
+After reconciliation, process `confirmed`, `downgraded`, `needs_context`, or `needs_review`. Discard `disputed`.
 
 ## Integration (Phase 4)
 

@@ -21,22 +21,22 @@ Review for CSS-first approach. Identify JavaScript used where CSS/HTML suffices.
 
 ## Analysis Phases
 
-| Phase | Action           | Command                                            |
-| ----- | ---------------- | -------------------------------------------------- |
-| 1     | JS Pattern Scan  | `grep -r "style\." "classList" "addEventListener"` |
-| 2     | Layout Detection | `grep -r "getBoundingClientRect" "offsetWidth"`    |
-| 3     | Animation Check  | `grep -r "setInterval" "requestAnimationFrame"`    |
-| 4     | Event Handlers   | `grep -r "resize" "scroll" "matchMedia"`           |
-| 5     | Alternative Map  | Match patterns to CSS alternatives from skill      |
+| Phase | Action           | Pattern                                       |
+| ----- | ---------------- | --------------------------------------------- |
+| 1     | JS Pattern Scan  | `style\.` `classList` `addEventListener`      |
+| 2     | Layout Detection | `getBoundingClientRect` `offsetWidth`         |
+| 3     | Animation Check  | `setInterval` `requestAnimationFrame`         |
+| 4     | Event Handlers   | `resize` `scroll` `matchMedia`                |
+| 5     | Alternative Map  | Match patterns to CSS alternatives from skill |
 
 ## Error Handling
 
-| Error              | Action                      |
-| ------------------ | --------------------------- |
-| No JS found        | Report "No JS to review"    |
-| Framework-specific | Note framework constraint   |
-| Browser compat     | Check caniuse for CSS alt   |
-| MCP unavailable    | Code-only analysis (no MDN) |
+| Error              | Action                    |
+| ------------------ | ------------------------- |
+| No JS found        | Report "No JS to review"  |
+| Framework-specific | Note framework constraint |
+| Browser compat     | Check caniuse for CSS alt |
+| MCP unavailable    | Code-only analysis        |
 
 ## Output
 

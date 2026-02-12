@@ -40,9 +40,7 @@ DM from compound reviewers with findings including `verification_hint`.
 | confidence ≥ 0.60 | `pattern_search`      |
 | confidence < 0.60 | Report `unverifiable` |
 
-### Per-finding limit
-
-Maximum 5 tool calls per finding. If inconclusive after 5 calls → `weak_evidence`.
+Maximum 5 tool calls per finding. If inconclusive → `weak_evidence` with `budget_exhausted: true`.
 
 ## Verdict Criteria
 
@@ -60,6 +58,7 @@ DM verified findings to `integrator`:
 verifications:
   - finding_id: "SEC-001"
     verdict: verified|weak_evidence|unverifiable
+    budget_exhausted: false
     evidence:
       - type: execution_trace|call_site_check|error_propagation|hotpath_analysis|pattern_search
         detail: "<specific finding with file:line references>"
