@@ -82,13 +82,13 @@ After:
 
 ルール（優先順に適用）:
 
-1. disputed + verified → needs_review（false negative 候補）
-2. Any + verified → confirmed（downgraded なら原 severity 維持）
-3. その他 → challenger の verdict を維持
+1. disputed + verified → needs_review（confidence = verifier.confidence）
+2. Any + verified → confirmed（confidence = max; downgraded なら原 severity 復元）
+3. Any + unverifiable → challenger verdict 維持、confidence を 0.10 減算
+4. Any + weak_evidence → challenger verdict 維持
+5. Verifier-only mode: verified→confirmed, weak_evidence→needs_context, unverifiable→exclude
 
-実装では 3 つの ordered rules に簡約化済み。詳細は [progressive-integrator.md](../agents/teams/progressive-integrator.md) の Reconciliation セクションを参照。
-
-> Note: Rule 2 では `confidence = max(challenger, verifier)` を適用し、downgraded の場合は原 severity を復元する。
+詳細は [progressive-integrator.md](../agents/teams/progressive-integrator.md) の Reconciliation セクションを参照。
 
 ## Rollback Plan
 

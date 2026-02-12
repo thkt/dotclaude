@@ -1,6 +1,6 @@
 ---
 name: type-safety-reviewer
-description: TypeScript type safety review. Identifies any usage, type coverage gaps, strict mode compliance.
+description: TypeScript type safety review. any usage, coverage gaps, strict mode.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-type-safety, applying-code-principles]
@@ -48,7 +48,7 @@ findings:
     evidence: "<code snippet>"
     reasoning: "<why this is unsafe>"
     fix: "<type-safe alternative>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: call_site_check|pattern_search
       question: "<are problematic values actually passed at call sites?>"

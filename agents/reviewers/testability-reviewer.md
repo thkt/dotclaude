@@ -9,8 +9,6 @@ context: fork
 
 # Testability Reviewer
 
-Evaluate testability, identify test-hostile patterns, recommend improvements.
-
 ## Generated Content
 
 | Section  | Description                      |
@@ -48,7 +46,7 @@ findings:
     evidence: "<code snippet>"
     reasoning: "<why this is hard to test>"
     fix: "<testable alternative>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: call_site_check|pattern_search
       question: "<is this dependency actually injected or mocked in existing tests?>"

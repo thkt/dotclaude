@@ -1,6 +1,6 @@
 ---
 name: compound-reviewer-quality
-description: Compound reviewer covering design patterns, testability, test coverage, performance, accessibility, and documentation.
+description: Design patterns, testability, test coverage, performance, accessibility, and documentation.
 tools: [Read, Grep, Glob, LS, Task(design-pattern-reviewer), Task(testability-reviewer), Task(test-coverage-reviewer), Task(performance-reviewer), Task(accessibility-reviewer), Task(document-reviewer), SendMessage]
 model: sonnet
 context: fork
@@ -59,7 +59,7 @@ Conflict resolution: Safety > Foundation > Quality.
 ```yaml
 domain: quality
 findings:
-  - finding_id: "<domain>-<seq>"
+  - finding_id: "<from sub-reviewer>"
     agent: <agent-name>
     severity: critical|high|medium|low
     category: "<category>"
@@ -67,7 +67,7 @@ findings:
     evidence: "<code snippet>"
     reasoning: "<why this is an issue>"
     fix: "<suggested fix>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: "<check type>"
       question: "<what to verify>"

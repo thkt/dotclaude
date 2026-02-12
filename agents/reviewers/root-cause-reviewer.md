@@ -1,6 +1,6 @@
 ---
 name: root-cause-reviewer
-description: Identify root causes using 5 Whys analysis. Detect patch-like solutions.
+description: 5 Whys root cause analysis. Detect patch-like solutions.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [analyzing-root-causes, applying-code-principles]
@@ -59,7 +59,7 @@ findings:
         why: "<root cause>"
     root_cause: "<fundamental issue>"
     fix: "<solution addressing root cause>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: execution_trace|pattern_search
       question: "<does the root cause actually produce the described symptom?>"

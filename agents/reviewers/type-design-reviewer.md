@@ -9,8 +9,6 @@ context: fork
 
 # Type Design Reviewer
 
-Evaluate type design quality: encapsulation, invariants, enforcement.
-
 ## Generated Content
 
 | Section  | Description                         |
@@ -74,7 +72,7 @@ findings:
       expression: <1-10>
       usefulness: <1-10>
       enforcement: <1-10>
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: call_site_check|pattern_search
       question: "<can invalid instances actually be constructed at call sites?>"

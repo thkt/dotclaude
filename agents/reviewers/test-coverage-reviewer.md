@@ -9,8 +9,6 @@ context: fork
 
 # Test Coverage Reviewer
 
-Evaluate test coverage quality: behavioral gaps, missing edge cases, test robustness.
-
 ## Generated Content
 
 | Section  | Description                    |
@@ -71,7 +69,7 @@ findings:
     reasoning: "<why this gap matters>"
     fix: "<suggested test case>"
     criticality: <1-10>
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: call_site_check|pattern_search
       question: "<is this code path actually exercised by any existing test?>"

@@ -66,7 +66,7 @@ findings:
     evidence: "<what's observed>"
     reasoning: "<why it's a problem>"
     fix: "<specific improvement>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: pattern_search
       question: "<is this documentation issue consistent across related files?>"

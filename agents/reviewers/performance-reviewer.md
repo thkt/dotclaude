@@ -14,8 +14,6 @@ context: fork
 
 # Performance Reviewer
 
-Optimize React rendering, bundle size, runtime performance.
-
 ## Generated Content
 
 | Section  | Description                   |
@@ -73,7 +71,7 @@ findings:
     reasoning: "<why this impacts performance>"
     fix: "<optimized alternative>"
     impact: "<estimated improvement>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: hotpath_analysis|call_site_check
       question: "<is this code in a hot path or frequently rendered component?>"

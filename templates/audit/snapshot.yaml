@@ -29,7 +29,7 @@ summary:
     downgraded: # count
     needs_context: # count
     needs_review:
-      count: # (disputed × verified)
+      count: # disputed + verified conflicts
       items:
         - finding_id: # id
           location: # file:line

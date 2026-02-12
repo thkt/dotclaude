@@ -54,7 +54,7 @@ findings:
     evidence: "<code snippet>"
     reasoning: "<why this is an issue>"
     fix: "<specific improvement>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: pattern_search|hotpath_analysis
       question: "<is this pattern widespread or in a critical path?>"

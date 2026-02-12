@@ -63,7 +63,7 @@ proposal:
 
 ## Output
 
-DM challenged proposal to `synthesizer`:
+DM challenged proposal to `team lead`:
 
 ```yaml
 challenged_proposal:

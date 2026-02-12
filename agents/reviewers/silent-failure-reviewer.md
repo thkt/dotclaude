@@ -1,6 +1,6 @@
 ---
 name: silent-failure-reviewer
-description: Detect silent failures, empty catch blocks, unhandled Promise rejections.
+description: Silent failure detection. Empty catches, unhandled rejections.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-silent-failures, applying-code-principles]
@@ -48,7 +48,7 @@ findings:
     evidence: "<code snippet>"
     reasoning: "<why this fails silently>"
     fix: "<visible error handling>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: error_propagation|pattern_search
       question: "<does this error surface to the user or remain silent?>"

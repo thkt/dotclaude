@@ -9,8 +9,6 @@ context: fork
 
 # Sub-Agent Reviewer
 
-Review agent definition files for proper format and quality.
-
 ## Generated Content
 
 | Section  | Description             |
@@ -67,7 +65,7 @@ findings:
     evidence: "<what's observed>"
     reasoning: "<why it's a problem>"
     fix: "<how to fix>"
-    confidence: 0.80-1.00
+    confidence: 0.60-1.00
 summary:
   total_findings: <count>
   agents_reviewed: <count>

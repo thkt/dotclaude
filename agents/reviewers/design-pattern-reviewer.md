@@ -9,8 +9,6 @@ context: fork
 
 # Design Pattern Reviewer
 
-Review React patterns and component architecture.
-
 ## Generated Content
 
 | Section  | Description                     |
@@ -48,7 +46,7 @@ findings:
     evidence: "<code snippet>"
     reasoning: "<why this pattern is problematic>"
     fix: "<recommended pattern>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: pattern_search|call_site_check
       question: "<is this anti-pattern used consistently or is this an isolated case?>"

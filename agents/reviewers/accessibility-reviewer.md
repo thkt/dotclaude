@@ -1,6 +1,6 @@
 ---
 name: accessibility-reviewer
-description: WCAG 2.2 compliance review. Outputs structured YAML.
+description: WCAG 2.2 compliance review.
 tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
 skills:
@@ -14,7 +14,7 @@ context: fork
 
 # Accessibility Reviewer
 
-Delegates WCAG checks to a11y-specialist-skills. Outputs structured YAML.
+Delegates WCAG checks to a11y-specialist-skills.
 
 ## Generated Content
 
@@ -76,7 +76,7 @@ findings:
     evidence: "<code snippet>"
     reasoning: "<why this is accessibility barrier>"
     fix: "<accessible alternative>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: execution_trace|pattern_search
       question: "<is this element actually reachable by keyboard/screen reader?>"
