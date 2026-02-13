@@ -65,7 +65,7 @@
    /plugin install complete-workflow-system  # フルTDD/RGRCワークフロー
    /plugin install quick-actions             # /fix, /polish
    /plugin install git-utilities             # /commit, /branch, /pr, /issue
-   /plugin install documentation-tools       # /adr, /rulify, /docs
+   /plugin install documentation-tools       # /adr, /docs
    /plugin install browser-workflows         # /e2e
    ```
 
@@ -74,7 +74,7 @@
 - **complete-workflow-system**: 39の専門エージェントを含むフル開発ワークフロー
 - **quick-actions**: 高速バグ修正 (/fix) と AIスロップ除去 (/polish)
 - **git-utilities**: Gitワークフローヘルパー (commit, branch, PR, issue)
-- **documentation-tools**: ADR作成とルール生成
+- **documentation-tools**: ADR作成とドキュメント生成
 - **browser-workflows**: E2Eテストと自動化
 - **development-skills**: TDD、原則、パターン、セキュリティなど25スキル
 

@@ -28,10 +28,10 @@ graph TD
 
 | Category       | Commands                                         | Purpose          |
 | -------------- | ------------------------------------------------ | ---------------- |
-| Planning       | `/think`, `/research`, `/sow`, `/spec`, `/plans` | 要件定義・調査   |
+| Planning       | `/think`, `/research`, `/sow`, `/spec`            | 要件定義・調査   |
 | Implementation | `/code`, `/fix`, `/test`                         | コード実装       |
 | Quality        | `/audit`, `/polish`, `/validate`                 | 品質保証         |
-| Documentation  | `/docs`, `/adr`, `/rulify`, `/e2e`               | ドキュメント生成 |
+| Documentation  | `/docs`, `/adr`, `/e2e`                           | ドキュメント生成 |
 | Git            | `/commit`, `/branch`, `/pr`, `/issue`            | Git操作          |
 
 ## Design Principles

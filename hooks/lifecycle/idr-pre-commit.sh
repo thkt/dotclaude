@@ -23,28 +23,23 @@ fi
 IDR_DIR="${WORKSPACE_BASE}/planning/${TODAY}"
 CURRENT_SOW="${WORKSPACE_BASE}/.current-sow"
 
-resolve_path() { echo "${1:A}"; }
-
-if [ -f "$CURRENT_SOW" ]; then
-  SOW_PATH=$(cat "$CURRENT_SOW")
-  if [ -f "$SOW_PATH" ]; then
-    real_sow=$(resolve_path "$SOW_PATH")
-    real_workspace=$(resolve_path "${WORKSPACE_BASE}")
-    if [[ "$real_sow" == "$real_workspace"/* ]]; then
-      IDR_DIR=$(dirname "$SOW_PATH")
-    fi
-  else
+if [[ -f "$CURRENT_SOW" ]]; then
+  SOW_PATH=$(<"$CURRENT_SOW")
+  if [[ ! -f "$SOW_PATH" ]]; then
     echo "WARNING: .current-sow points to missing file: $SOW_PATH" >&2
+  elif [[ "${SOW_PATH:A}" == "${WORKSPACE_BASE:A}"/* ]]; then
+    IDR_DIR=$(dirname "$SOW_PATH")
+  else
+    echo "WARNING: .current-sow path outside workspace: $SOW_PATH" >&2
   fi
 fi
 
+# -print -quit avoids SIGPIPE from | head -1; separate find avoids || true swallowing errors
 if [[ -d "$IDR_DIR" ]]; then
-  RECENT_IDR=$(find "$IDR_DIR" -maxdepth 1 -name 'idr-*.md' -mmin "-${IDR_FRESHNESS_MINUTES}" 2>/dev/null | head -1) || true
+  RECENT_IDR=$(find "$IDR_DIR" -maxdepth 1 -name 'idr-*.md' -mmin "-${IDR_FRESHNESS_MINUTES}" -print -quit 2>/dev/null) || true
   [[ -n "$RECENT_IDR" ]] && exit 0
-fi
-
-if [[ -d "$IDR_DIR" ]]; then
-  LAST_NUM=$(find "$IDR_DIR" -maxdepth 1 -name 'idr-*.md' 2>/dev/null | sed -n 's/.*idr-\([0-9][0-9]*\)\.md$/\1/p' | sort -n | tail -1) || true
+  IDR_FILES=$(find "$IDR_DIR" -maxdepth 1 -name 'idr-*.md' 2>/dev/null) || true
+  LAST_NUM=$(printf '%s' "$IDR_FILES" | sed -n 's/.*idr-\([0-9][0-9]*\)\.md$/\1/p' | sort -n | tail -1)
   NEXT_NUM=$(printf "%02d" $(( ${LAST_NUM:-0} + 1 )))
 else
   NEXT_NUM="01"
@@ -52,8 +47,10 @@ fi
 
 TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // ""')
 INTENT=""
+# Redirect jq stderr to distinguish parse errors from empty results
 if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
-  # Skip: empty, XML/system tags, tool feedback (⏺/⎿), tool results ([{)
+  JQ_ERR=$(mktemp)
+  trap 'rm -f "$JQ_ERR"' EXIT
   INTENT=$(jq -r '
     select(
       .type == "user" and .userType == "external"
@@ -62,9 +59,11 @@ if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
       and (.message.content | test("^\\s*[⏺⎿<\\[]") | not)
     )
     | .message.content
-  ' "$TRANSCRIPT" 2>/dev/null \
+  ' "$TRANSCRIPT" 2>"$JQ_ERR" \
     | head -5) || true
-  if [[ -z "$INTENT" ]] && [[ -s "$TRANSCRIPT" ]]; then
+  if [[ -s "$JQ_ERR" ]]; then
+    echo "WARNING: transcript parse failed: $(head -1 "$JQ_ERR")" >&2
+  elif [[ -z "$INTENT" ]] && [[ -s "$TRANSCRIPT" ]]; then
     echo "WARNING: transcript non-empty but no user messages extracted" >&2
   fi
 fi
@@ -72,19 +71,29 @@ fi
 DIFF_STAT=$(git diff --cached --stat 2>/dev/null | head -50) || true
 DIFF_CONTENT=$(git diff --cached --no-binary 2>/dev/null | head -500) || true
 
-NL=$'\n'
-CONTEXT="## User Intent (from session log)"
-if [[ -n "$INTENT" ]]; then
-  CONTEXT="${CONTEXT}${NL}${NL}${INTENT}"
-else
-  CONTEXT="${CONTEXT}${NL}${NL}(No user messages found in transcript)"
-fi
-CONTEXT="${CONTEXT}${NL}${NL}## Staged Changes${NL}${NL}\`\`\`${NL}${DIFF_STAT}${NL}\`\`\`${NL}${NL}\`\`\`diff${NL}${DIFF_CONTENT}${NL}\`\`\`"
-CONTEXT="${CONTEXT}${NL}${NL}Repository: ${REPO_ROOT}"
-CONTEXT="${CONTEXT}${NL}IDR output: ${IDR_DIR}/idr-${NEXT_NUM}.md"
-CONTEXT="${CONTEXT}${NL}${NL}Generate an IDR based on the staged diff and user intent above, then retry the commit."
-CONTEXT="${CONTEXT}${NL}Format: follow the IDR Generation section in skills/orchestrating-workflows/references/code-workflow.md"
-CONTEXT="${CONTEXT}${NL}File links: use file:///${REPO_ROOT}/... format."
+CONTEXT=$(cat <<EOF
+## User Intent (from session log)
+
+${INTENT:-(No user messages found in transcript)}
+
+## Staged Changes
+
+\`\`\`
+${DIFF_STAT}
+\`\`\`
+
+\`\`\`diff
+${DIFF_CONTENT}
+\`\`\`
+
+Repository: ${REPO_ROOT}
+IDR output: ${IDR_DIR}/idr-${NEXT_NUM}.md
+
+Generate an IDR based on the staged diff and user intent above, then retry the commit.
+Format: follow the IDR Generation section in skills/orchestrating-workflows/references/code-workflow.md
+File links: use file:///${REPO_ROOT}/... format.
+EOF
+)
 
 printf '%s' "$CONTEXT" | jq -Rs '{
   hookSpecificOutput: {

@@ -145,5 +145,5 @@ flowchart TD
 ## 関連
 
 - [TEMPLATE_VARIABLES](../rules/conventions/TEMPLATE_VARIABLES.md) — 変数構文
-- [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh) — IDR生成フック
+- [idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh) — IDR生成フック
 - [templates/README.md](../../templates/README.md) — テンプレート一覧

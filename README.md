@@ -64,7 +64,7 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
    /plugin install complete-workflow-system  # Full TDD/RGRC workflow
    /plugin install quick-actions             # /fix, /polish
    /plugin install git-utilities             # /commit, /branch, /pr, /issue
-   /plugin install documentation-tools       # /adr, /rulify, /docs
+   /plugin install documentation-tools       # /adr, /docs
    /plugin install browser-workflows         # /e2e
    ```
 
@@ -73,7 +73,7 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 - **complete-workflow-system**: Full development workflow with 35 specialized agents
 - **quick-actions**: Fast bug fixes (/fix) and AI slop removal (/polish)
 - **git-utilities**: Git workflow helpers (commit, branch, PR, issue)
-- **documentation-tools**: ADR creation, rule generation, and docs
+- **documentation-tools**: ADR creation and docs
 - **browser-workflows**: E2E testing and automation
 - **development-skills**: 31 skills for TDD, principles, patterns, security, and more
 

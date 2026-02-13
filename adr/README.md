@@ -29,4 +29,3 @@ ADRから抽出された強制ルール：
 
 - [MADR Format](https://adr.github.io/madr/)
 - `/adr` コマンドで新規ADR作成
-- `/rulify` コマンドでADRからルール生成

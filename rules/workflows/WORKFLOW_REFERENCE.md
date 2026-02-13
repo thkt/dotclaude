@@ -21,7 +21,6 @@ Detailed reference for command workflows. Loaded when editing commands or skills
 | `/audit`    | Code review via agents                                           |
 | `/polish`   | Remove AI-generated slop                                         |
 | `/validate` | Validate SOW conformance                                         |
-| `/plans`    | List planning documents (SOW/Spec)                               |
 | `/spec`     | Generate Spec (implementation details)                           |
 | `/sow`      | Display SOW progress                                             |
 | `/feature`  | Full feature lifecycle (explore + architect + implement + audit) |
@@ -32,19 +31,12 @@ Detailed reference for command workflows. Loaded when editing commands or skills
 | ------- | --------------------------------- |
 | `/fix`  | Quick bug fixes (think→code→test) |
 
-### Security
-
-| Command | Purpose                  |
-| ------- | ------------------------ |
-| `/scan` | Plugin security scanning |
-
 ### Browser & Documentation
 
 | Command   | Purpose                          |
 | --------- | -------------------------------- |
 | `/e2e`    | E2E test from browser operations |
 | `/adr`    | Architecture Decision Record     |
-| `/rulify` | Generate project rule from ADR   |
 | `/docs`   | Generate documentation from code |
 
 ### Git Operations
@@ -90,7 +82,6 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 | `/feature`  | Progressive Enhancement      | TDD, SOLID, Occam's Razor                   |
 | `/polish`   | Readable Code, Occam's Razor | DRY, YAGNI                                  |
 | `/validate` | Output Verifiability         | Completion criteria                         |
-| `/scan`     | Safety First                 | Strong Inference                            |
 | `/commit`   | Readable Code                | Conventional Commits                        |
 | `/branch`   | Readable Code                | Naming conventions                          |
 | `/pr`       | Readable Code                | Documentation                               |
@@ -100,5 +91,3 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 | `/sow`      | Occam's Razor                | Progressive Enhancement                     |
 | `/spec`     | Occam's Razor, SOLID         | TDD                                         |
 | `/e2e`      | TDD                          | Progressive Enhancement                     |
-| `/rulify`   | DRY                          | Readable Code                               |
-| `/plans`    | —                            | Read-only reference                         |
