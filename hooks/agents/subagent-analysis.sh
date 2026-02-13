@@ -9,7 +9,16 @@ TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 INPUT=$(cat)
 IFS=$'\t' read -r AGENT_ID TRANSCRIPT_PATH <<< "$(printf '%s' "$INPUT" | jq -r '[(.agent_id // "unknown"), (.agent_transcript_path // "")] | @tsv' 2>/dev/null)"
 
+# Sanitize AGENT_ID to prevent path traversal
+AGENT_ID="${AGENT_ID//[^a-zA-Z0-9_-]/_}"
+
 if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
+  # Validate transcript path is under expected directories
+  case "${TRANSCRIPT_PATH:a}" in
+    /tmp/*|/private/tmp/*|"$HOME"/*) ;;
+    *) echo "⚠ Unexpected transcript path: $AGENT_ID" >&2; exit 0 ;;
+  esac
+
   AGENT_LOG_DIR="$LOG_DIR/$AGENT_ID"
   mkdir -p -m 700 "$AGENT_LOG_DIR"
 

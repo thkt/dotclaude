@@ -69,7 +69,7 @@ FRAMEWORKS=$("$SCRIPTS_DIR/detect-frameworks.sh" "$PROJECT_ROOT") || FRAMEWORKS=
 
 TREE_OUTPUT=$(generate_tree "$PROJECT_ROOT/$SRC_DIR")
 ENTRY_POINTS=$(find_entry_points "$PROJECT_ROOT/$SRC_DIR")
-ENTRY_POINTS_MD=$(echo "$ENTRY_POINTS" | while read -r e; do [ -n "$e" ] && echo "- \`$e\`"; done)
+ENTRY_POINTS_MD=$(printf '%s\n' "$ENTRY_POINTS" | while read -r e; do [ -n "$e" ] && echo "- \`$e\`"; done)
 KEY_EXPORTS=$(find_key_exports "$PROJECT_ROOT/$SRC_DIR")
 
 emit_markdown() {
@@ -98,17 +98,17 @@ EOF
 
 emit_yaml() {
   local fw_yaml
-  fw_yaml=$(echo "$FRAMEWORKS" | tr ',' '\n' | sed 's/^ *//' | while read -r fw; do
+  fw_yaml=$(printf '%s\n' "$FRAMEWORKS" | tr ',' '\n' | sed 's/^ *//' | while read -r fw; do
     [ -n "$fw" ] && [ "$fw" != "N/A" ] && printf '  - "%s"\n' "$fw"
   done)
 
   local entry_yaml
-  entry_yaml=$(echo "$ENTRY_POINTS" | while read -r e; do
+  entry_yaml=$(printf '%s\n' "$ENTRY_POINTS" | while read -r e; do
     [ -n "$e" ] && printf '  - "%s"\n' "$e"
   done)
 
   local export_yaml
-  export_yaml=$(echo "$KEY_EXPORTS" | while read -r e; do
+  export_yaml=$(printf '%s\n' "$KEY_EXPORTS" | while read -r e; do
     [ -n "$e" ] && printf '  - "%s"\n' "$e"
   done)
 

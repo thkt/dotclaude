@@ -51,7 +51,7 @@
         "./agents/critics/devils-advocate-design.md",
         "./agents/critics/evidence-verifier.md",
         "./agents/generators/test-generator.md",
-        "./agents/enhancers/progressive-enhancer.md",
+        "./agents/reviewers/progressive-enhancer.md",
         "./agents/reviewers/subagent-reviewer.md",
         "./agents/reviewers/document-reviewer.md",
         "./agents/reviewers/testability-reviewer.md",

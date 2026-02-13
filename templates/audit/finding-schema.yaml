@@ -55,6 +55,7 @@ finding:
 # | A11Y   | accessibility-reviewer  |
 # | DOC    | document-reviewer       |
 # | SA     | subagent-reviewer       |
+# | SOW    | sow-spec-reviewer       |  (score-based output, no finding_id)
 
 # --- Consolidation rule ---
 # When the same pattern appears in multiple locations:

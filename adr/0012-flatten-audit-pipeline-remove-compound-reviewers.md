@@ -19,7 +19,7 @@ Audit pipeline uses 3-layer architecture: Leader → Compound-reviewer → Sub-r
 
 ## Considered Options
 
-### Option A: Flat Spawn (compound 削除, sub-reviewer 直接)
+### Option A: Flat Spawn
 
 Leader spawns sub-reviewers directly. Eliminates compound layer.
 
@@ -31,7 +31,7 @@ Leader routes files to relevant reviewers only. Reduces file reads.
 
 Phase 1: general-purpose quick scan. Phase 2: specialist only where needed.
 
-### Option D: Status Quo (compound layer 維持)
+### Option D: Status Quo
 
 Keep existing 3-layer architecture.
 

@@ -6,27 +6,60 @@ meta:
   command: audit
   timestamp: # ISO 8601
   target: # 対象スコープ
+  focus: # security|performance|readability|all
+
+pipeline_health:
+  domains_completed: # [ドメイン名]
+  domains_skipped: # [ドメイン名と理由]
+  verification_status: # full|partial|skipped
 
 summary:
   total_findings: # 件数
+  root_causes_synthesized: # 件数
+  standalone_findings: # 件数
   by_severity:
     critical: # 件数
     high: # 件数
     medium: # 件数
     low: # 件数
-  patterns_count: # 件数
-  root_causes_count: # 件数
-  agents_count: # 件数
+  validation:
+    challenged: # 件数
+    confirmed: # 件数
+    disputed: # 件数
+    downgraded: # 件数
+    needs_context: # 件数
+    needs_review:
+      count: # disputed + verified の競合件数
+      items:
+        - finding_id: # ID
+          location: # file:line
+          challenger_reasoning: # 異議理由
+          verifier_evidence: # 発見された証拠
+    false_positive_rate: # 偽陽性率
+    verification:
+      verified: # 件数
+      weak_evidence: # 件数
+      unverifiable: # 件数
+      verification_rate: # 検証率
 
-patterns:
-  - name: # パターン名
-    type: # systemic|isolated
-    files_affected: # 件数
-    root_cause: # 説明
-    confidence: # 0.80-1.00
+root_causes:
+  - id: "RC-001"
+    description: # 一文: 真の問題
+    category: # architecture_gap|knowledge_gap|tooling_gap|process_gap
+    findings_resolved: # [finding ID]
+    domains_involved: # [ドメイン名]
+    five_whys:
+      - why: # 質問
+        answer: # 回答
+    confidence: # float 0.70-1.00
+    action:
+      description: # 統合的な修正
+      effort: # 5min|15min|30min|1h|manual
+      resolves_count: # 件数
 
 priorities:
   - priority: # critical|high|medium|low
+    root_cause_ref: # RC-001 または finding_ref（スタンドアロン）
     item: # 説明
     score: # 数値スコア
     action: # 推奨アクション
@@ -37,15 +70,15 @@ suggestions:
   manual_count: # 件数
   items:
     - id: "SUG-001"
-      finding_ref: # 元の指摘ID
+      root_cause_ref: # RC-001 または finding_ref（スタンドアロン）
       category: # カテゴリ
       severity: # critical|high|medium|low
-      fix_type: # pattern|codemod|lint-fix|manual
+      fix_type: # auto|manual
       confidence: # 0.85-1.00
       location:
         file: # ファイルパス
         line: # 行番号
       before: # 修正前コード
       after: # 修正後コード
-      rationale: # 修正理由
+      rationale: # 修正理由（根本原因へのトレース）
       effort: # 5min|15min|30min|1h|manual

@@ -16,7 +16,7 @@ warn() { printf '  \033[33m!\033[0m %s\n' "$1"; warnings=$((warnings + 1)); }
 
 get_frontmatter_value() {
   local file="$1" key="$2"
-  sed -n '/^---$/,/^---$/p' "$file" | grep "^${key}:" | head -1 | sed "s/^${key}:[[:space:]]*//"
+  sed -n '/^---$/,/^---$/p' "$file" | grep "^${key}:" | head -1 | sed "s/^${key}:[[:space:]]*//; s/[[:space:]]*#.*//"
 }
 
 validate_model() {

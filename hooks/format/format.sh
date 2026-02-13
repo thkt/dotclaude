@@ -8,7 +8,11 @@ INPUT=$(cat)
 FILE_PATH=$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty')
 
 [ -z "$FILE_PATH" ] && exit 0
-[ ! -f "$FILE_PATH" ] && exit 0
+
+EXPANDED_PATH="${FILE_PATH/#\~/$HOME}"
+EXPANDED_PATH="${EXPANDED_PATH:a}"
+
+[ ! -f "$EXPANDED_PATH" ] && exit 0
 
 EXT="${FILE_PATH##*.}"
 
@@ -16,9 +20,6 @@ case "$EXT" in
   ts|tsx|js|jsx|json|css|scss|md|yaml|yml) ;;
   *) exit 0 ;;
 esac
-
-EXPANDED_PATH="${FILE_PATH/#\~/$HOME}"
-EXPANDED_PATH="${EXPANDED_PATH:a}"
 FILE_DIR=$(dirname "$EXPANDED_PATH")
 
 FIND_CONFIG="${HOME}/.claude/scripts/find-config-root.sh"

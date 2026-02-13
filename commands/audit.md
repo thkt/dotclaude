@@ -92,17 +92,18 @@ Include in each reviewer's prompt:
 
 Leader classifies each target file by path and assigns to relevant reviewers only:
 
-| File Pattern           | Reviewers                                            |
-| ---------------------- | ---------------------------------------------------- |
-| `*.sh`                 | security, silent-failure, code-quality               |
-| `*.ts, *.tsx, *.js`    | security, silent-failure, type-safety, code-quality, |
-|                        | design-pattern, testability, performance             |
-| `*.md` (agent defs)    | design-pattern, testability, document                |
-| `*.md` (commands/docs) | document, testability                                |
-| `*.yaml, *.json`       | type-design, document                                |
-| `*.css, *.html`        | accessibility, progressive-enhancer, performance     |
-| `test.*`, `*.test.*`   | test-coverage, testability                           |
-| Other                  | code-quality, document                               |
+| File Pattern           | Sub-reviewers (subagent_type)                                         |
+| ---------------------- | --------------------------------------------------------------------- |
+| `*.sh`                 | security-reviewer, silent-failure-reviewer, code-quality-reviewer     |
+| `*.ts, *.tsx, *.js`    | security-reviewer, silent-failure-reviewer, type-safety-reviewer,     |
+|                        | code-quality-reviewer, design-pattern-reviewer, testability-reviewer, |
+|                        | performance-reviewer                                                  |
+| `*.md` (agent defs)    | design-pattern-reviewer, testability-reviewer, document-reviewer      |
+| `*.md` (commands/docs) | document-reviewer, testability-reviewer                               |
+| `*.yaml, *.json`       | type-design-reviewer, document-reviewer                               |
+| `*.css, *.html`        | accessibility-reviewer, progressive-enhancer, performance-reviewer    |
+| `test.*`, `*.test.*`   | test-coverage-reviewer, testability-reviewer                          |
+| Other                  | code-quality-reviewer, document-reviewer                              |
 
 Classification by path: `agents/**/*.md` → agent defs, `commands/**/*.md` or `docs/**/*.md` → commands/docs, other `*.md` → commands/docs (default).
 

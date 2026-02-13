@@ -26,8 +26,8 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── conventions/      # Documentation conventions
 │   ├── development/      # Development patterns & methodologies
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (25 skills)
-├── agents/               # Specialized AI agents (39 agents)
+├── skills/               # Skill-based knowledge modules (31 skills)
+├── agents/               # Specialized AI agents (35 agents)
 │   ├── analyzers/        # Architecture & code analyzers
 │   ├── architects/       # Feature architecture designers
 │   ├── critics/          # Finding challengers (devils-advocate)
@@ -35,9 +35,8 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── explorers/        # Codebase exploration agents
 │   ├── generators/       # Code/test/git generators
 │   ├── resolvers/        # Build error resolvers
-│   ├── reviewers/        # Code review agents (14 reviewers)
-│   ├── teams/            # Integrators & implementers
-│   └── thinkers/         # Design perspective agents (pragmatist, architect, advocate)
+│   ├── reviewers/        # Code review agents (15 reviewers)
+│   └── teams/            # Integrators & implementers
 └── .ja/                   # Japanese translations
 ```
 
@@ -71,12 +70,12 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 
 **Available Plugins**:
 
-- **complete-workflow-system**: Full development workflow with 39 specialized agents
+- **complete-workflow-system**: Full development workflow with 35 specialized agents
 - **quick-actions**: Fast bug fixes (/fix) and AI slop removal (/polish)
 - **git-utilities**: Git workflow helpers (commit, branch, PR, issue)
 - **documentation-tools**: ADR creation, rule generation, and docs
 - **browser-workflows**: E2E testing and automation
-- **development-skills**: 25 skills for TDD, principles, patterns, security, and more
+- **development-skills**: 31 skills for TDD, principles, patterns, security, and more
 
 ### Option 2: Manual Installation (Full Configuration)
 

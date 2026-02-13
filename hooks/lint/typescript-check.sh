@@ -26,10 +26,10 @@ TSC_BIN="$PROJECT_ROOT/node_modules/.bin/tsc"
 cd "$PROJECT_ROOT"
 TSC_OUTPUT=$("$TSC_BIN" --noEmit 2>&1)
 TSC_EXIT=$?
-ERROR_COUNT=$(echo "$TSC_OUTPUT" | grep -c "error TS" || echo "0")
+ERROR_COUNT=$(printf '%s\n' "$TSC_OUTPUT" | grep -c "error TS" || echo "0")
 
 if [ "$TSC_EXIT" -ne 0 ] && [ "$ERROR_COUNT" -eq 0 ]; then
-  echo "⚠ tsc failed to run (exit $TSC_EXIT): $(echo "$TSC_OUTPUT" | head -1)" >&2
+  echo "⚠ tsc failed to run (exit $TSC_EXIT): $(printf '%s\n' "$TSC_OUTPUT" | head -1)" >&2
   exit 0
 fi
 
@@ -37,7 +37,7 @@ fi
 
 echo ""
 echo "⚠ TypeScript: $ERROR_COUNT errors ($(basename "$PROJECT_ROOT"))"
-echo "$TSC_OUTPUT" | grep "error TS" | head -5 | sed 's/^/  /'
+printf '%s\n' "$TSC_OUTPUT" | grep "error TS" | head -5 | sed 's/^/  /'
 [ "$ERROR_COUNT" -gt 5 ] && echo "  ... (+$((ERROR_COUNT - 5)) more)"
 
 exit 0

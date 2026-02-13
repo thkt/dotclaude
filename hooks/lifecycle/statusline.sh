@@ -11,6 +11,8 @@ color_for_pct() {
     else printf '\033[31m'; fi
 }
 
+DEFAULT_CONTEXT_LIMIT=$DEFAULT_CONTEXT_LIMIT
+
 parse_stdin() {
     EXCEEDS_200K="false"
     local stdin_input
@@ -77,7 +79,7 @@ load_state() {
         local tool_info
         tool_info=$(tail -n 200 "$TRANSCRIPT_PATH" 2>/dev/null | \
             jq -s '[.[] | select(.type == "tool_use")] | last | .name // empty' 2>/dev/null)
-        [ -n "$tool_info" ] && [ "$tool_info" != "null" ] && LAST_TOOL=$(echo "$tool_info" | tr -d '"')
+        [ -n "$tool_info" ] && [ "$tool_info" != "null" ] && LAST_TOOL=$(printf '%s' "$tool_info" | tr -d '"')
         TOOL_COUNT=$(tail -n 500 "$TRANSCRIPT_PATH" 2>/dev/null | \
             jq -s '[.[] | select(.type == "tool_use")] | length' 2>/dev/null)
         [ -z "$TOOL_COUNT" ] && TOOL_COUNT=0
@@ -105,13 +107,13 @@ render_context() {
 
     local limit_guessed=false
     if [ -z "$CONTEXT_LIMIT" ] || [ "$CONTEXT_LIMIT" = "null" ] || [ "$CONTEXT_LIMIT" = "0" ]; then
-        CONTEXT_LIMIT=200000; limit_guessed=true
+        CONTEXT_LIMIT=$DEFAULT_CONTEXT_LIMIT; limit_guessed=true
     fi
-    [[ "$CONTEXT_LIMIT" =~ ^[0-9]+$ ]] || { CONTEXT_LIMIT=200000; limit_guessed=true; }
+    [[ "$CONTEXT_LIMIT" =~ ^[0-9]+$ ]] || { CONTEXT_LIMIT=$DEFAULT_CONTEXT_LIMIT; limit_guessed=true; }
     [ "$CONTEXT_LIMIT" -gt 0 ] 2>/dev/null || return
 
     local percentage remaining
-    if [ -n "$CONTEXT_USED_PCT" ] && [ "$CONTEXT_USED_PCT" != "null" ]; then
+    if [ -n "$CONTEXT_USED_PCT" ] && [ "$CONTEXT_USED_PCT" != "null" ] && [[ "$CONTEXT_USED_PCT" =~ ^[0-9.]+$ ]]; then
         percentage=$(printf "%.0f" "$CONTEXT_USED_PCT" 2>/dev/null || echo "$CONTEXT_USED_PCT" | cut -d. -f1)
         remaining=$(printf "%.0f" "$CONTEXT_REMAINING_PCT" 2>/dev/null || echo "$CONTEXT_REMAINING_PCT" | cut -d. -f1)
     else
@@ -167,9 +169,9 @@ fetch_usage() {
     if [ $((now - cache_mtime)) -ge $cache_ttl ]; then
         {
             local creds token response usage
-            creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) || return
-            token=$(printf '%s' "$creds" | jq -r '.claudeAiOauth.accessToken // empty') || return
-            [ -n "$token" ] || return
+            creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) || { printf 'ERR\tERR\n' > "$cache_file"; return; }
+            token=$(printf '%s' "$creds" | jq -r '.claudeAiOauth.accessToken // empty') || { printf 'ERR\tERR\n' > "$cache_file"; return; }
+            [ -n "$token" ] || { printf 'ERR\tERR\n' > "$cache_file"; return; }
             response=$(printf 'header "Authorization: Bearer %s"\n' "$token" | \
                 curl -s --max-time 3 -K - \
                 -H "anthropic-beta: oauth-2025-04-20" \
@@ -177,7 +179,8 @@ fetch_usage() {
             if [ $? -eq 0 ]; then
                 usage=$(printf '%s' "$response" | jq -r '[.five_hour.utilization, .seven_day.utilization] | map(. // empty) | @tsv')
                 if [ -n "$usage" ]; then
-                    printf '%s\n' "$usage" > "$cache_file"
+                    local tmp_cache="${cache_file}.tmp.$$"
+                    printf '%s\n' "$usage" > "$tmp_cache" && mv "$tmp_cache" "$cache_file"
                 else
                     printf 'ERR\tERR\n' > "$cache_file"
                 fi
