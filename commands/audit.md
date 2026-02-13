@@ -173,6 +173,14 @@ Common names: `lint`, `typecheck`, `type-check`, `check`, `analyse`, `analyze`, 
 
 Fallback (best-effort): If no runner found, check for config files (e.g. `tsconfig.json` → `npx tsc --noEmit`, `ruff.toml` → `ruff check`).
 
+### Step 2.5: Detect global analysis tools
+
+| Tool | Condition                                 | Command                                                                      |
+| ---- | ----------------------------------------- | ---------------------------------------------------------------------------- |
+| knip | `package.json` exists AND `knip` in $PATH | `knip --no-exit-code` (no config → `--config ~/.claude/templates/knip.json`) |
+
+These run alongside project scripts in Step 3 (parallel). Skip silently if tool not found.
+
 ### Step 3: Run discovered scripts
 
 | Rule             | Behavior                                      |
