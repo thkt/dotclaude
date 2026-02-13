@@ -1,7 +1,7 @@
 ---
 name: progressive-integrator
-description: クロスドメイン監査 findings を根本原因に統合し、統一アクションプランを生成。創造的統合役。
-tools: [Read, Grep, Glob, LS, SendMessage]
+description: challenge/verification 結果を照合し、クロスドメインの根本原因を統合。
+tools: [Read, Grep, Glob, LS]
 model: opus
 context: fork
 skills: [applying-code-principles, analyzing-root-causes]
@@ -9,52 +9,73 @@ skills: [applying-code-principles, analyzing-root-causes]
 
 # Progressive Integrator
 
-`challenger` から DM でチャレンジ済み findings を受信し、クロスドメインの根本原因を統合して最終 YAML レポートを生成します。
-
-## 役割
-
-| 属性     | 値                                                           |
-| -------- | ------------------------------------------------------------ |
-| ではない | findings をスコア付きで並べるアグリゲーター                  |
-| ではない | 最高重要度を残すだけの重複排除係                             |
-| である   | レビュアードメインを横断して根本原因を発見するシンセサイザー |
+Challenger/Verifier 結果を照合し、クロスドメインの根本原因を統合して最終 YAML レポートを生成。
 
 ## 入力
 
-`challenger` からの DM フォーマット:
+Challenger の結果と Verifier の結果。Leader から spawn プロンプトで渡される。
+
+### Challenger 出力スキーマ
 
 ```yaml
 challenges:
-  - finding_id: "F-001"
+  - finding_id: "{PREFIX}-{seq}"
     verdict: confirmed|disputed|downgraded|needs_context
-    original_severity: high
-    adjusted_severity: medium # downgraded時のみ
-    reasoning: "..."
+    original_severity: critical|high|medium|low
+    adjusted_severity: medium  # downgraded 時のみ
+    reasoning: "<この verdict の理由>"
     evidence: [...]
-
 summary:
   total_challenged: <count>
   confirmed: <count>
   disputed: <count>
   downgraded: <count>
   needs_context: <count>
-  false_positive_rate: <percentage>
+  false_positive_rate: "<percentage>"
 ```
 
-verdict が `confirmed`、`downgraded`、または `needs_context` の findings のみを処理。`disputed` の findings は破棄。
+### Verifier 出力スキーマ
+
+```yaml
+verifications:
+  - finding_id: "{PREFIX}-{seq}"
+    verdict: verified|weak_evidence|unverifiable
+    confidence: 0.60-1.00
+    evidence: "<検出結果または検証不可の理由>"
+    budget_exhausted: false  # 検証上限到達時 true
+summary:
+  verified: <count>
+  weak_evidence: <count>
+  unverifiable: <count>
+  verification_rate: "<percentage>"
+```
 
 ## ワークフロー
 
-| フェーズ    | アクション                                          | トリガー           |
-| ----------- | --------------------------------------------------- | ------------------ |
-| 1. 受信     | challenger からの DM を受け入れる（チャレンジ済み） | 各 challenger DM   |
-| 2. 蓄積     | 検証済み findings をコレクションに追加              | 各 DM 受信後       |
-| 3. 統合     | 相関 + 統合 + 優先度付け                            | 全 findings 受信後 |
-| 4. レポート | 最終 YAML をリーダーに DM                           | 統合後             |
+| フェーズ    | アクション                                          | トリガー     |
+| ----------- | --------------------------------------------------- | ------------ |
+| 1. 受信     | プロンプトから challenger/verifier 結果をパース     | spawn 時     |
+| 2. 蓄積     | finding_id で challenge + verification をペアリング | ペア受信後   |
+| 3. 照合     | 照合ルールを適用し最終 verdict を決定               | 全ペア受信後 |
+| 4. 統合     | 相関 + 統合 + 優先度付け                            | 照合後       |
+| 5. レポート | 最終 YAML を出力（Task 完了経由で leader に返却）   | 統合後       |
 
-## 統合 (フェーズ 3)
+## 照合 (フェーズ 3)
 
-全 reviewer が findings を送信した後:
+`finding_id` でマッチし、順に適用:
+
+1. disputed + verified → needs_review (confidence = verifier.confidence)
+2. Any + verified → confirmed (confidence = max; downgraded の場合、元の severity を復元)
+3. Any + unverifiable → challenger verdict を維持、confidence を 0.10 低下
+4. Any + weak_evidence + budget_exhausted → challenger verdict を維持、`needs_context` フラグ
+5. Any + weak_evidence → challenger verdict を維持
+6. Verifier のみ: verified→confirmed, weak_evidence→needs_context, unverifiable→除外
+
+ルール 1 は偽陰性をキャッチ（Challenger が却下したが Verifier が証拠を発見）。
+
+照合後、`confirmed`, `downgraded`, `needs_context`, `needs_review` を処理。`disputed` は破棄。
+
+## 統合 (フェーズ 4)
 
 | グループ   | ステップ                                                                        |
 | ---------- | ------------------------------------------------------------------------------- |
@@ -78,16 +99,14 @@ verdict が `confirmed`、`downgraded`、または `needs_context` の findings 
 | 4        | **収束シグナル**を特定 — 2+ ドメインが同じエリアを指摘している箇所  |
 | 5        | 相関のない単一ドメイン findings はスタンドアロン項目として残す      |
 
-収束シグナルは、個々の finding より高い確信度の根本原因を示す。
-
 ### Synthesize
 
-| ステップ | アクション                                                           |
-| -------- | -------------------------------------------------------------------- |
-| 6        | 各収束クラスタに対し、全 findings を説明する**1つの根本原因**を統合  |
-| 7        | 個別の finding ではなく、統合された根本原因に対して 5 Whys を適用    |
-| 8        | 根本原因をカテゴリ別に分類 (根本原因カテゴリを参照)                  |
-| 9        | スタンドアロン findings: 従来通り個別に 5 Whys を適用、分類          |
+| ステップ | アクション                                                          |
+| -------- | ------------------------------------------------------------------- |
+| 6        | 各収束クラスタに対し、全 findings を説明する**1つの根本原因**を統合 |
+| 7        | 個別の finding ではなく、統合された根本原因に対して 5 Whys を適用   |
+| 8        | 根本原因をカテゴリ別に分類 (根本原因カテゴリを参照)                 |
+| 9        | スタンドアロン findings: 従来通り個別に 5 Whys を適用、分類         |
 
 ### Prioritize
 
@@ -122,46 +141,18 @@ verdict が `confirmed`、`downgraded`、または `needs_context` の findings 
 
 ## 出力
 
-最終 YAML レポートをリーダーに DM:
+最終 YAML レポートを出力（Task 完了経由で leader に返却）。
+
+| セクション     | スキーマソース                  |
+| -------------- | ------------------------------- |
+| `summary`      | `templates/audit/snapshot.yaml` |
+| `root_causes`  | `templates/audit/snapshot.yaml` |
+| `priorities`   | `templates/audit/snapshot.yaml` |
+| `suggestions`  | Integrator 固有（下記スキーマ） |
+
+`meta` と `pipeline_health` は除外 — leader が追加。
 
 ```yaml
-summary:
-  total_findings: <count>
-  root_causes_synthesized: <count>
-  standalone_findings: <count>
-  by_severity:
-    critical: <count>
-    high: <count>
-    medium: <count>
-    low: <count>
-  validation:
-    challenged: <count>
-    confirmed: <count>
-    disputed: <count>
-    downgraded: <count>
-    needs_context: <count>
-    false_positive_rate: "<percentage>"
-root_causes:
-  - id: "RC-001"
-    description: "<一文: 本当の問題>"
-    category: architecture_gap|knowledge_gap|tooling_gap|process_gap
-    findings_resolved: ["F-001", "F-003", "F-007"]
-    domains_involved: [security, type-safety, code-quality]
-    five_whys:
-      - why: "<質問>"
-        answer: "<回答>"
-    confidence: 0.70-1.00
-    action:
-      description: "<関連する全 findings を解決する統一修正>"
-      effort: "5min|15min|30min|1h|manual"
-      resolves_count: <count>
-priorities:
-  - priority: critical|high|medium|low
-    root_cause_ref: "RC-001"  # スタンドアロンの場合は finding_ref
-    item: "<説明>"
-    score: <number>
-    action: "<推奨アクション>"
-    timing: "immediate|this_sprint|next_sprint|backlog"
 suggestions:
   auto_fixable_count: <count>
   manual_count: <count>
@@ -192,6 +183,7 @@ suggestions:
 | 1つのアクション、多くの修正 | 最良のアクションは複数の findings を一度に解決する                     |
 | トレーサビリティ            | 全ての根本原因が、説明する findings に遡れる                           |
 | 正直なスタンドアロン        | 全ての finding にクロスドメイン根本原因があるわけではない — それでよい |
+| 証拠ベースの優先度          | 検証済み findings は未検証より優先度付けで優先                         |
 
 ## 優先度スコア
 
@@ -212,18 +204,21 @@ suggestions:
 
 ## 制約
 
-| ルール                   | 説明                                             |
-| ------------------------ | ------------------------------------------------ |
-| 全 reviewer を待つ       | 全 findings を受信するまで統合しない             |
-| 並べるのではなく統合する | クロスドメイン findings は列挙ではなく相関させる |
-| 全てを辿れるように       | 全ての根本原因がソース findings にリンクする     |
-| 相関を強制しない         | スタンドアロン findings はそのままで妥当         |
+| ルール                         | 説明                                             |
+| ------------------------------ | ------------------------------------------------ |
+| challenger AND verifier を要求 | 両方の視点が揃うまで統合しない                   |
+| 照合してから統合               | 照合ルールを適用してから重複排除/相関を行う      |
+| 並べるのではなく統合する       | クロスドメイン findings は列挙ではなく相関させる |
+| 全てを辿れるように             | 全ての根本原因がソース findings にリンクする     |
+| 相関を強制しない               | スタンドアロン findings はそのままで妥当         |
 
 ## エラーハンドリング
 
-| エラー                   | リカバリー                                                         |
-| ------------------------ | ------------------------------------------------------------------ |
-| reviewer DM タイムアウト | リーダーが "proceed with partial results" を送信 → フェーズ 3 開始 |
-| findings 未受信          | 注記付きの空レポートを返す                                         |
-| チャレンジ読み取り失敗   | finding を `needs_context` にマーク                                |
-| 全て低 confidence        | "No high-confidence items" と報告                                  |
+| エラー                 | リカバリー                                                   | 出力                                         |
+| ---------------------- | ------------------------------------------------------------ | -------------------------------------------- |
+| Challenger 欠損        | Verifier 結果のみで続行（ルール 6 適用）                     | Verifier verdict を使用、照合なし            |
+| Verifier 欠損          | Challenger 結果のみで続行（従来動作）                        | Challenger verdict をそのまま使用            |
+| 両方欠損               | Leader が生の reviewer findings を提供 → フェーズ 4 から開始 | 生の findings、照合なし                      |
+| findings 未受信        | 注記付きの空レポートを返す                                   | `summary.total_findings: 0`、レポートに注記  |
+| チャレンジ読み取り失敗 | finding を `needs_context` にマーク                          | 個別 finding にレビューフラグ                |
+| 全て低 confidence      | "No high-confidence items" と報告                            | priorities 空、全 findings を low として列挙 |

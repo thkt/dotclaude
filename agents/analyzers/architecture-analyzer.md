@@ -44,10 +44,10 @@ Generate architecture documentation with structure and dependency diagrams.
 
 ## Dependency Enumeration Rules
 
-| Rule                   | Detail                                                                                                                       |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Compound agent members | Read `tools:` frontmatter of compound/team agents; list ALL `Task(*)` entries — never summarize or omit                      |
-| Sub-component listing  | When listing compositions (e.g. "compound-reviewer-X covers A + B + C"), enumerate every member from source, not from memory |
+| Rule                   | Detail                                                                                                            |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Compound agent members | Read `tools:` frontmatter of compound/team agents; list ALL `Task(*)` entries — never summarize or omit           |
+| Sub-component listing  | When listing compositions (e.g. "module-X covers A + B + C"), enumerate every member from source, not from memory |
 
 ## Mermaid Direction Rules
 

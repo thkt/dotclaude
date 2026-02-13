@@ -17,7 +17,7 @@ graph LR
     subgraph Agents["Agents (実行)"]
         A1[test-generator]
         A2[security-reviewer]
-        A3[compound-reviewer-quality]
+        A3[progressive-integrator]
     end
 
     subgraph Trigger["起動方法"]
@@ -116,17 +116,19 @@ agents/
 ├── explorers/      # 探索 (feature-explorer)
 ├── generators/     # 生成 (branch, commit, issue, pr, test)
 ├── resolvers/      # 問題解決 (build-error-resolver)
-├── reviewers/      # レビュー (12 specialized reviewers)
-└── teams/          # 複合レビュー (compound-reviewer-*, progressive-integrator)
+├── reviewers/      # レビュー (14 specialized reviewers)
+└── teams/          # 統合 (progressive-integrator)
 ```
 
-### レビューエージェント（12種類）
+### レビューエージェント（14種類）
 
 | エージェント            | フォーカス           |
 | ----------------------- | -------------------- |
 | security-reviewer       | OWASP Top 10         |
 | type-safety-reviewer    | TypeScript型安全性   |
+| type-design-reviewer    | 型設計 + カプセル化  |
 | testability-reviewer    | テスト容易性         |
+| test-coverage-reviewer  | テストカバレッジ品質 |
 | silent-failure-reviewer | 静かな失敗検知       |
 | root-cause-reviewer     | 根本原因分析         |
 | code-quality-reviewer   | 構造 + 可読性        |
@@ -137,14 +139,11 @@ agents/
 | sow-spec-reviewer       | SOW/Spec品質         |
 | subagent-reviewer       | サブエージェント定義 |
 
-### チームエージェント（Compound Reviewers）
+### チームエージェント（1種類）
 
-| エージェント                 | フォーカス                                       |
-| ---------------------------- | ------------------------------------------------ |
-| compound-reviewer-foundation | code-quality + progressive-enhancer + root-cause |
-| compound-reviewer-safety     | security + silent-failure + type-safety          |
-| compound-reviewer-quality    | design-pattern + testability + perf + a11y + doc |
-| progressive-integrator       | devil's advocate challenge + finding integration |
+| エージェント           | フォーカス                                         |
+| ---------------------- | -------------------------------------------------- |
+| progressive-integrator | challenge/verification 結果の照合 + 根本原因の統合 |
 
 ### Task Tool による起動
 

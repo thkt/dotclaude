@@ -17,7 +17,7 @@ graph LR
     subgraph Agents["Agents (Execution)"]
         A1[test-generator]
         A2[security-reviewer]
-        A3[compound-reviewer-quality]
+        A3[progressive-integrator]
     end
 
     subgraph Trigger["Invocation"]
@@ -116,17 +116,19 @@ agents/
 ├── explorers/      # 探索 (feature-explorer)
 ├── generators/     # 生成 (branch, commit, issue, pr, test)
 ├── resolvers/      # 問題解決 (build-error-resolver)
-├── reviewers/      # レビュー (12 specialized reviewers)
-└── teams/          # 複合レビュー (compound-reviewer-*, progressive-integrator)
+├── reviewers/      # レビュー (14 specialized reviewers)
+└── teams/          # 統合 (progressive-integrator)
 ```
 
-### Reviewer Agents (12 types)
+### Reviewer Agents (14 types)
 
 | Agent                   | Focus                |
 | ----------------------- | -------------------- |
 | security-reviewer       | OWASP Top 10         |
 | type-safety-reviewer    | TypeScript型安全性   |
+| type-design-reviewer    | 型設計 + カプセル化  |
 | testability-reviewer    | テスト容易性         |
+| test-coverage-reviewer  | テストカバレッジ品質 |
 | silent-failure-reviewer | 静かな失敗検知       |
 | root-cause-reviewer     | 根本原因分析         |
 | code-quality-reviewer   | 構造 + 可読性        |
@@ -137,14 +139,11 @@ agents/
 | sow-spec-reviewer       | SOW/Spec品質         |
 | subagent-reviewer       | サブエージェント定義 |
 
-### Team Agents (Compound Reviewers)
+### Team Agent
 
-| Agent                        | Focus                                            |
-| ---------------------------- | ------------------------------------------------ |
-| compound-reviewer-foundation | code-quality + progressive-enhancer + root-cause |
-| compound-reviewer-safety     | security + silent-failure + type-safety          |
-| compound-reviewer-quality    | design-pattern + testability + perf + a11y + doc |
-| progressive-integrator       | devil's advocate challenge + finding integration |
+| Agent                  | Focus                                                           |
+| ---------------------- | --------------------------------------------------------------- |
+| progressive-integrator | Reconcile challenge/verification results + root cause synthesis |
 
 ### Invocation via Task Tool
 

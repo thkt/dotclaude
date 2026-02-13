@@ -1,8 +1,8 @@
 # Canonical Finding Schema
 #
 # Base fields required from all 13 audit reviewers.
-# Compound reviewers normalize domain-specific extensions before
-# forwarding to challenger and verifier.
+# Leader (Medium tier) or Integrator (Large tier) normalizes
+# domain-specific extensions during integration.
 
 # --- Base fields (required) ---
 finding:
@@ -20,18 +20,18 @@ finding:
     check: execution_trace|call_site_check|error_propagation|hotpath_analysis|pattern_search
     question: "<what to verify>"
 
-# --- Domain-specific extensions (normalized by compound reviewers) ---
+# --- Domain-specific extensions (normalized during integration) ---
 #
-# | Reviewer               | Extra Fields                  | Compound Reviewer | Normalization                                          |
-# | ---------------------- | ----------------------------- | ----------------- | ------------------------------------------------------ |
-# | root-cause-reviewer    | five_whys, root_cause         | foundation        | root_cause → reasoning; five_whys → append to evidence |
-# | progressive-enhancer   | recommendations               | foundation        | Append as separate items                               |
-# | code-quality-reviewer  | subcategory                   | foundation        | Append to category as category/subcategory             |
-# | performance-reviewer   | impact                        | quality           | Append to evidence; impact → reasoning note            |
-# | accessibility-reviewer | wcag                          | quality           | Append to evidence                                     |
-# | test-coverage-reviewer | related_code, criticality     | quality           | related_code → evidence; criticality → reasoning note  |
-# | type-design-reviewer   | type_name, scores             | safety            | Append to evidence; scores → reasoning note            |
-# | security-reviewer      | entry_points (in hint)        | safety            | Already in verification_hint                           |
+# | Reviewer               | Extra Fields              | Normalization                                          |
+# | ---------------------- | ------------------------- | ------------------------------------------------------ |
+# | root-cause-reviewer    | five_whys, root_cause     | root_cause → reasoning; five_whys → append to evidence |
+# | progressive-enhancer   | recommendations           | Append as separate items                               |
+# | code-quality-reviewer  | subcategory               | Append to category as category/subcategory             |
+# | performance-reviewer   | impact                    | Append to evidence; impact → reasoning note            |
+# | accessibility-reviewer | wcag                      | Append to evidence                                     |
+# | test-coverage-reviewer | related_code, criticality | related_code → evidence; criticality → reasoning note  |
+# | type-design-reviewer   | type_name, scores         | Append to evidence; scores → reasoning note            |
+# | security-reviewer      | entry_points (in hint)    | Already in verification_hint                           |
 
 # --- ID prefix registry ---
 # | Prefix | Reviewer                |

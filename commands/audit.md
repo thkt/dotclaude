@@ -23,128 +23,132 @@ Orchestrate specialized review agents with confidence-based filtering.
 
 ## Scope Tier
 
-| Tier   | Files | Team                                                           |
-| ------ | ----- | -------------------------------------------------------------- |
-| Small  | 1-3   | Leader runs sub-reviewers directly                             |
-| Medium | 4-15  | 3 compound reviewers + integrator                              |
-| Large  | 16+   | 6-agent pipeline: reviewers + challenger/verifier + integrator |
+| Tier   | Files | Architecture                                                     |
+| ------ | ----- | ---------------------------------------------------------------- |
+| Small  | 1-3   | Leader reviews directly (no agents)                              |
+| Medium | 4-15  | 3 general-purpose reviewers + Leader integrates                  |
+| Large  | 16+   | Sub-reviewers (file-routed) + challenger + verifier + integrator |
 
 Glob target → count files → select tier → confirm with user.
 
 ## Execution
 
+Select tier-specific workflow below. All tiers start with Pre-flight (see below).
+
+**Constraint: Save snapshot BEFORE displaying any results to user.**
+
+### Small Tier (1-3 files)
+
+Leader reads all target files and performs multi-domain review directly.
+Output: findings YAML → save snapshot → display delta.
+
+No agents spawned.
+
+### Medium Tier (4-15 files)
+
 | Step | Action                                                        |
 | ---- | ------------------------------------------------------------- |
-| 1    | Run project static analysis tools (see Pre-flight below)      |
-| 2    | Spawn review team (see Team Workflow below)                   |
-| 3    | Reviewers run agents, Council sharing round, DM to validators |
-| 4a   | Challenger validates findings, DMs to `integrator`            |
-| 4b   | Verifier verifies findings, DMs to `integrator`               |
-| 5    | Integrator reconciles + synthesizes root causes → final YAML  |
-| 6    | Save snapshot (see Snapshot Naming below)                     |
-| 7    | Compare with previous snapshot, display delta                 |
-| 8    | Output report using template                                  |
+| 1    | Pre-flight static analysis                                    |
+| 2    | Spawn 3 general-purpose reviewers via Task (background)       |
+| 3    | Each reviewer covers assigned domains, reads all target files |
+| 4    | Leader collects results, integrates (dedup, root causes)      |
+| 5    | Save snapshot                                                 |
+| 6    | Display delta + report                                        |
 
-## Team Workflow
+Medium skips challenger/verifier: with 4-15 files all reviewers read the same files, so cross-validation adds cost without proportional benefit. Leader performs integration directly. Large tier (16+) uses file-routed sub-reviewers where each sees a subset, making independent challenge/verification essential.
 
-Spawn a coordinated team of 3 compound reviewers, 1 challenger, 1 verifier, and 1 integrator.
+#### Reviewer Assignment
 
-### Team Structure
+| Reviewer   | subagent_type   | Domains                                            |
+| ---------- | --------------- | -------------------------------------------------- |
+| foundation | general-purpose | code-quality, progressive-enhancement, root-cause  |
+| safety     | general-purpose | security, silent-failure, type-safety, type-design |
+| quality    | general-purpose | design-pattern, testability, documentation         |
 
-```text
-/audit command (LEADER)
-├── reviewer-foundation  (compound-reviewer-foundation)
-├── reviewer-safety      (compound-reviewer-safety)
-├── reviewer-quality     (compound-reviewer-quality)
-├── challenger           (devils-advocate-audit)
-├── verifier             (evidence-verifier)
-└── integrator           (progressive-integrator)
-```
+#### Spawn Prompt Template
 
-### Council Protocol: Reviewer Council
+Include in each reviewer's prompt:
 
-Compound reviewers share cross-domain findings with peers before reporting to challenger/verifier.
+- Target file list (absolute paths)
+- Assigned domains with "what to look for" guidance
+- Finding schema (ID prefixes per domain)
+- Output format (YAML)
+- "Read ALL listed files. Do NOT skip files."
 
-#### Domain Priority (conflict resolution)
+### Large Tier (16+ files)
 
-When findings overlap or conflict, higher-priority domain prevails:
+| Step | Action                                                             |
+| ---- | ------------------------------------------------------------------ |
+| 1    | Pre-flight static analysis                                         |
+| 2    | File routing: classify target files → assign to relevant reviewers |
+| 3    | Spawn sub-reviewers via Task (background, max 10 parallel)         |
+| 4    | Spawn challenger + verifier (wait for reviewers)                   |
+| 5    | Spawn integrator (wait for challenger + verifier)                  |
+| 6    | Leader receives final YAML from integrator                         |
+| 7    | Save snapshot                                                      |
+| 8    | Display delta + report                                             |
 
-| Priority | Domain     | Rationale                        |
-| -------- | ---------- | -------------------------------- |
-| 1        | Safety     | Security vulnerabilities = fatal |
-| 2        | Foundation | Code quality enables everything  |
-| 3        | Quality    | Design patterns = aspirational   |
+#### File Routing
 
-#### Communication Priorities (what to share)
+Leader classifies each target file by path and assigns to relevant reviewers only:
 
-| Priority | Trigger                            | Action                               |
-| -------- | ---------------------------------- | ------------------------------------ |
-| P1       | Critical/high at specific location | DM file:line + summary to both peers |
-| P2       | Same issue in 3+ files             | DM pattern description to both peers |
-| Skip     | Domain-isolated low/medium finding | Don't share — own findings only      |
+| File Pattern           | Reviewers                                            |
+| ---------------------- | ---------------------------------------------------- |
+| `*.sh`                 | security, silent-failure, code-quality               |
+| `*.ts, *.tsx, *.js`    | security, silent-failure, type-safety, code-quality, |
+|                        | design-pattern, testability, performance             |
+| `*.md` (agent defs)    | design-pattern, testability, document                |
+| `*.md` (commands/docs) | document, testability                                |
+| `*.yaml, *.json`       | type-design, document                                |
+| `*.css, *.html`        | accessibility, progressive-enhancer, performance     |
+| `test.*`, `*.test.*`   | test-coverage, testability                           |
+| Other                  | code-quality, document                               |
 
-#### Sharing Format
+Classification by path: `agents/**/*.md` → agent defs, `commands/**/*.md` or `docs/**/*.md` → commands/docs, other `*.md` → commands/docs (default).
 
-```text
-[COUNCIL] {domain} findings for peer review:
+#### Sub-reviewer Spawn
 
-P1 Hotspots:
-- {file}:{line} — {summary} ({severity})
+Each sub-reviewer is spawned directly via Task:
 
-P2 Patterns:
-- {description} ({count} instances in {scope})
-```
+- subagent_type: the reviewer name (e.g., `security-reviewer`)
+- Prompt: assigned file list + focus + finding schema
+- No team_name (standalone background agents)
 
-### Spawn Context
+#### Sequential Dependencies
 
-Teammates don't inherit leader's conversation history. Include in each spawn prompt:
+| Reviewer   | Depends On            | Reason                     |
+| ---------- | --------------------- | -------------------------- |
+| root-cause | code-quality          | Needs CQ findings as input |
+| challenger | All reviewers         | Needs all findings         |
+| verifier   | All reviewers         | Needs all findings         |
+| integrator | challenger + verifier | Needs both perspectives    |
 
-| Context            | Source                                 |
-| ------------------ | -------------------------------------- |
-| Target file list   | git diff / $1 scope                    |
-| Audit focus        | security / performance / all           |
-| Pre-flight results | lint/typecheck output (if non-zero)    |
-| Council peers      | Other compound reviewer teammate names |
+#### Handoff (Standalone)
 
-### Workflow
+Since agents are standalone (not team), leader collects results via Task output:
 
-| Step | Actor      | Action                                                             |
-| ---- | ---------- | ------------------------------------------------------------------ |
-| 1    | Leader     | `TeamCreate("audit-{timestamp}")`                                  |
-| 2    | Leader     | TaskCreate x 6 (3 reviewers + challenger + verifier + integrator)  |
-| 3    | Leader     | Spawn 6 teammates via Task with `team_name`, passing spawn context |
-| 4    | Reviewers  | Run domain agents internally, normalize findings                   |
-| 4b   | Reviewers  | Council sharing round (see Council Protocol above)                 |
-| 4c   | Reviewers  | DM enriched findings to `challenger` AND `verifier`                |
-| 5    | Challenger | Validate each batch, DM challenged results to `integrator`         |
-| 5b   | Verifier   | Verify each batch, DM verification results to `integrator`         |
-| 6    | Leader     | Wait for integrator to produce final YAML                          |
-| 7    | Integrator | Synthesize cross-domain root causes, produce final YAML            |
-| 8    | Leader     | SendMessage `shutdown_request` to all teammates                    |
-
-### DM Handoff Contracts
-
-| Handoff                 | Schema Source                             | Key Fields                            |
-| ----------------------- | ----------------------------------------- | ------------------------------------- |
-| Reviewer → Challenger   | `agents/teams/compound-reviewer-*.md`     | `domain`, `findings[]`, `summary`     |
-| Reviewer → Verifier     | (same as above)                           | (same as above)                       |
-| Challenger → Integrator | `agents/critics/devils-advocate-audit.md` | `challenges[]`, `summary`             |
-| Verifier → Integrator   | `agents/critics/evidence-verifier.md`     | `verifications[]`, `summary`          |
-| Integrator → Leader     | `agents/teams/progressive-integrator.md`  | Full snapshot YAML (excluding `meta`) |
+| Handoff             | Method            |
+| ------------------- | ----------------- |
+| Reviewer → Leader   | Task completion   |
+| Leader → Challenger | Task spawn prompt |
+| Leader → Verifier   | Task spawn prompt |
+| Challenger → Leader | Task completion   |
+| Verifier → Leader   | Task completion   |
+| Leader → Integrator | Task spawn prompt |
+| Integrator → Leader | Task completion   |
 
 ### Error Handling
 
-| Error                 | Recovery                                                         | Degraded Output                             |
-| --------------------- | ---------------------------------------------------------------- | ------------------------------------------- |
-| No files to audit     | Return "No files to audit" message, skip team spawn              | No report generated                         |
-| Team creation fails   | Log error, report partial results                                | Report with available findings only         |
-| Teammate spawn fails  | Continue with remaining teammates                                | Missing domain(s) noted in pipeline_health  |
-| Reviewer timeout      | 120s; Leader sends "proceed with partial results" to integrator  | Integrator works with received domains only |
-| Challenger timeout    | 120s; Leader notifies integrator to proceed with verifier only   | Rule 5 (verifier-only mode) applied         |
-| Verifier timeout      | 120s; Leader notifies integrator to proceed with challenger only | Original challenger verdicts used as final  |
-| Teammate unresponsive | shutdown_request → proceed with available results                | Missing domain(s) noted in pipeline_health  |
-| DM delivery fails     | Retry once, then leader relays YAML via Task output              | Same schema, delivered through Task output  |
-| All teammates fail    | Log error, report partial results                                | Empty report with error note                |
+| Error              | Recovery                                                 |
+| ------------------ | -------------------------------------------------------- |
+| No files to audit  | Return "No files to audit"                               |
+| Reviewer timeout   | 300s; proceed with completed reviewers                   |
+| Malformed YAML     | Skip reviewer, log warning, proceed with valid reviewers |
+| Dependency timeout | Skip dependent reviewer (e.g., root-cause if CQ failed)  |
+| Max parallel >10   | Batch in groups of 10 with sequential waits              |
+| Challenger timeout | 120s; proceed with verifier only                         |
+| Verifier timeout   | 120s; proceed with challenger only                       |
+| Integrator timeout | 120s; Leader integrates manually                         |
 
 ## Pre-flight: Static Analysis
 
@@ -194,12 +198,12 @@ Example output: `audit-2026-01-23-031812.yaml`
 
 ## Verification
 
-| Check                        | Small | Medium | Large |
-| ---------------------------- | ----- | ------ | ----- |
-| Team spawned?                | No    | Yes    | Yes   |
-| Reviewer findings collected? | Yes   | Yes    | Yes   |
-| Challenger validated?        | —     | —      | Yes   |
-| Verifier verified?           | —     | —      | Yes   |
-| Integrator produced YAML?    | —     | Yes    | Yes   |
-| Snapshot saved?              | Yes   | Yes    | Yes   |
-| Delta displayed?             | Yes   | Yes    | Yes   |
+| Check                     | Small | Medium | Large |
+| ------------------------- | ----- | ------ | ----- |
+| Tier logged?              | Yes   | Yes    | Yes   |
+| Reviewers completed?      | —     | Yes    | Yes   |
+| Challenger validated?     | —     | —      | Yes   |
+| Verifier verified?        | —     | —      | Yes   |
+| Integrator produced YAML? | —     | —      | Yes   |
+| Snapshot saved?           | Yes   | Yes    | Yes   |
+| Delta displayed?          | Yes   | Yes    | Yes   |

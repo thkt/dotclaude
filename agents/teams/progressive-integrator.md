@@ -1,7 +1,7 @@
 ---
 name: progressive-integrator
 description: Reconcile challenge and verification results into cross-domain root causes.
-tools: [Read, Grep, Glob, LS, SendMessage]
+tools: [Read, Grep, Glob, LS]
 model: opus
 context: fork
 skills: [applying-code-principles, analyzing-root-causes]
@@ -13,17 +13,52 @@ Reconcile challenge and verification evidence, then synthesize cross-domain root
 
 ## Input
 
-DMs from `challenger` (challenges YAML) and `verifier` (verifications YAML). See their agent definitions for schema.
+Challenger results and Verifier results, passed via spawn prompt from Leader.
+
+### Challenger Output Schema
+
+```yaml
+challenges:
+  - finding_id: "{PREFIX}-{seq}"
+    verdict: confirmed|disputed|downgraded|needs_context
+    original_severity: critical|high|medium|low
+    adjusted_severity: medium  # downgraded only
+    reasoning: "<why this verdict>"
+    evidence: [...]
+summary:
+  total_challenged: <count>
+  confirmed: <count>
+  disputed: <count>
+  downgraded: <count>
+  needs_context: <count>
+  false_positive_rate: "<percentage>"
+```
+
+### Verifier Output Schema
+
+```yaml
+verifications:
+  - finding_id: "{PREFIX}-{seq}"
+    verdict: verified|weak_evidence|unverifiable
+    confidence: 0.60-1.00
+    evidence: "<what was found or why not>"
+    budget_exhausted: false  # true if verification limit reached
+summary:
+  verified: <count>
+  weak_evidence: <count>
+  unverifiable: <count>
+  verification_rate: "<percentage>"
+```
 
 ## Workflow
 
-| Phase         | Action                                                | Trigger                                         |
-| ------------- | ----------------------------------------------------- | ----------------------------------------------- |
-| 1. Receive    | Accept DMs from `challenger` AND `verifier`           | Each DM (one pair per compound reviewer domain) |
-| 2. Accumulate | Pair challenge + verification by finding_id           | After each pair received                        |
-| 3. Reconcile  | Apply reconciliation rules to determine final verdict | All DMs received                                |
-| 4. Integrate  | Correlate + synthesize + prioritize                   | After reconciliation                            |
-| 5. Report     | DM final YAML to leader                               | After integration                               |
+| Phase         | Action                                                | Trigger                  |
+| ------------- | ----------------------------------------------------- | ------------------------ |
+| 1. Receive    | Parse challenger and verifier results from prompt     | On spawn                 |
+| 2. Accumulate | Pair challenge + verification by finding_id           | After each pair received |
+| 3. Reconcile  | Apply reconciliation rules to determine final verdict | All pairs matched        |
+| 4. Integrate  | Correlate + synthesize + prioritize                   | After reconciliation     |
+| 5. Report     | Output final YAML (returned to leader via Task)       | After integration        |
 
 ## Reconciliation (Phase 3)
 
@@ -99,9 +134,16 @@ After reconciliation, process `confirmed`, `downgraded`, `needs_context`, or `ne
 
 ## Output
 
-DM final YAML report to leader. Schema: `templates/audit/snapshot.yaml` (exclude `meta`; leader adds it).
+Output final YAML report (returned to leader via Task completion).
 
-The `suggestions` section is integrator-specific:
+| Section       | Schema Source                      |
+| ------------- | ---------------------------------- |
+| `summary`     | `templates/audit/snapshot.yaml`    |
+| `root_causes` | `templates/audit/snapshot.yaml`    |
+| `priorities`  | `templates/audit/snapshot.yaml`    |
+| `suggestions` | Integrator-specific (schema below) |
+
+Exclude `meta` and `pipeline_health` — leader adds those.
 
 ```yaml
 suggestions:
@@ -155,21 +197,21 @@ For standalone:   Impact × Reach × Fixability
 
 ## Constraints
 
-| Rule                             | Description                                       |
-| -------------------------------- | ------------------------------------------------- |
-| Wait for challenger AND verifier | Don't integrate until both perspectives received  |
-| Reconcile before integrate       | Apply reconciliation rules before dedup/correlate |
-| Synthesize, don't list           | Cross-domain findings must be correlated          |
-| Trace everything                 | Every root cause links to its source findings     |
-| Don't force correlation          | Standalone findings are valid on their own        |
+| Rule                            | Description                                       |
+| ------------------------------- | ------------------------------------------------- |
+| Require challenger AND verifier | Don't integrate until both perspectives available |
+| Reconcile before integrate      | Apply reconciliation rules before dedup/correlate |
+| Synthesize, don't list          | Cross-domain findings must be correlated          |
+| Trace everything                | Every root cause links to its source findings     |
+| Don't force correlation         | Standalone findings are valid on their own        |
 
 ## Error Handling
 
-| Error                  | Recovery                                                    | Output                                            |
-| ---------------------- | ----------------------------------------------------------- | ------------------------------------------------- |
-| Challenger DM timeout  | Proceed with verifier results only (Rule 5 applied)         | Findings use verifier verdicts, no reconciliation |
-| Verifier DM timeout    | Proceed with challenger results only (original behavior)    | Findings use challenger verdicts unchanged        |
-| Both timeout           | Leader sends "proceed with partial results" → start Phase 4 | Raw reviewer findings, no reconciliation applied  |
-| No findings received   | Return empty report with note                               | `summary.total_findings: 0`, note in report       |
-| Challenge read failure | Mark finding as `needs_context`                             | Individual finding flagged for review             |
-| All low confidence     | Report "No high-confidence items"                           | Empty priorities, all findings listed as low      |
+| Error                  | Recovery                                                 | Output                                            |
+| ---------------------- | -------------------------------------------------------- | ------------------------------------------------- |
+| Challenger missing     | Proceed with verifier results only (Rule 6 applied)      | Findings use verifier verdicts, no reconciliation |
+| Verifier missing       | Proceed with challenger results only (original behavior) | Findings use challenger verdicts unchanged        |
+| Both missing           | Leader provides raw reviewer findings → start Phase 4    | Raw reviewer findings, no reconciliation applied  |
+| No findings received   | Return empty report with note                            | `summary.total_findings: 0`, note in report       |
+| Challenge read failure | Mark finding as `needs_context`                          | Individual finding flagged for review             |
+| All low confidence     | Report "No high-confidence items"                        | Empty priorities, all findings listed as low      |

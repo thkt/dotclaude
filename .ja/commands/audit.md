@@ -21,110 +21,134 @@ argument-hint: "[対象ファイルまたはスコープ]"
 | ---------- | ------------------------------------------ |
 | フォーカス | security / performance / readability / all |
 
+## スコープ Tier
+
+| Tier   | ファイル数 | アーキテクチャ                                                           |
+| ------ | ---------- | ------------------------------------------------------------------------ |
+| Small  | 1-3        | Leader が直接レビュー（エージェントなし）                                |
+| Medium | 4-15       | 3 汎用レビュアー + Leader が統合                                         |
+| Large  | 16+        | Sub-reviewer（ファイルルーティング）+ challenger + verifier + integrator |
+
+Glob 対象 → ファイル数カウント → Tier 選択 → ユーザーに確認。
+
 ## 実行
+
+以下の Tier 別ワークフローを選択。全 Tier で Pre-flight（下記参照）を先に実行。
+
+**制約: ユーザーに結果を表示する前に、必ずスナップショットを保存すること。**
+
+### Small Tier（1-3 ファイル）
+
+Leader が全対象ファイルを読み、全ドメインを直接レビュー。
+出力: 発見事項 YAML → スナップショット保存 → 差分表示。
+
+エージェント生成なし。
+
+### Medium Tier（4-15 ファイル）
+
+| Step | アクション                                           |
+| ---- | ---------------------------------------------------- |
+| 1    | Pre-flight 静的解析                                  |
+| 2    | Task（バックグラウンド）で 3 汎用レビュアーを生成    |
+| 3    | 各レビュアーが担当ドメインで全対象ファイルをレビュー |
+| 4    | Leader が結果を収集、統合（重複排除、根本原因）      |
+| 5    | スナップショット保存                                 |
+| 6    | 差分表示 + レポート                                  |
+
+Medium で challenger/verifier を省略する理由: 4-15 ファイルでは全レビュアーが同じファイルを読むため、相互検証のコストに見合う効果が得られない。Leader が直接統合を行う。Large tier（16+）ではファイルルーティングにより各レビュアーがサブセットのみを見るため、独立した challenge/verification が不可欠。
+
+#### レビュアー割当
+
+| レビュアー | subagent_type   | ドメイン                                           |
+| ---------- | --------------- | -------------------------------------------------- |
+| foundation | general-purpose | code-quality, progressive-enhancement, root-cause  |
+| safety     | general-purpose | security, silent-failure, type-safety, type-design |
+| quality    | general-purpose | design-pattern, testability, documentation         |
+
+#### 生成プロンプトテンプレート
+
+各レビュアーのプロンプトに含める:
+
+- 対象ファイル一覧（絶対パス）
+- 担当ドメインと「何を見るか」のガイダンス
+- 発見事項スキーマ（ドメイン別 ID プレフィックス）
+- 出力形式（YAML）
+- 「全ファイルを Read すること。スキップ不可。」
+
+### Large Tier（16+ ファイル）
 
 | Step | アクション                                                      |
 | ---- | --------------------------------------------------------------- |
-| 1    | プロジェクトの静的解析ツールを実行（下記 Pre-flight 参照）      |
-| 2    | レビューチームを生成（下記 Team Workflow 参照）                 |
-| 3    | Reviewers がエージェント実行、Council 共有ラウンド、検証者へ DM |
-| 4a   | Challenger が発見事項を検証、`integrator` に DM                 |
-| 4b   | Verifier が発見事項を検証、`integrator` に DM                   |
-| 5    | Integrator が根本原因を統合 → 最終 YAML                         |
-| 6    | スナップショット保存（下記の命名規則参照）                      |
-| 7    | 前回スナップショットと比較、差分を表示                          |
-| 8    | テンプレートを使用してレポート出力                              |
+| 1    | Pre-flight 静的解析                                             |
+| 2    | ファイルルーティング: 対象ファイルを分類 → 関連レビュアーに割当 |
+| 3    | Task（バックグラウンド、最大 10 並列）で Sub-reviewer を生成    |
+| 4    | Challenger + Verifier を生成（レビュアー完了待ち）              |
+| 5    | Integrator を生成（Challenger + Verifier 完了待ち）             |
+| 6    | Leader が Integrator から最終 YAML を受信                       |
+| 7    | スナップショット保存                                            |
+| 8    | 差分表示 + レポート                                             |
 
-## Team Workflow
+#### ファイルルーティング
 
-3つの Compound Reviewer、1つの Challenger、1つの Verifier、1つの Integrator からなる協調チームを生成。
+Leader が対象ファイルをパスで分類し、関連レビュアーのみに割当:
 
-### チーム構成
+| ファイルパターン                | レビュアー                                           |
+| ------------------------------- | ---------------------------------------------------- |
+| `*.sh`                          | security, silent-failure, code-quality               |
+| `*.ts, *.tsx, *.js`             | security, silent-failure, type-safety, code-quality, |
+|                                 | design-pattern, testability, performance             |
+| `*.md`（エージェント定義）      | design-pattern, testability, document                |
+| `*.md`（コマンド/ドキュメント） | document, testability                                |
+| `*.yaml, *.json`                | type-design, document                                |
+| `*.css, *.html`                 | accessibility, progressive-enhancer, performance     |
+| `test.*`, `*.test.*`            | test-coverage, testability                           |
+| その他                          | code-quality, document                               |
 
-```text
-/audit command (LEADER)
-├── reviewer-foundation  (compound-reviewer-foundation)
-├── reviewer-safety      (compound-reviewer-safety)
-├── reviewer-quality     (compound-reviewer-quality)
-├── challenger           (devils-advocate-audit)
-├── verifier             (evidence-verifier)
-└── integrator           (progressive-integrator)
-```
+パスによる分類: `agents/**/*.md` → エージェント定義、`commands/**/*.md` または `docs/**/*.md` → コマンド/ドキュメント、その他 `*.md` → コマンド/ドキュメント（デフォルト）。
 
-### Council Protocol: Reviewer Council
+#### Sub-reviewer 生成
 
-Compound Reviewer が Challenger/Verifier に報告する前に、クロスドメインの発見事項をピア間で共有。
+各 Sub-reviewer は Task で直接生成:
 
-#### ドメイン優先度（競合解決）
+- subagent_type: レビュアー名（例: `security-reviewer`）
+- プロンプト: 割当ファイル一覧 + フォーカス + 発見事項スキーマ
+- team_name なし（スタンドアロン バックグラウンドエージェント）
 
-発見事項が重複・競合する場合、優先度の高いドメインが優先:
+#### 順序依存関係
 
-| 優先度 | ドメイン   | 理由                        |
-| ------ | ---------- | --------------------------- |
-| 1      | Safety     | セキュリティ脆弱性 = 致命的 |
-| 2      | Foundation | コード品質がすべての基盤    |
-| 3      | Quality    | デザインパターン = 理想的   |
+| レビュアー | 依存先                | 理由                    |
+| ---------- | --------------------- | ----------------------- |
+| root-cause | code-quality          | CQ 発見事項が入力に必要 |
+| challenger | 全レビュアー          | 全発見事項が必要        |
+| verifier   | 全レビュアー          | 全発見事項が必要        |
+| integrator | challenger + verifier | 両方の視点が必要        |
 
-#### コミュニケーション優先度（何を共有するか）
+#### ハンドオフ（スタンドアロン）
 
-| 優先度 | トリガー                             | アクション                        |
-| ------ | ------------------------------------ | --------------------------------- |
-| P1     | 特定の場所で Critical/High           | file:line + サマリーを両ピアに DM |
-| P2     | 同じ課題が 3+ ファイルに存在         | パターン説明を両ピアに DM         |
-| Skip   | ドメイン内のみの Low/Medium 発見事項 | 共有しない — 自身の発見事項のみ   |
+エージェントはスタンドアロン（チームではない）のため、Leader が Task output で結果収集:
 
-#### 共有フォーマット
-
-```text
-[COUNCIL] {domain} findings for peer review:
-
-P1 Hotspots:
-- {file}:{line} — {summary} ({severity})
-
-P2 Patterns:
-- {description} ({count} instances in {scope})
-```
-
-### Spawn Context
-
-Teammate はリーダーの会話履歴を継承しない。各生成プロンプトに含める:
-
-| コンテキスト     | ソース                                |
-| ---------------- | ------------------------------------- |
-| 対象ファイル一覧 | git diff / $1 scope                   |
-| 監査フォーカス   | security / performance / all          |
-| Pre-flight 結果  | lint/typecheck 出力（非ゼロの場合）   |
-| Council ピア     | 他の Compound Reviewer の Teammate 名 |
-
-### ワークフロー
-
-| Step | アクター   | アクション                                                              |
-| ---- | ---------- | ----------------------------------------------------------------------- |
-| 1    | Leader     | `TeamCreate("audit-{timestamp}")`                                       |
-| 2    | Leader     | TaskCreate x 6（3 Reviewer + Challenger + Verifier + Integrator）       |
-| 3    | Leader     | Task で `team_name` 指定して 6 つの Teammate を生成、spawn context 付き |
-| 4    | Reviewers  | ドメインエージェント実行、発見事項を正規化                              |
-| 4b   | Reviewers  | Council 共有ラウンド（上記 Council Protocol 参照）                      |
-| 4c   | Reviewers  | エンリッチ済み発見事項を `challenger` AND `verifier` に DM              |
-| 5    | Challenger | 各バッチを検証、チャレンジ済み結果を `integrator` に DM                 |
-| 5b   | Verifier   | 各バッチを検証、検証結果を `integrator` に DM                           |
-| 6    | Leader     | Integrator が最終 YAML を生成するのを待機                               |
-| 7    | Integrator | クロスドメイン根本原因を統合、最終 YAML レポートを作成                  |
-| 8    | Leader     | SendMessage `shutdown_request` を全 Teammate に送信                     |
+| ハンドオフ          | 方法                |
+| ------------------- | ------------------- |
+| Reviewer → Leader   | Task 完了           |
+| Leader → Challenger | Task 生成プロンプト |
+| Leader → Verifier   | Task 生成プロンプト |
+| Challenger → Leader | Task 完了           |
+| Verifier → Leader   | Task 完了           |
+| Leader → Integrator | Task 生成プロンプト |
+| Integrator → Leader | Task 完了           |
 
 ### エラーハンドリング
 
-| エラー                  | リカバリ                                                       |
-| ----------------------- | -------------------------------------------------------------- |
-| 監査対象ファイルなし    | 「監査対象ファイルなし」メッセージを返却、チーム生成をスキップ |
-| チーム作成失敗          | エラーをログ、部分的な結果を報告                               |
-| Teammate 生成失敗       | 残りの Teammate で続行                                         |
-| Reviewer タイムアウト   | 120秒; Leader が「部分結果で続行」を Integrator に送信         |
-| Challenger タイムアウト | 120秒; Leader が Integrator に Verifier のみで続行と通知       |
-| Verifier タイムアウト   | 120秒; Leader が Integrator に Challenger のみで続行と通知     |
-| Teammate 無応答         | shutdown_request → 利用可能な結果で続行                        |
-| DM 配信失敗             | 1回リトライ、その後 Leader が直接データを渡す                  |
-| 全 Teammate 失敗        | エラーをログ、部分的な結果を報告                               |
+| エラー                  | リカバリ                                                    |
+| ----------------------- | ----------------------------------------------------------- |
+| 監査対象ファイルなし    | 「監査対象ファイルなし」を返却                              |
+| Reviewer タイムアウト   | 300秒; 完了済みレビュアーで続行                             |
+| 不正 YAML               | レビュアーをスキップ、警告ログ、有効なレビュアーで続行      |
+| 依存先タイムアウト      | 依存先のレビュアーをスキップ（例: CQ 失敗→root-cause 省略） |
+| 並列数 >10              | 10 件ずつバッチ実行、順次待機                               |
+| Challenger タイムアウト | 120秒; Verifier のみで続行                                  |
+| Verifier タイムアウト   | 120秒; Challenger のみで続行                                |
+| Integrator タイムアウト | 120秒; Leader が手動で統合                                  |
 
 ## Pre-flight: 静的解析
 
@@ -174,12 +198,12 @@ SNAPSHOT="$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).yaml
 
 ## 検証
 
-| チェック                            | 必須 |
-| ----------------------------------- | ---- |
-| 6つの Teammate でチーム生成した？   | Yes  |
-| 全 Reviewer の発見事項を収集した？  | Yes  |
-| Challenger が発見事項を検証した？   | Yes  |
-| Verifier が検証 YAML を作成した？   | Yes  |
-| Integrator が最終 YAML を作成した？ | Yes  |
-| スナップショットを保存した？        | Yes  |
-| 差分比較を表示した？                | Yes  |
+| チェック                  | Small | Medium | Large |
+| ------------------------- | ----- | ------ | ----- |
+| Tier ログ？               | Yes   | Yes    | Yes   |
+| レビュアー完了？          | —     | Yes    | Yes   |
+| Challenger 検証？         | —     | —      | Yes   |
+| Verifier 検証？           | —     | —      | Yes   |
+| Integrator が YAML 作成？ | —     | —      | Yes   |
+| スナップショット保存？    | Yes   | Yes    | Yes   |
+| 差分表示？                | Yes   | Yes    | Yes   |
