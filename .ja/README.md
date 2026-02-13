@@ -35,9 +35,8 @@
 │   ├── explorers/        # コードベース探索エージェント
 │   ├── generators/       # コード/テスト/Git生成
 │   ├── resolvers/        # ビルドエラー解決
-│   ├── reviewers/        # コードレビューエージェント（14レビューア）
-│   ├── teams/            # 複合レビューア、統合 & シンセサイザー
-│   └── thinkers/         # 設計観点エージェント（pragmatist, architect, advocate）
+│   ├── reviewers/        # コードレビューエージェント（15レビューア）
+│   └── teams/            # 統合 & 実装
 └── .ja/                   # 日本語翻訳
 ```
 

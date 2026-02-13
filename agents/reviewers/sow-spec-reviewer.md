@@ -39,12 +39,7 @@ context: fork
 
 ## Scoring (25 points each)
 
-| Category      | Focus                        |
-| ------------- | ---------------------------- |
-| Accuracy      | ✓/→/? markers, evidence      |
-| Completeness  | Required sections present    |
-| Relevance     | Goals match solutions, YAGNI |
-| Actionability | Specific steps, feasibility  |
+Accuracy, Completeness, Relevance, Actionability (focus areas defined in Analysis Phases 3-6).
 
 ## Required Sections
 
