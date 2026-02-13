@@ -5,6 +5,11 @@ set +e
 # Failure mode: fail-open (partial display is acceptable)
 
 sep() { printf ' \033[90m│\033[0m '; }
+color_for_pct() {
+    if [ "$1" -lt 50 ]; then printf '\033[32m'
+    elif [ "$1" -lt 80 ]; then printf '\033[33m'
+    else printf '\033[31m'; fi
+}
 
 parse_stdin() {
     EXCEEDS_200K="false"
@@ -165,29 +170,34 @@ fetch_usage() {
             creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) || return
             token=$(printf '%s' "$creds" | jq -r '.claudeAiOauth.accessToken // empty') || return
             [ -n "$token" ] || return
-            response=$(curl -s --max-time 3 \
-                -H "Authorization: Bearer $token" \
+            response=$(printf 'header "Authorization: Bearer %s"\n' "$token" | \
+                curl -s --max-time 3 -K - \
                 -H "anthropic-beta: oauth-2025-04-20" \
-                https://api.anthropic.com/api/oauth/usage) || return
-            usage=$(printf '%s' "$response" | jq -r '[.five_hour.utilization, .seven_day.utilization] | map(. // empty) | @tsv')
-            [ -n "$usage" ] && printf '%s\n' "$usage" > "$cache_file"
+                https://api.anthropic.com/api/oauth/usage)
+            if [ $? -eq 0 ]; then
+                usage=$(printf '%s' "$response" | jq -r '[.five_hour.utilization, .seven_day.utilization] | map(. // empty) | @tsv')
+                if [ -n "$usage" ]; then
+                    printf '%s\n' "$usage" > "$cache_file"
+                else
+                    printf 'ERR\tERR\n' > "$cache_file"
+                fi
+            else
+                printf 'ERR\tERR\n' > "$cache_file"
+            fi
         } &!
     fi
 }
 
 render_usage() {
     [ -n "$USAGE_5H" ] || return
+    if [ "$USAGE_5H" = "ERR" ]; then
+        sep; printf '\033[31m5h:? 7d:?\033[0m'; return
+    fi
     local p5=${USAGE_5H%.*} p7=${USAGE_7D%.*}
     [[ "$p5" =~ ^[0-9]+$ ]] || return
     [[ "$p7" =~ ^[0-9]+$ ]] || p7=0
 
-    local c5 c7
-    if [ "$p5" -lt 50 ]; then c5='\033[32m'
-    elif [ "$p5" -lt 80 ]; then c5='\033[33m'
-    else c5='\033[31m'; fi
-    if [ "$p7" -lt 50 ]; then c7='\033[32m'
-    elif [ "$p7" -lt 80 ]; then c7='\033[33m'
-    else c7='\033[31m'; fi
+    local c5=$(color_for_pct "$p5") c7=$(color_for_pct "$p7")
 
     sep
     printf "${c5}5h:%d%%\033[0m ${c7}7d:%d%%\033[0m" "$p5" "$p7"

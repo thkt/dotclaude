@@ -19,7 +19,8 @@ fi
 
 TOOL_NAME=$(jq -r '.tool_name // "unknown"' <<< "$INPUT")
 FILE_PATH=$(jq -r '.tool_input.file_path // .tool_input.path // ""' <<< "$INPUT")
-FILE_PATH="${FILE_PATH:a}"
+FILE_PATH="${FILE_PATH/#~/$HOME}"
+FILE_PATH="${FILE_PATH:A}"
 if [[ "$FILE_PATH" == *".."* ]]; then
   echo '{"decision": "deny", "reason": "Path traversal detected"}'
   exit 0
@@ -52,15 +53,20 @@ if [[ "$FILE_PATH" == "$HOME/.claude/hooks/"* ]]; then
   exit 0
 fi
 
+# .claude/ system prompt directories → ask (loaded into system prompt)
+if [[ "$FILE_PATH" == "$HOME/.claude/memory/"* ]] ||
+   [[ "$FILE_PATH" == "$HOME/.claude/projects/"* ]]; then
+  echo '{"decision": "ask", "reason": "System prompt file — review before write"}'
+  exit 0
+fi
+
 # .claude/ safe data directories → approve
 if [[ "$FILE_PATH" == "$HOME/.claude/workspace/"* ]] ||
    [[ "$FILE_PATH" == "$HOME/.claude/logs/"* ]] ||
    [[ "$FILE_PATH" == "$HOME/.claude/cache/"* ]] ||
    [[ "$FILE_PATH" == "$HOME/.claude/todos/"* ]] ||
    [[ "$FILE_PATH" == "$HOME/.claude/tasks/"* ]] ||
-   [[ "$FILE_PATH" == "$HOME/.claude/teams/"* ]] ||
-   [[ "$FILE_PATH" == "$HOME/.claude/memory/"* ]] ||
-   [[ "$FILE_PATH" == "$HOME/.claude/projects/"* ]]; then
+   [[ "$FILE_PATH" == "$HOME/.claude/teams/"* ]]; then
   echo '{"decision": "approve", "reason": "Claude data directory"}'
   exit 0
 fi

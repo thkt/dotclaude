@@ -20,10 +20,11 @@ FILE_DIR=$(dirname "$EXPANDED_PATH")
 [ -x "${HOME}/.claude/scripts/find-config-root.sh" ] || { echo "⚠ find-config-root.sh not found, skipping tsc" >&2; exit 0; }
 PROJECT_ROOT=$("${HOME}/.claude/scripts/find-config-root.sh" "$FILE_DIR" "tsconfig.json" 2>/dev/null) || exit 0
 
-command -v npx &> /dev/null || exit 0
+TSC_BIN="$PROJECT_ROOT/node_modules/.bin/tsc"
+[ -x "$TSC_BIN" ] || exit 0
 
 cd "$PROJECT_ROOT"
-TSC_OUTPUT=$(npx tsc --noEmit 2>&1)
+TSC_OUTPUT=$("$TSC_BIN" --noEmit 2>&1)
 TSC_EXIT=$?
 ERROR_COUNT=$(echo "$TSC_OUTPUT" | grep -c "error TS" || echo "0")
 

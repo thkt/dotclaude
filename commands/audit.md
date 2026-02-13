@@ -1,7 +1,7 @@
 ---
 description: Orchestrate specialized review agents for code quality assessment. Use when user mentions レビューして, コードレビュー, 品質チェック, code review, quality check.
 aliases: [review]
-allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion, TeamCreate, SendMessage
+allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(ls:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 argument-hint: "[target files or scope]"
 ---

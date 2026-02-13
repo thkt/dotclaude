@@ -36,7 +36,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── generators/       # Code/test/git generators
 │   ├── resolvers/        # Build error resolvers
 │   ├── reviewers/        # Code review agents (14 reviewers)
-│   ├── teams/            # Compound reviewers, integrators & synthesizers
+│   ├── teams/            # Integrators & implementers
 │   └── thinkers/         # Design perspective agents (pragmatist, architect, advocate)
 └── .ja/                   # Japanese translations
 ```

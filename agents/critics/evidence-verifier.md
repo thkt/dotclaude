@@ -1,7 +1,7 @@
 ---
 name: evidence-verifier
 description: Verify audit findings with positive evidence.
-tools: [Read, Grep, Glob, LS, SendMessage]
+tools: [Read, Grep, Glob, LS]
 model: sonnet
 context: fork
 ---
@@ -12,7 +12,7 @@ Collect positive evidence that findings ARE real problems. Every verdict backed 
 
 ## Input
 
-DM from compound reviewers with findings including `verification_hint`.
+Findings from Leader via Task spawn prompt, including `verification_hint` fields.
 
 ## Verification Process
 
@@ -52,7 +52,7 @@ Maximum 5 tool calls per finding. If inconclusive → `weak_evidence` with `budg
 
 ## Output
 
-DM verified findings to `integrator`:
+Return structured YAML via Task completion:
 
 ```yaml
 verifications:
@@ -76,12 +76,11 @@ summary:
 
 ## Error Handling
 
-| Error            | Action                                                       |
-| ---------------- | ------------------------------------------------------------ |
-| File not found   | Mark `unverifiable`, note "File may have been deleted"       |
-| No input         | Return empty verifications with note                         |
-| Tool limit hit   | Mark `weak_evidence` with partial results                    |
-| SendMessage fail | Retry once, then include findings in task completion message |
+| Error          | Action                                                 |
+| -------------- | ------------------------------------------------------ |
+| File not found | Mark `unverifiable`, note "File may have been deleted" |
+| No input       | Return empty verifications with note                   |
+| Tool limit hit | Mark `weak_evidence` with partial results              |
 
 ## Constraints
 

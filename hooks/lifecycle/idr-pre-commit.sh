@@ -17,11 +17,7 @@ TODAY="${TODAY:-$(date +%Y-%m-%d)}"
 IDR_DIR="$HOME/.claude/workspace/planning/${TODAY}"
 CURRENT_SOW="$HOME/.claude/workspace/.current-sow"
 
-resolve_path() {
-  realpath "$1" 2>/dev/null || \
-  python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$1" 2>/dev/null || \
-  { echo "ERROR: Cannot resolve path: $1" >&2; return 1; }
-}
+resolve_path() { echo "${1:A}"; }
 
 if [ -f "$CURRENT_SOW" ]; then
   SOW_PATH=$(cat "$CURRENT_SOW")
@@ -62,6 +58,9 @@ if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
     | .message.content
   ' "$TRANSCRIPT" 2>/dev/null \
     | head -5) || true
+  if [[ -z "$INTENT" ]] && [[ -s "$TRANSCRIPT" ]]; then
+    echo "WARNING: transcript non-empty but no user messages extracted" >&2
+  fi
 fi
 
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || printf '%s' "$PWD")

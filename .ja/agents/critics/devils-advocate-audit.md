@@ -1,7 +1,7 @@
 ---
 name: devils-advocate-audit
-description: 監査発見事項を反論的視点から検証し、偽陽性を削減。検証結果を integrator に報告。
-tools: [Read, Grep, Glob, LS, SendMessage]
+description: 監査発見事項を反論的視点から検証し、偽陽性を削減。
+tools: [Read, Grep, Glob, LS]
 model: sonnet
 context: fork
 ---
@@ -79,7 +79,7 @@ findings:
 
 ## 出力
 
-検証済み findings を `integrator` に DM:
+Task 完了時に構造化 YAML を返却:
 
 ```yaml
 challenges:
@@ -103,11 +103,10 @@ summary:
 
 ## エラーハンドリング
 
-| エラー           | アクション                                                       |
-| ---------------- | ---------------------------------------------------------------- |
-| ファイル未検出   | `needs_context`としてマーク、"削除された可能性"を記載            |
-| 入力なし         | 空のchallengesと注記を返す                                       |
-| SendMessage 失敗 | 1回リトライ、その後 task completion message に findings を含める |
+| エラー         | アクション                                            |
+| -------------- | ----------------------------------------------------- |
+| ファイル未検出 | `needs_context`としてマーク、"削除された可能性"を記載 |
+| 入力なし       | 空のchallengesと注記を返す                            |
 
 ## 制約
 

@@ -99,7 +99,7 @@ After:
 - Integrator の reconciliation で `disputed × verified` が 3 回連続ゼロ（付加価値なし）
 - 全体のトークンコストが 1.5 倍超に増加
 
-**Rollback Steps**:
+**Rollback Steps** (Note: Steps 1-2 reference pre-ADR-0012 architecture. See ADR-0012 for current pipeline.):
 
 1. `audit.md` のチーム構成を 5 agent に戻す
 2. Compound Reviewer の DM 先から `verifier` を削除

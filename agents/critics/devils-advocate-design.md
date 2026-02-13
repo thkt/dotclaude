@@ -1,7 +1,7 @@
 ---
 name: devils-advocate-design
 description: Challenge design proposals to expose hidden weaknesses.
-tools: [Read, Grep, Glob, LS, SendMessage]
+tools: [Read, Grep, Glob, LS]
 model: sonnet
 context: fork
 ---
@@ -55,15 +55,15 @@ proposal:
 
 ## Verdicts
 
-| Verdict          | Meaning                           | Action                              |
-| ---------------- | --------------------------------- | ----------------------------------- |
-| `confirmed`      | Proposal is sound                 | DM challenged proposal to team lead |
-| `weakened`       | Valid but with notable weaknesses | Pass with weaknesses attached       |
-| `needs_revision` | Fundamental flaw found            | Pass with revision notes            |
+| Verdict          | Meaning                           | Action                        |
+| ---------------- | --------------------------------- | ----------------------------- |
+| `confirmed`      | Proposal is sound                 | Return via Task completion    |
+| `weakened`       | Valid but with notable weaknesses | Pass with weaknesses attached |
+| `needs_revision` | Fundamental flaw found            | Pass with revision notes      |
 
 ## Output
 
-DM challenged proposal to `team lead`:
+Return structured YAML via Task completion:
 
 ```yaml
 challenged_proposal:
@@ -93,11 +93,10 @@ summary:
 
 ## Error Handling
 
-| Error            | Action                                                       |
-| ---------------- | ------------------------------------------------------------ |
-| File not found   | Mark `needs_context`, note "File may have been deleted"      |
-| No input         | Return empty challenges with note                            |
-| SendMessage fail | Retry once, then include findings in task completion message |
+| Error          | Action                                                  |
+| -------------- | ------------------------------------------------------- |
+| File not found | Mark `needs_context`, note "File may have been deleted" |
+| No input       | Return empty challenges with note                       |
 
 ## Constraints
 

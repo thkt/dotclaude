@@ -33,7 +33,6 @@ Assign only when all 3 conditions are met.
 
 | Category                             | Reason                                                                  |
 | ------------------------------------ | ----------------------------------------------------------------------- |
-| compound reviewers                   | Orchestrators only, no analysis performed                               |
 | devils-advocate                      | Receives other reviewers' findings, own memory causes contradictions    |
 | performance / accessibility reviewer | Applies universal standards (WCAG, Web Vitals), low project specificity |
 | generators (except commit)           | Low execution frequency, templates suffice                              |

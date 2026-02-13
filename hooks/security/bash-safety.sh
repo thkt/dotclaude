@@ -36,7 +36,10 @@ NORMALIZED=${NORMALIZED//,/ }
 NORMALIZED=${NORMALIZED//\$\{!/\$\{}
 
 # Enable PCRE for \b word boundary support
-setopt REMATCH_PCRE 2>/dev/null
+if ! setopt REMATCH_PCRE 2>/dev/null; then
+  echo "BLOCKED: zsh lacks PCRE support" >&2
+  exit 2
+fi
 
 DANGER_PATTERNS=(
   # File deletion (project policy: use mv ~/.Trash/ instead)

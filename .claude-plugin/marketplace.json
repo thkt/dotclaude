@@ -46,11 +46,10 @@
         "./commands/feature.md"
       ],
       "agents": [
-        "./agents/teams/compound-reviewer-foundation.md",
-        "./agents/teams/compound-reviewer-safety.md",
-        "./agents/teams/compound-reviewer-quality.md",
         "./agents/teams/progressive-integrator.md",
-        "./agents/critics/devils-advocate.md",
+        "./agents/critics/devils-advocate-audit.md",
+        "./agents/critics/devils-advocate-design.md",
+        "./agents/critics/evidence-verifier.md",
         "./agents/generators/test-generator.md",
         "./agents/enhancers/progressive-enhancer.md",
         "./agents/reviewers/subagent-reviewer.md",

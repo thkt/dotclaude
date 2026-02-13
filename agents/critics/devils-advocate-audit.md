@@ -1,7 +1,7 @@
 ---
 name: devils-advocate-audit
 description: Challenge audit findings to reduce false positives.
-tools: [Read, Grep, Glob, LS, SendMessage]
+tools: [Read, Grep, Glob, LS]
 model: sonnet
 context: fork
 ---
@@ -79,7 +79,7 @@ findings:
 
 ## Output
 
-DM challenged findings to `integrator`:
+Return structured YAML via Task completion:
 
 ```yaml
 challenges:
@@ -103,11 +103,10 @@ summary:
 
 ## Error Handling
 
-| Error            | Action                                                       |
-| ---------------- | ------------------------------------------------------------ |
-| File not found   | Mark `needs_context`, note "File may have been deleted"      |
-| No input         | Return empty challenges with note                            |
-| SendMessage fail | Retry once, then include findings in task completion message |
+| Error          | Action                                                  |
+| -------------- | ------------------------------------------------------- |
+| File not found | Mark `needs_context`, note "File may have been deleted" |
+| No input       | Return empty challenges with note                       |
 
 ## Constraints
 
