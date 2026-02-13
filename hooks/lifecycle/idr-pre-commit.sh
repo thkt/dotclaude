@@ -15,8 +15,13 @@ IDR_FRESHNESS_MINUTES=${IDR_FRESHNESS_MINUTES:-5}
 TODAY="${TODAY:-$(date +%Y-%m-%d)}"
 [[ "$TODAY" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || TODAY=$(date +%Y-%m-%d)
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || printf '%s' "$PWD")
-IDR_DIR="${REPO_ROOT}/.claude/workspace/planning/${TODAY}"
-CURRENT_SOW="${REPO_ROOT}/.claude/workspace/.current-sow"
+if [[ "${REPO_ROOT:t}" == ".claude" ]]; then
+  WORKSPACE_BASE="${REPO_ROOT}/workspace"
+else
+  WORKSPACE_BASE="${REPO_ROOT}/.claude/workspace"
+fi
+IDR_DIR="${WORKSPACE_BASE}/planning/${TODAY}"
+CURRENT_SOW="${WORKSPACE_BASE}/.current-sow"
 
 resolve_path() { echo "${1:A}"; }
 
@@ -24,7 +29,7 @@ if [ -f "$CURRENT_SOW" ]; then
   SOW_PATH=$(cat "$CURRENT_SOW")
   if [ -f "$SOW_PATH" ]; then
     real_sow=$(resolve_path "$SOW_PATH")
-    real_workspace=$(resolve_path "${REPO_ROOT}/.claude/workspace")
+    real_workspace=$(resolve_path "${WORKSPACE_BASE}")
     if [[ "$real_sow" == "$real_workspace"/* ]]; then
       IDR_DIR=$(dirname "$SOW_PATH")
     fi
