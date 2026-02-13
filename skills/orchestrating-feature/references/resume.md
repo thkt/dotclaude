@@ -2,8 +2,8 @@
 
 ## SOW Discovery
 
-1. Check `$HOME/.claude/workspace/.current-sow` for tracked SOW path
-2. If not found → Glob for `$HOME/.claude/workspace/planning/*/sow.md`
+1. Check `.claude/workspace/.current-sow` for tracked SOW path
+2. If not found → Glob for `.claude/workspace/planning/*/sow.md`
 3. If multiple SOWs → prompt user to select via AskUserQuestion
 4. Read SOW metadata to determine resume point
 

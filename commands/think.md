@@ -97,7 +97,7 @@ Purpose, Users, Scope, Priority (MoSCoW), Success criteria, Constraints, Risks.
 
 ## Output
 
-`$HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` and `spec.md`
+`.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` and `spec.md`
 
 ## Verification
 

@@ -29,4 +29,4 @@ argument-hint: "[タスク説明]"
 
 ## 出力
 
-ファイル: `$HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
+ファイル: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`

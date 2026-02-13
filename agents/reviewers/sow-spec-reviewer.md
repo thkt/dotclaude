@@ -33,8 +33,8 @@ context: fork
 ## Search Paths
 
 ```text
-$HOME/.claude/workspace/planning/**/sow.md
-$HOME/.claude/workspace/planning/**/spec.md
+.claude/workspace/planning/**/sow.md
+.claude/workspace/planning/**/spec.md
 ```
 
 ## Scoring (25 points each)

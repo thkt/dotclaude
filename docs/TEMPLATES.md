@@ -138,8 +138,8 @@ flowchart TD
 
 | Document | Location                                                     |
 | -------- | ------------------------------------------------------------ |
-| SOW/Spec | `planning/[feature]/` or `$HOME/.claude/workspace/planning/` |
-| IDR      | 同上（SOW存在時）or `planning/YYYY-MM-DD/`                   |
+| SOW/Spec | `.claude/workspace/planning/[feature]/`                      |
+| IDR      | 同上（SOW存在時）or `.claude/workspace/planning/YYYY-MM-DD/` |
 | ADR      | `adr/NNNN-title.md`                                          |
 
 ## Related

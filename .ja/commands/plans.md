@@ -19,7 +19,7 @@ argument-hint: "[機能名]"
 検索パス（プロジェクト固有を先に検索）:
 
 ```text
-$HOME/.claude/workspace/planning/**/sow.md
+.claude/workspace/planning/**/sow.md
 ```
 
 各SOWから `Status:` 行の値を抽出。

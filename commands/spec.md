@@ -33,4 +33,4 @@ If UI-related, include: Props table, variants, states, usage examples.
 
 ## Output
 
-File: `$HOME/.claude/workspace/planning/[same-dir]/spec.md`
+File: `.claude/workspace/planning/[same-dir]/spec.md`

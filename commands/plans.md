@@ -19,7 +19,7 @@ List and view planning documents (SOW/Spec).
 Search paths (project-specific first):
 
 ```text
-$HOME/.claude/workspace/planning/**/sow.md
+.claude/workspace/planning/**/sow.md
 ```
 
 For each SOW found, extract `Status:` line value.

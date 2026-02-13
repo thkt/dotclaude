@@ -97,7 +97,7 @@ argument-hint: "[タスク説明]"
 
 ## 出力
 
-`$HOME/.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` と `spec.md`
+`.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` と `spec.md`
 
 ## 検証
 
