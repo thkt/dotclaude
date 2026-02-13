@@ -35,6 +35,11 @@ memory: project
 | Glob empty    | Report 0 files found, do not infer clean |
 | Tool error    | Log error, skip file, note in summary    |
 
+## Reporting Rules
+
+- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Same pattern in multiple locations: consolidate into single finding
+
 ## Output
 
 Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):

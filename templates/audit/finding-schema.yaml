@@ -16,22 +16,27 @@ finding:
   fix: "<suggested fix>"
   confidence: 0.60-1.00
   confidence_floor: 0.60
+  # --- Confidence filtering rule ---
+  # Reviewers MUST NOT include findings with confidence < confidence_floor.
+  # If confidence cannot be assessed, default to confidence_floor (0.60).
+  # security-reviewer may define stricter thresholds in its own definition.
   verification_hint:
     check: execution_trace|call_site_check|error_propagation|hotpath_analysis|pattern_search
     question: "<what to verify>"
 
 # --- Domain-specific extensions (normalized during integration) ---
 #
-# | Reviewer               | Extra Fields              | Normalization                                          |
-# | ---------------------- | ------------------------- | ------------------------------------------------------ |
-# | root-cause-reviewer    | five_whys, root_cause     | root_cause → reasoning; five_whys → append to evidence |
-# | progressive-enhancer   | recommendations           | Append as separate items                               |
-# | code-quality-reviewer  | subcategory               | Append to category as category/subcategory             |
-# | performance-reviewer   | impact                    | Append to evidence; impact → reasoning note            |
-# | accessibility-reviewer | wcag                      | Append to evidence                                     |
-# | test-coverage-reviewer | related_code, criticality | related_code → evidence; criticality → reasoning note  |
-# | type-design-reviewer   | type_name, scores         | Append to evidence; scores → reasoning note            |
-# | security-reviewer      | entry_points (in hint)    | Already in verification_hint                           |
+# | Reviewer               | Extra Fields              | Opt | Normalization                                          |
+# | ---------------------- | ------------------------- | --- | ------------------------------------------------------ |
+# | root-cause-reviewer    | five_whys, root_cause     | req | root_cause → reasoning; five_whys → append to evidence |
+# | progressive-enhancer   | recommendations           | req | Append as separate items                               |
+# | code-quality-reviewer  | subcategory               | opt | Append to category as category/subcategory             |
+# | performance-reviewer   | impact                    | opt | Append to evidence; impact → reasoning note            |
+# | accessibility-reviewer | wcag                      | req | Append to evidence                                     |
+# | test-coverage-reviewer | related_code, criticality | opt | related_code → evidence; criticality → reasoning note  |
+# | type-design-reviewer   | type_name, scores         | opt | Append to evidence; scores → reasoning note            |
+# | security-reviewer      | entry_points (in hint)    | opt | Already in verification_hint                           |
+# | subagent-reviewer      | (none)                    | —   | No normalization needed                                |
 
 # --- ID prefix registry ---
 # | Prefix | Reviewer                |
@@ -49,3 +54,11 @@ finding:
 # | PERF   | performance-reviewer    |
 # | A11Y   | accessibility-reviewer  |
 # | DOC    | document-reviewer       |
+# | SA     | subagent-reviewer       |
+
+# --- Consolidation rule ---
+# When the same pattern appears in multiple locations:
+#   - Report as a SINGLE finding
+#   - List all locations in evidence (max 5, then "and N more")
+#   - Set severity to the highest among occurrences
+# Example: "Unused import in 7 files" → 1 finding, severity from worst case

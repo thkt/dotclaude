@@ -3,18 +3,11 @@ name: accessibility-reviewer
 description: WCAG 2.2 compliance review.
 tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
-skills:
-  [
-    a11y-specialist-skills:reviewing-a11y,
-    web-design-guidelines,
-    enhancing-progressively,
-  ]
+skills: [a11y-specialist-skills:reviewing-a11y, web-design-guidelines, enhancing-progressively]
 context: fork
 ---
 
 # Accessibility Reviewer
-
-Delegates WCAG checks to a11y-specialist-skills.
 
 ## Generated Content
 
@@ -41,7 +34,7 @@ Delegates WCAG checks to a11y-specialist-skills.
 
 Fallback: If browser unavailable, code-only analysis with lower confidence.
 
-## Computed Styles (v0.6.0+)
+## Computed Styles
 
 | Check          | Command           | Purpose                       |
 | -------------- | ----------------- | ----------------------------- |
@@ -58,6 +51,11 @@ Fallback: If browser unavailable, code-only analysis with lower confidence.
 | External skill timeout         | Continue with completed checks           |
 | Glob empty                     | Report 0 files found, do not infer clean |
 | Tool error                     | Log error, skip file, note in summary    |
+
+## Reporting Rules
+
+- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 

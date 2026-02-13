@@ -8,8 +8,6 @@ context: fork
 
 # Build Error Resolver
 
-Resolve errors with minimal changes. No architectural modifications.
-
 ## Generated Content
 
 | Section | Description                |
@@ -61,6 +59,14 @@ Stop and report if:
 - 50+ line changes needed
 - External package bug
 - Fundamental tsconfig change required
+
+## Stop Conditions
+
+| Condition              | Threshold            | Action                        |
+| ---------------------- | -------------------- | ----------------------------- |
+| Same error persists    | 3 fix attempts       | Stop, report as ESCALATED     |
+| Error count increased  | After any fix        | Revert fix, report regression |
+| Total errors unchanged | 2 consecutive cycles | Stop, report as STUCK         |
 
 ## Output
 

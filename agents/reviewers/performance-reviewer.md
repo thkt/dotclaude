@@ -3,12 +3,7 @@ name: performance-reviewer
 description: React rendering, bundle size, and runtime performance review.
 tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
-skills:
-  [
-    optimizing-performance,
-    vercel-react-best-practices,
-    applying-code-principles,
-  ]
+skills: [optimizing-performance, vercel-react-best-practices, applying-code-principles]
 context: fork
 ---
 
@@ -56,6 +51,11 @@ Fallback: If browser unavailable, code-only analysis with lower confidence.
 | No code found | Report "No code to review"               |
 | Glob empty    | Report 0 files found, do not infer clean |
 | Tool error    | Log error, skip file, note in summary    |
+
+## Reporting Rules
+
+- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 

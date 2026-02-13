@@ -54,13 +54,19 @@ context: fork
 | Glob empty      | Report 0 agents found, do not infer clean |
 | Tool error      | Log error, skip file, note in summary     |
 
+## Reporting Rules
+
+- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Same pattern in multiple locations: consolidate into single finding
+
 ## Output
 
-Return structured YAML:
+Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 
 ```yaml
 findings:
-  - agent: subagent-reviewer
+  - finding_id: "SA-{seq}"
+    agent: subagent-reviewer
     severity: high|medium|low
     category: "yaml|section|scope|pattern|output"
     location: "<file>:<line>"
@@ -68,6 +74,9 @@ findings:
     reasoning: "<why it's a problem>"
     fix: "<how to fix>"
     confidence: 0.60-1.00
+    verification_hint:
+      check: pattern_search
+      question: "<is this structural issue consistent across other agent definitions?>"
 summary:
   total_findings: <count>
   agents_reviewed: <count>

@@ -9,15 +9,13 @@ context: fork
 
 # Progressive Enhancer
 
-Review for CSS-first approach. Identify JavaScript used where CSS/HTML suffices.
-
 ## Generated Content
 
 | Section         | Description                     |
 | --------------- | ------------------------------- |
-| Findings        | JS patterns that could be CSS   |
-| Recommendations | Specific CSS alternatives       |
-| Impact          | Performance and maintainability |
+| findings        | JS patterns that could be CSS   |
+| recommendations | Specific CSS alternatives       |
+| summary         | Performance and maintainability |
 
 ## Analysis Phases
 
@@ -38,6 +36,11 @@ Review for CSS-first approach. Identify JavaScript used where CSS/HTML suffices.
 | Browser compat     | Check caniuse for CSS alt |
 | MCP unavailable    | Code-only analysis        |
 
+## Reporting Rules
+
+- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Same pattern in multiple locations: consolidate into single finding
+
 ## Output
 
 Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
@@ -52,7 +55,7 @@ findings:
     evidence: "<JS pattern found>"
     reasoning: "<why CSS is better>"
     fix: "<CSS alternative solution>"
-    confidence: 0.70-1.00
+    confidence: 0.60-1.00
     verification_hint:
       check: pattern_search|call_site_check
       question: "<is this JS pattern used in other components too?>"

@@ -44,15 +44,23 @@ memory: project
 - Memory safety in Rust/Go
 - Client-side permission checks
 - XSS in JSX/TSX (auto-escaping by default)
+- Test credentials (`test_`, `mock_`, `fake_`, `dummy_` prefixed)
+- Public/publishable API keys (e.g., Stripe `pk_test_*`, `pk_live_*`)
+- Checksums, hashes, UUIDs in non-secret context
+- Example/documentation values in comments or markdown
 
 ## Error Handling
 
-| Error            | Action                                   |
-| ---------------- | ---------------------------------------- |
-| No code found    | Report "No code to review"               |
-| Confidence < 60% | Exclude from report                      |
-| Glob empty       | Report 0 files found, do not infer clean |
-| Tool error       | Log error, skip file, note in summary    |
+| Error         | Action                                   |
+| ------------- | ---------------------------------------- |
+| No code found | Report "No code to review"               |
+| Glob empty    | Report 0 files found, do not infer clean |
+| Tool error    | Log error, skip file, note in summary    |
+
+## Reporting Rules
+
+- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
