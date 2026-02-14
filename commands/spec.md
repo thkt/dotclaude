@@ -33,4 +33,6 @@ If UI-related, include: Props table, variants, states, usage examples.
 
 ## Output
 
+Always use this exact path — Write tool creates parent directories if absent.
+
 File: `.claude/workspace/planning/[same-dir]/spec.md`

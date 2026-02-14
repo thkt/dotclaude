@@ -97,6 +97,8 @@ argument-hint: "[タスク説明]"
 
 ## 出力
 
+このパスを正確に使用すること — Write ツールが親ディレクトリを自動作成する。
+
 `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` と `spec.md`
 
 ## 検証

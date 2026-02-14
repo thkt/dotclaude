@@ -97,6 +97,8 @@ Purpose, Users, Scope, Priority (MoSCoW), Success criteria, Constraints, Risks.
 
 ## Output
 
+Always use this exact path — Write tool creates parent directories if absent.
+
 `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` and `spec.md`
 
 ## Verification

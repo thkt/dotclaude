@@ -29,4 +29,6 @@ Template: [@../templates/sow/template.md](../templates/sow/template.md)
 
 ## Output
 
+Always use this exact path — Write tool creates parent directories if absent.
+
 File: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
