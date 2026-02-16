@@ -23,17 +23,37 @@ user-invocable: false
 
 ## Quick Checks
 
-See CLAUDE.md Development Checks section (always loaded, single source of truth).
+| Question              | Principle     |
+| --------------------- | ------------- |
+| Simpler way?          | Occam's Razor |
+| <1 min to understand? | Miller's Law  |
+| Duplicating?          | DRY           |
+| Needed now?           | YAGNI         |
 
 ## Thresholds
 
-See `rules/development/CODE_THRESHOLDS.md` for canonical values.
+| Target                | Recommended | Warning | Maximum |
+| --------------------- | ----------- | ------- | ------- |
+| Function lines        | ≤30         | 31-50   | 50      |
+| File lines            | ≤400        | 401-800 | 800     |
+| Nesting depth         | ≤3          | 4       | 4       |
+| Function arguments    | ≤3          | 4-5     | 5       |
+| Cyclomatic complexity | ≤10         | 11-15   | 15      |
+| Class methods         | ≤5          | 6-7     | 9       |
+| Conditionals          | ≤3          | 4       | 5       |
 
-| Target        | Ideal | Warning | Max |
-| ------------- | ----- | ------- | --- |
-| Function args | 3     | 4-5     | 5   |
-| Class methods | 5     | 6-7     | 9   |
-| Conditionals  | 3     | 4       | 5   |
+Exceptions: auto-generated code, data definitions, test files, legacy in migration.
+
+## Conflict Resolution
+
+| Conflict                | Resolution     |
+| ----------------------- | -------------- |
+| DRY vs Readable         | Readable wins  |
+| SOLID vs Simple         | Simple wins    |
+| Perfect vs Working      | Working wins   |
+| Abstraction vs Concrete | Start concrete |
+
+When in doubt: simple > clever, concrete > abstract, working > perfect, clear > DRY.
 
 ## Rules
 

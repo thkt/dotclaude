@@ -66,12 +66,10 @@ After completion, generate IDR following this format:
 +added line
 ```
 
-> [!NOTE]
-> ### What Changed
+> [!WHAT]
 > - {what changed — bullet list}
 
-> [!TIP]
-> ### Design Rationale
+> [!RATIONALE]
 > - **{decision}**: {why this decision was made}
 
 ---
