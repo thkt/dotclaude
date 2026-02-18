@@ -67,7 +67,7 @@ Each explorer must deliver a structured DM to architect containing:
 | ----------------- | --------------------------------------------------- |
 | Files analyzed    | List of files read with key findings per file        |
 | Patterns found    | Existing patterns relevant to the feature            |
-| Constraints       | Technical limitations or dependencies discovered     |
+| Constraints       | Technical limitations or dependencies                |
 | Cross-layer notes | Discoveries shared via Council (P1/P2 items)         |
 
 Leader validates: if an explorer reports zero files analyzed, re-assign or absorb into leader's scope.

@@ -56,7 +56,3 @@ Flags: `--frontend`, `--principles`, `--storybook`
 | test-gen produces 0 tests | Verify spec exists, ask user    |
 | Ralph-loop stalls         | Stop loop, fix manually         |
 | Quality gates fail        | Fix issues before commit        |
-
-## Todo Progress Tracking
-
-Use `TaskList` + `TaskUpdate` to track RGRC phases
