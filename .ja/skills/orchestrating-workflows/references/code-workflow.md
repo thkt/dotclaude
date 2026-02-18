@@ -3,20 +3,25 @@
 ## フロー
 
 ```text
-フェーズ0: Spec → スキップテスト
+フェーズ0: SOWコンテキスト + テスト生成
 フェーズ1-N: RGRC (1テストずつ)
   Red → Green (Ralph-loop) → Refactor → Commit
 完了: 品質ゲート → IDR
 ```
 
-## フェーズ0: テスト生成
+## フェーズ0: SOWコンテキスト + テスト生成
 
-前提: `/sow` → `/spec` → `/code` パイプライン。SpecにFR-xxx（機能要件）項目が含まれていること。
+### SOW/Spec自動検出
 
-1. workspace内の`spec.md`を自動検出
-2. FR-xxx要件をパース
-3. 全テストを**スキップ状態**で生成
-4. 順序: 単純 → 複雑 (Baby Steps)
+[@../../lib/sow-resolution.md]
+
+### テスト生成
+
+前提: spec.md に FR-xxx（機能要件）項目が含まれていること。
+
+1. specからFR-xxx要件をパース
+2. 全テストを**スキップ状態**で生成
+3. 順序: 単純 → 複雑 (Baby Steps)
 
 ## フェーズ1-N: RGRCサイクル
 
@@ -31,9 +36,7 @@
 
 ## 品質ゲート
 
-```bash
-npm run lint & npm run type-check & npm test & wait
-```
+プロジェクトのパッケージマネージャーを使用して lint, type-check, test を実行（lockfile から検出）。独立したコマンドは並列実行し、個別の終了コードを取得。
 
 ## 信頼度ベースの判断
 
@@ -45,7 +48,7 @@ npm run lint & npm run type-check & npm test & wait
 
 ## IDR生成
 
-完了後、以下のフォーマットでIDRを生成:
+完了後、IDRを生成:
 
 ````markdown
 # IDR: {要約タイトル}
@@ -67,11 +70,9 @@ npm run lint & npm run type-check & npm test & wait
 ```
 
 > [!NOTE]
-> ### 変更内容
 > - {変更点 — 箇条書き}
 
 > [!TIP]
-> ### 設計意図
 > - **{判断}**: {その判断をした理由}
 
 ---

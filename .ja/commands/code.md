@@ -20,6 +20,10 @@ TDD/RGRCサイクルと品質チェックによるコード実装。
 | `--principles` | applying-code-principles   |
 | `--storybook`  | integrating-storybook      |
 
+## SOWコンテキスト
+
+[@../skills/lib/sow-resolution.md]
+
 ## Skills & Agents
 
 - Agent: test-generator（TDDテスト生成、fork）
@@ -35,18 +39,20 @@ TDD/RGRCサイクルと品質チェックによるコード実装。
 
 ## 実行
 
-1. `TeamCreate("code-{timestamp}")`
-2. `TaskCreate` でテスト生成 + RGRCフェーズを作成
-3. `test-gen` チームメイトを spawn（`subagent_type: test-generator`）
-4. test-gen から DM でテスト結果を受信
-5. `ralph-loop` 自動イテレーションを伴う RGRC サイクル
-6. フェーズ完了ごとに `TaskUpdate`
-7. `SendMessage(shutdown_request)` を test-gen に送信
+1. **SOWコンテキスト**: SOW/specを検出・読み込み
+2. `TeamCreate("code-{timestamp}")`
+3. `TaskCreate` でテスト生成 + RGRCフェーズを作成
+4. `test-gen` チームメイトを spawn（`subagent_type: test-generator`）
+5. test-gen から DM でテスト結果を受信
+6. `ralph-loop` 自動イテレーションを伴う RGRC サイクル
+7. フェーズ完了ごとに `TaskUpdate`
+8. `SendMessage(shutdown_request)` を test-gen に送信
 
-## SOWステータス更新
+## エラーハンドリング
 
-SOWが存在する場合: `draft` or `completed` → `in-progress` に更新
-
-## Todo進捗トラッキング
-
-`TaskList` + `TaskUpdate` で RGRC フェーズを追跡（`/think` から Todo が存在する場合）
+| エラー                    | アクション                                |
+| ------------------------- | ----------------------------------------- |
+| test-gen DM タイムアウト  | Leader がテストを直接生成                 |
+| test-gen がテスト0件生成  | specの存在を確認、ユーザーに質問          |
+| Ralph-loop 停止           | ループ停止、手動修正                      |
+| 品質ゲート失敗            | コミット前に問題を修正                    |
