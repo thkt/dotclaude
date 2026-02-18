@@ -158,6 +158,27 @@ Create `~/.srt-settings.json` for custom settings:
 
 See the [official blog post](https://azukiazusa.dev/blog/claude-code-sandbox-feature/) for more details.
 
+### External CLI Tools (Optional)
+
+Some commands use external CLI tools for data source integration:
+
+| Tool          | Required By         | Purpose               | Install                                                   |
+| ------------- | ------------------- | --------------------- | --------------------------------------------------------- |
+| `gh`          | `/inbox` (GitHub)   | GitHub API access     | `brew install gh && gh auth login`                        |
+| `gemini`      | `/inbox` (Calendar) | Google Calendar query | [Gemini CLI](https://github.com/google-gemini/gemini-cli) |
+| `SLACK_TOKEN` | `/inbox` (Slack)    | Slack API access      | See below                                                 |
+
+**Slack setup**:
+
+1. [Slack App](https://api.slack.com/apps) を作成し、User Token Scopes に `search:read` を追加
+2. User OAuth Token (`xoxp-...`) を取得
+3. 環境変数を設定:
+
+   ```bash
+   export SLACK_TOKEN="xoxp-..."
+   export SLACK_WORKSPACE="your-workspace"  # {workspace}.slack.com の workspace 部分
+   ```
+
 ### Required Plugins
 
 Some commands depend on external plugins that are not included in this repository. Install them manually after cloning:
