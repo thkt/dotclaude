@@ -97,7 +97,7 @@ Unmet ACs are treated as findings and included in Step 2 auto-fix.
 
 ### Regression Guard
 
-If /test fails after auto-fix: revert last fix batch, mark those findings as "auto-fix failed", present to user.
+If /test fails after auto-fix: revert last fix batch, mark findings as "auto-fix failed", present to user.
 
 Write `quality` section to handoff.yaml (iterations, auto_fixed, remaining, tests_passing).
 

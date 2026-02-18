@@ -66,8 +66,7 @@ options:
 ## Phase 6: Quality Loop
 
 ```yaml
-# Issue Triage (shown ONLY after quality loop max iterations reached)
-# Before this prompt, AI auto-fixes critical/high issues without asking.
+# Issue Triage (shown after quality loop max iterations reached)
 question: "Quality loop finished with remaining issues. How to proceed?"
 header: "Triage"
 options:

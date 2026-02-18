@@ -51,8 +51,6 @@ Agent: [unit-implementer.md](../../../agents/teams/unit-implementer.md)
 
 ### Implementer Task Prompt
 
-Include in each implementer's Task prompt:
-
 1. Unit assignment: `logic` or `ui`
 2. Interface contracts from architect output
 3. Assigned files (create + modify)

@@ -20,7 +20,7 @@ Flags: `--frontend`, `--principles`, `--storybook`
 | `--principles` | applying-code-principles   |
 | `--storybook`  | integrating-storybook      |
 
-## SOW Context (auto)
+## SOW Context
 
 [@../skills/lib/sow-resolution.md]
 
@@ -39,7 +39,7 @@ Flags: `--frontend`, `--principles`, `--storybook`
 
 ## Execution
 
-1. **SOW Context**: detect and read SOW/spec (see above)
+1. **SOW Context**: detect and read SOW/spec
 2. `TeamCreate("code-{timestamp}")`
 3. `TaskCreate` for test generation + RGRC phases
 4. Spawn `test-gen` teammate (`subagent_type: test-generator`)
@@ -59,4 +59,4 @@ Flags: `--frontend`, `--principles`, `--storybook`
 
 ## Todo Progress Tracking
 
-Use `TaskList` + `TaskUpdate` to track RGRC phases (if todos exist from `/think`)
+Use `TaskList` + `TaskUpdate` to track RGRC phases

@@ -56,7 +56,7 @@ Each phase reader validates before proceeding:
 | Phase 7 | `quality.tests_passing` is true                                 | Re-enter Phase 6    |
 | Resume  | YAML parses, recognized sections exist                          | Warn user, Phase 1  |
 
-Writer uses **read-merge-write** pattern: read existing handoff.yaml, add new section, write full file. Verify prior sections intact after write.
+Writer uses **read-merge-write** pattern. Verify prior sections intact after write.
 
 ## Rules
 

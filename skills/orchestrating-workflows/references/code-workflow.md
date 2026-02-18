@@ -48,7 +48,7 @@ Run lint, type-check, and test using the project's package manager (detect from 
 
 ## IDR Generation
 
-After completion, generate IDR following this format:
+After completion, generate IDR:
 
 ````markdown
 # IDR: {summary title}
