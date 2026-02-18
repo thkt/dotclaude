@@ -59,6 +59,19 @@ Glob for `.analysis/architecture.yaml` in project root. If exists, include in ex
 
 Agent: [feature-explorer.md](../../../agents/explorers/feature-explorer.md)
 
+## Explorer Completion Criteria
+
+Each explorer must deliver a structured DM to architect containing:
+
+| Deliverable       | Description                                         |
+| ----------------- | --------------------------------------------------- |
+| Files analyzed    | List of files read with key findings per file        |
+| Patterns found    | Existing patterns relevant to the feature            |
+| Constraints       | Technical limitations or dependencies discovered     |
+| Cross-layer notes | Discoveries shared via Council (P1/P2 items)         |
+
+Leader validates: if an explorer reports zero files analyzed, re-assign or absorb into leader's scope.
+
 ## Council Protocol: Explorer Council
 
 Explorers share cross-layer discoveries with peers before reporting to architect.

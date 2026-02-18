@@ -97,7 +97,9 @@ Unmet ACs are treated as findings and included in Step 2 auto-fix.
 
 ### Regression Guard
 
-If /test fails after auto-fix: revert last fix batch, mark findings as "auto-fix failed", present to user.
+Before auto-fix: `git stash push -m "pre-autofix-iter-N"` to create restore point.
+If /test fails after auto-fix: `git stash pop` to revert, mark findings as "auto-fix failed", present to user.
+If stash fails: `git checkout -- .` as fallback, notify user of partial state.
 
 Write `quality` section to handoff.yaml (iterations, auto_fixed, remaining, tests_passing).
 

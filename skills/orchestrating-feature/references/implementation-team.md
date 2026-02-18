@@ -21,6 +21,19 @@ Read architect's Component Design → classify by Layer column → decide mode.
 | logic  | hooks/, utils/, services/, api/, repos/, schemas/, lib/, store/, middleware/ |
 | ui     | components/, pages/, layouts/, views/, styles/, css/                         |
 
+## Sequential Mode
+
+Leader implements all components directly via /code.
+
+| Step | Action                                                          |
+| ---- | --------------------------------------------------------------- |
+| 1    | Implement shared layer (types/, constants/, config/)            |
+| 2    | /code for each remaining component, ordered: logic → ui         |
+| 3    | Pass SOW path from `architecture.sow_path` to /code            |
+| 4    | Execute /test for full suite after all components complete      |
+
+Write `implementation` section to handoff.yaml (mode: sequential).
+
 ## Parallel Mode
 
 ### Team Structure
