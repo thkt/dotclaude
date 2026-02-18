@@ -96,8 +96,12 @@ NORMALIZED_SINGLE=${NORMALIZED//$'\n'/ }
 
 for target in "$COMMAND_SINGLE" "$NORMALIZED_SINGLE"; do
   if [[ "$target" =~ $COMBINED_PATTERN ]]; then
-    echo "BLOCKED: dangerous command detected" >&2
     log_block "$MATCH" "$COMMAND"
+    jq -n --arg pattern "$MATCH" \
+      '{decision: "block", reason: ("Dangerous pattern: " + $pattern), additionalContext: "Project policy: use \"mv <file> ~/.Trash/\" instead of rm. Use Edit tool instead of sed -i. Avoid eval, python -c, and piped execution."}' \
+      && exit 0
+    # Fallback: fail-closed if jq fails
+    echo "BLOCKED: dangerous command detected" >&2
     exit 2
   fi
 done

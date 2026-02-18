@@ -213,7 +213,11 @@ render_tools() {
         Read) tool_short="R" ;; Write) tool_short="W" ;; Edit) tool_short="E" ;;
         Bash) tool_short="B" ;; Glob) tool_short="G" ;; Grep) tool_short="g" ;;
         Task) tool_short="T" ;; WebFetch) tool_short="WF" ;; WebSearch) tool_short="WS" ;;
-        TodoWrite) tool_short="TD" ;; AskUserQuestion) tool_short="?" ;;
+        TaskCreate) tool_short="T+" ;; TaskUpdate) tool_short="T~" ;;
+        TaskList) tool_short="TL" ;; TaskGet) tool_short="TG" ;;
+        TaskOutput) tool_short="TO" ;; TaskStop) tool_short="TS" ;;
+        SendMessage) tool_short="DM" ;; LSP) tool_short="LSP" ;;
+        AskUserQuestion) tool_short="?" ;;
     esac
     sep
     printf '\033[36m%s\033[0m' "$tool_short"

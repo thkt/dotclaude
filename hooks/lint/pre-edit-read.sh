@@ -18,4 +18,5 @@ EXPANDED_PATH="${EXPANDED_PATH:a}"
 SIZE=$(stat -f%z "$EXPANDED_PATH" 2>/dev/null || stat -c%s "$EXPANDED_PATH" 2>/dev/null || echo 0)
 [ "$SIZE" -gt 51200 ] && exit 0
 
-cat "$EXPANDED_PATH"
+jq -n --rawfile content "$EXPANDED_PATH" --arg path "$FILE_PATH" \
+  '{additionalContext: ("Current content of " + $path + ":\n" + $content)}'
