@@ -10,6 +10,7 @@ Phase details for /feature command workflow.
 
 ## References
 
+- [Phase Handoff](references/phase-handoff.md) — Handoff YAML schema, validation, and rules
 - [Exploration Team](references/exploration-team.md) — Phase 2-4: Team structure, council protocol, architect
 - [Implementation Team](references/implementation-team.md) — Phase 5: Parallel/sequential decision, layer classification
 - [Prompts](references/prompts.md) — All AskUserQuestion configurations

@@ -22,21 +22,7 @@ Flags: `--frontend`, `--principles`, `--storybook`
 
 ## SOW Context (auto)
 
-Before any implementation, check for existing SOW/spec:
-
-1. `Glob(".claude/workspace/planning/*/sow.md")` → find latest SOW (by directory name date `YYYY-MM-DD-*`, newest first; if ambiguous → AskUserQuestion)
-2. If found → read SOW + corresponding `spec.md`
-3. Extract: Acceptance Criteria, Implementation Plan, Constraints
-4. Use as **authoritative instruction source** (overrides vague `$1`)
-
-| SOW State       | Behavior                                                   |
-| --------------- | ---------------------------------------------------------- |
-| SOW + spec      | AC + Implementation Plan drive implementation              |
-| SOW only        | AC drives implementation, `$1` fills implementation detail |
-| No SOW          | `$1` is sole instruction (current behavior)                |
-| `$1` conflicts  | SOW wins; flag conflict to user via AskUserQuestion        |
-
-Update SOW status: `draft` or `completed` → `in-progress`
+[@../skills/lib/sow-resolution.md]
 
 ## Skills & Agents
 

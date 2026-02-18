@@ -36,18 +36,18 @@ Glob for `.analysis/architecture.yaml` in project root. If exists, include in ex
 | Step | Actor     | Action                                                                 |
 | ---- | --------- | ---------------------------------------------------------------------- |
 | 1    | Leader    | `TeamCreate("feature-{timestamp}")`                                    |
-| 1.5  | Leader    | Read seed context (see Seed Context above)                             |
-| 2    | Leader    | TaskCreate x 4 (explorer-data, explorer-api, explorer-core, architect) |
-| 3    | Leader    | Spawn 4 teammates via Task with `team_name` (include seed in prompt)   |
-| 4    | Explorers | Investigate assigned focus area                                        |
-| 4b   | Explorers | Council sharing round (see Council Protocol below)                     |
-| 4c   | Explorers | DM enriched findings to `architect`                                    |
-| 5    | Architect | Process explorer findings incrementally                                |
-| 6    | Leader    | Wait for all explorers to complete                                     |
-| 7    | Leader    | AskUserQuestion for clarification (edge cases, error handling, etc.)   |
-| 8    | Leader    | SendMessage clarification answers to `architect`                       |
-| 9    | Architect | Produce final architecture design                                      |
-| 10   | Leader    | SendMessage `shutdown_request` to all teammates                        |
+| 2    | Leader    | Read seed context (see Seed Context above)                             |
+| 3    | Leader    | TaskCreate (tier-dependent: Large x4, Medium x3, Small x1)             |
+| 4    | Leader    | Spawn teammates via Task with `team_name` (include seed in prompt)     |
+| 5    | Explorers | Investigate assigned focus area                                        |
+| 6    | Explorers | Council sharing round (see Council Protocol below)                     |
+| 7    | Explorers | DM enriched findings to `architect`                                    |
+| 8    | Architect | Process explorer findings incrementally                                |
+| 9    | Leader    | Wait for all explorers to complete                                     |
+| 10   | Leader    | AskUserQuestion for clarification (edge cases, error handling, etc.)   |
+| 11   | Leader    | SendMessage clarification answers to `architect`                       |
+| 12   | Architect | Produce final architecture design                                      |
+| 13   | Leader    | SendMessage `shutdown_request` to all teammates                        |
 
 ## Focus Assignment
 

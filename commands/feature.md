@@ -67,12 +67,13 @@ Read `implementation` from handoff.yaml. Automatic review→fix→re-review cycl
 | Step | Action                                              | Exit Condition              |
 | ---- | --------------------------------------------------- | --------------------------- |
 | 1    | /audit (capture critical + high findings)           | 0 critical/high → Step 1b  |
-| 1b   | AC check (see below)                                | All ACs met → Step 5       |
+| 1b   | AC check (see below)                                | All ACs met → Step 1c     |
+| 1c   | /test (verify implementation passes)                | Tests fail → Step 2       |
 | 2    | Auto-fix audit findings + unmet ACs                 | —                           |
 | 3    | /test (verify no regression)                        | Tests fail → revert, Step 4 |
 | 4    | Increment iteration (max 3) → Go to Step 1         | Max reached → Step 4b      |
 | 4b   | Present remaining issues to user (Prompt: Triage)   | User decides                |
-| 5    | /polish → /test (final)                             | —                           |
+| 5    | /polish → /test (final)                             | Tests fail → fix, re-test  |
 
 ### AC Check (Step 1b)
 

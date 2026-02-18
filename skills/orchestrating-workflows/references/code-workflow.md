@@ -13,10 +13,7 @@ Completion: Quality Gates → IDR
 
 ### SOW/Spec Auto-detection
 
-1. `Glob(".claude/workspace/planning/*/sow.md")` → find latest SOW
-2. If found → read SOW (Acceptance Criteria, Constraints) + `spec.md` (FR-xxx, Implementation Plan)
-3. SOW/spec become the authoritative instruction source for all subsequent phases
-4. If `$1` conflicts with SOW → SOW wins, flag to user
+[@../../lib/sow-resolution.md]
 
 ### Test Generation
 
@@ -39,9 +36,7 @@ For each test:
 
 ## Quality Gates
 
-```bash
-npm run lint & npm run type-check & npm test & wait
-```
+Run lint, type-check, and test using the project's package manager (detect from lockfile). Run independent commands in parallel, capture individual exit codes.
 
 ## Confidence-Based Decisions
 
@@ -74,10 +69,10 @@ After completion, generate IDR following this format:
 +added line
 ```
 
-> [!WHAT]
+> [!NOTE]
 > - {what changed — bullet list}
 
-> [!RATIONALE]
+> [!TIP]
 > - **{decision}**: {why this decision was made}
 
 ---
