@@ -1,31 +1,27 @@
 # Feature Resume
 
-## SOW Discovery
+## Discovery
 
 1. Check `.claude/workspace/.current-sow` for tracked SOW path
 2. If not found → Glob for `.claude/workspace/planning/*/sow.md`
 3. If multiple SOWs → prompt user to select via AskUserQuestion
-4. Read SOW metadata to determine resume point
 
-## Resume Actions
+## Resume Point
 
-| SOW Status          | Action                            |
-| ------------------- | --------------------------------- |
-| Phase N in-progress | Continue from last completed step |
-| Phase N completed   | Start from Phase N+1              |
-| No SOW found        | Start fresh from Phase 1          |
+Read handoff.yaml (same directory as sow.md) to determine resume point.
 
-## State Tracking
+| Handoff State                  | Resume Action                   |
+| ------------------------------ | ------------------------------- |
+| `quality` section exists       | Phase 7 (Validation)            |
+| `implementation` section exists | Phase 6 (Quality Loop)          |
+| `architecture` section exists  | Phase 5 (Implementation)        |
+| `discovery` section exists     | Phase 2-4 (Exploration)         |
+| No handoff.yaml                | Phase 1 (Discovery)             |
 
-SOW metadata fields for resume:
+## Fallback
+
+If handoff.yaml missing but SOW exists → read SOW status field as fallback:
 
 ```yaml
-status:
-  current_phase: 4
-  current_step: 2
-  completed_phases: [1, 2, 3]
-  exploration_summary: "..."
-  clarification_answers: {}
-  selected_architecture: "pragmatic"
-  implementation_mode: "parallel"  # "parallel" | "sequential"
+status: in-progress  # draft | in-progress | completed
 ```

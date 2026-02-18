@@ -98,5 +98,6 @@ Agent: [feature-architect.md](../../../agents/architects/feature-architect.md)
 2. Ask for review (see Prompts reference)
 3. If technical decision warrants → ask about ADR
 4. Execute /think → Output: SOW + Spec
+5. Write `architecture` section to handoff.yaml (components, contracts, sow/spec paths)
 
 If user says "whatever you think is best" → Proceed with composed architecture → Use Prompt: Delegation Confirm

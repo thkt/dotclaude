@@ -9,14 +9,22 @@ Phase 1-N: RGRC (one test at a time)
 Completion: Quality Gates → IDR
 ```
 
-## Phase 0: Test Generation
+## Phase 0: SOW Context + Test Generation
 
-Prerequisites: `/sow` → `/spec` → `/code` pipeline. Spec contains FR-xxx (Functional Requirement) items.
+### SOW/Spec Auto-detection
 
-1. Auto-detect `spec.md` in workspace
-2. Parse FR-xxx requirements
-3. Generate ALL tests in **skip state**
-4. Order: simple → complex (Baby Steps)
+1. `Glob(".claude/workspace/planning/*/sow.md")` → find latest SOW
+2. If found → read SOW (Acceptance Criteria, Constraints) + `spec.md` (FR-xxx, Implementation Plan)
+3. SOW/spec become the authoritative instruction source for all subsequent phases
+4. If `$1` conflicts with SOW → SOW wins, flag to user
+
+### Test Generation
+
+Prerequisites: spec.md with FR-xxx (Functional Requirement) items.
+
+1. Parse FR-xxx requirements from spec
+2. Generate ALL tests in **skip state**
+3. Order: simple → complex (Baby Steps)
 
 ## Phase 1-N: RGRC Cycle
 

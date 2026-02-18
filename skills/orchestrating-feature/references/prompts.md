@@ -50,7 +50,7 @@ options:
   - label: "No, explain options"
 ```
 
-## Phase 5-6: Implementation & Quality
+## Phase 5: Implementation
 
 ```yaml
 # Impl Mode (shown only when Parallel Decision = Parallel)
@@ -61,13 +61,17 @@ options:
   - label: "Sequential"
   - label: "Revise Design"
   - label: "Have Questions"
+```
 
-# Issue Triage
-question: "How to handle issues?"
+## Phase 6: Quality Loop
+
+```yaml
+# Issue Triage (shown ONLY after quality loop max iterations reached)
+# Before this prompt, AI auto-fixes critical/high issues without asking.
+question: "Quality loop finished with remaining issues. How to proceed?"
 header: "Triage"
 options:
-  - label: "Fix All"
-  - label: "Fix Critical Only"
+  - label: "Fix All Remaining"
   - label: "Proceed As-Is"
   - label: "Review Individually"
 ```

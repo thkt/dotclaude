@@ -20,6 +20,24 @@ Flags: `--frontend`, `--principles`, `--storybook`
 | `--principles` | applying-code-principles   |
 | `--storybook`  | integrating-storybook      |
 
+## SOW Context (auto)
+
+Before any implementation, check for existing SOW/spec:
+
+1. `Glob(".claude/workspace/planning/*/sow.md")` → find latest SOW (by directory name date `YYYY-MM-DD-*`, newest first; if ambiguous → AskUserQuestion)
+2. If found → read SOW + corresponding `spec.md`
+3. Extract: Acceptance Criteria, Implementation Plan, Constraints
+4. Use as **authoritative instruction source** (overrides vague `$1`)
+
+| SOW State       | Behavior                                                   |
+| --------------- | ---------------------------------------------------------- |
+| SOW + spec      | AC + Implementation Plan drive implementation              |
+| SOW only        | AC drives implementation, `$1` fills implementation detail |
+| No SOW          | `$1` is sole instruction (current behavior)                |
+| `$1` conflicts  | SOW wins; flag conflict to user via AskUserQuestion        |
+
+Update SOW status: `draft` or `completed` → `in-progress`
+
 ## Skills & Agents
 
 - Agent: test-generator (TDD test generation, fork)
@@ -35,17 +53,14 @@ Flags: `--frontend`, `--principles`, `--storybook`
 
 ## Execution
 
-1. `TeamCreate("code-{timestamp}")`
-2. `TaskCreate` for test generation + RGRC phases
-3. Spawn `test-gen` teammate (`subagent_type: test-generator`)
-4. Receive test results from test-gen via DM
-5. RGRC cycle with `ralph-loop` auto-iteration
-6. `TaskUpdate` per phase completion
-7. `SendMessage(shutdown_request)` to test-gen
-
-## SOW Status Update
-
-If SOW exists: update `draft` or `completed` → `in-progress`
+1. **SOW Context**: detect and read SOW/spec (see above)
+2. `TeamCreate("code-{timestamp}")`
+3. `TaskCreate` for test generation + RGRC phases
+4. Spawn `test-gen` teammate (`subagent_type: test-generator`)
+5. Receive test results from test-gen via DM
+6. RGRC cycle with `ralph-loop` auto-iteration
+7. `TaskUpdate` per phase completion
+8. `SendMessage(shutdown_request)` to test-gen
 
 ## Error Handling
 

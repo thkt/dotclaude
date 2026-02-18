@@ -23,8 +23,12 @@ Read `~/.claude/settings.json` and check the `language` field. If set, translate
 | 1     | Discovery      | Context scan → PRE_TASK_CHECK                | [?] or [→] resolution    |
 | 2-4   | Team Explore   | Explorer team + Architect → Clarify → /think | Clarification + Approach |
 | 5     | Implementation | Parallel or Sequential TDD/RGRC              | Approval + mode select   |
-| 6     | Quality        | /audit → /test → /polish                     | Issue triage             |
+| 6     | Quality Loop   | audit→fix→re-audit (max 3) → /polish         | Remaining issues only    |
 | 7     | Validation     | /validate → Summary                          | Completion               |
+
+## Phase Handoff
+
+[@../skills/orchestrating-feature/references/phase-handoff.md]
 
 ## Phase 1: Discovery
 
@@ -33,6 +37,7 @@ Read `~/.claude/settings.json` and check the `language` field. If set, translate
 3. Execute PRE_TASK_CHECK (follow rule: `rules/core/PRE_TASK_CHECK.md`)
 4. Resolve any [→] or [?] via AskUserQuestion
 5. Create todos via TaskCreate (Phase 2-4, 5, 6, 7)
+6. Write `discovery` section to handoff.yaml
 
 ### Context Patterns
 
@@ -53,16 +58,53 @@ Read `~/.claude/settings.json` and check the `language` field. If set, translate
 
 [@../skills/orchestrating-feature/references/implementation-team.md]
 
-## Phase 6: Quality Review
+Write `implementation` section to handoff.yaml (files_changed, tests_added, mode).
 
-1. Execute /audit → /test → /polish
-2. Present findings, ask for triage (see Prompts reference)
-3. Address selected issues
+## Phase 6: Quality Loop
+
+Read `implementation` from handoff.yaml. Automatic review→fix→re-review cycle.
+
+| Step | Action                                              | Exit Condition              |
+| ---- | --------------------------------------------------- | --------------------------- |
+| 1    | /audit (capture critical + high findings)           | 0 critical/high → Step 1b  |
+| 1b   | AC check (see below)                                | All ACs met → Step 5       |
+| 2    | Auto-fix audit findings + unmet ACs                 | —                           |
+| 3    | /test (verify no regression)                        | Tests fail → revert, Step 4 |
+| 4    | Increment iteration (max 3) → Go to Step 1         | Max reached → Step 4b      |
+| 4b   | Present remaining issues to user (Prompt: Triage)   | User decides                |
+| 5    | /polish → /test (final)                             | —                           |
+
+### AC Check (Step 1b)
+
+Read SOW acceptance criteria (path from `architecture.sow_path` in handoff.yaml). For each AC:
+
+| Check        | Method                                              |
+| ------------ | --------------------------------------------------- |
+| Implemented? | Grep target files for AC-related logic              |
+| Tested?      | Grep test files for AC-related assertions           |
+
+Unmet ACs are treated as findings and included in Step 2 auto-fix.
+
+### Auto-fix Rules
+
+| Severity | Action                                    |
+| -------- | ----------------------------------------- |
+| Critical | Always fix                                |
+| High     | Fix if confidence ≥80%                    |
+| Medium   | Skip                                      |
+| Low      | Skip                                      |
+
+### Regression Guard
+
+If /test fails after auto-fix: revert last fix batch, mark those findings as "auto-fix failed", present to user.
+
+Write `quality` section to handoff.yaml (iterations, auto_fixed, remaining, tests_passing).
 
 ## Phase 7: Validation
 
-1. Execute /validate
-2. Present summary
+1. Read handoff.yaml for full feature context
+2. Execute /validate
+3. Present summary
 
 ## Error Handling
 
@@ -73,7 +115,7 @@ Read `~/.claude/settings.json` and check the `language` field. If set, translate
 | Implementer blocked/fails     | Leader takes over; if both fail → /code       |
 | Integration tests fail        | Leader fixes cross-layer issues directly      |
 | /code failure                 | Present error, ask for guidance               |
-| /audit critical issues        | Block Phase 7 until resolved                  |
+| Quality loop exhausted        | Present remaining to user before Phase 7      |
 | User cancellation             | Save current phase + step to SOW metadata     |
 | All fallbacks exhausted       | Save progress to SOW, report terminal state   |
 

@@ -1,5 +1,9 @@
 # Phase 5: Implementation
 
+## Input
+
+Read `architecture` section from handoff.yaml → components, contracts, sow/spec paths.
+
 ## Parallel Decision
 
 Read architect's Component Design → classify by Layer column → decide mode.
