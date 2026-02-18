@@ -27,32 +27,18 @@ Read schema/type files as source of truth. Do NOT grep for field extraction.
 | OpenAPI        | openapi.yaml, swagger.yaml             |
 | Authentication | Auth middleware, JWT, OAuth patterns   |
 
-## Framework Patterns
-
-| Framework  | Route Pattern                | Schema Pattern                        |
-| ---------- | ---------------------------- | ------------------------------------- |
-| Express    | `app.get()`, `router.post()` | `**/routes/**/*.ts`, imported schemas |
-| Next.js    | `app/api/**/route.ts`        | Co-located or imported types          |
-| Flask      | `@app.route()`               | `schemas.py`, Pydantic models         |
-| FastAPI    | `@app.get()`, `@app.post()`  | Pydantic `BaseModel` in same file     |
-| Repository | `repository.ts` methods      | `schema.ts` in same directory         |
-
 ## Schema Reading
 
-| Rule                 | Detail                                         |
-| -------------------- | ---------------------------------------------- |
-| Read full file       | No grep — Read entire file                     |
-| Capture all fields   | Every field, not just "important" ones         |
-| Required/optional    | `?` or `.optional()` = optional, else required |
-| Preserve exact names | Use field names as defined                     |
-| Nested types         | Reference by name, document separately         |
-| Source location      | Record file:line for each type                 |
+| Rule                | Detail                                       |
+| ------------------- | -------------------------------------------- |
+| Read full file      | No grep — Read entire schema/route file      |
+| Capture all fields  | Exact names, types, required/optional status |
+| Source traceability | Record file:line for each type               |
 
 ## Confidence
 
 | Evidence        | Level    |
 | --------------- | -------- |
 | Schema + route  | verified |
-| Schema only     | inferred |
-| Route only      | inferred |
+| Schema or route | inferred |
 | Grep match only | unknown  |

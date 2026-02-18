@@ -131,4 +131,4 @@ commands/
 ## 関連
 
 - [SKILLS_AGENTS.md](./SKILLS_AGENTS.md) — スキル・エージェントの詳細
-- [WORKFLOW_GUIDE](../rules/workflows/WORKFLOW_GUIDE.md) — ワークフロー選択ガイド
+- [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) — ワークフロー選択ガイド

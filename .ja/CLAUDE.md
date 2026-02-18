@@ -29,4 +29,4 @@
 | -------- | ----------------------------------------- |
 | コマンド | README.md → package.json → ユーザーに確認 |
 
-参照: WORKFLOW_GUIDE.md (rules/workflows/), DOCUMENTATION.md (rules/conventions/)
+参照: WORKFLOW_REFERENCE.md (rules/workflows/), DOCUMENTATION.md (rules/conventions/)

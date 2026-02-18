@@ -2,7 +2,7 @@
 name: domain-analyzer
 description: Analyze codebase domain model, generate domain documentation
 tools: [Read, Grep, Glob, LS]
-model: opus
+model: sonnet
 skills: [documenting-domains]
 context: fork
 memory: project

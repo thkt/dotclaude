@@ -2,15 +2,13 @@
 name: commit-generator
 description: Analyze staged Git changes and generate Conventional Commits format messages.
 tools: [Bash]
-model: opus
+model: sonnet
 skills: [utilizing-cli-tools]
 context: fork
 memory: project
 ---
 
 # Commit Message Generator
-
-Generate Conventional Commits from git diff.
 
 ## Type Detection
 

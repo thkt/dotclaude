@@ -33,3 +33,7 @@ Method chains >2 → Demeter / 1min unreadable → Readable / Complex-first → 
 | Abstraction vs Concrete | Start concrete |
 
 When in doubt: simple > clever, concrete > abstract, working > perfect, clear > DRY.
+
+## Progressive Enhancement
+
+Make it Work → Make it Resilient (when errors occur) → Make it Fast (when slowness measured) → Make it Flexible (when users request)

@@ -12,12 +12,12 @@ user-invocable: false
 
 ## References
 
-| Category           | Reference                                                           |
-| ------------------ | ------------------------------------------------------------------- |
-| Version Control    | [@./references/git-essentials.md](./references/git-essentials.md)   |
-| GitHub             | [@./references/gh-github-cli.md](./references/gh-github-cli.md)     |
-| Package Management | [@./references/npm-scripts.md](./references/npm-scripts.md)         |
-| CHANGELOG          | [@./references/changelog-tools.md](./references/changelog-tools.md) |
+| Category           | Reference                         |
+| ------------------ | --------------------------------- |
+| Version Control    | `./references/git-essentials.md`  |
+| GitHub             | `./references/gh-github-cli.md`   |
+| Package Management | `./references/npm-scripts.md`     |
+| CHANGELOG          | `./references/changelog-tools.md` |
 
 ## Quick Reference
 

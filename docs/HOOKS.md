@@ -56,44 +56,43 @@ graph TD
 
 ### security/
 
-| Hook                    | Event             | Failure Mode | Purpose                    |
-| ----------------------- | ----------------- | ------------ | -------------------------- |
-| `bash-safety.sh`        | PreToolUse(Bash)  | fail-closed  | 危険コマンドをブロック     |
-| `permission-request.sh` | PermissionRequest | fail-closed  | 自動承認/拒否の判定        |
+| Hook                    | Event             | Failure Mode | Purpose                |
+| ----------------------- | ----------------- | ------------ | ---------------------- |
+| `bash-safety.sh`        | PreToolUse(Bash)  | fail-closed  | 危険コマンドをブロック |
+| `permission-request.sh` | PermissionRequest | fail-closed  | 自動承認/拒否の判定    |
 
 ### lint/
 
-| Hook                  | Event              | Failure Mode | Purpose                |
-| --------------------- | ------------------ | ------------ | ---------------------- |
-| `pre-edit-read.sh`    | PreToolUse(Edit)   | fail-open    | Edit前にファイル読込   |
-| `typescript-check.sh` | PostToolUse(Write) | fail-open    | tsc --noEmit 実行      |
+| Hook                  | Event              | Failure Mode | Purpose           |
+| --------------------- | ------------------ | ------------ | ----------------- |
+| `typescript-check.sh` | PostToolUse(Write) | fail-open    | tsc --noEmit 実行 |
 
 ### format/
 
-| Hook              | Event                      | Failure Mode | Purpose            |
-| ----------------- | -------------------------- | ------------ | ------------------ |
-| `eof-newline.sh`  | PostToolUse(Write)         | fail-open    | EOF改行を保証      |
-| `format.sh`       | PostToolUse(Write/Edit)    | fail-open    | biome/prettier実行 |
+| Hook             | Event                   | Failure Mode | Purpose            |
+| ---------------- | ----------------------- | ------------ | ------------------ |
+| `eof-newline.sh` | PostToolUse(Write)      | fail-open    | EOF改行を保証      |
+| `format.sh`      | PostToolUse(Write/Edit) | fail-open    | biome/prettier実行 |
 
 ### lifecycle/
 
-| Hook             | Trigger    | Purpose              |
-| ---------------- | ---------- | -------------------- |
-| `statusline.sh`  | statusLine | ステータスライン表示 |
-| `_pr-cache.sh`   | (sourced)  | PR情報のキャッシュ   |
+| Hook            | Trigger    | Purpose              |
+| --------------- | ---------- | -------------------- |
+| `statusline.sh` | statusLine | ステータスライン表示 |
+| `_pr-cache.sh`  | (sourced)  | PR情報のキャッシュ   |
 
 ### agents/
 
-| Hook                  | Event         | Failure Mode | Purpose              |
-| --------------------- | ------------- | ------------ | -------------------- |
-| `subagent-start.sh`   | SubagentStart | fail-open    | 開始ログ・通知音     |
-| `subagent-analysis.sh`| SubagentStop  | fail-open    | トランスクリプト保存 |
+| Hook                   | Event         | Failure Mode | Purpose              |
+| ---------------------- | ------------- | ------------ | -------------------- |
+| `subagent-start.sh`    | SubagentStart | fail-open    | 開始ログ・通知音     |
+| `subagent-analysis.sh` | SubagentStop  | fail-open    | トランスクリプト保存 |
 
 ### viewer/
 
-| Hook | Event | Failure Mode | Purpose |
-| --- | --- | --- | --- |
-| `ccplanview-open.sh` | PostToolUse(Write) | fail-open | Open SOW/Spec/IDR in viewer |
+| Hook                 | Event              | Failure Mode | Purpose                     |
+| -------------------- | ------------------ | ------------ | --------------------------- |
+| `ccplanview-open.sh` | PostToolUse(Write) | fail-open    | Open SOW/Spec/IDR in viewer |
 
 ### codemap/
 

@@ -43,59 +43,58 @@ graph TD
 
 ## フックカテゴリ
 
-| カテゴリ | トリガー | 目的 |
-| --- | --- | --- |
-| `security/` | PreToolUse | Bash安全チェック、権限制御 |
-| `lint/` | Pre/PostToolUse | コード品質チェック |
-| `format/` | PostToolUse | フォーマット適用 |
-| `lifecycle/` | statusLine | ステータスライン、PRキャッシュ |
-| `codemap/` | PostToolUse | アーキテクチャマップ更新 |
-| `agents/` | Subagent* | エージェントログ・通知 |
-| `viewer/` | PostToolUse | SOW/Spec/IDRビューア連携 |
-| `notifications/` | Stop | 完了通知 |
+| カテゴリ         | トリガー        | 目的                           |
+| ---------------- | --------------- | ------------------------------ |
+| `security/`      | PreToolUse      | Bash安全チェック、権限制御     |
+| `lint/`          | Pre/PostToolUse | コード品質チェック             |
+| `format/`        | PostToolUse     | フォーマット適用               |
+| `lifecycle/`     | statusLine      | ステータスライン、PRキャッシュ |
+| `codemap/`       | PostToolUse     | アーキテクチャマップ更新       |
+| `agents/`        | Subagent*       | エージェントログ・通知         |
+| `viewer/`        | PostToolUse     | SOW/Spec/IDRビューア連携       |
+| `notifications/` | Stop            | 完了通知                       |
 
 ## 主要フック
 
 ### security/
 
-| フック                  | イベント          | 失敗モード  | 目的                     |
-| ----------------------- | ----------------- | ----------- | ------------------------ |
-| `bash-safety.sh`        | PreToolUse(Bash)  | fail-closed | 危険コマンドをブロック   |
-| `permission-request.sh` | PermissionRequest | fail-closed | 自動承認/拒否の判定      |
+| フック                  | イベント          | 失敗モード  | 目的                   |
+| ----------------------- | ----------------- | ----------- | ---------------------- |
+| `bash-safety.sh`        | PreToolUse(Bash)  | fail-closed | 危険コマンドをブロック |
+| `permission-request.sh` | PermissionRequest | fail-closed | 自動承認/拒否の判定    |
 
 ### lint/
 
-| フック | イベント | 失敗モード | 目的 |
-| --- | --- | --- | --- |
-| `pre-edit-read.sh` | PreToolUse(Edit) | fail-open | Edit前にファイル読込 |
-| `typescript-check.sh` | PostToolUse(Write) | fail-open | tsc --noEmit 実行 |
+| フック                | イベント           | 失敗モード | 目的              |
+| --------------------- | ------------------ | ---------- | ----------------- |
+| `typescript-check.sh` | PostToolUse(Write) | fail-open  | tsc --noEmit 実行 |
 
 ### format/
 
-| フック | イベント | 失敗モード | 目的 |
-| --- | --- | --- | --- |
-| `eof-newline.sh` | PostToolUse(Write) | fail-open | EOF改行を保証 |
-| `format.sh` | PostToolUse(Write/Edit) | fail-open | biome/prettier実行 |
+| フック           | イベント                | 失敗モード | 目的               |
+| ---------------- | ----------------------- | ---------- | ------------------ |
+| `eof-newline.sh` | PostToolUse(Write)      | fail-open  | EOF改行を保証      |
+| `format.sh`      | PostToolUse(Write/Edit) | fail-open  | biome/prettier実行 |
 
 ### lifecycle/
 
-| フック           | トリガー   | 目的                 |
-| ---------------- | ---------- | -------------------- |
-| `statusline.sh`  | statusLine | ステータスライン表示 |
-| `_pr-cache.sh`   | (sourced)  | PR情報のキャッシュ   |
+| フック          | トリガー   | 目的                 |
+| --------------- | ---------- | -------------------- |
+| `statusline.sh` | statusLine | ステータスライン表示 |
+| `_pr-cache.sh`  | (sourced)  | PR情報のキャッシュ   |
 
 ### agents/
 
-| フック | イベント | 失敗モード | 目的 |
-| --- | --- | --- | --- |
-| `subagent-start.sh` | SubagentStart | fail-open | 開始ログ・通知音 |
-| `subagent-analysis.sh` | SubagentStop | fail-open | トランスクリプト保存 |
+| フック                 | イベント      | 失敗モード | 目的                 |
+| ---------------------- | ------------- | ---------- | -------------------- |
+| `subagent-start.sh`    | SubagentStart | fail-open  | 開始ログ・通知音     |
+| `subagent-analysis.sh` | SubagentStop  | fail-open  | トランスクリプト保存 |
 
 ### viewer/
 
-| フック | イベント | 失敗モード | 目的 |
-| --- | --- | --- | --- |
-| `ccplanview-open.sh` | PostToolUse(Write) | fail-open | SOW/Spec/IDRをビューアで開く |
+| フック               | イベント           | 失敗モード | 目的                         |
+| -------------------- | ------------------ | ---------- | ---------------------------- |
+| `ccplanview-open.sh` | PostToolUse(Write) | fail-open  | SOW/Spec/IDRをビューアで開く |
 
 ### codemap/
 

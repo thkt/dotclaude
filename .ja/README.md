@@ -178,8 +178,8 @@ srt --version
 
 コマンドリファレンスを参照:
 
-- [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOW_GUIDE.md)
-- [English Command Reference](../rules/workflows/WORKFLOW_GUIDE.md)
+- [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOW_REFERENCE.md)
+- [English Command Reference](../rules/workflows/WORKFLOW_REFERENCE.md)
 
 ## 🔄 標準ワークフロー
 
@@ -228,8 +228,8 @@ srt --version
 ### コアドキュメント
 
 - [設計思想](./docs/DESIGN.md) — **なぜこの設計か**（Design Philosophy）
-- [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOW_GUIDE.md)
-- [コマンドリファレンス（英語）](../rules/workflows/WORKFLOW_GUIDE.md)
+- [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOW_REFERENCE.md)
+- [コマンドリファレンス（英語）](../rules/workflows/WORKFLOW_REFERENCE.md)
 - [設定ガイド（日本語）](./CLAUDE.md)
 - [設定ガイド（英語）](../CLAUDE.md)
 

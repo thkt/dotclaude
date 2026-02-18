@@ -2,7 +2,7 @@
 name: api-analyzer
 description: Analyze codebase API endpoints and generate API specification.
 tools: [Read, Grep, Glob, LS]
-model: opus
+model: sonnet
 skills: [documenting-apis]
 context: fork
 memory: project

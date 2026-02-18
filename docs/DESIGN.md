@@ -21,7 +21,7 @@ graph TD
         PERF[PERFORMANCE]
         TIDY[TIDYINGS]
         CODE[CODE_THRESHOLDS]
-        PROG[PROGRESSIVE_ENHANCEMENT]
+        PROG[PRINCIPLES.md#Progressive Enhancement]
     end
 
     subgraph Conventions["Conventions Layer"]
@@ -33,7 +33,7 @@ graph TD
     end
 
     subgraph Workflows["Workflow Layer"]
-        WG[WORKFLOW_GUIDE]
+        WG[WORKFLOW_REFERENCE]
         MOD[MODULARIZATION_RULES]
         IDR[idr-pre-commit.sh]
     end
@@ -91,12 +91,12 @@ TDD / SOLID / YAGNI (Contextual)
 
 Concrete standards and patterns for daily development.
 
-| File                                                                       | Intent                        | Key Threshold                          |
-| -------------------------------------------------------------------------- | ----------------------------- | -------------------------------------- |
-| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)                 | Quality metrics + completion  | Function ≤30 lines, tests pass         |
-| [TIDYINGS](../rules/development/TIDYINGS.md)                               | Scope cleanup limits          | No behavior changes, edited files only |
-| [PERFORMANCE](../rules/development/PERFORMANCE.md)                         | Context/frontend optimization | MCP ≤10, LCP <2.5s                     |
-| [PROGRESSIVE_ENHANCEMENT](../rules/development/PROGRESSIVE_ENHANCEMENT.md) | Incremental building          | CSS-First, Outcome-First               |
+| File                                                            | Intent                        | Key Threshold                          |
+| --------------------------------------------------------------- | ----------------------------- | -------------------------------------- |
+| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)      | Quality metrics + completion  | Function ≤30 lines, tests pass         |
+| [TIDYINGS](../rules/development/TIDYINGS.md)                    | Scope cleanup limits          | No behavior changes, edited files only |
+| [PERFORMANCE](../rules/development/PERFORMANCE.md)              | Context/frontend optimization | MCP ≤10, LCP <2.5s                     |
+| [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | Incremental building          | CSS-First, Outcome-First               |
 
 **AI Failure Patterns (inline):**
 
@@ -136,7 +136,7 @@ User-facing commands and workflow system.
 
 | File                                                               | Intent                               |
 | ------------------------------------------------------------------ | ------------------------------------ |
-| [WORKFLOW_GUIDE](../rules/workflows/WORKFLOW_GUIDE.md)             | Command selection guide              |
+| [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md)     | Command selection guide              |
 | [MODULARIZATION_RULES](../rules/workflows/MODULARIZATION_RULES.md) | Command split criteria               |
 | [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh)          | Auto-generate implementation records |
 

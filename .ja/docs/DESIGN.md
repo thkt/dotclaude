@@ -21,7 +21,7 @@ graph TD
         PERF[PERFORMANCE]
         TIDY[TIDYINGS]
         CODE[CODE_THRESHOLDS]
-        PROG[PROGRESSIVE_ENHANCEMENT]
+        PROG[PRINCIPLES.md#Progressive Enhancement]
     end
 
     subgraph Conventions["規約レイヤー"]
@@ -33,7 +33,7 @@ graph TD
     end
 
     subgraph Workflows["ワークフローレイヤー"]
-        WG[WORKFLOW_GUIDE]
+        WG[WORKFLOW_REFERENCE]
         MOD[MODULARIZATION_RULES]
         IDR[idr-pre-commit.sh]
     end
@@ -96,7 +96,7 @@ TDD / SOLID / YAGNI (文脈依存)
 | [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)                 | 品質基準 + 完了条件               | 関数≤30行、tests pass              |
 | [TIDYINGS](../rules/development/TIDYINGS.md)                               | 整理範囲の限定                    | 振る舞い変更禁止、編集ファイルのみ |
 | [PERFORMANCE](../rules/development/PERFORMANCE.md)                         | コンテキスト/フロントエンド最適化 | MCP≤10、LCP<2.5s                   |
-| [PROGRESSIVE_ENHANCEMENT](../rules/development/PROGRESSIVE_ENHANCEMENT.md) | 漸進的構築                        | CSS-First、Outcome-First           |
+| [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md)             | 漸進的構築                        | CSS-First、Outcome-First           |
 
 **AI失敗パターン (インライン):**
 
@@ -136,7 +136,7 @@ TDD / SOLID / YAGNI (文脈依存)
 
 | ファイル                                                           | 意図               |
 | ------------------------------------------------------------------ | ------------------ |
-| [WORKFLOW_GUIDE](../rules/workflows/WORKFLOW_GUIDE.md)             | コマンド選択ガイド |
+| [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md)     | コマンド選択ガイド |
 | [MODULARIZATION_RULES](../rules/workflows/MODULARIZATION_RULES.md) | コマンド分割基準   |
 | [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh)          | 実装記録の自動生成 |
 

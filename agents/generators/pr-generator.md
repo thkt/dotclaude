@@ -2,15 +2,13 @@
 name: pr-generator
 description: Analyze branch changes and generate comprehensive PR descriptions.
 tools: [Bash]
-model: opus
+model: sonnet
 skills: [utilizing-cli-tools]
 context: fork
 memory: project
 ---
 
 # PR Description Generator
-
-Generate PR descriptions from branch diff and commit history.
 
 ## Analysis Sources
 

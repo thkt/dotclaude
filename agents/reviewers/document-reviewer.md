@@ -2,15 +2,13 @@
 name: document-reviewer
 description: Technical documentation review for quality, clarity, structure.
 tools: [Read, Grep, Glob, LS]
-model: opus
+model: sonnet
 skills: [reviewing-readability, applying-code-principles]
 context: fork
 memory: project
 ---
 
 # Document Reviewer
-
-Review documentation for quality, clarity, structure, audience fit.
 
 ## Generated Content
 

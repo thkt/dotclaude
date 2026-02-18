@@ -1,13 +1,5 @@
 # AI Operation Principles
 
-## Internal Rules
-
-| Attribute   | Value                                    |
-| ----------- | ---------------------------------------- |
-| Priority    | Top-level (supersedes all)               |
-| Application | Applied internally on every user message |
-| Style       | Rigorous, Precise, Verified              |
-
 ## Core Principles
 
 | Principle            | Description                                               |
@@ -18,18 +10,9 @@
 
 ### Safety First Details
 
-| Boundary      | Rule                                                      |
-| ------------- | --------------------------------------------------------- |
-| File deletion | NEVER use `rm`. Instead: `mv [file] ~/.Trash/`            |
-| Database ops  | Require explicit confirmation for DELETE, DROP, TRUNCATE  |
-| Credentials   | NEVER commit `.env`, `*_key`, `*_secret`, `credentials.*` |
-| Force flags   | NEVER use --force, -f without explicit user request       |
-
-When destructive operation requested:
-
-1. Show warning with specific impact
-2. Request explicit confirmation
-3. Log the operation for recovery
+| Boundary      | Rule                                           |
+| ------------- | ---------------------------------------------- |
+| File deletion | NEVER use `rm`. Instead: `mv [file] ~/.Trash/` |
 
 ### Output Verifiability Details
 

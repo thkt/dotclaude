@@ -2,7 +2,7 @@
 name: subagent-reviewer
 description: Review sub-agent definition files for format, structure, quality.
 tools: [Read, Grep, Glob, LS]
-model: opus
+model: sonnet
 skills: [applying-code-principles]
 context: fork
 memory: project

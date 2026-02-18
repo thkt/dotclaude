@@ -102,30 +102,7 @@ else
 fi
 echo ""
 
-echo "☑️  5. Checklist Progress"
-
-CHECKLIST_DIR="$(dirname "$0")/../checklists"
-if [ -d "$CHECKLIST_DIR" ]; then
-  if [ -f "$CHECKLIST_DIR/impact-analysis.md" ]; then
-    TOTAL=$(grep -c "^- \[ \]" "$CHECKLIST_DIR/impact-analysis.md" || echo 0)
-    echo "  Impact analysis: 0/$TOTAL completed (action required)"
-  fi
-
-  if [ -f "$CHECKLIST_DIR/test-coverage.md" ]; then
-    TOTAL=$(grep -c "^- \[ \]" "$CHECKLIST_DIR/test-coverage.md" || echo 0)
-    echo "  Test updates: 0/$TOTAL completed (action required)"
-  fi
-
-  if [ -f "$CHECKLIST_DIR/rollback-plan.md" ]; then
-    TOTAL=$(grep -c "^- \[ \]" "$CHECKLIST_DIR/rollback-plan.md" || echo 0)
-    echo "  Rollback plan: 0/$TOTAL completed (action required)"
-  fi
-else
-  echo "${BLUE}ℹ️  Checklist templates not configured${NC}"
-fi
-echo ""
-
-echo "📝 6. Markdown Lint Check"
+echo "📝 5. Markdown Lint Check"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 

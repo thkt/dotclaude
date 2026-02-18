@@ -39,5 +39,5 @@ Building a feature? → /code → /audit
 
 ## 5. Next Steps
 
-- See [WORKFLOW_GUIDE.md](./rules/workflows/WORKFLOW_GUIDE.md) for patterns
+- See [WORKFLOW_REFERENCE.md](./rules/workflows/WORKFLOW_REFERENCE.md) for patterns
 - Run `/help` for all commands

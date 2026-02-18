@@ -2,7 +2,7 @@
 name: issue-generator
 description: Generate well-structured GitHub Issues from descriptions.
 tools: [Bash]
-model: opus
+model: sonnet
 skills: [utilizing-cli-tools]
 context: fork
 memory: project
@@ -10,29 +10,18 @@ memory: project
 
 # Issue Generator
 
-Generate GitHub Issues with structured templates.
-
 ## Type Detection
 
 Infer type from issue context:
 
-| Type      | When to use                                             |
-| --------- | ------------------------------------------------------- |
-| `bug`     | Something existing is broken or not working as expected |
-| `feature` | New capability or enhancement request                   |
-| `docs`    | Documentation additions or corrections                  |
-| `chore`   | Maintenance, config, or dependency updates              |
+| Type      | Prefix    | When to use                                             |
+| --------- | --------- | ------------------------------------------------------- |
+| `bug`     | [Bug]     | Something existing is broken or not working as expected |
+| `feature` | [Feature] | New capability or enhancement request                   |
+| `docs`    | [Docs]    | Documentation additions or corrections                  |
+| `chore`   | [Chore]   | Maintenance, config, or dependency updates              |
 
 Default to `feature` if unclear.
-
-## Issue Types
-
-| Type      | Prefix    | Use Case                  |
-| --------- | --------- | ------------------------- |
-| `bug`     | [Bug]     | Something isn't working   |
-| `feature` | [Feature] | New functionality request |
-| `docs`    | [Docs]    | Documentation improvement |
-| `chore`   | [Chore]   | Maintenance task          |
 
 ## Templates
 

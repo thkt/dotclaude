@@ -199,8 +199,8 @@ Some commands depend on external plugins that are not included in this repositor
 
 See the complete command reference:
 
-- [English Command Reference](./rules/workflows/WORKFLOW_GUIDE.md)
-- [日本語コマンドリファレンス](./.ja/rules/workflows/WORKFLOW_GUIDE.md)
+- [English Command Reference](./rules/workflows/WORKFLOW_REFERENCE.md)
+- [日本語コマンドリファレンス](./.ja/rules/workflows/WORKFLOW_REFERENCE.md)
 
 ## 🔄 Standard Workflows
 
@@ -249,8 +249,8 @@ Full details: [PRINCIPLES.md](./rules/PRINCIPLES.md)
 ### Core Documentation
 
 - [Design Philosophy](./docs/DESIGN.md) — **Why this design** (設計思想・意図)
-- [Commands Reference (English)](./rules/workflows/WORKFLOW_GUIDE.md)
-- [Commands Reference (Japanese)](./.ja/rules/workflows/WORKFLOW_GUIDE.md)
+- [Commands Reference (English)](./rules/workflows/WORKFLOW_REFERENCE.md)
+- [Commands Reference (Japanese)](./.ja/rules/workflows/WORKFLOW_REFERENCE.md)
 - [Configuration Guide](./CLAUDE.md)
 - [Japanese Configuration](./.ja/CLAUDE.md)
 

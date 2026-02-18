@@ -2,15 +2,13 @@
 name: setup-analyzer
 description: Analyze codebase setup requirements, generate setup guide.
 tools: [Bash, Read, Grep, Glob, LS]
-model: opus
+model: sonnet
 skills: [documenting-setup]
 context: fork
 memory: project
 ---
 
 # Setup Analyzer
-
-Generate environment setup guide from codebase analysis.
 
 ## Generated Content
 

@@ -34,60 +34,21 @@ Read entity/model files as source of truth.
 
 ## Discovery Rule
 
-Enumerate ALL directories under model root before reading. Every directory = potential entity or VO. No directory left unaccounted.
-
-## ORM Extraction Rules
-
-| ORM/Framework | Entity Detection             | Field Extraction                 | Invariant Detection                   |
-| ------------- | ---------------------------- | -------------------------------- | ------------------------------------- |
-| Prisma        | `model EntityName {`         | `fieldName Type @annotation`     | `@unique`, `@default`, `@@index`      |
-| TypeORM       | `@Entity()` class            | `@Column()` property             | `@Check()`, class validators          |
-| Sequelize     | `Model.init({...})`          | Properties in init config        | `validate:` options                   |
-| Drizzle       | `pgTable()`, `sqliteTable()` | Column definitions               | `.notNull()`, `.unique()`             |
-| Django        | `class X(models.Model)`      | `models.CharField(...)` etc      | `validators=`, `unique=True`          |
-| SQLAlchemy    | `class X(Base)`              | `Column(Type, ...)` declarations | `CheckConstraint`, `UniqueConstraint` |
-| Generic       | `class X` / `interface X`    | Property declarations + types    | throw/assert/validate in methods      |
+Enumerate ALL directories under model root before reading. Every directory = potential entity or VO.
 
 ## Schema Reading
 
-| Rule                 | Detail                                                               |
-| -------------------- | -------------------------------------------------------------------- |
-| Read full file       | Never grep for field values                                          |
-| Capture all fields   | Every field, not just "important" ones                               |
-| Preserve exact types | Use type names as defined in code, including `\| null`               |
-| Nullable detection   | `?? null` → nullable; no `?? null` → non-nullable; `?: T` → optional |
-| Enum implementation  | Record form: named_enum, object_literal, or class_wrapped            |
-| Enum values          | All values in declaration order; keys from actual code only          |
-| Preserve constraints | NOT NULL, required, @IsNotEmpty, validators                          |
-| Source location      | Project-relative path with line number consistently                  |
-| Naming discrepancy   | Note directory name ≠ type name                                      |
-| Code issues          | Flag typos, inconsistent patterns found during reading               |
-
-Anti-Hallucination: Every output field MUST have `source_file` traced to a Read call. No Read evidence = no output.
-
-### Prisma Schema
-
-Parse `model X { ... }` blocks as entity source of truth. `Type?` = nullable, `@relation` = relationship, `enum X { ... }` = enum values.
+| Rule                | Detail                                                    |
+| ------------------- | --------------------------------------------------------- |
+| Read full file      | Never grep for field values. No Read evidence = no output |
+| Capture all fields  | Every field with exact types as defined in code           |
+| Nullable detection  | `?? null` → nullable; `?: T` → optional                   |
+| Source traceability | Every output field → file:line from Read call             |
 
 ## Confidence
 
 | Evidence              | Level    |
 | --------------------- | -------- |
 | Schema + validator    | verified |
-| Schema file only      | verified |
 | Type/class definition | inferred |
 | Grep match only       | unknown  |
-
-## Validation Gate
-
-Before output, verify:
-
-| Check              | Rule                                                      |
-| ------------------ | --------------------------------------------------------- |
-| No phantom fields  | Every output field must trace to file:line from Read call |
-| Directory coverage | Every model directory → entity or VO in output            |
-| Nullable accuracy  | Every field's nullable status matches actual code pattern |
-| Enum accuracy      | Enum keys/values match code exactly, form documented      |
-| Path consistency   | All source paths use same project-relative format         |
-| Relationship depth | Indirect relationships (A → B → C) included in ER         |
-| Naming alignment   | Directory ≠ type name discrepancies noted                 |
