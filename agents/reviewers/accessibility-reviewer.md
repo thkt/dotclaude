@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
 skills: [a11y-specialist-skills:reviewing-a11y, web-design-guidelines, enhancing-progressively]
 context: fork
+memory: project
 ---
 
 # Accessibility Reviewer

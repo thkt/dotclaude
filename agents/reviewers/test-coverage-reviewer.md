@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [generating-tdd-tests, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # Test Coverage Reviewer

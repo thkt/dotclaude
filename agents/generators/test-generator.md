@@ -5,6 +5,7 @@ tools: [Read, Write, Grep, Glob, LS]
 model: opus
 skills: [generating-tdd-tests]
 context: fork
+memory: project
 ---
 
 # Test Generator

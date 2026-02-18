@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [formatting-audits, reviewing-readability, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # SOW/Spec Reviewer

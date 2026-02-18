@@ -5,6 +5,7 @@ tools: [Bash]
 model: opus
 skills: [utilizing-cli-tools]
 context: fork
+memory: project
 ---
 
 # Branch Name Generator

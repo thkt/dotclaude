@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS, mcp__mdn__*]
 model: opus
 skills: [enhancing-progressively]
 context: fork
+memory: project
 ---
 
 # Progressive Enhancer

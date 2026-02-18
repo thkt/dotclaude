@@ -4,6 +4,7 @@ description: TypeScript/build error resolution with minimal changes. No architec
 tools: [Bash, Read, Edit, Grep, Glob]
 model: opus
 context: fork
+memory: project
 ---
 
 # Build Error Resolver

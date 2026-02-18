@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
 skills: [optimizing-performance, vercel-react-best-practices, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # Performance Reviewer

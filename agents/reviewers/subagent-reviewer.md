@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [applying-code-principles]
 context: fork
+memory: project
 ---
 
 # Sub-Agent Reviewer

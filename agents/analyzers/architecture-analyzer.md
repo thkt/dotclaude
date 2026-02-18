@@ -5,6 +5,7 @@ tools: [Bash, Read, Grep, Glob, LS]
 model: opus
 skills: [documenting-architecture]
 context: fork
+memory: project
 ---
 
 # Architecture Analyzer

@@ -4,6 +4,7 @@ description: Compose feature architecture from explorer insights with implementa
 tools: [Glob, Grep, LS, Read, SendMessage]
 model: opus
 context: fork
+memory: project
 skills: [applying-code-principles]
 ---
 

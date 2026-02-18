@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-testability, generating-tdd-tests, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # Testability Reviewer

@@ -4,6 +4,7 @@ description: Trace execution paths from entry points through all processing laye
 tools: [Read, Grep, Glob, LS]
 model: sonnet
 context: fork
+memory: project
 ---
 
 # Code Flow Analyzer

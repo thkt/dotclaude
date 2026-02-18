@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [documenting-domains]
 context: fork
+memory: project
 ---
 
 # Domain Analyzer

@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [documenting-apis]
 context: fork
+memory: project
 ---
 
 # API Analyzer

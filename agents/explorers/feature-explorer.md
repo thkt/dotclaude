@@ -4,6 +4,7 @@ description: Analyze codebase features by tracing execution paths, mapping archi
 tools: [Glob, Grep, LS, Read, SendMessage]
 model: opus
 context: fork
+memory: project
 skills: [orchestrating-workflows]
 ---
 

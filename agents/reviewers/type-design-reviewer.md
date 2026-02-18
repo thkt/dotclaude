@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-type-safety, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # Type Design Reviewer

@@ -5,6 +5,7 @@ tools: [Bash, Read, Grep, Glob, LS]
 model: opus
 skills: [documenting-setup]
 context: fork
+memory: project
 ---
 
 # Setup Analyzer

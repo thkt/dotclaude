@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [applying-code-principles, applying-frontend-patterns]
 context: fork
+memory: project
 ---
 
 # Design Pattern Reviewer

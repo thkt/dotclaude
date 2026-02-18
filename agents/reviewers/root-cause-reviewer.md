@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [analyzing-root-causes, applying-code-principles]
 context: fork
+memory: project
 ---
 
 # Root Cause Reviewer

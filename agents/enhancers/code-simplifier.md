@@ -5,6 +5,7 @@ tools: [Read, Edit, Grep, Glob, LS]
 model: opus
 skills: [applying-code-principles, reviewing-readability]
 context: fork
+memory: project
 ---
 
 # Code Simplifier
