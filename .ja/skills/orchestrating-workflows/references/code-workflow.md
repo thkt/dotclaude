@@ -74,6 +74,7 @@
 
 > [!TIP]
 > - **{判断}**: {その判断をした理由}
+> - **不採用**: {棄却した代替案} — {棄却理由}
 
 ---
 
@@ -88,6 +89,6 @@
 
 - ファイルリンク: `file:///` + 絶対パス (VS Codeでクリック可能)
 - Diff: `@@` hunkヘッダーで行番号を含める
-- ファイル順序: リンク見出し → diff → `[!NOTE]` 変更内容 → `[!TIP]` 設計意図
+- ファイル順序: リンク見出し → diff → `[!NOTE]` 変更内容 → `[!TIP]` 設計意図（棄却した代替案がある場合は含める）
 - 出力: `$IDR_DIR/idr-{NN}.md` (自動採番)、`$IDR_DIR` = `.claude/workspace/planning/YYYY-MM-DD-[feature]/`
 - 言語: `settings.json` の `language` に従う

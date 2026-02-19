@@ -74,6 +74,7 @@ After completion:
 
 > [!TIP]
 > - **{decision}**: {why this decision was made}
+> - **Not adopted**: {rejected alternative} — {why rejected}
 
 ---
 
@@ -88,6 +89,6 @@ Rules:
 
 - File links: `file:///` + absolute path (VS Code clickable)
 - Diff: include `@@` hunk headers for line numbers
-- Per-file order: link heading → diff → `[!NOTE]` What Changed → `[!TIP]` Design Rationale
+- Per-file order: link heading → diff → `[!NOTE]` What Changed → `[!TIP]` Design Rationale (include rejected alternatives when they existed)
 - Output: `$IDR_DIR/idr-{NN}.md` (auto-numbered), `$IDR_DIR` = `.claude/workspace/planning/YYYY-MM-DD-[feature]/`
 - Language: follows `settings.json` `language`
