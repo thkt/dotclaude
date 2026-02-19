@@ -183,9 +183,10 @@ Fallback (best-effort): If no runner found, check for config files (e.g. `tsconf
 
 ### Step 2.5: Detect global analysis tools
 
-| Tool | Condition                                 | Command                                                                      |
-| ---- | ----------------------------------------- | ---------------------------------------------------------------------------- |
-| knip | `package.json` exists AND `knip` in $PATH | `knip --no-exit-code` (no config → `--config ~/.claude/templates/knip.json`) |
+| Tool          | Condition                                              | Command                                                                      |
+| ------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| knip          | `package.json` exists AND `knip` in $PATH              | `knip --no-exit-code` (no config → `--config ~/.claude/templates/knip.json`) |
+| react-doctor  | `package.json` has `react` in dependencies/devDeps     | `npx -y react-doctor@latest . --verbose`                                     |
 
 These run alongside project scripts in Step 3 (parallel). Skip silently if tool not found.
 
