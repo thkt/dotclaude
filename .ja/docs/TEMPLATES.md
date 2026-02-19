@@ -23,15 +23,15 @@ flowchart LR
 
 ## テンプレートカテゴリ
 
-| カテゴリ    | テンプレート                  | 生成コマンド      |
-| ----------- | ----------------------------- | ----------------- |
-| `sow/`      | SOW (Statement of Work)       | `/think`          |
-| `spec/`     | Specification                 | `/think`, `/spec` |
-| `research/` | Research findings             | `/research`       |
-| `adr/`      | Architecture Decision Records | `/adr`            |
-| `docs/`     | Documentation                 | `/docs`           |
-| `issue/`    | GitHub Issues                 | `/issue`          |
-| `audit/`    | Audit reports                 | `/audit`          |
+| カテゴリ    | テンプレート                  | 生成コマンド |
+| ----------- | ----------------------------- | ------------ |
+| `sow/`      | SOW (Statement of Work)       | `/think`     |
+| `spec/`     | Specification                 | `/think`     |
+| `research/` | Research findings             | `/research`  |
+| `adr/`      | Architecture Decision Records | `/adr`       |
+| `docs/`     | Documentation                 | `/docs`      |
+| `issue/`    | GitHub Issues                 | `/issue`     |
+| `audit/`    | Audit reports                 | `/audit`     |
 
 ## ドキュメントライフサイクル
 

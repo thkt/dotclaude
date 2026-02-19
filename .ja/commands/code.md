@@ -7,11 +7,11 @@ argument-hint: "[実装内容] [--frontend] [--principles] [--storybook]"
 
 # /code - TDD実装
 
-TDD/RGRCサイクルと品質チェックによるコード実装。
+TDD/RGRCサイクルによるコード実装。
 
 ## 入力
 
-実装の説明: `$1`（必須、空の場合はプロンプト表示）
+実装の説明: `$1`（必須、空→プロンプト表示）
 フラグ: `--frontend`, `--principles`, `--storybook`
 
 | フラグ         | 読み込み                   |
@@ -22,7 +22,7 @@ TDD/RGRCサイクルと品質チェックによるコード実装。
 
 ## SOWコンテキスト
 
-[@../skills/lib/sow-resolution.md]
+[@../../skills/lib/sow-resolution.md]
 
 ## Skills & Agents
 
@@ -44,15 +44,15 @@ TDD/RGRCサイクルと品質チェックによるコード実装。
 3. `TaskCreate` でテスト生成 + RGRCフェーズを作成
 4. `test-gen` チームメイトを spawn（`subagent_type: test-generator`）
 5. test-gen から DM でテスト結果を受信
-6. `ralph-loop` 自動イテレーションを伴う RGRC サイクル
+6. `ralph-loop` 自動イテレーション付き RGRC サイクル
 7. フェーズ完了ごとに `TaskUpdate`
 8. `SendMessage(shutdown_request)` を test-gen に送信
 
 ## エラーハンドリング
 
-| エラー                    | アクション                                |
-| ------------------------- | ----------------------------------------- |
-| test-gen DM タイムアウト  | Leader がテストを直接生成                 |
-| test-gen がテスト0件生成  | specの存在を確認、ユーザーに質問          |
-| Ralph-loop 停止           | ループ停止、手動修正                      |
-| 品質ゲート失敗            | コミット前に問題を修正                    |
+| エラー                   | アクション                       |
+| ------------------------ | -------------------------------- |
+| test-gen DM タイムアウト | Leader がテストを直接生成        |
+| test-gen がテスト0件生成 | specの存在を確認、ユーザーに質問 |
+| Ralph-loop 停止          | ループ停止、手動修正             |
+| 品質ゲート失敗           | コミット前に問題を修正           |

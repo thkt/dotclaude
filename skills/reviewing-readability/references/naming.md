@@ -27,6 +27,4 @@
 
 ## Test
 
-**"Can someone understand this name without seeing the implementation?"**
-
-If not → make it more specific.
+Can someone understand this name without seeing the implementation? If not → more specific.

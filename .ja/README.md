@@ -27,7 +27,7 @@
 │   ├── development/      # 開発パターン & 方法論
 │   └── workflows/        # ワークフローガイド
 ├── skills/               # スキルベースの知識モジュール（25スキル）
-├── agents/               # 専門AIエージェント（39エージェント）
+├── agents/               # 専門AIエージェント（34エージェント）
 │   ├── analyzers/        # アーキテクチャ & コード分析
 │   ├── architects/       # 機能アーキテクチャ設計
 │   ├── critics/          # 発見チャレンジャー（devils-advocate）
@@ -187,12 +187,6 @@ srt --version
 
 ```txt
 /research → /think → /code → /test → /audit → /validate
-```
-
-### 進捗モニタリング
-
-```txt
-/sow (いつでも進捗確認)
 ```
 
 ### バグ調査 & 修正

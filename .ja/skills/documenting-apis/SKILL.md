@@ -1,7 +1,10 @@
 ---
 name: documenting-apis
-description: コードベースからAPI仕様を生成 - エンドポイント、型、スキーマ。
-allowed-tools: Read, Write, Grep, Glob, Task
+description: >
+  コードベースからAPI仕様を生成 - エンドポイント、型、スキーマ。
+  REST/GraphQL APIのドキュメント化、OpenAPIスペック生成時、
+  またはユーザーがAPI仕様, エンドポイント一覧, API docs等に言及した場合に使用。
+allowed-tools: [Read, Write, Grep, Glob, Task]
 context: fork
 user-invocable: false
 ---
@@ -12,11 +15,11 @@ user-invocable: false
 
 スキーマ/型ファイルを信頼できる情報源として読み取る。フィールド抽出に grep を使用しない。
 
-| 優先度 | ソース           | 方法                     |
-| ------ | ---------------- | ------------------------ |
-| 1      | スキーマファイル | 全文読み取り、解析       |
-| 2      | ルート/リポジトリ| 全文読み取り、パス抽出   |
-| 3      | Grep             | 発見のみ                 |
+| 優先度 | ソース           | 方法                   |
+| ------ | ---------------- | ---------------------- |
+| 1      | スキーマファイル | 全文読み取り、解析     |
+| 2      | ルート/リポジトリ| 全文読み取り、パス抽出 |
+| 3      | Grep             | 発見のみ               |
 
 ## 検出
 

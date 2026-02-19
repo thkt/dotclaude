@@ -5,7 +5,7 @@ paths:
 
 # JP/EN Translation File Handling
 
-Guidelines for reviewing bilingual documentation with English sources and Japanese translations.
+Rules for bilingual EN/JP documentation.
 
 ## File Path Convention
 
@@ -16,7 +16,7 @@ ADR exception: Written in Japanese by default, no `.ja/` needed.
 
 ## Translation File Recognition
 
-Files under `.ja/` directory are Japanese translations of corresponding English files. They should NOT be compared for content consistency.
+Files under `.ja/` are Japanese translations of corresponding English files. Do not compare for content consistency.
 
 | Path Pattern        | Type           | Treatment             |
 | ------------------- | -------------- | --------------------- |
@@ -31,6 +31,17 @@ Files under `.ja/` directory are Japanese translations of corresponding English 
 | ----------- | ------------------------------------------------------------------------------------------------ |
 | DO review   | Structure consistency, YAML frontmatter, Mermaid diagrams, Links/references                      |
 | DO NOT flag | Different keywords in examples, Translated content, Localized formats, Natural language phrasing |
+
+## @-include Convention
+
+JP files share EN skill/reference files via @-include. Paths must account for extra `.ja/` depth.
+
+| JP file location | Path adjustment | Example |
+| --- | --- | --- |
+| `.ja/commands/` | Add one `../` vs EN | `[@../../skills/lib/sow-resolution.md]` |
+| `.ja/skills/.../references/` | Add two `../` vs EN | `[@../../../../skills/lib/sow-resolution.md]` |
+
+Resolve @-include path from JP file's directory; verify it reaches the EN target under `.claude/`.
 
 ## Example: Valid EN/JP Difference
 

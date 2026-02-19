@@ -2,17 +2,17 @@
 name: evidence-verifier
 description: Verify audit findings with positive evidence.
 tools: [Read, Grep, Glob, LS]
-model: sonnet
+model: opus
 context: fork
 ---
 
 # Evidence Verifier
 
-Collect positive evidence that findings ARE real problems. Every verdict backed by specific files and code paths.
+Collect positive evidence that findings are real problems.
 
 ## Input
 
-Findings from Leader via Task spawn prompt, including `verification_hint` fields.
+Findings from Leader via Task spawn prompt (includes `verification_hint` fields).
 
 ## Verification Process
 
@@ -40,7 +40,7 @@ Findings from Leader via Task spawn prompt, including `verification_hint` fields
 | confidence ≥ 0.60 | `pattern_search`      |
 | confidence < 0.60 | Report `unverifiable` |
 
-Maximum 5 tool calls per finding. If inconclusive → `weak_evidence` with `budget_exhausted: true`.
+After 5 files with inconclusive evidence → `weak_evidence` with `budget_exhausted: true`.
 
 ## Verdict Criteria
 
@@ -52,7 +52,7 @@ Maximum 5 tool calls per finding. If inconclusive → `weak_evidence` with `budg
 
 ## Output
 
-Return structured YAML via Task completion:
+Structured YAML:
 
 ```yaml
 verifications:
@@ -88,4 +88,4 @@ summary:
 | --------------- | -------------------------------------- |
 | Read-only       | Never modify code                      |
 | Hint-first      | Follow verification_hint when provided |
-| 5 calls/finding | Prevent runaway verification           |
+| 5 files/finding | Prevent runaway verification           |

@@ -2,7 +2,7 @@
 
 ## Scope Tier
 
-Estimate from Phase 1 file count. Confirm after exploration.
+From Phase 1 file count (confirm after exploration):
 
 | Tier   | Files | Team                        |
 | ------ | ----- | --------------------------- |
@@ -10,7 +10,7 @@ Estimate from Phase 1 file count. Confirm after exploration.
 | Medium | 4-15  | 2 explorers + architect     |
 | Large  | 16+   | 3 explorers + architect     |
 
-User can request full team on small scope.
+User can request full team on any scope.
 
 ## Team Structure (Large)
 
@@ -27,27 +27,27 @@ Small: Leader explores directly, spawns `architect` only.
 
 ## Seed Context
 
-Glob for `.analysis/architecture.yaml` in project root. If exists, include in explorer Task prompts as seed with instruction:
+Glob for `.analysis/architecture.yaml` in project root. If found, include in explorer Task prompts.
 
 > Architecture data as seed context. Verify independently, do not assume current.
 
 ## Workflow
 
-| Step | Actor     | Action                                                                 |
-| ---- | --------- | ---------------------------------------------------------------------- |
-| 1    | Leader    | `TeamCreate("feature-{timestamp}")`                                    |
-| 2    | Leader    | Read seed context (see Seed Context above)                             |
-| 3    | Leader    | TaskCreate (tier-dependent: Large x4, Medium x3, Small x1)             |
-| 4    | Leader    | Spawn teammates via Task with `team_name` (include seed in prompt)     |
-| 5    | Explorers | Investigate assigned focus area                                        |
-| 6    | Explorers | Council sharing round (see Council Protocol below)                     |
-| 7    | Explorers | DM enriched findings to `architect`                                    |
-| 8    | Architect | Process explorer findings incrementally                                |
-| 9    | Leader    | Wait for all explorers to complete                                     |
-| 10   | Leader    | AskUserQuestion for clarification (edge cases, error handling, etc.)   |
-| 11   | Leader    | SendMessage clarification answers to `architect`                       |
-| 12   | Architect | Produce final architecture design                                      |
-| 13   | Leader    | SendMessage `shutdown_request` to all teammates                        |
+| Step | Actor     | Action                                                                          |
+| ---- | --------- | ------------------------------------------------------------------------------- |
+| 1    | Leader    | `TeamCreate("feature-{timestamp}")`                                             |
+| 2    | Leader    | Read seed context (see Seed Context above)                                      |
+| 3    | Leader    | TaskCreate (tier-dependent: Large x4, Medium x3, Small x1)                      |
+| 4    | Leader    | Spawn teammates via Task with `team_name` (include seed in prompt)              |
+| 5    | Explorers | Investigate assigned focus area                                                 |
+| 6    | Explorers | Council sharing round (see Council Protocol below)                              |
+| 7    | Explorers | DM enriched findings to `architect`                                             |
+| 8    | Architect | Process explorer findings incrementally                                         |
+| 9    | Leader    | Wait for explorers. If incomplete after leader's own tasks finish, absorb scope |
+| 10   | Leader    | AskUserQuestion for clarification (edge cases, error handling)                  |
+| 11   | Leader    | SendMessage clarifications to `architect`                                       |
+| 12   | Architect | Produce final architecture design                                               |
+| 13   | Leader    | SendMessage `shutdown_request` to all teammates                                 |
 
 ## Focus Assignment
 
@@ -61,24 +61,24 @@ Agent: [feature-explorer.md](../../../agents/explorers/feature-explorer.md)
 
 ## Explorer Completion Criteria
 
-Each explorer must deliver a structured DM to architect containing:
+Each explorer must DM architect with:
 
-| Deliverable       | Description                                         |
-| ----------------- | --------------------------------------------------- |
-| Files analyzed    | List of files read with key findings per file        |
-| Patterns found    | Existing patterns relevant to the feature            |
-| Constraints       | Technical limitations or dependencies                |
-| Cross-layer notes | Discoveries shared via Council (P1/P2 items)         |
+| Deliverable       | Description                                   |
+| ----------------- | --------------------------------------------- |
+| Files analyzed    | List of files read with key findings per file |
+| Patterns found    | Existing patterns relevant to the feature     |
+| Constraints       | Technical limitations or dependencies         |
+| Cross-layer notes | Discoveries shared via Council (P1/P2 items)  |
 
-Leader validates: if an explorer reports zero files analyzed, re-assign or absorb into leader's scope.
+Leader validates: zero files analyzed → re-assign or absorb.
 
 ## Council Protocol: Explorer Council
 
-Explorers share cross-layer discoveries with peers before reporting to architect.
+Explorers share cross-layer discoveries with peers before reporting to architect:
 
 ### Layer Priority (conflict resolution)
 
-When findings conflict, upstream constraints override downstream:
+Upstream overrides downstream:
 
 | Priority | Layer | Rationale                     |
 | -------- | ----- | ----------------------------- |
@@ -86,7 +86,7 @@ When findings conflict, upstream constraints override downstream:
 | 2        | Core  | Business logic constrains API |
 | 3        | API   | UI adapts to both             |
 
-### Communication Priorities (what to share)
+### Communication Priorities
 
 | Priority | Trigger                           | Action                          |
 | -------- | --------------------------------- | ------------------------------- |
@@ -96,21 +96,25 @@ When findings conflict, upstream constraints override downstream:
 
 ## Architect Instructions
 
-Spawn `architect` with progressive mode instructions in the Task prompt:
+Spawn `architect` with progressive mode:
 
 1. Start pattern analysis immediately (don't wait for explorers)
 2. Incorporate explorer findings as they arrive via DM
-3. After receiving Leader's clarification DM → produce final design
-4. Compose architecture from explorer insights (don't pick from predefined templates)
+3. After Leader's clarification DM → produce final design
+4. Compose from explorer insights (not predefined templates)
 
 Agent: [feature-architect.md](../../../agents/architects/feature-architect.md)
 
 ## Post-Team
 
-1. Present composed architecture with traceability to explorer insights
-2. Ask for review (see Prompts reference)
+1. Present architecture with explorer insight traceability
+2. Ask for review (Prompts reference)
 3. If technical decision warrants → ask about ADR
 4. Execute /think → Output: SOW + Spec
 5. Write `architecture` section to handoff.yaml (components, contracts, sow/spec paths)
 
-If user says "whatever you think is best" → Proceed with composed architecture → Use Prompt: Delegation Confirm
+User says "whatever you think is best" → proceed → Prompt: Delegation Confirm
+
+## Error Handling
+
+See the Error Handling section in `/feature`.

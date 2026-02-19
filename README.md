@@ -26,8 +26,8 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── conventions/      # Documentation conventions
 │   ├── development/      # Development patterns & methodologies
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (31 skills)
-├── agents/               # Specialized AI agents (35 agents)
+├── skills/               # Skill-based knowledge modules (25 skills)
+├── agents/               # Specialized AI agents (34 agents)
 │   ├── analyzers/        # Architecture & code analyzers
 │   ├── architects/       # Feature architecture designers
 │   ├── critics/          # Finding challengers (devils-advocate)
@@ -170,13 +170,13 @@ Some commands use external CLI tools for data source integration:
 
 **Slack setup**:
 
-1. [Slack App](https://api.slack.com/apps) を作成し、User Token Scopes に `search:read` を追加
-2. User OAuth Token (`xoxp-...`) を取得
-3. 環境変数を設定:
+1. Create a [Slack App](https://api.slack.com/apps) and add `search:read` to User Token Scopes
+2. Obtain the User OAuth Token (`xoxp-...`)
+3. Set environment variables:
 
    ```bash
    export SLACK_TOKEN="xoxp-..."
-   export SLACK_WORKSPACE="your-workspace"  # {workspace}.slack.com の workspace 部分
+   export SLACK_WORKSPACE="your-workspace"  # the workspace part of {workspace}.slack.com
    ```
 
 ### Required Plugins
@@ -208,12 +208,6 @@ See the complete command reference:
 
 ```txt
 /research → /think → /code → /test → /audit → /validate
-```
-
-### Progress Monitoring
-
-```txt
-/sow (check progress anytime)
 ```
 
 ### Bug Investigation & Fix

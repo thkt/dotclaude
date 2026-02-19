@@ -48,8 +48,8 @@ cd {project_name}
 
 {configuration.config_files[].key_settings? (foreach)}
 **{configuration.config_files[].file}**:
-| Setting                                             | Value                                              |
-| --------------------------------------------------- | -------------------------------------------------- |
+| Setting                                             | Value                                               |
+| --------------------------------------------------- | --------------------------------------------------- |
 | {configuration.config_files[].key_settings[].name}  | {configuration.config_files[].key_settings[].value} |
 {/foreach}
 

@@ -3,7 +3,7 @@
 ## Flow
 
 ```text
-Phase 0: Spec → Skipped Tests
+Phase 0: SOW Context + Test Generation
 Phase 1-N: RGRC (one test at a time)
   Red → Green (Ralph-loop) → Refactor → Commit
 Completion: Quality Gates → IDR
@@ -17,7 +17,7 @@ Completion: Quality Gates → IDR
 
 ### Test Generation
 
-Prerequisites: spec.md with FR-xxx (Functional Requirement) items.
+Prerequisites: spec.md with FR-xxx items.
 
 1. Parse FR-xxx requirements from spec
 2. Generate ALL tests in **skip state**
@@ -36,7 +36,7 @@ For each test:
 
 ## Quality Gates
 
-Run lint, type-check, and test using the project's package manager (detect from lockfile). Run independent commands in parallel, capture individual exit codes.
+Run lint, type-check, test using project's package manager (detect from lockfile). Independent commands in parallel.
 
 ## Confidence-Based Decisions
 
@@ -48,7 +48,7 @@ Run lint, type-check, and test using the project's package manager (detect from 
 
 ## IDR Generation
 
-After completion, generate IDR:
+After completion:
 
 ````markdown
 # IDR: {summary title}
@@ -86,8 +86,8 @@ After completion, generate IDR:
 
 Rules:
 
-- File links: `file:///` + absolute path (clickable in VS Code)
+- File links: `file:///` + absolute path (VS Code clickable)
 - Diff: include `@@` hunk headers for line numbers
-- Order per file: link heading → diff → `[!NOTE]` What Changed → `[!TIP]` Design Rationale
-- Output path: `$IDR_DIR/idr-{NN}.md` (auto-numbered)
-- Output language: follows `settings.json` `language` setting
+- Per-file order: link heading → diff → `[!NOTE]` What Changed → `[!TIP]` Design Rationale
+- Output: `$IDR_DIR/idr-{NN}.md` (auto-numbered), `$IDR_DIR` = `.claude/workspace/planning/YYYY-MM-DD-[feature]/`
+- Language: follows `settings.json` `language`

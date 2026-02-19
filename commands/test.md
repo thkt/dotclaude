@@ -1,5 +1,5 @@
 ---
-description: Run project tests and validate code quality through comprehensive testing. Use when user mentions テスト実行, テスト走らせて, run tests, テストして.
+description: Run project tests and validate code quality. Use when user mentions テスト実行, テスト走らせて, run tests, テストして.
 allowed-tools: Bash(npm test), Bash(npm run), Bash(yarn test), Bash(yarn run), Bash(pnpm test), Bash(pnpm run), Bash(bun test), Bash(bun run), Bash(npx), Read, Glob, Grep, Task, AskUserQuestion
 model: opus
 argument-hint: "[test scope or specific tests]"
@@ -35,19 +35,12 @@ Run project tests with gap analysis and quality checks.
 | 3    | `Task` with `subagent_type: test-generator` for gaps |
 | 4    | Quality checks (lint, type-check)                    |
 
-## Flow: Execute
-
-```text
-[Execute] → [Result]
-```
-
 ## Error Handling
 
 | Error                | Action                                 |
 | -------------------- | -------------------------------------- |
 | No test runner found | Report "No test runner detected", stop |
 | test-generator fails | Skip gap analysis, report test results |
-| Tests fail to run    | Check setup, report error              |
 
 ## Display Format
 
@@ -72,6 +65,14 @@ Run project tests with gap analysis and quality checks.
 ### Success
 
 **Tests**: ✅ XX passed | ❌ XX failed | Coverage XX%
+
+## Escalation
+
+| Condition           | Suggest                                          |
+| ------------------- | ------------------------------------------------ |
+| Tests failing       | `/fix` for targeted bug fix with regression test |
+| Coverage gaps found | `/code` to implement missing tests via TDD       |
+| Multiple failures   | `/research` to investigate root cause            |
 
 ## Verification
 

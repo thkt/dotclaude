@@ -64,18 +64,18 @@ function calculateDiscount(amount, userType) {
 
 ## Acceptance Checklist
 
-| Question                              | If No         |
-| ------------------------------------- | ------------- |
-| Can this be a simple function?        | Start there   |
-| Is pattern solving actual problem?    | Remove it     |
-| Can I explain WHY this code exists?   | Refactor      |
-| Would I write this from scratch?      | Refactor      |
-| Is there simpler code achieving same? | Apply Occam's |
+| Question                           | If No         |
+| ---------------------------------- | ------------- |
+| Can this be a simple function?     | Start there   |
+| Is pattern solving actual problem? | Remove it     |
+| Can I explain WHY this exists?     | Refactor      |
+| Would I write this from scratch?   | Refactor      |
+| Is there simpler code for same?    | Apply Occam's |
 
 ## Rule
 
 Abstract only when:
 
 1. Same pattern appears 3+ times (DRY)
-2. Multiple implementations **actually** needed
-3. Current approach **measurably** fails
+2. Multiple implementations actually needed
+3. Current approach measurably fails

@@ -1,6 +1,6 @@
 # Design Philosophy
 
-This configuration is designed as a **framework to ensure consistency and quality for AI coding assistants**.
+**Framework for AI coding assistant consistency and quality.**
 
 📌 **[日本語版](../.ja/docs/DESIGN.md)**
 
@@ -48,7 +48,7 @@ graph TD
 
 ### 1. Core Layer — Safety & Transparency
 
-Top-priority rules. Prevent AI "runaway" and ensure users always understand the situation.
+Top-priority rules. Prevent AI runaway and keep users informed.
 
 | File                                                                | Intent             | Key Mechanism                                                 |
 | ------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
@@ -57,13 +57,13 @@ Top-priority rules. Prevent AI "runaway" and ensure users always understand the 
 
 **Why this design:**
 
-- Prohibit `rm` and replace with `mv ~/.Trash/` to leverage macOS Trash recovery
-- Output verification markers `[✓][→][?]` make AI confidence explicit
-- 7-item check prevents misimplementation from "false understanding"
+- `rm` prohibited; `mv ~/.Trash/` leverages macOS Trash recovery
+- `[✓][→][?]` markers make AI confidence explicit
+- 7-item check prevents "false understanding" misimplementation
 
 ### 2. Design Principles — Decision Framework
 
-Define priority order for design decisions and conflict resolution rules.
+Priority order and conflict resolution for design decisions.
 
 | File                                    | Intent                                                |
 | --------------------------------------- | ----------------------------------------------------- |
@@ -81,15 +81,15 @@ TDD / SOLID / YAGNI (Contextual)
 
 **Conflict Resolution Examples:**
 
-| Conflict           | Winner   | Reason                                              |
-| ------------------ | -------- | --------------------------------------------------- |
-| DRY vs Readable    | Readable | Accept duplication if abstraction hurts clarity     |
-| SOLID vs Simple    | Simple   | Avoid overdesign for imagined futures               |
-| Perfect vs Working | Working  | Ship leaky abstractions if they solve real problems |
+| Conflict           | Winner   | Reason                                       |
+| ------------------ | -------- | -------------------------------------------- |
+| DRY vs Readable    | Readable | Duplication over clarity-harming abstraction |
+| SOLID vs Simple    | Simple   | Avoid overdesign for imagined futures        |
+| Perfect vs Working | Working  | Ship if it solves real problems              |
 
 ### 3. Development Layer — Practical Standards
 
-Concrete standards and patterns for daily development.
+Concrete standards for daily development.
 
 | File                                                            | Intent                        | Key Threshold                          |
 | --------------------------------------------------------------- | ----------------------------- | -------------------------------------- |
@@ -109,13 +109,13 @@ Concrete standards and patterns for daily development.
 
 **Why this design:**
 
-- Self-detect AI-specific patterns like "infinite exploration" and "repeated fixes"
-- `TIDYINGS` clarifies "what can be cleaned up" to prevent over-refactoring
+- Self-detect AI patterns: infinite exploration, repeated fixes
+- `TIDYINGS` scopes cleanup to prevent over-refactoring
 - Quantitative thresholds (30 lines, 400 lines) remove subjectivity
 
 ### 4. Conventions Layer — Consistency Rules
 
-Rules to maintain consistency across documentation, plugins, and translations.
+Consistency across documentation, plugins, and translations.
 
 | File                                                               | Intent                       |
 | ------------------------------------------------------------------ | ---------------------------- |
@@ -164,7 +164,7 @@ flowchart LR
 | **Consistency**  | Naming conventions, file structure, command system                  |
 | **Learnability** | Explanatory mode, Insight display                                   |
 
-These mechanisms are built on the premise that "**AI makes mistakes**":
+Built on the premise that "**AI makes mistakes**":
 
 - Make mistakes **easy to detect**
 - Make mistakes **easy to fix**
@@ -172,15 +172,15 @@ These mechanisms are built on the premise that "**AI makes mistakes**":
 
 ## Detailed Documentation
 
-For more detailed design intentions, refer to the following documents:
+Refer to:
 
-| Document                            | Content                                     |
-| ----------------------------------- | ------------------------------------------- |
-| [COMMANDS](./COMMANDS.md)           | Command design intentions and relationships |
-| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent mechanisms and usage            |
-| [HOOKS](./HOOKS.md)                 | Hook system and IDR generation              |
-| [TEMPLATES](./TEMPLATES.md)         | Template system and document lifecycle      |
+| Document                            | Content                                |
+| ----------------------------------- | -------------------------------------- |
+| [COMMANDS](./COMMANDS.md)           | Command design and relationships       |
+| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent mechanisms and usage       |
+| [HOOKS](./HOOKS.md)                 | Hook system and IDR generation         |
+| [TEMPLATES](./TEMPLATES.md)         | Template system and document lifecycle |
 
 ---
 
-_This design document explains the "why" behind the configuration. For "how to use", see [README.md](../README.md)._
+_Explains the "why" behind the configuration. For "how to use", see [README.md](../README.md)._

@@ -13,11 +13,11 @@
 
 ### SOW/Spec自動検出
 
-[@../../lib/sow-resolution.md]
+[@../../../../skills/lib/sow-resolution.md]
 
 ### テスト生成
 
-前提: spec.md に FR-xxx（機能要件）項目が含まれていること。
+前提: spec.md に FR-xxx 項目が含まれていること。
 
 1. specからFR-xxx要件をパース
 2. 全テストを**スキップ状態**で生成
@@ -36,7 +36,7 @@
 
 ## 品質ゲート
 
-プロジェクトのパッケージマネージャーを使用して lint, type-check, test を実行（lockfile から検出）。独立したコマンドは並列実行し、個別の終了コードを取得。
+パッケージマネージャーで lint, type-check, test を実行（lockfile から検出）。独立コマンドは並列実行。
 
 ## 信頼度ベースの判断
 
@@ -48,7 +48,7 @@
 
 ## IDR生成
 
-完了後、IDRを生成:
+完了後:
 
 ````markdown
 # IDR: {要約タイトル}
@@ -88,6 +88,6 @@
 
 - ファイルリンク: `file:///` + 絶対パス (VS Codeでクリック可能)
 - Diff: `@@` hunkヘッダーで行番号を含める
-- ファイルごとの順序: リンク見出し → diff → `[!NOTE]` 変更内容 → `[!TIP]` 設計意図
-- 出力パス: `$IDR_DIR/idr-{NN}.md` (自動採番)
-- 出力言語: `settings.json` の `language` 設定に従う
+- ファイル順序: リンク見出し → diff → `[!NOTE]` 変更内容 → `[!TIP]` 設計意図
+- 出力: `$IDR_DIR/idr-{NN}.md` (自動採番)、`$IDR_DIR` = `.claude/workspace/planning/YYYY-MM-DD-[feature]/`
+- 言語: `settings.json` の `language` に従う

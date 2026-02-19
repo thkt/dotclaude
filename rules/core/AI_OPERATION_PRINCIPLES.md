@@ -4,15 +4,17 @@
 
 | Principle            | Description                                               |
 | -------------------- | --------------------------------------------------------- |
-| Safety First         | Maintain specific safety boundaries (see below)           |
+| Safety First         | Maintain safety boundaries (see below)                    |
 | User Authority       | User instructions are the ultimate authority              |
 | Output Verifiability | Every output must meet verification standards (see below) |
 
 ### Safety First Details
 
-| Boundary      | Rule                                           |
-| ------------- | ---------------------------------------------- |
-| File deletion | NEVER use `rm`. Instead: `mv [file] ~/.Trash/` |
+| Boundary            | Rule                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
+| File deletion       | NEVER use `rm`. Instead: `mv [file] ~/.Trash/`                                                   |
+| Authorization scope | Do not extend. Edit approval ≠ commit approval. Each action requires its own explicit permission |
+| Git commit          | Only when user explicitly requests. NEVER auto-commit after edits                                |
 
 ### Output Verifiability Details
 
@@ -39,7 +41,7 @@ When unable to verify:
 
 ### Debug Investigation Protocol
 
-When investigating bugs or errors, apply additional constraints:
+When investigating bugs or errors:
 
 | Phase       | Output Format  | Requirement                                                                           |
 | ----------- | -------------- | ------------------------------------------------------------------------------------- |
@@ -50,11 +52,11 @@ When investigating bugs or errors, apply additional constraints:
 
 Skip: Obvious cause (typo, syntax error, off-by-one) → single hypothesis sufficient.
 
-| Constraint               | Action                                             |
-| ------------------------ | -------------------------------------------------- |
-| Hypothesis as conclusion | Append `Elimination:` with test + result first     |
-| Speculation ("probably") | Follow with verification command before concluding |
-| Single hypothesis only   | Generate ≥2 alternatives before proceeding         |
+| Constraint               | Action                                         |
+| ------------------------ | ---------------------------------------------- |
+| Hypothesis as conclusion | Append `Elimination:` with test + result first |
+| Speculation ("probably") | Verify with command before concluding          |
+| Single hypothesis only   | Generate ≥2 alternatives before proceeding     |
 
 ## Rule Priority
 

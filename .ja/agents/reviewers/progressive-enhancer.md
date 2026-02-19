@@ -9,7 +9,7 @@ context: fork
 
 # プログレッシブエンハンサー
 
-CSSファーストアプローチのレビュー。CSS/HTMLで十分な箇所でのJavaScript使用を検出。
+CSS/HTMLで十分な箇所でのJavaScript使用を検出。
 
 ## 生成コンテンツ
 
@@ -40,7 +40,7 @@ CSSファーストアプローチのレビュー。CSS/HTMLで十分な箇所で
 
 ## 出力
 
-構造化YAMLを返す:
+構造化YAML:
 
 ```yaml
 findings:

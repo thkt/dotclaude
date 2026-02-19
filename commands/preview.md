@@ -55,9 +55,18 @@ argument-hint: "[PR URL or number]"
 
 ## Rules
 
-| Rule               | Detail                                                                                       |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| No auto-post       | Never post comments to PR automatically                                                      |
-| Abort on dirty     | If uncommitted changes exist, warn and abort                                                 |
-| Speed over depth   | This is screening, not full audit                                                            |
-| Verify before flag | Before reporting [ask]/[want]+, confirm the issue manifests in actual user interaction paths |
+| Rule               | Detail                                                                 |
+| ------------------ | ---------------------------------------------------------------------- |
+| No auto-post       | Never post comments to PR automatically                                |
+| Abort on dirty     | If uncommitted changes exist, warn and abort                           |
+| Speed over depth   | This is screening, not full audit                                      |
+| Verify before flag | Before [ask]/[want]+, confirm the issue manifests in actual user paths |
+
+## /preview vs /audit
+
+| Aspect | /preview            | /audit                       |
+| ------ | ------------------- | ---------------------------- |
+| Scope  | PR diff only        | Any file set                 |
+| Depth  | Screening (1 pass)  | Multi-reviewer + challenger  |
+| Speed  | Fast (sonnet)       | Thorough (opus, parallel)    |
+| Use    | Before human review | Before merge or quality gate |

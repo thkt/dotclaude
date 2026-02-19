@@ -1,9 +1,8 @@
 ---
 name: orchestrating-workflows
 description: >
-  Command workflow orchestration patterns for /code, /fix, /audit, and other implementation commands.
-  Use when implementing features with /code, /fix, /audit commands, or when user mentions
-  workflow, ワークフロー, RGRC, quality gates, 品質ゲート, completion criteria.
+  Workflow orchestration for /code, /fix, /audit, and other commands.
+  Triggers: workflow, ワークフロー, RGRC, quality gates, 品質ゲート, completion criteria.
 allowed-tools: [Read, Write, Grep, Glob, Task, Bash(npm:*, npx:*, tsc:*, bun:*)]
 user-invocable: false
 ---
@@ -19,11 +18,11 @@ user-invocable: false
 
 ## Patterns
 
-| Pattern         | Reference                                                                           |
-| --------------- | ----------------------------------------------------------------------------------- |
-| IDR Generation  | [hooks/lifecycle/idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh)        |
-| TDD Cycle       | [@./references/tdd-cycle.md](./references/tdd-cycle.md)                             |
-| Test Generation | [@./references/test-generation.md](./references/test-generation.md)                 |
+| Pattern         | Reference                                                                    |
+| --------------- | ---------------------------------------------------------------------------- |
+| IDR Generation  | [hooks/lifecycle/idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh) |
+| TDD Cycle       | [@./references/tdd-cycle.md](./references/tdd-cycle.md)                      |
+| Test Generation | [@./references/test-generation.md](./references/test-generation.md)          |
 
 ## Quality Gates
 

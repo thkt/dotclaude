@@ -48,9 +48,9 @@ cd {project_name}
 
 {configuration.config_files[].key_settings? (foreach)}
 **{configuration.config_files[].file}**:
-| 設定                                                | 値                                                 |
-| --------------------------------------------------- | -------------------------------------------------- |
-| {configuration.config_files[].key_settings[].name}  | {configuration.config_files[].key_settings[].value} |
+| 設定                                               | 値                                                  |
+| -------------------------------------------------- | --------------------------------------------------- |
+| {configuration.config_files[].key_settings[].name} | {configuration.config_files[].key_settings[].value} |
 {/foreach}
 
 ## 実行

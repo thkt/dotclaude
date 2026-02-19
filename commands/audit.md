@@ -115,6 +115,14 @@ Each sub-reviewer is spawned directly via Task:
 - Prompt: assigned file list + focus + finding schema
 - No team_name (standalone background agents)
 
+#### Pipeline Roles
+
+| Role       | subagent_type          | Purpose                             |
+| ---------- | ---------------------- | ----------------------------------- |
+| challenger | devils-advocate-audit  | Challenge findings (reduce FP)      |
+| verifier   | evidence-verifier      | Verify findings (positive evidence) |
+| integrator | progressive-integrator | Reconcile into root causes          |
+
 #### Sequential Dependencies
 
 | Reviewer   | Depends On            | Reason                     |
@@ -140,16 +148,16 @@ Since agents are standalone (not team), leader collects results via Task output:
 
 ### Error Handling
 
-| Error              | Recovery                                                 |
-| ------------------ | -------------------------------------------------------- |
-| No files to audit  | Return "No files to audit"                               |
-| Reviewer timeout   | 300s; proceed with completed reviewers                   |
-| Malformed YAML     | Skip reviewer, log warning, proceed with valid reviewers |
-| Dependency timeout | Skip dependent reviewer (e.g., root-cause if CQ failed)  |
-| Max parallel >10   | Batch in groups of 10 with sequential waits              |
-| Challenger timeout | 120s; proceed with verifier only                         |
-| Verifier timeout   | 120s; proceed with challenger only                       |
-| Integrator timeout | 120s; Leader integrates manually                         |
+| Error             | Recovery                                                             |
+| ----------------- | -------------------------------------------------------------------- |
+| No files to audit | Return "No files to audit"                                           |
+| Reviewer stall    | If not completed when all peers finish, proceed without it           |
+| Malformed YAML    | Skip reviewer, log warning, proceed with valid reviewers             |
+| Dependency stall  | Skip dependent reviewer (e.g., root-cause if CQ failed)              |
+| Max parallel >10  | Batch in groups of 10 with sequential waits                          |
+| Challenger stall  | If not completed when verifier finishes, proceed without             |
+| Verifier stall    | If not completed when challenger finishes, proceed without           |
+| Integrator stall  | If not completed after both inputs ready, Leader integrates manually |
 
 ## Pre-flight: Static Analysis
 

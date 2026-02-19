@@ -15,12 +15,12 @@ paths:
 
 ## Rules
 
-| Rule                 | Guideline                                            |
-| -------------------- | ---------------------------------------------------- |
-| Miller's Law         | Responsibilities ≤7 (8-9: warning, >9: must split)   |
-| Thin Wrapper Pattern | Orchestration only, no implementation details        |
-| 2-Layer Architecture | Skills → Commands (Agents are separate for analysis) |
-| Size Limit           | ≤100 lines (101-200: warning, >200: must split)      |
+| Rule                 | Guideline                                        |
+| -------------------- | ------------------------------------------------ |
+| Miller's Law         | Responsibilities ≤7 (8-9: warning, >9: split)    |
+| Thin Wrapper Pattern | Orchestration only, no implementation details    |
+| 2-Layer Architecture | Skills → Commands (Agents separate for analysis) |
+| Size Limit           | ≤100 lines (101-200: warning, >200: split)       |
 
 ## When to Apply
 
@@ -37,21 +37,24 @@ paths:
 commands/
 └── [command].md
 
-skills/[skill-name]/
-├── SKILL.md
-└── references/
-    ├── [workflow].md
-    └── [topic].md
+skills/
+├── lib/              # shared @-include fragments (e.g., sow-resolution.md)
+└── [skill-name]/
+    ├── SKILL.md
+    └── references/
+        ├── [workflow].md
+        └── [topic].md
 ```
 
 ## Reference Patterns
 
 Commands reference skills in two ways:
 
-| Pattern        | Syntax                                  | Use Case                          |
-| -------------- | --------------------------------------- | --------------------------------- |
-| @import        | `[@../skills/name/references/file.md]`  | Inline content (templates, data)  |
-| Name reference | `Skill: skill-name (description)`       | Skill auto-loading by Skill tool  |
+| Pattern        | Syntax                                 | Use Case                         |
+| -------------- | -------------------------------------- | -------------------------------- |
+| @import        | `[@../skills/name/references/file.md]` | Inline content (templates, data) |
+| Cross-skill    | `[@../../lib/file.md]`                 | Shared fragments from skills/lib |
+| Name reference | `Skill: skill-name (description)`      | Skill auto-loading by Skill tool |
 
 ## Examples
 
@@ -72,7 +75,7 @@ TDD implementation with RGRC cycle.
 - [@../skills/orchestrating-feature/references/exploration-team.md]
 ```
 
-Why good: Orchestrates phases, delegates details to skills.
+Orchestrates phases, delegates details to skills.
 
 ### Bad: Monolithic (900 lines)
 
@@ -86,4 +89,4 @@ Why good: Orchestrates phases, delegates details to skills.
 ## Full test patterns here
 ```
 
-Why bad: Miller's Law violation, DRY violation, hard to maintain.
+Miller's Law + DRY violation, hard to maintain.

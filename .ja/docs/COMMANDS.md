@@ -1,6 +1,6 @@
 # コマンド設計
 
-コマンドの設計意図と関係性を説明します。
+コマンドの設計と関係性。
 
 📌 **[English Version](../../docs/COMMANDS.md)**
 
@@ -24,21 +24,15 @@ graph TD
     end
 ```
 
-## コマンドカテゴリ
+## コマンド & ワークフロー
 
-| カテゴリ     | コマンド                               | 目的             |
-| ------------ | -------------------------------------- | ---------------- |
-| 計画         | `/think`, `/research`, `/sow`, `/spec` | 要件定義・調査   |
-| 実装         | `/code`, `/fix`, `/test`               | コード実装       |
-| 品質         | `/audit`, `/polish`, `/validate`       | 品質保証         |
-| ドキュメント | `/docs`, `/adr`, `/e2e`                | ドキュメント生成 |
-| Git          | `/commit`, `/branch`, `/pr`, `/issue`  | Git操作          |
+[WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) にコマンド一覧と選択ガイドあり。
 
 ## 設計原則
 
 ### 1. Thin Wrapper パターン
 
-コマンドは「オーケストレーター」であり、実装詳細を持たない。
+コマンドはオーケストレーター、実装詳細を持たない。
 
 ```markdown
 # 良い例: /code
@@ -54,7 +48,7 @@ graph TD
 
 ### 2. 条件付きコンテキストロード
 
-必要な時だけスキルをロード。
+必要時のみスキルをロード。
 
 ```markdown
 /code --frontend → applying-frontend-patterns をロード
@@ -64,50 +58,24 @@ graph TD
 
 ### 3. グレースフルデグラデーション
 
-外部プラグインがなくても動作する。
+外部プラグインなしでも動作。
 
 ```markdown
 ralph-loop あり → 自動RGRC反復
 ralph-loop なし → 手動確認モード (機能は同じ)
 ```
 
-## コマンドの関係性
-
-```mermaid
-flowchart LR
-    subgraph Quick["クイックフィックス"]
-        F["/fix"]
-    end
-    subgraph Investigate["調査"]
-        R1["/research"] --> F2["/fix"]
-    end
-    subgraph Feature["完全ワークフロー"]
-        R2["/research"] --> T["/think"]
-        T --> S["/spec"]
-        S --> C["/code"]
-        C --> TE["/test"]
-        TE --> A["/audit"]
-        A --> P["/polish"]
-        P --> V["/validate"]
-    end
-```
-
-| パターン             | 使用場面               |
-| -------------------- | ---------------------- |
-| `/fix` のみ          | 原因が明確な小さなバグ |
-| `/research` → `/fix` | 原因不明の問題         |
-| 完全ワークフロー     | 新機能、複雑な変更     |
-
 ## コマンド → スキル/エージェント対応表
 
-| コマンド  | 使用スキル                                    | 使用エージェント   |
-| --------- | --------------------------------------------- | ------------------ |
-| `/think`  | -                                             | -                  |
-| `/code`   | orchestrating-workflows, generating-tdd-tests | test-generator     |
-| `/audit`  | applying-code-principles                      | 13 reviewer agents |
-| `/fix`    | -                                             | -                  |
-| `/polish` | -                                             | code-simplifier    |
-| `/docs`   | documenting-\*                                | \*-analyzer        |
+| コマンド  | 使用スキル                                    | 使用エージェント                                                      |
+| --------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| `/think`  | -                                             | -                                                                     |
+| `/code`   | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
+| `/audit`  | applying-code-principles                      | 13 reviewer agents                                                    |
+| `/fix`    | -                                             | -                                                                     |
+| `/polish` | -                                             | code-simplifier                                                       |
+| `/feature`| orchestrating-feature                         | feature-explorer, feature-architect, test-generator, unit-implementer |
+| `/docs`   | documenting-\*                                | \*-analyzer                                                           |
 
 ## ファイル構造
 

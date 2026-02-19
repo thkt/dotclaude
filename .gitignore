@@ -1,24 +1,23 @@
-# OS Files
+# OS
 .DS_Store
 Thumbs.db
 
-# Editor directories and files
+# Editors
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
 
-# Workspace and temporary files
+# Workspace / temp
 workspace/
-golden-masters/
 archive/
 debug/
 *.log
 *.tmp
 *.temp
 
-# Claude specific
+# Claude
 /.claude/
 /.analysis/
 /.credentials.json
@@ -35,27 +34,53 @@ debug/
 /todos/
 /tasks/
 
-# Claude session history
+# Session history
 history.jsonl
 *.jsonl
 file-history/
 
-# Private/Local configurations
+# Private / local config
 local/
 *.local
 .env
+.env.*
+!.env.example
+!.env.sample
+
+# Secrets / credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.secret
+*.secrets
+id_rsa
+id_ed25519
+credentials.csv
+credentials.json
+*-service-account*.json
+token.json
+
+# Database dumps
+*.sqlite3
+*.sqlite
+dump.sql
+*.sql.gz
 
 # Cache
 cache/
 *cache
 stats-cache.json
 
-# Session and runtime data
+# Runtime
 logs/
 session-env/
 plans/
 
-# Plugin system
+# Plugins
 .claude-plugin/.cache/
 plugins/*
 !plugins/README.md
+
+# Backups
+backups/

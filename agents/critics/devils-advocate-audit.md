@@ -2,7 +2,7 @@
 name: devils-advocate-audit
 description: Challenge audit findings to reduce false positives.
 tools: [Read, Grep, Glob, LS]
-model: sonnet
+model: opus
 context: fork
 ---
 

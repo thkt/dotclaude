@@ -1,7 +1,10 @@
 ---
 name: documenting-apis
-description: Generate API specification from codebase - endpoints, types, schemas.
-allowed-tools: Read, Write, Grep, Glob, Task
+description: >
+  Generate API specification from codebase - endpoints, types, schemas.
+  Use when documenting REST/GraphQL APIs, generating OpenAPI specs,
+  or when user mentions API仕様, エンドポイント一覧, API docs, endpoint documentation.
+allowed-tools: [Read, Write, Grep, Glob, Task]
 context: fork
 user-invocable: false
 ---

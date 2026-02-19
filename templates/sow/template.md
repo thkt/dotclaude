@@ -29,6 +29,17 @@ draft <!-- draft | in-progress | completed -->
 
 - [exclusion 1]
 
+### YAGNI Checklist
+
+Check only if needed (unchecked = excluded):
+
+- [ ] Complex permission management
+- [ ] Analytics/monitoring dashboards
+- [ ] Caching layers
+- [ ] Multi-tenant / API versioning
+- [ ] Real-time notifications
+- [ ] Batch processing / scheduled jobs
+
 ## Acceptance Criteria
 
 ### AC-1: [title]
@@ -45,9 +56,9 @@ draft <!-- draft | in-progress | completed -->
 
 ## Test Plan
 
-| Test | Target   | Verification     |
-| ---- | -------- | ---------------- |
-| T-1  | [target] | [what to verify] |
+| Test | AC   | Target   | Verification     |
+| ---- | ---- | -------- | ---------------- |
+| T-1  | AC-N | [target] | [what to verify] |
 
 ## Risks
 

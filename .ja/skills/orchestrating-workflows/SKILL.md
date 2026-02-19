@@ -1,10 +1,10 @@
 ---
 name: orchestrating-workflows
 description: >
-  Command workflow orchestration patterns for /code, /fix, /audit, and other implementation commands.
-  Triggers: workflow, orchestration, command flow, IDR, test generation, RGRC, quality gates, completion criteria,
+  Workflow orchestration for /code, /fix, /audit, and other commands.
+  Triggers: workflow, orchestration, IDR, RGRC, quality gates,
   ワークフロー, 実装フロー, テスト生成, 品質ゲート, 完了基準.
-allowed-tools: [Read, Write, Grep, Glob, Task, Bash]
+allowed-tools: [Read, Write, Grep, Glob, Task, Bash(npm:*, npx:*, tsc:*, bun:*)]
 user-invocable: false
 ---
 
@@ -19,11 +19,11 @@ user-invocable: false
 
 ## パターン
 
-| パターン    | 参照                                                                                |
-| ----------- | ----------------------------------------------------------------------------------- |
-| IDR生成     | [hooks/lifecycle/idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh)        |
-| TDDサイクル | [@./references/tdd-cycle.md](./references/tdd-cycle.md)                             |
-| テスト生成  | [@./references/test-generation.md](./references/test-generation.md)                 |
+| パターン    | 参照                                                                         |
+| ----------- | ---------------------------------------------------------------------------- |
+| IDR生成     | [hooks/lifecycle/idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh) |
+| TDDサイクル | [@./references/tdd-cycle.md](./references/tdd-cycle.md)                      |
+| テスト生成  | [@./references/test-generation.md](./references/test-generation.md)          |
 
 ## 品質ゲート
 

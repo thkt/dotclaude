@@ -2,7 +2,7 @@
 name: devils-advocate-design
 description: Challenge design proposals to expose hidden weaknesses.
 tools: [Read, Grep, Glob, LS]
-model: sonnet
+model: opus
 context: fork
 ---
 

@@ -1,7 +1,10 @@
 ---
 name: documenting-domains
-description: コードベース分析からドメインドキュメントを生成
-allowed-tools: Read, Write, Grep, Glob, Task
+description: >
+  コードベース分析からドメインドキュメントを生成。
+  ドメインモデル、エンティティ関係、ビジネスルールのドキュメント化時、
+  またはユーザーがドメインモデル, エンティティ, ER図, domain model等に言及した場合に使用。
+allowed-tools: [Read, Write, Grep, Glob, Task]
 context: fork
 user-invocable: false
 ---

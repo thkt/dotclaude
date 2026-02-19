@@ -60,8 +60,6 @@ Auto: All solo conditions met → Solo, otherwise → Team
 | `/audit`    | Code review via agents                                           |
 | `/polish`   | Remove AI-generated slop                                         |
 | `/validate` | Validate SOW conformance                                         |
-| `/spec`     | Generate Spec (implementation details)                           |
-| `/sow`      | Display SOW progress                                             |
 | `/feature`  | Full feature lifecycle (explore + architect + implement + audit) |
 
 ### Quick Actions
@@ -127,6 +125,4 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 | `/issue`    | Readable Code                | Miller's Law                                |
 | `/docs`     | Readable Code                | Progressive Enhancement                     |
 | `/adr`      | SOLID                        | Leaky Abstraction                           |
-| `/sow`      | Occam's Razor                | Progressive Enhancement                     |
-| `/spec`     | Occam's Razor, SOLID         | TDD                                         |
 | `/e2e`      | TDD                          | Progressive Enhancement                     |

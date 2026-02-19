@@ -5,7 +5,7 @@ set +e
 EXCLUDE_DIRS=(
   node_modules .git dist build __pycache__ target .next coverage
   debug .analysis file-history cache chrome projects logs
-  shell-snapshots golden-masters paste-cache plans plugins ide
+  shell-snapshots paste-cache plans plugins ide
   .ja statsig telemetry todos tasks sounds session-env
 )
 
@@ -14,7 +14,11 @@ SHOULD_UPDATE_SCRIPT="${HOME}/.claude/scripts/should-update-codemap.sh"
 
 STDERR_TMP=$(mktemp) || exit 0
 trap 'rm -f "$STDERR_TMP"' EXIT
-RESULT=$("$SHOULD_UPDATE_SCRIPT" 2>"$STDERR_TMP") || exit 0
+if ! RESULT=$("$SHOULD_UPDATE_SCRIPT" 2>"$STDERR_TMP"); then
+  REASON=$(cat "$STDERR_TMP")
+  [ -n "$REASON" ] && echo "[Codemap] Warning: $REASON" >&2
+  exit 0
+fi
 REASON=$(cat "$STDERR_TMP")
 
 [ "$RESULT" = "false" ] && exit 0
@@ -25,7 +29,10 @@ PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 CODEMAP_DIR="${PROJECT_ROOT}/.analysis"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-mkdir -p "$CODEMAP_DIR"
+if ! mkdir -p "$CODEMAP_DIR"; then
+  echo "[Codemap] Error: cannot create $CODEMAP_DIR" >&2
+  exit 0
+fi
 
 SCRIPTS_DIR="${HOME}/.claude/scripts"
 
@@ -56,7 +63,7 @@ find_entry_points() {
 
 find_key_exports() {
   local full_path="${1:-$PROJECT_ROOT}"
-  grep -rh "^export \(default \)\?\(function\|const\|class\|interface\|type\)" "$full_path" 2>/dev/null | \
+  grep -Erh "^export (default )?(function|const|class|interface|type)" "$full_path" 2>/dev/null | \
     sed 's/export default /export /; s/export //' | \
     cut -d'(' -f1 | cut -d'=' -f1 | cut -d'{' -f1 | \
     awk '{print $1, $2}' | sort -u | head -20 || echo "(none)"
@@ -143,8 +150,14 @@ emit_yaml() {
   } > "$CODEMAP_DIR/architecture.yaml"
 }
 
-emit_markdown
-emit_yaml
+if ! emit_markdown; then
+  echo "[Codemap] Error: Failed to generate architecture.md" >&2
+  exit 0
+fi
+if ! emit_yaml; then
+  echo "[Codemap] Error: Failed to generate architecture.yaml" >&2
+  exit 0
+fi
 
 if command -v prettier &> /dev/null; then
   prettier --write "$CODEMAP_DIR/architecture.md" 2>/dev/null || echo "[Codemap] Warning: prettier formatting failed" >&2

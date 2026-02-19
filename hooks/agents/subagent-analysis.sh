@@ -8,13 +8,14 @@ TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
 INPUT=$(cat)
 IFS=$'\t' read -r AGENT_ID TRANSCRIPT_PATH <<< "$(printf '%s' "$INPUT" | jq -r '[(.agent_id // "unknown"), (.agent_transcript_path // "")] | @tsv' 2>/dev/null)"
+LAST_MSG=$(printf '%s' "$INPUT" | jq -r '.last_assistant_message // ""' 2>/dev/null)
 
-# Sanitize AGENT_ID to prevent path traversal
+# Sanitize AGENT_ID (path traversal prevention)
 AGENT_ID="${AGENT_ID//[^a-zA-Z0-9_-]/_}"
 
 if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-  # Validate transcript path is under expected directories
-  case "${TRANSCRIPT_PATH:a}" in
+  # Validate path is under expected directories
+  case "${TRANSCRIPT_PATH:A}" in
     /tmp/*|/private/tmp/*|"$HOME"/*) ;;
     *) echo "⚠ Unexpected transcript path: $AGENT_ID" >&2; exit 0 ;;
   esac
@@ -27,9 +28,14 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
     chmod 600 "$LOG_FILE"
     ln -sf "$LOG_FILE" "$AGENT_LOG_DIR/latest.json"
 
-    find "$AGENT_LOG_DIR" -name "transcript-*.json" -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
+    if [ -n "$LAST_MSG" ]; then
+      printf '%s\n' "$LAST_MSG" > "$AGENT_LOG_DIR/summary-${TIMESTAMP}.txt"
+      ln -sf "$AGENT_LOG_DIR/summary-${TIMESTAMP}.txt" "$AGENT_LOG_DIR/latest-summary.txt"
+    fi
 
-    LINE_COUNT=$(wc -l < "$TRANSCRIPT_PATH" | tr -d ' ')
+    find "$AGENT_LOG_DIR" \( -name "transcript-*.json" -o -name "summary-*.txt" \) -mtime +30 -exec mv {} ~/.Trash/ \; 2>/dev/null || true
+
+    LINE_COUNT=$(wc -l < "$LOG_FILE" | tr -d ' ')
     echo "✓ Agent log saved: $AGENT_ID (${LINE_COUNT} lines)"
   else
     echo "⚠ Failed to save agent log: $AGENT_ID" >&2

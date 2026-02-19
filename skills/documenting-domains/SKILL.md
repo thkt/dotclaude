@@ -1,7 +1,10 @@
 ---
 name: documenting-domains
-description: Generate domain documentation from codebase analysis
-allowed-tools: Read, Write, Grep, Glob, Task
+description: >
+  Generate domain documentation from codebase analysis.
+  Use when documenting domain models, entity relationships, business rules,
+  or when user mentions ドメインモデル, エンティティ, ER図, domain model, entity documentation.
+allowed-tools: [Read, Write, Grep, Glob, Task]
 context: fork
 user-invocable: false
 ---
