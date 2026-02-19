@@ -1,6 +1,6 @@
 ---
 description: SOWとSpec生成を伴う設計探索。ユーザーが計画して, 設計して, アプローチ検討, 方針決め, planning等に言及した場合に使用。
-allowed-tools: Skill, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
+allowed-tools: Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[タスク説明]"
 ---
@@ -24,8 +24,8 @@ argument-hint: "[タスク説明]"
 | 4    | 設計構成          | トレーサビリティ付き最適設計           |
 | 5    | ユーザーレビュー  | 承認された設計（トレードオフ根拠付き） |
 | 5.5  | ADR提案           | （必要な場合）                         |
-| 6    | /sow              | sow.md                                 |
-| 7    | /spec             | spec.md                                |
+| 6    | SOW生成           | sow.md                                 |
+| 7    | Spec生成          | spec.md                                |
 | 8    | sow-spec-reviewer | （オプション、≥90）                    |
 | 9    | SOW → Todos       | TaskCreate                             |
 
@@ -77,6 +77,20 @@ argument-hint: "[タスク説明]"
 | ------------ | ------------ | ------ |
 | [やること]   | [諦めたこと] | [根拠] |
 ```
+
+## ドキュメント生成（Steps 6-7）
+
+### Step 6: SOW
+
+テンプレート `templates/sow/template.md` を Read。設計コンテキスト（Steps 1-5）から生成。ID形式: AC-N。
+出力: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
+
+### Step 7: Spec
+
+テンプレート `templates/spec/template.md` を Read。SOW から生成。ID形式: FR-001, T-001, NFR-001。
+トレーサビリティ: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
+UI関連: Component API（Props、variants、states、usage）を含める。
+出力: `.claude/workspace/planning/[same-dir]/spec.md`
 
 ## ADR提案（Step 5.5）
 

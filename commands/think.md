@@ -1,6 +1,6 @@
 ---
 description: Design exploration with SOW and Spec generation. Use when user mentions 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration.
-allowed-tools: Skill, Read, Write, Glob, Task, TaskCreate, TaskList, AskUserQuestion
+allowed-tools: Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[task description]"
 ---
@@ -24,8 +24,8 @@ Task description from `$1`, research context, or AskUserQuestion if empty.
 | 4    | Design composition   | Optimal design with traceability           |
 | 5    | User Review          | Approved design (with trade-off rationale) |
 | 5.5  | ADR Proposal         | (if needed)                                |
-| 6    | /sow                 | sow.md                                     |
-| 7    | /spec                | spec.md                                    |
+| 6    | SOW Generation       | sow.md                                     |
+| 7    | Spec Generation      | spec.md                                    |
 | 8    | sow-spec-reviewer    | (optional, ≥90/100 to pass)                |
 | 9    | SOW → Todos          | TaskCreate                                 |
 
@@ -77,6 +77,20 @@ Compose optimal design from surviving approaches.
 | ------------------ | ----------------- | ----------- |
 | [what we're doing] | [what we gave up] | [rationale] |
 ```
+
+## Document Generation (Steps 6-7)
+
+### Step 6: SOW
+
+Read template `templates/sow/template.md`. Fill from design context (Steps 1-5). ID format: AC-N.
+Output: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
+
+### Step 7: Spec
+
+Read template `templates/spec/template.md`. Generate from SOW. ID format: FR-001, T-001, NFR-001.
+Traceability: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
+If UI-related: include Component API (Props, variants, states, usage).
+Output: `.claude/workspace/planning/[same-dir]/spec.md`
 
 ## ADR Proposal (Step 5.5)
 
