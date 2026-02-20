@@ -6,6 +6,7 @@ model: sonnet
 skills: [documenting-setup]
 context: fork
 memory: project
+background: true
 ---
 
 # Setup Analyzer

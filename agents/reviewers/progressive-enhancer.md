@@ -6,6 +6,7 @@ model: sonnet
 skills: [enhancing-progressively]
 context: fork
 memory: project
+background: true
 ---
 
 # Progressive Enhancer

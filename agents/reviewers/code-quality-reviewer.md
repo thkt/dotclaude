@@ -6,6 +6,7 @@ model: opus
 skills: [reviewing-readability, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # Code Quality Reviewer

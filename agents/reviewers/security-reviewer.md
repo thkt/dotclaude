@@ -6,6 +6,7 @@ model: opus
 skills: [reviewing-security, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # Security Reviewer

@@ -6,9 +6,18 @@ model: sonnet
 skills: [utilizing-cli-tools]
 context: fork
 memory: project
+background: true
 ---
 
 # Commit Message Generator
+
+## Invocation Scope
+
+| Constraint   | Rule                                                    |
+| ------------ | ------------------------------------------------------- |
+| Entry point  | `/commit` skill only — never auto-invoked               |
+| Side effects | Creates git commits (requires explicit user permission) |
+| Safety       | Safety First: user must explicitly request each commit  |
 
 ## Type Detection
 

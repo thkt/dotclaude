@@ -6,9 +6,16 @@ model: sonnet
 skills: [utilizing-cli-tools]
 context: fork
 memory: project
+background: true
 ---
 
 # Issue Generator
+
+## Side Effects
+
+| Effect       | Description                                    |
+| ------------ | ---------------------------------------------- |
+| Issue create | `gh issue create` (requires user confirmation) |
 
 ## Type Detection
 

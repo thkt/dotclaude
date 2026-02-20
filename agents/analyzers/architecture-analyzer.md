@@ -6,6 +6,7 @@ model: sonnet
 skills: [documenting-architecture]
 context: fork
 memory: project
+background: true
 ---
 
 # Architecture Analyzer

@@ -6,6 +6,7 @@ model: opus
 skills: [analyzing-root-causes, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # Root Cause Reviewer

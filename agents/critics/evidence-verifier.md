@@ -4,6 +4,7 @@ description: Verify audit findings with positive evidence.
 tools: [Read, Grep, Glob, LS]
 model: opus
 context: fork
+background: true
 ---
 
 # Evidence Verifier

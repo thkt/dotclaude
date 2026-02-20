@@ -6,6 +6,7 @@ model: sonnet
 skills: [documenting-apis]
 context: fork
 memory: project
+background: true
 ---
 
 # API Analyzer

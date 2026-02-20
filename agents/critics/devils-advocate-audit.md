@@ -4,6 +4,7 @@ description: Challenge audit findings to reduce false positives.
 tools: [Read, Grep, Glob, LS]
 model: opus
 context: fork
+background: true
 ---
 
 # Devils Advocate (Audit)

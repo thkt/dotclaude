@@ -6,6 +6,7 @@ model: sonnet
 skills: [documenting-domains]
 context: fork
 memory: project
+background: true
 ---
 
 # Domain Analyzer

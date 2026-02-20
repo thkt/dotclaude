@@ -5,6 +5,7 @@ tools: [Read, Grep, Glob, LS]
 model: sonnet
 context: fork
 memory: project
+background: true
 ---
 
 # Code Flow Analyzer
@@ -78,6 +79,15 @@ observations:
   concerns: <potential issues>
   suggestions: <improvement ideas>
 ```
+
+## Error Handling
+
+| Error           | Action                                 |
+| --------------- | -------------------------------------- |
+| Entry not found | Report "Entry point not found: <name>" |
+| Trace dead-end  | Report last reachable step, note gap   |
+| Circular call   | Detect and report cycle, stop tracing  |
+| File not found  | Skip file, note in observations        |
 
 ## Input Patterns
 

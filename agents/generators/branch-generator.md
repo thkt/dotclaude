@@ -6,9 +6,16 @@ model: sonnet
 skills: [utilizing-cli-tools]
 context: fork
 memory: project
+background: true
 ---
 
 # Branch Name Generator
+
+## Side Effects
+
+| Effect   | Description                          |
+| -------- | ------------------------------------ |
+| Git read | `git diff`, `git status` (read-only) |
 
 ## Branch Naming
 

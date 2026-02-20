@@ -6,11 +6,19 @@ model: opus
 skills: [generating-tdd-tests]
 context: fork
 memory: project
+background: true
 ---
 
 # Test Generator
 
 Create tests from SOW test plans. Follow TDD cycle.
+
+## Side Effects
+
+| Effect        | Description                                 |
+| ------------- | ------------------------------------------- |
+| File creation | Writes test files to project test directory |
+| Entry point   | `/code`, `/test` skills, or Task prompt     |
 
 ## Constraints
 

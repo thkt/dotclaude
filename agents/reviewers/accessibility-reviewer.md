@@ -6,6 +6,7 @@ model: opus
 skills: [a11y-specialist-skills:reviewing-a11y, web-design-guidelines, enhancing-progressively]
 context: fork
 memory: project
+background: true
 ---
 
 # Accessibility Reviewer

@@ -6,6 +6,7 @@ model: opus
 skills: [optimizing-performance, vercel-react-best-practices, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # Performance Reviewer

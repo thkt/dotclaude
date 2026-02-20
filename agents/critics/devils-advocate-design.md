@@ -4,6 +4,7 @@ description: Challenge design proposals to expose hidden weaknesses.
 tools: [Read, Grep, Glob, LS]
 model: opus
 context: fork
+background: true
 ---
 
 # Devils Advocate (Design)

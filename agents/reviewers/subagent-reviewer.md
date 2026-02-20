@@ -6,6 +6,7 @@ model: sonnet
 skills: [applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # Sub-Agent Reviewer
@@ -37,6 +38,8 @@ memory: project
 | model       | sonnet\|haiku\|opus   |
 | skills      | Optional, valid names |
 | context     | fork (recommended)    |
+| memory      | Optional: project     |
+| background  | Optional: true        |
 
 ## Required Sections
 

@@ -6,6 +6,7 @@ model: opus
 skills: [generating-tdd-tests, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # Test Coverage Reviewer

@@ -6,6 +6,7 @@ model: sonnet
 skills: [reviewing-readability, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # Document Reviewer

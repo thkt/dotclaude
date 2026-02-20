@@ -6,6 +6,7 @@ model: opus
 skills: [reviewing-type-safety, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # Type Design Reviewer

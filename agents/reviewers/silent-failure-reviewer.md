@@ -6,6 +6,7 @@ model: opus
 skills: [reviewing-silent-failures, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # Silent Failure Reviewer
@@ -48,7 +49,7 @@ Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
 findings:
   - finding_id: "SF-{seq}"
     agent: silent-failure-reviewer
-    severity: critical|high|medium
+    severity: critical|high|medium|low
     category: "SF1-SF5"
     location: "<file>:<line>"
     evidence: "<code snippet>"

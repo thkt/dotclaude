@@ -6,6 +6,7 @@ model: opus
 skills: [reviewing-testability, generating-tdd-tests, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # Testability Reviewer

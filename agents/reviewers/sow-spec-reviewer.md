@@ -6,6 +6,7 @@ model: opus
 skills: [formatting-audits, validating-specs, reviewing-readability, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # SOW/Spec Reviewer
@@ -93,7 +94,7 @@ promise: "<promise>PASS</promise>" # Omit when total < 90
 
 ## Ralph Loop Integration
 
-ralph-loop reads `<promise>` tags for loop continuation.
+[ralph-loop](https://github.com/anthropics/claude-code-ralph-loop) is an external plugin that reads `<promise>` tags for loop continuation.
 
 | Condition   | Action                                      |
 | ----------- | ------------------------------------------- |

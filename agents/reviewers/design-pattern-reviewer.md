@@ -6,6 +6,7 @@ model: opus
 skills: [applying-code-principles, applying-frontend-patterns]
 context: fork
 memory: project
+background: true
 ---
 
 # Design Pattern Reviewer
