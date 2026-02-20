@@ -22,6 +22,20 @@ All items must be [✓] to proceed.
 | 6   | Components    | Affected areas + potential risks                         |
 | 7   | Prerequisites | Confirmed tech stack/conventions                         |
 
+## Display Format
+
+```text
+[✓] Purpose: {description}
+[✓] Scope: {target files/functions}
+[✓] Constraints: {requirements}
+[✓] Completion: {done criteria}
+[✓] Context: {code understanding}
+[✓] Components: {affected areas}
+[✓] Prerequisites: {tech stack}
+
+Status: Ready / Needs confirmation / Blocked
+```
+
 ## Flow
 
 1. Check 7 items → mark [✓]/[→]/[?]
