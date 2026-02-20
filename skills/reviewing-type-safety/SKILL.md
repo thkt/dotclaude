@@ -23,6 +23,8 @@ user-invocable: false
 | TS3 | `function fn(data)` (untyped) | `function fn(data: Type)`     |
 | TS3 | Missing return type           | Explicit `: ReturnType`       |
 | TS4 | `default:` without exhaustive | `default: assertNever(value)` |
+| TS5 | `strictNullChecks: false`     | Enable in tsconfig            |
+| TS5 | `noImplicitAny: false`        | Enable in tsconfig            |
 
 ## Criteria
 
