@@ -25,7 +25,7 @@ background: true
 
 | Phase | Action              | Command                                   |
 | ----- | ------------------- | ----------------------------------------- |
-| 1     | Project Detection   | `ls package.json Cargo.toml go.mod`       |
+| 1     | Project Detection   | LS tool for project root                  |
 | 2     | Version Detection   | See Version Detection table below         |
 | 3     | Directory Structure | `tree -L 3 -I 'node_modules\|.git'`       |
 | 4     | Code Structure      | `tree-sitter-analyzer {file} --structure` |

@@ -27,7 +27,7 @@ context: fork
 | フェーズ | アクション           | メソッド                                                                             |
 | -------- | -------------------- | ------------------------------------------------------------------------------------ |
 | 0        | シードコンテキスト   | `.analysis/architecture.yaml` または `.md` (いずれか存在時) から技術スタック読み取り |
-| 1        | パッケージ検出       | `ls package.json Cargo.toml pyproject.toml go.mod`                                   |
+| 1        | パッケージ検出       | LS ツールでプロジェクトルート確認                                                    |
 | 2        | バージョン検出       | `cat .nvmrc .python-version .tool-versions`                                          |
 | 3        | 環境変数抽出         | 発見 → 読み取り → クロスバリデーション (フェーズ3詳細参照)                           |
 | 4        | 設定ファイル精読     | 設定ファイルを読み、主要設定を抽出 (フェーズ4詳細参照)                               |
@@ -80,9 +80,9 @@ context: fork
 
 | 設定ファイル        | 抽出する主要設定                                 |
 | ------------------- | ------------------------------------------------ |
-| vite.config.*       | `server.port`, `base`, `build.outDir`            |
+| vite.config.\*      | `server.port`, `base`, `build.outDir`            |
 | tsconfig.json       | `target`, `module`, `moduleResolution`, `strict` |
-| next.config.*       | `basePath`, `output`, `experimental`             |
+| next.config.\*      | `basePath`, `output`, `experimental`             |
 | eslint/biome config | `extends`, プラグイン/ルール数                   |
 | compose.yml         | サービス、ポート、デフォルト認証情報             |
 

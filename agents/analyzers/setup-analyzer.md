@@ -27,7 +27,7 @@ background: true
 | Phase | Action             | Method                                                                        |
 | ----- | ------------------ | ----------------------------------------------------------------------------- |
 | 0     | Seed Context       | Read `.analysis/architecture.yaml` or `.md` (if either exists) for tech stack |
-| 1     | Package Detection  | `ls package.json Cargo.toml pyproject.toml go.mod`                            |
+| 1     | Package Detection  | LS tool for project root                                                      |
 | 2     | Version Detection  | `cat .nvmrc .python-version .tool-versions`                                   |
 | 3     | Env Var Extraction | Discover → Read → Cross-validate (see Phase 3 details)                        |
 | 4     | Config Deep Read   | Read config files and extract key settings (see Phase 4 details)              |
