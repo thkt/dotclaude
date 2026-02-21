@@ -1,7 +1,7 @@
 ---
 name: orchestrating-feature
 description: >
-  Feature development orchestration with team exploration, architecture, and TDD.
+  Feature development orchestration with /think, /code, /audit, /validate delegation.
   Triggers: /feature workflow, multi-phase feature development,
   機能開発, feature orchestration, フェーズ管理.
 allowed-tools: [Read, Grep, Glob, Task]
@@ -10,13 +10,12 @@ user-invocable: false
 
 # Feature Orchestration
 
-Phase details for /feature workflow.
+Phase coordination for /feature workflow. Delegates to specialized commands:
 
-## References
-
-- [Phase Handoff](references/phase-handoff.md) — YAML schema, validation, rules
-- [Exploration Team](references/exploration-team.md) — Phase 2-4: team, council, architect
-- [Implementation Team](references/implementation-team.md) — Phase 5: parallel/sequential, layers
-- [Prompts](references/prompts.md) — AskUserQuestion configurations
-- [Quality Loop](references/quality-loop.md) — Phase 6: audit/fix cycle, regression guard
-- [Resume](references/resume.md) — Resume point detection, state fallback
+| Phase | Command    | Purpose                      |
+| ----- | ---------- | ---------------------------- |
+| 1     | (direct)   | Discovery + PRE_TASK_CHECK   |
+| 2     | /think     | Design + SOW/Spec generation |
+| 3     | /code      | TDD implementation           |
+| 4     | /audit+fix | Quality loop (max 3 rounds)  |
+| 5     | /validate  | AC verification              |

@@ -1,95 +1,117 @@
 ---
 description: Comprehensive feature development with exploration, architecture, TDD, and quality gates. Use when user mentions 機能開発, 新機能, 機能追加, feature development.
-allowed-tools: Skill, Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion, TeamCreate, SendMessage
+allowed-tools: Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(git ls-files:*), Bash(git worktree *), Bash(git merge *), Bash(git branch *), Bash(date:*), Bash(mkdir:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, TeamCreate, SendMessage, AskUserQuestion
 model: opus
 argument-hint: "[feature description]"
 ---
 
 # /feature - Feature Development Orchestrator
 
-## Localization
-
-Read `~/.claude/settings.json` `language` field. If set, translate user-facing text. Internal processing stays English.
+Chain /think → /code → /audit → /validate for end-to-end feature development.
 
 ## Input
 
 - Feature description: `$1` (optional)
-- If empty → prompt via AskUserQuestion (see Prompts reference)
+- If empty → prompt via AskUserQuestion (context-aware options)
 
-## Execution Flow
+### Context-Aware Options
 
-| Phase | Name           | Action                                       | User Checkpoint          |
-| ----- | -------------- | -------------------------------------------- | ------------------------ |
-| 1     | Discovery      | Context scan → PRE_TASK_CHECK                | [?] or [→] resolution    |
-| 2-4   | Team Explore   | Explorer team + Architect → Clarify → /think | Clarification + Approach |
-| 5     | Implementation | Parallel or Sequential TDD/RGRC              | Approval + mode select   |
-| 6     | Quality Loop   | audit→fix→re-audit (max 3) → /polish         | Remaining issues only    |
-| 7     | Validation     | /validate → Summary                          | Completion               |
+Detect project type → present relevant options:
 
-## Phase Handoff
+| Pattern            | Detection                                       | Options                                     |
+| ------------------ | ----------------------------------------------- | ------------------------------------------- |
+| Claude Code config | `~/.claude/` or `.claude/` with commands/hooks/ | Add command, Add skill, Add hook, Add agent |
+| React/Next.js      | package.json has `react`, `next`                | Add component, Add page, Add API route      |
+| API server         | Express, Fastify, Hono, or `src/routes/`        | Add endpoint, Add middleware, Add service   |
+| CLI tool           | bin in package.json or `src/cli/`               | Add command, Add option, Add subcommand     |
+| Library            | main/exports in package.json                    | Add function, Add class, Add type           |
+| Fallback           | No match                                        | New feature, Extension, Refactoring         |
 
-[@../skills/orchestrating-feature/references/phase-handoff.md]
+## SOW Context
 
-## Phase 1: Discovery
+[@../skills/lib/sow-resolution.md]
 
-1. Context scan -- CLAUDE.md, package.json, Cargo.toml, etc. to match Context Patterns
-2. If `$ARGUMENTS` empty → prompt with context-aware options (see Prompts reference)
-3. Execute PRE_TASK_CHECK (`rules/core/PRE_TASK_CHECK.md`)
-4. Resolve any [→] or [?] via AskUserQuestion
-5. Early exit: ≤ 2 target files in same subtree → suggest `/code` (skip Phases 2-7)
-6. TaskCreate todos (Phases 2-4, 5, 6, 7)
-7. Write `discovery` section to handoff.yaml
+## Execution
 
-### Context Patterns
+| Phase | Name           | Action                        | User Checkpoint       |
+| ----- | -------------- | ----------------------------- | --------------------- |
+| 1     | Discovery      | Context scan → PRE_TASK_CHECK | [?] or [→] resolution |
+| 2     | Design         | Skill: /think                 | Design approval       |
+| 3     | Implementation | Skill: /code                  | —                     |
+| 4     | Quality        | /audit → /fix loop (max 3)    | Remaining issues only |
+| 5     | Validation     | Skill: /validate → Summary    | Completion            |
 
-| Pattern            | Value              | Detection                                       | Options                                          |
-| ------------------ | ------------------ | ----------------------------------------------- | ------------------------------------------------ |
-| Claude Code config | claude-code-config | `~/.claude/` or `.claude/` with commands/hooks/ | Add command, Add skill, Add hook, Add agent      |
-| React/Next.js      | react-nextjs       | package.json has `react`, `next`                | Add component, Add page, Add API route, Add hook |
-| API server         | api-server         | Express, Fastify, Hono, or `src/routes/`        | Add endpoint, Add middleware, Add service        |
-| CLI tool           | cli-tool           | bin in package.json or `src/cli/`               | Add command, Add option, Add subcommand          |
-| Library            | library            | main/exports in package.json                    | Add function, Add class, Add type                |
-| Fallback           | fallback           | No match                                        | New feature, Feature extension, Refactoring      |
+### Phase 1: Discovery
 
-## Phase 2-4: Team Exploration & Architecture
+1. Context scan — CLAUDE.md, package.json, Cargo.toml, etc.
+2. If `$1` empty → AskUserQuestion with context-aware options
+3. Execute PRE_TASK_CHECK
+4. Resolve any [→] or [?]
+5. Early exit: ≤ 2 target files → suggest `/code` (skip Phases 2-5)
+6. TaskCreate for tracking (Phases 2-5)
 
-[@../skills/orchestrating-feature/references/exploration-team.md]
+### Phase 2: Design
 
-## Phase 5: Implementation
+Execute `Skill("think", $1)`.
 
-[@../skills/orchestrating-feature/references/implementation-team.md]
+Output: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` + `spec.md`
 
-Write `implementation` section to handoff.yaml (files_changed, tests_added, mode).
+### Phase 3: Implementation
 
-## Phase 6: Quality Loop
+Execute `Skill("code", $1)`.
 
-[@../skills/orchestrating-feature/references/quality-loop.md]
+/code auto-discovers SOW from Phase 2 output.
 
-Write `quality` section to handoff.yaml (iterations, auto_fixed, remaining, tests_passing).
+### Phase 4: Quality Loop
 
-## Phase 7: Validation
+| Step | Action                                 | Exit                                             |
+| ---- | -------------------------------------- | ------------------------------------------------ |
+| 1    | Skill: /audit (changed files from git) | 0 critical/high → Step 4                         |
+| 2    | Skill: /fix for each critical/high     | → Step 3                                         |
+| 3    | Increment iteration (max 3) → Step 1   | Max reached → Step 5                             |
+| 4    | Skill: /polish → verify tests pass     | Tests fail → fix (max 2). Still failing → Step 5 |
+| 5    | Present remaining issues (if any)      | User decides                                     |
 
-1. Read handoff.yaml for full feature context
-2. Execute /validate
-3. Present summary
+Changed files: `git diff main...HEAD --name-only` (or base branch).
 
-## Error Handling
+### Phase 5: Validation
 
-| Condition                     | Action                                     |
-| ----------------------------- | ------------------------------------------ |
-| Team/teammate spawn fails     | Continue with remaining teammates or /code |
-| Teammate unresponsive/DM fail | shutdown_request, leader passes data       |
-| Implementer blocked/fails     | Leader takes over; both fail → /code       |
-| Integration tests fail        | Leader fixes cross-layer issues            |
-| /code failure                 | Present error, ask for guidance            |
-| Quality loop exhausted        | Present remaining before Phase 7           |
-| User cancellation             | Save phase + step to SOW metadata          |
-| All fallbacks exhausted       | Save progress to SOW, report terminal      |
+Execute `Skill("validate")`.
 
-## Prompts
+Present summary:
 
-[@../skills/orchestrating-feature/references/prompts.md]
+- Feature scope (files changed, tests added)
+- Quality iterations and remaining issues
+- AC coverage
 
 ## Resume
 
-[@../skills/orchestrating-feature/references/resume.md]
+Detect resume point from existing artifacts:
+
+| Artifact                                    | Resume  |
+| ------------------------------------------- | ------- |
+| No SOW                                      | Phase 1 |
+| SOW `draft`                                 | Phase 2 |
+| SOW `in-progress` + no implementation       | Phase 3 |
+| Implementation done + quality not completed | Phase 4 |
+| Quality passed                              | Phase 5 |
+
+Implementation evidence: `git diff main...HEAD --name-only` shows files matching SOW scope.
+
+## Error Handling
+
+| Error                             | Action                          |
+| --------------------------------- | ------------------------------- |
+| /think cancelled or fails         | Save context, exit              |
+| /code fails                       | Present error, ask user         |
+| Quality loop exhausted (3 rounds) | Present remaining, user decides |
+| /validate shows unmet ACs         | Offer to re-enter Phase 3 or 4  |
+
+## Verification
+
+| Check                   | Required |
+| ----------------------- | -------- |
+| PRE_TASK_CHECK passed?  | Yes      |
+| SOW + Spec generated?   | Yes      |
+| All tests pass?         | Yes      |
+| /validate confirms ACs? | Yes      |
