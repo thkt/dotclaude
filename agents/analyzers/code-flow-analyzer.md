@@ -1,7 +1,7 @@
 ---
 name: code-flow-analyzer
 description: Trace execution paths from entry points through all processing layers to final output. Maps data transformations, side effects, and component interactions.
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Write, Edit]
 model: sonnet
 context: fork
 memory: project

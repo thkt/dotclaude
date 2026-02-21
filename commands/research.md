@@ -1,6 +1,6 @@
 ---
 description: Perform project research and technical investigation without implementation. Use when user mentions 調査して, 調べて, リサーチ, investigate, 分析して.
-allowed-tools: Bash(tree:*), Bash(ls:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep, LS, Task, AskUserQuestion
+allowed-tools: Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 context: fork
 argument-hint: "[research topic or question]"
@@ -17,14 +17,14 @@ Investigate codebase with confidence-based findings, without implementation.
 
 ## Execution
 
-| Phase | Agent                              | Focus                                            |
-| ----- | ---------------------------------- | ------------------------------------------------ |
-| 0     | (codemap check)                    | Read `.analysis/architecture.yaml` if exists     |
-| 1     | (clarification)                    | Research intent + topic area                     |
-| 2     | (intent-aware analyzer selection)  | Select and run analyzers in parallel             |
-| 3     | Task(Explore)                      | Detail: code paths, patterns, edge cases         |
-| 3.5   | (Strong Inference)                 | ≥3 hypotheses → discriminating tests → eliminate |
-| 4     | (synthesis)                        | Consolidate with ✓/→/? markers                   |
+| Phase | Agent                             | Focus                                            |
+| ----- | --------------------------------- | ------------------------------------------------ |
+| 0     | (codemap check)                   | Read `.analysis/architecture.yaml` if exists     |
+| 1     | (clarification)                   | Research intent + topic area                     |
+| 2     | (intent-aware analyzer selection) | Select and run analyzers in parallel             |
+| 3     | Task(Explore)                     | Detail: code paths, patterns, edge cases         |
+| 3.5   | (Strong Inference)                | ≥3 hypotheses → discriminating tests → eliminate |
+| 4     | (synthesis)                       | Consolidate with ✓/→/? markers                   |
 
 Note: Invoke analyzers via `Task(subagent_type: <analyzer-name>)`, Explore via `Task(subagent_type: Explore)`.
 

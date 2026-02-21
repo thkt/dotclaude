@@ -1,6 +1,6 @@
 ---
 description: Remove AI-generated slop and simplify code for clarity and maintainability. Use when user mentions 整理して, きれいにして, コード整理, slop除去, ポリッシュ.
-allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob, Task, AskUserQuestion
+allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Bash(git worktree *), Bash(git merge *), Bash(git branch *), Read, Edit, Grep, Glob, Task, AskUserQuestion
 model: opus
 argument-hint: "[target scope]"
 ---
@@ -26,11 +26,16 @@ Remove AI-generated slop and simplify code before commit.
 
 ## Execution
 
-| Step | Action                                       |
-| ---- | -------------------------------------------- |
-| 1    | `Task` with `subagent_type: code-simplifier` |
-| 2    | Agent identifies and removes AI slop         |
-| 3    | Report simplifications                       |
+| Step | Action                                                           |
+| ---- | ---------------------------------------------------------------- |
+| 1    | Record current worktrees: `git worktree list`                    |
+| 2    | `Task` with `subagent_type: code-simplifier`                     |
+| 3    | Find new worktree branch: `git worktree list` (diff from step 1) |
+| 4    | Show diff: `git diff HEAD...<worktree-branch> --stat` + summary  |
+| 5    | `AskUserQuestion`: Apply / Discard                               |
+| 6a   | Apply → `git merge <worktree-branch> --no-commit` → report       |
+| 6b   | Discard → cleanup only                                           |
+| 7    | Cleanup: `git worktree remove <path> && git branch -D <branch>`  |
 
 ### Removal Targets
 

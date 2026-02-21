@@ -1,6 +1,6 @@
 ---
 description: Create Architecture Decision Records (ADR) in MADR format with auto-numbering. Use when user mentions ADR作成, 技術決定, アーキテクチャ決定, decision record.
-allowed-tools: Bash(ls:*), Read, Write, Grep, Glob, AskUserQuestion
+allowed-tools: Read, Write, Grep, Glob, LS, AskUserQuestion
 model: opus
 argument-hint: "[decision title]"
 ---

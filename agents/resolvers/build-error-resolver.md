@@ -1,9 +1,10 @@
 ---
 name: build-error-resolver
 description: TypeScript/build error resolution with minimal changes. No architectural modifications.
-tools: [Bash, Read, Edit, Grep, Glob]
+tools: [Bash, Read, Edit, Grep, Glob, LS]
 model: opus
 context: fork
+background: true
 memory: project
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: architecture-analyzer
 description: Analyze codebase structure, generate architecture docs with Mermaid diagrams.
-tools: [Bash, Read, Grep, Glob, LS]
+tools: [Bash, Read, Grep, Glob, LS, Write, Edit]
 model: sonnet
 skills: [documenting-architecture]
 context: fork

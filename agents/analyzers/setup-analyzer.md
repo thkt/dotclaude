@@ -1,7 +1,7 @@
 ---
 name: setup-analyzer
 description: Analyze codebase setup requirements, generate setup guide.
-tools: [Bash, Read, Grep, Glob, LS]
+tools: [Bash, Read, Grep, Glob, LS, Write, Edit]
 model: sonnet
 skills: [documenting-setup]
 context: fork
@@ -80,9 +80,9 @@ Read each config file and extract key settings, not just file names:
 
 | Config File         | Key Settings to Extract                          |
 | ------------------- | ------------------------------------------------ |
-| vite.config.*       | `server.port`, `base`, `build.outDir`            |
+| vite.config.\*      | `server.port`, `base`, `build.outDir`            |
 | tsconfig.json       | `target`, `module`, `moduleResolution`, `strict` |
-| next.config.*       | `basePath`, `output`, `experimental`             |
+| next.config.\*      | `basePath`, `output`, `experimental`             |
 | eslint/biome config | `extends`, plugins/rules count                   |
 | compose.yml         | services, ports, default credentials             |
 

@@ -4,7 +4,18 @@ description: >
   Structured ADR creation in MADR format. Use when creating architecture decision
   records, documenting technology choices, or when user mentions ADR, Architecture
   Decision, 決定記録, 技術選定, アーキテクチャ決定, deprecation, 非推奨化.
-allowed-tools: [Read, Write, Edit, Grep, Glob, Bash(ls:*, mkdir:*, $HOME/.claude/skills/creating-adrs/scripts/*), Task]
+allowed-tools:
+  [
+    Read,
+    Write,
+    Edit,
+    Grep,
+    Glob,
+    LS,
+    Bash(mkdir:*,
+    $HOME/.claude/skills/creating-adrs/scripts/*),
+    Task,
+  ]
 user-invocable: false
 ---
 
