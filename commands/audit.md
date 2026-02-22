@@ -8,7 +8,19 @@ argument-hint: "[target files or scope]"
 
 # /audit - Code Audit Orchestrator
 
+NO FINDING WITHOUT file:line EVIDENCE.
+
 Orchestrate specialized review agents with confidence-based filtering.
+
+## Rationalization Counters
+
+| Excuse                        | Counter                                                               |
+| ----------------------------- | --------------------------------------------------------------------- |
+| "This is a false positive"    | Verify with evidence-verifier before dismissing. Intuition ≠ evidence |
+| "This pattern is intentional" | No `// intentional:` marker = not intentional                         |
+| "Low severity, skip it"       | Low severity × high frequency = high risk. Count occurrences          |
+| "The code works fine"         | Working ≠ correct. Audit reviews quality, not functionality           |
+| "This is third-party code"    | If it's in your repo, it's your responsibility                        |
 
 ## Input
 
@@ -184,7 +196,7 @@ Fallback (best-effort): If no runner found, check for config files (e.g. `tsconf
 
 ### Step 3: Run discovered scripts
 
-**Note:** If a PreToolUse(Skill) hook injects `additionalContext` (e.g., knip, react-doctor results via `claude-reviews` per ADR-0013), include those results in the audit findings.
+If a PreToolUse(Skill) hook injects `additionalContext` (e.g., knip, react-doctor results via `claude-reviews` per ADR-0013), include those results in the audit findings.
 
 | Rule             | Behavior                                      |
 | ---------------- | --------------------------------------------- |

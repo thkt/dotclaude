@@ -26,9 +26,20 @@ user-invocable: false
 
 ## Quality Gates
 
+ALL 4 GATES MUST PASS. NO GATE IS OPTIONAL.
+
 | Gate     | Target           | Verification               |
 | -------- | ---------------- | -------------------------- |
 | Tests    | All passing      | `npm test` exit code 0     |
 | Lint     | 0 errors         | `npm run lint` exit code 0 |
 | Types    | No errors        | `tsc --noEmit` exit code 0 |
 | Coverage | C0 ≥90%, C1 ≥80% | Coverage report            |
+
+## Rationalization Counters
+
+| Excuse                                   | Counter                                                        |
+| ---------------------------------------- | -------------------------------------------------------------- |
+| "Tests pass, lint can wait"              | Lint errors are tech debt. Zero errors before commit           |
+| "Type errors are just warnings"          | `tsc --noEmit` exit 0 or no ship. Type warnings are errors     |
+| "Coverage is close enough"               | "Close enough" is failure with extra steps. Meet the threshold |
+| "This gate doesn't apply to this change" | All 4 gates apply to every change. No exceptions               |

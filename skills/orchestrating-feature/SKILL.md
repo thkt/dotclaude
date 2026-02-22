@@ -1,7 +1,7 @@
 ---
 name: orchestrating-feature
 description: >
-  Feature development orchestration with /think, /code, /audit, /validate delegation.
+  Feature development orchestration for multi-phase workflows.
   Triggers: /feature workflow, multi-phase feature development,
   機能開発, feature orchestration, フェーズ管理.
 allowed-tools: [Read, Grep, Glob, Task]

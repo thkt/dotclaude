@@ -10,6 +10,15 @@
 
 All items must be [✓] to proceed.
 
+## Rationalization Counters
+
+| Excuse                              | Counter                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------ |
+| "This is a simple follow-up"        | Scope changes disguise as follow-ups. Check Scope item at minimum              |
+| "I already understand the codebase" | Understanding ≠ verification. When did you last read the target files?         |
+| "The user wants speed over process" | PRE_TASK_CHECK takes 30 seconds. Fixing wrong-scope implementation takes hours |
+| "This is covered by the plan"       | Plans describe intent. PRE_TASK_CHECK verifies current state                   |
+
 ## Checklist (7 items)
 
 | #   | Item          | Check Criteria                                           |

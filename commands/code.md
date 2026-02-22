@@ -7,7 +7,25 @@ argument-hint: "[implementation description] [--frontend] [--principles] [--stor
 
 # /code - TDD Implementation
 
-Implement code with TDD/RGRC cycle and quality checks.
+NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
+
+Violation → delete the code, write the test, then rewrite.
+
+## Announce at Start
+
+Before writing any code, declare:
+
+> Starting TDD RGRC cycle. Every code change begins with a failing test.
+
+## Rationalization Counters
+
+| Excuse                           | Counter                                                                |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| "This is too simple for TDD"     | Simple changes hide regressions. One test line prevents hours of debug |
+| "I'll add tests later"           | "Later" never comes. Test debt compounds with interest                 |
+| "This is just a refactor"        | Refactors without tests are the #1 cause of silent regressions         |
+| "Existing tests already cover"   | If they do, Red phase will confirm it. Run it                          |
+| "Testing this would be too slow" | A slow test is faster than a production bug                            |
 
 ## Input
 

@@ -7,6 +7,10 @@ argument-hint: "[bug or issue description]"
 
 # /fix - Quick Bug Fix
 
+NO FIX WITHOUT REPRODUCTION TEST.
+
+Write a test that reproduces the bug before fixing it. The test must fail before the fix and pass after.
+
 Rapidly fix small bugs with root cause analysis and TDD verification.
 
 ## Input

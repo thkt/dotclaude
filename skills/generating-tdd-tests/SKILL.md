@@ -11,6 +11,10 @@ user-invocable: false
 
 # TDD Test Generation
 
+RED PHASE MUST FAIL FOR THE RIGHT REASON.
+
+A test that fails for the wrong reason (syntax error, wrong import) is not a valid Red. Fix the test first.
+
 ## RGRC Cycle
 
 | Phase    | Goal         | Rule                     |
