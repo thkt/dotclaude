@@ -59,11 +59,11 @@ Medium skips challenger/verifier: with 4-15 files all reviewers read the same fi
 
 #### Reviewer Assignment
 
-| Reviewer   | subagent_type   | Domains                                            |
-| ---------- | --------------- | -------------------------------------------------- |
-| foundation | general-purpose | code-quality, progressive-enhancement, root-cause  |
-| safety     | general-purpose | security, silent-failure, type-safety, type-design |
-| quality    | general-purpose | design-pattern, testability, documentation         |
+| Reviewer   | subagent_type   | Domains                                                           |
+| ---------- | --------------- | ----------------------------------------------------------------- |
+| foundation | general-purpose | code-quality, progressive-enhancement, root-cause                 |
+| safety     | general-purpose | security, silent-failure, type-safety, type-design                |
+| quality    | general-purpose | design-pattern, testability, documentation, operational-readiness |
 
 #### Spawn Prompt Template
 
@@ -94,10 +94,11 @@ Leader classifies each target file by path and assigns to relevant reviewers onl
 
 | File Pattern           | Sub-reviewers (subagent_type)                                         |
 | ---------------------- | --------------------------------------------------------------------- |
-| `*.sh`                 | security-reviewer, silent-failure-reviewer, code-quality-reviewer     |
+| `*.sh`                 | security-reviewer, silent-failure-reviewer, code-quality-reviewer,    |
+|                        | operational-readiness-reviewer                                        |
 | `*.ts, *.tsx, *.js`    | security-reviewer, silent-failure-reviewer, type-safety-reviewer,     |
 |                        | code-quality-reviewer, design-pattern-reviewer, testability-reviewer, |
-|                        | performance-reviewer                                                  |
+|                        | performance-reviewer, operational-readiness-reviewer                  |
 | `*.md` (agent defs)    | design-pattern-reviewer, testability-reviewer, document-reviewer      |
 | `*.md` (commands/docs) | document-reviewer, testability-reviewer                               |
 | `*.yaml, *.json`       | type-design-reviewer, document-reviewer                               |
@@ -148,16 +149,16 @@ Since agents are standalone (not team), leader collects results via Task output:
 
 ### Error Handling
 
-| Error             | Recovery                                                             |
-| ----------------- | -------------------------------------------------------------------- |
-| No files to audit | Return "No files to audit"                                           |
-| Reviewer stall    | If not completed when all peers finish, proceed without it           |
-| Malformed YAML    | Skip reviewer, log warning, proceed with valid reviewers             |
-| Dependency stall  | Skip dependent reviewer (e.g., root-cause if CQ failed)              |
-| Max parallel >10  | Batch in groups of 10 with sequential waits                          |
-| Challenger stall  | If not completed when verifier finishes, proceed without             |
-| Verifier stall    | If not completed when challenger finishes, proceed without           |
-| Integrator stall  | If not completed after both inputs ready, Leader integrates manually |
+| Error             | Recovery                                                                           |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| No files to audit | Return "No files to audit"                                                         |
+| Reviewer stall    | 120s timeout per reviewer; if not completed, proceed without it                    |
+| Malformed YAML    | Skip reviewer, log warning, proceed with valid reviewers                           |
+| Dependency stall  | Skip dependent reviewer (e.g., root-cause if CQ failed)                            |
+| Max parallel >10  | Batch in groups of 10 with sequential waits                                        |
+| Challenger stall  | 120s timeout; if not completed when verifier finishes, proceed without             |
+| Verifier stall    | 120s timeout; if not completed when challenger finishes, proceed without           |
+| Integrator stall  | 120s timeout; if not completed after both inputs ready, Leader integrates manually |
 
 ## Pre-flight: Static Analysis
 
@@ -181,16 +182,9 @@ Common names: `lint`, `typecheck`, `type-check`, `check`, `analyse`, `analyze`, 
 
 Fallback (best-effort): If no runner found, check for config files (e.g. `tsconfig.json` → `npx tsc --noEmit`, `ruff.toml` → `ruff check`).
 
-### Step 2.5: Detect global analysis tools
-
-| Tool         | Condition                                          | Command                                                                      |
-| ------------ | -------------------------------------------------- | ---------------------------------------------------------------------------- |
-| knip         | `package.json` exists AND `knip` in $PATH          | `knip --no-exit-code` (no config → `--config ~/.claude/templates/knip.json`) |
-| react-doctor | `package.json` has `react` in dependencies/devDeps | `npx -y react-doctor@latest . --verbose`                                     |
-
-These run alongside project scripts in Step 3 (parallel). Skip silently if tool not found.
-
 ### Step 3: Run discovered scripts
+
+**Note:** If a PreToolUse(Skill) hook injects `additionalContext` (e.g., knip, react-doctor results via `claude-reviews` per ADR-0013), include those results in the audit findings.
 
 | Rule             | Behavior                                      |
 | ---------------- | --------------------------------------------- |

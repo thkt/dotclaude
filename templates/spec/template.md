@@ -15,7 +15,11 @@ Validation:
 | ------ | ------------ | --------------- |
 | FR-001 | [validation] | [error message] |
 
-## Data Model
+## Domain Model
+
+<!-- Omit any subsection below that doesn't apply. For simple features (CLI tools, config changes, UI tweaks), a brief Data Model table is sufficient. -->
+
+### Data Model
 
 ```typescript
 interface [ModelName] {
@@ -26,6 +30,26 @@ interface [ModelName] {
 | Model   | Fields   | Used By |
 | ------- | -------- | ------- |
 | [Model] | [fields] | FR-001  |
+
+<!-- For business apps (entities >= 3 or business rules >= 3), add the subsections below. -->
+
+### Entities
+
+| Entity   | Attributes   | Invariants   | FR     |
+| -------- | ------------ | ------------ | ------ |
+| [Entity] | [attributes] | [invariants] | FR-001 |
+
+### Business Rules
+
+| ID     | Rule   | Description   | Enforced By | FR     |
+| ------ | ------ | ------------- | ----------- | ------ |
+| BR-001 | [rule] | [description] | [component] | FR-001 |
+
+### Domain Events
+
+| Event   | Trigger   | Consumers   | FR     |
+| ------- | --------- | ----------- | ------ |
+| [event] | [trigger] | [consumers] | FR-001 |
 
 ## Implementation
 

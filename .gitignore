@@ -42,6 +42,7 @@ file-history/
 # Private / local config
 local/
 *.local
+*.local.*
 .env
 .env.*
 !.env.example

@@ -6,7 +6,7 @@
 
 # --- Base fields (required) ---
 finding:
-  finding_id: "{PREFIX}-{seq}"  # See ID prefix registry below
+  finding_id: "{PREFIX}-{seq}" # See ID prefix registry below
   agent: "<reviewer-name>"
   severity: critical|high|medium|low
   category: "<domain-specific category>"
@@ -55,6 +55,7 @@ finding:
 # | A11Y   | accessibility-reviewer  |
 # | DOC    | document-reviewer       |
 # | SA     | subagent-reviewer       |
+# | OPS    | operational-readiness-reviewer |
 # | SOW    | sow-spec-reviewer       |  (score-based output, no finding_id)
 
 # --- Consolidation rule ---

@@ -43,6 +43,8 @@ Generate ≥2 distinct approaches from different perspectives:
 - Architect: What's extensible and well-structured?
 - DX Advocate: What's best for developer/user experience?
 
+If PRE_TASK_CHECK decomposition thresholds are exceeded (Files ≥ 5, Features ≥ 3, Layers ≥ 3), consider decomposing into independent Units. Each Unit gets its own SOW/Spec and can be implemented separately via `/code`.
+
 ### Step 3: Self-Challenge
 
 For each approach:
@@ -54,7 +56,39 @@ For each approach:
 
 ### Step 4: Design Composition
 
-Compose optimal design from surviving approaches.
+Compose optimal design from surviving approaches. Work through two perspectives in order:
+
+#### 4-1. Domain Perspective (What)
+
+Technology-independent business logic modeling. Depth varies by context:
+
+| Context                                           | Depth    | Focus                                                              |
+| ------------------------------------------------- | -------- | ------------------------------------------------------------------ |
+| Business app (entities ≥ 3 or business rules ≥ 3) | Detailed | Entities, relationships, invariants, business rules, domain events |
+| CLI tool / config / simple UI                     | Brief    | Key data structures and validation rules only                      |
+
+```markdown
+### Domain Perspective
+
+- Entities: [key data types and their relationships]
+- Business Rules: [domain-specific rules and constraints]
+- Invariants: [conditions that must always hold]
+```
+
+#### 4-2. Technical Perspective (How)
+
+Translate domain understanding into implementation design:
+
+```markdown
+### Technical Perspective
+
+- Component Architecture: [hierarchy, boundaries, responsibilities]
+- State Strategy: [server state vs client state, management approach]
+- NFR Application: [performance, security, accessibility patterns]
+- Operational Concerns: [error boundaries, logging, loading states]
+```
+
+#### Combined Output
 
 ```markdown
 ## Design
