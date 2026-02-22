@@ -180,6 +180,7 @@ Refer to:
 | [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent mechanisms and usage       |
 | [HOOKS](./HOOKS.md)                 | Hook system and IDR generation         |
 | [TEMPLATES](./TEMPLATES.md)         | Template system and document lifecycle |
+| [GLOSSARY](./GLOSSARY.md)           | Ubiquitous language dictionary         |
 
 ---
 
