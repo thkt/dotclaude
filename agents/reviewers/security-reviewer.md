@@ -20,13 +20,14 @@ background: true
 
 ## Analysis Phases
 
-| Phase | Action          | Focus Area                  |
-| ----- | --------------- | --------------------------- |
-| 1     | Injection Scan  | SQL, Command, XSS patterns  |
-| 2     | Auth Check      | Session, JWT, Cookie config |
-| 3     | Config Check    | CORS, Headers, Environment  |
-| 4     | Dependency Scan | npm/yarn audit results      |
-| 5     | SSRF Detection  | User-input URL handling     |
+| Phase | Action          | Focus Area                                                           |
+| ----- | --------------- | -------------------------------------------------------------------- |
+| 1     | Injection Scan  | SQL, Command, XSS patterns                                           |
+| 2     | Auth Check      | Session, JWT, Cookie config                                          |
+| 3     | Config Check    | CORS, Headers, Environment                                           |
+| 4     | Dependency Scan | npm/yarn audit results                                               |
+| 5     | SSRF Detection  | User-input URL handling                                              |
+| 6     | Frontend Taint  | Source→Sink data flow (see `references/frontend-taint-checklist.md`) |
 
 ## Confidence Scoring
 
@@ -60,7 +61,6 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
@@ -81,7 +81,7 @@ findings:
     verification_hint:
       check: execution_trace|call_site_check|pattern_search
       question: "<what to verify to confirm exploitability>"
-      entry_points: ["<file>:<line>"]  # optional, for execution_trace
+      entry_points: ["<file>:<line>"] # optional, for execution_trace
 summary:
   total_findings: <count>
   critical: <count>

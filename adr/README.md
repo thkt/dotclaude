@@ -20,6 +20,7 @@ Claude Codeプラグインのアーキテクチャ決定を記録するドキュ
 | [0012](./0012-flatten-audit-pipeline-remove-compound-reviewers.md)   | Audit パイプラインのフラット化        | accepted   |
 | [0013](./0013-adopt-hook-trinity-pattern-with-claude-reviews.md)     | Hook Trinity — claude-reviews 採用    | accepted   |
 | [0014](./0014-integrate-aidlc-design-separation-and-ops-reviewer.md) | AI-DLC 統合 — 設計分離と Ops Reviewer | accepted   |
+| [0015](./0015-frontend-security-guardrails-strategy.md)              | フロントエンドセキュリティ戦略        | accepted   |
 
 ## 関連ルール
 

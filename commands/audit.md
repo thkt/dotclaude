@@ -192,7 +192,15 @@ Auto-detect and run project lint/check tools before agents start.
 
 Common names: `lint`, `typecheck`, `type-check`, `check`, `analyse`, `analyze`, `static`, `phpstan`, `clippy`
 
-Fallback (best-effort): If no runner found, check for config files (e.g. `tsconfig.json` → `npx tsc --noEmit`, `ruff.toml` → `ruff check`).
+Fallback (best-effort): If no runner found, check for config files and verify tool availability via `command -v`:
+
+| Config File                       | Tool Check                     | Command                       |
+| --------------------------------- | ------------------------------ | ----------------------------- |
+| `tsconfig.json`                   | `command -v npx`               | `npx tsc --noEmit`            |
+| `ruff.toml` / `ruff` in pyproject | `command -v ruff`              | `ruff check`                  |
+| `.markdownlint.yaml` / `.json`    | `command -v markdownlint-cli2` | `markdownlint-cli2 "**/*.md"` |
+| `biome.json` / `biome.jsonc`      | `command -v biome`             | `biome check`                 |
+| `.eslintrc.*` / `eslint.config.*` | `command -v eslint`            | `eslint .`                    |
 
 ### Step 3: Run discovered scripts
 

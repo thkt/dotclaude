@@ -20,6 +20,7 @@ debug/
 # Claude
 /.claude/
 /.analysis/
+/output-styles/
 /.credentials.json
 /agent-memory/
 /chrome/
