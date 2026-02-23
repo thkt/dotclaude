@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["import", "typescript", "react"],
+  "plugins": ["import", "typescript", "react", "jsx-a11y", "unicorn"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -15,7 +15,9 @@
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-non-null-assertion": "error",
     "react/no-direct-mutation-state": "error",
-    "react/jsx-no-target-blank": "error"
+    "react/jsx-no-target-blank": "error",
+    "unicorn/prefer-module": "warn",
+    "unicorn/prefer-ternary": "warn"
   },
   "overrides": [
     {
@@ -23,6 +25,12 @@
       "rules": {
         "no-console": "off",
         "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": ["*.config.ts", "*.config.mts"],
+      "rules": {
+        "no-default-export": "off"
       }
     }
   ],
