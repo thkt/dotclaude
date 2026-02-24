@@ -1,38 +1,46 @@
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["import", "typescript", "react", "jsx-a11y", "unicorn"],
-  "categories": {
-    "correctness": "error",
-    "suspicious": "error",
-    "perf": "error"
-  },
-  "rules": {
-    "no-debugger": "error",
-    "no-console": "error",
-    "eqeqeq": "error",
-    "import/no-cycle": "error",
-    "import/no-self-import": "error",
-    "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/no-non-null-assertion": "error",
-    "react/no-direct-mutation-state": "error",
-    "react/jsx-no-target-blank": "error",
-    "unicorn/prefer-module": "warn",
-    "unicorn/prefer-ternary": "warn"
-  },
-  "overrides": [
-    {
-      "files": ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"],
-      "rules": {
-        "no-console": "off",
-        "@typescript-eslint/no-explicit-any": "off"
-      }
-    },
-    {
-      "files": ["*.config.ts", "*.config.mts"],
-      "rules": {
-        "no-default-export": "off"
-      }
-    }
-  ],
-  "ignorePatterns": ["dist", "build", "*.generated.*"]
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["import", "typescript", "react", "jsx-a11y", "unicorn"],
+	"categories": {
+		"correctness": "error",
+		"suspicious": "error",
+		"perf": "error",
+	},
+	"rules": {
+		// Not in default categories — explicit enable
+		"@typescript-eslint/no-explicit-any": "error",
+		"@typescript-eslint/no-non-null-assertion": "error",
+		"unicorn/prefer-module": "error",
+		"unicorn/prefer-ternary": "error",
+
+		// Code thresholds (CODE_THRESHOLDS.md): maximum values as lint boundary
+		"max-lines-per-function": [
+			"error",
+			{ "max": 50, "skipBlankLines": true, "skipComments": true },
+		],
+		"max-lines": ["error", { "max": 800 }],
+		"max-depth": ["error", { "max": 4 }],
+		"max-params": ["error", { "max": 5 }],
+		"complexity": ["error", { "max": 15 }],
+	},
+	"overrides": [
+		{
+			// Test files: relax strict rules
+			"files": ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"],
+			"rules": {
+				"no-console": "off",
+				"@typescript-eslint/no-explicit-any": "off",
+				"max-lines-per-function": "off",
+				"max-lines": "off",
+			},
+		},
+		{
+			// Config files: default export is conventional
+			"files": ["*.config.ts", "*.config.mts"],
+			"rules": {
+				"no-default-export": "off",
+			},
+		},
+	],
+	"ignorePatterns": ["dist", "build", "*.generated.*"],
 }

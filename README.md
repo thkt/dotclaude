@@ -1,6 +1,7 @@
 # Claude AI Configuration
 
-A comprehensive configuration system for Claude AI with custom commands, development principles, and workflow optimizations.
+A comprehensive configuration system for Claude AI with custom commands,
+development principles, and workflow optimizations.
 
 📌 **[日本語版](./.ja/README.md)**
 
@@ -26,8 +27,8 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── conventions/      # Documentation conventions
 │   ├── development/      # Development patterns & methodologies
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (25 skills)
-├── agents/               # Specialized AI agents (34 agents)
+├── skills/               # Skill-based knowledge modules (26 skills)
+├── agents/               # Specialized AI agents (35 agents)
 │   ├── analyzers/        # Architecture & code analyzers
 │   ├── architects/       # Feature architecture designers
 │   ├── critics/          # Finding challengers (devils-advocate)
@@ -35,7 +36,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── explorers/        # Codebase exploration agents
 │   ├── generators/       # Code/test/git generators
 │   ├── resolvers/        # Build error resolvers
-│   ├── reviewers/        # Code review agents (15 reviewers)
+│   ├── reviewers/        # Code review agents (16 reviewers)
 │   └── teams/            # Integrators & implementers
 └── .ja/                   # Japanese translations
 ```
@@ -44,7 +45,8 @@ This repository contains personal configurations for Claude AI, including:
 
 ### Option 1: Install as Claude Code Plugin (Recommended)
 
-This repository is available as a Claude Code plugin, allowing you to easily install specific workflow sets:
+This repository is available as a Claude Code plugin, allowing you to easily
+install specific workflow sets:
 
 1. **Add this repository as a marketplace**:
 
@@ -70,12 +72,14 @@ This repository is available as a Claude Code plugin, allowing you to easily ins
 
 **Available Plugins**:
 
-- **complete-workflow-system**: Full development workflow with 35 specialized agents
+- **complete-workflow-system**: Full development workflow with 35 specialized
+  agents
 - **quick-actions**: Fast bug fixes (/fix) and AI slop removal (/polish)
 - **git-utilities**: Git workflow helpers (commit, branch, PR, issue)
 - **documentation-tools**: ADR creation and docs
 - **browser-workflows**: E2E testing and automation
-- **development-skills**: 31 skills for TDD, principles, patterns, security, and more
+- **development-skills**: 26 skills for TDD, principles, patterns, security, and
+  more
 
 ### Option 2: Manual Installation (Full Configuration)
 
@@ -94,13 +98,16 @@ For using this as your personal `.claude` configuration:
    git clone https://github.com/thkt/.claude ~/.claude
    ```
 
-**Note**: Manual installation includes all commands, agents, rules, and personal configurations. Plugin installation only includes shared commands and agents (excludes personal `CLAUDE.md`, `rules/`, and `settings.json`).
+**Note**: Manual installation includes all commands, agents, rules, and personal
+configurations. Plugin installation only includes shared commands and agents
+(excludes personal `CLAUDE.md`, `rules/`, and `settings.json`).
 
 ## 📦 Dependencies & Setup
 
 ### Sandbox Feature (Optional but Recommended)
 
-Claude Code's sandbox feature provides secure command execution with automatic permission handling, reducing approval fatigue while maintaining safety.
+Claude Code's sandbox feature provides secure command execution with automatic
+permission handling, reducing approval fatigue while maintaining safety.
 
 **System Requirements**:
 
@@ -144,19 +151,21 @@ Create `~/.srt-settings.json` for custom settings:
 
 ```json
 {
-  "sandbox": {
-    "enabled": true,
-    "autoAllowBashIfSandboxed": true,
-    "excludedCommands": ["docker"],
-    "network": {
-      "allowLocalBinding": true,
-      "httpProxyPort": 8080
-    }
+ "sandbox": {
+  "enabled": true,
+  "autoAllowBashIfSandboxed": true,
+  "excludedCommands": ["docker"],
+  "network": {
+   "allowLocalBinding": true,
+   "httpProxyPort": 8080
   }
+ }
 }
 ```
 
-See the [official blog post](https://azukiazusa.dev/blog/claude-code-sandbox-feature/) for more details.
+See the
+[official blog post](https://azukiazusa.dev/blog/claude-code-sandbox-feature/)
+for more details.
 
 ### External CLI Tools (Optional)
 
@@ -170,7 +179,8 @@ Some commands use external CLI tools for data source integration:
 
 **Slack setup**:
 
-1. Create a [Slack App](https://api.slack.com/apps) and add `search:read` to User Token Scopes
+1. Create a [Slack App](https://api.slack.com/apps) and add `search:read` to
+   User Token Scopes
 2. Obtain the User OAuth Token (`xoxp-...`)
 3. Set environment variables:
 
@@ -181,7 +191,8 @@ Some commands use external CLI tools for data source integration:
 
 ### Required Plugins
 
-Some commands depend on external plugins that are not included in this repository. Install them manually after cloning:
+Some commands depend on external plugins that are not included in this
+repository. Install them manually after cloning:
 
 | Plugin       | Required By | Purpose                        | Install Command              |
 | ------------ | ----------- | ------------------------------ | ---------------------------- |
@@ -193,7 +204,8 @@ Some commands depend on external plugins that are not included in this repositor
 /plugin install ralph-loop
 ```
 
-**Note**: Plugins are stored in `~/.claude/plugins/` which is excluded from git. Each user must install plugins independently.
+**Note**: Plugins are stored in `~/.claude/plugins/` which is excluded from git.
+Each user must install plugins independently.
 
 ## 📝 Available Commands
 
@@ -226,9 +238,11 @@ See the complete command reference:
 
 ### Core AI Principles
 
-- **Safety First**: File deletion uses trash (`~/.Trash/`), destructive operations require confirmation
+- **Safety First**: File deletion uses trash (`~/.Trash/`), destructive
+  operations require confirmation
 - **User Authority**: Your instructions are the ultimate authority
-- **Output Verifiability**: Claims backed by evidence (file paths, confidence markers ✓/→/?)
+- **Output Verifiability**: Claims backed by evidence (file paths, confidence
+  markers ✓/→/?)
 
 ### Development Approach
 
@@ -250,12 +264,15 @@ Full details: [PRINCIPLES.md](./rules/PRINCIPLES.md)
 
 ### Development Guides
 
-- [Principles Guide](./rules/PRINCIPLES.md) - Complete overview of all development principles
-- [Documentation Rules](./rules/conventions/DOCUMENTATION.md) - Standards for documentation
+- [Principles Guide](./rules/PRINCIPLES.md) - Complete overview of all
+  development principles
+- [Documentation Rules](./rules/conventions/DOCUMENTATION.md) - Standards for
+  documentation
 
 ## 🤝 Contributing
 
-Feel free to fork this repository and customize it for your needs. Pull requests for improvements are welcome!
+Feel free to fork this repository and customize it for your needs. Pull requests
+for improvements are welcome!
 
 ## 📜 License
 
@@ -267,4 +284,5 @@ thkt
 
 ---
 
-_This configuration enhances Claude AI's capabilities for systematic software development with a focus on quality, readability, and maintainability._
+_This configuration enhances Claude AI's capabilities for systematic software
+development with a focus on quality, readability, and maintainability._

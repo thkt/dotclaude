@@ -1,0 +1,8 @@
+{
+	"tools": {
+		"knip": true,
+		"oxlint": true,
+		"tsgo": true,
+		"react_doctor": true
+	}
+}

@@ -1,6 +1,7 @@
 # Claude AI 設定
 
-カスタムコマンド、開発原則、ワークフロー最適化を含むClaude AIの包括的な設定システム。
+カスタムコマンド、開発原則、ワークフロー最適化を含むClaude
+AIの包括的な設定システム。
 
 📌 **[English Version](../README.md)**
 
@@ -26,8 +27,8 @@
 │   ├── conventions/      # ドキュメント規約
 │   ├── development/      # 開発パターン & 方法論
 │   └── workflows/        # ワークフローガイド
-├── skills/               # スキルベースの知識モジュール（25スキル）
-├── agents/               # 専門AIエージェント（34エージェント）
+├── skills/               # スキルベースの知識モジュール（26スキル）
+├── agents/               # 専門AIエージェント（35エージェント）
 │   ├── analyzers/        # アーキテクチャ & コード分析
 │   ├── architects/       # 機能アーキテクチャ設計
 │   ├── critics/          # 発見チャレンジャー（devils-advocate）
@@ -35,7 +36,7 @@
 │   ├── explorers/        # コードベース探索エージェント
 │   ├── generators/       # コード/テスト/Git生成
 │   ├── resolvers/        # ビルドエラー解決
-│   ├── reviewers/        # コードレビューエージェント（15レビューア）
+│   ├── reviewers/        # コードレビューエージェント（16レビューア）
 │   └── teams/            # 統合 & 実装
 └── .ja/                   # 日本語翻訳
 ```
@@ -44,7 +45,8 @@
 
 ### オプション1: Claude Codeプラグインとしてインストール（推奨）
 
-このリポジトリはClaude Codeプラグインとして利用可能で、特定のワークフローセットを簡単にインストールできます:
+このリポジトリはClaude
+Codeプラグインとして利用可能で、特定のワークフローセットを簡単にインストールできます:
 
 1. **このリポジトリをマーケットプレースとして追加**:
 
@@ -70,12 +72,12 @@
 
 **利用可能なプラグイン**:
 
-- **complete-workflow-system**: 39の専門エージェントを含むフル開発ワークフロー
+- **complete-workflow-system**: 35の専門エージェントを含むフル開発ワークフロー
 - **quick-actions**: 高速バグ修正 (/fix) と AIスロップ除去 (/polish)
 - **git-utilities**: Gitワークフローヘルパー (commit, branch, PR, issue)
 - **documentation-tools**: ADR作成とドキュメント生成
 - **browser-workflows**: E2Eテストと自動化
-- **development-skills**: TDD、原則、パターン、セキュリティなど25スキル
+- **development-skills**: TDD、原則、パターン、セキュリティなど26スキル
 
 ### オプション2: 手動インストール（フル設定）
 
@@ -94,13 +96,15 @@
    git clone https://github.com/thkt/.claude ~/.claude
    ```
 
-**注**: 手動インストールにはすべてのコマンド、エージェント、ルール、個人設定が含まれます。プラグインインストールには共有コマンドとエージェントのみが含まれます（個人の `CLAUDE.md`、`rules/`、`settings.json` は除外）。
+**注**: 手動インストールにはすべてのコマンド、エージェント、ルール、個人設定が含まれます。プラグインインストールには共有コマンドとエージェントのみが含まれます（個人の
+`CLAUDE.md`、`rules/`、`settings.json` は除外）。
 
 ## 📦 依存関係 & セットアップ
 
 ### サンドボックス機能（オプションだが推奨）
 
-Claude Codeのサンドボックス機能は、自動的な権限処理による安全なコマンド実行を提供し、安全性を維持しながら承認疲れを軽減します。
+Claude
+Codeのサンドボックス機能は、自動的な権限処理による安全なコマンド実行を提供し、安全性を維持しながら承認疲れを軽減します。
 
 **システム要件**:
 
@@ -144,15 +148,15 @@ srt --version
 
 ```json
 {
-  "sandbox": {
-    "enabled": true,
-    "autoAllowBashIfSandboxed": true,
-    "excludedCommands": ["docker"],
-    "network": {
-      "allowLocalBinding": true,
-      "httpProxyPort": 8080
-    }
+ "sandbox": {
+  "enabled": true,
+  "autoAllowBashIfSandboxed": true,
+  "excludedCommands": ["docker"],
+  "network": {
+   "allowLocalBinding": true,
+   "httpProxyPort": 8080
   }
+ }
 }
 ```
 
@@ -172,7 +176,8 @@ srt --version
 /plugin install ralph-loop
 ```
 
-**注**: プラグインは `~/.claude/plugins/` に保存され、gitから除外されています。各ユーザーが個別にインストールする必要があります。
+**注**: プラグインは `~/.claude/plugins/`
+に保存され、gitから除外されています。各ユーザーが個別にインストールする必要があります。
 
 ## 📝 利用可能なコマンド
 
@@ -246,4 +251,5 @@ thkt
 
 ---
 
-_この設定は、品質、可読性、保守性に重点を置いた体系的なソフトウェア開発のためにClaude AIの機能を強化します。_
+_この設定は、品質、可読性、保守性に重点を置いた体系的なソフトウェア開発のためにClaude
+AIの機能を強化します。_

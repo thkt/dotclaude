@@ -41,8 +41,8 @@ Assign only when all 3 conditions are met.
 
 ## Security Properties
 
-| Property   | Value                                           |
-| ---------- | ----------------------------------------------- |
-| Stored     | Analysis patterns, conventions, exception lists |
-| Not stored | Raw source code, secrets, credentials           |
-| Location   | `.claude/agent-memory/` (in `.gitignore`)       |
+| Property   | Value                                                                 |
+| ---------- | --------------------------------------------------------------------- |
+| Stored     | Analysis patterns, conventions, exception lists                       |
+| Not stored | Raw source code, secrets, credentials                                 |
+| Location   | `.claude/agent-memory/` (in `.gitignore` as `/.claude/agent-memory/`) |

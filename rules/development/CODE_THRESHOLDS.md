@@ -1,12 +1,15 @@
 # Code Thresholds
 
-| Target                | Recommended | Warning | Maximum |
-| --------------------- | ----------- | ------- | ------- |
-| Function lines        | ≤30         | 31-50   | 50      |
-| File lines            | ≤400        | 401-800 | 800     |
-| Nesting depth         | ≤3          | 4       | 4       |
-| Function arguments    | ≤3          | 4-5     | 5       |
-| Cyclomatic complexity | ≤10         | 11-15   | 15      |
+Enforcement: oxlint (`max-lines-per-function`, `max-lines`, `max-depth`,
+`max-params`, `complexity`) via guardrails hook.
+
+| Target                | Recommended | Maximum (oxlint error) |
+| --------------------- | ----------- | ---------------------- |
+| Function lines        | ≤30         | 50                     |
+| File lines            | ≤400        | 800                    |
+| Nesting depth         | ≤3          | 4                      |
+| Function arguments    | ≤3          | 5                      |
+| Cyclomatic complexity | ≤10         | 15                     |
 
 ## Coverage
 
