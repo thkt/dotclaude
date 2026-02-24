@@ -54,6 +54,7 @@ DANGER_PATTERNS=(
   # Destructive git operations
   '\bgit[[:space:]]+push[[:space:]]+.*--force'
   '\bgit[[:space:]]+push[[:space:]]+(.*-f|-f)([[:space:]]|$)'
+  '\bgit[[:space:]].*\bpush\b'
   '\bgit[[:space:]]+(checkout|restore)[[:space:]]+(\.|\.[[:space:]]|--[[:space:]]+\.)'
   '\bgit[[:space:]]+clean[[:space:]]+-[[:alnum:]]*[fd]'
   '\bgit[[:space:]]+reset[[:space:]]+--hard'
