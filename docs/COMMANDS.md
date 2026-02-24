@@ -26,7 +26,8 @@ graph TD
 
 ## Commands & Workflows
 
-See [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) for command listing and selection guide.
+See [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) for command
+listing and selection guide.
 
 ## Design Principles
 
@@ -51,9 +52,8 @@ Commands are orchestrators, no implementation details.
 Load skills only when needed.
 
 ```markdown
-/code --frontend → load applying-frontend-patterns
-/code --principles → load applying-code-principles
-/code (no flags) → no additional skills
+/code --frontend → load applying-frontend-patterns /code --principles → load
+applying-code-principles /code (no flags) → no additional skills
 ```
 
 ### 3. Graceful Degradation
@@ -61,21 +61,21 @@ Load skills only when needed.
 Commands work without external plugins:
 
 ```markdown
-ralph-loop present → automatic RGRC iteration
-ralph-loop absent → manual confirmation mode (same functionality)
+ralph-loop present → automatic RGRC iteration ralph-loop absent → manual
+confirmation mode (same functionality)
 ```
 
 ## Command → Skill/Agent Mapping
 
-| Command   | Skills Used                                   | Agents Used                                                           |
-| --------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `/think`  | -                                             | -                                                                     |
-| `/code`   | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
-| `/audit`  | applying-code-principles                      | 13 reviewer agents                                                    |
-| `/fix`    | -                                             | -                                                                     |
-| `/polish` | -                                             | code-simplifier                                                       |
-| `/feature`| orchestrating-feature                         | feature-explorer, feature-architect, test-generator, unit-implementer |
-| `/docs`   | documenting-\*                                | \*-analyzer                                                           |
+| Command    | Skills Used                                   | Agents Used                                                           |
+| ---------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| `/think`   | -                                             | -                                                                     |
+| `/code`    | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
+| `/audit`   | applying-code-principles                      | 13 reviewer agents                                                    |
+| `/fix`     | -                                             | -                                                                     |
+| `/polish`  | -                                             | code-simplifier                                                       |
+| `/feature` | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
+| `/docs`    | documenting-\*                                | \*-analyzer                                                           |
 
 ## File Structure
 
@@ -99,4 +99,5 @@ commands/
 ## Related
 
 - [SKILLS_AGENTS.md](./SKILLS_AGENTS.md) — Skills and agents reference
-- [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) — Workflow selection guide
+- [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) — Workflow
+  selection guide

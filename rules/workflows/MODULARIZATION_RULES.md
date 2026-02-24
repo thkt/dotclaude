@@ -69,10 +69,6 @@ TDD implementation with RGRC cycle.
 
 - Skill: orchestrating-workflows (RGRC cycle)
 - Agent: test-generator (TDD test generation, fork)
-
-## Phase References
-
-- [@../skills/orchestrating-feature/references/exploration-team.md]
 ```
 
 Orchestrates phases, delegates details to skills.

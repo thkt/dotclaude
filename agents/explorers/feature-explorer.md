@@ -1,6 +1,8 @@
 ---
 name: feature-explorer
-description: Analyze codebase features by tracing execution paths, mapping architecture, and documenting patterns.
+description:
+  Analyze codebase features by tracing execution paths, mapping architecture,
+  and documenting patterns.
 tools: [Glob, Grep, LS, Read, SendMessage]
 model: opus
 context: fork
@@ -19,7 +21,8 @@ Check for existing analysis:
 | .analysis/architecture.yaml | Project structure, entry points |
 | .analysis/api.yaml          | API overview (all levels)       |
 
-If api.yaml exists: Include in Entry Points, use for flow tracing, note confidence levels.
+If api.yaml exists: Include in Entry Points, use for flow tracing, note
+confidence levels.
 
 ## Analysis Approach
 
@@ -91,10 +94,6 @@ summary:
     internal: [AuthService, Logger]
     external: [zod, react-query]
 ```
-
-## Council Communication
-
-If Council peer names provided, follow the Council Protocol defined in [exploration-team.md](../../skills/orchestrating-feature/references/exploration-team.md#council-protocol-explorer-council).
 
 ## Guidelines
 

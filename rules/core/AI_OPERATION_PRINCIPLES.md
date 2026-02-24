@@ -50,13 +50,21 @@ When investigating bugs or errors:
 | Elimination | `Elimination:` | Discriminating test per hypothesis, eliminate falsified (`H1: [eliminated] — reason`) |
 | Conclusion  | `Conclusion:`  | Only surviving hypothesis with evidence                                               |
 
-Skip: Obvious cause (typo, syntax error, off-by-one) → single hypothesis sufficient.
+Skip: Obvious cause (typo, syntax error, off-by-one) → single hypothesis
+sufficient.
 
 | Constraint               | Action                                         |
 | ------------------------ | ---------------------------------------------- |
 | Hypothesis as conclusion | Append `Elimination:` with test + result first |
 | Speculation ("probably") | Verify with command before concluding          |
 | Single hypothesis only   | Generate ≥2 alternatives before proceeding     |
+
+### File Search Protocol
+
+| Rule             | Description                                                   |
+| ---------------- | ------------------------------------------------------------- |
+| Verify first     | Run `ls ~` to check home directory structure before searching |
+| No path guessing | Never assume `~/Documents`, `~/Projects`, etc.                |
 
 ## Rule Priority
 

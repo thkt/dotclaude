@@ -2,14 +2,18 @@
 name: generating-tdd-tests
 description: >
   RGRCサイクルとBaby Steps手法によるTDD。
-  テスト駆動開発での機能実装、RGRCサイクルの遵守、または
-  TDD, テスト駆動, Red-Green-Refactor, Baby Steps に言及した時に使用。
+  テスト駆動開発での機能実装、RGRCサイクルの遵守、または TDD, テスト駆動,
+  Red-Green-Refactor, Baby Steps に言及した時に使用。
 allowed-tools: [Read, Write, Edit, Grep, Glob, Task]
 context: fork
 user-invocable: false
 ---
 
 # TDDテスト生成
+
+RED フェーズは正しい理由で失敗しなければならない。
+
+間違った理由（構文エラー、間違ったインポート）で失敗するテストは有効な Red ではない。まずテストを修正すること。
 
 ## RGRCサイクル
 
@@ -22,7 +26,8 @@ user-invocable: false
 
 ## Baby Steps (2分サイクル)
 
-30秒: 失敗テスト作成 → 1分: パス → 10秒: テスト実行 → 30秒: 小さなリファクタ → 20秒: グリーンならコミット
+30秒: 失敗テスト作成 → 1分: パス → 10秒: テスト実行 → 30秒: 小さなリファクタ →
+20秒: グリーンならコミット
 
 ## テスト設計
 
@@ -34,12 +39,7 @@ user-invocable: false
 
 ## カバレッジ
 
-`rules/development/CODE_THRESHOLDS.md` の正式な値を参照してください。
-
-| レベル | 目標 | フォーカス       |
-| ------ | ---- | ---------------- |
-| C0     | 90%  | すべての行を実行 |
-| C1     | 80%  | すべてのブランチ |
+`rules/development/CODE_THRESHOLDS.md` の正式な値を参照。
 
 ## 命名
 

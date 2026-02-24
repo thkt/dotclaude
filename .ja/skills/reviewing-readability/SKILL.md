@@ -2,10 +2,10 @@
 name: reviewing-readability
 description: >
   "リーダブルコード" とMiller's Law (7±2) に基づくコード可読性レビュー。
-  コードの明確性レビュー、命名改善、または
-  可読性, 理解しやすい, わかりやすい, 明確, 命名, 変数名, 関数名,
-  ネスト, 深いネスト, 関数設計, コメント, 複雑, 難しい, 難読,
-  Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計 に言及した時に使用。
+  コードの明確性レビュー、命名改善、または 可読性, 理解しやすい, わかりやすい,
+  明確, 命名, 変数名, 関数名, ネスト, 深いネスト, 関数設計, コメント, 複雑,
+  難しい, 難読, Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計
+  に言及した時に使用。
 allowed-tools: [Read, Grep, Glob, Task]
 agent: code-quality-reviewer
 context: fork
@@ -13,6 +13,8 @@ user-invocable: false
 ---
 
 # 可読性レビュー
+
+閾値: `rules/development/CODE_THRESHOLDS.md` を参照。
 
 ## 検出
 
@@ -27,16 +29,6 @@ user-invocable: false
 | RD4 | 単一実装のインターフェース     | 2つ目の実装まで削除        |
 | RD4 | ステートレスロジック用クラス   | 純粋関数                   |
 | RD5 | > 5つの関数パラメータ          | 設定オブジェクトまたは分解 |
-
-## 閾値
-
-`rules/development/CODE_THRESHOLDS.md` の正式な値を参照してください。
-
-| 対象     | 推奨 | 最大 |
-| -------- | ---- | ---- |
-| 関数行数 | ≤30  | 50   |
-| ネスト   | ≤3   | 4    |
-| 関数引数 | ≤3   | 5    |
 
 ## 参照
 

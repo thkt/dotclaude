@@ -26,7 +26,8 @@ graph TD
 
 ## コマンド & ワークフロー
 
-[WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) にコマンド一覧と選択ガイドあり。
+[WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md)
+にコマンド一覧と選択ガイドあり。
 
 ## 設計原則
 
@@ -51,9 +52,8 @@ graph TD
 必要時のみスキルをロード。
 
 ```markdown
-/code --frontend → applying-frontend-patterns をロード
-/code --principles → applying-code-principles をロード
-/code (フラグなし) → 追加スキルなし
+/code --frontend → applying-frontend-patterns をロード /code --principles →
+applying-code-principles をロード /code (フラグなし) → 追加スキルなし
 ```
 
 ### 3. グレースフルデグラデーション
@@ -61,21 +61,20 @@ graph TD
 外部プラグインなしでも動作。
 
 ```markdown
-ralph-loop あり → 自動RGRC反復
-ralph-loop なし → 手動確認モード (機能は同じ)
+ralph-loop あり → 自動RGRC反復 ralph-loop なし → 手動確認モード (機能は同じ)
 ```
 
 ## コマンド → スキル/エージェント対応表
 
-| コマンド  | 使用スキル                                    | 使用エージェント                                                      |
-| --------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `/think`  | -                                             | -                                                                     |
-| `/code`   | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
-| `/audit`  | applying-code-principles                      | 13 reviewer agents                                                    |
-| `/fix`    | -                                             | -                                                                     |
-| `/polish` | -                                             | code-simplifier                                                       |
-| `/feature`| orchestrating-feature                         | feature-explorer, feature-architect, test-generator, unit-implementer |
-| `/docs`   | documenting-\*                                | \*-analyzer                                                           |
+| コマンド   | 使用スキル                                    | 使用エージェント                                                      |
+| ---------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| `/think`   | -                                             | -                                                                     |
+| `/code`    | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
+| `/audit`   | applying-code-principles                      | 13 reviewer agents                                                    |
+| `/fix`     | -                                             | -                                                                     |
+| `/polish`  | -                                             | code-simplifier                                                       |
+| `/feature` | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
+| `/docs`    | documenting-\*                                | \*-analyzer                                                           |
 
 ## ファイル構造
 
@@ -99,4 +98,5 @@ commands/
 ## 関連
 
 - [SKILLS_AGENTS.md](./SKILLS_AGENTS.md) — スキル・エージェントの詳細
-- [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) — ワークフロー選択ガイド
+- [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md)
+  — ワークフロー選択ガイド

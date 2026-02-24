@@ -1,9 +1,9 @@
 ---
 name: utilizing-cli-tools
 description: >
-  CLI tools guide for git, gh, npm, and other development tools.
-  Use when executing git commands, managing branches, or when user mentions
-  CLI, コマンドライン, バージョン管理, ブランチ, コミット.
+  CLI tools guide for git, gh, npm, and other development tools. Use when
+  executing git operations, GitHub CLI commands, npm scripts, or when user
+  mentions git操作, gh コマンド, npm スクリプト, HEREDOC コミット, CHANGELOG.
 allowed-tools: [Bash, Read, Glob]
 user-invocable: false
 ---
@@ -12,12 +12,12 @@ user-invocable: false
 
 ## References
 
-| Category           | Reference                         |
-| ------------------ | --------------------------------- |
-| Version Control    | `./references/git-essentials.md`  |
-| GitHub             | `./references/gh-github-cli.md`   |
-| Package Management | `./references/npm-scripts.md`     |
-| CHANGELOG          | `./references/changelog-tools.md` |
+| Category           | Reference                                                           |
+| ------------------ | ------------------------------------------------------------------- |
+| Version Control    | [@./references/git-essentials.md](./references/git-essentials.md)   |
+| GitHub             | [@./references/gh-github-cli.md](./references/gh-github-cli.md)     |
+| Package Management | [@./references/npm-scripts.md](./references/npm-scripts.md)         |
+| CHANGELOG          | [@./references/changelog-tools.md](./references/changelog-tools.md) |
 
 ## Quick Reference
 

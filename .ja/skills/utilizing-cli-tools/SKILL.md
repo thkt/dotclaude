@@ -1,9 +1,9 @@
 ---
 name: utilizing-cli-tools
 description: >
-  git, gh, npm等の開発ツールガイド。
-  Use when gitコマンド実行、ブランチ管理、または
-  CLI, コマンドライン, バージョン管理, ブランチ, コミット に言及時。
+  git, gh, npm等の開発ツールガイド。git操作、GitHub CLIコマンド、npmスクリプト
+  実行時、または git操作, gh コマンド, npm スクリプト, HEREDOC コミット,
+  CHANGELOG に言及時に使用。
 allowed-tools: [Bash, Read, Glob]
 user-invocable: false
 ---

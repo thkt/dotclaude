@@ -3,7 +3,7 @@ name: accessibility-reviewer
 description: WCAG 2.2 compliance review.
 tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
-skills: [a11y-specialist-skills:reviewing-a11y, web-design-guidelines, enhancing-progressively]
+skills: [a11y-specialist-skills:reviewing-a11y, web-design-guidelines]
 context: fork
 memory: project
 background: true
@@ -20,11 +20,10 @@ background: true
 
 ## Skill Delegation
 
-| Source                  | Responsibility                                               |
-| ----------------------- | ------------------------------------------------------------ |
-| a11y-specialist-skills  | WCAG 2.2 checks (semantics, forms, ARIA, keyboard, alt text) |
-| enhancing-progressively | Semantic HTML priority                                       |
-| This agent              | Visual checks (contrast, motion) + YAML output               |
+| Source                 | Responsibility                                               |
+| ---------------------- | ------------------------------------------------------------ |
+| a11y-specialist-skills | WCAG 2.2 checks (semantics, forms, ARIA, keyboard, alt text) |
+| This agent             | Visual checks (contrast, motion) + YAML output               |
 
 ## Browser Usage
 
@@ -77,7 +76,8 @@ findings:
     confidence: 0.60-1.00
     verification_hint:
       check: execution_trace|pattern_search
-      question: "<is this element actually reachable by keyboard/screen reader?>"
+      question:
+        "<is this element actually reachable by keyboard/screen reader?>"
 summary:
   total_findings: <count>
   wcag_compliance:

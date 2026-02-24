@@ -3,7 +3,7 @@ name: progressive-enhancer
 description: CSS-first approach review. Identify JS overuse.
 tools: [Read, Grep, Glob, LS, mcp__mdn__*]
 model: sonnet
-skills: [enhancing-progressively]
+skills: [tailwind-patterns]
 context: fork
 memory: project
 background: true

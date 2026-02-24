@@ -1,9 +1,9 @@
 ---
 name: generating-tdd-tests
 description: >
-  TDD with RGRC cycle and Baby Steps methodology.
-  Use when implementing features with test-driven development, following RGRC cycle,
-  or when user mentions TDD, テスト駆動, Red-Green-Refactor, Baby Steps.
+  TDD with RGRC cycle and Baby Steps methodology. Use when implementing features
+  with test-driven development, following RGRC cycle, or when user mentions TDD,
+  テスト駆動, Red-Green-Refactor, Baby Steps.
 allowed-tools: [Read, Write, Edit, Grep, Glob, Task]
 context: fork
 user-invocable: false
@@ -13,7 +13,8 @@ user-invocable: false
 
 RED PHASE MUST FAIL FOR THE RIGHT REASON.
 
-A test that fails for the wrong reason (syntax error, wrong import) is not a valid Red. Fix the test first.
+A test that fails for the wrong reason (syntax error, wrong import) is not a
+valid Red. Fix the test first.
 
 ## RGRC Cycle
 
@@ -26,7 +27,8 @@ A test that fails for the wrong reason (syntax error, wrong import) is not a val
 
 ## Baby Steps (2-min cycle)
 
-30s: Write failing test → 1min: Make pass → 10s: Run tests → 30s: Tiny refactor → 20s: Commit if green
+30s: Write failing test → 1min: Make pass → 10s: Run tests → 30s: Tiny refactor
+→ 20s: Commit if green
 
 ## Test Design
 
@@ -39,11 +41,6 @@ A test that fails for the wrong reason (syntax error, wrong import) is not a val
 ## Coverage
 
 See `rules/development/CODE_THRESHOLDS.md` for canonical values.
-
-| Level | Target | Focus              |
-| ----- | ------ | ------------------ |
-| C0    | 90%    | All lines executed |
-| C1    | 80%    | All branches taken |
 
 ## Naming
 

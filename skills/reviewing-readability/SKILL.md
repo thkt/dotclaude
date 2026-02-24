@@ -1,11 +1,11 @@
 ---
 name: reviewing-readability
 description: >
-  Code readability review based on "The Art of Readable Code" and Miller's Law (7±2).
-  Use when reviewing code clarity, improving naming, or when user mentions
-  可読性, 理解しやすい, わかりやすい, 明確, 命名, 変数名, 関数名,
-  ネスト, 深いネスト, 関数設計, コメント, 複雑, 難しい, 難読,
-  Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計.
+  Code readability review based on "The Art of Readable Code" and Miller's Law
+  (7±2). Use when reviewing code clarity, improving naming, or when user
+  mentions 可読性, 理解しやすい, わかりやすい, 明確, 命名, 変数名, 関数名,
+  ネスト, 深いネスト, 関数設計, コメント, 複雑, 難しい, 難読, Miller's Law,
+  ミラーの法則, 認知負荷, AI-generated, 過剰設計.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: code-quality-reviewer
 context: fork
@@ -13,6 +13,8 @@ user-invocable: false
 ---
 
 # Readability Review
+
+Thresholds: see `rules/development/CODE_THRESHOLDS.md`.
 
 ## Detection
 
@@ -27,16 +29,6 @@ user-invocable: false
 | RD4 | Interface for single impl     | Remove until 2nd impl            |
 | RD4 | Class for stateless logic     | Pure function                    |
 | RD5 | > 5 function parameters       | Config object or decompose       |
-
-## Thresholds
-
-See `rules/development/CODE_THRESHOLDS.md` for canonical values.
-
-| Metric             | Recommended | Maximum |
-| ------------------ | ----------- | ------- |
-| Function lines     | ≤30         | 50      |
-| Nesting depth      | ≤3          | 4       |
-| Function arguments | ≤3          | 5       |
 
 ## References
 

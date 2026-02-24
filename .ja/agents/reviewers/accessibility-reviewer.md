@@ -3,12 +3,7 @@ name: accessibility-reviewer
 description: WCAG 2.2準拠レビュー。構造化YAML出力。
 tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
-skills:
-  [
-    a11y-specialist-skills:reviewing-a11y,
-    web-design-guidelines,
-    enhancing-progressively,
-  ]
+skills: [a11y-specialist-skills:reviewing-a11y, web-design-guidelines]
 context: fork
 ---
 
@@ -25,11 +20,10 @@ WCAGチェックをa11y-specialist-skillsに委譲。構造化YAMLで出力。
 
 ## スキル委譲
 
-| ソース                  | 責務                                                                         |
-| ----------------------- | ---------------------------------------------------------------------------- |
-| a11y-specialist-skills  | WCAG 2.2チェック（セマンティクス、フォーム、ARIA、キーボード、代替テキスト） |
-| enhancing-progressively | セマンティックHTML優先                                                       |
-| このエージェント        | ビジュアルチェック（コントラスト、モーション）+ YAML出力                     |
+| ソース                 | 責務                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| a11y-specialist-skills | WCAG 2.2チェック（セマンティクス、フォーム、ARIA、キーボード、代替テキスト） |
+| このエージェント       | ビジュアルチェック（コントラスト、モーション）+ YAML出力                     |
 
 ## ブラウザ使用
 
@@ -58,8 +52,9 @@ WCAGチェックをa11y-specialist-skillsに委譲。構造化YAMLで出力。
 | a11y-specialist-skills不可 | 委譲スキップ、ローカルチェックのみ |
 | 外部スキルタイムアウト     | 完了分で続行                       |
 
-Fallback: a11y-specialist-skills不可 → ビジュアルチェックのみ（コントラスト、モーション）。
-Log: `⚠️ a11y-specialist-skills not available, WCAG semantic checks skipped`
+Fallback:
+a11y-specialist-skills不可 → ビジュアルチェックのみ（コントラスト、モーション）。Log:
+`⚠️ a11y-specialist-skills not available, WCAG semantic checks skipped`
 
 ## 出力
 
