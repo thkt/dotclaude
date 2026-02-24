@@ -1,4 +1,5 @@
 {
+	"skills": ["audit"],
 	"tools": {
 		"knip": true,
 		"oxlint": true,
