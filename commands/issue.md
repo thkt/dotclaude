@@ -1,5 +1,7 @@
 ---
-description: Generate GitHub Issue with structured title and body. Use when user mentions Issue作って, Issue書いて, Issue作成, GitHub Issue.
+description:
+  Generate GitHub Issue with structured title and body. Use when user mentions
+  Issue作って, Issue書いて, Issue作成, GitHub Issue.
 allowed-tools: Bash(gh issue:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[issue description]"
@@ -29,13 +31,13 @@ Generate well-structured GitHub Issues.
 
 ## Execution
 
-| Step | Action                                                |
-| ---- | ----------------------------------------------------- |
-| 1    | `Task` with `subagent_type: issue-generator`          |
-| 2    | Format and present preview                            |
-| 3    | Confirm with user                                     |
-| 4    | Execute: `gh issue create --title "..." --body "..."` |
-| 5    | Capture issue URL from command output                 |
+| Step | Action                                                                    |
+| ---- | ------------------------------------------------------------------------- |
+| 1    | `Task` with `subagent_type: issue-generator`, `mode: "bypassPermissions"` |
+| 2    | Format and present preview                                                |
+| 3    | Confirm with user                                                         |
+| 4    | Execute: `gh issue create --title "..." --body "..."`                     |
+| 5    | Capture issue URL from command output                                     |
 
 ## Flow: Preview
 
@@ -59,8 +61,7 @@ Generate well-structured GitHub Issues.
 
 ### Success
 
-**Created**: `#<number>` <title>
-<issue URL>
+**Created**: `#<number>` <title> <issue URL>
 
 ## Verification
 

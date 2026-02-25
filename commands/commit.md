@@ -1,5 +1,7 @@
 ---
-description: Analyze Git diff and generate Conventional Commits format messages. Use when user mentions コミットして, コミット作成, commit changes.
+description:
+  Analyze Git diff and generate Conventional Commits format messages. Use when
+  user mentions コミットして, コミット作成, commit changes.
 allowed-tools: Bash(git:*), Bash(cat:*), Bash(mv:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[context or issue reference]"
@@ -22,16 +24,17 @@ Analyze staged changes and generate Conventional Commits messages.
 
 ## Execution
 
-| Step | Action                                           |
-| ---- | ------------------------------------------------ |
-| 1    | `Task` with `subagent_type: commit-generator`    |
-| 2    | Present 3 message candidates via AskUserQuestion |
-| 3    | User selects or customizes (Other)               |
-| 4    | Execute selected commit (sandbox-compatible)     |
+| Step | Action                                                                     |
+| ---- | -------------------------------------------------------------------------- |
+| 1    | `Task` with `subagent_type: commit-generator`, `mode: "bypassPermissions"` |
+| 2    | Present 3 message candidates via AskUserQuestion                           |
+| 3    | User selects or customizes (Other)                                         |
+| 4    | Execute selected commit (sandbox-compatible)                               |
 
 ### Message Selection (Step 2)
 
-Present 3 generator candidates as AskUserQuestion options (varied scope/wording).
+Present 3 generator candidates as AskUserQuestion options (varied
+scope/wording).
 
 ### Sandbox-Compatible Commit
 
