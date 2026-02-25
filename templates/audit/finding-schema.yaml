@@ -57,6 +57,7 @@ finding:
 # | SA     | subagent-reviewer       |
 # | OPS    | operational-readiness-reviewer |
 # | SOW    | sow-spec-reviewer       |  (score-based output, no finding_id)
+# | PF     | pre-flight              |  (converted from hook additionalContext)
 
 # --- Consolidation rule ---
 # When the same pattern appears in multiple locations:

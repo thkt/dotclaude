@@ -1,7 +1,13 @@
 ---
-description: Orchestrate specialized review agents for code quality assessment. Use when user mentions レビューして, コードレビュー, 品質チェック, code review, quality check.
+description:
+  Orchestrate specialized review agents for code quality assessment. Use when
+  user mentions レビューして, コードレビュー, 品質チェック, code review, quality
+  check.
 aliases: [review]
-allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion
+allowed-tools:
+  Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
+  Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task,
+  AskUserQuestion
 model: opus
 argument-hint: "[target files or scope]"
 ---
@@ -25,7 +31,8 @@ Orchestrate specialized review agents with confidence-based filtering.
 ## Input
 
 - Target scope: `$1` (optional)
-- If `$1` is empty → select focus via AskUserQuestion, then review staged/modified files
+- If `$1` is empty → select focus via AskUserQuestion, then review
+  staged/modified files
 
 ### Audit Focus
 
@@ -45,14 +52,15 @@ Glob target → count files → select tier → confirm with user.
 
 ## Execution
 
-Select tier-specific workflow below. All tiers start with Pre-flight (see below).
+Select tier-specific workflow below. All tiers start with Pre-flight (see
+below).
 
 **Constraint: Save snapshot BEFORE displaying any results to user.**
 
 ### Small Tier (1-3 files)
 
-Leader reads all target files and performs multi-domain review directly.
-Output: findings YAML → save snapshot → display delta.
+Leader reads all target files and performs multi-domain review directly. Output:
+findings YAML → save snapshot → display delta.
 
 No agents spawned.
 
@@ -67,7 +75,9 @@ No agents spawned.
 | 5    | Save snapshot                                                 |
 | 6    | Display delta + report                                        |
 
-Medium skips challenger/verifier: with 4-15 files all reviewers read the same files, so cross-validation adds cost without proportional benefit. Leader performs integration directly. Large tier (16+) uses file-routed sub-reviewers where each sees a subset, making independent challenge/verification essential.
+Medium skips challenger/verifier: all reviewers read the same files, so Leader
+integrates directly. Large tier uses file-routed subsets, making independent
+challenge/verification essential.
 
 #### Reviewer Assignment
 
@@ -102,7 +112,8 @@ Include in each reviewer's prompt:
 
 #### File Routing
 
-Leader classifies each target file by path and assigns to relevant reviewers only:
+Leader classifies each target file by path and assigns to relevant reviewers
+only:
 
 | File Pattern           | Sub-reviewers (subagent_type)                                         |
 | ---------------------- | --------------------------------------------------------------------- |
@@ -118,7 +129,8 @@ Leader classifies each target file by path and assigns to relevant reviewers onl
 | `test.*`, `*.test.*`   | test-coverage-reviewer, testability-reviewer                          |
 | Other                  | code-quality-reviewer, document-reviewer                              |
 
-Classification by path: `agents/**/*.md` → agent defs, `commands/**/*.md` or `docs/**/*.md` → commands/docs, other `*.md` → commands/docs (default).
+Classification by path: `agents/**/*.md` → agent defs, `commands/**/*.md` or
+`docs/**/*.md` → commands/docs, other `*.md` → commands/docs (default).
 
 #### Sub-reviewer Spawn
 
@@ -147,30 +159,21 @@ Each sub-reviewer is spawned directly via Task:
 
 #### Handoff (Standalone)
 
-Since agents are standalone (not team), leader collects results via Task output:
-
-| Handoff             | Method            |
-| ------------------- | ----------------- |
-| Reviewer → Leader   | Task completion   |
-| Leader → Challenger | Task spawn prompt |
-| Leader → Verifier   | Task spawn prompt |
-| Challenger → Leader | Task completion   |
-| Verifier → Leader   | Task completion   |
-| Leader → Integrator | Task spawn prompt |
-| Integrator → Leader | Task completion   |
+Agents are standalone. Leader collects via Task completion; spawns via Task
+prompt.
 
 ### Error Handling
 
-| Error             | Recovery                                                                           |
-| ----------------- | ---------------------------------------------------------------------------------- |
-| No files to audit | Return "No files to audit"                                                         |
-| Reviewer stall    | 120s timeout per reviewer; if not completed, proceed without it                    |
-| Malformed YAML    | Skip reviewer, log warning, proceed with valid reviewers                           |
-| Dependency stall  | Skip dependent reviewer (e.g., root-cause if CQ failed)                            |
-| Max parallel >10  | Batch in groups of 10 with sequential waits                                        |
-| Challenger stall  | 120s timeout; if not completed when verifier finishes, proceed without             |
-| Verifier stall    | 120s timeout; if not completed when challenger finishes, proceed without           |
-| Integrator stall  | 120s timeout; if not completed after both inputs ready, Leader integrates manually |
+| Error             | Recovery                                                 |
+| ----------------- | -------------------------------------------------------- |
+| No files to audit | Return "No files to audit"                               |
+| Reviewer stall    | 120s timeout; proceed without                            |
+| Malformed YAML    | Skip reviewer, log warning, proceed with valid reviewers |
+| Dependency stall  | Skip dependent (e.g., root-cause if CQ failed)           |
+| Max parallel >10  | Batch in groups of 10                                    |
+| Challenger stall  | 120s timeout; proceed with verifier only                 |
+| Verifier stall    | 120s timeout; proceed with challenger only               |
+| Integrator stall  | 120s timeout; Leader integrates manually                 |
 
 ## Pre-flight: Static Analysis
 
@@ -190,9 +193,11 @@ Auto-detect and run project lint/check tools before agents start.
 
 ### Step 2: Find lint/check scripts in detected runner
 
-Common names: `lint`, `typecheck`, `type-check`, `check`, `analyse`, `analyze`, `static`, `phpstan`, `clippy`
+Common names: `lint`, `typecheck`, `type-check`, `check`, `analyse`, `analyze`,
+`static`, `phpstan`, `clippy`
 
-Fallback (best-effort): If no runner found, check for config files and verify tool availability via `command -v`:
+Fallback (best-effort): If no runner found, check for config files and verify
+tool availability via `command -v`:
 
 | Config File                       | Tool Check                     | Command                       |
 | --------------------------------- | ------------------------------ | ----------------------------- |
@@ -204,14 +209,36 @@ Fallback (best-effort): If no runner found, check for config files and verify to
 
 ### Step 3: Run discovered scripts
 
-If a PreToolUse(Skill) hook injects `additionalContext` (e.g., knip, react-doctor results via `claude-reviews` per ADR-0013), include those results in the audit findings.
-
 | Rule             | Behavior                                      |
 | ---------------- | --------------------------------------------- |
 | No tools found   | Skip pre-flight, proceed to agents            |
 | Non-zero exit    | Capture output as context, do NOT block audit |
 | Multiple scripts | Run independent scripts in parallel           |
 | Timeout          | 60s per script; kill and proceed on timeout   |
+
+### Step 4: Convert hook output to findings
+
+If a PreToolUse(Skill) hook injects `additionalContext` (e.g., `claude-reviews`
+per ADR-0013), parse each tool section and convert to `PF-{seq}` findings using
+the finding-schema.yaml base fields.
+
+| Field        | Value                                    |
+| ------------ | ---------------------------------------- |
+| `finding_id` | `PF-{seq}` (sequential across all tools) |
+| `agent`      | `pre-flight`                             |
+
+Category naming convention:
+
+| Tool         | Category pattern                                                           | Default severity                                        |
+| ------------ | -------------------------------------------------------------------------- | ------------------------------------------------------- |
+| knip         | `unused-file`, `unused-export`, `unused-dependency`, `unlisted-dependency` | `unlisted` → high, `unused-file` → medium, others → low |
+| oxlint       | `lint/{rule-name}`                                                         | `error` → high, `warning` → medium                      |
+| tsgo         | `type-error/TS{code}`                                                      | high                                                    |
+| react-doctor | `react/{issue-type}`                                                       | medium                                                  |
+| (unknown)    | `preflight/{tool-name}`                                                    | low                                                     |
+
+Apply the consolidation rule from finding-schema.yaml (same pattern → single
+finding).
 
 ## Snapshot Naming
 
