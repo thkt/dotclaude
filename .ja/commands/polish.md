@@ -1,6 +1,10 @@
 ---
-description: AI生成スロップの除去とコード簡素化による明確性・保守性の向上。ユーザーが整理して, きれいにして, コード整理, slop除去, ポリッシュ等に言及した場合に使用。
-allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob, Task, AskUserQuestion
+description:
+  AI生成スロップの除去とコード簡素化による明確性・保守性の向上。ユーザーが整理して,
+  きれいにして, コード整理, slop除去, ポリッシュ等に言及した場合に使用。
+allowed-tools:
+  Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob,
+  Task, AskUserQuestion
 model: opus
 argument-hint: "[対象スコープ]"
 ---
@@ -12,7 +16,7 @@ argument-hint: "[対象スコープ]"
 ## 入力
 
 - 対象スコープ: `$1`（任意）
-- `$1`が空の場合 → `git diff main...HEAD`を分析
+- `$1`が空の場合 → `git diff HEAD`を分析（staged + unstaged の未コミット変更）
 
 ### Polishレベル
 

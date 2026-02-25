@@ -1,6 +1,12 @@
 ---
-description: Remove AI-generated slop and simplify code for clarity and maintainability. Use when user mentions 整理して, きれいにして, コード整理, slop除去, ポリッシュ.
-allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Bash(git worktree *), Bash(git merge *), Bash(git branch *), Read, Edit, Grep, Glob, Task, AskUserQuestion
+description:
+  Remove AI-generated slop and simplify code for clarity and maintainability.
+  Use when user mentions 整理して, きれいにして, コード整理, slop除去,
+  ポリッシュ.
+allowed-tools:
+  Bash(git diff:*), Bash(git log:*), Bash(git status:*), Bash(git worktree *),
+  Bash(git merge *), Bash(git branch *), Read, Edit, Grep, Glob, Task,
+  AskUserQuestion
 model: opus
 argument-hint: "[target scope]"
 ---
@@ -12,7 +18,7 @@ Remove AI-generated slop and simplify code before commit.
 ## Input
 
 - Target scope: `$1` (optional)
-- If `$1` is empty → analyze `git diff main...HEAD`
+- If `$1` is empty → analyze `git diff HEAD` (staged + unstaged changes)
 
 ### Polish Level
 
