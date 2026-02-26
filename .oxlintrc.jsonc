@@ -1,46 +1,69 @@
 {
-	"$schema": "./node_modules/oxlint/configuration_schema.json",
-	"plugins": ["import", "typescript", "react", "jsx-a11y", "unicorn"],
-	"categories": {
-		"correctness": "error",
-		"suspicious": "error",
-		"perf": "error",
-	},
-	"rules": {
-		// Not in default categories — explicit enable
-		"@typescript-eslint/no-explicit-any": "error",
-		"@typescript-eslint/no-non-null-assertion": "error",
-		"unicorn/prefer-module": "error",
-		"unicorn/prefer-ternary": "error",
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["import", "typescript", "react", "jsx-a11y", "unicorn", "jsdoc", "jest", "vitest"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error",
+  },
+  "rules": {
+    // Not in default categories — explicit enable
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "unicorn/prefer-module": "error",
+    "unicorn/prefer-ternary": "error",
 
-		// Code thresholds (CODE_THRESHOLDS.md): maximum values as lint boundary
-		"max-lines-per-function": [
-			"error",
-			{ "max": 50, "skipBlankLines": true, "skipComments": true },
-		],
-		"max-lines": ["error", { "max": 800 }],
-		"max-depth": ["error", { "max": 4 }],
-		"max-params": ["error", { "max": 5 }],
-		"complexity": ["error", { "max": 15 }],
-	},
-	"overrides": [
-		{
-			// Test files: relax strict rules
-			"files": ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"],
-			"rules": {
-				"no-console": "off",
-				"@typescript-eslint/no-explicit-any": "off",
-				"max-lines-per-function": "off",
-				"max-lines": "off",
-			},
-		},
-		{
-			// Config files: default export is conventional
-			"files": ["*.config.ts", "*.config.mts"],
-			"rules": {
-				"no-default-export": "off",
-			},
-		},
-	],
-	"ignorePatterns": ["dist", "build", "*.generated.*"],
+    // Code thresholds (CODE_THRESHOLDS.md): maximum values as lint boundary
+    "max-lines-per-function": [
+      "error",
+      { "max": 50, "skipBlankLines": true, "skipComments": true },
+    ],
+    "max-lines": ["error", { "max": 800 }],
+    "max-depth": ["error", { "max": 4 }],
+    "max-params": ["error", { "max": 5 }],
+    "complexity": ["error", { "max": 15 }],
+
+    // Guardrails from blog: inorinrinrin.com/entry/2026/02/24/194907
+    "unicorn/filename-case": ["error", { "cases": { "kebabCase": true } }],
+    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "import/no-duplicates": "error",
+
+    // JSDoc (warn for gradual adoption)
+    "jsdoc/require-param": "warn",
+    "jsdoc/require-returns": "warn",
+    "jsdoc/require-param-description": "warn",
+    "jsdoc/require-returns-description": "warn",
+  },
+  "overrides": [
+    {
+      // Test files: relax strict rules, enforce test quality
+      "files": ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"],
+      "rules": {
+        "no-console": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "max-lines-per-function": "off",
+        "max-lines": "off",
+        "jsdoc/require-param": "off",
+        "jsdoc/require-returns": "off",
+        "jsdoc/require-param-description": "off",
+        "jsdoc/require-returns-description": "off",
+
+        // Test quality (from @vitest/eslint-plugin)
+        "jest/consistent-test-it": "error",
+        "jest/no-conditional-expect": "error",
+        "vitest/no-conditional-tests": "error",
+        "jest/prefer-mock-promise-shorthand": "error",
+        "jest/require-to-throw-message": "error",
+        "jest/require-top-level-describe": "error",
+      },
+    },
+    {
+      // Config files: default export is conventional
+      "files": ["*.config.ts", "*.config.mts"],
+      "rules": {
+        "no-default-export": "off",
+      },
+    },
+  ],
+  "ignorePatterns": ["dist", "build", "*.generated.*"],
 }
