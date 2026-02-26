@@ -27,7 +27,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── conventions/      # Documentation conventions
 │   ├── development/      # Development patterns & methodologies
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (26 skills)
+├── skills/               # Skill-based knowledge modules (25 skills)
 ├── agents/               # Specialized AI agents (35 agents)
 │   ├── analyzers/        # Architecture & code analyzers
 │   ├── architects/       # Feature architecture designers
@@ -78,7 +78,7 @@ install specific workflow sets:
 - **git-utilities**: Git workflow helpers (commit, branch, PR, issue)
 - **documentation-tools**: ADR creation and docs
 - **browser-workflows**: E2E testing and automation
-- **development-skills**: 26 skills for TDD, principles, patterns, security, and
+- **development-skills**: 25 skills for TDD, principles, patterns, security, and
   more
 
 ### Option 2: Manual Installation (Full Configuration)
@@ -116,14 +116,7 @@ permission handling, reducing approval fatigue while maintaining safety.
 - ripgrep (typically pre-installed)
 - jaq (for IDR hooks): `brew install jaq`
 
-**Quick Setup**:
-
-```bash
-# Automated setup (recommended)
-~/.claude/hooks/setup-sandbox.sh
-```
-
-**Manual Setup**:
+**Setup**:
 
 ```bash
 # 1. Install sandbox runtime
@@ -151,15 +144,15 @@ Create `~/.srt-settings.json` for custom settings:
 
 ```json
 {
- "sandbox": {
-  "enabled": true,
-  "autoAllowBashIfSandboxed": true,
-  "excludedCommands": ["docker"],
-  "network": {
-   "allowLocalBinding": true,
-   "httpProxyPort": 8080
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "excludedCommands": ["docker"],
+    "network": {
+      "allowLocalBinding": true,
+      "httpProxyPort": 8080
+    }
   }
- }
 }
 ```
 

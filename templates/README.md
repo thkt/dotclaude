@@ -38,6 +38,13 @@ templates/
 │   ├── deprecation.md
 │   ├── process-change.md
 │   └── technology-selection.md
+├── audit/             # Audit templates
+│   ├── finding-schema.yaml
+│   ├── output.md
+│   └── snapshot.yaml
+├── devcontainer/      # Dev Container templates
+│   ├── .devcontainer/devcontainer.json
+│   └── README.md
 ├── docs/              # Documentation templates
 │   ├── api.md
 │   ├── architecture.md
@@ -52,10 +59,8 @@ templates/
 │   └── template.md    # Research findings
 ├── sow/
 │   └── template.md    # Statement of Work
-├── spec/
-│   └── template.md    # Specification
-└── idr/
-    └── template.md    # Implementation Decision Record
+└── spec/
+    └── template.md    # Specification
 ```
 
 ## Document Responsibilities

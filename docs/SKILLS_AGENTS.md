@@ -42,7 +42,8 @@ graph LR
 
 ### Purpose
 
-Skills are "knowledge modules" that provide domain-specific knowledge when AI executes tasks.
+Skills are "knowledge modules" that provide domain-specific knowledge when AI
+executes tasks.
 
 ### Categories
 
@@ -90,9 +91,9 @@ skills/[skill-name]/
 ---
 name: generating-tdd-tests
 description: >
-  TDD with RGRC cycle and Baby Steps methodology.
-  Use when implementing features with test-driven development,
-  or when user mentions TDD, テスト駆動, Red-Green-Refactor.
+  TDD with RGRC cycle and Baby Steps methodology. Use when implementing features
+  with test-driven development, or when user mentions TDD, テスト駆動,
+  Red-Green-Refactor.
 allowed-tools: [Read, Write, Edit, Grep, Glob, Task]
 context: fork # fork or inline
 user-invocable: false # Whether invocable as slash command
@@ -103,20 +104,21 @@ user-invocable: false # Whether invocable as slash command
 
 ### Purpose
 
-Agents are "specialized executors" spawned via the Task tool to autonomously perform specific analysis or generation tasks.
+Agents are "specialized executors" spawned via the Task tool to autonomously
+perform specific analysis or generation tasks.
 
 ### Categories
 
 ```text
 agents/
-├── analyzers/      # Code analysis (api, architecture, code-flow, domain, plugin-scanner, setup)
+├── analyzers/      # Code analysis (api, architecture, code-flow, domain, setup)
 ├── architects/     # Design (feature-architect)
 ├── critics/        # Critical verification (devils-advocate-audit, devils-advocate-design, evidence-verifier)
 ├── enhancers/      # Code improvement (code-simplifier)
 ├── explorers/      # Exploration (feature-explorer)
 ├── generators/     # Generation (branch, commit, issue, pr, test)
 ├── resolvers/      # Problem resolution (build-error-resolver)
-├── reviewers/      # Review (15 specialized reviewers)
+├── reviewers/      # Review (16 specialized reviewers)
 └── teams/          # Team integration (progressive-integrator, unit-implementer)
 ```
 
@@ -174,7 +176,8 @@ Task tool with:
 SKILL.md → reference.md (1 level only)
 ```
 
-Reason: Claude truncates deep nesting with `head -100`, causing information loss.
+Reason: Claude truncates deep nesting with `head -100`, causing information
+loss.
 
 ## Related
 

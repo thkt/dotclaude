@@ -70,20 +70,28 @@ Auto: All solo conditions met → Solo, otherwise → Team
 
 ### Browser & Documentation
 
-| Command   | Purpose                          |
-| --------- | -------------------------------- |
-| `/e2e`    | E2E test from browser operations |
-| `/adr`    | Architecture Decision Record     |
-| `/docs`   | Generate documentation from code |
+| Command | Purpose                          |
+| ------- | -------------------------------- |
+| `/e2e`  | E2E test from browser operations |
+| `/adr`  | Architecture Decision Record     |
+| `/docs` | Generate documentation from code |
 
 ### Git Operations
 
-| Command   | Purpose                       |
-| --------- | ----------------------------- |
-| `/branch` | Suggest branch names          |
-| `/commit` | Conventional Commits messages |
-| `/pr`     | PR descriptions               |
-| `/issue`  | GitHub Issues                 |
+| Command    | Purpose                       |
+| ---------- | ----------------------------- |
+| `/branch`  | Suggest branch names          |
+| `/commit`  | Conventional Commits messages |
+| `/pr`      | PR descriptions               |
+| `/issue`   | GitHub Issues                 |
+| `/preview` | PR screening review           |
+
+### Productivity
+
+| Command            | Purpose                                  |
+| ------------------ | ---------------------------------------- |
+| `/inbox`           | Task aggregation (GitHub/Slack/Calendar) |
+| `/validate-config` | Configuration integrity check            |
 
 ## Todo Progress Tracking
 
@@ -108,21 +116,24 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 
 ## Command × Principle Mapping
 
-| Command     | Primary Principles           | Secondary Principles                        |
-| ----------- | ---------------------------- | ------------------------------------------- |
-| `/think`    | SOLID, Occam's Razor         | Progressive Enhancement                     |
-| `/research` | Strong Inference             | All principles for context                  |
-| `/code`     | TDD, Baby Steps              | Readable Code, DRY, AI-Assisted Development |
-| `/test`     | TDD                          | Law of Demeter, AI-Assisted Development     |
-| `/fix`      | Occam's Razor                | TIDYINGS                                    |
-| `/audit`    | All principles               | Priority order, Strong Inference            |
-| `/feature`  | Progressive Enhancement      | TDD, SOLID, Occam's Razor                   |
-| `/polish`   | Readable Code, Occam's Razor | DRY, YAGNI                                  |
-| `/validate` | Output Verifiability         | Completion criteria                         |
-| `/commit`   | Readable Code                | Conventional Commits                        |
-| `/branch`   | Readable Code                | Naming conventions                          |
-| `/pr`       | Readable Code                | Documentation                               |
-| `/issue`    | Readable Code                | Miller's Law                                |
-| `/docs`     | Readable Code                | Progressive Enhancement                     |
-| `/adr`      | SOLID                        | Leaky Abstraction                           |
-| `/e2e`      | TDD                          | Progressive Enhancement                     |
+| Command            | Primary Principles           | Secondary Principles                        |
+| ------------------ | ---------------------------- | ------------------------------------------- |
+| `/think`           | SOLID, Occam's Razor         | Progressive Enhancement                     |
+| `/research`        | Strong Inference             | All principles for context                  |
+| `/code`            | TDD, Baby Steps              | Readable Code, DRY, AI-Assisted Development |
+| `/test`            | TDD                          | Law of Demeter, AI-Assisted Development     |
+| `/fix`             | Occam's Razor                | TIDYINGS                                    |
+| `/audit`           | All principles               | Priority order, Strong Inference            |
+| `/feature`         | Progressive Enhancement      | TDD, SOLID, Occam's Razor                   |
+| `/polish`          | Readable Code, Occam's Razor | DRY, YAGNI                                  |
+| `/validate`        | Output Verifiability         | Completion criteria                         |
+| `/commit`          | Readable Code                | Conventional Commits                        |
+| `/branch`          | Readable Code                | Naming conventions                          |
+| `/pr`              | Readable Code                | Documentation                               |
+| `/issue`           | Readable Code                | Miller's Law                                |
+| `/docs`            | Readable Code                | Progressive Enhancement                     |
+| `/adr`             | SOLID                        | Leaky Abstraction                           |
+| `/e2e`             | TDD                          | Progressive Enhancement                     |
+| `/preview`         | Readable Code                | Strong Inference                            |
+| `/inbox`           | -                            | -                                           |
+| `/validate-config` | Output Verifiability         | Safety First                                |

@@ -18,8 +18,6 @@ graph TD
 
     subgraph Hooks["Hook Categories"]
         SEC[security/]
-        LINT[lint/]
-        FORMAT[format/]
         LIFE[lifecycle/]
         CODEMAP[codemap/]
         AGENTS[agents/]
@@ -28,9 +26,6 @@ graph TD
     end
 
     PRE --> SEC
-    PRE --> LINT
-    POST --> FORMAT
-    POST --> LINT
     POST --> VIEWER
     PERM --> SEC
     STOP --> NOTIFY_H
@@ -41,45 +36,34 @@ graph TD
 
 ## Hook Categories
 
-| Category | Trigger | Purpose |
-| --- | --- | --- |
-| `security/` | PreToolUse | Bash safety, permission control |
-| `lint/` | Pre/PostToolUse | Code quality checks |
-| `format/` | PostToolUse | Auto-formatting |
-| `lifecycle/` | statusLine | Status line, PR cache |
-| `codemap/` | PostToolUse | Architecture map update |
-| `agents/` | Subagent* | Agent logging |
-| `viewer/` | PostToolUse | SOW/Spec/IDR viewer |
-| `notifications/` | Stop | Completion notification |
+| Category         | Trigger                | Purpose                                         |
+| ---------------- | ---------------------- | ----------------------------------------------- |
+| `security/`      | PreToolUse             | Bash safety, permission control, secrets check  |
+| `lifecycle/`     | statusLine, pre-commit | Status line, PR cache, IDR generation, worktree |
+| `codemap/`       | PostToolUse            | Architecture map update                         |
+| `agents/`        | Subagent\*             | Agent logging, idle detection                   |
+| `viewer/`        | PostToolUse            | SOW/Spec/IDR viewer                             |
+| `notifications/` | Stop                   | Completion notification                         |
 
 ## Key Hooks
 
 ### security/
 
-| Hook                    | Event             | Failure Mode | Purpose                |
-| ----------------------- | ----------------- | ------------ | ---------------------- |
-| `bash-safety.sh`        | PreToolUse(Bash)  | fail-closed  | 危険コマンドをブロック |
-| `permission-request.sh` | PermissionRequest | fail-closed  | 自動承認/拒否の判定    |
-
-### lint/
-
-| Hook                  | Event              | Failure Mode | Purpose           |
-| --------------------- | ------------------ | ------------ | ----------------- |
-| `typescript-check.sh` | PostToolUse(Write) | fail-open    | tsc --noEmit 実行 |
-
-### format/
-
-| Hook             | Event                   | Failure Mode | Purpose            |
-| ---------------- | ----------------------- | ------------ | ------------------ |
-| `eof-newline.sh` | PostToolUse(Write)      | fail-open    | EOF改行を保証      |
-| `format.sh`      | PostToolUse(Write/Edit) | fail-open    | biome/prettier実行 |
+| Hook                    | Event             | Failure Mode | Purpose                  |
+| ----------------------- | ----------------- | ------------ | ------------------------ |
+| `bash-safety.sh`        | PreToolUse(Bash)  | fail-closed  | 危険コマンドをブロック   |
+| `permission-request.sh` | PermissionRequest | fail-closed  | 自動承認/拒否の判定      |
+| `secrets-check.sh`      | PreToolUse        | fail-closed  | シークレット漏洩チェック |
+| `config-change.sh`      | PreToolUse        | fail-closed  | 設定ファイル変更の検知   |
 
 ### lifecycle/
 
-| Hook            | Trigger    | Purpose              |
-| --------------- | ---------- | -------------------- |
-| `statusline.sh` | statusLine | ステータスライン表示 |
-| `_pr-cache.sh`  | (sourced)  | PR情報のキャッシュ   |
+| Hook                 | Trigger    | Purpose              |
+| -------------------- | ---------- | -------------------- |
+| `statusline.sh`      | statusLine | ステータスライン表示 |
+| `_pr-cache.sh`       | (sourced)  | PR情報のキャッシュ   |
+| `idr-pre-commit.sh`  | pre-commit | IDR自動生成          |
+| `worktree-create.sh` | worktree   | ワークツリー作成     |
 
 ### agents/
 
@@ -87,6 +71,8 @@ graph TD
 | ---------------------- | ------------- | ------------ | -------------------- |
 | `subagent-start.sh`    | SubagentStart | fail-open    | 開始ログ・通知音     |
 | `subagent-analysis.sh` | SubagentStop  | fail-open    | トランスクリプト保存 |
+| `task-completed.sh`    | SubagentStop  | fail-open    | タスク完了通知       |
+| `teammate-idle.sh`     | SubagentStop  | fail-open    | チームメイト待機検知 |
 
 ### viewer/
 
@@ -96,9 +82,9 @@ graph TD
 
 ### codemap/
 
-| Hook              | Event | Failure Mode | Purpose                  |
-| ----------------- | ----- | ------------ | ------------------------ |
-| `auto-update.sh`  | -     | fail-open    | architecture.md 自動生成 |
+| Hook             | Event | Failure Mode | Purpose                  |
+| ---------------- | ----- | ------------ | ------------------------ |
+| `auto-update.sh` | -     | fail-open    | architecture.md 自動生成 |
 
 ## Configuration
 
@@ -125,7 +111,7 @@ hooks は `settings.json` で設定:
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/format/format.sh",
+            "command": "~/.claude/hooks/viewer/ccplanview-open.sh",
             "timeout": 5000
           }
         ]
@@ -148,7 +134,8 @@ hooks は `settings.json` で設定:
 ### 3. Fail-mode Convention
 
 - **fail-open** (`set +e`): エラー時はスキップして継続。大半のフックがこちら。
-- **fail-closed** (`set -euo pipefail`): エラー時はブロック。セキュリティフックのみ。
+- **fail-closed**
+  (`set -euo pipefail`): エラー時はブロック。セキュリティフックのみ。
 
 ### 4. Composable
 
