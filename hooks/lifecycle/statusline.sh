@@ -11,7 +11,7 @@ color_for_pct() {
     else printf '\033[31m'; fi
 }
 
-DEFAULT_CONTEXT_LIMIT=$DEFAULT_CONTEXT_LIMIT
+DEFAULT_CONTEXT_LIMIT=${DEFAULT_CONTEXT_LIMIT:-200000}
 
 parse_stdin() {
     EXCEEDS_200K="false"
@@ -170,10 +170,10 @@ fetch_usage() {
         {
             local creds token response usage
             creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) || { printf 'ERR\tERR\n' > "$cache_file"; return; }
-            token=$(printf '%s' "$creds" | jq -r '.claudeAiOauth.accessToken // empty') || { printf 'ERR\tERR\n' > "$cache_file"; return; }
+            token=$(printf '%s' "$creds" | grep -o '"accessToken":"[^"]*"' | head -1 | cut -d'"' -f4) || { printf 'ERR\tERR\n' > "$cache_file"; return; }
             [ -n "$token" ] || { printf 'ERR\tERR\n' > "$cache_file"; return; }
             response=$(printf 'header "Authorization: Bearer %s"\n' "$token" | \
-                curl -s --max-time 3 -K - \
+                curl -sf --max-time 3 -K - \
                 -H "anthropic-beta: oauth-2025-04-20" \
                 https://api.anthropic.com/api/oauth/usage)
             if [ $? -eq 0 ]; then

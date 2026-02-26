@@ -1,10 +1,16 @@
 {
-	"mcpServers": {
-		"scout": {
-			"command": "scout",
-			"env": {
-				"GEMINI_API_KEY": "${GEMINI_API_KEY}"
-			}
-		}
-	}
+  "mcpServers": {
+    "scout": {
+      "command": "scout",
+      "env": {
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}"
+      }
+    },
+    "yomu": {
+      "command": "yomu",
+      "env": {
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}"
+      }
+    }
+  }
 }

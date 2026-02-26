@@ -1,9 +1,9 @@
 {
-	"skills": ["audit"],
-	"tools": {
-		"knip": true,
-		"oxlint": true,
-		"tsgo": true,
-		"react_doctor": true
-	}
+  "skills": ["audit"],
+  "tools": {
+    "knip": true,
+    "oxlint": true,
+    "tsgo": true,
+    "react_doctor": true
+  }
 }

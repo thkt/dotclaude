@@ -69,6 +69,9 @@ token.json
 dump.sql
 *.sql.gz
 
+# MCP data
+.yomu/
+
 # Cache
 cache/
 *cache

@@ -1,19 +1,18 @@
 {
-	"$schema": "./node_modules/oxfmt/configuration_schema.json",
-	// Only non-default values listed. Defaults: https://oxc.rs/docs/guide/usage/formatter/config-file-reference
-	"useTabs": true,
-	"sortImports": {
-		"groups": ["builtin", "external", "internal", "parent", "sibling"],
-	},
-	"overrides": [
-		{
-			// Markdown: narrower width for readability
-			"files": ["*.md", "*.mdx"],
-			"options": {
-				"printWidth": 80,
-				"proseWrap": "always",
-			},
-		},
-	],
-	"ignorePatterns": ["dist", "build", "*.generated.*"],
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  // Only non-default values listed. Defaults: https://oxc.rs/docs/guide/usage/formatter/config-file-reference
+  "sortImports": {
+    "groups": ["builtin", "external", "internal", "parent", "sibling"],
+  },
+  "overrides": [
+    {
+      // Markdown: narrower width for readability
+      "files": ["*.md", "*.mdx"],
+      "options": {
+        "printWidth": 80,
+        "proseWrap": "always",
+      },
+    },
+  ],
+  "ignorePatterns": ["dist", "build", "*.generated.*"],
 }
