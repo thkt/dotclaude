@@ -4,7 +4,7 @@ description:
   きれいにして, コード整理, slop除去, ポリッシュ等に言及した場合に使用。
 allowed-tools:
   Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob,
-  Task, AskUserQuestion
+  Task
 model: opus
 argument-hint: "[対象スコープ]"
 ---
@@ -30,11 +30,11 @@ argument-hint: "[対象スコープ]"
 
 ## 実行
 
-| Step | アクション                               |
-| ---- | ---------------------------------------- |
-| 1    | `Task`で`subagent_type: code-simplifier` |
-| 2    | エージェントがAIスロップを特定・除去     |
-| 3    | 簡素化を報告                             |
+| Step | アクション                                                    |
+| ---- | ------------------------------------------------------------- |
+| 1    | `git diff HEAD` で変更ファイルと差分内容を特定                |
+| 2    | `Task` で `subagent_type: code-simplifier`（in-place で編集） |
+| 3    | 簡素化を報告                                                  |
 
 ### 除去対象
 
