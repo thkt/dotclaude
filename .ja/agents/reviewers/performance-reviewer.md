@@ -1,14 +1,11 @@
 ---
 name: performance-reviewer
-description: TypeScript/Reactのフロントエンドパフォーマンス最適化。Web Vitals、レンダリング、バンドルサイズ。
+description:
+  TypeScript/Reactのフロントエンドパフォーマンス最適化。Web
+  Vitals、レンダリング、バンドルサイズ。
 tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
-skills:
-  [
-    optimizing-performance,
-    vercel-react-best-practices,
-    applying-code-principles,
-  ]
+skills: [optimizing-performance, applying-code-principles]
 context: fork
 ---
 

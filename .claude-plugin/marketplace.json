@@ -1,208 +1,207 @@
 {
-	"$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-	"name": "thkt-development-workflows",
-	"owner": {
-		"name": "thkt",
-		"email": "",
-		"url": "https://github.com/thkt"
-	},
-	"metadata": {
-		"description": "Comprehensive TDD/RGRC development workflow system. Provides integrated plugins sharing a common codebase: workflow commands (/think, /code, /audit), git utilities (/commit, /pr, /preview), documentation tools (/adr, /docs), and specialized review agents.",
-		"version": "2.2.0",
-		"architecture": "monorepo-marketplace",
-		"adr": "adr/0003-marketplace.md"
-	},
-	"plugins": [
-		{
-			"name": "complete-workflow-system",
-			"source": "./",
-			"description": "Full development workflow: /think → /code → /test → /audit → /validate with SOW-based validation",
-			"version": "2.2.0",
-			"author": {
-				"name": "thkt",
-				"url": "https://github.com/thkt"
-			},
-			"license": "MIT",
-			"keywords": ["tdd", "rgrc", "workflow", "validation", "review"],
-			"category": "Complete Workflow Systems",
-			"commands": [
-				"./commands/think.md",
-				"./commands/code.md",
-				"./commands/test.md",
-				"./commands/audit.md",
-				"./commands/validate.md",
-				"./commands/research.md",
-				"./commands/feature.md"
-			],
-			"agents": [
-				"./agents/teams/progressive-integrator.md",
-				"./agents/teams/unit-implementer.md",
-				"./agents/critics/devils-advocate-audit.md",
-				"./agents/critics/devils-advocate-design.md",
-				"./agents/critics/evidence-verifier.md",
-				"./agents/generators/test-generator.md",
-				"./agents/explorers/feature-explorer.md",
-				"./agents/architects/feature-architect.md",
-				"./agents/analyzers/code-flow-analyzer.md",
-				"./agents/reviewers/progressive-enhancer.md",
-				"./agents/reviewers/subagent-reviewer.md",
-				"./agents/reviewers/document-reviewer.md",
-				"./agents/reviewers/testability-reviewer.md",
-				"./agents/reviewers/root-cause-reviewer.md",
-				"./agents/reviewers/code-quality-reviewer.md",
-				"./agents/reviewers/performance-reviewer.md",
-				"./agents/reviewers/type-safety-reviewer.md",
-				"./agents/reviewers/accessibility-reviewer.md",
-				"./agents/reviewers/design-pattern-reviewer.md",
-				"./agents/reviewers/security-reviewer.md",
-				"./agents/reviewers/silent-failure-reviewer.md",
-				"./agents/reviewers/sow-spec-reviewer.md",
-				"./agents/reviewers/test-coverage-reviewer.md",
-				"./agents/reviewers/type-design-reviewer.md",
-				"./agents/reviewers/operational-readiness-reviewer.md"
-			]
-		},
-		{
-			"name": "quick-actions",
-			"source": "./",
-			"description": "Fast bug fixes, code polish, and config validation: /fix, /polish, /validate-config",
-			"version": "2.2.0",
-			"author": {
-				"name": "thkt",
-				"url": "https://github.com/thkt"
-			},
-			"license": "MIT",
-			"keywords": ["fix", "quick", "polish", "simplify", "validate", "config"],
-			"category": "Quick Actions",
-			"commands": ["./commands/fix.md", "./commands/polish.md", "./commands/validate-config.md"],
-			"agents": [
-				"./agents/resolvers/build-error-resolver.md",
-				"./agents/enhancers/code-simplifier.md"
-			]
-		},
-		{
-			"name": "git-utilities",
-			"source": "./",
-			"description": "Git workflow helpers: /commit, /branch, /pr, /issue, /preview (PR screening)",
-			"version": "2.2.0",
-			"author": {
-				"name": "thkt",
-				"url": "https://github.com/thkt"
-			},
-			"license": "MIT",
-			"keywords": ["git", "commit", "branch", "pr", "issue", "preview", "conventional-commits"],
-			"category": "Git Utilities",
-			"commands": [
-				"./commands/commit.md",
-				"./commands/branch.md",
-				"./commands/pr.md",
-				"./commands/issue.md",
-				"./commands/preview.md"
-			],
-			"agents": [
-				"./agents/generators/branch-generator.md",
-				"./agents/generators/commit-generator.md",
-				"./agents/generators/pr-generator.md",
-				"./agents/generators/issue-generator.md"
-			]
-		},
-		{
-			"name": "documentation-tools",
-			"source": "./",
-			"description": "Documentation generators: ADR (MADR format) and automated docs generation for architecture, API, setup, domain",
-			"version": "2.2.0",
-			"author": {
-				"name": "thkt",
-				"url": "https://github.com/thkt"
-			},
-			"license": "MIT",
-			"keywords": ["adr", "madr", "documentation", "architecture", "api", "decision-records"],
-			"category": "Documentation",
-			"commands": ["./commands/adr.md", "./commands/docs.md"],
-			"agents": [
-				"./agents/analyzers/architecture-analyzer.md",
-				"./agents/analyzers/api-analyzer.md",
-				"./agents/analyzers/domain-analyzer.md",
-				"./agents/analyzers/setup-analyzer.md"
-			]
-		},
-		{
-			"name": "browser-workflows",
-			"source": "./",
-			"description": "E2E test and documentation generator from agent-browser operations",
-			"version": "2.2.0",
-			"author": {
-				"name": "thkt",
-				"url": "https://github.com/thkt"
-			},
-			"license": "MIT",
-			"keywords": ["browser", "e2e", "playwright", "testing", "documentation"],
-			"category": "Browser Automation",
-			"commands": ["./commands/e2e.md"]
-		},
-		{
-			"name": "productivity-tools",
-			"source": "./",
-			"description": "Productivity helpers: /inbox for aggregating tasks from GitHub, Slack, and Google Calendar",
-			"version": "2.2.0",
-			"author": {
-				"name": "thkt",
-				"url": "https://github.com/thkt"
-			},
-			"license": "MIT",
-			"keywords": ["inbox", "github", "slack", "calendar", "productivity"],
-			"category": "Productivity",
-			"commands": ["./commands/inbox.md"]
-		},
-		{
-			"name": "development-skills",
-			"source": "./",
-			"description": "Comprehensive development skills: TDD, code principles, frontend patterns, performance, security, readability, and more",
-			"version": "2.2.0",
-			"author": {
-				"name": "thkt",
-				"url": "https://github.com/thkt"
-			},
-			"license": "MIT",
-			"keywords": [
-				"skills",
-				"tdd",
-				"principles",
-				"patterns",
-				"security",
-				"performance",
-				"readability",
-				"testing"
-			],
-			"category": "Development Skills",
-			"skills": [
-				"./skills/accessing-google-workspace/SKILL.md",
-				"./skills/accessing-slack/SKILL.md",
-				"./skills/analyzing-root-causes/SKILL.md",
-				"./skills/applying-code-principles/SKILL.md",
-				"./skills/applying-frontend-patterns/SKILL.md",
-				"./skills/creating-adrs/SKILL.md",
-				"./skills/documenting-apis/SKILL.md",
-				"./skills/documenting-architecture/SKILL.md",
-				"./skills/documenting-domains/SKILL.md",
-				"./skills/documenting-setup/SKILL.md",
-				"./skills/formatting-audits/SKILL.md",
-				"./skills/generating-tdd-tests/SKILL.md",
-				"./skills/integrating-storybook/SKILL.md",
-				"./skills/optimizing-performance/SKILL.md",
-				"./skills/orchestrating-workflows/SKILL.md",
-				"./skills/reviewing-readability/SKILL.md",
-				"./skills/reviewing-security/SKILL.md",
-				"./skills/reviewing-silent-failures/SKILL.md",
-				"./skills/reviewing-testability/SKILL.md",
-				"./skills/reviewing-type-safety/SKILL.md",
-				"./skills/screening-pr-review/SKILL.md",
-				"./skills/tailwind-patterns/SKILL.md",
-				"./skills/utilizing-cli-tools/SKILL.md",
-				"./skills/validating-specs/SKILL.md",
-				"./skills/vercel-react-best-practices/SKILL.md",
-				"./skills/web-design-guidelines/SKILL.md"
-			]
-		}
-	]
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "thkt-development-workflows",
+  "owner": {
+    "name": "thkt",
+    "email": "",
+    "url": "https://github.com/thkt"
+  },
+  "metadata": {
+    "description": "Comprehensive TDD/RGRC development workflow system. Provides integrated plugins sharing a common codebase: workflow commands (/think, /code, /audit), git utilities (/commit, /pr, /preview), documentation tools (/adr, /docs), and specialized review agents.",
+    "version": "2.2.0",
+    "architecture": "monorepo-marketplace",
+    "adr": "adr/0003-marketplace.md"
+  },
+  "plugins": [
+    {
+      "name": "complete-workflow-system",
+      "source": "./",
+      "description": "Full development workflow: /think → /code → /test → /audit → /validate with SOW-based validation",
+      "version": "2.2.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": ["tdd", "rgrc", "workflow", "validation", "review"],
+      "category": "Complete Workflow Systems",
+      "commands": [
+        "./commands/think.md",
+        "./commands/code.md",
+        "./commands/test.md",
+        "./commands/audit.md",
+        "./commands/validate.md",
+        "./commands/research.md",
+        "./commands/feature.md"
+      ],
+      "agents": [
+        "./agents/teams/progressive-integrator.md",
+        "./agents/teams/unit-implementer.md",
+        "./agents/critics/devils-advocate-audit.md",
+        "./agents/critics/devils-advocate-design.md",
+        "./agents/critics/evidence-verifier.md",
+        "./agents/generators/test-generator.md",
+        "./agents/explorers/feature-explorer.md",
+        "./agents/architects/feature-architect.md",
+        "./agents/analyzers/code-flow-analyzer.md",
+        "./agents/reviewers/progressive-enhancer.md",
+        "./agents/reviewers/subagent-reviewer.md",
+        "./agents/reviewers/document-reviewer.md",
+        "./agents/reviewers/testability-reviewer.md",
+        "./agents/reviewers/root-cause-reviewer.md",
+        "./agents/reviewers/code-quality-reviewer.md",
+        "./agents/reviewers/performance-reviewer.md",
+        "./agents/reviewers/type-safety-reviewer.md",
+        "./agents/reviewers/accessibility-reviewer.md",
+        "./agents/reviewers/design-pattern-reviewer.md",
+        "./agents/reviewers/security-reviewer.md",
+        "./agents/reviewers/silent-failure-reviewer.md",
+        "./agents/reviewers/sow-spec-reviewer.md",
+        "./agents/reviewers/test-coverage-reviewer.md",
+        "./agents/reviewers/type-design-reviewer.md",
+        "./agents/reviewers/operational-readiness-reviewer.md"
+      ]
+    },
+    {
+      "name": "quick-actions",
+      "source": "./",
+      "description": "Fast bug fixes, code polish, and config validation: /fix, /polish, /validate-config",
+      "version": "2.2.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": ["fix", "quick", "polish", "simplify", "validate", "config"],
+      "category": "Quick Actions",
+      "commands": ["./commands/fix.md", "./commands/polish.md", "./commands/validate-config.md"],
+      "agents": [
+        "./agents/resolvers/build-error-resolver.md",
+        "./agents/enhancers/code-simplifier.md"
+      ]
+    },
+    {
+      "name": "git-utilities",
+      "source": "./",
+      "description": "Git workflow helpers: /commit, /branch, /pr, /issue, /preview (PR screening)",
+      "version": "2.2.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": ["git", "commit", "branch", "pr", "issue", "preview", "conventional-commits"],
+      "category": "Git Utilities",
+      "commands": [
+        "./commands/commit.md",
+        "./commands/branch.md",
+        "./commands/pr.md",
+        "./commands/issue.md",
+        "./commands/preview.md"
+      ],
+      "agents": [
+        "./agents/generators/branch-generator.md",
+        "./agents/generators/commit-generator.md",
+        "./agents/generators/pr-generator.md",
+        "./agents/generators/issue-generator.md"
+      ]
+    },
+    {
+      "name": "documentation-tools",
+      "source": "./",
+      "description": "Documentation generators: ADR (MADR format) and automated docs generation for architecture, API, setup, domain",
+      "version": "2.2.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": ["adr", "madr", "documentation", "architecture", "api", "decision-records"],
+      "category": "Documentation",
+      "commands": ["./commands/adr.md", "./commands/docs.md"],
+      "agents": [
+        "./agents/analyzers/architecture-analyzer.md",
+        "./agents/analyzers/api-analyzer.md",
+        "./agents/analyzers/domain-analyzer.md",
+        "./agents/analyzers/setup-analyzer.md"
+      ]
+    },
+    {
+      "name": "browser-workflows",
+      "source": "./",
+      "description": "E2E test and documentation generator from agent-browser operations",
+      "version": "2.2.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": ["browser", "e2e", "playwright", "testing", "documentation"],
+      "category": "Browser Automation",
+      "commands": ["./commands/e2e.md"]
+    },
+    {
+      "name": "productivity-tools",
+      "source": "./",
+      "description": "Productivity helpers: /inbox for aggregating tasks from GitHub, Slack, and Google Calendar",
+      "version": "2.2.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": ["inbox", "github", "slack", "calendar", "productivity"],
+      "category": "Productivity",
+      "commands": ["./commands/inbox.md"]
+    },
+    {
+      "name": "development-skills",
+      "source": "./",
+      "description": "Comprehensive development skills: TDD, code principles, frontend patterns, performance, security, readability, and more",
+      "version": "2.2.0",
+      "author": {
+        "name": "thkt",
+        "url": "https://github.com/thkt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "skills",
+        "tdd",
+        "principles",
+        "patterns",
+        "security",
+        "performance",
+        "readability",
+        "testing"
+      ],
+      "category": "Development Skills",
+      "skills": [
+        "./skills/accessing-google-workspace/SKILL.md",
+        "./skills/accessing-slack/SKILL.md",
+        "./skills/analyzing-root-causes/SKILL.md",
+        "./skills/applying-code-principles/SKILL.md",
+        "./skills/applying-frontend-patterns/SKILL.md",
+        "./skills/creating-adrs/SKILL.md",
+        "./skills/documenting-apis/SKILL.md",
+        "./skills/documenting-architecture/SKILL.md",
+        "./skills/documenting-domains/SKILL.md",
+        "./skills/documenting-setup/SKILL.md",
+        "./skills/formatting-audits/SKILL.md",
+        "./skills/generating-tdd-tests/SKILL.md",
+        "./skills/integrating-storybook/SKILL.md",
+        "./skills/optimizing-performance/SKILL.md",
+        "./skills/orchestrating-workflows/SKILL.md",
+        "./skills/reviewing-readability/SKILL.md",
+        "./skills/reviewing-security/SKILL.md",
+        "./skills/reviewing-silent-failures/SKILL.md",
+        "./skills/reviewing-testability/SKILL.md",
+        "./skills/reviewing-type-safety/SKILL.md",
+        "./skills/screening-pr-review/SKILL.md",
+        "./skills/tailwind-patterns/SKILL.md",
+        "./skills/utilizing-cli-tools/SKILL.md",
+        "./skills/validating-specs/SKILL.md",
+        "./skills/web-design-guidelines/SKILL.md"
+      ]
+    }
+  ]
 }
