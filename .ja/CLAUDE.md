@@ -2,12 +2,12 @@
 
 ## ルール
 
-| ルール | 参照                                                                                            |
-| ------ | ----------------------------------------------------------------------------------------------- |
-| コア   | AI_OPERATION_PRINCIPLES.md (rules/core/)                                                        |
-| タスク | PRE_TASK_CHECK.md (rules/core/)                                                                 |
-| 削除   | `mv [file] ~/.Trash/ && git add -A` (sandboxエラー → `dangerouslyDisableSandbox: true`で再試行) |
-| 計画   | EnterPlanMode は使用しない。計画には `/think` を提案。実装には PRE_TASK_CHECK を表示。          |
+| ルール | 参照                                                                                                                         |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| コア   | AI_OPERATION_PRINCIPLES.md (rules/core/)                                                                                     |
+| タスク | PRE_TASK_CHECK.md (rules/core/)                                                                                              |
+| 削除   | `mv [file] ~/.Trash/ && git add [file]` (sandboxエラー → `dangerouslyDisableSandbox: true`で再試行、その他 → ユーザーに報告) |
+| 計画   | EnterPlanMode は使用しない。計画には `/think` を提案。                                                                       |
 
 ## 開発チェック
 
@@ -29,4 +29,5 @@
 | -------- | ----------------------------------------- |
 | コマンド | README.md → package.json → ユーザーに確認 |
 
-参照: WORKFLOW_REFERENCE.md (rules/workflows/), DOCUMENTATION.md (rules/conventions/)
+参照: WORKFLOW_REFERENCE.md (rules/workflows/), DOCUMENTATION.md
+(rules/conventions/)

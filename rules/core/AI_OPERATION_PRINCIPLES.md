@@ -41,17 +41,11 @@ When unable to verify:
 
 ### Debug Investigation Protocol
 
-When investigating bugs or errors:
+Default: Fix directly if cause is obvious. Activate full protocol for
+non-obvious bugs (behavioral issues, intermittent failures, unclear root cause).
 
-| Phase       | Output Format  | Requirement                                                                           |
-| ----------- | -------------- | ------------------------------------------------------------------------------------- |
-| Observation | `Observation:` | Actual log/error with `[source]` citation                                             |
-| Hypotheses  | `Hypotheses:`  | ≥3 competing: `H1:`, `H2:`, `H3:` + `[unverified]`                                    |
-| Elimination | `Elimination:` | Discriminating test per hypothesis, eliminate falsified (`H1: [eliminated] — reason`) |
-| Conclusion  | `Conclusion:`  | Only surviving hypothesis with evidence                                               |
-
-Skip: Obvious cause (typo, syntax error, off-by-one) → single hypothesis
-sufficient.
+Full protocol (when activated): Observation → Hypotheses (≥3) → Elimination →
+Conclusion.
 
 | Constraint               | Action                                         |
 | ------------------------ | ---------------------------------------------- |

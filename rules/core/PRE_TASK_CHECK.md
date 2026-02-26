@@ -1,57 +1,16 @@
 # PRE_TASK_CHECK
 
-## Markers
-
-| Marker | Meaning  | Action                        |
-| ------ | -------- | ----------------------------- |
-| [✓]    | Verified | Proceed                       |
-| [→]    | Inferred | Confirm before proceeding     |
-| [?]    | Unknown  | Investigate before proceeding |
-
-All items must be [✓] to proceed.
+Confirm scope before implementation. Skip for questions, read-only, follow-up
+edits to same file(s), or same-session plan continuation.
 
 ## Rationalization Counters
 
-| Excuse                              | Counter                                                                        |
-| ----------------------------------- | ------------------------------------------------------------------------------ |
-| "This is a simple follow-up"        | Scope changes disguise as follow-ups. Check Scope item at minimum              |
-| "I already understand the codebase" | Understanding ≠ verification. When did you last read the target files?         |
-| "The user wants speed over process" | PRE_TASK_CHECK takes 30 seconds. Fixing wrong-scope implementation takes hours |
-| "This is covered by the plan"       | Plans describe intent. PRE_TASK_CHECK verifies current state                   |
-
-## Checklist (7 items)
-
-| #   | Item          | Check Criteria                                           |
-| --- | ------------- | -------------------------------------------------------- |
-| 1   | Purpose       | Why needed + user's underlying intent (not just literal) |
-| 2   | Scope         | Identified target files/functions                        |
-| 3   | Constraints   | Technical requirements + limitations + dependencies      |
-| 4   | Completion    | Done criteria + verification method + edge cases         |
-| 5   | Context       | Check `.analysis/architecture.md` first, then read code  |
-| 6   | Components    | Affected areas + potential risks                         |
-| 7   | Prerequisites | Confirmed tech stack/conventions                         |
-
-## Display Format
-
-```text
-[✓] Purpose: {description}
-[✓] Scope: {target files/functions}
-[✓] Constraints: {requirements}
-[✓] Completion: {done criteria}
-[✓] Context: {code understanding}
-[✓] Components: {affected areas}
-[✓] Prerequisites: {tech stack}
-
-Status: Ready / Needs confirmation / Blocked
-```
-
-## Flow
-
-1. Check 7 items → mark [✓]/[→]/[?]
-2. Any non-[✓]? → Resolve first (ask/read)
-3. All [✓]? → Show check → Confirm with user
-4. Threshold exceeded? → Decompose
-5. Execute
+| Excuse                              | Counter                                                                |
+| ----------------------------------- | ---------------------------------------------------------------------- |
+| "This is a simple follow-up"        | Scope changes disguise as follow-ups. Check scope at minimum           |
+| "I already understand the codebase" | Understanding ≠ verification. When did you last read the target files? |
+| "The user wants speed over process" | Scope check takes 30 seconds. Wrong-scope implementation takes hours   |
+| "This is covered by the plan"       | Plans describe intent. Scope check verifies current state              |
 
 ## Task Decomposition
 
@@ -64,13 +23,6 @@ Split when ANY threshold exceeded:
 | Layers    | ≥3        |
 | Lines     | ≥200      |
 
-## When to Skip
-
-- Simple questions/confirmations or read-only queries
-- Follow-up clarifications or sequential edits to same file(s)
-- Continuation of approved plan (same session)
-- User explicitly says "just do it" or "skip check"
-
 ## Done Definition
 
 | Type          | Criteria                                                              |
@@ -80,8 +32,7 @@ Split when ANY threshold exceeded:
 | Refactor      | Behavior unchanged (tests pass), quality improved (measurable)        |
 | Investigation | Reproduction confirmed, root cause identified, normal case understood |
 
-Add "No change required if [condition]" when existing state may be sufficient.
+## No Change Rule
 
-## "No Change" Rule
-
-Before reporting no change: cite specific file:line, explain why current state meets goal, confirm with AskUserQuestion.
+Before reporting no change: cite specific file:line showing current state meets
+goal, then confirm with user.

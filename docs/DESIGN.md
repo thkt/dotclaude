@@ -50,16 +50,16 @@ graph TD
 
 Top-priority rules. Prevent AI runaway and keep users informed.
 
-| File                                                                | Intent             | Key Mechanism                                                 |
-| ------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| [AI_OPERATION_PRINCIPLES](../rules/core/AI_OPERATION_PRINCIPLES.md) | Ensure safety      | `rm` prohibited → `mv ~/.Trash/`, destructive op confirmation |
-| [PRE_TASK_CHECK](../rules/core/PRE_TASK_CHECK.md)                   | Task check unified | 7-item checklist, markers, skip conditions, done templates    |
+| File                                                                | Intent             | Key Mechanism                                                        |
+| ------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------- |
+| [AI_OPERATION_PRINCIPLES](../rules/core/AI_OPERATION_PRINCIPLES.md) | Ensure safety      | `rm` prohibited → `mv ~/.Trash/`, destructive op confirmation        |
+| [PRE_TASK_CHECK](../rules/core/PRE_TASK_CHECK.md)                   | Task check unified | Rationalization counters, decomposition thresholds, done definitions |
 
 **Why this design:**
 
 - `rm` prohibited; `mv ~/.Trash/` leverages macOS Trash recovery
-- `[✓][→][?]` markers make AI confidence explicit
-- 7-item check prevents "false understanding" misimplementation
+- Rationalization counters prevent model self-exemption from scope checks
+- Decomposition thresholds (Files ≥5, Features ≥3) prevent scope creep
 
 ### 2. Design Principles — Decision Framework
 
@@ -127,7 +127,8 @@ Consistency across documentation, plugins, and translations.
 
 **Why this design:**
 
-- Limit reference depth (Skills: 1 level, Rules: 3 levels) to avoid partial read issues
+- Limit reference depth (Skills: 1 level, Rules: 3 levels) to avoid partial read
+  issues
 - Align EN/JP structure while allowing translation content differences
 
 ### 5. Workflows Layer — User Interface
@@ -184,4 +185,5 @@ Refer to:
 
 ---
 
-_Explains the "why" behind the configuration. For "how to use", see [README.md](../README.md)._
+_Explains the "why" behind the configuration. For "how to use", see
+[README.md](../README.md)._
