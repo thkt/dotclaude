@@ -26,18 +26,11 @@ Method chains >2 → Demeter / 1min unreadable → Readable / Complex-first → 
 
 ## Conflict Resolution
 
-| Conflict                | Resolution     |
-| ----------------------- | -------------- |
-| DRY vs Readable         | Readable wins  |
-| SOLID vs Simple         | Simple wins    |
-| Perfect vs Working      | Working wins   |
-| Abstraction vs Concrete | Start concrete |
+When in doubt: simple > clever, concrete > abstract, working > perfect, readable
+\> DRY.
 
 Occam's Razor selects the simplest among approaches that produce equivalent
 results. It does not apply when simplicity reduces output quality.
-
-When in doubt: simple > clever, concrete > abstract, working > perfect, clear >
-DRY.
 
 ## Progressive Enhancement
 

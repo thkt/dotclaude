@@ -1,15 +1,14 @@
 # Code Thresholds
 
-Enforcement: oxlint (`max-lines-per-function`, `max-lines`, `max-depth`,
-`max-params`, `complexity`) via guardrails hook.
+Aim for these targets. Hard limits are enforced by oxlint via guardrails hook.
 
-| Target                | Recommended | Maximum (oxlint error) |
-| --------------------- | ----------- | ---------------------- |
-| Function lines        | ≤30         | 50                     |
-| File lines            | ≤400        | 800                    |
-| Nesting depth         | ≤3          | 4                      |
-| Function arguments    | ≤3          | 5                      |
-| Cyclomatic complexity | ≤10         | 15                     |
+| Target                | Recommended |
+| --------------------- | ----------- |
+| Function lines        | ≤30         |
+| File lines            | ≤400        |
+| Nesting depth         | ≤3          |
+| Function arguments    | ≤3          |
+| Cyclomatic complexity | ≤10         |
 
 ## Coverage
 

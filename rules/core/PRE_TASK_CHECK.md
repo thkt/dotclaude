@@ -23,15 +23,6 @@ Split when ANY threshold exceeded:
 | Layers    | ≥3        |
 | Lines     | ≥200      |
 
-## Done Definition
-
-| Type          | Criteria                                                              |
-| ------------- | --------------------------------------------------------------------- |
-| Feature       | Functionality works, no regression, tests added                       |
-| Fix           | Issue no longer reproduces, root cause resolved                       |
-| Refactor      | Behavior unchanged (tests pass), quality improved (measurable)        |
-| Investigation | Reproduction confirmed, root cause identified, normal case understood |
-
 ## No Change Rule
 
 Before reporting no change: cite specific file:line showing current state meets

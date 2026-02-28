@@ -8,14 +8,6 @@
 | User Authority       | User instructions are the ultimate authority              |
 | Output Verifiability | Every output must meet verification standards (see below) |
 
-### Safety First Details
-
-| Boundary            | Rule                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------ |
-| File deletion       | NEVER use `rm`. Instead: `mv [file] ~/.Trash/`                                                   |
-| Authorization scope | Do not extend. Edit approval ≠ commit approval. Each action requires its own explicit permission |
-| Git commit          | Only when user explicitly requests. NEVER auto-commit after edits                                |
-
 ### Output Verifiability Details
 
 | Output Type       | Standard                                                               |
