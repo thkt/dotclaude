@@ -207,7 +207,7 @@ tool availability via `command -v`:
 | `biome.json` / `biome.jsonc`      | `command -v biome`             | `biome check`                 |
 | `.eslintrc.*` / `eslint.config.*` | `command -v eslint`            | `eslint .`                    |
 
-### Step 3: Run discovered scripts
+### Step 3: Run discovered scripts + tests
 
 | Rule             | Behavior                                      |
 | ---------------- | --------------------------------------------- |
@@ -215,6 +215,20 @@ tool availability via `command -v`:
 | Non-zero exit    | Capture output as context, do NOT block audit |
 | Multiple scripts | Run independent scripts in parallel           |
 | Timeout          | 60s per script; kill and proceed on timeout   |
+
+Run in parallel: lint scripts, type-check, and test suite (with coverage).
+
+Record results in snapshot `pre_flight`:
+
+| Field    | Source                                      |
+| -------- | ------------------------------------------- |
+| build    | build script exit code → pass/fail/skipped  |
+| types    | tsc/tsgo exit code → pass/fail/skipped      |
+| lint     | lint script exit code → pass/fail/skipped   |
+| tests    | test output → total/passed/failed counts    |
+| coverage | coverage report → c0 (line) / c1 (branch) % |
+
+If test runner or coverage tool is unavailable, record as `skipped`.
 
 ### Step 4: Convert hook output to findings
 

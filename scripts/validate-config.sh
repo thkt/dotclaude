@@ -1,4 +1,5 @@
 #!/bin/zsh
+set -u
 # Exit 0: all checks pass, Exit 1: validation errors found
 
 CLAUDE_DIR="${HOME}/.claude"
@@ -115,7 +116,7 @@ typeset -A dynamic_agents=(
 for agent_file in "${AGENTS_DIR}"/**/*.md(N); do
   agent_name="${agent_file:t:r}"
 
-  if [[ -n "${dynamic_agents[$agent_name]}" ]]; then
+  if [[ -n "${dynamic_agents[$agent_name]-}" ]]; then
     pass "${agent_name}: dynamic (${dynamic_agents[$agent_name]})"
     continue
   fi
@@ -129,6 +130,33 @@ for agent_file in "${AGENTS_DIR}"/**/*.md(N); do
     warn "${agent_name}: no references found (may be orphan)"
   fi
 done
+
+echo "\nCheck 6: Hook tool availability"
+for tool in guardrails formatter reviews; do
+  if command -v "$tool" &>/dev/null; then
+    pass "hook tool '${tool}' available"
+  else
+    warn "hook tool '${tool}' → not found in PATH"
+  fi
+done
+
+echo "\nCheck 7: Global oxlint guardrail rules"
+OXLINTRC="${CLAUDE_DIR}/.oxlintrc.jsonc"
+if [[ -f "$OXLINTRC" ]]; then
+  typeset -A required_rules=(
+    [no-console]="no-console"
+    [no-explicit-any]="no-explicit-any"
+  )
+  for label rule in "${(@kv)required_rules}"; do
+    if grep -q "${rule}" "$OXLINTRC"; then
+      pass "oxlint rule '${label}' configured"
+    else
+      warn "oxlint rule '${label}' → not found in .oxlintrc.jsonc"
+    fi
+  done
+else
+  fail ".oxlintrc.jsonc not found"
+fi
 
 echo "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 if [[ $errors -eq 0 ]]; then

@@ -7,6 +7,16 @@ Template for /audit command output.
 ```markdown
 # Audit Report
 
+## Pre-flight
+
+| Check    | Status                                                      | Delta            |
+| -------- | ----------------------------------------------------------- | ---------------- |
+| Build    | {pre_flight.build}                                          | -                |
+| Types    | {pre_flight.types}                                          | -                |
+| Lint     | {pre_flight.lint}                                           | -                |
+| Tests    | {pre_flight.tests.passed}/{pre_flight.tests.total}          | {delta.tests}    |
+| Coverage | C0: {pre_flight.coverage.c0} / C1: {pre_flight.coverage.c1} | {delta.coverage} |
+
 ## Summary
 
 | Severity | Count                          | Delta            |
@@ -16,18 +26,23 @@ Template for /audit command output.
 | Medium   | {summary.by_severity.medium}   | {delta.medium}   |
 | Low      | {summary.by_severity.low}      | {delta.low}      |
 
-Auto-fixable: {suggestions.auto_fixable_count} | Manual: {suggestions.manual_count}
-Verification: {summary.validation.verification.verified} verified | {summary.validation.verification.weak_evidence} weak | {summary.validation.verification.unverifiable} unverifiable
+Auto-fixable: {suggestions.auto_fixable_count} | Manual:
+{suggestions.manual_count} Verification:
+{summary.validation.verification.verified} verified |
+{summary.validation.verification.weak_evidence} weak |
+{summary.validation.verification.unverifiable} unverifiable
 
-> **Pipeline**: {pipeline_health.domains_completed} | Skipped: {pipeline_health.domains_skipped} | Verification: {pipeline_health.verification_status}
-> _(Omit this section if all domains completed and verification is full)_
+> **Pipeline**: {pipeline_health.domains_completed} | Skipped:
+> {pipeline_health.domains_skipped} | Verification:
+> {pipeline_health.verification_status} \*(Omit this section if all domains
+> completed and verification is full)\_
 
 ---
 
 ## Quick Fixes
 
 | ID                                    | Location                                                                                            | Effort                                    | Rationale                                    |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------| ----------------------------------------- | -------------------------------------------- |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------- |
 | {suggestions.items[fix_type=auto].id} | `{suggestions.items[fix_type=auto].location.file}:{suggestions.items[fix_type=auto].location.line}` | {suggestions.items[fix_type=auto].effort} | {suggestions.items[fix_type=auto].rationale} |
 
 Apply: `/fix <ID>`

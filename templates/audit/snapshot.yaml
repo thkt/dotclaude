@@ -8,6 +8,18 @@ meta:
   target: # target scope
   focus: # security|performance|readability|all
 
+pre_flight:
+  build: # pass|fail|skipped
+  types: # pass|fail|skipped
+  lint: # pass|fail|skipped
+  tests:
+    total: # count
+    passed: # count
+    failed: # count
+  coverage:
+    c0: # line coverage percentage
+    c1: # branch coverage percentage
+
 pipeline_health:
   domains_completed: # [domain names]
   domains_skipped: # [domain names with reason]
