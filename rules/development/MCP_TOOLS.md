@@ -1,15 +1,21 @@
 # MCP Tool Preferences
 
-## Rule
+MCP tool > built-in equivalent. ToolSearch with keyword queries (not `select:`).
 
-MCP tool > built-in equivalent. Use ToolSearch keyword queries (not `select:`)
-to include MCP candidates in comparison.
+| Purpose     | Use                   | NOT             | Condition                 |
+| ----------- | --------------------- | --------------- | ------------------------- |
+| URL fetch   | `mcp__scout__fetch`   | `WebFetch`      | Always                    |
+| Web search  | `mcp__scout__search`  | `WebSearch`     | Always                    |
+| Code search | `mcp__yomu__explorer` | `Task(Explore)` | Frontend concept search   |
+|             | `Task(Explore)`       | —               | Non-frontend or unindexed |
 
-## Override Map
+## yomu
 
-| Purpose      | Use                   | NOT             | When                                         |
-| ------------ | --------------------- | --------------- | -------------------------------------------- |
-| URL fetch    | `mcp__scout__fetch`   | `WebFetch`      | Always                                       |
-| Web search   | `mcp__scout__search`  | `WebSearch`     | Always                                       |
-| Code explore | `mcp__yomu__explorer` | `Task(Explore)` | Frontend (TS/TSX/JS/CSS/HTML) concept search |
-|              | `Task(Explore)`       | —               | Non-frontend, or yomu unindexed project      |
+Frontend (TS/TSX/JS/CSS/HTML) concept/behavior/intent search →
+`mcp__yomu__explorer`. Do not substitute with grep/glob.
+
+| yomu                                    | grep/glob                               |
+| --------------------------------------- | --------------------------------------- |
+| Concept: "form validation", "auth flow" | Known identifier: `useAuth`             |
+| Related: "hooks that do Y"              | Known path: `src/components/Button.tsx` |
+| Unknown name: "where does X happen"     | Literal: error messages, class names    |

@@ -1,15 +1,21 @@
 # MCP ツール優先ルール
 
-## ルール
+MCP tool > ビルトイン同等品。ToolSearch はキーワード検索で（`select:` 不可）。
 
-MCP tool > ビルトイン同等品。ToolSearch は `select:`
-直接指名ではなくキーワード検索で MCP 候補を含めて比較する。
+| 用途       | 使う                  | 使わない        | 条件                       |
+| ---------- | --------------------- | --------------- | -------------------------- |
+| URL fetch  | `mcp__scout__fetch`   | `WebFetch`      | 常時                       |
+| Web search | `mcp__scout__search`  | `WebSearch`     | 常時                       |
+| コード検索 | `mcp__yomu__explorer` | `Task(Explore)` | フロントエンド概念検索     |
+|            | `Task(Explore)`       | —               | 非フロントエンド or 未登録 |
 
-## Override Map
+## yomu
 
-| 用途       | 使う                  | 使わない        | 条件                                           |
-| ---------- | --------------------- | --------------- | ---------------------------------------------- |
-| URL fetch  | `mcp__scout__fetch`   | `WebFetch`      | 常時                                           |
-| Web search | `mcp__scout__search`  | `WebSearch`     | 常時                                           |
-| コード探索 | `mcp__yomu__explorer` | `Task(Explore)` | フロントエンド (TS/TSX/JS/CSS/HTML) の概念検索 |
-|            | `Task(Explore)`       | —               | 非フロントエンド、または yomu 未インデックス   |
+フロントエンド (TS/TSX/JS/CSS/HTML) の概念・振る舞い・意図による検索 →
+`mcp__yomu__explorer`。grep/glob で代替しない。
+
+| yomu                                 | grep/glob                             |
+| ------------------------------------ | ------------------------------------- |
+| 概念: "form validation", "auth flow" | 識別子既知: `useAuth`                 |
+| 関連コード: "hooks that do Y"        | パス既知: `src/components/Button.tsx` |
+| 名前不明: "where does X happen"      | リテラル一致: エラー文言, class 名    |
