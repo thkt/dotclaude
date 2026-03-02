@@ -13,16 +13,20 @@ background: true
 
 ## Scope
 
-This analyzer produces the **domain model** — entities, value objects, relationships, business rules, and domain events extracted from source code. It is NOT a substitute for PROJECT_CONTEXT.md (business context, user stories, product decisions).
+This analyzer produces the domain model — entities, value objects,
+relationships, business rules, and domain events extracted from source code. It
+is NOT a substitute for PROJECT_CONTEXT.md (business context, user stories,
+product decisions).
 
-| This Analyzer Owns          | PROJECT_CONTEXT.md Owns          |
-| --------------------------- | -------------------------------- |
-| Entity fields & types       | Business context & product goals |
-| ER relationships            | User stories & workflows         |
-| Code-level invariants       | Product-level business rules     |
-| Glossary (from code)        | Glossary (from product domain)   |
+| This Analyzer Owns    | PROJECT_CONTEXT.md Owns          |
+| --------------------- | -------------------------------- |
+| Entity fields & types | Business context & product goals |
+| ER relationships      | User stories & workflows         |
+| Code-level invariants | Product-level business rules     |
+| Glossary (from code)  | Glossary (from product domain)   |
 
-When terms overlap, this analyzer cites **code as source** (file:line). PROJECT_CONTEXT.md cites **product decisions** (PRD, stakeholder).
+When terms overlap, this analyzer cites code as source (file:line).
+PROJECT_CONTEXT.md cites product decisions (PRD, stakeholder).
 
 ## Analysis Phases
 
@@ -51,7 +55,9 @@ When terms overlap, this analyzer cites **code as source** (file:line). PROJECT_
 | Generic TS    | `**/types.ts`, `**/types/**/*.ts`, `**/domain/**/*.ts` |
 | Generic Py    | `**/schemas.py`, `**/dataclasses/**/*.py`              |
 
-Exhaustive Discovery: After initial glob, `LS` ALL directories under model root (e.g. `_models/*/`). Every directory = potential entity or VO. No directory left unaccounted.
+Exhaustive Discovery: After initial glob, `LS` ALL directories under model root
+(e.g. `_models/*/`). Every directory = potential entity or VO. No directory left
+unaccounted.
 
 ### Phase 3: Schema Reading Rules
 
@@ -68,11 +74,14 @@ Exhaustive Discovery: After initial glob, `LS` ALL directories under model root 
 | Naming discrepancy   | Note when directory name differs from type/class name                     |
 | Code issues          | Flag bugs found during reading (typos in field names, inconsistent nulls) |
 
-CRITICAL — Anti-Hallucination Rule: Every field in output MUST have a `source_file` with file:line traced to a Read tool call. Fields without Read evidence are PROHIBITED in output.
+CRITICAL — Anti-Hallucination Rule: Every field in output MUST have a
+`source_file` with file:line traced to a Read tool call. Fields without Read
+evidence are PROHIBITED in output.
 
 #### Prisma Schema Parsing
 
-When `schema.prisma` is discovered, parse `model` blocks as the single source of truth for entities:
+When `schema.prisma` is discovered, parse `model` blocks as the single source of
+truth for entities:
 
 | Prisma Syntax        | Extract As                                 |
 | -------------------- | ------------------------------------------ |
@@ -107,7 +116,8 @@ When `schema.prisma` is discovered, parse `model` blocks as the single source of
 
 ### Phase 4: Value Object & Polymorphic Detection
 
-Value Objects: Types referenced by entity fields that have internal structure but no independent lifecycle.
+Value Objects: Types referenced by entity fields that have internal structure
+but no independent lifecycle.
 
 | Indicator                          | Action                        |
 | ---------------------------------- | ----------------------------- |
@@ -116,7 +126,8 @@ Value Objects: Types referenced by entity fields that have internal structure bu
 | No independent lifecycle (no CRUD) | Confirm VO classification     |
 | Nested types / subclass variants   | Document each variant         |
 
-Polymorphic / Discriminated Unions: Types with subtype variants distinguished by a discriminator field.
+Polymorphic / Discriminated Unions: Types with subtype variants distinguished by
+a discriminator field.
 
 | Indicator                  | Action                                |
 | -------------------------- | ------------------------------------- |
@@ -133,7 +144,8 @@ Polymorphic / Discriminated Unions: Types with subtype variants distinguished by
 | Events          | `**/*Event.ts`, `**/events/**/*.ts`, `**/*Listener.ts`       |
 | Python services | `**/services/**/*.py`, `**/use_cases/**/*.py`                |
 
-Extract business rules, domain events, and entity relationships (imports, FK references).
+Extract business rules, domain events, and entity relationships (imports, FK
+references).
 
 Relationship Rules:
 

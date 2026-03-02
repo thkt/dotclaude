@@ -2,23 +2,14 @@
 
 ## ルール
 
-| ルール   | 参照                                                                                                                         |
+| ルール   | 指示                                                                                                                         |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| コア     | AI_OPERATION_PRINCIPLES.md (rules/core/)                                                                                     |
-| タスク   | PRE_TASK_CHECK.md (rules/core/)                                                                                              |
+| コア     | Safety First, Output Verifiability, User Authority                                                                           |
+| タスク   | 実装前に PRE_TASK_CHECK（質問・読取専用・フォローアップは省略）                                                              |
 | 削除     | `mv [file] ~/.Trash/ && git add [file]` (sandboxエラー → `dangerouslyDisableSandbox: true`で再試行、その他 → ユーザーに報告) |
 | コミット | ユーザーが明示的に要求した場合のみ。編集後の自動コミット禁止                                                                 |
 | 認可範囲 | 認可範囲を拡大しない。編集承認 ≠ コミット承認                                                                                |
 | 計画     | EnterPlanMode は使用しない。計画には `/think` を提案。                                                                       |
-
-## 開発チェック
-
-| 質問               | 原則           |
-| ------------------ | -------------- |
-| シンプルな方法は？ | オッカムの剃刀 |
-| 1分で理解できる？  | ミラーの法則   |
-| 重複していない？   | DRY            |
-| 今必要？           | YAGNI          |
 
 ## 完了
 
@@ -33,6 +24,3 @@
 | 発見     | 順序                                      |
 | -------- | ----------------------------------------- |
 | コマンド | README.md → package.json → ユーザーに確認 |
-
-参照: WORKFLOW_REFERENCE.md (rules/workflows/), DOCUMENTATION.md
-(rules/conventions/)

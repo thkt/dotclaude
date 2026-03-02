@@ -1,6 +1,7 @@
-# MCP Tool Preferences
+# Tool Preferences
 
 MCP tool > built-in equivalent. ToolSearch with keyword queries (not `select:`).
+Bash commands are auto-rewritten to RTK by PreToolUse hook (no manual action).
 
 | Purpose     | Use                   | NOT             | Condition                 |
 | ----------- | --------------------- | --------------- | ------------------------- |
@@ -19,3 +20,23 @@ Frontend (TS/TSX/JS/CSS/HTML) concept/behavior/intent search →
 | Concept: "form validation", "auth flow" | Known identifier: `useAuth`             |
 | Related: "hooks that do Y"              | Known path: `src/components/Button.tsx` |
 | Unknown name: "where does X happen"     | Literal: error messages, class names    |
+
+## RTK (Rust Token Killer)
+
+Token-optimized CLI proxy. Bash commands are auto-rewritten by hook — no manual
+`rtk` prefix needed.
+
+### Meta Commands (use directly)
+
+```bash
+rtk gain              # Token savings analytics
+rtk gain --history    # Command usage history with savings
+rtk discover          # Analyze Claude Code history for missed opportunities
+```
+
+### Notes
+
+- Auto-rewrite covers: git, gh, cargo, vitest, tsc, eslint, docker, kubectl,
+  curl, etc.
+- If `rtk gain` fails: may have wrong rtk installed (reachingforthejack/rtk)
+- Verify: `rtk --version` should show `rtk X.Y.Z`

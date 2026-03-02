@@ -1,0 +1,215 @@
+---
+description:
+  Large-scale parallel implementation with multi-agent swarm. Architect + QA +
+  Implementer(s) collaborate via peer DM. Use when user mentions 大規模実装,
+  並列実装, swarm, チーム実装.
+allowed-tools:
+  Skill, Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
+  Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run),
+  Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git
+  log:*), Bash(git diff:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task,
+  TaskCreate, TaskList, TaskUpdate, TaskGet, SendMessage, TeamCreate,
+  TeamDelete, AskUserQuestion
+model: opus
+argument-hint: "[implementation description]"
+---
+
+# /swarm - Large-Scale Parallel Implementation
+
+Multi-agent swarm for large-scale implementation. Use /code for tasks under 5
+files.
+
+## When to Use
+
+Use /swarm when ANY condition applies. Otherwise use /code.
+
+| Condition             | /swarm |
+| --------------------- | ------ |
+| Files >= 5            | Yes    |
+| Multi-domain          | Yes    |
+| Design decisions many | Yes    |
+
+## Leader Principle
+
+Leader does NOT do substantive work:
+
+- Does NOT read code for understanding
+- Does NOT design contracts or architecture
+- Does NOT debug or fix code
+- Does NOT answer technical questions
+
+Leader ONLY:
+
+- Interfaces with user
+- Executes QG commands mechanically
+- Forwards results to agents
+- Manages team lifecycle
+
+All substantive work happens through peer DM between Architect, QA, and
+Implementer(s).
+
+## Input
+
+Implementation description: `$1` (required, prompt if empty)
+
+## SOW Context
+
+[@../skills/lib/sow-resolution.md]
+
+## Team Architecture
+
+| Agent          | subagent_type     | Responsibility                      | Bash | SendMessage | Model  |
+| -------------- | ----------------- | ----------------------------------- | ---- | ----------- | ------ |
+| Leader         | (self)            | User interface, QG, lifecycle       | Yes  | broadcast   | opus   |
+| Architect      | feature-architect | Codebase analysis, contracts        | No   | peer DM     | opus   |
+| QA             | qa-reviewer       | Quality observations (non-blocking) | No   | peer DM     | sonnet |
+| Implementer(s) | unit-implementer  | RGRC implementation                 | Yes  | peer DM     | opus   |
+
+### Model Constraint
+
+All team agents MUST use Opus or Sonnet. Haiku cannot reliably:
+
+- Follow complex multi-step instructions on first attempt
+- Handle shutdown protocol (`shutdown_response`)
+
+## Context Contracts
+
+Each handoff has a defined structure. Peer DM is the transport; these contracts
+define what to send.
+
+### Spawn Context (Leader → all agents)
+
+All spawn prompts MUST include:
+
+- CLAUDE.md rules (or summary of key constraints)
+- Project conventions (tech stack, naming, patterns)
+- SOW/spec content (if available)
+
+### Architect Output (Architect → Leader)
+
+```yaml
+contracts:
+  - name: "<interface/type name>"
+    definition: "<TypeScript interface or type>"
+    used_by: ["<file paths>"]
+parallel_units:
+  - unit_id: 1
+    files: ["<file paths>"]
+    depends_on: [] # empty = independent
+  - unit_id: 2
+    files: ["<file paths>"]
+    depends_on: []
+build_sequence: ["unit_id order if dependencies exist"]
+```
+
+### Implementer Assignment (Leader → Implementer)
+
+```yaml
+unit_id: 1
+contracts: ["<relevant contracts only>"]
+files: ["<assigned file paths>"]
+tests: ["<assigned test file paths>"]
+constraints: ["<project-specific rules from CLAUDE.md>"]
+```
+
+### Implementer Completion (Implementer → Leader)
+
+```yaml
+unit_id: 1
+status: complete | blocked
+files_modified: ["<paths>"]
+tests: { total: N, passed: N, failed: N }
+issues: [{ description: "<issue>", severity: blocker | warning }]
+```
+
+## Execution
+
+### Phase 0: SOW Detection
+
+1. SOW/spec auto-detection
+2. SOW なし → `$1` is sole instruction
+
+### Phase 1: Team Setup + Architecture
+
+1. `TeamCreate` with name `swarm-{timestamp}`
+2. Spawn Architect (feature-architect) with prompt:
+   - Spawn Context (see Context Contracts)
+   - `$1` implementation description
+   - Instruction: analyze codebase → design contracts → file groupings
+   - Expected output: Architect Output contract (YAML via DM)
+3. Spawn QA (qa-reviewer) with prompt:
+   - Instruction: observe Architect's design, comment via peer DM
+   - Read team config to discover teammates
+4. Wait for Architect's contract DM
+
+### Phase 2: Test Generation
+
+1. After final Architect Output contract is confirmed (Phase 1 + QA review)
+2. Spawn test-generator as standalone background agent
+   (`subagent_type: test-generator`, `run_in_background: true`)
+3. Include Architect's contract in test-gen prompt
+4. Receive test results via `TaskOutput`
+
+### Phase 3: File Assignment
+
+1. Receive final Architect Output contract (confirmed after QA review rounds)
+2. Receive test-gen results via `TaskOutput`
+3. Spawn Implementer(s) per Architect's `parallel_units` (mechanical — no
+   analysis):
+   - One Implementer per parallel unit (worktree isolation)
+   - Single unit → single Implementer
+   - `mode: "dontAsk"` (worktree isolation provides safety for autonomous Bash)
+   - Prompt: Implementer Assignment contract (see Context Contracts)
+   - Instruction: RGRC cycle, DM Architect for questions
+4. Forward file assignments to QA for observation
+
+### Phase 4: RGRC Implementation
+
+1. Implementer(s) work on assigned files
+2. Peer DM flow:
+   - Implementer ↔ Architect: contract questions, design clarification
+   - QA → Implementer: edge case observations
+   - QA → Architect: contract quality observations
+   - QA → Leader: verification command requests
+3. Leader handles QA verification requests mechanically:
+   - Receive command request → execute → return result to QA
+4. Wait for all Implementers to complete (DM with status)
+
+### Phase 5: Quality Gates
+
+1. Leader executes QG (tests, lint, types, coverage)
+2. On failure:
+   - Identify responsible agent from failing file
+   - Forward failure details to that agent via DM
+   - Agent fixes and reports back
+3. Re-run QG after fix
+4. Max 3 iterations → escalate to user
+
+### Phase 6: Summary
+
+1. Collect results from all agents
+2. Generate summary report (files modified, tests, issues)
+3. Shutdown all agents (`shutdown_request`)
+4. `TeamDelete` for cleanup
+5. Present summary to user
+
+## Error Handling
+
+| Scenario                     | Action                                                         |
+| ---------------------------- | -------------------------------------------------------------- |
+| User cancels                 | `shutdown_request` to all agents, TeamDelete                   |
+| Contract fundamentally wrong | Shutdown Implementers → Architect redesign                     |
+| Implementer timeout          | Shutdown timed-out Implementer, others continue                |
+| QG fails 3 times             | Escalate to user with details                                  |
+| Agent Bash permission block  | Use `mode: "dontAsk"` for worktree-isolated Implementers       |
+| test-gen timeout             | Leader generates tests directly                                |
+| test-gen produces 0 tests    | Verify spec exists, ask user                                   |
+| Shutdown unresponsive        | Retry with explicit tool params → move team dir to `~/.Trash/` |
+
+## Abort / Rollback
+
+| Scenario               | Recovery                                                            |
+| ---------------------- | ------------------------------------------------------------------- |
+| Mid-Phase 1 abort      | Shutdown Architect + QA, TeamDelete                                 |
+| Mid-Phase 4 abort      | Shutdown all Implementers + QA, TeamDelete                          |
+| Partial implementation | Implementer worktrees contain changes, user decides to keep/discard |

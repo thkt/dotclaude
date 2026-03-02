@@ -1,6 +1,16 @@
 ---
-description: Comprehensive feature development with exploration, architecture, TDD, and quality gates. Use when user mentions 機能開発, 新機能, 機能追加, feature development.
-allowed-tools: Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(git ls-files:*), Bash(git worktree *), Bash(git merge *), Bash(git branch *), Bash(date:*), Bash(mkdir:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, TeamCreate, SendMessage, AskUserQuestion
+description:
+  Comprehensive feature development with exploration, architecture, TDD, and
+  quality gates. Use when user mentions 機能開発, 新機能, 機能追加, feature
+  development.
+allowed-tools:
+  Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run),
+  Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*),
+  Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*),
+  Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
+  Bash(git ls-files:*), Bash(git worktree *), Bash(git merge *), Bash(git branch
+  *), Bash(date:*), Bash(mkdir:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS,
+  Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[feature description]"
 ---
@@ -96,7 +106,8 @@ Detect resume point from existing artifacts:
 | Implementation done + quality not completed | Phase 4 |
 | Quality passed                              | Phase 5 |
 
-Implementation evidence: `git diff main...HEAD --name-only` shows files matching SOW scope.
+Implementation evidence: `git diff main...HEAD --name-only` shows files matching
+SOW scope.
 
 ## Error Handling
 

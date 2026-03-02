@@ -1,13 +1,23 @@
 ---
-description: 探索・アーキテクチャ設計・TDD・品質ゲートを含む包括的な機能開発。ユーザーが機能開発, 新機能, 機能追加, feature development等に言及した場合に使用。
-allowed-tools: Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run), Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(git ls-files:*), Bash(git worktree *), Bash(git merge *), Bash(git branch *), Bash(date:*), Bash(mkdir:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, TeamCreate, SendMessage, AskUserQuestion
+description:
+  探索・アーキテクチャ設計・TDD・品質ゲートを含む包括的な機能開発。ユーザーが機能開発,
+  新機能, 機能追加, feature development等に言及した場合に使用。
+allowed-tools:
+  Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run),
+  Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*),
+  Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*),
+  Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
+  Bash(git ls-files:*), Bash(git worktree *), Bash(git merge *), Bash(git branch
+  *), Bash(date:*), Bash(mkdir:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS,
+  Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[機能の説明]"
 ---
 
 # /feature - 機能開発オーケストレーター
 
-/think → /code → /audit → /validate をチェーンして、エンドツーエンドの機能開発を実行。
+/think → /code → /audit →
+/validate をチェーンして、エンドツーエンドの機能開発を実行。
 
 ## 入力
 

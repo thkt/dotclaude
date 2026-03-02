@@ -1,6 +1,7 @@
-# MCP ツール優先ルール
+# ツール優先ルール
 
-MCP tool > ビルトイン同等品。ToolSearch はキーワード検索で（`select:` 不可）。
+MCP tool > ビルトイン同等品。ToolSearch はキーワード検索で（`select:`
+不可）。Bash コマンドは PreToolUse フックで RTK に自動リライト（手動操作不要）。
 
 | 用途       | 使う                  | 使わない        | 条件                       |
 | ---------- | --------------------- | --------------- | -------------------------- |
@@ -19,3 +20,24 @@ MCP tool > ビルトイン同等品。ToolSearch はキーワード検索で（`
 | 概念: "form validation", "auth flow" | 識別子既知: `useAuth`                 |
 | 関連コード: "hooks that do Y"        | パス既知: `src/components/Button.tsx` |
 | 名前不明: "where does X happen"      | リテラル一致: エラー文言, class 名    |
+
+## RTK (Rust Token Killer)
+
+トークン最適化CLIプロキシ。Bashコマンドはフックで自動リライト — 手動で `rtk`
+プレフィックスは不要。
+
+### メタコマンド（直接使用）
+
+```bash
+rtk gain              # トークン節約分析
+rtk gain --history    # コマンド使用履歴と節約量
+rtk discover          # Claude Code履歴から未活用機会を分析
+```
+
+### 注意事項
+
+- 自動リライト対象: git, gh, cargo, vitest, tsc, eslint, docker, kubectl,
+  curl 等
+- `rtk gain` が失敗する場合: 別の rtk
+  (reachingforthejack/rtk) がインストール済みの可能性
+- 確認: `rtk --version` で `rtk X.Y.Z` が表示されること
