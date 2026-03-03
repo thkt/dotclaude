@@ -133,7 +133,7 @@ issues: [{ description: "<問題>", severity: blocker | warning }]
 2. Architect (feature-architect) をスポーン:
    - スポーンコンテキスト（コンテキスト契約を参照）
    - `$1` 実装の説明
-   - 指示: コードベース分析 → 契約設計 → ファイルグルーピング
+   - 指示: コードベース探索（yomu優先、grep/globフォールバック） → 契約設計 →ファイルグルーピング
    - 期待出力: Architectアウトプット契約（DM経由のYAML）
 3. QA (qa-reviewer) をスポーン:
    - 指示: Architectの設計を観察、peer DMでコメント

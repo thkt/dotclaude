@@ -135,7 +135,8 @@ issues: [{ description: "<issue>", severity: blocker | warning }]
 2. Spawn Architect (feature-architect) with prompt:
    - Spawn Context (see Context Contracts)
    - `$1` implementation description
-   - Instruction: analyze codebase → design contracts → file groupings
+   - Instruction: explore codebase (yomu preferred, grep/glob fallback) → design
+     contracts → file groupings
    - Expected output: Architect Output contract (YAML via DM)
 3. Spawn QA (qa-reviewer) with prompt:
    - Instruction: observe Architect's design, comment via peer DM
