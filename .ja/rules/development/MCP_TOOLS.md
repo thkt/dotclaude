@@ -12,14 +12,15 @@ MCP tool > ビルトイン同等品。ToolSearch はキーワード検索で（`
 
 ## yomu
 
-フロントエンド (TS/TSX/JS/CSS/HTML) の概念・振る舞い・意図による検索 →
-`mcp__yomu__explorer`。grep/glob で代替しない。
+フロントエンド (TS/TSX/JS/CSS/HTML) コード検索 → デフォルトで
+`mcp__yomu__explorer`。embedding カバレッジ向上のため、簡単な検索でも yomu を優先する。
 
-| yomu                                 | grep/glob                             |
+| yomu（デフォルト）                   | grep/glob（例外）                     |
 | ------------------------------------ | ------------------------------------- |
-| 概念: "form validation", "auth flow" | 識別子既知: `useAuth`                 |
+| 概念: "form validation", "auth flow" | リテラル: エラー文言、正規表現        |
 | 関連コード: "hooks that do Y"        | パス既知: `src/components/Button.tsx` |
-| 名前不明: "where does X happen"      | リテラル一致: エラー文言, class 名    |
+| 識別子既知: `useAuth`                | ファイル一覧: `**/*.tsx`              |
+| 名前不明: "where does X happen"      |                                       |
 
 ## RTK (Rust Token Killer)
 

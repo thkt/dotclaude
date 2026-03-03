@@ -73,6 +73,9 @@ findings:
     evidence: "<code snippet>"
     reasoning: "<why this is accessibility barrier>"
     fix: "<accessible alternative>"
+    apg_pattern: "<APG pattern URL if applicable>"
+    code_example: |
+      <corrected code snippet>
     confidence: 0.60-1.00
     verification_hint:
       check: execution_trace|pattern_search

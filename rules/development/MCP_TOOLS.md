@@ -12,14 +12,15 @@ Bash commands are auto-rewritten to RTK by PreToolUse hook (no manual action).
 
 ## yomu
 
-Frontend (TS/TSX/JS/CSS/HTML) concept/behavior/intent search →
-`mcp__yomu__explorer`. Do not substitute with grep/glob.
+Frontend (TS/TSX/JS/CSS/HTML) code search → default to `mcp__yomu__explorer`.
+Prefer yomu even for simple searches to build embedding coverage over time.
 
-| yomu                                    | grep/glob                               |
+| yomu (default)                          | grep/glob (exception)                   |
 | --------------------------------------- | --------------------------------------- |
-| Concept: "form validation", "auth flow" | Known identifier: `useAuth`             |
+| Concept: "form validation", "auth flow" | Literal: error messages, regex          |
 | Related: "hooks that do Y"              | Known path: `src/components/Button.tsx` |
-| Unknown name: "where does X happen"     | Literal: error messages, class names    |
+| Known identifier: `useAuth`             | File listing: `**/*.tsx`                |
+| Unknown name: "where does X happen"     |                                         |
 
 ## RTK (Rust Token Killer)
 

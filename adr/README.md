@@ -21,15 +21,24 @@ Claude Codeプラグインのアーキテクチャ決定を記録するドキュ
 | [0013](./0013-adopt-hook-trinity-pattern-with-claude-reviews.md)     | Hook Trinity — claude-reviews 採用    | accepted   |
 | [0014](./0014-integrate-aidlc-design-separation-and-ops-reviewer.md) | AI-DLC 統合 — 設計分離と Ops Reviewer | accepted   |
 | [0015](./0015-frontend-security-guardrails-strategy.md)              | フロントエンドセキュリティ戦略        | accepted   |
+| [0016](./0016-adopt-rust-mcp-for-deep-search.md)                     | Deep Search に Rust MCP 採用          | accepted   |
+| [0017](./0017-build-frontend-code-search-mcp-in-rust.md)             | フロントエンドコード検索 MCP (yomu)   | accepted   |
+| [0018](./0018-index-time-file-context-storage-for-explorer.md)       | インデックス時ファイルコンテキスト    | accepted   |
+| [0019](./0019-adopt-sqlite-reference-graph-for-impact-analysis.md)   | SQLite 参照グラフで影響分析           | accepted   |
+| [0020](./0020-claude-code-dashboard-tech-stack.md)                   | Claude Code ダッシュボード技術選定    | accepted   |
+| [0021](./0021-build-slack-semantic-search-mcp-kiku.md)               | Slack 会話セマンティック検索 (kiku)   | proposed   |
 
 ## 関連ルール
 
 ADRから抽出された強制ルール：
 
-- [MODULARIZATION_RULES.md](../rules/workflows/MODULARIZATION_RULES.md) - ADR 0001, 0002
-- [PLUGIN_ARCHITECTURE.md](../rules/conventions/PLUGIN_ARCHITECTURE.md) - ADR 0003
+- [MODULARIZATION_RULES.md](../rules/workflows/MODULARIZATION_RULES.md) - ADR
+  0001, 0002
+- [PLUGIN_ARCHITECTURE.md](../rules/conventions/PLUGIN_ARCHITECTURE.md) - ADR
+  0003
 
 ## 参照
 
-- [MADR Format](https://adr.github.io/madr/) — 簡略版を使用（Pros/Cons は Consequences セクションに統合）
+- [MADR Format](https://adr.github.io/madr/)
+  — 簡略版を使用（Pros/Cons は Consequences セクションに統合）
 - `/adr` コマンドで新規ADR作成

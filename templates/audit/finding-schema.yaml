@@ -32,7 +32,8 @@ finding:
 # | progressive-enhancer   | recommendations           | req | Append as separate items                               |
 # | code-quality-reviewer  | subcategory               | opt | Append to category as category/subcategory             |
 # | performance-reviewer   | impact                    | opt | Append to evidence; impact → reasoning note            |
-# | accessibility-reviewer | wcag                      | req | Append to evidence                                     |
+# | accessibility-reviewer | wcag, apg_pattern,        | req | wcag → evidence; apg_pattern → fix context;            |
+# |                        | code_example              | opt | code_example → fix context                             |
 # | test-coverage-reviewer | related_code, criticality | opt | related_code → evidence; criticality → reasoning note  |
 # | type-design-reviewer   | type_name, scores         | opt | Append to evidence; scores → reasoning note            |
 # | security-reviewer      | entry_points (in hint)    | opt | Already in verification_hint                           |

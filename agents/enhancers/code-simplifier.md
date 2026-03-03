@@ -1,13 +1,12 @@
 ---
 name: code-simplifier
-description: Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise.
+description:
+  Simplifies and refines code for clarity, consistency, and maintainability
+  while preserving all functionality. Focuses on recently modified code unless
+  instructed otherwise.
 tools: [Read, Edit, Grep, Glob, LS]
 model: opus
 skills: [applying-code-principles, reviewing-readability]
-context: fork
-isolation: "worktree"
-background: true
-memory: project
 ---
 
 # Code Simplifier

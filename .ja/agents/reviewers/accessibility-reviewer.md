@@ -70,6 +70,9 @@ findings:
     evidence: "<code snippet>"
     reasoning: "<why this is accessibility barrier>"
     fix: "<accessible alternative>"
+    apg_pattern: "<該当APGパターンURL>"
+    code_example: |
+      <修正後コードスニペット>
     confidence: 0.70-1.00
 summary:
   total_findings: <count>
