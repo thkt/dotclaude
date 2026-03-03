@@ -111,7 +111,7 @@ perform specific analysis or generation tasks.
 
 ```text
 agents/
-├── analyzers/      # Code analysis (api, architecture, code-flow, domain, setup)
+├── analyzers/      # Code analysis (api, architecture, domain, setup)
 ├── architects/     # Design (feature-architect)
 ├── critics/        # Critical verification (devils-advocate-audit, devils-advocate-design, evidence-verifier)
 ├── enhancers/      # Code improvement (code-simplifier)
@@ -119,34 +119,36 @@ agents/
 ├── generators/     # Generation (branch, commit, issue, pr, test)
 ├── resolvers/      # Problem resolution (build-error-resolver)
 ├── reviewers/      # Review (16 specialized reviewers)
-└── teams/          # Team integration (progressive-integrator, unit-implementer)
+└── teams/          # Team integration (progressive-integrator, qa-reviewer, unit-implementer)
 ```
 
-### Reviewer Agents (15 types)
+### Reviewer Agents (16 types)
 
-| Agent                   | Focus                       |
-| ----------------------- | --------------------------- |
-| security-reviewer       | OWASP Top 10                |
-| type-safety-reviewer    | TypeScript type safety      |
-| type-design-reviewer    | Type design + encapsulation |
-| testability-reviewer    | Testability                 |
-| test-coverage-reviewer  | Test coverage quality       |
-| silent-failure-reviewer | Silent failure detection    |
-| root-cause-reviewer     | Root cause analysis         |
-| code-quality-reviewer   | Structure + readability     |
-| progressive-enhancer    | CSS-first + JS reduction    |
-| performance-reviewer    | Performance                 |
-| accessibility-reviewer  | WCAG compliance             |
-| design-pattern-reviewer | React patterns              |
-| document-reviewer       | Documentation quality       |
-| sow-spec-reviewer       | SOW/Spec quality            |
-| subagent-reviewer       | Sub-agent definition review |
+| Agent                          | Focus                       |
+| ------------------------------ | --------------------------- |
+| accessibility-reviewer         | WCAG compliance             |
+| code-quality-reviewer          | Structure + readability     |
+| design-pattern-reviewer        | React patterns              |
+| document-reviewer              | Documentation quality       |
+| operational-readiness-reviewer | Error boundaries + logging  |
+| performance-reviewer           | Performance                 |
+| progressive-enhancer           | CSS-first + JS reduction    |
+| root-cause-reviewer            | Root cause analysis         |
+| security-reviewer              | OWASP Top 10                |
+| silent-failure-reviewer        | Silent failure detection    |
+| sow-spec-reviewer              | SOW/Spec quality            |
+| subagent-reviewer              | Sub-agent definition review |
+| test-coverage-reviewer         | Test coverage quality       |
+| testability-reviewer           | Testability                 |
+| type-design-reviewer           | Type design + encapsulation |
+| type-safety-reviewer           | TypeScript type safety      |
 
 ### Team Agents
 
 | Agent                  | Focus                                                           |
 | ---------------------- | --------------------------------------------------------------- |
 | progressive-integrator | Reconcile challenge/verification results + root cause synthesis |
+| qa-reviewer            | Non-blocking QA participant via peer DM                         |
 | unit-implementer       | RGRC cycle implementation for assigned files and tests          |
 
 ### Invocation via Task Tool

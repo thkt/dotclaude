@@ -27,7 +27,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── conventions/      # Documentation conventions
 │   ├── development/      # Development patterns & methodologies
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (25 skills)
+├── skills/               # Skill-based knowledge modules (26 skills)
 ├── agents/               # Specialized AI agents (35 agents)
 │   ├── analyzers/        # Architecture & code analyzers
 │   ├── architects/       # Feature architecture designers
@@ -38,6 +38,12 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── resolvers/        # Build error resolvers
 │   ├── reviewers/        # Code review agents (16 reviewers)
 │   └── teams/            # Integrators & implementers
+├── docs/                  # Design docs & guides
+├── templates/             # Prompt templates (audit, docs, sow, etc.)
+├── hooks/                 # Pre/Post tool-use hooks
+├── scripts/               # Utility scripts
+├── output-styles/         # Output style definitions
+├── .claude-plugin/        # Plugin marketplace config
 └── .ja/                   # Japanese translations
 ```
 
@@ -78,7 +84,7 @@ install specific workflow sets:
 - **git-utilities**: Git workflow helpers (commit, branch, PR, issue)
 - **documentation-tools**: ADR creation and docs
 - **browser-workflows**: E2E testing and automation
-- **development-skills**: 25 skills for TDD, principles, patterns, security, and
+- **development-skills**: 26 skills for TDD, principles, patterns, security, and
   more
 
 ### Option 2: Manual Installation (Full Configuration)

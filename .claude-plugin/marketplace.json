@@ -32,10 +32,12 @@
         "./commands/audit.md",
         "./commands/validate.md",
         "./commands/research.md",
-        "./commands/feature.md"
+        "./commands/feature.md",
+        "./commands/swarm.md"
       ],
       "agents": [
         "./agents/teams/progressive-integrator.md",
+        "./agents/teams/qa-reviewer.md",
         "./agents/teams/unit-implementer.md",
         "./agents/critics/devils-advocate-audit.md",
         "./agents/critics/devils-advocate-design.md",
@@ -43,7 +45,6 @@
         "./agents/generators/test-generator.md",
         "./agents/explorers/feature-explorer.md",
         "./agents/architects/feature-architect.md",
-        "./agents/analyzers/code-flow-analyzer.md",
         "./agents/reviewers/progressive-enhancer.md",
         "./agents/reviewers/subagent-reviewer.md",
         "./agents/reviewers/document-reviewer.md",
@@ -118,7 +119,7 @@
       "license": "MIT",
       "keywords": ["adr", "madr", "documentation", "architecture", "api", "decision-records"],
       "category": "Documentation",
-      "commands": ["./commands/adr.md", "./commands/docs.md"],
+      "commands": ["./commands/adr.md", "./commands/docs.md", "./commands/glossary.md"],
       "agents": [
         "./agents/analyzers/architecture-analyzer.md",
         "./agents/analyzers/api-analyzer.md",
@@ -199,6 +200,7 @@
         "./skills/screening-pr-review/SKILL.md",
         "./skills/tailwind-patterns/SKILL.md",
         "./skills/utilizing-cli-tools/SKILL.md",
+        "./skills/extracting-ubiquitous-language/SKILL.md",
         "./skills/validating-specs/SKILL.md",
         "./skills/web-design-guidelines/SKILL.md"
       ]

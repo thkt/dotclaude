@@ -66,15 +66,17 @@ ralph-loop あり → 自動RGRC反復 ralph-loop なし → 手動確認モー�
 
 ## コマンド → スキル/エージェント対応表
 
-| コマンド   | 使用スキル                                    | 使用エージェント                                                      |
-| ---------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `/think`   | -                                             | -                                                                     |
-| `/code`    | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
-| `/audit`   | applying-code-principles                      | 13 reviewer agents                                                    |
-| `/fix`     | -                                             | -                                                                     |
-| `/polish`  | -                                             | code-simplifier                                                       |
-| `/feature` | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
-| `/docs`    | documenting-\*                                | \*-analyzer                                                           |
+| コマンド    | 使用スキル                                    | 使用エージェント                                                      |
+| ----------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| `/think`    | -                                             | -                                                                     |
+| `/code`     | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
+| `/audit`    | applying-code-principles                      | 13 reviewer agents                                                    |
+| `/fix`      | -                                             | -                                                                     |
+| `/polish`   | -                                             | code-simplifier                                                       |
+| `/feature`  | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
+| `/swarm`    | orchestrating-workflows                       | qa-reviewer, unit-implementer                                         |
+| `/docs`     | documenting-\*                                | \*-analyzer                                                           |
+| `/glossary` | extracting-ubiquitous-language                | -                                                                     |
 
 ## ファイル構造
 

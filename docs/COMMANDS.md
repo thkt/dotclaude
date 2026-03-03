@@ -67,15 +67,17 @@ confirmation mode (same functionality)
 
 ## Command → Skill/Agent Mapping
 
-| Command    | Skills Used                                   | Agents Used                                                           |
-| ---------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `/think`   | -                                             | -                                                                     |
-| `/code`    | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
-| `/audit`   | applying-code-principles                      | 13 reviewer agents                                                    |
-| `/fix`     | -                                             | -                                                                     |
-| `/polish`  | -                                             | code-simplifier                                                       |
-| `/feature` | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
-| `/docs`    | documenting-\*                                | \*-analyzer                                                           |
+| Command     | Skills Used                                   | Agents Used                                                           |
+| ----------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| `/think`    | -                                             | -                                                                     |
+| `/code`     | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
+| `/audit`    | applying-code-principles                      | 13 reviewer agents                                                    |
+| `/fix`      | -                                             | -                                                                     |
+| `/polish`   | -                                             | code-simplifier                                                       |
+| `/feature`  | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
+| `/swarm`    | orchestrating-workflows                       | qa-reviewer, unit-implementer                                         |
+| `/docs`     | documenting-\*                                | \*-analyzer                                                           |
+| `/glossary` | extracting-ubiquitous-language                | -                                                                     |
 
 ## File Structure
 

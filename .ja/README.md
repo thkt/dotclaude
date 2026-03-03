@@ -38,6 +38,12 @@ AIの包括的な設定システム。
 │   ├── resolvers/        # ビルドエラー解決
 │   ├── reviewers/        # コードレビューエージェント（16レビューア）
 │   └── teams/            # 統合 & 実装
+├── docs/                  # 設計ドキュメント & ガイド
+├── templates/             # プロンプトテンプレート（audit, docs, sow など）
+├── hooks/                 # Pre/Post ツール使用フック
+├── scripts/               # ユーティリティスクリプト
+├── output-styles/         # 出力スタイル定義
+├── .claude-plugin/        # プラグインマーケットプレイス設定
 └── .ja/                   # 日本語翻訳
 ```
 
@@ -148,15 +154,15 @@ srt --version
 
 ```json
 {
- "sandbox": {
-  "enabled": true,
-  "autoAllowBashIfSandboxed": true,
-  "excludedCommands": ["docker"],
-  "network": {
-   "allowLocalBinding": true,
-   "httpProxyPort": 8080
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "excludedCommands": ["docker"],
+    "network": {
+      "allowLocalBinding": true,
+      "httpProxyPort": 8080
+    }
   }
- }
 }
 ```
 
