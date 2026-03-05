@@ -9,8 +9,9 @@ allowed-tools:
   Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*),
   Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
   Bash(git ls-files:*), Bash(git worktree *), Bash(git merge *), Bash(git branch
-  *), Bash(date:*), Bash(mkdir:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS,
-  Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion
+  *), Bash(date:*), Bash(mkdir:*), Bash(agent-browser:*), Edit, MultiEdit,
+  Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate,
+  AskUserQuestion
 model: opus
 argument-hint: "[feature description]"
 ---
@@ -18,6 +19,14 @@ argument-hint: "[feature description]"
 # /feature - Feature Development Orchestrator
 
 Chain /think → /code → /audit → /validate for end-to-end feature development.
+
+## Plugin Dependencies
+
+| Plugin        | Required for   | Install                           |
+| ------------- | -------------- | --------------------------------- |
+| agent-browser | Phase 4.5 only | `claude plugin add agent-browser` |
+
+Phase 4.5 is skipped gracefully if agent-browser is not installed.
 
 ## Input
 
@@ -43,13 +52,14 @@ Detect project type → present relevant options:
 
 ## Execution
 
-| Phase | Name           | Action                        | User Checkpoint       |
-| ----- | -------------- | ----------------------------- | --------------------- |
-| 1     | Discovery      | Context scan → PRE_TASK_CHECK | [?] or [→] resolution |
-| 2     | Design         | Skill: /think                 | Design approval       |
-| 3     | Implementation | Skill: /code                  | —                     |
-| 4     | Quality        | /audit → /fix loop (max 3)    | Remaining issues only |
-| 5     | Validation     | Skill: /validate → Summary    | Completion            |
+| Phase | Name                | Action                        | User Checkpoint       |
+| ----- | ------------------- | ----------------------------- | --------------------- |
+| 1     | Discovery           | Context scan → PRE_TASK_CHECK | [?] or [→] resolution |
+| 2     | Design              | Skill: /think                 | Design approval       |
+| 3     | Implementation      | Skill: /code                  | —                     |
+| 4     | Quality             | /audit → /fix loop (max 3)    | Remaining issues only |
+| 4.5   | Visual Verification | Browser check (UI tasks only) | Visual approval       |
+| 5     | Validation          | Skill: /validate → Summary    | Completion            |
 
 ### Phase 1: Discovery
 
@@ -84,6 +94,43 @@ Execute `Skill("code", $1)`.
 
 Changed files: `git diff main...HEAD --name-only` (or base branch).
 
+### Phase 4.5: Visual Verification (conditional)
+
+#### Skip Conditions
+
+Any → skip:
+
+- No UI files in changed files (`.tsx`, `.jsx`, `.css`, `.scss`, `.html`)
+- `agent-browser` not installed (`which agent-browser` fails)
+- No dev server script detected in `package.json`
+
+#### Dev Server Detection
+
+From `package.json` scripts:
+
+| Priority | Script name pattern          | Default URL             |
+| -------- | ---------------------------- | ----------------------- |
+| 1        | `dev`, `start:dev`           | `http://localhost:5173` |
+| 2        | `start`                      | `http://localhost:3000` |
+| 3        | `storybook`, `storybook:dev` | `http://localhost:6006` |
+
+Extract port from script value if specified (`--port`, `-p`, `PORT=`).
+
+#### Workflow
+
+1. Detect dev server script and URL
+2. AskUserQuestion: "Dev server running at {url}? (Y to proceed / N to skip /
+   custom URL)"
+3. `agent-browser --headed open {url}` → navigate to page matching SOW scope
+   (infer route from changed file paths or AC descriptions)
+4. `agent-browser screenshot` → capture current state
+5. Check AC items containing visual keywords (display, layout, UI, style,
+   render, visible, responsive)
+6. Present screenshot + findings to user
+7. AskUserQuestion: "Visual check OK?" (Approve / Request fix / Skip)
+8. If "Request fix" → return to Phase 4 Step 2
+9. `agent-browser close`
+
 ### Phase 5: Validation
 
 Execute `Skill("validate")`.
@@ -98,25 +145,28 @@ Present summary:
 
 Detect resume point from existing artifacts:
 
-| Artifact                                    | Resume  |
-| ------------------------------------------- | ------- |
-| No SOW                                      | Phase 1 |
-| SOW `draft`                                 | Phase 2 |
-| SOW `in-progress` + no implementation       | Phase 3 |
-| Implementation done + quality not completed | Phase 4 |
-| Quality passed                              | Phase 5 |
+| Artifact                                    | Resume    |
+| ------------------------------------------- | --------- |
+| No SOW                                      | Phase 1   |
+| SOW `draft`                                 | Phase 2   |
+| SOW `in-progress` + no implementation       | Phase 3   |
+| Implementation done + quality not completed | Phase 4   |
+| Quality passed + UI files changed           | Phase 4.5 |
+| Quality passed + no UI files                | Phase 5   |
 
 Implementation evidence: `git diff main...HEAD --name-only` shows files matching
 SOW scope.
 
 ## Error Handling
 
-| Error                             | Action                          |
-| --------------------------------- | ------------------------------- |
-| /think cancelled or fails         | Save context, exit              |
-| /code fails                       | Present error, ask user         |
-| Quality loop exhausted (3 rounds) | Present remaining, user decides |
-| /validate shows unmet ACs         | Offer to re-enter Phase 3 or 4  |
+| Error                             | Action                              |
+| --------------------------------- | ----------------------------------- |
+| /think cancelled or fails         | Save context, exit                  |
+| /code fails                       | Present error, ask user             |
+| Quality loop exhausted (3 rounds) | Present remaining, user decides     |
+| agent-browser not installed       | Skip Phase 4.5, continue to Phase 5 |
+| Dev server not running            | Skip Phase 4.5, continue to Phase 5 |
+| /validate shows unmet ACs         | Offer to re-enter Phase 3 or 4      |
 
 ## Verification
 

@@ -8,8 +8,9 @@ allowed-tools:
   Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*),
   Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
   Bash(git ls-files:*), Bash(git worktree *), Bash(git merge *), Bash(git branch
-  *), Bash(date:*), Bash(mkdir:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS,
-  Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion
+  *), Bash(date:*), Bash(mkdir:*), Bash(agent-browser:*), Edit, MultiEdit,
+  Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate,
+  AskUserQuestion
 model: opus
 argument-hint: "[機能の説明]"
 ---
@@ -18,6 +19,14 @@ argument-hint: "[機能の説明]"
 
 /think → /code → /audit →
 /validate をチェーンして、エンドツーエンドの機能開発を実行。
+
+## プラグイン依存
+
+| プラグイン    | 用途           | インストール                      |
+| ------------- | -------------- | --------------------------------- |
+| agent-browser | Phase 4.5 のみ | `claude plugin add agent-browser` |
+
+agent-browser 未インストール時、Phase 4.5 はスキップされる。
 
 ## 入力
 
@@ -43,13 +52,14 @@ argument-hint: "[機能の説明]"
 
 ## 実行
 
-| Phase | 名前           | アクション                            | ユーザーチェックポイント |
-| ----- | -------------- | ------------------------------------- | ------------------------ |
-| 1     | Discovery      | コンテキストスキャン → PRE_TASK_CHECK | [?] or [→] の解決        |
-| 2     | Design         | Skill: /think                         | 設計承認                 |
-| 3     | Implementation | Skill: /code                          | —                        |
-| 4     | Quality        | /audit → /fix ループ (最大3回)        | 残存課題のみ             |
-| 5     | Validation     | Skill: /validate → サマリー           | 完了                     |
+| Phase | 名前                | アクション                            | ユーザーチェックポイント |
+| ----- | ------------------- | ------------------------------------- | ------------------------ |
+| 1     | Discovery           | コンテキストスキャン → PRE_TASK_CHECK | [?] or [→] の解決        |
+| 2     | Design              | Skill: /think                         | 設計承認                 |
+| 3     | Implementation      | Skill: /code                          | —                        |
+| 4     | Quality             | /audit → /fix ループ (最大3回)        | 残存課題のみ             |
+| 4.5   | Visual Verification | ブラウザ確認（UIタスクのみ）          | 画面承認                 |
+| 5     | Validation          | Skill: /validate → サマリー           | 完了                     |
 
 ### Phase 1: Discovery
 
@@ -84,6 +94,43 @@ argument-hint: "[機能の説明]"
 
 変更ファイル: `git diff main...HEAD --name-only`（またはベースブランチ）。
 
+### Phase 4.5: Visual Verification（条件付き）
+
+#### スキップ条件
+
+いずれか該当 → スキップ:
+
+- 変更ファイルに UI ファイルなし（`.tsx`, `.jsx`, `.css`, `.scss`, `.html`）
+- `agent-browser` 未インストール（`which agent-browser` 失敗）
+- `package.json` に dev server スクリプトなし
+
+#### Dev Server 検出
+
+`package.json` の scripts から:
+
+| 優先度 | スクリプト名パターン         | デフォルト URL          |
+| ------ | ---------------------------- | ----------------------- |
+| 1      | `dev`, `start:dev`           | `http://localhost:5173` |
+| 2      | `start`                      | `http://localhost:3000` |
+| 3      | `storybook`, `storybook:dev` | `http://localhost:6006` |
+
+ポート指定があれば抽出して使用（`--port`, `-p`, `PORT=`）。
+
+#### ワークフロー
+
+1. dev server スクリプトと URL を検出
+2. AskUserQuestion: "Dev server は {url} で起動中？ (Y で続行 /
+   N でスキップ / カスタム URL)"
+3. `agent-browser --headed open {url}` →
+   SOW スコープに該当するページへ遷移（変更ファイルパスや AC の記述からルートを推測）
+4. `agent-browser screenshot` → 現在の状態をキャプチャ
+5. AC の画面系キーワード（表示, レイアウト,
+   UI, スタイル, 描画, レスポンシブ）を含む項目を確認
+6. スクリーンショット + 所見をユーザーに提示
+7. AskUserQuestion: "画面確認 OK？" (承認 / 修正依頼 / スキップ)
+8. "修正依頼" → Phase 4 Step 2 に戻る
+9. `agent-browser close`
+
 ### Phase 5: Validation
 
 `Skill("validate")` を実行。
@@ -104,18 +151,21 @@ argument-hint: "[機能の説明]"
 | SOW `draft`                      | Phase 2    |
 | SOW `in-progress` + 実装証跡なし | Phase 3    |
 | 実装完了 + 品質未完了            | Phase 4    |
-| 品質通過                         | Phase 5    |
+| 品質通過 + UI ファイル変更あり   | Phase 4.5  |
+| 品質通過 + UI ファイル変更なし   | Phase 5    |
 
 実装証跡: `git diff main...HEAD --name-only` が SOW スコープのファイルを含む。
 
 ## エラーハンドリング
 
-| エラー                      | アクション                      |
-| --------------------------- | ------------------------------- |
-| /think キャンセルまたは失敗 | コンテキスト保存、終了          |
-| /code 失敗                  | エラーを提示、ユーザーに確認    |
-| 品質ループ最大到達（3回）   | 残存課題を提示、ユーザーが判断  |
-| /validate で未達 AC         | Phase 3 または 4 への再入を提案 |
+| エラー                       | アクション                         |
+| ---------------------------- | ---------------------------------- |
+| /think キャンセルまたは失敗  | コンテキスト保存、終了             |
+| /code 失敗                   | エラーを提示、ユーザーに確認       |
+| 品質ループ最大到達（3回）    | 残存課題を提示、ユーザーが判断     |
+| agent-browser 未インストール | Phase 4.5 スキップ、Phase 5 へ続行 |
+| Dev server 未起動            | Phase 4.5 スキップ、Phase 5 へ続行 |
+| /validate で未達 AC          | Phase 3 または 4 への再入を提案    |
 
 ## 検証
 
