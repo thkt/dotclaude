@@ -1,9 +1,9 @@
 ---
 name: analyzing-root-causes
 description: >
-  Root cause analysis with 5 Whys methodology.
-  Use when investigating bugs, analyzing failures, or when user mentions
-  root cause, 5 Whys, なぜなぜ分析, 根本原因, 原因分析, symptom fix, 対症療法.
+  Root cause analysis with 5 Whys methodology. Use when investigating bugs,
+  analyzing failures, or when user mentions root cause, 5 Whys, なぜなぜ分析,
+  根本原因, 原因分析, symptom fix, 対症療法.
 allowed-tools: [Read, Grep, Glob, Task]
 context: fork
 user-invocable: false
@@ -32,7 +32,7 @@ user-invocable: false
 
 ## References
 
-| Topic    | File                             |
-| -------- | -------------------------------- |
-| 5 Whys   | `references/five-whys.md`        |
-| Patterns | `references/symptom-patterns.md` |
+| Topic    | File                                                 |
+| -------- | ---------------------------------------------------- |
+| 5 Whys   | `${CLAUDE_SKILL_DIR}/references/five-whys.md`        |
+| Patterns | `${CLAUDE_SKILL_DIR}/references/symptom-patterns.md` |

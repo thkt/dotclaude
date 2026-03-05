@@ -7,7 +7,10 @@ LOG_FILE="$HOME/.claude/logs/team.log"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 INPUT=$(cat)
-NAME=$(printf '%s' "$INPUT" | jq -r '.agent_name // .name // "unknown"' 2>/dev/null)
+IFS=$'\t' read -r NAME AGENT_ID AGENT_TYPE <<< "$(printf '%s' "$INPUT" | jq -r '[(.agent_name // .name // "unknown"), (.agent_id // ""), (.agent_type // "")] | @tsv' 2>/dev/null)"
 
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Teammate idle: $NAME" >> "$LOG_FILE"
+AGENT_SUFFIX=""
+[[ -n "$AGENT_ID" ]] && AGENT_SUFFIX=" id=$AGENT_ID($AGENT_TYPE)"
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Teammate idle: $NAME$AGENT_SUFFIX" >> "$LOG_FILE"
 exit 0

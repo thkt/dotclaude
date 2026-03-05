@@ -12,18 +12,18 @@ user-invocable: false
 
 ## Workflows
 
-| Command | Workflow Reference                                              |
-| ------- | --------------------------------------------------------------- |
-| `/code` | [@./references/code-workflow.md](./references/code-workflow.md) |
-| `/fix`  | [@./references/fix-workflow.md](./references/fix-workflow.md)   |
+| Command | Workflow Reference                                |
+| ------- | ------------------------------------------------- |
+| `/code` | `${CLAUDE_SKILL_DIR}/references/code-workflow.md` |
+| `/fix`  | `${CLAUDE_SKILL_DIR}/references/fix-workflow.md`  |
 
 ## Patterns
 
 | Pattern         | Reference                                                                    |
 | --------------- | ---------------------------------------------------------------------------- |
 | IDR Generation  | [hooks/lifecycle/idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh) |
-| TDD Cycle       | [@./references/tdd-cycle.md](./references/tdd-cycle.md)                      |
-| Test Generation | [@./references/test-generation.md](./references/test-generation.md)          |
+| TDD Cycle       | `${CLAUDE_SKILL_DIR}/references/tdd-cycle.md`                                |
+| Test Generation | `${CLAUDE_SKILL_DIR}/references/test-generation.md`                          |
 
 ## Quality Gates
 

@@ -1,9 +1,10 @@
 ---
 name: applying-frontend-patterns
 description: >
-  Framework-agnostic frontend component design patterns.
-  Use when designing React/Vue/Angular components, applying Container/Presentational pattern,
-  or when user mentions component patterns, フロントエンドパターン, コンポーネント設計.
+  Framework-agnostic frontend component design patterns. Use when designing
+  React/Vue/Angular components, applying Container/Presentational pattern, or
+  when user mentions component patterns, フロントエンドパターン,
+  コンポーネント設計.
 allowed-tools: [Read, Grep, Glob, Task]
 user-invocable: false
 ---
@@ -42,6 +43,6 @@ Simple one-off components, prototypes (YAGNI), no reuse expected.
 
 ## References
 
-| Topic                  | File                                     |
-| ---------------------- | ---------------------------------------- |
-| Container/Presentation | `references/container-presentational.md` |
+| Topic                  | File                                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| Container/Presentation | `${CLAUDE_SKILL_DIR}/references/container-presentational.md` |

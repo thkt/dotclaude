@@ -32,9 +32,9 @@ Type coverage >= 95%. Any usage = 0. Strict mode all enabled.
 
 ## References
 
-| Topic    | File                          |
-| -------- | ----------------------------- |
-| Coverage | `references/type-coverage.md` |
-| Guards   | `references/type-guards.md`   |
-| Strict   | `references/strict-mode.md`   |
-| Result   | `references/result-type.md`   |
+| Topic    | File                                              |
+| -------- | ------------------------------------------------- |
+| Coverage | `${CLAUDE_SKILL_DIR}/references/type-coverage.md` |
+| Guards   | `${CLAUDE_SKILL_DIR}/references/type-guards.md`   |
+| Strict   | `${CLAUDE_SKILL_DIR}/references/strict-mode.md`   |
+| Result   | `${CLAUDE_SKILL_DIR}/references/result-type.md`   |

@@ -44,6 +44,7 @@ Leader ONLY:
 - Executes QG commands mechanically
 - Forwards results to agents
 - Manages team lifecycle
+- Tracks and reports progress (see Progress Tracking)
 
 All substantive work happens through peer DM between Architect, QA, and
 Implementer(s).
@@ -92,13 +93,17 @@ contracts:
   - name: "<interface/type name>"
     definition: "<TypeScript interface or type>"
     used_by: ["<file paths>"]
+shared_changes: # files modified by multiple units (types, config, etc.)
+  - file: "<file path>"
+    change: "<description of change>"
+    apply_before: parallel # merge to main before parallel execution
 parallel_units:
   - unit_id: 1
     files: ["<file paths>"]
-    depends_on: [] # empty = independent
+    depends_on: [] # GOAL: keep empty (independence-first)
   - unit_id: 2
     files: ["<file paths>"]
-    depends_on: []
+    depends_on: [] # only populate when unavoidable, with rationale
 build_sequence: ["unit_id order if dependencies exist"]
 ```
 
@@ -143,6 +148,19 @@ issues: [{ description: "<issue>", severity: blocker | warning }]
    - Read team config to discover teammates
 4. Wait for Architect's contract DM
 
+### Phase 1.5: Decomposition Approval
+
+1. Present Architect's decomposition to user:
+   - Parallel units with file assignments
+   - Shared changes (applied before parallel execution)
+   - Dependency graph (ideally all independent)
+   - Estimated worker count
+2. User may adjust:
+   - Merge/split units
+   - Reassign files between units
+   - Override dependency decisions
+3. Proceed to Phase 2 after approval
+
 ### Phase 2: Test Generation
 
 1. After final Architect Output contract is confirmed (Phase 1 + QA review)
@@ -176,9 +194,23 @@ issues: [{ description: "<issue>", severity: blocker | warning }]
    - Receive command request → execute → return result to QA
 4. Wait for all Implementers to complete (DM with status)
 
-### Phase 5: Quality Gates
+### Phase 5: Integration + Quality Gates
 
-1. Leader executes QG (tests, lint, types, coverage)
+#### 5a: Merge Strategy
+
+1. Apply shared_changes first (from Architect Output):
+   - Leader applies shared changes to main branch directly
+   - If application fails → halt merge, escalate to user
+   - Verify: run type-check/lint on main after applying
+2. Merge remaining worktrees sequentially:
+   - Merge independent units in completion order
+   - For units with depends_on, merge in build_sequence order
+   - Resolve conflicts via `git merge` or update branch
+3. Final state: all changes on main branch
+
+#### 5b: Quality Gates
+
+1. Leader executes QG on main branch (tests, lint, types, coverage)
 2. On failure:
    - Identify responsible agent from failing file
    - Forward failure details to that agent via DM
@@ -207,10 +239,41 @@ issues: [{ description: "<issue>", severity: blocker | warning }]
 | test-gen produces 0 tests    | Verify spec exists, ask user                                   |
 | Shutdown unresponsive        | Retry with explicit tool params → move team dir to `~/.Trash/` |
 
+## Progress Tracking
+
+Leader maintains a progress table and reports to user at key events:
+
+### Display Format
+
+```
+## Swarm Progress
+
+| Unit | Files | Implementer | Status      | Duration |
+| ---- | ----- | ----------- | ----------- | -------- |
+| 1    | 3     | impl-1      | complete    | 2m 30s   |
+| 2    | 2     | impl-2      | in_progress | 1m 45s   |
+| 3    | 4     | impl-3      | in_progress | 1m 45s   |
+
+Shared changes: applied
+Integration: pending (2/3 units complete)
+```
+
+### Trigger Events
+
+| Event                   | Action                           |
+| ----------------------- | -------------------------------- |
+| Phase 3 start           | Show initial table (all pending) |
+| Implementer completion  | Update row, show progress        |
+| All Implementers done   | Show timeline summary            |
+| Phase 5a merge progress | Show merge status per unit       |
+| Phase 5b QG result      | Show pass/fail with details      |
+
 ## Abort / Rollback
 
 | Scenario               | Recovery                                                            |
 | ---------------------- | ------------------------------------------------------------------- |
 | Mid-Phase 1 abort      | Shutdown Architect + QA, TeamDelete                                 |
+| Mid-Phase 2/3 abort    | Shutdown test-gen + QA, TeamDelete                                  |
 | Mid-Phase 4 abort      | Shutdown all Implementers + QA, TeamDelete                          |
+| Mid-Phase 5 abort      | Tag main before merges; revert merged commits if needed, TeamDelete |
 | Partial implementation | Implementer worktrees contain changes, user decides to keep/discard |

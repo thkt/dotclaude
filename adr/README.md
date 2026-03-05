@@ -27,6 +27,8 @@ Claude Codeプラグインのアーキテクチャ決定を記録するドキュ
 | [0019](./0019-adopt-sqlite-reference-graph-for-impact-analysis.md)   | SQLite 参照グラフで影響分析           | accepted   |
 | [0020](./0020-claude-code-dashboard-tech-stack.md)                   | Claude Code ダッシュボード技術選定    | accepted   |
 | [0021](./0021-build-slack-semantic-search-mcp-kiku.md)               | Slack 会話セマンティック検索 (kiku)   | proposed   |
+| [0022](./0022-migrate-yomu-from-mcp-to-cli.md)                       | yomu を MCP から CLI へ移行           | proposed   |
+| [0023](./0023-build-sharpen-rg-output-optimizer-for-ai.md)           | rg 出力の AI 向け最適化 (sharpen)     | proposed   |
 
 ## 関連ルール
 

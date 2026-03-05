@@ -43,6 +43,7 @@ argument-hint: "[実装内容]"
 - QGコマンドの機械的実行
 - エージェントへの結果転送
 - チームライフサイクルの管理
+- 進捗の追跡・報告（進捗トラッキングを参照）
 
 全ての実質的な作業はArchitect、QA、Implementer(s)間のpeer DMで行われる。
 
@@ -90,13 +91,17 @@ contracts:
   - name: "<インターフェース/型名>"
     definition: "<TypeScriptインターフェースまたは型>"
     used_by: ["<ファイルパス>"]
+shared_changes: # 複数ユニットが変更するファイル（型、設定等）
+  - file: "<ファイルパス>"
+    change: "<変更内容>"
+    apply_before: parallel # 並列実行前にmainへ適用
 parallel_units:
   - unit_id: 1
     files: ["<ファイルパス>"]
-    depends_on: [] # 空 = 独立
+    depends_on: [] # 目標: 空を維持（独立性優先）
   - unit_id: 2
     files: ["<ファイルパス>"]
-    depends_on: []
+    depends_on: [] # 不可避な場合のみ記入、理由を添える
 build_sequence: ["依存がある場合のunit_id順序"]
 ```
 
@@ -140,6 +145,19 @@ issues: [{ description: "<問題>", severity: blocker | warning }]
    - チーム設定を読んでチームメイトを把握
 4. ArchitectのcontractDMを待機
 
+### Phase 1.5: 分割計画の承認
+
+1. Architectの分割計画をユーザーに提示:
+   - 並列ユニットとファイル割当
+   - 共有変更（並列実行前に適用）
+   - 依存グラフ（理想は全て独立）
+   - ワーカー数の見積もり
+2. ユーザーが調整可能:
+   - ユニットの統合・分割
+   - ファイルのユニット間移動
+   - 依存判断の上書き
+3. 承認後にPhase 2へ進行
+
 ### Phase 2: テスト生成
 
 1. Architectアウトプット契約の最終確定後（Phase 1 + QAレビュー）
@@ -174,9 +192,23 @@ issues: [{ description: "<問題>", severity: blocker | warning }]
    - コマンドリクエスト受信 → 実行 → 結果をQAに返却
 4. 全Implementerの完了を待機（ステータスDM）
 
-### Phase 5: 品質ゲート
+### Phase 5: 統合 + 品質ゲート
 
-1. LeaderがQGを実行（tests, lint, types, coverage）
+#### 5a: マージ戦略
+
+1. shared_changesを最初に適用（Architectアウトプットより）:
+   - Leaderが共有変更をmainブランチに直接適用
+   - 適用失敗 → マージを停止、ユーザーにエスカレーション
+   - 検証: 適用後にmainで型チェック/lintを実行
+2. 残りのworktreeを順次マージ:
+   - 独立ユニットは完了順にマージ
+   - depends_onがあるユニットはbuild_sequence順にマージ
+   - コンフリクトは `git merge` またはupdate branchで解消
+3. 最終状態: 全変更がmainブランチ上
+
+#### 5b: 品質ゲート
+
+1. Leaderがmainブランチ上でQGを実行（tests, lint, types, coverage）
 2. 失敗時:
    - 失敗ファイルから担当エージェントを特定
    - 失敗詳細をそのエージェントにDMで転送
@@ -205,10 +237,41 @@ issues: [{ description: "<問題>", severity: blocker | warning }]
 | test-genがテスト0件生成 | specの存在を確認、ユーザーに質問                               |
 | シャットダウン応答なし  | 明示的なツールパラメータでリトライ → team dirを `~/.Trash/` に |
 
+## 進捗トラッキング
+
+Leaderは進捗テーブルを管理し、主要イベント時にユーザーへ報告する:
+
+### 表示フォーマット
+
+```markdown
+## Swarm Progress
+
+| Unit | Files | Implementer | Status      | Duration |
+| ---- | ----- | ----------- | ----------- | -------- |
+| 1    | 3     | impl-1      | complete    | 2m 30s   |
+| 2    | 2     | impl-2      | in_progress | 1m 45s   |
+| 3    | 4     | impl-3      | in_progress | 1m 45s   |
+
+Shared changes: applied
+Integration: pending (2/3 units complete)
+```
+
+### トリガーイベント
+
+| イベント            | アクション                      |
+| ------------------- | ------------------------------- |
+| Phase 3 開始        | 初期テーブル表示（全てpending） |
+| Implementer完了     | 該当行を更新、進捗を表示        |
+| 全Implementer完了   | タイムラインサマリーを表示      |
+| Phase 5a マージ進捗 | ユニットごとのマージ状態を表示  |
+| Phase 5b QG結果     | pass/failを詳細付きで表示       |
+
 ## 中断 / ロールバック
 
-| シナリオ          | 復旧                                                         |
-| ----------------- | ------------------------------------------------------------ |
-| Phase 1途中で中断 | Architect + QAをシャットダウン、TeamDelete                   |
-| Phase 4途中で中断 | 全Implementer + QAをシャットダウン、TeamDelete               |
-| 部分的な実装      | Implementerのworktreeに変更が残る、ユーザーが保持/破棄を決定 |
+| シナリオ            | 復旧                                                                         |
+| ------------------- | ---------------------------------------------------------------------------- |
+| Phase 1途中で中断   | Architect + QAをシャットダウン、TeamDelete                                   |
+| Phase 2/3途中で中断 | test-gen + QAをシャットダウン、TeamDelete                                    |
+| Phase 4途中で中断   | 全Implementer + QAをシャットダウン、TeamDelete                               |
+| Phase 5途中で中断   | マージ前にmainをタグ付け; 必要に応じてマージ済みコミットをrevert、TeamDelete |
+| 部分的な実装        | Implementerのworktreeに変更が残る、ユーザーが保持/破棄を決定                 |

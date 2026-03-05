@@ -1,9 +1,10 @@
 ---
 name: screening-pr-review
 description: >
-  AI screening review for PRs - preliminary analysis before human review.
-  Use when performing PR pre-review screening, or when user mentions
-  スクリーニングレビュー, PRレビュー支援, レビュー前チェック, PR screening, pre-review.
+  AI screening review for PRs - preliminary analysis before human review. Use
+  when performing PR pre-review screening, or when user mentions
+  スクリーニングレビュー, PRレビュー支援, レビュー前チェック, PR screening,
+  pre-review.
 allowed-tools: [Read, Grep, Glob, Bash(git:*), Bash(gh:*)]
 # Command-driven (invoked by /preview)
 user-invocable: false
@@ -61,6 +62,6 @@ Never include `author` in gh output fields.
 
 ## References
 
-| Topic            | File                             |
-| ---------------- | -------------------------------- |
-| Review Checklist | `references/review-checklist.md` |
+| Topic            | File                                                 |
+| ---------------- | ---------------------------------------------------- |
+| Review Checklist | `${CLAUDE_SKILL_DIR}/references/review-checklist.md` |

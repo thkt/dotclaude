@@ -1,7 +1,6 @@
 #!/bin/zsh
 set +e
 
-# Claude Code status line: model, context, cost, usage, tool, git branch
 # Failure mode: fail-open (partial display is acceptable)
 
 sep() { printf ' \033[90m│\033[0m '; }
@@ -23,35 +22,41 @@ parse_stdin() {
     local parsed
     parsed=$(printf '%s' "$stdin_input" | jq -r '
       [
-        (.model.display_name // ""),
-        (.model.id // ""),
+        (.model.display_name? // ""),
+        (.model.id? // ""),
         (.session_id // ""),
         (.transcript_path // ""),
-        (.cost.total_cost_usd // ""),
+        (.cost.total_cost_usd? // ""),
         (.exceeds_200k_tokens // false),
-        (if .context_window.current_usage != null then
+        (if .context_window.current_usage? then
           (.context_window.current_usage.input_tokens // 0) + (.context_window.current_usage.output_tokens // 0) +
           (.context_window.current_usage.cache_creation_input_tokens // 0) + (.context_window.current_usage.cache_read_input_tokens // 0)
         else
-          .context.tokens_used // .context_tokens // .tokens.context // .usage.total_tokens // ""
+          .context.tokens_used? // .context_tokens? // .tokens.context? // .usage.total_tokens? // ""
         end),
-        (.context_window.context_window_size // .context.limit // .context_limit // .tokens.limit // ""),
-        (.context_window.used_percentage // ""),
-        (.context_window.remaining_percentage // "")
+        (.context_window.context_window_size? // .context.limit? // .context_limit? // .tokens.limit? // ""),
+        (.context_window.used_percentage? // ""),
+        (.context_window.remaining_percentage? // ""),
+        (.worktree.name? // ""),
+        (.worktree.path? // ""),
+        (.worktree.branch? // ""),
+        (.worktree.directory? // "")
       ] | map(tostring) | @tsv' 2>/dev/null)
 
     if [ -n "$parsed" ]; then
         IFS=$'\t' read -r MODEL_NAME MODEL_ID SESSION_ID TRANSCRIPT_PATH SESSION_COST \
-            EXCEEDS_200K CONTEXT_TOKENS CONTEXT_LIMIT CONTEXT_USED_PCT CONTEXT_REMAINING_PCT <<< "$parsed"
+            EXCEEDS_200K CONTEXT_TOKENS CONTEXT_LIMIT CONTEXT_USED_PCT CONTEXT_REMAINING_PCT \
+            WT_NAME WT_PATH WT_BRANCH WT_ORIG_DIR <<< "$parsed"
     fi
 
     if { [ -z "$CONTEXT_TOKENS" ] || [ "$CONTEXT_TOKENS" = "null" ] || [ "$CONTEXT_TOKENS" = "" ]; } && \
        [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
         CONTEXT_TOKENS=$(tail -n 100 "$TRANSCRIPT_PATH" 2>/dev/null | \
-            jq -s 'map(select(.type == "assistant" and .message.usage)) |
-                last | .message.usage |
+            jq -s '[.[] | select(.type == "assistant" and .message.usage)] |
+                if length > 0 then .[-1].message.usage |
                 (.input_tokens // 0) + (.output_tokens // 0) +
-                (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0)' 2>/dev/null)
+                (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0)
+                else 0 end' 2>/dev/null)
     fi
 }
 
@@ -76,12 +81,14 @@ load_state() {
     fi
 
     if [ "$CONTEXT_DELTA" -ne 0 ] 2>/dev/null && [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-        local tool_info
-        tool_info=$(tail -n 200 "$TRANSCRIPT_PATH" 2>/dev/null | \
-            jq -s '[.[] | select(.type == "tool_use")] | last | .name // empty' 2>/dev/null)
-        [ -n "$tool_info" ] && [ "$tool_info" != "null" ] && LAST_TOOL=$(printf '%s' "$tool_info" | tr -d '"')
-        TOOL_COUNT=$(tail -n 500 "$TRANSCRIPT_PATH" 2>/dev/null | \
-            jq -s '[.[] | select(.type == "tool_use")] | length' 2>/dev/null)
+        local tool_parsed
+        tool_parsed=$(tail -n 500 "$TRANSCRIPT_PATH" 2>/dev/null | \
+            jq -rs '[.[] | select(.type == "tool_use")] |
+                [(if length > 0 then .[-1].name else "" end), length] | @tsv' 2>/dev/null)
+        if [ -n "$tool_parsed" ]; then
+            IFS=$'\t' read -r LAST_TOOL TOOL_COUNT <<< "$tool_parsed"
+            [ "$LAST_TOOL" = "null" ] && LAST_TOOL=""
+        fi
         [ -z "$TOOL_COUNT" ] && TOOL_COUNT=0
     else
         LAST_TOOL="${CACHED_TOOL:-}"
@@ -135,7 +142,7 @@ render_context() {
 
     [ -n "$MODEL_NAME" ] || [ -n "$MODEL_ID" ] && sep
     printf "${color}%s %dk/%dk (%d%%)\033[0m" "$circle" "$tokens_k" "$limit_k" "$percentage"
-    [ "$limit_guessed" = "true" ] && printf '\033[90m?\033[0m'
+    [ "$limit_guessed" = "true" ] && [ "$CONTEXT_TOKENS" -gt 0 ] 2>/dev/null && printf '\033[90m?\033[0m'
 
     if [ "$CONTEXT_DELTA" -ne 0 ] 2>/dev/null; then
         local delta_k=$((CONTEXT_DELTA / 1000))
@@ -169,35 +176,32 @@ fetch_usage() {
     if [ $((now - cache_mtime)) -ge $cache_ttl ]; then
         {
             local creds token response usage
-            creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) || { printf 'ERR\tERR\n' > "$cache_file"; return; }
-            token=$(printf '%s' "$creds" | grep -o '"accessToken":"[^"]*"' | head -1 | cut -d'"' -f4) || { printf 'ERR\tERR\n' > "$cache_file"; return; }
-            [ -n "$token" ] || { printf 'ERR\tERR\n' > "$cache_file"; return; }
+            creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) || return
+            token=$(printf '%s' "$creds" | grep -o '"accessToken":"[^"]*"' | head -1 | cut -d'"' -f4) || return
+            [ -n "$token" ] || return
             response=$(printf 'header "Authorization: Bearer %s"\n' "$token" | \
-                curl -sf --max-time 3 -K - \
+                curl -s --max-time 3 -K - \
                 -H "anthropic-beta: oauth-2025-04-20" \
+                -w '\n%{http_code}' \
                 https://api.anthropic.com/api/oauth/usage)
-            if [ $? -eq 0 ]; then
-                usage=$(printf '%s' "$response" | jq -r '[.five_hour.utilization, .seven_day.utilization] | map(. // empty) | @tsv')
+            local http_code="${response##*$'\n'}"
+            local body="${response%$'\n'*}"
+            if [ "$http_code" = "200" ]; then
+                usage=$(printf '%s' "$body" | jq -r '[.five_hour.utilization, .seven_day.utilization] | map(. // empty) | @tsv')
                 if [ -n "$usage" ]; then
                     local tmp_cache="${cache_file}.tmp.$$"
                     printf '%s\n' "$usage" > "$tmp_cache" && mv "$tmp_cache" "$cache_file"
-                else
-                    printf 'ERR\tERR\n' > "$cache_file"
                 fi
-            else
-                printf 'ERR\tERR\n' > "$cache_file"
             fi
         } &!
     fi
 }
 
 render_usage() {
-    [ -n "$USAGE_5H" ] || return
-    if [ "$USAGE_5H" = "ERR" ]; then
-        sep; printf '\033[31m5h:? 7d:?\033[0m'; return
+    if [ -z "$USAGE_5H" ] || [ "$USAGE_5H" = "ERR" ] || ! [[ "${USAGE_5H%.*}" =~ ^[0-9]+$ ]]; then
+        sep; printf '\033[90m5h:- 7d:-\033[0m'; return
     fi
     local p5=${USAGE_5H%.*} p7=${USAGE_7D%.*}
-    [[ "$p5" =~ ^[0-9]+$ ]] || return
     [[ "$p7" =~ ^[0-9]+$ ]] || p7=0
 
     local c5=$(color_for_pct "$p5") c7=$(color_for_pct "$p7")
@@ -226,6 +230,19 @@ render_tools() {
 
 render_git() {
     sep
+
+    # Worktree session: use pre-parsed JSON fields (no git subprocess)
+    if [ -n "$WT_NAME" ] && [ "$WT_NAME" != "null" ]; then
+        printf '\033[96;1m%s\033[0m' "$WT_NAME"
+        [ -n "$WT_BRANCH" ] && [ "$WT_BRANCH" != "null" ] && \
+            printf ' on \033[95m%s\033[0m' "$WT_BRANCH"
+        printf ' \033[92m[wt]\033[0m'
+        [ -n "$WT_ORIG_DIR" ] && [ "$WT_ORIG_DIR" != "null" ] && \
+            printf ' \033[90m← %s\033[0m' "$(basename "$WT_ORIG_DIR")"
+        source "$(dirname "$0")/_pr-cache.sh" || true
+        return
+    fi
+
     printf '\033[96;1m%s\033[0m' "$(basename "$PWD")"
 
     BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
@@ -240,12 +257,21 @@ render_git() {
     source "$(dirname "$0")/_pr-cache.sh" || true
 }
 
+has_no_cost() {
+    [ -z "$SESSION_COST" ] || [ "$SESSION_COST" = "null" ] || [ "$SESSION_COST" = "0" ]
+}
+
 parse_stdin
-load_state
 fetch_usage
 render_model
-render_context
-render_cost
+if has_no_cost; then
+    sep
+    printf '\033[32m◔ ready\033[0m'
+else
+    load_state
+    render_context
+    render_cost
+    render_tools
+fi
 render_usage
-render_tools
 render_git

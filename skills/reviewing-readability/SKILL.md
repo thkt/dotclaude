@@ -32,9 +32,9 @@ Thresholds: see `rules/development/CODE_THRESHOLDS.md`.
 
 ## References
 
-| Topic           | File                             |
-| --------------- | -------------------------------- |
-| Control Flow    | `references/control-flow.md`     |
-| Comments        | `references/comments-clarity.md` |
-| AI Antipatterns | `references/ai-antipatterns.md`  |
-| Naming          | `references/naming.md`           |
+| Topic           | File                                                 |
+| --------------- | ---------------------------------------------------- |
+| Control Flow    | `${CLAUDE_SKILL_DIR}/references/control-flow.md`     |
+| Comments        | `${CLAUDE_SKILL_DIR}/references/comments-clarity.md` |
+| AI Antipatterns | `${CLAUDE_SKILL_DIR}/references/ai-antipatterns.md`  |
+| Naming          | `${CLAUDE_SKILL_DIR}/references/naming.md`           |

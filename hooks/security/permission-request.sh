@@ -18,11 +18,19 @@ if ! jq empty <<< "$INPUT" 2>/dev/null; then
 fi
 
 TOOL_NAME=$(jq -r '.tool_name // "unknown"' <<< "$INPUT")
+AGENT_ID=$(jq -r '.agent_id // ""' <<< "$INPUT")
+AGENT_TYPE=$(jq -r '.agent_type // ""' <<< "$INPUT")
 FILE_PATH=$(jq -r '.tool_input.file_path // .tool_input.path // ""' <<< "$INPUT")
 FILE_PATH="${FILE_PATH/#~/$HOME}"
 FILE_PATH="${FILE_PATH:A}"
 if [[ "$FILE_PATH" == *".."* ]]; then
   echo '{"decision": "deny", "reason": "Path traversal detected"}'
+  exit 0
+fi
+
+# Subagent → deny security-critical paths (no human-in-the-loop)
+if [[ -n "$AGENT_ID" ]] && [[ "$FILE_PATH" == "$HOME/.claude/hooks/"* || "$FILE_PATH" == "$HOME/.claude/settings.json" || "$FILE_PATH" == "$HOME/.claude/CLAUDE.md" ]]; then
+  echo "{\"decision\": \"deny\", \"reason\": \"Subagent cannot modify security-critical files (agent=$AGENT_ID)\"}"
   exit 0
 fi
 

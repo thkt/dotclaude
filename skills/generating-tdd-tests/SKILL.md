@@ -61,8 +61,8 @@ See `rules/development/CODE_THRESHOLDS.md` for canonical values.
 
 ## References
 
-| Topic          | File                                  |
-| -------------- | ------------------------------------- |
-| Feature-driven | `references/feature-driven.md`        |
-| Bug-driven     | `references/bug-driven.md`            |
-| Flaky tests    | `references/flaky-test-management.md` |
+| Topic          | File                                                      |
+| -------------- | --------------------------------------------------------- |
+| Feature-driven | `${CLAUDE_SKILL_DIR}/references/feature-driven.md`        |
+| Bug-driven     | `${CLAUDE_SKILL_DIR}/references/bug-driven.md`            |
+| Flaky tests    | `${CLAUDE_SKILL_DIR}/references/flaky-test-management.md` |

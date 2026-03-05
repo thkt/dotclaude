@@ -7,8 +7,10 @@ LOG_FILE="$HOME/.claude/logs/bash-safety.log"
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || echo "WARNING: log dir creation failed" >&2
 
 log_block() {
-  printf '[%s] BLOCKED pattern="%s" command="%s"\n' \
-    "$(date '+%Y-%m-%d %H:%M:%S')" "$1" "$2" >> "$LOG_FILE" 2>/dev/null || \
+  local agent_info=""
+  [[ -n "${AGENT_ID:-}" ]] && agent_info=" agent=$AGENT_ID($AGENT_TYPE)"
+  printf '[%s] BLOCKED pattern="%s" command="%s"%s\n' \
+    "$(date '+%Y-%m-%d %H:%M:%S')" "$1" "$2" "$agent_info" >> "$LOG_FILE" 2>/dev/null || \
     echo "WARNING: log write failed" >&2
 }
 
@@ -21,6 +23,9 @@ COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null) 
   echo "BLOCKED: invalid JSON" >&2; exit 2
 }
 [[ -z "$COMMAND" ]] && exit 0
+
+AGENT_ID=$(printf '%s' "$INPUT" | jq -r '.agent_id // ""' 2>/dev/null)
+AGENT_TYPE=$(printf '%s' "$INPUT" | jq -r '.agent_type // ""' 2>/dev/null)
 
 # Strip quotes to prevent bypass via quoting
 NORMALIZED=${COMMAND//[\'\"\`]/}

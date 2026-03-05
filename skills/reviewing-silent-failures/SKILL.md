@@ -1,9 +1,9 @@
 ---
 name: reviewing-silent-failures
 description: >
-  Silent failure detection patterns for frontend code.
-  Use when reviewing error handling, detecting swallowed errors, or when user mentions
-  silent failure, empty catch, エラーハンドリング, 握りつぶし, swallowed error.
+  Silent failure detection patterns for frontend code. Use when reviewing error
+  handling, detecting swallowed errors, or when user mentions silent failure,
+  empty catch, エラーハンドリング, 握りつぶし, swallowed error.
 allowed-tools: [Read, Grep, Glob, Task]
 agent: silent-failure-reviewer
 context: fork
@@ -28,6 +28,6 @@ user-invocable: false
 
 ## References
 
-| Topic     | File                               |
-| --------- | ---------------------------------- |
-| Detection | `references/detection-patterns.md` |
+| Topic     | File                                                   |
+| --------- | ------------------------------------------------------ |
+| Detection | `${CLAUDE_SKILL_DIR}/references/detection-patterns.md` |

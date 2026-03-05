@@ -2,8 +2,8 @@
 name: integrating-storybook
 description: >
   Storybook integration with spec.md. Auto-generates Stories from Component API.
-  Use when creating Storybook stories, defining component APIs, or when user mentions
-  storybook, stories, props, argTypes, variants, CSF3.
+  Use when creating Storybook stories, defining component APIs, or when user
+  mentions storybook, stories, props, argTypes, variants, CSF3.
 allowed-tools: [Read, Write, Glob, Grep]
 user-invocable: false
 ---
@@ -47,7 +47,7 @@ Add to spec.md when implementing frontend components.
 
 ## References
 
-| Topic         | File                                   |
-| ------------- | -------------------------------------- |
-| Component API | `references/component-api-template.md` |
-| CSF3 Patterns | `references/csf3-patterns.md`          |
+| Topic         | File                                                       |
+| ------------- | ---------------------------------------------------------- |
+| Component API | `${CLAUDE_SKILL_DIR}/references/component-api-template.md` |
+| CSF3 Patterns | `${CLAUDE_SKILL_DIR}/references/csf3-patterns.md`          |

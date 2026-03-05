@@ -3,7 +3,7 @@ name: feature-architect
 description:
   Compose feature architecture from codebase exploration (yomu preferred) with
   blueprints, components, and build sequences.
-tools: [Glob, Grep, LS, Read, SendMessage, ToolSearch]
+tools: [Bash, Glob, Grep, LS, Read, SendMessage]
 model: opus
 context: fork
 memory: project
@@ -47,16 +47,13 @@ architecture decisions.
 
 ### yomu (preferred)
 
-1. `ToolSearch("yomu")` to load yomu tools
-2. If available, use `mcp__yomu__explorer` for semantic search:
+1. `yomu search "query"` for semantic code search:
    - Concept queries: "authentication flow", "form validation", etc.
    - Identifier queries: specific function/hook/type names from task
    - Broad → focused: start wide, narrow based on results
-3. `mcp__yomu__impact` for blast radius of files to be modified
+2. `yomu impact <file_or_symbol>` for blast radius of files to be modified
 
-### Fallback (yomu unavailable or failing)
-
-If ToolSearch returns no yomu tools, or yomu calls error/return empty:
+### Fallback (yomu unavailable or empty results)
 
 1. Glob for file structure mapping
 2. Grep for pattern/convention discovery
@@ -81,6 +78,30 @@ If ToolSearch returns no yomu tools, or yomu calls error/return empty:
 | 3    | Compose architecture satisfying all constraints with least complexity    |
 | 4    | Validate: design works for data, API, and core layers?                   |
 | 5    | Trace every decision to exploration insight or codebase pattern          |
+
+## Independence-First Decomposition
+
+When splitting work into parallel units, maximize independence:
+
+| Priority | Strategy                                                            |
+| -------- | ------------------------------------------------------------------- |
+| 1        | `depends_on: []` is the default goal for every unit                 |
+| 2        | Extract shared changes (types, config) into `shared_changes` block  |
+| 3        | Only add `depends_on` when unavoidable, with explicit rationale     |
+| 4        | Prefer duplicating small code over creating cross-unit dependencies |
+
+### shared_changes
+
+Files modified by multiple units (type definitions, config, shared utilities)
+must be listed separately. These are applied to main before parallel execution
+begins, eliminating a major source of merge conflicts.
+
+```yaml
+shared_changes:
+  - file: "src/types/feature.ts"
+    change: "Add Feature interface and related types"
+    apply_before: parallel
+```
 
 ## Output Format
 
