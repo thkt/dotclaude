@@ -128,6 +128,14 @@ render_context() {
         remaining=$((100 - percentage))
     fi
 
+    # Bridge file for context-monitor.sh PostToolUse hook
+    # Contract: $TMPDIR/claude-ctx-{session_id}.json → {session_id, remaining_pct, used_pct, ts}
+    if [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "null" ] && [[ "$SESSION_ID" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+        printf '{"session_id":"%s","remaining_pct":%d,"used_pct":%d,"ts":%d}\n' \
+            "$SESSION_ID" "$remaining" "$percentage" "${EPOCHSECONDS:-$(date +%s)}" \
+            > "${TMPDIR:-/tmp}/claude-ctx-${SESSION_ID}.json" 2>/dev/null
+    fi
+
     local tokens_k=$((CONTEXT_TOKENS / 1000)) limit_k=$((CONTEXT_LIMIT / 1000))
     local circle color
 
