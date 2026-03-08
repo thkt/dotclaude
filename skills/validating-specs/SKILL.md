@@ -1,8 +1,9 @@
 ---
 name: validating-specs
 description: >
-  SOW/Spec cross-document consistency validation.
-  Triggers: 整合性チェック, consistency check, spec validation, 仕様検証.
+  SOW/Spec cross-document consistency validation. Use when checking
+  cross-document consistency, or when user mentions 整合性チェック, consistency
+  check, spec validation, 仕様検証.
 allowed-tools: [Read, Grep, Glob]
 agent: sow-spec-reviewer
 context: fork
@@ -13,20 +14,22 @@ user-invocable: false
 
 ## ID System
 
-| Document | Prefix  | Links To           |
-| -------- | ------- | ------------------ |
-| SOW      | AC-N    | —                  |
-| Spec     | FR-NNN  | Implements: AC-N   |
-| Spec     | T-NNN   | FR: FR-NNN         |
-| Spec     | NFR-NNN | Validates: AC-N    |
+| Document | Prefix  | Links To         |
+| -------- | ------- | ---------------- |
+| SOW      | AC-N    | —                |
+| Spec     | FR-NNN  | Implements: AC-N |
+| Spec     | T-NNN   | FR: FR-NNN       |
+| Spec     | NFR-NNN | Validates: AC-N  |
 
 ## Checks
 
-Run CRITICAL (1-3) first. If any fail, run remaining but mark WARNING/INFO as provisional.
+Run CRITICAL (1-3) first. If any fail, run remaining but mark WARNING/INFO as
+provisional.
 
 ### 1. AC→FR Traceability [CRITICAL]
 
-Each `AC-N` must have ≥1 FR with `Implements: AC-N`. Orphan FR referencing non-existent AC → INFO.
+Each `AC-N` must have ≥1 FR with `Implements: AC-N`. Orphan FR referencing
+non-existent AC → INFO.
 
 ### 2. FR→Test Coverage [CRITICAL]
 
@@ -49,7 +52,8 @@ SOW In-Scope targets must appear in Spec phases. Extra files → INFO.
 
 ### 5. Contradiction Detection [WARNING]
 
-Cross-check SOW↔Spec for technology mismatches, numeric conflicts, contradictions.
+Cross-check SOW↔Spec for technology mismatches, numeric conflicts,
+contradictions.
 
 ### 6. Ambiguous Expressions [INFO]
 
@@ -60,11 +64,14 @@ Cross-check SOW↔Spec for technology mismatches, numeric conflicts, contradicti
 
 ### 7. Terminology Consistency [WARNING]
 
-Same concept must use same term across documents. Flag synonyms (user/member), abbreviation mixing (DB/database).
+Same concept must use same term across documents. Flag synonyms (user/member),
+abbreviation mixing (DB/database).
 
 ### 8. YAGNI Compliance [WARNING]
 
-With YAGNI Checklist: verify Spec excludes checked items. Without: flag over-engineering (excess permissions, caching without NFR, unscoped infrastructure).
+With YAGNI Checklist: verify Spec excludes checked items. Without: flag
+over-engineering (excess permissions, caching without NFR, unscoped
+infrastructure).
 
 ## Output
 

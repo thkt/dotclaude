@@ -1,8 +1,8 @@
 ---
 name: formatting-audits
 description: >
-  100-point scoring for SOW/Spec design review.
-  Triggers: SOW review, Spec review, 設計書レビュー, 品質スコア, document scoring.
+  100-point scoring for SOW/Spec design review. Use when reviewing SOW or Spec
+  documents, or when user mentions 設計書レビュー, 品質スコア, document scoring.
 allowed-tools: [Read, Grep, Glob]
 agent: sow-spec-reviewer
 context: fork
