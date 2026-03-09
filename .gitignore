@@ -71,6 +71,7 @@ dump.sql
 
 # MCP data
 .yomu/
+mcp-needs-auth-cache.json
 
 # Cache
 cache/
