@@ -1,0 +1,19 @@
+{
+  "rules": {
+    "@textlint-ja/preset-ai-writing": true,
+    "preset-ja-technical-writing": {
+      "sentence-length": {
+        "max": 150
+      },
+      "max-ten": {
+        "max": 3
+      }
+    },
+    "preset-ja-spacing": true,
+    "ja-hiragana-keishikimeishi": true,
+    "ja-hiragana-fukushi": true,
+    "ja-hiragana-hojodoushi": true,
+    "ja-no-redundant-expression": true,
+    "ja-no-weak-phrase": true
+  }
+}
