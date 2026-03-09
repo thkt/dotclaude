@@ -56,7 +56,7 @@ install specific workflow sets:
 1. **Add this repository as a marketplace**:
 
    ```bash
-   /plugin marketplace add thkt/claude-config
+   /plugin marketplace add thkt/dotclaude
    ```
 
 2. **Browse available plugins**:
