@@ -1,53 +1,61 @@
-# API Template
+# API テンプレート
 
-## Structure
+## 構造
 
 ```markdown
-# {project_name} - API Specification
+# {project_name} - API 仕様
 
-## Base URL
+> Generated: {generated_at} | Framework: {meta.framework} | Confidence: {confidence_summary.verified} verified, {confidence_summary.inferred} inferred, {confidence_summary.unknown} unknown
 
-\`{base_url}\`
+## メタ情報
 
-## Authentication
+| プロパティ   | 値                  |
+| ------------ | ------------------- |
+| Base URL     | `{base_url}`        |
+| Content-Type | {meta.content_type} |
+| Date Format  | {meta.date_format}  |
 
-| Method                    | Header                    | Description                    |
+## 認証
+
+| メソッド                  | ヘッダー                  | 説明                           |
 | ------------------------- | ------------------------- | ------------------------------ |
 | {authentication[].method} | {authentication[].header} | {authentication[].description} |
 
-## Endpoints
+## エンドポイント
 
 ### {endpoints[].resource}
 
-#### {endpoints[].method} {endpoints[].path}
+#### {endpoints[].method} {endpoints[].path} [{endpoints[].confidence}]
 
-**Description**: {endpoints[].description}
+**説明**: {endpoints[].description}
 
-**Request**:
-\`\`\`json
-{endpoints[].request.fields}
-\`\`\`
+**リクエスト** ({endpoints[].request.content_type}):
 
-**Response**:
-\`\`\`json
-{endpoints[].response.fields}
-\`\`\`
+| フィールド                          | 型                                  | 必須                                    |
+| ----------------------------------- | ----------------------------------- | --------------------------------------- |
+| {endpoints[].request.fields[].name} | {endpoints[].request.fields[].type} | {endpoints[].request.fields[].required} |
 
-**Status Codes**:
+**レスポンス**:
 
-| Code                              | Description                              |
+| フィールド                           | 型                                   |
+| ------------------------------------ | ------------------------------------ |
+| {endpoints[].response.fields[].name} | {endpoints[].response.fields[].type} |
+
+**ステータスコード**:
+
+| コード                            | 説明                                     |
 | --------------------------------- | ---------------------------------------- |
 | {endpoints[].status_codes[].code} | {endpoints[].status_codes[].description} |
 
-## Error Format
+## エラーフォーマット
 
 \`\`\`json
 {error_format.structure}
 \`\`\`
 
-## Types
+## 型定義
 
-| Type           | Fields           | Description           |
-| -------------- | ---------------- | --------------------- |
-| {types[].name} | {types[].fields} | {types[].description} |
+| 型             | ソース                | フィールド       | 説明                  |
+| -------------- | --------------------- | ---------------- | --------------------- |
+| {types[].name} | {types[].source_file} | {types[].fields} | {types[].description} |
 ```
