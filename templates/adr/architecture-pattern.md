@@ -41,9 +41,9 @@ In addition to the core sections, include:
 
 ## Context and Problem Statement
 
-Command files grew bloated, with some exceeding 900 lines.
-Knowledge (skills) and workflows (commands) were not separated,
-causing DRY violations and declining maintainability.
+Command files grew bloated, with some exceeding 900 lines. Knowledge (skills)
+and workflows (commands) were not separated, causing DRY violations and
+declining maintainability.
 
 ## Decision Drivers
 
@@ -71,8 +71,8 @@ Each command contains all required knowledge inline.
 
 ## Decision Outcome
 
-Adopted skill-centric architecture. Commands follow the Thin Wrapper
-pattern; implementation knowledge is consolidated in skills/.
+Adopted skill-centric architecture. Commands follow the Thin Wrapper pattern;
+implementation knowledge is consolidated in skills/.
 
 ### Positive Consequences
 
@@ -87,7 +87,7 @@ pattern; implementation knowledge is consolidated in skills/.
 
 ```mermaid
 graph TD
-    CMD[commands/] --> SKILL[skills/]
+    SKILL[skills/] --> REF[references/]
     SKILL --> REF[references/]
 ```
 

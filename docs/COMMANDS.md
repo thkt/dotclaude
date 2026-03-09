@@ -82,10 +82,10 @@ confirmation mode (same functionality)
 ## File Structure
 
 ```text
-commands/
-├── code.md      # YAML front matter + execution steps
-├── fix.md
-├── think.md
+skills/
+├── code/SKILL.md      # YAML front matter + execution steps
+├── fix/SKILL.md
+├── think/SKILL.md
 └── ...
 ```
 

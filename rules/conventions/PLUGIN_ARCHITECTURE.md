@@ -17,7 +17,8 @@ Rules for maintaining the Claude Code plugin architecture.
 
 ## Rationale
 
-Plugin system caches at load time, preventing `shared/` directory access across boundaries.
+Plugin system caches at load time, preventing `shared/` directory access across
+boundaries.
 
 | Constraint                  | Reason                                                |
 | --------------------------- | ----------------------------------------------------- |
@@ -40,10 +41,9 @@ Plugin system caches at load time, preventing `shared/` directory access across 
 .claude/
 ├── .claude-plugin/
 │   └── marketplace.json    # All plugins use source: "./"
-├── skills/                 # Educational content
+├── skills/                 # User-facing commands + educational content
 ├── rules/                  # Enforced guidelines
 ├── agents/                 # Specialized agents
-├── commands/               # User-facing commands
 └── [cross-references between all of the above]
 ```
 

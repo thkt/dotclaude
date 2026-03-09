@@ -26,14 +26,14 @@
       "keywords": ["tdd", "rgrc", "workflow", "validation", "review"],
       "category": "Complete Workflow Systems",
       "commands": [
-        "./commands/think.md",
-        "./commands/code.md",
-        "./commands/test.md",
-        "./commands/audit.md",
-        "./commands/validate.md",
-        "./commands/research.md",
-        "./commands/feature.md",
-        "./commands/swarm.md"
+        "./skills/think/SKILL.md",
+        "./skills/code/SKILL.md",
+        "./skills/test/SKILL.md",
+        "./skills/audit/SKILL.md",
+        "./skills/validate/SKILL.md",
+        "./skills/research/SKILL.md",
+        "./skills/feature/SKILL.md",
+        "./skills/swarm/SKILL.md"
       ],
       "agents": [
         "./agents/teams/progressive-integrator.md",
@@ -75,7 +75,11 @@
       "license": "MIT",
       "keywords": ["fix", "quick", "polish", "simplify", "validate", "config"],
       "category": "Quick Actions",
-      "commands": ["./commands/fix.md", "./commands/polish.md", "./commands/validate-config.md"],
+      "commands": [
+        "./skills/fix/SKILL.md",
+        "./skills/polish/SKILL.md",
+        "./skills/validate-config/SKILL.md"
+      ],
       "agents": [
         "./agents/resolvers/build-error-resolver.md",
         "./agents/enhancers/code-simplifier.md"
@@ -94,11 +98,11 @@
       "keywords": ["git", "commit", "branch", "pr", "issue", "preview", "conventional-commits"],
       "category": "Git Utilities",
       "commands": [
-        "./commands/commit.md",
-        "./commands/branch.md",
-        "./commands/pr.md",
-        "./commands/issue.md",
-        "./commands/preview.md"
+        "./skills/commit/SKILL.md",
+        "./skills/branch/SKILL.md",
+        "./skills/pr/SKILL.md",
+        "./skills/issue/SKILL.md",
+        "./skills/preview/SKILL.md"
       ],
       "agents": [
         "./agents/generators/branch-generator.md",
@@ -119,7 +123,7 @@
       "license": "MIT",
       "keywords": ["adr", "madr", "documentation", "architecture", "api", "decision-records"],
       "category": "Documentation",
-      "commands": ["./commands/adr.md", "./commands/docs.md", "./commands/glossary.md"],
+      "commands": ["./skills/adr/SKILL.md", "./skills/docs/SKILL.md", "./skills/glossary/SKILL.md"],
       "agents": [
         "./agents/analyzers/architecture-analyzer.md",
         "./agents/analyzers/api-analyzer.md",
@@ -139,7 +143,7 @@
       "license": "MIT",
       "keywords": ["browser", "e2e", "playwright", "testing", "documentation"],
       "category": "Browser Automation",
-      "commands": ["./commands/e2e.md"]
+      "commands": ["./skills/e2e/SKILL.md"]
     },
     {
       "name": "productivity-tools",
@@ -153,7 +157,7 @@
       "license": "MIT",
       "keywords": ["inbox", "github", "slack", "calendar", "productivity"],
       "category": "Productivity",
-      "commands": ["./commands/inbox.md"]
+      "commands": ["./skills/inbox/SKILL.md"]
     },
     {
       "name": "development-skills",

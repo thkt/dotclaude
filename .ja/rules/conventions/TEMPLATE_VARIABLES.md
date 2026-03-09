@@ -1,7 +1,7 @@
 ---
 paths:
   - ".claude/templates/**"
-  - ".claude/commands/**"
+  - ".claude/skills/**"
 ---
 
 # テンプレート変数構文
@@ -42,7 +42,7 @@ paths:
 
 | 場所         | ファイル                                                                 |
 | ------------ | ------------------------------------------------------------------------ |
-| コマンド     | `commands/audit.md`, `commands/docs.md`                                  |
+| スキル       | `skills/audit/SKILL.md`, `skills/docs/SKILL.md`                          |
 | テンプレート | `templates/docs/*.md`, `templates/adr/*.md`, `templates/audit/output.md` |
 |              | `templates/sow/template.md`, `templates/spec/template.md`                |
 |              | `templates/issue/*.md`, `templates/research/template.md`                 |

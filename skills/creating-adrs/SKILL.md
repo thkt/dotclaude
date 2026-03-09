@@ -1,9 +1,10 @@
 ---
 name: creating-adrs
 description: >
-  Structured ADR creation in MADR format. Use when creating architecture decision
-  records, documenting technology choices, or when user mentions ADR, Architecture
-  Decision, 決定記録, 技術選定, アーキテクチャ決定, deprecation, 非推奨化.
+  Structured ADR creation in MADR format. Use when creating architecture
+  decision records, documenting technology choices, or when user mentions ADR,
+  Architecture Decision, 決定記録, 技術選定, アーキテクチャ決定, deprecation,
+  非推奨化.
 allowed-tools:
   [
     Read,
@@ -61,6 +62,6 @@ adr/
 | Topic     | Resource                      |
 | --------- | ----------------------------- |
 | MADR      | <https://adr.github.io/madr/> |
-| Command   | `../../commands/adr.md`       |
+| Skill     | `../adr/SKILL.md`             |
 | Templates | `../../templates/adr/`        |
 | Scripts   | `./scripts/`                  |

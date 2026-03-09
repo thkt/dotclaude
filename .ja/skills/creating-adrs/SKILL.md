@@ -49,6 +49,6 @@ adr/
 | トピック     | リソース                      |
 | ------------ | ----------------------------- |
 | MADR         | <https://adr.github.io/madr/> |
-| コマンド     | `../../commands/adr.md`       |
+| スキル       | `../adr/SKILL.md`             |
 | テンプレート | `../../templates/adr/`        |
 | スクリプト   | `./scripts/`                  |

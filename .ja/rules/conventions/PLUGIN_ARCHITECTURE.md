@@ -40,10 +40,9 @@ Claude Codeプラグインアーキテクチャを維持するためのルール
 .claude/
 ├── .claude-plugin/
 │   └── marketplace.json    # すべてのプラグインは source: "./"
-├── skills/                 # 教育的コンテンツ
+├── skills/                 # コマンド＋知識モジュール（統合済み）
 ├── rules/                  # 強制ガイドライン
 ├── agents/                 # 特化エージェント
-├── commands/               # ユーザー向けコマンド
 └── [上記すべての間の相互参照]
 ```
 

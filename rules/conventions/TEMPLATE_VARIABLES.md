@@ -1,7 +1,7 @@
 ---
 paths:
   - ".claude/templates/**"
-  - ".claude/commands/**"
+  - ".claude/skills/**"
 ---
 
 # Template Variable Syntax
@@ -42,7 +42,7 @@ Variable substitution syntax for templates and command outputs.
 
 | Location  | Files                                                                    |
 | --------- | ------------------------------------------------------------------------ |
-| Commands  | `commands/audit.md`, `commands/docs.md`                                  |
+| Skills    | `skills/audit/SKILL.md`, `skills/docs/SKILL.md`                          |
 | Templates | `templates/docs/*.md`, `templates/adr/*.md`, `templates/audit/output.md` |
 |           | `templates/sow/template.md`, `templates/spec/template.md`                |
 |           | `templates/issue/*.md`, `templates/research/template.md`                 |

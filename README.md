@@ -21,7 +21,6 @@ This repository contains personal configurations for Claude AI, including:
 ├── CLAUDE.md              # Main configuration (AI reads this)
 ├── README.md              # This file - Quick start guide
 ├── adr/                   # Architecture Decision Records
-├── commands/              # Command definitions (/code, /fix, /think, etc.)
 ├── rules/                 # Rule definitions
 │   ├── core/             # Core AI operation principles
 │   ├── conventions/      # Documentation conventions

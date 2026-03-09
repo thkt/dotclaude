@@ -18,12 +18,12 @@ ADR例外: デフォルトで日本語出力、`.ja/` 不要。
 
 `.ja/`ディレクトリ配下のファイルは、対応する英語ファイルの日本語翻訳です。コンテンツの一貫性を比較すべきではありません。
 
-| パスパターン        | タイプ   | 取り扱い         |
-| ------------------- | -------- | ---------------- |
-| `commands/*.md`     | ENソース | 主要レビュー対象 |
-| `.ja/commands/*.md` | JP翻訳   | 構造のみレビュー |
-| `docs/*.md`         | ENソース | 主要レビュー対象 |
-| `.ja/docs/*.md`     | JP翻訳   | 構造のみレビュー |
+| パスパターン            | タイプ   | 取り扱い         |
+| ----------------------- | -------- | ---------------- |
+| `skills/*/SKILL.md`     | ENソース | 主要レビュー対象 |
+| `.ja/skills/*/SKILL.md` | JP翻訳   | 構造のみレビュー |
+| `docs/*.md`             | ENソース | 主要レビュー対象 |
+| `.ja/docs/*.md`         | JP翻訳   | 構造のみレビュー |
 
 ## 翻訳ファイルのレビュールール
 
@@ -36,7 +36,7 @@ ADR例外: デフォルトで日本語出力、`.ja/` 不要。
 
 これは問題ではありません:
 
-| EN (`commands/workflow/create.md`) | JP (`.ja/commands/workflow/create.md`) |
-| ---------------------------------- | -------------------------------------- |
-| `Navigate to https://example.com`  | `https://example.com に移動`           |
-| `Click element (uid: abc)`         | `要素をクリック（uid: abc）`           |
+| EN (`skills/code/SKILL.md`)       | JP (`.ja/skills/code/SKILL.md`) |
+| --------------------------------- | ------------------------------- |
+| `Navigate to https://example.com` | `https://example.com に移動`    |
+| `Click element (uid: abc)`        | `要素をクリック（uid: abc）`    |

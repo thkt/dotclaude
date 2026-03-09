@@ -40,10 +40,10 @@ background: true
 
 ## JP/EN Handling
 
-| Location         | Review Mode    |
-| ---------------- | -------------- |
-| `commands/*.md`  | Full review    |
-| `.ja/commands/*` | Structure-only |
+| Location                | Review Mode    |
+| ----------------------- | -------------- |
+| `skills/*/SKILL.md`     | Full review    |
+| `.ja/skills/*/SKILL.md` | Structure-only |
 
 ## Error Handling
 

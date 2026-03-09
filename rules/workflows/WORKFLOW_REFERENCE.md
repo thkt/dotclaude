@@ -1,6 +1,5 @@
 ---
 paths:
-  - ".claude/commands/**"
   - ".claude/skills/**"
 ---
 
@@ -108,11 +107,10 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 
 ## Architecture
 
-| Layer   | Location            | Role                  |
-| ------- | ------------------- | --------------------- |
-| Command | `commands/*.md`     | User-facing workflows |
-| Skill   | `skills/*/SKILL.md` | Knowledge base        |
-| Agent   | `agents/**/*.md`    | Specialized analysis  |
+| Layer | Location            | Role                  |
+| ----- | ------------------- | --------------------- |
+| Skill | `skills/*/SKILL.md` | Workflows + knowledge |
+| Agent | `agents/**/*.md`    | Specialized analysis  |
 
 ## Command × Principle Mapping
 
