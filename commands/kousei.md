@@ -15,16 +15,25 @@ Proofread and auto-fix Japanese text using textlint.
 - `$1`: file path / `#123` (Issue) / `#pr123` (PR) / raw text
 - If empty → target the most recently edited `.md` file
 
+## Language Support
+
+| Language | textlint (mechanical) | Structure review (AI) |
+| -------- | --------------------- | --------------------- |
+| Japanese | Yes                   | Yes                   |
+| English  | Skip                  | Yes                   |
+
+Detection: if text contains ≥50 hiragana/katakana/kanji characters → Japanese. Otherwise → English (structure review only).
+
 ## Execution
 
-| Step | Action                                              |
-| ---- | --------------------------------------------------- |
-| 1    | Determine target                                    |
-| 2    | Get original content                                |
-| 3    | Run `bun x textlint --fix`                          |
-| 4    | Structure review (AI-powered, see checklist below)  |
-| 5    | Show textlint diff + structure feedback             |
-| 6    | For Issue/PR → present changes, confirm before push |
+| Step | Action                                                          |
+| ---- | --------------------------------------------------------------- |
+| 1    | Determine target                                                |
+| 2    | Get original content                                            |
+| 3    | Run `bun x textlint --fix` (Japanese only)                      |
+| 4    | Structure review (AI-powered, see checklist below, all languages) |
+| 5    | Show textlint diff + structure feedback                         |
+| 6    | For Issue/PR → present changes, confirm before push             |
 
 ### Target Resolution
 

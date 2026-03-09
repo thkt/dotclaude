@@ -6,6 +6,9 @@ set -uo pipefail
 TEXTLINT_DIR="$HOME/.claude/textlint"
 TEXTLINT_CONFIG="$TEXTLINT_DIR/.textlintrc.json"
 
+# Japanese detection: ≥50 hiragana/katakana/kanji characters
+has_japanese() { [[ $(echo "$1" | LC_ALL=en_US.UTF-8 grep -o '[ぁ-んァ-ヶー一-龥]' | wc -l) -ge 50 ]]; }
+
 STRUCTURE_CHECKLIST='## 構造レビュー（ワークスロップ防止）\n\nbody を送信する前に、以下を確認してください：\n\n| チェック | 問い |\n|---|---|\n| 筆者の判断 | 筆者自身の結論が1〜3行で冒頭に書かれているか？AI出力が主役になっていないか |\n| 半分にできるか | この文書は半分にできるか？できないなら何が重要か分かっていない可能性がある |\n| 事実と意見の区別 | 事実・推測・提案にラベルが貼られ、分離されているか |\n| アクションの明確さ | 読み手に求める行動が具体的か（「ご確認ください」ではなく「Xを判断してください」） |\n| 読み手の認知負荷 | この文書は読み手の負荷を下げているか、仕事を押し付けていないか |\n\n問題がある項目のみ body を修正してください。'
 
 # Read hook JSON from stdin — parse tool_name and command in single jq call
@@ -33,9 +36,9 @@ if [[ -z "$body" ]]; then
   exit 0
 fi
 
-# Run textlint if config exists
+# Run textlint if config exists and body is Japanese
 lint_section=""
-if [[ -f "$TEXTLINT_CONFIG" ]]; then
+if [[ -f "$TEXTLINT_CONFIG" ]] && has_japanese "$body"; then
   tmpfile=$(mktemp /tmp/textlint-lint-XXXXXX.md)
   trap 'rm -f "$tmpfile"' EXIT
   echo "$body" > "$tmpfile"

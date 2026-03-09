@@ -48,6 +48,8 @@ templates/
 │   ├── chore.md
 │   ├── docs.md
 │   └── feature.md
+├── pr/                # Pull Requestテンプレート
+│   └── default.md
 ├── research/
 │   └── template.md    # リサーチ結果
 ├── sow/
@@ -69,5 +71,5 @@ templates/
 ## カスタマイズ
 
 1. 必須セクション（## ヘッダー）を維持
-2. 信頼度マーカー: [✓] ≥95%, [→] 70-94%, [?] <70%
+2. 信頼度マーカー:[✓]≥95%,[→]70-94%,[?]<70%
 3. ID規約: I-001, AC-001, FR-001, T-001, NFR-001

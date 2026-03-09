@@ -6,6 +6,9 @@ set -uo pipefail
 TEXTLINT_DIR="$HOME/.claude/textlint"
 TEXTLINT_CONFIG="$TEXTLINT_DIR/.textlintrc.json"
 
+# Japanese detection: ≥50 hiragana/katakana/kanji characters
+has_japanese() { [[ $(LC_ALL=en_US.UTF-8 grep -o '[ぁ-んァ-ヶー一-龥]' "$1" | wc -l) -ge 50 ]]; }
+
 # Read hook JSON from stdin — parse tool_name and file_path in single jq call
 input=$(cat)
 read -r tool_name file_path < <(echo "$input" | jq -r '[.tool_name // "", .tool_input.file_path // ""] | @tsv' 2>/dev/null) || true
@@ -26,6 +29,11 @@ esac
 
 # Verify file exists
 if [[ ! -f "$file_path" ]]; then
+  exit 0
+fi
+
+# Skip non-Japanese files
+if ! has_japanese "$file_path"; then
   exit 0
 fi
 

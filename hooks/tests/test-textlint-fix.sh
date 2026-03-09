@@ -42,7 +42,7 @@ test_md_write_fixes_file() {
   cat > "$tmpfile" <<'EOF'
 # テスト
 
-することができます。行う事にしました。
+この機能はユーザーが設定を変更することができます。また、管理者が権限を付与する事にしました。これにより、運用の効率化が期待されています。
 EOF
   local json='{"tool_name":"Write","tool_input":{"file_path":"'"$tmpfile"'"}}'
   echo "$json" | bash "$HOOK" 2>/dev/null
@@ -96,7 +96,7 @@ test_md_edit_fixes_file() {
   cat > "$tmpfile" <<'EOF'
 # テスト
 
-行う事にしました。
+この機能はユーザーが設定を変更する事にしました。また、管理者が権限を付与して運用の効率化が期待されています。
 EOF
   local json='{"tool_name":"Edit","tool_input":{"file_path":"'"$tmpfile"'"}}'
   echo "$json" | bash "$HOOK" 2>/dev/null
@@ -105,12 +105,29 @@ EOF
   assert_contains "fixes keishikimeishi on Edit" "こと" "$content"
 }
 
+# T-extra: English .md file is skipped (no textlint)
+test_english_md_skipped() {
+  echo "T-extra: English .md file is skipped"
+  local tmpfile="$TMPDIR_BASE/test-english.md"
+  cat > "$tmpfile" <<'EOF'
+# English Document
+
+This is a test document written entirely in English. It should not trigger textlint processing because it does not contain enough Japanese characters.
+EOF
+  local original
+  original=$(cat "$tmpfile")
+  local json='{"tool_name":"Write","tool_input":{"file_path":"'"$tmpfile"'"}}'
+  echo "$json" | bash "$HOOK" 2>/dev/null
+  assert_eq "english file unchanged" "$original" "$(cat "$tmpfile")"
+}
+
 echo "=== textlint-fix.sh tests ==="
 test_md_write_fixes_file
 test_ts_file_skipped
 test_read_tool_skipped
 test_graceful_skip_no_textlint
 test_md_edit_fixes_file
+test_english_md_skipped
 
 echo ""
 echo "Results: $PASS passed, $FAIL failed"

@@ -35,6 +35,12 @@ background: true
 | Refactor | refactor, restructure, optimize |
 | Docs     | docs, readme, documentation     |
 
+## Language
+
+Read `language` from `~/.claude/settings.json` and translate the PR body into
+that language. If unset, default to English. Keep technical terms, code, and
+identifiers untranslated.
+
 ## Title Rules
 
 **No prefix** (no `feat:`, `fix:`, etc.)
@@ -48,30 +54,7 @@ Examples: `Add user authentication`, `Fix login timeout issue`
 
 ## PR Template
 
-```markdown
-## Summary
-
-[1-2 lines: purpose and effect]
-
-## Changes
-
-- [Change 1]
-- [Change 2]
-
-## Checklist
-
-- [ ] Changes are focused on the objective
-- [ ] Test steps reproduce expected results
-
-## How to Test
-
-1. [Step]
-2. [Expected result]
-
-## Related
-
-- Closes #[issue]
-```
+[@../../../templates/pr/default.md](../../../templates/pr/default.md)
 
 ## Base Branch Detection
 
@@ -102,19 +85,7 @@ branch:
 pr:
   title: "<title without prefix, imperative verb>"
   body: |
-    ## Summary
-    [1-2 lines]
-
-    ## Changes
-    - [Change 1]
-    - [Change 2]
-
-    ## How to Test
-    1. [Step]
-    2. [Expected result]
-
-    ## Related
-    - Closes #[issue]
+    <content following the PR template structure>
 command: |
   gh pr create --title "<title>" --body "<body>"
 ```

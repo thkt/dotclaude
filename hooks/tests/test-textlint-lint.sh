@@ -106,6 +106,18 @@ test_no_body_skipped() {
   assert_empty "no output without --body" "$output"
 }
 
+# T-extra: English body gets structure checklist but no textlint
+test_english_body_structure_only() {
+  echo "T-extra: English body gets structure checklist only (no textlint)"
+  local body='This is an English issue body with enough content to verify that textlint does not run on non-Japanese text. The structure review should still appear.'
+  local cmd="gh issue create --title \"test\" --body \"$body\""
+  local json='{"tool_name":"Bash","tool_input":{"command":"'"$(echo "$cmd" | sed 's/"/\\"/g')"'"}}'
+  local output
+  output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
+  assert_contains "has structure checklist" "構造レビュー" "$output"
+  assert_contains "decision is approve" "approve" "$output"
+}
+
 echo "=== textlint-lint.sh tests ==="
 test_issue_create_advisory
 test_issue_create_clean
@@ -113,6 +125,7 @@ test_non_gh_command_skipped
 test_pr_create_advisory
 test_non_bash_tool_skipped
 test_no_body_skipped
+test_english_body_structure_only
 
 echo ""
 echo "Results: $PASS passed, $FAIL failed"

@@ -55,6 +55,8 @@ templates/
 │   ├── chore.md
 │   ├── docs.md
 │   └── feature.md
+├── pr/                # Pull Request templates
+│   └── default.md
 ├── research/
 │   └── template.md    # Research findings
 ├── sow/

@@ -3,32 +3,31 @@
 ## Structure
 
 ```markdown
-## Summary
+## What & Why
 
 [What maintenance task needs to be done]
+[Why now — risk, tech debt cost, or blocker for other work]
 
-## Type
+## Changes
 
-- [ ] Dependency update
-- [ ] Configuration change
-- [ ] Code cleanup / refactor
-- [ ] CI/CD improvement
-- [ ] Other maintenance
+- [Specific change 1]
+- [Specific change 2]
 
-## Details
+## Scope
 
-[Specific changes needed]
+- **In scope**: [What this issue covers]
+- **Out of scope**: [Related cleanup not addressed here]
 
-## Impact (optional)
+## Constraints (optional)
 
-[What might be affected by this change]
+- [No behavior changes, backward compatibility, etc.]
 ```
 
 ## Guidelines
 
-| Field   | Description                           |
-| ------- | ------------------------------------- |
-| Summary | What maintenance task is needed       |
-| Type    | Category of maintenance work          |
-| Details | Specific changes to make              |
-| Impact  | Areas that might be affected (if any) |
+| Field      | OK                                                    | NG                               |
+| ---------- | ----------------------------------------------------- | -------------------------------- |
+| What & Why | "Upgrade React 18→19, unblocks concurrent features"  | "Upgrade React" (no Why)         |
+| Changes    | "Update package.json, fix breaking API calls"         | "Update dependencies" (vague)    |
+| Scope      | "Only React core, not React Router"                   | (omitted)                        |
+| Constraints | "No behavior changes to existing components"         | (omitted when scope is unclear)  |

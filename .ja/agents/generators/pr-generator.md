@@ -2,14 +2,21 @@
 name: pr-generator
 description: ブランチ変更を分析し、包括的なPR説明を生成。
 tools: [Bash]
-model: opus
+model: sonnet
 skills: [utilizing-cli-tools]
 context: fork
+memory: project
+background: true
 ---
 
 # PRジェネレーター
 
-ブランチ変更からPR説明を生成。
+## 副作用
+
+| 効果       | 説明                                |
+| ---------- | ----------------------------------- |
+| Git読取    | `git diff`, `git log`（読取のみ）   |
+| PR作成     | `gh pr create`（ユーザー確認必要）  |
 
 ## 分析対象
 
@@ -28,6 +35,11 @@ context: fork
 | Refactor | refactor, restructure, optimize |
 | Docs     | docs, readme, documentation     |
 
+## 言語
+
+`~/.claude/settings.json` の `language` を読み取り、PR本文をその言語に翻訳する。
+未設定の場合は英語をデフォルトとする。技術用語・コード・識別子は翻訳しない。
+
 ## タイトルルール
 
 **接頭辞なし**（`feat:`, `fix:` 等は不要）
@@ -41,30 +53,7 @@ context: fork
 
 ## PRテンプレート
 
-```markdown
-## 概要
-
-[1-2行: 目的と効果]
-
-## 変更内容
-
-- [変更1]
-- [変更2]
-
-## チェックリスト
-
-- [ ] 変更が目的に集中している
-- [ ] テスト手順で期待結果が再現できる
-
-## テスト方法
-
-1. [手順]
-2. [期待結果]
-
-## 関連
-
-- Closes #[issue]
-```
+[@../../../../.ja/templates/pr/default.md](../../../../.ja/templates/pr/default.md)
 
 ## ベースブランチ検出
 
@@ -95,19 +84,7 @@ branch:
 pr:
   title: "<接頭辞なし、命令形動詞>"
   body: |
-    ## Summary
-    [1-2行]
-
-    ## Changes
-    - [変更1]
-    - [変更2]
-
-    ## How to Test
-    1. [手順]
-    2. [期待結果]
-
-    ## Related
-    - Closes #[issue]
+    <PRテンプレートの構造に従った内容>
 command: |
   gh pr create --title "<title>" --body "<body>"
 ```
