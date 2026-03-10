@@ -20,7 +20,7 @@ user-invocable: true
 
 # /feature - Feature Development Orchestrator
 
-Chain /think → /code → /audit → /validate for end-to-end feature development.
+Chain /think → /code → /audit for end-to-end feature development.
 
 ## Plugin Dependencies
 
@@ -61,7 +61,7 @@ Detect project type → present relevant options:
 | 3     | Implementation      | Skill: /code                  | —                     |
 | 4     | Quality             | /audit → /fix loop (max 3)    | Remaining issues only |
 | 4.5   | Visual Verification | Browser check (UI tasks only) | Visual approval       |
-| 5     | Validation          | Skill: /validate → Summary    | Completion            |
+| 5     | Summary             | AC coverage + scope report    | Completion            |
 
 ### Phase 1: Discovery
 
@@ -133,15 +133,13 @@ Extract port from script value if specified (`--port`, `-p`, `PORT=`).
 8. If "Request fix" → return to Phase 4 Step 2
 9. `agent-browser close`
 
-### Phase 5: Validation
+### Phase 5: Summary
 
-Execute `Skill("validate")`.
-
-Present summary:
+Present summary. AC coverage is already verified by /code Quality Gates.
 
 - Feature scope (files changed, tests added)
 - Quality iterations and remaining issues
-- AC coverage
+- AC coverage from /code
 
 ## Resume
 
@@ -161,20 +159,20 @@ SOW scope.
 
 ## Error Handling
 
-| Error                             | Action                              |
-| --------------------------------- | ----------------------------------- |
-| /think cancelled or fails         | Save context, exit                  |
-| /code fails                       | Present error, ask user             |
-| Quality loop exhausted (3 rounds) | Present remaining, user decides     |
-| agent-browser not installed       | Skip Phase 4.5, continue to Phase 5 |
-| Dev server not running            | Skip Phase 4.5, continue to Phase 5 |
-| /validate shows unmet ACs         | Offer to re-enter Phase 3 or 4      |
+| Error                               | Action                              |
+| ----------------------------------- | ----------------------------------- |
+| /think cancelled or fails           | Save context, exit                  |
+| /code fails                         | Present error, ask user             |
+| Quality loop exhausted (3 rounds)   | Present remaining, user decides     |
+| agent-browser not installed         | Skip Phase 4.5, continue to Phase 5 |
+| Dev server not running              | Skip Phase 4.5, continue to Phase 5 |
+| /code Quality Gates shows unmet ACs | Offer to re-enter Phase 3 or 4      |
 
 ## Verification
 
-| Check                   | Required |
-| ----------------------- | -------- |
-| PRE_TASK_CHECK passed?  | Yes      |
-| SOW + Spec generated?   | Yes      |
-| All tests pass?         | Yes      |
-| /validate confirms ACs? | Yes      |
+| Check                  | Required |
+| ---------------------- | -------- |
+| PRE_TASK_CHECK passed? | Yes      |
+| SOW + Spec generated?  | Yes      |
+| All tests pass?        | Yes      |
+| /code AC coverage?     | Yes      |

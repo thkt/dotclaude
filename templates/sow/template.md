@@ -49,10 +49,15 @@ Check only if needed (unchecked = excluded):
 
 ## Implementation Plan
 
+<!-- Phases with Files ≥5 must be split into Units (PRE_TASK_CHECK threshold) -->
+
 ### Phase 1: [title]
 
-1. [step]
-2. [step]
+| Step | Action | Files |
+| ---- | ------ | ----- |
+| 1    | [step] | N     |
+
+Files: [total unique files in this phase]
 
 ## Test Plan
 

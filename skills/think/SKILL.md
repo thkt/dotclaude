@@ -55,8 +55,8 @@ Generate ≥2 distinct approaches from different perspectives:
 - DX Advocate: What's best for developer/user experience?
 
 If PRE_TASK_CHECK decomposition thresholds are exceeded (Files ≥ 5, Features ≥
-3, Layers ≥ 3), consider decomposing into independent Units. Each Unit gets its
-own SOW/Spec and can be implemented separately via `/code`.
+3, Layers ≥ 3), decompose into independent Units. Each Unit gets its own
+SOW/Spec and can be implemented separately via `/code`.
 
 ### Step 3: Self-Challenge
 
@@ -169,9 +169,15 @@ tasks)
 | Implementation Plan | `Phase N: [description]` | Steps + validates AC-XXX | [dependency IDs] |
 | Test Plan (HIGH)    | `Test: [description]`    | (if complex)             | [dependency IDs] |
 
+### Scope Validation
+
+Before creating tasks, count unique files per Phase in the Implementation Plan.
+Split any Phase with Files ≥ 5 into independent Units (each gets own SOW/Spec).
+Repeat until all Phases have Files < 5.
+
 ### Milestone Summary
 
-```
+```text
 Phase 1 [Day X]: task list (completion criteria)
 Phase 2 [Day Y]: ...
 ```

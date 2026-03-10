@@ -39,15 +39,25 @@ TDD/RGRCサイクルによるコード実装。
 - Skill: orchestrating-workflows（RGRCサイクル）
 - Plugin: ralph-loop（自動イテレーション、未使用時は手動フォールバック）
 
+## スコープガード
+
+SOW読み込み後、Phaseのファイル数を確認。ファイル数 ≥5のPhaseがあれば、実装前に
+`/think` で分割するようユーザーに提案する。SOWがなく `$1` がファイル数 ≥5
+を示唆する場合も `/think` の実行を提案する。
+
 ## 実行
 
-1. **SOWコンテキスト**: SOW/specを検出・読み込み
+1. SOWコンテキスト: SOW/specを検出・読み込み → スコープガード
 2. `test-gen` をstandalone background
    agentとしてspawn（`subagent_type: test-generator`,
    `run_in_background: true`）
 3. `TaskOutput` でテスト結果を受信
 4. `ralph-loop` 自動イテレーション付きRGRCサイクル
 5. Quality Gates
+
+## Quality Gates
+
+RGRCサイクル後、各ACの充足（実装済み＋テスト済み）を検証する。SOWがなければスキップ。
 
 ## エラーハンドリング
 

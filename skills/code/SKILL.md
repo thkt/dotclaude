@@ -58,14 +58,24 @@ Implementation description: `$1` (required, prompt if empty) Flags:
 - Skill: orchestrating-workflows (RGRC cycle)
 - Plugin: ralph-loop (auto-iteration, manual fallback if unavailable)
 
+## Scope Guard
+
+After reading SOW, check Phase file counts. If any Phase has Files ≥ 5, stop and
+ask user to split via `/think` before proceeding. If no SOW exists and `$1`
+implies ≥ 5 files, suggest running `/think` first.
+
 ## Execution
 
-1. **SOW Context**: detect and read SOW/spec
+1. SOW Context: detect and read SOW/spec → Scope Guard
 2. Spawn `test-gen` as standalone background agent
    (`subagent_type: test-generator`, `run_in_background: true`)
 3. Receive test results via `TaskOutput`
 4. RGRC cycle with `ralph-loop` auto-iteration
 5. Quality Gates
+
+## Quality Gates
+
+After RGRC cycle, verify each AC is met (implemented + tested). Skip if no SOW.
 
 ## Error Handling
 

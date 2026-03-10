@@ -19,8 +19,7 @@ user-invocable: true
 
 # /feature - 機能開発オーケストレーター
 
-/think → /code → /audit →
-/validateをチェーンして、エンドツーエンドの機能開発を実行。
+/think → /code → /auditをチェーンして、エンドツーエンドの機能開発を実行。
 
 ## プラグイン依存
 
@@ -39,14 +38,14 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 
 プロジェクト種別を検出 → 関連する選択肢を提示:
 
-| パターン           | 検出方法                                        | 選択肢                                      |
-| ------------------ | ----------------------------------------------- | ------------------------------------------- |
-| Claude Code config | `~/.claude/` or `.claude/` with skills/hooks/   | Add skill, Add hook, Add agent              |
-| React/Next.js      | package.json に `react`, `next`                 | Add component, Add page, Add API route      |
-| API server         | Express, Fastify, Hono, or `src/routes/`        | Add endpoint, Add middleware, Add service   |
-| CLI tool           | package.json の bin or `src/cli/`               | Add command, Add option, Add subcommand     |
-| Library            | package.json の main/exports                    | Add function, Add class, Add type           |
-| Fallback           | 一致なし                                        | New feature, Extension, Refactoring         |
+| パターン           | 検出方法                                      | 選択肢                                    |
+| ------------------ | --------------------------------------------- | ----------------------------------------- |
+| Claude Code config | `~/.claude/` or `.claude/` with skills/hooks/ | Add skill, Add hook, Add agent            |
+| React/Next.js      | package.json に `react`, `next`               | Add component, Add page, Add API route    |
+| API server         | Express, Fastify, Hono, or `src/routes/`      | Add endpoint, Add middleware, Add service |
+| CLI tool           | package.json の bin or `src/cli/`             | Add command, Add option, Add subcommand   |
+| Library            | package.json の main/exports                  | Add function, Add class, Add type         |
+| Fallback           | 一致なし                                      | New feature, Extension, Refactoring       |
 
 ## SOW コンテキスト
 
@@ -61,7 +60,7 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 | 3     | Implementation      | Skill: /code                          | —                        |
 | 4     | Quality             | /audit → /fix ループ (最大3回)        | 残存課題のみ             |
 | 4.5   | Visual Verification | ブラウザ確認（UIタスクのみ）          | 画面承認                 |
-| 5     | Validation          | Skill: /validate → サマリー           | 完了                     |
+| 5     | Summary             | ACカバレッジ + スコープ報告           | 完了                     |
 
 ### Phase 1: Discovery
 
@@ -133,15 +132,13 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 8. "修正依頼" → Phase 4 Step 2に戻る
 9. `agent-browser close`
 
-### Phase 5: Validation
+### Phase 5: Summary
 
-`Skill("validate")` を実行。
-
-サマリーを提示:
+サマリーを提示する。ACカバレッジは /code Quality Gatesで検証済み。
 
 - 機能スコープ（変更ファイル、追加テスト）
 - 品質イテレーション結果と残存課題
-- ACカバレッジ
+- /codeからのACカバレッジ
 
 ## レジューム
 
@@ -167,7 +164,7 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 | 品質ループ最大到達（3回）    | 残存課題を提示、ユーザーが判断     |
 | agent-browser 未インストール | Phase 4.5 スキップ、Phase 5 へ続行 |
 | Dev server 未起動            | Phase 4.5 スキップ、Phase 5 へ続行 |
-| /validate で未達 AC          | Phase 3 または 4 への再入を提案    |
+| /code Quality Gatesで未達AC  | Phase 3 または 4 への再入を提案    |
 
 ## 検証
 
@@ -176,4 +173,4 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 | PRE_TASK_CHECK 通過?      | Yes  |
 | SOW + Spec 生成済み?      | Yes  |
 | 全テスト通過?             | Yes  |
-| /validate で AC 確認済み? | Yes  |
+| /code ACカバレッジ?       | Yes  |

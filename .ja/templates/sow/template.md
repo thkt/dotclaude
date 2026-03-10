@@ -27,7 +27,7 @@ draft <!-- draft | in-progress | completed -->
 
 ### Out of Scope
 
-- [除外項目 1]
+- [除外項目1]
 
 ## Acceptance Criteria
 
@@ -38,10 +38,15 @@ draft <!-- draft | in-progress | completed -->
 
 ## Implementation Plan
 
+<!-- ファイル数 ≥5 の Phase は Unit 分割必須（PRE_TASK_CHECK 閾値） -->
+
 ### Phase 1: [タイトル]
 
-1. [ステップ]
-2. [ステップ]
+| ステップ | アクション | ファイル数 |
+| -------- | ---------- | ---------- |
+| 1        | [ステップ] | N          |
+
+Files:[このPhaseのユニークファイル総数]
 
 ## Test Plan
 

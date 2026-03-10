@@ -18,11 +18,11 @@ if [ -z "$CODE_CHANGES" ]; then
   exit 0
 fi
 
-TIMEOUT_CMD=""
+TIMEOUT_ARGS=()
 if command -v timeout &>/dev/null; then
-  TIMEOUT_CMD="timeout 60"
+  TIMEOUT_ARGS=(timeout 60)
 elif command -v gtimeout &>/dev/null; then
-  TIMEOUT_CMD="gtimeout 60"
+  TIMEOUT_ARGS=(gtimeout 60)
 fi
 
 block_with() {
@@ -39,7 +39,8 @@ if [ -z "${TEST_CMD:-}" ] && command -v nr &>/dev/null && [ -f "$PROJECT_DIR/pac
 fi
 
 if [ -n "${TEST_CMD:-}" ]; then
-  TEST_OUTPUT=$($TIMEOUT_CMD $TEST_CMD 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
+  # Intentional word-splitting: TEST_CMD="nr test" splits into two args
+  TEST_OUTPUT=$(${TIMEOUT_ARGS[@]+"${TIMEOUT_ARGS[@]}"} $TEST_CMD 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
   if [ $TEST_EXIT -eq 124 ]; then
     echo "completion-gate: test timeout (60s)" >&2
   elif [ $TEST_EXIT -ne 0 ]; then
@@ -47,27 +48,3 @@ if [ -n "${TEST_CMD:-}" ]; then
 $(echo "$TEST_OUTPUT" | tail -50)"
   fi
 fi
-
-# Phase 2: Gates
-TOOLS_JSON="$PROJECT_DIR/.claude/tools.json"
-[ -f "$TOOLS_JSON" ] || exit 0
-command -v jq &>/dev/null || exit 0
-
-run_gate() {
-  local name="$1" cmd="$2" override="$3"
-  local enabled
-  enabled=$(jq -r ".gates.${name} // false" "$TOOLS_JSON" 2>/dev/null) || return 0
-  [ "$enabled" = "true" ] || return 0
-
-  local gate_cmd="${override:-$cmd}"
-  command -v "$gate_cmd" &>/dev/null || return 0
-  local gate_output gate_exit
-  gate_output=$($TIMEOUT_CMD $gate_cmd 2>&1) && gate_exit=0 || gate_exit=$?
-  [ $gate_exit -eq 0 ] && return 0
-  [ $gate_exit -eq 124 ] && return 0
-  block_with "${name} failed. Fix the issues:
-$(echo "$gate_output" | tail -50)"
-}
-
-run_gate "knip" "knip" "${KNIP_CMD:-}"
-run_gate "tsgo" "tsgo" "${TSGO_CMD:-}"

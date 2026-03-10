@@ -50,6 +50,9 @@ user-invocable: true
 - Architect: 拡張可能で構造的に優れた方法は？
 - DX Advocate: 開発者/ユーザー体験にとって最善は？
 
+PRE_TASK_CHECKの分解閾値（ファイル数 ≥5、機能 ≥3、レイヤー ≥3）を超える場合、独立したUnitに分解すること。各Unitは独自のSOW/Specを持ち
+`/code` で個別に実装可能。
+
 ### Step 3: セルフチャレンジ
 
 各アプローチに対して:
@@ -127,9 +130,14 @@ API（Props、variants、states、usage）を含める。出力:
 | Implementation Plan | `Phase N: [説明]` | ステップ + validates AC-XXX | [依存ID]     |
 | Test Plan (HIGH)    | `Test: [説明]`    | （複雑な場合）              | [依存ID]     |
 
+### スコープ検証
+
+タスク作成前に、Implementation Planの各Phaseのユニークファイル数をカウントする。
+ファイル数 ≥5のPhaseは独立Unitに分割し、全Phaseがファイル数 < 5になるまで繰り返す。
+
 ### マイルストーン
 
-```
+```text
 Phase 1 [Day X]: タスク一覧（完了条件）
 Phase 2 [Day Y]: ...
 ```
