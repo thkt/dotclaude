@@ -2,7 +2,8 @@
 name: code
 description:
   TDD/RGRCサイクルでリアルタイムテストフィードバック付きコード実装。ユーザーが実装して,
-  コード書いて, implement, coding等に言及した場合に使用。
+  コード書いて, implement,
+  coding等に言及した場合に使用。小さなバグ修正やエラー解消には /fix を使用。
 allowed-tools:
   Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
   Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run),
@@ -41,11 +42,11 @@ TDD/RGRCサイクルによるコード実装。
 ## 実行
 
 1. **SOWコンテキスト**: SOW/specを検出・読み込み
-2. `test-gen` を standalone background
-   agent として spawn（`subagent_type: test-generator`,
+2. `test-gen` をstandalone background
+   agentとしてspawn（`subagent_type: test-generator`,
    `run_in_background: true`）
 3. `TaskOutput` でテスト結果を受信
-4. `ralph-loop` 自動イテレーション付き RGRC サイクル
+4. `ralph-loop` 自動イテレーション付きRGRCサイクル
 5. Quality Gates
 
 ## エラーハンドリング

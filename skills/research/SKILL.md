@@ -1,7 +1,12 @@
 ---
 name: research
-description: Perform project research and technical investigation without implementation. Use when user mentions 調査して, 調べて, リサーチ, investigate, 分析して.
-allowed-tools: Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep, LS, Task, AskUserQuestion
+description:
+  Perform project research and technical investigation without implementation.
+  Use when user mentions 調査して, 調べて, リサーチ, investigate, 分析して. Do
+  NOT use for design planning or SOW/Spec generation (use /think instead).
+allowed-tools:
+  Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep,
+  LS, Task, AskUserQuestion
 model: opus
 context: fork
 argument-hint: "[research topic or question]"
@@ -28,7 +33,8 @@ Investigate codebase with confidence-based findings, without implementation.
 | 3.5   | (Strong Inference)                | ≥3 hypotheses → discriminating tests → eliminate |
 | 4     | (synthesis)                       | Consolidate with ✓/→/? markers                   |
 
-Note: Invoke analyzers via `Task(subagent_type: <analyzer-name>)`, Explore via `Task(subagent_type: Explore)`.
+Note: Invoke analyzers via `Task(subagent_type: <analyzer-name>)`, Explore via
+`Task(subagent_type: Explore)`.
 
 ### Phase 1: Intent Clarification
 
@@ -42,7 +48,8 @@ Ask via AskUserQuestion:
 
 ### Phase 2: Intent-Aware Parallel Analysis
 
-Select analyzers based on Phase 1 answers, then run all selected in parallel via Task.
+Select analyzers based on Phase 1 answers, then run all selected in parallel via
+Task.
 
 #### Analyzer Selection Matrix
 
@@ -52,7 +59,8 @@ Select analyzers based on Phase 1 answers, then run all selected in parallel via
 | Bug investigation | architecture + code-flow                | + domain   | + api | + setup        |
 | Understanding     | architecture + code-flow                | + domain   | + api | + setup        |
 
-Legend: Each cell shows additional analyzers beyond the base set. `architecture` + `code-flow` always run.
+Legend: Each cell shows additional analyzers beyond the base set.
+`architecture` + `code-flow` always run.
 
 #### Analyzer Reference
 
@@ -82,8 +90,8 @@ Skip when: cause is obvious or intent is "Feature planning" / "Understanding".
 
 ## Output
 
-File: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md`
-Template: [@../templates/research/template.md](../templates/research/template.md)
+File: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md` Template:
+[@../templates/research/template.md](../templates/research/template.md)
 
 ## Next Steps Section
 

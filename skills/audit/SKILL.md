@@ -3,7 +3,7 @@ name: audit
 description:
   Orchestrate specialized review agents for code quality assessment. Use when
   user mentions レビューして, コードレビュー, 品質チェック, code review, quality
-  check.
+  check. Do NOT use for quick PR screening (use /preview instead).
 aliases: [review]
 allowed-tools:
   Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),

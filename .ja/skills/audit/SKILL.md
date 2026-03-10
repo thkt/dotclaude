@@ -2,7 +2,8 @@
 name: audit
 description:
   包括的なコード品質評価のために専門レビューエージェントをオーケストレート。ユーザーがレビューして,
-  コードレビュー, 品質チェック, code review等に言及した場合に使用。
+  コードレビュー, 品質チェック, code
+  review等に言及した場合に使用。PRの軽量スクリーニングには /preview を使用。
 aliases: [review]
 allowed-tools:
   Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
@@ -15,7 +16,8 @@ user-invocable: true
 
 # /audit - コード監査オーケストレーター
 
-信頼度ベースフィルタリングで専門レビューエージェントをオーケストレート。発見事項スキーマは全findingに `file:line` を要求する — エビデンスのないエントリは構造的に無効。
+信頼度ベースフィルタリングで専門レビューエージェントをオーケストレート。発見事項スキーマは全findingに
+`file:line` を要求する — エビデンスのないエントリは構造的に無効。
 
 ## 入力
 

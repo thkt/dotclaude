@@ -1,7 +1,12 @@
 ---
 name: research
-description: 実装なしでプロジェクトリサーチと技術調査を実行。ユーザーが調査して, 調べて, リサーチ, investigate, 分析して等に言及した場合に使用。
-allowed-tools: Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep, LS, Task, AskUserQuestion
+description:
+  実装なしでプロジェクトリサーチと技術調査を実行。ユーザーが調査して, 調べて,
+  リサーチ, investigate, 分析して等に言及した場合に使用。設計やSOW/Spec生成には
+  /think を使用。
+allowed-tools:
+  Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep,
+  LS, Task, AskUserQuestion
 model: opus
 context: fork
 argument-hint: "[リサーチトピックまたは質問]"
@@ -15,7 +20,7 @@ user-invocable: true
 ## 入力
 
 - リサーチトピックまたは質問: `$1`（必須）
-- `$1` が空の場合 → AskUserQuestion で確認
+- `$1` が空の場合 → AskUserQuestionで確認
 
 ## 実行
 
@@ -28,11 +33,12 @@ user-invocable: true
 | 3.5      | （Strong Inference）             | ≥3仮説 → 判別テスト → 棄却                 |
 | 4        | （統合）                         | ✓/→/?マーカー付きで整理                    |
 
-Note: `Task(subagent_type: <analyzer-name>)` でアナライザーを、`Task(subagent_type: Explore)` で Explore を呼び出し。
+Note: `Task(subagent_type: <analyzer-name>)`
+でアナライザーを、`Task(subagent_type: Explore)` でExploreを呼び出し。
 
 ### フェーズ1: 意図確認
 
-AskUserQuestion で質問:
+AskUserQuestionで質問:
 
 | 質問         | 選択肢                               |
 | ------------ | ------------------------------------ |
@@ -42,7 +48,7 @@ AskUserQuestion で質問:
 
 ### フェーズ2: 意図ベースの並列分析
 
-フェーズ1 の回答に基づきアナライザーを選択し、全選択分を Task で並列実行。
+フェーズ1の回答に基づきアナライザーを選択し、全選択分をTaskで並列実行。
 
 #### アナライザー選択マトリクス
 
@@ -64,11 +70,11 @@ AskUserQuestion で質問:
 | api-analyzer          | `api-analyzer`          | エンドポイント、スキーマ、認証 |
 | setup-analyzer        | `setup-analyzer`        | 前提条件、環境変数、設定       |
 
-Output Verifiability マーカー（[✓]/[→]/[?]）を全発見に適用。
+Output Verifiabilityマーカー（[✓]/[→]/[?]）を全発見に適用。
 
 ### フェーズ3.5: Strong Inference（バグ調査時のみ）
 
-デバッグ調査プロトコルを適用。フェーズ2-3 の発見を入力とする。
+デバッグ調査プロトコルを適用。フェーズ2-3の発見を入力とする。
 
 スキップ: 原因が自明、または意図が「機能計画」/「理解のみ」の場合。
 
@@ -82,8 +88,8 @@ Output Verifiability マーカー（[✓]/[→]/[?]）を全発見に適用。
 
 ## 出力
 
-ファイル: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md`
-テンプレート: [@../templates/research/template.md](../templates/research/template.md)
+ファイル: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md` テンプレート:
+[@../templates/research/template.md](../templates/research/template.md)
 
 ## 次のステップ
 

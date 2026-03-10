@@ -1,6 +1,9 @@
 ---
 name: preview
-description: AI screening review for PRs - preliminary check before human review. Use when user mentions スクリーニング, PRレビュー, プレビュー, preview PR, pre-review.
+description:
+  AI screening review for PRs - preliminary check before human review. Use when
+  user mentions スクリーニング, PRレビュー, プレビュー, preview PR, pre-review.
+  Do NOT use for deep multi-reviewer code quality audits (use /audit instead).
 allowed-tools: Bash(git:*), Bash(gh:*), Read, Grep, Glob, AskUserQuestion
 model: sonnet
 skills: [screening-pr-review]
@@ -32,26 +35,32 @@ user-invocable: true
 ## PR Screening Report
 
 ### Overview
+
 {Background and purpose in 2-3 sentences}
 
 ### Changes Summary
+
 | File | Change Summary |
 | ---- | -------------- |
 
 ### Dependency Impact
+
 {Affected files, regression risk}
 
 ---
 
 ### Requires Action
+
 {`[must]` and `[want]` findings with file:line}
 
 ### Awareness
+
 {`[imo]`, `[ask]`, `[nits]`, `[info]` items with file:line}
 
 ---
 
 ### Proposed Review Comments
+
 {Grouped by file, with labels}
 ```
 

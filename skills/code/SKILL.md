@@ -2,7 +2,8 @@
 name: code
 description:
   Implement code following TDD/RGRC cycle with real-time test feedback. Use when
-  user mentions 実装して, コード書いて, implement, coding.
+  user mentions 実装して, コード書いて, implement, coding. Do NOT use for small
+  bug fixes or error resolution (use /fix instead).
 allowed-tools:
   Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
   Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run),

@@ -1,7 +1,11 @@
 ---
 name: think
-description: SOWとSpec生成を伴う設計探索。ユーザーが計画して, 設計して, アプローチ検討, 方針決め, planning等に言及した場合に使用。
-allowed-tools: Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, AskUserQuestion
+description:
+  SOWとSpec生成を伴う設計探索。ユーザーが計画して, 設計して, アプローチ検討,
+  方針決め, planning等に言及した場合に使用。計画意図のないコードベース調査には
+  /research を使用。
+allowed-tools:
+  Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[タスク説明]"
 user-invocable: true
@@ -13,7 +17,7 @@ user-invocable: true
 
 ## 入力
 
-`$1`、リサーチコンテキスト、または空の場合は AskUserQuestion でタスク説明を取得。
+`$1`、リサーチコンテキスト、または空の場合はAskUserQuestionでタスク説明を取得。
 
 ## 実行
 
@@ -29,19 +33,20 @@ user-invocable: true
 | 6    | SOW生成           | sow.md                                 |
 | 7    | Spec生成          | spec.md                                |
 | 8    | sow-spec-reviewer | （オプション、≥90）                    |
-| 9    | SOW → Todos       | TaskCreate                             |
+| 9    | タスク分解        | マイルストーン + TaskCreate + 初手     |
 
 ## 設計探索（Step 1-4）
 
 ### Step 1: コードベース探索
 
-関連コードを読む。`.analysis/architecture.yaml` があれば確認。パターン、制約、アーキテクチャ、先行事例を理解。
+関連コードを読む。`.analysis/architecture.yaml`
+があれば確認。パターン、制約、アーキテクチャ、先行事例を理解。
 
 ### Step 2: アプローチ生成
 
 ≥2つの異なるアプローチを異なる視点から生成:
 
-- Pragmatist: 動く最もシンプルな解決策は？
+- Pragmatist: 動くもっともシンプルな解決策は？
 - Architect: 拡張可能で構造的に優れた方法は？
 - DX Advocate: 開発者/ユーザー体験にとって最善は？
 
@@ -84,28 +89,58 @@ user-invocable: true
 
 ### Step 6: SOW
 
-テンプレート `templates/sow/template.md` を Read。設計コンテキスト（Steps 1-5）から生成。ID形式: AC-N。
-出力: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
+テンプレート `templates/sow/template.md` をRead。設計コンテキスト（Steps
+1-5）から生成。ID形式: AC-N。出力:
+`.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
 
 ### Step 7: Spec
 
-テンプレート `templates/spec/template.md` を Read。SOW から生成。ID形式: FR-001, T-001, NFR-001。
-トレーサビリティ: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
-UI関連: Component API（Props、variants、states、usage）を含める。
-出力: `.claude/workspace/planning/[same-dir]/spec.md`
+テンプレート `templates/spec/template.md` をRead。SOWから生成。ID形式: FR-001,
+T-001, NFR-001。トレーサビリティ: `FR-001 Implements: AC-001` →
+`T-001 Validates: FR-001` UI関連: Component
+API（Props、variants、states、usage）を含める。出力:
+`.claude/workspace/planning/[same-dir]/spec.md`
 
 ## ADR提案（Step 5.5）
 
 ユーザーが設計を承認した後、技術的決定（フレームワーク/ライブラリ選定、アーキテクチャパターン、非推奨化、トレードオフ選択）についてADRが必要か確認。単純な機能追加ならスキップ。
 
-## Todo生成（Step 9）
+## タスク分解（Step 9）
 
-クロスセッション: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"` (最大10タスク)
+### 原則
 
-| ソース              | subject           | description                 | activeForm |
-| ------------------- | ----------------- | --------------------------- | ---------- |
-| Implementation Plan | `Phase N: [説明]` | ステップ + validates AC-XXX | `[説明]中` |
-| Test Plan (HIGH)    | `Test: [説明]`    | （複雑な場合）              | `[説明]中` |
+| 原則                  | ルール                                 |
+| --------------------- | -------------------------------------- |
+| サブ締め切り必須      | フェーズ単位のマイルストーンと完了条件 |
+| 並行グルーピング      | 並行可能なら1フェーズ1タスクにしない   |
+| 初手を明示            | 最初に着手すべきタスクと理由を示す     |
+| スコープカット = 末端 | コア依存タスクは削減不可               |
+| 緊急性で煽らない      | 構造的に分析、反射的に対応しない       |
+
+### TaskCreate
+
+クロスセッション: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
+（最大10タスク）
+
+| ソース              | subject           | description                 | addBlockedBy |
+| ------------------- | ----------------- | --------------------------- | ------------ |
+| Implementation Plan | `Phase N: [説明]` | ステップ + validates AC-XXX | [依存ID]     |
+| Test Plan (HIGH)    | `Test: [説明]`    | （複雑な場合）              | [依存ID]     |
+
+### マイルストーン
+
+```
+Phase 1 [Day X]: タスク一覧（完了条件）
+Phase 2 [Day Y]: ...
+```
+
+### 初手
+
+→ タスクN:[理由 — なぜこれがもっとも多くの後続タスクをアンブロックするか]
+
+### スコープカット候補
+
+末端タスクのみ列挙。コア依存は削減不可。
 
 ## Q&Aカテゴリ
 
@@ -113,10 +148,10 @@ UI関連: Component API（Props、variants、states、usage）を含める。
 
 ## 出力
 
-このパスを正確に使用すること — Write ツールが親ディレクトリを自動作成する。
+このパスを正確に使用すること — Writeツールが親ディレクトリを自動作成する。
 
 `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` と `spec.md`
 
 ## 検証
 
-全ステップ完了必須: コードベース探索、≥2アプローチ比較、セルフチャレンジ適用、設計構成、ユーザーレビュー、sow.md と spec.md 生成、todo作成。
+全ステップ完了必須: コードベース探索、≥2アプローチ比較、セルフチャレンジ適用、設計構成、ユーザーレビュー、sow.mdとspec.md生成、タスク分解（マイルストーン + 初手 + スコープカット候補）。

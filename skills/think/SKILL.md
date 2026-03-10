@@ -1,7 +1,12 @@
 ---
 name: think
-description: Design exploration with SOW and Spec generation. Use when user mentions 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration.
-allowed-tools: Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, AskUserQuestion
+description:
+  Design exploration with SOW and Spec generation. Use when user mentions
+  計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration. Do
+  NOT use for codebase investigation without planning intent (use /research
+  instead).
+allowed-tools:
+  Read, Write, Glob, Grep, LS, Task, TaskCreate, TaskList, AskUserQuestion
 model: opus
 argument-hint: "[task description]"
 user-invocable: true
@@ -9,7 +14,8 @@ user-invocable: true
 
 # /think
 
-Deep design exploration. Compare approaches, validate assumptions, generate SOW and Spec.
+Deep design exploration. Compare approaches, validate assumptions, generate SOW
+and Spec.
 
 ## Input
 
@@ -29,13 +35,16 @@ Task description from `$1`, research context, or AskUserQuestion if empty.
 | 6    | SOW Generation       | sow.md                                     |
 | 7    | Spec Generation      | spec.md                                    |
 | 8    | sow-spec-reviewer    | (optional, ≥90/100 to pass)                |
-| 9    | SOW → Todos          | TaskCreate                                 |
+| 9    | Task Decomposition   | Milestones + TaskCreate + First Move       |
 
 ## Design Exploration (Steps 1-4)
 
 ### Step 1: Codebase Exploration
 
-Read relevant code. Check `.analysis/architecture.yaml` if exists. Also check `.claude/workspace/research/` for recent research output — if a relevant file exists, read it to inherit prior investigation context. Understand patterns, constraints, architecture, and prior art.
+Read relevant code. Check `.analysis/architecture.yaml` if exists. Also check
+`.claude/workspace/research/` for recent research output — if a relevant file
+exists, read it to inherit prior investigation context. Understand patterns,
+constraints, architecture, and prior art.
 
 ### Step 2: Approach Generation
 
@@ -45,7 +54,9 @@ Generate ≥2 distinct approaches from different perspectives:
 - Architect: What's extensible and well-structured?
 - DX Advocate: What's best for developer/user experience?
 
-If PRE_TASK_CHECK decomposition thresholds are exceeded (Files ≥ 5, Features ≥ 3, Layers ≥ 3), consider decomposing into independent Units. Each Unit gets its own SOW/Spec and can be implemented separately via `/code`.
+If PRE_TASK_CHECK decomposition thresholds are exceeded (Files ≥ 5, Features ≥
+3, Layers ≥ 3), consider decomposing into independent Units. Each Unit gets its
+own SOW/Spec and can be implemented separately via `/code`.
 
 ### Step 3: Self-Challenge
 
@@ -58,7 +69,8 @@ For each approach:
 
 ### Step 4: Design Composition
 
-Compose optimal design from surviving approaches. Work through two perspectives in order:
+Compose optimal design from surviving approaches. Work through two perspectives
+in order:
 
 #### 4-1. Domain Perspective (What)
 
@@ -118,28 +130,59 @@ Translate domain understanding into implementation design:
 
 ### Step 6: SOW
 
-Read template `templates/sow/template.md`. Fill from design context (Steps 1-5). ID format: AC-N.
-Output: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
+Read template `templates/sow/template.md`. Fill from design context (Steps 1-5).
+ID format: AC-N. Output:
+`.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
 
 ### Step 7: Spec
 
-Read template `templates/spec/template.md`. Generate from SOW. ID format: FR-001, T-001, NFR-001.
-Traceability: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
-If UI-related: include Component API (Props, variants, states, usage).
-Output: `.claude/workspace/planning/[same-dir]/spec.md`
+Read template `templates/spec/template.md`. Generate from SOW. ID format:
+FR-001, T-001, NFR-001. Traceability: `FR-001 Implements: AC-001` →
+`T-001 Validates: FR-001` If UI-related: include Component API (Props, variants,
+states, usage). Output: `.claude/workspace/planning/[same-dir]/spec.md`
 
 ## ADR Proposal (Step 5.5)
 
-After user approves design, ask if an ADR is needed for technical decisions (framework/library selection, architecture patterns, deprecations, trade-off choices). Skip for simple features.
+After user approves design, ask if an ADR is needed for technical decisions
+(framework/library selection, architecture patterns, deprecations, trade-off
+choices). Skip for simple features.
 
-## Todo Generation (Step 9)
+## Task Decomposition (Step 9)
 
-Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"` (max 10 tasks)
+### Principles
 
-| Source              | subject                  | description              | activeForm        |
-| ------------------- | ------------------------ | ------------------------ | ----------------- |
-| Implementation Plan | `Phase N: [description]` | Steps + validates AC-XXX | `[description]中` |
-| Test Plan (HIGH)    | `Test: [description]`    | (if complex)             | `[description]中` |
+| Principle              | Rule                                            |
+| ---------------------- | ----------------------------------------------- |
+| Sub-deadlines required | Phase-level milestones with completion criteria |
+| Parallel grouping      | Never 1 task per phase if parallelizable        |
+| First move explicit    | State which task to start and why               |
+| Scope cut = leaf only  | Core dependency tasks are non-negotiable        |
+| No urgency panic       | Analyze structurally, not reactively            |
+
+### TaskCreate
+
+Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"` (max 10
+tasks)
+
+| Source              | subject                  | description              | addBlockedBy     |
+| ------------------- | ------------------------ | ------------------------ | ---------------- |
+| Implementation Plan | `Phase N: [description]` | Steps + validates AC-XXX | [dependency IDs] |
+| Test Plan (HIGH)    | `Test: [description]`    | (if complex)             | [dependency IDs] |
+
+### Milestone Summary
+
+```
+Phase 1 [Day X]: task list (completion criteria)
+Phase 2 [Day Y]: ...
+```
+
+### First Move
+
+→ Task N: [rationale — why this unblocks the most downstream work]
+
+### Scope Cut Candidates
+
+Leaf tasks only. Core dependencies are non-negotiable.
 
 ## Q&A Categories
 
@@ -153,4 +196,6 @@ Always use this exact path — Write tool creates parent directories if absent.
 
 ## Verification
 
-All steps must complete: codebase explored, ≥2 approaches compared, self-challenge applied, design composed, user reviewed, sow.md and spec.md generated, todos created.
+All steps must complete: codebase explored, ≥2 approaches compared,
+self-challenge applied, design composed, user reviewed, sow.md and spec.md
+generated, tasks decomposed (milestones + first move + scope cut candidates).
