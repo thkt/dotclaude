@@ -16,7 +16,7 @@
     {
       "name": "complete-workflow-system",
       "source": "./",
-      "description": "Full development workflow: /think → /code → /test → /audit → /validate with SOW-based validation",
+      "description": "Full development workflow: /think → /code → /test → /audit with SOW-based quality gates",
       "version": "2.2.0",
       "author": {
         "name": "thkt",
@@ -30,7 +30,6 @@
         "./skills/code/SKILL.md",
         "./skills/test/SKILL.md",
         "./skills/audit/SKILL.md",
-        "./skills/validate/SKILL.md",
         "./skills/research/SKILL.md",
         "./skills/feature/SKILL.md",
         "./skills/swarm/SKILL.md"
@@ -66,17 +65,27 @@
     {
       "name": "quick-actions",
       "source": "./",
-      "description": "Fast bug fixes, code polish, and config validation: /fix, /polish, /validate-config",
+      "description": "Fast bug fixes, code polish, config validation, and Japanese proofreading: /fix, /polish, /validate-config, /kousei",
       "version": "2.2.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["fix", "quick", "polish", "simplify", "validate", "config"],
+      "keywords": [
+        "fix",
+        "quick",
+        "polish",
+        "simplify",
+        "validate",
+        "config",
+        "kousei",
+        "textlint"
+      ],
       "category": "Quick Actions",
       "commands": [
         "./skills/fix/SKILL.md",
+        "./skills/kousei/SKILL.md",
         "./skills/polish/SKILL.md",
         "./skills/validate-config/SKILL.md"
       ],
