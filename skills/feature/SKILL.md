@@ -6,13 +6,12 @@ description:
   development.
 allowed-tools:
   Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run),
-  Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*),
-  Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*),
-  Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
-  Bash(git ls-files:*), Bash(git worktree *), Bash(git merge *), Bash(git branch
-  *), Bash(date:*), Bash(mkdir:*), Bash(agent-browser:*), Edit, MultiEdit,
-  Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate,
-  AskUserQuestion
+  Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun
+  run:*), Bash(make:*), Bash(git diff:*), Bash(git status:*), Bash(git log:*),
+  Bash(git show:*), Bash(git ls-files:*), Bash(git worktree *), Bash(git merge
+  *), Bash(git branch *), Bash(date:*), Bash(mkdir:*), Bash(agent-browser:*),
+  Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList,
+  TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[feature description]"
 user-invocable: true

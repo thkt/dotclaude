@@ -5,13 +5,12 @@ description:
   新機能, 機能追加, feature development等に言及した場合に使用。
 allowed-tools:
   Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run),
-  Bash(yarn run:*), Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*),
-  Bash(pnpm:*), Bash(bun run), Bash(bun run:*), Bash(bun:*), Bash(make:*),
-  Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
-  Bash(git ls-files:*), Bash(git worktree *), Bash(git merge *), Bash(git branch
-  *), Bash(date:*), Bash(mkdir:*), Bash(agent-browser:*), Edit, MultiEdit,
-  Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate,
-  AskUserQuestion
+  Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun
+  run:*), Bash(make:*), Bash(git diff:*), Bash(git status:*), Bash(git log:*),
+  Bash(git show:*), Bash(git ls-files:*), Bash(git worktree *), Bash(git merge
+  *), Bash(git branch *), Bash(date:*), Bash(mkdir:*), Bash(agent-browser:*),
+  Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList,
+  TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[機能の説明]"
 user-invocable: true
@@ -168,9 +167,9 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 
 ## 検証
 
-| チェック                  | 必須 |
-| ------------------------- | ---- |
-| PRE_TASK_CHECK 通過?      | Yes  |
-| SOW + Spec 生成済み?      | Yes  |
-| 全テスト通過?             | Yes  |
-| /code ACカバレッジ?       | Yes  |
+| チェック             | 必須 |
+| -------------------- | ---- |
+| PRE_TASK_CHECK 通過? | Yes  |
+| SOW + Spec 生成済み? | Yes  |
+| 全テスト通過?        | Yes  |
+| /code ACカバレッジ?  | Yes  |
