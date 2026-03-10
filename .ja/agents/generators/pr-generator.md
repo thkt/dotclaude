@@ -4,19 +4,16 @@ description: ブランチ変更を分析し、包括的なPR説明を生成。
 tools: [Bash]
 model: sonnet
 skills: [utilizing-cli-tools]
-context: fork
-memory: project
-background: true
 ---
 
 # PRジェネレーター
 
 ## 副作用
 
-| 効果       | 説明                                |
-| ---------- | ----------------------------------- |
-| Git読取    | `git diff`, `git log`（読取のみ）   |
-| PR作成     | `gh pr create`（ユーザー確認必要）  |
+| 効果    | 説明                               |
+| ------- | ---------------------------------- |
+| Git読取 | `git diff`, `git log`（読取のみ）  |
+| PR作成  | `gh pr create`（ユーザー確認必要） |
 
 ## 分析対象
 
@@ -37,8 +34,8 @@ background: true
 
 ## 言語
 
-`~/.claude/settings.json` の `language` を読み取り、PR本文をその言語に翻訳する。
-未設定の場合は英語をデフォルトとする。技術用語・コード・識別子は翻訳しない。
+`~/.claude/settings.json` の `language`
+を読み取り、PR本文をその言語に翻訳する。未設定の場合は英語をデフォルトとする。技術用語・コード・識別子は翻訳しない。
 
 ## タイトルルール
 

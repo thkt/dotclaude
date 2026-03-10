@@ -4,19 +4,16 @@ description: Analyze branch changes and generate comprehensive PR descriptions.
 tools: [Bash]
 model: sonnet
 skills: [utilizing-cli-tools]
-context: fork
-memory: project
-background: true
 ---
 
 # PR Description Generator
 
 ## Side Effects
 
-| Effect     | Description                                 |
-| ---------- | ------------------------------------------- |
-| Git read   | `git diff`, `git log` (read-only)           |
-| PR create  | `gh pr create` (requires user confirmation) |
+| Effect    | Description                                 |
+| --------- | ------------------------------------------- |
+| Git read  | `git diff`, `git log` (read-only)           |
+| PR create | `gh pr create` (requires user confirmation) |
 
 ## Analysis Sources
 

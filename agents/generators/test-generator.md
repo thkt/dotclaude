@@ -4,9 +4,6 @@ description: Generate tests from SOW test plans. Does not implement code.
 tools: [Read, Write, Edit, Grep, Glob, LS]
 model: opus
 skills: [generating-tdd-tests]
-context: fork
-memory: project
-background: true
 ---
 
 # Test Generator

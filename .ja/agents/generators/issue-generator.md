@@ -4,7 +4,6 @@ description: 説明から構造化されたGitHub Issueを生成。
 tools: [Bash]
 model: opus
 skills: [utilizing-cli-tools]
-context: fork
 ---
 
 # Issueジェネレーター

@@ -4,9 +4,6 @@ description: Generate well-structured GitHub Issues from descriptions.
 tools: [Bash]
 model: sonnet
 skills: [utilizing-cli-tools]
-context: fork
-memory: project
-background: true
 ---
 
 # Issue Generator

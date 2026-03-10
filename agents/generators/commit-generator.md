@@ -1,12 +1,10 @@
 ---
 name: commit-generator
-description: Analyze staged Git changes and generate Conventional Commits format messages.
+description:
+  Analyze staged Git changes and generate Conventional Commits format messages.
 tools: [Bash]
 model: sonnet
 skills: [utilizing-cli-tools]
-context: fork
-memory: project
-background: true
 ---
 
 # Commit Message Generator

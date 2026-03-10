@@ -18,11 +18,11 @@ Analyze staged changes and generate Conventional Commits messages.
 - Context or issue reference: `$1` (optional)
 - If `$1` is empty → analyze staged changes only
 
-## Agent
+## Task
 
-| Type  | Name             | Purpose                         |
-| ----- | ---------------- | ------------------------------- |
-| Agent | commit-generator | Conventional Commits gen (fork) |
+| Type | Name             | Purpose                         |
+| ---- | ---------------- | ------------------------------- |
+| Task | commit-generator | Conventional Commits gen (fork) |
 
 ## Execution
 

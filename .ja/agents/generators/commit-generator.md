@@ -1,11 +1,10 @@
 ---
 name: commit-generator
-description: ステージされたGit変更を分析し、Conventional Commits形式メッセージを生成。
+description:
+  ステージされたGit変更を分析し、Conventional Commits形式メッセージを生成。
 tools: [Bash]
-model: opus
+model: sonnet
 skills: [utilizing-cli-tools]
-context: fork
-memory: project
 ---
 
 # コミットメッセージジェネレーター

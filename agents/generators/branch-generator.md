@@ -1,12 +1,10 @@
 ---
 name: branch-generator
-description: Analyze Git changes and generate branch names following conventional patterns.
+description:
+  Analyze Git changes and generate branch names following conventional patterns.
 tools: [Bash]
 model: sonnet
 skills: [utilizing-cli-tools]
-context: fork
-memory: project
-background: true
 ---
 
 # Branch Name Generator
