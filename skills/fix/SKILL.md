@@ -1,17 +1,18 @@
 ---
 name: fix
-description: Rapidly fix small bugs and minor improvements in development environment. Use when user mentions バグ修正, 直して, 修正して, fix bug, 不具合.
-allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run), Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Edit, MultiEdit, Read, Grep, Glob, LS, Task, AskUserQuestion
+description:
+  Rapidly fix small bugs and minor improvements in development environment. Use
+  when user mentions バグ修正, 直して, 修正して, fix bug, 不具合.
+allowed-tools:
+  Bash(git diff:*), Bash(git ls-files:*), Bash(npm test:*), Bash(npm run),
+  Bash(npm run:*), Bash(yarn run:*), Bash(pnpm run:*), Bash(bun run:*), Edit,
+  MultiEdit, Read, Grep, Glob, LS, Task, AskUserQuestion
 model: opus
 argument-hint: "[bug or issue description]"
 user-invocable: true
 ---
 
 # /fix - Quick Bug Fix
-
-NO FIX WITHOUT REPRODUCTION TEST.
-
-Write a test that reproduces the bug before fixing it. The test must fail before the fix and pass after.
 
 Rapidly fix small bugs with root cause analysis and TDD verification.
 

@@ -16,9 +16,9 @@ user-invocable: true
 
 # /audit - Code Audit Orchestrator
 
-NO FINDING WITHOUT file:line EVIDENCE.
-
-Orchestrate specialized review agents with confidence-based filtering.
+Orchestrate specialized review agents with confidence-based filtering. The
+finding schema requires `file:line` on every finding — entries without evidence
+are structurally invalid.
 
 ## Rationalization Counters
 
@@ -97,7 +97,7 @@ Include in each reviewer's prompt:
 - Assigned domains with "what to look for" guidance
 - Finding schema (ID prefixes per domain)
 - Output format (YAML)
-- "Read ALL listed files. Do NOT skip files."
+- Output format includes `files_read` section (list of files actually read)
 
 ### Large Tier (16+ files)
 

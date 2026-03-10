@@ -74,9 +74,8 @@ unaccounted.
 | Naming discrepancy   | Note when directory name differs from type/class name                     |
 | Code issues          | Flag bugs found during reading (typos in field names, inconsistent nulls) |
 
-CRITICAL — Anti-Hallucination Rule: Every field in output MUST have a
-`source_file` with file:line traced to a Read tool call. Fields without Read
-evidence are PROHIBITED in output.
+The YAML schema below requires `source_file` on every field. The Validation Gate
+(Phase 7) removes any field without a file:line traced to a Read call.
 
 #### Prisma Schema Parsing
 

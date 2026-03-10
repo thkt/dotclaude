@@ -70,10 +70,9 @@ Implementation description: `$1` (required, prompt if empty)
 
 ### Model Constraint
 
-All team agents MUST use Opus or Sonnet. Haiku cannot reliably:
-
-- Follow complex multi-step instructions on first attempt
-- Handle shutdown protocol (`shutdown_response`)
+Haiku is excluded from team agents — it cannot reliably follow multi-step
+instructions or handle the shutdown protocol. The Model column in Team
+Architecture defines each agent's model.
 
 ## Context Contracts
 
@@ -82,7 +81,7 @@ define what to send.
 
 ### Spawn Context (Leader → all agents)
 
-All spawn prompts MUST include:
+Every spawn prompt includes:
 
 - CLAUDE.md rules (or summary of key constraints)
 - Project conventions (tech stack, naming, patterns)
