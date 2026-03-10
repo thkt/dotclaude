@@ -26,6 +26,7 @@ flowchart LR
 | Review         | /audit    | -               | -                    |
 | Polish         | /polish   | -               | -                    |
 | Validation     | /validate | -               | -                    |
+| Delta          | /delta    | delta.md        | (embedded in skill)  |
 | Commit         | (hook)    | idr-N.md        | -                    |
 
 ## Directory Structure
@@ -49,6 +50,7 @@ templates/
 │   ├── api.md
 │   ├── architecture.md
 │   ├── domain.md
+│   ├── purpose.md
 │   └── setup.md
 ├── issue/             # GitHub Issue templates
 │   ├── bug.md

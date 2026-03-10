@@ -3,41 +3,22 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/test-helpers.sh"
 HOOK="$SCRIPT_DIR/../textlint-fix.sh"
-PASS=0
-FAIL=0
 TMPDIR_BASE="$(mktemp -d)"
 
 cleanup() { rm -rf "$TMPDIR_BASE"; }
 trap cleanup EXIT
 
-assert_eq() {
-  local name="$1" expected="$2" actual="$3"
-  if [[ "$expected" == "$actual" ]]; then
-    echo "  PASS: $name"
-    PASS=$((PASS + 1))
-  else
-    echo "  FAIL: $name"
-    echo "    expected: $expected"
-    echo "    actual:   $actual"
-    FAIL=$((FAIL + 1))
-  fi
+# Helper: build Bash tool_input JSON from a command string
+make_bash_json() {
+  local cmd="$1"
+  printf '{"tool_name":"Bash","tool_input":{"command":"%s"}}' \
+    "$(echo "$cmd" | sed 's/"/\\"/g')"
 }
 
-assert_contains() {
-  local name="$1" pattern="$2" text="$3"
-  if echo "$text" | grep -q "$pattern"; then
-    echo "  PASS: $name"
-    PASS=$((PASS + 1))
-  else
-    echo "  FAIL: $name (pattern '$pattern' not found)"
-    FAIL=$((FAIL + 1))
-  fi
-}
-
-# T-003: .md Write triggers textlint --fix
 test_md_write_fixes_file() {
-  echo "T-003: .md Write triggers textlint --fix"
+  echo ".md Write triggers textlint --fix"
   local tmpfile="$TMPDIR_BASE/test-write.md"
   cat > "$tmpfile" <<'EOF'
 # テスト
@@ -52,9 +33,8 @@ EOF
   assert_contains "fixes keishikimeishi" "こと" "$content"
 }
 
-# T-004: .ts file is skipped
 test_ts_file_skipped() {
-  echo "T-004: .ts file is skipped"
+  echo ".ts file is skipped"
   local tmpfile="$TMPDIR_BASE/test.ts"
   echo "const x = 1;" > "$tmpfile"
   local json='{"tool_name":"Write","tool_input":{"file_path":"'"$tmpfile"'"}}'
@@ -66,9 +46,8 @@ test_ts_file_skipped() {
   assert_eq "file unchanged" "const x = 1;" "$(cat "$tmpfile")"
 }
 
-# T-005: Read tool is skipped
 test_read_tool_skipped() {
-  echo "T-005: Read tool is skipped"
+  echo "Read tool is skipped"
   local json='{"tool_name":"Read","tool_input":{"file_path":"/some/file.md"}}'
   local exit_code
   echo "$json" | bash "$HOOK" 2>/dev/null
@@ -76,9 +55,8 @@ test_read_tool_skipped() {
   assert_eq "exit code 0" "0" "$exit_code"
 }
 
-# T-009: Graceful skip when textlint not found
 test_graceful_skip_no_textlint() {
-  echo "T-009: Graceful skip when textlint unavailable"
+  echo "graceful skip when textlint unavailable"
   local tmpfile="$TMPDIR_BASE/test-graceful.md"
   echo "# テスト" > "$tmpfile"
   local json='{"tool_name":"Write","tool_input":{"file_path":"'"$tmpfile"'"}}'
@@ -89,9 +67,8 @@ test_graceful_skip_no_textlint() {
   assert_eq "does not crash" "0" "$exit_code"
 }
 
-# T-extra: Edit tool on .md also triggers fix
 test_md_edit_fixes_file() {
-  echo "T-extra: Edit tool on .md triggers textlint --fix"
+  echo "Edit tool on .md triggers textlint --fix"
   local tmpfile="$TMPDIR_BASE/test-edit.md"
   cat > "$tmpfile" <<'EOF'
 # テスト
@@ -105,9 +82,8 @@ EOF
   assert_contains "fixes keishikimeishi on Edit" "こと" "$content"
 }
 
-# T-extra: English .md file is skipped (no textlint)
 test_english_md_skipped() {
-  echo "T-extra: English .md file is skipped"
+  echo "English .md file is skipped"
   local tmpfile="$TMPDIR_BASE/test-english.md"
   cat > "$tmpfile" <<'EOF'
 # English Document
@@ -129,6 +105,4 @@ test_graceful_skip_no_textlint
 test_md_edit_fixes_file
 test_english_md_skipped
 
-echo ""
-echo "Results: $PASS passed, $FAIL failed"
-[[ $FAIL -eq 0 ]]
+report_results

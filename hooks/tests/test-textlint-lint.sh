@@ -3,52 +3,22 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/test-helpers.sh"
 HOOK="$SCRIPT_DIR/../textlint-lint.sh"
-PASS=0
-FAIL=0
 
-assert_eq() {
-  local name="$1" expected="$2" actual="$3"
-  if [[ "$expected" == "$actual" ]]; then
-    echo "  PASS: $name"
-    PASS=$((PASS + 1))
-  else
-    echo "  FAIL: $name"
-    echo "    expected: $expected"
-    echo "    actual:   $actual"
-    FAIL=$((FAIL + 1))
-  fi
+# Helper: build Bash tool_input JSON from a command string
+make_bash_json() {
+  local cmd="$1"
+  printf '{"tool_name":"Bash","tool_input":{"command":"%s"}}' \
+    "$(echo "$cmd" | sed 's/"/\\"/g')"
 }
 
-assert_contains() {
-  local name="$1" pattern="$2" text="$3"
-  if echo "$text" | grep -q "$pattern"; then
-    echo "  PASS: $name"
-    PASS=$((PASS + 1))
-  else
-    echo "  FAIL: $name (pattern '$pattern' not found)"
-    echo "    text: $(echo "$text" | head -3)"
-    FAIL=$((FAIL + 1))
-  fi
-}
-
-assert_empty() {
-  local name="$1" text="$2"
-  if [[ -z "$text" ]]; then
-    echo "  PASS: $name"
-    PASS=$((PASS + 1))
-  else
-    echo "  FAIL: $name (expected empty, got: $(echo "$text" | head -1))"
-    FAIL=$((FAIL + 1))
-  fi
-}
-
-# T-006: gh issue create with AI-ish body returns advisory
 test_issue_create_advisory() {
-  echo "T-006: gh issue create with problematic body returns advisory"
+  echo "gh issue create with problematic body returns advisory"
   local body='革命的な技術で業界を変えます。することができます。'
   local cmd="gh issue create --title \"test\" --body \"$body\""
-  local json='{"tool_name":"Bash","tool_input":{"command":"'"$(echo "$cmd" | sed 's/"/\\"/g')"'"}}'
+  local json
+  json=$(make_bash_json "$cmd")
   local output
   output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
   assert_contains "outputs JSON" "decision" "$output"
@@ -56,62 +26,59 @@ test_issue_create_advisory() {
   assert_contains "has additionalContext" "additionalContext" "$output"
 }
 
-# T-007: gh issue create with clean body returns structure checklist (no textlint section)
 test_issue_create_clean() {
-  echo "T-007: gh issue create with clean body returns structure checklist only"
+  echo "gh issue create with clean body returns structure checklist only"
   local body='テストです。'
   local cmd="gh issue create --title \"test\" --body \"$body\""
-  local json='{"tool_name":"Bash","tool_input":{"command":"'"$(echo "$cmd" | sed 's/"/\\"/g')"'"}}'
+  local json
+  json=$(make_bash_json "$cmd")
   local output
   output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
   assert_contains "has structure checklist" "構造レビュー" "$output"
   assert_contains "decision is approve" "approve" "$output"
 }
 
-# T-008: Non-gh command is skipped
 test_non_gh_command_skipped() {
-  echo "T-008: git status is skipped"
+  echo "git status is skipped"
   local json='{"tool_name":"Bash","tool_input":{"command":"git status"}}'
   local output
   output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
   assert_empty "no output for git status" "$output"
 }
 
-# T-010: gh pr create with problematic body returns advisory
 test_pr_create_advisory() {
-  echo "T-010: gh pr create with problematic body returns advisory"
+  echo "gh pr create with problematic body returns advisory"
   local body='革命的な技術で業界を変えます。'
   local cmd="gh pr create --title \"test\" --body \"$body\""
-  local json='{"tool_name":"Bash","tool_input":{"command":"'"$(echo "$cmd" | sed 's/"/\\"/g')"'"}}'
+  local json
+  json=$(make_bash_json "$cmd")
   local output
   output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
   assert_contains "outputs advisory" "additionalContext" "$output"
 }
 
-# T-extra: Non-Bash tool is skipped
 test_non_bash_tool_skipped() {
-  echo "T-extra: Write tool is skipped"
+  echo "Write tool is skipped"
   local json='{"tool_name":"Write","tool_input":{"file_path":"/some/file.md"}}'
   local output
   output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
   assert_empty "no output for Write tool" "$output"
 }
 
-# T-extra: gh issue create without --body is skipped
 test_no_body_skipped() {
-  echo "T-extra: gh issue create without --body is skipped"
+  echo "gh issue create without --body is skipped"
   local json='{"tool_name":"Bash","tool_input":{"command":"gh issue create --title \"test\""}}'
   local output
   output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
   assert_empty "no output without --body" "$output"
 }
 
-# T-extra: English body gets structure checklist but no textlint
 test_english_body_structure_only() {
-  echo "T-extra: English body gets structure checklist only (no textlint)"
+  echo "English body gets structure checklist only (no textlint)"
   local body='This is an English issue body with enough content to verify that textlint does not run on non-Japanese text. The structure review should still appear.'
   local cmd="gh issue create --title \"test\" --body \"$body\""
-  local json='{"tool_name":"Bash","tool_input":{"command":"'"$(echo "$cmd" | sed 's/"/\\"/g')"'"}}'
+  local json
+  json=$(make_bash_json "$cmd")
   local output
   output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
   assert_contains "has structure checklist" "構造レビュー" "$output"
@@ -127,6 +94,4 @@ test_non_bash_tool_skipped
 test_no_body_skipped
 test_english_body_structure_only
 
-echo ""
-echo "Results: $PASS passed, $FAIL failed"
-[[ $FAIL -eq 0 ]]
+report_results
