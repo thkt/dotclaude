@@ -5,8 +5,8 @@ description:
   Use when user mentions 調査して, 調べて, リサーチ, investigate, 分析して. Do
   NOT use for design planning or SOW/Spec generation (use /think instead).
 allowed-tools:
-  Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep,
-  LS, Task, AskUserQuestion
+  Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Bash(yomu:*),
+  Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 context: fork
 argument-hint: "[research topic or question]"
@@ -28,7 +28,7 @@ Investigate codebase with confidence-based findings, without implementation.
 | ----- | --------------------------------- | ------------------------------------------------ |
 | 0     | (prior research check)            | Read `workspace/research/` for related findings  |
 | 1     | (clarification)                   | Research intent + topic area                     |
-| 2     | (intent-aware analyzer selection) | Select and run analyzers in parallel             |
+| 2     | (intent-aware analyzer selection) + `yomu search` | Select and run analyzers + semantic search in parallel |
 | 3     | Task(Explore)                     | Detail: code paths, patterns, edge cases         |
 | 3.5   | (Strong Inference)                | ≥3 hypotheses → discriminating tests → eliminate |
 | 4     | (synthesis)                       | Consolidate with ✓/→/? markers                   |
@@ -49,7 +49,11 @@ Ask via AskUserQuestion:
 ### Phase 2: Intent-Aware Parallel Analysis
 
 Select analyzers based on Phase 1 answers, then run all selected in parallel via
-Task.
+Task. Additionally, always run `yomu search "<research topic>"` via Bash in
+parallel for semantic concept search.
+
+yomu finds conceptually related code that structural analyzers may miss. Feed all
+results into Phase 3.
 
 #### Analyzer Selection Matrix
 
@@ -60,7 +64,7 @@ Task.
 | Understanding     | architecture + code-flow                | + domain   | + api | + setup        |
 
 Legend: Each cell shows additional analyzers beyond the base set.
-`architecture` + `code-flow` always run.
+`architecture` + `code-flow` always run. `yomu search` always runs (not shown in matrix).
 
 #### Analyzer Reference
 

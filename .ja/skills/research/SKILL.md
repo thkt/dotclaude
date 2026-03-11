@@ -5,8 +5,8 @@ description:
   リサーチ, investigate, 分析して等に言及した場合に使用。設計やSOW/Spec生成には
   /think を使用。
 allowed-tools:
-  Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*),
-  Bash(yomu:*), Read, Glob, Grep, LS, Task, AskUserQuestion
+  Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Bash(yomu:*),
+  Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 context: fork
 argument-hint: "[リサーチトピックまたは質問]"
@@ -24,44 +24,72 @@ user-invocable: true
 
 ## 実行
 
-| フェーズ | エージェント                                   | フォーカス                               |
-| -------- | ---------------------------------------------- | ---------------------------------------- |
-| 1        | （意図確認）                                   | 調査意図 → `/think` 計画？               |
-| 2        | `architecture-analyzer` + `code-flow-analyzer` + `yomu search` | 構造 + フロー + セマンティック検索（全並列） |
-| 3        | Task(Explore)                                  | 詳細: コードパス、パターン、エッジケース |
-| 3.5      | （Strong Inference）                           | ≥3仮説 → 判別テスト → 棄却              |
-| 4        | （統合）                                       | ✓/→/?マーカー付きで整理                  |
+| フェーズ | エージェント                                        | フォーカス                                     |
+| -------- | --------------------------------------------------- | ---------------------------------------------- |
+| 0        | （先行リサーチ確認）                                | `workspace/research/` で関連する発見を確認     |
+| 1        | （意図確認）                                        | 調査意図 + トピック領域                        |
+| 2        | （意図ベースのアナライザー選択）+ `yomu search`     | アナライザー + セマンティック検索を並列実行    |
+| 3        | Task(Explore)                                       | 詳細: コードパス、パターン、エッジケース       |
+| 3.5      | （Strong Inference）                                | ≥3仮説 → 判別テスト → 棄却                    |
+| 4        | （統合）                                            | ✓/→/?マーカー付きで整理                        |
 
-Note: `Task(subagent_type: Explore)` で呼び出し。
+Note: アナライザーは `Task(subagent_type: <analyzer-name>)` で、Exploreは
+`Task(subagent_type: Explore)` で呼び出し。
 
 ### フェーズ1: 意図確認
 
 AskUserQuestionで質問:
 
-| 質問       | 選択肢                               |
-| ---------- | ------------------------------------ |
-| 調査意図   | 機能計画 / バグ調査 / 理解のみ       |
-| 計画必要？ | Yes → 調査後 `/think` を提案         |
+| 質問           | 選択肢                               |
+| -------------- | ------------------------------------ |
+| 調査意図       | 機能計画 / バグ調査 / 理解のみ       |
+| トピック領域   | データモデル / API / インフラ / 全般 |
+| 計画必要？     | Yes → 調査後 `/think` を提案         |
 
-### フェーズ2: 並列分析
+### フェーズ2: 意図ベースの並列分析
 
-`architecture-analyzer` と `code-flow-analyzer` をTaskで並列実行。
+フェーズ1の回答に基づきアナライザーを選択、全てTaskで並列実行。加えて、常に
+`yomu search "<リサーチトピック>"` をBashで並列実行（セマンティック概念検索）。
+
+yomuは構造分析では見つからない概念的に関連するコードを発見する。全結果をフェーズ3
+に渡す。
+
+#### アナライザー選択マトリクス
+
+| 意図 \ トピック | 全般                                    | データモデル | API   | インフラ |
+| --------------- | --------------------------------------- | ------------ | ----- | -------- |
+| 機能計画        | architecture + code-flow + domain + api | + domain     | + api | + setup  |
+| バグ調査        | architecture + code-flow                | + domain     | + api | + setup  |
+| 理解のみ        | architecture + code-flow                | + domain     | + api | + setup  |
+
+凡例: 各セルはベースセットに追加されるアナライザーを示す。
+`architecture` + `code-flow` は常に実行。`yomu search` も常に実行（マトリクスには非表示）。
+
+#### アナライザーリファレンス
+
+| アナライザー          | サブエージェント型      | 返却内容                          |
+| --------------------- | ----------------------- | --------------------------------- |
+| architecture-analyzer | `architecture-analyzer` | 構造、依存関係、Mermaidダイアグラム |
+| code-flow-analyzer    | `code-flow-analyzer`    | 実行パス、データフロー            |
+| domain-analyzer       | `domain-analyzer`       | エンティティ、関係、ルール        |
+| api-analyzer          | `api-analyzer`          | エンドポイント、スキーマ、認証    |
+| setup-analyzer        | `setup-analyzer`        | 前提条件、環境変数、設定          |
 
 Output Verifiabilityマーカー（[✓]/[→]/[?]）を全発見に適用。
-
-### フェーズ2.5: セマンティックコード検索
-
-`yomu search "<リサーチトピック>"` で概念的に関連するコードを検索。
-
-- フェーズ2の結果を用いて検索クエリを精度向上
-- Grep/Globのリテラル検索をyomuのセマンティック検索で補完
-- 発見したファイルをフェーズ3のExplore探索に渡す
 
 ### フェーズ3.5: Strong Inference（バグ調査時のみ）
 
 デバッグ調査プロトコルを適用。フェーズ2-3の発見を入力とする。
 
 スキップ: 原因が自明、または意図が「機能計画」/「理解のみ」の場合。
+
+## エラーハンドリング
+
+| エラー                     | アクション                                       |
+| -------------------------- | ------------------------------------------------ |
+| アナライザーが空を返す     | より広いスコープで再実行、発見に記載             |
+| アナライザーがタイムアウト | 完了したアナライザーで続行                       |
+| 全アナライザーが空         | 「データ不十分」と報告 — 結論を出さないこと      |
 
 ## 出力
 
