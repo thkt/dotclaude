@@ -215,8 +215,7 @@
         "./skills/utilizing-cli-tools/SKILL.md",
         "./skills/extracting-ubiquitous-language/SKILL.md",
         "./skills/validating-specs/SKILL.md",
-        "./skills/vercel-react/SKILL.md",
-        "./skills/web-design-guidelines/SKILL.md"
+        "./skills/vercel-react/SKILL.md"
       ]
     }
   ]
