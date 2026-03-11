@@ -19,7 +19,6 @@ graph TD
     subgraph Hooks["Hook Categories"]
         SEC[security/]
         LIFE[lifecycle/]
-        CODEMAP[codemap/]
         AGENTS[agents/]
         VIEWER[viewer/]
         NOTIFY_H[notifications/]
@@ -40,7 +39,6 @@ graph TD
 | ---------------- | ---------------------- | ----------------------------------------------- |
 | `security/`      | PreToolUse             | Bash safety, permission control, secrets check  |
 | `lifecycle/`     | statusLine, pre-commit | Status line, PR cache, IDR generation, worktree |
-| `codemap/`       | PostToolUse            | Architecture map update                         |
 | `agents/`        | Subagent\*             | Agent logging, idle detection                   |
 | `viewer/`        | PostToolUse            | SOW/Spec/IDR viewer                             |
 | `notifications/` | Stop                   | Completion notification                         |
@@ -80,15 +78,9 @@ graph TD
 | -------------------- | ------------------ | ------------ | --------------------------- |
 | `ccplanview-open.sh` | PostToolUse(Write) | fail-open    | Open SOW/Spec/IDR in viewer |
 
-### codemap/
-
-| Hook             | Event | Failure Mode | Purpose                  |
-| ---------------- | ----- | ------------ | ------------------------ |
-| `auto-update.sh` | -     | fail-open    | architecture.md 自動生成 |
-
 ## Configuration
 
-hooks は `settings.json` で設定:
+hooksは `settings.json` で設定:
 
 ```json
 {
@@ -129,7 +121,7 @@ hooks は `settings.json` で設定:
 
 ### 2. Fail-safe
 
-フックがエラーで終了しても、Claude Code は継続動作。
+フックがエラーで終了しても、Claude Codeは継続動作。
 
 ### 3. Fail-mode Convention
 

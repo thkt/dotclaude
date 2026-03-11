@@ -26,7 +26,7 @@ Investigate codebase with confidence-based findings, without implementation.
 
 | Phase | Agent                             | Focus                                            |
 | ----- | --------------------------------- | ------------------------------------------------ |
-| 0     | (codemap check)                   | Read `.analysis/architecture.yaml` if exists     |
+| 0     | (prior research check)            | Read `workspace/research/` for related findings  |
 | 1     | (clarification)                   | Research intent + topic area                     |
 | 2     | (intent-aware analyzer selection) | Select and run analyzers in parallel             |
 | 3     | Task(Explore)                     | Detail: code paths, patterns, edge cases         |

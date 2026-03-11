@@ -41,10 +41,9 @@ Task description from `$1`, research context, or AskUserQuestion if empty.
 
 ### Step 1: Codebase Exploration
 
-Read relevant code. Check `.analysis/architecture.yaml` if exists. Also check
-`.claude/workspace/research/` for recent research output — if a relevant file
-exists, read it to inherit prior investigation context. Understand patterns,
-constraints, architecture, and prior art.
+Read relevant code. Check `.claude/workspace/research/` for recent research
+output — if a relevant file exists, read it to inherit prior investigation
+context. Understand patterns, constraints, architecture, and prior art.
 
 ### Step 2: Approach Generation
 

@@ -32,7 +32,7 @@ PROJECT_CONTEXT.md cites product decisions (PRD, stakeholder).
 
 | Phase | Action                        | Method                                                                          |
 | ----- | ----------------------------- | ------------------------------------------------------------------------------- |
-| 0     | Seed Context                  | Read `.analysis/architecture.yaml` or `.md` (if either exists) for domain hints |
+| 0     | Project Discovery             | Glob/LS for project structure; identify model directories and domain boundaries |
 | 1     | Framework Detection           | Glob for `package.json`, `requirements.txt`, `go.mod`; Read to identify         |
 | 2     | Schema Discovery              | Glob for entity/model files; enumerate ALL model directories                    |
 | 3     | Schema Reading                | Read each file exhaustively (see reading rules below)                           |

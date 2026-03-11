@@ -23,7 +23,6 @@ graph TD
         LINT[lint/]
         FORMAT[format/]
         LIFE[lifecycle/]
-        CODEMAP[codemap/]
         AGENTS[agents/]
         VIEWER[viewer/]
         NOTIFY_H[notifications/]
@@ -49,7 +48,6 @@ graph TD
 | `lint/`          | Pre/PostToolUse | コード品質チェック             |
 | `format/`        | PostToolUse     | フォーマット適用               |
 | `lifecycle/`     | statusLine      | ステータスライン、PRキャッシュ |
-| `codemap/`       | PostToolUse     | アーキテクチャマップ更新       |
 | `agents/`        | Subagent*       | エージェントログ・通知         |
 | `viewer/`        | PostToolUse     | SOW/Spec/IDRビューア連携       |
 | `notifications/` | Stop            | 完了通知                       |
@@ -96,12 +94,6 @@ graph TD
 | -------------------- | ------------------ | ---------- | ---------------------------- |
 | `ccplanview-open.sh` | PostToolUse(Write) | fail-open  | SOW/Spec/IDRをビューアで開く |
 
-### codemap/
-
-| フック            | イベント | 失敗モード | 目的                     |
-| ----------------- | -------- | ---------- | ------------------------ |
-| `auto-update.sh`  | -        | fail-open  | architecture.md 自動生成 |
-
 ## 設定
 
 フックは `settings.json` で設定:
@@ -145,7 +137,7 @@ graph TD
 
 ### 2. フェイルセーフ
 
-フックがエラーで終了しても、Claude Code は継続動作。
+フックがエラーで終了しても、Claude Codeは継続動作。
 
 ### 3. 失敗モード規約
 

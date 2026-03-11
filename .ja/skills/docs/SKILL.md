@@ -1,6 +1,8 @@
 ---
 name: docs
-description: コードベース分析からドキュメントを生成。ユーザーがドキュメント生成, ドキュメント作って, generate docs, ドキュメント化等に言及した場合に使用。
+description:
+  コードベース分析からドキュメントを生成。ユーザーがドキュメント生成,
+  ドキュメント作って, generate docs, ドキュメント化等に言及した場合に使用。
 allowed-tools: Read, Write, Task, AskUserQuestion
 model: opus
 argument-hint: "[architecture|api|domain|setup]"
@@ -17,24 +19,20 @@ user-invocable: true
 
 ## 実行
 
-1. アナライザー呼び出し: `architecture-analyzer`, `api-analyzer`, `domain-analyzer`, `setup-analyzer`
+1. アナライザー呼び出し: `architecture-analyzer`, `api-analyzer`,
+   `domain-analyzer`, `setup-analyzer`
 2. アナライザーが構造化YAMLを返す
-3. YAMLに必須トップレベルキーがあるか検証（エラー → "Analyzer returned invalid YAML" を報告）
-4. `architecture` か `api` の場合: `.analysis/{type}.yaml` に保存
-5. `templates/docs/{type}.md` からテンプレート読み込み
-6. テンプレートでYAMLをフォーマット
-7. `.analysis/{type}.md` に保存
-8. ユーザーに提示
+3. YAMLに必須トップレベルキーがあるか検証（エラー → "Analyzer returned invalid
+   YAML" を報告）
+4. `templates/docs/{type}.md` からテンプレート読み込み
+5. テンプレートでYAMLをフォーマット
+6. `workspace/docs/{type}.md` に保存
+7. ユーザーに提示
 
 ## フロー
 
 ```text
-architecture / api:
-[analyzer YAML] → .analysis/{type}.yaml (データ)
-               → [template] → .analysis/{type}.md (ドキュメント)
-
-domain / setup:
-[analyzer YAML] → [template] → .analysis/{type}.md (ドキュメント)
+[analyzer YAML] → [template] → workspace/docs/{type}.md (ドキュメント)
 ```
 
 ## 型別必須キー
@@ -50,4 +48,5 @@ domain / setup:
 
 ## 出力
 
-テンプレートでフォーマットされたMarkdown。変数: `{field}`, `{object.property}`, `{array[].property}`。条件: `{field? (foreach)}...{/foreach}` (optional配列用)
+テンプレートでフォーマットされたMarkdown。変数: `{field}`, `{object.property}`,
+`{array[].property}`。条件: `{field? (foreach)}...{/foreach}` (optional配列用)

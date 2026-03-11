@@ -14,25 +14,20 @@ skills: [orchestrating-workflows]
 
 ## Seed Context
 
-Check for existing analysis:
+Discover project structure:
 
-| File                        | Usage                           |
-| --------------------------- | ------------------------------- |
-| .analysis/architecture.yaml | Project structure, entry points |
-| .analysis/api.yaml          | API overview (all levels)       |
-
-If api.yaml exists: Include in Entry Points, use for flow tracing, note
-confidence levels.
+Use Glob/LS to discover project structure and entry points. Use Grep to find key
+exports and API patterns.
 
 ## Analysis Approach
 
-| Phase        | Focus                                      | Output                 |
-| ------------ | ------------------------------------------ | ---------------------- |
-| Seed Context | Read existing analysis data                | Known structure + APIs |
-| Discovery    | Entry points, core files, boundaries       | API/UI/CLI entry list  |
-| Flow Tracing | Call chains, data transforms, dependencies | Execution sequence     |
-| Architecture | Layers, patterns, interfaces               | Design map             |
-| Details      | Algorithms, error handling, performance    | Technical notes        |
+| Phase        | Focus                                        | Output                 |
+| ------------ | -------------------------------------------- | ---------------------- |
+| Seed Context | Glob/LS for project structure + entry points | Known structure + APIs |
+| Discovery    | Entry points, core files, boundaries         | API/UI/CLI entry list  |
+| Flow Tracing | Call chains, data transforms, dependencies   | Execution sequence     |
+| Architecture | Layers, patterns, interfaces                 | Design map             |
+| Details      | Algorithms, error handling, performance      | Technical notes        |
 
 ## Output Format
 

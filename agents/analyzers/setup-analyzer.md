@@ -24,25 +24,21 @@ background: true
 
 ## Analysis Phases
 
-| Phase | Action             | Method                                                                        |
-| ----- | ------------------ | ----------------------------------------------------------------------------- |
-| 0     | Seed Context       | Read `.analysis/architecture.yaml` or `.md` (if either exists) for tech stack |
-| 1     | Package Detection  | LS tool for project root                                                      |
-| 2     | Version Detection  | `cat .nvmrc .python-version .tool-versions`                                   |
-| 3     | Env Var Extraction | Discover → Read → Cross-validate (see Phase 3 details)                        |
-| 4     | Config Deep Read   | Read config files and extract key settings (see Phase 4 details)              |
-| 5     | Script Discovery   | `jq '.scripts' package.json` / `cat Makefile`                                 |
-| 6     | README Parsing     | Extract setup instructions from README                                        |
-| 7     | Validation Gate    | Verify evidence for all output fields                                         |
+| Phase | Action             | Method                                                               |
+| ----- | ------------------ | -------------------------------------------------------------------- |
+| 0     | Project Discovery  | Glob/LS for project structure; identify tech stack from config files |
+| 1     | Package Detection  | LS tool for project root                                             |
+| 2     | Version Detection  | `cat .nvmrc .python-version .tool-versions`                          |
+| 3     | Env Var Extraction | Discover → Read → Cross-validate (see Phase 3 details)               |
+| 4     | Config Deep Read   | Read config files and extract key settings (see Phase 4 details)     |
+| 5     | Script Discovery   | `jq '.scripts' package.json` / `cat Makefile`                        |
+| 6     | README Parsing     | Extract setup instructions from README                               |
+| 7     | Validation Gate    | Verify evidence for all output fields                                |
 
-### Phase 0: Seed Context
+### Phase 0: Project Discovery
 
-If `.analysis/architecture.yaml` or `.analysis/architecture.md` exists, read it for:
-
-- `tech_stack` → skip redundant detection in Phase 1-2
-- `key_components` → identify config entry points
-
-If absent, proceed with full detection from Phase 1.
+Use Glob/LS to scan project root. Read `package.json`, `Cargo.toml`, `go.mod`,
+or `pyproject.toml` to identify tech stack and config entry points.
 
 ### Phase 3: Env Var Extraction
 
@@ -109,14 +105,14 @@ Read each config file and extract key settings, not just file names:
 
 ## Error Handling
 
-| Error                | Action                                                |
-| -------------------- | ----------------------------------------------------- |
-| No package manager   | Report "Manual setup"                                 |
-| No env example       | Skip to code-only env var detection (Phase 3c)        |
-| No README            | Generate minimal guide                                |
-| Malformed JSON       | Log parse error for file, skip that config source     |
-| Invalid config       | Log error with file path, continue with other sources |
-| No architecture file | Skip Phase 0, proceed with full detection             |
+| Error              | Action                                                |
+| ------------------ | ----------------------------------------------------- |
+| No package manager | Report "Manual setup"                                 |
+| No env example     | Skip to code-only env var detection (Phase 3c)        |
+| No README          | Generate minimal guide                                |
+| Malformed JSON     | Log parse error for file, skip that config source     |
+| Invalid config     | Log error with file path, continue with other sources |
+| No config files    | Proceed with generic detection patterns               |
 
 ## Output
 

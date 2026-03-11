@@ -13,15 +13,15 @@ background: true
 
 ## Analysis Phases
 
-| Phase | Action                   | Method                                                                          |
-| ----- | ------------------------ | ------------------------------------------------------------------------------- |
-| 0     | Seed Context             | Read `.analysis/architecture.yaml` or `.md` (if either exists) for entry points |
-| 1     | Framework Detection      | Glob for `package.json`, `requirements.txt`, `go.mod`; Read to identify         |
-| 2     | Schema Discovery         | Glob for schema/type definition files (see patterns below)                      |
-| 3     | Schema Reading           | Read each schema file, extract fields with name/type/required                   |
-| 4     | Route-Schema Correlation | Glob for route/repository files; Read and match to schemas                      |
-| 5     | Auth Detection           | Grep for auth middleware, JWT patterns in discovered route files                |
-| 6     | Confidence Tagging       | Assign verified/inferred/unknown per endpoint                                   |
+| Phase | Action                   | Method                                                                  |
+| ----- | ------------------------ | ----------------------------------------------------------------------- |
+| 0     | Project Discovery        | Glob/LS for project structure; identify entry points and route files    |
+| 1     | Framework Detection      | Glob for `package.json`, `requirements.txt`, `go.mod`; Read to identify |
+| 2     | Schema Discovery         | Glob for schema/type definition files (see patterns below)              |
+| 3     | Schema Reading           | Read each schema file, extract fields with name/type/required           |
+| 4     | Route-Schema Correlation | Glob for route/repository files; Read and match to schemas              |
+| 5     | Auth Detection           | Grep for auth middleware, JWT patterns in discovered route files        |
+| 6     | Confidence Tagging       | Assign verified/inferred/unknown per endpoint                           |
 
 ### Phase 2: Schema Discovery Patterns
 
@@ -33,7 +33,8 @@ background: true
 | Repository | `**/_repositories/*/schema.ts`, `**/repositories/*/schema.ts`       |
 | Python     | `**/schemas.py`, `**/models.py`, `**/*_schema.py`                   |
 
-After known-framework patterns, also scan generic paths to catch unlisted frameworks:
+After known-framework patterns, also scan generic paths to catch unlisted
+frameworks:
 
 | Fallback | Glob Pattern                                                  |
 | -------- | ------------------------------------------------------------- |
@@ -42,7 +43,8 @@ After known-framework patterns, also scan generic paths to catch unlisted framew
 
 ### Phase 3: Schema Reading
 
-Read each file in full. Extract name, type, required (`?` or `.optional()` = optional).
+Read each file in full. Extract name, type, required (`?` or `.optional()` =
+optional).
 
 ### Phase 4: Route-Schema Correlation
 
@@ -55,7 +57,8 @@ Read each file in full. Extract name, type, required (`?` or `.optional()` = opt
 | FastAPI    | `**/*.py` with `@app.get/post/put/delete`                                 |
 | Generic    | `**/routes/**/*.{ts,tsx}` — detect `export { loader, action, GET, POST }` |
 
-Above are common patterns. Use Phase 1 detection to identify additional route conventions.
+Above are common patterns. Use Phase 1 detection to identify additional route
+conventions.
 
 ### Phase 6: Confidence Rules
 

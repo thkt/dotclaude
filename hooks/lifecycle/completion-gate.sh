@@ -34,13 +34,18 @@ block_with() {
 }
 
 # Phase 1: Tests
+# Prefer test:type + test:unit when available (avoids running format/lint gates
+# that can be slow or cause side-effects like prisma engine corruption).
 if [ -z "${TEST_CMD:-}" ] && command -v nr &>/dev/null && [ -f "$PROJECT_DIR/package.json" ]; then
-  TEST_CMD="nr test"
+  if jq -e '.scripts["test:unit"]' "$PROJECT_DIR/package.json" >/dev/null 2>&1; then
+    TEST_CMD="nr test:type && nr test:unit"
+  else
+    TEST_CMD="nr test"
+  fi
 fi
 
 if [ -n "${TEST_CMD:-}" ]; then
-  # Intentional word-splitting: TEST_CMD="nr test" splits into two args
-  TEST_OUTPUT=$(${TIMEOUT_ARGS[@]+"${TIMEOUT_ARGS[@]}"} $TEST_CMD 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
+  TEST_OUTPUT=$(${TIMEOUT_ARGS[@]+"${TIMEOUT_ARGS[@]}"} bash -c "$TEST_CMD" 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
   if [ $TEST_EXIT -eq 124 ]; then
     echo "completion-gate: test timeout (60s)" >&2
   elif [ $TEST_EXIT -ne 0 ]; then

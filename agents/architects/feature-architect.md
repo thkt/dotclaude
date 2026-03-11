@@ -21,17 +21,11 @@ skills: [applying-code-principles]
 
 ## Seed Context
 
-Check for existing analysis files:
+Discover project structure:
 
-| File                        | Usage                                   |
-| --------------------------- | --------------------------------------- |
-| .analysis/architecture.yaml | Project structure, entry points         |
-| .analysis/api.yaml          | Existing APIs (verified endpoints only) |
+Use Glob/LS to discover project structure and entry points. Use Grep to find
+existing API endpoints and naming conventions.
 
-If api.yaml exists:
-
-- Use verified endpoints for consistency
-- Flag new endpoints conflicting with existing naming/path conventions
 - Include "API Conflicts" list if any detected
 
 ## Exploration
@@ -63,7 +57,7 @@ architecture decisions.
 
 | Phase            | Focus                               | Output                  |
 | ---------------- | ----------------------------------- | ----------------------- |
-| Seed Context     | Read existing analysis data         | Known patterns + APIs   |
+| Seed Context     | Glob/LS for project structure       | Known patterns + APIs   |
 | Exploration      | Semantic search with yomu/fallback  | Codebase insights       |
 | Pattern Analysis | Extract existing conventions        | Patterns with file:line |
 | Compose          | Synthesize from exploration         | Decision + traceability |

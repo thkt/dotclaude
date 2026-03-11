@@ -39,8 +39,8 @@ user-invocable: true
 
 ### Step 1: コードベース探索
 
-関連コードを読む。`.analysis/architecture.yaml`
-があれば確認。パターン、制約、アーキテクチャ、先行事例を理解。
+関連コードを読む。`.claude/workspace/research/`
+に最近の調査結果があれば読み込み、先行調査のコンテキストを継承。パターン、制約、アーキテクチャ、先行事例を理解。
 
 ### Step 2: アプローチ生成
 
@@ -132,8 +132,9 @@ API（Props、variants、states、usage）を含める。出力:
 
 ### スコープ検証
 
-タスク作成前に、Implementation Planの各Phaseのユニークファイル数をカウントする。
-ファイル数 ≥5のPhaseは独立Unitに分割し、全Phaseがファイル数 < 5になるまで繰り返す。
+タスク作成前に、Implementation
+Planの各Phaseのユニークファイル数をカウントする。ファイル数 ≥5のPhaseは独立Unitに分割し、全Phaseがファイル数 <
+5になるまで繰り返す。
 
 ### マイルストーン
 
