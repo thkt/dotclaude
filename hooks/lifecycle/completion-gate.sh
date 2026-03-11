@@ -44,7 +44,7 @@ if [ -z "${TEST_CMD:-}" ] && command -v nr &>/dev/null && [ -f "$PROJECT_DIR/pac
 fi
 
 if [ -n "${TEST_CMD:-}" ]; then
-  TEST_OUTPUT=$(${TIMEOUT_ARGS[@]+"${TIMEOUT_ARGS[@]}"} bash -c "$TEST_CMD" 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
+  TEST_OUTPUT=$(cd "$PROJECT_DIR" && ${TIMEOUT_ARGS[@]+"${TIMEOUT_ARGS[@]}"} bash -c "$TEST_CMD" 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
   if [ $TEST_EXIT -eq 124 ]; then
     echo "completion-gate: test timeout (${GATE_TIMEOUT}s)" >&2
   elif [ $TEST_EXIT -ne 0 ]; then

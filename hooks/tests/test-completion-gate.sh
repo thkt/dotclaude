@@ -222,6 +222,42 @@ test_015_type_fail_blocks() {
   assert_eq "unit not ran (short-circuit)" "no" "$(ran unit-015)"
 }
 
+test_017_cwd_differs_from_project_dir() {
+  echo "T-017: CWD != PROJECT_DIR → test runs in PROJECT_DIR (pwd check)"
+  local repo
+  repo=$(make_repo_with_ts_change)
+  local cwd_marker="$TMPDIR_BASE/marker-017-cwd"
+  local mock="$TMPDIR_BASE/mock-017.sh"
+  cat > "$mock" <<MOCK
+#!/usr/bin/env bash
+pwd > "$cwd_marker"
+MOCK
+  chmod +x "$mock"
+  local exit_code=0
+  (cd /tmp && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock" bash "$HOOK" >/dev/null 2>&1) || exit_code=$?
+  assert_eq "exit 0" "0" "$exit_code"
+  assert_eq "ran in PROJECT_DIR" "$repo" "$(cat "$cwd_marker" 2>/dev/null)"
+}
+
+test_018_cwd_differs_nr_detection() {
+  echo "T-018: CWD != PROJECT_DIR → nr detects package.json in PROJECT_DIR"
+  if ! command -v nr &>/dev/null; then
+    echo "  SKIP: nr not installed"
+    return
+  fi
+  local repo marker="$TMPDIR_BASE/marker-018"
+  repo=$(make_repo)
+  echo "const x = 1" > "$repo/app.ts"
+  echo "{\"scripts\":{\"test\":\"touch $marker\"}}" > "$repo/package.json"
+  echo '{}' > "$repo/package-lock.json"
+  git -C "$repo" add . && git -C "$repo" commit -q -m "add"
+  echo "const x = 2" > "$repo/app.ts"
+  local exit_code=0
+  (cd /tmp && echo '{}' | CLAUDE_PROJECT_DIR="$repo" bash "$HOOK" >/dev/null 2>&1) || exit_code=$?
+  assert_eq "exit 0" "0" "$exit_code"
+  assert_eq "test actually ran" "yes" "$(test -f "$marker" && echo yes || echo no)"
+}
+
 test_016_timeout_no_block() {
   echo "T-016: test timeout → exit 0, no block, stderr message"
   if ! command -v timeout &>/dev/null && ! command -v gtimeout &>/dev/null; then
@@ -248,6 +284,8 @@ test_008_no_test_cmd
 test_010_test_fail_and_truncate
 test_011_014_nr_script_detection
 test_015_type_fail_blocks
+test_017_cwd_differs_from_project_dir
+test_018_cwd_differs_nr_detection
 test_016_timeout_no_block
 
 report_results
