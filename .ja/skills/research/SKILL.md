@@ -5,8 +5,8 @@ description:
   リサーチ, investigate, 分析して等に言及した場合に使用。設計やSOW/Spec生成には
   /think を使用。
 allowed-tools:
-  Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Read, Glob, Grep,
-  LS, Task, AskUserQuestion
+  Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*),
+  Bash(yomu:*), Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 context: fork
 argument-hint: "[リサーチトピックまたは質問]"
@@ -24,53 +24,38 @@ user-invocable: true
 
 ## 実行
 
-| フェーズ | エージェント                     | フォーカス                                 |
-| -------- | -------------------------------- | ------------------------------------------ |
-| 0        | （先行調査確認）                 | `workspace/research/` から関連する調査結果を読む |
-| 1        | （意図確認）                     | 調査意図 + トピック領域                    |
-| 2        | （意図ベースのアナライザー選択） | 選択して並列実行                           |
-| 3        | Task(Explore)                    | 詳細: コードパス、パターン、エッジケース   |
-| 3.5      | （Strong Inference）             | ≥3仮説 → 判別テスト → 棄却                 |
-| 4        | （統合）                         | ✓/→/?マーカー付きで整理                    |
+| フェーズ | エージェント                                   | フォーカス                               |
+| -------- | ---------------------------------------------- | ---------------------------------------- |
+| 1        | （意図確認）                                   | 調査意図 → `/think` 計画？               |
+| 2        | `architecture-analyzer` + `code-flow-analyzer` + `yomu search` | 構造 + フロー + セマンティック検索（全並列） |
+| 3        | Task(Explore)                                  | 詳細: コードパス、パターン、エッジケース |
+| 3.5      | （Strong Inference）                           | ≥3仮説 → 判別テスト → 棄却              |
+| 4        | （統合）                                       | ✓/→/?マーカー付きで整理                  |
 
-Note: `Task(subagent_type: <analyzer-name>)`
-でアナライザーを、`Task(subagent_type: Explore)` でExploreを呼び出し。
+Note: `Task(subagent_type: Explore)` で呼び出し。
 
 ### フェーズ1: 意図確認
 
 AskUserQuestionで質問:
 
-| 質問         | 選択肢                               |
-| ------------ | ------------------------------------ |
-| 調査意図     | 機能計画 / バグ調査 / 理解のみ       |
-| トピック領域 | データモデル / API / インフラ / 全般 |
-| 計画必要？   | Yes → 調査後 `/think` を提案         |
+| 質問       | 選択肢                               |
+| ---------- | ------------------------------------ |
+| 調査意図   | 機能計画 / バグ調査 / 理解のみ       |
+| 計画必要？ | Yes → 調査後 `/think` を提案         |
 
-### フェーズ2: 意図ベースの並列分析
+### フェーズ2: 並列分析
 
-フェーズ1の回答に基づきアナライザーを選択し、全選択分をTaskで並列実行。
-
-#### アナライザー選択マトリクス
-
-| 意図 \ トピック | 全般                                    | データモデル | API   | インフラ |
-| --------------- | --------------------------------------- | ------------ | ----- | -------- |
-| 機能計画        | architecture + code-flow + domain + api | + domain     | + api | + setup  |
-| バグ調査        | architecture + code-flow                | + domain     | + api | + setup  |
-| 理解のみ        | architecture + code-flow                | + domain     | + api | + setup  |
-
-凡例: 各セルはベースセットへの追加分。`architecture` + `code-flow` は常に実行。
-
-#### アナライザーリファレンス
-
-| アナライザー          | Subagent Type           | 返却内容                       |
-| --------------------- | ----------------------- | ------------------------------ |
-| architecture-analyzer | `architecture-analyzer` | 構造、依存関係、Mermaid 図     |
-| code-flow-analyzer    | `code-flow-analyzer`    | 実行パス、データフロー         |
-| domain-analyzer       | `domain-analyzer`       | エンティティ、関連、ルール     |
-| api-analyzer          | `api-analyzer`          | エンドポイント、スキーマ、認証 |
-| setup-analyzer        | `setup-analyzer`        | 前提条件、環境変数、設定       |
+`architecture-analyzer` と `code-flow-analyzer` をTaskで並列実行。
 
 Output Verifiabilityマーカー（[✓]/[→]/[?]）を全発見に適用。
+
+### フェーズ2.5: セマンティックコード検索
+
+`yomu search "<リサーチトピック>"` で概念的に関連するコードを検索。
+
+- フェーズ2の結果を用いて検索クエリを精度向上
+- Grep/Globのリテラル検索をyomuのセマンティック検索で補完
+- 発見したファイルをフェーズ3のExplore探索に渡す
 
 ### フェーズ3.5: Strong Inference（バグ調査時のみ）
 
@@ -78,18 +63,10 @@ Output Verifiabilityマーカー（[✓]/[→]/[?]）を全発見に適用。
 
 スキップ: 原因が自明、または意図が「機能計画」/「理解のみ」の場合。
 
-## エラーハンドリング
-
-| エラー                | アクション                                |
-| --------------------- | ----------------------------------------- |
-| Analyzer が空を返す   | より広いスコープで再実行、findings に記載 |
-| Analyzer タイムアウト | 完了した Analyzer の結果で続行            |
-| 全 Analyzer が空      | "データ不足"を報告 — 結論を出さないこと   |
-
 ## 出力
 
-ファイル: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md` テンプレート:
-[@../templates/research/template.md](../templates/research/template.md)
+ファイル: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md`
+テンプレート: [@../templates/research/template.md](../templates/research/template.md)
 
 ## 次のステップ
 

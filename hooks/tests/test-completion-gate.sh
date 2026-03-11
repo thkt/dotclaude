@@ -73,8 +73,8 @@ test_002_no_changes() {
   local repo mock
   repo=$(make_repo)
   mock=$(make_mock_test "002")
-  local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock" bash "$HOOK" 2>/dev/null) || exit_code=$?
+  local exit_code=0
+  (cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock" bash "$HOOK" >/dev/null 2>&1) || exit_code=$?
   assert_eq "exit 0" "0" "$exit_code"
   assert_eq "test not called" "no" "$(was_called 002)"
 }
@@ -89,8 +89,8 @@ test_003_excluded_extensions() {
   echo "# updated" > "$repo/README.md"
   echo "updated" > "$repo/notes.txt"
   mock=$(make_mock_test "003")
-  local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock" bash "$HOOK" 2>/dev/null) || exit_code=$?
+  local exit_code=0
+  (cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock" bash "$HOOK" >/dev/null 2>&1) || exit_code=$?
   assert_eq "exit 0" "0" "$exit_code"
   assert_eq "test not called" "no" "$(was_called 003)"
 }
@@ -102,58 +102,50 @@ test_005_json_change() {
   echo '{}' > "$repo/config.json"
   git -C "$repo" add config.json && git -C "$repo" commit -q -m "add json"
   echo '{"key":"val"}' > "$repo/config.json"
-  mock=$(make_mock_test "005" "true")
-  local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock" bash "$HOOK" 2>/dev/null) || exit_code=$?
+  mock=$(make_mock_test "005")
+  local exit_code=0
+  (cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock" bash "$HOOK" >/dev/null 2>&1) || exit_code=$?
   assert_eq "test was called" "yes" "$(was_called 005)"
 }
 
-test_006_test_cmd_env() {
-  echo "T-006: TEST_CMD env var is used"
+test_006_test_cmd_pass() {
+  echo "T-006: TEST_CMD pass → exit 0, mock called, no block output"
   local repo mock
   repo=$(make_repo_with_ts_change)
-  mock=$(make_mock_test "006" "true")
+  mock=$(make_mock_test "006")
   local exit_code=0 output
   output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock" bash "$HOOK" 2>/dev/null) || exit_code=$?
   assert_eq "exit 0" "0" "$exit_code"
   assert_eq "mock test called" "yes" "$(was_called 006)"
+  assert_empty "no block output" "$output"
 }
 
 test_007_nr_test() {
-  echo "T-007: nr + package.json → nr test"
+  echo "T-007: nr + package.json → nr test (with marker verification)"
   if ! command -v nr &>/dev/null; then
     echo "  SKIP: nr not installed"
     return
   fi
-  local repo
+  local repo marker="$TMPDIR_BASE/marker-007"
   repo=$(make_repo)
   echo "const x = 1" > "$repo/app.ts"
-  echo '{"scripts":{"test":"echo ok"}}' > "$repo/package.json"
+  echo "{\"scripts\":{\"test\":\"touch $marker\"}}" > "$repo/package.json"
+  echo '{}' > "$repo/package-lock.json"
   git -C "$repo" add . && git -C "$repo" commit -q -m "add"
   echo "const x = 2" > "$repo/app.ts"
-  local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" bash "$HOOK" 2>/dev/null) || exit_code=$?
+  local exit_code=0
+  (cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" bash "$HOOK" >/dev/null 2>&1) || exit_code=$?
   assert_eq "exit 0" "0" "$exit_code"
+  assert_eq "test actually ran" "yes" "$(test -f "$marker" && echo yes || echo no)"
 }
 
 test_008_no_test_cmd() {
   echo "T-008: no TEST_CMD, no package.json → exit 0"
   local repo
   repo=$(make_repo_with_ts_change)
-  local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" bash "$HOOK" 2>/dev/null) || exit_code=$?
+  local exit_code=0
+  (cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" bash "$HOOK" >/dev/null 2>&1) || exit_code=$?
   assert_eq "exit 0" "0" "$exit_code"
-}
-
-test_009_test_pass() {
-  echo "T-009: test pass → exit 0"
-  local repo mock
-  repo=$(make_repo_with_ts_change)
-  mock=$(make_mock_test "009" "true")
-  local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock" bash "$HOOK" 2>/dev/null) || exit_code=$?
-  assert_eq "exit 0" "0" "$exit_code"
-  assert_empty "no block output" "$output"
 }
 
 test_010_test_fail_and_truncate() {
@@ -179,106 +171,70 @@ MOCK
   assert_not_contains "no line 50" "line 50 of" "$output"
 }
 
-make_mock_gate() {
-  local name="$1" pass="${2:-true}"
-  local marker="$TMPDIR_BASE/marker-gate-$name"
-  local script="$TMPDIR_BASE/gate-$name.sh"
-  if [ "$pass" = "true" ]; then
-    cat > "$script" <<MOCK
-#!/usr/bin/env bash
-touch "$marker"
-exit 0
-MOCK
-  else
-    cat > "$script" <<MOCK
-#!/usr/bin/env bash
-touch "$marker"
-echo "Unused export: foo in src/bar.ts"
-exit 1
-MOCK
-  fi
-  chmod +x "$script"
-  echo "$script"
-}
-
-gate_was_called() {
-  local name="$1"
-  test -f "$TMPDIR_BASE/marker-gate-$name" && echo "yes" || echo "no"
-}
-
-test_011_gate_knip_pass() {
-  echo "T-011: gates knip pass → exit 0"
-  local repo mock_test mock_knip
+make_repo_with_npm() {
+  local id="$1" scripts="$2"
+  local repo m_type="$TMPDIR_BASE/ran-type-$id" m_unit="$TMPDIR_BASE/ran-unit-$id" m_full="$TMPDIR_BASE/ran-full-$id"
   repo=$(make_repo_with_ts_change)
-  mock_test=$(make_mock_test "011" "true")
-  mock_knip=$(make_mock_gate "knip-011" "true")
-  mkdir -p "$repo/.claude"
-  echo '{"gates":{"knip":true}}' > "$repo/.claude/tools.json"
-  local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock_test" KNIP_CMD="$mock_knip" bash "$HOOK" 2>/dev/null) || exit_code=$?
-  assert_eq "exit 0" "0" "$exit_code"
-  assert_empty "no block output" "$output"
-  assert_eq "gate was called" "yes" "$(gate_was_called knip-011)"
+  # Inject marker touches into scripts so we can verify which ran
+  local json
+  json=$(echo "$scripts" \
+    | sed -e "s|TEST_MARKER|touch $m_full|" -e "s|TYPE_MARKER|touch $m_type|" -e "s|UNIT_MARKER|touch $m_unit|")
+  echo "$json" > "$repo/package.json"
+  echo '{}' > "$repo/package-lock.json"
+  echo "$repo"
 }
 
-test_012_gate_knip_fail() {
-  echo "T-012: gates knip fail → block"
-  local repo mock_test mock_knip
-  repo=$(make_repo_with_ts_change)
-  mock_test=$(make_mock_test "012" "true")
-  mock_knip=$(make_mock_gate "knip-012" "false")
-  mkdir -p "$repo/.claude"
-  echo '{"gates":{"knip":true}}' > "$repo/.claude/tools.json"
+ran() { test -f "$TMPDIR_BASE/ran-$1" && echo "yes" || echo "no"; }
+
+test_011_014_nr_script_detection() {
+  echo "T-011-014: nr script detection (type+unit, unit-only, type-only, fallback)"
+  if ! command -v nr &>/dev/null; then echo "  SKIP: nr not installed"; return; fi
+
+  # id | scripts | expect_type | expect_unit | expect_full
+  local cases=(
+    '011|{"scripts":{"test":"TEST_MARKER","test:type":"TYPE_MARKER","test:unit":"UNIT_MARKER"}}|yes|yes|no'
+    '012|{"scripts":{"test":"TEST_MARKER","test:unit":"UNIT_MARKER"}}|no|yes|no'
+    '013|{"scripts":{"test":"TEST_MARKER","test:type":"TYPE_MARKER"}}|yes|no|no'
+    '014|{"scripts":{"test":"TEST_MARKER"}}|no|no|yes'
+  )
+
+  for case in "${cases[@]}"; do
+    IFS='|' read -r id scripts exp_type exp_unit exp_full <<< "$case"
+    local repo exit_code=0
+    repo=$(make_repo_with_npm "$id" "$scripts")
+    (cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" bash "$HOOK" >/dev/null 2>&1) || exit_code=$?
+    assert_eq "$id: exit 0" "0" "$exit_code"
+    assert_eq "$id: type" "$exp_type" "$(ran "type-$id")"
+    assert_eq "$id: unit" "$exp_unit" "$(ran "unit-$id")"
+    assert_eq "$id: full" "$exp_full" "$(ran "full-$id")"
+  done
+}
+
+test_015_type_fail_blocks() {
+  echo "T-015: test:type fail → block"
+  if ! command -v nr &>/dev/null; then echo "  SKIP: nr not installed"; return; fi
+  local repo
+  repo=$(make_repo_with_npm "015" '{"scripts":{"test:type":"exit 1","test:unit":"UNIT_MARKER"}}')
   local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock_test" KNIP_CMD="$mock_knip" bash "$HOOK" 2>/dev/null) || exit_code=$?
+  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" bash "$HOOK" 2>/dev/null) || exit_code=$?
   assert_eq "exit 0 (hook itself)" "0" "$exit_code"
-  assert_contains "decision block" '"block"' "$output"
-  assert_contains "gate name" "knip" "$output"
+  assert_contains "blocked" "Tests failed" "$output"
+  assert_eq "unit not ran (short-circuit)" "no" "$(ran unit-015)"
 }
 
-test_013_gate_disabled() {
-  echo "T-013: gates knip false → skip"
-  local repo mock_test mock_knip
+test_016_timeout_no_block() {
+  echo "T-016: test timeout → exit 0, no block, stderr message"
+  if ! command -v timeout &>/dev/null && ! command -v gtimeout &>/dev/null; then
+    echo "  SKIP: neither timeout nor gtimeout available"
+    return
+  fi
+  local repo
   repo=$(make_repo_with_ts_change)
-  mock_test=$(make_mock_test "013" "true")
-  mock_knip=$(make_mock_gate "knip-013" "false")
-  mkdir -p "$repo/.claude"
-  echo '{"gates":{"knip":false}}' > "$repo/.claude/tools.json"
-  local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock_test" KNIP_CMD="$mock_knip" bash "$HOOK" 2>/dev/null) || exit_code=$?
+  local exit_code=0 output stderr_file="$TMPDIR_BASE/stderr-016"
+  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" GATE_TIMEOUT=1 TEST_CMD="sleep 10" bash "$HOOK" 2>"$stderr_file") || exit_code=$?
   assert_eq "exit 0" "0" "$exit_code"
   assert_empty "no block output" "$output"
-  assert_eq "gate not called" "no" "$(gate_was_called knip-013)"
-}
-
-test_014_no_tools_json() {
-  echo "T-014: no tools.json → skip gates"
-  local repo mock_test
-  repo=$(make_repo_with_ts_change)
-  mock_test=$(make_mock_test "014" "true")
-  local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock_test" bash "$HOOK" 2>/dev/null) || exit_code=$?
-  assert_eq "exit 0" "0" "$exit_code"
-  assert_empty "no block output" "$output"
-}
-
-test_015_test_fail_blocks_with_gates() {
-  echo "T-015: test fail → block even with gates configured"
-  local repo mock_knip
-  repo=$(make_repo_with_ts_change)
-  mock_knip=$(make_mock_gate "knip-015" "true")
-  local mock_test="$TMPDIR_BASE/fail-test-015.sh"
-  cat > "$mock_test" <<'MOCK'
-#!/usr/bin/env bash
-echo "test failure"
-exit 1
-MOCK
-  chmod +x "$mock_test"
-  mkdir -p "$repo/.claude"
-  echo '{"gates":{"knip":true}}' > "$repo/.claude/tools.json"
-  local exit_code=0 output
-  output=$(cd "$repo" && echo '{}' | CLAUDE_PROJECT_DIR="$repo" TEST_CMD="$mock_test" KNIP_CMD="$mock_knip" bash "$HOOK" 2>/dev/null) || exit_code=$?
-  assert_contains "blocked on tests" "Tests failed" "$output"
+  assert_contains "stderr timeout msg" "test timeout" "$(cat "$stderr_file")"
 }
 
 echo "=== completion-gate.sh tests ==="
@@ -286,15 +242,12 @@ test_001_stop_hook_active
 test_002_no_changes
 test_003_excluded_extensions
 test_005_json_change
-test_006_test_cmd_env
+test_006_test_cmd_pass
 test_007_nr_test
 test_008_no_test_cmd
-test_009_test_pass
 test_010_test_fail_and_truncate
-test_011_gate_knip_pass
-test_012_gate_knip_fail
-test_013_gate_disabled
-test_014_no_tools_json
-test_015_test_fail_blocks_with_gates
+test_011_014_nr_script_detection
+test_015_type_fail_blocks
+test_016_timeout_no_block
 
 report_results

@@ -11,24 +11,21 @@ has_japanese() { [[ $(echo "$1" | LC_ALL=en_US.UTF-8 grep -o '[ぁ-んァ-ヶー
 
 STRUCTURE_CHECKLIST='## 構造レビュー（ワークスロップ防止）\n\nbody を送信する前に、以下を確認してください：\n\n| チェック | 問い |\n|---|---|\n| 筆者の判断 | 筆者自身の結論が1〜3行で冒頭に書かれているか？AI出力が主役になっていないか |\n| 半分にできるか | この文書は半分にできるか？できないなら何が重要か分かっていない可能性がある |\n| 事実と意見の区別 | 事実・推測・提案にラベルが貼られ、分離されているか |\n| アクションの明確さ | 読み手に求める行動が具体的か（「ご確認ください」ではなく「Xを判断してください」） |\n| 読み手の認知負荷 | この文書は読み手の負荷を下げているか、仕事を押し付けていないか |\n\n問題がある項目のみ body を修正してください。'
 
-# Read hook JSON from stdin — parse tool_name and command in single jq call
 input=$(cat)
 read -r tool_name command_str < <(echo "$input" | jq -r '[.tool_name // "", .tool_input.command // ""] | @tsv' 2>/dev/null) || true
+# @tsv doubles backslashes — undo to get original command string
+command_str="${command_str//\\\\/\\}"
 
 if [[ "$tool_name" != "Bash" || -z "$command_str" ]]; then
   exit 0
 fi
 
-# Only match gh issue/pr create
 if ! echo "$command_str" | grep -qE 'gh (issue|pr) create'; then
   exit 0
 fi
 
-# Extract --body value (double or single quoted)
-body=""
-if echo "$command_str" | grep -qE -- '--body "[^"]*"'; then
-  body=$(echo "$command_str" | sed -nE 's/.*--body "([^"]*)".*/\1/p')
-elif echo "$command_str" | grep -qE -- "--body '[^']*'"; then
+body=$(echo "$command_str" | sed -nE 's/.*--body "(([^"\\]|\\.)*)".*/\1/p')
+if [[ -z "$body" ]]; then
   body=$(echo "$command_str" | sed -nE "s/.*--body '([^']*)'.*/\1/p")
 fi
 
@@ -36,7 +33,6 @@ if [[ -z "$body" ]]; then
   exit 0
 fi
 
-# Run textlint if config exists and body is Japanese
 lint_section=""
 if [[ -f "$TEXTLINT_CONFIG" ]] && has_japanese "$body"; then
   tmpfile=$(mktemp /tmp/textlint-lint-XXXXXX.md)
@@ -58,7 +54,4 @@ if [[ -f "$TEXTLINT_CONFIG" ]] && has_japanese "$body"; then
   fi
 fi
 
-# Output advisory JSON (always include structure checklist)
-cat <<EOF
-{"decision":"approve","reason":"textlint: 日本語校正 + 構造レビュー","additionalContext":"${lint_section}${STRUCTURE_CHECKLIST}"}
-EOF
+jq -nc --arg r "textlint: 日本語校正 + 構造レビュー" --arg c "${lint_section}${STRUCTURE_CHECKLIST}" '{"decision":"approve","reason":$r,"additionalContext":$c}'

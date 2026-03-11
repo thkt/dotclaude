@@ -18,11 +18,12 @@ if [ -z "$CODE_CHANGES" ]; then
   exit 0
 fi
 
+GATE_TIMEOUT="${GATE_TIMEOUT:-60}"
 TIMEOUT_ARGS=()
 if command -v timeout &>/dev/null; then
-  TIMEOUT_ARGS=(timeout 60)
+  TIMEOUT_ARGS=(timeout "$GATE_TIMEOUT")
 elif command -v gtimeout &>/dev/null; then
-  TIMEOUT_ARGS=(gtimeout 60)
+  TIMEOUT_ARGS=(gtimeout "$GATE_TIMEOUT")
 fi
 
 block_with() {
@@ -33,21 +34,19 @@ block_with() {
   exit 0
 }
 
-# Phase 1: Tests
-# Prefer test:type + test:unit when available (avoids running format/lint gates
-# that can be slow or cause side-effects like prisma engine corruption).
+# Prefer test:type + test:unit over generic "test" script (avoids slow lint
+# passes or side-effects like prisma engine corruption).
 if [ -z "${TEST_CMD:-}" ] && command -v nr &>/dev/null && [ -f "$PROJECT_DIR/package.json" ]; then
-  if jq -e '.scripts["test:unit"]' "$PROJECT_DIR/package.json" >/dev/null 2>&1; then
-    TEST_CMD="nr test:type && nr test:unit"
-  else
-    TEST_CMD="nr test"
-  fi
+  TEST_CMD=""
+  jq -e '.scripts["test:type"]' "$PROJECT_DIR/package.json" >/dev/null 2>&1 && TEST_CMD="nr test:type"
+  jq -e '.scripts["test:unit"]' "$PROJECT_DIR/package.json" >/dev/null 2>&1 && TEST_CMD="${TEST_CMD:+$TEST_CMD && }nr test:unit"
+  TEST_CMD="${TEST_CMD:-nr test}"
 fi
 
 if [ -n "${TEST_CMD:-}" ]; then
   TEST_OUTPUT=$(${TIMEOUT_ARGS[@]+"${TIMEOUT_ARGS[@]}"} bash -c "$TEST_CMD" 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
   if [ $TEST_EXIT -eq 124 ]; then
-    echo "completion-gate: test timeout (60s)" >&2
+    echo "completion-gate: test timeout (${GATE_TIMEOUT}s)" >&2
   elif [ $TEST_EXIT -ne 0 ]; then
     block_with "Tests failed. Fix the failures:
 $(echo "$TEST_OUTPUT" | tail -50)"
