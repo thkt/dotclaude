@@ -59,7 +59,8 @@
         "./agents/reviewers/sow-spec-reviewer.md",
         "./agents/reviewers/test-coverage-reviewer.md",
         "./agents/reviewers/type-design-reviewer.md",
-        "./agents/reviewers/operational-readiness-reviewer.md"
+        "./agents/reviewers/operational-readiness-reviewer.md",
+        "./agents/reviewers/duplication-reviewer.md"
       ]
     },
     {

@@ -54,6 +54,7 @@ finding:
 # | TC     | test-coverage-reviewer  |
 # | PERF   | performance-reviewer    |
 # | A11Y   | accessibility-reviewer  |
+# | DRY    | duplication-reviewer    |
 # | DOC    | document-reviewer       |
 # | SA     | subagent-reviewer       |
 # | OPS    | operational-readiness-reviewer |

@@ -20,18 +20,17 @@ background: true
 
 ## Analysis Phases
 
-| Phase | Category    | Action           | Focus                                                                                 |
-| ----- | ----------- | ---------------- | ------------------------------------------------------------------------------------- |
-| 1     | Structure   | Unused Code Scan | Dead imports, unreferenced                                                            |
-| 2     | Structure   | DRY Analysis     | 3+ occurrences of patterns (including same command/function with different arguments) |
-| 3     | Structure   | Over-engineering | Unnecessary abstractions                                                              |
-| 4     | Structure   | State Structure  | Local vs global misplacement                                                          |
-| 5     | Structure   | Size Check       | File lines, complexity                                                                |
-| 6     | Readability | Naming Scan      | Variables, functions, types                                                           |
-| 7     | Readability | Complexity Check | Nesting, function length                                                              |
-| 8     | Readability | Comment Audit    | Why vs What, outdated TODOs                                                           |
-| 9     | Readability | AI Smell Check   | Over-abstraction, patterns                                                            |
-| 10    | Readability | Miller's Law     | 7±2 violations                                                                        |
+| Phase | Category    | Action           | Focus                        |
+| ----- | ----------- | ---------------- | ---------------------------- |
+| 1     | Structure   | Unused Code Scan | Dead imports, unreferenced   |
+| 2     | Structure   | Over-engineering | Unnecessary abstractions     |
+| 3     | Structure   | State Structure  | Local vs global misplacement |
+| 4     | Structure   | Size Check       | File lines, complexity       |
+| 5     | Readability | Naming Scan      | Variables, functions, types  |
+| 6     | Readability | Complexity Check | Nesting, function length     |
+| 7     | Readability | Comment Audit    | Why vs What, outdated TODOs  |
+| 8     | Readability | AI Smell Check   | Over-abstraction, patterns   |
+| 9     | Readability | Miller's Law     | 7±2 violations               |
 
 ## Error Handling
 
@@ -56,7 +55,7 @@ findings:
     agent: code-quality-reviewer
     severity: high|medium|low
     category: "structure|readability"
-    subcategory: "waste|dry|naming|complexity|comments|ai_smell"
+    subcategory: "waste|naming|complexity|comments|ai_smell"
     location: "<file>:<line>"
     evidence: "<code snippet>"
     reasoning: "<why this is an issue>"

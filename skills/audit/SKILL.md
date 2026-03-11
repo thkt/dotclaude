@@ -52,12 +52,12 @@ are structurally invalid.
 
 Glob target → count files → select tier → confirm with user.
 
+When tier is Small or Medium, offer escalation option.
+
 ## Execution
 
 Select tier-specific workflow below. All tiers start with Pre-flight (see
-below).
-
-**Constraint: Save snapshot BEFORE displaying any results to user.**
+below). Save snapshot before displaying any results to user.
 
 ### Small Tier (1-3 files)
 
@@ -85,7 +85,7 @@ challenge/verification essential.
 
 | Reviewer   | subagent_type   | Domains                                                           |
 | ---------- | --------------- | ----------------------------------------------------------------- |
-| foundation | general-purpose | code-quality, progressive-enhancement, root-cause                 |
+| foundation | general-purpose | code-quality, duplication, progressive-enhancement, root-cause    |
 | safety     | general-purpose | security, silent-failure, type-safety, type-design                |
 | quality    | general-purpose | design-pattern, testability, documentation, operational-readiness |
 
@@ -117,19 +117,20 @@ Include in each reviewer's prompt:
 Leader classifies each target file by path and assigns to relevant reviewers
 only:
 
-| File Pattern         | Sub-reviewers (subagent_type)                                         |
-| -------------------- | --------------------------------------------------------------------- |
-| `*.sh`               | security-reviewer, silent-failure-reviewer, code-quality-reviewer,    |
-|                      | operational-readiness-reviewer                                        |
-| `*.ts, *.tsx, *.js`  | security-reviewer, silent-failure-reviewer, type-safety-reviewer,     |
-|                      | code-quality-reviewer, design-pattern-reviewer, testability-reviewer, |
-|                      | performance-reviewer, operational-readiness-reviewer                  |
-| `*.md` (agent defs)  | design-pattern-reviewer, testability-reviewer, document-reviewer      |
-| `*.md` (skills/docs) | document-reviewer, testability-reviewer                               |
-| `*.yaml, *.json`     | type-design-reviewer, document-reviewer                               |
-| `*.css, *.html`      | accessibility-reviewer, progressive-enhancer, performance-reviewer    |
-| `test.*`, `*.test.*` | test-coverage-reviewer, testability-reviewer                          |
-| Other                | code-quality-reviewer, document-reviewer                              |
+| File Pattern         | Sub-reviewers (subagent_type)                                              |
+| -------------------- | -------------------------------------------------------------------------- |
+| `*.sh`               | security-reviewer, silent-failure-reviewer, code-quality-reviewer,         |
+|                      | duplication-reviewer, operational-readiness-reviewer                       |
+| `*.ts, *.tsx, *.js`  | security-reviewer, silent-failure-reviewer, type-safety-reviewer,          |
+|                      | code-quality-reviewer, duplication-reviewer, design-pattern-reviewer,      |
+|                      | testability-reviewer, performance-reviewer, operational-readiness-reviewer |
+| `*.md` (agent defs)  | design-pattern-reviewer, testability-reviewer, document-reviewer           |
+| `*.md` (skills/docs) | document-reviewer, testability-reviewer                                    |
+| `*.yaml, *.json`     | type-design-reviewer, document-reviewer                                    |
+| `*.css, *.html`      | accessibility-reviewer, progressive-enhancer, performance-reviewer,        |
+|                      | duplication-reviewer                                                       |
+| `test.*`, `*.test.*` | test-coverage-reviewer, testability-reviewer                               |
+| Other                | code-quality-reviewer, duplication-reviewer, document-reviewer             |
 
 Classification by path: `agents/**/*.md` → agent defs, `skills/*/SKILL.md` or
 `docs/**/*.md` → skills/docs, other `*.md` → skills/docs (default).
