@@ -61,12 +61,12 @@ Run project build command (detect from package.json or project config).
 
 ### Standard Flow (No Build Errors)
 
-| Step | Action                                                   |
-| ---- | -------------------------------------------------------- |
-| 1    | Root cause analysis (5 Whys)                             |
-| 2    | `Task` with `subagent_type: test-generator` for reg test |
-| 3    | Fix implementation                                       |
-| 4    | Verify all tests pass                                    |
+| Step | Action                                                                                     |
+| ---- | ------------------------------------------------------------------------------------------ |
+| 1    | Root cause analysis (5 Whys)                                                               |
+| 2    | `Task` with `subagent_type: test-generator` for reg test (pass symptom + repro steps only) |
+| 3    | Fix implementation                                                                         |
+| 4    | Verify all tests pass                                                                      |
 
 ## Escalation
 

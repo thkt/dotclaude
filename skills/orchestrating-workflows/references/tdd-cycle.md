@@ -38,6 +38,18 @@ npm test -- --watch --testNamePattern="[test]" # Green
 npm run lint && npm test && npm run type-check # Commit
 ```
 
+## Test Failure Judgment
+
+When a test fails, determine whether to fix the test or the implementation.
+
+| Judgment | Condition                 | Action                               |
+| -------- | ------------------------- | ------------------------------------ |
+| Impl bug | Test matches spec/FR-xxx  | Fix implementation. Don't touch test |
+| Test bug | Test diverges from spec   | Fix test                             |
+| Unclear  | Spec ambiguous or missing | Escalate to user                     |
+
+For bug-driven flows (`/fix`): reproduction steps serve as the spec.
+
 ## When NOT to Use TDD
 
 - Prototypes (throwaway)

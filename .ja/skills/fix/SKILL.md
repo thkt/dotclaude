@@ -64,7 +64,7 @@ user-invocable: true
 | Step | アクション                                                |
 | ---- | --------------------------------------------------------- |
 | 1    | 根本原因分析 (5 Whys)                                     |
-| 2    | `Task`で`subagent_type: test-generator`によるリグレテスト |
+| 2    | `Task`で`subagent_type: test-generator`によるリグレテスト（症状+再現手順のみ渡す） |
 | 3    | 修正実装                                                  |
 | 4    | 全テストパス確認                                          |
 
