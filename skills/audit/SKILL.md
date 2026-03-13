@@ -50,9 +50,14 @@ are structurally invalid.
 | Medium | 4-15  | 3 general-purpose reviewers + Leader integrates                  |
 | Large  | 16+   | Sub-reviewers (file-routed) + challenger + verifier + integrator |
 
-Glob target → count files → select tier → confirm with user.
+Glob target → count files → select tier → confirm with user via AskUserQuestion.
+If tier is Small or Medium, include higher tiers as options.
 
-When tier is Small or Medium, offer escalation option.
+| Detected | AskUserQuestion Options                                              |
+| -------- | -------------------------------------------------------------------- |
+| Small    | Small (direct review) / Medium (3 reviewers) / Large (full pipeline) |
+| Medium   | Medium (3 reviewers) / Large (full pipeline)                         |
+| Large    | Large (confirmed)                                                    |
 
 ## Execution
 

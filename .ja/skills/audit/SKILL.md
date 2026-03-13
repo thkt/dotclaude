@@ -39,9 +39,14 @@ user-invocable: true
 | Medium | 4-15       | 3 汎用レビュアー + Leader が統合                                         |
 | Large  | 16+        | Sub-reviewer（ファイルルーティング）+ challenger + verifier + integrator |
 
-Glob対象 → ファイル数カウント → Tier選択 → ユーザーに確認。
+Glob対象 → ファイル数カウント → Tier選択 →
+AskUserQuestionでユーザーに確認。SmallまたはMediumの場合、上位Tierも選択肢に含める。
 
-SmallまたはMediumの場合、エスカレート選択肢を提示。
+| 検出Tier | AskUserQuestion 選択肢                                                  |
+| -------- | ----------------------------------------------------------------------- |
+| Small    | Small（直接レビュー）/ Medium（3レビュアー）/ Large（フルパイプライン） |
+| Medium   | Medium（3レビュアー）/ Large（フルパイプライン）                        |
+| Large    | Large（確定）                                                           |
 
 ## 実行
 
