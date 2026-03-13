@@ -10,6 +10,7 @@ INPUT=$(cat)
 IFS=$'\t' read -r AGENT_ID TRANSCRIPT_PATH <<< "$(printf '%s' "$INPUT" | jq -r '[(.agent_id // "unknown"), (.agent_transcript_path // "")] | @tsv' 2>/dev/null)"
 LAST_MSG=$(printf '%s' "$INPUT" | jq -r '.last_assistant_message // ""' 2>/dev/null)
 
+AGENT_ID="${AGENT_ID:-unknown}"
 # Sanitize AGENT_ID (path traversal prevention)
 AGENT_ID="${AGENT_ID//[^a-zA-Z0-9_-]/_}"
 
@@ -37,6 +38,7 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
 
     LINE_COUNT=$(wc -l < "$LOG_FILE" | tr -d ' ')
     echo "✓ Agent log saved: $AGENT_ID (${LINE_COUNT} lines)"
+    touch "${TMPDIR:-/tmp}/claude-subagent-completed"
   else
     echo "⚠ Failed to save agent log: $AGENT_ID" >&2
   fi

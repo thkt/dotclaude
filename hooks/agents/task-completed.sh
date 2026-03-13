@@ -10,13 +10,16 @@ mkdir -p "$(dirname "$LOG_FILE")"
 INPUT=$(cat)
 IFS=$'\t' read -r TASK_ID SUBJECT OWNER AGENT_ID AGENT_TYPE <<< "$(printf '%s' "$INPUT" | jq -r '[(.task_id // "?"), (.task_subject // .subject // "?"), (.owner // "?"), (.agent_id // ""), (.agent_type // "")] | @tsv' 2>/dev/null)"
 
+TASK_ID="${TASK_ID:-?}"
 AGENT_SUFFIX=""
-[[ -n "$AGENT_ID" ]] && AGENT_SUFFIX=" agent=$AGENT_ID($AGENT_TYPE)"
+[[ -n "$AGENT_ID" ]] && AGENT_SUFFIX=" agent=$AGENT_ID${AGENT_TYPE:+($AGENT_TYPE)}"
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Task completed: #$TASK_ID \"$SUBJECT\" by $OWNER$AGENT_SUFFIX" >> "$LOG_FILE"
 
 if [ -f "$SOUND_FILE" ]; then
     afplay -volume 0.05 "$SOUND_FILE" &
 fi
+
+touch "${TMPDIR:-/tmp}/claude-subagent-completed"
 
 exit 0
