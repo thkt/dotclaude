@@ -71,6 +71,7 @@ dump.sql
 
 # MCP data
 .yomu/
+.playwright-cli/
 mcp-needs-auth-cache.json
 
 # Cache
