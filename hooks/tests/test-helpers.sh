@@ -52,8 +52,22 @@ assert_empty() {
   fi
 }
 
+make_bash_json() {
+  local cmd="$1"
+  jq -nc --arg cmd "$cmd" '{"tool_name":"Bash","tool_input":{"command":$cmd}}'
+}
+
+make_tool_json() {
+  local tool="$1" file_path="$2"
+  jq -nc --arg t "$tool" --arg f "$file_path" '{"tool_name":$t,"tool_input":{"file_path":$f}}'
+}
+
 report_results() {
   echo ""
+  if [[ $((PASS + FAIL)) -eq 0 ]]; then
+    echo "ERROR: No assertions ran"
+    exit 1
+  fi
   echo "Results: $PASS passed, $FAIL failed"
   if [[ $FAIL -gt 0 ]]; then exit 1; fi
 }

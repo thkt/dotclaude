@@ -29,23 +29,39 @@ user-invocable: false
 
 ## Quality Gates
 
-| Gate     | Target           | Verification               |
-| -------- | ---------------- | -------------------------- |
-| Tests    | All passing      | `npm test` exit code 0     |
-| Lint     | 0 errors         | `npm run lint` exit code 0 |
-| Types    | No errors        | `tsc --noEmit` exit code 0 |
-| Coverage | C0 ≥90%, C1 ≥80% | Coverage report            |
+| Gate         | Target           | Verification                               |
+| ------------ | ---------------- | ------------------------------------------ |
+| Tests        | All passing      | `npm test` exit code 0                     |
+| Lint         | 0 errors         | `npm run lint` exit code 0                 |
+| Types        | No errors        | `tsc --noEmit` exit code 0                 |
+| Coverage     | C0 ≥90%, C1 ≥80% | Coverage report                            |
+| Test Quality | ≥70              | `test-quality-evaluator` (skip if no Spec) |
+
+### Test Quality Gate
+
+When a Spec with Test Scenarios exists, spawn `test-quality-evaluator` as a
+background agent:
+
+```
+Agent(subagent_type: "test-quality-evaluator",
+      prompt: "spec_path: <path>\ntest_paths: <paths>",
+      run_in_background: true)
+```
+
+Score ≥70 → pass. Score <70 → report uncovered/excess/intent issues, fix before
+proceeding. Skip when no Spec exists (e.g., `/fix`, ad-hoc changes).
 
 ### Gate Result Output
 
 ```text
-Tests:    pass | fail (detail)
-Lint:     pass | fail (detail)
-Types:    pass | fail (detail)
-Coverage: C0 XX% / C1 XX% — pass | fail
+Tests:        pass | fail (detail)
+Lint:         pass | fail (detail)
+Types:        pass | fail (detail)
+Coverage:     C0 XX% / C1 XX% — pass | fail
+Test Quality: XX/100 — pass | skip (no Spec)
 ```
 
-All 4 lines required. Empty lines indicate a skipped gate — investigate before
+All 5 lines required. Empty lines indicate a skipped gate — investigate before
 proceeding.
 
 ## Rationalization Counters

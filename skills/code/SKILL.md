@@ -77,15 +77,33 @@ implies ≥ 5 files, suggest running `/think` first.
 
 <!-- canonical: skills/orchestrating-workflows (full gate table) -->
 
+## Spec Evolution
+
+During implementation, new requirements may be discovered (edge cases, error
+handling, integration concerns). When this happens:
+
+1. Update Spec first: Add T-NNN to the Test Scenarios table in spec.md
+2. Then write the test: Reference the new T-NNN in the test name/comment
+3. Never add tests without a Spec trace: Every test must map to a T-NNN
+
+This keeps the Spec as the single source of truth. The `test-quality-evaluator`
+agent uses T-NNN mappings to compute coverage scores.
+
 ## Quality Gates
 
 After RGRC cycle, verify each AC is met (implemented + tested). Skip if no SOW.
 
+If Spec exists, run `test-quality-evaluator` (background) to score test quality.
+Score ≥70 required. See orchestrating-workflows for gate details.
+
 ## Error Handling
 
-| Error                       | Action                          |
-| --------------------------- | ------------------------------- |
-| test-gen background timeout | Leader generates tests directly |
-| test-gen produces 0 tests   | Verify spec exists, ask user    |
-| Ralph-loop stalls           | Stop loop, fix manually         |
-| Quality gates fail          | Fix issues before commit        |
+| Error                       | Action                             |
+| --------------------------- | ---------------------------------- |
+| test-gen background timeout | Leader generates tests directly    |
+| test-gen produces 0 tests   | Verify spec exists, ask user       |
+| Ralph-loop stalls           | Stop loop, fix manually            |
+| Quality gates fail          | Fix issues before commit           |
+| Evaluator score <70         | Fix uncovered/excess/intent issues |
+| Evaluator timeout           | Skip gate, log warning             |
+| Spec not found              | Create spec.md or ask user         |

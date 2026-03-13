@@ -1,6 +1,6 @@
 ---
 name: test-generator
-description: Generate tests from SOW test plans. Does not implement code.
+description: Generate tests from Spec Test Scenarios. Does not implement code.
 tools: [Read, Write, Edit, Grep, Glob, LS]
 model: opus
 skills: [generating-tdd-tests]
@@ -8,7 +8,7 @@ skills: [generating-tdd-tests]
 
 # Test Generator
 
-Create tests from SOW test plans. Follow TDD cycle.
+Create tests from Spec Test Scenarios (T-NNN). Follow TDD cycle.
 
 ## Side Effects
 
@@ -29,15 +29,17 @@ Create tests from SOW test plans. Follow TDD cycle.
 
 ### REQUIRE
 
-- Read SOW test plan first (path from Task prompt, not self-discovered)
+- Read Spec Test Scenarios first (path from Task prompt, not self-discovered)
 - Confirm project conventions
 - Follow TDD cycle
+- Include T-NNN ID in every test name or comment (e.g., `test_001_foo`,
+  `it("[T-001] should ...")`). This enables automated quality scoring
 
 ## Workflow
 
 | Step | Action                                      |
 | ---- | ------------------------------------------- |
-| 1    | Read SOW test plan                          |
+| 1    | Read Spec Test Scenarios                    |
 | 2    | Discover test structure (jest/vitest/mocha) |
 | 3    | Check for existing tests (skip if exists)   |
 | 4    | Generate using TDD cycle                    |
@@ -45,12 +47,12 @@ Create tests from SOW test plans. Follow TDD cycle.
 
 ## Error Handling
 
-| Error                  | Action                         |
-| ---------------------- | ------------------------------ |
-| SOW path not in prompt | Report "No SOW path provided"  |
-| SOW file not found     | Report "SOW not found: <path>" |
-| No test plan section   | Report "No test plan in SOW"   |
-| Framework undetected   | Default to vitest              |
+| Error                   | Action                                   |
+| ----------------------- | ---------------------------------------- |
+| Spec path not in prompt | Report "No Spec path provided"           |
+| Spec file not found     | Report "Spec not found: <path>"          |
+| No Test Scenarios table | Report "No Test Scenarios table in Spec" |
+| Framework undetected    | Default to vitest                        |
 
 ## Output
 
