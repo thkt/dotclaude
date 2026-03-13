@@ -209,6 +209,8 @@ issues: [{ description: "<issue>", severity: blocker | warning }]
    - Resolve conflicts via `git merge` or update branch
 3. Final state: all changes on main branch
 
+<!-- canonical: skills/orchestrating-workflows (full gate table) -->
+
 #### 5b: Quality Gates
 
 1. Leader executes QG on main branch (tests, lint, types, coverage)

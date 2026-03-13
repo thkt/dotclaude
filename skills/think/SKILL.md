@@ -53,6 +53,8 @@ Generate ≥2 distinct approaches from different perspectives:
 - Architect: What's extensible and well-structured?
 - DX Advocate: What's best for developer/user experience?
 
+<!-- canonical: rules/core/PRE_TASK_CHECK.md (decomposition thresholds) -->
+
 If PRE_TASK_CHECK decomposition thresholds are exceeded (Files ≥ 5, Features ≥
 3, Layers ≥ 3), decompose into independent Units. Each Unit gets its own
 SOW/Spec and can be implemented separately via `/code`.

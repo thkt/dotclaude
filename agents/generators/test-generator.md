@@ -24,6 +24,8 @@ Create tests from SOW test plans. Follow TDD cycle.
 - Tests not in plan
 - Heavy frameworks for simple cases
 - Testing implementation details
+- UT importing non-target production modules (test infrastructure is allowed;
+  build test data from types/literals)
 
 ### REQUIRE
 
@@ -67,6 +69,11 @@ files:
   - path: "<test file path>"
     tests: <count>
     status: created|skipped
+fr_coverage: # omit when no spec/FR-xxx available
+  covered:
+    - "FR-001 → <test file>:<test name>"
+  uncovered:
+    - "FR-003 (reason: not in scope of current test paths)"
 suggestions:
   - "<edge case not in plan>"
 ```

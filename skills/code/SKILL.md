@@ -58,6 +58,8 @@ Implementation description: `$1` (required, prompt if empty) Flags:
 - Skill: orchestrating-workflows (RGRC cycle)
 - Plugin: ralph-loop (auto-iteration, manual fallback if unavailable)
 
+<!-- canonical: rules/core/PRE_TASK_CHECK.md (decomposition thresholds) -->
+
 ## Scope Guard
 
 After reading SOW, check Phase file counts. If any Phase has Files ≥ 5, stop and
@@ -72,6 +74,8 @@ implies ≥ 5 files, suggest running `/think` first.
 3. Receive test results via `TaskOutput`
 4. RGRC cycle with `ralph-loop` auto-iteration
 5. Quality Gates
+
+<!-- canonical: skills/orchestrating-workflows (full gate table) -->
 
 ## Quality Gates
 

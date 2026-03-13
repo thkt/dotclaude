@@ -3,7 +3,8 @@ name: feature
 description:
   Comprehensive feature development with exploration, architecture, TDD, and
   quality gates. Use when user mentions 機能開発, 新機能, 機能追加, feature
-  development.
+  development. Do NOT use for implementation without planning (use /code), bug
+  fixes (use /fix), or planning only without implementation (use /think).
 allowed-tools:
   Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run),
   Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun

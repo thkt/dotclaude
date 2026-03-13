@@ -3,7 +3,8 @@ name: polish
 description:
   Review changed code for reuse, quality, and efficiency, then remove
   AI-generated slop and audit tests. Use when user mentions 整理して,
-  きれいにして, コード整理, slop除去, ポリッシュ, テスト整理, テスト監査.
+  きれいにして, コード整理, slop除去, ポリッシュ, テスト整理, テスト監査. Do NOT
+  use for deep multi-reviewer code quality audits (use /audit instead).
 allowed-tools:
   Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob,
   Task, Skill

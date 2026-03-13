@@ -42,12 +42,19 @@ describe("[Target]", () => {
 });
 ```
 
+<!-- canonical: rules/development/CODE_THRESHOLDS.md -->
+
 ## Coverage Goals
 
 | Level          | Target |
 | -------------- | ------ |
 | C0 (Statement) | 90%    |
 | C1 (Branch)    | 80%    |
+
+## UT Isolation
+
+UTs import only: target module + types + test infrastructure. Build test data
+from types/literals.
 
 ## Test Priority
 
