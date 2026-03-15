@@ -39,6 +39,7 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 | 2    | Find matching suggestion by ID                               |
 | 3    | Apply fix directly (skip 5 Whys)                             |
 | 4    | Verify tests pass                                            |
+| 5    | Suggest targeted re-audit: `/audit <modified files>`         |
 
 ## Skills & Agents
 

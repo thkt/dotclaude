@@ -1,6 +1,6 @@
 # Audit 出力テンプレート
 
-/audit コマンドの出力テンプレート。
+/auditコマンドの出力テンプレート。
 
 ## テンプレート
 
@@ -16,11 +16,15 @@
 | Medium   | {summary.by_severity.medium}   | {delta.medium}   |
 | Low      | {summary.by_severity.low}      | {delta.low}      |
 
-自動修正可能: {suggestions.auto_fixable_count} | 手動: {suggestions.manual_count}
-検証: {summary.validation.verification.verified} verified | {summary.validation.verification.weak_evidence} weak | {summary.validation.verification.unverifiable} unverifiable
+自動修正可能: {suggestions.auto_fixable_count} | 手動:
+{suggestions.manual_count} 検証: {summary.validation.verification.verified}
+verified | {summary.validation.verification.weak_evidence} weak |
+{summary.validation.verification.unverifiable} unverifiable
 
-> **Pipeline**: {pipeline_health.domains_completed} | Skipped: {pipeline_health.domains_skipped} | Verification: {pipeline_health.verification_status}
-> _(全ドメイン完了かつ検証が full の場合はこのセクションを省略)_
+> **Pipeline**: {pipeline*health.domains_completed} | Skipped:
+> {pipeline_health.domains_skipped} | Verification:
+> {pipeline_health.verification_status}
+> *(全ドメイン完了かつ検証が full の場合はこのセクションを省略)\_
 
 ---
 
@@ -58,6 +62,14 @@
 | ------------ | --------------------------------------- |
 | [!] 即時対応 | {priorities[timing=immediate].action}   |
 | [→] 今Sprint | {priorities[timing=this_sprint].action} |
+
+---
+
+## 修正サイクル
+
+1. 適用: `/fix SUG-XXX`（上記クイック修正）
+2. 変更ファイルのみ再監査: `/audit <変更ファイル>`
+3. 満足するまで繰り返す
 ```
 
 ## 差分表示形式

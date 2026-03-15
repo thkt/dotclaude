@@ -73,6 +73,14 @@ Apply: `/fix <ID>`
 | --------------- | --------------------------------------- |
 | [!] Immediate   | {priorities[timing=immediate].action}   |
 | [→] This Sprint | {priorities[timing=this_sprint].action} |
+
+---
+
+## Fix Cycle
+
+1. Apply: `/fix SUG-XXX` (Quick Fixes above)
+2. Re-audit modified files: `/audit <modified files>`
+3. Repeat until satisfied
 ```
 
 ## Delta Format
