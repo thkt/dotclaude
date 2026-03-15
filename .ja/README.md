@@ -165,8 +165,6 @@ srt --version
 }
 ```
 
-詳細は[公式ブログ記事](https://azukiazusa.dev/blog/claude-code-sandbox-feature/)を参照。
-
 ### 必要なプラグイン
 
 一部のコマンドはこのリポジトリに含まれていない外部プラグインに依存しています。クローン後に手動でインストールしてください:
