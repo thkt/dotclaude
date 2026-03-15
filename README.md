@@ -161,9 +161,26 @@ Create `~/.srt-settings.json` for custom settings:
 }
 ```
 
-See the
-[official blog post](https://azukiazusa.dev/blog/claude-code-sandbox-feature/)
-for more details.
+### Hook Tools (Recommended)
+
+Quality pipeline hooks that run automatically during Claude Code sessions. These
+catch lint errors, format code, inject static analysis, and enforce quality
+gates — all without manual intervention.
+
+```bash
+brew tap thkt/tap
+brew install guardrails formatter reviews gates
+```
+
+| Tool       | Hook        | Timing            | Role                              |
+| ---------- | ----------- | ----------------- | --------------------------------- |
+| guardrails | PreToolUse  | Before Write/Edit | Lint (oxlint) + security checks   |
+| formatter  | PostToolUse | After Write/Edit  | Auto-format (oxfmt)               |
+| reviews    | PreToolUse  | Before Skill      | Static analysis context injection |
+| gates      | Stop        | Agent completion  | Quality gates (knip, tsgo, madge) |
+
+Per-project configuration is done via `.claude/tools.json`. See
+[thkt/tap](https://github.com/thkt/homebrew-tap) for details.
 
 ### External CLI Tools (Optional)
 
