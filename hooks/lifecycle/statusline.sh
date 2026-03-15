@@ -11,7 +11,6 @@ color_for_pct() {
 }
 
 parse_stdin() {
-    EXCEEDS_200K="false"
     local stdin_input
     [ ! -t 0 ] && stdin_input=$(cat)
     [ -z "${stdin_input:-}" ] && return
@@ -24,7 +23,6 @@ parse_stdin() {
         (.model.id? // ""),
         (.session_id // ""),
         (.cost.total_cost_usd? // ""),
-        (.exceeds_200k_tokens // false),
         (if .context_window.current_usage? then
           (.context_window.current_usage.input_tokens // 0) + (.context_window.current_usage.output_tokens // 0) +
           (.context_window.current_usage.cache_creation_input_tokens // 0) + (.context_window.current_usage.cache_read_input_tokens // 0)
@@ -38,7 +36,7 @@ parse_stdin() {
 
     if [ -n "$parsed" ]; then
         IFS=$'\t' read -r MODEL_NAME MODEL_ID SESSION_ID SESSION_COST \
-            EXCEEDS_200K CONTEXT_TOKENS CONTEXT_LIMIT CONTEXT_USED_PCT \
+            CONTEXT_TOKENS CONTEXT_LIMIT CONTEXT_USED_PCT \
             WT_NAME WT_BRANCH WT_ORIG_DIR <<< "$parsed"
     fi
 
@@ -93,8 +91,7 @@ render_context() {
     elif [ "$remaining" -ge 20 ]; then circle="◑"
     else circle="◕"; fi
 
-    if [ "$EXCEEDS_200K" = "true" ]; then color='\033[31;1m'
-    elif [ "$percentage" -lt 60 ]; then color='\033[32m'
+    if [ "$percentage" -lt 60 ]; then color='\033[32m'
     elif [ "$percentage" -lt 80 ]; then color='\033[33m'
     else color='\033[31m'; fi
 
@@ -104,7 +101,7 @@ render_context() {
     if [ "$delta_k" -gt 0 ] 2>/dev/null; then printf ' \033[94m+%dk\033[0m' "$delta_k"
     elif [ "$delta_k" -lt 0 ] 2>/dev/null; then printf ' \033[35m-%dk\033[0m' "$((-delta_k))"; fi
 
-    [ "$EXCEEDS_200K" = "true" ] && printf ' \033[31;1m[!]\033[0m'
+    [ "$percentage" -ge 80 ] && printf ' \033[31;1m[!]\033[0m'
 }
 
 render_cost() {
