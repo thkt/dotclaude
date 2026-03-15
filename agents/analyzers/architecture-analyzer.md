@@ -1,6 +1,7 @@
 ---
 name: architecture-analyzer
-description: Analyze codebase structure, generate architecture docs with Mermaid diagrams.
+description:
+  Analyze codebase structure, generate architecture docs with Mermaid diagrams.
 tools: [Bash, Read, Grep, Glob, LS, Write, Edit]
 model: sonnet
 skills: [documenting-architecture]
@@ -69,42 +70,66 @@ background: true
 
 ## Output
 
-Return structured YAML:
+Return structured Markdown:
 
-```yaml
-project_name: <name>
-source: analyzer
-tech_stack:
-  language:
-    name: <lang>
-    version: <version>
-  framework:
-    name: <framework>
-    version: <version>
-  runtime:
-    name: <runtime>
-    version: <version>
-  database:
-    name: <database>
-    version: <version>
-directory_structure: |
-  <tree output>
-key_components:
-  - name: <name>
-    path: <path>
-    description: <description>
-dependencies:
-  external:
-    - name: <package>
-      purpose: <purpose>
-  internal: # Use full paths consistent with key_components[].path
-    - from: <dir>/<file>
-      to: <dir>/<file>
-      relationship: <relationship>
-mermaid_diagram: | # Node labels must use full paths matching key_components[].path
-  graph TD
-    A["app/services/cache.ts"] --> B["app/utils/logger.ts"]
-statistics:
-  files: <count>
-  lines: <count>
+````markdown
+## Meta
+
+| Field        | Value    |
+| ------------ | -------- |
+| project_name | <name>   |
+| source       | analyzer |
+
+## Tech Stack
+
+| Category  | Name        | Version   |
+| --------- | ----------- | --------- |
+| language  | <lang>      | <version> |
+| framework | <framework> | <version> |
+| runtime   | <runtime>   | <version> |
+| database  | <database>  | <version> |
+
+## Directory Structure
+
+```text
+<tree output>
 ```
+
+## Key Components
+
+| Name   | Path   | Description   |
+| ------ | ------ | ------------- |
+| <name> | <path> | <description> |
+
+## Dependencies
+
+### External
+
+| Package   | Purpose   |
+| --------- | --------- |
+| <package> | <purpose> |
+
+### Internal
+
+Use full paths consistent with Key Components path.
+
+| From         | To           | Relationship   |
+| ------------ | ------------ | -------------- |
+| <dir>/<file> | <dir>/<file> | <relationship> |
+
+## Mermaid Diagram
+
+Node labels must use full paths matching Key Components path.
+
+```mermaid
+graph TD
+  A["app/services/cache.ts"] --> B["app/utils/logger.ts"]
+```
+
+## Statistics
+
+| Metric | Count   |
+| ------ | ------- |
+| files  | <count> |
+| lines  | <count> |
+````

@@ -74,8 +74,8 @@ unaccounted.
 | Naming discrepancy   | Note when directory name differs from type/class name                     |
 | Code issues          | Flag bugs found during reading (typos in field names, inconsistent nulls) |
 
-The YAML schema below requires `source_file` on every field. The Validation Gate
-(Phase 7) removes any field without a file:line traced to a Read call.
+The output schema below requires `source_file` on every field. The Validation
+Gate (Phase 7) removes any field without a file:line traced to a Read call.
 
 #### Prisma Schema Parsing
 
@@ -191,85 +191,111 @@ Relationship Rules:
 
 ## Output
 
-Structured YAML:
+Structured Markdown:
 
-```yaml
-project_name: <name>
-generated_at: <ISO 8601 timestamp>
-source: analyzer
-meta:
-  framework: <detected framework>
-  orm: <detected ORM or "none">
-confidence_summary:
-  verified: <count>
-  inferred: <count>
-  unknown: <count>
-glossary:
-  - term: <term>
-    definition: <definition>
-    context: <where used>
-    source_file: <file:line>
-entities:
-  - name: <entity_name>
-    source_file: <file:line>
-    directory_name: <directory name if different from entity name>
-    confidence: <verified|inferred|unknown>
-    fields:
-      - name: <field>
-        type: <exact type from code, including | null>
-        required: <true|false>
-        nullable: <true|false>
-        description: <description>
-        enum_values: [<value1>, <value2>]
-        enum_form: <named_enum|object_literal|class_wrapped>
-        source_file: <file:line>
-        confidence: <verified|inferred|unknown>
-    invariants:
-      - rule: <invariant description>
-        source_file: <file:line>
-    polymorphic:
-      discriminator: <field name>
-      variants:
-        - type_value: <discriminator value>
-          name: <variant name>
-          unique_fields:
-            - name: <field>
-              type: <type>
-              required: <true|false>
-          source_file: <file:line>
-value_objects:
-  - name: <vo_name>
-    source_file: <file:line>
-    used_by: [<entity names>]
-    confidence: <verified|inferred|unknown>
-    fields:
-      - name: <field>
-        type: <type>
-        required: <true|false>
-        nullable: <true|false>
-        source_file: <file:line>
-relationships:
-  mermaid: |
-    erDiagram
-    EntityA ||--o{ EntityB : "has many"
-  details:
-    - from: <entity>
-      to: <entity>
-      type: <one-to-one|one-to-many|many-to-many>
-      path: <direct|"via X">
-      source_file: <file:line>
-business_rules:
-  - name: <rule_name>
-    description: <description>
-    enforced_by: <component>
-    source_file: <file:line>
-domain_events:
-  - name: <event_name>
-    trigger: <when triggered>
-    subscribers: [<who listens>]
-    source_file: <file:line>
-code_issues:
-  - location: <file:line>
-    severity: <typo|inconsistency|potential_bug>
-    description: <what was found>
+````markdown
+## Meta
+
+| Field        | Value                    |
+| ------------ | ------------------------ |
+| project_name | <name>                   |
+| generated_at | <ISO 8601 timestamp>     |
+| source       | analyzer                 |
+| framework    | <detected framework>     |
+| orm          | <detected ORM or "none"> |
+
+## Confidence Summary
+
+| Level    | Count   |
+| -------- | ------- |
+| verified | <count> |
+| inferred | <count> |
+| unknown  | <count> |
+
+## Glossary
+
+| Term   | Definition   | Context      | Source        |
+| ------ | ------------ | ------------ | ------------- |
+| <term> | <definition> | <where used> | `<file:line>` |
+
+## Entities
+
+### <entity_name>
+
+| Field          | Value                                          |
+| -------------- | ---------------------------------------------- |
+| source_file    | `<file:line>`                                  |
+| directory_name | <directory name if different from entity name> |
+| confidence     | verified/inferred/unknown                      |
+
+#### Fields
+
+| Name    | Type                   | Required   | Nullable   | Description   | Enum Values        | Enum Form                               | Source        | Confidence                |
+| ------- | ---------------------- | ---------- | ---------- | ------------- | ------------------ | --------------------------------------- | ------------- | ------------------------- |
+| <field> | <exact type from code> | true/false | true/false | <description> | <value1>, <value2> | named_enum/object_literal/class_wrapped | `<file:line>` | verified/inferred/unknown |
+
+#### Invariants
+
+| Rule                    | Source        |
+| ----------------------- | ------------- |
+| <invariant description> | `<file:line>` |
+
+#### Polymorphic
+
+Discriminator: `<field name>`
+
+| Type Value            | Variant Name   | Source        |
+| --------------------- | -------------- | ------------- |
+| <discriminator value> | <variant name> | `<file:line>` |
+
+Per variant, unique fields:
+
+| Name    | Type   | Required   |
+| ------- | ------ | ---------- |
+| <field> | <type> | true/false |
+
+## Value Objects
+
+### <vo_name>
+
+| Field       | Value                     |
+| ----------- | ------------------------- |
+| source_file | `<file:line>`             |
+| used_by     | <entity names>            |
+| confidence  | verified/inferred/unknown |
+
+| Name    | Type   | Required   | Nullable   | Source        |
+| ------- | ------ | ---------- | ---------- | ------------- |
+| <field> | <type> | true/false | true/false | `<file:line>` |
+
+## Relationships
+
+```mermaid
+erDiagram
+EntityA ||--o{ EntityB : "has many"
 ```
+
+### Details
+
+| From     | To       | Type                                | Path           | Source        |
+| -------- | -------- | ----------------------------------- | -------------- | ------------- |
+| <entity> | <entity> | one-to-one/one-to-many/many-to-many | direct/"via X" | `<file:line>` |
+
+## Business Rules
+
+| Name        | Description   | Enforced By | Source        |
+| ----------- | ------------- | ----------- | ------------- |
+| <rule_name> | <description> | <component> | `<file:line>` |
+
+## Domain Events
+
+| Name         | Trigger          | Subscribers   | Source        |
+| ------------ | ---------------- | ------------- | ------------- |
+| <event_name> | <when triggered> | <who listens> | `<file:line>` |
+
+## Code Issues
+
+| Location      | Severity                         | Description      |
+| ------------- | -------------------------------- | ---------------- |
+| `<file:line>` | typo/inconsistency/potential_bug | <what was found> |
+````

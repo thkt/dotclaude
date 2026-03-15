@@ -40,7 +40,7 @@ templates/
 │   ├── process-change.md
 │   └── technology-selection.md
 ├── audit/             # Audit templates
-│   ├── finding-schema.yaml
+│   ├── finding-schema.md
 │   ├── output.md
 │   └── snapshot.yaml
 ├── devcontainer/      # Dev Container templates

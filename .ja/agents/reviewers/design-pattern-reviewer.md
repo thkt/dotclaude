@@ -5,6 +5,8 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [applying-code-principles, applying-frontend-patterns]
 context: fork
+memory: project
+background: true
 ---
 
 # デザインパターンレビューアー
@@ -29,31 +31,45 @@ Reactパターンとコンポーネントアーキテクチャをレビュー。
 
 ## エラーハンドリング
 
-| エラー    | アクション               |
-| --------- | ------------------------ |
-| Reactなし | "No React to review"報告 |
-| 問題なし  | 空のfindingsを返す       |
+| エラー       | アクション                                  |
+| ------------ | ------------------------------------------- |
+| Reactなし    | "No React to review"報告                    |
+| Glob結果なし | 0ファイル検出を報告、クリーンと推定しない   |
+| ツールエラー | エラー記録、ファイルスキップ、summaryに記載 |
+
+## レポートルール
+
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
+- 同一パターンが複数箇所: 1つのfindingに統合
 
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - agent: design-pattern-reviewer
-    severity: high|medium|low
-    category: "container|hook|state|anti-pattern"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this pattern is problematic>"
-    fix: "<recommended pattern>"
-    confidence: 0.70-1.00
-summary:
-  total_findings: <count>
-  pattern_score: "<X/10>"
-  by_type:
-    containers: <count>
-    presentational: <count>
-    mixed: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID       | Severity            | Category                                | Location    | Confidence |
+| -------- | ------------------- | --------------------------------------- | ----------- | ---------- |
+| DP-{seq} | high / medium / low | container / hook / state / anti-pattern | `file:line` | 0.60–1.00  |
+
+### DP-{seq}
+
+| Field        | Value                                                                                               |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| Evidence     | コードスニペット                                                                                    |
+| Reasoning    | このパターンが問題である理由                                                                        |
+| Fix          | 推奨パターン                                                                                        |
+| Verification | pattern_search / call_site_check — このアンチパターンは一貫して使用されているか、孤立したケースか？ |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| pattern_score  | X/10  |
+| containers     | count |
+| presentational | count |
+| mixed          | count |
+| files_reviewed | count |
 ```

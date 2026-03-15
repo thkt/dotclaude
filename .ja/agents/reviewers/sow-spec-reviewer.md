@@ -5,6 +5,8 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [formatting-audits, reviewing-readability, applying-code-principles]
 context: fork
+memory: project
+background: true
 ---
 
 # SOW/Specレビューアー
@@ -39,7 +41,7 @@ context: fork
 
 ## 採点（各25点）
 
-各カテゴリ25点からスタート。Phase 3-6 で発見した問題に応じて減点:
+各カテゴリ25点からスタート。Phase 3-6で発見した問題に応じて減点:
 
 | カテゴリ   | 減点ルール                                                     |
 | ---------- | -------------------------------------------------------------- |
@@ -71,27 +73,44 @@ context: fork
 | 空のドキュメント | スコア0を返す          |
 | セクション欠如   | 完全性から減点         |
 
+## レポートルール
+
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
+- 同一パターンが複数箇所: 1つのfindingに統合
+
 ## 出力
 
-ralph-loop互換promiseタグ付き構造化YAMLを返す:
+ralph-loop互換promiseタグ付き構造化Markdownを返す:
 
-```yaml
-agent: sow-spec-reviewer
-document: "<レビュー対象ドキュメントパス>"
-scores:
-  accuracy: <0-25>
-  completeness: <0-25>
-  relevance: <0-25>
-  actionability: <0-25>
-  total: <0-100>
-judgment: PASS|CONDITIONAL|FAIL
-fixes:
-  - location: "<セクションまたは行>"
-    issue: "<問題点>"
-    suggestion: "<修正方法>"
-    impact: "<スコア改善>"
-next_action: "<具体的な次のアクション>"
-promise: "<promise>PASS</promise>" # total >= 90の場合のみ
+```markdown
+## Review: sow-spec-reviewer
+
+| Field    | Value                        |
+| -------- | ---------------------------- |
+| document | レビュー対象ドキュメントパス |
+
+## Scores
+
+| Category      | Score                     |
+| ------------- | ------------------------- |
+| accuracy      | 0–25                      |
+| completeness  | 0–25                      |
+| relevance     | 0–25                      |
+| actionability | 0–25                      |
+| total         | 0–100                     |
+| judgment      | PASS / CONDITIONAL / FAIL |
+
+## Fixes
+
+| Location           | Issue  | Suggestion | Impact     |
+| ------------------ | ------ | ---------- | ---------- |
+| セクションまたは行 | 問題点 | 修正方法   | スコア改善 |
+
+| Field       | Value                  |
+| ----------- | ---------------------- |
+| next_action | 具体的な次のアクション |
+
+`<promise>PASS</promise>` (total < 90の場合は省略)
 ```
 
 ## Ralph Loop統合

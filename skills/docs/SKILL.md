@@ -21,30 +21,31 @@ If empty, use AskUserQuestion to select.
 
 1. Call analyzer: `architecture-analyzer`, `api-analyzer`, `domain-analyzer`, or
    `setup-analyzer`
-2. Analyzer returns structured YAML
-3. Validate YAML has required top-level keys (error → report "Analyzer returned
-   invalid YAML")
+2. Analyzer returns structured Markdown
+3. Validate Markdown has required sections (error → report "Analyzer returned
+   invalid output")
 4. Load template from `templates/docs/{type}.md`
-5. Format YAML using template structure
+5. Format output using template structure
 6. Write to `workspace/docs/{type}.md`
 7. Present to user
 
 ## Flow
 
 ```text
-[analyzer YAML] → [template] → workspace/docs/{type}.md (document)
+[analyzer Markdown] → [template] → workspace/docs/{type}.md (document)
 ```
 
-## Required Keys by Type
+## Required Sections by Type
 
-| Type         | Required Keys                                                            |
+| Type         | Required Sections                                                        |
 | ------------ | ------------------------------------------------------------------------ |
 | architecture | `project_name`, `tech_stack`, `key_components`, `dependencies`           |
 | api          | `project_name`, `meta`, `endpoints`                                      |
 | domain       | `project_name`, `generated_at`, `meta`, `confidence_summary`, `entities` |
 | setup        | `project_name`, `prerequisites`, `installation`                          |
 
-Step 3 validates against this table. Missing key → report which keys are absent.
+Step 3 validates against this table. Missing section → report which sections are
+absent.
 
 ## Output
 

@@ -37,33 +37,37 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "TEST-{seq}"
-    agent: testability-reviewer
-    severity: high|medium|low
-    category: "TE1(DI)|TE2(Separation)|TE3(Mocking)|TE4(Globals)|TE5(Coupling)"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this is hard to test>"
-    fix: "<testable alternative>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: call_site_check|pattern_search
-      question: "<is this dependency actually injected or mocked in existing tests?>"
-summary:
-  total_findings: <count>
-  by_category:
-    dependencies: <count>
-    side_effects: <count>
-    mocking: <count>
-    state: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID         | Severity            | Category                                                                | Location    | Confidence |
+| ---------- | ------------------- | ----------------------------------------------------------------------- | ----------- | ---------- |
+| TEST-{seq} | high / medium / low | TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling) | `file:line` | 0.60–1.00  |
+
+### TEST-{seq}
+
+| Field        | Value                                                                                                |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
+| Evidence     | code snippet                                                                                         |
+| Reasoning    | why this is hard to test                                                                             |
+| Fix          | testable alternative                                                                                 |
+| Verification | call_site_check / pattern_search — is this dependency actually injected or mocked in existing tests? |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| dependencies   | count |
+| side_effects   | count |
+| mocking        | count |
+| state          | count |
+| files_reviewed | count |
 ```

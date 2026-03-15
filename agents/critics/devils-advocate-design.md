@@ -18,12 +18,18 @@ background: true
 
 ## Input
 
-```yaml
-proposal:
-  source: "thinker-pragmatist"
-  approach: "Extend existing service with new method"
-  decisions: [...]
-  trade_offs: [...]
+```markdown
+### Proposal
+
+| Field    | Value                                   |
+| -------- | --------------------------------------- |
+| source   | thinker-pragmatist                      |
+| approach | Extend existing service with new method |
+
+| Field      | Value              |
+| ---------- | ------------------ |
+| decisions  | list of decisions  |
+| trade-offs | list of trade-offs |
 ```
 
 ## Challenge Framework
@@ -64,32 +70,42 @@ proposal:
 
 ## Output
 
-Return structured YAML via Task completion:
+Return structured Markdown via Task completion:
 
-```yaml
-challenged_proposal:
-  source: "thinker-pragmatist"
-  verdict: confirmed|weakened|needs_revision
-  strengths:
-    - "Minimal diff, low risk"
-    - "Reuses existing patterns"
-  weaknesses:
-    - finding: "Assumes single-tenant usage"
-      severity: high
-      reasoning: "No tenant isolation in proposed data model"
-    - finding: "No error recovery path"
-      severity: medium
-      reasoning: "Service method has no retry or fallback"
-  challenges_applied:
-    - question: "What assumptions are hidden?"
-      result: "Single-tenant assumption found"
-    - question: "How does this fail?"
-      result: "No graceful degradation on API timeout"
+```markdown
+## Challenged Proposal
 
-summary:
-  strengths_count: <count>
-  weaknesses_count: <count>
-  verdict: "confirmed|weakened|needs_revision"
+| Field   | Value                                 |
+| ------- | ------------------------------------- |
+| source  | thinker-pragmatist                    |
+| verdict | confirmed / weakened / needs_revision |
+
+### Strengths
+
+- Minimal diff, low risk
+- Reuses existing patterns
+
+### Weaknesses
+
+- Assumes single-tenant usage (severity: high) — No tenant isolation in proposed
+  data model
+- No error recovery path (severity: medium) — Service method has no retry or
+  fallback
+
+### Challenges Applied
+
+| Question                     | Result                                 |
+| ---------------------------- | -------------------------------------- |
+| What assumptions are hidden? | Single-tenant assumption found         |
+| How does this fail?          | No graceful degradation on API timeout |
+
+## Summary
+
+| Metric           | Value                                 |
+| ---------------- | ------------------------------------- |
+| strengths_count  | count                                 |
+| weaknesses_count | count                                 |
+| verdict          | confirmed / weakened / needs_revision |
 ```
 
 ## Error Handling

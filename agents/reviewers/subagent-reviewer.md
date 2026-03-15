@@ -47,7 +47,7 @@ background: true
 - Generated Content table
 - Analysis Phases table
 - Error Handling table
-- Output (YAML format)
+- Output (Markdown format)
 
 ## Error Handling
 
@@ -60,30 +60,35 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "SA-{seq}"
-    agent: subagent-reviewer
-    severity: high|medium|low
-    category: "yaml|section|scope|pattern|output"
-    location: "<file>:<line>"
-    evidence: "<what's observed>"
-    reasoning: "<why it's a problem>"
-    fix: "<how to fix>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: pattern_search
-      question: "<is this structural issue consistent across other agent definitions?>"
-summary:
-  total_findings: <count>
-  agents_reviewed: <count>
-  compliant: <count>
-  non_compliant: <count>
+```markdown
+## Findings
+
+| ID       | Severity            | Category                                  | Location    | Confidence |
+| -------- | ------------------- | ----------------------------------------- | ----------- | ---------- |
+| SA-{seq} | high / medium / low | yaml / section / scope / pattern / output | `file:line` | 0.60–1.00  |
+
+### SA-{seq}
+
+| Field        | Value                                                                                |
+| ------------ | ------------------------------------------------------------------------------------ |
+| Evidence     | what's observed                                                                      |
+| Reasoning    | why it's a problem                                                                   |
+| Fix          | how to fix                                                                           |
+| Verification | pattern_search — is this structural issue consistent across other agent definitions? |
+
+## Summary
+
+| Metric          | Value |
+| --------------- | ----- |
+| total_findings  | count |
+| agents_reviewed | count |
+| compliant       | count |
+| non_compliant   | count |
 ```

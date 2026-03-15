@@ -103,21 +103,13 @@ Analyze harvested conversations in batches. For each batch, extract:
 
 For each conversation batch, produce structured output:
 
-```yaml
-terms:
-  - term: "メンバー"
-    definition: "有料プラン契約者"
-    code_mapping: "User where subscriptionStatus === 'active'"
-    confidence: high
-    evidence: "slack:#{channel}/p{ts}"
-    ref_mapping: "design-doc.md: 「メンバー = 有料プラン契約済みユーザー」"
-    synonyms: ["有料ユーザー"]
-  - term: "ゲスト"
-    definition: "未登録・未ログインユーザー"
-    code_mapping: null
-    confidence: medium
-    evidence: "slack:#{channel}/p{ts}"
-    ref_mapping: null
+```markdown
+### Extracted Terms
+
+| Term     | Definition                 | Code Mapping                               | Confidence | Evidence               | Ref Mapping                                              | Synonyms     |
+| -------- | -------------------------- | ------------------------------------------ | ---------- | ---------------------- | -------------------------------------------------------- | ------------ |
+| メンバー | 有料プラン契約者           | User where subscriptionStatus === 'active' | high       | slack:#{channel}/p{ts} | design-doc.md: 「メンバー = 有料プラン契約済みユーザー」 | 有料ユーザー |
+| ゲスト   | 未登録・未ログインユーザー | —                                          | medium     | slack:#{channel}/p{ts} | —                                                        | —            |
 ```
 
 When reference materials are loaded (Phase 2.5), cross-reference each candidate

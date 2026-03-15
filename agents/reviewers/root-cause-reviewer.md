@@ -39,41 +39,36 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "RCA-{seq}"
-    agent: root-cause-reviewer
-    severity: high|medium|low
-    category: "symptom|state-sync|race|workaround"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    five_whys:
-      - level: 1
-        why: "<observable fact>"
-      - level: 2
-        why: "<implementation detail>"
-      - level: 3
-        why: "<design decision>"
-      - level: 4
-        why: "<architectural constraint>"
-      - level: 5
-        why: "<root cause>"
-    root_cause: "<fundamental issue>"
-    fix: "<solution addressing root cause>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: execution_trace|pattern_search
-      question: "<does the root cause actually produce the described symptom?>"
-summary:
-  total_findings: <count>
-  patches_detected: <count>
-  root_causes_identified: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID        | Severity            | Category                                 | Location    | Confidence |
+| --------- | ------------------- | ---------------------------------------- | ----------- | ---------- |
+| RCA-{seq} | high / medium / low | symptom / state-sync / race / workaround | `file:line` | 0.60–1.00  |
+
+### RCA-{seq}
+
+| Field        | Value                                                                                                    |
+| ------------ | -------------------------------------------------------------------------------------------------------- |
+| Evidence     | code snippet                                                                                             |
+| 5 Whys       | 1. observable fact 2. implementation detail 3. design decision 4. architectural constraint 5. root cause |
+| Root Cause   | fundamental issue                                                                                        |
+| Fix          | solution addressing root cause                                                                           |
+| Verification | execution_trace / pattern_search — does the root cause actually produce the described symptom?           |
+
+## Summary
+
+| Metric                 | Value |
+| ---------------------- | ----- |
+| total_findings         | count |
+| patches_detected       | count |
+| root_causes_identified | count |
+| files_reviewed         | count |
 ```

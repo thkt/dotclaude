@@ -116,46 +116,73 @@ Read each config file and extract key settings, not just file names:
 
 ## Output
 
-Return structured YAML:
+Return structured Markdown:
 
-```yaml
-project_name: <name>
-generated_at: <ISO 8601 timestamp>
-source: analyzer
-meta:
-  framework: <detected framework>
-  package_manager: <detected package manager>
-prerequisites:
-  - tool: <tool>
-    version: <version>
-    required: true/false
-installation:
-  clone_url: <repo_url>
-  install_command: <command>
-  post_install_steps:
-    - description: <step>
-      command: <command>
-configuration:
-  env_vars:
-    - name: <VAR_NAME>
-      description: <description>
-      required_level: <Yes|No|Conditional (condition)>
-      default: <default>
-      source_file: <file:line>
-      confidence: <verified|inferred>
-  config_files:
-    - file: <filename>
-      purpose: <purpose>
-      key_settings:
-        - name: <setting>
-          value: <value>
-running:
-  development: <dev_command>
-  production: <prod_command>
-  dev_url: <URL with correct port from config>
-testing:
-  command: <test_command>
-troubleshooting:
-  - issue: <issue>
-    solution: <solution>
+```markdown
+## Meta
+
+| Field           | Value                      |
+| --------------- | -------------------------- |
+| project_name    | <name>                     |
+| generated_at    | <ISO 8601 timestamp>       |
+| source          | analyzer                   |
+| framework       | <detected framework>       |
+| package_manager | <detected package manager> |
+
+## Prerequisites
+
+| Tool   | Version   | Required |
+| ------ | --------- | -------- |
+| <tool> | <version> | yes/no   |
+
+## Installation
+
+| Field           | Value      |
+| --------------- | ---------- |
+| clone_url       | <repo_url> |
+| install_command | <command>  |
+
+### Post-Install Steps
+
+| Step          | Command   |
+| ------------- | --------- |
+| <description> | <command> |
+
+## Configuration
+
+### Environment Variables
+
+| Name       | Description   | Required           | Default   | Source        | Confidence        |
+| ---------- | ------------- | ------------------ | --------- | ------------- | ----------------- |
+| <VAR_NAME> | <description> | Yes/No/Conditional | <default> | `<file:line>` | verified/inferred |
+
+### Config Files
+
+| File       | Purpose   |
+| ---------- | --------- |
+| <filename> | <purpose> |
+
+Per config file, key settings:
+
+- **<setting>**: <value>
+
+## Running
+
+| Mode        | Command                             |
+| ----------- | ----------------------------------- |
+| development | <dev_command>                       |
+| production  | <prod_command>                      |
+| dev_url     | <URL with correct port from config> |
+
+## Testing
+
+| Field   | Value          |
+| ------- | -------------- |
+| command | <test_command> |
+
+## Troubleshooting
+
+| Issue   | Solution   |
+| ------- | ---------- |
+| <issue> | <solution> |
 ```

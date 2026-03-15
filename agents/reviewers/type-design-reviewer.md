@@ -57,40 +57,40 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "TD-{seq}"
-    agent: type-design-reviewer
-    severity: critical|high|medium|low
-    category: "encapsulation|expression|usefulness|enforcement"
-    location: "<file>:<line>"
-    type_name: "<TypeName>"
-    evidence: "<code snippet>"
-    reasoning: "<why this is a design issue>"
-    fix: "<improved type design>"
-    scores:
-      encapsulation: <1-10>
-      expression: <1-10>
-      usefulness: <1-10>
-      enforcement: <1-10>
-    confidence: 0.60-1.00
-    verification_hint:
-      check: call_site_check|pattern_search
-      question: "<can invalid instances actually be constructed at call sites?>"
-summary:
-  total_findings: <count>
-  types_reviewed: <count>
-  average_scores:
-    encapsulation: <avg>
-    expression: <avg>
-    usefulness: <avg>
-    enforcement: <avg>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID       | Severity                       | Category                                              | Location    | Confidence |
+| -------- | ------------------------------ | ----------------------------------------------------- | ----------- | ---------- |
+| TD-{seq} | critical / high / medium / low | encapsulation / expression / usefulness / enforcement | `file:line` | 0.60–1.00  |
+
+### TD-{seq}
+
+| Field        | Value                                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------- |
+| Type Name    | TypeName                                                                                        |
+| Evidence     | code snippet                                                                                    |
+| Reasoning    | why this is a design issue                                                                      |
+| Fix          | improved type design                                                                            |
+| Scores       | encapsulation X/10, expression X/10, usefulness X/10, enforcement X/10                          |
+| Verification | call_site_check / pattern_search — can invalid instances actually be constructed at call sites? |
+
+## Summary
+
+| Metric            | Value |
+| ----------------- | ----- |
+| total_findings    | count |
+| types_reviewed    | count |
+| avg encapsulation | avg   |
+| avg expression    | avg   |
+| avg usefulness    | avg   |
+| avg enforcement   | avg   |
+| files_reviewed    | count |
 ```

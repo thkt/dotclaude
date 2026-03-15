@@ -6,7 +6,7 @@ CLAUDE_DIR="${HOME}/.claude"
 AGENTS_DIR="${CLAUDE_DIR}/agents"
 SKILLS_DIR="${CLAUDE_DIR}/skills"
 COMMANDS_DIR="${CLAUDE_DIR}/commands"
-SCHEMA_FILE="${CLAUDE_DIR}/templates/audit/finding-schema.yaml"
+SCHEMA_FILE="${CLAUDE_DIR}/templates/audit/finding-schema.md"
 
 errors=0
 warnings=0
@@ -74,20 +74,22 @@ if [[ -f "$SCHEMA_FILE" ]]; then
   check3_count=0
   while read -r line; do
     check3_count=$((check3_count + 1))
-    prefix=$(printf '%s' "$line" | sed 's/^# | *\([A-Z0-9]*\) .*/\1/')
-    reviewer=$(printf '%s' "$line" | sed 's/.*| *\([a-z][-a-z]*\) *|.*/\1/')
+    prefix=$(printf '%s' "$line" | sed 's/^| *\([A-Z0-9]*\) .*/\1/')
+    reviewer=$(printf '%s' "$line" | sed 's/.*| *\([a-z][a-z0-9-]*\).*/\1/')
     [[ -z "$reviewer" || "$reviewer" == "$line" ]] && continue
 
-    if [[ -f "${AGENTS_DIR}/reviewers/${reviewer}.md" ]]; then
+    if [[ "$reviewer" == "pre-flight" ]]; then
+      pass "${prefix} → ${reviewer} (hook-generated, no agent file)"
+    elif [[ -f "${AGENTS_DIR}/reviewers/${reviewer}.md" ]]; then
       pass "${prefix} → ${reviewer} exists"
     else
       fail "${prefix} → ${reviewer} → file not found: reviewers/${reviewer}.md"
     fi
-  done < <(sed -n '/^# --- ID prefix registry/,/^# ---/p' "$SCHEMA_FILE" \
-    | grep '^# |' | grep -v 'Prefix\|------')
+  done < <(sed -n '/^## ID Prefix Registry/,/^##/p' "$SCHEMA_FILE" \
+    | grep '^|' | grep -v 'Prefix\|------')
   [[ $check3_count -eq 0 ]] && warn "No prefix entries found in schema — section header may have changed"
 else
-  fail "finding-schema.yaml not found"
+  fail "finding-schema.md not found"
 fi
 
 echo "\nCheck 4: Frontmatter model values"

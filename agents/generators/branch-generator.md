@@ -60,15 +60,33 @@ skills: [utilizing-cli-tools]
 
 ## Output
 
-Return structured YAML:
+Return structured Markdown:
 
-```yaml
-options:
-  - name: feature/auth-add-oauth
-    reason: Best match for changes
-  - name: feat/oauth-integration
-    reason: Short form
-  - name: feat/PROJ-123-oauth
-    reason: With ticket
-recommended: feature/auth-add-oauth
+```markdown
+## Options
+
+### 1
+
+| Field  | Value                  |
+| ------ | ---------------------- |
+| name   | feature/auth-add-oauth |
+| reason | Best match for changes |
+
+### 2
+
+| Field  | Value                  |
+| ------ | ---------------------- |
+| name   | feat/oauth-integration |
+| reason | Short form             |
+
+### 3
+
+| Field  | Value               |
+| ------ | ------------------- |
+| name   | feat/PROJ-123-oauth |
+| reason | With ticket         |
+
+## Recommended
+
+feature/auth-add-oauth
 ```

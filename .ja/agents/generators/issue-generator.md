@@ -69,11 +69,14 @@ skills: [utilizing-cli-tools]
 
 ## 出力
 
-テンプレート適用済みのbodyを含む構造化YAMLを返す:
+テンプレート適用済みのbodyを含む構造化Markdownを返す:
 
-```yaml
-type: <type>
-title: <title>
-body: |
-  <テンプレート構造に従った内容>
+```markdown
+## Issue
+
+| Field | Value                        |
+| ----- | ---------------------------- |
+| type  | type                         |
+| title | title                        |
+| body  | テンプレート構造に従った内容 |
 ```

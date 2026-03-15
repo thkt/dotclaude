@@ -3,7 +3,7 @@ name: accessibility-reviewer
 description: WCAG 2.2 compliance review.
 tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
-skills: [a11y-specialist-skills:reviewing-a11y, web-design-guidelines]
+skills: [a11y-specialist-skills:reviewing-a11y]
 context: fork
 memory: project
 background: true
@@ -23,7 +23,7 @@ background: true
 | Source                 | Responsibility                                               |
 | ---------------------- | ------------------------------------------------------------ |
 | a11y-specialist-skills | WCAG 2.2 checks (semantics, forms, ARIA, keyboard, alt text) |
-| This agent             | Visual checks (contrast, motion) + YAML output               |
+| This agent             | Visual checks (contrast, motion) + Markdown output           |
 
 ## Browser Usage
 
@@ -55,40 +55,40 @@ Fallback: If browser unavailable, code-only analysis with lower confidence.
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "A11Y-{seq}"
-    agent: accessibility-reviewer
-    severity: critical|high|medium
-    category: "semantic|keyboard|screen-reader|visual|form"
-    wcag: "<success criterion e.g., 1.1.1>"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this is accessibility barrier>"
-    fix: "<accessible alternative>"
-    apg_pattern: "<APG pattern URL if applicable>"
-    code_example: |
-      <corrected code snippet>
-    confidence: 0.60-1.00
-    verification_hint:
-      check: execution_trace|pattern_search
-      question:
-        "<is this element actually reachable by keyboard/screen reader?>"
-summary:
-  total_findings: <count>
-  wcag_compliance:
-    level_a: "<X/30>"
-    level_aa: "<Y/20>"
-  by_category:
-    keyboard: <count>
-    screen_reader: <count>
-    visual: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID         | Severity                 | Category                                            | WCAG                            | Location    | Confidence |
+| ---------- | ------------------------ | --------------------------------------------------- | ------------------------------- | ----------- | ---------- |
+| A11Y-{seq} | critical / high / medium | semantic / keyboard / screen-reader / visual / form | success criterion (e.g., 1.1.1) | `file:line` | 0.60–1.00  |
+
+### A11Y-{seq}
+
+| Field        | Value                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------ |
+| Evidence     | code snippet                                                                                     |
+| Reasoning    | why this is accessibility barrier                                                                |
+| Fix          | accessible alternative                                                                           |
+| APG Pattern  | APG pattern URL if applicable                                                                    |
+| Code Example | corrected code snippet                                                                           |
+| Verification | execution_trace / pattern_search — is this element actually reachable by keyboard/screen reader? |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| level_a        | X/30  |
+| level_aa       | Y/20  |
+| keyboard       | count |
+| screen_reader  | count |
+| visual         | count |
+| files_reviewed | count |
 ```

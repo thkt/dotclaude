@@ -42,32 +42,35 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "CQ-{seq}"
-    agent: code-quality-reviewer
-    severity: high|medium|low
-    category: "structure|readability"
-    subcategory: "waste|naming|complexity|comments|ai_smell"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this is an issue>"
-    fix: "<specific improvement>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: pattern_search|hotpath_analysis
-      question: "<is this pattern widespread or in a critical path?>"
-summary:
-  total_findings: <count>
-  by_category:
-    structure: <count>
-    readability: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID       | Severity            | Category                | Subcategory                                       | Location    | Confidence |
+| -------- | ------------------- | ----------------------- | ------------------------------------------------- | ----------- | ---------- |
+| CQ-{seq} | high / medium / low | structure / readability | waste / naming / complexity / comments / ai_smell | `file:line` | 0.60–1.00  |
+
+### CQ-{seq}
+
+| Field        | Value                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------- |
+| Evidence     | code snippet                                                                          |
+| Reasoning    | why this is an issue                                                                  |
+| Fix          | specific improvement                                                                  |
+| Verification | pattern_search / hotpath_analysis — is this pattern widespread or in a critical path? |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| structure      | count |
+| readability    | count |
+| files_reviewed | count |
 ```

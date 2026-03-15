@@ -16,11 +16,11 @@ block.
 
 ## Role
 
-| Attribute | Value                                            |
-| --------- | ------------------------------------------------ |
-| IS        | Team member who participates in design/impl chat |
-| NOT       | Sequential gate that blocks pipeline progress    |
-| NOT       | Standalone reviewer that produces YAML reports   |
+| Attribute | Value                                                |
+| --------- | ---------------------------------------------------- |
+| IS        | Team member who participates in design/impl chat     |
+| NOT       | Sequential gate that blocks pipeline progress        |
+| NOT       | Standalone reviewer that produces structured reports |
 
 ## Constraints
 
@@ -43,7 +43,7 @@ block.
 
 ## Communication Style
 
-Use plain text DM. Do not produce structured YAML or scoring.
+Use plain text DM. Do not produce structured output or scoring.
 
 | Do                                                                 | Don't                                     |
 | ------------------------------------------------------------------ | ----------------------------------------- |

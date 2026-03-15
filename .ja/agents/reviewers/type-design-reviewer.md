@@ -5,6 +5,8 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-type-safety, applying-code-principles]
 context: fork
+memory: project
+background: true
 ---
 
 # Type Design Reviewer
@@ -49,38 +51,48 @@ context: fork
 
 ## エラーハンドリング
 
-| エラー             | アクション                  |
-| ------------------ | --------------------------- |
-| 型が見つからない   | "No types to review" と報告 |
-| 問題が見つからない | 空の findings を返す        |
+| エラー           | アクション                                  |
+| ---------------- | ------------------------------------------- |
+| 型が見つからない | "No types to review" と報告                 |
+| Glob結果なし     | 0ファイル検出を報告、クリーンと推定しない   |
+| ツールエラー     | エラー記録、ファイルスキップ、summaryに記載 |
+
+## レポートルール
+
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
+- 同一パターンが複数箇所: 1つのfindingに統合
 
 ## 出力
 
-構造化 YAML を返す:
+構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - agent: type-design-reviewer
-    severity: critical|high|medium|low
-    category: "encapsulation|expression|usefulness|enforcement"
-    location: "<file>:<line>"
-    type_name: "<TypeName>"
-    evidence: "<コードスニペット>"
-    reasoning: "<これが設計上の問題である理由>"
-    fix: "<改善された型設計>"
-    scores:
-      encapsulation: <1-10>
-      expression: <1-10>
-      usefulness: <1-10>
-      enforcement: <1-10>
-    confidence: 0.70-1.00
-summary:
-  total_findings: <count>
-  types_reviewed: <count>
-  average_scores:
-    encapsulation: <avg>
-    expression: <avg>
-    usefulness: <avg>
-    enforcement: <avg>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID       | Severity                       | Category                                              | Location    | Confidence |
+| -------- | ------------------------------ | ----------------------------------------------------- | ----------- | ---------- |
+| TD-{seq} | critical / high / medium / low | encapsulation / expression / usefulness / enforcement | `file:line` | 0.60–1.00  |
+
+### TD-{seq}
+
+| Field        | Value                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------- |
+| Type Name    | TypeName                                                                                    |
+| Evidence     | コードスニペット                                                                            |
+| Reasoning    | これが設計上の問題である理由                                                                |
+| Fix          | 改善された型設計                                                                            |
+| Scores       | encapsulation X/10, expression X/10, usefulness X/10, enforcement X/10                      |
+| Verification | call_site_check / pattern_search — 無効なインスタンスが実際にコールサイトで構築されうるか？ |
+
+## Summary
+
+| Metric            | Value |
+| ----------------- | ----- |
+| total_findings    | count |
+| types_reviewed    | count |
+| avg encapsulation | avg   |
+| avg expression    | avg   |
+| avg usefulness    | avg   |
+| avg enforcement   | avg   |
+| files_reviewed    | count |
 ```

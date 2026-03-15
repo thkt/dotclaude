@@ -1,6 +1,7 @@
 ---
 name: progressive-integrator
-description: challenge/verification 結果を照合し、クロスドメインの根本原因を統合。
+description:
+  challenge/verification 結果を照合し、クロスドメインの根本原因を統合。
 tools: [Read, Grep, Glob, LS]
 model: opus
 context: fork
@@ -9,71 +10,91 @@ skills: [applying-code-principles, analyzing-root-causes]
 
 # Progressive Integrator
 
-Challenger/Verifier 結果を照合し、クロスドメインの根本原因を統合して最終 YAML レポートを生成。
+Challenger/Verifier結果を照合し、クロスドメインの根本原因を統合して最終Markdownレポートを生成。
 
 ## 入力
 
-Challenger の結果と Verifier の結果。Leader から spawn プロンプトで渡される。
+Challengerの結果とVerifierの結果。Leaderからspawnプロンプトで渡される。
 
 ### Challenger 出力スキーマ
 
-```yaml
-challenges:
-  - finding_id: "{PREFIX}-{seq}"
-    verdict: confirmed|disputed|downgraded|needs_context
-    original_severity: critical|high|medium|low
-    adjusted_severity: medium  # downgraded 時のみ
-    reasoning: "<この verdict の理由>"
-    evidence: [...]
-summary:
-  total_challenged: <count>
-  confirmed: <count>
-  disputed: <count>
-  downgraded: <count>
-  needs_context: <count>
-  false_positive_rate: "<percentage>"
+```markdown
+## Challenges
+
+### {finding_id}
+
+| Field             | Value                                             |
+| ----------------- | ------------------------------------------------- |
+| verdict           | confirmed / disputed / downgraded / needs_context |
+| original_severity | critical / high / medium / low                    |
+| adjusted_severity | (downgraded 時のみ)                               |
+| reasoning         | この verdict の理由                               |
+| evidence          | 裏付けとなる証拠のリスト                          |
+
+## Summary
+
+| Metric              | Value      |
+| ------------------- | ---------- |
+| total_challenged    | count      |
+| confirmed           | count      |
+| disputed            | count      |
+| downgraded          | count      |
+| needs_context       | count      |
+| false_positive_rate | percentage |
 ```
 
 ### Verifier 出力スキーマ
 
-```yaml
-verifications:
-  - finding_id: "{PREFIX}-{seq}"
-    verdict: verified|weak_evidence|unverifiable
-    confidence: 0.60-1.00
-    evidence: "<検出結果または検証不可の理由>"
-    budget_exhausted: false  # 検証上限到達時 true
-summary:
-  verified: <count>
-  weak_evidence: <count>
-  unverifiable: <count>
-  verification_rate: "<percentage>"
+```markdown
+## Verifications
+
+### {finding_id}
+
+| Field            | Value                                   |
+| ---------------- | --------------------------------------- |
+| verdict          | verified / weak_evidence / unverifiable |
+| confidence       | 0.60-1.00                               |
+| budget_exhausted | true / false                            |
+| evidence         | 検出結果または検証不可の理由              |
+
+## Summary
+
+| Metric            | Value      |
+| ----------------- | ---------- |
+| verified          | count      |
+| weak_evidence     | count      |
+| unverifiable      | count      |
+| verification_rate | percentage |
 ```
 
 ## ワークフロー
 
-| フェーズ    | アクション                                          | トリガー     |
-| ----------- | --------------------------------------------------- | ------------ |
-| 1. 受信     | プロンプトから challenger/verifier 結果をパース     | spawn 時     |
-| 2. 蓄積     | finding_id で challenge + verification をペアリング | ペア受信後   |
-| 3. 照合     | 照合ルールを適用し最終 verdict を決定               | 全ペア受信後 |
-| 4. 統合     | 相関 + 統合 + 優先度付け                            | 照合後       |
-| 5. レポート | 最終 YAML を出力（Task 完了経由で leader に返却）   | 統合後       |
+| フェーズ    | アクション                                            | トリガー     |
+| ----------- | ----------------------------------------------------- | ------------ |
+| 1. 受信     | プロンプトから challenger/verifier 結果をパース       | spawn 時     |
+| 2. 蓄積     | finding_id で challenge + verification をペアリング   | ペア受信後   |
+| 3. 照合     | 照合ルールを適用し最終 verdict を決定                 | 全ペア受信後 |
+| 4. 統合     | 相関 + 統合 + 優先度付け                              | 照合後       |
+| 5. レポート | 最終 Markdown を出力（Task 完了経由で leader に返却） | 統合後       |
 
 ## 照合 (フェーズ 3)
 
 `finding_id` でマッチし、順に適用:
 
 1. disputed + verified → needs_review (confidence = verifier.confidence)
-2. Any + verified → confirmed (confidence = max; downgraded の場合、元の severity を復元)
-3. Any + unverifiable → challenger verdict を維持、confidence を 0.10 低下
-4. Any + weak_evidence + budget_exhausted → challenger verdict を維持、`needs_context` フラグ
-5. Any + weak_evidence → challenger verdict を維持
-6. Verifier のみ: verified→confirmed, weak_evidence→needs_context, unverifiable→除外
+2. Any + verified → confirmed (confidence = max;
+   downgradedの場合、元のseverityを復元)
+3. Any + unverifiable → challenger verdictを維持、confidenceを0.10低下
+4. Any + weak_evidence + budget_exhausted → challenger
+   verdictを維持、`needs_context` フラグ
+5. Any + weak_evidence → challenger verdictを維持
+6. Verifierのみ: verified→confirmed, weak_evidence→needs_context,
+   unverifiable→除外
 
-ルール 1 は偽陰性をキャッチ（Challenger が却下したが Verifier が証拠を発見）。
+ルール1は偽陰性をキャッチ（Challengerが却下したがVerifierが証拠を発見）。
 
-照合後、`confirmed`, `downgraded`, `needs_context`, `needs_review` を処理。`disputed` は破棄。
+照合後、`confirmed`, `downgraded`, `needs_context`, `needs_review`
+を処理。`disputed` は破棄。
 
 ## 統合 (フェーズ 4)
 
@@ -141,37 +162,39 @@ summary:
 
 ## 出力
 
-最終 YAML レポートを出力（Task 完了経由で leader に返却）。
+最終Markdownレポートを出力（Task完了経由でleaderに返却）。
 
-| セクション     | スキーマソース                  |
-| -------------- | ------------------------------- |
-| `summary`      | `templates/audit/snapshot.yaml` |
-| `root_causes`  | `templates/audit/snapshot.yaml` |
-| `priorities`   | `templates/audit/snapshot.yaml` |
-| `suggestions`  | Integrator 固有（下記スキーマ） |
+| セクション    | スキーマソース                  |
+| ------------- | ------------------------------- |
+| `summary`     | `templates/audit/snapshot.yaml` |
+| `root_causes` | `templates/audit/snapshot.yaml` |
+| `priorities`  | `templates/audit/snapshot.yaml` |
+| `suggestions` | Integrator 固有（下記スキーマ） |
 
-`meta` と `pipeline_health` は除外 — leader が追加。
+`meta` と `pipeline_health` は除外 — leaderが追加。
 
-```yaml
-suggestions:
-  auto_fixable_count: <count>
-  manual_count: <count>
-  items:
-    - id: "SUG-001"
-      root_cause_ref: "RC-001"  # スタンドアロンの場合は finding_ref
-      category: "<category>"
-      severity: critical|high|medium|low
-      fix_type: pattern|codemod|lint-fix|manual
-      confidence: 0.85-1.00
-      location:
-        file: "<ファイルパス>"
-        line: <行番号>
-      before: |
-        <元のコードスニペット>
-      after: |
-        <修正案のコードスニペット>
-      rationale: "<この修正の理由 — 根本原因に遡る>"
-      effort: "5min|15min|30min|1h|manual"
+```markdown
+## Suggestions
+
+| Metric             | Value |
+| ------------------ | ----- |
+| auto_fixable_count | count |
+| manual_count       | count |
+
+### SUG-001
+
+| Field          | Value                              |
+| -------------- | ---------------------------------- |
+| root_cause_ref | RC-001                             |
+| category       | category                           |
+| severity       | critical / high / medium / low     |
+| fix_type       | auto / manual                      |
+| confidence     | 0.85-1.00                          |
+| location       | ファイルパス : 行番号              |
+| effort         | 5min / 15min / 30min / 1h / manual |
+| Before         | 元のコードスニペット               |
+| After          | 修正案のコードスニペット           |
+| Rationale      | この修正の理由 — 根本原因に遡る    |
 ```
 
 ## 統合原則

@@ -90,11 +90,12 @@ Files modified by multiple units (type definitions, config, shared utilities)
 must be listed separately. These are applied to main before parallel execution
 begins, eliminating a major source of merge conflicts.
 
-```yaml
-shared_changes:
-  - file: "src/types/feature.ts"
-    change: "Add Feature interface and related types"
-    apply_before: parallel
+```markdown
+### Shared Changes
+
+| File                 | Change                                  | Apply Before |
+| -------------------- | --------------------------------------- | ------------ |
+| src/types/feature.ts | Add Feature interface and related types | parallel     |
 ```
 
 ## Output Format

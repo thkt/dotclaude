@@ -1,9 +1,16 @@
 ---
 name: sow-spec-reviewer
-description: SOW/Spec quality review. 100-point scoring, 90-point pass threshold.
+description:
+  SOW/Spec quality review. 100-point scoring, 90-point pass threshold.
 tools: [Read, Grep, Glob, LS]
 model: opus
-skills: [formatting-audits, validating-specs, reviewing-readability, applying-code-principles]
+skills:
+  [
+    formatting-audits,
+    validating-specs,
+    reviewing-readability,
+    applying-code-principles,
+  ]
 context: fork
 memory: project
 background: true
@@ -59,7 +66,8 @@ Start at 25 per category. Deduct for issues found in Phases 3-6:
 
 ## Consistency Check
 
-Delegate to `validating-specs` skill. CON-NNN findings append to `fixes`, deduct per severity.
+Delegate to `validating-specs` skill. CON-NNN findings append to `fixes`, deduct
+per severity.
 
 ## Error Handling
 
@@ -71,30 +79,43 @@ Delegate to `validating-specs` skill. CON-NNN findings append to `fixes`, deduct
 
 ## Output
 
-Structured YAML with ralph-loop promise tag:
+Structured Markdown with ralph-loop promise tag:
 
-```yaml
-agent: sow-spec-reviewer
-document: "<path to reviewed document>"
-scores:
-  accuracy: <0-25>
-  completeness: <0-25>
-  relevance: <0-25>
-  actionability: <0-25>
-  total: <0-100>
-judgment: PASS|CONDITIONAL|FAIL
-fixes:
-  - location: "<section or line>"
-    issue: "<what's wrong>"
-    suggestion: "<how to fix>"
-    impact: "<score improvement>"
-next_action: "<specific action to take>"
-promise: "<promise>PASS</promise>" # Omit when total < 90
+```markdown
+## Review: sow-spec-reviewer
+
+| Field    | Value                     |
+| -------- | ------------------------- |
+| document | path to reviewed document |
+
+## Scores
+
+| Category      | Score                     |
+| ------------- | ------------------------- |
+| accuracy      | 0–25                      |
+| completeness  | 0–25                      |
+| relevance     | 0–25                      |
+| actionability | 0–25                      |
+| total         | 0–100                     |
+| judgment      | PASS / CONDITIONAL / FAIL |
+
+## Fixes
+
+| Location        | Issue        | Suggestion | Impact            |
+| --------------- | ------------ | ---------- | ----------------- |
+| section or line | what's wrong | how to fix | score improvement |
+
+| Field       | Value                   |
+| ----------- | ----------------------- |
+| next_action | specific action to take |
+
+`<promise>PASS</promise>` (omit when total < 90)
 ```
 
 ## Ralph Loop Integration
 
-[ralph-loop](https://github.com/anthropics/claude-code-ralph-loop) is an external plugin that reads `<promise>` tags for loop continuation.
+[ralph-loop](https://github.com/anthropics/claude-code-ralph-loop) is an
+external plugin that reads `<promise>` tags for loop continuation.
 
 | Condition   | Action                                      |
 | ----------- | ------------------------------------------- |

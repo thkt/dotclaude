@@ -89,43 +89,68 @@ Every spawn prompt includes:
 
 ### Architect Output (Architect → Leader)
 
-```yaml
-contracts:
-  - name: "<interface/type name>"
-    definition: "<TypeScript interface or type>"
-    used_by: ["<file paths>"]
-shared_changes: # files modified by multiple units (types, config, etc.)
-  - file: "<file path>"
-    change: "<description of change>"
-    apply_before: parallel # merge to main before parallel execution
-parallel_units:
-  - unit_id: 1
-    files: ["<file paths>"]
-    depends_on: [] # GOAL: keep empty (independence-first)
-  - unit_id: 2
-    files: ["<file paths>"]
-    depends_on: [] # only populate when unavoidable, with rationale
-build_sequence: ["unit_id order if dependencies exist"]
+```markdown
+### Contracts
+
+| Name                | Definition                   | Used By    |
+| ------------------- | ---------------------------- | ---------- |
+| interface/type name | TypeScript interface or type | file paths |
+
+### Shared Changes
+
+| File      | Change                | Apply           |
+| --------- | --------------------- | --------------- |
+| file path | description of change | before parallel |
+
+### Parallel Units
+
+| Unit ID | Files      | Depends On                                              |
+| ------- | ---------- | ------------------------------------------------------- |
+| 1       | file paths | (none) — GOAL: keep empty (independence-first)          |
+| 2       | file paths | (none) — only populate when unavoidable, with rationale |
+
+Build sequence: unit_id order if dependencies exist
 ```
 
 ### Implementer Assignment (Leader → Implementer)
 
-```yaml
-unit_id: 1
-contracts: ["<relevant contracts only>"]
-files: ["<assigned file paths>"]
-tests: ["<assigned test file paths>"]
-constraints: ["<project-specific rules from CLAUDE.md>"]
+```markdown
+| Field       | Value                                 |
+| ----------- | ------------------------------------- |
+| unit_id     | 1                                     |
+| contracts   | relevant contracts only               |
+| files       | assigned file paths                   |
+| tests       | assigned test file paths              |
+| constraints | project-specific rules from CLAUDE.md |
 ```
 
 ### Implementer Completion (Implementer → Leader)
 
-```yaml
-unit_id: 1
-status: complete | blocked
-files_modified: ["<paths>"]
-tests: { total: N, passed: N, failed: N }
-issues: [{ description: "<issue>", severity: blocker | warning }]
+```markdown
+## Status
+
+| Field   | Value              |
+| ------- | ------------------ |
+| unit_id | 1                  |
+| status  | complete / blocked |
+
+### Files Modified
+
+| Path      | Action             |
+| --------- | ------------------ |
+| file path | created / modified |
+
+### Tests
+
+| Metric | Value |
+| ------ | ----- |
+| total  | count |
+| passed | count |
+| failed | count |
+
+### Issues
+
+- **description** (severity: blocker / warning)
 ```
 
 ## Execution
@@ -143,7 +168,7 @@ issues: [{ description: "<issue>", severity: blocker | warning }]
    - `$1` implementation description
    - Instruction: explore codebase (yomu preferred, grep/glob fallback) → design
      contracts → file groupings
-   - Expected output: Architect Output contract (YAML via DM)
+   - Expected output: Architect Output contract (Markdown via DM)
 3. Spawn QA (qa-reviewer) with prompt:
    - Instruction: observe Architect's design, comment via peer DM
    - Read team config to discover teammates
@@ -248,7 +273,7 @@ Leader maintains a progress table and reports to user at key events:
 
 ### Display Format
 
-```
+```markdown
 ## Swarm Progress
 
 | Unit | Files | Implementer | Status      | Duration |

@@ -55,33 +55,37 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "DOC-{seq}"
-    agent: document-reviewer
-    severity: high|medium|low
-    category: "clarity|structure|completeness|technical|audience"
-    location: "<file>:<section>"
-    evidence: "<what's observed>"
-    reasoning: "<why it's a problem>"
-    fix: "<specific improvement>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: pattern_search
-      question: "<is this documentation issue consistent across related files?>"
-summary:
-  total_findings: <count>
-  score:
-    clarity: "<X/10>"
-    completeness: "<X/10>"
-    structure: "<X/10>"
-    examples: "<X/10>"
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID        | Severity            | Category                                                  | Location       | Confidence |
+| --------- | ------------------- | --------------------------------------------------------- | -------------- | ---------- |
+| DOC-{seq} | high / medium / low | clarity / structure / completeness / technical / audience | `file:section` | 0.60–1.00  |
+
+### DOC-{seq}
+
+| Field        | Value                                                                         |
+| ------------ | ----------------------------------------------------------------------------- |
+| Evidence     | what's observed                                                               |
+| Reasoning    | why it's a problem                                                            |
+| Fix          | specific improvement                                                          |
+| Verification | pattern_search — is this documentation issue consistent across related files? |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| clarity        | X/10  |
+| completeness   | X/10  |
+| structure      | X/10  |
+| examples       | X/10  |
+| files_reviewed | count |
 ```

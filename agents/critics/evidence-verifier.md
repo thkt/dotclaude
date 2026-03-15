@@ -13,7 +13,8 @@ Collect positive evidence that findings are real problems.
 
 ## Input
 
-Findings from Leader via Task spawn prompt (includes `verification_hint` fields).
+Findings from Leader via Task spawn prompt (includes `verification_hint`
+fields).
 
 ## Verification Process
 
@@ -41,7 +42,8 @@ Findings from Leader via Task spawn prompt (includes `verification_hint` fields)
 | confidence ≥ 0.60 | `pattern_search`      |
 | confidence < 0.60 | Report `unverifiable` |
 
-After 5 files with inconclusive evidence → `weak_evidence` with `budget_exhausted: true`.
+After 5 files with inconclusive evidence → `weak_evidence` with
+`budget_exhausted: true`.
 
 ## Verdict Criteria
 
@@ -53,26 +55,30 @@ After 5 files with inconclusive evidence → `weak_evidence` with `budget_exhaus
 
 ## Output
 
-Structured YAML:
+Return structured Markdown:
 
-```yaml
-verifications:
-  - finding_id: "SEC-001"
-    verdict: verified|weak_evidence|unverifiable
-    budget_exhausted: false
-    evidence:
-      - type: execution_trace|call_site_check|error_propagation|hotpath_analysis|pattern_search
-        detail: "<specific finding with file:line references>"
-        files_checked: ["<file1>", "<file2>"]
-    confidence: 0.60-1.00
-    effort_to_reproduce: "5min|15min|30min|1h|manual"
+```markdown
+## Verifications
 
-summary:
-  total_processed: <count>
-  verified: <count>
-  weak_evidence: <count>
-  unverifiable: <count>
-  verification_rate: "<percentage>"
+### {finding_id}
+
+| Field               | Value                                                                   |
+| ------------------- | ----------------------------------------------------------------------- |
+| verdict             | verified / weak_evidence / unverifiable                                 |
+| budget_exhausted    | true / false                                                            |
+| confidence          | 0.60-1.00                                                               |
+| effort_to_reproduce | 5min / 15min / 30min / 1h / manual                                      |
+| Evidence            | type — detail with `file:line` references (files checked: file1, file2) |
+
+## Summary
+
+| Metric            | Value      |
+| ----------------- | ---------- |
+| total_processed   | count      |
+| verified          | count      |
+| weak_evidence     | count      |
+| unverifiable      | count      |
+| verification_rate | percentage |
 ```
 
 ## Error Handling

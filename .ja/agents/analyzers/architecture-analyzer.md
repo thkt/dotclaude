@@ -69,42 +69,66 @@ context: fork
 
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す:
 
-```yaml
-project_name: <name>
-source: analyzer
-tech_stack:
-  language:
-    name: <lang>
-    version: <version>
-  framework:
-    name: <framework>
-    version: <version>
-  runtime:
-    name: <runtime>
-    version: <version>
-  database:
-    name: <database>
-    version: <version>
-directory_structure: |
-  <tree出力>
-key_components:
-  - name: <name>
-    path: <path>
-    description: <description>
-dependencies:
-  external:
-    - name: <package>
-      purpose: <purpose>
-  internal: # key_components[].path と一致するフルパスを使用
-    - from: <dir>/<file>
-      to: <dir>/<file>
-      relationship: <relationship>
-mermaid_diagram: | # ノードラベルは key_components[].path と一致するフルパスを使用
-  graph TD
-    A["app/services/cache.ts"] --> B["app/utils/logger.ts"]
-statistics:
-  files: <count>
-  lines: <count>
+````markdown
+## Meta
+
+| Field        | Value    |
+| ------------ | -------- |
+| project_name | <name>   |
+| source       | analyzer |
+
+## Tech Stack
+
+| Category  | Name        | Version   |
+| --------- | ----------- | --------- |
+| language  | <lang>      | <version> |
+| framework | <framework> | <version> |
+| runtime   | <runtime>   | <version> |
+| database  | <database>  | <version> |
+
+## Directory Structure
+
+```text
+<tree出力>
 ```
+
+## Key Components
+
+| Name   | Path   | Description   |
+| ------ | ------ | ------------- |
+| <name> | <path> | <description> |
+
+## Dependencies
+
+### External
+
+| Package   | Purpose   |
+| --------- | --------- |
+| <package> | <purpose> |
+
+### Internal
+
+key_components[].path と一致するフルパスを使用。
+
+| From         | To           | Relationship   |
+| ------------ | ------------ | -------------- |
+| <dir>/<file> | <dir>/<file> | <relationship> |
+
+## Mermaid Diagram
+
+ノードラベルは key_components[].path と一致するフルパスを使用。
+
+```mermaid
+graph TD
+  A["app/services/cache.ts"] --> B["app/utils/logger.ts"]
+```
+
+## Statistics
+
+| Metric | Count   |
+| ------ | ------- |
+| files  | <count> |
+| lines  | <count> |
+````

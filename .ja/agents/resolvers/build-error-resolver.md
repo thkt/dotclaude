@@ -64,18 +64,25 @@ context: fork
 
 ## 出力
 
-```yaml
-errors:
-  - level: CRITICAL|HIGH|MEDIUM
-    code: "TS2322"
-    location: "<file>:<line>"
-    message: "<error message>"
-fixes:
-  - location: "<file>:<line>"
-    change: "<description>"
-status:
-  tsc_exit: 0
-  new_errors: 0
-  lines_changed: <count>
-  result: RESOLVED|ESCALATED
+```markdown
+## Errors
+
+| Level                    | Code   | Location  | Message       |
+| ------------------------ | ------ | --------- | ------------- |
+| CRITICAL / HIGH / MEDIUM | TS2322 | file:line | error message |
+
+## Fixes
+
+| Location  | Change      |
+| --------- | ----------- |
+| file:line | description |
+
+## Status
+
+| Field         | Value                |
+| ------------- | -------------------- |
+| tsc_exit      | 0                    |
+| new_errors    | 0                    |
+| lines_changed | count                |
+| result        | RESOLVED / ESCALATED |
 ```

@@ -1,6 +1,7 @@
 ---
 name: type-safety-reviewer
-description: TypeScript type safety review. any usage, coverage gaps, strict mode.
+description:
+  TypeScript type safety review. any usage, coverage gaps, strict mode.
 tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-type-safety, applying-code-principles]
@@ -30,41 +31,45 @@ background: true
 
 ## Error Handling
 
-| Error       | Action                                    |
-| ----------- | ----------------------------------------- |
-| No TS found | Report "No TS to review"                  |
-| Glob empty  | Report 0 files found, do not infer clean  |
-| Tool error  | Log error, skip file, note in summary     |
+| Error       | Action                                   |
+| ----------- | ---------------------------------------- |
+| No TS found | Report "No TS to review"                 |
+| Glob empty  | Report 0 files found, do not infer clean |
+| Tool error  | Log error, skip file, note in summary    |
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "TS-{seq}"
-    agent: type-safety-reviewer
-    severity: high|medium|low
-    category: "TS1-TS5"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this is unsafe>"
-    fix: "<type-safe alternative>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: call_site_check|pattern_search
-      question: "<are problematic values actually passed at call sites?>"
-summary:
-  total_findings: <count>
-  type_coverage: "<percentage>"
-  any_count: <count>
-  strict_mode:
-    strictNullChecks: true|false
-    noImplicitAny: true|false
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID       | Severity            | Category | Location    | Confidence |
+| -------- | ------------------- | -------- | ----------- | ---------- |
+| TS-{seq} | high / medium / low | TS1-TS5  | `file:line` | 0.60–1.00  |
+
+### TS-{seq}
+
+| Field        | Value                                                                                    |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| Evidence     | code snippet                                                                             |
+| Reasoning    | why this is unsafe                                                                       |
+| Fix          | type-safe alternative                                                                    |
+| Verification | call_site_check / pattern_search — are problematic values actually passed at call sites? |
+
+## Summary
+
+| Metric           | Value        |
+| ---------------- | ------------ |
+| total_findings   | count        |
+| type_coverage    | percentage   |
+| any_count        | count        |
+| strictNullChecks | true / false |
+| noImplicitAny    | true / false |
+| files_reviewed   | count        |
 ```

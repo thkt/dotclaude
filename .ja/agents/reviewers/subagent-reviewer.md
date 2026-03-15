@@ -5,6 +5,8 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [applying-code-principles]
 context: fork
+memory: project
+background: true
 ---
 
 # サブエージェントレビューアー
@@ -45,7 +47,7 @@ context: fork
 - 生成コンテンツテーブル
 - 分析フェーズテーブル
 - エラーハンドリングテーブル
-- 出力（YAML形式）
+- 出力（Markdown形式）
 
 ## エラーハンドリング
 
@@ -54,23 +56,37 @@ context: fork
 | エージェントなし | "No agents to review"報告 |
 | 無効なYAML       | パースエラーと共に報告    |
 
+## レポートルール
+
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
+- 同一パターンが複数箇所: 1つのfindingに統合
+
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - agent: subagent-reviewer
-    severity: high|medium|low
-    category: "yaml|section|scope|pattern|output"
-    location: "<file>:<line>"
-    evidence: "<what's observed>"
-    reasoning: "<why it's a problem>"
-    fix: "<how to fix>"
-    confidence: 0.80-1.00
-summary:
-  total_findings: <count>
-  agents_reviewed: <count>
-  compliant: <count>
-  non_compliant: <count>
+```markdown
+## Findings
+
+| ID       | Severity            | Category                                  | Location    | Confidence |
+| -------- | ------------------- | ----------------------------------------- | ----------- | ---------- |
+| SA-{seq} | high / medium / low | yaml / section / scope / pattern / output | `file:line` | 0.60–1.00  |
+
+### SA-{seq}
+
+| Field        | Value                                                                       |
+| ------------ | --------------------------------------------------------------------------- |
+| Evidence     | 観察された内容                                                              |
+| Reasoning    | これが問題である理由                                                        |
+| Fix          | 修正方法                                                                    |
+| Verification | pattern_search — この構造的な問題は他のエージェント定義でも一貫しているか？ |
+
+## Summary
+
+| Metric          | Value |
+| --------------- | ----- |
+| total_findings  | count |
+| agents_reviewed | count |
+| compliant       | count |
+| non_compliant   | count |
 ```

@@ -56,26 +56,42 @@ Create tests from Spec Test Scenarios (T-NNN). Follow TDD cycle.
 
 ## Output
 
-Return structured YAML:
+Return structured Markdown:
 
-```yaml
-summary:
-  created:
-    unit: <count>
-    integration: <count>
-    e2e: <count>
-  skipped:
-    - type: "<test type>"
-      reason: "<why skipped>"
-files:
-  - path: "<test file path>"
-    tests: <count>
-    status: created|skipped
-fr_coverage: # omit when no spec/FR-xxx available
-  covered:
-    - "FR-001 → <test file>:<test name>"
-  uncovered:
-    - "FR-003 (reason: not in scope of current test paths)"
-suggestions:
-  - "<edge case not in plan>"
+```markdown
+## Summary
+
+### Created
+
+| Type        | Count |
+| ----------- | ----- |
+| unit        | count |
+| integration | count |
+| e2e         | count |
+
+### Skipped
+
+| Type      | Reason      |
+| --------- | ----------- |
+| test type | why skipped |
+
+## Files
+
+| Path           | Tests | Status          |
+| -------------- | ----- | --------------- |
+| test file path | count | created/skipped |
+
+## FR Coverage
+
+### Covered
+
+- FR-001 → test file:test name
+
+### Uncovered
+
+- FR-003 (reason: not in scope of current test paths)
+
+## Suggestions
+
+- edge case not in plan
 ```

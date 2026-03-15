@@ -40,34 +40,40 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "PE-{seq}"
-    agent: progressive-enhancer
-    severity: high|medium|low
-    location: "<file>:<line>"
-    category: "layout|animation|event|style|toggle"
-    evidence: "<JS pattern found>"
-    reasoning: "<why CSS is better>"
-    fix: "<CSS alternative solution>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: pattern_search|call_site_check
-      question: "<is this JS pattern used in other components too?>"
-recommendations:
-  - location: "<file>:<line>"
-    action: "<specific change>"
-    impact: "<benefit>"
-    browser_support: "<compatibility note>"
-summary:
-  total_findings: <count>
-  high_priority: <count>
-  estimated_js_reduction: "<lines or percentage>"
+```markdown
+## Findings
+
+| ID       | Severity            | Category                                    | Location    | Confidence |
+| -------- | ------------------- | ------------------------------------------- | ----------- | ---------- |
+| PE-{seq} | high / medium / low | layout / animation / event / style / toggle | `file:line` | 0.60–1.00  |
+
+### PE-{seq}
+
+| Field        | Value                                                                               |
+| ------------ | ----------------------------------------------------------------------------------- |
+| Evidence     | JS pattern found                                                                    |
+| Reasoning    | why CSS is better                                                                   |
+| Fix          | CSS alternative solution                                                            |
+| Verification | pattern_search / call_site_check — is this JS pattern used in other components too? |
+
+## Recommendations
+
+| Location    | Action          | Impact  | Browser Support    |
+| ----------- | --------------- | ------- | ------------------ |
+| `file:line` | specific change | benefit | compatibility note |
+
+## Summary
+
+| Metric                 | Value               |
+| ---------------------- | ------------------- |
+| total_findings         | count               |
+| high_priority          | count               |
+| estimated_js_reduction | lines or percentage |
 ```

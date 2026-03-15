@@ -133,7 +133,7 @@ Signs of implementation coupling:
 #### Judgment Method: Substitution Test
 
 For borderline cases (e.g., tests using marker files, side-effect verification),
-apply the **Substitution Test**:
+apply the Substitution Test:
 
 > If the implementation were replaced with a different approach that achieves
 > the same spec-defined behavior, would this test break?
@@ -143,8 +143,8 @@ apply the **Substitution Test**:
 | Test still passes | Behavior test  | Checking exit code and stdout of a CLI tool   |
 | Test breaks       | Implementation | Checking which internal scripts were selected |
 
-Key: compare against the **Spec's Test Scenario granularity**, not the test's
-own assertions. A test that verifies internal routing logic invisible at the
+Key: compare against the Spec's Test Scenario granularity, not the test's own
+assertions. A test that verifies internal routing logic invisible at the
 spec-defined interface boundary is implementation-coupled, even if it asserts on
 observable side effects (marker files, log output).
 
@@ -161,14 +161,14 @@ Behavior-testing score = count(behavior tests) / count(all tests)
 
 ### Weight Table
 
-| Metric      | Weight  | Formula                     |
-| ----------- | ------- | --------------------------- |
-| Coverage    | 30      | coverage × 30               |
-| Excess      | 20      | (1 - excess_rate) × 20      |
-| Duplication | 15      | (1 - duplication_rate) × 15 |
-| Granularity | 15      | single_behavior_rate × 15   |
-| Intent      | 20      | behavior_testing_rate × 20  |
-| **Total**   | **100** |                             |
+| Metric      | Weight | Formula                     |
+| ----------- | ------ | --------------------------- |
+| Coverage    | 30     | coverage × 30               |
+| Excess      | 20     | (1 - excess_rate) × 20      |
+| Duplication | 15     | (1 - duplication_rate) × 15 |
+| Granularity | 15     | single_behavior_rate × 15   |
+| Intent      | 20     | behavior_testing_rate × 20  |
+| Total       | 100    |                             |
 
 ## Error Handling
 
@@ -181,44 +181,80 @@ Behavior-testing score = count(behavior tests) / count(all tests)
 
 ## Output
 
-Return structured YAML:
+Return structured Markdown:
 
-```yaml
-agent: test-quality-evaluator
-spec_path: "<path>"
-test_paths: ["<path>", ...]
-metrics:
-  coverage: <0.0-1.0>
-  excess: <0.0-1.0> # lower is better
-  duplication: <0.0-1.0> # lower is better
-  granularity: <0.0-1.0>
-  intent: <0.0-1.0>
-scores:
-  coverage: <0-30>
-  excess: <0-20>
-  duplication: <0-15>
-  granularity: <0-15>
-  intent: <0-20>
-  total: <0-100>
-details:
-  spec_scenarios: ["T-001", "T-002", ...]
-  test_functions:
-    - name: "<function name>"
-      file: "<file path>"
-      t_refs: ["T-001"]
-  coverage_map: # T-NNN → test functions
-    T-001: ["test_001_foo"]
-    T-002: [] # uncovered
-  uncovered: ["T-002"]
-  excess_tests: ["test_099_extra"]
-  duplicate_groups: # only T-NNN with 2+ tests
-    T-003: ["test_003a", "test_003b"]
-  granularity_issues:
-    - test: "<function name>"
-      behaviors: ["behavior A", "behavior B"]
-      judgment: "<why this is multi-behavior>"
-  intent_issues:
-    - test: "<function name>"
-      pattern: "<anti-pattern detected>"
-      judgment: "<why this is implementation-coupled>"
+```markdown
+## Metadata
+
+| Field      | Value                  |
+| ---------- | ---------------------- |
+| agent      | test-quality-evaluator |
+| spec_path  | path                   |
+| test_paths | path1, path2           |
+
+## Metrics
+
+| Metric      | Value   | Note            |
+| ----------- | ------- | --------------- |
+| coverage    | 0.0-1.0 |                 |
+| excess      | 0.0-1.0 | lower is better |
+| duplication | 0.0-1.0 | lower is better |
+| granularity | 0.0-1.0 |                 |
+| intent      | 0.0-1.0 |                 |
+
+## Scores
+
+| Metric      | Score |
+| ----------- | ----- |
+| coverage    | 0-30  |
+| excess      | 0-20  |
+| duplication | 0-15  |
+| granularity | 0-15  |
+| intent      | 0-20  |
+| total       | 0-100 |
+
+## Details
+
+### Spec Scenarios
+
+- T-001, T-002, ...
+
+### Test Functions
+
+| Name          | File      | T-Refs |
+| ------------- | --------- | ------ |
+| function name | file path | T-001  |
+
+### Coverage Map
+
+| T-NNN | Test Functions |
+| ----- | -------------- |
+| T-001 | test_001_foo   |
+| T-002 | (uncovered)    |
+
+### Uncovered
+
+- T-002
+
+### Excess Tests
+
+- test_099_extra
+
+### Duplicate Groups
+
+| T-NNN | Tests                |
+| ----- | -------------------- |
+| T-003 | test_003a, test_003b |
+
+### Granularity Issues
+
+| Test          | Behaviors              | Judgment                   |
+| ------------- | ---------------------- | -------------------------- |
+| function name | behavior A, behavior B | why this is multi-behavior |
+
+### Intent Issues
+
+| Test          | Pattern               | Judgment                           |
+| ------------- | --------------------- | ---------------------------------- |
+| function name | anti-pattern detected | why this is implementation-coupled |
 ```

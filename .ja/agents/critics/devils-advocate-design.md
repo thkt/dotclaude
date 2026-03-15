@@ -17,22 +17,28 @@ context: fork
 
 ## 入力
 
-```yaml
-proposal:
-  source: "thinker-pragmatist"
-  approach: "Extend existing service with new method"
-  decisions: [...]
-  trade_offs: [...]
+```markdown
+### Proposal
+
+| Field    | Value                                   |
+| -------- | --------------------------------------- |
+| source   | thinker-pragmatist                      |
+| approach | Extend existing service with new method |
+
+| Field      | Value                |
+| ---------- | -------------------- |
+| decisions  | 決定事項のリスト     |
+| trade-offs | トレードオフのリスト |
 ```
 
 ## 検証フレームワーク
 
-| 質問                        | 目的                                           |
-| --------------------------- | ---------------------------------------------- |
-| 隠れた前提は何か？          | 未検証の依存関係、暗黙の制約                   |
-| 隠れたコストは何か？        | 複雑性、保守負担、学習コスト                   |
-| どのように失敗するか？      | エラーシナリオ、エッジケース、スケーリング限界 |
-| もっと単純な選択肢はないか？| 過剰設計の検出、オッカムの剃刀                 |
+| 質問                         | 目的                                           |
+| ---------------------------- | ---------------------------------------------- |
+| 隠れた前提は何か？           | 未検証の依存関係、暗黙の制約                   |
+| 隠れたコストは何か？         | 複雑性、保守負担、学習コスト                   |
+| どのように失敗するか？       | エラーシナリオ、エッジケース、スケーリング限界 |
+| もっと単純な選択肢はないか？ | 過剰設計の検出、オッカムの剃刀                 |
 
 ## 検証カテゴリ
 
@@ -46,12 +52,12 @@ proposal:
 
 ## 検証プロセス
 
-| ステップ | アクション                        | 出力              |
-| -------- | --------------------------------- | ----------------- |
-| 1        | 提案 + 参照ファイルを読む         | コンテキスト      |
-| 2        | 既存コードベースで矛盾/衝突を確認 | コンフリクト      |
-| 3        | 障害シナリオを列挙                | リスク評価        |
-| 4        | 検証フレームワークを適用          | 判定（各決定ごと）|
+| ステップ | アクション                        | 出力               |
+| -------- | --------------------------------- | ------------------ |
+| 1        | 提案 + 参照ファイルを読む         | コンテキスト       |
+| 2        | 既存コードベースで矛盾/衝突を確認 | コンフリクト       |
+| 3        | 障害シナリオを列挙                | リスク評価         |
+| 4        | 検証フレームワークを適用          | 判定（各決定ごと） |
 
 ## 判定
 
@@ -63,32 +69,42 @@ proposal:
 
 ## 出力
 
-Task 完了時に構造化 YAML を返却:
+Task完了時に構造化Markdownを返却:
 
-```yaml
-challenged_proposal:
-  source: "thinker-pragmatist"
-  verdict: confirmed|weakened|needs_revision
-  strengths:
-    - "最小差分、低リスク"
-    - "既存パターンを再利用"
-  weaknesses:
-    - finding: "シングルテナント使用を前提としている"
-      severity: high
-      reasoning: "提案データモデルにテナント分離がない"
-    - finding: "エラー回復パスがない"
-      severity: medium
-      reasoning: "サービスメソッドにリトライやフォールバックがない"
-  challenges_applied:
-    - question: "隠れた前提は何か？"
-      result: "シングルテナント前提を発見"
-    - question: "どのように失敗するか？"
-      result: "APIタイムアウト時のグレースフルデグラデーションなし"
+```markdown
+## Challenged Proposal
 
-summary:
-  strengths_count: <count>
-  weaknesses_count: <count>
-  verdict: "confirmed|weakened|needs_revision"
+| Field   | Value                                 |
+| ------- | ------------------------------------- |
+| source  | thinker-pragmatist                    |
+| verdict | confirmed / weakened / needs_revision |
+
+### Strengths
+
+- 最小差分、低リスク
+- 既存パターンを再利用
+
+### Weaknesses
+
+- シングルテナント使用を前提としている (severity: high)
+  — 提案データモデルにテナント分離がない
+- エラー回復パスがない (severity: medium)
+  — サービスメソッドにリトライやフォールバックがない
+
+### Challenges Applied
+
+| Question               | Result                                              |
+| ---------------------- | --------------------------------------------------- |
+| 隠れた前提は何か？     | シングルテナント前提を発見                          |
+| どのように失敗するか？ | APIタイムアウト時のグレースフルデグラデーションなし |
+
+## Summary
+
+| Metric           | Value                                 |
+| ---------------- | ------------------------------------- |
+| strengths_count  | count                                 |
+| weaknesses_count | count                                 |
+| verdict          | confirmed / weakened / needs_revision |
 ```
 
 ## エラーハンドリング

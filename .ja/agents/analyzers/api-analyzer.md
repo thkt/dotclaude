@@ -76,58 +76,86 @@ context: fork
 
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す:
 
-```yaml
-project_name: <name>
-base_url: <base_url>
-generated_at: <ISO 8601 タイムスタンプ>
-source: analyzer
-meta:
-  content_type: <検出結果 or "application/json">
-  date_format: <検出結果 or "ISO 8601">
-  framework: <検出されたフレームワーク>
-confidence_summary:
-  verified: <件数>
-  inferred: <件数>
-  unknown: <件数>
-authentication:
-  - method: <type>
-    header: <header>
-    description: <description>
-endpoints:
-  - resource: <resource>
-    method: <METHOD>
-    path: <path>
-    description: <description>
-    confidence: <verified|inferred|unknown>
-    confidence_reason: <理由>
-    request:
-      content_type: <content type>
-      fields:
-        - name: <field>
-          type: <type>
-          required: <true|false>
-    response:
-      fields:
-        - name: <field>
-          type: <type>
-    status_codes:
-      - code: <code>
-        description: <description>
-error_format:
-  structure: |
-    {
-      "error": {
-        "code": "<error_code>",
-        "message": "<message>"
-      }
-    }
-types:
-  - name: <type_name>
-    source_file: <file:line>
-    fields:
-      - name: <field>
-        type: <type>
-    description: <description>
+````markdown
+## Meta
+
+| Field        | Value                            |
+| ------------ | -------------------------------- |
+| project_name | <name>                           |
+| base_url     | <base_url>                       |
+| generated_at | <ISO 8601 タイムスタンプ>        |
+| source       | analyzer                         |
+| content_type | <検出結果 or "application/json"> |
+| date_format  | <検出結果 or "ISO 8601">         |
+| framework    | <検出されたフレームワーク>       |
+
+## Confidence Summary
+
+| Level    | Count  |
+| -------- | ------ |
+| verified | <件数> |
+| inferred | <件数> |
+| unknown  | <件数> |
+
+## Authentication
+
+| Method | Header   | Description   |
+| ------ | -------- | ------------- |
+| <type> | <header> | <description> |
+
+## Endpoints
+
+### <resource> - <METHOD> <path>
+
+| Field             | Value                       |
+| ----------------- | --------------------------- |
+| description       | <description>               |
+| confidence        | <verified/inferred/unknown> |
+| confidence_reason | <理由>                      |
+
+#### Request
+
+| Field   | Type   | Required   |
+| ------- | ------ | ---------- |
+| <field> | <type> | true/false |
+
+Content-Type: <content type>
+
+#### Response
+
+| Field   | Type   |
+| ------- | ------ |
+| <field> | <type> |
+
+#### Status Codes
+
+| Code   | Description   |
+| ------ | ------------- |
+| <code> | <description> |
+
+## Error Format
+
+```json
+{
+  "error": {
+    "code": "<error_code>",
+    "message": "<message>"
+  }
+}
 ```
+
+## Types
+
+### <type_name>
+
+| Field       | Value         |
+| ----------- | ------------- |
+| source_file | <file:line>   |
+| description | <description> |
+
+| Field   | Type   |
+| ------- | ------ |
+| <field> | <type> |
+````

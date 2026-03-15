@@ -37,33 +37,37 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "DP-{seq}"
-    agent: design-pattern-reviewer
-    severity: high|medium|low
-    category: "container|hook|state|anti-pattern"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this pattern is problematic>"
-    fix: "<recommended pattern>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: pattern_search|call_site_check
-      question: "<is this anti-pattern used consistently or is this an isolated case?>"
-summary:
-  total_findings: <count>
-  pattern_score: "<X/10>"
-  by_type:
-    containers: <count>
-    presentational: <count>
-    mixed: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID       | Severity            | Category                                | Location    | Confidence |
+| -------- | ------------------- | --------------------------------------- | ----------- | ---------- |
+| DP-{seq} | high / medium / low | container / hook / state / anti-pattern | `file:line` | 0.60–1.00  |
+
+### DP-{seq}
+
+| Field        | Value                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------ |
+| Evidence     | code snippet                                                                                           |
+| Reasoning    | why this pattern is problematic                                                                        |
+| Fix          | recommended pattern                                                                                    |
+| Verification | pattern_search / call_site_check — is this anti-pattern used consistently or is this an isolated case? |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| pattern_score  | X/10  |
+| containers     | count |
+| presentational | count |
+| mixed          | count |
+| files_reviewed | count |
 ```

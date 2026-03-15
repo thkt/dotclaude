@@ -40,7 +40,7 @@ identifiers untranslated.
 
 ## Title Rules
 
-**No prefix** (no `feat:`, `fix:`, etc.)
+No prefix (no `feat:`, `fix:`, etc.)
 
 | Context          | Format                              |
 | ---------------- | ----------------------------------- |
@@ -71,18 +71,26 @@ BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remo
 
 ## Output
 
-Return structured YAML:
+Return structured Markdown:
 
-```yaml
-branch:
-  current: "<branch-name>"
-  base: "<detected-base>"
-  commits: <count>
-  files_changed: <count>
-pr:
-  title: "<title without prefix, imperative verb>"
-  body: |
-    <content following the PR template structure>
-command: |
-  gh pr create --title "<title>" --body "<body>"
+```markdown
+## Branch
+
+| Field         | Value         |
+| ------------- | ------------- |
+| current       | branch-name   |
+| base          | detected-base |
+| commits       | count         |
+| files_changed | count         |
+
+## PR
+
+| Field | Value                         |
+| ----- | ----------------------------- |
+| title | title without prefix          |
+| body  | content following PR template |
+
+## Command
+
+    gh pr create --title "title" --body "body"
 ```

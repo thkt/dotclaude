@@ -5,6 +5,8 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [analyzing-root-causes, applying-code-principles]
 context: fork
+memory: project
+background: true
 ---
 
 # 根本原因レビューアー
@@ -29,39 +31,44 @@ context: fork
 
 ## エラーハンドリング
 
-| エラー     | アクション              |
-| ---------- | ----------------------- |
-| コードなし | "No code to review"報告 |
-| 問題なし   | 空のfindingsを返す      |
+| エラー       | アクション                                  |
+| ------------ | ------------------------------------------- |
+| コードなし   | "No code to review"報告                     |
+| Glob結果なし | 0ファイル検出を報告、クリーンと推定しない   |
+| ツールエラー | エラー記録、ファイルスキップ、summaryに記載 |
+
+## レポートルール
+
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
+- 同一パターンが複数箇所: 1つのfindingに統合
 
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - agent: root-cause-reviewer
-    severity: high|medium|low
-    category: "symptom|state-sync|race|workaround"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    five_whys:
-      - level: 1
-        why: "<observable fact>"
-      - level: 2
-        why: "<implementation detail>"
-      - level: 3
-        why: "<design decision>"
-      - level: 4
-        why: "<architectural constraint>"
-      - level: 5
-        why: "<root cause>"
-    root_cause: "<fundamental issue>"
-    fix: "<solution addressing root cause>"
-    confidence: 0.70-1.00
-summary:
-  total_findings: <count>
-  patches_detected: <count>
-  root_causes_identified: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID        | Severity            | Category                                 | Location    | Confidence |
+| --------- | ------------------- | ---------------------------------------- | ----------- | ---------- |
+| RCA-{seq} | high / medium / low | symptom / state-sync / race / workaround | `file:line` | 0.60–1.00  |
+
+### RCA-{seq}
+
+| Field        | Value                                                                             |
+| ------------ | --------------------------------------------------------------------------------- |
+| Evidence     | コードスニペット                                                                  |
+| 5 Whys       | 1. 観察可能な事実 2. 実装の詳細 3. 設計判断 4. アーキテクチャ上の制約 5. 根本原因 |
+| Root Cause   | 根本的な問題                                                                      |
+| Fix          | 根本原因に対処する解決策                                                          |
+| Verification | execution_trace / pattern_search — 根本原因が実際に記述された症状を生じさせるか？ |
+
+## Summary
+
+| Metric                 | Value |
+| ---------------------- | ----- |
+| total_findings         | count |
+| patches_detected       | count |
+| root_causes_identified | count |
+| files_reviewed         | count |
 ```

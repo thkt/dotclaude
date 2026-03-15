@@ -18,16 +18,18 @@ context: fork
 
 ## 入力
 
-```yaml
-findings:
-  - finding_id: "SEC-001"
-    agent: "security-reviewer"
-    severity: high
-    category: type-safety
-    location: "src/api/client.ts:45"
-    evidence: "any type used"
-    reasoning: "Reduces type safety"
-    confidence: 0.85
+```markdown
+### {finding_id}
+
+| Field      | Value                |
+| ---------- | -------------------- |
+| agent      | security-reviewer    |
+| severity   | high                 |
+| category   | type-safety          |
+| location   | src/api/client.ts:45 |
+| evidence   | any type used        |
+| reasoning  | Reduces type safety  |
+| confidence | 0.85                 |
 ```
 
 ## 検証フレームワーク
@@ -79,26 +81,31 @@ findings:
 
 ## 出力
 
-Task 完了時に構造化 YAML を返却:
+Task完了時に構造化Markdownを返却:
 
-```yaml
-challenges:
-  - finding_id: "SEC-001"
-    verdict: confirmed|disputed|downgraded|needs_context
-    original_severity: high
-    adjusted_severity: medium # downgraded時のみ
-    reasoning: "意図性マーカーなし。"
-    evidence:
-      - "@ts-ignoreコメントなし"
-      - "外部APIバウンダリではない"
+```markdown
+## Challenges
 
-summary:
-  total_challenged: <count>
-  confirmed: <count>
-  disputed: <count>
-  downgraded: <count>
-  needs_context: <count>
-  false_positive_rate: <percentage>
+### {finding_id}
+
+| Field             | Value                                             |
+| ----------------- | ------------------------------------------------- |
+| verdict           | confirmed / disputed / downgraded / needs_context |
+| original_severity | high                                              |
+| adjusted_severity | medium (downgraded時のみ)                         |
+| reasoning         | 意図性マーカーなし。                              |
+| Evidence          | @ts-ignoreコメントなし、外部APIバウンダリではない |
+
+## Summary
+
+| Metric              | Value      |
+| ------------------- | ---------- |
+| total_challenged    | count      |
+| confirmed           | count      |
+| disputed            | count      |
+| downgraded          | count      |
+| needs_context       | count      |
+| false_positive_rate | percentage |
 ```
 
 ## エラーハンドリング

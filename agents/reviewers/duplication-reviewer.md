@@ -63,40 +63,40 @@ detection.
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding with all
   locations listed
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "DRY-{seq}"
-    agent: duplication-reviewer
-    severity: high|medium|low
-    category: "exact|near-duplicate|pattern|reimplementation|arg-variant"
-    location: "<file>:<line>"
-    evidence: |
-      # Location 1: <file1>:<line>
-      <code snippet>
-      # Location 2: <file2>:<line>
-      <code snippet>
-    reasoning: "<why this duplication is problematic>"
-    fix: "<specific extraction: shared function/module/utility>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: pattern_search
-      question: "<are there more occurrences beyond the ones found?>"
-summary:
-  total_findings: <count>
-  by_category:
-    exact: <count>
-    near_duplicate: <count>
-    pattern: <count>
-    reimplementation: <count>
-    arg_variant: <count>
-  files_reviewed: <count>
-  highest_cluster: <count>
+```markdown
+## Findings
+
+| ID        | Severity            | Category                                                          | Location    | Confidence |
+| --------- | ------------------- | ----------------------------------------------------------------- | ----------- | ---------- |
+| DRY-{seq} | high / medium / low | exact / near-duplicate / pattern / reimplementation / arg-variant | `file:line` | 0.60–1.00  |
+
+### DRY-{seq}
+
+| Field        | Value                                                                         |
+| ------------ | ----------------------------------------------------------------------------- |
+| Evidence     | Location 1: `file1:line` code snippet / Location 2: `file2:line` code snippet |
+| Reasoning    | why this duplication is problematic                                           |
+| Fix          | specific extraction: shared function/module/utility                           |
+| Verification | pattern_search — are there more occurrences beyond the ones found?            |
+
+## Summary
+
+| Metric           | Value |
+| ---------------- | ----- |
+| total_findings   | count |
+| exact            | count |
+| near_duplicate   | count |
+| pattern          | count |
+| reimplementation | count |
+| arg_variant      | count |
+| files_reviewed   | count |
+| highest_cluster  | count |
 ```

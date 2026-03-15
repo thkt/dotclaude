@@ -73,21 +73,32 @@ exports and API patterns.
 
 ## Structured Summary (append to output)
 
-```yaml
-summary:
-  entry_points:
-    - path: src/api/feature.ts
-      line: 45
-      type: REST endpoint
-  essential_files:
-    - src/services/feature.ts
-    - src/repos/feature.ts
-  patterns:
-    - name: Repository + Service
-      confidence: verified
-  dependencies:
-    internal: [AuthService, Logger]
-    external: [zod, react-query]
+```markdown
+## Structured Summary
+
+### Entry Points
+
+| Path               | Line | Type          |
+| ------------------ | ---- | ------------- |
+| src/api/feature.ts | 45   | REST endpoint |
+
+### Essential Files
+
+- src/services/feature.ts
+- src/repos/feature.ts
+
+### Patterns
+
+| Name                 | Confidence |
+| -------------------- | ---------- |
+| Repository + Service | verified   |
+
+### Dependencies
+
+| Type     | Items               |
+| -------- | ------------------- |
+| internal | AuthService, Logger |
+| external | zod, react-query    |
 ```
 
 ## Guidelines

@@ -5,6 +5,8 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-readability, applying-code-principles]
 context: fork
+memory: project
+background: true
 ---
 
 # ドキュメントレビューアー
@@ -47,31 +49,45 @@ context: fork
 
 ## エラーハンドリング
 
-| エラー           | アクション              |
-| ---------------- | ----------------------- |
-| ドキュメントなし | "No docs to review"報告 |
-| 問題なし         | 空のfindingsを返す      |
+| エラー           | アクション                                  |
+| ---------------- | ------------------------------------------- |
+| ドキュメントなし | "No docs to review"報告                     |
+| Glob結果なし     | 0ファイル検出を報告、クリーンと推定しない   |
+| ツールエラー     | エラー記録、ファイルスキップ、summaryに記載 |
+
+## レポートルール
+
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
+- 同一パターンが複数箇所: 1つのfindingに統合
 
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - agent: document-reviewer
-    severity: high|medium|low
-    category: "clarity|structure|completeness|technical|audience"
-    location: "<file>:<section>"
-    evidence: "<what's observed>"
-    reasoning: "<why it's a problem>"
-    fix: "<specific improvement>"
-    confidence: 0.70-1.00
-summary:
-  total_findings: <count>
-  score:
-    clarity: "<X/10>"
-    completeness: "<X/10>"
-    structure: "<X/10>"
-    examples: "<X/10>"
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID        | Severity            | Category                                                  | Location       | Confidence |
+| --------- | ------------------- | --------------------------------------------------------- | -------------- | ---------- |
+| DOC-{seq} | high / medium / low | clarity / structure / completeness / technical / audience | `file:section` | 0.60–1.00  |
+
+### DOC-{seq}
+
+| Field        | Value                                                                     |
+| ------------ | ------------------------------------------------------------------------- |
+| Evidence     | 観察された内容                                                            |
+| Reasoning    | これが問題である理由                                                      |
+| Fix          | 具体的な改善案                                                            |
+| Verification | pattern_search — このドキュメントの問題は関連ファイル間で一貫しているか？ |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| clarity        | X/10  |
+| completeness   | X/10  |
+| structure      | X/10  |
+| examples       | X/10  |
+| files_reviewed | count |
 ```

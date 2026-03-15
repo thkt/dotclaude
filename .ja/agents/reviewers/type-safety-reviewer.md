@@ -6,6 +6,7 @@ model: opus
 skills: [reviewing-type-safety, applying-code-principles]
 context: fork
 memory: project
+background: true
 ---
 
 # 型安全性レビューアー
@@ -31,31 +32,45 @@ memory: project
 
 ## エラーハンドリング
 
-| エラー   | アクション            |
-| -------- | --------------------- |
-| TSなし   | "No TS to review"報告 |
-| 問題なし | 空のfindingsを返す    |
+| エラー       | アクション                                  |
+| ------------ | ------------------------------------------- |
+| TSなし       | "No TS to review"報告                       |
+| Glob結果なし | 0ファイル検出を報告、クリーンと推定しない   |
+| ツールエラー | エラー記録、ファイルスキップ、summaryに記載 |
+
+## レポートルール
+
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
+- 同一パターンが複数箇所: 1つのfindingに統合
 
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - agent: type-safety-reviewer
-    severity: high|medium|low
-    category: "TS1-TS5"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this is unsafe>"
-    fix: "<type-safe alternative>"
-    confidence: 0.70-1.00
-summary:
-  total_findings: <count>
-  type_coverage: "<percentage>"
-  any_count: <count>
-  strict_mode:
-    strictNullChecks: true|false
-    noImplicitAny: true|false
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID       | Severity            | Category | Location    | Confidence |
+| -------- | ------------------- | -------- | ----------- | ---------- |
+| TS-{seq} | high / medium / low | TS1-TS5  | `file:line` | 0.60–1.00  |
+
+### TS-{seq}
+
+| Field        | Value                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------- |
+| Evidence     | コードスニペット                                                                      |
+| Reasoning    | 型安全でない理由                                                                      |
+| Fix          | 型安全な代替                                                                          |
+| Verification | call_site_check / pattern_search — 問題のある値が実際にコールサイトで渡されているか？ |
+
+## Summary
+
+| Metric           | Value        |
+| ---------------- | ------------ |
+| total_findings   | count        |
+| type_coverage    | percentage   |
+| any_count        | count        |
+| strictNullChecks | true / false |
+| noImplicitAny    | true / false |
+| files_reviewed   | count        |
 ```

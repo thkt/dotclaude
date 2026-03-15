@@ -67,7 +67,7 @@ below). Save snapshot before displaying any results to user.
 ### Small Tier (1-3 files)
 
 Leader reads all target files and performs multi-domain review directly. Output:
-findings YAML → save snapshot → display delta.
+findings Markdown → save snapshot → display delta.
 
 No agents spawned.
 
@@ -75,7 +75,7 @@ No agents spawned.
 
 | Step | Action                                                        |
 | ---- | ------------------------------------------------------------- |
-| 1    | Pre-flight static analysis                                    |
+| 1    | Pre-flight (tests + hook findings)                            |
 | 2    | Spawn 3 general-purpose reviewers via Task (background)       |
 | 3    | Each reviewer covers assigned domains, reads all target files |
 | 4    | Leader collects results, integrates (dedup, root causes)      |
@@ -101,19 +101,19 @@ Include in each reviewer's prompt:
 - Target file list (absolute paths)
 - Assigned domains with "what to look for" guidance
 - Finding schema (ID prefixes per domain)
-- Output format (YAML)
+- Output format (Markdown)
 - Output format includes `files_read` section (list of files actually read)
 
 ### Large Tier (16+ files)
 
 | Step | Action                                                             |
 | ---- | ------------------------------------------------------------------ |
-| 1    | Pre-flight static analysis                                         |
+| 1    | Pre-flight (tests + hook findings)                                 |
 | 2    | File routing: classify target files → assign to relevant reviewers |
 | 3    | Spawn sub-reviewers via Task (background, max 10 parallel)         |
 | 4    | Spawn challenger + verifier (wait for reviewers)                   |
 | 5    | Spawn integrator (wait for challenger + verifier)                  |
-| 6    | Leader receives final YAML from integrator                         |
+| 6    | Leader receives final Markdown from integrator                     |
 | 7    | Save snapshot                                                      |
 | 8    | Display delta + report                                             |
 
@@ -176,16 +176,18 @@ prompt.
 | ----------------- | -------------------------------------------------------- |
 | No files to audit | Return "No files to audit"                               |
 | Reviewer stall    | 120s timeout; proceed without                            |
-| Malformed YAML    | Skip reviewer, log warning, proceed with valid reviewers |
+| Malformed output  | Skip reviewer, log warning, proceed with valid reviewers |
 | Dependency stall  | Skip dependent (e.g., root-cause if CQ failed)           |
 | Max parallel >10  | Batch in groups of 10                                    |
 | Challenger stall  | 120s timeout; proceed with verifier only                 |
 | Verifier stall    | 120s timeout; proceed with challenger only               |
 | Integrator stall  | 120s timeout; Leader integrates manually                 |
 
-## Pre-flight: Static Analysis
+## Pre-flight: Tests + Hook Findings
 
-Auto-detect and run project lint/check tools before agents start.
+Static analysis is delegated to the `reviews` hook (knip, oxlint, tsgo,
+react-doctor via ADR-0013). Pre-flight focuses on test execution and converting
+hook output to findings.
 
 ### Step 1: Detect task runner from project root
 
@@ -199,40 +201,33 @@ Auto-detect and run project lint/check tools before agents start.
 | `pyproject.toml` | poetry / uv / ruff      |
 | `Gemfile`        | bundle exec             |
 
-### Step 2: Find lint/check scripts in detected runner
+### Step 2: Find test script in detected runner
 
-Common names: `lint`, `typecheck`, `type-check`, `check`, `analyse`, `analyze`,
-`static`, `phpstan`, `clippy`
+Common names: `test`, `test:unit`, `test:ci`, `spec`
 
-Fallback (best-effort): If no runner found, check for config files and verify
-tool availability via `command -v`:
+Fallback: If no runner found, check for test frameworks via `command -v`:
 
-| Config File                       | Tool Check                     | Command                       |
-| --------------------------------- | ------------------------------ | ----------------------------- |
-| `tsconfig.json`                   | `command -v npx`               | `npx tsc --noEmit`            |
-| `ruff.toml` / `ruff` in pyproject | `command -v ruff`              | `ruff check`                  |
-| `.markdownlint.yaml` / `.json`    | `command -v markdownlint-cli2` | `markdownlint-cli2 "**/*.md"` |
-| `biome.json` / `biome.jsonc`      | `command -v biome`             | `biome check`                 |
-| `.eslintrc.*` / `eslint.config.*` | `command -v eslint`            | `eslint .`                    |
+| Config File                     | Tool Check          | Command          |
+| ------------------------------- | ------------------- | ---------------- |
+| `vitest.config.*`               | `command -v npx`    | `npx vitest run` |
+| `jest.config.*`                 | `command -v npx`    | `npx jest`       |
+| `pytest.ini` / `pyproject.toml` | `command -v pytest` | `pytest`         |
+| `Cargo.toml`                    | `command -v cargo`  | `cargo test`     |
 
-### Step 3: Run discovered scripts + tests
+### Step 3: Run tests
 
-| Rule             | Behavior                                      |
-| ---------------- | --------------------------------------------- |
-| No tools found   | Skip pre-flight, proceed to agents            |
-| Non-zero exit    | Capture output as context, do NOT block audit |
-| Multiple scripts | Run independent scripts in parallel           |
-| Timeout          | 60s per script; kill and proceed on timeout   |
+| Rule          | Behavior                                      |
+| ------------- | --------------------------------------------- |
+| No test found | Skip pre-flight tests, proceed to agents      |
+| Non-zero exit | Capture output as context, do NOT block audit |
+| Timeout       | 60s per script; kill and proceed on timeout   |
 
-Run in parallel: lint scripts, type-check, and test suite (with coverage).
+Run test suite with coverage if available.
 
 Record results in snapshot `pre_flight`:
 
 | Field    | Source                                      |
 | -------- | ------------------------------------------- |
-| build    | build script exit code → pass/fail/skipped  |
-| types    | tsc/tsgo exit code → pass/fail/skipped      |
-| lint     | lint script exit code → pass/fail/skipped   |
 | tests    | test output → total/passed/failed counts    |
 | coverage | coverage report → c0 (line) / c1 (branch) % |
 
@@ -242,7 +237,7 @@ If test runner or coverage tool is unavailable, record as `skipped`.
 
 If a PreToolUse(Skill) hook injects `additionalContext` (e.g., `claude-reviews`
 per ADR-0013), parse each tool section and convert to `PF-{seq}` findings using
-the finding-schema.yaml base fields.
+the finding-schema.md base fields.
 
 | Field        | Value                                    |
 | ------------ | ---------------------------------------- |
@@ -259,7 +254,7 @@ Category naming convention:
 | react-doctor | `react/{issue-type}`                                                       | medium                                                  |
 | (unknown)    | `preflight/{tool-name}`                                                    | low                                                     |
 
-Apply the consolidation rule from finding-schema.yaml (same pattern → single
+Apply the consolidation rule from finding-schema.md (same pattern → single
 finding).
 
 ## Snapshot Naming
@@ -279,12 +274,12 @@ Example output: `audit-2026-01-23-031812.yaml`
 
 ## Verification
 
-| Check                     | Small | Medium | Large |
-| ------------------------- | ----- | ------ | ----- |
-| Tier logged?              | Yes   | Yes    | Yes   |
-| Reviewers completed?      | —     | Yes    | Yes   |
-| Challenger validated?     | —     | —      | Yes   |
-| Verifier verified?        | —     | —      | Yes   |
-| Integrator produced YAML? | —     | —      | Yes   |
-| Snapshot saved?           | Yes   | Yes    | Yes   |
-| Delta displayed?          | Yes   | Yes    | Yes   |
+| Check                         | Small | Medium | Large |
+| ----------------------------- | ----- | ------ | ----- |
+| Tier logged?                  | Yes   | Yes    | Yes   |
+| Reviewers completed?          | —     | Yes    | Yes   |
+| Challenger validated?         | —     | —      | Yes   |
+| Verifier verified?            | —     | —      | Yes   |
+| Integrator produced Markdown? | —     | —      | Yes   |
+| Snapshot saved?               | Yes   | Yes    | Yes   |
+| Delta displayed?              | Yes   | Yes    | Yes   |

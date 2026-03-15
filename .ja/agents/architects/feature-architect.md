@@ -84,11 +84,12 @@ Glob/LSでプロジェクト構造とエントリーポイントを発見。Grep
 
 複数ユニットが変更するファイル（型定義、設定、共有ユーティリティ）は個別にリストする。これらは並列実行開始前にmainに適用され、マージコンフリクトの主要な原因を排除する。
 
-```yaml
-shared_changes:
-  - file: "src/types/feature.ts"
-    change: "Feature インターフェースと関連型を追加"
-    apply_before: parallel
+```markdown
+### Shared Changes
+
+| File                 | Change                                  | Apply Before |
+| -------------------- | --------------------------------------- | ------------ |
+| src/types/feature.ts | Feature インターフェースと関連型を追加  | parallel     |
 ```
 
 ## 出力フォーマット

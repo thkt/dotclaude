@@ -70,11 +70,14 @@ identifiers untranslated.
 
 ## Output
 
-Return structured YAML with template-based body:
+Return structured Markdown with template-based body:
 
-```yaml
-type: <type>
-title: <title>
-body: |
-  <content following the template structure>
+```markdown
+## Issue
+
+| Field | Value                                    |
+| ----- | ---------------------------------------- |
+| type  | type                                     |
+| title | title                                    |
+| body  | content following the template structure |
 ```

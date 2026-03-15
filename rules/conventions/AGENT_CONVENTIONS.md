@@ -33,11 +33,11 @@ Assign only when all 3 conditions are met.
 
 ## Reviewer Design Patterns
 
-| Element     | Convention                                      |
-| ----------- | ----------------------------------------------- |
-| Scope       | Single domain, single responsibility, ~60 lines |
-| Frontmatter | `tools`, `model`, `skills`, `context: fork`     |
-| Output      | Structured YAML with `findings` + `summary`     |
+| Element     | Convention                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| Scope       | Single domain, single responsibility, ~60 lines                                             |
+| Frontmatter | `tools`, `model`, `skills`, `context: fork`                                                 |
+| Output      | Structured Markdown with `findings` + `summary` (base: `templates/audit/finding-schema.md`) |
 
 ## Security Properties
 

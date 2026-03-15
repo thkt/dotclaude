@@ -65,26 +65,31 @@ background: true
 
 ## 出力
 
-構造化YAMLを返す（基本スキーマ: `templates/audit/finding-schema.yaml`）:
+構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - finding_id: "SEC-{seq}"
-    agent: security-reviewer
-    severity: critical|high|medium
-    category: "A01-A10"
-    location: "<file>:<line>"
-    evidence: "<コードスニペット>"
-    reasoning: "<脆弱性理由 + 攻撃シナリオ>"
-    fix: "<セキュアな代替>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: execution_trace|call_site_check|pattern_search
-      question: "<確認すべきこと>"
-      entry_points: ["<file>:<line>"]
-summary:
-  total_findings: <count>
-  critical: <count>
-  high: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID        | Severity                 | Category | Location    | Confidence |
+| --------- | ------------------------ | -------- | ----------- | ---------- |
+| SEC-{seq} | critical / high / medium | A01-A10  | `file:line` | 0.60–1.00  |
+
+### SEC-{seq}
+
+| Field        | Value                                                               |
+| ------------ | ------------------------------------------------------------------- |
+| Evidence     | コードスニペット                                                    |
+| Reasoning    | 脆弱性理由 + 攻撃シナリオ                                           |
+| Fix          | セキュアな代替                                                      |
+| Verification | execution_trace / call_site_check / pattern_search — 確認すべきこと |
+| Entry Points | `file:line`（オプション、execution_trace用）                        |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| critical       | count |
+| high           | count |
+| files_reviewed | count |
 ```

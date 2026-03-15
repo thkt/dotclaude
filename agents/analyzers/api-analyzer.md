@@ -80,58 +80,86 @@ conventions.
 
 ## Output
 
-Return structured YAML:
+Return structured Markdown:
 
-```yaml
-project_name: <name>
-base_url: <base_url>
-generated_at: <ISO 8601 timestamp>
-source: analyzer
-meta:
-  content_type: <detected or "application/json">
-  date_format: <detected or "ISO 8601">
-  framework: <detected framework>
-confidence_summary:
-  verified: <count>
-  inferred: <count>
-  unknown: <count>
-authentication:
-  - method: <type>
-    header: <header>
-    description: <description>
-endpoints:
-  - resource: <resource>
-    method: <METHOD>
-    path: <path>
-    description: <description>
-    confidence: <verified|inferred|unknown>
-    confidence_reason: <reason string>
-    request:
-      content_type: <content type>
-      fields:
-        - name: <field>
-          type: <type>
-          required: <true|false>
-    response:
-      fields:
-        - name: <field>
-          type: <type>
-    status_codes:
-      - code: <code>
-        description: <description>
-error_format:
-  structure: |
-    {
-      "error": {
-        "code": "<error_code>",
-        "message": "<message>"
-      }
-    }
-types:
-  - name: <type_name>
-    source_file: <file:line>
-    fields:
-      - name: <field>
-        type: <type>
-    description: <description>
+````markdown
+## Meta
+
+| Field        | Value                            |
+| ------------ | -------------------------------- |
+| project_name | <name>                           |
+| base_url     | <base_url>                       |
+| generated_at | <ISO 8601 timestamp>             |
+| source       | analyzer                         |
+| content_type | <detected or "application/json"> |
+| date_format  | <detected or "ISO 8601">         |
+| framework    | <detected framework>             |
+
+## Confidence Summary
+
+| Level    | Count   |
+| -------- | ------- |
+| verified | <count> |
+| inferred | <count> |
+| unknown  | <count> |
+
+## Authentication
+
+| Method | Header   | Description   |
+| ------ | -------- | ------------- |
+| <type> | <header> | <description> |
+
+## Endpoints
+
+### <resource> - <METHOD> <path>
+
+| Field             | Value                       |
+| ----------------- | --------------------------- |
+| description       | <description>               |
+| confidence        | <verified/inferred/unknown> |
+| confidence_reason | <reason string>             |
+
+#### Request
+
+| Field   | Type   | Required   |
+| ------- | ------ | ---------- |
+| <field> | <type> | true/false |
+
+Content-Type: <content type>
+
+#### Response
+
+| Field   | Type   |
+| ------- | ------ |
+| <field> | <type> |
+
+#### Status Codes
+
+| Code   | Description   |
+| ------ | ------------- |
+| <code> | <description> |
+
+## Error Format
+
+```json
+{
+  "error": {
+    "code": "<error_code>",
+    "message": "<message>"
+  }
+}
 ```
+
+## Types
+
+### <type_name>
+
+| Field       | Value         |
+| ----------- | ------------- |
+| source_file | <file:line>   |
+| description | <description> |
+
+| Field   | Type   |
+| ------- | ------ |
+| <field> | <type> |
+````

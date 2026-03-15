@@ -1,6 +1,8 @@
 ---
 name: operational-readiness-reviewer
-description: Operational readiness review. Error boundaries, loading states, logging, performance budgets.
+description:
+  Operational readiness review. Error boundaries, loading states, logging,
+  performance budgets.
 tools: [Read, Grep, Glob, LS]
 model: sonnet
 skills: [applying-code-principles]
@@ -47,35 +49,39 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 - Do not flag test files or mock files
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "OPS-{seq}"
-    agent: operational-readiness-reviewer
-    severity: critical|high|medium|low
-    category: "error-boundary|loading-state|logging|performance|degradation"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this is an operational readiness gap>"
-    fix: "<recommended improvement>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: pattern_search|call_site_check
-      question: "<is this component user-facing or in a critical path?>"
-summary:
-  total_findings: <count>
-  by_category:
-    error_boundary: <count>
-    loading_state: <count>
-    logging: <count>
-    performance: <count>
-    degradation: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID        | Severity                       | Category                                                             | Location    | Confidence |
+| --------- | ------------------------------ | -------------------------------------------------------------------- | ----------- | ---------- |
+| OPS-{seq} | critical / high / medium / low | error-boundary / loading-state / logging / performance / degradation | `file:line` | 0.60–1.00  |
+
+### OPS-{seq}
+
+| Field        | Value                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------- |
+| Evidence     | code snippet                                                                            |
+| Reasoning    | why this is an operational readiness gap                                                |
+| Fix          | recommended improvement                                                                 |
+| Verification | pattern_search / call_site_check — is this component user-facing or in a critical path? |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| error_boundary | count |
+| loading_state  | count |
+| logging        | count |
+| performance    | count |
+| degradation    | count |
+| files_reviewed | count |
 ```

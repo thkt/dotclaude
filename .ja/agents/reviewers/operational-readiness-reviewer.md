@@ -47,35 +47,39 @@ background: true
 
 ## レポートルール
 
-- 確信度 < 0.60: 除外（`finding-schema.yaml` 参照）
+- 確信度 < 0.60: 除外（`finding-schema.md` 参照）
 - 複数箇所で同じパターン: 単一の指摘に統合
 - テストファイルやモックファイルは指摘しない
 
 ## 出力
 
-構造化YAMLを返却（基本スキーマ: `templates/audit/finding-schema.yaml`）:
+構造化Markdownを返却（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - finding_id: "OPS-{seq}"
-    agent: operational-readiness-reviewer
-    severity: critical|high|medium|low
-    category: "error-boundary|loading-state|logging|performance|degradation"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<運用準備ギャップの理由>"
-    fix: "<推奨改善策>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: pattern_search|call_site_check
-      question: "<このコンポーネントはユーザー向けまたはクリティカルパスか？>"
-summary:
-  total_findings: <count>
-  by_category:
-    error_boundary: <count>
-    loading_state: <count>
-    logging: <count>
-    performance: <count>
-    degradation: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID        | Severity                       | Category                                                             | Location    | Confidence |
+| --------- | ------------------------------ | -------------------------------------------------------------------- | ----------- | ---------- |
+| OPS-{seq} | critical / high / medium / low | error-boundary / loading-state / logging / performance / degradation | `file:line` | 0.60–1.00  |
+
+### OPS-{seq}
+
+| Field        | Value                                                                                         |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| Evidence     | コードスニペット                                                                              |
+| Reasoning    | 運用準備ギャップの理由                                                                        |
+| Fix          | 推奨改善策                                                                                    |
+| Verification | pattern_search / call_site_check — このコンポーネントはユーザー向けまたはクリティカルパスか？ |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| error_boundary | count |
+| loading_state  | count |
+| logging        | count |
+| performance    | count |
+| degradation    | count |
+| files_reviewed | count |
 ```

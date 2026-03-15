@@ -40,34 +40,40 @@ background: true
 
 ## レポーティングルール
 
-- Confidence < 0.60: 除外（`finding-schema.yaml` 参照）
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
 - 同一パターンが複数箇所: 単一findingに統合
 
 ## 出力
 
-構造化YAMLを返す（ベーススキーマ: `templates/audit/finding-schema.yaml`）:
+構造化Markdownを返す（ベーススキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - finding_id: "PE-{seq}"
-    agent: progressive-enhancer
-    severity: high|medium|low
-    location: "<file>:<line>"
-    category: "layout|animation|event|style|toggle"
-    evidence: "<検出されたJSパターン>"
-    reasoning: "<CSSが優れている理由>"
-    fix: "<CSS代替ソリューション>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: pattern_search|call_site_check
-      question: "<このJSパターンは他のコンポーネントでも使われているか？>"
-recommendations:
-  - location: "<file>:<line>"
-    action: "<具体的な変更>"
-    impact: "<メリット>"
-    browser_support: "<互換性メモ>"
-summary:
-  total_findings: <count>
-  high_priority: <count>
-  estimated_js_reduction: "<行数または割合>"
+```markdown
+## Findings
+
+| ID       | Severity            | Category                                    | Location    | Confidence |
+| -------- | ------------------- | ------------------------------------------- | ----------- | ---------- |
+| PE-{seq} | high / medium / low | layout / animation / event / style / toggle | `file:line` | 0.60–1.00  |
+
+### PE-{seq}
+
+| Field        | Value                                                                                     |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| Evidence     | 検出されたJSパターン                                                                      |
+| Reasoning    | CSSが優れている理由                                                                       |
+| Fix          | CSS代替ソリューション                                                                     |
+| Verification | pattern_search / call_site_check — このJSパターンは他のコンポーネントでも使われているか？ |
+
+## Recommendations
+
+| Location    | Action       | Impact   | Browser Support |
+| ----------- | ------------ | -------- | --------------- |
+| `file:line` | 具体的な変更 | メリット | 互換性メモ      |
+
+## Summary
+
+| Metric                 | Value          |
+| ---------------------- | -------------- |
+| total_findings         | count          |
+| high_priority          | count          |
+| estimated_js_reduction | 行数または割合 |
 ```

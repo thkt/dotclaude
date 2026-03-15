@@ -68,18 +68,33 @@ git commit -m "subject" -m "body"
 
 ## 出力
 
-3候補を構造化YAML配列で返す:
+3候補を構造化Markdownで返す:
 
-```yaml
-candidates:
-  - type: <type>
-    scope: <scope>
-    description: <description>
-    body: <body> # 任意
-    footer: <footer> # 任意
-  - type: <type>
-    scope: <scope>
-    description: <description>
-  - type: <type>
-    description: <description>
+```markdown
+## Candidates
+
+### 1
+
+| Field       | Value             |
+| ----------- | ----------------- |
+| type        | type              |
+| scope       | scope             |
+| description | description       |
+| body        | body (任意)       |
+| footer      | footer (任意)     |
+
+### 2
+
+| Field       | Value       |
+| ----------- | ----------- |
+| type        | type        |
+| scope       | scope       |
+| description | description |
+
+### 3
+
+| Field       | Value       |
+| ----------- | ----------- |
+| type        | type        |
+| description | description |
 ```

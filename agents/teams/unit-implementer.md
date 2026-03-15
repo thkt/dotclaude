@@ -1,6 +1,7 @@
 ---
 name: unit-implementer
-description: Implements a work unit using RGRC cycle for assigned files and tests.
+description:
+  Implements a work unit using RGRC cycle for assigned files and tests.
 tools: [Bash, Edit, Write, Read, Glob, Grep, LS, SendMessage]
 model: opus
 context: fork
@@ -42,19 +43,34 @@ skills: [orchestrating-workflows]
 
 ## Output (DM to leader)
 
-```yaml
-unit: logic|ui
-status: complete|blocked
-files_modified:
-  - path: "<file path>"
-    action: created|modified
-tests:
-  total: <count>
-  passed: <count>
-  failed: <count>
-issues:
-  - description: "<issue>"
-    severity: blocker|warning
+```markdown
+## Status
+
+| Field  | Value              |
+| ------ | ------------------ |
+| unit   | logic / ui         |
+| status | complete / blocked |
+
+### Files Modified
+
+| Path      | Action             |
+| --------- | ------------------ |
+| file path | created / modified |
+
+### Tests
+
+| Metric | Value |
+| ------ | ----- |
+| total  | count |
+| passed | count |
+| failed | count |
+
+### Issues
+
+| Field       | Value             |
+| ----------- | ----------------- |
+| description | issue description |
+| severity    | blocker / warning |
 ```
 
 ## Error Handling

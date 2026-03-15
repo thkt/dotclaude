@@ -56,35 +56,39 @@ Fallback: If browser unavailable, code-only analysis with lower confidence.
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "PERF-{seq}"
-    agent: performance-reviewer
-    severity: high|medium|low
-    category: "render|bundle|hooks|effects|data"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this impacts performance>"
-    fix: "<optimized alternative>"
-    impact: "<estimated improvement>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: hotpath_analysis|call_site_check
-      question: "<is this code in a hot path or frequently rendered component?>"
-summary:
-  total_findings: <count>
-  bundle_size: "<X KB>"
-  potential_savings: "<Y KB (Z%)>"
-  by_category:
-    render: <count>
-    bundle: <count>
-    hooks: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID         | Severity            | Category                                 | Location    | Confidence |
+| ---------- | ------------------- | ---------------------------------------- | ----------- | ---------- |
+| PERF-{seq} | high / medium / low | render / bundle / hooks / effects / data | `file:line` | 0.60–1.00  |
+
+### PERF-{seq}
+
+| Field        | Value                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------- |
+| Evidence     | code snippet                                                                                      |
+| Reasoning    | why this impacts performance                                                                      |
+| Fix          | optimized alternative                                                                             |
+| Impact       | estimated improvement                                                                             |
+| Verification | hotpath_analysis / call_site_check — is this code in a hot path or frequently rendered component? |
+
+## Summary
+
+| Metric            | Value     |
+| ----------------- | --------- |
+| total_findings    | count     |
+| bundle_size       | X KB      |
+| potential_savings | Y KB (Z%) |
+| render            | count     |
+| bundle            | count     |
+| hooks             | count     |
+| files_reviewed    | count     |
 ```

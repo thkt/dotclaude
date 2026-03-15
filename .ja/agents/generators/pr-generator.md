@@ -70,18 +70,26 @@ BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remo
 
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す:
 
-```yaml
-branch:
-  current: "<branch-name>"
-  base: "<detected-base>"
-  commits: <count>
-  files_changed: <count>
-pr:
-  title: "<接頭辞なし、命令形動詞>"
-  body: |
-    <PRテンプレートの構造に従った内容>
-command: |
-  gh pr create --title "<title>" --body "<body>"
+```markdown
+## Branch
+
+| Field         | Value         |
+| ------------- | ------------- |
+| current       | branch-name   |
+| base          | detected-base |
+| commits       | count         |
+| files_changed | count         |
+
+## PR
+
+| Field | Value                            |
+| ----- | -------------------------------- |
+| title | 接頭辞なし、命令形動詞           |
+| body  | PRテンプレートの構造に従った内容 |
+
+## Command
+
+    gh pr create --title "title" --body "body"
 ```

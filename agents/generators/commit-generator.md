@@ -15,7 +15,6 @@ skills: [utilizing-cli-tools]
 | ------------ | ------------------------------------------------------- |
 | Entry point  | `/commit` skill only — never auto-invoked               |
 | Side effects | Creates git commits (requires explicit user permission) |
-| Safety       | Safety First: user must explicitly request each commit  |
 
 ## Type Detection
 
@@ -74,18 +73,33 @@ git commit -m "subject" -m "body"
 
 ## Output
 
-Return 3 candidates as structured YAML array:
+Return 3 candidates as structured Markdown:
 
-```yaml
-candidates:
-  - type: <type>
-    scope: <scope>
-    description: <description>
-    body: <body> # optional
-    footer: <footer> # optional
-  - type: <type>
-    scope: <scope>
-    description: <description>
-  - type: <type>
-    description: <description>
+```markdown
+## Candidates
+
+### 1
+
+| Field       | Value             |
+| ----------- | ----------------- |
+| type        | type              |
+| scope       | scope             |
+| description | description       |
+| body        | body (optional)   |
+| footer      | footer (optional) |
+
+### 2
+
+| Field       | Value       |
+| ----------- | ----------- |
+| type        | type        |
+| scope       | scope       |
+| description | description |
+
+### 3
+
+| Field       | Value       |
+| ----------- | ----------- |
+| type        | type        |
+| description | description |
 ```

@@ -65,26 +65,31 @@ background: true
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "SEC-{seq}"
-    agent: security-reviewer
-    severity: critical|high|medium
-    category: "A01-A10"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this is vulnerable + attack scenario>"
-    fix: "<secure alternative>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: execution_trace|call_site_check|pattern_search
-      question: "<what to verify to confirm exploitability>"
-      entry_points: ["<file>:<line>"] # optional, for execution_trace
-summary:
-  total_findings: <count>
-  critical: <count>
-  high: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID        | Severity                 | Category | Location    | Confidence |
+| --------- | ------------------------ | -------- | ----------- | ---------- |
+| SEC-{seq} | critical / high / medium | A01-A10  | `file:line` | 0.60–1.00  |
+
+### SEC-{seq}
+
+| Field        | Value                                                                                         |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| Evidence     | code snippet                                                                                  |
+| Reasoning    | why this is vulnerable + attack scenario                                                      |
+| Fix          | secure alternative                                                                            |
+| Verification | execution_trace / call_site_check / pattern_search — what to verify to confirm exploitability |
+| Entry Points | `file:line` (optional, for execution_trace)                                                   |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| critical       | count |
+| high           | count |
+| files_reviewed | count |
 ```

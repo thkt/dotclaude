@@ -55,15 +55,33 @@ git diff/statusからブランチ名を生成。
 
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す:
 
-```yaml
-options:
-  - name: feature/auth-add-oauth
-    reason: 変更内容に最適
-  - name: feat/oauth-integration
-    reason: 短縮形
-  - name: feat/PROJ-123-oauth
-    reason: チケット付き
-recommended: feature/auth-add-oauth
+```markdown
+## Options
+
+### 1
+
+| Field  | Value                  |
+| ------ | ---------------------- |
+| name   | feature/auth-add-oauth |
+| reason | 変更内容に最適         |
+
+### 2
+
+| Field  | Value                  |
+| ------ | ---------------------- |
+| name   | feat/oauth-integration |
+| reason | 短縮形                 |
+
+### 3
+
+| Field  | Value               |
+| ------ | ------------------- |
+| name   | feat/PROJ-123-oauth |
+| reason | チケット付き        |
+
+## Recommended
+
+feature/auth-add-oauth
 ```

@@ -58,36 +58,38 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "TC-{seq}"
-    agent: test-coverage-reviewer
-    severity: critical|high|medium|low
-    category: "gap|quality|negative|regression"
-    location: "<test-file>:<line>"
-    related_code: "<source-file>:<line>"
-    evidence: "<what's missing or problematic>"
-    reasoning: "<why this gap matters>"
-    fix: "<suggested test case>"
-    criticality: <1-10>
-    confidence: 0.60-1.00
-    verification_hint:
-      check: call_site_check|pattern_search
-      question: "<is this code path actually exercised by any existing test?>"
-summary:
-  total_findings: <count>
-  by_criticality:
-    critical: <count>
-    important: <count>
-    moderate: <count>
-    low: <count>
-  test_files_reviewed: <count>
-  source_files_mapped: <count>
+```markdown
+## Findings
+
+| ID       | Severity                       | Category                              | Location         | Related Code       | Criticality | Confidence |
+| -------- | ------------------------------ | ------------------------------------- | ---------------- | ------------------ | ----------- | ---------- |
+| TC-{seq} | critical / high / medium / low | gap / quality / negative / regression | `test-file:line` | `source-file:line` | 1–10        | 0.60–1.00  |
+
+### TC-{seq}
+
+| Field        | Value                                                                                         |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| Evidence     | what's missing or problematic                                                                 |
+| Reasoning    | why this gap matters                                                                          |
+| Fix          | suggested test case                                                                           |
+| Verification | call_site_check / pattern_search — is this code path actually exercised by any existing test? |
+
+## Summary
+
+| Metric              | Value |
+| ------------------- | ----- |
+| total_findings      | count |
+| critical            | count |
+| important           | count |
+| moderate            | count |
+| low                 | count |
+| test_files_reviewed | count |
+| source_files_mapped | count |
 ```

@@ -5,6 +5,8 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [reviewing-testability, generating-tdd-tests, applying-code-principles]
 context: fork
+memory: project
+background: true
 ---
 
 # テスタビリティレビューアー
@@ -29,31 +31,45 @@ context: fork
 
 ## エラーハンドリング
 
-| エラー     | アクション              |
-| ---------- | ----------------------- |
-| コードなし | "No code to review"報告 |
-| 問題なし   | 空のfindingsを返す      |
+| エラー       | アクション                                  |
+| ------------ | ------------------------------------------- |
+| コードなし   | "No code to review"報告                     |
+| Glob結果なし | 0ファイル検出を報告、クリーンと推定しない   |
+| ツールエラー | エラー記録、ファイルスキップ、summaryに記載 |
+
+## レポートルール
+
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
+- 同一パターンが複数箇所: 1つのfindingに統合
 
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - agent: testability-reviewer
-    severity: high|medium|low
-    category: "TE1-TE5"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this is hard to test>"
-    fix: "<testable alternative>"
-    confidence: 0.70-1.00
-summary:
-  total_findings: <count>
-  by_category:
-    dependencies: <count>
-    side_effects: <count>
-    mocking: <count>
-    state: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID         | Severity            | Category                                                                | Location    | Confidence |
+| ---------- | ------------------- | ----------------------------------------------------------------------- | ----------- | ---------- |
+| TEST-{seq} | high / medium / low | TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling) | `file:line` | 0.60–1.00  |
+
+### TEST-{seq}
+
+| Field        | Value                                                                                                     |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| Evidence     | コードスニペット                                                                                          |
+| Reasoning    | テストが困難な理由                                                                                        |
+| Fix          | テスト可能な代替                                                                                          |
+| Verification | call_site_check / pattern_search — この依存関係は既存テストで実際にインジェクトまたはモックされているか？ |
+
+## Summary
+
+| Metric         | Value |
+| -------------- | ----- |
+| total_findings | count |
+| dependencies   | count |
+| side_effects   | count |
+| mocking        | count |
+| state          | count |
+| files_reviewed | count |
 ```

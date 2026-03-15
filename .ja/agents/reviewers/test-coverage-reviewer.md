@@ -5,6 +5,8 @@ tools: [Read, Grep, Glob, LS]
 model: opus
 skills: [generating-tdd-tests, applying-code-principles]
 context: fork
+memory: project
+background: true
 ---
 
 # Test Coverage Reviewer
@@ -50,34 +52,46 @@ context: fork
 
 ## エラーハンドリング
 
-| エラー               | アクション                  |
-| -------------------- | --------------------------- |
-| テストが見つからない | "No tests to review" と報告 |
-| 問題が見つからない   | 空の findings を返す        |
+| エラー               | アクション                                  |
+| -------------------- | ------------------------------------------- |
+| テストが見つからない | "No tests to review" と報告                 |
+| Glob結果なし         | 0ファイル検出を報告、クリーンと推定しない   |
+| ツールエラー         | エラー記録、ファイルスキップ、summaryに記載 |
+
+## レポートルール
+
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
+- 同一パターンが複数箇所: 1つのfindingに統合
 
 ## 出力
 
-構造化 YAML を返す:
+構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - agent: test-coverage-reviewer
-    severity: critical|high|medium|low
-    category: "gap|quality|negative|regression"
-    location: "<test-file>:<line>"
-    related_code: "<source-file>:<line>"
-    evidence: "<不足している点や問題点>"
-    reasoning: "<このギャップが重要な理由>"
-    fix: "<提案するテストケース>"
-    criticality: <1-10>
-    confidence: 0.70-1.00
-summary:
-  total_findings: <count>
-  by_criticality:
-    critical: <count>
-    important: <count>
-    moderate: <count>
-    low: <count>
-  test_files_reviewed: <count>
-  source_files_mapped: <count>
+```markdown
+## Findings
+
+| ID       | Severity                       | Category                              | Location         | Related Code       | Criticality | Confidence |
+| -------- | ------------------------------ | ------------------------------------- | ---------------- | ------------------ | ----------- | ---------- |
+| TC-{seq} | critical / high / medium / low | gap / quality / negative / regression | `test-file:line` | `source-file:line` | 1–10        | 0.60–1.00  |
+
+### TC-{seq}
+
+| Field        | Value                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------- |
+| Evidence     | 不足している点や問題点                                                                  |
+| Reasoning    | このギャップが重要な理由                                                                |
+| Fix          | 提案するテストケース                                                                    |
+| Verification | call_site_check / pattern_search — このコードパスは既存テストで実際に実行されているか？ |
+
+## Summary
+
+| Metric              | Value |
+| ------------------- | ----- |
+| total_findings      | count |
+| critical            | count |
+| important           | count |
+| moderate            | count |
+| low                 | count |
+| test_files_reviewed | count |
+| source_files_mapped | count |
 ```

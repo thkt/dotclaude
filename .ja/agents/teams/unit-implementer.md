@@ -1,6 +1,8 @@
 ---
 name: unit-implementer
-description: RGRC サイクルを使用して、割り当てられたファイルとテストの作業ユニットを実装します。
+description:
+  RGRC
+  サイクルを使用して、割り当てられたファイルとテストの作業ユニットを実装します。
 tools: [Bash, Edit, Write, Read, Glob, Grep, LS, SendMessage]
 model: opus
 context: fork
@@ -42,19 +44,34 @@ skills: [orchestrating-workflows]
 
 ## 出力（リーダーへのDM）
 
-```yaml
-unit: logic|ui
-status: complete|blocked
-files_modified:
-  - path: "<file path>"
-    action: created|modified
-tests:
-  total: <count>
-  passed: <count>
-  failed: <count>
-issues:
-  - description: "<issue>"
-    severity: blocker|warning
+```markdown
+## Status
+
+| Field  | Value              |
+| ------ | ------------------ |
+| unit   | logic / ui         |
+| status | complete / blocked |
+
+### Files Modified
+
+| Path      | Action             |
+| --------- | ------------------ |
+| file path | created / modified |
+
+### Tests
+
+| Metric | Value |
+| ------ | ----- |
+| total  | count |
+| passed | count |
+| failed | count |
+
+### Issues
+
+| Field       | Value             |
+| ----------- | ----------------- |
+| description | issue description |
+| severity    | blocker / warning |
 ```
 
 ## エラーハンドリング

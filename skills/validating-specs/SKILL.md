@@ -75,16 +75,14 @@ infrastructure).
 
 ## Output
 
-YAML appended to reviewer findings:
+Markdown appended to reviewer findings:
 
-```yaml
-consistency:
-  - id: "CON-001"
-    severity: CRITICAL|WARNING|INFO
-    check: "<check name>"
-    location: "sow.md:<section> / spec.md:<section>"
-    issue: "<description>"
-    suggestion: "<fix>"
+```markdown
+## Consistency Findings
+
+| ID      | Severity                  | Check      | Location                         | Issue       | Suggestion |
+| ------- | ------------------------- | ---------- | -------------------------------- | ----------- | ---------- |
+| CON-001 | CRITICAL / WARNING / INFO | check name | sow.md:section / spec.md:section | description | fix        |
 ```
 
 ## Score Impact

@@ -38,34 +38,38 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.yaml`)
+- Confidence < 0.60: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
 
-Return structured YAML (base schema: `templates/audit/finding-schema.yaml`):
+Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
-```yaml
-findings:
-  - finding_id: "SF-{seq}"
-    agent: silent-failure-reviewer
-    severity: critical|high|medium|low
-    category: "SF1-SF5"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this fails silently>"
-    fix: "<visible error handling>"
-    confidence: 0.60-1.00
-    verification_hint:
-      check: error_propagation|pattern_search
-      question: "<does this error surface to the user or remain silent?>"
-summary:
-  total_findings: <count>
-  critical: <count>
-  high: <count>
-  by_category:
-    empty_catch: <count>
-    unhandled_promise: <count>
-    missing_boundary: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID       | Severity                       | Category | Location    | Confidence |
+| -------- | ------------------------------ | -------- | ----------- | ---------- |
+| SF-{seq} | critical / high / medium / low | SF1-SF5  | `file:line` | 0.60–1.00  |
+
+### SF-{seq}
+
+| Field        | Value                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| Evidence     | code snippet                                                                               |
+| Reasoning    | why this fails silently                                                                    |
+| Fix          | visible error handling                                                                     |
+| Verification | error_propagation / pattern_search — does this error surface to the user or remain silent? |
+
+## Summary
+
+| Metric            | Value |
+| ----------------- | ----- |
+| total_findings    | count |
+| critical          | count |
+| high              | count |
+| empty_catch       | count |
+| unhandled_promise | count |
+| missing_boundary  | count |
+| files_reviewed    | count |
 ```

@@ -85,43 +85,68 @@ DMが転送手段であり、これらの契約は何を送るかを定義する
 
 ### Architectアウトプット (Architect → Leader)
 
-```yaml
-contracts:
-  - name: "<インターフェース/型名>"
-    definition: "<TypeScriptインターフェースまたは型>"
-    used_by: ["<ファイルパス>"]
-shared_changes: # 複数ユニットが変更するファイル（型、設定等）
-  - file: "<ファイルパス>"
-    change: "<変更内容>"
-    apply_before: parallel # 並列実行前にmainへ適用
-parallel_units:
-  - unit_id: 1
-    files: ["<ファイルパス>"]
-    depends_on: [] # 目標: 空を維持（独立性優先）
-  - unit_id: 2
-    files: ["<ファイルパス>"]
-    depends_on: [] # 不可避な場合のみ記入、理由を添える
-build_sequence: ["依存がある場合のunit_id順序"]
+```markdown
+### Contracts
+
+| Name                 | Definition                       | Used By    |
+| -------------------- | -------------------------------- | ---------- |
+| インターフェース/型名 | TypeScriptインターフェースまたは型 | ファイルパス |
+
+### Shared Changes
+
+| File         | Change   | Apply           |
+| ------------ | -------- | --------------- |
+| ファイルパス | 変更内容 | before parallel |
+
+### Parallel Units
+
+| Unit ID | Files        | Depends On                                          |
+| ------- | ------------ | --------------------------------------------------- |
+| 1       | ファイルパス | (none) — 目標: 空を維持（独立性優先）               |
+| 2       | ファイルパス | (none) — 不可避な場合のみ記入、理由を添える         |
+
+Build sequence: 依存がある場合のunit_id順序
 ```
 
 ### Implementerアサインメント (Leader → Implementer)
 
-```yaml
-unit_id: 1
-contracts: ["<関連する契約のみ>"]
-files: ["<割り当てファイルパス>"]
-tests: ["<割り当てテストファイルパス>"]
-constraints: ["<CLAUDE.mdからのプロジェクト固有ルール>"]
+```markdown
+| Field       | Value                                 |
+| ----------- | ------------------------------------- |
+| unit_id     | 1                                     |
+| contracts   | 関連する契約のみ                      |
+| files       | 割り当てファイルパス                  |
+| tests       | 割り当てテストファイルパス            |
+| constraints | CLAUDE.mdからのプロジェクト固有ルール |
 ```
 
 ### Implementer完了報告 (Implementer → Leader)
 
-```yaml
-unit_id: 1
-status: complete | blocked
-files_modified: ["<パス>"]
-tests: { total: N, passed: N, failed: N }
-issues: [{ description: "<問題>", severity: blocker | warning }]
+```markdown
+## Status
+
+| Field   | Value              |
+| ------- | ------------------ |
+| unit_id | 1                  |
+| status  | complete / blocked |
+
+### Files Modified
+
+| Path | Action             |
+| ---- | ------------------ |
+| パス | created / modified |
+
+### Tests
+
+| Metric | Value |
+| ------ | ----- |
+| total  | count |
+| passed | count |
+| failed | count |
+
+### Issues
+
+- **description** (severity: blocker / warning)
 ```
 
 ## 実行
@@ -138,7 +163,7 @@ issues: [{ description: "<問題>", severity: blocker | warning }]
    - スポーンコンテキスト（コンテキスト契約を参照）
    - `$1` 実装の説明
    - 指示: コードベース探索（yomu優先、grep/globフォールバック）→ 契約設計 →ファイルグルーピング
-   - 期待出力: Architectアウトプット契約（DM経由のYAML）
+   - 期待出力: Architectアウトプット契約（DM経由のMarkdown）
 3. QA (qa-reviewer) をスポーン:
    - 指示: Architectの設計を観察、peer DMでコメント
    - チーム設定を読んでチームメイトを把握

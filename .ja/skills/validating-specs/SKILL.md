@@ -22,16 +22,16 @@ user-invocable: false
 
 ## チェック項目
 
-CRITICAL（1-3）を先に実行。いずれか失敗した場合、残りも実行するが WARNING/INFO は暫定扱い。
+CRITICAL（1-3）を先に実行。いずれか失敗した場合、残りも実行するがWARNING/INFOは暫定扱い。
 
 ### 1. AC→FR トレーサビリティ [CRITICAL]
 
 各 `AC-N` に `Implements: AC-N`
-を持つ FR が1つ以上必要。存在しない AC を参照する孤立 FR → INFO。
+を持つFRが1つ以上必要。存在しないACを参照する孤立FR → INFO。
 
 ### 2. FR→テストカバレッジ [CRITICAL]
 
-各 `FR-NNN` に対応する FR 参照を持つ `T-NNN` が1つ以上必要。
+各 `FR-NNN` に対応するFR参照を持つ `T-NNN` が1つ以上必要。
 
 ### 3. トレーサビリティマトリクスの整合性 [CRITICAL]
 
@@ -46,12 +46,12 @@ CRITICAL（1-3）を先に実行。いずれか失敗した場合、残りも実
 
 ### 4. スコープ↔実装 [WARNING]
 
-SOW のスコープ内ターゲットが Spec のフェーズに含まれること。余分なファイル →
+SOWのスコープ内ターゲットがSpecのフェーズに含まれること。余分なファイル →
 INFO。
 
 ### 5. 矛盾検出 [WARNING]
 
-SOW↔Spec 間の技術的不一致、数値の矛盾、記述の矛盾をクロスチェック。
+SOW↔Spec間の技術的不一致、数値の矛盾、記述の矛盾をクロスチェック。
 
 ### 6. 曖昧表現 [INFO]
 
@@ -66,21 +66,19 @@ SOW↔Spec 間の技術的不一致、数値の矛盾、記述の矛盾をクロ
 
 ### 8. YAGNI 準拠 [WARNING]
 
-YAGNI チェックリストあり:
-Spec がチェック済み項目を除外していることを確認。なし: 過剰設計をフラグ（過剰な権限、NFR なしのキャッシュ、スコープ外のインフラ）。
+YAGNIチェックリストあり:
+Specがチェック済み項目を除外していることを確認。なし: 過剰設計をフラグ（過剰な権限、NFRなしのキャッシュ、スコープ外のインフラ）。
 
 ## 出力
 
-レビューアーの findings に追加される YAML:
+レビューアーのfindingsに追加されるMarkdown:
 
-```yaml
-consistency:
-  - id: "CON-001"
-    severity: CRITICAL|WARNING|INFO
-    check: "<チェック名>"
-    location: "sow.md:<セクション> / spec.md:<セクション>"
-    issue: "<説明>"
-    suggestion: "<修正案>"
+```markdown
+## Consistency Findings
+
+| ID      | Severity                  | Check      | Location                               | Issue | Suggestion |
+| ------- | ------------------------- | ---------- | -------------------------------------- | ----- | ---------- |
+| CON-001 | CRITICAL / WARNING / INFO | チェック名 | sow.md:セクション / spec.md:セクション | 説明  | 修正案     |
 ```
 
 ## スコア影響

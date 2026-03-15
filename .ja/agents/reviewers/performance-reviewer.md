@@ -7,6 +7,8 @@ tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
 skills: [optimizing-performance, applying-code-principles]
 context: fork
+memory: project
+background: true
 ---
 
 # パフォーマンスレビューアー
@@ -50,33 +52,47 @@ Reactレンダリング、バンドルサイズ、ランタイムパフォーマ
 
 ## エラーハンドリング
 
-| エラー     | アクション              |
-| ---------- | ----------------------- |
-| コードなし | "No code to review"報告 |
-| 問題なし   | 空のfindingsを返す      |
+| エラー       | アクション                                  |
+| ------------ | ------------------------------------------- |
+| コードなし   | "No code to review"報告                     |
+| Glob結果なし | 0ファイル検出を報告、クリーンと推定しない   |
+| ツールエラー | エラー記録、ファイルスキップ、summaryに記載 |
+
+## レポートルール
+
+- Confidence < 0.60: 除外（`finding-schema.md` 参照）
+- 同一パターンが複数箇所: 1つのfindingに統合
 
 ## 出力
 
-構造化YAMLを返す:
+構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
 
-```yaml
-findings:
-  - agent: performance-reviewer
-    severity: high|medium|low
-    category: "render|bundle|hooks|effects|data"
-    location: "<file>:<line>"
-    evidence: "<code snippet>"
-    reasoning: "<why this impacts performance>"
-    fix: "<optimized alternative>"
-    impact: "<estimated improvement>"
-    confidence: 0.70-1.00
-summary:
-  total_findings: <count>
-  bundle_size: "<X KB>"
-  potential_savings: "<Y KB (Z%)>"
-  by_category:
-    render: <count>
-    bundle: <count>
-    hooks: <count>
-  files_reviewed: <count>
+```markdown
+## Findings
+
+| ID         | Severity            | Category                                 | Location    | Confidence |
+| ---------- | ------------------- | ---------------------------------------- | ----------- | ---------- |
+| PERF-{seq} | high / medium / low | render / bundle / hooks / effects / data | `file:line` | 0.60–1.00  |
+
+### PERF-{seq}
+
+| Field        | Value                                                                                                             |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Evidence     | コードスニペット                                                                                                  |
+| Reasoning    | パフォーマンスへの影響理由                                                                                        |
+| Fix          | 最適化された代替                                                                                                  |
+| Impact       | 推定改善量                                                                                                        |
+| Verification | hotpath_analysis / call_site_check — このコードはホットパスまたは頻繁にレンダリングされるコンポーネントにあるか？ |
+
+## Summary
+
+| Metric            | Value     |
+| ----------------- | --------- |
+| total_findings    | count     |
+| bundle_size       | X KB      |
+| potential_savings | Y KB (Z%) |
+| render            | count     |
+| bundle            | count     |
+| hooks             | count     |
+| files_reviewed    | count     |
 ```
