@@ -1,34 +1,37 @@
 #!/bin/bash
 # Stop hook: play different sounds based on context
 # - Subagent: silent
+# - Main after subagent: silent (flag-based, 30s window)
 # - Main (error): Heavy
-# - Main (success): Cleaned + activate Ghostty
+# - Main (success): Cleaned + activate Ghostty pane
 
 [[ -n "$CLAUDE_CODE_IS_SUBAGENT" ]] && exit 0
+command -v jq &>/dev/null || exit 0
+source "$HOME/.claude/hooks/lib/notify.sh"
 
-SOUNDS_DIR="$HOME/.claude/sounds"
 INPUT=$(cat)
-STOP_REASON=$(printf '%s' "$INPUT" | jq -r '.stop_reason // "end_turn"' 2>/dev/null)
+IFS=$'\t' read -r STOP_REASON PROJECT_DIR <<< "$(printf '%s' "$INPUT" | jq -r '[(.stop_reason // "end_turn"), (.cwd // "")] | @tsv' 2>/dev/null)"
 STOP_REASON="${STOP_REASON:-end_turn}"
-PROJECT_DIR=$(printf '%s' "$INPUT" | jq -r '.cwd // ""' 2>/dev/null)
+PROJECT_DIR="${PROJECT_DIR:-$PWD}"
+
+# Avoid double-notify when main agent resumes right after subagent
+if mv "$SUBAGENT_DONE_MARKER" "${SUBAGENT_DONE_MARKER}.$$" 2>/dev/null; then
+  FLAG_MTIME=$(stat -f %m "${SUBAGENT_DONE_MARKER}.$$" 2>/dev/null) || { rm -f "${SUBAGENT_DONE_MARKER}.$$"; exit 0; }
+  rm -f "${SUBAGENT_DONE_MARKER}.$$"
+  (( $(date +%s) - FLAG_MTIME < 30 )) && exit 0
+fi
 
 if [[ "$STOP_REASON" != "end_turn" ]]; then
-  [[ -f "$SOUNDS_DIR/DHVMagellanHorn_Heavy.mp3" ]] && afplay -volume 0.1 "$SOUNDS_DIR/DHVMagellanHorn_Heavy.mp3" &
+  play_sound "DHVMagellanHorn_Heavy.mp3"
 else
-  [[ -f "$SOUNDS_DIR/DHVMagellanHorn_Cleaned.mp3" ]] && afplay -volume 0.1 "$SOUNDS_DIR/DHVMagellanHorn_Cleaned.mp3" &
+  play_sound "DHVMagellanHorn_Cleaned.mp3"
 fi
 
-SUBAGENT_FLAG="${TMPDIR:-/tmp}/claude-subagent-completed"
-if mv "$SUBAGENT_FLAG" "${SUBAGENT_FLAG}.$$" 2>/dev/null; then
-  trap 'rm -f "${SUBAGENT_FLAG}.$$"' EXIT
-  FLAG_MTIME=$(stat -f %m "${SUBAGENT_FLAG}.$$" 2>/dev/null)
-  rm -f "${SUBAGENT_FLAG}.$$"
-  FLAG_AGE=$(( $(date +%s) - ${FLAG_MTIME:-0} ))
-  # Subagent completion within 30s → skip Ghostty focus (subagent hook already notified)
-  (( FLAG_AGE < 30 )) && exit 0
-fi
+# Skip Ghostty focus if user is actively interacting (typing, scrolling, etc.)
+IDLE_NS=$(ioreg -c IOHIDSystem 2>/dev/null | awk '/HIDIdleTime/ {print $NF; exit}')
+[[ -n "$IDLE_NS" ]] && (( IDLE_NS < 3000000000 )) && exit 0  # 3s in ns
 
-osascript - "${PROJECT_DIR:-$PWD}" <<'APPLESCRIPT' &
+osascript - "$PROJECT_DIR" <<'APPLESCRIPT' &
 on run argv
   set targetDir to item 1 of argv
   tell application "System Events"
@@ -36,10 +39,16 @@ on run argv
   end tell
   tell application "Ghostty"
     activate
-    set matched to every terminal whose working directory is targetDir
-    if (count of matched) > 0 then
-      focus (item 1 of matched)
-    end if
+    repeat with w in every window
+      repeat with t in (every tab of w)
+        set matched to every terminal of t whose working directory is targetDir
+        if (count of matched) > 0 then
+          select tab t
+          focus (item 1 of matched)
+          return
+        end if
+      end repeat
+    end repeat
   end tell
 end run
 APPLESCRIPT

@@ -48,7 +48,7 @@ graph TD
 | `lint/`          | Pre/PostToolUse | コード品質チェック             |
 | `format/`        | PostToolUse     | フォーマット適用               |
 | `lifecycle/`     | statusLine      | ステータスライン、PRキャッシュ |
-| `agents/`        | Subagent*       | エージェントログ・通知         |
+| `agents/`        | Subagent\*      | エージェントログ・通知         |
 | `viewer/`        | PostToolUse     | SOW/Spec/IDRビューア連携       |
 | `notifications/` | Stop            | 完了通知                       |
 
@@ -83,10 +83,10 @@ graph TD
 
 ### agents/
 
-| フック                 | イベント      | 失敗モード | 目的                 |
-| ---------------------- | ------------- | ---------- | -------------------- |
-| `subagent-start.sh`    | SubagentStart | fail-open  | 開始ログ・通知音     |
-| `subagent-analysis.sh` | SubagentStop  | fail-open  | トランスクリプト保存 |
+| フック             | イベント     | 失敗モード | 目的                 |
+| ------------------ | ------------ | ---------- | -------------------- |
+| `subagent-done.sh` | SubagentStop | fail-open  | 完了マーカー書き込み |
+| `teammate-idle.sh` | TeammateIdle | fail-open  | チームメイト待機検知 |
 
 ### viewer/
 
@@ -142,7 +142,8 @@ graph TD
 ### 3. 失敗モード規約
 
 - **fail-open** (`set +e`): エラー時はスキップして継続。大半のフックがこちら。
-- **fail-closed** (`set -euo pipefail`): エラー時はブロック。セキュリティフックのみ。
+- **fail-closed**
+  (`set -euo pipefail`): エラー時はブロック。セキュリティフックのみ。
 
 ### 4. 組み合わせ可能
 

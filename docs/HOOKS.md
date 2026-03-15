@@ -56,21 +56,18 @@ graph TD
 
 ### lifecycle/
 
-| Hook                 | Trigger    | Purpose              |
-| -------------------- | ---------- | -------------------- |
-| `statusline.sh`      | statusLine | ステータスライン表示 |
-| `_pr-cache.sh`       | (sourced)  | PR情報のキャッシュ   |
-| `idr-pre-commit.sh`  | pre-commit | IDR自動生成          |
-| `worktree-create.sh` | worktree   | ワークツリー作成     |
+| Hook                | Trigger    | Purpose              |
+| ------------------- | ---------- | -------------------- |
+| `statusline.sh`     | statusLine | ステータスライン表示 |
+| `_pr-cache.sh`      | (sourced)  | PR情報のキャッシュ   |
+| `idr-pre-commit.sh` | pre-commit | IDR自動生成          |
 
 ### agents/
 
-| Hook                   | Event         | Failure Mode | Purpose              |
-| ---------------------- | ------------- | ------------ | -------------------- |
-| `subagent-start.sh`    | SubagentStart | fail-open    | 開始ログ・通知音     |
-| `subagent-analysis.sh` | SubagentStop  | fail-open    | トランスクリプト保存 |
-| `task-completed.sh`    | SubagentStop  | fail-open    | タスク完了通知       |
-| `teammate-idle.sh`     | SubagentStop  | fail-open    | チームメイト待機検知 |
+| Hook               | Event        | Failure Mode | Purpose              |
+| ------------------ | ------------ | ------------ | -------------------- |
+| `subagent-done.sh` | SubagentStop | fail-open    | 完了マーカー書き込み |
+| `teammate-idle.sh` | TeammateIdle | fail-open    | チームメイト待機検知 |
 
 ### viewer/
 
