@@ -75,9 +75,82 @@ graph TD
 | -------------------- | ------------------ | ------------ | --------------------------- |
 | `ccplanview-open.sh` | PostToolUse(Write) | fail-open    | Open SOW/Spec/IDR in viewer |
 
+## Quality Pipeline (Rust Binaries)
+
+4 Rust binaries that form the primary code quality enforcement layer. Separate
+repositories, installed via `brew install thkt/tap/{tool}` or as Claude Code
+plugins. Per-project config in `.claude/tools.json`.
+
+```mermaid
+flowchart LR
+    W[Write/Edit] --> G[guardrails]
+    G -->|pass| F[formatter]
+    SK[Skill] --> R[reviews]
+    STOP[Agent Stop] --> GA[gates]
+```
+
+### guardrails
+
+PreToolUse hook. Validates code before Write/Edit is applied.
+
+| Aspect       | Detail                                                |
+| ------------ | ----------------------------------------------------- |
+| Linter       | oxlint (priority) / biome (fallback)                  |
+| Custom rules | 19 rules (sensitiveFile, cryptoWeak, XSS, eval, etc)  |
+| Blocking     | Yes - blocks on critical/high severity                |
+| Source       | [thkt/guardrails](https://github.com/thkt/guardrails) |
+
+### formatter
+
+PostToolUse hook. Auto-formats files after Write/Edit.
+
+| Aspect    | Detail                                              |
+| --------- | --------------------------------------------------- |
+| Formatter | oxfmt (priority) / biome (fallback) + EOF newline   |
+| Blocking  | Never (exit 0 always, errors logged to stderr)      |
+| Source    | [thkt/formatter](https://github.com/thkt/formatter) |
+
+### reviews
+
+PreToolUse hook (Skill matcher). Injects static analysis context before
+configured skills.
+
+| Aspect   | Detail                                                |
+| -------- | ----------------------------------------------------- |
+| Tools    | knip, oxlint, tsgo, react-doctor (parallel execution) |
+| Blocking | Never (advisory only, results as additionalContext)   |
+| Source   | [thkt/reviews](https://github.com/thkt/reviews)       |
+
+### gates
+
+Stop hook. Quality gates enforced on agent completion.
+
+| Aspect          | Detail                                                  |
+| --------------- | ------------------------------------------------------- |
+| Static gates    | knip, tsgo, madge                                       |
+| Script gates    | lint, type-check, test (detected from package.json)     |
+| Phase detection | fix → review → allow (blocks first all-pass for review) |
+| Blocking        | Yes on gate failure; fail-open for missing tools        |
+| Source          | [thkt/gates](https://github.com/thkt/gates)             |
+
+### Pipeline Configuration
+
+All 4 tools share `.claude/tools.json` at the project root:
+
+```json
+{
+  "guardrails": { "rules": { "oxlint": true } },
+  "formatter": { "formatters": { "oxfmt": true } },
+  "reviews": { "skills": ["audit"], "tools": { "knip": true, "tsgo": true } },
+  "gates": { "knip": true, "tsgo": true }
+}
+```
+
+Each tool can be disabled per project with `"enabled": false`.
+
 ## Configuration
 
-hooksは `settings.json` で設定:
+Shell hooks are configured in `settings.json`:
 
 ```json
 {
