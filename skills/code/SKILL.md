@@ -55,8 +55,9 @@ Implementation description: `$1` (required, prompt if empty) Flags:
 ## Skills & Agents
 
 - Agent: test-generator (TDD test generation, standalone background)
+- Agent: code-quality-reviewer (review gate, post-RGRC)
 - Skill: orchestrating-workflows (RGRC cycle)
-- Plugin: ralph-loop (auto-iteration, manual fallback if unavailable)
+- Hook: gates (completion gate + review enforcement, auto-iteration)
 
 <!-- canonical: rules/core/PRE_TASK_CHECK.md (decomposition thresholds) -->
 
@@ -73,7 +74,8 @@ implies ≥ 5 files, suggest running `/think` first.
    (`subagent_type: test-generator`, `run_in_background: true`)
 3. Receive test results via `TaskOutput`
 4. RGRC cycle with `ralph-loop` auto-iteration
-5. Quality Gates
+5. Review Gate: spawn `code-quality-reviewer` (skip for /fix)
+6. Quality Gates
 
 <!-- canonical: skills/orchestrating-workflows (full gate table) -->
 

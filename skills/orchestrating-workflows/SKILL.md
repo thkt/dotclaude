@@ -51,6 +51,19 @@ Agent(subagent_type: "test-quality-evaluator",
 Score ≥70 → pass. Score <70 → report uncovered/excess/intent issues, fix before
 proceeding. Skip when no Spec exists (e.g., `/fix`, ad-hoc changes).
 
+### Review Gate
+
+After RGRC cycles, spawn `code-quality-reviewer` as a background agent:
+
+```
+Agent(subagent_type: "code-quality-reviewer",
+      prompt: "Review files changed in this session: <paths>",
+      run_in_background: true)
+```
+
+High severity → fix before Quality Gates. Medium/low → advisory (note in IDR).
+Skip for `/fix` and single-file changes.
+
 ### Gate Result Output
 
 ```text

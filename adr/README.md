@@ -30,6 +30,7 @@ Claude Codeプラグインのアーキテクチャ決定を記録するドキュ
 | [0022](./0022-migrate-yomu-from-mcp-to-cli.md)                       | yomu を MCP から CLI へ移行           | proposed   |
 | [0023](./0023-build-sharpen-rg-output-optimizer-for-ai.md)           | rg 出力の AI 向け最適化 (sharpen)     | proposed   |
 | [0024](./0024-adopt-two-layer-delta-for-compaction-resilience.md)    | 二層 Delta で compaction 耐性確保     | accepted   |
+| [0025](./0025-replace-ralph-loop-with-flow-controller.md)            | ralph-loop を flow-controller で置換  | proposed   |
 
 ## 関連ルール
 
