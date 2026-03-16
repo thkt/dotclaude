@@ -50,7 +50,7 @@ graph LR
 | ------------ | ---------------------------------------------------- | ------------------ |
 | TDD/テスト   | generating-tdd-tests                                 | テスト手法         |
 | 原則         | applying-code-principles, applying-frontend-patterns | 設計原則           |
-| ドキュメント | documenting-\*                                       | ドキュメント生成   |
+| ドキュメント | creating-adrs, extracting-ubiquitous-language        | ドキュメント生成   |
 | レビュー     | reviewing-\*                                         | コードレビュー観点 |
 | ワークフロー | orchestrating-workflows                              | ワークフロー定義   |
 
@@ -110,18 +110,18 @@ toolで起動され、特定の分析・生成タスクを自律的に実行。
 
 ```text
 agents/
-├── analyzers/      # コード分析 (api, architecture, domain, setup)
 ├── architects/     # 設計 (feature-architect)
 ├── critics/        # 批判的検証 (devils-advocate-audit, devils-advocate-design, evidence-verifier)
 ├── enhancers/      # コード改善 (code-simplifier)
+├── evaluators/     # 品質評価 (test-quality-evaluator)
 ├── explorers/      # 探索 (feature-explorer)
 ├── generators/     # 生成 (branch, commit, issue, pr, test)
 ├── resolvers/      # 問題解決 (build-error-resolver)
-├── reviewers/      # レビュー (16 specialized reviewers)
+├── reviewers/      # レビュー (17 specialized reviewers)
 └── teams/          # チーム統合 (progressive-integrator, qa-reviewer, unit-implementer)
 ```
 
-### レビューエージェント（16種類）
+### レビューエージェント（17種類）
 
 | エージェント                   | フォーカス            |
 | ------------------------------ | --------------------- |
@@ -129,6 +129,7 @@ agents/
 | code-quality-reviewer          | 構造 + 可読性         |
 | design-pattern-reviewer        | Reactパターン         |
 | document-reviewer              | ドキュメント品質      |
+| duplication-reviewer           | ファイル横断DRY分析   |
 | operational-readiness-reviewer | エラー境界 + ロギング |
 | performance-reviewer           | パフォーマンス        |
 | progressive-enhancer           | CSS-first + JS削減    |

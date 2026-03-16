@@ -9,9 +9,10 @@ development principles, and workflow optimizations.
 
 This repository contains personal configurations for Claude AI, including:
 
-- Custom slash commands for systematic development workflows
+- Custom slash commands for systematic development workflows (42 skills)
+- Specialized AI agents for code review, generation, and analysis (33 agents)
 - Core AI operation principles and development best practices
-- Progressive Enhancement and code readability guidelines
+- Quality pipeline hooks (guardrails, formatter, reviews, gates)
 - Japanese language support
 
 ## 📁 Structure
@@ -25,20 +26,21 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── core/             # Core AI operation principles
 │   ├── conventions/      # Documentation conventions
 │   ├── development/      # Development patterns & methodologies
+│   ├── frameworks/       # Framework-specific rules
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (48 skills)
-├── agents/               # Specialized AI agents (35 agents)
-│   ├── analyzers/        # Architecture & code analyzers
+├── skills/               # Skill-based knowledge modules (42 skills)
+├── agents/               # Specialized AI agents (33 agents)
 │   ├── architects/       # Feature architecture designers
 │   ├── critics/          # Finding challengers (devils-advocate)
 │   ├── enhancers/        # Code enhancers & simplifiers
+│   ├── evaluators/       # Quality evaluators
 │   ├── explorers/        # Codebase exploration agents
 │   ├── generators/       # Code/test/git generators
 │   ├── resolvers/        # Build error resolvers
-│   ├── reviewers/        # Code review agents (16 reviewers)
+│   ├── reviewers/        # Code review agents (17 reviewers)
 │   └── teams/            # Integrators & implementers
 ├── docs/                  # Design docs & guides
-├── templates/             # Prompt templates (audit, docs, sow, etc.)
+├── templates/             # Prompt templates (audit, sow, spec, etc.)
 ├── hooks/                 # Pre/Post tool-use hooks
 ├── scripts/               # Utility scripts
 ├── output-styles/         # Output style definitions
@@ -77,14 +79,17 @@ install specific workflow sets:
 
 **Available Plugins**:
 
-- **complete-workflow-system**: Full development workflow with 48 skills and 35
-  agents
-- **quick-actions**: Fast bug fixes (/fix) and AI slop removal (/polish)
-- **git-utilities**: Git workflow helpers (commit, branch, PR, issue)
-- **documentation-tools**: ADR creation and docs
-- **browser-workflows**: E2E testing and automation
-- **development-skills**: 48 skills for TDD, principles, patterns, security, and
-  more
+- **complete-workflow-system**: Full development workflow with quality gates
+  (/think, /code, /test, /audit, /research, /feature, /swarm)
+- **quick-actions**: Fast bug fixes (/fix), AI slop removal (/polish), config
+  validation (/validate-config), Japanese proofreading (/kousei)
+- **git-utilities**: Git workflow helpers (/commit, /branch, /pr, /issue,
+  /preview)
+- **documentation-tools**: ADR creation (/adr) and domain glossary (/glossary)
+- **browser-workflows**: E2E testing and automation (/e2e)
+- **productivity-tools**: Inbox aggregation from GitHub, Slack, Calendar (/inbox)
+- **development-skills**: 22 reference skills for TDD, principles, patterns,
+  security, and more
 
 ### Option 2: Manual Installation (Full Configuration)
 

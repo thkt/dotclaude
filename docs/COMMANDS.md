@@ -71,12 +71,11 @@ confirmation mode (same functionality)
 | ----------- | --------------------------------------------- | --------------------------------------------------------------------- |
 | `/think`    | -                                             | -                                                                     |
 | `/code`     | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
-| `/audit`    | applying-code-principles                      | 13 reviewer agents                                                    |
-| `/fix`      | -                                             | -                                                                     |
+| `/audit`    | applying-code-principles                      | tier-based reviewer agents (3 or file-routed from 17)                 |
+| `/fix`      | -                                             | build-error-resolver                                                  |
 | `/polish`   | -                                             | code-simplifier                                                       |
 | `/feature`  | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
 | `/swarm`    | orchestrating-workflows                       | qa-reviewer, unit-implementer                                         |
-| `/docs`     | documenting-\*                                | \*-analyzer                                                           |
 | `/glossary` | extracting-ubiquitous-language                | -                                                                     |
 
 ## File Structure

@@ -51,7 +51,7 @@ executes tasks.
 | ------------- | ---------------------------------------------------- | ------------------------ |
 | TDD/Testing   | generating-tdd-tests                                 | Testing methodology      |
 | Principles    | applying-code-principles, applying-frontend-patterns | Design principles        |
-| Documentation | documenting-\*                                       | Documentation generation |
+| Documentation | creating-adrs, extracting-ubiquitous-language        | Documentation generation |
 | Review        | reviewing-\*                                         | Code review perspectives |
 | Workflow      | orchestrating-workflows                              | Workflow definitions     |
 
@@ -111,18 +111,18 @@ perform specific analysis or generation tasks.
 
 ```text
 agents/
-├── analyzers/      # Code analysis (api, architecture, domain, setup)
 ├── architects/     # Design (feature-architect)
 ├── critics/        # Critical verification (devils-advocate-audit, devils-advocate-design, evidence-verifier)
 ├── enhancers/      # Code improvement (code-simplifier)
+├── evaluators/     # Quality evaluation (test-quality-evaluator)
 ├── explorers/      # Exploration (feature-explorer)
 ├── generators/     # Generation (branch, commit, issue, pr, test)
 ├── resolvers/      # Problem resolution (build-error-resolver)
-├── reviewers/      # Review (16 specialized reviewers)
+├── reviewers/      # Review (17 specialized reviewers)
 └── teams/          # Team integration (progressive-integrator, qa-reviewer, unit-implementer)
 ```
 
-### Reviewer Agents (16 types)
+### Reviewer Agents (17 types)
 
 | Agent                          | Focus                       |
 | ------------------------------ | --------------------------- |
@@ -130,6 +130,7 @@ agents/
 | code-quality-reviewer          | Structure + readability     |
 | design-pattern-reviewer        | React patterns              |
 | document-reviewer              | Documentation quality       |
+| duplication-reviewer           | Cross-file DRY analysis     |
 | operational-readiness-reviewer | Error boundaries + logging  |
 | performance-reviewer           | Performance                 |
 | progressive-enhancer           | CSS-first + JS reduction    |

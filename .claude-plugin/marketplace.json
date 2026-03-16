@@ -60,7 +60,8 @@
         "./agents/reviewers/test-coverage-reviewer.md",
         "./agents/reviewers/type-design-reviewer.md",
         "./agents/reviewers/operational-readiness-reviewer.md",
-        "./agents/reviewers/duplication-reviewer.md"
+        "./agents/reviewers/duplication-reviewer.md",
+        "./agents/evaluators/test-quality-evaluator.md"
       ]
     },
     {
@@ -133,13 +134,7 @@
       "license": "MIT",
       "keywords": ["adr", "madr", "documentation", "architecture", "api", "decision-records"],
       "category": "Documentation",
-      "commands": ["./skills/adr/SKILL.md", "./skills/docs/SKILL.md", "./skills/glossary/SKILL.md"],
-      "agents": [
-        "./agents/analyzers/architecture-analyzer.md",
-        "./agents/analyzers/api-analyzer.md",
-        "./agents/analyzers/domain-analyzer.md",
-        "./agents/analyzers/setup-analyzer.md"
-      ]
+      "commands": ["./skills/adr/SKILL.md", "./skills/glossary/SKILL.md"]
     },
     {
       "name": "browser-workflows",
@@ -197,10 +192,6 @@
         "./skills/applying-code-principles/SKILL.md",
         "./skills/applying-frontend-patterns/SKILL.md",
         "./skills/creating-adrs/SKILL.md",
-        "./skills/documenting-apis/SKILL.md",
-        "./skills/documenting-architecture/SKILL.md",
-        "./skills/documenting-domains/SKILL.md",
-        "./skills/documenting-setup/SKILL.md",
         "./skills/formatting-audits/SKILL.md",
         "./skills/generating-tdd-tests/SKILL.md",
         "./skills/integrating-storybook/SKILL.md",
