@@ -43,11 +43,12 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 
 ## Skills & Agents
 
-| Type  | Name                  | Purpose                         |
-| ----- | --------------------- | ------------------------------- |
-| Skill | analyzing-root-causes | 5 Whys methodology              |
-| Agent | test-generator        | Regression test creation (fork) |
-| Agent | build-error-resolver  | TypeScript/build error fix      |
+| Type      | Name                  | Purpose                         |
+| --------- | --------------------- | ------------------------------- |
+| Skill     | analyzing-root-causes | 5 Whys methodology              |
+| Agent     | test-generator        | Regression test creation (fork) |
+| Agent     | build-error-resolver  | TypeScript/build error fix      |
+| Reference | defense-in-depth      | Post-fix multi-layer validation |
 
 ## Execution
 
@@ -71,19 +72,24 @@ Run project build command (detect from package.json or project config).
 
 ## Escalation
 
-| Confidence | Action                 |
-| ---------- | ---------------------- |
-| [?] <70%   | Escalate → `/research` |
-| Complex    | Multi-file → `/code`   |
-| New scope  | Feature → `/think`     |
+| Confidence | Action                                               |
+| ---------- | ---------------------------------------------------- |
+| [?] <50%   | Escalate → `/research` immediately                   |
+| 50-69%     | Ask user: continue with defensive checks or escalate |
+| Complex    | Multi-file → `/code`                                 |
+| New scope  | Feature → `/think`                                   |
 
 ## Error Handling
 
-| Error                      | Action                                 |
-| -------------------------- | -------------------------------------- |
-| build-error-resolver fails | Present error, ask user for guidance   |
-| test-generator timeout     | Skip regression test, proceed with fix |
-| Tests still fail after fix | Re-analyze root cause or escalate      |
+| Error                      | Action                                          |
+| -------------------------- | ----------------------------------------------- |
+| build-error-resolver fails | Present error, ask user for guidance            |
+| test-generator timeout     | Skip regression test, proceed with fix          |
+| Tests still fail after fix | Re-analyze root cause or escalate               |
+| ≥3 fix attempts fail       | STOP. Escalate to `/research` with full context |
+
+The ≥3 rule: if three distinct fix attempts fail, the issue is likely
+architectural, not a local bug. Do not attempt fix #4 without escalating.
 
 ## Verification
 

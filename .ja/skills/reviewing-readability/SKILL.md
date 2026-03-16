@@ -32,9 +32,9 @@ user-invocable: false
 
 ## 参照
 
-| トピック         | ファイル                         |
-| ---------------- | -------------------------------- |
-| 制御フロー       | `references/control-flow.md`     |
-| コメント         | `references/comments-clarity.md` |
-| AIアンチパターン | `references/ai-antipatterns.md`  |
-| 命名             | `references/naming.md`           |
+| トピック         | ファイル                                             |
+| ---------------- | ---------------------------------------------------- |
+| 制御フロー       | `${CLAUDE_SKILL_DIR}/references/control-flow.md`     |
+| コメント         | `${CLAUDE_SKILL_DIR}/references/comments-clarity.md` |
+| AIアンチパターン | `${CLAUDE_SKILL_DIR}/references/ai-antipatterns.md`  |
+| 命名             | `${CLAUDE_SKILL_DIR}/references/naming.md`           |

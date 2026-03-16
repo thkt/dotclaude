@@ -2,16 +2,14 @@
 name: screening-pr-review
 description: >
   PR の AI スクリーニングレビュー — 人間のレビュー前に事前分析。
-  スクリーニングレビュー, PRレビュー支援, レビュー前チェック, PR screening, pre-review に言及した時に使用。
+  スクリーニングレビュー, PRレビュー支援, レビュー前チェック, PR screening,
+  pre-review に言及した時に使用。
 allowed-tools: [Read, Grep, Glob, Bash(git:*), Bash(gh:*)]
 # コマンド駆動（/preview から呼び出し）
 user-invocable: false
 ---
 
 # PR スクリーニングレビュー
-
-AI が事前分析を行い、レビュアーがゼロから理解するのではなく
-最終判断に集中できるようにする。
 
 ## プロセス
 
@@ -39,7 +37,7 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments \
   --jq '.[] | {file: .path, user: .user.login, comment: .body}'
 ```
 
-gh 出力フィールドに `author` を含めないこと。
+gh出力フィールドに `author` を含めないこと。
 
 ## コメントラベル
 
@@ -63,6 +61,6 @@ gh 出力フィールドに `author` を含めないこと。
 
 ## 参照
 
-| トピック               | ファイル                         |
-| ---------------------- | -------------------------------- |
-| レビューチェックリスト | `references/review-checklist.md` |
+| トピック               | ファイル                                             |
+| ---------------------- | ---------------------------------------------------- |
+| レビューチェックリスト | `${CLAUDE_SKILL_DIR}/references/review-checklist.md` |

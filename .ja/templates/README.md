@@ -26,6 +26,7 @@ flowchart LR
 | レビュー | /audit    | -               | -                    |
 | 整理     | /polish   | -               | -                    |
 | 検証     | /validate | -               | -                    |
+| Delta    | /delta    | delta.md        | (スキルに内蔵)       |
 | コミット | (hook)    | idr-N.md        | -                    |
 
 ## ディレクトリ構造
@@ -38,10 +39,18 @@ templates/
 │   ├── deprecation.md
 │   ├── process-change.md
 │   └── technology-selection.md
+├── audit/             # 監査テンプレート
+│   ├── finding-schema.md
+│   ├── output.md
+│   └── snapshot.yaml
+├── devcontainer/      # Dev Containerテンプレート
+│   ├── .devcontainer/devcontainer.json
+│   └── README.md
 ├── docs/              # ドキュメントテンプレート
 │   ├── api.md
 │   ├── architecture.md
 │   ├── domain.md
+│   ├── purpose.md
 │   └── setup.md
 ├── issue/             # GitHub Issueテンプレート
 │   ├── bug.md
@@ -54,10 +63,8 @@ templates/
 │   └── template.md    # リサーチ結果
 ├── sow/
 │   └── template.md    # Statement of Work
-├── spec/
-│   └── template.md    # 仕様書
-└── idr/
-    └── template.md    # 実装判断記録
+└── spec/
+    └── template.md    # 仕様書
 ```
 
 ## ドキュメント責務

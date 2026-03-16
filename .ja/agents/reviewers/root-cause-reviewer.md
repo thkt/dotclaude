@@ -60,7 +60,7 @@ background: true
 | Evidence     | コードスニペット                                                                  |
 | 5 Whys       | 1. 観察可能な事実 2. 実装の詳細 3. 設計判断 4. アーキテクチャ上の制約 5. 根本原因 |
 | Root Cause   | 根本的な問題                                                                      |
-| Fix          | 根本原因に対処する解決策                                                          |
+| Fix          | 根本原因に対処する解決策（既存の状態/メカニズムの活用を新規追加より優先）          |
 | Verification | execution_trace / pattern_search — 根本原因が実際に記述された症状を生じさせるか？ |
 
 ## Summary

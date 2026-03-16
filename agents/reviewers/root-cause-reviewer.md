@@ -60,7 +60,7 @@ Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 | Evidence     | code snippet                                                                                             |
 | 5 Whys       | 1. observable fact 2. implementation detail 3. design decision 4. architectural constraint 5. root cause |
 | Root Cause   | fundamental issue                                                                                        |
-| Fix          | solution addressing root cause                                                                           |
+| Fix          | solution addressing root cause (prefer existing state/mechanisms over adding new ones)                   |
 | Verification | execution_trace / pattern_search — does the root cause actually produce the described symptom?           |
 
 ## Summary

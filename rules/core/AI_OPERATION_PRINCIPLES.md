@@ -44,11 +44,11 @@ When unable to verify:
 Default: Fix directly if cause is obvious. Activate full protocol for
 non-obvious bugs (behavioral issues, intermittent failures, unclear root cause).
 
-Full protocol (when activated): Observation → Hypotheses (≥3) → Elimination →
-Conclusion.
+Full protocol (when activated): Observation → Pattern Analysis → Hypotheses (≥3) → Elimination → Conclusion.
 
 | Constraint               | Action                                         |
 | ------------------------ | ---------------------------------------------- |
+| No pattern comparison    | Find working similar code, diff against broken |
 | Hypothesis as conclusion | Append `Elimination:` with test + result first |
 | Speculation ("probably") | Verify with command before concluding          |
 | Single hypothesis only   | Generate ≥2 alternatives before proceeding     |

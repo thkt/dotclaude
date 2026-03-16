@@ -11,8 +11,6 @@ background: true
 
 # Type Design Reviewer
 
-型設計の品質を評価します: カプセル化、不変条件、強制。
-
 ## 生成コンテンツ
 
 | セクション | 説明                            |

@@ -1,9 +1,11 @@
 ---
 name: polish
 description:
-  変更コードの再利用性・品質・効率をレビューし修正、さらにAI生成スロップを除去。
-  ユーザーが整理して, きれいにして, コード整理, slop除去, ポリッシュ等に言及した
-  場合に使用。
+  変更コードの再利用性・品質・効率をレビューし修正、さらにAI生成スロップを除去し
+  テストを監査。ユーザーが整理して, きれいにして, コード整理, slop除去,
+  ポリッシュ, テスト整理,
+  テスト監査等に言及した場合に使用。深いマルチレビュアーの品質監査には /audit
+  を使用。
 allowed-tools:
   Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob,
   Task, Skill
@@ -12,21 +14,21 @@ argument-hint: "[対象スコープ]"
 user-invocable: true
 ---
 
-# /polish - コードレビュー・クリーンアップ & AIスロップ除去
+# /polish - コードレビュー・クリーンアップ・AIスロップ除去 & テスト監査
 
-変更コードをレビュー・修正し、AI生成スロップを除去。
+変更コードをレビュー・修正し、AI生成スロップを除去してテストを監査。
 
 ## 入力
 
 - 対象スコープ: `$1`（任意）
-- `$1`が空の場合 → `git diff HEAD`を分析（staged + unstaged の未コミット変更）
+- `$1`が空の場合 → `git diff HEAD`を分析（staged + unstagedの未コミット変更）
 
 ## 実行
 
 | Phase | アクション                                                                              |
 | ----- | --------------------------------------------------------------------------------------- |
 | 1     | `Skill("simplify", args: "$1")` — 3並列レビュー（再利用、品質、効率）で構造的問題を修正 |
-| 2     | `Task` で `subagent_type: code-simplifier` — 更新後のdiffでAIスロップ除去               |
+| 2     | `Task` で `subagent_type: code-simplifier` — 更新後のdiffでAIスロップ除去 + テスト監査  |
 | 3     | 統合結果を報告                                                                          |
 
 ### Phase 1: /simplify（バンドル）
@@ -39,15 +41,19 @@ user-invocable: true
 
 ### Phase 2: code-simplifier（カスタムagent）
 
-/simplify 完了後、残りのdiffに対して実行。
+/simplify完了後、残りのdiffに対して実行。
 
-除去対象はagent定義を参照: `agents/enhancers/code-simplifier.md`
+プロダクションコードのスロップとテスト監査をカバー。agentは構造化テンプレートで両方を報告する — 空セクションも出力に表示される。
+
+agent定義の詳細: `agents/enhancers/code-simplifier.md`
 
 ## 出力
 
 ```text
-Phase 1 (simplify): 再利用X件、品質Y件、効率Z件を修正
-Phase 2 (slop除去): コメントA件削除、ヘルパーB件インライン化
+Phase 1 (simplify): <再利用/品質/効率のサマリー>
+Phase 2 (code):  <file:line付きの変更リスト>
+Phase 2 (tests): <file:line付きの変更リスト>
+Phase 2 (skipped): <監査されなかったファイルのリスト（理由付き）>
 ```
 
 ## エラーハンドリング

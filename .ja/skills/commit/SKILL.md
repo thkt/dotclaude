@@ -1,6 +1,9 @@
 ---
 name: commit
-description: Git diffを分析し、Conventional Commits形式のメッセージを生成。ユーザーがコミットして, コミット作成, commit等に言及した場合に使用。
+description:
+  Git diffを分析し、Conventional
+  Commits形式のメッセージを生成。ユーザーがコミットして, コミット作成,
+  commit等に言及した場合に使用。
 allowed-tools: Bash(git:*), Bash(cat:*), Bash(mv:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[コンテキストまたはIssue参照]"
@@ -16,17 +19,17 @@ user-invocable: true
 - コンテキストまたはIssue参照: `$1`（任意）
 - `$1`が空の場合 → ステージされた変更のみ分析
 
-## Agent
+## Task
 
 | タイプ | 名前             | 目的                            |
 | ------ | ---------------- | ------------------------------- |
-| Agent  | commit-generator | Conventional Commits生成 (fork) |
+| Task   | commit-generator | Conventional Commits生成 (fork) |
 
 ## 実行
 
 | Step | アクション                                               |
 | ---- | -------------------------------------------------------- |
-| 1    | `Task`で`subagent_type: commit-generator`                |
+| 1    | `Task`で`subagent_type: commit-generator`, `mode: "bypassPermissions"` |
 | 2    | 3候補をAskUserQuestionで提示                             |
 | 3    | ユーザーが選択またはカスタマイズ（Other）                |
 | 4    | 選択されたメッセージでコミット実行（サンドボックス互換） |

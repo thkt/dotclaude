@@ -5,6 +5,7 @@ Thumbs.db
 # Editors
 .idea/
 .vscode/
+.cursor/
 *.swp
 *.swo
 *~
@@ -82,6 +83,7 @@ stats-cache.json
 # Runtime
 logs/
 session-env/
+sessions/
 plans/
 
 # Plugins

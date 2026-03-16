@@ -6,12 +6,12 @@
 
 ### ステージングとコミット
 
-| コマンド | 目的 |
-| --- | --- |
-| `git add -A` | すべての変更をステージ |
-| `git add -p` | インタラクティブステージング（ハンクを選択） |
-| `git commit -m "..."` | メッセージ付きコミット |
-| `git commit --amend` | 最後のコミットを修正（プッシュ前のみ！） |
+| コマンド              | 目的                                         |
+| --------------------- | -------------------------------------------- |
+| `git add -A`          | すべての変更をステージ                       |
+| `git add -p`          | インタラクティブステージング（ハンクを選択） |
+| `git commit -m "..."` | メッセージ付きコミット                       |
+| `git commit --amend`  | 最後のコミットを修正（プッシュ前のみ！）     |
 
 ### HEREDOCコミット（推奨）
 
@@ -30,31 +30,31 @@ EOF
 
 ### ブランチ操作
 
-| コマンド | 目的 |
-| --- | --- |
-| `git checkout -b feature/xxx` | 作成して切り替え |
-| `git push -u origin HEAD` | トラッキング付きでプッシュ |
-| `git branch -d feature/xxx` | ローカルブランチを削除 |
-| `git branch --show-current` | 現在のブランチを表示 |
+| コマンド                      | 目的                       |
+| ----------------------------- | -------------------------- |
+| `git checkout -b feature/xxx` | 作成して切り替え           |
+| `git push -u origin HEAD`     | トラッキング付きでプッシュ |
+| `git branch -d feature/xxx`   | ローカルブランチを削除     |
+| `git branch --show-current`   | 現在のブランチを表示       |
 
 ### 調査
 
-| コマンド | 目的 |
-| --- | --- |
-| `git log --oneline -10` | 最近の履歴 |
-| `git log --oneline --graph -20` | ビジュアル履歴 |
-| `git diff --stat` | 変更のサマリー |
-| `git diff --staged` | ステージされた変更 |
-| `git status --short` | コンパクトなステータス |
-| `git blame <file>` | 行ごとの履歴 |
+| コマンド                        | 目的                   |
+| ------------------------------- | ---------------------- |
+| `git log --oneline -10`         | 最近の履歴             |
+| `git log --oneline --graph -20` | ビジュアル履歴         |
+| `git diff --stat`               | 変更のサマリー         |
+| `git diff --staged`             | ステージされた変更     |
+| `git status --short`            | コンパクトなステータス |
+| `git blame <file>`              | 行ごとの履歴           |
 
 ### スタッシュ
 
-| コマンド | 目的 |
-| --- | --- |
-| `git stash` | 進行中の作業を保存 |
-| `git stash pop` | 復元して削除 |
-| `git stash list` | スタッシュをリスト |
+| コマンド            | 目的                   |
+| ------------------- | ---------------------- |
+| `git stash`         | 進行中の作業を保存     |
+| `git stash pop`     | 復元して削除           |
+| `git stash list`    | スタッシュをリスト     |
 | `git stash show -p` | スタッシュのdiffを表示 |
 
 ## ベストプラクティス
@@ -95,12 +95,12 @@ git log --oneline -3    # コミット履歴を確認
 
 ## 危険な操作（確認必要）
 
-| コマンド | リスク | より安全な代替 |
-| --- | --- | --- |
-| `git push --force` | 履歴書き換え | `git push --force-with-lease` |
-| `git reset --hard` | データ損失 | まず `git stash` |
-| `git clean -fd` | ファイル削除 | `git clean -fdn`（ドライラン優先） |
-| `git checkout -- .` | 変更破棄 | 先に `git status` で確認 |
+| コマンド            | リスク       | より安全な代替                     |
+| ------------------- | ------------ | ---------------------------------- |
+| `git push --force`  | 履歴書き換え | `git push --force-with-lease`      |
+| `git reset --hard`  | データ損失   | まず `git stash`                   |
+| `git clean -fd`     | ファイル削除 | `git clean -fdn`（ドライラン優先） |
+| `git checkout -- .` | 変更破棄     | 先に `git status` で確認           |
 
 ## 復旧
 

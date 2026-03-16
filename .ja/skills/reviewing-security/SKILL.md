@@ -35,14 +35,14 @@ user-invocable: false
 
 ## 信頼度閾値
 
-信頼度 >=0.60 の場合に報告。0.60-0.80: verification_hint を付与。>=0.80: 完全な悪用シナリオと修正推奨を含める。常に file:line を含める。
+信頼度 >=0.60の場合に報告。0.60-0.80: verification_hintを付与。>=0.80: 完全な悪用シナリオと修正推奨を含める。常にfile:lineを含める。
 
 ## 参照
 
-| トピック         | スコープ         | ファイル                                 |
-| ---------------- | ---------------- | ---------------------------------------- |
-| 基本             | A01, A02, A07    | `references/owasp-basic.md`              |
-| インジェクション | A03              | `references/owasp-injection.md`          |
-| 上級             | A04-A06, A08-A10 | `references/owasp-advanced.md`           |
-| クラウド         | IAM, IaC, CI/CD  | `references/cloud-infrastructure.md`     |
-| フロントエンド   | Taint分析        | `references/frontend-taint-checklist.md` |
+| トピック         | スコープ         | ファイル                                                         |
+| ---------------- | ---------------- | ---------------------------------------------------------------- |
+| 基本             | A01, A02, A07    | `${CLAUDE_SKILL_DIR}/references/owasp-basic.md`              |
+| インジェクション | A03              | `${CLAUDE_SKILL_DIR}/references/owasp-injection.md`          |
+| 上級             | A04-A06, A08-A10 | `${CLAUDE_SKILL_DIR}/references/owasp-advanced.md`           |
+| クラウド         | IAM, IaC, CI/CD  | `${CLAUDE_SKILL_DIR}/references/cloud-infrastructure.md`     |
+| フロントエンド   | Taint分析        | `${CLAUDE_SKILL_DIR}/references/frontend-taint-checklist.md` |

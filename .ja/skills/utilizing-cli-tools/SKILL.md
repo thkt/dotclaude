@@ -12,12 +12,12 @@ user-invocable: false
 
 ## 参照
 
-| カテゴリ       | リファレンス                                                        |
-| -------------- | ------------------------------------------------------------------- |
-| バージョン管理 | [@./references/git-essentials.md](./references/git-essentials.md)   |
-| GitHub         | [@./references/gh-github-cli.md](./references/gh-github-cli.md)     |
-| パッケージ管理 | [@./references/npm-scripts.md](./references/npm-scripts.md)         |
-| CHANGELOG      | [@./references/changelog-tools.md](./references/changelog-tools.md) |
+| カテゴリ       | リファレンス                                        |
+| -------------- | --------------------------------------------------- |
+| バージョン管理 | `${CLAUDE_SKILL_DIR}/references/git-essentials.md`  |
+| GitHub         | `${CLAUDE_SKILL_DIR}/references/gh-github-cli.md`   |
+| パッケージ管理 | `${CLAUDE_SKILL_DIR}/references/npm-scripts.md`     |
+| CHANGELOG      | `${CLAUDE_SKILL_DIR}/references/changelog-tools.md` |
 
 ## クイックリファレンス
 

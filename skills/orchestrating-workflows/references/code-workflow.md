@@ -23,6 +23,11 @@ Prerequisites: spec.md with FR-xxx items.
 1. Parse FR-xxx requirements from spec
 2. Generate ALL tests in **skip state**
 3. Order: simple → complex (Baby Steps)
+4. Add `// T-NNN` comment to each test mapping to Spec Test Scenario ID
+
+T-NNN traceability: each `it()` block includes a comment referencing its Spec
+test scenario (e.g., `// T-001`). This keeps verification in living code and
+enables `test-quality-evaluator` to compute coverage scores.
 
 ## Phase 1-N: RGRC Cycle
 
@@ -40,7 +45,7 @@ For each test:
 After all RGRC cycles, spawn `code-quality-reviewer` to catch structural and
 readability issues missed during implementation.
 
-```
+```text
 Agent(subagent_type: "code-quality-reviewer",
       prompt: "Review files changed in this session: <changed file paths>",
       run_in_background: true)

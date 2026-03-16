@@ -2,7 +2,8 @@
 name: feature
 description:
   探索・アーキテクチャ設計・TDD・品質ゲートを含む包括的な機能開発。ユーザーが機能開発,
-  新機能, 機能追加, feature development等に言及した場合に使用。
+  新機能, 機能追加, feature development等に言及した場合に使用。計画なし実装には
+  /code、 バグ修正には /fix、実装なしの計画には /think を使用。
 allowed-tools:
   Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run),
   Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun

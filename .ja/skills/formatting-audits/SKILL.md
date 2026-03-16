@@ -2,8 +2,8 @@
 name: formatting-audits
 description: >
   SOW/Spec向け100点満点採点システムによる設計書レビュー形式。
-  SOWまたはSpecドキュメントのレビュー、設計品質の採点、または
-  SOW review, Spec review, 設計書レビュー, 品質スコア, document scoring に言及した時に使用。
+  SOWまたはSpecドキュメントのレビュー、設計品質の採点、または SOW review, Spec
+  review, 設計書レビュー, 品質スコア, document scoring に言及した時に使用。
 allowed-tools: [Read, Grep, Glob]
 agent: sow-spec-reviewer
 context: fork
@@ -23,14 +23,14 @@ user-invocable: false
 
 ## 減点
 
-| 問題                   | 減点 |
-| ---------------------- | ---- |
-| 信頼度マーカーなし     | -5   |
-| 必須セクション欠如     | -10  |
-| テストシナリオなしのAC | -5   |
-| 曖昧なアクション項目   | -5   |
-| YAGNI違反              | -5   |
-| AC-FRマップ不整合      | -10  |
+| 問題               | 減点 |
+| ------------------ | ---- |
+| 信頼度マーカーなし | -5   |
+| 必須セクション欠如 | -10  |
+| 曖昧なアクション   | -5   |
+| YAGNI違反          | -5   |
+
+AC-FRトレーサビリティとテストカバレッジ: `validating-specs` スキルに委譲。
 
 ## 閾値
 

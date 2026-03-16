@@ -2,8 +2,9 @@
 name: devils-advocate-design
 description: 設計提案を反論的視点から検証し、隠れた弱点を露出。
 tools: [Read, Grep, Glob, LS]
-model: sonnet
+model: opus
 context: fork
+background: true
 ---
 
 # Devils Advocate（設計）

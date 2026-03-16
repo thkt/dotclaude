@@ -4,7 +4,8 @@
 
 ## パッケージマネージャの検出
 
-`package-lock.json`、`yarn.lock`、または `pnpm-lock.yaml` をチェックしてパッケージマネージャを識別。
+`package-lock.json`、`yarn.lock`、または `pnpm-lock.yaml`
+をチェックしてパッケージマネージャを識別。
 
 ```bash
 # 検出ロジック
@@ -21,39 +22,39 @@ fi
 
 ### インストール
 
-| npm | yarn | pnpm |
-| --- | --- | --- |
-| `npm install` | `yarn` | `pnpm install` |
-| `npm ci` | `yarn --frozen-lockfile` | `pnpm install --frozen-lockfile` |
+| npm           | yarn                     | pnpm                             |
+| ------------- | ------------------------ | -------------------------------- |
+| `npm install` | `yarn`                   | `pnpm install`                   |
+| `npm ci`      | `yarn --frozen-lockfile` | `pnpm install --frozen-lockfile` |
 
 ### スクリプト実行
 
-| npm | yarn | pnpm |
-| --- | --- | --- |
+| npm                | yarn            | pnpm            |
+| ------------------ | --------------- | --------------- |
 | `npm run <script>` | `yarn <script>` | `pnpm <script>` |
-| `npm test` | `yarn test` | `pnpm test` |
-| `npm run build` | `yarn build` | `pnpm build` |
+| `npm test`         | `yarn test`     | `pnpm test`     |
+| `npm run build`    | `yarn build`    | `pnpm build`    |
 
 ### 依存関係の追加
 
-| npm | yarn | pnpm |
-| --- | --- | --- |
-| `npm install <pkg>` | `yarn add <pkg>` | `pnpm add <pkg>` |
-| `npm install -D <pkg>` | `yarn add -D <pkg>` | `pnpm add -D <pkg>` |
+| npm                    | yarn                    | pnpm                |
+| ---------------------- | ----------------------- | ------------------- |
+| `npm install <pkg>`    | `yarn add <pkg>`        | `pnpm add <pkg>`    |
+| `npm install -D <pkg>` | `yarn add -D <pkg>`     | `pnpm add -D <pkg>` |
 | `npm install -g <pkg>` | `yarn global add <pkg>` | `pnpm add -g <pkg>` |
 
 ### 依存関係の削除
 
-| npm | yarn | pnpm |
-| --- | --- | --- |
+| npm                   | yarn                | pnpm                |
+| --------------------- | ------------------- | ------------------- |
 | `npm uninstall <pkg>` | `yarn remove <pkg>` | `pnpm remove <pkg>` |
 
 ### 依存関係のリスト
 
-| npm | yarn | pnpm |
-| --- | --- | --- |
+| npm                  | yarn                  | pnpm                  |
+| -------------------- | --------------------- | --------------------- |
 | `npm list --depth=0` | `yarn list --depth=0` | `pnpm list --depth=0` |
-| `npm outdated` | `yarn outdated` | `pnpm outdated` |
+| `npm outdated`       | `yarn outdated`       | `pnpm outdated`       |
 
 ## 一般的なスクリプト
 

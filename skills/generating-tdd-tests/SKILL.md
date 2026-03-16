@@ -37,6 +37,15 @@ behavior gap.
 | Boundary Value           | Test edges            | 17, 18, 120, 121       |
 | Decision Table           | Multi-condition logic | isLoggedIn × isPremium |
 
+## Mock Pitfalls
+
+| Anti-Pattern                | Problem                                     | Instead                                    |
+| --------------------------- | ------------------------------------------- | ------------------------------------------ |
+| Assert mock was called      | Tests mock behavior, not component behavior | Assert on observable output or side effect |
+| Test-only production method | Pollutes production API for test access     | Extract to test utility or use public API  |
+| Mock before understanding   | Hides real dependency behavior              | Understand dependency first, then mock     |
+| Partial mock structure      | Missing fields cause false passes           | Mirror complete real API structure         |
+
 ## Coverage
 
 See `rules/development/CODE_THRESHOLDS.md` for canonical values.

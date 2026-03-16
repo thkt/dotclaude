@@ -2,8 +2,8 @@
 name: reviewing-type-safety
 description: >
   最大型カバレッジのためのTypeScript型安全パターンとベストプラクティス。
-  TypeScriptコードの型問題レビュー、`any`型の排除、または
-  type safety, 型安全, 型カバレッジ, strict mode に言及した時に使用。
+  TypeScriptコードの型問題レビュー、`any`型の排除、または type safety, 型安全,
+  型カバレッジ, strict mode に言及した時に使用。
 allowed-tools: [Read, Grep, Glob, Task]
 agent: type-safety-reviewer
 context: fork
@@ -23,6 +23,8 @@ user-invocable: false
 | TS3 | `function fn(data)` (型なし)  | `function fn(data: Type)`     |
 | TS3 | 戻り値型の欠如                | 明示的な `: ReturnType`       |
 | TS4 | 網羅的でない`default:`        | `default: assertNever(value)` |
+| TS5 | `strictNullChecks: false`     | tsconfigで有効化              |
+| TS5 | `noImplicitAny: false`        | tsconfigで有効化              |
 
 ## 基準
 
@@ -30,9 +32,9 @@ user-invocable: false
 
 ## 参照
 
-| トピック   | ファイル                      |
-| ---------- | ----------------------------- |
-| カバレッジ | `references/type-coverage.md` |
-| ガード     | `references/type-guards.md`   |
-| Strict     | `references/strict-mode.md`   |
-| Result     | `references/result-type.md`   |
+| トピック   | ファイル                                          |
+| ---------- | ------------------------------------------------- |
+| カバレッジ | `${CLAUDE_SKILL_DIR}/references/type-coverage.md` |
+| ガード     | `${CLAUDE_SKILL_DIR}/references/type-guards.md`   |
+| Strict     | `${CLAUDE_SKILL_DIR}/references/strict-mode.md`   |
+| Result     | `${CLAUDE_SKILL_DIR}/references/result-type.md`   |

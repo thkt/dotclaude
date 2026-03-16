@@ -23,19 +23,19 @@ Task description from `$1`, research context, or AskUserQuestion if empty.
 
 ## Execution
 
-| Step | Action               | Output                                     |
-| ---- | -------------------- | ------------------------------------------ |
-| 0    | Q&A Clarification    | (if unclear)                               |
-| 1    | Codebase exploration | Relevant code, patterns, constraints       |
-| 2    | Approach generation  | ≥2 approaches with trade-offs              |
-| 3    | Self-challenge       | Weaknesses exposed, assumptions validated  |
-| 4    | Design composition   | Optimal design with traceability           |
-| 5    | User Review          | Approved design (with trade-off rationale) |
-| 5.5  | ADR Proposal         | (if needed)                                |
-| 6    | SOW Generation       | sow.md                                     |
-| 7    | Spec Generation      | spec.md                                    |
-| 8    | sow-spec-reviewer    | (optional, ≥90/100 to pass)                |
-| 9    | Task Decomposition   | Milestones + TaskCreate + First Move       |
+| Step | Action               | Output                                        |
+| ---- | -------------------- | --------------------------------------------- |
+| 0    | Q&A Clarification    | (if unclear)                                  |
+| 1    | Codebase exploration | Relevant code, patterns, constraints          |
+| 2    | Approach generation  | ≥2 approaches with trade-offs                 |
+| 3    | Self-challenge       | Weaknesses exposed, assumptions validated     |
+| 4    | Design composition   | Optimal design with traceability              |
+| 5    | User Review          | Approved design (with trade-off rationale)    |
+| 5.5  | ADR Proposal         | (if needed)                                   |
+| 6    | SOW Generation       | sow.md                                        |
+| 7    | Spec Generation      | spec.md                                       |
+| 8    | sow-spec-reviewer    | Auto if FR ≥ 5 or multi-domain; else optional |
+| 9    | Task Decomposition   | Milestones + TaskCreate + First Move          |
 
 ## Design Exploration (Steps 1-4)
 
@@ -141,6 +141,19 @@ Read template `templates/spec/template.md`. Generate from SOW. ID format:
 FR-001, T-001, NFR-001. Traceability: `FR-001 Implements: AC-001` →
 `T-001 Validates: FR-001` If UI-related: include Component API (Props, variants,
 states, usage). Output: `.claude/workspace/planning/[same-dir]/spec.md`
+
+## Spec Review (Step 8)
+
+After Spec generation, check auto-invoke conditions:
+
+| Condition         | Action                                 |
+| ----------------- | -------------------------------------- |
+| FR ≥ 5 in Spec    | Auto-invoke sow-spec-reviewer          |
+| Multi-domain Spec | Auto-invoke sow-spec-reviewer          |
+| Neither condition | Offer as optional ("Run spec review?") |
+
+On auto-invoke: score ≥ 90 → pass. Score < 90 → fix findings, re-invoke (max 3
+loops). After 3 loops, present remaining findings to user and proceed.
 
 ## ADR Proposal (Step 5.5)
 

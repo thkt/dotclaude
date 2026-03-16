@@ -55,7 +55,7 @@ Challengerの結果とVerifierの結果。Leaderからspawnプロンプトで渡
 | verdict          | verified / weak_evidence / unverifiable |
 | confidence       | 0.60-1.00                               |
 | budget_exhausted | true / false                            |
-| evidence         | 検出結果または検証不可の理由              |
+| evidence         | 検出結果または検証不可の理由            |
 
 ## Summary
 
@@ -148,17 +148,10 @@ Challengerの結果とVerifierの結果。Leaderからspawnプロンプトで渡
 
 ### 自動修正検出
 
-| fix_type | 説明                        | Confidence | 例                          |
-| -------- | --------------------------- | ---------- | --------------------------- |
-| pattern  | 既知の修正パターンが存在    | ≥90%       | 空の catch → エラーログ出力 |
-| codemod  | AST ベースの変換            | ≥85%       | any → 具体的な型            |
-| lint-fix | linter の自動修正が利用可能 | ≥95%       | ESLint --fix                |
-| manual   | 人間の判断が必要            | N/A        | アーキテクチャ変更          |
-
-| Confidence | アクション |
-| ---------- | ---------- |
-| ≥85%       | 提案を生成 |
-| <85%       | スキップ   |
+| fix_type | 説明                                | アクション   |
+| -------- | ----------------------------------- | ------------ |
+| auto     | 既知の修正パターン、confidence ≥85% | 提案を生成   |
+| manual   | 人間の判断が必要                    | 提案スキップ |
 
 ## 出力
 

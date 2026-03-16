@@ -153,6 +153,16 @@ Build sequence: unit_id order if dependencies exist
 - **description** (severity: blocker / warning)
 ```
 
+Leader response by status + issues:
+
+| Status   | Issues     | Leader Action                                     |
+| -------- | ---------- | ------------------------------------------------- |
+| complete | none       | Proceed to merge                                  |
+| complete | warning(s) | Forward warnings to Architect for assessment      |
+| blocked  | blocker(s) | Assess: context gap → re-dispatch with more info  |
+|          |            | Assess: too complex → upgrade model or split task |
+|          |            | Assess: plan wrong → escalate to user             |
+
 ## Execution
 
 ### Phase 0: SOW Detection
@@ -239,12 +249,16 @@ Build sequence: unit_id order if dependencies exist
 #### 5b: Quality Gates
 
 1. Leader executes QG on main branch (tests, lint, types, coverage)
-2. On failure:
+2. If Spec exists: Spec coverage check — compare `git diff --name-only` against
+   the file list in Spec's `## Implementation` section. Flag any file not
+   listed. New test files and config files are exempt (mechanical filename match
+   only)
+3. On failure:
    - Identify responsible agent from failing file
    - Forward failure details to that agent via DM
    - Agent fixes and reports back
-3. Re-run QG after fix
-4. Max 3 iterations → escalate to user
+4. Re-run QG after fix
+5. Max 3 iterations → escalate to user
 
 ### Phase 6: Summary
 
@@ -282,8 +296,7 @@ Leader maintains a progress table and reports to user at key events:
 | 2    | 2     | impl-2      | in_progress | 1m 45s   |
 | 3    | 4     | impl-3      | in_progress | 1m 45s   |
 
-Shared changes: applied
-Integration: pending (2/3 units complete)
+Shared changes: applied Integration: pending (2/3 units complete)
 ```
 
 ### Trigger Events

@@ -1,10 +1,12 @@
 ---
 name: reviewing-testability
 description: >
-  Testable code design patterns for TypeScript/React applications.
-  Triggers: testability, DI, dependency injection, テスト容易性, モック, mock-friendly.
+  TypeScript/Reactアプリケーション向けテスト容易な設計パターン。
+  テスタビリティのコードレビュー、依存性注入の実装、または テスト容易性, モック,
+  mock-friendly, DI に言及した時に使用。
 allowed-tools: [Read, Grep, Glob, Task]
 agent: testability-reviewer
+context: fork
 user-invocable: false
 ---
 
@@ -29,8 +31,8 @@ user-invocable: false
 
 ## 参考
 
-| トピック | ファイル                             |
-| -------- | ------------------------------------ |
-| DI       | `references/dependency-injection.md` |
-| 純粋     | `references/pure-functions.md`       |
-| モック   | `references/mock-friendly.md`        |
+| トピック | ファイル                                                 |
+| -------- | -------------------------------------------------------- |
+| DI       | `${CLAUDE_SKILL_DIR}/references/dependency-injection.md` |
+| 純粋     | `${CLAUDE_SKILL_DIR}/references/pure-functions.md`       |
+| モック   | `${CLAUDE_SKILL_DIR}/references/mock-friendly.md`        |

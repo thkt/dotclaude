@@ -1,9 +1,8 @@
 ---
 name: analyzing-root-causes
 description: >
-  5 Whys手法による根本原因分析。
-  バグ調査、障害分析、または
-  root cause, 5 Whys, なぜなぜ分析, 根本原因, 原因分析, symptom fix, 対症療法 に言及した時に使用。
+  5 Whys手法による根本原因分析。 バグ調査、障害分析、または root cause, 5 Whys,
+  なぜなぜ分析, 根本原因, 原因分析, symptom fix, 対症療法 に言及した時に使用。
 allowed-tools: [Read, Grep, Glob, Task]
 context: fork
 user-invocable: false
@@ -32,7 +31,7 @@ user-invocable: false
 
 ## 参照
 
-| トピック | ファイル                         |
-| -------- | -------------------------------- |
-| 5 Whys   | `references/five-whys.md`        |
-| パターン | `references/symptom-patterns.md` |
+| トピック | ファイル                                             |
+| -------- | ---------------------------------------------------- |
+| 5 Whys   | `${CLAUDE_SKILL_DIR}/references/five-whys.md`        |
+| パターン | `${CLAUDE_SKILL_DIR}/references/symptom-patterns.md` |

@@ -9,7 +9,12 @@ skills: [utilizing-cli-tools]
 
 # コミットメッセージジェネレーター
 
-git diffからConventional Commitsメッセージを生成。
+## 呼び出しスコープ
+
+| 制約             | ルール                                          |
+| ---------------- | ----------------------------------------------- |
+| エントリポイント | `/commit` スキルのみ — 自動呼び出しなし         |
+| 副作用           | gitコミットを作成（ユーザーの明示的許可が必要） |
 
 ## タイプ検出
 
@@ -75,13 +80,13 @@ git commit -m "subject" -m "body"
 
 ### 1
 
-| Field       | Value             |
-| ----------- | ----------------- |
-| type        | type              |
-| scope       | scope             |
-| description | description       |
-| body        | body (任意)       |
-| footer      | footer (任意)     |
+| Field       | Value         |
+| ----------- | ------------- |
+| type        | type          |
+| scope       | scope         |
+| description | description   |
+| body        | body (任意)   |
+| footer      | footer (任意) |
 
 ### 2
 
