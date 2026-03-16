@@ -2,6 +2,7 @@
 # Failure mode: fail-closed (block on error)
 # Exit: 0=allow, 2=block
 set -euo pipefail
+trap '' PIPE
 
 LOG_FILE="$HOME/.claude/logs/bash-safety.log"
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || echo "WARNING: log dir creation failed" >&2
@@ -56,9 +57,7 @@ DANGER_PATTERNS=(
   '\bcurl[[:space:]].*\|[[:space:]]*(bash|sh|zsh)\b'
   '\bwget[[:space:]].*\|[[:space:]]*(bash|sh|zsh)\b'
   '\bcurl[[:space:]].*-o[[:space:]]*-.*\|'
-  # Destructive git operations
-  '\bgit[[:space:]]+push[[:space:]]+.*--force'
-  '\bgit[[:space:]]+push[[:space:]]+(.*-f|-f)([[:space:]]|$)'
+  # Destructive git operations (all git push blocked by policy)
   '\bgit[[:space:]].*\bpush\b'
   '\bgit[[:space:]]+(checkout|restore)[[:space:]]+(\.|\.[[:space:]]|--[[:space:]]+\.)'
   '\bgit[[:space:]]+clean[[:space:]]+-[[:alnum:]]*[fd]'
@@ -66,13 +65,13 @@ DANGER_PATTERNS=(
   '\bgit[[:space:]]+stash[[:space:]]+drop'
   # Indirect deletion via xargs/find
   '\bxargs[[:space:]].*\b(rm|rmdir|unlink|shred)\b'
-  '\bfind[[:space:]].*-exec[[:space:]].*\brm\b'
+  '\bfind[[:space:]].*-exec[[:space:]].*\b(rm|sh|bash|zsh|python[23]?|perl|ruby|node)\b'
   '\bfind[[:space:]].*-delete\b'
   # Indirect execution and file modification
   '\beval[[:space:]]'
   '\bsed[[:space:]].*-i\b'
   '\bsed[[:space:]].*--in-place\b'
-  '\bawk[[:space:]].*system\s*\('
+  '\bawk[[:space:]].*system[[:space:]]*\('
   # Download-then-execute
   '\bcurl[[:space:]].*-o[[:space:]]+/tmp'
   '\bwget[[:space:]].*-O[[:space:]]+/tmp'
@@ -82,10 +81,20 @@ DANGER_PATTERNS=(
   '\bruby[[:space:]]+-e\b'
   '\bnode[[:space:]]+-e\b'
   '\bbase64[[:space:]].*\|[[:space:]]*(bash|sh|zsh)\b'
+  # Additional interpreter bypass (macOS/modern runtimes)
+  '\bosascript[[:space:]]'
+  '\bphp[[:space:]]+-r\b'
+  '\bdeno[[:space:]]+(run|eval|repl)\b'
+  '\bbun[[:space:]]+(run|x|eval)\b'
+  '\bshred[[:space:]]'
 )
 
+# GitHub impersonation guard: posting comments/reviews as user
+GH_WRITE_PATTERN='\bgh[[:space:]]+pr[[:space:]]+(comment|review|edit)\b|\bgh[[:space:]]+issue[[:space:]]+comment\b'
+GH_WRITE_CONTEXT='GitHub impersonation guard: this command posts/edits content as the user. Draft the content and show it to the user instead. The user can run the command manually or give explicit approval.'
+
 # Self-test: verify \b word boundary works (fail-closed)
-COMBINED_PATTERN="${(j:|:)DANGER_PATTERNS}"
+COMBINED_PATTERN="${(j:|:)DANGER_PATTERNS}|${GH_WRITE_PATTERN}"
 if ! [[ "rm -rf" =~ $COMBINED_PATTERN ]]; then
   echo "BLOCKED: regex engine lacks \\b support" >&2
   exit 2
@@ -102,9 +111,14 @@ NORMALIZED_SINGLE=${NORMALIZED//$'\n'/ }
 
 for target in "$COMMAND_SINGLE" "$NORMALIZED_SINGLE"; do
   if [[ "$target" =~ $COMBINED_PATTERN ]]; then
-    log_block "$MATCH" "$COMMAND"
-    jq -n --arg pattern "$MATCH" \
-      '{decision: "block", reason: ("Dangerous pattern: " + $pattern), additionalContext: "Project policy: use \"mv <file> ~/.Trash/\" instead of rm. Use Edit tool instead of sed -i. Avoid eval, python -c, and piped execution."}' \
+    log_block "$MATCH" "$COMMAND_SINGLE"
+    if [[ "$target" =~ $GH_WRITE_PATTERN ]]; then
+      CONTEXT=$GH_WRITE_CONTEXT
+    else
+      CONTEXT='Project policy: use "mv <file> ~/.Trash/" instead of rm. Use Edit tool instead of sed -i. Avoid eval, python -c, and piped execution.'
+    fi
+    jq -n --arg pattern "$MATCH" --arg ctx "$CONTEXT" \
+      '{decision: "block", reason: ("Dangerous pattern: " + $pattern), additionalContext: $ctx}' \
       && exit 0
     # Fallback: fail-closed if jq fails
     echo "BLOCKED: dangerous command detected" >&2
