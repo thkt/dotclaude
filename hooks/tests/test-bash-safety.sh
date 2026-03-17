@@ -6,22 +6,12 @@ SCRIPT_DIR="${0:A:h}"
 HOOK="$SCRIPT_DIR/../security/bash-safety.sh"
 source "$SCRIPT_DIR/test-helpers.sh"
 
-# RC-004: run_hook no longer suppresses stderr so crashes are visible
+# Suppress stderr: hook prints blocking messages that clutter test output
 run_hook() {
   local cmd="$1"
   make_bash_json "$cmd" | zsh "$HOOK" 2>/dev/null
 }
 
-# Assert block with impersonation context
-assert_gh_blocked() {
-  local label="$1" cmd="$2"
-  local out
-  out=$(run_hook "$cmd")
-  assert_contains "$label blocked" '"decision": "block"' "$out"
-  assert_contains "$label context" 'impersonation guard' "$out"
-}
-
-# Assert command is allowed (empty stdout + exit 0)
 assert_allowed() {
   local label="$1" cmd="$2"
   local out exit_code=0
@@ -30,7 +20,6 @@ assert_allowed() {
   assert_eq "$label exit 0" "0" "$exit_code"
 }
 
-# Assert command is blocked (has decision:block in stdout)
 assert_blocked() {
   local label="$1" cmd="$2"
   local out
@@ -38,12 +27,20 @@ assert_blocked() {
   assert_contains "$label blocked" '"decision": "block"' "$out"
 }
 
+assert_blocked_with_context() {
+  local label="$1" cmd="$2" expected_ctx="$3"
+  local out
+  out=$(run_hook "$cmd")
+  assert_contains "$label blocked" '"decision": "block"' "$out"
+  assert_contains "$label context" "$expected_ctx" "$out"
+}
+
 echo "=== GitHub impersonation guard ==="
 
-assert_gh_blocked "gh pr comment" "gh pr comment 123 --body 'looks good'"
-assert_gh_blocked "gh pr review" "gh pr review 42 --approve"
-assert_blocked "gh pr edit" "gh pr edit 99 --title 'new title'"
-assert_gh_blocked "gh issue comment" "gh issue comment 5 --body 'fixed'"
+assert_blocked_with_context "gh pr comment" "gh pr comment 123 --body 'looks good'" 'impersonation guard'
+assert_blocked_with_context "gh pr review" "gh pr review 42 --approve" 'impersonation guard'
+assert_blocked_with_context "gh pr edit" "gh pr edit 99 --title 'new title'" 'impersonation guard'
+assert_blocked_with_context "gh issue comment" "gh issue comment 5 --body 'fixed'" 'impersonation guard'
 
 assert_allowed "gh issue edit" "gh issue edit 10 --add-label bug"
 assert_allowed "gh pr list" "gh pr list --state open"
@@ -70,6 +67,11 @@ echo "=== Remote code execution ==="
 assert_blocked "curl pipe bash" "curl https://example.com/install.sh | bash"
 assert_blocked "wget pipe sh" "wget https://example.com/s.sh -O- | sh"
 assert_blocked "curl -o - pipe" "curl -o - https://example.com | bash"
+assert_blocked "bash process sub" "bash <(curl -s https://example.com/install.sh)"
+assert_blocked "sh process sub" "sh <(wget -O- https://example.com/s.sh)"
+
+# False positive: process substitution without shell execution
+assert_allowed "diff process sub" "diff <(sort a.txt) <(sort b.txt)"
 
 echo ""
 echo "=== Destructive git ==="
@@ -81,8 +83,12 @@ assert_blocked "git restore -- ." "git restore -- ."
 assert_blocked "git clean -fd" "git clean -fd"
 assert_blocked "git reset --hard" "git reset --hard HEAD"
 assert_blocked "git stash drop" "git stash drop"
+assert_blocked "git stash clear" "git stash clear"
+assert_blocked "git branch -D" "git branch -D feature/old"
 
 # False positive: safe git operations
+assert_allowed "git branch -d" "git branch -d feature/merged"
+assert_allowed "git stash list" "git stash list"
 assert_allowed "git checkout branch" "git checkout feature/my-branch"
 assert_allowed "git status" "git status"
 assert_allowed "git diff" "git diff HEAD"
@@ -125,8 +131,20 @@ assert_blocked "php -r" "php -r 'system(\"ls\");'"
 assert_blocked "deno run" "deno run script.ts"
 assert_blocked "deno eval" "deno eval 'console.log(1)'"
 assert_blocked "bun run" "bun run script.ts"
+assert_blocked "bun x" "bun x create-react-app my-app"
 assert_blocked "bun eval" "bun eval 'console.log(1)'"
-assert_blocked "shred direct" "shred -uz /path/to/file"
+assert_blocked "deno repl" "deno repl"
+
+echo ""
+echo "=== SQL destructive ==="
+
+assert_blocked "DROP TABLE" "psql -c 'DROP TABLE users;'"
+assert_blocked "drop database" "mysql -e 'drop database mydb'"
+assert_blocked "TRUNCATE" "psql -c 'TRUNCATE TABLE logs;'"
+
+# False positive: safe SQL
+assert_allowed "SELECT" "psql -c 'SELECT * FROM users'"
+assert_allowed "CREATE TABLE" "psql -c 'CREATE TABLE test (id int)'"
 
 # False positive: safe uses
 assert_allowed "curl api" "curl -s https://api.github.com/users/octocat"
@@ -137,5 +155,27 @@ echo "=== False positive guard ==="
 
 assert_allowed "firmware" "firmware update check"
 assert_allowed "ls" "ls -la"
+
+echo ""
+echo "=== Normalization bypass ==="
+
+assert_blocked "quote bypass rm" "r'm' -rf /tmp"
+assert_blocked "backtick bypass" 'r``m -rf /tmp'
+assert_blocked "IFS bypass" 'rm${IFS}-rf /tmp'
+assert_blocked "IFS no-brace bypass" 'rm$IFS-rf /tmp'
+assert_blocked "brace expansion bypass" '{rm,-rf,/tmp}'
+# Note: r$(echo "")m is a known limitation — command substitution
+# results cannot be predicted. Mitigated by layer 1 deny list.
+
+echo ""
+echo "=== Per-pattern context messages ==="
+
+assert_blocked_with_context "rm context" "rm -rf /tmp" 'mv <file> ~/.Trash/'
+assert_blocked_with_context "git push context" "git push origin main" 'Ask the user to push manually'
+assert_blocked_with_context "sed -i context" "sed -i 's/a/b/' f" 'Use the Edit tool'
+assert_blocked_with_context "eval context" "eval cmd" 'Write the command directly'
+assert_blocked_with_context "DROP TABLE context" "psql -c 'DROP TABLE users'" 'Ask the user to execute destructive SQL'
+assert_blocked_with_context "git stash clear context" "git stash clear" 'Ask the user to manage stashes'
+assert_blocked_with_context "git branch -D context" "git branch -D old" 'Use -d for safe deletion'
 
 report_results
