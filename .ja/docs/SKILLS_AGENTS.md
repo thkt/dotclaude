@@ -46,13 +46,14 @@ graph LR
 
 ### カテゴリ
 
-| カテゴリ     | スキル                                               | 目的               |
-| ------------ | ---------------------------------------------------- | ------------------ |
-| TDD/テスト   | generating-tdd-tests                                 | テスト手法         |
-| 原則         | applying-code-principles, applying-frontend-patterns | 設計原則           |
-| ドキュメント | creating-adrs, extracting-ubiquitous-language        | ドキュメント生成   |
-| レビュー     | reviewing-\*                                         | コードレビュー観点 |
-| ワークフロー | orchestrating-workflows                              | ワークフロー定義   |
+| カテゴリ     | スキル                                               | 目的                 |
+| ------------ | ---------------------------------------------------- | -------------------- |
+| TDD/テスト   | generating-tdd-tests                                 | テスト手法           |
+| 原則         | applying-code-principles, applying-frontend-patterns | 設計原則             |
+| ドキュメント | creating-adrs, extracting-ubiquitous-language        | ドキュメント生成     |
+| リファレンス | find-docs                                            | 外部ドキュメント検索 |
+| レビュー     | reviewing-\*                                         | コードレビュー観点   |
+| ワークフロー | orchestrating-workflows                              | ワークフロー定義     |
 
 ### ロード機構
 

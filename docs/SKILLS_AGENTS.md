@@ -52,6 +52,7 @@ executes tasks.
 | TDD/Testing   | generating-tdd-tests                                 | Testing methodology      |
 | Principles    | applying-code-principles, applying-frontend-patterns | Design principles        |
 | Documentation | creating-adrs, extracting-ubiquitous-language        | Documentation generation |
+| Reference     | find-docs                                            | External docs lookup     |
 | Review        | reviewing-\*                                         | Code review perspectives |
 | Workflow      | orchestrating-workflows                              | Workflow definitions     |
 

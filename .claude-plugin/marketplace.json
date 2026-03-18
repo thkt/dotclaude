@@ -82,14 +82,17 @@
         "validate",
         "config",
         "kousei",
-        "textlint"
+        "textlint",
+        "challenge",
+        "devils-advocate"
       ],
       "category": "Quick Actions",
       "commands": [
         "./skills/fix/SKILL.md",
         "./skills/kousei/SKILL.md",
         "./skills/polish/SKILL.md",
-        "./skills/validate-config/SKILL.md"
+        "./skills/validate-config/SKILL.md",
+        "./skills/challenge/SKILL.md"
       ],
       "agents": [
         "./agents/resolvers/build-error-resolver.md",
@@ -99,18 +102,18 @@
     {
       "name": "git-utilities",
       "source": "./",
-      "description": "Git workflow helpers: /commit, /branch, /pr, /issue, /preview (PR screening)",
+      "description": "Git workflow helpers: /commit, /checkout, /pr, /issue, /preview (PR screening)",
       "version": "2.2.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["git", "commit", "branch", "pr", "issue", "preview", "conventional-commits"],
+      "keywords": ["git", "commit", "checkout", "pr", "issue", "preview", "conventional-commits"],
       "category": "Git Utilities",
       "commands": [
         "./skills/commit/SKILL.md",
-        "./skills/branch/SKILL.md",
+        "./skills/checkout/SKILL.md",
         "./skills/pr/SKILL.md",
         "./skills/issue/SKILL.md",
         "./skills/preview/SKILL.md"
@@ -206,6 +209,7 @@
         "./skills/tailwind-patterns/SKILL.md",
         "./skills/utilizing-cli-tools/SKILL.md",
         "./skills/extracting-ubiquitous-language/SKILL.md",
+        "./skills/find-docs/SKILL.md",
         "./skills/validating-specs/SKILL.md",
         "./skills/vercel-react/SKILL.md"
       ]

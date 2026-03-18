@@ -9,7 +9,7 @@ development principles, and workflow optimizations.
 
 This repository contains personal configurations for Claude AI, including:
 
-- Custom slash commands for systematic development workflows (42 skills)
+- Custom slash commands for systematic development workflows (48 skills)
 - Specialized AI agents for code review, generation, and analysis (33 agents)
 - Core AI operation principles and development best practices
 - Quality pipeline hooks (guardrails, formatter, reviews, gates)
@@ -28,7 +28,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── development/      # Development patterns & methodologies
 │   ├── frameworks/       # Framework-specific rules
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (42 skills)
+├── skills/               # Skill-based knowledge modules (48 skills)
 ├── agents/               # Specialized AI agents (33 agents)
 │   ├── architects/       # Feature architecture designers
 │   ├── critics/          # Finding challengers (devils-advocate)
@@ -88,8 +88,8 @@ install specific workflow sets:
 - **documentation-tools**: ADR creation (/adr) and domain glossary (/glossary)
 - **browser-workflows**: E2E testing and automation (/e2e)
 - **productivity-tools**: Inbox aggregation from GitHub, Slack, Calendar (/inbox)
-- **development-skills**: 22 reference skills for TDD, principles, patterns,
-  security, and more
+- **development-skills**: 23 reference skills for TDD, principles, patterns,
+  security, doc lookup, and more
 
 ### Option 2: Manual Installation (Full Configuration)
 
