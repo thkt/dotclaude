@@ -1,11 +1,9 @@
 ---
 name: research
-description:
-  Perform project research and technical investigation without implementation.
+description: Perform project research and technical investigation without implementation.
   Use when user mentions 調査して, 調べて, リサーチ, investigate, 分析して. Do
   NOT use for design planning or SOW/Spec generation (use /think instead).
-allowed-tools:
-  Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Bash(yomu:*),
+allowed-tools: Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Bash(yomu:*),
   Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 context: fork
@@ -24,14 +22,14 @@ Investigate codebase with confidence-based findings, without implementation.
 
 ## Execution
 
-| Phase | Agent                             | Focus                                            |
-| ----- | --------------------------------- | ------------------------------------------------ |
-| 0     | (prior research check)            | Read `workspace/research/` for related findings  |
-| 1     | (clarification)                   | Research intent + topic area                     |
+| Phase | Agent                                             | Focus                                                  |
+| ----- | ------------------------------------------------- | ------------------------------------------------------ |
+| 0     | (prior research check)                            | Read `workspace/research/` for related findings        |
+| 1     | (clarification)                                   | Research intent + topic area                           |
 | 2     | (intent-aware analyzer selection) + `yomu search` | Select and run analyzers + semantic search in parallel |
-| 3     | Task(Explore)                     | Detail: code paths, patterns, edge cases         |
-| 3.5   | (Strong Inference)                | ≥3 hypotheses → discriminating tests → eliminate |
-| 4     | (synthesis)                       | Consolidate with ✓/→/? markers                   |
+| 3     | Task(Explore)                                     | Detail: code paths, patterns, edge cases               |
+| 3.5   | (Strong Inference)                                | ≥3 hypotheses → discriminating tests → eliminate       |
+| 4     | (synthesis)                                       | Consolidate with ✓/→/? markers                         |
 
 Note: Invoke analyzers via `Task(subagent_type: <analyzer-name>)`, Explore via
 `Task(subagent_type: Explore)`.
@@ -112,5 +110,10 @@ Always include at end of output:
 | Check                                     | Required |
 | ----------------------------------------- | -------- |
 | Findings marked with [✓]/[→]/[?] markers? | Yes      |
+| Disconfirmation check applied?            | Yes      |
 | Output saved to workspace/research/?      | Yes      |
 | Next Steps section included?              | Yes      |
+
+Disconfirmation check: Before synthesizing, search for one piece of evidence that
+contradicts the leading hypothesis. Record what was found (or not found) in the
+output.

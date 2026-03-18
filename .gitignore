@@ -23,7 +23,7 @@ debug/
 /.analysis/
 /output-styles/
 /.credentials.json
-/.claude/agent-memory/
+/agent-memory/
 /chrome/
 /ide/
 /projects/

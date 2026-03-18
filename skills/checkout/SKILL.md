@@ -1,7 +1,6 @@
 ---
-name: branch
-description:
-  Analyze Git changes and suggest appropriate branch names. Use when user
+name: checkout
+description: Analyze Git changes and suggest appropriate branch names. Use when user
   mentions ブランチ名, ブランチ作成, branch name.
 allowed-tools: Bash(git:*), Task, AskUserQuestion
 model: opus
@@ -9,7 +8,7 @@ argument-hint: "[context or ticket number]"
 user-invocable: true
 ---
 
-# /branch - Git Branch Name Generator
+# /checkout - Git Branch Name Generator
 
 Analyze current Git changes and suggest appropriate branch names.
 
