@@ -1,12 +1,10 @@
 ---
 name: audit
-description:
-  Orchestrate specialized review agents for code quality assessment. Use when
+description: Orchestrate specialized review agents for code quality assessment. Use when
   user mentions レビューして, コードレビュー, 品質チェック, code review, quality
   check. Do NOT use for quick PR screening (use /preview instead).
 aliases: [review]
-allowed-tools:
-  Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
+allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
   Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task,
   AskUserQuestion
 model: opus
@@ -42,69 +40,10 @@ are structurally invalid.
 | -------- | ------------------------------------------ |
 | Focus    | security / performance / readability / all |
 
-## Scope Tier
-
-| Tier   | Files | Architecture                                                     |
-| ------ | ----- | ---------------------------------------------------------------- |
-| Small  | 1-3   | Leader reviews directly (no agents)                              |
-| Medium | 4-15  | 3 general-purpose reviewers + Leader integrates                  |
-| Large  | 16+   | Sub-reviewers (file-routed) + challenger + verifier + integrator |
-
-Glob target → count files → select tier → confirm with user via AskUserQuestion.
-If tier is Small or Medium, include higher tiers as options.
-
-| Detected | AskUserQuestion Options                                              |
-| -------- | -------------------------------------------------------------------- |
-| Small    | Small (direct review) / Medium (3 reviewers) / Large (full pipeline) |
-| Medium   | Medium (3 reviewers) / Large (full pipeline)                         |
-| Large    | Large (confirmed)                                                    |
-
 ## Execution
 
-Select tier-specific workflow below. All tiers start with Pre-flight (see
-below). Save snapshot before displaying any results to user.
-
-### Small Tier (1-3 files)
-
-Leader reads all target files and performs multi-domain review directly. Output:
-findings Markdown → save snapshot → display delta.
-
-No agents spawned.
-
-### Medium Tier (4-15 files)
-
-| Step | Action                                                        |
-| ---- | ------------------------------------------------------------- |
-| 1    | Pre-flight (tests + hook findings)                            |
-| 2    | Spawn 3 general-purpose reviewers via Task (background)       |
-| 3    | Each reviewer covers assigned domains, reads all target files |
-| 4    | Leader collects results, integrates (dedup, root causes)      |
-| 5    | Save snapshot                                                 |
-| 6    | Display delta + report                                        |
-
-Medium skips challenger/verifier: all reviewers read the same files, so Leader
-integrates directly. Large tier uses file-routed subsets, making independent
-challenge/verification essential.
-
-#### Reviewer Assignment
-
-| Reviewer   | subagent_type   | Domains                                                           |
-| ---------- | --------------- | ----------------------------------------------------------------- |
-| foundation | general-purpose | code-quality, duplication, progressive-enhancement, root-cause    |
-| safety     | general-purpose | security, silent-failure, type-safety, type-design                |
-| quality    | general-purpose | design-pattern, testability, documentation, operational-readiness |
-
-#### Spawn Prompt Template
-
-Include in each reviewer's prompt:
-
-- Target file list (absolute paths)
-- Assigned domains with "what to look for" guidance
-- Finding schema (ID prefixes per domain)
-- Output format (Markdown)
-- Output format includes `files_read` section (list of files actually read)
-
-### Large Tier (16+ files)
+Start with Pre-flight (see below). Save snapshot before displaying any results
+to user.
 
 | Step | Action                                                             |
 | ---- | ------------------------------------------------------------------ |
@@ -274,12 +213,11 @@ Example output: `audit-2026-01-23-031812.yaml`
 
 ## Verification
 
-| Check                         | Small | Medium | Large |
-| ----------------------------- | ----- | ------ | ----- |
-| Tier logged?                  | Yes   | Yes    | Yes   |
-| Reviewers completed?          | —     | Yes    | Yes   |
-| Challenger validated?         | —     | —      | Yes   |
-| Verifier verified?            | —     | —      | Yes   |
-| Integrator produced Markdown? | —     | —      | Yes   |
-| Snapshot saved?               | Yes   | Yes    | Yes   |
-| Delta displayed?              | Yes   | Yes    | Yes   |
+| Check                         | Required |
+| ----------------------------- | -------- |
+| Reviewers completed?          | Yes      |
+| Challenger validated?         | Yes      |
+| Verifier verified?            | Yes      |
+| Integrator produced Markdown? | Yes      |
+| Snapshot saved?               | Yes      |
+| Delta displayed?              | Yes      |

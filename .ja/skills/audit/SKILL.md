@@ -5,8 +5,7 @@ description:
   コードレビュー, 品質チェック, code
   review等に言及した場合に使用。PRの軽量スクリーニングには /preview を使用。
 aliases: [review]
-allowed-tools:
-  Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
+allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
   Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task,
   AskUserQuestion
 model: opus
@@ -31,67 +30,9 @@ user-invocable: true
 | ---------- | ------------------------------------------ |
 | フォーカス | security / performance / readability / all |
 
-## スコープ Tier
-
-| Tier   | ファイル数 | アーキテクチャ                                                           |
-| ------ | ---------- | ------------------------------------------------------------------------ |
-| Small  | 1-3        | Leader が直接レビュー（エージェントなし）                                |
-| Medium | 4-15       | 3 汎用レビュアー + Leader が統合                                         |
-| Large  | 16+        | Sub-reviewer（ファイルルーティング）+ challenger + verifier + integrator |
-
-Glob対象 → ファイル数カウント → Tier選択 →
-AskUserQuestionでユーザーに確認。SmallまたはMediumの場合、上位Tierも選択肢に含める。
-
-| 検出Tier | AskUserQuestion 選択肢                                                  |
-| -------- | ----------------------------------------------------------------------- |
-| Small    | Small（直接レビュー）/ Medium（3レビュアー）/ Large（フルパイプライン） |
-| Medium   | Medium（3レビュアー）/ Large（フルパイプライン）                        |
-| Large    | Large（確定）                                                           |
-
 ## 実行
 
-以下のTier別ワークフローを選択。全TierでPre-flight（下記参照）を先に実行。結果表示前にスナップショットを保存。
-
-### Small Tier（1-3 ファイル）
-
-Leaderが全対象ファイルを読み、全ドメインを直接レビュー。出力: 発見事項YAML
-→ スナップショット保存 → 差分表示。
-
-エージェント生成なし。
-
-### Medium Tier（4-15 ファイル）
-
-| Step | アクション                                           |
-| ---- | ---------------------------------------------------- |
-| 1    | Pre-flight（テスト + hook findings）                 |
-| 2    | Task（バックグラウンド）で 3 汎用レビュアーを生成    |
-| 3    | 各レビュアーが担当ドメインで全対象ファイルをレビュー |
-| 4    | Leader が結果を収集、統合（重複排除、根本原因）      |
-| 5    | スナップショット保存                                 |
-| 6    | 差分表示 + レポート                                  |
-
-Mediumでchallenger/verifierを省略: 全レビュアーが同じファイルを読むためLeaderが直接統合。Large
-tierではファイルルーティングでサブセット化するため独立したchallenge/verificationが不可欠。
-
-#### レビュアー割当
-
-| レビュアー | subagent_type   | ドメイン                                                          |
-| ---------- | --------------- | ----------------------------------------------------------------- |
-| foundation | general-purpose | code-quality, duplication, progressive-enhancement, root-cause    |
-| safety     | general-purpose | security, silent-failure, type-safety, type-design                |
-| quality    | general-purpose | design-pattern, testability, documentation, operational-readiness |
-
-#### 生成プロンプトテンプレート
-
-各レビュアーのプロンプトに含める:
-
-- 対象ファイル一覧（絶対パス）
-- 担当ドメインと「何を見るか」のガイダンス
-- 発見事項スキーマ（ドメイン別IDプレフィックス）
-- 出力形式（YAML）
-- 出力形式に `files_read` セクションを含む（実際にReadしたファイルの一覧）
-
-### Large Tier（16+ ファイル）
+Pre-flight（下記参照）を先に実行。結果表示前にスナップショットを保存。
 
 | Step | アクション                                                      |
 | ---- | --------------------------------------------------------------- |
@@ -192,12 +133,12 @@ Pre-flightはテスト実行とhook出力のfinding変換に集中。
 
 フォールバック: ランナー未検出の場合、`command -v` でテストフレームワークを確認:
 
-| 設定ファイル                      | ツール確認          | コマンド         |
-| --------------------------------- | ------------------- | ---------------- |
-| `vitest.config.*`                 | `command -v npx`    | `npx vitest run` |
-| `jest.config.*`                   | `command -v npx`    | `npx jest`       |
-| `pytest.ini` / `pyproject.toml`   | `command -v pytest` | `pytest`         |
-| `Cargo.toml`                      | `command -v cargo`  | `cargo test`     |
+| 設定ファイル                    | ツール確認          | コマンド         |
+| ------------------------------- | ------------------- | ---------------- |
+| `vitest.config.*`               | `command -v npx`    | `npx vitest run` |
+| `jest.config.*`                 | `command -v npx`    | `npx jest`       |
+| `pytest.ini` / `pyproject.toml` | `command -v pytest` | `pytest`         |
+| `Cargo.toml`                    | `command -v cargo`  | `cargo test`     |
 
 ### Step 3: テスト実行
 
@@ -259,12 +200,11 @@ SNAPSHOT="$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).yaml
 
 ## 検証
 
-| チェック                  | Small | Medium | Large |
-| ------------------------- | ----- | ------ | ----- |
-| Tier ログ？               | Yes   | Yes    | Yes   |
-| レビュアー完了？          | —     | Yes    | Yes   |
-| Challenger 検証？         | —     | —      | Yes   |
-| Verifier 検証？           | —     | —      | Yes   |
-| Integrator が YAML 作成？ | —     | —      | Yes   |
-| スナップショット保存？    | Yes   | Yes    | Yes   |
-| 差分表示？                | Yes   | Yes    | Yes   |
+| チェック                  | 必須 |
+| ------------------------- | ---- |
+| レビュアー完了？          | Yes  |
+| Challenger 検証？         | Yes  |
+| Verifier 検証？           | Yes  |
+| Integrator が YAML 作成？ | Yes  |
+| スナップショット保存？    | Yes  |
+| 差分表示？                | Yes  |
