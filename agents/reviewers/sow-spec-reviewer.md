@@ -1,16 +1,9 @@
 ---
 name: sow-spec-reviewer
-description:
-  SOW/Spec quality review. 100-point scoring, 90-point pass threshold.
+description: SOW/Spec quality review. 100-point scoring, 90-point pass threshold.
 tools: [Read, Grep, Glob, LS]
 model: opus
-skills:
-  [
-    formatting-audits,
-    validating-specs,
-    reviewing-readability,
-    applying-code-principles,
-  ]
+skills: [formatting-audits, validating-specs, reviewing-readability, applying-code-principles]
 context: fork
 memory: project
 background: true
@@ -61,8 +54,40 @@ Start at 25 per category. Deduct for issues found in Phases 3-6:
 
 | Document | Sections                                                                                                                         |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| SOW      | Overview, Background, Scope, Acceptance Criteria, Implementation Plan, Test Plan, Risks                                          |
+| SOW      | Why, Overview, Background, Scope, Acceptance Criteria, Implementation Plan, Test Plan, Risks                                     |
 | Spec     | Functional Requirements (FR-xxx), Data Model, Test Scenarios (Given-When-Then), Non-Functional Requirements, Traceability Matrix |
+
+## Why Quality Check
+
+If `## Why` section is absent, apply only the missing-section deduction (-5 from
+Completeness). Skip all sub-rules below.
+
+Accept both table format (`| For | ... |`) and list format (`- For: ...`).
+
+### Structural checks (Completeness)
+
+| Check                 | Deduction | Condition                                                                        |
+| --------------------- | --------- | -------------------------------------------------------------------------------- |
+| Placeholder remaining | -5        | Any field contains `[` bracket template text                                     |
+| Empty field           | -5        | Any of the 5 fields (For/Problem/Outcome/Urgency/Inaction cost) missing or blank |
+
+Category score cannot go below 0.
+
+### Quality checks (only for fields with actual content)
+
+| Check                | Category  | Deduction | Condition                                                                             |
+| -------------------- | --------- | --------- | ------------------------------------------------------------------------------------- |
+| Outcome is a feature | Relevance | -3        | Outcome describes a deliverable, not a measurable result                              |
+| Problem is assumed   | Accuracy  | -3        | Problem lacks evidence in Why section or Background section (no data, no observation) |
+
+Examples for "Outcome is a feature":
+
+- FAIL: "A tracking file is created" (deliverable)
+- PASS: "Startup time reduced from 8s to <1s" (measurable result)
+
+If total Why-related deductions (structural + quality) >= 8, add to fixes:
+"Why Statement is weak. Run Step 0 (Why Discovery) wall-bouncing before
+proceeding."
 
 ## Consistency Check
 

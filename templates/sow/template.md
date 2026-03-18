@@ -4,18 +4,27 @@
 
 draft <!-- draft | in-progress | completed -->
 
+## Why
+
+| Field         | Value                                               |
+| ------------- | --------------------------------------------------- |
+| For           | [who needs this]                                    |
+| Problem       | [evidence-based pain point]                         |
+| Outcome       | [what success looks like — a result, not a feature] |
+| Urgency       | [why now, not later]                                |
+| Inaction cost | [cost of not doing this]                            |
+
 ## Overview
 
-| Field     | Value                       |
-| --------- | --------------------------- |
-| Purpose   | [why this change is needed] |
-| Target    | [target files/areas]        |
-| Approach  | [approach summary]          |
-| Reference | [related docs/ADRs]         |
+| Field     | Value                |
+| --------- | -------------------- |
+| Target    | [target files/areas] |
+| Approach  | [approach summary]   |
+| Reference | [related docs/ADRs]  |
 
 ## Background
 
-[Problem context and evidence. Free-form description.]
+[Current system state, technical context, prior art. What exists today.]
 
 ## Scope
 
