@@ -61,20 +61,23 @@ to user.
 Leader classifies each target file by path and assigns to relevant reviewers
 only:
 
-| File Pattern         | Sub-reviewers (subagent_type)                                              |
-| -------------------- | -------------------------------------------------------------------------- |
-| `*.sh`               | security-reviewer, silent-failure-reviewer, code-quality-reviewer,         |
-|                      | duplication-reviewer, operational-readiness-reviewer                       |
-| `*.ts, *.tsx, *.js`  | security-reviewer, silent-failure-reviewer, type-safety-reviewer,          |
-|                      | code-quality-reviewer, duplication-reviewer, design-pattern-reviewer,      |
-|                      | testability-reviewer, performance-reviewer, operational-readiness-reviewer |
-| `*.md` (agent defs)  | design-pattern-reviewer, testability-reviewer, document-reviewer           |
-| `*.md` (skills/docs) | document-reviewer, testability-reviewer                                    |
-| `*.yaml, *.json`     | type-design-reviewer, document-reviewer                                    |
-| `*.css, *.html`      | accessibility-reviewer, progressive-enhancer, performance-reviewer,        |
-|                      | duplication-reviewer                                                       |
-| `test.*`, `*.test.*` | test-coverage-reviewer, testability-reviewer                               |
-| Other                | code-quality-reviewer, duplication-reviewer, document-reviewer             |
+| File Pattern         | Sub-reviewers (subagent_type)                                       |
+| -------------------- | ------------------------------------------------------------------- |
+| `*.sh`               | security-reviewer, silent-failure-reviewer, code-quality-reviewer,  |
+|                      | duplication-reviewer, reuse-reviewer, efficiency-reviewer,          |
+|                      | operational-readiness-reviewer                                      |
+| `*.ts, *.tsx, *.js`  | security-reviewer, silent-failure-reviewer, type-safety-reviewer,   |
+|                      | code-quality-reviewer, duplication-reviewer, reuse-reviewer,        |
+|                      | efficiency-reviewer, design-pattern-reviewer, testability-reviewer, |
+|                      | performance-reviewer, operational-readiness-reviewer                |
+| `*.md` (agent defs)  | design-pattern-reviewer, testability-reviewer, document-reviewer    |
+| `*.md` (skills/docs) | document-reviewer, testability-reviewer                             |
+| `*.yaml, *.json`     | type-design-reviewer, document-reviewer                             |
+| `*.css, *.html`      | accessibility-reviewer, progressive-enhancer, performance-reviewer, |
+|                      | duplication-reviewer                                                |
+| `test.*`, `*.test.*` | test-coverage-reviewer, testability-reviewer                        |
+| Other                | code-quality-reviewer, duplication-reviewer, reuse-reviewer,        |
+|                      | efficiency-reviewer, document-reviewer                              |
 
 Classification by path: `agents/**/*.md` → agent defs, `skills/*/SKILL.md` or
 `docs/**/*.md` → skills/docs, other `*.md` → skills/docs (default).

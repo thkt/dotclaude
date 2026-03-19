@@ -68,6 +68,8 @@ Reviewers not listed use base fields only.
 | PERF   | performance-reviewer           |
 | A11Y   | accessibility-reviewer         |
 | DRY    | duplication-reviewer           |
+| REUSE  | reuse-reviewer                 |
+| EFF    | efficiency-reviewer            |
 | DOC    | document-reviewer              |
 | SA     | subagent-reviewer              |
 | OPS    | operational-readiness-reviewer |

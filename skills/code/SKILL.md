@@ -1,17 +1,14 @@
 ---
 name: code
-description:
-  Implement code following TDD/RGRC cycle with real-time test feedback. Use when
+description: Implement code following TDD/RGRC cycle with real-time test feedback. Use when
   user mentions 実装して, コード書いて, implement, coding. Do NOT use for small
   bug fixes or error resolution (use /fix instead).
-allowed-tools:
-  Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
+allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
   Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run),
   Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git
   log:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
-argument-hint:
-  "[implementation description] [--frontend] [--principles] [--storybook]"
+argument-hint: "[implementation description] [--frontend] [--principles] [--storybook]"
 user-invocable: true
 ---
 
@@ -95,8 +92,8 @@ agent uses T-NNN mappings to compute coverage scores.
 
 After RGRC cycle, verify each AC is met (implemented + tested). Skip if no SOW.
 
-If Spec exists, run `test-quality-evaluator` (background) to score test quality.
-Score ≥70 required. See orchestrating-workflows for gate details.
+If Spec exists, run via `Agent(subagent_type: "test-quality-evaluator")` in
+background. Score ≥70 required. See orchestrating-workflows for gate details.
 
 ## Error Handling
 
