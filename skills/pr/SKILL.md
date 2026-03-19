@@ -1,7 +1,6 @@
 ---
 name: pr
-description:
-  Analyze branch changes and generate comprehensive PR description. Use when
+description: Analyze branch changes and generate comprehensive PR description. Use when
   user mentions PR作って, プルリクエスト, pull request, PR作成.
 allowed-tools: Bash(git:*), Bash(gh:*), Task, AskUserQuestion
 model: opus
@@ -27,14 +26,14 @@ descriptions.
 
 ## Execution
 
-| Step | Action                                                                                |
-| ---- | ------------------------------------------------------------------------------------- |
-| 1    | Analyze: `git status`, `git diff`, `git log` (parallel)                               |
-| 2    | Select base branch via AskUserQuestion                                                |
-| 3    | `Task` with `subagent_type: pr-generator`, `mode: "bypassPermissions"` for PR content |
-| 4    | Preview PR → AskUserQuestion: "Create this PR?"                                       |
-| 5    | Display push command for user to run manually                                         |
-| 6    | Create PR: `gh pr create --title "..." --body "..."`                                  |
+| Step | Action                                                                      |
+| ---- | --------------------------------------------------------------------------- |
+| 1    | Analyze: `git status`, `git diff`, `git log` (parallel)                     |
+| 2    | Select base branch via AskUserQuestion                                      |
+| 3    | `Task` with `subagent_type: pr-generator`, `mode: "dontAsk"` for PR content |
+| 4    | Preview PR → AskUserQuestion: "Create this PR?"                             |
+| 5    | Display push command for user to run manually                               |
+| 6    | Create PR: `gh pr create --title "..." --body "..."`                        |
 
 ### Base Branch Selection (Step 2)
 

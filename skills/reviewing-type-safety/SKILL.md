@@ -3,7 +3,9 @@ name: reviewing-type-safety
 description: >
   TypeScript type safety patterns and best practices for maximum type coverage.
   Use when reviewing TypeScript code for type issues, eliminating `any` types,
-  or when user mentions type safety, 型安全, 型カバレッジ, strict mode.
+  or when user mentions type safety, 型安全, 型カバレッジ, strict mode. Do
+  NOT use for testability (reviewing-testability), security
+  (reviewing-security), or readability (reviewing-readability).
 allowed-tools: [Read, Grep, Glob, Task]
 agent: type-safety-reviewer
 context: fork

@@ -25,11 +25,11 @@ Analyze current Git changes and suggest appropriate branch names.
 
 ## Execution
 
-| Step | Action                                                                     |
-| ---- | -------------------------------------------------------------------------- |
-| 1    | `Task` with `subagent_type: branch-generator`, `mode: "bypassPermissions"` |
-| 2    | Present options via `AskUserQuestion`                                      |
-| 3    | Create selected branch                                                     |
+| Step | Action                                                           |
+| ---- | ---------------------------------------------------------------- |
+| 1    | `Task` with `subagent_type: branch-generator`, `mode: "dontAsk"` |
+| 2    | Present options via `AskUserQuestion`                            |
+| 3    | Create selected branch                                           |
 
 ## Flow: Select
 

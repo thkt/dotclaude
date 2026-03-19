@@ -3,7 +3,9 @@ name: reviewing-testability
 description: >
   Testable code design patterns for TypeScript/React applications. Use when
   reviewing code for testability, implementing dependency injection, or when
-  user mentions テスト容易性, モック, mock-friendly, DI.
+  user mentions テスト容易性, モック, mock-friendly, DI. Do NOT use for
+  type safety (reviewing-type-safety), security (reviewing-security), or
+  readability (reviewing-readability).
 allowed-tools: [Read, Grep, Glob, Task]
 agent: testability-reviewer
 context: fork

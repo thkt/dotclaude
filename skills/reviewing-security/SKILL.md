@@ -4,7 +4,9 @@ description: >
   OWASP Top 10-based security review and vulnerability detection. Use when
   reviewing code for security issues, performing vulnerability analysis, or when
   user mentions security, OWASP, XSS, SQL injection, セキュリティ, 脆弱性, cloud
-  security, AWS, IAM, Terraform, クラウドセキュリティ, インフラ.
+  security, AWS, IAM, Terraform, クラウドセキュリティ, インフラ. Do NOT
+  use for code readability (reviewing-readability), type errors
+  (reviewing-type-safety), or test design (reviewing-testability).
 allowed-tools: [Read, Grep, Glob, Task]
 agent: security-reviewer
 context: fork

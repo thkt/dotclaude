@@ -1,10 +1,9 @@
 ---
 name: extracting-ubiquitous-language
 description: >
-  Extract ubiquitous language from Slack conversations and generate domain
-  glossary. Use when building domain glossary from team conversations, or when
-  user mentions ユビキタス言語, 用語集, glossary, ubiquitous language,
-  ドメイン用語.
+  Slack API conversation harvesting and NLP term extraction pipeline.
+  Implementation module called by /glossary skill. Handles pagination,
+  thread resolution, and term frequency analysis.
 allowed-tools: [Bash, Read, Write, Glob, Grep, AskUserQuestion]
 user-invocable: false
 ---
