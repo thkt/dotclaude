@@ -1,11 +1,9 @@
 ---
 name: swarm
-description:
-  Large-scale parallel implementation with multi-agent swarm. Architect + QA +
+description: Large-scale parallel implementation with multi-agent swarm. Architect + QA +
   Implementer(s) collaborate via peer DM. Use when user mentions 大規模実装,
   並列実装, swarm, チーム実装.
-allowed-tools:
-  Skill, Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
+allowed-tools: Skill, Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
   Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run),
   Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git
   log:*), Bash(git diff:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task,
@@ -249,10 +247,11 @@ Leader response by status + issues:
 #### 5b: Quality Gates
 
 1. Leader executes QG on main branch (tests, lint, types, coverage)
-2. If Spec exists: Spec coverage check — compare `git diff --name-only` against
-   the file list in Spec's `## Implementation` section. Flag any file not
-   listed. New test files and config files are exempt (mechanical filename match
-   only)
+2. If Spec exists: Spec compliance check
+   - File coverage: compare `git diff --name-only` against Spec
+     `## Implementation` file list. New test files and config files are exempt
+   - AC verification: for each AC in SOW, confirm implementation + test exist.
+     Flag unmet or partially met ACs with specific gaps
 3. On failure:
    - Identify responsible agent from failing file
    - Forward failure details to that agent via DM

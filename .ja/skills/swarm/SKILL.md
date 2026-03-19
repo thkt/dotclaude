@@ -1,11 +1,9 @@
 ---
 name: swarm
-description:
-  マルチエージェントswarmによる大規模並列実装。Architect + QA +
+description: マルチエージェントswarmによる大規模並列実装。Architect + QA +
   Implementer(s)がpeer DMで協業。ユーザーが大規模実装, 並列実装, swarm,
   チーム実装に言及した場合に使用。
-allowed-tools:
-  Skill, Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
+allowed-tools: Skill, Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
   Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run),
   Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git
   log:*), Bash(git diff:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task,
@@ -245,8 +243,11 @@ Build sequence: 依存がある場合のunit_id順序
 #### 5b: 品質ゲート
 
 1. Leaderがmainブランチ上でQGを実行（tests, lint, types, coverage）
-2. Specが存在する場合: Specカバレッジチェック — `git diff --name-only` をSpecの
-   `## Implementation` セクションのファイルリストと比較。リストにないファイルをフラグ。新規テストファイルと設定ファイルは免除（機械的なファイル名一致のみ）
+2. Specが存在する場合: Specコンプライアンスチェック
+   - ファイルカバレッジ: `git diff --name-only` をSpecの `## Implementation`
+     ファイルリストと比較。新規テストファイルと設定ファイルは免除
+   - AC検証: SOWの各ACについて、実装+テストの存在を確認。
+     未達または部分達成のACを具体的なギャップとともにフラグ
 3. 失敗時:
    - 失敗ファイルから担当エージェントを特定
    - 失敗詳細をそのエージェントにDMで転送

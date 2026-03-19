@@ -100,6 +100,11 @@ Generate ≥2 distinct approaches from different perspectives:
 - Architect: What's extensible and well-structured?
 - DX Advocate: What's best for developer/user experience?
 
+When the approaches contain independent technical decisions (e.g., framework,
+state management, API style), present each decision as a separate choice
+question — 1 question per message, with recommendation and impact on the
+project. Bundle only decisions that are tightly coupled.
+
 <!-- canonical: rules/core/PRE_TASK_CHECK.md (decomposition thresholds) -->
 
 If PRE_TASK_CHECK decomposition thresholds are exceeded (Files ≥ 5, Features ≥
