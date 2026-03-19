@@ -141,6 +141,30 @@ CONTEXTS+=('Do not use deno run/eval for arbitrary execution.')
 PATTERNS+=('\bbun[[:space:]]+(run|x|eval)\b')
 CONTEXTS+=('Do not use bun run/eval for arbitrary execution. Use the package manager workflow.')
 
+# Data exfiltration: raw socket tools (also covers nc -e reverse shell)
+PATTERNS+=('\b(nc|ncat|netcat|socat)[[:space:]]')
+CONTEXTS+=('Raw socket tools (including reverse shell via nc -e) are prohibited. Use curl or dedicated tools for network requests.')
+
+# Data exfiltration: file upload via curl/wget
+PATTERNS+=('\bcurl[[:space:]].*(-T|--upload-file)[[:space:]]')
+CONTEXTS+=('File upload via curl is prohibited. Ask the user to upload manually.')
+PATTERNS+=('\bcurl[[:space:]].*-F[[:space:]]+.*@')
+CONTEXTS+=('File upload via curl -F @file is prohibited. Ask the user to upload manually.')
+PATTERNS+=('\bwget[[:space:]]+.*--post-file[=[:space:]]')
+CONTEXTS+=('File upload via wget --post-file is prohibited. Ask the user to upload manually.')
+
+# Data exfiltration: remote file transfer
+PATTERNS+=('\bscp[[:space:]]')
+CONTEXTS+=('scp is prohibited. Ask the user to transfer files manually.')
+PATTERNS+=('\brsync[[:space:]].*[[:alnum:]]@[[:alnum:]].*:')
+CONTEXTS+=('rsync to remote host is prohibited. Ask the user to sync manually.')
+
+# Reverse shell patterns (specific patterns before general nc block above)
+PATTERNS+=('\bbash[[:space:]]+-i[[:space:]]+>&[[:space:]]*/dev/tcp/')
+CONTEXTS+=('Reverse shell via bash -i is blocked. If you need a remote connection, use ssh directly.')
+PATTERNS+=('\bmkfifo[[:space:]]')
+CONTEXTS+=('Named pipe creation is prohibited (common in reverse shell patterns). Use a temporary file instead.')
+
 # SQL destructive operations
 PATTERNS+=('(?i)\bDROP[[:space:]]+(TABLE|DATABASE)\b')
 CONTEXTS+=('DROP TABLE/DATABASE is prohibited. Ask the user to execute destructive SQL.')

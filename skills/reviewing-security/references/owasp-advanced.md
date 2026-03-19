@@ -18,11 +18,12 @@ app.post("/api/login", loginLimiter, handler);
 
 ## 5. Security Misconfiguration
 
-| Issue         | Fix              |
-| ------------- | ---------------- |
-| Debug in prod | Check `NODE_ENV` |
-| CORS `*`      | Specific origins |
-| No headers    | Use `helmet()`   |
+| Issue              | Fix                                                  |
+| ------------------ | ---------------------------------------------------- |
+| Debug in prod      | Check `NODE_ENV`                                     |
+| CORS `*`           | Specific origins                                     |
+| No headers         | Use `helmet()`                                       |
+| Stack trace leaked | Omit `err.stack` from client responses in production |
 
 ```typescript
 app.use(helmet());
@@ -32,6 +33,19 @@ app.use(
     credentials: true,
   }),
 );
+```
+
+```typescript
+// VULNERABLE: stack trace exposes internal paths
+res.status(500).json({ error: err.message, stack: err.stack });
+
+// SAFE: generic message in production, details in logs only
+const isProd = process.env.NODE_ENV === "production";
+res.status(500).json({
+  error: isProd ? "Internal server error" : err.message,
+  ...(isProd ? {} : { stack: err.stack }),
+});
+logger.error({ err }, "Unhandled error");
 ```
 
 ## 6. Vulnerable Components
@@ -46,11 +60,7 @@ npx snyk test
 
 ```html
 <!-- SRI for CDN -->
-<script
-  src="https://cdn/lib.js"
-  integrity="sha384-..."
-  crossorigin="anonymous"
-></script>
+<script src="https://cdn/lib.js" integrity="sha384-..." crossorigin="anonymous"></script>
 ```
 
 ## 9. Logging Failures

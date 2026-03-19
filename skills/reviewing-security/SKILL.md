@@ -17,23 +17,24 @@ user-invocable: false
 
 ## Detection (OWASP Top 10)
 
-| ID  | Category                  | Pattern                                                  | Fix                                  |
-| --- | ------------------------- | -------------------------------------------------------- | ------------------------------------ |
-| A01 | Broken Access Control     | Missing auth, IDOR, path traversal                       | Auth middleware, ownership check     |
-| A02 | Cryptographic Failures    | `password: 'plaintext'`                                  | bcrypt/argon2 hashing                |
-| A03 | Injection                 | `db.query(\`SELECT...${id}\`)`                           | Parameterized query, ORM             |
-| A03 | Injection                 | `exec(\`ping ${host}\`)`                                 | Input validation, library instead    |
-| A03 | XSS                       | `dangerouslySetInnerHTML` (static presence)              | Default escaping, DOMPurify          |
-| A05 | Security Misconfiguration | `cors({ origin: '*' })`                                  | Explicit origin allowlist            |
-| A05 | Security Misconfiguration | `cookie: {}` (no options)                                | secure, httpOnly, sameSite: 'strict' |
-| A09 | Logging Failures          | `logger.info({ password })`                              | Exclude sensitive fields             |
-| A10 | SSRF                      | `fetch(userInputUrl)`                                    | URL validation, allowlist            |
-| A03 | XSS (Taint)               | `dangerouslySetInnerHTML={{ __html }}` without sanitizer | DOMPurify.sanitize() at boundary     |
-| A03 | XSS (Taint)               | Function arg → `innerHTML` without sanitization          | Sanitize at function boundary        |
-| A03 | XSS (Taint)               | `<a href={variable}>` with user-controlled URL           | Protocol allowlist (https/http only) |
-| A01 | Open Redirect (Taint)     | URL param → `location.href` without validation           | Domain allowlist or relative-only    |
-| A04 | Insecure Design           | `postMessage` handler without origin check               | Strict `event.origin` comparison     |
-| A02 | Sensitive Data Exposure   | JWT stored in localStorage/sessionStorage                | httpOnly cookie instead              |
+| ID  | Category                  | Pattern                                                  | Fix                                     |
+| --- | ------------------------- | -------------------------------------------------------- | --------------------------------------- |
+| A01 | Broken Access Control     | Missing auth, IDOR, path traversal                       | Auth middleware, ownership check        |
+| A02 | Cryptographic Failures    | `password: 'plaintext'`                                  | bcrypt/argon2 hashing                   |
+| A03 | Injection                 | `db.query(\`SELECT...${id}\`)`                           | Parameterized query, ORM                |
+| A03 | Injection                 | `exec(\`ping ${host}\`)`                                 | Input validation, library instead       |
+| A03 | XSS                       | `dangerouslySetInnerHTML` (static presence)              | Default escaping, DOMPurify             |
+| A05 | Security Misconfiguration | `cors({ origin: '*' })`                                  | Explicit origin allowlist               |
+| A05 | Security Misconfiguration | `cookie: {}` (no options)                                | secure, httpOnly, sameSite: 'strict'    |
+| A05 | Security Misconfiguration | `err.stack` in error response without `NODE_ENV` guard   | Generic message in prod, log internally |
+| A09 | Logging Failures          | `logger.info({ password })`                              | Exclude sensitive fields                |
+| A10 | SSRF                      | `fetch(userInputUrl)`                                    | URL validation, allowlist               |
+| A03 | XSS (Taint)               | `dangerouslySetInnerHTML={{ __html }}` without sanitizer | DOMPurify.sanitize() at boundary        |
+| A03 | XSS (Taint)               | Function arg → `innerHTML` without sanitization          | Sanitize at function boundary           |
+| A03 | XSS (Taint)               | `<a href={variable}>` with user-controlled URL           | Protocol allowlist (https/http only)    |
+| A01 | Open Redirect (Taint)     | URL param → `location.href` without validation           | Domain allowlist or relative-only       |
+| A04 | Insecure Design           | `postMessage` handler without origin check               | Strict `event.origin` comparison        |
+| A02 | Sensitive Data Exposure   | JWT stored in localStorage/sessionStorage                | httpOnly cookie instead                 |
 
 ## Confidence Threshold
 
