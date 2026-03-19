@@ -110,6 +110,16 @@ Every spawn prompt includes:
 Build sequence: unit_id order if dependencies exist
 ```
 
+### Implementer Started (Implementer → Leader)
+
+```markdown
+| Field   | Value      |
+| ------- | ---------- |
+| unit_id | 1          |
+| status  | started    |
+| files   | file count |
+```
+
 ### Implementer Assignment (Leader → Implementer)
 
 ```markdown
@@ -219,14 +229,25 @@ Leader response by status + issues:
 ### Phase 4: RGRC Implementation
 
 1. Implementer(s) work on assigned files
-2. Peer DM flow:
+2. Wait for `started` DM from each Implementer (receipt confirmation)
+   - 120s timeout per Implementer (aligned with /audit convention)
+   - No `started` DM within 120s → shutdown, re-spawn same assignment (max 1
+     retry → escalate to user)
+3. Peer DM flow:
    - Implementer ↔ Architect: contract questions, design clarification
    - QA → Implementer: edge case observations
    - QA → Architect: contract quality observations
    - QA → Leader: verification command requests
-3. Leader handles QA verification requests mechanically:
+4. Leader handles QA verification requests mechanically:
    - Receive command request → execute → return result to QA
-4. Wait for all Implementers to complete (DM with status)
+5. Wait for all Implementers to complete (DM with status)
+6. Suspected death (no completion DM, abnormally long silence):
+   - Leader inspects worktree: `git -C <worktree-path> status`
+   - Modified files → partial progress exists
+   - Clean → Implementer never started real work
+   - Shutdown dead Implementer, re-spawn with same assignment (max 1 retry →
+     escalate to user). New Implementer reads worktree state and decides
+     independently whether to continue or restart
 
 ### Phase 5: Integration + Quality Gates
 
@@ -273,7 +294,8 @@ Leader response by status + issues:
 | ---------------------------- | -------------------------------------------------------------- |
 | User cancels                 | `shutdown_request` to all agents, TeamDelete                   |
 | Contract fundamentally wrong | Shutdown Implementers → Architect redesign                     |
-| Implementer timeout          | Shutdown timed-out Implementer, others continue                |
+| Implementer no started DM    | 120s timeout → shutdown → re-spawn (max 1 retry → user)        |
+| Implementer death mid-work   | Leader checks worktree via git status → re-spawn (max 1 retry) |
 | QG fails 3 times             | Escalate to user with details                                  |
 | Agent Bash permission block  | Use `mode: "dontAsk"` for worktree-isolated Implementers       |
 | test-gen timeout             | Leader generates tests directly                                |
@@ -303,6 +325,7 @@ Shared changes: applied Integration: pending (2/3 units complete)
 | Event                   | Action                           |
 | ----------------------- | -------------------------------- |
 | Phase 3 start           | Show initial table (all pending) |
+| Implementer started DM  | Update row status to in_progress |
 | Implementer completion  | Update row, show progress        |
 | All Implementers done   | Show timeline summary            |
 | Phase 5a merge progress | Show merge status per unit       |

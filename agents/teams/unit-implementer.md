@@ -1,7 +1,6 @@
 ---
 name: unit-implementer
-description:
-  Implements a work unit using RGRC cycle for assigned files and tests.
+description: Implements a work unit using RGRC cycle for assigned files and tests.
 tools: [Bash, Edit, Write, Read, Glob, Grep, LS, SendMessage]
 model: opus
 context: fork
@@ -14,7 +13,7 @@ skills: [orchestrating-workflows]
 
 | Field     | Description                           |
 | --------- | ------------------------------------- |
-| unit      | `logic` or `ui`                       |
+| unit_id   | Assigned unit identifier (e.g., 1, 2) |
 | contracts | Interface types shared between layers |
 | files     | Assigned implementation files         |
 | tests     | Assigned test files (in skip state)   |
@@ -34,6 +33,7 @@ skills: [orchestrating-workflows]
 | ---- | ---------------------------------------------------- |
 | 1    | Read interface contracts from task prompt            |
 | 2    | Read assigned test files                             |
+| 2.5  | SendMessage to leader: `started` (receipt confirm)   |
 | 3    | For each test (simple → complex):                    |
 | 3a   | Remove `.skip`, verify Red (correct failure)         |
 | 3b   | Implement minimal code to pass (Green)               |
@@ -43,13 +43,25 @@ skills: [orchestrating-workflows]
 
 ## Output (DM to leader)
 
+### Started (Step 2.5)
+
+```markdown
+| Field   | Value      |
+| ------- | ---------- |
+| unit_id | 1          |
+| status  | started    |
+| files   | file count |
+```
+
+### Completion (Step 5)
+
 ```markdown
 ## Status
 
-| Field  | Value              |
-| ------ | ------------------ |
-| unit   | logic / ui         |
-| status | complete / blocked |
+| Field   | Value              |
+| ------- | ------------------ |
+| unit_id | 1                  |
+| status  | complete / blocked |
 
 ### Files Modified
 
@@ -67,10 +79,7 @@ skills: [orchestrating-workflows]
 
 ### Issues
 
-| Field       | Value             |
-| ----------- | ----------------- |
-| description | issue description |
-| severity    | blocker / warning |
+- **description** (severity: blocker / warning)
 ```
 
 ## Error Handling
