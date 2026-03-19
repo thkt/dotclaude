@@ -33,13 +33,13 @@ user-invocable: true
 
 ### Slack
 
-必須: `$SLACK_TOKEN` (xoxp-...) と `$SLACK_WORKSPACE` 環境変数。詳細は skill `accessing-slack` を参照。
+必須: `$SLACK_TOKEN` (xoxp-...) と `$SLACK_WORKSPACE` 環境変数。
 
 1. `$SLACK_TOKEN` が設定されているか確認 — 未設定ならセットアップヒント付きでスキップ
 2. 検索: `curl -s -G -H "Authorization: Bearer $SLACK_TOKEN" --data-urlencode "query=to:me after:$(date -v-${DAYS}d +%Y-%m-%d)" -d "count=10" -d "sort=timestamp" "https://slack.com/api/search.messages"`
 3. `jq` でパース: `.messages.matches[]` を抽出 → `{channel: .channel.name, user: .username, text, ts, permalink}`
 
-リンク: API レスポンスの `permalink` を使用。
+リンク: APIレスポンスの `permalink` を使用。
 
 ### Google Calendar
 

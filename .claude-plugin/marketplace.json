@@ -190,7 +190,7 @@
       "category": "Development Skills",
       "skills": [
         "./skills/accessing-google-workspace/SKILL.md",
-        "./skills/accessing-slack/SKILL.md",
+
         "./skills/analyzing-root-causes/SKILL.md",
         "./skills/applying-code-principles/SKILL.md",
         "./skills/applying-frontend-patterns/SKILL.md",

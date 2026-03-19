@@ -3,14 +3,41 @@
 CLI tool > built-in equivalent. Bash commands are auto-rewritten to RTK by
 PreToolUse hook (no manual action).
 
-| Purpose     | Use                   | NOT             | Condition                 |
-| ----------- | --------------------- | --------------- | ------------------------- |
-| URL fetch   | `scout fetch`         | `WebFetch`      | Always (Bash)             |
-| Web search  | `scout search`        | `WebSearch`     | Always (Bash)             |
-| GitHub repo | `scout repo-overview` | `gh` / `fetch`  | Repo overview (Bash)      |
-| Code search | `yomu search`         | `Task(Explore)` | Frontend concept search   |
-|             | `Task(Explore)`       | —               | Non-frontend or unindexed |
-| Session log | `recall "query"`      | `Grep *.jsonl`  | Past session search       |
+| Purpose     | Use                   | NOT             | Condition                  |
+| ----------- | --------------------- | --------------- | -------------------------- |
+| X/Twitter   | `xr tweet <url>`      | `scout fetch`   | x.com / twitter.com URLs   |
+| Slack msg   | `scout fetch`         | `curl` + token  | \*.slack.com/archives/ URL |
+| URL fetch   | `scout fetch`         | `WebFetch`      | Always (Bash)              |
+| Web search  | `scout search`        | `WebSearch`     | Always (Bash)              |
+| GitHub repo | `scout repo-overview` | `gh` / `fetch`  | Repo overview (Bash)       |
+| Code search | `yomu search`         | `Task(Explore)` | Frontend concept search    |
+|             | `Task(Explore)`       | —               | Non-frontend or unindexed  |
+| Session log | `recall "query"`      | `Grep *.jsonl`  | Past session search        |
+
+## xr
+
+Read-only Twitter/X CLI. Run directly via Bash.
+
+```bash
+xr tweet <id_or_url>          # Single tweet (Markdown)
+xr tweet <id_or_url> --thread # Entire thread (YAML)
+xr article <id_or_url>        # Twitter Article (Markdown)
+xr user <screen_name>         # User profile (Markdown)
+xr user-posts <screen_name>   # User's tweets (YAML)
+xr search "query"             # Search tweets (YAML)
+xr feed                       # Home timeline (YAML)
+xr feed -t following          # Following timeline (YAML)
+xr bookmarks                  # Bookmarked tweets (YAML)
+xr list <list_id>             # List timeline (YAML)
+```
+
+| Trigger                            | Action                    |
+| ---------------------------------- | ------------------------- |
+| x.com or twitter.com URL           | `xr tweet <url>`          |
+| x.com URL + thread/replies context | `xr tweet <url> --thread` |
+| x.com URL with `/article` intent   | `xr article <url>`        |
+| "read this tweet", "this post"     | `xr tweet <url>`          |
+| "@user profile"                    | `xr user <screen_name>`   |
 
 ## scout
 

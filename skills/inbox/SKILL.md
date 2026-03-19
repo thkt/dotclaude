@@ -33,7 +33,7 @@ Dedup: item in multiple categories → show in highest-priority only.
 
 ### Slack
 
-Requires: `$SLACK_TOKEN` (xoxp-...) and `$SLACK_WORKSPACE` env vars. See skill `accessing-slack` for details.
+Requires: `$SLACK_TOKEN` (xoxp-...) and `$SLACK_WORKSPACE` env vars.
 
 1. Verify `$SLACK_TOKEN` is set — if not, skip with setup hint
 2. Search: `curl -s -G -H "Authorization: Bearer $SLACK_TOKEN" --data-urlencode "query=to:me after:$(date -v-${DAYS}d +%Y-%m-%d)" -d "count=10" -d "sort=timestamp" "https://slack.com/api/search.messages"`

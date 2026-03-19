@@ -88,7 +88,7 @@ install specific workflow sets:
 - **documentation-tools**: ADR creation (/adr) and domain glossary (/glossary)
 - **browser-workflows**: E2E testing and automation (/e2e)
 - **productivity-tools**: Inbox aggregation from GitHub, Slack, Calendar (/inbox)
-- **development-skills**: 23 reference skills for TDD, principles, patterns,
+- **development-skills**: 21 reference skills for TDD, principles, patterns,
   security, doc lookup, and more
 
 ### Option 2: Manual Installation (Full Configuration)
@@ -195,9 +195,13 @@ Some commands use external CLI tools for data source integration:
 | ------------- | ------------------- | --------------------- | --------------------------------------------------------- |
 | `gh`          | `/inbox` (GitHub)   | GitHub API access     | `brew install gh && gh auth login`                        |
 | `gemini`      | `/inbox` (Calendar) | Google Calendar query | [Gemini CLI](https://github.com/google-gemini/gemini-cli) |
-| `SLACK_TOKEN` | `/inbox` (Slack)    | Slack API access      | See below                                                 |
+| `scout`       | Slack URL reading   | Slack message fetch   | `brew install thkt/tap/scout`                             |
+| `SLACK_TOKEN` | `/inbox` (Slack)    | Slack search API      | See below                                                 |
 
-**Slack setup**:
+**Slack reading**: `scout fetch <slack-url>` reads any Slack message/thread URL
+directly. No additional setup needed if scout is configured.
+
+**Slack search** (for `/inbox`):
 
 1. Create a [Slack App](https://api.slack.com/apps) and add `search:read` to
    User Token Scopes
