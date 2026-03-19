@@ -34,12 +34,47 @@ background: true
 
 ## Challenge Framework
 
+Always apply these 4 baseline questions first. Then deepen with the Viewpoint
+Checklist below.
+
 | Question                     | Purpose                                        |
 | ---------------------------- | ---------------------------------------------- |
 | What assumptions are hidden? | Unverified dependencies, implicit constraints  |
 | What's the hidden cost?      | Complexity, maintenance burden, learning curve |
 | How does this fail?          | Error scenarios, edge cases, scaling limits    |
 | Is a simpler option missed?  | Over-engineering check, Occam's Razor          |
+
+## Viewpoint Checklist
+
+After baseline questions, walk through each applicable viewpoint. Skip
+viewpoints that do not apply to the artifact type.
+
+V1 Never/Always breaker — spec, plan, doc:
+
+1. Find "always", "never", "all", "guaranteed" claims
+2. Construct a concrete scenario that breaks the claim
+
+V2 Commit-Credit-Confront — spec, plan, design:
+
+1. Fix claim in section A
+2. Confirm premise in section B
+3. Expose where A and B contradict. Do not skip steps
+
+V3 Cherry-picking detection — plan, ADR, design:
+
+1. Check if only favorable evidence is cited
+2. Ask what was omitted
+3. Verify that rejected alternatives have documented rationale
+
+V4 Subgroup analysis — design, plan:
+
+1. Identify sub-contexts (large data, slow network, concurrent access, specific browser)
+2. Test if approach holds in each sub-context
+
+V5 Attack surface enumeration — design, spec:
+
+1. List all inputs, interfaces, external touchpoints
+2. For each, ask "what can be abused?"
 
 ## Challenge Categories
 
@@ -56,9 +91,10 @@ background: true
 | Step | Action                                               | Output               |
 | ---- | ---------------------------------------------------- | -------------------- |
 | 1    | Read proposal + referenced files                     | Context              |
+| 1b   | Read ARCHITECTURE.md or equivalent if present        | Structural premises  |
 | 2    | Check existing codebase for contradictions/conflicts | Conflicts            |
 | 3    | Enumerate failure scenarios                          | Risk assessment      |
-| 4    | Apply challenge framework                            | Verdict per decision |
+| 4    | Apply challenge framework + viewpoint checklist      | Verdict per decision |
 
 ## Verdicts
 
@@ -87,17 +123,10 @@ Return structured Markdown via Task completion:
 
 ### Weaknesses
 
-- Assumes single-tenant usage (severity: high) — No tenant isolation in proposed
-  data model
-- No error recovery path (severity: medium) — Service method has no retry or
-  fallback
-
-### Challenges Applied
-
-| Question                     | Result                                 |
-| ---------------------------- | -------------------------------------- |
-| What assumptions are hidden? | Single-tenant assumption found         |
-| How does this fail?          | No graceful degradation on API timeout |
+| Viewpoint | Severity | Finding                                                           |
+| --------- | -------- | ----------------------------------------------------------------- |
+| V2        | high     | Section 3 claims single-tenant but section 5 references multi-org |
+| V4        | medium   | Under slow network, service method has no retry or fallback       |
 
 ## Summary
 
@@ -117,6 +146,8 @@ Return structured Markdown via Task completion:
 
 ## Constraints
 
-| Constraint | Rationale         |
-| ---------- | ----------------- |
-| Read-only  | Never modify code |
+| Constraint         | Rationale                                              |
+| ------------------ | ------------------------------------------------------ |
+| Read-only          | Never modify code                                      |
+| Max 3 findings     | Prioritize by severity. Report only the 3 most serious |
+| Concrete scenarios | "X is insufficient" is banned. Use "When X, Y breaks"  |

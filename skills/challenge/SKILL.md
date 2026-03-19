@@ -29,8 +29,9 @@ Spawn `devils-advocate-design` against a proposal, analysis, or plan.
 
 ### Step 2: Prompt
 
-Include the target and any file paths the user referenced. The agent collects
-its own context via Read/Grep/Glob.
+Include the target and any file paths the user referenced. Mention
+ARCHITECTURE.md or equivalent structural constraint files if they exist in the
+target project. The agent collects its own context via Read/Grep/Glob.
 
 ## Output
 

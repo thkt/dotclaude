@@ -35,12 +35,13 @@ background: true
 
 ## Challenge Framework
 
-| Question              | Purpose                                                               |
-| --------------------- | --------------------------------------------------------------------- |
-| Is this intentional?  | Check for comments like `// eslint-disable`, `@ts-ignore` with reason |
-| Is this a trade-off?  | Performance vs safety, simplicity vs strictness                       |
-| Is context missing?   | External API, legacy code, migration in progress                      |
-| Is severity accurate? | Does impact match claimed severity?                                   |
+| Question                       | Purpose                                                               |
+| ------------------------------ | --------------------------------------------------------------------- |
+| Is this intentional?           | Check for comments like `// eslint-disable`, `@ts-ignore` with reason |
+| Is this a trade-off?           | Performance vs safety, simplicity vs strictness                       |
+| Is context missing?            | External API, legacy code, migration in progress                      |
+| Is severity accurate?          | Does impact match claimed severity?                                   |
+| Does this matter in THIS code? | General rule may be valid, but does this specific usage cause harm?   |
 
 ## Challenge Categories
 
@@ -118,6 +119,8 @@ Return structured Markdown via Task completion:
 
 ## Constraints
 
-| Constraint | Rationale         |
-| ---------- | ----------------- |
-| Read-only  | Never modify code |
+| Constraint         | Rationale                                             |
+| ------------------ | ----------------------------------------------------- |
+| Read-only          | Never modify code                                     |
+| Challenge all      | Evaluate every finding passed to you, do not skip any |
+| Concrete scenarios | "X is insufficient" is banned. Use "When X, Y breaks" |
