@@ -29,6 +29,8 @@ parse_stdin() {
         else "" end),
         (.context_window.context_window_size? // ""),
         (.context_window.used_percentage? // ""),
+        (.rate_limits.five_hour.used_percentage? // "" | if . == "" then "" else floor end),
+        (.rate_limits.seven_day.used_percentage? // "" | if . == "" then "" else floor end),
         (.worktree.name? // ""),
         (.worktree.branch? // ""),
         (.worktree.directory? // "")
@@ -37,6 +39,7 @@ parse_stdin() {
     if [ -n "$parsed" ]; then
         IFS=$'\t' read -r MODEL_NAME MODEL_ID SESSION_ID SESSION_COST \
             CONTEXT_TOKENS CONTEXT_LIMIT CONTEXT_USED_PCT \
+            USAGE_5H USAGE_7D \
             WT_NAME WT_BRANCH WT_ORIG_DIR <<< "$parsed"
     fi
 
@@ -77,7 +80,6 @@ render_context() {
     remaining=$((100 - percentage))
 
     # Bridge file for context-monitor.sh PostToolUse hook
-    # Contract: $TMPDIR/claude-ctx-{session_id}.json → {session_id, remaining_pct, used_pct, ts}
     if [ -n "$SESSION_ID" ]; then
         printf '{"session_id":"%s","remaining_pct":%d,"used_pct":%d,"ts":%d}\n' \
             "$SESSION_ID" "$remaining" "$percentage" "${EPOCHSECONDS:-$(date +%s)}" \
@@ -110,59 +112,18 @@ render_cost() {
     printf '\033[33m$%s\033[0m' "$(printf "%.2f" "$SESSION_COST" 2>/dev/null || echo "$SESSION_COST")"
 }
 
-fetch_usage() {
-    local cache_file="$HOME/.claude/cache/usage-api.cache"
-    local cache_ttl=120
-    local now=${EPOCHSECONDS:-$(date +%s)}
-    local cache_mtime=0
-    USAGE_5H="" USAGE_7D=""
-
-    if [ -f "$cache_file" ]; then
-        cache_mtime=$(stat -f %m "$cache_file" 2>/dev/null || printf '0')
-        IFS=$'\t' read -r USAGE_5H USAGE_7D < "$cache_file" 2>/dev/null
-    fi
-
-    if [ $((now - cache_mtime)) -ge $cache_ttl ]; then
-        {
-            local creds token response usage
-            creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) || return
-            token=$(printf '%s' "$creds" | grep -o '"accessToken":"[^"]*"' | head -1 | cut -d'"' -f4) || return
-            [ -n "$token" ] || return
-            response=$(printf 'header "Authorization: Bearer %s"\n' "$token" | \
-                curl -s --max-time 3 -K - \
-                -H "anthropic-beta: oauth-2025-04-20" \
-                -w '\n%{http_code}' \
-                https://api.anthropic.com/api/oauth/usage)
-            local http_code="${response##*$'\n'}"
-            local body="${response%$'\n'*}"
-            if [ "$http_code" = "200" ]; then
-                usage=$(printf '%s' "$body" | jq -r '[.five_hour.utilization, .seven_day.utilization] | map(. // empty) | @tsv')
-                if [ -n "$usage" ]; then
-                    local tmp_cache="${cache_file}.tmp.$$"
-                    printf '%s\n' "$usage" > "$tmp_cache" && mv "$tmp_cache" "$cache_file"
-                fi
-            fi
-        } &!
-    fi
-}
-
 render_usage() {
-    if [ -z "$USAGE_5H" ] || [ "$USAGE_5H" = "ERR" ] || ! [[ "${USAGE_5H%.*}" =~ ^[0-9]+$ ]]; then
-        sep; printf '\033[90m5h:- 7d:-\033[0m'; return
-    fi
-    local p5=${USAGE_5H%.*} p7=${USAGE_7D%.*}
+    [[ "$USAGE_5H" =~ ^[0-9]+$ ]] || { sep; printf '\033[90m5h:- 7d:-\033[0m'; return; }
+    local p5=$USAGE_5H p7=$USAGE_7D
     [[ "$p7" =~ ^[0-9]+$ ]] || p7=0
 
-    local c5=$(color_for_pct "$p5") c7=$(color_for_pct "$p7")
-
     sep
-    printf "${c5}5h:%d%%\033[0m ${c7}7d:%d%%\033[0m" "$p5" "$p7"
+    printf "$(color_for_pct "$p5")5h:%d%%\033[0m $(color_for_pct "$p7")7d:%d%%\033[0m" "$p5" "$p7"
 }
 
 render_git() {
     sep
 
-    # Worktree session: use pre-parsed JSON fields (no git subprocess)
     if [ -n "$WT_NAME" ] && [ "$WT_NAME" != "null" ]; then
         printf '\033[96;1m%s\033[0m' "$WT_NAME"
         [ -n "$WT_BRANCH" ] && [ "$WT_BRANCH" != "null" ] && \
@@ -189,7 +150,6 @@ render_git() {
 }
 
 parse_stdin
-fetch_usage
 render_model
 if [ -z "$SESSION_COST" ] || [ "$SESSION_COST" = "null" ] || [ "$SESSION_COST" = "0" ]; then
     sep
