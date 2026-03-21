@@ -42,6 +42,7 @@
         "./agents/critics/devils-advocate-design.md",
         "./agents/critics/evidence-verifier.md",
         "./agents/generators/test-generator.md",
+        "./agents/generators/e2e-test-generator.md",
         "./agents/explorers/feature-explorer.md",
         "./agents/architects/feature-architect.md",
         "./agents/reviewers/progressive-enhancer.md",
@@ -142,16 +143,16 @@
     {
       "name": "browser-workflows",
       "source": "./",
-      "description": "E2E test and documentation generator from agent-browser operations",
-      "version": "2.2.0",
+      "description": "E2E test generation via agent-browser, integrated into /code and /feature workflows",
+      "version": "2.3.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["browser", "e2e", "playwright", "testing", "documentation"],
+      "keywords": ["browser", "e2e", "playwright", "testing", "agent-browser"],
       "category": "Browser Automation",
-      "commands": ["./skills/e2e/SKILL.md"]
+      "agents": ["./agents/generators/e2e-test-generator.md"]
     },
     {
       "name": "productivity-tools",
