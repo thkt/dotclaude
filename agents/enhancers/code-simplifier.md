@@ -1,7 +1,6 @@
 ---
 name: code-simplifier
-description:
-  Simplifies and refines code for clarity, consistency, and maintainability
+description: Simplifies and refines code for clarity, consistency, and maintainability
   while preserving all functionality. Focuses on recently modified code unless
   instructed otherwise.
 tools: [Read, Edit, Grep, Glob, LS]
@@ -53,6 +52,8 @@ Simplify recently modified code while preserving exact functionality.
 
 | Smell                         | Fix                                             |
 | ----------------------------- | ----------------------------------------------- |
+| Vague test names              | 3-part: what / scenario / expected              |
+| Mixed AAA phases              | Separate Arrange, Act, Assert with blank lines  |
 | Copy-pasted test cases        | Consolidate with `test.each` / parameterized    |
 | Duplicate setup across tests  | Extract to `beforeEach` or shared helper        |
 | Multiple assertions same path | Reduce to minimal covering set                  |
