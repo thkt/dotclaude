@@ -91,10 +91,7 @@ proceeding."
 
 ## Why Fidelity Check
 
-Verify that downstream artifacts maintain fidelity to the Why Statement. This
-targets the "local coherence vs global fidelity" gap — where each step looks
-correct relative to the previous step, but the chain drifts from the original
-intent.
+Verify that downstream artifacts maintain fidelity to the Why Statement.
 
 ### AC → Why (Relevance)
 
@@ -112,8 +109,7 @@ intent.
 | FR scope overflow  | -3        | FR introduces behavior not required by any AC or Why field |
 
 If total fidelity deductions >= 6, add to fixes: "Why fidelity drift detected.
-ACs/FRs have diverged from the original Why Statement. Review the chain: Why
-Outcome → ACs → FRs."
+Review chain: Why Outcome → ACs → FRs."
 
 ## Consistency Check
 

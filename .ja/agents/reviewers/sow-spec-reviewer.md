@@ -59,8 +59,7 @@ background: true
 
 ## Why忠実度チェック
 
-下流の成果物がWhy Statementに対して忠実かを検証する。局所整合性（前工程との
-整合）と全体忠実度（元要件への忠実さ）の乖離を検出する。
+下流の成果物がWhy Statementに対して忠実かを検証する。
 
 ### AC → Why（関連性）
 
@@ -78,8 +77,7 @@ background: true
 | FRスコープ超過 | -3   | FRがACにもWhy fieldにも要求されていない振る舞いを追加 |
 
 忠実度関連の減点合計 >= 6の場合、fixesに追加: "Why忠実度ドリフト検出。
-AC/FRが元のWhy Statementから逸脱しています。チェーンを見直してください:
-Why Outcome → ACs → FRs"
+チェーン確認: Why Outcome → ACs → FRs"
 
 ## 整合性チェック
 
