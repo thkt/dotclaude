@@ -10,6 +10,7 @@
 | Commit | Only when user explicitly requests. Never auto-commit after edits                                                                                                |
 | Scope  | Do not extend authorization scope. Edit approval ≠ commit approval                                                                                               |
 | Plan   | Do NOT use EnterPlanMode. For planning, suggest `/think`.                                                                                                        |
+| Session| ~/.claude session: read BACKLOG.md first, present `next` tasks (SESSION_START)                                                                                   |
 
 ## Completion
 
@@ -24,3 +25,4 @@
 | Discovery | Order                               |
 | --------- | ----------------------------------- |
 | Commands  | README.md → package.json → ask user |
+

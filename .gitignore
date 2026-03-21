@@ -92,5 +92,8 @@ plans/
 plugins/*
 !plugins/README.md
 
+# Local state
+BACKLOG.md
+
 # Backups
 backups/
