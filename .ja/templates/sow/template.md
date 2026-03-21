@@ -4,11 +4,20 @@
 
 draft <!-- draft | in-progress | completed -->
 
+## Why
+
+| Field    | Value                         |
+| -------- | ----------------------------- |
+| For      | [誰のためか]                  |
+| Problem  | [証拠に基づく課題]            |
+| Outcome  | [成功の姿 — 機能ではなく結果] |
+| Urgency  | [なぜ今か]                    |
+| Inaction | [やらなかった場合のコスト]    |
+
 ## Overview
 
 | Field      | Value                  |
 | ---------- | ---------------------- |
-| 目的       | [なぜこの変更が必要か] |
 | 対象       | [対象ファイル/領域]    |
 | アプローチ | [アプローチの概要]     |
 | 参照       | [関連ドキュメント/ADR] |
@@ -30,6 +39,8 @@ draft <!-- draft | in-progress | completed -->
 - [除外項目1]
 
 ## Acceptance Criteria
+
+<!-- 各ACはWhy Outcomeにトレースできること。Outcomeに貢献しないACはスコープ肥大。 -->
 
 ### AC-1: [タイトル]
 

@@ -23,14 +23,14 @@ background: true
 
 ## Analysis Phases
 
-| Phase | Action              | Focus                           |
-| ----- | ------------------- | ------------------------------- |
-| 1     | Document Discovery  | Find sow.md/spec.md in planning |
-| 2     | Section Check       | Required sections present       |
-| 3     | Accuracy Analysis   | ✓/→/? markers, evidence         |
-| 4     | Completeness Check  | AC, FR, Test coverage           |
-| 5     | Relevance Check     | Goals ↔ Solutions, YAGNI        |
-| 6     | Actionability Check | Specific steps, feasibility     |
+| Phase | Action              | Focus                                  |
+| ----- | ------------------- | -------------------------------------- |
+| 1     | Document Discovery  | Find sow.md/spec.md in planning        |
+| 2     | Section Check       | Required sections present              |
+| 3     | Accuracy Analysis   | ✓/→/? markers, evidence                |
+| 4     | Completeness Check  | AC, FR, Test coverage                  |
+| 5     | Relevance Check     | Goals ↔ Solutions, Why Fidelity, YAGNI |
+| 6     | Actionability Check | Specific steps, feasibility            |
 
 ## Search Paths
 
@@ -88,6 +88,32 @@ Examples for "Outcome is a feature":
 If total Why-related deductions (structural + quality) >= 8, add to fixes:
 "Why Statement is weak. Run Step 0 (Why Discovery) wall-bouncing before
 proceeding."
+
+## Why Fidelity Check
+
+Verify that downstream artifacts maintain fidelity to the Why Statement. This
+targets the "local coherence vs global fidelity" gap — where each step looks
+correct relative to the previous step, but the chain drifts from the original
+intent.
+
+### AC → Why (Relevance)
+
+| Check       | Deduction | Condition                                              |
+| ----------- | --------- | ------------------------------------------------------ |
+| Orphan AC   | -3        | AC does not contribute to achieving the Why Outcome    |
+| Scope creep | -3        | AC addresses a problem not stated in Why Problem field |
+| Outcome gap | -5        | Why Outcome not achievable by the sum of all ACs       |
+
+### FR → Why (Relevance)
+
+| Check              | Deduction | Condition                                                  |
+| ------------------ | --------- | ---------------------------------------------------------- |
+| Broken trace chain | -3        | FR implements an AC that itself has no Why trace           |
+| FR scope overflow  | -3        | FR introduces behavior not required by any AC or Why field |
+
+If total fidelity deductions >= 6, add to fixes: "Why fidelity drift detected.
+ACs/FRs have diverged from the original Why Statement. Review the chain: Why
+Outcome → ACs → FRs."
 
 ## Consistency Check
 

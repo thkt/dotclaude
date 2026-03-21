@@ -51,6 +51,8 @@ Check only if needed (unchecked = excluded):
 
 ## Acceptance Criteria
 
+<!-- Each AC must trace to the Why Outcome. ACs that don't serve the Outcome are scope creep. -->
+
 ### AC-1: [title]
 
 - [ ] [verifiable criterion]
