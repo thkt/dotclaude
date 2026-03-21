@@ -74,7 +74,7 @@ install specific workflow sets:
    /plugin install quick-actions             # /fix, /polish
    /plugin install git-utilities             # /commit, /branch, /pr, /issue
    /plugin install documentation-tools       # /adr, /docs
-   /plugin install browser-workflows         # /e2e
+   /plugin install browser-workflows         # agent-browser (E2E via /code)
    ```
 
 **Available Plugins**:
@@ -86,7 +86,7 @@ install specific workflow sets:
 - **git-utilities**: Git workflow helpers (/commit, /branch, /pr, /issue,
   /preview)
 - **documentation-tools**: ADR creation (/adr) and domain glossary (/glossary)
-- **browser-workflows**: E2E testing and automation (/e2e)
+- **browser-workflows**: E2E testing via /code E2E Phase (agent-browser)
 - **productivity-tools**: Inbox aggregation from GitHub, Slack, Calendar (/inbox)
 - **development-skills**: 21 reference skills for TDD, principles, patterns,
   security, doc lookup, and more

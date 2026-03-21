@@ -59,9 +59,11 @@ interface [ModelName] {
 
 ## Test Scenarios
 
-| ID    | Type | FR     | Given          | When     | Then     |
-| ----- | ---- | ------ | -------------- | -------- | -------- |
-| T-001 | unit | FR-001 | [precondition] | [action] | [result] |
+| ID    | Type        | FR     | Given          | When     | Then     |
+| ----- | ----------- | ------ | -------------- | -------- | -------- |
+| T-001 | unit        | FR-001 | [precondition] | [action] | [result] |
+| T-002 | integration | FR-001 | [precondition] | [action] | [result] |
+| T-003 | e2e         | FR-001 | [precondition] | [action] | [result] |
 
 ## Non-Functional Requirements
 

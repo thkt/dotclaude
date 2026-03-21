@@ -67,11 +67,10 @@ Auto: All solo conditions met → Solo, otherwise → Team
 | ------- | --------------------------------- |
 | `/fix`  | Quick bug fixes (think→code→test) |
 
-### Browser & Documentation
+### Documentation
 
 | Command | Purpose                          |
 | ------- | -------------------------------- |
-| `/e2e`  | E2E test from browser operations |
 | `/adr`  | Architecture Decision Record     |
 | `/docs` | Generate documentation from code |
 
@@ -131,7 +130,6 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 | `/issue`           | Readable Code                | Miller's Law                                |
 | `/docs`            | Readable Code                | Progressive Enhancement                     |
 | `/adr`             | SOLID                        | Leaky Abstraction                           |
-| `/e2e`             | TDD                          | Progressive Enhancement                     |
 | `/preview`         | Readable Code                | Strong Inference                            |
 | `/inbox`           | -                            | -                                           |
 | `/validate-config` | Output Verifiability         | Safety First                                |

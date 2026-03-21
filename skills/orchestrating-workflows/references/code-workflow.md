@@ -7,6 +7,7 @@ Phase 0: SOW Context + Test Generation
 Phase 1-N: RGRC (one test at a time)
   Red → Green (Ralph-loop) → Refactor → Commit
 Review: code-quality-reviewer (skip for /fix)
+E2E: e2e-test-generator (conditional — Spec has Type: e2e + agent-browser + dev server)
 Completion: Quality Gates → IDR
 ```
 
@@ -59,6 +60,15 @@ Agent(subagent_type: "code-quality-reviewer",
 | timeout          | Skip (note in IDR)                 |
 
 Skip when: `/fix`, single-file changes, no Spec context.
+
+## E2E Phase
+
+After Review Gate, conditionally spawn `e2e-test-generator`. See
+`skills/code/SKILL.md` E2E Phase section for full conditions and dev server
+detection logic.
+
+Skip when: no `Type: e2e` in Spec, agent-browser not installed, no dev server,
+or `/fix`.
 
 ## Quality Gates
 

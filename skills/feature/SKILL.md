@@ -1,12 +1,10 @@
 ---
 name: feature
-description:
-  Comprehensive feature development with exploration, architecture, TDD, and
+description: Comprehensive feature development with exploration, architecture, TDD, and
   quality gates. Use when user mentions 機能開発, 新機能, 機能追加, feature
   development. Do NOT use for implementation without planning (use /code), bug
   fixes (use /fix), or planning only without implementation (use /think).
-allowed-tools:
-  Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run),
+allowed-tools: Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run),
   Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun
   run:*), Bash(make:*), Bash(git diff:*), Bash(git status:*), Bash(git log:*),
   Bash(git show:*), Bash(git ls-files:*), Bash(git worktree *), Bash(git merge
@@ -98,13 +96,13 @@ Changed files: `git diff main...HEAD --name-only` (or base branch).
 
 ### Phase 4.5: Visual Verification (conditional)
 
-#### Skip Conditions
+#### Skip Conditions (evaluate in order, skip on first fail)
 
-Any → skip:
-
-- No UI files in changed files (`.tsx`, `.jsx`, `.css`, `.scss`, `.html`)
-- `agent-browser` not installed (`which agent-browser` fails)
-- No dev server script detected in `package.json`
+| #   | Check                               | How                                            | On fail       |
+| --- | ----------------------------------- | ---------------------------------------------- | ------------- |
+| 1   | UI files in changed files           | Match `.tsx`, `.jsx`, `.css`, `.scss`, `.html` | skip (silent) |
+| 2   | agent-browser installed             | `which agent-browser`                          | skip (silent) |
+| 3   | Dev server detected in package.json | Match `dev`, `start:dev`, `start` scripts      | skip (silent) |
 
 #### Dev Server Detection
 
@@ -131,7 +129,16 @@ Extract port from script value if specified (`--port`, `-p`, `PORT=`).
 6. Present screenshot + findings to user
 7. AskUserQuestion: "Visual check OK?" (Approve / Request fix / Skip)
 8. If "Request fix" → return to Phase 4 Step 2
-9. `agent-browser close`
+9. E2E Test Generation (conditional):
+   - If Spec has `Type: e2e` scenarios:
+     ```
+     Agent(subagent_type: "e2e-test-generator",
+           prompt: "spec_path: <path>\ndev_server_url: <url>",
+           run_in_background: true)
+     ```
+   - If no e2e scenarios → skip (silent)
+   - On failure → advisory, continue
+10. `agent-browser close`
 
 ### Phase 5: Summary
 

@@ -44,10 +44,10 @@ When unable to verify:
 
 ### Visual Verification
 
-| Change Type          | Verification            |
-| -------------------- | ----------------------- |
-| Layout/styling       | Screenshot before/after |
-| Interactive elements | Browser test or `/e2e`  |
+| Change Type          | Verification                  |
+| -------------------- | ----------------------------- |
+| Layout/styling       | Screenshot before/after       |
+| Interactive elements | Browser test or agent-browser |
 
 ### Debug Investigation Protocol
 

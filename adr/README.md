@@ -4,33 +4,37 @@ Claude Codeプラグインのアーキテクチャ決定を記録するドキュ
 
 ## ADR一覧
 
-| ADR                                                                  | タイトル                              | ステータス |
-| -------------------------------------------------------------------- | ------------------------------------- | ---------- |
-| [0001](./0001-code-command-responsibility-separation.md)             | code.md コマンドの責任分離            | accepted   |
-| [0002](./0002-fix-modularization-and-tdd-commonization.md)           | /fix モジュール化とTDD共通化          | accepted   |
-| [0003](./0003-marketplace.md)                                        | Marketplace構造の維持                 | accepted   |
-| [0004](./0004-skill-centric-architecture-restructuring.md)           | スキル中心アーキテクチャへの再構成    | accepted   |
-| [0005](./0005-documentation-role-separation.md)                      | ドキュメントの役割分離とAI最適化      | accepted   |
-| [0006](./0006-adopt-deterministic-script-pattern.md)                 | 決定論的処理のスクリプト化パターン    | accepted   |
-| [0007](./0007-configuration-optimization.md)                         | Claude Code 設定の最適化              | proposed   |
-| [0008](./0008-audience-optimized-templates.md)                       | 読み手別テンプレート最適化            | accepted   |
-| [0009](./0009-externalize-idr-as-rust-binary.md)                     | IDR生成の外部リポジトリ化（Rust）     | accepted   |
-| [0010](./0010-schema-first-api-documentation.md)                     | Schema-First APIドキュメント生成      | accepted   |
-| [0011](./0011-add-evidence-verifier-to-audit-pipeline.md)            | Audit に Evidence Verifier を追加     | accepted   |
-| [0012](./0012-flatten-audit-pipeline-remove-compound-reviewers.md)   | Audit パイプラインのフラット化        | accepted   |
-| [0013](./0013-adopt-hook-trinity-pattern-with-claude-reviews.md)     | Hook Trinity — claude-reviews 採用    | accepted   |
-| [0014](./0014-integrate-aidlc-design-separation-and-ops-reviewer.md) | AI-DLC 統合 — 設計分離と Ops Reviewer | accepted   |
-| [0015](./0015-frontend-security-guardrails-strategy.md)              | フロントエンドセキュリティ戦略        | accepted   |
-| [0016](./0016-adopt-rust-mcp-for-deep-search.md)                     | Deep Search に Rust MCP 採用          | accepted   |
-| [0017](./0017-build-frontend-code-search-mcp-in-rust.md)             | フロントエンドコード検索 MCP (yomu)   | accepted   |
-| [0018](./0018-index-time-file-context-storage-for-explorer.md)       | インデックス時ファイルコンテキスト    | accepted   |
-| [0019](./0019-adopt-sqlite-reference-graph-for-impact-analysis.md)   | SQLite 参照グラフで影響分析           | accepted   |
-| [0020](./0020-claude-code-dashboard-tech-stack.md)                   | Claude Code ダッシュボード技術選定    | accepted   |
-| [0021](./0021-build-slack-semantic-search-mcp-kiku.md)               | Slack 会話セマンティック検索 (kiku)   | proposed   |
-| [0022](./0022-migrate-yomu-from-mcp-to-cli.md)                       | yomu を MCP から CLI へ移行           | proposed   |
-| [0023](./0023-build-sharpen-rg-output-optimizer-for-ai.md)           | rg 出力の AI 向け最適化 (sharpen)     | proposed   |
-| [0024](./0024-adopt-two-layer-delta-for-compaction-resilience.md)    | 二層 Delta で compaction 耐性確保     | accepted   |
-| [0025](./0025-replace-ralph-loop-with-flow-controller.md)            | ralph-loop を flow-controller で置換  | proposed   |
+| ADR                                                                       | タイトル                              | ステータス |
+| ------------------------------------------------------------------------- | ------------------------------------- | ---------- |
+| [0001](./0001-code-command-responsibility-separation.md)                  | code.md コマンドの責任分離            | accepted   |
+| [0002](./0002-fix-modularization-and-tdd-commonization.md)                | /fix モジュール化とTDD共通化          | accepted   |
+| [0003](./0003-marketplace.md)                                             | Marketplace構造の維持                 | accepted   |
+| [0004](./0004-skill-centric-architecture-restructuring.md)                | スキル中心アーキテクチャへの再構成    | accepted   |
+| [0005](./0005-documentation-role-separation.md)                           | ドキュメントの役割分離とAI最適化      | accepted   |
+| [0006](./0006-adopt-deterministic-script-pattern.md)                      | 決定論的処理のスクリプト化パターン    | accepted   |
+| [0007](./0007-configuration-optimization.md)                              | Claude Code 設定の最適化              | proposed   |
+| [0008](./0008-audience-optimized-templates.md)                            | 読み手別テンプレート最適化            | accepted   |
+| [0009](./0009-externalize-idr-as-rust-binary.md)                          | IDR生成の外部リポジトリ化（Rust）     | accepted   |
+| [0010](./0010-schema-first-api-documentation.md)                          | Schema-First APIドキュメント生成      | accepted   |
+| [0011](./0011-add-evidence-verifier-to-audit-pipeline.md)                 | Audit に Evidence Verifier を追加     | accepted   |
+| [0012](./0012-flatten-audit-pipeline-remove-compound-reviewers.md)        | Audit パイプラインのフラット化        | accepted   |
+| [0013](./0013-adopt-hook-trinity-pattern-with-claude-reviews.md)          | Hook Trinity — claude-reviews 採用    | accepted   |
+| [0014](./0014-integrate-aidlc-design-separation-and-ops-reviewer.md)      | AI-DLC 統合 — 設計分離と Ops Reviewer | accepted   |
+| [0015](./0015-frontend-security-guardrails-strategy.md)                   | フロントエンドセキュリティ戦略        | accepted   |
+| [0016](./0016-adopt-rust-mcp-for-deep-search.md)                          | Deep Search に Rust MCP 採用          | accepted   |
+| [0017](./0017-build-frontend-code-search-mcp-in-rust.md)                  | フロントエンドコード検索 MCP (yomu)   | accepted   |
+| [0018](./0018-index-time-file-context-storage-for-explorer.md)            | インデックス時ファイルコンテキスト    | accepted   |
+| [0019](./0019-adopt-sqlite-reference-graph-for-impact-analysis.md)        | SQLite 参照グラフで影響分析           | accepted   |
+| [0020](./0020-claude-code-dashboard-tech-stack.md)                        | Claude Code ダッシュボード技術選定    | accepted   |
+| [0021](./0021-build-slack-semantic-search-mcp-kiku.md)                    | Slack 会話セマンティック検索 (kiku)   | proposed   |
+| [0022](./0022-migrate-yomu-from-mcp-to-cli.md)                            | yomu を MCP から CLI へ移行           | proposed   |
+| [0023](./0023-build-sharpen-rg-output-optimizer-for-ai.md)                | rg 出力の AI 向け最適化 (sharpen)     | proposed   |
+| [0024](./0024-adopt-two-layer-delta-for-compaction-resilience.md)         | 二層 Delta で compaction 耐性確保     | accepted   |
+| [0025](./0025-replace-ralph-loop-with-flow-controller.md)                 | ralph-loop を flow-controller で置換  | proposed   |
+| [0026](./0026-recognize-spec-code-convergence-in-llm-instructions.md)     | LLM 指示の仕様-コード収束則           | accepted   |
+| [0027](./0027-centralize-plugin-definitions-in-sentinels.md)              | プラグイン定義を sentinels に集約     | proposed   |
+| [0028](./0028-build-test-quality-gate-with-oxc-parser.md)                 | oxc_parser テスト品質ゲート litmus    | proposed   |
+| [0029](./0029-integrate-e2e-test-generation-into-spec-driven-workflow.md) | Spec 駆動 E2E テスト生成の統合        | proposed   |
 
 ## 関連ルール
 
