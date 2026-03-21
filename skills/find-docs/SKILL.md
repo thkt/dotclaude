@@ -1,20 +1,9 @@
 ---
 name: find-docs
-description: Retrieves authoritative, up-to-date technical documentation, API references,
-  configuration details, and code examples for any developer technology.
-  Use this skill whenever answering technical questions or writing code that
-  interacts with external technologies. This includes libraries, frameworks,
-  programming languages, SDKs, APIs, CLI tools, cloud services, infrastructure
-  tools, and developer platforms.
-  Common scenarios include looking up API endpoints, classes, functions, or
-  method parameters, checking configuration options or CLI commands,
-  answering "how do I" technical questions,
-  generating code that uses a specific library or service,
-  debugging issues related to frameworks, SDKs, or APIs,
-  retrieving setup instructions, examples, or migration guides, and
-  verifying version-specific behavior or breaking changes.
-  Prefer this skill whenever documentation accuracy matters or when model
-  knowledge may be outdated.
+description: >
+  Fetch up-to-date docs and code examples for any library, API, or developer
+  tool. Prefer when documentation accuracy matters or model knowledge may be
+  outdated.
 allowed-tools: Bash(scout:*)
 argument-hint: "[library/framework] [topic or question]"
 user-invocable: true

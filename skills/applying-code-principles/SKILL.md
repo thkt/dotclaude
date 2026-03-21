@@ -2,9 +2,8 @@
 name: applying-code-principles
 description: >
   Fundamental software principles - SOLID, DRY, Occam's Razor, Miller's Law,
-  YAGNI, Readable Code. Use when applying design principles, refactoring code,
-  or when user mentions 原則, シンプル, 複雑, リファクタリング, 保守性, clean
-  code, best practice.
+  YAGNI, Readable Code. Use when: 原則, シンプル, 複雑, リファクタリング,
+  保守性, clean code, best practice.
 allowed-tools: [Read, Grep, Glob]
 user-invocable: false
 ---

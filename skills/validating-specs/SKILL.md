@@ -1,9 +1,8 @@
 ---
 name: validating-specs
 description: >
-  SOW/Spec cross-document consistency validation. Use when checking
-  cross-document consistency, or when user mentions 整合性チェック, consistency
-  check, spec validation, 仕様検証.
+  SOW/Spec cross-document consistency validation. Use when: 整合性チェック,
+  consistency check, spec validation, 仕様検証.
 allowed-tools: [Read, Grep, Glob]
 agent: sow-spec-reviewer
 context: fork

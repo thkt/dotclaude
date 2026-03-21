@@ -1,9 +1,8 @@
 ---
 name: extracting-ubiquitous-language
 description: >
-  Slack API conversation harvesting and NLP term extraction pipeline.
-  Implementation module called by /glossary skill. Handles pagination,
-  thread resolution, and term frequency analysis.
+  Slack conversation harvesting and term extraction. Internal module for
+  /glossary. Use when: ユビキタス言語, 用語集, glossary, ドメイン用語.
 allowed-tools: [Bash, Read, Write, Glob, Grep, AskUserQuestion]
 user-invocable: false
 ---

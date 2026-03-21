@@ -1,9 +1,8 @@
 ---
 name: orchestrating-workflows
 description: >
-  Workflow orchestration for /code, /fix, /audit, and other commands. Use when
-  executing workflow commands, or when user mentions /code ワークフロー, /fix
-  ワークフロー, quality gates, 品質ゲート, RGRC サイクル, completion criteria.
+  Workflow orchestration for /code, /fix, /audit. Use when: /code ワークフロー,
+  /fix ワークフロー, quality gates, 品質ゲート, RGRC サイクル.
 allowed-tools: [Read, Write, Grep, Glob, Task, Bash(npm:*, npx:*, tsc:*, bun:*)]
 user-invocable: false
 ---

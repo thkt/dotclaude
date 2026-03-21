@@ -1,14 +1,11 @@
 ---
 name: reviewing-readability
 description: >
-  Code readability review based on "The Art of Readable Code" and Miller's Law
-  (7±2). Use when reviewing code clarity, improving naming, or when user
-  mentions 可読性, 理解しやすい, わかりやすい, 明確, 命名, 変数名, 関数名,
-  ネスト, 深いネスト, 関数設計, コメント, 複雑, 難しい, 難読, Miller's Law,
-  ミラーの法則, 認知負荷, AI-generated, 過剰設計. Do NOT use for
-  security issues (reviewing-security), type errors (reviewing-type-safety),
-  error handling (reviewing-silent-failures), or test design
-  (reviewing-testability).
+  Code readability review. Use when: 可読性, 明確, 命名, 変数名, 関数名,
+  ネスト, 関数設計, コメント, 複雑, Miller's Law, ミラーの法則, 認知負荷,
+  AI-generated, 過剰設計. Do NOT use for security (reviewing-security),
+  type errors (reviewing-type-safety), error handling
+  (reviewing-silent-failures), or test design (reviewing-testability).
 allowed-tools: [Read, Grep, Glob, Task]
 agent: code-quality-reviewer
 context: fork

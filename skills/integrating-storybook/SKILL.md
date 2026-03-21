@@ -1,9 +1,8 @@
 ---
 name: integrating-storybook
 description: >
-  Storybook integration with spec.md. Auto-generates Stories from Component API.
-  Use when creating Storybook stories, defining component APIs, or when user
-  mentions storybook, stories, props, argTypes, variants, CSF3.
+  Storybook integration with spec.md. Auto-generates Stories from Component
+  API. Use when: storybook, stories, props, argTypes, variants, CSF3.
 allowed-tools: [Read, Write, Glob, Grep]
 user-invocable: false
 ---

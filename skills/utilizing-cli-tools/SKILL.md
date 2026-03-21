@@ -1,9 +1,8 @@
 ---
 name: utilizing-cli-tools
 description: >
-  CLI tools guide for git, gh, npm, and other development tools. Use when
-  executing git operations, GitHub CLI commands, npm scripts, or when user
-  mentions git操作, gh コマンド, npm スクリプト, HEREDOC コミット, CHANGELOG.
+  CLI tools guide (git, gh, npm). Use when: git操作, gh コマンド,
+  npm スクリプト, HEREDOC コミット, CHANGELOG.
 allowed-tools: [Bash, Read, Glob]
 user-invocable: false
 ---

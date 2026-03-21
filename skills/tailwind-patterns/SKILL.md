@@ -1,9 +1,8 @@
 ---
 name: tailwind-patterns
 description: >
-  Tailwind CSS v4 design decision reference for code reviews. Use when reviewing
-  Tailwind usage, choosing layout strategies, or when user mentions Tailwind,
-  utility-first, container query, design tokens, dark mode strategy.
+  Tailwind CSS v4 design decisions. Use when: Tailwind, utility-first,
+  container query, design tokens, dark mode strategy.
 allowed-tools: [Read, Grep, Glob]
 user-invocable: false
 ---

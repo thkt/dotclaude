@@ -1,10 +1,8 @@
 ---
 name: screening-pr-review
 description: >
-  AI screening review for PRs - preliminary analysis before human review. Use
-  when performing PR pre-review screening, or when user mentions
-  スクリーニングレビュー, PRレビュー支援, レビュー前チェック, PR screening,
-  pre-review.
+  PR screening review before human review. Use when: スクリーニングレビュー,
+  PRレビュー支援, レビュー前チェック, PR screening, pre-review.
 allowed-tools: [Read, Grep, Glob, Bash(git:*), Bash(gh:*)]
 # Command-driven (invoked by /preview)
 user-invocable: false

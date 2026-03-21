@@ -1,9 +1,8 @@
 ---
 name: vercel-react
 description: >
-  React/Next.js performance rules from Vercel Engineering. Use when writing,
-  reviewing, or refactoring React/Next.js code for performance. Triggers on:
-  React components, Next.js pages, data fetching, bundle optimization.
+  React/Next.js performance rules from Vercel Engineering. Triggers on: React
+  components, Next.js pages, data fetching, bundle optimization.
 allowed-tools: [Read, Bash, Glob]
 user-invocable: false
 ---

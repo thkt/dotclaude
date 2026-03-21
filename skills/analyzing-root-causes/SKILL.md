@@ -1,8 +1,7 @@
 ---
 name: analyzing-root-causes
 description: >
-  Root cause analysis with 5 Whys methodology. Use when investigating bugs,
-  analyzing failures, or when user mentions root cause, 5 Whys, なぜなぜ分析,
+  Root cause analysis with 5 Whys. Use when: root cause, 5 Whys, なぜなぜ分析,
   根本原因, 原因分析, symptom fix, 対症療法.
 allowed-tools: [Read, Grep, Glob, Task]
 context: fork
