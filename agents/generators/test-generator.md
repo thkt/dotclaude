@@ -23,9 +23,12 @@ Create tests from Spec Test Scenarios (T-NNN). Follow TDD cycle.
 
 - Tests not in plan
 - Heavy frameworks for simple cases
-- Testing implementation details
+- Testing implementation details (assert behavior, not how it works)
 - UT importing non-target production modules (test infrastructure is allowed;
   build test data from types/literals)
+- Weak-only assertions (toBeTruthy/toBeDefined without a value assertion)
+- Mock count exceeding assertion count in a test block
+- Copy-paste tests with trivial variations (use test.each)
 
 ### REQUIRE
 
@@ -34,6 +37,9 @@ Create tests from Spec Test Scenarios (T-NNN). Follow TDD cycle.
 - Follow TDD cycle
 - Include T-NNN ID in every test name or comment (e.g., `test_001_foo`,
   `it("[T-001] should ...")`). This enables automated quality scoring
+- Every test must contain at least one meaningful assertion (toBe, toEqual,
+  toThrow, toHaveBeenCalledWith, etc.)
+- Test observable output or side effects, not internal implementation
 
 ## Workflow
 
