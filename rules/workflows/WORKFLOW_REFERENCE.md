@@ -11,8 +11,8 @@ paths:
 | ------------- | ------------------------------------------------------------------------------------ | ------------------------------------- |
 | Quick Fix     | `/fix`                                                                               | Small bug, stable codebase            |
 | Investigation | `/research` → `/fix`                                                                 | Unknown cause                         |
-| Feature       | `/feature` (or: `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate`) | New capability, requirements unstable |
-| Simple        | `/code` → `/test`                                                                    | Clear implementation                  |
+| Feature       | `/feature` (or: `/research` → `/think` → `/code` → `/audit` → `/validate`) | New capability, requirements unstable |
+| Simple        | `/code`                                                                     | Clear implementation                  |
 
 ## Command Selection
 
@@ -55,7 +55,6 @@ Auto: All solo conditions met → Solo, otherwise → Team
 | `/think`    | SOW creation with validation                                     |
 | `/research` | Investigation without implementation                             |
 | `/code`     | TDD/RGRC implementation                                          |
-| `/test`     | Comprehensive testing                                            |
 | `/audit`    | Code review via agents                                           |
 | `/polish`   | Remove AI-generated slop                                         |
 | `/validate` | Validate SOW conformance                                         |
@@ -99,7 +98,6 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 | ----------- | -------------------------------------------------- |
 | `/think`    | TaskCreate from Implementation Plan                |
 | `/code`     | TaskUpdate → in_progress / completed               |
-| `/test`     | (via `/code` phase)                                |
 | `/audit`    | (via `/code` phase)                                |
 | `/validate` | TaskUpdate remaining → completed                   |
 | `/feature`  | TaskCreate (Phase 1), TaskUpdate throughout phases |
@@ -118,7 +116,6 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 | `/think`           | SOLID, Occam's Razor         | Progressive Enhancement                     |
 | `/research`        | Strong Inference             | All principles for context                  |
 | `/code`            | TDD, Baby Steps              | Readable Code, DRY, AI-Assisted Development |
-| `/test`            | TDD                          | Law of Demeter, AI-Assisted Development     |
 | `/fix`             | Occam's Razor                | TIDYINGS                                    |
 | `/audit`           | All principles               | Priority order, Strong Inference            |
 | `/feature`         | Progressive Enhancement      | TDD, SOLID, Occam's Razor                   |

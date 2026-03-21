@@ -11,8 +11,8 @@ paths:
 | -------- | ------------------------------------------------------------------------------------ | ---------------------------- |
 | 迅速修正 | `/fix`                                                                               | 小さなバグ、安定コードベース |
 | 調査     | `/research` → `/fix`                                                                 | 原因不明                     |
-| 機能開発 | `/feature` (or: `/research` → `/think` → `/code` → `/test` → `/audit` → `/validate`) | 新機能、要件が不安定         |
-| シンプル | `/code` → `/test`                                                                    | 実装が明確                   |
+| 機能開発 | `/feature` (or: `/research` → `/think` → `/code` → `/audit` → `/validate`) | 新機能、要件が不安定         |
+| シンプル | `/code`                                                                     | 実装が明確                   |
 
 ## コマンド選択
 
@@ -55,7 +55,6 @@ paths:
 | `/think`    | SOW作成と検証                                           |
 | `/research` | 実装なしの調査                                          |
 | `/code`     | TDD/RGRC実装                                            |
-| `/test`     | 包括的テスト                                            |
 | `/audit`    | エージェント経由のコードレビュー                        |
 | `/polish`   | AI生成スロップの除去                                    |
 | `/validate` | SOW準拠の検証                                           |
@@ -91,7 +90,6 @@ paths:
 | ----------- | --------------------------------------------- |
 | `/think`    | Implementation PlanからTaskCreate             |
 | `/code`     | TaskUpdate → in_progress / completed          |
-| `/test`     | （`/code` フェーズ経由）                      |
 | `/audit`    | （`/code` フェーズ経由）                      |
 | `/validate` | 残りのTaskUpdate → completed                  |
 | `/feature`  | TaskCreate（Phase 1）、全フェーズでTaskUpdate |
@@ -110,7 +108,6 @@ paths:
 | `/think`    | SOLID、オッカムの剃刀            | プログレッシブエンハンスメント    |
 | `/research` | Strong Inference                 | コンテキストのためのすべての原則  |
 | `/code`     | TDD、ベイビーステップ            | 読みやすいコード、DRY、AI支援開発 |
-| `/test`     | TDD                              | デメテルの法則、AI支援開発        |
 | `/fix`      | オッカムの剃刀                   | TIDYINGS                          |
 | `/audit`    | すべての原則                     | 優先順序、Strong Inference        |
 | `/feature`  | プログレッシブエンハンスメント   | TDD、SOLID、オッカムの剃刀        |

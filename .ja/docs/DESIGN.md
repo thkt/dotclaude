@@ -151,7 +151,7 @@ flowchart LR
         R1["/research"] --> F2["/fix"]
     end
     subgraph Feature["機能開発"]
-        R2["/research"] --> T["/think"] --> C["/code"] --> TE["/test"] --> A["/audit"] --> V["/validate"]
+        R2["/research"] --> T["/think"] --> C["/code"] --> A["/audit"] --> V["/validate"]
     end
 ```
 

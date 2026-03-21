@@ -37,7 +37,7 @@
     {
       "name": "build",
       "source": "./",
-      "description": "Implementation and testing: /code, /fix, /feature, /swarm, /test with TDD/RGRC cycle and quality gates",
+      "description": "Implementation and testing: /code, /fix, /feature, /swarm with TDD/RGRC cycle and quality gates",
       "version": "3.0.0",
       "author": {
         "name": "thkt",
@@ -50,8 +50,7 @@
         "./skills/code/SKILL.md",
         "./skills/fix/SKILL.md",
         "./skills/feature/SKILL.md",
-        "./skills/swarm/SKILL.md",
-        "./skills/test/SKILL.md"
+        "./skills/swarm/SKILL.md"
       ],
       "agents": [
         "./agents/teams/unit-implementer.md",

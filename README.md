@@ -9,7 +9,7 @@ development principles, and workflow optimizations.
 
 This repository contains personal configurations for Claude AI, including:
 
-- Custom slash commands for systematic development workflows (48 skills)
+- Custom slash commands for systematic development workflows (47 skills)
 - Specialized AI agents for code review, generation, and analysis (33 agents)
 - Core AI operation principles and development best practices
 - Quality pipeline hooks (guardrails, formatter, reviews, gates)
@@ -28,7 +28,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── development/      # Development patterns & methodologies
 │   ├── frameworks/       # Framework-specific rules
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (48 skills)
+├── skills/               # Skill-based knowledge modules (47 skills)
 ├── agents/               # Specialized AI agents (33 agents)
 │   ├── architects/       # Feature architecture designers
 │   ├── critics/          # Finding challengers (devils-advocate)
@@ -80,7 +80,7 @@ install specific workflow sets:
 **Available Plugins**:
 
 - **complete-workflow-system**: Full development workflow with quality gates
-  (/think, /code, /test, /audit, /research, /feature, /swarm)
+  (/think, /code, /audit, /research, /feature, /swarm)
 - **quick-actions**: Fast bug fixes (/fix), AI slop removal (/polish), config
   validation (/validate-config), Japanese proofreading (/kousei)
 - **git-utilities**: Git workflow helpers (/commit, /branch, /pr, /issue,
@@ -243,7 +243,7 @@ See the complete command reference:
 ### Feature Development (Enhanced)
 
 ```txt
-/research → /think → /code → /test → /audit
+/research → /think → /code → /audit
 ```
 
 ### Bug Investigation & Fix

@@ -15,7 +15,7 @@ Create tests from Spec Test Scenarios (T-NNN). Follow TDD cycle.
 | Effect        | Description                                 |
 | ------------- | ------------------------------------------- |
 | File creation | Writes test files to project test directory |
-| Entry point   | `/code`, `/test` skills, or Task prompt     |
+| Entry point   | `/code`, `/fix` skills, or Task prompt      |
 
 ## Constraints
 

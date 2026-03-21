@@ -137,6 +137,5 @@ pnpm --filter @scope/core build
 
 ## Integration with Commands
 
-- `/test` detects and runs appropriate test command
 - `/code` runs lint/typecheck after implementation
 - `/audit` checks for npm audit issues
