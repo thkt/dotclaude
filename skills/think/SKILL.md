@@ -17,11 +17,11 @@ and Spec.
 
 ## Rationalization Counters
 
-| Excuse                                     | Counter                                                                          |
-| ------------------------------------------ | -------------------------------------------------------------------------------- |
-| "Why is obvious, I'll skip it"             | Obvious to whom? Unexamined Why produces silent decisions downstream             |
-| "Self-challenge is overkill for this"      | List 3 assumptions in the leading approach. If any is unverified, Step 4 applies |
-| "The user's request maps directly to code" | Requests describe symptoms. Name the underlying problem before designing         |
+| Excuse                                     | Counter                                                                       |
+| ------------------------------------------ | ----------------------------------------------------------------------------- |
+| "Why is obvious, I'll skip it"             | Obvious to whom? Unexamined Why produces silent decisions downstream          |
+| "DA challenge is overkill for this"        | Every design has hidden assumptions. DA agent catches what self-review misses |
+| "The user's request maps directly to code" | Requests describe symptoms. Name the underlying problem before designing      |
 
 ## Input
 
@@ -35,13 +35,13 @@ Task description from `$1`, research context, or AskUserQuestion if empty.
 | 1    | Q&A Clarification    | Scope, constraints, risks (if needed)           |
 | 2    | Codebase exploration | Relevant code, patterns, constraints            |
 | 3    | Approach generation  | ≥2 approaches with trade-offs                   |
-| 4    | Self-challenge       | Weaknesses exposed, assumptions validated       |
+| 4    | Design Challenge     | DA agent verdict + actionable revisions         |
 | 5    | Design composition   | Optimal design with traceability                |
 | 6    | User Review          | Approved design (with trade-off rationale)      |
 | 6.5  | ADR Proposal         | (if needed)                                     |
 | 7    | SOW Generation       | sow.md                                          |
 | 8    | Spec Generation      | spec.md                                         |
-| 9    | sow-spec-reviewer    | Auto if FR ≥ 5 or multi-domain; else optional   |
+| 9    | sow-spec-reviewer    | Score ≥ 90 pass, < 90 fix + re-invoke (max 3)   |
 | 10   | Task Decomposition   | Milestones + TaskCreate + First Move            |
 
 ## Why Discovery (Step 0)
@@ -111,14 +111,13 @@ If PRE_TASK_CHECK decomposition thresholds are exceeded (Files ≥ 5, Features �
 3, Layers ≥ 3), decompose into independent Units. Each Unit gets its own
 SOW/Spec and can be implemented separately via `/code`.
 
-### Step 4: Self-Challenge
+### Step 4: Design Challenge
 
-For each approach:
+Spawn `devils-advocate-design` agent (background) against the approaches from
+Step 3. The agent collects its own context via Read/Grep/Glob.
 
-- What assumptions are hidden?
-- What's the hidden cost?
-- How does this fail?
-- Is a simpler option missed?
+Present DA results with verdict table + actionable items. Revise approaches
+based on findings before proceeding to Step 5.
 
 ### Step 5: Design Composition
 
@@ -196,16 +195,10 @@ states, usage). Output: `.claude/workspace/planning/[same-dir]/spec.md`
 
 ## Spec Review (Step 9)
 
-After Spec generation, check auto-invoke conditions:
+After Spec generation, invoke sow-spec-reviewer.
 
-| Condition         | Action                                 |
-| ----------------- | -------------------------------------- |
-| FR ≥ 5 in Spec    | Auto-invoke sow-spec-reviewer          |
-| Multi-domain Spec | Auto-invoke sow-spec-reviewer          |
-| Neither condition | Offer as optional ("Run spec review?") |
-
-On auto-invoke: score ≥ 90 → pass. Score < 90 → fix findings, re-invoke (max 3
-loops). After 3 loops, present remaining findings to user and proceed.
+Score ≥ 90 → pass. Score < 90 → fix findings, re-invoke (max 3 loops). After 3
+loops, present remaining findings to user and proceed.
 
 ## ADR Proposal (Step 6.5)
 
@@ -271,6 +264,6 @@ Always use this exact path — Write tool creates parent directories if absent.
 ## Verification
 
 All steps must complete: Why established, codebase explored, ≥2 approaches
-compared, self-challenge applied, design composed, user reviewed, sow.md and
-spec.md generated, tasks decomposed (milestones + first move + scope cut
-candidates).
+compared, DA challenge applied, design composed, user reviewed, sow.md and
+spec.md generated, spec review passed, tasks decomposed (milestones + first
+move + scope cut candidates).
