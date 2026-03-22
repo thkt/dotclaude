@@ -21,15 +21,11 @@ Validation:
 
 ### Data Model
 
-```typescript
-interface [ModelName] {
-  [property]: [type];  // FR-001
-}
-```
+| Model   | Field      | Type     | Note   | FR     |
+| ------- | ---------- | -------- | ------ | ------ |
+| [Model] | [field]    | [type]   | [note] | FR-001 |
 
-| Model   | Fields   | Used By |
-| ------- | -------- | ------- |
-| [Model] | [fields] | FR-001  |
+Type notation: `string`, `integer`, `boolean`, `float`, `string?` (nullable), `list<string>`, `A｜B` (union).
 
 <!-- For business apps (entities >= 3 or business rules >= 3), add the subsections below. -->
 

@@ -17,6 +17,7 @@ debug/
 *.log
 *.tmp
 *.temp
+node_modules/
 
 # Claude
 /.claude/
@@ -86,6 +87,9 @@ logs/
 session-env/
 sessions/
 plans/
+
+# Usage / analytics
+usage-data/
 
 # Plugins
 .claude-plugin/.cache/
