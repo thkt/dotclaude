@@ -17,6 +17,7 @@ graph TD
     end
 
     subgraph Hooks["Hook Categories"]
+        SHIELDS[shields]
         SEC[security/]
         LIFE[lifecycle/]
         AGENTS[agents/]
@@ -24,9 +25,10 @@ graph TD
         NOTIFY_H[notifications/]
     end
 
-    PRE --> SEC
+    PRE --> SHIELDS
     POST --> VIEWER
-    PERM --> SEC
+    PERM --> SHIELDS
+    PRE --> SEC
     STOP --> NOTIFY_H
     SUB_START --> AGENTS
     SUB_STOP --> AGENTS
@@ -35,24 +37,36 @@ graph TD
 
 ## Hook Categories
 
-| Category         | Trigger                | Purpose                                         |
-| ---------------- | ---------------------- | ----------------------------------------------- |
-| `security/`      | PreToolUse             | Bash safety, permission control, secrets check  |
-| `lifecycle/`     | statusLine, pre-commit | Status line, PR cache, IDR generation, worktree |
-| `agents/`        | Subagent\*             | Agent logging, idle detection                   |
-| `viewer/`        | PostToolUse            | SOW/Spec/IDR viewer                             |
-| `notifications/` | Stop                   | Completion notification                         |
+| Category         | Trigger                          | Purpose                                 |
+| ---------------- | -------------------------------- | --------------------------------------- |
+| `shields`        | PreToolUse, PermissionRequest    | Command guard, file ACL, secrets check  |
+| `security/`      | PreToolUse                       | Config change audit logging             |
+| `lifecycle/`     | statusLine, pre-commit           | Status line, PR cache, IDR generation   |
+| `agents/`        | Subagent\*                       | Agent logging, idle detection           |
+| `viewer/`        | PostToolUse                      | SOW/Spec/IDR viewer                     |
+| `notifications/` | Stop                             | Completion notification                 |
 
 ## Key Hooks
 
+### shields (Rust binary)
+
+Replaces bash-safety.sh, permission-request.sh, and secrets-check.sh with a
+single Rust binary. Installed via `brew install thkt/tap/shields` or as a
+Claude Code plugin (`shields@sentinels`).
+
+| Subcommand      | Event             | Failure Mode | Purpose                                     |
+| --------------- | ----------------- | ------------ | ------------------------------------------- |
+| `shields check` | PreToolUse(Bash)  | fail-closed  | 44 builtin + custom patterns, N1-N7 bypass defeat |
+| `shields acl`   | PermissionRequest | fail-closed  | Path-based ACL with subagent restrictions   |
+
+`shields check` also blocks `git commit` with staged secrets (20 builtin
+patterns). Config via `.claude/tools.json` under the `shields` key.
+
 ### security/
 
-| Hook                    | Event             | Failure Mode | Purpose                  |
-| ----------------------- | ----------------- | ------------ | ------------------------ |
-| `bash-safety.sh`        | PreToolUse(Bash)  | fail-closed  | 危険コマンドをブロック   |
-| `permission-request.sh` | PermissionRequest | fail-closed  | 自動承認/拒否の判定      |
-| `secrets-check.sh`      | PreToolUse        | fail-closed  | シークレット漏洩チェック |
-| `config-change.sh`      | PreToolUse        | fail-closed  | 設定ファイル変更の検知   |
+| Hook               | Event      | Failure Mode | Purpose              |
+| ------------------ | ---------- | ------------ | -------------------- |
+| `config-change.sh` | PreToolUse | fail-open    | 設定ファイル変更の検知 |
 
 ### lifecycle/
 
@@ -77,12 +91,14 @@ graph TD
 
 ## Quality Pipeline (Rust Binaries)
 
-4 Rust binaries that form the primary code quality enforcement layer. Separate
-repositories, installed via `brew install thkt/tap/{tool}` or as Claude Code
-plugins. Per-project config in `.claude/tools.json`.
+5 Rust binaries that form the primary quality and security enforcement layer.
+Separate repositories, installed via `brew install thkt/tap/{tool}` or as
+Claude Code plugins. Per-project config in `.claude/tools.json`.
 
 ```mermaid
 flowchart LR
+    B[Bash] --> S[shields check]
+    PERM[PermissionRequest] --> SA[shields acl]
     W[Write/Edit] --> G[guardrails]
     G -->|pass| F[formatter]
     SK[Skill] --> R[reviews]
@@ -135,10 +151,11 @@ Stop hook. Quality gates enforced on agent completion.
 
 ### Pipeline Configuration
 
-All 4 tools share `.claude/tools.json` at the project root:
+All 5 tools share `.claude/tools.json` at the project root:
 
 ```json
 {
+  "shields": { "check": true, "acl": true, "custom_patterns": [] },
   "guardrails": { "rules": { "oxlint": true } },
   "formatter": { "formatters": { "oxfmt": true } },
   "reviews": { "skills": ["audit"], "tools": { "knip": true, "tsgo": true } },
@@ -150,23 +167,12 @@ Each tool can be disabled per project with `"enabled": false`.
 
 ## Configuration
 
-Shell hooks are configured in `settings.json`:
+Shell hooks are configured in `settings.json`. Security hooks (shields) are
+registered via the `shields@sentinels` plugin. Remaining shell hooks:
 
 ```json
 {
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/security/bash-safety.sh",
-            "timeout": 2000
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit",

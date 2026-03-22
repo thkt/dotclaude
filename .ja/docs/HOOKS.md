@@ -19,6 +19,7 @@ graph TD
     end
 
     subgraph Hooks["フックカテゴリ"]
+        SHIELDS[shields]
         SEC[security/]
         LIFE[lifecycle/]
         AGENTS[agents/]
@@ -26,9 +27,10 @@ graph TD
         NOTIFY_H[notifications/]
     end
 
-    PRE --> SEC
+    PRE --> SHIELDS
     POST --> VIEWER
-    PERM --> SEC
+    PERM --> SHIELDS
+    PRE --> SEC
     STOP --> NOTIFY_H
     SUB_START --> AGENTS
     SUB_STOP --> AGENTS
@@ -37,24 +39,35 @@ graph TD
 
 ## フックカテゴリ
 
-| カテゴリ         | トリガー               | 目的                                    |
-| ---------------- | ---------------------- | --------------------------------------- |
-| `security/`      | PreToolUse             | Bash安全チェック、権限制御、秘匿情報    |
-| `lifecycle/`     | statusLine, pre-commit | ステータスライン、PRキャッシュ、IDR生成 |
-| `agents/`        | Subagent\*             | エージェントログ、アイドル検知          |
-| `viewer/`        | PostToolUse            | SOW/Spec/IDRビューア連携                |
-| `notifications/` | Stop                   | 完了通知                                |
+| カテゴリ         | トリガー                       | 目的                                   |
+| ---------------- | ------------------------------ | -------------------------------------- |
+| `shields`        | PreToolUse, PermissionRequest  | コマンドガード、ファイルACL、秘匿情報 |
+| `security/`      | PreToolUse                     | 設定ファイル変更の監査ログ             |
+| `lifecycle/`     | statusLine, pre-commit         | ステータスライン、PRキャッシュ、IDR生成 |
+| `agents/`        | Subagent\*                     | エージェントログ、アイドル検知         |
+| `viewer/`        | PostToolUse                    | SOW/Spec/IDRビューア連携               |
+| `notifications/` | Stop                           | 完了通知                               |
 
 ## 主要フック
 
+### shields（Rustバイナリ）
+
+bash-safety.sh、permission-request.sh、secrets-check.shを単一のRustバイナリに統合。
+`brew install thkt/tap/shields` またはClaude Codeプラグイン（`shields@sentinels`）でインストール。
+
+| サブコマンド    | イベント          | 失敗モード  | 目的                                        |
+| --------------- | ----------------- | ----------- | ------------------------------------------- |
+| `shields check` | PreToolUse(Bash)  | fail-closed | 44ビルトイン + カスタムパターン、N1-N7正規化 |
+| `shields acl`   | PermissionRequest | fail-closed | パスベースACL、サブエージェント制限         |
+
+`shields check` は `git commit` 時にステージされた秘匿ファイルもブロック（20ビルトインパターン）。
+設定は `.claude/tools.json` の `shields` キー。
+
 ### security/
 
-| フック                  | イベント          | 失敗モード  | 目的                     |
-| ----------------------- | ----------------- | ----------- | ------------------------ |
-| `bash-safety.sh`        | PreToolUse(Bash)  | fail-closed | 危険コマンドをブロック   |
-| `permission-request.sh` | PermissionRequest | fail-closed | 自動承認/拒否の判定      |
-| `secrets-check.sh`      | PreToolUse        | fail-closed | シークレット漏洩チェック |
-| `config-change.sh`      | PreToolUse        | fail-closed | 設定ファイル変更の検知   |
+| フック             | イベント   | 失敗モード | 目的                   |
+| ------------------ | ---------- | ---------- | ---------------------- |
+| `config-change.sh` | PreToolUse | fail-open  | 設定ファイル変更の検知 |
 
 ### lifecycle/
 
@@ -79,12 +92,14 @@ graph TD
 
 ## 品質パイプライン（Rustバイナリ）
 
-コード品質の主要な強制レイヤーとなる4つのRustバイナリ。別リポジトリで管理、
+品質とセキュリティの主要な強制レイヤーとなる5つのRustバイナリ。別リポジトリで管理、
 `brew install thkt/tap/{tool}` またはClaude Codeプラグインでインストール。
 プロジェクトごとの設定は `.claude/tools.json`。
 
 ```mermaid
 flowchart LR
+    B[Bash] --> S[shields check]
+    PERM[PermissionRequest] --> SA[shields acl]
     W[Write/Edit] --> G[guardrails]
     G -->|pass| F[formatter]
     SK[Skill] --> R[reviews]
@@ -136,10 +151,11 @@ Stopフック。エージェント完了時に品質ゲートを強制。
 
 ### パイプライン設定
 
-4ツール共通でプロジェクトルートの `.claude/tools.json` から読み込み:
+5ツール共通でプロジェクトルートの `.claude/tools.json` から読み込み:
 
 ```json
 {
+  "shields": { "check": true, "acl": true, "custom_patterns": [] },
   "guardrails": { "rules": { "oxlint": true } },
   "formatter": { "formatters": { "oxfmt": true } },
   "reviews": { "skills": ["audit"], "tools": { "knip": true, "tsgo": true } },
@@ -151,30 +167,19 @@ Stopフック。エージェント完了時に品質ゲートを強制。
 
 ## 設定
 
-シェルフックは `settings.json` で設定:
+シェルフックは `settings.json` で設定。セキュリティフック（shields）は
+`shields@sentinels` プラグインで登録。残りのシェルフック:
 
 ```json
 {
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/security/bash-safety.sh",
-            "timeout": 2000
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/format/format.sh",
+            "command": "~/.claude/hooks/viewer/ccplanview-open.sh",
             "timeout": 5000
           }
         ]
