@@ -74,6 +74,26 @@ Structure review:
 - [Check name]: [specific suggestion]
 ```
 
+### Anti-AI-Pattern Review (Japanese)
+
+After structure review, check for AI-typical Japanese patterns:
+
+| Pattern | Signal | Fix |
+| --- | --- | --- |
+| Appended significance | 「〜を浮き彫りにしており」「〜に示唆を与えています」 | Data speaks for itself. Cut the appendage |
+| Roundabout copula | 「〜として位置づけられています」「〜の役割を果たしています」 | 「〜です」 |
+| Hedge stacking | 「〜と考えられます」「〜の可能性があります」 in succession | Commit or hedge once |
+| Boilerplate conclusion | 「今後の展開が注目されます」「〜が期待されます」 | Say something specific or end without it |
+| Connector stacking | 「さらに」「加えて」「また」 in consecutive sentences | Vary or cut. One per 3 paragraphs max |
+| Full-width dash | 「——」(U+2014 x2) | Replace with parentheses or comma |
+
+Apply to Japanese text only. Report format:
+
+```
+Anti-AI-pattern review:
+- [Pattern]: [specific location and fix]
+```
+
 ### Issue/PR Update Flow
 
 1. Fetch body → write to temp `.md` file

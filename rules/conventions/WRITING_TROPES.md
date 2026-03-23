@@ -28,6 +28,7 @@ Single use is fine. Multiple tropes stacking = AI slop.
 | Filler transitions    | "It's worth noting", "Notably", "Interestingly"            | Cut entirely              |
 | Shallow -ing analysis | "highlighting its importance", "reflecting broader trends" | Cut or make specific      |
 | False ranges          | "from innovation to cultural transformation"               | Only use on real scales   |
+| Synonym cycling       | "important" → "essential" → "critical" for same concept    | Pick one word, use it     |
 
 ## Paragraph / Composition
 
@@ -55,11 +56,13 @@ Single use is fine. Multiple tropes stacking = AI slop.
 | Teacher mode            | "Let's break this down", "Let's unpack"     | Just explain                 |
 | Vague attributions      | "Experts argue", "Industry reports suggest" | Name the source or cut       |
 | Invented concept labels | "supervision paradox", "acceleration trap"  | Define or use plain language |
+| Excessive hedging       | "may potentially", "it's possible that"     | Commit or qualify once       |
+| Chatbot residue         | "Of course!", "Happy to help", "Let me know" | Cut entirely                |
 
 ## Formatting
 
 | Trope              | Pattern                       | Fix                             |
 | ------------------ | ----------------------------- | ------------------------------- |
 | Em-dash addiction  | 20+ em dashes in one piece    | Use 2-3 max per piece           |
-| Bold-first bullets | Every list item starts bold   | Bold only when it aids scanning |
+| Bold-first bullets | Every list item starts bold, `- **Label:** text` | Bold only when it aids scanning |
 | Unicode decoration | Arrows, smart quotes in prose | Use ASCII in prose. Tables OK   |
