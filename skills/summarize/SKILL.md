@@ -58,6 +58,8 @@ Author: {{Author or "N/A"}}
 
 | Rule | Detail |
 | ---- | ------ |
+| Source of truth | Summarize ONLY from scout fetch output. NEVER infer from conversation context, CLAUDE.md, or URL patterns |
+| Fetch failure | If fetch returns no article body, report that the article body could not be retrieved and stop. Do not generate a summary |
 | Key points | Exactly 5. Concrete, not vague |
 | Relevance | Connect to specific functionality, not generic "could be useful" |
 | Verdict | One sentence. Opinionated |

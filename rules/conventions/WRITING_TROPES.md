@@ -1,7 +1,5 @@
 # AI Writing Tropes to Avoid
 
-Source: https://tropes.fyi/tropes-md
-
 Applies to: PR descriptions, Issues, docs, blog posts, and any prose output.
 Does NOT apply to: code, code comments, technical tables, commit messages.
 

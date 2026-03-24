@@ -35,6 +35,11 @@ Claude Codeプラグインのアーキテクチャ決定を記録するドキュ
 | [0027](./0027-centralize-plugin-definitions-in-sentinels.md)              | プラグイン定義を sentinels に集約     | proposed   |
 | [0028](./0028-build-test-quality-gate-with-oxc-parser.md)                 | oxc_parser テスト品質ゲート litmus    | proposed   |
 | [0029](./0029-integrate-e2e-test-generation-into-spec-driven-workflow.md) | Spec 駆動 E2E テスト生成の統合        | proposed   |
+| [0030](./0030-build-session-monitor-tui-mado.md)                          | セッション監視 TUI mado の構築        | proposed   |
+| [0031](./0031-adopt-local-embedding-ort-ruri-v3.md)                       | ort + Ruri v3 ローカル embedding 基盤 | proposed   |
+| [0032](./0032-build-esa-semantic-search-cli-sae.md)                       | esa セマンティック検索 CLI (sae)      | proposed   |
+| [0033](./0033-add-recursive-unwrap-stack-to-shields.md)                   | shields に Recursive Unwrap Stack     | proposed   |
+| [0034](./0034-extract-shared-embedding-crate-ruri-core.md)               | embedding 共有クレート rurico      | proposed   |
 
 ## 関連ルール
 

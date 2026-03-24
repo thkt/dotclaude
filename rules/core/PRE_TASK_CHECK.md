@@ -12,6 +12,7 @@ edits to same file(s), or same-session plan continuation.
 | "The user wants speed over process"      | Scope check takes 30 seconds. Wrong-scope implementation takes hours              |
 | "This is covered by the plan"            | Plans describe intent. Scope check verifies current state                         |
 | "This is lightweight, no need to design" | Implementation cost ≠ architectural fit. Check existing patterns and system needs |
+| "Root fix is too costly for the user"    | Cost judgment is the user's. Present options with costs and let them decide        |
 
 ## Task Decomposition
 

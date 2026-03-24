@@ -1,39 +1,35 @@
 # Spec: [Feature Name]
 
-Updated: [YYYY-MM-DD]
-SOW: [path to sow.md]
+Updated:[YYYY-MM-DD]
+SOW:[path to sow.md]
 
 ## Functional Requirements
 
-| ID     | Description   | Input   | Output   | Implements |
-| ------ | ------------- | ------- | -------- | ---------- |
-| FR-001 | [requirement] | [input] | [output] | AC-001     |
+| ID     | Description   | Input              | Output              | Implements |
+| ------ | ------------- | ------------------ | ------------------- | ---------- |
+| FR-001 | [requirement] | [semantic input]   | [semantic output]   | AC-001     |
+
+Input/Output: semantic descriptions (what goes in/out), not type names or field names.
 
 Validation:
 
-| FR     | Rule         | Error           |
-| ------ | ------------ | --------------- |
-| FR-001 | [validation] | [error message] |
+| FR     | Rule         | Error kind          |
+| ------ | ------------ | ------------------- |
+| FR-001 | [validation] | [kind + info to include] |
 
 ## Domain Model
 
-<!-- Omit any subsection below that doesn't apply. For simple features (CLI tools, config changes, UI tweaks), a brief Data Model table is sufficient. -->
-
-### Data Model
-
-| Model   | Field      | Type     | Note   | FR     |
-| ------- | ---------- | -------- | ------ | ------ |
-| [Model] | [field]    | [type]   | [note] | FR-001 |
-
-Type notation: `string`, `integer`, `boolean`, `float`, `string?` (nullable), `list<string>`, `A｜B` (union).
-
-<!-- For business apps (entities >= 3 or business rules >= 3), add the subsections below. -->
+<!-- Concept-level only. No type names, field names, or language-specific syntax. Precise type definitions belong in Phase 1 implementation. -->
 
 ### Entities
 
-| Entity   | Attributes   | Invariants   | FR     |
-| -------- | ------------ | ------------ | ------ |
-| [Entity] | [attributes] | [invariants] | FR-001 |
+| Entity   | Attributes           | Invariants           | FR     |
+| -------- | -------------------- | -------------------- | ------ |
+| [Entity] | [semantic attributes] | [what must hold true] | FR-001 |
+
+Attributes: semantic descriptions ("list of authors", "optional thread origin"). Field names and types are implementation decisions.
+
+<!-- Add Business Rules, Domain Events only when applicable -->
 
 ### Business Rules
 
@@ -75,8 +71,8 @@ Type notation: `string`, `integer`, `boolean`, `float`, `string?` (nullable), `l
 
 ## Implementation Checklist
 
-- [ ] Phase 1: [task] (FR-001)
-- [ ] Phase 2: [task] (FR-002)
+- [ ] Phase 1:[task](FR-001)
+- [ ] Phase 2:[task](FR-002)
 
 ## Traceability Matrix
 

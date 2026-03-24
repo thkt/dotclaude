@@ -55,7 +55,7 @@ Start at 25 per category. Deduct for issues found in Phases 3-6:
 | Document | Sections                                                                                                                         |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | SOW      | Why, Overview, Background, Scope, Acceptance Criteria, Implementation Plan, Test Plan, Risks                                     |
-| Spec     | Functional Requirements (FR-xxx), Data Model, Test Scenarios (Given-When-Then), Non-Functional Requirements, Traceability Matrix |
+| Spec     | Functional Requirements (FR-xxx), Domain Model (Entities), Test Scenarios (Given-When-Then), Non-Functional Requirements, Traceability Matrix |
 
 ## Why Quality Check
 
