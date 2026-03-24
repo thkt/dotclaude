@@ -1,7 +1,6 @@
 # Tool Preferences
 
-CLI tool > built-in equivalent. Bash commands are auto-rewritten to RTK by
-PreToolUse hook (no manual action).
+CLI tool > built-in equivalent.
 
 | Purpose     | Use                   | NOT             | Condition                                |
 | ----------- | --------------------- | --------------- | ---------------------------------------- |
@@ -12,7 +11,7 @@ PreToolUse hook (no manual action).
 | GitHub repo | `scout repo-overview` | `gh` / `fetch`  | Repo overview (Bash)                     |
 | Code search | `yomu search`         | `Grep` / `Glob` | Always (Bash). Builds embedding coverage |
 |             | `Grep` / `Glob`       | —               | Only: literal regex, known exact path    |
-| Session log | `recall "query"`      | `Grep *.jsonl`  | Past session search                      |
+| Session log | `recall search "query"` | `Grep *.jsonl` | Past session search                     |
 
 ## xr Routing
 
@@ -34,10 +33,13 @@ Prefer yomu even for simple searches to build embedding coverage over time.
 | Known identifier: `useAuth`             | File listing: `**/*.tsx`                |
 | Unknown name: "where does X happen"     |                                         |
 
-## RTK Meta Commands
+## recall Usage
 
-```bash
-rtk gain              # Token savings analytics
-rtk gain --history    # Command usage history with savings
-rtk discover          # Analyze Claude Code history for missed opportunities
-```
+Proactively search past sessions for context. Don't wait to be asked.
+
+| Trigger                                | Action                                                  |
+| -------------------------------------- | ------------------------------------------------------- |
+| SESSION_START picking a BACKLOG task   | `recall search "task/module name"` for prior context    |
+| Pre-implementation context gathering   | Search past sessions touching the same file/module      |
+| User vaguely references past work      | `recall search` to identify the relevant session        |
+

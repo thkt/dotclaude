@@ -6,7 +6,7 @@ Claude Codeの機能を拡張する外部CLIツール。
 
 ## 概要
 
-4つのRust CLIツール。Claude Codeのデフォルトツールでカバーできない領域を補完する。
+3つのRust CLIツール。Claude Codeのデフォルトツールでカバーできない領域を補完する。
 AI向けの選択ルールは [TOOLS.md](../rules/development/TOOLS.md) に記載。
 このドキュメントでは設計意図とアーキテクチャを説明する。
 
@@ -18,14 +18,9 @@ graph LR
         RE[recall]
     end
 
-    subgraph Optimization["トークン最適化"]
-        RTK[rtk]
-    end
-
     SC -->|Web + GitHub| AI[Claude Code]
     YO -->|コードベース| AI
     RE -->|過去セッション| AI
-    RTK -->|圧縮出力| AI
 ```
 
 ## scout
@@ -117,50 +112,6 @@ Embeddingベース、文字列一致ではなく意味で検索。
 | 過去の解決策: "how did I fix X"       | 現在のセッションのみ         |
 | パターン記憶: "what tool for Y"       | 特定の既知セッションファイル |
 | プロジェクト横断: "where did I use Z" |                              |
-
-## rtk（Rust Token Killer）
-
-トークン最適化CLIプロキシ。コマンド出力からノイズを除去、テーブルを圧縮、
-冗長な出力を要約してトークン消費を削減。
-
-| 項目         | 詳細                                         |
-| ------------ | -------------------------------------------- |
-| なぜ必要か   | CLI出力は空白やノイズでトークンを浪費する    |
-| 仕組み       | PreToolUseフックがBashコマンドを自動リライト |
-| インストール | `brew install thkt/tap/rtk`                  |
-| ソース       | [thkt/rtk](https://github.com/thkt/rtk)      |
-
-### 動作原理
-
-rtkは透過的。PreToolUseフック（`rtk-rewrite.sh`）がBashコマンドを実行前に
-書き換える。手動で `rtk` プレフィックスを付ける必要はない。
-
-```text
-ユーザー入力: git status
-フックが書換: rtk git status
-出力: 圧縮済み、ノイズ除去済み
-```
-
-### 対応コマンド
-
-| カテゴリ     | コマンド                                            |
-| ------------ | --------------------------------------------------- |
-| Git/GitHub   | git, gh                                             |
-| ファイル操作 | cat/bat, rg/grep, ls/eza, tree, find/fd, diff, head |
-| JS/TS        | vitest, tsc, eslint, prettier, playwright, pnpm     |
-| Rust         | cargo (test/build/clippy/check/fmt)                 |
-| Python       | pytest, ruff, pip, mypy                             |
-| Go           | go (test/build/vet), golangci-lint                  |
-| コンテナ     | docker, kubectl                                     |
-| ネットワーク | curl, wget                                          |
-
-### メタコマンド
-
-```bash
-rtk gain              # トークン削減分析
-rtk gain --history    # コマンド使用履歴
-rtk discover          # 最適化の機会を分析
-```
 
 ## 関連
 

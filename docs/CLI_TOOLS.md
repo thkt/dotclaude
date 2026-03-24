@@ -6,7 +6,7 @@ External CLI tools that extend Claude Code's capabilities.
 
 ## Overview
 
-4 Rust CLI tools, each purpose-built for a specific gap in Claude Code's default
+3 Rust CLI tools, each purpose-built for a specific gap in Claude Code's default
 tooling. AI-facing rules live in
 [TOOLS.md](../rules/development/TOOLS.md) — this document covers design intent
 and architecture.
@@ -19,14 +19,9 @@ graph LR
         RE[recall]
     end
 
-    subgraph Optimization["Token Optimization"]
-        RTK[rtk]
-    end
-
     SC -->|Web + GitHub| AI[Claude Code]
     YO -->|Codebase| AI
     RE -->|Past Sessions| AI
-    RTK -->|Compressed Output| AI
 ```
 
 ## scout
@@ -119,50 +114,6 @@ index).
 | Past solutions: "how did I fix X"  | Current session only        |
 | Pattern recall: "what tool for Y"  | Specific known session file |
 | Cross-project: "where did I use Z" |                             |
-
-## rtk (Rust Token Killer)
-
-Token-optimized CLI proxy. Rewrites command output to reduce token consumption
-by stripping noise, compressing tables, and summarizing verbose output.
-
-| Aspect  | Detail                                           |
-| ------- | ------------------------------------------------ |
-| Why     | CLI output wastes tokens on whitespace and noise |
-| How     | PreToolUse hook auto-rewrites Bash commands      |
-| Install | `brew install thkt/tap/rtk`                      |
-| Source  | [thkt/rtk](https://github.com/thkt/rtk)          |
-
-### How It Works
-
-rtk is transparent. A PreToolUse hook (`rtk-rewrite.sh`) rewrites Bash commands
-before execution. No manual `rtk` prefix needed.
-
-```text
-User types: git status
-Hook rewrites to: rtk git status
-Output: compressed, noise-stripped
-```
-
-### Coverage
-
-| Category   | Commands                                            |
-| ---------- | --------------------------------------------------- |
-| Git/GitHub | git, gh                                             |
-| File ops   | cat/bat, rg/grep, ls/eza, tree, find/fd, diff, head |
-| JS/TS      | vitest, tsc, eslint, prettier, playwright, pnpm     |
-| Rust       | cargo (test/build/clippy/check/fmt)                 |
-| Python     | pytest, ruff, pip, mypy                             |
-| Go         | go (test/build/vet), golangci-lint                  |
-| Containers | docker, kubectl                                     |
-| Network    | curl, wget                                          |
-
-### Meta Commands
-
-```bash
-rtk gain              # Token savings analytics
-rtk gain --history    # Command usage history
-rtk discover          # Find missed optimization opportunities
-```
 
 ## Related
 
