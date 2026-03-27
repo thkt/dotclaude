@@ -20,6 +20,8 @@ All ADRs must include these MADR core sections:
 6. **Decision Outcome** — "Chosen option: X, because Y"
 7. **Consequences** — Positive and Negative impacts
 
+Metadata: `- Confidence: {level} — {rationale}`. Optional: `## Reassessment Triggers` after Consequences.
+
 ## Template-Specific Sections
 
 In addition to the core sections, include:
@@ -37,6 +39,7 @@ In addition to the core sections, include:
 - Status: accepted
 - Deciders: Entire team
 - Date: 2026-01-13
+- Confidence: high — team proficient with React Router, migration path well-documented
 
 ## Context and Problem Statement
 
@@ -98,4 +101,9 @@ Phase 3: Production deployment
 ## Rollback Plan
 
 Revert package.json to v6 and restore changed API calls.
+
+## Reassessment Triggers
+
+- If TanStack Router reaches 1.0 stable and team evaluates type-safe routing alternatives
+- If React Router v7 introduces breaking changes in a minor release
 ```

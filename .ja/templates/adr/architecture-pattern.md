@@ -20,6 +20,8 @@
 6. **決定** —「Chosen option: X, because Y」形式
 7. **結果** — ポジティブ・ネガティブな影響
 
+メタデータ: `- Confidence: {level} — {根拠}`。任意: `## 再評価トリガー` を結果の後に追加。
+
 ## テンプレート固有セクション
 
 コアセクションに加えて以下を含める：
@@ -38,6 +40,7 @@
 - Status: accepted
 - Deciders: プロジェクトオーナー
 - Date: 2026-01-08
+- Confidence: high — 6ヶ月の本番運用でパターンを検証済み
 
 ## コンテキスト
 
@@ -87,7 +90,7 @@ DRY 違反と保守性の低下が顕著になった。
 
 ​`mermaid
 graph TD
-    SKILL[skills/] --> REF_SKILL[references/]
+    CMD[commands/] --> SKILL[skills/]
     SKILL --> REF[references/]
 ​`
 
@@ -101,4 +104,8 @@ graph TD
 ## トレードオフ
 
 - ファイル数の増加と引き換えに、各ファイルの責務を明確化
+
+## 再評価トリガー
+
+- コマンド数が30を超え、スキル依存グラフが複雑化した場合
 ````

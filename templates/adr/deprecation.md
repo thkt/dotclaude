@@ -20,6 +20,8 @@ All ADRs must include these MADR core sections:
 6. **Decision Outcome** — "Chosen option: X, because Y"
 7. **Consequences** — Positive and Negative impacts
 
+Metadata: `- Confidence: {level} — {rationale}`. Optional: `## Reassessment Triggers` after Consequences.
+
 ## Template-Specific Sections (REQUIRED)
 
 Deprecation ADRs have stricter requirements:
@@ -40,6 +42,7 @@ Deprecation ADRs have stricter requirements:
 - Status: accepted
 - Deciders: Frontend team
 - Date: 2026-01-15
+- Confidence: high — official deprecation notice, clear bundle size data
 
 ## Context and Problem Statement
 
@@ -52,6 +55,20 @@ features are included in the bundle.
 - Demand for bundle size reduction
 - Official deprecation notice from moment.js
 - Risk of security patches ending
+
+## Considered Options
+
+### Migrate to date-fns
+
+- Good: Tree-shakable, actively maintained
+- Good: Similar API surface reduces learning cost
+- Bad: Both libraries coexist during migration
+
+### Keep moment.js with wrapper
+
+- Good: No migration effort
+- Bad: Bundle size remains at 67KB
+- Bad: Security patch risk increases over time
 
 ## Deprecation Target
 
@@ -101,4 +118,9 @@ Deprecate moment.js and gradually migrate to date-fns.
 1. Revert compat layer to moment.js
 2. Revert migrated files
 3. Disable ESLint rule
+
+## Reassessment Triggers
+
+- If date-fns introduces a breaking change that affects locale handling
+- If moment.js is revived with tree-shaking support
 ```

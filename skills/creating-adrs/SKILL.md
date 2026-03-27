@@ -55,11 +55,29 @@ adr/
 └── 0002-*.md
 ```
 
+## Rules
+
+| Rule         | Detail                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------- |
+| Immutability | Once accepted, never modify. To change, create a new ADR that supersedes it                 |
+| Brevity      | Target ~80 lines. Context: 3 lines. Options: 3-5 lines each. Consequences: 2-3 bullets     |
+| Confidence   | `- Confidence: {level} — {rationale}` in metadata. Level + reason in one line               |
+| Reassessment | Optional `## Reassessment Triggers` section after Consequences                              |
+
+### Confidence Levels
+
+| Level  | When to use                                              |
+| ------ | -------------------------------------------------------- |
+| high   | All options evaluated, clear winner, team consensus      |
+| medium | Some unknowns remain, limited production data            |
+| low    | Best guess under constraints, significant unknowns exist |
+
 ## References
 
 | Topic     | Resource                      |
 | --------- | ----------------------------- |
 | MADR      | <https://adr.github.io/madr/> |
+| Fowler    | <https://martinfowler.com/articles/architecture-decision-record.html> |
 | Skill     | `../adr/SKILL.md`             |
 | Templates | `../../templates/adr/`        |
 | Scripts   | `./scripts/`                  |

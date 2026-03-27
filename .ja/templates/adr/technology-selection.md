@@ -10,15 +10,17 @@
 
 ## 必須セクション
 
-すべての ADR は以下の MADR コアセクションを含む：
+すべてのADRは以下のMADRコアセクションを含む：
 
-1. **タイトル** — アクション指向: 「Y のために X を採用」
+1. **タイトル** — アクション指向:「YのためにXを採用」
 2. **ステータス** — proposed | accepted | deprecated | superseded
 3. **コンテキスト** — なぜ今この判断が必要か
 4. **決定ドライバー** — 判断に影響を与える要因
-5. **検討した選択肢** — 最低3つの選択肢と Pros/Cons
-6. **決定** — 「Chosen option: X, because Y」形式
+5. **検討した選択肢** — 最低3つの選択肢とPros/Cons
+6. **決定** —「Chosen option: X, because Y」形式
 7. **結果** — ポジティブ・ネガティブな影響
+
+メタデータ: `- Confidence: {level} — {根拠}`。任意: `## 再評価トリガー` を結果の後に追加。
 
 ## テンプレート固有セクション
 
@@ -37,6 +39,7 @@
 - Status: accepted
 - Deciders: チーム全体
 - Date: 2026-01-13
+- Confidence: high — チームが React Router に習熟、移行パスが明文化済み
 
 ## コンテキスト
 
@@ -98,4 +101,9 @@ Phase 3: 本番デプロイ
 ## ロールバック計画
 
 package.json を v6 に戻し、変更した API 呼び出しを revert する。
+
+## 再評価トリガー
+
+- TanStack Router が 1.0 stable に達し、型安全ルーティングの代替を再評価する場合
+- React Router v7 がマイナーリリースで破壊的変更を導入した場合
 ```

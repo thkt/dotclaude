@@ -20,6 +20,8 @@ All ADRs must include these MADR core sections:
 6. **Decision Outcome** — "Chosen option: X, because Y"
 7. **Consequences** — Positive and Negative impacts
 
+Metadata: `- Confidence: {level} — {rationale}`. Optional: `## Reassessment Triggers` after Consequences.
+
 ## Template-Specific Sections
 
 In addition to the core sections, include:
@@ -38,6 +40,7 @@ In addition to the core sections, include:
 - Status: accepted
 - Deciders: Project owner
 - Date: 2026-01-08
+- Confidence: high — 6 months of production use validated the pattern
 
 ## Context and Problem Statement
 
@@ -87,7 +90,7 @@ implementation knowledge is consolidated in skills/.
 
 ```mermaid
 graph TD
-    SKILL[skills/] --> REF[references/]
+    CMD[commands/] --> SKILL[skills/]
     SKILL --> REF[references/]
 ```
 
@@ -101,4 +104,8 @@ graph TD
 ## Trade-offs
 
 - More files in exchange for clear single-responsibility per file
+
+## Reassessment Triggers
+
+- If command count exceeds 30 and skill dependency graph becomes tangled
 ````

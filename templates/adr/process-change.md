@@ -20,6 +20,8 @@ All ADRs must include these MADR core sections:
 6. **Decision Outcome** — "Chosen option: X, because Y"
 7. **Consequences** — Positive and Negative impacts
 
+Metadata: `- Confidence: {level} — {rationale}`. Optional: `## Reassessment Triggers` after Consequences.
+
 ## Template-Specific Sections
 
 In addition to the core sections, include:
@@ -38,6 +40,7 @@ In addition to the core sections, include:
 - Status: accepted
 - Deciders: Project owner
 - Date: 2026-01-28
+- Confidence: medium — template-reality gap observed but optimal format unproven
 
 ## Context and Problem Statement
 
@@ -93,4 +96,8 @@ Adopted audience-optimized approach.
 
 - 1 week: Check template usability
 - 1 month: Quantitative evaluation of SOW/ADR quality
+
+## Reassessment Triggers
+
+- If template usage rate drops below 50% in new ADRs
 ```

@@ -52,6 +52,14 @@ for meta in "${REQUIRED_META[@]}"; do
     ERRORS=$((ERRORS + 1))
   fi
 done
+
+if grep -q "^- Confidence:" "$ADR_FILE"; then
+  VALUE=$(grep "^- Confidence:" "$ADR_FILE" | head -1)
+  echo "${GREEN}✅ $VALUE${NC}"
+else
+  echo "${YELLOW}⚠️  Confidence: Not set (recommended: high | medium | low)${NC}"
+  WARNINGS=$((WARNINGS + 1))
+fi
 echo ""
 
 echo "📝 3. Content Quality"
