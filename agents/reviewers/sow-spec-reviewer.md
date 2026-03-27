@@ -23,14 +23,15 @@ background: true
 
 ## Analysis Phases
 
-| Phase | Action              | Focus                                  |
-| ----- | ------------------- | -------------------------------------- |
-| 1     | Document Discovery  | Find sow.md/spec.md in planning        |
-| 2     | Section Check       | Required sections present              |
-| 3     | Accuracy Analysis   | ✓/→/? markers, evidence                |
-| 4     | Completeness Check  | AC, FR, Test coverage                  |
-| 5     | Relevance Check     | Goals ↔ Solutions, Why Fidelity, YAGNI |
-| 6     | Actionability Check | Specific steps, feasibility            |
+| Phase | Action              | Focus                                        |
+| ----- | ------------------- | -------------------------------------------- |
+| 1     | Document Discovery  | Find sow.md/spec.md in planning              |
+| 2     | Section Check       | Required sections present                    |
+| 3     | Accuracy Analysis   | ✓/→/? markers, evidence                      |
+| 4     | Completeness Check  | AC, FR, Test coverage, Why Quality           |
+| 5     | Relevance Check     | Goals ↔ Solutions, Why Fidelity, YAGNI       |
+| 6     | Actionability Check | Specific steps, feasibility, EARS syntax     |
+| 7     | Consistency Check   | SOW ↔ Spec cross-document (validating-specs) |
 
 ## Search Paths
 
@@ -41,7 +42,7 @@ background: true
 
 ## Scoring (25 points each)
 
-Start at 25 per category. Deduct for issues found in Phases 3-6:
+Start at 25 per category. Deduct for issues found in Phases 3-7:
 
 | Category      | Deductions                                                         |
 | ------------- | ------------------------------------------------------------------ |
@@ -50,11 +51,18 @@ Start at 25 per category. Deduct for issues found in Phases 3-6:
 | Relevance     | Off-scope content: -3, YAGNI violation: -3                         |
 | Actionability | Vague step (no file:line): -3, infeasible step: -5                 |
 
+### Scoring Rules
+
+| Rule                | Detail                                                     |
+| ------------------- | ---------------------------------------------------------- |
+| Category floor      | Category score cannot go below 0                           |
+| No double deduction | Same issue caught by multiple checks is deducted once only |
+
 ## Required Sections
 
-| Document | Sections                                                                                                                         |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| SOW      | Why, Overview, Background, Scope, Acceptance Criteria, Implementation Plan, Test Plan, Risks                                     |
+| Document | Sections                                                                                                                                      |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| SOW      | Why, Overview, Background, Scope, Acceptance Criteria, Implementation Plan, Test Plan, Risks                                                  |
 | Spec     | Functional Requirements (FR-xxx), Domain Model (Entities), Test Scenarios (Given-When-Then), Non-Functional Requirements, Traceability Matrix |
 
 ## Why Quality Check
@@ -70,8 +78,7 @@ Accept both table format (`| For | ... |`) and list format (`- For: ...`).
 | --------------------- | --------- | -------------------------------------------------------------------------------- |
 | Placeholder remaining | -5        | Any field contains `[` bracket template text                                     |
 | Empty field           | -5        | Any of the 5 fields (For/Problem/Outcome/Urgency/Inaction cost) missing or blank |
-
-Category score cannot go below 0.
+| Multi-SHALL           | -2        | Multiple SHALL in single FR Description (split into separate FRs)                |
 
 ### Quality checks (only for fields with actual content)
 
@@ -110,6 +117,32 @@ Verify that downstream artifacts maintain fidelity to the Why Statement.
 
 If total fidelity deductions >= 6, add to fixes: "Why fidelity drift detected.
 Review chain: Why Outcome → ACs → FRs."
+
+## EARS Compliance Check
+
+FR descriptions without EARS syntax are unactionable — the implementer cannot
+confirm the exact behavior to build. Deduct from Actionability.
+
+### Matching Rules
+
+| Pattern | Match condition                                      |
+| ------- | ---------------------------------------------------- |
+| Always  | Contains SHALL, no When/While/If prefix              |
+| Event   | Starts with "When [...]," + contains SHALL           |
+| State   | Starts with "While [...]," + contains SHALL          |
+| Error   | Starts with "If [...]," + contains "then" + SHALL    |
+| Limit   | Contains SHALL NOT                                   |
+| Complex | Starts with "While [...]," + contains "when" + SHALL |
+
+### Deductions
+
+| Check           | Deduction | Condition                                                                |
+| --------------- | --------- | ------------------------------------------------------------------------ |
+| Missing SHALL   | -3        | FR Description lacks SHALL keyword                                       |
+| No EARS pattern | -3        | SHALL present but does not match any pattern above                       |
+| Vague value     | -3        | SHALL clause contains "appropriate", "suitable", "properly", "correctly" |
+
+Reference: `templates/spec/template.md` Functional Requirements section.
 
 ## Consistency Check
 
