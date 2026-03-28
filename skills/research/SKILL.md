@@ -92,6 +92,8 @@ Skip when: cause is obvious or intent is "Feature planning" / "Understanding".
 
 ## Output
 
+Session ID: ${CLAUDE_SESSION_ID}
+
 File: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md` Template:
 [@../templates/research/template.md](../templates/research/template.md)
 

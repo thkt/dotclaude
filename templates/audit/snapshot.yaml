@@ -4,6 +4,7 @@
 
 meta:
   command: audit
+  session_id: # UUID from skill invocation
   timestamp: # ISO 8601
   target: # target scope
   focus: # security|performance|readability|all

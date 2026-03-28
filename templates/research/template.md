@@ -1,6 +1,7 @@
 # Research: [Topic Name]
 
 Generated: [YYYY-MM-DD]
+Session: [session-id]
 Intent: [Feature planning | Bug investigation | Understanding]
 
 ## Purpose

@@ -1,5 +1,7 @@
 # SOW: [Feature Name]
 
+Session: [session-id]
+
 ## Status
 
 draft <!-- draft | in-progress | completed -->

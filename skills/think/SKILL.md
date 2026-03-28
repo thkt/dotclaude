@@ -257,6 +257,8 @@ Purpose, Users, and Success criteria are covered by Step 0 (Why Discovery).
 
 ## Output
 
+Session ID: ${CLAUDE_SESSION_ID}
+
 Always use this exact path — Write tool creates parent directories if absent.
 
 `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` and `spec.md`

@@ -131,13 +131,13 @@ Read [`references/pre-flight.md`](references/pre-flight.md) for the full
 procedure: detect task runner → find test script → run tests → convert hook
 output to `PF-{seq}` findings.
 
-## Snapshot Naming
+## Snapshot
+
+Session ID: ${CLAUDE_SESSION_ID}
 
 ```bash
 SNAPSHOT="$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).yaml"
 ```
-
-Example output: `audit-2026-01-23-031812.yaml`
 
 ## Templates
 

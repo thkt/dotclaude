@@ -1,6 +1,7 @@
 # Spec: [Feature Name]
 
 Updated: [YYYY-MM-DD]
+Session: [session-id]
 SOW: [path to sow.md]
 
 ## Functional Requirements
