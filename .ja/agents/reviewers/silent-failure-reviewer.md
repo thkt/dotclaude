@@ -30,6 +30,10 @@ background: true
 | 4        | UIフィードバックチェック | 欠落したエラー状態、境界   |
 | 5        | フォールバック分析       | サイレントデフォルト       |
 
+## Calibration
+
+`templates/audit/calibration-examples.md` のSFセクション参照。
+
 ## エラーハンドリング
 
 | エラー       | アクション                                  |

@@ -53,6 +53,10 @@ detection.
 5. Report clusters (group of locations sharing the same pattern)
 6. If Phase 1-2 yield zero matches above similarity threshold, skip Phase 3-5
 
+## Calibration
+
+See `templates/audit/calibration-examples.md` section DRY.
+
 ## Error Handling
 
 | Error         | Action                                   |

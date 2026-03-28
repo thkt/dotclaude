@@ -28,6 +28,42 @@ Per finding, output as Markdown heading + single table:
 - If confidence cannot be assessed, default to 0.60
 - security-reviewer may define stricter thresholds in its own definition
 
+## Calibration Principles
+
+Before reporting a finding, apply these filters in order. If any filter
+excludes, do not report.
+
+### Filter 1: Senior Engineer Test
+
+Would a senior engineer flag this in code review and request a change? If the
+answer is "it depends on preference" or "I wouldn't block the PR for this,"
+exclude.
+
+### Filter 2: Harm Test
+
+Can you describe a concrete scenario where this code causes a bug, data loss,
+security issue, or maintenance burden? "Could theoretically cause issues" is not
+concrete. Name the trigger condition.
+
+### Filter 3: Context Test
+
+| Context          | Action                                                    |
+| ---------------- | --------------------------------------------------------- |
+| Cold path        | Exclude unless severity >= high                           |
+| Intentional      | Code comments, error messages, or naming suggest intent → exclude |
+| Framework idiom  | Follows framework/library convention → exclude            |
+| Indirect cover   | Tested through caller or integration test → exclude (TC)  |
+| Semantic differ  | Structurally similar but different business logic → exclude (DRY) |
+
+### Filter 4: Fix Proportionality
+
+Is the fix proportional to the risk? If the fix requires significant
+refactoring for a low-severity issue, downgrade to informational or exclude.
+
+Each reviewer's Calibration section has domain-specific REPORT/SKIP examples.
+When uncertain, prefer SKIP — the challenger exists to catch false negatives,
+but false positives waste pipeline capacity.
+
 ## Overview Table
 
 When multiple findings exist, prepend a summary table:

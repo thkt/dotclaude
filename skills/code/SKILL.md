@@ -72,7 +72,7 @@ implies ≥ 5 files, suggest running `/think` first.
 2. Spawn `test-gen` as standalone background agent
    (`subagent_type: test-generator`, `run_in_background: true`)
 3. Receive test results via `TaskOutput`
-4. RGRC cycle with `ralph-loop` auto-iteration
+4. RGRC cycle with `ralph-loop --max-iterations 10` auto-iteration
 5. Review Gate: spawn `code-quality-reviewer` (skip for /fix)
 6. E2E Phase (conditional)
 7. Quality Gates

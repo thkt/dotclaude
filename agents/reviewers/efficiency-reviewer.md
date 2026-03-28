@@ -54,6 +54,10 @@ Before flagging, check execution frequency:
 | Shell, Rust, TS, any language     | Frontend-specific (React/Next.js)        |
 | Runtime resource waste            | User-perceived performance               |
 
+## Calibration
+
+See `templates/audit/calibration-examples.md` section EFF.
+
 ## Error Handling
 
 | Error         | Action                                   |

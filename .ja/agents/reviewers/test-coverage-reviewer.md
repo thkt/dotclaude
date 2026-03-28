@@ -50,6 +50,10 @@ background: true
 | 自己モック (SUT をモック) | high   |
 | 空/スキップされたテスト   | medium |
 
+## Calibration
+
+`templates/audit/calibration-examples.md` のTCセクション参照。
+
 ## エラーハンドリング
 
 | エラー               | アクション                                  |

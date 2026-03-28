@@ -23,8 +23,8 @@ background: true
 | Phase | Action          | Focus Area                                                           |
 | ----- | --------------- | -------------------------------------------------------------------- |
 | 1     | Injection Scan  | SQL, Command, XSS patterns                                           |
-| 2     | Auth Check      | Session, JWT, Cookie config                                          |
-| 3     | Config Check    | CORS, Headers, Environment                                           |
+| 2     | Auth/AuthZ Scan | Identity spoofing, token forgery, privilege escalation, session fixation |
+| 3     | Misconfiguration| CORS bypass, header injection, secrets exposure (OWASP A05)          |
 | 4     | Dependency Scan | npm/yarn audit results                                               |
 | 5     | SSRF Detection  | User-input URL handling                                              |
 | 6     | Frontend Taint  | Source→Sink data flow (see `references/frontend-taint-checklist.md`) |
@@ -79,7 +79,7 @@ Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 | Field        | Value                                                                                         |
 | ------------ | --------------------------------------------------------------------------------------------- |
 | Evidence     | code snippet                                                                                  |
-| Reasoning    | why this is vulnerable + attack scenario                                                      |
+| Reasoning    | threat model: actor capability → attack vector → concrete impact                              |
 | Fix          | secure alternative                                                                            |
 | Verification | execution_trace / call_site_check / pattern_search — what to verify to confirm exploitability |
 | Entry Points | `file:line` (optional, for execution_trace)                                                   |

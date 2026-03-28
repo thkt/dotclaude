@@ -46,6 +46,10 @@ background: true
 | 8        | 可読性   | AIスメルチェック | 過剰抽象化、パターン       |
 | 9        | 可読性   | ミラーの法則     | 7±2違反                    |
 
+## Calibration
+
+`templates/audit/calibration-examples.md` のCQセクション参照。
+
 ## エラーハンドリング
 
 | エラー       | アクション                                  |

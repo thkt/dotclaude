@@ -23,8 +23,8 @@ background: true
 | フェーズ | アクション          | フォーカス領域                                                          |
 | -------- | ------------------- | ----------------------------------------------------------------------- |
 | 1        | インジェクション    | SQL、コマンド、XSSパターン                                              |
-| 2        | 認証チェック        | セッション、JWT、Cookie設定                                             |
-| 3        | 設定チェック        | CORS、ヘッダー、環境                                                    |
+| 2        | 認証/認可スキャン   | なりすまし、トークン偽造、権限昇格、セッション固定化                    |
+| 3        | 設定不備スキャン    | CORSバイパス、ヘッダーインジェクション、シークレット露出 (OWASP A05)    |
 | 4        | 依存関係スキャン    | npm/yarn audit結果                                                      |
 | 5        | SSRF検出            | ユーザー入力URL処理                                                     |
 | 6        | フロントエンドTaint | Source→Sinkデータフロー (`references/frontend-taint-checklist.md` 参照) |
@@ -79,7 +79,7 @@ background: true
 | Field        | Value                                                               |
 | ------------ | ------------------------------------------------------------------- |
 | Evidence     | コードスニペット                                                    |
-| Reasoning    | 脆弱性理由 + 攻撃シナリオ                                           |
+| Reasoning    | 脅威モデル: 攻撃者の能力 → 攻撃ベクター → 具体的影響               |
 | Fix          | セキュアな代替                                                      |
 | Verification | execution_trace / call_site_check / pattern_search — 確認すべきこと |
 | Entry Points | `file:line`（オプション、execution_trace用）                        |

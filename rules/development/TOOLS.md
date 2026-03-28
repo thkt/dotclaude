@@ -35,11 +35,15 @@ Prefer yomu even for simple searches to build embedding coverage over time.
 
 ## recall Usage
 
-Proactively search past sessions for context. Don't wait to be asked.
+Pattern recognition, not decision making. If ANY pattern detected, call
+`recall search "relevant query"`. Do not deliberate.
 
-| Trigger                                | Action                                                  |
-| -------------------------------------- | ------------------------------------------------------- |
-| SESSION_START picking a BACKLOG task   | `recall search "task/module name"` for prior context    |
-| Pre-implementation context gathering   | Search past sessions touching the same file/module      |
-| User vaguely references past work      | `recall search` to identify the relevant session        |
+| Pattern | Signal |
+| --- | --- |
+| Temporal reference | 「前に」「あの時」「この前」、past events, prior decisions |
+| Structural echo | Current problem/design mirrors a past situation |
+| Repetition | 「また同じ」「繰り返し」、recurring mistake or pattern |
+| Vague back-reference | 「あの件」「前にやったやつ」、past work without specifics |
+| Module first contact | About to edit a file/module not yet touched this session |
+| BACKLOG task pickup | Starting a task from BACKLOG.md |
 

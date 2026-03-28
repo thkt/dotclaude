@@ -48,6 +48,10 @@ background: true
 | Self-mocking (mock SUT) | high     |
 | Empty/skipped test      | medium   |
 
+## Calibration
+
+See `templates/audit/calibration-examples.md` section TC.
+
 ## Error Handling
 
 | Error          | Action                                   |

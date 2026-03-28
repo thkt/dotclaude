@@ -26,9 +26,9 @@ background: true
 | ----- | -------------------- | ------------------------------------------ |
 | 1     | Error Boundary Scan  | Missing boundaries around risky components |
 | 2     | Loading State Check  | Suspense fallbacks, skeleton screens       |
-| 3     | Logging Audit        | Critical paths without error/info logging  |
+| 3     | Observability Audit  | Critical paths without structured logging, error correlation, or alertability |
 | 4     | Performance Budget   | Bundle size, lazy loading, code splitting  |
-| 5     | Graceful Degradation | Offline handling, retry logic, timeouts    |
+| 5     | Fault Isolation      | Blast radius containment, fallback paths, circuit breakers |
 
 ## Scope Adaptation
 
@@ -69,7 +69,7 @@ Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 | Field        | Value                                                                                   |
 | ------------ | --------------------------------------------------------------------------------------- |
 | Evidence     | code snippet                                                                            |
-| Reasoning    | why this is an operational readiness gap                                                |
+| Reasoning    | blast radius: when this fails, what breaks and who notices                              |
 | Fix          | recommended improvement                                                                 |
 | Verification | pattern_search / call_site_check — is this component user-facing or in a critical path? |
 

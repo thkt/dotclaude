@@ -32,6 +32,10 @@ background: true
 | 8     | Readability | AI Smell Check   | Over-abstraction, patterns   |
 | 9     | Readability | Miller's Law     | 7±2 violations               |
 
+## Calibration
+
+See `templates/audit/calibration-examples.md` section CQ.
+
 ## Error Handling
 
 | Error         | Action                                   |

@@ -34,10 +34,10 @@ parse_stdin() {
         (.worktree.name? // ""),
         (.worktree.branch? // ""),
         (.worktree.directory? // "")
-      ] | map(tostring) | @tsv' 2>/dev/null)
+      ] | map(tostring) | join("\u001f")' 2>/dev/null)
 
     if [ -n "$parsed" ]; then
-        IFS=$'\t' read -r MODEL_NAME MODEL_ID SESSION_ID SESSION_COST \
+        IFS=$'\x1f' read -r MODEL_NAME MODEL_ID SESSION_ID SESSION_COST \
             CONTEXT_TOKENS CONTEXT_LIMIT CONTEXT_USED_PCT \
             USAGE_5H USAGE_7D \
             WT_NAME WT_BRANCH WT_ORIG_DIR <<< "$parsed"
@@ -151,13 +151,13 @@ render_git() {
 
 parse_stdin
 render_model
-if [ -z "$SESSION_COST" ] || [ "$SESSION_COST" = "null" ] || [ "$SESSION_COST" = "0" ]; then
+load_state
+if [ -z "$CONTEXT_USED_PCT" ] || [ "$CONTEXT_USED_PCT" = "null" ]; then
     sep
     printf '\033[32m◔ ready\033[0m'
 else
-    load_state
     render_context
-    render_cost
 fi
+render_cost
 render_usage
 render_git

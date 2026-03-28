@@ -56,6 +56,10 @@ background: true
 | Shell、Rust、TS、あらゆる言語 | フロントエンド特化（React/Next.js）           |
 | 実行時リソースの無駄          | ユーザー体感パフォーマンス                    |
 
+## Calibration
+
+`templates/audit/calibration-examples.md` のEFFセクション参照。
+
 ## エラーハンドリング
 
 | エラー       | アクション                       |

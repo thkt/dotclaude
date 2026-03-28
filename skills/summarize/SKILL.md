@@ -21,7 +21,9 @@ Fetch an article by URL and summarize it.
 ## Execution
 
 1. Fetch the article: `scout fetch "$1"`
-2. Produce the summary
+2. Extract title from the fetch output — if no title or no article body found, report failure and STOP
+3. Print `> Fetched: "{{exact title from fetch output}}"` before the summary (this line is a hallucination guard — the caller verifies it matches the actual article)
+4. Produce the summary using ONLY the fetched text
 
 ## Output Format
 
@@ -58,8 +60,9 @@ Author: {{Author or "N/A"}}
 
 | Rule | Detail |
 | ---- | ------ |
-| Source of truth | Summarize ONLY from scout fetch output. NEVER infer from conversation context, CLAUDE.md, or URL patterns |
-| Fetch failure | If fetch returns no article body, report that the article body could not be retrieved and stop. Do not generate a summary |
+| Source of truth | Summarize ONLY from scout fetch output. NEVER use conversation context, CLAUDE.md, memory, or URL patterns. If you cannot find specific information in the fetch output, say so — do not fill gaps from other sources |
+| Fetch failure | If fetch returns no article body or no title, report failure and STOP. Do not generate a summary from memory or context |
+| Title guard | The `> Fetched: "..."` line MUST contain the exact title string from the fetch output. This is verified by the caller. A wrong title means hallucination occurred |
 | Key points | Exactly 5. Concrete, not vague |
 | Relevance | Connect to specific functionality, not generic "could be useful" |
 | Verdict | One sentence. Opinionated |

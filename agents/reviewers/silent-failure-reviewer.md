@@ -28,6 +28,10 @@ background: true
 | 4     | UI Feedback Check | Missing error states, boundaries |
 | 5     | Fallback Analysis | Silent defaults                  |
 
+## Calibration
+
+See `templates/audit/calibration-examples.md` section SF.
+
 ## Error Handling
 
 | Error         | Action                                   |
