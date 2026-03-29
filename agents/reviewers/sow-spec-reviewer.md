@@ -11,15 +11,15 @@ background: true
 
 # SOW/Spec Reviewer
 
-100-point scoring, 90-point pass threshold. Detect design issues before code.
+Detect design issues before code.
 
 ## Generated Content
 
-| Section | Description                         |
-| ------- | ----------------------------------- |
-| scores  | 4 categories × 25 points each       |
-| fixes   | Specific issues with locations      |
-| result  | PASS/CONDITIONAL/FAIL + promise tag |
+| Section | Description                    |
+| ------- | ------------------------------ |
+| scores  | 4 categories × 25 points each  |
+| fixes   | Specific issues with locations |
+| result  | PASS/FAIL + promise tag        |
 
 ## Analysis Phases
 
@@ -42,14 +42,8 @@ background: true
 
 ## Scoring (25 points each)
 
-Start at 25 per category. Deduct for issues found in Phases 3-7:
-
-| Category      | Deductions                                                         |
-| ------------- | ------------------------------------------------------------------ |
-| Accuracy      | [?] without evidence: -3, [→] not confirmed: -2, factual error: -5 |
-| Completeness  | Missing required section: -5, missing AC/FR/test: -3               |
-| Relevance     | Off-scope content: -3, YAGNI violation: -3                         |
-| Actionability | Vague step (no file:line): -3, infeasible step: -5                 |
+4 categories (Accuracy, Completeness, Relevance, Actionability), 25 points each.
+Deductions defined in detailed checks below (Phases 3-7).
 
 ### Scoring Rules
 
@@ -147,7 +141,14 @@ Reference: `templates/spec/template.md` Functional Requirements section.
 ## Consistency Check
 
 Delegate to `validating-specs` skill. CON-NNN findings append to `fixes`, deduct
-per severity.
+from Accuracy:
+
+| CON Severity | Deduction |
+| ------------ | --------- |
+| critical     | -5        |
+| high         | -3        |
+| medium       | -2        |
+| low          | -1        |
 
 ## Error Handling
 
@@ -170,20 +171,28 @@ Structured Markdown with ralph-loop promise tag:
 
 ## Scores
 
-| Category      | Score                     |
-| ------------- | ------------------------- |
-| accuracy      | 0–25                      |
-| completeness  | 0–25                      |
-| relevance     | 0–25                      |
-| actionability | 0–25                      |
-| total         | 0–100                     |
-| judgment      | PASS / CONDITIONAL / FAIL |
+| Category      | Score | Deductions                 |
+| ------------- | ----- | -------------------------- |
+| accuracy      | 0–25  | -N: reason (location), ... |
+| completeness  | 0–25  | -N: reason (location), ... |
+| relevance     | 0–25  | -N: reason (location), ... |
+| actionability | 0–25  | -N: reason (location), ... |
+| total         | 0–100 |                            |
+| judgment      |       | PASS / FAIL                |
+
+Deductions column applies to category rows only (not total/judgment — leave
+those blank). Format: `-N: reason (document:line or section)`. No deductions:
+write `(none)`. Blank cells are invalid.
+
+Example: `-3: [?] without evidence (spec.md:42), -2: [→] unconfirmed (sow.md:15)`
 
 ## Fixes
 
 | Location        | Issue        | Suggestion | Impact            |
 | --------------- | ------------ | ---------- | ----------------- |
 | section or line | what's wrong | how to fix | score improvement |
+
+## Next Action
 
 | Field       | Value                   |
 | ----------- | ----------------------- |

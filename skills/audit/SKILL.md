@@ -70,8 +70,10 @@ only:
 |                      | code-quality-reviewer, duplication-reviewer, reuse-reviewer,        |
 |                      | efficiency-reviewer, design-pattern-reviewer, testability-reviewer, |
 |                      | performance-reviewer, operational-readiness-reviewer                |
-| `*.md` (agent defs)  | design-pattern-reviewer, testability-reviewer, document-reviewer    |
-| `*.md` (skills/docs) | document-reviewer, testability-reviewer                             |
+| `*.md` (agent defs)  | prompt-reviewer, design-pattern-reviewer, testability-reviewer,     |
+|                      | document-reviewer                                                   |
+| `*.md` (skills/docs) | prompt-reviewer, document-reviewer, testability-reviewer            |
+| `*.md` (rules)       | prompt-reviewer, document-reviewer                                  |
 | `*.yaml, *.json`     | type-design-reviewer, document-reviewer                             |
 | `*.css, *.html`      | accessibility-reviewer, progressive-enhancer, performance-reviewer, |
 |                      | duplication-reviewer                                                |
@@ -80,7 +82,8 @@ only:
 |                      | efficiency-reviewer, document-reviewer                              |
 
 Classification by path: `agents/**/*.md` → agent defs, `skills/*/SKILL.md` or
-`docs/**/*.md` → skills/docs, other `*.md` → skills/docs (default).
+`docs/**/*.md` → skills/docs, `rules/**/*.md` → rules, other `*.md` →
+skills/docs (default).
 
 #### Sub-reviewer Spawn
 

@@ -1,8 +1,9 @@
 ---
 name: research
 description: Perform project research and technical investigation without implementation.
-  Use when user mentions 調査して, 調べて, リサーチ, investigate, 分析して. Do
-  NOT use for design planning or SOW/Spec generation (use /think instead).
+  Use when user mentions 調査して, 調べて, リサーチ, investigate, 分析して,
+  issueやろう, issue見て. Do NOT use for design planning or SOW/Spec generation
+  (use /think instead).
 allowed-tools: Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Bash(yomu:*),
   Read, Glob, Grep, LS, Task, AskUserQuestion
 model: opus

@@ -10,55 +10,68 @@ Per finding, output as Markdown heading + single table:
 
 ### {PREFIX}-{seq}
 
-| Field        | Value                          |
-| ------------ | ------------------------------ |
-| Agent        | reviewer-name                  |
-| Severity     | critical / high / medium / low |
-| Category     | domain-specific category       |
-| Location     | `file:line`                    |
-| Confidence   | 0.60–1.00                      |
-| Evidence     | code snippet or observation    |
-| Reasoning    | why this is an issue           |
-| Fix          | suggested fix                  |
-| Verification | check type — question          |
+| Field        | Value                                                |
+| ------------ | ---------------------------------------------------- |
+| Agent        | reviewer-name                                        |
+| Severity     | critical / high / medium / low                       |
+| Category     | domain-specific category                             |
+| Location     | `file:line`                                          |
+| Confidence   | 0.70–1.00                                            |
+| Evidence     | code snippet or observation                          |
+| Trigger      | concrete condition that causes the issue to manifest |
+| Reasoning    | why this is an issue                                 |
+| Fix          | suggested fix                                        |
+| Verification | check type — question                                |
 
 ### Confidence Floor
 
-- Reviewers MUST NOT include findings with confidence < 0.60
-- If confidence cannot be assessed, default to 0.60
-- security-reviewer may define stricter thresholds in its own definition
+| Condition                     | Action        |
+| ----------------------------- | ------------- |
+| Confidence < 0.70             | Do not report |
+| Cannot assess confidence      | Do not report |
+| Requires speculative language | Do not report |
 
-## Calibration Principles
+security-reviewer may define stricter thresholds in its own definition.
 
-Before reporting a finding, apply these filters in order. If any filter
-excludes, do not report.
+### Pre-Report Verification
 
-### Filter 1: Senior Engineer Test
+Before reporting any finding, the reviewer MUST:
 
-Would a senior engineer flag this in code review and request a change? If the
-answer is "it depends on preference" or "I wouldn't block the PR for this,"
-exclude.
+1. Read the target file at the reported location (± 20 lines context)
+2. Confirm the issue exists in the actual code, not from memory or assumption
+3. A finding without a prior file read is invalid — the leader discards it
 
-### Filter 2: Harm Test
+### Language Constraints
 
-Can you describe a concrete scenario where this code causes a bug, data loss,
-security issue, or maintenance burden? "Could theoretically cause issues" is not
-concrete. Name the trigger condition.
+Evidence, Trigger, and Reasoning fields MUST use concrete language.
 
-### Filter 3: Context Test
+| Prohibited             | Replace with                        |
+| ---------------------- | ----------------------------------- |
+| might, could, possibly | does, causes, results in            |
+| potentially            | when [condition], [consequence]     |
+| may cause              | causes [X] when [Y]                 |
+| theoretically          | (remove — describe the actual path) |
+| in some cases          | when [specific condition]           |
 
-| Context          | Action                                                    |
-| ---------------- | --------------------------------------------------------- |
-| Cold path        | Exclude unless severity >= high                           |
-| Intentional      | Code comments, error messages, or naming suggest intent → exclude |
-| Framework idiom  | Follows framework/library convention → exclude            |
-| Indirect cover   | Tested through caller or integration test → exclude (TC)  |
-| Semantic differ  | Structurally similar but different business logic → exclude (DRY) |
+## Calibration Filters
 
-### Filter 4: Fix Proportionality
+Apply in order. If any filter excludes, do not report.
 
-Is the fix proportional to the risk? If the fix requires significant
-refactoring for a low-severity issue, downgrade to informational or exclude.
+| Filter              | Question                                                        | Exclude when                                       |
+| ------------------- | --------------------------------------------------------------- | -------------------------------------------------- |
+| Senior Engineer     | Would a senior engineer request a change?                       | "Depends on preference" or "wouldn't block the PR" |
+| Harm                | Concrete trigger for bug/data loss/security/maintenance burden? | Cannot name one                                    |
+| Fix Proportionality | Fix proportional to risk?                                       | Significant refactoring for low-severity issue     |
+
+### Context Test
+
+| Context         | Action                                                            |
+| --------------- | ----------------------------------------------------------------- |
+| Cold path       | Exclude unless severity >= high                                   |
+| Intentional     | Code comments, error messages, or naming suggest intent → exclude |
+| Framework idiom | Follows framework/library convention → exclude                    |
+| Indirect cover  | Tested through caller or integration test → exclude (TC)          |
+| Semantic differ | Structurally similar but different business logic → exclude (DRY) |
 
 Each reviewer's Calibration section has domain-specific REPORT/SKIP examples.
 When uncertain, prefer SKIP — the challenger exists to catch false negatives,
@@ -75,7 +88,7 @@ When multiple findings exist, prepend a summary table:
 
 Reviewers not listed use base fields only.
 
-| Reviewer               | Extra Fields                                      | Opt     | Normalization                                            |
+| Reviewer               | Extra Fields                                      | Req/Opt | Normalization                                            |
 | ---------------------- | ------------------------------------------------- | ------- | -------------------------------------------------------- |
 | root-cause-reviewer    | five_whys, root_cause                             | req     | root_cause → reasoning; five_whys → append to evidence   |
 | progressive-enhancer   | recommendations                                   | req     | Append as separate items                                 |
@@ -86,6 +99,7 @@ Reviewers not listed use base fields only.
 | type-design-reviewer   | type_name, scores                                 | opt     | Append to evidence; scores → reasoning note              |
 | security-reviewer      | entry_points (in hint)                            | opt     | Already in verification_hint                             |
 | subagent-reviewer      | (none)                                            | —       | No normalization needed                                  |
+| sow-spec-reviewer      | deductions                                        | req     | Append to evidence as deduction log                      |
 
 ## ID Prefix Registry
 
@@ -110,6 +124,7 @@ Reviewers not listed use base fields only.
 | SA     | subagent-reviewer              |
 | OPS    | operational-readiness-reviewer |
 | SOW    | sow-spec-reviewer              |
+| PQ     | prompt-reviewer                |
 | PF     | pre-flight (not an agent file) |
 
 ## Consolidation Rule
