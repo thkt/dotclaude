@@ -68,7 +68,7 @@ See `templates/audit/calibration-examples.md` section EFF.
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.md`)
+- Confidence < 0.70: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 - Cold-path minor issues: exclude unless consolidation raises severity
 
@@ -81,7 +81,7 @@ Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
 | ID        | Severity            | Category                                                                          | Location    | Confidence |
 | --------- | ------------------- | --------------------------------------------------------------------------------- | ----------- | ---------- |
-| EFF-{seq} | high / medium / low | unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad | `file:line` | 0.60-1.00  |
+| EFF-{seq} | high / medium / low | unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad | `file:line` | 0.70-1.00  |
 
 ### EFF-{seq}
 

@@ -62,7 +62,7 @@ See `templates/audit/calibration-examples.md` section TC.
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.md`)
+- Confidence < 0.70: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
@@ -74,7 +74,7 @@ Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
 | ID       | Severity                       | Category                              | Location         | Related Code       | Criticality | Confidence |
 | -------- | ------------------------------ | ------------------------------------- | ---------------- | ------------------ | ----------- | ---------- |
-| TC-{seq} | critical / high / medium / low | gap / quality / negative / regression | `test-file:line` | `source-file:line` | 1–10        | 0.60–1.00  |
+| TC-{seq} | critical / high / medium / low | gap / quality / negative / regression | `test-file:line` | `source-file:line` | 1–10        | 0.70–1.00  |
 
 ### TC-{seq}
 

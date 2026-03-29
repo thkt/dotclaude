@@ -61,7 +61,7 @@ duplication detection (that is duplication-reviewer / DRY). This reviewer answer
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.md`)
+- Confidence < 0.70: exclude (see `finding-schema.md`)
 - Same utility missed in multiple locations: consolidate into single finding
 
 ## Output
@@ -73,7 +73,7 @@ Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
 | ID          | Severity            | Category                                   | Location    | Confidence |
 | ----------- | ------------------- | ------------------------------------------ | ----------- | ---------- |
-| REUSE-{seq} | high / medium / low | utility / pattern / inline / unused_import | `file:line` | 0.60-1.00  |
+| REUSE-{seq} | high / medium / low | utility / pattern / inline / unused_import | `file:line` | 0.70-1.00  |
 
 ### REUSE-{seq}
 

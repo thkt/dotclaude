@@ -20,14 +20,14 @@ background: true
 
 ## Analysis Phases
 
-| Phase | Action          | Focus Area                                                           |
-| ----- | --------------- | -------------------------------------------------------------------- |
-| 1     | Injection Scan  | SQL, Command, XSS patterns                                           |
-| 2     | Auth/AuthZ Scan | Identity spoofing, token forgery, privilege escalation, session fixation |
-| 3     | Misconfiguration| CORS bypass, header injection, secrets exposure (OWASP A05)          |
-| 4     | Dependency Scan | npm/yarn audit results                                               |
-| 5     | SSRF Detection  | User-input URL handling                                              |
-| 6     | Frontend Taint  | Source→Sink data flow (see `references/frontend-taint-checklist.md`) |
+| Phase | Action           | Focus Area                                                               |
+| ----- | ---------------- | ------------------------------------------------------------------------ |
+| 1     | Injection Scan   | SQL, Command, XSS patterns                                               |
+| 2     | Auth/AuthZ Scan  | Identity spoofing, token forgery, privilege escalation, session fixation |
+| 3     | Misconfiguration | CORS bypass, header injection, secrets exposure (OWASP A05)              |
+| 4     | Dependency Scan  | npm/yarn audit results                                                   |
+| 5     | SSRF Detection   | User-input URL handling                                                  |
+| 6     | Frontend Taint   | Source→Sink data flow (see `references/frontend-taint-checklist.md`)     |
 
 ## Confidence Scoring
 
@@ -72,7 +72,7 @@ Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
 | ID        | Severity                 | Category | Location    | Confidence |
 | --------- | ------------------------ | -------- | ----------- | ---------- |
-| SEC-{seq} | critical / high / medium | A01-A10  | `file:line` | 0.60–1.00  |
+| SEC-{seq} | critical / high / medium | A01-A10  | `file:line` | 0.70–1.00  |
 
 ### SEC-{seq}
 

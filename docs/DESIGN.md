@@ -91,12 +91,12 @@ TDD / SOLID / YAGNI (Contextual)
 
 Concrete standards for daily development.
 
-| File                                                            | Intent                        | Key Threshold                          |
-| --------------------------------------------------------------- | ----------------------------- | -------------------------------------- |
-| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)      | Quality metrics + completion  | Function ≤30 lines, tests pass         |
-| [TIDYINGS](../rules/development/TIDYINGS.md)                    | Scope cleanup limits          | No behavior changes, edited files only |
-| [PERFORMANCE](../rules/development/PERFORMANCE.md)              | Context/frontend optimization | MCP ≤10, LCP <2.5s                     |
-| [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | Incremental building          | CSS-First, Outcome-First               |
+| File                                                            | Intent                       | Key Threshold                          |
+| --------------------------------------------------------------- | ---------------------------- | -------------------------------------- |
+| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)      | Quality metrics + completion | Function ≤30 lines, tests pass         |
+| [TIDYINGS](../rules/development/TIDYINGS.md)                    | Scope cleanup limits         | No behavior changes, edited files only |
+| [PERFORMANCE](../rules/development/PERFORMANCE.md)              | Context management           | MCP ≤10, /compact >70%                 |
+| [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | Incremental building         | CSS-First, Outcome-First               |
 
 **AI Failure Patterns (inline):**
 

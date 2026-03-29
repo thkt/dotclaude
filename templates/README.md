@@ -40,6 +40,7 @@ templates/
 │   ├── process-change.md
 │   └── technology-selection.md
 ├── audit/             # Audit templates
+│   ├── calibration-examples.md
 │   ├── finding-schema.md
 │   ├── output.md
 │   └── snapshot.yaml

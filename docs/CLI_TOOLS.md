@@ -6,7 +6,7 @@ External CLI tools that extend Claude Code's capabilities.
 
 ## Overview
 
-3 Rust CLI tools, each purpose-built for a specific gap in Claude Code's default
+4 Rust CLI tools, each purpose-built for a specific gap in Claude Code's default
 tooling. AI-facing rules live in
 [TOOLS.md](../rules/development/TOOLS.md) — this document covers design intent
 and architecture.
@@ -17,11 +17,13 @@ graph LR
         SC[scout]
         YO[yomu]
         RE[recall]
+        XR[xr]
     end
 
     SC -->|Web + GitHub| AI[Claude Code]
     YO -->|Codebase| AI
     RE -->|Past Sessions| AI
+    XR -->|X/Twitter| AI
 ```
 
 ## scout
@@ -114,6 +116,33 @@ index).
 | Past solutions: "how did I fix X"  | Current session only        |
 | Pattern recall: "what tool for Y"  | Specific known session file |
 | Cross-project: "where did I use Z" |                             |
+
+## xr
+
+X/Twitter content fetching (tweets, threads, articles, user profiles).
+
+| Aspect  | Detail                                                   |
+| ------- | -------------------------------------------------------- |
+| Why     | scout fetch cannot extract X/Twitter structured content  |
+| How     | X/Twitter API for tweet/thread/article/profile retrieval |
+| Install | `brew install thkt/tap/xr`                               |
+
+### Commands
+
+| Command                   | Purpose                 |
+| ------------------------- | ----------------------- |
+| `xr tweet <url>`          | Fetch single tweet      |
+| `xr tweet <url> --thread` | Fetch tweet with thread |
+| `xr article <url>`        | Fetch X article         |
+| `xr user <screen_name>`   | Fetch user profile      |
+
+### When to Use
+
+| xr                            | scout fetch    |
+| ----------------------------- | -------------- |
+| x.com / twitter.com URLs      | All other URLs |
+| Thread/replies context needed | N/A            |
+| User profile lookup           | N/A            |
 
 ## Related
 

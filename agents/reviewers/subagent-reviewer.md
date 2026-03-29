@@ -60,7 +60,7 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.md`)
+- Confidence < 0.70: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
@@ -72,7 +72,7 @@ Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
 | ID       | Severity            | Category                                  | Location    | Confidence |
 | -------- | ------------------- | ----------------------------------------- | ----------- | ---------- |
-| SA-{seq} | high / medium / low | yaml / section / scope / pattern / output | `file:line` | 0.60–1.00  |
+| SA-{seq} | high / medium / low | yaml / section / scope / pattern / output | `file:line` | 0.70–1.00  |
 
 ### SA-{seq}
 

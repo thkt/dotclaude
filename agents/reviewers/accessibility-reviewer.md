@@ -55,7 +55,7 @@ Fallback: If browser unavailable, code-only analysis with lower confidence.
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.md`)
+- Confidence < 0.70: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 
 ## Output
@@ -67,7 +67,7 @@ Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
 | ID         | Severity                 | Category                                            | WCAG                            | Location    | Confidence |
 | ---------- | ------------------------ | --------------------------------------------------- | ------------------------------- | ----------- | ---------- |
-| A11Y-{seq} | critical / high / medium | semantic / keyboard / screen-reader / visual / form | success criterion (e.g., 1.1.1) | `file:line` | 0.60–1.00  |
+| A11Y-{seq} | critical / high / medium | semantic / keyboard / screen-reader / visual / form | success criterion (e.g., 1.1.1) | `file:line` | 0.70–1.00  |
 
 ### A11Y-{seq}
 

@@ -128,7 +128,6 @@ flowchart LR
 | **T-NNN**   | Test Scenario              | Spec    | T-001   |
 | **NFR-NNN** | Non-Functional Requirement | Spec    | NFR-001 |
 | **BR-NNN**  | Business Rule              | Spec    | BR-001  |
-| **I-NNN**   | Issue / Investigation      | SOW     | I-001   |
 | **RC-NNN**  | Root Cause                 | Audit   | RC-001  |
 | **SUG-NNN** | Suggestion                 | Audit   | SUG-001 |
 

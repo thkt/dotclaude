@@ -30,6 +30,6 @@ Effective prompting techniques for Claude Code.
 
 | Technique                                                                            | Effect                          |
 | ------------------------------------------------------------------------------------ | ------------------------------- |
-| Plan Mode → review with separate Claude session                                      | Improve plan quality            |
-| Switch back to Plan Mode the moment something goes sideways                          | Avoid wasting time on bad paths |
+| /think → review with separate Claude session                                         | Improve plan quality            |
+| Switch to /think the moment something goes sideways                                  | Avoid wasting time on bad paths |
 | After every correction: "Update your CLAUDE.md so you don't make that mistake again" | Prevent recurring mistakes      |

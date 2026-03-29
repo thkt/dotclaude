@@ -119,31 +119,34 @@ agents/
 ├── explorers/      # Exploration (feature-explorer)
 ├── generators/     # Generation (branch, commit, issue, pr, test)
 ├── resolvers/      # Problem resolution (build-error-resolver)
-├── reviewers/      # Review (17 specialized reviewers)
+├── reviewers/      # Review (20 specialized reviewers)
 └── teams/          # Team integration (progressive-integrator, qa-reviewer, unit-implementer)
 ```
 
-### Reviewer Agents (17 types)
+### Reviewer Agents (20 types)
 
-| Agent                          | Focus                       |
-| ------------------------------ | --------------------------- |
-| accessibility-reviewer         | WCAG compliance             |
-| code-quality-reviewer          | Structure + readability     |
-| design-pattern-reviewer        | React patterns              |
-| document-reviewer              | Documentation quality       |
-| duplication-reviewer           | Cross-file DRY analysis     |
-| operational-readiness-reviewer | Error boundaries + logging  |
-| performance-reviewer           | Performance                 |
-| progressive-enhancer           | CSS-first + JS reduction    |
-| root-cause-reviewer            | Root cause analysis         |
-| security-reviewer              | OWASP Top 10                |
-| silent-failure-reviewer        | Silent failure detection    |
-| sow-spec-reviewer              | SOW/Spec quality            |
-| subagent-reviewer              | Sub-agent definition review |
-| test-coverage-reviewer         | Test coverage quality       |
-| testability-reviewer           | Testability                 |
-| type-design-reviewer           | Type design + encapsulation |
-| type-safety-reviewer           | TypeScript type safety      |
+| Agent                          | Focus                             |
+| ------------------------------ | --------------------------------- |
+| accessibility-reviewer         | WCAG compliance                   |
+| code-quality-reviewer          | Structure + readability           |
+| design-pattern-reviewer        | React patterns                    |
+| document-reviewer              | Documentation quality             |
+| duplication-reviewer           | Cross-file DRY analysis           |
+| efficiency-reviewer            | Algorithmic cost + hot paths      |
+| operational-readiness-reviewer | Error boundaries + logging        |
+| performance-reviewer           | Performance                       |
+| progressive-enhancer           | CSS-first + JS reduction          |
+| prompt-reviewer                | Prompt/agent definition quality   |
+| reuse-reviewer                 | Existing code reuse opportunities |
+| root-cause-reviewer            | Root cause analysis               |
+| security-reviewer              | OWASP Top 10                      |
+| silent-failure-reviewer        | Silent failure detection          |
+| sow-spec-reviewer              | SOW/Spec quality                  |
+| subagent-reviewer              | Sub-agent definition review       |
+| test-coverage-reviewer         | Test coverage quality             |
+| testability-reviewer           | Testability                       |
+| type-design-reviewer           | Type design + encapsulation       |
+| type-safety-reviewer           | TypeScript type safety            |
 
 ### Team Agents
 

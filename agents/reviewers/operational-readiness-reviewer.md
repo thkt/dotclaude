@@ -1,7 +1,6 @@
 ---
 name: operational-readiness-reviewer
-description:
-  Operational readiness review. Error boundaries, loading states, logging,
+description: Operational readiness review. Error boundaries, loading states, logging,
   performance budgets.
 tools: [Read, Grep, Glob, LS]
 model: sonnet
@@ -22,13 +21,13 @@ background: true
 
 ## Analysis Phases
 
-| Phase | Action               | Focus                                      |
-| ----- | -------------------- | ------------------------------------------ |
-| 1     | Error Boundary Scan  | Missing boundaries around risky components |
-| 2     | Loading State Check  | Suspense fallbacks, skeleton screens       |
-| 3     | Observability Audit  | Critical paths without structured logging, error correlation, or alertability |
-| 4     | Performance Budget   | Bundle size, lazy loading, code splitting  |
-| 5     | Fault Isolation      | Blast radius containment, fallback paths, circuit breakers |
+| Phase | Action              | Focus                                                                         |
+| ----- | ------------------- | ----------------------------------------------------------------------------- |
+| 1     | Error Boundary Scan | Missing boundaries around risky components                                    |
+| 2     | Loading State Check | Suspense fallbacks, skeleton screens                                          |
+| 3     | Observability Audit | Critical paths without structured logging, error correlation, or alertability |
+| 4     | Performance Budget  | Bundle size, lazy loading, code splitting                                     |
+| 5     | Fault Isolation     | Blast radius containment, fallback paths, circuit breakers                    |
 
 ## Scope Adaptation
 
@@ -49,7 +48,7 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.60: exclude (see `finding-schema.md`)
+- Confidence < 0.70: exclude (see `finding-schema.md`)
 - Same pattern in multiple locations: consolidate into single finding
 - Do not flag test files or mock files
 
@@ -62,7 +61,7 @@ Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
 
 | ID        | Severity                       | Category                                                             | Location    | Confidence |
 | --------- | ------------------------------ | -------------------------------------------------------------------- | ----------- | ---------- |
-| OPS-{seq} | critical / high / medium / low | error-boundary / loading-state / logging / performance / degradation | `file:line` | 0.60–1.00  |
+| OPS-{seq} | critical / high / medium / low | error-boundary / loading-state / logging / performance / degradation | `file:line` | 0.70–1.00  |
 
 ### OPS-{seq}
 
