@@ -1,7 +1,6 @@
 ---
 name: glossary
-description:
-  Extract ubiquitous language from Slack and generate domain glossary. Use when
+description: Extract ubiquitous language from Slack and generate domain glossary. Use when
   user mentions 用語集, glossary, ユビキタス言語, ドメイン用語, Slack から用語.
 allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion
 model: opus
@@ -12,6 +11,10 @@ user-invocable: true
 # /glossary - Ubiquitous Language Extractor
 
 Extract domain terms from Slack conversations and generate a glossary.
+
+## Architecture
+
+Thin wrapper. Slack API procedures and extraction logic live in `extracting-ubiquitous-language` skill.
 
 ## Input
 

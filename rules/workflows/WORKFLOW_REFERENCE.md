@@ -7,12 +7,12 @@ paths:
 
 ## Standard Workflows
 
-| Pattern       | Workflow                                                                             | When                                  |
-| ------------- | ------------------------------------------------------------------------------------ | ------------------------------------- |
-| Quick Fix     | `/fix`                                                                               | Small bug, stable codebase            |
-| Investigation | `/research` → `/fix`                                                                 | Unknown cause                         |
+| Pattern       | Workflow                                                                   | When                                  |
+| ------------- | -------------------------------------------------------------------------- | ------------------------------------- |
+| Quick Fix     | `/fix`                                                                     | Small bug, stable codebase            |
+| Investigation | `/research` → `/fix`                                                       | Unknown cause                         |
 | Feature       | `/feature` (or: `/research` → `/think` → `/code` → `/audit` → `/validate`) | New capability, requirements unstable |
-| Simple        | `/code`                                                                     | Clear implementation                  |
+| Simple        | `/code`                                                                    | Clear implementation                  |
 
 ## Command Selection
 
@@ -85,10 +85,9 @@ Auto: All solo conditions met → Solo, otherwise → Team
 
 ### Productivity
 
-| Command            | Purpose                                  |
-| ------------------ | ---------------------------------------- |
-| `/inbox`           | Task aggregation (GitHub/Slack/Calendar) |
-| `/validate-config` | Configuration integrity check            |
+| Command  | Purpose                                  |
+| -------- | ---------------------------------------- |
+| `/inbox` | Task aggregation (GitHub/Slack/Calendar) |
 
 ## Todo Progress Tracking
 
@@ -111,22 +110,21 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 
 ## Command × Principle Mapping
 
-| Command            | Primary Principles           | Secondary Principles                        |
-| ------------------ | ---------------------------- | ------------------------------------------- |
-| `/think`           | SOLID, Occam's Razor         | Progressive Enhancement                     |
-| `/research`        | Strong Inference             | All principles for context                  |
-| `/code`            | TDD, Baby Steps              | Readable Code, DRY, AI-Assisted Development |
-| `/fix`             | Occam's Razor                | TIDYINGS                                    |
-| `/audit`           | All principles               | Priority order, Strong Inference            |
-| `/feature`         | Progressive Enhancement      | TDD, SOLID, Occam's Razor                   |
-| `/polish`          | Readable Code, Occam's Razor | DRY, YAGNI                                  |
-| `/validate`        | Output Verifiability         | Completion criteria                         |
-| `/commit`          | Readable Code                | Conventional Commits                        |
-| `/branch`          | Readable Code                | Naming conventions                          |
-| `/pr`              | Readable Code                | Documentation                               |
-| `/issue`           | Readable Code                | Miller's Law                                |
-| `/docs`            | Readable Code                | Progressive Enhancement                     |
-| `/adr`             | SOLID                        | Leaky Abstraction                           |
-| `/preview`         | Readable Code                | Strong Inference                            |
-| `/inbox`           | -                            | -                                           |
-| `/validate-config` | Output Verifiability         | Safety First                                |
+| Command     | Primary Principles           | Secondary Principles                        |
+| ----------- | ---------------------------- | ------------------------------------------- |
+| `/think`    | SOLID, Occam's Razor         | Progressive Enhancement                     |
+| `/research` | Strong Inference             | All principles for context                  |
+| `/code`     | TDD, Baby Steps              | Readable Code, DRY, AI-Assisted Development |
+| `/fix`      | Occam's Razor                | TIDYINGS                                    |
+| `/audit`    | All principles               | Priority order, Strong Inference            |
+| `/feature`  | Progressive Enhancement      | TDD, SOLID, Occam's Razor                   |
+| `/polish`   | Readable Code, Occam's Razor | DRY, YAGNI                                  |
+| `/validate` | Output Verifiability         | Completion criteria                         |
+| `/commit`   | Readable Code                | Conventional Commits                        |
+| `/branch`   | Readable Code                | Naming conventions                          |
+| `/pr`       | Readable Code                | Documentation                               |
+| `/issue`    | Readable Code                | Miller's Law                                |
+| `/docs`     | Readable Code                | Progressive Enhancement                     |
+| `/adr`      | SOLID                        | Leaky Abstraction                           |
+| `/preview`  | Readable Code                | Strong Inference                            |
+| `/inbox`    | -                            | -                                           |

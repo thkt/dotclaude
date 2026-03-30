@@ -147,7 +147,7 @@
     {
       "name": "toolkit",
       "source": "./",
-      "description": "Utilities and patterns: /inbox, /watch, /kousei, /glossary, /adr, /validate-config, /find-docs plus frontend pattern references",
+      "description": "Utilities and patterns: /inbox, /watch, /kousei, /glossary, /adr plus frontend pattern references",
       "version": "3.0.0",
       "author": {
         "name": "thkt",
@@ -170,9 +170,7 @@
         "./skills/watch/SKILL.md",
         "./skills/kousei/SKILL.md",
         "./skills/glossary/SKILL.md",
-        "./skills/adr/SKILL.md",
-        "./skills/validate-config/SKILL.md",
-        "./skills/find-docs/SKILL.md"
+        "./skills/adr/SKILL.md"
       ],
       "skills": [
         "./skills/accessing-google-workspace/SKILL.md",

@@ -11,6 +11,10 @@ user-invocable: true
 
 Create ADR in MADR format with auto-numbering.
 
+## Architecture
+
+Thin wrapper. Templates, validation, and scripts live in `creating-adrs` skill.
+
 ## Input
 
 - Decision title: `$1` (specific action like "Adopt X for Y")

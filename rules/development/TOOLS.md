@@ -2,16 +2,18 @@
 
 CLI tool > built-in equivalent.
 
-| Purpose     | Use                   | NOT             | Condition                                |
-| ----------- | --------------------- | --------------- | ---------------------------------------- |
-| X/Twitter   | `xr tweet <url>`      | `scout fetch`   | x.com / twitter.com URLs                 |
-| Slack msg   | `scout fetch`         | `curl` + token  | \*.slack.com/archives/ URL               |
-| URL fetch   | `scout fetch`         | `WebFetch`      | Always (Bash)                            |
-| Web search  | `scout search`        | `WebSearch`     | Always (Bash)                            |
-| GitHub repo | `scout repo-overview` | `gh` / `fetch`  | Repo overview (Bash)                     |
-| Code search | `yomu search`         | `Grep` / `Glob` | Always (Bash). Builds embedding coverage |
-|             | `Grep` / `Glob`       | —               | Only: literal regex, known exact path    |
-| Session log | `recall search "query"` | `Grep *.jsonl` | Past session search                     |
+| Purpose      | Use                     | NOT             | Condition                                |
+| ------------ | ----------------------- | --------------- | ---------------------------------------- |
+| X/Twitter    | `xr tweet <url>`        | `scout fetch`   | x.com / twitter.com URLs                 |
+| Slack msg    | `scout fetch`           | `curl` + token  | \*.slack.com/archives/ URL               |
+| URL fetch    | `scout fetch`           | `WebFetch`      | Always (Bash)                            |
+| Web search   | `scout search`          | `WebSearch`     | Always (Bash)                            |
+| GitHub repo  | `scout repo-overview`   | `gh` / `fetch`  | Repo overview (Bash)                     |
+| Code search  | `yomu search`           | `Grep` / `Glob` | Always (Bash). Builds embedding coverage |
+|              | `Grep` / `Glob`         | —               | Only: literal regex, known exact path    |
+| Doc lookup   | `scout research`        | `WebSearch`     | Library/API docs (Bash)                  |
+| Config check | `validate-config.sh`    | —               | `~/.claude/scripts/` (Bash)              |
+| Session log  | `recall search "query"` | `Grep *.jsonl`  | Past session search                      |
 
 ## xr Routing
 
@@ -33,17 +35,27 @@ Prefer yomu even for simple searches to build embedding coverage over time.
 | Known identifier: `useAuth`             | File listing: `**/*.tsx`                |
 | Unknown name: "where does X happen"     |                                         |
 
+## Doc Lookup
+
+| Command                          | When                                           |
+| -------------------------------- | ---------------------------------------------- |
+| `scout research "<lib> <topic>"` | Default — search + fetch + compile in one step |
+| `scout fetch "<url>"`            | Known URL from prior fetch or user-provided    |
+
+- Max 3 pages per question
+- Prefer official docs over blog posts
+- When docs insufficient, answer from training knowledge and note it may be outdated
+
 ## recall Usage
 
 Pattern recognition, not decision making. If ANY pattern detected, call
 `recall search "relevant query"`. Do not deliberate.
 
-| Pattern | Signal |
-| --- | --- |
-| Temporal reference | 「前に」「あの時」「この前」、past events, prior decisions |
-| Structural echo | Current problem/design mirrors a past situation |
-| Repetition | 「また同じ」「繰り返し」、recurring mistake or pattern |
-| Vague back-reference | 「あの件」「前にやったやつ」、past work without specifics |
-| Module first contact | About to edit a file/module not yet touched this session |
-| BACKLOG task pickup | Starting a task from BACKLOG.md |
-
+| Pattern              | Signal                                                     |
+| -------------------- | ---------------------------------------------------------- |
+| Temporal reference   | 「前に」「あの時」「この前」、past events, prior decisions |
+| Structural echo      | Current problem/design mirrors a past situation            |
+| Repetition           | 「また同じ」「繰り返し」、recurring mistake or pattern     |
+| Vague back-reference | 「あの件」「前にやったやつ」、past work without specifics  |
+| Module first contact | About to edit a file/module not yet touched this session   |
+| BACKLOG task pickup  | Starting a task from BACKLOG.md                            |

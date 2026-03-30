@@ -82,7 +82,7 @@ install specific workflow sets:
 - **complete-workflow-system**: Full development workflow with quality gates
   (/think, /code, /audit, /research, /feature, /swarm)
 - **quick-actions**: Fast bug fixes (/fix), AI slop removal (/polish), config
-  validation (/validate-config), Japanese proofreading (/kousei)
+  Japanese proofreading (/kousei)
 - **git-utilities**: Git workflow helpers (/commit, /branch, /pr, /issue,
   /preview)
 - **documentation-tools**: ADR creation (/adr) and domain glossary (/glossary)

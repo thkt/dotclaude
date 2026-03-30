@@ -1,7 +1,6 @@
 ---
 name: preview
-description:
-  AI screening review for PRs - preliminary check before human review. Use when
+description: AI screening review for PRs - preliminary check before human review. Use when
   user mentions スクリーニング, PRレビュー, プレビュー, preview PR, pre-review.
   Do NOT use for deep multi-reviewer code quality audits (use /audit instead).
 allowed-tools: Bash(git:*), Bash(gh:*), Read, Grep, Glob, AskUserQuestion
@@ -12,6 +11,10 @@ user-invocable: true
 ---
 
 # /preview - PR Screening Review
+
+## Architecture
+
+Thin wrapper. PR resolution and checkout here; review process and comment labels in `screening-pr-review` skill.
 
 ## Input
 

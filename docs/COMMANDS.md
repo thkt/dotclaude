@@ -67,17 +67,16 @@ confirmation mode (same functionality)
 
 ## Command → Skill/Agent Mapping
 
-| Command      | Skills Used                                   | Agents Used                                                           |
-| ------------ | --------------------------------------------- | --------------------------------------------------------------------- |
-| `/think`     | -                                             | -                                                                     |
-| `/code`      | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
-| `/audit`     | applying-code-principles                      | tier-based reviewer agents (3 or file-routed from 17)                 |
-| `/fix`       | -                                             | build-error-resolver                                                  |
-| `/polish`    | -                                             | code-simplifier                                                       |
-| `/feature`   | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
-| `/swarm`     | orchestrating-workflows                       | qa-reviewer, unit-implementer                                         |
-| `/find-docs` | -                                             | -                                                                     |
-| `/glossary`  | extracting-ubiquitous-language                | -                                                                     |
+| Command     | Skills Used                                   | Agents Used                                                           |
+| ----------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| `/think`    | -                                             | -                                                                     |
+| `/code`     | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
+| `/audit`    | applying-code-principles                      | tier-based reviewer agents (3 or file-routed from 17)                 |
+| `/fix`      | -                                             | build-error-resolver                                                  |
+| `/polish`   | -                                             | code-simplifier                                                       |
+| `/feature`  | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
+| `/swarm`    | orchestrating-workflows                       | qa-reviewer, unit-implementer                                         |
+| `/glossary` | extracting-ubiquitous-language                | -                                                                     |
 
 ## File Structure
 
