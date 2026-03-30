@@ -174,6 +174,17 @@ DA結果を判定テーブル + アクション項目で提示。Step 5に進む
 0-6）から生成。ID形式: AC-N。出力:
 `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
 
+品質ゲート（各セクション記述前に適用）:
+
+| セクション | ゲート                                                                   |
+| ---------- | ------------------------------------------------------------------------ |
+| Why        | 5フィールド全記入。Outcome = 成果物ではなく計測可能な結果                |
+| AC         | 各ACがWhy Outcomeにトレース。孤立AC禁止。Why Problemを超えたスコープ不可 |
+| Scope      | YAGNIチェックリスト項目に理由を付けてチェック（単なる除外は不可）        |
+| Impl       | フェーズごとにFiles < 5。Stepは具体的な変更内容を記述                    |
+| Test       | 全ACに≥1テスト。Verificationは何を検証するか具体的に記述                 |
+| Risks      | ≥1リスク特定 + 緩和策                                                    |
+
 ### Step 8: Spec
 
 テンプレート `templates/spec/template.md` をRead。SOWから生成。ID形式: FR-001,
@@ -181,6 +192,17 @@ T-001, NFR-001。トレーサビリティ: `FR-001 Implements: AC-001` →
 `T-001 Validates: FR-001` UI関連: Component
 API（Props、variants、states、usage）を含める。出力:
 `.claude/workspace/planning/[same-dir]/spec.md`
+
+品質ゲート（各セクション記述前に適用）:
+
+| セクション | ゲート                                                               |
+| ---------- | -------------------------------------------------------------------- |
+| FR         | EARS構文必須。1文につきSHALL 1つ。曖昧な値禁止（appropriate等）      |
+| FR         | 設計判断がある場合は補足で根拠を記載（variant流用、YAGNI論拠等）     |
+| Domain     | 概念レベルのみ。型名・フィールド名は書かない。InvariantsはFRに紐付け |
+| Test       | 全FRに≥1シナリオ。Given-When-Thenの全列に具体値                      |
+| NFR        | Measurement列に計測方法を明記（コードレビュー、手動計測等）          |
+| Trace      | AC → FR → Test → NFR チェーン途切れなし                              |
 
 ## Specレビュー（Step 9）
 
