@@ -1,65 +1,83 @@
 ---
 name: polish
-description:
-  変更コードの再利用性・品質・効率をレビューし修正、さらにAI生成スロップを除去し
-  テストを監査。ユーザーが整理して, きれいにして, コード整理, slop除去,
-  ポリッシュ, テスト整理,
-  テスト監査等に言及した場合に使用。深いマルチレビュアーの品質監査には /audit
-  を使用。
-allowed-tools:
-  Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob,
-  Task, Skill
+description: 軽量レビュー + クリーンアップ。構造レビュー、オプションのCodexクロスチェック、
+  スロップ除去、テスト監査。整理して, きれいにして, コード整理, slop除去,
+  ポリッシュ, テスト整理, テスト監査, クロスチェック, crosscheck,
+  Codex レビュー に言及した場合に使用。深いマルチレビュアー監査には /audit を使用。
+allowed-tools: Bash(codex:*), Bash(git diff:*), Bash(git log:*), Bash(git stash:*),
+  Bash(git status:*), Bash(cargo test:*), Bash(npm test:*), Bash(npm run test:*),
+  Bash(bun test:*), Bash(pnpm test:*), Bash(yarn test:*), Bash(make test:*),
+  Bash(which:*), Read, Edit, Grep, Glob, LS, Skill, AskUserQuestion
 model: opus
 argument-hint: "[対象スコープ]"
 user-invocable: true
 ---
 
-# /polish - コードレビュー・クリーンアップ・AIスロップ除去 & テスト監査
+# /polish - 軽量レビュー + クリーンアップ
 
-変更コードをレビュー・修正し、AI生成スロップを除去してテストを監査。
+構造レビュー (simplify) + オプションのCodexクロスチェック + コードクリーンアップ +
+テスト監査。全修正をフォアグラウンドで直接適用。
 
 ## 入力
 
 - 対象スコープ: `$1`（任意）
-- `$1`が空の場合 → `git diff HEAD`を分析（staged + unstagedの未コミット変更）
+- `$1`が空の場合 → `git diff HEAD`を分析（staged + unstagedの変更）
 
 ## 実行
 
-| Phase | アクション                                                                              |
-| ----- | --------------------------------------------------------------------------------------- |
-| 1     | `Skill("simplify", args: "$1")` — 3並列レビュー（再利用、品質、効率）で構造的問題を修正 |
-| 2     | `Task` で `subagent_type: code-simplifier` — 更新後のdiffでAIスロップ除去 + テスト監査  |
-| 3     | 統合結果を報告                                                                          |
+### Phase 1: 構造レビュー
 
-### Phase 1: /simplify（バンドル）
+`Skill("simplify", args: "$1")` — 並列レビュー（再利用、品質、効率）で構造的問題を修正。
 
-`Skill` ツールで呼び出し。カバー範囲:
+### Phase 2: Codexクロスチェック（オプション）
 
-- 再利用: 既存ユーティリティの重複、インライン共通処理
-- 品質: 冗長state、パラメータ増殖、コピペ、leaky abstraction
-- 効率: 不要計算、並列化漏れ、ホットパス肥大、メモリリーク
+`which codex` 失敗時は全スキップ。
 
-### Phase 2: code-simplifier（カスタムagent）
+| Step | アクション                                                            |
+| ---- | --------------------------------------------------------------------- |
+| 1    | モード検出: `git status --porcelain` → uncommitted or base            |
+| 2    | `codex review` を検出モードで実行（単一パス）                         |
+| 3    | トリアージ: P1/P2をfile:line付きで抽出。P3除外、スコープ外スキップ    |
+| 4    | 通過findingsを修正（high → medium順）                                 |
+| 5    | テストコマンド検出・バリデーション。テスト失敗時は `git stash` で退避 |
 
-/simplify完了後、残りのdiffに対して実行。
+| 条件               | モード      | コマンド                     |
+| ------------------ | ----------- | ---------------------------- |
+| 未コミット変更あり | uncommitted | `codex review --uncommitted` |
+| baseとの差分のみ   | base        | `codex review --base main`   |
 
-プロダクションコードのスロップとテスト監査をカバー。agentは構造化テンプレートで両方を報告する — 空セクションも出力に表示される。
+未コミット・コミット済み両方ある場合: uncommittedモードを使用。
 
-agent定義の詳細: `agents/enhancers/code-simplifier.md`
+### Phase 3: コードクリーンアップ
+
+現在のdiffに対してcode-simplifierルールを直接適用（フォアグラウンド）。
+
+ルール: `agents/enhancers/code-simplifier.md`
+
+| 対象       | 範囲                                         |
+| ---------- | -------------------------------------------- |
+| AIスロップ | 冗長コメント、過剰防御、過剰設計             |
+| テスト監査 | 曖昧な名前、コピペ、過剰モック、自明なテスト |
+
+code-simplifierの保持ルール適用 — 迷ったら残す。
 
 ## 出力
 
 ```text
-Phase 1 (simplify): <再利用/品質/効率のサマリー>
-Phase 2 (code):  <file:line付きの変更リスト>
-Phase 2 (tests): <file:line付きの変更リスト>
-Phase 2 (skipped): <監査されなかったファイルのリスト（理由付き）>
+Phase 1 (simplify): <サマリー>
+Phase 2 (codex): <修正N / スキップN（理由付き）/ codex未導入>
+Phase 3 (cleanup):
+  Code: <file:line付きの変更>
+  Tests: <file:line付きの変更>
+  Skipped: <未監査ファイル、理由付き>
 ```
 
 ## エラーハンドリング
 
-| エラー              | アクション                      |
-| ------------------- | ------------------------------- |
-| diff変更なし        | "Nothing to polish"報告         |
-| /simplify失敗       | 警告ログ、Phase 2に進む         |
-| code-simplifier失敗 | 警告ログ、Phase 1の結果のみ報告 |
+| エラー              | アクション                          |
+| ------------------- | ----------------------------------- |
+| diff変更なし        | "Nothing to polish" 報告            |
+| /simplify失敗       | 警告ログ、Phase 2に進む             |
+| codex未インストール | Phase 2スキップ、Phase 3に進む      |
+| codex review失敗    | 警告ログ、Phase 3に進む             |
+| 修正がテスト失敗    | `git stash` で退避、findingスキップ |

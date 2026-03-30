@@ -30,6 +30,15 @@ background: true
 | 4        | ネガティブケース     | バリデーション失敗、境界条件                |
 | 5        | リグレッションリスク | テストは将来のリグレッションを検出できるか? |
 
+## testability-reviewerとの区別
+
+| 本レビュアー (test-coverage)            | testability-reviewer              |
+| --------------------------------------- | --------------------------------- |
+| 「この振る舞いはテストされてる？」      | 「このコードはテスト可能？」      |
+| テストファイルの品質/ギャップをレビュー | ソースコードのDI/純粋性をレビュー |
+| ギャップ検出、アンチパターンカタログ    | 依存注入、副作用                  |
+| 修正: 不足テストケースを追加            | 修正: テスト可能な構造に再設計    |
+
 ## 重要度レーティング (ギャップ毎)
 
 | スコア | レベル    | 意味                                               |
@@ -64,19 +73,20 @@ background: true
 
 ## レポートルール
 
-- Confidence < 0.60: 除外（`finding-schema.md` 参照）
-- 同一パターンが複数箇所: 1つのfindingに統合
+| 条件                   | アクション                       |
+| ---------------------- | -------------------------------- |
+| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
+| 同一パターンが複数箇所 | 1つのfindingに統合               |
 
 ## 出力
 
-構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
-
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 ```markdown
 ## Findings
 
 | ID       | Severity                       | Category                              | Location         | Related Code       | Criticality | Confidence |
 | -------- | ------------------------------ | ------------------------------------- | ---------------- | ------------------ | ----------- | ---------- |
-| TC-{seq} | critical / high / medium / low | gap / quality / negative / regression | `test-file:line` | `source-file:line` | 1–10        | 0.60–1.00  |
+| TC-{seq} | critical / high / medium / low | gap / quality / negative / regression | `test-file:line` | `source-file:line` | 1–10        | 0.70–1.00  |
 
 ### TC-{seq}
 

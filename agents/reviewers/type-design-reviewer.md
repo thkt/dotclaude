@@ -27,6 +27,15 @@ background: true
 | 3     | Expression Assessment | Compile-time vs runtime, self-document  |
 | 4     | Enforcement Audit     | Construction validation, mutation guard |
 
+## Distinction from type-safety-reviewer
+
+| This reviewer (type-design)         | type-safety-reviewer               |
+| ----------------------------------- | ---------------------------------- |
+| Modeling quality (domain concepts)  | Mechanical correctness (TS rules)  |
+| Encapsulation, invariant expression | any usage, strict mode, assertions |
+| "Is this type well-designed?"       | "Is this type safe?"               |
+| Language-agnostic principles        | TypeScript-specific checks         |
+
 ## Scoring (per type)
 
 | Dimension             | 1-10 | What it measures                         |
@@ -47,6 +56,10 @@ background: true
 | Too many responsibilities     | medium   |
 | External invariant dependence | medium   |
 
+## Calibration
+
+See `templates/audit/calibration-examples.md` section TD.
+
 ## Error Handling
 
 | Error          | Action                                   |
@@ -57,12 +70,14 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

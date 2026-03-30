@@ -30,6 +30,19 @@ background: true
 | 4        | Strictモード         | tsconfigオプション           |
 | 5        | Union処理            | 網羅的チェック               |
 
+## type-design-reviewerとの区別
+
+| 本レビュアー (type-safety)          | type-design-reviewer             |
+| ----------------------------------- | -------------------------------- |
+| メカニカルな正確性（TSルール）      | モデリング品質（ドメイン概念）   |
+| any使用、strictモード、アサーション | カプセル化、不変条件の表現       |
+| 「この型は安全か？」                | 「この型は良く設計されてるか？」 |
+| TypeScript固有のチェック            | 言語非依存の原則                 |
+
+## Calibration
+
+`templates/audit/calibration-examples.md` のTSセクション参照。
+
 ## エラーハンドリング
 
 | エラー       | アクション                                  |
@@ -40,19 +53,21 @@ background: true
 
 ## レポートルール
 
-- Confidence < 0.60: 除外（`finding-schema.md` 参照）
-- 同一パターンが複数箇所: 1つのfindingに統合
+| 条件                   | アクション                       |
+| ---------------------- | -------------------------------- |
+| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
+| 同一パターンが複数箇所 | 1つのfindingに統合               |
 
 ## 出力
 
-構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 
 ```markdown
 ## Findings
 
 | ID       | Severity            | Category | Location    | Confidence |
 | -------- | ------------------- | -------- | ----------- | ---------- |
-| TS-{seq} | high / medium / low | TS1-TS5  | `file:line` | 0.60–1.00  |
+| TS-{seq} | high / medium / low | TS1-TS5  | `file:line` | 0.70–1.00  |
 
 ### TS-{seq}
 

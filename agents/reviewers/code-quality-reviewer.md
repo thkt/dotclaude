@@ -32,6 +32,16 @@ background: true
 | 8     | Readability | AI Smell Check   | Over-abstraction, patterns   |
 | 9     | Readability | Miller's Law     | 7±2 violations               |
 
+## Distinction from related reviewers
+
+| Concern    | This reviewer (code-quality) | testability-reviewer         | design-pattern-reviewer  |
+| ---------- | ---------------------------- | ---------------------------- | ------------------------ |
+| Lens       | Readable? Maintainable?      | Testable?                    | Architecturally sound?   |
+| State      | Wrong scope (readability)    | Mutable global (isolation)   | Wrong state tool (React) |
+| Coupling   | Over-engineered abstraction  | Can't inject dependency      | Prop drilling            |
+| Complexity | Nesting depth, function size | Mock depth, setup complexity | Component responsibility |
+| Fix        | Simplify or restructure      | Make injectable/mockable     | Apply React pattern      |
+
 ## Calibration
 
 See `templates/audit/calibration-examples.md` section CQ.
@@ -46,12 +56,14 @@ See `templates/audit/calibration-examples.md` section CQ.
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

@@ -56,6 +56,15 @@ background: true
 | Shell、Rust、TS、あらゆる言語 | フロントエンド特化（React/Next.js）           |
 | 実行時リソースの無駄          | ユーザー体感パフォーマンス                    |
 
+## root-cause-reviewerとの区別
+
+| 本レビュアー (EFF)                      | root-cause-reviewer (RCA)        |
+| --------------------------------------- | -------------------------------- |
+| 「これは不要な処理をしてないか？」      | 「これはパッチか根本修正か？」   |
+| TOCTOUをパフォーマンス/正確性バグとして | レース条件を設計欠陥の症状として |
+| ホット/コールドパス分析                 | 5 Whysで根本原因を追跡           |
+| 修正方向: 最適化                        | 修正方向: 再設計                 |
+
 ## Calibration
 
 `templates/audit/calibration-examples.md` のEFFセクション参照。
@@ -70,20 +79,21 @@ background: true
 
 ## レポートルール
 
-- 信頼度 < 0.60: 除外（`finding-schema.md` 参照）
-- 同一パターンが複数箇所: 単一findingに統合
-- コールドパスの軽微な問題: 統合でseverityが上がらない限り除外
+| 条件                     | アクション                         |
+| ------------------------ | ---------------------------------- |
+| 信頼度 < 0.70            | 除外（`finding-schema.md` 参照）   |
+| 同一パターンが複数箇所   | 単一findingに統合                  |
+| コールドパスの軽微な問題 | 統合でseverityが上がらない限り除外 |
 
 ## 出力
 
-構造化Markdownを返す（ベーススキーマ: `templates/audit/finding-schema.md`）:
-
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 ```markdown
 ## Findings
 
 | ID        | Severity            | Category                                                                          | Location    | Confidence |
 | --------- | ------------------- | --------------------------------------------------------------------------------- | ----------- | ---------- |
-| EFF-{seq} | high / medium / low | unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad | `file:line` | 0.60-1.00  |
+| EFF-{seq} | high / medium / low | unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad | `file:line` | 0.70-1.00  |
 
 ### EFF-{seq}
 

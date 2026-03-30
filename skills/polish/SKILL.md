@@ -1,22 +1,22 @@
 ---
 name: polish
-description:
-  Review changed code for reuse, quality, and efficiency, then remove
-  AI-generated slop and audit tests. Use when user mentions 整理して,
-  きれいにして, コード整理, slop除去, ポリッシュ, テスト整理, テスト監査. Do NOT
-  use for deep multi-reviewer code quality audits (use /audit instead).
-allowed-tools:
-  Bash(git diff:*), Bash(git log:*), Bash(git status:*), Read, Edit, Grep, Glob,
-  Task, Skill
+description: Light review + cleanup with optional Codex cross-check, slop removal,
+  and test audit. Use when user mentions 整理して, きれいにして, コード整理,
+  slop除去, ポリッシュ, テスト整理, テスト監査, クロスチェック, crosscheck,
+  Codex レビュー. Do NOT use for deep multi-reviewer audits (use /audit).
+allowed-tools: Bash(codex:*), Bash(git diff:*), Bash(git log:*), Bash(git stash:*),
+  Bash(git status:*), Bash(cargo test:*), Bash(npm test:*), Bash(npm run test:*),
+  Bash(bun test:*), Bash(pnpm test:*), Bash(yarn test:*), Bash(make test:*),
+  Bash(which:*), Read, Edit, Grep, Glob, LS, Skill, AskUserQuestion
 model: opus
 argument-hint: "[target scope]"
 user-invocable: true
 ---
 
-# /polish - Code Review, Cleanup, AI Slop Removal & Test Audit
+# /polish - Light Review + Cleanup
 
-Review changed code and fix issues, then remove AI-generated slop and audit
-tests.
+Structural review (simplify) + optional Codex cross-check + code cleanup + test
+audit. All fixes applied directly in foreground.
 
 ## Input
 
@@ -25,42 +25,60 @@ tests.
 
 ## Execution
 
-| Phase | Action                                                                                                                 |
-| ----- | ---------------------------------------------------------------------------------------------------------------------- |
-| 1     | `Skill("simplify", args: "$1")` — 3 parallel review agents (reuse, quality, efficiency) find and fix structural issues |
-| 2     | `Task` with `subagent_type: code-simplifier` — AI slop removal + test audit on the updated diff                        |
-| 3     | Report combined results                                                                                                |
+### Phase 1: Structural review
 
-### Phase 1: /simplify (bundled)
+`Skill("simplify", args: "$1")` — parallel review agents (reuse, quality,
+efficiency) find and fix structural issues.
 
-Invoke via `Skill` tool. Covers:
+### Phase 2: Codex cross-check (optional)
 
-- Reuse: existing utilities duplicated, inline common logic
-- Quality: redundant state, parameter sprawl, copy-paste, leaky abstractions
-- Efficiency: unnecessary work, missed concurrency, hot-path bloat, memory leaks
+Skip entirely if `which codex` fails.
 
-### Phase 2: code-simplifier (custom agent)
+| Step | Action                                                            |
+| ---- | ----------------------------------------------------------------- |
+| 1    | Detect mode: `git status --porcelain` → uncommitted or base       |
+| 2    | Run `codex review` with detected mode (single pass)               |
+| 3    | Triage: extract P1/P2 with file:line. Drop P3, skip out-of-scope  |
+| 4    | Fix surviving findings (high first, then medium)                  |
+| 5    | Detect test command and validate. `git stash` fix on test failure |
 
-After /simplify completes, run code-simplifier on the remaining diff.
+| Condition                       | Mode        | Command                      |
+| ------------------------------- | ----------- | ---------------------------- |
+| Uncommitted changes             | uncommitted | `codex review --uncommitted` |
+| Commits vs base, no uncommitted | base        | `codex review --base main`   |
 
-Covers production code slop and test audit. The agent reports both in a
-structured template — empty sections are visible in the output.
+If both uncommitted and committed changes: use uncommitted mode.
 
-See agent definition for full rules: `agents/enhancers/code-simplifier.md`
+### Phase 3: Code cleanup
+
+Apply code-simplifier rules directly on the current diff (foreground).
+
+Rules: `agents/enhancers/code-simplifier.md`
+
+| Target     | Scope                                                  |
+| ---------- | ------------------------------------------------------ |
+| AI slop    | Redundant comments, defensive excess, over-engineering |
+| Test audit | Vague names, copy-paste, over-mocking, trivial tests   |
+
+Preservation rules in code-simplifier apply — when in doubt, keep.
 
 ## Output
 
 ```text
-Phase 1 (simplify): <reuse/quality/efficiency summary>
-Phase 2 (code):  <list changes with file:line>
-Phase 2 (tests): <list changes with file:line>
-Phase 2 (skipped): <list files not audited, with reason>
+Phase 1 (simplify): <summary>
+Phase 2 (codex): <fixed N / skipped N with reasons / not available>
+Phase 3 (cleanup):
+  Code: <changes with file:line>
+  Tests: <changes with file:line>
+  Skipped: <files not audited, with reason>
 ```
 
 ## Error Handling
 
-| Error                 | Action                           |
-| --------------------- | -------------------------------- |
-| No changes in diff    | Report "Nothing to polish"       |
-| /simplify fails       | Log warning, proceed to Phase 2  |
-| code-simplifier fails | Log warning, report Phase 1 only |
+| Error                | Action                            |
+| -------------------- | --------------------------------- |
+| No changes in diff   | Report "Nothing to polish"        |
+| /simplify fails      | Log warning, proceed to Phase 2   |
+| codex not installed  | Skip Phase 2, proceed to Phase 3  |
+| codex review fails   | Log warning, proceed to Phase 3   |
+| Fix causes test fail | `git stash` the fix, skip finding |

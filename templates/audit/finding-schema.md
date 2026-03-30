@@ -98,7 +98,6 @@ Reviewers not listed use base fields only.
 | test-coverage-reviewer | related_code, criticality                         | opt     | related_code → evidence; criticality → reasoning note    |
 | type-design-reviewer   | type_name, scores                                 | opt     | Append to evidence; scores → reasoning note              |
 | security-reviewer      | entry_points (in hint)                            | opt     | Already in verification_hint                             |
-| subagent-reviewer      | (none)                                            | —       | No normalization needed                                  |
 | sow-spec-reviewer      | deductions                                        | req     | Append to evidence as deduction log                      |
 
 ## ID Prefix Registry
@@ -121,7 +120,6 @@ Reviewers not listed use base fields only.
 | REUSE  | reuse-reviewer                 |
 | EFF    | efficiency-reviewer            |
 | DOC    | document-reviewer              |
-| SA     | subagent-reviewer              |
 | OPS    | operational-readiness-reviewer |
 | SOW    | sow-spec-reviewer              |
 | PQ     | prompt-reviewer                |

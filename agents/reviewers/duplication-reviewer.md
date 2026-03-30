@@ -53,6 +53,15 @@ detection.
 5. Report clusters (group of locations sharing the same pattern)
 6. If Phase 1-2 yield zero matches above similarity threshold, skip Phase 3-5
 
+## Distinction from reuse-reviewer
+
+| This reviewer (duplication)            | reuse-reviewer                     |
+| -------------------------------------- | ---------------------------------- |
+| Code vs code (any direction)           | New code vs existing utilities     |
+| "Extract shared Y from A and B"        | "Use the existing X instead"       |
+| Cross-compares all target files        | Searches outward from changed code |
+| Actionable: extract new shared utility | Actionable: replace with import    |
+
 ## Calibration
 
 See `templates/audit/calibration-examples.md` section DRY.
@@ -67,13 +76,14 @@ See `templates/audit/calibration-examples.md` section DRY.
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding with all
-  locations listed
+| Condition                          | Action                                              |
+| ---------------------------------- | --------------------------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)                       |
+| Same pattern in multiple locations | Consolidate into single finding, list all locations |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

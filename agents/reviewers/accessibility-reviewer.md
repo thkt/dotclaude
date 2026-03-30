@@ -43,6 +43,10 @@ Fallback: If browser unavailable, code-only analysis with lower confidence.
 | Font size      | `get styles @ref` | Verify minimum 16px for body  |
 | Focus visible  | `get styles @ref` | Check outline on :focus       |
 
+## Calibration
+
+See `templates/audit/calibration-examples.md` section A11Y.
+
 ## Error Handling
 
 | Error                          | Action                                   |
@@ -55,12 +59,14 @@ Fallback: If browser unavailable, code-only analysis with lower confidence.
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

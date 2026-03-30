@@ -113,7 +113,6 @@ typeset -A dynamic_agents=(
   [evidence-verifier]="audit pipeline"
   [progressive-integrator]="/code team"
   [unit-implementer]="/code team"
-  [subagent-reviewer]="audit sub-reviewer"
 )
 for agent_file in "${AGENTS_DIR}"/**/*.md(N); do
   agent_name="${agent_file:t:r}"

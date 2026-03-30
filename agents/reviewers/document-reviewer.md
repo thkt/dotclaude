@@ -38,12 +38,24 @@ background: true
 | Rules        | Clarity, effectiveness, conflicts   |
 | Architecture | Decisions, justifications, diagrams |
 
+## Distinction from prompt-reviewer
+
+| This reviewer (document)              | prompt-reviewer                      |
+| ------------------------------------- | ------------------------------------ |
+| Human-facing docs (README, API, arch) | LLM-facing files (agents, skills)    |
+| Readability, completeness, audience   | Token efficiency, format compliance  |
+| "Can a human follow this?"            | "Can an LLM parse this efficiently?" |
+
 ## JP/EN Handling
 
 | Location                | Review Mode    |
 | ----------------------- | -------------- |
 | `skills/*/SKILL.md`     | Full review    |
 | `.ja/skills/*/SKILL.md` | Structure-only |
+
+## Calibration
+
+See `templates/audit/calibration-examples.md` section DOC.
 
 ## Error Handling
 
@@ -55,12 +67,14 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

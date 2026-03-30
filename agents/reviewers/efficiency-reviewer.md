@@ -54,6 +54,15 @@ Before flagging, check execution frequency:
 | Shell, Rust, TS, any language     | Frontend-specific (React/Next.js)        |
 | Runtime resource waste            | User-perceived performance               |
 
+## Distinction from root-cause-reviewer
+
+| This reviewer (EFF)                   | root-cause-reviewer (RCA)                |
+| ------------------------------------- | ---------------------------------------- |
+| "Is this doing unnecessary work?"     | "Is this a patch or a fix?"              |
+| TOCTOU as performance/correctness bug | Race condition as symptom of design flaw |
+| Hot/cold path analysis                | 5 Whys to find root cause                |
+| Fix direction: optimize               | Fix direction: redesign                  |
+
 ## Calibration
 
 See `templates/audit/calibration-examples.md` section EFF.
@@ -68,13 +77,15 @@ See `templates/audit/calibration-examples.md` section EFF.
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
-- Cold-path minor issues: exclude unless consolidation raises severity
+| Condition                          | Action                                       |
+| ---------------------------------- | -------------------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)                |
+| Same pattern in multiple locations | Consolidate into single finding              |
+| Cold-path minor issues             | Exclude unless consolidation raises severity |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

@@ -101,7 +101,6 @@
         "./agents/reviewers/root-cause-reviewer.md",
         "./agents/reviewers/security-reviewer.md",
         "./agents/reviewers/silent-failure-reviewer.md",
-        "./agents/reviewers/subagent-reviewer.md",
         "./agents/reviewers/test-coverage-reviewer.md",
         "./agents/reviewers/testability-reviewer.md",
         "./agents/reviewers/type-design-reviewer.md",

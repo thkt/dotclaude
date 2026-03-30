@@ -141,7 +141,6 @@ agents/
 | security-reviewer              | OWASP Top 10                      |
 | silent-failure-reviewer        | Silent failure detection          |
 | sow-spec-reviewer              | SOW/Spec quality                  |
-| subagent-reviewer              | Sub-agent definition review       |
 | test-coverage-reviewer         | Test coverage quality             |
 | testability-reviewer           | Testability                       |
 | type-design-reviewer           | Type design + encapsulation       |

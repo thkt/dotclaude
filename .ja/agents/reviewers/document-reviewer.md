@@ -40,12 +40,24 @@ background: true
 | Rules        | 明確性、有効性、コンフリクト                      |
 | Architecture | 決定、理由、ダイアグラム                          |
 
+## prompt-reviewerとの区別
+
+| 本レビュアー (document)               | prompt-reviewer                         |
+| ------------------------------------- | --------------------------------------- |
+| 人間向けドキュメント（README、API等） | LLM向けファイル（agents、skills）       |
+| 可読性、完全性、対象読者適合          | トークン効率、フォーマット準拠          |
+| 「人間がこれを理解できるか？」        | 「LLMがこれを効率的にパースできるか？」 |
+
 ## JP/ENハンドリング
 
 | 場所                    | レビューモード |
 | ----------------------- | -------------- |
 | `skills/*/SKILL.md`     | フルレビュー   |
 | `.ja/skills/*/SKILL.md` | 構造のみ       |
+
+## Calibration
+
+`templates/audit/calibration-examples.md` のDOCセクション参照。
 
 ## エラーハンドリング
 
@@ -57,19 +69,21 @@ background: true
 
 ## レポートルール
 
-- Confidence < 0.60: 除外（`finding-schema.md` 参照）
-- 同一パターンが複数箇所: 1つのfindingに統合
+| 条件                   | アクション                       |
+| ---------------------- | -------------------------------- |
+| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
+| 同一パターンが複数箇所 | 1つのfindingに統合               |
 
 ## 出力
 
-構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 
 ```markdown
 ## Findings
 
 | ID        | Severity            | Category                                                  | Location       | Confidence |
 | --------- | ------------------- | --------------------------------------------------------- | -------------- | ---------- |
-| DOC-{seq} | high / medium / low | clarity / structure / completeness / technical / audience | `file:section` | 0.60–1.00  |
+| DOC-{seq} | high / medium / low | clarity / structure / completeness / technical / audience | `file:section` | 0.70–1.00  |
 
 ### DOC-{seq}
 

@@ -79,14 +79,26 @@ When adversarial testing is skipped (bootstrap failure or timeout), score
 defaults to 15 (neutral). Not 0 (punitive) because absence of evidence is not
 evidence of absence.
 
+## Merge Gate
+
+Zero-tolerance: any reconciled finding blocks merge.
+
+| Condition                               | Decision         |
+| --------------------------------------- | ---------------- |
+| Reconciled findings = 0 AND score >= 90 | Proceed to merge |
+| Reconciled findings > 0                 | Block merge      |
+| Score < 90 (build/test/adversarial gap) | Block merge      |
+
 ## Interpretation
 
-| Range  | Meaning                                         | Suggested Action  |
-| ------ | ----------------------------------------------- | ----------------- |
-| 90-100 | High confidence. Code is independently verified | Proceed to merge  |
-| 70-89  | Moderate. Some findings or partial evidence     | Review findings   |
-| 50-69  | Low. Significant issues or missing evidence     | Address findings  |
-| 0-49   | Critical. Build/test failures or many findings  | Block merge, /fix |
+Score measures severity, not merge readiness (Merge Gate decides that).
+
+| Range  | Meaning                                         |
+| ------ | ----------------------------------------------- |
+| 90-100 | High confidence. Evidence complete, no findings |
+| 70-89  | Partial evidence gaps or adversarial failures   |
+| 50-69  | Significant issues or missing evidence          |
+| 0-49   | Critical. Build/test failures or many findings  |
 
 ## Report Format
 

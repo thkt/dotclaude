@@ -137,7 +137,6 @@ agents/
 | security-reviewer              | OWASP Top 10          |
 | silent-failure-reviewer        | 静かな失敗検知        |
 | sow-spec-reviewer              | SOW/Spec品質          |
-| subagent-reviewer              | サブエージェント定義  |
 | test-coverage-reviewer         | テストカバレッジ品質  |
 | testability-reviewer           | テスト容易性          |
 | type-design-reviewer           | 型設計 + カプセル化   |

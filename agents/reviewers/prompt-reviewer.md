@@ -83,7 +83,17 @@ Skill required sections: Input, Execution, Output. Output via template reference
 | Scope unclear (what file covers)     | REPORT (medium) — add scope table |
 | Rules without anti-patterns/examples | REPORT (low) — add calibration    |
 
+## Distinction from document-reviewer
+
+| This reviewer (prompt)                   | document-reviewer                     |
+| ---------------------------------------- | ------------------------------------- |
+| LLM-facing files (agents, skills, rules) | Human-facing docs (README, API, arch) |
+| Token efficiency, format compliance      | Readability, completeness, audience   |
+| "Can an LLM parse this efficiently?"     | "Can a human follow this?"            |
+
 ## Calibration
+
+See `templates/audit/calibration-examples.md` section PQ.
 
 | Scenario                                    | Verdict       | Reason                                     |
 | ------------------------------------------- | ------------- | ------------------------------------------ |

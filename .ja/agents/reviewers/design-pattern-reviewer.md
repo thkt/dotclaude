@@ -29,6 +29,20 @@ Reactパターンとコンポーネントアーキテクチャをレビュー。
 | 3        | 状態管理               | Local vs Context vs Store          |
 | 4        | アンチパターンチェック | Props drilling、巨大コンポーネント |
 
+## 関連レビュアーとの区別
+
+| 観点     | 本レビュアー (design-pattern) | code-quality-reviewer      | testability-reviewer                 |
+| -------- | ----------------------------- | -------------------------- | ------------------------------------ |
+| レンズ   | アーキテクチャ的に妥当？      | 読みやすい？保守しやすい？ | テスト書ける？                       |
+| 結合     | Props drilling                | 過剰な抽象化               | 依存注入不可                         |
+| 状態     | 間違った状態ツール（React）   | 間違ったスコープ（可読性） | ミュータブルグローバル（テスト隔離） |
+| スコープ | Reactコンポーネントのみ       | あらゆるコードファイル     | あらゆるコードファイル               |
+| 修正方向 | Reactパターンを適用           | 簡素化・再構造化           | 注入可能/モック可能にする            |
+
+## Calibration
+
+`templates/audit/calibration-examples.md` のDPセクション参照。
+
 ## エラーハンドリング
 
 | エラー       | アクション                                  |
@@ -39,19 +53,21 @@ Reactパターンとコンポーネントアーキテクチャをレビュー。
 
 ## レポートルール
 
-- Confidence < 0.60: 除外（`finding-schema.md` 参照）
-- 同一パターンが複数箇所: 1つのfindingに統合
+| 条件                   | アクション                       |
+| ---------------------- | -------------------------------- |
+| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
+| 同一パターンが複数箇所 | 1つのfindingに統合               |
 
 ## 出力
 
-構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 
 ```markdown
 ## Findings
 
 | ID       | Severity            | Category                                | Location    | Confidence |
 | -------- | ------------------- | --------------------------------------- | ----------- | ---------- |
-| DP-{seq} | high / medium / low | container / hook / state / anti-pattern | `file:line` | 0.60–1.00  |
+| DP-{seq} | high / medium / low | container / hook / state / anti-pattern | `file:line` | 0.70–1.00  |
 
 ### DP-{seq}
 

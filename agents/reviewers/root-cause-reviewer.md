@@ -29,6 +29,19 @@ background: true
 | 3     | Race Condition   | Timing-dependent fixes        |
 | 4     | 5 Whys Trace     | Follow causality chain        |
 
+## Distinction from efficiency-reviewer
+
+| This reviewer (root-cause)               | efficiency-reviewer                   |
+| ---------------------------------------- | ------------------------------------- |
+| "Is this a patch or a fix?"              | "Is this doing unnecessary work?"     |
+| Race condition as symptom of design flaw | TOCTOU as performance/correctness bug |
+| 5 Whys to find root cause                | Hot/cold path analysis                |
+| Fix direction: redesign                  | Fix direction: optimize               |
+
+## Calibration
+
+See `templates/audit/calibration-examples.md` section RCA.
+
 ## Error Handling
 
 | Error         | Action                                   |
@@ -39,12 +52,14 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

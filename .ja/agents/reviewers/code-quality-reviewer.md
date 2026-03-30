@@ -1,7 +1,6 @@
 ---
 name: code-quality-reviewer
-description:
-  統合コード品質レビュー。構造（ファイルレベル）+
+description: 統合コード品質レビュー。構造（ファイルレベル）+
   可読性（関数レベル）。無駄の排除、ミラーの法則。
 tools: [Read, Grep, Glob, LS]
 model: opus
@@ -46,6 +45,16 @@ background: true
 | 8        | 可読性   | AIスメルチェック | 過剰抽象化、パターン       |
 | 9        | 可読性   | ミラーの法則     | 7±2違反                    |
 
+## 関連レビュアーとの区別
+
+| 観点     | 本レビュアー (code-quality) | testability-reviewer           | design-pattern-reviewer     |
+| -------- | --------------------------- | ------------------------------ | --------------------------- |
+| レンズ   | 読みやすい？保守しやすい？  | テスト書ける？                 | アーキテクチャ的に妥当？    |
+| 状態     | 間違ったスコープ（可読性）  | ミュータブルグローバル（隔離） | 間違った状態ツール（React） |
+| 結合     | 過剰な抽象化                | 依存注入不可                   | Props drilling              |
+| 複雑度   | ネスト深度、関数サイズ      | モック深度、セットアップ複雑度 | コンポーネント責務          |
+| 修正方向 | 簡素化・再構造化            | 注入可能/モック可能にする      | Reactパターンを適用         |
+
 ## Calibration
 
 `templates/audit/calibration-examples.md` のCQセクション参照。
@@ -60,19 +69,21 @@ background: true
 
 ## レポートルール
 
-- Confidence < 0.60: 除外（`finding-schema.md` 参照）
-- 同一パターンが複数箇所: 1つのfindingに統合
+| 条件                   | アクション                       |
+| ---------------------- | -------------------------------- |
+| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
+| 同一パターンが複数箇所 | 1つのfindingに統合               |
 
 ## 出力
 
-構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 
 ```markdown
 ## Findings
 
 | ID       | Severity            | Category                | Subcategory                                       | Location    | Confidence |
 | -------- | ------------------- | ----------------------- | ------------------------------------------------- | ----------- | ---------- |
-| CQ-{seq} | high / medium / low | structure / readability | waste / naming / complexity / comments / ai_smell | `file:line` | 0.60–1.00  |
+| CQ-{seq} | high / medium / low | structure / readability | waste / naming / complexity / comments / ai_smell | `file:line` | 0.70–1.00  |
 
 ### CQ-{seq}
 

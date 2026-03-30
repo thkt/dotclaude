@@ -148,6 +148,10 @@ EARS構文のないFR記述は実行不能 — 実装者が構築すべき正確
 | medium       | -2   |
 | low          | -1   |
 
+## Calibration
+
+`templates/audit/calibration-examples.md` のSOWセクション参照。
+
 ## エラーハンドリング
 
 | エラー           | 対処                   |

@@ -51,6 +51,10 @@ background: true
 - Checksums, hashes, UUIDs in non-secret context
 - Example/documentation values in comments or markdown
 
+## Calibration
+
+See `templates/audit/calibration-examples.md` section SEC.
+
 ## Error Handling
 
 | Error         | Action                                   |
@@ -61,11 +65,13 @@ background: true
 
 ## Reporting Rules
 
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

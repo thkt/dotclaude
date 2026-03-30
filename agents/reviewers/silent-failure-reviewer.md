@@ -28,6 +28,22 @@ background: true
 | 4     | UI Feedback Check | Missing error states, boundaries |
 | 5     | Fallback Analysis | Silent defaults                  |
 
+## Distinction from operational-readiness-reviewer
+
+| This reviewer (silent-failure)       | operational-readiness-reviewer               |
+| ------------------------------------ | -------------------------------------------- |
+| Error swallowed? (detection)         | Error contained? (architecture)              |
+| Empty catch, console.log-only catch  | Missing ErrorBoundary around risky component |
+| Silent default return value          | Missing fallback path for degraded service   |
+| Code-level: does the error propagate | System-level: does someone notice/respond    |
+
+| Phase                             | Flags                                 | Level        |
+| --------------------------------- | ------------------------------------- | ------------ |
+| SF Phase 4 (UI Feedback Check)    | Missing user-visible error indication | User-facing  |
+| OPS Phase 1 (Error Boundary Scan) | Missing React ErrorBoundary placement | Architecture |
+
+Same component may receive findings from both — complementary, not duplicate.
+
 ## Calibration
 
 See `templates/audit/calibration-examples.md` section SF.
@@ -42,12 +58,14 @@ See `templates/audit/calibration-examples.md` section SF.
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

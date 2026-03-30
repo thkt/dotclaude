@@ -52,6 +52,10 @@ background: true
 | 変更コードから外側に探索         | 全対象ファイルをクロス比較             |
 | アクション: importで置き換え     | アクション: 新規共有ユーティリティ抽出 |
 
+## Calibration
+
+`templates/audit/calibration-examples.md` のREUSEセクション参照。
+
 ## エラーハンドリング
 
 | エラー       | アクション                       |
@@ -62,19 +66,21 @@ background: true
 
 ## レポートルール
 
-- 信頼度 < 0.60: 除外（`finding-schema.md` 参照）
-- 同一ユーティリティが複数箇所で見落とされている場合: 単一findingに統合
+| 条件                                       | アクション                       |
+| ------------------------------------------ | -------------------------------- |
+| 信頼度 < 0.70                              | 除外（`finding-schema.md` 参照） |
+| 同一ユーティリティが複数箇所で見落とされた | 単一findingに統合                |
 
 ## 出力
 
-構造化Markdownを返す（ベーススキーマ: `templates/audit/finding-schema.md`）:
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 
 ```markdown
 ## Findings
 
 | ID          | Severity            | Category                                   | Location    | Confidence |
 | ----------- | ------------------- | ------------------------------------------ | ----------- | ---------- |
-| REUSE-{seq} | high / medium / low | utility / pattern / inline / unused_import | `file:line` | 0.60-1.00  |
+| REUSE-{seq} | high / medium / low | utility / pattern / inline / unused_import | `file:line` | 0.70-1.00  |
 
 ### REUSE-{seq}
 

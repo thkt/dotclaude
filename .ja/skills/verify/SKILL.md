@@ -4,7 +4,7 @@ description: |
   Codex + audit reviewersによる独立したoutcome-basedの検証。
   検証して, verify, 独立検証, outcome verification,
   trust score, adversarial testing に言及した場合に使用。
-  手軽なコードレビューには /crosscheck、静的分析のみには /audit を使用。
+  手軽なコードレビューには /polish、静的分析のみには /audit を使用。
 allowed-tools: Bash(codex:*), Bash(git worktree:*), Bash(git diff:*),
   Bash(git status:*), Bash(git log:*), Bash(git branch:*),
   Bash(npm ci:*), Bash(npm run:*), Bash(npm test:*),
@@ -235,11 +235,11 @@ Bootstrap: {success | failed: 理由}
 
 ## エスカレーション
 
-| 条件                                      | アクション                        |
-| ----------------------------------------- | --------------------------------- |
-| Trust Score < 50                          | critical findingsに `/fix` を提案 |
-| アーキテクチャ root causes 発見           | 設計レビューに `/think` を提案    |
-| Adversarial testsがカバレッジギャップ露呈 | テスト追加に `/code` を提案       |
+| 条件                                      | アクション                     |
+| ----------------------------------------- | ------------------------------ |
+| reconciled finding 1件以上                | マージブロック、`/fix` を提案  |
+| アーキテクチャ root causes 発見           | 設計レビューに `/think` を提案 |
+| Adversarial testsがカバレッジギャップ露呈 | テスト追加に `/code` を提案    |
 
 ## 確認事項
 

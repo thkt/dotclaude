@@ -27,6 +27,15 @@ background: true
 | 3        | 表現の評価         | コンパイル時 vs ランタイム、自己文書化 |
 | 4        | 強制の監査         | 構築時バリデーション、変更ガード       |
 
+## type-safety-reviewerとの区別
+
+| 本レビュアー (type-design)       | type-safety-reviewer                |
+| -------------------------------- | ----------------------------------- |
+| モデリング品質（ドメイン概念）   | メカニカルな正確性（TSルール）      |
+| カプセル化、不変条件の表現       | any使用、strictモード、アサーション |
+| 「この型は良く設計されてるか？」 | 「この型は安全か？」                |
+| 言語非依存の原則                 | TypeScript固有のチェック            |
+
 ## スコアリング (型ごと)
 
 | 次元             | 1-10 | 測定内容                                            |
@@ -47,6 +56,10 @@ background: true
 | 責務過多                   | medium |
 | 外部不変条件への依存       | medium |
 
+## Calibration
+
+`templates/audit/calibration-examples.md` のTDセクション参照。
+
 ## エラーハンドリング
 
 | エラー           | アクション                                  |
@@ -57,19 +70,21 @@ background: true
 
 ## レポートルール
 
-- Confidence < 0.60: 除外（`finding-schema.md` 参照）
-- 同一パターンが複数箇所: 1つのfindingに統合
+| 条件                   | アクション                       |
+| ---------------------- | -------------------------------- |
+| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
+| 同一パターンが複数箇所 | 1つのfindingに統合               |
 
 ## 出力
 
-構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 
 ```markdown
 ## Findings
 
 | ID       | Severity                       | Category                                              | Location    | Confidence |
 | -------- | ------------------------------ | ----------------------------------------------------- | ----------- | ---------- |
-| TD-{seq} | critical / high / medium / low | encapsulation / expression / usefulness / enforcement | `file:line` | 0.60–1.00  |
+| TD-{seq} | critical / high / medium / low | encapsulation / expression / usefulness / enforcement | `file:line` | 0.70–1.00  |
 
 ### TD-{seq}
 

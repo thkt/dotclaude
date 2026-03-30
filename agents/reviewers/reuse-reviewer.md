@@ -51,6 +51,10 @@ duplication detection (that is duplication-reviewer / DRY). This reviewer answer
 | Searches outward from changed code | Cross-compares all target files        |
 | Actionable: replace with import    | Actionable: extract new shared utility |
 
+## Calibration
+
+See `templates/audit/calibration-examples.md` section REUSE.
+
 ## Error Handling
 
 | Error         | Action                                   |
@@ -61,12 +65,14 @@ duplication detection (that is duplication-reviewer / DRY). This reviewer answer
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same utility missed in multiple locations: consolidate into single finding
+| Condition                                 | Action                          |
+| ----------------------------------------- | ------------------------------- |
+| Confidence < 0.70                         | Exclude (`finding-schema.md`)   |
+| Same utility missed in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

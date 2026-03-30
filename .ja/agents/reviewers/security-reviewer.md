@@ -51,6 +51,10 @@ background: true
 - 非シークレット文脈のチェックサム、ハッシュ、UUID
 - コメントやmarkdown内のサンプル/ドキュメント値
 
+## Calibration
+
+`templates/audit/calibration-examples.md` のSECセクション参照。
+
 ## エラーハンドリング
 
 | エラー       | 対処                                         |
@@ -61,11 +65,13 @@ background: true
 
 ## 報告ルール
 
-- 同一パターンが複数箇所にある場合: 単一のfindingに統合
+| 条件                             | アクション          |
+| -------------------------------- | ------------------- |
+| 同一パターンが複数箇所にある場合 | 単一のfindingに統合 |
 
 ## 出力
 
-構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 
 ```markdown
 ## Findings
@@ -79,7 +85,7 @@ background: true
 | Field        | Value                                                               |
 | ------------ | ------------------------------------------------------------------- |
 | Evidence     | コードスニペット                                                    |
-| Reasoning    | 脅威モデル: 攻撃者の能力 → 攻撃ベクター → 具体的影響               |
+| Reasoning    | 脅威モデル: 攻撃者の能力 → 攻撃ベクター → 具体的影響                |
 | Fix          | セキュアな代替                                                      |
 | Verification | execution_trace / call_site_check / pattern_search — 確認すべきこと |
 | Entry Points | `file:line`（オプション、execution_trace用）                        |

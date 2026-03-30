@@ -29,6 +29,19 @@ background: true
 | 4        | イベントハンドラ   | `resize` `scroll` `matchMedia`            |
 | 5        | 代替マッピング     | スキルからCSS代替案にパターンをマッピング |
 
+## performance-reviewerとの区別
+
+| 本レビュアー (progressive-enhancer) | performance-reviewer             |
+| ----------------------------------- | -------------------------------- |
+| 「CSSでこれをJSの代わりにできる？」 | 「このReactコードは十分速い？」  |
+| JS→CSS置換の機会                    | レンダリング最適化、バンドル分割 |
+| ブラウザAPI代替の検出               | React固有のフック/エフェクト分析 |
+| JSコードを完全に排除                | 既存のJS/Reactコードを最適化     |
+
+## Calibration
+
+`templates/audit/calibration-examples.md` のPEセクション参照。
+
 ## エラーハンドリング
 
 | エラー             | 対処                       |
@@ -40,19 +53,21 @@ background: true
 
 ## レポーティングルール
 
-- Confidence < 0.60: 除外（`finding-schema.md` 参照）
-- 同一パターンが複数箇所: 単一findingに統合
+| 条件                   | アクション                       |
+| ---------------------- | -------------------------------- |
+| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
+| 同一パターンが複数箇所 | 単一findingに統合                |
 
 ## 出力
 
-構造化Markdownを返す（ベーススキーマ: `templates/audit/finding-schema.md`）:
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 
 ```markdown
 ## Findings
 
 | ID       | Severity            | Category                                    | Location    | Confidence |
 | -------- | ------------------- | ------------------------------------------- | ----------- | ---------- |
-| PE-{seq} | high / medium / low | layout / animation / event / style / toggle | `file:line` | 0.60–1.00  |
+| PE-{seq} | high / medium / low | layout / animation / event / style / toggle | `file:line` | 0.70–1.00  |
 
 ### PE-{seq}
 

@@ -28,6 +28,19 @@ background: true
 | 4     | Strict Mode     | tsconfig options                |
 | 5     | Union Handling  | Exhaustive checks               |
 
+## Distinction from type-design-reviewer
+
+| This reviewer (type-safety)        | type-design-reviewer                |
+| ---------------------------------- | ----------------------------------- |
+| Mechanical correctness (TS rules)  | Modeling quality (domain concepts)  |
+| any usage, strict mode, assertions | Encapsulation, invariant expression |
+| "Is this type safe?"               | "Is this type well-designed?"       |
+| TypeScript-specific checks         | Language-agnostic principles        |
+
+## Calibration
+
+See `templates/audit/calibration-examples.md` section TS.
+
 ## Error Handling
 
 | Error       | Action                                   |
@@ -38,12 +51,14 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

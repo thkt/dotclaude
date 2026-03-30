@@ -30,6 +30,22 @@ background: true
 | 4        | UIフィードバックチェック | 欠落したエラー状態、境界   |
 | 5        | フォールバック分析       | サイレントデフォルト       |
 
+## operational-readiness-reviewerとの区別
+
+| 本レビュアー (silent-failure)      | operational-readiness-reviewer              |
+| ---------------------------------- | ------------------------------------------- |
+| エラーが握り潰されてるか？（検知） | エラーが封じ込められてるか？（設計）        |
+| 空catch、console.logのみのcatch    | リスクコンポーネント周辺のErrorBoundary欠如 |
+| サイレントなデフォルト戻り値       | 縮退サービス時のフォールバックパス欠如      |
+| コードレベル: エラーは伝搬するか   | システムレベル: 誰かが気づいて対応できるか  |
+
+| フェーズ                       | 指摘対象                         | レベル         |
+| ------------------------------ | -------------------------------- | -------------- |
+| SF Phase 4 (UIフィードバック)  | ユーザーに見えるエラー表示の欠如 | ユーザー向け   |
+| OPS Phase 1 (エラーバウンダリ) | React ErrorBoundaryの配置欠如    | アーキテクチャ |
+
+同一コンポーネントが両方からfindingを受ける場合がある — 補完関係であり重複ではない。
+
 ## Calibration
 
 `templates/audit/calibration-examples.md` のSFセクション参照。
@@ -44,19 +60,21 @@ background: true
 
 ## レポートルール
 
-- Confidence < 0.60: 除外（`finding-schema.md` 参照）
-- 同一パターンが複数箇所: 1つのfindingに統合
+| 条件                   | アクション                       |
+| ---------------------- | -------------------------------- |
+| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
+| 同一パターンが複数箇所 | 1つのfindingに統合               |
 
 ## 出力
 
-構造化Markdownを返す（基本スキーマ: `templates/audit/finding-schema.md`）:
+構造化Markdownを返す（`templates/audit/finding-schema.md`）
 
 ```markdown
 ## Findings
 
 | ID       | Severity                       | Category | Location    | Confidence |
 | -------- | ------------------------------ | -------- | ----------- | ---------- |
-| SF-{seq} | critical / high / medium / low | SF1-SF5  | `file:line` | 0.60–1.00  |
+| SF-{seq} | critical / high / medium / low | SF1-SF5  | `file:line` | 0.70–1.00  |
 
 ### SF-{seq}
 

@@ -29,6 +29,22 @@ background: true
 | 4     | Performance Budget  | Bundle size, lazy loading, code splitting                                     |
 | 5     | Fault Isolation     | Blast radius containment, fallback paths, circuit breakers                    |
 
+## Distinction from silent-failure-reviewer
+
+| This reviewer (operational-readiness) | silent-failure-reviewer                |
+| ------------------------------------- | -------------------------------------- |
+| Error contained? (architecture)       | Error swallowed? (detection)           |
+| ErrorBoundary placement, blast radius | Empty catch blocks, unhandled promises |
+| Graceful degradation paths            | Silent default return values           |
+| System-level: can someone respond     | Code-level: does the error propagate   |
+
+| Phase                          | Flags                                 | Level        |
+| ------------------------------ | ------------------------------------- | ------------ |
+| OPS Phase 1 (Error Boundary)   | Missing architectural containment     | Architecture |
+| SF Phase 4 (UI Feedback Check) | Missing user-visible error indication | User-facing  |
+
+Same component may receive findings from both — complementary, not duplicate.
+
 ## Scope Adaptation
 
 | File Type      | Focus                                                |
@@ -37,6 +53,10 @@ background: true
 | `.ts`, `.js`   | Logging, error propagation, retry patterns           |
 | `.sh`, `.zsh`  | Error handling (`set -e`), exit codes, cleanup traps |
 | Config files   | Skip (not applicable)                                |
+
+## Calibration
+
+See `templates/audit/calibration-examples.md` section OPS.
 
 ## Error Handling
 
@@ -48,13 +68,15 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
-- Do not flag test files or mock files
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
+| Test files or mock files           | Do not flag                     |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

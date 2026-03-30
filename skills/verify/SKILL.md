@@ -4,7 +4,7 @@ description: |
   Independent outcome-based verification with Codex + audit reviewers.
   Use when user mentions 検証して, verify, 独立検証, outcome verification,
   trust score, adversarial testing.
-  Do NOT use for quick code review (use /crosscheck) or static-only audit
+  Do NOT use for quick code review (use /polish) or static-only audit
   (use /audit).
 allowed-tools: Bash(codex:*), Bash(git worktree:*), Bash(git diff:*),
   Bash(git status:*), Bash(git log:*), Bash(git branch:*),
@@ -236,11 +236,11 @@ Bootstrap: {success | failed: reason}
 
 ## Escalation
 
-| Condition                             | Action                               |
-| ------------------------------------- | ------------------------------------ |
-| Trust Score < 50                      | Suggest `/fix` for critical findings |
-| Architectural root causes found       | Suggest `/think` for design review   |
-| Adversarial tests reveal coverage gap | Suggest `/code` to add tests         |
+| Condition                             | Action                             |
+| ------------------------------------- | ---------------------------------- |
+| Any reconciled finding                | Block merge, suggest `/fix`        |
+| Architectural root causes found       | Suggest `/think` for design review |
+| Adversarial tests reveal coverage gap | Suggest `/code` to add tests       |
 
 ## Verification
 

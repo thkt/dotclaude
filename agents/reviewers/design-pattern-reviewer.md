@@ -27,6 +27,20 @@ background: true
 | 3     | State Management   | Local vs Context vs Store      |
 | 4     | Anti-Pattern Check | Prop drilling, massive comps   |
 
+## Distinction from related reviewers
+
+| Concern  | This reviewer (design-pattern) | code-quality-reviewer       | testability-reviewer            |
+| -------- | ------------------------------ | --------------------------- | ------------------------------- |
+| Lens     | Architecturally sound?         | Readable? Maintainable?     | Testable?                       |
+| Coupling | Prop drilling                  | Over-engineered abstraction | Can't inject dependency         |
+| State    | Wrong state tool (React)       | Wrong scope (readability)   | Mutable global (test isolation) |
+| Scope    | React components only          | Any code file               | Any code file                   |
+| Fix      | Apply React pattern            | Simplify or restructure     | Make injectable/mockable        |
+
+## Calibration
+
+See `templates/audit/calibration-examples.md` section DP.
+
 ## Error Handling
 
 | Error          | Action                                   |
@@ -37,12 +51,14 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

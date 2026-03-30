@@ -28,6 +28,15 @@ background: true
 | 4     | Negative Cases  | Validation failures, boundary conditions |
 | 5     | Regression Risk | Would tests catch future regressions?    |
 
+## Distinction from testability-reviewer
+
+| This reviewer (test-coverage)       | testability-reviewer                |
+| ----------------------------------- | ----------------------------------- |
+| "Is this behavior tested?" (gaps)   | "Can this code be tested?" (design) |
+| Reviews test files for quality/gaps | Reviews source code for DI/purity   |
+| Gap detection, anti-pattern catalog | Dependency injection, side effects  |
+| Fix: add missing test case          | Fix: restructure for testability    |
+
 ## Criticality Rating (per gap)
 
 | Score | Level     | Meaning                                       |
@@ -62,12 +71,14 @@ See `templates/audit/calibration-examples.md` section TC.
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

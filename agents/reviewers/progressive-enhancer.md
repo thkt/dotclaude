@@ -29,6 +29,19 @@ background: true
 | 4     | Event Handlers   | `resize` `scroll` `matchMedia`                |
 | 5     | Alternative Map  | Match patterns to CSS alternatives from skill |
 
+## Distinction from performance-reviewer
+
+| This reviewer (progressive-enhancer) | performance-reviewer                  |
+| ------------------------------------ | ------------------------------------- |
+| "Can CSS do this instead of JS?"     | "Is this React code fast enough?"     |
+| JS→CSS replacement opportunities     | Render optimization, bundle splitting |
+| Browser API alternative detection    | React-specific hook/effect analysis   |
+| Eliminates JS code entirely          | Optimizes existing JS/React code      |
+
+## Calibration
+
+See `templates/audit/calibration-examples.md` section PE.
+
 ## Error Handling
 
 | Error              | Action                    |
@@ -40,12 +53,14 @@ background: true
 
 ## Reporting Rules
 
-- Confidence < 0.70: exclude (see `finding-schema.md`)
-- Same pattern in multiple locations: consolidate into single finding
+| Condition                          | Action                          |
+| ---------------------------------- | ------------------------------- |
+| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
+| Same pattern in multiple locations | Consolidate into single finding |
 
 ## Output
 
-Return structured Markdown (base schema: `templates/audit/finding-schema.md`):
+Return structured Markdown (`templates/audit/finding-schema.md`)
 
 ```markdown
 ## Findings

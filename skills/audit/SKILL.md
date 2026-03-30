@@ -70,9 +70,8 @@ only:
 |                      | code-quality-reviewer, duplication-reviewer, reuse-reviewer,        |
 |                      | efficiency-reviewer, design-pattern-reviewer, testability-reviewer, |
 |                      | performance-reviewer, operational-readiness-reviewer                |
-| `*.md` (agent defs)  | prompt-reviewer, design-pattern-reviewer, testability-reviewer,     |
-|                      | document-reviewer                                                   |
-| `*.md` (skills/docs) | prompt-reviewer, document-reviewer, testability-reviewer            |
+| `*.md` (agent defs)  | prompt-reviewer, document-reviewer                                  |
+| `*.md` (skills/docs) | prompt-reviewer, document-reviewer                                  |
 | `*.md` (rules)       | prompt-reviewer, document-reviewer                                  |
 | `*.yaml, *.json`     | type-design-reviewer, document-reviewer                             |
 | `*.css, *.html`      | accessibility-reviewer, progressive-enhancer, performance-reviewer, |
@@ -84,6 +83,10 @@ only:
 Classification by path: `agents/**/*.md` → agent defs, `skills/*/SKILL.md` or
 `docs/**/*.md` → skills/docs, `rules/**/*.md` → rules, other `*.md` →
 skills/docs (default).
+
+root-cause-reviewer is not in this table — it runs sequentially after
+code-quality-reviewer completes (see Sequential Dependencies). Leader spawns it
+with the same file list + CQ findings as input.
 
 #### Sub-reviewer Spawn
 

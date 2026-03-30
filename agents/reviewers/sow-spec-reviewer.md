@@ -150,6 +150,10 @@ from Accuracy:
 | medium       | -2        |
 | low          | -1        |
 
+## Calibration
+
+See `templates/audit/calibration-examples.md` section SOW.
+
 ## Error Handling
 
 | Error             | Action                   |
