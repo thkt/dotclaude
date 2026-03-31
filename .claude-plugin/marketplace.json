@@ -82,11 +82,13 @@
         "./skills/audit/SKILL.md",
         "./skills/polish/SKILL.md",
         "./skills/preview/SKILL.md",
-        "./skills/challenge/SKILL.md"
+        "./skills/challenge/SKILL.md",
+        "./skills/verify/SKILL.md"
       ],
       "agents": [
         "./agents/critics/devils-advocate-audit.md",
         "./agents/critics/evidence-verifier.md",
+        "./agents/enhancers/evidence-integrator.md",
         "./agents/teams/progressive-integrator.md",
         "./agents/reviewers/accessibility-reviewer.md",
         "./agents/reviewers/code-quality-reviewer.md",
@@ -104,7 +106,8 @@
         "./agents/reviewers/test-coverage-reviewer.md",
         "./agents/reviewers/testability-reviewer.md",
         "./agents/reviewers/type-design-reviewer.md",
-        "./agents/reviewers/type-safety-reviewer.md"
+        "./agents/reviewers/type-safety-reviewer.md",
+        "./agents/reviewers/prompt-reviewer.md"
       ],
       "skills": [
         "./skills/analyzing-root-causes/SKILL.md",
@@ -165,7 +168,6 @@
       ],
       "category": "Utilities",
       "commands": [
-        "./skills/inbox/SKILL.md",
         "./skills/watch/SKILL.md",
         "./skills/kousei/SKILL.md",
         "./skills/glossary/SKILL.md",
