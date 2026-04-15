@@ -30,7 +30,7 @@ are structurally invalid.
 
 ## Input
 
-- Target scope: `$1` (optional)
+- Target scope: `$1` (optional). SHA/branch range (`x..y`) → `git diff --name-only $1` → file list
 - If `$1` is empty → select focus via AskUserQuestion, then review
   staged/modified files
 
@@ -65,11 +65,12 @@ only:
 | -------------------- | ------------------------------------------------------------------- |
 | `*.sh`               | security-reviewer, silent-failure-reviewer, code-quality-reviewer,  |
 |                      | duplication-reviewer, reuse-reviewer, efficiency-reviewer,          |
-|                      | operational-readiness-reviewer                                      |
+|                      | operational-readiness-reviewer, chaos-engineer                      |
 | `*.ts, *.tsx, *.js`  | security-reviewer, silent-failure-reviewer, type-safety-reviewer,   |
 |                      | code-quality-reviewer, duplication-reviewer, reuse-reviewer,        |
 |                      | efficiency-reviewer, design-pattern-reviewer, testability-reviewer, |
-|                      | performance-reviewer, operational-readiness-reviewer                |
+|                      | performance-reviewer, operational-readiness-reviewer,               |
+|                      | chaos-engineer                                                      |
 | `*.md` (agent defs)  | prompt-reviewer, document-reviewer                                  |
 | `*.md` (skills/docs) | prompt-reviewer, document-reviewer                                  |
 | `*.md` (rules)       | prompt-reviewer, document-reviewer                                  |
@@ -120,16 +121,19 @@ prompt.
 
 ### Error Handling
 
-| Error             | Recovery                                                 |
-| ----------------- | -------------------------------------------------------- |
-| No files to audit | Return "No files to audit"                               |
-| Reviewer stall    | 120s timeout; proceed without                            |
-| Malformed output  | Skip reviewer, log warning, proceed with valid reviewers |
-| Dependency stall  | Skip dependent (e.g., root-cause if CQ failed)           |
-| Max parallel >10  | Batch in groups of 10                                    |
-| Challenger stall  | 120s timeout; proceed with verifier only                 |
-| Verifier stall    | 120s timeout; proceed with challenger only               |
-| Integrator stall  | 120s timeout; Leader integrates manually                 |
+Any skipped reviewer must be recorded to `pipeline_health.domains_skipped` with
+the reason.
+
+| Error             | Recovery                                    | Skip Reason                    |
+| ----------------- | ------------------------------------------- | ------------------------------ |
+| No files to audit | Return "No files to audit"                  | —                              |
+| Reviewer stall    | 120s timeout; proceed without               | `timeout`                      |
+| Malformed output  | Skip reviewer; proceed with valid reviewers | `malformed_output`             |
+| Dependency stall  | Skip dependent (e.g., root-cause if CQ failed) | `dependency_stall: {upstream}` |
+| Max parallel >10  | Batch in groups of 10                       | —                              |
+| Challenger stall  | 120s timeout; proceed with verifier only    | —                              |
+| Verifier stall    | 120s timeout; proceed with challenger only  | —                              |
+| Integrator stall  | 120s timeout; Leader integrates manually    | —                              |
 
 ## Pre-flight: Tests + Hook Findings
 

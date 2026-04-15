@@ -69,6 +69,9 @@ git commit -m "subject" -m "body"
 
 <body>
 
+Key Decisions:
+<key_decisions>
+
 `<footer>`
 ```
 

@@ -38,7 +38,9 @@ draft <!-- draft | in-progress | completed -->
 
 ### Out of Scope
 
-- [exclusion 1]
+| Exclusion   | Why not (Why field / Constraint) |
+| ----------- | -------------------------------- |
+| [exclusion] | [reason]                         |
 
 ### YAGNI Checklist
 

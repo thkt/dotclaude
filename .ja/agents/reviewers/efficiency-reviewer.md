@@ -1,7 +1,7 @@
 ---
 name: efficiency-reviewer
 description: コード効率性レビュー。不要な処理、並行性、ホットパス分析。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: sonnet
 skills: [applying-code-principles]
 context: fork

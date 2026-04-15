@@ -1,7 +1,7 @@
 ---
 name: evidence-verifier
 description: Verify audit findings with positive evidence.
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
 background: true

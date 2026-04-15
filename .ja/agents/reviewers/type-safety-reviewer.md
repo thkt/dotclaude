@@ -1,7 +1,7 @@
 ---
 name: type-safety-reviewer
 description: TypeScript型安全性レビュー。any使用、型カバレッジギャップ、strictモード準拠を特定。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 skills: [reviewing-type-safety, applying-code-principles]
 context: fork

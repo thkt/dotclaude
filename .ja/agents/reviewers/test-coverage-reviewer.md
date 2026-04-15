@@ -1,7 +1,7 @@
 ---
 name: test-coverage-reviewer
 description: テストカバレッジの品質レビュー。重要なギャップ、不足しているエッジケース、テスト品質の問題を特定します。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 skills: [generating-tdd-tests, applying-code-principles]
 context: fork

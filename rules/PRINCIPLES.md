@@ -43,6 +43,15 @@ YAGNI prohibits unneeded features and speculative code paths. It does not prohib
 
 When YAGNI Boundary and Occam's Razor disagree, Occam's Razor wins.
 
+## DRY
+
+Gate: 3+ duplications. Then verify: same knowledge or similar structure?
+
+| Type           | Criterion                                 | Action       |
+| -------------- | ----------------------------------------- | ------------ |
+| Same knowledge | one change forces all instances to change | Apply DRY    |
+| Similar code   | each copy could evolve independently      | Do not merge |
+
 ## Progressive Enhancement
 
 Make it Work → Make it Resilient (when errors occur) → Make it Fast (when

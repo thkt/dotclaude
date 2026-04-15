@@ -1,7 +1,7 @@
 ---
 name: code-quality-reviewer
 description: Code quality review. Structure and readability analysis.
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 skills: [reviewing-readability, applying-code-principles]
 context: fork

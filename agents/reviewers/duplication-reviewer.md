@@ -1,7 +1,7 @@
 ---
 name: duplication-reviewer
 description: Cross-file code duplication detection. DRY analysis specialist.
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 skills: [applying-code-principles]
 context: fork

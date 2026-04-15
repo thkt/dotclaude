@@ -1,8 +1,7 @@
 ---
 name: progressive-integrator
-description:
-  Reconcile challenge and verification results into cross-domain root causes.
-tools: [Read, Grep, Glob, LS]
+description: Reconcile challenge and verification results into cross-domain root causes.
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
 skills: [applying-code-principles, analyzing-root-causes]
@@ -109,10 +108,11 @@ After reconciliation, process `confirmed`, `downgraded`, `needs_context`, or
 
 ### Clean
 
-| Step | Action                                                                             |
-| ---- | ---------------------------------------------------------------------------------- |
-| 1    | Deduplicate by `file:line:category` (keep highest severity)                        |
-| 2    | Filter by finding.confidence: ≥95% include, 60-94% include with note, <60% exclude |
+| Step | Action                                                                                                                                         |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Deduplicate by `file:line:category` (keep highest severity)                                                                                    |
+| 1a   | Set `severity_upgraded: true/false` (true = contributors disagreed on severity). On true, record `original_severities: [{reviewer, severity}]` |
+| 2    | Filter by finding.confidence: ≥95% include, 60-94% include with note, <60% exclude                                                             |
 
 ### Correlate
 
@@ -120,7 +120,14 @@ After reconciliation, process `confirmed`, `downgraded`, `needs_context`, or
 | ---- | --------------------------------------------------------------------- |
 | 3    | Group findings by location (file, module, boundary)                   |
 | 4    | Identify convergence signals — where 2+ domains flag the same area    |
+| 4a   | Severity re-evaluation per convergence cluster (see below)            |
 | 5    | Single-domain findings with no correlation remain as standalone items |
+
+#### Step 4a — Severity re-evaluation rules
+
+- Cite the specific contributing finding that changes the impact assessment
+- If no cross-domain context changes impact → record "Independent findings. No upgrade."
+- Count alone does not justify upgrade: 2× medium ≠ high
 
 ### Synthesize
 

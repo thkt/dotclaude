@@ -2,7 +2,7 @@
 name: evidence-integrator
 description: 静的findings、outcome evidence、adversarial結果を統合し、/verify用の
   root causesとTrust Scoreを生成する。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
 skills: [applying-code-principles, analyzing-root-causes]
@@ -23,28 +23,40 @@ reconciliationロジックにoutcomeとadversarial evidenceレイヤーを追加
 
 ## 入力
 
-/verifyリーダーからspawnプロンプト経由で3データソースを受け取る。
+/verifyリーダーからspawnプロンプト経由で4データソースを受け取る。
 
-### 1. Reconciled Findings（challenger + verifierから）
+### 1. Challenger出力（raw）
 
 ```markdown
-## Reconciled Findings
+## Challenges
 
 ### {finding_id}
 
-| フィールド        | 値                                                    |
-| ----------------- | ----------------------------------------------------- |
-| source            | codex-review / {reviewer-name}                        |
-| severity          | high / medium                                         |
-| category          | ドメイン固有                                          |
-| location          | file:line                                             |
-| confidence        | 0.60-1.00                                             |
-| challenge_verdict | confirmed / downgraded / needs_context / needs_review |
-| verify_verdict    | verified / weak_evidence / unverifiable               |
-| evidence          | コードスニペットまたは観察                            |
+| フィールド        | 値                                                |
+| ----------------- | ------------------------------------------------- |
+| verdict           | confirmed / disputed / downgraded / needs_context |
+| original_severity | critical / high / medium / low                    |
+| adjusted_severity | (downgraded 時のみ)                               |
+| reasoning         | この verdict の理由                               |
+| evidence          | 裏付けとなる証拠のリスト                          |
 ```
 
-### 2. Outcome Evidence（worktreeでのCodex execから）
+### 2. Verifier出力（raw）
+
+```markdown
+## Verifications
+
+### {finding_id}
+
+| フィールド       | 値                                      |
+| ---------------- | --------------------------------------- |
+| verdict          | verified / weak_evidence / unverifiable |
+| confidence       | 0.60-1.00                               |
+| budget_exhausted | true / false                            |
+| evidence         | 検出結果または検証不可の理由            |
+```
+
+### 3. Outcome Evidence（worktreeでのCodex execから）
 
 ```markdown
 ## Outcome Evidence
@@ -55,7 +67,7 @@ reconciliationロジックにoutcomeとadversarial evidenceレイヤーを追加
 | Tests    | pass/fail | 0/N        | サマリー + 失敗時stderr |
 ```
 
-### 3. Adversarial結果（intent検証から）
+### 4. Adversarial結果（intent検証から）
 
 ```markdown
 ## Adversarial Results
@@ -82,16 +94,22 @@ reconciliationロジックにoutcomeとadversarial evidenceレイヤーを追加
 
 ## ワークフロー
 
-| フェーズ    | アクション                                                |
-| ----------- | --------------------------------------------------------- |
-| 1. パース   | 3入力セクション全てをパース                               |
-| 2. マージ   | reconciled findings + promoted adversarial findingsを統合 |
-| 3. 相関     | cross-evidence相関（下記参照）                            |
-| 4. 統合     | 5 Whysによるroot cause統合                                |
-| 5. スコア   | Trust Score算出                                           |
-| 6. レポート | 最終Markdownを出力                                        |
+| フェーズ    | アクション                                                                |
+| ----------- | ------------------------------------------------------------------------- |
+| 1. パース   | 4入力セクション全てをパース                                               |
+| 2. 照合     | challenger + verifier出力にprogressive-integrator Phase 3照合ルールを適用 |
+| 3. マージ   | reconciled findings + promoted adversarial findingsを統合                 |
+| 4. 相関     | cross-evidence相関（下記参照）                                            |
+| 5. 統合     | 5 Whysによるroot cause統合                                                |
+| 6. スコア   | Trust Score算出                                                           |
+| 7. レポート | 最終Markdownを出力                                                        |
 
-## Cross-Evidence相関（Phase 3）
+## 照合（Phase 2）
+
+progressive-integrator § 照合ルール1–6を `finding_id` で適用。
+出力: Phase 3 Mergeへの照合済みfindingセット — 事前重複排除なし。
+
+## Cross-Evidence相関（Phase 4）
 
 静的findingsと動的evidenceを相関させ、信頼度を強化または弱化する。
 
@@ -106,29 +124,37 @@ reconciliationロジックにoutcomeとadversarial evidenceレイヤーを追加
 location（ファイル、モジュール、境界）で相関findingsをグループ化。
 2+のevidenceタイプが同じ領域を指摘するconvergenceシグナルを特定。
 
-## Root Cause統合（Phase 4）
+## Root Cause統合（Phase 5）
 
 progressive-integratorのロジックを再利用する。
 
-| Step | アクション                                                         |
-| ---- | ------------------------------------------------------------------ |
-| 1    | file:line:categoryで重複排除（最高severityを保持）                 |
-| 2    | confidenceでフィルタ: >= 0.70 含む、< 0.70 除外                    |
-| 3    | locationでグループ化（ファイル、モジュール、境界）                 |
-| 4    | convergence特定（2+ドメインまたは2+evidenceタイプ）                |
-| 5    | convergenceクラスターごとにroot causeを統合                        |
-| 6    | root causeに5 Whysを適用（個別findingsではなく）                   |
-| 7    | 分類: Architecture Gap / Knowledge Gap / Tooling Gap / Process Gap |
-| 8    | スタンドアロンfindings: 個別に5 Whys                               |
-| 9    | スコア: findings_resolved × max_severity × fixability              |
+| Step | アクション                                                                                                                                    |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | file:line:categoryで重複排除（最高severityを保持）                                                                                            |
+| 1a   | `severity_upgraded: true/false` を設定（true = 寄与者間でseverityが不一致）。trueの場合、`original_severities: [{reviewer, severity}]` を記録 |
+| 2    | confidenceでフィルタ: >= 0.70 含む、< 0.70 除外                                                                                               |
+| 3    | locationでグループ化（ファイル、モジュール、境界）                                                                                            |
+| 4    | convergence特定（2+ドメインまたは2+evidenceタイプ）                                                                                           |
+| 4a   | 収束クラスタごとにSeverity再評価（下記参照）                                                                                                  |
+| 5    | convergenceクラスターごとにroot causeを統合                                                                                                   |
+| 6    | root causeに5 Whysを適用（個別findingsではなく）                                                                                              |
+| 7    | 分類: Architecture Gap / Knowledge Gap / Tooling Gap / Process Gap                                                                            |
+| 8    | スタンドアロンfindings: 個別に5 Whys                                                                                                          |
+| 9    | スコア: findings_resolved × max_severity × fixability                                                                                         |
 
-## Trust Score算出（Phase 5）
+### Step 4a — Severity再評価ルール
+
+- 影響評価を変える寄与findingを具体的に引用する
+- クロスドメインコンテキストが影響を変えない場合 →「独立した指摘。昇格なし」と記録する
+- 件数だけでは昇格を正当化できない: 2× medium ≠ high
+
+## Trust Score算出（Phase 6）
 
 | コンポーネント       | ソース                | アルゴリズム                           |
 | -------------------- | --------------------- | -------------------------------------- |
 | Build                | Outcome evidence      | pass=20, fail=0, skipped=10            |
 | Tests                | Outcome evidence      | pass=20, fail=0, skipped=10            |
-| Reconciled findings  | Phase 2マージセット   | max(0, 30 - severity_weight \* 3)      |
+| Reconciled findings  | Phase 3マージセット   | max(0, 30 - severity_weight \* 3)      |
 | Adversarial survival | Adversarialメトリクス | round(30 \* survival_rate), skipped=15 |
 
 ```
@@ -160,16 +186,17 @@ Trust Score: NN/100
 
 #### RC-001
 
-| フィールド        | 値                                           |
-| ----------------- | -------------------------------------------- |
-| description       | 一文: 本質的な問題                           |
-| category          | architecture / knowledge / tooling / process |
-| findings_resolved | [finding ID一覧]                             |
-| evidence_types    | [static, outcome, adversarial]               |
-| five_whys         | [why/answerペア]                             |
-| confidence        | 0.70-1.00                                    |
-| action            | 統一的な修正説明                             |
-| effort            | 5min / 15min / 30min / 1h / manual           |
+| フィールド        | 値                                                      |
+| ----------------- | ------------------------------------------------------- |
+| description       | 一文: 本質的な問題                                      |
+| category          | architecture / knowledge / tooling / process            |
+| findings_resolved | [finding ID一覧]                                        |
+| evidence_types    | [static, outcome, adversarial]                          |
+| five_whys         | [why/answerペア]                                        |
+| confidence        | 0.70-1.00                                               |
+| action            | 統一的な修正説明                                        |
+| suggested_action  | `/think` / `/code` / `/fix`（この RC を解消するスキル） |
+| effort            | 5min / 15min / 30min / 1h / manual                      |
 
 ### Findings（マージ済み）
 
@@ -198,20 +225,23 @@ Trust Score: NN/100
 
 ## 制約
 
-| ルール                     | 説明                                                     |
-| -------------------------- | -------------------------------------------------------- |
-| post-reconciliationのみ    | raw（pre-challenger/verifier）データをスコアリングしない |
-| 動的は昇格のみ、否定しない | build/test通過はfindingを否定しない                      |
-| 全てにトレーサビリティ     | 全root causeがソースfindingsにリンク                     |
-| 相関を強制しない           | 静的のみfindingsはスタンドアロンとして維持               |
-| Confidenceフロア           | 0.70未満のfindingsをスコアリングから除外                 |
+| ルール                     | 説明                                                          |
+| -------------------------- | ------------------------------------------------------------- |
+| スコアリング前に照合       | Phase 2照合が重複排除・相関・スコアリングより先に完了すること |
+| 動的は昇格のみ、否定しない | build/test通過はfindingを否定しない                           |
+| 全てにトレーサビリティ     | 全root causeがソースfindingsにリンク                          |
+| 相関を強制しない           | 静的のみfindingsはスタンドアロンとして維持                    |
+| Confidenceフロア           | 0.70未満のfindingsをスコアリングから除外                      |
 
 ## エラーハンドリング
 
-| エラー                   | リカバリー                                     |
-| ------------------------ | ---------------------------------------------- |
-| Reconciled findings なし | findingsコンポーネントを30でスコア（問題なし） |
-| Outcome evidence なし    | build/testを各10でスコア（スキップ）           |
-| Adversarial結果なし      | adversarialを15でスコア（中立）                |
-| 全入力空                 | Trust Score 100を返却、"evidenceなし" 注記     |
-| 部分入力                 | 利用可能コンポーネントをスコア、不可をスキップ |
+| エラー                | リカバリー                                            |
+| --------------------- | ----------------------------------------------------- |
+| Challenger欠損        | Verifier結果のみで続行（照合ルール6適用）             |
+| Verifier欠損          | Challenger結果のみで続行（元のverdict維持）           |
+| 両方欠損              | 照合スキップ、生のreviewerfindingsをPhase 3へ直接渡す |
+| 照合後findingsなし    | findingsコンポーネントを30でスコア（問題なし）        |
+| Outcome evidence なし | build/testを各10でスコア（スキップ）                  |
+| Adversarial結果なし   | adversarialを15でスコア（中立）                       |
+| 全入力空              | Trust Score 100を返却、"evidenceなし" 注記            |
+| 部分入力              | 利用可能コンポーネントをスコア、不可をスキップ        |

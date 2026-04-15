@@ -1,7 +1,7 @@
 ---
 name: devils-advocate-design
 description: 設計提案を反論的視点から検証し、隠れた弱点を露出。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
 background: true

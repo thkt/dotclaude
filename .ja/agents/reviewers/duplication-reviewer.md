@@ -1,7 +1,7 @@
 ---
 name: duplication-reviewer
 description: クロスファイルのコード重複検出。DRY分析の専門家。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 skills: [applying-code-principles]
 context: fork

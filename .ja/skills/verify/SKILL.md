@@ -143,7 +143,11 @@ Report: (1) build exit code and last 50 lines of stderr if non-zero, \
 
 Phase 0成功が前提。失敗時スキップ。
 
-[`references/adversarial.md`](references/adversarial.md) protocol.
+```bash
+codex exec -C <worktree-path> --full-auto "<adversarial-prompt>"
+```
+
+`<adversarial-prompt>`: [`references/adversarial.md`](references/adversarial.md) § Codex Prompt（対象ファイル一覧を埋め込む）。
 
 | 制約         | 値    |
 | ------------ | ----- |
@@ -169,11 +173,12 @@ assertion + 対象コード → intentソース検索 → verdict（exclude or p
 
 `evidence-integrator` をバックグラウンドTaskで起動。
 
-| 入力                | ソース                      |
-| ------------------- | --------------------------- |
-| Reconciled findings | Challenger + verifier出力   |
-| Outcome evidence    | Phase 1c build/test結果     |
-| Adversarial results | Phase 2.5 promoted findings |
+| 入力                | ソース                                                      |
+| ------------------- | ----------------------------------------------------------- |
+| Challenger出力      | Challengerの生出力（evidence-integratorが内部で照合を実施） |
+| Verifier出力        | Verifierの生出力（evidence-integratorが内部で照合を実施）   |
+| Outcome evidence    | Phase 1c build/test結果                                     |
+| Adversarial results | Phase 2.5 promoted findings                                 |
 
 返却: root causes + Trust Score + レポート。
 [`references/trust-score.md`](references/trust-score.md) § Trust Scoreアルゴリズム。

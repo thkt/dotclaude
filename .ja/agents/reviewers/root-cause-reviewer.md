@@ -1,7 +1,7 @@
 ---
 name: root-cause-reviewer
 description: 5 Whys分析で根本原因を特定。パッチ的解決策を検出。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 skills: [analyzing-root-causes, applying-code-principles]
 context: fork

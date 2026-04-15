@@ -1,7 +1,7 @@
 ---
 name: type-design-reviewer
 description: 型設計の品質レビュー。カプセル化、不変条件の表現、強制のスコアリング。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 skills: [reviewing-type-safety, applying-code-principles]
 context: fork

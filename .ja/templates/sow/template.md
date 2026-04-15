@@ -36,7 +36,9 @@ draft <!-- draft | in-progress | completed -->
 
 ### Out of Scope
 
-- [除外項目1]
+| 除外項目   | Why not（Whyフィールド / 制約） |
+| ---------- | ------------------------------- |
+| [除外項目] | [理由]                          |
 
 ## Acceptance Criteria
 

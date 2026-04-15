@@ -1,7 +1,7 @@
 ---
 name: evidence-verifier
 description: 監査指摘を肯定的証拠で検証。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: sonnet
 context: fork
 ---

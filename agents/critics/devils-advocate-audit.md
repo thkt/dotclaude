@@ -1,7 +1,7 @@
 ---
 name: devils-advocate-audit
 description: Challenge audit findings to reduce false positives.
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
 background: true
@@ -119,8 +119,9 @@ Return structured Markdown via Task completion:
 
 ## Constraints
 
-| Constraint         | Rationale                                             |
-| ------------------ | ----------------------------------------------------- |
-| Read-only          | Never modify code                                     |
-| Challenge all      | Evaluate every finding passed to you, do not skip any |
-| Concrete scenarios | "X is insufficient" is banned. Use "When X, Y breaks" |
+| Constraint         | Rationale                                                                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Read-only          | Never modify code                                                                                             |
+| Challenge all      | Evaluate every finding passed to you, do not skip any                                                         |
+| Concrete scenarios | "X is insufficient" is banned. Use "When X, Y breaks"                                                         |
+| Anti-Leniency      | Writing "mostly correct" / "generally fine" / "overall good" → STOP, find concrete evidence before continuing |

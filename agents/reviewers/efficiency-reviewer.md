@@ -1,7 +1,7 @@
 ---
 name: efficiency-reviewer
 description: Code efficiency review. Unnecessary work, concurrency, hot-path analysis.
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: sonnet
 skills: [applying-code-principles]
 context: fork

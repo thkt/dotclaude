@@ -1,7 +1,7 @@
 ---
 name: security-reviewer
 description: OWASP Top 10-based security vulnerability detection.
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 skills: [reviewing-security, applying-code-principles]
 context: fork

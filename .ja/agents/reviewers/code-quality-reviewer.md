@@ -2,7 +2,7 @@
 name: code-quality-reviewer
 description: 統合コード品質レビュー。構造（ファイルレベル）+
   可読性（関数レベル）。無駄の排除、ミラーの法則。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 skills: [reviewing-readability, applying-code-principles]
 context: fork

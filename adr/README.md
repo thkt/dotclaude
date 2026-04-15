@@ -1,57 +1,113 @@
 # Architecture Decision Records
 
-Claude Codeプラグインのアーキテクチャ決定を記録するドキュメント。
+This directory contains important decisions about the project's architecture.
 
-## ADR一覧
+## ADR List
 
-| ADR                                                                       | タイトル                              | ステータス |
-| ------------------------------------------------------------------------- | ------------------------------------- | ---------- |
-| [0001](./0001-code-command-responsibility-separation.md)                  | code.md コマンドの責任分離            | accepted   |
-| [0002](./0002-fix-modularization-and-tdd-commonization.md)                | /fix モジュール化とTDD共通化          | accepted   |
-| [0003](./0003-marketplace.md)                                             | Marketplace構造の維持                 | accepted   |
-| [0004](./0004-skill-centric-architecture-restructuring.md)                | スキル中心アーキテクチャへの再構成    | accepted   |
-| [0005](./0005-documentation-role-separation.md)                           | ドキュメントの役割分離とAI最適化      | accepted   |
-| [0006](./0006-adopt-deterministic-script-pattern.md)                      | 決定論的処理のスクリプト化パターン    | accepted   |
-| [0007](./0007-configuration-optimization.md)                              | Claude Code 設定の最適化              | proposed   |
-| [0008](./0008-audience-optimized-templates.md)                            | 読み手別テンプレート最適化            | accepted   |
-| [0009](./0009-externalize-idr-as-rust-binary.md)                          | IDR生成の外部リポジトリ化（Rust）     | accepted   |
-| [0010](./0010-schema-first-api-documentation.md)                          | Schema-First APIドキュメント生成      | accepted   |
-| [0011](./0011-add-evidence-verifier-to-audit-pipeline.md)                 | Audit に Evidence Verifier を追加     | accepted   |
-| [0012](./0012-flatten-audit-pipeline-remove-compound-reviewers.md)        | Audit パイプラインのフラット化        | accepted   |
-| [0013](./0013-adopt-hook-trinity-pattern-with-claude-reviews.md)          | Hook Trinity — claude-reviews 採用    | accepted   |
-| [0014](./0014-integrate-aidlc-design-separation-and-ops-reviewer.md)      | AI-DLC 統合 — 設計分離と Ops Reviewer | accepted   |
-| [0015](./0015-frontend-security-guardrails-strategy.md)                   | フロントエンドセキュリティ戦略        | accepted   |
-| [0016](./0016-adopt-rust-mcp-for-deep-search.md)                          | Deep Search に Rust MCP 採用          | accepted   |
-| [0017](./0017-build-frontend-code-search-mcp-in-rust.md)                  | フロントエンドコード検索 MCP (yomu)   | accepted   |
-| [0018](./0018-index-time-file-context-storage-for-explorer.md)            | インデックス時ファイルコンテキスト    | accepted   |
-| [0019](./0019-adopt-sqlite-reference-graph-for-impact-analysis.md)        | SQLite 参照グラフで影響分析           | accepted   |
-| [0020](./0020-claude-code-dashboard-tech-stack.md)                        | Claude Code ダッシュボード技術選定    | accepted   |
-| [0021](./0021-build-slack-semantic-search-mcp-kiku.md)                    | Slack 会話セマンティック検索 (kiku)   | proposed   |
-| [0022](./0022-migrate-yomu-from-mcp-to-cli.md)                            | yomu を MCP から CLI へ移行           | proposed   |
-| [0023](./0023-build-sharpen-rg-output-optimizer-for-ai.md)                | rg 出力の AI 向け最適化 (sharpen)     | proposed   |
-| [0024](./0024-adopt-two-layer-delta-for-compaction-resilience.md)         | 二層 Delta で compaction 耐性確保     | accepted   |
-| [0025](./0025-replace-ralph-loop-with-flow-controller.md)                 | ralph-loop を flow-controller で置換  | proposed   |
-| [0026](./0026-recognize-spec-code-convergence-in-llm-instructions.md)     | LLM 指示の仕様-コード収束則           | accepted   |
-| [0027](./0027-centralize-plugin-definitions-in-sentinels.md)              | プラグイン定義を sentinels に集約     | proposed   |
-| [0028](./0028-build-test-quality-gate-with-oxc-parser.md)                 | oxc_parser テスト品質ゲート litmus    | proposed   |
-| [0029](./0029-integrate-e2e-test-generation-into-spec-driven-workflow.md) | Spec 駆動 E2E テスト生成の統合        | proposed   |
-| [0030](./0030-build-session-monitor-tui-mado.md)                          | セッション監視 TUI mado の構築        | proposed   |
-| [0031](./0031-adopt-local-embedding-ort-ruri-v3.md)                       | ort + Ruri v3 ローカル embedding 基盤 | proposed   |
-| [0032](./0032-build-esa-semantic-search-cli-sae.md)                       | esa セマンティック検索 CLI (sae)      | proposed   |
-| [0033](./0033-add-recursive-unwrap-stack-to-shields.md)                   | shields に Recursive Unwrap Stack     | proposed   |
-| [0034](./0034-extract-shared-embedding-crate-ruri-core.md)               | embedding 共有クレート rurico      | proposed   |
+| Number | Title | Status | Date |
+|--------|-------|--------|------|
+| [0001](0001-code-command-responsibility-separation.md) | ADR 0001: code.md コマンドの責任分離 | proposed | Not set |
+| [0002](0002-fix-modularization-and-tdd-commonization.md) | ADR 0002: /fix モジュール化とTDD共通化 | proposed | Not set |
+| [0003](0003-marketplace.md) | Marketplace構造の維持 | accepted | 2026-01-03 |
+| [0004](0004-skill-centric-architecture-restructuring.md) | ADR 0004: スキル中心アーキテクチャへの再構成 | proposed | Not set |
+| [0005](0005-documentation-role-separation.md) | ADR-0005: ドキュメントの役割分離とAI最適化 | proposed | Not set |
+| [0006](0006-adopt-deterministic-script-pattern.md) | Adopt Deterministic Script Pattern | Accepted | 2026-01-27 |
+| [0007](0007-configuration-optimization.md) | ADR-0007: Claude Code 設定の最適化 | proposed | Not set |
+| [0008](0008-audience-optimized-templates.md) | ADR-0008: 読み手別テンプレート最適化の採用 | proposed | Not set |
+| [0009](0009-externalize-idr-as-rust-binary.md) | IDR生成システムの外部リポジトリ化（Rustバイナリ） | Accepted | 2026-02-07 |
+| [0010](0010-schema-first-api-documentation.md) | Schema-First API ドキュメント生成と Dual Output | Accepted | 2026-02-08 |
+| [0011](0011-add-evidence-verifier-to-audit-pipeline.md) | Audit パイプラインに Evidence Verifier を追加 | Accepted | 2026-02-10 |
+| [0012](0012-flatten-audit-pipeline-remove-compound-reviewers.md) | ADR-0012: Flatten Audit Pipeline — Remove Compound Reviewers | proposed | Not set |
+| [0013](0013-adopt-hook-trinity-pattern-with-claude-reviews.md) | ADR-0013: Hook Trinity パターンの採用 — claude-reviews による Pre-flight 分析の確実な実行 | proposed | Not set |
+| [0014](0014-integrate-aidlc-design-separation-and-ops-reviewer.md) | ADR-0014: AI-DLC 統合 — 設計分離と Operational Readiness Reviewer | proposed | Not set |
+| [0015](0015-frontend-security-guardrails-strategy.md) | Adopt Pattern-Match + Taint-Checklist Strategy for Frontend Security | accepted | 2026-02-23 |
+| [0016](0016-adopt-rust-mcp-for-deep-search.md) | ADR-0016: Adopt Rust + rmcp for deep-search MCP Server | proposed | 2026-02-25 |
+| [0017](0017-build-frontend-code-search-mcp-in-rust.md) | ADR-0017: Build frontend-specialized code search MCP server in Rust | proposed | 2026-02-26 |
+| [0018](0018-index-time-file-context-storage-for-explorer.md) | explorer のファイル文脈に Index-time storage を採用 | accepted | 2026-02-27 |
+| [0019](0019-adopt-sqlite-reference-graph-for-impact-analysis.md) | Adopt SQLite Reference Graph for Impact Analysis | proposed | 2026-02-27 |
+| [0020](0020-claude-code-dashboard-tech-stack.md) | ADR-0020: kagami — 技術スタックと収集方式の選定 | proposed | Not set |
+| [0021](0021-build-slack-semantic-search-mcp-kiku.md) | ADR-0021: Build Slack conversation semantic search MCP server (kiku) | proposed | 2026-03-03 |
+| [0022](0022-migrate-yomu-from-mcp-to-cli.md) | ADR-0022: Migrate yomu from MCP server to CLI tool | proposed | 2026-03-04 |
+| [0023](0023-build-sharpen-rg-output-optimizer-for-ai.md) | ADR-0023: Build sharpen - rg output optimizer for AI consumption | proposed | 2026-03-05 |
+| [0024](0024-adopt-two-layer-delta-for-compaction-resilience.md) | ADR-0024: Adopt two-layer Delta for compaction resilience | accepted | 2026-03-10 |
+| [0025](0025-replace-ralph-loop-with-flow-controller.md) | ADR-0025: gates を stateful completion gate に拡張 | proposed | 2026-03-16 |
+| [0026](0026-recognize-spec-code-convergence-in-llm-instructions.md) | ADR-0026: LLM指示設計における仕様-コード収束則を認識する | accepted | 2026-03-20 |
+| [0027](0027-centralize-plugin-definitions-in-sentinels.md) | ADR-0027: プラグイン定義を sentinels リポに集約する | proposed | 2026-03-20 |
+| [0028](0028-build-test-quality-gate-with-oxc-parser.md) | ADR 0028: oxc_parser によるテスト品質ゲート litmus の構築 | proposed | Not set |
+| [0029](0029-integrate-e2e-test-generation-into-spec-driven-workflow.md) | ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合 | proposed | Not set |
+| [0030](0030-build-session-monitor-tui-mado.md) | ADR 0030: Claude Code セッション監視 TUI mado の構築 | proposed | Not set |
+| [0031](0031-adopt-local-embedding-ort-ruri-v3.md) | ADR-0031: ort + Ruri v3 によるローカル embedding 基盤の構築 | proposed | 2026-03-22 |
+| [0032](0032-build-esa-semantic-search-cli-sae.md) | ADR-0032: Build esa semantic search CLI (sae) | proposed | 2026-03-23 |
+| [0033](0033-add-recursive-unwrap-stack-to-shields.md) | ADR-0033: shields に Recursive Unwrap Stack を追加 | proposed | 2026-03-24 |
+| [0034](0034-automate-backlog-lifecycle-with-remote-trigger.md) | ADR-0034: LaunchAgent によるバックログライフサイクル自動化 | accepted | 2026-03-24 |
+| [0034](0034-extract-shared-embedding-crate-ruri-core.md) | ADR-0034: embedding + storage ユーティリティの共有クレート化 (rurico) | proposed | 2026-03-24 |
+| [0035](0035-audit-verify-convergence-signal-and-reconciliation-ownership.md) | Record convergence signals in audit/verify dedup and move reconciliation into evidence-integrator | accepted | 2026-04-04 |
+| [0036](0036-build-llm-wiki-plugin-for-cross-session-knowledge-synthesis.md) | LLMによるクロスセッション知識合成wikiプラグインの構築 | accepted | 2026-04-07 |
+| [0037](0037-align-sae-filter-helpers-for-amici-extraction.md) | ADR-0037: sae フィルタヘルパーを amici 抽出前提で yomu パターンに揃える | proposed | Not set |
+| [0038](0038-add-stencils-as-sixth-posttooluse-hook-for-pattern-cataloging.md) | ADR-0038: hook pipelineに stencils を追加しコードパターンをカタログ化する | proposed | Not set |
+| [0039](0039-add-tempos-pretooluse-tdd-hook-with-litmus-library-integration.md) | ADR-0039: PreToolUse hook に tempos を追加し litmus library 統合で TDD リズムを強制する | proposed | 2026-04-13 |
 
-## 関連ルール
+## By Status
 
-ADRから抽出された強制ルール：
+### Proposed
 
-- [MODULARIZATION_RULES.md](../rules/workflows/MODULARIZATION_RULES.md) - ADR
-  0001, 0002
-- [PLUGIN_ARCHITECTURE.md](../rules/conventions/PLUGIN_ARCHITECTURE.md) - ADR
-  0003
+- **0001**: ADR 0001: code.mdコマンドの責任分離
+- **0002**: ADR 0002: /fixモジュール化とTDD共通化
+- **0004**: ADR 0004: スキル中心アーキテクチャへの再構成
+- **0005**: ADR-0005: ドキュメントの役割分離とAI最適化
+- **0007**: ADR-0007: Claude Code設定の最適化
+- **0008**: ADR-0008: 読み手別テンプレート最適化の採用
+- **0012**: ADR-0012: Flatten Audit Pipeline — Remove Compound Reviewers
+- **0013**: ADR-0013: Hook Trinityパターンの採用 — claude-reviewsによるPre-flight分析の確実な実行
+- **0014**: ADR-0014: AI-DLC統合 — 設計分離とOperational Readiness Reviewer
+- **0016**: ADR-0016: Adopt Rust + rmcp for deep-search MCP Server
+- **0017**: ADR-0017: Build frontend-specialized code search MCP server in Rust
+- **0019**: Adopt SQLite Reference Graph for Impact Analysis
+- **0020**: ADR-0020: kagami — 技術スタックと収集方式の選定
+- **0021**: ADR-0021: Build Slack conversation semantic search MCP server (kiku)
+- **0022**: ADR-0022: Migrate yomu from MCP server to CLI tool
+- **0023**: ADR-0023: Build sharpen - rg output optimizer for AI consumption
+- **0025**: ADR-0025: gatesをstateful completion gateに拡張
+- **0027**: ADR-0027: プラグイン定義をsentinelsリポに集約する
+- **0028**: ADR 0028: oxc_parserによるテスト品質ゲートlitmusの構築
+- **0029**: ADR 0029: Spec駆動E2Eテスト生成のワークフロー統合
+- **0030**: ADR 0030: Claude Codeセッション監視TUI madoの構築
+- **0031**: ADR-0031: ort + Ruri v3によるローカルembedding基盤の構築
+- **0032**: ADR-0032: Build esa semantic search CLI (sae)
+- **0033**: ADR-0033: shieldsにRecursive Unwrap Stackを追加
+- **0034**: ADR-0034: embedding + storageユーティリティの共有クレート化 (rurico)
+- **0037**: ADR-0037: saeフィルタヘルパーをamici抽出前提でyomuパターンに揃える
+- **0038**: ADR-0038: hook pipelineにstencilsを追加しコードパターンをカタログ化する
 
-## 参照
+### Accepted
 
-- [MADR Format](https://adr.github.io/madr/)
-  — 簡略版を使用（Pros/ConsはConsequencesセクションに統合）
-- `/adr` コマンドで新規ADR作成
+- **0003**: Marketplace構造の維持
+- **0015**: Adopt Pattern-Match + Taint-Checklist Strategy for Frontend Security
+- **0018**: explorerのファイル文脈にIndex-time storageを採用
+- **0024**: ADR-0024: Adopt two-layer Delta for compaction resilience
+- **0026**: ADR-0026: LLM指示設計における仕様-コード収束則を認識する
+- **0034**: ADR-0034: LaunchAgentによるバックログライフサイクル自動化
+- **0035**: Record convergence signals in audit/verify dedup and move reconciliation into evidence-integrator
+- **0036**: LLMによるクロスセッション知識合成wikiプラグインの構築
+
+## About MADR Format
+
+This project uses [MADR (Markdown Architecture Decision Records)](https://adr.github.io/madr/) format.
+
+### How to Create an ADR
+
+```bash
+/adr "Decision Title"
+```
+
+### Status Meanings
+
+- **Proposed**: Awaiting review
+- **Accepted**: Approved, implementing or completed
+- **Deprecated**: Better alternative found
+- **Superseded**: Replaced by another ADR
+
+---
+
+*Last updated: 2026-04-13*
+*Auto-generated by: update-index.sh*

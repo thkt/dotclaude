@@ -17,11 +17,12 @@ and Spec.
 
 ## Rationalization Counters
 
-| Excuse                                     | Counter                                                                       |
-| ------------------------------------------ | ----------------------------------------------------------------------------- |
-| "Why is obvious, I'll skip it"             | Obvious to whom? Unexamined Why produces silent decisions downstream          |
-| "DA challenge is overkill for this"        | Every design has hidden assumptions. DA agent catches what self-review misses |
-| "The user's request maps directly to code" | Requests describe symptoms. Name the underlying problem before designing      |
+| Excuse                                     | Counter                                                                                  |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| "Why is obvious, I'll skip it"             | Obvious to whom? Unexamined Why produces silent decisions downstream                     |
+| "DA challenge is overkill for this"        | Every design has hidden assumptions. DA agent catches what self-review misses            |
+| "The user's request maps directly to code" | Requests describe symptoms. Name the underlying problem before designing                 |
+| "This is simple enough to skip the spec"   | Simple-looking tasks hide ambiguity. Formalization catches it before implementation does |
 
 ## Input
 
@@ -73,16 +74,18 @@ Output: Why Statement
 
 Gate: Do not proceed to Step 1 until the Why Statement is clear.
 
-If any field is vague or assumed, do not fill in placeholders and move on.
-Instead, engage the user in back-and-forth dialogue:
+If any field is vague or assumed, use back-and-forth dialogue — not placeholders.
 
-- Surface what you think the Why might be, and ask the user to confirm or correct
-- Challenge vague outcomes ("improve UX" → for whom? measured how?)
-- Offer contrasting framings to help the user articulate what they actually mean
-- Keep asking until the user confirms the Why Statement
+| Rule | Detail |
+| ---- | ------ |
+| One question per message | Attach recommended answer with reasoning |
+| Codebase-first | Explore instead of asking if codebase can resolve |
+| Surface hypothesis | State your Why reading; ask to confirm or correct |
+| Offer contrasting framings | Present alternative readings to help user articulate what they mean |
+| Challenge vague outcomes | "improve UX" → for whom? measured how? |
+| Gate | Repeat until Why Statement is confirmed |
 
-This is a wall-bouncing session, not a one-shot question. The goal is to draw out
-what the user already knows but has not yet articulated.
+The goal is to draw out what the user already knows but has not yet articulated.
 
 ## Design Exploration (Steps 2-5)
 
@@ -182,24 +185,24 @@ Translate domain understanding into implementation design:
 
 ### Step 7: SOW
 
-Read template `templates/sow/template.md`. Fill from design context (Steps 0-6).
+Read template `~/.claude/templates/sow/template.md`. Fill from design context (Steps 0-6).
 ID format: AC-N. Output:
 `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
 
 Quality gates (apply before writing each section):
 
-| Section | Gate                                                                         |
-| ------- | ---------------------------------------------------------------------------- |
-| Why     | 5 fields all filled. Outcome = measurable result, not deliverable            |
-| AC      | Each traces to Why Outcome. No orphan ACs. No scope creep beyond Why Problem |
-| Scope   | YAGNI checklist items checked with rationale, not just excluded              |
-| Impl    | Files < 5 per Phase. Steps describe concrete changes                         |
-| Test    | Every AC has ≥1 test. Verification states what is checked concretely         |
-| Risks   | ≥1 risk identified with mitigation                                           |
+| Section | Gate                                                                                                                                      |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Why     | 5 fields all filled. Outcome = measurable result, not deliverable                                                                         |
+| AC      | Each traces to Why Outcome. No orphan ACs. No scope creep beyond Why Problem                                                              |
+| Scope   | YAGNI checklist items checked with rationale, not just excluded. Out of Scope: each exclusion traces Why not to a Why field or Constraint |
+| Impl    | Files < 5 per Phase. Steps describe concrete changes                                                                                      |
+| Test    | Every AC has ≥1 test. Verification states what is checked concretely                                                                      |
+| Risks   | ≥1 risk identified with mitigation                                                                                                        |
 
 ### Step 8: Spec
 
-Read template `templates/spec/template.md`. Generate from SOW. ID format:
+Read template `~/.claude/templates/spec/template.md`. Generate from SOW. ID format:
 FR-001, T-001, NFR-001. Traceability: `FR-001 Implements: AC-001` →
 `T-001 Validates: FR-001` If UI-related: include Component API (Props, variants,
 states, usage). Output: `.claude/workspace/planning/[same-dir]/spec.md`

@@ -1,7 +1,7 @@
 ---
 name: devils-advocate-design
 description: Challenge design proposals to expose hidden weaknesses.
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
 background: true

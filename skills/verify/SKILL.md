@@ -144,7 +144,11 @@ Launch all three in parallel:
 
 Requires Phase 0 success. Skip if failed.
 
-[`references/adversarial.md`](references/adversarial.md) protocol.
+```bash
+codex exec -C <worktree-path> --full-auto "<adversarial-prompt>"
+```
+
+`<adversarial-prompt>`: [`references/adversarial.md`](references/adversarial.md) § Codex Prompt (fill in scoped file list).
 
 | Constraint | Value |
 | ---------- | ----- |
@@ -170,11 +174,12 @@ assertion + target code → search intent sources → verdict (exclude or promot
 
 Spawn `evidence-integrator` as background Task.
 
-| Input               | Source                       |
-| ------------------- | ---------------------------- |
-| Reconciled findings | Challenger + verifier output |
-| Outcome evidence    | Phase 1c build/test results  |
-| Adversarial results | Phase 2.5 promoted findings  |
+| Input               | Source                                                            |
+| ------------------- | ----------------------------------------------------------------- |
+| Challenger output   | Raw challenger output (evidence-integrator reconciles internally) |
+| Verifier output     | Raw verifier output (evidence-integrator reconciles internally)   |
+| Outcome evidence    | Phase 1c build/test results                                       |
+| Adversarial results | Phase 2.5 promoted findings                                       |
 
 Returns: root causes + Trust Score + report.
 [`references/trust-score.md`](references/trust-score.md) § Trust Score algorithm.

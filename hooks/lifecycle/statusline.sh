@@ -31,16 +31,20 @@ parse_stdin() {
         (.context_window.used_percentage? // ""),
         (.rate_limits.five_hour.used_percentage? // "" | if . == "" then "" else floor end),
         (.rate_limits.seven_day.used_percentage? // "" | if . == "" then "" else floor end),
+        (if .context_window.current_usage? then (.context_window.current_usage.cache_read_input_tokens // 0) else 0 end),
+        (if .context_window.current_usage? then (.context_window.current_usage.cache_creation_input_tokens // 0) else 0 end),
         (.worktree.name? // ""),
         (.worktree.branch? // ""),
-        (.worktree.directory? // "")
+        (.worktree.directory? // ""),
+        (.workspace.git_worktree? // false | if . then "1" else "" end)
       ] | map(tostring) | join("\u001f")' 2>/dev/null)
 
     if [ -n "$parsed" ]; then
         IFS=$'\x1f' read -r MODEL_NAME MODEL_ID SESSION_ID SESSION_COST \
             CONTEXT_TOKENS CONTEXT_LIMIT CONTEXT_USED_PCT \
             USAGE_5H USAGE_7D \
-            WT_NAME WT_BRANCH WT_ORIG_DIR <<< "$parsed"
+            CACHE_READ CACHE_CREATION \
+            WT_NAME WT_BRANCH WT_ORIG_DIR WS_IS_WORKTREE <<< "$parsed"
     fi
 
     [[ "${SESSION_ID:-}" =~ ^[a-zA-Z0-9_-]+$ ]] || SESSION_ID=""
@@ -79,10 +83,20 @@ render_context() {
     percentage=$(printf "%.0f" "$CONTEXT_USED_PCT")
     remaining=$((100 - percentage))
 
+    # Cache hit rate
+    local cache_hit_pct=0 has_cache=0
+    if [[ "${CACHE_READ:-}" =~ ^[0-9]+$ ]] && [[ "${CACHE_CREATION:-}" =~ ^[0-9]+$ ]]; then
+        local cache_total=$((CACHE_READ + CACHE_CREATION))
+        if [ "$cache_total" -gt 0 ]; then
+            has_cache=1
+            cache_hit_pct=$((CACHE_READ * 100 / cache_total))
+        fi
+    fi
+
     # Bridge file for context-monitor.sh PostToolUse hook
     if [ -n "$SESSION_ID" ]; then
-        printf '{"session_id":"%s","remaining_pct":%d,"used_pct":%d,"ts":%d}\n' \
-            "$SESSION_ID" "$remaining" "$percentage" "${EPOCHSECONDS:-$(date +%s)}" \
+        printf '{"session_id":"%s","remaining_pct":%d,"used_pct":%d,"cache_hit_pct":%d,"ts":%d}\n' \
+            "$SESSION_ID" "$remaining" "$percentage" "$cache_hit_pct" "${EPOCHSECONDS:-$(date +%s)}" \
             > "${TMPDIR:-/tmp}/claude-ctx-${SESSION_ID}.json" 2>/dev/null
     fi
 
@@ -104,6 +118,15 @@ render_context() {
     elif [ "$delta_k" -lt 0 ] 2>/dev/null; then printf ' \033[35m-%dk\033[0m' "$((-delta_k))"; fi
 
     [ "$percentage" -ge 80 ] && printf ' \033[31;1m[!]\033[0m'
+
+    if [ "$has_cache" -eq 1 ]; then
+        local cache_color
+        if [ "$cache_hit_pct" -ge 80 ]; then cache_color='\033[32m'
+        elif [ "$cache_hit_pct" -ge 50 ]; then cache_color='\033[33m'
+        else cache_color='\033[31m'; fi
+        sep
+        printf "${cache_color}cache:%d%%\033[0m" "$cache_hit_pct"
+    fi
 }
 
 render_cost() {
@@ -119,6 +142,36 @@ render_usage() {
 
     sep
     printf "$(color_for_pct "$p5")5h:%d%%\033[0m $(color_for_pct "$p7")7d:%d%%\033[0m" "$p5" "$p7"
+}
+
+render_deadlines() {
+    local backlog="$HOME/.claude/BACKLOG.md"
+    [ -f "$backlog" ] || return
+
+    local today today_epoch overdue upcoming deadline deadline_epoch diff
+    today=$(date +%Y-%m-%d)
+    today_epoch=$(date -j -f "%Y-%m-%d" "$today" +%s 2>/dev/null) || return
+    overdue=0
+    upcoming=0
+
+    setopt local_options REMATCH_PCRE
+    while IFS= read -r line; do
+        [[ "$line" =~ '\|\s*(\d{4}-\d{2}-\d{2})\s*\|' ]] || continue
+        deadline="${match[1]}"
+        deadline_epoch=$(date -j -f "%Y-%m-%d" "$deadline" +%s 2>/dev/null) || continue
+        diff=$(( (deadline_epoch - today_epoch) / 86400 ))
+        if   [ "$diff" -lt 0 ]; then overdue=$((overdue + 1))
+        elif [ "$diff" -le 3 ]; then upcoming=$((upcoming + 1))
+        fi
+    done < "$backlog"
+
+    local total=$((overdue + upcoming))
+    [ "$total" -eq 0 ] && return
+
+    sep
+    if [ "$overdue" -gt 0 ]; then printf '\033[31mdl:%d!\033[0m' "$total"
+    else printf '\033[33mdl:%d\033[0m' "$total"
+    fi
 }
 
 render_git() {
@@ -142,9 +195,13 @@ render_git() {
 
     printf ' on \033[95m%s\033[0m' "$BRANCH"
 
-    local git_dir git_common
-    { read -r git_dir; read -r git_common; } <<< "$(git rev-parse --git-dir --git-common-dir 2>/dev/null)"
-    [ -n "$git_common" ] && [ "$git_common" != "$git_dir" ] && printf ' \033[92m[wt]\033[0m'
+    if [ "${WS_IS_WORKTREE:-}" = "1" ]; then
+        printf ' \033[92m[wt]\033[0m'
+    else
+        local git_dir git_common
+        { read -r git_dir; read -r git_common; } <<< "$(git rev-parse --git-dir --git-common-dir 2>/dev/null)"
+        [ -n "$git_common" ] && [ "$git_common" != "$git_dir" ] && printf ' \033[92m[wt]\033[0m'
+    fi
 
     source "$(dirname "$0")/_pr-cache.sh" || true
 }
@@ -160,4 +217,5 @@ else
 fi
 render_cost
 render_usage
+render_deadlines
 render_git

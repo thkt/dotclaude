@@ -6,9 +6,9 @@ SOW: [path to sow.md]
 
 ## Functional Requirements
 
-| ID     | Description   | Input            | Output            | Implements |
-| ------ | ------------- | ---------------- | ----------------- | ---------- |
-| FR-001 | [requirement] | [semantic input] | [semantic output] | AC-001     |
+| ID     | Description   | Input            | Output            | Implements | Testability Notes             |
+| ------ | ------------- | ---------------- | ----------------- | ---------- | ----------------------------- |
+| FR-001 | [requirement] | [semantic input] | [semantic output] | AC-001     | [e.g. mock clock, pure fn, —] |
 
 Input/Output: semantic descriptions (what goes in/out), not type names or field names.
 

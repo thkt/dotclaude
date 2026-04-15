@@ -1,7 +1,6 @@
 ---
 name: commit-generator
-description:
-  Analyze staged Git changes and generate Conventional Commits format messages.
+description: Analyze staged Git changes and generate Conventional Commits format messages.
 tools: [Bash]
 model: sonnet
 skills: [utilizing-cli-tools]
@@ -40,6 +39,22 @@ Default to `feat` if unclear.
 | ------- | ---------------------------------------------------- |
 | Subject | ≤72 chars, imperative, lowercase, no period          |
 | Footer  | `BREAKING CHANGE:`, `Closes #123`, `Co-authored-by:` |
+
+## Key Decisions
+
+Every candidate must include a `key_decisions` field.
+
+| Quality    | Example                                                                           | Criterion                           |
+| ---------- | --------------------------------------------------------------------------------- | ----------------------------------- |
+| Good       | `Session cookies over JWT — prioritized existing auth infrastructure consistency` | Decision + rejection reason + basis |
+| Acceptable | `- Routine implementation`                                                        | No design decisions                 |
+| Bad        | `Using React`                                                                     | Self-evident fact. Do not record    |
+
+What to record:
+
+- Non-obvious technology/pattern choices and why alternatives were rejected
+- Trade-off decisions (e.g., DRY vs defensive design)
+- Deviations from existing patterns or plans
 
 ## Examples
 
@@ -80,26 +95,29 @@ Return 3 candidates as structured Markdown:
 
 ### 1
 
-| Field       | Value             |
-| ----------- | ----------------- |
-| type        | type              |
-| scope       | scope             |
-| description | description       |
-| body        | body (optional)   |
-| footer      | footer (optional) |
+| Field         | Value                |
+| ------------- | -------------------- |
+| type          | type                 |
+| scope         | scope                |
+| description   | description          |
+| body          | body (optional)      |
+| key_decisions | decisions (required) |
+| footer        | footer (optional)    |
 
 ### 2
 
-| Field       | Value       |
-| ----------- | ----------- |
-| type        | type        |
-| scope       | scope       |
-| description | description |
+| Field         | Value                |
+| ------------- | -------------------- |
+| type          | type                 |
+| scope         | scope                |
+| description   | description          |
+| key_decisions | decisions (required) |
 
 ### 3
 
-| Field       | Value       |
-| ----------- | ----------- |
-| type        | type        |
-| description | description |
+| Field         | Value                |
+| ------------- | -------------------- |
+| type          | type                 |
+| description   | description          |
+| key_decisions | decisions (required) |
 ```

@@ -1,7 +1,7 @@
 ---
 name: silent-failure-reviewer
 description: サイレント障害、空のcatchブロック、未処理のPromise拒否を検出。
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 skills: [reviewing-silent-failures, applying-code-principles]
 context: fork

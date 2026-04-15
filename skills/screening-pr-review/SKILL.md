@@ -51,12 +51,13 @@ Never include `author` in gh output fields.
 
 ## Comment Tone
 
-| Rule       | Detail                             |
-| ---------- | ---------------------------------- |
-| Respectful | Acknowledge effort, avoid commands |
-| Concise    | 3 lines max per comment            |
-| Suggestive | "Consider..." not "This is wrong"  |
-| Located    | Specify file:line for each comment |
+| Rule            | Detail                                                                               |
+| --------------- | ------------------------------------------------------------------------------------ |
+| Format          | `[label] <observed behavior or risk>. <suggestion>. (file:line)`                    |
+| Concise         | 3 lines for `[imo]`/`[nits]`/`[info]`; up to 5 for `[must]`/`[want]` with evidence |
+| Respectful      | Acknowledge effort, avoid commands                                                   |
+| Suggestive      | "Consider..." not "This is wrong"                                                    |
+| Author-targeted | Comments may be posted verbatim — calibrate detail for the PR author                 |
 
 ## References
 
