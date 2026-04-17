@@ -18,13 +18,16 @@ NOW=$(date +%s)
 HIT=""
 
 if [ -f "$CACHE_FILE" ]; then
-    CACHED_RAW=$(jq -r --arg k "$CACHE_KEY" '.[$k] // empty' "$CACHE_FILE" 2>/dev/null)
-    if [ -n "$CACHED_RAW" ]; then
-        IFS=$'\t' read -r CACHED_AT PR_URL PR_NUM PR_STATE \
-            <<< "$(printf '%s' "$CACHED_RAW" | jq -r '[(.cached_at // 0), (.url // ""), (.number // ""), (.state // "")] | map(tostring) | @tsv' 2>/dev/null)"
-        if [ $((NOW - CACHED_AT)) -lt "$CACHE_TTL_SEC" ]; then
-            HIT=1
-        fi
+    # Single jq fork: extract entry + serialize to TSV in one pass
+    IFS=$'\t' read -r CACHED_AT PR_URL PR_NUM PR_STATE \
+        <<< "$(jq -r --arg k "$CACHE_KEY" '
+            .[$k] // null
+            | if . == null then ""
+              else [(.cached_at // 0), (.url // ""), (.number // ""), (.state // "")] | map(tostring) | @tsv
+              end
+        ' "$CACHE_FILE" 2>/dev/null)"
+    if [ -n "$CACHED_AT" ] && [ $((NOW - CACHED_AT)) -lt "$CACHE_TTL_SEC" ]; then
+        HIT=1
     fi
 fi
 

@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # PostToolUse hook: auto-fix .md files with textlint
 # Triggered on Write/Edit/MultiEdit for markdown files
-set -uo pipefail
+set -euo pipefail
 
 TEXTLINT_DIR="$HOME/.claude/textlint"
 TEXTLINT_CONFIG="$TEXTLINT_DIR/.textlintrc.json"
@@ -9,8 +9,15 @@ TEXTLINT_CONFIG="$TEXTLINT_DIR/.textlintrc.json"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/lib/japanese-detect.sh"
 
-# Read hook JSON from stdin — parse tool_name and file_path in single jq call
+# Read hook JSON from stdin
 input=$(cat)
+
+# Fast-exit: skip jq fork unless input references a .md file path
+case "$input" in
+  *.md\"*) ;;
+  *) exit 0 ;;
+esac
+
 read -r tool_name file_path < <(echo "$input" | jq -r '[.tool_name // "", .tool_input.file_path // ""] | @tsv' 2>/dev/null) || true
 
 case "$tool_name" in

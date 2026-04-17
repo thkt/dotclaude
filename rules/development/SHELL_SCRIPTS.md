@@ -9,12 +9,13 @@ paths:
 
 ## Shell
 
-| Rule    | Value                                                |
-| ------- | ---------------------------------------------------- |
-| Shebang | `#!/bin/zsh` (macOS default)                         |
-| Strict  | Enforcement: `set -euo pipefail`                     |
-| Relaxed | Informational: `set +e`                              |
-| SIGPIPE | `cmd \| head` with pipefail → add `\|\| true` at end |
+| Rule        | Value                                                                |
+| ----------- | -------------------------------------------------------------------- |
+| Shebang     | `#!/bin/zsh` (macOS default)                                         |
+| Bash excpt. | `#!/bin/bash` when `BASH_REMATCH` / `declare -A` are required        |
+| Strict      | Enforcement: `set -euo pipefail`                                     |
+| Relaxed     | Informational: `set +e`                                              |
+| SIGPIPE     | `cmd \| head` with pipefail → add `\|\| true` at end                 |
 
 ## zsh Pitfalls
 

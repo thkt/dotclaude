@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # Shared Japanese detection. Reads from stdin.
 # Usage: has_japanese < file.md  OR  echo "text" | has_japanese
 

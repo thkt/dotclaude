@@ -9,6 +9,13 @@ CCPLANVIEW_APP="/Applications/CCPlanView.app"
 command -v jq &>/dev/null || exit 0
 
 INPUT="$(cat)"
+
+# Fast-exit: skip jq fork unless input mentions sow/spec/idr path fragments
+case "$INPUT" in
+  *sow*|*spec*|*idr-*) ;;
+  *) exit 0 ;;
+esac
+
 FILE_PATH="$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty')"
 
 case "$FILE_PATH" in

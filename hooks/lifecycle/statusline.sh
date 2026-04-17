@@ -183,12 +183,12 @@ render_git() {
             printf ' on \033[95m%s\033[0m' "$WT_BRANCH"
         printf ' \033[92m[wt]\033[0m'
         [ -n "$WT_ORIG_DIR" ] && [ "$WT_ORIG_DIR" != "null" ] && \
-            printf ' \033[90m← %s\033[0m' "$(basename "$WT_ORIG_DIR")"
+            printf ' \033[90m← %s\033[0m' "${WT_ORIG_DIR:t}"
         source "$(dirname "$0")/_pr-cache.sh" || true
         return
     fi
 
-    printf '\033[96;1m%s\033[0m' "$(basename "$PWD")"
+    printf '\033[96;1m%s\033[0m' "${PWD:t}"
 
     BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
     [ -z "$BRANCH" ] && return

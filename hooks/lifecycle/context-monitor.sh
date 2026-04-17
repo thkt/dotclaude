@@ -3,13 +3,19 @@ set +e
 
 # Failure mode: fail-open (advisory only, never blocks)
 
+# Fast-exit: no bridge file means statusline.sh hasn't run → nothing to warn about.
+# Skip jq fork entirely in that case.
+setopt null_glob
+CTX_FILES=("${TMPDIR:-/tmp}"/claude-ctx-*.json)
+(( ${#CTX_FILES[@]} )) || exit 0
+
 INPUT=$(</dev/stdin)
 SESSION_ID=$(printf '%s' "$INPUT" | jq -r '.session_id // ""' 2>/dev/null)
 
-# Find bridge file written by statusline.sh
 CTX_FILE="${TMPDIR:-/tmp}/claude-ctx-${SESSION_ID}.json"
 if [ -z "$SESSION_ID" ] || [ ! -f "$CTX_FILE" ]; then
-    CTX_FILE=$(ls -t "${TMPDIR:-/tmp}"/claude-ctx-*.json 2>/dev/null | head -1)
+    # Pick newest by modification time without fork (zsh glob qualifier)
+    CTX_FILE=("${TMPDIR:-/tmp}"/claude-ctx-*.json(Nom[1]))
     [ -f "$CTX_FILE" ] || exit 0
 fi
 

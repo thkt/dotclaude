@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
 # PreToolUse hook: block gh issue/pr create when title/headings are not in configured language
-set -uo pipefail
+# Uses bash (not zsh) because BASH_REMATCH is required for heading regex extraction.
+set -euo pipefail
 
 input=$(cat)
+
+# Fast-exit: skip jq+grep forks unless input is a Bash `gh ... create` call
+# (this hook fires on every Bash invocation; ~99% are irrelevant)
+case "$input" in
+  *'"tool_name":"Bash"'*gh*create*) ;;
+  *) exit 0 ;;
+esac
+
 read -r tool_name command_str < <(echo "$input" | jq -r '[.tool_name // "", .tool_input.command // ""] | @tsv' 2>/dev/null) || true
 # @tsv doubles backslashes — undo to get original command string
 command_str="${command_str//\\\\/\\}"
 
-[[ "$tool_name" == "Bash" ]] || exit 0
-echo "$command_str" | grep -qE 'gh (issue|pr) create' || exit 0
+[[ "$command_str" =~ gh[[:space:]]+(issue|pr)[[:space:]]+create ]] || exit 0
 
 # Language → Unicode pattern (Latin-script languages cannot be distinguished from English)
 lang=$(jq -r '.language // ""' "$HOME/.claude/settings.json" 2>/dev/null)
@@ -23,24 +31,34 @@ has_lang() { local LC_ALL=en_US.UTF-8; [[ "$1" =~ $char_pattern ]]; }
 
 errors=()
 
-# Extract --title
-title=$(echo "$command_str" | sed -nE 's/.*--title "(([^"\\]|\\.)*)".*/\1/p')
-[[ -z "$title" ]] && title=$(echo "$command_str" | sed -nE "s/.*--title '([^']*)'.*/\1/p")
+# Extract --title (double-quoted or single-quoted) — BASH_REMATCH, zero forks
+title=""
+if [[ "$command_str" =~ --title[[:space:]]+\"(([^\"\\]|\\.)*)\" ]]; then
+  title="${BASH_REMATCH[1]}"
+elif [[ "$command_str" =~ --title[[:space:]]+\'([^\']*)\' ]]; then
+  title="${BASH_REMATCH[1]}"
+fi
 if [[ -n "$title" ]] && ! has_lang "$title"; then
   errors+=("title: $title")
 fi
 
-# Extract --body and check headings
-body=$(echo "$command_str" | sed -nE 's/.*--body "(([^"\\]|\\.)*)".*/\1/p')
-[[ -z "$body" ]] && body=$(echo "$command_str" | sed -nE "s/.*--body '([^']*)'.*/\1/p")
+# Extract --body — BASH_REMATCH, zero forks
+body=""
+if [[ "$command_str" =~ --body[[:space:]]+\"(([^\"\\]|\\.)*)\" ]]; then
+  body="${BASH_REMATCH[1]}"
+elif [[ "$command_str" =~ --body[[:space:]]+\'([^\']*)\' ]]; then
+  body="${BASH_REMATCH[1]}"
+fi
 if [[ -n "$body" ]]; then
+  # Unescape literal \n to newline via parameter expansion (no sed fork)
+  body="${body//\\n/$'\n'}"
   while IFS= read -r line; do
     if [[ "$line" =~ ^#{1,6}[[:space:]](.+)$ ]]; then
       heading="${BASH_REMATCH[1]}"
       heading="${heading%"${heading##*[![:space:]]}"}"
       [[ -n "$heading" ]] && ! has_lang "$heading" && errors+=("heading: $heading")
     fi
-  done < <(echo "$body" | sed 's/\\n/\n/g')
+  done <<< "$body"
 fi
 
 if [[ ${#errors[@]} -gt 0 ]]; then

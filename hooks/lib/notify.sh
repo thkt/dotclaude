@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 
 SOUNDS_DIR="$HOME/.claude/sounds"
 

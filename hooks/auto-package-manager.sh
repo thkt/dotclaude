@@ -1,15 +1,25 @@
 #!/bin/bash
 # PreToolUse hook: Convert package manager commands to ni equivalents
 # Requires: jq, ni
+# Uses bash (not zsh) because BASH_REMATCH is required for regex match extraction.
+set -euo pipefail
 
 command -v jq >/dev/null 2>&1 || exit 0
 command -v ni >/dev/null 2>&1 || exit 0
 
 INPUT=$(cat)
+
+# Fast-exit: skip jq fork unless input looks like a package manager command
+# (this hook fires on every Bash invocation; ~99% are irrelevant)
+case "$INPUT" in
+  *'"command":"npm'*|*'"command":"npx'*|*'"command":"pnpm'*|*'"command":"yarn'*|*'"command":"bun'*) ;;
+  *) exit 0 ;;
+esac
+
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
 
-# Only process package manager commands
-FIRST_TOKEN=$(echo "$COMMAND" | awk '{print $1}')
+# Only process package manager commands (bash builtin parameter expansion — no fork)
+FIRST_TOKEN="${COMMAND%% *}"
 case "$FIRST_TOKEN" in
   npm|npx|pnpm|yarn|bun|bunx) ;;
   *) exit 0 ;;

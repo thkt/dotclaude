@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # PreToolUse hook: lint text + structure review checklist for gh issue/pr create
 # Returns advisory (approve + additionalContext) with textlint results and structure checklist
-set -uo pipefail
+set -euo pipefail
 
 TEXTLINT_DIR="$HOME/.claude/textlint"
 TEXTLINT_CONFIG="$TEXTLINT_DIR/.textlintrc.json"
@@ -12,15 +12,22 @@ source "$SCRIPT_DIR/lib/japanese-detect.sh"
 STRUCTURE_CHECKLIST='## 構造レビュー（ワークスロップ防止）\n\nbody を送信する前に、以下を確認してください：\n\n| チェック | 問い |\n|---|---|\n| 筆者の判断 | 筆者自身の結論が1〜3行で冒頭に書かれているか？AI出力が主役になっていないか |\n| 半分にできるか | この文書は半分にできるか？できないなら何が重要か分かっていない可能性がある |\n| 事実と意見の区別 | 事実・推測・提案にラベルが貼られ、分離されているか |\n| アクションの明確さ | 読み手に求める行動が具体的か（「ご確認ください」ではなく「Xを判断してください」） |\n| 読み手の認知負荷 | この文書は読み手の負荷を下げているか、仕事を押し付けていないか |\n\n問題がある項目のみ body を修正してください。'
 
 input=$(cat)
+
+# Fast-exit: skip jq+grep forks unless input is a Bash `gh ... create` call
+case "$input" in
+  *'"tool_name":"Bash"'*gh*create*) ;;
+  *) exit 0 ;;
+esac
+
 read -r tool_name command_str < <(echo "$input" | jq -r '[.tool_name // "", .tool_input.command // ""] | @tsv' 2>/dev/null) || true
 # @tsv doubles backslashes — undo to get original command string
 command_str="${command_str//\\\\/\\}"
 
-if [[ "$tool_name" != "Bash" || -z "$command_str" ]]; then
+if [[ -z "$command_str" ]]; then
   exit 0
 fi
 
-if ! echo "$command_str" | grep -qE 'gh (issue|pr) create'; then
+if ! [[ "$command_str" =~ gh[[:space:]]+(issue|pr)[[:space:]]+create ]]; then
   exit 0
 fi
 

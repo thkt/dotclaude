@@ -5,6 +5,14 @@
 set -euo pipefail
 
 INPUT=$(cat)
+
+# Fast-exit: skip jq fork unless input starts with a supported package manager
+# (this hook fires on every Bash invocation; ~99% are irrelevant)
+case "$INPUT" in
+  *'"command":"npm'*|*'"command":"pnpm'*|*'"command":"yarn'*|*'"command":"bun'*|*'"command":"ni'*|*'"command":"nci'*|*'"command":"nup'*) ;;
+  *) exit 0 ;;
+esac
+
 command -v jq >/dev/null 2>&1 || exit 0
 
 COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // ""')
