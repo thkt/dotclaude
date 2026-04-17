@@ -49,7 +49,7 @@ to user.
 | ---- | ------------------------------------------------------------------ |
 | 1    | Pre-flight (tests + hook findings)                                 |
 | 2    | File routing: classify target files → assign to relevant reviewers |
-| 3    | Spawn sub-reviewers via Task (background, max 10 parallel)         |
+| 3    | Spawn sub-reviewers via Task as parallel calls in one turn (max 10 per batch) |
 | 4    | Spawn challenger + verifier (wait for reviewers)                   |
 | 5    | Spawn integrator (wait for challenger + verifier)                  |
 | 6    | Leader receives final Markdown from integrator                     |
@@ -96,6 +96,10 @@ Each sub-reviewer is spawned directly via Task:
 - subagent_type: the reviewer name (e.g., `security-reviewer`)
 - Prompt: assigned file list + focus + finding schema
 - No team_name (standalone background agents)
+
+Fan-out is the point of this step. Spawn all applicable sub-reviewers as
+parallel Task calls within a single response — one Task call per reviewer.
+Sequential spawning defeats the parallelism and wastes turns.
 
 #### Pipeline Roles
 

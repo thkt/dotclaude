@@ -93,6 +93,10 @@ Output, Implementer Started/Assignment/Completion.
 | 5     | Integration + Quality Gates    | [references/execution.md](references/execution.md#phase-5-integration--quality-gates) |
 | 6     | Summary                        | [references/execution.md](references/execution.md#phase-6-summary) |
 
+Parallel spawn rule: Phase 4 must spawn all Implementers as concurrent Task
+calls within a single response. One Task call per unit. Sequential spawning
+defeats the swarm model and stretches wall time linearly.
+
 ## Error Handling
 
 | Scenario                     | Action                                                         |

@@ -40,10 +40,10 @@ const TodoList = ({ todos }) => (
 
 ## Anti-patterns
 
-| Bad                                    | Problem                   |
-| -------------------------------------- | ------------------------- |
-| Presentational with `useState`/`fetch` | Should receive via props  |
-| Container with decorative styles       | Should handle layout only |
+| Bad                                    | Problem                   | Fix                                       |
+| -------------------------------------- | ------------------------- | ----------------------------------------- |
+| Presentational with `useState`/`fetch` | Should receive via props  | Lift state to Container; pass via props   |
+| Container with decorative styles       | Should handle layout only | Move styling to Presentational component  |
 
 ## Benefits
 

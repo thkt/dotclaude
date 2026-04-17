@@ -63,6 +63,10 @@ Base branch detection: `main` (default), override with `--base <branch>`.
 Phase 0 constraints: Timeout 300s. On failure: skip Phase 1c, 2a → static-only
 verification. Log reason in report.
 
+Parallel spawn rule: Phase 1 and Phase 2 must issue all Task / Bash / Codex
+exec calls concurrently within a single response. Sequential invocation
+negates the fan-out and doubles wall time.
+
 ## Report
 
 [`references/trust-score.md`](references/trust-score.md) § Report Format.
