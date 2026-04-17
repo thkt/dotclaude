@@ -12,11 +12,10 @@
 
 | Output Type       | Standard                                                               |
 | ----------------- | ---------------------------------------------------------------------- |
-| Facts             | Cite source: `[file_path:line_number]` or `[command_output:timestamp]` |
-| Assumptions       | Mark with [→] prefix and state basis                                   |
-| Uncertainty       | [✓] ≥95%, [→] 70-94%, [?] <70%                                         |
-| Partial knowledge | Read files for exact formats (concepts ≠ details)                      |
-| Knowledge gaps    | State "I don't know" rather than guessing                              |
+| Facts             | Cite source: `[file_path:line_number]` or `[command_output:timestamp]` → mark [✓] |
+| Assumptions       | Mark with [→] prefix and state basis                                               |
+| Partial knowledge | Read files for exact formats (concepts ≠ details)                                  |
+| Knowledge gaps    | State "I don't know" rather than guessing → mark [?]                               |
 
 ### Anti-Sycophancy
 

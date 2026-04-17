@@ -2,29 +2,40 @@
 
 ## Priority Matrix
 
-| Priority   | Principle                |
-| ---------- | ------------------------ |
-| Critical   | Occam's Razor            |
-| Critical   | Progressive Enhancement  |
-| Default    | Readable Code            |
-| Default    | Miller's Law             |
-| Default    | TDD/Baby Steps           |
-| Default    | DRY (3+ duplications)    |
-| Default    | YAGNI                    |
-| Default    | Strong Inference         |
-| Contextual | SOLID                    |
-| Contextual | Container/Presentational |
-| Contextual | Law of Demeter           |
-| Contextual | Leaky Abstraction        |
-| Contextual | AI-Assisted Development  |
-| Contextual | TIDYINGS                 |
+| Priority    | Principle                |
+| ----------- | ------------------------ |
+| Foundation  | Backcasting              |
+| Critical    | Occam's Razor            |
+| Critical    | Progressive Enhancement  |
+| Default     | Readable Code            |
+| Default     | Miller's Law             |
+| Default     | TDD/Baby Steps           |
+| Default     | DRY (3+ duplications)    |
+| Default     | YAGNI                    |
+| Default     | Strong Inference         |
+| Contextual  | SOLID                    |
+| Contextual  | Container/Presentational |
+| Contextual  | Law of Demeter           |
+| Contextual  | Leaky Abstraction        |
+| Contextual  | AI-Assisted Development  |
+| Contextual  | TIDYINGS                 |
 
 ## Triggers
 
-Method chains >2 → Demeter / 1min unreadable → Readable / Complex-first → Occam
-/ Single hypothesis → Strong Inference / Coordinated call sites >= 2 → YAGNI Boundary
+New task or unclear goal → Backcasting / Method chains >2 → Demeter / 1min unreadable → Readable / Complex-first → Occam
+/ Single hypothesis → Strong Inference / Coordinated call sites >= 2 → YAGNI Boundary / Post-write verbose → Occam
+
+## Backcasting
+
+Define the ideal end state and work backward.
+
+1. Goal: What does "done" look like? (user behavior or system state, not a deliverable)
+2. Gap: What separates the current state from that goal?
+3. Path: What is the minimum set of steps from gap to goal?
 
 ## Conflict Resolution
+
+Backcasting defines the goal; Occam's Razor and other principles govern how to reach it.
 
 When in doubt: simple > clever, concrete > abstract, working > perfect, readable
 \> DRY.

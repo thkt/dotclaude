@@ -25,6 +25,13 @@ Split when ANY threshold exceeded:
 | Layers    | ≥3        |
 | Lines     | ≥200      |
 
+## Interpretation Clarity
+
+| Trigger | Action |
+| ------- | ------ |
+| Multiple valid interpretations exist | List all. Do not silently pick one — wait for confirmation |
+| Task intent is unclear | Stop. Name what is unclear. Do not proceed |
+
 ## No Change Rule
 
 Before reporting no change: cite specific file:line showing current state meets
