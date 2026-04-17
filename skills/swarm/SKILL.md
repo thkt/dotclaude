@@ -77,124 +77,21 @@ Architecture defines each agent's model.
 Peer DM transport with defined handoff structures: Spawn Context, Architect
 Output, Implementer Started/Assignment/Completion.
 
-→ Templates and response rules: [reference.md](reference.md#context-contracts)
+→ Templates and response rules:
+[references/contracts.md](references/contracts.md#context-contracts)
 
 ## Execution
 
-### Phase 0: SOW Detection
-
-1. SOW/spec auto-detection
-2. SOW なし → `$1` is sole instruction
-
-### Phase 1: Team Setup + Architecture
-
-1. `TeamCreate` with name `swarm-{timestamp}`
-2. Spawn Architect (feature-architect) with prompt:
-   - Spawn Context ([reference.md#spawn-context](reference.md#spawn-context-leader--all-agents))
-   - `$1` implementation description
-   - Instruction: explore codebase (yomu preferred, grep/glob fallback) → design
-     contracts → file groupings
-   - Expected output: Architect Output contract (Markdown via DM)
-3. Spawn QA (qa-reviewer) with prompt:
-   - Instruction: observe Architect's design, comment via peer DM
-   - Read team config to discover teammates
-4. Wait for Architect's contract DM
-
-### Phase 1.5: Decomposition Approval
-
-1. Present Architect's decomposition to user:
-   - Parallel units with file assignments
-   - Shared changes (applied before parallel execution)
-   - Dependency graph (ideally all independent)
-   - Estimated worker count
-2. User may adjust:
-   - Merge/split units
-   - Reassign files between units
-   - Override dependency decisions
-3. Proceed to Phase 2 after approval
-
-### Phase 2: Test Generation
-
-1. After final Architect Output contract is confirmed (Phase 1 + QA review)
-2. Spawn test-generator as standalone background agent
-   (`subagent_type: test-generator`, `run_in_background: true`)
-3. Include Architect's contract in test-gen prompt
-4. Receive test results via `TaskOutput`
-
-### Phase 3: File Assignment
-
-1. Receive final Architect Output contract (confirmed after QA review rounds)
-2. Receive test-gen results via `TaskOutput`
-3. Spawn Implementer(s) per Architect's `parallel_units` (mechanical — no
-   analysis):
-   - One Implementer per parallel unit (worktree isolation)
-   - Single unit → single Implementer
-   - `mode: "dontAsk"` (worktree isolation provides safety for autonomous Bash)
-   - Prompt: Implementer Assignment contract ([reference.md#implementer-assignment](reference.md#implementer-assignment-leader--implementer))
-   - Instruction: RGRC cycle, DM Architect for questions
-4. Forward file assignments to QA for observation
-
-### Phase 4: RGRC Implementation
-
-1. Implementer(s) work on assigned files
-2. Wait for `started` DM from each Implementer (receipt confirmation)
-   - 120s timeout per Implementer (aligned with /audit convention)
-   - No `started` DM within 120s → shutdown, re-spawn same assignment (max 1
-     retry → escalate to user)
-3. Peer DM flow:
-   - Implementer ↔ Architect: contract questions, design clarification
-   - QA → Implementer: edge case observations
-   - QA → Architect: contract quality observations
-   - QA → Leader: verification command requests
-4. Leader handles QA verification requests mechanically:
-   - Receive command request → execute → return result to QA
-5. Wait for all Implementers to complete (DM with status)
-6. Suspected death (no completion DM, abnormally long silence):
-   - Leader inspects worktree: `git -C <worktree-path> status`
-   - Modified files → partial progress exists
-   - Clean → Implementer never started real work
-   - Shutdown dead Implementer, re-spawn with same assignment (max 1 retry →
-     escalate to user). New Implementer reads worktree state and decides
-     independently whether to continue or restart
-
-### Phase 5: Integration + Quality Gates
-
-#### 5a: Merge Strategy
-
-1. Apply shared_changes first (from Architect Output):
-   - Leader applies shared changes to main branch directly
-   - If application fails → halt merge, escalate to user
-   - Verify: run type-check/lint on main after applying
-2. Merge remaining worktrees sequentially:
-   - Merge independent units in completion order
-   - For units with depends_on, merge in build_sequence order
-   - Resolve conflicts via `git merge` or update branch
-3. Final state: all changes on main branch
-
-<!-- canonical: skills/orchestrating-workflows (full gate table) -->
-
-#### 5b: Quality Gates
-
-1. Leader executes QG on main branch (tests, lint, types, coverage)
-2. If Spec exists: Spec compliance check
-   - File coverage: compare `git diff --name-only` against Spec
-     `## Implementation` file list. New test files and config files are exempt
-   - AC verification: for each AC in SOW, confirm implementation + test exist.
-     Flag unmet or partially met ACs with specific gaps
-3. On failure:
-   - Identify responsible agent from failing file
-   - Forward failure details to that agent via DM
-   - Agent fixes and reports back
-4. Re-run QG after fix
-5. Max 3 iterations → escalate to user
-
-### Phase 6: Summary
-
-1. Collect results from all agents
-2. Generate summary report (files modified, tests, issues)
-3. Shutdown all agents (`shutdown_request`)
-4. `TeamDelete` for cleanup
-5. Present summary to user
+| Phase | Action                         | Detail                                                     |
+| ----- | ------------------------------ | ---------------------------------------------------------- |
+| 0     | SOW Detection                  | [references/execution.md](references/execution.md#phase-0-sow-detection) |
+| 1     | Team Setup + Architecture      | [references/execution.md](references/execution.md#phase-1-team-setup--architecture) |
+| 1.5   | Decomposition Approval         | [references/execution.md](references/execution.md#phase-15-decomposition-approval) |
+| 2     | Test Generation                | [references/execution.md](references/execution.md#phase-2-test-generation) |
+| 3     | File Assignment                | [references/execution.md](references/execution.md#phase-3-file-assignment) |
+| 4     | RGRC Implementation            | [references/execution.md](references/execution.md#phase-4-rgrc-implementation) |
+| 5     | Integration + Quality Gates    | [references/execution.md](references/execution.md#phase-5-integration--quality-gates) |
+| 6     | Summary                        | [references/execution.md](references/execution.md#phase-6-summary) |
 
 ## Error Handling
 
@@ -216,9 +113,9 @@ Leader reports progress table at key events (Phase 3 start, Implementer
 started/completion, merge/QG results).
 
 → Display format and trigger events:
-[reference.md](reference.md#progress-tracking)
+[references/contracts.md](references/contracts.md#progress-tracking)
 
 ## Abort / Rollback
 
 → Recovery procedures by phase:
-[reference.md](reference.md#abort--rollback)
+[references/contracts.md](references/contracts.md#abort--rollback)
