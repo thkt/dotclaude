@@ -10,7 +10,7 @@ development principles, and workflow optimizations.
 This repository contains personal configurations for Claude AI, including:
 
 - Custom slash commands for systematic development workflows (47 skills)
-- Specialized AI agents for code review, generation, and analysis (33 agents)
+- Specialized AI agents for code review, generation, and analysis (38 agents)
 - Core AI operation principles and development best practices
 - Quality pipeline hooks (guardrails, formatter, reviews, gates)
 - Japanese language support
@@ -37,7 +37,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── explorers/        # Codebase exploration agents
 │   ├── generators/       # Code/test/git generators
 │   ├── resolvers/        # Build error resolvers
-│   ├── reviewers/        # Code review agents (17 reviewers)
+│   ├── reviewers/        # Code review agents (20 reviewers)
 │   └── teams/            # Integrators & implementers
 ├── docs/                  # Design docs & guides
 ├── templates/             # Prompt templates (audit, sow, spec, etc.)
