@@ -62,41 +62,22 @@ See `templates/audit/calibration-examples.md` section TD.
 
 ## Error Handling
 
-| Error          | Action                                   |
-| -------------- | ---------------------------------------- |
-| No types found | Report "No types to review"              |
-| Glob empty     | Report 0 files found, do not infer clean |
-| Tool error     | Log error, skip file, note in summary    |
+| Error          | Action                      |
+| -------------- | --------------------------- |
+| No types found | Report "No types to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: TD.
+
+Categories: encapsulation / expression / usefulness / enforcement.
+Severity: critical / high / medium / low.
+Verification: call_site_check / pattern_search — can invalid instances actually be constructed at call sites?
+Extra: type_name (TypeName, optional), scores (encapsulation/expression/usefulness/enforcement X/10, optional — see Scoring above).
 
 ```markdown
-## Findings
-
-| ID       | Severity                       | Category                                              | Location    | Confidence |
-| -------- | ------------------------------ | ----------------------------------------------------- | ----------- | ---------- |
-| TD-{seq} | critical / high / medium / low | encapsulation / expression / usefulness / enforcement | `file:line` | 0.70–1.00  |
-
-### TD-{seq}
-
-| Field        | Value                                                                                           |
-| ------------ | ----------------------------------------------------------------------------------------------- |
-| Type Name    | TypeName                                                                                        |
-| Evidence     | code snippet                                                                                    |
-| Reasoning    | why this is a design issue                                                                      |
-| Fix          | improved type design                                                                            |
-| Scores       | encapsulation X/10, expression X/10, usefulness X/10, enforcement X/10                          |
-| Verification | call_site_check / pattern_search — can invalid instances actually be constructed at call sites? |
-
 ## Summary
 
 | Metric            | Value |

@@ -10,18 +10,37 @@ Per finding, output as Markdown heading + single table:
 
 ### {PREFIX}-{seq}
 
-| Field        | Value                                                |
-| ------------ | ---------------------------------------------------- |
-| Agent        | reviewer-name                                        |
-| Severity     | critical / high / medium / low                       |
-| Category     | domain-specific category                             |
-| Location     | `file:line`                                          |
-| Confidence   | 0.70–1.00                                            |
-| Evidence     | code snippet or observation                          |
-| Trigger      | concrete condition that causes the issue to manifest |
-| Reasoning    | why this is an issue                                 |
-| Fix          | suggested fix                                        |
-| Verification | check type — question                                |
+| Field        | Value                                                | Source          |
+| ------------ | ---------------------------------------------------- | --------------- |
+| Agent        | reviewer-name                                        | auto-filled     |
+| Severity     | critical / high / medium / low                       | reviewer        |
+| Category     | domain-specific category                             | reviewer        |
+| Location     | `file:line`                                          | reviewer        |
+| Confidence   | 0.70–1.00                                            | reviewer        |
+| Evidence     | code snippet or observation                          | reviewer        |
+| Trigger      | concrete condition that causes the issue to manifest | reviewer        |
+| Reasoning    | why this is an issue                                 | reviewer        |
+| Fix          | suggested fix                                        | reviewer        |
+| Verification | check type — question                                | reviewer        |
+
+### Agent (auto-fill)
+
+The integrator/leader populates `Agent` from the spawning reviewer's
+`name:` frontmatter. Reviewers MUST NOT repeat their own name in the output;
+omit the Agent row entirely.
+
+### Trigger vs Reasoning
+
+These are distinct fields. Do not merge them.
+
+| Field     | Question       | Example                                                                      |
+| --------- | -------------- | ---------------------------------------------------------------------------- |
+| Trigger   | When does it fire? | "Every Bash tool call (PreToolUse hook runs on every invocation)"        |
+| Reasoning | Why is it bad? | "awk fork+exec on hot path costs 2-5ms before the case filter can short-circuit" |
+
+If Trigger is identical to Reasoning's opening clause, the finding is too
+abstract — restate Trigger as an observable condition that a verifier could
+reproduce.
 
 ### Confidence Floor
 
@@ -31,7 +50,11 @@ Per finding, output as Markdown heading + single table:
 | Cannot assess confidence      | Do not report |
 | Requires speculative language | Do not report |
 
-security-reviewer may define stricter thresholds in its own definition.
+### Confidence Floor Overrides
+
+| Reviewer          | Floor | Rationale                                                      |
+| ----------------- | ----- | -------------------------------------------------------------- |
+| security-reviewer | 0.60  | Lower floor to catch possible issues; requires fix suggestion |
 
 ### Pre-Report Verification
 
@@ -88,17 +111,22 @@ When multiple findings exist, prepend a summary table:
 
 Reviewers not listed use base fields only.
 
-| Reviewer               | Extra Fields                                      | Req/Opt | Normalization                                            |
-| ---------------------- | ------------------------------------------------- | ------- | -------------------------------------------------------- |
-| root-cause-reviewer    | five_whys, root_cause                             | req     | root_cause → reasoning; five_whys → append to evidence   |
-| progressive-enhancer   | recommendations                                   | req     | Append as separate items                                 |
-| code-quality-reviewer  | subcategory                                       | opt     | Append to category as category/subcategory               |
-| performance-reviewer   | impact                                            | opt     | Append to evidence; impact → reasoning note              |
-| accessibility-reviewer | wcag (req), apg_pattern (req), code_example (opt) | req/opt | wcag → evidence; apg_pattern, code_example → fix context |
-| test-coverage-reviewer | related_code, criticality                         | opt     | related_code → evidence; criticality → reasoning note    |
-| type-design-reviewer   | type_name, scores                                 | opt     | Append to evidence; scores → reasoning note              |
-| security-reviewer      | entry_points (in hint)                            | opt     | Already in verification_hint                             |
-| sow-spec-reviewer      | deductions                                        | req     | Append to evidence as deduction log                      |
+| Reviewer                  | Extra Fields                                      | Req/Opt | Normalization                                            |
+| ------------------------- | ------------------------------------------------- | ------- | -------------------------------------------------------- |
+| root-cause-reviewer       | five_whys, root_cause                             | req     | root_cause → reasoning; five_whys → append to evidence   |
+| progressive-enhancer      | recommendations                                   | req     | Append as separate items                                 |
+| code-quality-reviewer     | subcategory                                       | opt     | Append to category as category/subcategory               |
+| performance-reviewer      | impact                                            | opt     | Append to evidence; impact → reasoning note              |
+| accessibility-reviewer    | wcag (req), apg_pattern (req), code_example (opt) | req/opt | wcag → evidence; apg_pattern, code_example → fix context |
+| test-coverage-reviewer    | related_code, criticality                         | opt     | related_code → evidence; criticality → reasoning note    |
+| type-design-reviewer      | type_name, scores                                 | opt     | Append to evidence; scores → reasoning note              |
+| security-reviewer         | entry_points (in hint)                            | opt     | Already in verification_hint                             |
+| sow-spec-reviewer         | deductions                                        | req     | Append to evidence as deduction log                      |
+| chaos-engineer            | blast_radius, failure, hypothesis                 | req     | blast_radius replaces severity; failure+hypothesis → reasoning |
+| duplication-reviewer      | multi_location_evidence                           | req     | Evidence lists all source locations                      |
+| reuse-reviewer            | existing_code                                     | req     | Evidence pairs new code with existing alternative        |
+| efficiency-reviewer       | path_frequency                                    | opt     | hot/warm/cold → reasoning note                           |
+| type-safety-reviewer      | type_coverage, strict_flags                       | opt     | Summary-level metrics only                               |
 
 ## ID Prefix Registry
 
@@ -123,6 +151,7 @@ Reviewers not listed use base fields only.
 | OPS    | operational-readiness-reviewer |
 | SOW    | sow-spec-reviewer              |
 | PQ     | prompt-reviewer                |
+| CHX    | chaos-engineer                 |
 | PF     | pre-flight (not an agent file) |
 
 ## Consolidation Rule
@@ -134,3 +163,15 @@ When the same pattern appears in multiple locations:
 - Set severity to the highest among occurrences
 
 Example: "Unused import in 7 files" → 1 finding, severity from worst case
+
+## Default Error Handling
+
+All reviewers apply the following unless overridden in their own definition:
+
+| Error      | Action                                   |
+| ---------- | ---------------------------------------- |
+| Glob empty | Report 0 files found, do not infer clean |
+| Tool error | Log error, skip file, note in summary    |
+
+Domain-specific guards (missing input, unavailable dependency) remain in each
+reviewer's own `## Error Handling` section.

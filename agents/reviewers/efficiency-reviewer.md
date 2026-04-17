@@ -69,40 +69,24 @@ See `templates/audit/calibration-examples.md` section EFF.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                                       |
-| ---------------------------------- | -------------------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)                |
-| Same pattern in multiple locations | Consolidate into single finding              |
-| Cold-path minor issues             | Exclude unless consolidation raises severity |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
+Cold-path minor issues excluded unless consolidation raises severity (see
+schema's Context Test).
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: EFF.
+
+Categories: unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad.
+Severity: high / medium / low.
+Verification: benchmark / profile — how to confirm the improvement.
+Extra: path_frequency (hot/warm/cold) in reasoning.
 
 ```markdown
-## Findings
-
-| ID        | Severity            | Category                                                                          | Location    | Confidence |
-| --------- | ------------------- | --------------------------------------------------------------------------------- | ----------- | ---------- |
-| EFF-{seq} | high / medium / low | unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad | `file:line` | 0.70-1.00  |
-
-### EFF-{seq}
-
-| Field        | Value                                                                    |
-| ------------ | ------------------------------------------------------------------------ |
-| Evidence     | code snippet showing the inefficiency                                    |
-| Reasoning    | why this wastes resources + estimated path frequency (hot/warm/cold)     |
-| Fix          | specific improvement (consolidate calls, parallelize, narrow scope, etc) |
-| Verification | benchmark / profile — how to confirm the improvement                     |
-
 ## Summary
 
 | Metric             | Value |

@@ -43,39 +43,21 @@ See `templates/audit/calibration-examples.md` section DP.
 
 ## Error Handling
 
-| Error          | Action                                   |
-| -------------- | ---------------------------------------- |
-| No React found | Report "No React to review"              |
-| Glob empty     | Report 0 files found, do not infer clean |
-| Tool error     | Log error, skip file, note in summary    |
+| Error          | Action                      |
+| -------------- | --------------------------- |
+| No React found | Report "No React to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: DP.
+
+Categories: container / hook / state / anti-pattern.
+Severity: high / medium / low.
+Verification: pattern_search / call_site_check — is this anti-pattern used consistently or is this an isolated case?
 
 ```markdown
-## Findings
-
-| ID       | Severity            | Category                                | Location    | Confidence |
-| -------- | ------------------- | --------------------------------------- | ----------- | ---------- |
-| DP-{seq} | high / medium / low | container / hook / state / anti-pattern | `file:line` | 0.70–1.00  |
-
-### DP-{seq}
-
-| Field        | Value                                                                                                  |
-| ------------ | ------------------------------------------------------------------------------------------------------ |
-| Evidence     | code snippet                                                                                           |
-| Reasoning    | why this pattern is problematic                                                                        |
-| Fix          | recommended pattern                                                                                    |
-| Verification | pattern_search / call_site_check — is this anti-pattern used consistently or is this an isolated case? |
-
 ## Summary
 
 | Metric         | Value |

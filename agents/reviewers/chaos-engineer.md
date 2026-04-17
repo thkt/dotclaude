@@ -38,38 +38,21 @@ background: true
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                      | Action                          |
-| ------------------------------ | ------------------------------- |
-| Confidence < 0.70              | Exclude                         |
-| Same failure mode across paths | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
+Follow finding-schema.md. Prefix: CHX.
+
+Categories: auth / data / resource / cascade / infra / state.
+Severity: (replaced by blast_radius — critical / high / medium / low).
+Extra: blast_radius (critical/high/medium/low) replaces severity, failure (what breaks), hypothesis (When [X], system will [Y]).
+
 ```markdown
-## Findings
-
-| ID        | Blast Radius                   | Category                                         | Location    |
-| --------- | ------------------------------ | ------------------------------------------------ | ----------- |
-| CHX-{seq} | critical / high / medium / low | auth / data / resource / cascade / infra / state | `file:line` |
-
-### CHX-{seq}
-
-| Field        | Value                                           |
-| ------------ | ----------------------------------------------- |
-| Evidence     | code snippet                                    |
-| Failure      | what breaks and how                             |
-| Blast radius | who is affected and what they lose              |
-| Hypothesis   | When [X], system will [Y] — testable in staging |
-| Fix          | recommended change                              |
-
 ## Summary
 
 | Metric         | Value |

@@ -57,39 +57,22 @@ See `templates/audit/calibration-examples.md` section REUSE.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                                 | Action                          |
-| ----------------------------------------- | ------------------------------- |
-| Confidence < 0.70                         | Exclude (`finding-schema.md`)   |
-| Same utility missed in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: REUSE.
+
+Categories: utility / pattern / inline / unused_import.
+Severity: high / medium / low.
+Verification: pattern_search — does the existing utility handle all edge cases of new code?
+Extra: Evidence pairs new code and existing utility — `New: file:line snippet / Existing: file:line snippet`.
 
 ```markdown
-## Findings
-
-| ID          | Severity            | Category                                   | Location    | Confidence |
-| ----------- | ------------------- | ------------------------------------------ | ----------- | ---------- |
-| REUSE-{seq} | high / medium / low | utility / pattern / inline / unused_import | `file:line` | 0.70-1.00  |
-
-### REUSE-{seq}
-
-| Field        | Value                                                                         |
-| ------------ | ----------------------------------------------------------------------------- |
-| Evidence     | New code: `file:line` snippet / Existing: `file:line` snippet                 |
-| Reasoning    | why the existing code covers this use case                                    |
-| Fix          | replace with import/call to existing utility                                  |
-| Verification | pattern_search — does the existing utility handle all edge cases of new code? |
-
 ## Summary
 
 | Metric         | Value |

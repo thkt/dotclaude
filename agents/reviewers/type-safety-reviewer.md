@@ -43,39 +43,22 @@ See `templates/audit/calibration-examples.md` section TS.
 
 ## Error Handling
 
-| Error       | Action                                   |
-| ----------- | ---------------------------------------- |
-| No TS found | Report "No TS to review"                 |
-| Glob empty  | Report 0 files found, do not infer clean |
-| Tool error  | Log error, skip file, note in summary    |
+| Error       | Action                   |
+| ----------- | ------------------------ |
+| No TS found | Report "No TS to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: TS.
+
+Categories: TS1-TS5 (any / assertion / coverage / strict_mode / union).
+Severity: high / medium / low.
+Verification: call_site_check / pattern_search — are problematic values actually passed at call sites?
+Extra: type_coverage + strict_flags are summary-level only.
 
 ```markdown
-## Findings
-
-| ID       | Severity            | Category | Location    | Confidence |
-| -------- | ------------------- | -------- | ----------- | ---------- |
-| TS-{seq} | high / medium / low | TS1-TS5  | `file:line` | 0.70–1.00  |
-
-### TS-{seq}
-
-| Field        | Value                                                                                    |
-| ------------ | ---------------------------------------------------------------------------------------- |
-| Evidence     | code snippet                                                                             |
-| Reasoning    | why this is unsafe                                                                       |
-| Fix          | type-safe alternative                                                                    |
-| Verification | call_site_check / pattern_search — are problematic values actually passed at call sites? |
-
 ## Summary
 
 | Metric           | Value        |

@@ -31,6 +31,8 @@ background: true
 
 ## Confidence Scoring
 
+Floor 0.60 (override per schema).
+
 | Score   | Description         | Action        |
 | ------- | ------------------- | ------------- |
 | 0.9-1.0 | Certain exploit     | Critical      |
@@ -57,39 +59,23 @@ See `templates/audit/calibration-examples.md` section SEC.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: SEC. Confidence floor 0.60 (override).
+
+Categories: A01-A10.
+Severity: critical / high / medium.
+Verification: execution_trace / call_site_check / pattern_search — what to verify to confirm exploitability.
+Reasoning uses threat model: actor capability → attack vector → concrete impact.
+Extra: entry_points (optional, for execution_trace) — `file:line`.
 
 ```markdown
-## Findings
-
-| ID        | Severity                 | Category | Location    | Confidence |
-| --------- | ------------------------ | -------- | ----------- | ---------- |
-| SEC-{seq} | critical / high / medium | A01-A10  | `file:line` | 0.70–1.00  |
-
-### SEC-{seq}
-
-| Field        | Value                                                                                         |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| Evidence     | code snippet                                                                                  |
-| Reasoning    | threat model: actor capability → attack vector → concrete impact                              |
-| Fix          | secure alternative                                                                            |
-| Verification | execution_trace / call_site_check / pattern_search — what to verify to confirm exploitability |
-| Entry Points | `file:line` (optional, for execution_trace)                                                   |
-
 ## Summary
 
 | Metric         | Value |

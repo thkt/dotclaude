@@ -61,40 +61,22 @@ See `templates/audit/calibration-examples.md` section PERF.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: PERF.
+
+Categories: render / bundle / hooks / effects / data.
+Severity: high / medium / low.
+Verification: hotpath_analysis / call_site_check — is this code in a hot path or frequently rendered component?
+Extra: impact (estimated improvement, optional).
 
 ```markdown
-## Findings
-
-| ID         | Severity            | Category                                 | Location    | Confidence |
-| ---------- | ------------------- | ---------------------------------------- | ----------- | ---------- |
-| PERF-{seq} | high / medium / low | render / bundle / hooks / effects / data | `file:line` | 0.70–1.00  |
-
-### PERF-{seq}
-
-| Field        | Value                                                                                             |
-| ------------ | ------------------------------------------------------------------------------------------------- |
-| Evidence     | code snippet                                                                                      |
-| Reasoning    | why this impacts performance                                                                      |
-| Fix          | optimized alternative                                                                             |
-| Impact       | estimated improvement                                                                             |
-| Verification | hotpath_analysis / call_site_check — is this code in a hot path or frequently rendered component? |
-
 ## Summary
 
 | Metric            | Value     |

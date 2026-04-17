@@ -51,39 +51,21 @@ See `templates/audit/calibration-examples.md` section TEST.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: TEST.
+
+Categories: TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling).
+Severity: high / medium / low.
+Verification: call_site_check / pattern_search — is this dependency actually injected or mocked in existing tests?
 
 ```markdown
-## Findings
-
-| ID         | Severity            | Category                                                                | Location    | Confidence |
-| ---------- | ------------------- | ----------------------------------------------------------------------- | ----------- | ---------- |
-| TEST-{seq} | high / medium / low | TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling) | `file:line` | 0.70–1.00  |
-
-### TEST-{seq}
-
-| Field        | Value                                                                                                |
-| ------------ | ---------------------------------------------------------------------------------------------------- |
-| Evidence     | code snippet                                                                                         |
-| Reasoning    | why this is hard to test                                                                             |
-| Fix          | testable alternative                                                                                 |
-| Verification | call_site_check / pattern_search — is this dependency actually injected or mocked in existing tests? |
-
 ## Summary
 
 | Metric         | Value |

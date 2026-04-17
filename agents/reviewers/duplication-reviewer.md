@@ -68,39 +68,22 @@ See `templates/audit/calibration-examples.md` section DRY.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                                              |
-| ---------------------------------- | --------------------------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)                       |
-| Same pattern in multiple locations | Consolidate into single finding, list all locations |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: DRY.
+
+Categories: exact / near-duplicate / pattern / reimplementation / arg-variant.
+Severity: high / medium / low.
+Verification: pattern_search — are there more occurrences beyond the ones found?
+Extra: Evidence lists each occurrence as `Location N: fileN:line snippet`.
 
 ```markdown
-## Findings
-
-| ID        | Severity            | Category                                                          | Location    | Confidence |
-| --------- | ------------------- | ----------------------------------------------------------------- | ----------- | ---------- |
-| DRY-{seq} | high / medium / low | exact / near-duplicate / pattern / reimplementation / arg-variant | `file:line` | 0.70–1.00  |
-
-### DRY-{seq}
-
-| Field        | Value                                                                         |
-| ------------ | ----------------------------------------------------------------------------- |
-| Evidence     | Location 1: `file1:line` code snippet / Location 2: `file2:line` code snippet |
-| Reasoning    | why this duplication is problematic                                           |
-| Fix          | specific extraction: shared function/module/utility                           |
-| Verification | pattern_search — are there more occurrences beyond the ones found?            |
-
 ## Summary
 
 | Metric           | Value |

@@ -48,39 +48,22 @@ See `templates/audit/calibration-examples.md` section CQ.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: CQ.
+
+Categories: structure / readability.
+Severity: high / medium / low.
+Verification: pattern_search / hotpath_analysis — is this pattern widespread or in a critical path?
+Extra: subcategory (waste / naming / complexity / comments / ai_smell, optional, appended as category/subcategory).
 
 ```markdown
-## Findings
-
-| ID       | Severity            | Category                | Subcategory                                       | Location    | Confidence |
-| -------- | ------------------- | ----------------------- | ------------------------------------------------- | ----------- | ---------- |
-| CQ-{seq} | high / medium / low | structure / readability | waste / naming / complexity / comments / ai_smell | `file:line` | 0.70–1.00  |
-
-### CQ-{seq}
-
-| Field        | Value                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------- |
-| Evidence     | code snippet                                                                          |
-| Reasoning    | why this is an issue                                                                  |
-| Fix          | specific improvement                                                                  |
-| Verification | pattern_search / hotpath_analysis — is this pattern widespread or in a critical path? |
-
 ## Summary
 
 | Metric         | Value |

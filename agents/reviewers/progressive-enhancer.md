@@ -51,33 +51,18 @@ See `templates/audit/calibration-examples.md` section PE.
 | Browser compat     | Check caniuse for CSS alt |
 | MCP unavailable    | Code-only analysis        |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: PE.
+
+Categories: layout / animation / event / style / toggle.
+Severity: high / medium / low.
+Verification: pattern_search / call_site_check — is this JS pattern used in other components too?
+Required: recommendations section (per schema Domain Extensions).
 
 ```markdown
-## Findings
-
-| ID       | Severity            | Category                                    | Location    | Confidence |
-| -------- | ------------------- | ------------------------------------------- | ----------- | ---------- |
-| PE-{seq} | high / medium / low | layout / animation / event / style / toggle | `file:line` | 0.70–1.00  |
-
-### PE-{seq}
-
-| Field        | Value                                                                               |
-| ------------ | ----------------------------------------------------------------------------------- |
-| Evidence     | JS pattern found                                                                    |
-| Reasoning    | why CSS is better                                                                   |
-| Fix          | CSS alternative solution                                                            |
-| Verification | pattern_search / call_site_check — is this JS pattern used in other components too? |
-
 ## Recommendations
 
 | Location    | Action          | Impact  | Browser Support    |

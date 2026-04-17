@@ -50,39 +50,21 @@ See `templates/audit/calibration-examples.md` section SF.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: SF.
+
+Categories: SF1-SF5 (catch / promise / async / ui_feedback / fallback).
+Severity: critical / high / medium / low.
+Verification: error_propagation / pattern_search — does this error surface to the user or remain silent?
 
 ```markdown
-## Findings
-
-| ID       | Severity                       | Category | Location    | Confidence |
-| -------- | ------------------------------ | -------- | ----------- | ---------- |
-| SF-{seq} | critical / high / medium / low | SF1-SF5  | `file:line` | 0.70–1.00  |
-
-### SF-{seq}
-
-| Field        | Value                                                                                      |
-| ------------ | ------------------------------------------------------------------------------------------ |
-| Evidence     | code snippet                                                                               |
-| Reasoning    | why this fails silently                                                                    |
-| Fix          | visible error handling                                                                     |
-| Verification | error_propagation / pattern_search — does this error surface to the user or remain silent? |
-
 ## Summary
 
 | Metric            | Value |

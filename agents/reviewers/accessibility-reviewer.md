@@ -49,43 +49,24 @@ See `templates/audit/calibration-examples.md` section A11Y.
 
 ## Error Handling
 
-| Error                          | Action                                   |
-| ------------------------------ | ---------------------------------------- |
-| No HTML found                  | Report "No HTML to review"               |
-| a11y-specialist-skills unavail | Visual-only checks (contrast, motion)    |
-| External skill timeout         | Continue with completed checks           |
-| Glob empty                     | Report 0 files found, do not infer clean |
-| Tool error                     | Log error, skip file, note in summary    |
+| Error                          | Action                                |
+| ------------------------------ | ------------------------------------- |
+| No HTML found                  | Report "No HTML to review"            |
+| a11y-specialist-skills unavail | Visual-only checks (contrast, motion) |
+| External skill timeout         | Continue with completed checks        |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: A11Y.
+
+Categories: semantic / keyboard / screen-reader / visual / form.
+Severity: critical / high / medium.
+Verification: execution_trace / pattern_search — is this element actually reachable by keyboard/screen reader?
+Extra: wcag (success criterion like 1.1.1, required), apg_pattern (URL, required), code_example (corrected snippet, optional).
 
 ```markdown
-## Findings
-
-| ID         | Severity                 | Category                                            | WCAG                            | Location    | Confidence |
-| ---------- | ------------------------ | --------------------------------------------------- | ------------------------------- | ----------- | ---------- |
-| A11Y-{seq} | critical / high / medium | semantic / keyboard / screen-reader / visual / form | success criterion (e.g., 1.1.1) | `file:line` | 0.70–1.00  |
-
-### A11Y-{seq}
-
-| Field        | Value                                                                                            |
-| ------------ | ------------------------------------------------------------------------------------------------ |
-| Evidence     | code snippet                                                                                     |
-| Reasoning    | why this is accessibility barrier                                                                |
-| Fix          | accessible alternative                                                                           |
-| APG Pattern  | APG pattern URL if applicable                                                                    |
-| Code Example | corrected code snippet                                                                           |
-| Verification | execution_trace / pattern_search — is this element actually reachable by keyboard/screen reader? |
-
 ## Summary
 
 | Metric         | Value |

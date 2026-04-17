@@ -44,40 +44,22 @@ See `templates/audit/calibration-examples.md` section RCA.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: RCA.
+
+Categories: symptom / state-sync / race / workaround.
+Severity: high / medium / low.
+Verification: execution_trace / pattern_search — does the root cause actually produce the described symptom?
+Required: five_whys (5-step chain from observable fact to root cause), root_cause (fundamental issue). Fix should prefer existing state/mechanisms over adding new ones.
 
 ```markdown
-## Findings
-
-| ID        | Severity            | Category                                 | Location    | Confidence |
-| --------- | ------------------- | ---------------------------------------- | ----------- | ---------- |
-| RCA-{seq} | high / medium / low | symptom / state-sync / race / workaround | `file:line` | 0.70–1.00  |
-
-### RCA-{seq}
-
-| Field        | Value                                                                                                    |
-| ------------ | -------------------------------------------------------------------------------------------------------- |
-| Evidence     | code snippet                                                                                             |
-| 5 Whys       | 1. observable fact 2. implementation detail 3. design decision 4. architectural constraint 5. root cause |
-| Root Cause   | fundamental issue                                                                                        |
-| Fix          | solution addressing root cause (prefer existing state/mechanisms over adding new ones)                   |
-| Verification | execution_trace / pattern_search — does the root cause actually produce the described symptom?           |
-
 ## Summary
 
 | Metric                 | Value |

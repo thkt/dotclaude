@@ -63,39 +63,22 @@ See `templates/audit/calibration-examples.md` section TC.
 
 ## Error Handling
 
-| Error          | Action                                   |
-| -------------- | ---------------------------------------- |
-| No tests found | Report "No tests to review"              |
-| Glob empty     | Report 0 files found, do not infer clean |
-| Tool error     | Log error, skip file, note in summary    |
+| Error          | Action                      |
+| -------------- | --------------------------- |
+| No tests found | Report "No tests to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: TC. Location uses `test-file:line`.
+
+Categories: gap / quality / negative / regression.
+Severity: critical / high / medium / low.
+Verification: call_site_check / pattern_search — is this code path actually exercised by any existing test?
+Extra: related_code (`source-file:line`, optional), criticality (1-10, optional — see Criticality Rating above).
 
 ```markdown
-## Findings
-
-| ID       | Severity                       | Category                              | Location         | Related Code       | Criticality | Confidence |
-| -------- | ------------------------------ | ------------------------------------- | ---------------- | ------------------ | ----------- | ---------- |
-| TC-{seq} | critical / high / medium / low | gap / quality / negative / regression | `test-file:line` | `source-file:line` | 1–10        | 0.70–1.00  |
-
-### TC-{seq}
-
-| Field        | Value                                                                                         |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| Evidence     | what's missing or problematic                                                                 |
-| Reasoning    | why this gap matters                                                                          |
-| Fix          | suggested test case                                                                           |
-| Verification | call_site_check / pattern_search — is this code path actually exercised by any existing test? |
-
 ## Summary
 
 | Metric              | Value |

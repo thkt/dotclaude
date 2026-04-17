@@ -60,40 +60,23 @@ See `templates/audit/calibration-examples.md` section OPS.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No code found | Report "No code to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No code found | Report "No code to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
-| Test files or mock files           | Do not flag                     |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
+Test files and mock files excluded via Context Test (Intentional) in schema.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: OPS.
+
+Categories: error-boundary / loading-state / logging / performance / degradation.
+Severity: critical / high / medium / low.
+Verification: pattern_search / call_site_check — is this component user-facing or in a critical path?
+Reasoning should name blast radius (what breaks, who notices).
 
 ```markdown
-## Findings
-
-| ID        | Severity                       | Category                                                             | Location    | Confidence |
-| --------- | ------------------------------ | -------------------------------------------------------------------- | ----------- | ---------- |
-| OPS-{seq} | critical / high / medium / low | error-boundary / loading-state / logging / performance / degradation | `file:line` | 0.70–1.00  |
-
-### OPS-{seq}
-
-| Field        | Value                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------- |
-| Evidence     | code snippet                                                                            |
-| Reasoning    | blast radius: when this fails, what breaks and who notices                              |
-| Fix          | recommended improvement                                                                 |
-| Verification | pattern_search / call_site_check — is this component user-facing or in a critical path? |
-
 ## Summary
 
 | Metric         | Value |

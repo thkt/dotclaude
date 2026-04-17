@@ -59,39 +59,21 @@ See `templates/audit/calibration-examples.md` section DOC.
 
 ## Error Handling
 
-| Error         | Action                                   |
-| ------------- | ---------------------------------------- |
-| No docs found | Report "No docs to review"               |
-| Glob empty    | Report 0 files found, do not infer clean |
-| Tool error    | Log error, skip file, note in summary    |
+| Error         | Action                     |
+| ------------- | -------------------------- |
+| No docs found | Report "No docs to review" |
 
-## Reporting Rules
-
-| Condition                          | Action                          |
-| ---------------------------------- | ------------------------------- |
-| Confidence < 0.70                  | Exclude (`finding-schema.md`)   |
-| Same pattern in multiple locations | Consolidate into single finding |
+Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Return structured Markdown (`templates/audit/finding-schema.md`)
+Follow finding-schema.md. Prefix: DOC. Location uses `file:section`.
+
+Categories: clarity / structure / completeness / technical / audience.
+Severity: high / medium / low.
+Verification: pattern_search — is this documentation issue consistent across related files?
 
 ```markdown
-## Findings
-
-| ID        | Severity            | Category                                                  | Location       | Confidence |
-| --------- | ------------------- | --------------------------------------------------------- | -------------- | ---------- |
-| DOC-{seq} | high / medium / low | clarity / structure / completeness / technical / audience | `file:section` | 0.70–1.00  |
-
-### DOC-{seq}
-
-| Field        | Value                                                                         |
-| ------------ | ----------------------------------------------------------------------------- |
-| Evidence     | what's observed                                                               |
-| Reasoning    | why it's a problem                                                            |
-| Fix          | specific improvement                                                          |
-| Verification | pattern_search — is this documentation issue consistent across related files? |
-
 ## Summary
 
 | Metric         | Value |
