@@ -156,8 +156,12 @@ render_deadlines() {
 
     setopt local_options REMATCH_PCRE
     while IFS= read -r line; do
-        [[ "$line" =~ '\|\s*(\d{4}-\d{2}-\d{2})\s*\|' ]] || continue
-        deadline="${match[1]}"
+        [[ "$line" =~ '\|\s*([a-z-]+)\s*\|\s*(\d{4}-\d{2}-\d{2})\s*\|' ]] || continue
+        case "${match[1]}" in
+            next|in-progress|blocked) ;;
+            *) continue ;;
+        esac
+        deadline="${match[2]}"
         deadline_epoch=$(date -j -f "%Y-%m-%d" "$deadline" +%s 2>/dev/null) || continue
         diff=$(( (deadline_epoch - today_epoch) / 86400 ))
         if   [ "$diff" -lt 0 ]; then overdue=$((overdue + 1))

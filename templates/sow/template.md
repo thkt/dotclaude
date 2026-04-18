@@ -32,9 +32,11 @@ draft <!-- draft | in-progress | completed -->
 
 ### In Scope
 
-| Target   | Change               | Files   |
-| -------- | -------------------- | ------- |
-| [target] | [change description] | [count] |
+| Target   | Change               | Observable outcome                  | Files   |
+| -------- | -------------------- | ----------------------------------- | ------- |
+| [target] | [change description] | [what becomes observable after]     | [count] |
+
+Observable outcome: concrete signal that the change landed (new endpoint returns 200, UI element present, metric threshold met). Enables Spec traceback.
 
 ### Out of Scope
 
@@ -59,8 +61,12 @@ Check only if needed (unchecked = excluded):
 
 ### AC-1: [title]
 
-- [ ] [verifiable criterion]
-- [ ] [verifiable criterion]
+| # | Criterion              | Observable signal                     |
+| - | ---------------------- | ------------------------------------- |
+| 1 | [verifiable criterion] | [how to observe: HTTP 200, state X, metric Y] |
+| 2 | [verifiable criterion] | [how to observe]                      |
+
+Observable signal: concrete check a test can perform. Enables downstream Spec FR to produce a test without ambiguity.
 
 ## Implementation Plan
 
@@ -82,6 +88,8 @@ Files: [total unique files in this phase]
 
 ## Risks
 
-| Risk   | Impact       | Mitigation   |
-| ------ | ------------ | ------------ |
-| [risk] | HIGH/MED/LOW | [mitigation] |
+| Risk   | Impact       | Probability  | Mitigation   |
+| ------ | ------------ | ------------ | ------------ |
+| [risk] | HIGH/MED/LOW | HIGH/MED/LOW | [mitigation] |
+
+Probability: likelihood of the risk materializing given current plan. Used with Impact to prioritize Mitigation. Empty Mitigation with Impact HIGH is a blocker.

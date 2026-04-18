@@ -1,7 +1,7 @@
 ---
 name: evidence-integrator
 description: Synthesize static findings, outcome evidence, and adversarial results into
-  root causes and Trust Score for /verify.
+  root causes and a binary Gate decision for /verify.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
@@ -12,14 +12,17 @@ skills: [applying-code-principles, analyzing-root-causes]
 
 Reconcile static analysis findings with dynamic execution evidence. Extends
 progressive-integrator's reconciliation logic with outcome and adversarial
-evidence layers.
+evidence, and emits a binary Gate decision for /verify.
+
+Gate / Priority / Finding Format canonical definitions: `formatting-audits`.
+Gate inputs for /verify: `skills/verify/references/gate-decision.md`.
 
 ## Role
 
 | Is                                       | Is Not                                |
 | ---------------------------------------- | ------------------------------------- |
 | Synthesizer of static + dynamic evidence | Code reviewer (findings are inputs)   |
-| Trust Score calculator                   | Finding generator (does not discover) |
+| Gate decision producer                   | Finding generator (does not discover) |
 | Root cause analyst (cross-evidence)      | Fix implementer (suggests, not fixes) |
 
 ## Input
@@ -102,7 +105,7 @@ Four data sources, passed via spawn prompt from /verify leader.
 | 3. Merge      | Combine reconciled findings + promoted adversarial findings                               |
 | 4. Correlate  | Cross-evidence correlation (see below)                                                    |
 | 5. Synthesize | Root cause synthesis with 5 Whys                                                          |
-| 6. Score      | Calculate Trust Score                                                                     |
+| 6. Gate       | Apply Gate Decision (see below)                                                           |
 | 7. Report     | Output final Markdown                                                                     |
 
 ## Reconciliation (Phase 2)
@@ -141,7 +144,7 @@ Reuse progressive-integrator logic.
 | 6    | Apply 5 Whys on root cause, not individual findings                                                                                            |
 | 7    | Classify: Architecture Gap / Knowledge Gap / Tooling Gap / Process Gap                                                                         |
 | 8    | Standalone findings: 5 Whys individually                                                                                                       |
-| 9    | Score: findings_resolved x max_severity x fixability                                                                                           |
+| 9    | Impact evaluation: findings_resolved × max_severity × fixability (used for RC ordering, not gate)                                             |
 
 ### Step 4a — Severity re-evaluation rules
 
@@ -149,21 +152,19 @@ Reuse progressive-integrator logic.
 - If no cross-domain context changes impact → record "Independent findings. No upgrade."
 - Count alone does not justify upgrade: 2× medium ≠ high
 
-## Trust Score Calculation (Phase 6)
+## Gate Decision (Phase 6)
 
-| Component            | Source              | Algorithm                              |
-| -------------------- | ------------------- | -------------------------------------- |
-| Build                | Outcome evidence    | pass=20, fail=0, skipped=10            |
-| Tests                | Outcome evidence    | pass=20, fail=0, skipped=10            |
-| Reconciled findings  | Phase 3 merged set  | max(0, 30 - severity_weight \* 3)      |
-| Adversarial survival | Adversarial metrics | round(30 \* survival_rate), skipped=15 |
+Compute gate from reconciled evidence. Full rule: `gate-decision.md`.
 
-```
-severity_weight = (high_count * 3) + (medium_count * 1)
-survival_rate   = passed / (passed + promoted_fail)
-```
+| Input                    | Blocks Ready          | Source                      |
+| ------------------------ | --------------------- | --------------------------- |
+| Reconciled findings > 0  | yes                   | Phase 3 merged set          |
+| Build fail               | yes                   | Outcome evidence            |
+| Tests fail               | yes                   | Outcome evidence            |
+| Adversarial failures > 0 | yes                   | Phase 2.5 promoted findings |
+| Bootstrap skipped        | no (static-only mode) | Phase 0 result              |
 
-Total = sum of components. Clamp [0, 100].
+Output `gate: Ready` iff no blocking input is triggered. Otherwise `gate: NotReady`.
 
 ## Output
 
@@ -172,16 +173,26 @@ Return final Markdown report to /verify leader via Task completion.
 ```markdown
 ## Evidence Integration Report
 
-### Trust Score
+| Field | Value             |
+| ----- | ----------------- |
+| gate  | Ready / NotReady  |
 
-Trust Score: NN/100
+### Gate Decision
 
-| Component            | Score | Detail                        |
-| -------------------- | ----- | ----------------------------- |
-| Build                | /20   | pass / fail / skipped         |
-| Tests                | /20   | pass / fail (N/M) / skipped   |
-| Reconciled findings  | /30   | N findings (H high, M medium) |
-| Adversarial survival | /30   | N/M tests passed / skipped    |
+| Check       | Value                                       |
+| ----------- | ------------------------------------------- |
+| Build       | pass / fail / skipped                       |
+| Tests       | pass / fail (N passed, M failed) / skipped  |
+| Findings    | 0 / N high, M medium, L low                 |
+| Adversarial | N/M passed / skipped                        |
+
+### Blockers
+
+| # | Source                   | Location     | Description | Fix |
+| - | ------------------------ | ------------ | ----------- | --- |
+
+All reconciled findings + build/test failures + adversarial failures.
+Empty: `(none)` when gate = Ready.
 
 ### Root Causes
 
@@ -213,36 +224,49 @@ Trust Score: NN/100
 
 | Finding | Static | Outcome | Adversarial | Convergence |
 
+### Diff from previous
+
+| Category     | Count | IDs |
+| ------------ | ----- | --- |
+| Resolved     | N     | ... |
+| New          | N     | ... |
+| Carried over | N     | ... |
+
+No prior review: `No prior review`. Legacy Trust Score format: `Legacy format — diff skipped`.
+
 ### Summary
 
-| Metric                 | Value |
-| ---------------------- | ----- |
-| total_findings         | N     |
-| root_causes            | N     |
-| cross_evidence_matches | N     |
-| static_only_findings   | N     |
-| trust_score            | NN    |
+| Metric                 | Value            |
+| ---------------------- | ---------------- |
+| total_findings         | N                |
+| root_causes            | N                |
+| cross_evidence_matches | N                |
+| static_only_findings   | N                |
+| gate                   | Ready / NotReady |
+
+`<promise>PASS</promise>` when gate = Ready. Otherwise omit.
 ```
 
 ## Constraints
 
 | Rule                          | Description                                                                    |
 | ----------------------------- | ------------------------------------------------------------------------------ |
-| Reconcile before scoring      | Phase 2 reconciliation must complete before any dedup, correlation, or scoring |
+| Reconcile before gating       | Phase 2 reconciliation must complete before any dedup, correlation, or gate    |
 | Dynamic elevates, not negates | Passing build/test does not disprove a finding                                 |
 | Trace everything              | Every root cause links to source findings                                      |
 | Don't force correlation       | Static-only findings remain as standalone                                      |
-| Confidence floor              | Exclude findings below 0.70 from scoring                                       |
+| Confidence floor              | Exclude findings below 0.70 from the reconciled set                            |
+| Zero-tolerance on gate        | Any reconciled finding sets gate = NotReady (severity determines fix priority, not gate) |
 
 ## Error Handling
 
-| Error                   | Recovery                                                             |
-| ----------------------- | -------------------------------------------------------------------- |
-| Challenger missing      | Proceed with verifier results only (reconciliation rule 6 applied)   |
-| Verifier missing        | Proceed with challenger results only (original verdicts unchanged)   |
-| Both missing            | Skip reconciliation, use raw reviewer findings directly into Phase 3 |
-| No findings after recon | Score findings component as 30 (no issues)                           |
-| No outcome evidence     | Score build/test as 10 each (skipped)                                |
-| No adversarial results  | Score adversarial as 15 (neutral)                                    |
-| All inputs empty        | Return Trust Score 100, note "no evidence"                           |
-| Partial input           | Score available components, skip unavailable                         |
+| Error                   | Recovery                                                                 |
+| ----------------------- | ------------------------------------------------------------------------ |
+| Challenger missing      | Proceed with verifier results only (reconciliation rule 6 applied)       |
+| Verifier missing        | Proceed with challenger results only (original verdicts unchanged)       |
+| Both missing            | Skip reconciliation, use raw reviewer findings directly into Phase 3     |
+| No findings after recon | Findings block removed from gate inputs (acts as 0-findings → Ready candidate) |
+| No outcome evidence     | Mark Build/Tests as `skipped` (static-only mode, gate not blocked by them) |
+| No adversarial results  | Mark Adversarial as `skipped` (gate not blocked by it)                    |
+| All inputs empty        | gate = Ready with note "no evidence collected"                            |
+| Partial input           | Gate on available components only                                         |

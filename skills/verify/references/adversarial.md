@@ -64,7 +64,7 @@ Parse output between `ADVERSARIAL_RESULTS_START` and `ADVERSARIAL_RESULTS_END`.
 | PASS   | count toward survival rate    |
 | FAIL   | queue for intent verification |
 
-No results block: treat as 0 tests (adversarial score = 15, neutral).
+No results block: treat as 0 tests; Adversarial column shows `skipped` in the Evidence table and does not block the gate.
 
 ## Intent Verification (Phase 2.5 — Orchestrator)
 
@@ -110,8 +110,8 @@ The orchestrator triages each failing adversarial test.
 
 ## Metrics
 
-| Metric          | Formula                           | Used In       |
-| --------------- | --------------------------------- | ------------- |
-| survival_rate   | passed / (passed + promoted_fail) | Trust Score   |
-| exclusion_rate  | excluded / total_fail             | Report (info) |
-| generation_rate | total_tests / scoped_files        | Report (info) |
+| Metric          | Formula                           | Used In                        |
+| --------------- | --------------------------------- | ------------------------------ |
+| survival_rate   | passed / (passed + promoted_fail) | Evidence table (informational) |
+| exclusion_rate  | excluded / total_fail             | Report (info)                  |
+| generation_rate | total_tests / scoped_files        | Report (info)                  |

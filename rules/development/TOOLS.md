@@ -2,16 +2,16 @@
 
 CLI tool > built-in equivalent.
 
+WebFetch and WebSearch are hook-blocked globally; the hook prompts `scout --help`. The table below covers routing the hook cannot decide.
+
 | Purpose      | Use                     | NOT             | Condition                            |
 | ------------ | ----------------------- | --------------- | ------------------------------------ |
 | X/Twitter    | `xr tweet <url>`        | `scout fetch`   | x.com / twitter.com URLs             |
 | Slack msg    | `scout fetch`           | `curl` + token  | *.slack.com/archives/ URL            |
-| URL fetch    | `scout fetch`           | `WebFetch`      | Always (Bash)                        |
-| Web search   | `scout search`          | `WebSearch`     | Always (Bash)                        |
 | GitHub repo  | `scout repo-overview`   | `gh` / `fetch`  | Repo overview (Bash)                 |
 | Code search  | `yomu search`           | `Grep` / `Glob` | Always (Bash). Builds embedding coverage |
 |              | `Grep` / `Glob`         | —               | Only: literal regex, known exact path |
-| Doc lookup   | `scout research`        | `WebSearch`     | Library/API docs (Bash)              |
+| Doc lookup   | `scout research`        | —               | Library/API docs (Bash)              |
 | Config check | `validate-config.sh`    | —               | `~/.claude/scripts/` (Bash)          |
 | Session log  | `recall search "query"` | `Grep *.jsonl`  | Past session search                  |
 

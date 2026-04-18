@@ -754,9 +754,11 @@ function SubmitButton({ onClick, children }: Props) {
 
 ---
 
-## SOW (sow-spec-reviewer)
+## SOW/Spec (sow-spec-reviewer)
 
-### REPORT
+### Spec — FR EARS violation
+
+#### REPORT
 
 ```markdown
 ### FR-001: Order Processing
@@ -766,10 +768,10 @@ The system processes orders and updates the database accordingly.
 | Field   | Value                                                         |
 | ------- | ------------------------------------------------------------- |
 | Filter  | Harm Test pass — no SHALL, no EARS pattern, not implementable |
-| Trigger | Developer cannot determine exact behavior to build            |
-| Impact  | -3 (SHALL missing) + -3 (no EARS pattern) = -6 actionability  |
+| Trigger | CC cannot determine exact behavior to build — will escalate   |
+| Impact  | 2 × P0 blocker (Missing SHALL + No EARS pattern) → NotReady   |
 
-### SKIP
+#### SKIP
 
 ```markdown
 ## Background
@@ -781,3 +783,106 @@ approximately 500 orders per day. Peak load occurs during lunch hours.
 | ------ | -------------------------------------------------------------- |
 | Filter | Context Test: background section, not a requirement            |
 | Signal | Descriptive prose in Background; SHALL/EARS applies to FR only |
+
+### SOW — AC Observable signal
+
+#### REPORT
+
+```markdown
+### AC-1: User Registration
+
+| # | Criterion                | Observable signal            |
+| - | ------------------------ | ---------------------------- |
+| 1 | ユーザー登録ができる     | ユーザーが正しく登録される   |
+```
+
+| Field   | Value                                                              |
+| ------- | ------------------------------------------------------------------ |
+| Filter  | Harm Test pass — "正しく登録" is unobservable; Spec FR is blocked  |
+| Trigger | CC cannot write a test from this AC — will escalate                |
+| Impact  | P0 blocker on AC column completeness → NotReady                    |
+
+#### SKIP
+
+```markdown
+### AC-1: User Registration
+
+| # | Criterion                | Observable signal                                |
+| - | ------------------------ | ------------------------------------------------ |
+| 1 | ユーザー登録ができる     | POST /api/v1/users returns 201 + Location header |
+```
+
+| Field  | Value                                                               |
+| ------ | ------------------------------------------------------------------- |
+| Filter | Context Test: observable signal is a concrete HTTP assertion        |
+| Signal | Test writer can produce `expect(res.status).toBe(201)` immediately  |
+
+### SOW — Scope integrity overlap
+
+#### REPORT
+
+```markdown
+### In Scope
+| Target              | Change            | Observable outcome         | Files |
+| ------------------- | ----------------- | -------------------------- | ----- |
+| auth middleware     | replace with JWT  | /login returns JWT         | 3     |
+
+### Out of Scope
+| Exclusion           | Why not                                       |
+| ------------------- | --------------------------------------------- |
+| auth middleware     | Session cookies retained in legacy paths     |
+```
+
+| Field   | Value                                                             |
+| ------- | ----------------------------------------------------------------- |
+| Filter  | Harm Test pass — same target listed as both In Scope and Out of Scope |
+| Trigger | CC cannot determine which paths to touch; Spec generation breaks  |
+| Impact  | P0 blocker (Scope Integrity) → NotReady                           |
+
+#### SKIP
+
+```markdown
+### In Scope
+| Target           | Change           |
+| ---------------- | ---------------- |
+| login endpoint   | accept JWT       |
+
+### Out of Scope
+| Exclusion               | Why not                     |
+| ----------------------- | --------------------------- |
+| session token migration | Follow-up feature           |
+```
+
+| Field  | Value                                                               |
+| ------ | ------------------------------------------------------------------- |
+| Filter | Context Test: In Scope and Out of Scope reference distinct targets  |
+| Signal | "login endpoint" ≠ "session token migration"; no overlap            |
+
+### SOW — Risks Mitigation gap on HIGH impact
+
+#### REPORT
+
+```markdown
+| Risk                 | Impact | Probability | Mitigation |
+| -------------------- | ------ | ----------- | ---------- |
+| DB migration failure | HIGH   | MED         |            |
+```
+
+| Field   | Value                                                                 |
+| ------- | --------------------------------------------------------------------- |
+| Filter  | Harm Test pass — HIGH-impact risk with no concrete mitigation         |
+| Trigger | If the risk materializes, CC has no planned response                  |
+| Impact  | P0 blocker (Risks Completeness) → NotReady                            |
+
+#### SKIP
+
+```markdown
+| Risk                 | Impact | Probability | Mitigation                                     |
+| -------------------- | ------ | ----------- | ---------------------------------------------- |
+| DB migration failure | HIGH   | MED         | Dry-run on staging; rollback SQL stored in repo |
+```
+
+| Field  | Value                                                              |
+| ------ | ------------------------------------------------------------------ |
+| Filter | Context Test: Mitigation is concrete and executable                |
+| Signal | "dry-run" and "rollback SQL" are testable operations, not "monitor"|

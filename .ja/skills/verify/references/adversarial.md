@@ -112,6 +112,6 @@ ADVERSARIAL_RESULTS_END
 
 | メトリクス      | 計算式                            | 用途             |
 | --------------- | --------------------------------- | ---------------- |
-| survival_rate   | passed / (passed + promoted_fail) | Trust Score      |
+| survival_rate   | passed / (passed + promoted_fail) | Evidence テーブル（情報）|
 | exclusion_rate  | excluded / total_fail             | レポート（参考） |
 | generation_rate | total_tests / scoped_files        | レポート（参考） |

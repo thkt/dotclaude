@@ -14,11 +14,11 @@ Apply before writing each section.
 | Section | Gate                                                                                                                                      |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | Why     | 5 fields all filled. Outcome = measurable result, not deliverable                                                                         |
-| AC      | Each traces to Why Outcome. No orphan ACs. No scope creep beyond Why Problem                                                              |
-| Scope   | YAGNI checklist items checked with rationale, not just excluded. Out of Scope: each exclusion traces Why not to a Why field or Constraint |
+| AC      | Each traces to Why Outcome. Observable signal column filled (HTTP 200, state X). No orphan ACs, no scope creep beyond Why Problem |
+| Scope   | YAGNI checklist checked with rationale. Out of Scope traces Why not. In Scope Observable outcome column filled (concrete signal) |
 | Impl    | Files < 5 per Phase. Steps describe concrete changes                                                                                      |
 | Test    | Every AC has ≥1 test. Verification states what is checked concretely                                                                      |
-| Risks   | ≥1 risk identified with mitigation                                                                                                        |
+| Risks   | ≥1 risk identified. Probability column filled. Mitigation required when Impact = HIGH                                                     |
 
 ## Step 8: Spec
 
@@ -41,5 +41,7 @@ Apply before writing each section.
 | FR      | Document rationale for design decisions (variant reuse, YAGNI reasoning etc)  |
 | Domain  | Concept-level only. No type/field names. Invariants trace to FRs              |
 | Test    | Every FR has ≥1 scenario. Concrete values in all Given-When-Then columns      |
-| NFR     | Measurement column specifies how to measure (code review, manual timing etc)  |
+| NFR     | Rationale column filled — why this target value (UX budget, SLA etc)          |
+| Assume  | Assumptions include Impact-if-broken for each entry                           |
+| Impl    | Depends column specifies prior Phase IDs or `none`                            |
 | Trace   | AC → FR → Test → NFR chain unbroken                                           |

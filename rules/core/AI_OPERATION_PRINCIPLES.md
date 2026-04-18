@@ -60,7 +60,7 @@ Full protocol (when activated): Observation → Pattern Analysis → Hypotheses 
 | No pattern comparison    | Find working similar code, diff against broken |
 | Hypothesis as conclusion | Append `Elimination:` with test + result first |
 | Speculation ("probably") | Verify with command before concluding          |
-| Single hypothesis only   | Generate ≥2 alternatives before proceeding     |
+| Single hypothesis only   | Generate ≥3 alternatives before proceeding     |
 
 ### File Search Protocol
 

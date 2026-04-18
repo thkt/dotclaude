@@ -2,8 +2,9 @@
 name: verify
 description: |
   Independent outcome-based verification with Codex + audit reviewers.
+  Emits binary Ready/NotReady gate from reconciled static + dynamic evidence.
   Use when user mentions 検証して, verify, 独立検証, outcome verification,
-  trust score, adversarial testing.
+  gate decision, trust score (legacy), adversarial testing.
   Do NOT use for quick code review (use /polish) or static-only audit
   (use /audit).
 allowed-tools: Bash(codex:*), Bash(git worktree:*), Bash(git diff:*),
@@ -20,7 +21,8 @@ user-invocable: true
 # /verify - Independent Outcome-Based Verification
 
 Codex verifies independently in an isolated worktree. Claude Code orchestrates
-and synthesizes. Trust Score quantifies evidence from static + dynamic sources.
+and synthesizes. Emits a binary Gate decision (Ready / NotReady) from reconciled
+static + dynamic evidence. No numeric score.
 
 ## Rationalization Counters
 
@@ -28,7 +30,7 @@ and synthesizes. Trust Score quantifies evidence from static + dynamic sources.
 | ------------------------------------ | ----------------------------------------------------------------- |
 | "Tests pass, so the code is correct" | Your tests, your environment. Independent verification is the gap |
 | "Codex will just find the same bugs" | Different model = different blind spots. That is the value        |
-| "Adversarial testing takes too long" | Skip it if it does. The Trust Score degrades gracefully           |
+| "Adversarial testing takes too long" | Skip it if it does. Gate falls back to static-only mode           |
 | "The code review already covered it" | Reviews read code. Verification runs code. Different evidence     |
 
 ## Input
@@ -69,21 +71,36 @@ negates the fan-out and doubles wall time.
 
 ## Report
 
-[`references/trust-score.md`](references/trust-score.md) § Report Format.
+Gate rule canonical: [`references/gate-decision.md`](references/gate-decision.md).
 
 ```markdown
 ## Verification Report
 
-Trust Score: NN/100
-[component breakdown table]
+| Field     | Value                                                  |
+| --------- | ------------------------------------------------------ |
+| gate      | Ready / NotReady                                       |
+| mode      | diff (main) / diff (uncommitted) / target              |
+| scope     | {file count} files                                     |
+| bootstrap | success / failed: {reason}                             |
 
-Mode: {diff (main) | diff (uncommitted) | target}
-Scope: {file count} files
-Bootstrap: {success | failed: reason}
+### Gate Decision
+
+| Check       | Value                                       |
+| ----------- | ------------------------------------------- |
+| Build       | pass / fail / skipped                       |
+| Tests       | pass / fail (N passed, M failed) / skipped  |
+| Findings    | 0 / N high, M medium, L low                 |
+| Adversarial | N/M passed / skipped                        |
+
+### Blockers
+
+[All reconciled findings + build/test failures + adversarial failures with Fix suggestions]
+
+Empty: `(none)` when gate = Ready.
 
 ### Root Causes
 
-[from integrator: RC-001... with description, category, findings, action]
+[RC-001... with description, category, findings, action]
 
 ### Findings
 
@@ -96,6 +113,12 @@ Bootstrap: {success | failed: reason}
 ### Outcome Evidence
 
 [build/test pass/fail with stderr excerpts]
+
+### Diff from previous
+
+[Resolved / New / Carried from workspace/history/. "Legacy format — diff skipped" for Trust Score era reports.]
+
+`<promise>PASS</promise>` is emitted by evidence-integrator when gate = Ready. Leader relays verbatim without regenerating.
 ```
 
 ## Error Handling
@@ -110,7 +133,7 @@ Bootstrap: {success | failed: reason}
 | Challenger stall            | Proceed with verifier only                      |
 | Verifier stall              | Proceed with challenger only                    |
 | Integrator stall            | Leader synthesizes manually (simplified report) |
-| No findings from any source | Report Trust Score = 100 with "no issues found" |
+| No findings from any source | gate = Ready with note "no issues found"        |
 | Worktree cleanup fails      | Log warning, suggest manual cleanup             |
 
 ## Escalation
@@ -130,5 +153,5 @@ Bootstrap: {success | failed: reason}
 | Phase 1 produced evidence?       | Yes      |
 | Phase 2 challenger/verifier ran? | Yes      |
 | Integrator produced report?      | Yes      |
-| Trust Score displayed?           | Yes      |
+| Gate decision displayed?         | Yes      |
 | Worktree cleaned up?             | Yes      |

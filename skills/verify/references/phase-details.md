@@ -117,8 +117,8 @@ Spawn `evidence-integrator` as background Task.
 | Outcome evidence    | Phase 1c build/test results                                       |
 | Adversarial results | Phase 2.5 promoted findings                                       |
 
-Returns: root causes + Trust Score + report.
-[`trust-score.md`](trust-score.md) § Trust Score algorithm.
+Returns: root causes + Gate decision + report.
+[`gate-decision.md`](gate-decision.md) § Gate Rule.
 
 ## Cleanup (Always)
 

@@ -4,8 +4,8 @@
 
 After Spec generation, invoke `sow-spec-reviewer`.
 
-Score ≥ 90 → pass. Score < 90 → fix findings, re-invoke (max 3 loops). After 3
-loops, present remaining findings to user and proceed.
+Gate = Ready → pass. Gate = NotReady → fix P0 blockers, re-invoke (max 3 loops).
+After 3 loops, present remaining blockers to user and proceed.
 
 ## Step 10: Task Decomposition
 

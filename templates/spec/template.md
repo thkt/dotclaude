@@ -61,9 +61,11 @@ Attributes: semantic descriptions ("list of authors", "optional thread origin").
 
 ## Implementation
 
-| Phase | FRs    | Files   |
-| ----- | ------ | ------- |
-| 1     | FR-001 | [files] |
+| Phase | FRs    | Files   | Depends    |
+| ----- | ------ | ------- | ---------- |
+| 1     | FR-001 | [files] | none       |
+
+Depends: list prior Phase IDs this phase requires, or `none` for parallel-executable. Enables agents to schedule independent phases concurrently.
 
 ## Test Scenarios
 
@@ -75,9 +77,19 @@ Attributes: semantic descriptions ("list of authors", "optional thread origin").
 
 ## Non-Functional Requirements
 
-| ID      | Category    | Requirement   | Target   | Validates |
-| ------- | ----------- | ------------- | -------- | --------- |
-| NFR-001 | performance | [requirement] | [target] | AC-001    |
+| ID      | Category    | Requirement   | Target   | Rationale   | Validates |
+| ------- | ----------- | ------------- | -------- | ----------- | --------- |
+| NFR-001 | performance | [requirement] | [target] | [why target] | AC-001    |
+
+Rationale: why this target value (e.g. "UX guideline", "SLA 99.9%", "P95 budget of parent request"). Empty = reviewers cannot judge whether the threshold is appropriate.
+
+## Assumptions
+
+| ID    | Assumption   | Rationale   | Impact if broken |
+| ----- | ------------ | ----------- | ---------------- |
+| AS-001 | [assumption] | [why held]  | [what collapses] |
+
+Assumption: preconditions taken as given (existing infra, data shape, external SLA). Impact if broken: what must be redesigned if the assumption fails. Forces the reviewer to confront hidden coupling.
 
 ## Dependencies
 

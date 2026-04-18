@@ -19,24 +19,35 @@ user-invocable: false
 | Spec     | FR-NNN  | Implements: AC-N |
 | Spec     | T-NNN   | FR: FR-NNN       |
 | Spec     | NFR-NNN | Validates: AC-N  |
+| Spec     | AS-NNN  | —                |
+
+Priority levels (P0/P1/P2) and the Gate rule are defined in `formatting-audits`.
+Each check below assigns priority per finding type.
 
 ## Checks
 
-Run CRITICAL (1-3) first. If any fail, run remaining but mark WARNING/INFO as
-provisional.
+Run P0-producing checks (1-3) first. If any P0 is raised, downstream checks may
+be skipped — the gate will already be NotReady.
 
-### 1. AC→FR Traceability [CRITICAL]
+### 1. AC→FR Traceability [P0 candidate]
 
-Each `AC-N` must have ≥1 FR with `Implements: AC-N`. Orphan FR referencing
-non-existent AC → INFO.
+Each `AC-N` must have ≥1 FR with `Implements: AC-N`.
 
-### 2. FR→Test Coverage [CRITICAL]
+| Finding                                       | Priority |
+| --------------------------------------------- | -------- |
+| AC has no FR implementing it                  | P0       |
+| Orphan FR implements non-existent AC          | P1       |
+
+### 2. FR→Test Coverage [P0 candidate]
 
 Each `FR-NNN` must have ≥1 `T-NNN` with matching FR reference.
 
-### 3. Traceability Matrix Integrity [CRITICAL]
+| Finding                               | Priority |
+| ------------------------------------- | -------- |
+| FR has no test scenario               | P0       |
+| Test references non-existent FR       | P1       |
 
-Matrix rows must match actual content. Flag mismatches.
+### 3. Traceability Matrix Integrity [P0 candidate]
 
 | Column | Must exist in             |
 | ------ | ------------------------- |
@@ -45,32 +56,82 @@ Matrix rows must match actual content. Flag mismatches.
 | Test   | Spec Test Scenarios       |
 | NFR    | Spec NFR table            |
 
-### 4. Scope↔Implementation [WARNING]
+| Finding                                 | Priority |
+| --------------------------------------- | -------- |
+| Matrix row references non-existent ID   | P0       |
+| Matrix row missing expected column      | P1       |
 
-SOW In-Scope targets must appear in Spec phases. Extra files → INFO.
+### 4. Scope↔Implementation [P1 candidate]
 
-### 5. Contradiction Detection [WARNING]
+SOW In-Scope targets must appear in Spec phases. Extra files → P2.
 
-Cross-check SOW↔Spec for technology mismatches, numeric conflicts,
-contradictions.
+### 5. Contradiction Detection [P0/P1 candidate]
 
-### 6. Ambiguous Expressions [INFO]
+Cross-check SOW↔Spec for technology mismatches, numeric conflicts.
+
+| Finding                                   | Priority |
+| ----------------------------------------- | -------- |
+| SOW and Spec specify conflicting tech     | P0       |
+| SOW and Spec specify conflicting numerics | P0       |
+| Terminology used inconsistently           | P1       |
+
+### 6. Ambiguous Expressions [P0 candidate]
 
 | Language | Patterns                                                                           |
 | -------- | ---------------------------------------------------------------------------------- |
 | JA       | 適切に、できる限り、なるべく、ある程度、検討する、考慮する、予定、高速に(数値なし) |
 | EN       | appropriately, as much as possible, reasonable, adequate, TBD, fast(no metric)     |
 
-### 7. Terminology Consistency [WARNING]
+| Finding                                           | Priority |
+| ------------------------------------------------- | -------- |
+| Ambiguous term inside a SHALL clause (FR)         | P0       |
+| Ambiguous term in NFR Target                      | P0       |
+| Ambiguous term elsewhere                          | P1       |
 
-Same concept must use same term across documents. Flag synonyms (user/member),
-abbreviation mixing (DB/database).
+### 7. Terminology Consistency [P1 candidate]
 
-### 8. YAGNI Compliance [WARNING]
+Same concept must use same term across documents.
 
-With YAGNI Checklist: verify Spec excludes checked items. Without: flag
-over-engineering (excess permissions, caching without NFR, unscoped
-infrastructure).
+| Finding                                          | Priority |
+| ------------------------------------------------ | -------- |
+| Synonym mixing (user/member) in same role        | P1       |
+| Abbreviation mixing (DB/database)                | P2       |
+
+### 8. Column Completeness [P0/P1/P2 candidate]
+
+| Finding                                          | Priority |
+| ------------------------------------------------ | -------- |
+| AC Observable signal column empty (SOW)          | P0       |
+| In Scope Observable outcome column empty (SOW)   | P1       |
+| NFR Rationale column empty                       | P1       |
+| Assumption Impact-if-broken column empty         | P1       |
+| Dependency Purpose column empty                  | P2       |
+
+Risks column rules (Probability/Mitigation × Impact): delegated to
+`sow-spec-reviewer` Risks Completeness section.
+
+### 9. Phase Dependency [P1 candidate]
+
+Implementation table must declare `Depends`. Empty Depends blocks parallel
+scheduling judgment.
+
+| Finding                                          | Priority |
+| ------------------------------------------------ | -------- |
+| Phase Depends column empty                       | P1       |
+
+### 10. YAGNI Compliance [P2]
+
+With YAGNI Checklist: verify Spec excludes checked items. Flag over-engineering.
+
+### 11. Scope Integrity [P0/P1 candidate]
+
+SOW In Scope and Out of Scope must not overlap. ACs must target only In Scope.
+
+| Finding                                             | Priority |
+| --------------------------------------------------- | -------- |
+| In Scope target also listed in Out of Scope         | P0       |
+| AC references a target absent from In Scope         | P1       |
+| Out of Scope lacks `Why not` justification          | P2       |
 
 ## Output
 
@@ -79,15 +140,9 @@ Markdown appended to reviewer findings:
 ```markdown
 ## Consistency Findings
 
-| ID      | Severity                  | Check      | Location                         | Issue       | Suggestion |
-| ------- | ------------------------- | ---------- | -------------------------------- | ----------- | ---------- |
-| CON-001 | CRITICAL / WARNING / INFO | check name | sow.md:section / spec.md:section | description | fix        |
+| ID      | Priority | Check      | Location                         | CC Impact                        | Fix                                  |
+| ------- | -------- | ---------- | -------------------------------- | -------------------------------- | ------------------------------------ |
+| CON-001 | P0/P1/P2 | check name | sow.md:section / spec.md:section | What CC will do when it reads this | Concrete rewrite, not "clarify this" |
 ```
 
-## Score Impact
-
-| Severity | Deduction                          |
-| -------- | ---------------------------------- |
-| CRITICAL | -10 per finding (from Accuracy)    |
-| WARNING  | -5 per finding (from Completeness) |
-| INFO     | -2 per finding (max -10 total)     |
+Finding format and Gate contribution: see `formatting-audits`.

@@ -140,7 +140,7 @@ agents/
 | root-cause-reviewer            | Root cause analysis               |
 | security-reviewer              | OWASP Top 10                      |
 | silent-failure-reviewer        | Silent failure detection          |
-| sow-spec-reviewer              | SOW/Spec quality                  |
+| sow-spec-reviewer              | SOW/Spec Ready/NotReady gate      |
 | test-coverage-reviewer         | Test coverage quality             |
 | testability-reviewer           | Testability                       |
 | type-design-reviewer           | Type design + encapsulation       |
