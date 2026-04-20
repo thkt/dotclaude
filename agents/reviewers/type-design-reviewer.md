@@ -3,7 +3,7 @@ name: type-design-reviewer
 description: Type design quality review. Encapsulation, invariants, enforcement.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-type-safety, applying-code-principles]
+skills: [reviewing-type-safety]
 context: fork
 memory: project
 background: true

@@ -1,8 +1,9 @@
 # Adopt Deterministic Script Pattern
 
-- Status: Accepted
+- Status: superseded
 - Deciders: thkt
 - Date: 2026-01-27
+- Superseded by: [ADR-0042](0042-colocate-skill-specific-scripts-within-skill.md) (2026-04-20, partial — skill 固有スクリプトの配置方針のみ)
 
 Technical Story: [Claude Code SKILL.md 肥大化対策パターン](https://zenn.dev/playpark/articles/41a5dab35a6f97)
 

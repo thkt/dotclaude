@@ -38,13 +38,11 @@ Before writing any code, declare:
 ## Input
 
 Implementation description: `$1` (required, prompt if empty) Flags:
-`--frontend`, `--principles`, `--storybook`
+`--storybook`
 
-| Flag           | Loads                      |
-| -------------- | -------------------------- |
-| `--frontend`   | applying-frontend-patterns |
-| `--principles` | applying-code-principles   |
-| `--storybook`  | integrating-storybook      |
+| Flag          | Loads                 |
+| ------------- | --------------------- |
+| `--storybook` | integrating-storybook |
 
 ## SOW Context
 

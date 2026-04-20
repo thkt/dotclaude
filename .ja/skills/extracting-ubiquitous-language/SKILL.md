@@ -77,8 +77,8 @@ curl -s -H "Authorization: Bearer $SLACK_TOKEN" \
 | ソース             | 読み込み方法                                     |
 | ------------------ | ------------------------------------------------ |
 | ローカルmdファイル | Readツール                                       |
-| Google Docs        | `accessing-google-workspace`スキル（gcloud CLI） |
-| Google Sheets      | `accessing-google-workspace`スキル（gcloud CLI） |
+| Google Docs        | `google-workspace`スキル（gcloud CLI） |
+| Google Sheets      | `google-workspace`スキル（gcloud CLI） |
 
 参考資料はkikuのDBには埋め込まない。Phase
 3の用語抽出時の相互参照コンテキストとして機能 —

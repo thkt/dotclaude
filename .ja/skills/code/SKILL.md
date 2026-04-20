@@ -36,14 +36,11 @@ user-invocable: true
 
 ## 入力
 
-実装の説明: `$1`（必須、空→プロンプト表示）フラグ: `--frontend`, `--principles`,
-`--storybook`
+実装の説明: `$1`（必須、空→プロンプト表示）フラグ: `--storybook`
 
-| フラグ         | 読み込み                   |
-| -------------- | -------------------------- |
-| `--frontend`   | applying-frontend-patterns |
-| `--principles` | applying-code-principles   |
-| `--storybook`  | integrating-storybook      |
+| フラグ        | 読み込み              |
+| ------------- | --------------------- |
+| `--storybook` | integrating-storybook |
 
 ## SOWコンテキスト
 

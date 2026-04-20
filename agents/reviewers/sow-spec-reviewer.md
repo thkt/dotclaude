@@ -3,7 +3,7 @@ name: sow-spec-reviewer
 description: Binary Ready/NotReady gate for SOW/Spec. Implementability probe + findings with P0/P1/P2 and concrete Fix examples.
 tools: [Read, Grep, Glob, LS]
 model: opus
-skills: [formatting-audits, validating-specs, reviewing-readability, applying-code-principles]
+skills: [formatting-audits, validating-specs, reviewing-readability]
 context: fork
 memory: project
 background: true

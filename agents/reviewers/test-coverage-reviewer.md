@@ -3,7 +3,7 @@ name: test-coverage-reviewer
 description: Test coverage quality review. Behavioral gaps and test robustness.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [generating-tdd-tests, applying-code-principles]
+skills: [generating-tdd-tests]
 context: fork
 memory: project
 background: true

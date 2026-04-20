@@ -10,8 +10,7 @@ Design intent and usage guidelines for Skills and Agents.
 graph LR
     subgraph Skills["Skills (Knowledge)"]
         S1[generating-tdd-tests]
-        S2[applying-code-principles]
-        S3[reviewing-security]
+        S2[reviewing-security]
     end
 
     subgraph Agents["Agents (Execution)"]
@@ -50,7 +49,6 @@ executes tasks.
 | Category      | Skills                                               | Purpose                  |
 | ------------- | ---------------------------------------------------- | ------------------------ |
 | TDD/Testing   | generating-tdd-tests                                 | Testing methodology      |
-| Principles    | applying-code-principles, applying-frontend-patterns | Design principles        |
 | Documentation | creating-adrs, extracting-ubiquitous-language        | Documentation generation |
 | Review        | reviewing-\*                                         | Code review perspectives |
 | Workflow      | orchestrating-workflows                              | Workflow definitions     |
@@ -70,11 +68,9 @@ flowchart TD
 
 **Trigger Examples:**
 
-| Trigger               | Skill Loaded               |
-| --------------------- | -------------------------- |
-| "TDD", "test-driven"  | generating-tdd-tests       |
-| "SOLID", "principles" | applying-code-principles   |
-| "/code --frontend"    | applying-frontend-patterns |
+| Trigger              | Skill Loaded         |
+| -------------------- | -------------------- |
+| "TDD", "test-driven" | generating-tdd-tests |
 
 ### File Structure
 

@@ -3,7 +3,6 @@ name: design-pattern-reviewer
 description: React design patterns and component architecture review.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [applying-code-principles, applying-frontend-patterns]
 context: fork
 memory: project
 background: true

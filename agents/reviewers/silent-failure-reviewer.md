@@ -3,7 +3,7 @@ name: silent-failure-reviewer
 description: Silent failure detection. Empty catches, unhandled rejections.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-silent-failures, applying-code-principles]
+skills: [reviewing-silent-failures]
 context: fork
 memory: project
 background: true

@@ -6,7 +6,6 @@ description:
 tools: [Read, Grep, Glob, LS, SendMessage]
 model: sonnet
 context: fork
-skills: [applying-code-principles]
 ---
 
 # QA Reviewer

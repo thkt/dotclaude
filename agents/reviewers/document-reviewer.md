@@ -3,7 +3,7 @@ name: document-reviewer
 description: Technical documentation review for quality, clarity, structure.
 tools: [Read, Grep, Glob, LS]
 model: sonnet
-skills: [reviewing-readability, applying-code-principles]
+skills: [reviewing-readability]
 context: fork
 memory: project
 background: true

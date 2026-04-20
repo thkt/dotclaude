@@ -3,7 +3,7 @@ name: root-cause-reviewer
 description: 5 Whys root cause analysis. Detect patch-like solutions.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [analyzing-root-causes, applying-code-principles]
+skills: [root-cause-analysis]
 context: fork
 memory: project
 background: true

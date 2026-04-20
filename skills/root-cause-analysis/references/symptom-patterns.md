@@ -23,3 +23,13 @@
 | Treating cause or effect?       | Apply 5 Whys           |
 | Will this fix scale?            | Rethink approach       |
 | Is this the framework way?      | Learn patterns         |
+
+## Root Cause Categories
+
+| Category     | Examples                              |
+| ------------ | ------------------------------------- |
+| Design       | Wrong abstraction, missing pattern    |
+| Architecture | Coupling, missing boundary            |
+| Process      | Missing validation, no retry logic    |
+| Knowledge    | Misunderstanding of framework/lib     |
+| Requirements | Unclear requirements → wrong solution |

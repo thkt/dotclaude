@@ -5,7 +5,7 @@ description: Synthesize static findings, outcome evidence, and adversarial resul
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
-skills: [applying-code-principles, analyzing-root-causes]
+skills: [root-cause-analysis]
 ---
 
 # Evidence Integrator

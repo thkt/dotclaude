@@ -4,9 +4,22 @@
 
 meta:
   command: audit
+  session_id: # skill 起動時の UUID
   timestamp: # ISO 8601
   target: # 対象スコープ
   focus: # security|performance|readability|all
+
+pre_flight:
+  build: # pass|fail|skipped
+  types: # pass|fail|skipped
+  lint: # pass|fail|skipped
+  tests:
+    total: # 件数
+    passed: # 件数
+    failed: # 件数
+  coverage:
+    c0: # 行カバレッジ率
+    c1: # 分岐カバレッジ率
 
 pipeline_health:
   domains_completed: # [ドメイン名]

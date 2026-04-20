@@ -1,11 +1,21 @@
 # Audit 出力テンプレート
 
-/auditコマンドの出力テンプレート。
+/audit コマンドの出力テンプレート。
 
 ## テンプレート
 
 ```markdown
 # 監査レポート
+
+## Pre-flight
+
+| チェック | 状態                                                        | 差分             |
+| -------- | ----------------------------------------------------------- | ---------------- |
+| Build    | {pre_flight.build}                                          | -                |
+| Types    | {pre_flight.types}                                          | -                |
+| Lint     | {pre_flight.lint}                                           | -                |
+| Tests    | {pre_flight.tests.passed}/{pre_flight.tests.total}          | {delta.tests}    |
+| Coverage | C0: {pre_flight.coverage.c0} / C1: {pre_flight.coverage.c1} | {delta.coverage} |
 
 ## 概要
 
@@ -17,14 +27,16 @@
 | Low      | {summary.by_severity.low}      | {delta.low}      |
 
 自動修正可能: {suggestions.auto_fixable_count} | 手動:
-{suggestions.manual_count} 検証: {summary.validation.verification.verified}
-verified | {summary.validation.verification.weak_evidence} weak |
+{suggestions.manual_count} 検証:
+{summary.validation.verification.verified} verified |
+{summary.validation.verification.weak_evidence} weak |
 {summary.validation.verification.unverifiable} unverifiable
 
-> **Pipeline**: {pipeline*health.domains_completed} | Skipped:
+> **Pipeline**: {pipeline_health.domains_completed} | Skipped:
 > {pipeline_health.domains_skipped} | Verification:
 > {pipeline_health.verification_status}
-> *(全ドメイン完了かつ検証が full の場合はこのセクションを省略)\_
+>
+> (全ドメイン完了かつ検証が full の場合はこのセクションを省略)
 
 ---
 
@@ -58,10 +70,10 @@ verified | {summary.validation.verification.weak_evidence} weak |
 
 ## アクション
 
-| 優先度       | アクション                              |
-| ------------ | --------------------------------------- |
-| [!] 即時対応 | {priorities[timing=immediate].action}   |
-| [→] 今Sprint | {priorities[timing=this_sprint].action} |
+| 優先度        | アクション                              |
+| ------------- | --------------------------------------- |
+| [!] 即時対応  | {priorities[timing=immediate].action}   |
+| [→] 今 Sprint | {priorities[timing=this_sprint].action} |
 
 ---
 
@@ -74,11 +86,11 @@ verified | {summary.validation.verification.weak_evidence} weak |
 
 ## 差分表示形式
 
-| 値  | 表示                           |
-| --- | ------------------------------ |
-| 0   | `-`                            |
-| +N  | `+N` (Critical/Highは警告表示) |
-| -N  | `-N`                           |
+| 値  | 表示                             |
+| --- | -------------------------------- |
+| 0   | `-`                              |
+| +N  | `+N` (Critical/High は警告表示) |
+| -N  | `-N`                             |
 
 ## 初回記録
 

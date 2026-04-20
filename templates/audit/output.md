@@ -34,8 +34,9 @@ Auto-fixable: {suggestions.auto_fixable_count} | Manual:
 
 > **Pipeline**: {pipeline_health.domains_completed} | Skipped:
 > {pipeline_health.domains_skipped} | Verification:
-> {pipeline_health.verification_status} \*(Omit this section if all domains
-> completed and verification is full)\_
+> {pipeline_health.verification_status}
+>
+> (Omit this section if all domains completed and verification is full.)
 
 ---
 

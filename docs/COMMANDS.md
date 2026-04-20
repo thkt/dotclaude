@@ -52,8 +52,7 @@ Commands are orchestrators, no implementation details.
 Load skills only when needed.
 
 ```markdown
-/code --frontend → load applying-frontend-patterns /code --principles → load
-applying-code-principles /code (no flags) → no additional skills
+/code (no flags) → no additional skills
 ```
 
 ### 3. Graceful Degradation
@@ -71,7 +70,7 @@ confirmation mode (same functionality)
 | ----------- | --------------------------------------------- | --------------------------------------------------------------------- |
 | `/think`    | -                                             | -                                                                     |
 | `/code`     | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
-| `/audit`    | applying-code-principles                      | tier-based reviewer agents (3 or file-routed from 17)                 |
+| `/audit`    | -                                             | tier-based reviewer agents (3 or file-routed from 17)                 |
 | `/fix`      | -                                             | build-error-resolver                                                  |
 | `/polish`   | -                                             | code-simplifier                                                       |
 | `/feature`  | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |

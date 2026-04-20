@@ -48,8 +48,8 @@ extraction.
 | Source         | How to load                                     |
 | -------------- | ----------------------------------------------- |
 | Local md files | Read tool                                       |
-| Google Docs    | `accessing-google-workspace` skill (gcloud CLI) |
-| Google Sheets  | `accessing-google-workspace` skill (gcloud CLI) |
+| Google Docs    | `google-workspace` skill (gcloud CLI) |
+| Google Sheets  | `google-workspace` skill (gcloud CLI) |
 
 Reference materials are NOT embedded into kiku's DB. They serve as
 cross-reference context during Phase 3 term extraction — helping the LLM

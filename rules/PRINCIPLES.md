@@ -70,3 +70,11 @@ Gate: 3+ duplications. Then verify: same knowledge or similar structure?
 ## Progressive Enhancement
 
 Make it Work → Make it Resilient (when errors occur) → Make it Fast (when slowness measured) → Make it Flexible (when users request)
+
+## SOLID
+
+Add interface only when a 2nd implementation appears. Premature interfaces add indirection without value.
+
+## Readable Code
+
+One-minute rule: a new team member should understand the function in under a minute. If not, simplify or document the non-obvious constraint.

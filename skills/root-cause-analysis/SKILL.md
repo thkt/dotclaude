@@ -1,8 +1,6 @@
 ---
-name: analyzing-root-causes
-description: >
-  Root cause analysis with 5 Whys. Use when: root cause, 5 Whys, なぜなぜ分析,
-  根本原因, 原因分析, symptom fix, 対症療法.
+name: root-cause-analysis
+description: Root cause analysis with 5 Whys. Use when: root cause, 5 Whys, なぜなぜ分析, 根本原因, 原因分析, symptom fix, 対症療法.
 allowed-tools: [Read, Grep, Glob, Task]
 context: fork
 user-invocable: false
@@ -10,28 +8,35 @@ user-invocable: false
 
 # Root Cause Analysis - 5 Whys
 
-## Symptom vs Root Cause
+## Principle
 
-| Type        | Example                    | Result        |
-| ----------- | -------------------------- | ------------- |
-| Symptom Fix | setTimeout to wait for DOM | Breaks later  |
-| Root Cause  | Use React ref properly     | Permanent fix |
-| Symptom Fix | Add flag for double-submit | Complexity ↑  |
-| Root Cause  | Disable button on submit   | Simple fix    |
+Fix the root cause, not the symptom. Symptom fixes add complexity; root-cause fixes prevent recurrence.
 
 ## 5 Whys Process
 
-| Step | Question                      | Reveals                  |
-| ---- | ----------------------------- | ------------------------ |
-| 1    | Why does this occur?          | Observable fact          |
-| 2    | Why does that happen?         | Implementation detail    |
-| 3    | Why is that the case?         | Design decision          |
-| 4    | Why does that exist?          | Architectural constraint |
-| 5    | Why was it designed this way? | Root cause               |
+Ask "why" five times, descending through abstraction levels.
+
+| Step | Level                    |
+| ---- | ------------------------ |
+| 1    | Observable fact          |
+| 2    | Implementation detail    |
+| 3    | Design decision          |
+| 4    | Architectural constraint |
+| 5    | Root cause               |
+
+## Tips
+
+| Tip              | Description                      |
+| ---------------- | -------------------------------- |
+| Stay factual     | Evidence, not assumptions        |
+| Don't stop early | First "why" is rarely root cause |
+| Don't go deep    | Stop when actionable             |
+| Validate         | "Because [5], therefore [4]..."  |
+| Verify fix       | "Will this prevent the problem?" |
 
 ## References
 
-| Topic    | File                                                 |
-| -------- | ---------------------------------------------------- |
-| 5 Whys   | `${CLAUDE_SKILL_DIR}/references/five-whys.md`        |
-| Patterns | `${CLAUDE_SKILL_DIR}/references/symptom-patterns.md` |
+| Topic                | File                                                 |
+| -------------------- | ---------------------------------------------------- |
+| Worked examples      | `${CLAUDE_SKILL_DIR}/references/five-whys.md`        |
+| Symptom → Root Cause | `${CLAUDE_SKILL_DIR}/references/symptom-patterns.md` |

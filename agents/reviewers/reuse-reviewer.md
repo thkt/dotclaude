@@ -3,7 +3,6 @@ name: reuse-reviewer
 description: Existing code reuse opportunity detection. Find replaceable new code.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: sonnet
-skills: [applying-code-principles]
 context: fork
 memory: project
 background: true

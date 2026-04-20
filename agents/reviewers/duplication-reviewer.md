@@ -3,7 +3,6 @@ name: duplication-reviewer
 description: Cross-file code duplication detection. DRY analysis specialist.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [applying-code-principles]
 context: fork
 memory: project
 background: true
@@ -38,7 +37,7 @@ background: true
 | Arg-variant     | 2+ calls  | Same func/cmd with only args differing           |
 
 This reviewer uses 2+ as the unified threshold. Rule of Three from
-applying-code-principles determines extraction urgency (severity), not
+`rules/PRINCIPLES.md` (DRY) determines extraction urgency (severity), not
 detection.
 
 ## Comparison Strategy

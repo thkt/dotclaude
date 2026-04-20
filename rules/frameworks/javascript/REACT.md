@@ -16,6 +16,14 @@ paths:
 | Derived state    | Compute in render or useMemo, not in extra store entries                  |
 | Sync preferred   | Avoid async atoms/selectors unless fetching is the store's responsibility |
 
+### Scope Selection
+
+| Scope  | Tool          | Example            |
+| ------ | ------------- | ------------------ |
+| Local  | useState      | Form input, toggle |
+| Shared | Context       | Theme, auth status |
+| Global | Zustand/Redux | App-wide cache     |
+
 ## Memoization
 
 Measurement-based only. No preemptive React.memo, useCallback, useMemo.
@@ -26,6 +34,24 @@ Measurement-based only. No preemptive React.memo, useCallback, useMemo.
 | -------------- | ----------------------------------------- |
 | Shared UI      | Place in `components/ui/`                 |
 | Props drilling | Max 2 levels, then Context or composition |
+
+## Component Patterns
+
+### Container/Presentational
+
+| Role           | Responsibility     | Styles                                   |
+| -------------- | ------------------ | ---------------------------------------- |
+| Container      | Data, state, logic | Layout (grid, flex, spacing, sizing)     |
+| Presentational | Props-only, UI     | Decorative (colors, borders, typography) |
+
+Apply when data fetching meets display. Skip for one-off components (YAGNI).
+
+### Anti-patterns
+
+| Anti-pattern                           | Fix                            |
+| -------------------------------------- | ------------------------------ |
+| Presentational with `useState`/`fetch` | Lift state to Container        |
+| Container with decorative styles       | Move styling to Presentational |
 
 ## Styling
 
