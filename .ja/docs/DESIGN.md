@@ -9,8 +9,8 @@
 ```mermaid
 graph TD
     subgraph Core["Core Layer (最優先)"]
-        AOP[AI_OPERATION_PRINCIPLES]
-        PTC[PRE_TASK_CHECK]
+        OPS[OPERATION]
+        PFL[PREFLIGHT]
     end
 
     subgraph Principles["設計原則"]
@@ -20,27 +20,27 @@ graph TD
     subgraph Development["開発レイヤー"]
         PERF[PERFORMANCE]
         TIDY[TIDYINGS]
-        CODE[CODE_THRESHOLDS]
+        CODE[THRESHOLDS]
         PROG[PRINCIPLES.md#Progressive Enhancement]
     end
 
     subgraph Conventions["規約レイヤー"]
-        DOC[DOCUMENTATION]
-        SKILL[SKILL_FORMAT]
-        PLUG[PLUGIN_ARCHITECTURE]
-        TRANS[TRANSLATION]
-        TEMP[TEMPLATE_VARIABLES]
+        MD[MARKDOWN]
+        SKILL[SKILLS]
+        SUB[SUBAGENT]
+        PLUG[PLUGIN]
+        TEMP[TEMPLATES]
     end
 
     subgraph Workflows["ワークフローレイヤー"]
-        WG[WORKFLOW_REFERENCE]
-        MOD[MODULARIZATION_RULES]
+        WG[WORKFLOWS]
+        MOD[MODULARIZATION]
         IDR[idr-pre-commit.sh]
     end
 
-    AOP --> PTC
+    OPS --> PFL
     P --> Development
-    PTC --> Workflows
+    PFL --> Workflows
     Development --> Conventions
 ```
 
@@ -52,8 +52,8 @@ graph TD
 
 | ファイル                                                            | 意図               | 主要な仕組み                              |
 | ------------------------------------------------------------------- | ------------------ | ----------------------------------------- |
-| [AI_OPERATION_PRINCIPLES](../rules/core/AI_OPERATION_PRINCIPLES.md) | 安全性の担保       | `rm`禁止→`mv ~/.Trash/`、破壊的操作の確認 |
-| [PRE_TASK_CHECK](../rules/core/PRE_TASK_CHECK.md)                   | タスクチェック統合 | 合理化カウンター、分解閾値、完了定義      |
+| [OPERATION](../rules/core/OPERATION.md) | 安全性の担保       | `rm`禁止→`mv ~/.Trash/`、破壊的操作の確認 |
+| [PREFLIGHT](../rules/core/PREFLIGHT.md)                   | タスクチェック統合 | 合理化カウンター、分解閾値、完了定義      |
 
 **理由:**
 
@@ -93,7 +93,7 @@ TDD / SOLID / YAGNI (文脈依存)
 
 | ファイル                                                        | 意図                              | 主要な閾値                         |
 | --------------------------------------------------------------- | --------------------------------- | ---------------------------------- |
-| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)      | 品質基準 + 完了条件               | 関数≤30行、tests pass              |
+| [THRESHOLDS](../rules/development/THRESHOLDS.md)      | 品質基準 + 完了条件               | 関数≤30行、tests pass              |
 | [TIDYINGS](../rules/development/TIDYINGS.md)                    | 整理範囲の限定                    | 振る舞い変更禁止、編集ファイルのみ |
 | [PERFORMANCE](../rules/development/PERFORMANCE.md)              | コンテキスト/フロントエンド最適化 | MCP≤10、LCP<2.5s                   |
 | [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | 漸進的構築                        | CSS-First、Outcome-First           |
@@ -119,11 +119,11 @@ TDD / SOLID / YAGNI (文脈依存)
 
 | ファイル                                                           | 意図                |
 | ------------------------------------------------------------------ | ------------------- |
-| [DOCUMENTATION](../rules/conventions/DOCUMENTATION.md)             | 文書構造の統一      |
-| [SKILL_FORMAT](../rules/conventions/SKILL_FORMAT.md)               | Skill定義の標準形式 |
-| [PLUGIN_ARCHITECTURE](../rules/conventions/PLUGIN_ARCHITECTURE.md) | プラグイン制約      |
-| [TRANSLATION](../rules/conventions/TRANSLATION.md)                 | EN/JP同期ルール     |
-| [TEMPLATE_VARIABLES](../rules/conventions/TEMPLATE_VARIABLES.md)   | 変数置換構文        |
+| [MARKDOWN](../rules/conventions/MARKDOWN.md)                       | Markdown規約 |
+| [SKILLS](../rules/conventions/SKILLS.md)                           | Skill定義の標準形式            |
+| [SUBAGENT](../rules/conventions/SUBAGENT.md)                       | サブエージェント定義の標準形式 |
+| [PLUGIN](../rules/conventions/PLUGIN.md)                           | プラグイン制約      |
+| [TEMPLATES](../rules/conventions/TEMPLATES.md)                     | 変数置換構文        |
 
 **理由:**
 
@@ -136,8 +136,8 @@ TDD / SOLID / YAGNI (文脈依存)
 
 | ファイル                                                           | 意図               |
 | ------------------------------------------------------------------ | ------------------ |
-| [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md)     | コマンド選択ガイド |
-| [MODULARIZATION_RULES](../rules/workflows/MODULARIZATION_RULES.md) | コマンド分割基準   |
+| [WORKFLOWS](../rules/workflows/WORKFLOWS.md)     | コマンド選択ガイド |
+| [MODULARIZATION](../rules/workflows/MODULARIZATION.md) | コマンド分割基準   |
 | [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh)          | 実装記録の自動生成 |
 
 **ワークフローパターン:**

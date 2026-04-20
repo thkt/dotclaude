@@ -150,8 +150,7 @@ scenarios.
 | `[→]`  | 70-94%     | Inferred | Confirm before proceeding |
 | `[?]`  | <70%       | Unknown  | Investigate first         |
 
-Used in AI_OPERATION_PRINCIPLES (Output Verifiability) and throughout
-documentation.
+Used in OPERATION (Output Verifiability) and throughout documentation.
 
 ## Related
 

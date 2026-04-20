@@ -1,9 +1,20 @@
-# AI Writing Tropes to Avoid
+---
+paths:
+  - ".claude/docs/**"
+  - ".claude/.ja/docs/**"
+  - ".claude/adr/**"
+  - ".claude/workspace/**"
+  - ".claude/README.md"
+  - ".claude/.ja/README.md"
+---
 
-Applies to: PR descriptions, Issues, docs, blog posts, and any prose output.
+# AI Writing Tropes
+
+Prose anti-patterns in AI-generated writing. Single use is fine; multiple tropes stacking = AI slop.
+
+Applies to: PR descriptions, Issues, docs, blog posts, prose output.
+
 Does NOT apply to: code, code comments, technical tables, commit messages.
-
-Single use is fine. Multiple tropes stacking = AI slop.
 
 ## Word Choice
 
@@ -43,24 +54,16 @@ Single use is fine. Multiple tropes stacking = AI slop.
 
 ## Tone
 
-| Trope                   | Pattern                                     | Fix                          |
-| ----------------------- | ------------------------------------------- | ---------------------------- |
-| False suspense          | "Here's the kicker", "Here's the thing"     | State the point              |
-| Patronizing analogy     | "Think of it as..."                         | Trust the reader             |
-| Futurism invitation     | "Imagine a world where..."                  | Describe the actual proposal |
-| False vulnerability     | Performative self-awareness                 | Be specific or skip          |
-| "The truth is simple"   | Asserting clarity instead of proving it     | Prove it                     |
-| Stakes inflation        | Everything is world-historical              | Match stakes to actual scope |
-| Teacher mode            | "Let's break this down", "Let's unpack"     | Just explain                 |
-| Vague attributions      | "Experts argue", "Industry reports suggest" | Name the source or cut       |
-| Invented concept labels | "supervision paradox", "acceleration trap"  | Define or use plain language |
+| Trope                   | Pattern                                      | Fix                          |
+| ----------------------- | -------------------------------------------- | ---------------------------- |
+| False suspense          | "Here's the kicker", "Here's the thing"      | State the point              |
+| Patronizing analogy     | "Think of it as..."                          | Trust the reader             |
+| Futurism invitation     | "Imagine a world where..."                   | Describe the actual proposal |
+| False vulnerability     | Performative self-awareness                  | Be specific or skip          |
+| "The truth is simple"   | Asserting clarity instead of proving it      | Prove it                     |
+| Stakes inflation        | Everything is world-historical               | Match stakes to actual scope |
+| Teacher mode            | "Let's break this down", "Let's unpack"      | Just explain                 |
+| Vague attributions      | "Experts argue", "Industry reports suggest"  | Name the source or cut       |
+| Invented concept labels | "supervision paradox", "acceleration trap"   | Define or use plain language |
 | Excessive hedging       | "may potentially", "it's possible that"     | Commit or qualify once       |
-| Chatbot residue         | "Of course!", "Happy to help", "Let me know" | Cut entirely                |
-
-## Formatting
-
-| Trope              | Pattern                       | Fix                             |
-| ------------------ | ----------------------------- | ------------------------------- |
-| Em-dash addiction  | 20+ em dashes in one piece    | Use 2-3 max per piece           |
-| Bold-first bullets | Every list item starts bold, `- **Label:** text` | Bold only when it aids scanning |
-| Unicode decoration | Arrows, smart quotes in prose | Use ASCII in prose. Tables OK   |
+| Chatbot residue         | "Of course!", "Happy to help", "Let me know" | Cut entirely                 |

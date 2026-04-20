@@ -14,7 +14,7 @@ user-invocable: false
 
 # Readability Review
 
-Thresholds: see `rules/development/CODE_THRESHOLDS.md`.
+Thresholds: see `rules/development/THRESHOLDS.md`.
 
 ## Detection
 

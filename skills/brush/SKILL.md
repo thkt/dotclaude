@@ -46,10 +46,10 @@ relevant ones and make them explicit in the rewritten prompt.
 | Category | Inject when |
 | --- | --- |
 | PRINCIPLES.md (Occam, DRY, YAGNI) | Refactoring, architecture decisions |
-| CODE_THRESHOLDS.md | Any code quality ask |
-| CODE_STRUCTURE.md | Structural or organization questions |
+| THRESHOLDS.md | Any code quality ask |
+| STRUCTURE.md | Structural or organization questions |
 | SECURITY.md | Auth, input handling, API endpoints |
-| PRE_TASK_CHECK.md | Broad implementation requests |
+| PREFLIGHT.md | Broad implementation requests |
 
 Only inject rules that are directly relevant. Do not add length for thoroughness.
 

@@ -55,7 +55,7 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 
 | Phase | 名前                | アクション                            | ユーザーチェックポイント |
 | ----- | ------------------- | ------------------------------------- | ------------------------ |
-| 1     | Discovery           | コンテキストスキャン → PRE_TASK_CHECK | [?] or [→] の解決        |
+| 1     | Discovery           | コンテキストスキャン → PREFLIGHT | [?] or [→] の解決        |
 | 2     | Design              | Skill: /think                         | 設計承認                 |
 | 3     | Implementation      | Skill: /code                          | —                        |
 | 4     | Quality             | /audit → /fix ループ (最大3回)        | 残存課題のみ             |
@@ -66,7 +66,7 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 
 1. コンテキストスキャン — CLAUDE.md, package.json, Cargo.toml等
 2. `$1` が空の場合 → コンテキスト対応オプションでAskUserQuestion
-3. PRE_TASK_CHECKを実行
+3. PREFLIGHTを実行
 4. [→]または[?]を解決
 5. 早期終了: 対象ファイル ≤ 2 → `/code` を提案（Phase 2-5スキップ）
 6. TaskCreateでフェーズ追跡（Phase 2-5）
@@ -170,7 +170,7 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 
 | チェック             | 必須 |
 | -------------------- | ---- |
-| PRE_TASK_CHECK 通過? | Yes  |
+| PREFLIGHT 通過? | Yes  |
 | SOW + Spec 生成済み? | Yes  |
 | 全テスト通過?        | Yes  |
 | /code ACカバレッジ?  | Yes  |

@@ -24,7 +24,7 @@ user-invocable: false
 | TDD Cycle       | `${CLAUDE_SKILL_DIR}/references/tdd-cycle.md`                                |
 | Test Generation | `${CLAUDE_SKILL_DIR}/references/test-generation.md`                          |
 
-<!-- canonical: rules/development/CODE_THRESHOLDS.md (coverage targets) -->
+<!-- canonical: rules/development/THRESHOLDS.md (coverage targets) -->
 
 ## Quality Gates
 

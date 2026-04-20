@@ -46,7 +46,7 @@ user-invocable: false
 
 ## カバレッジ
 
-`rules/development/CODE_THRESHOLDS.md` の正式な値を参照。
+`rules/development/THRESHOLDS.md` の正式な値を参照。
 
 ## 命名
 

@@ -1,17 +1,17 @@
 ---
 name: root-cause-reviewer
-description: 5 Whys分析で根本原因を特定。パッチ的解決策を検出。
+description: 5 Whys 根本原因分析。パッチ的解決策を検出。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [analyzing-root-causes, applying-code-principles]
+skills: [root-cause-analysis]
 context: fork
 memory: project
 background: true
 ---
 
-# 根本原因レビューアー
+# Root Cause Reviewer
 
-5 Whys分析でコードが根本的な問題に対処していることを確認。
+5 Whys 分析でコードが根本的な問題に対処していることを確認。
 
 ## 生成コンテンツ
 
@@ -25,9 +25,9 @@ background: true
 | フェーズ | アクション       | フォーカス               |
 | -------- | ---------------- | ------------------------ |
 | 1        | 症状スキャン     | 回避策、絆創膏的修正     |
-| 2        | 状態同期チェック | 派生状態を同期するEffect |
+| 2        | 状態同期チェック | 派生状態を同期する Effect |
 | 3        | レース条件       | タイミング依存の修正     |
-| 4        | 5 Whysトレース   | 因果関係チェーンを追跡   |
+| 4        | 5 Whys トレース  | 因果関係チェーンを追跡   |
 
 ## efficiency-reviewerとの区別
 
@@ -44,39 +44,22 @@ background: true
 
 ## エラーハンドリング
 
-| エラー       | アクション                                  |
-| ------------ | ------------------------------------------- |
-| コードなし   | "No code to review"報告                     |
-| Glob結果なし | 0ファイル検出を報告、クリーンと推定しない   |
-| ツールエラー | エラー記録、ファイルスキップ、summaryに記載 |
+| エラー     | アクション              |
+| ---------- | ----------------------- |
+| コードなし | "No code to review"報告 |
 
-## レポートルール
-
-| 条件                   | アクション                       |
-| ---------------------- | -------------------------------- |
-| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
-| 同一パターンが複数箇所 | 1つのfindingに統合               |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: RCA。
+
+Categories: symptom / state-sync / race / workaround。
+Severity: high / medium / low。
+Verification: execution_trace / pattern_search — 根本原因が実際に記述された症状を生じさせるか？
+必須: five_whys（観察可能な事実から根本原因への5ステップの連鎖）、root_cause（根本的な問題）。Fix は既存の状態/メカニズムの活用を新規追加より優先する。
+
 ```markdown
-## Findings
-
-| ID        | Severity            | Category                                 | Location    | Confidence |
-| --------- | ------------------- | ---------------------------------------- | ----------- | ---------- |
-| RCA-{seq} | high / medium / low | symptom / state-sync / race / workaround | `file:line` | 0.70–1.00  |
-
-### RCA-{seq}
-
-| Field        | Value                                                                             |
-| ------------ | --------------------------------------------------------------------------------- |
-| Evidence     | コードスニペット                                                                  |
-| 5 Whys       | 1. 観察可能な事実 2. 実装の詳細 3. 設計判断 4. アーキテクチャ上の制約 5. 根本原因 |
-| Root Cause   | 根本的な問題                                                                      |
-| Fix          | 根本原因に対処する解決策（既存の状態/メカニズムの活用を新規追加より優先）         |
-| Verification | execution_trace / pattern_search — 根本原因が実際に記述された症状を生じさせるか？ |
-
 ## Summary
 
 | Metric                 | Value |

@@ -1,18 +1,15 @@
 ---
 name: performance-reviewer
-description: TypeScript/Reactのフロントエンドパフォーマンス最適化。Web
-  Vitals、レンダリング、バンドルサイズ。
+description: Reactレンダリング、バンドルサイズ、ランタイムパフォーマンスレビュー。
 tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
-skills: [optimizing-performance, applying-code-principles]
+skills: [optimizing-performance, vercel-react]
 context: fork
 memory: project
 background: true
 ---
 
-# パフォーマンスレビューアー
-
-Reactレンダリング、バンドルサイズ、ランタイムパフォーマンスを最適化。
+# Performance Reviewer
 
 ## 生成コンテンツ
 
@@ -28,7 +25,7 @@ Reactレンダリング、バンドルサイズ、ランタイムパフォーマ
 | 1        | レンダリング分析 | 再レンダリング、memo候補         |
 | 2        | バンドルチェック | 大きなインポート、遅延ロード     |
 | 3        | フック監査       | useCallback、useMemo使用         |
-| 4        | Effect チェック  | 依存配列、クリーンアップ         |
+| 4        | Effectチェック   | 依存配列、クリーンアップ         |
 | 5        | データフェッチ   | キャッシング、ウォーターフォール |
 
 ## 閾値
@@ -50,7 +47,7 @@ Reactレンダリング、バンドルサイズ、ランタイムパフォーマ
 
 ## ブラウザ使用
 
-| ブラウザを使う場合   | スキップする場合 |
+| 使う場合             | スキップする場合 |
 | -------------------- | ---------------- |
 | パフォーマンス計測   | 静的コード分析   |
 | ランタイム測定       | devサーバーなし  |
@@ -64,39 +61,22 @@ Reactレンダリング、バンドルサイズ、ランタイムパフォーマ
 
 ## エラーハンドリング
 
-| エラー       | アクション                                  |
-| ------------ | ------------------------------------------- |
-| コードなし   | "No code to review"報告                     |
-| Glob結果なし | 0ファイル検出を報告、クリーンと推定しない   |
-| ツールエラー | エラー記録、ファイルスキップ、summaryに記載 |
+| エラー     | アクション              |
+| ---------- | ----------------------- |
+| コードなし | "No code to review"報告 |
 
-## レポートルール
-
-| 条件                   | アクション                       |
-| ---------------------- | -------------------------------- |
-| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
-| 同一パターンが複数箇所 | 1つのfindingに統合               |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: PERF。
+
+Categories: render / bundle / hooks / effects / data。
+Severity: high / medium / low。
+Verification: hotpath_analysis / call_site_check — このコードはホットパスまたは頻繁にレンダリングされるコンポーネントにあるか？
+Extra: impact（推定改善量、オプション）。
+
 ```markdown
-## Findings
-
-| ID         | Severity            | Category                                 | Location    | Confidence |
-| ---------- | ------------------- | ---------------------------------------- | ----------- | ---------- |
-| PERF-{seq} | high / medium / low | render / bundle / hooks / effects / data | `file:line` | 0.70–1.00  |
-
-### PERF-{seq}
-
-| Field        | Value                                                                                                             |
-| ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| Evidence     | コードスニペット                                                                                                  |
-| Reasoning    | パフォーマンスへの影響理由                                                                                        |
-| Fix          | 最適化された代替                                                                                                  |
-| Impact       | 推定改善量                                                                                                        |
-| Verification | hotpath_analysis / call_site_check — このコードはホットパスまたは頻繁にレンダリングされるコンポーネントにあるか？ |
-
 ## Summary
 
 | Metric            | Value     |

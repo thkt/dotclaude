@@ -9,8 +9,8 @@
 ```mermaid
 graph TD
     subgraph Core["Core Layer (Top Priority)"]
-        AOP[AI_OPERATION_PRINCIPLES]
-        PTC[PRE_TASK_CHECK]
+        OPS[OPERATION]
+        PFL[PREFLIGHT]
     end
 
     subgraph Principles["Design Principles"]
@@ -20,27 +20,27 @@ graph TD
     subgraph Development["Development Layer"]
         PERF[PERFORMANCE]
         TIDY[TIDYINGS]
-        CODE[CODE_THRESHOLDS]
+        CODE[THRESHOLDS]
         PROG[PRINCIPLES.md#Progressive Enhancement]
     end
 
     subgraph Conventions["Conventions Layer"]
-        DOC[DOCUMENTATION]
-        SKILL[SKILL_FORMAT]
-        PLUG[PLUGIN_ARCHITECTURE]
-        TRANS[TRANSLATION]
-        TEMP[TEMPLATE_VARIABLES]
+        MD[MARKDOWN]
+        SKILL[SKILLS]
+        SUB[SUBAGENT]
+        PLUG[PLUGIN]
+        TEMP[TEMPLATES]
     end
 
     subgraph Workflows["Workflow Layer"]
-        WG[WORKFLOW_REFERENCE]
-        MOD[MODULARIZATION_RULES]
+        WG[WORKFLOWS]
+        MOD[MODULARIZATION]
         IDR[idr-pre-commit.sh]
     end
 
-    AOP --> PTC
+    OPS --> PFL
     P --> Development
-    PTC --> Workflows
+    PFL --> Workflows
     Development --> Conventions
 ```
 
@@ -52,8 +52,8 @@ Top-priority rules. Prevent AI runaway and keep users informed.
 
 | File                                                                | Intent             | Key Mechanism                                                        |
 | ------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------- |
-| [AI_OPERATION_PRINCIPLES](../rules/core/AI_OPERATION_PRINCIPLES.md) | Ensure safety      | `rm` prohibited → `mv ~/.Trash/`, destructive op confirmation        |
-| [PRE_TASK_CHECK](../rules/core/PRE_TASK_CHECK.md)                   | Task check unified | Rationalization counters, decomposition thresholds, done definitions |
+| [OPERATION](../rules/core/OPERATION.md) | Ensure safety      | `rm` prohibited → `mv ~/.Trash/`, destructive op confirmation        |
+| [PREFLIGHT](../rules/core/PREFLIGHT.md)                   | Task check unified | Rationalization counters, decomposition thresholds, done definitions |
 
 **Why this design:**
 
@@ -93,7 +93,7 @@ Concrete standards for daily development.
 
 | File                                                            | Intent                       | Key Threshold                          |
 | --------------------------------------------------------------- | ---------------------------- | -------------------------------------- |
-| [CODE_THRESHOLDS](../rules/development/CODE_THRESHOLDS.md)      | Quality metrics + completion | Function ≤30 lines, tests pass         |
+| [THRESHOLDS](../rules/development/THRESHOLDS.md)      | Quality metrics + completion | Function ≤30 lines, tests pass         |
 | [TIDYINGS](../rules/development/TIDYINGS.md)                    | Scope cleanup limits         | No behavior changes, edited files only |
 | [PERFORMANCE](../rules/development/PERFORMANCE.md)              | Context management           | MCP ≤10, /compact >70%                 |
 | [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | Incremental building         | CSS-First, Outcome-First               |
@@ -119,11 +119,11 @@ Consistency across documentation, plugins, and translations.
 
 | File                                                               | Intent                       |
 | ------------------------------------------------------------------ | ---------------------------- |
-| [DOCUMENTATION](../rules/conventions/DOCUMENTATION.md)             | Document structure unity     |
-| [SKILL_FORMAT](../rules/conventions/SKILL_FORMAT.md)               | Skill definition standard    |
-| [PLUGIN_ARCHITECTURE](../rules/conventions/PLUGIN_ARCHITECTURE.md) | Plugin constraints           |
-| [TRANSLATION](../rules/conventions/TRANSLATION.md)                 | EN/JP sync rules             |
-| [TEMPLATE_VARIABLES](../rules/conventions/TEMPLATE_VARIABLES.md)   | Variable substitution syntax |
+| [MARKDOWN](../rules/conventions/MARKDOWN.md)                       | Markdown conventions         |
+| [SKILLS](../rules/conventions/SKILLS.md)                           | Skill definition standard    |
+| [SUBAGENT](../rules/conventions/SUBAGENT.md)                       | Sub-agent definition standard |
+| [PLUGIN](../rules/conventions/PLUGIN.md)                           | Plugin constraints           |
+| [TEMPLATES](../rules/conventions/TEMPLATES.md)                     | Variable substitution syntax |
 
 **Why this design:**
 
@@ -137,8 +137,8 @@ User-facing commands and workflow system.
 
 | File                                                               | Intent                               |
 | ------------------------------------------------------------------ | ------------------------------------ |
-| [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md)     | Command selection guide              |
-| [MODULARIZATION_RULES](../rules/workflows/MODULARIZATION_RULES.md) | Command split criteria               |
+| [WORKFLOWS](../rules/workflows/WORKFLOWS.md)     | Command selection guide              |
+| [MODULARIZATION](../rules/workflows/MODULARIZATION.md) | Command split criteria               |
 | [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh)          | Auto-generate implementation records |
 
 **Workflow Patterns:**

@@ -26,7 +26,7 @@ graph TD
 
 ## コマンド & ワークフロー
 
-[WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md)
+[WORKFLOWS](../rules/workflows/WORKFLOWS.md)
 にコマンド一覧と選択ガイドあり。
 
 ## 設計原則
@@ -99,5 +99,5 @@ skills/
 ## 関連
 
 - [SKILLS_AGENTS.md](./SKILLS_AGENTS.md) — スキル・エージェントの詳細
-- [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md)
+- [WORKFLOWS](../rules/workflows/WORKFLOWS.md)
   — ワークフロー選択ガイド

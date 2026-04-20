@@ -3,15 +3,12 @@ name: efficiency-reviewer
 description: コード効率性レビュー。不要な処理、並行性、ホットパス分析。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: sonnet
-skills: [applying-code-principles]
 context: fork
 memory: project
 background: true
 ---
 
 # Efficiency Reviewer
-
-実行時およびリソースの非効率性を検出する専門レビュアー。言語非依存。
 
 ## 生成コンテンツ
 
@@ -71,39 +68,23 @@ background: true
 
 ## エラーハンドリング
 
-| エラー       | アクション                       |
-| ------------ | -------------------------------- |
-| コードなし   | "レビュー対象なし"を報告         |
-| Glob 空      | 0ファイル検出と報告              |
-| ツールエラー | ログ記録、スキップ、サマリに記載 |
+| エラー     | アクション              |
+| ---------- | ----------------------- |
+| コードなし | "No code to review"報告 |
 
-## レポートルール
-
-| 条件                     | アクション                         |
-| ------------------------ | ---------------------------------- |
-| 信頼度 < 0.70            | 除外（`finding-schema.md` 参照）   |
-| 同一パターンが複数箇所   | 単一findingに統合                  |
-| コールドパスの軽微な問題 | 統合でseverityが上がらない限り除外 |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
+コールドパスの軽微な問題は、統合でseverityが上がらない限り除外（schema の Context Test 参照）。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: EFF。
+
+Categories: unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad。
+Severity: high / medium / low。
+Verification: benchmark / profile — 改善を確認する方法。
+Extra: reasoning に path_frequency（hot/warm/cold）を記載。
+
 ```markdown
-## Findings
-
-| ID        | Severity            | Category                                                                          | Location    | Confidence |
-| --------- | ------------------- | --------------------------------------------------------------------------------- | ----------- | ---------- |
-| EFF-{seq} | high / medium / low | unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad | `file:line` | 0.70-1.00  |
-
-### EFF-{seq}
-
-| Field        | Value                                                  |
-| ------------ | ------------------------------------------------------ |
-| Evidence     | 非効率性を示すコードスニペット                         |
-| Reasoning    | リソースを浪費する理由 + 推定パス頻度（hot/warm/cold） |
-| Fix          | 具体的な改善（呼び出し統合、並列化、スコープ縮小など） |
-| Verification | benchmark / profile — 改善を確認する方法               |
-
 ## Summary
 
 | Metric             | Value |

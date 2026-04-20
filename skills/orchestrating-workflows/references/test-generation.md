@@ -42,7 +42,7 @@ describe("[Target]", () => {
 });
 ```
 
-<!-- canonical: rules/development/CODE_THRESHOLDS.md -->
+<!-- canonical: rules/development/THRESHOLDS.md -->
 
 ## Coverage Goals
 

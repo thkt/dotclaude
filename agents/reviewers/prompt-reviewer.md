@@ -65,7 +65,7 @@ Threshold: 3+ parallel items. 2 items in prose is acceptable.
 | -------------------- | ----------------------------------------------------- | -------------------------------- |
 | Bold prohibition     | No `**bold**` in LLM-facing files                     | `agents/*.md`, `skills/SKILL.md` |
 | Agent frontmatter    | name, description, tools, model (context recommended) | `agents/**/*.md`                 |
-| Skill frontmatter    | name, description (per SKILL_FORMAT.md)               | `skills/*/SKILL.md`              |
+| Skill frontmatter    | name, description (per rules/conventions/SKILLS.md)   | `skills/*/SKILL.md`              |
 | Section completeness | Required sections present (see below)                 | `agents/*.md`, `skills/SKILL.md` |
 | Table alignment      | Consistent column separators, no ragged rows          | All                              |
 

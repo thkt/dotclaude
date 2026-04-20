@@ -25,7 +25,7 @@ user-invocable: false
 | Phase         | Actions                                                                  |
 | ------------- | ------------------------------------------------------------------------ |
 | 1. Pre-Check  | Run `./scripts/pre-check.sh "$TITLE"` (uses shared scripts)              |
-| 2. Template   | Run `$HOME/.claude/scripts/select-adr-template.sh "$TITLE"`              |
+| 2. Template   | Run `./scripts/select-adr-template.sh "$TITLE"`                          |
 | 3. References | Gather project docs, issues, external resources                          |
 | 4. Validate   | Check required sections (Title, Status, Context, Decision, Consequences) |
 | 5. Index      | Auto-generate `adr/README.md`                                            |
@@ -36,7 +36,7 @@ user-invocable: false
 Use script to auto-select template:
 
 ```bash
-TEMPLATE=$("$HOME/.claude/scripts/select-adr-template.sh" "$TITLE")
+TEMPLATE=$("./scripts/select-adr-template.sh" "$TITLE")
 ```
 
 | Template             | Use Case                   | Required Sections          |

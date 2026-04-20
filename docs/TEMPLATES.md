@@ -127,7 +127,7 @@ Variable syntax available in templates:
 | `{obj.prop}`   | `{summary.total}` | `8`            |
 | `{arr[].prop}` | `{items[].id}`    | Each item's id |
 
-Details: [TEMPLATE_VARIABLES](../rules/conventions/TEMPLATE_VARIABLES.md)
+Details: [TEMPLATES](../rules/conventions/TEMPLATES.md)
 
 ## Customization Rules
 
@@ -145,6 +145,6 @@ Details: [TEMPLATE_VARIABLES](../rules/conventions/TEMPLATE_VARIABLES.md)
 
 ## Related
 
-- [TEMPLATE_VARIABLES](../rules/conventions/TEMPLATE_VARIABLES.md) — Variable syntax
+- [TEMPLATES](../rules/conventions/TEMPLATES.md) — Variable syntax
 - [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh) — IDR generation hook
 - [templates/README.md](../templates/README.md) — Template list

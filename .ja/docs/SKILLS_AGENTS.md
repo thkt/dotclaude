@@ -182,4 +182,5 @@ SKILL.md → reference.md (1階層まで)
 ## 関連
 
 - [COMMANDS.md](./COMMANDS.md) — コマンドの設計
-- [SKILL_FORMAT](../rules/conventions/SKILL_FORMAT.md) — スキル定義形式
+- [SKILLS](../rules/conventions/SKILLS.md) — スキル定義形式
+- [SUBAGENT](../rules/conventions/SUBAGENT.md) — サブエージェント定義形式

@@ -127,7 +127,7 @@ flowchart TD
 | `{obj.prop}`   | `{summary.total}` | `8`            |
 | `{arr[].prop}` | `{items[].id}`    | 各アイテムのid |
 
-詳細: [TEMPLATE_VARIABLES](../rules/conventions/TEMPLATE_VARIABLES.md)
+詳細: [TEMPLATES](../rules/conventions/TEMPLATES.md)
 
 ## カスタマイズルール
 
@@ -145,6 +145,6 @@ flowchart TD
 
 ## 関連
 
-- [TEMPLATE_VARIABLES](../rules/conventions/TEMPLATE_VARIABLES.md) — 変数構文
+- [TEMPLATES](../rules/conventions/TEMPLATES.md) — 変数構文
 - [idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh) — IDR生成フック
 - [templates/README.md](../../templates/README.md) — テンプレート一覧

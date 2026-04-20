@@ -1,17 +1,15 @@
 ---
 name: silent-failure-reviewer
-description: サイレント障害、空のcatchブロック、未処理のPromise拒否を検出。
+description: サイレント障害検出。空の catch、未処理の Promise rejection。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-silent-failures, applying-code-principles]
+skills: [reviewing-silent-failures]
 context: fork
 memory: project
 background: true
 ---
 
-# サイレント障害レビューアー
-
-サイレントに失敗するパターンを特定。
+# Silent Failure Reviewer
 
 ## 生成コンテンツ
 
@@ -52,39 +50,21 @@ background: true
 
 ## エラーハンドリング
 
-| エラー       | アクション                                  |
-| ------------ | ------------------------------------------- |
-| コードなし   | "No code to review"報告                     |
-| Glob結果なし | 0ファイル検出を報告、クリーンと推定しない   |
-| ツールエラー | エラー記録、ファイルスキップ、summaryに記載 |
+| エラー     | アクション              |
+| ---------- | ----------------------- |
+| コードなし | "No code to review"報告 |
 
-## レポートルール
-
-| 条件                   | アクション                       |
-| ---------------------- | -------------------------------- |
-| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
-| 同一パターンが複数箇所 | 1つのfindingに統合               |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: SF。
+
+Categories: SF1-SF5（catch / promise / async / ui_feedback / fallback）。
+Severity: critical / high / medium / low。
+Verification: error_propagation / pattern_search — このエラーはユーザーに表示されるか、サイレントのままか？
 
 ```markdown
-## Findings
-
-| ID       | Severity                       | Category | Location    | Confidence |
-| -------- | ------------------------------ | -------- | ----------- | ---------- |
-| SF-{seq} | critical / high / medium / low | SF1-SF5  | `file:line` | 0.70–1.00  |
-
-### SF-{seq}
-
-| Field        | Value                                                                                         |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| Evidence     | コードスニペット                                                                              |
-| Reasoning    | サイレントに失敗する理由                                                                      |
-| Fix          | 可視的なエラーハンドリング                                                                    |
-| Verification | error_propagation / pattern_search — このエラーはユーザーに表示されるか、サイレントのままか？ |
-
 ## Summary
 
 | Metric            | Value |

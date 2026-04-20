@@ -26,7 +26,7 @@ graph TD
 
 ## Commands & Workflows
 
-See [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) for command
+See [WORKFLOWS](../rules/workflows/WORKFLOWS.md) for command
 listing and selection guide.
 
 ## Design Principles
@@ -100,5 +100,5 @@ skills/
 ## Related
 
 - [SKILLS_AGENTS.md](./SKILLS_AGENTS.md) — Skills and agents reference
-- [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) — Workflow
+- [WORKFLOWS](../rules/workflows/WORKFLOWS.md) — Workflow
   selection guide

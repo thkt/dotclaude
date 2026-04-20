@@ -3,7 +3,7 @@ name: sow-spec-reviewer
 description: SOW/Spec向けバイナリゲート（Ready/NotReady）。Implementability プローブ + P0/P1/P2 優先度と具体的Fix例付きfindings。
 tools: [Read, Grep, Glob, LS]
 model: opus
-skills: [formatting-audits, validating-specs, reviewing-readability, applying-code-principles]
+skills: [formatting-audits, validating-specs, reviewing-readability]
 context: fork
 memory: project
 background: true

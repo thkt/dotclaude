@@ -53,7 +53,7 @@ echo "${GREEN}✅ Write permission: OK${NC}"
 echo ""
 
 echo "🔢 3. ADR Number Assignment"
-SCRIPTS_DIR="${HOME}/.claude/scripts"
+SCRIPTS_DIR="$(dirname "$0")"
 NEXT_NUM=$("$SCRIPTS_DIR/next-adr-number.sh" "$ADR_DIR")
 echo "${GREEN}✅ Next number: ${NEXT_NUM}${NC}"
 

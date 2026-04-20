@@ -14,7 +14,7 @@ user-invocable: false
 
 # 可読性レビュー
 
-閾値: `rules/development/CODE_THRESHOLDS.md` を参照。
+閾値: `rules/development/THRESHOLDS.md` を参照。
 
 ## 検出
 

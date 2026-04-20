@@ -187,4 +187,5 @@ loss.
 ## Related
 
 - [COMMANDS.md](./COMMANDS.md) — Command design
-- [SKILL_FORMAT](../rules/conventions/SKILL_FORMAT.md) — Skill definition format
+- [SKILLS](../rules/conventions/SKILLS.md) — Skill definition format
+- [SUBAGENT](../rules/conventions/SUBAGENT.md) — Sub-agent definition format

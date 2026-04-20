@@ -1,15 +1,15 @@
 ---
 name: security-reviewer
-description: OWASP Top 10ベースのセキュリティ脆弱性検出。
+description: OWASP Top 10 ベースのセキュリティ脆弱性検出。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-security, applying-code-principles]
+skills: [reviewing-security]
 context: fork
 memory: project
 background: true
 ---
 
-# セキュリティレビューアー
+# Security Reviewer
 
 ## 生成コンテンツ
 
@@ -30,6 +30,8 @@ background: true
 | 6        | フロントエンドTaint | Source→Sinkデータフロー (`references/frontend-taint-checklist.md` 参照) |
 
 ## 信頼度スコアリング
+
+Floor 0.60（schema でオーバーライド）。
 
 | スコア  | 説明             | アクション    |
 | ------- | ---------------- | ------------- |
@@ -57,39 +59,23 @@ background: true
 
 ## エラーハンドリング
 
-| エラー       | 対処                                         |
-| ------------ | -------------------------------------------- |
-| コードなし   | "レビュー対象なし"を報告                     |
-| Glob結果なし | 0件検出を報告、クリーンとは推定しない        |
-| ツールエラー | エラーログ、ファイルスキップ、サマリーに記載 |
+| エラー     | アクション              |
+| ---------- | ----------------------- |
+| コードなし | "No code to review"報告 |
 
-## 報告ルール
-
-| 条件                             | アクション          |
-| -------------------------------- | ------------------- |
-| 同一パターンが複数箇所にある場合 | 単一のfindingに統合 |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: SEC。Confidence floor 0.60（オーバーライド）。
+
+Categories: A01-A10。
+Severity: critical / high / medium。
+Verification: execution_trace / call_site_check / pattern_search — 悪用可能性を確認するため何を検証するか。
+Reasoning は脅威モデルを使う: 攻撃者の能力 → 攻撃ベクター → 具体的影響。
+Extra: entry_points（オプション、execution_trace 用）— `file:line`。
 
 ```markdown
-## Findings
-
-| ID        | Severity                 | Category | Location    | Confidence |
-| --------- | ------------------------ | -------- | ----------- | ---------- |
-| SEC-{seq} | critical / high / medium | A01-A10  | `file:line` | 0.60–1.00  |
-
-### SEC-{seq}
-
-| Field        | Value                                                               |
-| ------------ | ------------------------------------------------------------------- |
-| Evidence     | コードスニペット                                                    |
-| Reasoning    | 脅威モデル: 攻撃者の能力 → 攻撃ベクター → 具体的影響                |
-| Fix          | セキュアな代替                                                      |
-| Verification | execution_trace / call_site_check / pattern_search — 確認すべきこと |
-| Entry Points | `file:line`（オプション、execution_trace用）                        |
-
 ## Summary
 
 | Metric         | Value |

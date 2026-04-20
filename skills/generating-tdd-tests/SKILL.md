@@ -95,7 +95,7 @@ argument pattern, merge or parameterize with `test.each`.
 
 ## Coverage
 
-See `rules/development/CODE_THRESHOLDS.md` for canonical values.
+See `rules/development/THRESHOLDS.md` for canonical values.
 
 ## Naming
 

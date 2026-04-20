@@ -56,7 +56,7 @@ user-invocable: true
 - Skill: orchestrating-workflows（RGRCサイクル）
 - Hook: gates（完了ゲート + レビュー強制、自動イテレーション）
 
-<!-- canonical: rules/core/PRE_TASK_CHECK.md (decomposition thresholds) -->
+<!-- canonical: rules/core/PREFLIGHT.md (decomposition thresholds) -->
 
 ## スコープガード
 

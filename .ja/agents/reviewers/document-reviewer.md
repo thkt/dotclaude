@@ -2,16 +2,14 @@
 name: document-reviewer
 description: 技術文書の品質、明確性、構造をレビュー。
 tools: [Read, Grep, Glob, LS]
-model: opus
-skills: [reviewing-readability, applying-code-principles]
+model: sonnet
+skills: [reviewing-readability]
 context: fork
 memory: project
 background: true
 ---
 
-# ドキュメントレビューアー
-
-ドキュメントの品質、明確性、構造、対象読者への適合性をレビュー。
+# Document Reviewer
 
 ## 生成コンテンツ
 
@@ -61,39 +59,21 @@ background: true
 
 ## エラーハンドリング
 
-| エラー           | アクション                                  |
-| ---------------- | ------------------------------------------- |
-| ドキュメントなし | "No docs to review"報告                     |
-| Glob結果なし     | 0ファイル検出を報告、クリーンと推定しない   |
-| ツールエラー     | エラー記録、ファイルスキップ、summaryに記載 |
+| エラー           | アクション              |
+| ---------------- | ----------------------- |
+| ドキュメントなし | "No docs to review"報告 |
 
-## レポートルール
-
-| 条件                   | アクション                       |
-| ---------------------- | -------------------------------- |
-| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
-| 同一パターンが複数箇所 | 1つのfindingに統合               |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: DOC。Location は `file:section` 形式。
+
+Categories: clarity / structure / completeness / technical / audience。
+Severity: high / medium / low。
+Verification: pattern_search — このドキュメントの問題は関連ファイル間で一貫しているか？
 
 ```markdown
-## Findings
-
-| ID        | Severity            | Category                                                  | Location       | Confidence |
-| --------- | ------------------- | --------------------------------------------------------- | -------------- | ---------- |
-| DOC-{seq} | high / medium / low | clarity / structure / completeness / technical / audience | `file:section` | 0.70–1.00  |
-
-### DOC-{seq}
-
-| Field        | Value                                                                     |
-| ------------ | ------------------------------------------------------------------------- |
-| Evidence     | 観察された内容                                                            |
-| Reasoning    | これが問題である理由                                                      |
-| Fix          | 具体的な改善案                                                            |
-| Verification | pattern_search — このドキュメントの問題は関連ファイル間で一貫しているか？ |
-
 ## Summary
 
 | Metric         | Value |

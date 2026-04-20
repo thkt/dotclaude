@@ -1,9 +1,9 @@
 ---
 name: type-design-reviewer
-description: 型設計の品質レビュー。カプセル化、不変条件の表現、強制のスコアリング。
+description: 型設計の品質レビュー。カプセル化、不変条件、強制。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-type-safety, applying-code-principles]
+skills: [reviewing-type-safety]
 context: fork
 memory: project
 background: true
@@ -20,7 +20,7 @@ background: true
 
 ## 分析フェーズ
 
-| フェーズ | アクション         | 焦点                                   |
+| フェーズ | アクション         | フォーカス                             |
 | -------- | ------------------ | -------------------------------------- |
 | 1        | 不変条件の発見     | 暗黙的/明示的なデータ制約              |
 | 2        | カプセル化チェック | 公開された内部、ミュータブルアクセス   |
@@ -36,14 +36,14 @@ background: true
 | 「この型は良く設計されてるか？」 | 「この型は安全か？」                |
 | 言語非依存の原則                 | TypeScript固有のチェック            |
 
-## スコアリング (型ごと)
+## スコアリング（型ごと）
 
-| 次元             | 1-10 | 測定内容                                            |
-| ---------------- | ---- | --------------------------------------------------- |
-| カプセル化       | X/10 | 内部は隠蔽されているか? 最小限のインターフェースか? |
-| 不変条件の表現   | X/10 | 制約が構造から明確か?                               |
-| 不変条件の有用性 | X/10 | 不変条件は実際のバグを防止するか?                   |
-| 不変条件の強制   | X/10 | 無効なインスタンスを作成できるか?                   |
+| 次元             | 1-10 | 測定内容                                              |
+| ---------------- | ---- | ----------------------------------------------------- |
+| カプセル化       | X/10 | 内部は隠蔽されているか？最小限のインターフェースか？  |
+| 不変条件の表現   | X/10 | 制約が構造から明確か？                                |
+| 不変条件の有用性 | X/10 | 不変条件は実際のバグを防止するか？                    |
+| 不変条件の強制   | X/10 | 無効なインスタンスを作成できるか？                    |
 
 ## アンチパターン
 
@@ -62,41 +62,22 @@ background: true
 
 ## エラーハンドリング
 
-| エラー           | アクション                                  |
-| ---------------- | ------------------------------------------- |
-| 型が見つからない | "No types to review" と報告                 |
-| Glob結果なし     | 0ファイル検出を報告、クリーンと推定しない   |
-| ツールエラー     | エラー記録、ファイルスキップ、summaryに記載 |
+| エラー           | アクション                  |
+| ---------------- | --------------------------- |
+| 型が見つからない | "No types to review" と報告 |
 
-## レポートルール
-
-| 条件                   | アクション                       |
-| ---------------------- | -------------------------------- |
-| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
-| 同一パターンが複数箇所 | 1つのfindingに統合               |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: TD。
+
+Categories: encapsulation / expression / usefulness / enforcement。
+Severity: critical / high / medium / low。
+Verification: call_site_check / pattern_search — 無効なインスタンスが実際にコールサイトで構築されうるか？
+Extra: type_name（TypeName、オプション）、scores（encapsulation/expression/usefulness/enforcement X/10、オプション — 上記スコアリング参照）。
 
 ```markdown
-## Findings
-
-| ID       | Severity                       | Category                                              | Location    | Confidence |
-| -------- | ------------------------------ | ----------------------------------------------------- | ----------- | ---------- |
-| TD-{seq} | critical / high / medium / low | encapsulation / expression / usefulness / enforcement | `file:line` | 0.70–1.00  |
-
-### TD-{seq}
-
-| Field        | Value                                                                                       |
-| ------------ | ------------------------------------------------------------------------------------------- |
-| Type Name    | TypeName                                                                                    |
-| Evidence     | コードスニペット                                                                            |
-| Reasoning    | これが設計上の問題である理由                                                                |
-| Fix          | 改善された型設計                                                                            |
-| Scores       | encapsulation X/10, expression X/10, usefulness X/10, enforcement X/10                      |
-| Verification | call_site_check / pattern_search — 無効なインスタンスが実際にコールサイトで構築されうるか？ |
-
 ## Summary
 
 | Metric            | Value |

@@ -58,7 +58,7 @@ Implementation description: `$1` (required, prompt if empty) Flags:
 - Skill: orchestrating-workflows (RGRC cycle)
 - Hook: gates (completion gate + review enforcement, auto-iteration)
 
-<!-- canonical: rules/core/PRE_TASK_CHECK.md (decomposition thresholds) -->
+<!-- canonical: rules/core/PREFLIGHT.md (decomposition thresholds) -->
 
 ## Scope Guard
 
