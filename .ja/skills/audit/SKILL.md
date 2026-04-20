@@ -27,9 +27,11 @@ user-invocable: true
 
 ## 入力
 
-- 対象スコープ: `$1`（任意）
-- `$1` が空の場合 →
-  AskUserQuestion でフォーカスを選択、ステージ済み/変更ファイルをレビュー
+- `$1` は引数文字列全体を保持する。Leader は使用前に空白で split すること —
+  最初の positional token が scope、残りの `--key=value` が options。
+  `$1` を `git diff` に literal で渡してはならない。
+- スコープ: SHA/branch range（`x..y`）または file path → `git diff --name-only <scope>` → file list
+- スコープが空 → AskUserQuestion でフォーカスを選択、ステージ済み/変更ファイルをレビュー
 - `--runs=N`（任意、1-3、デフォルト 1）。N > 1 で multi-run 集約を起動し、
   stochastic な findings ドリフトに対抗する — 下記 Multi-run Policy 参照
 
@@ -42,7 +44,7 @@ user-invocable: true
 ### Multi-run Policy
 
 Reviewer findings は stochastic: 同一 reviewer・同一 target でも run 間で
-約 50% の findings が入れ替わる（2026-04-20 diagnostic 実証）。高信頼カバレッジが
+50-87% の findings が入れ替わる（2026-04-20 diagnostic 実証）。高信頼カバレッジが
 必要なときは `--runs=2` または `--runs=3` を指定。
 
 | N   | ユースケース                           | コスト               |
@@ -52,9 +54,20 @@ Reviewer findings は stochastic: 同一 reviewer・同一 target でも run 間
 | 3   | リリース前、FN リスク不許容           | reviewer run ~3 倍   |
 
 N > 1 のとき Leader は Wave 1（reviewer fan-out）を N 回逐次実行し、
-`(file:line, category, reviewer)` をキーに findings を重複排除集約する。
-集約された finding は `runs_observed: [1, 3]`（どの run で検出されたか）を
-持ち、透明性を担保する。
+下記手順で findings を集約する。
+
+#### Aggregation
+
+1. merge 前に各 finding を normalize:
+   - `file`: project root からの repo-relative path（例: `src/config.rs`、`config.rs` 不可）
+   - `line`: `M` または `M-N` → `(start, end)` tuple
+   - `category`: 小文字化、`/` の前の prefix を取る（例: `structure/waste` → `structure`）
+2. Merge key: `(file, category, reviewer)` + line range overlap ±3 tolerance
+3. `runs_observed`: finding を生成した run index（1-based）の integer array、merge 時に union
+4. message divergence 時: 最長を採用、検証が必要なら `messages: [...]` に両方保存
+
+normalization なしの厳密 key match では実測で ~3% しか集約されない — path
+format・line range・category prefix の揺らぎに対する tolerance が必須。
 
 ## 実行
 

@@ -28,8 +28,11 @@ are structurally invalid.
 
 ## Input
 
-- Target scope: `$1` (optional). SHA/branch range (`x..y`) → `git diff --name-only $1` → file list
-- If `$1` is empty → select focus via AskUserQuestion, then review
+- `$1` holds the full argument string. Leader MUST split on whitespace
+  before use — first positional token is the scope, remaining `--key=value`
+  tokens are options. Never pass `$1` verbatim to `git diff`.
+- Scope: SHA/branch range (`x..y`) or file path → `git diff --name-only <scope>` → file list
+- If scope is empty → select focus via AskUserQuestion, then review
   staged/modified files
 - `--runs=N` (optional, 1-3, default 1). N > 1 triggers multi-run aggregation
   to counter stochastic findings drift — see Multi-run Policy below
@@ -42,9 +45,9 @@ are structurally invalid.
 
 ### Multi-run Policy
 
-Reviewer findings are stochastic: ~50% of findings from the same reviewer on
-the same target differ between runs (observed 2026-04-20 diagnostic). When
-high-confidence coverage matters, pass `--runs=2` or `--runs=3`.
+Reviewer findings are stochastic: 50-87% of findings from the same reviewer
+on the same target differ between runs (observed 2026-04-20 diagnostic).
+When high-confidence coverage matters, pass `--runs=2` or `--runs=3`.
 
 | N   | Use case                              | Cost                |
 | --- | ------------------------------------- | ------------------- |
@@ -53,9 +56,21 @@ high-confidence coverage matters, pass `--runs=2` or `--runs=3`.
 | 3   | Pre-release, FN risk unacceptable     | ~3x reviewer runs   |
 
 With N > 1, Leader runs Wave 1 (reviewer fan-out) N times in sequence, then
-aggregates findings by `(file:line, category, reviewer)` as deduplication key.
-Each aggregated finding carries `runs_observed: [1, 3]` (which runs produced
-it) for transparency.
+aggregates findings per the procedure below.
+
+#### Aggregation
+
+1. Normalize each finding before merge:
+   - `file`: repo-relative path from project root (e.g., `src/config.rs`, not `config.rs`)
+   - `line`: `M` or `M-N` → `(start, end)` tuple
+   - `category`: lowercase, take prefix before `/` (e.g., `structure/waste` → `structure`)
+2. Merge key: `(file, category, reviewer)` with line-range overlap tolerance ±3
+3. `runs_observed`: integer array of run indices (1-based) that produced the finding; union on merge
+4. On message divergence: keep the longest; preserve both in `messages: [...]` if verification is needed
+
+Without normalization, strict key matching aggregates only ~3% of findings in
+practice — tolerance on path format, line range, and category prefix is
+required.
 
 ## Execution
 
