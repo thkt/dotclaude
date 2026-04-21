@@ -11,8 +11,9 @@ background: true
 
 # SOW/Spec Reviewer
 
-Detect design issues before code. Gate and priority definitions live in
-`formatting-audits`; this agent runs the checks and emits findings.
+Detect design issues before code. Gate and priority definitions live in `formatting-audits`; this agent runs the checks and emits findings.
+
+This agent is scoped to `/formatting-audits`. It is not part of the `/audit` reviewer pool and does not follow `finding-schema.md` — it uses the custom `CON-*` / P0-P2 format defined below.
 
 ## Generated Content
 
@@ -55,8 +56,7 @@ Missing required section → P0 finding per section (CC cannot orient without it
 
 ## Why Quality Check
 
-If `## Why` section is absent → single P0 finding (blocks the gate). Skip
-sub-rules below.
+If `## Why` section is absent → single P0 finding (blocks the gate). Skip sub-rules below.
 
 Accept both table (`| For | ... |`) and list (`- For: ...`) formats.
 
@@ -80,8 +80,7 @@ Examples for "Outcome is a feature":
 - FAIL: "A tracking file is created" (deliverable)
 - PASS: "Startup time reduced from 8s to <1s" (measurable result)
 
-If Why-related P0 count ≥ 1 OR quality findings ≥ 2, add to blockers: "Why
-Statement is weak. Run Step 0 (Why Discovery) wall-bouncing before proceeding."
+If Why-related P0 count ≥ 1 OR quality findings ≥ 2, add to blockers: "Why Statement is weak. Run Step 0 (Why Discovery) wall-bouncing before proceeding."
 
 ## Why Fidelity Check
 
@@ -102,8 +101,7 @@ Statement is weak. Run Step 0 (Why Discovery) wall-bouncing before proceeding."
 
 ## EARS Compliance Check
 
-FR descriptions without EARS syntax are unactionable — CC cannot confirm the
-exact behavior to build.
+FR descriptions without EARS syntax are unactionable — CC cannot confirm the exact behavior to build.
 
 ### Matching Rules
 
@@ -129,8 +127,7 @@ Reference: `templates/spec/template.md` Functional Requirements section.
 
 ## Implementability Probe
 
-Ensures SOW → Spec → Test chain is unblocked. Mentally attempt the next step
-from the current document alone; record failures.
+Ensures SOW → Spec → Test chain is unblocked. Mentally attempt the next step from the current document alone; record failures.
 
 ### AC Probe (SOW → Spec FR)
 
@@ -148,12 +145,9 @@ from the current document alone; record failures.
 | Is the assertion observable (status, return, state)? | P0               |
 | Can I write one concrete input example?              | P1               |
 
-NFR Probe: same three FR questions against the NFR Target. Rationale-empty
-detection is delegated to `validating-specs` Check 8.
+NFR Probe: same three FR questions against the NFR Target. Rationale-empty detection is delegated to `validating-specs` Check 8.
 
-Failure handling (all probes): record `CON-NNN` with Location
-(`sow.md:AC-N` or `spec.md:FR-NNN`), CC Impact "next artifact cannot be
-generated without escalation", Fix = minimal rewrite that lets the probe succeed.
+Failure handling (all probes): record `CON-NNN` with Location (`sow.md:AC-N` or `spec.md:FR-NNN`), CC Impact "next artifact cannot be generated without escalation", Fix = minimal rewrite that lets the probe succeed.
 
 ## Risks Completeness
 
@@ -167,13 +161,11 @@ Location: `sow.md:Risks`. Fix: add concrete Mitigation, not "monitor".
 
 ## Consistency Check
 
-Delegate to `validating-specs` skill. CON-NNN findings append to the findings
-table with priority assigned by `validating-specs`.
+Delegate to `validating-specs` skill. CON-NNN findings append to the findings table with priority assigned by `validating-specs`.
 
 ## Diff from Previous
 
-Search `~/.claude/workspace/history/` for the most recent audit output covering
-the same document. Compute:
+Search `~/.claude/workspace/history/` for the most recent audit output covering the same document. Compute:
 
 | Category     | Meaning                                               |
 | ------------ | ----------------------------------------------------- |
@@ -181,13 +173,7 @@ the same document. Compute:
 | New          | Findings not in prior review                          |
 | Carried over | Findings present in prior review and still present    |
 
-If no prior review exists → write "No prior review" and skip this section.
-If prior review uses the legacy scoring format (pre-binary-gate), write
-"Legacy format — diff skipped" and skip; do not attempt to parse scores.
-
-## Calibration
-
-See `templates/audit/calibration-examples.md` section SOW.
+If no prior review exists → write "No prior review" and skip this section. If prior review uses the legacy scoring format (pre-binary-gate), write "Legacy format — diff skipped" and skip; do not attempt to parse scores.
 
 ## Error Handling
 
@@ -245,8 +231,7 @@ If no prior review: `No prior review`.
 
 ## Ralph Loop Integration
 
-[ralph-loop](https://github.com/anthropics/claude-code-ralph-loop) reads
-`<promise>` tags for loop continuation.
+[ralph-loop](https://github.com/anthropics/claude-code-ralph-loop) reads `<promise>` tags for loop continuation.
 
 | Condition    | Action                                                        |
 | ------------ | ------------------------------------------------------------- |

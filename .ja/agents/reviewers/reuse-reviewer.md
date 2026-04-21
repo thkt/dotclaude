@@ -19,9 +19,7 @@ background: true
 
 ## スコープ
 
-新規コードを書く代わりに既存コードを使う機会を検出する。重複検出（duplication-reviewer
-/ DRY）とは異なる。本レビュアーが答える問い:
-「コードベースにすでにこれを行うものがあるか？」
+新規コードを書く代わりに既存コードを使う機会を検出する。重複検出（duplication-reviewer / DRY）とは異なる。本レビュアーが答える問い: 「コードベースにすでにこれを行うものがあるか？」
 
 ## 分析フェーズ
 
@@ -50,7 +48,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のREUSEセクション参照。
+`skills/audit/references/calibration-examples.md` のREUSEセクション参照。
 
 ## エラーハンドリング
 
@@ -64,10 +62,7 @@ background: true
 
 finding-schema.md に従う。Prefix: REUSE。
 
-Categories: utility / pattern / inline / unused_import。
-Severity: high / medium / low。
-Verification: pattern_search — 既存ユーティリティが新規コードの全エッジケースに対応するか？
-Extra: Evidence は新規コードと既存ユーティリティをペアにする — `New: file:line スニペット / Existing: file:line スニペット`。
+Categories: utility / pattern / inline / unused_import。 Severity: high / medium / low。 Verification: pattern_search — 既存ユーティリティが新規コードの全エッジケースに対応するか？ Extra: Evidence は新規コードと既存ユーティリティをペアにする — `New: file:line スニペット / Existing: file:line スニペット`。
 
 ```markdown
 ## Summary

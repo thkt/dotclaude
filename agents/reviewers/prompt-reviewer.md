@@ -69,9 +69,7 @@ Threshold: 3+ parallel items. 2 items in prose is acceptable.
 | Section completeness | Required sections present (see below)                 | `agents/*.md`, `skills/SKILL.md` |
 | Table alignment      | Consistent column separators, no ragged rows          | All                              |
 
-Reviewer agent (`agents/reviewers/`) required sections: title, Generated Content, Analysis Phases, Error Handling, Output.
-Other agent types (generators, teams, architects): title, Error Handling, Output.
-Skill required sections: Input, Execution, Output. Output via template reference is acceptable.
+Reviewer agent (`agents/reviewers/`) required sections: title, Generated Content, Analysis Phases, Error Handling, Output. Other agent types (generators, teams, architects): title, Error Handling, Output. Skill required sections: Input, Execution, Output. Output via template reference is acceptable.
 
 ### Phase 4: Clarity
 
@@ -93,7 +91,7 @@ Skill required sections: Input, Execution, Output. Output via template reference
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section PQ.
+See `skills/audit/references/calibration-examples.md` section PQ.
 
 | Scenario                                    | Verdict       | Reason                                     |
 | ------------------------------------------- | ------------- | ------------------------------------------ |

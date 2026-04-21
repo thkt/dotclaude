@@ -53,11 +53,11 @@ background: true
 | Runtime measurements  | No dev server available |
 | Real user metrics     | Bundle analysis only    |
 
-Fallback: If browser unavailable, code-only analysis with lower confidence.
+Fallback: If browser unavailable, run code-only analysis — note in evidence that runtime checks were skipped.
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section PERF.
+See `skills/audit/references/calibration-examples.md` section PERF.
 
 ## Error Handling
 
@@ -71,10 +71,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: PERF.
 
-Categories: render / bundle / hooks / effects / data.
-Severity: high / medium / low.
-Verification: hotpath_analysis / call_site_check — is this code in a hot path or frequently rendered component?
-Extra: impact (estimated improvement, optional).
+Categories: render / bundle / hooks / effects / data. Severity: high / medium / low. Verification: hotpath_analysis / call_site_check — is this code in a hot path or frequently rendered component? Extra: impact (estimated improvement, optional).
 
 ```markdown
 ## Summary

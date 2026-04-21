@@ -36,8 +36,7 @@ background: true
 | パターン       | 3行以上 | 短いシーケンスは抽出に値しないことが多い   |
 | 引数バリアント | 2回以上 | 引数だけが異なる同一関数/コマンド          |
 
-本レビュアーは 2+ を統一閾値とする。`rules/PRINCIPLES.md`（DRY）の Rule of
-Three は抽出の緊急度（severity）を決定するもので、検出閾値ではない。
+本レビュアーは 2+ を統一閾値とする。`rules/PRINCIPLES.md`（DRY）の Rule of Three は抽出の緊急度（severity）を決定するもので、検出閾値ではない。
 
 ## 比較戦略
 
@@ -59,7 +58,7 @@ Three は抽出の緊急度（severity）を決定するもので、検出閾値
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のDRYセクション参照。
+`skills/audit/references/calibration-examples.md` のDRYセクション参照。
 
 ## エラーハンドリング
 
@@ -73,10 +72,7 @@ Three は抽出の緊急度（severity）を決定するもので、検出閾値
 
 finding-schema.md に従う。Prefix: DRY。
 
-Categories: exact / near-duplicate / pattern / reimplementation / arg-variant。
-Severity: high / medium / low。
-Verification: pattern_search — 検出分以外にも出現があるか？
-Extra: Evidence は各出現を `Location N: fileN:line スニペット` の形式で列挙。
+Categories: exact / near-duplicate / pattern / reimplementation / arg-variant。 Severity: high / medium / low。 Verification: pattern_search — 検出分以外にも出現があるか？ Extra: Evidence は各出現を `Location N: fileN:line スニペット` の形式で列挙。
 
 ```markdown
 ## Summary

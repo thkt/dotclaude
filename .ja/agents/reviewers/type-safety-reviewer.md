@@ -39,7 +39,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のTSセクション参照。
+`skills/audit/references/calibration-examples.md` のTSセクション参照。
 
 ## エラーハンドリング
 
@@ -53,10 +53,7 @@ background: true
 
 finding-schema.md に従う。Prefix: TS。
 
-Categories: TS1-TS5（any / assertion / coverage / strict_mode / union）。
-Severity: high / medium / low。
-Verification: call_site_check / pattern_search — 問題のある値が実際にコールサイトで渡されているか？
-Extra: type_coverage + strict_flags は summary レベルのみ。
+Categories: TS1-TS5（any / assertion / coverage / strict_mode / union）。 Severity: high / medium / low。 Verification: call_site_check / pattern_search — 問題のある値が実際にコールサイトで渡されているか？ Extra: type_coverage + strict_flags は summary レベルのみ。
 
 ```markdown
 ## Summary

@@ -40,7 +40,7 @@ background: true
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section PE.
+See `skills/audit/references/calibration-examples.md` section PE.
 
 ## Error Handling
 
@@ -57,10 +57,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: PE.
 
-Categories: layout / animation / event / style / toggle.
-Severity: high / medium / low.
-Verification: pattern_search / call_site_check — is this JS pattern used in other components too?
-Required: recommendations section (per schema Domain Extensions).
+Categories: layout / animation / event / style / toggle. Severity: high / medium / low. Verification: pattern_search / call_site_check — is this JS pattern used in other components too? Required: recommendations section (per schema Domain Extensions).
 
 ```markdown
 ## Recommendations

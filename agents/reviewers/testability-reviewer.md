@@ -47,7 +47,7 @@ background: true
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section TEST.
+See `skills/audit/references/calibration-examples.md` section TEST.
 
 ## Error Handling
 
@@ -61,9 +61,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: TEST.
 
-Categories: TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling).
-Severity: high / medium / low.
-Verification: call_site_check / pattern_search — is this dependency actually injected or mocked in existing tests?
+Categories: TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling). Severity: high / medium / low. Verification: call_site_check / pattern_search — is this dependency actually injected or mocked in existing tests?
 
 ```markdown
 ## Summary

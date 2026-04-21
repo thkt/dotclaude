@@ -47,7 +47,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のTESTセクション参照。
+`skills/audit/references/calibration-examples.md` のTESTセクション参照。
 
 ## エラーハンドリング
 
@@ -61,9 +61,7 @@ background: true
 
 finding-schema.md に従う。Prefix: TEST。
 
-Categories: TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling)。
-Severity: high / medium / low。
-Verification: call_site_check / pattern_search — この依存関係は既存テストで実際にインジェクトまたはモックされているか？
+Categories: TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling)。 Severity: high / medium / low。 Verification: call_site_check / pattern_search — この依存関係は既存テストで実際にインジェクトまたはモックされているか？
 
 ```markdown
 ## Summary

@@ -29,16 +29,16 @@ background: true
 | 5     | SSRF Detection   | User-input URL handling                                                  |
 | 6     | Frontend Taint   | Source→Sink data flow (see `references/frontend-taint-checklist.md`)     |
 
-## Confidence Scoring
+## Reporting Bar
 
-Floor 0.60 (override per schema).
+security-reviewer uses the relaxed bar defined in `finding-schema.md` — include a finding with a concrete fix suggestion even when exploitability is uncertain. Purely speculative items (no concrete trigger, no fix) are still excluded.
 
-| Score   | Description         | Action        |
-| ------- | ------------------- | ------------- |
-| 0.9-1.0 | Certain exploit     | Critical      |
-| 0.8-0.9 | Clear vulnerability | High          |
-| 0.6-0.8 | Possible issue      | Report + hint |
-| < 0.6   | Speculative         | Do NOT report |
+| Signal strength     | Severity     | Action        |
+| ------------------- | ------------ | ------------- |
+| Certain exploit     | Critical     | Report        |
+| Clear vulnerability | High         | Report        |
+| Possible issue      | Medium       | Report + hint |
+| Speculative only    | —            | Do NOT report |
 
 ## Exclusions
 
@@ -55,7 +55,7 @@ Floor 0.60 (override per schema).
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section SEC.
+See `skills/audit/references/calibration-examples.md` section SEC.
 
 ## Error Handling
 
@@ -67,13 +67,9 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: SEC. Confidence floor 0.60 (override).
+Follow finding-schema.md. Prefix: SEC. Relaxed reporting bar (override).
 
-Categories: A01-A10.
-Severity: critical / high / medium.
-Verification: execution_trace / call_site_check / pattern_search — what to verify to confirm exploitability.
-Reasoning uses threat model: actor capability → attack vector → concrete impact.
-Extra: entry_points (optional, for execution_trace) — `file:line`.
+Categories: A01-A10. Severity: critical / high / medium. Verification: execution_trace / call_site_check / pattern_search — what to verify to confirm exploitability. Reasoning uses threat model: actor capability → attack vector → concrete impact. Extra: entry_points (optional, for execution_trace) — `file:line`.
 
 ```markdown
 ## Summary

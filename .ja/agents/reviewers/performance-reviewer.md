@@ -53,11 +53,11 @@ background: true
 | ランタイム測定       | devサーバーなし  |
 | 実ユーザーメトリクス | バンドル分析のみ |
 
-フォールバック: ブラウザ利用不可の場合、コード分析のみ（信頼度を下げる）。
+フォールバック: ブラウザ利用不可の場合、コード分析のみで実行 — evidence にランタイムチェックをスキップした旨を記載。
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のPERFセクション参照。
+`skills/audit/references/calibration-examples.md` のPERFセクション参照。
 
 ## エラーハンドリング
 
@@ -71,10 +71,7 @@ background: true
 
 finding-schema.md に従う。Prefix: PERF。
 
-Categories: render / bundle / hooks / effects / data。
-Severity: high / medium / low。
-Verification: hotpath_analysis / call_site_check — このコードはホットパスまたは頻繁にレンダリングされるコンポーネントにあるか？
-Extra: impact（推定改善量、オプション）。
+Categories: render / bundle / hooks / effects / data。 Severity: high / medium / low。 Verification: hotpath_analysis / call_site_check — このコードはホットパスまたは頻繁にレンダリングされるコンポーネントにあるか？ Extra: impact（推定改善量、オプション）。
 
 ```markdown
 ## Summary

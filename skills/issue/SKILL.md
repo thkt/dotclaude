@@ -40,12 +40,6 @@ Generate well-structured GitHub Issues.
 | 4    | Execute: `gh issue create --title "..." --body "..."`           |
 | 5    | Capture issue URL from command output                           |
 
-## Flow: Preview
-
-```text
-[Generator YAML] → [Preview] → [Confirm] → [Execute]
-```
-
 ## Display Format
 
 ### Preview
@@ -62,7 +56,7 @@ Generate well-structured GitHub Issues.
 
 ### Success
 
-**Created**: `#<number>` <title> <issue URL>
+Created: `#<number>` <title> <issue URL>
 
 ## Verification
 

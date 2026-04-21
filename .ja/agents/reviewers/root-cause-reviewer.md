@@ -40,7 +40,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のRCAセクション参照。
+`skills/audit/references/calibration-examples.md` のRCセクション参照。
 
 ## エラーハンドリング
 
@@ -52,12 +52,9 @@ background: true
 
 ## 出力
 
-finding-schema.md に従う。Prefix: RCA。
+finding-schema.md に従う。Prefix: RC。
 
-Categories: symptom / state-sync / race / workaround。
-Severity: high / medium / low。
-Verification: execution_trace / pattern_search — 根本原因が実際に記述された症状を生じさせるか？
-必須: five_whys（観察可能な事実から根本原因への5ステップの連鎖）、root_cause（根本的な問題）。Fix は既存の状態/メカニズムの活用を新規追加より優先する。
+Categories: symptom / state-sync / race / workaround。 Severity: high / medium / low。 Verification: execution_trace / pattern_search — 根本原因が実際に記述された症状を生じさせるか？ 必須: five_whys（観察可能な事実から根本原因への5ステップの連鎖）、root_cause（根本的な問題）。Fix は既存の状態/メカニズムの活用を新規追加より優先する。
 
 ```markdown
 ## Summary

@@ -55,7 +55,7 @@ background: true
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section DOC.
+See `skills/audit/references/calibration-examples.md` section DOC.
 
 ## Error Handling
 
@@ -69,9 +69,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: DOC. Location uses `file:section`.
 
-Categories: clarity / structure / completeness / technical / audience.
-Severity: high / medium / low.
-Verification: pattern_search — is this documentation issue consistent across related files?
+Categories: clarity / structure / completeness / technical / audience. Severity: high / medium / low. Verification: pattern_search — is this documentation issue consistent across related files?
 
 ```markdown
 ## Summary

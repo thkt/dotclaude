@@ -40,7 +40,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のPEセクション参照。
+`skills/audit/references/calibration-examples.md` のPEセクション参照。
 
 ## エラーハンドリング
 
@@ -57,10 +57,7 @@ background: true
 
 finding-schema.md に従う。Prefix: PE。
 
-Categories: layout / animation / event / style / toggle。
-Severity: high / medium / low。
-Verification: pattern_search / call_site_check — このJSパターンは他のコンポーネントでも使われているか？
-必須: recommendations セクション（schema の Domain Extensions に従う）。
+Categories: layout / animation / event / style / toggle。 Severity: high / medium / low。 Verification: pattern_search / call_site_check — このJSパターンは他のコンポーネントでも使われているか？ 必須: recommendations セクション（schema の Domain Extensions に従う）。
 
 ```markdown
 ## Recommendations

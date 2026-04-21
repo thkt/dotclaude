@@ -40,7 +40,7 @@ background: true
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section RCA.
+See `skills/audit/references/calibration-examples.md` section RC.
 
 ## Error Handling
 
@@ -52,12 +52,9 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: RCA.
+Follow finding-schema.md. Prefix: RC.
 
-Categories: symptom / state-sync / race / workaround.
-Severity: high / medium / low.
-Verification: execution_trace / pattern_search — does the root cause actually produce the described symptom?
-Required: five_whys (5-step chain from observable fact to root cause), root_cause (fundamental issue). Fix should prefer existing state/mechanisms over adding new ones.
+Categories: symptom / state-sync / race / workaround. Severity: high / medium / low. Verification: execution_trace / pattern_search — does the root cause actually produce the described symptom? Required: five_whys (5-step chain from observable fact to root cause), root_cause (fundamental issue). Fix should prefer existing state/mechanisms over adding new ones.
 
 ```markdown
 ## Summary

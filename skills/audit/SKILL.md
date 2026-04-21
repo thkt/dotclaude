@@ -2,9 +2,7 @@
 name: audit
 description: "Orchestrate specialized review agents for code quality assessment. Use when: レビューして, コードレビュー, 品質チェック, code review, quality check. Do NOT use for quick PR screening (use /preview instead)."
 aliases: [review]
-allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*),
-  Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task,
-  AskUserQuestion
+allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, LS, Task, AskUserQuestion
 model: opus
 argument-hint: "[target files or scope]"
 user-invocable: true
@@ -12,9 +10,7 @@ user-invocable: true
 
 # /audit - Code Audit Orchestrator
 
-Orchestrate specialized review agents with confidence-based filtering. The
-finding schema requires `file:line` on every finding — entries without evidence
-are structurally invalid.
+Orchestrate specialized review agents with evidence-based filtering. The finding schema requires `file:line` on every finding — entries without evidence are structurally invalid.
 
 ## Rationalization Counters
 
@@ -28,14 +24,10 @@ are structurally invalid.
 
 ## Input
 
-- `$1` holds the full argument string. Leader MUST split on whitespace
-  before use — first positional token is the scope, remaining `--key=value`
-  tokens are options. Never pass `$1` verbatim to `git diff`.
+- `$1` holds the full argument string. Leader MUST split on whitespace before use — first positional token is the scope, remaining `--key=value` tokens are options. Never pass `$1` verbatim to `git diff`.
 - Scope: SHA/branch range (`x..y`) or file path → `git diff --name-only <scope>` → file list
-- If scope is empty → select focus via AskUserQuestion, then review
-  staged/modified files
-- `--runs=N` (optional, 1-3, default 1). N > 1 triggers multi-run aggregation
-  to counter stochastic findings drift — see Multi-run Policy below
+- If scope is empty → select focus via AskUserQuestion, then review staged/modified files
+- `--runs=N` (optional, 1-3, default 1). N > 1 triggers multi-run aggregation to counter stochastic findings drift — see Multi-run Policy below
 
 ### Audit Focus
 
@@ -45,9 +37,7 @@ are structurally invalid.
 
 ### Multi-run Policy
 
-Reviewer findings are stochastic: 50-87% of findings from the same reviewer
-on the same target differ between runs (observed 2026-04-20 diagnostic).
-When high-confidence coverage matters, pass `--runs=2` or `--runs=3`.
+Reviewer findings drift across runs on the same target. When well-supported coverage matters, pass `--runs=2` or `--runs=3`.
 
 | N   | Use case                              | Cost                |
 | --- | ------------------------------------- | ------------------- |
@@ -55,8 +45,7 @@ When high-confidence coverage matters, pass `--runs=2` or `--runs=3`.
 | 2   | Standard audit, FN risk acceptable    | ~2x reviewer runs   |
 | 3   | Pre-release, FN risk unacceptable     | ~3x reviewer runs   |
 
-With N > 1, Leader runs Wave 1 (reviewer fan-out) N times in sequence, then
-aggregates findings per the procedure below.
+With N > 1, Leader runs Wave 1 (reviewer fan-out) N times in sequence, then aggregates findings per the procedure below.
 
 #### Aggregation
 
@@ -68,14 +57,11 @@ aggregates findings per the procedure below.
 3. `runs_observed`: integer array of run indices (1-based) that produced the finding; union on merge
 4. On message divergence: keep the longest; preserve both in `messages: [...]` if verification is needed
 
-Without normalization, strict key matching aggregates only ~3% of findings in
-practice — tolerance on path format, line range, and category prefix is
-required.
+Without normalization, strict key matching leaves most findings unmerged because reviewers vary path format, line boundary, and category label across runs. Tolerance on all three is required.
 
 ## Execution
 
-Start with Pre-flight (see below). Save snapshot before displaying any results
-to user.
+Start with Pre-flight (see below). Save snapshot before displaying any results to user.
 
 | Step | Action                                                                        |
 | ---- | ----------------------------------------------------------------------------- |
@@ -92,25 +78,17 @@ to user.
 
 Leader classifies each target file by path and assigns to relevant reviewers only:
 
-| File Pattern         | Sub-reviewers (subagent_type)                                                                                                                                                                                                                                          |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*.sh`               | security-reviewer, silent-failure-reviewer, code-quality-reviewer, duplication-reviewer, reuse-reviewer, efficiency-reviewer, operational-readiness-reviewer, chaos-engineer                                                                                           |
-| `*.ts, *.tsx, *.js`  | security-reviewer, silent-failure-reviewer, type-safety-reviewer, code-quality-reviewer, duplication-reviewer, reuse-reviewer, efficiency-reviewer, design-pattern-reviewer, testability-reviewer, performance-reviewer, operational-readiness-reviewer, chaos-engineer |
-| `*.md` (agent defs)  | prompt-reviewer, document-reviewer                                                                                                                                                                                                                                     |
-| `*.md` (skills/docs) | prompt-reviewer, document-reviewer                                                                                                                                                                                                                                     |
-| `*.md` (rules)       | prompt-reviewer, document-reviewer                                                                                                                                                                                                                                     |
-| `*.yaml, *.json`     | type-design-reviewer, document-reviewer                                                                                                                                                                                                                                |
-| `*.css, *.html`      | accessibility-reviewer, progressive-enhancer, performance-reviewer, duplication-reviewer                                                                                                                                                                               |
-| `test.*`, `*.test.*` | test-coverage-reviewer, testability-reviewer                                                                                                                                                                                                                           |
-| Other                | code-quality-reviewer, duplication-reviewer, reuse-reviewer, efficiency-reviewer, document-reviewer                                                                                                                                                                    |
+| File Pattern         | Sub-reviewers (subagent_type)                                                                                                                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `*.sh`               | security-reviewer, silent-failure-reviewer, duplication-reviewer, reuse-reviewer, efficiency-reviewer, operational-readiness-reviewer, chaos-engineer                                                                                            |
+| `*.ts, *.tsx, *.js`  | security-reviewer, silent-failure-reviewer, type-safety-reviewer, duplication-reviewer, reuse-reviewer, efficiency-reviewer, design-pattern-reviewer, testability-reviewer, performance-reviewer, operational-readiness-reviewer, chaos-engineer |
+| `*.md`               | prompt-reviewer, document-reviewer                                                                                                                                                                                                               |
+| `*.yaml, *.json`     | type-design-reviewer, document-reviewer                                                                                                                                                                                                          |
+| `*.css, *.html`      | accessibility-reviewer, progressive-enhancer, performance-reviewer, duplication-reviewer                                                                                                                                                         |
+| `test.*`, `*.test.*` | test-coverage-reviewer, testability-reviewer                                                                                                                                                                                                     |
+| Other                | duplication-reviewer, reuse-reviewer, efficiency-reviewer, document-reviewer                                                                                                                                                                     |
 
-Classification by path: `agents/**/*.md` → agent defs, `skills/*/SKILL.md` or
-`docs/**/*.md` → skills/docs, `rules/**/*.md` → rules, other `*.md` →
-skills/docs (default).
-
-root-cause-reviewer is not in this table — it runs sequentially after
-code-quality-reviewer completes (see Sequential Dependencies). Leader spawns it
-with the same file list + CQ findings as input.
+root-cause-reviewer is not in this table — it runs sequentially after all Wave 1 reviewers complete (see Sequential Dependencies). Leader spawns it with the same file list + all Wave 1 findings as input.
 
 #### Sub-reviewer Spawn
 
@@ -124,16 +102,11 @@ Each sub-reviewer is spawned directly via Task:
 Reliability constraints (include verbatim in every reviewer prompt):
 
 - "Do NOT call the advisor tool. Work autonomously from your own analysis."
-- "Complete within 8 minutes. If uncertain about a finding, include it with confidence < 0.85 rather than skip."
+- "Complete within 8 minutes. If uncertain about a finding, include it rather than skip — the challenger will prune false positives."
 
-Rationale: opus model + advisor call + Rust deep analysis exceeded the 600s
-stream watchdog in 3/7 reviewers during the 2026-04-20 diagnostic on tally
-`HEAD~2..HEAD`. Adding the constraint and overriding to sonnet reduced stall
-to 0/7 across two reruns.
+Rationale: opus + advisor + deep analysis exceeds the stream watchdog. Sonnet override + no-advisor constraint eliminates reviewer stalls.
 
-Fan-out is the point of this step. Spawn all applicable sub-reviewers as
-parallel Task calls within a single response — one Task call per reviewer.
-Sequential spawning defeats the parallelism and wastes turns.
+Fan-out is the point of this step. Spawn all applicable sub-reviewers as parallel Task calls within a single response — one Task call per reviewer. Sequential spawning defeats the parallelism and wastes turns.
 
 #### Pipeline Roles
 
@@ -145,39 +118,33 @@ Sequential spawning defeats the parallelism and wastes turns.
 
 #### Sequential Dependencies
 
-| Reviewer   | Depends On            | Reason                     |
-| ---------- | --------------------- | -------------------------- |
-| root-cause | code-quality          | Needs CQ findings as input |
-| challenger | All reviewers         | Needs all findings         |
-| verifier   | All reviewers         | Needs all findings         |
-| integrator | challenger + verifier | Needs both perspectives    |
+| Reviewer   | Depends On            | Reason                               |
+| ---------- | --------------------- | ------------------------------------ |
+| root-cause | Wave 1 reviewers      | Needs all Wave 1 findings for 5 Whys |
+| challenger | All reviewers         | Needs all findings                   |
+| verifier   | All reviewers         | Needs all findings                   |
+| integrator | challenger + verifier | Needs both perspectives              |
 
 #### Handoff (Standalone)
 
-Agents are standalone. Leader collects via Task completion; spawns via Task
-prompt.
+Agents are standalone. Leader collects via Task completion; spawns via Task prompt.
 
 ### Error Handling
 
-Any skipped reviewer must be recorded to `pipeline_health.domains_skipped` with
-the reason.
+Any skipped reviewer must be recorded to `pipeline_health.domains_skipped` with the reason.
 
-| Error             | Recovery                                       | Skip Reason                    |
-| ----------------- | ---------------------------------------------- | ------------------------------ |
-| No files to audit | Return "No files to audit"                     | —                              |
-| Reviewer stall    | 120s timeout; proceed without                  | `timeout`                      |
-| Malformed output  | Skip reviewer; proceed with valid reviewers    | `malformed_output`             |
-| Dependency stall  | Skip dependent (e.g., root-cause if CQ failed) | `dependency_stall: {upstream}` |
-| Max parallel >10  | Batch in groups of 10                          | —                              |
-| Challenger stall  | 120s timeout; proceed with verifier only       | —                              |
-| Verifier stall    | 120s timeout; proceed with challenger only     | —                              |
-| Integrator stall  | 120s timeout; Leader integrates manually       | —                              |
+| Error                | Recovery                                                                           | Skip Reason                    |
+| -------------------- | ---------------------------------------------------------------------------------- | ------------------------------ |
+| No files to audit    | Return "No files to audit"                                                         | —                              |
+| Reviewer stall       | 120s timeout; proceed without                                                      | `timeout`                      |
+| Malformed output     | Skip reviewer; proceed with valid reviewers                                        | `malformed_output`             |
+| Dependency stall     | Skip dependent (e.g., root-cause if Wave 1 failed)                                 | `dependency_stall: {upstream}` |
+| Max parallel >10     | Batch in groups of 10                                                              | —                              |
+| Pipeline-agent stall | 120s timeout; proceed with remaining agents; Leader integrates if integrator fails | —                              |
 
 ## Pre-flight: Tests + Hook Findings
 
-Read [`references/pre-flight.md`](references/pre-flight.md) for the full
-procedure: detect task runner → find test script → run tests → convert hook
-output to `PF-{seq}` findings.
+Read [`references/pre-flight.md`](references/pre-flight.md) for the full procedure: detect task runner → find test script → run tests → convert hook output to `PF-{seq}` findings.
 
 ## Snapshot
 
@@ -189,18 +156,7 @@ SNAPSHOT="$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).yaml
 
 ## Templates
 
-| Template                                                              | Purpose                  |
-| --------------------------------------------------------------------- | ------------------------ |
-| [@../templates/audit/output.md](../templates/audit/output.md)         | Output format with delta |
-| [@../templates/audit/snapshot.yaml](../templates/audit/snapshot.yaml) | Snapshot schema          |
-
-## Verification
-
-| Check                         | Required |
-| ----------------------------- | -------- |
-| Reviewers completed?          | Yes      |
-| Challenger validated?         | Yes      |
-| Verifier verified?            | Yes      |
-| Integrator produced Markdown? | Yes      |
-| Snapshot saved?               | Yes      |
-| Delta displayed?              | Yes      |
+| Template                                            | Purpose                  |
+| --------------------------------------------------- | ------------------------ |
+| [@templates/output.md](templates/output.md)         | Output format with delta |
+| [@templates/snapshot.yaml](templates/snapshot.yaml) | Snapshot schema          |

@@ -44,7 +44,7 @@ background: true
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section CQ.
+See `skills/audit/references/calibration-examples.md` section CQ.
 
 ## Error Handling
 
@@ -58,10 +58,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: CQ.
 
-Categories: structure / readability.
-Severity: high / medium / low.
-Verification: pattern_search / hotpath_analysis — is this pattern widespread or in a critical path?
-Extra: subcategory (waste / naming / complexity / comments / ai_smell, optional, appended as category/subcategory).
+Categories: structure / readability. Severity: high / medium / low. Verification: pattern_search / hotpath_analysis — is this pattern widespread or in a critical path? Extra: subcategory (waste / naming / complexity / comments / ai_smell, optional, appended as category/subcategory).
 
 ```markdown
 ## Summary

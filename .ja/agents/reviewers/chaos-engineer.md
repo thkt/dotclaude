@@ -48,9 +48,7 @@ background: true
 
 finding-schema.md に従う。Prefix: CHX。
 
-Categories: auth / data / resource / cascade / infra / state。
-Severity: (blast_radius で置換 — critical / high / medium / low)。
-Extra: blast_radius (severity を置換)、failure（何が壊れるか）、hypothesis（[X] のとき、システムは [Y] する）。
+Categories: auth / data / resource / cascade / infra / state。 Severity: (blast_radius で置換 — critical / high / medium / low)。 Extra: blast_radius (severity を置換)、failure（何が壊れるか）、hypothesis（[X] のとき、システムは [Y] する）。
 
 ```markdown
 ## Summary

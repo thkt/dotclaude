@@ -55,7 +55,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のDOCセクション参照。
+`skills/audit/references/calibration-examples.md` のDOCセクション参照。
 
 ## エラーハンドリング
 
@@ -69,9 +69,7 @@ background: true
 
 finding-schema.md に従う。Prefix: DOC。Location は `file:section` 形式。
 
-Categories: clarity / structure / completeness / technical / audience。
-Severity: high / medium / low。
-Verification: pattern_search — このドキュメントの問題は関連ファイル間で一貫しているか？
+Categories: clarity / structure / completeness / technical / audience。 Severity: high / medium / low。 Verification: pattern_search — このドキュメントの問題は関連ファイル間で一貫しているか？
 
 ```markdown
 ## Summary

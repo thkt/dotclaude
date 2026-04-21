@@ -55,7 +55,6 @@ Gate / Priority / Finding Format の正典定義: `formatting-audits`。
 | フィールド       | 値                                      |
 | ---------------- | --------------------------------------- |
 | verdict          | verified / weak_evidence / unverifiable |
-| confidence       | 0.60-1.00                               |
 | budget_exhausted | true / false                            |
 | evidence         | 検出結果または検証不可の理由            |
 ```
@@ -78,8 +77,8 @@ Gate / Priority / Finding Format の正典定義: `formatting-audits`。
 
 ### Promoted Findings
 
-| #   | テスト名 | 対象 | Assertion | Confidence | 詳細 |
-| --- | -------- | ---- | --------- | ---------- | ---- |
+| #   | テスト名 | 対象 | Assertion | 詳細 |
+| --- | -------- | ---- | --------- | ---- |
 
 ### 除外テスト
 
@@ -115,15 +114,15 @@ progressive-integrator § 照合ルール1–6を `finding_id` で適用。
 
 ## Cross-Evidence相関（Phase 4）
 
-静的findingsと動的evidenceを相関させ、信頼度を強化または弱化する。
+静的 findings と動的 evidence を相関させ、裏付けを強化または弱める。
 
-| 静的Finding   | 動的Evidence             | アクション                                          |
-| ------------- | ------------------------ | --------------------------------------------------- |
-| High severity | 同一箇所でbuild/test失敗 | criticalに昇格、confidence +0.10                    |
-| High severity | adversarialテストが確認  | confidence +0.10                                    |
-| Any severity  | build/testが正常通過     | 変更なし（通過は否定を意味しない）                  |
-| Weak evidence | adversarialテストが確認  | verifiedに昇格、confidence = adversarial confidence |
-| Any finding   | 動的evidenceなし         | 現状維持（静的のみfinding）                         |
+| 静的 Finding  | 動的 Evidence              | アクション                         |
+| ------------- | -------------------------- | ---------------------------------- |
+| High severity | 同一箇所で build/test 失敗 | critical に昇格                    |
+| High severity | adversarial テストが確認    | 裏付け強に格上げ                    |
+| Any severity  | build/test が正常通過       | 変更なし（通過は否定を意味しない） |
+| Weak evidence | adversarial テストが確認    | verified に昇格                     |
+| Any finding   | 動的 evidence なし          | 現状維持（静的のみ finding）        |
 
 location（ファイル、モジュール、境界）で相関findingsをグループ化。
 2+のevidenceタイプが同じ領域を指摘するconvergenceシグナルを特定。
@@ -136,7 +135,7 @@ progressive-integratorのロジックを再利用する。
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1    | file:line:categoryで重複排除（最高severityを保持）                                                                                            |
 | 1a   | `severity_upgraded: true/false` を設定（true = 寄与者間でseverityが不一致）。trueの場合、`original_severities: [{reviewer, severity}]` を記録 |
-| 2    | confidenceでフィルタ: >= 0.70 含む、< 0.70 除外                                                                                               |
+| 2    | 具体的な Trigger またはファイル読み取り検証を欠く findings を除外。残りは含める                                                                |
 | 3    | locationでグループ化（ファイル、モジュール、境界）                                                                                            |
 | 4    | convergence特定（2+ドメインまたは2+evidenceタイプ）                                                                                           |
 | 4a   | 収束クラスタごとにSeverity再評価（下記参照）                                                                                                  |
@@ -205,7 +204,6 @@ gate = Ready の場合は `(none)`。
 | findings_resolved | [finding ID一覧]                                        |
 | evidence_types    | [static, outcome, adversarial]                          |
 | five_whys         | [why/answerペア]                                        |
-| confidence        | 0.70-1.00                                               |
 | action            | 統一的な修正説明                                        |
 | suggested_action  | `/think` / `/code` / `/fix`（この RC を解消するスキル） |
 | effort            | 5min / 15min / 30min / 1h / manual                      |
@@ -214,11 +212,11 @@ gate = Ready の場合は `(none)`。
 
 #### High
 
-| # | ID | Source | File:Line | 説明 | Evidenceタイプ | Confidence |
+| # | ID | Source | File:Line | 説明 | Evidenceタイプ |
 
 #### Medium
 
-| # | ID | Source | File:Line | 説明 | Evidenceタイプ | Confidence |
+| # | ID | Source | File:Line | 説明 | Evidenceタイプ |
 
 ### Cross-Evidence相関
 
@@ -255,7 +253,7 @@ gate = Ready の場合は `(none)`。
 | 動的は昇格のみ、否定しない | build/test通過はfindingを否定しない                                       |
 | 全てにトレーサビリティ     | 全root causeがソースfindingsにリンク                                      |
 | 相関を強制しない           | 静的のみfindingsはスタンドアロンとして維持                                |
-| Confidenceフロア           | 0.70未満のfindingsをreconciled setから除外                               |
+| エビデンス基準             | 具体的な Trigger またはファイル読み取り検証を欠く findings を除外         |
 | Gate は Zero-tolerance     | reconciled finding が1件でも gate = NotReady（severity は fix優先度、gate には非関与） |
 
 ## エラーハンドリング

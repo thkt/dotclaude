@@ -38,7 +38,7 @@ background: true
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section DP.
+See `skills/audit/references/calibration-examples.md` section DP.
 
 ## Error Handling
 
@@ -52,9 +52,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: DP.
 
-Categories: container / hook / state / anti-pattern.
-Severity: high / medium / low.
-Verification: pattern_search / call_site_check — is this anti-pattern used consistently or is this an isolated case?
+Categories: container / hook / state / anti-pattern. Severity: high / medium / low. Verification: pattern_search / call_site_check — is this anti-pattern used consistently or is this an isolated case?
 
 ```markdown
 ## Summary

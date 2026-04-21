@@ -4,7 +4,14 @@
 set -e
 
 TITLE="$1"
-ADR_DIR="${ADR_DIR:-docs/adr}"
+# Auto-detect adr/ vs docs/adr/ (prefer adr/ if exists). Override with ADR_DIR env.
+if [ -n "${ADR_DIR:-}" ]; then
+  : # use provided value
+elif [ -d "adr" ]; then
+  ADR_DIR="adr"
+else
+  ADR_DIR="docs/adr"
+fi
 THRESHOLD="${DUPLICATE_THRESHOLD:-0.7}"
 
 source "$(dirname "$0")/colors.sh"

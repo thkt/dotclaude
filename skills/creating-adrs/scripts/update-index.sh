@@ -4,7 +4,14 @@
 
 set -e
 
-ADR_DIR="${1:-docs/adr}"
+# Auto-detect adr/ vs docs/adr/ (prefer adr/ if exists). $1 overrides.
+if [ -n "${1:-}" ]; then
+  ADR_DIR="$1"
+elif [ -d "adr" ]; then
+  ADR_DIR="adr"
+else
+  ADR_DIR="docs/adr"
+fi
 
 if [ ! -d "$ADR_DIR" ]; then
   echo "❌ Error: Directory not found: $ADR_DIR"

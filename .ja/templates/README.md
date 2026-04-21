@@ -39,10 +39,6 @@ templates/
 │   ├── deprecation.md
 │   ├── process-change.md
 │   └── technology-selection.md
-├── audit/             # 監査テンプレート
-│   ├── finding-schema.md
-│   ├── output.md
-│   └── snapshot.yaml
 ├── devcontainer/      # Dev Containerテンプレート
 │   ├── .devcontainer/devcontainer.json
 │   └── README.md

@@ -59,7 +59,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のTCセクション参照。
+`skills/audit/references/calibration-examples.md` のTCセクション参照。
 
 ## エラーハンドリング
 
@@ -73,10 +73,7 @@ background: true
 
 finding-schema.md に従う。Prefix: TC。Location は `test-file:line` 形式。
 
-Categories: gap / quality / negative / regression。
-Severity: critical / high / medium / low。
-Verification: call_site_check / pattern_search — このコードパスは既存テストで実際に実行されているか？
-Extra: related_code（`source-file:line`、オプション）、criticality（1-10、オプション — 上記レーティング参照）。
+Categories: gap / quality / negative / regression。 Severity: critical / high / medium / low。 Verification: call_site_check / pattern_search — このコードパスは既存テストで実際に実行されているか？ Extra: related_code（`source-file:line`、オプション）、criticality（1-10、オプション — 上記レーティング参照）。
 
 ```markdown
 ## Summary

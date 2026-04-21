@@ -54,7 +54,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のOPSセクション参照。
+`skills/audit/references/calibration-examples.md` のOPSセクション参照。
 
 ## エラーハンドリング
 
@@ -62,17 +62,13 @@ background: true
 | ---------- | ----------------------- |
 | コードなし | "No code to review"報告 |
 
-共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
-テストファイルやモックは schema の Context Test（Intentional）で除外。
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。 テストファイルやモックは schema の Context Test（Intentional）で除外。
 
 ## 出力
 
 finding-schema.md に従う。Prefix: OPS。
 
-Categories: error-boundary / loading-state / logging / performance / degradation。
-Severity: critical / high / medium / low。
-Verification: pattern_search / call_site_check — このコンポーネントはユーザー向けまたはクリティカルパスか？
-Reasoning には爆発半径（何が壊れ、誰が気づくか）を明記。
+Categories: error-boundary / loading-state / logging / performance / degradation。 Severity: critical / high / medium / low。 Verification: pattern_search / call_site_check — このコンポーネントはユーザー向けまたはクリティカルパスか？ Reasoning には爆発半径（何が壊れ、誰が気づくか）を明記。
 
 ```markdown
 ## Summary

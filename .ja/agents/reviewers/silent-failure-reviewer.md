@@ -46,7 +46,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のSFセクション参照。
+`skills/audit/references/calibration-examples.md` のSFセクション参照。
 
 ## エラーハンドリング
 
@@ -60,9 +60,7 @@ background: true
 
 finding-schema.md に従う。Prefix: SF。
 
-Categories: SF1-SF5（catch / promise / async / ui_feedback / fallback）。
-Severity: critical / high / medium / low。
-Verification: error_propagation / pattern_search — このエラーはユーザーに表示されるか、サイレントのままか？
+Categories: SF1-SF5（catch / promise / async / ui_feedback / fallback）。 Severity: critical / high / medium / low。 Verification: error_propagation / pattern_search — このエラーはユーザーに表示されるか、サイレントのままか？
 
 ```markdown
 ## Summary

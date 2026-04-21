@@ -55,7 +55,7 @@ Same component may receive findings from both — complementary, not duplicate.
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section OPS.
+See `skills/audit/references/calibration-examples.md` section OPS.
 
 ## Error Handling
 
@@ -63,17 +63,13 @@ See `templates/audit/calibration-examples.md` section OPS.
 | ------------- | -------------------------- |
 | No code found | Report "No code to review" |
 
-Common guards (glob empty, tool error) follow finding-schema.md defaults.
-Test files and mock files excluded via Context Test (Intentional) in schema.
+Common guards (glob empty, tool error) follow finding-schema.md defaults. Test files and mock files excluded via Context Test (Intentional) in schema.
 
 ## Output
 
 Follow finding-schema.md. Prefix: OPS.
 
-Categories: error-boundary / loading-state / logging / performance / degradation.
-Severity: critical / high / medium / low.
-Verification: pattern_search / call_site_check — is this component user-facing or in a critical path?
-Reasoning should name blast radius (what breaks, who notices).
+Categories: error-boundary / loading-state / logging / performance / degradation. Severity: critical / high / medium / low. Verification: pattern_search / call_site_check — is this component user-facing or in a critical path? Reasoning should name blast radius (what breaks, who notices).
 
 ```markdown
 ## Summary

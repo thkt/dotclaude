@@ -38,7 +38,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のDPセクション参照。
+`skills/audit/references/calibration-examples.md` のDPセクション参照。
 
 ## エラーハンドリング
 
@@ -52,9 +52,7 @@ background: true
 
 finding-schema.md に従う。Prefix: DP。
 
-Categories: container / hook / state / anti-pattern。
-Severity: high / medium / low。
-Verification: pattern_search / call_site_check — このアンチパターンは一貫して使用されているか、孤立したケースか？
+Categories: container / hook / state / anti-pattern。 Severity: high / medium / low。 Verification: pattern_search / call_site_check — このアンチパターンは一貫して使用されているか、孤立したケースか？
 
 ```markdown
 ## Summary

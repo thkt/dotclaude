@@ -33,7 +33,7 @@ background: true
 | カスタムARIAウィジェット | devサーバーなし    |
 | 視覚的検証               | セマンティックのみ |
 
-フォールバック: ブラウザ利用不可の場合、コード分析のみ（信頼度を下げる）。
+フォールバック: ブラウザ利用不可の場合、コード分析のみで実行 — evidence にランタイムチェックをスキップした旨を記載。
 
 ## 計算済みスタイル
 
@@ -45,7 +45,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のA11Yセクション参照。
+`skills/audit/references/calibration-examples.md` のA11Yセクション参照。
 
 ## エラーハンドリング
 
@@ -61,10 +61,7 @@ background: true
 
 finding-schema.md に従う。Prefix: A11Y。
 
-Categories: semantic / keyboard / screen-reader / visual / form。
-Severity: critical / high / medium。
-Verification: execution_trace / pattern_search — この要素は実際にキーボード/スクリーンリーダーで到達可能か？
-Extra: wcag（success criterion、例: 1.1.1、必須）、apg_pattern（URL、必須）、code_example（修正後スニペット、オプション）。
+Categories: semantic / keyboard / screen-reader / visual / form。 Severity: critical / high / medium。 Verification: execution_trace / pattern_search — この要素は実際にキーボード/スクリーンリーダーで到達可能か？ Extra: wcag（success criterion、例: 1.1.1、必須）、apg_pattern（URL、必須）、code_example（修正後スニペット、オプション）。
 
 ```markdown
 ## Summary

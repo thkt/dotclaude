@@ -46,7 +46,7 @@ Same component may receive findings from both — complementary, not duplicate.
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section SF.
+See `skills/audit/references/calibration-examples.md` section SF.
 
 ## Error Handling
 
@@ -60,9 +60,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: SF.
 
-Categories: SF1-SF5 (catch / promise / async / ui_feedback / fallback).
-Severity: critical / high / medium / low.
-Verification: error_propagation / pattern_search — does this error surface to the user or remain silent?
+Categories: SF1-SF5 (catch / promise / async / ui_feedback / fallback). Severity: critical / high / medium / low. Verification: error_propagation / pattern_search — does this error surface to the user or remain silent?
 
 ```markdown
 ## Summary

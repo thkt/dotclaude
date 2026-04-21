@@ -29,16 +29,16 @@ background: true
 | 5        | SSRF検出            | ユーザー入力URL処理                                                     |
 | 6        | フロントエンドTaint | Source→Sinkデータフロー (`references/frontend-taint-checklist.md` 参照) |
 
-## 信頼度スコアリング
+## 報告基準
 
-Floor 0.60（schema でオーバーライド）。
+security-reviewer は `finding-schema.md` の緩和された基準を使う — 悪用可能性が不確実でも、具体的な fix suggestion を添えて finding を報告する。純粋な推測（具体的 Trigger と fix の両方なし）は除外。
 
-| スコア  | 説明             | アクション    |
-| ------- | ---------------- | ------------- |
-| 0.9-1.0 | 確実な悪用       | Critical      |
-| 0.8-0.9 | 明確な脆弱性     | High          |
-| 0.6-0.8 | 可能性のある問題 | 報告 + ヒント |
-| < 0.6   | 推測的           | 報告しない    |
+| シグナル強度     | Severity | アクション    |
+| ---------------- | -------- | ------------- |
+| 確実な悪用       | Critical | 報告           |
+| 明確な脆弱性     | High     | 報告           |
+| 可能性のある問題 | Medium   | 報告 + ヒント  |
+| 純推測のみ       | —        | 報告しない     |
 
 ## 除外
 
@@ -55,7 +55,7 @@ Floor 0.60（schema でオーバーライド）。
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のSECセクション参照。
+`skills/audit/references/calibration-examples.md` のSECセクション参照。
 
 ## エラーハンドリング
 
@@ -67,13 +67,9 @@ Floor 0.60（schema でオーバーライド）。
 
 ## 出力
 
-finding-schema.md に従う。Prefix: SEC。Confidence floor 0.60（オーバーライド）。
+finding-schema.md に従う。Prefix: SEC。報告基準を緩和（オーバーライド）。
 
-Categories: A01-A10。
-Severity: critical / high / medium。
-Verification: execution_trace / call_site_check / pattern_search — 悪用可能性を確認するため何を検証するか。
-Reasoning は脅威モデルを使う: 攻撃者の能力 → 攻撃ベクター → 具体的影響。
-Extra: entry_points（オプション、execution_trace 用）— `file:line`。
+Categories: A01-A10。 Severity: critical / high / medium。 Verification: execution_trace / call_site_check / pattern_search — 悪用可能性を確認するため何を検証するか。 Reasoning は脅威モデルを使う: 攻撃者の能力 → 攻撃ベクター → 具体的影響。 Extra: entry_points（オプション、execution_trace 用）— `file:line`。
 
 ```markdown
 ## Summary

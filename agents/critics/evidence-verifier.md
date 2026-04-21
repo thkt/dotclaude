@@ -37,10 +37,10 @@ fields).
 
 ### No verification_hint
 
-| Condition         | Default Action        |
-| ----------------- | --------------------- |
-| confidence ≥ 0.60 | `pattern_search`      |
-| confidence < 0.60 | Report `unverifiable` |
+| Condition                                      | Default Action        |
+| ---------------------------------------------- | --------------------- |
+| Finding has a concrete trigger and file:line   | `pattern_search`      |
+| Finding lacks a concrete trigger or location   | Report `unverifiable` |
 
 After 5 files with inconclusive evidence → `weak_evidence` with
 `budget_exhausted: true`.
@@ -66,7 +66,6 @@ Return structured Markdown:
 | ------------------- | ----------------------------------------------------------------------- |
 | verdict             | verified / weak_evidence / unverifiable                                 |
 | budget_exhausted    | true / false                                                            |
-| confidence          | 0.60-1.00                                                               |
 | effort_to_reproduce | 5min / 15min / 30min / 1h / manual                                      |
 | Evidence            | type — detail with `file:line` references (files checked: file1, file2) |
 

@@ -58,7 +58,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のTDセクション参照。
+`skills/audit/references/calibration-examples.md` のTDセクション参照。
 
 ## エラーハンドリング
 
@@ -72,10 +72,7 @@ background: true
 
 finding-schema.md に従う。Prefix: TD。
 
-Categories: encapsulation / expression / usefulness / enforcement。
-Severity: critical / high / medium / low。
-Verification: call_site_check / pattern_search — 無効なインスタンスが実際にコールサイトで構築されうるか？
-Extra: type_name（TypeName、オプション）、scores（encapsulation/expression/usefulness/enforcement X/10、オプション — 上記スコアリング参照）。
+Categories: encapsulation / expression / usefulness / enforcement。 Severity: critical / high / medium / low。 Verification: call_site_check / pattern_search — 無効なインスタンスが実際にコールサイトで構築されうるか？ Extra: type_name（TypeName、オプション）、scores（encapsulation/expression/usefulness/enforcement X/10、オプション — 上記スコアリング参照）。
 
 ```markdown
 ## Summary

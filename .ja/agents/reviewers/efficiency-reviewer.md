@@ -19,9 +19,7 @@ background: true
 
 ## スコープ
 
-コード変更における実行時およびリソースの非効率性を検出する。言語非依存。
-フロントエンドのパフォーマンス最適化（performance-reviewer / PERF）とは異なる。
-本レビュアーが答える問い:「このコードは必要以上の処理をしていないか？」
+コード変更における実行時およびリソースの非効率性を検出する。言語非依存。 フロントエンドのパフォーマンス最適化（performance-reviewer / PERF）とは異なる。 本レビュアーが答える問い:「このコードは必要以上の処理をしていないか？」
 
 ## 分析フェーズ
 
@@ -55,7 +53,7 @@ background: true
 
 ## root-cause-reviewerとの区別
 
-| 本レビュアー (EFF)                      | root-cause-reviewer (RCA)        |
+| 本レビュアー (EFF)                      | root-cause-reviewer (RC)        |
 | --------------------------------------- | -------------------------------- |
 | 「これは不要な処理をしてないか？」      | 「これはパッチか根本修正か？」   |
 | TOCTOUをパフォーマンス/正確性バグとして | レース条件を設計欠陥の症状として |
@@ -64,7 +62,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のEFFセクション参照。
+`skills/audit/references/calibration-examples.md` のEFFセクション参照。
 
 ## エラーハンドリング
 
@@ -72,17 +70,13 @@ background: true
 | ---------- | ----------------------- |
 | コードなし | "No code to review"報告 |
 
-共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
-コールドパスの軽微な問題は、統合でseverityが上がらない限り除外（schema の Context Test 参照）。
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。 コールドパスの軽微な問題は、統合でseverityが上がらない限り除外（schema の Context Test 参照）。
 
 ## 出力
 
 finding-schema.md に従う。Prefix: EFF。
 
-Categories: unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad。
-Severity: high / medium / low。
-Verification: benchmark / profile — 改善を確認する方法。
-Extra: reasoning に path_frequency（hot/warm/cold）を記載。
+Categories: unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad。 Severity: high / medium / low。 Verification: benchmark / profile — 改善を確認する方法。 Extra: reasoning に path_frequency（hot/warm/cold）を記載。
 
 ```markdown
 ## Summary

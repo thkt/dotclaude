@@ -1,7 +1,6 @@
 ---
 name: checkout
-description: Analyze Git changes and suggest appropriate branch names. Use when user
-  mentions ブランチ名, ブランチ作成, branch name.
+description: Analyze Git changes and suggest appropriate branch names. Use when user mentions ブランチ名, ブランチ作成, branch name.
 allowed-tools: Bash(git:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[context or ticket number]"
@@ -31,12 +30,6 @@ Analyze current Git changes and suggest appropriate branch names.
 | 2    | Present options via `AskUserQuestion`                            |
 | 3    | Create selected branch                                           |
 
-## Flow: Select
-
-```text
-[Generator YAML] → [Options] → [User Selection] → [Execute]
-```
-
 ## Display Format
 
 ### Selection (via AskUserQuestion)
@@ -45,7 +38,7 @@ Present generator options as choices with reasons.
 
 ### Success
 
-**Created branch**: `[selected-branch-name]`
+Created branch: `[selected-branch-name]`
 
 ## Verification
 

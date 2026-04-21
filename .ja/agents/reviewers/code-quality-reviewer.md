@@ -44,7 +44,7 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のCQセクション参照。
+`skills/audit/references/calibration-examples.md` のCQセクション参照。
 
 ## エラーハンドリング
 
@@ -58,10 +58,7 @@ background: true
 
 finding-schema.md に従う。Prefix: CQ。
 
-Categories: structure / readability。
-Severity: high / medium / low。
-Verification: pattern_search / hotpath_analysis — このパターンは広範囲か、クリティカルパスにあるか？
-Extra: subcategory（waste / naming / complexity / comments / ai_smell、オプション、category/subcategory の形で付加）。
+Categories: structure / readability。 Severity: high / medium / low。 Verification: pattern_search / hotpath_analysis — このパターンは広範囲か、クリティカルパスにあるか？ Extra: subcategory（waste / naming / complexity / comments / ai_smell、オプション、category/subcategory の形で付加）。
 
 ```markdown
 ## Summary

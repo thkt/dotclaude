@@ -59,7 +59,7 @@ background: true
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section TC.
+See `skills/audit/references/calibration-examples.md` section TC.
 
 ## Error Handling
 
@@ -73,10 +73,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: TC. Location uses `test-file:line`.
 
-Categories: gap / quality / negative / regression.
-Severity: critical / high / medium / low.
-Verification: call_site_check / pattern_search — is this code path actually exercised by any existing test?
-Extra: related_code (`source-file:line`, optional), criticality (1-10, optional — see Criticality Rating above).
+Categories: gap / quality / negative / regression. Severity: critical / high / medium / low. Verification: call_site_check / pattern_search — is this code path actually exercised by any existing test? Extra: related_code (`source-file:line`, optional), criticality (1-10, optional — see Criticality Rating above).
 
 ```markdown
 ## Summary
