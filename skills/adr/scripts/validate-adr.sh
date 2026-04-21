@@ -1,152 +1,143 @@
 #!/bin/zsh
 # Usage: validate-adr.sh <adr-file>
+# Output (stdout): JSON { errors, warnings, checks }
+# Exit: 0 if no errors (warnings allowed), 1 if errors
 
-set -e
+set -euo pipefail
 
-ADR_FILE="$1"
+ADR_FILE="${1:-}"
 
 if [ ! -f "$ADR_FILE" ]; then
-  echo "❌ Error: File not found: $ADR_FILE"
+  echo "Error: file not found: $ADR_FILE" >&2
   exit 1
 fi
 
-source "$(dirname "$0")/colors.sh"
+ERRORS=()
+WARNINGS=()
+CHECKS=()
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📊 ADR Validation Report: $(basename "$ADR_FILE")"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-WARNINGS=0
-ERRORS=0
-
-echo "📋 1. Required Sections Validation"
-REQUIRED_SECTIONS=(
-  "Context and Problem Statement"
-  "Considered Options"
-  "Decision Outcome"
-)
-
-for section in "${REQUIRED_SECTIONS[@]}"; do
+# Required sections
+for section in "Context and Problem Statement" "Considered Options" "Decision Outcome"; do
   if grep -q "## $section" "$ADR_FILE"; then
-    echo "${GREEN}✅ $section${NC}"
+    CHECKS+=("section:$section=ok")
   else
-    echo "${RED}❌ $section - Not filled${NC}"
-    ERRORS=$((ERRORS + 1))
-  fi
-done
-echo ""
-
-echo "📌 2. Metadata Validation"
-REQUIRED_META=(
-  "Status:"
-  "Date:"
-)
-
-for meta in "${REQUIRED_META[@]}"; do
-  if grep -q "^- $meta" "$ADR_FILE"; then
-    VALUE=$(grep "^- $meta" "$ADR_FILE" | head -1)
-    echo "${GREEN}✅ $VALUE${NC}"
-  else
-    echo "${RED}❌ $meta - Not set${NC}"
-    ERRORS=$((ERRORS + 1))
+    ERRORS+=("missing_section:$section")
   fi
 done
 
+# Required metadata
+for meta in "Status" "Date"; do
+  if grep -q "^- $meta:" "$ADR_FILE"; then
+    VALUE=$(grep -m 1 "^- $meta:" "$ADR_FILE" || true)
+    CHECKS+=("metadata:$meta=ok [$VALUE]")
+  else
+    ERRORS+=("missing_metadata:$meta")
+  fi
+done
+
+# Optional confidence
 if grep -q "^- Confidence:" "$ADR_FILE"; then
-  VALUE=$(grep "^- Confidence:" "$ADR_FILE" | head -1)
-  echo "${GREEN}✅ $VALUE${NC}"
+  VALUE=$(grep -m 1 "^- Confidence:" "$ADR_FILE" || true)
+  CHECKS+=("metadata:Confidence=ok [$VALUE]")
 else
-  echo "${YELLOW}⚠️  Confidence: Not set (recommended: high | medium | low)${NC}"
-  WARNINGS=$((WARNINGS + 1))
+  WARNINGS+=("missing_metadata:Confidence (recommended: high|medium|low)")
 fi
-echo ""
 
-echo "📝 3. Content Quality"
-
-OPTIONS_COUNT=$(grep -c "^### " "$ADR_FILE" || echo 0)
-if [ $OPTIONS_COUNT -ge 2 ]; then
-  echo "${GREEN}✅ Considered options: ${OPTIONS_COUNT}${NC}"
-elif [ $OPTIONS_COUNT -eq 1 ]; then
-  echo "${YELLOW}⚠️  Considered options: Only 1 (recommended: 2 or more)${NC}"
-  WARNINGS=$((WARNINGS + 1))
+# Options count
+OPTIONS_COUNT=$(grep -c "^### " "$ADR_FILE" || true)
+OPTIONS_COUNT=${OPTIONS_COUNT:-0}
+if [ "$OPTIONS_COUNT" -ge 2 ]; then
+  CHECKS+=("options_count=${OPTIONS_COUNT}")
+elif [ "$OPTIONS_COUNT" -eq 1 ]; then
+  WARNINGS+=("options_count=1 (recommended: 2+)")
 else
-  echo "${RED}❌ Considered options: None${NC}"
-  ERRORS=$((ERRORS + 1))
+  ERRORS+=("options_count=0")
 fi
 
-EMPTY_SECTIONS=$(grep -A 1 "^## " "$ADR_FILE" | grep -c "^$" || echo 0)
-if [ $EMPTY_SECTIONS -gt 0 ]; then
-  echo "${YELLOW}⚠️  ${EMPTY_SECTIONS} empty section(s) found${NC}"
-  WARNINGS=$((WARNINGS + 1))
+# Empty sections
+EMPTY_SECTIONS=$(grep -A 1 "^## " "$ADR_FILE" | grep -c "^$" || true)
+EMPTY_SECTIONS=${EMPTY_SECTIONS:-0}
+if [ "$EMPTY_SECTIONS" -gt 0 ]; then
+  WARNINGS+=("empty_sections=${EMPTY_SECTIONS}")
 fi
 
-REFERENCES_COUNT=$(grep -c "^\[.*\](.*)$" "$ADR_FILE" || echo 0)
-if [ $REFERENCES_COUNT -ge 3 ]; then
-  echo "${GREEN}✅ References: ${REFERENCES_COUNT}${NC}"
-elif [ $REFERENCES_COUNT -gt 0 ]; then
-  echo "${YELLOW}⚠️  References: ${REFERENCES_COUNT} (recommended: 3 or more)${NC}"
-  WARNINGS=$((WARNINGS + 1))
+# References count
+REFERENCES_COUNT=$(grep -c "^\[.*\](.*)$" "$ADR_FILE" || true)
+REFERENCES_COUNT=${REFERENCES_COUNT:-0}
+if [ "$REFERENCES_COUNT" -ge 3 ]; then
+  CHECKS+=("references_count=${REFERENCES_COUNT}")
+elif [ "$REFERENCES_COUNT" -gt 0 ]; then
+  WARNINGS+=("references_count=${REFERENCES_COUNT} (recommended: 3+)")
 else
-  echo "${YELLOW}⚠️  References: None${NC}"
-  WARNINGS=$((WARNINGS + 1))
+  WARNINGS+=("references_count=0 (recommended: 3+)")
 fi
-echo ""
 
-echo "📐 4. MADR Format Compliance"
-
+# Title heading (MADR format)
 if grep -q "^# " "$ADR_FILE"; then
-  echo "${GREEN}✅ Title format: OK${NC}"
+  CHECKS+=("title_heading=ok")
 else
-  echo "${RED}❌ Title format: NG (requires heading starting with #)${NC}"
-  ERRORS=$((ERRORS + 1))
+  ERRORS+=("title_heading=missing")
 fi
 
-if grep -q "^- Status:" "$ADR_FILE" && grep -q "^- Date:" "$ADR_FILE"; then
-  echo "${GREEN}✅ Metadata format: OK${NC}"
-else
-  echo "${YELLOW}⚠️  Metadata format: Non-standard${NC}"
-  WARNINGS=$((WARNINGS + 1))
-fi
-echo ""
+# Markdown lint (inline; optional)
+if command -v markdownlint-cli2 &> /dev/null; then
+  LINT_CONFIG=""
+  if [ -n "${MARKDOWNLINT_CONFIG:-}" ] && [ -f "$MARKDOWNLINT_CONFIG" ]; then
+    LINT_CONFIG="$MARKDOWNLINT_CONFIG"
+  elif [ -f ".markdownlint.json" ]; then
+    LINT_CONFIG=".markdownlint.json"
+  elif [ -f "$HOME/.claude/.markdownlint.json" ]; then
+    LINT_CONFIG="$HOME/.claude/.markdownlint.json"
+  fi
 
-echo "📝 5. Markdown Lint Check"
+  lint_args=(markdownlint-cli2)
+  if [ -n "$LINT_CONFIG" ]; then
+    lint_args+=(--config "$LINT_CONFIG")
+  fi
+  lint_args+=("$ADR_FILE")
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-if [ -f "${SCRIPT_DIR}/validate-markdown.sh" ]; then
-  LINT_OUTPUT=$(bash "${SCRIPT_DIR}/validate-markdown.sh" "$ADR_FILE" 2>&1) || true
-  echo "$LINT_OUTPUT" | grep -v "^$" || true
-
-  if echo "$LINT_OUTPUT" | grep -q "⚠️"; then
-    WARNINGS=$((WARNINGS + 1)) || true
+  if "${lint_args[@]}" > /dev/null 2>&1; then
+    CHECKS+=("markdown_lint=ok")
+  else
+    WARNINGS+=("markdown_lint=issues (run markdownlint-cli2 for details)")
   fi
 else
-  echo "${BLUE}ℹ️  Markdown lint skipped (shared script not found)${NC}"
+  CHECKS+=("markdown_lint=skipped (markdownlint-cli2 not installed)")
 fi
-echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📊 Overall Evaluation"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+# JSON output
+join_array() {
+  local arr=()
+  for item in "$@"; do
+    [ -n "$item" ] && arr+=("$item")
+  done
+  if [ "${#arr[@]}" -eq 0 ]; then
+    echo "[]"
+    return
+  fi
+  local out=""
+  for item in "${arr[@]}"; do
+    local escaped=${item//\\/\\\\}
+    escaped=${escaped//\"/\\\"}
+    out+="\"${escaped}\","
+  done
+  echo "[${out%,}]"
+}
 
-if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then
-  echo "${GREEN}✅ Validation passed - ADR meets quality standards${NC}"
-  exit 0
-elif [ $ERRORS -eq 0 ]; then
-  echo "${YELLOW}⚠️  Warnings found - ${WARNINGS} improvement(s) recommended${NC}"
-  echo ""
-  echo "Recommended actions:"
-  echo "  - Add references (minimum 3)"
-  echo "  - Fill in empty sections"
-  echo "  - Complete checklists"
-  exit 0
-else
-  echo "${RED}❌ Validation failed - ${ERRORS} error(s), ${WARNINGS} warning(s)${NC}"
-  echo ""
-  echo "Required actions:"
-  echo "  - Fill in all required sections"
-  echo "  - Set metadata"
-  echo "  - Consider at least 2 options"
+ERRORS_JSON=$(join_array "${ERRORS[@]:-}")
+WARNINGS_JSON=$(join_array "${WARNINGS[@]:-}")
+CHECKS_JSON=$(join_array "${CHECKS[@]:-}")
+
+cat <<EOF
+{
+  "file": "$(basename "$ADR_FILE")",
+  "errors": ${ERRORS_JSON},
+  "warnings": ${WARNINGS_JSON},
+  "checks": ${CHECKS_JSON}
+}
+EOF
+
+if [ "${#ERRORS[@]}" -gt 0 ]; then
   exit 1
 fi
+exit 0

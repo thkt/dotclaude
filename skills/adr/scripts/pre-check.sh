@@ -1,10 +1,11 @@
 #!/bin/zsh
 # Usage: pre-check.sh "ADR Title"
+# Output (stdout): JSON with number, filename, slug, date, adr_dir, similar_adrs
+# Errors (stderr): validation failures with exit 1
 
-set -e
+set -euo pipefail
 
-TITLE="$1"
-# Auto-detect adr/ vs docs/adr/ (prefer adr/ if exists). Override with ADR_DIR env.
+TITLE="${1:-}"
 if [ -n "${ADR_DIR:-}" ]; then
   : # use provided value
 elif [ -d "adr" ]; then
@@ -14,121 +15,75 @@ else
 fi
 THRESHOLD="${DUPLICATE_THRESHOLD:-0.7}"
 
-source "$(dirname "$0")/colors.sh"
-
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🔍 ADR Pre-creation Check"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-echo "📋 1. Title Validation"
+# Title validation
 TITLE_LENGTH=${#TITLE}
-if [ $TITLE_LENGTH -lt 5 ] || [ $TITLE_LENGTH -gt 64 ]; then
-  echo "${RED}❌ Title length error: ${TITLE_LENGTH} characters (recommended: 5-64 characters)${NC}"
+if [ "$TITLE_LENGTH" -lt 5 ] || [ "$TITLE_LENGTH" -gt 64 ]; then
+  echo "Error: title length ${TITLE_LENGTH} chars (required 5-64)" >&2
   exit 1
 fi
 
 FORBIDDEN_CHARS='[/:*?"<>|]'
 if [[ "$TITLE" =~ $FORBIDDEN_CHARS ]]; then
-  echo "${RED}❌ Contains forbidden characters: / : * ? \" < > |${NC}"
+  echo 'Error: forbidden characters in title (/:*?"<>|)' >&2
   exit 1
 fi
 
-echo "${GREEN}✅ Title length: ${TITLE_LENGTH} characters${NC}"
-echo "${GREEN}✅ Character set: OK${NC}"
-echo ""
-
-echo "📁 2. Directory Validation"
-if [ ! -d "$ADR_DIR" ]; then
-  echo "${YELLOW}⚠️  Directory not found: $ADR_DIR${NC}"
-  echo "   Attempting to create automatically..."
-  if mkdir -p "$ADR_DIR"; then
-    echo "${GREEN}✅ Directory created successfully${NC}"
-  else
-    echo "${RED}❌ Directory creation failed${NC}"
-    exit 1
-  fi
-else
-  echo "${GREEN}✅ Directory exists: $ADR_DIR${NC}"
-fi
-
+# Directory
+mkdir -p "$ADR_DIR"
 if [ ! -w "$ADR_DIR" ]; then
-  echo "${RED}❌ No write permission: $ADR_DIR${NC}"
+  echo "Error: no write permission: $ADR_DIR" >&2
   exit 1
 fi
-echo "${GREEN}✅ Write permission: OK${NC}"
-echo ""
 
-echo "🔢 3. ADR Number Assignment"
-SCRIPTS_DIR="$(dirname "$0")"
-NEXT_NUM=$("$SCRIPTS_DIR/next-adr-number.sh" "$ADR_DIR")
-echo "${GREEN}✅ Next number: ${NEXT_NUM}${NC}"
+# Next ADR number (4-digit)
+LAST_NUM=$(ls "$ADR_DIR" 2>/dev/null | grep -E '^[0-9]{4}-' | sort -r | head -1 | cut -d'-' -f1 || true)
+LAST_NUM=${LAST_NUM:-0000}
+NEXT_NUM=$(printf "%04d" $((10#$LAST_NUM + 1)))
 
-SLUG=$("$SCRIPTS_DIR/slugify.sh" "$TITLE")
+# Slug from title
+SLUG=$(echo "$TITLE" \
+  | tr '[:upper:]' '[:lower:]' \
+  | sed 's/ /-/g; s/[^a-z0-9-]//g; s/-\{2,\}/-/g; s/^-//; s/-$//')
+
 FILENAME="${NEXT_NUM}-${SLUG}.md"
-echo "${GREEN}✅ Filename: ${FILENAME}${NC}"
-echo ""
+CURRENT_DATE=$(date +%Y-%m-%d)
 
-echo "🔍 4. Duplicate Check"
-if [ -d "$ADR_DIR" ] && [ "$(ls -A "$ADR_DIR" 2>/dev/null)" ]; then
-  SIMILAR_FOUND=false
+# Duplicate detection
+SIMILAR_JSON="[]"
+if [ "$(ls -A "$ADR_DIR" 2>/dev/null)" ]; then
+  SIMILAR_ENTRIES=()
   while IFS= read -r existing_file; do
-    EXISTING_TITLE=$(grep -m 1 '^# ' "$existing_file" | sed 's/^# //')
+    [ -z "$existing_file" ] && continue
+    EXISTING_TITLE=$(grep -m 1 '^# ' "$existing_file" | sed 's/^# //' || true)
+    [ -z "$EXISTING_TITLE" ] && continue
 
     COMMON_WORDS=$(comm -12 \
       <(echo "$TITLE" | tr ' ' '\n' | tr '[:upper:]' '[:lower:]' | sort) \
       <(echo "$EXISTING_TITLE" | tr ' ' '\n' | tr '[:upper:]' '[:lower:]' | sort) \
-      | wc -l)
+      | wc -l | tr -d ' ')
+    TITLE_WORDS=$(echo "$TITLE" | tr ' ' '\n' | wc -l | tr -d ' ')
+    [ "$TITLE_WORDS" -eq 0 ] && continue
 
-    TITLE_WORDS=$(echo "$TITLE" | tr ' ' '\n' | wc -l)
-
-    if [ $TITLE_WORDS -gt 0 ]; then
-      SIMILARITY=$(awk -v cw="$COMMON_WORDS" -v tw="$TITLE_WORDS" 'BEGIN {printf "%.2f", cw/tw}')
-
-      if (( $(awk -v s="$SIMILARITY" -v t="$THRESHOLD" 'BEGIN {print (s >= t)}') )); then
-        echo "${YELLOW}⚠️  Similar ADR detected (similarity: ${SIMILARITY}): $(basename "$existing_file")${NC}"
-        echo "   Existing: $EXISTING_TITLE"
-        SIMILAR_FOUND=true
-      fi
+    SIMILARITY=$(awk -v cw="$COMMON_WORDS" -v tw="$TITLE_WORDS" 'BEGIN {printf "%.2f", cw/tw}')
+    if awk -v s="$SIMILARITY" -v t="$THRESHOLD" 'BEGIN {exit !(s >= t)}'; then
+      SAFE_TITLE=${EXISTING_TITLE//\"/\\\"}
+      SIMILAR_ENTRIES+=("{\"file\":\"$(basename "$existing_file")\",\"similarity\":\"${SIMILARITY}\",\"title\":\"${SAFE_TITLE}\"}")
     fi
   done < <(find "$ADR_DIR" -name "*.md" -type f)
 
-  if [ "$SIMILAR_FOUND" = false ]; then
-    echo "${GREEN}✅ No similar ADRs found${NC}"
-  else
-    echo ""
-    echo "${YELLOW}💡 Please check relevance. Consider updating existing ADR if needed.${NC}"
+  if [ "${#SIMILAR_ENTRIES[@]}" -gt 0 ]; then
+    SIMILAR_JSON="[$(IFS=,; echo "${SIMILAR_ENTRIES[*]}")]"
   fi
-else
-  echo "${GREEN}✅ No existing ADRs (first creation)${NC}"
 fi
-echo ""
 
-echo "📅 5. Date Validation"
-CURRENT_DATE=$(date +%Y-%m-%d)
-echo "${GREEN}✅ Creation date: ${CURRENT_DATE}${NC}"
-echo ""
-
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "${GREEN}✅ Ready to create${NC}"
-echo ""
-echo "Will create with the following information:"
-echo "  Number: ${NEXT_NUM}"
-echo "  Filename: ${FILENAME}"
-echo "  Creation date: ${CURRENT_DATE}"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-# Output result as JSON (for Claude Code parsing)
 cat <<EOF
-
 {
   "status": "ok",
   "number": "${NEXT_NUM}",
   "filename": "${FILENAME}",
   "slug": "${SLUG}",
   "date": "${CURRENT_DATE}",
-  "warnings": []
+  "adr_dir": "${ADR_DIR}",
+  "similar_adrs": ${SIMILAR_JSON}
 }
 EOF
-
-exit 0
