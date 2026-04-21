@@ -55,6 +55,7 @@ This directory contains important decisions about the project's architecture.
 | [0046](0046-colocate-audit-templates-in-skill-references.md) | Colocate audit assets under skills/audit with references and templates split | accepted | 2026-04-20 |
 | [0047](0047-adopt-snapshot-as-canonical-with-rendered-output.md) | Adopt snapshot as canonical source with rendered Markdown output for audit reports | accepted | 2026-04-20 |
 | [0048](0048-standardize-generator-skill-structure.md) | Adopt unified SKILL.md template for generator-class workflows | accepted | 2026-04-21 |
+| [0049](0049-consolidate-skill-to-skill-wrapper-pairs.md) | ADR-0049: Consolidate skill-to-skill wrapper pairs | accepted | 2026-04-21 |
 
 ## By Status
 
@@ -107,6 +108,7 @@ This directory contains important decisions about the project's architecture.
 - **0046**: Colocate audit assets under skills/audit with references and templates split
 - **0047**: Adopt snapshot as canonical source with rendered Markdown output for audit reports
 - **0048**: Adopt unified SKILL.md template for generator-class workflows
+- **0049**: ADR-0049: Consolidate skill-to-skill wrapper pairs
 
 ### Superseded
 
