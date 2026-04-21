@@ -20,13 +20,17 @@ user-invocable: false
 
 ## Commands
 
-| Purpose          | Command                                              |
-| ---------------- | ---------------------------------------------------- |
-| Search           | `recall "query"`                                     |
-| Last N days      | `recall "query" --days N`                            |
-| Project filter   | `recall "query" --project <path>`                    |
-| Source filter    | `recall "query" --source claude` or `--source codex` |
-| Reindex          | `recall --reindex`                                   |
+| Purpose          | Command                                                     |
+| ---------------- | ----------------------------------------------------------- |
+| Search           | `recall search "query"` (or `recall "query"` as shorthand)  |
+| Last N days      | `recall search "query" --days N`                            |
+| Project filter   | `recall search "query" --project <path>`                    |
+| Source filter    | `recall search "query" --source claude` or `--source codex` |
+| Limit results    | `recall search "query" --limit N` (default 10, max 100)     |
+| Show session     | `recall show <session-id>`                                  |
+| Status           | `recall status`                                             |
+| Incremental index| `recall index`                                              |
+| Full rebuild     | `recall index --force`                                      |
 
 ## Parallel with yomu-search
 

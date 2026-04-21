@@ -9,12 +9,20 @@ user-invocable: false
 
 ## Commands
 
-| Purpose          | Command                                 |
-| ---------------- | --------------------------------------- |
-| Semantic search  | `yomu search "query"`                   |
-| JSON output      | `yomu search "query" --json`            |
-| Impact analysis  | `yomu impact <file-or-symbol>`          |
-| Index status     | `yomu status`                           |
+| Purpose           | Command                                                   |
+| ----------------- | --------------------------------------------------------- |
+| Semantic search   | `yomu search "query"`                                     |
+| JSON output       | `yomu search "query" --json`                              |
+| Limit / offset    | `yomu search "query" --limit N --offset M`                |
+| Path filter       | `yomu search "query" --path <prefix>` (repeatable)        |
+| Find similar      | `yomu search --from <file>` or `--from <file>:<symbol>`   |
+| Impact (file)     | `yomu impact <file>` (relative to project root)           |
+| Impact (symbol)   | `yomu impact <file> --symbol <name>`                      |
+| Impact (semantic) | `yomu impact <file> --semantic`                           |
+| Index status      | `yomu status`                                             |
+| Incremental index | `yomu index`                                              |
+| Full rebuild      | `yomu rebuild`                                            |
+| Embed pending     | `yomu embed` (required for semantic search)               |
 
 ## When to Use
 
@@ -27,4 +35,10 @@ user-invocable: false
 
 ## Prerequisite
 
-Run `yomu status` first. If index missing → `yomu rebuild` then `yomu index`.
+Run `yomu status` first.
+
+| State                   | Action                         |
+| ----------------------- | ------------------------------ |
+| Index missing           | `yomu rebuild` → `yomu embed`  |
+| Pending chunks to embed | `yomu embed`                   |
+| Stale after edits       | `yomu index` → `yomu embed`    |
