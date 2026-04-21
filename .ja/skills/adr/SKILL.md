@@ -85,6 +85,6 @@ adr/
 | トピック     | リソース                                                              |
 | ------------ | --------------------------------------------------------------------- |
 | MADR         | <https://adr.github.io/madr/>                                         |
-| Fowler       | <https://martinfowler.com/articles/architecture-decision-record.html> |
+| Fowler       | <https://martinfowler.com/bliki/ArchitectureDecisionRecord.html>      |
 | テンプレート | `./templates/`                                                        |
 | スクリプト   | `./scripts/`                                                          |
