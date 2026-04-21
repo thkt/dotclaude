@@ -35,7 +35,7 @@ Use gerund form (verb-ing).
 
 | Pattern | Examples                               |
 | ------- | -------------------------------------- |
-| Good    | `creating-adrs`, `reviewing-security`  |
+| Good    | `reviewing-security`, `orchestrating-workflows` |
 | Avoid   | `helper`, `utils`, `tools` (too vague) |
 
 ## Directory structure

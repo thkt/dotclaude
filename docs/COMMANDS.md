@@ -75,7 +75,7 @@ confirmation mode (same functionality)
 | `/polish`   | -                                             | code-simplifier                                                       |
 | `/feature`  | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
 | `/swarm`    | orchestrating-workflows                       | qa-reviewer, unit-implementer                                         |
-| `/glossary` | extracting-ubiquitous-language                | -                                                                     |
+| `/glossary` | -                                             | -                                                                     |
 
 ## File Structure
 

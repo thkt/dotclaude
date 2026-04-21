@@ -49,7 +49,7 @@ executes tasks.
 | Category      | Skills                                               | Purpose                  |
 | ------------- | ---------------------------------------------------- | ------------------------ |
 | TDD/Testing   | generating-tdd-tests                                 | Testing methodology      |
-| Documentation | creating-adrs, extracting-ubiquitous-language        | Documentation generation |
+| Documentation | adr, glossary                                        | Documentation generation |
 | Review        | reviewing-\*                                         | Code review perspectives |
 | Workflow      | orchestrating-workflows                              | Workflow definitions     |
 

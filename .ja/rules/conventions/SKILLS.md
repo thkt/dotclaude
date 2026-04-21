@@ -35,7 +35,7 @@ user-invocable: false          # 任意: デフォルト false
 
 | パターン | 例                                      |
 | -------- | --------------------------------------- |
-| 良い     | `creating-adrs`, `reviewing-security`   |
+| 良い     | `reviewing-security`, `orchestrating-workflows` |
 | 避ける   | `helper`, `utils`, `tools` (曖昧すぎる) |
 
 ## ディレクトリ構造

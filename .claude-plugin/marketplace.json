@@ -115,8 +115,7 @@
         "./skills/reviewing-security/SKILL.md",
         "./skills/reviewing-silent-failures/SKILL.md",
         "./skills/reviewing-testability/SKILL.md",
-        "./skills/reviewing-type-safety/SKILL.md",
-        "./skills/screening-pr-review/SKILL.md"
+        "./skills/reviewing-type-safety/SKILL.md"
       ]
     },
     {
@@ -174,8 +173,6 @@
       ],
       "skills": [
         "./skills/google-workspace/SKILL.md",
-        "./skills/creating-adrs/SKILL.md",
-        "./skills/extracting-ubiquitous-language/SKILL.md",
         "./skills/integrating-storybook/SKILL.md",
         "./skills/optimizing-performance/SKILL.md",
         "./skills/tailwind-patterns/SKILL.md",

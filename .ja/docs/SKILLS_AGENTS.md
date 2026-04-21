@@ -48,7 +48,7 @@ graph LR
 | カテゴリ     | スキル                                               | 目的               |
 | ------------ | ---------------------------------------------------- | ------------------ |
 | TDD/テスト   | generating-tdd-tests                                 | テスト手法         |
-| ドキュメント | creating-adrs, extracting-ubiquitous-language        | ドキュメント生成   |
+| ドキュメント | adr, glossary                                        | ドキュメント生成   |
 | レビュー     | reviewing-\*                                         | コードレビュー観点 |
 | ワークフロー | orchestrating-workflows                              | ワークフロー定義   |
 
