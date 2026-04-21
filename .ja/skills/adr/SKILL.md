@@ -1,17 +1,7 @@
 ---
 name: adr
 description: MADR形式でアーキテクチャ決定記録（ADR）を自動採番で作成。Use when: ADR作成, 技術決定, アーキテクチャ決定, decision record.
-allowed-tools:
-  [
-    Read,
-    Write,
-    Edit,
-    Grep,
-    Glob,
-    LS,
-    Bash(mkdir:*, $HOME/.claude/skills/adr/scripts/*),
-    AskUserQuestion,
-  ]
+allowed-tools: Read, Write, Edit, Grep, Glob, LS, Bash(mkdir:*), Bash($HOME/.claude/skills/adr/scripts/*), AskUserQuestion
 model: opus
 argument-hint: "[決定タイトル]"
 user-invocable: true
@@ -40,8 +30,8 @@ user-invocable: true
 | 1. 事前チェック | `./scripts/pre-check.sh "$TITLE"` を実行                                   |
 | 2. テンプレート | `./scripts/select-adr-template.sh "$TITLE"` を実行                         |
 | 3. 参照         | プロジェクトドキュメント、Issue、外部リソースを収集                        |
-| 4. 検証         | 必須セクションをチェック（Title、Status、Context、Decision、Consequences） |
-| 5. インデックス | `./scripts/update-index.sh` で `adr/README.md` を自動生成                  |
+| 4. 検証         | ADR 書き出し後に `./scripts/validate-adr.sh "$ADR_FILE"` を実行            |
+| 5. インデックス | `./scripts/update-index.sh` で `adr/README.md` を再生成                    |
 | 6. リカバリー   | 欠落ディレクトリ、重複、欠落セクションを処理                               |
 
 ## テンプレート選択
@@ -49,7 +39,7 @@ user-invocable: true
 スクリプトで自動選択:
 
 ```bash
-TEMPLATE=$("./scripts/select-adr-template.sh" "$TITLE")
+TEMPLATE=$(./scripts/select-adr-template.sh "$TITLE")
 ```
 
 | テンプレート         | ユースケース             | 必須セクション                   |
@@ -63,9 +53,9 @@ TEMPLATE=$("./scripts/select-adr-template.sh" "$TITLE")
 
 ```text
 adr/
-├── README.md          # 自動生成インデックス
-├── 0001-*.md          # 連番
-└── 0002-*.md
+├── README.md   # 自動生成インデックス
+├── 0001-*.md   # 連番
+└── 0002-*.md   # (次の ADR)
 ```
 
 ## ルール
@@ -96,5 +86,5 @@ adr/
 | ------------ | --------------------------------------------------------------------- |
 | MADR         | <https://adr.github.io/madr/>                                         |
 | Fowler       | <https://martinfowler.com/articles/architecture-decision-record.html> |
-| テンプレート | `../../templates/adr/`                                                |
+| テンプレート | `./templates/`                                                        |
 | スクリプト   | `./scripts/`                                                          |

@@ -34,11 +34,6 @@ flowchart LR
 ```text
 templates/
 ├── README.md
-├── adr/               # ADRテンプレート
-│   ├── architecture-pattern.md
-│   ├── deprecation.md
-│   ├── process-change.md
-│   └── technology-selection.md
 ├── devcontainer/      # Dev Containerテンプレート
 │   ├── .devcontainer/devcontainer.json
 │   └── README.md

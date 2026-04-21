@@ -1,17 +1,7 @@
 ---
 name: adr
 description: Create Architecture Decision Records (ADR) in MADR format with auto-numbering. Use when: ADR作成, 技術決定, アーキテクチャ決定, decision record.
-allowed-tools:
-  [
-    Read,
-    Write,
-    Edit,
-    Grep,
-    Glob,
-    LS,
-    Bash(mkdir:*, $HOME/.claude/skills/adr/scripts/*),
-    AskUserQuestion,
-  ]
+allowed-tools: Read, Write, Edit, Grep, Glob, LS, Bash(mkdir:*), Bash($HOME/.claude/skills/adr/scripts/*), AskUserQuestion
 model: opus
 argument-hint: "[decision title]"
 user-invocable: true
@@ -40,8 +30,8 @@ If "Update existing" → list recent ADRs in `adr/` for selection via AskUserQue
 | 1. Pre-Check  | Run `./scripts/pre-check.sh "$TITLE"`                                    |
 | 2. Template   | Run `./scripts/select-adr-template.sh "$TITLE"`                          |
 | 3. References | Gather project docs, issues, external resources                          |
-| 4. Validate   | Check required sections (Title, Status, Context, Decision, Consequences) |
-| 5. Index      | Auto-generate `adr/README.md` via `./scripts/update-index.sh`            |
+| 4. Validate   | Run `./scripts/validate-adr.sh "$ADR_FILE"` after writing                |
+| 5. Index      | Run `./scripts/update-index.sh` to regenerate `adr/README.md`            |
 | 6. Recovery   | Handle missing dirs, duplicates, missing sections                        |
 
 ## Template Selection
@@ -49,7 +39,7 @@ If "Update existing" → list recent ADRs in `adr/` for selection via AskUserQue
 Auto-select via script:
 
 ```bash
-TEMPLATE=$("./scripts/select-adr-template.sh" "$TITLE")
+TEMPLATE=$(./scripts/select-adr-template.sh "$TITLE")
 ```
 
 | Template             | Use Case                   | Required Sections          |
@@ -63,9 +53,9 @@ TEMPLATE=$("./scripts/select-adr-template.sh" "$TITLE")
 
 ```text
 adr/
-├── README.md          # Auto-generated index
-├── 0001-*.md          # Sequential numbering
-└── 0002-*.md
+├── README.md   # Auto-generated index
+├── 0001-*.md   # Sequential numbering
+└── 0002-*.md   # (next)
 ```
 
 ## Rules
@@ -96,5 +86,5 @@ adr/
 | --------- | --------------------------------------------------------------------- |
 | MADR      | <https://adr.github.io/madr/>                                         |
 | Fowler    | <https://martinfowler.com/articles/architecture-decision-record.html> |
-| Templates | `../../templates/adr/`                                                |
+| Templates | `./templates/`                                                        |
 | Scripts   | `./scripts/`                                                          |
