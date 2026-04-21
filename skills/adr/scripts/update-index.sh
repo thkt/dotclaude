@@ -43,10 +43,14 @@ EOF
 while IFS= read -r adr_file; do
   FILENAME=$(basename "$adr_file")
   NUMBER=$(echo "$FILENAME" | grep -oE '^[0-9]{4}')
-  TITLE=$(grep -m 1 '^# ' "$adr_file" | sed 's/^# //' || true)
-  STATUS=$(grep -m 1 '^- Status:' "$adr_file" | sed 's/^- Status: //' | tr -d ' ' || true)
+
+  IFS='|' read -r TITLE STATUS DATE <<< "$(awk '
+    /^# / && !t { t = substr($0, 3) }
+    /^- Status:/ && !s { s = $0; sub(/^- Status:[[:space:]]*/, "", s); gsub(/[[:space:]]/, "", s) }
+    /^- Date:/ && !d { d = $0; sub(/^- Date:[[:space:]]*/, "", d); gsub(/[[:space:]]/, "", d) }
+    END { print t "|" s "|" d }
+  ' "$adr_file")"
   STATUS=${STATUS:-proposed}
-  DATE=$(grep -m 1 '^- Date:' "$adr_file" | sed 's/^- Date: //' | tr -d ' ' || true)
   DATE=${DATE:-Not set}
 
   echo "| [$NUMBER]($FILENAME) | $TITLE | $STATUS | $DATE |" >> "$TEMP_FILE"

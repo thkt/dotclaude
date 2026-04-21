@@ -16,7 +16,6 @@ ERRORS=()
 WARNINGS=()
 CHECKS=()
 
-# Required sections
 for section in "Context and Problem Statement" "Considered Options" "Decision Outcome"; do
   if grep -q "## $section" "$ADR_FILE"; then
     CHECKS+=("section:$section=ok")
@@ -25,7 +24,6 @@ for section in "Context and Problem Statement" "Considered Options" "Decision Ou
   fi
 done
 
-# Required metadata
 for meta in "Status" "Date"; do
   if grep -q "^- $meta:" "$ADR_FILE"; then
     VALUE=$(grep -m 1 "^- $meta:" "$ADR_FILE" || true)
@@ -35,7 +33,6 @@ for meta in "Status" "Date"; do
   fi
 done
 
-# Optional confidence
 if grep -q "^- Confidence:" "$ADR_FILE"; then
   VALUE=$(grep -m 1 "^- Confidence:" "$ADR_FILE" || true)
   CHECKS+=("metadata:Confidence=ok [$VALUE]")
@@ -43,7 +40,6 @@ else
   WARNINGS+=("missing_metadata:Confidence (recommended: high|medium|low)")
 fi
 
-# Options count
 OPTIONS_COUNT=$(grep -c "^### " "$ADR_FILE" || true)
 OPTIONS_COUNT=${OPTIONS_COUNT:-0}
 if [ "$OPTIONS_COUNT" -ge 2 ]; then
@@ -54,14 +50,6 @@ else
   ERRORS+=("options_count=0")
 fi
 
-# Empty sections
-EMPTY_SECTIONS=$(grep -A 1 "^## " "$ADR_FILE" | grep -c "^$" || true)
-EMPTY_SECTIONS=${EMPTY_SECTIONS:-0}
-if [ "$EMPTY_SECTIONS" -gt 0 ]; then
-  WARNINGS+=("empty_sections=${EMPTY_SECTIONS}")
-fi
-
-# References count
 REFERENCES_COUNT=$(grep -c "^\[.*\](.*)$" "$ADR_FILE" || true)
 REFERENCES_COUNT=${REFERENCES_COUNT:-0}
 if [ "$REFERENCES_COUNT" -ge 3 ]; then
@@ -72,14 +60,12 @@ else
   WARNINGS+=("references_count=0 (recommended: 3+)")
 fi
 
-# Title heading (MADR format)
 if grep -q "^# " "$ADR_FILE"; then
   CHECKS+=("title_heading=ok")
 else
   ERRORS+=("title_heading=missing")
 fi
 
-# Markdown lint (inline; optional)
 if command -v markdownlint-cli2 &> /dev/null; then
   LINT_CONFIG=""
   if [ -n "${MARKDOWNLINT_CONFIG:-}" ] && [ -f "$MARKDOWNLINT_CONFIG" ]; then
