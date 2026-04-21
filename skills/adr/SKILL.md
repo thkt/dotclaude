@@ -82,9 +82,9 @@ adr/
 
 ## References
 
-| Topic     | Resource                                                              |
-| --------- | --------------------------------------------------------------------- |
-| MADR      | <https://adr.github.io/madr/>                                         |
-| Fowler    | <https://martinfowler.com/bliki/ArchitectureDecisionRecord.html>      |
-| Templates | `./templates/`                                                        |
-| Scripts   | `./scripts/`                                                          |
+| Topic     | Resource                             |
+| --------- | ------------------------------------ |
+| MADR      | `./references/madr-format.md`        |
+| Fowler    | `./references/fowler-adr.md`         |
+| Templates | `./templates/`                       |
+| Scripts   | `./scripts/`                         |

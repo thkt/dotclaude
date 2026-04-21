@@ -82,9 +82,9 @@ adr/
 
 ## 参照
 
-| トピック     | リソース                                                              |
-| ------------ | --------------------------------------------------------------------- |
-| MADR         | <https://adr.github.io/madr/>                                         |
-| Fowler       | <https://martinfowler.com/bliki/ArchitectureDecisionRecord.html>      |
-| テンプレート | `./templates/`                                                        |
-| スクリプト   | `./scripts/`                                                          |
+| トピック     | リソース                             |
+| ------------ | ------------------------------------ |
+| MADR         | `./references/madr-format.md`        |
+| Fowler       | `./references/fowler-adr.md`         |
+| テンプレート | `./templates/`                       |
+| スクリプト   | `./scripts/`                         |
