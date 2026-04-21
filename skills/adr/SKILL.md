@@ -25,14 +25,14 @@ If "Update existing" → list recent ADRs in `adr/` for selection via AskUserQue
 
 ## 6-Phase Process
 
-| Phase         | Actions                                                                  |
-| ------------- | ------------------------------------------------------------------------ |
-| 1. Pre-Check  | Run `./scripts/pre-check.sh "$TITLE"`                                    |
-| 2. Template   | Run `./scripts/select-adr-template.sh "$TITLE"`                          |
-| 3. References | Gather project docs, issues, external resources                          |
-| 4. Validate   | Run `./scripts/validate-adr.sh "$ADR_FILE"` after writing                |
-| 5. Index      | Run `./scripts/update-index.sh` to regenerate `adr/README.md`            |
-| 6. Recovery   | Handle missing dirs, duplicates, missing sections                        |
+| Phase         | Actions                                                       |
+| ------------- | ------------------------------------------------------------- |
+| 1. Pre-Check  | Run `./scripts/pre-check.sh "$TITLE"`                         |
+| 2. Template   | Run `./scripts/select-adr-template.sh "$TITLE"`               |
+| 3. References | Gather project docs, issues, external resources               |
+| 4. Validate   | Run `./scripts/validate-adr.sh "$ADR_FILE"` after writing     |
+| 5. Index      | Run `./scripts/update-index.sh` to regenerate `adr/README.md` |
+| 6. Recovery   | Handle missing dirs, duplicates, missing sections             |
 
 ## Template Selection
 
@@ -60,12 +60,12 @@ adr/
 
 ## Rules
 
-| Rule         | Detail                                                                                  |
-| ------------ | --------------------------------------------------------------------------------------- |
-| Immutability | Once accepted, never modify. To change, create a new ADR that supersedes it             |
+| Rule         | Detail                                                                                 |
+| ------------ | -------------------------------------------------------------------------------------- |
+| Immutability | Once accepted, never modify. To change, create a new ADR that supersedes it            |
 | Brevity      | Target ~80 lines. Context: 3 lines. Options: 3-5 lines each. Consequences: 2-3 bullets |
-| Confidence   | `- Confidence: {level} — {rationale}` in metadata. Level + reason in one line           |
-| Reassessment | Optional `## Reassessment Triggers` section after Consequences                          |
+| Confidence   | `- Confidence: {level}. {rationale}` in metadata. Level + reason in one line           |
+| Reassessment | Optional `## Reassessment Triggers` section after Consequences                         |
 
 ### Confidence Levels
 
@@ -82,9 +82,9 @@ adr/
 
 ## References
 
-| Topic     | Resource                             |
-| --------- | ------------------------------------ |
-| MADR      | `./references/madr-format.md`        |
-| Fowler    | `./references/fowler-adr.md`         |
-| Templates | `./templates/`                       |
-| Scripts   | `./scripts/`                         |
+| Topic     | Resource                      |
+| --------- | ----------------------------- |
+| MADR      | `./references/madr-format.md` |
+| Fowler    | `./references/fowler-adr.md`  |
+| Templates | `./templates/`                |
+| Scripts   | `./scripts/`                  |

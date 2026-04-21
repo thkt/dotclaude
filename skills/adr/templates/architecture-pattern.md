@@ -1,36 +1,38 @@
 # Architecture Pattern Template
 
-Guide for documenting architecture and design pattern decisions.
+Document decisions that adopt an architecture pattern, component structure, or design policy affecting multiple files.
 
 ## When to Use
 
-- Choosing between architectural patterns (MVC, Clean Architecture, etc.)
-- Defining component structure or module boundaries
-- Establishing design policies that affect multiple files
+| Scenario                                                                |
+| ----------------------------------------------------------------------- |
+| Choosing between architectural patterns (MVC, Clean Architecture, etc.) |
+| Defining component structure or module boundaries                       |
+| Establishing design policies that affect multiple files                 |
 
-## Required Sections
+## Required Sections (MADR Core)
 
-All ADRs must include these MADR core sections:
+| # | Section                       | Purpose                                               |
+| - | ----------------------------- | ----------------------------------------------------- |
+| 1 | Title                         | Action-oriented. Example: `Adopt X pattern for Y`     |
+| 2 | Status                        | `proposed` / `accepted` / `deprecated` / `superseded` |
+| 3 | Context and Problem Statement | Why this decision is needed now                       |
+| 4 | Decision Drivers              | Factors influencing the choice                        |
+| 5 | Considered Options            | Minimum 2 options, each with Good / Bad bullets       |
+| 6 | Decision Outcome              | `Chosen option: X, because Y`                         |
+| 7 | Consequences                  | Positive and Negative impacts                         |
 
-1. **Title** — Action-oriented: "Adopt X pattern for Y"
-2. **Status** — proposed | accepted | deprecated | superseded
-3. **Context and Problem Statement** — Why this decision is needed now
-4. **Decision Drivers** — Factors influencing the choice
-5. **Considered Options** — Minimum 2 options with Pros/Cons
-6. **Decision Outcome** — "Chosen option: X, because Y"
-7. **Consequences** — Positive and Negative impacts
-
-Metadata: `- Confidence: {level} — {rationale}`. Optional: `## Reassessment Triggers` after Consequences.
+Metadata line: `- Confidence: {level}. {rationale}`. Reassessment goes in an optional `## Reassessment Triggers` section after Consequences.
 
 ## Template-Specific Sections
 
-In addition to the core sections, include:
-
-- **Architecture Diagram** — Mermaid or text diagram showing the structure
-- **Quality Attributes** — Priority table (maintainability, performance, etc.)
-- **Trade-offs** — What is sacrificed for what is gained
-- **Implementation Guidelines** — Concrete rules for applying the pattern
-- **Monitoring** — How to verify the pattern is working
+| Section                   | Purpose                                             |
+| ------------------------- | --------------------------------------------------- |
+| Architecture Diagram      | Mermaid or text diagram showing the structure       |
+| Quality Attributes        | Priority table (maintainability, performance, etc.) |
+| Trade-offs                | What is sacrificed for what is gained               |
+| Implementation Guidelines | Concrete rules for applying the pattern             |
+| Monitoring                | How to verify the pattern is working                |
 
 ## Example
 
@@ -40,13 +42,11 @@ In addition to the core sections, include:
 - Status: accepted
 - Deciders: Project owner
 - Date: 2026-01-08
-- Confidence: high — 6 months of production use validated the pattern
+- Confidence: high. 6 months of production use validated the pattern.
 
 ## Context and Problem Statement
 
-Command files grew bloated, with some exceeding 900 lines. Knowledge (skills)
-and workflows (commands) were not separated, causing DRY violations and
-declining maintainability.
+Command files grew bloated, with some exceeding 900 lines. Knowledge (skills) and workflows (commands) were not separated, causing DRY violations and declining maintainability.
 
 ## Decision Drivers
 
@@ -74,8 +74,7 @@ Each command contains all required knowledge inline.
 
 ## Decision Outcome
 
-Adopted skill-centric architecture. Commands follow the Thin Wrapper pattern;
-implementation knowledge is consolidated in skills/.
+Adopted skill-centric architecture. Commands follow the Thin Wrapper pattern; implementation knowledge is consolidated in `skills/`.
 
 ### Positive Consequences
 
@@ -103,7 +102,7 @@ graph TD
 
 ## Trade-offs
 
-- More files in exchange for clear single-responsibility per file
+More files in exchange for clear single-responsibility per file.
 
 ## Reassessment Triggers
 

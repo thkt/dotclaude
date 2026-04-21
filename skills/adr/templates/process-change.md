@@ -1,36 +1,38 @@
 # Process Change Template
 
-Guide for documenting workflow, rule, or process change decisions.
+Document decisions that change a workflow, rule, review procedure, or quality gate.
 
 ## When to Use
 
-- Changing development workflows or conventions
-- Modifying review processes or quality gates
-- Introducing new rules or deprecating old ones
+| Scenario                                      |
+| --------------------------------------------- |
+| Changing development workflows or conventions |
+| Modifying review processes or quality gates   |
+| Introducing new rules or deprecating old ones |
 
-## Required Sections
+## Required Sections (MADR Core)
 
-All ADRs must include these MADR core sections:
+| # | Section                       | Purpose                                               |
+| - | ----------------------------- | ----------------------------------------------------- |
+| 1 | Title                         | Action-oriented. Example: `Adopt X process for Y`     |
+| 2 | Status                        | `proposed` / `accepted` / `deprecated` / `superseded` |
+| 3 | Context and Problem Statement | Why this decision is needed now                       |
+| 4 | Decision Drivers              | Factors influencing the choice                        |
+| 5 | Considered Options            | Minimum 2 options, each with Good / Bad bullets       |
+| 6 | Decision Outcome              | `Chosen option: X, because Y`                         |
+| 7 | Consequences                  | Positive and Negative impacts                         |
 
-1. **Title** — Action-oriented: "Adopt X process for Y"
-2. **Status** — proposed | accepted | deprecated | superseded
-3. **Context and Problem Statement** — Why this decision is needed now
-4. **Decision Drivers** — Factors influencing the choice
-5. **Considered Options** — Minimum 2 options with Pros/Cons
-6. **Decision Outcome** — "Chosen option: X, because Y"
-7. **Consequences** — Positive and Negative impacts
-
-Metadata: `- Confidence: {level} — {rationale}`. Optional: `## Reassessment Triggers` after Consequences.
+Metadata line: `- Confidence: {level}. {rationale}`. Reassessment goes in an optional `## Reassessment Triggers` section after Consequences.
 
 ## Template-Specific Sections
 
-In addition to the core sections, include:
-
-- **Current Process vs New Process** — Before/After comparison
-- **Transition Plan** — Phased rollout with success criteria
-- **Team Impact** — Affected roles, training needs
-- **Rollback Plan** — How to revert if the change fails
-- **Review Schedule** — When to evaluate effectiveness
+| Section                        | Purpose                                        |
+| ------------------------------ | ---------------------------------------------- |
+| Current Process vs New Process | Before / After comparison (table)              |
+| Transition Plan                | Phased rollout with success criteria per phase |
+| Team Impact                    | Affected roles, training needs                 |
+| Rollback Plan                  | How to revert if the change fails              |
+| Review Schedule                | When to evaluate effectiveness                 |
 
 ## Example
 
@@ -40,13 +42,11 @@ In addition to the core sections, include:
 - Status: accepted
 - Deciders: Project owner
 - Date: 2026-01-28
-- Confidence: medium — template-reality gap observed but optimal format unproven
+- Confidence: medium. Template-reality gap observed. Optimal format unproven.
 
 ## Context and Problem Statement
 
-SOW/Spec/ADR serve different audiences, but all templates used the
-same placeholder-list format. As a result, ADR templates were effectively
-unused, and 24 SOWs diverged from the template structure.
+SOW, Spec, and ADR serve different audiences, but all templates used the same placeholder-list format. As a result, ADR templates were effectively unused, and 24 SOWs diverged from the template structure.
 
 ## Decision Drivers
 
@@ -58,7 +58,7 @@ unused, and 24 SOWs diverged from the template structure.
 
 ### Audience-Optimized
 
-Keep structured tables for SOW/Spec; switch ADR to guideline format.
+Keep structured tables for SOW and Spec. Switch ADR to guideline format.
 
 - Good: Optimal format for each document's audience
 - Good: Eliminates template-reality gap
@@ -73,7 +73,7 @@ Keep all templates in placeholder format.
 
 ## Decision Outcome
 
-Adopted audience-optimized approach.
+Adopted the audience-optimized approach.
 
 ### Positive Consequences
 
@@ -94,8 +94,8 @@ Adopted audience-optimized approach.
 
 ## Review Schedule
 
-- 1 week: Check template usability
-- 1 month: Quantitative evaluation of SOW/ADR quality
+- 1 week. Check template usability.
+- 1 month. Quantitative evaluation of SOW and ADR quality.
 
 ## Reassessment Triggers
 

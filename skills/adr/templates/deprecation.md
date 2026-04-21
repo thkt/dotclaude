@@ -1,38 +1,42 @@
 # Deprecation Template
 
-Guide for documenting technology retirement and migration decisions.
+Document decisions to retire a technology, API, or legacy code path and the migration plan that replaces it.
 
 ## When to Use
 
-- Retiring a library, framework, or tool
-- Replacing deprecated APIs or patterns
-- Planning removal of legacy code
+| Scenario                               |
+| -------------------------------------- |
+| Retiring a library, framework, or tool |
+| Replacing deprecated APIs or patterns  |
+| Planning removal of legacy code        |
 
-## Required Sections
+## Required Sections (MADR Core)
 
-All ADRs must include these MADR core sections:
+| # | Section                       | Purpose                                               |
+| - | ----------------------------- | ----------------------------------------------------- |
+| 1 | Title                         | Action-oriented. Example: `Deprecate X in favor of Y` |
+| 2 | Status                        | `proposed` / `accepted` / `deprecated` / `superseded` |
+| 3 | Context and Problem Statement | Why this decision is needed now                       |
+| 4 | Decision Drivers              | Factors influencing the choice                        |
+| 5 | Considered Options            | Minimum 2 options (migrate vs keep)                   |
+| 6 | Decision Outcome              | `Chosen option: X, because Y`                         |
+| 7 | Consequences                  | Positive and Negative impacts                         |
 
-1. **Title** — Action-oriented: "Deprecate X in favor of Y"
-2. **Status** — proposed | accepted | deprecated | superseded
-3. **Context and Problem Statement** — Why this decision is needed now
-4. **Decision Drivers** — Factors influencing the choice
-5. **Considered Options** — Minimum 2 options (migrate vs keep)
-6. **Decision Outcome** — "Chosen option: X, because Y"
-7. **Consequences** — Positive and Negative impacts
+Metadata line: `- Confidence: {level}. {rationale}`. Reassessment goes in an optional `## Reassessment Triggers` section after Consequences.
 
-Metadata: `- Confidence: {level} — {rationale}`. Optional: `## Reassessment Triggers` after Consequences.
+## Template-Specific Sections (Required)
 
-## Template-Specific Sections (REQUIRED)
+Deprecation ADRs have stricter requirements than the other templates.
 
-Deprecation ADRs have stricter requirements:
-
-- **Deprecation Target** — What is being deprecated (name, version, usage locations)
-- **Replacement Technology** — What replaces it and why
-- **Impact Analysis** — Code impact, dependency impact, team impact
-- **Migration Plan (REQUIRED)** — Phased timeline with success criteria per phase
-- **Deprecation Warning Period** — Soft deprecation → Hard deprecation → Removal dates
-- **Rollback Plan (REQUIRED)** — Trigger conditions and rollback steps
-- **Communication** — Announcement schedule and documentation updates
+| Section                    | Required? | Purpose                                           |
+| -------------------------- | --------- | ------------------------------------------------- |
+| Deprecation Target         | Yes       | Name, version, usage locations                    |
+| Replacement Technology     | Yes       | What replaces it and the rationale                |
+| Impact Analysis            | Yes       | Code impact, dependency impact, team impact       |
+| Migration Plan             | Yes       | Phased timeline with success criteria per phase   |
+| Deprecation Warning Period | Yes       | Soft deprecation, hard deprecation, removal dates |
+| Rollback Plan              | Yes       | Trigger conditions and rollback steps             |
+| Communication              | Yes       | Announcement schedule and doc updates             |
 
 ## Example
 
@@ -42,13 +46,11 @@ Deprecation ADRs have stricter requirements:
 - Status: accepted
 - Deciders: Frontend team
 - Date: 2026-01-15
-- Confidence: high — official deprecation notice, clear bundle size data
+- Confidence: high. Official deprecation notice. Clear bundle size data.
 
 ## Context and Problem Statement
 
-moment.js has entered maintenance mode and its bundle size (67KB gzip)
-accounts for 15% of the application. It is not tree-shakable, so unused
-features are included in the bundle.
+moment.js has entered maintenance mode and its bundle size (67 KB gzip) accounts for 15% of the application. It is not tree-shakable, so unused features are included in the bundle.
 
 ## Decision Drivers
 
@@ -67,19 +69,23 @@ features are included in the bundle.
 ### Keep moment.js with wrapper
 
 - Good: No migration effort
-- Bad: Bundle size remains at 67KB
+- Bad: Bundle size remains at 67 KB
 - Bad: Security patch risk increases over time
 
 ## Deprecation Target
 
-- **Name**: moment.js
-- **Version**: 2.29.4
-- **Usage locations**: src/utils/date.ts, src/components/Calendar/
+| Attribute       | Value                                       |
+| --------------- | ------------------------------------------- |
+| Name            | moment.js                                   |
+| Version         | 2.29.4                                      |
+| Usage locations | src/utils/date.ts, src/components/Calendar/ |
 
 ## Replacement Technology
 
-- **Name**: date-fns
-- **Rationale**: Tree-shakable, TypeScript native, lightweight
+| Attribute | Value                                          |
+| --------- | ---------------------------------------------- |
+| Name      | date-fns                                       |
+| Rationale | Tree-shakable. TypeScript native. Lightweight. |
 
 ## Decision Outcome
 
@@ -87,7 +93,7 @@ Deprecate moment.js and gradually migrate to date-fns.
 
 ### Positive Consequences
 
-- ~60KB bundle size reduction
+- ~60 KB bundle size reduction
 - Tree-shaking optimization enabled
 
 ### Negative Consequences
@@ -105,15 +111,17 @@ Deprecate moment.js and gradually migrate to date-fns.
 
 ## Deprecation Warning Period
 
-- Soft deprecation: ESLint rule as warning
-- Hard deprecation: CI blocks moment.js imports
-- Full removal: Remove from package.json
+| Stage            | Mechanism                   |
+| ---------------- | --------------------------- |
+| Soft deprecation | ESLint rule as warning      |
+| Hard deprecation | CI blocks moment.js imports |
+| Full removal     | Remove from package.json    |
 
 ## Rollback Plan
 
-**Trigger**: Bug in date-fns that cannot reproduce moment.js behavior
+Trigger. Bug in date-fns that cannot reproduce moment.js behavior.
 
-**Steps**:
+Steps.
 
 1. Revert compat layer to moment.js
 2. Revert migrated files

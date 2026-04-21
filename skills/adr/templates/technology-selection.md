@@ -1,35 +1,37 @@
 # Technology Selection Template
 
-Guide for documenting technology/library/framework selection decisions.
+Document decisions that adopt a library, framework, service, or infrastructure component.
 
 ## When to Use
 
-- Choosing between libraries or frameworks
-- Selecting infrastructure components
-- Adopting new tools or services
+| Scenario                                 |
+| ---------------------------------------- |
+| Choosing between libraries or frameworks |
+| Selecting infrastructure components      |
+| Adopting new tools or services           |
 
-## Required Sections
+## Required Sections (MADR Core)
 
-All ADRs must include these MADR core sections:
+| # | Section                       | Purpose                                               |
+| - | ----------------------------- | ----------------------------------------------------- |
+| 1 | Title                         | Action-oriented. Example: `Adopt X for Y`             |
+| 2 | Status                        | `proposed` / `accepted` / `deprecated` / `superseded` |
+| 3 | Context and Problem Statement | Why this decision is needed now                       |
+| 4 | Decision Drivers              | Factors influencing the choice                        |
+| 5 | Considered Options            | Minimum 3 options, each with Good / Bad bullets       |
+| 6 | Decision Outcome              | `Chosen option: X, because Y`                         |
+| 7 | Consequences                  | Positive and Negative impacts                         |
 
-1. **Title** — Action-oriented: "Adopt X for Y"
-2. **Status** — proposed | accepted | deprecated | superseded
-3. **Context and Problem Statement** — Why this decision is needed now
-4. **Decision Drivers** — Factors influencing the choice
-5. **Considered Options** — Minimum 3 options with Pros/Cons
-6. **Decision Outcome** — "Chosen option: X, because Y"
-7. **Consequences** — Positive and Negative impacts
-
-Metadata: `- Confidence: {level} — {rationale}`. Optional: `## Reassessment Triggers` after Consequences.
+Metadata line: `- Confidence: {level}. {rationale}`. Reassessment goes in an optional `## Reassessment Triggers` section after Consequences.
 
 ## Template-Specific Sections
 
-In addition to the core sections, include:
-
-- **Implementation Plan** — Steps to adopt the technology
-- **Migration Strategy** — How to transition from current state
-- **Rollback Plan** — How to revert if adoption fails
-- **Success Criteria** — Measurable outcomes to validate the decision
+| Section             | Purpose                                      |
+| ------------------- | -------------------------------------------- |
+| Implementation Plan | Concrete steps to adopt the technology       |
+| Migration Strategy  | How to transition from the current state     |
+| Rollback Plan       | How to revert if the adoption fails          |
+| Success Criteria    | Measurable outcomes that validate the choice |
 
 ## Example
 
@@ -39,12 +41,11 @@ In addition to the core sections, include:
 - Status: accepted
 - Deciders: Entire team
 - Date: 2026-01-13
-- Confidence: high — team proficient with React Router, migration path well-documented
+- Confidence: high. Team proficient with React Router. Migration path well-documented.
 
 ## Context and Problem Statement
 
-React Router v6 only receives conservative updates. v7 introduces
-type-safe routing and improved data loading capabilities.
+React Router v6 only receives conservative updates. v7 introduces type-safe routing and improved data loading capabilities.
 
 ## Decision Drivers
 
@@ -75,7 +76,7 @@ A new router specialized in type safety.
 
 Migration to a full-stack framework.
 
-- Good: Integrated SSR/SSG
+- Good: Integrated SSR / SSG
 - Bad: Requires significant architectural changes
 - Bad: Incompatible with current SPA setup
 
@@ -94,9 +95,9 @@ Adopted React Router v7. Best balance of migration cost and benefits.
 
 ## Migration Strategy
 
-Phase 1: Upgrade and verify in development environment
-Phase 2: Fix breaking changes
-Phase 3: Production deployment
+Phase 1. Upgrade and verify in development environment.
+Phase 2. Fix breaking changes.
+Phase 3. Production deployment.
 
 ## Rollback Plan
 
