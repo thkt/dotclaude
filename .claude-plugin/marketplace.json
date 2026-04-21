@@ -110,14 +110,12 @@
         "./agents/reviewers/prompt-reviewer.md"
       ],
       "skills": [
-        "./skills/analyzing-root-causes/SKILL.md",
-        "./skills/applying-code-principles/SKILL.md",
+        "./skills/root-cause-analysis/SKILL.md",
         "./skills/reviewing-readability/SKILL.md",
         "./skills/reviewing-security/SKILL.md",
         "./skills/reviewing-silent-failures/SKILL.md",
         "./skills/reviewing-testability/SKILL.md",
-        "./skills/reviewing-type-safety/SKILL.md",
-        "./skills/screening-pr-review/SKILL.md"
+        "./skills/reviewing-type-safety/SKILL.md"
       ]
     },
     {
@@ -174,14 +172,13 @@
         "./skills/adr/SKILL.md"
       ],
       "skills": [
-        "./skills/accessing-google-workspace/SKILL.md",
-        "./skills/applying-frontend-patterns/SKILL.md",
-        "./skills/creating-adrs/SKILL.md",
-        "./skills/extracting-ubiquitous-language/SKILL.md",
+        "./skills/google-workspace/SKILL.md",
         "./skills/integrating-storybook/SKILL.md",
         "./skills/optimizing-performance/SKILL.md",
         "./skills/tailwind-patterns/SKILL.md",
-        "./skills/vercel-react/SKILL.md"
+        "./skills/vercel-react/SKILL.md",
+        "./skills/yomu-search/SKILL.md",
+        "./skills/recall-search/SKILL.md"
       ]
     }
   ]

@@ -48,9 +48,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: CHX.
 
-Categories: auth / data / resource / cascade / infra / state.
-Severity: (replaced by blast_radius — critical / high / medium / low).
-Extra: blast_radius (critical/high/medium/low) replaces severity, failure (what breaks), hypothesis (When [X], system will [Y]).
+Categories: auth / data / resource / cascade / infra / state. Severity: (replaced by blast_radius — critical / high / medium / low). Extra: blast_radius (critical/high/medium/low) replaces severity, failure (what breaks), hypothesis (When [X], system will [Y]).
 
 ```markdown
 ## Summary

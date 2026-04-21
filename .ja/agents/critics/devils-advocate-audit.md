@@ -2,8 +2,9 @@
 name: devils-advocate-audit
 description: 監査発見事項を反論的視点から検証し、偽陽性を削減。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
-model: sonnet
+model: opus
 context: fork
+background: true
 ---
 
 # Devils Advocate（監査）
@@ -29,7 +30,6 @@ context: fork
 | location   | src/api/client.ts:45 |
 | evidence   | any type used        |
 | reasoning  | Reduces type safety  |
-| confidence | 0.85                 |
 ```
 
 ## 検証フレームワーク

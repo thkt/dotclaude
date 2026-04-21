@@ -45,7 +45,7 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 
 | Type      | Name                  | Purpose                         |
 | --------- | --------------------- | ------------------------------- |
-| Skill     | analyzing-root-causes | 5 Whys methodology              |
+| Skill     | root-cause-analysis | 5 Whys methodology              |
 | Agent     | test-generator        | Regression test creation (fork) |
 | Agent     | build-error-resolver  | TypeScript/build error fix      |
 | Reference | defense-in-depth      | Post-fix multi-layer validation |

@@ -1,17 +1,15 @@
 ---
 name: test-coverage-reviewer
-description: テストカバレッジの品質レビュー。重要なギャップ、不足しているエッジケース、テスト品質の問題を特定します。
+description: テストカバレッジの品質レビュー。動作ギャップとテストの堅牢性。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [generating-tdd-tests, applying-code-principles]
+skills: [generating-tdd-tests]
 context: fork
 memory: project
 background: true
 ---
 
 # Test Coverage Reviewer
-
-テストカバレッジの品質を評価します: 動作のギャップ、不足しているエッジケース、テストの堅牢性。
 
 ## 生成コンテンツ
 
@@ -22,13 +20,13 @@ background: true
 
 ## 分析フェーズ
 
-| フェーズ | アクション           | 焦点                                        |
-| -------- | -------------------- | ------------------------------------------- |
-| 1        | 変更マッピング       | 変更コードと対応するテストのマッピング      |
-| 2        | ギャップ検出         | 未テストパス、不足するエラー/エッジケース   |
-| 3        | 品質チェック         | 動作 vs 実装の結合度                        |
-| 4        | ネガティブケース     | バリデーション失敗、境界条件                |
-| 5        | リグレッションリスク | テストは将来のリグレッションを検出できるか? |
+| フェーズ | アクション           | フォーカス                                   |
+| -------- | -------------------- | -------------------------------------------- |
+| 1        | 変更マッピング       | 変更コードと対応するテストのマッピング       |
+| 2        | ギャップ検出         | 未テストパス、不足するエラー/エッジケース    |
+| 3        | 品質チェック         | 動作 vs 実装の結合度                         |
+| 4        | ネガティブケース     | バリデーション失敗、境界条件                 |
+| 5        | リグレッションリスク | テストは将来のリグレッションを検出できるか？ |
 
 ## testability-reviewerとの区別
 
@@ -39,7 +37,7 @@ background: true
 | ギャップ検出、アンチパターンカタログ    | 依存注入、副作用                  |
 | 修正: 不足テストケースを追加            | 修正: テスト可能な構造に再設計    |
 
-## 重要度レーティング (ギャップ毎)
+## 重要度レーティング（ギャップ毎）
 
 | スコア | レベル    | 意味                                               |
 | ------ | --------- | -------------------------------------------------- |
@@ -61,42 +59,23 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のTCセクション参照。
+`skills/audit/references/calibration-examples.md` のTCセクション参照。
 
 ## エラーハンドリング
 
-| エラー               | アクション                                  |
-| -------------------- | ------------------------------------------- |
-| テストが見つからない | "No tests to review" と報告                 |
-| Glob結果なし         | 0ファイル検出を報告、クリーンと推定しない   |
-| ツールエラー         | エラー記録、ファイルスキップ、summaryに記載 |
+| エラー               | アクション                  |
+| -------------------- | --------------------------- |
+| テストが見つからない | "No tests to review" と報告 |
 
-## レポートルール
-
-| 条件                   | アクション                       |
-| ---------------------- | -------------------------------- |
-| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
-| 同一パターンが複数箇所 | 1つのfindingに統合               |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: TC。Location は `test-file:line` 形式。
+
+Categories: gap / quality / negative / regression。 Severity: critical / high / medium / low。 Verification: call_site_check / pattern_search — このコードパスは既存テストで実際に実行されているか？ Extra: related_code（`source-file:line`、オプション）、criticality（1-10、オプション — 上記レーティング参照）。
+
 ```markdown
-## Findings
-
-| ID       | Severity                       | Category                              | Location         | Related Code       | Criticality | Confidence |
-| -------- | ------------------------------ | ------------------------------------- | ---------------- | ------------------ | ----------- | ---------- |
-| TC-{seq} | critical / high / medium / low | gap / quality / negative / regression | `test-file:line` | `source-file:line` | 1–10        | 0.70–1.00  |
-
-### TC-{seq}
-
-| Field        | Value                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------- |
-| Evidence     | 不足している点や問題点                                                                  |
-| Reasoning    | このギャップが重要な理由                                                                |
-| Fix          | 提案するテストケース                                                                    |
-| Verification | call_site_check / pattern_search — このコードパスは既存テストで実際に実行されているか？ |
-
 ## Summary
 
 | Metric              | Value |

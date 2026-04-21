@@ -42,7 +42,7 @@ describe("[対象]", () => {
 });
 ```
 
-<!-- canonical: rules/development/CODE_THRESHOLDS.md -->
+<!-- canonical: rules/development/THRESHOLDS.md -->
 
 ## カバレッジ目標
 

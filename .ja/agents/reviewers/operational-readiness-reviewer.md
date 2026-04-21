@@ -3,13 +3,12 @@ name: operational-readiness-reviewer
 description: 運用準備レビュー。エラーバウンダリ、ローディング状態、ロギング、パフォーマンスバジェット。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: sonnet
-skills: [applying-code-principles]
 context: fork
 memory: project
 background: true
 ---
 
-# 運用準備レビューアー
+# Operational Readiness Reviewer
 
 ## 生成コンテンツ
 
@@ -55,44 +54,23 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のOPSセクション参照。
+`skills/audit/references/calibration-examples.md` のOPSセクション参照。
 
-## エラー処理
+## エラーハンドリング
 
-| エラー       | アクション                                  |
-| ------------ | ------------------------------------------- |
-| コードなし   | "レビュー対象コードなし"と報告              |
-| Glob空       | 0ファイル発見と報告、クリーンとは推測しない |
-| ツールエラー | エラーログ、ファイルスキップ、サマリに記録  |
+| エラー     | アクション              |
+| ---------- | ----------------------- |
+| コードなし | "No code to review"報告 |
 
-## レポートルール
-
-| 条件                   | アクション                       |
-| ---------------------- | -------------------------------- |
-| 確信度 < 0.70          | 除外（`finding-schema.md` 参照） |
-| 複数箇所で同じパターン | 単一の指摘に統合                 |
-| テストファイルやモック | 指摘しない                       |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。 テストファイルやモックは schema の Context Test（Intentional）で除外。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: OPS。
+
+Categories: error-boundary / loading-state / logging / performance / degradation。 Severity: critical / high / medium / low。 Verification: pattern_search / call_site_check — このコンポーネントはユーザー向けまたはクリティカルパスか？ Reasoning には爆発半径（何が壊れ、誰が気づくか）を明記。
 
 ```markdown
-## Findings
-
-| ID        | Severity                       | Category                                                             | Location    | Confidence |
-| --------- | ------------------------------ | -------------------------------------------------------------------- | ----------- | ---------- |
-| OPS-{seq} | critical / high / medium / low | error-boundary / loading-state / logging / performance / degradation | `file:line` | 0.70–1.00  |
-
-### OPS-{seq}
-
-| Field        | Value                                                                                         |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| Evidence     | コードスニペット                                                                              |
-| Reasoning    | 爆発半径: この障害時に何が壊れ、誰が気づくか                                                  |
-| Fix          | 推奨改善策                                                                                    |
-| Verification | pattern_search / call_site_check — このコンポーネントはユーザー向けまたはクリティカルパスか？ |
-
 ## Summary
 
 | Metric         | Value |

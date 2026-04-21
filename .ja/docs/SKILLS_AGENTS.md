@@ -10,8 +10,7 @@
 graph LR
     subgraph Skills["Skills (知識)"]
         S1[generating-tdd-tests]
-        S2[applying-code-principles]
-        S3[reviewing-security]
+        S2[reviewing-security]
     end
 
     subgraph Agents["Agents (実行)"]
@@ -49,8 +48,7 @@ graph LR
 | カテゴリ     | スキル                                               | 目的               |
 | ------------ | ---------------------------------------------------- | ------------------ |
 | TDD/テスト   | generating-tdd-tests                                 | テスト手法         |
-| 原則         | applying-code-principles, applying-frontend-patterns | 設計原則           |
-| ドキュメント | creating-adrs, extracting-ubiquitous-language        | ドキュメント生成   |
+| ドキュメント | adr, glossary                                        | ドキュメント生成   |
 | レビュー     | reviewing-\*                                         | コードレビュー観点 |
 | ワークフロー | orchestrating-workflows                              | ワークフロー定義   |
 
@@ -69,11 +67,9 @@ flowchart TD
 
 **トリガー例:**
 
-| トリガー            | ロードされるスキル         |
-| ------------------- | -------------------------- |
-| "TDD", "テスト駆動" | generating-tdd-tests       |
-| "SOLID", "原則"     | applying-code-principles   |
-| "/code --frontend"  | applying-frontend-patterns |
+| トリガー            | ロードされるスキル   |
+| ------------------- | -------------------- |
+| "TDD", "テスト駆動" | generating-tdd-tests |
 
 ### ファイル構造
 
@@ -182,4 +178,5 @@ SKILL.md → reference.md (1階層まで)
 ## 関連
 
 - [COMMANDS.md](./COMMANDS.md) — コマンドの設計
-- [SKILL_FORMAT](../rules/conventions/SKILL_FORMAT.md) — スキル定義形式
+- [SKILLS](../rules/conventions/SKILLS.md) — スキル定義形式
+- [SUBAGENT](../rules/conventions/SUBAGENT.md) — サブエージェント定義形式

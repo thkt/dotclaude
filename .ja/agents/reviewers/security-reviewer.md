@@ -1,15 +1,15 @@
 ---
 name: security-reviewer
-description: OWASP Top 10ベースのセキュリティ脆弱性検出。
+description: OWASP Top 10 ベースのセキュリティ脆弱性検出。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-security, applying-code-principles]
+skills: [reviewing-security]
 context: fork
 memory: project
 background: true
 ---
 
-# セキュリティレビューアー
+# Security Reviewer
 
 ## 生成コンテンツ
 
@@ -29,14 +29,16 @@ background: true
 | 5        | SSRF検出            | ユーザー入力URL処理                                                     |
 | 6        | フロントエンドTaint | Source→Sinkデータフロー (`references/frontend-taint-checklist.md` 参照) |
 
-## 信頼度スコアリング
+## 報告基準
 
-| スコア  | 説明             | アクション    |
-| ------- | ---------------- | ------------- |
-| 0.9-1.0 | 確実な悪用       | Critical      |
-| 0.8-0.9 | 明確な脆弱性     | High          |
-| 0.6-0.8 | 可能性のある問題 | 報告 + ヒント |
-| < 0.6   | 推測的           | 報告しない    |
+security-reviewer は `finding-schema.md` の緩和された基準を使う — 悪用可能性が不確実でも、具体的な fix suggestion を添えて finding を報告する。純粋な推測（具体的 Trigger と fix の両方なし）は除外。
+
+| シグナル強度     | Severity | アクション    |
+| ---------------- | -------- | ------------- |
+| 確実な悪用       | Critical | 報告           |
+| 明確な脆弱性     | High     | 報告           |
+| 可能性のある問題 | Medium   | 報告 + ヒント  |
+| 純推測のみ       | —        | 報告しない     |
 
 ## 除外
 
@@ -53,43 +55,23 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のSECセクション参照。
+`skills/audit/references/calibration-examples.md` のSECセクション参照。
 
 ## エラーハンドリング
 
-| エラー       | 対処                                         |
-| ------------ | -------------------------------------------- |
-| コードなし   | "レビュー対象なし"を報告                     |
-| Glob結果なし | 0件検出を報告、クリーンとは推定しない        |
-| ツールエラー | エラーログ、ファイルスキップ、サマリーに記載 |
+| エラー     | アクション              |
+| ---------- | ----------------------- |
+| コードなし | "No code to review"報告 |
 
-## 報告ルール
-
-| 条件                             | アクション          |
-| -------------------------------- | ------------------- |
-| 同一パターンが複数箇所にある場合 | 単一のfindingに統合 |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: SEC。報告基準を緩和（オーバーライド）。
+
+Categories: A01-A10。 Severity: critical / high / medium。 Verification: execution_trace / call_site_check / pattern_search — 悪用可能性を確認するため何を検証するか。 Reasoning は脅威モデルを使う: 攻撃者の能力 → 攻撃ベクター → 具体的影響。 Extra: entry_points（オプション、execution_trace 用）— `file:line`。
 
 ```markdown
-## Findings
-
-| ID        | Severity                 | Category | Location    | Confidence |
-| --------- | ------------------------ | -------- | ----------- | ---------- |
-| SEC-{seq} | critical / high / medium | A01-A10  | `file:line` | 0.60–1.00  |
-
-### SEC-{seq}
-
-| Field        | Value                                                               |
-| ------------ | ------------------------------------------------------------------- |
-| Evidence     | コードスニペット                                                    |
-| Reasoning    | 脅威モデル: 攻撃者の能力 → 攻撃ベクター → 具体的影響                |
-| Fix          | セキュアな代替                                                      |
-| Verification | execution_trace / call_site_check / pattern_search — 確認すべきこと |
-| Entry Points | `file:line`（オプション、execution_trace用）                        |
-
 ## Summary
 
 | Metric         | Value |

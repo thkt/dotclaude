@@ -4,13 +4,12 @@ description: Reconcile challenge and verification results into cross-domain root
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
-skills: [applying-code-principles, analyzing-root-causes]
+skills: [root-cause-analysis]
 ---
 
 # Progressive Integrator
 
-Reconcile challenge and verification evidence, then synthesize cross-domain root
-causes.
+Reconcile challenge and verification evidence, synthesize cross-domain root causes, then emit the canonical snapshot data (per ADR 0047). Leader renders the Markdown output from that snapshot; integrator does not produce Markdown directly.
 
 ## Input
 
@@ -53,7 +52,6 @@ Challenger results and Verifier results, passed via spawn prompt from Leader.
 | Field            | Value                                   |
 | ---------------- | --------------------------------------- |
 | verdict          | verified / weak_evidence / unverifiable |
-| confidence       | 0.60-1.00                               |
 | budget_exhausted | true / false                            |
 | evidence         | what was found or why not               |
 
@@ -69,39 +67,34 @@ Challenger results and Verifier results, passed via spawn prompt from Leader.
 
 ## Workflow
 
-| Phase         | Action                                                | Trigger                  |
-| ------------- | ----------------------------------------------------- | ------------------------ |
-| 1. Receive    | Parse challenger and verifier results from prompt     | On spawn                 |
-| 2. Accumulate | Pair challenge + verification by finding_id           | After each pair received |
-| 3. Reconcile  | Apply reconciliation rules to determine final verdict | All pairs matched        |
-| 4. Integrate  | Correlate + synthesize + prioritize                   | After reconciliation     |
-| 5. Report     | Output final Markdown (returned to leader via Task)   | After integration        |
+| Phase         | Action                                                           | Trigger                  |
+| ------------- | ---------------------------------------------------------------- | ------------------------ |
+| 1. Receive    | Parse challenger and verifier results from prompt                | On spawn                 |
+| 2. Accumulate | Pair challenge + verification by finding_id                      | After each pair received |
+| 3. Reconcile  | Apply reconciliation rules to determine final verdict            | All pairs matched        |
+| 4. Integrate  | Correlate + synthesize + prioritize                              | After reconciliation     |
+| 5. Emit       | Emit snapshot data (YAML, per snapshot.yaml schema) to Leader    | After integration        |
 
 ## Reconciliation (Phase 3)
 
 Match by `finding_id`, apply in order:
 
-1. disputed + verified → needs_review (confidence = verifier.confidence)
-2. Any + verified → confirmed (confidence = max; if downgraded, restore original
-   severity)
-3. Any + unverifiable → keep challenger verdict, degrade confidence by 0.10
-4. Any + weak_evidence + budget_exhausted → keep challenger verdict, flag
-   `needs_context`
+1. disputed + verified → needs_review
+2. Any + verified → confirmed (if downgraded, restore original severity)
+3. Any + unverifiable → keep challenger verdict
+4. Any + weak_evidence + budget_exhausted → keep challenger verdict, flag `needs_context`
 5. Any + weak_evidence → keep challenger verdict
-6. Verifier-only: verified→confirmed, weak_evidence→needs_context,
-   unverifiable→exclude
+6. Verifier-only: verified→confirmed, weak_evidence→needs_context, unverifiable→exclude
 
-Rule 1 catches false negatives (Challenger dismissed but Verifier found
-evidence).
+Rule 1 catches false negatives (Challenger dismissed but Verifier found evidence).
 
-After reconciliation, process `confirmed`, `downgraded`, `needs_context`, or
-`needs_review`. Discard `disputed`.
+After reconciliation, process `confirmed`, `downgraded`, `needs_context`, or `needs_review`. Discard `disputed`.
 
 ## Integration (Phase 4)
 
 | Group      | Steps                                                                             |
 | ---------- | --------------------------------------------------------------------------------- |
-| Clean      | Deduplicate, filter by confidence                                                 |
+| Clean      | Deduplicate, drop findings without concrete evidence                              |
 | Correlate  | Cross-domain grouping, convergence signal detection                               |
 | Synthesize | Root cause synthesis across domains, 5 Whys on clusters                           |
 | Prioritize | Score by findings resolved × severity × fixability, generate unified action plans |
@@ -112,7 +105,7 @@ After reconciliation, process `confirmed`, `downgraded`, `needs_context`, or
 | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1    | Deduplicate by `file:line:category` (keep highest severity)                                                                                    |
 | 1a   | Set `severity_upgraded: true/false` (true = contributors disagreed on severity). On true, record `original_severities: [{reviewer, severity}]` |
-| 2    | Filter by finding.confidence: ≥95% include, 60-94% include with note, <60% exclude                                                             |
+| 2    | Drop findings lacking a concrete trigger or file-read verification (schema-mandated); keep the rest                                            |
 
 ### Correlate
 
@@ -159,52 +152,46 @@ After reconciliation, process `confirmed`, `downgraded`, `needs_context`, or
 
 | fix_type | Description                        | Action              |
 | -------- | ---------------------------------- | ------------------- |
-| auto     | Known fix pattern, confidence ≥85% | Generate suggestion |
+| auto     | Known fix pattern applies without ambiguity | Generate suggestion |
 | manual   | Requires human judgment            | Skip suggestion     |
 
 ## Output
 
-Output final Markdown report (returned to leader via Task completion).
+Integrator emits snapshot data (YAML, conforming to `skills/audit/templates/snapshot.yaml` — canonical per ADR 0047). Leader persists the snapshot to history and renders the Markdown report using `skills/audit/templates/output.md`. Integrator does not produce Markdown.
 
-| Section       | Schema Source                      |
-| ------------- | ---------------------------------- |
-| `summary`     | `templates/audit/snapshot.yaml`    |
-| `root_causes` | `templates/audit/snapshot.yaml`    |
-| `priorities`  | `templates/audit/snapshot.yaml`    |
-| `suggestions` | Integrator-specific (schema below) |
+### Integrator responsibilities
 
-Exclude `meta` and `pipeline_health` — leader adds those.
+| Field                              | Source                                                            |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| `findings[]`                       | All confirmed/needs_review/needs_context entries, including RC-* synthesis |
+| `findings[RC-*]`                   | Root cause synthesis with `resolves: [IDs]`, `effort: 5min/15min/30min/1h/manual`, `category`, `message` |
+| `findings[*].status`               | `open` → Wave 1 raw, `confirmed` → reconciled, `dismissed` → challenger-rejected, `needs_review` → disputed-but-verified, `needs_context` → weak evidence + budget exhausted |
+| `summary.total_findings`           | Count of findings with status ∈ {open, confirmed, needs_review}   |
+| `summary.{critical,high,medium,low}` | Severity counts over the same subset                            |
+| `summary.dismissed`                | Count of challenger-rejected findings                             |
+| `summary.trust_score`              | Priority-weighted convergence score (per ADR 0035, 0-100)         |
+| `pipeline_health.*_completed`      | Boolean per agent, `false` if stalled or skipped                  |
+| `pipeline_health.domains_skipped`  | `["<domain>: <reason>"]` list                                     |
 
-```markdown
-## Suggestions
+### Leader responsibilities (not integrator's)
 
-| Metric             | Value |
-| ------------------ | ----- |
-| auto_fixable_count | count |
-| manual_count       | count |
+| Field                              | Source                                                            |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| `session_id` / `timestamp`         | Leader captures at audit start                                    |
+| `branch` / `target` / `focus`      | Leader from git state and scope input                             |
+| `pre_flight`                       | Leader from test runner and hook findings                         |
+| `delta_from` / `delta.*`           | Leader computes against previous snapshot                         |
 
-### SUG-001
+### Auto-fix marking
 
-| Field          | Value                               |
-| -------------- | ----------------------------------- |
-| root_cause_ref | RC-001                              |
-| category       | category                            |
-| severity       | critical / high / medium / low      |
-| fix_type       | auto / manual                       |
-| confidence     | 0.85-1.00                           |
-| location       | file path : line number             |
-| effort         | 5min / 15min / 30min / 1h / manual  |
-| Before         | original code snippet               |
-| After          | suggested fix snippet               |
-| Rationale      | why this fix — traces to root cause |
-```
+A finding is auto-fixable when `status: open | confirmed`, severity ∈ {low, medium}, location points to a single line, and a known fix pattern applies without ambiguity. Record this on the finding itself (category or a dedicated `fix_type` field); do not emit a separate suggestions list — output.md derives Quick Fixes from findings.
 
 ## Synthesis Principles
 
 | Principle                 | Description                                             |
 | ------------------------- | ------------------------------------------------------- |
 | Root causes over symptoms | Same location = likely one shared cause                 |
-| Cross-domain signals      | 2+ domains flagging same area = high-confidence issue   |
+| Cross-domain signals      | 2+ domains flagging same area = well-supported issue    |
 | One action, many fixes    | Best actions resolve multiple findings at once          |
 | Traceability              | Every root cause traces to its source findings          |
 | Honest standalone         | Not every finding has a cross-domain root cause         |
@@ -246,4 +233,4 @@ For standalone:   Impact × Reach × Fixability
 | Both missing           | Leader provides raw reviewer findings → start Phase 4    | Raw reviewer findings, no reconciliation applied  |
 | No findings received   | Return empty report with note                            | `summary.total_findings: 0`, note in report       |
 | Challenge read failure | Mark finding as `needs_context`                          | Individual finding flagged for review             |
-| All low confidence     | Report "No high-confidence items"                        | Empty priorities, all findings listed as low      |
+| All weakly supported   | Report "No well-supported items"                         | Empty priorities, all findings listed as low      |

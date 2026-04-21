@@ -36,14 +36,11 @@ user-invocable: true
 
 ## 入力
 
-実装の説明: `$1`（必須、空→プロンプト表示）フラグ: `--frontend`, `--principles`,
-`--storybook`
+実装の説明: `$1`（必須、空→プロンプト表示）フラグ: `--storybook`
 
-| フラグ         | 読み込み                   |
-| -------------- | -------------------------- |
-| `--frontend`   | applying-frontend-patterns |
-| `--principles` | applying-code-principles   |
-| `--storybook`  | integrating-storybook      |
+| フラグ        | 読み込み              |
+| ------------- | --------------------- |
+| `--storybook` | integrating-storybook |
 
 ## SOWコンテキスト
 
@@ -56,7 +53,7 @@ user-invocable: true
 - Skill: orchestrating-workflows（RGRCサイクル）
 - Hook: gates（完了ゲート + レビュー強制、自動イテレーション）
 
-<!-- canonical: rules/core/PRE_TASK_CHECK.md (decomposition thresholds) -->
+<!-- canonical: rules/core/PREFLIGHT.md (decomposition thresholds) -->
 
 ## スコープガード
 

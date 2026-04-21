@@ -1,7 +1,6 @@
 ---
 name: commit
-description: Analyze Git diff and generate Conventional Commits format messages. Use when
-  user mentions コミットして, コミット作成, commit changes.
+description: Analyze Git diff and generate Conventional Commits format messages. Use when user mentions コミットして, コミット作成, commit changes.
 allowed-tools: Bash(git:*), Bash(cat:*), Bash(mv:*), Task, AskUserQuestion
 model: opus
 argument-hint: "[context or issue reference]"
@@ -17,25 +16,20 @@ Analyze staged changes and generate Conventional Commits messages.
 - Context or issue reference: `$1` (optional)
 - If `$1` is empty → analyze staged changes only
 
-## Task
+## Agent
 
-| Type | Name             | Purpose                         |
-| ---- | ---------------- | ------------------------------- |
-| Task | commit-generator | Conventional Commits gen (fork) |
+| Type  | Name             | Purpose                         |
+| ----- | ---------------- | ------------------------------- |
+| Agent | commit-generator | Conventional Commits gen (fork) |
 
 ## Execution
 
-| Step | Action                                                           |
-| ---- | ---------------------------------------------------------------- |
-| 1    | `Task` with `subagent_type: commit-generator`, `mode: "dontAsk"` |
-| 2    | Present 3 message candidates via AskUserQuestion                 |
-| 3    | User selects or customizes (Other)                               |
-| 4    | Execute selected commit (sandbox-compatible)                     |
-
-### Message Selection (Step 2)
-
-Present 3 generator candidates as AskUserQuestion options (varied
-scope/wording).
+| Step | Action                                                                    |
+| ---- | ------------------------------------------------------------------------- |
+| 1    | `Task` with `subagent_type: commit-generator`, `mode: "dontAsk"`          |
+| 2    | Present 3 generator candidates via AskUserQuestion (varied scope/wording) |
+| 3    | User selects or customizes (Other)                                        |
+| 4    | Execute selected commit (sandbox-compatible)                              |
 
 ### Sandbox-Compatible Commit
 
@@ -49,12 +43,6 @@ mv /tmp/claude/commit-msg.txt ~/.Trash/ 2>/dev/null || true
 
 # Single-line: multiple -m flags
 git commit -m "subject" -m "body"
-```
-
-## Flow: Preview
-
-```text
-[Generator YAML] → [Preview] → [Confirm] → [Execute]
 ```
 
 ## Display Format
@@ -76,7 +64,7 @@ Key Decisions:
 
 ### Success
 
-**Committed**: `[short-hash]` <type>(<scope>): <description>
+Committed: `[short-hash]` <type>(<scope>): <description>
 
 ## Verification
 

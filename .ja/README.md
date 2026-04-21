@@ -236,8 +236,8 @@ brew install guardrails formatter reviews gates
 
 コマンドリファレンスを参照:
 
-- [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOW_REFERENCE.md)
-- [English Command Reference](../rules/workflows/WORKFLOW_REFERENCE.md)
+- [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOWS.md)
+- [English Command Reference](../rules/workflows/WORKFLOWS.md)
 
 ## 🔄 標準ワークフロー
 
@@ -280,15 +280,15 @@ brew install guardrails formatter reviews gates
 ### コアドキュメント
 
 - [設計思想](./docs/DESIGN.md) — **なぜこの設計か**（Design Philosophy）
-- [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOW_REFERENCE.md)
-- [コマンドリファレンス（英語）](../rules/workflows/WORKFLOW_REFERENCE.md)
+- [コマンドリファレンス（日本語）](./rules/workflows/WORKFLOWS.md)
+- [コマンドリファレンス（英語）](../rules/workflows/WORKFLOWS.md)
 - [設定ガイド（日本語）](./CLAUDE.md)
 - [設定ガイド（英語）](../CLAUDE.md)
 
 ### 開発ガイド
 
 - [原則ガイド](../rules/PRINCIPLES.md) - すべての開発原則の完全な概要
-- [ドキュメントルール](../rules/conventions/DOCUMENTATION.md) - ドキュメントの標準
+- [Markdown規約](../rules/conventions/MARKDOWN.md) - Markdownの書き方と参照ルール
 
 ## 🤝 貢献
 

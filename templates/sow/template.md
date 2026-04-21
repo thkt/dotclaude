@@ -70,7 +70,7 @@ Observable signal: concrete check a test can perform. Enables downstream Spec FR
 
 ## Implementation Plan
 
-<!-- Phases with Files ≥5 must be split into Units (PRE_TASK_CHECK threshold) -->
+<!-- Phases with Files ≥5 must be split into Units (PREFLIGHT threshold) -->
 
 ### Phase 1: [title]
 

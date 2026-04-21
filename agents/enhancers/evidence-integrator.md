@@ -5,7 +5,7 @@ description: Synthesize static findings, outcome evidence, and adversarial resul
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
-skills: [applying-code-principles, analyzing-root-causes]
+skills: [root-cause-analysis]
 ---
 
 # Evidence Integrator
@@ -55,7 +55,6 @@ Four data sources, passed via spawn prompt from /verify leader.
 | Field            | Value                                   |
 | ---------------- | --------------------------------------- |
 | verdict          | verified / weak_evidence / unverifiable |
-| confidence       | 0.60-1.00                               |
 | budget_exhausted | true / false                            |
 | evidence         | what was found or why not               |
 ```
@@ -78,7 +77,7 @@ Four data sources, passed via spawn prompt from /verify leader.
 
 ### Promoted Findings
 
-| #   | Test Name | Target | Assertion | Confidence | Detail |
+| #   | Test Name | Target | Assertion | Detail |
 | --- | --------- | ------ | --------- | ---------- | ------ |
 
 ### Excluded Tests
@@ -115,15 +114,15 @@ Output: reconciled finding set entering Phase 3 Merge â€” no prior deduplication
 
 ## Cross-Evidence Correlation (Phase 4)
 
-Correlate static findings with dynamic evidence to strengthen or weaken confidence.
+Correlate static findings with dynamic evidence to reinforce or weaken support.
 
-| Static Finding | Dynamic Evidence                  | Action                                                   |
-| -------------- | --------------------------------- | -------------------------------------------------------- |
-| High severity  | Build/test fails at same location | Elevate to critical, confidence +0.10                    |
-| High severity  | Adversarial test confirms         | Elevate confidence +0.10                                 |
-| Any severity   | Build/test passes cleanly         | No change (passing does not disprove)                    |
-| Weak evidence  | Adversarial test confirms         | Upgrade to verified, confidence = adversarial confidence |
-| Any finding    | No dynamic evidence               | Keep as-is (static-only finding)                         |
+| Static Finding | Dynamic Evidence                  | Action                                          |
+| -------------- | --------------------------------- | ----------------------------------------------- |
+| High severity  | Build/test fails at same location | Elevate to critical                             |
+| High severity  | Adversarial test confirms         | Mark as strongly supported                      |
+| Any severity   | Build/test passes cleanly         | No change (passing does not disprove)           |
+| Weak evidence  | Adversarial test confirms         | Upgrade to verified                             |
+| Any finding    | No dynamic evidence               | Keep as-is (static-only finding)                |
 
 Group correlated findings by location (file, module, boundary). Identify
 convergence signals where 2+ evidence types flag the same area.
@@ -136,7 +135,7 @@ Reuse progressive-integrator logic.
 | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1    | Deduplicate by file:line:category (keep highest severity)                                                                                      |
 | 1a   | Set `severity_upgraded: true/false` (true = contributors disagreed on severity). On true, record `original_severities: [{reviewer, severity}]` |
-| 2    | Filter by confidence: >= 0.70 include, < 0.70 exclude                                                                                          |
+| 2    | Drop findings lacking a concrete trigger or file-read verification; keep the rest                                                              |
 | 3    | Group by location (file, module, boundary)                                                                                                     |
 | 4    | Identify convergence (2+ domains or 2+ evidence types)                                                                                         |
 | 4a   | Severity re-evaluation per convergence cluster (see below)                                                                                     |
@@ -205,7 +204,6 @@ Empty: `(none)` when gate = Ready.
 | findings_resolved | [finding IDs]                                             |
 | evidence_types    | [static, outcome, adversarial]                            |
 | five_whys         | [why/answer pairs]                                        |
-| confidence        | 0.70-1.00                                                 |
 | action            | unified fix description                                   |
 | suggested_action  | `/think` / `/code` / `/fix` (skill that resolves this RC) |
 | effort            | 5min / 15min / 30min / 1h / manual                        |
@@ -214,11 +212,11 @@ Empty: `(none)` when gate = Ready.
 
 #### High
 
-| # | ID | Source | File:Line | Description | Evidence Types | Confidence |
+| # | ID | Source | File:Line | Description | Evidence Types |
 
 #### Medium
 
-| # | ID | Source | File:Line | Description | Evidence Types | Confidence |
+| # | ID | Source | File:Line | Description | Evidence Types |
 
 ### Cross-Evidence Correlations
 
@@ -255,7 +253,7 @@ No prior review: `No prior review`. Legacy Trust Score format: `Legacy format â€
 | Dynamic elevates, not negates | Passing build/test does not disprove a finding                                 |
 | Trace everything              | Every root cause links to source findings                                      |
 | Don't force correlation       | Static-only findings remain as standalone                                      |
-| Confidence floor              | Exclude findings below 0.70 from the reconciled set                            |
+| Evidence bar                  | Exclude findings lacking a concrete trigger or file-read verification          |
 | Zero-tolerance on gate        | Any reconciled finding sets gate = NotReady (severity determines fix priority, not gate) |
 
 ## Error Handling

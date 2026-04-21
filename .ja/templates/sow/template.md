@@ -57,7 +57,7 @@ draft <!-- draft | in-progress | completed -->
 
 ## Implementation Plan
 
-<!-- ファイル数 ≥5 の Phase は Unit 分割必須（PRE_TASK_CHECK 閾値） -->
+<!-- ファイル数 ≥5 の Phase は Unit 分割必須（PREFLIGHT 閾値） -->
 
 ### Phase 1: [タイトル]
 

@@ -4,9 +4,8 @@ description:
   PR のAIスクリーニングレビュー —
   人間のレビュー前に事前チェック。スクリーニング, PRレビュー, プレビュー,
   preview PR, pre-review に言及した場合に使用。深い品質監査には /audit を使用。
-allowed-tools: Bash(git:*), Bash(gh:*), Read, Grep, Glob, AskUserQuestion
+allowed-tools: [Bash(git:*), Bash(gh:*), Read, Grep, Glob, AskUserQuestion]
 model: sonnet
-skills: [screening-pr-review]
 argument-hint: "[PR URL or number]"
 user-invocable: true
 ---
@@ -24,10 +23,50 @@ user-invocable: true
 | 1    | PR 特定: `gh pr view $1 --json number,title,body,labels,files,url`（フォールバック: `$1` 省略） |
 | 2    | PR 未検出または作業ツリーが dirty (`git status --porcelain`) の場合中止                         |
 | 3    | PR チェックアウト: `gh pr checkout $PR`                                                         |
-| 4    | コンテキスト並列取得（diff、コメント、インラインコメント）— skill 参照                          |
+| 4    | PR コンテキストを並列取得（下記参照）                                                           |
 | 5    | 各変更ファイルをローカルで読み取り                                                              |
-| 6    | skill に従いレビュー: 概要 → ファイル別 → 依存影響 → 指摘                                       |
+| 6    | プロセスに従いレビュー: 概要 → ファイル別 → 依存影響 → 指摘                                     |
 | 7    | 構造化されたスクリーニングレポートを出力                                                        |
+
+### PR コンテキスト収集
+
+```bash
+# メタデータ
+gh pr view --json title,body,labels,files,url $PR
+
+# 差分
+gh pr diff $PR
+
+# 既存コメント
+gh pr view --comments $PR
+
+# インラインコメント
+gh api repos/{owner}/{repo}/pulls/{number}/comments \
+  --jq '.[] | {file: .path, user: .user.login, comment: .body}'
+```
+
+gh 出力フィールドに `author` を含めないこと。
+
+## コメントラベル
+
+| ラベル   | 意味                           | 重要度 |
+| -------- | ------------------------------ | ------ |
+| `[must]` | マージ前に修正必須             | 高     |
+| `[want]` | 修正推奨、ブロッキングではない | 中     |
+| `[imo]`  | 個人的見解、採否は任意         | 低     |
+| `[ask]`  | 確認が必要な質問               | -      |
+| `[nits]` | 軽微なスタイル/フォーマット    | 低     |
+| `[info]` | 情報共有、アクション不要       | -      |
+
+## コメントトーン
+
+| ルール       | 詳細                                                                            |
+| ------------ | ------------------------------------------------------------------------------- |
+| フォーマット | `[label] <観察した動作またはリスク>. <提案>. (file:line)`                       |
+| 簡潔         | `[imo]`/`[nits]`/`[info]` は3行以内; 根拠が必要な `[must]`/`[want]` は5行まで |
+| 敬意         | 実装者への敬意を忘れず、命令口調を避ける                                        |
+| 提案型       | 「〜を検討してください」可、「〜は間違いです」不可                              |
+| 著者向け     | コメントはそのままコピペされる可能性がある — PR著者に適した粒度で書く           |
 
 ## 出力
 
@@ -81,3 +120,9 @@ user-invocable: true
 | 深度     | スクリーニング（1パス） | マルチレビューア + チャレンジャー |
 | 速度     | 高速（sonnet）          | 徹底（opus、並列）                |
 | 用途     | 人間レビュー前          | マージ前または品質ゲート          |
+
+## 参照
+
+| トピック               | ファイル                                             |
+| ---------------------- | ---------------------------------------------------- |
+| レビューチェックリスト | `${CLAUDE_SKILL_DIR}/references/review-checklist.md` |

@@ -5,7 +5,6 @@ tools: [Bash, Glob, Grep, LS, Read, SendMessage]
 model: opus
 context: fork
 memory: project
-skills: [applying-code-principles]
 ---
 
 # Feature Architect

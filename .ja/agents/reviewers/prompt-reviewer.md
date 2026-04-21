@@ -10,7 +10,7 @@ background: true
 
 # Prompt Reviewer
 
-rules, skills, agents, templatesのLLM向けプロンプトファイル品質レビュー。
+rules, skills, agents, templates 配下の LLM 向けプロンプトファイル品質レビュー。
 
 ## 生成コンテンツ
 
@@ -20,13 +20,13 @@ rules, skills, agents, templatesのLLM向けプロンプトファイル品質レ
 
 ## スコープ
 
-| 対象                     | 対象外                                   |
-| ------------------------ | ---------------------------------------- |
-| rules/\*_/_.md           | コードファイル (_.ts, _.rs 等)           |
-| skills/\*/SKILL.md       | 人間向けドキュメント (README, CHANGELOG) |
-| skills/_/references/_.md | 内容の正確性（ドメイン固有）             |
-| agents/\*_/_.md          | セキュリティ懸念                         |
-| templates/\*_/_.md       | .ja/ 翻訳（ルールに従い構造のみ）        |
+| 対象                       | 対象外                                |
+| -------------------------- | ------------------------------------- |
+| `rules/**/*.md`            | コードファイル (_.ts, _.rs 等)        |
+| `skills/*/SKILL.md`        | 人間向けドキュメント（README、CHANGELOG） |
+| `skills/*/references/*.md` | 内容の正確性（ドメイン固有）          |
+| `agents/**/*.md`           | セキュリティ懸念                      |
+| `templates/**/*.md`        | .ja/ 翻訳（ルールに従い構造のみ）     |
 
 ## 分析フェーズ
 
@@ -57,20 +57,19 @@ rules, skills, agents, templatesのLLM向けプロンプトファイル品質レ
 | アクション付きインライン条件          | デシジョンテーブル               |
 | 順序依存性のない番号付きリスト        | テーブル（順序は意味論的でない） |
 
-閾値: 並列項目が3以上。2項目のproseは許容。
+閾値: 並列項目が3以上。2項目の prose は許容。
 
 ### Phase 3: フォーマット準拠
 
-| チェック          | ルール                                   | 適用対象                      |
-| ----------------- | ---------------------------------------- | ----------------------------- |
-| 太字禁止          | LLM向けファイルで `**太字**` 不可        | agents/\*.md, skills/SKILL.md |
-| Agent frontmatter | name, description, tools, model, context | agents/\*_/_.md               |
-| Skill frontmatter | model（またはデフォルト）, aliases       | skills/\*/SKILL.md            |
-| セクション完全性  | 必須セクションの存在（下記参照）         | agents/\*.md, skills/SKILL.md |
-| テーブル整列      | 一貫したカラム区切り、不揃い行なし       | 全ファイル                    |
+| チェック          | ルール                                                     | 適用対象                         |
+| ----------------- | ---------------------------------------------------------- | -------------------------------- |
+| 太字禁止          | LLM 向けファイルで `**太字**` 不可                         | `agents/*.md`, `skills/SKILL.md` |
+| Agent frontmatter | name, description, tools, model（context 推奨）            | `agents/**/*.md`                 |
+| Skill frontmatter | name, description（`rules/conventions/SKILLS.md` 参照）    | `skills/*/SKILL.md`              |
+| セクション完全性  | 必須セクションの存在（下記参照）                           | `agents/*.md`, `skills/SKILL.md` |
+| テーブル整列      | 一貫したカラム区切り、不揃い行なし                         | 全ファイル                       |
 
-Agent必須セクション: タイトル, Generated Content, Analysis Phases, Error Handling, Output。
-Skill必須セクション: Input, Execution, Output（または同等）。
+Reviewer agent（`agents/reviewers/`）必須セクション: title, Generated Content, Analysis Phases, Error Handling, Output。 その他の agent 種別（generators, teams, architects）: title, Error Handling, Output。 Skill 必須セクション: Input, Execution, Output。Output のテンプレート参照は許容。
 
 ### Phase 4: 明確性
 
@@ -92,27 +91,27 @@ Skill必須セクション: Input, Execution, Output（または同等）。
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のPQセクション参照。
+`skills/audit/references/calibration-examples.md` のPQセクション参照。
 
-| シナリオ                               | 判定          | 理由                                    |
-| -------------------------------------- | ------------- | --------------------------------------- |
-| 5行 prose → 3カラムテーブル            | REPORT        | 計測可能なトークン節約 + スキャン容易性 |
-| 2行 prose → 1テーブル行                | SKIP          | 限界的な節約、proseの方が明確な場合あり |
-| agent定義内の `**太字**`               | REPORT        | 規約で禁止                              |
-| 人間向け README の `**太字**`          | SKIP          | スコープ外                              |
-| 10行マイクロルールにアンチパターンなし | SKIP          | 釣り合い — ルールが小さすぎる           |
-| 同一ファイル内の矛盾する指示           | REPORT (high) | LLMは矛盾を解決できない                 |
-| ファイル間の矛盾する指示               | SKIP          | duplication-reviewerのスコープ          |
+| シナリオ                               | 判定          | 理由                                     |
+| -------------------------------------- | ------------- | ---------------------------------------- |
+| 5行 prose → 3カラムテーブル            | REPORT        | 計測可能なトークン節約 + スキャン容易性  |
+| 2行 prose → 1テーブル行                | SKIP          | 限界的な節約、prose の方が明確な場合あり |
+| agent定義内の `**太字**`               | REPORT        | 規約で禁止                               |
+| 人間向け README の `**太字**`          | SKIP          | スコープ外                               |
+| 10行マイクロルールにアンチパターンなし | SKIP          | 釣り合い — ルールが小さすぎる            |
+| 同一ファイル内の矛盾する指示           | REPORT (high) | LLMは矛盾を解決できない                  |
+| ファイル間の矛盾する指示               | SKIP          | duplication-reviewer のスコープ          |
 
 ## エラーハンドリング
 
-| エラー             | 対処                          |
+| エラー             | アクション                    |
 | ------------------ | ----------------------------- |
 | ファイル種別不一致 | スキップ、"not prompt" を記録 |
-| 空ファイル         | "空ファイル" を返す           |
+| 空ファイル         | "Empty file" を返す           |
 
 ## 出力
 
-finding-schema.mdに従う。プレフィックス: PQ
+finding-schema.md に従う。Prefix: PQ
 
-カテゴリ: token-efficiency / structure / format / clarity
+Categories: token-efficiency / structure / format / clarity

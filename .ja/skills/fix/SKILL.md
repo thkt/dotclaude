@@ -45,7 +45,7 @@ user-invocable: true
 
 | タイプ    | 名前                  | 目的                            |
 | --------- | --------------------- | ------------------------------- |
-| Skill     | analyzing-root-causes | 5 Whys手法                      |
+| Skill     | root-cause-analysis | 5 Whys手法                      |
 | Agent     | test-generator        | リグレッションテスト作成 (fork) |
 | Agent     | build-error-resolver  | TypeScript/ビルドエラー修正     |
 | Reference | defense-in-depth      | 修正後の多層バリデーション      |

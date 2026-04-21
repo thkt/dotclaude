@@ -1,17 +1,15 @@
 ---
 name: testability-reviewer
-description: テスト可能なコード設計レビュー。DIパターン、純粋関数、モックフレンドリーなアーキテクチャ。
+description: テスト可能なコード設計レビュー。テスト敵対パターンを特定。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-testability, generating-tdd-tests, applying-code-principles]
+skills: [reviewing-testability, generating-tdd-tests]
 context: fork
 memory: project
 background: true
 ---
 
-# テスタビリティレビューアー
-
-テスタビリティを評価し、テスト敵対パターンを特定し、改善を推奨。
+# Testability Reviewer
 
 ## 生成コンテンツ
 
@@ -49,42 +47,23 @@ background: true
 
 ## Calibration
 
-`templates/audit/calibration-examples.md` のTESTセクション参照。
+`skills/audit/references/calibration-examples.md` のTESTセクション参照。
 
 ## エラーハンドリング
 
-| エラー       | アクション                                  |
-| ------------ | ------------------------------------------- |
-| コードなし   | "No code to review"報告                     |
-| Glob結果なし | 0ファイル検出を報告、クリーンと推定しない   |
-| ツールエラー | エラー記録、ファイルスキップ、summaryに記載 |
+| エラー     | アクション              |
+| ---------- | ----------------------- |
+| コードなし | "No code to review"報告 |
 
-## レポートルール
-
-| 条件                   | アクション                       |
-| ---------------------- | -------------------------------- |
-| Confidence < 0.70      | 除外（`finding-schema.md` 参照） |
-| 同一パターンが複数箇所 | 1つのfindingに統合               |
+共通ガード（Glob空、ツールエラー）は finding-schema.md のデフォルトに従う。
 
 ## 出力
 
-構造化Markdownを返す（`templates/audit/finding-schema.md`）
+finding-schema.md に従う。Prefix: TEST。
+
+Categories: TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling)。 Severity: high / medium / low。 Verification: call_site_check / pattern_search — この依存関係は既存テストで実際にインジェクトまたはモックされているか？
+
 ```markdown
-## Findings
-
-| ID         | Severity            | Category                                                                | Location    | Confidence |
-| ---------- | ------------------- | ----------------------------------------------------------------------- | ----------- | ---------- |
-| TEST-{seq} | high / medium / low | TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling) | `file:line` | 0.70–1.00  |
-
-### TEST-{seq}
-
-| Field        | Value                                                                                                     |
-| ------------ | --------------------------------------------------------------------------------------------------------- |
-| Evidence     | コードスニペット                                                                                          |
-| Reasoning    | テストが困難な理由                                                                                        |
-| Fix          | テスト可能な代替                                                                                          |
-| Verification | call_site_check / pattern_search — この依存関係は既存テストで実際にインジェクトまたはモックされているか？ |
-
 ## Summary
 
 | Metric         | Value |

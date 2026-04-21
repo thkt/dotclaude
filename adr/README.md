@@ -11,7 +11,7 @@ This directory contains important decisions about the project's architecture.
 | [0003](0003-marketplace.md) | Marketplace構造の維持 | accepted | 2026-01-03 |
 | [0004](0004-skill-centric-architecture-restructuring.md) | ADR 0004: スキル中心アーキテクチャへの再構成 | proposed | Not set |
 | [0005](0005-documentation-role-separation.md) | ADR-0005: ドキュメントの役割分離とAI最適化 | proposed | Not set |
-| [0006](0006-adopt-deterministic-script-pattern.md) | Adopt Deterministic Script Pattern | Accepted | 2026-01-27 |
+| [0006](0006-adopt-deterministic-script-pattern.md) | Adopt Deterministic Script Pattern | superseded | 2026-01-27 |
 | [0007](0007-configuration-optimization.md) | ADR-0007: Claude Code 設定の最適化 | proposed | Not set |
 | [0008](0008-audience-optimized-templates.md) | ADR-0008: 読み手別テンプレート最適化の採用 | proposed | Not set |
 | [0009](0009-externalize-idr-as-rust-binary.md) | IDR生成システムの外部リポジトリ化（Rustバイナリ） | Accepted | 2026-02-07 |
@@ -44,22 +44,32 @@ This directory contains important decisions about the project's architecture.
 | [0035](0035-audit-verify-convergence-signal-and-reconciliation-ownership.md) | Record convergence signals in audit/verify dedup and move reconciliation into evidence-integrator | accepted | 2026-04-04 |
 | [0036](0036-build-llm-wiki-plugin-for-cross-session-knowledge-synthesis.md) | LLMによるクロスセッション知識合成wikiプラグインの構築 | accepted | 2026-04-07 |
 | [0037](0037-align-sae-filter-helpers-for-amici-extraction.md) | ADR-0037: sae フィルタヘルパーを amici 抽出前提で yomu パターンに揃える | proposed | Not set |
-| [0038](0038-add-stencils-as-sixth-posttooluse-hook-for-pattern-cataloging.md) | ADR-0038: hook pipelineに stencils を追加しコードパターンをカタログ化する | proposed | Not set |
+| [0038](0038-add-stencils-as-sixth-posttooluse-hook-for-pattern-cataloging.md) | ADR-0038: hook pipelineに stencils を追加しコードパターンをカタログ化する | proposed | 2026-04-13 |
 | [0039](0039-add-tempos-pretooluse-tdd-hook-with-litmus-library-integration.md) | ADR-0039: PreToolUse hook に tempos を追加し litmus library 統合で TDD リズムを強制する | proposed | 2026-04-13 |
+| [0040](0040-wiki-plugin-v2-global-mode-and-publish-layer.md) | wiki plugin v2: グローバルモード・publish 層・wiki_root リゾルバーの導入 | accepted | 2026-04-14 |
+| [0041](0041-fork-strategy-for-carte.md) | ADR-0041: carte を CCPlanView からフォークする運用方針 | proposed | 2026-04-19 |
+| [0042](0042-colocate-skill-specific-scripts-within-skill.md) | ADR-0042: Colocate Skill-Specific Scripts Within Skill Directory | accepted | 2026-04-20 |
+| [0043](0043-normalize-findings-in-audit-multi-run-aggregation.md) | Normalize findings in audit multi-run aggregation with line and category tolerance | accepted | 2026-04-20 |
+| [0044](0044-reject-snapshot-aware-audit-pipeline.md) | Reject snapshot-aware audit pipeline in favor of multi-run aggregation | rejected | 2026-04-20 |
+| [0045](0045-replace-scout-skill-with-scout-search-cli-wrapper.md) | Replace /scout skill with scout-search CLI wrapper, retire scouting-anomalies | accepted | 2026-04-20 |
+| [0046](0046-colocate-audit-templates-in-skill-references.md) | Colocate audit assets under skills/audit with references and templates split | accepted | 2026-04-20 |
+| [0047](0047-adopt-snapshot-as-canonical-with-rendered-output.md) | Adopt snapshot as canonical source with rendered Markdown output for audit reports | accepted | 2026-04-20 |
+| [0048](0048-standardize-generator-skill-structure.md) | Adopt unified SKILL.md template for generator-class workflows | accepted | 2026-04-21 |
+| [0049](0049-consolidate-skill-to-skill-wrapper-pairs.md) | ADR-0049: Consolidate skill-to-skill wrapper pairs | accepted | 2026-04-21 |
 
 ## By Status
 
 ### Proposed
 
-- **0001**: ADR 0001: code.mdコマンドの責任分離
-- **0002**: ADR 0002: /fixモジュール化とTDD共通化
+- **0001**: ADR 0001: code.md コマンドの責任分離
+- **0002**: ADR 0002: /fix モジュール化とTDD共通化
 - **0004**: ADR 0004: スキル中心アーキテクチャへの再構成
 - **0005**: ADR-0005: ドキュメントの役割分離とAI最適化
-- **0007**: ADR-0007: Claude Code設定の最適化
+- **0007**: ADR-0007: Claude Code 設定の最適化
 - **0008**: ADR-0008: 読み手別テンプレート最適化の採用
 - **0012**: ADR-0012: Flatten Audit Pipeline — Remove Compound Reviewers
-- **0013**: ADR-0013: Hook Trinityパターンの採用 — claude-reviewsによるPre-flight分析の確実な実行
-- **0014**: ADR-0014: AI-DLC統合 — 設計分離とOperational Readiness Reviewer
+- **0013**: ADR-0013: Hook Trinity パターンの採用 — claude-reviews による Pre-flight 分析の確実な実行
+- **0014**: ADR-0014: AI-DLC 統合 — 設計分離と Operational Readiness Reviewer
 - **0016**: ADR-0016: Adopt Rust + rmcp for deep-search MCP Server
 - **0017**: ADR-0017: Build frontend-specialized code search MCP server in Rust
 - **0019**: Adopt SQLite Reference Graph for Impact Analysis
@@ -67,28 +77,42 @@ This directory contains important decisions about the project's architecture.
 - **0021**: ADR-0021: Build Slack conversation semantic search MCP server (kiku)
 - **0022**: ADR-0022: Migrate yomu from MCP server to CLI tool
 - **0023**: ADR-0023: Build sharpen - rg output optimizer for AI consumption
-- **0025**: ADR-0025: gatesをstateful completion gateに拡張
-- **0027**: ADR-0027: プラグイン定義をsentinelsリポに集約する
-- **0028**: ADR 0028: oxc_parserによるテスト品質ゲートlitmusの構築
-- **0029**: ADR 0029: Spec駆動E2Eテスト生成のワークフロー統合
-- **0030**: ADR 0030: Claude Codeセッション監視TUI madoの構築
-- **0031**: ADR-0031: ort + Ruri v3によるローカルembedding基盤の構築
+- **0025**: ADR-0025: gates を stateful completion gate に拡張
+- **0027**: ADR-0027: プラグイン定義を sentinels リポに集約する
+- **0028**: ADR 0028: oxc_parser によるテスト品質ゲート litmus の構築
+- **0029**: ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合
+- **0030**: ADR 0030: Claude Code セッション監視 TUI mado の構築
+- **0031**: ADR-0031: ort + Ruri v3 によるローカル embedding 基盤の構築
 - **0032**: ADR-0032: Build esa semantic search CLI (sae)
-- **0033**: ADR-0033: shieldsにRecursive Unwrap Stackを追加
-- **0034**: ADR-0034: embedding + storageユーティリティの共有クレート化 (rurico)
-- **0037**: ADR-0037: saeフィルタヘルパーをamici抽出前提でyomuパターンに揃える
-- **0038**: ADR-0038: hook pipelineにstencilsを追加しコードパターンをカタログ化する
+- **0033**: ADR-0033: shields に Recursive Unwrap Stack を追加
+- **0034**: ADR-0034: embedding + storage ユーティリティの共有クレート化 (rurico)
+- **0037**: ADR-0037: sae フィルタヘルパーを amici 抽出前提で yomu パターンに揃える
+- **0038**: ADR-0038: hook pipelineに stencils を追加しコードパターンをカタログ化する
+- **0039**: ADR-0039: PreToolUse hook に tempos を追加し litmus library 統合で TDD リズムを強制する
+- **0041**: ADR-0041: carte を CCPlanView からフォークする運用方針
 
 ### Accepted
 
 - **0003**: Marketplace構造の維持
 - **0015**: Adopt Pattern-Match + Taint-Checklist Strategy for Frontend Security
-- **0018**: explorerのファイル文脈にIndex-time storageを採用
+- **0018**: explorer のファイル文脈に Index-time storage を採用
 - **0024**: ADR-0024: Adopt two-layer Delta for compaction resilience
 - **0026**: ADR-0026: LLM指示設計における仕様-コード収束則を認識する
-- **0034**: ADR-0034: LaunchAgentによるバックログライフサイクル自動化
+- **0034**: ADR-0034: LaunchAgent によるバックログライフサイクル自動化
 - **0035**: Record convergence signals in audit/verify dedup and move reconciliation into evidence-integrator
 - **0036**: LLMによるクロスセッション知識合成wikiプラグインの構築
+- **0040**: wiki plugin v2: グローバルモード・publish 層・wiki_root リゾルバーの導入
+- **0042**: ADR-0042: Colocate Skill-Specific Scripts Within Skill Directory
+- **0043**: Normalize findings in audit multi-run aggregation with line and category tolerance
+- **0045**: Replace /scout skill with scout-search CLI wrapper, retire scouting-anomalies
+- **0046**: Colocate audit assets under skills/audit with references and templates split
+- **0047**: Adopt snapshot as canonical source with rendered Markdown output for audit reports
+- **0048**: Adopt unified SKILL.md template for generator-class workflows
+- **0049**: ADR-0049: Consolidate skill-to-skill wrapper pairs
+
+### Superseded
+
+- **0006**: Adopt Deterministic Script Pattern
 
 ## About MADR Format
 
@@ -109,5 +133,5 @@ This project uses [MADR (Markdown Architecture Decision Records)](https://adr.gi
 
 ---
 
-*Last updated: 2026-04-13*
+*Last updated: 2026-04-21*
 *Auto-generated by: update-index.sh*

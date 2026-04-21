@@ -1,8 +1,6 @@
 # Pre-flight: Tests + Hook Findings
 
-Static analysis is delegated to the `reviews` hook (knip, oxlint, tsgo,
-react-doctor via ADR-0013). Pre-flight focuses on test execution and converting
-hook output to findings.
+Pre-flight runs tests and converts `reviews` hook output (knip/oxlint/tsgo/react-doctor) into findings. Static analysis lives in the hook, not here.
 
 ## Step 1: Detect task runner from project root
 
@@ -18,9 +16,14 @@ hook output to findings.
 
 ## Step 2: Find test script in detected runner
 
-Common names: `test`, `test:unit`, `test:ci`, `spec`
+Check these names in priority order and use the first match.
 
-Fallback: If no runner found, check for test frameworks via `command -v`:
+1. `test`
+2. `test:unit`
+3. `test:ci`
+4. `spec`
+
+If no runner found, fall back to `command -v` framework detection.
 
 | Config File                     | Tool Check          | Command          |
 | ------------------------------- | ------------------- | ---------------- |
@@ -37,29 +40,26 @@ Fallback: If no runner found, check for test frameworks via `command -v`:
 | Non-zero exit | Capture output as context, do NOT block audit |
 | Timeout       | 60s per script; kill and proceed on timeout   |
 
-Run test suite with coverage if available.
-
-Record results in snapshot `pre_flight`:
+Record to snapshot `pre_flight` (with coverage if available; missing tool → `skipped`).
 
 | Field    | Source                                      |
 | -------- | ------------------------------------------- |
 | tests    | test output → total/passed/failed counts    |
 | coverage | coverage report → c0 (line) / c1 (branch) % |
 
-If test runner or coverage tool is unavailable, record as `skipped`.
-
 ## Step 4: Convert hook output to findings
 
-If a PreToolUse(Skill) hook injects `additionalContext` (e.g., `claude-reviews`
-per ADR-0013), parse each tool section and convert to `PF-{seq}` findings using
-the finding-schema.md base fields.
+| Hook state                                 | Action                                                                        |
+| ------------------------------------------ | ----------------------------------------------------------------------------- |
+| Injected `additionalContext`               | Parse each tool section → `PF-{seq}` findings (finding-schema.md base fields) |
+| Absent (not installed, no-op, no findings) | Record `hook_findings: 0` in snapshot; do NOT fail pre-flight                 |
 
-| Field        | Value                                    |
-| ------------ | ---------------------------------------- |
-| `finding_id` | `PF-{seq}` (sequential across all tools) |
-| `agent`      | `pre-flight`                             |
+| Field        | Value                                                        |
+| ------------ | ------------------------------------------------------------ |
+| `finding_id` | `PF-{seq}` (1-based, sequential across tools per pre-flight) |
+| `agent`      | `pre-flight`                                                 |
 
-Category naming convention:
+Category naming convention by tool.
 
 | Tool         | Category pattern                                                           | Default severity                                        |
 | ------------ | -------------------------------------------------------------------------- | ------------------------------------------------------- |
@@ -69,5 +69,4 @@ Category naming convention:
 | react-doctor | `react/{issue-type}`                                                       | medium                                                  |
 | (unknown)    | `preflight/{tool-name}`                                                    | low                                                     |
 
-Apply the consolidation rule from finding-schema.md (same pattern → single
-finding).
+Apply the consolidation rule from finding-schema.md (same pattern → single finding).

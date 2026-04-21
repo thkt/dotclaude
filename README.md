@@ -235,8 +235,8 @@ Each user must install plugins independently.
 
 See the complete command reference:
 
-- [English Command Reference](./rules/workflows/WORKFLOW_REFERENCE.md)
-- [日本語コマンドリファレンス](./.ja/rules/workflows/WORKFLOW_REFERENCE.md)
+- [English Command Reference](./rules/workflows/WORKFLOWS.md)
+- [日本語コマンドリファレンス](./.ja/rules/workflows/WORKFLOWS.md)
 
 ## 🔄 Standard Workflows
 
@@ -281,8 +281,8 @@ Full details: [PRINCIPLES.md](./rules/PRINCIPLES.md)
 ### Core Documentation
 
 - [Design Philosophy](./docs/DESIGN.md) — **Why this design** (設計思想・意図)
-- [Commands Reference (English)](./rules/workflows/WORKFLOW_REFERENCE.md)
-- [Commands Reference (Japanese)](./.ja/rules/workflows/WORKFLOW_REFERENCE.md)
+- [Commands Reference (English)](./rules/workflows/WORKFLOWS.md)
+- [Commands Reference (Japanese)](./.ja/rules/workflows/WORKFLOWS.md)
 - [Configuration Guide](./CLAUDE.md)
 - [Japanese Configuration](./.ja/CLAUDE.md)
 
@@ -290,8 +290,8 @@ Full details: [PRINCIPLES.md](./rules/PRINCIPLES.md)
 
 - [Principles Guide](./rules/PRINCIPLES.md) - Complete overview of all
   development principles
-- [Documentation Rules](./rules/conventions/DOCUMENTATION.md) - Standards for
-  documentation
+- [Markdown Conventions](./rules/conventions/MARKDOWN.md) - Markdown writing
+  and reference rules
 
 ## 🤝 Contributing
 

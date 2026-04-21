@@ -2,9 +2,7 @@
 
 Ambiguous terms in software development. Specify before using.
 
-Applies to: test descriptions, Issue/PR bodies, Spec/SOW, code comments,
-technical docs. In Spec FR descriptions and SOW AC criteria: use EARS syntax
-(templates/spec/template.md).
+Applies to: test descriptions, Issue/PR bodies, Spec/SOW, code comments, technical docs.
 
 ## Define Concretely
 

@@ -3,7 +3,6 @@ name: duplication-reviewer
 description: Cross-file code duplication detection. DRY analysis specialist.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [applying-code-principles]
 context: fork
 memory: project
 background: true
@@ -37,19 +36,16 @@ background: true
 | Pattern         | 3+ lines  | Shorter sequences are rarely worth extracting    |
 | Arg-variant     | 2+ calls  | Same func/cmd with only args differing           |
 
-This reviewer uses 2+ as the unified threshold. Rule of Three from
-applying-code-principles determines extraction urgency (severity), not
-detection.
+This reviewer uses 2+ as the unified threshold. Rule of Three from `rules/PRINCIPLES.md` (DRY) determines extraction urgency (severity), not detection.
 
 ## Comparison Strategy
 
 1. Read target files and extract function/block signatures and key patterns
 2. Grep/Glob the broader codebase (same file types) for each extracted pattern —
-   scan up to 100 files per file type (priority: same directory > imports >
-   alphabetical)
+scan up to 100 files per file type (priority: same directory > imports > alphabetical)
 3. Cross-compare signatures across target files AND codebase matches
 4. For near-duplicates, normalize variable names before comparison. Similarity
-   threshold: >=70% normalized token overlap
+threshold: >=70% normalized token overlap
 5. Report clusters (group of locations sharing the same pattern)
 6. If Phase 1-2 yield zero matches above similarity threshold, skip Phase 3-5
 
@@ -64,7 +60,7 @@ detection.
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section DRY.
+See `skills/audit/references/calibration-examples.md` section DRY.
 
 ## Error Handling
 
@@ -78,10 +74,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: DRY.
 
-Categories: exact / near-duplicate / pattern / reimplementation / arg-variant.
-Severity: high / medium / low.
-Verification: pattern_search — are there more occurrences beyond the ones found?
-Extra: Evidence lists each occurrence as `Location N: fileN:line snippet`.
+Categories: exact / near-duplicate / pattern / reimplementation / arg-variant. Severity: high / medium / low. Verification: pattern_search — are there more occurrences beyond the ones found? Extra: Evidence lists each occurrence as `Location N: fileN:line snippet`.
 
 ```markdown
 ## Summary

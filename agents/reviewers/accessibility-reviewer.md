@@ -33,7 +33,7 @@ background: true
 | Custom ARIA widgets  | No dev server available |
 | Visual verification  | Semantic-only review    |
 
-Fallback: If browser unavailable, code-only analysis with lower confidence.
+Fallback: If browser unavailable, run code-only analysis — note in evidence that runtime checks were skipped.
 
 ## Computed Styles
 
@@ -45,7 +45,7 @@ Fallback: If browser unavailable, code-only analysis with lower confidence.
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section A11Y.
+See `skills/audit/references/calibration-examples.md` section A11Y.
 
 ## Error Handling
 
@@ -61,10 +61,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: A11Y.
 
-Categories: semantic / keyboard / screen-reader / visual / form.
-Severity: critical / high / medium.
-Verification: execution_trace / pattern_search — is this element actually reachable by keyboard/screen reader?
-Extra: wcag (success criterion like 1.1.1, required), apg_pattern (URL, required), code_example (corrected snippet, optional).
+Categories: semantic / keyboard / screen-reader / visual / form. Severity: critical / high / medium. Verification: execution_trace / pattern_search — is this element actually reachable by keyboard/screen reader? Extra: wcag (success criterion like 1.1.1, required), apg_pattern (URL, required), code_example (corrected snippet, optional).
 
 ```markdown
 ## Summary

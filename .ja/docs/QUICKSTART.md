@@ -39,5 +39,5 @@
 
 ## 5. 次のステップ
 
-- パターン詳細: [WORKFLOW_REFERENCE.md](../rules/workflows/WORKFLOW_REFERENCE.md)
+- パターン詳細: [WORKFLOWS.md](../rules/workflows/WORKFLOWS.md)
 - 全コマンド: `/help`

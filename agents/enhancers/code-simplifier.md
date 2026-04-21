@@ -5,7 +5,7 @@ description: Simplifies and refines code for clarity, consistency, and maintaina
   instructed otherwise.
 tools: [Read, Edit, Grep, Glob, LS]
 model: opus
-skills: [applying-code-principles, reviewing-readability]
+skills: [reviewing-readability]
 ---
 
 # Code Simplifier

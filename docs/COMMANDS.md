@@ -26,7 +26,7 @@ graph TD
 
 ## Commands & Workflows
 
-See [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) for command
+See [WORKFLOWS](../rules/workflows/WORKFLOWS.md) for command
 listing and selection guide.
 
 ## Design Principles
@@ -52,8 +52,7 @@ Commands are orchestrators, no implementation details.
 Load skills only when needed.
 
 ```markdown
-/code --frontend → load applying-frontend-patterns /code --principles → load
-applying-code-principles /code (no flags) → no additional skills
+/code (no flags) → no additional skills
 ```
 
 ### 3. Graceful Degradation
@@ -71,12 +70,12 @@ confirmation mode (same functionality)
 | ----------- | --------------------------------------------- | --------------------------------------------------------------------- |
 | `/think`    | -                                             | -                                                                     |
 | `/code`     | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
-| `/audit`    | applying-code-principles                      | tier-based reviewer agents (3 or file-routed from 17)                 |
+| `/audit`    | -                                             | tier-based reviewer agents (3 or file-routed from 17)                 |
 | `/fix`      | -                                             | build-error-resolver                                                  |
 | `/polish`   | -                                             | code-simplifier                                                       |
 | `/feature`  | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
 | `/swarm`    | orchestrating-workflows                       | qa-reviewer, unit-implementer                                         |
-| `/glossary` | extracting-ubiquitous-language                | -                                                                     |
+| `/glossary` | -                                             | -                                                                     |
 
 ## File Structure
 
@@ -100,5 +99,5 @@ skills/
 ## Related
 
 - [SKILLS_AGENTS.md](./SKILLS_AGENTS.md) — Skills and agents reference
-- [WORKFLOW_REFERENCE](../rules/workflows/WORKFLOW_REFERENCE.md) — Workflow
+- [WORKFLOWS](../rules/workflows/WORKFLOWS.md) — Workflow
   selection guide

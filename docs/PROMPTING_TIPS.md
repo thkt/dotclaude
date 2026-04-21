@@ -14,11 +14,14 @@ Effective prompting techniques for Claude Code.
 | ---------------------------------------------------------------------- | ---------------------------------- | ------------------ |
 | "Grill me on these changes and don't make a PR until I pass your test" | Turn Claude into a strict reviewer | Before PR creation |
 
-## Compute Resources
+## Context & Compute
 
-| Prompt                            | Effect                             | When        |
-| --------------------------------- | ---------------------------------- | ----------- |
-| Append "use subagents" to request | Parallel processing with subagents | Large tasks |
+| Strategy                          | When / Why                          |
+| --------------------------------- | ----------------------------------- |
+| MCP tools ≤10 per project         | Prevents 200k→70k context shrinkage |
+| Enable only needed plugins        | Each adds token overhead            |
+| Append "use subagents" to request | Parallel processing for large tasks |
+| `/fork` before parallel work      | Isolated context, avoids pollution  |
 
 ## Debugging
 

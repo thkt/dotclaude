@@ -19,9 +19,9 @@ state management, API style), present each decision as a separate choice
 question — 1 question per message, with recommendation and impact on the
 project. Bundle only decisions that are tightly coupled.
 
-<!-- canonical: rules/core/PRE_TASK_CHECK.md (decomposition thresholds) -->
+<!-- canonical: rules/core/PREFLIGHT.md (decomposition thresholds) -->
 
-If PRE_TASK_CHECK decomposition thresholds are exceeded (Files ≥ 5, Features ≥
+If PREFLIGHT decomposition thresholds are exceeded (Files ≥ 5, Features ≥
 3, Layers ≥ 3), decompose into independent Units. Each Unit gets its own
 SOW/Spec and can be implemented separately via `/code`.
 

@@ -3,7 +3,6 @@ name: efficiency-reviewer
 description: Code efficiency review. Unnecessary work, concurrency, hot-path analysis.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: sonnet
-skills: [applying-code-principles]
 context: fork
 memory: project
 background: true
@@ -20,9 +19,7 @@ background: true
 
 ## Scope
 
-Detect runtime and resource inefficiencies in code changes. Language-agnostic.
-This is NOT frontend performance optimization (that is performance-reviewer /
-PERF). This reviewer answers: "Is this code doing more work than necessary?"
+Detect runtime and resource inefficiencies in code changes. Language-agnostic. This is NOT frontend performance optimization (that is performance-reviewer / PERF). This reviewer answers: "Is this code doing more work than necessary?"
 
 ## Analysis Phases
 
@@ -56,7 +53,7 @@ Before flagging, check execution frequency:
 
 ## Distinction from root-cause-reviewer
 
-| This reviewer (EFF)                   | root-cause-reviewer (RCA)                |
+| This reviewer (EFF)                   | root-cause-reviewer (RC)                |
 | ------------------------------------- | ---------------------------------------- |
 | "Is this doing unnecessary work?"     | "Is this a patch or a fix?"              |
 | TOCTOU as performance/correctness bug | Race condition as symptom of design flaw |
@@ -65,7 +62,7 @@ Before flagging, check execution frequency:
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section EFF.
+See `skills/audit/references/calibration-examples.md` section EFF.
 
 ## Error Handling
 
@@ -73,18 +70,13 @@ See `templates/audit/calibration-examples.md` section EFF.
 | ------------- | -------------------------- |
 | No code found | Report "No code to review" |
 
-Common guards (glob empty, tool error) follow finding-schema.md defaults.
-Cold-path minor issues excluded unless consolidation raises severity (see
-schema's Context Test).
+Common guards (glob empty, tool error) follow finding-schema.md defaults. Cold-path minor issues excluded unless consolidation raises severity (see schema's Context Test).
 
 ## Output
 
 Follow finding-schema.md. Prefix: EFF.
 
-Categories: unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad.
-Severity: high / medium / low.
-Verification: benchmark / profile — how to confirm the improvement.
-Extra: path_frequency (hot/warm/cold) in reasoning.
+Categories: unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad. Severity: high / medium / low. Verification: benchmark / profile — how to confirm the improvement. Extra: path_frequency (hot/warm/cold) in reasoning.
 
 ```markdown
 ## Summary

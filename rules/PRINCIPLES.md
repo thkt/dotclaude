@@ -22,8 +22,15 @@
 
 ## Triggers
 
-New task or unclear goal → Backcasting / Method chains >2 → Demeter / 1min unreadable → Readable / Complex-first → Occam
-/ Single hypothesis → Strong Inference / Coordinated call sites >= 2 → YAGNI Boundary / Post-write verbose → Occam
+| Trigger                     | Principle        |
+| --------------------------- | ---------------- |
+| New task or unclear goal    | Backcasting      |
+| Method chains >2            | Law of Demeter   |
+| 1min unreadable             | Readable Code    |
+| Complex-first               | Occam's Razor    |
+| Single hypothesis           | Strong Inference |
+| Coordinated call sites >= 2 | YAGNI Boundary   |
+| Post-write verbose          | Occam's Razor    |
 
 ## Backcasting
 
@@ -37,22 +44,19 @@ Define the ideal end state and work backward.
 
 Backcasting defines the goal; Occam's Razor and other principles govern how to reach it.
 
-When in doubt: simple > clever, concrete > abstract, working > perfect, readable
-\> DRY.
+When in doubt: simple > clever, concrete > abstract, working > perfect, readable \> DRY.
 
 Occam's Razor selects the simplest among approaches that achieve the outcome,
 not symptom removal. It does not apply when simplicity reduces output quality.
 
 ## YAGNI Boundary
 
-YAGNI prohibits unneeded features and speculative code paths. It does not prohibit choosing better structure at equal cost.
+YAGNI prohibits unneeded features and speculative code paths. It does not prohibit choosing better structure at equal cost. When YAGNI Boundary and Occam's Razor disagree, Occam's Razor wins.
 
 | Step          | Criteria                                                                                       |
 | ------------- | ---------------------------------------------------------------------------------------------- |
 | Gate          | call sites >= 2 OR domain-obvious (auth, logging, error handling)                              |
 | Decision axis | equal cost (line count, indirection depth, import count) → prefer fewer coordinated call sites |
-
-When YAGNI Boundary and Occam's Razor disagree, Occam's Razor wins.
 
 ## DRY
 
@@ -65,5 +69,12 @@ Gate: 3+ duplications. Then verify: same knowledge or similar structure?
 
 ## Progressive Enhancement
 
-Make it Work → Make it Resilient (when errors occur) → Make it Fast (when
-slowness measured) → Make it Flexible (when users request)
+Make it Work → Make it Resilient (when errors occur) → Make it Fast (when slowness measured) → Make it Flexible (when users request)
+
+## SOLID
+
+Add interface only when a 2nd implementation appears. Premature interfaces add indirection without value.
+
+## Readable Code
+
+One-minute rule: a new team member should understand the function in under a minute. If not, simplify or document the non-obvious constraint.

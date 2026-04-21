@@ -3,7 +3,7 @@ name: type-safety-reviewer
 description: TypeScript type safety review. any usage, coverage gaps, strict mode.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-type-safety, applying-code-principles]
+skills: [reviewing-type-safety]
 context: fork
 memory: project
 background: true
@@ -39,7 +39,7 @@ background: true
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section TS.
+See `skills/audit/references/calibration-examples.md` section TS.
 
 ## Error Handling
 
@@ -53,10 +53,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: TS.
 
-Categories: TS1-TS5 (any / assertion / coverage / strict_mode / union).
-Severity: high / medium / low.
-Verification: call_site_check / pattern_search — are problematic values actually passed at call sites?
-Extra: type_coverage + strict_flags are summary-level only.
+Categories: TS1-TS5 (any / assertion / coverage / strict_mode / union). Severity: high / medium / low. Verification: call_site_check / pattern_search — are problematic values actually passed at call sites? Extra: type_coverage + strict_flags are summary-level only.
 
 ```markdown
 ## Summary

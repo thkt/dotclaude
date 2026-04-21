@@ -54,7 +54,7 @@ Detect project type → present relevant options:
 
 | Phase | Name                | Action                        | User Checkpoint       |
 | ----- | ------------------- | ----------------------------- | --------------------- |
-| 1     | Discovery           | Context scan → PRE_TASK_CHECK | [?] or [→] resolution |
+| 1     | Discovery           | Context scan → PREFLIGHT | [?] or [→] resolution |
 | 2     | Design              | Skill: /think                 | Design approval       |
 | 3     | Implementation      | Skill: /code                  | —                     |
 | 4     | Quality             | /audit → /fix loop (max 3)    | Remaining issues only |
@@ -65,7 +65,7 @@ Detect project type → present relevant options:
 
 1. Context scan — CLAUDE.md, package.json, Cargo.toml, etc.
 2. If `$1` empty → AskUserQuestion with context-aware options
-3. Execute PRE_TASK_CHECK
+3. Execute PREFLIGHT
 4. Resolve any [→] or [?]
 5. Early exit: ≤ 2 target files → suggest `/code` (skip Phases 2-5)
 6. TaskCreate for tracking (Phases 2-5)
@@ -179,7 +179,7 @@ SOW scope.
 
 | Check                  | Required |
 | ---------------------- | -------- |
-| PRE_TASK_CHECK passed? | Yes      |
+| PREFLIGHT passed? | Yes      |
 | SOW + Spec generated?  | Yes      |
 | All tests pass?        | Yes      |
 | /code AC coverage?     | Yes      |

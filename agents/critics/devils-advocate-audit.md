@@ -30,7 +30,6 @@ background: true
 | location   | src/api/client.ts:45 |
 | evidence   | any type used        |
 | reasoning  | Reduces type safety  |
-| confidence | 0.85                 |
 ```
 
 ## Challenge Framework

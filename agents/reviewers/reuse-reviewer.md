@@ -3,7 +3,6 @@ name: reuse-reviewer
 description: Existing code reuse opportunity detection. Find replaceable new code.
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: sonnet
-skills: [applying-code-principles]
 context: fork
 memory: project
 background: true
@@ -20,9 +19,7 @@ background: true
 
 ## Scope
 
-Find opportunities to use EXISTING code instead of writing new code. This is NOT
-duplication detection (that is duplication-reviewer / DRY). This reviewer answers:
-"Does the codebase already have something that does this?"
+Find opportunities to use EXISTING code instead of writing new code. This is NOT duplication detection (that is duplication-reviewer / DRY). This reviewer answers: "Does the codebase already have something that does this?"
 
 ## Analysis Phases
 
@@ -37,9 +34,9 @@ duplication detection (that is duplication-reviewer / DRY). This reviewer answer
 
 1. Read target files and extract new/changed functions and logic blocks
 2. For each block, Grep/Glob the codebase for similar function names, signatures,
-   and patterns — scan same directory first, then expand outward
+and patterns — scan same directory first, then expand outward
 3. Compare found utilities against new code: does the existing code cover the same
-   behavior?
+behavior?
 4. If Phase 1-2 yield zero matches, skip Phase 3-4
 
 ## Distinction from duplication-reviewer
@@ -53,7 +50,7 @@ duplication detection (that is duplication-reviewer / DRY). This reviewer answer
 
 ## Calibration
 
-See `templates/audit/calibration-examples.md` section REUSE.
+See `skills/audit/references/calibration-examples.md` section REUSE.
 
 ## Error Handling
 
@@ -67,10 +64,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: REUSE.
 
-Categories: utility / pattern / inline / unused_import.
-Severity: high / medium / low.
-Verification: pattern_search — does the existing utility handle all edge cases of new code?
-Extra: Evidence pairs new code and existing utility — `New: file:line snippet / Existing: file:line snippet`.
+Categories: utility / pattern / inline / unused_import. Severity: high / medium / low. Verification: pattern_search — does the existing utility handle all edge cases of new code? Extra: Evidence pairs new code and existing utility — `New: file:line snippet / Existing: file:line snippet`.
 
 ```markdown
 ## Summary
