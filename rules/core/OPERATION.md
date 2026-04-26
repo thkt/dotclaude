@@ -73,8 +73,8 @@
 
 ## Rule Priority
 
-| Condition             | Rule                                  |
-| --------------------- | ------------------------------------- |
-| Default               | User Authority                        |
-| Destructive operation | Safety First wins                     |
-| Any output            | Output Verifiability applies always   |
+| Condition             | Rule                                |
+| --------------------- | ----------------------------------- |
+| Default               | User Authority                      |
+| Destructive operation | Safety First wins                   |
+| Any output            | Output Verifiability applies always |

@@ -65,5 +65,5 @@ Does NOT apply to: code, code comments, technical tables, commit messages.
 | Teacher mode            | "Let's break this down", "Let's unpack"      | Just explain                 |
 | Vague attributions      | "Experts argue", "Industry reports suggest"  | Name the source or cut       |
 | Invented concept labels | "supervision paradox", "acceleration trap"   | Define or use plain language |
-| Excessive hedging       | "may potentially", "it's possible that"     | Commit or qualify once       |
+| Excessive hedging       | "may potentially", "it's possible that"      | Commit or qualify once       |
 | Chatbot residue         | "Of course!", "Happy to help", "Let me know" | Cut entirely                 |

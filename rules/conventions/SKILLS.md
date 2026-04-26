@@ -32,13 +32,13 @@ user-invocable: false          # Optional: default false
 
 Choose by category.
 
-| `user-invocable` | Binding    | Pattern           | Examples                                            |
-| ---------------- | ---------- | ----------------- | --------------------------------------------------- |
-| `true`           | -          | Short name        | `commit`, `fix`, `audit`                            |
-| `false`          | CLI wrap   | `use-<cli>`       | `use-cli-git`, `use-cli-yomu`                       |
-| `false`          | Agent-only | `ctx-<agent>`     | `use-context-reviewer-security`                     |
-| `false`          | Workflow   | `workflow-<noun>` | `use-workflow-code`, `use-workflow-spec-validation` |
-| any              | Avoid      | -                 | `helper`, `utils`, `tools`                          |
+| `user-invocable` | Binding    | Pattern               | Examples                                            |
+| ---------------- | ---------- | --------------------- | --------------------------------------------------- |
+| `true`           | -          | Short name            | `commit`, `fix`, `audit`                            |
+| `false`          | CLI wrap   | `use-cli-<cli>`       | `use-cli-git`, `use-cli-yomu`                       |
+| `false`          | Agent-only | `use-context-<agent>` | `use-context-reviewer-security`                     |
+| `false`          | Workflow   | `use-workflow-<noun>` | `use-workflow-code`, `use-workflow-spec-validation` |
+| any              | Avoid      | -                     | `helper`, `utils`, `tools`                          |
 
 ## Directory structure
 

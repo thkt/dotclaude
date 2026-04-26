@@ -25,13 +25,13 @@ Assign only when all 3 conditions are met.
 
 Default is `memory: project` (30/35 agents).
 
-| Agent                  | Reason                                                 |
-| ---------------------- | ------------------------------------------------------ |
-| team-implementation       | Team agent, works within session only                  |
-| team-integration | Team agent, works within session only                  |
-| critic-audit  | Receives other reviewers' findings, memory causes bias |
-| critic-design | Same as above, must remain objective                   |
-| critic-evidence      | Must verify findings without preconceptions            |
+| Agent               | Reason                                                 |
+| ------------------- | ------------------------------------------------------ |
+| team-implementation | Team agent, works within session only                  |
+| team-integration    | Team agent, works within session only                  |
+| critic-audit        | Receives other reviewers' findings, memory causes bias |
+| critic-design       | Same as above, must remain objective                   |
+| critic-evidence     | Must verify findings without preconceptions            |
 
 ## Reviewer Design Patterns
 
