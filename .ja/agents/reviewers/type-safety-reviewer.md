@@ -3,7 +3,7 @@ name: type-safety-reviewer
 description: TypeScript型安全性レビュー。any使用、カバレッジギャップ、strictモード。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-type-safety]
+skills: [use-context-type-safety-reviewer]
 context: fork
 memory: project
 background: true

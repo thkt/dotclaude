@@ -3,7 +3,7 @@ name: testability-reviewer
 description: テスト可能なコード設計レビュー。テスト敵対パターンを特定。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-testability, generating-tdd-tests]
+skills: [use-context-testability-reviewer, use-workflow-tdd-cycle]
 context: fork
 memory: project
 background: true

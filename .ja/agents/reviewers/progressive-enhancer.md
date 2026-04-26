@@ -3,7 +3,6 @@ name: progressive-enhancer
 description: CSSファーストアプローチレビュー。JS過剰使用を検出。
 tools: [Read, Grep, Glob, LS, mcp__mdn__*]
 model: sonnet
-skills: [tailwind-patterns]
 context: fork
 memory: project
 background: true

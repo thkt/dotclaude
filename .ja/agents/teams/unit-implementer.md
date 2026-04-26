@@ -6,7 +6,7 @@ description:
 tools: [Bash, Edit, Write, Read, Glob, Grep, LS, SendMessage]
 model: opus
 context: fork
-skills: [orchestrating-workflows]
+skills: [use-workflow-code]
 ---
 
 # ユニット実装者

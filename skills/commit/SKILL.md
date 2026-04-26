@@ -1,37 +1,61 @@
 ---
 name: commit
-description: Analyze Git diff and generate Conventional Commits format messages. Use when user mentions コミットして, コミット作成, commit changes.
-allowed-tools: Bash(git:*), Bash(cat:*), Bash(mv:*), Task, AskUserQuestion
-model: opus
+description: Analyze Git diff and generate Conventional Commits format messages.
+when_to_use: コミットして, コミット作成, commit changes
+allowed-tools: Bash(git:*) Bash(cat:*) Bash(mv:*) AskUserQuestion
+model: haiku
 argument-hint: "[context or issue reference]"
-user-invocable: true
 ---
 
 # /commit - Git Commit Message Generator
 
-Analyze staged changes and generate Conventional Commits messages.
-
 ## Input
 
-- Context or issue reference: `$1` (optional)
-- If `$1` is empty → analyze staged changes only
-
-## Agent
-
-| Type  | Name             | Purpose                         |
-| ----- | ---------------- | ------------------------------- |
-| Agent | commit-generator | Conventional Commits gen (fork) |
+- Context or issue reference: `$ARGUMENTS` (optional)
+- If `$ARGUMENTS` is empty → analyze staged changes only
 
 ## Execution
 
-| Step | Action                                                                    |
-| ---- | ------------------------------------------------------------------------- |
-| 1    | `Task` with `subagent_type: commit-generator`, `mode: "dontAsk"`          |
-| 2    | Present 3 generator candidates via AskUserQuestion (varied scope/wording) |
-| 3    | User selects or customizes (Other)                                        |
-| 4    | Execute selected commit (sandbox-compatible)                              |
+| Step | Action                                                                   |
+| ---- | ------------------------------------------------------------------------ |
+| 1    | Read staged: `git status`, `git diff --staged` (parallel)                |
+| 2    | Generate 3 candidates (varied scope/wording, see Type Detection + Rules) |
+| 3    | Present via AskUserQuestion → user selects or customizes (Other)         |
+| 4    | Execute selected commit (sandbox-compatible)                             |
 
-### Sandbox-Compatible Commit
+## Type Detection
+
+Infer type from diff context:
+
+| Type     | When to use                                |
+| -------- | ------------------------------------------ |
+| feat     | New functionality or capability            |
+| fix      | Bug fix or error correction                |
+| refactor | Code restructuring without behavior change |
+| docs     | Documentation only changes                 |
+| test     | Adding or updating tests                   |
+| chore    | Config, dependencies, maintenance          |
+| perf     | Performance optimization                   |
+| style    | Formatting, whitespace, linting            |
+| ci       | CI/CD configuration changes                |
+
+Default to `feat` if unclear.
+
+## Rules
+
+| Rule    | Guideline                                            |
+| ------- | ---------------------------------------------------- |
+| Subject | ≤72 chars, imperative, lowercase, no period          |
+| Footer  | `BREAKING CHANGE:`, `Closes #123`, `Co-authored-by:` |
+
+## Examples
+
+```text
+feat(auth): add OAuth2 authentication support
+feat(api)!: remove deprecated endpoints  # BREAKING CHANGE
+```
+
+## Sandbox-Compatible Commit
 
 ```bash
 # Multi-line: file-based
@@ -45,19 +69,25 @@ mv /tmp/claude/commit-msg.txt ~/.Trash/ 2>/dev/null || true
 git commit -m "subject" -m "body"
 ```
 
+## Error Handling
+
+| Error             | Action                  |
+| ----------------- | ----------------------- |
+| No staged files   | Report "Nothing staged" |
+| Empty diff        | Return minimal message  |
+| No git repository | Report "Not a git repo" |
+| Pre-commit failed | Report hook error       |
+
 ## Display Format
 
 ### Preview
 
 ```markdown
-## 📝 Commit Preview
+## Commit Preview
 
-> **<type>(<scope>)**: <description>
+> <type>(<scope>): <description>
 
 <body>
-
-Key Decisions:
-<key_decisions>
 
 `<footer>`
 ```
@@ -65,9 +95,3 @@ Key Decisions:
 ### Success
 
 Committed: `[short-hash]` <type>(<scope>): <description>
-
-## Verification
-
-| Check                                                 | Required |
-| ----------------------------------------------------- | -------- |
-| `Task` called with `subagent_type: commit-generator`? | Yes      |

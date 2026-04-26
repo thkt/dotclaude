@@ -36,10 +36,12 @@ paths:
 
 ```text
 skills/
-├── lib/              # 共有 @-include フラグメント
+├── _lib/             # 共有 @-include フラグメント
 ├── [short-name]/     # user-invocable: true (例: commit, fix, audit)
 │   └── SKILL.md
-└── [verb-noun]/      # user-invocable: false (例: reviewing-type-safety)
+├── use-[cli]/        # user-invocable: false, CLI ラッパー (例: use-cli-git)
+├── ctx-[agent]/      # user-invocable: false, agent 専用 (例: use-context-security-reviewer)
+└── workflow-[名詞]/   # user-invocable: false, workflow (例: use-workflow-code)
     ├── SKILL.md
     └── references/
         ├── [workflow].md
@@ -48,10 +50,12 @@ skills/
 
 ## 命名規則
 
-| `user-invocable` | 命名スタイル | 例                                                 |
-| ---------------- | ------------ | -------------------------------------------------- |
-| `true`           | 短い名前     | `commit`, `fix`, `audit`                           |
-| `false`          | `動詞-名詞`  | `reviewing-type-safety`, `orchestrating-workflows` |
+| `user-invocable` | バインディング | 命名スタイル  | 例                                            |
+| ---------------- | -------------- | ------------- | --------------------------------------------- |
+| `true`           | -              | 短い名前      | `commit`, `fix`, `audit`                      |
+| `false`          | CLI ラップ     | `use-<cli>`   | `use-cli-git`, `use-cli-yomu` (ADR-0052)              |
+| `false`          | agent 専用     | `ctx-<agent>` | `use-context-security-reviewer` (ADR-0053)            |
+| `false`          | workflow       | `workflow-<名詞>` | `use-workflow-code`, `use-workflow-spec-validation` |
 
 ## 例
 
@@ -64,8 +68,8 @@ RGRCサイクルによるTDD実装。
 
 ## フェーズ参照
 
-- [@../skills/generating-tdd-tests/SKILL.md]
-- [@../skills/orchestrating-workflows/references/code-workflow.md]
+- [@../skills/use-workflow-tdd-cycle/SKILL.md]
+- [@../skills/use-workflow-code/references/code-workflow.md]
 ```
 
 良い理由: フェーズを調整し、詳細をスキルに委譲。

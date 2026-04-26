@@ -3,7 +3,7 @@ name: type-design-reviewer
 description: 型設計の品質レビュー。カプセル化、不変条件、強制。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-type-safety]
+skills: [use-context-type-safety-reviewer]
 context: fork
 memory: project
 background: true

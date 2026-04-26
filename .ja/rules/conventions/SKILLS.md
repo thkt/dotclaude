@@ -31,12 +31,15 @@ user-invocable: false          # 任意: デフォルト false
 
 ## 命名
 
-動名詞形 (verb-ing) を使う。
+カテゴリで選ぶ。
 
-| パターン | 例                                      |
-| -------- | --------------------------------------- |
-| 良い     | `reviewing-security`, `orchestrating-workflows` |
-| 避ける   | `helper`, `utils`, `tools` (曖昧すぎる) |
+| `user-invocable` | バインディング | パターン      | 例                                            |
+| ---------------- | -------------- | ------------- | --------------------------------------------- |
+| `true`           | -              | 短い名前      | `commit`, `fix`, `audit`                      |
+| `false`          | CLI ラップ     | `use-<cli>`   | `use-cli-git`, `use-cli-yomu` (ADR-0052)              |
+| `false`          | agent 専用     | `ctx-<agent>` | `use-context-security-reviewer` (ADR-0053)            |
+| `false`          | workflow       | `workflow-<名詞>` | `use-workflow-code`, `use-workflow-spec-validation` |
+| any              | 避ける         | -             | `helper`, `utils`, `tools` (曖昧すぎる)       |
 
 ## ディレクトリ構造
 

@@ -2,7 +2,7 @@
 
 ## Step 7: SOW
 
-Read template `~/.claude/templates/sow/template.md`. Fill from design context
+Read template `~/.claude/skills/think/templates/sow.md`. Fill from design context
 (Steps 0-6). ID format: AC-N.
 
 Output: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
@@ -22,12 +22,19 @@ Apply before writing each section.
 
 ## Step 8: Spec
 
-Read template `~/.claude/templates/spec/template.md`. Generate from SOW.
+Read template `~/.claude/skills/think/templates/spec.md`. Generate from SOW.
 ID format: FR-001, T-001, NFR-001.
 
 Traceability: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
 
-If UI-related: include Component API (Props, variants, states, usage).
+### Component API Section (auto-detected)
+
+| Condition                                                                                                            | Action                                                         |
+| -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Project has Storybook (`.storybook/` or `@storybook/*` dep) AND target includes `.tsx`/`.jsx` with PascalCase export | Include Component API section (Props, variants, states, usage) |
+| Otherwise                                                                                                            | Skip                                                           |
+
+See `~/.claude/skills/think/templates/component-api.md` for the Component API template.
 
 Output: `.claude/workspace/planning/[same-dir]/spec.md`
 

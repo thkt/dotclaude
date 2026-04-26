@@ -27,11 +27,11 @@ Default is `memory: project` (30/35 agents).
 
 | Agent                  | Reason                                                 |
 | ---------------------- | ------------------------------------------------------ |
-| unit-implementer       | Team agent, works within session only                  |
-| progressive-integrator | Team agent, works within session only                  |
-| devils-advocate-audit  | Receives other reviewers' findings, memory causes bias |
-| devils-advocate-design | Same as above, must remain objective                   |
-| evidence-verifier      | Must verify findings without preconceptions            |
+| team-implementation       | Team agent, works within session only                  |
+| team-integration | Team agent, works within session only                  |
+| critic-audit  | Receives other reviewers' findings, memory causes bias |
+| critic-design | Same as above, must remain objective                   |
+| critic-evidence      | Must verify findings without preconceptions            |
 
 ## Reviewer Design Patterns
 

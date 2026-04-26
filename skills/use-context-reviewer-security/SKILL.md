@@ -1,0 +1,52 @@
+---
+name: use-context-reviewer-security
+description: >
+  OWASP Top 10 security review. Use when: security, OWASP, XSS, SQL injection,
+  セキュリティ, 脆弱性, cloud security, AWS, IAM, Terraform,
+  クラウドセキュリティ, インフラ. Do NOT use for readability
+  (use-context-reviewer-readability), type errors (use-context-reviewer-strictness), or test design
+  (use-context-reviewer-testability).
+allowed-tools: [Read, Grep, Glob, Task]
+agent: reviewer-security
+context: fork
+user-invocable: false
+---
+
+# Security Review
+
+## Detection (OWASP Top 10)
+
+| ID  | Category                  | Pattern                                                  | Fix                                     |
+| --- | ------------------------- | -------------------------------------------------------- | --------------------------------------- |
+| A01 | Broken Access Control     | Missing auth, IDOR, path traversal                       | Auth middleware, ownership check        |
+| A02 | Cryptographic Failures    | `password: 'plaintext'`                                  | bcrypt/argon2 hashing                   |
+| A03 | Injection                 | `db.query(\`SELECT...${id}\`)`                           | Parameterized query, ORM                |
+| A03 | Injection                 | `exec(\`ping ${host}\`)`                                 | Input validation, library instead       |
+| A03 | XSS                       | `dangerouslySetInnerHTML` (static presence)              | Default escaping, DOMPurify             |
+| A05 | Security Misconfiguration | `cors({ origin: '*' })`                                  | Explicit origin allowlist               |
+| A05 | Security Misconfiguration | `cookie: {}` (no options)                                | secure, httpOnly, sameSite: 'strict'    |
+| A05 | Security Misconfiguration | `err.stack` in error response without `NODE_ENV` guard   | Generic message in prod, log internally |
+| A09 | Logging Failures          | `logger.info({ password })`                              | Exclude sensitive fields                |
+| A10 | SSRF                      | `fetch(userInputUrl)`                                    | URL validation, allowlist               |
+| A03 | XSS (Taint)               | `dangerouslySetInnerHTML={{ __html }}` without sanitizer | DOMPurify.sanitize() at boundary        |
+| A03 | XSS (Taint)               | Function arg → `innerHTML` without sanitization          | Sanitize at function boundary           |
+| A03 | XSS (Taint)               | `<a href={variable}>` with user-controlled URL           | Protocol allowlist (https/http only)    |
+| A01 | Open Redirect (Taint)     | URL param → `location.href` without validation           | Domain allowlist or relative-only       |
+| A04 | Insecure Design           | `postMessage` handler without origin check               | Strict `event.origin` comparison        |
+| A02 | Sensitive Data Exposure   | JWT stored in localStorage/sessionStorage                | httpOnly cookie instead                 |
+
+## Confidence Threshold
+
+Report findings with confidence >=0.60. For 0.60-0.80: include
+verification_hint. For >=0.80: include full exploit scenario and fix
+recommendation. Always include file:line.
+
+## References
+
+| Topic     | Scope            | File                                                         |
+| --------- | ---------------- | ------------------------------------------------------------ |
+| Basic     | A01, A02, A07    | `${CLAUDE_SKILL_DIR}/references/owasp-basic.md`              |
+| Injection | A03              | `${CLAUDE_SKILL_DIR}/references/owasp-injection.md`          |
+| Advanced  | A04-A06, A08-A10 | `${CLAUDE_SKILL_DIR}/references/owasp-advanced.md`           |
+| Cloud     | IAM, IaC, CI/CD  | `${CLAUDE_SKILL_DIR}/references/cloud-infrastructure.md`     |
+| Frontend  | Taint analysis   | `${CLAUDE_SKILL_DIR}/references/frontend-taint-checklist.md` |

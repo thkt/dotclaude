@@ -174,7 +174,7 @@ DA結果を判定テーブル + アクション項目で提示。Step 5に進む
 
 ### Step 7: SOW
 
-テンプレート `~/.claude/templates/sow/template.md` をRead。設計コンテキスト（Steps
+テンプレート `~/.claude/skills/think/templates/sow.md` をRead。設計コンテキスト（Steps
 0-6）から生成。ID形式: AC-N。出力:
 `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
 
@@ -191,7 +191,7 @@ DA結果を判定テーブル + アクション項目で提示。Step 5に進む
 
 ### Step 8: Spec
 
-テンプレート `~/.claude/templates/spec/template.md` をRead。SOWから生成。ID形式: FR-001,
+テンプレート `~/.claude/skills/think/templates/spec.md` をRead。SOWから生成。ID形式: FR-001,
 T-001, NFR-001。トレーサビリティ: `FR-001 Implements: AC-001` →
 `T-001 Validates: FR-001` UI関連: Component
 API（Props、variants、states、usage）を含める。出力:

@@ -3,7 +3,7 @@ name: test-coverage-reviewer
 description: テストカバレッジの品質レビュー。動作ギャップとテストの堅牢性。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [generating-tdd-tests]
+skills: [use-workflow-tdd-cycle]
 context: fork
 memory: project
 background: true

@@ -8,10 +8,13 @@ set -euo pipefail
 TITLE="${1:-}"
 if [ -n "${ADR_DIR:-}" ]; then
   : # use provided value
-elif [ -d "adr" ]; then
-  ADR_DIR="adr"
 else
-  ADR_DIR="docs/adr"
+  GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || true)
+  if [ -z "$GIT_ROOT" ]; then
+    echo "Error: not inside a git repository. ADRs require <git-root>/docs/decisions/. Set ADR_DIR env var to override." >&2
+    exit 1
+  fi
+  ADR_DIR="$GIT_ROOT/docs/decisions"
 fi
 THRESHOLD="${DUPLICATE_THRESHOLD:-0.7}"
 
@@ -24,6 +27,12 @@ fi
 FORBIDDEN_CHARS='[/:*?"<>|]'
 if [[ "$TITLE" =~ $FORBIDDEN_CHARS ]]; then
   echo 'Error: forbidden characters in title (/:*?"<>|)' >&2
+  exit 1
+fi
+
+if [ -d "$ADR_DIR" ] && [ -f "$ADR_DIR/SKILL.md" ]; then
+  echo "Error: $ADR_DIR contains SKILL.md (skill-definition directory, not an ADR archive)" >&2
+  echo "Set ADR_DIR env var or run from a project root where docs/decisions/ is the archive." >&2
   exit 1
 fi
 

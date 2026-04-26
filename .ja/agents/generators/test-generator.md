@@ -3,7 +3,7 @@ name: test-generator
 description: SOWのテスト計画からテストを生成。実装コードは変更しない。
 tools: [Read, Write, Grep, Glob, LS]
 model: opus
-skills: [generating-tdd-tests]
+skills: [use-workflow-tdd-cycle]
 ---
 
 # テストジェネレーター

@@ -1,17 +1,7 @@
 ---
 name: feature
-description:
-  探索・アーキテクチャ設計・TDD・品質ゲートを含む包括的な機能開発。ユーザーが機能開発,
-  新機能, 機能追加, feature development等に言及した場合に使用。計画なし実装には
-  /code、 バグ修正には /fix、実装なしの計画には /think を使用。
-allowed-tools:
-  Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run),
-  Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun
-  run:*), Bash(make:*), Bash(git diff:*), Bash(git status:*), Bash(git log:*),
-  Bash(git show:*), Bash(git ls-files:*), Bash(git worktree *), Bash(git merge
-  *), Bash(git branch *), Bash(date:*), Bash(mkdir:*), Bash(agent-browser:*),
-  Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList,
-  TaskUpdate, AskUserQuestion
+description: 探索・アーキテクチャ設計・TDD・品質ゲートを含む包括的な機能開発。ユーザーが機能開発, 新機能, 機能追加, feature development等に言及した場合に使用。計画なし実装には /code、バグ修正には /fix、実装なしの計画には /think を使用。
+allowed-tools: Skill, Bash(npm run), Bash(npm run:*), Bash(npm test:*), Bash(yarn run), Bash(yarn run:*), Bash(pnpm run), Bash(pnpm run:*), Bash(bun run), Bash(bun run:*), Bash(make:*), Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(git ls-files:*), Bash(git worktree *), Bash(git merge *), Bash(git branch *), Bash(date:*), Bash(mkdir:*), Bash(agent-browser:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, TaskCreate, TaskList, TaskUpdate, AskUserQuestion
 model: opus
 argument-hint: "[機能の説明]"
 user-invocable: true
@@ -23,11 +13,11 @@ user-invocable: true
 
 ## プラグイン依存
 
-| プラグイン    | 用途           | インストール                      |
-| ------------- | -------------- | --------------------------------- |
-| agent-browser | Phase 4.5 のみ | `claude plugin add agent-browser` |
+| プラグイン    | 用途         | インストール                      |
+| ------------- | ------------ | --------------------------------- |
+| agent-browser | Phase 5 のみ | `claude plugin add agent-browser` |
 
-agent-browser未インストール時、Phase 4.5はスキップされる。
+agent-browser未インストール時、Phase 5はスキップされる。
 
 ## 入力
 
@@ -36,7 +26,7 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 
 ### コンテキスト対応オプション
 
-プロジェクト種別を検出 → 関連する選択肢を提示:
+プロジェクト種別を検出し、関連する選択肢を提示する。
 
 | パターン           | 検出方法                                      | 選択肢                                    |
 | ------------------ | --------------------------------------------- | ----------------------------------------- |
@@ -49,18 +39,18 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 
 ## SOW コンテキスト
 
-[@../../skills/lib/sow-resolution.md]
+[@../../skills/_lib/sow-resolution.md]
 
 ## 実行
 
-| Phase | 名前                | アクション                            | ユーザーチェックポイント |
-| ----- | ------------------- | ------------------------------------- | ------------------------ |
+| Phase | 名前                | アクション                       | ユーザーチェックポイント |
+| ----- | ------------------- | -------------------------------- | ------------------------ |
 | 1     | Discovery           | コンテキストスキャン → PREFLIGHT | [?] or [→] の解決        |
-| 2     | Design              | Skill: /think                         | 設計承認                 |
-| 3     | Implementation      | Skill: /code                          | —                        |
-| 4     | Quality             | /audit → /fix ループ (最大3回)        | 残存課題のみ             |
-| 4.5   | Visual Verification | ブラウザ確認（UIタスクのみ）          | 画面承認                 |
-| 5     | Summary             | ACカバレッジ + スコープ報告           | 完了                     |
+| 2     | Design              | Skill: /think                    | 設計承認                 |
+| 3     | Implementation      | Skill: /code                     | —                        |
+| 4     | Quality Loop        | /audit → /fix ループ (最大3回)   | 残存課題のみ             |
+| 5     | Visual Verification | ブラウザ確認（UIタスクのみ）     | 画面承認                 |
+| 6     | Summary             | ACカバレッジ + スコープ報告      | 完了                     |
 
 ### Phase 1: Discovery
 
@@ -68,8 +58,8 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 2. `$1` が空の場合 → コンテキスト対応オプションでAskUserQuestion
 3. PREFLIGHTを実行
 4. [→]または[?]を解決
-5. 早期終了: 対象ファイル ≤ 2 → `/code` を提案（Phase 2-5スキップ）
-6. TaskCreateでフェーズ追跡（Phase 2-5）
+5. 早期終了: 対象ファイル ≤ 2 → `/code` を提案（Phase 2-6スキップ）
+6. TaskCreateでフェーズ追跡（Phase 2-6）
 
 ### Phase 2: Design
 
@@ -85,21 +75,28 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 
 ### Phase 4: Quality Loop
 
-| Step | アクション                               | 終了条件                                       |
-| ---- | ---------------------------------------- | ---------------------------------------------- |
-| 1    | Skill: /audit（git の変更ファイル対象）  | critical/high が 0 → Step 4                    |
-| 2    | Skill: /fix（各 critical/high に対して） | → Step 3                                       |
-| 3    | イテレーション加算 (最大3) → Step 1      | 最大到達 → Step 5                              |
-| 4    | Skill: /polish → テスト確認              | テスト失敗 → 修正 (最大2回)。失敗継続 → Step 5 |
-| 5    | 残存課題を提示（あれば）                 | ユーザーが判断                                 |
+#### ループ
+
+| Step | アクション                               | 終了条件                      |
+| ---- | ---------------------------------------- | ----------------------------- |
+| 1    | Skill: /audit（git の変更ファイル対象）  | critical/high が 0 → Finalize |
+| 2    | Skill: /fix（各 critical/high に対して） | → Step 3                      |
+| 3    | イテレーション加算 (最大3) → Step 1      | 最大到達 → Finalize           |
 
 変更ファイル: `git diff main...HEAD --name-only`（またはベースブランチ）。
 
-### Phase 4.5: Visual Verification（条件付き）
+#### Finalize
+
+| Step | アクション                  | 終了条件                                   |
+| ---- | --------------------------- | ------------------------------------------ |
+| 1    | Skill: /polish → テスト確認 | テスト失敗 → 修正 (最大2回)。失敗継続 → 次 |
+| 2    | 残存課題を提示（あれば）    | ユーザーが判断                             |
+
+### Phase 5: Visual Verification
 
 #### スキップ条件
 
-いずれか該当 → スキップ:
+いずれかに該当したら skip する。
 
 - 変更ファイルにUIファイルなし（`.tsx`, `.jsx`, `.css`, `.scss`, `.html`）
 - `agent-browser` 未インストール（`which agent-browser` 失敗）
@@ -107,7 +104,7 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 
 #### Dev Server 検出
 
-`package.json` のscriptsから:
+`package.json` のscriptsから検出する。
 
 | 優先度 | スクリプト名パターン         | デフォルト URL          |
 | ------ | ---------------------------- | ----------------------- |
@@ -120,19 +117,16 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 #### ワークフロー
 
 1. dev serverスクリプトとURLを検出
-2. AskUserQuestion: "Dev serverは {url} で起動中？　(Yで続行 /
-   Nでスキップ / カスタムURL)"
-3. `agent-browser --headed open {url}` →
-   SOWスコープに該当するページへ遷移（変更ファイルパスやACの記述からルートを推測）
+2. AskUserQuestion: "Dev serverは {url} で起動中？　(Yで続行 / Nでスキップ / カスタムURL)"
+3. `agent-browser --headed open {url}` → SOWスコープに該当するページへ遷移（変更ファイルパスやACの記述からルートを推測）
 4. `agent-browser screenshot` → 現在の状態をキャプチャ
-5. ACの画面系キーワード（表示, レイアウト,
-   UI, スタイル, 描画, レスポンシブ）を含む項目を確認
+5. ACの画面系キーワード（表示, レイアウト, UI, スタイル, 描画, レスポンシブ）を含む項目を確認
 6. スクリーンショット + 所見をユーザーに提示
 7. AskUserQuestion: "画面確認OK？" (承認 / 修正依頼 / スキップ)
-8. "修正依頼" → Phase 4 Step 2に戻る
+8. "修正依頼" → Phase 4 ループ Step 2 に戻る
 9. `agent-browser close`
 
-### Phase 5: Summary
+### Phase 6: Summary
 
 サマリーを提示する。ACカバレッジは /code Quality Gatesで検証済み。
 
@@ -142,7 +136,7 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 
 ## レジューム
 
-既存のアーティファクトからレジュームポイントを検出:
+既存のアーティファクトからレジュームポイントを検出する。
 
 | アーティファクト                 | レジューム |
 | -------------------------------- | ---------- |
@@ -150,27 +144,27 @@ agent-browser未インストール時、Phase 4.5はスキップされる。
 | SOW `draft`                      | Phase 2    |
 | SOW `in-progress` + 実装証跡なし | Phase 3    |
 | 実装完了 + 品質未完了            | Phase 4    |
-| 品質通過 + UI ファイル変更あり   | Phase 4.5  |
-| 品質通過 + UI ファイル変更なし   | Phase 5    |
+| 品質通過 + UI ファイル変更あり   | Phase 5    |
+| 品質通過 + UI ファイル変更なし   | Phase 6    |
 
 実装証跡: `git diff main...HEAD --name-only` がSOWスコープのファイルを含む。
 
 ## エラーハンドリング
 
-| エラー                       | アクション                         |
-| ---------------------------- | ---------------------------------- |
-| /think キャンセルまたは失敗  | コンテキスト保存、終了             |
-| /code 失敗                   | エラーを提示、ユーザーに確認       |
-| 品質ループ最大到達（3回）    | 残存課題を提示、ユーザーが判断     |
-| agent-browser 未インストール | Phase 4.5 スキップ、Phase 5 へ続行 |
-| Dev server 未起動            | Phase 4.5 スキップ、Phase 5 へ続行 |
-| /code Quality Gatesで未達AC  | Phase 3 または 4 への再入を提案    |
+| エラー                       | アクション                       |
+| ---------------------------- | -------------------------------- |
+| /think キャンセルまたは失敗  | コンテキスト保存、終了           |
+| /code 失敗                   | エラーを提示、ユーザーに確認     |
+| 品質ループ最大到達（3回）    | 残存課題を提示、ユーザーが判断   |
+| agent-browser 未インストール | Phase 5 スキップ、Phase 6 へ続行 |
+| Dev server 未起動            | Phase 5 スキップ、Phase 6 へ続行 |
+| /code Quality Gatesで未達AC  | Phase 3 または 4 への再入を提案  |
 
 ## 検証
 
 | チェック             | 必須 |
 | -------------------- | ---- |
-| PREFLIGHT 通過? | Yes  |
+| PREFLIGHT 通過?      | Yes  |
 | SOW + Spec 生成済み? | Yes  |
 | 全テスト通過?        | Yes  |
 | /code ACカバレッジ?  | Yes  |

@@ -13,13 +13,13 @@ user-invocable: true
 
 ## Input
 
-- PR reference: `$1` (URL, number, or empty → detect from current branch)
+- PR reference: `$ARGUMENTS` (URL, number, or empty → detect from current branch)
 
 ## Execution
 
 | Step | Action                                                                                       |
 | ---- | -------------------------------------------------------------------------------------------- |
-| 1    | Identify PR: `gh pr view $1 --json number,title,body,labels,files,url` (fallback: omit `$1`) |
+| 1    | Identify PR: `gh pr view $ARGUMENTS --json number,title,body,labels,files,url` (fallback: omit `$ARGUMENTS`) |
 | 2    | Abort if no PR found or working tree is dirty (`git status --porcelain`)                     |
 | 3    | Checkout PR: `gh pr checkout $PR`                                                            |
 | 4    | Gather PR context in parallel (see below)                                                    |
@@ -122,6 +122,6 @@ Never include `author` in gh output fields.
 
 ## References
 
-| Topic            | File                                                 |
-| ---------------- | ---------------------------------------------------- |
-| Review Checklist | `${CLAUDE_SKILL_DIR}/references/review-checklist.md` |
+| Topic            | File                                               |
+| ---------------- | -------------------------------------------------- |
+| Review Checklist | ${CLAUDE_SKILL_DIR}/references/review-checklist.md |

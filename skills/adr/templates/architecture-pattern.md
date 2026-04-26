@@ -10,23 +10,11 @@ Document decisions that adopt an architecture pattern, component structure, or d
 | Defining component structure or module boundaries                       |
 | Establishing design policies that affect multiple files                 |
 
-## Required Sections (MADR Core)
+## Template-Specific Topics
 
-| # | Section                       | Purpose                                               |
-| - | ----------------------------- | ----------------------------------------------------- |
-| 1 | Title                         | Action-oriented. Example: `Adopt X pattern for Y`     |
-| 2 | Status                        | `proposed` / `accepted` / `deprecated` / `superseded` |
-| 3 | Context and Problem Statement | Why this decision is needed now                       |
-| 4 | Decision Drivers              | Factors influencing the choice                        |
-| 5 | Considered Options            | Minimum 2 options, each with Good / Bad bullets       |
-| 6 | Decision Outcome              | `Chosen option: X, because Y`                         |
-| 7 | Consequences                  | Positive and Negative impacts                         |
+Place under `## More Information` as `### {topic}`.
 
-Metadata line: `- Confidence: {level}. {rationale}`. Reassessment goes in an optional `## Reassessment Triggers` section after Consequences.
-
-## Template-Specific Sections
-
-| Section                   | Purpose                                             |
+| Topic                     | Purpose                                             |
 | ------------------------- | --------------------------------------------------- |
 | Architecture Diagram      | Mermaid or text diagram showing the structure       |
 | Quality Attributes        | Priority table (maintainability, performance, etc.) |
@@ -36,56 +24,65 @@ Metadata line: `- Confidence: {level}. {rationale}`. Reassessment goes in an opt
 
 ## Example
 
-````markdown
-# Adopt Skill-Centric Architecture
+`````markdown
+---
+status: "accepted"
+date: 2026-01-08
+decision-makers: Project owner
+---
 
-- Status: accepted
-- Deciders: Project owner
-- Date: 2026-01-08
-- Confidence: high. 6 months of production use validated the pattern.
+# Adopt Skill-Centric Architecture
 
 ## Context and Problem Statement
 
-Command files grew bloated, with some exceeding 900 lines. Knowledge (skills) and workflows (commands) were not separated, causing DRY violations and declining maintainability.
+Command files grew bloated, with some exceeding 900 lines. Knowledge (skills) and workflows (commands) were not separated, causing DRY violations and declining maintainability. How should we restructure to keep commands lightweight and knowledge reusable?
 
 ## Decision Drivers
 
-- Command files violating Miller's Law (responsibilities > 9)
-- Same knowledge duplicated across multiple commands
-- Unclear impact scope when adding new features
+* Command files violating Miller's Law (responsibilities > 9)
+* Same knowledge duplicated across multiple commands
+* Unclear impact scope when adding new features
 
 ## Considered Options
+
+* Skill-Centric Architecture
+* Status Quo (Monolithic Commands)
+
+## Decision Outcome
+
+Chosen option: "Skill-Centric Architecture", because it achieves DRY by consolidating knowledge into `skills/` while keeping commands as thin wrappers.
+
+### Consequences
+
+* Good, because commands stay under 100 lines on average
+* Good, because skills become reusable across commands
+* Bad, because more inter-file navigation is required
+
+### Confirmation
+
+A line-count audit verifies commands stay under 100 lines. Skill reuse is tracked by counting cross-command references in skill files.
+
+## Pros and Cons of the Options
 
 ### Skill-Centric Architecture
 
 Commands act as thin wrappers, delegating knowledge to skills.
 
-- Good: Achieves DRY (knowledge in one place)
-- Good: Commands stay under 100 lines
-- Bad: Increased indirection via references
+* Good, because achieves DRY (knowledge in one place)
+* Good, because commands stay under 100 lines
+* Bad, because increased indirection via references
 
 ### Status Quo (Monolithic Commands)
 
 Each command contains all required knowledge inline.
 
-- Good: Self-contained in one file
-- Bad: Duplication keeps growing
-- Bad: Hard to predict change impact
+* Good, because self-contained in one file
+* Bad, because duplication keeps growing
+* Bad, because hard to predict change impact
 
-## Decision Outcome
+## More Information
 
-Adopted skill-centric architecture. Commands follow the Thin Wrapper pattern; implementation knowledge is consolidated in `skills/`.
-
-### Positive Consequences
-
-- Commands are lightweight (average 80 lines)
-- Skills become reusable
-
-### Negative Consequences
-
-- More inter-file navigation required
-
-## Architecture Diagram
+### Architecture Diagram
 
 ```mermaid
 graph TD
@@ -93,18 +90,18 @@ graph TD
     SKILL --> REF[references/]
 ```
 
-## Quality Attributes
+### Quality Attributes
 
 | Attribute         | Priority | Approach     |
 | ----------------- | -------- | ------------ |
 | Maintainability   | High     | Skill split  |
 | Understandability | Medium   | Thin Wrapper |
 
-## Trade-offs
+### Trade-offs
 
 More files in exchange for clear single-responsibility per file.
 
-## Reassessment Triggers
+### Reassessment Triggers
 
-- If command count exceeds 30 and skill dependency graph becomes tangled
-````
+* If command count exceeds 30 and skill dependency graph becomes tangled
+`````

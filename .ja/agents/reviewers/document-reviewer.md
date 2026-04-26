@@ -3,7 +3,7 @@ name: document-reviewer
 description: 技術文書の品質、明確性、構造をレビュー。
 tools: [Read, Grep, Glob, LS]
 model: sonnet
-skills: [reviewing-readability]
+skills: [use-context-code-quality-reviewer]
 context: fork
 memory: project
 background: true

@@ -4,7 +4,7 @@ description: challenge/verification 結果を照合し、クロスドメイン�
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
-skills: [root-cause-analysis]
+skills: [use-context-root-cause-analysis]
 ---
 
 # Progressive Integrator

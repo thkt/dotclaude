@@ -1,8 +1,7 @@
 # Audit Output Template
 
-Output is rendered from `snapshot.yaml` (the canonical source — see ADR 0047).
-Every value below traces back to a snapshot field; do not surface data that has
-no snapshot origin. Leader orchestrates the render; integrator fills snapshot.
+Output is rendered from `snapshot.json` (the canonical source. See ADR 0047 and `references/snapshot-schema.md`).
+Every value below traces back to a snapshot field; do not surface data that has no snapshot origin. Leader orchestrates the render; integrator fills snapshot.
 
 ## Template
 
@@ -33,10 +32,14 @@ Omit a row whose snapshot field is `skipped` and whose delta is `-`.
 Trust Score: {summary.trust_score} / 100
 FP rate: {summary.dismissed} / ({summary.total_findings} + {summary.dismissed}) dismissed by challenger
 
-> Pipeline: {pipeline_health.reviewers_completed} reviewers completed |
-> Skipped: {pipeline_health.domains_skipped}
+> Pipeline: {pipeline_health.reviewers_completed} reviewers completed
 >
-> (Omit this blockquote if `domains_skipped` is empty and all `*_completed` are true.)
+> Skipped reviewers (no findings reported for these areas):
+>
+> - {domains_skipped[i]} (one bullet per entry; format `<domain>: <reason>`)
+>
+> Omit the entire blockquote if `domains_skipped` is empty and all `*_completed` are true.
+> Omit only the "Skipped reviewers" subsection if `domains_skipped` is empty but a `*_completed` is false.
 
 ---
 
@@ -44,8 +47,8 @@ FP rate: {summary.dismissed} / ({summary.total_findings} + {summary.dismissed}) 
 
 One row per finding whose id starts with `RC-`.
 
-| ID                | Description          | Findings resolved         | Effort                |
-| ----------------- | -------------------- | ------------------------- | --------------------- |
+| ID                | Description            | Findings resolved       | Effort                |
+| ----------------- | ---------------------- | ----------------------- | --------------------- |
 | {findings[RC].id} | {findings[RC].message} | {findings[RC].resolves} | {findings[RC].effort} |
 
 `Findings resolved` and `Effort` are integrator-supplied fields on RC-* entries.
@@ -55,15 +58,28 @@ Omit this section if no finding starts with `RC-`.
 
 ## Quick Fixes
 
-One row per auto-applicable suggestion. Auto-fix candidates are findings whose
-status is `open`, severity is `low` or `medium`, and location points to a
-single line.
+One row per auto-applicable suggestion. Auto-fix candidates are findings with
+`fix_type: auto`, `status: open | confirmed`, and `severity: low | medium`. The
+integrator sets `fix_type` per snapshot.json when a known fix pattern applies
+without ambiguity (typically a single-line replacement).
 
 | ID                  | Location              | Effort  | Rationale                |
 | ------------------- | --------------------- | ------- | ------------------------ |
 | {findings[auto].id} | {findings[auto].file} | 5-15min | {findings[auto].message} |
 
 Apply: `/fix <ID>`. Omit section if no auto-fix candidates.
+
+---
+
+## Static Tool Findings
+
+Findings from deterministic tools (oxlint, knip, tsgo, react-doctor). These bypass challenger/verifier; the tool output is the evidence. Wave 1 findings at the same `file:line` strengthen the signal and appear with cross-references in the next section.
+
+| ID                | Severity                | Category                | Location            |
+| ----------------- | ----------------------- | ----------------------- | ------------------- |
+| {findings[PF].id} | {findings[PF].severity} | {findings[PF].category} | {findings[PF].file} |
+
+Omit this section if no `status: static` finding exists.
 
 ---
 
@@ -79,11 +95,11 @@ All findings with `status: confirmed`, sorted by severity descending.
 
 ## Needs Review
 
-Disputed by challenger but verified by verifier — needs human judgement.
+Disputed by challenger but verified by verifier. Needs human judgement.
 
-| ID               | Location              | Reason                 |
-| ---------------- | --------------------- | ---------------------- |
-| {findings[nr].id} | {findings[nr].file}  | {findings[nr].message} |
+| ID                | Location            | Reason                 |
+| ----------------- | ------------------- | ---------------------- |
+| {findings[nr].id} | {findings[nr].file} | {findings[nr].message} |
 
 Omit this entire section if there are no findings in this state.
 
@@ -91,14 +107,25 @@ Omit this entire section if there are no findings in this state.
 
 ## Actions
 
-Grouped by timing. Omit a row whose list is empty.
+Findings grouped by relation to the audit scope. Default policy. Resolve all in-scope findings before merge; defer only what is truly outside. Omit a row whose list is empty.
 
-| Priority         | Action                                          |
-| ---------------- | ----------------------------------------------- |
-| [!] Immediate    | critical/high findings or fail-state pre_flight |
-| [→] This Sprint  | medium findings + auto-fixes                    |
-| [→] Next Sprint  | low findings or structural refactors            |
-| [○] Backlog      | minor improvements, priority score < 5          |
+### In scope (resolve before merge)
+
+| Tier       | Criteria                                                                             |
+| ---------- | ------------------------------------------------------------------------------------ |
+| Must-fix   | critical/high severity; security (any severity); fail-state pre_flight; broken tests |
+| Should-fix | medium/low severity on files within the audit scope                                  |
+
+### Out of scope
+
+| Tier     | Criteria                                                      |
+| -------- | ------------------------------------------------------------- |
+| Followup | `finding.file` outside the audit scope (incidental discovery) |
+| Discard  | Confirmed false positive after review                         |
+
+Routing rule. Leader places each finding by checking its `file` against the audit scope. In-scope findings split by severity into Must-fix or Should-fix. Out-of-scope findings go to Followup. Discard requires explicit user decision.
+
+Sort within each tier. Use priority score, highest first. Integrator computes it as `findings_resolved × max_severity × fixability` for RC entries, or `Impact × Reach × Fixability` for standalone findings.
 
 ---
 
@@ -111,13 +138,13 @@ Grouped by timing. Omit a row whose list is empty.
 
 ## Rendering Rules
 
-| Rule                    | Detail                                                                  |
-| ----------------------- | ----------------------------------------------------------------------- |
-| Canonical source        | `snapshot.yaml` only. Do not render fields absent from snapshot.        |
-| Delta format            | `+N` if positive, `-N` if negative, `-` if zero, `(first)` on first run |
-| Severity order          | critical → high → medium → low                                          |
-| Section omission        | See per-section rules; do not emit empty tables                         |
-| Trust Score range       | 0-100, per ADR 0035                                                     |
+| Rule              | Detail                                                                  |
+| ----------------- | ----------------------------------------------------------------------- |
+| Canonical source  | `snapshot.json` only. Do not render fields absent from snapshot.        |
+| Delta format      | `+N` if positive, `-N` if negative, `-` if zero, `(first)` on first run |
+| Severity order    | critical → high → medium → low                                          |
+| Section omission  | See per-section rules; do not emit empty tables                         |
+| Trust Score range | 0-100. See `references/snapshot-schema.md` for derivation               |
 
 ## First Recording
 

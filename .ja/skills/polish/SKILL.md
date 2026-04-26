@@ -1,10 +1,11 @@
 ---
 name: polish
-description: 軽量レビュー + クリーンアップ。構造レビュー、オプションのCodexクロスチェック、
-  スロップ除去、テスト監査。整理して, きれいにして, コード整理, slop除去,
-  ポリッシュ, テスト整理, テスト監査, クロスチェック, crosscheck,
-  Codex レビュー に言及した場合に使用。深いマルチレビュアー監査には /audit を使用。
-allowed-tools: Bash(codex:*), Bash(git diff:*), Bash(git log:*), Bash(git stash:*),
+description: 軽量レビュー + クリーンアップ。構造レビュー、オプションのCodex + CodeRabbit
+  クロスチェック、スロップ除去、テスト監査。整理して, きれいにして, コード整理,
+  slop除去, ポリッシュ, テスト整理, テスト監査, クロスチェック, crosscheck,
+  Codex レビュー, CodeRabbit に言及した場合に使用。
+  深いマルチレビュアー監査には /audit を使用。
+allowed-tools: Bash(codex:*), Bash(coderabbit:*), Bash(git diff:*), Bash(git log:*), Bash(git stash:*),
   Bash(git status:*), Bash(cargo test:*), Bash(npm test:*), Bash(npm run test:*),
   Bash(bun test:*), Bash(pnpm test:*), Bash(yarn test:*), Bash(make test:*),
   Bash(which:*), Read, Edit, Grep, Glob, LS, Skill, AskUserQuestion
@@ -15,8 +16,8 @@ user-invocable: true
 
 # /polish - 軽量レビュー + クリーンアップ
 
-構造レビュー (simplify) + オプションのCodexクロスチェック + コードクリーンアップ +
-テスト監査。全修正をフォアグラウンドで直接適用。
+構造レビュー (simplify) + オプションのCodex + CodeRabbitクロスチェック +
+コードクリーンアップ + テスト監査。全修正をフォアグラウンドで直接適用。
 
 ## 入力
 
@@ -29,24 +30,33 @@ user-invocable: true
 
 `Skill("simplify", args: "$1")` — 並列レビュー（再利用、品質、効率）で構造的問題を修正。
 
-### Phase 2: Codexクロスチェック（オプション）
+### Phase 2: クロスチェック（並列、オプション）
 
-`which codex` 失敗時は全スキップ。
+CodexとCodeRabbit CLIを並列実行。各ツールは個別に利用不可ならスキップ。両方スキップ時はPhase 3へ進む。
 
-| Step | アクション                                                            |
-| ---- | --------------------------------------------------------------------- |
-| 1    | モード検出: `git status --porcelain` → uncommitted or base            |
-| 2    | `codex review` を検出モードで実行（単一パス）                         |
-| 3    | トリアージ: P1/P2をfile:line付きで抽出。P3除外、スコープ外スキップ    |
-| 4    | 通過findingsを修正（high → medium順）                                 |
-| 5    | テストコマンド検出・バリデーション。テスト失敗時は `git stash` で退避 |
+| ツール     | フォーカス                           | スキップ条件                                    |
+| ---------- | ------------------------------------ | ----------------------------------------------- |
+| Codex      | ロジック、アーキテクチャ、データフロー | `which codex` 失敗                              |
+| CodeRabbit | セキュリティ、機械的バグ (P1)         | `which coderabbit` 失敗 OR `coderabbit auth status` 失敗 |
 
-| 条件               | モード      | コマンド                     |
-| ------------------ | ----------- | ---------------------------- |
-| 未コミット変更あり | uncommitted | `codex review --uncommitted` |
-| baseとの差分のみ   | base        | `codex review --base main`   |
+| Step | アクション                                                                           |
+| ---- | ------------------------------------------------------------------------------------ |
+| 1    | モード検出: `git status --porcelain` → uncommitted or base                           |
+| 2    | 両ツールを検出モードで並列実行（各々単一パス）                                       |
+| 3    | file:lineでツール間の指摘を重複排除                                                  |
+| 4    | トリアージ: Codex は P1/P2 採用、CodeRabbit は critical のみ採用。Phase 3領域は除外 |
+| 5    | 通過findingsを修正（high → medium順）                                                |
+| 6    | テストコマンド検出・バリデーション。テスト失敗時は `git stash` で退避                |
+
+| 条件               | モード      | Codex                        | CodeRabbit                                       |
+| ------------------ | ----------- | ---------------------------- | ------------------------------------------------ |
+| 未コミット変更あり | uncommitted | `codex review --uncommitted` | `coderabbit review --agent --type uncommitted`   |
+| baseとの差分のみ   | base        | `codex review --base main`   | `coderabbit review --agent --type committed`     |
 
 未コミット・コミット済み両方ある場合: uncommittedモードを使用。
+
+CodeRabbit の除外対象 (Phase 3領域、ここでは適用しない): 命名、フォーマット、可読性、AIスロップ。
+`.coderabbit.yaml` で `profile: chill` を設定して無料枠のレート制限負荷を下げることを推奨。
 
 ### Phase 3: コードクリーンアップ
 
@@ -66,6 +76,7 @@ code-simplifierの保持ルール適用 — 迷ったら残す。
 ```text
 Phase 1 (simplify): <サマリー>
 Phase 2 (codex): <修正N / スキップN（理由付き）/ codex未導入>
+Phase 2 (coderabbit): <修正N / スキップN（理由付き）/ coderabbit未導入>
 Phase 3 (cleanup):
   Code: <file:line付きの変更>
   Tests: <file:line付きの変更>
@@ -74,10 +85,14 @@ Phase 3 (cleanup):
 
 ## エラーハンドリング
 
-| エラー              | アクション                          |
-| ------------------- | ----------------------------------- |
-| diff変更なし        | "Nothing to polish" 報告            |
-| /simplify失敗       | 警告ログ、Phase 2に進む             |
-| codex未インストール | Phase 2スキップ、Phase 3に進む      |
-| codex review失敗    | 警告ログ、Phase 3に進む             |
-| 修正がテスト失敗    | `git stash` で退避、findingスキップ |
+| エラー                     | アクション                             |
+| -------------------------- | -------------------------------------- |
+| diff変更なし               | "Nothing to polish" 報告               |
+| /simplify失敗              | 警告ログ、Phase 2に進む                |
+| codex未インストール        | Codexのみスキップ、CodeRabbitは継続    |
+| codex review失敗           | 警告ログ、続行                         |
+| coderabbit未インストール   | CodeRabbitのみスキップ、Codexは継続    |
+| coderabbit auth status失敗 | CodeRabbitのみスキップ、Codexは継続    |
+| coderabbit review失敗      | 警告ログ、続行                         |
+| Phase 2両ツールスキップ    | Phase 3に直接進む                      |
+| 修正がテスト失敗           | `git stash` で退避、findingスキップ    |

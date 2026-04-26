@@ -1,6 +1,6 @@
 ---
 name: challenge
-description: 提案、設計、計画、分析に対してdevil's advocateを実行。ユーザーがdevils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し等に言及した場合に使用。コードレビューの発見事項には /audit、outcome 検証には /verify（adversarial testing 内蔵）を使用。
+description: 提案、設計、計画、分析に対してdevil's advocateを実行。ユーザーがdevils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し等に言及した場合に使用。コードレビューの発見事項には /audit、outcome assertion には /assert（adversarial testing 内蔵）を使用。
 allowed-tools: Read, Glob, Grep, LS, Task
 model: opus
 argument-hint: "[提案ファイル | 説明]"

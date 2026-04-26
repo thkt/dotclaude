@@ -38,8 +38,8 @@ Commands are orchestrators, no implementation details.
 ```markdown
 # Good: /code
 
-- Skills: orchestrating-workflows (RGRC definition)
-- Agents: test-generator (test generation)
+- Skills: use-workflow-code (RGRC definition)
+- Agents: generator-test (test generation)
 - Plugins: ralph-loop (automatic iteration)
 
 # Bad
@@ -69,12 +69,12 @@ confirmation mode (same functionality)
 | Command     | Skills Used                                   | Agents Used                                                           |
 | ----------- | --------------------------------------------- | --------------------------------------------------------------------- |
 | `/think`    | -                                             | -                                                                     |
-| `/code`     | orchestrating-workflows, generating-tdd-tests | test-generator                                                        |
+| `/code`     | use-workflow-code, use-workflow-tdd-cycle     | generator-test                                                        |
 | `/audit`    | -                                             | tier-based reviewer agents (3 or file-routed from 17)                 |
-| `/fix`      | -                                             | build-error-resolver                                                  |
-| `/polish`   | -                                             | code-simplifier                                                       |
-| `/feature`  | orchestrating-workflows                       | feature-explorer, feature-architect, test-generator, unit-implementer |
-| `/swarm`    | orchestrating-workflows                       | qa-reviewer, unit-implementer                                         |
+| `/fix`      | use-context-root-cause-analysis               | generator-test, resolver-build                                  |
+| `/polish`   | -                                             | enhancer-code                                                       |
+| `/feature`  | use-workflow-code                       | explorer-feature, architect-feature, generator-test, team-implementation |
+| `/swarm`    | use-workflow-code                       | team-qa, team-implementation                                         |
 | `/glossary` | -                                             | -                                                                     |
 
 ## File Structure

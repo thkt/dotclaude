@@ -18,8 +18,8 @@ Investigate codebase with confidence-based findings, without implementation.
 
 ## Input
 
-- Research topic or question: `$1` (required)
-- If `$1` is empty → prompt via AskUserQuestion
+- Research topic or question: `$ARGUMENTS` (required)
+- If `$ARGUMENTS` is empty → prompt via AskUserQuestion
 
 ## Execution
 
@@ -67,13 +67,13 @@ Legend: Each cell shows additional analyzers beyond the base set.
 
 #### Analyzer Reference
 
-| Analyzer              | Subagent Type           | Returns                           |
-| --------------------- | ----------------------- | --------------------------------- |
-| architecture-analyzer | `architecture-analyzer` | Structure, deps, Mermaid diagrams |
-| code-flow-analyzer    | `code-flow-analyzer`    | Execution paths, data flow        |
-| domain-analyzer       | `domain-analyzer`       | Entities, relationships, rules    |
-| api-analyzer          | `api-analyzer`          | Endpoints, schemas, auth          |
-| setup-analyzer        | `setup-analyzer`        | Prerequisites, env vars, config   |
+| Analyzer              | Subagent Type         | Returns                           |
+| --------------------- | --------------------- | --------------------------------- |
+| architecture-analyzer | architecture-analyzer | Structure, deps, Mermaid diagrams |
+| code-flow-analyzer    | code-flow-analyzer    | Execution paths, data flow        |
+| domain-analyzer       | domain-analyzer       | Entities, relationships, rules    |
+| api-analyzer          | api-analyzer          | Endpoints, schemas, auth          |
+| setup-analyzer        | setup-analyzer        | Prerequisites, env vars, config   |
 
 Apply Output Verifiability markers ([✓]/[→]/[?]) to all findings.
 
@@ -96,7 +96,7 @@ Skip when: cause is obvious or intent is "Feature planning" / "Understanding".
 Session ID: ${CLAUDE_SESSION_ID}
 
 File: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md` Template:
-[@../templates/research/template.md](../templates/research/template.md)
+[@./templates/research.md](./templates/research.md)
 
 ## Next Steps Section
 

@@ -154,6 +154,5 @@ Used in OPERATION (Output Verifiability) and throughout documentation.
 
 ## Related
 
-- [TEMPLATES](./TEMPLATES.md) — Template structure and lifecycle
 - [DESIGN](./DESIGN.md) — Architecture overview
 - [HOOKS](./HOOKS.md) — IDR generation details

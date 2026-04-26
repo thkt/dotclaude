@@ -3,7 +3,7 @@ name: code-quality-reviewer
 description: コード品質レビュー。構造と可読性を分析。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-readability]
+skills: [use-context-code-quality-reviewer]
 context: fork
 memory: project
 background: true

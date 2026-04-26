@@ -1,0 +1,84 @@
+---
+name: use-workflow-code
+description: >
+  Workflow orchestration for /code. Use when: /code ワークフロー,
+  quality gates, 品質ゲート, RGRC サイクル.
+allowed-tools: [Read, Write, Grep, Glob, Task, Bash(npm:*, npx:*, tsc:*, bun:*)]
+user-invocable: false
+---
+
+# Workflow: /code
+
+## Workflows
+
+| Command | Workflow Reference                                |
+| ------- | ------------------------------------------------- |
+| `/code` | `${CLAUDE_SKILL_DIR}/references/code-workflow.md` |
+
+## Patterns
+
+| Pattern        | Reference                                                                    |
+| -------------- | ---------------------------------------------------------------------------- |
+| IDR Generation | [hooks/lifecycle/idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh) |
+| TDD            | [@~/.claude/skills/use-workflow-tdd-cycle/SKILL.md](../use-workflow-tdd-cycle/SKILL.md) |
+
+<!-- canonical: rules/development/THRESHOLDS.md (coverage targets) -->
+
+## Quality Gates
+
+| Gate         | Target           | Verification                               |
+| ------------ | ---------------- | ------------------------------------------ |
+| Tests        | All passing      | `npm test` exit code 0                     |
+| Lint         | 0 errors         | `npm run lint` exit code 0                 |
+| Types        | No errors        | `tsc --noEmit` exit code 0                 |
+| Coverage     | C0 ≥90%, C1 ≥80% | Coverage report                            |
+| Test Quality | ≥70              | `evaluator-test` (skip if no Spec) |
+
+### Test Quality Gate
+
+When a Spec with Test Scenarios exists, spawn `evaluator-test` as a
+background agent:
+
+```
+Agent(subagent_type: "evaluator-test",
+      prompt: "spec_path: <path>\ntest_paths: <paths>",
+      run_in_background: true)
+```
+
+Score ≥70 → pass. Score <70 → report uncovered/excess/intent issues, fix before
+proceeding. Skip when no Spec exists (e.g., `/fix`, ad-hoc changes).
+
+### Review Gate
+
+After RGRC cycles, spawn `reviewer-readability` as a background agent:
+
+```
+Agent(subagent_type: "reviewer-readability",
+      prompt: "Review files changed in this session: <paths>",
+      run_in_background: true)
+```
+
+High severity → fix before Quality Gates. Medium/low → advisory (note in IDR).
+Skip for `/fix` and single-file changes.
+
+### Gate Result Output
+
+```text
+Tests:        pass | fail (detail)
+Lint:         pass | fail (detail)
+Types:        pass | fail (detail)
+Coverage:     C0 XX% / C1 XX% — pass | fail
+Test Quality: XX/100 — pass | skip (no Spec)
+```
+
+All 5 lines required. Empty lines indicate a skipped gate — investigate before
+proceeding.
+
+## Rationalization Counters
+
+| Excuse                                   | Counter                                                        |
+| ---------------------------------------- | -------------------------------------------------------------- |
+| "Tests pass, lint can wait"              | Lint errors are tech debt. Zero errors before commit           |
+| "Type errors are just warnings"          | `tsc --noEmit` exit 0 or no ship. Type warnings are errors     |
+| "Coverage is close enough"               | "Close enough" is failure with extra steps. Meet the threshold |
+| "This gate doesn't apply to this change" | All 4 gates apply to every change. No exceptions               |

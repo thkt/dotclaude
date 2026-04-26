@@ -46,8 +46,7 @@ Backcasting defines the goal; Occam's Razor and other principles govern how to r
 
 When in doubt: simple > clever, concrete > abstract, working > perfect, readable \> DRY.
 
-Occam's Razor selects the simplest among approaches that achieve the outcome,
-not symptom removal. It does not apply when simplicity reduces output quality.
+Occam's Razor selects the simplest among approaches that achieve the outcome, not symptom removal. It does not apply when simplicity reduces output quality.
 
 ## YAGNI Boundary
 

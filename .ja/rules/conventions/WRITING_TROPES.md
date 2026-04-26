@@ -2,7 +2,7 @@
 paths:
   - ".claude/docs/**"
   - ".claude/.ja/docs/**"
-  - ".claude/adr/**"
+  - ".claude/docs/decisions/**"
   - ".claude/workspace/**"
   - ".claude/README.md"
   - ".claude/.ja/README.md"

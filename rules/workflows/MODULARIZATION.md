@@ -34,10 +34,12 @@ paths:
 
 ```text
 skills/
-├── lib/              # shared @-include fragments (e.g., sow-resolution.md)
+├── _lib/             # shared @-include fragments (e.g., sow-resolution.md)
 ├── [short-name]/     # user-invocable: true (e.g., commit, fix, audit)
 │   └── SKILL.md
-└── [verb-noun]/      # user-invocable: false (e.g., reviewing-type-safety)
+├── use-[cli]/        # user-invocable: false, CLI wrapper (e.g., use-cli-git)
+├── ctx-[agent]/      # user-invocable: false, agent-only (e.g., use-context-reviewer-security)
+└── workflow-[noun]/   # user-invocable: false, workflow (e.g., use-workflow-code)
     ├── SKILL.md
     └── references/
         ├── [workflow].md
@@ -46,20 +48,22 @@ skills/
 
 ## Naming Convention
 
-| `user-invocable` | Name style  | Example                                            |
-| ---------------- | ----------- | -------------------------------------------------- |
-| `true`           | Short name  | `commit`, `fix`, `audit`                           |
-| `false`          | `verb-noun` | `reviewing-type-safety`, `orchestrating-workflows` |
+| `user-invocable` | Binding    | Name style    | Example                                                 |
+| ---------------- | ---------- | ------------- | ------------------------------------------------------- |
+| `true`           | -          | Short name    | `commit`, `fix`, `audit`                                |
+| `false`          | CLI wrap   | `use-<cli>`   | `use-cli-git`, `use-cli-yomu` (ADR-0052)                |
+| `false`          | Agent-only | `ctx-<agent>` | `use-context-reviewer-security` (ADR-0053)              |
+| `false`          | Workflow   | `workflow-<noun>` | `use-workflow-code`, `use-workflow-spec-validation` |
 
 ## Reference Patterns
 
 Skills reference other skills via:
 
-| Pattern        | Syntax                            | Use Case                         |
-| -------------- | --------------------------------- | -------------------------------- |
-| @import        | `[@../name/references/file.md]`   | Inline content (templates, data) |
-| Cross-skill    | `[@../lib/file.md]`               | Shared fragments from skills/lib |
-| Name reference | `Skill: skill-name (description)` | Skill auto-loading by Skill tool |
+| Pattern        | Syntax                            | Use Case                          |
+| -------------- | --------------------------------- | --------------------------------- |
+| @import        | `[@../name/references/file.md]`   | Inline content (templates, data)  |
+| Cross-skill    | `[@../_lib/file.md]`              | Shared fragments from skills/_lib |
+| Name reference | `Skill: skill-name (description)` | Skill auto-loading by Skill tool  |
 
 ## Examples
 
@@ -72,8 +76,8 @@ TDD implementation with RGRC cycle.
 
 ## Skills & Agents
 
-- Skill: orchestrating-workflows (RGRC cycle)
-- Agent: test-generator (TDD test generation, fork)
+- Skill: use-workflow-code (RGRC cycle)
+- Agent: generator-test (TDD test generation, fork)
 ```
 
 Orchestrates phases, delegates details to skills.

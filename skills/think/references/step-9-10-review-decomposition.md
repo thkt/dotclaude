@@ -2,7 +2,7 @@
 
 ## Step 9: Spec Review
 
-After Spec generation, invoke `sow-spec-reviewer`.
+After Spec generation, invoke `reviewer-spec`.
 
 Gate = Ready → pass. Gate = NotReady → fix P0 blockers, re-invoke (max 3 loops).
 After 3 loops, present remaining blockers to user and proceed.

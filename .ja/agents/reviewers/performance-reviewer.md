@@ -3,7 +3,7 @@ name: performance-reviewer
 description: Reactレンダリング、バンドルサイズ、ランタイムパフォーマンスレビュー。
 tools: [Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*]
 model: opus
-skills: [optimizing-performance, vercel-react]
+skills: [use-context-performance-reviewer]
 context: fork
 memory: project
 background: true

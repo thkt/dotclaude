@@ -3,7 +3,7 @@
 # Returns advisory (approve + additionalContext) with textlint results and structure checklist
 set -euo pipefail
 
-TEXTLINT_DIR="$HOME/.claude/textlint"
+TEXTLINT_DIR="$HOME/.claude/hooks/textlint"
 TEXTLINT_CONFIG="$TEXTLINT_DIR/.textlintrc.json"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

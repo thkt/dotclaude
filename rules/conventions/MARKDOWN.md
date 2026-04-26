@@ -9,10 +9,10 @@ Conventions for Markdown files under `.claude/`.
 
 ## File scope
 
-| Scope      | Paths                                                                             |
-| ---------- | --------------------------------------------------------------------------------- |
-| LLM-facing | `CLAUDE.md`, `agents/**`, `skills/**`, `rules/**`, `templates/**`, `workspace/**` |
-| Human      | `docs/**`, `adr/**`, `README.md`                                                  |
+| Scope      | Paths                                                             |
+| ---------- | ----------------------------------------------------------------- |
+| LLM-facing | `CLAUDE.md`, `agents/**`, `skills/**`, `rules/**`, `workspace/**` |
+| Human      | `docs/**`, `README.md`                                            |
 
 Bilingual `.ja/` copies follow their counterpart's scope.
 

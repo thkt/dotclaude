@@ -3,7 +3,7 @@ name: security-reviewer
 description: OWASP Top 10 ベースのセキュリティ脆弱性検出。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
-skills: [reviewing-security]
+skills: [use-context-security-reviewer]
 context: fork
 memory: project
 background: true

@@ -27,7 +27,7 @@ SOW/Spec and can be implemented separately via `/code`.
 
 ## Step 4: Design Challenge
 
-Spawn `devils-advocate-design` agent (background) against the approaches from
+Spawn `critic-design` agent (background) against the approaches from
 Step 3. The agent collects its own context via Read/Grep/Glob.
 
 Present DA results with verdict table + actionable items. Revise approaches

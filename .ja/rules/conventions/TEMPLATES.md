@@ -1,6 +1,6 @@
 ---
 paths:
-  - ".claude/templates/**"
+  - ".claude/skills/**/templates/**"
 ---
 
 # テンプレート変数

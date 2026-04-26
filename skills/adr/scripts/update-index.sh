@@ -6,16 +6,27 @@
 
 set -euo pipefail
 
-if [ -n "${1:-}" ]; then
+if [ -n "${ADR_DIR:-}" ]; then
+  : # use provided value
+elif [ -n "${1:-}" ]; then
   ADR_DIR="$1"
-elif [ -d "adr" ]; then
-  ADR_DIR="adr"
 else
-  ADR_DIR="docs/adr"
+  GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || true)
+  if [ -z "$GIT_ROOT" ]; then
+    echo "Error: not inside a git repository. ADRs require <git-root>/docs/decisions/. Set ADR_DIR env var to override." >&2
+    exit 1
+  fi
+  ADR_DIR="$GIT_ROOT/docs/decisions"
 fi
 
 if [ ! -d "$ADR_DIR" ]; then
   echo "Error: directory not found: $ADR_DIR" >&2
+  exit 1
+fi
+
+if [ -f "$ADR_DIR/SKILL.md" ]; then
+  echo "Error: $ADR_DIR contains SKILL.md (skill-definition directory, not an ADR archive)" >&2
+  echo "Set ADR_DIR env var or pass an explicit ADR archive path." >&2
   exit 1
 fi
 
@@ -26,8 +37,9 @@ TEMP_PROPOSED=$(mktemp)
 TEMP_ACCEPTED=$(mktemp)
 TEMP_DEPRECATED=$(mktemp)
 TEMP_SUPERSEDED=$(mktemp)
+TEMP_REJECTED=$(mktemp)
 
-trap "rm -f $TEMP_FILE $TEMP_PROPOSED $TEMP_ACCEPTED $TEMP_DEPRECATED $TEMP_SUPERSEDED" EXIT
+trap "rm -f $TEMP_FILE $TEMP_PROPOSED $TEMP_ACCEPTED $TEMP_DEPRECATED $TEMP_SUPERSEDED $TEMP_REJECTED" EXIT
 
 cat > "$TEMP_FILE" <<'EOF'
 # Architecture Decision Records
@@ -45,9 +57,22 @@ while IFS= read -r adr_file; do
   NUMBER=$(echo "$FILENAME" | grep -oE '^[0-9]{4}')
 
   IFS='|' read -r TITLE STATUS DATE <<< "$(awk '
-    /^# / && !t { t = substr($0, 3) }
-    /^- Status:/ && !s { s = $0; sub(/^- Status:[[:space:]]*/, "", s); gsub(/[[:space:]]/, "", s) }
-    /^- Date:/ && !d { d = $0; sub(/^- Date:[[:space:]]*/, "", d); gsub(/[[:space:]]/, "", d) }
+    BEGIN { in_fm = 0; fm_seen = 0 }
+    /^---[[:space:]]*$/ {
+      if (fm_seen == 0) { in_fm = 1; fm_seen = 1; next }
+      else if (in_fm) { in_fm = 0; next }
+    }
+    in_fm && /^status:/ && !s {
+      s = $0
+      sub(/^status:[[:space:]]*/, "", s)
+      gsub(/^"|"$/, "", s)
+    }
+    in_fm && /^date:/ && !d {
+      d = $0
+      sub(/^date:[[:space:]]*/, "", d)
+      gsub(/^"|"$/, "", d)
+    }
+    !in_fm && /^# / && !t { t = substr($0, 3) }
     END { print t "|" s "|" d }
   ' "$adr_file")"
   STATUS=${STATUS:-proposed}
@@ -56,10 +81,11 @@ while IFS= read -r adr_file; do
   echo "| [$NUMBER]($FILENAME) | $TITLE | $STATUS | $DATE |" >> "$TEMP_FILE"
 
   case "$STATUS" in
-    proposed)   echo "$NUMBER|$TITLE" >> "$TEMP_PROPOSED" ;;
-    accepted)   echo "$NUMBER|$TITLE" >> "$TEMP_ACCEPTED" ;;
-    deprecated) echo "$NUMBER|$TITLE" >> "$TEMP_DEPRECATED" ;;
-    superseded) echo "$NUMBER|$TITLE" >> "$TEMP_SUPERSEDED" ;;
+    proposed*)   echo "$NUMBER|$TITLE" >> "$TEMP_PROPOSED" ;;
+    accepted*)   echo "$NUMBER|$TITLE" >> "$TEMP_ACCEPTED" ;;
+    deprecated*) echo "$NUMBER|$TITLE" >> "$TEMP_DEPRECATED" ;;
+    superseded*) echo "$NUMBER|$TITLE" >> "$TEMP_SUPERSEDED" ;;
+    rejected*)   echo "$NUMBER|$TITLE" >> "$TEMP_REJECTED" ;;
   esac
 done < <(find "$ADR_DIR" -name "[0-9][0-9][0-9][0-9]-*.md" -type f | sort)
 
@@ -86,11 +112,12 @@ emit_status_section "Proposed" "$TEMP_PROPOSED"
 emit_status_section "Accepted" "$TEMP_ACCEPTED"
 emit_status_section "Deprecated" "$TEMP_DEPRECATED"
 emit_status_section "Superseded" "$TEMP_SUPERSEDED"
+emit_status_section "Rejected" "$TEMP_REJECTED"
 
 cat >> "$TEMP_FILE" <<'EOF'
 ## About MADR Format
 
-This project uses [MADR (Markdown Architecture Decision Records)](https://adr.github.io/madr/) format.
+This project uses [MADR (Markdown Any Decision Records)](https://adr.github.io/madr/) format, v4.
 
 ### How to Create an ADR
 
@@ -102,8 +129,9 @@ This project uses [MADR (Markdown Architecture Decision Records)](https://adr.gi
 
 - **Proposed**: Awaiting review
 - **Accepted**: Approved, implementing or completed
-- **Deprecated**: Better alternative found
-- **Superseded**: Replaced by another ADR
+- **Rejected**: Considered but not adopted
+- **Deprecated**: Retired without a replacement ADR
+- **Superseded**: Replaced by another ADR (e.g. `superseded by ADR-0042`)
 
 ---
 

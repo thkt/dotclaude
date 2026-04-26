@@ -51,20 +51,20 @@ Implementer(s).
 
 ## Input
 
-Implementation description: `$1` (required, prompt if empty)
+Implementation description: `$ARGUMENTS` (required, prompt if empty)
 
 ## SOW Context
 
-[@../skills/lib/sow-resolution.md]
+See ../_lib/sow-resolution.md
 
 ## Team Architecture
 
 | Agent          | subagent_type     | Responsibility                      | Bash | SendMessage | Model  |
 | -------------- | ----------------- | ----------------------------------- | ---- | ----------- | ------ |
 | Leader         | (self)            | User interface, QG, lifecycle       | Yes  | broadcast   | opus   |
-| Architect      | feature-architect | Codebase analysis, contracts        | No   | peer DM     | opus   |
-| QA             | qa-reviewer       | Quality observations (non-blocking) | No   | peer DM     | sonnet |
-| Implementer(s) | unit-implementer  | RGRC implementation                 | Yes  | peer DM     | opus   |
+| Architect      | architect-feature | Codebase analysis, contracts        | No   | peer DM     | opus   |
+| QA             | team-qa       | Quality observations (non-blocking) | No   | peer DM     | sonnet |
+| Implementer(s) | team-implementation  | RGRC implementation                 | Yes  | peer DM     | opus   |
 
 ### Model Constraint
 

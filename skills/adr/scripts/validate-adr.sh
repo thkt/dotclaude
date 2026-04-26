@@ -24,40 +24,44 @@ for section in "Context and Problem Statement" "Considered Options" "Decision Ou
   fi
 done
 
-for meta in "Status" "Date"; do
-  if grep -q "^- $meta:" "$ADR_FILE"; then
-    VALUE=$(grep -m 1 "^- $meta:" "$ADR_FILE" || true)
-    CHECKS+=("metadata:$meta=ok [$VALUE]")
-  else
-    ERRORS+=("missing_metadata:$meta")
-  fi
-done
+# MADR v4 frontmatter: status and date are optional but recommended
+FRONTMATTER=$(awk '
+  BEGIN { in_fm = 0; fm_seen = 0 }
+  /^---[[:space:]]*$/ {
+    if (fm_seen == 0) { in_fm = 1; fm_seen = 1; next }
+    else if (in_fm) { in_fm = 0; next }
+  }
+  in_fm { print }
+' "$ADR_FILE")
 
-if grep -q "^- Confidence:" "$ADR_FILE"; then
-  VALUE=$(grep -m 1 "^- Confidence:" "$ADR_FILE" || true)
-  CHECKS+=("metadata:Confidence=ok [$VALUE]")
+if [ -n "$FRONTMATTER" ]; then
+  CHECKS+=("frontmatter=present")
+  for meta in status date; do
+    if printf '%s\n' "$FRONTMATTER" | grep -q "^${meta}:"; then
+      VALUE=$(printf '%s\n' "$FRONTMATTER" | grep -m 1 "^${meta}:" || true)
+      CHECKS+=("metadata:${meta}=ok [${VALUE}]")
+    else
+      WARNINGS+=("missing_metadata:${meta} (recommended in MADR v4 frontmatter)")
+    fi
+  done
 else
-  WARNINGS+=("missing_metadata:Confidence (recommended: high|medium|low)")
+  WARNINGS+=("missing_frontmatter (MADR v4 supports optional YAML frontmatter for status/date/decision-makers)")
 fi
 
-OPTIONS_COUNT=$(grep -c "^### " "$ADR_FILE" || true)
-OPTIONS_COUNT=${OPTIONS_COUNT:-0}
+# MADR v4 lists Considered Options as bullets, then Pros and Cons of the Options uses ### headings.
+# Count bullets directly under the "## Considered Options" section.
+OPTIONS_COUNT=$(awk '
+  /^## Considered Options[[:space:]]*$/ { in_opts = 1; next }
+  in_opts && /^## / { in_opts = 0 }
+  in_opts && /^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]/ { count++ }
+  END { print count + 0 }
+' "$ADR_FILE")
 if [ "$OPTIONS_COUNT" -ge 2 ]; then
   CHECKS+=("options_count=${OPTIONS_COUNT}")
 elif [ "$OPTIONS_COUNT" -eq 1 ]; then
   WARNINGS+=("options_count=1 (recommended: 2+)")
 else
   ERRORS+=("options_count=0")
-fi
-
-REFERENCES_COUNT=$(grep -c "^\[.*\](.*)$" "$ADR_FILE" || true)
-REFERENCES_COUNT=${REFERENCES_COUNT:-0}
-if [ "$REFERENCES_COUNT" -ge 3 ]; then
-  CHECKS+=("references_count=${REFERENCES_COUNT}")
-elif [ "$REFERENCES_COUNT" -gt 0 ]; then
-  WARNINGS+=("references_count=${REFERENCES_COUNT} (recommended: 3+)")
-else
-  WARNINGS+=("references_count=0 (recommended: 3+)")
 fi
 
 if grep -q "^# " "$ADR_FILE"; then

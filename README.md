@@ -40,7 +40,6 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── reviewers/        # Code review agents (20 reviewers)
 │   └── teams/            # Integrators & implementers
 ├── docs/                  # Design docs & guides
-├── templates/             # Prompt templates (audit, sow, spec, etc.)
 ├── hooks/                 # Pre/Post tool-use hooks
 ├── scripts/               # Utility scripts
 ├── output-styles/         # Output style definitions
@@ -81,8 +80,7 @@ install specific workflow sets:
 
 - **complete-workflow-system**: Full development workflow with quality gates
   (/think, /code, /audit, /research, /feature, /swarm)
-- **quick-actions**: Fast bug fixes (/fix), AI slop removal (/polish), config
-  Japanese proofreading (/kousei)
+- **quick-actions**: Fast bug fixes (/fix), AI slop removal (/polish)
 - **git-utilities**: Git workflow helpers (/commit, /branch, /pr, /issue,
   /preview)
 - **documentation-tools**: ADR creation (/adr) and domain glossary (/glossary)

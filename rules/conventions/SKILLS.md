@@ -12,31 +12,33 @@ Conventions for skill files under `.claude/skills/`.
 ```yaml
 ---
 name: skill-name               # lowercase-hyphens, ≤64 chars
-description: >                 # ≤1024 chars, must include "Use when"
-  Brief summary. Use when [scenario] or when user mentions keyword1, キーワード.
-allowed-tools: [Read, Write]   # Recommended
+description: Brief summary.    # ≤1024 chars
+when_to_use: scenario, keyword1, キーワード
+allowed-tools: Read Write      # space-separated
 agent: agent-name              # Optional: links to agents/
 context: fork                  # Optional: fork = sub-agent, inline = main
 user-invocable: false          # Optional: default false
 ---
 ```
 
-## Description
+## Description and triggers
 
-| Rule     | Requirement                |
-| -------- | -------------------------- |
-| Voice    | Third person only          |
-| Format   | Include "Use when" pattern |
-| Keywords | Include EN/JP triggers     |
+| Field        | Requirement           |
+| ------------ | --------------------- |
+| description  | Third person only     |
+| when_to_use  | EN/JP trigger phrases |
 
 ## Naming
 
-Use gerund form (verb-ing).
+Choose by category.
 
-| Pattern | Examples                               |
-| ------- | -------------------------------------- |
-| Good    | `reviewing-security`, `orchestrating-workflows` |
-| Avoid   | `helper`, `utils`, `tools` (too vague) |
+| `user-invocable` | Binding    | Pattern           | Examples                                            |
+| ---------------- | ---------- | ----------------- | --------------------------------------------------- |
+| `true`           | -          | Short name        | `commit`, `fix`, `audit`                            |
+| `false`          | CLI wrap   | `use-<cli>`       | `use-cli-git`, `use-cli-yomu`                       |
+| `false`          | Agent-only | `ctx-<agent>`     | `use-context-reviewer-security`                     |
+| `false`          | Workflow   | `workflow-<noun>` | `use-workflow-code`, `use-workflow-spec-validation` |
+| any              | Avoid      | -                 | `helper`, `utils`, `tools`                          |
 
 ## Directory structure
 
@@ -48,6 +50,31 @@ skill-name/
 ```
 
 Claude reads SKILL.md first, references only when needed.
+
+## Reference notation
+
+Reference paths inside SKILL.md, scripts/, templates/ and references/ files use bare `${CLAUDE_SKILL_DIR}` substitution, NOT markdown links.
+
+| Form                                            | Use    | Reason                                                                     |
+| ----------------------------------------------- | ------ | -------------------------------------------------------------------------- |
+| `${CLAUDE_SKILL_DIR}/references/foo.md` (bare)  | Always | Harness expands the variable to absolute path. Read tool resolves directly |
+| `[references/foo.md](references/foo.md)` (link) | Never  | Harness does not expand markdown links; AI infers relative path            |
+| `` `${CLAUDE_SKILL_DIR}/references/foo.md` ``   | Avoid  | Harness behavior inside backticks is undocumented; safer to omit           |
+
+## Argument variables
+
+Skill input arguments expand at invocation time.
+
+| Variable        | Returns                       | Example (args=`alpha beta gamma`) |
+| --------------- | ----------------------------- | --------------------------------- |
+| `$ARGUMENTS`    | full argument string          | `alpha beta gamma`                |
+| `$ARGUMENTS[N]` | `split(' ')[N]` (0-indexed)   | `[0]`=`alpha`, `[1]`=`beta`       |
+| `$N`            | shorthand for `$ARGUMENTS[N]` | `$0`=`alpha`, `$1`=`beta`         |
+
+| Use case                     | Use             |
+| ---------------------------- | --------------- |
+| Capture multi-word free text | `$ARGUMENTS`    |
+| Get first word explicitly    | `$ARGUMENTS[0]` |
 
 ## Size limits
 

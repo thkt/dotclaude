@@ -5,18 +5,18 @@ Detailed phase execution for /swarm. SKILL.md references this per phase.
 ## Phase 0: SOW Detection
 
 1. SOW/spec auto-detection
-2. SOW なし → `$1` is sole instruction
+2. SOW なし → `$ARGUMENTS` is sole instruction
 
 ## Phase 1: Team Setup + Architecture
 
 1. `TeamCreate` with name `swarm-{timestamp}`
-2. Spawn Architect (feature-architect) with prompt:
+2. Spawn Architect (architect-feature) with prompt:
    - Spawn Context ([contracts.md](contracts.md#spawn-context-leader--all-agents))
-   - `$1` implementation description
+   - `$ARGUMENTS` implementation description
    - Instruction: explore codebase (yomu preferred, grep/glob fallback) → design
      contracts → file groupings
    - Expected output: Architect Output contract (Markdown via DM)
-3. Spawn QA (qa-reviewer) with prompt:
+3. Spawn QA (team-qa) with prompt:
    - Instruction: observe Architect's design, comment via peer DM
    - Read team config to discover teammates
 4. Wait for Architect's contract DM
@@ -37,8 +37,8 @@ Detailed phase execution for /swarm. SKILL.md references this per phase.
 ## Phase 2: Test Generation
 
 1. After final Architect Output contract is confirmed (Phase 1 + QA review)
-2. Spawn test-generator as standalone background agent
-   (`subagent_type: test-generator`, `run_in_background: true`)
+2. Spawn generator-test as standalone background agent
+   (`subagent_type: generator-test`, `run_in_background: true`)
 3. Include Architect's contract in test-gen prompt
 4. Receive test results via `TaskOutput`
 
@@ -92,7 +92,7 @@ Detailed phase execution for /swarm. SKILL.md references this per phase.
    - Resolve conflicts via `git merge` or update branch
 3. Final state: all changes on main branch
 
-<!-- canonical: skills/orchestrating-workflows (full gate table) -->
+<!-- canonical: skills/use-workflow-code (full gate table) -->
 
 ### 5b: Quality Gates
 

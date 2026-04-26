@@ -2,7 +2,7 @@
 
 Domain-specific REPORT/SKIP examples for audit reviewers. Each reviewer references this file. Principles are in `finding-schema.md`.
 
-## CQ (code-quality-reviewer)
+## CQ (reviewer-readability)
 
 ### REPORT
 
@@ -25,7 +25,7 @@ function processOrder(order, user, config, db, logger) {
 
 | Field   | Value                                                     |
 | ------- | --------------------------------------------------------- |
-| Filter  | Senior Engineer Test pass — would request changes         |
+| Filter  | Senior Engineer Test pass - would request changes         |
 | Trigger | Any reader encountering this function                     |
 | Impact  | 5-level nesting + 6 args + single-letter var = unreadable |
 
@@ -41,10 +41,10 @@ function createUser(name: string, email: string): User {
 
 | Field  | Value                                                              |
 | ------ | ------------------------------------------------------------------ |
-| Filter | Senior Engineer Test fail — preference, not defect                 |
+| Filter | Senior Engineer Test fail - preference, not defect                 |
 | Signal | `normalized` and `user` aid readability; inlining saves no clarity |
 
-## EFF (efficiency-reviewer)
+## EFF (reviewer-efficiency)
 
 ### REPORT
 
@@ -58,10 +58,10 @@ fn search(&self, query: &str) -> Vec<Result> {
 
 | Field   | Value                                                            |
 | ------- | ---------------------------------------------------------------- |
-| Filter  | Harm Test pass — measurable waste on hot path                    |
+| Filter  | Harm Test pass - measurable waste on hot path                    |
 | Trigger | Every user search call                                           |
 | Impact  | New DB connection per call instead of pool reuse; latency + leak |
-| Path    | Hot — user-facing function                                       |
+| Path    | Hot - user-facing function                                       |
 
 ### SKIP
 
@@ -82,14 +82,14 @@ fn init_config() -> Config {
 | ------ | ------------------------------------------------------------ |
 | Filter | Context Test: cold path                                      |
 | Signal | Runs once at startup; two env var reads are negligible       |
-| Path   | Cold — caching adds complexity for zero user-visible benefit |
+| Path   | Cold - caching adds complexity for zero user-visible benefit |
 
-## TC (test-coverage-reviewer)
+## TC (reviewer-coverage)
 
 ### REPORT
 
 ```rust
-// src/auth.rs — public API, no test for invalid token path
+// src/auth.rs - public API, no test for invalid token path
 pub fn verify_token(token: &str) -> Result<Claims, AuthError> {
     let decoded = decode(token, &KEY, &Validation::default())?;
     if decoded.claims.exp < now() {
@@ -101,15 +101,15 @@ pub fn verify_token(token: &str) -> Result<Claims, AuthError> {
 
 | Field       | Value                                                      |
 | ----------- | ---------------------------------------------------------- |
-| Filter      | Harm Test pass — security regression with concrete trigger |
+| Filter      | Harm Test pass - security regression with concrete trigger |
 | Trigger     | Expiry check regresses                                     |
 | Impact      | Invalid tokens pass silently; auth bypass                  |
-| Criticality | 9/10 — public API, authentication boundary                 |
+| Criticality | 9/10 - public API, authentication boundary                 |
 
 ### SKIP
 
 ```rust
-// src/internal/normalize.rs — private helper
+// src/internal/normalize.rs - private helper
 fn normalize_whitespace(s: &str) -> String {
     s.split_whitespace().collect::<Vec<_>>().join(" ")
 }
@@ -125,7 +125,7 @@ fn normalize_whitespace(s: &str) -> String {
 | Signal | Two chunker tests exercise observable behavior through this helper  |
 | Note   | Unit test here would test `split_whitespace`, not application logic |
 
-## DRY (duplication-reviewer)
+## DRY (reviewer-duplication)
 
 ### REPORT
 
@@ -138,22 +138,22 @@ async function getUser(id: string) {
   return user;
 }
 
-// src/api/teams.ts — same error handling pattern, same structure
+// src/api/teams.ts - same error handling pattern, same structure
 async function getTeam(id: string) {
   const db = await getConnection();
   const team = await db.query("SELECT * FROM teams WHERE id = ?", [id]);
   if (!team) throw new NotFoundError("Team not found");
   return team;
 }
-// (also in orders.ts, projects.ts — 4 occurrences)
+// (also in orders.ts, projects.ts - 4 occurrences)
 ```
 
 | Field   | Value                                                                |
 | ------- | -------------------------------------------------------------------- |
-| Filter  | Harm Test pass — coordinated update risk                             |
+| Filter  | Harm Test pass - coordinated update risk                             |
 | Trigger | Error handling change (e.g., add logging or custom error type)       |
 | Impact  | Must update 4 identical call sites; miss one = inconsistent behavior |
-| Count   | 4 occurrences — above Rule of Three threshold                        |
+| Count   | 4 occurrences - above Rule of Three threshold                        |
 
 ### SKIP
 
@@ -166,7 +166,7 @@ async function createUser(data: CreateUserInput) {
   return user;
 }
 
-// src/api/teams.ts — similar structure, different business logic
+// src/api/teams.ts - similar structure, different business logic
 async function createTeam(data: CreateTeamInput) {
   validate(data);
   const team = await db.insert("teams", { ...data, plan: "free" });
@@ -179,9 +179,9 @@ async function createTeam(data: CreateTeamInput) {
 | ------ | --------------------------------------------------------------------------------------------------------------------- |
 | Filter | Context Test: semantic difference                                                                                     |
 | Signal | Domain-specific defaults (`role: "member"` vs `plan: "free"`) and side effects (`sendWelcomeEmail` vs `notifyAdmins`) |
-| Count  | 2 occurrences — below Rule of Three extraction urgency                                                                |
+| Count  | 2 occurrences - below Rule of Three extraction urgency                                                                |
 
-## SF (silent-failure-reviewer)
+## SF (reviewer-silence)
 
 ### REPORT
 
@@ -189,14 +189,14 @@ async function createTeam(data: CreateTeamInput) {
 fn sync_messages(&self, channel: &str) -> Result<usize> {
     match self.client.fetch_history(channel) {
         Ok(messages) => self.store(messages),
-        Err(_) => Ok(0),  // caller sees "0 messages synced" — no error signal
+        Err(_) => Ok(0),  // caller sees "0 messages synced" - no error signal
     }
 }
 ```
 
 | Field   | Value                                                                 |
 | ------- | --------------------------------------------------------------------- |
-| Filter  | Harm Test pass — concrete failure scenario exists                     |
+| Filter  | Harm Test pass - concrete failure scenario exists                     |
 | Trigger | Network error, auth failure, or rate limit on Slack API               |
 | Impact  | Caller sees `Ok(0)`, cannot distinguish "no messages" from "API down" |
 
@@ -206,7 +206,7 @@ fn sync_messages(&self, channel: &str) -> Result<usize> {
 fn load_config(path: &Path) -> Config {
     match fs::read_to_string(path) {
         Ok(content) => toml::from_str(&content).unwrap_or_default(),
-        Err(_) => Config::default(),  // first run — config file doesn't exist yet
+        Err(_) => Config::default(),  // first run - config file doesn't exist yet
     }
 }
 ```
@@ -215,9 +215,9 @@ fn load_config(path: &Path) -> Config {
 | ------ | ---------------------------------------------------------------------- |
 | Filter | Context Test: intentional fallback                                     |
 | Signal | Function name `load_config` (not `require_config`), `default()` return |
-| Path   | Cold — runs once at startup                                            |
+| Path   | Cold - runs once at startup                                            |
 
-## SEC (security-reviewer)
+## SEC (reviewer-security)
 
 ### REPORT
 
@@ -231,7 +231,7 @@ app.get("/users", async (req, res) => {
 
 | Field   | Value                                             |
 | ------- | ------------------------------------------------- |
-| Filter  | Harm Test pass — exploitable SQL injection        |
+| Filter  | Harm Test pass - exploitable SQL injection        |
 | Trigger | `?sort=1; DROP TABLE users--`                     |
 | Impact  | Arbitrary SQL execution; full database compromise |
 
@@ -252,7 +252,7 @@ app.get("/users", async (req, res) => {
 | Filter | Context Test: allowlist validation                               |
 | Signal | `ALLOWED_SORTS.includes()` gates user input before interpolation |
 
-## TS (type-safety-reviewer)
+## TS (reviewer-strictness)
 
 ### REPORT
 
@@ -266,7 +266,7 @@ async function fetchUser(id: string): Promise<User> {
 
 | Field   | Value                                                    |
 | ------- | -------------------------------------------------------- |
-| Filter  | Harm Test pass — external boundary without validation    |
+| Filter  | Harm Test pass - external boundary without validation    |
 | Trigger | API returns unexpected shape (field renamed, null added) |
 | Impact  | Runtime crash far from the assertion site; hard to debug |
 
@@ -286,21 +286,21 @@ function parseUser(raw: unknown): User {
 | Filter | Context Test: validated input                                |
 | Signal | `schema.parse()` provides runtime guarantee before assertion |
 
-## TD (type-design-reviewer)
+## TD (reviewer-encapsulation)
 
 ### REPORT
 
 ```rust
 pub struct Order {
     pub items: Vec<Item>,
-    pub total: f64,      // must equal sum of items — not enforced
-    pub status: String,  // "pending" | "paid" | "shipped" — not enforced
+    pub total: f64,      // must equal sum of items - not enforced
+    pub status: String,  // "pending" | "paid" | "shipped" - not enforced
 }
 ```
 
 | Field   | Value                                                            |
 | ------- | ---------------------------------------------------------------- |
-| Filter  | Harm Test pass — invalid state is constructible                  |
+| Filter  | Harm Test pass - invalid state is constructible                  |
 | Trigger | `Order { items: vec![], total: 999.0, status: "banana".into() }` |
 | Impact  | Business logic bugs from inconsistent total or invalid status    |
 
@@ -318,7 +318,7 @@ pub struct Point {
 | Filter | Context Test: no invariants to enforce                       |
 | Signal | Any (x, y) combination is valid; encapsulation adds no value |
 
-## DP (design-pattern-reviewer)
+## DP (reviewer-design)
 
 ### REPORT
 
@@ -354,7 +354,7 @@ function OrderPage() {
 
 | Field   | Value                                                         |
 | ------- | ------------------------------------------------------------- |
-| Filter  | Harm Test pass — fetch + filter + sort + render all in one    |
+| Filter  | Harm Test pass - fetch + filter + sort + render all in one    |
 | Trigger | Adding a new filter type requires editing rendering code      |
 | Impact  | Untestable logic; render-coupled state; growing without bound |
 
@@ -372,7 +372,7 @@ function UserAvatar({ name, src }: { name: string; src: string }) {
 | Filter | Context Test: single responsibility, leaf component             |
 | Signal | Deriving `initials` is trivial; extracting a hook adds overhead |
 
-## TEST (testability-reviewer)
+## TEST (reviewer-testability)
 
 ### REPORT
 
@@ -387,7 +387,7 @@ function sendReport() {
 
 | Field   | Value                                                              |
 | ------- | ------------------------------------------------------------------ |
-| Filter  | Harm Test pass — 3 hidden globals impossible to control in tests   |
+| Filter  | Harm Test pass - 3 hidden globals impossible to control in tests   |
 | Trigger | Testing timestamp, HTTP call, and logging requires mocking globals |
 | Impact  | Tests are flaky (time-dependent) or require complex setup          |
 
@@ -404,7 +404,7 @@ function formatCurrency(amount: number, locale: string): string {
 | Filter | Context Test: pure function, no hidden dependencies          |
 | Signal | `Intl.NumberFormat` is deterministic; test with input/output |
 
-## PERF (performance-reviewer)
+## PERF (reviewer-performance)
 
 ### REPORT
 
@@ -427,7 +427,7 @@ function ChatList({ messages }: { messages: Message[] }) {
 
 | Field   | Value                                                          |
 | ------- | -------------------------------------------------------------- |
-| Filter  | Harm Test pass — N child re-renders per parent render          |
+| Filter  | Harm Test pass - N child re-renders per parent render          |
 | Trigger | Any state change in parent; list with 100+ items               |
 | Impact  | Inline arrow + inline object break `React.memo` on every child |
 
@@ -449,7 +449,7 @@ function SettingsToggle({ label, checked, onChange }: Props) {
 | Filter | Context Test: leaf component, no children to re-render     |
 | Signal | Inline arrow on leaf; memoizing saves nothing (no subtree) |
 
-## PE (progressive-enhancer)
+## PE (reviewer-progressive)
 
 ### REPORT
 
@@ -465,9 +465,9 @@ window.addEventListener("resize", () => {
 
 | Field   | Value                                                                                    |
 | ------- | ---------------------------------------------------------------------------------------- |
-| Filter  | Harm Test pass — CSS media query replaces this entirely                                  |
+| Filter  | Harm Test pass - CSS media query replaces this entirely                                  |
 | Trigger | Every window resize fires JS handler                                                     |
-| Impact  | `@media (max-width: 768px) { .sidebar { display: none } }` — zero JS, better performance |
+| Impact  | `@media (max-width: 768px) { .sidebar { display: none } }` - zero JS, better performance |
 
 ### SKIP
 
@@ -488,7 +488,7 @@ observer.observe(sentinelRef.current);
 | Filter | Context Test: no CSS equivalent for data fetching on scroll   |
 | Signal | IntersectionObserver triggers API call; CSS cannot fetch data |
 
-## OPS (operational-readiness-reviewer)
+## OPS (reviewer-operations)
 
 ### REPORT
 
@@ -507,7 +507,7 @@ function DashboardPage() {
 
 | Field   | Value                                                    |
 | ------- | -------------------------------------------------------- |
-| Filter  | Harm Test pass — page-level with no error containment    |
+| Filter  | Harm Test pass - page-level with no error containment    |
 | Trigger | API returns error or unexpected shape                    |
 | Impact  | Entire page white-screens; user sees React error overlay |
 
@@ -524,7 +524,7 @@ function PriceTag({ amount }: { amount: number }) {
 | Filter | Context Test: internal presentational, parent handles errors |
 | Signal | No async, no side effects; parent ErrorBoundary covers this  |
 
-## RC (root-cause-reviewer)
+## RC (reviewer-causation)
 
 ### REPORT
 
@@ -542,7 +542,7 @@ async function saveOrder(order: Order) {
 
 | Field   | Value                                                                        |
 | ------- | ---------------------------------------------------------------------------- |
-| Filter  | Harm Test pass — retry without understanding cause                           |
+| Filter  | Harm Test pass - retry without understanding cause                           |
 | Trigger | Connection pool exhaustion or constraint violation                           |
 | Impact  | Doubles load on failing DB; masks root cause (pool sizing or validation gap) |
 
@@ -564,17 +564,17 @@ async function fetchExternalRate(currency: string): Promise<number> {
 | Filter | Context Test: intentional resilience for known transient errors |
 | Signal | Scoped to specific HTTP status codes; external dependency       |
 
-## REUSE (reuse-reviewer)
+## REUSE (reviewer-reuse)
 
 ### REPORT
 
 ```typescript
-// src/features/billing/validate.ts — new code
+// src/features/billing/validate.ts - new code
 function validateEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// src/shared/validation.ts — already exists in codebase
+// src/shared/validation.ts - already exists in codebase
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -582,14 +582,14 @@ export function isValidEmail(email: string): boolean {
 
 | Field   | Value                                                 |
 | ------- | ----------------------------------------------------- |
-| Filter  | Harm Test pass — identical logic reimplemented        |
+| Filter  | Harm Test pass - identical logic reimplemented        |
 | Trigger | Email validation rule change (e.g., allow + aliases)  |
 | Impact  | Update one, forget the other; inconsistent validation |
 
 ### SKIP
 
 ```typescript
-// src/features/billing/validate.ts — new code
+// src/features/billing/validate.ts - new code
 function validateInvoiceDate(date: Date, billingCycle: BillingCycle): boolean {
   const cycleStart = billingCycle.startDate;
   const grace = billingCycle.gracePeriodDays;
@@ -602,7 +602,7 @@ function validateInvoiceDate(date: Date, billingCycle: BillingCycle): boolean {
 | Filter | Context Test: domain-specific logic with no existing equivalent |
 | Signal | Billing cycle validation is unique to this feature              |
 
-## DOC (document-reviewer)
+## DOC (reviewer-document)
 
 ### REPORT
 
@@ -614,7 +614,7 @@ Install globally: $ npm install -g myapp
 
 | Field   | Value                                                            |
 | ------- | ---------------------------------------------------------------- |
-| Filter  | Harm Test pass — outdated instruction causes user failure        |
+| Filter  | Harm Test pass - outdated instruction causes user failure        |
 | Trigger | User follows deprecated global install; conflicts with npx usage |
 | Impact  | Setup failure on first experience; user abandons                 |
 
@@ -631,7 +631,7 @@ The system uses a pipeline pattern where each stage transforms the input and pas
 | Filter | Context Test: accurate prose, style preference not defect      |
 | Signal | Content is correct; adding a diagram is improvement, not a fix |
 
-## PQ (prompt-reviewer)
+## PQ (reviewer-prompt)
 
 ### REPORT
 
@@ -641,16 +641,16 @@ If it does not conform, you should return an appropriate error message.
 If it does conform, you should proceed with processing the input according to the rules defined below.
 ```
 
-| Field   | Value                                                  |
-| ------- | ------------------------------------------------------ |
-| Filter  | Harm Test pass — 4 lines of prose = 1 table row        |
-| Trigger | LLM processes ~60 tokens for a 2-column rule           |
-| Impact  | `\| invalid input \| return error \|` saves 50+ tokens |
+| Field   | Value                                           |
+| ------- | ----------------------------------------------- |
+| Filter  | Harm Test pass - 4 lines of prose = 1 table row |
+| Trigger | LLM processes ~60 tokens for a 2-column rule    |
+| Impact  | Equivalent 2-column table row saves 50+ tokens  |
 
 ### SKIP
 
 ```markdown
-This reviewer detects silent failures — errors that are caught but not surfaced to the user or logged for operators.
+This reviewer detects silent failures - errors that are caught but not surfaced to the user or logged for operators.
 ```
 
 | Field  | Value                                                         |
@@ -658,7 +658,7 @@ This reviewer detects silent failures — errors that are caught but not surface
 | Filter | Context Test: 2-line intro before detailed table              |
 | Signal | Brief context-setting prose; converting to table adds nothing |
 
-## A11Y (accessibility-reviewer)
+## A11Y (reviewer-accessibility)
 
 ### REPORT
 
@@ -682,7 +682,7 @@ function Dropdown({ items, onSelect }: Props) {
 
 | Field   | Value                                                                 |
 | ------- | --------------------------------------------------------------------- |
-| Filter  | Harm Test pass — keyboard and screen reader inaccessible              |
+| Filter  | Harm Test pass - keyboard and screen reader inaccessible              |
 | Trigger | Tab key skips dropdown; screen reader announces "group" not "listbox" |
 | Impact  | WCAG 2.1.1 (Keyboard), 4.1.2 (Name, Role, Value) failure              |
 
@@ -698,3 +698,39 @@ function SubmitButton({ onClick, children }: Props) {
 | ------ | --------------------------------------------------- |
 | Filter | Context Test: native element provides built-in a11y |
 | Signal | `<button>` has keyboard, focus, and role by default |
+
+## CHX (reviewer-resilience)
+
+### REPORT
+
+```rust
+// src/sync/slack.rs - external API call without resilience controls
+async fn fetch_messages(&self, channel: &str) -> Result<Vec<Message>> {
+    let response = self.client
+        .get(&format!("{}/conversations.history", self.base))
+        .send()
+        .await?;
+    Ok(response.json().await?)
+}
+```
+
+| Field        | Value                                                                   |
+| ------------ | ----------------------------------------------------------------------- |
+| Filter       | Harm Test pass - external API without timeout/retry/circuit breaker     |
+| Trigger      | Slack API latency > 30s, network partition, or rate limit (429)         |
+| Failure      | Caller hangs indefinitely; entire sync pipeline blocks                  |
+| Blast radius | service-wide (every caller of `fetch_messages` blocks)                  |
+| Hypothesis   | Without explicit timeout, TCP socket waits for OS-level default (~2min) |
+
+### SKIP
+
+```rust
+fn clamp(value: i32, min: i32, max: i32) -> i32 {
+    value.max(min).min(max)
+}
+```
+
+| Field  | Value                                                        |
+| ------ | ------------------------------------------------------------ |
+| Filter | Context Test: pure function, no failure modes                |
+| Signal | Deterministic, no I/O, no shared state, no retry path needed |

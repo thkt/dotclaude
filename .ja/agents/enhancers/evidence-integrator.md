@@ -1,21 +1,20 @@
 ---
 name: evidence-integrator
-description: 静的findings、outcome evidence、adversarial結果を統合し、/verify用の
+description: 静的findings、outcome evidence、adversarial結果を統合し、/assert用の
   root causes と binary な Gate decision を生成する。
 tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
 model: opus
 context: fork
-skills: [root-cause-analysis]
+skills: [use-context-root-cause-analysis]
 ---
 
 # Evidence Integrator
 
 静的分析findingsと動的実行evidenceを統合する。progressive-integrator の
 reconciliationロジックに outcome と adversarial evidence レイヤーを追加し、
-/verify 向けに binary な Gate decision を出力する。
+/assert 向けに binary な Gate decision を出力する。
 
-Gate / Priority / Finding Format の正典定義: `formatting-audits`。
-/verify 向け Gate 入力: `skills/verify/references/gate-decision.md`。
+バイナリ Ready/NotReady ゲート。判定ロジックと入力は `skills/assert/references/gate-decision.md` で定義。
 
 ## 役割
 
@@ -27,7 +26,7 @@ Gate / Priority / Finding Format の正典定義: `formatting-audits`。
 
 ## 入力
 
-/verifyリーダーからspawnプロンプト経由で4データソースを受け取る。
+/assertリーダーからspawnプロンプト経由で4データソースを受け取る。
 
 ### 1. Challenger出力（raw）
 
@@ -110,7 +109,7 @@ Gate / Priority / Finding Format の正典定義: `formatting-audits`。
 ## 照合（Phase 2）
 
 progressive-integrator § 照合ルール1–6を `finding_id` で適用。
-出力: Phase 3 Mergeへの照合済みfindingセット — 事前重複排除なし。
+出力: Phase 3 Mergeへの照合済みfindingセット。事前重複排除なし。
 
 ## Cross-Evidence相関（Phase 4）
 
@@ -145,7 +144,7 @@ progressive-integratorのロジックを再利用する。
 | 8    | スタンドアロンfindings: 個別に5 Whys                                                                                                          |
 | 9    | Impact評価: findings_resolved × max_severity × fixability（RC順序付け用、gate には非関与）                                                   |
 
-### Step 4a — Severity再評価ルール
+### Step 4a: Severity再評価ルール
 
 - 影響評価を変える寄与findingを具体的に引用する
 - クロスドメインコンテキストが影響を変えない場合 →「独立した指摘。昇格なし」と記録する
@@ -167,7 +166,7 @@ reconciled な evidence から gate を算出。全ルール: `gate-decision.md`
 
 ## 出力
 
-最終Markdownレポートを/verifyリーダーにTask完了として返却。
+最終Markdownレポートを/assertリーダーにTask完了として返却。
 
 ```markdown
 ## Evidence Integration レポート
@@ -230,7 +229,7 @@ gate = Ready の場合は `(none)`。
 | New          | N    | ... |
 | Carried over | N    | ... |
 
-前回レビューなし: `No prior review`。旧 Trust Score 形式: `Legacy format — diff skipped`。
+前回レビューなし: `No prior review`。旧 Trust Score 形式: `Legacy format: diff skipped`。
 
 ### サマリー
 

@@ -2,14 +2,6 @@
 
 Martin Fowler's bliki entry summarizing ADR practice. The original concept is from Michael Nygard (2011).
 
-## Source
-
-| Topic                 | URL                                                                        |
-| --------------------- | -------------------------------------------------------------------------- |
-| Fowler bliki          | <https://martinfowler.com/bliki/ArchitectureDecisionRecord.html>           |
-| Nygard 2011 (origin)  | <https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions> |
-| adr-tools (Pryce CLI) | <https://github.com/npryce/adr-tools>                                      |
-
 ## Core Definition
 
 > An ADR is a short document that captures and explains a single decision relevant to a product or ecosystem.
@@ -35,19 +27,9 @@ Typically a single page, at most two. Capture the decision, its context, and sig
 
 | Item      | Convention                                                  |
 | --------- | ----------------------------------------------------------- |
-| Directory | `doc/adr` by common convention (or repo-specific)           |
+| Directory | `docs/decisions/`                                           |
 | Filename  | `NNNN-short-title.md`. Monotonic sequence, descriptive slug |
 | Example   | `0001-HTMX-for-active-web-pages`                            |
-
-## Status Values
-
-| Status     | Meaning                                     |
-| ---------- | ------------------------------------------- |
-| proposed   | Under discussion                            |
-| accepted   | Team accepted and currently active          |
-| superseded | Replaced by a later ADR (link to successor) |
-
-Once accepted, an ADR is never reopened or modified. Always supersede with a new ADR.
 
 ## Required Content Elements
 

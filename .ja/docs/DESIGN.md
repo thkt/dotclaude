@@ -179,7 +179,6 @@ flowchart LR
 | [COMMANDS](./COMMANDS.md)           | コマンドの設計と関係性                       |
 | [SKILLS_AGENTS](./SKILLS_AGENTS.md) | スキル・エージェントの仕組みと使い分け       |
 | [HOOKS](./HOOKS.md)                 | フックシステムとIDR生成                      |
-| [TEMPLATES](./TEMPLATES.md)         | テンプレート体系とドキュメントライフサイクル |
 | [GLOSSARY](./GLOSSARY.md)           | ユビキタス言語辞書                           |
 
 ---

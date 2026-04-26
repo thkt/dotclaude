@@ -53,7 +53,7 @@ user-invocable: true
 
 ## SOWコンテキスト
 
-[@../../skills/lib/sow-resolution.md]
+[@../../skills/_lib/sow-resolution.md]
 
 ## チームアーキテクチャ
 
@@ -226,7 +226,7 @@ Build sequence: 依存がある場合のunit_id順序
 
 ### Phase 5: 統合 + 品質ゲート
 
-<!-- canonical: skills/orchestrating-workflows (full gate table) -->
+<!-- canonical: skills/use-workflow-code (full gate table) -->
 
 #### 5a: マージ戦略
 

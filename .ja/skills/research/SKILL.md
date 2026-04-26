@@ -92,7 +92,7 @@ Output Verifiabilityマーカー（[✓]/[→]/[?]）を全発見に適用。
 ## 出力
 
 ファイル: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md`
-テンプレート: [@../templates/research/template.md](../templates/research/template.md)
+テンプレート: [@../../../skills/research/templates/research.md](../../../skills/research/templates/research.md)
 
 ## 次のステップ
 

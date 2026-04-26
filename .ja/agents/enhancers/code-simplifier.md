@@ -3,7 +3,7 @@ name: code-simplifier
 description: すべての機能を維持しながら、明確性、一貫性、保守性のためにコードを簡素化・洗練します。特に指示がない限り、最近変更されたコードに焦点を当てます。
 tools: [Read, Edit, Grep, Glob, LS]
 model: opus
-skills: [reviewing-readability]
+skills: [use-context-code-quality-reviewer]
 context: fork
 ---
 

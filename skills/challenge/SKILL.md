@@ -1,28 +1,28 @@
 ---
 name: challenge
-description: Challenge proposals, designs, plans, or analyses with devil's advocate. Use when user mentions devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し. Do NOT use for code review findings (use /audit) or outcome verification (use /verify which has built-in adversarial testing).
-allowed-tools: Read, Glob, Grep, LS, Task
+description: Challenge proposals, designs, plans, or analyses with devil's advocate. Do NOT use for code review findings (use /audit) or outcome assertion (use /assert which has built-in adversarial testing).
+when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し
+allowed-tools: Read Glob Grep LS Task
 model: opus
 argument-hint: "[proposal file | description]"
-user-invocable: true
 ---
 
 # /challenge
 
-Spawn `devils-advocate-design` against a proposal, analysis, or plan.
+Spawn `critic-design` against a proposal, analysis, or plan.
 
 ## Input
 
-- `$1`: what to challenge (proposal file path or description)
-- If `$1` is empty: stop and ask user to specify target. Silent target inference from conversation has high misfire risk.
+- `$ARGUMENTS`: what to challenge (proposal file path or description)
+- If `$ARGUMENTS` is empty: stop and ask user to specify target. Silent target inference from conversation has high misfire risk.
 
 ## Execution
 
-| Step | Action          | Detail                                                        |
-| ---- | --------------- | ------------------------------------------------------------- |
-| 1    | Identify target | Extract from `$1`                                             |
-| 2    | Spawn DA        | Task(subagent_type: devils-advocate-design, background: true) |
-| 3    | Report          | Agent output + actionable items                               |
+| Step | Action          | Detail                                               |
+| ---- | --------------- | ---------------------------------------------------- |
+| 1    | Identify target | Extract from `$ARGUMENTS`                            |
+| 2    | Spawn DA        | Task(subagent_type: critic-design, background: true) |
+| 3    | Report          | Agent output + actionable items                      |
 
 ### Step 2: Prompt
 

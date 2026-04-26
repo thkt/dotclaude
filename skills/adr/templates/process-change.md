@@ -10,23 +10,11 @@ Document decisions that change a workflow, rule, review procedure, or quality ga
 | Modifying review processes or quality gates   |
 | Introducing new rules or deprecating old ones |
 
-## Required Sections (MADR Core)
+## Template-Specific Topics
 
-| # | Section                       | Purpose                                               |
-| - | ----------------------------- | ----------------------------------------------------- |
-| 1 | Title                         | Action-oriented. Example: `Adopt X process for Y`     |
-| 2 | Status                        | `proposed` / `accepted` / `deprecated` / `superseded` |
-| 3 | Context and Problem Statement | Why this decision is needed now                       |
-| 4 | Decision Drivers              | Factors influencing the choice                        |
-| 5 | Considered Options            | Minimum 2 options, each with Good / Bad bullets       |
-| 6 | Decision Outcome              | `Chosen option: X, because Y`                         |
-| 7 | Consequences                  | Positive and Negative impacts                         |
+Place under `## More Information` as `### {topic}`.
 
-Metadata line: `- Confidence: {level}. {rationale}`. Reassessment goes in an optional `## Reassessment Triggers` section after Consequences.
-
-## Template-Specific Sections
-
-| Section                        | Purpose                                        |
+| Topic                          | Purpose                                        |
 | ------------------------------ | ---------------------------------------------- |
 | Current Process vs New Process | Before / After comparison (table)              |
 | Transition Plan                | Phased rollout with success criteria per phase |
@@ -36,55 +24,64 @@ Metadata line: `- Confidence: {level}. {rationale}`. Reassessment goes in an opt
 
 ## Example
 
-```markdown
-# Adopt Audience-Optimized Templates
+````markdown
+---
+status: "accepted"
+date: 2026-01-28
+decision-makers: Project owner
+---
 
-- Status: accepted
-- Deciders: Project owner
-- Date: 2026-01-28
-- Confidence: medium. Template-reality gap observed. Optimal format unproven.
+# Adopt Audience-Optimized Templates
 
 ## Context and Problem Statement
 
-SOW, Spec, and ADR serve different audiences, but all templates used the same placeholder-list format. As a result, ADR templates were effectively unused, and 24 SOWs diverged from the template structure.
+SOW, Spec, and ADR serve different audiences, but all templates used the same placeholder-list format. As a result, ADR templates were effectively unused, and 24 SOWs diverged from the template structure. How should we restructure templates to close the gap?
 
 ## Decision Drivers
 
-- Structured tables are optimal for AI readers
-- Prose and guidelines are optimal for human readers
-- Large gap between templates and actual documents
+* Structured tables are optimal for AI readers
+* Prose and guidelines are optimal for human readers
+* Large gap between templates and actual documents
 
 ## Considered Options
+
+* Audience-Optimized
+* Unified Placeholder Format
+
+## Decision Outcome
+
+Chosen option: "Audience-Optimized", because each document type matches the format that best serves its primary audience.
+
+### Consequences
+
+* Good, because templates are actually used in practice
+* Good, because document quality improves
+* Bad, because increased template management complexity
+
+### Confirmation
+
+After 1 month, audit ADR usage and SOW divergence. Templates remain in use if usage rate stays above 50%.
+
+## Pros and Cons of the Options
 
 ### Audience-Optimized
 
 Keep structured tables for SOW and Spec. Switch ADR to guideline format.
 
-- Good: Optimal format for each document's audience
-- Good: Eliminates template-reality gap
-- Bad: Reduced uniformity across template types
+* Good, because optimal format for each document's audience
+* Good, because eliminates template-reality gap
+* Bad, because reduced uniformity across template types
 
 ### Unified Placeholder Format
 
 Keep all templates in placeholder format.
 
-- Good: Consistency
-- Bad: ADR reality gap persists
+* Good, because consistency
+* Bad, because ADR reality gap persists
 
-## Decision Outcome
+## More Information
 
-Adopted the audience-optimized approach.
-
-### Positive Consequences
-
-- Templates are actually used in practice
-- Document quality improves
-
-### Negative Consequences
-
-- Increased template management complexity
-
-## Current Process vs New Process
+### Current Process vs New Process
 
 | Aspect        | Before                   | After                 |
 | ------------- | ------------------------ | --------------------- |
@@ -92,12 +89,12 @@ Adopted the audience-optimized approach.
 | ADR templates | Placeholder lists        | Guidelines + examples |
 | Reviewer      | Mismatched with template | Synced with template  |
 
-## Review Schedule
+### Review Schedule
 
-- 1 week. Check template usability.
-- 1 month. Quantitative evaluation of SOW and ADR quality.
+* 1 week. Check template usability.
+* 1 month. Quantitative evaluation of SOW and ADR quality.
 
-## Reassessment Triggers
+### Reassessment Triggers
 
-- If template usage rate drops below 50% in new ADRs
-```
+* If template usage rate drops below 50% in new ADRs
+````

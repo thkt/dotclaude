@@ -1,0 +1,157 @@
+# Architecture Decision Records
+
+This directory contains important decisions about the project's architecture.
+
+## ADR List
+
+| Number | Title | Status | Date |
+|--------|-------|--------|------|
+| [0001](0001-code-command-responsibility-separation.md) | ADR 0001: code.md コマンドの責任分離 | accepted | 2025-12-16 |
+| [0002](0002-fix-modularization-and-tdd-commonization.md) | ADR 0002: /fix モジュール化とTDD共通化 | accepted | 2025-12-24 |
+| [0003](0003-marketplace.md) | Marketplace構造の維持 | accepted | 2026-01-03 |
+| [0004](0004-skill-centric-architecture-restructuring.md) | ADR 0004: スキル中心アーキテクチャへの再構成 | accepted | Not set |
+| [0005](0005-documentation-role-separation.md) | ADR-0005: ドキュメントの役割分離とAI最適化 | accepted | Not set |
+| [0006](0006-adopt-deterministic-script-pattern.md) | Adopt Deterministic Script Pattern | superseded by ADR-0042 | 2026-01-27 |
+| [0007](0007-configuration-optimization.md) | ADR-0007: Claude Code 設定の最適化 | proposed | Not set |
+| [0008](0008-audience-optimized-templates.md) | ADR-0008: 読み手別テンプレート最適化の採用 | accepted | Not set |
+| [0009](0009-externalize-idr-as-rust-binary.md) | IDR生成システムの外部リポジトリ化（Rustバイナリ） | accepted | 2026-02-07 |
+| [0010](0010-schema-first-api-documentation.md) | Schema-First API ドキュメント生成と Dual Output | accepted | 2026-02-08 |
+| [0011](0011-add-critic-evidence-to-audit-pipeline.md) | Audit パイプラインに Evidence Verifier を追加 | accepted | 2026-02-10 |
+| [0012](0012-flatten-audit-pipeline-remove-compound-reviewers.md) | ADR-0012: Flatten Audit Pipeline — Remove Compound Reviewers | accepted | Not set |
+| [0013](0013-adopt-hook-trinity-pattern-with-claude-reviews.md) | ADR-0013: Hook Trinity パターンの採用 — claude-reviews による Pre-flight 分析の確実な実行 | accepted | Not set |
+| [0014](0014-integrate-aidlc-design-separation-and-ops-reviewer.md) | ADR-0014: AI-DLC 統合 — 設計分離と Operational Readiness Reviewer | accepted | Not set |
+| [0015](0015-frontend-security-guardrails-strategy.md) | Adopt Pattern-Match + Taint-Checklist Strategy for Frontend Security | accepted | 2026-02-23 |
+| [0016](0016-adopt-rust-mcp-for-deep-search.md) | ADR-0016: Adopt Rust + rmcp for deep-search MCP Server | proposed | 2026-02-25 |
+| [0017](0017-build-frontend-code-search-mcp-in-rust.md) | ADR-0017: Build frontend-specialized code search MCP server in Rust | proposed | 2026-02-26 |
+| [0018](0018-index-time-file-context-storage-for-explorer.md) | explorer のファイル文脈に Index-time storage を採用 | accepted | 2026-02-27 |
+| [0019](0019-adopt-sqlite-reference-graph-for-impact-analysis.md) | Adopt SQLite Reference Graph for Impact Analysis | proposed | 2026-02-27 |
+| [0020](0020-claude-code-dashboard-tech-stack.md) | ADR-0020: kagami — 技術スタックと収集方式の選定 | accepted | Not set |
+| [0021](0021-build-slack-semantic-search-mcp-kiku.md) | ADR-0021: Build Slack conversation semantic search MCP server (kiku) | proposed | 2026-03-03 |
+| [0022](0022-migrate-yomu-from-mcp-to-cli.md) | ADR-0022: Migrate yomu from MCP server to CLI tool | proposed | 2026-03-04 |
+| [0023](0023-build-sharpen-rg-output-optimizer-for-ai.md) | ADR-0023: Build sharpen - rg output optimizer for AI consumption | proposed | 2026-03-05 |
+| [0024](0024-adopt-two-layer-delta-for-compaction-resilience.md) | ADR-0024: Adopt two-layer Delta for compaction resilience | accepted | 2026-03-10 |
+| [0025](0025-replace-ralph-loop-with-flow-controller.md) | ADR-0025: gates を stateful completion gate に拡張 | proposed | 2026-03-16 |
+| [0026](0026-recognize-spec-code-convergence-in-llm-instructions.md) | ADR-0026: LLM指示設計における仕様-コード収束則を認識する | accepted | 2026-03-20 |
+| [0027](0027-centralize-plugin-definitions-in-sentinels.md) | ADR-0027: プラグイン定義を sentinels リポに集約する | proposed | 2026-03-20 |
+| [0028](0028-build-test-quality-gate-with-oxc-parser.md) | ADR 0028: oxc_parser によるテスト品質ゲート litmus の構築 | proposed | 2026-03-20 |
+| [0029](0029-integrate-e2e-test-generation-into-spec-driven-workflow.md) | ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合 | proposed | 2026-03-21 |
+| [0030](0030-build-session-monitor-tui-mado.md) | ADR 0030: Claude Code セッション監視 TUI mado の構築 | proposed | 2026-03-22 |
+| [0031](0031-adopt-local-embedding-ort-ruri-v3.md) | ADR-0031: ort + Ruri v3 によるローカル embedding 基盤の構築 | proposed | 2026-03-22 |
+| [0032](0032-build-esa-semantic-search-cli-sae.md) | ADR-0032: Build esa semantic search CLI (sae) | proposed | 2026-03-23 |
+| [0033](0033-add-recursive-unwrap-stack-to-shields.md) | ADR-0033: shields に Recursive Unwrap Stack を追加 | proposed | 2026-03-24 |
+| [0034](0034-automate-backlog-lifecycle-with-remote-trigger.md) | ADR-0034: LaunchAgent によるバックログライフサイクル自動化 | accepted | 2026-03-24 |
+| [0034](0034-extract-shared-embedding-crate-ruri-core.md) | ADR-0034: embedding + storage ユーティリティの共有クレート化 (rurico) | proposed | 2026-03-24 |
+| [0035](0035-audit-verify-convergence-signal-and-reconciliation-ownership.md) | Record convergence signals in audit/verify dedup and move reconciliation into enhancer-evidence | accepted | 2026-04-04 |
+| [0036](0036-build-llm-wiki-plugin-for-cross-session-knowledge-synthesis.md) | LLMによるクロスセッション知識合成wikiプラグインの構築 | accepted | 2026-04-07 |
+| [0037](0037-align-sae-filter-helpers-for-amici-extraction.md) | ADR-0037: sae フィルタヘルパーを amici 抽出前提で yomu パターンに揃える | accepted | 2026-04-10 |
+| [0038](0038-add-stencils-as-sixth-posttooluse-hook-for-pattern-cataloging.md) | ADR-0038: hook pipelineに stencils を追加しコードパターンをカタログ化する | proposed | 2026-04-13 |
+| [0039](0039-add-tempos-pretooluse-tdd-hook-with-litmus-library-integration.md) | ADR-0039: PreToolUse hook に tempos を追加し litmus library 統合で TDD リズムを強制する | proposed | 2026-04-13 |
+| [0040](0040-wiki-plugin-v2-global-mode-and-publish-layer.md) | wiki plugin v2: グローバルモード・publish 層・wiki_root リゾルバーの導入 | accepted | 2026-04-14 |
+| [0041](0041-fork-strategy-for-carte.md) | ADR-0041: carte を CCPlanView からフォークする運用方針 | proposed | 2026-04-19 |
+| [0042](0042-colocate-skill-specific-scripts-within-skill.md) | ADR-0042: Colocate Skill-Specific Scripts Within Skill Directory | accepted | 2026-04-20 |
+| [0043](0043-normalize-findings-in-audit-multi-run-aggregation.md) | Normalize findings in audit multi-run aggregation with line and category tolerance | accepted | 2026-04-20 |
+| [0044](0044-reject-snapshot-aware-audit-pipeline.md) | Reject snapshot-aware audit pipeline in favor of multi-run aggregation | rejected | 2026-04-20 |
+| [0045](0045-replace-scout-skill-with-scout-search-cli-wrapper.md) | Replace /scout skill with scout-search CLI wrapper, retire scouting-anomalies | accepted | 2026-04-20 |
+| [0046](0046-colocate-audit-templates-in-skill-references.md) | Colocate audit assets under skills/audit with references and templates split | accepted | 2026-04-20 |
+| [0047](0047-adopt-snapshot-as-canonical-with-rendered-output.md) | Adopt snapshot as canonical source with rendered Markdown output for audit reports | accepted | 2026-04-20 |
+| [0048](0048-standardize-generator-skill-structure.md) | Adopt unified SKILL.md template for generator-class workflows | accepted | 2026-04-21 |
+| [0049](0049-consolidate-skill-to-skill-wrapper-pairs.md) | ADR-0049: Consolidate skill-to-skill wrapper pairs | accepted | 2026-04-21 |
+| [0050](0050-consolidate-fix-via-skill-delegation.md) | ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md | accepted | 2026-04-21 |
+| [0051](0051-consolidate-formatting-audits-into-reviewer-spec.md) | ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent | accepted | 2026-04-23 |
+| [0052](0052-unify-skill-naming-with-use-prefix-for-cli-wrappers.md) | ADR-0052: Unify skill naming with `use-*` prefix for CLI wrapper skills | superseded by ADR-0055 | 2026-04-23 |
+| [0053](0053-adopt-ctx-prefix-for-agent-only-skills.md) | Adopt ctx- prefix for agent-only skills | superseded by ADR-0055 | 2026-04-24 |
+| [0054](0054-adopt-workflow-prefix-for-workflow-skills.md) | Adopt workflow- prefix for workflow skills | superseded by ADR-0055 | 2026-04-24 |
+| [0055](0055-consolidate-user-invocable-false-skills-under-use-prefix.md) | ADR-0055: Consolidate user-invocable:false skills under unified use- prefix with role subcategories | accepted | 2026-04-24 |
+
+## By Status
+
+### Proposed
+
+- **0007**: ADR-0007: Claude Code 設定の最適化
+- **0016**: ADR-0016: Adopt Rust + rmcp for deep-search MCP Server
+- **0017**: ADR-0017: Build frontend-specialized code search MCP server in Rust
+- **0019**: Adopt SQLite Reference Graph for Impact Analysis
+- **0021**: ADR-0021: Build Slack conversation semantic search MCP server (kiku)
+- **0022**: ADR-0022: Migrate yomu from MCP server to CLI tool
+- **0023**: ADR-0023: Build sharpen - rg output optimizer for AI consumption
+- **0025**: ADR-0025: gates を stateful completion gate に拡張
+- **0027**: ADR-0027: プラグイン定義を sentinels リポに集約する
+- **0028**: ADR 0028: oxc_parser によるテスト品質ゲート litmus の構築
+- **0029**: ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合
+- **0030**: ADR 0030: Claude Code セッション監視 TUI mado の構築
+- **0031**: ADR-0031: ort + Ruri v3 によるローカル embedding 基盤の構築
+- **0032**: ADR-0032: Build esa semantic search CLI (sae)
+- **0033**: ADR-0033: shields に Recursive Unwrap Stack を追加
+- **0034**: ADR-0034: embedding + storage ユーティリティの共有クレート化 (rurico)
+- **0038**: ADR-0038: hook pipelineに stencils を追加しコードパターンをカタログ化する
+- **0039**: ADR-0039: PreToolUse hook に tempos を追加し litmus library 統合で TDD リズムを強制する
+- **0041**: ADR-0041: carte を CCPlanView からフォークする運用方針
+
+### Accepted
+
+- **0001**: ADR 0001: code.md コマンドの責任分離
+- **0002**: ADR 0002: /fix モジュール化とTDD共通化
+- **0003**: Marketplace構造の維持
+- **0004**: ADR 0004: スキル中心アーキテクチャへの再構成
+- **0005**: ADR-0005: ドキュメントの役割分離とAI最適化
+- **0008**: ADR-0008: 読み手別テンプレート最適化の採用
+- **0009**: IDR生成システムの外部リポジトリ化（Rustバイナリ）
+- **0010**: Schema-First API ドキュメント生成と Dual Output
+- **0011**: Audit パイプラインに Evidence Verifier を追加
+- **0012**: ADR-0012: Flatten Audit Pipeline — Remove Compound Reviewers
+- **0013**: ADR-0013: Hook Trinity パターンの採用 — claude-reviews による Pre-flight 分析の確実な実行
+- **0014**: ADR-0014: AI-DLC 統合 — 設計分離と Operational Readiness Reviewer
+- **0015**: Adopt Pattern-Match + Taint-Checklist Strategy for Frontend Security
+- **0018**: explorer のファイル文脈に Index-time storage を採用
+- **0020**: ADR-0020: kagami — 技術スタックと収集方式の選定
+- **0024**: ADR-0024: Adopt two-layer Delta for compaction resilience
+- **0026**: ADR-0026: LLM指示設計における仕様-コード収束則を認識する
+- **0034**: ADR-0034: LaunchAgent によるバックログライフサイクル自動化
+- **0035**: Record convergence signals in audit/verify dedup and move reconciliation into enhancer-evidence
+- **0036**: LLMによるクロスセッション知識合成wikiプラグインの構築
+- **0037**: ADR-0037: sae フィルタヘルパーを amici 抽出前提で yomu パターンに揃える
+- **0040**: wiki plugin v2: グローバルモード・publish 層・wiki_root リゾルバーの導入
+- **0042**: ADR-0042: Colocate Skill-Specific Scripts Within Skill Directory
+- **0043**: Normalize findings in audit multi-run aggregation with line and category tolerance
+- **0045**: Replace /scout skill with scout-search CLI wrapper, retire scouting-anomalies
+- **0046**: Colocate audit assets under skills/audit with references and templates split
+- **0047**: Adopt snapshot as canonical source with rendered Markdown output for audit reports
+- **0048**: Adopt unified SKILL.md template for generator-class workflows
+- **0049**: ADR-0049: Consolidate skill-to-skill wrapper pairs
+- **0050**: ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md
+- **0051**: ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent
+- **0055**: ADR-0055: Consolidate user-invocable:false skills under unified use- prefix with role subcategories
+
+### Superseded
+
+- **0006**: Adopt Deterministic Script Pattern
+- **0052**: ADR-0052: Unify skill naming with `use-*` prefix for CLI wrapper skills
+- **0053**: Adopt ctx- prefix for agent-only skills
+- **0054**: Adopt workflow- prefix for workflow skills
+
+### Rejected
+
+- **0044**: Reject snapshot-aware audit pipeline in favor of multi-run aggregation
+
+## About MADR Format
+
+This project uses [MADR (Markdown Any Decision Records)](https://adr.github.io/madr/) format, v4.
+
+### How to Create an ADR
+
+```bash
+/adr "Decision Title"
+```
+
+### Status Meanings
+
+- **Proposed**: Awaiting review
+- **Accepted**: Approved, implementing or completed
+- **Rejected**: Considered but not adopted
+- **Deprecated**: Retired without a replacement ADR
+- **Superseded**: Replaced by another ADR (e.g. `superseded by ADR-0042`)
+
+---
+
+*Last updated: 2026-04-25*
+*Auto-generated by: update-index.sh*

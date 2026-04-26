@@ -26,7 +26,7 @@ and Spec.
 
 ## Input
 
-Task description from `$1`, research context, or AskUserQuestion if empty.
+Task description from `$ARGUMENTS`, research context, or AskUserQuestion if empty.
 
 ## Execution
 

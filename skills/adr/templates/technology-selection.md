@@ -10,23 +10,11 @@ Document decisions that adopt a library, framework, service, or infrastructure c
 | Selecting infrastructure components      |
 | Adopting new tools or services           |
 
-## Required Sections (MADR Core)
+## Template-Specific Topics
 
-| # | Section                       | Purpose                                               |
-| - | ----------------------------- | ----------------------------------------------------- |
-| 1 | Title                         | Action-oriented. Example: `Adopt X for Y`             |
-| 2 | Status                        | `proposed` / `accepted` / `deprecated` / `superseded` |
-| 3 | Context and Problem Statement | Why this decision is needed now                       |
-| 4 | Decision Drivers              | Factors influencing the choice                        |
-| 5 | Considered Options            | Minimum 3 options, each with Good / Bad bullets       |
-| 6 | Decision Outcome              | `Chosen option: X, because Y`                         |
-| 7 | Consequences                  | Positive and Negative impacts                         |
+Place under `## More Information` as `### {topic}`.
 
-Metadata line: `- Confidence: {level}. {rationale}`. Reassessment goes in an optional `## Reassessment Triggers` section after Consequences.
-
-## Template-Specific Sections
-
-| Section             | Purpose                                      |
+| Topic               | Purpose                                      |
 | ------------------- | -------------------------------------------- |
 | Implementation Plan | Concrete steps to adopt the technology       |
 | Migration Strategy  | How to transition from the current state     |
@@ -35,76 +23,86 @@ Metadata line: `- Confidence: {level}. {rationale}`. Reassessment goes in an opt
 
 ## Example
 
-```markdown
-# Migrate to React Router v7
+````markdown
+---
+status: "accepted"
+date: 2026-01-13
+decision-makers: Frontend team
+---
 
-- Status: accepted
-- Deciders: Entire team
-- Date: 2026-01-13
-- Confidence: high. Team proficient with React Router. Migration path well-documented.
+# Migrate to React Router v7
 
 ## Context and Problem Statement
 
-React Router v6 only receives conservative updates. v7 introduces type-safe routing and improved data loading capabilities.
+React Router v6 only receives conservative updates. v7 introduces type-safe routing and improved data loading. Should we adopt v7 now, switch to a different router, or wait?
 
 ## Decision Drivers
 
-- Type safety directly improves development velocity
-- v6 support window is closing
-- Team already proficient with React Router
+* Type safety directly improves development velocity
+* v6 support window is closing
+* Team already proficient with React Router
 
 ## Considered Options
+
+* React Router v7
+* TanStack Router
+* Next.js App Router
+
+## Decision Outcome
+
+Chosen option: "React Router v7", because it offers the best balance of migration cost and benefits while leveraging existing team knowledge.
+
+### Consequences
+
+* Good, because type-safe routing reduces runtime errors
+* Good, because maximizes existing team knowledge
+* Bad, because effort required to address breaking API changes
+
+### Confirmation
+
+`tsc --noEmit` runs in CI to ensure router types stay aligned. Manual review verifies all routes use the v7 API surface.
+
+## Pros and Cons of the Options
 
 ### React Router v7
 
 Major upgrade of the current router.
 
-- Good: Minimal migration cost (leverages existing knowledge)
-- Good: Type-safe routing
-- Bad: Some breaking API changes
+* Good, because minimal migration cost (leverages existing knowledge)
+* Good, because type-safe routing
+* Bad, because some breaking API changes
 
 ### TanStack Router
 
 A new router specialized in type safety.
 
-- Good: TypeScript-first design
-- Good: Type-safe search parameters
-- Bad: High learning cost
-- Bad: Smaller ecosystem
+* Good, because TypeScript-first design
+* Good, because type-safe search parameters
+* Bad, because high learning cost
+* Bad, because smaller ecosystem
 
 ### Next.js App Router
 
 Migration to a full-stack framework.
 
-- Good: Integrated SSR / SSG
-- Bad: Requires significant architectural changes
-- Bad: Incompatible with current SPA setup
+* Good, because integrated SSR / SSG
+* Bad, because requires significant architectural changes
+* Bad, because incompatible with current SPA setup
 
-## Decision Outcome
+## More Information
 
-Adopted React Router v7. Best balance of migration cost and benefits.
-
-### Positive Consequences
-
-- Type-safe routing reduces runtime errors
-- Maximizes team's existing knowledge
-
-### Negative Consequences
-
-- Effort required to address breaking changes
-
-## Migration Strategy
+### Migration Strategy
 
 Phase 1. Upgrade and verify in development environment.
 Phase 2. Fix breaking changes.
 Phase 3. Production deployment.
 
-## Rollback Plan
+### Rollback Plan
 
 Revert package.json to v6 and restore changed API calls.
 
-## Reassessment Triggers
+### Reassessment Triggers
 
-- If TanStack Router reaches 1.0 stable and team evaluates type-safe routing alternatives
-- If React Router v7 introduces breaking changes in a minor release
-```
+* If TanStack Router reaches 1.0 stable, evaluate type-safe routing alternatives
+* If React Router v7 introduces breaking changes in a minor release
+````

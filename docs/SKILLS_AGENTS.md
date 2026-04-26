@@ -9,14 +9,14 @@ Design intent and usage guidelines for Skills and Agents.
 ```mermaid
 graph LR
     subgraph Skills["Skills (Knowledge)"]
-        S1[generating-tdd-tests]
-        S2[reviewing-security]
+        S1[use-workflow-tdd-cycle]
+        S2[use-context-reviewer-security]
     end
 
     subgraph Agents["Agents (Execution)"]
-        A1[test-generator]
-        A2[security-reviewer]
-        A3[progressive-integrator]
+        A1[generator-test]
+        A2[reviewer-security]
+        A3[team-integration]
     end
 
     subgraph Trigger["Invocation"]
@@ -48,10 +48,10 @@ executes tasks.
 
 | Category      | Skills                                               | Purpose                  |
 | ------------- | ---------------------------------------------------- | ------------------------ |
-| TDD/Testing   | generating-tdd-tests                                 | Testing methodology      |
+| TDD/Testing   | use-workflow-tdd-cycle                          | Testing methodology      |
 | Documentation | adr, glossary                                        | Documentation generation |
 | Review        | reviewing-\*                                         | Code review perspectives |
-| Workflow      | orchestrating-workflows                              | Workflow definitions     |
+| Workflow      | use-workflow-code                                        | Workflow definitions     |
 
 ### Loading Mechanism
 
@@ -70,7 +70,7 @@ flowchart TD
 
 | Trigger              | Skill Loaded         |
 | -------------------- | -------------------- |
-| "TDD", "test-driven" | generating-tdd-tests |
+| "TDD", "test-driven" | use-workflow-tdd-cycle |
 
 ### File Structure
 
@@ -85,12 +85,9 @@ skills/[skill-name]/
 
 ```yaml
 ---
-name: generating-tdd-tests
-description: >
-  TDD with RGRC cycle and Baby Steps methodology. Use when implementing features
-  with test-driven development, or when user mentions TDD, テスト駆動,
-  Red-Green-Refactor.
-allowed-tools: [Read, Write, Edit, Grep, Glob, Task]
+name: use-workflow-tdd-cycle
+description: TDD with RGRC cycle and Baby Steps. Use when: TDD, テスト駆動, Red-Green-Refactor, Baby Steps.
+allowed-tools: Read Write Edit Grep Glob
 context: fork # fork or inline
 user-invocable: false # Whether invocable as slash command
 ---
@@ -107,55 +104,55 @@ perform specific analysis or generation tasks.
 
 ```text
 agents/
-├── architects/     # Design (feature-architect)
-├── critics/        # Critical verification (devils-advocate-audit, devils-advocate-design, evidence-verifier)
-├── enhancers/      # Code improvement (code-simplifier)
-├── evaluators/     # Quality evaluation (test-quality-evaluator)
-├── explorers/      # Exploration (feature-explorer)
+├── architects/     # Design (architect-feature)
+├── critics/        # Critical verification (critic-audit, critic-design, critic-evidence)
+├── enhancers/      # Code improvement (enhancer-code)
+├── evaluators/     # Quality evaluation (evaluator-test)
+├── explorers/      # Exploration (explorer-feature)
 ├── generators/     # Generation (branch, commit, issue, pr, test)
-├── resolvers/      # Problem resolution (build-error-resolver)
+├── resolvers/      # Problem resolution (resolver-build)
 ├── reviewers/      # Review (20 specialized reviewers)
-└── teams/          # Team integration (progressive-integrator, qa-reviewer, unit-implementer)
+└── teams/          # Team integration (team-integration, team-qa, team-implementation)
 ```
 
 ### Reviewer Agents (20 types)
 
 | Agent                          | Focus                             |
 | ------------------------------ | --------------------------------- |
-| accessibility-reviewer         | WCAG compliance                   |
-| code-quality-reviewer          | Structure + readability           |
-| design-pattern-reviewer        | React patterns                    |
-| document-reviewer              | Documentation quality             |
-| duplication-reviewer           | Cross-file DRY analysis           |
-| efficiency-reviewer            | Algorithmic cost + hot paths      |
-| operational-readiness-reviewer | Error boundaries + logging        |
-| performance-reviewer           | Performance                       |
-| progressive-enhancer           | CSS-first + JS reduction          |
-| prompt-reviewer                | Prompt/agent definition quality   |
-| reuse-reviewer                 | Existing code reuse opportunities |
-| root-cause-reviewer            | Root cause analysis               |
-| security-reviewer              | OWASP Top 10                      |
-| silent-failure-reviewer        | Silent failure detection          |
-| sow-spec-reviewer              | SOW/Spec Ready/NotReady gate      |
-| test-coverage-reviewer         | Test coverage quality             |
-| testability-reviewer           | Testability                       |
-| type-design-reviewer           | Type design + encapsulation       |
-| type-safety-reviewer           | TypeScript type safety            |
+| reviewer-accessibility         | WCAG compliance                   |
+| reviewer-readability          | Structure + readability           |
+| reviewer-design        | React patterns                    |
+| reviewer-document              | Documentation quality             |
+| reviewer-duplication           | Cross-file DRY analysis           |
+| reviewer-efficiency            | Algorithmic cost + hot paths      |
+| reviewer-operations | Error boundaries + logging        |
+| reviewer-performance           | Performance                       |
+| reviewer-progressive           | CSS-first + JS reduction          |
+| reviewer-prompt                | Prompt/agent definition quality   |
+| reviewer-reuse                 | Existing code reuse opportunities |
+| reviewer-causation            | Root cause analysis               |
+| reviewer-security              | OWASP Top 10                      |
+| reviewer-silence        | Silent failure detection          |
+| reviewer-spec              | SOW/Spec Ready/NotReady gate      |
+| reviewer-coverage         | Test coverage quality             |
+| reviewer-testability           | Testability                       |
+| reviewer-encapsulation           | Type design + encapsulation       |
+| reviewer-strictness           | TypeScript type safety            |
 
 ### Team Agents
 
 | Agent                  | Focus                                                           |
 | ---------------------- | --------------------------------------------------------------- |
-| progressive-integrator | Reconcile challenge/verification results + root cause synthesis |
-| qa-reviewer            | Non-blocking QA participant via peer DM                         |
-| unit-implementer       | RGRC cycle implementation for assigned files and tests          |
+| team-integration | Reconcile challenge/verification results + root cause synthesis |
+| team-qa            | Non-blocking QA participant via peer DM                         |
+| team-implementation       | RGRC cycle implementation for assigned files and tests          |
 
 ### Invocation via Task Tool
 
 ```markdown
 Task tool with:
 
-- subagent_type: "security-reviewer"
+- subagent_type: "reviewer-security"
 - prompt: "Review the authentication module for vulnerabilities"
 - model: "sonnet" (optional)
 ```

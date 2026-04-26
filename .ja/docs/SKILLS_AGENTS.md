@@ -9,8 +9,8 @@
 ```mermaid
 graph LR
     subgraph Skills["Skills (知識)"]
-        S1[generating-tdd-tests]
-        S2[reviewing-security]
+        S1[use-workflow-tdd-cycle]
+        S2[use-context-security-reviewer]
     end
 
     subgraph Agents["Agents (実行)"]
@@ -47,10 +47,10 @@ graph LR
 
 | カテゴリ     | スキル                                               | 目的               |
 | ------------ | ---------------------------------------------------- | ------------------ |
-| TDD/テスト   | generating-tdd-tests                                 | テスト手法         |
+| TDD/テスト   | use-workflow-tdd-cycle                          | テスト手法         |
 | ドキュメント | adr, glossary                                        | ドキュメント生成   |
 | レビュー     | reviewing-\*                                         | コードレビュー観点 |
-| ワークフロー | orchestrating-workflows                              | ワークフロー定義   |
+| ワークフロー | use-workflow-code                                        | ワークフロー定義   |
 
 ### ロード機構
 
@@ -69,7 +69,7 @@ flowchart TD
 
 | トリガー            | ロードされるスキル   |
 | ------------------- | -------------------- |
-| "TDD", "テスト駆動" | generating-tdd-tests |
+| "TDD", "テスト駆動" | use-workflow-tdd-cycle |
 
 ### ファイル構造
 
@@ -84,12 +84,9 @@ skills/[skill-name]/
 
 ```yaml
 ---
-name: generating-tdd-tests
-description: >
-  TDD with RGRC cycle and Baby Steps methodology. Use when implementing features
-  with test-driven development, or when user mentions TDD, テスト駆動,
-  Red-Green-Refactor.
-allowed-tools: [Read, Write, Edit, Grep, Glob, Task]
+name: use-workflow-tdd-cycle
+description: RGRCサイクルとBaby StepsによるTDD。TDD, テスト駆動, Red-Green-Refactor, Baby Steps に言及した時に使用。
+allowed-tools: Read Write Edit Grep Glob
 context: fork # fork or inline
 user-invocable: false # スラッシュコマンドとして呼び出し可能か
 ---
