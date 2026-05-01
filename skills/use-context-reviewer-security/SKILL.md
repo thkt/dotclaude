@@ -31,11 +31,16 @@ user-invocable: false
 | A04 | Insecure Design           | `postMessage` handler without origin check               | Strict `event.origin` comparison        |
 | A02 | Sensitive Data Exposure   | JWT stored in localStorage/sessionStorage                | httpOnly cookie instead                 |
 
-## Confidence Threshold
+## Reporting
 
-Report findings with confidence >=0.60. For 0.60-0.80: include
-verification_hint. For >=0.80: include full exploit scenario and fix
-recommendation. Always include file:line.
+Severity scale: critical / high / medium. Always include `file:line`.
+
+| Signal              | Severity | Required output                      |
+| ------------------- | -------- | ------------------------------------ |
+| Certain exploit     | critical | Full exploit scenario + concrete fix |
+| Clear vulnerability | high     | Attack vector + concrete fix         |
+| Possible issue      | medium   | verification_hint + suggested fix    |
+| Speculative only    | none     | Do NOT report                        |
 
 ## References
 

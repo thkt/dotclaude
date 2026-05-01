@@ -31,9 +31,16 @@ user-invocable: false
 | A04 | Insecure Design           | origin チェックなしの `postMessage` ハンドラ            | `event.origin` の厳密比較              |
 | A02 | Sensitive Data Exposure   | localStorage/sessionStorage に保存された JWT            | httpOnly cookie に置き換える           |
 
-## 信頼度しきい値
+## 報告
 
-confidence >=0.60 の発見事項を報告する。0.60-0.80: verification_hint を含める。>=0.80: 完全な悪用シナリオと修正推奨を含める。常に file:line を含める。
+重大度スケール: critical / high / medium。常に `file:line` を含める。
+
+| シグナル         | 重大度   | 必須出力                          |
+| ---------------- | -------- | --------------------------------- |
+| 確実な悪用       | critical | 完全な悪用シナリオ + 具体的な修正 |
+| 明確な脆弱性     | high     | 攻撃ベクター + 具体的な修正       |
+| 可能性のある問題 | medium   | verification_hint + 修正提案      |
+| 投機的のみ       | none     | 報告しない                        |
 
 ## 参照ファイル
 
