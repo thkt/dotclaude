@@ -1,0 +1,36 @@
+---
+name: use-context-reviewer-readability
+description: コードの可読性レビュー。セキュリティは use-context-reviewer-security、型エラーは use-context-reviewer-strictness、エラーハンドリングは use-context-reviewer-silence、テスト設計は use-context-reviewer-testability に使う。
+when_to_use: 可読性, 明確, 命名, 変数名, 関数名, ネスト, 関数設計, コメント, 複雑, Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計
+allowed-tools: Read Grep Glob Task
+agent: reviewer-readability
+context: fork
+user-invocable: false
+---
+
+# 可読性レビュー
+
+しきい値: `rules/development/THRESHOLDS.md` を参照。
+
+## 検出
+
+| ID  | パターン                       | 修正                       |
+| --- | ------------------------------ | -------------------------- |
+| RD1 | `processData()` (曖昧)         | `validateUserEmail()`      |
+| RD1 | 誤解を招く識別子               | 名前は意図を表す           |
+| RD2 | ネスト > 3 階層                | guard clause、関数抽出     |
+| RD2 | 関数 > 30 行                   | 分解                       |
+| RD3 | コメント: `// increment i`     | 削除 (自明)                |
+| RD3 | コメント: `// TODO: fix later` | issue 化または今修正       |
+| RD4 | 単一実装の interface           | 2 つ目の実装が出るまで削除 |
+| RD4 | 状態を持たないロジックの class | 純粋関数                   |
+| RD5 | 関数引数 > 5                   | 設定オブジェクトまたは分解 |
+
+## 参照ファイル
+
+| トピック        | ファイル                                           |
+| --------------- | -------------------------------------------------- |
+| Control Flow    | ${CLAUDE_SKILL_DIR}/references/control-flow.md     |
+| Comments        | ${CLAUDE_SKILL_DIR}/references/comments-clarity.md |
+| AI Antipatterns | ${CLAUDE_SKILL_DIR}/references/ai-antipatterns.md  |
+| Naming          | ${CLAUDE_SKILL_DIR}/references/naming.md           |

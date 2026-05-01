@@ -1,179 +1,186 @@
-# スキル・エージェント設計
+# Skills & Agents Design
 
-スキルとエージェントの設計意図と使い分けを説明します。
+Skill とエージェントの設計意図と利用ガイドライン。
 
-📌 **[English Version](../../docs/SKILLS_AGENTS.md)**
+📌 [English version](../../docs/SKILLS_AGENTS.md)
 
-## 基本概念
+## コア コンセプト
 
 ```mermaid
 graph LR
-    subgraph Skills["Skills (知識)"]
+    subgraph Skills["Skills (Knowledge)"]
         S1[use-workflow-tdd-cycle]
-        S2[use-context-security-reviewer]
+        S2[use-context-reviewer-security]
     end
 
-    subgraph Agents["Agents (実行)"]
-        A1[test-generator]
-        A2[security-reviewer]
-        A3[progressive-integrator]
+    subgraph Agents["Agents (Execution)"]
+        A1[generator-test]
+        A2[reviewer-security]
+        A3[team-integration]
     end
 
-    subgraph Trigger["起動方法"]
-        CMD[コマンド] --> S1
+    subgraph Trigger["Invocation"]
+        CMD[Command] --> S1
         CMD --> A1
-        CTX[コンテキスト] -.-> S2
+        CTX[Context] -.-> S2
         TASK[Task Tool] --> A2
     end
 ```
 
-## スキル vs エージェント
+## Skills と Agents
 
-| 観点             | スキル                         | エージェント  |
-| ---------------- | ------------------------------ | ------------- |
-| **役割**         | 知識ベース（What/How）         | 実行者（Do）  |
-| **起動**         | 自動ロード or コマンドから参照 | Task tool経由 |
-| **コンテキスト** | メインまたはfork               | 常にfork      |
-| **状態**         | 読み取り専用                   | 変更可能      |
-| **出力**         | 情報提供                       | 成果物生成    |
+| 観点         | Skills                       | Agents           |
+| ------------ | ---------------------------- | ---------------- |
+| 役割         | ナレッジベース (What/How)    | 実行者 (Do)      |
+| 起動         | 自動ロードまたはコマンド参照 | Task ツール経由  |
+| コンテキスト | メイン または fork           | 常に fork        |
+| 状態         | 読み取り専用                 | 可変             |
+| 出力         | 情報                         | アーティファクト |
 
-## スキル
+## Skills
 
-### 目的
+### 用途
 
-スキルは「知識モジュール」。AIが特定のタスクを実行する際に必要な知識を提供。
+Skills は「ナレッジ モジュール」。AI がタスク実行時にドメイン固有の知識を提供する。
 
 ### カテゴリ
 
-| カテゴリ     | スキル                                               | 目的               |
-| ------------ | ---------------------------------------------------- | ------------------ |
-| TDD/テスト   | use-workflow-tdd-cycle                          | テスト手法         |
-| ドキュメント | adr, glossary                                        | ドキュメント生成   |
-| レビュー     | reviewing-\*                                         | コードレビュー観点 |
-| ワークフロー | use-workflow-code                                        | ワークフロー定義   |
+| カテゴリ       | Skills                                                                                         | 用途                                  |
+| -------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Workflow       | use-workflow-code, use-workflow-tdd-cycle, use-workflow-pageshot, use-workflow-spec-validation | 多段ワークフロー定義                  |
+| Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                       | エージェント向けドメイン知識          |
+| CLI ラッパー   | use-cli-yomu, use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase                 | CLI ツール統合                        |
+| User-invocable | think, research, code, audit, polish, feature, fix, adr, swarm 等                              | スラッシュ コマンド エントリ ポイント |
 
 ### ロード機構
 
 ```mermaid
 flowchart TD
-    A[ユーザー入力] --> B{トリガー一致?}
-    B -->|キーワード| C[スキル自動ロード]
-    B -->|フラグ| D[条件付きロード]
-    B -->|コマンド| E[コマンド内参照]
-    C --> F[スキルコンテキスト追加]
+    A[User Input] --> B{Trigger Match?}
+    B -->|Keyword| C[Auto-load Skill]
+    B -->|Flag| D[Conditional Load]
+    B -->|Command| E[Reference in Command]
+    C --> F[Skill Context Added]
     D --> F
     E --> F
 ```
 
-**トリガー例:**
+トリガー例:
 
-| トリガー            | ロードされるスキル   |
-| ------------------- | -------------------- |
-| "TDD", "テスト駆動" | use-workflow-tdd-cycle |
+| トリガー                | ロードされる Skill              |
+| ----------------------- | ------------------------------- |
+| "TDD", "test-driven"    | use-workflow-tdd-cycle          |
+| "OWASP", "セキュリティ" | use-context-reviewer-security   |
+| "any", "type safety"    | use-context-reviewer-strictness |
+| "5 Whys", "root cause"  | use-context-root-cause-analysis |
 
 ### ファイル構造
 
 ```text
 skills/[skill-name]/
-├── SKILL.md        # 必須: YAML front matter + 知識本体
+├── SKILL.md        # 必須: YAML frontmatter + 知識本体
 └── references/     # 任意: 詳細ガイド
     └── *.md
 ```
 
-### YAML Front Matter
+### YAML Frontmatter
 
 ```yaml
 ---
 name: use-workflow-tdd-cycle
-description: RGRCサイクルとBaby StepsによるTDD。TDD, テスト駆動, Red-Green-Refactor, Baby Steps に言及した時に使用。
+description: TDD with RGRC cycle and Baby Steps.
+when_to_use: TDD, テスト駆動, Red-Green-Refactor, Baby Steps
 allowed-tools: Read Write Edit Grep Glob
-context: fork # fork or inline
-user-invocable: false # スラッシュコマンドとして呼び出し可能か
+context: fork # fork または inline
+user-invocable: false # スラッシュ コマンドとして起動可能か
 ---
 ```
 
-## エージェント
+## Agents
 
-### 目的
+### 用途
 
-エージェントは「専門実行者」。Task
-toolで起動され、特定の分析・生成タスクを自律的に実行。
+エージェントは「専門実行者」。Task ツール経由で起動し、特定の分析や生成タスクを自律的に行う。
 
 ### カテゴリ
 
 ```text
 agents/
-├── architects/     # 設計 (feature-architect)
-├── critics/        # 批判的検証 (devils-advocate-audit, devils-advocate-design, evidence-verifier)
-├── enhancers/      # コード改善 (code-simplifier)
-├── evaluators/     # 品質評価 (test-quality-evaluator)
-├── explorers/      # 探索 (feature-explorer)
-├── generators/     # 生成 (branch, commit, issue, pr, test)
-├── resolvers/      # 問題解決 (build-error-resolver)
-├── reviewers/      # レビュー (17 specialized reviewers)
-└── teams/          # チーム統合 (progressive-integrator, qa-reviewer, unit-implementer)
+├── architects/     # 設計 (architect-feature)
+├── critics/        # 反論検証 (critic-audit, critic-design, critic-evidence)
+├── enhancers/      # コード改善 (enhancer-code, enhancer-evidence)
+├── evaluators/     # 品質評価 (evaluator-test)
+├── explorers/      # 探索 (explorer-feature)
+├── generators/     # 生成 (generator-test, generator-e2e)
+├── resolvers/      # 問題解決 (resolver-build)
+├── reviewers/      # レビュー (20 種の専門 reviewer)
+└── teams/          # チーム統合 (team-integration, team-qa, team-implementation)
 ```
 
-### レビューエージェント（17種類）
+### Reviewer Agents (20 種)
 
-| エージェント                   | フォーカス            |
-| ------------------------------ | --------------------- |
-| accessibility-reviewer         | WCAG準拠              |
-| code-quality-reviewer          | 構造 + 可読性         |
-| design-pattern-reviewer        | Reactパターン         |
-| document-reviewer              | ドキュメント品質      |
-| duplication-reviewer           | ファイル横断DRY分析   |
-| operational-readiness-reviewer | エラー境界 + ロギング |
-| performance-reviewer           | パフォーマンス        |
-| progressive-enhancer           | CSS-first + JS削減    |
-| root-cause-reviewer            | 根本原因分析          |
-| security-reviewer              | OWASP Top 10          |
-| silent-failure-reviewer        | 静かな失敗検知        |
-| sow-spec-reviewer              | SOW/Spec Ready/NotReady ゲート |
-| test-coverage-reviewer         | テストカバレッジ品質  |
-| testability-reviewer           | テスト容易性          |
-| type-design-reviewer           | 型設計 + カプセル化   |
-| type-safety-reviewer           | TypeScript型安全性    |
+| Agent                  | 焦点                              |
+| ---------------------- | --------------------------------- |
+| reviewer-accessibility | WCAG 2.2 適合                     |
+| reviewer-causation     | 5 Whys 根本原因分析               |
+| reviewer-coverage      | テスト カバレッジ品質             |
+| reviewer-design        | React 設計パターン                |
+| reviewer-document      | ドキュメント品質                  |
+| reviewer-duplication   | クロスファイル DRY 分析           |
+| reviewer-efficiency    | アルゴリズム コスト、ホット パス  |
+| reviewer-encapsulation | 型設計、不変条件の強制            |
+| reviewer-operations    | エラー境界、ロギング              |
+| reviewer-performance   | React レンダリング、bundle サイズ |
+| reviewer-progressive   | CSS-first、JS 削減                |
+| reviewer-prompt        | LLM プロンプト定義の品質          |
+| reviewer-readability   | コード構造、可読性                |
+| reviewer-resilience    | 耐障害性の弱点分析                |
+| reviewer-reuse         | 既存コードの再利用機会            |
+| reviewer-security      | OWASP Top 10                      |
+| reviewer-silence       | サイレント失敗の検出              |
+| reviewer-spec          | SOW/Spec の Ready/NotReady ゲート |
+| reviewer-strictness    | TypeScript 型安全                 |
+| reviewer-testability   | テスト可能なコード設計            |
 
-### チームエージェント（3種類）
+### Team Agents
 
-| エージェント           | フォーカス                                         |
-| ---------------------- | -------------------------------------------------- |
-| progressive-integrator | challenge/verification 結果の照合 + 根本原因の統合 |
-| qa-reviewer            | 非ブロッキングQA参加（peer DM経由）                |
-| unit-implementer       | RGRC サイクルによる実装                            |
+| Agent               | 焦点                                               |
+| ------------------- | -------------------------------------------------- |
+| team-integration    | 反論/検証結果の調整 + 根本原因の合成               |
+| team-qa             | peer DM 経由のノンブロッキング QA 参加者           |
+| team-implementation | 割り当てられたファイルとテストの RGRC サイクル実装 |
 
-### Task Tool による起動
+### Task ツールでの起動
 
 ```markdown
-Task tool with:
+Task tool で:
 
-- subagent_type: "security-reviewer"
-- prompt: "認証モジュールの脆弱性をレビュー"
+- subagent_type: "reviewer-security"
+- prompt: "Review the authentication module for vulnerabilities"
 - model: "sonnet" (任意)
 ```
 
 ## 設計判断
 
-### なぜスキルとエージェントを分けるのか？
+### Skill と Agent を分ける理由
 
-| 理由                 | 説明                                               |
-| -------------------- | -------------------------------------------------- |
-| **関心の分離**       | 知識（Skills）と実行（Agents）を分離               |
-| **コンテキスト管理** | Agentsはforkで実行、メインコンテキストを汚染しない |
-| **再利用性**         | Skillsは複数のコマンドから参照可能                 |
-| **専門性**           | Agentsは特定タスクに特化、深い分析が可能           |
+| 理由             | 説明                                                        |
+| ---------------- | ----------------------------------------------------------- |
+| 関心の分離       | 知識 (Skills) と実行 (Agents) を分離                        |
+| コンテキスト管理 | エージェントは fork で動き、メイン コンテキストを汚染しない |
+| 再利用性         | Skill は複数のコマンドから参照できる                        |
+| 専門化           | エージェントは特定タスクに特化し、より深い分析を行う        |
 
 ### 参照深度ルール
 
 ```text
-SKILL.md → reference.md (1階層まで)
+SKILL.md → reference.md (1 階層のみ)
 ```
 
-理由: Claudeが深いネストを `head -100` で読むと情報が欠落する。
+理由: Claude は深いネストを `head -100` で切り詰め、情報損失が起こる。
 
 ## 関連
 
-- [COMMANDS.md](./COMMANDS.md) — コマンドの設計
-- [SKILLS](../rules/conventions/SKILLS.md) — スキル定義形式
-- [SUBAGENT](../rules/conventions/SUBAGENT.md) — サブエージェント定義形式
+- [COMMANDS.md](./COMMANDS.md). コマンド設計
+- [SKILLS](../rules/conventions/SKILLS.md). Skill 定義書式
+- [SUBAGENT](../rules/conventions/SUBAGENT.md). サブエージェント定義書式

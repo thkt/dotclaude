@@ -28,36 +28,36 @@ Phase 5 is skipped gracefully if agent-browser is not installed.
 
 Detect project type → present relevant options.
 
-| Pattern            | Detection                                     | Options                                   |
-| ------------------ | --------------------------------------------- | ----------------------------------------- |
-| Claude Code config | `~/.claude/` or `.claude/` with skills/hooks/ | Add skill, Add hook, Add agent            |
-| React/Next.js      | package.json has `react`, `next`              | Add component, Add page, Add API route    |
-| API server         | Express, Fastify, Hono, or `src/routes/`      | Add endpoint, Add middleware, Add service |
-| CLI tool           | bin in package.json or `src/cli/`             | Add command, Add option, Add subcommand   |
-| Library            | main/exports in package.json                  | Add function, Add class, Add type         |
-| Fallback           | No match                                      | New feature, Extension, Refactoring       |
+| Pattern            | Detection                                                   | Options                                   |
+| ------------------ | ----------------------------------------------------------- | ----------------------------------------- |
+| Claude Code config | ${CLAUDE_SKILL_DIR}/../../ or `.claude/` with skills/hooks/ | Add skill, Add hook, Add agent            |
+| React/Next.js      | package.json has `react`, `next`                            | Add component, Add page, Add API route    |
+| API server         | Express, Fastify, Hono, or `src/routes/`                    | Add endpoint, Add middleware, Add service |
+| CLI tool           | bin in package.json or `src/cli/`                           | Add command, Add option, Add subcommand   |
+| Library            | main/exports in package.json                                | Add function, Add class, Add type         |
+| Fallback           | No match                                                    | New feature, Extension, Refactoring       |
 
 ## SOW Context
 
-See ../_lib/sow-resolution.md
+See ${CLAUDE_SKILL_DIR}/../_lib/sow-resolution.md
 
 ## Execution
 
-| Phase | Name                | Action                        | User Checkpoint       |
-| ----- | ------------------- | ----------------------------- | --------------------- |
-| 1     | Discovery           | Context scan → PREFLIGHT      | [?] or [→] resolution |
-| 2     | Design              | Skill: /think                 | Design approval       |
-| 3     | Implementation      | Skill: /code                  | —                     |
-| 4     | Quality Loop        | /audit → /fix loop (max 3)    | Remaining issues only |
-| 5     | Visual Verification | Browser check (UI tasks only) | Visual approval       |
-| 6     | Summary             | AC coverage + scope report    | Completion            |
+| Phase | Name                | Action                        | User Checkpoint                 |
+| ----- | ------------------- | ----------------------------- | ------------------------------- |
+| 1     | Discovery           | Context scan → PREFLIGHT      | Resolve unknowns and inferences |
+| 2     | Design              | Skill: /think                 | Design approval                 |
+| 3     | Implementation      | Skill: /code                  | -                               |
+| 4     | Quality Loop        | /audit → /fix loop (max 3)    | Remaining issues only           |
+| 5     | Visual Verification | Browser check (UI tasks only) | Visual approval                 |
+| 6     | Summary             | AC coverage + scope report    | Completion                      |
 
 ### Phase 1: Discovery
 
-1. Context scan — CLAUDE.md, package.json, Cargo.toml, etc.
+1. Context scan: CLAUDE.md, package.json, Cargo.toml, etc.
 2. If `$ARGUMENTS` empty → AskUserQuestion with context-aware options
 3. Execute PREFLIGHT
-4. Resolve any [→] or [?]
+4. Resolve any inferences or unknowns
 5. Early exit: ≤ 2 target files → suggest `/code` (skip Phases 2-6)
 6. TaskCreate for tracking (Phases 2-6)
 
@@ -83,7 +83,7 @@ Execute `Skill("code", $ARGUMENTS)`.
 | 2    | Skill: /fix for each critical/high     | → Step 3                   |
 | 3    | Increment iteration (max 3) → Step 1   | Max reached → Finalize     |
 
-Changed files: `git diff main...HEAD --name-only` (or base branch).
+Changed files: `git diff main...HEAD --name-only`.
 
 #### Finalize
 
@@ -106,11 +106,11 @@ Changed files: `git diff main...HEAD --name-only` (or base branch).
 
 Detected from `package.json` scripts.
 
-| Priority | Script name pattern        | Default URL           |
-| -------- | -------------------------- | --------------------- |
-| 1        | dev, start:dev             | http://localhost:5173 |
-| 2        | start                      | http://localhost:3000 |
-| 3        | storybook, storybook:dev   | http://localhost:6006 |
+| Priority | Script name pattern      | Default URL           |
+| -------- | ------------------------ | --------------------- |
+| 1        | dev, start:dev           | http://localhost:5173 |
+| 2        | start                    | http://localhost:3000 |
+| 3        | storybook, storybook:dev | http://localhost:6006 |
 
 Extract port from script value if specified (`--port`, `-p`, `PORT=`).
 

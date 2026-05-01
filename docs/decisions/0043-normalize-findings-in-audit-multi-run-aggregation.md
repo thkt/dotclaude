@@ -20,7 +20,7 @@ Without normalization, nearly every finding appears unique across runs, defeatin
 
 - Measured aggregation rate (3% strict) was far below useful threshold
 - Reviewers are non-deterministic LLMs; path format and category labeling vary across runs
-- Integrator layer (team-integration / enhancer-evidence, ADR 0035) uses `file:line:category` dedup with severity preservation — aggregation before integrator must not destroy category information
+- Integrator layer (team-integration / enhancer-evidence, ADR 0035) uses `file:line:category` dedup with severity preservation - aggregation before integrator must not destroy category information
 - Drift magnitude exceeded initial estimate: diagnostic showed 50%, verification showed 87%
 
 ## Considered Options
@@ -35,7 +35,7 @@ Without normalization, nearly every finding appears unique across runs, defeatin
 Normalize `file` to repo-relative path, `line` to `(start, end)` tuple, `category` to prefix before `/`. Merge key: `(file, category_prefix, reviewer)` with line overlap ±3.
 
 - Good: Empirical 33% aggregation rate (10× strict), preserves category semantics for integrator
-- Good: Tolerance is bounded — no fuzzy matching explosion
+- Good: Tolerance is bounded - no fuzzy matching explosion
 - Bad: Remaining 67% drift includes same-location-different-category findings (e.g., `:165 structure` vs `:165 readability`)
 
 ### C: Drop category from merge key entirely
@@ -58,9 +58,9 @@ Adopted option B. The additional normalization logic is justified by the 10× im
 
 ### Negative Consequences
 
-- Same-location-different-category drift (~67% residual) is not merged — treated as drift signal
+- Same-location-different-category drift (~67% residual) is not merged - treated as drift signal
 - Normalization step adds ~20 lines to audit SKILL.md (EN/JA)
-- Aggregator must parse `M-N` line range format and apply ±3 tolerance — small implementation complexity
+- Aggregator must parse `M-N` line range format and apply ±3 tolerance - small implementation complexity
 
 ## Implementation
 
@@ -93,7 +93,7 @@ Leader applies normalization before merge key comparison. `runs_observed` intege
 
 ## References
 
-- ADR 0035 — audit/verify convergence signal and reconciliation ownership
-- commit b3ee9a6 — initial multi-run policy
-- commit 7ace4ac — normalization + $1 split implementation
-- workspace/delta/diagnostic-3run-summary.md — drift observation data
+- ADR 0035 - audit/verify convergence signal and reconciliation ownership
+- commit b3ee9a6 - initial multi-run policy
+- commit 7ace4ac - normalization + $1 split implementation
+- workspace/delta/diagnostic-3run-summary.md - drift observation data

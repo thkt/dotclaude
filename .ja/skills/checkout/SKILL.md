@@ -1,41 +1,41 @@
 ---
 name: checkout
-description: Git変更を分析し、適切なブランチ名を提案。
+description: Git の変更を解析し、適切なブランチ名を提案する。
 when_to_use: ブランチ名, ブランチ作成, branch name
 allowed-tools: Bash(git:*) AskUserQuestion
 model: haiku
-argument-hint: "[コンテキストまたはチケット番号]"
+argument-hint: "[context or ticket number]"
 ---
 
-# /checkout - Gitブランチ名生成
+# /checkout - Git Branch Name Generator
 
-## 入力
+## Input
 
-- コンテキストまたはチケット番号: `$ARGUMENTS`（任意）
-- `$ARGUMENTS`が空の場合 → git diff/status のみ分析
+- コンテキストまたはチケット番号: `$ARGUMENTS` (任意)
+- `$ARGUMENTS` が空 → git diff/status のみで解析
 
-## 実行
+## Execution
 
-| Step | アクション                                          |
-| ---- | --------------------------------------------------- |
-| 1    | 変更を読み込み: `git status`, `git diff`（並行）    |
-| 2    | 3つのブランチ名候補を生成（ブランチ命名 参照）      |
-| 3    | `AskUserQuestion`で選択肢を理由付きで提示           |
-| 4    | `git checkout -b` で選択されたブランチを作成        |
+| Step | アクション                                       |
+| ---- | ------------------------------------------------ |
+| 1    | 変更を読む: `git status`, `git diff` (並列)      |
+| 2    | ブランチ名候補を 3 つ生成 (Branch Naming を参照) |
+| 3    | `AskUserQuestion` で理由付き選択肢を提示         |
+| 4    | `git checkout -b` で選んだブランチを作成         |
 
-## ブランチ命名
+## Branch Naming
 
-| Prefix      | 用途             | トリガー                     |
-| ----------- | ---------------- | ---------------------------- |
-| `feature/`  | 新機能           | 新規ファイル、コンポーネント |
-| `fix/`      | バグ修正         | エラー修正                   |
-| `refactor/` | コード改善       | 構造変更                     |
-| `docs/`     | ドキュメント     | .md, README                  |
-| `test/`     | テスト追加・修正 | テストファイル               |
-| `chore/`    | メンテナンス     | 依存・設定                   |
-| `perf/`     | パフォーマンス   | 最適化、キャッシュ           |
+| Prefix    | ユースケース    | トリガー                     |
+| --------- | --------------- | ---------------------------- |
+| feature/  | 新機能          | 新規ファイル、コンポーネント |
+| fix/      | バグ修正        | エラー修正                   |
+| refactor/ | コード改善      | 再構造化                     |
+| docs/     | ドキュメント    | .md ファイル、README         |
+| test/     | テスト追加/修正 | テストファイル               |
+| chore/    | メンテナンス    | 依存、設定                   |
+| perf/     | パフォーマンス  | 最適化、キャッシュ           |
 
-## フォーマット
+## Format
 
 ```text
 <type>/<scope>-<description>
@@ -44,29 +44,29 @@ argument-hint: "[コンテキストまたはチケット番号]"
 
 | Good                             | Bad                         |
 | -------------------------------- | --------------------------- |
-| `feature/auth-add-oauth-support` | `new-feature` (typeなし)    |
+| `feature/auth-add-oauth-support` | `new-feature` (type なし)   |
 | `fix/api-resolve-timeout-issue`  | `feature/ADD_USER` (大文字) |
 | `feature/PROJ-123-user-search`   | `fix/bug` (曖昧すぎる)      |
 
-## ルール
+## Rules
 
-| Do                     | Don't                         |
-| ---------------------- | ----------------------------- |
-| 小文字を使う           | スペース・アンダースコア使用  |
-| ハイフンを区切り文字に | CamelCase/PascalCase使用      |
-| 簡潔に（2-4語）        | 曖昧な名前（「update」など）  |
-| チケットIDを含める     | 日付を含める                  |
+| Do                     | Don't                       |
+| ---------------------- | --------------------------- |
+| 小文字を使う           | 空白/アンダースコアを使う   |
+| ハイフンを区切りに使う | CamelCase/PascalCase を使う |
+| 簡潔に (2-4 単語)      | 曖昧な名前 ("update")       |
+| チケット ID を含める   | 日付を含める                |
 
-## エラー処理
+## Error Handling
 
-| エラー              | アクション                     |
-| ------------------- | ------------------------------ |
-| 変更なし            | "変更なし" を報告              |
-| ブランチが存在      | 別の名前を提案                 |
-| Gitリポジトリでない | "Gitリポジトリではない" を報告 |
+| エラー               | アクション              |
+| -------------------- | ----------------------- |
+| 変更なし             | "No changes" を報告     |
+| ブランチ既存         | 代替名を提案            |
+| git リポジトリでない | "Not a git repo" を報告 |
 
-## 表示形式
+## Display Format
 
-### 成功
+### Success
 
-ブランチ作成完了: `[選択されたブランチ名]`
+Created branch: `[selected-branch-name]`

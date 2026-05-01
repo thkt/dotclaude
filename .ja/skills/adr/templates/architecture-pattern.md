@@ -1,91 +1,88 @@
-# アーキテクチャパターンテンプレート
+# Architecture Pattern Template
 
-複数ファイルに影響するアーキテクチャパターン、コンポーネント構造、設計ポリシーの採用判断を記録するためのガイド。
+複数ファイルに影響するアーキテクチャパターン、コンポーネント構造、または設計方針を採用する決定を記録する。
 
-## 使用場面
+## When to Use
 
-| シナリオ                                                        |
-| --------------------------------------------------------------- |
-| アーキテクチャパターンの選択 (MVC、Clean Architecture 等)       |
-| コンポーネント構造やモジュール境界の定義                        |
-| 複数ファイルに影響する設計ポリシーの確立                        |
+| シナリオ                                                      |
+| ------------------------------------------------------------- |
+| アーキテクチャパターン間の選択 (MVC, Clean Architecture など) |
+| コンポーネント構造やモジュール境界の定義                      |
+| 複数ファイルに影響する設計方針の確立                          |
 
-## 必須セクション (MADR コア)
+## Template-Specific Topics
 
-| # | セクション                    | 目的                                                  |
-| - | ----------------------------- | ----------------------------------------------------- |
-| 1 | Title                         | アクション指向。例: `YにXパターンを採用`              |
-| 2 | Status                        | `proposed` / `accepted` / `deprecated` / `superseded` |
-| 3 | Context and Problem Statement | なぜ今この判断が必要か                                |
-| 4 | Decision Drivers              | 判断に影響を与える要因                                |
-| 5 | Considered Options            | 最低 2 つの選択肢。各々に Good / Bad の箇条書き       |
-| 6 | Decision Outcome              | `Chosen option: X, because Y` 形式                    |
-| 7 | Consequences                  | ポジティブ・ネガティブな影響                          |
+`## More Information` 配下に `### {topic}` として配置する。
 
-メタデータ行: `- Confidence: {level}. {根拠}`。再評価は Consequences の後に任意の `## Reassessment Triggers` セクションで。
-
-## テンプレート固有セクション
-
-| セクション                | 目的                                             |
-| ------------------------- | ------------------------------------------------ |
-| Architecture Diagram      | Mermaid またはテキスト図で構造を示す             |
-| Quality Attributes        | 優先度表 (保守性、パフォーマンス等)              |
-| Trade-offs                | 得るものと引き換えに犠牲にするもの               |
-| Implementation Guidelines | パターン適用の具体ルール                         |
-| Monitoring                | パターンが機能しているかの検証方法               |
+| トピック                  | 目的                                         |
+| ------------------------- | -------------------------------------------- |
+| Architecture Diagram      | Mermaid またはテキスト図で構造を示す         |
+| Quality Attributes        | 優先度表 (maintainability, performance など) |
+| Trade-offs                | 何のために何を犠牲にするか                   |
+| Implementation Guidelines | パターン適用の具体ルール                     |
+| Monitoring                | パターンが機能していることをどう検証するか   |
 
 ## 例
 
-````markdown
-# スキル中心アーキテクチャの採用
+`````markdown
+---
+status: "accepted"
+date: 2026-01-08
+decision-makers: Project owner
+---
 
-- Status: accepted
-- Deciders: プロジェクトオーナー
-- Date: 2026-01-08
-- Confidence: high. 6 ヶ月の本番運用で検証済み。
+# Adopt Skill-Centric Architecture
 
 ## Context and Problem Statement
 
-コマンドファイルが肥大化し、900 行を超えるものが出ていた。Knowledge (skills) と Workflow (commands) が分離されていないため、DRY 違反と保守性低下が発生していた。
+Command files grew bloated, with some exceeding 900 lines. Knowledge (skills) and workflows (commands) were not separated, causing DRY violations and declining maintainability. How should we restructure to keep commands lightweight and knowledge reusable?
 
 ## Decision Drivers
 
-- Miller の法則を超えたコマンドファイル (責務数 > 9)
-- 同じ知識が複数コマンドに重複
-- 新機能追加時に影響範囲が不明確
+* Command files violating Miller's Law (responsibilities > 9)
+* Same knowledge duplicated across multiple commands
+* Unclear impact scope when adding new features
 
 ## Considered Options
 
-### スキル中心アーキテクチャ
-
-コマンドは薄いラッパーとして機能し、知識は skill に委譲。
-
-- Good: DRY を達成 (知識が一箇所)
-- Good: コマンドが 100 行以下に収まる
-- Bad: references 経由で indirection が増える
-
-### 現状維持 (モノリシックコマンド)
-
-各コマンドが必要な知識を全てインラインで保持。
-
-- Good: 1 ファイルで完結
-- Bad: 重複が増え続ける
-- Bad: 変更影響が読めない
+* Skill-Centric Architecture
+* Status Quo (Monolithic Commands)
 
 ## Decision Outcome
 
-スキル中心アーキテクチャを採用。コマンドは Thin Wrapper パターンに従い、実装知識は `skills/` に集約。
+Chosen option: "Skill-Centric Architecture", because it achieves DRY by consolidating knowledge into `skills/` while keeping commands as thin wrappers.
 
-### Positive Consequences
+### Consequences
 
-- コマンドが軽量化 (平均 80 行)
-- skill が再利用可能に
+* Good, because commands stay under 100 lines on average
+* Good, because skills become reusable across commands
+* Bad, because more inter-file navigation is required
 
-### Negative Consequences
+### Confirmation
 
-- ファイル間移動が増える
+A line-count audit verifies commands stay under 100 lines. Skill reuse is tracked by counting cross-command references in skill files.
 
-## Architecture Diagram
+## Pros and Cons of the Options
+
+### Skill-Centric Architecture
+
+Commands act as thin wrappers, delegating knowledge to skills.
+
+* Good, because achieves DRY (knowledge in one place)
+* Good, because commands stay under 100 lines
+* Bad, because increased indirection via references
+
+### Status Quo (Monolithic Commands)
+
+Each command contains all required knowledge inline.
+
+* Good, because self-contained in one file
+* Bad, because duplication keeps growing
+* Bad, because hard to predict change impact
+
+## More Information
+
+### Architecture Diagram
 
 ```mermaid
 graph TD
@@ -93,18 +90,18 @@ graph TD
     SKILL --> REF[references/]
 ```
 
-## Quality Attributes
+### Quality Attributes
 
-| 属性   | 優先度 | アプローチ   |
-| ------ | ------ | ------------ |
-| 保守性 | 高     | skill 分離   |
-| 理解性 | 中     | Thin Wrapper |
+| Attribute         | Priority | Approach     |
+| ----------------- | -------- | ------------ |
+| Maintainability   | High     | Skill split  |
+| Understandability | Medium   | Thin Wrapper |
 
-## Trade-offs
+### Trade-offs
 
-ファイル数が増える代わりに、各ファイルの単一責務が明確になる。
+More files in exchange for clear single-responsibility per file.
 
-## Reassessment Triggers
+### Reassessment Triggers
 
-- コマンド数が 30 を超え、skill 依存グラフが複雑化した場合
-````
+* If command count exceeds 30 and skill dependency graph becomes tangled
+`````

@@ -18,15 +18,11 @@ Spawn `critic-design` against a proposal, analysis, or plan.
 
 ## Execution
 
-| Step | Action          | Detail                                               |
-| ---- | --------------- | ---------------------------------------------------- |
-| 1    | Identify target | Extract from `$ARGUMENTS`                            |
-| 2    | Spawn DA        | Task(subagent_type: critic-design, background: true) |
-| 3    | Report          | Agent output + actionable items                      |
-
-### Step 2: Prompt
-
-Include the target and any file paths the user referenced. Mention ARCHITECTURE.md or equivalent structural constraint files if they exist in the target project. The agent collects its own context via Read/Grep/Glob.
+| Step | Action          | Detail                                                                                                                                                                      |
+| ---- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Identify target | Extract from `$ARGUMENTS`                                                                                                                                                   |
+| 2    | Spawn DA        | Task(subagent_type: critic-design, background: true). Pass target + referenced file paths. Mention ARCHITECTURE.md or equivalent if present. Agent collects its own context |
+| 3    | Report          | Agent output + actionable items                                                                                                                                             |
 
 ## Output
 

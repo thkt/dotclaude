@@ -1,9 +1,8 @@
 ---
 name: use-context-reviewer-performance
-description: >
-  Frontend performance optimization. Use when: performance, Web Vitals, LCP,
-  FID, CLS, パフォーマンス最適化, 速度改善, bundle size.
-allowed-tools: [Read, Grep, Glob, Task, Bash(agent-browser:*), mcp__mdn__*]
+description: Frontend performance optimization.
+when_to_use: performance, Web Vitals, LCP, FID, CLS, パフォーマンス最適化, 速度改善, bundle size
+allowed-tools: Read Grep Glob Task Bash(agent-browser:*) mcp__mdn__*
 agent: reviewer-performance
 context: fork
 user-invocable: false
@@ -28,8 +27,8 @@ user-invocable: false
 
 ## References
 
-| Topic  | File                                                    |
-| ------ | ------------------------------------------------------- |
-| Vitals | `${CLAUDE_SKILL_DIR}/references/web-vitals.md`          |
-| React  | `${CLAUDE_SKILL_DIR}/references/react-optimization.md`  |
-| Bundle | `${CLAUDE_SKILL_DIR}/references/bundle-optimization.md` |
+| Topic  | File                                                  |
+| ------ | ----------------------------------------------------- |
+| Vitals | ${CLAUDE_SKILL_DIR}/references/web-vitals.md          |
+| React  | ${CLAUDE_SKILL_DIR}/references/react-optimization.md  |
+| Bundle | ${CLAUDE_SKILL_DIR}/references/bundle-optimization.md |

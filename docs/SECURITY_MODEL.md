@@ -2,54 +2,51 @@
 
 ## Permission Evaluation Flow Is UX, Not Security
 
-Claude Codeの権限評価フロー（PreToolUse Hook → Deny Rules → Allow Rules →
-Ask Rules → Permission Mode）はtool_useブロックのフィルタ。セキュリティ境界では
-ない。
+The Claude Code permission evaluation flow (PreToolUse Hook → Deny Rules → Allow Rules → Ask Rules → Permission Mode) filters tool_use blocks. It is not a security boundary.
 
-LLMはテキスト生成器であり、tool_useは出力形式の1つ。Bashが許可されていれば
-OSの能力をそのまま渡している。
+An LLM is a text generator and tool_use is one output format. Once Bash is allowed, OS capabilities pass through as-is.
 
 ref: https://zenn.dev/commander/articles/72a907ce68a8c1
 
 ## Defense Layers
 
-| Layer                 | Implementation         | What It Stops              | Bypass via Bash |
-| --------------------- | ---------------------- | -------------------------- | --------------- |
-| L1: Deny Rules        | settings.json deny     | tool_use ブロック単位      | 可能            |
-| L2: PreToolUse Hook   | shields check          | Bash内の危険パターン       | 部分防御        |
-| L3: PermissionRequest | shields acl            | サブエージェントの設定改変 | N/A             |
-| L4: macOS Seatbelt    | Claude Code内蔵        | ファイルシステム一部制限   | OS強制          |
-| L5: Process Sandbox   | 未実装                 | ネットワーク・FS全体       | 不可能          |
+| Layer                 | Implementation         | What It Stops                  | Bypass via Bash |
+| --------------------- | ---------------------- | ------------------------------ | --------------- |
+| L1: Deny Rules        | settings.json deny     | Per tool_use block             | Yes             |
+| L2: PreToolUse Hook   | shields check          | Dangerous patterns inside Bash | Partial         |
+| L3: PermissionRequest | shields acl            | Subagent config modification   | N/A             |
+| L4: macOS Seatbelt    | Built into Claude Code | Partial filesystem restriction | OS-enforced     |
+| L5: Process Sandbox   | Not implemented        | Network and full FS            | No              |
 
-重要: L1〜L3は人間の介入ポイント調整（UX）。L4〜L5がセキュリティ境界。
+Important: L1 to L3 tune human intervention points (UX). L4 to L5 are the actual security boundary.
 
 ## Known Gaps
 
-| Gap                                  | Risk                                         | Mitigation                                                |
-| ------------------------------------ | -------------------------------------------- | --------------------------------------------------------- |
-| Bash許可コマンドでのネットワーク通信 | curl/wget でデータ送信可能                   | shields check でファイルアップロードパターンをブロック    |
-| 許可済みツール経由の外部送信         | scout, gh api でデータ送信可能               | 正当な用途と区別不能。運用で対応                          |
-| npm/pnpm install の postinstall      | 任意コード実行可能                           | 信頼できるパッケージのみ使用                              |
-| L5 プロセスサンドボックス未実装      | エージェントの通信を OS レベルで制約できない | コンテナ化を検討（将来）                                  |
+| Gap                                       | Risk                                            | Mitigation                                                  |
+| ----------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
+| Network calls from allowed Bash commands  | Data exfiltration possible via curl/wget        | Block file upload patterns via shields check                |
+| External transmission via allowed tools   | Data exfiltration possible via scout, gh api    | Indistinguishable from legitimate use, handle operationally |
+| npm/pnpm install postinstall              | Arbitrary code execution                        | Use only trusted packages                                   |
+| L5 process sandbox not implemented        | Cannot restrict agent communication at OS level | Consider containerization (future)                          |
 
 ## Team Guidelines
 
-| Guideline                        | Description                                                                     |
-| -------------------------------- | ------------------------------------------------------------------------------- |
-| deny ≠ 安全                      | deny ルール追加だけでセキュリティ対処済みと判断しない                           |
-| Bash許可 = OS能力委譲            | Bash を許可した時点で deny ルールは迂回可能                                     |
-| hook = 確率的防御                | shields check はパターンマッチ。未知経路には対応不可                            |
-| bypassPermissions = 隔離環境専用 | 本番・開発環境で使わない                                                        |
-| 秘密情報は環境外に               | .env, credentials は deny + hook で二重防御しているが、プロセスレベルでは制約なし |
-| サブエージェントの権限           | shields acl がセキュリティファイル改変を deny。ただし Bash 経由は L2 依存       |
+| Guideline                                     | Description                                                                                        |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| deny ≠ safe                                   | Adding deny rules alone does not equal a complete security response                                |
+| Allowing Bash = OS capability delegation      | Once Bash is allowed, deny rules can be bypassed                                                   |
+| hook = probabilistic defense                  | shields check is pattern matching. It cannot cover unknown paths                                   |
+| bypassPermissions = isolated environment only | Do not use in production or development environments                                               |
+| Keep secrets outside the environment          | .env and credentials are double-protected by deny + hook, but no process-level restriction applies |
+| Subagent permissions                          | shields acl denies modifications to security files. Bash routes still depend on L2                 |
 
 ## When to Use Containers
 
-L5が必要になるケース:
+Cases where L5 is required.
 
-- CI/CDでエージェントを自動実行する
-- 信頼できないリポジトリでエージェントを動かす
-- エージェントに外部通信を禁止する必要がある
-- コンプライアンス要件でプロセス隔離が求められる
+- Running agents automatically in CI/CD
+- Running agents on untrusted repositories
+- External communication must be prohibited for the agent
+- Compliance requirements demand process isolation
 
-ローカル開発で人間が監視している場合はL1〜L4で十分。
+For local development with human supervision, L1 to L4 are sufficient.

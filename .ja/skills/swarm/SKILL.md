@@ -1,315 +1,111 @@
 ---
 name: swarm
-description: マルチエージェントswarmによる大規模並列実装。Architect + QA +
-  Implementer(s)がpeer DMで協業。ユーザーが大規模実装, 並列実装, swarm,
-  チーム実装に言及した場合に使用。
-allowed-tools: Skill, Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
-  Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run),
-  Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git
-  log:*), Bash(git diff:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task,
-  TaskCreate, TaskList, TaskUpdate, TaskGet, SendMessage, TeamCreate,
-  TeamDelete, AskUserQuestion
+description: マルチエージェント swarm による大規模並列実装。Architect + QA + Implementer(s) が peer DM で協働する。
+when_to_use: 大規模実装, 並列実装, swarm, チーム実装
+allowed-tools: Skill Bash(npm run) Bash(npm run:*) Bash(yarn run) Bash(yarn run:*) Bash(yarn:*) Bash(pnpm run) Bash(pnpm run:*) Bash(pnpm:*) Bash(bun run) Bash(bun run:*) Bash(bun:*) Bash(make:*) Bash(git status:*) Bash(git log:*) Bash(git diff:*) Edit MultiEdit Write Read Glob Grep LS Task TaskCreate TaskList TaskUpdate TaskGet SendMessage TeamCreate TeamDelete AskUserQuestion
 model: opus
-argument-hint: "[実装内容]"
-user-invocable: true
+argument-hint: "[implementation description]"
 ---
 
 # /swarm - 大規模並列実装
 
-マルチエージェントswarmによる大規模実装。5ファイル未満のタスクには /codeを使用。
+大規模実装のためのマルチエージェント swarm。5 ファイル未満のタスクは /code を使う。
 
 ## 使用条件
 
-以下のいずれかの条件に該当する場合は /swarmを使用。それ以外は /code。
+以下のいずれかに該当するときに /swarm を使う。それ以外は /code を使う。
 
 | 条件            | /swarm |
 | --------------- | ------ |
 | ファイル数 >= 5 | Yes    |
 | マルチドメイン  | Yes    |
-| 設計判断が多数  | Yes    |
+| 設計判断が多い  | Yes    |
 
-## リーダー原則
+## Leader 原則
 
-リーダーは実質的な作業を行わない:
+Leader はオーケストレーターであり、ワーカーではない。実質的な作業は Architect、QA、Implementer(s) 間の peer DM を通じて行われる。
 
-- コードを読んで理解しない
-- 契約やアーキテクチャを設計しない
-- デバッグや修正をしない
-- 技術的な質問に回答しない
+### 制限
 
-リーダーが行うのは:
+- 理解のためのコード読みは行わない
+- 契約 (contracts) やアーキテクチャの設計は行わない
+- コードのデバッグや修正は行わない
+- 技術的な質問への回答は行わない
+
+### 責務
 
 - ユーザーとのインターフェース
-- QGコマンドの機械的実行
-- エージェントへの結果転送
-- チームライフサイクルの管理
-- 進捗の追跡・報告（進捗トラッキングを参照）
-
-全ての実質的な作業はArchitect、QA、Implementer(s)間のpeer DMで行われる。
+- QG コマンドを機械的に実行
+- 結果をエージェントに転送
+- チームのライフサイクル管理
+- 進捗の追跡と報告 (下記 Progress Tracking 参照)
 
 ## 入力
 
-実装の説明: `$1`（必須、空→プロンプト表示）
+実装の説明: `$ARGUMENTS` (必須、空ならプロンプト)
 
-## SOWコンテキスト
+## SOW コンテキスト
 
-[@../../skills/_lib/sow-resolution.md]
+${CLAUDE_SKILL_DIR}/../_lib/sow-resolution.md を参照
 
-## チームアーキテクチャ
+## チーム構成
 
-| エージェント   | subagent_type     | 責務                           | Bash | SendMessage | Model  |
-| -------------- | ----------------- | ------------------------------ | ---- | ----------- | ------ |
-| Leader         | (self)            | ユーザーIF、QG、ライフサイクル | Yes  | broadcast   | opus   |
-| Architect      | feature-architect | コードベース分析、契約         | No   | peer DM     | opus   |
-| QA             | qa-reviewer       | 品質観察（非ブロッキング）     | No   | peer DM     | sonnet |
-| Implementer(s) | unit-implementer  | RGRC実装                       | Yes  | peer DM     | opus   |
+| エージェント   | subagent_type       | 責務                               | Bash | SendMessage | Model  |
+| -------------- | ------------------- | ---------------------------------- | ---- | ----------- | ------ |
+| Leader         | (self)              | ユーザー対応、QG、ライフサイクル   | Yes  | broadcast   | opus   |
+| Architect      | architect-feature   | コードベース分析、契約 (contracts) | No   | peer DM     | opus   |
+| QA             | team-qa             | 品質観察 (ノンブロッキング)        | No   | peer DM     | sonnet |
+| Implementer(s) | team-implementation | RGRC 実装                          | Yes  | peer DM     | opus   |
 
-### モデル制約
+### Model 制約
 
-Haikuはチームエージェントから除外 — 複雑な多段指示への追従やshutdownプロトコルの処理が不安定なため。チームアーキテクチャのModel列が各エージェントのモデルを定義する。
+Haiku はチームエージェントから除外する。多段階の指示の追従や shutdown プロトコルの処理を確実に行えないため。Team Architecture の Model 列が各エージェントのモデルを規定する。
 
-## コンテキスト契約
+## Context Contracts
 
-各ハンドオフには定義された構造がある。peer
-DMが転送手段であり、これらの契約は何を送るかを定義する。
+ハンドオフ構造を持つ peer DM トランスポート (Spawn Context、Architect Output、Implementer Started/Assignment/Completion)。
 
-### スポーンコンテキスト (Leader → 全エージェント)
-
-全スポーンプロンプトに含める:
-
-- CLAUDE.mdルール（または主要制約のサマリー）
-- プロジェクト慣例（技術スタック、命名、パターン）
-- SOW/spec内容（存在する場合）
-
-### Architectアウトプット (Architect → Leader)
-
-```markdown
-### Contracts
-
-| Name                  | Definition                         | Used By      |
-| --------------------- | ---------------------------------- | ------------ |
-| インターフェース/型名 | TypeScriptインターフェースまたは型 | ファイルパス |
-
-### Shared Changes
-
-| File         | Change   | Apply           |
-| ------------ | -------- | --------------- |
-| ファイルパス | 変更内容 | before parallel |
-
-### Parallel Units
-
-| Unit ID | Files        | Depends On                                  |
-| ------- | ------------ | ------------------------------------------- |
-| 1       | ファイルパス | (none) — 目標: 空を維持（独立性優先）       |
-| 2       | ファイルパス | (none) — 不可避な場合のみ記入、理由を添える |
-
-Build sequence: 依存がある場合のunit_id順序
-```
-
-### Implementerアサインメント (Leader → Implementer)
-
-```markdown
-| Field       | Value                                 |
-| ----------- | ------------------------------------- |
-| unit_id     | 1                                     |
-| contracts   | 関連する契約のみ                      |
-| files       | 割り当てファイルパス                  |
-| tests       | 割り当てテストファイルパス            |
-| constraints | CLAUDE.mdからのプロジェクト固有ルール |
-```
-
-### Implementer完了報告 (Implementer → Leader)
-
-```markdown
-## Status
-
-| Field   | Value              |
-| ------- | ------------------ |
-| unit_id | 1                  |
-| status  | complete / blocked |
-
-### Files Modified
-
-| Path | Action             |
-| ---- | ------------------ |
-| パス | created / modified |
-
-### Tests
-
-| Metric | Value |
-| ------ | ----- |
-| total  | count |
-| passed | count |
-| failed | count |
-
-### Issues
-
-- **description** (severity: blocker / warning)
-```
-
-ステータス + Issuesに応じたLeaderの対応:
-
-| Status   | Issues     | Leaderアクション                                  |
-| -------- | ---------- | ------------------------------------------------- |
-| complete | none       | マージに進行                                      |
-| complete | warning(s) | 警告をArchitectに転送して評価                     |
-| blocked  | blocker(s) | 評価: コンテキスト不足 → 追加情報で再ディスパッチ |
-|          |            | 評価: 複雑すぎ → モデルアップグレードまたは分割   |
-|          |            | 評価: 計画に誤り → ユーザーにエスカレーション     |
+参照: ${CLAUDE_SKILL_DIR}/references/contracts.md#context-contracts
 
 ## 実行
 
-### Phase 0: SOW検出
+| Phase | アクション                  | 詳細                                                                           |
+| ----- | --------------------------- | ------------------------------------------------------------------------------ |
+| 0     | SOW 検出                    | ${CLAUDE_SKILL_DIR}/references/execution.md#phase-0-sow-detection              |
+| 1     | チーム編成 + アーキテクチャ | ${CLAUDE_SKILL_DIR}/references/execution.md#phase-1-team-setup--architecture   |
+| 2     | 分割の承認                  | ${CLAUDE_SKILL_DIR}/references/execution.md#phase-2-decomposition-approval     |
+| 3     | テスト生成                  | ${CLAUDE_SKILL_DIR}/references/execution.md#phase-3-test-generation            |
+| 4     | ファイル割当                | ${CLAUDE_SKILL_DIR}/references/execution.md#phase-4-file-assignment            |
+| 5     | RGRC 実装                   | ${CLAUDE_SKILL_DIR}/references/execution.md#phase-5-rgrc-implementation        |
+| 6     | 統合 + 品質ゲート           | ${CLAUDE_SKILL_DIR}/references/execution.md#phase-6-integration--quality-gates |
+| 7     | サマリ                      | ${CLAUDE_SKILL_DIR}/references/execution.md#phase-7-summary                    |
 
-1. SOW/specの自動検出
-2. SOWなし → `$1` が唯一の指示
+### 並列スポーンルール
 
-### Phase 1: チームセットアップ + アーキテクチャ
+Phase 5 はすべての Implementer を 1 つのレスポンス内の並行 Task 呼び出しでスポーンしなければならない。1 ユニットにつき 1 Task 呼び出し。逐次スポーンは swarm モデルを台無しにし、所要時間が線形に伸びる。
 
-1. `TeamCreate` で名前 `swarm-{timestamp}`
-2. Architect (feature-architect) をスポーン:
-   - スポーンコンテキスト（コンテキスト契約を参照）
-   - `$1` 実装の説明
-   - 指示: コードベース探索（yomu優先、grep/globフォールバック）→ 契約設計 →ファイルグルーピング
-   - 期待出力: Architectアウトプット契約（DM経由のMarkdown）
-3. QA (qa-reviewer) をスポーン:
-   - 指示: Architectの設計を観察、peer DMでコメント
-   - チーム設定を読んでチームメイトを把握
-4. ArchitectのcontractDMを待機
+## エラー処理
 
-### Phase 1.5: 分割計画の承認
+| シナリオ                         | アクション                                                                              |
+| -------------------------------- | --------------------------------------------------------------------------------------- |
+| ユーザーがキャンセル             | 全エージェントに `shutdown_request`、TeamDelete                                         |
+| Contract が根本的に誤り          | Implementer をシャットダウン、Architect が再設計                                        |
+| Implementer の started DM なし   | 120s タイムアウト、シャットダウン、再スポーン (リトライ最大 1 回、超過時はエスカレート) |
+| Implementer が作業中に停止       | Leader が git status で worktree を確認、再スポーン (リトライ最大 1 回)                 |
+| QG が 3 回失敗                   | 詳細とともにユーザーへエスカレート                                                      |
+| エージェントの Bash 権限ブロック | worktree 隔離された Implementer には `mode: "dontAsk"` を使用                           |
+| test-gen のタイムアウト          | Leader が直接テストを生成                                                               |
+| test-gen が 0 テスト生成         | Spec の存在を確認、ユーザーに問う                                                       |
+| シャットダウンが応答しない       | tool params を明示して再試行、team ディレクトリを `~/.Trash/` に移動                    |
 
-1. Architectの分割計画をユーザーに提示:
-   - 並列ユニットとファイル割当
-   - 共有変更（並列実行前に適用）
-   - 依存グラフ（理想は全て独立）
-   - ワーカー数の見積もり
-2. ユーザーが調整可能:
-   - ユニットの統合・分割
-   - ファイルのユニット間移動
-   - 依存判断の上書き
-3. 承認後にPhase 2へ進行
+## 進捗追跡
 
-### Phase 2: テスト生成
+Leader は主要イベント (Phase 4 開始、Implementer の started/completion、merge/QG 結果) で進捗テーブルを報告する。
 
-1. Architectアウトプット契約の最終確定後（Phase 1 + QAレビュー）
-2. test-generatorをstandalone
-   backgroundエージェントとしてスポーン (`subagent_type: test-generator`,
-   `run_in_background: true`)
-3. Architectの契約をtest-genプロンプトに含める
-4. `TaskOutput` でテスト結果を受信
+参照: ${CLAUDE_SKILL_DIR}/references/contracts.md#progress-tracking
 
-### Phase 3: ファイルアサインメント
+## Abort / Rollback
 
-1. Architectアウトプット契約の最終版を受信（QAレビューラウンド確定後）
-2. `TaskOutput` でtest-gen結果を受信
-3. Architectの `parallel_units`
-   に従いImplementer(s)をスポーン（機械的に — 分析なし）:
-   - 並列ユニットごとに1 Implementer（worktree隔離）
-   - 単一ユニット → 単一Implementer
-   - `mode: "dontAsk"`（worktree隔離により自律Bashが安全）
-   - プロンプト: Implementerアサインメント契約（コンテキスト契約を参照）
-   - 指示: RGRCサイクル、質問はArchitectにDM
-4. ファイルアサインメントをQAに転送（観察用）
+Phase ごとのリカバリ手順。
 
-### Phase 4: RGRC実装
-
-1. Implementer(s)が割り当てファイルで作業
-2. peer DMフロー:
-   - Implementer ↔ Architect: 契約の質問、設計の明確化
-   - QA → Implementer: エッジケースの観察
-   - QA → Architect: 契約品質の観察
-   - QA → Leader: 検証コマンドのリクエスト
-3. LeaderがQAの検証リクエストを機械的に処理:
-   - コマンドリクエスト受信 → 実行 → 結果をQAに返却
-4. 全Implementerの完了を待機（ステータスDM）
-
-### Phase 5: 統合 + 品質ゲート
-
-<!-- canonical: skills/use-workflow-code (full gate table) -->
-
-#### 5a: マージ戦略
-
-1. shared_changesを最初に適用（Architectアウトプットより）:
-   - Leaderが共有変更をmainブランチに直接適用
-   - 適用失敗 → マージを停止、ユーザーにエスカレーション
-   - 検証: 適用後にmainで型チェック/lintを実行
-2. 残りのworktreeを順次マージ:
-   - 独立ユニットは完了順にマージ
-   - depends_onがあるユニットはbuild_sequence順にマージ
-   - コンフリクトは `git merge` またはupdate branchで解消
-3. 最終状態: 全変更がmainブランチ上
-
-#### 5b: 品質ゲート
-
-1. Leaderがmainブランチ上でQGを実行（tests, lint, types, coverage）
-2. Specが存在する場合: Specコンプライアンスチェック
-   - ファイルカバレッジ: `git diff --name-only` をSpecの `## Implementation`
-     ファイルリストと比較。新規テストファイルと設定ファイルは免除
-   - AC検証: SOWの各ACについて、実装+テストの存在を確認。
-     未達または部分達成のACを具体的なギャップとともにフラグ
-3. 失敗時:
-   - 失敗ファイルから担当エージェントを特定
-   - 失敗詳細をそのエージェントにDMで転送
-   - エージェントが修正して報告
-4. 修正後にQGを再実行
-5. 最大3回 → ユーザーにエスカレーション
-
-### Phase 6: サマリー
-
-1. 全エージェントから結果を収集
-2. サマリーレポート生成（変更ファイル、テスト、問題）
-3. 全エージェントをシャットダウン（`shutdown_request`）
-4. `TeamDelete` でクリーンアップ
-5. ユーザーにサマリーを提示
-
-## エラーハンドリング
-
-| シナリオ                | アクション                                                     |
-| ----------------------- | -------------------------------------------------------------- |
-| ユーザーキャンセル      | 全エージェントに `shutdown_request`、TeamDelete                |
-| 契約が根本的に誤り      | Implementerをシャットダウン → Architect再設計                  |
-| Implementerタイムアウト | タイムアウトしたImplementerをシャットダウン、他は継続          |
-| QG3回失敗               | 詳細を添えてユーザーにエスカレーション                         |
-| Agent Bash権限ブロック  | worktree隔離済みImplementerに `mode: "dontAsk"` を使用         |
-| test-genタイムアウト    | Leaderがテストを直接生成                                       |
-| test-genがテスト0件生成 | specの存在を確認、ユーザーに質問                               |
-| シャットダウン応答なし  | 明示的なツールパラメータでリトライ → team dirを `~/.Trash/` に |
-
-## 進捗トラッキング
-
-Leaderは進捗テーブルを管理し、主要イベント時にユーザーへ報告する:
-
-### 表示フォーマット
-
-```markdown
-## Swarm Progress
-
-| Unit | Files | Implementer | Status      | Duration |
-| ---- | ----- | ----------- | ----------- | -------- |
-| 1    | 3     | impl-1      | complete    | 2m 30s   |
-| 2    | 2     | impl-2      | in_progress | 1m 45s   |
-| 3    | 4     | impl-3      | in_progress | 1m 45s   |
-
-Shared changes: applied Integration: pending (2/3 units complete)
-```
-
-### トリガーイベント
-
-| イベント            | アクション                      |
-| ------------------- | ------------------------------- |
-| Phase 3 開始        | 初期テーブル表示（全てpending） |
-| Implementer完了     | 該当行を更新、進捗を表示        |
-| 全Implementer完了   | タイムラインサマリーを表示      |
-| Phase 5a マージ進捗 | ユニットごとのマージ状態を表示  |
-| Phase 5b QG結果     | pass/failを詳細付きで表示       |
-
-## 中断 / ロールバック
-
-| シナリオ            | 復旧                                                                         |
-| ------------------- | ---------------------------------------------------------------------------- |
-| Phase 1途中で中断   | Architect + QAをシャットダウン、TeamDelete                                   |
-| Phase 2/3途中で中断 | test-gen + QAをシャットダウン、TeamDelete                                    |
-| Phase 4途中で中断   | 全Implementer + QAをシャットダウン、TeamDelete                               |
-| Phase 5途中で中断   | マージ前にmainをタグ付け; 必要に応じてマージ済みコミットをrevert、TeamDelete |
-| 部分的な実装        | Implementerのworktreeに変更が残る、ユーザーが保持/破棄を決定                 |
+参照: ${CLAUDE_SKILL_DIR}/references/contracts.md#abort--rollback

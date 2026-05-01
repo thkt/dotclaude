@@ -2,23 +2,24 @@
 
 ## Priority Matrix
 
-| Priority    | Principle                |
-| ----------- | ------------------------ |
-| Foundation  | Backcasting              |
-| Critical    | Occam's Razor            |
-| Critical    | Progressive Enhancement  |
-| Default     | Readable Code            |
-| Default     | Miller's Law             |
-| Default     | TDD/Baby Steps           |
-| Default     | DRY (3+ duplications)    |
-| Default     | YAGNI                    |
-| Default     | Strong Inference         |
-| Contextual  | SOLID                    |
-| Contextual  | Container/Presentational |
-| Contextual  | Law of Demeter           |
-| Contextual  | Leaky Abstraction        |
-| Contextual  | AI-Assisted Development  |
-| Contextual  | TIDYINGS                 |
+| Priority    | Principle                      |
+| ----------- | ------------------------------ |
+| Foundation  | Outcome-driven (see CLAUDE.md) |
+| Critical    | Occam's Razor                  |
+| Critical    | Progressive Enhancement        |
+| Default     | Readable Code                  |
+| Default     | Miller's Law                   |
+| Default     | TDD/Baby Steps                 |
+| Default     | DRY (3+ duplications)          |
+| Default     | YAGNI                          |
+| Default     | Strong Inference               |
+| Default     | Measurement                    |
+| Contextual  | SOLID                          |
+| Contextual  | Container/Presentational       |
+| Contextual  | Law of Demeter                 |
+| Contextual  | Leaky Abstraction              |
+| Contextual  | AI-Assisted Development        |
+| Contextual  | TIDYINGS                       |
 
 ## Triggers
 
@@ -32,21 +33,21 @@
 | Coordinated call sites >= 2 | YAGNI Boundary   |
 | Post-write verbose          | Occam's Razor    |
 
-## Backcasting
-
-Define the ideal end state and work backward.
-
-1. Goal: What does "done" look like? (user behavior or system state, not a deliverable)
-2. Gap: What separates the current state from that goal?
-3. Path: What is the minimum set of steps from gap to goal?
-
 ## Conflict Resolution
 
-Backcasting defines the goal; Occam's Razor and other principles govern how to reach it.
+Outcome-driven defines the why (see CLAUDE.md). Backcasting defines the goal in service of the outcome. Occam's Razor and other principles govern how to reach it.
 
 When in doubt: simple > clever, concrete > abstract, working > perfect, readable \> DRY.
 
 Occam's Razor selects the simplest among approaches that achieve the outcome, not symptom removal. It does not apply when simplicity reduces output quality.
+
+## Measurement
+
+Outcomes need observable signals to verify drift. Measurement serves Outcome-driven.
+
+- Combine result indicators (what changed) with process indicators (what was done) to resist metric gaming.
+- Indicators serve the outcome, not the other way around. If a number improves while the outcome does not, the indicator is wrong.
+- Keep indicators thin enough to read at a glance. Too many dilute attention.
 
 ## YAGNI Boundary
 

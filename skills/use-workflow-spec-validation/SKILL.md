@@ -1,9 +1,8 @@
 ---
 name: use-workflow-spec-validation
-description: >
-  SOW/Spec cross-document consistency validation. Use when: 整合性チェック,
-  consistency check, spec validation, 仕様検証.
-allowed-tools: [Read, Grep, Glob]
+description: SOW/Spec cross-document consistency validation.
+when_to_use: 整合性チェック, consistency check, spec validation, 仕様検証
+allowed-tools: Read Grep Glob
 agent: reviewer-spec
 context: fork
 user-invocable: false
@@ -33,19 +32,19 @@ be skipped. The gate will already be NotReady.
 
 Each `AC-N` must have ≥1 FR with `Implements: AC-N`.
 
-| Finding                                       | Priority |
-| --------------------------------------------- | -------- |
-| AC has no FR implementing it                  | P0       |
-| Orphan FR implements non-existent AC          | P1       |
+| Finding                              | Priority |
+| ------------------------------------ | -------- |
+| AC has no FR implementing it         | P0       |
+| Orphan FR implements non-existent AC | P1       |
 
 ### 2. FR→Test Coverage [P0 candidate]
 
 Each `FR-NNN` must have ≥1 `T-NNN` with matching FR reference.
 
-| Finding                               | Priority |
-| ------------------------------------- | -------- |
-| FR has no test scenario               | P0       |
-| Test references non-existent FR       | P1       |
+| Finding                         | Priority |
+| ------------------------------- | -------- |
+| FR has no test scenario         | P0       |
+| Test references non-existent FR | P1       |
 
 ### 3. Traceability Matrix Integrity [P0 candidate]
 
@@ -82,30 +81,30 @@ Cross-check SOW↔Spec for technology mismatches, numeric conflicts.
 | JA       | 適切に、できる限り、なるべく、ある程度、検討する、考慮する、予定、高速に(数値なし) |
 | EN       | appropriately, as much as possible, reasonable, adequate, TBD, fast(no metric)     |
 
-| Finding                                           | Priority |
-| ------------------------------------------------- | -------- |
-| Ambiguous term inside a SHALL clause (FR)         | P0       |
-| Ambiguous term in NFR Target                      | P0       |
-| Ambiguous term elsewhere                          | P1       |
+| Finding                                   | Priority |
+| ----------------------------------------- | -------- |
+| Ambiguous term inside a SHALL clause (FR) | P0       |
+| Ambiguous term in NFR Target              | P0       |
+| Ambiguous term elsewhere                  | P1       |
 
 ### 7. Terminology Consistency [P1 candidate]
 
 Same concept must use same term across documents.
 
-| Finding                                          | Priority |
-| ------------------------------------------------ | -------- |
-| Synonym mixing (user/member) in same role        | P1       |
-| Abbreviation mixing (DB/database)                | P2       |
+| Finding                                   | Priority |
+| ----------------------------------------- | -------- |
+| Synonym mixing (user/member) in same role | P1       |
+| Abbreviation mixing (DB/database)         | P2       |
 
 ### 8. Column Completeness [P0/P1/P2 candidate]
 
-| Finding                                          | Priority |
-| ------------------------------------------------ | -------- |
-| AC Observable signal column empty (SOW)          | P0       |
-| In Scope Observable outcome column empty (SOW)   | P1       |
-| NFR Rationale column empty                       | P1       |
-| Assumption Impact-if-broken column empty         | P1       |
-| Dependency Purpose column empty                  | P2       |
+| Finding                                        | Priority |
+| ---------------------------------------------- | -------- |
+| AC Observable signal column empty (SOW)        | P0       |
+| In Scope Observable outcome column empty (SOW) | P1       |
+| NFR Rationale column empty                     | P1       |
+| Assumption Impact-if-broken column empty       | P1       |
+| Dependency Purpose column empty                | P2       |
 
 Risks column rules (Probability/Mitigation × Impact): delegated to
 `reviewer-spec` Risks Completeness section.
@@ -115,9 +114,9 @@ Risks column rules (Probability/Mitigation × Impact): delegated to
 Implementation table must declare `Depends`. Empty Depends blocks parallel
 scheduling judgment.
 
-| Finding                                          | Priority |
-| ------------------------------------------------ | -------- |
-| Phase Depends column empty                       | P1       |
+| Finding                    | Priority |
+| -------------------------- | -------- |
+| Phase Depends column empty | P1       |
 
 ### 10. YAGNI Compliance [P2]
 
@@ -127,11 +126,11 @@ With YAGNI Checklist: verify Spec excludes checked items. Flag over-engineering.
 
 SOW In Scope and Out of Scope must not overlap. ACs must target only In Scope.
 
-| Finding                                             | Priority |
-| --------------------------------------------------- | -------- |
-| In Scope target also listed in Out of Scope         | P0       |
-| AC references a target absent from In Scope         | P1       |
-| Out of Scope lacks `Why not` justification          | P2       |
+| Finding                                     | Priority |
+| ------------------------------------------- | -------- |
+| In Scope target also listed in Out of Scope | P0       |
+| AC references a target absent from In Scope | P1       |
+| Out of Scope lacks `Why not` justification  | P2       |
 
 ## Output
 

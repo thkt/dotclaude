@@ -1,7 +1,8 @@
 ---
 name: use-context-root-cause-analysis
-description: 5 Whys手法による根本原因分析。Use when: root cause, 5 Whys, なぜなぜ分析, 根本原因, 原因分析, symptom fix, 対症療法.
-allowed-tools: [Read, Grep, Glob, Task]
+description: 5 Whys による根本原因分析。
+when_to_use: root cause, 5 Whys, なぜなぜ分析, 根本原因, 原因分析, symptom fix, 対症療法
+allowed-tools: Read Grep Glob Task
 context: fork
 user-invocable: false
 ---
@@ -10,52 +11,52 @@ user-invocable: false
 
 ## 原則
 
-症状を直すな、根本を直せ。対症療法は複雑性を増し、根本対処は再発を防ぐ。
+症状ではなく根本原因を修正する。対症療法は複雑性を増やし、根本原因の修正は再発を防ぐ。
 
 ## 5 Whys プロセス
 
-「なぜ」を 5 回繰り返し、抽象レベルを降りていく。
+「なぜ」を 5 回問う。抽象度を下げながら掘り下げる。
 
-| ステップ | レベル             |
+| ステップ | 階層               |
 | -------- | ------------------ |
 | 1        | 観察可能な事実     |
 | 2        | 実装の詳細         |
-| 3        | 設計上の決定       |
+| 3        | 設計判断           |
 | 4        | アーキテクチャ制約 |
 | 5        | 根本原因           |
 
 ## ヒント
 
-| ヒント           | 説明                              |
-| ---------------- | --------------------------------- |
-| 事実に基づく     | 推測ではなく証拠                  |
-| 早期に止めない   | 最初の「なぜ」は稀に根本原因      |
-| 深く掘りすぎない | 実行可能なものに達したら止める    |
-| 逆方向で検証     | 「[5] だから、したがって [4]...」 |
-| 修正を検証       | 「これで問題は防げるか？」        |
+| ヒント           | 説明                                       |
+| ---------------- | ------------------------------------------ |
+| 事実に基づく     | 仮定ではなく根拠                           |
+| 早く止めない     | 最初の「なぜ」が根本原因であることは少ない |
+| 深く行きすぎない | アクション可能になったら止める             |
+| 検証             | 「[5] だから [4]、よって ...」で確かめる   |
+| 修正を検証       | 「これで問題が防げるか?」                  |
 
 ## 出力フォーマット
 
-| フィールド | 説明                                |
-| ---------- | ----------------------------------- |
-| Symptom    | ユーザーが観測した失敗              |
-| Root cause | 失敗が起きた根本理由（5 Whys 結果） |
-| Pattern    | Isolated / Recurring / Systematic   |
+| フィールド | 説明                              |
+| ---------- | --------------------------------- |
+| Symptom    | ユーザーから見た失敗              |
+| Root cause | なぜ失敗したか (5 Whys の結果)    |
+| Pattern    | Isolated / Recurring / Systematic |
 
-### Pattern enum
+### Pattern Enum
 
 | 値         | 意味                                           |
 | ---------- | ---------------------------------------------- |
-| Isolated   | 1 箇所限定、再発経路なし                       |
-| Recurring  | 近傍に類似コードあり、別 path から再発の可能性 |
-| Systematic | 設計起因、アーキテクチャレベルで再発リスク     |
+| Isolated   | 単一箇所、再発経路なし                         |
+| Recurring  | 近くに類似コードあり、再発の可能性             |
+| Systematic | 設計に根ざす、アーキテクチャレベルの再発リスク |
 
-Consumer（例: `/fix` Non-obvious フロー）は Pattern フィールドに基づいて
-defense-in-depth 適用やエスカレーションを分岐する。
+利用側 (例 `/fix` の Non-obvious flow) は Pattern フィールドで分岐し、
+defense-in-depth を適用するか escalate するかを判断する。
 
 ## 参照
 
-| トピック       | ファイル                                             |
-| -------------- | ---------------------------------------------------- |
-| 適用例         | `${CLAUDE_SKILL_DIR}/references/five-whys.md`        |
-| 症状→根本原因  | `${CLAUDE_SKILL_DIR}/references/symptom-patterns.md` |
+| トピック              | ファイル                                           |
+| --------------------- | -------------------------------------------------- |
+| 実例                  | ${CLAUDE_SKILL_DIR}/references/five-whys.md        |
+| Symptom → Root Cause | ${CLAUDE_SKILL_DIR}/references/symptom-patterns.md |

@@ -12,12 +12,12 @@
 
 ### Details
 
-| Output Type       | Standard                                                                          |
-| ----------------- | --------------------------------------------------------------------------------- |
-| Facts             | Cite source: `[file_path:line_number]` or `[command_output:timestamp]` → mark [✓] |
-| Assumptions       | Mark with [→] prefix and state basis                                              |
-| Partial knowledge | Read files for exact formats. Concepts are not details                            |
-| Knowledge gaps    | State "I don't know" rather than guessing → mark [?]                              |
+| Output Type       | Standard                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| Facts             | Cite source: `[file_path:line_number]` or `[command_output:timestamp]`                   |
+| Assumptions       | State the basis directly (e.g. "inferred from naming convention", "from type signature") |
+| Partial knowledge | Read files for exact formats. Concepts are not details                                   |
+| Knowledge gaps    | State "unknown, requires X" with the specific verification path                          |
 
 ### Anti-Sycophancy
 

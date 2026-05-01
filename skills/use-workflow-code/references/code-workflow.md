@@ -7,7 +7,7 @@ Phase 0: SOW Context + Test Generation
 Phase 1-N: RGRC (one test at a time)
   Red → Green (Ralph-loop) → Refactor → Commit
 Review: reviewer-readability (skip for /fix)
-E2E: generator-e2e (conditional — Spec has Type: e2e + agent-browser + dev server)
+E2E: generator-e2e (conditional. Spec has Type: e2e + agent-browser + dev server)
 Completion: Quality Gates → IDR
 ```
 
@@ -22,13 +22,13 @@ See ../../_lib/sow-resolution.md
 Prerequisites: spec.md with FR-xxx items.
 
 1. Parse FR-xxx requirements from spec
-2. Generate ALL tests in **skip state**
+2. Generate ALL tests in skip state
 3. Order: simple → complex (Baby Steps)
 4. Add `// T-NNN` comment to each test mapping to Spec Test Scenario ID
 
 T-NNN traceability: each `it()` block includes a comment referencing its Spec
 test scenario (e.g., `// T-001`). This keeps verification in living code and
-enables `evaluator-test` to compute coverage scores.
+enables `evaluator-test` to compute coverage and other quality metrics.
 
 ## Phase 1-N: RGRC Cycle
 
@@ -75,13 +75,13 @@ or `/fix`.
 Run lint, type-check, test using project's package manager (detect from
 lockfile). Independent commands in parallel.
 
-## Confidence-Based Decisions
+## Implementation Approach
 
-| Confidence | Action               |
-| ---------- | -------------------- |
-| ≥80%       | Proceed              |
-| 50-79%     | Add defensive checks |
-| <50%       | → /research first    |
+| Situation                                          | Action               |
+| -------------------------------------------------- | -------------------- |
+| Matches known pattern in codebase (cite file:line) | Proceed              |
+| Partial match, some unknowns remain                | Add defensive checks |
+| Unknown territory, no precedent in codebase        | → /research first    |
 
 ## IDR Generation
 
@@ -108,12 +108,12 @@ After completion:
 
 > [!NOTE]
 >
-> - {what changed — bullet list}
+> - {what changed (bullet list)}
 
 > [!TIP]
 >
-> - **{decision}**: {why this decision was made}
-> - **Not adopted**: {rejected alternative} — {why rejected}
+> - {decision}: {why this decision was made}
+> - Not adopted: {rejected alternative}. {why rejected}
 
 ---
 

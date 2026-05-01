@@ -6,8 +6,10 @@ Taint analysis patterns for frontend code review. These require data flow unders
 
 ### 1. dangerouslySetInnerHTML without Sanitizer
 
-**Source**: User input, API response, URL parameter
-**Sink**: `dangerouslySetInnerHTML={{ __html: value }}`
+| Flow   | Target                                        |
+| ------ | --------------------------------------------- |
+| Source | User input, API response, URL parameter       |
+| Sink   | `dangerouslySetInnerHTML={{ __html: value }}` |
 
 | Check              | Question                                                                         |
 | ------------------ | -------------------------------------------------------------------------------- |
@@ -25,8 +27,10 @@ Taint analysis patterns for frontend code review. These require data flow unders
 
 ### 2. postMessage Origin Verification
 
-**Source**: `window.addEventListener('message', handler)`
-**Sink**: DOM manipulation, state update, navigation within handler
+| Flow   | Target                                                    |
+| ------ | --------------------------------------------------------- |
+| Source | `window.addEventListener('message', handler)`             |
+| Sink   | DOM manipulation, state update, navigation within handler |
 
 | Check           | Question                                                             |
 | --------------- | -------------------------------------------------------------------- |
@@ -50,8 +54,10 @@ window.addEventListener("message", (e) => {
 
 ### 3. URL Parameter to Redirect Flow
 
-**Source**: `URLSearchParams`, `location.search`, `location.hash`, route params
-**Sink**: `location.href`, `location.replace()`, `location.assign()`, `window.open()`
+| Flow   | Target                                                                      |
+| ------ | --------------------------------------------------------------------------- |
+| Source | `URLSearchParams`, `location.search`, `location.hash`, route params         |
+| Sink   | `location.href`, `location.replace()`, `location.assign()`, `window.open()` |
 
 | Check           | Question                                                                  |
 | --------------- | ------------------------------------------------------------------------- |
@@ -76,8 +82,10 @@ if (next) {
 
 ### 4. Function Argument to DOM Method
 
-**Source**: Function parameter, callback argument
-**Sink**: `innerHTML`, `outerHTML`, `insertAdjacentHTML()`, `document.write()`
+| Flow   | Target                                                               |
+| ------ | -------------------------------------------------------------------- |
+| Source | Function parameter, callback argument                                |
+| Sink   | `innerHTML`, `outerHTML`, `insertAdjacentHTML()`, `document.write()` |
 
 | Check                  | Question                                                                     |
 | ---------------------- | ---------------------------------------------------------------------------- |
@@ -99,8 +107,10 @@ function renderContent(html: string) {
 
 ### 5. JWT in localStorage
 
-**Source**: Authentication response, token refresh
-**Sink**: `localStorage.setItem('token', jwt)`, `sessionStorage.setItem('auth', jwt)`
+| Flow   | Target                                                                      |
+| ------ | --------------------------------------------------------------------------- |
+| Source | Authentication response, token refresh                                      |
+| Sink   | `localStorage.setItem('token', jwt)`, `sessionStorage.setItem('auth', jwt)` |
 
 | Check         | Question                                                                          |
 | ------------- | --------------------------------------------------------------------------------- |
@@ -120,8 +130,10 @@ localStorage.setItem("token", response.jwt);
 
 ### 6. href Variable with javascript: URL
 
-**Source**: User input, database value, API response
-**Sink**: `<a href={variable}>`, `location.href = variable`
+| Flow   | Target                                            |
+| ------ | ------------------------------------------------- |
+| Source | User input, database value, API response          |
+| Sink   | `<a href={variable}>`, `location.href = variable` |
 
 | Check                | Question                                                        |
 | -------------------- | --------------------------------------------------------------- |

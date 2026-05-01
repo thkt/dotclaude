@@ -100,17 +100,15 @@ LIMIT 20;
 
 - Lead with the direct answer (file list, count, chain)
 - Cite `file_path:line` for every claim
-- Confidence marker:
-  - [✓] direct row from query result
-  - [→] inferred by JOIN / aggregation / naming
+- State the basis for each claim: direct row from query result for facts, "inferred by JOIN / aggregation / naming" for inferences
 
 Example:
 
 ```
-TargetSymbol を使うファイルは 3 件 [✓]
+TargetSymbol を使うファイルは 3 件 (direct query result)
   src/handlers/user.rs:42
   src/handlers/admin.rs:18
   src/tests/integration.rs:205
 
-ref_kind は 'named' のみ → import vs call の区別は不明 [→]
+ref_kind は 'named' のみ (inferred from aggregation): import vs call の区別は不明
 ```

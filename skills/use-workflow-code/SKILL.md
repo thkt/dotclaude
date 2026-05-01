@@ -1,9 +1,8 @@
 ---
 name: use-workflow-code
-description: >
-  Workflow orchestration for /code. Use when: /code ワークフロー,
-  quality gates, 品質ゲート, RGRC サイクル.
-allowed-tools: [Read, Write, Grep, Glob, Task, Bash(npm:*, npx:*, tsc:*, bun:*)]
+description: Workflow orchestration for /code.
+when_to_use: /code ワークフロー, quality gates, 品質ゲート, RGRC サイクル
+allowed-tools: Read Write Grep Glob Task Bash(npm:*) Bash(npx:*) Bash(tsc:*) Bash(bun:*)
 user-invocable: false
 ---
 
@@ -11,33 +10,32 @@ user-invocable: false
 
 ## Workflows
 
-| Command | Workflow Reference                                |
-| ------- | ------------------------------------------------- |
-| `/code` | `${CLAUDE_SKILL_DIR}/references/code-workflow.md` |
+| Command | Workflow Reference                              |
+| ------- | ----------------------------------------------- |
+| `/code` | ${CLAUDE_SKILL_DIR}/references/code-workflow.md |
 
 ## Patterns
 
-| Pattern        | Reference                                                                    |
-| -------------- | ---------------------------------------------------------------------------- |
-| IDR Generation | [hooks/lifecycle/idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh) |
-| TDD            | [@~/.claude/skills/use-workflow-tdd-cycle/SKILL.md](../use-workflow-tdd-cycle/SKILL.md) |
+| Pattern        | Reference                                                   |
+| -------------- | ----------------------------------------------------------- |
+| IDR Generation | ${CLAUDE_SKILL_DIR}/../../hooks/lifecycle/idr-pre-commit.sh |
+| TDD            | ${CLAUDE_SKILL_DIR}/../use-workflow-tdd-cycle/SKILL.md      |
 
 <!-- canonical: rules/development/THRESHOLDS.md (coverage targets) -->
 
 ## Quality Gates
 
-| Gate         | Target           | Verification                               |
-| ------------ | ---------------- | ------------------------------------------ |
-| Tests        | All passing      | `npm test` exit code 0                     |
-| Lint         | 0 errors         | `npm run lint` exit code 0                 |
-| Types        | No errors        | `tsc --noEmit` exit code 0                 |
-| Coverage     | C0 ≥90%, C1 ≥80% | Coverage report                            |
-| Test Quality | ≥70              | `evaluator-test` (skip if no Spec) |
+| Gate         | Target                | Verification                       |
+| ------------ | --------------------- | ---------------------------------- |
+| Tests        | All passing           | `npm test` exit code 0             |
+| Lint         | 0 errors              | `npm run lint` exit code 0         |
+| Types        | No errors             | `tsc --noEmit` exit code 0         |
+| Coverage     | C0 ≥90%, C1 ≥80%      | Coverage report                    |
+| Test Quality | per-metric thresholds | `evaluator-test` (skip if no Spec) |
 
 ### Test Quality Gate
 
-When a Spec with Test Scenarios exists, spawn `evaluator-test` as a
-background agent:
+When a Spec with Test Scenarios exists, spawn `evaluator-test` as a background agent using this invocation.
 
 ```
 Agent(subagent_type: "evaluator-test",
@@ -45,8 +43,15 @@ Agent(subagent_type: "evaluator-test",
       run_in_background: true)
 ```
 
-Score ≥70 → pass. Score <70 → report uncovered/excess/intent issues, fix before
-proceeding. Skip when no Spec exists (e.g., `/fix`, ad-hoc changes).
+Pass when all 5 metrics meet thresholds. On any fail, report findings (uncovered T-NNN, excess tests, duplicates, granularity issues, intent issues) and fix before proceeding. Skip when no Spec exists (e.g., `/fix`, ad-hoc changes).
+
+| Metric      | Threshold |
+| ----------- | --------- |
+| coverage    | ≥0.8      |
+| excess      | ≤0.1      |
+| duplication | ≤0.2      |
+| granularity | ≥0.7      |
+| intent      | ≥0.7      |
 
 ### Review Gate
 
@@ -67,11 +72,11 @@ Skip for `/fix` and single-file changes.
 Tests:        pass | fail (detail)
 Lint:         pass | fail (detail)
 Types:        pass | fail (detail)
-Coverage:     C0 XX% / C1 XX% — pass | fail
-Test Quality: XX/100 — pass | skip (no Spec)
+Coverage:     C0 XX% / C1 XX% - pass | fail
+Test Quality: cov=X.X exc=X.X dup=X.X gran=X.X int=X.X | pass | fail | skip (no Spec)
 ```
 
-All 5 lines required. Empty lines indicate a skipped gate — investigate before
+All 5 lines required. Empty lines indicate a skipped gate - investigate before
 proceeding.
 
 ## Rationalization Counters

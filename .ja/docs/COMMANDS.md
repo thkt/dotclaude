@@ -1,102 +1,100 @@
-# コマンド設計
+# Commands Design
 
-コマンドの設計と関係性。
+コマンドの設計と関係。
 
-📌 **[English Version](../../docs/COMMANDS.md)**
+📌 [English version](../../docs/COMMANDS.md)
 
 ## アーキテクチャ
 
 ```mermaid
 graph TD
-    subgraph User["ユーザーインターフェース"]
+    subgraph User["User Interface"]
         CMD["/command"]
     end
 
-    subgraph Orchestration["コマンドレイヤー"]
+    subgraph Orchestration["Command Layer"]
         CMD --> SKILL[Skills]
         CMD --> AGENT[Agents]
-        CMD --> PLUGIN[外部プラグイン]
+        CMD --> PLUGIN[External Plugins]
     end
 
-    subgraph Execution["実行レイヤー"]
-        SKILL --> FORK[Forkコンテキスト]
+    subgraph Execution["Execution Layer"]
+        SKILL --> FORK[Fork Context]
         AGENT --> TASK[Task Tool]
     end
 ```
 
-## コマンド & ワークフロー
+## コマンドとワークフロー
 
-[WORKFLOWS](../rules/workflows/WORKFLOWS.md)
-にコマンド一覧と選択ガイドあり。
+コマンド一覧と選択ガイドは [WORKFLOWS](../rules/workflows/WORKFLOWS.md) を参照。
 
 ## 設計原則
 
 ### 1. Thin Wrapper パターン
 
-コマンドはオーケストレーター、実装詳細を持たない。
+コマンドはオーケストレータ。実装詳細は持たない。
 
 ```markdown
-# 良い例: /code
+# Good: /code
 
-- Skills: use-workflow-code (RGRC定義)
-- Agents: test-generator (テスト生成)
-- Plugins: ralph-loop (自動イテレーション)
+- Skills: use-workflow-code (RGRC definition)
+- Agents: generator-test (test generation)
+- Plugins: ralph-loop (automatic iteration)
 
-# 悪い例
+# Bad
 
-- コマンド内にTDD手順をハードコード
+- TDD ステップをコマンド内にハードコード
 ```
 
-### 2. 条件付きコンテキストロード
+### 2. 条件付きコンテキスト ロード
 
-必要時のみスキルをロード。
+必要なときにのみ skill をロードする。
 
 ```markdown
-/code (フラグなし) → 追加スキルなし
+/code (フラグなし) → 追加 skill なし
 ```
 
-### 3. グレースフルデグラデーション
+### 3. Graceful Degradation
 
-外部プラグインなしでも動作。
+外部プラグインなしでもコマンドが動く。
 
 ```markdown
-ralph-loop あり → 自動RGRC反復 ralph-loop なし → 手動確認モード (機能は同じ)
+ralph-loop あり → 自動 RGRC 反復
+ralph-loop なし → 手動確認モード (同機能)
 ```
 
-## コマンド → スキル/エージェント対応表
+## Command → Skill/Agent マッピング
 
-| コマンド    | 使用スキル                                    | 使用エージェント                                                      |
-| ----------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `/think`    | -                                             | -                                                                     |
-| `/code`     | use-workflow-code, use-workflow-tdd-cycle     | test-generator                                                        |
-| `/audit`    | -                                             | ティアベースのreviewer agents（3 or ファイルルートで17から選択）      |
-| `/fix`      | use-context-root-cause-analysis               | test-generator, build-error-resolver                                  |
-| `/polish`   | -                                             | code-simplifier                                                       |
-| `/feature`  | use-workflow-code                       | feature-explorer, feature-architect, test-generator, unit-implementer |
-| `/swarm`    | use-workflow-code                       | qa-reviewer, unit-implementer                                         |
-| `/glossary` | -                                             | -                                                                     |
+| コマンド   | 使用 Skill                                | 使用 Agent                                                       |
+| ---------- | ----------------------------------------- | ---------------------------------------------------------------- |
+| `/think`   | -                                         | -                                                                |
+| `/code`    | use-workflow-code, use-workflow-tdd-cycle | generator-test                                                   |
+| `/audit`   | -                                         | tier ベースの reviewer agent (3 つまたは 17 からファイル ルート) |
+| `/fix`     | use-context-root-cause-analysis           | generator-test, resolver-build                                   |
+| `/polish`  | -                                         | enhancer-code                                                    |
+| `/feature` | think, code, audit, fix, polish (連鎖)    | -                                                                |
+| `/swarm`   | use-workflow-code                         | architect-feature, team-qa, generator-test, team-implementation  |
 
 ## ファイル構造
 
 ```text
 skills/
-├── code/SKILL.md      # YAML front matter + 実行手順
+├── code/SKILL.md      # YAML frontmatter + 実行ステップ
 ├── fix/SKILL.md
 ├── think/SKILL.md
 └── ...
 ```
 
-### Front Matter フィールド
+### Frontmatter フィールド
 
-| フィールド      | 必須 | 目的                            |
-| --------------- | ---- | ------------------------------- |
-| `description`   | ✓    | コマンドの説明（Skill表示用）   |
-| `allowed-tools` | ✓    | 使用可能なツール                |
-| `model`         | -    | 使用モデル（opus/sonnet/haiku） |
-| `argument-hint` | -    | 引数のヒント表示                |
+| フィールド      | 必須 | 用途                             |
+| --------------- | ---- | -------------------------------- |
+| `description`   | ✓    | コマンド説明 (Skill picker 表示) |
+| `allowed-tools` | ✓    | 許可ツール                       |
+| `model`         | -    | 使用モデル (opus/sonnet/haiku)   |
+| `argument-hint` | -    | 引数入力時に表示するヒント       |
 
 ## 関連
 
-- [SKILLS_AGENTS.md](./SKILLS_AGENTS.md) — スキル・エージェントの詳細
-- [WORKFLOWS](../rules/workflows/WORKFLOWS.md)
-  — ワークフロー選択ガイド
+- [SKILLS_AGENTS.md](./SKILLS_AGENTS.md). Skill とエージェントのリファレンス
+- [WORKFLOWS](../rules/workflows/WORKFLOWS.md). ワークフロー選択ガイド

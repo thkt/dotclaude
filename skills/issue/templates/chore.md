@@ -6,7 +6,7 @@
 ## What & Why
 
 [What maintenance task needs to be done]
-[Why now — risk, tech debt cost, or blocker for other work]
+[Why now - risk, tech debt cost, or blocker for other work]
 
 ## Changes
 

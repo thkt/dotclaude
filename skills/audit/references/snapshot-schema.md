@@ -2,11 +2,11 @@
 
 Canonical source of an `/audit` run. Per ADR 0047.
 
-${CLAUDE_SKILL_DIR}templates/output.md is a rendered view derived from a snapshot. Do not surface output fields that cannot be traced back to snapshot data.
+${CLAUDE_SKILL_DIR}/templates/output.md is a rendered view derived from a snapshot. Do not surface output fields that cannot be traced back to snapshot data.
 
 ## Location
 
-`$HOME/.claude/workspace/history/audit-YYYY-MM-DD-HHmmss.json`
+${CLAUDE_SKILL_DIR}/../../workspace/history/audit-YYYY-MM-DD-HHmmss.json
 
 One file per audit run. Filename timestamp is UTC.
 

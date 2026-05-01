@@ -25,7 +25,8 @@ Split when any threshold is exceeded.
 
 ## Interpretation Clarity
 
-| Trigger                              | Action                                                    |
-| ------------------------------------ | --------------------------------------------------------- |
-| Multiple valid interpretations exist | List all. Do not silently pick one. Wait for confirmation |
-| Task intent is unclear               | Stop. Name what is unclear. Do not proceed                |
+| Trigger                               | Action                                                                        |
+| ------------------------------------- | ----------------------------------------------------------------------------- |
+| Multiple valid interpretations exist  | List all. Do not silently pick one. Wait for confirmation                     |
+| Task intent is unclear                | Stop. Name what is unclear. Do not proceed                                    |
+| Issue URL or external spec referenced | Present plan (changes, files, TODO) and wait for approval before implementing |

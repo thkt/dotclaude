@@ -168,7 +168,7 @@ Create `~/.srt-settings.json` for custom settings:
 
 Quality pipeline hooks that run automatically during Claude Code sessions. These
 catch lint errors, format code, inject static analysis, and enforce quality
-gates — all without manual intervention.
+gates - all without manual intervention.
 
 ```bash
 brew tap thkt/tap
@@ -278,7 +278,7 @@ Full details: [PRINCIPLES.md](./rules/PRINCIPLES.md)
 
 ### Core Documentation
 
-- [Design Philosophy](./docs/DESIGN.md) — **Why this design** (設計思想・意図)
+- [Design Philosophy](./docs/DESIGN.md) - **Why this design** (設計思想・意図)
 - [Commands Reference (English)](./rules/workflows/WORKFLOWS.md)
 - [Commands Reference (Japanese)](./.ja/rules/workflows/WORKFLOWS.md)
 - [Configuration Guide](./CLAUDE.md)

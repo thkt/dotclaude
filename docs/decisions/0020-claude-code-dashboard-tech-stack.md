@@ -2,7 +2,7 @@
 status: "accepted"
 ---
 
-# ADR-0020: kagami — 技術スタックと収集方式の選定
+# ADR-0020: kagami - 技術スタックと収集方式の選定
 
 ## Date
 
@@ -32,7 +32,7 @@ Code 活用状況を可視化するダッシュボードを新規構築する。
 
 ## Decision Outcome
 
-### 決定1: データ収集 — トランスクリプト JSONL 解析
+### 決定1: データ収集 - トランスクリプト JSONL 解析
 
 **選択**: Stop hook でセッション終了時にトランスクリプト JSONL を解析
 
@@ -47,7 +47,7 @@ Code 活用状況を可視化するダッシュボードを新規構築する。
 **根拠**: JSONL にはすべての tool_use イベント（name,
 input）、モデル名、トークン使用量（input/output/cache）が含まれる。セッション終了時に一括解析することでデータの整合性と網羅性を確保できる。
 
-### 決定2: 技術スタック — Cloudflare 統一
+### 決定2: 技術スタック - Cloudflare 統一
 
 | Layer    | Choice                                | Rationale                              |
 | -------- | ------------------------------------- | -------------------------------------- |
@@ -70,7 +70,7 @@ input）、モデル名、トークン使用量（input/output/cache）が含ま
 | Supabase             | 機能過多（Realtime, Storage等不要）             |
 | drizzle-zod          | API入力バリデーションは hono/zod-openapi で十分 |
 
-### 決定3: 配布方式 — Plugin Marketplace
+### 決定3: 配布方式 - Plugin Marketplace
 
 **選択**: Private GitHub repo → `/plugin marketplace add` でインストール
 

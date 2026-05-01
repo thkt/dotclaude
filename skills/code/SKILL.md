@@ -44,7 +44,7 @@ Auto-detects when project has Storybook + component file. See Storybook Phase.
 
 ## SOW Context
 
-See ../_lib/sow-resolution.md
+See ${CLAUDE_SKILL_DIR}/../_lib/sow-resolution.md
 
 ## Scope Guard
 
@@ -58,7 +58,7 @@ JS/TS is first-class. Rust / Go / Python work via `generator-test` framework det
 
 | Reference                                       | When read                           | If not found / unclear                          |
 | ----------------------------------------------- | ----------------------------------- | ----------------------------------------------- |
-| See ../_lib/sow-resolution.md                   | Step 1 SOW detect                   | No SOW state, apply Scope Guard inline only     |
+| ${CLAUDE_SKILL_DIR}/../_lib/sow-resolution.md   | Step 1 SOW detect                   | No SOW state, apply Scope Guard inline only     |
 | ${CLAUDE_SKILL_DIR}/references/csf3-patterns.md | Storybook Phase all conditions pass | Use minimal CSF3 stories format                 |
 | `ralph-loop` plugin                             | Step 4 RGRC iteration               | Manual Red → Green → Refactor loop              |
 | `generator-test` agent                          | Step 2 spawn                        | Error Handling: Leader generates tests directly |
@@ -91,7 +91,7 @@ During implementation, new requirements may be discovered (edge cases, error han
 2. Then write the test: Reference the new T-NNN in the test name/comment
 3. Never add tests without a Spec trace: Every test must map to a T-NNN
 
-`evaluator-test` uses T-NNN mappings to compute coverage scores.
+`evaluator-test` uses T-NNN mappings to compute coverage and other quality metrics.
 
 ## Storybook Phase (Conditional)
 
@@ -162,26 +162,26 @@ Agent(subagent_type: "generator-e2e",
 
 ## Quality Gates
 
-| Check                 | Condition                  | How                        |
-| --------------------- | -------------------------- | -------------------------- |
-| AC met                | After RGRC                 | Manual (skip if no SOW)    |
-| Test Quality ≥70      | Spec exists                | `evaluator-test` agent     |
-| Iteration enforcement | Every Write/Edit/MultiEdit | `gates` hook (PostToolUse) |
+| Check                     | Condition                  | How                        |
+| ------------------------- | -------------------------- | -------------------------- |
+| AC met                    | After RGRC                 | Manual (skip if no SOW)    |
+| Test Quality (per-metric) | Spec exists                | `evaluator-test` agent     |
+| Iteration enforcement     | Every Write/Edit/MultiEdit | `gates` hook (PostToolUse) |
 
 See use-workflow-code for invocation details.
 
 ## Error Handling
 
-| Error                           | Action                                                                           |
-| ------------------------------- | -------------------------------------------------------------------------------- |
-| generator-test timeout          | Leader generates tests directly                                                  |
-| generator-test produces 0 tests | Verify spec exists, ask user                                                     |
-| ralph-loop stalls               | Stop loop, fix manually                                                          |
-| Quality gates fail              | Fix issues before commit                                                         |
-| Evaluator score <70             | Fix uncovered/excess/intent issues                                               |
-| Evaluator timeout               | Skip gate, log warning                                                           |
-| Spec not found                  | Proceed without T-NNN trace, skip Test Quality gate (or ask user to create spec) |
-| agent-browser crash             | Skip E2E, advisory, continue                                                     |
-| Dev server unreachable          | Skip E2E, advisory, continue                                                     |
-| E2E tests fail                  | Advisory (do not block)                                                          |
-| Storybook phase error           | Skip phase, advisory, continue                                                   |
+| Error                            | Action                                                                           |
+| -------------------------------- | -------------------------------------------------------------------------------- |
+| generator-test timeout           | Leader generates tests directly                                                  |
+| generator-test produces 0 tests  | Verify spec exists, ask user                                                     |
+| ralph-loop stalls                | Stop loop, fix manually                                                          |
+| Quality gates fail               | Fix issues before commit                                                         |
+| Evaluator metric below threshold | Fix uncovered/excess/duplicate/granularity/intent issues                         |
+| Evaluator timeout                | Skip gate, log warning                                                           |
+| Spec not found                   | Proceed without T-NNN trace, skip Test Quality gate (or ask user to create spec) |
+| agent-browser crash              | Skip E2E, advisory, continue                                                     |
+| Dev server unreachable           | Skip E2E, advisory, continue                                                     |
+| E2E tests fail                   | Advisory (do not block)                                                          |
+| Storybook phase error            | Skip phase, advisory, continue                                                   |

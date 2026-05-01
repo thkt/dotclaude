@@ -11,13 +11,13 @@ decision-makers: thkt
 2026-04-07のADR-0036でwiki plugin（Stop hook + ingest/query/lintスキル）の方針を決定した。
 scaffoldは完了（`plugins/wiki/`）したが全コンポーネントが未実装の段階で、v1設計に以下の課題が判明した。
 
-1. **wiki 格納場所が `{cwd}/.wiki/` 固定** — プロジェクトローカルのみ。Zenn記事など
+1. **wiki 格納場所が `{cwd}/.wiki/` 固定** - プロジェクトローカルのみ。Zenn記事など
    プロジェクト横断的な知識（ADR-0036 line 90: "プロジェクト横断的な実装パターン"）の
    格納先がない。
-2. **recall を永続的 ingest ソースとして扱う設計がない** — Stop hook導入後は二重取り込みに
+2. **recall を永続的 ingest ソースとして扱う設計がない** - Stop hook導入後は二重取り込みに
    なるため、過去セッションの一括取り込みには別の手段が必要。
-3. **publish 層がない** — 蓄積した知識をチームへ共有する経路がない。
-4. **stale-published の追跡がない** — publish後にwikiを更新しても外部記事が静かに
+3. **publish 層がない** - 蓄積した知識をチームへ共有する経路がない。
+4. **stale-published の追跡がない** - publish後にwikiを更新しても外部記事が静かに
    staleになる。
 
 ## Decision Drivers

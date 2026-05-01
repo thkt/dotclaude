@@ -1,0 +1,88 @@
+# 依存性注入 (DI)
+
+## なぜ DI か
+
+| DI なし               | DI あり          |
+| --------------------- | ---------------- |
+| ハードコードな import | パラメータで注入 |
+| mock 不可             | mock が容易      |
+| 密結合                | 疎結合           |
+
+## パターン
+
+### コンストラクタ注入
+
+```typescript
+interface HttpClient {
+  get<T>(url: string): Promise<T>;
+}
+
+class UserService {
+  constructor(private http: HttpClient) {}
+
+  getUser(id: string) {
+    return this.http.get<User>(`/users/${id}`);
+  }
+}
+
+// テスト
+const service = new UserService(mockHttp);
+```
+
+### Factory 関数
+
+```typescript
+function createOrderService(deps: { db: Database; mailer: Mailer }) {
+  return new OrderService(deps.db, deps.mailer);
+}
+
+// テスト
+const service = createOrderService({ db: mockDb, mailer: mockMailer });
+```
+
+### React Context
+
+```typescript
+const ServicesContext = createContext<Services>(null)
+
+function useServices() {
+  return useContext(ServicesContext)
+}
+
+// Provider
+<ServicesProvider services={{ api: realApi, auth: realAuth }}>
+  <App />
+</ServicesProvider>
+
+// テスト
+<ServicesProvider services={{ api: mockApi, auth: mockAuth }}>
+  <Component />
+</ServicesProvider>
+```
+
+### Props 注入
+
+```typescript
+// Container (impure) → Presentational (pure)
+function UserListContainer() {
+  const { data, loading } = useUsers()
+  return <UserList users={data} loading={loading} />
+}
+
+function UserList({ users, loading }: Props) {
+  if (loading) return <Spinner />
+  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>
+}
+
+// Presentational を直接テスト
+render(<UserList users={[{ id: '1', name: 'Test' }]} loading={false} />)
+```
+
+## パターン選択
+
+| パターン       | 複雑さ | ユースケース         |
+| -------------- | ------ | -------------------- |
+| Props          | 低     | 単純なコンポーネント |
+| コンストラクタ | 中     | サービス/クラス      |
+| Factory        | 中     | 複雑なオブジェクト   |
+| Context        | 中     | アプリ全体のサービス |

@@ -7,28 +7,28 @@ paths:
 
 ## Command Selection
 
-| Situation                         | Workflow                                                                   |
-| --------------------------------- | -------------------------------------------------------------------------- |
-| Small bug, stable codebase        | `/fix`                                                                     |
-| Known implementation              | `/code`                                                                    |
-| Unknown cause / missing knowledge | `/research` → `/fix`                                                       |
-| Design or approach unresolved     | `/think`                                                                   |
-| New capability                    | `/feature` (or: `/research` → `/think` → `/code` → `/audit` → `/validate`) |
-| Urgent production issue           | `/fix` (urgent, skip design)                                               |
+| Situation                         | Workflow                                                     |
+| --------------------------------- | ------------------------------------------------------------ |
+| Small bug, stable codebase        | `/fix`                                                       |
+| Known implementation              | `/code`                                                      |
+| Unknown cause / missing knowledge | `/research` → `/fix`                                         |
+| Design or approach unresolved     | `/think`                                                     |
+| New capability                    | `/feature` (or: `/research` → `/think` → `/code` → `/audit`) |
+| Urgent production issue           | `/fix` (urgent, skip design)                                 |
 
 ## Team-First Principle
 
 Default: Team (TeamCreate + TaskList for progress tracking)
 
-| Command     | Mode | Notes                       |
-| ----------- | ---- | --------------------------- |
-| `/feature`  | Team | Existing team structure     |
-| `/audit`    | Auto | Scope-based decision        |
-| `/think`    | Solo |                             |
-| `/code`     | Auto | Scope-based decision        |
-| `/fix`      | Auto | Solo conditions below       |
-| `/research` | Solo |                             |
-| Utility     | Solo | /commit, /branch, /pr, etc. |
+| Command     | Mode | Notes                         |
+| ----------- | ---- | ----------------------------- |
+| `/feature`  | Team | Existing team structure       |
+| `/audit`    | Auto | Scope-based decision          |
+| `/think`    | Solo |                               |
+| `/code`     | Auto | Scope-based decision          |
+| `/fix`      | Auto | Solo conditions below         |
+| `/research` | Solo |                               |
+| Utility     | Solo | /commit, /checkout, /pr, etc. |
 
 Auto: All solo conditions met → Solo, otherwise → Team
 
@@ -47,17 +47,14 @@ Auto: All solo conditions met → Solo, otherwise → Team
 | `/code`     | Core          | TDD/RGRC implementation                                          |
 | `/audit`    | Core          | Code review via agents                                           |
 | `/polish`   | Core          | Remove AI-generated slop                                         |
-| `/validate` | Core          | Validate SOW conformance                                         |
 | `/feature`  | Core          | Full feature lifecycle (explore + architect + implement + audit) |
 | `/fix`      | Quick         | Quick bug fixes (think→code→test)                                |
 | `/adr`      | Documentation | Architecture Decision Record                                     |
-| `/docs`     | Documentation | Generate documentation from code                                 |
-| `/branch`   | Git           | Suggest branch names                                             |
+| `/checkout` | Git           | Suggest branch names                                             |
 | `/commit`   | Git           | Conventional Commits messages                                    |
 | `/pr`       | Git           | PR descriptions                                                  |
 | `/issue`    | Git           | GitHub Issues                                                    |
 | `/preview`  | Git           | PR screening review                                              |
-| `/inbox`    | Productivity  | Task aggregation (GitHub/Slack/Calendar)                         |
 
 ## Todo Progress Tracking
 
@@ -68,5 +65,4 @@ Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 | `/think`    | TaskCreate from Implementation Plan                |
 | `/code`     | TaskUpdate → in_progress / completed               |
 | `/audit`    | (via `/code` phase)                                |
-| `/validate` | TaskUpdate remaining → completed                   |
 | `/feature`  | TaskCreate (Phase 1), TaskUpdate throughout phases |

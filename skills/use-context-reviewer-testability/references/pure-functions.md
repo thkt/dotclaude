@@ -60,13 +60,11 @@ function OrderSummaryContainer() {
 ```typescript
 // Pure: calculation hook
 function useOrderCalc(items: Item[]) {
-  return useMemo(
-    () => ({
-      subtotal: items.reduce((s, i) => s + i.price, 0),
-      tax: subtotal * 0.1,
-    }),
-    [items],
-  );
+  return useMemo(() => {
+    const subtotal = items.reduce((s, i) => s + i.price, 0);
+    const tax = subtotal * 0.1;
+    return { subtotal, tax };
+  }, [items]);
 }
 
 // Impure: data hook

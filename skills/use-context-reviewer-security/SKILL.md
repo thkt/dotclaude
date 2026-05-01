@@ -1,12 +1,8 @@
 ---
 name: use-context-reviewer-security
-description: >
-  OWASP Top 10 security review. Use when: security, OWASP, XSS, SQL injection,
-  セキュリティ, 脆弱性, cloud security, AWS, IAM, Terraform,
-  クラウドセキュリティ, インフラ. Do NOT use for readability
-  (use-context-reviewer-readability), type errors (use-context-reviewer-strictness), or test design
-  (use-context-reviewer-testability).
-allowed-tools: [Read, Grep, Glob, Task]
+description: OWASP Top 10 security review. Do NOT use for readability (use-context-reviewer-readability), type errors (use-context-reviewer-strictness), or test design (use-context-reviewer-testability).
+when_to_use: security, OWASP, XSS, SQL injection, セキュリティ, 脆弱性, cloud security, AWS, IAM, Terraform, クラウドセキュリティ, インフラ
+allowed-tools: Read Grep Glob Task
 agent: reviewer-security
 context: fork
 user-invocable: false
@@ -43,10 +39,10 @@ recommendation. Always include file:line.
 
 ## References
 
-| Topic     | Scope            | File                                                         |
-| --------- | ---------------- | ------------------------------------------------------------ |
-| Basic     | A01, A02, A07    | `${CLAUDE_SKILL_DIR}/references/owasp-basic.md`              |
-| Injection | A03              | `${CLAUDE_SKILL_DIR}/references/owasp-injection.md`          |
-| Advanced  | A04-A06, A08-A10 | `${CLAUDE_SKILL_DIR}/references/owasp-advanced.md`           |
-| Cloud     | IAM, IaC, CI/CD  | `${CLAUDE_SKILL_DIR}/references/cloud-infrastructure.md`     |
-| Frontend  | Taint analysis   | `${CLAUDE_SKILL_DIR}/references/frontend-taint-checklist.md` |
+| Topic     | Scope            | File                                                       |
+| --------- | ---------------- | ---------------------------------------------------------- |
+| Basic     | A01, A02, A07    | ${CLAUDE_SKILL_DIR}/references/owasp-basic.md              |
+| Injection | A03              | ${CLAUDE_SKILL_DIR}/references/owasp-injection.md          |
+| Advanced  | A04-A06, A08-A10 | ${CLAUDE_SKILL_DIR}/references/owasp-advanced.md           |
+| Cloud     | IAM, IaC, CI/CD  | ${CLAUDE_SKILL_DIR}/references/cloud-infrastructure.md     |
+| Frontend  | Taint analysis   | ${CLAUDE_SKILL_DIR}/references/frontend-taint-checklist.md |

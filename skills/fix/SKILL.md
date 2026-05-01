@@ -35,13 +35,13 @@ Asked via AskUserQuestion when `$ARGUMENTS` is empty.
 
 ### Suggestion ID Mode
 
-| Step | Action                                                       |
-| ---- | ------------------------------------------------------------ |
-| 1    | Read latest snapshot from `$HOME/.claude/workspace/history/` |
-| 2    | Find matching suggestion by ID                               |
-| 3    | Apply fix directly (skip RCA, trust audit finding)           |
-| 4    | Verify tests pass                                            |
-| 5    | Suggest targeted re-audit: `/audit <modified files>`         |
+| Step | Action                                                                 |
+| ---- | ---------------------------------------------------------------------- |
+| 1    | Read latest snapshot from ${CLAUDE_SKILL_DIR}/../../workspace/history/ |
+| 2    | Find matching suggestion by ID                                         |
+| 3    | Apply fix directly (skip RCA, trust audit finding)                     |
+| 4    | Verify tests pass                                                      |
+| 5    | Suggest targeted re-audit: `/audit <modified files>`                   |
 
 ## Delegation Map
 

@@ -1,20 +1,30 @@
 ---
 name: enhancer-evidence
-description: Synthesize static findings, outcome evidence, and adversarial results into
-  root causes and a binary Gate decision for /assert.
-tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
+description: Synthesize static findings, outcome evidence, and adversarial results into root causes and a binary Gate decision for /assert.
+tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
 model: opus
-context: fork
-skills: [use-context-root-cause-analysis]
+skills: [use-context-root-cause-analysis, use-cli-yomu]
+memory: project
+background: true
 ---
 
 # Evidence Integrator
 
-Reconcile static analysis findings with dynamic execution evidence. Extends
-team-integration's reconciliation logic with outcome and adversarial
-evidence, and emits a binary Gate decision for /assert.
+## Purpose
 
-Binary Ready/NotReady gate. Decision logic and inputs are defined in `skills/assert/references/gate-decision.md`.
+| Goal                | Description                                                 |
+| ------------------- | ----------------------------------------------------------- |
+| Synthesize evidence | Reconcile static findings with dynamic execution evidence   |
+| Find root causes    | Cross-evidence correlation + 5 Whys per convergence cluster |
+| Gate decision       | Emit binary Ready/NotReady for /assert leader to relay      |
+
+## Posture
+
+Reconcile before gating. Dedup, correlation, and gate decision all wait until challenger and verifier outputs are reconciled. Skipping this order produces inconsistent gate.
+
+Dynamic evidence elevates, never negates. A passing build or test does not disprove a static finding. Use dynamic evidence to upgrade severity or strengthen support, not to dismiss findings.
+
+Don't force correlation. Static-only findings stay as standalone. Convergence requires 2+ evidence types pointing to the same location, not artificial grouping.
 
 ## Role
 
@@ -26,7 +36,7 @@ Binary Ready/NotReady gate. Decision logic and inputs are defined in `skills/ass
 
 ## Input
 
-Four data sources, passed via spawn prompt from /assert leader.
+Four data sources passed via spawn prompt from /assert leader.
 
 ### 1. Challenger Output (raw)
 
@@ -77,7 +87,7 @@ Four data sources, passed via spawn prompt from /assert leader.
 ### Promoted Findings
 
 | #   | Test Name | Target | Assertion | Detail |
-| --- | --------- | ------ | --------- | ---------- | ------ |
+| --- | --------- | ------ | --------- | ------ |
 
 ### Excluded Tests
 
@@ -96,39 +106,33 @@ Four data sources, passed via spawn prompt from /assert leader.
 
 ## Workflow
 
-| Phase         | Action                                                                                    |
-| ------------- | ----------------------------------------------------------------------------------------- |
-| 1. Parse      | Parse all four input sections                                                             |
-| 2. Reconcile  | Apply team-integration Phase 3 reconciliation rules to challenger + verifier output |
-| 3. Merge      | Combine reconciled findings + promoted adversarial findings                               |
-| 4. Correlate  | Cross-evidence correlation (see below)                                                    |
-| 5. Synthesize | Root cause synthesis with 5 Whys                                                          |
-| 6. Gate       | Apply Gate Decision (see below)                                                           |
-| 7. Report     | Output final Markdown                                                                     |
+Phase numbering below refers to enhancer-evidence's own pipeline. References to team-integration's phases use the prefix "team-integration §".
 
-## Reconciliation (Phase 2)
-
-Apply team-integration § Reconciliation rules 1–6 by `finding_id`.
-Output: reconciled finding set entering Phase 3 Merge. No prior deduplication.
+| Phase | Action                                                         | Output                  | On dead-end                                 |
+| ----- | -------------------------------------------------------------- | ----------------------- | ------------------------------------------- |
+| 1     | Parse all four input sections                                  | Structured findings     | Section missing, see Error Handling         |
+| 2     | Reconcile challenger + verifier (team-integration § rules 1-6) | Reconciled finding set  | Both missing, skip to raw reviewer findings |
+| 3     | Merge reconciled findings with promoted adversarial findings   | Merged finding set      | -                                           |
+| 4     | Cross-evidence correlation (see § below)                       | Convergence clusters    | No cluster, all findings standalone         |
+| 5     | Root cause synthesis with 5 Whys                               | Root causes per cluster | -                                           |
+| 6     | Gate decision (see § below)                                    | Ready / NotReady        | -                                           |
+| 7     | Output final Markdown                                          | Report                  | -                                           |
 
 ## Cross-Evidence Correlation (Phase 4)
 
-Correlate static findings with dynamic evidence to reinforce or weaken support.
+Correlate static findings with dynamic evidence to reinforce or weaken support. Group correlated findings by location (file, module, boundary). Identify convergence signals where 2+ evidence types flag the same area.
 
-| Static Finding | Dynamic Evidence                  | Action                                          |
-| -------------- | --------------------------------- | ----------------------------------------------- |
-| High severity  | Build/test fails at same location | Elevate to critical                             |
-| High severity  | Adversarial test confirms         | Mark as strongly supported                      |
-| Any severity   | Build/test passes cleanly         | No change (passing does not disprove)           |
-| Weak evidence  | Adversarial test confirms         | Upgrade to verified                             |
-| Any finding    | No dynamic evidence               | Keep as-is (static-only finding)                |
-
-Group correlated findings by location (file, module, boundary). Identify
-convergence signals where 2+ evidence types flag the same area.
+| Static Finding | Dynamic Evidence                  | Action                                |
+| -------------- | --------------------------------- | ------------------------------------- |
+| High severity  | Build/test fails at same location | Elevate to critical                   |
+| High severity  | Adversarial test confirms         | Mark as strongly supported            |
+| Any severity   | Build/test passes cleanly         | No change (passing does not disprove) |
+| Weak evidence  | Adversarial test confirms         | Upgrade to verified                   |
+| Any finding    | No dynamic evidence               | Keep as-is (static-only finding)      |
 
 ## Root Cause Synthesis (Phase 5)
 
-Reuse team-integration logic.
+Reuses team-integration synthesis logic.
 
 | Step | Action                                                                                                                                         |
 | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -142,27 +146,25 @@ Reuse team-integration logic.
 | 6    | Apply 5 Whys on root cause, not individual findings                                                                                            |
 | 7    | Classify: Architecture Gap / Knowledge Gap / Tooling Gap / Process Gap                                                                         |
 | 8    | Standalone findings: 5 Whys individually                                                                                                       |
-| 9    | Impact evaluation: findings_resolved × max_severity × fixability (used for RC ordering, not gate)                                             |
+| 9    | Impact evaluation: findings_resolved × max_severity × fixability (used for RC ordering, not gate)                                              |
 
 ### Step 4a: Severity re-evaluation rules
 
 - Cite the specific contributing finding that changes the impact assessment
-- If no cross-domain context changes impact → record "Independent findings. No upgrade."
+- If no cross-domain context changes impact, record "Independent findings. No upgrade."
 - Count alone does not justify upgrade: 2× medium ≠ high
 
 ## Gate Decision (Phase 6)
 
-Compute gate from reconciled evidence. Full rule: `gate-decision.md`.
+Compute gate from reconciled evidence. Full rule reference: `skills/assert/references/gate-decision.md`. Output `gate: Ready` iff no blocking input is triggered. Otherwise `gate: NotReady`.
 
-| Input                    | Blocks Ready          | Source                      |
-| ------------------------ | --------------------- | --------------------------- |
-| Reconciled findings > 0  | yes                   | Phase 3 merged set          |
-| Build fail               | yes                   | Outcome evidence            |
-| Tests fail               | yes                   | Outcome evidence            |
-| Adversarial failures > 0 | yes                   | Phase 2.5 promoted findings |
-| Bootstrap skipped        | no (static-only mode) | Phase 0 result              |
-
-Output `gate: Ready` iff no blocking input is triggered. Otherwise `gate: NotReady`.
+| Input                    | Blocks Ready          | Source                        |
+| ------------------------ | --------------------- | ----------------------------- |
+| Reconciled findings > 0  | yes                   | Phase 3 merged set            |
+| Build fail               | yes                   | Outcome evidence              |
+| Tests fail               | yes                   | Outcome evidence              |
+| Adversarial failures > 0 | yes                   | Promoted adversarial findings |
+| Bootstrap skipped        | no (static-only mode) | Bootstrap result              |
 
 ## Output
 
@@ -171,26 +173,25 @@ Return final Markdown report to /assert leader via Task completion.
 ```markdown
 ## Evidence Integration Report
 
-| Field | Value             |
-| ----- | ----------------- |
-| gate  | Ready / NotReady  |
+| Field | Value            |
+| ----- | ---------------- |
+| gate  | Ready / NotReady |
 
 ### Gate Decision
 
-| Check       | Value                                       |
-| ----------- | ------------------------------------------- |
-| Build       | pass / fail / skipped                       |
-| Tests       | pass / fail (N passed, M failed) / skipped  |
-| Findings    | 0 / N high, M medium, L low                 |
-| Adversarial | N/M passed / skipped                        |
+| Check       | Value                                      |
+| ----------- | ------------------------------------------ |
+| Build       | pass / fail / skipped                      |
+| Tests       | pass / fail (N passed, M failed) / skipped |
+| Findings    | 0 / N high, M medium, L low                |
+| Adversarial | N/M passed / skipped                       |
 
 ### Blockers
 
-| # | Source                   | Location     | Description | Fix |
-| - | ------------------------ | ------------ | ----------- | --- |
+All reconciled findings + build/test failures + adversarial failures. When gate = Ready, write `(none)`.
 
-All reconciled findings + build/test failures + adversarial failures.
-Empty: `(none)` when gate = Ready.
+| # | Source | Location | Description | Fix |
+| - | ------ | -------- | ----------- | --- |
 
 ### Root Causes
 
@@ -223,13 +224,13 @@ Empty: `(none)` when gate = Ready.
 
 ### Diff from previous
 
+No prior review marker: `No prior review`. Legacy Trust Score format marker: `Legacy format: diff skipped`.
+
 | Category     | Count | IDs |
 | ------------ | ----- | --- |
 | Resolved     | N     | ... |
 | New          | N     | ... |
 | Carried over | N     | ... |
-
-No prior review: `No prior review`. Legacy Trust Score format: `Legacy format: diff skipped`.
 
 ### Summary
 
@@ -241,29 +242,26 @@ No prior review: `No prior review`. Legacy Trust Score format: `Legacy format: d
 | static_only_findings   | N                |
 | gate                   | Ready / NotReady |
 
-`<promise>PASS</promise>` when gate = Ready. Otherwise omit.
+`<promise>PASS</promise>` when gate = Ready only. Otherwise omit this marker.
 ```
 
 ## Constraints
 
-| Rule                          | Description                                                                    |
-| ----------------------------- | ------------------------------------------------------------------------------ |
-| Reconcile before gating       | Phase 2 reconciliation must complete before any dedup, correlation, or gate    |
-| Dynamic elevates, not negates | Passing build/test does not disprove a finding                                 |
-| Trace everything              | Every root cause links to source findings                                      |
-| Don't force correlation       | Static-only findings remain as standalone                                      |
-| Evidence bar                  | Exclude findings lacking a concrete trigger or file-read verification          |
-| Zero-tolerance on gate        | Any reconciled finding sets gate = NotReady (severity determines fix priority, not gate) |
+| Rule                   | Description                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| Trace everything       | Every root cause links to source findings                                                |
+| Evidence bar           | Exclude findings lacking a concrete trigger or file-read verification                    |
+| Zero-tolerance on gate | Any reconciled finding sets gate = NotReady (severity determines fix priority, not gate) |
 
 ## Error Handling
 
-| Error                   | Recovery                                                                 |
-| ----------------------- | ------------------------------------------------------------------------ |
-| Challenger missing      | Proceed with verifier results only (reconciliation rule 6 applied)       |
-| Verifier missing        | Proceed with challenger results only (original verdicts unchanged)       |
-| Both missing            | Skip reconciliation, use raw reviewer findings directly into Phase 3     |
+| Error                   | Recovery                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| Challenger missing      | Proceed with verifier results only (reconciliation rule 6 applied)             |
+| Verifier missing        | Proceed with challenger results only (original verdicts unchanged)             |
+| Both missing            | Skip reconciliation, use raw reviewer findings directly into Phase 3           |
 | No findings after recon | Findings block removed from gate inputs (acts as 0-findings → Ready candidate) |
-| No outcome evidence     | Mark Build/Tests as `skipped` (static-only mode, gate not blocked by them) |
-| No adversarial results  | Mark Adversarial as `skipped` (gate not blocked by it)                    |
-| All inputs empty        | gate = Ready with note "no evidence collected"                            |
-| Partial input           | Gate on available components only                                         |
+| No outcome evidence     | Mark Build/Tests as skipped (static-only mode, gate not blocked by them)       |
+| No adversarial results  | Mark Adversarial as skipped (gate not blocked by it)                           |
+| All inputs empty        | gate = Ready with note "no evidence collected"                                 |
+| Partial input           | Gate on available components only                                              |

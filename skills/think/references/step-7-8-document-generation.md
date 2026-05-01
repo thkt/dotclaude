@@ -2,7 +2,7 @@
 
 ## Step 7: SOW
 
-Read template `~/.claude/skills/think/templates/sow.md`. Fill from design context
+Read template ${CLAUDE_SKILL_DIR}/templates/sow.md. Fill from design context
 (Steps 0-6). ID format: AC-N.
 
 Output: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
@@ -11,30 +11,21 @@ Output: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
 
 Apply before writing each section.
 
-| Section | Gate                                                                                                                                      |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Why     | 5 fields all filled. Outcome = measurable result, not deliverable                                                                         |
+| Section | Gate                                                                                                                              |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Why     | 5 fields all filled. Outcome = measurable result, not deliverable                                                                 |
 | AC      | Each traces to Why Outcome. Observable signal column filled (HTTP 200, state X). No orphan ACs, no scope creep beyond Why Problem |
-| Scope   | YAGNI checklist checked with rationale. Out of Scope traces Why not. In Scope Observable outcome column filled (concrete signal) |
-| Impl    | Files < 5 per Phase. Steps describe concrete changes                                                                                      |
-| Test    | Every AC has ≥1 test. Verification states what is checked concretely                                                                      |
-| Risks   | ≥1 risk identified. Probability column filled. Mitigation required when Impact = HIGH                                                     |
+| Scope   | Out of Scope traces Why field or constraint. In Scope Observable outcome column filled (concrete signal)                          |
+| Impl    | Files < 5 per Phase. Steps describe concrete changes                                                                              |
+| Test    | Every AC has ≥1 test. Verification states what is checked concretely                                                              |
+| Risks   | ≥1 risk identified. Probability column filled. Mitigation required when Impact = HIGH                                             |
 
 ## Step 8: Spec
 
-Read template `~/.claude/skills/think/templates/spec.md`. Generate from SOW.
+Read template ${CLAUDE_SKILL_DIR}/templates/spec.md. Generate from SOW.
 ID format: FR-001, T-001, NFR-001.
 
 Traceability: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
-
-### Component API Section (auto-detected)
-
-| Condition                                                                                                            | Action                                                         |
-| -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| Project has Storybook (`.storybook/` or `@storybook/*` dep) AND target includes `.tsx`/`.jsx` with PascalCase export | Include Component API section (Props, variants, states, usage) |
-| Otherwise                                                                                                            | Skip                                                           |
-
-See `~/.claude/skills/think/templates/component-api.md` for the Component API template.
 
 Output: `.claude/workspace/planning/[same-dir]/spec.md`
 
@@ -48,7 +39,7 @@ Apply before writing each section.
 | FR      | Document rationale for design decisions (variant reuse, YAGNI reasoning etc)  |
 | Domain  | Concept-level only. No type/field names. Invariants trace to FRs              |
 | Test    | Every FR has ≥1 scenario. Concrete values in all Given-When-Then columns      |
-| NFR     | Rationale column filled — why this target value (UX budget, SLA etc)          |
+| NFR     | Rationale column filled: why this target value (UX budget, SLA etc)           |
 | Assume  | Assumptions include Impact-if-broken for each entry                           |
 | Impl    | Depends column specifies prior Phase IDs or `none`                            |
 | Trace   | AC → FR → Test → NFR chain unbroken                                           |

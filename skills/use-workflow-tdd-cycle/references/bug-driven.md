@@ -1,6 +1,6 @@
 # Bug-Driven TDD
 
-How `/fix` uses TDD for bug fixes. Builds on `${CLAUDE_SKILL_DIR}/SKILL.md` (RGRC Cycle, Baby Steps).
+How `/fix` uses TDD for bug fixes. Builds on ${CLAUDE_SKILL_DIR}/SKILL.md (RGRC Cycle, Baby Steps).
 
 ## Context
 

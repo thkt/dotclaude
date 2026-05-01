@@ -1,11 +1,8 @@
 ---
 name: use-context-reviewer-strictness
-description: >
-  TypeScript type safety review. Use when: type safety, any, 型安全,
-  型カバレッジ, strict mode. Do NOT use for testability
-  (use-context-reviewer-testability), security (use-context-reviewer-security), or readability
-  (use-context-reviewer-readability).
-allowed-tools: [Read, Grep, Glob, Task]
+description: TypeScript type safety review. Do NOT use for testability (use-context-reviewer-testability), security (use-context-reviewer-security), or readability (use-context-reviewer-readability).
+when_to_use: type safety, any, 型安全, 型カバレッジ, strict mode
+allowed-tools: Read Grep Glob Task
 agent: reviewer-strictness
 context: fork
 user-invocable: false
@@ -33,9 +30,9 @@ Type coverage >= 95%. Any usage = 0. Strict mode all enabled.
 
 ## References
 
-| Topic    | File                                              |
-| -------- | ------------------------------------------------- |
-| Coverage | `${CLAUDE_SKILL_DIR}/references/type-coverage.md` |
-| Guards   | `${CLAUDE_SKILL_DIR}/references/type-guards.md`   |
-| Strict   | `${CLAUDE_SKILL_DIR}/references/strict-mode.md`   |
-| Result   | `${CLAUDE_SKILL_DIR}/references/result-type.md`   |
+| Topic    | File                                            |
+| -------- | ----------------------------------------------- |
+| Coverage | ${CLAUDE_SKILL_DIR}/references/type-coverage.md |
+| Guards   | ${CLAUDE_SKILL_DIR}/references/type-guards.md   |
+| Strict   | ${CLAUDE_SKILL_DIR}/references/strict-mode.md   |
+| Result   | ${CLAUDE_SKILL_DIR}/references/result-type.md   |

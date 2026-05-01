@@ -1,10 +1,8 @@
 ---
 name: use-context-reviewer-testability
-description: >
-  Testable code design review. Use when: テスト容易性, モック, mock-friendly,
-  DI. Do NOT use for type safety (use-context-reviewer-strictness), security
-  (use-context-reviewer-security), or readability (use-context-reviewer-readability).
-allowed-tools: [Read, Grep, Glob, Task]
+description: Testable code design review. Do NOT use for type safety (use-context-reviewer-strictness), security (use-context-reviewer-security), or readability (use-context-reviewer-readability).
+when_to_use: テスト容易性, モック, mock-friendly, DI
+allowed-tools: Read Grep Glob Task
 agent: reviewer-testability
 context: fork
 user-invocable: false
@@ -31,8 +29,8 @@ Test setup < 10 lines. No deep mock chains. Dependencies explicit.
 
 ## References
 
-| Topic   | File                                                     |
-| ------- | -------------------------------------------------------- |
-| DI      | `${CLAUDE_SKILL_DIR}/references/dependency-injection.md` |
-| Pure    | `${CLAUDE_SKILL_DIR}/references/pure-functions.md`       |
-| Mocking | `${CLAUDE_SKILL_DIR}/references/mock-friendly.md`        |
+| Topic   | File                                                   |
+| ------- | ------------------------------------------------------ |
+| DI      | ${CLAUDE_SKILL_DIR}/references/dependency-injection.md |
+| Pure    | ${CLAUDE_SKILL_DIR}/references/pure-functions.md       |
+| Mocking | ${CLAUDE_SKILL_DIR}/references/mock-friendly.md        |

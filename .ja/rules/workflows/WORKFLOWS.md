@@ -3,70 +3,66 @@ paths:
   - ".claude/skills/**"
 ---
 
-# ワークフロー
+# Workflows
 
 ## コマンド選択
 
-| 状況                         | ワークフロー                                                               |
-| ---------------------------- | -------------------------------------------------------------------------- |
-| 小さなバグ、安定コードベース | `/fix`                                                                     |
-| 実装が明確                   | `/code`                                                                    |
-| 原因不明 / 知識不足          | `/research` → `/fix`                                                       |
-| 設計・アプローチ未決         | `/think`                                                                   |
-| 新機能                       | `/feature` (or: `/research` → `/think` → `/code` → `/audit` → `/validate`) |
-| 緊急のプロダクション問題     | `/fix`(緊急、設計スキップ)                                                 |
+| 状況                             | ワークフロー                                                        |
+| -------------------------------- | ------------------------------------------------------------------- |
+| 小さなバグ、安定したコードベース | `/fix`                                                              |
+| 既知の実装                       | `/code`                                                             |
+| 原因不明 / 知識欠落              | `/research` → `/fix`                                               |
+| 設計または方針未確定             | `/think`                                                            |
+| 新機能                           | `/feature` (または: `/research` → `/think` → `/code` → `/audit`) |
+| 緊急の本番障害                   | `/fix` (緊急、設計を省略)                                           |
 
-## チームファースト原則
+## Team-First 原則
 
-デフォルト: チーム（TeamCreate + TaskListで進捗追跡）
+デフォルト: Team (TeamCreate + TaskList で進捗追跡)
 
-| コマンド    | モード | 備考                        |
-| ----------- | ------ | --------------------------- |
-| `/feature`  | チーム | 既存チーム構造              |
-| `/audit`    | 自動   | スコープベースの判断        |
-| `/think`    | ソロ   |                             |
-| `/code`     | 自動   | スコープベースの判断        |
-| `/fix`      | 自動   | 下記ソロ条件                |
-| `/research` | ソロ   |                             |
-| ユーティリ  | ソロ   | /commit, /branch, /pr, etc. |
+| コマンド    | モード | 備考                         |
+| ----------- | ------ | ---------------------------- |
+| `/feature`  | Team   | 既存のチーム構造             |
+| `/audit`    | Auto   | スコープに基づく判断         |
+| `/think`    | Solo   |                              |
+| `/code`     | Auto   | スコープに基づく判断         |
+| `/fix`      | Auto   | 下記の Solo 条件             |
+| `/research` | Solo   |                              |
+| Utility     | Solo   | /commit, /checkout, /pr など |
 
-自動: すべてのソロ条件を満たす → ソロ、それ以外 → チーム
+Auto: すべての Solo 条件を満たす → Solo、そうでなければ → Team
 
-| ソロ条件             | 例                         |
+| Solo 条件            | 例                         |
 | -------------------- | -------------------------- |
-| 対象ファイル1-2      | Typo修正、単一関数の変更   |
-| 完了まで単一フェーズ | リサーチやテスト生成が不要 |
+| 対象 1-2 ファイル    | typo 修正、単一関数の変更  |
+| 完了まで単一フェーズ | リサーチやテスト生成不要   |
 | エージェント連携なし | 他エージェントへの依存なし |
 
 ## 利用可能なコマンド
 
-| コマンド    | カテゴリ     | 目的                                                    |
-| ----------- | ------------ | ------------------------------------------------------- |
-| `/think`    | コア         | SOW作成と検証                                           |
-| `/research` | コア         | 実装なしの調査                                          |
-| `/code`     | コア         | TDD/RGRC実装                                            |
-| `/audit`    | コア         | エージェント経由のコードレビュー                        |
-| `/polish`   | コア         | AI生成スロップの除去                                    |
-| `/validate` | コア         | SOW準拠の検証                                           |
-| `/feature`  | コア         | 機能ライフサイクル全体（調査 + 設計 + 実装 + レビュー） |
-| `/fix`      | クイック     | 迅速なバグ修正（think→code→test）                       |
-| `/adr`      | ドキュメント | アーキテクチャ決定記録                                  |
-| `/docs`     | ドキュメント | コードからドキュメント生成                              |
-| `/branch`   | Git          | ブランチ名の提案                                        |
-| `/commit`   | Git          | Conventional Commitsメッセージ                          |
-| `/pr`       | Git          | PRの説明                                                |
-| `/issue`    | Git          | GitHub Issues                                           |
-| `/preview`  | Git          | PRスクリーニングレビュー                                |
-| `/inbox`    | 生産性       | タスク集約（GitHub/Slack/カレンダー）                   |
+| コマンド    | カテゴリ      | 用途                                                             |
+| ----------- | ------------- | ---------------------------------------------------------------- |
+| `/think`    | Core          | 検証付きの SOW 作成                                              |
+| `/research` | Core          | 実装なしの調査                                                   |
+| `/code`     | Core          | TDD/RGRC 実装                                                    |
+| `/audit`    | Core          | エージェントによるコードレビュー                                 |
+| `/polish`   | Core          | AI 由来の slop 除去                                              |
+| `/feature`  | Core          | 機能ライフサイクル全体 (explore + architect + implement + audit) |
+| `/fix`      | Quick         | 高速バグ修正 (think→code→test)                                 |
+| `/adr`      | Documentation | Architecture Decision Record                                     |
+| `/checkout` | Git           | ブランチ名提案                                                   |
+| `/commit`   | Git           | Conventional Commits メッセージ                                  |
+| `/pr`       | Git           | PR 説明                                                          |
+| `/issue`    | Git           | GitHub Issue                                                     |
+| `/preview`  | Git           | PR スクリーニングレビュー                                        |
 
-## Todo進捗トラッキング
+## Todo 進捗追跡
 
 クロスセッション: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
 
-| コマンド    | Todoアクション                                |
-| ----------- | --------------------------------------------- |
-| `/think`    | Implementation PlanからTaskCreate             |
-| `/code`     | TaskUpdate → in_progress / completed          |
-| `/audit`    | （`/code` フェーズ経由）                      |
-| `/validate` | 残りのTaskUpdate → completed                  |
-| `/feature`  | TaskCreate（Phase 1）、全フェーズでTaskUpdate |
+| コマンド   | Todo アクション                                 |
+| ---------- | ----------------------------------------------- |
+| `/think`   | Implementation Plan から TaskCreate             |
+| `/code`    | TaskUpdate → in_progress / completed           |
+| `/audit`   | (`/code` フェーズ経由)                          |
+| `/feature` | TaskCreate (Phase 1)、フェーズ全体で TaskUpdate |

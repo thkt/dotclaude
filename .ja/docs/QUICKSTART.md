@@ -1,43 +1,43 @@
-# クイックスタート（5分）
+# Quick Start (5 分)
 
 ## 1. 基本コマンド
 
-| コマンド    | 使用場面           |
-| ----------- | ------------------ |
-| `/fix`      | 小さなバグ、即修正 |
-| `/code`     | TDDで新機能開発    |
-| `/research` | 実装前の調査       |
-| `/audit`    | コード品質レビュー |
-| `/commit`   | コミットメッセージ |
+| コマンド    | 利用シーン                |
+| ----------- | ------------------------- |
+| `/fix`      | 小さなバグ、即時修正      |
+| `/code`     | TDD で新機能              |
+| `/research` | 着手前に調査              |
+| `/audit`    | コード品質レビュー        |
+| `/commit`   | コミット メッセージを作成 |
 
 ## 2. 判断フロー
 
 ```text
-すぐ直せる？ → /fix
-まず理解が必要？ → /research → /fix
-機能開発？ → /code → /audit
+即時修正か → /fix
+先に理解が必要か → /research → /fix
+機能を作るか → /code → /audit
 ```
 
 ## 3. セッション例
 
 ```bash
-# 即修正
-> /fix ログインボタンが動かない
+# 即時バグ修正
+> /fix the login button is not working
 
 # 機能開発
-> /research このコードベースの認証はどう動いてる？
-> /code ログアウト機能を追加
+> /research how does auth work in this codebase?
+> /code add logout functionality
 > /audit
 > /commit
 ```
 
-## 4. 基本原則
+## 4. キーポイント
 
-- **一度に一つ**: 各コマンドの完了を待つ
-- **ワークフローを信頼**: コマンドは自然に連鎖
-- **不明時は質問**: Claudeが確認してくれる
+- 一度に 1 コマンド: 各コマンドが完了してから次へ
+- ワークフローを信頼する: コマンドは自然に連鎖する
+- 不明なら聞く: Claude が必要なら確認する
 
 ## 5. 次のステップ
 
-- パターン詳細: [WORKFLOWS.md](../rules/workflows/WORKFLOWS.md)
-- 全コマンド: `/help`
+- パターンは [WORKFLOWS.md](../rules/workflows/WORKFLOWS.md) を参照
+- 全コマンドは `/help` で確認

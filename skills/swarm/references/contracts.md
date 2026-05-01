@@ -4,12 +4,11 @@ Details and templates referenced by SKILL.md during execution.
 
 ## Context Contracts
 
-Each handoff has a defined structure. Peer DM is the transport; these contracts
-define what to send.
+Each handoff has a defined structure. Peer DM is the transport; these contracts define what to send.
 
 ### Spawn Context (Leader → all agents)
 
-Every spawn prompt includes:
+Every spawn prompt includes the following.
 
 - CLAUDE.md rules (or summary of key constraints)
 - Project conventions (tech stack, naming, patterns)
@@ -32,10 +31,10 @@ Every spawn prompt includes:
 
 ### Parallel Units
 
-| Unit ID | Files      | Depends On                                              |
-| ------- | ---------- | ------------------------------------------------------- |
-| 1       | file paths | (none) — GOAL: keep empty (independence-first)          |
-| 2       | file paths | (none) — only populate when unavoidable, with rationale |
+| Unit ID | Files      | Depends On                                             |
+| ------- | ---------- | ------------------------------------------------------ |
+| 1       | file paths | (none), GOAL keep empty (independence-first)           |
+| 2       | file paths | (none), populate only when unavoidable, with rationale |
 
 Build sequence: unit_id order if dependencies exist
 ```
@@ -88,10 +87,10 @@ Build sequence: unit_id order if dependencies exist
 
 ### Issues
 
-- **description** (severity: blocker / warning)
+- description (severity: blocker / warning)
 ```
 
-Leader response by status + issues:
+Leader response by status and issues.
 
 | Status   | Issues     | Leader Action                                     |
 | -------- | ---------- | ------------------------------------------------- |
@@ -103,7 +102,7 @@ Leader response by status + issues:
 
 ## Progress Tracking
 
-Leader maintains a progress table and reports to user at key events:
+Leader maintains a progress table and reports to user at key events.
 
 ### Display Format
 
@@ -123,19 +122,19 @@ Shared changes: applied Integration: pending (2/3 units complete)
 
 | Event                   | Action                           |
 | ----------------------- | -------------------------------- |
-| Phase 3 start           | Show initial table (all pending) |
+| Phase 4 start           | Show initial table (all pending) |
 | Implementer started DM  | Update row status to in_progress |
 | Implementer completion  | Update row, show progress        |
 | All Implementers done   | Show timeline summary            |
-| Phase 5a merge progress | Show merge status per unit       |
-| Phase 5b QG result      | Show pass/fail with details      |
+| Phase 6a merge progress | Show merge status per unit       |
+| Phase 6b QG result      | Show pass/fail with details      |
 
 ## Abort / Rollback
 
 | Scenario               | Recovery                                                            |
 | ---------------------- | ------------------------------------------------------------------- |
 | Mid-Phase 1 abort      | Shutdown Architect + QA, TeamDelete                                 |
-| Mid-Phase 2/3 abort    | Shutdown test-gen + QA, TeamDelete                                  |
-| Mid-Phase 4 abort      | Shutdown all Implementers + QA, TeamDelete                          |
-| Mid-Phase 5 abort      | Tag main before merges; revert merged commits if needed, TeamDelete |
+| Mid-Phase 3/4 abort    | Shutdown test-gen + QA, TeamDelete                                  |
+| Mid-Phase 5 abort      | Shutdown all Implementers + QA, TeamDelete                          |
+| Mid-Phase 6 abort      | Tag main before merges; revert merged commits if needed, TeamDelete |
 | Partial implementation | Implementer worktrees contain changes, user decides to keep/discard |

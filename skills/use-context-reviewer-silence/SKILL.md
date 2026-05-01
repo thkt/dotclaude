@@ -1,11 +1,8 @@
 ---
 name: use-context-reviewer-silence
-description: >
-  Silent failure detection. Use when: silent failure, empty catch,
-  エラーハンドリング, 握りつぶし, swallowed error. Do NOT use for security
-  (use-context-reviewer-security), readability (use-context-reviewer-readability), or type safety
-  (use-context-reviewer-strictness).
-allowed-tools: [Read, Grep, Glob, Task]
+description: Silent failure detection. Do NOT use for security (use-context-reviewer-security), readability (use-context-reviewer-readability), or type safety (use-context-reviewer-strictness).
+when_to_use: silent failure, empty catch, エラーハンドリング, 握りつぶし, swallowed error
+allowed-tools: Read Grep Glob Task
 agent: reviewer-silence
 context: fork
 user-invocable: false
@@ -29,6 +26,6 @@ user-invocable: false
 
 ## References
 
-| Topic     | File                                                   |
-| --------- | ------------------------------------------------------ |
-| Detection | `${CLAUDE_SKILL_DIR}/references/detection-patterns.md` |
+| Topic     | File                                                 |
+| --------- | ---------------------------------------------------- |
+| Detection | ${CLAUDE_SKILL_DIR}/references/detection-patterns.md |

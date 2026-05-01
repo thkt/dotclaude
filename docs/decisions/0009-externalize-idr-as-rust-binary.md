@@ -88,7 +88,7 @@ guardrails と同じパターンで、stdin からフック入力を受け取り
 | `resolve-idr-path.sh`      | `path.rs`           |
 | `next-idr-number.sh`       | `numbering.rs`      |
 | IDR format (in prompt)     | `prompt.rs`         |
-| —                          | `config.rs`         |
+| -                          | `config.rs`         |
 
 ### Integration Points
 
@@ -131,7 +131,7 @@ git commit
 
 ## Related ADRs
 
-- [ADR-0006: Adopt Deterministic Script Pattern](0006-adopt-deterministic-script-pattern.md) — scripts/ パターンの前身
+- [ADR-0006: Adopt Deterministic Script Pattern](0006-adopt-deterministic-script-pattern.md) - scripts/ パターンの前身
 
 ---
 

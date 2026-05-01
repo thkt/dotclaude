@@ -1,119 +1,145 @@
-# CLIツール
+# CLI Tools
 
-Claude Codeの機能を拡張する外部CLIツール。
+Claude Code の機能を拡張する外部 CLI ツール。
 
-📌 **[English Version](../../docs/CLI_TOOLS.md)**
+📌 [English version](../../docs/CLI_TOOLS.md)
 
 ## 概要
 
-3つのRust CLIツール。Claude Codeのデフォルトツールでカバーできない領域を補完する。
-AI向けの選択ルールは [TOOLS.md](../rules/development/TOOLS.md) に記載。
-このドキュメントでは設計意図とアーキテクチャを説明する。
+4 つの Rust CLI ツール。それぞれ Claude Code のデフォルト ツールに対する特定のギャップを埋めるために作られている。AI 向けルールは [TOOLS.md](../rules/development/TOOLS.md) にあり、本ドキュメントは設計意図とアーキテクチャを扱う。
 
 ```mermaid
 graph LR
-    subgraph Search["情報取得"]
+    subgraph Search["Information Retrieval"]
         SC[scout]
         YO[yomu]
         RE[recall]
+        XR[xr]
     end
 
     SC -->|Web + GitHub| AI[Claude Code]
-    YO -->|コードベース| AI
-    RE -->|過去セッション| AI
+    YO -->|Codebase| AI
+    RE -->|Past Sessions| AI
+    XR -->|X/Twitter| AI
 ```
 
 ## scout
 
-Gemini Grounding with Google Searchを使ったWeb検索・ページ取得ツール。
+Gemini Grounding と Google 検索による Web 検索とページ取得。
 
-| 項目         | 詳細                                                     |
-| ------------ | -------------------------------------------------------- |
-| なぜ必要か   | WebFetch/WebSearchはトークン消費が大きくMarkdown変換なし |
-| 仕組み       | Gemini Grounding APIで検索、readabilityでページ抽出      |
-| インストール | `brew install thkt/tap/scout`                            |
-| ソース       | [thkt/scout](https://github.com/thkt/scout)              |
+| 観点    | 詳細                                                       |
+| ------- | ---------------------------------------------------------- |
+| Why     | WebFetch/WebSearch はトークンを消費し、Markdown 変換が弱い |
+| How     | 検索は Gemini Grounding API、ページ抽出は readability      |
+| Install | `brew install thkt/tap/scout`                              |
+| Source  | [thkt/scout](https://github.com/thkt/scout)                |
 
 ### コマンド
 
 | コマンド              | 用途                                          |
 | --------------------- | --------------------------------------------- |
-| `scout search`        | Web検索（Gemini Grounding）                   |
-| `scout fetch`         | URLをクリーンなMarkdownで取得                 |
-| `scout research`      | ディープリサーチ（検索+取得+まとめ）          |
-| `scout repo-overview` | GitHubリポジトリ概要（stars, issues, README） |
-| `scout repo-tree`     | リモートGitHubリポジトリのファイル一覧        |
-| `scout repo-read`     | リモートGitHubリポジトリのファイル読取        |
+| `scout search`        | Web 検索 (Gemini Grounding)                   |
+| `scout fetch`         | URL をクリーンな Markdown として取得          |
+| `scout research`      | 深いリサーチ (検索 + 取得 + 編集)             |
+| `scout repo-overview` | GitHub リポジトリ概要 (stars, issues, README) |
+| `scout repo-tree`     | リモート GitHub リポジトリのファイル一覧      |
+| `scout repo-read`     | リモート GitHub リポジトリからファイルを読む  |
 
-### 使い分け
+### 適用条件
 
-| scout                        | WebFetch/WebSearch    |
-| ---------------------------- | --------------------- |
-| 最新ドキュメント・リリース   | 使わない（scout優先） |
-| GitHubリポジトリ探索         | 使わない（scout優先） |
-| まとめ付きのディープリサーチ | N/A                   |
+| scout                            | WebFetch/WebSearch  |
+| -------------------------------- | ------------------- |
+| 最新ドキュメント、リリースノート | 不可 (scout を優先) |
+| GitHub リポジトリ探索            | 不可 (scout を優先) |
+| 編集付きの深いリサーチ           | N/A                 |
 
 ## yomu
 
-フロントエンドコードベース（TS/TSX/JS/CSS/HTML）のセマンティック検索。
-Embeddingベース、文字列一致ではなく意味で検索。
+フロントエンド コードベース (TS/TSX/JS/CSS/HTML) のためのセマンティック コード検索。embedding ベース。文字列マッチではなく意味でコードを見つける。
 
-| 項目         | 詳細                                      |
-| ------------ | ----------------------------------------- |
-| なぜ必要か   | Grepは完全一致。yomuは概念で検索できる    |
-| 仕組み       | チャンクインデックス + Embedding検索      |
-| インストール | `brew install thkt/tap/yomu`              |
-| ソース       | [thkt/yomu](https://github.com/thkt/yomu) |
+| 観点    | 詳細                                           |
+| ------- | ---------------------------------------------- |
+| Why     | Grep は文字列の正確一致。yomu は概念で見つける |
+| How     | チャンク インデックス + embedding 検索         |
+| Install | `brew install thkt/tap/yomu`                   |
+| Source  | [thkt/yomu](https://github.com/thkt/yomu)      |
 
 ### コマンド
 
-| コマンド       | 用途                                     |
-| -------------- | ---------------------------------------- |
-| `yomu search`  | セマンティック検索（概念・識別子・関連） |
-| `yomu index`   | チャンクインデックスの増分更新           |
-| `yomu rebuild` | チャンクインデックスの全再構築           |
-| `yomu impact`  | ファイル・シンボルの変更影響分析         |
-| `yomu status`  | インデックス統計の表示                   |
+| コマンド       | 用途                                              |
+| -------------- | ------------------------------------------------- |
+| `yomu search`  | セマンティック検索 (concept, identifier, related) |
+| `yomu index`   | 増分でチャンク インデックスを更新                 |
+| `yomu rebuild` | チャンク インデックスをゼロから再構築             |
+| `yomu impact`  | ファイルやシンボルの変更影響を分析                |
+| `yomu status`  | インデックス統計を表示                            |
 
-### 使い分け
+### 適用条件
 
 | yomu                                 | Grep/Glob                             |
 | ------------------------------------ | ------------------------------------- |
-| 概念: "form validation", "auth flow" | リテラル: エラーメッセージ、正規表現  |
+| 概念: "form validation", "auth flow" | リテラル: エラー メッセージ、正規表現 |
 | 関連: "hooks that do Y"              | 既知パス: `src/components/Button.tsx` |
-| 既知の識別子: `useAuth`              | ファイル一覧: `**/*.tsx`              |
-| 名前不明: "where does X happen"      |                                       |
+| 既知識別子: `useAuth`                | ファイル一覧: `**/*.tsx`              |
+| 不明名: "where does X happen"        |                                       |
 
 ## recall
 
-過去のClaude Code / Codexセッションの全文検索（FTS5ベースのSQLiteインデックス）。
+過去の Claude Code・Codex セッションを横断する全文検索 (FTS5 ベースの SQLite インデックス)。
 
-| 項目         | 詳細                                           |
-| ------------ | ---------------------------------------------- |
-| なぜ必要か   | JONLセッション履歴はそのままでは検索不可       |
-| 仕組み       | セッショントランスクリプト上のFTS5インデックス |
-| インストール | `brew install thkt/tap/recall`                 |
-| ソース       | [thkt/recall](https://github.com/thkt/recall)  |
+| 観点    | 詳細                                                  |
+| ------- | ----------------------------------------------------- |
+| Why     | JSONL のセッション履歴はデフォルトで検索できない      |
+| How     | セッション トランスクリプトに対する FTS5 インデックス |
+| Install | `brew install thkt/tap/recall`                        |
+| Source  | [thkt/recall](https://github.com/thkt/recall)         |
 
 ### コマンド
 
-| コマンド           | 用途                             |
-| ------------------ | -------------------------------- |
-| `recall "query"`   | セッション横断の全文検索         |
-| `recall --days N`  | 直近N日間に限定                  |
-| `recall --project` | プロジェクトパスでフィルタ       |
-| `recall --source`  | ソースでフィルタ（claude/codex） |
-| `recall --reindex` | インデックスの全再構築           |
+| コマンド           | 用途                              |
+| ------------------ | --------------------------------- |
+| `recall "query"`   | セッション横断の全文検索          |
+| `recall --days N`  | 直近 N 日にフィルタ               |
+| `recall --project` | プロジェクト パスでフィルタ       |
+| `recall --source`  | ソースでフィルタ (claude / codex) |
+| `recall --reindex` | 完全インデックス再構築を強制      |
 
-### 使い分け
+### 適用条件
 
-| recall                                | Grep \*.jsonl                |
-| ------------------------------------- | ---------------------------- |
-| 過去の解決策: "how did I fix X"       | 現在のセッションのみ         |
-| パターン記憶: "what tool for Y"       | 特定の既知セッションファイル |
-| プロジェクト横断: "where did I use Z" |                              |
+| recall                                | Grep \*.jsonl                 |
+| ------------------------------------- | ----------------------------- |
+| 過去の解: "how did I fix X"           | 現セッションのみ              |
+| パターン想起: "what tool for Y"       | 既知の特定セッション ファイル |
+| プロジェクト横断: "where did I use Z" |                               |
+
+## xr
+
+X/Twitter コンテンツの取得 (tweet, thread, article, user profile)。
+
+| 観点    | 詳細                                                      |
+| ------- | --------------------------------------------------------- |
+| Why     | scout fetch は X/Twitter の構造化コンテンツを抽出できない |
+| How     | tweet/thread/article/profile 取得のための X/Twitter API   |
+| Install | `brew install thkt/tap/xr`                                |
+
+### コマンド
+
+| コマンド                  | 用途                        |
+| ------------------------- | --------------------------- |
+| `xr tweet <url>`          | 単一ツイートの取得          |
+| `xr tweet <url> --thread` | スレッド付きツイートの取得  |
+| `xr article <url>`        | X article の取得            |
+| `xr user <screen_name>`   | ユーザー プロフィールの取得 |
+
+### 適用条件
+
+| xr                                | scout fetch        |
+| --------------------------------- | ------------------ |
+| x.com / twitter.com URL           | その他すべての URL |
+| スレッド/返信のコンテキストが必要 | N/A                |
+| ユーザー プロフィール検索         | N/A                |
 
 ## 関連
 
-- [TOOLS.md](../rules/development/TOOLS.md) — AI向けツール選択ルール
-- [HOOKS.md](./HOOKS.md) — フックシステム設計（品質パイプライン含む）
+- [TOOLS.md](../rules/development/TOOLS.md). AI 向けのツール選択ルール
+- [HOOKS.md](./HOOKS.md). Hook システム設計 (品質パイプラインを含む)

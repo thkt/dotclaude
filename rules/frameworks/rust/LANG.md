@@ -42,7 +42,7 @@ tests/
 | Crate / Module / Function / Method / Local / Macro | `snake_case`                                                         |
 | Type / Trait / Enum variant                        | `UpperCamelCase`                                                     |
 | Constant / Static                                  | `SCREAMING_SNAKE_CASE`                                               |
-| Type parameter                                     | Concise `UpperCamelCase` — single letter (`T`, `E`) unless ambiguous |
+| Type parameter                                     | Concise `UpperCamelCase` - single letter (`T`, `E`) unless ambiguous |
 | Lifetime                                           | Short lowercase (`'a`, `'src`)                                       |
 
 Acronyms in `UpperCamelCase` count as one word: `Uuid` not `UUID`, `Stdin` not `StdIn`. Crate names drop `-rs`/`-rust` suffix.
@@ -79,7 +79,7 @@ Acronyms in `UpperCamelCase` count as one word: `Uuid` not `UUID`, `Stdin` not `
 
 | Pattern                                        | When                                                   |
 | ---------------------------------------------- | ------------------------------------------------------ |
-| `#[cfg(test)] mod tests { use super::*; ... }` | Default — keep tests near the code                     |
+| `#[cfg(test)] mod tests { use super::*; ... }` | Default - keep tests near the code                     |
 | `#[cfg(test)] mod tests;` → `tests.rs`         | When test code grows long enough to obscure the module |
 | `tests/cli_integration.rs`                     | Binary CLI behavior (spawns the real binary)           |
 
@@ -97,15 +97,15 @@ Centralize setup in helpers that return both the primary handle and any RAII gua
 | Helper pattern                            | Purpose                                                                          |
 | ----------------------------------------- | -------------------------------------------------------------------------------- |
 | `test_db() -> (Db, TempDir)`              | Fresh isolated DB in a temp dir                                                  |
-| `test_<crate>() -> (<MainType>, TempDir)` | Construct the crate's main type with test doubles — no real network / filesystem |
+| `test_<crate>() -> (<MainType>, TempDir)` | Construct the crate's main type with test doubles - no real network / filesystem |
 | `setup_test_files(files)`                 | Write fixture files to a temp dir and return the resulting handle                |
 
 ### Isolation
 
 | Rule     | Detail                                                                                                                                      |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Temp dir | Use `tempfile::tempdir()` — bind the `TempDir` to `_dir` so it lives until the test ends                                                    |
-| Mocks    | Use crate-provided mock/failing doubles (e.g., `MockEmbedder`, `FailingEmbedder`) — never call real network / model endpoints in unit tests |
+| Temp dir | Use `tempfile::tempdir()` - bind the `TempDir` to `_dir` so it lives until the test ends                                                    |
+| Mocks    | Use crate-provided mock/failing doubles (e.g., `MockEmbedder`, `FailingEmbedder`) - never call real network / model endpoints in unit tests |
 
 ### Assertions
 
@@ -158,7 +158,7 @@ Minimum set per type. Over-deriving leaks representation and bloats compile time
 
 | Derive                      | When                                                                  |
 | --------------------------- | --------------------------------------------------------------------- |
-| `Debug`                     | Always — required for `?` error output, test failures, `dbg!`         |
+| `Debug`                     | Always - required for `?` error output, test failures, `dbg!`         |
 | `Clone`                     | User needs duplication                                                |
 | `Copy`                      | POD ≤ 16 bytes with no semantic cost. Requires `Clone`                |
 | `Default`                   | Obvious zero-value exists                                             |
@@ -171,7 +171,7 @@ Minimum set per type. Over-deriving leaks representation and bloats compile time
 | Trait                    | When                                                                                     |
 | ------------------------ | ---------------------------------------------------------------------------------------- |
 | `Display`                | User-facing types. Pairs with `thiserror::Error` via `#[error("...")]`                   |
-| `From<T>` / `TryFrom<T>` | Natural conversion from another type — prefer over ad-hoc `new`/`with_*` (C-CONV-TRAITS) |
+| `From<T>` / `TryFrom<T>` | Natural conversion from another type - prefer over ad-hoc `new`/`with_*` (C-CONV-TRAITS) |
 
 ## Error Handling
 
@@ -189,10 +189,10 @@ Minimum set per type. Over-deriving leaks representation and bloats compile time
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Attribute             | `#[derive(Error, Debug)]` on enum                                                                                                                        |
 | Message               | `#[error("... {field} ...")]`                                                                                                                            |
-| Wrap + auto-convert   | `#[from]` on the inner error — enables `?`. Implies `#[source]` — do not add both                                                                        |
+| Wrap + auto-convert   | `#[from]` on the inner error - enables `?`. Implies `#[source]` - do not add both                                                                        |
 | Preserve chain        | `#[source]` when not wrapping (additional context fields)                                                                                                |
 | Variant granularity   | One variant per distinct cause. Do not flatten to `String`                                                                                               |
-| Forward compatibility | `#[non_exhaustive]` on `pub` error enums — adding a variant is non-breaking                                                                              |
+| Forward compatibility | `#[non_exhaustive]` on `pub` error enums - adding a variant is non-breaking                                                                              |
 | Crate-level alias     | `pub type Result<T> = std::result::Result<T, CrateError>;` at crate root. Override with `std::result::Result<T, OtherError>` when the error type differs |
 
 ### anyhow conventions
@@ -210,9 +210,9 @@ Minimum set per type. Over-deriving leaks representation and bloats compile time
 | ----------------------------------------------------- | ------------------------------------------------ |
 | `-> Result<T, Box<dyn Error>>` in library public API  | Define a `thiserror` enum so callers can match   |
 | Global `AppError` enum covering every module          | Per-module error types, `#[from]` to wrap        |
-| `.map_err(\|e\| e.to_string())?`                      | `#[from]` or `.context()` — preserves chain      |
+| `.map_err(\|e\| e.to_string())?`                      | `#[from]` or `.context()` - preserves chain      |
 | `anyhow!` inside a library                            | Reserve `anyhow` for application layer           |
-| `#[from]` combined with `#[source]` on the same field | `#[from]` alone — it already implies `#[source]` |
+| `#[from]` combined with `#[source]` on the same field | `#[from]` alone - it already implies `#[source]` |
 
 ## Unsafe (2024 Edition)
 
@@ -220,11 +220,11 @@ Every `unsafe {}` block carries a `// SAFETY: ...` comment explaining why the in
 
 | Rule                                                | Detail                                                                                                                   |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `unsafe fn` body                                    | Wrap each unsafe operation in `unsafe {}` — `unsafe_op_in_unsafe_fn` is warn-by-default                                  |
-| `extern` blocks                                     | `unsafe extern "C" { ... }` — the `unsafe` keyword is required on the block                                              |
+| `unsafe fn` body                                    | Wrap each unsafe operation in `unsafe {}` - `unsafe_op_in_unsafe_fn` is warn-by-default                                  |
+| `extern` blocks                                     | `unsafe extern "C" { ... }` - the `unsafe` keyword is required on the block                                              |
 | `#[no_mangle]`, `#[export_name]`, `#[link_section]` | Must be `unsafe #[no_mangle]` etc.                                                                                       |
 | `static mut`                                        | References to `static mut` are deny-by-default (2024 `static_mut_refs` lint). Replace with `Mutex`, `RwLock`, or atomics |
-| `std::env::set_var` / `remove_var`                  | Now `unsafe` — wrap in `unsafe {}`                                                                                       |
+| `std::env::set_var` / `remove_var`                  | Now `unsafe` - wrap in `unsafe {}`                                                                                       |
 
 ## Ownership & Smart Pointers
 
@@ -255,8 +255,8 @@ Default to the narrowest type that compiles.
 | Read only               | `&str`, `&[T]`, `&T`                                      |
 | Mutate                  | `&mut T`                                                  |
 | Consume / store         | `String`, `Vec<T>`, `T`                                   |
-| Flexible read-only      | `impl AsRef<str>` — accepts `&str`, `&String`, `String`   |
-| Flexible take-ownership | `impl Into<String>` — accepts `&str` (converts), `String` |
+| Flexible read-only      | `impl AsRef<str>` - accepts `&str`, `&String`, `String`   |
+| Flexible take-ownership | `impl Into<String>` - accepts `&str` (converts), `String` |
 
 ### Avoid
 
@@ -275,22 +275,22 @@ Default to the narrowest type that compiles.
 | -------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Parallel async tasks (I/O-bound)       | `tokio::spawn` with `move` closures                                                          |
 | Parallel tasks + shared local variable | Wrap in `Arc<T>` and clone before spawn, or use `async-scoped` for scope-bounded parallelism |
-| Blocking I/O inside async context      | `tokio::task::spawn_blocking` — moves work to the blocking-thread pool                       |
+| Blocking I/O inside async context      | `tokio::task::spawn_blocking` - moves work to the blocking-thread pool                       |
 | CPU-bound parallelism                  | `rayon` (data parallelism) or `std::thread::spawn` (ad-hoc)                                  |
 
 ### Patterns
 
 | Pattern                    | When                                                                                |
 | -------------------------- | ----------------------------------------------------------------------------------- |
-| `OnceLock<T>` (std, 1.70+) | Lazy one-time init via `get_or_init()` — for function-local deferred construction   |
-| `LazyLock<T>` (std, 1.80+) | `static` with inline closure init — for globals that were previously `lazy_static!` |
+| `OnceLock<T>` (std, 1.70+) | Lazy one-time init via `get_or_init()` - for function-local deferred construction   |
+| `LazyLock<T>` (std, 1.80+) | `static` with inline closure init - for globals that were previously `lazy_static!` |
 | `const fn`                 | Compile-time computation of `Duration`, bit masks, etc.                             |
 
 ### Avoid
 
 | AI tends to                                       | Correct                                                                |
 | ------------------------------------------------- | ---------------------------------------------------------------------- |
-| `lazy_static!`                                    | `LazyLock` (global `static`) or `OnceLock` (function-local) — both std |
+| `lazy_static!`                                    | `LazyLock` (global `static`) or `OnceLock` (function-local) - both std |
 | `tokio::spawn` around a blocking call             | `tokio::task::spawn_blocking`                                          |
 | `std::sync::Mutex` with lock held across `.await` | `tokio::sync::Mutex`                                                   |
 
@@ -298,16 +298,16 @@ Default to the narrowest type that compiles.
 
 | Choose                  | When                                                                                                                |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `enum`                  | Variants are a closed set known at compile time. Static dispatch is faster in hot loops — measure before optimizing |
+| `enum`                  | Variants are a closed set known at compile time. Static dispatch is faster in hot loops - measure before optimizing |
 | `dyn Trait`             | External callers need to add new types, or the type appears in a public crate API                                   |
-| `impl Trait` (generics) | Static dispatch with no vtable — avoids overhead but causes monomorphization bloat; profile before choosing         |
+| `impl Trait` (generics) | Static dispatch with no vtable - avoids overhead but causes monomorphization bloat; profile before choosing         |
 
 ### Avoid
 
 | AI tends to                                                   | Correct                                                              |
 | ------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `-> impl Trait` in public return position                     | Named type — `impl Trait` return is a breaking change to widen later |
-| `Box<dyn Trait>` when the variant set is closed               | `enum` — cheaper dispatch, exhaustive `match`                        |
+| `-> impl Trait` in public return position                     | Named type - `impl Trait` return is a breaking change to widen later |
+| `Box<dyn Trait>` when the variant set is closed               | `enum` - cheaper dispatch, exhaustive `match`                        |
 | `enum` collapsing types that callers should be able to extend | `dyn Trait` if downstream crates must add new variants               |
 
 ## API Design Patterns
@@ -341,7 +341,7 @@ Use when the struct has ≥3 optional fields OR validation is required before co
 | ------ | -------------------------------------------------------------------- |
 | Entry  | `Foo::builder()` returning `FooBuilder`                              |
 | Setter | `fn with_x(&mut self, x: X) -> &mut Self` (mutable ref, ergonomic)   |
-| Build  | `fn build(self) -> Foo` — or `Result<Foo, _>` if validation can fail |
+| Build  | `fn build(self) -> Foo` - or `Result<Foo, _>` if validation can fail |
 
 For 1–2 fields, prefer struct literal or plain `new`.
 
@@ -381,7 +381,7 @@ Split a module into a separate crate when any of the following apply.
 | ---------------- | ------------------------------------------------------------------------------------------------- |
 | Compile time     | Large, rarely-changed code isolated so incremental builds skip it                                 |
 | Shared logic     | Code compiled for multiple targets (e.g., native binary + WASM)                                   |
-| Proc macro       | Procedural macros must be in a separate crate — they compile to a native plugin loaded by `rustc` |
+| Proc macro       | Procedural macros must be in a separate crate - they compile to a native plugin loaded by `rustc` |
 | Unsafe isolation | FFI / `unsafe extern` isolated in a child crate; outer crate can then `#![forbid(unsafe_code)]`   |
 
 ## Documentation (rustdoc)
@@ -399,10 +399,10 @@ Plural form even with a single entry.
 
 | Header       | When                                                       |
 | ------------ | ---------------------------------------------------------- |
-| `# Examples` | Every `pub` item — code blocks auto-compile as doctests    |
+| `# Examples` | Every `pub` item - code blocks auto-compile as doctests    |
 | `# Errors`   | Functions returning `Result`                               |
-| `# Panics`   | Functions that may panic — state the precondition          |
-| `# Safety`   | `unsafe fn` / `unsafe trait` — state the caller's contract |
+| `# Panics`   | Functions that may panic - state the precondition          |
+| `# Safety`   | `unsafe fn` / `unsafe trait` - state the caller's contract |
 
 ### Conventions
 
@@ -410,7 +410,7 @@ Plural form even with a single entry.
 | ---------------------- | --------------------------------------------------------- |
 | Summary                | First line: one sentence, period-terminated               |
 | Example error handling | Use `?`, never `.unwrap()`                                |
-| Hidden setup           | Prefix doctest setup lines with `#` — compiles but hidden |
+| Hidden setup           | Prefix doctest setup lines with `#` - compiles but hidden |
 | Type references        | Full name with generics: `Option<T>`                      |
 | Intra-doc links        | ``[`Foo`]`` auto-resolves                                 |
 
@@ -440,7 +440,7 @@ Use `tracing` (structured, async-aware) over `log`.
 
 | Rule                        | Detail                                                                              |
 | --------------------------- | ----------------------------------------------------------------------------------- |
-| Structured fields           | `info!(count = items.len(), "indexed batch")` — field then message                  |
+| Structured fields           | `info!(count = items.len(), "indexed batch")` - field then message                  |
 | Spans                       | `#[tracing::instrument]` on request / task entry points                             |
 | Subscriber                  | Initialize `tracing_subscriber` once at `main` with `EnvFilter::from_default_env()` |
 | No `println!` / `eprintln!` | Except for CLI stdout output that is the program's actual result                    |

@@ -12,7 +12,7 @@ decision-makers: thkt
 
 | Issue | Detail |
 | ----- | ------ |
-| Namespace collision | `scout` CLI (`/opt/homebrew/bin/scout`) provides Web search, page fetch, GitHub repo exploration — shipped via `brew install thkt/tap/scout`. `/scout` skill had no relation to that CLI, breaking the mental model established by sibling `yomu-search` / `recall-search` skills (each wraps its namesake CLI) |
+| Namespace collision | `scout` CLI (`/opt/homebrew/bin/scout`) provides Web search, page fetch, GitHub repo exploration - shipped via `brew install thkt/tap/scout`. `/scout` skill had no relation to that CLI, breaking the mental model established by sibling `yomu-search` / `recall-search` skills (each wraps its namesake CLI) |
 | Dead skill | recall search across 11,260 sessions found no invocation of `scouting-anomalies` or `/scout` outside the original design discussion (2026-04-15) and two later meta-discussions (2026-04-17 cleanup, 2026-04-20 rename). Read-through diagnostic never produced a staging entry in production |
 
 Meanwhile, `scout` CLI was not surfaced as a skill, so neither humans nor the LLM had a discoverable wrapper that matched the `yomu-search` / `recall-search` pattern.
@@ -26,7 +26,7 @@ Meanwhile, `scout` CLI was not surfaced as a skill, so neither humans nor the LL
 
 ## Considered Options
 
-### A: Keep both — rename `/scout` skill to `/read-through`, add `scout-search` separately
+### A: Keep both - rename `/scout` skill to `/read-through`, add `scout-search` separately
 
 Retain scouting-anomalies and its wrapper under a new name. Add `scout-search` for CLI access.
 
@@ -42,8 +42,8 @@ Delete the read-through skill and its staging template. Create `scout-search` as
 - Good: Namespace aligns with yomu-search / recall-search pattern
 - Good: Removes dead skill from LLM matching candidates
 - Good: Fully reversible via git history + `~/.Trash/`
-- Bad: Read-through diagnostic capability removed (acceptable — never used)
-- Bad: Original design intent (institutionalize read-through as a diagnostic) unmet — deferred until demand surfaces
+- Bad: Read-through diagnostic capability removed (acceptable - never used)
+- Bad: Original design intent (institutionalize read-through as a diagnostic) unmet - deferred until demand surfaces
 
 ### C: Only add scout-search, leave `/scout` + scouting-anomalies as-is
 

@@ -1,282 +1,155 @@
 ---
 name: assert
-description: |
-  Codex + audit reviewersによる独立したoutcome-based assertion。
-  reconciled static + dynamic evidence から binary Ready/NotReady gate を出力。
-  検証して, assert, 独立検証, outcome assertion,
-  gate decision, trust score (legacy), adversarial testing に言及した場合に使用。
-  手軽なコードレビューには /polish、静的分析のみには /audit を使用。
-allowed-tools: Bash(codex:*), Bash(git worktree:*), Bash(git diff:*),
-  Bash(git status:*), Bash(git log:*), Bash(git branch:*),
-  Bash(npm ci:*), Bash(npm run:*), Bash(npm test:*),
-  Bash(cargo:*), Bash(make:*), Bash(bun:*), Bash(pnpm:*),
-  Bash(yarn:*), Bash(which:*), Bash(date:*), Bash(rm:*),
-  Read, Write, Grep, Glob, LS, Task, AskUserQuestion
+description: Codex + audit reviewer による独立アウトカムベース assertion。静的 + 動的根拠を統合し Ready / Ready (caveat) / NotReady の三値ゲートを発する。クイックなコードレビューには使わない (/polish を使用)。静的のみの監査にも使わない (/audit を使用)。
+when_to_use: 検証して, assert, 独立検証, outcome assertion, gate decision, adversarial testing
+allowed-tools: Bash(codex:*) Bash(git worktree:*) Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git branch:*) Bash(git ls-files:*) Bash(npm ci:*) Bash(npm run:*) Bash(npm test:*) Bash(cargo:*) Bash(make:*) Bash(bun:*) Bash(pnpm:*) Bash(yarn:*) Bash(which:*) Bash(date:*) Bash(rm:*) Read Write Grep Glob LS Task AskUserQuestion
 model: opus
-argument-hint: "[targetモード用のファイルパスまたはディレクトリ]"
-user-invocable: true
+argument-hint: "[file paths or directory for target mode] [--base <branch>]"
 ---
 
-# /assert - 独立 Outcome-Based Assertion
+# /assert - Independent Outcome-Based Assertion
 
-Codexが隔離worktreeで独立検証する。Claude Codeがオーケストレーションと統合を担当。
-reconciled な static + dynamic evidence から binary な Ready/NotReady gate を出力。
-数値スコアなし。
+Codex は隔離された worktree で独立に assert を行う。Claude Code がオーケストレーションと統合を担う。統合された静的 + 動的根拠から三値ゲート (Ready / Ready (caveat) / NotReady) を発する。スコア値は出さない。
 
-## 合理化カウンター
+## Rationalization Counters
 
-| 言い訳                               | 反論                                                           |
-| ------------------------------------ | -------------------------------------------------------------- |
-| 「テスト通ってるから正しい」         | あなたのテスト、あなたの環境。独立検証がそのギャップを埋める   |
-| 「Codexも同じバグ見つけるだけ」      | モデルが違う＝盲点が違う。それが価値                           |
-| 「adversarial testingは時間かかる」  | 時間超過ならスキップ。gate は static-only モードに fallback     |
-| 「コードレビューですでにカバー済み」 | レビューはコードを読む。検証はコードを動かす。異なるエビデンス |
+| 言い訳                               | 反論                                                                |
+| ------------------------------------ | ------------------------------------------------------------------- |
+| "Tests pass, so the code is correct" | あなたのテスト、あなたの環境。独立 assertion がそのギャップを埋める |
+| "Codex will just find the same bugs" | 異なるモデル = 異なる盲点。それこそが価値                           |
+| "Adversarial testing takes too long" | 時間かかるならスキップ。ゲートは静的のみモードに fallback する      |
+| "The code review already covered it" | レビューはコードを読む。assertion はコードを動かす。根拠が違う      |
 
-## 入力
+## Input
 
-| 引数 | 値                             | 結果                      |
-| ---- | ------------------------------ | ------------------------- |
-| `$1` | ファイルパスまたはディレクトリ | `target` モード           |
-| `$1` | 省略（変更あり）               | `diff` モード（自動検出） |
+| 引数              | 値                             | 結果                         |
+| ----------------- | ------------------------------ | ---------------------------- |
+| `$ARGUMENTS`      | ファイルパスまたはディレクトリ | `target` mode                |
+| `$ARGUMENTS`      | 省略 (変更が存在)              | `diff` mode (自動検出)       |
+| `--base <branch>` | base ブランチを上書き          | デフォルトの `main` を上書き |
 
-## モード選択
+## Mode Selection
 
-| 条件                                  | モード   | スコープ                     |
-| ------------------------------------- | -------- | ---------------------------- |
-| `$1` がファイルパスまたはディレクトリ | `target` | 指定パス                     |
-| `$1` なし、未コミット変更あり         | `diff`   | 変更ファイル（未コミット）   |
-| `$1` なし、ベースブランチから差分あり | `diff`   | 変更ファイル（ブランチdiff） |
-| `$1` なし、変更なし                   | —        | 中止: "Assert対象なし"       |
+| 条件                                             | Mode   | スコープ                                                             |
+| ------------------------------------------------ | ------ | -------------------------------------------------------------------- |
+| `$ARGUMENTS` がファイルパス                      | target | 単一ファイル (git tracking 状態を問わない)                           |
+| `$ARGUMENTS` がディレクトリ                      | target | `git ls-files <path>` の出力 (再帰、`.gitignore` 尊重、tracked のみ) |
+| `$ARGUMENTS` なし、未コミット変更あり            | diff   | 変更ファイル (未コミット)                                            |
+| `$ARGUMENTS` なし、base ブランチより先行コミット | diff   | 変更ファイル (branch diff)                                           |
+| `$ARGUMENTS` なし、変更なし                      | -      | 中断: "Nothing to assert"                                            |
 
-ベースブランチ検出: `main`（デフォルト）、`--base <branch>` で上書き。
+Base ブランチ検出: `main` (デフォルト)、`--base <branch>` で上書き。ディレクトリスコープは `git ls-files` を使い `.gitignore` 解析を git に委譲する。ディレクトリ内の untracked ファイルは設計上除外する (未コミット作業を assert したい場合は diff mode を使う)。
 
-## 実行
+## Execution
 
-| Phase | アクション                    | 依存      |
-| ----- | ----------------------------- | --------- |
-| 0     | Worktreeブートストラップ      | —         |
-| 1     | エビデンス収集（並列）        | Phase 0   |
-| 2     | 深層 Assertion（並列）        | Phase 1   |
-| 2.5   | Intent Assertion（adversarial結果） | Phase 2   |
-| 3     | エビデンス統合                | Phase 2.5 |
-| final | Worktreeクリーンアップ        | 常時      |
+| Phase | アクション          | 実行者                     | モード              | 依存    | 詳細                                                       |
+| ----- | ------------------- | -------------------------- | ------------------- | ------- | ---------------------------------------------------------- |
+| 0     | Bootstrap worktree  | orchestrator (Bash)        | sequential          | -       | ${CLAUDE_SKILL_DIR}/references/bootstrap.md                |
+| 1     | Evidence collection | Codex CLI + audit agents   | parallel (required) | Phase 0 | ${CLAUDE_SKILL_DIR}/references/phase-details.md § Phase 1 |
+| 2     | Deep assertion      | Codex CLI + audit agents   | parallel (required) | Phase 1 | ${CLAUDE_SKILL_DIR}/references/phase-details.md § Phase 2 |
+| 3     | Intent assertion    | orchestrator (Claude Code) | sequential          | Phase 2 | ${CLAUDE_SKILL_DIR}/references/phase-details.md § Phase 3 |
+| 4     | Evidence synthesis  | enhancer-evidence          | single task         | Phase 3 | ${CLAUDE_SKILL_DIR}/references/phase-details.md § Phase 4 |
+| final | Worktree cleanup    | orchestrator (Bash)        | sequential          | Always  | ${CLAUDE_SKILL_DIR}/references/phase-details.md § Cleanup |
 
-### Phase 0: Worktreeブートストラップ
+Phase 0 制約: 全体で 300s タイムアウト。Bootstrap には fast-fail ガードとして build smoke test を含む。
 
-[`references/bootstrap.md`](references/bootstrap.md)の手順に従う。
+- Step 1-3 fail (env: worktree, install): Phase 1c, 2a をスキップ → gate = Issues=0 なら Ready (caveat)、Issues>0 なら NotReady
+- Step 4 fail (build smoke broken): Phase 1c, 2a をスキップ → gate = NotReady (Build = fail は Issues に関わらずブロック)
 
-| 制約         | 値                                                               |
-| ------------ | ---------------------------------------------------------------- |
-| タイムアウト | 300秒                                                            |
-| 失敗時       | Phase 1c, 2a スキップ → 静的 assertion のみで続行。理由をレポートに記録 |
+両パスとも失敗理由をレポートに記録する。
 
-### Phase 1: エビデンス収集（並列）
+並列モードルール: `parallel (required)` と記された phase は、すべての Task / Bash / Codex exec 呼び出しを 1 つのレスポンス内で同時発行する。逐次呼び出しは fan-out を打ち消し、wall time を倍にする。
 
-3タスクをTask（バックグラウンド）で並列起動し、全完了後にPhase 2へ進む。
+外部依存: Phase 1b の reviewer ファイルルーティングは /audit skill の File Routing 表に従う。そこを変えると /assert の reviewer 割り当てに影響する。
 
-| タスク          | 実行者             | アクション                    |
-| --------------- | ------------------ | ----------------------------- |
-| Codexレビュー   | Codex CLI (Bash)   | 変更/対象コードの静的レビュー |
-| Auditレビューア | Claude Code agents | ドメイン別の静的分析          |
-| Outcomeチェック | Codex CLI (Bash)   | worktreeでのbuild + test実行  |
+## Report
 
-#### 1a. Codex静的レビュー
-
-| モード             | コマンド                                                       |
-| ------------------ | -------------------------------------------------------------- |
-| diff（未コミット） | `codex review --uncommitted`                                   |
-| diff（ブランチ）   | `codex review --base $BASE`                                    |
-| target             | `codex review --uncommitted`（対象ファイルのコンテキスト付き） |
-
-| Codex severity | 正規化 |
-| -------------- | ------ |
-| `[P1]`         | high   |
-| `[P2]`         | medium |
-| `[P3]`         | 除外   |
-
-file:lineなしまたはスコープ外のfindingsはスキップ。
-
-#### 1b. Auditレビューア
-
-/auditファイルルーティングテーブル（`skills/audit/SKILL.md` § ファイルルーティング）
-を使用。ファイルタイプごとに同じレビューアを割り当て。
-
-各レビューアをスタンドアロンのバックグラウンドTaskとして起動する。
-
-| 制約         | 値                                      |
-| ------------ | --------------------------------------- |
-| 入力         | 割り当てファイルリスト + finding-schema |
-| 並列上限     | 10（超過時バッチ）                      |
-| タイムアウト | レビューアごと120秒                     |
-
-#### 1c. Outcome Assertion（worktreeでのCodex exec）
-
-Phase 0成功が前提。失敗時スキップ。
-
-```bash
-codex exec -C <worktree-path> "Run the project build and test commands. \
-Report: (1) build exit code and last 50 lines of stderr if non-zero, \
-(2) test exit code and last 50 lines of stderr if non-zero, \
-(3) test summary (total/passed/failed)."
-```
-
-| 制約         | 値                                               |
-| ------------ | ------------------------------------------------ |
-| タイムアウト | 600秒                                            |
-| 取得         | build pass/fail + test pass/fail（各stderr付き） |
-
-### Phase 1→2 移行: Finding重複排除
-
-1. Codexとレビューアのfindingsを `file:line:category` で重複排除
-2. 衝突時はseverityが高いほうを保持
-3. 重複排除済みセットをPhase 2のchallengerとverifierに渡す
-
-### Phase 2: 深層 Assertion（並列）
-
-3タスクを並列起動:
-
-| タスク           | 実行者                | 入力                         |
-| ---------------- | --------------------- | ---------------------------- |
-| Adversarial test | Codex CLI (Bash)      | worktree内の対象コード       |
-| Challenger       | devils-advocate-audit | 重複排除済みPhase 1 findings |
-| Verifier         | evidence-verifier     | 重複排除済みPhase 1 findings |
-
-#### 2a. Adversarial Testing（worktreeでのCodex exec）
-
-Phase 0成功が前提。失敗時スキップ。
-
-```bash
-codex exec -C <worktree-path> --full-auto "<adversarial-prompt>"
-```
-
-`<adversarial-prompt>`: [`references/adversarial.md`](references/adversarial.md) § Codex Prompt（対象ファイル一覧を埋め込む）。
-
-| 制約         | 値    |
-| ------------ | ----- |
-| タイムアウト | 600秒 |
-
-#### 2b. Challenger + Verifier
-
-| Task       | subagent_type         | 入力                         |
-| ---------- | --------------------- | ---------------------------- |
-| Challenger | devils-advocate-audit | 重複排除済みPhase 1 findings |
-| Verifier   | evidence-verifier     | 重複排除済みPhase 1 findings |
-
-各120秒タイムアウト。バックグラウンドTask。
-
-### Phase 2.5: Intent Assertion
-
-Phase 2a結果返却後、オーケストレーターが失敗テストをトリアージ。
-
-[`references/adversarial.md`](references/adversarial.md) § Intent Assertionのverdictルール適用:
-assertion + 対象コード → intentソース検索 → verdict（exclude or promote 0.70+）。
-
-### Phase 3: エビデンス統合
-
-`evidence-integrator` をバックグラウンドTaskで起動。
-
-| 入力                | ソース                                                      |
-| ------------------- | ----------------------------------------------------------- |
-| Challenger出力      | Challengerの生出力（evidence-integratorが内部で照合を実施） |
-| Verifier出力        | Verifierの生出力（evidence-integratorが内部で照合を実施）   |
-| Outcome evidence    | Phase 1c build/test結果                                     |
-| Adversarial results | Phase 2.5 promoted findings                                 |
-
-返却: root causes + Gate decision + レポート。
-[`references/gate-decision.md`](references/gate-decision.md) § Gate ルール。
-
-### クリーンアップ（常時）
-
-成功・失敗を問わず全フェーズをtry/finallyで囲み、クリーンアップを保証する。
-
-```bash
-git worktree remove <worktree-path> --force
-git branch -D assert-<session-id>
-```
-
-## レポート
-
-Gate ルールの正典: [`references/gate-decision.md`](references/gate-decision.md)。
+ゲートルールの canonical は ${CLAUDE_SKILL_DIR}/references/gate-decision.md。
 
 ```markdown
-## Assert レポート
+## Assertion Report
 
-| Field     | Value                                                  |
-| --------- | ------------------------------------------------------ |
-| gate      | Ready / NotReady                                       |
-| mode      | diff (main) / diff (uncommitted) / target              |
-| scope     | {ファイル数} files                                     |
-| bootstrap | success / failed: {理由}                               |
+| Field     | Value                                     |
+| --------- | ----------------------------------------- |
+| gate      | Ready / Ready (caveat) / NotReady         |
+| mode      | diff (main) / diff (uncommitted) / target |
+| scope     | {file count} files                        |
+| bootstrap | success / failed: {reason}                |
 
 ### Gate Decision
 
-| Check       | Value                                       |
-| ----------- | ------------------------------------------- |
-| Build       | pass / fail / skipped                       |
-| Tests       | pass / fail (N passed, M failed) / skipped  |
-| Findings    | 0 / N high, M medium, L low                 |
-| Adversarial | N/M passed / skipped                        |
+| Check       | Value                                                                |
+| ----------- | -------------------------------------------------------------------- |
+| Build       | pass / fail / skipped                                                |
+| Tests       | pass / fail (N passed, M failed) / skipped / no-runner               |
+| Issues      | 0 / N total (X from challenger, Y from verifier, Z from adversarial) |
+| Adversarial | N/M passed / skipped                                                 |
+
+`Ready (caveat)` 行は bootstrap が失敗し Issues = 0 のとき表示される。`caveat: dynamic evidence skipped` を末尾に付記する。
 
 ### Blockers
 
-[全 reconciled findings + build/test 失敗 + adversarial 失敗 を Fix例とともに]
+[全 issue + build/test 失敗を Fix 提案とソースタグ (challenger / verifier / adversarial) 付きで]
 
-gate = Ready の場合は `(none)`。
+空のとき: gate = Ready なら `(none)`。
 
 ### Root Causes
 
-[RC-001... description, category, findings, action 付き]
+[RC-001... 説明、カテゴリ、findings、action 付き]
 
-### Findings
+### Issues
 
-[High / Medium severity テーブル: Source, File:Line, Description, Evidence]
+[High / Medium severity 表。Source タグ、File:Line, Description, Evidence。複数ソース検出はすべてのタグを表示。例: `[challenger, adversarial]`]
 
 ### Adversarial Test Results
 
-[テスト名, 対象, 結果, verdict をテストごとに]
+[テスト名、対象、結果、判定をテストごとに]
 
 ### Outcome Evidence
 
-[build/test pass/fail と stderr 抜粋]
+[build/test pass/fail、stderr 抜粋付き]
 
 ### Diff from previous
 
-[workspace/history/ との比較。Trust Score 時代のレポートは "Legacy format — diff skipped"。]
+[Resolved / New / Carried from workspace/history/.]
 
-`<promise>PASS</promise>` は evidence-integrator が発行 (gate = Ready 時)。リーダーはそのまま転記し、再生成しない。
+`<promise>PASS</promise>` は gate = Ready のときのみ enhancer-evidence が発する (Ready (caveat) や NotReady では発しない)。Leader はそのまま中継し、再生成しない。
 ```
 
-## エラーハンドリング
+## Error Handling
 
-| エラー                                | リカバリー                                    |
-| ------------------------------------- | --------------------------------------------- |
-| codex 未インストール                  | インストール手順表示、中止                    |
-| ブートストラップタイムアウト（300秒） | outcome + adversarialスキップ、静的のみモード |
-| Codex review 失敗                     | エラーログ、auditレビューアのみで続行         |
-| Codex exec タイムアウト（600秒）      | 該当フェーズスキップ、レポートに記録          |
-| レビューアストール（120秒）           | 該当レビューアなしで続行、警告ログ            |
-| Challengerストール                    | verifierのみで続行                            |
-| Verifierストール                      | challengerのみで続行                          |
-| インテグレーターストール              | リーダーが手動統合（簡略レポート）            |
-| 全ソースからfindingsなし              | gate = Ready、"問題なし" レポート             |
-| Worktreeクリーンアップ失敗            | 警告ログ、手動クリーンアップを提案            |
+| エラー                                 | リカバリ                                                                                                                   |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| codex 未インストール                   | インストール手順を表示して中断                                                                                             |
+| Bootstrap fail at Step 1-3 (env)       | Phase 1c + 2a をスキップ → 静的のみモード。Build = `skipped`. gate = issues=0 なら Ready (caveat)、issues>0 なら NotReady |
+| Bootstrap fail at Step 4 (build smoke) | Build = `fail` (skipped ではない)。Phase 1c + 2a をスキップ。gate = NotReady (build fail は issues 数に関わらずブロック)   |
+| Bootstrap timeout (300s overall)       | Step 4 が開始されていれば Step 4 fail として扱う。それ以外は Step 1-3 fail として扱う                                      |
+| Codex review fails                     | エラーをログ。audit reviewer のみで続行                                                                                    |
+| Codex exec timeout (600s)              | その phase をスキップ、レポートに記録                                                                                      |
+| Reviewer stall (120s)                  | 当該 reviewer なしで続行、警告を記録                                                                                       |
+| Challenger stall                       | verifier のみで続行                                                                                                        |
+| Verifier stall                         | challenger のみで続行                                                                                                      |
+| Integrator stall                       | Leader が手動で統合 (簡易レポート)                                                                                         |
+| 全ソースで issue ゼロ                  | gate = Ready (bootstrap 失敗時は Ready (caveat))。"no issues found" を記録                                                 |
+| Worktree cleanup fails                 | 警告を記録、手動 cleanup を提案                                                                                            |
 
-## エスカレーション
+## Escalation
 
-| 条件                                      | アクション                     |
-| ----------------------------------------- | ------------------------------ |
-| reconciled finding 1件以上                | マージブロック、`/fix` を提案  |
-| アーキテクチャ root causes 発見           | 設計レビューに `/think` を提案 |
-| Adversarial testsがカバレッジギャップ露呈 | テスト追加に `/code` を提案    |
+| 条件                                                 | アクション                                                                   |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 何らかの issue (challenger / verifier / adversarial) | merge をブロック、`/fix` を提案                                              |
+| アーキテクチャ的な root cause を発見                 | `/think` で設計レビューを提案                                                |
+| Adversarial test がカバレッジギャップを発見          | `/code` でテスト追加を提案                                                   |
+| gate = Ready (caveat)                                | 環境を復旧して /assert を再実行 (または動的根拠ギャップを意識的に受け入れる) |
 
-## 確認事項
+## Assertion
 
-| チェック                              | 必須 |
-| ------------------------------------- | ---- |
-| モード検出済み？                      | Yes  |
-| ブートストラップ試行済み？            | Yes  |
-| Phase 1 エビデンス生成済み？          | Yes  |
-| Phase 2 challenger/verifier実行済み？ | Yes  |
-| インテグレーターレポート生成済み？    | Yes  |
-| Gate decision 表示済み？              | Yes  |
-| Worktreeクリーンアップ済み？          | Yes  |
+| Check                            | 必須 |
+| -------------------------------- | ---- |
+| Mode detected?                   | Yes  |
+| Bootstrap attempted?             | Yes  |
+| Phase 1 produced evidence?       | Yes  |
+| Phase 2 challenger/verifier ran? | Yes  |
+| Integrator produced report?      | Yes  |
+| Gate decision displayed?         | Yes  |
+| Worktree cleaned up?             | Yes  |

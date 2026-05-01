@@ -16,16 +16,16 @@ This directory contains important decisions about the project's architecture.
 | [0008](0008-audience-optimized-templates.md) | ADR-0008: 読み手別テンプレート最適化の採用 | accepted | Not set |
 | [0009](0009-externalize-idr-as-rust-binary.md) | IDR生成システムの外部リポジトリ化（Rustバイナリ） | accepted | 2026-02-07 |
 | [0010](0010-schema-first-api-documentation.md) | Schema-First API ドキュメント生成と Dual Output | accepted | 2026-02-08 |
-| [0011](0011-add-critic-evidence-to-audit-pipeline.md) | Audit パイプラインに Evidence Verifier を追加 | accepted | 2026-02-10 |
-| [0012](0012-flatten-audit-pipeline-remove-compound-reviewers.md) | ADR-0012: Flatten Audit Pipeline — Remove Compound Reviewers | accepted | Not set |
-| [0013](0013-adopt-hook-trinity-pattern-with-claude-reviews.md) | ADR-0013: Hook Trinity パターンの採用 — claude-reviews による Pre-flight 分析の確実な実行 | accepted | Not set |
-| [0014](0014-integrate-aidlc-design-separation-and-ops-reviewer.md) | ADR-0014: AI-DLC 統合 — 設計分離と Operational Readiness Reviewer | accepted | Not set |
+| [0011](0011-add-evidence-verifier-to-audit-pipeline.md) | Audit パイプラインに Evidence Verifier を追加 | accepted | 2026-02-10 |
+| [0012](0012-flatten-audit-pipeline-remove-compound-reviewers.md) | ADR-0012: Flatten Audit Pipeline - Remove Compound Reviewers | accepted | Not set |
+| [0013](0013-adopt-hook-trinity-pattern-with-claude-reviews.md) | ADR-0013: Hook Trinity パターンの採用 - claude-reviews による Pre-flight 分析の確実な実行 | accepted | Not set |
+| [0014](0014-integrate-aidlc-design-separation-and-ops-reviewer.md) | ADR-0014: AI-DLC 統合 - 設計分離と Operational Readiness Reviewer | accepted | Not set |
 | [0015](0015-frontend-security-guardrails-strategy.md) | Adopt Pattern-Match + Taint-Checklist Strategy for Frontend Security | accepted | 2026-02-23 |
 | [0016](0016-adopt-rust-mcp-for-deep-search.md) | ADR-0016: Adopt Rust + rmcp for deep-search MCP Server | proposed | 2026-02-25 |
 | [0017](0017-build-frontend-code-search-mcp-in-rust.md) | ADR-0017: Build frontend-specialized code search MCP server in Rust | proposed | 2026-02-26 |
 | [0018](0018-index-time-file-context-storage-for-explorer.md) | explorer のファイル文脈に Index-time storage を採用 | accepted | 2026-02-27 |
 | [0019](0019-adopt-sqlite-reference-graph-for-impact-analysis.md) | Adopt SQLite Reference Graph for Impact Analysis | proposed | 2026-02-27 |
-| [0020](0020-claude-code-dashboard-tech-stack.md) | ADR-0020: kagami — 技術スタックと収集方式の選定 | accepted | Not set |
+| [0020](0020-claude-code-dashboard-tech-stack.md) | ADR-0020: kagami - 技術スタックと収集方式の選定 | accepted | Not set |
 | [0021](0021-build-slack-semantic-search-mcp-kiku.md) | ADR-0021: Build Slack conversation semantic search MCP server (kiku) | proposed | 2026-03-03 |
 | [0022](0022-migrate-yomu-from-mcp-to-cli.md) | ADR-0022: Migrate yomu from MCP server to CLI tool | proposed | 2026-03-04 |
 | [0023](0023-build-sharpen-rg-output-optimizer-for-ai.md) | ADR-0023: Build sharpen - rg output optimizer for AI consumption | proposed | 2026-03-05 |
@@ -57,11 +57,14 @@ This directory contains important decisions about the project's architecture.
 | [0048](0048-standardize-generator-skill-structure.md) | Adopt unified SKILL.md template for generator-class workflows | accepted | 2026-04-21 |
 | [0049](0049-consolidate-skill-to-skill-wrapper-pairs.md) | ADR-0049: Consolidate skill-to-skill wrapper pairs | accepted | 2026-04-21 |
 | [0050](0050-consolidate-fix-via-skill-delegation.md) | ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md | accepted | 2026-04-21 |
-| [0051](0051-consolidate-formatting-audits-into-reviewer-spec.md) | ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent | accepted | 2026-04-23 |
+| [0051](0051-consolidate-formatting-audits-into-sow-spec-reviewer.md) | ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent | accepted | 2026-04-23 |
 | [0052](0052-unify-skill-naming-with-use-prefix-for-cli-wrappers.md) | ADR-0052: Unify skill naming with `use-*` prefix for CLI wrapper skills | superseded by ADR-0055 | 2026-04-23 |
 | [0053](0053-adopt-ctx-prefix-for-agent-only-skills.md) | Adopt ctx- prefix for agent-only skills | superseded by ADR-0055 | 2026-04-24 |
 | [0054](0054-adopt-workflow-prefix-for-workflow-skills.md) | Adopt workflow- prefix for workflow skills | superseded by ADR-0055 | 2026-04-24 |
 | [0055](0055-consolidate-user-invocable-false-skills-under-use-prefix.md) | ADR-0055: Consolidate user-invocable:false skills under unified use- prefix with role subcategories | accepted | 2026-04-24 |
+| [0056](0056-remove-redundant-cli-wrapper-skills.md) | ADR-0056: Remove redundant CLI wrapper skills (use-cli-git/gh/npm) | accepted | 2026-04-29 |
+| [0057](0057-make-evaluator-test-a-pure-measurement-agent.md) | Make evaluator-test a Pure Measurement Agent | accepted | 2026-05-01 |
+| [0058](0058-inline-single-consumer-agent-context-skills-into-agents.md) | Inline single-consumer agent context skills into agents | accepted | 2026-05-01 |
 
 ## By Status
 
@@ -98,12 +101,12 @@ This directory contains important decisions about the project's architecture.
 - **0009**: IDR生成システムの外部リポジトリ化（Rustバイナリ）
 - **0010**: Schema-First API ドキュメント生成と Dual Output
 - **0011**: Audit パイプラインに Evidence Verifier を追加
-- **0012**: ADR-0012: Flatten Audit Pipeline — Remove Compound Reviewers
-- **0013**: ADR-0013: Hook Trinity パターンの採用 — claude-reviews による Pre-flight 分析の確実な実行
-- **0014**: ADR-0014: AI-DLC 統合 — 設計分離と Operational Readiness Reviewer
+- **0012**: ADR-0012: Flatten Audit Pipeline - Remove Compound Reviewers
+- **0013**: ADR-0013: Hook Trinity パターンの採用 - claude-reviews による Pre-flight 分析の確実な実行
+- **0014**: ADR-0014: AI-DLC 統合 - 設計分離と Operational Readiness Reviewer
 - **0015**: Adopt Pattern-Match + Taint-Checklist Strategy for Frontend Security
 - **0018**: explorer のファイル文脈に Index-time storage を採用
-- **0020**: ADR-0020: kagami — 技術スタックと収集方式の選定
+- **0020**: ADR-0020: kagami - 技術スタックと収集方式の選定
 - **0024**: ADR-0024: Adopt two-layer Delta for compaction resilience
 - **0026**: ADR-0026: LLM指示設計における仕様-コード収束則を認識する
 - **0034**: ADR-0034: LaunchAgent によるバックログライフサイクル自動化
@@ -121,6 +124,9 @@ This directory contains important decisions about the project's architecture.
 - **0050**: ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md
 - **0051**: ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent
 - **0055**: ADR-0055: Consolidate user-invocable:false skills under unified use- prefix with role subcategories
+- **0056**: ADR-0056: Remove redundant CLI wrapper skills (use-cli-git/gh/npm)
+- **0057**: Make evaluator-test a Pure Measurement Agent
+- **0058**: Inline single-consumer agent context skills into agents
 
 ### Superseded
 
@@ -153,5 +159,5 @@ This project uses [MADR (Markdown Any Decision Records)](https://adr.github.io/m
 
 ---
 
-*Last updated: 2026-04-25*
+*Last updated: 2026-05-01*
 *Auto-generated by: update-index.sh*

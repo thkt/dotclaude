@@ -1,12 +1,10 @@
 ---
 name: preview
-description: AI screening review for PRs - preliminary check before human review. Use when
-  user mentions スクリーニング, PRレビュー, プレビュー, preview PR, pre-review.
-  Do NOT use for deep multi-reviewer code quality audits (use /audit instead).
-allowed-tools: [Bash(git:*), Bash(gh:*), Read, Grep, Glob, AskUserQuestion]
-model: sonnet
+description: AI screening review for PRs - preliminary check before human review. Do NOT use for deep multi-reviewer code quality audits (use /audit instead).
+when_to_use: スクリーニング, PRレビュー, プレビュー, preview PR, pre-review
+allowed-tools: Bash(git:*) Bash(gh:*) Read Grep Glob AskUserQuestion
+model: opus
 argument-hint: "[PR URL or number]"
-user-invocable: true
 ---
 
 # /preview - PR Screening Review
@@ -17,15 +15,15 @@ user-invocable: true
 
 ## Execution
 
-| Step | Action                                                                                       |
-| ---- | -------------------------------------------------------------------------------------------- |
+| Step | Action                                                                                                       |
+| ---- | ------------------------------------------------------------------------------------------------------------ |
 | 1    | Identify PR: `gh pr view $ARGUMENTS --json number,title,body,labels,files,url` (fallback: omit `$ARGUMENTS`) |
-| 2    | Abort if no PR found or working tree is dirty (`git status --porcelain`)                     |
-| 3    | Checkout PR: `gh pr checkout $PR`                                                            |
-| 4    | Gather PR context in parallel (see below)                                                    |
-| 5    | Read each changed file locally for full context                                              |
-| 6    | Review per process: overview → per-file → dependency impact → findings                       |
-| 7    | Output structured screening report                                                           |
+| 2    | Abort if no PR found or working tree is dirty (`git status --porcelain`)                                     |
+| 3    | Checkout PR: `gh pr checkout $PR`                                                                            |
+| 4    | Gather PR context in parallel (see below)                                                                    |
+| 5    | Read each changed file in full, including code outside the diff hunks                                        |
+| 6    | Review per process: overview → per-file → dependency impact → findings                                       |
+| 7    | Output structured screening report                                                                           |
 
 ### PR Context Gathering
 
@@ -59,13 +57,13 @@ Never include `author` in gh output fields.
 
 ## Comment Tone
 
-| Rule            | Detail                                                                              |
-| --------------- | ----------------------------------------------------------------------------------- |
-| Format          | `[label] <observed behavior or risk>. <suggestion>. (file:line)`                    |
-| Concise         | 3 lines for `[imo]`/`[nits]`/`[info]`; up to 5 for `[must]`/`[want]` with evidence  |
-| Respectful      | Acknowledge effort, avoid commands                                                  |
-| Suggestive      | "Consider..." not "This is wrong"                                                   |
-| Author-targeted | Comments may be posted verbatim — calibrate detail for the PR author                |
+| Rule            | Detail                                                                             |
+| --------------- | ---------------------------------------------------------------------------------- |
+| Format          | `[label] <observed behavior or risk>. <suggestion>. (file:line)`                   |
+| Concise         | 3 lines for `[imo]`/`[nits]`/`[info]`; up to 5 for `[must]`/`[want]` with evidence |
+| Respectful      | Acknowledge effort, avoid commands                                                 |
+| Suggestive      | "Consider..." not "This is wrong"                                                  |
+| Author-targeted | Comments may be posted verbatim - calibrate detail for the PR author               |
 
 ## Output
 
@@ -109,16 +107,7 @@ Never include `author` in gh output fields.
 | No auto-post       | Never post comments to PR automatically                                |
 | Abort on dirty     | If uncommitted changes exist, warn and abort                           |
 | Speed over depth   | This is screening, not full audit                                      |
-| Verify before flag | Before [ask]/[want]+, confirm the issue manifests in actual user paths |
-
-## /preview vs /audit
-
-| Aspect | /preview            | /audit                       |
-| ------ | ------------------- | ---------------------------- |
-| Scope  | PR diff only        | Any file set                 |
-| Depth  | Screening (1 pass)  | Multi-reviewer + challenger  |
-| Speed  | Fast (sonnet)       | Thorough (opus, parallel)    |
-| Use    | Before human review | Before merge or quality gate |
+| Verify before flag | Before [ask]/[want]+, trace the issue to a reachable runtime call site |
 
 ## References
 

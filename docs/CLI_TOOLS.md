@@ -8,7 +8,7 @@ External CLI tools that extend Claude Code's capabilities.
 
 4 Rust CLI tools, each purpose-built for a specific gap in Claude Code's default
 tooling. AI-facing rules live in
-[TOOLS.md](../rules/development/TOOLS.md) — this document covers design intent
+[TOOLS.md](../rules/development/TOOLS.md) - this document covers design intent
 and architecture.
 
 ```mermaid
@@ -146,5 +146,5 @@ X/Twitter content fetching (tweets, threads, articles, user profiles).
 
 ## Related
 
-- [TOOLS.md](../rules/development/TOOLS.md) — AI-facing tool selection rules
-- [HOOKS.md](./HOOKS.md) — Hook system design (includes quality pipeline)
+- [TOOLS.md](../rules/development/TOOLS.md) - AI-facing tool selection rules
+- [HOOKS.md](./HOOKS.md) - Hook system design (includes quality pipeline)

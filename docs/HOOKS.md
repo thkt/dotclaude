@@ -1,6 +1,6 @@
 # Hooks Design
 
-フックシステムの設計意図と仕組みを説明します。
+Hook system design intent and mechanism.
 
 ## Overview
 
@@ -37,14 +37,14 @@ graph TD
 
 ## Hook Categories
 
-| Category         | Trigger                          | Purpose                                 |
-| ---------------- | -------------------------------- | --------------------------------------- |
-| `shields`        | PreToolUse, PermissionRequest    | Command guard, file ACL, secrets check  |
-| `security/`      | PreToolUse                       | Config change audit logging             |
-| `lifecycle/`     | statusLine, pre-commit           | Status line, PR cache, IDR generation   |
-| `agents/`        | Subagent\*                       | Agent logging, idle detection           |
-| `viewer/`        | PostToolUse                      | SOW/Spec/IDR viewer                     |
-| `notifications/` | Stop                             | Completion notification                 |
+| Category         | Trigger                       | Purpose                                |
+| ---------------- | ----------------------------- | -------------------------------------- |
+| `shields`        | PreToolUse, PermissionRequest | Command guard, file ACL, secrets check |
+| `security/`      | PreToolUse                    | Config change audit logging            |
+| `lifecycle/`     | statusLine, pre-commit        | Status line, PR cache, IDR generation  |
+| `agents/`        | Subagent\*                    | Agent logging, idle detection          |
+| `viewer/`        | PostToolUse                   | SOW/Spec/IDR viewer                    |
+| `notifications/` | Stop                          | Completion notification                |
 
 ## Key Hooks
 
@@ -54,34 +54,34 @@ Replaces bash-safety.sh, permission-request.sh, and secrets-check.sh with a
 single Rust binary. Installed via `brew install thkt/tap/shields` or as a
 Claude Code plugin (`shields@sentinels`).
 
-| Subcommand      | Event             | Failure Mode | Purpose                                     |
-| --------------- | ----------------- | ------------ | ------------------------------------------- |
+| Subcommand      | Event             | Failure Mode | Purpose                                           |
+| --------------- | ----------------- | ------------ | ------------------------------------------------- |
 | `shields check` | PreToolUse(Bash)  | fail-closed  | 44 builtin + custom patterns, N1-N7 bypass defeat |
-| `shields acl`   | PermissionRequest | fail-closed  | Path-based ACL with subagent restrictions   |
+| `shields acl`   | PermissionRequest | fail-closed  | Path-based ACL with subagent restrictions         |
 
 `shields check` also blocks `git commit` with staged secrets (20 builtin
 patterns). Config via `.claude/tools.json` under the `shields` key.
 
 ### security/
 
-| Hook               | Event      | Failure Mode | Purpose              |
-| ------------------ | ---------- | ------------ | -------------------- |
-| `config-change.sh` | PreToolUse | fail-open    | 設定ファイル変更の検知 |
+| Hook               | Event      | Failure Mode | Purpose                    |
+| ------------------ | ---------- | ------------ | -------------------------- |
+| `config-change.sh` | PreToolUse | fail-open    | Detect config file changes |
 
 ### lifecycle/
 
-| Hook                | Trigger    | Purpose              |
-| ------------------- | ---------- | -------------------- |
-| `statusline.sh`     | statusLine | ステータスライン表示 |
-| `_pr-cache.sh`      | (sourced)  | PR情報のキャッシュ   |
-| `idr-pre-commit.sh` | pre-commit | IDR自動生成          |
+| Hook                | Trigger    | Purpose             |
+| ------------------- | ---------- | ------------------- |
+| `statusline.sh`     | statusLine | Status line display |
+| `_pr-cache.sh`      | (sourced)  | PR info cache       |
+| `idr-pre-commit.sh` | pre-commit | IDR auto-generation |
 
 ### agents/
 
-| Hook               | Event        | Failure Mode | Purpose              |
-| ------------------ | ------------ | ------------ | -------------------- |
-| `subagent-done.sh` | SubagentStop | fail-open    | 完了マーカー書き込み |
-| `teammate-idle.sh` | TeammateIdle | fail-open    | チームメイト待機検知 |
+| Hook               | Event        | Failure Mode | Purpose                    |
+| ------------------ | ------------ | ------------ | -------------------------- |
+| `subagent-done.sh` | SubagentStop | fail-open    | Write completion marker    |
+| `teammate-idle.sh` | TeammateIdle | fail-open    | Detect teammate idle state |
 
 ### viewer/
 
@@ -193,25 +193,25 @@ registered via the `shields@sentinels` plugin. Remaining shell hooks:
 
 ### 1. Non-blocking by Default
 
-フックは通常、操作をブロックしない。ブロックは明示的な設定が必要。
+Hooks do not block operations by default. Blocking requires explicit configuration.
 
 ### 2. Fail-safe
 
-フックがエラーで終了しても、Claude Codeは継続動作。
+Claude Code continues operating even when a hook exits with an error.
 
 ### 3. Fail-mode Convention
 
-- **fail-open** (`set +e`): エラー時はスキップして継続。大半のフックがこちら。
+- **fail-open** (`set +e`): Skip and continue on error. Most hooks fall here.
 - **fail-closed**
-  (`set -euo pipefail`): エラー時はブロック。セキュリティフックのみ。
+  (`set -euo pipefail`): Block on error. Used only for security hooks.
 
 ### 4. Composable
 
-小さなフックを組み合わせて複雑な動作を実現。
+Combine small hooks to achieve complex behavior.
 
 ## IDR (Implementation Decision Record)
 
-コミット時に `claude-idr` バイナリで自動生成される実装記録。
+Implementation records auto-generated by the `claude-idr` binary at commit time.
 
 ```mermaid
 flowchart LR

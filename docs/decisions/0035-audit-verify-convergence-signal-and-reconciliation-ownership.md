@@ -12,14 +12,14 @@ decision-makers: thkt
 
 ## Decision Drivers
 
-- Severity upgrades during dedup are silent — no audit trail
+- Severity upgrades during dedup are silent - no audit trail
 - Cross-domain findings at the same location are a convergence signal that should influence prioritization
 - enhancer-evidence assumes pre-reconciled input, but /verify SKILL.md does not assign reconciliation to any component
 - /audit (static-only) and /verify (static + dynamic) have structurally different confidence requirements
 
 ## Considered Options
 
-### A: Minimal — add `reviewer_count` field to dedup
+### A: Minimal - add `reviewer_count` field to dedup
 
 Use a single `reviewer_count` field as a tiebreaker in the Prioritize scoring formula.
 
@@ -42,7 +42,7 @@ Extract dedup, reconciliation, and root cause logic into a shared reference, use
 
 - Good: DRY
 - Bad: Constrains independent evolution of /audit vs /verify pipelines
-- Bad: YAGNI — the two integrators handle different evidence types
+- Bad: YAGNI - the two integrators handle different evidence types
 
 ## Decision Outcome
 

@@ -14,42 +14,42 @@ paths:
 
 ## ランタイム制約
 
-| ルール              | 詳細                                                              |
-| ------------------- | ----------------------------------------------------------------- |
-| Web Standard のみ   | Node.js API、Bun固有API禁止（本番は workerd）                     |
-| ブロッキングI/O禁止 | Workers はシングルスレッド。async/await を必ず使用                |
-| Env は Bindings経由 | シークレットやサービスは `c.env` でアクセス。`process.env` は不可 |
+| ルール                | 詳細                                                       |
+| --------------------- | ---------------------------------------------------------- |
+| Web Standard のみ     | Node.js API 不可、Bun 固有 API 不可 (本番は workerd)       |
+| ブロッキング I/O 不可 | Workers はシングルスレッド。async/await のみ使う           |
+| Env は Bindings       | secret やサービスは `c.env` 経由。`process.env` は使わない |
 
 ## Hono パターン
 
 | パターン         | 規約                                                                     |
 | ---------------- | ------------------------------------------------------------------------ |
-| App 型定義       | `new Hono<{ Bindings: Bindings }>()` で型付き Bindings                   |
-| ルートグループ   | ドメインごとに Hono インスタンス分離、`app.route()` でマウント           |
-| 認証ミドルウェア | 保護グループに `clerkMiddleware()`、公開ルートはベースアプリに           |
+| App 型           | `new Hono<{ Bindings: Bindings }>()` で型付き Bindings を使う            |
+| ルートグループ   | ドメインごとに別 Hono インスタンス。`app.route()` でマウント             |
+| 認証ミドルウェア | 保護対象グループに `clerkMiddleware()`。公開ルートは base app に置く     |
 | Variables        | `Hono<{ Bindings: Bindings; Variables: { ... } }>` + `c.set()`/`c.get()` |
-| レスポンス       | 必ず `c.json()`。エラー形式: `{ error: string }`                         |
-| エラーハンドラ   | `app.onError()` で構造化JSONログ（message, method, path, stack）         |
+| Response         | 常に `c.json()`。エラー形状: `{ error: string }`                         |
+| Error handler    | `app.onError()` で構造化 JSON ログ (message, method, path, stack)        |
 
-## バリデーション
+## Validation
 
-| ルール   | 詳細                                                           |
-| -------- | -------------------------------------------------------------- |
-| 入力     | `c.req.json()` を try-catch、その後 `schema.safeParse()`       |
-| 出力     | Zod schema `.parse()` でレスポンスデータ検証（クライアント側） |
-| スキーマ | アプリごとに `validators.ts` ファイルを分離                    |
+| ルール  | 詳細                                                      |
+| ------- | --------------------------------------------------------- |
+| Input   | `c.req.json()` を try-catch、その後 `schema.safeParse()`  |
+| Output  | レスポンスデータに Zod schema `.parse()` (クライアント側) |
+| Schemas | アプリごとに専用の `validators.ts`                        |
 
 ## Drizzle ORM
 
-| ルール        | 詳細                                                                                  |
-| ------------- | ------------------------------------------------------------------------------------- |
-| スキーマ配置  | 共有パッケージ（`packages/shared/`）に置き、web と api の両方からインポート           |
-| DB ファクトリ | リクエストごとに `createDb(c.env.DB)`（D1）またはコネクションプール（Neon）           |
-| インデックス  | スキーマのテーブル定義内で宣言。個別マイグレーションにしない                          |
-| 日付          | ISO 8601 テキストで保存。SQLite datetime は使わない                                   |
-| ID            | UUID は `text().primaryKey()`、連番は `integer().primaryKey({ autoIncrement: true })` |
+| ルール      | 詳細                                                                                        |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| Schema 配置 | 共有パッケージ (`packages/shared/`) に置き、web と api の両方から import                    |
+| DB factory  | リクエストごとに `createDb(c.env.DB)` (D1) または接続プール (Neon)                          |
+| Indexes     | スキーマ定義内に定義する。マイグレーションを別にしない                                      |
+| Dates       | ISO 8601 テキストで保存する。SQLite datetime は使わない                                     |
+| IDs         | UUID は `text().primaryKey()`、シーケンスは `integer().primaryKey({ autoIncrement: true })` |
 
-## セキュリティ
+## Security
 
-- MUST 自由入力 Zod フィールド（検索クエリ、ユーザー入力）に `.max()` を適用する
-- MUST NOT `as` / `satisfies` を Drizzle クエリに直接渡さない
+- 自由記述 Zod フィールド (検索クエリ、ユーザー入力) に `.max()` を適用する MUST
+- Drizzle クエリに `as` / `satisfies` アサーションを直接渡さない MUST NOT

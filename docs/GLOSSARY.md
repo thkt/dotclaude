@@ -13,28 +13,28 @@ Ubiquitous language dictionary for this project.
 | **Spec** | Specification                  | Implementation details, tests | `/think`          | AI       | Static after approval   |
 | **IDR**  | Implementation Decision Record | Implementation record         | `git commit` hook | Human    | Append-only             |
 
-### ADR — Architecture Decision Record
+### ADR - Architecture Decision Record
 
 **What it answers:** "Why did we choose this approach?"
 
-Records the reasoning behind significant technical decisions — technology
+Records the reasoning behind significant technical decisions - technology
 selections, architecture patterns, deprecations, process changes. Written in
 MADR format with prose-style explanation optimized for human readers who need to
 understand context months or years later.
 
 Key properties:
 
-- **Audience: future developers** — someone joining the project should
+- **Audience: future developers** - someone joining the project should
   understand past decisions by reading ADRs
-- **Immutable once accepted** — superseded by new ADRs, never edited
-- **Prose over placeholders** — ADR-0008 established that human-facing documents
+- **Immutable once accepted** - superseded by new ADRs, never edited
+- **Prose over placeholders** - ADR-0008 established that human-facing documents
   use narrative style, not structured tables
 - **4 template variants** by decision type: technology-selection,
   architecture-pattern, deprecation, process-change
 
 Location: `adr/NNNN-title.md`
 
-### SOW — Statement of Work
+### SOW - Statement of Work
 
 **What it answers:** "What are we building, and how do we know it's done?"
 
@@ -44,18 +44,18 @@ implementation approach. Produced during `/think` after design exploration
 
 Key properties:
 
-- **Audience: AI** — structured tables that AI can parse mechanically for
+- **Audience: AI** - structured tables that AI can parse mechanically for
   `/validate` and `/code`
-- **Static after approval** — once the user approves, SOW is not modified
-- **AC-N acceptance criteria** — simple numbered checklist (not WHEN/THEN
+- **Static after approval** - once the user approves, SOW is not modified
+- **AC-N acceptance criteria** - simple numbered checklist (not WHEN/THEN
   format; ADR-0008 simplified from the unused I-001/A-001 system)
-- **Includes YAGNI checklist** — explicitly marks excluded features to prevent
+- **Includes YAGNI checklist** - explicitly marks excluded features to prevent
   scope creep
-- **Paired with Spec** — SOW defines "what/why", Spec defines "how"
+- **Paired with Spec** - SOW defines "what/why", Spec defines "how"
 
 Location: `workspace/planning/YYYY-MM-DD-[feature]/sow.md`
 
-### Spec — Specification
+### Spec - Specification
 
 **What it answers:** "How exactly do we implement this?"
 
@@ -64,19 +64,19 @@ and domain model. The primary input for `/code` implementation.
 
 Key properties:
 
-- **Audience: AI** — structured tables with full traceability
+- **Audience: AI** - structured tables with full traceability
   (`FR-001 Implements: AC-001` → `T-001 Validates: FR-001`)
-- **Static after approval** — locked alongside SOW
-- **Domain model depth varies** — brief data model for CLI/config, detailed
+- **Static after approval** - locked alongside SOW
+- **Domain model depth varies** - brief data model for CLI/config, detailed
   entities/business rules/events for business apps (ADR-0008 threshold: entities
   ≥ 3 or business rules ≥ 3)
-- **Test scenarios own the detail** — test plan lives in Spec, not SOW (ADR-0008
+- **Test scenarios own the detail** - test plan lives in Spec, not SOW (ADR-0008
   eliminated duplication)
-- **Traceability matrix** — every AC maps to FR, test, and NFR
+- **Traceability matrix** - every AC maps to FR, test, and NFR
 
 Location: `workspace/planning/YYYY-MM-DD-[feature]/spec.md`
 
-### IDR — Implementation Decision Record
+### IDR - Implementation Decision Record
 
 **What it answers:** "What actually happened during implementation?"
 
@@ -86,15 +86,15 @@ by analyzing the session log and diff.
 
 Key properties:
 
-- **Audience: human reviewers** — written as a narrative summary of changes, not
+- **Audience: human reviewers** - written as a narrative summary of changes, not
   structured data
-- **Append-only** — each commit adds a new IDR file, never modifies previous
+- **Append-only** - each commit adds a new IDR file, never modifies previous
   ones
-- **Automatic** — no manual effort; the hook generates it from git diff +
+- **Automatic** - no manual effort; the hook generates it from git diff +
   session context
-- **Traces back to SOW** — placed in the same directory as the SOW when one
+- **Traces back to SOW** - placed in the same directory as the SOW when one
   exists, providing a link from planning to execution
-- **Numbered sequentially** — `idr-01.md`, `idr-02.md`, ... within a feature
+- **Numbered sequentially** - `idr-01.md`, `idr-02.md`, ... within a feature
   directory
 
 Location: `workspace/planning/[feature]/idr-NN.md` or
@@ -142,17 +142,7 @@ AC-001 ← FR-001 ← T-001
 IDs trace across documents: SOW acceptance criteria → Spec requirements → Test
 scenarios.
 
-## Confidence Markers
-
-| Marker | Confidence | Meaning  | Action                    |
-| ------ | ---------- | -------- | ------------------------- |
-| `[✓]`  | ≥95%       | Verified | Proceed                   |
-| `[→]`  | 70-94%     | Inferred | Confirm before proceeding |
-| `[?]`  | <70%       | Unknown  | Investigate first         |
-
-Used in OPERATION (Output Verifiability) and throughout documentation.
-
 ## Related
 
-- [DESIGN](./DESIGN.md) — Architecture overview
-- [HOOKS](./HOOKS.md) — IDR generation details
+- [DESIGN](./DESIGN.md) - Architecture overview
+- [HOOKS](./HOOKS.md) - IDR generation details

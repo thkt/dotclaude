@@ -35,7 +35,7 @@ Choose by category.
 | `user-invocable` | Binding    | Pattern               | Examples                                            |
 | ---------------- | ---------- | --------------------- | --------------------------------------------------- |
 | `true`           | -          | Short name            | `commit`, `fix`, `audit`                            |
-| `false`          | CLI wrap   | `use-cli-<cli>`       | `use-cli-git`, `use-cli-yomu`                       |
+| `false`          | CLI wrap   | `use-cli-<cli>`       | `use-cli-yomu`, `use-cli-recall`                    |
 | `false`          | Agent-only | `use-context-<agent>` | `use-context-reviewer-security`                     |
 | `false`          | Workflow   | `use-workflow-<noun>` | `use-workflow-code`, `use-workflow-spec-validation` |
 | any              | Avoid      | -                     | `helper`, `utils`, `tools`                          |
@@ -55,11 +55,12 @@ Claude reads SKILL.md first, references only when needed.
 
 Reference paths inside SKILL.md, scripts/, templates/ and references/ files use bare `${CLAUDE_SKILL_DIR}` substitution, NOT markdown links.
 
-| Form                                            | Use    | Reason                                                                     |
-| ----------------------------------------------- | ------ | -------------------------------------------------------------------------- |
-| `${CLAUDE_SKILL_DIR}/references/foo.md` (bare)  | Always | Harness expands the variable to absolute path. Read tool resolves directly |
-| `[references/foo.md](references/foo.md)` (link) | Never  | Harness does not expand markdown links; AI infers relative path            |
-| `` `${CLAUDE_SKILL_DIR}/references/foo.md` ``   | Avoid  | Harness behavior inside backticks is undocumented; safer to omit           |
+| Form                                            | Use         | Reason                                                                                            |
+| ----------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------- |
+| `${CLAUDE_SKILL_DIR}/references/foo.md` (bare)  | Always      | Harness expands the variable to absolute path. Read tool resolves directly                        |
+| `${CLAUDE_SKILL_DIR}/../<dir>/foo.md` (sibling) | Cross-skill | Harness expands the variable; Read normalizes the .. segment. Used for shared _lib/ across skills |
+| `[references/foo.md](references/foo.md)` (link) | Never       | Harness does not expand markdown links; AI infers relative path                                   |
+| `` `${CLAUDE_SKILL_DIR}/references/foo.md` ``   | Avoid       | Harness behavior inside backticks is undocumented; safer to omit                                  |
 
 ## Argument variables
 
@@ -78,7 +79,7 @@ Skill input arguments expand at invocation time.
 
 ## Size limits
 
-| Rule            | Threshold  | Action                     |
-| --------------- | ---------- | -------------------------- |
-| SKILL.md body   | 500 lines  | Split into reference files |
-| Reference files | 100+ lines | Add TOC at top             |
+| Rule            | Threshold | Action                      |
+| --------------- | --------- | --------------------------- |
+| SKILL.md body   | 500 lines | Split into reference files  |
+| Reference files | 200 lines | Consider splitting by topic |

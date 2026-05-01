@@ -103,4 +103,4 @@ SOW/Spec もガイドライン形式にする。
 ## References
 
 - ADR-0005: ドキュメントの役割分離とAI最適化（本 ADR の前提となる原則）
-- `rules/conventions/DOCUMENTATION.md` — ドキュメント規約
+- `rules/conventions/DOCUMENTATION.md` - ドキュメント規約

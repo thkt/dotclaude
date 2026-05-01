@@ -13,11 +13,11 @@ Test behavior via public API. Mock only at system boundaries.
 
 ## Variant Selection
 
-| Trigger                           | Variant         | Reference                                          |
-| --------------------------------- | --------------- | -------------------------------------------------- |
-| spec.md / new feature (`/code`)   | Feature-driven  | `${CLAUDE_SKILL_DIR}/references/feature-driven.md` |
-| Bug report / regression (`/fix`)  | Bug-driven      | `${CLAUDE_SKILL_DIR}/references/bug-driven.md`     |
-| Coverage gap in existing codebase | Coverage-driven | Active tests, no skip. Reuse RGRC below            |
+| Trigger                           | Variant         | Reference                                        |
+| --------------------------------- | --------------- | ------------------------------------------------ |
+| spec.md / new feature (`/code`)   | Feature-driven  | ${CLAUDE_SKILL_DIR}/references/feature-driven.md |
+| Bug report / regression (`/fix`)  | Bug-driven      | ${CLAUDE_SKILL_DIR}/references/bug-driven.md     |
+| Coverage gap in existing codebase | Coverage-driven | Active tests, no skip. Reuse RGRC below          |
 
 ## What to Test
 
@@ -29,12 +29,12 @@ Test behavior via public API. Mock only at system boundaries.
 
 ### When NOT to Use TDD
 
-| Context                     | Reason                              |
-| --------------------------- | ----------------------------------- |
-| Prototypes (throwaway)      | Discard likely, cost > benefit      |
-| External API integration    | Mock the API, not the integration   |
-| Simple one-off scripts      | Shorter than the test would be      |
-| UI experiments              | Visual first, extract logic later   |
+| Context                  | Reason                            |
+| ------------------------ | --------------------------------- |
+| Prototypes (throwaway)   | Discard likely, cost > benefit    |
+| External API integration | Mock the API, not the integration |
+| Simple one-off scripts   | Shorter than the test would be    |
+| UI experiments           | Visual first, extract logic later |
 
 ## Feature-Driven vs Bug-Driven
 
@@ -159,7 +159,7 @@ test("name", () => {
 
 | Topic          | File                                                      |
 | -------------- | --------------------------------------------------------- |
-| Feature-driven | `${CLAUDE_SKILL_DIR}/references/feature-driven.md`        |
-| Bug-driven     | `${CLAUDE_SKILL_DIR}/references/bug-driven.md`            |
-| Flaky tests    | `${CLAUDE_SKILL_DIR}/references/flaky-test-management.md` |
-| Coverage       | `~/.claude/rules/development/THRESHOLDS.md`               |
+| Feature-driven | ${CLAUDE_SKILL_DIR}/references/feature-driven.md          |
+| Bug-driven     | ${CLAUDE_SKILL_DIR}/references/bug-driven.md              |
+| Flaky tests    | ${CLAUDE_SKILL_DIR}/references/flaky-test-management.md   |
+| Coverage       | ${CLAUDE_SKILL_DIR}/../../rules/development/THRESHOLDS.md |

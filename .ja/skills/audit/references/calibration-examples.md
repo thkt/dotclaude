@@ -1,8 +1,8 @@
-# Calibration 例
+# Calibration Examples
 
-監査レビュアー向けのドメイン固有 REPORT/SKIP 例。各レビュアーがこのファイルを参照する。原則は `finding-schema.md` を参照。
+audit reviewer 向けのドメイン別 REPORT/SKIP 例。各 reviewer がこのファイルを参照する。原則は `finding-schema.md` にある。
 
-## CQ (code-quality-reviewer)
+## CQ (reviewer-readability)
 
 ### REPORT
 
@@ -23,11 +23,11 @@ function processOrder(order, user, config, db, logger) {
 }
 ```
 
-| Field   | Value                                          |
-| ------- | ---------------------------------------------- |
-| Filter  | Senior Engineer Test pass — 変更を求める       |
-| Trigger | この関数を読むすべての開発者                   |
-| Impact  | ネスト 5 段 + 引数 6 個 + 1 文字変数 = 読めない |
+| Field   | Value                                      |
+| ------- | ------------------------------------------ |
+| Filter  | Senior Engineer Test pass: 変更を要請する  |
+| Trigger | この関数に出会った任意の読み手             |
+| Impact  | 5 段ネスト + 6 引数 + 1 文字変数で読めない |
 
 ### SKIP
 
@@ -39,12 +39,12 @@ function createUser(name: string, email: string): User {
 }
 ```
 
-| Field  | Value                                                                   |
-| ------ | ----------------------------------------------------------------------- |
-| Filter | Senior Engineer Test fail — 好みの問題であり欠陥ではない                |
-| Signal | `normalized` と `user` は可読性に貢献。インライン化で明瞭さは向上しない |
+| Field  | Value                                                                  |
+| ------ | ---------------------------------------------------------------------- |
+| Filter | Senior Engineer Test fail: 好みの問題、欠陥ではない                    |
+| Signal | `normalized` と `user` は可読性に寄与; inline しても明瞭性は変わらない |
 
-## EFF (efficiency-reviewer)
+## EFF (reviewer-efficiency)
 
 ### REPORT
 
@@ -56,12 +56,12 @@ fn search(&self, query: &str) -> Vec<Result> {
 }
 ```
 
-| Field   | Value                                                         |
-| ------- | ------------------------------------------------------------- |
-| Filter  | Harm Test pass — ホットパスで計測可能な無駄                   |
-| Trigger | ユーザーの検索呼び出しごと                                    |
-| Impact  | プール再利用の代わりに毎回 DB 接続を開く。レイテンシ + リーク |
-| Path    | Hot — ユーザー向け関数                                        |
+| Field   | Value                                                             |
+| ------- | ----------------------------------------------------------------- |
+| Filter  | Harm Test pass: ホットパスでの計測可能な無駄                      |
+| Trigger | ユーザー検索のたび                                                |
+| Impact  | プール再利用ではなく呼び出しごとに新規 DB 接続; レイテンシ + leak |
+| Path    | Hot: ユーザー向け関数                                             |
 
 ### SKIP
 
@@ -78,18 +78,18 @@ fn init_config() -> Config {
 }
 ```
 
-| Field  | Value                                                       |
-| ------ | ----------------------------------------------------------- |
-| Filter | Context Test: コールドパス                                  |
-| Signal | 起動時に 1 回だけ実行。環境変数 2 回読み込みは無視できる    |
-| Path   | Cold — キャッシュ追加は複雑さに対してユーザー体感ゼロの改善 |
+| Field  | Value                                                          |
+| ------ | -------------------------------------------------------------- |
+| Filter | Context Test: cold path                                        |
+| Signal | 起動時 1 回実行、env var 2 回読みは無視できる                  |
+| Path   | Cold: ユーザー目に見える効果ゼロでキャッシュは複雑度を増すだけ |
 
-## TC (test-coverage-reviewer)
+## TC (reviewer-coverage)
 
 ### REPORT
 
 ```rust
-// src/auth.rs — public API, no test for invalid token path
+// src/auth.rs - public API, no test for invalid token path
 pub fn verify_token(token: &str) -> Result<Claims, AuthError> {
     let decoded = decode(token, &KEY, &Validation::default())?;
     if decoded.claims.exp < now() {
@@ -99,17 +99,17 @@ pub fn verify_token(token: &str) -> Result<Claims, AuthError> {
 }
 ```
 
-| Field       | Value                                                       |
-| ----------- | ----------------------------------------------------------- |
-| Filter      | Harm Test pass — セキュリティリグレッションの具体的 trigger |
-| Trigger     | 期限チェックがリグレッション                                |
-| Impact      | 無効なトークンがサイレントに通過。認証バイパス              |
-| Criticality | 9/10 — public API、認証境界                                 |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Filter      | Harm Test pass: 具体トリガー付きセキュリティリグレッション |
+| Trigger     | expiry チェックがリグレッション                            |
+| Impact      | 無効 token が静かに通る; auth bypass                       |
+| Criticality | 9/10: public API, 認証境界                                 |
 
 ### SKIP
 
 ```rust
-// src/internal/normalize.rs — private helper
+// src/internal/normalize.rs - private helper
 fn normalize_whitespace(s: &str) -> String {
     s.split_whitespace().collect::<Vec<_>>().join(" ")
 }
@@ -119,13 +119,13 @@ fn normalize_whitespace(s: &str) -> String {
 // tests/chunker_test.rs::test_chunk_preserves_newlines
 ```
 
-| Field  | Value                                                                                    |
-| ------ | ---------------------------------------------------------------------------------------- |
-| Filter | Context Test: 間接カバー                                                                 |
-| Signal | chunker テスト 2 件がこのヘルパーを経由して観測可能な動作を検証済み                      |
-| Note   | この関数の単体テストは `split_whitespace` のテストであり、アプリロジックのテストではない |
+| Field  | Value                                                                            |
+| ------ | -------------------------------------------------------------------------------- |
+| Filter | Context Test: indirect coverage                                                  |
+| Signal | 2 つの chunker テストがこの helper を介して観測可能挙動を検査済み                |
+| Note   | ここの単体テストは `split_whitespace` をテストするだけで、アプリロジックではない |
 
-## DRY (duplication-reviewer)
+## DRY (reviewer-duplication)
 
 ### REPORT
 
@@ -138,22 +138,22 @@ async function getUser(id: string) {
   return user;
 }
 
-// src/api/teams.ts — same error handling pattern, same structure
+// src/api/teams.ts - same error handling pattern, same structure
 async function getTeam(id: string) {
   const db = await getConnection();
   const team = await db.query("SELECT * FROM teams WHERE id = ?", [id]);
   if (!team) throw new NotFoundError("Team not found");
   return team;
 }
-// (also in orders.ts, projects.ts — 4 occurrences)
+// (also in orders.ts, projects.ts - 4 occurrences)
 ```
 
-| Field   | Value                                                   |
-| ------- | ------------------------------------------------------- |
-| Filter  | Harm Test pass — 協調更新リスク                         |
-| Trigger | エラーハンドリング変更（ログ追加、カスタムエラー型など）|
-| Impact  | 4 箇所の同一コールサイトを更新必要。1 箇所漏れ = 不整合 |
-| Count   | 4 箇所 — Rule of Three 閾値超過                         |
+| Field   | Value                                                            |
+| ------- | ---------------------------------------------------------------- |
+| Filter  | Harm Test pass: 協調更新リスク                                   |
+| Trigger | エラーハンドリング変更 (例: ロギング追加やカスタム error 型導入) |
+| Impact  | 同一 4 箇所を更新必要; 1 つでも漏れると挙動が不一致になる        |
+| Count   | 4 occurrences: Rule of Three の閾値超過                          |
 
 ### SKIP
 
@@ -166,7 +166,7 @@ async function createUser(data: CreateUserInput) {
   return user;
 }
 
-// src/api/teams.ts — similar structure, different business logic
+// src/api/teams.ts - similar structure, different business logic
 async function createTeam(data: CreateTeamInput) {
   validate(data);
   const team = await db.insert("teams", { ...data, plan: "free" });
@@ -175,13 +175,13 @@ async function createTeam(data: CreateTeamInput) {
 }
 ```
 
-| Field  | Value                                                                                                            |
-| ------ | ---------------------------------------------------------------------------------------------------------------- |
-| Filter | Context Test: 意味的差異                                                                                         |
-| Signal | ドメイン固有のデフォルト値（`role: "member"` vs `plan: "free"`）と副作用（`sendWelcomeEmail` vs `notifyAdmins`） |
-| Count  | 2 箇所 — Rule of Three の抽出緊急度閾値未満                                                                      |
+| Field  | Value                                                                                                               |
+| ------ | ------------------------------------------------------------------------------------------------------------------- |
+| Filter | Context Test: 意味的差異                                                                                            |
+| Signal | ドメイン固有のデフォルト (`role: "member"` vs `plan: "free"`) と side effect (`sendWelcomeEmail` vs `notifyAdmins`) |
+| Count  | 2 occurrences: Rule of Three 抽出緊急性以下                                                                         |
 
-## SF (silent-failure-reviewer)
+## SF (reviewer-silence)
 
 ### REPORT
 
@@ -189,16 +189,16 @@ async function createTeam(data: CreateTeamInput) {
 fn sync_messages(&self, channel: &str) -> Result<usize> {
     match self.client.fetch_history(channel) {
         Ok(messages) => self.store(messages),
-        Err(_) => Ok(0),  // caller sees "0 messages synced" — no error signal
+        Err(_) => Ok(0),  // caller sees "0 messages synced" - no error signal
     }
 }
 ```
 
-| Field   | Value                                                                             |
-| ------- | --------------------------------------------------------------------------------- |
-| Filter  | Harm Test pass — 具体的な障害シナリオあり                                         |
-| Trigger | Slack API のネットワークエラー、認証失敗、レート制限                              |
-| Impact  | 呼び出し元は `Ok(0)` を受け取り、「メッセージなし」と「API ダウン」を区別できない |
+| Field   | Value                                                              |
+| ------- | ------------------------------------------------------------------ |
+| Filter  | Harm Test pass: 具体的失敗シナリオが存在                           |
+| Trigger | Slack API でネットワークエラー、auth 失敗、rate limit              |
+| Impact  | caller は `Ok(0)` を見て「0 件同期」と「API ダウン」を区別できない |
 
 ### SKIP
 
@@ -206,18 +206,18 @@ fn sync_messages(&self, channel: &str) -> Result<usize> {
 fn load_config(path: &Path) -> Config {
     match fs::read_to_string(path) {
         Ok(content) => toml::from_str(&content).unwrap_or_default(),
-        Err(_) => Config::default(),  // first run — config file doesn't exist yet
+        Err(_) => Config::default(),  // first run - config file doesn't exist yet
     }
 }
 ```
 
-| Field  | Value                                                                   |
-| ------ | ----------------------------------------------------------------------- |
-| Filter | Context Test: 意図的フォールバック                                      |
-| Signal | 関数名 `load_config`（`require_config` ではない）、`default()` の戻り値 |
-| Path   | Cold — 起動時に 1 回だけ実行                                            |
+| Field  | Value                                                                |
+| ------ | -------------------------------------------------------------------- |
+| Filter | Context Test: 意図的 fallback                                        |
+| Signal | 関数名 `load_config` (`require_config` ではない)、`default()` を返す |
+| Path   | Cold: 起動時 1 回実行                                                |
 
-## SEC (security-reviewer)
+## SEC (reviewer-security)
 
 ### REPORT
 
@@ -229,11 +229,11 @@ app.get("/users", async (req, res) => {
 });
 ```
 
-| Field   | Value                                            |
-| ------- | ------------------------------------------------ |
-| Filter  | Harm Test pass — 悪用可能な SQL インジェクション |
-| Trigger | `?sort=1; DROP TABLE users--`                    |
-| Impact  | 任意 SQL 実行; データベース全体の侵害            |
+| Field   | Value                                    |
+| ------- | ---------------------------------------- |
+| Filter  | Harm Test pass: 悪用可能な SQL injection |
+| Trigger | `?sort=1; DROP TABLE users--`            |
+| Impact  | 任意 SQL 実行; DB 全体侵害               |
 
 ### SKIP
 
@@ -249,10 +249,10 @@ app.get("/users", async (req, res) => {
 
 | Field  | Value                                                             |
 | ------ | ----------------------------------------------------------------- |
-| Filter | Context Test: allowlist 検証                                      |
+| Filter | Context Test: allowlist による検証                                |
 | Signal | `ALLOWED_SORTS.includes()` が補間前にユーザー入力をゲートしている |
 
-## TS (type-safety-reviewer)
+## TS (reviewer-strictness)
 
 ### REPORT
 
@@ -264,11 +264,11 @@ async function fetchUser(id: string): Promise<User> {
 }
 ```
 
-| Field   | Value                                                            |
-| ------- | ---------------------------------------------------------------- |
-| Filter  | Harm Test pass — 検証なしの外部境界                              |
-| Trigger | API が想定外の形を返す（フィールド改名、null 追加）              |
-| Impact  | アサーション箇所から遠い場所でランタイムクラッシュ; デバッグ困難 |
+| Field   | Value                                                  |
+| ------- | ------------------------------------------------------ |
+| Filter  | Harm Test pass: 検証なしの外部境界                     |
+| Trigger | API が予期しない形を返す (フィールド改名、null 追加)   |
+| Impact  | アサート位置から離れたランタイムクラッシュ; debug 困難 |
 
 ### SKIP
 
@@ -281,28 +281,28 @@ function parseUser(raw: unknown): User {
 }
 ```
 
-| Field  | Value                                                           |
-| ------ | --------------------------------------------------------------- |
-| Filter | Context Test: 検証済み入力                                      |
-| Signal | `schema.parse()` がアサーション前にランタイム保証を提供している |
+| Field  | Value                                               |
+| ------ | --------------------------------------------------- |
+| Filter | Context Test: 検証済み入力                          |
+| Signal | `schema.parse()` がアサート前にランタイム保証を提供 |
 
-## TD (type-design-reviewer)
+## TD (reviewer-encapsulation)
 
 ### REPORT
 
 ```rust
 pub struct Order {
     pub items: Vec<Item>,
-    pub total: f64,      // must equal sum of items — not enforced
-    pub status: String,  // "pending" | "paid" | "shipped" — not enforced
+    pub total: f64,      // must equal sum of items - not enforced
+    pub status: String,  // "pending" | "paid" | "shipped" - not enforced
 }
 ```
 
 | Field   | Value                                                            |
 | ------- | ---------------------------------------------------------------- |
-| Filter  | Harm Test pass — 不正な状態が構築可能                            |
+| Filter  | Harm Test pass: 不正状態が構築可能                               |
 | Trigger | `Order { items: vec![], total: 999.0, status: "banana".into() }` |
-| Impact  | total 不整合や無効な status によるビジネスロジックバグ           |
+| Impact  | total 不一致や不正 status からビジネスロジックバグ               |
 
 ### SKIP
 
@@ -313,12 +313,12 @@ pub struct Point {
 }
 ```
 
-| Field  | Value                                                    |
-| ------ | -------------------------------------------------------- |
-| Filter | Context Test: 強制すべき不変条件なし                     |
-| Signal | 任意の (x, y) 組み合わせが有効; カプセル化による価値なし |
+| Field  | Value                                                 |
+| ------ | ----------------------------------------------------- |
+| Filter | Context Test: 強制すべき不変条件なし                  |
+| Signal | (x, y) はどんな組合せも有効; encapsulation は価値ゼロ |
 
-## DP (design-pattern-reviewer)
+## DP (reviewer-design)
 
 ### REPORT
 
@@ -352,11 +352,11 @@ function OrderPage() {
 }
 ```
 
-| Field   | Value                                                           |
-| ------- | --------------------------------------------------------------- |
-| Filter  | Harm Test pass — fetch + filter + sort + render が 1 箇所に集中 |
-| Trigger | 新しいフィルタ種別を追加するたびにレンダリングコード編集が必要  |
-| Impact  | テスト不可能なロジック; レンダーと結合した状態; 無制限に拡大    |
+| Field   | Value                                                          |
+| ------- | -------------------------------------------------------------- |
+| Filter  | Harm Test pass: fetch + filter + sort + render を 1 箇所に集約 |
+| Trigger | 新規フィルタ種類追加でレンダリングコード変更が必要             |
+| Impact  | テスト不能ロジック; render と state が結合; 際限なく成長       |
 
 ### SKIP
 
@@ -369,10 +369,10 @@ function UserAvatar({ name, src }: { name: string; src: string }) {
 
 | Field  | Value                                                          |
 | ------ | -------------------------------------------------------------- |
-| Filter | Context Test: 単一責務、葉コンポーネント                       |
-| Signal | `initials` の導出は自明; hook 抽出はオーバーヘッドを増やすだけ |
+| Filter | Context Test: 単一責務、leaf component                         |
+| Signal | `initials` 導出は些末; hook 抽出はオーバーヘッドにしかならない |
 
-## TEST (testability-reviewer)
+## TEST (reviewer-testability)
 
 ### REPORT
 
@@ -385,11 +385,11 @@ function sendReport() {
 }
 ```
 
-| Field   | Value                                                            |
-| ------- | ---------------------------------------------------------------- |
-| Filter  | Harm Test pass — テストで制御不能な隠れグローバル 3 つ           |
-| Trigger | timestamp、HTTP 呼び出し、ログのテストにグローバルのモックが必要 |
-| Impact  | テストが flaky（時間依存）または複雑なセットアップを要求         |
+| Field   | Value                                                              |
+| ------- | ------------------------------------------------------------------ |
+| Filter  | Harm Test pass: テストで制御できない隠れた global 3 つ             |
+| Trigger | timestamp、HTTP 呼び出し、ロギングのテストは global の mock が必要 |
+| Impact  | テストが flaky (時間依存) または複雑なセットアップが必要           |
 
 ### SKIP
 
@@ -399,12 +399,12 @@ function formatCurrency(amount: number, locale: string): string {
 }
 ```
 
-| Field  | Value                                                     |
-| ------ | --------------------------------------------------------- |
-| Filter | Context Test: 純粋関数、隠れた依存なし                    |
-| Signal | `Intl.NumberFormat` は決定論的; input/output でテスト可能 |
+| Field  | Value                                                   |
+| ------ | ------------------------------------------------------- |
+| Filter | Context Test: 純粋関数、隠れた依存なし                  |
+| Signal | `Intl.NumberFormat` は決定的; input/output でテスト可能 |
 
-## PERF (performance-reviewer)
+## PERF (reviewer-performance)
 
 ### REPORT
 
@@ -425,11 +425,11 @@ function ChatList({ messages }: { messages: Message[] }) {
 }
 ```
 
-| Field   | Value                                                       |
-| ------- | ----------------------------------------------------------- |
-| Filter  | Harm Test pass — 親レンダーごとに N 個の子が再レンダー      |
-| Trigger | 親の state 変更; 100+ items のリスト                        |
-| Impact  | inline arrow + inline object で `React.memo` が毎回子で破綻 |
+| Field   | Value                                                         |
+| ------- | ------------------------------------------------------------- |
+| Filter  | Harm Test pass: 親 render ごとに N 個の子 re-render           |
+| Trigger | 親の任意 state 変更; 100+ アイテムのリスト                    |
+| Impact  | inline arrow + inline object が全子の `React.memo` を破壊する |
 
 ### SKIP
 
@@ -444,12 +444,12 @@ function SettingsToggle({ label, checked, onChange }: Props) {
 }
 ```
 
-| Field  | Value                                                           |
-| ------ | --------------------------------------------------------------- |
-| Filter | Context Test: 葉コンポーネント、再レンダーする子なし            |
-| Signal | 葉の inline arrow; メモ化しても何も節約できない（subtree なし） |
+| Field  | Value                                                            |
+| ------ | ---------------------------------------------------------------- |
+| Filter | Context Test: leaf component、re-render する子なし               |
+| Signal | leaf の inline arrow; メモ化しても (subtree なし) 何も得られない |
 
-## PE (progressive-enhancer)
+## PE (reviewer-progressive)
 
 ### REPORT
 
@@ -463,11 +463,11 @@ window.addEventListener("resize", () => {
 });
 ```
 
-| Field   | Value                                                                                    |
-| ------- | ---------------------------------------------------------------------------------------- |
-| Filter  | Harm Test pass — CSS media query で完全に置き換え可能                                    |
-| Trigger | ウィンドウリサイズのたびに JS ハンドラ発火                                               |
-| Impact  | `@media (max-width: 768px) { .sidebar { display: none } }` — JS ゼロ、パフォーマンス改善 |
+| Field   | Value                                                                                   |
+| ------- | --------------------------------------------------------------------------------------- |
+| Filter  | Harm Test pass: CSS media query で完全代替可能                                          |
+| Trigger | window resize ごとに JS handler が発火                                                  |
+| Impact  | `@media (max-width: 768px) { .sidebar { display: none } }`: JS ゼロでパフォーマンス向上 |
 
 ### SKIP
 
@@ -483,12 +483,12 @@ const observer = new IntersectionObserver((entries) => {
 observer.observe(sentinelRef.current);
 ```
 
-| Field  | Value                                                                |
-| ------ | -------------------------------------------------------------------- |
-| Filter | Context Test: スクロール時データ取得に CSS 代替なし                  |
-| Signal | IntersectionObserver が API 呼び出しをトリガー; CSS はデータ取得不可 |
+| Field  | Value                                                             |
+| ------ | ----------------------------------------------------------------- |
+| Filter | Context Test: スクロール時のデータ取得に CSS 等価物なし           |
+| Signal | IntersectionObserver が API 呼び出しをトリガ; CSS では fetch 不可 |
 
-## OPS (operational-readiness-reviewer)
+## OPS (reviewer-operations)
 
 ### REPORT
 
@@ -505,11 +505,11 @@ function DashboardPage() {
 }
 ```
 
-| Field   | Value                                                       |
-| ------- | ----------------------------------------------------------- |
-| Filter  | Harm Test pass — ページレベルでエラーコンテインメントなし   |
-| Trigger | API がエラーを返すか想定外の形を返す                        |
-| Impact  | ページ全体がホワイトアウト; ユーザーに React エラー画面表示 |
+| Field   | Value                                                     |
+| ------- | --------------------------------------------------------- |
+| Filter  | Harm Test pass: page レベルでエラー封じ込めなし           |
+| Trigger | API がエラーまたは予期しない shape を返す                 |
+| Impact  | ページ全体が white-screen; ユーザーに React error overlay |
 
 ### SKIP
 
@@ -519,12 +519,12 @@ function PriceTag({ amount }: { amount: number }) {
 }
 ```
 
-| Field  | Value                                               |
-| ------ | --------------------------------------------------- |
-| Filter | Context Test: 内部 Presentational、親がエラーを処理 |
-| Signal | async なし、副作用なし; 親の ErrorBoundary がカバー |
+| Field  | Value                                             |
+| ------ | ------------------------------------------------- |
+| Filter | Context Test: 内部 presentational、親がエラー処理 |
+| Signal | async なし、副作用なし; 親 ErrorBoundary がカバー |
 
-## RC (root-cause-reviewer)
+## RC (reviewer-causation)
 
 ### REPORT
 
@@ -540,11 +540,11 @@ async function saveOrder(order: Order) {
 }
 ```
 
-| Field   | Value                                                            |
-| ------- | ---------------------------------------------------------------- |
-| Filter  | Harm Test pass — 原因を理解せずに retry                          |
-| Trigger | 接続プール枯渇または制約違反                                     |
-| Impact  | 失敗中 DB の負荷が倍増; 根本原因（プールサイズや検証不足）を隠す |
+| Field   | Value                                                                  |
+| ------- | ---------------------------------------------------------------------- |
+| Filter  | Harm Test pass: 原因を理解しない retry                                 |
+| Trigger | コネクションプール枯渇または制約違反                                   |
+| Impact  | 失敗中 DB に二重負荷; 根本原因 (プールサイズや検証ギャップ) を覆い隠す |
 
 ### SKIP
 
@@ -559,37 +559,37 @@ async function fetchExternalRate(currency: string): Promise<number> {
 }
 ```
 
-| Field  | Value                                                    |
-| ------ | -------------------------------------------------------- |
-| Filter | Context Test: 既知の一時的エラーに対する意図的な回復処理 |
-| Signal | 特定の HTTP status code に限定; 外部依存                 |
+| Field  | Value                                                          |
+| ------ | -------------------------------------------------------------- |
+| Filter | Context Test: 既知の transient error に対する意図的 resilience |
+| Signal | 特定 HTTP status code に限定; 外部依存                         |
 
-## REUSE (reuse-reviewer)
+## REUSE (reviewer-reuse)
 
 ### REPORT
 
 ```typescript
-// src/features/billing/validate.ts — new code
+// src/features/billing/validate.ts - new code
 function validateEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// src/shared/validation.ts — already exists in codebase
+// src/shared/validation.ts - already exists in codebase
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 ```
 
-| Field   | Value                                          |
-| ------- | ---------------------------------------------- |
-| Filter  | Harm Test pass — 同一ロジックの再実装          |
-| Trigger | メール検証ルール変更（例: `+` エイリアス許可） |
-| Impact  | 片方だけ更新して忘れる; 検証の不整合           |
+| Field   | Value                                              |
+| ------- | -------------------------------------------------- |
+| Filter  | Harm Test pass: 同一ロジックの再実装               |
+| Trigger | email 検証ルール変更 (例: + alias 許可)            |
+| Impact  | 一方を更新してもう一方を忘れる; 検証が不整合になる |
 
 ### SKIP
 
 ```typescript
-// src/features/billing/validate.ts — new code
+// src/features/billing/validate.ts - new code
 function validateInvoiceDate(date: Date, billingCycle: BillingCycle): boolean {
   const cycleStart = billingCycle.startDate;
   const grace = billingCycle.gracePeriodDays;
@@ -597,27 +597,26 @@ function validateInvoiceDate(date: Date, billingCycle: BillingCycle): boolean {
 }
 ```
 
-| Field  | Value                                                            |
-| ------ | ---------------------------------------------------------------- |
-| Filter | Context Test: 既存同等品なしのドメイン固有ロジック               |
-| Signal | 請求サイクル検証はこの機能固有                                   |
+| Field  | Value                                              |
+| ------ | -------------------------------------------------- |
+| Filter | Context Test: 既存等価物のないドメイン特化ロジック |
+| Signal | billing cycle 検証はこの機能固有                   |
 
-## DOC (document-reviewer)
+## DOC (reviewer-document)
 
 ### REPORT
 
 ```markdown
 ## Installation
 
-Install globally:
-$ npm install -g myapp
+Install globally: $ npm install -g myapp
 ```
 
-| Field   | Value                                                          |
-| ------- | -------------------------------------------------------------- |
-| Filter  | Harm Test pass — 時代遅れの手順でユーザーが失敗                |
-| Trigger | ユーザーが非推奨のグローバルインストールに従う; npx 使用と衝突 |
-| Impact  | 初回セットアップ失敗; ユーザーが離脱                           |
+| Field   | Value                                                    |
+| ------- | -------------------------------------------------------- |
+| Filter  | Harm Test pass: 古い手順がユーザー失敗を招く             |
+| Trigger | ユーザーが非推奨の global install に従う; npx 利用と衝突 |
+| Impact  | 初回セットアップ失敗; ユーザー離脱                       |
 
 ### SKIP
 
@@ -627,12 +626,12 @@ $ npm install -g myapp
 The system uses a pipeline pattern where each stage transforms the input and passes it to the next stage.
 ```
 
-| Field  | Value                                                  |
-| ------ | ------------------------------------------------------ |
-| Filter | Context Test: 正確な散文、スタイルの好みで欠陥ではない |
-| Signal | 内容は正しい; 図を追加するのは改善であって修正ではない |
+| Field  | Value                                              |
+| ------ | -------------------------------------------------- |
+| Filter | Context Test: 正確な散文、好みの問題で欠陥ではない |
+| Signal | 内容は正確; diagram 追加は改善で fix ではない      |
 
-## PQ (prompt-reviewer)
+## PQ (reviewer-prompt)
 
 ### REPORT
 
@@ -642,24 +641,24 @@ If it does not conform, you should return an appropriate error message.
 If it does conform, you should proceed with processing the input according to the rules defined below.
 ```
 
-| Field   | Value                                                     |
-| ------- | --------------------------------------------------------- |
-| Filter  | Harm Test pass — 4 行の散文 = テーブル 1 行               |
-| Trigger | 2 列のルールに LLM が ~60 トークン消費                    |
-| Impact  | `\| invalid input \| return error \|` で 50+ トークン節約 |
+| Field   | Value                                      |
+| ------- | ------------------------------------------ |
+| Filter  | Harm Test pass: 4 行の散文 = 1 表行        |
+| Trigger | LLM が 2 列ルールに ~60 トークンを処理する |
+| Impact  | 等価な 2 列表行で 50+ トークン削減         |
 
 ### SKIP
 
 ```markdown
-This reviewer detects silent failures — errors that are caught but not surfaced to the user or logged for operators.
+This reviewer detects silent failures - errors that are caught but not surfaced to the user or logged for operators.
 ```
 
-| Field  | Value                                        |
-| ------ | -------------------------------------------- |
-| Filter | Context Test: 詳細テーブルの前の 2 行の導入  |
-| Signal | 簡潔な文脈設定散文; テーブル化しても価値なし |
+| Field  | Value                                                  |
+| ------ | ------------------------------------------------------ |
+| Filter | Context Test: 詳細な表の前の 2 行イントロ              |
+| Signal | 簡潔なコンテキスト設定散文; 表に変えても何も得られない |
 
-## A11Y (accessibility-reviewer)
+## A11Y (reviewer-accessibility)
 
 ### REPORT
 
@@ -681,11 +680,11 @@ function Dropdown({ items, onSelect }: Props) {
 }
 ```
 
-| Field   | Value                                                                                    |
-| ------- | ---------------------------------------------------------------------------------------- |
-| Filter  | Harm Test pass — キーボードとスクリーンリーダーでアクセス不能                            |
-| Trigger | Tab キーが dropdown をスキップ; スクリーンリーダーが "group" と読み "listbox" と読まない |
-| Impact  | WCAG 2.1.1 (Keyboard)、4.1.2 (Name, Role, Value) の不合格                                |
+| Field   | Value                                                                  |
+| ------- | ---------------------------------------------------------------------- |
+| Filter  | Harm Test pass: キーボードと screen reader でアクセス不可              |
+| Trigger | Tab key で dropdown を skip; screen reader が "listbox" でなく "group" |
+| Impact  | WCAG 2.1.1 (Keyboard), 4.1.2 (Name, Role, Value) 違反                  |
 
 ### SKIP
 
@@ -697,5 +696,41 @@ function SubmitButton({ onClick, children }: Props) {
 
 | Field  | Value                                                  |
 | ------ | ------------------------------------------------------ |
-| Filter | Context Test: ネイティブ要素が built-in a11y を提供    |
-| Signal | `<button>` はデフォルトで keyboard、focus、role を持つ |
+| Filter | Context Test: ネイティブ要素が組み込み a11y を提供     |
+| Signal | `<button>` はデフォルトで keyboard, focus, role を持つ |
+
+## CHX (reviewer-resilience)
+
+### REPORT
+
+```rust
+// src/sync/slack.rs - external API call without resilience controls
+async fn fetch_messages(&self, channel: &str) -> Result<Vec<Message>> {
+    let response = self.client
+        .get(&format!("{}/conversations.history", self.base))
+        .send()
+        .await?;
+    Ok(response.json().await?)
+}
+```
+
+| Field        | Value                                                           |
+| ------------ | --------------------------------------------------------------- |
+| Filter       | Harm Test pass: timeout/retry/circuit breaker なしの外部 API    |
+| Trigger      | Slack API レイテンシ > 30s、network partition、rate limit (429) |
+| Failure      | caller が無期限ハング; sync pipeline 全体がブロック             |
+| Blast radius | service-wide (`fetch_messages` の全 caller がブロック)          |
+| Hypothesis   | 明示 timeout なしで TCP socket は OS デフォルト (~2min) を待つ  |
+
+### SKIP
+
+```rust
+fn clamp(value: i32, min: i32, max: i32) -> i32 {
+    value.max(min).min(max)
+}
+```
+
+| Field  | Value                                           |
+| ------ | ----------------------------------------------- |
+| Filter | Context Test: 純粋関数、failure mode なし       |
+| Signal | 決定的、I/O なし、共有状態なし、retry path 不要 |

@@ -1,134 +1,129 @@
-# 非推奨化テンプレート
+# Deprecation Template
 
-技術、API、レガシーコードパスを廃止し、それを置き換える移行計画を記録するためのガイド。
+技術、API、またはレガシーコードパスを廃止し、それを置き換える移行計画を記録する。
 
-## 使用場面
+## When to Use
 
-| シナリオ                                     |
-| -------------------------------------------- |
-| ライブラリ、フレームワーク、ツールの廃止     |
-| 非推奨化された API やパターンの置き換え      |
-| レガシーコードの削除計画                     |
+| シナリオ                                 |
+| ---------------------------------------- |
+| ライブラリ、フレームワーク、ツールの廃止 |
+| 非推奨 API やパターンの置き換え          |
+| レガシーコードの削除計画                 |
 
-## 必須セクション (MADR コア)
+## Template-Specific Topics (More Information 配下)
 
-| # | セクション                    | 目的                                                  |
-| - | ----------------------------- | ----------------------------------------------------- |
-| 1 | Title                         | アクション指向。例: `YのためにXを非推奨化`            |
-| 2 | Status                        | `proposed` / `accepted` / `deprecated` / `superseded` |
-| 3 | Context and Problem Statement | なぜ今この判断が必要か                                |
-| 4 | Decision Drivers              | 判断に影響を与える要因                                |
-| 5 | Considered Options            | 最低 2 つの選択肢 (移行 vs 維持)                      |
-| 6 | Decision Outcome              | `Chosen option: X, because Y` 形式                    |
-| 7 | Consequences                  | ポジティブ・ネガティブな影響                          |
+Deprecation ADR は他のテンプレートよりも強い構造が必要。以下のすべてを `## More Information` 配下に `### {topic}` として含める。
 
-メタデータ行: `- Confidence: {level}. {根拠}`。再評価は Consequences の後に任意の `## Reassessment Triggers` セクションで。
-
-## テンプレート固有セクション (必須)
-
-非推奨化 ADR は他テンプレートより要件が厳しい。
-
-| セクション                 | 必須? | 目的                                                |
-| -------------------------- | ----- | --------------------------------------------------- |
-| Deprecation Target         | Yes   | 名前、バージョン、使用箇所                          |
-| Replacement Technology     | Yes   | 置き換え対象とその根拠                              |
-| Impact Analysis            | Yes   | コード影響、依存影響、チーム影響                    |
-| Migration Plan             | Yes   | フェーズ毎の成功基準を伴うタイムライン              |
-| Deprecation Warning Period | Yes   | ソフト非推奨、ハード非推奨、削除の各日付            |
-| Rollback Plan              | Yes   | トリガー条件とロールバック手順                      |
-| Communication              | Yes   | 告知スケジュールとドキュメント更新                  |
+| トピック                   | 必須 | 目的                                         |
+| -------------------------- | ---- | -------------------------------------------- |
+| Deprecation Target         | Yes  | 名称、バージョン、使用箇所                   |
+| Replacement Technology     | Yes  | 何で置き換えるか、その理由                   |
+| Impact Analysis            | Yes  | コードへの影響、依存への影響、チームへの影響 |
+| Migration Plan             | Yes  | フェーズ別タイムラインと各フェーズの達成基準 |
+| Deprecation Warning Period | Yes  | soft deprecation, hard deprecation, 削除日   |
+| Rollback Plan              | Yes  | トリガー条件と rollback 手順                 |
+| Communication              | Yes  | 告知スケジュールとドキュメント更新           |
 
 ## 例
 
-```markdown
-# date-fns への移行のため moment.js を非推奨化
+````markdown
+---
+status: "accepted"
+date: 2026-01-15
+decision-makers: Frontend team
+---
 
-- Status: accepted
-- Deciders: フロントエンドチーム
-- Date: 2026-01-15
-- Confidence: high. 公式の非推奨化通知あり。バンドルサイズの明確なデータあり。
+# Deprecate moment.js in favor of date-fns
 
 ## Context and Problem Statement
 
-moment.js はメンテナンスモードに入っており、バンドルサイズ (67 KB gzip) はアプリケーションの 15% を占める。ツリーシェイク不可のため、未使用機能もバンドルに含まれる。
+moment.js has entered maintenance mode and its bundle size (67 KB gzip) accounts for 15% of the application. It is not tree-shakable, so unused features are included in the bundle. Should we migrate, wrap, or stay?
 
 ## Decision Drivers
 
-- バンドルサイズ削減の要求
-- moment.js の公式非推奨化通知
-- セキュリティパッチ終了のリスク
+* Demand for bundle size reduction
+* Official deprecation notice from moment.js
+* Risk of security patches ending
 
 ## Considered Options
 
-### date-fns へ移行
-
-- Good: ツリーシェイク可能、メンテナンス継続
-- Good: 類似 API で学習コスト低
-- Bad: 移行中は両ライブラリが共存
-
-### ラッパー経由で moment.js 維持
-
-- Good: 移行工数ゼロ
-- Bad: バンドルサイズ 67 KB のまま
-- Bad: セキュリティパッチリスクが時間と共に増加
-
-## Deprecation Target
-
-| 属性     | 値                                          |
-| -------- | ------------------------------------------- |
-| Name     | moment.js                                   |
-| Version  | 2.29.4                                      |
-| 使用箇所 | src/utils/date.ts, src/components/Calendar/ |
-
-## Replacement Technology
-
-| 属性     | 値                                              |
-| -------- | ----------------------------------------------- |
-| Name     | date-fns                                        |
-| Rationale | ツリーシェイク可能。TypeScript ネイティブ。軽量。|
+* Migrate to date-fns
+* Keep moment.js with wrapper
 
 ## Decision Outcome
 
-moment.js を非推奨化し、date-fns に段階的に移行する。
+Chosen option: "Migrate to date-fns", because it eliminates the 67 KB bundle penalty and gives us tree-shaking for future date utilities.
 
-### Positive Consequences
+### Consequences
 
-- バンドルサイズ ~60 KB 削減
-- ツリーシェイク最適化が有効に
+* Good, because ~60 KB bundle size reduction
+* Good, because tree-shaking optimization enabled
+* Bad, because both libraries coexist during migration
+* Bad, because learning cost due to API differences
 
-### Negative Consequences
+### Confirmation
 
-- 移行中は両ライブラリが共存
-- API 差異による学習コスト
+Bundle analyzer shows moment.js removed from production bundle. ESLint rule blocks new moment.js imports. Migration completion tracked by `0 dependencies` on moment.js in package.json.
 
-## Migration Plan
+## Pros and Cons of the Options
 
-| Phase   | 期間   | ゴール                             | 成功基準      |
-| ------- | ------ | ---------------------------------- | ------------- |
-| 準備    | 1 週間 | date-fns 追加、互換レイヤー作成     | テスト通過    |
-| 段階移行 | 2 週間 | 使用箇所を段階的に置換              | 80% 完了      |
-| 完全移行 | 1 週間 | 残りを置換、moment 削除             | 依存ゼロ      |
+### Migrate to date-fns
 
-## Deprecation Warning Period
+* Good, because tree-shakable, actively maintained
+* Good, because similar API surface reduces learning cost
+* Bad, because both libraries coexist during migration
 
-| 段階          | メカニズム                     |
-| ------------- | ------------------------------ |
-| ソフト非推奨  | ESLint ルールで警告             |
-| ハード非推奨  | CI で moment.js import をブロック|
-| 完全削除      | package.json から削除            |
+### Keep moment.js with wrapper
 
-## Rollback Plan
+* Good, because no migration effort
+* Bad, because bundle size remains at 67 KB
+* Bad, because security patch risk increases over time
 
-トリガー. date-fns で moment.js の挙動を再現できないバグが発生した場合。
+## More Information
 
-手順.
+### Deprecation Target
 
-1. 互換レイヤーを moment.js に戻す
-2. 移行済みファイルを revert
-3. ESLint ルールを無効化
+| Attribute       | Value                                       |
+| --------------- | ------------------------------------------- |
+| Name            | moment.js                                   |
+| Version         | 2.29.4                                      |
+| Usage locations | src/utils/date.ts, src/components/Calendar/ |
 
-## Reassessment Triggers
+### Replacement Technology
 
-- date-fns がロケール処理に影響する破壊的変更を導入した場合
-- moment.js がツリーシェイクサポートを追加して復活した場合
-```
+| Attribute | Value                                          |
+| --------- | ---------------------------------------------- |
+| Name      | date-fns                                       |
+| Rationale | Tree-shakable. TypeScript native. Lightweight. |
+
+### Migration Plan
+
+| Phase             | Duration | Goal                              | Criteria       |
+| ----------------- | -------- | --------------------------------- | -------------- |
+| Preparation       | 1 week   | Add date-fns, create compat layer | Tests pass     |
+| Gradual migration | 2 weeks  | Replace usage incrementally       | 80% complete   |
+| Full migration    | 1 week   | Replace remainder, remove moment  | 0 dependencies |
+
+### Deprecation Warning Period
+
+| Stage            | Mechanism                   |
+| ---------------- | --------------------------- |
+| Soft deprecation | ESLint rule as warning      |
+| Hard deprecation | CI blocks moment.js imports |
+| Full removal     | Remove from package.json    |
+
+### Rollback Plan
+
+Trigger. Bug in date-fns that cannot reproduce moment.js behavior.
+
+Steps.
+
+1. Revert compat layer to moment.js
+2. Revert migrated files
+3. Disable ESLint rule
+
+### Reassessment Triggers
+
+* If date-fns introduces a breaking change that affects locale handling
+* If moment.js is revived with tree-shaking support
+````

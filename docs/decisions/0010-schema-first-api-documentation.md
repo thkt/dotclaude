@@ -103,8 +103,8 @@ Chosen option: "Hybrid: Schema-First with Architectural Guidance", because Archi
 
 ## Related ADRs
 
-- [ADR-0005: Documentation Role Separation](0005-documentation-role-separation.md) — ドキュメントの役割分離
-- [ADR-0008: Audience-Optimized Templates](0008-audience-optimized-templates.md) — 読み手別テンプレート
+- [ADR-0005: Documentation Role Separation](0005-documentation-role-separation.md) - ドキュメントの役割分離
+- [ADR-0008: Audience-Optimized Templates](0008-audience-optimized-templates.md) - 読み手別テンプレート
 
 ---
 

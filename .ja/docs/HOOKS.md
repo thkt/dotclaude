@@ -1,14 +1,12 @@
-# フック設計
+# Hooks Design
 
-フックシステムの設計意図と仕組みを説明します。
-
-📌 **[English Version](../../docs/HOOKS.md)**
+Hook システムの設計意図と仕組み。
 
 ## 概要
 
 ```mermaid
 graph TD
-    subgraph Events["Claude Code イベント"]
+    subgraph Events["Claude Code Events"]
         PRE[PreToolUse]
         POST[PostToolUse]
         PERM[PermissionRequest]
@@ -18,7 +16,7 @@ graph TD
         SUB_STOP[SubagentStop]
     end
 
-    subgraph Hooks["フックカテゴリ"]
+    subgraph Hooks["Hook Categories"]
         SHIELDS[shields]
         SEC[security/]
         LIFE[lifecycle/]
@@ -37,64 +35,60 @@ graph TD
     LIFE -.->|statusLine| Events
 ```
 
-## フックカテゴリ
+## Hook カテゴリ
 
-| カテゴリ         | トリガー                       | 目的                                   |
-| ---------------- | ------------------------------ | -------------------------------------- |
-| `shields`        | PreToolUse, PermissionRequest  | コマンドガード、ファイルACL、秘匿情報 |
-| `security/`      | PreToolUse                     | 設定ファイル変更の監査ログ             |
-| `lifecycle/`     | statusLine, pre-commit         | ステータスライン、PRキャッシュ、IDR生成 |
-| `agents/`        | Subagent\*                     | エージェントログ、アイドル検知         |
-| `viewer/`        | PostToolUse                    | SOW/Spec/IDRビューア連携               |
-| `notifications/` | Stop                           | 完了通知                               |
+| カテゴリ         | トリガー                      | 用途                                            |
+| ---------------- | ----------------------------- | ----------------------------------------------- |
+| `shields`        | PreToolUse, PermissionRequest | コマンド ガード、ファイル ACL、secrets チェック |
+| `security/`      | PreToolUse                    | 設定変更の監査ログ                              |
+| `lifecycle/`     | statusLine, pre-commit        | ステータス ライン、PR キャッシュ、IDR 生成      |
+| `agents/`        | Subagent\*                    | Agent ロギング、idle 検出                       |
+| `viewer/`        | PostToolUse                   | SOW/Spec/IDR ビューア                           |
+| `notifications/` | Stop                          | 完了通知                                        |
 
-## 主要フック
+## 主要 Hook
 
-### shields（Rustバイナリ）
+### shields (Rust バイナリ)
 
-bash-safety.sh、permission-request.sh、secrets-check.shを単一のRustバイナリに統合。
-`brew install thkt/tap/shields` またはClaude Codeプラグイン（`shields@sentinels`）でインストール。
+bash-safety.sh, permission-request.sh, secrets-check.sh を 1 つの Rust バイナリに置換。`brew install thkt/tap/shields` または Claude Code プラグイン (`shields@sentinels`) でインストール。
 
-| サブコマンド    | イベント          | 失敗モード  | 目的                                        |
-| --------------- | ----------------- | ----------- | ------------------------------------------- |
-| `shields check` | PreToolUse(Bash)  | fail-closed | 44ビルトイン + カスタムパターン、N1-N7正規化 |
-| `shields acl`   | PermissionRequest | fail-closed | パスベースACL、サブエージェント制限         |
+| サブコマンド    | イベント          | 失敗モード  | 用途                                                      |
+| --------------- | ----------------- | ----------- | --------------------------------------------------------- |
+| `shields check` | PreToolUse(Bash)  | fail-closed | 44 個のビルトイン + カスタム パターン、N1-N7 バイパス対策 |
+| `shields acl`   | PermissionRequest | fail-closed | パス ベースの ACL、サブエージェント制限                   |
 
-`shields check` は `git commit` 時にステージされた秘匿ファイルもブロック（20ビルトインパターン）。
-設定は `.claude/tools.json` の `shields` キー。
+`shields check` はステージ済みシークレットを伴う `git commit` もブロックする (20 個のビルトイン パターン)。設定は `.claude/tools.json` の `shields` キー。
 
 ### security/
 
-| フック             | イベント   | 失敗モード | 目的                   |
+| Hook               | イベント   | 失敗モード | 用途                   |
 | ------------------ | ---------- | ---------- | ---------------------- |
-| `config-change.sh` | PreToolUse | fail-open  | 設定ファイル変更の検知 |
+| `config-change.sh` | PreToolUse | fail-open  | 設定ファイル変更を検出 |
 
 ### lifecycle/
 
-| フック              | トリガー   | 目的                 |
-| ------------------- | ---------- | -------------------- |
-| `statusline.sh`     | statusLine | ステータスライン表示 |
-| `_pr-cache.sh`      | (sourced)  | PR情報のキャッシュ   |
-| `idr-pre-commit.sh` | pre-commit | IDR自動生成          |
+| Hook                | トリガー   | 用途                  |
+| ------------------- | ---------- | --------------------- |
+| `statusline.sh`     | statusLine | ステータス ライン表示 |
+| `_pr-cache.sh`      | (sourced)  | PR 情報キャッシュ     |
+| `idr-pre-commit.sh` | pre-commit | IDR 自動生成          |
 
 ### agents/
 
-| フック             | イベント     | 失敗モード | 目的                 |
-| ------------------ | ------------ | ---------- | -------------------- |
-| `subagent-done.sh` | SubagentStop | fail-open  | 完了マーカー書き込み |
-| `teammate-idle.sh` | TeammateIdle | fail-open  | チームメイト待機検知 |
+| Hook               | イベント     | 失敗モード | 用途                           |
+| ------------------ | ------------ | ---------- | ------------------------------ |
+| `subagent-done.sh` | SubagentStop | fail-open  | 完了マーカーを書く             |
+| `teammate-idle.sh` | TeammateIdle | fail-open  | チームメイトの idle 状態を検出 |
 
 ### viewer/
 
-| フック               | イベント           | 失敗モード | 目的                         |
-| -------------------- | ------------------ | ---------- | ---------------------------- |
-| `ccplanview-open.sh` | PostToolUse(Write) | fail-open  | SOW/Spec/IDRをビューアで開く |
+| Hook                 | イベント           | 失敗モード | 用途                          |
+| -------------------- | ------------------ | ---------- | ----------------------------- |
+| `ccplanview-open.sh` | PostToolUse(Write) | fail-open  | SOW/Spec/IDR をビューアで開く |
 
-## 品質パイプライン（Rustバイナリ）
+## Quality Pipeline (Rust バイナリ)
 
-品質とセキュリティの主要な強制レイヤーとなる5つのRustバイナリ。別リポジトリで管理、
-`brew install thkt/tap/{tool}` またはClaude Codeプラグインでインストール。
-プロジェクトごとの設定は `.claude/tools.json`。
+主要な品質・セキュリティ強制レイヤーを構成する 5 つの Rust バイナリ。リポジトリは別、`brew install thkt/tap/{tool}` または Claude Code プラグイン経由でインストール。プロジェクト設定は `.claude/tools.json`。
 
 ```mermaid
 flowchart LR
@@ -108,50 +102,50 @@ flowchart LR
 
 ### guardrails
 
-PreToolUseフック。Write/Edit適用前にコードを検証。
+PreToolUse フック。Write/Edit 適用前にコードを検証する。
 
-| 項目           | 詳細                                                  |
-| -------------- | ----------------------------------------------------- |
-| リンター       | oxlint（優先）/ biome（フォールバック）               |
-| カスタムルール | 19ルール（sensitiveFile, cryptoWeak, XSS, eval 等）   |
-| ブロック       | critical/highでブロック                               |
-| ソース         | [thkt/guardrails](https://github.com/thkt/guardrails) |
+| 観点            | 詳細                                                  |
+| --------------- | ----------------------------------------------------- |
+| Linter          | oxlint (優先) / biome (フォールバック)                |
+| カスタム ルール | 19 ルール (sensitiveFile, cryptoWeak, XSS, eval 等)   |
+| ブロッキング    | あり。critical/high severity でブロック               |
+| Source          | [thkt/guardrails](https://github.com/thkt/guardrails) |
 
 ### formatter
 
-PostToolUseフック。Write/Edit後にファイルを自動フォーマット。
+PostToolUse フック。Write/Edit 後にファイルを自動整形する。
 
-| 項目           | 詳細                                                |
-| -------------- | --------------------------------------------------- |
-| フォーマッター | oxfmt（優先）/ biome（フォールバック）+ EOF改行     |
-| ブロック       | しない（常にexit 0、エラーはstderrにログ）          |
-| ソース         | [thkt/formatter](https://github.com/thkt/formatter) |
+| 観点         | 詳細                                                |
+| ------------ | --------------------------------------------------- |
+| Formatter    | oxfmt (優先) / biome (フォールバック) + EOF 改行    |
+| ブロッキング | なし (常に exit 0、エラーは stderr へ)              |
+| Source       | [thkt/formatter](https://github.com/thkt/formatter) |
 
 ### reviews
 
-PreToolUseフック（Skillマッチャー）。設定されたスキル実行前に静的解析結果を注入。
+PreToolUse フック (Skill matcher)。設定された skill の前に静的解析コンテキストを注入する。
 
-| 項目     | 詳細                                            |
-| -------- | ----------------------------------------------- |
-| ツール   | knip, oxlint, tsgo, react-doctor（並列実行）    |
-| ブロック | しない（advisory、additionalContextとして注入） |
-| ソース   | [thkt/reviews](https://github.com/thkt/reviews) |
+| 観点         | 詳細                                                  |
+| ------------ | ----------------------------------------------------- |
+| ツール       | knip, oxlint, tsgo, react-doctor (並列実行)           |
+| ブロッキング | なし (advisory のみ、結果は additionalContext として) |
+| Source       | [thkt/reviews](https://github.com/thkt/reviews)       |
 
 ### gates
 
-Stopフック。エージェント完了時に品質ゲートを強制。
+Stop フック。エージェント完了時に品質ゲートを強制する。
 
-| 項目       | 詳細                                                           |
-| ---------- | -------------------------------------------------------------- |
-| 静的ゲート | knip, tsgo, madge                                              |
-| スクリプト | lint, type-check, test（package.jsonから検出）                 |
-| フェーズ   | fix → review → allow（初回all-passではレビュー指示でブロック） |
-| ブロック   | ゲート失敗時はブロック。ツール未インストール時はスキップ       |
-| ソース     | [thkt/gates](https://github.com/thkt/gates)                    |
+| 観点              | 詳細                                                      |
+| ----------------- | --------------------------------------------------------- |
+| 静的ゲート        | knip, tsgo, madge                                         |
+| スクリプト ゲート | lint, type-check, test (package.json から検出)            |
+| フェーズ検出      | fix → review → allow (最初の全合格をレビューにブロック) |
+| ブロッキング      | ゲート失敗時にブロック。ツール欠落は fail-open            |
+| Source            | [thkt/gates](https://github.com/thkt/gates)               |
 
-### パイプライン設定
+### Pipeline 設定
 
-5ツール共通でプロジェクトルートの `.claude/tools.json` から読み込み:
+5 ツールはプロジェクト ルートの `.claude/tools.json` を共有する。
 
 ```json
 {
@@ -163,12 +157,11 @@ Stopフック。エージェント完了時に品質ゲートを強制。
 }
 ```
 
-各ツールはプロジェクト単位で `"enabled": false` で無効化可能。
+各ツールはプロジェクト単位で `"enabled": false` により無効化できる。
 
 ## 設定
 
-シェルフックは `settings.json` で設定。セキュリティフック（shields）は
-`shields@sentinels` プラグインで登録。残りのシェルフック:
+シェル フックは `settings.json` で設定する。セキュリティ フック (shields) は `shields@sentinels` プラグイン経由で登録する。残りのシェル フック。
 
 ```json
 {
@@ -193,25 +186,24 @@ Stopフック。エージェント完了時に品質ゲートを強制。
 
 ### 1. デフォルトでノンブロッキング
 
-フックは通常、操作をブロックしない。ブロックは明示的な設定が必要。
+フックはデフォルトで操作をブロックしない。ブロックは明示設定が必要。
 
-### 2. フェイルセーフ
+### 2. Fail-safe
 
-フックがエラーで終了しても、Claude Codeは継続動作。
+フックがエラー終了しても Claude Code は継続する。
 
-### 3. 失敗モード規約
+### 3. fail-mode 規約
 
-- **fail-open** (`set +e`): エラー時はスキップして継続。大半のフックがこちら。
-- **fail-closed**
-  (`set -euo pipefail`): エラー時はブロック。セキュリティフックのみ。
+- fail-open (`set +e`): エラー時にスキップして継続。多くのフックがこちら。
+- fail-closed (`set -euo pipefail`): エラー時にブロック。セキュリティ フックのみで使う。
 
-### 4. 組み合わせ可能
+### 4. Composable
 
-小さなフックを組み合わせて複雑な動作を実現。
+小さなフックを組み合わせて複雑な振る舞いを実現する。
 
-## IDR（実装決定記録）
+## IDR (Implementation Decision Record)
 
-コミット時に `claude-idr` バイナリで自動生成される実装記録。
+コミット時に `claude-idr` バイナリが自動生成する実装記録。
 
 ```mermaid
 flowchart LR

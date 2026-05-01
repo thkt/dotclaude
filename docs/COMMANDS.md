@@ -66,16 +66,15 @@ confirmation mode (same functionality)
 
 ## Command → Skill/Agent Mapping
 
-| Command     | Skills Used                                   | Agents Used                                                           |
-| ----------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `/think`    | -                                             | -                                                                     |
-| `/code`     | use-workflow-code, use-workflow-tdd-cycle     | generator-test                                                        |
-| `/audit`    | -                                             | tier-based reviewer agents (3 or file-routed from 17)                 |
-| `/fix`      | use-context-root-cause-analysis               | generator-test, resolver-build                                  |
-| `/polish`   | -                                             | enhancer-code                                                       |
-| `/feature`  | use-workflow-code                       | explorer-feature, architect-feature, generator-test, team-implementation |
-| `/swarm`    | use-workflow-code                       | team-qa, team-implementation                                         |
-| `/glossary` | -                                             | -                                                                     |
+| Command    | Skills Used                               | Agents Used                                                     |
+| ---------- | ----------------------------------------- | --------------------------------------------------------------- |
+| `/think`   | -                                         | -                                                               |
+| `/code`    | use-workflow-code, use-workflow-tdd-cycle | generator-test                                                  |
+| `/audit`   | -                                         | tier-based reviewer agents (3 or file-routed from 17)           |
+| `/fix`     | use-context-root-cause-analysis           | generator-test, resolver-build                                  |
+| `/polish`  | -                                         | enhancer-code                                                   |
+| `/feature` | think, code, audit, fix, polish (chained) | -                                                               |
+| `/swarm`   | use-workflow-code                         | architect-feature, team-qa, generator-test, team-implementation |
 
 ## File Structure
 
@@ -98,6 +97,5 @@ skills/
 
 ## Related
 
-- [SKILLS_AGENTS.md](./SKILLS_AGENTS.md) — Skills and agents reference
-- [WORKFLOWS](../rules/workflows/WORKFLOWS.md) — Workflow
-  selection guide
+- [SKILLS_AGENTS.md](./SKILLS_AGENTS.md) - Skills and agents reference
+- [WORKFLOWS](../rules/workflows/WORKFLOWS.md) - Workflow selection guide

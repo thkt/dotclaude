@@ -4,13 +4,13 @@ A good problem statement is specific and observable. "The dashboard takes 5 seco
 
 ## Example: Dashboard takes 5 seconds to load
 
-| Step | Question         | Answer                                  |
-| ---- | ---------------- | --------------------------------------- |
-| 1    | Why 5 seconds?   | API `/api/dashboard` takes 4.5s         |
-| 2    | Why slow API?    | Queries 15 tables                       |
-| 3    | Why 15 tables?   | Shows all modules in one view           |
-| 4    | Why all at once? | Renders everything on mount             |
-| 5    | Why on mount?    | No lazy loading                         |
+| Step | Question         | Answer                          |
+| ---- | ---------------- | ------------------------------- |
+| 1    | Why 5 seconds?   | API `/api/dashboard` takes 4.5s |
+| 2    | Why slow API?    | Queries 15 tables               |
+| 3    | Why 15 tables?   | Shows all modules in one view   |
+| 4    | Why all at once? | Renders everything on mount     |
+| 5    | Why on mount?    | No lazy loading                 |
 
 Solution: Lazy loading for sections, fetch on-demand.
 

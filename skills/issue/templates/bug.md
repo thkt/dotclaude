@@ -5,8 +5,8 @@
 ```markdown
 ## What & Why
 
-[What is broken — 1 sentence]
-[User impact — why this matters]
+[What is broken - 1 sentence]
+[User impact - why this matters]
 
 ## Steps to Reproduce
 
@@ -40,5 +40,5 @@
 | ------------------ | ------------------------------------------ | --------------------------- |
 | What & Why         | "Login fails, blocking 30% of users"       | "Login is broken"           |
 | Expected vs Actual | "Expected: 200 OK / Actual: 500 with ESQL" | "Works correctly" (vague)   |
-| Scope — Out of     | "Auth refactor is out of scope"            | (omitted)                   |
+| Scope - Out of     | "Auth refactor is out of scope"            | (omitted)                   |
 | Constraints        | "Fix root cause, not workaround"           | (omitted when fix is risky) |

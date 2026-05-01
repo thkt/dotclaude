@@ -60,7 +60,7 @@ Bootstrap has two failure modes that route to different gate outcomes. The orche
 | Adversarial | `skipped`. Cannot contribute to Issues count                                      |
 | Issues      | Challenger / verifier still run on static code. Full gate weight (NotReady on >0) |
 
-Rationale: Step 1-3 failure is environmental (no worktree, no internet, install crash) and not a verdict on the code, so penalizing it as NotReady would make every run in a broken environment useless. Step 4 failure means the code under assertion does not build, which IS a verdict on the code, so it must NotReady. Conflating them would let "build is broken but reviewers found nothing" land on Ready (caveat) and ship to merge — exactly the false-Ready outcome the ternary gate exists to prevent.
+Rationale: Step 1-3 failure is environmental (no worktree, no internet, install crash) and not a verdict on the code, so penalizing it as NotReady would make every run in a broken environment useless. Step 4 failure means the code under assertion does not build, which IS a verdict on the code, so it must NotReady. Conflating them would let "build is broken but reviewers found nothing" land on Ready (caveat) and ship to merge - exactly the false-Ready outcome the ternary gate exists to prevent.
 
 Ready (caveat) preserves the dynamic-evidence-gap signal for the legitimate environmental case only.
 

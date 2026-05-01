@@ -1,12 +1,8 @@
 ---
 name: use-context-reviewer-readability
-description: >
-  Code readability review. Use when: 可読性, 明確, 命名, 変数名, 関数名,
-  ネスト, 関数設計, コメント, 複雑, Miller's Law, ミラーの法則, 認知負荷,
-  AI-generated, 過剰設計. Do NOT use for security (use-context-reviewer-security),
-  type errors (use-context-reviewer-strictness), error handling
-  (use-context-reviewer-silence), or test design (use-context-reviewer-testability).
-allowed-tools: [Read, Grep, Glob, Task]
+description: Code readability review. Do NOT use for security (use-context-reviewer-security), type errors (use-context-reviewer-strictness), error handling (use-context-reviewer-silence), or test design (use-context-reviewer-testability).
+when_to_use: 可読性, 明確, 命名, 変数名, 関数名, ネスト, 関数設計, コメント, 複雑, Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計
+allowed-tools: Read Grep Glob Task
 agent: reviewer-readability
 context: fork
 user-invocable: false
@@ -32,9 +28,9 @@ Thresholds: see `rules/development/THRESHOLDS.md`.
 
 ## References
 
-| Topic           | File                                                 |
-| --------------- | ---------------------------------------------------- |
-| Control Flow    | `${CLAUDE_SKILL_DIR}/references/control-flow.md`     |
-| Comments        | `${CLAUDE_SKILL_DIR}/references/comments-clarity.md` |
-| AI Antipatterns | `${CLAUDE_SKILL_DIR}/references/ai-antipatterns.md`  |
-| Naming          | `${CLAUDE_SKILL_DIR}/references/naming.md`           |
+| Topic           | File                                               |
+| --------------- | -------------------------------------------------- |
+| Control Flow    | ${CLAUDE_SKILL_DIR}/references/control-flow.md     |
+| Comments        | ${CLAUDE_SKILL_DIR}/references/comments-clarity.md |
+| AI Antipatterns | ${CLAUDE_SKILL_DIR}/references/ai-antipatterns.md  |
+| Naming          | ${CLAUDE_SKILL_DIR}/references/naming.md           |

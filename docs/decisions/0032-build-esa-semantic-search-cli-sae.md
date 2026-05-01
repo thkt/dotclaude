@@ -22,7 +22,7 @@ sae = esaのアナグラム。冴え（sharpness/clarity）。
 
 ## Considered Options
 
-### Option 1: sae — kiku/yomu コピーフォークによる Rust CLI（採用）
+### Option 1: sae - kiku/yomu コピーフォークによる Rust CLI（採用）
 
 kikuのアーキテクチャをコピーフォークし、データソースをesa APIに置換。FTS5 trigram + semantic hybrid検索。Embed traitでembedding backendを抽象化し、recall完成後にローカルbackend（ort + Ruri v3）に統一。
 

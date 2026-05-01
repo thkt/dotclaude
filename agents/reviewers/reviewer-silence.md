@@ -1,22 +1,28 @@
 ---
 name: reviewer-silence
 description: Silent failure detection. Empty catches, unhandled rejections.
-tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
+tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
 model: opus
 skills: [use-context-reviewer-silence]
-context: fork
 memory: project
 background: true
 ---
 
 # Silent Failure Reviewer
 
-## Generated Content
+## Purpose
 
-| Section  | Description                        |
-| -------- | ---------------------------------- |
-| findings | Silent failure patterns with fixes |
-| summary  | Counts by risk level               |
+| Goal             | Description                                             |
+| ---------------- | ------------------------------------------------------- |
+| Detect swallow   | Empty catch, console.log-only, fire-and-forget patterns |
+| Surface to user  | Flag missing error states and silent defaults           |
+| Demand rationale | Suppression must be intentional with documented reason  |
+
+## Posture
+
+Errors must surface or be intentionally suppressed with a documented reason. Silent defaults hide bugs that only show up in production logs.
+
+Banned phrasing inside reasoning: "fallback handles it" without naming what the fallback covers, "user won't notice" without confirming observability.
 
 ## Analysis Phases
 
@@ -30,7 +36,7 @@ background: true
 
 ## Distinction from reviewer-operations
 
-| This reviewer (silent-failure)       | reviewer-operations               |
+| This reviewer (silent-failure)       | reviewer-operations                          |
 | ------------------------------------ | -------------------------------------------- |
 | Error swallowed? (detection)         | Error contained? (architecture)              |
 | Empty catch, console.log-only catch  | Missing ErrorBoundary around risky component |
@@ -42,7 +48,7 @@ background: true
 | SF Phase 4 (UI Feedback Check)    | Missing user-visible error indication | User-facing  |
 | OPS Phase 1 (Error Boundary Scan) | Missing React ErrorBoundary placement | Architecture |
 
-Same component may receive findings from both — complementary, not duplicate.
+Same component may receive findings from both, complementary not duplicate.
 
 ## Calibration
 
@@ -60,7 +66,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: SF.
 
-Categories: SF1-SF5 (catch / promise / async / ui_feedback / fallback). Severity: critical / high / medium / low. Verification: error_propagation / pattern_search — does this error surface to the user or remain silent?
+Categories: SF1-SF5 (catch / promise / async / ui_feedback / fallback). Severity: critical / high / medium / low. Verification: error_propagation or pattern_search, does this error surface to the user or remain silent?
 
 ```markdown
 ## Summary

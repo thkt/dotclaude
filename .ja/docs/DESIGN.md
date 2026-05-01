@@ -1,30 +1,30 @@
-# 設計思想
+# Design Philosophy
 
-**AIコーディングアシスタントの一貫性と品質確保フレームワーク。**
+AI コーディング アシスタントの一貫性と品質のためのフレームワーク。
 
-📌 **[English Version](../../docs/DESIGN.md)**
+📌 [English version](../../docs/DESIGN.md)
 
 ## アーキテクチャ概要
 
 ```mermaid
 graph TD
-    subgraph Core["Core Layer (最優先)"]
+    subgraph Core["Core Layer (Top Priority)"]
         OPS[OPERATION]
         PFL[PREFLIGHT]
     end
 
-    subgraph Principles["設計原則"]
+    subgraph Principles["Design Principles"]
         P[PRINCIPLES.md]
     end
 
-    subgraph Development["開発レイヤー"]
+    subgraph Development["Development Layer"]
         PERF[PERFORMANCE]
         TIDY[TIDYINGS]
         CODE[THRESHOLDS]
         PROG[PRINCIPLES.md#Progressive Enhancement]
     end
 
-    subgraph Conventions["規約レイヤー"]
+    subgraph Conventions["Conventions Layer"]
         MD[MARKDOWN]
         SKILL[SKILLS]
         SUB[SUBAGENT]
@@ -32,7 +32,7 @@ graph TD
         TEMP[TEMPLATES]
     end
 
-    subgraph Workflows["ワークフローレイヤー"]
+    subgraph Workflows["Workflow Layer"]
         WG[WORKFLOWS]
         MOD[MODULARIZATION]
         IDR[idr-pre-commit.sh]
@@ -46,141 +46,139 @@ graph TD
 
 ## レイヤー別の設計意図
 
-### 1. Core Layer — 安全性と透明性
+### 1. Core Layer. 安全性と透明性
 
-最優先で適用。AIの暴走を防ぎ、ユーザーの状況把握を確保。
+最優先のルール。AI の暴走を防ぎ、ユーザーに状況を伝える。
 
-| ファイル                                                            | 意図               | 主要な仕組み                              |
-| ------------------------------------------------------------------- | ------------------ | ----------------------------------------- |
-| [OPERATION](../rules/core/OPERATION.md) | 安全性の担保       | `rm`禁止→`mv ~/.Trash/`、破壊的操作の確認 |
-| [PREFLIGHT](../rules/core/PREFLIGHT.md)                   | タスクチェック統合 | 合理化カウンター、分解閾値、完了定義      |
+| ファイル                                | 意図             | 主な仕組み                                    |
+| --------------------------------------- | ---------------- | --------------------------------------------- |
+| [OPERATION](../rules/core/OPERATION.md) | 安全性の確保     | `rm` 禁止 → `mv ~/.Trash/`、破壊的操作の確認 |
+| [PREFLIGHT](../rules/core/PREFLIGHT.md) | タスク確認の統一 | Rationalization counter、分割閾値、完了の定義 |
 
-**理由:**
+設計理由:
 
-- `rm`禁止; `mv ~/.Trash/`でmacOSゴミ箱復元を活用
-- 合理化カウンターでモデルのスコープチェック自己免除を防止
-- 分解閾値（Files ≥5、Features ≥3）でスコープクリープを防止
+- `rm` を禁止し、`mv ~/.Trash/` で macOS のごみ箱回復を活用
+- Rationalization counter がモデルによる scope check の自己除外を防ぐ
+- 分割閾値 (Files ≥5, Features ≥3) がスコープ膨張を防ぐ
 
-### 2. Design Principles — 判断基準
+### 2. Design Principles. 意思決定フレームワーク
 
-優先順位と衝突解決ルール。
+設計判断のための優先順位と衝突解決。
 
-| ファイル                                | 意図                               |
-| --------------------------------------- | ---------------------------------- |
-| [PRINCIPLES.md](../rules/PRINCIPLES.md) | 原則の優先順位、依存関係、衝突解決 |
+| ファイル                                | 意図                             |
+| --------------------------------------- | -------------------------------- |
+| [PRINCIPLES.md](../rules/PRINCIPLES.md) | 原則の優先度、依存関係、衝突解決 |
 
-**階層:**
+原則の階層:
 
 ```text
-Occam's Razor (メタ原則 - すべての複雑さを疑う)
+Occam's Razor (Meta. すべての複雑性に問いを立てる)
     ↓
-Progressive Enhancement / Readable Code / DRY (普遍的)
+Progressive Enhancement / Readable Code / DRY (Universal)
     ↓
-TDD / SOLID / YAGNI (文脈依存)
+TDD / SOLID / YAGNI (Contextual)
 ```
 
-**衝突解決:**
+衝突解決の例:
 
-| 衝突              | 勝者     | 理由                             |
-| ----------------- | -------- | -------------------------------- |
-| DRY vs 可読性     | 可読性   | 可読性を損なう抽象化より重複許容 |
-| SOLID vs シンプル | シンプル | overdesignを避ける               |
-| 完璧 vs 動作      | 動作     | 実問題を解決するなら出荷         |
+| 衝突               | 勝つ側   | 理由                                 |
+| ------------------ | -------- | ------------------------------------ |
+| DRY vs Readable    | Readable | 明瞭性を損なう抽象より重複           |
+| SOLID vs Simple    | Simple   | 想像上の将来のための過剰設計を避ける |
+| Perfect vs Working | Working  | 実問題を解くなら出荷する             |
 
-### 3. Development Layer — 実践的な基準
+### 3. Development Layer. 実用基準
 
-日々の開発で適用する具体的基準。
+日々の開発のための具体的な基準。
 
-| ファイル                                                        | 意図                              | 主要な閾値                         |
-| --------------------------------------------------------------- | --------------------------------- | ---------------------------------- |
-| [THRESHOLDS](../rules/development/THRESHOLDS.md)      | 品質基準 + 完了条件               | 関数≤30行、tests pass              |
-| [TIDYINGS](../rules/development/TIDYINGS.md)                    | 整理範囲の限定                    | 振る舞い変更禁止、編集ファイルのみ |
-| [PERFORMANCE](../rules/development/PERFORMANCE.md)              | コンテキスト/フロントエンド最適化 | MCP≤10、LCP<2.5s                   |
-| [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | 漸進的構築                        | CSS-First、Outcome-First           |
+| ファイル                                                        | 意図                     | 主な閾値                           |
+| --------------------------------------------------------------- | ------------------------ | ---------------------------------- |
+| [THRESHOLDS](../rules/development/THRESHOLDS.md)                | 品質メトリクス + 完了    | 関数 ≤30 行、テスト合格           |
+| [TIDYINGS](../rules/development/TIDYINGS.md)                    | クリーンアップの範囲制限 | 振る舞い変更なし、編集ファイル限定 |
+| [PERFORMANCE](../rules/development/PERFORMANCE.md)              | コンテキスト管理         | MCP ≤10、`/compact` >70%          |
+| [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | 段階的構築               | CSS-First、Outcome-First           |
 
-**AI失敗パターン:**
+AI 失敗パターン (インライン):
 
-| パターン         | トリガー                       | アクション                     |
-| ---------------- | ------------------------------ | ------------------------------ |
-| コンテキスト膨張 | 使用率 >70%                    | `/clear` または `/compact`     |
-| 繰り返し修正     | 同じエラーで3回目              | プロンプトを再構成             |
-| 無限探索         | >10ファイル読み込み、編集なし  | subagentでスコープを絞る       |
-| 間違った方向     | 「それは望んでいたものと違う」 | `/rewind` でチェックポイントへ |
+| パターン             | トリガー                  | アクション                   |
+| -------------------- | ------------------------- | ---------------------------- |
+| Context Bloat        | 使用率 >70%               | `/clear` または `/compact`   |
+| Repeated Fixes       | 同じエラーで 3 回目       | 具体性を増して再フレーム     |
+| Infinite Exploration | 10 ファイル以上読み未編集 | サブエージェントで縮小       |
+| Wrong Direction      | 「望んだものではない」    | チェックポイントへ `/rewind` |
 
-**理由:**
+設計理由:
 
-- AI特有パターン（無限探索、繰り返し修正）を自己検知
-- `TIDYINGS`で整理範囲を限定、過剰リファクタリングを防止
-- 定量基準（30行、400行）で主観を排除
+- 無限探索や繰り返し修正など AI のパターンを自己検出
+- `TIDYINGS` がクリーンアップ範囲を絞り、過剰リファクタを防ぐ
+- 定量的閾値 (30 行、400 行) が主観性を排除
 
-### 4. Conventions Layer — 一貫性のルール
+### 4. Conventions Layer. 一貫性ルール
 
-ドキュメント・プラグイン・翻訳の一貫性確保。
+ドキュメント、プラグイン、翻訳の一貫性。
 
-| ファイル                                                           | 意図                |
-| ------------------------------------------------------------------ | ------------------- |
-| [MARKDOWN](../rules/conventions/MARKDOWN.md)                       | Markdown規約 |
-| [SKILLS](../rules/conventions/SKILLS.md)                           | Skill定義の標準形式            |
-| [SUBAGENT](../rules/conventions/SUBAGENT.md)                       | サブエージェント定義の標準形式 |
-| [PLUGIN](../rules/conventions/PLUGIN.md)                           | プラグイン制約      |
-| [TEMPLATES](../rules/conventions/TEMPLATES.md)                     | 変数置換構文        |
+| ファイル                                       | 意図                       |
+| ---------------------------------------------- | -------------------------- |
+| [MARKDOWN](../rules/conventions/MARKDOWN.md)   | Markdown 規約              |
+| [SKILLS](../rules/conventions/SKILLS.md)       | Skill 定義の標準           |
+| [SUBAGENT](../rules/conventions/SUBAGENT.md)   | サブエージェント定義の標準 |
+| [PLUGIN](../rules/conventions/PLUGIN.md)       | プラグイン制約             |
+| [TEMPLATES](../rules/conventions/TEMPLATES.md) | 変数置換構文               |
 
-**理由:**
+設計理由:
 
-- 参照深度制限（Skills: 1階層、Rules: 3階層）で部分読み込み問題を回避
-- EN/JP構造を揃えつつ、翻訳内容の差異は許容
+- 部分読み取りの問題を避けるため、参照深度を制限 (Skills 1 階層、Rules 3 階層)
+- 翻訳内容の差を許容しつつ EN/JP の構造を揃える
 
-### 5. Workflows Layer — ユーザーインターフェース
+### 5. Workflows Layer. ユーザー インターフェース
 
-ユーザー向けのコマンドとワークフロー体系。
+ユーザー向けコマンドとワークフロー システム。
 
-| ファイル                                                           | 意図               |
-| ------------------------------------------------------------------ | ------------------ |
-| [WORKFLOWS](../rules/workflows/WORKFLOWS.md)     | コマンド選択ガイド |
-| [MODULARIZATION](../rules/workflows/MODULARIZATION.md) | コマンド分割基準   |
-| [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh)          | 実装記録の自動生成 |
+| ファイル                                                     | 意図               |
+| ------------------------------------------------------------ | ------------------ |
+| [WORKFLOWS](../rules/workflows/WORKFLOWS.md)                 | コマンド選択ガイド |
+| [MODULARIZATION](../rules/workflows/MODULARIZATION.md)       | コマンド分割基準   |
+| [idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh) | 実装記録の自動生成 |
 
-**ワークフローパターン:**
+ワークフロー パターン:
 
 ```mermaid
 flowchart LR
-    subgraph Quick["クイックフィックス"]
+    subgraph Quick["Quick Fix"]
         F["/fix"]
     end
-    subgraph Investigate["調査"]
+    subgraph Investigate["Investigation"]
         R1["/research"] --> F2["/fix"]
     end
-    subgraph Feature["機能開発"]
+    subgraph Feature["Feature Development"]
         R2["/research"] --> T["/think"] --> C["/code"] --> A["/audit"] --> V["/validate"]
     end
 ```
 
-## 根底にある思想
+## 根底の哲学
 
-| 思想       | 実装                                        |
-| ---------- | ------------------------------------------- |
-| **透明性** | チェックリスト、確信度マーカー、進捗可視化  |
-| **安全性** | 破壊的操作禁止/確認、ゴミ箱移動、復元可能性 |
-| **一貫性** | 命名規則、ファイル構成、コマンド体系        |
-| **学習性** | Explanatory mode、Insight表示               |
+| 哲学         | 実装                                              |
+| ------------ | ------------------------------------------------- |
+| Transparency | チェックリスト、出典引用、進捗の可視化            |
+| Safety       | 破壊的操作の禁止/確認、ごみ箱への移動、復旧可能性 |
+| Consistency  | 命名規約、ファイル構造、コマンド体系              |
+| Learnability | 説明モード、Insight 表示                          |
 
-「**AIは間違える**」前提で：
+「AI は誤る」を前提にする。
 
-- 間違いを**検知しやすく**する
-- 間違いを**修正しやすく**する
-- 間違いの**被害を最小化**する
+- 誤りを発見しやすくする
+- 誤りを修正しやすくする
+- 誤りの被害を最小化する
 
 ## 詳細ドキュメント
 
-参照:
-
-| ドキュメント                        | 内容                                         |
-| ----------------------------------- | -------------------------------------------- |
-| [COMMANDS](./COMMANDS.md)           | コマンドの設計と関係性                       |
-| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | スキル・エージェントの仕組みと使い分け       |
-| [HOOKS](./HOOKS.md)                 | フックシステムとIDR生成                      |
-| [GLOSSARY](./GLOSSARY.md)           | ユビキタス言語辞書                           |
+| ドキュメント                        | 内容                       |
+| ----------------------------------- | -------------------------- |
+| [COMMANDS](./COMMANDS.md)           | コマンドの設計と関係       |
+| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent の仕組みと利用 |
+| [HOOKS](./HOOKS.md)                 | Hook システムと IDR 生成   |
+| [GLOSSARY](./GLOSSARY.md)           | ユビキタス言語辞書         |
 
 ---
 
-_設定の「なぜ」を説明。「使い方」は [README.md](../README.md) 参照。_
+_設定の「なぜ」を説明する。「使い方」については [README.md](../README.md) を参照。_

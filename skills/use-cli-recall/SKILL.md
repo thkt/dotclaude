@@ -10,14 +10,14 @@ user-invocable: false
 
 ## Triggers (call without deliberation)
 
-| Trigger              | Signal                                    |
-| -------------------- | ----------------------------------------- |
+| Trigger              | Signal                                     |
+| -------------------- | ------------------------------------------ |
 | Temporal reference   | 「前に」「あの時」 past events / decisions |
-| Structural echo      | Current problem mirrors a past situation  |
-| Repetition           | 「また同じ」 recurring mistake            |
-| Vague back-reference | 「あの件」 past work without specifics    |
-| Module first contact | First edit to a file/module this session  |
-| BACKLOG task pickup  | Starting a task from BACKLOG.md           |
+| Structural echo      | Current problem mirrors a past situation   |
+| Repetition           | 「また同じ」 recurring mistake             |
+| Vague back-reference | 「あの件」 past work without specifics     |
+| Module first contact | First edit to a file/module this session   |
+| BACKLOG task pickup  | Starting a task from BACKLOG.md            |
 
 ## Commands
 

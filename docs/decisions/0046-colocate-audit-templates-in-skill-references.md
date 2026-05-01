@@ -33,11 +33,11 @@ ADR 0042 で skill-specific scripts を skill 内に colocate する方針を採
 
 `templates/audit/*` を audit skill 内に移動する際、性格で 2 ディレクトリに分ける:
 
-- `skills/audit/references/` — 読み物（procedure, calibration, schema）
+- `skills/audit/references/` - 読み物（procedure, calibration, schema）
   - `pre-flight.md` (既存)
   - `calibration-examples.md`
   - `finding-schema.md`
-- `skills/audit/templates/` — fill-in 雛形
+- `skills/audit/templates/` - fill-in 雛形
   - `snapshot.yaml`
   - `output.md`
 
@@ -119,8 +119,8 @@ Rollback Steps:
 
 ## Related ADRs
 
-- [ADR 0042: Colocate Skill-Specific Scripts Within Skill Directory](0042-colocate-skill-specific-scripts-within-skill.md) — 同原則の scripts 版
-- [ADR 0044: Reject snapshot-aware audit pipeline](0044-reject-snapshot-aware-audit-pipeline.md) — 形式変更を伴わない位置移動のみである点でこの判断と整合
+- [ADR 0042: Colocate Skill-Specific Scripts Within Skill Directory](0042-colocate-skill-specific-scripts-within-skill.md) - 同原則の scripts 版
+- [ADR 0044: Reject snapshot-aware audit pipeline](0044-reject-snapshot-aware-audit-pipeline.md) - 形式変更を伴わない位置移動のみである点でこの判断と整合
 
 ---
 

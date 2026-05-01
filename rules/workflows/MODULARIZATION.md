@@ -37,9 +37,9 @@ skills/
 ├── _lib/             # shared @-include fragments (e.g., sow-resolution.md)
 ├── [short-name]/     # user-invocable: true (e.g., commit, fix, audit)
 │   └── SKILL.md
-├── use-[cli]/        # user-invocable: false, CLI wrapper (e.g., use-cli-git)
-├── ctx-[agent]/      # user-invocable: false, agent-only (e.g., use-context-reviewer-security)
-└── workflow-[noun]/   # user-invocable: false, workflow (e.g., use-workflow-code)
+├── use-cli-[name]/      # user-invocable: false, CLI wrapper (e.g., use-cli-yomu)
+├── use-context-[name]/  # user-invocable: false, agent-only (e.g., use-context-reviewer-security)
+└── use-workflow-[name]/ # user-invocable: false, workflow (e.g., use-workflow-code)
     ├── SKILL.md
     └── references/
         ├── [workflow].md
@@ -48,12 +48,12 @@ skills/
 
 ## Naming Convention
 
-| `user-invocable` | Binding    | Name style    | Example                                                 |
-| ---------------- | ---------- | ------------- | ------------------------------------------------------- |
-| `true`           | -          | Short name    | `commit`, `fix`, `audit`                                |
-| `false`          | CLI wrap   | `use-<cli>`   | `use-cli-git`, `use-cli-yomu` (ADR-0052)                |
-| `false`          | Agent-only | `ctx-<agent>` | `use-context-reviewer-security` (ADR-0053)              |
-| `false`          | Workflow   | `workflow-<noun>` | `use-workflow-code`, `use-workflow-spec-validation` |
+| `user-invocable` | Binding    | Name style           | Example                                             |
+| ---------------- | ---------- | -------------------- | --------------------------------------------------- |
+| `true`           | -          | Short name           | `commit`, `fix`, `audit`                            |
+| `false`          | CLI wrap   | `use-cli-<name>`     | `use-cli-yomu`, `use-cli-recall`                    |
+| `false`          | Agent-only | `use-context-<name>` | `use-context-reviewer-security`                     |
+| `false`          | Workflow   | `use-workflow-<name>`| `use-workflow-code`, `use-workflow-spec-validation` |
 
 ## Reference Patterns
 

@@ -136,11 +136,7 @@
         "./skills/pr/SKILL.md",
         "./skills/issue/SKILL.md"
       ],
-      "skills": [
-        "./skills/use-cli-git/SKILL.md",
-        "./skills/use-cli-gh/SKILL.md",
-        "./skills/use-cli-npm/SKILL.md"
-      ]
+      "skills": []
     },
     {
       "name": "toolkit",

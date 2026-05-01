@@ -2,7 +2,7 @@
 
 ## Core Principle
 
-**Why, not What** - Code should explain itself; comments explain intent.
+Why, not What. Code should explain itself; comments explain intent.
 
 | Comment Type | Example                                               | Verdict |
 | ------------ | ----------------------------------------------------- | ------- |

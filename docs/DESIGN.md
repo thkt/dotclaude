@@ -46,14 +46,14 @@ graph TD
 
 ## Design Intentions by Layer
 
-### 1. Core Layer — Safety & Transparency
+### 1. Core Layer - Safety & Transparency
 
 Top-priority rules. Prevent AI runaway and keep users informed.
 
-| File                                                                | Intent             | Key Mechanism                                                        |
-| ------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------- |
+| File                                    | Intent             | Key Mechanism                                                        |
+| --------------------------------------- | ------------------ | -------------------------------------------------------------------- |
 | [OPERATION](../rules/core/OPERATION.md) | Ensure safety      | `rm` prohibited → `mv ~/.Trash/`, destructive op confirmation        |
-| [PREFLIGHT](../rules/core/PREFLIGHT.md)                   | Task check unified | Rationalization counters, decomposition thresholds, done definitions |
+| [PREFLIGHT](../rules/core/PREFLIGHT.md) | Task check unified | Rationalization counters, decomposition thresholds, done definitions |
 
 **Why this design:**
 
@@ -61,7 +61,7 @@ Top-priority rules. Prevent AI runaway and keep users informed.
 - Rationalization counters prevent model self-exemption from scope checks
 - Decomposition thresholds (Files ≥5, Features ≥3) prevent scope creep
 
-### 2. Design Principles — Decision Framework
+### 2. Design Principles - Decision Framework
 
 Priority order and conflict resolution for design decisions.
 
@@ -87,13 +87,13 @@ TDD / SOLID / YAGNI (Contextual)
 | SOLID vs Simple    | Simple   | Avoid overdesign for imagined futures        |
 | Perfect vs Working | Working  | Ship if it solves real problems              |
 
-### 3. Development Layer — Practical Standards
+### 3. Development Layer - Practical Standards
 
 Concrete standards for daily development.
 
 | File                                                            | Intent                       | Key Threshold                          |
 | --------------------------------------------------------------- | ---------------------------- | -------------------------------------- |
-| [THRESHOLDS](../rules/development/THRESHOLDS.md)      | Quality metrics + completion | Function ≤30 lines, tests pass         |
+| [THRESHOLDS](../rules/development/THRESHOLDS.md)                | Quality metrics + completion | Function ≤30 lines, tests pass         |
 | [TIDYINGS](../rules/development/TIDYINGS.md)                    | Scope cleanup limits         | No behavior changes, edited files only |
 | [PERFORMANCE](../rules/development/PERFORMANCE.md)              | Context management           | MCP ≤10, /compact >70%                 |
 | [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | Incremental building         | CSS-First, Outcome-First               |
@@ -113,17 +113,17 @@ Concrete standards for daily development.
 - `TIDYINGS` scopes cleanup to prevent over-refactoring
 - Quantitative thresholds (30 lines, 400 lines) remove subjectivity
 
-### 4. Conventions Layer — Consistency Rules
+### 4. Conventions Layer - Consistency Rules
 
 Consistency across documentation, plugins, and translations.
 
-| File                                                               | Intent                       |
-| ------------------------------------------------------------------ | ---------------------------- |
-| [MARKDOWN](../rules/conventions/MARKDOWN.md)                       | Markdown conventions         |
-| [SKILLS](../rules/conventions/SKILLS.md)                           | Skill definition standard    |
-| [SUBAGENT](../rules/conventions/SUBAGENT.md)                       | Sub-agent definition standard |
-| [PLUGIN](../rules/conventions/PLUGIN.md)                           | Plugin constraints           |
-| [TEMPLATES](../rules/conventions/TEMPLATES.md)                     | Variable substitution syntax |
+| File                                           | Intent                        |
+| ---------------------------------------------- | ----------------------------- |
+| [MARKDOWN](../rules/conventions/MARKDOWN.md)   | Markdown conventions          |
+| [SKILLS](../rules/conventions/SKILLS.md)       | Skill definition standard     |
+| [SUBAGENT](../rules/conventions/SUBAGENT.md)   | Sub-agent definition standard |
+| [PLUGIN](../rules/conventions/PLUGIN.md)       | Plugin constraints            |
+| [TEMPLATES](../rules/conventions/TEMPLATES.md) | Variable substitution syntax  |
 
 **Why this design:**
 
@@ -131,15 +131,15 @@ Consistency across documentation, plugins, and translations.
   issues
 - Align EN/JP structure while allowing translation content differences
 
-### 5. Workflows Layer — User Interface
+### 5. Workflows Layer - User Interface
 
 User-facing commands and workflow system.
 
-| File                                                               | Intent                               |
-| ------------------------------------------------------------------ | ------------------------------------ |
-| [WORKFLOWS](../rules/workflows/WORKFLOWS.md)     | Command selection guide              |
-| [MODULARIZATION](../rules/workflows/MODULARIZATION.md) | Command split criteria               |
-| [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh)          | Auto-generate implementation records |
+| File                                                      | Intent                               |
+| --------------------------------------------------------- | ------------------------------------ |
+| [WORKFLOWS](../rules/workflows/WORKFLOWS.md)              | Command selection guide              |
+| [MODULARIZATION](../rules/workflows/MODULARIZATION.md)    | Command split criteria               |
+| [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh) | Auto-generate implementation records |
 
 **Workflow Patterns:**
 
@@ -160,7 +160,7 @@ flowchart LR
 
 | Philosophy       | Implementation                                                      |
 | ---------------- | ------------------------------------------------------------------- |
-| **Transparency** | Checklists, confidence markers, progress visualization              |
+| **Transparency** | Checklists, source citations, progress visualization                |
 | **Safety**       | Destructive op prohibition/confirmation, Trash move, recoverability |
 | **Consistency**  | Naming conventions, file structure, command system                  |
 | **Learnability** | Explanatory mode, Insight display                                   |
@@ -175,14 +175,13 @@ Built on the premise that "**AI makes mistakes**":
 
 Refer to:
 
-| Document                            | Content                                |
-| ----------------------------------- | -------------------------------------- |
-| [COMMANDS](./COMMANDS.md)           | Command design and relationships       |
-| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent mechanisms and usage       |
-| [HOOKS](./HOOKS.md)                 | Hook system and IDR generation         |
-| [GLOSSARY](./GLOSSARY.md)           | Ubiquitous language dictionary         |
+| Document                            | Content                          |
+| ----------------------------------- | -------------------------------- |
+| [COMMANDS](./COMMANDS.md)           | Command design and relationships |
+| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent mechanisms and usage |
+| [HOOKS](./HOOKS.md)                 | Hook system and IDR generation   |
+| [GLOSSARY](./GLOSSARY.md)           | Ubiquitous language dictionary   |
 
 ---
 
-_Explains the "why" behind the configuration. For "how to use", see
-[README.md](../README.md)._
+_Explains the "why" behind the configuration. For "how to use", see [README.md](../README.md)._

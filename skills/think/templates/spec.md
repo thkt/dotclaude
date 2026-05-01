@@ -6,9 +6,9 @@ SOW: [path to sow.md]
 
 ## Functional Requirements
 
-| ID     | Description   | Input            | Output            | Implements | Testability Notes             |
-| ------ | ------------- | ---------------- | ----------------- | ---------- | ----------------------------- |
-| FR-001 | [requirement] | [semantic input] | [semantic output] | AC-001     | [e.g. mock clock, pure fn, —] |
+| ID     | Description                | Input            | Output            | Implements | Testability Notes                |
+| ------ | -------------------------- | ---------------- | ----------------- | ---------- | -------------------------------- |
+| FR-001 | The system SHALL [action]. | [semantic input] | [semantic output] | AC-001     | [e.g. mock clock, pure fn, none] |
 
 Input/Output: semantic descriptions (what goes in/out), not type names or field names.
 
@@ -25,11 +25,11 @@ Description: EARS (Easy Approach to Requirements Syntax) pattern required.
 
 Rules: one SHALL per sentence, concrete values (no "appropriate" / "suitable" / "properly" / "correctly"), each SHALL specifies a numeric threshold, named state/error, or concrete input-output pair.
 
-Validation:
+### Validation
 
-| FR     | Rule         | Error kind               |
-| ------ | ------------ | ------------------------ |
-| FR-001 | [validation] | [kind + info to include] |
+| ID     | Description                                       | Error kind               |
+| ------ | ------------------------------------------------- | ------------------------ |
+| FR-002 | If [condition], then the system SHALL [response]. | [kind + info to include] |
 
 ## Domain Model
 
@@ -61,9 +61,9 @@ Attributes: semantic descriptions ("list of authors", "optional thread origin").
 
 ## Implementation
 
-| Phase | FRs    | Files   | Depends    |
-| ----- | ------ | ------- | ---------- |
-| 1     | FR-001 | [files] | none       |
+| Phase | FRs    | Files   | Depends |
+| ----- | ------ | ------- | ------- |
+| 1     | FR-001 | [files] | none    |
 
 Depends: list prior Phase IDs this phase requires, or `none` for parallel-executable. Enables agents to schedule independent phases concurrently.
 
@@ -79,14 +79,14 @@ Depends: list prior Phase IDs this phase requires, or `none` for parallel-execut
 
 | ID      | Category    | Requirement   | Target   | Rationale   | Validates |
 | ------- | ----------- | ------------- | -------- | ----------- | --------- |
-| NFR-001 | performance | [requirement] | [target] | [why target] | AC-001    |
+| NFR-001 | performance | [requirement] | [target] | [why target] | AC-001   |
 
 Rationale: why this target value (e.g. "UX guideline", "SLA 99.9%", "P95 budget of parent request"). Empty = reviewers cannot judge whether the threshold is appropriate.
 
 ## Assumptions
 
-| ID    | Assumption   | Rationale   | Impact if broken |
-| ----- | ------------ | ----------- | ---------------- |
+| ID     | Assumption   | Rationale   | Impact if broken |
+| ------ | ------------ | ----------- | ---------------- |
 | AS-001 | [assumption] | [why held]  | [what collapses] |
 
 Assumption: preconditions taken as given (existing infra, data shape, external SLA). Impact if broken: what must be redesigned if the assumption fails. Forces the reviewer to confront hidden coupling.
@@ -96,11 +96,6 @@ Assumption: preconditions taken as given (existing infra, data shape, external S
 | Type     | Name  | Purpose   | Used By |
 | -------- | ----- | --------- | ------- |
 | external | [lib] | [purpose] | FR-001  |
-
-## Implementation Checklist
-
-- [ ] Phase 1: [task](FR-001)
-- [ ] Phase 2: [task](FR-002)
 
 ## Traceability Matrix
 

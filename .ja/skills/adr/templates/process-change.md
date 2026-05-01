@@ -1,103 +1,100 @@
-# プロセス変更テンプレート
+# Process Change Template
 
-ワークフロー、ルール、レビュープロセス、品質ゲートの変更判断を記録するためのガイド。
+ワークフロー、ルール、レビュー手順、品質ゲートを変更する決定を記録する。
 
-## 使用場面
+## When to Use
 
-| シナリオ                                         |
-| ------------------------------------------------ |
-| 開発ワークフローや規約の変更                     |
-| レビュープロセスや品質ゲートの修正               |
-| 新しいルールの導入や古いルールの非推奨化         |
+| シナリオ                         |
+| -------------------------------- |
+| 開発ワークフローや規約の変更     |
+| レビュー手順や品質ゲートの修正   |
+| 新規ルールの導入や旧ルールの廃止 |
 
-## 必須セクション (MADR コア)
+## Template-Specific Topics
 
-| # | セクション                    | 目的                                                  |
-| - | ----------------------------- | ----------------------------------------------------- |
-| 1 | Title                         | アクション指向。例: `YにXプロセスを採用`              |
-| 2 | Status                        | `proposed` / `accepted` / `deprecated` / `superseded` |
-| 3 | Context and Problem Statement | なぜ今この判断が必要か                                |
-| 4 | Decision Drivers              | 判断に影響を与える要因                                |
-| 5 | Considered Options            | 最低 2 つの選択肢。各々に Good / Bad の箇条書き       |
-| 6 | Decision Outcome              | `Chosen option: X, because Y` 形式                    |
-| 7 | Consequences                  | ポジティブ・ネガティブな影響                          |
+`## More Information` 配下に `### {topic}` として配置する。
 
-メタデータ行: `- Confidence: {level}. {根拠}`。再評価は Consequences の後に任意の `## Reassessment Triggers` セクションで。
-
-## テンプレート固有セクション
-
-| セクション                     | 目的                                               |
-| ------------------------------ | -------------------------------------------------- |
-| Current Process vs New Process | Before / After 比較 (表)                           |
-| Transition Plan                | フェーズ分割と各フェーズの成功基準                 |
-| Team Impact                    | 影響を受ける役割、必要な研修                       |
-| Rollback Plan                  | 変更失敗時の撤退方法                               |
-| Review Schedule                | 効果測定のタイミング                               |
+| トピック                       | 目的                                 |
+| ------------------------------ | ------------------------------------ |
+| Current Process vs New Process | Before / After 比較表                |
+| Transition Plan                | フェーズ別移行と各フェーズの達成基準 |
+| Team Impact                    | 影響を受けるロール、トレーニング要件 |
+| Rollback Plan                  | 変更が失敗した場合の差し戻し方法     |
+| Review Schedule                | 効果評価のタイミング                 |
 
 ## 例
 
-```markdown
-# オーディエンス最適化テンプレートの採用
+````markdown
+---
+status: "accepted"
+date: 2026-01-28
+decision-makers: Project owner
+---
 
-- Status: accepted
-- Deciders: プロジェクトオーナー
-- Date: 2026-01-28
-- Confidence: medium. テンプレートと実態の乖離は観測済み。最適フォーマットは未検証。
+# Adopt Audience-Optimized Templates
 
 ## Context and Problem Statement
 
-SOW、Spec、ADR は異なる読者を持つが、全てのテンプレートが同じプレースホルダーリスト形式だった。結果として ADR テンプレートは実質未使用で、24 件の SOW がテンプレート構造から逸脱していた。
+SOW, Spec, and ADR serve different audiences, but all templates used the same placeholder-list format. As a result, ADR templates were effectively unused, and 24 SOWs diverged from the template structure. How should we restructure templates to close the gap?
 
 ## Decision Drivers
 
-- AI 読者には構造化された表が最適
-- 人間読者には散文とガイドラインが最適
-- テンプレートと実ドキュメントの乖離が大きい
+* Structured tables are optimal for AI readers
+* Prose and guidelines are optimal for human readers
+* Large gap between templates and actual documents
 
 ## Considered Options
 
-### オーディエンス最適化
-
-SOW と Spec は構造化された表のまま。ADR はガイドライン形式に切り替え。
-
-- Good: 各ドキュメントの読者に最適なフォーマット
-- Good: テンプレートと実態の乖離を解消
-- Bad: テンプレート種別間の統一性が下がる
-
-### 統一プレースホルダー形式
-
-全テンプレートをプレースホルダー形式のまま保持。
-
-- Good: 一貫性
-- Bad: ADR の実態乖離が残る
+* Audience-Optimized
+* Unified Placeholder Format
 
 ## Decision Outcome
 
-オーディエンス最適化アプローチを採用。
+Chosen option: "Audience-Optimized", because each document type matches the format that best serves its primary audience.
 
-### Positive Consequences
+### Consequences
 
-- テンプレートが実際に使われる
-- ドキュメント品質が向上
+* Good, because templates are actually used in practice
+* Good, because document quality improves
+* Bad, because increased template management complexity
 
-### Negative Consequences
+### Confirmation
 
-- テンプレート管理の複雑性が増える
+After 1 month, audit ADR usage and SOW divergence. Templates remain in use if usage rate stays above 50%.
 
-## Current Process vs New Process
+## Pros and Cons of the Options
 
-| 観点           | Before                     | After                          |
-| -------------- | -------------------------- | ------------------------------ |
-| SOW テンプレ   | 過剰な ID (8 種類)         | 実態ベース (AC-N)              |
-| ADR テンプレ   | プレースホルダーリスト     | ガイドライン + 例              |
-| Reviewer       | テンプレートと不一致       | テンプレートと同期             |
+### Audience-Optimized
 
-## Review Schedule
+Keep structured tables for SOW and Spec. Switch ADR to guideline format.
 
-- 1 週間. テンプレートの使いやすさを確認。
-- 1 ヶ月. SOW と ADR の定量的な品質評価。
+* Good, because optimal format for each document's audience
+* Good, because eliminates template-reality gap
+* Bad, because reduced uniformity across template types
 
-## Reassessment Triggers
+### Unified Placeholder Format
 
-- 新規 ADR でテンプレート使用率が 50% を下回った場合
-```
+Keep all templates in placeholder format.
+
+* Good, because consistency
+* Bad, because ADR reality gap persists
+
+## More Information
+
+### Current Process vs New Process
+
+| Aspect        | Before                   | After                 |
+| ------------- | ------------------------ | --------------------- |
+| SOW templates | Excessive IDs (8 types)  | Reality-based (AC-N)  |
+| ADR templates | Placeholder lists        | Guidelines + examples |
+| Reviewer      | Mismatched with template | Synced with template  |
+
+### Review Schedule
+
+* 1 week. Check template usability.
+* 1 month. Quantitative evaluation of SOW and ADR quality.
+
+### Reassessment Triggers
+
+* If template usage rate drops below 50% in new ADRs
+````

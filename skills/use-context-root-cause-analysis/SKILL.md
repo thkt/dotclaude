@@ -1,7 +1,8 @@
 ---
 name: use-context-root-cause-analysis
-description: Root cause analysis with 5 Whys. Use when: root cause, 5 Whys, なぜなぜ分析, 根本原因, 原因分析, symptom fix, 対症療法.
-allowed-tools: [Read, Grep, Glob, Task]
+description: Root cause analysis with 5 Whys.
+when_to_use: root cause, 5 Whys, なぜなぜ分析, 根本原因, 原因分析, symptom fix, 対症療法
+allowed-tools: Read Grep Glob Task
 context: fork
 user-invocable: false
 ---
@@ -55,7 +56,7 @@ whether to apply defense-in-depth or escalate.
 
 ## References
 
-| Topic                | File                                                 |
-| -------------------- | ---------------------------------------------------- |
-| Worked examples      | `${CLAUDE_SKILL_DIR}/references/five-whys.md`        |
-| Symptom → Root Cause | `${CLAUDE_SKILL_DIR}/references/symptom-patterns.md` |
+| Topic                | File                                               |
+| -------------------- | -------------------------------------------------- |
+| Worked examples      | ${CLAUDE_SKILL_DIR}/references/five-whys.md        |
+| Symptom → Root Cause | ${CLAUDE_SKILL_DIR}/references/symptom-patterns.md |

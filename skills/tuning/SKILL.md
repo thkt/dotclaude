@@ -15,11 +15,11 @@ Prompt authors are the worst readers of their own prompts. They fill tacit knowl
 
 ## Target
 
-| Target        | Path                               | Dispatch                     |
-| ------------- | ---------------------------------- | ---------------------------- |
-| Skill         | `~/.claude/skills/<name>/SKILL.md` | Task + general-purpose agent |
-| Agent         | `~/.claude/agents/**/<name>.md`    | Task + subagent_type=<name>  |
-| Slash command | `~/.claude/commands/<name>.md`     | Task + general-purpose agent |
+| Target        | Path                                          | Dispatch                     |
+| ------------- | --------------------------------------------- | ---------------------------- |
+| Skill         | ${CLAUDE_SKILL_DIR}/../<name>/SKILL.md        | Task + general-purpose agent |
+| Agent         | ${CLAUDE_SKILL_DIR}/../../agents/**/<name>.md | Task + subagent_type=<name>  |
+| Slash command | ${CLAUDE_SKILL_DIR}/../../commands/<name>.md  | Task + general-purpose agent |
 
 ## Loop
 
@@ -48,79 +48,79 @@ Every scenario carries a checklist. Tag at least one item `[critical]`. A run is
 ## Subagent Prompt Template
 
 ```text
-あなたは <対象プロンプト名> を白紙で読む実行者です。
+You are the executor reading <target prompt name> cold.
 
-## 対象プロンプト
-<プロンプト本文 or ファイルパス>
+## Target Prompt
+<prompt body or file path>
 
-## シナリオ
-<状況設定 1段落>
+## Scenario
+<one-paragraph situation>
 
-## 要件チェックリスト
-1. [critical] <最低ライン項目>
-2. <通常項目>
+## Requirements Checklist
+1. [critical] <minimum-line item>
+2. <regular item>
 ...
 
-## タスク
-1. 対象プロンプトに従ってシナリオを実行し、成果物を生成
-2. 終了時に下記レポート構造で返答
+## Task
+1. Follow the target prompt against the scenario and produce the deliverable
+2. Return a report in the structure below at the end
 
-## レポート構造
-- 成果物: <生成物 or 実行結果サマリ>
-- 要件達成: 各項目について ○ / × / 部分的 (理由付き)
-- 不明瞭点: 詰まった箇所、解釈に迷った文言
-- 裁量補完: 指示で決まっておらず自分の判断で埋めた箇所
-- 再試行: 同じ判断をやり直した回数とその理由
+## Report Structure
+- Deliverable: <output or execution summary>
+- Requirement check: pass / fail / partial (with reasoning) per item
+- Ambiguities: stall points, wording that was hard to interpret
+- Discretionary fills: gaps filled by your own judgment
+- Retries: how many times you redid the same decision and why
 ```
 
 ## Stop Conditions
 
-| Outcome   | Criteria                                                                          |
-| --------- | --------------------------------------------------------------------------------- |
-| Converged | 連続2回で 新規不明瞭点 0, 精度 ±3pt, steps ±10%, duration ±15%, hold-out 落ちなし |
-| Diverged  | 3回以上反復しても新規不明瞭点が減らない. パッチで直さず構造を書き直す             |
-| Cut off   | 改善コスト > 残り重要度. 90→100 は頭打ち寄りなので打ち切り候補                    |
+| Outcome   | Criteria                                                                                                    |
+| --------- | ----------------------------------------------------------------------------------------------------------- |
+| Converged | 2 consecutive runs with new ambiguities 0, accuracy ±3pt, steps ±10%, duration ±15%, no hold-out regression |
+| Diverged  | New ambiguities do not drop after 3+ iterations. Rewrite the structure instead of patching                  |
+| Cut off   | Improvement cost > remaining importance. 90→100 hits diminishing returns, candidate for cutoff              |
 
 ## Metrics
 
-Task tool 戻り値の末尾に `<usage>total_tokens: N, tool_uses: M, duration_ms: D</usage>` が付く。毎回これを拾って比較する。「速くなった気がする」では再評価できない。
+Task tool return values append `<usage>total_tokens: N, tool_uses: M, duration_ms: D</usage>`. Capture this every run and compare across iterations. "Feels faster" is not a comparable metric.
 
 ### tool_uses Diagnosis
 
-シナリオ間で `tool_uses` を比べる。4シナリオが 1〜3 なのに 1シナリオだけ 15+ なら、そのシナリオは references 漁りまくり, 自己完結性が低いサイン。本文に「最小完成例 inline」「いつ references を読むかの指針」を足すと落ちる。精度 100% でも構造的な穴は `tool_uses` に出る。
+Compare `tool_uses` across scenarios. If 4 scenarios sit at 1-3 and 1 spikes to 15+, that scenario is digging through references, signaling low self-containment. Add an inline minimal example and a "when to read references" guideline to the body to bring it down. Even at 100% accuracy, structural gaps surface in `tool_uses`.
 
 ## Common Failures
 
-| Failure                          | Fix                                               |
-| -------------------------------- | ------------------------------------------------- |
-| Task tool が dispatch されない   | 「Task tool を使って subagent を起動して」と明示  |
-| `<usage>` が出ない               | dispatch 時にレポート構造を強制                   |
-| レートリミット (529/overloaded)  | 並列 3 → 1, または 30s 待って再 dispatch          |
-| 親 context token 枯渇            | 評価専用の別セッションを新規起動                  |
-| シナリオが本文をなぞる           | median + edge を再設計, エッジケース必須          |
-| 同じ AI を使い回す               | 毎回新規 dispatch. SendMessage で続行しない       |
-| 1反復で複数修正                  | 1反復1テーマ. 効いたものが追えなくなる            |
-| メトリクスだけで判断             | 質的 (不明瞭点/裁量補完) が主, 量的は補助         |
-| 軸名で雑に修正                   | 判定表の閾値文言を subagent に明示参照させる      |
+| Failure                         | Fix                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------ |
+| Task tool not dispatched        | Tell the subagent explicitly to spawn another via Task tool                    |
+| `<usage>` block missing         | Force the report structure in the dispatch prompt                              |
+| Rate limit (529/overloaded)     | Drop parallelism from 3 to 1, or wait 30s and re-dispatch                      |
+| Parent context token exhaustion | Spawn a fresh session dedicated to evaluation                                  |
+| Scenario echoes the body        | Redesign median + edge. Edge cases are mandatory                               |
+| Same AI reused                  | Always fresh dispatch. Do not continue via SendMessage                         |
+| Multiple patches per iteration  | One theme per iteration. Otherwise attribution is lost                         |
+| Decision based on metrics only  | Qualitative (ambiguities, discretionary fills) leads. Quantitative supports it |
+| Vague patch by axis name        | Force the subagent to cite the threshold text from the rubric                  |
 
 ## Do Not Apply
 
-| Case                           | Reason                               |
-| ------------------------------ | ------------------------------------ |
-| 一回限りの使い捨てプロンプト   | 反復コストが見合わない               |
-| 書き手の主観的好みを残す用途   | バイアス排除が主目的なのと矛盾       |
-| 自己再読で代替                 | 作者の暗黙知が入る, 検出できない     |
+| Case                                     | Reason                                           |
+| ---------------------------------------- | ------------------------------------------------ |
+| One-shot disposable prompt               | Iteration cost does not pay off                  |
+| Preserving the author's subjective taste | Conflicts with the goal of removing author bias  |
+| Self-rereading as a substitute           | The author's tacit knowledge slips in undetected |
 
 ## Handoff
 
-反復ログはその場で破棄せず、対象プロンプトと同じディレクトリに `TUNING_LOG.md` として残す候補。スコア推移, シナリオ, 各反復の修正テーマを記録。次回チューニング時の起点になる。
+Do not discard the iteration log in place. Keep it as `TUNING_LOG.md` next to the target prompt. Record score trends, scenarios, and patch theme per iteration. It becomes the starting point for the next tuning round.
 
 ## Related
 
-| Skill                           | Relation                                                  |
-| ------------------------------- | --------------------------------------------------------- |
-| use-workflow-tdd-cycle          | 同じ Red-Green-Refactor 構造を prompt に適用              |
-| use-context-root-cause-analysis | 不明瞭点の深掘り (5 Whys) で構造的欠陥を特定              |
-| use-workflow-spec-validation    | Spec 整合性は別, こちらは prompt の再現性を計測           |
-| assert                          | `/assert` は code outcome の Ready/NotReady gate, 対象が別 |
-| challenge                       | adversarial な穴探しは別, こちらは iterative patch ループ |
+| Skill                           | Relation                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| use-workflow-tdd-cycle          | Applies the same Red-Green-Refactor cycle to prompts                     |
+| use-context-root-cause-analysis | Drills into ambiguities (5 Whys) to find structural gaps                 |
+| use-workflow-spec-validation    | Spec consistency is separate; this one measures prompt reproducibility   |
+| assert                          | `/assert` is the Ready/NotReady gate for code outcomes. Different target |
+| challenge                       | Adversarial gap-hunting is separate. This is an iterative patch loop     |

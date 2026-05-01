@@ -33,11 +33,11 @@ Snapshot-aware pipeline was conceived as Flavor B remedy: feed prior run's findi
 Add persistence layer that feeds prior snapshot (file list, findings summary) to each reviewer's prompt in Run N+1.
 
 - Good: Addresses Flavor B directly; each run deepens analysis
-- Bad: Stateful pipeline — reviewer outputs become run-order dependent
+- Bad: Stateful pipeline - reviewer outputs become run-order dependent
 - Bad: Risk of cross-run leakage (Run 2 copies Run 1 wording instead of re-reasoning)
 - Bad: Observed drift is dominated by Flavor A; no evidence Flavor B is material once A is handled
 
-### B: Reject — multi-run aggregation covers the use case
+### B: Reject - multi-run aggregation covers the use case
 
 Rely on ADR 0043 normalization + tolerance for cross-run convergence. No snapshot persistence between runs.
 
@@ -47,13 +47,13 @@ Rely on ADR 0043 normalization + tolerance for cross-run convergence. No snapsho
 - Bad: Intentional deep-dive across runs is not possible; each run explores independently
 - Bad: Long-term findings history is not leveraged at aggregation time
 
-### C: Defer — wait for more target data before deciding
+### C: Defer - wait for more target data before deciding
 
 Keep proposal in backlog until multi-run runs on 3-4 more targets.
 
 - Good: More data before commitment
 - Bad: Indefinite pending state; same decision deferred repeatedly
-- Bad: ADR 0043 Triggers already act as passive monitor — no additional deferral value
+- Bad: ADR 0043 Triggers already act as passive monitor - no additional deferral value
 
 ## Decision Outcome
 
@@ -73,12 +73,12 @@ Adopted option B (reject). Multi-run aggregation with normalization has demonstr
 ## Reassessment Triggers
 
 - If ADR 0043 Reassessment Triggers fire on a future target → evaluate whether Flavor B remedy (snapshot-aware) or Option C (category drop) is the better response
-- If `run2_only` findings systematically represent deeper (not noisier) analysis — e.g., multiple targets show Run 2 finding genuinely novel issues at >30% rate — reopen this decision
+- If `run2_only` findings systematically represent deeper (not noisier) analysis - e.g., multiple targets show Run 2 finding genuinely novel issues at >30% rate - reopen this decision
 - If a user workflow requires intentional iterative deepening (e.g., "audit this again with focus on what you missed") → implement as a separate focused mode, not a default pipeline change
 
 ## References
 
-- ADR 0043 — Normalize findings in audit multi-run aggregation
-- ADR 0035 — Audit/verify convergence signal and reconciliation ownership
-- workspace/history/audit-2026-04-20-diagnostic-run{1,2,3}.yaml — Rust baseline
-- workspace/history/audit-2026-04-20-okr-multirun-verification.yaml — TS verification
+- ADR 0043 - Normalize findings in audit multi-run aggregation
+- ADR 0035 - Audit/verify convergence signal and reconciliation ownership
+- workspace/history/audit-2026-04-20-diagnostic-run{1,2,3}.yaml - Rust baseline
+- workspace/history/audit-2026-04-20-okr-multirun-verification.yaml - TS verification

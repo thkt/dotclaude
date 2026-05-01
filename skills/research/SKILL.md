@@ -1,122 +1,124 @@
 ---
 name: research
-description: Perform project research and technical investigation without implementation.
-  Use when user mentions 調査して, 調べて, リサーチ, investigate, 分析して,
-  issueやろう, issue見て. Do NOT use for design planning or SOW/Spec generation
-  (use /think instead).
-allowed-tools: Bash(tree:*), Bash(git log:*), Bash(git diff:*), Bash(wc:*), Bash(yomu:*),
-  Read, Glob, Grep, LS, Task, AskUserQuestion
+description: Perform project research and technical investigation without implementation. Do NOT use for design planning or SOW/Spec generation (use /think instead).
+when_to_use: 調査して, 調べて, リサーチ, investigate, 分析して, issueやろう, issue見て, 横並びチェック, 類似パターン検出, refactor 横展開
+allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(wc:*) Bash(yomu:*) Read Glob Grep LS Task AskUserQuestion
 model: opus
 context: fork
-argument-hint: "[research topic or question]"
-user-invocable: true
+argument-hint: "[research subject or question]"
 ---
 
-# /research - Project Research & Investigation
+# /research
 
-Investigate codebase with confidence-based findings, without implementation.
+Investigate codebase with source-based findings, without implementation.
 
 ## Input
 
-- Research topic or question: `$ARGUMENTS` (required)
-- If `$ARGUMENTS` is empty → prompt via AskUserQuestion
+- Research subject: `$ARGUMENTS` (required free-text topic or question)
+- If `$ARGUMENTS` is empty, prompt via AskUserQuestion.
 
 ## Execution
 
-| Phase | Agent                                             | Focus                                                  |
-| ----- | ------------------------------------------------- | ------------------------------------------------------ |
-| 0     | (prior research check)                            | Read `workspace/research/` for related findings        |
-| 1     | (clarification)                                   | Research intent + topic area                           |
-| 2     | (intent-aware analyzer selection) + `yomu search` | Select and run analyzers + semantic search in parallel |
-| 3     | Task(Explore)                                     | Detail: code paths, patterns, edge cases               |
-| 3.5   | (Strong Inference)                                | ≥3 hypotheses → discriminating tests → eliminate       |
-| 4     | (synthesis)                                       | Consolidate with ✓/→/? markers                         |
+| Phase | Action                               | Detail                                                                                      |
+| ----- | ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| 0     | Prior research scan                  | Glob same-subject files in `.claude/workspace/research/`. Inherit Findings/Constraints      |
+| 1     | Intent + Domain clarification        | Ask via AskUserQuestion (skip if obvious from `$ARGUMENTS`)                                 |
+| 2     | Domain-scoped parallel investigation | yomu search + Task(Explore) + targeted Read/Grep, scoped by Domain                          |
+| 3     | Strong Inference (Bug only)          | ≥3 hypotheses, discriminating tests, eliminate                                              |
+| 4     | Synthesis                            | Merge prior baseline, source pass for findings. Disconfirmation only if Phase 3 was skipped |
 
-Note: Invoke analyzers via `Task(subagent_type: <analyzer-name>)`, Explore via
-`Task(subagent_type: Explore)`.
+### Phase 0: Prior Research Scan
 
-### Phase 1: Intent Clarification
+Derive subject slug from `$ARGUMENTS` (lowercase, hyphenated). Run `Glob '.claude/workspace/research/*<slug>*.md'`. For each match:
 
-Ask via AskUserQuestion:
+| Extract                 | Carry forward as                          |
+| ----------------------- | ----------------------------------------- |
+| Key Findings table      | Phase 4 baseline (re-verify or supersede) |
+| Constraints table       | Phase 2 input (do not re-discover)        |
+| Disconfirmation results | Phase 4 reference                         |
 
-| Question         | Options                                              |
-| ---------------- | ---------------------------------------------------- |
-| Research intent  | Feature planning / Bug investigation / Understanding |
-| Topic area       | Data model / API / Infrastructure / General          |
-| Planning needed? | Yes → suggest `/think` after research                |
+If no match, skip and note "No prior research found for `<slug>`".
 
-### Phase 2: Intent-Aware Parallel Analysis
+### Phase 1: Intent + Domain Clarification
 
-Select analyzers based on Phase 1 answers, then run all selected in parallel via
-Task. Additionally, always run `yomu search "<research topic>"` via Bash in
-parallel for semantic concept search.
+Skip if `$ARGUMENTS` clearly indicates both. Otherwise ask via AskUserQuestion.
 
-yomu finds conceptually related code that structural analyzers may miss. Feed all
-results into Phase 3.
+| Question        | Options                                              |
+| --------------- | ---------------------------------------------------- |
+| Research intent | Feature planning / Bug investigation / Understanding |
+| Domain          | Data model / API / Infrastructure / General          |
 
-#### Analyzer Selection Matrix
+Domain drives Phase 2 scoping. Domain=General applies no scoping.
 
-| Intent \ Topic    | General                                 | Data model | API   | Infrastructure |
-| ----------------- | --------------------------------------- | ---------- | ----- | -------------- |
-| Feature planning  | architecture + code-flow + domain + api | + domain   | + api | + setup        |
-| Bug investigation | architecture + code-flow                | + domain   | + api | + setup        |
-| Understanding     | architecture + code-flow                | + domain   | + api | + setup        |
+### Phase 2: Domain-Scoped Parallel Investigation
 
-Legend: Each cell shows additional analyzers beyond the base set.
-`architecture` + `code-flow` always run. `yomu search` always runs (not shown in matrix).
+Run in parallel:
 
-#### Analyzer Reference
+| Tool                                               | Purpose                             | Domain Scoping                                                     |
+| -------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------ |
+| `yomu search "<subject + domain keywords>"` (Bash) | Semantic concept search             | Append Domain-aligned terms (e.g., API → "endpoint route handler") |
+| `Task(subagent_type: Explore)`                     | File / symbol / reference discovery | Pass Domain glob roots in the prompt                               |
+| Read / Grep / Glob                                 | Targeted reads on identified files  | Use Domain glob roots as starting point                            |
 
-| Analyzer              | Subagent Type         | Returns                           |
-| --------------------- | --------------------- | --------------------------------- |
-| architecture-analyzer | architecture-analyzer | Structure, deps, Mermaid diagrams |
-| code-flow-analyzer    | code-flow-analyzer    | Execution paths, data flow        |
-| domain-analyzer       | domain-analyzer       | Entities, relationships, rules    |
-| api-analyzer          | api-analyzer          | Endpoints, schemas, auth          |
-| setup-analyzer        | setup-analyzer        | Prerequisites, env vars, config   |
+Domain glob roots:
 
-Apply Output Verifiability markers ([✓]/[→]/[?]) to all findings.
+| Domain         | Suggested roots                                                 |
+| -------------- | --------------------------------------------------------------- |
+| Data model     | `schema/`, `models/`, `db/`, `drizzle/`, `prisma/`, `*.sql`     |
+| API            | `routes/`, `handlers/`, `controllers/`, `api/`, `server/`       |
+| Infrastructure | `terraform/`, `infra/`, `ci/`, `.github/`, `deploy/`, `docker/` |
+| General        | (no scoping; let Explore find)                                  |
 
-### Phase 3.5: Strong Inference (Bug Investigation only)
+For Feature planning intent, additionally invoke `Task(subagent_type: explorer-feature)` to trace execution paths and map architecture for the relevant feature area.
 
-Apply Debug Investigation Protocol using Phase 2-3 findings as input.
+State sources directly for all findings as they accumulate: file:line for facts, "inferred from X" for inferences, "unknown, requires X" for unverified claims.
 
-Skip when: cause is obvious or intent is "Feature planning" / "Understanding".
+### Phase 3: Strong Inference (Bug investigation only)
+
+Apply Debug Investigation Protocol from `rules/core/OPERATION.md`.
+
+| Step | Action                                                            |
+| ---- | ----------------------------------------------------------------- |
+| 1    | Observation                                                       |
+| 2    | Pattern analysis (find working similar code, diff against broken) |
+| 3    | Generate ≥3 hypotheses                                            |
+| 4    | Discriminating test per hypothesis                                |
+| 5    | Elimination, then conclusion                                      |
+
+Skip when intent is Feature planning or Understanding.
+
+### Phase 4: Synthesis
+
+| Step                 | Action                                                                                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Merge prior baseline | If Phase 0 found prior research, integrate inherited Findings/Constraints into Key Findings, marking re-verified or superseded                                                  |
+| Source pass          | Each finding states its basis: file:line / command output for facts, "inferred from X (source)" for inferences, "unknown, requires X" for gaps                                  |
+| Disconfirmation      | If Phase 3 was skipped, search for one piece of evidence contradicting the leading hypothesis. Record found / not found. If Phase 3 ran, write "Covered by Phase 3 elimination" |
+| Coverage check       | All Phase 1 questions answered, or noted as "unknown, requires X" with investigation method                                                                                     |
 
 ## Error Handling
 
-| Error                  | Action                                       |
-| ---------------------- | -------------------------------------------- |
-| Analyzer returns empty | Re-run with broader scope, note in findings  |
-| Analyzer timeout       | Continue with completed analyzers            |
-| All analyzers empty    | Report "Insufficient data" — do NOT conclude |
+| Error                         | Action                                             |
+| ----------------------------- | -------------------------------------------------- |
+| Explore returns empty         | Re-run with broader keywords, note in findings     |
+| yomu search returns empty     | Suggest user run `yomu rebuild`, fall back to Grep |
+| Intent unclear after Phase 1  | Stop, name the ambiguity, ask user                 |
+| Domain glob roots all missing | Fall back to Domain=General scoping                |
 
 ## Output
 
 Session ID: ${CLAUDE_SESSION_ID}
 
-File: `$HOME/.claude/workspace/research/YYYY-MM-DD-[topic].md` Template:
-[@./templates/research.md](./templates/research.md)
+File: `.claude/workspace/research/YYYY-MM-DD-<slug>.md`
 
-## Next Steps Section
-
-Always include at end of output:
-
-| Intent           | Suggested Next |
-| ---------------- | -------------- |
-| Feature planning | `/think`       |
-| Bug fix          | `/fix`         |
-| Understanding    | complete       |
+Template: ${CLAUDE_SKILL_DIR}/templates/research.md
 
 ## Verification
 
-| Check                                     | Required |
-| ----------------------------------------- | -------- |
-| Findings marked with [✓]/[→]/[?] markers? | Yes      |
-| Disconfirmation check applied?            | Yes      |
-| Output saved to workspace/research/?      | Yes      |
-| Next Steps section included?              | Yes      |
-
-Disconfirmation check: Before synthesizing, search for one piece of evidence that
-contradicts the leading hypothesis. Record what was found (or not found) in the
-output.
+| Check                                                              | Required |
+| ------------------------------------------------------------------ | -------- |
+| `Prior research` field filled (slug or `none found`)?              | Yes      |
+| All findings have explicit sources or "unknown, requires X" notes? | Yes      |
+| Disconfirmation recorded (if Phase 3 skipped)?                     | Yes      |
+| Output saved to `workspace/research/`?                             | Yes      |
+| Next Steps section in template included?                           | Yes      |

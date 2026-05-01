@@ -6,7 +6,7 @@
 ## What & Why
 
 [What documentation needs to be added or changed]
-[Why — what problem does the reader face without this?]
+[Why - what problem does the reader face without this?]
 
 ## Location
 
@@ -27,7 +27,7 @@
 
 | Field      | OK                                                      | NG                          |
 | ---------- | ------------------------------------------------------- | --------------------------- |
-| What & Why | "Add setup guide — new contributors can't onboard"      | "Add setup guide" (no Why)  |
+| What & Why | "Add setup guide - new contributors can't onboard"      | "Add setup guide" (no Why)  |
 | Location   | "`docs/getting-started.md`, Setup section"              | "Somewhere in docs" (vague) |
 | Changes    | "Add prerequisites list, install steps, verify command" | "Write setup documentation" |
 | Scope      | "Only local dev setup, not CI/CD"                       | (omitted)                   |

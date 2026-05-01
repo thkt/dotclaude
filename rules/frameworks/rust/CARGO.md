@@ -12,7 +12,7 @@ paths:
 | Field                                    | Library                                                           | Binary                       |
 | ---------------------------------------- | ----------------------------------------------------------------- | ---------------------------- |
 | `name` / `version` / `edition`           | Required                                                          | Required                     |
-| `rust-version`                           | Recommended (MSRV) — match the newest Rust feature the crate uses | Recommended — same           |
+| `rust-version`                           | Recommended (MSRV) - match the newest Rust feature the crate uses | Recommended - same           |
 | `description` / `license` / `repository` | Recommended (Required when publishing)                            | Recommended                  |
 | `readme`                                 | Recommended when publishing                                       | Optional                     |
 | `publish = false`                        | Set when not publishing to crates.io                              | Set when not publishing      |
@@ -24,7 +24,7 @@ paths:
 | ----------------------- | ------------------------------------------------------------------- |
 | Version                 | Semver range (`"2"`, not `"=2.0.1"`) unless a pin is required       |
 | Features                | Always explicit: `serde = { version = "1", features = ["derive"] }` |
-| Dev-only                | `[dev-dependencies]` — not compiled into release                    |
+| Dev-only                | `[dev-dependencies]` - not compiled into release                    |
 | Optional + feature gate | `optional = true` on dep + `features = { x = ["dep:pkg"] }`         |
 | Git dep                 | Pin with `rev = "<sha>"`, not branch name                           |
 
@@ -33,9 +33,9 @@ paths:
 | Rule                | Detail                                                                                        |
 | ------------------- | --------------------------------------------------------------------------------------------- |
 | Naming              | `snake_case`, no `with_` prefix (C-FEATURE)                                                   |
-| Default             | Keep `default = [...]` minimal — opt-in over opt-out                                          |
+| Default             | Keep `default = [...]` minimal - opt-in over opt-out                                          |
 | `test-support`      | Conventional feature name for exposing test helpers (mocks, fixtures) to downstream test code |
-| Feature unification | Features are additive — never use them for mutually-exclusive behavior                        |
+| Feature unification | Features are additive - never use them for mutually-exclusive behavior                        |
 
 ## `[lints]` canonical set
 
@@ -52,7 +52,7 @@ pedantic = { level = "warn", priority = -1 }
 
 # Pedantic opt-outs (common false positives)
 module_name_repetitions = "allow"
-# Note: `missing_errors_doc` / `missing_panics_doc` intentionally left at warn —
+# Note: `missing_errors_doc` / `missing_panics_doc` intentionally left at warn,
 # RUST.md requires `# Errors` / `# Panics` sections on public fallible APIs.
 
 # Specific deny (project-wide strictness)
@@ -73,11 +73,11 @@ needless_pass_by_value = "deny"
 
 | Group                           | Setting                                                |
 | ------------------------------- | ------------------------------------------------------ |
-| `correctness` / `suspicious`    | deny / warn (default) — never disable as group         |
-| `complexity` / `perf` / `style` | warn (default) — fix or `#[allow]` with reason         |
+| `correctness` / `suspicious`    | deny / warn (default) - never disable as group         |
+| `complexity` / `perf` / `style` | warn (default) - fix or `#[allow]` with reason         |
 | `pedantic`                      | warn as group, cherry-pick `allow` for false positives |
-| `nursery`                       | Never enable as group — cherry-pick stable lints       |
-| `restriction`                   | Never enable as group — cherry-pick individual lints   |
+| `nursery`                       | Never enable as group - cherry-pick stable lints       |
+| `restriction`                   | Never enable as group - cherry-pick individual lints   |
 
 ### CI
 
@@ -112,8 +112,8 @@ workspace = true
 
 | Rule            | Detail                                                                                        |
 | --------------- | --------------------------------------------------------------------------------------------- |
-| Shared versions | `[workspace.dependencies]` — pin once, inherit everywhere                                     |
-| Shared lints    | `[workspace.lints]` — consistent strictness across crates                                     |
+| Shared versions | `[workspace.dependencies]` - pin once, inherit everywhere                                     |
+| Shared lints    | `[workspace.lints]` - consistent strictness across crates                                     |
 | Single lockfile | All members share one `Cargo.lock`; compatible dependency versions unify across the workspace |
 | FFI isolation   | Child crate holds `unsafe extern`; outer crate keeps `unsafe_code = "forbid"`                 |
 
@@ -123,10 +123,10 @@ Beyond `rustfmt` / `clippy`, these `cargo` subcommands close common gaps for AI-
 
 | Tool             | Purpose                                                     | Usage                                                                                         |
 | ---------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `cargo-nextest`  | Faster, parallel test runner with retries and better output | `cargo nextest run` — replaces `cargo test` locally and in CI; accelerates RGRC cycles        |
-| `cargo-llvm-cov` | Source-based coverage measurement                           | `cargo llvm-cov --all-features` — enforces the C0 ≥ 90% / C1 ≥ 80% gates from `THRESHOLDS.md` |
+| `cargo-nextest`  | Faster, parallel test runner with retries and better output | `cargo nextest run` - replaces `cargo test` locally and in CI; accelerates RGRC cycles        |
+| `cargo-llvm-cov` | Source-based coverage measurement                           | `cargo llvm-cov --all-features` - enforces the C0 ≥ 90% / C1 ≥ 80% gates from `THRESHOLDS.md` |
 | `cargo-deny`     | License / security-advisory / banned-crate checks           | `cargo deny check` in CI with a `deny.toml` policy                                            |
-| `cargo-machete`  | Detect unused `[dependencies]` entries                      | `cargo machete` — catches deps added during exploration but never wired in                    |
+| `cargo-machete`  | Detect unused `[dependencies]` entries                      | `cargo machete` - catches deps added during exploration but never wired in                    |
 
 ## Avoid
 
@@ -136,4 +136,4 @@ Beyond `rustfmt` / `clippy`, these `cargo` subcommands close common gaps for AI-
 | `version = "1.0.42"` exact pin for lib dep     | Semver range `"1"` unless a pin is required                                   |
 | `git = "...", branch = "main"`                 | Pin with `rev = "<sha>"` for reproducibility                                  |
 | `#![warn(clippy::pedantic)]` in source         | `[lints.clippy] pedantic = { level = "warn", priority = -1 }` in `Cargo.toml` |
-| `cargo test` when `cargo-nextest` is installed | `cargo nextest run` — faster feedback, fail-fast options                      |
+| `cargo test` when `cargo-nextest` is installed | `cargo nextest run` - faster feedback, fail-fast options                      |

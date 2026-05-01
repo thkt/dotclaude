@@ -1,7 +1,7 @@
 # adr skill empirical-prompt-tuning log
 
 Started: 2026-04-25
-Target: `~/.claude/skills/adr/SKILL.md` (91 lines, with scripts/ references/ templates/)
+Target: ${CLAUDE_SKILL_DIR}/SKILL.md (91 lines, with scripts/ references/ templates/)
 Method: /tuning skill (mizchi empirical-prompt-tuning)
 
 ## Scenarios (FROZEN)

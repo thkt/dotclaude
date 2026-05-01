@@ -1,6 +1,6 @@
 # Feature-Driven TDD
 
-How `/code` uses TDD for new feature development. Builds on `${CLAUDE_SKILL_DIR}/SKILL.md` (RGRC Cycle, Baby Steps).
+How `/code` uses TDD for new feature development. Builds on ${CLAUDE_SKILL_DIR}/SKILL.md (RGRC Cycle, Baby Steps).
 
 ## Context
 

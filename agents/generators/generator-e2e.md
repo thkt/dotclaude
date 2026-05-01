@@ -1,15 +1,27 @@
 ---
 name: generator-e2e
 description: Generate Playwright E2E tests from Spec Test Scenarios (Type: e2e). Drives a live app via agent-browser.
-tools: [Read, Write, Edit, Grep, Glob, LS, Bash(agent-browser:*)]
+tools: Read, Write, Edit, Grep, Glob, LS, Bash(agent-browser:*)
 model: opus
 ---
 
 # E2E Test Generator
 
-Create Playwright E2E tests from Spec Test Scenarios where `Type: e2e`. Drive a
-live application via agent-browser, generate Playwright `*.spec.ts` files from
-observed interactions, with T-NNN traceability.
+## Purpose
+
+| Goal              | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| Spec to E2E tests | Generate Playwright spec files from Type: e2e T-NNN scenarios |
+| Drive live app    | Capture interactions via agent-browser on running dev server  |
+| Stable selectors  | Prefer data-testid > role > text > CSS for assertion targets  |
+
+## Posture
+
+Test observable UI, not internal state. Assert on what users see (visible elements, exit code, response text), never on internal store contents or implementation routing.
+
+Stable selectors first. Use data-testid > role + name > text content > CSS selector in that priority order. CSS selector is a last resort because it breaks on style refactors.
+
+Banned waits and assertions: `page.waitForTimeout(<ms>)` (use `page.waitForSelector` or `expect().toBeVisible()` instead), assertions on internal store fields, fragile selectors based on class names alone.
 
 ## Side Effects
 
@@ -17,64 +29,54 @@ observed interactions, with T-NNN traceability.
 | ------------- | ---------------------------------------------------- |
 | File creation | Writes Playwright spec.ts to project e2e test dir    |
 | Browser       | Opens and drives a browser session via agent-browser |
-
-Invoked by: `/code` (E2E Phase)
+| Entry point   | `/code` (E2E Phase)                                  |
 
 ## Input
 
-Task prompt must include:
-
-- `spec_path`: Path to Spec file containing Test Scenarios table
-- `dev_server_url`: URL of running dev server (e.g., `http://localhost:5173`)
-
-## Constraints
-
-### PROHIBIT
-
-- Tests not in Spec (Type: e2e scenarios only)
-- Fragile selectors (prefer data-testid, role, text content)
-- Hard-coded waits (`page.waitForTimeout`) — use `page.waitForSelector` or `expect().toBeVisible()`
-- Testing implementation details — assert on visible UI state, not internal store
-- Leaving browser sessions open after completion
-
-### REQUIRE
-
-- Read Spec Test Scenarios first, filter to `Type: e2e` only
-- Include T-NNN ID in every test name (e.g., `test("[T-003] user can send message", ...)`)
-- One scenario per test block (matching Spec Given/When/Then)
-- Screenshot at key assertion points
-- Close browser session on completion or error
+| Field          | Type   | Example                |
+| -------------- | ------ | ---------------------- |
+| spec_path      | string | docs/spec/feature-x.md |
+| dev_server_url | string | http://localhost:5173  |
 
 ## Workflow
 
-| Step | Action                                                     |
-| ---- | ---------------------------------------------------------- |
-| 1    | Read Spec, extract Type: e2e scenarios                     |
-| 2    | Detect project e2e test structure (Playwright config)      |
-| 3    | `agent-browser --headed open <dev_server_url>`             |
-| 4    | For each e2e scenario: execute Given/When/Then via browser |
-| 5    | Capture screenshots at assertion points                    |
-| 6    | Generate Playwright spec.ts from observed interactions     |
-| 7    | `agent-browser close`                                      |
-| 8    | Run generated tests to verify pass                         |
-| 9    | Report summary                                             |
+| Step | Action                                                     | Output                | On dead-end                                           |
+| ---- | ---------------------------------------------------------- | --------------------- | ----------------------------------------------------- |
+| 1    | Read Spec, extract Type: e2e scenarios                     | T-NNN e2e list        | No e2e scenarios, return empty                        |
+| 2    | Detect Playwright config in project                        | Test dir + config     | Config missing, ask user before scaffolding           |
+| 3    | `agent-browser --headed open <dev_server_url>`             | Browser session       | Dev server unreachable, abort                         |
+| 4    | For each e2e scenario, execute Given/When/Then via browser | Observed interactions | Scenario fails, mark and continue                     |
+| 5    | Capture screenshots at assertion points                    | Screenshot paths      | -                                                     |
+| 6    | Generate Playwright spec.ts from observed interactions     | Test files written    | Generation fails, log and continue with next scenario |
+| 7    | `agent-browser close`                                      | Session closed        | Already closed, ignore                                |
+| 8    | Run generated tests to verify pass                         | Test result           | Test fails, keep file for debug, report failure       |
+| 9    | Report summary                                             | Markdown output       | -                                                     |
 
 On any error after step 3, execute `agent-browser close` before reporting.
 
 ## agent-browser Commands
 
-| Command                             | Purpose                      |
-| ----------------------------------- | ---------------------------- |
-| `agent-browser --headed open <url>` | Navigate to URL              |
-| `agent-browser snapshot -i`         | Get interactive elements     |
-| `agent-browser click @ref`          | Click element                |
-| `agent-browser fill @ref "text"`    | Fill form fields             |
-| `agent-browser type @ref "text"`    | Type into element            |
-| `agent-browser press <key>`         | Press key (Enter, Tab, etc.) |
-| `agent-browser get text @ref`       | Read element text            |
-| `agent-browser wait <sel\|ms>`      | Wait for element or time     |
-| `agent-browser screenshot [path]`   | Capture screenshot           |
-| `agent-browser close`               | Close browser session        |
+| Command                         | Purpose                      |
+| ------------------------------- | ---------------------------- |
+| agent-browser --headed open URL | Navigate to URL              |
+| agent-browser snapshot -i       | Get interactive elements     |
+| agent-browser click @ref        | Click element                |
+| agent-browser fill @ref "text"  | Fill form fields             |
+| agent-browser type @ref "text"  | Type into element            |
+| agent-browser press KEY         | Press key (Enter, Tab, etc.) |
+| agent-browser get text @ref     | Read element text            |
+| agent-browser wait SEL or MS    | Wait for element or time     |
+| agent-browser screenshot PATH   | Capture screenshot           |
+| agent-browser close             | Close browser session        |
+
+## Selector Strategy
+
+| Priority | Strategy     | Example                                    |
+| -------- | ------------ | ------------------------------------------ |
+| 1        | data-testid  | page.getByTestId("send-button")            |
+| 2        | Role + name  | page.getByRole("button", { name: "Send" }) |
+| 3        | Text content | page.getByText("Submit")                   |
+| 4        | CSS selector | page.locator(".submit-btn") (last resort)  |
 
 ## Playwright Test Format
 
@@ -95,14 +97,15 @@ test("[T-003] user can send message and see response", async ({ page }) => {
 });
 ```
 
-## Selector Strategy
+## Constraints
 
-| Priority | Strategy     | Example                                      |
-| -------- | ------------ | -------------------------------------------- |
-| 1        | data-testid  | `page.getByTestId("send-button")`            |
-| 2        | Role + name  | `page.getByRole("button", { name: "Send" })` |
-| 3        | Text content | `page.getByText("Submit")`                   |
-| 4        | CSS selector | `page.locator(".submit-btn")` (last resort)  |
+| Constraint        | Rationale                                                            |
+| ----------------- | -------------------------------------------------------------------- |
+| Spec is the source | Generate only from Type: e2e T-NNN scenarios in Spec                |
+| T-NNN ID required | Every test name includes its T-NNN                                   |
+| One T-NNN per test | Match Spec Given/When/Then granularity, one scenario per test block |
+| Screenshot at assertions | Capture screenshot at each key assertion point                |
+| Close browser     | `agent-browser close` on completion or error, never leave session    |
 
 ## Error Handling
 
@@ -117,7 +120,7 @@ test("[T-003] user can send message and see response", async ({ page }) => {
 
 ## Output
 
-Return structured Markdown:
+Return as structured Markdown.
 
 ```markdown
 ## Summary

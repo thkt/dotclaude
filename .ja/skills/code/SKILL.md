@@ -1,173 +1,187 @@
 ---
 name: code
-description: TDD/RGRCサイクルでリアルタイムテストフィードバック付きコード実装。ユーザーが実装して,
-  コード書いて, implement,
-  coding等に言及した場合に使用。小さなバグ修正やエラー解消には /fix を使用。
-allowed-tools: Bash(npm run), Bash(npm run:*), Bash(yarn run), Bash(yarn run:*),
-  Bash(yarn:*), Bash(pnpm run), Bash(pnpm run:*), Bash(pnpm:*), Bash(bun run),
-  Bash(bun run:*), Bash(bun:*), Bash(make:*), Bash(git status:*), Bash(git
-  log:*), Bash(which:*), Edit, MultiEdit, Write, Read, Glob, Grep, LS, Task, AskUserQuestion
+description: TDD/RGRC サイクルとリアルタイムテストフィードバックでコードを実装する。小さなバグ修正やエラー解決には使わない (/fix を使用)。
+when_to_use: 実装して, コード書いて, implement, coding
+allowed-tools: Bash(npm run) Bash(npm run:*) Bash(yarn run) Bash(yarn run:*) Bash(yarn:*) Bash(pnpm run) Bash(pnpm run:*) Bash(pnpm:*) Bash(bun run) Bash(bun run:*) Bash(bun:*) Bash(cargo:*) Bash(make:*) Bash(git status:*) Bash(git log:*) Bash(which:*) Edit MultiEdit Write Read Glob Grep LS Task AskUserQuestion
 model: opus
-argument-hint: "[実装内容] [--frontend] [--principles] [--no-storybook]"
-user-invocable: true
+argument-hint: "[implementation description] [--no-storybook]"
 ---
 
-# /code - TDD実装
+# /code - TDD Implementation
 
-失敗するテストなしにプロダクションコードを書いてはならない。
+NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
 
-違反 → コードを削除し、テストを書き、それから書き直す。
+違反 → コードを削除し、テストを書き、書き直す。
 
 ## 開始時の宣言
 
-コードを書く前に必ず宣言:
+コードを書く前に、以下の宣言をそのまま出力する。
 
-> TDD RGRCサイクルを開始します。すべてのコード変更は失敗するテストから始めます。
+> Starting TDD RGRC cycle. Every code change begins with a failing test.
 
-## 合理化への対抗
+## Rationalization Counters
 
-| 言い訳                           | 対抗                                                                |
-| -------------------------------- | ------------------------------------------------------------------- |
-| 「これはTDDするほどでもない」    | 単純な変更こそリグレッションを隠す。テスト1行でデバッグ数時間を防ぐ |
-| 「テストは後で追加する」         | 「後で」は来ない。テスト負債は複利で増える                          |
-| 「これはリファクタリングだけ」   | テストなしのリファクタリングはサイレントリグレッションの第1原因     |
-| 「既存のテストがカバーしている」 | カバーしているならRed phaseで確認できる。実行せよ                   |
-| 「これをテストすると遅くなる」   | 遅いテストは本番バグより速い                                        |
-| 「Redテストの検証は不要」        | 未検証のRedは盲目的なコーディング。実行して意図通りの失敗を確認せよ |
+| 言い訳                               | 反論                                                                                |
+| ------------------------------------ | ----------------------------------------------------------------------------------- |
+| "This is too simple for TDD"         | 単純な変更がリグレッションを隠す。1 行のテストが数時間の debug を防ぐ               |
+| "I'll add tests later"               | "後で" は来ない。テスト負債は利息付きで複利になる                                   |
+| "This is just a refactor"            | テストなしのリファクタは silent regression の最大原因                               |
+| "Existing tests already cover"       | カバーするなら Red phase で確認できる。実行する                                     |
+| "Testing this would be too slow"     | 遅いテストは production bug より速い                                                |
+| "Red test doesn't need verification" | テストしない Red = 盲目的に書いている。実行して、失敗が意図と一致することを確認する |
 
-## 入力
+## Input
 
-- `$1` が実装の説明を保持（必須、空なら質問）
+- `$ARGUMENTS` に実装記述 (必須、空ならプロンプト)
 
-### フラグ
+### Flags
 
-| フラグ           | 効果                                              |
+| Flag             | 効果                                              |
 | ---------------- | ------------------------------------------------- |
-| `--no-storybook` | Storybook自動検出を無効化（デフォルト: 自動検出） |
+| `--no-storybook` | Storybook 自動検出を無効化 (デフォルト: 自動検出) |
 
-プロジェクトに Storybook + コンポーネントファイルを検出すると自動発動。詳細は Storybook Phase 参照。
+プロジェクトに Storybook + コンポーネントファイルがあるとき自動検出。Storybook Phase を参照。
 
-## SOWコンテキスト
+## SOW Context
 
-[@../../skills/_lib/sow-resolution.md]
+${CLAUDE_SKILL_DIR}/../_lib/sow-resolution.md を参照
 
-## スコープガード
+## Scope Guard
 
-SOW読み込み後、Phaseのファイル数を確認。ファイル数 ≥5のPhaseがあれば、実装前に
-`/think` で分割するようユーザーに提案する。SOWがなく `$1` がファイル数 ≥5
-を示唆する場合も `/think` の実行を提案する。
+SOW 読み込み後、Phase ごとのファイル数を確認する。Phase に Files ≥ 5 があれば、停止し `/think` で分割するようユーザーに求める。SOW がなく `$ARGUMENTS` が ≥ 5 ファイルを示唆する場合、まず `/think` 実行を提案する。
 
-## 実行
+## Target Languages
 
-1. SOWコンテキスト: SOW/specを検出・読み込み → スコープガード
-2. `test-generator` をbackground agentとしてspawn（`subagent_type: test-generator`, `run_in_background: true`）
-3. `TaskOutput` でテスト結果を受信（実装前に完了を待つ）
-4. `ralph-loop --max-iterations 10` 自動イテレーション付きRGRCサイクル
-5. レビューゲート: `code-quality-reviewer` をspawn（/fixではスキップ）
-6. Storybook Phase（条件付き）
-7. E2E Phase（条件付き）
+JS/TS が first-class。Rust / Go / Python は `generator-test` のフレームワーク検出経由で動く。検出が失敗するときは task prompt にテストランナーを明示する。Storybook/E2E phase は非 JS/TS では既存条件で自動スキップ。Quality Gates は言語非依存 (T-NNN coverage、gates hook が言語ごとに pre/post-edit)。
+
+## External References
+
+| Reference                                       | 読むタイミング                    | 見つからない/不明瞭時                      |
+| ----------------------------------------------- | --------------------------------- | ------------------------------------------ |
+| ${CLAUDE_SKILL_DIR}/../_lib/sow-resolution.md   | Step 1 SOW 検出                   | SOW なし状態、Scope Guard を inline で適用 |
+| ${CLAUDE_SKILL_DIR}/references/csf3-patterns.md | Storybook Phase 全条件 pass       | 最小 CSF3 stories フォーマットを使う       |
+| `ralph-loop` plugin                             | Step 4 RGRC 反復                  | Red → Green → Refactor を手動ループ      |
+| `generator-test` agent                          | Step 2 spawn                      | Error Handling: Leader が直接テスト生成    |
+| `evaluator-test` agent                          | Step 8 Quality Gates、Spec が存在 | Test Quality gate をスキップ               |
+| `reviewer-readability` agent                    | Step 5 Review Gate                | /fix ではスキップ; 手動レビューで継続      |
+
+## Notation
+
+| 記号         | 意味                                                        | 用途                                                               |
+| ------------ | ----------------------------------------------------------- | ------------------------------------------------------------------ |
+| `T-NNN`      | `T-\d{3}` 3 桁ゼロパディング spec scenario ID (例: `T-001`) | テスト関数名、describe/it 文字列、または inline コメントに埋め込む |
+| `TaskOutput` | `run_in_background: true` spawn からの同期受信              | 完了を待ってから次へ進む                                           |
+
+## Execution
+
+1. SOW Context: SOW/spec を検出して読む → Scope Guard
+2. `generator-test` を background エージェントとして spawn (`subagent_type: generator-test`, `run_in_background: true`)
+3. `TaskOutput` でテスト結果を受信 (実装前に完了を待つ)
+4. `ralph-loop --max-iterations 10` で RGRC サイクルを自動反復
+5. Review Gate: `reviewer-readability` を spawn (/fix ではスキップ)
+6. Storybook Phase (条件付き)
+7. E2E Phase (条件付き)
 8. Quality Gates
 
 ## Spec Evolution
 
-実装中に新しい要件が発見される場合がある（エッジケース、エラーハンドリング、統合上の
-懸念）。
+実装中に新規要件が見つかる (edge case、エラー処理、統合関心事)。
 
-1. まずSpecを更新: spec.mdのTest ScenariosテーブルにT-NNNを追加
-2. 次にテストを書く: テスト名/コメントで新しいT-NNNを参照
-3. Specトレースなしにテストを追加しない: すべてのテストはT-NNNに対応する
+1. 先に Spec を更新する: spec.md の Test Scenarios 表に T-NNN を追加
+2. それからテストを書く: テスト名/コメントで新しい T-NNN を参照
+3. Spec トレースなしのテストを追加してはいけない: 全テストは T-NNN にマップする
 
-`test-quality-evaluator` がT-NNNマッピングを使用してカバレッジスコアを算出する。
+`evaluator-test` は T-NNN マッピングを使ってカバレッジ等の品質メトリクスを計算する。
 
-## Storybook Phase（条件付き）
+## Storybook Phase (条件付き)
 
 ### 条件
 
-すべて順にチェックし、1つでも失敗した時点でスキップ。
+すべて pass する必要があり、順に評価し、最初の fail でスキップ。
 
-| #   | チェック                                 | 方法                                                           | 失敗時        |
-| --- | ---------------------------------------- | -------------------------------------------------------------- | ------------- |
-| 1   | `--no-storybook` フラグ未指定            | `$ARGUMENTS` をパース                                          | スキップ(silent) |
-| 2   | プロジェクトにStorybookあり              | `.storybook/` 存在 OR `@storybook/*` が package.json deps にある | スキップ(silent) |
-| 3   | 実装にコンポーネントファイルが含まれる   | 変更ファイルに `.tsx`/`.jsx` + PascalCase export                | スキップ(silent) |
+| #   | チェック                     | 方法                                                      | fail 時           |
+| --- | ---------------------------- | --------------------------------------------------------- | ----------------- |
+| 1   | `--no-storybook` フラグなし  | `$ARGUMENTS` を parse                                     | スキップ (silent) |
+| 2   | プロジェクトに Storybook     | `.storybook/` 存在 OR package.json deps に `@storybook/*` | スキップ (silent) |
+| 3   | 実装にコンポーネントファイル | 変更ファイルに PascalCase export の `.tsx`/`.jsx`         | スキップ (silent) |
 
 ### 宣言
 
-条件成立時、生成前に宣言。
+条件が一致したら、生成前に announce する。
 
 ```
-[auto-detect] Storybook検出 + {File}.tsx がコンポーネントと判定。
-{File}.stories.tsx を生成。オプトアウトは --no-storybook。
+[auto-detect] Storybook detected + {File}.tsx appears to be a component.
+Will generate {File}.stories.tsx. Opt out with --no-storybook.
 ```
 
 ### 実行
 
-検出された各コンポーネントについて `${CLAUDE_SKILL_DIR}/references/csf3-patterns.md` に従い `{Component}.stories.tsx` を生成。Props は Spec の Component API セクションがあれば採用、なければコンポーネントから推論。
+検出された各コンポーネントについて、${CLAUDE_SKILL_DIR}/references/csf3-patterns.md に従い `{Component}.stories.tsx` を生成する。Spec の Component API セクションがあれば props をそこから取得し、なければコンポーネントから推論する。
 
-### 既存Storiesの扱い
+### 既存 Stories の扱い
 
-| オプション | アクション                 |
-| ---------- | -------------------------- |
-| [O]        | 既存ファイルを上書き       |
-| [S]        | スキップ（既存を保持）     |
-| [M]        | マージ（diff表示、手動）   |
-| [D]        | diffのみ追記               |
+| 選択肢 | アクション                 |
+| ------ | -------------------------- |
+| [O]    | 既存ファイルを上書き       |
+| [S]    | スキップ - 既存を保持      |
+| [M]    | マージ - diff を表示、手動 |
+| [D]    | Diff のみ - 新規を追記     |
 
-## E2E Phase（条件付き）
+## E2E Phase (条件付き)
 
 ### 条件
 
-すべて順にチェックし、1つでも失敗した時点でスキップ。
+すべて pass する必要があり、順に評価し、最初の fail でスキップ。
 
-| #   | チェック                                    | 方法                                         | 失敗時            |
-| --- | ------------------------------------------- | -------------------------------------------- | ----------------- |
-| 1   | Specに `Type: e2e` のシナリオあり           | Spec Test Scenarios テーブルを grep          | スキップ (silent) |
-| 2   | agent-browser インストール済み              | `which agent-browser`                        | スキップ + advisory |
-| 3   | Dev serverが package.json から検出          | `dev`, `start:dev`, `start` スクリプトにマッチ | スキップ + advisory |
-| 4   | Dev server起動中（ユーザー確認）            | AskUserQuestion: "Dev server at {url}?"      | スキップ + advisory |
+| #   | チェック                         | 方法                                        | fail 時             |
+| --- | -------------------------------- | ------------------------------------------- | ------------------- |
+| 1   | Spec に `Type: e2e` シナリオ     | Spec Test Scenarios 表を grep               | スキップ (silent)   |
+| 2   | agent-browser インストール済み   | `which agent-browser`                       | スキップ + advisory |
+| 3   | package.json で dev server 検出  | `dev`, `start:dev`, `start` script に match | スキップ + advisory |
+| 4   | dev server 稼働中 (ユーザー確認) | AskUserQuestion: "Dev server at {url}?"     | スキップ + advisory |
 
 ### Dev Server 検出
 
-`package.json` の scripts から検出。
+`package.json` script から検出。
 
-| 優先度 | スクリプト名パターン         | デフォルトURL           |
-| ------ | ---------------------------- | ----------------------- |
-| 1      | `dev`, `start:dev`           | `http://localhost:5173` |
-| 2      | `start`                      | `http://localhost:3000` |
-| 3      | `storybook`, `storybook:dev` | `http://localhost:6006` |
+| 優先度 | script 名パターン        | デフォルト URL        |
+| ------ | ------------------------ | --------------------- |
+| 1      | dev, start:dev           | http://localhost:5173 |
+| 2      | start                    | http://localhost:3000 |
+| 3      | storybook, storybook:dev | http://localhost:6006 |
 
-スクリプト値内に指定があればポートを抽出（`--port`, `-p`, `PORT=`）。
+script 値で指定されていれば port を抽出 (`--port`, `-p`, `PORT=`)。
 
 ### 実行
 
 ```
-Agent(subagent_type: "e2e-test-generator",
+Agent(subagent_type: "generator-e2e",
       prompt: "spec_path: <path>\ndev_server_url: <url>",
       run_in_background: true)
 ```
 
 ## Quality Gates
 
-| チェック              | 条件                        | 方法                           |
-| --------------------- | --------------------------- | ------------------------------ |
-| AC達成                | RGRC後                      | 手動（SOWなければスキップ）    |
-| Test Quality ≥70      | Spec存在                    | `test-quality-evaluator` agent |
-| イテレーション強制    | Write/Edit/MultiEdit毎      | `gates` hook (PostToolUse)     |
+| Check                     | 条件                    | 方法                          |
+| ------------------------- | ----------------------- | ----------------------------- |
+| AC met                    | RGRC 後                 | 手動 (SOW なしならスキップ)   |
+| Test Quality (per-metric) | Spec が存在             | `evaluator-test` エージェント |
+| Iteration 強制            | 各 Write/Edit/MultiEdit | `gates` hook (PostToolUse)    |
 
-詳細は use-workflow-code を参照。
+呼び出し詳細は use-workflow-code を参照。
 
-## エラーハンドリング
+## Error Handling
 
-| エラー                              | アクション                         |
-| ----------------------------------- | ---------------------------------- |
-| test-generator タイムアウト         | Leader がテストを直接生成          |
-| test-generator がテスト0件生成      | specの存在を確認、ユーザーに質問   |
-| ralph-loop 停止                     | ループ停止、手動修正               |
-| 品質ゲート失敗                      | コミット前に問題を修正             |
-| Evaluator スコア <70                | 未カバー/過剰/意図の問題を修正     |
-| Evaluator タイムアウト              | ゲートスキップ、警告をログ         |
-| Spec 未検出                         | spec.md を作成またはユーザーに確認 |
-| agent-browser クラッシュ            | E2Eスキップ、advisory、続行        |
-| Dev server 到達不可                 | E2Eスキップ、advisory、続行        |
-| E2Eテスト失敗                       | Advisory（ブロックしない）         |
-| Storybook Phase エラー              | Phaseスキップ、advisory、続行      |
+| エラー                             | アクション                                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------------------- |
+| generator-test タイムアウト        | Leader が直接テスト生成                                                               |
+| generator-test がテストを 0 件生成 | spec の存在を確認、ユーザーに確認                                                     |
+| ralph-loop 停滞                    | ループを停止、手動修正                                                                |
+| Quality gates fail                 | commit 前に issue を修正                                                              |
+| Evaluator metric が閾値以下        | uncovered/excess/duplicate/granularity/intent issue を修正                            |
+| Evaluator タイムアウト             | gate をスキップ、警告ログ                                                             |
+| Spec 見つからず                    | T-NNN trace なしで進む、Test Quality gate をスキップ (またはユーザーに spec 作成依頼) |
+| agent-browser クラッシュ           | E2E をスキップ、advisory、続行                                                        |
+| Dev server 到達不能                | E2E をスキップ、advisory、続行                                                        |
+| E2E tests fail                     | Advisory (ブロックしない)                                                             |
+| Storybook phase エラー             | phase をスキップ、advisory、続行                                                      |

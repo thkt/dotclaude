@@ -40,7 +40,7 @@ Default to `feature` if unclear.
 
 ## Language
 
-Read `language` from `~/.claude/settings.json` and translate the issue body into that language. If unset, default to English. Keep technical terms, code, and identifiers untranslated.
+Read `language` from ${CLAUDE_SKILL_DIR}/../../settings.json and translate the issue body into that language. If unset, default to English. Keep technical terms, code, and identifiers untranslated.
 
 ## Templates
 

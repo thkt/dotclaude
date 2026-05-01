@@ -1,21 +1,27 @@
 ---
 name: reviewer-duplication
 description: Cross-file code duplication detection. DRY analysis specialist.
-tools: [Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)]
+tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
 model: opus
-context: fork
 memory: project
 background: true
 ---
 
 # Duplication Reviewer
 
-## Generated Content
+## Purpose
 
-| Section  | Description                        |
-| -------- | ---------------------------------- |
-| findings | Duplication issues with extraction |
-| summary  | Duplication counts by type         |
+| Goal                 | Description                                                |
+| -------------------- | ---------------------------------------------------------- |
+| Cross-file detection | Find functions, blocks, and patterns repeated across files |
+| Cluster reporting    | Group occurrences by shared signature                      |
+| Extract suggestion   | Propose new shared utility with concrete location          |
+
+## Posture
+
+Duplication grows quietly. Each occurrence increases maintenance cost. Detect 3+ line patterns across files and propose extraction with concrete location.
+
+Banned phrasing inside reasoning: "could be DRYed" without naming the shared invariant, "similar pattern" without showing token overlap.
 
 ## Analysis Phases
 
@@ -41,11 +47,9 @@ This reviewer uses 2+ as the unified threshold. Rule of Three from `rules/PRINCI
 ## Comparison Strategy
 
 1. Read target files and extract function/block signatures and key patterns
-2. Grep/Glob the broader codebase (same file types) for each extracted pattern —
-scan up to 100 files per file type (priority: same directory > imports > alphabetical)
+2. Grep/Glob the broader codebase (same file types) for each extracted pattern. Scan up to 100 files per file type (priority same directory > imports > alphabetical)
 3. Cross-compare signatures across target files AND codebase matches
-4. For near-duplicates, normalize variable names before comparison. Similarity
-threshold: >=70% normalized token overlap
+4. For near-duplicates, normalize variable names before comparison. Similarity threshold: >=70% normalized token overlap
 5. Report clusters (group of locations sharing the same pattern)
 6. If Phase 1-2 yield zero matches above similarity threshold, skip Phase 3-5
 
@@ -74,7 +78,7 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 Follow finding-schema.md. Prefix: DRY.
 
-Categories: exact / near-duplicate / pattern / reimplementation / arg-variant. Severity: high / medium / low. Verification: pattern_search — are there more occurrences beyond the ones found? Extra: Evidence lists each occurrence as `Location N: fileN:line snippet`.
+Categories: exact / near-duplicate / pattern / reimplementation / arg-variant. Severity: high / medium / low. Verification: pattern_search, are there more occurrences beyond the ones found? Extra: Evidence lists each occurrence as `Location N: fileN:line snippet`.
 
 ```markdown
 ## Summary

@@ -1,10 +1,10 @@
-# Pre-flight: テスト + Hook Findings
+# Pre-flight: Tests + Hook Findings
 
-Pre-flight はテスト実行と `reviews` hook 出力（knip/oxlint/tsgo/react-doctor）の finding 変換を担う。静的解析は hook 側、ここには置かない。
+Pre-flight は test を実行し、`reviews` hook 出力 (knip/oxlint/tsgo/react-doctor) を finding に変換する。静的解析は hook 側で行い、ここでは行わない。
 
-## Step 1: プロジェクトルートからタスクランナーを検出
+## Step 1: プロジェクトルートから task runner を検出
 
-| ファイル         | ランナー                |
+| ファイル         | Runner                  |
 | ---------------- | ----------------------- |
 | `package.json`   | npm / yarn / pnpm / bun |
 | `composer.json`  | composer                |
@@ -14,18 +14,18 @@ Pre-flight はテスト実行と `reviews` hook 出力（knip/oxlint/tsgo/react-
 | `pyproject.toml` | poetry / uv / ruff      |
 | `Gemfile`        | bundle exec             |
 
-## Step 2: 検出したランナーからテストスクリプトを探索
+## Step 2: 検出した runner で test スクリプトを探す
 
-以下を優先順で確認し、最初にマッチしたものを使用する。
+以下の名前を優先順で確認し、最初の match を使う。
 
 1. `test`
 2. `test:unit`
 3. `test:ci`
 4. `spec`
 
-ランナー未検出の場合は `command -v` でテストフレームワーク検出にフォールバックする。
+runner が見つからない場合、`command -v` でフレームワーク検出に fallback する。
 
-| 設定ファイル                    | ツール確認          | コマンド         |
+| Config File                     | ツールチェック      | コマンド         |
 | ------------------------------- | ------------------- | ---------------- |
 | `vitest.config.*`               | `command -v npx`    | `npx vitest run` |
 | `jest.config.*`                 | `command -v npx`    | `npx jest`       |
@@ -34,39 +34,59 @@ Pre-flight はテスト実行と `reviews` hook 出力（knip/oxlint/tsgo/react-
 
 ## Step 3: テスト実行
 
-| ルール       | 動作                                               |
-| ------------ | -------------------------------------------------- |
-| テスト未検出 | Pre-flight テストをスキップ、エージェントへ進む    |
-| 非ゼロ終了   | 出力をコンテキストとして保持、監査はブロックしない |
-| タイムアウト | スクリプトごと60秒；超過時は kill して続行         |
+| ルール          | 振る舞い                                             |
+| --------------- | ---------------------------------------------------- |
+| test 見つからず | pre-flight tests をスキップ、エージェントへ進む      |
+| 非ゼロ終了      | 出力をコンテキストとして取得、audit はブロックしない |
+| タイムアウト    | スクリプトあたり 60s; kill して続行                  |
 
-スナップショットの `pre_flight` に記録する（カバレッジ利用可能なら付加、ツール不在は `skipped`）。
+snapshot の `pre_flight` に記録 (取得可能なら coverage 付き; ツールなしなら `skipped`)。
 
-| フィールド | ソース                                     |
-| ---------- | ------------------------------------------ |
-| tests      | テスト出力 → total/passed/failed カウント  |
-| coverage   | カバレッジレポート → c0 (行) / c1 (分岐) % |
+| Field    | Source                                       |
+| -------- | -------------------------------------------- |
+| tests    | test 出力 → total/passed/failed カウント    |
+| coverage | coverage report → c0 (line) / c1 (branch) % |
 
 ## Step 4: hook 出力を finding に変換
 
-| Hook 状態                                 | Action                                                                          |
-| ----------------------------------------- | ------------------------------------------------------------------------------- |
-| `additionalContext` 注入あり              | 各ツールセクションを parse → `PF-{seq}` finding（finding-schema.md の base fields） |
-| 注入なし（未インストール / no-op / findings 無し） | snapshot に `hook_findings: 0` を記録し続行。Pre-flight は失敗させない          |
+| Hook 状態                                   | アクション                                                                                           |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `additionalContext` を注入                  | 各 tool セクションを parse → `PF-{seq}` finding に `status: static` (finding-schema.md base fields) |
+| 不在 (未インストール、no-op、findings ゼロ) | snapshot に `hook_findings: 0` を記録; pre-flight を fail させない                                   |
 
-| フィールド   | 値                                                                              |
-| ------------ | ------------------------------------------------------------------------------- |
-| `finding_id` | `PF-{seq}`（1-based、同一 pre-flight 呼出内で全ツール通しの連番）               |
-| `agent`      | `pre-flight`                                                                    |
+| Field        | Value                                               |
+| ------------ | --------------------------------------------------- |
+| `finding_id` | `PF-{seq}` (1-based、pre-flight 内で tool 横断連番) |
+| `agent`      | `pre-flight`                                        |
+| `status`     | `static` (deterministic ツールで機械的に確認済み)   |
 
-ツールごとの category 命名規則。
+ツールごとのカテゴリ命名規則。
 
-| ツール       | category パターン                                                          | デフォルト severity                                 |
-| ------------ | -------------------------------------------------------------------------- | --------------------------------------------------- |
-| knip         | `unused-file`, `unused-export`, `unused-dependency`, `unlisted-dependency` | `unlisted` → high, `unused-file` → medium, 他 → low |
-| oxlint       | `lint/{rule-name}`                                                         | `error` → high, `warning` → medium                  |
-| tsgo         | `type-error/TS{code}`                                                      | high                                                |
-| react-doctor | `react/{issue-type}`                                                       | medium                                              |
-| （未知）     | `preflight/{tool-name}`                                                    | low                                                 |
+| ツール       | Category パターン                                                          | デフォルト severity                                        |
+| ------------ | -------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| knip         | `unused-file`, `unused-export`, `unused-dependency`, `unlisted-dependency` | `unlisted` → high, `unused-file` → medium, others → low |
+| oxlint       | `lint/{rule-name}`                                                         | `error` → high, `warning` → medium                       |
+| tsgo         | `type-error/TS{code}`                                                      | high                                                       |
+| react-doctor | `react/{issue-type}`                                                       | medium                                                     |
+| (未知)       | `preflight/{tool-name}`                                                    | low                                                        |
 
-finding-schema.mdの統合ルールを適用（同一パターン → 1 findingに統合）。
+finding-schema.md の Consolidation Rule (同パターン → 単一 finding) を PF finding 内のみで適用する。PF と Wave 1 は別扱い (下記 Pipeline Treatment)。
+
+## PF Findings の Pipeline 扱い
+
+PF findings (`status: static`) は challenger/verifier をスキップする。deterministic ツールが自身の evidence を提供しているため。reconcile された Wave 1 findings と並んで integrator に直接流れる。
+
+| Stage      | PF の扱い                                                |
+| ---------- | -------------------------------------------------------- |
+| challenger | スキップ。機械的に確認済み                               |
+| verifier   | スキップ。ツール出力自体が evidence                      |
+| root-cause | 含める。PF findings は root cause 解析の seed になり得る |
+| integrator | 直接受け取る。Wave 1 と cross-reference (下記)           |
+
+### Wave 1 Cross-reference
+
+PF finding と同じ `file:line` (overlap ±3、`SKILL.md` の Multi-run Aggregation と同一 tolerance) に Wave 1 finding がある場合、integrator は Wave 1 finding の evidence に cross-reference を追記する。
+
+`Static-confirmed by ${PF-id} (${PF.category})`
+
+両 finding は snapshot に残る。PF は `status: static` のまま、Wave 1 は reconcile 済み status を保つ。cross-reference により `output.md` がエントリを merge せずに関係を render できる。重複扱いではなく、強化シグナルとして扱う。

@@ -1,17 +1,16 @@
 ---
 name: use-workflow-spec-validation
-description: >
-  SOW/Spec のドキュメント間整合性検証。 トリガー: 整合性チェック, consistency
-  check, spec validation, 仕様検証.
-allowed-tools: [Read, Grep, Glob]
-agent: sow-spec-reviewer
+description: SOW/Spec のドキュメント横断整合性検証。
+when_to_use: 整合性チェック, consistency check, spec validation, 仕様検証
+allowed-tools: Read Grep Glob
+agent: reviewer-spec
 context: fork
 user-invocable: false
 ---
 
-# ワークフロー: SOW/Spec 整合性検証
+# Workflow: SOW/Spec Validation
 
-## ID体系
+## ID 体系
 
 | ドキュメント | プレフィックス | リンク先         |
 | ------------ | -------------- | ---------------- |
@@ -21,129 +20,125 @@ user-invocable: false
 | Spec         | NFR-NNN        | Validates: AC-N  |
 | Spec         | AS-NNN         | -                |
 
-優先度レベル（P0/P1/P2）とゲートルールは `sow-spec-reviewer` エージェントで定義。
-各チェックは finding 種別ごとに優先度を割り当てる。
+優先度 (P0/P1/P2) と Gate ルールは `reviewer-spec` エージェントで定義する。
+以下の各チェックは発見事項の種別ごとに優先度を割り当てる。
 
-## チェック項目
+## チェック
 
-P0発生可能なチェック（1-3）を先に実行。P0が発生した時点でゲートは NotReady
-確定のため、下流チェックはスキップ可能。
+P0 を生むチェック (1-3) を最初に実行する。P0 が 1 件でも上がれば、後続のチェックはスキップしてよい。その時点で gate は NotReady になる。
 
-### 1. AC→FR トレーサビリティ [P0候補]
+### 1. AC→FR 追跡性 [P0 候補]
 
-各 `AC-N` に `Implements: AC-N` を持つ FR が1つ以上必要。
+各 `AC-N` に `Implements: AC-N` を持つ FR が 1 件以上必要。
 
-| Finding                                   | Priority |
-| ----------------------------------------- | -------- |
-| ACを実装するFRがない                      | P0       |
-| 存在しないACを参照する孤立FR              | P1       |
+| 発見事項                            | 優先度 |
+| ----------------------------------- | ------ |
+| AC を実装する FR が存在しない       | P0     |
+| 存在しない AC を実装する孤立した FR | P1     |
 
-### 2. FR→テストカバレッジ [P0候補]
+### 2. FR→Test カバレッジ [P0 候補]
 
-各 `FR-NNN` に対応するFR参照を持つ `T-NNN` が1つ以上必要。
+各 `FR-NNN` に対して、対応する FR を参照する `T-NNN` が 1 件以上必要。
 
-| Finding                               | Priority |
-| ------------------------------------- | -------- |
-| FRにテストシナリオがない              | P0       |
-| テストが存在しないFRを参照            | P1       |
+| 発見事項                    | 優先度 |
+| --------------------------- | ------ |
+| FR にテストシナリオがない   | P0     |
+| Test が存在しない FR を参照 | P1     |
 
-### 3. トレーサビリティマトリクス整合性 [P0候補]
+### 3. 追跡性マトリクスの整合性 [P0 候補]
 
-| 列   | 存在必須箇所            |
-| ---- | ----------------------- |
-| AC   | SOW 受入基準            |
-| FR   | Spec 機能要件テーブル   |
-| Test | Spec テストシナリオ     |
-| NFR  | Spec 非機能要件テーブル |
+| 列   | 存在すべき場所            |
+| ---- | ------------------------- |
+| AC   | SOW Acceptance Criteria   |
+| FR   | Spec Functional Req table |
+| Test | Spec Test Scenarios       |
+| NFR  | Spec NFR table            |
 
-| Finding                                     | Priority |
-| ------------------------------------------- | -------- |
-| マトリクス行が存在しないIDを参照            | P0       |
-| マトリクス行で期待される列が欠落            | P1       |
+| 発見事項                             | 優先度 |
+| ------------------------------------ | ------ |
+| マトリクスの行が存在しない ID を参照 | P0     |
+| マトリクスの行に必要な列が欠落       | P1     |
 
-### 4. スコープ↔実装 [P1候補]
+### 4. Scope↔Implementation [P1 候補]
 
-SOWのスコープ内ターゲットがSpecのフェーズに含まれること。余分なファイル → P2。
+SOW の In-Scope ターゲットは Spec のフェーズに登場すること。余分なファイル → P2。
 
-### 5. 矛盾検出 [P0/P1候補]
+### 5. 矛盾検出 [P0/P1 候補]
 
-SOW↔Spec間の技術的不一致、数値の矛盾をクロスチェック。
+SOW↔Spec 間で技術不一致や数値の競合をクロスチェックする。
 
-| Finding                              | Priority |
-| ------------------------------------ | -------- |
-| SOWとSpecで矛盾する技術選定          | P0       |
-| SOWとSpecで矛盾する数値              | P0       |
-| 用語の不整合な使用                   | P1       |
+| 発見事項                     | 優先度 |
+| ---------------------------- | ------ |
+| SOW と Spec で技術が矛盾     | P0     |
+| SOW と Spec で数値が矛盾     | P0     |
+| 用語が一貫せずに使われている | P1     |
 
-### 6. 曖昧表現 [P0候補]
+### 6. 曖昧な表現 [P0 候補]
 
 | 言語 | パターン                                                                           |
 | ---- | ---------------------------------------------------------------------------------- |
 | JA   | 適切に、できる限り、なるべく、ある程度、検討する、考慮する、予定、高速に(数値なし) |
 | EN   | appropriately, as much as possible, reasonable, adequate, TBD, fast(no metric)     |
 
-| Finding                                         | Priority |
-| ----------------------------------------------- | -------- |
-| SHALL句（FR）内の曖昧表現                       | P0       |
-| NFR Target内の曖昧表現                          | P0       |
-| それ以外の曖昧表現                              | P1       |
+| 発見事項                 | 優先度 |
+| ------------------------ | ------ |
+| SHALL 句 (FR) 内の曖昧語 | P0     |
+| NFR Target 内の曖昧語    | P0     |
+| その他箇所の曖昧語       | P1     |
 
-### 7. 用語の一貫性 [P1候補]
+### 7. 用語の一貫性 [P1 候補]
 
-同じ概念に同じ用語を使用すること。
+同じ概念には同じ用語を全ドキュメントで使うこと。
 
-| Finding                                   | Priority |
-| ----------------------------------------- | -------- |
-| 同一役割での同義語混在（user/member）     | P1       |
-| 略語の混在（DB/database）                 | P2       |
+| 発見事項                                   | 優先度 |
+| ------------------------------------------ | ------ |
+| 同じロールに対する同義語混在 (user/member) | P1     |
+| 略語の混在 (DB/database)                   | P2     |
 
-### 8. 列の完全性 [P0/P1/P2候補]
+### 8. 列の完全性 [P0/P1/P2 候補]
 
-| Finding                                              | Priority |
-| ---------------------------------------------------- | -------- |
-| AC 観察可能シグナル列が空欄（SOW）                   | P0       |
-| In Scope 観察可能な成果列が空欄（SOW）               | P1       |
-| NFR Rationale 列が空欄                               | P1       |
-| Assumption Impact-if-broken 列が空欄                 | P1       |
-| Dependency Purpose 列が空欄                          | P2       |
+| 発見事項                                    | 優先度 |
+| ------------------------------------------- | ------ |
+| AC の Observable signal 列が空 (SOW)        | P0     |
+| In Scope の Observable outcome 列が空 (SOW) | P1     |
+| NFR Rationale 列が空                        | P1     |
+| Assumption Impact-if-broken 列が空          | P1     |
+| Dependency Purpose 列が空                   | P2     |
 
-Risks 列ルール（Probability/Mitigation × Impact）は
-`sow-spec-reviewer` Risks 完全性セクションに委譲。
+Risks 列のルール (Probability/Mitigation × Impact) は `reviewer-spec` の Risks Completeness セクションに委任する。
 
-### 9. Phase 依存関係 [P1候補]
+### 9. フェーズ依存 [P1 候補]
 
-Implementation テーブルは `Depends` を記載必須。空欄だと並列スケジューリング
-判断がブロックされる。
+実装テーブルは `Depends` を宣言すること。Depends が空だと並列スケジュールの判断ができない。
 
-| Finding                                   | Priority |
-| ----------------------------------------- | -------- |
-| Phase Depends 列が空欄                    | P1       |
+| 発見事項                  | 優先度 |
+| ------------------------- | ------ |
+| フェーズの Depends 列が空 | P1     |
 
 ### 10. YAGNI 準拠 [P2]
 
-YAGNIチェックリストあり: Specがチェック済み項目を除外していることを確認。
-過剰設計をフラグ。
+YAGNI Checklist を用い、Spec がチェックされた項目を除外していることを確認する。Over-engineering を flag する。
 
-### 11. Scope 整合性 [P0/P1候補]
+### 11. Scope の整合性 [P0/P1 候補]
 
-SOW の In Scope と Out of Scope は重複不可。AC は In Scope 対象のみを扱う。
+SOW の In Scope と Out of Scope は重複しないこと。AC は In Scope のみを対象にすること。
 
-| Finding                                           | Priority |
-| ------------------------------------------------- | -------- |
-| In Scope 対象が Out of Scope にも記載             | P0       |
-| AC が In Scope に存在しない対象を参照             | P1       |
-| Out of Scope に `Why not` 根拠なし                | P2       |
+| 発見事項                                    | 優先度 |
+| ------------------------------------------- | ------ |
+| In Scope ターゲットが Out of Scope にも記載 | P0     |
+| AC が In Scope に無いターゲットを参照       | P1     |
+| Out of Scope に `Why not` の正当化がない    | P2     |
 
 ## 出力
 
-レビュアー findings に追加される Markdown:
+reviewer の発見事項に追記する Markdown。
 
 ```markdown
 ## Consistency Findings
 
-| ID      | Priority | Check      | Location                               | CC Impact                                | Fix                                    |
-| ------- | -------- | ---------- | -------------------------------------- | ---------------------------------------- | -------------------------------------- |
-| CON-001 | P0/P1/P2 | チェック名 | sow.md:セクション / spec.md:セクション | CCがこれを読んだ時に何をするか           | 具体的な書き換え例。「明確化」は禁止   |
+| ID      | Priority | Check      | Location                         | CC Impact                        | Fix                                  |
+| ------- | -------- | ---------- | -------------------------------- | -------------------------------- | ------------------------------------ |
+| CON-001 | P0/P1/P2 | check name | sow.md:section / spec.md:section | この記述を読んだとき CC が何をするか | "明確化せよ" ではなく具体的な書き換え |
 ```
 
-Finding フォーマットおよびゲート寄与は `sow-spec-reviewer` エージェントに従う。
+発見事項のフォーマットと Gate への寄与は `reviewer-spec` エージェントに従う。

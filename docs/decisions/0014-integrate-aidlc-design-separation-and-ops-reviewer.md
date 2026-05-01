@@ -2,7 +2,7 @@
 status: "accepted"
 ---
 
-# ADR-0014: AI-DLC 統合 — 設計分離と Operational Readiness Reviewer
+# ADR-0014: AI-DLC 統合 - 設計分離と Operational Readiness Reviewer
 
 ## Context and Problem Statement
 
@@ -89,7 +89,7 @@ reviewer-operations を作成し、既存の /audit Phase 4 でカバー。
 
 ## References
 
-- [AI-DLC Method Definition](https://prod.d13rzhkk8cj2z0.amplifyapp.com/) (Amplify URL — may change; use GitHub repos as stable reference)
+- [AI-DLC Method Definition](https://prod.d13rzhkk8cj2z0.amplifyapp.com/) (Amplify URL - may change; use GitHub repos as stable reference)
 - [awslabs/aidlc-workflows](https://github.com/awslabs/aidlc-workflows)
 - [ikeisuke/ai-dlc-starter-kit](https://github.com/ikeisuke/ai-dlc-starter-kit)
 - [SOW](../workspace/planning/2026-02-22-aidlc-integration/sow.md) (local planning artifact, not committed)

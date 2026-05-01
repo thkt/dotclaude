@@ -1,128 +1,113 @@
-# 用語集（ユビキタス言語辞書）
+# Glossary
 
-プロジェクト全体で統一して使う用語の定義。
+このプロジェクトのユビキタス言語辞書。
 
-📌 **[English Version](../../docs/GLOSSARY.md)**
+📌 [English version](../../docs/GLOSSARY.md)
 
 ## ドキュメント
 
-| 略称     | 正式名称                       | 目的                     | 生成元            | 対象読者 | ライフサイクル    |
-| -------- | ------------------------------ | ------------------------ | ----------------- | -------- | ----------------- |
-| **ADR**  | Architecture Decision Record   | 技術的意思決定の記録     | `/adr`            | 人間     | Accepted 後は不変 |
-| **SOW**  | Statement of Work              | 計画・スコープ・受入基準 | `/think`          | AI       | 承認後は固定      |
-| **Spec** | Specification                  | 実装詳細・テスト計画     | `/think`          | AI       | 承認後は固定      |
-| **IDR**  | Implementation Decision Record | 実装記録                 | `git commit` hook | 人間     | 追記のみ          |
+| 用語 | 正式名称                       | 用途                 | 生成元              | 読み手 | ライフサイクル |
+| ---- | ------------------------------ | -------------------- | ------------------- | ------ | -------------- |
+| ADR  | Architecture Decision Record   | 技術判断の記録       | `/adr`              | 人間   | 受理後は不変   |
+| SOW  | Statement of Work              | 計画、スコープ、基準 | `/think`            | AI     | 承認後は静的   |
+| Spec | Specification                  | 実装詳細、テスト     | `/think`            | AI     | 承認後は静的   |
+| IDR  | Implementation Decision Record | 実装記録             | `git commit` フック | 人間   | 追記のみ       |
 
-### ADR — Architecture Decision Record
+### ADR. Architecture Decision Record
 
-**答える問い:**「なぜこのアプローチを選んだのか？」
+答えること: 「なぜこのアプローチを選んだのか」
 
-重要な技術的意思決定の背景と理由を記録する。技術選定、アーキテクチャパターン、非推奨化、プロセス変更が対象。MADRフォーマットで、人間が数ヶ月〜数年後に文脈を理解できる散文スタイルで記述する。
+技術判断 (技術選定、アーキテクチャ パターン、廃止、プロセス変更) の根拠を記録する。MADR 形式の prose スタイルで書き、数か月から数年後に文脈を理解する必要がある人間の読者に最適化する。
 
-特性:
+主な特性:
 
-- **読み手: 将来の開発者**
-  — プロジェクトに参加した人が過去の決定をADRで理解できる
-- **Accepted 後は不変** — 新しいADRでsupersedeする。既存ADRは編集しない
-- **散文 > プレースホルダ** — ADR-0008で人間向けドキュメントは散文スタイルに決定
-- **4種のテンプレート**: technology-selection, architecture-pattern,
-  deprecation, process-change
+- 読み手は将来の開発者。プロジェクトに加わった人が ADR を読むことで過去の判断を理解できる
+- 受理後は不変。新たな ADR で置換されるが、編集はしない
+- プレースホルダより prose。ADR-0008 で、人間向けドキュメントは構造化テーブルではなく物語的に書くと定めた
+- 判断種別ごとに 4 つのテンプレート バリアントがある: technology-selection, architecture-pattern, deprecation, process-change
 
 配置: `adr/NNNN-title.md`
 
-### SOW — Statement of Work
+### SOW. Statement of Work
 
-**答える問い:**「何を作るのか？完了をどう判定するか？」
+答えること: 「何を作るのか、完了の判定はどうするのか」
 
-スコープ、受入基準、実装方針を定義する計画ドキュメント。`/think`
-の設計探索（アプローチ比較、自己チャレンジ、ドメイン/技術観点）を経て生成される。
+スコープ、受け入れ基準、実装アプローチを定める計画文書。`/think` の中で、設計探索 (アプローチ比較、自己反論、ドメイン/技術視点) の後に作成される。
 
-特性:
+主な特性:
 
-- **読み手: AI** — `/validate` や `/code` が機械的に解析できる構造化テーブル
-- **承認後は固定** — ユーザー承認後は変更しない
-- **AC-N 受入基準**
-  — シンプルな番号付きチェックリスト（ADR-0008で未使用のI-001/A-001体系から簡素化）
-- **YAGNI チェックリスト付き** — 除外機能を明示してスコープクリープを防止
-- **Spec とペア** — SOWが "what/why"、Specが "how"
+- 読み手は AI。`/validate` と `/code` が機械的にパースできる構造化テーブル
+- 承認後は静的。ユーザーが承認したら SOW は変更しない
+- AC-N 受け入れ基準。シンプルな番号付きチェックリスト (WHEN/THEN 形式ではない。ADR-0008 で未使用の I-001/A-001 体系から簡略化された)
+- YAGNI チェックリストを含む。除外する機能を明示し、スコープ膨張を防ぐ
+- Spec と対。SOW は「何を/なぜ」、Spec は「どう」を定める
 
 配置: `workspace/planning/YYYY-MM-DD-[feature]/sow.md`
 
-### Spec — Specification
+### Spec. Specification
 
-**答える問い:**「具体的にどう実装するのか？」
+答えること: 「具体的にどう実装するのか」
 
-SOWの受入基準を機能要件、テストシナリオ、ドメインモデルに変換する。`/code`
-の主要な入力。
+SOW の受け入れ基準を機能要件、テスト シナリオ、ドメイン モデルに落とす。`/code` 実装の主入力。
 
-特性:
+主な特性:
 
-- **読み手: AI**
-  — 完全なトレーサビリティを持つ構造化テーブル（`FR-001 Implements: AC-001` →
-  `T-001 Validates: FR-001`）
-- **承認後は固定** — SOWと一緒にロック
-- **ドメインモデルの深さは可変** —
-  CLI/設定なら簡素なデータモデル、業務アプリなら詳細なエンティティ/ビジネスルール/ドメインイベント（ADR-0008閾値: エンティティ ≥
-  3またはビジネスルール ≥ 3）
-- **テストの詳細は Spec が担当**
-  — テスト計画はSpecに集約、SOWとの重複を排除（ADR-0008）
-- **トレーサビリティマトリクス** — すべてのACがFR、テスト、NFRに対応
+- 読み手は AI。完全な追跡性を持つ構造化テーブル (`FR-001 Implements: AC-001` → `T-001 Validates: FR-001`)
+- 承認後は静的。SOW と一緒にロックされる
+- ドメイン モデルの深さは可変。CLI/設定向けには簡潔なデータ モデル、ビジネス アプリ向けには詳細なエンティティ/ビジネス ルール/イベント (ADR-0008 の閾値: エンティティ 3 以上またはビジネス ルール 3 以上)
+- テスト シナリオが詳細を持つ。テスト計画は SOW ではなく Spec にある (ADR-0008 で重複を排除)
+- 追跡性マトリクス。すべての AC が FR、テスト、NFR にマップされる
 
 配置: `workspace/planning/YYYY-MM-DD-[feature]/spec.md`
 
-### IDR — Implementation Decision Record
+### IDR. Implementation Decision Record
 
-**答える問い:**「実装中に実際に何が起きたか？」
+答えること: 「実装中に実際に何が起きたか」
 
-各コミットの変更内容を記録する自動生成ドキュメント。`claude-idr`（Rustバイナリ）がgit
-pre-commit hookでセッションログとdiffを解析して生成する。
+各コミットの変更を自動生成する記録。コーディング中に下した判断を捕捉する。`claude-idr` (Rust バイナリ) が git pre-commit フック時にセッション ログと diff を分析して作成する。
 
-特性:
+主な特性:
 
-- **読み手: 人間レビュアー**
-  — 変更のナラティブサマリーとして記述（構造化データではない）
-- **追記のみ** — コミットごとに新しいIDRファイルを追加。既存IDRは変更しない
-- **自動生成** — 手動作業不要。hookがgit diff + セッションコンテキストから生成
-- **SOW へのトレース** —
-  SOWが存在する場合は同じディレクトリに配置され、計画から実行への追跡リンクを提供
-- **連番** — フィーチャーディレクトリ内で `idr-01.md`, `idr-02.md`, ...
+- 読み手は人間レビュアー。構造化データではなく、変更の物語的なサマリ
+- 追記のみ。各コミットが新規 IDR ファイルを追加し、過去のものは変更しない
+- 自動。手動操作不要。フックが git diff + セッション コンテキストから生成する
+- SOW へ追跡可能。SOW があれば同じディレクトリに置かれ、計画から実行へのリンクを提供する
+- 連番。feature ディレクトリ内で `idr-01.md`, `idr-02.md`, ... と続く
 
-配置: `workspace/planning/[feature]/idr-NN.md` または
-`workspace/planning/YYYY-MM-DD/idr-NN.md`
+配置: `workspace/planning/[feature]/idr-NN.md` または `workspace/planning/YYYY-MM-DD/idr-NN.md`
 
-### ドキュメント間の関係
+### ドキュメントの関係
 
 ```mermaid
 flowchart LR
-    SOW -->|詳細化| Spec
-    Spec -->|実装| Code
-    Code -->|記録| IDR
-    ADR -.->|参照| SOW
-    IDR -.->|トレース| SOW
+    SOW -->|details| Spec
+    Spec -->|implements| Code
+    Code -->|records| IDR
+    ADR -.->|references| SOW
+    IDR -.->|traces back| SOW
 ```
 
-| 関係        | メカニズム                                             |
-| ----------- | ------------------------------------------------------ |
-| SOW → Spec  | SOW の AC-N → Spec の FR-NNN `Implements: AC-N`        |
-| Spec → Code | `/code` が Spec を実装入力として読み込む               |
-| Code → IDR  | git commit hook が diff から IDR を自動生成            |
-| ADR → SOW   | `/think` Step 5.5 で主要な決定に ADR を提案            |
-| IDR → SOW   | IDR を同じディレクトリに配置し、計画へのトレースを提供 |
+| 関係         | 仕組み                                            |
+| ------------ | ------------------------------------------------- |
+| SOW → Spec  | SOW の AC-N → Spec の FR-NNN `Implements: AC-N`  |
+| Spec → Code | `/code` が Spec を実装入力として読む              |
+| Code → IDR  | git commit フックが diff から IDR を自動生成      |
+| ADR → SOW   | `/think` Step 5.5 が主要判断に対し ADR を提案する |
+| IDR → SOW   | IDR は同ディレクトリに置かれ、計画へ追跡可能      |
 
-## ID 体系
+## ID 規約
 
-| 接頭辞      | 意味           | 使用箇所 | 例      |
-| ----------- | -------------- | -------- | ------- |
-| **AC-NNN**  | 受入基準       | SOW      | AC-001  |
-| **FR-NNN**  | 機能要件       | Spec     | FR-001  |
-| **T-NNN**   | テストシナリオ | Spec     | T-001   |
-| **NFR-NNN** | 非機能要件     | Spec     | NFR-001 |
-| **BR-NNN**  | ビジネスルール | Spec     | BR-001  |
-| **I-NNN**   | 課題・調査項目 | SOW      | I-001   |
-| **RC-NNN**  | 根本原因       | Audit    | RC-001  |
-| **SUG-NNN** | 改善提案       | Audit    | SUG-001 |
+| 接頭辞  | 意味                       | 利用先 | 例      |
+| ------- | -------------------------- | ------ | ------- |
+| AC-NNN  | Acceptance Criteria        | SOW    | AC-001  |
+| FR-NNN  | Functional Requirement     | Spec   | FR-001  |
+| T-NNN   | Test Scenario              | Spec   | T-001   |
+| NFR-NNN | Non-Functional Requirement | Spec   | NFR-001 |
+| BR-NNN  | Business Rule              | Spec   | BR-001  |
+| RC-NNN  | Root Cause                 | Audit  | RC-001  |
+| SUG-NNN | Suggestion                 | Audit  | SUG-001 |
 
-### トレーサビリティ
+### 追跡性
 
 ```text
 AC-001 ← FR-001 ← T-001
@@ -130,20 +115,9 @@ AC-001 ← FR-001 ← T-001
            NFR-001   BR-001
 ```
 
-SOWの受入基準 →
-Specの機能要件 → テストシナリオへと、ドキュメントをまたいでIDが追跡可能。
+ID はドキュメント間で追跡される。SOW 受け入れ基準 → Spec 要件 → テスト シナリオ。
 
-## 確信度マーカー
+## 関連
 
-| マーカー | 確信度 | 意味   | アクション       |
-| -------- | ------ | ------ | ---------------- |
-| `[✓]`    | ≥95%   | 確認済 | そのまま進行     |
-| `[→]`    | 70-94% | 推定   | 確認してから進行 |
-| `[?]`    | <70%   | 不明   | 調査してから進行 |
-
-OPERATION（出力の検証可能性）およびドキュメント全般で使用。
-
-## 関連ドキュメント
-
-- [DESIGN](./DESIGN.md) — アーキテクチャ概要
-- [HOOKS](./HOOKS.md) — IDR生成の詳細
+- [DESIGN](./DESIGN.md). アーキテクチャ概要
+- [HOOKS](./HOOKS.md). IDR 生成の詳細

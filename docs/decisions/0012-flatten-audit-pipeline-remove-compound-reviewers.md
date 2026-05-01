@@ -2,7 +2,7 @@
 status: "accepted"
 ---
 
-# ADR-0012: Flatten Audit Pipeline — Remove Compound Reviewers
+# ADR-0012: Flatten Audit Pipeline - Remove Compound Reviewers
 
 ## Context and Problem Statement
 

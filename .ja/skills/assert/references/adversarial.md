@@ -1,23 +1,21 @@
-# Adversarial Testingプロトコル
+# Adversarial Testing Protocol
 
-Codexが隔離worktreeでエッジケーステストを生成・実行し、結果を報告する。
-失敗したテストはfindingに昇格する前にintent assertionを通過する。
+Codex が隔離された worktree で edge-case テストを生成し、実行し、結果をレポートする。失敗したテストは intent assertion を経てから finding になる。
 
-## 前提条件
+## 前提
 
-- worktreeブートストラップ成功（Phase 0）
-- モード選択によるスコープ済みファイルリスト
+- Phase 0 で worktree bootstrap が成功
+- mode 選択でスコープが確定したファイル一覧
 
-## Codexプロンプト
+## Codex Prompt
 
-プロジェクト種別に応じて調整する。
+プロジェクトタイプに応じて調整。
 
 ```
-You are an adversarial tester. Your goal is to find bugs by writing tests that
-the original developer likely missed.
+You are an adversarial tester. Your goal is to find bugs by writing tests that the original developer likely missed.
 
 Target files:
-<スコープ済みファイルリスト>
+<scoped file list>
 
 Instructions:
 1. Read each target file and understand its behavior
@@ -43,75 +41,73 @@ failure_detail: <error message if FAIL>
 ADVERSARIAL_RESULTS_END
 ```
 
-## タイムアウト
+## Timeout
 
-600秒。タイムアウト時: adversarial testingスキップ、理由をレポートに記録。
+600 秒。タイムアウト時は adversarial testing をスキップし、理由をレポートに記録する。
 
-## 結果パース
+## Result Parsing
 
-`ADVERSARIAL_RESULTS_START` 〜 `ADVERSARIAL_RESULTS_END` 間の出力をパースする。
+`ADVERSARIAL_RESULTS_START` と `ADVERSARIAL_RESULTS_END` の間の出力を parse する。
 
-| フィールド     | 抽出元         |
-| -------------- | -------------- |
-| test_name      | 結果ブロック   |
-| target         | file:line      |
-| assertion      | 結果ブロック   |
-| result         | PASS / FAIL    |
-| failure_detail | FAILの場合のみ |
+| Field          | ソース        |
+| -------------- | ------------- |
+| test_name      | results block |
+| target         | file:line     |
+| assertion      | results block |
+| result         | PASS / FAIL   |
+| failure_detail | FAIL のみ     |
 
-| result | アクション              |
-| ------ | ----------------------- |
-| PASS   | survival rateにカウント |
-| FAIL   | intent assertionキューへ |
+| result | アクション                        |
+| ------ | --------------------------------- |
+| PASS   | survival rate にカウント          |
+| FAIL   | intent assertion のキューに入れる |
 
-結果ブロック未検出時はテスト生成0件（adversarialスコア = 15、中立）。
+results block がない場合: 0 テストとして扱う。Adversarial 列は Evidence 表で `skipped` を表示し、ゲートをブロックしない。
 
-## Intent Assertion（Phase 2.5 — オーケストレーター）
+## Intent Assertion (Phase 3: Orchestrator)
 
-以下のステップはCodexではなくオーケストレーター（Claude Code）が実行する。
-オーケストレーターが各失敗adversarialテストをトリアージする。
+以下のステップは Codex ではなく orchestrator (Claude Code) が実行する。
+Phase 2a 戻り後、orchestrator が adversarial test の失敗を逐次トリアージする。
 
-### トリアージ手順
+### Triage Steps
 
-| Step | アクション                                       |
-| ---- | ------------------------------------------------ |
-| 1    | 失敗したassertionの説明を読む                    |
-| 2    | 対象コードを読む（file:line ± 30行コンテキスト） |
-| 3    | intentドキュメントを検索（下記Intentソース参照） |
-| 4    | verdictルールを適用                              |
+| Step | アクション                                          |
+| ---- | --------------------------------------------------- |
+| 1    | 失敗 assertion の説明を読む                         |
+| 2    | 対象コードを読む (file:line ± 30 行のコンテキスト) |
+| 3    | intent ドキュメントを探す (下記 Intent Sources)     |
+| 4    | 判定ルールを適用                                    |
 
-### Intentソース（確認順序）
+### Intent Sources (上から順に確認)
 
-| ソース         | 検索パターン                                    |
-| -------------- | ----------------------------------------------- |
-| コードコメント | 対象コードの前後10行のコメント                  |
-| 関数docstring  | JSDoc, rustdoc, 対象関数のdocstring             |
-| Spec           | SKILL.mdまたはCLAUDE.mdで参照されているSOW/Spec |
-| README         | プロジェクトルートのREADME.md                   |
-| テスト名       | 同じ関数の既存テストの説明                      |
+| Source             | 検索パターン                                        |
+| ------------------ | --------------------------------------------------- |
+| Code comments      | 対象コードの前後 10 行以内のコメント                |
+| Function docstring | 対象関数の JSDoc, rustdoc, docstring                |
+| Spec               | SKILL.md または CLAUDE.md で参照されている SOW/Spec |
+| README             | プロジェクトルートの README.md                      |
+| Test names         | 同じ関数の既存テスト名                              |
 
-### Verdictルール
+### Verdict Rules
 
-| 条件                                 | Verdict | Confidence |
-| ------------------------------------ | ------- | ---------- |
-| Intentソースがテスト期待値と矛盾     | exclude | —          |
-| Intentソースがテストの正しさを裏付け | promote | 0.85+      |
-| Intentソースなし、明らかにバグ       | promote | 0.80       |
-| Intentソースなし、挙動が曖昧         | promote | 0.70       |
+| 条件                                                       | 判定    |
+| ---------------------------------------------------------- | ------- |
+| Intent source がテスト期待を否定                           | exclude |
+| それ以外 (source 見つからず、または source がテストを支持) | promote |
 
-### 除外ログ
+### Exclusion Logging
 
 ```markdown
-### 除外されたAdversarialテスト
+### Excluded Adversarial Tests
 
-| # | テスト | 理由 |
-| 1 | test_null_throws | テストが誤った期待値をエンコード — 関数はnull返却が設計意図（42行目コメント）|
+| # | Test             | Reason                                                                            |
+| 1 | test_null_throws | test encodes wrong expectation. Function returns null by design (line 42 comment) |
 ```
 
-## メトリクス
+## Metrics
 
-| メトリクス      | 計算式                            | 用途             |
-| --------------- | --------------------------------- | ---------------- |
-| survival_rate   | passed / (passed + promoted_fail) | Evidence テーブル（情報）|
-| exclusion_rate  | excluded / total_fail             | レポート（参考） |
-| generation_rate | total_tests / scoped_files        | レポート（参考） |
+| Metric          | 計算式                            | 用途                   |
+| --------------- | --------------------------------- | ---------------------- |
+| survival_rate   | passed / (passed + promoted_fail) | Evidence 表 (参考情報) |
+| exclusion_rate  | excluded / total_fail             | レポート (info)        |
+| generation_rate | total_tests / scoped_files        | レポート (info)        |

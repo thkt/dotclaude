@@ -162,11 +162,11 @@ Rollback Steps:
 ## Related ADRs
 
 - [ADR 0004: スキル中心アーキテクチャへの再構成](0004-skill-centric-architecture-restructuring.md)
-  — skill/command 分離の根幹。本 ADR は skill 内部の構造統一を扱う
+  - skill/command 分離の根幹。本 ADR は skill 内部の構造統一を扱う
 - [ADR 0042: Colocate Skill-Specific Scripts Within Skill Directory](0042-colocate-skill-specific-scripts-within-skill.md)
-  — skill 内ファイル配置の一貫性
+  - skill 内ファイル配置の一貫性
 - [ADR 0046: Colocate audit templates under skills/audit/references](0046-colocate-audit-templates-in-skill-references.md)
-  — 同じく「skill 単位の自己完結」原則
+  - 同じく「skill 単位の自己完結」原則
 
 ---
 

@@ -27,12 +27,12 @@ user-invocable: false
 
 ## When to Use
 
-| use-cli-yomu                                 | Grep / Glob                             |
-| ---------------------------------------- | --------------------------------------- |
-| Concept: "form validation", "auth flow"  | Literal string or regex                 |
-| Related: "hooks that do Y"               | Known path: `src/components/Button.tsx` |
-| Unknown identifier: "where does X happen"| File glob: `**/*.tsx`                   |
-| TS/JSX/CSS/HTML/Rust/Markdown            | Swift / Python / Go / other             |
+| use-cli-yomu                              | Grep / Glob                             |
+| ----------------------------------------- | --------------------------------------- |
+| Concept: "form validation", "auth flow"   | Literal string or regex                 |
+| Related: "hooks that do Y"                | Known path: `src/components/Button.tsx` |
+| Unknown identifier: "where does X happen" | File glob: `**/*.tsx`                   |
+| TS/JSX/CSS/HTML/Rust/Markdown             | Swift / Python / Go / other             |
 
 ## Prerequisite
 
