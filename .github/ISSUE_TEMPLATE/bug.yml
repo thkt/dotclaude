@@ -1,0 +1,36 @@
+name: Bug report
+description: File a bug report
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this?
+      options:
+        - high
+        - medium
+        - low
+      default: 1
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug
+      placeholder: "When I did X, Y happened instead of Z"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How can someone reproduce the issue?
+      placeholder: "1. ...\n2. ...\n3. ..."
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, version, relevant runtime info
