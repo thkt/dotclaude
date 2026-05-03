@@ -1,7 +1,7 @@
 ---
 name: reviewer-coverage
 description: Test coverage quality review. Behavioral gaps and test robustness.
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-workflow-tdd-cycle]
 memory: project

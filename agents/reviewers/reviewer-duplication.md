@@ -1,7 +1,7 @@
 ---
 name: reviewer-duplication
 description: Cross-file code duplication detection. DRY analysis specialist.
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true
@@ -47,7 +47,7 @@ This reviewer uses 2+ as the unified threshold. Rule of Three from `rules/PRINCI
 ## Comparison Strategy
 
 1. Read target files and extract function/block signatures and key patterns
-2. Grep/Glob the broader codebase (same file types) for each extracted pattern. Scan up to 100 files per file type (priority same directory > imports > alphabetical)
+2. ugrep/bfs the broader codebase (same file types) for each extracted pattern. Scan up to 100 files per file type (priority same directory > imports > alphabetical)
 3. Cross-compare signatures across target files AND codebase matches
 4. For near-duplicates, normalize variable names before comparison. Similarity threshold: >=70% normalized token overlap
 5. Report clusters (group of locations sharing the same pattern)

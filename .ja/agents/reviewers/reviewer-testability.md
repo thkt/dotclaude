@@ -1,7 +1,7 @@
 ---
 name: reviewer-testability
 description: テスト容易性のあるコード設計レビュー。テストに敵対的なパターンを特定する。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-testability, use-workflow-tdd-cycle]
 memory: project

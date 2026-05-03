@@ -1,7 +1,7 @@
 ---
 name: reviewer-duplication
 description: クロスファイルなコード重複検出。DRY 解析の専門。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true
@@ -47,7 +47,7 @@ background: true
 ## 比較ストラテジ
 
 1. 対象ファイルを読み、関数/ブロック シグネチャと主要パターンを抽出する
-2. 抽出した各パターンについて、より広いコードベース (同じファイル種) を Grep/Glob する。ファイル種ごとに 100 ファイルまでスキャン (優先度: 同じディレクトリ > import > アルファベット順)
+2. 抽出した各パターンについて、より広いコードベース (同じファイル種) を ugrep/bfs する。ファイル種ごとに 100 ファイルまでスキャン (優先度: 同じディレクトリ > import > アルファベット順)
 3. 対象ファイル間と、コードベースの一致箇所のシグネチャをクロス比較する
 4. 近似重複の場合は比較前に変数名を正規化する。類似度閾値: 正規化トークン重複 70% 以上
 5. クラスタ (同じパターンを共有する場所のグループ) を報告する

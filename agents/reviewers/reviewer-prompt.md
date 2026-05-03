@@ -1,7 +1,7 @@
 ---
 name: reviewer-prompt
 description: LLM prompt file quality review. Token efficiency, structure, format, clarity.
-tools: Read, Grep, Glob, LS
+tools: Read, LS, Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: feedback
 background: true

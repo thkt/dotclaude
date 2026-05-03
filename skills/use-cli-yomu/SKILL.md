@@ -27,7 +27,7 @@ user-invocable: false
 
 ## When to Use
 
-| use-cli-yomu                              | Grep / Glob                             |
+| use-cli-yomu                              | ugrep / bfs                             |
 | ----------------------------------------- | --------------------------------------- |
 | Concept: "form validation", "auth flow"   | Literal string or regex                 |
 | Related: "hooks that do Y"                | Known path: `src/components/Button.tsx` |

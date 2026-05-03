@@ -45,7 +45,7 @@ Skip silently if no intent source is available at all.
 
 | Check               | Method                                       |
 | ------------------- | -------------------------------------------- |
-| Import dependents   | Grep for imports of changed files/exports    |
+| Import dependents   | ugrep for imports of changed files/exports   |
 | Interface contracts | Verify unchanged function signatures         |
 | Shared state        | Check global/module state mutations          |
 | Test coverage       | Existing tests still valid for changed paths |

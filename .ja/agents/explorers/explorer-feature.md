@@ -1,7 +1,7 @@
 ---
 name: explorer-feature
 description: 実行パスを追跡し、アーキテクチャをマップし、パターンを文書化することでコードベースの機能を分析する。
-tools: Glob, Grep, LS, Read, SendMessage
+tools: LS, Read, SendMessage, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 ---
@@ -32,11 +32,11 @@ memory: project
 
 ## Analysis Approach
 
-Glob と LS でプロジェクト構造とエントリポイントを発見する。Grep で主要エクスポートと API パターンを探す。フェーズを順に歩く。
+bfs と LS でプロジェクト構造とエントリポイントを発見する。ugrep で主要エクスポートと API パターンを探す。フェーズを順に歩く。
 
 | Phase        | Focus                                         | Output                  | On dead-end                                                           |
 | ------------ | --------------------------------------------- | ----------------------- | --------------------------------------------------------------------- |
-| Seed Context | Glob/LS でプロジェクト構造 + エントリポイント | 既知構造 + API          | 空リポジトリ、注記して中止                                            |
+| Seed Context | bfs/LS でプロジェクト構造 + エントリポイント | 既知構造 + API          | 空リポジトリ、注記して中止                                            |
 | Discovery    | エントリポイント、コアファイル、境界          | API/UI/CLI エントリ一覧 | エントリポイント未発見、glob ルートを広げる                           |
 | Flow Tracing | 呼び出しチェーン、データ変換、依存関係        | 実行シーケンス          | 境界でチェーンが切れる、「unknown, requires reading X」と注記して続行 |
 | Architecture | 層、パターン、インターフェース                | 設計マップ              | 明確なパターンなし、観察された構造をそのまま文書化                    |

@@ -2,7 +2,7 @@
 name: challenge
 description: Challenge proposals, designs, plans, or analyses with devil's advocate. Do NOT use for code review findings (use /audit) or outcome assertion (use /assert which has built-in adversarial testing).
 when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し
-allowed-tools: Read Glob Grep LS Task
+allowed-tools: Read LS Task Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[proposal file | description]"
 ---

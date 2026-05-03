@@ -2,7 +2,7 @@
 name: use-context-reviewer-performance
 description: Frontend performance optimization.
 when_to_use: performance, Web Vitals, LCP, FID, CLS, パフォーマンス最適化, 速度改善, bundle size
-allowed-tools: Read Grep Glob Task Bash(agent-browser:*) mcp__mdn__*
+allowed-tools: Read Task Bash(agent-browser:*) mcp__mdn__* Bash(ugrep:*) Bash(bfs:*)
 agent: reviewer-performance
 context: fork
 user-invocable: false

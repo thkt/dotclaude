@@ -2,7 +2,7 @@
 name: preview
 description: PR への AI スクリーニングレビュー。人間レビュー前の予備チェック。深い multi-reviewer コード品質監査には使わない (/audit を使う)。
 when_to_use: スクリーニング, PRレビュー, プレビュー, preview PR, pre-review
-allowed-tools: Bash(git:*) Bash(gh:*) Read Grep Glob AskUserQuestion
+allowed-tools: Bash(git:*) Bash(gh:*) Read AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[PR URL or number]"
 ---

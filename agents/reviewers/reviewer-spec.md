@@ -1,7 +1,7 @@
 ---
 name: reviewer-spec
 description: Binary Ready/NotReady gate for SOW/Spec. Implementability probe + findings with P0/P1/P2 and concrete Fix examples.
-tools: Read, Grep, Glob, LS
+tools: Read, LS, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-workflow-spec-validation]
 memory: project

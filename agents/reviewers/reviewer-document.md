@@ -1,7 +1,7 @@
 ---
 name: reviewer-document
 description: Technical documentation review for quality, clarity, structure.
-tools: Read, Grep, Glob, LS
+tools: Read, LS, Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true

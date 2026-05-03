@@ -2,7 +2,7 @@
 name: polish
 description: 軽量レビュー + クリーンアップ。任意で Codex + CodeRabbit クロスチェック、slop 除去、テスト監査を行う。深い multi-reviewer 監査には使わない (/audit を使う)。
 when_to_use: 整理して, きれいにして, コード整理, slop除去, ポリッシュ, テスト整理, テスト監査, クロスチェック, crosscheck, Codex レビュー, CodeRabbit
-allowed-tools: Bash(codex:*) Bash(coderabbit:*) Bash(git diff:*) Bash(git log:*) Bash(git stash:*) Bash(git status:*) Bash(cargo test:*) Bash(npm test:*) Bash(npm run test:*) Bash(bun test:*) Bash(pnpm test:*) Bash(yarn test:*) Bash(make test:*) Bash(which:*) Read Edit Grep Glob LS Skill Task AskUserQuestion
+allowed-tools: Bash(codex:*) Bash(coderabbit:*) Bash(git diff:*) Bash(git log:*) Bash(git stash:*) Bash(git status:*) Bash(cargo test:*) Bash(npm test:*) Bash(npm run test:*) Bash(bun test:*) Bash(pnpm test:*) Bash(yarn test:*) Bash(make test:*) Bash(which:*) Read Edit LS Skill Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[target scope]"
 ---

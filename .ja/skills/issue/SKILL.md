@@ -3,7 +3,7 @@ name: issue
 description: 構造化されたタイトルと本文で GitHub Issue を生成する。
 when_to_use: Issue作って, Issue書いて, Issue作成, GitHub Issue
 allowed-tools: Bash(gh:*) Bash(cat:*) Bash(mv:*) Read AskUserQuestion
-model: sonnet
+model: opus
 argument-hint: "[issue description]"
 ---
 

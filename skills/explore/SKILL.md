@@ -1,6 +1,6 @@
 ---
 name: explore
-description: Explore codebase structure via iterative SQL queries against yomu's indexed SQLite DB. Do NOT use for concept/semantic search (use use-cli-yomu) or literal string search (use Grep).
+description: Explore codebase structure via iterative SQL queries against yomu's indexed SQLite DB. Do NOT use for concept/semantic search (use use-cli-yomu) or literal string search (use ugrep).
 when_to_use: どこで使われてる, どのファイルが依存してる, 呼び出し元, 参照してるファイル, import元, 循環依存, 依存チェーン, who calls, what depends on, which files use, callers, callees, dependency chain, files importing a symbol
 allowed-tools: Bash(sqlite3:*) Bash(git:*) Bash(yomu:*)
 argument-hint: "[natural language question about codebase structure]"
@@ -12,11 +12,11 @@ argument-hint: "[natural language question about codebase structure]"
 
 Run `yomu status` first and read the counts.
 
-| State             | Action                                                              |
-| ----------------- | ------------------------------------------------------------------- |
-| Index missing     | Tell user to run `yomu rebuild` (full), then re-invoke              |
-| Stale after edits | Tell user to run `yomu index` (incremental), then re-invoke         |
-| References: 0     | caller/import 系クエリは空。`use-cli-yomu` か Grep にフォールバック |
+| State             | Action                                                               |
+| ----------------- | -------------------------------------------------------------------- |
+| Index missing     | Tell user to run `yomu rebuild` (full), then re-invoke               |
+| Stale after edits | Tell user to run `yomu index` (incremental), then re-invoke          |
+| References: 0     | caller/import 系クエリは空。`use-cli-yomu` か ugrep にフォールバック |
 
 DB path: `<project_root>/.yomu/index.db` (`git rev-parse --show-toplevel`). If not a git repo, ask user for the DB path.
 
@@ -61,7 +61,7 @@ Do not query `vec_chunks` (requires sqlite-vec extension; semantic search belong
 | File X の依存を網羅したい                          | `yomu impact <file>`       |
 | File X の依存を ref_kind 別に集計・JOIN したい     | explore (ad-hoc SQL)       |
 | 概念「認証フロー」で関連コードを探す               | use-cli-yomu (semantic)    |
-| リテラル文字列 / 正規表現で grep                   | Grep                       |
+| リテラル文字列 / 正規表現で grep                   | ugrep                      |
 | chunks の content にキーワードが含まれるか全文検索 | explore (fts_chunks MATCH) |
 
 ## Query Archetypes

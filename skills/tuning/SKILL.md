@@ -2,7 +2,7 @@
 name: tuning
 description: Empirical prompt tuning loop. Dispatch fresh subagents against skill/agent/command prompts, collect ambiguities, patch one at a time.
 when_to_use: skill チューニング, agent チューニング, command チューニング, プロンプト再現性, empirical prompt tuning, 暗黙知排除, 再現性テスト
-allowed-tools: Read Edit Write Grep Glob Task
+allowed-tools: Read Edit Write Task Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[target-path]"
 ---

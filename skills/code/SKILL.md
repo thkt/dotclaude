@@ -2,7 +2,7 @@
 name: code
 description: Implement code following TDD/RGRC cycle with real-time test feedback. Do NOT use for small bug fixes or error resolution (use /fix instead).
 when_to_use: 実装して, コード書いて, implement, coding
-allowed-tools: Bash(npm run) Bash(npm run:*) Bash(yarn run) Bash(yarn run:*) Bash(yarn:*) Bash(pnpm run) Bash(pnpm run:*) Bash(pnpm:*) Bash(bun run) Bash(bun run:*) Bash(bun:*) Bash(cargo:*) Bash(make:*) Bash(git status:*) Bash(git log:*) Bash(which:*) Edit MultiEdit Write Read Glob Grep LS Task AskUserQuestion
+allowed-tools: Bash(npm run) Bash(npm run:*) Bash(yarn run) Bash(yarn run:*) Bash(yarn:*) Bash(pnpm run) Bash(pnpm run:*) Bash(pnpm:*) Bash(bun run) Bash(bun run:*) Bash(bun:*) Bash(cargo:*) Bash(make:*) Bash(git status:*) Bash(git log:*) Bash(which:*) Edit MultiEdit Write Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[implementation description] [--no-storybook]"
 ---
@@ -135,7 +135,7 @@ All must pass, evaluated in order, skip on first fail.
 
 | #   | Check                               | How                                       | On fail         |
 | --- | ----------------------------------- | ----------------------------------------- | --------------- |
-| 1   | Spec has `Type: e2e` scenarios      | Grep Spec Test Scenarios table            | skip (silent)   |
+| 1   | Spec has `Type: e2e` scenarios      | ugrep Spec Test Scenarios table           | skip (silent)   |
 | 2   | agent-browser installed             | `which agent-browser`                     | skip + advisory |
 | 3   | Dev server detected in package.json | Match `dev`, `start:dev`, `start` scripts | skip + advisory |
 | 4   | Dev server running (user confirms)  | AskUserQuestion: "Dev server at {url}?"   | skip + advisory |

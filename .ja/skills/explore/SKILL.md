@@ -1,6 +1,6 @@
 ---
 name: explore
-description: yomu がインデックス化した SQLite DB に対する反復 SQL クエリでコードベース構造を探索する。概念やセマンティック検索には使わない (use-cli-yomu を使う)。リテラル文字列検索にも使わない (Grep を使う)。
+description: yomu がインデックス化した SQLite DB に対する反復 SQL クエリでコードベース構造を探索する。概念やセマンティック検索には使わない (use-cli-yomu を使う)。リテラル文字列検索にも使わない (ugrep を使う)。
 when_to_use: どこで使われてる, どのファイルが依存してる, 呼び出し元, 参照してるファイル, import元, 循環依存, 依存チェーン, who calls, what depends on, which files use, callers, callees, dependency chain, files importing a symbol
 allowed-tools: Bash(sqlite3:*) Bash(git:*) Bash(yomu:*)
 argument-hint: "[natural language question about codebase structure]"
@@ -16,7 +16,7 @@ argument-hint: "[natural language question about codebase structure]"
 | -------------- | ------------------------------------------------------------------- |
 | Index missing  | `yomu rebuild` (full) を促してから再度呼び出す                      |
 | 編集後で stale | `yomu index` (incremental) を促してから再度呼び出す                 |
-| References: 0  | caller/import 系クエリは空。`use-cli-yomu` か Grep にフォールバック |
+| References: 0  | caller/import 系クエリは空。`use-cli-yomu` か ugrep にフォールバック |
 
 DB パス: `<project_root>/.yomu/index.db` (`git rev-parse --show-toplevel`)。Git リポジトリでない場合はユーザーに DB パスを尋ねる。
 
@@ -61,7 +61,7 @@ fts_chunks (name, content, file_path)
 | File X の依存を網羅したい                          | `yomu impact <file>`       |
 | File X の依存を ref_kind 別に集計・JOIN したい     | explore (ad-hoc SQL)       |
 | 概念「認証フロー」で関連コードを探す               | use-cli-yomu (semantic)    |
-| リテラル文字列 / 正規表現で grep                   | Grep                       |
+| リテラル文字列 / 正規表現で grep                   | ugrep                       |
 | chunks の content にキーワードが含まれるか全文検索 | explore (fts_chunks MATCH) |
 
 ## クエリの定型

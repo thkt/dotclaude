@@ -1,7 +1,7 @@
 ---
 name: reviewer-coverage
 description: テストカバレッジ品質レビュー。振る舞いの欠落とテストの堅牢性を見る。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-workflow-tdd-cycle]
 memory: project

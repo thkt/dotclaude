@@ -1,7 +1,7 @@
 ---
 name: reviewer-accessibility
 description: WCAG 2.2 compliance review.
-tools: Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*
+tools: Read, LS, Bash(agent-browser:*), mcp__mdn__*, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [a11y-specialist-skills:reviewing-a11y]
 memory: project

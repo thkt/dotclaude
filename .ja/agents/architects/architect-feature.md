@@ -1,7 +1,7 @@
 ---
 name: architect-feature
 description: /swarm の並列実装に向けた機能アーキテクチャを構築する。コードベース探索の結果をブループリント、契約、並列ユニットに統合する。
-tools: Bash, Glob, Grep, LS, Read, SendMessage
+tools: Bash, LS, Read, SendMessage
 model: opus
 skills: [use-cli-yomu]
 memory: project
@@ -38,8 +38,8 @@ memory: project
 
 | Step | Action                                               | Output                          | On dead-end                             |
 | ---- | ---------------------------------------------------- | ------------------------------- | --------------------------------------- |
-| 1    | Seed Context (Glob/LS/Grep で構造を把握)             | 既知パターン + API コンフリクト | 空リポジトリ、注記して中止              |
-| 2    | Exploration (yomu で 3-5 のセマンティッククエリ)     | ソース付き洞察                  | yomu 利用不可、Grep にフォールバック    |
+| 1    | Seed Context (bfs/LS/ugrep で構造を把握)             | 既知パターン + API コンフリクト | 空リポジトリ、注記して中止              |
+| 2    | Exploration (yomu で 3-5 のセマンティッククエリ)     | ソース付き洞察                  | yomu 利用不可、ugrep にフォールバック    |
 | 3    | Pattern Analysis (規約抽出、file:line に追跡)        | パターン表                      | パターン未発見、Greenfield として記録   |
 | 4    | Compose (制約からブループリントへ、独立性ファースト) | 構築されたアーキテクチャ        | 制約コンフリクト、Leader にエスカレート |
 | 5    | Verify (推論項目を読み、不明点を埋める)              | ソース付きの検証済み発見        | 検証不可、「unknown, requires X」と注記 |
@@ -49,7 +49,7 @@ memory: project
 
 | Aspect | Detail                                                                     |
 | ------ | -------------------------------------------------------------------------- |
-| Tool   | Glob, LS, Grep                                                             |
+| Tool   | bfs, LS, ugrep                                                             |
 | Action | プロジェクト構造、エントリポイント、API エンドポイント、命名規約を発見する |
 | Output | 既知パターン + API コンフリクト一覧 (検出された場合)                       |
 
@@ -59,7 +59,7 @@ memory: project
 | -------- | ---------------------------------------------------------------------------------- |
 | Strategy | タスク記述から 3-5 のセマンティッククエリ、広い範囲から焦点へ                      |
 | Tool     | yomu (注入された `use-cli-yomu` スキル経由のコマンド)                              |
-| Fallback | yomu 利用不可または空のとき Glob, Grep, Read                                       |
+| Fallback | yomu 利用不可または空のとき bfs, ugrep, Read                                       |
 | Output   | コードベースの洞察。事実は file:line、推論は基準を明示、不明点は検証パスを明示する |
 
 ### Step 3: Pattern Analysis

@@ -1,7 +1,7 @@
 ---
 name: critic-evidence
 description: Verify audit findings by tracing concrete execution paths. Verifier role complementing critic-audit (challenger).
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-cli-yomu]
 memory: project
@@ -43,7 +43,7 @@ Pick the check that matches the finding category. The verification_hint may name
 | Check             | When to use                                    | Action                                                                    |
 | ----------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
 | execution_trace   | Untrusted input flows to dangerous sink        | Trace from entry_points to finding location. Check sanitize/validate pass |
-| call_site_check   | API boundary, public function with constraints | Find all call sites via Grep. Identify problematic argument patterns      |
+| call_site_check   | API boundary, public function with constraints | Find all call sites via ugrep. Identify problematic argument patterns     |
 | error_propagation | Catch, promise, or unhandled rejection         | Trace from catch upward. Check if error surfaces to user or log           |
 | hotpath_analysis  | Performance, memory, or frequency-sensitive    | Check if location is in loop, request handler, or frequently called path  |
 | pattern_search    | Default when finding describes a code shape    | Search codebase for same pattern. Assess scope of the issue               |

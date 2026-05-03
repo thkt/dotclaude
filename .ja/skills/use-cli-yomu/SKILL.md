@@ -27,7 +27,7 @@ user-invocable: false
 
 ## 使用判断
 
-| use-cli-yomu                         | Grep / Glob                           |
+| use-cli-yomu                         | ugrep / bfs                           |
 | ------------------------------------ | ------------------------------------- |
 | 概念: "form validation", "auth flow" | リテラル文字列または regex            |
 | 関連: "hooks that do Y"              | 既知パス: `src/components/Button.tsx` |

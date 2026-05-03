@@ -1,7 +1,7 @@
 ---
 name: critic-audit
 description: 監査の発見事項に異議を唱え、誤検知を減らす。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-cli-yomu]
 memory: project

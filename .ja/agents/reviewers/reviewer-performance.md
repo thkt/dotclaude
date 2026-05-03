@@ -1,7 +1,7 @@
 ---
 name: reviewer-performance
 description: React レンダリング、バンドル サイズ、実行時パフォーマンスのレビュー。
-tools: Read, Grep, Glob, LS, Bash(agent-browser:*), mcp__mdn__*
+tools: Read, LS, Bash(agent-browser:*), mcp__mdn__*, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-performance]
 memory: project

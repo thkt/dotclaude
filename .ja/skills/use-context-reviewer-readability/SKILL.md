@@ -2,7 +2,7 @@
 name: use-context-reviewer-readability
 description: コードの可読性レビュー。セキュリティは use-context-reviewer-security、型エラーは use-context-reviewer-strictness、エラーハンドリングは use-context-reviewer-silence、テスト設計は use-context-reviewer-testability に使う。
 when_to_use: 可読性, 明確, 命名, 変数名, 関数名, ネスト, 関数設計, コメント, 複雑, Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計
-allowed-tools: Read Grep Glob Task
+allowed-tools: Read Task Bash(ugrep:*) Bash(bfs:*)
 agent: reviewer-readability
 context: fork
 user-invocable: false

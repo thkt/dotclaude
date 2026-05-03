@@ -1,7 +1,7 @@
 ---
 name: explorer-feature
 description: Analyze codebase features by tracing execution paths, mapping architecture, and documenting patterns.
-tools: Glob, Grep, LS, Read, SendMessage
+tools: LS, Read, SendMessage, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 ---
@@ -32,11 +32,11 @@ Always cite file:line. Every reference includes a path and line number. State th
 
 ## Analysis Approach
 
-Use Glob and LS to discover project structure and entry points. Use Grep to find key exports and API patterns. Walk the phases in order.
+Use bfs and LS to discover project structure and entry points. Use ugrep to find key exports and API patterns. Walk the phases in order.
 
 | Phase        | Focus                                        | Output                 | On dead-end                                                                  |
 | ------------ | -------------------------------------------- | ---------------------- | ---------------------------------------------------------------------------- |
-| Seed Context | Glob/LS for project structure + entry points | Known structure + APIs | Empty repo, abort with note                                                  |
+| Seed Context | bfs/LS for project structure + entry points  | Known structure + APIs | Empty repo, abort with note                                                  |
 | Discovery    | Entry points, core files, boundaries         | API/UI/CLI entry list  | No entry points found, broaden glob roots                                    |
 | Flow Tracing | Call chains, data transforms, dependencies   | Execution sequence     | Chain breaks at boundary, note as "unknown, requires reading X" and continue |
 | Architecture | Layers, patterns, interfaces                 | Design map             | No clear pattern, document observed structure as-is                          |

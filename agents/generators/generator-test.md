@@ -1,7 +1,7 @@
 ---
 name: generator-test
 description: Generate tests from Spec Test Scenarios. Does not implement code.
-tools: Read, Write, Edit, Grep, Glob, LS
+tools: Read, Write, Edit, LS, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-workflow-tdd-cycle]
 ---

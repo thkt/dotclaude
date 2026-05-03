@@ -1,7 +1,7 @@
 ---
 name: reviewer-readability
 description: Code quality review. Structure and readability analysis.
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-readability]
 memory: project

@@ -1,7 +1,7 @@
 ---
 name: reviewer-operations
 description: Operational readiness review. Error boundaries, loading states, logging, performance budgets.
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true

@@ -1,7 +1,7 @@
 ---
 name: reviewer-testability
 description: Testable code design review. Identify test-hostile patterns.
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-testability, use-workflow-tdd-cycle]
 memory: project

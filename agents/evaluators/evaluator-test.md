@@ -1,7 +1,7 @@
 ---
 name: evaluator-test
 description: Score test quality against Spec T-NNN scenarios. Outputs 5 raw metrics and findings.
-tools: Read, Grep, Glob, LS
+tools: Read, LS, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 ---
 

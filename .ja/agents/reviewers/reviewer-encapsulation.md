@@ -1,7 +1,7 @@
 ---
 name: reviewer-encapsulation
 description: 型設計品質のレビュー。カプセル化、不変条件、強制。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true

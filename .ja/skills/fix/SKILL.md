@@ -2,7 +2,7 @@
 name: fix
 description: 開発環境で小さなバグや軽微な改善を素早く修正する。新機能実装や大規模変更には使わない (/code を使う)。
 when_to_use: バグ修正, 直して, 修正して, fix bug, 不具合
-allowed-tools: Bash(git diff:*) Bash(git ls-files:*) Bash(npm test:*) Bash(npm run) Bash(npm run:*) Bash(yarn run:*) Bash(pnpm run:*) Bash(bun run:*) Edit MultiEdit Read Grep Glob LS Task AskUserQuestion Skill
+allowed-tools: Bash(git diff:*) Bash(git ls-files:*) Bash(npm test:*) Bash(npm run) Bash(npm run:*) Bash(yarn run:*) Bash(pnpm run:*) Bash(bun run:*) Edit MultiEdit Read LS Task AskUserQuestion Skill Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[bug or issue description]"
 ---

@@ -3,7 +3,7 @@ name: issue
 description: Generate GitHub Issue with structured title and body.
 when_to_use: Issue作って, Issue書いて, Issue作成, GitHub Issue
 allowed-tools: Bash(gh:*) Bash(cat:*) Bash(mv:*) Read AskUserQuestion
-model: sonnet
+model: opus
 argument-hint: "[issue description]"
 ---
 

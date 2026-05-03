@@ -2,7 +2,7 @@
 name: audit
 description: コード品質評価のため、専門 reviewer エージェント群をオーケストレーションする。クイック PR スクリーニングには使わない (/preview を使用)。
 when_to_use: レビューして, コードレビュー, 品質チェック, code review, quality check, review
-allowed-tools: Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git show:*) Bash(date:*) Bash(mkdir:*) Read Write Glob Grep LS Task AskUserQuestion
+allowed-tools: Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git show:*) Bash(date:*) Bash(mkdir:*) Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[target files or scope]"
 ---

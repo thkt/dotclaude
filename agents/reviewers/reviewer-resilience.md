@@ -1,7 +1,7 @@
 ---
 name: reviewer-resilience
 description: Resilience weakness analysis. Maps failure modes, blast radius, and missing safeguards in a codebase. Use when you want to stress-test system assumptions before an incident finds them first.
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true

@@ -153,9 +153,9 @@ Example: "Unused import in 7 files" → 1 finding, severity from worst case
 
 All reviewers apply the following unless overridden in their own definition.
 
-| Error      | Action                                   |
-| ---------- | ---------------------------------------- |
-| Glob empty | Report 0 files found, do not infer clean |
-| Tool error | Log error, skip file, note in summary    |
+| Error             | Action                                   |
+| ----------------- | ---------------------------------------- |
+| bfs returns empty | Report 0 files found, do not infer clean |
+| Tool error        | Log error, skip file, note in summary    |
 
 Domain-specific guards (missing input, unavailable dependency) remain in each reviewer's own `## Error Handling` section.

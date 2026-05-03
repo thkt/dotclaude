@@ -1,7 +1,7 @@
 ---
 name: generator-e2e
 description: Spec の Test Scenarios (Type: e2e) から Playwright E2E テストを生成する。agent-browser 経由で実行中のアプリを駆動する。
-tools: Read, Write, Edit, Grep, Glob, LS, Bash(agent-browser:*)
+tools: Read, Write, Edit, LS, Bash(agent-browser:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 ---
 

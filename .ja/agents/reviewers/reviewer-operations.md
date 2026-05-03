@@ -1,7 +1,7 @@
 ---
 name: reviewer-operations
 description: 運用準備のレビュー。エラー境界、ローディング状態、ロギング、パフォーマンス予算。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true

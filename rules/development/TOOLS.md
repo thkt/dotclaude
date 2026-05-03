@@ -7,8 +7,8 @@ CLI tool > built-in equivalent. WebFetch/WebSearch are hook-routed to the approp
 | Task                                | Use                    | When                          |
 | ----------------------------------- | ---------------------- | ----------------------------- |
 | Concept / identifier / related code | `use-cli-yomu` skill   | TS/JSX/CSS/HTML/Rust/Markdown |
-| Concept / related code              | `Grep` / `Glob`        | Swift / Python / Go / other   |
-| Literal regex / known exact path    | `Grep` / `Glob`        | Any language                  |
+| Concept / related code              | `ugrep` / `bfs` (Bash) | Swift / Python / Go / other   |
+| Literal regex / known exact path    | `ugrep` / `bfs` (Bash) | Any language                  |
 | Past session search                 | `use-cli-recall` skill | Any language                  |
 
 ## Parallel execution

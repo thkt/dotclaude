@@ -2,7 +2,7 @@
 name: use-context-reviewer-strictness
 description: TypeScript の型安全レビュー。テスト容易性 (use-context-reviewer-testability)、セキュリティ (use-context-reviewer-security)、可読性 (use-context-reviewer-readability) には使わない。
 when_to_use: type safety, any, 型安全, 型カバレッジ, strict mode
-allowed-tools: Read Grep Glob Task
+allowed-tools: Read Task Bash(ugrep:*) Bash(bfs:*)
 agent: reviewer-strictness
 context: fork
 user-invocable: false

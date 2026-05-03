@@ -1,7 +1,7 @@
 ---
 name: enhancer-code
 description: 機能を保ったまま、明確性、一貫性、保守性のためにコードを簡略化・洗練する。指示がない限り最近変更されたコードに焦点を当てる。
-tools: Read, Edit, Grep, Glob, LS
+tools: Read, Edit, LS, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-readability]
 memory: project
@@ -86,7 +86,7 @@ memory: project
 
 | Target  | Check before removing                                               |
 | ------- | ------------------------------------------------------------------- |
-| Test    | 同じ関数をカバーする他のテストを Grep。カバーされている場合のみ削除 |
+| Test    | 同じ関数をカバーする他のテストを ugrep。カバーされている場合のみ削除 |
 | Comment | WHY (HOW ではなく) に答えているか? WHY なら残す                     |
 | Helper  | 1 箇所からのみ呼ばれる? インライン化。2 箇所以上? 残す              |
 

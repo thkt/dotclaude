@@ -1,7 +1,7 @@
 ---
 name: reviewer-spec
 description: SOW/Spec の Ready/NotReady バイナリゲート。実装可能性プローブ + P0/P1/P2 と具体的な Fix 例を伴う finding。
-tools: Read, Grep, Glob, LS
+tools: Read, LS, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-workflow-spec-validation]
 memory: project

@@ -2,7 +2,7 @@
 name: use-workflow-code
 description: Workflow orchestration for /code.
 when_to_use: /code ワークフロー, quality gates, 品質ゲート, RGRC サイクル
-allowed-tools: Read Write Grep Glob Task Bash(npm:*) Bash(npx:*) Bash(tsc:*) Bash(bun:*)
+allowed-tools: Read Write Task Bash(npm:*) Bash(npx:*) Bash(tsc:*) Bash(bun:*) Bash(ugrep:*) Bash(bfs:*)
 user-invocable: false
 ---
 

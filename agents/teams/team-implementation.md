@@ -1,7 +1,7 @@
 ---
 name: team-implementation
 description: Implements a work unit using RGRC cycle for assigned files and tests.
-tools: Bash, Edit, Write, Read, Glob, Grep, LS, SendMessage
+tools: Bash, Edit, Write, Read, LS, SendMessage
 model: opus
 skills: [use-workflow-code]
 ---

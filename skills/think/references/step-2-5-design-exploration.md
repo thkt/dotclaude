@@ -20,7 +20,7 @@ Decomposition unit: 1 AC (outcome) = 1 Unit. Each Unit traces to a single accept
 
 ## Step 4: Design Challenge
 
-Spawn `critic-design` agent (background) against the approaches from Step 3. The agent collects its own context via Read/Grep/Glob.
+Spawn `critic-design` agent (background) against the approaches from Step 3. The agent collects its own context via Read/ugrep/bfs.
 
 Present DA results with verdict table + actionable items. Revise approaches based on findings before proceeding to Step 5.
 

@@ -2,7 +2,7 @@
 name: assert
 description: Codex + audit reviewer による独立アウトカムベース assertion。静的 + 動的根拠を統合し Ready / Ready (caveat) / NotReady の三値ゲートを発する。クイックなコードレビューには使わない (/polish を使用)。静的のみの監査にも使わない (/audit を使用)。
 when_to_use: 検証して, assert, 独立検証, outcome assertion, gate decision, adversarial testing
-allowed-tools: Bash(codex:*) Bash(git worktree:*) Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git branch:*) Bash(git ls-files:*) Bash(npm ci:*) Bash(npm run:*) Bash(npm test:*) Bash(cargo:*) Bash(make:*) Bash(bun:*) Bash(pnpm:*) Bash(yarn:*) Bash(which:*) Bash(date:*) Bash(rm:*) Read Write Grep Glob LS Task AskUserQuestion
+allowed-tools: Bash(codex:*) Bash(git worktree:*) Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git branch:*) Bash(git ls-files:*) Bash(npm ci:*) Bash(npm run:*) Bash(npm test:*) Bash(cargo:*) Bash(make:*) Bash(bun:*) Bash(pnpm:*) Bash(yarn:*) Bash(which:*) Bash(date:*) Bash(rm:*) Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[file paths or directory for target mode] [--base <branch>]"
 ---

@@ -2,7 +2,7 @@
 name: tuning
 description: 経験的なプロンプトチューニングループ。skill / agent / コマンドのプロンプトに対して新規 subagent をディスパッチし、曖昧さを集めて 1 つずつ修正する。
 when_to_use: skill チューニング, agent チューニング, command チューニング, プロンプト再現性, empirical prompt tuning, 暗黙知排除, 再現性テスト
-allowed-tools: Read Edit Write Grep Glob Task
+allowed-tools: Read Edit Write Task Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[target-path]"
 ---

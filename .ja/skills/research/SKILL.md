@@ -2,7 +2,7 @@
 name: research
 description: プロジェクトの調査と技術的な探索を実装なしで行う。設計計画や SOW/Spec 生成には使わない (代わりに /think を使う)。
 when_to_use: 調査して, 調べて, リサーチ, investigate, 分析して, issueやろう, issue見て, 横並びチェック, 類似パターン検出, refactor 横展開
-allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(wc:*) Bash(yomu:*) Read Glob Grep LS Task AskUserQuestion
+allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(wc:*) Bash(yomu:*) Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 context: fork
 argument-hint: "[research subject or question]"
@@ -21,15 +21,15 @@ argument-hint: "[research subject or question]"
 
 | Phase | アクション                        | 詳細                                                                                                  |
 | ----- | --------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 0     | 過去調査スキャン                  | `.claude/workspace/research/` で同題ファイルを Glob。発見事項 / 制約を引き継ぐ                        |
+| 0     | 過去調査スキャン                  | `.claude/workspace/research/` で同題ファイルを bfs。発見事項 / 制約を引き継ぐ                        |
 | 1     | 意図 + ドメインの明確化           | AskUserQuestion で問う (`$ARGUMENTS` から自明なら省略)                                                |
-| 2     | ドメインスコープ並列調査          | yomu search + Task(Explore) + 対象を絞った Read/Grep。ドメインでスコープを限定                        |
+| 2     | ドメインスコープ並列調査          | yomu search + Task(Explore) + 対象を絞った Read/ugrep。ドメインでスコープを限定                        |
 | 3     | Strong Inference (Bug の場合のみ) | 仮説 3 つ以上、識別可能なテスト、消去                                                                 |
 | 4     | 統合                              | 過去ベースラインの統合、発見事項に対するソースパス。Phase 3 を省略した場合のみ disconfirmation を実施 |
 
 ### Phase 0: 過去調査スキャン
 
-`$ARGUMENTS` から subject slug (小文字、ハイフン区切り) を導出。`Glob '.claude/workspace/research/*<slug>*.md'` を実行。一致するファイルごとに以下を抽出する。
+`$ARGUMENTS` から subject slug (小文字、ハイフン区切り) を導出。`bfs '.claude/workspace/research/*<slug>*.md'` を実行。一致するファイルごとに以下を抽出する。
 
 | 抽出元               | 引き継ぎ先                                  |
 | -------------------- | ------------------------------------------- |
@@ -58,7 +58,7 @@ argument-hint: "[research subject or question]"
 | -------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------- |
 | `yomu search "<subject + domain keywords>"` (Bash) | 概念のセマンティック検索               | ドメインに沿った語を追加 (例: API → "endpoint route handler") |
 | `Task(subagent_type: Explore)`                     | ファイル / シンボル / 参照の発見       | プロンプトでドメインの glob ルートを渡す                       |
-| Read / Grep / Glob                                 | 特定済みファイルへの的を絞った読み込み | ドメインの glob ルートを起点に使う                             |
+| Read / ugrep / bfs                                 | 特定済みファイルへの的を絞った読み込み | ドメインの glob ルートを起点に使う                             |
 
 ドメインの glob ルート:
 
@@ -101,7 +101,7 @@ Feature planning が意図のときは追加で `Task(subagent_type: explorer-fe
 | エラー                           | アクション                                         |
 | -------------------------------- | -------------------------------------------------- |
 | Explore が空を返す               | より広いキーワードで再実行、発見事項に注記         |
-| yomu search が空を返す           | `yomu rebuild` の実行を提案、Grep にフォールバック |
+| yomu search が空を返す           | `yomu rebuild` の実行を提案、ugrep にフォールバック |
 | Phase 1 後でも意図が不明瞭       | 停止し、曖昧な点を名指ししてユーザーに問う         |
 | ドメインの glob ルートが全て不在 | Domain=General スコープにフォールバック            |
 

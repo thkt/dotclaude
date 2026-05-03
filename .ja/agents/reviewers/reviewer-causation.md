@@ -1,7 +1,7 @@
 ---
 name: reviewer-causation
 description: 5 Whys による根本原因分析。パッチ的な解決策を検出する。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-root-cause-analysis]
 memory: project

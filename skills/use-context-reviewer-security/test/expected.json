@@ -1,0 +1,101 @@
+[
+  {
+    "file": "cases/vuln/sql-injection.ts",
+    "expected": "detected",
+    "category": "A03",
+    "severity_min": "high",
+    "difficulty": "easy",
+    "note": "Template literal in db.query"
+  },
+  {
+    "file": "cases/safe/parameterized-query.ts",
+    "expected": "no_finding",
+    "note": "Placeholder ($1) で渡しているため安全"
+  },
+  {
+    "file": "cases/vuln/dangerous-html.tsx",
+    "expected": "detected",
+    "category": "A03",
+    "severity_min": "high",
+    "difficulty": "easy",
+    "note": "dangerouslySetInnerHTML without sanitizer"
+  },
+  {
+    "file": "cases/safe/sanitized-html.tsx",
+    "expected": "no_finding",
+    "note": "DOMPurify.sanitize() を境界で適用済み"
+  },
+  {
+    "file": "cases/vuln/hardcoded-key.ts",
+    "expected": "detected",
+    "category": "A02",
+    "severity_min": "high",
+    "difficulty": "easy",
+    "note": "Stripe sk_live_ key hardcoded"
+  },
+  {
+    "file": "cases/safe/env-key.ts",
+    "expected": "no_finding",
+    "note": "process.env から読む"
+  },
+  {
+    "file": "cases/cross-file/middleware.ts",
+    "expected": "detected",
+    "category": "A01",
+    "severity_min": "high",
+    "difficulty": "cross-file",
+    "min_findings": 2,
+    "notes": [
+      "matcher gap: /api/admin 配下しか保護されず、analytics-route.ts は素通し",
+      "unsigned cookie role: req.cookies.get('role') を信用しているため任意改ざん可能"
+    ],
+    "pair": "cases/cross-file/analytics-route.ts"
+  },
+  {
+    "file": "cases/hard-vuln/fake-escape.ts",
+    "expected": "detected",
+    "category": "A03",
+    "severity_min": "high",
+    "difficulty": "hard",
+    "note": "シングルクォートのみのエスケープでLIKE述語の中にテンプレートリテラル展開。エスケープ済みに見えるが LIKE ワイルドカード/構文崩しで侵入可能"
+  },
+  {
+    "file": "cases/hard-vuln/indirect-xss.tsx",
+    "expected": "detected",
+    "category": "A03",
+    "severity_min": "high",
+    "difficulty": "hard",
+    "note": "renderHTML ヘルパー経由で dangerouslySetInnerHTML に到達。taint の追跡が必要"
+  },
+  {
+    "file": "cases/hard-vuln/ssrf.ts",
+    "expected": "detected",
+    "category": "A10",
+    "severity_min": "high",
+    "difficulty": "hard",
+    "note": "ユーザー入力 url を fetch にそのまま渡す。ホスト・プロトコル制御可能 (除外ルール A10 'パスのみ制御' に該当しない)"
+  },
+  {
+    "file": "cases/hard-vuln/second-order-injection.ts",
+    "expected": "detected",
+    "category": "A03",
+    "severity_min": "high",
+    "difficulty": "hard",
+    "note": "保存はパラメータ化済みだが、取り出した name をテーブル名としてテンプレートリテラルで埋め込み。second-order injection。listUserOrders 単独では脆弱性が見えにくい"
+  },
+  {
+    "file": "cases/hard-safe/parameterized-like.ts",
+    "expected": "no_finding",
+    "note": "LIKE のワイルドカードもバインド側で結合し、SQL本体には placeholder のみ"
+  },
+  {
+    "file": "cases/hard-safe/wrapped-sanitize.tsx",
+    "expected": "no_finding",
+    "note": "helper safeRender 経由でも DOMPurify.sanitize を境界で適用済み"
+  },
+  {
+    "file": "cases/hard-safe/allowlist-fetch.ts",
+    "expected": "no_finding",
+    "note": "URL parse + protocol/host allowlist 検証後に fetch"
+  }
+]

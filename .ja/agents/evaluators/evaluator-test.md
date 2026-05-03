@@ -1,7 +1,7 @@
 ---
 name: evaluator-test
 description: テストの品質を Spec T-NNN シナリオに対してスコア化する。5 つの生メトリクスと発見事項を出力する。
-tools: Read, Grep, Glob, LS
+tools: Read, LS, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 ---
 

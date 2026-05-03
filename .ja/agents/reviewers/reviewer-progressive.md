@@ -1,7 +1,7 @@
 ---
 name: reviewer-progressive
 description: CSS-first アプローチのレビュー。JS の過剰利用を特定する。
-tools: Read, Grep, Glob, LS, mcp__mdn__*
+tools: Read, LS, mcp__mdn__*, Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true

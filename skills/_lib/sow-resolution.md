@@ -5,7 +5,7 @@
 ## Discovery
 
 1. Check `.claude/workspace/.current-sow` for tracked SOW path
-2. If not found → `Glob(".claude/workspace/planning/*/sow.md")`
+2. If not found → `bfs .claude/workspace/planning -name 'sow.md'`
 3. Select latest by directory name date (`YYYY-MM-DD-*`, newest first)
 4. If 2+ SOWs share the same latest date → AskUserQuestion to select
 5. If found → read SOW + corresponding `spec.md`

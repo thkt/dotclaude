@@ -45,7 +45,7 @@ Out-of-scope: <file or area> - not traceable to stated intent
 
 | チェック            | 方法                                        |
 | ------------------- | ------------------------------------------- |
-| Import dependents   | 変更ファイル/exports の import を grep      |
+| Import dependents   | 変更ファイル/exports の import を ugrep     |
 | Interface contracts | 関数シグネチャが不変か検証                  |
 | Shared state        | グローバル/モジュール状態の mutation を確認 |
 | Test coverage       | 既存テストが変更パスに対し有効か            |

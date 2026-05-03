@@ -2,7 +2,7 @@
 name: use-workflow-spec-validation
 description: SOW/Spec cross-document consistency validation.
 when_to_use: 整合性チェック, consistency check, spec validation, 仕様検証
-allowed-tools: Read Grep Glob
+allowed-tools: Read Bash(ugrep:*) Bash(bfs:*)
 agent: reviewer-spec
 context: fork
 user-invocable: false

@@ -1,7 +1,7 @@
 ---
 name: team-integration
 description: チャレンジと検証の結果を、ドメイン横断の根本原因へ統合する。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-root-cause-analysis]
 ---

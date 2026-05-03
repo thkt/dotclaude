@@ -1,7 +1,7 @@
 ---
 name: reviewer-efficiency
 description: Code efficiency review. Unnecessary work, concurrency, hot-path analysis.
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true

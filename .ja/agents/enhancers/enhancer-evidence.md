@@ -1,7 +1,7 @@
 ---
 name: enhancer-evidence
 description: 静的発見事項、アウトカム根拠、敵対的結果を統合し、根本原因と /assert のためのバイナリ Gate 判定を生成する。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-root-cause-analysis, use-cli-yomu]
 memory: project

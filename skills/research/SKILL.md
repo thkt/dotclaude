@@ -2,7 +2,7 @@
 name: research
 description: Perform project research and technical investigation without implementation. Do NOT use for design planning or SOW/Spec generation (use /think instead).
 when_to_use: 調査して, 調べて, リサーチ, investigate, 分析して, issueやろう, issue見て, 横並びチェック, 類似パターン検出, refactor 横展開
-allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(wc:*) Bash(yomu:*) Read Glob Grep LS Task AskUserQuestion
+allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(wc:*) Bash(yomu:*) Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 context: fork
 argument-hint: "[research subject or question]"
@@ -21,15 +21,15 @@ Investigate codebase with source-based findings, without implementation.
 
 | Phase | Action                               | Detail                                                                                      |
 | ----- | ------------------------------------ | ------------------------------------------------------------------------------------------- |
-| 0     | Prior research scan                  | Glob same-subject files in `.claude/workspace/research/`. Inherit Findings/Constraints      |
+| 0     | Prior research scan                  | bfs same-subject files in `.claude/workspace/research/`. Inherit Findings/Constraints       |
 | 1     | Intent + Domain clarification        | Ask via AskUserQuestion (skip if obvious from `$ARGUMENTS`)                                 |
-| 2     | Domain-scoped parallel investigation | yomu search + Task(Explore) + targeted Read/Grep, scoped by Domain                          |
+| 2     | Domain-scoped parallel investigation | yomu search + Task(Explore) + targeted Read/ugrep, scoped by Domain                         |
 | 3     | Strong Inference (Bug only)          | ≥3 hypotheses, discriminating tests, eliminate                                              |
 | 4     | Synthesis                            | Merge prior baseline, source pass for findings. Disconfirmation only if Phase 3 was skipped |
 
 ### Phase 0: Prior Research Scan
 
-Derive subject slug from `$ARGUMENTS` (lowercase, hyphenated). Run `Glob '.claude/workspace/research/*<slug>*.md'`. For each match:
+Derive subject slug from `$ARGUMENTS` (lowercase, hyphenated). Run `bfs .claude/workspace/research -name '*<slug>*.md'`. For each match:
 
 | Extract                 | Carry forward as                          |
 | ----------------------- | ----------------------------------------- |
@@ -58,7 +58,7 @@ Run in parallel:
 | -------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------ |
 | `yomu search "<subject + domain keywords>"` (Bash) | Semantic concept search             | Append Domain-aligned terms (e.g., API → "endpoint route handler") |
 | `Task(subagent_type: Explore)`                     | File / symbol / reference discovery | Pass Domain glob roots in the prompt                               |
-| Read / Grep / Glob                                 | Targeted reads on identified files  | Use Domain glob roots as starting point                            |
+| Read / ugrep / bfs                                 | Targeted reads on identified files  | Use Domain glob roots as starting point                            |
 
 Domain glob roots:
 
@@ -98,12 +98,12 @@ Skip when intent is Feature planning or Understanding.
 
 ## Error Handling
 
-| Error                         | Action                                             |
-| ----------------------------- | -------------------------------------------------- |
-| Explore returns empty         | Re-run with broader keywords, note in findings     |
-| yomu search returns empty     | Suggest user run `yomu rebuild`, fall back to Grep |
-| Intent unclear after Phase 1  | Stop, name the ambiguity, ask user                 |
-| Domain glob roots all missing | Fall back to Domain=General scoping                |
+| Error                         | Action                                              |
+| ----------------------------- | --------------------------------------------------- |
+| Explore returns empty         | Re-run with broader keywords, note in findings      |
+| yomu search returns empty     | Suggest user run `yomu rebuild`, fall back to ugrep |
+| Intent unclear after Phase 1  | Stop, name the ambiguity, ask user                  |
+| Domain glob roots all missing | Fall back to Domain=General scoping                 |
 
 ## Output
 

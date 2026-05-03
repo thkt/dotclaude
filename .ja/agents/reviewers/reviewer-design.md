@@ -1,7 +1,7 @@
 ---
 name: reviewer-design
 description: React デザインパターンとコンポーネント アーキテクチャのレビュー。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true

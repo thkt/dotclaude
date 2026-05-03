@@ -1,7 +1,7 @@
 ---
 name: enhancer-code
 description: Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise.
-tools: Read, Edit, Grep, Glob, LS
+tools: Read, Edit, LS, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-readability]
 memory: project
@@ -84,11 +84,11 @@ On conflict with a removal target, preservation wins.
 
 ### Verification before removal
 
-| Target  | Check before removing                                                   |
-| ------- | ----------------------------------------------------------------------- |
-| Test    | Grep for other tests covering the same function. Only remove if covered |
-| Comment | Does it answer WHY (not HOW)? If WHY, keep                              |
-| Helper  | Called from exactly 1 site? Inline. 2+ call sites? Keep                 |
+| Target  | Check before removing                                                    |
+| ------- | ------------------------------------------------------------------------ |
+| Test    | ugrep for other tests covering the same function. Only remove if covered |
+| Comment | Does it answer WHY (not HOW)? If WHY, keep                               |
+| Helper  | Called from exactly 1 site? Inline. 2+ call sites? Keep                  |
 
 ## Simplification Rules
 

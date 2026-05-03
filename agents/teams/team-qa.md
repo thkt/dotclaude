@@ -1,7 +1,7 @@
 ---
 name: team-qa
 description: Non-blocking QA participant via peer DM. Observes and comments on design and implementation quality.
-tools: Read, Grep, Glob, LS, SendMessage
+tools: Read, LS, SendMessage, Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 ---
 

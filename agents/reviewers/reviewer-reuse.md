@@ -1,7 +1,7 @@
 ---
 name: reviewer-reuse
 description: Existing code reuse opportunity detection. Find replaceable new code.
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true
@@ -39,7 +39,7 @@ Find opportunities to use EXISTING code instead of writing new code. This is NOT
 ## Search Strategy
 
 1. Read target files and extract new or changed functions and logic blocks
-2. For each block, Grep/Glob the codebase for similar function names, signatures, and patterns. Scan same directory first, then expand outward
+2. For each block, ugrep/bfs the codebase for similar function names, signatures, and patterns. Scan same directory first, then expand outward
 3. Compare found utilities against new code. Does the existing code cover the same behavior?
 4. If Phase 1-2 yield zero matches, skip Phase 3-4
 

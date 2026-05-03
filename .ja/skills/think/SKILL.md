@@ -2,7 +2,7 @@
 name: think
 description: 設計の探索と SOW、Spec の生成。計画意図のないコードベース調査には使わない (代わりに /research を使う)。
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
-allowed-tools: Read Write Glob Grep LS Task TaskCreate TaskList AskUserQuestion
+allowed-tools: Read Write LS Task TaskCreate TaskList AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[task description]"
 ---

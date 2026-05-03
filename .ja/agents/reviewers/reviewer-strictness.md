@@ -1,7 +1,7 @@
 ---
 name: reviewer-strictness
 description: TypeScript 型安全レビュー。any 使用、カバレッジギャップ、strict mode。
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-strictness]
 memory: project

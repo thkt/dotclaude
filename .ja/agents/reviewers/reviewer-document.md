@@ -1,7 +1,7 @@
 ---
 name: reviewer-document
 description: 技術ドキュメントの品質、明瞭性、構造のレビュー。
-tools: Read, Grep, Glob, LS
+tools: Read, LS, Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true

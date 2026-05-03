@@ -2,7 +2,7 @@
 name: adr
 description: Create Architecture Decision Records (ADR) in MADR v4 format with auto-numbering.
 when_to_use: ADR作成, 技術決定, アーキテクチャ決定, decision record
-allowed-tools: Read Write Edit Grep Glob LS Bash(mkdir:*) Bash($HOME/.claude/skills/adr/scripts/*) AskUserQuestion
+allowed-tools: Read Write Edit LS Bash(mkdir:*) Bash($HOME/.claude/skills/adr/scripts/*) AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[decision title]"
 ---

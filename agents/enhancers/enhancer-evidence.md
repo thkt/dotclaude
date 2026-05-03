@@ -1,7 +1,7 @@
 ---
 name: enhancer-evidence
 description: Synthesize static findings, outcome evidence, and adversarial results into root causes and a binary Gate decision for /assert.
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-root-cause-analysis, use-cli-yomu]
 memory: project

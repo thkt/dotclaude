@@ -2,7 +2,7 @@
 name: use-context-reviewer-silence
 description: サイレント失敗の検出。セキュリティは use-context-reviewer-security、可読性は use-context-reviewer-readability、型安全性は use-context-reviewer-strictness に使う。
 when_to_use: silent failure, empty catch, エラーハンドリング, 握りつぶし, swallowed error
-allowed-tools: Read Grep Glob Task
+allowed-tools: Read Task Bash(ugrep:*) Bash(bfs:*)
 agent: reviewer-silence
 context: fork
 user-invocable: false

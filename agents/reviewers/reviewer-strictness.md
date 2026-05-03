@@ -1,7 +1,7 @@
 ---
 name: reviewer-strictness
 description: TypeScript type safety review. any usage, coverage gaps, strict mode.
-tools: Read, Grep, Glob, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*)
+tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-strictness]
 memory: project

@@ -2,7 +2,7 @@
 name: challenge
 description: 提案、設計、計画、分析を devil's advocate で chalenge する。コードレビュー findings には使わない (/audit を使用)。outcome assertion にも使わない (/assert に組み込み adversarial testing がある)。
 when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し
-allowed-tools: Read Glob Grep LS Task
+allowed-tools: Read LS Task Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[proposal file | description]"
 ---

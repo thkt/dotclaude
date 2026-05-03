@@ -1,7 +1,7 @@
 ---
 name: architect-feature
 description: Compose feature architecture for /swarm parallel implementation. Synthesize codebase exploration into blueprints, contracts, and parallel units.
-tools: Bash, Glob, Grep, LS, Read, SendMessage
+tools: Bash, LS, Read, SendMessage
 model: opus
 skills: [use-cli-yomu]
 memory: project
@@ -38,8 +38,8 @@ See `skills/swarm/references/contracts.md#spawn-context-leader--all-agents`.
 
 | Step | Action                                                  | Output                         | On dead-end                                  |
 | ---- | ------------------------------------------------------- | ------------------------------ | -------------------------------------------- |
-| 1    | Seed Context (Glob/LS/Grep for structure)               | Known patterns + API conflicts | Empty repo, abort with note                  |
-| 2    | Exploration (3-5 semantic queries via yomu)             | Insights with sources          | yomu unavailable, fall back to Grep          |
+| 1    | Seed Context (bfs/LS/ugrep for structure)               | Known patterns + API conflicts | Empty repo, abort with note                  |
+| 2    | Exploration (3-5 semantic queries via yomu)             | Insights with sources          | yomu unavailable, fall back to ugrep         |
 | 3    | Pattern Analysis (extract conventions, trace file:line) | Pattern table                  | No patterns found, document as Greenfield    |
 | 4    | Compose (constraints to blueprint, independence-first)  | Composed architecture          | Constraint conflict, escalate to Leader      |
 | 5    | Verify (read inferred items, fill unknowns)             | Verified findings with sources | Cannot verify, note as "unknown, requires X" |
@@ -49,7 +49,7 @@ See `skills/swarm/references/contracts.md#spawn-context-leader--all-agents`.
 
 | Aspect | Detail                                                                      |
 | ------ | --------------------------------------------------------------------------- |
-| Tool   | Glob, LS, Grep                                                              |
+| Tool   | bfs, LS, ugrep                                                              |
 | Action | Discover project structure, entry points, API endpoints, naming conventions |
 | Output | Known patterns + API conflicts list (if any detected)                       |
 
@@ -59,7 +59,7 @@ See `skills/swarm/references/contracts.md#spawn-context-leader--all-agents`.
 | -------- | ------------------------------------------------------------------------------------------------------- |
 | Strategy | 3-5 semantic queries from task description, broad to focused                                            |
 | Tool     | yomu (commands via injected `use-cli-yomu` skill)                                                       |
-| Fallback | Glob, Grep, Read when yomu unavailable or empty                                                         |
+| Fallback | bfs, ugrep, Read when yomu unavailable or empty                                                         |
 | Output   | Codebase insights with file:line for facts, basis stated for inferences, verification path for unknowns |
 
 ### Step 3: Pattern Analysis
