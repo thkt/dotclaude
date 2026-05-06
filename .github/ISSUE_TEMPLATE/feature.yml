@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a new feature or enhancement
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this?
+      options:
+        - high
+        - medium
+        - low
+      default: 1
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      placeholder: "Currently when I try to X, ..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: "Add an option / command / behavior that ..."
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
