@@ -12,9 +12,19 @@ Targets based on cognitive limits (working memory, one-screen focus) and establi
 
 ## Coverage
 
-| Level | Target | Focus                                           |
-| ----- | ------ | ----------------------------------------------- |
-| C0    | ≥90%   | All lines executed (catches untested code)      |
-| C1    | ≥80%   | All branches taken (catches untested decisions) |
+Delta-based gate: PR で C0 / C1 が下がらないこと。絶対値の floor は持たない (ADR-0062)。
+
+| Level | Focus                                           |
+| ----- | ----------------------------------------------- |
+| C0    | All lines executed (catches untested code)      |
+| C1    | All branches taken (catches untested decisions) |
+
+Reference values (informational, not enforced):
+
+- Istanbul / Jest / Vitest defaults: 80% across statements, branches, functions, lines
+- Google tiered: 60% acceptable, 75% commendable, 90% exemplary (do not over-pursue beyond 90%)
+- General project average: 74-76%
+
+Project-specific absolute thresholds live in each project's spec NFR (e.g. security tools may keep C0 ≥90%). Observation depth, priority areas, and test quality live in `TESTING.md`.
 
 Exceptions: auto-generated code, data definitions, test files, legacy in migration.

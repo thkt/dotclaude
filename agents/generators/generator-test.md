@@ -20,6 +20,8 @@ skills: [use-workflow-tdd-cycle]
 
 Spec is the source. Tests come from T-NNN scenarios in the Spec. Do not add tests not in the plan. If a new edge case surfaces during implementation, update the Spec first, then generate the test from the new T-NNN.
 
+Perspectives are the lens. Each T-NNN maps to one or more entries in the Perspective Checklist (see `rules/development/TESTING.md`). Generate tests through that lens to avoid happy-path bias.
+
 Test observable behavior, not implementation. Assert on outputs or side effects. Never assert on internal call counts, private state, or intermediate steps.
 
 Banned weak assertions inside test bodies: JS/TS `toBeTruthy` without a value check, Rust bare `is_err()`, Python bare `assert`. Every test needs a meaningful assertion (`toBe`, `toEqual`, `toThrow`, `toHaveBeenCalledWith`, equivalent).
@@ -41,13 +43,14 @@ Banned weak assertions inside test bodies: JS/TS `toBeTruthy` without a value ch
 
 ## Workflow
 
-| Step | Action                         | Output             | On dead-end                                     |
-| ---- | ------------------------------ | ------------------ | ----------------------------------------------- |
-| 1    | Read Spec Test Scenarios       | T-NNN list         | No Test Scenarios table, abort                  |
-| 2    | Detect test framework          | Framework name     | Undetected, fall back to vitest (JS/TS) or ask  |
-| 3    | Check existing tests per T-NNN | Skip list          | All T-NNN already covered, return "no work"     |
-| 4    | Generate tests via TDD cycle   | Test files written | Generation fails, log and report partial result |
-| 5    | Report summary                 | Markdown output    | -                                               |
+| Step | Action                                  | Output               | On dead-end                                     |
+| ---- | --------------------------------------- | -------------------- | ----------------------------------------------- |
+| 1    | Read Spec Test Scenarios                | T-NNN list           | No Test Scenarios table, abort                  |
+| 2    | Map each T-NNN to Perspective Checklist | T-NNN → perspectives | Map empty, ask user to clarify the scenario     |
+| 3    | Detect test framework                   | Framework name       | Undetected, fall back to vitest (JS/TS) or ask  |
+| 4    | Check existing tests per T-NNN          | Skip list            | All T-NNN already covered, return "no work"     |
+| 5    | Generate tests via TDD cycle            | Test files written   | Generation fails, log and report partial result |
+| 6    | Report summary                          | Markdown output      | -                                               |
 
 ### Framework Detection
 
@@ -60,16 +63,18 @@ Banned weak assertions inside test bodies: JS/TS `toBeTruthy` without a value ch
 
 ## Constraints
 
-| Constraint            | Rationale                                                              |
-| --------------------- | ---------------------------------------------------------------------- |
-| Read-only on Spec     | Never modify the Spec from this agent                                  |
-| TDD cycle             | Generate failing tests first, follow Red, Green, Refactor in order     |
-| T-NNN ID required     | Every test name or comment includes its T-NNN                          |
-| Project conventions   | Match existing test framework, naming, and directory structure         |
-| Mock ≤ assertions     | Mock count must not exceed assertion count per test block              |
-| No heavy framework    | Use minimal framework appropriate to the case                          |
-| No copy-paste         | Consolidate trivial variations into `test.each` or parameterized tests |
-| No non-target imports | UT may not import non-target production modules                        |
+| Constraint            | Rationale                                                                   |
+| --------------------- | --------------------------------------------------------------------------- |
+| Read-only on Spec     | Never modify the Spec from this agent                                       |
+| TDD cycle             | Generate failing tests first, follow Red, Green, Refactor in order          |
+| T-NNN ID required     | Every test name or comment includes its T-NNN                               |
+| Perspective binding   | Each T-NNN cites its Perspective(s) before generation                       |
+| Decision table first  | For 2+ conditions, write the decision table as a comment, then test per row |
+| Project conventions   | Match existing test framework, naming, and directory structure              |
+| Mock ≤ assertions     | Mock count must not exceed assertion count per test block                   |
+| No heavy framework    | Use minimal framework appropriate to the case                               |
+| No copy-paste         | Consolidate trivial variations into `test.each` or parameterized tests      |
+| No non-target imports | UT may not import non-target production modules                             |
 
 ## Error Handling
 
