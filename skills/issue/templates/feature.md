@@ -21,6 +21,13 @@
 ## Constraints (optional)
 
 - [Technical constraints, prohibited approaches, dependencies]
+
+## Testing Decisions
+
+- [Definition of "good" for this issue: external behavior only, not implementation details]
+- [Modules under test: which module/component/function gets tested]
+- [Prior art: link or filename for the most similar existing test]
+- [Skip rationale (optional): if no test is added, state why explicitly]
 ```
 
 ## Guidelines
@@ -31,3 +38,4 @@
 | Acceptance Criteria | "When user clicks Export, a .csv downloads"   | "CSV export works correctly"               |
 | Scope - Out of      | "Excel format is out of scope"                | (omitted)                                  |
 | Constraints         | "Must not add new dependencies"               | (omitted when there are known constraints) |
+| Testing Decisions   | "Test the CSV serializer; mirror tests/orders.test.ts" | "TBD" or skipped without rationale |

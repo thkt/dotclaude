@@ -16,6 +16,7 @@ Apply before writing each section.
 | Why     | 5 fields all filled. Outcome = measurable result, not deliverable                                                                 |
 | AC      | Each traces to Why Outcome. Observable signal column filled (HTTP 200, state X). No orphan ACs, no scope creep beyond Why Problem |
 | Scope   | Out of Scope traces Why field or constraint. In Scope Observable outcome column filled (concrete signal)                          |
+| Bound   | Boundaries section is optional. When present, at least one Never row required. Enforced by column names a concrete mechanism      |
 | Impl    | Files < 5 per Phase. Steps describe concrete changes                                                                              |
 | Test    | Every AC has ≥1 test. Verification states what is checked concretely                                                              |
 | Risks   | ≥1 risk identified. Probability column filled. Mitigation required when Impact = HIGH                                             |

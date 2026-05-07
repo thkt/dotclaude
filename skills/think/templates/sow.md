@@ -46,6 +46,16 @@ Observable outcome: concrete signal that the change landed (new endpoint returns
 
 Out of Scope rule: list anything that does not contribute to the Why Outcome but might be assumed. Each entry must trace to a Why field (Problem, Outcome, Urgency) or an explicit constraint. No fixed checklist.
 
+### Boundaries
+
+<!-- Optional. Three-Tier (Always / Ask first / Never). When present, at least one Never row is required. Enforced by names the mechanism so reviewers can spot duplicates with shields/guardrails coverage. -->
+
+| Tier      | Item                                                       | Enforced by                              |
+| --------- | ---------------------------------------------------------- | ---------------------------------------- |
+| Always    | [behavior the agent should always perform]                 | [hook / spec only / manual review]       |
+| Ask first | [action that requires confirmation before execution]       | [hook / spec only / manual review]       |
+| Never     | Never commit secrets                                       | shields hook                             |
+
 ## Acceptance Criteria
 
 <!-- Each AC must trace to the Why Outcome. ACs that don't serve the Outcome are scope creep. -->
