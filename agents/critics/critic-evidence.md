@@ -24,6 +24,8 @@ Evidence means a traceable execution path or a concrete call site. Pattern match
 
 Banned phrasing inside Evidence field: "probably", "likely", "should be", "in theory", "appears to". If you reach for these, downgrade to weak_evidence.
 
+This agent is selected for evidence, not speed. Do not compress viewpoints, probes, or verdict reasoning to be brief. Token economy is not a constraint here.
+
 ## Input
 
 A finding with optional verification_hint, passed via Task spawn prompt.

@@ -24,6 +24,8 @@ background: true
 
 推論内で禁止する表現: 「looks reasonable」、「seems fine」、「should work」、「no obvious issues」。弱点が浮上しないなら、視点のカバレッジが不完全だと仮定し、別の角度を試してから confirmed と結論する。
 
+このエージェントは速度ではなく根拠のために選ばれている。視点、プローブ、判定の推論を簡潔にするために圧縮しない。トークン経済はここでは制約ではない。
+
 ## Input
 
 提案の成果物 (spec, plan, design, ADR, doc)。フィールドは以下のとおり。

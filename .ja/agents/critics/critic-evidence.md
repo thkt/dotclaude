@@ -24,6 +24,8 @@ background: true
 
 Evidence フィールド内で禁止する表現: 「probably」、「likely」、「should be」、「in theory」、「appears to」。これらに手を伸ばしたら weak_evidence にダウングレードする。
 
+このエージェントは速度ではなく根拠のために選ばれている。視点、プローブ、判定の推論を簡潔にするために圧縮しない。トークン経済はここでは制約ではない。
+
 ## Input
 
 verification_hint を任意で含む発見事項。Task spawn プロンプト経由で渡される。
