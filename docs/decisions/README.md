@@ -70,6 +70,7 @@ This directory contains important decisions about the project's architecture.
 | [0061](0061-adopt-meta-edit-declaration-pattern-as-a-new-sentinel.md) | Adopt meta-edit declaration pattern as a new sentinel | accepted | 2026-05-03 |
 | [0062](0062-replace-absolute-coverage-thresholds-with-delta-based-gate.md) | Replace absolute coverage thresholds with delta-based gate | accepted | 2026-05-06 |
 | [0063](0063-split-reviewer-design-into-deletion-test-and-react-pattern.md) | Split reviewer-design into deletion test and react-pattern | accepted | 2026-05-07 |
+| [0064](0064-adopt-always-rerun-pre-commit-gate-for-silent-commit-prevention.md) | Adopt always-rerun pre-commit gate for silent commit prevention | proposed | 2026-05-07 |
 
 ## By Status
 
@@ -94,6 +95,7 @@ This directory contains important decisions about the project's architecture.
 - **0038**: ADR-0038: hook pipelineに stencils を追加しコードパターンをカタログ化する
 - **0039**: ADR-0039: PreToolUse hook に tempos を追加し litmus library 統合で TDD リズムを強制する
 - **0041**: ADR-0041: carte を CCPlanView からフォークする運用方針
+- **0064**: Adopt always-rerun pre-commit gate for silent commit prevention
 
 ### Accepted
 
