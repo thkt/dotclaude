@@ -69,6 +69,30 @@ Test behavior via public API. Mock only at system boundaries.
 
 30s: Write failing test → 1min: Make pass → 10s: Run tests → 30s: Tiny refactor → 20s: Commit if green. Bugs are always in the last 2-minute change.
 
+## Vertical Slices Only
+
+Stack RGRC cycles vertically per behavior. Never expand horizontally by writing all tests first and all implementations later.
+
+```
+Wrong (horizontal):
+  Red:   test1, test2, test3, test4, test5
+  Green: impl1, impl2, impl3, impl4, impl5
+
+Right (vertical):
+  Red → Green: test1 → impl1
+  Red → Green: test2 → impl2
+  ...
+```
+
+| # | Hazard from horizontal slices                                                |
+| - | ---------------------------------------------------------------------------- |
+| 1 | Bulk-written tests verify imagined behavior instead of real behavior         |
+| 2 | Tests degrade into structural assertions (data shape, signature) only        |
+| 3 | Sensitivity to behavior change drops (pass when broken, fail when correct)   |
+| 4 | Implementation knowledge follows test structure instead of guiding it        |
+
+Reference: mattpocock/skills `tdd` SKILL.md.
+
 ## Test Failure Judgment
 
 When a test fails, decide whether to fix the test or the implementation.

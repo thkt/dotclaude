@@ -1,6 +1,6 @@
 ---
 name: code
-description: Implement code following TDD/RGRC cycle with real-time test feedback. Do NOT use for small bug fixes or error resolution (use /fix instead).
+description: Implement code following TDD/RGRC cycle with real-time test feedback. Vertical slices only (one test then one impl, never bulk tests then bulk impl). Do NOT use for small bug fixes or error resolution (use /fix instead).
 when_to_use: 実装して, コード書いて, implement, coding
 allowed-tools: Bash(npm run) Bash(npm run:*) Bash(yarn run) Bash(yarn run:*) Bash(yarn:*) Bash(pnpm run) Bash(pnpm run:*) Bash(pnpm:*) Bash(bun run) Bash(bun run:*) Bash(bun:*) Bash(cargo:*) Bash(make:*) Bash(git status:*) Bash(git log:*) Bash(which:*) Edit MultiEdit Write Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
