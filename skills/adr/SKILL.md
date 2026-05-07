@@ -26,6 +26,24 @@ Use `$ARGUMENTS` to capture full input. `$N` is 0-indexed split (`$0` first word
 
 If "Update existing" → list recent ADRs in `<git-root>/docs/decisions/` for selection via AskUserQuestion.
 
+## Adoption Gate
+
+Before starting the 6-Phase Process, confirm all three conditions hold. If any one is missing, skip the ADR and record the decision somewhere lighter.
+
+| # | Condition                                                                                            | Failing example                                          |
+| - | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| 1 | Hard to reverse. Changing the decision later carries meaningful cost                                 | Library swap with one isolated import boundary           |
+| 2 | Surprising without context. A future reader will ask "why this way?"                                 | Choosing the only option the framework supports          |
+| 3 | Result of a real trade-off. Genuine alternatives existed and one was picked for specific reasons     | Following an established team convention by default      |
+
+| Outcome                  | Demote to                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| Conditions 1 or 2 fail   | `CONTEXT.md` entry (or equivalent project glossary / design notes)                   |
+| Only condition 3 fails   | Commit message body (record the rationale alongside the change)                      |
+| All three pass           | Proceed to the 6-Phase Process below                                                 |
+
+Reference: mattpocock/skills `grill-with-docs` SKILL.md `Offer ADRs sparingly`.
+
 ## 6-Phase Process
 
 | Phase         | Actions                                                                                                                            |
