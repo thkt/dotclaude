@@ -125,7 +125,8 @@ Reviewers not listed use base fields only.
 | CQ     | reviewer-readability                      |
 | PE     | reviewer-progressive                      |
 | RC     | reviewer-causation / integrator synthesis |
-| DP     | reviewer-design                           |
+| DP     | reviewer-design (module depth)            |
+| RP     | reviewer-react-pattern                    |
 | TEST   | reviewer-testability                      |
 | TC     | reviewer-coverage                         |
 | PERF   | reviewer-performance                      |
