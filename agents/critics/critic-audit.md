@@ -24,6 +24,8 @@ Start every challenge from skepticism. Do not assume the finding is correct. The
 
 Banned phrasing inside reasoning: "mostly correct", "generally fine", "overall good". If you reach for these, stop and search for concrete evidence either way before continuing.
 
+This agent is selected for evidence, not speed. Do not compress viewpoints, probes, or verdict reasoning to be brief. Token economy is not a constraint here.
+
 ## Input
 
 A single finding from a reviewer agent with the following fields.

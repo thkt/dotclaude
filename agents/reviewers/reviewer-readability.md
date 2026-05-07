@@ -40,13 +40,13 @@ Banned phrasing inside reasoning: "looks complex" without naming the cognitive l
 
 ## Distinction from related reviewers
 
-| Concern    | This reviewer (code-quality) | reviewer-testability         | reviewer-design          |
-| ---------- | ---------------------------- | ---------------------------- | ------------------------ |
-| Lens       | Readable? Maintainable?      | Testable?                    | Architecturally sound?   |
-| State      | Wrong scope (readability)    | Mutable global (isolation)   | Wrong state tool (React) |
-| Coupling   | Over-engineered abstraction  | Can't inject dependency      | Prop drilling            |
-| Complexity | Nesting depth, function size | Mock depth, setup complexity | Component responsibility |
-| Fix        | Simplify or restructure      | Make injectable/mockable     | Apply React pattern      |
+| Concern    | This reviewer (code-quality) | reviewer-testability         | reviewer-design          | reviewer-react-pattern   |
+| ---------- | ---------------------------- | ---------------------------- | ------------------------ | ------------------------ |
+| Lens       | Readable? Maintainable?      | Testable?                    | Module earns interface?  | React-idiomatic?         |
+| State      | Wrong scope (readability)    | Mutable global (isolation)   | Out of scope             | Wrong state tool (React) |
+| Coupling   | Over-engineered abstraction  | Can't inject dependency      | Pass-through wrapper     | Prop drilling            |
+| Complexity | Nesting depth, function size | Mock depth, setup complexity | Shallow vs deep module   | Component responsibility |
+| Fix        | Simplify or restructure      | Make injectable/mockable     | Inline or grow the body  | Apply React pattern      |
 
 ## Calibration
 

@@ -1,0 +1,48 @@
+[
+  {
+    "file": "cases/shallow/pass-through-wrapper.tsx",
+    "expected": "detected",
+    "category": "module-depth",
+    "severity_min": "medium",
+    "difficulty": "easy",
+    "language": "tsx",
+    "note": "Component wraps Button without adding state, derivation, or behavior. Deletion test: removing collapses to <Button> at call sites with no logic loss."
+  },
+  {
+    "file": "cases/shallow/thin-hook.ts",
+    "expected": "detected",
+    "category": "module-depth",
+    "severity_min": "medium",
+    "difficulty": "easy",
+    "language": "ts",
+    "min_findings": 1,
+    "note": "Hook wraps a single useState. Deletion test: callers use useState directly without coordination loss."
+  },
+  {
+    "file": "cases/shallow/wrapper-logger.rs",
+    "expected": "detected",
+    "category": "module-depth",
+    "severity_min": "medium",
+    "difficulty": "easy",
+    "language": "rust",
+    "note": "AppLogger forwards to tracing::event! macros 1:1. Deletion test: callers invoke tracing macros directly without losing any abstraction."
+  },
+  {
+    "file": "cases/deep/order-container.tsx",
+    "expected": "no_finding",
+    "language": "tsx",
+    "note": "OrderContainer aggregates 2 hooks, derives view-model, owns confirm/cancel lifecycle, encodes a business rule (shipped orders cannot cancel). Deletion test: removing forces every caller to duplicate fetch+state+handlers+rule."
+  },
+  {
+    "file": "cases/deep/redaction.rs",
+    "expected": "no_finding",
+    "language": "rust",
+    "note": "Redactor compiles patterns once, validates uniqueness, owns Cow-based replacement, and provides reverse lookup. Deletion test: removing forces callers to re-implement compile+validate+apply."
+  },
+  {
+    "file": "cases/borderline/use-toggle.ts",
+    "expected": "no_finding",
+    "language": "ts",
+    "note": "Borderline. useToggle returns named tuple (value, toggle, set) with stable callbacks. Deletion test: removing pushes useState+useCallback+functional-update pattern to every caller. The naming and stable identity earn the wrapper."
+  }
+]

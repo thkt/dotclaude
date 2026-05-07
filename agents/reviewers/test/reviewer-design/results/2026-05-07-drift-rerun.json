@@ -1,0 +1,76 @@
+{
+  "date": "2026-05-07",
+  "run_type": "drift-rerun",
+  "agent_definition_revision": "rebuild-deletion-test",
+  "previous_run": "2026-05-07-baseline.json",
+  "drift_status": "resolved",
+  "spec_compliance": {
+    "category_naming": "module-depth (single, per new spec)",
+    "summary_metric_schema": "total_findings, modules_reviewed, shallow_count, consolidated_count, files_reviewed (per new spec)",
+    "verification_field": "deletion_trace + concrete reappearance trace (per new spec)"
+  },
+  "metrics": {
+    "recall": "3/3 (100%) on shallow files (all 3 shallow files surfaced findings)",
+    "fp_rate": "0/2 (0%) on deep files",
+    "borderline_outcome": "DP-06 reported with split-rationale (toggle earns, set dead-weight). Diverges from baseline run which classified the whole hook as deep."
+  },
+  "per_case": [
+    {
+      "file": "cases/shallow/pass-through-wrapper.tsx",
+      "expected": "detected",
+      "actual": "DP-01, DP-02 (one per wrapper)",
+      "result": "pass",
+      "agent_severity": "low",
+      "agent_category": "module-depth",
+      "delta_from_baseline": "Per-module finding instead of consolidated; severity low (was medium)"
+    },
+    {
+      "file": "cases/shallow/thin-hook.ts",
+      "expected": "detected",
+      "actual": "DP-03, DP-04 (one per hook)",
+      "result": "pass",
+      "agent_severity": "low",
+      "agent_category": "module-depth",
+      "delta_from_baseline": "Per-module finding instead of consolidated"
+    },
+    {
+      "file": "cases/shallow/wrapper-logger.rs",
+      "expected": "detected",
+      "actual": "DP-05",
+      "result": "pass",
+      "agent_severity": "low",
+      "agent_category": "module-depth"
+    },
+    {
+      "file": "cases/deep/order-container.tsx",
+      "expected": "no_finding",
+      "actual": "no_finding",
+      "result": "pass"
+    },
+    {
+      "file": "cases/deep/redaction.rs",
+      "expected": "no_finding",
+      "actual": "no_finding",
+      "result": "pass"
+    },
+    {
+      "file": "cases/borderline/use-toggle.ts",
+      "expected": "no_finding",
+      "actual": "DP-06 (split-rationale: toggle deep, set shallow)",
+      "result": "expectation_diverged",
+      "agent_severity": "low",
+      "agent_category": "module-depth",
+      "agent_reasoning": "toggle is a vocabulary boundary earning weight at 2+ callers (flip closure); set is shallow (setValue already has stable identity). Mixed module reads shallow overall because the dead-weight piece dominates."
+    }
+  ],
+  "consolidation_observation": {
+    "expected": "Phase 2 consolidation rule (3+ identical patterns -> single finding)",
+    "actual": "Per-module finding because intra-file grouping sat below 3+ threshold (2 wrappers, 2 hooks)",
+    "harness_gap": "No fixture exercises consolidation rule. To test, add 3+ identical wrappers in one file or across files."
+  },
+  "next": [
+    "Decide on borderline expectation: tighten use-toggle.ts (drop set parameter) so it stays no_finding, OR update expected.json to detected with split-rationale acceptance.",
+    "Add a consolidation fixture (3+ identical wrappers) when the consolidation rule needs to be validated.",
+    "Drift hypothesis (in-session memory carry-over) confirmed: fresh agent invocation honored the rebuild spec."
+  ]
+}

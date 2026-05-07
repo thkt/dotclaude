@@ -118,14 +118,15 @@ agents/
 └── teams/          # Team integration (team-integration, team-qa, team-implementation)
 ```
 
-### Reviewer Agents (20 types)
+### Reviewer Agents (21 types)
 
 | Agent                  | Focus                              |
 | ---------------------- | ---------------------------------- |
 | reviewer-accessibility | WCAG 2.2 conformance               |
 | reviewer-causation     | 5 Whys root cause analysis         |
 | reviewer-coverage      | Test coverage quality              |
-| reviewer-design        | React design patterns              |
+| reviewer-design        | Module depth via deletion test     |
+| reviewer-react-pattern | React design patterns              |
 | reviewer-document      | Documentation quality              |
 | reviewer-duplication   | Cross-file DRY analysis            |
 | reviewer-efficiency    | Algorithmic cost, hot paths        |
