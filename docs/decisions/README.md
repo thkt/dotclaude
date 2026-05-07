@@ -71,6 +71,7 @@ This directory contains important decisions about the project's architecture.
 | [0062](0062-replace-absolute-coverage-thresholds-with-delta-based-gate.md) | Replace absolute coverage thresholds with delta-based gate | accepted | 2026-05-06 |
 | [0063](0063-split-reviewer-design-into-deletion-test-and-react-pattern.md) | Split reviewer-design into deletion test and react-pattern | accepted | 2026-05-07 |
 | [0064](0064-adopt-always-rerun-pre-commit-gate-for-silent-commit-prevention.md) | Adopt always-rerun pre-commit gate for silent commit prevention | proposed | 2026-05-07 |
+| [0065](0065-scout-json-output-schema-and-sysexits-exit-code-policy.md) | scout JSON output schema and sysexits exit code policy | accepted | 2026-05-07 |
 
 ## By Status
 
@@ -138,6 +139,7 @@ This directory contains important decisions about the project's architecture.
 - **0061**: Adopt meta-edit declaration pattern as a new sentinel
 - **0062**: Replace absolute coverage thresholds with delta-based gate
 - **0063**: Split reviewer-design into deletion test and react-pattern
+- **0065**: scout JSON output schema and sysexits exit code policy
 
 ### Superseded
 
