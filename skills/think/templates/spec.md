@@ -67,6 +67,18 @@ Attributes: semantic descriptions ("list of authors", "optional thread origin").
 
 Depends: list prior Phase IDs this phase requires, or `none` for parallel-executable. Enables agents to schedule independent phases concurrently.
 
+## Testing Decisions
+
+<!-- Strategy-level. Concrete scenarios go in Test Scenarios below. -->
+
+| Decision               | Value                                                                |
+| ---------------------- | -------------------------------------------------------------------- |
+| Definition of "good"   | [external behavior only, not implementation details]                 |
+| Modules under test     | [which modules / components / pure functions]                        |
+| Mock boundary          | [what is real, what is mocked, why]                                  |
+| Prior art              | [link or filename for the closest existing test, if any]             |
+| Skip rationale         | [if some FRs intentionally have no T-NNN, state why]                 |
+
 ## Test Scenarios
 
 | ID    | Type        | FR     | Given          | When     | Then     |
