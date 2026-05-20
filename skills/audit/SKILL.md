@@ -1,6 +1,6 @@
 ---
 name: audit
-description: Orchestrate specialized review agents for code quality assessment. Do NOT use for quick PR screening (use /preview instead).
+description: Orchestrate reviewer agents under adversarial challenge (critic-audit + critic-evidence). Findings are positions to be argued, not facts to be aggregated. Do NOT use for quick PR screening (use /preview instead).
 when_to_use: レビューして, コードレビュー, 品質チェック, code review, quality check, review
 allowed-tools: Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git show:*) Bash(date:*) Bash(mkdir:*) Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
@@ -9,7 +9,7 @@ argument-hint: "[target files or scope]"
 
 # /audit - Code Audit Orchestrator
 
-Orchestrate specialized review agents with evidence-based filtering. The finding schema requires `file:line` on every finding. Entries without evidence are structurally invalid.
+Orchestrate reviewer agents, then run findings through critic-audit (challenge) and critic-evidence (verify) before integration. The pipeline is reviewer → challenge → verify → integrate, not reviewer → aggregate. Each finding is a position to be argued, not a fact. The finding schema requires `file:line` on every finding. Entries without evidence are structurally invalid.
 
 ## Rationalization Counters
 
@@ -45,7 +45,7 @@ After File Routing assigns reviewers by file pattern, Leader filters the result 
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | security    | reviewer-security, reviewer-silence                                                                                                                                                                                                                                |
 | performance | reviewer-performance, reviewer-efficiency, reviewer-progressive                                                                                                                                                                                                    |
-| quality     | reviewer-readability, reviewer-design, reviewer-react-pattern, reviewer-strictness, reviewer-encapsulation, reviewer-causation, reviewer-resilience, reviewer-duplication, reviewer-reuse, reviewer-testability, reviewer-operations, reviewer-document, reviewer-prompt, reviewer-silence |
+| quality     | reviewer-readability, reviewer-design, reviewer-react-pattern, reviewer-strictness, reviewer-rust, reviewer-encapsulation, reviewer-causation, reviewer-resilience, reviewer-duplication, reviewer-reuse, reviewer-testability, reviewer-operations, reviewer-document, reviewer-prompt, reviewer-silence |
 | a11y        | reviewer-accessibility, reviewer-progressive                                                                                                                                                                                                                       |
 | all         | No filter. All reviewers per File Routing run                                                                                                                                                                                                                      |
 
@@ -126,7 +126,8 @@ Leader classifies each target file by path and assigns to relevant reviewers onl
 | `*.sh`               | reviewer-security, reviewer-silence, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-operations, reviewer-resilience                                                                                                                                 |
 | `*.ts, *.js`         | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-react-pattern, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                       |
 | `*.tsx, *.jsx`       | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-react-pattern, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience, reviewer-accessibility, reviewer-progressive |
-| `*.rs, *.py`         | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                               |
+| `*.rs`               | reviewer-security, reviewer-silence, reviewer-rust, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                                     |
+| `*.py`               | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                               |
 | `*.md`               | reviewer-prompt, reviewer-document                                                                                                                                                                                                                                       |
 | `*.yaml, *.json`     | reviewer-encapsulation, reviewer-document                                                                                                                                                                                                                                |
 | `*.css, *.html`      | reviewer-accessibility, reviewer-progressive, reviewer-performance, reviewer-duplication                                                                                                                                                                                 |
