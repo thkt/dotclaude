@@ -22,7 +22,7 @@ DB path: `<project_root>/.yomu/index.db` (`git rev-parse --show-toplevel`). If n
 
 ## Schema
 
-Run queries via `sqlite3 -readonly <db_path> "<query>"`.
+Run queries via `sqlite3 "file:<db_path>?immutable=1" "<query>"`.
 
 ```sql
 chunks (
