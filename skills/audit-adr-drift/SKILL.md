@@ -49,7 +49,7 @@ Skip this skill when no ADR directory exists; run `/audit-adr-gaps` first to ele
 | 5    | Run language-appropriate reviewer agents on candidate sites                        |
 | 6    | Tag each finding with modification direction (code-fix / adr-update / accept)      |
 | 7    | Tag each finding with priority (H / M / L)                                         |
-| 8    | Write report to `docs/audit/<YYYY-MM-DD>-adr-drift.md`                             |
+| 8    | Write report to `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-drift.md`                    |
 | 9    | List H-priority drifts as candidate follow-up issues                               |
 
 ### Step 1: ADR Detection
@@ -122,18 +122,18 @@ Reviewers receive the candidate file:line list plus the ADR Decision text. They 
 
 ### Step 8: Report Output
 
-Compute the date with `date -u +%Y-%m-%d` (UTC, ISO format) for cross-timezone consistency. Ensure the output directory exists:
+Compute a UTC timestamp with `date -u +%Y-%m-%d-%H%M%S` (ISO date plus HHMMSS) so same-day reruns never collide and stay chronologically sortable. Ensure the output directory exists:
 
 ```bash
 mkdir -p docs/audit
-DATE=$(date -u +%Y-%m-%d)
-REPORT="docs/audit/${DATE}-adr-drift.md"
+STAMP=$(date -u +%Y-%m-%d-%H%M%S)
+REPORT="docs/audit/${STAMP}-adr-drift.md"
 ```
 
 Write the report with:
 
 ```markdown
-# ADR Drift Scan: <YYYY-MM-DD>
+# ADR Drift Scan: <YYYY-MM-DD>-<HHMMSS>
 
 ## Summary
 
@@ -152,17 +152,17 @@ Write the report with:
 
 Status: <Accepted/Superseded>
 
-| # | File:Line   | Description | Direction | Priority |
-| - | ----------- | ----------- | --------- | -------- |
-| 1 | src/x.rs:42 | ...         | code-fix  | H        |
+| #   | File:Line   | Description | Direction | Priority |
+| --- | ----------- | ----------- | --------- | -------- |
+| 1   | src/x.rs:42 | ...         | code-fix  | H        |
 
 (repeat per ADR)
 
 ## External ADR Dependencies
 
-| # | File:Line     | External ADR ref     | Recommended action                              |
-| - | ------------- | -------------------- | ----------------------------------------------- |
-| 1 | src/foo.rs:55 | ADR-NNNN (not local) | Promote to scout-local ADR or supersede locally |
+| #   | File:Line     | External ADR ref     | Recommended action                              |
+| --- | ------------- | -------------------- | ----------------------------------------------- |
+| 1   | src/foo.rs:55 | ADR-NNNN (not local) | Promote to scout-local ADR or supersede locally |
 
 ## Follow-up Issue Candidates
 
@@ -175,7 +175,7 @@ Print the H-priority follow-up candidates and offer to invoke `/issue` for each.
 
 ## Output
 
-- Report path: `docs/audit/<YYYY-MM-DD>-adr-drift.md`
+- Report path: `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-drift.md`
 - Console summary: ADR count, finding count, H/M/L breakdown
 - Optional: H-priority issue creation via `/issue`
 
@@ -187,7 +187,7 @@ Print the H-priority follow-up candidates and offer to invoke `/issue` for each.
 
 ## Acceptance Criteria
 
-- [ ] Report file exists at `docs/audit/<YYYY-MM-DD>-adr-drift.md`
+- [ ] Report file exists at `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-drift.md`
 - [ ] Every ADR has a section (drift findings or "no drift" or "unverifiable")
 - [ ] Every drift finding has file:line, ADR ref, direction, priority
 - [ ] Superseded ADRs include a note-vs-rewrite recommendation
