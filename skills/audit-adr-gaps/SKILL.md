@@ -47,7 +47,7 @@ Discover design decisions that exist in the code but have no ADR. Each candidate
 | 4    | Extract decision-shaped sentences from prose documents; cross-reference with existing ADRs |
 | 5    | Tag each candidate with impact (H/M/L) and reversibility (high/medium/low)                 |
 | 6    | Rank initial candidates; spawn critic-design to challenge them (skip if `--no-challenge`)  |
-| 7    | Write report to `docs/audit/<YYYY-MM-DD>-undocumented-decisions.md`                        |
+| 7    | Write report to `docs/audit/<YYYY-MM-DD>-<HHMMSS>-undocumented-decisions.md`               |
 | 8    | List post-challenge ADR promotion candidates as follow-up issues                           |
 
 ### Step 1: Large File Detection
@@ -158,10 +158,10 @@ ADR worth heuristic and incomplete-contract examples: see `${CLAUDE_SKILL_DIR}/r
 
 For each candidate, critic-design returns one of:
 
-| Verdict     | Meaning                                                                                                                                                               |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `keep`      | ADR worth, file as standalone or merge with related candidates                                                                                                        |
-| `downgrade` | Not standalone ADR; absorb into a related ADR section or strengthen comments                                                                                          |
+| Verdict     | Meaning                                                                                                                                                           |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `keep`      | ADR worth, file as standalone or merge with related candidates                                                                                                    |
+| `downgrade` | Not standalone ADR; absorb into a related ADR section or strengthen comments                                                                                      |
 | `drop`      | Not ADR-worthy; config/comment/test already covers it, cost > value, or the candidate is a bug (surface as bug-fix follow-up, do not document the wrong behavior) |
 
 Record the challenge verdict alongside the initial ranking. The final candidate list = initial candidates marked `keep` + those marked `downgrade` (with target ADR), minus those marked `drop`.
@@ -172,11 +172,11 @@ When agent is unavailable or times out, fall back to initial ranking with a `cha
 
 ```bash
 mkdir -p docs/audit
-DATE=$(date -u +%Y-%m-%d)  # UTC ISO for cross-timezone consistency
-REPORT="docs/audit/${DATE}-undocumented-decisions.md"
+STAMP=$(date -u +%Y-%m-%d-%H%M%S)  # UTC date + HHMMSS; same-day reruns never collide
+REPORT="docs/audit/${STAMP}-undocumented-decisions.md"
 ```
 
-Write the report following `${CLAUDE_SKILL_DIR}/templates/report-template.md`, substituting placeholders (`<YYYY-MM-DD>`, `<source>:<line>`, `<summary>`) from findings. Add a per-file summary line `keep N / downgrade N / drop N`. If `--no-challenge` was set, omit the Challenge and Final columns and use the initial ranking.
+Write the report following `${CLAUDE_SKILL_DIR}/templates/report-template.md`, substituting placeholders (`<YYYY-MM-DD>-<HHMMSS>`, `<source>:<line>`, `<summary>`) from findings. Add a per-file summary line `keep N / downgrade N / drop N`. If `--no-challenge` was set, omit the Challenge and Final columns and use the initial ranking.
 
 ### Step 8: Follow-up Hand-off
 
@@ -184,7 +184,7 @@ Print only the post-challenge `keep` candidates and offer to invoke `/adr` for e
 
 ## Output
 
-- Report path: `docs/audit/<YYYY-MM-DD>-undocumented-decisions.md`
+- Report path: `docs/audit/<YYYY-MM-DD>-<HHMMSS>-undocumented-decisions.md`
 - Console summary: candidate count, promotion candidate count
 - Optional: ADR drafting via `/adr` or tracking issue via `/issue`
 
@@ -198,7 +198,7 @@ Print only the post-challenge `keep` candidates and offer to invoke `/adr` for e
 
 ## Acceptance Criteria
 
-- [ ] Report file exists at `docs/audit/<YYYY-MM-DD>-undocumented-decisions.md`
+- [ ] Report file exists at `docs/audit/<YYYY-MM-DD>-<HHMMSS>-undocumented-decisions.md`
 - [ ] Every large file exceeding threshold has a section
 - [ ] Every scanned document has an extraction section (or "no decisions found")
 - [ ] Every candidate has impact + reversibility tags
