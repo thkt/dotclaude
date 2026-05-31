@@ -72,9 +72,16 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults. Test f
 
 ## Output
 
-Follow finding-schema.md. Prefix: OPS.
+Follow finding-schema.md.
 
-Categories: error-boundary / loading-state / logging / performance / degradation. Severity: critical / high / medium / low. Verification: pattern_search or call_site_check, is this component user-facing or in a critical path? Reasoning should name blast radius (what breaks, who notices).
+| Field        | Value                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------- |
+| Prefix       | OPS                                                                                     |
+| Categories   | error-boundary / loading-state / logging / performance / degradation                    |
+| Severity     | critical / high / medium / low                                                          |
+| Verification | pattern_search or call_site_check. Is this component user-facing or in a critical path? |
+
+Reasoning should name blast radius (what breaks, who notices).
 
 ```markdown
 ## Summary

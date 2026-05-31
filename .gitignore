@@ -3,6 +3,7 @@
 Thumbs.db
 
 # Editors
+.antigravitycli/
 .idea/
 .vscode/
 .cursor/

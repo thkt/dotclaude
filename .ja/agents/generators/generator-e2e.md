@@ -118,7 +118,7 @@ test("[T-003] user can send message and see response", async ({ page }) => {
 | Dev server unreachable  | Report "Dev server not responding at <url>"      |
 | Generated test fails    | 失敗詳細を報告、デバッグ用にテストファイルを残す |
 
-## Output
+## アウトプット
 
 構造化 Markdown を返す。
 

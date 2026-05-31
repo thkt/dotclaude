@@ -54,6 +54,10 @@ argument-hint: "[bug or issue description]"
 
 ## 実行
 
+### Outcome Anchor
+
+ビルドチェックの前に `.claude/OUTCOME.md` を読む。不在なら stub を生成 (rules/core/OUTCOME.md 参照)。バグまたは修正が outcome 状態の中にあるか確認する。範囲外ならエスカレーション (下記参照)。
+
 ### ビルドチェック
 
 プロジェクトのビルドコマンドを実行 (package.json やプロジェクト設定から検出)。
@@ -79,26 +83,27 @@ argument-hint: "[bug or issue description]"
 
 ### Non-obvious: Full Protocol
 
-| Step | 動作                                                                                              |
-| ---- | ------------------------------------------------------------------------------------------------- |
-| 1    | `Skill("use-context-root-cause-analysis")` で 5 Whys。出力: Symptom / Root cause / Pattern        |
-| 2    | `Task(subagent_type: generator-test)` で regression test (symptom と再現手順のみ渡す)             |
-| 3    | regression test が Red であることを確認                                                           |
-| 4    | 修正を適用                                                                                        |
-| 5    | regression test が Green、他のテストに regression がないことを確認                                |
+| Step | 動作                                                                                             |
+| ---- | ------------------------------------------------------------------------------------------------ |
+| 1    | `Skill("use-context-root-cause-analysis")` で 5 Whys。出力: Symptom / Root cause / Pattern       |
+| 2    | `Task(subagent_type: generator-test)` で regression test (symptom と再現手順のみ渡す)            |
+| 3    | regression test が Red であることを確認                                                          |
+| 4    | 修正を適用                                                                                       |
+| 5    | regression test が Green、他のテストに regression がないことを確認                               |
 | 6    | Pattern ∈ {Recurring, Systematic} なら ${CLAUDE_SKILL_DIR}/references/defense-in-depth.md を適用 |
 
 ## エスカレーション
 
 客観的トリガー。自己評価による信頼度判断はしない。
 
-| トリガー                       | 動作                                              |
-| ------------------------------ | ------------------------------------------------- |
-| RCA で根本原因が特定できない   | エスカレーション → `/research`                   |
-| 修正試行が 3 回失敗            | STOP。完全なコンテキストで `/research` にエスカレ |
-| 複数ファイル影響 (>3 ファイル) | 委譲 → `/code`                                   |
-| 新機能スコープ                 | 委譲 → `/think`                                  |
-| Pattern = Systematic           | エスカレーション → `/research`                   |
+| トリガー                       | 動作                                                    |
+| ------------------------------ | ------------------------------------------------------- |
+| RCA で根本原因が特定できない   | エスカレーション → `/research`                          |
+| 修正試行が 3 回失敗            | STOP。完全なコンテキストで `/research` にエスカレ       |
+| 複数ファイル影響 (>3 ファイル) | 委譲 → `/code`                                          |
+| 新機能スコープ                 | 委譲 → `/think`                                         |
+| Pattern = Systematic           | エスカレーション → `/research`                          |
+| Fix が OUTCOME.md スコープ外   | ユーザーに確認。Non-goals を再定義するか `/code` に委譲 |
 
 3 回ルール: 異なる修正試行が 3 回失敗するなら、ローカルバグでなくアーキテクチャ問題の可能性が高い。エスカレートせず 4 回目を試みない。
 

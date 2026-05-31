@@ -40,4 +40,4 @@
 | NFR        | Rationale 列を埋める。なぜこの目標値か (UX バジェット、SLA など)         |
 | Assume     | 各仮定に Impact-if-broken を添える                                       |
 | Impl       | Depends 列に先行 Phase ID または `none` を指定                           |
-| Trace      | AC → FR → Test → NFR チェーンが切れていない                           |
+| Trace      | AC → FR → Test → NFR チェーンが切れていない                              |

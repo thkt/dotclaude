@@ -17,15 +17,17 @@ argument-hint: "[task description]"
 
 ## 実行
 
-| Step | アクション       | 詳細                                                             |
-| ---- | ---------------- | ---------------------------------------------------------------- |
-| 0    | Why Discovery    | ${CLAUDE_SKILL_DIR}/references/step-0-why-discovery.md           |
-| 1    | Q&A による明確化 | スコープ、優先度 (MoSCoW)、制約、リスク (必要に応じて)           |
-| 2-5  | 設計探索         | ${CLAUDE_SKILL_DIR}/references/step-2-5-design-exploration.md    |
-| 6    | ユーザーレビュー | トレードオフの根拠とともに設計を提示、承認を待つ                 |
-| 6.5  | ADR の提案       | 技術判断に ADR が必要か問う。単純な機能では省略                  |
-| 7-8  | SOW と Spec      | ${CLAUDE_SKILL_DIR}/references/step-7-8-document-generation.md   |
-| 9-10 | レビュー + 分割  | ${CLAUDE_SKILL_DIR}/references/step-9-10-review-decomposition.md |
+| Step  | アクション       | 詳細                                                                               |
+| ----- | ---------------- | ---------------------------------------------------------------------------------- |
+| 0     | Outcome Anchor   | `.claude/OUTCOME.md` を読む。不在なら stub を生成 (rules/core/OUTCOME.md 参照)     |
+| 1     | Why Discovery    | ${CLAUDE_SKILL_DIR}/references/step-1-why-discovery.md (OUTCOME.md を前提とする)   |
+| 2     | Q&A による明確化 | スコープ、優先度 (MoSCoW)、制約、リスク (必要に応じて)                             |
+| 3-6   | 設計探索         | ${CLAUDE_SKILL_DIR}/references/step-3-6-design-exploration.md                      |
+| 7     | ユーザーレビュー | トレードオフの根拠とともに設計を提示、承認を待つ                                   |
+| 7.5   | ADR の提案       | 技術判断に ADR が必要か問う。単純な機能では省略                                    |
+| 8-9   | SOW と Spec      | ${CLAUDE_SKILL_DIR}/references/step-8-9-document-generation.md                     |
+| 10-11 | レビュー + 分割  | ${CLAUDE_SKILL_DIR}/references/step-10-11-review-decomposition.md                  |
+| 12    | View 生成        | planning slug を `use-workflow-plan-preview` に渡す。返された URL をユーザーに共有 |
 
 ## 出力
 
@@ -37,12 +39,14 @@ Session ID: ${CLAUDE_SESSION_ID}
 
 ## 検証
 
-- [ ] Why Statement が確立されている (Step 0)
-- [ ] コードベースが探索されている (Step 2)
-- [ ] 2 つ以上のアプローチが比較されている (Step 3)
-- [ ] DA チャレンジが適用されている (Step 4)
-- [ ] 設計が構成されている (Step 5)
-- [ ] ユーザーレビュー済み (Step 6)
-- [ ] sow.md と spec.md が生成されている (Steps 7-8)
-- [ ] Spec レビューを通過 (Step 9)
-- [ ] タスク分割: マイルストーン、最初の一手、スコープ削減候補 (Step 10)
+- [ ] OUTCOME.md が存在 (Step 0)
+- [ ] Why Statement が確立されている (Step 1)
+- [ ] コードベースが探索されている (Step 3)
+- [ ] 2 つ以上のアプローチが比較されている (Step 4)
+- [ ] DA チャレンジが適用されている (Step 5)
+- [ ] 設計が構成されている (Step 6)
+- [ ] ユーザーレビュー済み (Step 7)
+- [ ] sow.md と spec.md が生成されている (Steps 8-9)
+- [ ] Spec レビューを通過 (Step 10)
+- [ ] タスク分割: マイルストーン、最初の一手、スコープ削減候補 (Step 11)
+- [ ] View 生成済みで `http://localhost:4321/spec/<short-slug>` URL を共有済み (Step 12)

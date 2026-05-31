@@ -122,7 +122,7 @@ informed: stakeholders kept up-to-date (one-way)
 | Step | アクション                                                                   |
 | ---- | ---------------------------------------------------------------------------- |
 | 1    | 通常の 6-Phase Process で新規 ADR を作成                                     |
-| 2    | 新規 ADR の `More Information` で先行 ADR を引用 (例: `Supersedes ADR-0042`) |
+| 2    | 新規 ADR の `More Information` で先行 ADR を引用 (例: `Supersedes ADR-NNNN`) |
 | 3    | 旧 ADR の `status:` を `superseded by ADR-NNNN` に変更                       |
 | 4    | 旧 ADR の `date:` を当日に更新                                               |
 | 5    | update-index.sh を実行してインデックスを更新                                 |

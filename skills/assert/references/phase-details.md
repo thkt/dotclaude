@@ -100,6 +100,8 @@ After Phase 2a returns, orchestrator (Claude Code) triages failing adversarial t
 
 ${CLAUDE_SKILL_DIR}/references/adversarial.md § Intent Assertion verdict rules: assertion + target code → search intent sources → verdict (exclude if intent source contradicts; otherwise promote).
 
+Intent sources include (in priority order): `.claude/OUTCOME.md` (Behavior / Non-goals / Constraints from Pre-flight), SOW / Spec under `.claude/workspace/planning/`, ADRs, target file commit messages, code comments. OUTCOME.md is the top-priority source because it defines what "done" looks like; a failing assertion that contradicts a Non-goal or violates a Constraint is promoted regardless of test contents.
+
 Output: list of promoted adversarial findings (with `[adversarial]` source tag), passed to Phase 4.
 
 ## Phase 4: Evidence Synthesis
@@ -108,12 +110,13 @@ Spawn `enhancer-evidence` as a single background Task.
 
 | Input               | Source                                                                             |
 | ------------------- | ---------------------------------------------------------------------------------- |
+| Outcome reference   | `.claude/OUTCOME.md` Behavior / Non-goals / Constraints (cached during Pre-flight) |
 | Challenger output   | Raw challenger output (enhancer-evidence reconciles internally)                    |
 | Verifier output     | Raw verifier output (enhancer-evidence reconciles internally)                      |
 | Outcome evidence    | Bootstrap smoke test (build) + Phase 1c (test) results                             |
 | Adversarial results | Phase 3 promoted findings (merged into issues set with `[adversarial]` source tag) |
 
-Integrator constructs a single `issues` set: dedup by `file:line`, retain ALL source tags per finding (e.g. `[challenger, adversarial]`). The unified set drives gate evaluation in ${CLAUDE_SKILL_DIR}/references/gate-decision.md § Gate Rule.
+Integrator constructs a single `issues` set: dedup by `file:line`, retain ALL source tags per finding (e.g. `[challenger, adversarial]`). Findings that the Outcome reference contradicts (touching a Non-goal or violating a Constraint) carry full weight in the issues count. The unified set drives gate evaluation in ${CLAUDE_SKILL_DIR}/references/gate-decision.md § Gate Rule.
 
 Returns: root causes + Gate decision (Ready / Ready (caveat) / NotReady) + report.
 

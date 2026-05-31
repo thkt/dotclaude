@@ -26,3 +26,13 @@ Meaningless without a reference point.
 | large / small amount | No threshold  | Concrete number or threshold       |
 | large / small (size) | No baseline   | Concrete size or comparison target |
 | latest / oldest      | Scope unclear | Scope and sort key                 |
+
+## State Scope Explicitly
+
+Latest models read instructions literally. They do not generalize an instruction from one item to another, nor infer scope you did not state. When authoring a rule, spec, or prompt, make the intended scope explicit.
+
+| Authoring intent      | Write                                      |
+| --------------------- | ------------------------------------------ |
+| List is illustrative  | "such as A, B, C (not limited to these)"   |
+| List is exhaustive    | "exactly these: A, B, C"                   |
+| Apply broadly         | "every section, not just the first"        |

@@ -27,17 +27,18 @@
 | --------------------------- | ---------------- |
 | New task or unclear goal    | Backcasting      |
 | Method chains >2            | Law of Demeter   |
-| 1min unreadable             | Readable Code    |
+| Shrank, reads worse         | Readable Code    |
 | Complex-first               | Occam's Razor    |
 | Single hypothesis           | Strong Inference |
 | Coordinated call sites >= 2 | YAGNI Boundary   |
 | Post-write verbose          | Occam's Razor    |
+| Extra files, unasked scope  | Overeagerness    |
 
 ## Conflict Resolution
 
 Outcome-driven defines the why (see CLAUDE.md). Backcasting defines the goal in service of the outcome. Occam's Razor and other principles govern how to reach it.
 
-When in doubt: simple > clever, concrete > abstract, working > perfect, readable \> DRY.
+When in doubt, simple > clever, concrete > abstract, working > perfect, readable \> DRY.
 
 Occam's Razor selects the simplest among approaches that achieve the outcome, not symptom removal. It does not apply when simplicity reduces output quality.
 
@@ -58,9 +59,20 @@ YAGNI prohibits unneeded features and speculative code paths. It does not prohib
 | Gate          | call sites >= 2 OR domain-obvious (auth, logging, error handling)                              |
 | Decision axis | equal cost (line count, indirection depth, import count) → prefer fewer coordinated call sites |
 
+## Overeagerness
+
+Concretizes AI-Assisted Development. Latest models tend to overengineer with extra files, unrequested abstractions, and defensive code. Keep to what the task requires; see YAGNI and Occam's Razor.
+
+| Trap                    | Rule                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| Unrequested scope       | A bug fix does not clean surrounding code; a small feature does not add config  |
+| Docs on untouched code  | Add comments/types only to code you changed, only where logic is non-obvious    |
+| Defensive code          | Validate at system boundaries (user input, external APIs), not impossible cases |
+| Speculative abstraction | No helpers or abstractions for one-time use or hypothetical future requirements |
+
 ## DRY
 
-Gate: 3+ duplications. Then verify: same knowledge or similar structure?
+The gate is 3+ duplications. Then verify whether it is the same knowledge or a similar structure.
 
 | Type           | Criterion                                 | Action       |
 | -------------- | ----------------------------------------- | ------------ |
@@ -77,4 +89,4 @@ Add interface only when a 2nd implementation appears. Premature interfaces add i
 
 ## Readable Code
 
-One-minute rule: a new team member should understand the function in under a minute. If not, simplify or document the non-obvious constraint.
+Write for your later self and one teammate who shares the context, not every newcomer. If shrinking the code makes it read easier, that is refinement; pursue it. If shrinking leaves code only you can decode, that is compression; revert it. Carry intent in names, types, and test names, which fail under CI when they lie; comment last, for the why code cannot hold.

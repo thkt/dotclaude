@@ -11,11 +11,11 @@ background: true
 
 ## Purpose
 
-| Goal             | Description                                                          |
-| ---------------- | -------------------------------------------------------------------- |
-| Depth audit      | Decide whether each module earns the interface it exposes            |
-| Shallow detect   | Surface modules that disappear without loss when removed             |
-| Consolidation    | Group repeated shallow patterns into a single finding                |
+| Goal           | Description                                               |
+| -------------- | --------------------------------------------------------- |
+| Depth audit    | Decide whether each module earns the interface it exposes |
+| Shallow detect | Surface modules that disappear without loss when removed  |
+| Consolidation  | Group repeated shallow patterns into a single finding     |
 
 ## Scope
 
@@ -31,10 +31,10 @@ Banned phrasing inside reasoning: "looks abstract", "feels like a wrapper", "sho
 
 ## Analysis Phases
 
-| Phase | Action            | Focus                                                                 |
-| ----- | ----------------- | --------------------------------------------------------------------- |
-| 1     | Deletion Test     | For each module, name what reappears at call sites if removed         |
-| 2     | Wrapper Inventory | Group identical shallow patterns; report once with all locations      |
+| Phase | Action            | Focus                                                            |
+| ----- | ----------------- | ---------------------------------------------------------------- |
+| 1     | Deletion Test     | For each module, name what reappears at call sites if removed    |
+| 2     | Wrapper Inventory | Group identical shallow patterns; report once with all locations |
 
 ### Phase 1 procedure
 
@@ -54,12 +54,12 @@ When Phase 1 surfaces the same shallow pattern at 3+ locations, follow the conso
 
 ## Distinction from related reviewers
 
-| Concern  | This reviewer (module-depth) | reviewer-react-pattern   | reviewer-encapsulation       | reviewer-readability         |
-| -------- | ---------------------------- | ------------------------ | ---------------------------- | ---------------------------- |
-| Lens     | Earns interface?             | React-idiomatic?         | Invariants enforced?         | Readable in 1 minute?        |
-| Trigger  | 1:1 forward to inner call    | Wrong React pattern      | Invalid state representable  | Cognitive load too high      |
-| Scope    | Any language                 | React components/hooks   | Type design (any language)   | Any code                     |
-| Fix      | Inline or grow the body      | Apply React pattern      | Add invariants to type       | Simplify or rename           |
+| Concern | This reviewer (module-depth) | reviewer-react-pattern | reviewer-encapsulation      | reviewer-readability    |
+| ------- | ---------------------------- | ---------------------- | --------------------------- | ----------------------- |
+| Lens    | Earns interface?             | React-idiomatic?       | Invariants enforced?        | Readable in 1 minute?   |
+| Trigger | 1:1 forward to inner call    | Wrong React pattern    | Invalid state representable | Cognitive load too high |
+| Scope   | Any language                 | React components/hooks | Type design (any language)  | Any code                |
+| Fix     | Inline or grow the body      | Apply React pattern    | Add invariants to type      | Simplify or rename      |
 
 ## Calibration
 
@@ -67,20 +67,23 @@ See `skills/audit/references/calibration-examples.md` section DP.
 
 ## Error Handling
 
-| Error             | Action                                       |
-| ----------------- | -------------------------------------------- |
-| No modules found  | Report "No modules to review"                |
-| Mixed-lang target | Review per-language; do not skip silently    |
+| Error             | Action                                    |
+| ----------------- | ----------------------------------------- |
+| No modules found  | Report "No modules to review"             |
+| Mixed-lang target | Review per-language; do not skip silently |
 
 Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: DP.
+Follow finding-schema.md.
 
-Category: module-depth (single category; subtype lives in evidence). Severity: high / medium / low.
-
-Verification: deletion_trace, name explicitly what reappears at call sites if the module is removed.
+| Field        | Value                                                                                  |
+| ------------ | -------------------------------------------------------------------------------------- |
+| Prefix       | DP                                                                                     |
+| Category     | module-depth (single category; subtype lives in evidence)                              |
+| Severity     | high / medium / low                                                                    |
+| Verification | deletion_trace. Name explicitly what reappears at call sites if the module is removed. |
 
 ```markdown
 ## Summary

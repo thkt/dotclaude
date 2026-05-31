@@ -48,9 +48,16 @@ MD_FILE="$REFL_DIR/$SESSION_ID.md"
 # this same script. Tests override via REFLECT_HOOK_EXTRACT_SH.
 HOOK_PATH_FOR_CHILD="${REFLECT_HOOK_EXTRACT_SH:-$SCRIPT_PATH}"
 PLUGIN_ROOT="${SCRIPT_PATH:h:h:h}"
+AGENT_MD="$PLUGIN_ROOT/agents/reflection-extractor.md"
 TIMEOUT_SEC="${REFLECT_SUBAGENT_TIMEOUT:-25}"
+MODEL="${REFLECT_SUBAGENT_MODEL:-claude-haiku-4-5}"
 
-# Common env block for the subagent: recursion guard + path overrides.
+# transcript_path lets the subagent read the just-finished session. Absent in
+# some Stop payloads; the subagent then degrades to no-write (placeholder).
+TRANSCRIPT_PATH=$(jq_field "$HOOK_INPUT" "transcript_path")
+
+# Common env block for the subagent: recursion guard + path overrides. The mock
+# claude in tests reads SESSION_ID / KNOWLEDGE_DIR from here (ignores argv).
 typeset -a SUBAGENT_ENV
 SUBAGENT_ENV=(
   "REFLECT_HOOK_SESSION=1"
@@ -59,28 +66,45 @@ SUBAGENT_ENV=(
   "REFLECT_HOOK_EXTRACT_SH=$HOOK_PATH_FOR_CHILD"
 )
 
-# Common subagent invocation. Test PATH-injects this as a mock `claude`.
+# Subagent invocation. NOT --bare: that flag strips OAuth auth AND custom agents,
+# so the agent never loads (claude prints "Unknown command") and nothing is ever
+# written — every session fell back to a placeholder. Instead:
+#   --setting-sources ""         skip this repo's hooks/plugins (avoids a hook
+#                                cascade on each subagent tool call) yet keeps auth
+#   --strict-mcp-config + ""     skip all MCP servers (irrelevant here, slow init)
+#   --append-system-prompt-file  inject the agent body (custom agents are not
+#                                loaded once --setting-sources is "")
+#   --model haiku                summarization task; ~17s vs opus ~90s (over budget)
+#   --allowedTools               default permission mode needs an explicit
+#                                allowlist for Write to land
+# Tests PATH-inject a mock `claude` that ignores these args and reads env only.
 typeset -a SUBAGENT_CMD
 SUBAGENT_CMD=(
-  claude --bare -p
-  --permission-mode bypassPermissions
-  --plugin-dir "$PLUGIN_ROOT"
-  "/reflection-extractor $SESSION_ID"
+  claude -p
+  --model "$MODEL"
+  --setting-sources ""
+  --strict-mcp-config --mcp-config ""
+  --append-system-prompt-file "$AGENT_MD"
+  --allowedTools Read Write Bash
 )
+
+# Concrete inputs go in the prompt, delivered on stdin so the variadic
+# --allowedTools cannot swallow it as a tool name.
+SUBAGENT_PROMPT="Session: $SESSION_ID. Transcript path: $TRANSCRIPT_PATH. Write the reflection markdown to exactly this path: $MD_FILE. Use REFLECT_KNOWLEDGE_DIR=$KNOWLEDGE_DIR and REFLECT_SESSION_ID=$SESSION_ID. Follow the Output contract in the system prompt."
 
 T_START=$(date +%s)
 SUBAGENT_EXIT=0
 TIMEOUT_BIN=$(command -v gtimeout || command -v timeout || true)
 
 if [[ -n "$TIMEOUT_BIN" ]]; then
-  env "${SUBAGENT_ENV[@]}" "$TIMEOUT_BIN" "${TIMEOUT_SEC}s" "${SUBAGENT_CMD[@]}" \
+  printf '%s' "$SUBAGENT_PROMPT" | env "${SUBAGENT_ENV[@]}" "$TIMEOUT_BIN" "${TIMEOUT_SEC}s" "${SUBAGENT_CMD[@]}" \
     >/dev/null 2>&1 || SUBAGENT_EXIT=$?
 else
   # Pure-zsh fallback: background subagent + sleep-kill watchdog.
   # Note: a 0..TIMEOUT_SEC second stray `sleep` process may briefly survive
   # after an early subagent exit. Harmless (it terminates naturally) and the
   # gtimeout/timeout path is preferred whenever available.
-  env "${SUBAGENT_ENV[@]}" "${SUBAGENT_CMD[@]}" >/dev/null 2>&1 &
+  printf '%s' "$SUBAGENT_PROMPT" | env "${SUBAGENT_ENV[@]}" "${SUBAGENT_CMD[@]}" >/dev/null 2>&1 &
   SUBAGENT_PID=$!
   ( sleep "$TIMEOUT_SEC" && kill -TERM "$SUBAGENT_PID" 2>/dev/null ) &
   WATCHDOG_PID=$!

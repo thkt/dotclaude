@@ -140,7 +140,7 @@ When a new ADR replaces an existing one:
 | Step | Action                                                                          |
 | ---- | ------------------------------------------------------------------------------- |
 | 1    | Create the new ADR via the normal 6-Phase Process                               |
-| 2    | New ADR's `More Information` cites the predecessor (e.g. `Supersedes ADR-0042`) |
+| 2    | New ADR's `More Information` cites the predecessor (e.g. `Supersedes ADR-NNNN`) |
 | 3    | In the old ADR, change `status:` to `superseded by ADR-NNNN`                    |
 | 4    | Update old ADR's `date:` to today                                               |
 | 5    | Run update-index.sh to refresh the index                                        |

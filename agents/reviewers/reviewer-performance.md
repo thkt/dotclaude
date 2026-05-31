@@ -75,9 +75,15 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: PERF.
+Follow finding-schema.md.
 
-Categories: render / bundle / hooks / effects / data. Severity: high / medium / low. Verification: hotpath_analysis or call_site_check, is this code in a hot path or frequently rendered component? Extra: impact (estimated improvement, optional).
+| Field        | Value                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------- |
+| Prefix       | PERF                                                                                              |
+| Categories   | render / bundle / hooks / effects / data                                                          |
+| Severity     | high / medium / low                                                                               |
+| Verification | hotpath_analysis or call_site_check. Is this code in a hot path or frequently rendered component? |
+| Extra        | impact (estimated improvement, optional)                                                          |
 
 ```markdown
 ## Summary

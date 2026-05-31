@@ -113,6 +113,7 @@ On conflict with a removal target, preservation wins.
 | Multiple assertions same path | Reduce to minimal covering set                  |
 | Verbose assertion chains      | Use targeted matchers (`toMatchObject`, etc.)   |
 | Over-mocked internals         | Test behavior via public API, remove impl mocks |
+| Contract-pinning test flagged for removal | Rewrite to a concrete literal (wire format, authz, allowlist, cross-module invariant); do not delete |
 
 ## Process
 

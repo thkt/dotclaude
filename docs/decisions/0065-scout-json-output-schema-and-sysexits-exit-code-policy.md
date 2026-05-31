@@ -96,18 +96,46 @@ Phase 2 PR で JSON schema を `serde` 派生型として実装し、本 ADR の
 | `error.candidates` | string[] | Optional | 修正候補 (例: typo の OSA distance マッチ) |
 | `error.retryable` | bool | Yes (error) | リトライで成功する可能性があるか |
 
-### Exit Code Policy (sysexits.h 6 種)
+### Exit Code Policy (9 種、3 層出典)
 
-| Exit | Const | JSON `error.code` | scout での発生条件 |
+出典は 3 層構成。混在を意識的にやるための明示。
+
+| 範囲 | 出典 | 備考 |
+| --- | --- | --- |
+| 0, 64-78 | sysexits.h (BSD) | OpenBSD man 3 sysexits |
+| 124 | GNU coreutils `timeout` 慣例 | `--preserve-status` 非指定時 |
+| 80-104 | PJ 拡張枠 (kodak_diary 記事方針を採用) | 細分類が必要なときのみ採番 |
+
+| Exit | Const / 出典 | JSON `error.code` | scout での発生条件 |
 | --- | --- | --- | --- |
 | 0 | EX_OK | (none) | Ok 経路 |
-| 64 | EX_USAGE | `USAGE_ERROR` | clap parse error, `conflicts_with` 違反 |
+| 64 | EX_USAGE | `USAGE_ERROR` | clap parse error, `conflicts_with` 違反, env var missing (GEMINI_API_KEY) |
 | 65 | EX_DATAERR | `DATA_ERROR` | URL invalid, owner/repo malformed, encoding 不正 |
-| 66 | EX_NOINPUT | `NOT_FOUND` | repo / file not found, 404 |
-| 74 | EX_IOERR | `IO_ERROR` | network IO error, write failure (BrokenPipe 除く) |
-| 75 | EX_TEMPFAIL | `TEMP_FAILURE` | rate limit, 5xx, retryable network error |
+| 66 | EX_NOINPUT | `NOT_FOUND` | repo / file not found, 404, search 0 件 |
+| 70 | EX_SOFTWARE | `INTERNAL` | invariant violation, deserialize unexpected schema (起因が scout 自身) |
+| 74 | EX_IOERR | `IO_ERROR` | network IO error (retry 不可), write failure (BrokenPipe 除く) |
+| 75 | EX_TEMPFAIL | `TEMP_FAILURE` | rate limit, 5xx, retry で回復見込みあり (timeout 以外) |
+| 104 | PJ 拡張 | `UNKNOWN` | 上記いずれにも分類できない (退避先、増えたら設計見直し signal) |
+| 124 | GNU `timeout` 慣例 | `TIMEOUT` | fetch / research の全体 timeout, API timeout (retry policy が `TEMP_FAILURE` と異なる) |
 
-`error.retryable` は `code == "TEMP_FAILURE"` の時のみ `true`、他は `false`。
+`error.retryable` は `code == "TEMP_FAILURE"` か `code == "TIMEOUT"` の時のみ `true`、他は `false`。`TIMEOUT` と `TEMP_FAILURE` を分けるのは、retry sleep duration が違うため (timeout は backoff を長めに、rate limit は短め)。
+
+### Classification Priority
+
+複数分類が当てはまる場合の優先順位。scout の実エラーソース (clap parse / URL invalid / 404 / rate limit / timeout / JSON parse / network IO) から 5 段に絞る。
+
+| 優先 | ルール | 分類 |
+| --- | --- | --- |
+| 1 | env var missing / 設定起因 / 引数誤り | 64 USAGE_ERROR |
+| 2 | URL / owner / repo / encoding の形式不正 | 65 DATA_ERROR |
+| 3 | リソース不在 (404, search 0 件) | 66 NOT_FOUND |
+| 4 | retry で回復見込みあり (rate limit, 5xx, timeout) | 75 TEMP_FAILURE または 124 TIMEOUT |
+| 5 | アプリ内部不具合と判断できる | 70 INTERNAL |
+| 退避 | 上記いずれにも分類できない | 104 UNKNOWN |
+
+ルールの読み方: 上から順に評価。マッチした時点で確定。例: GitHub API から 404 と rate limit 余地のあるレスポンスが同時にあった場合、優先 3 で 66 NOT_FOUND を採用 (rate limit より先に 404 評価)。
+
+`UNKNOWN` が増える場合は分類設計の signal。`anyhow::Error` の握り潰しを検知する目的で意図的に独立。
 
 ### Migration Strategy
 
@@ -127,8 +155,10 @@ Phase 2 で JSON `error.code` を導入した時点で、内部の `ScoutError::
 
 ### Reassessment Triggers
 
-* sysexits 6 種で不足が出た場合、16 種フル準拠への拡張を本 ADR を superseded して新 ADR で記録
+* sysexits 9 種で不足が出た場合、16 種フル準拠への拡張を本 ADR を superseded して新 ADR で記録
 * `data` 内 schema が共通化される兆候が出た場合、commands 横断 schema として別 ADR で抽出
+* `UNKNOWN` (104) の発生比率が増えた場合、分類設計を見直す
+* 他 CLI (xr / notch / yomu 系 / Hook tool 系) で本 policy を採用する流れになった場合、CLI 横断方針を別 ADR で抽出 (本 ADR は scout 固有のまま)
 
 ### References
 
@@ -136,5 +166,7 @@ Phase 2 で JSON `error.code` を導入した時点で、内部の `ScoutError::
 * Audit: `/Users/thkt/GitHub/cli/scout/.claude/workspace/research/2026-05-07-adr-0060-scout-cli-gap.md`
 * Issue: thkt/scout#67
 * Phase 1 PR: thkt/scout#74
-* Standards: sysexits.h, MCP Tools spec
-* Existing exemplars: yomu (`--json` global), sae (`output.rs:6-8` two-stream output), recall (`USER_ERROR_MARKERS`)
+* Revision (2026-05-13) follow-up issues: thkt/scout#83 (TIMEOUT 124), thkt/scout#84 (INTERNAL 70 / UNKNOWN 104), thkt/scout#85 (classification priority)
+* Standards: sysexits.h, GNU coreutils `timeout`, MCP Tools spec
+* Inspiration: kodak_diary "終了コードを PJ 独自ルールにしすぎないための設計メモ" (https://zenn.dev/kodak_diary/articles/5a84d597c69b0b) - 数値↔文字列分離、分類優先順位、80-104 拡張枠の方針を参考
+* Existing exemplars: yomu (`--json` global), sae (`output.rs:6-8` two-stream output), recall (`USER_ERROR_MARKERS`), amici (`cli::exit_code::codes` で sysexits u8 定数 + `CliError` trait 提供済み)

@@ -80,9 +80,15 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults. Cold-p
 
 ## Output
 
-Follow finding-schema.md. Prefix: EFF.
+Follow finding-schema.md.
 
-Categories: unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad. Severity: high / medium / low. Verification: benchmark or profile, how to confirm the improvement. Extra: path_frequency (hot/warm/cold) in reasoning.
+| Field        | Value                                                                             |
+| ------------ | --------------------------------------------------------------------------------- |
+| Prefix       | EFF                                                                               |
+| Categories   | unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad |
+| Severity     | high / medium / low                                                               |
+| Verification | benchmark or profile. How to confirm the improvement.                             |
+| Extra        | path_frequency (hot/warm/cold) in reasoning                                       |
 
 ```markdown
 ## Summary

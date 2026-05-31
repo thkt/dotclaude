@@ -73,9 +73,7 @@ With N > 1, Leader runs Wave 1 (reviewer fan-out) N times in sequence, then aggr
 3. `runs_observed`: integer array of run indices (1-based) that produced the finding; union on merge
 4. On message divergence: keep the longest; preserve both in `messages: [...]` if verification is needed
 
-Without normalization, strict key matching leaves most findings unmerged because reviewers vary path format, line boundary, and category label across runs. Tolerance on all three is required.
-
-The ±3 line tolerance was chosen empirically: a strict key yielded ~3% merge rate on a 2-run diagnostic; ±3 with the normalization above lifted this to ~33% (10× improvement). Tighter (±1) under-merges legitimate same-issue findings; broader (±5+) risks false merges across distinct issues at nearby lines. If observed false merges rise, tighten to ±1 or require range overlap only.
+Without normalization, strict key matching leaves most findings unmerged because reviewers vary path format, line boundary, and category label across runs. Tolerance on all three is required. The ±3 tuning rationale (empirical ~3% → ~33% merge rate) is in ${CLAUDE_SKILL_DIR}/references/aggregation-tuning.md.
 
 ### File Count Policy
 

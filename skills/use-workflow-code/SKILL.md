@@ -16,10 +16,9 @@ user-invocable: false
 
 ## Patterns
 
-| Pattern        | Reference                                                   |
-| -------------- | ----------------------------------------------------------- |
-| IDR Generation | ${CLAUDE_SKILL_DIR}/../../hooks/lifecycle/idr-pre-commit.sh |
-| TDD            | ${CLAUDE_SKILL_DIR}/../use-workflow-tdd-cycle/SKILL.md      |
+| Pattern | Reference                                              |
+| ------- | ------------------------------------------------------ |
+| TDD     | ${CLAUDE_SKILL_DIR}/../use-workflow-tdd-cycle/SKILL.md |
 
 <!-- canonical: rules/development/THRESHOLDS.md (coverage targets) -->
 
@@ -63,7 +62,7 @@ Agent(subagent_type: "reviewer-readability",
       run_in_background: true)
 ```
 
-High severity → fix before Quality Gates. Medium/low → advisory (note in IDR).
+High severity → fix before Quality Gates. Medium/low → advisory.
 Skip for `/fix` and single-file changes.
 
 ### Gate Result Output

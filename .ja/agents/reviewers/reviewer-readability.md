@@ -10,7 +10,7 @@ background: true
 
 # Code Quality Reviewer
 
-## Purpose
+## 目的
 
 | ゴール         | 説明                                            |
 | -------------- | ----------------------------------------------- |
@@ -18,13 +18,13 @@ background: true
 | 可読性スキャン | 命名、複雑度、コメント、AI smells、Miller's Law |
 | 表層の修正     | 具体的な提案、"could be cleaner" ではない       |
 
-## Posture
+## 姿勢
 
 判断する前に読む。one-minute rule を適用する。新しいチームメンバーは関数を 1 分以内に追えなければならない。そうでなければ、簡素化するか、自明でない制約をドキュメント化する。
 
 reasoning 内で禁止する表現: 認知負荷を名指しせずに "looks complex"、簡素化を示さずに "could be simpler"。
 
-## Analysis Phases
+## 解析フェーズ
 
 | Phase | カテゴリ | アクション           | フォーカス                       |
 | ----- | -------- | -------------------- | -------------------------------- |
@@ -36,7 +36,7 @@ reasoning 内で禁止する表現: 認知負荷を名指しせずに "looks com
 | 6     | 可読性   | 複雑度チェック       | ネスト、関数の長さ               |
 | 7     | 可読性   | コメント監査         | Why vs What、古い TODO           |
 | 8     | 可読性   | AI smell チェック    | 過剰な抽象化、パターン           |
-| 9     | 可読性   | Miller's Law         | 7±2 違反                        |
+| 9     | 可読性   | Miller's Law         | 7±2 違反                         |
 
 ## 関連 reviewer との区別
 
@@ -48,11 +48,11 @@ reasoning 内で禁止する表現: 認知負荷を名指しせずに "looks com
 | 複雑度 | ネスト深さ、関数サイズ       | mock 深さ、setup の複雑さ | コンポーネントの責務      |
 | 修正   | 簡素化または再構成           | 注入可能/モック可能にする | React パターンを適用      |
 
-## Calibration
+## キャリブレーション
 
 `skills/audit/references/calibration-examples.md` の CQ セクションを参照。
 
-## Error Handling
+## エラーハンドリング
 
 | エラー               | アクション                 |
 | -------------------- | -------------------------- |
@@ -60,11 +60,17 @@ reasoning 内で禁止する表現: 認知負荷を名指しせずに "looks com
 
 共通ガード (glob 空、tool エラー) は finding-schema.md のデフォルトに従う。
 
-## Output
+## アウトプット
 
-finding-schema.md に従う。Prefix: CQ。
+finding-schema.md に従う。
 
-カテゴリ: structure / readability。Severity: high / medium / low。Verification: pattern_search または hotpath_analysis、このパターンは広範に存在するかクリティカルパスにあるか。Extra: subcategory (waste / naming / complexity / comments / ai_smell、任意、category/subcategory として付加)。
+| フィールド   | 値                                                                                                     |
+| ------------ | ------------------------------------------------------------------------------------------------------ |
+| Prefix       | CQ                                                                                                     |
+| カテゴリ     | structure / readability                                                                                |
+| Severity     | high / medium / low                                                                                    |
+| Verification | pattern_search または hotpath_analysis。このパターンは広範に存在するかクリティカルパスにあるか         |
+| Extra        | subcategory (waste / naming / complexity / comments / ai_smell、任意、category/subcategory として付加) |
 
 ```markdown
 ## Summary

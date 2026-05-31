@@ -40,11 +40,24 @@ Codex asserts independently in an isolated worktree. Claude Code orchestrates an
 
 Base branch detection: `main` (default), override with `--base <branch>`. Directory scope uses `git ls-files` to delegate `.gitignore` parsing to git itself; untracked files inside a directory are excluded by design (use diff mode to assert uncommitted work).
 
+## Pre-flight: Read OUTCOME.md
+
+Outcome-based assertion needs the outcome it is asserting against. Read `.claude/OUTCOME.md` before Phase 0 to establish what "done" looks like for this repo. The Behavior, Non-goals, and Constraints sections feed into Phase 3 (Intent Assertion) and Phase 4 (Evidence Synthesis) as intent sources.
+
+| Condition                             | Action                                                                         |
+| ------------------------------------- | ------------------------------------------------------------------------------ |
+| `.claude/OUTCOME.md` exists           | Read and cache the Behavior / Non-goals / Constraints sections                 |
+| `.claude/OUTCOME.md` absent           | Generate stub per `rules/core/OUTCOME.md` § Behavior when absent, then proceed |
+| Behavior empty or all sections TBD    | Treat as absent. Generate stub                                                 |
+| Asserted change touches a Non-goal    | Flag in report as Intent Assertion finding; let Phase 4 decide if it blocks    |
+| Asserted change violates a Constraint | Promote as `[adversarial]` finding (Issues>0 routes to NotReady)               |
+
 ## Execution
 
 | Phase | Action              | Executor                   | Mode                | Depends On | Detail                                                    |
 | ----- | ------------------- | -------------------------- | ------------------- | ---------- | --------------------------------------------------------- |
-| 0     | Bootstrap worktree  | orchestrator (Bash)        | sequential          | -          | ${CLAUDE_SKILL_DIR}/references/bootstrap.md               |
+| -1    | OUTCOME.md read     | orchestrator (Read)        | sequential          | -          | Pre-flight section above                                  |
+| 0     | Bootstrap worktree  | orchestrator (Bash)        | sequential          | Phase -1   | ${CLAUDE_SKILL_DIR}/references/bootstrap.md               |
 | 1     | Evidence collection | Codex CLI + audit agents   | parallel (required) | Phase 0    | ${CLAUDE_SKILL_DIR}/references/phase-details.md § Phase 1 |
 | 2     | Deep assertion      | Codex CLI + audit agents   | parallel (required) | Phase 1    | ${CLAUDE_SKILL_DIR}/references/phase-details.md § Phase 2 |
 | 3     | Intent assertion    | orchestrator (Claude Code) | sequential          | Phase 2    | ${CLAUDE_SKILL_DIR}/references/phase-details.md § Phase 3 |
@@ -113,7 +126,7 @@ Empty: `(none)` when gate = Ready.
 
 [Resolved / New / Carried from workspace/history/.]
 
-`<promise>PASS</promise>` is emitted by enhancer-evidence when gate = Ready ONLY (NOT for Ready (caveat) or NotReady). Leader relays verbatim without regenerating.
+enhancer-evidence states `gate = Ready` explicitly when gate = Ready ONLY (NOT for Ready (caveat) or NotReady), so a `/goal` evaluator reads completion from the conversation. Leader relays verbatim without regenerating.
 ```
 
 ## Error Handling

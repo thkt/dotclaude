@@ -189,12 +189,12 @@ Per-project configuration is done via `.claude/tools.json`. See
 
 Some commands use external CLI tools for data source integration:
 
-| Tool          | Required By         | Purpose               | Install                                                   |
-| ------------- | ------------------- | --------------------- | --------------------------------------------------------- |
-| `gh`          | `/inbox` (GitHub)   | GitHub API access     | `brew install gh && gh auth login`                        |
-| `gemini`      | `/inbox` (Calendar) | Google Calendar query | [Gemini CLI](https://github.com/google-gemini/gemini-cli) |
-| `scout`       | Slack URL reading   | Slack message fetch   | `brew install thkt/tap/scout`                             |
-| `SLACK_TOKEN` | `/inbox` (Slack)    | Slack search API      | See below                                                 |
+| Tool          | Required By         | Purpose               | Install                               |
+| ------------- | ------------------- | --------------------- | ------------------------------------- |
+| `gh`          | `/inbox` (GitHub)   | GitHub API access     | `brew install gh && gh auth login`    |
+| `agy`         | `/inbox` (Calendar) | Google Calendar query | `brew install --cask antigravity-cli` |
+| `scout`       | Slack URL reading   | Slack message fetch   | `brew install thkt/tap/scout`         |
+| `SLACK_TOKEN` | `/inbox` (Slack)    | Slack search API      | See below                             |
 
 **Slack reading**: `scout fetch <slack-url>` reads any Slack message/thread URL
 directly. No additional setup needed if scout is configured.
@@ -211,23 +211,17 @@ directly. No additional setup needed if scout is configured.
    export SLACK_WORKSPACE="your-workspace"  # the workspace part of {workspace}.slack.com
    ```
 
-### Required Plugins
+### Autonomous Iteration
 
-Some commands depend on external plugins that are not included in this
-repository. Install them manually after cloning:
-
-| Plugin       | Required By | Purpose                        | Install Command              |
-| ------------ | ----------- | ------------------------------ | ---------------------------- |
-| `ralph-loop` | `/code`     | TDD Green Phase auto-iteration | `/plugin install ralph-loop` |
-
-**Quick Install**:
+`/code` can run as an autonomous multi-turn loop via the native `/goal` command
+(Claude Code 2.1.139+). No plugin install is required.
 
 ```bash
-/plugin install ralph-loop
+/goal all tests pass and lint is clean
 ```
 
-**Note**: Plugins are stored in `~/.claude/plugins/` which is excluded from git.
-Each user must install plugins independently.
+Wrap a `/code` session in `/goal <condition>`; Claude continues until a fast
+model judges the condition met from the conversation.
 
 ## 📝 Available Commands
 

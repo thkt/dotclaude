@@ -59,9 +59,15 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: PE.
+Follow finding-schema.md.
 
-Categories: layout / animation / event / style / toggle. Severity: high / medium / low. Verification: pattern_search or call_site_check, is this JS pattern used in other components too? Required: recommendations section (per schema Domain Extensions).
+| Field        | Value                                                                               |
+| ------------ | ----------------------------------------------------------------------------------- |
+| Prefix       | PE                                                                                  |
+| Categories   | layout / animation / event / style / toggle                                         |
+| Severity     | high / medium / low                                                                 |
+| Verification | pattern_search or call_site_check. Is this JS pattern used in other components too? |
+| Required     | recommendations section (per schema Domain Extensions)                              |
 
 ```markdown
 ## Recommendations

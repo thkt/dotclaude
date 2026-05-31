@@ -44,11 +44,11 @@ Auto-detects when project has Storybook + component file. See Storybook Phase.
 
 ## SOW Context
 
-See ${CLAUDE_SKILL_DIR}/../_lib/sow-resolution.md
+See ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md
 
 ## Scope Guard
 
-After reading SOW, check Phase file counts. If any Phase has Files ≥ 5, stop and ask user to split via `/think` before proceeding. If no SOW exists and `$ARGUMENTS` implies ≥ 5 files, suggest running `/think` first.
+After reading OUTCOME.md and SOW, check (a) Phase file counts and (b) outcome alignment. If any Phase has Files ≥ 5, stop and ask user to split via `/think` before proceeding. If the implementation steps into Non-goals or conflicts with Constraints from OUTCOME.md, stop and confirm with user. If no SOW exists and `$ARGUMENTS` implies ≥ 5 files, suggest running `/think` first.
 
 ## Target Languages
 
@@ -58,9 +58,10 @@ JS/TS is first-class. Rust / Go / Python work via `generator-test` framework det
 
 | Reference                                       | When read                           | If not found / unclear                          |
 | ----------------------------------------------- | ----------------------------------- | ----------------------------------------------- |
-| ${CLAUDE_SKILL_DIR}/../_lib/sow-resolution.md   | Step 1 SOW detect                   | No SOW state, apply Scope Guard inline only     |
+| `.claude/OUTCOME.md`                            | Step 0 Outcome Anchor               | Generate stub via rules/core/OUTCOME.md flow    |
+| ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md  | Step 1 SOW detect                   | No SOW state, apply Scope Guard inline only     |
 | ${CLAUDE_SKILL_DIR}/references/csf3-patterns.md | Storybook Phase all conditions pass | Use minimal CSF3 stories format                 |
-| `ralph-loop` plugin                             | Step 4 RGRC iteration               | Manual Red → Green → Refactor loop              |
+| `/goal` (optional)                              | Step 4 autonomous loop              | gates auto-retry; manual otherwise              |
 | `generator-test` agent                          | Step 2 spawn                        | Error Handling: Leader generates tests directly |
 | `evaluator-test` agent                          | Step 8 Quality Gates, Spec exists   | Skip Test Quality gate                          |
 | `reviewer-readability` agent                    | Step 5 Review Gate                  | Skip for /fix; continue with manual review      |
@@ -74,14 +75,17 @@ JS/TS is first-class. Rust / Go / Python work via `generator-test` framework det
 
 ## Execution
 
-1. SOW Context: detect and read SOW/spec → Scope Guard
-2. Spawn `generator-test` as background agent (`subagent_type: generator-test`, `run_in_background: true`)
-3. Receive test results via `TaskOutput` (wait for completion before implementation)
-4. RGRC cycle with `ralph-loop --max-iterations 10` auto-iteration
-5. Review Gate: spawn `reviewer-readability` (skip for /fix)
-6. Storybook Phase (conditional)
-7. E2E Phase (conditional)
-8. Quality Gates
+| Step | Action                 | Detail                                                                            |
+| ---- | ---------------------- | --------------------------------------------------------------------------------- |
+| 0    | Outcome Anchor         | Read `.claude/OUTCOME.md`; if absent, stub generation (see rules/core/OUTCOME.md) |
+| 1    | SOW Context            | Detect and read SOW/spec → Scope Guard                                            |
+| 2    | Spawn `generator-test` | `subagent_type: generator-test`, `run_in_background: true`                        |
+| 3    | Receive test results   | `TaskOutput` (wait for completion before implementation)                          |
+| 4    | RGRC cycle             | gates auto-retry per Green; optional `/goal` wrapper                              |
+| 5    | Review Gate            | Spawn `reviewer-readability` (skip for /fix)                                      |
+| 6    | Storybook Phase        | Conditional                                                                       |
+| 7    | E2E Phase              | Conditional                                                                       |
+| 8    | Quality Gates          | See use-workflow-code                                                             |
 
 ## Spec Evolution
 
@@ -176,7 +180,7 @@ See use-workflow-code for invocation details.
 | -------------------------------- | -------------------------------------------------------------------------------- |
 | generator-test timeout           | Leader generates tests directly                                                  |
 | generator-test produces 0 tests  | Verify spec exists, ask user                                                     |
-| ralph-loop stalls                | Stop loop, fix manually                                                          |
+| `/goal` loop stalls              | `/goal clear`, then fix manually                                                 |
 | Quality gates fail               | Fix issues before commit                                                         |
 | Evaluator metric below threshold | Fix uncovered/excess/duplicate/granularity/intent issues                         |
 | Evaluator timeout                | Skip gate, log warning                                                           |

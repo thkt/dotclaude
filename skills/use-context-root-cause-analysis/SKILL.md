@@ -34,6 +34,7 @@ Ask "why" five times, descending through abstraction levels.
 | Don't go deep    | Stop when actionable             |
 | Validate         | "Because [5], therefore [4]..."  |
 | Verify fix       | "Will this prevent the problem?" |
+| Watch complexity signals | When intermittent / multiple independent changes overlap / behavior unexplained, enumerate ≥3 cause-layer candidates before converging |
 
 ## Output Format
 

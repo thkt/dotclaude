@@ -80,7 +80,7 @@ tests/
 | パターン                                       | 適用条件                                              |
 | ---------------------------------------------- | ----------------------------------------------------- |
 | `#[cfg(test)] mod tests { use super::*; ... }` | デフォルト。テストをコードの近くに保つ                |
-| `#[cfg(test)] mod tests;` → `tests.rs`        | テスト コードがモジュールを覆い隠すほど長くなった場合 |
+| `#[cfg(test)] mod tests;` → `tests.rs`         | テスト コードがモジュールを覆い隠すほど長くなった場合 |
 | `tests/cli_integration.rs`                     | バイナリ CLI 挙動 (実バイナリを起動)                  |
 
 ### 命名
@@ -134,23 +134,23 @@ assert!(stdout.starts_with(expected_prefix), "expected prefix {expected_prefix:?
 
 行数を減らすために idiomatic な Rust を選ぶ。`unwrap()` はテスト内、または不変条件が構築上保証されている場合は許容。`(1.95+)` タグの機能は `Cargo.toml` で `rust-version = "1.95"` を要求する。MSRV は実際に使う最新機能に合わせる。
 
-| 状況                               | 推奨                                                     | 避ける                                        |
-| ---------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
-| エラー伝播                         | `?`                                                      | 本番コードでの `unwrap()`                     |
-| `Option` フォールバック            | `unwrap_or(default)` / `unwrap_or_else(\|\| ...)`        | `match`                                       |
-| `Result` フォールバック            | `unwrap_or(default)` / `unwrap_or_else(\|e\| ...)`       | `match`                                       |
-| エラー型変換                       | `map_err(\|e\| ...)`                                     | `match Err(e) =>`                             |
-| 破棄 + 変換                        | `.filter_map()`                                          | `.filter().map()`                             |
-| Boolean 短絡                       | `.any()` / `.all()`                                      | 明示ループ                                    |
-| 単一 variant チェック              | `if let` / `let else`                                    | `match`                                       |
-| Boolean パターン チェック          | `matches!(val, Pat)`                                     | bool を返す `match`                           |
-| 単一引数クロージャ                 | point-free (`f`)                                         | `\|x\| f(x)`                                  |
+| 状況                              | 推奨                                                     | 避ける                                        |
+| --------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
+| エラー伝播                        | `?`                                                      | 本番コードでの `unwrap()`                     |
+| `Option` フォールバック           | `unwrap_or(default)` / `unwrap_or_else(\|\| ...)`        | `match`                                       |
+| `Result` フォールバック           | `unwrap_or(default)` / `unwrap_or_else(\|e\| ...)`       | `match`                                       |
+| エラー型変換                      | `map_err(\|e\| ...)`                                     | `match Err(e) =>`                             |
+| 破棄 + 変換                       | `.filter_map()`                                          | `.filter().map()`                             |
+| Boolean 短絡                      | `.any()` / `.all()`                                      | 明示ループ                                    |
+| 単一 variant チェック             | `if let` / `let else`                                    | `match`                                       |
+| Boolean パターン チェック         | `matches!(val, Pat)`                                     | bool を返す `match`                           |
+| 単一引数クロージャ                | point-free (`f`)                                         | `\|x\| f(x)`                                  |
 | `Option<String>` → `Option<&str>` | `opt.as_deref()`                                         | `opt.as_ref().map(\|s\| s.as_str())`          |
-| HashMap insert-or-modify           | `map.entry(k).or_insert_with(...)`                       | `if !map.contains_key(k) { map.insert(...) }` |
-| match 内のパターン + 条件          | `match v { Some(x) if let Ok(y) = f(x) => ... }` (1.95+) | ネストした `match` / `if let`                 |
-| Push + 可変参照を使う              | `let r = v.push_mut(x);` (1.95+)                         | `v.push(x); v.last_mut().unwrap()`            |
+| HashMap insert-or-modify          | `map.entry(k).or_insert_with(...)`                       | `if !map.contains_key(k) { map.insert(...) }` |
+| match 内のパターン + 条件         | `match v { Some(x) if let Ok(y) = f(x) => ... }` (1.95+) | ネストした `match` / `if let`                 |
+| Push + 可変参照を使う             | `let r = v.push_mut(x);` (1.95+)                         | `v.push(x); v.last_mut().unwrap()`            |
 | Integer → bool                    | `bool::try_from(n)?` (1.95+)                             | `n != 0` (意図不明)                           |
-| プラットフォーム / feature 分岐    | `cfg_select! { unix => ..., _ => ... }` (1.95+)          | `cfg-if` crate 依存                           |
+| プラットフォーム / feature 分岐   | `cfg_select! { unix => ..., _ => ... }` (1.95+)          | `cfg-if` crate 依存                           |
 
 ### derive 選択
 

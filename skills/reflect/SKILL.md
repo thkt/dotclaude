@@ -6,7 +6,7 @@ allowed-tools: Read Write Bash
 
 # /reflect — manual reflection promotion
 
-Escape hatch for ADR-0068. Stop hook subagent extraction (`reflection-extract.sh`) normally writes per-session reflections automatically. When that pipeline fails (subagent timeout, API error, build issue), `/reflect` lets you produce the same artifact manually before the session ends.
+Escape hatch for the automated reflection pipeline. Stop hook subagent extraction (`reflection-extract.sh`) normally writes per-session reflections automatically. When that pipeline fails (subagent timeout, API error, build issue), `/reflect` lets you produce the same artifact manually before the session ends.
 
 This is NOT the primary path. The Stop hook is. Use this skill when:
 
@@ -84,7 +84,7 @@ echo "Promoted to $MD"
 
 ## Constraints
 
-- Never modify `CLAUDE.md`, `MEMORY.md`, `rules/`, `agents/`, `skills/`, or any file referenced by `paths:` frontmatter. Same auto-loaded-path immutability rule as the Stop hook (ADR-0068 BR-006). Violations invalidate the prompt cache for every following session.
+- Never modify `CLAUDE.md`, `MEMORY.md`, `rules/`, `agents/`, `skills/`, or any file referenced by `paths:` frontmatter. Same auto-loaded-path immutability rule as the Stop hook. Violations invalidate the prompt cache for every following session.
 - Never read transcripts outside the current session.
 - Never call `claude --bare` recursively. This skill runs in the main session, not in a subagent.
 
@@ -96,6 +96,5 @@ echo "Promoted to $MD"
 
 ## Related
 
-- ADR-0068: Stop hook Knowledge Reflection design (this skill is the escape hatch named there).
 - `agents/reflection-extractor.md`: shares the 3-category output shape.
 - `hooks/lifecycle/reflection-extract.sh`: the primary auto-extraction path this skill complements.

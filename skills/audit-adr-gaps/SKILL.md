@@ -1,13 +1,13 @@
 ---
-name: audit-undocumented
-description: Discover undocumented design decisions and challenge each candidate via critic-design before promotion. Rank by impact and reversibility, produce ADR promotion candidates. Treat each candidate as a position arguing for ADR status, not a fact to be filed.
+name: audit-adr-gaps
+description: Discover undocumented design decisions and challenge each candidate via critic-design before promotion. Rank by impact and reversibility, produce ADR promotion candidates. Treat each candidate as a position arguing for ADR status, not a fact to be filed. Pairs with audit-adr-drift, which scans existing ADRs for drift against code.
 when_to_use: 判断未記録の発掘, undocumented decisions, ADR候補発掘, 設計判断棚卸し, decision archaeology, design rationale audit
 allowed-tools: Read Write Edit LS Bash(git:*) Bash(gh:*) Bash(ugrep:*) Bash(bfs:*) Bash(yomu:*) Bash(sqlite3:*) Bash(wc:*) Task AskUserQuestion
 model: opus
 argument-hint: "[--threshold=N] [--paths=path,path]"
 ---
 
-# /audit-undocumented - Undocumented Decisions Audit
+# /audit-adr-gaps - Undocumented Decisions Audit
 
 Discover design decisions that exist in the code but have no ADR. Each candidate is challenged by critic-design (Step 6.2) before promotion. The final list is what survived the adversarial pass, not what the initial scan found. Produce a ranked list of ADR promotion candidates so the next refactor has a complete decision baseline.
 
@@ -17,9 +17,14 @@ Discover design decisions that exist in the code but have no ADR. Each candidate
 - Before refactoring, you want to know which decisions to preserve vs question
 - New maintainers need a map of "why is the code shaped this way"
 
-This skill is complementary to `/audit-adr-drift`. Run drift scan first if ADRs exist; the gaps it cannot answer become the input here.
+### Pairing with /audit-adr-drift
 
-For cross-repo `scope:` cluster detection on ADRs already tagged with the scope frontmatter (YAML or `- Scope:` bullet), invoke `scripts/audit-adr-scopes.py` directly. That sibling script aggregates ADRs from `~/.claude` and `~/GitHub/{cli,apps,plugins}/*/docs/decisions/` and surfaces same-scope title clusters (horizontal-expansion candidates).
+`/audit-adr-gaps` and `/audit-adr-drift` form an ADR-baseline audit pair. Run order depends on whether ADRs already exist, not a fixed sequence.
+
+| Repo state            | Run first                                              | Then                                            |
+| --------------------- | ------------------------------------------------------ | ----------------------------------------------- |
+| ADRs exist            | `/audit-adr-drift` (drift between ADR and code)        | `/audit-adr-gaps` (gaps drift cannot see)       |
+| ADRs absent or sparse | `/audit-adr-gaps` (mine decisions into ADR candidates) | `/audit-adr-drift` (verify once ADRs are added) |
 
 ## Input
 
@@ -64,19 +69,7 @@ Default threshold is 400 lines (one-screen ceiling, see rules/development/THRESH
 
 ### Step 2: Document Detection
 
-Scan top-level and `docs/` for files matching:
-
-| Filename pattern                                                     | Likely content                       |
-| -------------------------------------------------------------------- | ------------------------------------ |
-| `README.md`                                                          | Design intent, naming, prohibitions  |
-| `CONTRIBUTING.md`                                                    | Code style decisions, workflow rules |
-| `SECURITY.md`                                                        | Threat boundaries, security policies |
-| `THREAT_MODEL.md`                                                    | Trust boundaries, mitigations        |
-| `ARCHITECTURE.md`                                                    | Module decomposition, layer policy   |
-| `DESIGN.md` / `*.design.md`                                          | Component rationale                  |
-| `CLAUDE.md` / `AGENTS.md`                                            | AI-agent operating decisions         |
-| `Makefile` / `justfile`                                              | Build flow decisions                 |
-| Linter config (`Cargo.toml` `[lints.*]`, `.eslintrc`, `oxlint.json`) | Rule selection rationale             |
+Scan top-level and `docs/` for decision-bearing documents (README, CONTRIBUTING, SECURITY, THREAT_MODEL, ARCHITECTURE, DESIGN, CLAUDE.md / AGENTS.md, Makefile / justfile, linter configs). Full pattern-to-content table: `${CLAUDE_SKILL_DIR}/references/detection-targets.md`.
 
 ### Step 3: Large File Decision Mining
 
@@ -95,9 +88,7 @@ For each large file (full or truncated scope), spawn the matching reviewer via T
 - Is there a comment or module-doc that already records the rationale?
 - Does the comment describe the current state but omit the rule for future contributors? (this is the `incomplete-contract` pattern)
 
-Findings format: `file:line` + decision summary + evidence (code comment, naming, module-doc) + `documented?` (Yes/Partial/No) + `incomplete-contract?` (Yes/No).
-
-The `incomplete-contract` flag captures findings where the code has a comment describing what is true, but not what must remain true. Example: an SSRF-safe HTTP client field is annotated "redirect disabled for SSRF" but no rule says "future commands handling user URLs MUST use this client." This pattern is common with security invariants and design rationale that depend on the reader inferring "and this should stay this way." Findings with `incomplete-contract=Yes` are strong ADR candidates regardless of `documented?` value, because the missing rule is what an ADR uniquely provides.
+Findings format: `file:line` + decision summary + evidence (code comment, naming, module-doc) + `documented?` (Yes/Partial/No) + `incomplete-contract?` (Yes/No). The `incomplete-contract` flag marks code whose comment says what is true but not what must remain true (a missing rule for future contributors); promotion is handled in Step 6.1, with examples in `${CLAUDE_SKILL_DIR}/references/decision-criteria.md`.
 
 After collecting findings, cross-reference each one against the ADR directory (if any). Drop findings already covered by an ADR (record count as "ADR-covered (excluded)" in the summary).
 
@@ -121,7 +112,7 @@ ugrep -r -n -E "(per |see |governed by )?ADR-[0-9]{4}" --include="*.rs" --includ
 For each captured ADR id, check whether the matching `NNNN-*.md` exists in the local ADR directory:
 
 - Local match → existing ADR coverage, skip
-- No local match → record as **External ADR Dependency** candidate
+- No local match → record as External ADR Dependency candidate
 
 External ADR dependencies are flagged for promotion (write a scout-local ADR that supersedes or imports the external decision). This is impact=H by default because cross-repo ADR drift is silent and hard to detect after the fact.
 
@@ -161,14 +152,9 @@ Spawn `critic-design` via Task with the initial promotion candidate list. The ag
 - For statement-of-fact configs (deny.toml, Cargo.toml lints): is the config file itself already the source of truth, making an ADR redundant?
 - For monolithic-boundary candidates: would the ADR justify the status quo and reduce pressure to split?
 - Is there already an enforcement mechanism (type system, lint, test) that makes the rule mechanical, leaving the ADR with nothing to add?
-- **Bug vs Invariant**: is this candidate describing a fix-the-bug case (current code is wrong and should change) or an invariant-to-document case (current code is intentional and should be preserved)? Bugs must be surfaced as bug-fix follow-ups, not ADRs — documenting wrong behavior as intentional locks in the bug.
+- Bug vs Invariant: is this candidate describing a fix-the-bug case (current code is wrong and should change) or an invariant-to-document case (current code is intentional and should be preserved)? Bugs must be surfaced as bug-fix follow-ups, not ADRs. Documenting wrong behavior as intentional locks in the bug.
 
-ADR worth heuristic (empirically derived from scout試運転 2026-05-13): existing enforcement mechanisms (lint config, type system, automated tests) are stronger than ADR text for mechanical decisions. Reserve ADR for two categories where mechanisms cannot help:
-
-1. Invariants not enforceable by tools (e.g., "field X must not be used with Y" when both are same type)
-2. Public API compatibility commitments (e.g., exit code convention, JSON output schema)
-
-Statement-of-fact configs (deny.toml, Cargo.toml `[lints.*]`) are themselves the source of truth — duplicating into an ADR creates drift risk. A 1-2 line policy comment in the config block usually suffices.
+ADR worth heuristic and incomplete-contract examples: see `${CLAUDE_SKILL_DIR}/references/decision-criteria.md` (pass to critic-design alongside the candidate list).
 
 For each candidate, critic-design returns one of:
 
@@ -176,7 +162,7 @@ For each candidate, critic-design returns one of:
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `keep`      | ADR worth, file as standalone or merge with related candidates                                                                                                        |
 | `downgrade` | Not standalone ADR; absorb into a related ADR section or strengthen comments                                                                                          |
-| `drop`      | Not ADR-worthy; config/comment/test already covers it, cost > value, or **the candidate is a bug** (surface as bug-fix follow-up, do not document the wrong behavior) |
+| `drop`      | Not ADR-worthy; config/comment/test already covers it, cost > value, or the candidate is a bug (surface as bug-fix follow-up, do not document the wrong behavior) |
 
 Record the challenge verdict alongside the initial ranking. The final candidate list = initial candidates marked `keep` + those marked `downgrade` (with target ADR), minus those marked `drop`.
 
@@ -184,58 +170,13 @@ When agent is unavailable or times out, fall back to initial ranking with a `cha
 
 ### Step 7: Report Output
 
-Compute the date with `date -u +%Y-%m-%d` (UTC, ISO format) for cross-timezone consistency. Ensure the output directory exists:
-
 ```bash
 mkdir -p docs/audit
-DATE=$(date -u +%Y-%m-%d)
+DATE=$(date -u +%Y-%m-%d)  # UTC ISO for cross-timezone consistency
 REPORT="docs/audit/${DATE}-undocumented-decisions.md"
 ```
 
-Write the report with:
-
-```markdown
-# Undocumented Decisions Audit: <YYYY-MM-DD>
-
-## Summary
-
-| Metric                   | Value |
-| ------------------------ | ----- |
-| Large files scanned      | N     |
-| Documents scanned        | N     |
-| Decision candidates      | N     |
-| ADR-covered (excluded)   | N     |
-| Net new candidates       | N     |
-| ADR promotion candidates | N     |
-
-## Large File Decisions
-
-### src/foo.rs (NNN lines)
-
-| # | Line | Decision | Documented? | Incomplete-contract? | Impact | Reversibility |
-| - | ---- | -------- | ----------- | -------------------- | ------ | ------------- |
-| 1 | 42   | ...      | Partial     | Yes                  | H      | low           |
-
-## Prose Document Decisions
-
-### README.md
-
-| # | Line | Decision Verb | Decision | ADR Coverage |
-| - | ---- | ------------- | -------- | ------------ |
-| 1 | 12   | must not      | ...      | None         |
-
-## ADR Promotion Candidates (post-challenge)
-
-| # | Candidate                       | Initial | Challenge | Final          |
-| - | ------------------------------- | ------- | --------- | -------------- |
-| 1 | `<source>:<line>` — `<summary>` | promote | keep      | ADR            |
-| 2 | `<source>:<line>` — `<summary>` | promote | downgrade | inline-comment |
-| 3 | `<source>:<line>` — `<summary>` | promote | drop      | skip           |
-
-Summary line per file: `keep N / downgrade N / drop N`.
-
-If `--no-challenge` was set, omit Challenge and Final columns and use the initial ranking directly.
-```
+Write the report following `${CLAUDE_SKILL_DIR}/templates/report-template.md`, substituting placeholders (`<YYYY-MM-DD>`, `<source>:<line>`, `<summary>`) from findings. Add a per-file summary line `keep N / downgrade N / drop N`. If `--no-challenge` was set, omit the Challenge and Final columns and use the initial ranking.
 
 ### Step 8: Follow-up Hand-off
 

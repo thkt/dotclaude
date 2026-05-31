@@ -17,7 +17,7 @@ when_to_use: scenario, keyword1, キーワード
 allowed-tools: Read Write      # space-separated
 agent: agent-name              # Optional: agents/ にリンク
 context: fork                  # Optional: fork = sub-agent, inline = main
-user-invocable: false          # Optional: デフォルト false
+user-invocable: false          # Optional: デフォルト true (false は / メニュー非表示、内部 skill 用)
 ---
 ```
 
@@ -81,5 +81,5 @@ Skill 入力引数は起動時に展開される。
 
 | ルール                | 閾値   | アクション                  |
 | --------------------- | ------ | --------------------------- |
-| SKILL.md 本文         | 500 行 | リファレンス ファイルに分割 |
+| SKILL.md 本文         | 200 行 | リファレンス ファイルに分割 |
 | リファレンス ファイル | 200 行 | トピックでの分割を検討      |

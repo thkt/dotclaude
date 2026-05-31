@@ -10,21 +10,16 @@ user-invocable: false
 
 ## コマンド
 
-| 目的                        | コマンド                                                            |
-| --------------------------- | ------------------------------------------------------------------- |
-| Web 検索                    | `scout search "query"`                                              |
-| 言語フィルタ                | `scout search "query" --lang ja` または `--lang en`                 |
-| ページ取得                  | `scout fetch <url>`                                                 |
-| ページ取得 (SPA)            | `scout fetch <url> --js`                                            |
-| ページ取得 (raw)            | `scout fetch <url> --raw`                                           |
-| ディープリサーチ            | `scout research "topic"`                                            |
-| リサーチ深度                | `scout research "topic" --depth N` (1-10, デフォルト 3)             |
-| リポジトリツリー            | `scout repo-tree <owner/repo>`                                      |
-| リポジトリツリーフィルタ    | `scout repo-tree <owner/repo> --path <prefix>` / `--pattern <glob>` |
-| 特定 ref のリポジトリツリー | `scout repo-tree <owner/repo> --ref <branch-or-tag-or-sha>`         |
-| リポジトリ読み取り          | `scout repo-read <owner/repo> <path>`                               |
-| リポジトリ読み取り (行範囲) | `scout repo-read <owner/repo> <path> --lines 1-80`                  |
-| リポジトリ概要              | `scout repo-overview <owner/repo>`                                  |
+| 目的               | コマンド                              |
+| ------------------ | ------------------------------------- |
+| Web 検索           | `scout search "query"`                |
+| ページ取得         | `scout fetch <url>`                   |
+| ディープリサーチ   | `scout research "topic"`              |
+| リポジトリツリー   | `scout repo-tree <owner/repo>`        |
+| リポジトリ読み取り | `scout repo-read <owner/repo> <path>` |
+| リポジトリ概要     | `scout repo-overview <owner/repo>`    |
+
+オプション、`--json` envelope、exit code、stdin 入力、実行例は `scout <subcommand> --help` を参照する。インストール済みバージョンの正典は help 出力。
 
 ## 使用判断
 

@@ -10,21 +10,16 @@ user-invocable: false
 
 ## Commands
 
-| Purpose          | Command                                                             |
-| ---------------- | ------------------------------------------------------------------- |
-| Web search       | `scout search "query"`                                              |
-| Language filter  | `scout search "query" --lang ja` or `--lang en`                     |
-| Fetch page       | `scout fetch <url>`                                                 |
-| Fetch (SPA)      | `scout fetch <url> --js`                                            |
-| Fetch (raw)      | `scout fetch <url> --raw`                                           |
-| Deep research    | `scout research "topic"`                                            |
-| Research depth   | `scout research "topic" --depth N` (1-10, default 3)                |
-| Repo tree        | `scout repo-tree <owner/repo>`                                      |
-| Repo tree filter | `scout repo-tree <owner/repo> --path <prefix>` / `--pattern <glob>` |
-| Repo tree at ref | `scout repo-tree <owner/repo> --ref <branch-or-tag-or-sha>`         |
-| Repo read        | `scout repo-read <owner/repo> <path>`                               |
-| Repo read lines  | `scout repo-read <owner/repo> <path> --lines 1-80`                  |
-| Repo overview    | `scout repo-overview <owner/repo>`                                  |
+| Purpose       | Command                               |
+| ------------- | ------------------------------------- |
+| Web search    | `scout search "query"`                |
+| Fetch page    | `scout fetch <url>`                   |
+| Deep research | `scout research "topic"`              |
+| Repo tree     | `scout repo-tree <owner/repo>`        |
+| Repo read     | `scout repo-read <owner/repo> <path>` |
+| Repo overview | `scout repo-overview <owner/repo>`    |
+
+Run `scout <subcommand> --help` for options, `--json` envelope, exit codes, stdin input, and examples. The help output is the authoritative source for the installed version.
 
 ## When to Use
 

@@ -178,12 +178,12 @@ brew install guardrails formatter reviews gates
 
 一部のコマンドはデータソース連携のために外部 CLI を使う。
 
-| ツール        | 利用コマンド        | 用途                 | インストール                                              |
-| ------------- | ------------------- | -------------------- | --------------------------------------------------------- |
-| `gh`          | `/inbox` (GitHub)   | GitHub API アクセス  | `brew install gh && gh auth login`                        |
-| `gemini`      | `/inbox` (Calendar) | Google Calendar 検索 | [Gemini CLI](https://github.com/google-gemini/gemini-cli) |
-| `scout`       | Slack URL 読み込み  | Slack メッセージ取得 | `brew install thkt/tap/scout`                             |
-| `SLACK_TOKEN` | `/inbox` (Slack)    | Slack 検索 API       | 後述                                                      |
+| ツール        | 利用コマンド        | 用途                 | インストール                          |
+| ------------- | ------------------- | -------------------- | ------------------------------------- |
+| `gh`          | `/inbox` (GitHub)   | GitHub API アクセス  | `brew install gh && gh auth login`    |
+| `agy`         | `/inbox` (Calendar) | Google Calendar 検索 | `brew install --cask antigravity-cli` |
+| `scout`       | Slack URL 読み込み  | Slack メッセージ取得 | `brew install thkt/tap/scout`         |
+| `SLACK_TOKEN` | `/inbox` (Slack)    | Slack 検索 API       | 後述                                  |
 
 Slack 読み込み: `scout fetch <slack-url>` で任意の Slack メッセージ/スレッド URL を直接読み込む。scout が設定済みなら追加設定は不要。
 

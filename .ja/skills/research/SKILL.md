@@ -19,27 +19,33 @@ argument-hint: "[research subject or question]"
 
 ## 実行
 
-| Phase | アクション                        | 詳細                                                                                                  |
-| ----- | --------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 0     | 過去調査スキャン                  | `.claude/workspace/research/` で同題ファイルを bfs。発見事項 / 制約を引き継ぐ                        |
-| 1     | 意図 + ドメインの明確化           | AskUserQuestion で問う (`$ARGUMENTS` から自明なら省略)                                                |
-| 2     | ドメインスコープ並列調査          | yomu search + Task(Explore) + 対象を絞った Read/ugrep。ドメインでスコープを限定                        |
-| 3     | Strong Inference (Bug の場合のみ) | 仮説 3 つ以上、識別可能なテスト、消去                                                                 |
-| 4     | 統合                              | 過去ベースラインの統合、発見事項に対するソースパス。Phase 3 を省略した場合のみ disconfirmation を実施 |
+| Phase | アクション                        | 詳細                                                                                                                                                                                 |
+| ----- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0     | Outcome Anchor                    | `.claude/OUTCOME.md` を読む。不在なら stub を生成 (rules/core/OUTCOME.md 参照)。調査スコープが outcome 状態に整合するか確認                                                          |
+| 1     | 過去調査スキャン                  | `.claude/workspace/research/` で同題ファイルを bfs。発見事項 / 制約を引き継ぐ                                                                                                        |
+| 2     | 意図 + ドメインの明確化           | AskUserQuestion で問う (`$ARGUMENTS` から自明なら省略)                                                                                                                               |
+| 3     | ドメインスコープ並列調査          | yomu search + Task(Explore) + 対象を絞った Read/ugrep。ドメインでスコープを限定。コマンドと raw 出力を scratch に記録。PR スコープを駆動するか repo を跨ぐ場合は cross-method で検証 |
+| 4     | Strong Inference (Bug の場合のみ) | 仮説 3 つ以上、識別可能なテスト、消去                                                                                                                                                |
+| 5     | Advisor 事前統合チェック          | パラメータなしで `advisor()` を起動。Phase 5 セクションの条件で省略                                                                                                                  |
+| 6     | 統合                              | 過去ベースラインの統合、発見事項に対するソースパス。Phase 4 を省略した場合のみ disconfirmation を実施                                                                                |
 
-### Phase 0: 過去調査スキャン
+### Phase 0: Outcome Anchor
+
+`.claude/OUTCOME.md` を読む。不在なら rules/core/OUTCOME.md の flow で stub を生成する。調査スコープが outcome 状態に整合するか確認する。調査が Non-goals に踏み込む場合は、進める前に明示的にユーザーに確認する。
+
+### Phase 1: 過去調査スキャン
 
 `$ARGUMENTS` から subject slug (小文字、ハイフン区切り) を導出。`bfs '.claude/workspace/research/*<slug>*.md'` を実行。一致するファイルごとに以下を抽出する。
 
 | 抽出元               | 引き継ぎ先                                  |
 | -------------------- | ------------------------------------------- |
-| Key Findings 表      | Phase 4 のベースライン (再検証または上書き) |
-| Constraints 表       | Phase 2 の入力 (再発見しない)               |
-| Disconfirmation 結果 | Phase 4 の参照                              |
+| Key Findings 表      | Phase 6 のベースライン (再検証または上書き) |
+| Constraints 表       | Phase 3 の入力 (再発見しない)               |
+| Disconfirmation 結果 | Phase 6 の参照                              |
 
 一致なしの場合はスキップし、「No prior research found for `<slug>`」と注記する。
 
-### Phase 1: 意図 + ドメインの明確化
+### Phase 2: 意図 + ドメインの明確化
 
 `$ARGUMENTS` から両方が明確なら省略。そうでなければ AskUserQuestion で問う。
 
@@ -48,19 +54,19 @@ argument-hint: "[research subject or question]"
 | 調査の意図 | Feature planning / Bug investigation / Understanding |
 | ドメイン   | Data model / API / Infrastructure / General          |
 
-ドメインは Phase 2 のスコープを決める。Domain=General はスコープを適用しない。
+ドメインは Phase 3 のスコープを決める。Domain=General はスコープを適用しない。
 
-### Phase 2: ドメインスコープ並列調査
+### Phase 3: ドメインスコープ並列調査
 
 並列で実行する。
 
-| ツール                                             | 目的                                   | ドメインスコープ                                               |
-| -------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------- |
+| ツール                                             | 目的                                   | ドメインスコープ                                              |
+| -------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------- |
 | `yomu search "<subject + domain keywords>"` (Bash) | 概念のセマンティック検索               | ドメインに沿った語を追加 (例: API → "endpoint route handler") |
-| `Task(subagent_type: Explore)`                     | ファイル / シンボル / 参照の発見       | プロンプトでドメインの glob ルートを渡す                       |
-| Read / ugrep / bfs                                 | 特定済みファイルへの的を絞った読み込み | ドメインの glob ルートを起点に使う                             |
+| `Task(subagent_type: Explore)`                     | ファイル / シンボル / 参照の発見       | プロンプトでドメインの glob ルートを渡す                      |
+| Read / ugrep / bfs                                 | 特定済みファイルへの的を絞った読み込み | ドメインの glob ルートを起点に使う                            |
 
-ドメインの glob ルート:
+ドメインの glob ルートは以下のとおり。
 
 | ドメイン       | 推奨ルート                                                      |
 | -------------- | --------------------------------------------------------------- |
@@ -73,7 +79,15 @@ Feature planning が意図のときは追加で `Task(subagent_type: explorer-fe
 
 蓄積される発見事項にはソースを直接記載する。事実は file:line、推論は "inferred from X"、未検証は "unknown, requires X" を使う。
 
-### Phase 3: Strong Inference (Bug investigation のみ)
+### 監査証跡の記録
+
+Phase 3 の検索を実行する間、各コマンドと生の出力をこの会話の scratch バッファに verbatim で追記する。Phase 6 の Disconfirmation はその scratch から直接引用する。再構築しない。実行されたコマンドと実際の出力こそが監査証跡である。
+
+### Cross-method 検証
+
+「該当の caller が無い」「X が唯一の Y」「X が Y の網羅的な一覧」「[repo set] で未使用」のような発見事項が、後段の PR スコープを駆動する、または repo を跨ぐとき、yomu search、ugrep / bfs、Task(Explore) のうち少なくとも 2 つで検証する。結果が食い違うときは差異をフラグし、ツールエラーを特定してから記録する。単一ツールでの 0 件結果は疑わしい状態であって、決定的ではない。
+
+### Phase 4: Strong Inference (Bug investigation のみ)
 
 `rules/core/OPERATION.md` の Debug Investigation Protocol を適用する。
 
@@ -87,23 +101,35 @@ Feature planning が意図のときは追加で `Task(subagent_type: explorer-fe
 
 意図が Feature planning または Understanding のときは省略。
 
-### Phase 4: 統合
+### Phase 5: Advisor 事前統合チェック
 
-| Step                 | アクション                                                                                                                                              |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 過去ベースライン統合 | Phase 0 で過去調査が見つかれば、引き継いだ発見事項 / 制約を Key Findings に統合し、再検証済み / 上書き済みを示す                                        |
-| ソースパス           | 各発見事項にソースを記す。事実は file:line / コマンド出力、推論は "inferred from X (source)"、不足は "unknown, requires X"                              |
-| Disconfirmation      | Phase 3 を省略したときは、主要な仮説に反する根拠を 1 つ探す。found / not found を記録。Phase 3 を実施したときは「Covered by Phase 3 elimination」と書く |
-| カバレッジチェック   | Phase 1 の質問がすべて回答されているか、または "unknown, requires X" として調査方法とともに記録されているか                                             |
+パラメータなしで `advisor()` を起動する。advisor は会話履歴全体 (Phase 2 の回答、Phase 3 の発見事項、監査証跡 scratch を含む) を参照する。
+
+以下の条件がすべて成立するとき省略する。
+
+- Phase 1 で過去調査がヒットし、現在の実行は引き継ぎのみ
+- Intent = Understanding かつ Domain = General
+- repo を跨ぐ主張や PR スコープを駆動する主張がない
+
+advisor が見落とし領域や弱い推論を指摘したら、Phase 3 に戻ってスコープを絞り直す。省略した場合はその理由を出力に記録する。
+
+### Phase 6: 統合
+
+| Step                 | アクション                                                                                                                                                                                                                                   |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 過去ベースライン統合 | Phase 1 で過去調査が見つかれば、引き継いだ発見事項 / 制約を Key Findings に統合し、再検証済み / 上書き済みを示す                                                                                                                             |
+| ソースパス           | 各発見事項にソースを記す。事実は file:line / コマンド出力、推論は "inferred from X (source)"、不足は "unknown, requires X"                                                                                                                   |
+| Disconfirmation      | Phase 4 を省略したときは、Phase 3 の scratch から実行コマンドと生の出力を verbatim で引用する (再構築禁止)。0 件の結果は「不在」と断じる前に「ツール誤用の可能性」とみなす。Phase 4 を実施したときは「Covered by Phase 4 elimination」と書く |
+| カバレッジチェック   | Phase 2 の質問がすべて回答されているか、または "unknown, requires X" として調査方法とともに記録されているか                                                                                                                                  |
 
 ## エラー処理
 
-| エラー                           | アクション                                         |
-| -------------------------------- | -------------------------------------------------- |
-| Explore が空を返す               | より広いキーワードで再実行、発見事項に注記         |
+| エラー                           | アクション                                          |
+| -------------------------------- | --------------------------------------------------- |
+| Explore が空を返す               | より広いキーワードで再実行、発見事項に注記          |
 | yomu search が空を返す           | `yomu rebuild` の実行を提案、ugrep にフォールバック |
-| Phase 1 後でも意図が不明瞭       | 停止し、曖昧な点を名指ししてユーザーに問う         |
-| ドメインの glob ルートが全て不在 | Domain=General スコープにフォールバック            |
+| Phase 2 後でも意図が不明瞭       | 停止し、曖昧な点を名指ししてユーザーに問う          |
+| ドメインの glob ルートが全て不在 | Domain=General スコープにフォールバック             |
 
 ## 出力
 
@@ -115,10 +141,14 @@ Session ID: ${CLAUDE_SESSION_ID}
 
 ## 検証
 
-| チェック                                                                   | 必須 |
-| -------------------------------------------------------------------------- | ---- |
-| `Prior research` フィールドが埋まっている (slug または `none found`)?      | Yes  |
-| すべての発見事項に明示的なソースまたは "unknown, requires X" 注記があるか? | Yes  |
-| Disconfirmation が記録されている (Phase 3 を省略した場合)?                 | Yes  |
-| 出力が `workspace/research/` に保存された?                                 | Yes  |
-| テンプレートの Next Steps セクションが含まれている?                        | Yes  |
+| チェック                                                                            | 必須         |
+| ----------------------------------------------------------------------------------- | ------------ |
+| OUTCOME.md が存在 (Phase 0)?                                                        | Yes          |
+| `Prior research` フィールドが埋まっている (slug または `none found`)?               | Yes          |
+| すべての発見事項に明示的なソースまたは "unknown, requires X" 注記があるか?          | Yes          |
+| Phase 3 の監査証跡 scratch を取得した (コマンドと生出力を verbatim で)?             | Yes          |
+| 「該当 caller なし」「網羅的列挙」のような主張に対し cross-method 検証を実施したか? | Yes (or N/A) |
+| Phase 5 の advisor を起動したか、または省略理由を記録したか?                        | Yes          |
+| Disconfirmation が記録されている (Phase 4 を省略した場合)?                          | Yes          |
+| 出力が `workspace/research/` に保存された?                                          | Yes          |
+| テンプレートの Next Steps セクションが含まれている?                                 | Yes          |

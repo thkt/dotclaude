@@ -57,9 +57,15 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: TS.
+Follow finding-schema.md.
 
-Categories: TS1-TS5 (any / assertion / coverage / strict_mode / union). Severity: high / medium / low. Verification: call_site_check or pattern_search, are problematic values actually passed at call sites? Extra: type_coverage and strict_flags are summary-level only.
+| Field        | Value                                                                                    |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| Prefix       | TS                                                                                       |
+| Categories   | TS1-TS5 (any / assertion / coverage / strict_mode / union)                               |
+| Severity     | high / medium / low                                                                      |
+| Verification | call_site_check or pattern_search. Are problematic values actually passed at call sites? |
+| Extra        | type_coverage and strict_flags are summary-level only                                    |
 
 ```markdown
 ## Summary

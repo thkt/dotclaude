@@ -121,12 +121,12 @@ workspace = true
 
 `rustfmt` / `clippy` 以外で、AI 主導開発の隙を埋める cargo サブコマンド。`cargo install <tool>` または `cargo binstall <tool>` (バイナリ プリビルドで高速) でインストール。
 
-| ツール           | 用途                                                         | 使い方                                                                                 |
-| ---------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| `cargo-nextest`  | 並列実行・リトライ・出力改善付きのテストランナー             | `cargo nextest run`。ローカルと CI で `cargo test` を置換し、RGRC サイクルを加速       |
+| ツール           | 用途                                                         | 使い方                                                                               |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `cargo-nextest`  | 並列実行・リトライ・出力改善付きのテストランナー             | `cargo nextest run`。ローカルと CI で `cargo test` を置換し、RGRC サイクルを加速     |
 | `cargo-llvm-cov` | ソースベースのカバレッジ計測                                 | `cargo llvm-cov --all-features`。`THRESHOLDS.md` の C0 ≥ 90% / C1 ≥ 80% ゲートを強制 |
-| `cargo-deny`     | ライセンス / セキュリティ アドバイザリ / 禁止 crate チェック | CI で `deny.toml` ポリシーと共に `cargo deny check`                                    |
-| `cargo-machete`  | 未使用 `[dependencies]` エントリの検出                       | `cargo machete`。探索中に追加して未配線のままの依存を検出                              |
+| `cargo-deny`     | ライセンス / セキュリティ アドバイザリ / 禁止 crate チェック | CI で `deny.toml` ポリシーと共に `cargo deny check`                                  |
+| `cargo-machete`  | 未使用 `[dependencies]` エントリの検出                       | `cargo machete`。探索中に追加して未配線のままの依存を検出                            |
 
 ## 避ける
 

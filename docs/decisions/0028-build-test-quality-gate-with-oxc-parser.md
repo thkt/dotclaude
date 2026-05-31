@@ -1,6 +1,7 @@
 ---
 status: "proposed"
 date: 2026-03-20
+scope: [ts, testing]
 ---
 
 # ADR 0028: oxc_parser によるテスト品質ゲート litmus の構築

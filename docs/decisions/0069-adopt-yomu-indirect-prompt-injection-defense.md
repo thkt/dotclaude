@@ -44,7 +44,7 @@ chunks テーブル schema version 9 で 2 column 追加 (additive ALTER ADD COL
 
 | Column | 型 | 意味 |
 | --- | --- | --- |
-| `source_kind` | TEXT | chunk 起源 (vendor / test / src) の enum 文字列 |
+| `source_kind` | TEXT | chunk 起源 (vendor / test / src) の DB-side text representation。Rust 側は `SourceKind` enum (closed set, `as_str` / `from_db` で boundary 変換)。stringly-typed の解消は yomu issue #212 で実施 |
 | `injection_flags` | TEXT | matcher の per-chunk 検出結果 (JSON 配列文字列、NULL は matcher 未走行) |
 
 JSON 出力で 2 field 追加 (additive optional):

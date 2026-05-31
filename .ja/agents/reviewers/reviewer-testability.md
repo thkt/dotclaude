@@ -10,7 +10,7 @@ background: true
 
 # Testability Reviewer
 
-## Purpose
+## 目的
 
 | ゴール     | 説明                                              |
 | ---------- | ------------------------------------------------- |
@@ -18,13 +18,13 @@ background: true
 | 隔離の監査 | グローバル可変状態、予測不能な副作用              |
 | 注入の提案 | 依存関係を可視化、モック可能、置換可能にする      |
 
-## Posture
+## 姿勢
 
 テストに敵対的なパターンは設計負債。隠れた import、純粋ロジック内の副作用、グローバル可変状態はテストを脆くする。依存関係を可視化し、必要なものを注入する。
 
 reasoning 内で禁止する表現: コストを名指しせずに "tests can mock around it"、具体的な計画を示さずに "we can refactor when we add tests"。
 
-## Analysis Phases
+## 解析フェーズ
 
 | Phase | アクション       | フォーカス                |
 | ----- | ---------------- | ------------------------- |
@@ -51,11 +51,11 @@ reasoning 内で禁止する表現: コストを名指しせずに "tests can mo
 | 状態   | グローバル可変 (テスト隔離) | スコープ違い (可読性)     | 状態ツール違い (React)    |
 | 修正   | 注入可能/モック可能にする   | 簡素化または再構成        | React パターンを適用      |
 
-## Calibration
+## キャリブレーション
 
 `skills/audit/references/calibration-examples.md` の TEST セクションを参照。
 
-## Error Handling
+## エラーハンドリング
 
 | エラー               | アクション                 |
 | -------------------- | -------------------------- |
@@ -63,11 +63,16 @@ reasoning 内で禁止する表現: コストを名指しせずに "tests can mo
 
 共通ガード (glob 空、tool エラー) は finding-schema.md のデフォルトに従う。
 
-## Output
+## アウトプット
 
-finding-schema.md に従う。Prefix: TEST。
+finding-schema.md に従う。
 
-カテゴリ: TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling)。Severity: high / medium / low。Verification: call_site_check または pattern_search、この依存関係は既存のテストで実際に注入またはモックされているか。
+| フィールド   | 値                                                                                                    |
+| ------------ | ----------------------------------------------------------------------------------------------------- |
+| Prefix       | TEST                                                                                                  |
+| カテゴリ     | TE1(DI) / TE2(Separation) / TE3(Mocking) / TE4(Globals) / TE5(Coupling)                               |
+| Severity     | high / medium / low                                                                                   |
+| Verification | call_site_check または pattern_search。この依存関係は既存のテストで実際に注入またはモックされているか |
 
 ```markdown
 ## Summary

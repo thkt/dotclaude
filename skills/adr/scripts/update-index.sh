@@ -131,7 +131,7 @@ This project uses [MADR (Markdown Any Decision Records)](https://adr.github.io/m
 - **Accepted**: Approved, implementing or completed
 - **Rejected**: Considered but not adopted
 - **Deprecated**: Retired without a replacement ADR
-- **Superseded**: Replaced by another ADR (e.g. `superseded by ADR-0042`)
+- **Superseded**: Replaced by another ADR (e.g. `superseded by ADR-NNNN`)
 
 ---
 

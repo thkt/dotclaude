@@ -17,7 +17,7 @@ when_to_use: scenario, keyword1, キーワード
 allowed-tools: Read Write      # space-separated
 agent: agent-name              # Optional: links to agents/
 context: fork                  # Optional: fork = sub-agent, inline = main
-user-invocable: false          # Optional: default false
+user-invocable: false          # Optional: default true (false hides from / menu, for internal skills)
 ---
 ```
 
@@ -81,5 +81,5 @@ Skill input arguments expand at invocation time.
 
 | Rule            | Threshold | Action                      |
 | --------------- | --------- | --------------------------- |
-| SKILL.md body   | 500 lines | Split into reference files  |
+| SKILL.md body   | 200 lines | Split into reference files  |
 | Reference files | 200 lines | Consider splitting by topic |

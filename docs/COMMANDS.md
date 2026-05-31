@@ -40,7 +40,7 @@ Commands are orchestrators, no implementation details.
 
 - Skills: use-workflow-code (RGRC definition)
 - Agents: generator-test (test generation)
-- Plugins: ralph-loop (automatic iteration)
+- Native: /goal (optional autonomous iteration)
 
 # Bad
 
@@ -60,8 +60,8 @@ Load skills only when needed.
 Commands work without external plugins:
 
 ```markdown
-ralph-loop present → automatic RGRC iteration ralph-loop absent → manual
-confirmation mode (same functionality)
+/goal wrapping → autonomous iteration; absent → gates auto-retry + manual
+confirmation (same functionality)
 ```
 
 ## Command → Skill/Agent Mapping

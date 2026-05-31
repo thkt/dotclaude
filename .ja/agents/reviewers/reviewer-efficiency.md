@@ -78,11 +78,17 @@ background: true
 
 共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。Cold-path のマイナーな問題は集約により severity が上がる場合を除いて除外 (schema の Context Test 参照)。
 
-## 出力
+## アウトプット
 
-finding-schema.md に従う。Prefix: EFF。
+finding-schema.md に従う。
 
-カテゴリ: unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad。Severity: high / medium / low。Verification: benchmark または profile。改善をどう確認するか。Extra: 推論内に path_frequency (hot/warm/cold) を含める。
+| フィールド   | 値                                                                                |
+| ------------ | --------------------------------------------------------------------------------- |
+| Prefix       | EFF                                                                               |
+| カテゴリ     | unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad |
+| Severity     | high / medium / low                                                               |
+| Verification | benchmark または profile。改善をどう確認するか                                    |
+| Extra        | 推論内に path_frequency (hot/warm/cold) を含める                                  |
 
 ```markdown
 ## Summary

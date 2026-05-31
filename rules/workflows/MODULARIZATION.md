@@ -19,7 +19,7 @@ paths:
 | Miller's Law         | Responsibilities ≤7 (8-9: warning, >9: split) |
 | Thin Wrapper Pattern | Orchestration only, no implementation details |
 | Unified Skills       | All in skills/ (Agents separate for analysis) |
-| Size Limit           | ≤100 lines (101-200: warning, >200: split)    |
+| Size Limit           | Thin wrapper target ≤100 lines; general SKILL.md body limit in SKILLS.md |
 
 ## When to Apply
 
@@ -45,15 +45,6 @@ skills/
         ├── [workflow].md
         └── [topic].md
 ```
-
-## Naming Convention
-
-| `user-invocable` | Binding    | Name style           | Example                                             |
-| ---------------- | ---------- | -------------------- | --------------------------------------------------- |
-| `true`           | -          | Short name           | `commit`, `fix`, `audit`                            |
-| `false`          | CLI wrap   | `use-cli-<name>`     | `use-cli-yomu`, `use-cli-recall`                    |
-| `false`          | Agent-only | `use-context-<name>` | `use-context-reviewer-security`                     |
-| `false`          | Workflow   | `use-workflow-<name>`| `use-workflow-code`, `use-workflow-spec-validation` |
 
 ## Reference Patterns
 

@@ -238,7 +238,7 @@ If no prior review exists, write "No prior review" and skip this section. If pri
 
 ## Output
 
-Structured Markdown with ralph-loop promise tag.
+Structured Markdown with explicit gate verdict.
 
 ```markdown
 ## Review: reviewer-spec
@@ -250,8 +250,8 @@ Structured Markdown with ralph-loop promise tag.
 
 ## Blockers
 
-| # | Location | Finding | Fix |
-| - | -------- | ------- | --- |
+| #   | Location | Finding | Fix |
+| --- | -------- | ------- | --- |
 
 Blockers are all P0 findings, ordered by Location. If gate = Ready, write `(none)`.
 
@@ -279,15 +279,15 @@ If no prior review: `No prior review`.
 | ----------- | --------------------------------------------------------- |
 | next_action | Resolve all P0 blockers, then re-run, or proceed to code. |
 
-`<promise>PASS</promise>` when gate = Ready. Otherwise omit.
+State `gate = Ready` explicitly when Ready so a `/goal` evaluator reads completion. Otherwise state the blockers.
 ```
 
-## Ralph Loop Integration
+## /goal Integration
 
-[ralph-loop](https://github.com/anthropics/claude-code-ralph-loop) reads `<promise>` tags for loop continuation.
+A `/goal <condition>` session wrapper reads the conversation (not tags) to judge completion. State the gate verdict explicitly.
 
 | Condition       | Action                                               |
 | --------------- | ---------------------------------------------------- |
-| gate = Ready    | Output `<promise>PASS</promise>`, exit loop          |
+| gate = Ready    | State `gate = Ready`; the evaluator reads completion |
 | gate = NotReady | Output blockers with Fix examples for next iteration |
-| Iterations      | 5-10 recommended                                     |
+| Iterations      | session-scoped; user wraps with `/goal <condition>`  |

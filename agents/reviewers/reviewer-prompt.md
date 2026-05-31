@@ -119,6 +119,9 @@ See `skills/audit/references/calibration-examples.md` section PQ.
 
 ## Output
 
-Follow finding-schema.md. Prefix: PQ.
+Follow finding-schema.md.
 
-Categories: token-efficiency / structure / format / clarity.
+| Field      | Value                                           |
+| ---------- | ----------------------------------------------- |
+| Prefix     | PQ                                              |
+| Categories | token-efficiency / structure / format / clarity |

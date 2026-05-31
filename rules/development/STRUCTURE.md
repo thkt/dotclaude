@@ -2,11 +2,11 @@
 
 ## Consistency
 
-Priority: 1 > 2 > 3 (upper wins on conflict)
+The priority is 1 > 2 > 3 (upper wins on conflict).
 
 | Priority | Principle       | Detail                                                                                               |
 | -------- | --------------- | ---------------------------------------------------------------------------------------------------- |
-| 1        | Follow existing | Match structure, naming, error handling, state management patterns. Changes only on user instruction |
+| 1        | Follow existing | Match established patterns such as structure, naming, error handling, and state management (not limited to these). Changes only on user instruction |
 | 2        | Flat if none    | AI does not invent structure. Split decisions are user's. On user request, select from Strategy      |
 | 3        | Colocation      | When splitting, keep co-changing files together                                                      |
 

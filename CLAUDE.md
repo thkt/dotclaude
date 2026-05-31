@@ -4,7 +4,7 @@
 
 ### Outcome-driven
 
-An outcome is a state of behavior, time, error rate, or value. Not a deliverable, not "task done".
+An outcome is a state of being: how human users, AI agents, or the system behave when this project is in its done condition. Time, error rate, and value are indicators that corroborate the outcome.
 
 | Trigger                                     | Action                                     |
 | ------------------------------------------- | ------------------------------------------ |

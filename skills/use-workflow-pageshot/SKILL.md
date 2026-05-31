@@ -4,6 +4,7 @@ description: Internal helper for /pr. Reads PR body (Preview URL + How to Test),
 when_to_use: /pr workflow UI変更検出時のスクショ/動画撮影, screenshot capture, video capture
 allowed-tools: Read Bash(agent-browser:*) Bash(ffmpeg:*) Bash(mkdir:*) Bash(date:*)
 model: opus
+user-invocable: false
 ---
 
 # use-workflow-pageshot - PR Screenshot/Video Helper

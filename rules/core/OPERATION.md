@@ -18,6 +18,7 @@
 | Assumptions       | State the basis directly (e.g. "inferred from naming convention", "from type signature") |
 | Partial knowledge | Read files for exact formats. Concepts are not details                                   |
 | Knowledge gaps    | State "unknown, requires X" with the specific verification path                          |
+| Code claims       | Read the referenced file before answering; never assert about code you have not opened   |
 
 ### Anti-Sycophancy
 

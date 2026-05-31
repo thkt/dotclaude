@@ -5,17 +5,17 @@
 ```text
 Phase 0: SOW Context + Test Generation
 Phase 1-N: RGRC (one test at a time)
-  Red → Green (Ralph-loop) → Refactor → Commit
+  Red → Green (gates auto-retry) → Refactor → Commit
 Review: reviewer-readability (skip for /fix)
 E2E: generator-e2e (conditional. Spec has Type: e2e + agent-browser + dev server)
-Completion: Quality Gates → IDR
+Completion: Quality Gates
 ```
 
 ## Phase 0: SOW Context + Test Generation
 
 ### SOW/Spec Auto-detection
 
-See ../../_lib/sow-resolution.md
+See ../../\_lib/sow-resolution.md
 
 ### Test Generation
 
@@ -56,8 +56,8 @@ Agent(subagent_type: "reviewer-readability",
 | ---------------- | ---------------------------------- |
 | 0 high findings  | Pass → proceed to Quality Gates    |
 | ≥1 high findings | Fix issues → re-run affected tests |
-| medium/low only  | Pass (note in IDR)                 |
-| timeout          | Skip (note in IDR)                 |
+| medium/low only  | Pass                               |
+| timeout          | Skip                               |
 
 Skip when: `/fix`, single-file changes, no Spec context.
 
@@ -82,55 +82,3 @@ lockfile). Independent commands in parallel.
 | Matches known pattern in codebase (cite file:line) | Proceed              |
 | Partial match, some unknowns remain                | Add defensive checks |
 | Unknown territory, no precedent in codebase        | → /research first    |
-
-## IDR Generation
-
-After completion:
-
-````markdown
-# IDR: {summary title}
-
-> {YYYY-MM-DD}
-
-## Summary
-
-{2-3 sentences summarizing changes and purpose}
-
-## Changes
-
-### [{file path}](file:///{absolute path})
-
-```diff
-@@ -{old_start},{old_count} +{new_start},{new_count} @@
--removed line
-+added line
-```
-
-> [!NOTE]
->
-> - {what changed (bullet list)}
-
-> [!TIP]
->
-> - {decision}: {why this decision was made}
-> - Not adopted: {rejected alternative}. {why rejected}
-
----
-
-### git diff --stat
-
-```
- {file} | {count} {++++----}
- N files changed, M insertions(+), D deletions(-)
-```
-````
-
-Rules:
-
-- File links: `file:///` + absolute path (VS Code clickable)
-- Diff: include `@@` hunk headers for line numbers
-- Per-file order: link heading → diff → `[!NOTE]` What Changed → `[!TIP]` Design
-  Rationale (include rejected alternatives when they existed)
-- Output: `$IDR_DIR/idr-{NN}.md` (auto-numbered), `$IDR_DIR` =
-  `.claude/workspace/planning/YYYY-MM-DD-[feature]/`
-- Language: follows `settings.json` `language`

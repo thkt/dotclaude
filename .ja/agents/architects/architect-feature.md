@@ -39,7 +39,7 @@ memory: project
 | Step | Action                                               | Output                          | On dead-end                             |
 | ---- | ---------------------------------------------------- | ------------------------------- | --------------------------------------- |
 | 1    | Seed Context (bfs/LS/ugrep で構造を把握)             | 既知パターン + API コンフリクト | 空リポジトリ、注記して中止              |
-| 2    | Exploration (yomu で 3-5 のセマンティッククエリ)     | ソース付き洞察                  | yomu 利用不可、ugrep にフォールバック    |
+| 2    | Exploration (yomu で 3-5 のセマンティッククエリ)     | ソース付き洞察                  | yomu 利用不可、ugrep にフォールバック   |
 | 3    | Pattern Analysis (規約抽出、file:line に追跡)        | パターン表                      | パターン未発見、Greenfield として記録   |
 | 4    | Compose (制約からブループリントへ、独立性ファースト) | 構築されたアーキテクチャ        | 制約コンフリクト、Leader にエスカレート |
 | 5    | Verify (推論項目を読み、不明点を埋める)              | ソース付きの検証済み発見        | 検証不可、「unknown, requires X」と注記 |
@@ -95,7 +95,7 @@ memory: project
 
 下記 Output セクションに従って整形する。Leader に DM で送信する。
 
-## Output
+## アウトプット
 
 ### Architect Output Contract (required)
 

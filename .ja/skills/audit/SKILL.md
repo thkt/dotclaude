@@ -17,7 +17,7 @@ argument-hint: "[target files or scope]"
 | ----------------------------- | -------------------------------------------------------------------- |
 | "This is a false positive"    | 却下する前に critic-evidence で検証する。直感は根拠ではない          |
 | "This pattern is intentional" | `// intentional:` マーカーがなければ intentional ではない            |
-| "Low severity, skip it"       | low severity × high frequency = high risk. 出現回数を数える         |
+| "Low severity, skip it"       | low severity × high frequency = high risk. 出現回数を数える          |
 | "The code works fine"         | 動くことは正しいことではない。Audit は機能ではなく品質をレビューする |
 | "This is third-party code"    | リポジトリにあるならあなたの責任                                     |
 
@@ -45,7 +45,7 @@ File Routing がファイルパターンごとに reviewer を割り当てた後
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | security    | reviewer-security, reviewer-silence                                                                                                                                                                                                                                |
 | performance | reviewer-performance, reviewer-efficiency, reviewer-progressive                                                                                                                                                                                                    |
-| quality     | reviewer-readability, reviewer-design, reviewer-strictness, reviewer-encapsulation, reviewer-causation, reviewer-resilience, reviewer-duplication, reviewer-reuse, reviewer-testability, reviewer-operations, reviewer-document, reviewer-prompt, reviewer-silence |
+| quality     | reviewer-readability, reviewer-design, reviewer-react-pattern, reviewer-strictness, reviewer-rust, reviewer-encapsulation, reviewer-causation, reviewer-resilience, reviewer-duplication, reviewer-reuse, reviewer-testability, reviewer-operations, reviewer-document, reviewer-prompt, reviewer-silence |
 | a11y        | reviewer-accessibility, reviewer-progressive                                                                                                                                                                                                                       |
 | all         | フィルタなし。File Routing の全 reviewer が走る                                                                                                                                                                                                                    |
 
@@ -83,7 +83,7 @@ Audit コストはターゲットファイル数とともに増える。Leader �
 
 | Mode                   | アクション                                                        |
 | ---------------------- | ----------------------------------------------------------------- |
-| scope 空、files ≤ 30  | 続行                                                              |
+| scope 空、files ≤ 30   | 続行                                                              |
 | scope 空、files > 30   | AskUserQuestion で 3 つの選択肢。下記 Narrow Scope Options を参照 |
 | scope 指定、files > 30 | ファイル数を警告して続行 (意図を尊重)                             |
 | `--no-limit` 設定      | limit チェックをスキップ、続行                                    |
@@ -109,7 +109,7 @@ Pre-flight (下記) から開始。ユーザーに結果を表示する前に sn
 | Step | アクション                                                                             |
 | ---- | -------------------------------------------------------------------------------------- |
 | 1    | Pre-flight (tests + hook findings)                                                     |
-| 2    | File routing: ターゲットファイルを分類 → 該当 reviewer に割り当て                     |
+| 2    | File routing: ターゲットファイルを分類 → 該当 reviewer に割り当て                      |
 | 3    | Task で sub-reviewer を 1 turn 内で並列 spawn (バッチあたり最大 10)                    |
 | 4    | challenger + verifier を spawn (reviewer 完了を待つ)                                   |
 | 5    | integrator を spawn (challenger + verifier 完了を待つ)                                 |
@@ -124,9 +124,10 @@ Leader は各ターゲットファイルをパスで分類し、該当 reviewer 
 | File パターン        | Sub-reviewer (subagent_type)                                                                                                                                                                                                                                             |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `*.sh`               | reviewer-security, reviewer-silence, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-operations, reviewer-resilience                                                                                                                                 |
-| `*.ts, *.js`         | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                               |
-| `*.tsx, *.jsx`       | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience, reviewer-accessibility, reviewer-progressive |
-| `*.rs, *.py`         | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                               |
+| `*.ts, *.js`         | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-react-pattern, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                       |
+| `*.tsx, *.jsx`       | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-react-pattern, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience, reviewer-accessibility, reviewer-progressive |
+| `*.rs`               | reviewer-security, reviewer-silence, reviewer-rust, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                                     |
+| `*.py`               | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                               |
 | `*.md`               | reviewer-prompt, reviewer-document                                                                                                                                                                                                                                       |
 | `*.yaml, *.json`     | reviewer-encapsulation, reviewer-document                                                                                                                                                                                                                                |
 | `*.css, *.html`      | reviewer-accessibility, reviewer-progressive, reviewer-performance, reviewer-duplication                                                                                                                                                                                 |

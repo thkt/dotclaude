@@ -1,0 +1,343 @@
+---
+title: "{{TITLE}}"
+subtitle: "{{SUBTITLE}}"
+status: {{STATUS}}
+updatedAt: {{UPDATED_AT}}
+sessionId: {{SESSION_ID}}
+issueUrl: {{ISSUE_URL}}
+---
+import TabPanel from '../components/TabPanel.astro';
+import SearchBox from '../components/SearchBox.astro';
+import ChipGroup from '../components/ChipGroup.astro';
+import PhaseFlow from '../components/PhaseFlow.astro';
+import DataFlow from '../components/DataFlow.astro';
+
+{/* ------------------------------------------------------------------
+  spec.mdx テンプレート
+  use-workflow-plan-preview skill が sow.md / spec.md を読み、各
+  {{...}} と {/* PLACEHOLDER: ... */} を実値で置換する。
+
+  リファレンス実装: src/content/spec/issue-61.mdx (9 tab すべて埋まったサンプル)
+  components 用法は SKILL.md の「Components 用法」表を参照。
+  MDX エスケープは SKILL.md の「MDX エスケープ」表を参照。
+------------------------------------------------------------------ */}
+
+<TabPanel id="overview" initial>
+  <h2>なぜこの Issue が必要か</h2>
+  <p class="text-muted text-[0.95rem]">
+    {/* PLACEHOLDER: 1 段落の概要文。専門用語は <span class="term" data-tip="..."> でホバー注釈を付ける */}
+  </p>
+
+  <div class="card-grid">
+    {/* PLACEHOLDER: 8 cards (sow.md の Why / Outcome / Risk-of-doing-nothing / Urgency から)
+        構造例:
+          <div class="card">
+            <div class="label">誰のために</div>
+            <p>...</p>
+          </div>
+          <div class="card">
+            <div class="label">解きたい問題</div>
+            <p>...</p>
+          </div>
+          <div class="card">
+            <div class="label">狙い (a) ...</div>
+            <p>...</p>
+          </div>
+          <div class="card">
+            <div class="label">狙い (b) ...</div>
+            <p>...</p>
+          </div>
+          <div class="card">
+            <div class="label">狙い (c) ...</div>
+            <p>...</p>
+          </div>
+          <div class="card">
+            <div class="label">狙い (d) ...</div>
+            <p>...</p>
+          </div>
+          <div class="card bg-fail-soft">
+            <div class="label">放置するとどうなるか</div>
+            <p>...</p>
+          </div>
+          <div class="card bg-warn-soft">
+            <div class="label">急ぐ理由</div>
+            <p>...</p>
+          </div>
+    */}
+  </div>
+
+  <h2>進め方</h2>
+  <div class="card">
+    {/* PLACEHOLDER: sow.md の Approach から 1 段落。phase 数や統合方針 (1 PR vs 複数 PR) を明記 */}
+  </div>
+
+  <h2>背景</h2>
+  <div class="card">
+    {/* PLACEHOLDER: sow.md / spec.md の Background から 2-3 段落 + 必要なら blockquote
+        構造例:
+          <p>...</p>
+          <p>...</p>
+          <blockquote>重要な制約や注意点</blockquote>
+    */}
+  </div>
+</TabPanel>
+
+<TabPanel id="scope">
+  <h2>スコープ内</h2>
+  <table class="has-files-col">
+    <thead><tr><th>対象</th><th>変更</th><th>観測可能なシグナル</th><th>変更ファイル数</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: sow.md の Scope (In) から N 行
+          各行: 対象ファイル/領域、変更内容、検証コマンド、ファイル数
+      */}
+    </tbody>
+  </table>
+
+  <h2>スコープ外</h2>
+  <table>
+    <thead><tr><th>除外項目</th><th>除外理由</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: sow.md の Scope (Out) から N 行 */}
+    </tbody>
+  </table>
+
+  <h2>境界 (3 段階)</h2>
+  <p class="text-muted text-[0.9rem]">変更スコープを 3 段階で固定。必須は守るべき不変条件、要相談は変更前に相談、禁止は今回の Issue では絶対に触らない領域。</p>
+  <table>
+    <thead><tr><th>段階</th><th>内容</th><th>強制方法</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: sow.md の Three-Tier Boundaries から N 行
+          tier badge: <span class="tier-always">必須</span> / <span class="tier-ask">要相談</span> / <span class="tier-never">禁止</span>
+      */}
+    </tbody>
+  </table>
+</TabPanel>
+
+<TabPanel id="ac">
+  <h2>受け入れ条件</h2>
+  <p class="text-muted text-[0.9rem]">{/* PLACEHOLDER: AC 件数 */} 件の条件をすべて満たした時点で完了。各条件は具体的に観測可能なシグナルと紐付く。</p>
+
+  {/* PLACEHOLDER: AC-N の details 群。最初の 1 つだけ <details open>、以降は <details>
+      構造例:
+        <details open>
+          <summary><span class="pill-ac">AC-1</span> 1 文の達成条件</summary>
+          <table>
+            <thead><tr><th>#</th><th>条件</th><th>観測可能なシグナル</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>...</td><td>...</td></tr>
+              <tr><td>2</td><td>...</td><td>...</td></tr>
+            </tbody>
+          </table>
+        </details>
+        <details>
+          <summary><span class="pill-ac">AC-2</span> ...</summary>
+          ...
+        </details>
+  */}
+</TabPanel>
+
+<TabPanel id="phases">
+  <h2>実装フェーズ</h2>
+  <p class="text-muted text-[0.9rem]">{/* PLACEHOLDER: Phase 戦略の前置き 1 段落。なぜこの分割か、PR をどうまとめるか */}</p>
+
+  <PhaseFlow
+    caption="{/* PLACEHOLDER: 図キャプション (例: '3 phase を 1 PR にまとめてマージ') */}"
+    phases={[
+      {/* PLACEHOLDER: phase data 配列
+        各 phase:
+          {
+            num: 1,
+            title: '実装 + 仮 tolerance',
+            subtitle: '実装 + 仮 tolerance',
+            bullets: [
+              'やること 1',
+              'やること 2',
+              'やること 3',
+            ],
+            outcome: 'AC-1, AC-2 達成',
+            tone: 'accent',  // 'accent' | 'warn' | 'pass' で色分け
+          },
+      */}
+    ]}
+  />
+
+  {/* PLACEHOLDER: 各 Phase の詳細
+      構造例:
+        <h3>Phase 1: タイトル</h3>
+        <div class="card">
+          <p><strong>完了シグナル:</strong> ...</p>
+          <table class="has-files-col">
+            <thead><tr><th>Step</th><th>Action</th><th>Files</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>...</td><td>1</td></tr>
+              <tr><td>2</td><td>...</td><td>1</td></tr>
+            </tbody>
+          </table>
+        </div>
+  */}
+</TabPanel>
+
+<TabPanel id="spec">
+  <h2>機能要件 (FR)</h2>
+  <p class="text-muted text-[0.9rem]">{/* PLACEHOLDER: 実装すべき振る舞いを N 件の FR + N 件の Validation で定義。各 FR は AC と紐付く。 */}</p>
+  <div class="flex gap-2 flex-wrap my-3">
+    <SearchBox id="fr-filter" placeholder="FR ID / 説明で絞り込み" />
+  </div>
+  <table id="fr-table">
+    <thead><tr><th>ID</th><th>説明</th><th>入出力</th><th>紐付く AC</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: spec.md の Functional Requirements から N 行
+          各行: <span class="pill-fr">FR-NNN</span>、説明、入出力シグネチャ、AC 番号
+      */}
+    </tbody>
+  </table>
+
+  <h3>Validation (異常系の振る舞い)</h3>
+  <table>
+    <thead><tr><th>ID</th><th>条件</th><th>振る舞い</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: spec.md の Validation から N 行 — pill は <span class="pill-fr">FR-VNNN</span> */}
+    </tbody>
+  </table>
+
+  <h2>非機能要件 (NFR)</h2>
+  <p class="text-muted text-[0.9rem]">{/* PLACEHOLDER: 機能以外の品質属性 (規律 / 再現性 / 保守性 / 統制) を N 件で定義 */}</p>
+  <table>
+    <thead><tr><th>ID</th><th>カテゴリ</th><th>要件</th><th>目標値</th><th>紐付く AC</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: spec.md の Non-Functional Requirements から N 行
+          各行: <span class="pill-nfr">NFR-NNN</span>、カテゴリ、要件、目標値、AC 番号
+      */}
+    </tbody>
+  </table>
+
+  <h2>前提条件</h2>
+  <table>
+    <thead><tr><th>ID</th><th>前提</th><th>破綻時の影響</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: spec.md の Assumptions から N 行 — pill は <span class="pill-as">AS-NNN</span> */}
+    </tbody>
+  </table>
+</TabPanel>
+
+<TabPanel id="domain">
+  <h2>ドメインモデル</h2>
+
+  <h3>登場するモノ (Entities)</h3>
+  <table>
+    <thead><tr><th>名前</th><th>属性</th><th>不変条件</th><th>関連 FR</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: spec.md の Domain Model > Entities から N 行
+          名前は概念レベル (型名・フィールド名は実装判断、Spec には書かない)
+      */}
+    </tbody>
+  </table>
+
+  <h3>横断ルール (Business Rules)</h3>
+  <table>
+    <thead><tr><th>ID</th><th>ルール</th><th>説明</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: spec.md の Business Rules から N 行 */}
+    </tbody>
+  </table>
+
+  {/* PLACEHOLDER: optional Data flow (該当する場合のみ DataFlow component を使う)
+      構造例:
+        <h3>データの流れ</h3>
+        <p class="text-muted text-[0.9rem]">説明 1 段落</p>
+        <DataFlow
+          boxes={[
+            // tone: 'info' | 'warn' | 'accent' | 'pass' | 'fail' から選ぶ
+            { x: 20,  y: 80,  width: 140, height: 60, tone: 'info',   primary: '入力',     secondary: '副題' },
+            { x: 200, y: 80,  width: 140, height: 60, tone: 'warn',   primary: '処理',     secondary: '副題' },
+            { x: 380, y: 80,  width: 200, height: 60, tone: 'pass',   primary: '出力',     secondary: '副題' },
+          ]}
+          edges={[
+            { from: { x: 165, y: 110 }, to: { x: 195, y: 110 } },
+            { from: { x: 345, y: 110 }, to: { x: 375, y: 110 } },
+          ]}
+        />
+  */}
+</TabPanel>
+
+<TabPanel id="tests">
+  <h2>テストシナリオ</h2>
+  <p class="text-muted text-[0.9rem]">{/* PLACEHOLDER: テスト件数 + 種別の説明 (unit / procedure / integration) */}</p>
+  <div class="flex gap-2 flex-wrap items-center my-3">
+    <SearchBox id="test-filter" placeholder="ID / 説明で絞り込み" />
+    <ChipGroup
+      id="test-chips"
+      initial="all"
+      chips={[
+        { type: 'all', label: '全て' },
+        { type: 'unit', label: 'unit' },
+        { type: 'procedure', label: 'procedure' },
+        { type: 'integration', label: 'integration' },
+      ]}
+    />
+  </div>
+  <table id="test-table">
+    <thead><tr><th>ID</th><th>種別</th><th>関連 FR</th><th>Given / When / Then</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: spec.md の Test Scenarios から N 行
+          構造例:
+            <tr data-type="unit">
+              <td><span class="pill-test">T-NNN-NNN</span></td>
+              <td>unit</td>
+              <td>FR-001, FR-002</td>
+              <td><strong>Given</strong> ... / <strong>When</strong> ... / <strong>Then</strong> ...</td>
+            </tr>
+          data-type は 'unit' | 'procedure' | 'integration' のいずれか (chip フィルタが使う)
+      */}
+    </tbody>
+  </table>
+</TabPanel>
+
+<TabPanel id="risks">
+  <h2>リスク</h2>
+  <p class="text-muted text-[0.9rem]">{/* PLACEHOLDER: リスク件数 + 評価方針 (HIGH / MED / LOW + 発生確率) */}</p>
+
+  {/* PLACEHOLDER: details 群。最初の 1 つだけ <details open>
+      構造例:
+        <details open>
+          <summary><span class="pill-risk-h">HIGH</span> 1 文のリスク記述</summary>
+          <table>
+            <tbody>
+              <tr><td><strong>脅かす狙い</strong></td><td>...</td></tr>
+              <tr><td><strong>発生確率</strong></td><td>HIGH | MED | LOW</td></tr>
+              <tr><td><strong>緩和策</strong></td><td>...</td></tr>
+            </tbody>
+          </table>
+        </details>
+      pill は <span class="pill-risk-h">HIGH</span> / pill-risk-m / pill-risk-l で色分け
+  */}
+
+  <h2>見直しのきっかけ</h2>
+  <p class="text-muted text-[0.9rem]">これらの状態に到達したら、本 Issue で確定したパラメータや設計判断を見直す。</p>
+  <ul>
+    {/* PLACEHOLDER: spec.md の Reassessment Triggers から N 行 (li) */}
+  </ul>
+</TabPanel>
+
+<TabPanel id="traceability">
+  <h2>追跡性マトリクス</h2>
+  <p class="text-muted text-[0.9rem]">受け入れ条件 (AC) → 機能要件 (FR) → テスト → 非機能要件 (NFR) の縦串。「どの AC を検証するためにどの test が走るか」「どの test がどの NFR に紐付くか」を一目で確認できる。</p>
+  <table>
+    <thead><tr><th>AC</th><th>FR</th><th>Test</th><th>NFR</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: spec.md の Traceability Matrix から N 行
+          各行: <span class="pill-ac">AC-N.M</span>、FR-NNN、T-NNN-NNN、NFR-NNN
+      */}
+    </tbody>
+  </table>
+
+  <h2>Phase × FR マッピング</h2>
+  <table class="has-files-col">
+    <thead><tr><th>Phase</th><th>関連 FR</th><th>変更ファイル</th><th>依存</th></tr></thead>
+    <tbody>
+      {/* PLACEHOLDER: 各 Phase が触る FR と file をマップ
+          各行: Phase 番号、FR 範囲、変更ファイル、依存 phase
+      */}
+    </tbody>
+  </table>
+</TabPanel>

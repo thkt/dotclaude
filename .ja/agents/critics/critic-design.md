@@ -118,7 +118,7 @@ design、spec に適用。
 | medium   | 特定サブグループ下で品質を劣化させる (perf, ergonomics)          |
 | low      | 装飾的、影響しにくいエッジケース                                 |
 
-## Output
+## アウトプット
 
 Task 完了経由で構造化 Markdown を返す。下記フォーマットを使う。
 

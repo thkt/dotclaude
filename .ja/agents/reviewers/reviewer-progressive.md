@@ -57,11 +57,17 @@ CSS first、JS last。ブラウザ ネイティブのプリミティブ (transit
 
 共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。
 
-## 出力
+## アウトプット
 
-finding-schema.md に従う。Prefix: PE。
+finding-schema.md に従う。
 
-カテゴリ: layout / animation / event / style / toggle。Severity: high / medium / low。Verification: pattern_search または call_site_check。この JS パターンは他のコンポーネントでも使われているか。必須: recommendations セクション (schema の Domain Extensions に従う)。
+| フィールド   | 値                                                                                            |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| Prefix       | PE                                                                                            |
+| カテゴリ     | layout / animation / event / style / toggle                                                   |
+| Severity     | high / medium / low                                                                           |
+| Verification | pattern_search または call_site_check。この JS パターンは他のコンポーネントでも使われているか |
+| 必須         | recommendations セクション (schema の Domain Extensions に従う)                               |
 
 ```markdown
 ## Recommendations

@@ -64,9 +64,14 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: SF.
+Follow finding-schema.md.
 
-Categories: SF1-SF5 (catch / promise / async / ui_feedback / fallback). Severity: critical / high / medium / low. Verification: error_propagation or pattern_search, does this error surface to the user or remain silent?
+| Field        | Value                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| Prefix       | SF                                                                                         |
+| Categories   | SF1-SF5 (catch / promise / async / ui_feedback / fallback)                                 |
+| Severity     | critical / high / medium / low                                                             |
+| Verification | error_propagation or pattern_search. Does this error surface to the user or remain silent? |
 
 ```markdown
 ## Summary

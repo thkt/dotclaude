@@ -73,11 +73,17 @@ background: true
 
 共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。
 
-## 出力
+## アウトプット
 
-finding-schema.md に従う。Prefix: TD。
+finding-schema.md に従う。
 
-カテゴリ: encapsulation / expression / usefulness / enforcement。Severity: critical / high / medium / low。Verification: call_site_check または pattern_search。呼び出し箇所で本当に不正なインスタンスを構築できるか。Extra: type_name (TypeName。任意)、scores (encapsulation/expression/usefulness/enforcement X/10。任意。上記スコアリング参照)。
+| フィールド   | 値                                                                                                                    |
+| ------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Prefix       | TD                                                                                                                    |
+| カテゴリ     | encapsulation / expression / usefulness / enforcement                                                                 |
+| Severity     | critical / high / medium / low                                                                                        |
+| Verification | call_site_check または pattern_search。呼び出し箇所で本当に不正なインスタンスを構築できるか                           |
+| Extra        | type_name (TypeName。任意)、scores (encapsulation/expression/usefulness/enforcement X/10。任意。上記スコアリング参照) |
 
 ```markdown
 ## Summary

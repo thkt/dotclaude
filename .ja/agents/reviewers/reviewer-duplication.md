@@ -74,11 +74,18 @@ background: true
 
 共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。
 
-## 出力
+## アウトプット
 
-finding-schema.md に従う。Prefix: DRY。
+finding-schema.md に従う。
 
-カテゴリ: exact / near-duplicate / pattern / reimplementation / arg-variant。Severity: high / medium / low。Verification: pattern_search。発見された以外にもさらに出現があるか。Extra: Evidence は各出現を `Location N: fileN:line snippet` として列挙する。
+| フィールド   | 値                                                                |
+| ------------ | ----------------------------------------------------------------- |
+| Prefix       | DRY                                                               |
+| カテゴリ     | exact / near-duplicate / pattern / reimplementation / arg-variant |
+| Severity     | high / medium / low                                               |
+| Verification | pattern_search。発見された以外にもさらに出現があるか              |
+
+Evidence は各出現を `Location N: fileN:line snippet` として列挙する。
 
 ```markdown
 ## Summary

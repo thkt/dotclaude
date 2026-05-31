@@ -46,6 +46,9 @@ When generating tests via AI, expect these biases. Run this checklist on the out
 | No product-specific hazards | List Hazard patterns (double-submit, timezone, perm bypass, partial state) and add a test |
 | Weak assertions             | Replace toBeTruthy with exact value comparison                                            |
 | Vague test intent           | Rename each test to state the spec it verifies                                            |
+| Restates implementation     | Drop tests that only restate impl (tautology, asserting a mock was called); test observable behavior via the public API instead |
+
+`litmus` (oxc_parser based static analysis) automates these bias checks across a test suite without manual review. Run it as a CI gate where the harness is wired.
 
 ### Number-as-Goal Trap
 

@@ -20,7 +20,7 @@ background: true
 
 ## Posture
 
-Read before you judge. Apply the one-minute rule. A new team member should follow the function in under a minute. If not, simplify or document the non-obvious constraint.
+Read before you judge. Judge by the refinement test. Shrinking should read easier; flag the shrink that leaves code only the author can decode (compression), not the shrink that removes noise (refinement). Audience is the author's later self and a context-sharing teammate, not every newcomer. Fix order: names, types, and test names first; comments last, for the why code cannot hold.
 
 Banned phrasing inside reasoning: "looks complex" without naming the cognitive load, "could be simpler" without showing the simplification.
 
@@ -40,13 +40,13 @@ Banned phrasing inside reasoning: "looks complex" without naming the cognitive l
 
 ## Distinction from related reviewers
 
-| Concern    | This reviewer (code-quality) | reviewer-testability         | reviewer-design          | reviewer-react-pattern   |
-| ---------- | ---------------------------- | ---------------------------- | ------------------------ | ------------------------ |
-| Lens       | Readable? Maintainable?      | Testable?                    | Module earns interface?  | React-idiomatic?         |
-| State      | Wrong scope (readability)    | Mutable global (isolation)   | Out of scope             | Wrong state tool (React) |
-| Coupling   | Over-engineered abstraction  | Can't inject dependency      | Pass-through wrapper     | Prop drilling            |
-| Complexity | Nesting depth, function size | Mock depth, setup complexity | Shallow vs deep module   | Component responsibility |
-| Fix        | Simplify or restructure      | Make injectable/mockable     | Inline or grow the body  | Apply React pattern      |
+| Concern    | This reviewer (code-quality) | reviewer-testability         | reviewer-design         | reviewer-react-pattern   |
+| ---------- | ---------------------------- | ---------------------------- | ----------------------- | ------------------------ |
+| Lens       | Readable? Maintainable?      | Testable?                    | Module earns interface? | React-idiomatic?         |
+| State      | Wrong scope (readability)    | Mutable global (isolation)   | Out of scope            | Wrong state tool (React) |
+| Coupling   | Over-engineered abstraction  | Can't inject dependency      | Pass-through wrapper    | Prop drilling            |
+| Complexity | Nesting depth, function size | Mock depth, setup complexity | Shallow vs deep module  | Component responsibility |
+| Fix        | Simplify or restructure      | Make injectable/mockable     | Inline or grow the body | Apply React pattern      |
 
 ## Calibration
 
@@ -62,9 +62,15 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: CQ.
+Follow finding-schema.md.
 
-Categories: structure / readability. Severity: high / medium / low. Verification: pattern_search or hotpath_analysis, is this pattern widespread or in a critical path? Extra: subcategory (waste / naming / complexity / comments / ai_smell, optional, appended as category/subcategory).
+| Field        | Value                                                                                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| Prefix       | CQ                                                                                                          |
+| Categories   | structure / readability                                                                                     |
+| Severity     | high / medium / low                                                                                         |
+| Verification | pattern_search or hotpath_analysis. Is this pattern widespread or in a critical path?                       |
+| Extra        | subcategory (waste / naming / complexity / comments / ai_smell, optional, appended as category/subcategory) |
 
 ```markdown
 ## Summary

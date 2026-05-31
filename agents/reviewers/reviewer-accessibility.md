@@ -65,9 +65,15 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: A11Y.
+Follow finding-schema.md.
 
-Categories: semantic / keyboard / screen-reader / visual / form. Severity: critical / high / medium. Verification: execution_trace or pattern_search, is this element actually reachable by keyboard or screen reader? Extra: wcag (success criterion like 1.1.1, required), apg_pattern (URL, required), code_example (corrected snippet, optional).
+| Field        | Value                                                                                                                  |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Prefix       | A11Y                                                                                                                   |
+| Categories   | semantic / keyboard / screen-reader / visual / form                                                                    |
+| Severity     | critical / high / medium                                                                                               |
+| Verification | execution_trace or pattern_search. Is this element actually reachable by keyboard or screen reader?                    |
+| Extra        | wcag (success criterion like 1.1.1, required), apg_pattern (URL, required), code_example (corrected snippet, optional) |
 
 ```markdown
 ## Summary

@@ -76,9 +76,16 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: DRY.
+Follow finding-schema.md.
 
-Categories: exact / near-duplicate / pattern / reimplementation / arg-variant. Severity: high / medium / low. Verification: pattern_search, are there more occurrences beyond the ones found? Extra: Evidence lists each occurrence as `Location N: fileN:line snippet`.
+| Field        | Value                                                             |
+| ------------ | ----------------------------------------------------------------- |
+| Prefix       | DRY                                                               |
+| Categories   | exact / near-duplicate / pattern / reimplementation / arg-variant |
+| Severity     | high / medium / low                                               |
+| Verification | pattern_search. Are there more occurrences beyond the ones found? |
+
+Evidence lists each occurrence as `Location N: fileN:line snippet`.
 
 ```markdown
 ## Summary

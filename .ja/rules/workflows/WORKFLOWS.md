@@ -7,18 +7,18 @@ paths:
 
 ## コマンド選択
 
-| 状況                             | ワークフロー                                                        |
-| -------------------------------- | ------------------------------------------------------------------- |
-| 小さなバグ、安定したコードベース | `/fix`                                                              |
-| 既知の実装                       | `/code`                                                             |
-| 原因不明 / 知識欠落              | `/research` → `/fix`                                               |
-| 設計または方針未確定             | `/think`                                                            |
+| 状況                             | ワークフロー                                                     |
+| -------------------------------- | ---------------------------------------------------------------- |
+| 小さなバグ、安定したコードベース | `/fix`                                                           |
+| 既知の実装                       | `/code`                                                          |
+| 原因不明 / 知識欠落              | `/research` → `/fix`                                             |
+| 設計または方針未確定             | `/think`                                                         |
 | 新機能                           | `/feature` (または: `/research` → `/think` → `/code` → `/audit`) |
-| 緊急の本番障害                   | `/fix` (緊急、設計を省略)                                           |
+| 緊急の本番障害                   | `/fix` (緊急、設計を省略)                                        |
 
 ## Team-First 原則
 
-デフォルト: Team (TeamCreate + TaskList で進捗追跡)
+デフォルトは Team (TeamCreate + TaskList で進捗追跡)。
 
 | コマンド    | モード | 備考                         |
 | ----------- | ------ | ---------------------------- |
@@ -30,7 +30,7 @@ paths:
 | `/research` | Solo   |                              |
 | Utility     | Solo   | /commit, /checkout, /pr など |
 
-Auto: すべての Solo 条件を満たす → Solo、そうでなければ → Team
+Auto では、すべての Solo 条件を満たす → Solo、そうでなければ → Team。
 
 | Solo 条件            | 例                         |
 | -------------------- | -------------------------- |
@@ -48,7 +48,7 @@ Auto: すべての Solo 条件を満たす → Solo、そうでなければ → 
 | `/audit`    | Core          | エージェントによるコードレビュー                                 |
 | `/polish`   | Core          | AI 由来の slop 除去                                              |
 | `/feature`  | Core          | 機能ライフサイクル全体 (explore + architect + implement + audit) |
-| `/fix`      | Quick         | 高速バグ修正 (think→code→test)                                 |
+| `/fix`      | Quick         | 高速バグ修正 (think→code→test)                                   |
 | `/adr`      | Documentation | Architecture Decision Record                                     |
 | `/checkout` | Git           | ブランチ名提案                                                   |
 | `/commit`   | Git           | Conventional Commits メッセージ                                  |
@@ -58,11 +58,11 @@ Auto: すべての Solo 条件を満たす → Solo、そうでなければ → 
 
 ## Todo 進捗追跡
 
-クロスセッション: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
+クロスセッションは `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`。
 
 | コマンド   | Todo アクション                                 |
 | ---------- | ----------------------------------------------- |
 | `/think`   | Implementation Plan から TaskCreate             |
-| `/code`    | TaskUpdate → in_progress / completed           |
+| `/code`    | TaskUpdate → in_progress / completed            |
 | `/audit`   | (`/code` フェーズ経由)                          |
 | `/feature` | TaskCreate (Phase 1)、フェーズ全体で TaskUpdate |

@@ -17,15 +17,16 @@ argument-hint: "[issue description]"
 
 ## Execution
 
-| Step | Action                                                 |
-| ---- | ------------------------------------------------------ |
-| 1    | Detect type from description (see Type Detection)      |
-| 2    | Read template: ${CLAUDE_SKILL_DIR}/templates/<type>.md |
-| 3    | Generate title + body following template               |
-| 4    | Refine body inline via prose review (see below)        |
-| 5    | Preview issue → AskUserQuestion: "Create this issue?"  |
-| 6    | Execute via body-file (sandbox-compatible)             |
-| 7    | Capture issue URL from command output                  |
+| Step | Action                                                                            |
+| ---- | --------------------------------------------------------------------------------- |
+| 0    | Read `.claude/OUTCOME.md`; if absent, stub generation (see rules/core/OUTCOME.md) |
+| 1    | Detect type from description (see Type Detection)                                 |
+| 2    | Read template: ${CLAUDE_SKILL_DIR}/templates/<type>.md                            |
+| 3    | Generate title + body following template                                          |
+| 4    | Refine body inline via prose review (see below)                                   |
+| 5    | Preview issue → AskUserQuestion: "Create this issue?"                             |
+| 6    | Execute via body-file (sandbox-compatible)                                        |
+| 7    | Capture issue URL from command output                                             |
 
 ## Type Detection
 
@@ -55,7 +56,7 @@ Read `language` from ${CLAUDE_SKILL_DIR}/../../settings.json and translate the i
 
 | Type    | Labels               |
 | ------- | -------------------- |
-| Bug     | bug, priority:*      |
+| Bug     | bug, priority:\*     |
 | Feature | enhancement, feature |
 | Task    | task, chore          |
 
@@ -72,13 +73,14 @@ Read `language` from ${CLAUDE_SKILL_DIR}/../../settings.json and translate the i
 
 ### Structure (Issue-specific)
 
-| Check            | Question                                                                 |
-| ---------------- | ------------------------------------------------------------------------ |
-| Problem stated   | Is the problem or request in 1-3 lines at the top?                       |
-| Reproducible     | Bug: are reproduction steps concrete? Feature: is the use case concrete? |
-| Expected outcome | Is the expected behavior explicit, not left for the reader to infer?     |
-| Reader action    | Is the ask specific ("review spec", "investigate cause", "decide by X")? |
-| Scope            | Is the issue focused on one problem, not a dump of related concerns?     |
+| Check             | Question                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| Problem stated    | Is the problem or request in 1-3 lines at the top?                                       |
+| Reproducible      | Bug: are reproduction steps concrete? Feature: is the use case concrete?                 |
+| Expected outcome  | Is the expected behavior explicit, not left for the reader to infer?                     |
+| Reader action     | Is the ask specific ("review spec", "investigate cause", "decide by X")?                 |
+| Scope             | Is the issue focused on one problem, not a dump of related concerns?                     |
+| Outcome alignment | Does this advance the outcome state? If it steps into Non-goals, flag explicitly in body |
 
 ### Anti-AI-pattern
 

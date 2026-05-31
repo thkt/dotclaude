@@ -72,9 +72,15 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: DOC. Location uses `file:section`.
+Follow finding-schema.md.
 
-Categories: clarity / structure / completeness / technical / audience. Severity: high / medium / low. Verification: pattern_search, is this documentation issue consistent across related files?
+| Field        | Value                                                                        |
+| ------------ | ---------------------------------------------------------------------------- |
+| Prefix       | DOC                                                                          |
+| Location     | `file:section`                                                               |
+| Categories   | clarity / structure / completeness / technical / audience                    |
+| Severity     | high / medium / low                                                          |
+| Verification | pattern_search. Is this documentation issue consistent across related files? |
 
 ```markdown
 ## Summary

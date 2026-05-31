@@ -12,19 +12,21 @@
 
 ## Coverage
 
-Delta-based gate: PR で C0 / C1 が下がらないこと。絶対値の floor は持たない (ADR-0062)。
+ゲートは delta ベース。PR で C0 / C1 が下がらないこと。絶対値の floor は持たない。
 
 | レベル | 焦点                              |
 | ------ | --------------------------------- |
 | C0     | 全行実行 (未テストコードを検出)   |
 | C1     | 全分岐通過 (未テストの判断を検出) |
 
-参考値 (informational, not enforced):
+参考値 (informational, not enforced)。
 
-- Istanbul / Jest / Vitest デフォルト: 80% (statements / branches / functions / lines)
-- Google ティアード: 60% acceptable, 75% commendable, 90% exemplary (90% 大幅超過は非推奨)
-- 一般プロジェクト平均: 74-76%
+| ソース                              | 値                                                                   |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| Istanbul / Jest / Vitest デフォルト | 80% (statements / branches / functions / lines)                      |
+| Google ティアード                   | 60% acceptable, 75% commendable, 90% exemplary (90% 大幅超過は非推奨) |
+| 一般プロジェクト平均                | 74-76%                                                               |
 
-プロジェクト個別の絶対値が必要な場合は spec NFR で定義する (例: security tool で C0 ≥90%)。観点・優先領域・テストの質は `TESTING.md` 参照。
+プロジェクト個別の絶対値が必要な場合は spec NFR で定義する (例えば security tool で C0 ≥90%)。観点・優先領域・テストの質は `TESTING.md` 参照。
 
-例外: 自動生成コード、データ定義、テストファイル、移行中のレガシー。
+例外は自動生成コード、データ定義、テストファイル、移行中のレガシー。

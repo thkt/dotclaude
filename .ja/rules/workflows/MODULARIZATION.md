@@ -14,12 +14,12 @@ paths:
 
 ## ルール
 
-| ルール               | ガイドライン                                  |
-| -------------------- | --------------------------------------------- |
-| Miller's Law         | 責務 ≤7 (8-9: 警告、>9: 分割)                |
-| Thin Wrapper Pattern | オーケストレーションのみ。実装詳細は持たない  |
-| 統一 Skills          | すべて skills/ に置く (Agents は分析用に分離) |
-| サイズ制限           | ≤100 行 (101-200: 警告、>200: 分割)          |
+| ルール               | ガイドライン                                                        |
+| -------------------- | ------------------------------------------------------------------- |
+| Miller's Law         | 責務 ≤7 (8-9: 警告、>9: 分割)                                       |
+| Thin Wrapper Pattern | オーケストレーションのみ。実装詳細は持たない                        |
+| 統一 Skills          | すべて skills/ に置く (Agents は分析用に分離)                       |
+| サイズ制限           | Thin wrapper 目安 ≤100 行。一般 SKILL.md body 上限は SKILLS.md 参照 |
 
 ## 適用条件
 
@@ -45,15 +45,6 @@ skills/
         ├── [workflow].md
         └── [topic].md
 ```
-
-## 命名規約
-
-| `user-invocable` | バインド   | 命名スタイル          | 例                                                  |
-| ---------------- | ---------- | --------------------- | --------------------------------------------------- |
-| `true`           | -          | 短縮名                | `commit`, `fix`, `audit`                            |
-| `false`          | CLI ラップ | `use-cli-<name>`      | `use-cli-yomu`, `use-cli-recall`                    |
-| `false`          | Agent 専用 | `use-context-<name>`  | `use-context-reviewer-security`                     |
-| `false`          | Workflow   | `use-workflow-<name>` | `use-workflow-code`, `use-workflow-spec-validation` |
 
 ## 参照パターン
 

@@ -63,11 +63,17 @@ background: true
 
 共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。
 
-## 出力
+## アウトプット
 
-finding-schema.md に従う。Prefix: A11Y。
+finding-schema.md に従う。
 
-カテゴリ: semantic / keyboard / screen-reader / visual / form。Severity: critical / high / medium。Verification: execution_trace または pattern_search。この要素は本当にキーボードまたはスクリーンリーダーで到達可能か。Extra: wcag (1.1.1 のような達成基準。必須)、apg_pattern (URL。必須)、code_example (修正済みスニペット。任意)。
+| フィールド   | 値                                                                                                    |
+| ------------ | ----------------------------------------------------------------------------------------------------- |
+| Prefix       | A11Y                                                                                                  |
+| カテゴリ     | semantic / keyboard / screen-reader / visual / form                                                   |
+| Severity     | critical / high / medium                                                                              |
+| Verification | execution_trace または pattern_search。この要素は本当にキーボードまたはスクリーンリーダーで到達可能か |
+| Extra        | wcag (1.1.1 のような達成基準。必須)、apg_pattern (URL。必須)、code_example (修正済みスニペット。任意) |
 
 ```markdown
 ## Summary

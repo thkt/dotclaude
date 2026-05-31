@@ -45,7 +45,7 @@ verification_hint を任意で含む発見事項。Task spawn プロンプト経
 | Check             | When to use                                | Action                                                                  |
 | ----------------- | ------------------------------------------ | ----------------------------------------------------------------------- |
 | execution_trace   | 信頼できない入力が危険な sink まで流れる   | entry_points から発見事項の場所まで追跡。sanitize/validate を通るか確認 |
-| call_site_check   | API 境界、制約付きの公開関数               | ugrep で全呼び出し箇所を発見。問題のある引数パターンを特定               |
+| call_site_check   | API 境界、制約付きの公開関数               | ugrep で全呼び出し箇所を発見。問題のある引数パターンを特定              |
 | error_propagation | catch、promise、未処理 rejection           | catch から上方に追跡。エラーがユーザーまたはログに到達するか確認        |
 | hotpath_analysis  | パフォーマンス、メモリ、頻度依存           | 場所がループ、リクエストハンドラ、頻繁に呼ばれるパスにあるか確認        |
 | pattern_search    | 発見事項がコード形状を述べているときの既定 | 同じパターンをコードベースで検索。問題の範囲を評価                      |
@@ -86,7 +86,7 @@ verification_hint を任意で含む発見事項。Task spawn プロンプト経
 | 1h                  | 複雑な状態、コード実行が必要                   |
 | manual              | ユーザー操作または特定のランタイムデータが必要 |
 
-## Output
+## アウトプット
 
 Task 完了経由で構造化 Markdown を返す。下記フォーマットを使う。
 

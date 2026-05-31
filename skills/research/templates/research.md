@@ -15,7 +15,7 @@ Investigate ... in order to ...
 
 ## Key Findings
 
-<!-- Phase 2-3 outputs after Phase 4 source pass. All findings, sorted by Priority ascending. -->
+<!-- Phase 2-3 outputs after Phase 5 source pass. All findings, sorted by Priority ascending. -->
 
 | Priority | Finding                                       | Source                                             | Next Action              |
 | -------- | --------------------------------------------- | -------------------------------------------------- | ------------------------ |
@@ -55,10 +55,17 @@ Investigate ... in order to ...
 
 ## Disconfirmation Check
 
-<!-- Phase 4 output. When Phase 3 ran, write `Covered by Phase 3 elimination`. When Phase 3 was skipped, search for one piece of evidence contradicting the leading hypothesis and record found or not found. -->
+<!-- Phase 5 output. When Phase 3 ran, write `Covered by Phase 3 elimination`. When Phase 3 was skipped, quote command + raw output from Phase 2 scratch verbatim. Treat 0 hits as possible tool misuse before claiming absence. -->
 
-Searched: `middleware/auth.ts` and `tests/auth.test.ts` for a case where token refresh succeeds without rate-limit.
-Result: Not found. Tests do not cover the concurrent-refresh scenario.
+Command: `ugrep -n 'rateLimit|throttle' middleware/auth.ts tests/auth.test.ts`
+
+Raw output below.
+
+```
+(no matches)
+```
+
+Result: Not found. Cross-checked with `grep -E 'rateLimit|throttle'` (same) and `yomu search "rate limit auth refresh"` (no hits). Absence confirmed; tests do not cover the concurrent-refresh scenario.
 
 ## References
 
@@ -72,9 +79,11 @@ Result: Not found. Tests do not cover the concurrent-refresh scenario.
 
 ## Coverage Notes
 
-<!-- Phase 4 Coverage check output. List Phase 1 questions noted as unknown and the investigation method to close them. -->
+<!-- Phase 5 Coverage check output. List Phase 1 questions noted as unknown and the investigation method to close them. Record tool disagreements found in Phase 2 cross-method verification. Note Phase 4 advisor outcome (or skip reason). -->
 
 - Refresh-token storage backend: noted as unknown in Key Findings. Resolve by reading `config/storage.ts` in next session.
+- Tool disagreement (Phase 2): yomu search "ratelimit" returned 2 hits, ugrep returned 0. Investigated: ugrep alternation syntax was wrong. Corrected with `grep -E`.
+- Advisor (Phase 4): no missed area flagged. (or: skipped, reason: Phase 0 inherit only, Intent = Understanding, no cross-repo claim)
 
 ## Next Steps
 

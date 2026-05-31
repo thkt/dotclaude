@@ -190,8 +190,8 @@ Return final Markdown report to /assert leader via Task completion.
 
 All reconciled findings + build/test failures + adversarial failures. When gate = Ready, write `(none)`.
 
-| # | Source | Location | Description | Fix |
-| - | ------ | -------- | ----------- | --- |
+| #   | Source | Location | Description | Fix |
+| --- | ------ | -------- | ----------- | --- |
 
 ### Root Causes
 
@@ -242,7 +242,7 @@ No prior review marker: `No prior review`. Legacy Trust Score format marker: `Le
 | static_only_findings   | N                |
 | gate                   | Ready / NotReady |
 
-`<promise>PASS</promise>` when gate = Ready only. Otherwise omit this marker.
+State `gate = Ready` explicitly when gate = Ready only, so a `/goal` evaluator reads completion. Otherwise omit.
 ```
 
 ## Constraints

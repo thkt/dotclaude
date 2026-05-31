@@ -54,6 +54,10 @@ Asked via AskUserQuestion when `$ARGUMENTS` is empty.
 
 ## Execution
 
+### Outcome Anchor
+
+Read `.claude/OUTCOME.md` before Build Check. If absent, stub generation (see rules/core/OUTCOME.md). Confirm the bug or fix lives inside the outcome state. Escalate if outside (see Escalation).
+
 ### Build Check
 
 Run project build command (detect from package.json or project config).
@@ -92,13 +96,14 @@ Run project build command (detect from package.json or project config).
 
 Objective triggers. No confidence self-assessment.
 
-| Trigger                        | Action                                         |
-| ------------------------------ | ---------------------------------------------- |
-| RCA cannot identify root cause | Escalate → `/research`                         |
-| 3 fix attempts failed          | STOP. Escalate → `/research` with full context |
-| Multi-file impact (>3 files)   | Delegate → `/code`                             |
-| New feature scope              | Delegate → `/think`                            |
-| Pattern = Systematic           | Escalate → `/research`                         |
+| Trigger                        | Action                                                       |
+| ------------------------------ | ------------------------------------------------------------ |
+| RCA cannot identify root cause | Escalate → `/research`                                       |
+| 3 fix attempts failed          | STOP. Escalate → `/research` with full context               |
+| Multi-file impact (>3 files)   | Delegate → `/code`                                           |
+| New feature scope              | Delegate → `/think`                                          |
+| Pattern = Systematic           | Escalate → `/research`                                       |
+| Fix outside OUTCOME.md scope   | Confirm with user; redefine Non-goals or delegate to `/code` |
 
 The ≥3 rule: if three distinct fix attempts fail, the issue is likely architectural, not a local bug. Do not attempt fix #4 without escalating.
 

@@ -73,9 +73,17 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: SEC. Relaxed reporting bar (override).
+Follow finding-schema.md. Relaxed reporting bar (override).
 
-Categories: A01-A10. Severity: critical / high / medium. Verification: execution_trace, call_site_check, or pattern_search, what to verify to confirm exploitability. Reasoning uses threat model: actor capability, attack vector, concrete impact. Extra: entry_points (optional, for execution_trace) as `file:line`.
+| Field        | Value                                                                                          |
+| ------------ | ---------------------------------------------------------------------------------------------- |
+| Prefix       | SEC                                                                                            |
+| Categories   | A01-A10                                                                                        |
+| Severity     | critical / high / medium                                                                       |
+| Verification | execution_trace, call_site_check, or pattern_search. What to verify to confirm exploitability. |
+| Extra        | entry_points (optional, for execution_trace) as `file:line`                                    |
+
+Reasoning uses threat model. Actor capability, attack vector, concrete impact.
 
 ```markdown
 ## Summary

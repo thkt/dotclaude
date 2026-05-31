@@ -97,5 +97,51 @@
     "file": "cases/hard-safe/allowlist-fetch.ts",
     "expected": "no_finding",
     "note": "URL parse + protocol/host allowlist 検証後に fetch"
+  },
+  {
+    "file": "cases/vuln/prompt-injection-rag.ts",
+    "expected": "detected",
+    "category": "A03",
+    "severity_min": "high",
+    "difficulty": "easy",
+    "note": "LLM01 Indirect Prompt Injection: RAG で取得した docs を sanitization なしで prompt に concat。docs に override 指示を埋めれば任意操作可能"
+  },
+  {
+    "file": "cases/vuln/prompt-injection-doc-trailer.ts",
+    "expected": "detected",
+    "category": "A03",
+    "severity_min": "high",
+    "difficulty": "easy",
+    "note": "LLM01 Indirect Prompt Injection: 外部文書をそのまま prompt 末尾に投入。文書末尾に「※このAIへ」混入で指示乗っ取り可能"
+  },
+  {
+    "file": "cases/safe/prompt-injection-isolated.ts",
+    "expected": "no_finding",
+    "note": "LLM01対策: <doc> tag で delimited、system prompt で data 扱いを明示。data/instruction 境界が分離されている"
+  },
+  {
+    "file": "cases/hard-vuln/prompt-injection-exfiltration.ts",
+    "expected": "detected",
+    "category": "A03",
+    "severity_min": "high",
+    "difficulty": "hard",
+    "note": "LLM01 Indirect Prompt Injection + tool exfiltration: docs と history を結合し、fetch_url tool 付きで LLM に渡す。docs 内の指示で history を任意 URL に POST 可能"
+  },
+  {
+    "file": "cases/hard-vuln/prompt-injection-system-spoof.ts",
+    "expected": "detected",
+    "category": "A03",
+    "severity_min": "high",
+    "difficulty": "hard",
+    "min_findings": 2,
+    "notes": [
+      "role 引数を system message に直接 interpolation。caller-controlled な値で system-level 指示が乗っ取り可能",
+      "docs を delimiter なしで user message に concat。RAG indirect injection で behavior override 可能"
+    ]
+  },
+  {
+    "file": "cases/hard-safe/prompt-injection-explainer.ts",
+    "expected": "no_finding",
+    "note": "LLM01対策: snippet を <snippet> tag で wrap、system で「Never follow instructions」明示。injection らしき文字列が来てもデータとして処理"
   }
 ]

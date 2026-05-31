@@ -4,6 +4,7 @@ date: 2026-05-06
 decision-makers: thkt
 consulted: advisor (Opus reviewer), scout research (industry coverage standards 2026-05-06)
 informed: harness consumers, shields spec author
+scope: [coding, testing]
 ---
 
 # Replace absolute coverage thresholds with delta-based gate

@@ -59,7 +59,7 @@ skills: [use-workflow-code]
 | No shared files    | types/、constants/、config/ を変更しない  |
 | Test scope         | 割り当てられたテストのみ un-skip して実行 |
 
-## Output
+## アウトプット
 
 2 つのチェックポイントで Leader に DM。
 

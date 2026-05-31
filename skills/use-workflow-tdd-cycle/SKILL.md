@@ -58,12 +58,12 @@ Test behavior via public API. Mock only at system boundaries.
 
 ## RGRC Cycle
 
-| Phase    | Goal         | Rule                                                                       | Common Mistake          |
-| -------- | ------------ | -------------------------------------------------------------------------- | ----------------------- |
-| Red      | Failing test | Verify failure matches the intended behavior gap, not syntax/import errors | Test passes immediately |
-| Green    | Pass test    | "You can sin" - dirty OK                                                   | Over-implementing       |
-| Refactor | Clean code   | Keep tests green                                                           | Changing behavior       |
-| Commit   | Save state   | All checks pass                                                            | Skipping checks         |
+| Phase    | Goal         | Rule                                                                       | Common Mistake                 |
+| -------- | ------------ | -------------------------------------------------------------------------- | ------------------------------ |
+| Red      | Failing test | Verify failure matches the intended behavior gap, not syntax/import errors | Test passes immediately        |
+| Green    | Pass test    | "You can sin" - dirty OK                                                   | Over-implementing              |
+| Refactor | Refine       | Keep tests green. Shrink only while it reads easier (rules/PRINCIPLES.md)  | Changing behavior; compressing |
+| Commit   | Save state   | All checks pass                                                            | Skipping checks                |
 
 ## Baby Steps (2-min cycle)
 

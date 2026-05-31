@@ -18,7 +18,7 @@ paths:
 
 ## Team-First Principle
 
-Default: Team (TeamCreate + TaskList for progress tracking)
+The default is Team (TeamCreate + TaskList for progress tracking).
 
 | Command     | Mode | Notes                         |
 | ----------- | ---- | ----------------------------- |
@@ -30,7 +30,7 @@ Default: Team (TeamCreate + TaskList for progress tracking)
 | `/research` | Solo |                               |
 | Utility     | Solo | /commit, /checkout, /pr, etc. |
 
-Auto: All solo conditions met → Solo, otherwise → Team
+Under Auto, all solo conditions met → Solo, otherwise → Team.
 
 | Solo Condition             | Example                          |
 | -------------------------- | -------------------------------- |
@@ -58,7 +58,7 @@ Auto: All solo conditions met → Solo, otherwise → Team
 
 ## Todo Progress Tracking
 
-Cross-session: `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`
+Cross-session uses `export CLAUDE_CODE_TASK_LIST_ID="[feature]-tasks"`.
 
 | Command     | Todo Action                                        |
 | ----------- | -------------------------------------------------- |

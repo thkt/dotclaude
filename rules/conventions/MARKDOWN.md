@@ -40,7 +40,7 @@ Bilingual `.ja/` copies follow their counterpart's scope.
 
 ## Pseudo-headings
 
-Do not end a line with `:` to introduce a table, list, or section. Promote to a proper heading (`### Foo`) or rewrite as prose. Inline colons remain fine (e.g., `File: foo.md`, table cells, `- Name: bar`).
+Do not end a line with `:` to introduce a table, list, or section. Promote to a proper heading (`### Foo`) or rewrite as prose. The same applies to an inline `Label: value` colon. It hints at structure, so promote it to a table or rewrite as prose. Literal colons stay fine (time `14:30`, ratio `2:1`, URLs, paths, table cells).
 
 | Violation                                  | Fix                          |
 | ------------------------------------------ | ---------------------------- |

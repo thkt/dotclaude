@@ -60,9 +60,14 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: RP.
+Follow finding-schema.md.
 
-Categories: container / hook / state / anti-pattern. Severity: high / medium / low. Verification: pattern_search or call_site_check, is this anti-pattern used consistently or is this an isolated case?
+| Field        | Value                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------ |
+| Prefix       | RP                                                                                                     |
+| Categories   | container / hook / state / anti-pattern                                                                |
+| Severity     | high / medium / low                                                                                    |
+| Verification | pattern_search or call_site_check. Is this anti-pattern used consistently or is this an isolated case? |
 
 ```markdown
 ## Summary

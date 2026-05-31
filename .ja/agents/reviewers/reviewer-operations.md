@@ -70,11 +70,18 @@ background: true
 
 共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。テスト ファイルとモック ファイルは schema の Context Test (Intentional) で除外される。
 
-## 出力
+## アウトプット
 
-finding-schema.md に従う。Prefix: OPS。
+finding-schema.md に従う。
 
-カテゴリ: error-boundary / loading-state / logging / performance / degradation。Severity: critical / high / medium / low。Verification: pattern_search または call_site_check。このコンポーネントはユーザー向けか、重要経路にあるか。推論では blast radius (何が壊れ、誰が気付くか) を明記する。
+| フィールド   | 値                                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------- |
+| Prefix       | OPS                                                                                         |
+| カテゴリ     | error-boundary / loading-state / logging / performance / degradation                        |
+| Severity     | critical / high / medium / low                                                              |
+| Verification | pattern_search または call_site_check。このコンポーネントはユーザー向けか、重要経路にあるか |
+
+推論では blast radius (何が壊れ、誰が気付くか) を明記する。
 
 ```markdown
 ## Summary

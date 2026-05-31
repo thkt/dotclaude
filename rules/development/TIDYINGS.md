@@ -16,6 +16,7 @@
 | Types (TS) | Remove inferable, any→specific                                        |
 | Formatting | Consistent semicolons/quotes/commas                                   |
 | Naming     | Fix typos, case inconsistencies                                       |
+| Temp files | Remove scratch/helper files created for iteration in this task        |
 
 ## Not allowed
 

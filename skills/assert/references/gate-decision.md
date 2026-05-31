@@ -6,6 +6,8 @@ Ternary Ready / Ready (caveat) / NotReady judgment for /assert, derived from rec
 
 Goal: answer "can this change merge safely?" with a discrete signal that distinguishes "fully verified clean" from "static-only clean (dynamic evidence missing)" from "blockers exist." Plus a structured list of blockers and their fixes.
 
+"Safely" is defined against `.claude/OUTCOME.md`. The orchestrator reads it during Pre-flight and feeds Behavior / Non-goals / Constraints to enhancer-evidence as context. Findings that contradict a Constraint or violate a Non-goal carry extra weight in the issues set (challenger / verifier may flag, adversarial may promote). When OUTCOME.md is absent the orchestrator generates a stub interactively per `rules/core/OUTCOME.md` § Behavior when absent before proceeding.
+
 Judgment rule: any issue or test failure blocks the gate as NotReady. Bootstrap failure alone does not block as NotReady, but it downgrades a clean Ready to Ready (caveat) because dynamic evidence is missing.
 
 ## Issue Set Construction
@@ -64,12 +66,12 @@ Rationale: Step 1-3 failure is environmental (no worktree, no internet, install 
 
 Ready (caveat) preserves the dynamic-evidence-gap signal for the legitimate environmental case only.
 
-## Ralph Loop Integration
+## /goal Integration
 
-| Condition             | Action                                                                     |
-| --------------------- | -------------------------------------------------------------------------- |
-| gate = Ready          | Emit `<promise>PASS</promise>`, exit loop                                  |
-| gate = Ready (caveat) | Output Blockers (none) + caveat note. Continue iteration. NO PASS emission |
-| gate = NotReady       | Output Blockers with Fix suggestions. Continue iteration. NO PASS emission |
+| Condition             | Action                                                                  |
+| --------------------- | ----------------------------------------------------------------------- |
+| gate = Ready          | State `gate = Ready`; `/goal` evaluator reads completion                |
+| gate = Ready (caveat) | Output Blockers (none) + caveat note. Continue. Do NOT state completion |
+| gate = NotReady       | Output Blockers with Fix suggestions. Continue. Do NOT state completion |
 
-Rationale for Ready (caveat) NOT emitting PASS: Ralph Loop should not exit on possibly-untested code. Continuing the loop gives the user a chance to restore the environment and re-run, or to consciously accept the caveat by stopping the loop manually.
+Rationale for Ready (caveat) NOT signaling completion: a `/goal` loop should not exit on possibly-untested code. Continuing gives the user a chance to restore the environment and re-run, or to consciously accept the caveat by stopping the loop manually.

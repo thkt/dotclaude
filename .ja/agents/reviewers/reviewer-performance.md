@@ -73,11 +73,17 @@ background: true
 
 共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。
 
-## 出力
+## アウトプット
 
-finding-schema.md に従う。Prefix: PERF。
+finding-schema.md に従う。
 
-カテゴリ: render / bundle / hooks / effects / data。Severity: high / medium / low。Verification: hotpath_analysis または call_site_check。このコードは hot path か、頻繁にレンダーされるコンポーネントか。Extra: impact (推定改善。任意)。
+| フィールド   | 値                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------- |
+| Prefix       | PERF                                                                                                    |
+| カテゴリ     | render / bundle / hooks / effects / data                                                                |
+| Severity     | high / medium / low                                                                                     |
+| Verification | hotpath_analysis または call_site_check。このコードは hot path か、頻繁にレンダーされるコンポーネントか |
+| Extra        | impact (推定改善。任意)                                                                                 |
 
 ```markdown
 ## Summary

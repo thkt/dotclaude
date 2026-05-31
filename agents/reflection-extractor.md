@@ -70,7 +70,7 @@ Body sections (Markdown headings), each ≤ 100 words:
 - Omit a category from `categories:` if you cannot fill that section honestly. Keep the heading present but write a single line: `(none extracted)`. At least one category must be present.
 - If no meaningful reflection can be extracted at all, do NOT write the file. The Stop hook will create a placeholder.
 - Never write outside `${REFLECT_KNOWLEDGE_DIR}/reflection/`.
-- Never read or modify files under `${REFLECT_KNOWLEDGE_DIR}/../memory/`, `CLAUDE.md`, `rules/`, `agents/`, or `skills/`. Reflection is a one-way producer. Violating this invalidates the prompt cache for every following session (ADR-0068 BR-006).
+- Never read or modify files under `${REFLECT_KNOWLEDGE_DIR}/../memory/`, `CLAUDE.md`, `rules/`, `agents/`, or `skills/`. Reflection is a one-way producer. Violating this invalidates the prompt cache for every following session.
 - Never invoke other hooks or skills. You run inside a Stop hook subagent; recursion is blocked at the script level but reentry costs.
 - Keep body under 300 words total. Larger documents bloat SessionStart latency.
 

@@ -84,11 +84,11 @@ memory: project
 
 ### Verification before removal
 
-| Target  | Check before removing                                               |
-| ------- | ------------------------------------------------------------------- |
+| Target  | Check before removing                                                |
+| ------- | -------------------------------------------------------------------- |
 | Test    | 同じ関数をカバーする他のテストを ugrep。カバーされている場合のみ削除 |
-| Comment | WHY (HOW ではなく) に答えているか? WHY なら残す                     |
-| Helper  | 1 箇所からのみ呼ばれる? インライン化。2 箇所以上? 残す              |
+| Comment | WHY (HOW ではなく) に答えているか? WHY なら残す                      |
+| Helper  | 1 箇所からのみ呼ばれる? インライン化。2 箇所以上? 残す               |
 
 ## Simplification Rules
 
@@ -136,7 +136,7 @@ memory: project
 | No formatting   | linter/formatter に任せる                              |
 | Conservative    | 削除が安全か不明なら、コードを残す                     |
 
-## Output
+## アウトプット
 
 3 セクションすべて必須。セクションに発見事項がない場合は「No changes」を使う。
 

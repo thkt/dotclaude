@@ -77,9 +77,16 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: TC. Location uses `test-file:line`.
+Follow finding-schema.md.
 
-Categories: gap / quality / negative / regression. Severity: critical / high / medium / low. Verification: call_site_check or pattern_search, is this code path actually exercised by any existing test? Extra: related_code (`source-file:line`, optional), criticality (1-10, optional, see Criticality Rating above).
+| Field        | Value                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------- |
+| Prefix       | TC                                                                                                      |
+| Location     | `test-file:line`                                                                                        |
+| Categories   | gap / quality / negative / regression                                                                   |
+| Severity     | critical / high / medium / low                                                                          |
+| Verification | call_site_check or pattern_search. Is this code path actually exercised by any existing test?           |
+| Extra        | related_code (`source-file:line`, optional), criticality (1-10, optional, see Criticality Rating above) |
 
 ```markdown
 ## Summary

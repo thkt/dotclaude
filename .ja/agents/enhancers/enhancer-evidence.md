@@ -108,15 +108,15 @@ background: true
 
 下記のフェーズ番号は enhancer-evidence 自身のパイプラインを指す。team-integration のフェーズ参照には接頭辞「team-integration §」を使う。
 
-| Phase | Action                                                       | Output                   | On dead-end                                    |
-| ----- | ------------------------------------------------------------ | ------------------------ | ---------------------------------------------- |
-| 1     | 4 つの入力セクションをパース                                 | 構造化された発見事項     | セクション欠落、Error Handling 参照            |
+| Phase | Action                                                      | Output                   | On dead-end                                    |
+| ----- | ----------------------------------------------------------- | ------------------------ | ---------------------------------------------- |
+| 1     | 4 つの入力セクションをパース                                | 構造化された発見事項     | セクション欠落、Error Handling 参照            |
 | 2     | challenger + verifier の調整 (team-integration § rules 1-6) | 調整済み発見事項セット   | 両方欠落、生 reviewer 発見事項にスキップ       |
-| 3     | 調整済み発見事項と昇格された敵対的発見事項をマージ           | マージ済み発見事項セット | -                                              |
+| 3     | 調整済み発見事項と昇格された敵対的発見事項をマージ          | マージ済み発見事項セット | -                                              |
 | 4     | 根拠横断の相関 (下記 § 参照)                                | 収束クラスタ             | クラスタなし、すべての発見事項はスタンドアロン |
-| 5     | 5 Whys を伴う根本原因の統合                                  | クラスタごとの根本原因   | -                                              |
+| 5     | 5 Whys を伴う根本原因の統合                                 | クラスタごとの根本原因   | -                                              |
 | 6     | Gate 判定 (下記 § 参照)                                     | Ready / NotReady         | -                                              |
-| 7     | 最終 Markdown を出力                                         | レポート                 | -                                              |
+| 7     | 最終 Markdown を出力                                        | レポート                 | -                                              |
 
 ## Cross-Evidence Correlation (Phase 4)
 
@@ -146,7 +146,7 @@ team-integration の統合ロジックを再利用する。
 | 6    | 個別発見事項ではなく根本原因に 5 Whys を適用                                                                                                 |
 | 7    | 分類: Architecture Gap / Knowledge Gap / Tooling Gap / Process Gap                                                                           |
 | 8    | スタンドアロン発見事項: 個別に 5 Whys                                                                                                        |
-| 9    | 影響評価: findings_resolved × max_severity × fixability (RC 順序付けに使用、ゲートには使わない)                                            |
+| 9    | 影響評価: findings_resolved × max_severity × fixability (RC 順序付けに使用、ゲートには使わない)                                              |
 
 ### Step 4a: Severity re-evaluation rules
 
@@ -166,7 +166,7 @@ team-integration の統合ロジックを再利用する。
 | 敵対的失敗 > 0       | yes                 | 昇格された敵対的発見事項 |
 | Bootstrap skipped    | no (静的のみモード) | Bootstrap result         |
 
-## Output
+## アウトプット
 
 最終 Markdown レポートを Task 完了経由で /assert leader に返す。
 
@@ -260,7 +260,7 @@ team-integration の統合ロジックを再利用する。
 | Challenger missing   | verifier の結果のみで進行 (調整ルール 6 を適用)                                    |
 | Verifier missing     | challenger の結果のみで進行 (元の判定は変えない)                                   |
 | Both missing         | 調整をスキップ、生 reviewer 発見事項を直接 Phase 3 に投入                          |
-| 調整後に発見事項なし | 発見事項ブロックをゲート入力から除去 (0 findings → Ready 候補として作用)          |
+| 調整後に発見事項なし | 発見事項ブロックをゲート入力から除去 (0 findings → Ready 候補として作用)           |
 | outcome 根拠なし     | Build/Tests を skipped にマーク (静的のみモード、それらでゲートはブロックされない) |
 | 敵対的結果なし       | Adversarial を skipped にマーク (それでゲートはブロックされない)                   |
 | すべての入力が空     | gate = Ready、注記「no evidence collected」                                        |

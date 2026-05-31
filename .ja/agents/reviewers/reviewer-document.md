@@ -70,11 +70,17 @@ background: true
 
 共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。
 
-## 出力
+## アウトプット
 
-finding-schema.md に従う。Prefix: DOC。Location は `file:section` を使用。
+finding-schema.md に従う。
 
-カテゴリ: clarity / structure / completeness / technical / audience。Severity: high / medium / low。Verification: pattern_search。このドキュメントの問題は関連ファイルで一貫しているか。
+| フィールド   | 値                                                                   |
+| ------------ | -------------------------------------------------------------------- |
+| Prefix       | DOC                                                                  |
+| Location     | `file:section`                                                       |
+| カテゴリ     | clarity / structure / completeness / technical / audience            |
+| Severity     | high / medium / low                                                  |
+| Verification | pattern_search。このドキュメントの問題は関連ファイルで一貫しているか |
 
 ```markdown
 ## Summary

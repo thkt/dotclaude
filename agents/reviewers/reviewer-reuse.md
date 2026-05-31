@@ -66,9 +66,16 @@ Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 ## Output
 
-Follow finding-schema.md. Prefix: REUSE.
+Follow finding-schema.md.
 
-Categories: utility / pattern / inline / unused_import. Severity: high / medium / low. Verification: pattern_search, does the existing utility handle all edge cases of new code? Extra: Evidence pairs new code and existing utility as `New: file:line snippet / Existing: file:line snippet`.
+| Field        | Value                                                                        |
+| ------------ | ---------------------------------------------------------------------------- |
+| Prefix       | REUSE                                                                        |
+| Categories   | utility / pattern / inline / unused_import                                   |
+| Severity     | high / medium / low                                                          |
+| Verification | pattern_search. Does the existing utility handle all edge cases of new code? |
+
+Evidence pairs new code and existing utility as `New: file:line snippet / Existing: file:line snippet`.
 
 ```markdown
 ## Summary

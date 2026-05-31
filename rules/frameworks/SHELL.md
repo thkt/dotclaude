@@ -34,6 +34,7 @@ paths:
 | realpath -m          | `realpath -m` (unavailable on macOS)          | `python3 -c "import os; print(os.path.realpath(...))"` |
 | echo escapes         | `echo "$var"` (interprets `\n`, `\t`, `\b`)   | `printf '%s' "$var"` (literal)                         |
 | Associative arrays   | bash `declare -A`                             | zsh `typeset -A`                                       |
+| path/PATH linkage    | `local path="$1"` inside function             | `local file_path="$1"` (zsh ties `path` array to `$PATH`; declaring `path` local collapses PATH to one entry inside the function, so subsequent `date` / `cat` fail with "command not found". Same hazard: `cdpath`, `fpath`, `manpath`, `mailpath`) |
 
 ## Error Policy
 

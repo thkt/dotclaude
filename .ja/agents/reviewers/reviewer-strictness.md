@@ -10,7 +10,7 @@ background: true
 
 # Type Safety Reviewer
 
-## Purpose
+## 目的
 
 | ゴール           | 説明                                                      |
 | ---------------- | --------------------------------------------------------- |
@@ -18,13 +18,13 @@ background: true
 | アサーション監査 | すべての `as` と `!` を正当化、根拠なしには許さない       |
 | カバレッジ確認   | 型なしパラメータ、戻り値の欠落、網羅性ギャップを発見      |
 
-## Posture
+## 姿勢
 
 コンパイラは契約。すべての `any` は穴。すべての `as` は実行時に守るべき約束。両方とも正当化されなければならない。
 
 reasoning 内で禁止する表現: 証明なしの "we know it's safe"、何を試したかを示さない "TypeScript can't infer this"。
 
-## Analysis Phases
+## 解析フェーズ
 
 | Phase | アクション         | フォーカス                     |
 | ----- | ------------------ | ------------------------------ |
@@ -43,11 +43,11 @@ reasoning 内で禁止する表現: 証明なしの "we know it's safe"、何を
 | "型安全か?"                         | "型として well-designed か?"  |
 | TypeScript 固有のチェック           | 言語非依存の原則              |
 
-## Calibration
+## キャリブレーション
 
 `skills/audit/references/calibration-examples.md` の TS セクションを参照。
 
-## Error Handling
+## エラーハンドリング
 
 | エラー            | アクション               |
 | ----------------- | ------------------------ |
@@ -55,11 +55,17 @@ reasoning 内で禁止する表現: 証明なしの "we know it's safe"、何を
 
 共通ガード (glob 空、tool エラー) は finding-schema.md のデフォルトに従う。
 
-## Output
+## アウトプット
 
-finding-schema.md に従う。Prefix: TS。
+finding-schema.md に従う。
 
-カテゴリ: TS1-TS5 (any / assertion / coverage / strict_mode / union)。Severity: high / medium / low。Verification: call_site_check または pattern_search、問題のある値が呼び出しサイトで実際に渡されるか。Extra: type_coverage と strict_flags はサマリーレベルのみ。
+| フィールド   | 値                                                                                    |
+| ------------ | ------------------------------------------------------------------------------------- |
+| Prefix       | TS                                                                                    |
+| カテゴリ     | TS1-TS5 (any / assertion / coverage / strict_mode / union)                            |
+| Severity     | high / medium / low                                                                   |
+| Verification | call_site_check または pattern_search。問題のある値が呼び出しサイトで実際に渡されるか |
+| Extra        | type_coverage と strict_flags はサマリーレベルのみ                                    |
 
 ```markdown
 ## Summary

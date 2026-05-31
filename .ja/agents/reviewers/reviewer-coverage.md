@@ -75,11 +75,18 @@ background: true
 
 共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。
 
-## 出力
+## アウトプット
 
-finding-schema.md に従う。Prefix: TC。Location は `test-file:line` を使用。
+finding-schema.md に従う。
 
-カテゴリ: gap / quality / negative / regression。Severity: critical / high / medium / low。Verification: call_site_check または pattern_search。このコード経路は既存のテストで実際に実行されるか。Extra: related_code (`source-file:line`。任意)、criticality (1-10。任意。上記クリティカリティ評価参照)。
+| フィールド   | 値                                                                                              |
+| ------------ | ----------------------------------------------------------------------------------------------- |
+| Prefix       | TC                                                                                              |
+| Location     | `test-file:line`                                                                                |
+| カテゴリ     | gap / quality / negative / regression                                                           |
+| Severity     | critical / high / medium / low                                                                  |
+| Verification | call_site_check または pattern_search。このコード経路は既存のテストで実際に実行されるか         |
+| Extra        | related_code (`source-file:line`。任意)、criticality (1-10。任意。上記クリティカリティ評価参照) |
 
 ```markdown
 ## Summary

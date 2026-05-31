@@ -185,23 +185,23 @@ For standalone:   Impact × Reach × Fixability
 | 5-20  | Medium   | 次スプリント   |
 | < 5   | Low      | バックログ     |
 
-## Output
+## アウトプット
 
 Integrator は snapshot データ (YAML、`skills/audit/templates/snapshot.yaml` 準拠、ADR 0047 で正本) を出力する。Leader が snapshot を history へ永続化し、`skills/audit/templates/output.md` を使って Markdown レポートを描画する。Integrator は Markdown を生成しない。
 
 ### Integrator の責務
 
-| フィールド                         | ソース                                                                                                                                                     |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| findings[]                         | RC-* 合成を含む、すべての confirmed/needs_review/needs_context エントリ                                                                                    |
-| findings[RC-*]                     | resolves [IDs]、effort 5min/15min/30min/1h/manual、category、message を伴う根本原因合成                                                                    |
+| フィールド                         | ソース                                                                                                                                                |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| findings[]                         | RC-* 合成を含む、すべての confirmed/needs_review/needs_context エントリ                                                                               |
+| findings[RC-*]                     | resolves [IDs]、effort 5min/15min/30min/1h/manual、category、message を伴う根本原因合成                                                               |
 | findings[*].status                 | open → Wave 1 raw、confirmed → reconciled、dismissed → challenger-rejected、needs_review → disputed-but-verified、needs_context → 弱い証拠 + 予算枯渇 |
-| summary.total_findings             | status ∈ {open, confirmed, needs_review} の finding 数                                                                                                    |
-| summary.{critical,high,medium,low} | 上記サブセットに対する severity カウント                                                                                                                   |
-| summary.dismissed                  | challenger により拒否された finding 数                                                                                                                     |
-| summary.trust_score                | 優先度加重された収束スコア (ADR 0035 準拠、0-100)                                                                                                          |
-| pipeline_health.*_completed        | エージェントごとの真偽値、停止または skip された場合は false                                                                                               |
-| pipeline_health.domains_skipped    | "<domain>: <reason>" エントリのリスト                                                                                                                      |
+| summary.total_findings             | status ∈ {open, confirmed, needs_review} の finding 数                                                                                                |
+| summary.{critical,high,medium,low} | 上記サブセットに対する severity カウント                                                                                                              |
+| summary.dismissed                  | challenger により拒否された finding 数                                                                                                                |
+| summary.trust_score                | 優先度加重された収束スコア (ADR 0035 準拠、0-100)                                                                                                     |
+| pipeline_health.*_completed        | エージェントごとの真偽値、停止または skip された場合は false                                                                                          |
+| pipeline_health.domains_skipped    | "<domain>: <reason>" エントリのリスト                                                                                                                 |
 
 ### Leader の責務 (integrator 担当外)
 

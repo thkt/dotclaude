@@ -79,7 +79,7 @@ memory: project
 | No build errors    | Report "Build clean" |
 | Build command fail | コマンド失敗を報告   |
 
-## Output
+## アウトプット
 
 構造化 Markdown を返す。
 

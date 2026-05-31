@@ -15,7 +15,7 @@ Prior research: <slug of inherited file, or "none found">
 
 ## Key Findings
 
-<!-- Phase 2-3 の出力を Phase 4 のソースパスを通したもの。すべての発見事項を Priority 昇順で記載。 -->
+<!-- Phase 2-3 の出力を Phase 5 のソースパスを通したもの。すべての発見事項を Priority 昇順で記載。 -->
 
 | Priority | 発見事項                                          | ソース                                             | 次のアクション               |
 | -------- | ------------------------------------------------- | -------------------------------------------------- | ---------------------------- |
@@ -55,10 +55,17 @@ Prior research: <slug of inherited file, or "none found">
 
 ## Disconfirmation チェック
 
-<!-- Phase 4 の出力。Phase 3 を実施したときは `Covered by Phase 3 elimination` と書く。Phase 3 を省略したときは、主要な仮説に反する根拠を 1 つ探し、found / not found を記録。 -->
+<!-- Phase 5 の出力。Phase 3 を実施したときは `Covered by Phase 3 elimination` と書く。Phase 3 を省略したときは Phase 2 の scratch から実行コマンドと生の出力を verbatim で引用する。0 件の結果は「不在」と断じる前に「ツール誤用の可能性」とみなす。 -->
 
-検索: `middleware/auth.ts` と `tests/auth.test.ts` で、token refresh が rate-limit なしに成功するケース。
-結果: 該当なし。テストは並行 refresh シナリオを網羅していない。
+コマンド: `ugrep -n 'rateLimit|throttle' middleware/auth.ts tests/auth.test.ts`
+
+生の出力は以下のとおり。
+
+```
+(no matches)
+```
+
+結果: 該当なし。`grep -E 'rateLimit|throttle'` (同結果)、および `yomu search "rate limit auth refresh"` (ヒットなし) でクロスチェック済み。並行 refresh シナリオは未網羅、不在を確認した。
 
 ## References
 
@@ -72,9 +79,11 @@ Prior research: <slug of inherited file, or "none found">
 
 ## カバレッジ注記
 
-<!-- Phase 4 のカバレッジチェック出力。unknown と注記した Phase 1 の質問と、それを解消する調査方法を列挙する。 -->
+<!-- Phase 5 のカバレッジチェック出力。unknown と注記した Phase 1 の質問と、それを解消する調査方法を列挙する。Phase 2 の cross-method 検証で見つかったツール不一致を記録。Phase 4 の advisor 結果 (または省略理由) を注記する。 -->
 
 - Refresh-token のストレージバックエンド: Key Findings で unknown と注記。次セッションで `config/storage.ts` を読んで解決。
+- ツール不一致 (Phase 2): yomu search "ratelimit" は 2 件ヒット、ugrep は 0 件。調査の結果、ugrep の alternation 構文が誤りだった。`grep -E` で訂正済み。
+- Advisor (Phase 4): 見落とし領域なし。(または: 省略、理由: Phase 0 の引き継ぎのみ、Intent = Understanding、repo を跨ぐ主張なし)
 
 ## Next Steps
 

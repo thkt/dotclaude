@@ -1,6 +1,6 @@
 ---
 name: think
-description: Design exploration with built-in adversarial challenge (Step 4: critic-design). Generates SOW and Spec from approaches that survive the challenge. Do NOT use for codebase investigation without planning intent (use /research instead).
+description: "Design exploration with built-in adversarial challenge (Step 4: critic-design). Generates SOW and Spec from approaches that survive the challenge. Do NOT use for codebase investigation without planning intent (use /research instead)."
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
 allowed-tools: Read Write LS Task TaskCreate TaskList AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
