@@ -1,6 +1,6 @@
 <!-- /audit-adr-gaps Step 7 report skeleton. Placeholders substituted from findings. -->
 
-# Undocumented Decisions Audit: <YYYY-MM-DD>-<HHMMSS>
+# ADR Gaps Audit: <YYYY-MM-DD>-<HHMMSS>
 
 ## Summary
 

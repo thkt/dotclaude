@@ -7,7 +7,7 @@ model: opus
 argument-hint: "[--threshold=N] [--paths=path,path]"
 ---
 
-# /audit-adr-gaps - Undocumented Decisions Audit
+# /audit-adr-gaps - ADR Gaps Audit
 
 Discover design decisions that exist in the code but have no ADR. Each candidate is challenged by critic-design (Step 6.2) before promotion. The final list is what survived the adversarial pass, not what the initial scan found. Produce a ranked list of ADR promotion candidates so the next refactor has a complete decision baseline.
 
@@ -47,7 +47,7 @@ Discover design decisions that exist in the code but have no ADR. Each candidate
 | 4    | Extract decision-shaped sentences from prose documents; cross-reference with existing ADRs |
 | 5    | Tag each candidate with impact (H/M/L) and reversibility (high/medium/low)                 |
 | 6    | Rank initial candidates; spawn critic-design to challenge them (skip if `--no-challenge`)  |
-| 7    | Write report to `docs/audit/<YYYY-MM-DD>-<HHMMSS>-undocumented-decisions.md`               |
+| 7    | Write report to `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-gaps.md`                             |
 | 8    | List post-challenge ADR promotion candidates as follow-up issues                           |
 
 ### Step 1: Large File Detection
@@ -173,7 +173,7 @@ When agent is unavailable or times out, fall back to initial ranking with a `cha
 ```bash
 mkdir -p docs/audit
 STAMP=$(date -u +%Y-%m-%d-%H%M%S)  # UTC date + HHMMSS; same-day reruns never collide
-REPORT="docs/audit/${STAMP}-undocumented-decisions.md"
+REPORT="docs/audit/${STAMP}-adr-gaps.md"
 ```
 
 Write the report following `${CLAUDE_SKILL_DIR}/templates/report-template.md`, substituting placeholders (`<YYYY-MM-DD>-<HHMMSS>`, `<source>:<line>`, `<summary>`) from findings. Add a per-file summary line `keep N / downgrade N / drop N`. If `--no-challenge` was set, omit the Challenge and Final columns and use the initial ranking.
@@ -184,7 +184,7 @@ Print only the post-challenge `keep` candidates and offer to invoke `/adr` for e
 
 ## Output
 
-- Report path: `docs/audit/<YYYY-MM-DD>-<HHMMSS>-undocumented-decisions.md`
+- Report path: `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-gaps.md`
 - Console summary: candidate count, promotion candidate count
 - Optional: ADR drafting via `/adr` or tracking issue via `/issue`
 
@@ -198,7 +198,7 @@ Print only the post-challenge `keep` candidates and offer to invoke `/adr` for e
 
 ## Acceptance Criteria
 
-- [ ] Report file exists at `docs/audit/<YYYY-MM-DD>-<HHMMSS>-undocumented-decisions.md`
+- [ ] Report file exists at `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-gaps.md`
 - [ ] Every large file exceeding threshold has a section
 - [ ] Every scanned document has an extraction section (or "no decisions found")
 - [ ] Every candidate has impact + reversibility tags
