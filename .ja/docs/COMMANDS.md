@@ -39,7 +39,7 @@ graph TD
 
 - Skills: use-workflow-code (RGRC definition)
 - Agents: generator-test (test generation)
-- Plugins: ralph-loop (automatic iteration)
+- Native: /goal (optional autonomous iteration)
 
 # Bad
 
@@ -59,8 +59,7 @@ graph TD
 外部プラグインなしでもコマンドが動く。
 
 ```markdown
-ralph-loop あり → 自動 RGRC 反復
-ralph-loop なし → 手動確認モード (同機能)
+/goal ラップあり → 自律反復; なし → gates 自動リトライ + 手動確認 (同機能)
 ```
 
 ## Command → Skill/Agent マッピング

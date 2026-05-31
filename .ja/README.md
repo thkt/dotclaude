@@ -198,21 +198,9 @@ Slack 検索 (`/inbox` 用):
    export SLACK_WORKSPACE="your-workspace"  # {workspace}.slack.com の workspace 部分
    ```
 
-### 必須プラグイン
+### 自律反復
 
-一部のコマンドはこのリポジトリに含まれない外部プラグインに依存する。クローン後に手動でインストールする。
-
-| プラグイン   | 利用コマンド | 用途                     | インストールコマンド         |
-| ------------ | ------------ | ------------------------ | ---------------------------- |
-| `ralph-loop` | `/code`      | TDD Green Phase 自動反復 | `/plugin install ralph-loop` |
-
-クイックインストール:
-
-```bash
-/plugin install ralph-loop
-```
-
-注意: プラグインは `~/.claude/plugins/` に保存され、git の対象外。各ユーザーが個別にインストールする必要がある。
+`/code` は native `/goal` コマンド (Claude Code 2.1.139+) で自律的なマルチターンループとして実行できる。プラグインのインストールは不要。
 
 ## 📝 利用可能なコマンド
 
