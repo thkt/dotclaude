@@ -93,14 +93,28 @@ Applies to design, spec.
 
 ## Validation Process
 
-| Step | Action                                        | Output                | On dead-end                                               |
-| ---- | --------------------------------------------- | --------------------- | --------------------------------------------------------- |
-| 1    | Read proposal + referenced files              | Context               | Files missing, verdict = needs_revision (cannot evaluate) |
-| 2    | Read ARCHITECTURE.md or equivalent if present | Structural premises   | Not present, skip and proceed                             |
-| 3    | Check existing codebase for conflicts         | Conflicts list        | None found, no conflict weakness                          |
-| 4    | Enumerate failure scenarios                   | Risk assessment       | All scenarios covered, no failure weakness                |
-| 5    | Apply baseline + viewpoint checklist          | Per-decision findings | -                                                         |
-| 6    | Decide verdict                                | One of 3 verdicts     | -                                                         |
+| Step | Action                                                                                                                                                                         | Output                                              | On dead-end                                               |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- | --------------------------------------------------------- |
+| 1    | Read proposal + referenced files                                                                                                                                               | Context                                             | Files missing, verdict = needs_revision (cannot evaluate) |
+| 2    | Read ARCHITECTURE.md or equivalent if present                                                                                                                                  | Structural premises                                 | Not present, skip and proceed                             |
+| 3    | Check existing codebase for conflicts                                                                                                                                          | Conflicts list                                      | None found, no conflict weakness                          |
+| 4    | Enumerate failure scenarios                                                                                                                                                    | Risk assessment                                     | All scenarios covered, no failure weakness                |
+| 5a   | Apply baseline + viewpoint checklist, rank surfaced weaknesses by severity, take the top 3, collect 1 supporting evidence for each                                             | Top-3 findings with supporting evidence             | No weakness surfaces, verdict = confirmed                 |
+| 5b   | For each of the top 3, run 1 disconfirming probe (search for evidence that would refute the weakness), high severity first                                                     | Per-finding probe result                            | Budget reached, apply Degradation rule                    |
+| 5c   | Adjust severity from the probe result. Refuted weakness is dropped (its underlying claim survives), a weakened one drops a severity step, nothing disconfirming keeps severity | Severity-adjusted findings, 3 or fewer, no backfill | -                                                         |
+| 6    | Decide verdict                                                                                                                                                                 | One of 3 verdicts                                   | -                                                         |
+
+### Degradation rule (budget)
+
+Disconfirming probes (5b) cost extra Read/search operations. Probe in severity order, high findings first. When a single probe would need more than ~2 additional Read/search operations, or the run's probe allotment is spent, stop probing the remaining findings and degrade them instead of skipping silently.
+
+| For a probe-unexecuted weakness | Action                                                          |
+| ------------------------------- | --------------------------------------------------------------- |
+| Disconfirming probe column      | Record `skipped (budget)`                                       |
+| Severity                        | Lower one step (high→medium, medium→low, low unchanged)         |
+| Finding count                   | Keep it. Never drop a finding to save budget. Max 3 still holds |
+
+A `skipped (budget)` mark is a recorded, severity-penalized degradation, not a silent compression. It does not violate the anti-compression posture, which bans dropping probes merely to be brief.
 
 ## Verdicts
 
@@ -139,10 +153,10 @@ Claims that withstood viewpoint checks. List only what passed.
 
 ### Weaknesses
 
-| Viewpoint | Severity | Finding                                                           |
-| --------- | -------- | ----------------------------------------------------------------- |
-| V2        | high     | Section 3 claims single-tenant but section 5 references multi-org |
-| V4        | medium   | Under slow network, service method has no retry or fallback       |
+| Viewpoint | Severity | Finding                                                           | Supporting evidence                      | Disconfirming probe                                                                       |
+| --------- | -------- | ----------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------- |
+| V2        | high     | Section 3 claims single-tenant but section 5 references multi-org | section 5 references multi-org tenant_id | searched for a tenant-boundary guard reconciling both sections; none found → claim stands |
+| V4        | medium   | Under slow network, service method has no retry or fallback       | no retry/backoff in method signature     | checked for upstream retry middleware; none → claim stands                                |
 
 ## Summary
 
@@ -152,6 +166,8 @@ Claims that withstood viewpoint checks. List only what passed.
 | weaknesses_count | count                                 |
 | verdict          | confirmed / weakened / needs_revision |
 ```
+
+Supporting evidence is a concrete cite (file:line or search result). Disconfirming probe is the refutation search plus its result (claim stands, weakened, or `skipped (budget)`).
 
 ## Error Handling
 
