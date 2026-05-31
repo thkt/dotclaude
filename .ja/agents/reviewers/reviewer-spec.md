@@ -238,7 +238,7 @@ Location `sow.md:Risks`。Fix: 具体的な Mitigation を追加、"monitor" で
 
 ## アウトプット
 
-ralph-loop promise タグを伴う構造化 Markdown。
+明示的な gate verdict を伴う構造化 Markdown。
 
 ```markdown
 ## Review: reviewer-spec
@@ -279,15 +279,15 @@ Blockers は Location 順にソートされたすべての P0 finding。gate = R
 | ----------- | --------------------------------------------------------- |
 | next_action | Resolve all P0 blockers, then re-run, or proceed to code. |
 
-gate = Ready のとき `<promise>PASS</promise>`。それ以外は省略。
+gate = Ready のとき `gate = Ready` を明示し `/goal` evaluator が完了を読み取れるようにする。それ以外は blocker を述べる。
 ```
 
-## Ralph Loop 統合
+## /goal 統合
 
-[ralph-loop](https://github.com/anthropics/claude-code-ralph-loop) はループ継続のために `<promise>` タグを読み取る。
+`/goal <condition>` セッションラッパーが (タグでなく) 会話を読んで完了を判定する。gate verdict を明示する。
 
-| 条件             | アクション                                         |
-| ---------------- | -------------------------------------------------- |
-| gate = Ready     | `<promise>PASS</promise>` を出力、ループ終了       |
-| gate = NotReady  | 次のイテレーション用に Fix 例を伴う blocker を出力 |
-| イテレーション数 | 推奨 5-10                                          |
+| 条件            | アクション                                           |
+| --------------- | ---------------------------------------------------- |
+| gate = Ready    | `gate = Ready` を明示。evaluator が完了を読み取る    |
+| gate = NotReady | 次のイテレーション用に Fix 例付き blocker を出力     |
+| Iterations      | session-scoped。user が `/goal <condition>` でラップ |
