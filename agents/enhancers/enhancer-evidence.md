@@ -40,32 +40,37 @@ Four data sources passed via spawn prompt from /assert leader.
 
 ### 1. Challenger Output (raw)
 
-```markdown
-## Challenges
+critic-audit returns a Markdown narrative (reasoning, evidence) plus an authoritative JSON decision block. Read verdict and severity from the JSON block ONLY; the narrative carries supporting prose, not decisions.
 
-### {finding_id}
-
-| Field             | Value                                             |
-| ----------------- | ------------------------------------------------- |
-| verdict           | confirmed / disputed / downgraded / needs_context |
-| original_severity | critical / high / medium / low                    |
-| adjusted_severity | (downgraded only)                                 |
-| reasoning         | why this verdict                                  |
-| evidence          | list of supporting evidence                       |
+```json
+{
+  "challenges": [
+    {
+      "finding_id": "F-042",
+      "verdict": "confirmed",
+      "original_severity": "high",
+      "adjusted_severity": null
+    }
+  ],
+  "summary": {
+    "total_challenged": 1,
+    "confirmed": 1,
+    "disputed": 0,
+    "downgraded": 0,
+    "needs_context": 0
+  }
+}
 ```
 
 ### 2. Verifier Output (raw)
 
-```markdown
-## Verifications
+critic-evidence returns a Markdown narrative (effort, evidence) plus an authoritative JSON decision block. Read verdict from the JSON block ONLY.
 
-### {finding_id}
-
-| Field            | Value                                   |
-| ---------------- | --------------------------------------- |
-| verdict          | verified / weak_evidence / unverifiable |
-| budget_exhausted | true / false                            |
-| evidence         | what was found or why not               |
+```json
+{
+  "verifications": [{ "finding_id": "F-042", "verdict": "verified", "budget_exhausted": false }],
+  "summary": { "total_processed": 1, "verified": 1, "weak_evidence": 0, "unverifiable": 0 }
+}
 ```
 
 ### 3. Outcome Evidence (from Codex exec in worktree)
@@ -168,14 +173,40 @@ Compute gate from reconciled evidence. Full rule reference: `skills/assert/refer
 
 ## Output
 
-Return final Markdown report to /assert leader via Task completion.
+Return two parts to the /assert leader via Task completion: an authoritative JSON decision block, then the human-facing Markdown report. The leader extracts gate and findings from the JSON block with jq, never from the prose. Decision values live in the JSON block and are not restated as decisions in the report.
+
+### Decision block (authoritative)
+
+Emit exactly one fenced `json` block.
+
+```json
+{
+  "gate": "Ready",
+  "build": "pass",
+  "tests": "pass",
+  "adversarial": "skipped",
+  "findings": []
+}
+```
+
+| Field               | Type   | Rule                                                              |
+| ------------------- | ------ | ----------------------------------------------------------------- |
+| gate                | enum   | Ready / NotReady. Computed, not asserted (see rule below)         |
+| build               | enum   | pass / fail / skipped                                             |
+| tests               | enum   | pass / fail / skipped / no-runner                                 |
+| adversarial         | string | "N/M passed" or "skipped"                                         |
+| findings[]          | array  | One entry per blocking issue; empty array = zero issues           |
+| findings[].id       | string | Finding identifier                                                |
+| findings[].severity | enum   | critical / high / medium / low (fix-priority hint, does not gate) |
+| findings[].source   | array  | Subset of [challenger, verifier, adversarial]                     |
+| findings[].location | string | file:line                                                         |
+
+gate is computed, not asserted: gate = Ready iff build ≠ fail AND tests ≠ fail AND findings is empty. Any non-empty findings, build fail, or test fail forces gate = NotReady. Zero findings is the valid Ready path: emit `"findings": []`, never omit the key. A missing or malformed block makes the leader re-run once, then fail-close to NotReady. `Ready (caveat)` is the leader's to assign on bootstrap env-failure; this agent emits only Ready or NotReady.
+
+### Human-facing report
 
 ```markdown
 ## Evidence Integration Report
-
-| Field | Value            |
-| ----- | ---------------- |
-| gate  | Ready / NotReady |
 
 ### Gate Decision
 
@@ -241,9 +272,9 @@ No prior review marker: `No prior review`. Legacy Trust Score format marker: `Le
 | cross_evidence_matches | N                |
 | static_only_findings   | N                |
 | gate                   | Ready / NotReady |
-
-State `gate = Ready` explicitly when gate = Ready only, so a `/goal` evaluator reads completion. Otherwise omit.
 ```
+
+State `gate = Ready` explicitly in your completion message when the JSON gate = Ready only, so a `/goal` evaluator reads completion. Otherwise omit. The leader does not regenerate the gate; it relays the decoded JSON value.
 
 ## Constraints
 

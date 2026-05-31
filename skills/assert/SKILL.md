@@ -2,7 +2,7 @@
 name: assert
 description: Independent outcome-based assertion with Codex + audit reviewers. Emits ternary Ready / Ready (caveat) / NotReady gate from reconciled static + dynamic evidence. Do NOT use for quick code review (use /polish) or static-only audit (use /audit).
 when_to_use: 検証して, assert, 独立検証, outcome assertion, gate decision, adversarial testing
-allowed-tools: Bash(codex:*) Bash(git worktree:*) Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git branch:*) Bash(git ls-files:*) Bash(npm ci:*) Bash(npm run:*) Bash(npm test:*) Bash(cargo:*) Bash(make:*) Bash(bun:*) Bash(pnpm:*) Bash(yarn:*) Bash(which:*) Bash(date:*) Bash(rm:*) Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Bash(codex:*) Bash(git worktree:*) Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git branch:*) Bash(git ls-files:*) Bash(npm ci:*) Bash(npm run:*) Bash(npm test:*) Bash(cargo:*) Bash(make:*) Bash(bun:*) Bash(pnpm:*) Bash(yarn:*) Bash(which:*) Bash(date:*) Bash(rm:*) Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(jq:*) Bash(awk:*)
 model: opus
 argument-hint: "[file paths or directory for target mode] [--base <branch>]"
 ---
@@ -126,7 +126,7 @@ Empty: `(none)` when gate = Ready.
 
 [Resolved / New / Carried from workspace/history/.]
 
-enhancer-evidence states `gate = Ready` explicitly when gate = Ready ONLY (NOT for Ready (caveat) or NotReady), so a `/goal` evaluator reads completion from the conversation. Leader relays verbatim without regenerating.
+enhancer-evidence emits an authoritative JSON decision block; the leader decodes gate and findings from it with jq (Phase 4 Gate Decode), never from prose. The leader states `gate = Ready` explicitly when the decoded gate = Ready ONLY (NOT for Ready (caveat) or NotReady), so a `/goal` evaluator reads completion from the conversation. Leader relays the decoded gate verbatim without regenerating.
 ```
 
 ## Error Handling

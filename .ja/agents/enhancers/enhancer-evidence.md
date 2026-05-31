@@ -40,32 +40,37 @@ background: true
 
 ### 1. Challenger Output (raw)
 
-```markdown
-## Challenges
+critic-audit は Markdown narrative (reasoning, evidence) に加え、権威ある JSON decision ブロックを返す。verdict と severity は JSON ブロックからのみ読む。narrative は補足の prose を持つが decision は持たない。
 
-### {finding_id}
-
-| Field             | Value                                             |
-| ----------------- | ------------------------------------------------- |
-| verdict           | confirmed / disputed / downgraded / needs_context |
-| original_severity | critical / high / medium / low                    |
-| adjusted_severity | (downgraded only)                                 |
-| reasoning         | why this verdict                                  |
-| evidence          | list of supporting evidence                       |
+```json
+{
+  "challenges": [
+    {
+      "finding_id": "F-042",
+      "verdict": "confirmed",
+      "original_severity": "high",
+      "adjusted_severity": null
+    }
+  ],
+  "summary": {
+    "total_challenged": 1,
+    "confirmed": 1,
+    "disputed": 0,
+    "downgraded": 0,
+    "needs_context": 0
+  }
+}
 ```
 
 ### 2. Verifier Output (raw)
 
-```markdown
-## Verifications
+critic-evidence は Markdown narrative (effort, evidence) に加え、権威ある JSON decision ブロックを返す。verdict は JSON ブロックからのみ読む。
 
-### {finding_id}
-
-| Field            | Value                                   |
-| ---------------- | --------------------------------------- |
-| verdict          | verified / weak_evidence / unverifiable |
-| budget_exhausted | true / false                            |
-| evidence         | what was found or why not               |
+```json
+{
+  "verifications": [{ "finding_id": "F-042", "verdict": "verified", "budget_exhausted": false }],
+  "summary": { "total_processed": 1, "verified": 1, "weak_evidence": 0, "unverifiable": 0 }
+}
 ```
 
 ### 3. Outcome Evidence (from Codex exec in worktree)
@@ -168,14 +173,40 @@ team-integration の統合ロジックを再利用する。
 
 ## アウトプット
 
-最終 Markdown レポートを Task 完了経由で /assert leader に返す。
+Task 完了経由で 2 つのパートを /assert leader に返す。権威ある JSON decision ブロックの後に、人間向けの Markdown レポートを続ける。leader は gate と findings を JSON ブロックから jq で抽出し、prose からは読まない。decision 値は JSON ブロックに存在し、レポートで decision として再記しない。
+
+### Decision block (authoritative)
+
+単一の `json` ブロックをちょうど 1 つ出す。
+
+```json
+{
+  "gate": "Ready",
+  "build": "pass",
+  "tests": "pass",
+  "adversarial": "skipped",
+  "findings": []
+}
+```
+
+| Field               | Type   | Rule                                                            |
+| ------------------- | ------ | --------------------------------------------------------------- |
+| gate                | enum   | Ready / NotReady。計算結果であり主張ではない (下記ルール参照)   |
+| build               | enum   | pass / fail / skipped                                           |
+| tests               | enum   | pass / fail / skipped / no-runner                               |
+| adversarial         | string | "N/M passed" または "skipped"                                   |
+| findings[]          | array  | ブロッキング issue ごとに 1 エントリ。空配列 = issue ゼロ       |
+| findings[].id       | string | finding 識別子                                                  |
+| findings[].severity | enum   | critical / high / medium / low (修正優先度ヒント、ゲートしない) |
+| findings[].source   | array  | [challenger, verifier, adversarial] の部分集合                  |
+| findings[].location | string | file:line                                                       |
+
+gate は計算結果であり主張ではない: gate = Ready は build ≠ fail かつ tests ≠ fail かつ findings が空のときのみ。findings が空でない、または build/test 失敗があれば gate = NotReady を強制する。findings ゼロが有効な Ready パス: `"findings": []` を出し、キーを省略しない。ブロックの欠落や malformed のとき leader は 1 度だけ再実行し、その後 NotReady に fail-close する。`Ready (caveat)` は bootstrap の env-failure 時に leader が付与する。このエージェントは Ready または NotReady のみを出す。
+
+### Human-facing report
 
 ```markdown
 ## Evidence Integration Report
-
-| Field | Value            |
-| ----- | ---------------- |
-| gate  | Ready / NotReady |
 
 ### Gate Decision
 
@@ -190,8 +221,8 @@ team-integration の統合ロジックを再利用する。
 
 すべての調整済み発見事項 + ビルド/テスト失敗 + 敵対的失敗。gate = Ready のときは `(none)` と書く。
 
-| # | Source | Location | Description | Fix |
-| - | ------ | -------- | ----------- | --- |
+| #   | Source | Location | Description | Fix |
+| --- | ------ | -------- | ----------- | --- |
 
 ### Root Causes
 
@@ -241,9 +272,9 @@ team-integration の統合ロジックを再利用する。
 | cross_evidence_matches | N                |
 | static_only_findings   | N                |
 | gate                   | Ready / NotReady |
-
-`<promise>PASS</promise>` は gate = Ready のときのみ。それ以外はこのマーカーを省略する。
 ```
+
+JSON gate = Ready のときのみ、完了メッセージで `gate = Ready` を明示し、`/goal` evaluator が完了を読み取れるようにする。それ以外は省略する。leader は gate を再生成せず、decode した JSON 値を中継する。
 
 ## Constraints
 

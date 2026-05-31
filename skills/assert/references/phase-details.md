@@ -120,6 +120,37 @@ Integrator constructs a single `issues` set: dedup by `file:line`, retain ALL so
 
 Returns: root causes + Gate decision (Ready / Ready (caveat) / NotReady) + report.
 
+### Phase 4 Gate Decode (leader, deterministic)
+
+enhancer-evidence returns a Markdown report led by one fenced `json` decision block. The leader does NOT read the gate from prose; it extracts and validates the block mechanically, so no natural-language interpretation re-enters at the final step (the exact path /assert's JSON contract exists to close).
+
+| Step | Action                                                                                                                                    |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Slice the single `json` block from the enhancer Task output                                                                               |
+| 2    | Read decision fields: `jq -r '.gate'`, `jq '.findings \| length'`, `jq -r '.build,.tests'`                                                |
+| 3    | Validate enums: gate ∈ {Ready, NotReady}, build ∈ {pass,fail,skipped}, tests ∈ {pass,fail,skipped,no-runner}                              |
+| 4    | Cross-check: gate = Ready requires findings length = 0 AND build ≠ fail AND tests ≠ fail                                                  |
+| 5    | On parse failure, missing block, enum violation, or cross-check mismatch: re-spawn enhancer once. Second failure → fail-close to NotReady |
+
+Ternary assignment after a clean decode:
+
+| Decoded gate | findings | Bootstrap         | Final gate     |
+| ------------ | -------- | ----------------- | -------------- |
+| NotReady     | any      | any               | NotReady       |
+| Ready        | 0        | success           | Ready          |
+| Ready        | 0        | env-failure (1-3) | Ready (caveat) |
+
+````bash
+# enhancer Task output saved to "$OUT"
+BLOCK=$(awk '/^```json/{f=1;next} /^```/{f=0} f' "$OUT")
+GATE=$(printf '%s' "$BLOCK" | jq -r '.gate')                 # malformed → jq exits non-zero
+ISSUES=$(printf '%s' "$BLOCK" | jq '.findings | length')
+case "$GATE" in Ready|NotReady) ;; *) GATE=NotReady ;; esac  # enum guard
+[ "$GATE" = Ready ] && [ "$ISSUES" -ne 0 ] && GATE=NotReady   # cross-check
+````
+
+The leader relays the decoded gate verbatim; it never regenerates the verdict from prose. `Ready (caveat)` is applied by the leader only when bootstrap Step 1-3 failed (env) and decoded findings = 0.
+
 ## Cleanup (Always)
 
 Wrap all phases in try/finally to guarantee cleanup regardless of outcome.

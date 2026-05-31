@@ -120,6 +120,37 @@ Integrator は単一の `issues` セットを構築する: `file:line` で重複
 
 返り値: root causes + Gate decision (Ready / Ready (caveat) / NotReady) + report。
 
+### Phase 4 Gate Decode (leader, deterministic)
+
+enhancer-evidence は単一の fenced `json` decision ブロックを先頭に持つ Markdown レポートを返す。leader は gate を prose から読まない。ブロックを機械的に抽出・検証し、最終段で自然言語解釈が再混入しないようにする (/assert の JSON contract が塞ぐ経路そのもの)。
+
+| Step | Action                                                                                                                             |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | enhancer の Task 出力から単一の `json` ブロックを切り出す                                                                          |
+| 2    | decision フィールドを読む: `jq -r '.gate'`、`jq '.findings \| length'`、`jq -r '.build,.tests'`                                    |
+| 3    | enum を検証: gate ∈ {Ready, NotReady}、build ∈ {pass,fail,skipped}、tests ∈ {pass,fail,skipped,no-runner}                          |
+| 4    | クロスチェック: gate = Ready は findings length = 0 かつ build ≠ fail かつ tests ≠ fail を要する                                   |
+| 5    | パース失敗・ブロック欠落・enum 違反・クロスチェック不一致のとき: enhancer を 1 度だけ再起動。2 度目の失敗 → NotReady に fail-close |
+
+clean な decode 後の三値割り当て:
+
+| Decoded gate | findings | Bootstrap         | Final gate     |
+| ------------ | -------- | ----------------- | -------------- |
+| NotReady     | any      | any               | NotReady       |
+| Ready        | 0        | success           | Ready          |
+| Ready        | 0        | env-failure (1-3) | Ready (caveat) |
+
+````bash
+# enhancer の Task 出力を "$OUT" に保存
+BLOCK=$(awk '/^```json/{f=1;next} /^```/{f=0} f' "$OUT")
+GATE=$(printf '%s' "$BLOCK" | jq -r '.gate')                 # malformed → jq が非ゼロ終了
+ISSUES=$(printf '%s' "$BLOCK" | jq '.findings | length')
+case "$GATE" in Ready|NotReady) ;; *) GATE=NotReady ;; esac  # enum ガード
+[ "$GATE" = Ready ] && [ "$ISSUES" -ne 0 ] && GATE=NotReady   # クロスチェック
+````
+
+leader は decode した gate をそのまま中継し、prose から verdict を再生成しない。`Ready (caveat)` は bootstrap Step 1-3 が失敗 (env) し decode した findings = 0 のときのみ leader が付与する。
+
 ## Cleanup (Always)
 
 すべての phase を try/finally で囲み、結果に関わらず cleanup を保証する。
