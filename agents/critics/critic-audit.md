@@ -107,32 +107,54 @@ If the category does not match any lens, fall back to baseline only and note "no
 
 ## Output
 
-Return as structured Markdown via Task completion using this format.
+Return two parts via Task completion: a Markdown narrative (non-authoritative reasoning and evidence) then a single fenced JSON block (authoritative decision fields). The integrator and /assert leader read verdict and severity from the JSON block ONLY. Do NOT restate verdict or severity in the narrative. A decision value living in two places is exactly the cherry-pick path this contract closes.
+
+### Markdown narrative
 
 ```markdown
 ## Challenges
 
 ### {finding_id}
 
-| Field             | Value                                             |
-| ----------------- | ------------------------------------------------- |
-| verdict           | confirmed / disputed / downgraded / needs_context |
-| original_severity | high                                              |
-| adjusted_severity | medium (only if downgraded)                       |
-| reasoning         | One sentence naming the verdict trigger.          |
-| Evidence          | file:line refs, marker quotes, ADR refs           |
-
-## Summary
-
-| Metric              | Value      |
-| ------------------- | ---------- |
-| total_challenged    | count      |
-| confirmed           | count      |
-| disputed            | count      |
-| downgraded          | count      |
-| needs_context       | count      |
-| false_positive_rate | percentage |
+| Field     | Value                                    |
+| --------- | ---------------------------------------- |
+| reasoning | One sentence naming the verdict trigger. |
+| Evidence  | file:line refs, marker quotes, ADR refs  |
 ```
+
+### Decision block (authoritative)
+
+A single fenced `json` block follows the narrative. Decision fields live here and nowhere else.
+
+```json
+{
+  "challenges": [
+    {
+      "finding_id": "F-042",
+      "verdict": "confirmed",
+      "original_severity": "high",
+      "adjusted_severity": null
+    }
+  ],
+  "summary": {
+    "total_challenged": 1,
+    "confirmed": 1,
+    "disputed": 0,
+    "downgraded": 0,
+    "needs_context": 0
+  }
+}
+```
+
+| Field                          | Type         | Rule                                                           |
+| ------------------------------ | ------------ | -------------------------------------------------------------- |
+| challenges[].finding_id        | string       | Matches the input finding_id                                   |
+| challenges[].verdict           | enum         | confirmed / disputed / downgraded / needs_context              |
+| challenges[].original_severity | enum         | critical / high / medium / low                                 |
+| challenges[].adjusted_severity | enum or null | Set only when verdict = downgraded; null otherwise             |
+| summary                        | object       | Counts derived from challenges; human-facing, not a 2nd source |
+
+Zero challenges is a valid result, not an error: emit `"challenges": []` with zeroed summary counts. A missing or malformed JSON block is NOT zero challenges. The consumer re-runs once, then fail-closes. Always emit the block.
 
 ## Error Handling
 

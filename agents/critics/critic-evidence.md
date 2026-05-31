@@ -88,7 +88,9 @@ Pick the check that matches the finding category. The verification_hint may name
 
 ## Output
 
-Return as structured Markdown via Task completion using this format.
+Return two parts via Task completion: a Markdown narrative (non-authoritative evidence and effort) then a single fenced JSON block (authoritative decision fields). The integrator reads verdict from the JSON block ONLY. Do NOT restate verdict in the narrative. A decision value living in two places is exactly the cherry-pick path this contract closes.
+
+### Markdown narrative
 
 ```markdown
 ## Verifications
@@ -97,21 +99,29 @@ Return as structured Markdown via Task completion using this format.
 
 | Field               | Value                                                                |
 | ------------------- | -------------------------------------------------------------------- |
-| verdict             | verified / weak_evidence / unverifiable                              |
-| budget_exhausted    | true / false                                                         |
 | effort_to_reproduce | 5min / 15min / 30min / 1h / manual                                   |
 | Evidence            | type, detail with file:line references (files checked: file1, file2) |
-
-## Summary
-
-| Metric            | Value      |
-| ----------------- | ---------- |
-| total_processed   | count      |
-| verified          | count      |
-| weak_evidence     | count      |
-| unverifiable      | count      |
-| verification_rate | percentage |
 ```
+
+### Decision block (authoritative)
+
+A single fenced `json` block follows the narrative. Decision fields live here and nowhere else.
+
+```json
+{
+  "verifications": [{ "finding_id": "F-042", "verdict": "verified", "budget_exhausted": false }],
+  "summary": { "total_processed": 1, "verified": 1, "weak_evidence": 0, "unverifiable": 0 }
+}
+```
+
+| Field                            | Type    | Rule                                                              |
+| -------------------------------- | ------- | ----------------------------------------------------------------- |
+| verifications[].finding_id       | string  | Matches the input finding_id                                      |
+| verifications[].verdict          | enum    | verified / weak_evidence / unverifiable                           |
+| verifications[].budget_exhausted | boolean | true when the 5-files budget was hit before a path was traced     |
+| summary                          | object  | Counts derived from verifications; human-facing, not a 2nd source |
+
+Zero verifications is a valid result, not an error: emit `"verifications": []` with zeroed summary counts. A missing or malformed JSON block is NOT zero verifications. The consumer re-runs once, then fail-closes. Always emit the block.
 
 ## Error Handling
 
