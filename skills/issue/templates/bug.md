@@ -28,11 +28,17 @@
 
 - [Fix constraints: no breaking changes, root cause not workaround, etc.]
 
+## Premises (optional)
+
+- [Unverified assumption the fix depends on, with a recheck marker: "User-reported error not yet reproduced on current binary; confirm before fixing"]
+
 ## Environment (optional)
 
 - Browser/OS: [e.g., Chrome 120 / macOS 14]
 - Version: [e.g., v1.2.3]
 ```
+
+Sections marked (optional) are omitted when there is nothing to say.
 
 ## Guidelines
 
@@ -42,3 +48,4 @@
 | Expected vs Actual | "Expected: 200 OK / Actual: 500 with ESQL" | "Works correctly" (vague)   |
 | Scope - Out of     | "Auth refactor is out of scope"            | (omitted)                   |
 | Constraints        | "Fix root cause, not workaround"           | (omitted when fix is risky) |
+| Premises           | "Reproduce on current binary before fixing" | Unverified report stated as fact |
