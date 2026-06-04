@@ -1,8 +1,8 @@
 ---
 name: issue
-description: Generate GitHub Issue with structured title and body.
+description: Generate GitHub Issue with structured title and body. Premise check + critic-design challenge verify drafted claims before posting.
 when_to_use: Issue作って, Issue書いて, Issue作成, GitHub Issue
-allowed-tools: Bash(gh:*) Bash(cat:*) Bash(mv:*) Read AskUserQuestion
+allowed-tools: Bash(gh:*) Bash(cat:*) Bash(mv:*) Bash(ugrep:*) Read Task AskUserQuestion
 model: opus
 argument-hint: "[issue description]"
 ---
@@ -23,10 +23,14 @@ argument-hint: "[issue description]"
 | 1    | Detect type from description (see Type Detection)                                 |
 | 2    | Read template: ${CLAUDE_SKILL_DIR}/templates/<type>.md                            |
 | 3    | Generate title + body following template                                          |
-| 4    | Refine body inline via prose review (see below)                                   |
-| 5    | Preview issue → AskUserQuestion: "Create this issue?"                             |
-| 6    | Execute via body-file (sandbox-compatible)                                        |
-| 7    | Capture issue URL from command output                                             |
+| 4    | Filter drafted claims via premise check (see Premise Check)                       |
+| 5    | Refine body inline via prose review (see below)                                   |
+| 6    | Challenge body via critic-design, feature/bug only (see Adversarial Challenge)    |
+| 7    | Preview issue + unverified premises → AskUserQuestion: "Create this issue?"       |
+| 8    | Execute via body-file (sandbox-compatible)                                        |
+| 9    | Capture issue URL from command output                                             |
+
+A body supplied verbatim by the user skips steps 4-6 and posts unchanged.
 
 ## Type Detection
 
@@ -69,7 +73,22 @@ Read `language` from ${CLAUDE_SKILL_DIR}/../../settings.json and translate the i
 | priority:medium   | Normal             |
 | priority:low      | Nice to have       |
 
+## Premise Check
+
+Filters claims already drafted into the body. Not a discovery phase: no agent spawns inside this check (the skill's only spawn is critic-design at the challenge step), no cross-codebase audit, no digging beyond the drafted claims themselves. A claim either resolves within 2-3 targeted probes or gets downgraded to provisional; never investigate to rescue it.
+
+| Claim type                                    | Action                                                                                                        |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Current-code claim ("X currently does Y")     | Verify with 2-3 targeted Read/ugrep probes; annotate in body ("grep-confirmed")                               |
+| Claim still ambiguous after the probes        | Downgrade to provisional: state under Premises with a recheck marker, never as fact                           |
+| Claim contradicted by the source              | Rewrite the body to match the source. If the mismatch matters (user report vs code), state it under Premises with the verification ask |
+| External design ref (Figma, design doc, spec) | Always unverified, since the skill cannot know the source is current. Link + "confirm latest before starting" |
+| Target file list                              | Annotate "candidates as of writing; recheck on pickup"                                                        |
+| Code example in body                          | Annotate as illustrative, not the implementation: "reference shape; final form decided at pickup"             |
+
 ## Prose Review
+
+Write for a teammate who shares context and can open the linked docs, not a zero-context reader. The issue carries the delta; links carry the background.
 
 ### Structure (Issue-specific)
 
@@ -84,14 +103,40 @@ Read `language` from ${CLAUDE_SKILL_DIR}/../../settings.json and translate the i
 
 ### Anti-AI-pattern
 
-| Pattern            | Signal                                                                                   | Fix                                            |
-| ------------------ | ---------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Boilerplate opener | `This issue describes/reports/proposes...`                                               | Start with the problem, not self-description   |
-| Empty intensifier  | `comprehensive`, `robust`, `seamless`, `thorough`                                        | Drop or replace with specifics (counts, names) |
-| Filler verb        | `leverage`, `utilize`, `facilitate`                                                      | Use `use`, `do`, `let`                         |
-| Vague quantifier   | `various issues`, `multiple concerns`, `several bugs`                                    | Enumerate or count                             |
-| Hedge stacking     | `might potentially`, `could possibly`, `may perhaps`                                     | One hedge maximum, or commit                   |
-| Filler phrase      | `It should be noted that...`, `Looking forward to your thoughts`, `Any feedback welcome` | Delete. State the fact or ask directly         |
+| Pattern            | Signal                                                                                   | Fix                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Boilerplate opener | `This issue describes/reports/proposes...`                                               | Start with the problem, not self-description                                               |
+| Empty intensifier  | `comprehensive`, `robust`, `seamless`, `thorough`                                        | Drop or replace with specifics (counts, names)                                             |
+| Filler verb        | `leverage`, `utilize`, `facilitate`                                                      | Use `use`, `do`, `let`                                                                     |
+| Vague quantifier   | `various issues`, `multiple concerns`, `several bugs`                                    | Enumerate or count                                                                         |
+| Hedge stacking     | `might potentially`, `could possibly`, `may perhaps`                                     | One hedge maximum, or commit                                                               |
+| Filler phrase      | `It should be noted that...`, `Looking forward to your thoughts`, `Any feedback welcome` | Delete. State the fact or ask directly                                                     |
+| Doc transcription  | Restating linked design-doc content in the issue                                         | Link + one-line takeaway; write only the delta                                             |
+| Repeated rationale | Same design reason explained twice in one issue                                          | State once, where the decision lands                                                       |
+| Bold overuse       | Bold scattered on every other line                                                       | Headings carry structure; bold only warnings                                               |
+| Over-specified AC  | AC spelling out authoring details (story names, addon config)                            | Keep the criterion, drop authoring details. UI component issues keep Storybook/a11y as DoD |
+| Compulsive section | Optional section filled with nothing to say                                              | Omit empty optional sections                                                               |
+
+## Adversarial Challenge
+
+feature/bug only; docs/chore skip it. Spawn one critic-design Task directly with the drafted body (not via /challenge). The critic argues against the issue (hidden premises, missed dependencies, scope contradictions); it does not gate it. Final judgment stays with the user at confirm time.
+
+| Input field      | Mapping                             |
+| ---------------- | ----------------------------------- |
+| source           | /issue                              |
+| artifact_type    | spec                                |
+| approach         | What & Why section                  |
+| decisions        | Scope (In/Out) + Constraints        |
+| trade-offs       | Stated trade-offs, if any           |
+| referenced_files | Target files + external design refs |
+
+| Verdict        | Handling                                                                                |
+| -------------- | --------------------------------------------------------------------------------------- |
+| confirmed      | Proceed to preview                                                                      |
+| weakened       | Fold accepted findings into the body; present the rest at preview as ephemeral critique |
+| needs_revision | Revise the body once; do not re-spawn                                                   |
+
+Critic findings never enter the issue body. They are confirm-time review material: fold or dismiss at preview. The body's Premises section stays reserved for genuinely unverifiable dependencies (design refs, provisional claims), matching how humans write it.
 
 ## Sandbox-Compatible Create
 
@@ -124,7 +169,19 @@ mv /tmp/claude/issue-body.md ~/.Trash/ 2>/dev/null || true
 ### Body
 
 <body content>
+
+### Unverified premises (N)
+
+- <claim>: <what the reader must confirm>
+
+### Critic findings (not posted)
+
+- <finding>: fold into body or dismiss
 ```
+
+The unverified block mirrors the body's Premises section (no new content at preview time): external design refs and provisional claims only. Verified claims keep their annotation in the body and do not repeat here. Zero unverified items: omit the block. Keep it short.
+
+Critic block: omit when empty (docs/chore, or verdict confirmed).
 
 ### Success
 
