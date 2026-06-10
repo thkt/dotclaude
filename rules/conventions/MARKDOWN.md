@@ -1,6 +1,11 @@
 ---
 paths:
   - ".claude/**/*.md"
+  - ".ja/**/*.md"
+  - "rules/**/*.md"
+  - "skills/**/*.md"
+  - "agents/**/*.md"
+  - "workspace/**/*.md"
 ---
 
 # Markdown Conventions
@@ -9,12 +14,12 @@ Conventions for Markdown files under `.claude/`.
 
 ## File scope
 
-| Scope      | Paths                                                             |
-| ---------- | ----------------------------------------------------------------- |
-| LLM-facing | `CLAUDE.md`, `agents/**`, `skills/**`, `rules/**`, `workspace/**` |
-| Human      | `docs/**`, `README.md`                                            |
+| Scope        | Paths                                                             |
+| ------------ | ----------------------------------------------------------------- |
+| LLM-facing   | `CLAUDE.md`, `agents/**`, `skills/**`, `rules/**`, `workspace/**` |
+| Human-facing | `docs/**`, `README.md`                                            |
 
-Bilingual `.ja/` copies follow their counterpart's scope.
+The `.ja/` translations follow their counterpart's scope.
 
 ## Symbols
 
@@ -23,29 +28,34 @@ Bilingual `.ja/` copies follow their counterpart's scope.
 | `/`    | Parallel enumeration (AND/OR)       | `Safety First / Output Verifiability`                               |
 | `.`    | Separator between independent rules | `Check scope. Do not skip`                                          |
 | `()`   | Supplementary condition only        | `Skip for follow-up (same session)`                                 |
-| `→`    | Order (fallback or step sequence)   | `README → package.json → ask user` / `Observe → analyze → conclude` |
+| `→`    | Fallback or step sequence           | `README → package.json → ask user` / `Observe → analyze → conclude` |
+
+## Inline code
+
+Judge backticks by whether removing them causes misreading. If it does not, leave the text unwrapped. Being a literal or an identifier is not by itself a reason to wrap. Wrap angle-bracket placeholders like `<branch>` in backticks instead of escaping them.
+
+| Keep                                                                 | Remove                                                             |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Identifiers mixed with normal text in a sentence                     | Cells in a column whose entries share one type                     |
+| Tokens containing placeholders (one such row keeps the whole column) | Emphasis-only wrapping                                             |
+| Escapes and symbols that must stay distinguishable                   | Values self-evident from the column name (Tool column, tool names) |
+| Whole commands in a sentence                                         | List items already distinguished by symbols (`[✓]` etc.)           |
 
 ## Do not
 
-| Pattern               | Applies to | Reason                                             |
-| --------------------- | ---------- | -------------------------------------------------- |
-| `≠`                   | All        | Rewrite as positive form. Use `is not X`           |
-| `()` for contrast     | All        | Split with `.`                                     |
-| `—` (em-dash)         | Prose      | Split into separate sentences with `.`             |
-| `ANY` / `ALL` in caps | All        | Use normal case                                    |
-| `**bold**`            | LLM-facing | Token waste. Use tables or sections instead        |
-| Emoji in prose        | LLM-facing | Token waste. User-visible emoji are the exception  |
-| Unicode decoration    | All        | Use ASCII in prose. Tables allow Unicode symbols   |
-| Bold-first bullets    | All        | `- **Label:** text` pattern. Use only if aids scan |
+| Pattern               | Applies to | Fix                                                                       |
+| --------------------- | ---------- | ------------------------------------------------------------------------- |
+| `≠`                   | All        | Rewrite as positive form or use `is not X`                                |
+| `()` for contrast     | All        | Split with `.`                                                            |
+| `—` (em-dash)         | All        | Split into sentences with `.`, or replace with `,` / `:` / `-` by context |
+| `ANY` / `ALL` in caps | All        | Use normal case                                                           |
+| `**bold**`            | LLM-facing | Use tables or sections. Convert bold-first bullets to a table             |
+| Emoji in prose        | LLM-facing | Remove. User-visible emoji are the exception                              |
+| Unicode decoration    | Prose      | Use ASCII                                                                 |
 
 ## Pseudo-headings
 
-Do not end a line with `:` to introduce a table, list, or section. Promote to a proper heading (`### Foo`) or rewrite as prose. The same applies to an inline `Label: value` colon. It hints at structure, so promote it to a table or rewrite as prose. Literal colons stay fine (time `14:30`, ratio `2:1`, URLs, paths, table cells).
-
-| Violation                                  | Fix                          |
-| ------------------------------------------ | ---------------------------- |
-| `Only excluded:` followed by a table       | `### Exclusions` + table     |
-| `When unable to verify:` followed by steps | `#### When unable to verify` |
+Do not end a line with `:` to introduce a table, list, or section. The same applies to an inline `Label: value` colon. Both hint at structure, so promote to a heading (`### Foo`) or a table, or rewrite as prose. Literal colons stay fine (time `14:30`, ratio `2:1`, URLs, paths, table cells).
 
 ## Table placement
 
@@ -64,13 +74,12 @@ Do not insert physical line breaks inside paragraphs. Write each paragraph on a 
 
 ## Forbidden references
 
-| Pattern              | Reason                                           |
-| -------------------- | ------------------------------------------------ |
-| Circular (A → B → A) | Creates unresolvable dependencies                |
-| Already in CLAUDE.md | Globally loaded files don't need re-reference    |
-| Unneeded reference   | Reference only when required for current context |
+| Pattern               | Reason                                        |
+| --------------------- | --------------------------------------------- |
+| Circular (A → B → A)  | Creates unresolvable dependencies             |
+| Already in CLAUDE.md  | Globally loaded files don't need re-reference |
+| Speculative reference | Reference only what the current context reads |
 
 ## Out of scope
 
-- Code blocks / inline code
-- ADR Japanese prose
+- Inside code blocks / inline code
