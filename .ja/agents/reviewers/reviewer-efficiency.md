@@ -1,7 +1,7 @@
 ---
 name: reviewer-efficiency
 description: コード効率レビュー。不要な処理、並行性、hot-path 解析。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true
@@ -68,7 +68,7 @@ background: true
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の EFF セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の EFF セクションを参照。
 
 ## エラーハンドリング
 

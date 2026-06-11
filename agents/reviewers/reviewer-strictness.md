@@ -1,7 +1,7 @@
 ---
 name: reviewer-strictness
 description: TypeScript type safety review. any usage, coverage gaps, strict mode.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-strictness]
 memory: project
@@ -45,7 +45,7 @@ Banned phrasing inside reasoning: "we know it's safe" without proof, "TypeScript
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section TS.
+See `~/.claude/skills/audit/references/calibration-examples.md` section TS.
 
 ## Error Handling
 

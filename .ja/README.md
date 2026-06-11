@@ -206,8 +206,8 @@ Slack 検索 (`/inbox` 用):
 
 完全なコマンドリファレンスを参照する。
 
-- [English Command Reference](../rules/workflows/WORKFLOWS.md)
-- [日本語コマンドリファレンス](./rules/workflows/WORKFLOWS.md)
+- [English Command Reference](../docs/COMMANDS.md)
+- [日本語コマンドリファレンス](./docs/COMMANDS.md)
 
 ## 🔄 標準ワークフロー
 
@@ -250,8 +250,8 @@ Slack 検索 (`/inbox` 用):
 ### コアドキュメント
 
 - [Design Philosophy](./docs/DESIGN.md). 設計思想・意図
-- [Commands Reference (English)](../rules/workflows/WORKFLOWS.md)
-- [Commands Reference (Japanese)](./rules/workflows/WORKFLOWS.md)
+- [Commands Reference (English)](../docs/COMMANDS.md)
+- [Commands Reference (Japanese)](./docs/COMMANDS.md)
 - [Configuration Guide](../CLAUDE.md)
 - [Japanese Configuration](./CLAUDE.md)
 

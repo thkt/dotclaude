@@ -64,7 +64,7 @@ Skip when: `/fix`, single-file changes, no Spec context.
 ## E2E Phase
 
 After Review Gate, conditionally spawn `generator-e2e`. See
-`skills/code/SKILL.md` E2E Phase section for full conditions and dev server
+`~/.claude/skills/code/SKILL.md` E2E Phase section for full conditions and dev server
 detection logic.
 
 Skip when: no `Type: e2e` in Spec, agent-browser not installed, no dev server,

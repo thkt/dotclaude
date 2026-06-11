@@ -1,7 +1,7 @@
 ---
 name: reviewer-coverage
 description: テストカバレッジ品質レビュー。振る舞いの欠落とテストの堅牢性を見る。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-workflow-tdd-cycle]
 memory: project
@@ -65,7 +65,7 @@ background: true
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の TC セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の TC セクションを参照。
 
 ## エラーハンドリング
 

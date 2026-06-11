@@ -1,7 +1,7 @@
 ---
 name: use-context-reviewer-security
 description: OWASP Top 10 security review. Do NOT use for readability (use-context-reviewer-readability), type errors (use-context-reviewer-strictness), or test design (use-context-reviewer-testability).
-when_to_use: security, OWASP, XSS, SQL injection, セキュリティ, 脆弱性, cloud security, AWS, IAM, Terraform, クラウドセキュリティ, インフラ
+when_to_use: security, OWASP, XSS, SQL injection, prompt injection, LLM security, セキュリティ, 脆弱性, cloud security, AWS, IAM, Terraform, クラウドセキュリティ, インフラ
 allowed-tools: Read Task Bash(ugrep:*) Bash(bfs:*)
 agent: reviewer-security
 context: fork
@@ -12,24 +12,31 @@ user-invocable: false
 
 ## Detection (OWASP Top 10)
 
-| ID  | Category                  | Pattern                                                  | Fix                                     |
-| --- | ------------------------- | -------------------------------------------------------- | --------------------------------------- |
-| A01 | Broken Access Control     | Missing auth, IDOR, path traversal                       | Auth middleware, ownership check        |
-| A02 | Cryptographic Failures    | `password: 'plaintext'`                                  | bcrypt/argon2 hashing                   |
-| A03 | Injection                 | `db.query(\`SELECT...${id}\`)`                           | Parameterized query, ORM                |
-| A03 | Injection                 | `exec(\`ping ${host}\`)`                                 | Input validation, library instead       |
-| A03 | XSS                       | `dangerouslySetInnerHTML` (static presence)              | Default escaping, DOMPurify             |
-| A05 | Security Misconfiguration | `cors({ origin: '*' })`                                  | Explicit origin allowlist               |
-| A05 | Security Misconfiguration | `cookie: {}` (no options)                                | secure, httpOnly, sameSite: 'strict'    |
-| A05 | Security Misconfiguration | `err.stack` in error response without `NODE_ENV` guard   | Generic message in prod, log internally |
-| A09 | Logging Failures          | `logger.info({ password })`                              | Exclude sensitive fields                |
-| A10 | SSRF                      | `fetch(userInputUrl)`                                    | URL validation, allowlist               |
-| A03 | XSS (Taint)               | `dangerouslySetInnerHTML={{ __html }}` without sanitizer | DOMPurify.sanitize() at boundary        |
-| A03 | XSS (Taint)               | Function arg → `innerHTML` without sanitization          | Sanitize at function boundary           |
-| A03 | XSS (Taint)               | `<a href={variable}>` with user-controlled URL           | Protocol allowlist (https/http only)    |
-| A01 | Open Redirect (Taint)     | URL param → `location.href` without validation           | Domain allowlist or relative-only       |
-| A04 | Insecure Design           | `postMessage` handler without origin check               | Strict `event.origin` comparison        |
-| A02 | Sensitive Data Exposure   | JWT stored in localStorage/sessionStorage                | httpOnly cookie instead                 |
+| ID    | Category                  | Pattern                                                                                                                                | Fix                                                                                   |
+| ----- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| A01   | Broken Access Control     | Missing auth, IDOR, path traversal                                                                                                     | Auth middleware, ownership check                                                      |
+| A02   | Cryptographic Failures    | `password: 'plaintext'`                                                                                                                | bcrypt/argon2 hashing                                                                 |
+| A03   | Injection                 | `db.query(\`SELECT...${id}\`)`                                                                                                         | Parameterized query, ORM                                                              |
+| A03   | Injection                 | `exec(\`ping ${host}\`)`                                                                                                               | Input validation, library instead                                                     |
+| A03   | XSS                       | `dangerouslySetInnerHTML` (static presence)                                                                                            | Default escaping, DOMPurify                                                           |
+| A05   | Security Misconfiguration | `cors({ origin: '*' })`                                                                                                                | Explicit origin allowlist                                                             |
+| A05   | Security Misconfiguration | `cookie: {}` (no options)                                                                                                              | secure, httpOnly, sameSite: 'strict'                                                  |
+| A05   | Security Misconfiguration | `err.stack` in error response without `NODE_ENV` guard                                                                                 | Generic message in prod, log internally                                               |
+| A09   | Logging Failures          | `logger.info({ password })`                                                                                                            | Exclude sensitive fields                                                              |
+| A10   | SSRF                      | `fetch(userInputUrl)`                                                                                                                  | URL validation, allowlist                                                             |
+| A07   | Authentication Failures   | No rate limit on auth endpoints (login, register, password-reset)                                                                      | Rate limiter middleware on auth route group                                           |
+| A01   | CSRF                      | No CSRF token verification on state-changing requests (POST/PUT/PATCH/DELETE)                                                          | Double Submit Cookie                                                                  |
+| A02   | Timing Attack             | `===` comparison of tokens/signatures                                                                                                  | Constant-time comparison (XOR all bytes, decide last)                                 |
+| A08   | Prototype Pollution       | Request object built with `...body` spread                                                                                             | Explicit field assignment                                                             |
+| A03   | XSS (Taint)               | `dangerouslySetInnerHTML={{ __html }}` without sanitizer                                                                               | DOMPurify.sanitize() at boundary                                                      |
+| A03   | XSS (Taint)               | Function arg → `innerHTML` without sanitization                                                                                        | Sanitize at function boundary                                                         |
+| A03   | XSS (Taint)               | `<a href={variable}>` with user-controlled URL                                                                                         | Protocol allowlist (https/http only)                                                  |
+| A01   | Open Redirect (Taint)     | URL param → `location.href` without validation                                                                                         | Domain allowlist or relative-only                                                     |
+| A04   | Insecure Design           | `postMessage` handler without origin check                                                                                             | Strict `event.origin` comparison                                                      |
+| A02   | Sensitive Data Exposure   | JWT stored in localStorage/sessionStorage                                                                                              | httpOnly cookie instead                                                               |
+| LLM01 | Prompt Injection (LLM)    | Untrusted or caller-controlled value (RAG docs, fetched content, tool results, role args) reaches the prompt with no data-only framing | Delimit untrusted content as data; map caller values to fixed enumerated instructions |
+
+LLM01 covers apps that pass untrusted content to an LLM. The sink is the prompt itself: untrusted text concatenated without a data/instruction boundary, or a caller-supplied value interpolated into a system prompt. Constrain an LLM tool (e.g. a `fetch_url` tool) the same way as its non-LLM counterpart (A10 SSRF). The tool is the sink, not the prompt.
 
 ## Reporting
 
@@ -41,6 +48,8 @@ Severity scale: critical / high / medium. Always include `file:line`.
 | Clear vulnerability | high     | Attack vector + concrete fix         |
 | Possible issue      | medium   | verification_hint + suggested fix    |
 | Speculative only    | none     | Do NOT report                        |
+
+Report each independent vulnerability as its own finding. When one file holds two distinct issues (e.g. a path traversal and a separate prompt injection), list both as separate findings rather than folding one into a note on the other.
 
 ## References
 

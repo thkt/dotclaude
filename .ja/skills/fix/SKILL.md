@@ -56,7 +56,7 @@ argument-hint: "[bug or issue description]"
 
 ### Outcome Anchor
 
-ビルドチェックの前に `.claude/OUTCOME.md` を読む。不在なら stub を生成 (rules/core/OUTCOME.md 参照)。バグまたは修正が outcome 状態の中にあるか確認する。範囲外ならエスカレーション (下記参照)。
+ビルドチェックの前に `.claude/OUTCOME.md` を読む。不在なら /outcome で stub を生成。バグまたは修正が outcome 状態の中にあるか確認する。範囲外ならエスカレーション (下記参照)。
 
 ### ビルドチェック
 

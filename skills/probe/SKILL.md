@@ -13,11 +13,11 @@ Trace the repository aspect-by-aspect and surface friction points as issue candi
 
 No arguments. Target is the entire repository at current working directory. Scope auto-derived from `.claude/OUTCOME.md`.
 
-| Input      | Required | Source                                                                         |
-| ---------- | -------- | ------------------------------------------------------------------------------ |
-| OUTCOME.md | Yes      | `.claude/OUTCOME.md` (generate via `rules/core/OUTCOME.md` workflow if absent) |
-| ADR        | Optional | `docs/decisions/`                                                              |
-| Spec       | Optional | `.claude/workspace/planning/*/spec.md` etc.                                    |
+| Input      | Required | Source                                                 |
+| ---------- | -------- | ------------------------------------------------------ |
+| OUTCOME.md | Yes      | `.claude/OUTCOME.md` (generate via /outcome if absent) |
+| ADR        | Optional | `docs/decisions/`                                      |
+| Spec       | Optional | `.claude/workspace/planning/*/spec.md` etc.            |
 
 ## Output
 

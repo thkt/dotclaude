@@ -5,32 +5,32 @@
 過去 30 日における thkt の利用状況 (846 セッション) より。
 
 Work Type Breakdown:
-  Plan / Design    ██████████████░░░░░░  70%
-  Improve Quality  ███░░░░░░░░░░░░░░░░░  12%
-  Build Feature    ██░░░░░░░░░░░░░░░░░░  10%
-  Debug / Fix      ██░░░░░░░░░░░░░░░░░░   8%
+Plan / Design ██████████████░░░░░░ 70%
+Improve Quality ███░░░░░░░░░░░░░░░░░ 12%
+Build Feature ██░░░░░░░░░░░░░░░░░░ 10%
+Debug / Fix ██░░░░░░░░░░░░░░░░░░ 8%
 
 Top Skills & Commands:
-  /clear           ████████████████████  582x/month
-  /exit            ███████░░░░░░░░░░░░░  200x/month
-  /plugin          ██░░░░░░░░░░░░░░░░░░   69x/month
-  /commit          ██░░░░░░░░░░░░░░░░░░   60x/month
-  /audit           █░░░░░░░░░░░░░░░░░░░   29x/month
-  /challenge       █░░░░░░░░░░░░░░░░░░░   28x/month
-  /think           █░░░░░░░░░░░░░░░░░░░   22x/month
-  /release-notes   █░░░░░░░░░░░░░░░░░░░   21x/month
-  /polish          █░░░░░░░░░░░░░░░░░░░   18x/month
+/clear ████████████████████ 582x/month
+/exit ███████░░░░░░░░░░░░░ 200x/month
+/plugin ██░░░░░░░░░░░░░░░░░░ 69x/month
+/commit ██░░░░░░░░░░░░░░░░░░ 60x/month
+/audit █░░░░░░░░░░░░░░░░░░░ 29x/month
+/challenge █░░░░░░░░░░░░░░░░░░░ 28x/month
+/think █░░░░░░░░░░░░░░░░░░░ 22x/month
+/release-notes █░░░░░░░░░░░░░░░░░░░ 21x/month
+/polish █░░░░░░░░░░░░░░░░░░░ 18x/month
 
 Top MCP Servers:
-  heptabase        ████████████████████   28 calls
-  discord          ███████████████████░   26 calls
-  context7         ██░░░░░░░░░░░░░░░░░░    3 calls
+heptabase ████████████████████ 28 calls
+discord ███████████████████░ 26 calls
+context7 ██░░░░░░░░░░░░░░░░░░ 3 calls
 
 ## Your Setup Checklist
 
 ### Codebases
+
 - [ ] dotclaude. github.com/thkt/dotclaude (Claude Code 設定: agents, skills, hooks, rules)
-- [ ] yomu. ~/GitHub/cli/yomu (セマンティック コード検索 CLI)
 - [ ] scout. ~/GitHub/cli/scout (Web 取得 / 検索 CLI)
 - [ ] recall. ~/GitHub/cli/recall (セッション検索)
 - [ ] shields. ~/GitHub/cli/shields (PreToolUse ガード フック)
@@ -40,11 +40,13 @@ Top MCP Servers:
 - [ ] tally. ~/GitHub/cli/tally (エンジニアリング時間追跡)
 
 ### MCP Servers to Activate
+
 - [ ] heptabase. ナレッジベース / ノート カード。heptabase.com でアクセスを取得し、`/mcp` 経由で API キーを設定する。
 - [ ] discord. 非同期 Claude 応答のための Discord bot 連携。`/discord:configure` で bot トークンを設定する。
 - [ ] context7. ライブラリ ドキュメント参照。マーケットプレイスから `/plugin` で有効化する。
 
 ### Skills to Know About
+
 - `/commit`. ステージ済み diff から Conventional Commits メッセージを生成する。手書きする代わりに編集後に実行する。
 - `/audit`. 専門 reviewer (security, type safety, silent failures 等) を編成し、現コードベースに対して実行する。
 - `/challenge`. 提案、設計、計画への悪魔の代弁者パス。アーキテクチャ判断を確定する前に使う。

@@ -3,7 +3,6 @@ name: architect-feature
 description: Compose feature architecture for /swarm parallel implementation. Synthesize codebase exploration into blueprints, contracts, and parallel units.
 tools: Bash, LS, Read, SendMessage
 model: opus
-skills: [use-cli-yomu]
 memory: project
 ---
 
@@ -32,14 +31,14 @@ Banned phrasing inside reasoning: "this is the standard pattern" without a file:
 | Spawn Context | /swarm Leader | CLAUDE.md rules, project conventions, SOW/spec content |
 | $ARGUMENTS    | /swarm Leader | Implementation description                             |
 
-See `skills/swarm/references/contracts.md#spawn-context-leader--all-agents`.
+See `~/.claude/skills/swarm/references/contracts.md#spawn-context-leader--all-agents`.
 
 ## Workflow
 
 | Step | Action                                                  | Output                         | On dead-end                                  |
 | ---- | ------------------------------------------------------- | ------------------------------ | -------------------------------------------- |
 | 1    | Seed Context (bfs/LS/ugrep for structure)               | Known patterns + API conflicts | Empty repo, abort with note                  |
-| 2    | Exploration (3-5 semantic queries via yomu)             | Insights with sources          | yomu unavailable, fall back to ugrep         |
+| 2    | Exploration (3-5 ugrep/bfs pattern searches)            | Insights with sources          | No matches, document as Greenfield           |
 | 3    | Pattern Analysis (extract conventions, trace file:line) | Pattern table                  | No patterns found, document as Greenfield    |
 | 4    | Compose (constraints to blueprint, independence-first)  | Composed architecture          | Constraint conflict, escalate to Leader      |
 | 5    | Verify (read inferred items, fill unknowns)             | Verified findings with sources | Cannot verify, note as "unknown, requires X" |
@@ -57,9 +56,9 @@ See `skills/swarm/references/contracts.md#spawn-context-leader--all-agents`.
 
 | Aspect   | Detail                                                                                                  |
 | -------- | ------------------------------------------------------------------------------------------------------- |
-| Strategy | 3-5 semantic queries from task description, broad to focused                                            |
-| Tool     | yomu (commands via injected `use-cli-yomu` skill)                                                       |
-| Fallback | bfs, ugrep, Read when yomu unavailable or empty                                                         |
+| Strategy | 3-5 pattern/identifier searches from task description, broad to focused                                 |
+| Tool     | ugrep, bfs, Read (literal and regex; no semantic ranking)                                               |
+| Fallback | Broaden search terms or LS-walk the tree when matches are empty                                         |
 | Output   | Codebase insights with file:line for facts, basis stated for inferences, verification path for unknowns |
 
 ### Step 3: Pattern Analysis
@@ -99,7 +98,7 @@ Format outputs per the Output sections below. Send via DM to Leader.
 
 ### Architect Output Contract (required)
 
-Send via DM to Leader. See `skills/swarm/references/contracts.md#architect-output-architect--leader`.
+Send via DM to Leader. See `~/.claude/skills/swarm/references/contracts.md#architect-output-architect--leader`.
 
 | Section        | Purpose                                                |
 | -------------- | ------------------------------------------------------ |

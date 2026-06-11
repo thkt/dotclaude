@@ -1,7 +1,7 @@
 ---
 name: reviewer-testability
 description: テスト容易性のあるコード設計レビュー。テストに敵対的なパターンを特定する。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-testability, use-workflow-tdd-cycle]
 memory: project
@@ -53,7 +53,7 @@ reasoning 内で禁止する表現: コストを名指しせずに "tests can mo
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の TEST セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の TEST セクションを参照。
 
 ## エラーハンドリング
 

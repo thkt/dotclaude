@@ -4,6 +4,7 @@ description: Implement code following TDD/RGRC cycle with real-time test feedbac
 when_to_use: 実装して, コード書いて, implement, coding
 allowed-tools: Bash(npm run) Bash(npm run:*) Bash(yarn run) Bash(yarn run:*) Bash(yarn:*) Bash(pnpm run) Bash(pnpm run:*) Bash(pnpm:*) Bash(bun run) Bash(bun run:*) Bash(bun:*) Bash(cargo:*) Bash(make:*) Bash(git status:*) Bash(git log:*) Bash(which:*) Edit MultiEdit Write Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
+effort: xhigh
 argument-hint: "[implementation description] [--no-storybook]"
 ---
 
@@ -58,7 +59,7 @@ JS/TS is first-class. Rust / Go / Python work via `generator-test` framework det
 
 | Reference                                       | When read                           | If not found / unclear                          |
 | ----------------------------------------------- | ----------------------------------- | ----------------------------------------------- |
-| `.claude/OUTCOME.md`                            | Step 0 Outcome Anchor               | Generate stub via rules/core/OUTCOME.md flow    |
+| `.claude/OUTCOME.md`                            | Step 0 Outcome Anchor               | Generate stub via /outcome                      |
 | ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md  | Step 1 SOW detect                   | No SOW state, apply Scope Guard inline only     |
 | ${CLAUDE_SKILL_DIR}/references/csf3-patterns.md | Storybook Phase all conditions pass | Use minimal CSF3 stories format                 |
 | `/goal` (optional)                              | Step 4 autonomous loop              | gates auto-retry; manual otherwise              |
@@ -75,17 +76,17 @@ JS/TS is first-class. Rust / Go / Python work via `generator-test` framework det
 
 ## Execution
 
-| Step | Action                 | Detail                                                                            |
-| ---- | ---------------------- | --------------------------------------------------------------------------------- |
-| 0    | Outcome Anchor         | Read `.claude/OUTCOME.md`; if absent, stub generation (see rules/core/OUTCOME.md) |
-| 1    | SOW Context            | Detect and read SOW/spec → Scope Guard                                            |
-| 2    | Spawn `generator-test` | `subagent_type: generator-test`, `run_in_background: true`                        |
-| 3    | Receive test results   | `TaskOutput` (wait for completion before implementation)                          |
-| 4    | RGRC cycle             | gates auto-retry per Green; optional `/goal` wrapper                              |
-| 5    | Review Gate            | Spawn `reviewer-readability` (skip for /fix)                                      |
-| 6    | Storybook Phase        | Conditional                                                                       |
-| 7    | E2E Phase              | Conditional                                                                       |
-| 8    | Quality Gates          | See use-workflow-code                                                             |
+| Step | Action                 | Detail                                                                                                                                              |
+| ---- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | Outcome Anchor         | Read `.claude/OUTCOME.md`; if absent, generate the stub via /outcome                                                                                |
+| 1    | SOW Context            | Detect and read SOW/spec → Scope Guard                                                                                                              |
+| 2    | Spawn `generator-test` | `subagent_type: generator-test`, `run_in_background: true`                                                                                          |
+| 3    | Receive test results   | `TaskOutput` (wait for completion before implementation)                                                                                            |
+| 4    | RGRC cycle             | gates auto-retry per Green; optional `/goal` wrapper. Condition pairs target with preserved invariants (e.g. "0 failures, no test deleted/skipped") |
+| 5    | Review Gate            | Spawn `reviewer-readability` (skip for /fix)                                                                                                        |
+| 6    | Storybook Phase        | Conditional                                                                                                                                         |
+| 7    | E2E Phase              | Conditional                                                                                                                                         |
+| 8    | Quality Gates          | See use-workflow-code                                                                                                                               |
 
 ## Spec Evolution
 

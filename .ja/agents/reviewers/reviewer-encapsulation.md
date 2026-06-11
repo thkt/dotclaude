@@ -1,7 +1,7 @@
 ---
 name: reviewer-encapsulation
 description: 型設計品質のレビュー。カプセル化、不変条件、強制。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true
@@ -63,7 +63,7 @@ background: true
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の TD セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の TD セクションを参照。
 
 ## エラーハンドリング
 

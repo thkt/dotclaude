@@ -24,11 +24,6 @@ graph TD
     end
 ```
 
-## Commands & Workflows
-
-See [WORKFLOWS](../rules/workflows/WORKFLOWS.md) for command
-listing and selection guide.
-
 ## Design Principles
 
 ### 1. Thin Wrapper Pattern
@@ -98,4 +93,3 @@ skills/
 ## Related
 
 - [SKILLS_AGENTS.md](./SKILLS_AGENTS.md) - Skills and agents reference
-- [WORKFLOWS](../rules/workflows/WORKFLOWS.md) - Workflow selection guide

@@ -1,7 +1,7 @@
 ---
 name: reviewer-readability
 description: Code quality review. Structure and readability analysis.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-readability]
 memory: project
@@ -50,7 +50,7 @@ Banned phrasing inside reasoning: "looks complex" without naming the cognitive l
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section CQ.
+See `~/.claude/skills/audit/references/calibration-examples.md` section CQ.
 
 ## Error Handling
 

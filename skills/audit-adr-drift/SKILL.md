@@ -2,7 +2,7 @@
 name: audit-adr-drift
 description: Scan ADR Decision sections against current code and report drift with modification direction and priority. Do NOT use for repos without ADRs (use audit-adr-gaps instead).
 when_to_use: ADR と コードの整合性確認, ADR drift, ADR vs code, ADR audit, 意思決定の風化チェック, decision record divergence
-allowed-tools: Read Write Edit LS Bash(git:*) Bash(gh:*) Bash(ugrep:*) Bash(bfs:*) Bash(yomu:*) Bash(sqlite3:*) Task AskUserQuestion
+allowed-tools: Read Write Edit LS Bash(git:*) Bash(gh:*) Bash(ugrep:*) Bash(bfs:*) Task AskUserQuestion
 model: opus
 argument-hint: "[adr-directory]"
 ---
@@ -45,7 +45,7 @@ Skip this skill when no ADR directory exists; run `/audit-adr-gaps` first to ele
 | 1    | Detect ADR directory (auto-detect or `$ARGUMENTS`)                                 |
 | 2    | List ADRs and extract Status (Accepted / Superseded / Proposed)                    |
 | 3    | Per ADR: extract Decision section + referenced symbols (functions, types, modules) |
-| 4    | Search references with ugrep/yomu; build drift candidates                          |
+| 4    | Search references with ugrep/bfs; build drift candidates                           |
 | 5    | Run language-appropriate reviewer agents on candidate sites                        |
 | 6    | Tag each finding with modification direction (code-fix / adr-update / accept)      |
 | 7    | Tag each finding with priority (H / M / L)                                         |
@@ -76,7 +76,6 @@ Extract code-identifiers (function names, type names, module names, file paths) 
 For each extracted symbol:
 
 - `ugrep -r "<symbol>"` for literal matches
-- `yomu search <symbol>` for semantic matches (TS/Rust/CSS/HTML)
 - Filter out the ADR file itself and test fixtures
 
 #### External ADR Cross-Check

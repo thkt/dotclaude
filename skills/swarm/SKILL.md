@@ -4,6 +4,7 @@ description: Large-scale parallel implementation with multi-agent swarm. Archite
 when_to_use: 大規模実装, 並列実装, swarm, チーム実装
 allowed-tools: Skill Bash(npm run) Bash(npm run:*) Bash(yarn run) Bash(yarn run:*) Bash(yarn:*) Bash(pnpm run) Bash(pnpm run:*) Bash(pnpm:*) Bash(bun run) Bash(bun run:*) Bash(bun:*) Bash(make:*) Bash(git status:*) Bash(git log:*) Bash(git diff:*) Edit MultiEdit Write Read LS Task TaskCreate TaskList TaskUpdate TaskGet SendMessage TeamCreate TeamDelete AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
+effort: xhigh
 argument-hint: "[implementation description]"
 ---
 
@@ -46,7 +47,7 @@ Implementation description: `$ARGUMENTS` (required, prompt if empty)
 
 ## SOW Context
 
-See ${CLAUDE_SKILL_DIR}/../_lib/sow-resolution.md
+See ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md
 
 ## Team Architecture
 

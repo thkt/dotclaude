@@ -1,7 +1,7 @@
 ---
 name: reviewer-silence
 description: Silent failure detection. Empty catches, unhandled rejections.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-silence]
 memory: project
@@ -52,7 +52,7 @@ Same component may receive findings from both, complementary not duplicate.
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section SF.
+See `~/.claude/skills/audit/references/calibration-examples.md` section SF.
 
 ## Error Handling
 

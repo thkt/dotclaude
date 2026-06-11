@@ -176,7 +176,7 @@ FR descriptions without EARS syntax are unactionable. CC cannot confirm the exac
 | Missing SHALL   | P0       | FR Description lacks SHALL keyword                 |
 | No EARS pattern | P0       | SHALL present but does not match any pattern above |
 
-Vague value inside SHALL is detected by `use-workflow-spec-validation` Check 6. Reference `skills/think/templates/spec.md` Functional Requirements section.
+Vague value inside SHALL is detected by `use-workflow-spec-validation` Check 6. Reference `~/.claude/skills/think/templates/spec.md` Functional Requirements section.
 
 ## Implementability Probe
 

@@ -2,7 +2,7 @@
 name: audit-adr-gaps
 description: Discover undocumented design decisions and challenge each candidate via critic-design before promotion. Rank by impact and reversibility, produce ADR promotion candidates. Treat each candidate as a position arguing for ADR status, not a fact to be filed. Pairs with audit-adr-drift, which scans existing ADRs for drift against code.
 when_to_use: 判断未記録の発掘, undocumented decisions, ADR候補発掘, 設計判断棚卸し, decision archaeology, design rationale audit
-allowed-tools: Read Write Edit LS Bash(git:*) Bash(gh:*) Bash(ugrep:*) Bash(bfs:*) Bash(yomu:*) Bash(sqlite3:*) Bash(wc:*) Task AskUserQuestion
+allowed-tools: Read Write Edit LS Bash(git:*) Bash(gh:*) Bash(ugrep:*) Bash(bfs:*) Bash(wc:*) Task AskUserQuestion
 model: opus
 argument-hint: "[--threshold=N] [--paths=path,path]"
 ---
@@ -65,7 +65,7 @@ bfs <repo-root> -type f \( -name '*.rs' -o -name '*.ts' -o -name '*.tsx' -o -nam
     done | sort -rn
 ```
 
-Default threshold is 400 lines (one-screen ceiling, see rules/development/THRESHOLDS.md).
+Default threshold is 400 lines (one-screen ceiling).
 
 ### Step 2: Document Detection
 

@@ -1,7 +1,7 @@
 ---
 name: reviewer-react-pattern
 description: React-specific design pattern review. Container/Presentational, hook design, state placement, anti-patterns.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true
@@ -48,7 +48,7 @@ Banned phrasing inside reasoning: "could be cleaner" without naming the violated
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section RP.
+See `~/.claude/skills/audit/references/calibration-examples.md` section RP.
 
 ## Error Handling
 

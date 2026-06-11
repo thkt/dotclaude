@@ -1,7 +1,7 @@
 ---
 name: reviewer-design
 description: Module depth review via deletion test. Language-agnostic. Detect shallow modules that do not earn their interface.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true
@@ -63,7 +63,7 @@ When Phase 1 surfaces the same shallow pattern at 3+ locations, follow the conso
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section DP.
+See `~/.claude/skills/audit/references/calibration-examples.md` section DP.
 
 ## Error Handling
 

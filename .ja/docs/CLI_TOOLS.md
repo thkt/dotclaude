@@ -6,19 +6,17 @@ Claude Code の機能を拡張する外部 CLI ツール。
 
 ## 概要
 
-4 つの Rust CLI ツール。それぞれ Claude Code のデフォルト ツールに対する特定のギャップを埋めるために作られている。AI 向けルールは [TOOLS.md](../rules/development/TOOLS.md) にあり、本ドキュメントは設計意図とアーキテクチャを扱う。
+3 つの Rust CLI ツール。それぞれ Claude Code のデフォルト ツールに対する特定のギャップを埋めるために作られている。本ドキュメントは設計意図とアーキテクチャを扱う。
 
 ```mermaid
 graph LR
     subgraph Search["Information Retrieval"]
         SC[scout]
-        YO[yomu]
         RE[recall]
         XR[xr]
     end
 
     SC -->|Web + GitHub| AI[Claude Code]
-    YO -->|Codebase| AI
     RE -->|Past Sessions| AI
     XR -->|X/Twitter| AI
 ```
@@ -52,36 +50,6 @@ Gemini Grounding と Google 検索による Web 検索とページ取得。
 | 最新ドキュメント、リリースノート | 不可 (scout を優先) |
 | GitHub リポジトリ探索            | 不可 (scout を優先) |
 | 編集付きの深いリサーチ           | N/A                 |
-
-## yomu
-
-フロントエンド コードベース (TS/TSX/JS/CSS/HTML) のためのセマンティック コード検索。embedding ベース。文字列マッチではなく意味でコードを見つける。
-
-| 観点    | 詳細                                           |
-| ------- | ---------------------------------------------- |
-| Why     | Grep は文字列の正確一致。yomu は概念で見つける |
-| How     | チャンク インデックス + embedding 検索         |
-| Install | `brew install thkt/tap/yomu`                   |
-| Source  | [thkt/yomu](https://github.com/thkt/yomu)      |
-
-### コマンド
-
-| コマンド       | 用途                                              |
-| -------------- | ------------------------------------------------- |
-| `yomu search`  | セマンティック検索 (concept, identifier, related) |
-| `yomu index`   | 増分でチャンク インデックスを更新                 |
-| `yomu rebuild` | チャンク インデックスをゼロから再構築             |
-| `yomu impact`  | ファイルやシンボルの変更影響を分析                |
-| `yomu status`  | インデックス統計を表示                            |
-
-### 適用条件
-
-| yomu                                 | Grep/Glob                             |
-| ------------------------------------ | ------------------------------------- |
-| 概念: "form validation", "auth flow" | リテラル: エラー メッセージ、正規表現 |
-| 関連: "hooks that do Y"              | 既知パス: `src/components/Button.tsx` |
-| 既知識別子: `useAuth`                | ファイル一覧: `**/*.tsx`              |
-| 不明名: "where does X happen"        |                                       |
 
 ## recall
 
@@ -141,5 +109,4 @@ X/Twitter コンテンツの取得 (tweet, thread, article, user profile)。
 
 ## 関連
 
-- [TOOLS.md](../rules/development/TOOLS.md). AI 向けのツール選択ルール
 - [HOOKS.md](./HOOKS.md). Hook システム設計 (品質パイプラインを含む)

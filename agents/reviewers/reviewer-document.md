@@ -60,7 +60,7 @@ Banned phrasing inside reasoning: "self-explanatory" without testing on a fresh 
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section DOC.
+See `~/.claude/skills/audit/references/calibration-examples.md` section DOC.
 
 ## Error Handling
 

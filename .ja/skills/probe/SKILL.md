@@ -13,11 +13,11 @@ allowed-tools: Read Write Edit Bash LS Glob Grep
 
 引数なし。対象は現在の作業ディレクトリにあるリポジトリ全体。スコープは `.claude/OUTCOME.md` から自動導出する。
 
-| 入力       | 必須     | ソース                                                                  |
-| ---------- | -------- | ----------------------------------------------------------------------- |
-| OUTCOME.md | Yes      | `.claude/OUTCOME.md` (不在時は `rules/core/OUTCOME.md` workflow で生成) |
-| ADR        | Optional | `docs/decisions/`                                                       |
-| Spec       | Optional | `.claude/workspace/planning/*/spec.md` 等                               |
+| 入力       | 必須     | ソース                                          |
+| ---------- | -------- | ----------------------------------------------- |
+| OUTCOME.md | Yes      | `.claude/OUTCOME.md` (不在時は /outcome で生成) |
+| ADR        | Optional | `docs/decisions/`                               |
+| Spec       | Optional | `.claude/workspace/planning/*/spec.md` 等       |
 
 ## 出力
 

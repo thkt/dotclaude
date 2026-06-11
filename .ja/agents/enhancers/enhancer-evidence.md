@@ -1,10 +1,9 @@
 ---
 name: enhancer-evidence
 description: 静的発見事項、アウトカム根拠、敵対的結果を統合し、根本原因と /assert のためのバイナリ Gate 判定を生成する。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
-skills: [use-context-root-cause-analysis, use-cli-yomu]
-memory: project
+skills: [use-context-root-cause-analysis]
 background: true
 ---
 
@@ -161,7 +160,7 @@ team-integration の統合ロジックを再利用する。
 
 ## Gate Decision (Phase 6)
 
-調整済み根拠からゲートを計算する。完全なルール参照は `skills/assert/references/gate-decision.md`。ブロッキング入力がトリガーされない場合に限り `gate: Ready` を出力する。それ以外は `gate: NotReady`。
+調整済み根拠からゲートを計算する。完全なルール参照は `~/.claude/skills/assert/references/gate-decision.md`。ブロッキング入力がトリガーされない場合に限り `gate: Ready` を出力する。それ以外は `gate: NotReady`。
 
 | Input                | Blocks Ready        | Source                   |
 | -------------------- | ------------------- | ------------------------ |

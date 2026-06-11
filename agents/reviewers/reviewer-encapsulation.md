@@ -1,7 +1,7 @@
 ---
 name: reviewer-encapsulation
 description: Type design quality review. Encapsulation, invariants, enforcement.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true
@@ -63,7 +63,7 @@ Banned phrasing inside reasoning: "we always validate at boundary" without showi
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section TD.
+See `~/.claude/skills/audit/references/calibration-examples.md` section TD.
 
 ## Error Handling
 

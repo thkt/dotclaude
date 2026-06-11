@@ -60,7 +60,7 @@ Agent(subagent_type: "reviewer-readability",
 
 ## E2E Phase
 
-Review Gate の後、条件に応じて `generator-e2e` を spawn する。完全な条件と dev server の検出ロジックは `skills/code/SKILL.md` の E2E Phase セクションを参照。
+Review Gate の後、条件に応じて `generator-e2e` を spawn する。完全な条件と dev server の検出ロジックは `~/.claude/skills/code/SKILL.md` の E2E Phase セクションを参照。
 
 スキップする場合。Spec に `Type: e2e` がない、agent-browser が未インストール、dev server がない、または `/fix`。
 

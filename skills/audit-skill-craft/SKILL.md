@@ -1,7 +1,7 @@
 ---
 name: audit-skill-craft
 description: Judge a SKILL.md against craft axes (single responsibility, description distinctiveness, imperative voice, verifiable completion, calibration, progressive disclosure) and apply the fixes the audit surfaces. Do not use for format-presence-only checks (use reviewer-prompt) or reproducibility loops (use /tuning).
-when_to_use: スキルの書き味, skill craft, スキル品質監査, SKILL.md 監査, skill audit, 書き味判定, mattpocock パターン, スキル整形
+when_to_use: スキルの書き味, skill craft, スキル品質監査, SKILL.md 監査, skill audit, 書き味判定, スキル整形
 allowed-tools: Read Write Edit LS Bash(ugrep:*) Bash(bfs:*) Bash(git:*) Task AskUserQuestion
 model: opus
 argument-hint: "[skill-path]"
@@ -9,7 +9,7 @@ argument-hint: "[skill-path]"
 
 # /audit-skill-craft - Skill Craft Auditor
 
-Judge a SKILL.md against the craft axes in rules/conventions/SKILLS.md and the format rules in MARKDOWN.md, then apply the fixes the audit surfaces. This pairs the format-presence judgment of reviewer-prompt with craft-quality judgment and in-place repair.
+Judge a SKILL.md against the craft axes in ~/.claude/rules/conventions/SKILLS.md and the format rules in ~/.claude/rules/conventions/MARKDOWN.md, then apply the fixes the audit surfaces. This pairs the format-presence judgment of reviewer-prompt with craft-quality judgment and in-place repair.
 
 ## When to Use
 
@@ -54,7 +54,7 @@ Four tools touch prompt files. This table draws the boundary so the audit avoids
 
 ### Step 3: Craft Judgment
 
-Judge against the 6 axes in the SKILLS.md Craft section. For each axis, record pass or fail plus the line(s) that triggered the verdict. Pattern detail and Good/Bad pairs live in ${CLAUDE_SKILL_DIR}/references/mattpocock-patterns.md.
+Judge against the 6 axes in the SKILLS.md Craft section. For each axis, record pass or fail plus the line(s) that triggered the verdict.
 
 ### Step 5: Fix Classification
 

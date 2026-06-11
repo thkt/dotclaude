@@ -1,7 +1,7 @@
 ---
 name: reviewer-strictness
 description: TypeScript 型安全レビュー。any 使用、カバレッジギャップ、strict mode。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-strictness]
 memory: project
@@ -45,7 +45,7 @@ reasoning 内で禁止する表現: 証明なしの "we know it's safe"、何を
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の TS セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の TS セクションを参照。
 
 ## エラーハンドリング
 

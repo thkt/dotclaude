@@ -24,7 +24,7 @@ Electron writes a harmless warning to stderr on every invocation. Suppress with 
 ## Commands
 
 | Purpose                            | Command                                                       |
-| ---------------------------------- | ------------------------------------------------------------- |
+| ---------------------------------- | ------------------------------------------------------------- | ------ | ----------------------- | ------------ |
 | Server ready check                 | `heptabase start`                                             |
 | List / search cards                | `heptabase card list --limit N --offset M`                    |
 | Trash / restore card               | `heptabase card trash <id>` / `heptabase card restore <id>`   |
@@ -32,10 +32,10 @@ Electron writes a harmless warning to stderr on every invocation. Suppress with 
 | Read note                          | `heptabase note read <cardId>`                                |
 | Append note (markdown)             | `heptabase note append <cardId>`                              |
 | Replace note (ProseMirror JSON)    | `heptabase note save <cardId>` (needs `contentMd5` from read) |
-| Journal CRUD by date               | `heptabase journal create|read|append|save <date>`            |
-| Tag list / create / add / remove   | `heptabase tag list|create|add|remove`                        |
+| Journal CRUD by date               | `heptabase journal create                                     | read   | append                  | save <date>` |
+| Tag list / create / add / remove   | `heptabase tag list                                           | create | add                     | remove`      |
 | Cards under a tag                  | `heptabase tag cards <tagId>`                                 |
-| AI Tutor goals / courses / lessons | `heptabase goal|course|lesson ...` (read-only)                |
+| AI Tutor goals / courses / lessons | `heptabase goal                                               | course | lesson ...` (read-only) |
 
 Run `heptabase <sub> -h` for argument details (flags vary per subcommand).
 
@@ -49,11 +49,11 @@ Run `heptabase <sub> -h` for argument details (flags vary per subcommand).
 
 ## When to Use
 
-| use-cli-heptabase                                          | Alternative               |
-| ---------------------------------------------------------- | ------------------------- |
-| Write back to knowledge base (journal append, note create) | Local markdown repo edit  |
-| Card library lookup by title / recency                     | yomu (code), kiku (Slack) |
-| AI Tutor course / lesson / chat read                       | n/a                       |
+| use-cli-heptabase                                          | Alternative              |
+| ---------------------------------------------------------- | ------------------------ |
+| Write back to knowledge base (journal append, note create) | Local markdown repo edit |
+| Card library lookup by title / recency                     | kiku (Slack)             |
+| AI Tutor course / lesson / chat read                       | n/a                      |
 
 ## Warm-up (first use in session)
 

@@ -5,32 +5,32 @@
 Based on thkt's usage over the last 30 days (846 sessions):
 
 Work Type Breakdown:
-  Plan / Design    ██████████████░░░░░░  70%
-  Improve Quality  ███░░░░░░░░░░░░░░░░░  12%
-  Build Feature    ██░░░░░░░░░░░░░░░░░░  10%
-  Debug / Fix      ██░░░░░░░░░░░░░░░░░░   8%
+Plan / Design ██████████████░░░░░░ 70%
+Improve Quality ███░░░░░░░░░░░░░░░░░ 12%
+Build Feature ██░░░░░░░░░░░░░░░░░░ 10%
+Debug / Fix ██░░░░░░░░░░░░░░░░░░ 8%
 
 Top Skills & Commands:
-  /clear           ████████████████████  582x/month
-  /exit            ███████░░░░░░░░░░░░░  200x/month
-  /plugin          ██░░░░░░░░░░░░░░░░░░   69x/month
-  /commit          ██░░░░░░░░░░░░░░░░░░   60x/month
-  /audit           █░░░░░░░░░░░░░░░░░░░   29x/month
-  /challenge       █░░░░░░░░░░░░░░░░░░░   28x/month
-  /think           █░░░░░░░░░░░░░░░░░░░   22x/month
-  /release-notes   █░░░░░░░░░░░░░░░░░░░   21x/month
-  /polish          █░░░░░░░░░░░░░░░░░░░   18x/month
+/clear ████████████████████ 582x/month
+/exit ███████░░░░░░░░░░░░░ 200x/month
+/plugin ██░░░░░░░░░░░░░░░░░░ 69x/month
+/commit ██░░░░░░░░░░░░░░░░░░ 60x/month
+/audit █░░░░░░░░░░░░░░░░░░░ 29x/month
+/challenge █░░░░░░░░░░░░░░░░░░░ 28x/month
+/think █░░░░░░░░░░░░░░░░░░░ 22x/month
+/release-notes █░░░░░░░░░░░░░░░░░░░ 21x/month
+/polish █░░░░░░░░░░░░░░░░░░░ 18x/month
 
 Top MCP Servers:
-  heptabase        ████████████████████   28 calls
-  discord          ███████████████████░   26 calls
-  context7         ██░░░░░░░░░░░░░░░░░░    3 calls
+heptabase ████████████████████ 28 calls
+discord ███████████████████░ 26 calls
+context7 ██░░░░░░░░░░░░░░░░░░ 3 calls
 
 ## Your Setup Checklist
 
 ### Codebases
+
 - [ ] dotclaude - github.com/thkt/dotclaude (Claude Code config: agents, skills, hooks, rules)
-- [ ] yomu - ~/GitHub/cli/yomu (semantic code search CLI)
 - [ ] scout - ~/GitHub/cli/scout (web fetch / search CLI)
 - [ ] recall - ~/GitHub/cli/recall (session search)
 - [ ] shields - ~/GitHub/cli/shields (PreToolUse guard hook)
@@ -40,11 +40,13 @@ Top MCP Servers:
 - [ ] tally - ~/GitHub/cli/tally (engineering time tracking)
 
 ### MCP Servers to Activate
+
 - [ ] heptabase - Knowledge base / note cards. Get access at heptabase.com; configure API key via `/mcp`.
 - [ ] discord - Discord bot integration for async Claude responses. Run `/discord:configure` to set up your bot token.
 - [ ] context7 - Library documentation lookup. Enable via `/plugin` from the marketplace.
 
 ### Skills to Know About
+
 - `/commit` - Generates a Conventional Commits message from staged diff. Run after edits instead of writing commit messages manually.
 - `/audit` - Orchestrates multiple specialized reviewers (security, type safety, silent failures, etc.) against the current codebase.
 - `/challenge` - Devil's advocate pass on a proposal, design, or plan. Use before committing to an architecture decision.

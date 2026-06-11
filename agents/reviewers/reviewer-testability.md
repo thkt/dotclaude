@@ -1,7 +1,7 @@
 ---
 name: reviewer-testability
 description: Testable code design review. Identify test-hostile patterns.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-testability, use-workflow-tdd-cycle]
 memory: project
@@ -53,7 +53,7 @@ Banned phrasing inside reasoning: "tests can mock around it" without naming the 
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section TEST.
+See `~/.claude/skills/audit/references/calibration-examples.md` section TEST.
 
 ## Error Handling
 

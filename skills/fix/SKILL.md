@@ -56,7 +56,7 @@ Asked via AskUserQuestion when `$ARGUMENTS` is empty.
 
 ### Outcome Anchor
 
-Read `.claude/OUTCOME.md` before Build Check. If absent, stub generation (see rules/core/OUTCOME.md). Confirm the bug or fix lives inside the outcome state. Escalate if outside (see Escalation).
+Read `.claude/OUTCOME.md` before Build Check. If absent, generate the stub via /outcome. Confirm the bug or fix lives inside the outcome state. Escalate if outside (see Escalation).
 
 ### Build Check
 

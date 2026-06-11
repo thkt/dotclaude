@@ -17,17 +17,17 @@ Task description from `$ARGUMENTS`, research context, or AskUserQuestion if empt
 
 ## Execution
 
-| Step  | Action             | Detail                                                                            |
-| ----- | ------------------ | --------------------------------------------------------------------------------- |
-| 0     | Outcome Anchor     | Read `.claude/OUTCOME.md`; if absent, stub generation (see rules/core/OUTCOME.md) |
-| 1     | Why Discovery      | ${CLAUDE_SKILL_DIR}/references/step-1-why-discovery.md (assumes OUTCOME.md)       |
-| 2     | Q&A Clarification  | Scope, Priority (MoSCoW), Constraints, Risks (if needed)                          |
-| 3-6   | Design Exploration | ${CLAUDE_SKILL_DIR}/references/step-3-6-design-exploration.md                     |
-| 7     | User Review        | Present design with trade-off rationale; wait for approval                        |
-| 7.5   | ADR Proposal       | Ask if ADR needed for technical decisions. Skip for simple features               |
-| 8-9   | SOW and Spec       | ${CLAUDE_SKILL_DIR}/references/step-8-9-document-generation.md                    |
-| 10-11 | Review + Decompose | ${CLAUDE_SKILL_DIR}/references/step-10-11-review-decomposition.md                 |
-| 12    | View Generation    | Pass planning slug to `use-workflow-plan-preview`. Share returned URL with user   |
+| Step  | Action             | Detail                                                                          |
+| ----- | ------------------ | ------------------------------------------------------------------------------- |
+| 0     | Outcome Anchor     | Read `.claude/OUTCOME.md`; if absent, generate the stub via /outcome            |
+| 1     | Why Discovery      | ${CLAUDE_SKILL_DIR}/references/step-1-why-discovery.md (assumes OUTCOME.md)     |
+| 2     | Q&A Clarification  | Scope, Priority (MoSCoW), Constraints, Risks (if needed)                        |
+| 3-6   | Design Exploration | ${CLAUDE_SKILL_DIR}/references/step-3-6-design-exploration.md                   |
+| 7     | User Review        | Present design with trade-off rationale; wait for approval                      |
+| 7.5   | ADR Proposal       | Ask if ADR needed for technical decisions. Skip for simple features             |
+| 8-9   | SOW and Spec       | ${CLAUDE_SKILL_DIR}/references/step-8-9-document-generation.md                  |
+| 10-11 | Review + Decompose | ${CLAUDE_SKILL_DIR}/references/step-10-11-review-decomposition.md               |
+| 12    | View Generation    | Pass planning slug to `use-workflow-plan-preview`. Share returned URL with user |
 
 ## Output
 

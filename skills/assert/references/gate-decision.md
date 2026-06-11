@@ -6,7 +6,7 @@ Ternary Ready / Ready (caveat) / NotReady judgment for /assert, derived from rec
 
 Goal: answer "can this change merge safely?" with a discrete signal that distinguishes "fully verified clean" from "static-only clean (dynamic evidence missing)" from "blockers exist." Plus a structured list of blockers and their fixes.
 
-"Safely" is defined against `.claude/OUTCOME.md`. The orchestrator reads it during Pre-flight and feeds Behavior / Non-goals / Constraints to enhancer-evidence as context. Findings that contradict a Constraint or violate a Non-goal carry extra weight in the issues set (challenger / verifier may flag, adversarial may promote). When OUTCOME.md is absent the orchestrator generates a stub interactively per `rules/core/OUTCOME.md` § Behavior when absent before proceeding.
+"Safely" is defined against `.claude/OUTCOME.md`. The orchestrator reads it during Pre-flight and feeds Behavior / Non-goals / Constraints to enhancer-evidence as context. Findings that contradict a Constraint or violate a Non-goal carry extra weight in the issues set (challenger / verifier may flag, adversarial may promote). When OUTCOME.md is absent the orchestrator generates a stub interactively via /outcome before proceeding.
 
 Judgment rule: any issue or test failure blocks the gate as NotReady. Bootstrap failure alone does not block as NotReady, but it downgrades a clean Ready to Ready (caveat) because dynamic evidence is missing.
 

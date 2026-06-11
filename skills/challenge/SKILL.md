@@ -22,37 +22,37 @@ Ask one question at a time. Each question must include a recommended answer pres
 
 ### Rules
 
-| Rule | Detail |
-| ---- | ------ |
-| Code-resolvable questions | If the answer lives in the code, run yomu/ugrep/explore instead of asking |
-| Question budget | Cap at 7 across the phase. If hitting cap with branches still open, summarise the unresolved set and let user decide whether to continue |
-| Stop conditions | All decision branches resolved, user signals "enough", or budget hit |
+| Rule                      | Detail                                                                                                                                   |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Code-resolvable questions | If the answer lives in the code, run ugrep / bfs instead of asking                                                                       |
+| Question budget           | Cap at 7 across the phase. If hitting cap with branches still open, summarise the unresolved set and let user decide whether to continue |
+| Stop conditions           | All decision branches resolved, user signals "enough", or budget hit                                                                     |
 
 ### Output to Phase 2
 
 Aggregate grill findings into critic-design input schema before spawning.
 
-| Field | Source |
-| ----- | ------ |
-| source | "user-grill" |
-| artifact_type | inferred from $ARGUMENTS (spec / plan / design / ADR / doc) |
-| approach | one-line summary of the proposal core |
-| decisions | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded) |
-| trade-offs | trade-offs surfaced during grill |
-| referenced_files | files cited or read during grill |
+| Field            | Source                                                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------------------------- |
+| source           | "user-grill"                                                                                             |
+| artifact_type    | inferred from $ARGUMENTS (spec / plan / design / ADR / doc)                                              |
+| approach         | one-line summary of the proposal core                                                                    |
+| decisions        | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded) |
+| trade-offs       | trade-offs surfaced during grill                                                                         |
+| referenced_files | files cited or read during grill                                                                         |
 
 ## Phase 2 Devil
 
-| Step | Action |
-| ---- | ------ |
-| 1 | Compose Phase 2 input from Phase 1 aggregation + original $ARGUMENTS context |
-| 2 | Spawn critic-design via Task (subagent_type: critic-design, background: false). Mention ARCHITECTURE.md or equivalent if present |
-| 3 | Wait for completion, capture verdict + weaknesses |
+| Step | Action                                                                                                                           |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Compose Phase 2 input from Phase 1 aggregation + original $ARGUMENTS context                                                     |
+| 2    | Spawn critic-design via Task (subagent_type: critic-design, background: false). Mention ARCHITECTURE.md or equivalent if present |
+| 3    | Wait for completion, capture verdict + weaknesses                                                                                |
 
 ## Output
 
-| Section | Content |
-| ------- | ------- |
-| Grill summary | Surfaced assumptions, decisions, trade-offs (one-line each) |
-| Devil verdict | critic-design output verbatim |
-| Actionable items | Top 3 concrete actions (keep / remove / revise) |
+| Section          | Content                                                     |
+| ---------------- | ----------------------------------------------------------- |
+| Grill summary    | Surfaced assumptions, decisions, trade-offs (one-line each) |
+| Devil verdict    | critic-design output verbatim                               |
+| Actionable items | Top 3 concrete actions (keep / remove / revise)             |

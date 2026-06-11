@@ -47,7 +47,7 @@ Outcome-based assertion は assert 対象となる outcome 自体を必要とす
 | 条件                              | 動作                                                                       |
 | --------------------------------- | -------------------------------------------------------------------------- |
 | `.claude/OUTCOME.md` あり         | Behavior / Non-goals / Constraints の各セクションを読んでキャッシュ        |
-| `.claude/OUTCOME.md` なし         | `rules/core/OUTCOME.md` § 不在時の振る舞い に従い stub を生成してから続行  |
+| `.claude/OUTCOME.md` なし         | /outcome で stub を生成してから続行                                        |
 | Behavior が空 / 全 section が TBD | 不在として扱い stub を生成                                                 |
 | assert 対象が Non-goal に触れる   | Intent Assertion finding として report に記載。block 判定は Phase 4 が下す |
 | assert 対象が Constraint を破る   | `[adversarial]` finding として promote (Issues>0 ルートで NotReady)        |

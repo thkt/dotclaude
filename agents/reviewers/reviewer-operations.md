@@ -1,7 +1,7 @@
 ---
 name: reviewer-operations
 description: Operational readiness review. Error boundaries, loading states, logging, performance budgets.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true
@@ -60,7 +60,7 @@ Same component may receive findings from both, complementary not duplicate.
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section OPS.
+See `~/.claude/skills/audit/references/calibration-examples.md` section OPS.
 
 ## Error Handling
 

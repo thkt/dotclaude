@@ -3,6 +3,7 @@ name: resolver-build
 description: 最小限の変更で TypeScript/build エラーを解決する。アーキテクチャの変更は行わない。
 tools: Bash, Read, Edit, LS
 model: opus
+effort: medium
 background: true
 memory: project
 ---

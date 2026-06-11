@@ -30,7 +30,7 @@ file:line がないもの、スコープ外のものはスキップ。
 
 ### 1b. Audit Reviewers
 
-/audit のファイルルーティング表 (`skills/audit/SKILL.md` § File Routing) を使う。同じ reviewer 割り当てをファイルタイプごとに適用。
+/audit のファイルルーティング表 (`~/.claude/skills/audit/SKILL.md` § File Routing) を使う。同じ reviewer 割り当てをファイルタイプごとに適用。
 
 各 reviewer をスタンドアロンの background Task として起動。
 

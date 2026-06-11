@@ -20,7 +20,7 @@ user-invocable: false
 | ------- | ------------------------------------------------------ |
 | TDD     | ${CLAUDE_SKILL_DIR}/../use-workflow-tdd-cycle/SKILL.md |
 
-<!-- canonical: rules/development/THRESHOLDS.md (coverage targets) -->
+<!-- canonical: rules/development/TESTING.md (coverage gate) -->
 
 ## Quality Gates
 

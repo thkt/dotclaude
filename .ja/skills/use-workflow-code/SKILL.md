@@ -21,7 +21,7 @@ user-invocable: false
 | IDR Generation | ${CLAUDE_SKILL_DIR}/../../hooks/lifecycle/idr-pre-commit.sh |
 | TDD            | ${CLAUDE_SKILL_DIR}/../use-workflow-tdd-cycle/SKILL.md      |
 
-<!-- canonical: rules/development/THRESHOLDS.md (coverage targets) -->
+<!-- canonical: rules/development/TESTING.md (coverage gate) -->
 
 ## 品質ゲート
 
@@ -30,7 +30,7 @@ user-invocable: false
 | Tests        | 全てパス           | `npm test` exit code 0                   |
 | Lint         | エラー 0           | `npm run lint` exit code 0               |
 | Types        | エラーなし         | `tsc --noEmit` exit code 0               |
-| Coverage     | C0 ≥90%, C1 ≥80% | カバレッジレポート                       |
+| Coverage     | C0 ≥90%, C1 ≥80%   | カバレッジレポート                       |
 | Test Quality | メトリック別の閾値 | `evaluator-test` (Spec なしならスキップ) |
 
 ### Test Quality Gate
@@ -45,8 +45,8 @@ Agent(subagent_type: "evaluator-test",
 
 5 つのメトリック全てが閾値を満たせば pass。いずれかが fail なら、発見事項 (未カバーの T-NNN、過剰なテスト、重複、粒度の問題、意図の問題) を報告し、進む前に修正する。Spec が無いとき (例 `/fix`、ad-hoc な変更) はスキップ。
 
-| メトリック  | 閾値  |
-| ----------- | ----- |
+| メトリック  | 閾値 |
+| ----------- | ---- |
 | coverage    | ≥0.8 |
 | excess      | ≤0.1 |
 | duplication | ≤0.2 |

@@ -1,7 +1,7 @@
 ---
 name: reviewer-resilience
 description: 回復力の弱点分析。コードベースにおける障害モード、ブラスト半径、欠落しているセーフガードをマッピングする。インシデントが先に発見する前にシステムの仮定をストレステストしたいときに使う。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true

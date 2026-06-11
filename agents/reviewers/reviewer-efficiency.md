@@ -1,7 +1,7 @@
 ---
 name: reviewer-efficiency
 description: Code efficiency review. Unnecessary work, concurrency, hot-path analysis.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true
@@ -68,7 +68,7 @@ Before flagging, check execution frequency.
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section EFF.
+See `~/.claude/skills/audit/references/calibration-examples.md` section EFF.
 
 ## Error Handling
 

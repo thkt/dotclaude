@@ -6,7 +6,7 @@
 
 Goal: 「この変更を安全に merge できるか」に離散シグナルで答える。「完全検証クリア」「静的のみクリア (動的根拠欠如)」「ブロッカーあり」を区別する。あわせて blocker の構造化リストと修正案を出す。
 
-「安全に」の基準は `.claude/OUTCOME.md`。orchestrator は Pre-flight でこれを読み、Behavior / Non-goals / Constraints を文脈として enhancer-evidence に渡す。Constraint に反する findings、Non-goal に踏み込む findings は issues セットで通常権重を持つ (challenger / verifier が flag、adversarial が promote する場合あり)。OUTCOME.md が不在なら orchestrator は `rules/core/OUTCOME.md` § 不在時の振る舞い に従い対話的に stub を生成してから続行する。
+「安全に」の基準は `.claude/OUTCOME.md`。orchestrator は Pre-flight でこれを読み、Behavior / Non-goals / Constraints を文脈として enhancer-evidence に渡す。Constraint に反する findings、Non-goal に踏み込む findings は issues セットで通常権重を持つ (challenger / verifier が flag、adversarial が promote する場合あり)。OUTCOME.md が不在なら orchestrator は /outcome で対話的に stub を生成してから続行する。
 
 判定ルール: いずれかの issue または test 失敗があればゲートを NotReady とする。Bootstrap 失敗単独では NotReady にしないが、動的根拠が欠如するためクリーンな Ready を Ready (caveat) に降格する。
 

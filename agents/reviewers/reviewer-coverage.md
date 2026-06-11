@@ -1,7 +1,7 @@
 ---
 name: reviewer-coverage
 description: Test coverage quality review. Behavioral gaps and test robustness.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-workflow-tdd-cycle]
 memory: project
@@ -65,7 +65,7 @@ Banned phrasing inside reasoning: "implementation might change" without identify
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section TC.
+See `~/.claude/skills/audit/references/calibration-examples.md` section TC.
 
 ## Error Handling
 

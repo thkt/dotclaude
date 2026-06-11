@@ -2,9 +2,12 @@
 paths:
   - ".claude/**/*.md"
   - ".ja/**/*.md"
+  - "CLAUDE.md"
+  - "README.md"
+  - "agents/**/*.md"
+  - "docs/**/*.md"
   - "rules/**/*.md"
   - "skills/**/*.md"
-  - "agents/**/*.md"
   - "workspace/**/*.md"
 ---
 
@@ -14,56 +17,47 @@ Conventions for Markdown files under `.claude/`.
 
 ## File scope
 
+Files under `.ja/` are canonical; edit `.ja/` first, then mirror to the English file at the path without the `.ja/` prefix in the same commit. Scope is judged by the path without the `.ja/` prefix.
+
 | Scope        | Paths                                                             |
 | ------------ | ----------------------------------------------------------------- |
 | LLM-facing   | `CLAUDE.md`, `agents/**`, `skills/**`, `rules/**`, `workspace/**` |
 | Human-facing | `docs/**`, `README.md`                                            |
 
-The `.ja/` translations follow their counterpart's scope.
-
 ## Symbols
 
-| Symbol | Use                                 | Example                                                             |
-| ------ | ----------------------------------- | ------------------------------------------------------------------- |
-| `/`    | Parallel enumeration (AND/OR)       | `Safety First / Output Verifiability`                               |
-| `.`    | Separator between independent rules | `Check scope. Do not skip`                                          |
-| `()`   | Supplementary condition only        | `Skip for follow-up (same session)`                                 |
-| `→`    | Fallback or step sequence           | `README → package.json → ask user` / `Observe → analyze → conclude` |
+| Symbol | Use                                           | Example                               |
+| ------ | --------------------------------------------- | ------------------------------------- |
+| `/`    | AND parallel enumeration                      | `Safety First / Output Verifiability` |
+| `.`    | Separator between independent rules           | `Check scope. Do not skip`            |
+| `()`   | Supplementary condition only                  | `Skip for follow-up (same session)`   |
+| `>`    | Priority order (prefer left, fall back right) | `CLI tool > built-in equivalent`      |
+| `→`    | Step sequence                                 | `Observe → analyze → conclude`        |
 
 ## Inline code
 
-Judge backticks by whether removing them causes misreading. If it does not, leave the text unwrapped. Being a literal or an identifier is not by itself a reason to wrap. Wrap angle-bracket placeholders like `<branch>` in backticks instead of escaping them.
+Judge backtick use by whether removal causes misreading. Being a literal or an identifier is not a reason to wrap, and if removal causes no misreading, leave it unwrapped. Angle-brackets like `<branch>` are the exception.
 
-| Keep                                                                 | Remove                                                             |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Identifiers mixed with normal text in a sentence                     | Cells in a column whose entries share one type                     |
-| Tokens containing placeholders (one such row keeps the whole column) | Emphasis-only wrapping                                             |
-| Escapes and symbols that must stay distinguishable                   | Values self-evident from the column name (Tool column, tool names) |
-| Whole commands in a sentence                                         | List items already distinguished by symbols (`[✓]` etc.)           |
+| Keep                                                         | Remove                                                       |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Identifiers or commands mixed with normal text in a sentence | Columns of same-type cells self-evident from the column name |
+| Tokens containing placeholders                               | Emphasis-only wrapping                                       |
+| Escapes and symbols that must stay distinguishable           | List items already distinguished by symbols                  |
 
 ## Do not
 
-| Pattern               | Applies to | Fix                                                                       |
-| --------------------- | ---------- | ------------------------------------------------------------------------- |
-| `≠`                   | All        | Rewrite as positive form or use `is not X`                                |
-| `()` for contrast     | All        | Split with `.`                                                            |
-| `—` (em-dash)         | All        | Split into sentences with `.`, or replace with `,` / `:` / `-` by context |
-| `ANY` / `ALL` in caps | All        | Use normal case                                                           |
-| `**bold**`            | LLM-facing | Use tables or sections. Convert bold-first bullets to a table             |
-| Emoji in prose        | LLM-facing | Remove. User-visible emoji are the exception                              |
-| Unicode decoration    | Prose      | Use ASCII                                                                 |
-
-## Pseudo-headings
-
-Do not end a line with `:` to introduce a table, list, or section. The same applies to an inline `Label: value` colon. Both hint at structure, so promote to a heading (`### Foo`) or a table, or rewrite as prose. Literal colons stay fine (time `14:30`, ratio `2:1`, URLs, paths, table cells).
-
-## Table placement
-
-Put the explanation (rule, context, exceptions) before the table. Do not continue the paragraph after the table. Tables are for enumeration, not for splitting prose.
-
-## Prose wrapping
-
-Do not insert physical line breaks inside paragraphs. Write each paragraph on a single line. Tooling handles soft-wrapping.
+| Pattern                                 | Applies to | Fix                                                                            |
+| --------------------------------------- | ---------- | ------------------------------------------------------------------------------ |
+| `≠`                                     | All        | Rewrite as positive form or use `is not X`                                     |
+| `()` for contrast                       | All        | Split with `.`                                                                 |
+| `—`                                     | All        | Split into sentences with `.`, or replace with `,` / `:` / `-` by context      |
+| Line-ending `:` or `Label: value`       | All        | Promote to a heading or a table, or rewrite as prose. Literal colons stay fine |
+| All-caps for emphasis                   | All        | Use normal case                                                                |
+| Physical line breaks inside a paragraph | All        | Write each paragraph on a single line. Tooling handles soft-wrapping           |
+| Paragraph after a table                 | All        | Put the explanation (rule, context, exceptions) before the table               |
+| `**bold**`                              | LLM-facing | Use tables or sections. Convert bold-first bullets to a table                  |
+| Emoji in prose                          | LLM-facing | Remove. User-visible emoji are the exception                                   |
+| Unicode decoration                      | Prose      | Use ASCII                                                                      |
 
 ## Reference depth
 

@@ -39,5 +39,4 @@
 
 ## 5. 次のステップ
 
-- パターンは [WORKFLOWS.md](../rules/workflows/WORKFLOWS.md) を参照
 - 全コマンドは `/help` で確認

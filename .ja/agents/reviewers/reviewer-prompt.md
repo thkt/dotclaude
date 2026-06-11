@@ -72,7 +72,7 @@ rules、skills、agents、templates 配下の LLM 向けプロンプトファイ
 | ----------------- | ------------------------------------------------------ | -------------------------------- |
 | bold 禁止         | LLM 向けファイルで `**bold**` 不使用                   | `agents/*.md`, `skills/SKILL.md` |
 | Agent frontmatter | name, description, tools, model (context は推奨)       | `agents/**/*.md`                 |
-| Skill frontmatter | name, description (rules/conventions/SKILLS.md に従う) | `skills/*/SKILL.md`              |
+| Skill frontmatter | name, description (~/.claude/rules/conventions/SKILLS.md に従う) | `skills/*/SKILL.md`              |
 | セクション完全性  | 必須セクションの存在 (下記参照)                        | `agents/*.md`, `skills/SKILL.md` |
 | テーブル整列      | 一貫した列セパレータ、不揃いな行なし                   | All                              |
 
@@ -98,7 +98,7 @@ reviewer エージェント (`agents/reviewers/`) の必須セクション: titl
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の PQ セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の PQ セクションを参照。
 
 | シナリオ                                | 判定          | 理由                                             |
 | --------------------------------------- | ------------- | ------------------------------------------------ |

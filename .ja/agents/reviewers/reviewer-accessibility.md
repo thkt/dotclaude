@@ -51,7 +51,7 @@ background: true
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の A11Y セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の A11Y セクションを参照。
 
 ## エラーハンドリング
 

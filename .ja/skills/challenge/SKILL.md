@@ -22,37 +22,37 @@ argument-hint: "[proposal file | description]"
 
 ### ルール
 
-| ルール | 詳細 |
-| ------ | ---- |
-| コードで分かる質問 | 答えがコードにあるなら yomu/ugrep/explore で確認、ユーザーには聞かない |
-| 質問数上限 | フェーズ全体で 7 問まで。上限到達時に未解決分岐があれば、未解決セットを要約してユーザーに継続判断を求める |
-| 終了条件 | 全分岐解決、ユーザーが "enough" 宣言、または上限到達 |
+| ルール             | 詳細                                                                                                      |
+| ------------------ | --------------------------------------------------------------------------------------------------------- |
+| コードで分かる質問 | 答えがコードにあるなら ugrep / bfs で確認、ユーザーには聞かない                                           |
+| 質問数上限         | フェーズ全体で 7 問まで。上限到達時に未解決分岐があれば、未解決セットを要約してユーザーに継続判断を求める |
+| 終了条件           | 全分岐解決、ユーザーが "enough" 宣言、または上限到達                                                      |
 
 ### Phase 2 への出力
 
 grill findings を critic-design 入力スキーマに集約してから spawn する。
 
-| Field | 出所 |
-| ----- | ---- |
-| source | "user-grill" |
-| artifact_type | $ARGUMENTS から推定 (spec / plan / design / ADR / doc) |
-| approach | proposal core の 1 行要約 |
-| decisions | grill 中に固まったアーキレベル判断 (用語確認や scope 細部は除外) |
-| trade-offs | grill 中に表面化した trade-off |
-| referenced_files | grill 中に参照または読まれたファイル |
+| Field            | 出所                                                             |
+| ---------------- | ---------------------------------------------------------------- |
+| source           | "user-grill"                                                     |
+| artifact_type    | $ARGUMENTS から推定 (spec / plan / design / ADR / doc)           |
+| approach         | proposal core の 1 行要約                                        |
+| decisions        | grill 中に固まったアーキレベル判断 (用語確認や scope 細部は除外) |
+| trade-offs       | grill 中に表面化した trade-off                                   |
+| referenced_files | grill 中に参照または読まれたファイル                             |
 
 ## Phase 2 Devil
 
-| Step | アクション |
-| ---- | ---------- |
-| 1 | Phase 1 集約 + 元の $ARGUMENTS コンテキストから Phase 2 入力を組み立てる |
-| 2 | Task で critic-design を spawn する (subagent_type: critic-design, background: false)。ARCHITECTURE.md 等が存在すれば言及する |
-| 3 | 完了待機、verdict + weaknesses を取得 |
+| Step | アクション                                                                                                                    |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Phase 1 集約 + 元の $ARGUMENTS コンテキストから Phase 2 入力を組み立てる                                                      |
+| 2    | Task で critic-design を spawn する (subagent_type: critic-design, background: false)。ARCHITECTURE.md 等が存在すれば言及する |
+| 3    | 完了待機、verdict + weaknesses を取得                                                                                         |
 
 ## Output
 
-| セクション | 内容 |
-| ---------- | ---- |
-| Grill summary | 表面化した assumption、decisions、trade-offs (各 1 行) |
-| Devil verdict | critic-design 出力をそのまま提示 |
-| Actionable items | 具体アクションのトップ 3 (keep / remove / revise) |
+| セクション       | 内容                                                   |
+| ---------------- | ------------------------------------------------------ |
+| Grill summary    | 表面化した assumption、decisions、trade-offs (各 1 行) |
+| Devil verdict    | critic-design 出力をそのまま提示                       |
+| Actionable items | 具体アクションのトップ 3 (keep / remove / revise)      |

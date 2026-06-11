@@ -20,6 +20,7 @@ One file per audit run. Filename timestamp is UTC.
 | `target`          | string        | yes      | audited scope. files, SHA range, or description         |
 | `focus`           | enum          | yes      | `security` / `performance` / `quality` / `a11y` / `all` |
 | `pre_flight`      | object        | yes      | see Pre-flight                                          |
+| `raw_findings`    | array         | yes      | see Raw Findings                                        |
 | `findings`        | array         | yes      | see Finding Entry                                       |
 | `summary`         | object        | yes      | see Summary                                             |
 | `pipeline_health` | object        | yes      | see Pipeline Health                                     |
@@ -35,6 +36,21 @@ One file per audit run. Filename timestamp is UTC.
 | `clippy`   | string         | `clean` / `N warnings` / `skipped`. Rust only            |
 | `fmt`      | string         | `clean` / `N drifts` / `skipped`                         |
 | `coverage` | enum or object | `skipped`, or `{ c0: "N%", c1: "N%" }`                   |
+
+## Raw Findings
+
+Wave 1 reviewer output before challenge and dedupe. Reconciliation erases per-reviewer detail (dismissed findings lose their content; integrator merges convergent ones), which made post-hoc overlap measurement impossible until the 2026-06-04 pilot recovered it from transcripts (`workspace/history/overlap-pilot-2026-06-04.md`). This section keeps that data addressable per run.
+
+One entry per finding as emitted by each Wave 1 reviewer. No `status` — these precede reconciliation.
+
+Trust boundary: this section is a best-effort convenience index transcribed by the Leader (an LLM), so silent omission is possible and nothing validates completeness. The session transcript (Task results in the session jsonl) remains the authoritative source; extraction procedure in the pilot report above. Before using `raw_findings` for measurement, cross-check entry counts per reviewer against the transcript.
+
+| Field      | Type   | Description                                                                                                |
+| ---------- | ------ | ---------------------------------------------------------------------------------------------------------- |
+| `reviewer` | string | subagent_type (e.g. `reviewer-duplication`)                                                                |
+| `id`       | string | reviewer-local ID as emitted (e.g. `DRY-001`). May differ from `findings` IDs after integrator renumbering |
+| `file`     | string | repo-relative path with line. Same format as Finding Entry                                                 |
+| `message`  | string | one-line claim. Strip evidence and fix detail                                                              |
 
 ## Finding Entry
 
@@ -97,28 +113,29 @@ Each `domains_skipped` entry follows `<domain>: <reason>`. Each entry signals fi
 
 ## Delta
 
-| Field               | Type        | Description                                      |
-| ------------------- | ----------- | ------------------------------------------------ |
-| `tests`             | string      | `N → N` or `unchanged`                           |
-| `clippy`            | string      | `N warnings → 0` or `unchanged`                  |
-| `fmt`               | string      | `N drifts → 0` or `unchanged`                    |
-| `trust_score`       | string      | `N → N` or `unchanged`                           |
-| `critical`          | string      | `+N`, `-N`, `0`, or `(first)` on first run       |
-| `high`              | string      | same format as critical                          |
-| `medium`            | string      | same format as critical                          |
-| `low`               | string      | same format as critical                          |
-| `findings_new`      | int         | findings present in this run, absent in previous |
-| `findings_resolved` | int         | findings present in previous, absent in this run |
-| `findings_prior`    | int / null  | prior total, or null on first run                |
+| Field               | Type       | Description                                      |
+| ------------------- | ---------- | ------------------------------------------------ |
+| `tests`             | string     | `N → N` or `unchanged`                           |
+| `clippy`            | string     | `N warnings → 0` or `unchanged`                  |
+| `fmt`               | string     | `N drifts → 0` or `unchanged`                    |
+| `trust_score`       | string     | `N → N` or `unchanged`                           |
+| `critical`          | string     | `+N`, `-N`, `0`, or `(first)` on first run       |
+| `high`              | string     | same format as critical                          |
+| `medium`            | string     | same format as critical                          |
+| `low`               | string     | same format as critical                          |
+| `findings_new`      | int        | findings present in this run, absent in previous |
+| `findings_resolved` | int        | findings present in previous, absent in this run |
+| `findings_prior`    | int / null | prior total, or null on first run                |
 
 ## Responsibility Split
 
-| Section                                                | Filled by                                |
-| ------------------------------------------------------ | ---------------------------------------- |
-| `session_id`, `timestamp`, `branch`, `target`, `focus` | Leader at audit start                    |
-| `pre_flight`                                           | Leader from test runner and hook output  |
-| `findings`, `summary`, `pipeline_health`               | Integrator                               |
-| `delta_from`, `delta`                                  | Leader by comparing to previous snapshot |
+| Section                                                | Filled by                                                                |
+| ------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `session_id`, `timestamp`, `branch`, `target`, `focus` | Leader at audit start                                                    |
+| `pre_flight`                                           | Leader from test runner and hook output                                  |
+| `raw_findings`                                         | Leader from each Wave 1 Task result, before spawning challenger/verifier |
+| `findings`, `summary`, `pipeline_health`               | Integrator                                                               |
+| `delta_from`, `delta`                                  | Leader by comparing to previous snapshot                                 |
 
 ## Example
 

@@ -41,13 +41,13 @@ Orchestrate reviewer agents, then run findings through critic-audit (challenge) 
 
 After File Routing assigns reviewers by file pattern, Leader filters the result by focus. Only reviewers in the focus set actually run. `reviewer-causation` follows the Wave 1 set (see Sequential Dependencies); it runs when `quality` or `all` includes the upstream reviewers it depends on.
 
-| focus       | Reviewers included                                                                                                                                                                                                                                                 |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| security    | reviewer-security, reviewer-silence                                                                                                                                                                                                                                |
-| performance | reviewer-performance, reviewer-efficiency, reviewer-progressive                                                                                                                                                                                                    |
+| focus       | Reviewers included                                                                                                                                                                                                                                                                                        |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| security    | reviewer-security, reviewer-silence                                                                                                                                                                                                                                                                       |
+| performance | reviewer-performance, reviewer-efficiency, reviewer-progressive                                                                                                                                                                                                                                           |
 | quality     | reviewer-readability, reviewer-design, reviewer-react-pattern, reviewer-strictness, reviewer-rust, reviewer-encapsulation, reviewer-causation, reviewer-resilience, reviewer-duplication, reviewer-reuse, reviewer-testability, reviewer-operations, reviewer-document, reviewer-prompt, reviewer-silence |
-| a11y        | reviewer-accessibility, reviewer-progressive                                                                                                                                                                                                                       |
-| all         | No filter. All reviewers per File Routing run                                                                                                                                                                                                                      |
+| a11y        | reviewer-accessibility, reviewer-progressive                                                                                                                                                                                                                                                              |
+| all         | No filter. All reviewers per File Routing run                                                                                                                                                                                                                                                             |
 
 Filter rule. Final reviewer set per file = (File Routing reviewers for that pattern) ∩ (Focus reviewers). When the intersection is empty for a given file, that file is skipped for the focus.
 
@@ -104,33 +104,33 @@ When the assigned file list per reviewer exceeds 10 files, Leader splits into ba
 
 Start with Pre-flight (see below). Save snapshot before displaying any results to user.
 
-| Step | Action                                                                                |
-| ---- | ------------------------------------------------------------------------------------- |
-| 1    | Pre-flight (tests + hook findings)                                                    |
-| 2    | File routing: classify target files → assign to relevant reviewers                    |
-| 3    | Spawn sub-reviewers via Task as parallel calls in one turn (max 10 per batch)         |
-| 4    | Spawn challenger + verifier (wait for reviewers)                                      |
-| 5    | Spawn integrator (wait for challenger + verifier)                                     |
-| 6    | Integrator emits snapshot data; Leader fills session/branch/pre_flight/delta fields   |
-| 7    | Save snapshot to history                                                              |
-| 8    | Render Markdown from snapshot via ${CLAUDE_SKILL_DIR}/templates/output.md and display |
+| Step | Action                                                                                           |
+| ---- | ------------------------------------------------------------------------------------------------ |
+| 1    | Pre-flight (tests + hook findings)                                                               |
+| 2    | File routing: classify target files → assign to relevant reviewers                               |
+| 3    | Spawn sub-reviewers via Task as parallel calls in one turn (max 10 per batch)                    |
+| 4    | Spawn challenger + verifier (wait for reviewers)                                                 |
+| 5    | Spawn integrator (wait for challenger + verifier)                                                |
+| 6    | Integrator emits snapshot data; Leader fills session/branch/pre_flight/raw_findings/delta fields |
+| 7    | Save snapshot to history                                                                         |
+| 8    | Render Markdown from snapshot via ${CLAUDE_SKILL_DIR}/templates/output.md and display            |
 
 #### File Routing
 
 Leader classifies each target file by path and assigns to relevant reviewers only.
 
-| File Pattern         | Sub-reviewers (subagent_type)                                                                                                                                                                                                                                            |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `*.sh`               | reviewer-security, reviewer-silence, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-operations, reviewer-resilience                                                                                                                                 |
-| `*.ts, *.js`         | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-react-pattern, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                       |
+| File Pattern         | Sub-reviewers (subagent_type)                                                                                                                                                                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `*.sh`               | reviewer-security, reviewer-silence, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-operations, reviewer-resilience                                                                                                                                                         |
+| `*.ts, *.js`         | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-react-pattern, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                               |
 | `*.tsx, *.jsx`       | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-react-pattern, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience, reviewer-accessibility, reviewer-progressive |
-| `*.rs`               | reviewer-security, reviewer-silence, reviewer-rust, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                                     |
-| `*.py`               | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                               |
-| `*.md`               | reviewer-prompt, reviewer-document                                                                                                                                                                                                                                       |
-| `*.yaml, *.json`     | reviewer-encapsulation, reviewer-document                                                                                                                                                                                                                                |
-| `*.css, *.html`      | reviewer-accessibility, reviewer-progressive, reviewer-performance, reviewer-duplication                                                                                                                                                                                 |
-| `test.*`, `*.test.*` | reviewer-coverage, reviewer-testability                                                                                                                                                                                                                                  |
-| Other                | reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-document                                                                                                                                                                                             |
+| `*.rs`               | reviewer-security, reviewer-silence, reviewer-rust, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                                                             |
+| `*.py`               | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                                                       |
+| `*.md`               | reviewer-prompt, reviewer-document                                                                                                                                                                                                                                                               |
+| `*.yaml, *.json`     | reviewer-encapsulation, reviewer-document                                                                                                                                                                                                                                                        |
+| `*.css, *.html`      | reviewer-accessibility, reviewer-progressive, reviewer-performance, reviewer-duplication                                                                                                                                                                                                         |
+| `test.*`, `*.test.*` | reviewer-coverage, reviewer-testability                                                                                                                                                                                                                                                          |
+| Other                | reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-document                                                                                                                                                                                                                     |
 
 reviewer-causation is not in this table. It runs sequentially after all Wave 1 reviewers complete (see Sequential Dependencies). Leader spawns it with the same file list + all Wave 1 findings as input.
 
@@ -197,6 +197,8 @@ Session ID: ${CLAUDE_SESSION_ID}
 ```bash
 SNAPSHOT="$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).json"
 ```
+
+`raw_findings`: before spawning challenger/verifier, Leader extracts `{reviewer, id, file, message}` per finding from each Wave 1 Task result. Keep `message` to one line. Purpose: dismissed findings keep their content here, enabling post-hoc overlap / convergence measurement (schema: ${CLAUDE_SKILL_DIR}/references/snapshot-schema.md).
 
 ## Templates
 

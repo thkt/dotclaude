@@ -1,7 +1,7 @@
 ---
 name: team-integration
 description: Reconcile challenge and verification results into cross-domain root causes.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-root-cause-analysis]
 ---
@@ -187,7 +187,7 @@ For standalone:   Impact × Reach × Fixability
 
 ## Output
 
-Integrator emits snapshot data (YAML, conforming to `skills/audit/templates/snapshot.yaml`, canonical per ADR 0047). Leader persists the snapshot to history and renders the Markdown report using `skills/audit/templates/output.md`. Integrator does not produce Markdown.
+Integrator emits snapshot data (YAML, conforming to `~/.claude/skills/audit/templates/snapshot.yaml`, canonical per ADR 0047). Leader persists the snapshot to history and renders the Markdown report using `~/.claude/skills/audit/templates/output.md`. Integrator does not produce Markdown.
 
 ### Integrator responsibilities
 

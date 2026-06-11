@@ -1,7 +1,7 @@
 ---
 name: reviewer-readability
 description: コード品質レビュー。構造と可読性の分析。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-readability]
 memory: project
@@ -50,7 +50,7 @@ reasoning 内で禁止する表現: 認知負荷を名指しせずに "looks com
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の CQ セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の CQ セクションを参照。
 
 ## エラーハンドリング
 

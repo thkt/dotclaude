@@ -1,10 +1,8 @@
 ---
 name: critic-evidence
 description: 監査の発見事項を、具体的な実行パスを追跡して検証する。critic-audit (challenger) を補完する verifier の役割。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
-skills: [use-cli-yomu]
-memory: project
 background: true
 ---
 

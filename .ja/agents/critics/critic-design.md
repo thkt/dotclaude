@@ -1,9 +1,8 @@
 ---
 name: critic-design
 description: 設計提案に異議を唱え、隠れた弱点を露わにする。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
-skills: [use-cli-yomu]
 memory: project
 background: true
 ---

@@ -49,7 +49,7 @@ Skills are "knowledge modules" that provide domain-specific knowledge when AI ex
 | -------------- | ---------------------------------------------------------------------------------------------- | -------------------------------- |
 | Workflow       | use-workflow-code, use-workflow-tdd-cycle, use-workflow-pageshot, use-workflow-spec-validation | Multi-phase workflow definitions |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                       | Domain knowledge for agents      |
-| CLI wrapper    | use-cli-yomu, use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase                 | CLI tool integration             |
+| CLI wrapper    | use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase                               | CLI tool integration             |
 | User-invocable | think, research, code, audit, polish, feature, fix, adr, swarm, etc.                           | Slash command entry points       |
 
 ### Loading Mechanism

@@ -10,7 +10,15 @@ user-invocable: false
 
 # Readability Review
 
-Thresholds: see `rules/development/THRESHOLDS.md`.
+Thresholds are based on cognitive limits (working memory, one-screen focus) and established metrics (McCabe complexity).
+
+| Target                | Recommended | Why                                          |
+| --------------------- | ----------- | -------------------------------------------- |
+| Function lines        | ≤30         | One-screen readability                       |
+| File lines            | ≤400        | Module-level cognitive ceiling               |
+| Nesting depth         | ≤3          | Branch tracking within working memory        |
+| Function arguments    | ≤3          | Argument order memorization limit            |
+| Cyclomatic complexity | ≤10         | McCabe 1976: testable without path explosion |
 
 ## Detection
 

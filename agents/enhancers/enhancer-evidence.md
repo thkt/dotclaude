@@ -1,10 +1,9 @@
 ---
 name: enhancer-evidence
 description: Synthesize static findings, outcome evidence, and adversarial results into root causes and a binary Gate decision for /assert.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
-skills: [use-context-root-cause-analysis, use-cli-yomu]
-memory: project
+skills: [use-context-root-cause-analysis]
 background: true
 ---
 
@@ -161,7 +160,7 @@ Reuses team-integration synthesis logic.
 
 ## Gate Decision (Phase 6)
 
-Compute gate from reconciled evidence. Full rule reference: `skills/assert/references/gate-decision.md`. Output `gate: Ready` iff no blocking input is triggered. Otherwise `gate: NotReady`.
+Compute gate from reconciled evidence. Full rule reference: `~/.claude/skills/assert/references/gate-decision.md`. Output `gate: Ready` iff no blocking input is triggered. Otherwise `gate: NotReady`.
 
 | Input                    | Blocks Ready          | Source                        |
 | ------------------------ | --------------------- | ----------------------------- |

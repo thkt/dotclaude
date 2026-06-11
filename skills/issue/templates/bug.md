@@ -38,14 +38,14 @@
 - Version: [e.g., v1.2.3]
 ```
 
-Sections marked (optional) are omitted when there is nothing to say.
+Sections marked (optional) are omitted when there is nothing to say. Fixed items (the reproduction, expected/actual) stay unmarked; tentative items (a suspected cause, an inferred fix direction) carry a `(tentative: <action at pickup>)` mark (see Confidence Marking).
 
 ## Guidelines
 
-| Field              | OK                                         | NG                          |
-| ------------------ | ------------------------------------------ | --------------------------- |
-| What & Why         | "Login fails, blocking 30% of users"       | "Login is broken"           |
-| Expected vs Actual | "Expected: 200 OK / Actual: 500 with ESQL" | "Works correctly" (vague)   |
-| Scope - Out of     | "Auth refactor is out of scope"            | (omitted)                   |
-| Constraints        | "Fix root cause, not workaround"           | (omitted when fix is risky) |
+| Field              | OK                                          | NG                               |
+| ------------------ | ------------------------------------------- | -------------------------------- |
+| What & Why         | "Login fails, blocking 30% of users"        | "Login is broken"                |
+| Expected vs Actual | "Expected: 200 OK / Actual: 500 with ESQL"  | "Works correctly" (vague)        |
+| Scope - Out of     | "Auth refactor is out of scope"             | (omitted)                        |
+| Constraints        | "Fix root cause, not workaround"            | (omitted when fix is risky)      |
 | Premises           | "Reproduce on current binary before fixing" | Unverified report stated as fact |

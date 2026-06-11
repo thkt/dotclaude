@@ -4,6 +4,7 @@ description: Comprehensive feature development with exploration, architecture, T
 when_to_use: 機能開発, 新機能, 機能追加, feature development
 allowed-tools: Skill Bash(npm run) Bash(npm run:*) Bash(npm test:*) Bash(yarn run) Bash(yarn run:*) Bash(pnpm run) Bash(pnpm run:*) Bash(bun run) Bash(bun run:*) Bash(make:*) Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git show:*) Bash(git ls-files:*) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(date:*) Bash(mkdir:*) Bash(agent-browser:*) Edit MultiEdit Write Read LS Task TaskCreate TaskList TaskUpdate AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
+effort: xhigh
 argument-hint: "[feature description]"
 ---
 
@@ -39,7 +40,7 @@ Detect project type → present relevant options.
 
 ## SOW Context
 
-See ${CLAUDE_SKILL_DIR}/../_lib/sow-resolution.md
+See ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md
 
 ## Execution
 

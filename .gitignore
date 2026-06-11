@@ -4,26 +4,25 @@ Thumbs.db
 
 # Editors
 .antigravitycli/
+.cursor/
 .idea/
 .vscode/
-.cursor/
-*.swp
 *.swo
+*.swp
 *~
 
 # Workspace / temp
-workspace/
 archive/
 debug/
-*.log
-*.tmp
-*.temp
 node_modules/
+workspace/
+*.log
+*.temp
+*.tmp
 
 # Claude
-/.claude/
 /.analysis/
-/output-styles/
+/.claude/
 /.credentials.json
 /agent-memory/
 /chrome/
@@ -33,61 +32,60 @@ node_modules/
 /shell-snapshots/
 /sounds/
 /statsig/
-/telemetry/
-/teams/
-/todos/
 /tasks/
+/teams/
+/telemetry/
+/todos/
 
 # Session history
+file-history/
 history.jsonl
 *.jsonl
-file-history/
 
 # Private / local config
 local/
-*.local
-*.local.*
 .env
 .env.*
 !.env.example
 !.env.sample
+*.local
+*.local.*
 
 # Secrets / credentials
-*.pem
+credentials.csv
+credentials.json
+id_ed25519
+id_rsa
+token.json
+*-service-account*.json
 *.key
 *.p12
+*.pem
 *.pfx
 *.secret
 *.secrets
-id_rsa
-id_ed25519
-credentials.csv
-credentials.json
-*-service-account*.json
-token.json
 
 # Database dumps
-*.sqlite3
-*.sqlite
 dump.sql
 *.sql.gz
+*.sqlite
+*.sqlite3
 
 # MCP data
 .mcp.json
-.yomu/
 .playwright-cli/
 mcp-needs-auth-cache.json
 
 # Cache
 cache/
-*cache
 stats-cache.json
+*cache
 
 # Runtime
 logs/
+plans/
 session-env/
 sessions/
-plans/
 
 # Usage / analytics
 usage-data/
@@ -99,6 +97,8 @@ plugins/*
 
 # Local state
 BACKLOG.md
+.last-cleanup
+.last-update-result.json
 
 # Backups
 backups/

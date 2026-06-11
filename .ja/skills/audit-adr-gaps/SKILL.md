@@ -2,7 +2,7 @@
 name: audit-adr-gaps
 description: ADR の無い設計判断・方針を発掘し、impact と reversibility でランク付けして ADR 化候補リストを生成。既存 ADR の drift チェックは audit-adr-drift と組む。
 when_to_use: 判断未記録の発掘, undocumented decisions, ADR候補発掘, 設計判断棚卸し, decision archaeology, design rationale audit
-allowed-tools: Read Write Edit LS Bash(git:*) Bash(gh:*) Bash(ugrep:*) Bash(bfs:*) Bash(yomu:*) Bash(sqlite3:*) Bash(wc:*) Task AskUserQuestion
+allowed-tools: Read Write Edit LS Bash(git:*) Bash(gh:*) Bash(ugrep:*) Bash(bfs:*) Bash(wc:*) Task AskUserQuestion
 model: opus
 argument-hint: "[--threshold=N] [--paths=path,path]"
 ---
@@ -66,7 +66,7 @@ bfs <repo-root> -type f \( -name '*.rs' -o -name '*.ts' -o -name '*.tsx' -o -nam
     done | sort -rn
 ```
 
-default 閾値は 400 行 (one-screen 上限、`rules/development/THRESHOLDS.md` 参照)。
+default 閾値は 400 行 (one-screen 上限)。
 
 ### Step 2: ドキュメント検出
 

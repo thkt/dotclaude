@@ -227,8 +227,8 @@ model judges the condition met from the conversation.
 
 See the complete command reference:
 
-- [English Command Reference](./rules/workflows/WORKFLOWS.md)
-- [日本語コマンドリファレンス](./.ja/rules/workflows/WORKFLOWS.md)
+- [English Command Reference](./docs/COMMANDS.md)
+- [日本語コマンドリファレンス](./.ja/docs/COMMANDS.md)
 
 ## 🔄 Standard Workflows
 
@@ -273,8 +273,8 @@ Full details: [PRINCIPLES.md](./rules/PRINCIPLES.md)
 ### Core Documentation
 
 - [Design Philosophy](./docs/DESIGN.md) - **Why this design** (設計思想・意図)
-- [Commands Reference (English)](./rules/workflows/WORKFLOWS.md)
-- [Commands Reference (Japanese)](./.ja/rules/workflows/WORKFLOWS.md)
+- [Commands Reference (English)](./docs/COMMANDS.md)
+- [Commands Reference (Japanese)](./.ja/docs/COMMANDS.md)
 - [Configuration Guide](./CLAUDE.md)
 - [Japanese Configuration](./.ja/CLAUDE.md)
 

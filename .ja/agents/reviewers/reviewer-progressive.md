@@ -44,7 +44,7 @@ CSS first、JS last。ブラウザ ネイティブのプリミティブ (transit
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の PE セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の PE セクションを参照。
 
 ## エラーハンドリング
 

@@ -58,12 +58,12 @@ Test behavior via public API. Mock only at system boundaries.
 
 ## RGRC Cycle
 
-| Phase    | Goal         | Rule                                                                       | Common Mistake                 |
-| -------- | ------------ | -------------------------------------------------------------------------- | ------------------------------ |
-| Red      | Failing test | Verify failure matches the intended behavior gap, not syntax/import errors | Test passes immediately        |
-| Green    | Pass test    | "You can sin" - dirty OK                                                   | Over-implementing              |
-| Refactor | Refine       | Keep tests green. Shrink only while it reads easier (rules/PRINCIPLES.md)  | Changing behavior; compressing |
-| Commit   | Save state   | All checks pass                                                            | Skipping checks                |
+| Phase    | Goal         | Rule                                                                                | Common Mistake                 |
+| -------- | ------------ | ----------------------------------------------------------------------------------- | ------------------------------ |
+| Red      | Failing test | Verify failure matches the intended behavior gap, not syntax/import errors          | Test passes immediately        |
+| Green    | Pass test    | "You can sin" - dirty OK                                                            | Over-implementing              |
+| Refactor | Refine       | Keep tests green. Shrink only while it reads easier (~/.claude/rules/PRINCIPLES.md) | Changing behavior; compressing |
+| Commit   | Save state   | All checks pass                                                                     | Skipping checks                |
 
 ## Baby Steps (2-min cycle)
 
@@ -84,12 +84,12 @@ Right (vertical):
   ...
 ```
 
-| # | Hazard from horizontal slices                                                |
-| - | ---------------------------------------------------------------------------- |
-| 1 | Bulk-written tests verify imagined behavior instead of real behavior         |
-| 2 | Tests degrade into structural assertions (data shape, signature) only        |
-| 3 | Sensitivity to behavior change drops (pass when broken, fail when correct)   |
-| 4 | Implementation knowledge follows test structure instead of guiding it        |
+| #   | Hazard from horizontal slices                                              |
+| --- | -------------------------------------------------------------------------- |
+| 1   | Bulk-written tests verify imagined behavior instead of real behavior       |
+| 2   | Tests degrade into structural assertions (data shape, signature) only      |
+| 3   | Sensitivity to behavior change drops (pass when broken, fail when correct) |
+| 4   | Implementation knowledge follows test structure instead of guiding it      |
 
 Reference: mattpocock/skills `tdd` SKILL.md.
 
@@ -181,9 +181,9 @@ test("name", () => {
 
 ## References
 
-| Topic          | File                                                      |
-| -------------- | --------------------------------------------------------- |
-| Feature-driven | ${CLAUDE_SKILL_DIR}/references/feature-driven.md          |
-| Bug-driven     | ${CLAUDE_SKILL_DIR}/references/bug-driven.md              |
-| Flaky tests    | ${CLAUDE_SKILL_DIR}/references/flaky-test-management.md   |
-| Coverage       | ${CLAUDE_SKILL_DIR}/../../rules/development/THRESHOLDS.md |
+| Topic          | File                                                    |
+| -------------- | ------------------------------------------------------- |
+| Feature-driven | ${CLAUDE_SKILL_DIR}/references/feature-driven.md        |
+| Bug-driven     | ${CLAUDE_SKILL_DIR}/references/bug-driven.md            |
+| Flaky tests    | ${CLAUDE_SKILL_DIR}/references/flaky-test-management.md |
+| Coverage       | ${CLAUDE_SKILL_DIR}/../../rules/development/TESTING.md  |

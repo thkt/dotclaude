@@ -6,22 +6,18 @@ External CLI tools that extend Claude Code's capabilities.
 
 ## Overview
 
-4 Rust CLI tools, each purpose-built for a specific gap in Claude Code's default
-tooling. AI-facing rules live in
-[TOOLS.md](../rules/development/TOOLS.md) - this document covers design intent
-and architecture.
+3 Rust CLI tools, each purpose-built for a specific gap in Claude Code's default
+tooling. This document covers design intent and architecture.
 
 ```mermaid
 graph LR
     subgraph Search["Information Retrieval"]
         SC[scout]
-        YO[yomu]
         RE[recall]
         XR[xr]
     end
 
     SC -->|Web + GitHub| AI[Claude Code]
-    YO -->|Codebase| AI
     RE -->|Past Sessions| AI
     XR -->|X/Twitter| AI
 ```
@@ -55,37 +51,6 @@ Web search and page fetching via Gemini Grounding with Google Search.
 | Latest docs, release notes     | Never (scout preferred) |
 | GitHub repo exploration        | Never (scout preferred) |
 | Deep research with compilation | N/A                     |
-
-## yomu
-
-Semantic code search for frontend codebases (TS/TSX/JS/CSS/HTML). Embedding-
-based, finds code by meaning rather than string matching.
-
-| Aspect  | Detail                                        |
-| ------- | --------------------------------------------- |
-| Why     | Grep finds exact strings; yomu finds concepts |
-| How     | Chunk indexing + embedding search             |
-| Install | `brew install thkt/tap/yomu`                  |
-| Source  | [thkt/yomu](https://github.com/thkt/yomu)     |
-
-### Commands
-
-| Command        | Purpose                                        |
-| -------------- | ---------------------------------------------- |
-| `yomu search`  | Semantic search (concept, identifier, related) |
-| `yomu index`   | Update chunk index incrementally               |
-| `yomu rebuild` | Rebuild chunk index from scratch               |
-| `yomu impact`  | Analyze impact of changes to file or symbol    |
-| `yomu status`  | Show index statistics                          |
-
-### When to Use
-
-| yomu                                    | Grep/Glob                               |
-| --------------------------------------- | --------------------------------------- |
-| Concept: "form validation", "auth flow" | Literal: error messages, regex          |
-| Related: "hooks that do Y"              | Known path: `src/components/Button.tsx` |
-| Known identifier: `useAuth`             | File listing: `**/*.tsx`                |
-| Unknown name: "where does X happen"     |                                         |
 
 ## recall
 
@@ -146,5 +111,4 @@ X/Twitter content fetching (tweets, threads, articles, user profiles).
 
 ## Related
 
-- [TOOLS.md](../rules/development/TOOLS.md) - AI-facing tool selection rules
 - [HOOKS.md](./HOOKS.md) - Hook system design (includes quality pipeline)

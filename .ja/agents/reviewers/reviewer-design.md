@@ -1,7 +1,7 @@
 ---
 name: reviewer-design
 description: 削除テストによるモジュール深度レビュー。言語非依存。インターフェースに見合わない浅いモジュールを検出する。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true
@@ -63,7 +63,7 @@ Phase 1 が同じ浅いパターンを 3 箇所以上で検出したら、findin
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の DP セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の DP セクションを参照。
 
 ## エラーハンドリング
 

@@ -4,25 +4,22 @@ Confirm scope before implementation. Skip for questions / read-only / follow-up 
 
 ## Outcome Reference
 
-Read `.claude/OUTCOME.md` at task start and judge scope against the outcome. See rules/core/OUTCOME.md for the rule definition. Skip only for questions, read-only operations, or when OUTCOME.md was already read earlier in this session.
+Read `.claude/OUTCOME.md` at task start and judge scope against the outcome. Skip the re-read when OUTCOME.md was already read earlier in this session.
 
-| Condition                             | Action                                                             |
-| ------------------------------------- | ------------------------------------------------------------------ |
-| OUTCOME.md absent                     | Generate stub via the workflow (see rules/core/OUTCOME.md)         |
-| Change requested in a non-goal area   | Confirm with user: redefine non-goal or split into a separate task |
-| Change conflicts with Constraints     | Stop. Confirm with user whether the constraint should change       |
-| Change does not advance outcome state | Re-check YAGNI                                                     |
+| Condition                             | Action                                                                |
+| ------------------------------------- | --------------------------------------------------------------------- |
+| OUTCOME.md absent                     | Generate stub via /outcome                                            |
+| Change requested in a non-goal area   | Confirm with user whether to redefine the non-goal or split as a task |
+| Change conflicts with Constraints     | Confirm the constraint change with the user and stop                  |
+| Change does not advance outcome state | Re-check YAGNI                                                        |
 
-## Rationalization Counters
+## Interpretation Clarity
 
-| Excuse                                | Counter                                                                        |
-| ------------------------------------- | ------------------------------------------------------------------------------ |
-| "This is a simple follow-up"          | Scope changes disguise as follow-ups. Check scope at minimum                   |
-| "I already understand the codebase"   | Understanding is not verification. When did you last read the target files?    |
-| "The user wants speed over process"   | Scope check takes 30 seconds. Wrong-scope implementation takes hours           |
-| "This is covered by the plan"         | Plans describe intent. Scope check verifies current state                      |
-| "Root fix is too costly for the user" | Cost judgment is the user's. Present options with costs and let them decide    |
-| "I can write this from scratch"       | Adjacent code may already do it. Search the target module for duplicates first |
+| Trigger                               | Action                                                    |
+| ------------------------------------- | --------------------------------------------------------- |
+| Multiple valid interpretations exist  | List all and wait for confirmation                        |
+| Task intent is unclear                | Name what is unclear and stop                             |
+| Issue URL or external spec referenced | Present plan (changes, files, TODO) and wait for approval |
 
 ## Task Decomposition
 
@@ -35,10 +32,13 @@ Split when any threshold is exceeded.
 | Layers    | ≥3        |
 | Lines     | ≥200      |
 
-## Interpretation Clarity
+## Rationalization Counters
 
-| Trigger                               | Action                                                                        |
-| ------------------------------------- | ----------------------------------------------------------------------------- |
-| Multiple valid interpretations exist  | List all. Do not silently pick one. Wait for confirmation                     |
-| Task intent is unclear                | Stop. Name what is unclear. Do not proceed                                    |
-| Issue URL or external spec referenced | Present plan (changes, files, TODO) and wait for approval before implementing |
+| Excuse                          | Counter                                                        |
+| ------------------------------- | -------------------------------------------------------------- |
+| Simple follow-up                | Check the minimum scope and eliminate unneeded scope changes   |
+| Already understand the codebase | Check when you last read the target files, then verify         |
+| User wants speed over process   | Implementing with the right process ends up faster             |
+| Covered by the plan             | Scope check verifies current state, which a plan does not      |
+| Root fix is too costly          | Leave cost judgment to the user                                |
+| Implement from scratch          | Search the project for existing implementations before writing |

@@ -44,7 +44,7 @@ Banned phrasing inside reasoning: "JS is more flexible" without naming the flexi
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section PE.
+See `~/.claude/skills/audit/references/calibration-examples.md` section PE.
 
 ## Error Handling
 

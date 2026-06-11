@@ -30,7 +30,7 @@ Skip findings without file:line or outside scope.
 
 ### 1b. Audit Reviewers
 
-Use /audit file routing table (`skills/audit/SKILL.md` § File Routing). Apply same reviewer assignments per file type.
+Use /audit file routing table (`~/.claude/skills/audit/SKILL.md` § File Routing). Apply same reviewer assignments per file type.
 
 Each reviewer spawned as standalone background Task.
 

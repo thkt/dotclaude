@@ -19,7 +19,7 @@ argument-hint: "[task description]"
 
 | Step  | アクション       | 詳細                                                                               |
 | ----- | ---------------- | ---------------------------------------------------------------------------------- |
-| 0     | Outcome Anchor   | `.claude/OUTCOME.md` を読む。不在なら stub を生成 (rules/core/OUTCOME.md 参照)     |
+| 0     | Outcome Anchor   | `.claude/OUTCOME.md` を読む。不在なら /outcome で stub を生成                      |
 | 1     | Why Discovery    | ${CLAUDE_SKILL_DIR}/references/step-1-why-discovery.md (OUTCOME.md を前提とする)   |
 | 2     | Q&A による明確化 | スコープ、優先度 (MoSCoW)、制約、リスク (必要に応じて)                             |
 | 3-6   | 設計探索         | ${CLAUDE_SKILL_DIR}/references/step-3-6-design-exploration.md                      |

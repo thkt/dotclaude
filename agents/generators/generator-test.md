@@ -20,7 +20,7 @@ skills: [use-workflow-tdd-cycle]
 
 Spec is the source. Tests come from T-NNN scenarios in the Spec. Do not add tests not in the plan. If a new edge case surfaces during implementation, update the Spec first, then generate the test from the new T-NNN.
 
-Perspectives are the lens. Each T-NNN maps to one or more entries in the Perspective Checklist (see `rules/development/TESTING.md`). Generate tests through that lens to avoid happy-path bias.
+Perspectives are the lens. Each T-NNN maps to one or more entries in the Perspective Checklist (see `~/.claude/rules/development/TESTING.md`). Generate tests through that lens to avoid happy-path bias.
 
 Test observable behavior, not implementation. Assert on outputs or side effects. Never assert on internal call counts, private state, or intermediate steps.
 

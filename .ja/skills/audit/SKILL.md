@@ -41,13 +41,13 @@ argument-hint: "[target files or scope]"
 
 File Routing がファイルパターンごとに reviewer を割り当てた後、Leader は結果を focus でフィルタする。focus セットに含まれる reviewer のみが実際に走る。`reviewer-causation` は Wave 1 セットに従う (Sequential Dependencies を参照)。`quality` または `all` で依存する上流 reviewer が含まれるときに走る。
 
-| focus       | 含まれる reviewer                                                                                                                                                                                                                                                  |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| security    | reviewer-security, reviewer-silence                                                                                                                                                                                                                                |
-| performance | reviewer-performance, reviewer-efficiency, reviewer-progressive                                                                                                                                                                                                    |
+| focus       | 含まれる reviewer                                                                                                                                                                                                                                                                                         |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| security    | reviewer-security, reviewer-silence                                                                                                                                                                                                                                                                       |
+| performance | reviewer-performance, reviewer-efficiency, reviewer-progressive                                                                                                                                                                                                                                           |
 | quality     | reviewer-readability, reviewer-design, reviewer-react-pattern, reviewer-strictness, reviewer-rust, reviewer-encapsulation, reviewer-causation, reviewer-resilience, reviewer-duplication, reviewer-reuse, reviewer-testability, reviewer-operations, reviewer-document, reviewer-prompt, reviewer-silence |
-| a11y        | reviewer-accessibility, reviewer-progressive                                                                                                                                                                                                                       |
-| all         | フィルタなし。File Routing の全 reviewer が走る                                                                                                                                                                                                                    |
+| a11y        | reviewer-accessibility, reviewer-progressive                                                                                                                                                                                                                                                              |
+| all         | フィルタなし。File Routing の全 reviewer が走る                                                                                                                                                                                                                                                           |
 
 フィルタルール。ファイルあたりの最終 reviewer セット = (File Routing でそのパターンに割り当てられた reviewer) ∩ (Focus reviewer)。あるファイルで交差が空のとき、その focus ではそのファイルをスキップする。
 
@@ -106,33 +106,33 @@ reviewer に割り当てられたファイル一覧が 10 ファイルを超え�
 
 Pre-flight (下記) から開始。ユーザーに結果を表示する前に snapshot を保存する。
 
-| Step | アクション                                                                             |
-| ---- | -------------------------------------------------------------------------------------- |
-| 1    | Pre-flight (tests + hook findings)                                                     |
-| 2    | File routing: ターゲットファイルを分類 → 該当 reviewer に割り当て                      |
-| 3    | Task で sub-reviewer を 1 turn 内で並列 spawn (バッチあたり最大 10)                    |
-| 4    | challenger + verifier を spawn (reviewer 完了を待つ)                                   |
-| 5    | integrator を spawn (challenger + verifier 完了を待つ)                                 |
-| 6    | Integrator が snapshot data を生成。Leader が session/branch/pre_flight/delta を補完   |
-| 7    | snapshot を history に保存                                                             |
-| 8    | ${CLAUDE_SKILL_DIR}/templates/output.md で snapshot から Markdown を render し表示する |
+| Step | アクション                                                                                        |
+| ---- | ------------------------------------------------------------------------------------------------- |
+| 1    | Pre-flight (tests + hook findings)                                                                |
+| 2    | File routing: ターゲットファイルを分類 → 該当 reviewer に割り当て                                 |
+| 3    | Task で sub-reviewer を 1 turn 内で並列 spawn (バッチあたり最大 10)                               |
+| 4    | challenger + verifier を spawn (reviewer 完了を待つ)                                              |
+| 5    | integrator を spawn (challenger + verifier 完了を待つ)                                            |
+| 6    | Integrator が snapshot data を生成。Leader が session/branch/pre_flight/raw_findings/delta を補完 |
+| 7    | snapshot を history に保存                                                                        |
+| 8    | ${CLAUDE_SKILL_DIR}/templates/output.md で snapshot から Markdown を render し表示する            |
 
 #### File Routing
 
 Leader は各ターゲットファイルをパスで分類し、該当 reviewer にのみ割り当てる。
 
-| File パターン        | Sub-reviewer (subagent_type)                                                                                                                                                                                                                                             |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `*.sh`               | reviewer-security, reviewer-silence, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-operations, reviewer-resilience                                                                                                                                 |
-| `*.ts, *.js`         | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-react-pattern, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                       |
+| File パターン        | Sub-reviewer (subagent_type)                                                                                                                                                                                                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `*.sh`               | reviewer-security, reviewer-silence, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-operations, reviewer-resilience                                                                                                                                                         |
+| `*.ts, *.js`         | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-react-pattern, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                               |
 | `*.tsx, *.jsx`       | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-react-pattern, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience, reviewer-accessibility, reviewer-progressive |
-| `*.rs`               | reviewer-security, reviewer-silence, reviewer-rust, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                                     |
-| `*.py`               | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                               |
-| `*.md`               | reviewer-prompt, reviewer-document                                                                                                                                                                                                                                       |
-| `*.yaml, *.json`     | reviewer-encapsulation, reviewer-document                                                                                                                                                                                                                                |
-| `*.css, *.html`      | reviewer-accessibility, reviewer-progressive, reviewer-performance, reviewer-duplication                                                                                                                                                                                 |
-| `test.*`, `*.test.*` | reviewer-coverage, reviewer-testability                                                                                                                                                                                                                                  |
-| その他               | reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-document                                                                                                                                                                                             |
+| `*.rs`               | reviewer-security, reviewer-silence, reviewer-rust, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                                                             |
+| `*.py`               | reviewer-security, reviewer-silence, reviewer-strictness, reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-design, reviewer-testability, reviewer-performance, reviewer-operations, reviewer-resilience                                                                       |
+| `*.md`               | reviewer-prompt, reviewer-document                                                                                                                                                                                                                                                               |
+| `*.yaml, *.json`     | reviewer-encapsulation, reviewer-document                                                                                                                                                                                                                                                        |
+| `*.css, *.html`      | reviewer-accessibility, reviewer-progressive, reviewer-performance, reviewer-duplication                                                                                                                                                                                                         |
+| `test.*`, `*.test.*` | reviewer-coverage, reviewer-testability                                                                                                                                                                                                                                                          |
+| その他               | reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-document                                                                                                                                                                                                                     |
 
 reviewer-causation は表に含まない。Wave 1 reviewer がすべて完了した後、逐次実行する (下記 Sequential Dependencies)。Leader は同じファイル一覧 + Wave 1 全 findings を入力に spawn する。
 
@@ -199,6 +199,8 @@ Session ID: ${CLAUDE_SESSION_ID}
 ```bash
 SNAPSHOT="$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).json"
 ```
+
+`raw_findings`: challenger/verifier の spawn 前に、Leader が各 Wave 1 Task result から finding ごとの `{reviewer, id, file, message}` を抽出する。`message` は 1 行に保つ。目的: dismissed findings の内容がここに残り、事後の overlap / convergence 計測を可能にする (schema: ${CLAUDE_SKILL_DIR}/references/snapshot-schema.md)。
 
 ## Templates
 

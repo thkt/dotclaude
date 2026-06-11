@@ -29,9 +29,9 @@
     "file": "cases/vuln/hardcoded-key.ts",
     "expected": "detected",
     "category": "A02",
-    "severity_min": "high",
+    "severity_min": "medium",
     "difficulty": "easy",
-    "note": "Stripe sk_live_ key hardcoded"
+    "note": "Stripe sk_live_ key hardcoded. severity_min is medium because the committed value is a placeholder (structural anti-pattern, not a live-key leak); a real key cannot be fixtured here since guardrails blocks the write at save time. reviewer detecting and reporting at medium is the correct behavior."
   },
   {
     "file": "cases/safe/env-key.ts",

@@ -166,7 +166,6 @@
       "skills": [
         "./skills/use-cli-gcloud/SKILL.md",
         "./skills/use-context-reviewer-performance/SKILL.md",
-        "./skills/use-cli-yomu/SKILL.md",
         "./skills/use-cli-recall/SKILL.md",
         "./skills/use-cli-scout/SKILL.md"
       ]

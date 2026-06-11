@@ -11,6 +11,7 @@ graph TD
     subgraph Core["Core Layer (Top Priority)"]
         OPS[OPERATION]
         PFL[PREFLIGHT]
+        OUT[OUTCOME]
     end
 
     subgraph Principles["Design Principles"]
@@ -18,9 +19,8 @@ graph TD
     end
 
     subgraph Development["Development Layer"]
-        PERF[PERFORMANCE]
+        TEST[TESTING]
         TIDY[TIDYINGS]
-        CODE[THRESHOLDS]
         PROG[PRINCIPLES.md#Progressive Enhancement]
     end
 
@@ -29,18 +29,11 @@ graph TD
         SKILL[SKILLS]
         SUB[SUBAGENT]
         PLUG[PLUGIN]
-        TEMP[TEMPLATES]
-    end
-
-    subgraph Workflows["Workflow Layer"]
-        WG[WORKFLOWS]
-        MOD[MODULARIZATION]
-        IDR[idr-pre-commit.sh]
+        VAGUE[VAGUE_TERMS]
     end
 
     OPS --> PFL
     P --> Development
-    PFL --> Workflows
     Development --> Conventions
 ```
 
@@ -52,8 +45,9 @@ graph TD
 
 | ファイル                                | 意図             | 主な仕組み                                    |
 | --------------------------------------- | ---------------- | --------------------------------------------- |
-| [OPERATION](../rules/core/OPERATION.md) | 安全性の確保     | `rm` 禁止 → `mv ~/.Trash/`、破壊的操作の確認 |
+| [OPERATION](../rules/core/OPERATION.md) | 安全性の確保     | `rm` 禁止 → `mv ~/.Trash/`、破壊的操作の確認  |
 | [PREFLIGHT](../rules/core/PREFLIGHT.md) | タスク確認の統一 | Rationalization counter、分割閾値、完了の定義 |
+| [OUTCOME](../rules/core/OUTCOME.md)     | 成果状態の可視化 | Outcome test、更新トリガー                    |
 
 設計理由:
 
@@ -93,9 +87,8 @@ TDD / SOLID / YAGNI (Contextual)
 
 | ファイル                                                        | 意図                     | 主な閾値                           |
 | --------------------------------------------------------------- | ------------------------ | ---------------------------------- |
-| [THRESHOLDS](../rules/development/THRESHOLDS.md)                | 品質メトリクス + 完了    | 関数 ≤30 行、テスト合格           |
+| [TESTING](../rules/development/TESTING.md)                      | カバレッジの観点と質     | delta-based gate、優先領域別の深度 |
 | [TIDYINGS](../rules/development/TIDYINGS.md)                    | クリーンアップの範囲制限 | 振る舞い変更なし、編集ファイル限定 |
-| [PERFORMANCE](../rules/development/PERFORMANCE.md)              | コンテキスト管理         | MCP ≤10、`/compact` >70%          |
 | [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | 段階的構築               | CSS-First、Outcome-First           |
 
 AI 失敗パターン (インライン):
@@ -111,19 +104,18 @@ AI 失敗パターン (インライン):
 
 - 無限探索や繰り返し修正など AI のパターンを自己検出
 - `TIDYINGS` がクリーンアップ範囲を絞り、過剰リファクタを防ぐ
-- 定量的閾値 (30 行、400 行) が主観性を排除
 
 ### 4. Conventions Layer. 一貫性ルール
 
 ドキュメント、プラグイン、翻訳の一貫性。
 
-| ファイル                                       | 意図                       |
-| ---------------------------------------------- | -------------------------- |
-| [MARKDOWN](../rules/conventions/MARKDOWN.md)   | Markdown 規約              |
-| [SKILLS](../rules/conventions/SKILLS.md)       | Skill 定義の標準           |
-| [SUBAGENT](../rules/conventions/SUBAGENT.md)   | サブエージェント定義の標準 |
-| [PLUGIN](../rules/conventions/PLUGIN.md)       | プラグイン制約             |
-| [TEMPLATES](../rules/conventions/TEMPLATES.md) | 変数置換構文               |
+| ファイル                                           | 意図                       |
+| -------------------------------------------------- | -------------------------- |
+| [MARKDOWN](../rules/conventions/MARKDOWN.md)       | Markdown 規約              |
+| [SKILLS](../rules/conventions/SKILLS.md)           | Skill 定義の標準           |
+| [SUBAGENT](../rules/conventions/SUBAGENT.md)       | サブエージェント定義の標準 |
+| [PLUGIN](../rules/conventions/PLUGIN.md)           | プラグイン制約             |
+| [VAGUE_TERMS](../rules/conventions/VAGUE_TERMS.md) | 曖昧語の具体化             |
 
 設計理由:
 
@@ -133,12 +125,6 @@ AI 失敗パターン (インライン):
 ### 5. Workflows Layer. ユーザー インターフェース
 
 ユーザー向けコマンドとワークフロー システム。
-
-| ファイル                                                     | 意図               |
-| ------------------------------------------------------------ | ------------------ |
-| [WORKFLOWS](../rules/workflows/WORKFLOWS.md)                 | コマンド選択ガイド |
-| [MODULARIZATION](../rules/workflows/MODULARIZATION.md)       | コマンド分割基準   |
-| [idr-pre-commit.sh](../../hooks/lifecycle/idr-pre-commit.sh) | 実装記録の自動生成 |
 
 ワークフロー パターン:
 
@@ -151,7 +137,7 @@ flowchart LR
         R1["/research"] --> F2["/fix"]
     end
     subgraph Feature["Feature Development"]
-        R2["/research"] --> T["/think"] --> C["/code"] --> A["/audit"] --> V["/validate"]
+        R2["/research"] --> T["/think"] --> C["/code"] --> A["/audit"]
     end
 ```
 
@@ -172,12 +158,12 @@ flowchart LR
 
 ## 詳細ドキュメント
 
-| ドキュメント                        | 内容                       |
-| ----------------------------------- | -------------------------- |
-| [COMMANDS](./COMMANDS.md)           | コマンドの設計と関係       |
-| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent の仕組みと利用 |
-| [HOOKS](./HOOKS.md)                 | Hook システムと IDR 生成   |
-| [GLOSSARY](./GLOSSARY.md)           | ユビキタス言語辞書         |
+| ドキュメント                        | 内容                             |
+| ----------------------------------- | -------------------------------- |
+| [COMMANDS](./COMMANDS.md)           | コマンドの設計と関係             |
+| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent の仕組みと利用       |
+| [HOOKS](./HOOKS.md)                 | Hook システムと Quality Pipeline |
+| [GLOSSARY](./GLOSSARY.md)           | ユビキタス言語辞書               |
 
 ---
 

@@ -51,7 +51,7 @@ Fallback when browser unavailable, run code-only analysis. Note in evidence that
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section A11Y.
+See `~/.claude/skills/audit/references/calibration-examples.md` section A11Y.
 
 ## Error Handling
 

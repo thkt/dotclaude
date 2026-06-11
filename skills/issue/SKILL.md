@@ -17,18 +17,18 @@ argument-hint: "[issue description]"
 
 ## Execution
 
-| Step | Action                                                                            |
-| ---- | --------------------------------------------------------------------------------- |
-| 0    | Read `.claude/OUTCOME.md`; if absent, stub generation (see rules/core/OUTCOME.md) |
-| 1    | Detect type from description (see Type Detection)                                 |
-| 2    | Read template: ${CLAUDE_SKILL_DIR}/templates/<type>.md                            |
-| 3    | Generate title + body following template                                          |
-| 4    | Filter drafted claims via premise check (see Premise Check)                       |
-| 5    | Refine body inline via prose review (see below)                                   |
-| 6    | Challenge body via critic-design, feature/bug only (see Adversarial Challenge)    |
-| 7    | Preview issue + unverified premises → AskUserQuestion: "Create this issue?"       |
-| 8    | Execute via body-file (sandbox-compatible)                                        |
-| 9    | Capture issue URL from command output                                             |
+| Step | Action                                                                                  |
+| ---- | --------------------------------------------------------------------------------------- |
+| 0    | Read `.claude/OUTCOME.md`; if absent, generate the stub via /outcome                    |
+| 1    | Detect type from description (see Type Detection)                                       |
+| 2    | Read template: ${CLAUDE_SKILL_DIR}/templates/<type>.md                                  |
+| 3    | Generate title + body following template; mark fixed/tentative (see Confidence Marking) |
+| 4    | Filter drafted claims via premise check (see Premise Check)                             |
+| 5    | Refine body inline via prose review (see below)                                         |
+| 6    | Challenge body via critic-design, feature/bug only (see Adversarial Challenge)          |
+| 7    | Preview issue + tentative items → AskUserQuestion: "Create this issue?"                 |
+| 8    | Execute via body-file (sandbox-compatible)                                              |
+| 9    | Capture issue URL from command output                                                   |
 
 A body supplied verbatim by the user skips steps 4-6 and posts unchanged.
 
@@ -73,18 +73,42 @@ Read `language` from ${CLAUDE_SKILL_DIR}/../../settings.json and translate the i
 | priority:medium   | Normal             |
 | priority:low      | Nice to have       |
 
+## Confidence Marking
+
+Mark which parts of the body are fixed vs tentative, so the implementer can tell a requirement to honor from a starting point to refine. Applied at generation time (Step 3); it is not a verification pass and triggers no investigation.
+
+Default direction decides itself without a codebase scan.
+
+| Origin                                                                          | State     | Notation                          |
+| ------------------------------------------------------------------------------- | --------- | --------------------------------- |
+| User decided it, or it is the ask (WHAT, AC, explicit Scope/Constraints)        | fixed     | unmarked                          |
+| AI-inferred HOW (placement, approach, format), or a decision the user left open | tentative | `(tentative: <action at pickup>)` |
+
+An AI-inferred approach is tentative by definition, so marking it needs no investigation to promote it, which keeps the no-prefetch principle intact. The marker word follows the language setting (`仮` under Japanese). The action phrase tells the implementer what to do, splitting by why the item is tentative.
+
+| Why tentative                                              | Action phrase                                         |
+| ---------------------------------------------------------- | ----------------------------------------------------- |
+| Decision not yet settled (AI inferred a plausible default) | "decide at pickup" / "change if a better fit appears" |
+| Fact not yet verified (carried from Premise Check)         | "recheck at pickup"                                   |
+
+Mark sparingly, only where it changes implementer action. Annotating every line collides with the Anti-AI-pattern rules (Hedge stacking, Compulsive section); a body that is all fixed gets no marks.
+
+The existing code-example and target-file annotations are instances of this rule. `reference shape; final form decided at pickup` is a tentative HOW; `candidates as of writing; recheck on pickup` is an unverified fact. Premise Check's provisional downgrade emits the same marker, one notation distinguished only by the action phrase.
+
+Tentative marks stay inline at the item they qualify. The Premises section stays reserved for issue-level premises that do not attach to a specific line (design refs, global assumptions).
+
 ## Premise Check
 
 Filters claims already drafted into the body. Not a discovery phase: no agent spawns inside this check (the skill's only spawn is critic-design at the challenge step), no cross-codebase audit, no digging beyond the drafted claims themselves. A claim either resolves within 2-3 targeted probes or gets downgraded to provisional; never investigate to rescue it.
 
-| Claim type                                    | Action                                                                                                        |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Current-code claim ("X currently does Y")     | Verify with 2-3 targeted Read/ugrep probes; annotate in body ("grep-confirmed")                               |
-| Claim still ambiguous after the probes        | Downgrade to provisional: state under Premises with a recheck marker, never as fact                           |
+| Claim type                                    | Action                                                                                                                                 |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Current-code claim ("X currently does Y")     | Verify with 2-3 targeted Read/ugrep probes; annotate in body ("grep-confirmed")                                                        |
+| Claim still ambiguous after the probes        | Downgrade to provisional: mark the claim inline with a recheck marker (Premises only if issue-level), never as fact                    |
 | Claim contradicted by the source              | Rewrite the body to match the source. If the mismatch matters (user report vs code), state it under Premises with the verification ask |
-| External design ref (Figma, design doc, spec) | Always unverified, since the skill cannot know the source is current. Link + "confirm latest before starting" |
-| Target file list                              | Annotate "candidates as of writing; recheck on pickup"                                                        |
-| Code example in body                          | Annotate as illustrative, not the implementation: "reference shape; final form decided at pickup"             |
+| External design ref (Figma, design doc, spec) | Always unverified, since the skill cannot know the source is current. Link + "confirm latest before starting"                          |
+| Target file list                              | Annotate "candidates as of writing; recheck on pickup"                                                                                 |
+| Code example in body                          | Annotate as illustrative, not the implementation: "reference shape; final form decided at pickup"                                      |
 
 ## Prose Review
 
@@ -121,14 +145,14 @@ Write for a teammate who shares context and can open the linked docs, not a zero
 
 feature/bug only; docs/chore skip it. Spawn one critic-design Task directly with the drafted body (not via /challenge). The critic argues against the issue (hidden premises, missed dependencies, scope contradictions); it does not gate it. Final judgment stays with the user at confirm time.
 
-| Input field      | Mapping                             |
-| ---------------- | ----------------------------------- |
-| source           | /issue                              |
-| artifact_type    | spec                                |
-| approach         | What & Why section                  |
-| decisions        | Scope (In/Out) + Constraints        |
-| trade-offs       | Stated trade-offs, if any           |
-| referenced_files | Target files + external design refs |
+| Input field      | Mapping                                 |
+| ---------------- | --------------------------------------- |
+| source           | /issue                                  |
+| artifact_type    | spec                                    |
+| approach         | What & Why section                      |
+| decisions        | Scope (In/Out) + Constraints + Approach |
+| trade-offs       | Stated trade-offs, if any               |
+| referenced_files | Target files + external design refs     |
 
 | Verdict        | Handling                                                                                |
 | -------------- | --------------------------------------------------------------------------------------- |
@@ -136,7 +160,7 @@ feature/bug only; docs/chore skip it. Spawn one critic-design Task directly with
 | weakened       | Fold accepted findings into the body; present the rest at preview as ephemeral critique |
 | needs_revision | Revise the body once; do not re-spawn                                                   |
 
-Critic findings never enter the issue body. They are confirm-time review material: fold or dismiss at preview. The body's Premises section stays reserved for genuinely unverifiable dependencies (design refs, provisional claims), matching how humans write it.
+Critic findings never enter the issue body. They are confirm-time review material: fold or dismiss at preview. The body's Premises section stays reserved for issue-level premises that do not attach to a specific line (design refs, global assumptions), matching how humans write it.
 
 ## Sandbox-Compatible Create
 
@@ -170,16 +194,16 @@ mv /tmp/claude/issue-body.md ~/.Trash/ 2>/dev/null || true
 
 <body content>
 
-### Unverified premises (N)
+### Tentative items (N)
 
-- <claim>: <what the reader must confirm>
+- <item>: <action at pickup>
 
 ### Critic findings (not posted)
 
 - <finding>: fold into body or dismiss
 ```
 
-The unverified block mirrors the body's Premises section (no new content at preview time): external design refs and provisional claims only. Verified claims keep their annotation in the body and do not repeat here. Zero unverified items: omit the block. Keep it short.
+The tentative block collects every inline tentative mark plus the Premises section, covering both decide-type (AI-inferred HOW) and verify-type (unverified facts, design refs), each with its action phrase. It adds no new content at preview time and mirrors what the body already carries. This is the reader's single signal for what is not yet fixed. If there are zero tentative items, omit the block. Keep it short.
 
 Critic block: omit when empty (docs/chore, or verdict confirmed).
 

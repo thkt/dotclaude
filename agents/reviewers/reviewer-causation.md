@@ -1,7 +1,7 @@
 ---
 name: reviewer-causation
 description: 5 Whys root cause analysis. Detect patch-like solutions.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-root-cause-analysis]
 memory: project
@@ -60,7 +60,7 @@ A long comment triggers both reviewers. The angle differs, so both findings are 
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section RC.
+See `~/.claude/skills/audit/references/calibration-examples.md` section RC.
 
 ## Error Handling
 

@@ -36,7 +36,11 @@ parse_stdin() {
         (.worktree.name? // ""),
         (.worktree.branch? // ""),
         (.worktree.directory? // ""),
-        (.workspace.git_worktree? // false | if . then "1" else "" end)
+        (.workspace.git_worktree? // false | if . then "1" else "" end),
+        (.effort.level? // ""),
+        (.fast_mode? // false | if . then "1" else "" end),
+        (.rate_limits.five_hour.resets_at? // ""),
+        (.rate_limits.seven_day.resets_at? // "")
       ] | map(tostring) | join("\u001f")' 2>/dev/null)
 
     if [ -n "$parsed" ]; then
@@ -44,7 +48,8 @@ parse_stdin() {
             CONTEXT_TOKENS CONTEXT_LIMIT CONTEXT_USED_PCT \
             USAGE_5H USAGE_7D \
             CACHE_READ CACHE_CREATION \
-            WT_NAME WT_BRANCH WT_ORIG_DIR WS_IS_WORKTREE <<< "$parsed"
+            WT_NAME WT_BRANCH WT_ORIG_DIR WS_IS_WORKTREE \
+            EFFORT_LEVEL FAST_MODE RESET_5H RESET_7D <<< "$parsed"
     fi
 
     [[ "${SESSION_ID:-}" =~ ^[a-zA-Z0-9_-]+$ ]] || SESSION_ID=""
@@ -72,6 +77,8 @@ render_model() {
     elif [ -n "$MODEL_ID" ]; then
         printf '\033[94m%s\033[0m' "$(echo "$MODEL_ID" | sed -E 's/^(claude-)?//; s/-[0-9]{8}$//')"
     fi
+    [ -n "$EFFORT_LEVEL" ] && printf ' \033[35m%s\033[0m' "$EFFORT_LEVEL"
+    [ -n "$FAST_MODE" ] && printf ' \033[93m[fast]\033[0m'
 }
 
 render_context() {
@@ -135,13 +142,24 @@ render_cost() {
     printf '\033[33m$%s\033[0m' "$(printf "%.2f" "$SESSION_COST" 2>/dev/null || echo "$SESSION_COST")"
 }
 
+reset_eta() {
+    [[ "$1" =~ ^[0-9]+$ ]] || return
+    local diff=$(( $1 - ${EPOCHSECONDS:-$(date +%s)} ))
+    [ "$diff" -le 0 ] && return
+    if [ "$diff" -lt 3600 ]; then printf '(%dm)' "$((diff / 60))"
+    elif [ "$diff" -lt 86400 ]; then printf '(%dh)' "$((diff / 3600))"
+    else printf '(%dd)' "$((diff / 86400))"
+    fi
+}
+
 render_usage() {
     [[ "$USAGE_5H" =~ ^[0-9]+$ ]] || { sep; printf '\033[90m5h:- 7d:-\033[0m'; return; }
     local p5=$USAGE_5H p7=$USAGE_7D
     [[ "$p7" =~ ^[0-9]+$ ]] || p7=0
 
     sep
-    printf "$(color_for_pct "$p5")5h:%d%%\033[0m $(color_for_pct "$p7")7d:%d%%\033[0m" "$p5" "$p7"
+    printf "$(color_for_pct "$p5")5h:%d%%%s\033[0m $(color_for_pct "$p7")7d:%d%%%s\033[0m" \
+        "$p5" "$(reset_eta "$RESET_5H")" "$p7" "$(reset_eta "$RESET_7D")"
 }
 
 render_deadlines() {

@@ -11,6 +11,32 @@
     "fmt": "clean",
     "coverage": { "c0": "92%", "c1": "85%" }
   },
+  "raw_findings": [
+    {
+      "reviewer": "reviewer-security",
+      "id": "SEC-001",
+      "file": "src/auth.ts:45",
+      "message": "User input concatenated into SQL query"
+    },
+    {
+      "reviewer": "reviewer-security",
+      "id": "SEC-002",
+      "file": "src/auth.ts:102",
+      "message": "Session cookie missing HttpOnly flag"
+    },
+    {
+      "reviewer": "reviewer-strictness",
+      "id": "TS-001",
+      "file": "src/auth.ts:78",
+      "message": "any type used at API boundary without runtime validation"
+    },
+    {
+      "reviewer": "reviewer-readability",
+      "id": "CQ-003",
+      "file": "src/utils.ts:12",
+      "message": "Single-letter variable name"
+    }
+  ],
   "findings": [
     {
       "id": "SEC-001",

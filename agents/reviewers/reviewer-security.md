@@ -1,7 +1,7 @@
 ---
 name: reviewer-security
 description: OWASP Top 10-based security vulnerability detection.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-reviewer-security]
 memory: project
@@ -49,7 +49,7 @@ reviewer-security uses the relaxed bar defined in `finding-schema.md`. Include a
 ## Exclusions
 
 - DoS vulnerabilities
-- Rate limiting / resource exhaustion
+- Rate limiting / resource exhaustion (DoS context). Missing rate limiting on auth endpoints (brute force, A07) stays in scope
 - Test files
 - Memory safety in Rust/Go
 - Client-side permission checks
@@ -61,7 +61,7 @@ reviewer-security uses the relaxed bar defined in `finding-schema.md`. Include a
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section SEC.
+See `~/.claude/skills/audit/references/calibration-examples.md` section SEC.
 
 ## Error Handling
 

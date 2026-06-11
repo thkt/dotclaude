@@ -1,11 +1,6 @@
----
-paths:
-  - ".claude/OUTCOME.md"
----
-
 # OUTCOME Template and Examples
 
-Stub template and project-shape examples for `.claude/OUTCOME.md`. Referenced from `rules/core/OUTCOME.md` Behavior when absent. Kept out of always-loaded context because it is consumed only during stub generation; the flow reads this file explicitly.
+Stub template and project-shape examples for `.claude/OUTCOME.md`. The /outcome skill reads this file during generation and update.
 
 ## Template
 
@@ -29,11 +24,11 @@ Each repository's `.claude/OUTCOME.md` follows the structure below. Behavior is 
 
 [Optional. States that corroborate the Behavior above. Numeric, temporal, or aspirational direction. Skip the section if none sharpen the Behavior.]
 
-| Indicator   | Value                     | Corroborates            |
-| ----------- | ------------------------- | ----------------------- |
-| Time        | [bound]                   | [which Behavior bullet] |
-| Error rate  | [bound]                   | [which Behavior bullet] |
-| Value       | [beneficiary holds value] | [which Behavior bullet] |
+| Indicator  | Value                     | Corroborates            |
+| ---------- | ------------------------- | ----------------------- |
+| Time       | [bound]                   | [which Behavior bullet] |
+| Error rate | [bound]                   | [which Behavior bullet] |
+| Value      | [beneficiary holds value] | [which Behavior bullet] |
 
 ## Non-goals
 
@@ -69,21 +64,21 @@ guardrails operates as a hook for AI agents and functions on frontend projects. 
 | UX        | AI agent edit experience improves continuously      | Agents do not perceive the hook as friction and run the fix loop themselves |
 ```
 
-### Developer CLI (e.g. yomu)
+### Developer CLI (e.g. recall)
 
 ```markdown
 ## Outcome state
 
 ### Behavior
 
-- Developers find concept-related code without knowing the exact identifier.
-- Developers act on the search result without re-searching with different terms.
+- Developers retrieve past session decisions without re-deriving them.
+- Developers act on the recalled result without re-searching with different terms.
 
 ### Indicators
 
-| Indicator | Value                                         | Corroborates                         |
-| --------- | --------------------------------------------- | ------------------------------------ |
-| Time      | Search returns within 2s for repos under 10MB | Developers do not abandon mid-search |
+| Indicator | Value                                        | Corroborates                         |
+| --------- | -------------------------------------------- | ------------------------------------ |
+| Time      | Search returns within 2s for typical history | Developers do not abandon mid-search |
 ```
 
 ### SaaS feature (e.g. okr-dashboard)

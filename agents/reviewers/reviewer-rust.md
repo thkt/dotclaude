@@ -102,7 +102,7 @@ If any of these records the decision rationale, downgrade `documented?` to `Part
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section RU. If absent, calibration is pending and reviewer should err on the side of flagging with `verification: pending_calibration`.
+See `~/.claude/skills/audit/references/calibration-examples.md` section RU. If absent, calibration is pending and reviewer should err on the side of flagging with `verification: pending_calibration`.
 
 ## Error Handling
 

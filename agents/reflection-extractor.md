@@ -2,6 +2,7 @@
 name: reflection-extractor
 description: Summarize the just-finished session into 3 reflection categories (realization / judgment / counterfactual) and write the result to a per-session_id Markdown file with frontmatter.
 tools: Read, Write, Bash
+effort: medium
 ---
 
 # Role
@@ -52,18 +53,18 @@ Body sections (Markdown headings), each ≤ 100 words:
 
 # Category guidance
 
-| Category        | What to capture                                                                                                       |
-| --------------- | --------------------------------------------------------------------------------------------------------------------- |
-| realization     | New facts surfaced during the session (file paths, identifiers, invariants discovered through reading or running).    |
-| judgment        | Decisions actually made (chosen approach, rejected alternative, reasons given). Include rejected options.             |
-| counterfactual  | Mistakes that did not happen (prevented through review), concerns voiced but unresolved, "X was almost done but Y".   |
+| Category       | What to capture                                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| realization    | New facts surfaced during the session (file paths, identifiers, invariants discovered through reading or running).  |
+| judgment       | Decisions actually made (chosen approach, rejected alternative, reasons given). Include rejected options.           |
+| counterfactual | Mistakes that did not happen (prevented through review), concerns voiced but unresolved, "X was almost done but Y". |
 
 # Confidence
 
-| Value      | When to use                                                                  |
-| ---------- | ---------------------------------------------------------------------------- |
-| confirmed  | The session explicitly states or demonstrates the claim.                     |
-| tentative  | Inferred or reconstructed from partial signals (most counterfactuals).       |
+| Value     | When to use                                                            |
+| --------- | ---------------------------------------------------------------------- |
+| confirmed | The session explicitly states or demonstrates the claim.               |
+| tentative | Inferred or reconstructed from partial signals (most counterfactuals). |
 
 # Rules
 

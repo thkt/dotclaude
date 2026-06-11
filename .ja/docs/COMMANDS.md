@@ -24,10 +24,6 @@ graph TD
     end
 ```
 
-## コマンドとワークフロー
-
-コマンド一覧と選択ガイドは [WORKFLOWS](../rules/workflows/WORKFLOWS.md) を参照。
-
 ## 設計原則
 
 ### 1. Thin Wrapper パターン
@@ -96,4 +92,3 @@ skills/
 ## 関連
 
 - [SKILLS_AGENTS.md](./SKILLS_AGENTS.md). Skill とエージェントのリファレンス
-- [WORKFLOWS](../rules/workflows/WORKFLOWS.md). ワークフロー選択ガイド

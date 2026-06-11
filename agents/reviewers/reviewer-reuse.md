@@ -1,7 +1,7 @@
 ---
 name: reviewer-reuse
 description: Existing code reuse opportunity detection. Find replaceable new code.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
 memory: project
 background: true
@@ -54,7 +54,7 @@ Find opportunities to use EXISTING code instead of writing new code. This is NOT
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section REUSE.
+See `~/.claude/skills/audit/references/calibration-examples.md` section REUSE.
 
 ## Error Handling
 

@@ -27,11 +27,16 @@ test/
 
 ## Usage
 
-現状は手動実行。runner は MVP 後に実装する。
+現状は手動実行。runner はハーネスが育ってから実装する。
 
-1. `/audit test/cases/ --focus=security` を実行
-2. 結果を `expected.json` と照合
-3. `results/YYYY-MM-DD-recall.json` に Recall / FP Rate を記録
+測定は blind protocol で行う。dispatch prompt にラベル・期待値・脆弱性ヒントを含めると Recall が汚染される (2026-06-04 判明、旧ベースライン無効化)。
+
+1. cases を一時ディレクトリに中立名でコピー (case-01.ts のように連番、vuln/safe を交互に)。`./db` などフレームワーク規約名は文脈なので保持
+2. reviewer-security agent を Task tool で起動。prompt には対象パス・出力フォーマット・cross-file ペアの関連性のみ記載。「vuln」「safe」「テスト」「期待」の語と各ファイルの脆弱性説明は禁止
+3. 照合基準を dispatch 前に固定 (後出しで基準を動かさない)
+4. 結果を `expected.json` と照合し `results/YYYY-MM-DD-*.json` に記録
+
+注: 連番命名とペア構造から agent が「テスト集合」と推測しうる (2026-06-04 観測)。完全な blind には現実的な scaffolding への埋め込みが要るが、現状はラベル漏洩の除去を優先する。
 
 ## expected.json schema
 

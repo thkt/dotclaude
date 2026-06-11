@@ -1,9 +1,8 @@
 ---
 name: critic-design
 description: Challenge design proposals to expose hidden weaknesses.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
-skills: [use-cli-yomu]
 memory: project
 background: true
 ---

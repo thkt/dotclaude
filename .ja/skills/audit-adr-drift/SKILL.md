@@ -2,7 +2,7 @@
 name: audit-adr-drift
 description: ADR の Decision section と現コードの drift を体系 scan し、修正方向と優先度付きレポートを生成。ADR が無い repo では使わない (audit-adr-gaps を先に使う)。
 when_to_use: ADR と コードの整合性確認, ADR drift, ADR vs code, ADR audit, 意思決定の風化チェック, decision record divergence
-allowed-tools: Read Write Edit LS Bash(git:*) Bash(gh:*) Bash(ugrep:*) Bash(bfs:*) Bash(yomu:*) Bash(sqlite3:*) Task AskUserQuestion
+allowed-tools: Read Write Edit LS Bash(git:*) Bash(gh:*) Bash(ugrep:*) Bash(bfs:*) Task AskUserQuestion
 model: opus
 argument-hint: "[adr-directory]"
 ---
@@ -45,7 +45,7 @@ ADR ディレクトリが無い repo では本 skill は使わず、先に `/aud
 | 1    | ADR ディレクトリ検出 (auto-detect or `$ARGUMENTS`)                       |
 | 2    | ADR 一覧化と Status 抽出 (Accepted / Superseded / Proposed)              |
 | 3    | ADR ごとに Decision section と言及シンボル (関数・型・モジュール) を抽出 |
-| 4    | ugrep/yomu で参照検索し、drift 候補を作成                                |
+| 4    | ugrep/bfs で参照検索し、drift 候補を作成                                 |
 | 5    | repo 言語に応じた reviewer agent を候補箇所に対して spawn                |
 | 6    | 各 finding に修正方向 (code-fix / adr-update / accept) を付与            |
 | 7    | 各 finding に優先度 (H / M / L) を付与                                   |
@@ -76,7 +76,6 @@ ADR ディレクトリが無い repo では本 skill は使わず、先に `/aud
 抽出した各シンボルについて:
 
 - `ugrep -r "<symbol>"` で literal マッチ
-- `yomu search <symbol>` で semantic マッチ (TS/Rust/CSS/HTML)
 - ADR ファイル自体と test fixture は除外
 
 #### External ADR Cross-Check

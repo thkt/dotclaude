@@ -1,7 +1,7 @@
 ---
 name: reviewer-duplication
 description: Cross-file code duplication detection. DRY analysis specialist.
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true
@@ -42,7 +42,7 @@ Banned phrasing inside reasoning: "could be DRYed" without naming the shared inv
 | Pattern         | 3+ lines  | Shorter sequences are rarely worth extracting    |
 | Arg-variant     | 2+ calls  | Same func/cmd with only args differing           |
 
-This reviewer uses 2+ as the unified threshold. Rule of Three from `rules/PRINCIPLES.md` (DRY) determines extraction urgency (severity), not detection.
+This reviewer uses 2+ as the unified threshold. Rule of Three from `~/.claude/rules/PRINCIPLES.md` (DRY) determines extraction urgency (severity), not detection.
 
 ## Comparison Strategy
 
@@ -64,7 +64,7 @@ This reviewer uses 2+ as the unified threshold. Rule of Three from `rules/PRINCI
 
 ## Calibration
 
-See `skills/audit/references/calibration-examples.md` section DRY.
+See `~/.claude/skills/audit/references/calibration-examples.md` section DRY.
 
 ## Error Handling
 

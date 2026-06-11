@@ -1,7 +1,7 @@
 ---
 name: reviewer-duplication
 description: クロスファイルなコード重複検出。DRY 解析の専門。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 memory: project
 background: true
@@ -42,7 +42,7 @@ background: true
 | パターン       | 3 行以上       | より短いシーケンスは抽出する価値が乏しい   |
 | 引数バリアント | 2 呼び出し以上 | 引数だけが異なる同じ関数/コマンド          |
 
-本 reviewer は統一閾値として 2 以上を使う。`rules/PRINCIPLES.md` (DRY) の Rule of Three は検出ではなく抽出の緊急度 (severity) を決める。
+本 reviewer は統一閾値として 2 以上を使う。`~/.claude/rules/PRINCIPLES.md` (DRY) の Rule of Three は検出ではなく抽出の緊急度 (severity) を決める。
 
 ## 比較ストラテジ
 
@@ -64,7 +64,7 @@ background: true
 
 ## キャリブレーション
 
-`skills/audit/references/calibration-examples.md` の DRY セクションを参照。
+`~/.claude/skills/audit/references/calibration-examples.md` の DRY セクションを参照。
 
 ## エラーハンドリング
 

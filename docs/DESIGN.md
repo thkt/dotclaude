@@ -11,6 +11,7 @@ graph TD
     subgraph Core["Core Layer (Top Priority)"]
         OPS[OPERATION]
         PFL[PREFLIGHT]
+        OUT[OUTCOME]
     end
 
     subgraph Principles["Design Principles"]
@@ -18,9 +19,8 @@ graph TD
     end
 
     subgraph Development["Development Layer"]
-        PERF[PERFORMANCE]
+        TEST[TESTING]
         TIDY[TIDYINGS]
-        CODE[THRESHOLDS]
         PROG[PRINCIPLES.md#Progressive Enhancement]
     end
 
@@ -29,18 +29,11 @@ graph TD
         SKILL[SKILLS]
         SUB[SUBAGENT]
         PLUG[PLUGIN]
-        TEMP[TEMPLATES]
-    end
-
-    subgraph Workflows["Workflow Layer"]
-        WG[WORKFLOWS]
-        MOD[MODULARIZATION]
-        IDR[idr-pre-commit.sh]
+        VAGUE[VAGUE_TERMS]
     end
 
     OPS --> PFL
     P --> Development
-    PFL --> Workflows
     Development --> Conventions
 ```
 
@@ -50,10 +43,11 @@ graph TD
 
 Top-priority rules. Prevent AI runaway and keep users informed.
 
-| File                                    | Intent             | Key Mechanism                                                        |
-| --------------------------------------- | ------------------ | -------------------------------------------------------------------- |
-| [OPERATION](../rules/core/OPERATION.md) | Ensure safety      | `rm` prohibited → `mv ~/.Trash/`, destructive op confirmation        |
-| [PREFLIGHT](../rules/core/PREFLIGHT.md) | Task check unified | Rationalization counters, decomposition thresholds, done definitions |
+| File                                    | Intent                   | Key Mechanism                                                        |
+| --------------------------------------- | ------------------------ | -------------------------------------------------------------------- |
+| [OPERATION](../rules/core/OPERATION.md) | Ensure safety            | `rm` prohibited → `mv ~/.Trash/`, destructive op confirmation        |
+| [PREFLIGHT](../rules/core/PREFLIGHT.md) | Task check unified       | Rationalization counters, decomposition thresholds, done definitions |
+| [OUTCOME](../rules/core/OUTCOME.md)     | Outcome state visibility | Outcome test, update triggers                                        |
 
 **Why this design:**
 
@@ -91,12 +85,11 @@ TDD / SOLID / YAGNI (Contextual)
 
 Concrete standards for daily development.
 
-| File                                                            | Intent                       | Key Threshold                          |
-| --------------------------------------------------------------- | ---------------------------- | -------------------------------------- |
-| [THRESHOLDS](../rules/development/THRESHOLDS.md)                | Quality metrics + completion | Function ≤30 lines, tests pass         |
-| [TIDYINGS](../rules/development/TIDYINGS.md)                    | Scope cleanup limits         | No behavior changes, edited files only |
-| [PERFORMANCE](../rules/development/PERFORMANCE.md)              | Context management           | MCP ≤10, /compact >70%                 |
-| [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | Incremental building         | CSS-First, Outcome-First               |
+| File                                                            | Intent                            | Key Threshold                          |
+| --------------------------------------------------------------- | --------------------------------- | -------------------------------------- |
+| [TESTING](../rules/development/TESTING.md)                      | Coverage perspectives and quality | Delta-based gate, per-area depth       |
+| [TIDYINGS](../rules/development/TIDYINGS.md)                    | Scope cleanup limits              | No behavior changes, edited files only |
+| [PRINCIPLES.md#Progressive Enhancement](../rules/PRINCIPLES.md) | Incremental building              | CSS-First, Outcome-First               |
 
 **AI Failure Patterns (inline):**
 
@@ -111,19 +104,18 @@ Concrete standards for daily development.
 
 - Self-detect AI patterns: infinite exploration, repeated fixes
 - `TIDYINGS` scopes cleanup to prevent over-refactoring
-- Quantitative thresholds (30 lines, 400 lines) remove subjectivity
 
 ### 4. Conventions Layer - Consistency Rules
 
 Consistency across documentation, plugins, and translations.
 
-| File                                           | Intent                        |
-| ---------------------------------------------- | ----------------------------- |
-| [MARKDOWN](../rules/conventions/MARKDOWN.md)   | Markdown conventions          |
-| [SKILLS](../rules/conventions/SKILLS.md)       | Skill definition standard     |
-| [SUBAGENT](../rules/conventions/SUBAGENT.md)   | Sub-agent definition standard |
-| [PLUGIN](../rules/conventions/PLUGIN.md)       | Plugin constraints            |
-| [TEMPLATES](../rules/conventions/TEMPLATES.md) | Variable substitution syntax  |
+| File                                               | Intent                        |
+| -------------------------------------------------- | ----------------------------- |
+| [MARKDOWN](../rules/conventions/MARKDOWN.md)       | Markdown conventions          |
+| [SKILLS](../rules/conventions/SKILLS.md)           | Skill definition standard     |
+| [SUBAGENT](../rules/conventions/SUBAGENT.md)       | Sub-agent definition standard |
+| [PLUGIN](../rules/conventions/PLUGIN.md)           | Plugin constraints            |
+| [VAGUE_TERMS](../rules/conventions/VAGUE_TERMS.md) | Vague term concretization     |
 
 **Why this design:**
 
@@ -134,12 +126,6 @@ Consistency across documentation, plugins, and translations.
 ### 5. Workflows Layer - User Interface
 
 User-facing commands and workflow system.
-
-| File                                                      | Intent                               |
-| --------------------------------------------------------- | ------------------------------------ |
-| [WORKFLOWS](../rules/workflows/WORKFLOWS.md)              | Command selection guide              |
-| [MODULARIZATION](../rules/workflows/MODULARIZATION.md)    | Command split criteria               |
-| [idr-pre-commit.sh](../hooks/lifecycle/idr-pre-commit.sh) | Auto-generate implementation records |
 
 **Workflow Patterns:**
 
@@ -152,7 +138,7 @@ flowchart LR
         R1["/research"] --> F2["/fix"]
     end
     subgraph Feature["Feature Development"]
-        R2["/research"] --> T["/think"] --> C["/code"] --> A["/audit"] --> V["/validate"]
+        R2["/research"] --> T["/think"] --> C["/code"] --> A["/audit"]
     end
 ```
 
@@ -179,7 +165,7 @@ Refer to:
 | ----------------------------------- | -------------------------------- |
 | [COMMANDS](./COMMANDS.md)           | Command design and relationships |
 | [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent mechanisms and usage |
-| [HOOKS](./HOOKS.md)                 | Hook system and IDR generation   |
+| [HOOKS](./HOOKS.md)                 | Hook system and Quality Pipeline |
 | [GLOSSARY](./GLOSSARY.md)           | Ubiquitous language dictionary   |
 
 ---

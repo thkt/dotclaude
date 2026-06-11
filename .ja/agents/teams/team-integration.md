@@ -1,7 +1,7 @@
 ---
 name: team-integration
 description: チャレンジと検証の結果を、ドメイン横断の根本原因へ統合する。
-tools: Read, LS, Bash(yomu:*), Bash(sqlite3:*), Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
+tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-context-root-cause-analysis]
 ---
@@ -187,7 +187,7 @@ For standalone:   Impact × Reach × Fixability
 
 ## アウトプット
 
-Integrator は snapshot データ (YAML、`skills/audit/templates/snapshot.yaml` 準拠、ADR 0047 で正本) を出力する。Leader が snapshot を history へ永続化し、`skills/audit/templates/output.md` を使って Markdown レポートを描画する。Integrator は Markdown を生成しない。
+Integrator は snapshot データ (YAML、`~/.claude/skills/audit/templates/snapshot.yaml` 準拠、ADR 0047 で正本) を出力する。Leader が snapshot を history へ永続化し、`~/.claude/skills/audit/templates/output.md` を使って Markdown レポートを描画する。Integrator は Markdown を生成しない。
 
 ### Integrator の責務
 

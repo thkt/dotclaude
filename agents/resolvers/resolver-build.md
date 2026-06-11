@@ -3,6 +3,7 @@ name: resolver-build
 description: TypeScript/build error resolution with minimal changes. No architectural modifications.
 tools: Bash, Read, Edit, LS
 model: opus
+effort: medium
 background: true
 memory: project
 ---
