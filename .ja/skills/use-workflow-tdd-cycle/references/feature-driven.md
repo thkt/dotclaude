@@ -1,6 +1,6 @@
 # Feature-Driven TDD
 
-`/code` が新機能開発で TDD をどう使うか。${CLAUDE_SKILL_DIR}/SKILL.md の RGRC Cycle と Baby Steps を基盤とする。
+`/code` が新機能開発で TDD をどう使うか。${CLAUDE_SKILL_DIR}/SKILL.md の RGRC サイクルと Baby Steps を基盤とする。
 
 ## 文脈
 
@@ -8,19 +8,19 @@
 | ---------- | --------------------------------- |
 | ソース     | 機能要件を含む spec.md            |
 | アプローチ | 全テストを skip 状態で生成        |
-| 順序       | Simple → Complex (Baby Steps)    |
+| 順序       | Simple → Complex (Baby Steps)     |
 | 制御       | ユーザーが 1 テストずつ active 化 |
 
 ## ワークフロー
 
-| ステップ | アクション                                                  |
-| -------- | ----------------------------------------------------------- |
-| 1        | spec.md を読む → FR-xxx を抽出 → Given-When-Then を特定   |
+| ステップ | アクション                                                 |
+| -------- | ---------------------------------------------------------- |
+| 1        | spec.md を読む → FR-xxx を抽出 → Given-When-Then を特定    |
 | 2        | skip 状態のテスト (`it.skip()`) を simple→complex 順で生成 |
 | 3        | 対話的有効化。[Y]es/[S]kip/[Q]uit → RGRC サイクル          |
-| 4        | 全テストが active かつ pass するまで繰り返す                |
+| 4        | 全テストが active かつ pass するまで繰り返す               |
 
-テスト毎の実行は `SKILL.md` の正典 RGRC Cycle に従う。Feature-driven は Red が次に選ばれたテストの `.skip` を外すところから始まる点が異なる。
+テスト毎の実行は `SKILL.md` の正典 RGRC サイクルに従う。Feature-driven は Red が次に選ばれたテストの `.skip` を外すところから始まる点が異なる。
 
 ## フレームワークの skip マーカー
 
@@ -32,12 +32,12 @@
 
 ## 主な特徴
 
-| 特徴         | 説明                     |
-| ------------ | ------------------------ |
-| Proactive    | 実装前にテスト           |
+| 特徴         | 説明                   |
+| ------------ | ---------------------- |
+| Proactive    | 実装前にテスト         |
 | Spec-driven  | 要件 → テスト → コード |
-| ユーザー制御 | 明示的な有効化           |
-| Baby Steps   | 1 度に 1 テスト          |
+| ユーザー制御 | 明示的な有効化         |
+| Baby Steps   | 1 度に 1 テスト        |
 
 ## 判断ポイント
 

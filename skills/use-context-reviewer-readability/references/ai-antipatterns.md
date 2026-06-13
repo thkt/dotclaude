@@ -74,7 +74,7 @@ function calculateDiscount(amount, userType) {
 
 ## Rule
 
-Abstract only when:
+Abstract only in the following cases.
 
 1. Same pattern appears 3+ times (DRY)
 2. Multiple implementations actually needed

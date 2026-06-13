@@ -14,15 +14,15 @@ Chain /think → /code → /audit for end-to-end feature development.
 
 ## Plugin Dependencies
 
+Phase 5 is skipped gracefully if agent-browser is not installed.
+
 | Plugin        | Required for | Install                           |
 | ------------- | ------------ | --------------------------------- |
 | agent-browser | Phase 5 only | `claude plugin add agent-browser` |
 
-Phase 5 is skipped gracefully if agent-browser is not installed.
-
 ## Input
 
-- Feature description: `$ARGUMENTS` (optional)
+- Feature description comes from `$ARGUMENTS` (optional)
 - If empty → prompt via AskUserQuestion (context-aware options)
 
 ### Context-Aware Options
@@ -55,18 +55,18 @@ See ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md
 
 ### Phase 1: Discovery
 
-1. Context scan: CLAUDE.md, package.json, Cargo.toml, etc.
+1. Context scan over CLAUDE.md, package.json, Cargo.toml, etc.
 2. If `$ARGUMENTS` empty → AskUserQuestion with context-aware options
 3. Execute PREFLIGHT
 4. Resolve any inferences or unknowns
-5. Early exit: ≤ 2 target files → suggest `/code` (skip Phases 2-6)
+5. Early exit when target files ≤ 2 → suggest `/code` (skip Phases 2-6)
 6. TaskCreate for tracking (Phases 2-6)
 
 ### Phase 2: Design
 
 Execute `Skill("think", $ARGUMENTS)`.
 
-Output: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` + `spec.md`
+Output is `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` + `spec.md`.
 
 ### Phase 3: Implementation
 
@@ -78,13 +78,13 @@ Execute `Skill("code", $ARGUMENTS)`.
 
 #### Loop
 
+Changed files come from `git diff main...HEAD --name-only`.
+
 | Step | Action                                 | Exit                       |
 | ---- | -------------------------------------- | -------------------------- |
 | 1    | Skill: /audit (changed files from git) | 0 critical/high → Finalize |
 | 2    | Skill: /fix for each critical/high     | → Step 3                   |
 | 3    | Increment iteration (max 3) → Step 1   | Max reached → Finalize     |
-
-Changed files: `git diff main...HEAD --name-only`.
 
 #### Finalize
 
@@ -105,15 +105,13 @@ Changed files: `git diff main...HEAD --name-only`.
 
 #### Dev Server Detection
 
-Detected from `package.json` scripts.
+Detected from `package.json` scripts. Extract port from script value if specified (`--port`, `-p`, `PORT=`).
 
 | Priority | Script name pattern      | Default URL           |
 | -------- | ------------------------ | --------------------- |
 | 1        | dev, start:dev           | http://localhost:5173 |
 | 2        | start                    | http://localhost:3000 |
 | 3        | storybook, storybook:dev | http://localhost:6006 |
-
-Extract port from script value if specified (`--port`, `-p`, `PORT=`).
 
 #### Workflow
 
@@ -137,7 +135,7 @@ Present summary. AC coverage is already verified by /code Quality Gates.
 
 ## Resume
 
-Detect resume point from existing artifacts.
+Detect resume point from existing artifacts. Implementation evidence is `git diff main...HEAD --name-only` showing files that match SOW scope.
 
 | Artifact                                    | Resume  |
 | ------------------------------------------- | ------- |
@@ -147,8 +145,6 @@ Detect resume point from existing artifacts.
 | Implementation done + quality not completed | Phase 4 |
 | Quality passed + UI files changed           | Phase 5 |
 | Quality passed + no UI files                | Phase 6 |
-
-Implementation evidence: `git diff main...HEAD --name-only` shows files matching SOW scope.
 
 ## Error Handling
 

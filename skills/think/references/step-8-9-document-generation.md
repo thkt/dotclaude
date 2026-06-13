@@ -2,8 +2,7 @@
 
 ## Step 7: SOW
 
-Read template ${CLAUDE_SKILL_DIR}/templates/sow.md. Fill from design context
-(Steps 0-6). ID format: AC-N.
+Read template ${CLAUDE_SKILL_DIR}/templates/sow.md. Fill from design context (Steps 0-6). ID format: AC-N.
 
 Output: `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md`
 
@@ -23,8 +22,7 @@ Apply before writing each section.
 
 ## Step 8: Spec
 
-Read template ${CLAUDE_SKILL_DIR}/templates/spec.md. Generate from SOW.
-ID format: FR-001, T-001, NFR-001.
+Read template ${CLAUDE_SKILL_DIR}/templates/spec.md. Generate from SOW. ID format: FR-001, T-001, NFR-001.
 
 Traceability: `FR-001 Implements: AC-001` → `T-001 Validates: FR-001`
 

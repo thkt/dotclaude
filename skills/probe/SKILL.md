@@ -7,7 +7,7 @@ allowed-tools: Read Write Edit Bash LS Glob Grep
 
 # probe
 
-Trace the repository aspect-by-aspect and surface friction points as issue candidates. The act of "trying to explain" exposes contradictions and gaps. Final output is Issues, no severity rating. Single-file output: findings.md.
+Trace the repository aspect-by-aspect and surface friction points as issue candidates. The act of "trying to explain" exposes contradictions and gaps. Final output is Issues, no severity rating. Output is a single file, findings.md.
 
 ## Inputs
 
@@ -21,9 +21,10 @@ No arguments. Target is the entire repository at current working directory. Scop
 
 ## Output
 
-File: `/tmp/probe-{repo}-{YYYYMMDD}/findings.md` (ephemeral)
-
-Template: ${CLAUDE_SKILL_DIR}/templates/findings.md
+| Item     | Value                                                  |
+| -------- | ------------------------------------------------------ |
+| File     | `/tmp/probe-{repo}-{YYYYMMDD}/findings.md` (ephemeral) |
+| Template | ${CLAUDE_SKILL_DIR}/templates/findings.md              |
 
 ## Process
 
@@ -33,7 +34,7 @@ Add each item under Behavior / Non-goals / Constraints in `.claude/OUTCOME.md` t
 
 ### Step 2: Pass-by-Aspect Exploration
 
-Sequential per aspect:
+Run the following sequence per aspect, one aspect at a time.
 
 1. Locate implementation matching the aspect
 2. Summarize the spec mentally while reading (do not write out)

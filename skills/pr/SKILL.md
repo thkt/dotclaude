@@ -66,7 +66,7 @@ ${CLAUDE_SKILL_DIR}/templates/pr.md
 
 ### Design Decisions Detection
 
-Aggregate `Design Decisions` at the PR level, not per-commit. Detect from `git diff <base>...HEAD` and `git log <base>..HEAD`:
+Aggregate `Design Decisions` at the PR level, not per-commit. Detect from `git diff <base>...HEAD` and `git log <base>..HEAD`. Routine implementation only (no explicit tradeoff) → omit the Design Decisions section.
 
 | Signal                                      | Example                          |
 | ------------------------------------------- | -------------------------------- |
@@ -74,8 +74,6 @@ Aggregate `Design Decisions` at the PR level, not per-commit. Detect from `git d
 | Performance / type / compatibility tradeoff | "Chose X to avoid Y"             |
 | Deviation from existing patterns            | "Deviated from X for..."         |
 | Library / API selection                     | "Selected X (over Y) because..." |
-
-Routine implementation only (no explicit tradeoff) → omit the Design Decisions section.
 
 ## Base Branch Detection
 
@@ -86,7 +84,7 @@ BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remo
 
 ## UI Change Detection
 
-UI change if `git diff --name-only {base}...HEAD` contains any of these extensions:
+UI change if `git diff --name-only {base}...HEAD` contains any of these extensions. No UI change → skip Pageshot Integration.
 
 | Extension                                       | Kind        |
 | ----------------------------------------------- | ----------- |
@@ -94,8 +92,6 @@ UI change if `git diff --name-only {base}...HEAD` contains any of these extensio
 | `.html`                                         | Page        |
 | `.css` / `.scss` / `.sass` / `.less`            | Style       |
 | `*.module.css` / `*.module.scss`                | CSS Modules |
-
-No UI change → skip Pageshot Integration.
 
 ## Pageshot Integration
 
@@ -106,12 +102,12 @@ Skill invoke: use-workflow-pageshot
 Input: <PR body string>
 ```
 
-PR body must contain before invoking:
+The PR body must contain the following before invoking.
 
 - A `Preview URL: <URL>` line near the top
 - A `## How to Test` section (numbered list)
 
-The skill returns a single stdout line:
+The skill returns a single stdout line.
 
 ```
 mode=screenshot artifact=/path/to/step-01.png
@@ -125,7 +121,7 @@ mode=video artifact=/path/to/capture.mp4
 
 On `mode=failed`, report missing items and continue PR creation (skip pageshot).
 
-After PR creation, display:
+After PR creation, display the following.
 
 ```text
 Pageshot generated: <absolute path>
@@ -157,7 +153,7 @@ Drag and drop it into the PR description or first comment on GitHub.
 
 ### Push (Manual)
 
-Never execute `git push` directly. Display the command and wait for confirmation:
+Never execute `git push` directly. Display the command and wait for confirmation.
 
 ```text
 Run this to push: git push -u origin HEAD
@@ -181,4 +177,4 @@ Run this to push: git push -u origin HEAD
 
 ## Display Format
 
-Preview shows title, base branch, current branch, summary bullets, and changes table. Success: `Created PR: #<number> <title> <PR URL>`
+Preview shows title, base branch, current branch, summary bullets, and changes table. On success, display `Created PR: #<number> <title> <PR URL>`.

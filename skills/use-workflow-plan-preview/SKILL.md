@@ -10,29 +10,26 @@ user-invocable: false
 
 Workflow helper invoked by `/think` Step 11. Renders SOW.md + Spec.md as an integrated, browser-friendly view via the Astro project at `~/.claude/workspace/views/`.
 
-Not for direct user invocation — `/think` is the only caller.
+Not for direct user invocation. `/think` is the only caller.
 
 ## Args (passed by caller `/think`)
 
-`$1`: planning slug (e.g. `2026-05-08-issue-53-annotation-foundation`)
+`$1` is the planning slug (e.g. `2026-05-08-issue-53-annotation-foundation`).
 
 ## Steps
 
 1. Read `~/.claude/workspace/planning/$1/sow.md` and `spec.md`
-2. Decide a short-slug from the trailing keywords of `$1`
-   - Example: `2026-05-08-issue-53-annotation-foundation` → `issue-53` or `annotation-foundation`
-3. Copy the template
-   - source: ${CLAUDE_SKILL_DIR}/templates/spec.mdx
-   - dest: `~/.claude/workspace/views/src/content/<short-slug>.mdx`
+2. Decide a short-slug from the trailing keywords of `$1` (e.g. `2026-05-08-issue-53-annotation-foundation` → `issue-53` or `annotation-foundation`)
+3. Copy ${CLAUDE_SKILL_DIR}/templates/spec.mdx to `~/.claude/workspace/views/src/content/<short-slug>.mdx`
 4. Fill the frontmatter from sow.md
-   - `title`: H1 line
-   - `subtitle`: First sentence of Why → Outcome (a)
-   - `status`: Below `## Status` (draft / approved / done)
-   - `updatedAt`: Today's date YYYY-MM-DD
-   - `sessionId`: From `Session:` line
-   - `issueUrl`: GitHub URL in Reference
+   - `title`. H1 line
+   - `subtitle`. First sentence of Why → Outcome (a)
+   - `status`. Below `## Status` (draft / approved / done)
+   - `updatedAt`. Today's date YYYY-MM-DD
+   - `sessionId`. From `Session:` line
+   - `issueUrl`. GitHub URL in Reference
 5. Fill each tab placeholder (mapping below)
-6. Start or verify the dev server: `cd ~/.claude/workspace/views && bun run dev`
+6. Start or verify the dev server with `cd ~/.claude/workspace/views && bun run dev`
    - Skip if port 4321 is already running
 7. Share `http://localhost:4321/spec/<short-slug>` with the user
 
@@ -65,12 +62,12 @@ Not for direct user invocation — `/think` is the only caller.
 | PhaseFlow | `<PhaseFlow phases={[{num, title, subtitle, bullets, outcome, tone}]} caption="..." />` |
 | DataFlow  | `<DataFlow boxes={[...]} edges={[...]} />`                                              |
 
-`tone` 値は component ごとに異なる。未定義値は runtime error。
+`tone` values differ per component. Undefined values cause a runtime error.
 
-| Component | 許可される tone                                |
-| --------- | --------------------------------------------- |
-| PhaseFlow | `accent` / `warn` / `pass`                    |
-| DataFlow  | `info` / `warn` / `accent` / `pass` / `fail`  |
+| Component | Allowed tone                                 |
+| --------- | -------------------------------------------- |
+| PhaseFlow | `accent` / `warn` / `pass`                   |
+| DataFlow  | `info` / `warn` / `accent` / `pass` / `fail` |
 
 ## MDX escaping
 

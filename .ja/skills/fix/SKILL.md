@@ -13,18 +13,18 @@ argument-hint: "[bug or issue description]"
 
 ## 入力
 
-- `$ARGUMENTS`: バグ説明、または `/audit` の Suggestion ID (例: `SUG-001`)
-- スコープ: 小さく、十分理解されている問題 (1-3 ファイル)
+- `$ARGUMENTS` にバグ説明、または `/audit` の Suggestion ID (例: `SUG-001`)
+- スコープは小さく、十分理解されている問題 (1-3 ファイル)
 
 ### ルーティング
 
-| `$ARGUMENTS` パターン | モード                       |
-| --------------------- | ---------------------------- |
-| `/^SUG-[0-9]+$/`      | Suggestion ID Mode           |
-| 空                    | Fix Prompt (AskUserQuestion) |
-| その他                | Standard Flow                |
+| `$ARGUMENTS` パターン | モード                           |
+| --------------------- | -------------------------------- |
+| `/^SUG-[0-9]+$/`      | Suggestion ID モード             |
+| 空                    | Fix プロンプト (AskUserQuestion) |
+| その他                | Standard Flow                    |
 
-### Fix Prompt
+### Fix プロンプト
 
 `$ARGUMENTS` が空のとき AskUserQuestion で尋ねる。
 
@@ -33,7 +33,7 @@ argument-hint: "[bug or issue description]"
 | Fix type    | Bug fix / Error message / Test failure |
 | Description | [Other で自由記述]                     |
 
-### Suggestion ID Mode
+### Suggestion ID モード
 
 | Step | 動作                                                                  |
 | ---- | --------------------------------------------------------------------- |
@@ -45,12 +45,12 @@ argument-hint: "[bug or issue description]"
 
 ## 委譲マップ
 
-| 種別      | 委譲先                          | 目的                                        |
-| --------- | ------------------------------- | ------------------------------------------- |
-| Skill     | use-context-root-cause-analysis | 非自明バグへの 5 Whys                       |
-| Agent     | generator-test                  | symptom + 再現手順から regression test 生成 |
-| Agent     | resolver-build                  | TypeScript やビルドエラーの triage          |
-| Reference | references/defense-in-depth.md  | Recurring/Systematic への多層検証           |
+| 種別      | 委譲先                                             | 目的                                        |
+| --------- | -------------------------------------------------- | ------------------------------------------- |
+| Skill     | use-context-root-cause-analysis                    | 非自明バグへの 5 Whys                       |
+| Agent     | generator-test                                     | symptom + 再現手順から regression test 生成 |
+| Agent     | resolver-build                                     | TypeScript やビルドエラーの triage          |
+| Reference | ${CLAUDE_SKILL_DIR}/references/defense-in-depth.md | Recurring/Systematic への多層検証           |
 
 ## 実行
 
@@ -65,23 +65,23 @@ argument-hint: "[bug or issue description]"
 | 結果         | 動作                                                  |
 | ------------ | ----------------------------------------------------- |
 | ビルドエラー | `Task` を `subagent_type: resolver-build` で起動、END |
-| エラーなし   | Triage に進む                                         |
+| エラーなし   | トリアージに進む                                      |
 
-### Triage
+### トリアージ
 
-| 条件                                           | パス                       |
-| ---------------------------------------------- | -------------------------- |
-| 単一箇所が特定 + 1-3 行修正 + 類似パターンなし | Obvious: Direct Fix        |
-| 断続的、複数の再現条件、または根本原因が不明   | Non-obvious: Full Protocol |
+| 条件                                           | パス                        |
+| ---------------------------------------------- | --------------------------- |
+| 単一箇所が特定 + 1-3 行修正 + 類似パターンなし | Obvious: 直接修正           |
+| 断続的、複数の再現条件、または根本原因が不明   | Non-obvious: フルプロトコル |
 
-### Obvious: Direct Fix
+### Obvious: 直接修正
 
 | Step | 動作                                               |
 | ---- | -------------------------------------------------- |
 | 1    | 最小限の修正を適用                                 |
 | 2    | 影響コードをカバーするテストを実行 (なければ skip) |
 
-### Non-obvious: Full Protocol
+### Non-obvious: フルプロトコル
 
 | Step | 動作                                                                                             |
 | ---- | ------------------------------------------------------------------------------------------------ |
@@ -94,18 +94,16 @@ argument-hint: "[bug or issue description]"
 
 ## エスカレーション
 
-客観的トリガー。自己評価による信頼度判断はしない。
+客観的トリガー。自己評価による信頼度判断はしない。異なる修正試行が 3 回失敗するなら、ローカルバグでなくアーキテクチャ問題の可能性が高い。エスカレーションなしで 4 回目を試みない。
 
-| トリガー                       | 動作                                                    |
-| ------------------------------ | ------------------------------------------------------- |
-| RCA で根本原因が特定できない   | エスカレーション → `/research`                          |
-| 修正試行が 3 回失敗            | STOP。完全なコンテキストで `/research` にエスカレ       |
-| 複数ファイル影響 (>3 ファイル) | 委譲 → `/code`                                          |
-| 新機能スコープ                 | 委譲 → `/think`                                         |
-| Pattern = Systematic           | エスカレーション → `/research`                          |
-| Fix が OUTCOME.md スコープ外   | ユーザーに確認。Non-goals を再定義するか `/code` に委譲 |
-
-3 回ルール: 異なる修正試行が 3 回失敗するなら、ローカルバグでなくアーキテクチャ問題の可能性が高い。エスカレートせず 4 回目を試みない。
+| トリガー                       | 動作                                                      |
+| ------------------------------ | --------------------------------------------------------- |
+| RCA で根本原因が特定できない   | エスカレーション → `/research`                            |
+| 修正試行が 3 回失敗            | 停止。完全なコンテキストで `/research` にエスカレーション |
+| 複数ファイル影響 (>3 ファイル) | 委譲 → `/code`                                            |
+| 新機能スコープ                 | 委譲 → `/think`                                           |
+| Pattern = Systematic           | エスカレーション → `/research`                            |
+| Fix が OUTCOME.md スコープ外   | ユーザーに確認。Non-goals を再定義するか `/code` に委譲   |
 
 ## エラー処理
 

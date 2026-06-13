@@ -4,7 +4,7 @@
 
 ${CLAUDE_SKILL_DIR}/templates/output.md は snapshot から導出された render view。snapshot data に traceback できないフィールドは出力に出さない。
 
-## Location
+## 保存先
 
 ${CLAUDE_SKILL_DIR}/../../workspace/history/audit-YYYY-MM-DD-HHmmss.json
 
@@ -43,7 +43,7 @@ challenge と dedupe 前の Wave 1 reviewer 出力。reconcile は per-reviewer 
 
 各 Wave 1 reviewer が emit した finding ごとに 1 エントリ。`status` は持たない (reconcile 前のため)。
 
-Trust boundary: このセクションは Leader (LLM) が転記する best-effort の便宜的 index であり、黙った欠損が起こり得るし完全性を検証する機構もない。authoritative source は session transcript (session jsonl 内の Task results) のまま。抽出手順は上記 pilot レポートにある。`raw_findings` を計測に使う前に、reviewer ごとのエントリ数を transcript と照合する。
+Trust boundary。このセクションは Leader (LLM) が転記する best-effort の便宜的 index であり、黙った欠損が起こり得るし完全性を検証する機構もない。authoritative source は session transcript (session jsonl 内の Task results) のまま。抽出手順は上記 pilot レポートにある。`raw_findings` を計測に使う前に、reviewer ごとのエントリ数を transcript と照合する。
 
 | Field      | Type   | 説明                                                                                                             |
 | ---------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
@@ -54,7 +54,7 @@ Trust boundary: このセクションは Leader (LLM) が転記する best-effor
 
 ## Finding Entry
 
-各エントリは個別にアドレッサブル。ID prefix registry は `finding-schema.md` にある。RC は Wave 1 reviewer-causation 出力と integrator 統合の両方をカバーする。
+各エントリは個別にアドレッサブル。ID Prefix レジストリは `finding-schema.md` にある。RC は Wave 1 reviewer-causation 出力と integrator 統合の両方をカバーする。
 
 | Field      | Type     | Required | 説明                                                                    |
 | ---------- | -------- | -------- | ----------------------------------------------------------------------- |
@@ -109,7 +109,7 @@ Trust boundary: このセクションは Leader (LLM) が転記する best-effor
 
 ### Skipped Domains
 
-`domains_skipped` の各エントリは `<domain>: <reason>` 形式に従う。各エントリは当該 reviewer の findings がこの audit に存在しないことを示す。理由は `SKILL.md` の Error Handling 表に従う (`timeout`, `malformed_output`, `dependency_stall: {upstream}`)。`output.md` の `Skipped reviewers` サブセクションでユーザーに表示する。
+`domains_skipped` の各エントリは `<domain>: <reason>` 形式に従う。各エントリは当該 reviewer の findings がこの audit に存在しないことを示す。理由は `SKILL.md` のエラー処理表に従う (`timeout`, `malformed_output`, `dependency_stall: {upstream}`)。`output.md` の `Skipped reviewers` サブセクションでユーザーに表示する。
 
 ## Delta
 
@@ -127,7 +127,7 @@ Trust boundary: このセクションは Leader (LLM) が転記する best-effor
 | `findings_resolved` | int        | 前回ありで今回ない finding 数           |
 | `findings_prior`    | int / null | 前回 total、初回実行時は null           |
 
-## Responsibility Split
+## 担当分担
 
 | セクション                                             | 担当                                                              |
 | ------------------------------------------------------ | ----------------------------------------------------------------- |

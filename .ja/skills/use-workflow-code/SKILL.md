@@ -6,7 +6,7 @@ allowed-tools: Read Write Task Bash(npm:*) Bash(npx:*) Bash(tsc:*) Bash(bun:*) B
 user-invocable: false
 ---
 
-# Workflow: /code
+# ワークフロー: /code
 
 ## ワークフロー
 
@@ -16,10 +16,9 @@ user-invocable: false
 
 ## パターン
 
-| パターン       | 参照                                                        |
-| -------------- | ----------------------------------------------------------- |
-| IDR Generation | ${CLAUDE_SKILL_DIR}/../../hooks/lifecycle/idr-pre-commit.sh |
-| TDD            | ${CLAUDE_SKILL_DIR}/../use-workflow-tdd-cycle/SKILL.md      |
+| パターン | 参照                                                   |
+| -------- | ------------------------------------------------------ |
+| TDD      | ${CLAUDE_SKILL_DIR}/../use-workflow-tdd-cycle/SKILL.md |
 
 <!-- canonical: rules/development/TESTING.md (coverage gate) -->
 
@@ -63,8 +62,7 @@ Agent(subagent_type: "reviewer-readability",
       run_in_background: true)
 ```
 
-High severity → 品質ゲートの前に修正。Medium/low → advisory (IDR にメモ)。
-`/fix` および単一ファイル変更ではスキップ。
+High severity → 品質ゲートの前に修正。Medium/low → advisory。`/fix` および単一ファイル変更ではスキップ。
 
 ### ゲート結果の出力
 
@@ -78,7 +76,7 @@ Test Quality: cov=X.X exc=X.X dup=X.X gran=X.X int=X.X | pass | fail | skip (no 
 
 5 行全てが必須。空行はスキップされたゲートを示す。進む前に調査すること。
 
-## Rationalization Counters
+## 言い訳カウンター
 
 | 言い訳                                 | 反論                                                             |
 | -------------------------------------- | ---------------------------------------------------------------- |

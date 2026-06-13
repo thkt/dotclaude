@@ -28,19 +28,24 @@
 
 - [修正の制約: 破壊的変更なし、対症療法でなく根本原因など]
 
+## Premises (任意)
+
+- [修正が依存する未検証の前提。再確認マーカー付き: "ユーザー報告のエラーは現行バイナリで未再現。修正前に確認する"]
+
 ## Environment (任意)
 
 - Browser/OS: [例: Chrome 120 / macOS 14]
 - Version: [例: v1.2.3]
 ```
 
-確定の項目 (再現手順, expected/actual) は無印、仮の項目 (原因の仮説, 推論した修正方針) は `(仮: <着手時のアクション>)` を付ける (Confidence Marking 参照)。
+(任意) と付いたセクションは書くことがなければ省略する。確定の項目 (再現手順, expected/actual) は無印、仮の項目 (原因の仮説, 推論した修正方針) は `(仮: <着手時のアクション>)` を付ける (確信度マーキング参照)。
 
 ## ガイドライン
 
-| フィールド         | OK                                         | NG                           |
-| ------------------ | ------------------------------------------ | ---------------------------- |
-| What & Why         | "Login fails, blocking 30% of users"       | "Login is broken"            |
-| Expected vs Actual | "Expected: 200 OK / Actual: 500 with ESQL" | "Works correctly" (曖昧)     |
-| Scope - Out of     | "Auth refactor is out of scope"            | (省略)                       |
-| Constraints        | "Fix root cause, not workaround"           | (修正がリスキーなときに省略) |
+| フィールド         | OK                                          | NG                           |
+| ------------------ | ------------------------------------------- | ---------------------------- |
+| What & Why         | "Login fails, blocking 30% of users"        | "Login is broken"            |
+| Expected vs Actual | "Expected: 200 OK / Actual: 500 with ESQL"  | "Works correctly" (曖昧)     |
+| Scope - Out of     | "Auth refactor is out of scope"             | (省略)                       |
+| Constraints        | "Fix root cause, not workaround"            | (修正がリスキーなときに省略) |
+| Premises           | "Reproduce on current binary before fixing" | 未検証の報告を事実として書く |

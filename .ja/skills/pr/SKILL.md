@@ -19,12 +19,12 @@ argument-hint: "[issue reference or context]"
 | Step | 動作                                                                         |
 | ---- | ---------------------------------------------------------------------------- |
 | 1    | 分析: `git status`, `git diff <base>...HEAD`, `git log <base>..HEAD` (並列)  |
-| 2    | base ブランチを検出 (Base Branch Detection を参照)                           |
+| 2    | base ブランチを検出 (Base ブランチ検出を参照)                                |
 | 3    | AskUserQuestion で base ブランチを選択 (選択肢: main / develop / [検出済み]) |
 | 4    | UI 変更検出 (下記参照)                                                       |
 | 5    | PR テンプレートに従いタイトルと本文を生成 (下記参照)                         |
 | 6    | prose review で本文をインライン精査 (下記参照)                               |
-| 7    | PR プレビュー → AskUserQuestion: "Create this PR?"                          |
+| 7    | PR プレビュー → AskUserQuestion: "Create this PR?"                           |
 | 8    | UI 変更時: Skill で `use-workflow-pageshot` を PR 本文と共に呼ぶ (下記参照)  |
 | 9    | push コマンドを表示 (手動実行)                                               |
 | 10   | PR 作成: `gh pr create --title "..." --body "..."`                           |
@@ -66,7 +66,7 @@ ${CLAUDE_SKILL_DIR}/templates/pr.md
 
 ### Design Decisions の検出
 
-`Design Decisions` は commit ごとでなく PR レベルで集約する。`git diff <base>...HEAD` と `git log <base>..HEAD` から検出する。
+`Design Decisions` は commit ごとでなく PR レベルで集約する。`git diff <base>...HEAD` と `git log <base>..HEAD` から検出する。ルーチンな実装のみ (明示的トレードオフなし) → Design Decisions セクションを省略する。
 
 | シグナル                               | 例                               |
 | -------------------------------------- | -------------------------------- |
@@ -74,8 +74,6 @@ ${CLAUDE_SKILL_DIR}/templates/pr.md
 | パフォーマンス/型/互換性のトレードオフ | "Chose X to avoid Y"             |
 | 既存パターンからの逸脱                 | "Deviated from X for..."         |
 | ライブラリ/API の選定                  | "Selected X (over Y) because..." |
-
-ルーチンな実装のみ (明示的トレードオフなし) → Design Decisions セクションを省略する。
 
 ## Base ブランチ検出
 
@@ -86,7 +84,7 @@ BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remo
 
 ## UI 変更検出
 
-`git diff --name-only {base}...HEAD` が以下の拡張子を含めば UI 変更とみなす。
+`git diff --name-only {base}...HEAD` が以下の拡張子を含めば UI 変更とみなす。UI 変更なし → Pageshot 統合をスキップ。
 
 | 拡張子                                          | 種別        |
 | ----------------------------------------------- | ----------- |
@@ -95,9 +93,7 @@ BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remo
 | `.css` / `.scss` / `.sass` / `.less`            | Style       |
 | `*.module.css` / `*.module.scss`                | CSS Modules |
 
-UI 変更なし → Pageshot Integration をスキップ。
-
-## Pageshot Integration
+## Pageshot 統合
 
 Skill ツールで `use-workflow-pageshot` skill を呼ぶ。入力は現在の PR 本文文字列。
 
@@ -106,12 +102,12 @@ Skill invoke: use-workflow-pageshot
 Input: <PR body string>
 ```
 
-呼び出し前に PR 本文に必要なもの:
+呼び出し前に PR 本文に以下が必要。
 
 - 上部近くに `Preview URL: <URL>` 行
 - `## How to Test` セクション (番号付きリスト)
 
-skill は stdout に 1 行返す:
+skill は stdout に 1 行返す。
 
 ```
 mode=screenshot artifact=/path/to/step-01.png
@@ -125,7 +121,7 @@ mode=video artifact=/path/to/capture.mp4
 
 `mode=failed` のとき、欠落項目を報告して PR 作成を続行する (pageshot をスキップ)。
 
-PR 作成後、以下を表示:
+PR 作成後、以下を表示する。
 
 ```text
 Pageshot generated: <absolute path>
@@ -157,7 +153,7 @@ Drag and drop it into the PR description or first comment on GitHub.
 
 ### Push (手動)
 
-`git push` を直接実行しない。コマンドを表示して確認を待つ:
+`git push` を直接実行しない。コマンドを表示して確認を待つ。
 
 ```text
 Run this to push: git push -u origin HEAD
@@ -181,4 +177,4 @@ Run this to push: git push -u origin HEAD
 
 ## 表示形式
 
-プレビューはタイトル、base ブランチ、現在ブランチ、サマリー bullets、変更テーブルを表示。成功時: `Created PR: #<number> <title> <PR URL>`
+プレビューはタイトル、base ブランチ、現在ブランチ、サマリー bullets、変更テーブルを表示する。成功時は `Created PR: #<number> <title> <PR URL>` を表示する。

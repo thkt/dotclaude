@@ -30,7 +30,7 @@ Skip this skill when no ADR directory exists; run `/audit-adr-gaps` first to ele
 
 ## Input
 
-`$ARGUMENTS` may contain a single ADR directory path. Parse before use:
+`$ARGUMENTS` may contain a single ADR directory path. Parse before use.
 
 - Trim whitespace; treat empty as "auto-detect"
 - If non-empty, treat the value as a path relative to repo root. Reject if it does not exist
@@ -73,14 +73,14 @@ Extract code-identifiers (function names, type names, module names, file paths) 
 
 ### Step 4: Reference Search
 
-For each extracted symbol:
+For each extracted symbol, apply the following.
 
 - `ugrep -r "<symbol>"` for literal matches
 - Filter out the ADR file itself and test fixtures
 
 #### External ADR Cross-Check
 
-Additionally, scan the entire codebase for `ADR-NNNN` (uppercase) and `adr-nnnn` (lowercase) reference patterns:
+Additionally, scan the entire codebase for `ADR-NNNN` (uppercase) and `adr-nnnn` (lowercase) reference patterns.
 
 ```bash
 ugrep -r -n -E "ADR-[0-9]{4}|adr-[0-9]{4}" --include="*.rs" --include="*.md" --include="*.toml" .
@@ -90,7 +90,7 @@ For each captured ADR id, check whether the matching `NNNN-*.md` file exists in 
 
 ### Step 5: Reviewer Selection
 
-Detect repo language by manifest file and run the matching reviewer(s) via Task tool.
+Detect repo language by manifest file and run the matching reviewer(s) via Task tool. Reviewers receive the candidate file:line list plus the ADR Decision text. They flag semantic gaps clippy or grep cannot detect.
 
 | Detection                     | Reviewer(s) to spawn                         |
 | ----------------------------- | -------------------------------------------- |
@@ -100,8 +100,6 @@ Detect repo language by manifest file and run the matching reviewer(s) via Task 
 | `pyproject.toml` / `setup.py` | reviewer-design (language-agnostic only)     |
 | `go.mod`                      | reviewer-design (language-agnostic only)     |
 | Other / Unknown               | reviewer-design                              |
-
-Reviewers receive the candidate file:line list plus the ADR Decision text. They flag semantic gaps clippy or grep cannot detect.
 
 ### Step 6: Modification Direction
 
@@ -121,7 +119,7 @@ Reviewers receive the candidate file:line list plus the ADR Decision text. They 
 
 ### Step 8: Report Output
 
-Compute a UTC timestamp with `date -u +%Y-%m-%d-%H%M%S` (ISO date plus HHMMSS) so same-day reruns never collide and stay chronologically sortable. Ensure the output directory exists:
+Compute a UTC timestamp with `date -u +%Y-%m-%d-%H%M%S` (ISO date plus HHMMSS) so same-day reruns never collide and stay chronologically sortable. Ensure the output directory exists.
 
 ```bash
 mkdir -p docs/audit
@@ -129,7 +127,7 @@ STAMP=$(date -u +%Y-%m-%d-%H%M%S)
 REPORT="docs/audit/${STAMP}-adr-drift.md"
 ```
 
-Write the report with:
+Write the report in this format.
 
 ```markdown
 # ADR Drift Scan: <YYYY-MM-DD>-<HHMMSS>

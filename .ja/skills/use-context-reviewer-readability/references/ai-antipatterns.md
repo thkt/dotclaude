@@ -74,7 +74,7 @@ function calculateDiscount(amount, userType) {
 
 ## ルール
 
-抽象化は次の場合のみ:
+抽象化は次の場合に限る。
 
 1. 同じパターンが 3 回以上出現 (DRY)
 2. 複数の実装が実際に必要

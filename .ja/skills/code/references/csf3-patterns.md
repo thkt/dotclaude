@@ -1,4 +1,4 @@
-# CSF3 Patterns
+# CSF3 パターン
 
 Component Story Format 3 (Storybook 7+) のリファレンス。
 
@@ -59,7 +59,7 @@ argTypes: {
 | decorators | story を wrap          | `decorators: [(Story) => <Wrapper><Story /></Wrapper>]` |
 | parameters | story 設定             | `parameters: { layout: 'fullscreen' }`                  |
 
-## Best Practices
+## ベストプラクティス
 
 | Do                          | Don't                         |
 | --------------------------- | ----------------------------- |

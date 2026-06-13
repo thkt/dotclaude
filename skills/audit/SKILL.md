@@ -41,6 +41,8 @@ Orchestrate reviewer agents, then run findings through critic-audit (challenge) 
 
 After File Routing assigns reviewers by file pattern, Leader filters the result by focus. Only reviewers in the focus set actually run. `reviewer-causation` follows the Wave 1 set (see Sequential Dependencies); it runs when `quality` or `all` includes the upstream reviewers it depends on.
 
+Filter rule. Final reviewer set per file = (File Routing reviewers for that pattern) ∩ (Focus reviewers). When the intersection is empty for a given file, that file is skipped for the focus.
+
 | focus       | Reviewers included                                                                                                                                                                                                                                                                                        |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | security    | reviewer-security, reviewer-silence                                                                                                                                                                                                                                                                       |
@@ -49,11 +51,9 @@ After File Routing assigns reviewers by file pattern, Leader filters the result 
 | a11y        | reviewer-accessibility, reviewer-progressive                                                                                                                                                                                                                                                              |
 | all         | No filter. All reviewers per File Routing run                                                                                                                                                                                                                                                             |
 
-Filter rule. Final reviewer set per file = (File Routing reviewers for that pattern) ∩ (Focus reviewers). When the intersection is empty for a given file, that file is skipped for the focus.
-
 ### Multi-run Policy
 
-Reviewer findings drift across runs on the same target. When well-supported coverage matters, pass `--runs=2` or `--runs=3`.
+Reviewer findings drift across runs on the same target. When well-supported coverage matters, pass `--runs=2` or `--runs=3`. With N > 1, Leader runs Wave 1 (reviewer fan-out) N times in sequence, then aggregates findings per the procedure below.
 
 | N   | Use case                           | Cost              |
 | --- | ---------------------------------- | ----------------- |
@@ -61,17 +61,15 @@ Reviewer findings drift across runs on the same target. When well-supported cove
 | 2   | Standard audit, FN risk acceptable | ~2x reviewer runs |
 | 3   | Pre-release, FN risk unacceptable  | ~3x reviewer runs |
 
-With N > 1, Leader runs Wave 1 (reviewer fan-out) N times in sequence, then aggregates findings per the procedure below.
-
 #### Aggregation
 
-1. Normalize each finding before merge:
+1. Normalize each finding before merge.
    - `file`: repo-relative path from project root (e.g., `src/config.rs`, not `config.rs`)
    - `line`: `M` or `M-N` → `(start, end)` tuple
    - `category`: lowercase, take prefix before `/` (e.g., `structure/waste` → `structure`)
 2. Merge key: `(file, category, reviewer)` with line-range overlap tolerance ±3
 3. `runs_observed`: integer array of run indices (1-based) that produced the finding; union on merge
-4. On message divergence: keep the longest; preserve both in `messages: [...]` if verification is needed
+4. On message divergence, keep the longest; preserve both in `messages: [...]` if verification is needed
 
 Without normalization, strict key matching leaves most findings unmerged because reviewers vary path format, line boundary, and category label across runs. Tolerance on all three is required. The ±3 tuning rationale (empirical ~3% → ~33% merge rate) is in ${CLAUDE_SKILL_DIR}/references/aggregation-tuning.md.
 
@@ -117,7 +115,7 @@ Start with Pre-flight (see below). Save snapshot before displaying any results t
 
 #### File Routing
 
-Leader classifies each target file by path and assigns to relevant reviewers only.
+Leader classifies each target file by path and assigns to relevant reviewers only. reviewer-causation is not in this table. It runs sequentially after all Wave 1 reviewers complete (see Sequential Dependencies). Leader spawns it with the same file list + all Wave 1 findings as input.
 
 | File Pattern         | Sub-reviewers (subagent_type)                                                                                                                                                                                                                                                                    |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -131,8 +129,6 @@ Leader classifies each target file by path and assigns to relevant reviewers onl
 | `*.css, *.html`      | reviewer-accessibility, reviewer-progressive, reviewer-performance, reviewer-duplication                                                                                                                                                                                                         |
 | `test.*`, `*.test.*` | reviewer-coverage, reviewer-testability                                                                                                                                                                                                                                                          |
 | Other                | reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-document                                                                                                                                                                                                                     |
-
-reviewer-causation is not in this table. It runs sequentially after all Wave 1 reviewers complete (see Sequential Dependencies). Leader spawns it with the same file list + all Wave 1 findings as input.
 
 #### Sub-reviewer Spawn
 
@@ -148,7 +144,7 @@ Reliability constraints (include verbatim in every reviewer prompt).
 - "Do NOT call the advisor tool. Work autonomously from your own analysis."
 - "Complete within 8 minutes. If uncertain about a finding, include it rather than skip. The challenger will prune false positives."
 
-Rationale: opus + advisor + deep analysis exceeds the stream watchdog. Sonnet override + no-advisor constraint eliminates reviewer stalls.
+Opus + advisor + deep analysis exceeds the stream watchdog, so the sonnet override and no-advisor constraint eliminate reviewer stalls.
 
 Fan-out is the point of this step. Spawn all applicable sub-reviewers as parallel Task calls within a single response. One Task call per reviewer. Sequential spawning defeats the parallelism and wastes turns.
 
@@ -188,7 +184,7 @@ Any skipped reviewer must be recorded to `pipeline_health.domains_skipped` with 
 
 ## Pre-flight: Tests + Hook Findings
 
-Read ${CLAUDE_SKILL_DIR}/references/pre-flight.md for the full procedure. detect task runner → find test script → run tests → convert hook output to `PF-{seq}` findings.
+Read ${CLAUDE_SKILL_DIR}/references/pre-flight.md for the full procedure. Detect task runner → find test script → run tests → convert hook output to `PF-{seq}` findings.
 
 ## Snapshot
 

@@ -20,17 +20,25 @@ user-invocable: false
 
 ## コマンド
 
-| 目的                  | コマンド                                                        |
-| --------------------- | --------------------------------------------------------------- |
-| 検索                  | `recall search "query"` (短縮形 `recall "query"`)               |
-| 直近 N 日             | `recall search "query" --days N`                                |
-| プロジェクト フィルタ | `recall search "query" --project <path>`                        |
-| ソース フィルタ       | `recall search "query" --source claude` または `--source codex` |
-| 結果数制限            | `recall search "query" --limit N` (デフォルト 10, 最大 100)     |
-| セッション表示        | `recall show <session-id>`                                      |
-| ステータス            | `recall status`                                                 |
-| 増分インデックス      | `recall index`                                                  |
-| 完全リビルド          | `recall index --force`                                          |
+| 目的                 | コマンド                                                        |
+| -------------------- | --------------------------------------------------------------- |
+| 検索                 | `recall search "query"` (短縮形 `recall "query"`)               |
+| 直近 N 日            | `recall search "query" --days N`                                |
+| プロジェクトフィルタ | `recall search "query" --project <path>`                        |
+| ソースフィルタ       | `recall search "query" --source claude` または `--source codex` |
+| 結果数制限           | `recall search "query" --limit N` (デフォルト 10, 最大 100)     |
+| セッション表示       | `recall show <session-id>`                                      |
+| ステータス           | `recall status`                                                 |
+| 増分インデックス     | `recall index`                                                  |
+| 完全リビルド         | `recall index --force`                                          |
+
+## クエリ構成
+
+最初から二言語クエリを書く (例 `recall "認証 auth"`)。FTS5 の trigram トークナイズは 2 文字以下の日本語語句にマッチせず (認証/依存は 0 件)、embedding は EN⇄JA を橋渡ししない (thkt/recall#51)。両言語を含めることで各検索経路をカバーする。
+
+## 結果が弱いときのリトライ
+
+recall はクエリを拡張しない (caller-is-LLM, thkt/recall#25)。ハイブリッド検索は最近傍を返すため、貧弱なクエリは 0 件ではなく低関連の結果になる。結果が空または低関連のときは、同義語、EN⇄JA バリアント、関連概念語で自分でクエリを書き直して 1 回リトライする。
 
 ## コード検索との並列実行
 

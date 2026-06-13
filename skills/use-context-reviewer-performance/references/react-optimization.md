@@ -35,10 +35,7 @@ const ExpensiveList = React.memo(({ data }: { data: Data[] }) => {
 ### useMemo
 
 ```tsx
-const sortedItems = useMemo(
-  () => items.sort((a, b) => b.price - a.price),
-  [items],
-);
+const sortedItems = useMemo(() => items.sort((a, b) => b.price - a.price), [items]);
 ```
 
 ### useCallback

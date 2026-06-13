@@ -4,6 +4,8 @@ A good problem statement is specific and observable. "The dashboard takes 5 seco
 
 ## Example: Dashboard takes 5 seconds to load
 
+The solution is lazy loading for sections, fetched on-demand.
+
 | Step | Question         | Answer                          |
 | ---- | ---------------- | ------------------------------- |
 | 1    | Why 5 seconds?   | API `/api/dashboard` takes 4.5s |
@@ -12,9 +14,9 @@ A good problem statement is specific and observable. "The dashboard takes 5 seco
 | 4    | Why all at once? | Renders everything on mount     |
 | 5    | Why on mount?    | No lazy loading                 |
 
-Solution: Lazy loading for sections, fetch on-demand.
-
 ## Example: Form submits twice
+
+The solution is `useRef` for an immediate flag, or `disabled={pending}` from the form action.
 
 | Step | Question          | Answer                                  |
 | ---- | ----------------- | --------------------------------------- |
@@ -23,5 +25,3 @@ Solution: Lazy loading for sections, fetch on-demand.
 | 3    | Why not disabled? | `isSubmitting` set after handler starts |
 | 4    | Why after?        | React batches state updates             |
 | 5    | Why batching?     | State used for imperative concern       |
-
-Solution: `useRef` for immediate flag, or `disabled={pending}` from form action.

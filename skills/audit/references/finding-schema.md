@@ -43,7 +43,7 @@ Report a finding only when all of the following hold. Otherwise, do not report.
 - A concrete trigger and reasoning can both be written (see Language Constraints)
 - The reviewer read the target file and confirmed the condition in current code
 
-reviewer-security has a lower bar: include a finding even when exploitability is uncertain, provided a concrete fix suggestion accompanies it.
+reviewer-security has a lower bar. Include a finding even when exploitability is uncertain, provided a concrete fix suggestion accompanies it.
 
 ### Pre-Report Verification
 
@@ -148,7 +148,7 @@ When the same pattern appears in multiple locations, apply these rules.
 - List all locations in evidence (max 5, then "and N more")
 - Set severity to the highest among occurrences
 
-Example: "Unused import in 7 files" → 1 finding, severity from worst case
+For example, "Unused import in 7 files" is one finding with severity from the worst case.
 
 ## Default Error Handling
 

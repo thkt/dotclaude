@@ -35,10 +35,7 @@ const ExpensiveList = React.memo(({ data }: { data: Data[] }) => {
 ### useMemo
 
 ```tsx
-const sortedItems = useMemo(
-  () => items.sort((a, b) => b.price - a.price),
-  [items],
-);
+const sortedItems = useMemo(() => items.sort((a, b) => b.price - a.price), [items]);
 ```
 
 ### useCallback
@@ -75,6 +72,6 @@ const handleClick = useCallback(() => {
 
 ## プロファイリング
 
-1. React DevTools, Profiler タブ
-2. 記録, 操作実行, 停止
+1. React DevTools → Profiler タブ
+2. 記録 → 操作実行 → 停止
 3. flame graph で不要な再レンダリングを確認

@@ -1,7 +1,6 @@
 # Audit Output Template
 
-Output is rendered from `snapshot.json` (the canonical source. See ADR 0047 and `references/snapshot-schema.md`).
-Every value below traces back to a snapshot field; do not surface data that has no snapshot origin. Leader orchestrates the render; integrator fills snapshot.
+Output is rendered from `snapshot.json` (the canonical source. See ADR 0047 and `references/snapshot-schema.md`). Every value below traces back to a snapshot field; do not surface data that has no snapshot origin. Leader orchestrates the render; integrator fills snapshot.
 
 ## Template
 
@@ -51,7 +50,7 @@ One row per finding whose id starts with `RC-`.
 | ----------------- | ---------------------- | ----------------------- | --------------------- |
 | {findings[RC].id} | {findings[RC].message} | {findings[RC].resolves} | {findings[RC].effort} |
 
-`Findings resolved` and `Effort` are integrator-supplied fields on RC-* entries.
+`Findings resolved` and `Effort` are integrator-supplied fields on RC-\* entries.
 Omit this section if no finding starts with `RC-`.
 
 ---

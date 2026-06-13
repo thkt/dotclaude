@@ -12,6 +12,8 @@ user-invocable: false
 
 ## Detection (OWASP Top 10)
 
+LLM01 covers apps that pass untrusted content to an LLM. The sink is the prompt itself: untrusted text concatenated without a data/instruction boundary, or a caller-supplied value interpolated into a system prompt. Constrain an LLM tool (e.g. a `fetch_url` tool) the same way as its non-LLM counterpart (A10 SSRF). The tool is the sink, not the prompt.
+
 | ID    | Category                  | Pattern                                                                                                                                | Fix                                                                                   |
 | ----- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | A01   | Broken Access Control     | Missing auth, IDOR, path traversal                                                                                                     | Auth middleware, ownership check                                                      |
@@ -36,11 +38,9 @@ user-invocable: false
 | A02   | Sensitive Data Exposure   | JWT stored in localStorage/sessionStorage                                                                                              | httpOnly cookie instead                                                               |
 | LLM01 | Prompt Injection (LLM)    | Untrusted or caller-controlled value (RAG docs, fetched content, tool results, role args) reaches the prompt with no data-only framing | Delimit untrusted content as data; map caller values to fixed enumerated instructions |
 
-LLM01 covers apps that pass untrusted content to an LLM. The sink is the prompt itself: untrusted text concatenated without a data/instruction boundary, or a caller-supplied value interpolated into a system prompt. Constrain an LLM tool (e.g. a `fetch_url` tool) the same way as its non-LLM counterpart (A10 SSRF). The tool is the sink, not the prompt.
-
 ## Reporting
 
-Severity scale: critical / high / medium. Always include `file:line`.
+The severity scale is critical / high / medium. Always include `file:line`. Report each independent vulnerability as its own finding. When one file holds two distinct issues (e.g. a path traversal and a separate prompt injection), list both as separate findings rather than folding one into a note on the other.
 
 | Signal              | Severity | Required output                      |
 | ------------------- | -------- | ------------------------------------ |
@@ -48,8 +48,6 @@ Severity scale: critical / high / medium. Always include `file:line`.
 | Clear vulnerability | high     | Attack vector + concrete fix         |
 | Possible issue      | medium   | verification_hint + suggested fix    |
 | Speculative only    | none     | Do NOT report                        |
-
-Report each independent vulnerability as its own finding. When one file holds two distinct issues (e.g. a path traversal and a separate prompt injection), list both as separate findings rather than folding one into a note on the other.
 
 ## References
 

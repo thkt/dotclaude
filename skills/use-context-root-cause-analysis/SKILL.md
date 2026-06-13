@@ -27,13 +27,13 @@ Ask "why" five times, descending through abstraction levels.
 
 ## Tips
 
-| Tip              | Description                      |
-| ---------------- | -------------------------------- |
-| Stay factual     | Evidence, not assumptions        |
-| Don't stop early | First "why" is rarely root cause |
-| Don't go deep    | Stop when actionable             |
-| Validate         | "Because [5], therefore [4]..."  |
-| Verify fix       | "Will this prevent the problem?" |
+| Tip                      | Description                                                                                                                            |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Stay factual             | Evidence, not assumptions                                                                                                              |
+| Don't stop early         | First "why" is rarely root cause                                                                                                       |
+| Don't go deep            | Stop when actionable                                                                                                                   |
+| Validate                 | "Because [5], therefore [4]..."                                                                                                        |
+| Verify fix               | "Will this prevent the problem?"                                                                                                       |
 | Watch complexity signals | When intermittent / multiple independent changes overlap / behavior unexplained, enumerate ≥3 cause-layer candidates before converging |
 
 ## Output Format
@@ -46,14 +46,13 @@ Ask "why" five times, descending through abstraction levels.
 
 ### Pattern Enum
 
+Consumers (e.g., `/fix` Non-obvious flow) branch on the Pattern field to decide whether to apply defense-in-depth or escalate.
+
 | Value      | Meaning                                           |
 | ---------- | ------------------------------------------------- |
 | Isolated   | Single location, no recurrence path               |
 | Recurring  | Similar code exists nearby, recurrence possible   |
 | Systematic | Design-rooted, architecture-level recurrence risk |
-
-Consumers (e.g., `/fix` Non-obvious flow) branch on the Pattern field to decide
-whether to apply defense-in-depth or escalate.
 
 ## References
 

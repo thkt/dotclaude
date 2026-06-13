@@ -1,6 +1,6 @@
 ---
 name: code
-description: TDD/RGRC サイクルとリアルタイムテストフィードバックでコードを実装する。小さなバグ修正やエラー解決には使わない (/fix を使用)。
+description: TDD/RGRC サイクルとリアルタイムテストフィードバックでコードを実装する。vertical slice のみ (テスト 1 件 → 実装 1 件の交互。テスト一括 → 実装一括は禁止)。小さなバグ修正やエラー解決には使わない (/fix を使用)。
 when_to_use: 実装して, コード書いて, implement, coding
 allowed-tools: Bash(npm run) Bash(npm run:*) Bash(yarn run) Bash(yarn run:*) Bash(yarn:*) Bash(pnpm run) Bash(pnpm run:*) Bash(pnpm:*) Bash(bun run) Bash(bun run:*) Bash(bun:*) Bash(cargo:*) Bash(make:*) Bash(git status:*) Bash(git log:*) Bash(which:*) Edit MultiEdit Write Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
@@ -8,9 +8,9 @@ effort: xhigh
 argument-hint: "[implementation description] [--no-storybook]"
 ---
 
-# /code - TDD Implementation
+# /code - TDD 実装
 
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
+No production code without a failing test first.
 
 違反 → コードを削除し、テストを書き、書き直す。
 
@@ -20,7 +20,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
 
 > Starting TDD RGRC cycle. Every code change begins with a failing test.
 
-## Rationalization Counters
+## 言い訳カウンター
 
 | 言い訳                               | 反論                                                                                |
 | ------------------------------------ | ----------------------------------------------------------------------------------- |
@@ -31,74 +31,74 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
 | "Testing this would be too slow"     | 遅いテストは production bug より速い                                                |
 | "Red test doesn't need verification" | テストしない Red = 盲目的に書いている。実行して、失敗が意図と一致することを確認する |
 
-## Input
+## 入力
 
 - `$ARGUMENTS` に実装記述 (必須、空ならプロンプト)
 
-### Flags
+### フラグ
+
+プロジェクトに Storybook + コンポーネントファイルがあるとき自動検出。Storybook フェーズを参照。
 
 | Flag             | 効果                                              |
 | ---------------- | ------------------------------------------------- |
 | `--no-storybook` | Storybook 自動検出を無効化 (デフォルト: 自動検出) |
 
-プロジェクトに Storybook + コンポーネントファイルがあるとき自動検出。Storybook Phase を参照。
-
-## SOW Context
+## SOW コンテキスト
 
 ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md を参照
 
-## Scope Guard
+## スコープガード
 
 OUTCOME.md と SOW を読み込んだ後、(a) Phase ごとのファイル数と (b) outcome 整合性を確認する。Phase に Files ≥ 5 があれば、停止し `/think` で分割するようユーザーに求める。実装が OUTCOME.md の Non-goals に踏み込むか Constraints に抵触する場合、停止しユーザーに確認する。SOW がなく `$ARGUMENTS` が ≥ 5 ファイルを示唆する場合、まず `/think` 実行を提案する。
 
-## Target Languages
+## 対象言語
 
-JS/TS が first-class。Rust / Go / Python は `generator-test` のフレームワーク検出経由で動く。検出が失敗するときは task prompt にテストランナーを明示する。Storybook/E2E phase は非 JS/TS では既存条件で自動スキップ。Quality Gates は言語非依存 (T-NNN coverage、gates hook が言語ごとに pre/post-edit)。
+JS/TS が first-class。Rust / Go / Python は `generator-test` のフレームワーク検出経由で動く。検出が失敗するときは task prompt にテストランナーを明示する。Storybook/E2E フェーズは非 JS/TS では既存条件で自動スキップ。品質ゲートは言語非依存 (T-NNN coverage、gates hook が言語ごとに pre/post-edit)。
 
-## External References
+## 外部参照
 
-| Reference                                       | 読むタイミング                    | 見つからない/不明瞭時                      |
-| ----------------------------------------------- | --------------------------------- | ------------------------------------------ |
-| `.claude/OUTCOME.md`                            | Step 0 Outcome Anchor             | /outcome で stub を生成                    |
-| ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md  | Step 1 SOW 検出                   | SOW なし状態、Scope Guard を inline で適用 |
-| ${CLAUDE_SKILL_DIR}/references/csf3-patterns.md | Storybook Phase 全条件 pass       | 最小 CSF3 stories フォーマットを使う       |
-| `/goal` (optional)                              | Step 4 自律ループ                 | gates 自動リトライ; それ以外は手動         |
-| `generator-test` agent                          | Step 2 spawn                      | Error Handling: Leader が直接テスト生成    |
-| `evaluator-test` agent                          | Step 8 Quality Gates、Spec が存在 | Test Quality gate をスキップ               |
-| `reviewer-readability` agent                    | Step 5 Review Gate                | /fix ではスキップ; 手動レビューで継続      |
+| Reference                                       | 読むタイミング                 | 見つからない/不明瞭時                        |
+| ----------------------------------------------- | ------------------------------ | -------------------------------------------- |
+| `.claude/OUTCOME.md`                            | Step 0 Outcome Anchor          | /outcome で stub を生成                      |
+| ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md  | Step 1 SOW 検出                | SOW なし状態、スコープガードを inline で適用 |
+| ${CLAUDE_SKILL_DIR}/references/csf3-patterns.md | Storybook フェーズ全条件 pass  | 最小 CSF3 stories フォーマットを使う         |
+| `/goal` (optional)                              | Step 4 自律ループ              | gates 自動リトライ; それ以外は手動           |
+| `generator-test` agent                          | Step 2 spawn                   | エラー処理: Leader が直接テスト生成          |
+| `evaluator-test` agent                          | Step 8 品質ゲート、Spec が存在 | Test Quality gate をスキップ                 |
+| `reviewer-readability` agent                    | Step 5 Review Gate             | /fix ではスキップ; 手動レビューで継続        |
 
-## Notation
+## 記法
 
 | 記号         | 意味                                                        | 用途                                                               |
 | ------------ | ----------------------------------------------------------- | ------------------------------------------------------------------ |
 | `T-NNN`      | `T-\d{3}` 3 桁ゼロパディング spec scenario ID (例: `T-001`) | テスト関数名、describe/it 文字列、または inline コメントに埋め込む |
 | `TaskOutput` | `run_in_background: true` spawn からの同期受信              | 完了を待ってから次へ進む                                           |
 
-## Execution
+## 実行
 
 | Step | アクション             | 詳細                                                                                                                                               |
 | ---- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0    | Outcome Anchor         | `.claude/OUTCOME.md` を読む。不在なら /outcome で stub を生成                                                                                      |
-| 1    | SOW Context            | SOW/spec を検出して読む → Scope Guard                                                                                                              |
+| 1    | SOW コンテキスト       | SOW/spec を検出して読む → スコープガード                                                                                                           |
 | 2    | `generator-test` spawn | `subagent_type: generator-test`, `run_in_background: true`                                                                                         |
 | 3    | テスト結果を受信       | `TaskOutput` (実装前に完了を待つ)                                                                                                                  |
 | 4    | RGRC サイクル          | Green ごとに gates 自動リトライ; optional `/goal` ラッパー。condition は target と保存 invariant を対で書く (例 "失敗 0 件、テスト削除/skip なし") |
 | 5    | Review Gate            | `reviewer-readability` を spawn (/fix ではスキップ)                                                                                                |
-| 6    | Storybook Phase        | 条件付き                                                                                                                                           |
-| 7    | E2E Phase              | 条件付き                                                                                                                                           |
-| 8    | Quality Gates          | use-workflow-code を参照                                                                                                                           |
+| 6    | Storybook フェーズ     | 条件付き                                                                                                                                           |
+| 7    | E2E フェーズ           | 条件付き                                                                                                                                           |
+| 8    | 品質ゲート             | use-workflow-code を参照                                                                                                                           |
 
-## Spec Evolution
+## Spec の進化
 
 実装中に新規要件が見つかる (edge case、エラー処理、統合関心事)。
 
-1. 先に Spec を更新する: spec.md の Test Scenarios 表に T-NNN を追加
-2. それからテストを書く: テスト名/コメントで新しい T-NNN を参照
-3. Spec トレースなしのテストを追加してはいけない: 全テストは T-NNN にマップする
+1. 先に spec.md の Test Scenarios 表に T-NNN を追加して Spec を更新する
+2. それからテスト名/コメントで新しい T-NNN を参照するテストを書く
+3. Spec トレースなしのテストを追加してはいけない。全テストは T-NNN にマップする
 
 `evaluator-test` は T-NNN マッピングを使ってカバレッジ等の品質メトリクスを計算する。
 
-## Storybook Phase (条件付き)
+## Storybook フェーズ (条件付き)
 
 ### 条件
 
@@ -132,7 +132,7 @@ Will generate {File}.stories.tsx. Opt out with --no-storybook.
 | [M]    | マージ - diff を表示、手動 |
 | [D]    | Diff のみ - 新規を追記     |
 
-## E2E Phase (条件付き)
+## E2E フェーズ (条件付き)
 
 ### 条件
 
@@ -147,15 +147,13 @@ Will generate {File}.stories.tsx. Opt out with --no-storybook.
 
 ### Dev Server 検出
 
-`package.json` script から検出。
+`package.json` script から検出。script 値で指定されていれば port を抽出 (`--port`, `-p`, `PORT=`)。
 
 | 優先度 | script 名パターン        | デフォルト URL        |
 | ------ | ------------------------ | --------------------- |
 | 1      | dev, start:dev           | http://localhost:5173 |
 | 2      | start                    | http://localhost:3000 |
 | 3      | storybook, storybook:dev | http://localhost:6006 |
-
-script 値で指定されていれば port を抽出 (`--port`, `-p`, `PORT=`)。
 
 ### 実行
 
@@ -165,7 +163,9 @@ Agent(subagent_type: "generator-e2e",
       run_in_background: true)
 ```
 
-## Quality Gates
+## 品質ゲート
+
+呼び出し詳細は use-workflow-code を参照。
 
 | Check                     | 条件                    | 方法                          |
 | ------------------------- | ----------------------- | ----------------------------- |
@@ -173,9 +173,7 @@ Agent(subagent_type: "generator-e2e",
 | Test Quality (per-metric) | Spec が存在             | `evaluator-test` エージェント |
 | Iteration 強制            | 各 Write/Edit/MultiEdit | `gates` hook (PostToolUse)    |
 
-呼び出し詳細は use-workflow-code を参照。
-
-## Error Handling
+## エラー処理
 
 | エラー                             | アクション                                                                            |
 | ---------------------------------- | ------------------------------------------------------------------------------------- |
@@ -189,4 +187,4 @@ Agent(subagent_type: "generator-e2e",
 | agent-browser クラッシュ           | E2E をスキップ、advisory、続行                                                        |
 | Dev server 到達不能                | E2E をスキップ、advisory、続行                                                        |
 | E2E tests fail                     | Advisory (ブロックしない)                                                             |
-| Storybook phase エラー             | phase をスキップ、advisory、続行                                                      |
+| Storybook フェーズエラー           | phase をスキップ、advisory、続行                                                      |

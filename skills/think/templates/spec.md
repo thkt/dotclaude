@@ -6,13 +6,15 @@ SOW: [path to sow.md]
 
 ## Functional Requirements
 
+Input/Output: semantic descriptions (what goes in/out), not type names or field names.
+
 | ID     | Description                | Input            | Output            | Implements | Testability Notes                |
 | ------ | -------------------------- | ---------------- | ----------------- | ---------- | -------------------------------- |
 | FR-001 | The system SHALL [action]. | [semantic input] | [semantic output] | AC-001     | [e.g. mock clock, pure fn, none] |
 
-Input/Output: semantic descriptions (what goes in/out), not type names or field names.
-
 Description: EARS (Easy Approach to Requirements Syntax) pattern required.
+
+Rules: one SHALL per sentence, concrete values (no "appropriate" / "suitable" / "properly" / "correctly"), each SHALL specifies a numeric threshold, named state/error, or concrete input-output pair.
 
 | Pattern | Syntax                                                 | Use when               |
 | ------- | ------------------------------------------------------ | ---------------------- |
@@ -22,8 +24,6 @@ Description: EARS (Easy Approach to Requirements Syntax) pattern required.
 | Error   | If [condition], then the system SHALL [action]         | Failure handling       |
 | Limit   | The system SHALL NOT [action]                          | Prohibited behavior    |
 | Complex | While [state], when [event], the system SHALL [action] | State + trigger combo  |
-
-Rules: one SHALL per sentence, concrete values (no "appropriate" / "suitable" / "properly" / "correctly"), each SHALL specifies a numeric threshold, named state/error, or concrete input-output pair.
 
 ### Validation
 
@@ -37,11 +37,11 @@ Rules: one SHALL per sentence, concrete values (no "appropriate" / "suitable" / 
 
 ### Entities
 
+Attributes: semantic descriptions ("list of authors", "optional thread origin"). Field names and types are implementation decisions.
+
 | Entity   | Attributes            | Invariants            | FR     |
 | -------- | --------------------- | --------------------- | ------ |
 | [Entity] | [semantic attributes] | [what must hold true] | FR-001 |
-
-Attributes: semantic descriptions ("list of authors", "optional thread origin"). Field names and types are implementation decisions.
 
 <!-- Add Business Rules, Domain Events only when applicable -->
 
@@ -61,23 +61,23 @@ Attributes: semantic descriptions ("list of authors", "optional thread origin").
 
 ## Implementation
 
+Depends: list prior Phase IDs this phase requires, or `none` for parallel-executable. Enables agents to schedule independent phases concurrently.
+
 | Phase | FRs    | Files   | Depends |
 | ----- | ------ | ------- | ------- |
 | 1     | FR-001 | [files] | none    |
-
-Depends: list prior Phase IDs this phase requires, or `none` for parallel-executable. Enables agents to schedule independent phases concurrently.
 
 ## Testing Decisions
 
 <!-- Strategy-level. Concrete scenarios go in Test Scenarios below. -->
 
-| Decision               | Value                                                                |
-| ---------------------- | -------------------------------------------------------------------- |
-| Definition of "good"   | [external behavior only, not implementation details]                 |
-| Modules under test     | [which modules / components / pure functions]                        |
-| Mock boundary          | [what is real, what is mocked, why]                                  |
-| Prior art              | [link or filename for the closest existing test, if any]             |
-| Skip rationale         | [if some FRs intentionally have no T-NNN, state why]                 |
+| Decision             | Value                                                    |
+| -------------------- | -------------------------------------------------------- |
+| Definition of "good" | [external behavior only, not implementation details]     |
+| Modules under test   | [which modules / components / pure functions]            |
+| Mock boundary        | [what is real, what is mocked, why]                      |
+| Prior art            | [link or filename for the closest existing test, if any] |
+| Skip rationale       | [if some FRs intentionally have no T-NNN, state why]     |
 
 ## Test Scenarios
 
@@ -89,19 +89,19 @@ Depends: list prior Phase IDs this phase requires, or `none` for parallel-execut
 
 ## Non-Functional Requirements
 
-| ID      | Category    | Requirement   | Target   | Rationale   | Validates |
-| ------- | ----------- | ------------- | -------- | ----------- | --------- |
-| NFR-001 | performance | [requirement] | [target] | [why target] | AC-001   |
-
 Rationale: why this target value (e.g. "UX guideline", "SLA 99.9%", "P95 budget of parent request"). Empty = reviewers cannot judge whether the threshold is appropriate.
+
+| ID      | Category    | Requirement   | Target   | Rationale    | Validates |
+| ------- | ----------- | ------------- | -------- | ------------ | --------- |
+| NFR-001 | performance | [requirement] | [target] | [why target] | AC-001    |
 
 ## Assumptions
 
-| ID     | Assumption   | Rationale   | Impact if broken |
-| ------ | ------------ | ----------- | ---------------- |
-| AS-001 | [assumption] | [why held]  | [what collapses] |
-
 Assumption: preconditions taken as given (existing infra, data shape, external SLA). Impact if broken: what must be redesigned if the assumption fails. Forces the reviewer to confront hidden coupling.
+
+| ID     | Assumption   | Rationale  | Impact if broken |
+| ------ | ------------ | ---------- | ---------------- |
+| AS-001 | [assumption] | [why held] | [what collapses] |
 
 ## Dependencies
 

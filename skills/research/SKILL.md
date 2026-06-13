@@ -35,7 +35,7 @@ Read `.claude/OUTCOME.md`. If absent, generate the stub via /outcome. Confirm th
 
 ### Phase 1: Prior Research Scan
 
-Derive subject slug from `$ARGUMENTS` (lowercase, hyphenated). Run `bfs .claude/workspace/research -name '*<slug>*.md'`. For each match, the table below shows the carry-forward mapping.
+Derive subject slug from `$ARGUMENTS` (lowercase, hyphenated). Run `bfs .claude/workspace/research -name '*<slug>*.md'`. If no match, skip and note "No prior research found for `<slug>`". For each match, the table below shows the carry-forward mapping.
 
 | Extract                 | Carry forward as                          |
 | ----------------------- | ----------------------------------------- |
@@ -43,22 +43,18 @@ Derive subject slug from `$ARGUMENTS` (lowercase, hyphenated). Run `bfs .claude/
 | Constraints table       | Phase 3 input (do not re-discover)        |
 | Disconfirmation results | Phase 6 reference                         |
 
-If no match, skip and note "No prior research found for `<slug>`".
-
 ### Phase 2: Intent + Domain Clarification
 
-Skip if `$ARGUMENTS` clearly indicates both. Otherwise ask via AskUserQuestion.
+Skip if `$ARGUMENTS` clearly indicates both. Otherwise ask via AskUserQuestion. Domain drives Phase 3 scoping. Domain=General applies no scoping.
 
 | Question        | Options                                              |
 | --------------- | ---------------------------------------------------- |
 | Research intent | Feature planning / Bug investigation / Understanding |
 | Domain          | Data model / API / Infrastructure / General          |
 
-Domain drives Phase 3 scoping. Domain=General applies no scoping.
-
 ### Phase 3: Domain-Scoped Parallel Investigation
 
-Run in parallel.
+Run in parallel. For Feature planning intent, additionally invoke `Task(subagent_type: explorer-feature)` to trace execution paths and map architecture for the relevant feature area. State sources directly for all findings as they accumulate: file:line for facts, "inferred from X" for inferences, "unknown, requires X" for unverified claims.
 
 | Tool                           | Purpose                             | Domain Scoping                                                     |
 | ------------------------------ | ----------------------------------- | ------------------------------------------------------------------ |
@@ -75,10 +71,6 @@ Use the following Domain glob roots.
 | Infrastructure | `terraform/`, `infra/`, `ci/`, `.github/`, `deploy/`, `docker/` |
 | General        | (no scoping; let Explore find)                                  |
 
-For Feature planning intent, additionally invoke `Task(subagent_type: explorer-feature)` to trace execution paths and map architecture for the relevant feature area.
-
-State sources directly for all findings as they accumulate: file:line for facts, "inferred from X" for inferences, "unknown, requires X" for unverified claims.
-
 ### Audit trail capture
 
 As Phase 3 searches run, append each command verbatim and its raw output to a scratch buffer in this conversation. Phase 6 Disconfirmation quotes from this scratch directly. Reconstruct nothing. The actual command and actual output is the audit trail.
@@ -89,7 +81,7 @@ When a finding states "no caller" / "X is the only Y" / "X is the exhaustive lis
 
 ### Primary-source verification (Phase 3 close)
 
-At the end of Phase 3, extract findings whose Source references behavior of an external system this session did not execute (hook firing timing, action/parser required schema, library API behavior, cited-paper claims) AND that is load-bearing: the conclusion, a Next Action, or the Disconfirmation depends on the claim being true. The trigger is structural — apply to every finding matching both conditions, no self-judged exemptions.
+At the end of Phase 3, extract findings whose Source references behavior of an external system this session did not execute (hook firing timing, action/parser required schema, library API behavior, cited-paper claims) and that is load-bearing: the conclusion, a Next Action, or the Disconfirmation depends on the claim being true. The trigger is structural. Apply to every finding matching both conditions, no self-judged exemptions.
 
 Verify each extracted claim against its primary source in one batch: `scout fetch <official docs URL>` for web docs, `scout repo-read` / `scout repo-overview` for GitHub-hosted sources. Record verbatim quotes to the audit trail scratch.
 
@@ -112,7 +104,7 @@ Skip when intent is Feature planning or Understanding.
 
 ### Same-origin artifact sweep (after root cause confirmed)
 
-A root cause rarely corrupts exactly one file. Sweep the artifacts that share its origin for sibling defects — they may be of a different kind than the root cause (a sibling can violate its consumer's schema while the root cause was a placeholder corruption).
+A root cause rarely corrupts exactly one file. Sweep the artifacts that share its origin for sibling defects. They may be of a different kind than the root cause (a sibling can violate its consumer's schema while the root cause was a placeholder corruption).
 
 | Step | Action                                                                                                                                                                                                                                                   |
 | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -129,7 +121,7 @@ Invoke `advisor()` with no parameters. Advisor sees full conversation history in
 Skip when all conditions hold.
 
 - Phase 1 hit prior research and current run inherits only
-- Intent = Understanding AND Domain = General
+- Intent = Understanding and Domain = General
 - No claim crosses repo boundary or drives PR scope
 
 If advisor flags missed area or weak inference, return to Phase 3 for targeted scoping. Record skip reason in output if applicable.
@@ -154,11 +146,11 @@ If advisor flags missed area or weak inference, return to Phase 3 for targeted s
 
 ## Output
 
-Session ID: ${CLAUDE_SESSION_ID}
-
-File: `.claude/workspace/research/YYYY-MM-DD-<slug>.md`
-
-Template: ${CLAUDE_SKILL_DIR}/templates/research.md
+| Item       | Value                                             |
+| ---------- | ------------------------------------------------- |
+| Session ID | ${CLAUDE_SESSION_ID}                              |
+| File       | `.claude/workspace/research/YYYY-MM-DD-<slug>.md` |
+| Template   | ${CLAUDE_SKILL_DIR}/templates/research.md         |
 
 ## Verification
 

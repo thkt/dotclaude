@@ -7,23 +7,23 @@ model: haiku
 argument-hint: "[context or ticket number]"
 ---
 
-# /checkout - Git Branch Name Generator
+# /checkout - Git ブランチ名ジェネレーター
 
-## Input
+## 入力
 
 - コンテキストまたはチケット番号: `$ARGUMENTS` (任意)
 - `$ARGUMENTS` が空 → git diff/status のみで解析
 
-## Execution
+## 実行
 
-| Step | アクション                                       |
-| ---- | ------------------------------------------------ |
-| 1    | 変更を読む: `git status`, `git diff` (並列)      |
-| 2    | ブランチ名候補を 3 つ生成 (Branch Naming を参照) |
-| 3    | `AskUserQuestion` で理由付き選択肢を提示         |
-| 4    | `git checkout -b` で選んだブランチを作成         |
+| Step | アクション                                     |
+| ---- | ---------------------------------------------- |
+| 1    | 変更を読む: `git status`, `git diff` (並列)    |
+| 2    | ブランチ名候補を 3 つ生成 (ブランチ命名を参照) |
+| 3    | `AskUserQuestion` で理由付き選択肢を提示       |
+| 4    | `git checkout -b` で選んだブランチを作成       |
 
-## Branch Naming
+## ブランチ命名
 
 | Prefix    | ユースケース    | トリガー                     |
 | --------- | --------------- | ---------------------------- |
@@ -35,7 +35,7 @@ argument-hint: "[context or ticket number]"
 | chore/    | メンテナンス    | 依存、設定                   |
 | perf/     | パフォーマンス  | 最適化、キャッシュ           |
 
-## Format
+## フォーマット
 
 ```text
 <type>/<scope>-<description>
@@ -48,7 +48,7 @@ argument-hint: "[context or ticket number]"
 | `fix/api-resolve-timeout-issue`  | `feature/ADD_USER` (大文字) |
 | `feature/PROJ-123-user-search`   | `fix/bug` (曖昧すぎる)      |
 
-## Rules
+## ルール
 
 | Do                     | Don't                       |
 | ---------------------- | --------------------------- |
@@ -57,7 +57,7 @@ argument-hint: "[context or ticket number]"
 | 簡潔に (2-4 単語)      | 曖昧な名前 ("update")       |
 | チケット ID を含める   | 日付を含める                |
 
-## Error Handling
+## エラー処理
 
 | エラー               | アクション              |
 | -------------------- | ----------------------- |
@@ -65,8 +65,8 @@ argument-hint: "[context or ticket number]"
 | ブランチ既存         | 代替名を提案            |
 | git リポジトリでない | "Not a git repo" を報告 |
 
-## Display Format
+## 表示形式
 
-### Success
+### 成功時
 
 Created branch: `[selected-branch-name]`

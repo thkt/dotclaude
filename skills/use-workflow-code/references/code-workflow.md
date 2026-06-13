@@ -15,24 +15,22 @@ Completion: Quality Gates
 
 ### SOW/Spec Auto-detection
 
-See ../../\_lib/sow-resolution.md
+See ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md
 
 ### Test Generation
 
-Prerequisites: spec.md with FR-xxx items.
+Prerequisites. spec.md with FR-xxx items.
 
 1. Parse FR-xxx requirements from spec
-2. Generate ALL tests in skip state
-3. Order: simple → complex (Baby Steps)
+2. Generate all tests in skip state
+3. Order. simple → complex (Baby Steps)
 4. Add `// T-NNN` comment to each test mapping to Spec Test Scenario ID
 
-T-NNN traceability: each `it()` block includes a comment referencing its Spec
-test scenario (e.g., `// T-001`). This keeps verification in living code and
-enables `evaluator-test` to compute coverage and other quality metrics.
+T-NNN traceability. Each `it()` block includes a comment referencing its Spec test scenario (e.g., `// T-001`). This keeps verification in living code and enables `evaluator-test` to compute coverage and other quality metrics.
 
 ## Phase 1-N: RGRC Cycle
 
-For each test:
+For each test.
 
 | Step     | Action                                            |
 | -------- | ------------------------------------------------- |
@@ -43,8 +41,7 @@ For each test:
 
 ## Review Gate
 
-After all RGRC cycles, spawn `reviewer-readability` to catch structural and
-readability issues missed during implementation.
+After all RGRC cycles, spawn `reviewer-readability` to catch structural and readability issues missed during implementation.
 
 ```text
 Agent(subagent_type: "reviewer-readability",
@@ -59,21 +56,17 @@ Agent(subagent_type: "reviewer-readability",
 | medium/low only  | Pass                               |
 | timeout          | Skip                               |
 
-Skip when: `/fix`, single-file changes, no Spec context.
+Skip when `/fix`, single-file changes, or no Spec context.
 
 ## E2E Phase
 
-After Review Gate, conditionally spawn `generator-e2e`. See
-`~/.claude/skills/code/SKILL.md` E2E Phase section for full conditions and dev server
-detection logic.
+After Review Gate, conditionally spawn `generator-e2e`. See the E2E Phase section in ${CLAUDE_SKILL_DIR}/../code/SKILL.md for full conditions and dev server detection logic.
 
-Skip when: no `Type: e2e` in Spec, agent-browser not installed, no dev server,
-or `/fix`.
+Skip when no `Type: e2e` in Spec, agent-browser not installed, no dev server, or `/fix`.
 
 ## Quality Gates
 
-Run lint, type-check, test using project's package manager (detect from
-lockfile). Independent commands in parallel.
+Run lint, type-check, test using project's package manager (detect from lockfile). Independent commands in parallel.
 
 ## Implementation Approach
 

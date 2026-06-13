@@ -1,4 +1,4 @@
-# Calibration Examples
+# キャリブレーション例
 
 audit reviewer 向けのドメイン別 REPORT/SKIP 例。各 reviewer がこのファイルを参照する。原則は `finding-schema.md` にある。
 
@@ -260,7 +260,7 @@ app.get("/users", async (req, res) => {
 async function fetchUser(id: string): Promise<User> {
   const res = await fetch(`/api/users/${id}`);
   const data = await res.json();
-  return data as User;  // no runtime validation
+  return data as User; // no runtime validation
 }
 ```
 
@@ -277,7 +277,7 @@ const schema = z.object({ name: z.string(), email: z.string().email() });
 
 function parseUser(raw: unknown): User {
   const parsed = schema.parse(raw);
-  return parsed as User;  // Zod already validated; type narrowing
+  return parsed as User; // Zod already validated; type narrowing
 }
 ```
 
@@ -318,7 +318,7 @@ pub struct Point {
 | Filter | Context Test: 強制すべき不変条件なし                  |
 | Signal | (x, y) はどんな組合せも有効; encapsulation は価値ゼロ |
 
-## DP (reviewer-design)
+## RP (reviewer-react-pattern)
 
 ### REPORT
 
@@ -328,19 +328,23 @@ function OrderPage() {
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState("date");
 
-  useEffect(() => { fetch("/api/orders").then(r => r.json()).then(setOrders); }, []);
+  useEffect(() => {
+    fetch("/api/orders")
+      .then((r) => r.json())
+      .then(setOrders);
+  }, []);
 
-  const filtered = orders.filter(o => o.name.includes(filter));
-  const sorted = filtered.sort((a, b) => a[sort] > b[sort] ? 1 : -1);
+  const filtered = orders.filter((o) => o.name.includes(filter));
+  const sorted = filtered.sort((a, b) => (a[sort] > b[sort] ? 1 : -1));
 
   return (
     <div>
-      <input value={filter} onChange={e => setFilter(e.target.value)} />
-      <select value={sort} onChange={e => setSort(e.target.value)}>
+      <input value={filter} onChange={(e) => setFilter(e.target.value)} />
+      <select value={sort} onChange={(e) => setSort(e.target.value)}>
         <option value="date">Date</option>
         <option value="name">Name</option>
       </select>
-      {sorted.map(o => (
+      {sorted.map((o) => (
         <div key={o.id}>
           <h3>{o.name}</h3>
           <p>{o.total}</p>
@@ -362,8 +366,11 @@ function OrderPage() {
 
 ```tsx
 function UserAvatar({ name, src }: { name: string; src: string }) {
-  const initials = name.split(" ").map(n => n[0]).join("");
-  return <img src={src} alt={initials} onError={e => (e.target.textContent = initials)} />;
+  const initials = name
+    .split(" ")
+    .map((n) => n[0])
+    .join("");
+  return <img src={src} alt={initials} onError={(e) => (e.target.textContent = initials)} />;
 }
 ```
 
@@ -371,6 +378,75 @@ function UserAvatar({ name, src }: { name: string; src: string }) {
 | ------ | -------------------------------------------------------------- |
 | Filter | Context Test: 単一責務、leaf component                         |
 | Signal | `initials` 導出は些末; hook 抽出はオーバーヘッドにしかならない |
+
+## DP (reviewer-design)
+
+### REPORT (shallow, React)
+
+```tsx
+const ButtonWrapper = (props: ButtonProps) => <Button {...props} />;
+```
+
+| Field   | Value                                                                         |
+| ------- | ----------------------------------------------------------------------------- |
+| Filter  | Deletion test: 削除すると全呼び出し箇所で `<Button>` に潰れ、ロジック損失なし |
+| Trigger | component が自前の state/effect/導出なしに props を 1:1 転送                  |
+| Impact  | 挙動を何も隠さずに間接層を 1 つ追加                                           |
+
+### REPORT (shallow, Rust)
+
+```rust
+pub struct AppLogger;
+
+impl AppLogger {
+    pub fn info(&self, msg: &str) { event!(Level::INFO, "{}", msg); }
+    pub fn warn(&self, msg: &str) { event!(Level::WARN, "{}", msg); }
+    pub fn error(&self, msg: &str) { event!(Level::ERROR, "{}", msg); }
+}
+```
+
+| Field   | Value                                                                     |
+| ------- | ------------------------------------------------------------------------- |
+| Filter  | Deletion test: caller が tracing マクロを直接呼べばよく、失われる抽象なし |
+| Trigger | メソッドが集約・検証・state なしに `tracing::event!` へ 1:1 転送          |
+| Impact  | wrapper に見合う働きをせず primitive を改名しただけ                       |
+
+### SKIP (deep, React)
+
+```tsx
+function OrderContainer({ orderId }: { orderId: string }) {
+  const { data, isLoading, error, refetch } = useOrder(orderId);
+  const { mutate: cancel, isPending } = useCancelOrder();
+  const handleCancel = useCallback(() => {
+    if (data?.status === "shipped") return alert("Cannot cancel shipped order");
+    cancel(orderId, { onSuccess: refetch });
+  }, [orderId, cancel, refetch, data?.status]);
+  if (isLoading) return <Spinner />;
+  if (error) return <ErrorView err={error} />;
+  return <OrderDetail order={data} isCancelling={isPending} onCancel={handleCancel} />;
+}
+```
+
+| Field  | Value                                                                               |
+| ------ | ----------------------------------------------------------------------------------- |
+| Filter | Deletion test: 削除すると全 caller が fetch+state+rule+lifecycle を再実装させられる |
+| Signal | 2 hook を集約し view-model を導出、ドメインルール (shipped はキャンセル不可) を内包 |
+
+### SKIP (deep, Rust)
+
+```rust
+pub struct Redactor { /* compiled patterns + placeholder index */ }
+impl Redactor {
+    pub fn new(rules: &[RedactionRule]) -> Result<Self, RedactionError> { /* compile + validate uniqueness */ }
+    pub fn redact<'a>(&self, text: &'a str) -> Cow<'a, str> { /* apply in order, Cow optimization */ }
+    pub fn rule_for_placeholder(&self, p: &str) -> Option<&str> { /* reverse lookup */ }
+}
+```
+
+| Field  | Value                                                                                        |
+| ------ | -------------------------------------------------------------------------------------------- |
+| Filter | Deletion test: 削除すると caller が compile+validate+apply+reverse-lookup を再実装させられる |
+| Signal | invariant (placeholder の一意性)、borrowed-vs-owned 最適化、error taxonomy を所有            |
 
 ## TEST (reviewer-testability)
 
@@ -412,12 +488,12 @@ function formatCurrency(amount: number, locale: string): string {
 function ChatList({ messages }: { messages: Message[] }) {
   return (
     <ul>
-      {messages.map(msg => (
+      {messages.map((msg) => (
         <ChatBubble
           key={msg.id}
           message={msg}
-          onReply={() => handleReply(msg.id)}  // new function every render
-          style={{ padding: msg.isOwn ? 10 : 20 }}  // new object every render
+          onReply={() => handleReply(msg.id)} // new function every render
+          style={{ padding: msg.isOwn ? 10 : 20 }} // new object every render
         />
       ))}
     </ul>
@@ -473,7 +549,7 @@ window.addEventListener("resize", () => {
 
 ```javascript
 const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
+  entries.forEach((entry) => {
     if (entry.isIntersecting) {
       loadMoreItems();
       observer.unobserve(entry.target);
@@ -494,7 +570,7 @@ observer.observe(sentinelRef.current);
 
 ```tsx
 function DashboardPage() {
-  const { data } = useSWR("/api/dashboard", fetcher);  // can throw
+  const { data } = useSWR("/api/dashboard", fetcher); // can throw
   return (
     <main>
       <h1>Dashboard</h1>
@@ -526,7 +602,7 @@ function PriceTag({ amount }: { amount: number }) {
 
 ## RC (reviewer-causation)
 
-### REPORT (retry hides cause)
+### REPORT (retry が原因を隠す)
 
 ```typescript
 // "Fix: add retry on save failure"
@@ -535,7 +611,7 @@ async function saveOrder(order: Order) {
     await db.save(order);
   } catch {
     await sleep(500);
-    await db.save(order);  // retry hides the real problem
+    await db.save(order); // retry hides the real problem
   }
 }
 ```
@@ -546,7 +622,7 @@ async function saveOrder(order: Order) {
 | Trigger | コネクションプール枯渇または制約違反                                   |
 | Impact  | 失敗中 DB に二重負荷; 根本原因 (プールサイズや検証ギャップ) を覆い隠す |
 
-### SKIP (intentional transient retry)
+### SKIP (意図的な transient retry)
 
 ```typescript
 // Intentional retry for transient network errors
@@ -554,7 +630,7 @@ async function fetchExternalRate(currency: string): Promise<number> {
   return retry(() => fetch(`https://api.rates.com/${currency}`), {
     retries: 3,
     delay: 1000,
-    retryOn: [503, 429],  // only transient errors
+    retryOn: [503, 429], // only transient errors
   });
 }
 ```
@@ -577,11 +653,11 @@ function getBalance(userId: string): number {
 }
 ```
 
-| Field   | Value                                                                |
-| ------- | -------------------------------------------------------------------- |
-| Filter  | Harm Test pass: 段落が cold-cache miss の 0 偽装を正当化             |
+| Field   | Value                                                                 |
+| ------- | --------------------------------------------------------------------- |
+| Filter  | Harm Test pass: 段落が cold-cache miss の 0 偽装を正当化              |
 | Trigger | cold cache が undefined を返し、呼び出し元が miss でなく残高 0 を見る |
-| Impact  | 誤った残高を実値として表示; コメントが contract 修正でなく近道を弁護 |
+| Impact  | 誤った残高を実値として表示; コメントが contract 修正でなく近道を弁護  |
 
 ### SKIP (justification camouflage)
 
@@ -594,10 +670,10 @@ function rowPtr(table: Table, idx: number): RowRef {
 }
 ```
 
-| Field  | Value                                                                 |
-| ------ | --------------------------------------------------------------------- |
+| Field  | Value                                                                  |
+| ------ | ---------------------------------------------------------------------- |
 | Filter | Context Test: コメントが実在し強制される invariant (ロック保持) を記録 |
-| Signal | 呼び出し元が保証する事前条件であり、近道の言い訳ではない              |
+| Signal | 呼び出し元が保証する事前条件であり、近道の言い訳ではない               |
 
 ## REUSE (reviewer-reuse)
 
@@ -705,8 +781,10 @@ function Dropdown({ items, onSelect }: Props) {
       <div onClick={() => setOpen(!open)}>Select...</div>
       {open && (
         <ul>
-          {items.map(item => (
-            <li key={item.id} onClick={() => onSelect(item)}>{item.label}</li>
+          {items.map((item) => (
+            <li key={item.id} onClick={() => onSelect(item)}>
+              {item.label}
+            </li>
           ))}
         </ul>
       )}
@@ -725,7 +803,11 @@ function Dropdown({ items, onSelect }: Props) {
 
 ```tsx
 function SubmitButton({ onClick, children }: Props) {
-  return <button type="submit" onClick={onClick}>{children}</button>;
+  return (
+    <button type="submit" onClick={onClick}>
+      {children}
+    </button>
+  );
 }
 ```
 

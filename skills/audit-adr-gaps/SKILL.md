@@ -69,7 +69,7 @@ Default threshold is 400 lines (one-screen ceiling).
 
 ### Step 2: Document Detection
 
-Scan top-level and `docs/` for decision-bearing documents (README, CONTRIBUTING, SECURITY, THREAT_MODEL, ARCHITECTURE, DESIGN, CLAUDE.md / AGENTS.md, Makefile / justfile, linter configs). Full pattern-to-content table: `${CLAUDE_SKILL_DIR}/references/detection-targets.md`.
+Scan top-level and `docs/` for decision-bearing documents (README, CONTRIBUTING, SECURITY, THREAT_MODEL, ARCHITECTURE, DESIGN, CLAUDE.md / AGENTS.md, Makefile / justfile, linter configs). Full pattern-to-content table: ${CLAUDE_SKILL_DIR}/references/detection-targets.md.
 
 ### Step 3: Large File Decision Mining
 
@@ -88,7 +88,7 @@ For each large file (full or truncated scope), spawn the matching reviewer via T
 - Is there a comment or module-doc that already records the rationale?
 - Does the comment describe the current state but omit the rule for future contributors? (this is the `incomplete-contract` pattern)
 
-Findings format: `file:line` + decision summary + evidence (code comment, naming, module-doc) + `documented?` (Yes/Partial/No) + `incomplete-contract?` (Yes/No). The `incomplete-contract` flag marks code whose comment says what is true but not what must remain true (a missing rule for future contributors); promotion is handled in Step 6.1, with examples in `${CLAUDE_SKILL_DIR}/references/decision-criteria.md`.
+Findings format: `file:line` + decision summary + evidence (code comment, naming, module-doc) + `documented?` (Yes/Partial/No) + `incomplete-contract?` (Yes/No). The `incomplete-contract` flag marks code whose comment says what is true but not what must remain true (a missing rule for future contributors); promotion is handled in Step 6.1, with examples in ${CLAUDE_SKILL_DIR}/references/decision-criteria.md.
 
 After collecting findings, cross-reference each one against the ADR directory (if any). Drop findings already covered by an ADR (record count as "ADR-covered (excluded)" in the summary).
 
@@ -154,7 +154,7 @@ Spawn `critic-design` via Task with the initial promotion candidate list. The ag
 - Is there already an enforcement mechanism (type system, lint, test) that makes the rule mechanical, leaving the ADR with nothing to add?
 - Bug vs Invariant: is this candidate describing a fix-the-bug case (current code is wrong and should change) or an invariant-to-document case (current code is intentional and should be preserved)? Bugs must be surfaced as bug-fix follow-ups, not ADRs. Documenting wrong behavior as intentional locks in the bug.
 
-ADR worth heuristic and incomplete-contract examples: see `${CLAUDE_SKILL_DIR}/references/decision-criteria.md` (pass to critic-design alongside the candidate list).
+ADR worth heuristic and incomplete-contract examples: see ${CLAUDE_SKILL_DIR}/references/decision-criteria.md (pass to critic-design alongside the candidate list).
 
 For each candidate, critic-design returns one of:
 
@@ -176,7 +176,7 @@ STAMP=$(date -u +%Y-%m-%d-%H%M%S)  # UTC date + HHMMSS; same-day reruns never co
 REPORT="docs/audit/${STAMP}-adr-gaps.md"
 ```
 
-Write the report following `${CLAUDE_SKILL_DIR}/templates/report-template.md`, substituting placeholders (`<YYYY-MM-DD>-<HHMMSS>`, `<source>:<line>`, `<summary>`) from findings. Add a per-file summary line `keep N / downgrade N / drop N`. If `--no-challenge` was set, omit the Challenge and Final columns and use the initial ranking.
+Write the report following ${CLAUDE_SKILL_DIR}/templates/report-template.md, substituting placeholders (`<YYYY-MM-DD>-<HHMMSS>`, `<source>:<line>`, `<summary>`) from findings. Add a per-file summary line `keep N / downgrade N / drop N`. If `--no-challenge` was set, omit the Challenge and Final columns and use the initial ranking.
 
 ### Step 8: Follow-up Hand-off
 

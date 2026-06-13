@@ -15,6 +15,7 @@
 | Why        | 5 フィールドすべて埋まっていること。Outcome は計測可能な結果であり、成果物ではない                                                                   |
 | AC         | 各 AC が Why Outcome に紐づくこと。Observable signal 列が埋まっていること (HTTP 200、状態 X)。孤立 AC なし、Why Problem を超えるスコープクリープなし |
 | Scope      | Out of Scope が Why フィールドまたは制約に紐づくこと。In Scope の Observable outcome 列が埋まっていること (具体的なシグナル)                         |
+| Bound      | Boundaries セクションは任意。存在する場合は最低 1 つの Never 行が必須。Enforced by 列は具体的なメカニズムを名指しすること                            |
 | Impl       | Phase あたりファイル数 < 5。Steps は具体的な変更を記述すること                                                                                       |
 | Test       | 各 AC に 1 つ以上のテスト。Verification は具体的に何を確認するかを記述すること                                                                       |
 | Risks      | 1 つ以上のリスクを特定。Probability 列を埋める。Impact = HIGH のときは Mitigation 必須                                                               |

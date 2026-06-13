@@ -43,7 +43,7 @@ Wave 1 reviewer output before challenge and dedupe. Reconciliation erases per-re
 
 One entry per finding as emitted by each Wave 1 reviewer. No `status` — these precede reconciliation.
 
-Trust boundary: this section is a best-effort convenience index transcribed by the Leader (an LLM), so silent omission is possible and nothing validates completeness. The session transcript (Task results in the session jsonl) remains the authoritative source; extraction procedure in the pilot report above. Before using `raw_findings` for measurement, cross-check entry counts per reviewer against the transcript.
+Trust boundary. This section is a best-effort convenience index transcribed by the Leader (an LLM), so silent omission is possible and nothing validates completeness. The session transcript (Task results in the session jsonl) remains the authoritative source; extraction procedure in the pilot report above. Before using `raw_findings` for measurement, cross-check entry counts per reviewer against the transcript.
 
 | Field      | Type   | Description                                                                                                |
 | ---------- | ------ | ---------------------------------------------------------------------------------------------------------- |

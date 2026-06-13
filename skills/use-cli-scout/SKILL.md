@@ -10,6 +10,8 @@ user-invocable: false
 
 ## Commands
 
+Run `scout <subcommand> --help` for options, `--json` envelope, exit codes, stdin input, and examples. The help output is the authoritative source for the installed version.
+
 | Purpose       | Command                               |
 | ------------- | ------------------------------------- |
 | Web search    | `scout search "query"`                |
@@ -19,14 +21,12 @@ user-invocable: false
 | Repo read     | `scout repo-read <owner/repo> <path>` |
 | Repo overview | `scout repo-overview <owner/repo>`    |
 
-Run `scout <subcommand> --help` for options, `--json` envelope, exit codes, stdin input, and examples. The help output is the authoritative source for the installed version.
-
 ## When to Use
 
 | use-cli-scout                      | Built-in WebFetch / WebSearch      |
 | ---------------------------------- | ---------------------------------- |
 | Latest docs, release notes         | Never (scout preferred)            |
-| GitHub repository exploration      | Never (scout repo-* preferred)     |
+| GitHub repository exploration      | Never (scout repo-\* preferred)    |
 | Deep research with compiled report | Unavailable (use scout research)   |
 | Markdown-clean page extraction     | WebFetch lacks Markdown conversion |
 

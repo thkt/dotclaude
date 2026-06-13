@@ -1,6 +1,6 @@
 ---
 name: think
-description: 設計の探索と SOW、Spec の生成。計画意図のないコードベース調査には使わない (代わりに /research を使う)。
+description: "組み込みの adversarial challenge (Step 4: critic-design) を伴う設計探索。challenge を生き残ったアプローチから SOW と Spec を生成する。計画意図のないコードベース調査には使わない (代わりに /research を使う)。"
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
 allowed-tools: Read Write LS Task TaskCreate TaskList AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
@@ -9,7 +9,7 @@ argument-hint: "[task description]"
 
 # /think
 
-深い設計探索。アプローチを比較し、仮定を検証し、SOW と Spec を生成する。
+adversarial challenge を伴う深い設計探索。2 つ以上のアプローチを比較し、critic-design をぶつけ (Step 4)、challenge を生き残ったアプローチだけを Spec に到達させる。アプローチは選び取る選択肢ではなく、論証にかける立場である。
 
 ## 入力
 

@@ -10,6 +10,8 @@ user-invocable: false
 
 ## コマンド
 
+オプション、`--json` envelope、exit code、stdin 入力、実行例は `scout <subcommand> --help` を参照する。インストール済みバージョンの正典は help 出力。
+
 | 目的               | コマンド                              |
 | ------------------ | ------------------------------------- |
 | Web 検索           | `scout search "query"`                |
@@ -19,14 +21,12 @@ user-invocable: false
 | リポジトリ読み取り | `scout repo-read <owner/repo> <path>` |
 | リポジトリ概要     | `scout repo-overview <owner/repo>`    |
 
-オプション、`--json` envelope、exit code、stdin 入力、実行例は `scout <subcommand> --help` を参照する。インストール済みバージョンの正典は help 出力。
-
-## 使用判断
+## 使いどころ
 
 | use-cli-scout                        | 組み込み WebFetch / WebSearch     |
 | ------------------------------------ | --------------------------------- |
 | 最新ドキュメント、リリースノート     | 使わない (scout を優先)           |
-| GitHub リポジトリ探索                | 使わない (scout repo-* を優先)    |
+| GitHub リポジトリ探索                | 使わない (scout repo-\* を優先)   |
 | 編集済みレポート付きディープリサーチ | 利用不可 (scout research を使用)  |
 | Markdown クリーンなページ抽出        | WebFetch には Markdown 変換がない |
 

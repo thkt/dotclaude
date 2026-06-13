@@ -10,7 +10,7 @@ argument-hint: "[implementation description] [--no-storybook]"
 
 # /code - TDD Implementation
 
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
+No production code without a failing test first.
 
 Violation → delete the code, write the test, then rewrite.
 
@@ -37,11 +37,11 @@ Before writing any code, output the declaration below verbatim.
 
 ### Flags
 
+Auto-detects when project has Storybook + component file. See Storybook Phase.
+
 | Flag             | Effect                                                  |
 | ---------------- | ------------------------------------------------------- |
 | `--no-storybook` | Disable Storybook auto-detection (default: auto-detect) |
-
-Auto-detects when project has Storybook + component file. See Storybook Phase.
 
 ## SOW Context
 
@@ -92,9 +92,9 @@ JS/TS is first-class. Rust / Go / Python work via `generator-test` framework det
 
 During implementation, new requirements may be discovered (edge cases, error handling, integration concerns).
 
-1. Update Spec first: Add T-NNN to the Test Scenarios table in spec.md
-2. Then write the test: Reference the new T-NNN in the test name/comment
-3. Never add tests without a Spec trace: Every test must map to a T-NNN
+1. Update the Spec first by adding T-NNN to the Test Scenarios table in spec.md
+2. Then write the test, referencing the new T-NNN in the test name/comment
+3. Never add tests without a Spec trace. Every test must map to a T-NNN
 
 `evaluator-test` uses T-NNN mappings to compute coverage and other quality metrics.
 
@@ -147,15 +147,13 @@ All must pass, evaluated in order, skip on first fail.
 
 ### Dev Server Detection
 
-Detected from `package.json` scripts.
+Detected from `package.json` scripts. Extract port from script value if specified (`--port`, `-p`, `PORT=`).
 
 | Priority | Script name pattern      | Default URL           |
 | -------- | ------------------------ | --------------------- |
 | 1        | dev, start:dev           | http://localhost:5173 |
 | 2        | start                    | http://localhost:3000 |
 | 3        | storybook, storybook:dev | http://localhost:6006 |
-
-Extract port from script value if specified (`--port`, `-p`, `PORT=`).
 
 ### Execution
 
@@ -167,13 +165,13 @@ Agent(subagent_type: "generator-e2e",
 
 ## Quality Gates
 
+See use-workflow-code for invocation details.
+
 | Check                     | Condition                  | How                        |
 | ------------------------- | -------------------------- | -------------------------- |
 | AC met                    | After RGRC                 | Manual (skip if no SOW)    |
 | Test Quality (per-metric) | Spec exists                | `evaluator-test` agent     |
 | Iteration enforcement     | Every Write/Edit/MultiEdit | `gates` hook (PostToolUse) |
-
-See use-workflow-code for invocation details.
 
 ## Error Handling
 

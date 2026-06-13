@@ -54,7 +54,7 @@ Pass when all 5 metrics meet thresholds. On any fail, report findings (uncovered
 
 ### Review Gate
 
-After RGRC cycles, spawn `reviewer-readability` as a background agent:
+After RGRC cycles, spawn `reviewer-readability` as a background agent.
 
 ```
 Agent(subagent_type: "reviewer-readability",
@@ -62,8 +62,7 @@ Agent(subagent_type: "reviewer-readability",
       run_in_background: true)
 ```
 
-High severity → fix before Quality Gates. Medium/low → advisory.
-Skip for `/fix` and single-file changes.
+High severity → fix before Quality Gates. Medium/low → advisory. Skip for `/fix` and single-file changes.
 
 ### Gate Result Output
 
@@ -75,8 +74,7 @@ Coverage:     C0 XX% / C1 XX% - pass | fail
 Test Quality: cov=X.X exc=X.X dup=X.X gran=X.X int=X.X | pass | fail | skip (no Spec)
 ```
 
-All 5 lines required. Empty lines indicate a skipped gate - investigate before
-proceeding.
+All 5 lines required. Empty lines indicate a skipped gate - investigate before proceeding.
 
 ## Rationalization Counters
 

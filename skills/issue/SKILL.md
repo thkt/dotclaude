@@ -17,6 +17,8 @@ argument-hint: "[issue description]"
 
 ## Execution
 
+A body supplied verbatim by the user skips steps 4-6 and posts unchanged.
+
 | Step | Action                                                                                  |
 | ---- | --------------------------------------------------------------------------------------- |
 | 0    | Read `.claude/OUTCOME.md`; if absent, generate the stub via /outcome                    |
@@ -30,9 +32,9 @@ argument-hint: "[issue description]"
 | 8    | Execute via body-file (sandbox-compatible)                                              |
 | 9    | Capture issue URL from command output                                                   |
 
-A body supplied verbatim by the user skips steps 4-6 and posts unchanged.
-
 ## Type Detection
+
+Default to `feature` if unclear.
 
 | Type    | Prefix    | When to use                                             |
 | ------- | --------- | ------------------------------------------------------- |
@@ -40,8 +42,6 @@ A body supplied verbatim by the user skips steps 4-6 and posts unchanged.
 | feature | [Feature] | New capability or enhancement request                   |
 | docs    | [Docs]    | Documentation additions or corrections                  |
 | chore   | [Chore]   | Maintenance, config, or dependency updates              |
-
-Default to `feature` if unclear.
 
 ## Language
 
@@ -75,27 +75,25 @@ Read `language` from ${CLAUDE_SKILL_DIR}/../../settings.json and translate the i
 
 ## Confidence Marking
 
-Mark which parts of the body are fixed vs tentative, so the implementer can tell a requirement to honor from a starting point to refine. Applied at generation time (Step 3); it is not a verification pass and triggers no investigation.
-
-Default direction decides itself without a codebase scan.
+Mark which parts of the body are fixed vs tentative, so the implementer can tell a requirement to honor from a starting point to refine. Applied at generation time (Step 3); it is not a verification pass and triggers no investigation. Default direction decides itself without a codebase scan.
 
 | Origin                                                                          | State     | Notation                          |
 | ------------------------------------------------------------------------------- | --------- | --------------------------------- |
 | User decided it, or it is the ask (WHAT, AC, explicit Scope/Constraints)        | fixed     | unmarked                          |
 | AI-inferred HOW (placement, approach, format), or a decision the user left open | tentative | `(tentative: <action at pickup>)` |
 
-An AI-inferred approach is tentative by definition, so marking it needs no investigation to promote it, which keeps the no-prefetch principle intact. The marker word follows the language setting (`仮` under Japanese). The action phrase tells the implementer what to do, splitting by why the item is tentative.
-
-| Why tentative                                              | Action phrase                                         |
-| ---------------------------------------------------------- | ----------------------------------------------------- |
-| Decision not yet settled (AI inferred a plausible default) | "decide at pickup" / "change if a better fit appears" |
-| Fact not yet verified (carried from Premise Check)         | "recheck at pickup"                                   |
+An AI-inferred approach is tentative by definition, so marking it needs no investigation to promote it, which keeps the no-prefetch principle intact. The marker word follows the language setting (`仮` under Japanese).
 
 Mark sparingly, only where it changes implementer action. Annotating every line collides with the Anti-AI-pattern rules (Hedge stacking, Compulsive section); a body that is all fixed gets no marks.
 
 The existing code-example and target-file annotations are instances of this rule. `reference shape; final form decided at pickup` is a tentative HOW; `candidates as of writing; recheck on pickup` is an unverified fact. Premise Check's provisional downgrade emits the same marker, one notation distinguished only by the action phrase.
 
-Tentative marks stay inline at the item they qualify. The Premises section stays reserved for issue-level premises that do not attach to a specific line (design refs, global assumptions).
+Tentative marks stay inline at the item they qualify. The Premises section stays reserved for issue-level premises that do not attach to a specific line (design refs, global assumptions). The action phrase tells the implementer what to do, splitting by why the item is tentative.
+
+| Why tentative                                              | Action phrase                                         |
+| ---------------------------------------------------------- | ----------------------------------------------------- |
+| Decision not yet settled (AI inferred a plausible default) | "decide at pickup" / "change if a better fit appears" |
+| Fact not yet verified (carried from Premise Check)         | "recheck at pickup"                                   |
 
 ## Premise Check
 
@@ -145,6 +143,8 @@ Write for a teammate who shares context and can open the linked docs, not a zero
 
 feature/bug only; docs/chore skip it. Spawn one critic-design Task directly with the drafted body (not via /challenge). The critic argues against the issue (hidden premises, missed dependencies, scope contradictions); it does not gate it. Final judgment stays with the user at confirm time.
 
+Critic findings never enter the issue body. They are confirm-time review material: fold or dismiss at preview. The body's Premises section stays reserved for issue-level premises that do not attach to a specific line (design refs, global assumptions), matching how humans write it.
+
 | Input field      | Mapping                                 |
 | ---------------- | --------------------------------------- |
 | source           | /issue                                  |
@@ -159,8 +159,6 @@ feature/bug only; docs/chore skip it. Spawn one critic-design Task directly with
 | confirmed      | Proceed to preview                                                                      |
 | weakened       | Fold accepted findings into the body; present the rest at preview as ephemeral critique |
 | needs_revision | Revise the body once; do not re-spawn                                                   |
-
-Critic findings never enter the issue body. They are confirm-time review material: fold or dismiss at preview. The body's Premises section stays reserved for issue-level premises that do not attach to a specific line (design refs, global assumptions), matching how humans write it.
 
 ## Sandbox-Compatible Create
 
@@ -203,9 +201,7 @@ mv /tmp/claude/issue-body.md ~/.Trash/ 2>/dev/null || true
 - <finding>: fold into body or dismiss
 ```
 
-The tentative block collects every inline tentative mark plus the Premises section, covering both decide-type (AI-inferred HOW) and verify-type (unverified facts, design refs), each with its action phrase. It adds no new content at preview time and mirrors what the body already carries. This is the reader's single signal for what is not yet fixed. If there are zero tentative items, omit the block. Keep it short.
-
-Critic block: omit when empty (docs/chore, or verdict confirmed).
+The tentative block collects every inline tentative mark plus the Premises section, covering both decide-type (AI-inferred HOW) and verify-type (unverified facts, design refs), each with its action phrase. It adds no new content at preview time and mirrors what the body already carries. This is the reader's single signal for what is not yet fixed. If there are zero tentative items, omit the block. Keep it short. Omit the critic block when empty (docs/chore, or verdict confirmed).
 
 ### Success
 

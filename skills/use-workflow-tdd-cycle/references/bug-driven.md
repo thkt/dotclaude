@@ -44,7 +44,7 @@ Execution follows the canonical RGRC Cycle in `SKILL.md`. Bug-driven differs in 
 
 | Pitfall                    | Fix                               |
 | -------------------------- | --------------------------------- |
-| Test after fixing          | Write failing test FIRST          |
+| Test after fixing          | Write failing test first          |
 | Test doesn't reproduce bug | Test exact failure scenario       |
 | Over-engineering fix       | Simplest solution (Occam's Razor) |
 | Not verifying test fails   | Always see Red before Green       |

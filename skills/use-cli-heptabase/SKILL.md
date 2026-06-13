@@ -12,19 +12,19 @@ Heptabase CLI (`heptabase`, v0.1.0+). Desktop app must be running with CLI enabl
 
 ## Prerequisite
 
-Run `heptabase start` first.
+Run `heptabase start` first. Electron writes a harmless warning to stderr on every invocation. Suppress with `2>/dev/null` when parsing.
 
 | Output                   | Meaning                              |
 | ------------------------ | ------------------------------------ |
 | `{"status":"ready",...}` | Server up. Proceed                   |
 | Hangs / non-JSON         | Desktop app closed or CLI toggle off |
 
-Electron writes a harmless warning to stderr on every invocation. Suppress with `2>/dev/null` when parsing.
-
 ## Commands
 
+Run `heptabase <sub> -h` for argument details (flags vary per subcommand).
+
 | Purpose                            | Command                                                       |
-| ---------------------------------- | ------------------------------------------------------------- | ------ | ----------------------- | ------------ |
+| ---------------------------------- | ------------------------------------------------------------- |
 | Server ready check                 | `heptabase start`                                             |
 | List / search cards                | `heptabase card list --limit N --offset M`                    |
 | Trash / restore card               | `heptabase card trash <id>` / `heptabase card restore <id>`   |
@@ -32,12 +32,10 @@ Electron writes a harmless warning to stderr on every invocation. Suppress with 
 | Read note                          | `heptabase note read <cardId>`                                |
 | Append note (markdown)             | `heptabase note append <cardId>`                              |
 | Replace note (ProseMirror JSON)    | `heptabase note save <cardId>` (needs `contentMd5` from read) |
-| Journal CRUD by date               | `heptabase journal create                                     | read   | append                  | save <date>` |
-| Tag list / create / add / remove   | `heptabase tag list                                           | create | add                     | remove`      |
+| Journal CRUD by date               | `heptabase journal create \| read \| append \| save <date>`   |
+| Tag list / create / add / remove   | `heptabase tag list \| create \| add \| remove`               |
 | Cards under a tag                  | `heptabase tag cards <tagId>`                                 |
-| AI Tutor goals / courses / lessons | `heptabase goal                                               | course | lesson ...` (read-only) |
-
-Run `heptabase <sub> -h` for argument details (flags vary per subcommand).
+| AI Tutor goals / courses / lessons | `heptabase goal \| course \| lesson ...` (read-only)          |
 
 ## Content Format
 

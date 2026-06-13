@@ -8,36 +8,34 @@ user-invocable: false
 
 # use-cli-heptabase
 
-Heptabase CLI (`heptabase`, v0.1.0+)。Desktop アプリが起動済みで CLI が有効化されている必要がある (Settings, AI Features, CLI)。
+Heptabase CLI (`heptabase`, v0.1.0+)。Desktop アプリが起動済みで CLI が有効化されている必要がある (Settings → AI Features → CLI)。
 
 ## 前提
 
-最初に `heptabase start` を実行する。
+最初に `heptabase start` を実行する。Electron は呼び出しごとに無害な warning を stderr に出力する。パース時は `2>/dev/null` で抑制する。
 
-| 出力                     | 意味                                       |
-| ------------------------ | ------------------------------------------ |
-| `{"status":"ready",...}` | サーバー起動済み。続行可                   |
-| ハング / 非 JSON         | Desktop アプリ未起動または CLI トグル オフ |
-
-Electron は呼び出しごとに無害な warning を stderr に出力する。パース時は `2>/dev/null` で抑制する。
+| 出力                     | 意味                                        |
+| ------------------------ | ------------------------------------------- |
+| `{"status":"ready",...}` | サーバー起動済み。続行可                    |
+| ハング / 非 JSON         | Desktop アプリ未起動または CLI トグルがオフ |
 
 ## コマンド
 
-| 目的                                  | コマンド                                                           |        |                         |              |
-| ------------------------------------- | ------------------------------------------------------------------ | ------ | ----------------------- | ------------ |
-| サーバー ready チェック               | `heptabase start`                                                  |        |                         |              |
-| カード一覧 / 検索                     | `heptabase card list --limit N --offset M`                         |        |                         |              |
-| カードのゴミ箱送り / 復元             | `heptabase card trash <id>` / `heptabase card restore <id>`        |        |                         |              |
-| ノート作成 (markdown)                 | `heptabase note create` (最初の `# heading` がタイトル)            |        |                         |              |
-| ノート読み取り                        | `heptabase note read <cardId>`                                     |        |                         |              |
-| ノート追記 (markdown)                 | `heptabase note append <cardId>`                                   |        |                         |              |
-| ノート置換 (ProseMirror JSON)         | `heptabase note save <cardId>` (read で取得した `contentMd5` 必要) |        |                         |              |
-| 日付ごとのジャーナル CRUD             | `heptabase journal create                                          | read   | append                  | save <date>` |
-| タグ list / create / add / remove     | `heptabase tag list                                                | create | add                     | remove`      |
-| タグ配下のカード                      | `heptabase tag cards <tagId>`                                      |        |                         |              |
-| AI Tutor の goals / courses / lessons | `heptabase goal                                                    | course | lesson ...` (read-only) |              |
-
 引数の詳細は `heptabase <sub> -h` を参照 (フラグはサブコマンドごとに異なる)。
+
+| 目的                                  | コマンド                                                           |
+| ------------------------------------- | ------------------------------------------------------------------ |
+| サーバー ready チェック               | `heptabase start`                                                  |
+| カード一覧 / 検索                     | `heptabase card list --limit N --offset M`                         |
+| カードのゴミ箱送り / 復元             | `heptabase card trash <id>` / `heptabase card restore <id>`        |
+| ノート作成 (markdown)                 | `heptabase note create` (最初の `# heading` がタイトル)            |
+| ノート読み取り                        | `heptabase note read <cardId>`                                     |
+| ノート追記 (markdown)                 | `heptabase note append <cardId>`                                   |
+| ノート置換 (ProseMirror JSON)         | `heptabase note save <cardId>` (read で取得した `contentMd5` 必要) |
+| 日付ごとのジャーナル CRUD             | `heptabase journal create \| read \| append \| save <date>`        |
+| タグ list / create / add / remove     | `heptabase tag list \| create \| add \| remove`                    |
+| タグ配下のカード                      | `heptabase tag cards <tagId>`                                      |
+| AI Tutor の goals / courses / lessons | `heptabase goal \| course \| lesson ...` (read-only)               |
 
 ## コンテンツ形式
 
@@ -47,7 +45,7 @@ Electron は呼び出しごとに無害な warning を stderr に出力する。
 | read            | ProseMirror JSON (`contentMd5` を返す)                       |
 | save            | ProseMirror JSON (`read` で取得した最新 `contentMd5` が必要) |
 
-## 使用判断
+## 使いどころ
 
 | use-cli-heptabase                                       | 代替                               |
 | ------------------------------------------------------- | ---------------------------------- |

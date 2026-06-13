@@ -13,8 +13,8 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 
 ## Input
 
-- `$ARGUMENTS`: bug description OR Suggestion ID from `/audit` (e.g., `SUG-001`)
-- Scope: small, well-understood issues (1-3 files)
+- `$ARGUMENTS` holds the bug description or a Suggestion ID from `/audit` (e.g., `SUG-001`)
+- Scope is small, well-understood issues (1-3 files)
 
 ### Routing
 
@@ -45,12 +45,12 @@ Asked via AskUserQuestion when `$ARGUMENTS` is empty.
 
 ## Delegation Map
 
-| Type      | Target                          | Purpose                                         |
-| --------- | ------------------------------- | ----------------------------------------------- |
-| Skill     | use-context-root-cause-analysis | 5 Whys for non-obvious bugs                     |
-| Agent     | generator-test                  | Regression test from symptom + repro steps      |
-| Agent     | resolver-build                  | TypeScript or build error triage                |
-| Reference | references/defense-in-depth.md  | Multi-layer validation for Recurring/Systematic |
+| Type      | Target                                             | Purpose                                         |
+| --------- | -------------------------------------------------- | ----------------------------------------------- |
+| Skill     | use-context-root-cause-analysis                    | 5 Whys for non-obvious bugs                     |
+| Agent     | generator-test                                     | Regression test from symptom + repro steps      |
+| Agent     | resolver-build                                     | TypeScript or build error triage                |
+| Reference | ${CLAUDE_SKILL_DIR}/references/defense-in-depth.md | Multi-layer validation for Recurring/Systematic |
 
 ## Execution
 
@@ -94,18 +94,16 @@ Run project build command (detect from package.json or project config).
 
 ## Escalation
 
-Objective triggers. No confidence self-assessment.
+Objective triggers. No confidence self-assessment. If three distinct fix attempts fail, the issue is likely architectural, not a local bug. Do not attempt fix #4 without escalating.
 
 | Trigger                        | Action                                                       |
 | ------------------------------ | ------------------------------------------------------------ |
 | RCA cannot identify root cause | Escalate → `/research`                                       |
-| 3 fix attempts failed          | STOP. Escalate → `/research` with full context               |
+| 3 fix attempts failed          | Stop. Escalate → `/research` with full context               |
 | Multi-file impact (>3 files)   | Delegate → `/code`                                           |
 | New feature scope              | Delegate → `/think`                                          |
 | Pattern = Systematic           | Escalate → `/research`                                       |
 | Fix outside OUTCOME.md scope   | Confirm with user; redefine Non-goals or delegate to `/code` |
-
-The ≥3 rule: if three distinct fix attempts fail, the issue is likely architectural, not a local bug. Do not attempt fix #4 without escalating.
 
 ## Error Handling
 

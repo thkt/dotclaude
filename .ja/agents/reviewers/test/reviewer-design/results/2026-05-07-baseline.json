@@ -1,0 +1,74 @@
+{
+  "date": "2026-05-07",
+  "run_type": "baseline",
+  "agent_definition_revision": "rebuild-deletion-test",
+  "metrics": {
+    "recall": "3/3 (100%)",
+    "fp_rate": "0/2 (0%)",
+    "borderline_outcome": "no_finding (expected match)"
+  },
+  "per_case": [
+    {
+      "file": "cases/shallow/pass-through-wrapper.tsx",
+      "expected": "detected",
+      "actual": "DP-1",
+      "result": "pass",
+      "agent_severity": "medium",
+      "agent_category": "container"
+    },
+    {
+      "file": "cases/shallow/thin-hook.ts",
+      "expected": "detected",
+      "actual": "DP-2",
+      "result": "pass",
+      "agent_severity": "medium",
+      "agent_category": "hook"
+    },
+    {
+      "file": "cases/shallow/wrapper-logger.rs",
+      "expected": "detected",
+      "actual": "DP-3",
+      "result": "pass",
+      "agent_severity": "medium",
+      "agent_category": "anti-pattern"
+    },
+    {
+      "file": "cases/deep/order-container.tsx",
+      "expected": "no_finding",
+      "actual": "no_finding",
+      "result": "pass"
+    },
+    {
+      "file": "cases/deep/redaction.rs",
+      "expected": "no_finding",
+      "actual": "no_finding",
+      "result": "pass"
+    },
+    {
+      "file": "cases/borderline/use-toggle.ts",
+      "expected": "no_finding",
+      "actual": "no_finding",
+      "result": "pass",
+      "agent_reasoning": "deletion forces re-implementing the toggle closure (small derivation, not pure pass-through). Borderline leaning deep."
+    }
+  ],
+  "drift": [
+    {
+      "type": "category_naming",
+      "expected": "module-depth (single category per new reviewer-design.md Output spec)",
+      "actual": "container / hook / anti-pattern (legacy reviewer-react-pattern categories)",
+      "hypothesis": "Agent referenced legacy categories from Distinction table or pre-rebuild memory. Re-run after session rotation to confirm."
+    },
+    {
+      "type": "summary_metric_schema",
+      "expected": "modules_reviewed, shallow_count, consolidated_count (per new reviewer-design.md Output spec)",
+      "actual": "pattern_score, containers, presentational, mixed (legacy schema)",
+      "hypothesis": "Same as above. New schema not picked up in this run."
+    }
+  ],
+  "next": [
+    "Re-run after session rotation to confirm category/summary drift resolves with cleaner agent boot.",
+    "Add A11Y/perf cases incrementally if real audits reveal blind spots.",
+    "Add cross-file shallow case (e.g. wrapper used in 5+ files) to exercise consolidation rule."
+  ]
+}

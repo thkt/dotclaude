@@ -20,13 +20,11 @@ user-invocable: false
 | Spec     | NFR-NNN | Validates: AC-N  |
 | Spec     | AS-NNN  | -                |
 
-Priority levels (P0/P1/P2) and the Gate rule are defined by the `reviewer-spec` agent.
-Each check below assigns priority per finding type.
+Priority levels (P0/P1/P2) and the Gate rule are defined by the `reviewer-spec` agent. Each check below assigns priority per finding type.
 
 ## Checks
 
-Run P0-producing checks (1-3) first. If any P0 is raised, downstream checks may
-be skipped. The gate will already be NotReady.
+Run P0-producing checks (1-3) first. If any P0 is raised, downstream checks may be skipped. The gate will already be NotReady.
 
 ### 1. AC→FR Traceability [P0 candidate]
 
@@ -55,10 +53,10 @@ Each `FR-NNN` must have ≥1 `T-NNN` with matching FR reference.
 | Test   | Spec Test Scenarios       |
 | NFR    | Spec NFR table            |
 
-| Finding                                 | Priority |
-| --------------------------------------- | -------- |
-| Matrix row references non-existent ID   | P0       |
-| Matrix row missing expected column      | P1       |
+| Finding                               | Priority |
+| ------------------------------------- | -------- |
+| Matrix row references non-existent ID | P0       |
+| Matrix row missing expected column    | P1       |
 
 ### 4. Scope↔Implementation [P1 candidate]
 
@@ -106,13 +104,11 @@ Same concept must use same term across documents.
 | Assumption Impact-if-broken column empty       | P1       |
 | Dependency Purpose column empty                | P2       |
 
-Risks column rules (Probability/Mitigation × Impact): delegated to
-`reviewer-spec` Risks Completeness section.
+Risks column rules (Probability/Mitigation × Impact) are delegated to the `reviewer-spec` Risks Completeness section.
 
 ### 9. Phase Dependency [P1 candidate]
 
-Implementation table must declare `Depends`. Empty Depends blocks parallel
-scheduling judgment.
+Implementation table must declare `Depends`. Empty Depends blocks parallel scheduling judgment.
 
 | Finding                    | Priority |
 | -------------------------- | -------- |
@@ -134,13 +130,13 @@ SOW In Scope and Out of Scope must not overlap. ACs must target only In Scope.
 
 ## Output
 
-Markdown appended to reviewer findings:
+Markdown appended to reviewer findings.
 
 ```markdown
 ## Consistency Findings
 
-| ID      | Priority | Check      | Location                         | CC Impact                        | Fix                                  |
-| ------- | -------- | ---------- | -------------------------------- | -------------------------------- | ------------------------------------ |
+| ID      | Priority | Check      | Location                         | CC Impact                          | Fix                                  |
+| ------- | -------- | ---------- | -------------------------------- | ---------------------------------- | ------------------------------------ |
 | CON-001 | P0/P1/P2 | check name | sow.md:section / spec.md:section | What CC will do when it reads this | Concrete rewrite, not "clarify this" |
 ```
 

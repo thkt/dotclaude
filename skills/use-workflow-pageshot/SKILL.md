@@ -38,26 +38,26 @@ PR body is passed as a string from `/pr`. If Preview URL or How to Test is missi
 
 ## Screenshot Flow (1 step)
 
-| # | Command                                                                    |
-| - | -------------------------------------------------------------------------- |
-| 1 | `agent-browser snapshot` to obtain accessibility tree                      |
-| 2 | If the step contains operations, run `agent-browser {click/type/fill/...}` |
-| 3 | `agent-browser screenshot --full {outdir}/step-01.png`                     |
+| #   | Command                                                                    |
+| --- | -------------------------------------------------------------------------- |
+| 1   | `agent-browser snapshot` to obtain accessibility tree                      |
+| 2   | If the step contains operations, run `agent-browser {click/type/fill/...}` |
+| 3   | `agent-browser screenshot --full {outdir}/step-01.png`                     |
 
 ## Video Flow (2+ steps)
 
-| # | Command                                                                |
-| - | ---------------------------------------------------------------------- |
-| 1 | `agent-browser record start {outdir}/capture.webm`                     |
-| 2 | For each step run `snapshot` then the operation in order               |
-| 3 | `agent-browser record stop`                                            |
-| 4 | `ffmpeg -i {outdir}/capture.webm -vcodec libx264 {outdir}/capture.mp4` |
+| #   | Command                                                                |
+| --- | ---------------------------------------------------------------------- |
+| 1   | `agent-browser record start {outdir}/capture.webm`                     |
+| 2   | For each step run `snapshot` then the operation in order               |
+| 3   | `agent-browser record stop`                                            |
+| 4   | `ffmpeg -i {outdir}/capture.webm -vcodec libx264 {outdir}/capture.mp4` |
 
 Insert `agent-browser wait 500` between steps. Run `snapshot` before each operation to identify elements.
 
 ## Output
 
-Single stdout line:
+Single stdout line.
 
 ```
 mode=screenshot artifact=/absolute/path/to/step-01.png
@@ -69,7 +69,7 @@ or
 mode=video artifact=/absolute/path/to/capture.mp4
 ```
 
-On failure:
+On failure.
 
 ```
 mode=failed reason=<one-line reason>

@@ -7,11 +7,11 @@ model: opus
 argument-hint: "[adr-directory]"
 ---
 
-# /audit-adr-drift - ADR vs Code Drift Scanner
+# /audit-adr-drift - ADR とコードの drift スキャナー
 
 各 ADR の Decision section と現コードを照合し、drift を file:line + 修正方向 + 優先度で記録する。ADR を refactor の整理基準として使えるよう gap を可視化する。
 
-## When to Use
+## 使いどころ
 
 - repo に ADR が存在し、Decision 本文と現コードの整合性が体系的に確認されていない
 - refactor 前に「ADR を整理基準として信頼できるか」を確認したい
@@ -28,9 +28,9 @@ ADR ディレクトリが無い repo では本 skill は使わず、先に `/aud
 | ADR がある        | `/audit-adr-drift` (ADR と code の drift を検出) | `/audit-adr-gaps` (drift で拾えない gap を発掘) |
 | ADR が無い/少ない | `/audit-adr-gaps` (判断を発掘し ADR 候補化)      | `/audit-adr-drift` (ADR 追加後に維持を検証)     |
 
-## Input
+## 入力
 
-`$ARGUMENTS` は単一 ADR ディレクトリパスを含み得る。使用前に parse する:
+`$ARGUMENTS` は単一 ADR ディレクトリパスを含み得る。使用前に parse する。
 
 - 空白を trim、空文字列は "auto-detect" として扱う
 - 非空の場合、repo root 相対のパスとして扱う。存在しなければ reject
@@ -38,7 +38,7 @@ ADR ディレクトリが無い repo では本 skill は使わず、先に `/aud
 - 複数該当時は AskUserQuestion で選択
 - 全て該当なしの場合は "No ADRs found, run /audit-adr-gaps first" で abort
 
-## Execution
+## 実行
 
 | Step | アクション                                                               |
 | ---- | ------------------------------------------------------------------------ |
@@ -73,24 +73,24 @@ ADR ディレクトリが無い repo では本 skill は使わず、先に `/aud
 
 ### Step 4: 参照検索
 
-抽出した各シンボルについて:
+抽出した各シンボルに以下を適用する。
 
 - `ugrep -r "<symbol>"` で literal マッチ
 - ADR ファイル自体と test fixture は除外
 
-#### External ADR Cross-Check
+#### External ADR クロスチェック
 
-加えて、codebase 全体を `ADR-NNNN` (大文字) と `adr-nnnn` (小文字) 参照パターンで scan する:
+加えて、codebase 全体を `ADR-NNNN` (大文字) と `adr-nnnn` (小文字) 参照パターンで scan する。
 
 ```bash
 ugrep -r -n -E "ADR-[0-9]{4}|adr-[0-9]{4}" --include="*.rs" --include="*.md" --include="*.toml" .
 ```
 
-捕捉した各 ADR id について、Step 1 で検出した ADR ディレクトリに `NNNN-*.md` が存在するか確認。local に無い ADR id への参照は **External ADR dependency** として別 section (Step 8) に記録。これは meta ADR が別 repo (例: 共有 dotclaude config) にあるが local に未昇格 (promote) の case を捕捉する。
+捕捉した各 ADR id について、Step 1 で検出した ADR ディレクトリに `NNNN-*.md` が存在するか確認。local に無い ADR id への参照は External ADR dependency として別 section (Step 8) に記録。これは meta ADR が別 repo (例: 共有 dotclaude config) にあるが local に未昇格 (promote) の case を捕捉する。
 
 ### Step 5: Reviewer 選択
 
-manifest ファイルで repo 言語を判定し、対応する reviewer を Task で spawn。
+manifest ファイルで repo 言語を判定し、対応する reviewer を Task で spawn。reviewer には候補 file:line リストと ADR Decision 本文を渡す。clippy や grep で拾えない semantic gap を判定させる。
 
 | 検出                           | spawn する Reviewer                          |
 | ------------------------------ | -------------------------------------------- |
@@ -100,8 +100,6 @@ manifest ファイルで repo 言語を判定し、対応する reviewer を Tas
 | `pyproject.toml` / `setup.py`  | reviewer-design (言語非依存のみ)             |
 | `go.mod`                       | reviewer-design (言語非依存のみ)             |
 | その他 / 不明                  | reviewer-design                              |
-
-reviewer には候補 file:line リストと ADR Decision 本文を渡す。clippy や grep で拾えない semantic gap を判定させる。
 
 ### Step 6: 修正方向
 
@@ -121,7 +119,7 @@ reviewer には候補 file:line リストと ADR Decision 本文を渡す。clip
 
 ### Step 8: レポート出力
 
-日付時刻は `date -u +%Y-%m-%d-%H%M%S` (UTC ISO 日付 + HHMMSS) で算出し、同日再走でも衝突せず時系列ソート可能にする。出力ディレクトリの存在を保証:
+日付時刻は `date -u +%Y-%m-%d-%H%M%S` (UTC ISO 日付 + HHMMSS) で算出し、同日再走でも衝突せず時系列ソート可能にする。出力ディレクトリの存在を保証する。
 
 ```bash
 mkdir -p docs/audit
@@ -129,7 +127,7 @@ STAMP=$(date -u +%Y-%m-%d-%H%M%S)
 REPORT="docs/audit/${STAMP}-adr-drift.md"
 ```
 
-下記フォーマットで保存:
+下記フォーマットで保存する。
 
 ```markdown
 # ADR Drift Scan: <YYYY-MM-DD>-<HHMMSS>
@@ -172,19 +170,19 @@ Status: <Accepted/Superseded>
 
 H priority の follow-up 候補を表示し、`/issue` で個別起票するかを user に確認。
 
-## Output
+## 出力
 
 - レポートパス: `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-drift.md`
 - コンソール summary: ADR 数、finding 数、H/M/L 内訳
 - option: H priority drift について `/issue` で起票
 
-## Out of Scope
+## 対象外
 
 - 実コード修正 (別途)
 - ADR 本文の本格的書き換え (Note 追記レベルは含む。大幅変更は新 ADR + Supersedes リンク)
 - ADR が無い領域の発掘 (`/audit-adr-gaps` で扱う)
 
-## Acceptance Criteria
+## 受け入れ基準
 
 - [ ] `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-drift.md` が存在
 - [ ] 各 ADR について drift section が存在 (findings or "no drift" or "unverifiable")

@@ -27,7 +27,7 @@ Test behavior via public API. Mock only at system boundaries.
 | Contextual | Complex utils, custom hooks, transformations         |
 | Skip       | Simple accessors, UI layout, external lib behavior   |
 
-### When NOT to Use TDD
+### When Not to Use TDD
 
 | Context                  | Reason                            |
 | ------------------------ | --------------------------------- |
@@ -91,7 +91,7 @@ Right (vertical):
 | 3   | Sensitivity to behavior change drops (pass when broken, fail when correct) |
 | 4   | Implementation knowledge follows test structure instead of guiding it      |
 
-Reference: mattpocock/skills `tdd` SKILL.md.
+Adapted from mattpocock/skills `tdd` SKILL.md.
 
 ## Test Failure Judgment
 
@@ -123,8 +123,9 @@ Every test must verify a specific outcome. Weak assertions alone are forbidden.
 | Meaningful (value) | toBe, toEqual, toStrictEqual, toMatch, toContain, toThrow, toHaveLength | Always preferred                                  |
 | Meaningful (call)  | toHaveBeenCalledWith, toHaveBeenCalledTimes, toHaveReturnedWith         | When verifying side effects                       |
 
-Bad: `expect(result).toBeTruthy()`
-Good: `expect(result).toEqual({ id: 1, name: "Alice" })`
+Bad. `expect(result).toBeTruthy()`
+
+Good. `expect(result).toEqual({ id: 1, name: "Alice" })`
 
 One test, one concept. If two tests assert the same function with the same argument pattern, merge or parameterize with `test.each`.
 

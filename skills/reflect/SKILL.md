@@ -4,11 +4,11 @@ description: Surface the current session's tentative reflection (realization / j
 allowed-tools: Read Write Bash
 ---
 
-# /reflect — manual reflection promotion
+# /reflect - manual reflection promotion
 
 Escape hatch for the automated reflection pipeline. Stop hook subagent extraction (`reflection-extract.sh`) normally writes per-session reflections automatically. When that pipeline fails (subagent timeout, API error, build issue), `/reflect` lets you produce the same artifact manually before the session ends.
 
-This is NOT the primary path. The Stop hook is. Use this skill when:
+This is not the primary path. The Stop hook is. Use this skill in any of these cases.
 
 - The latest `knowledge/reflection/<session_id>.md` is a `placeholder: true` file (auto-extraction returned empty) and you have meaningful reflection to capture.
 - You want to override or edit the auto-extracted content before the next session reads it.
@@ -31,7 +31,7 @@ If `$KDIR` does not exist, advise the user to run a session under the Stop hook 
 
 ### Step 1: Read the current state
 
-Print to the user, in this order:
+Print the following to the user, in this order.
 
 1. Does `$MD` exist? If yes, show it (frontmatter + body).
 2. Is it a placeholder (`placeholder: true`)? Flag it.
@@ -39,7 +39,7 @@ Print to the user, in this order:
 
 ### Step 2: Compose
 
-Generate a fresh reflection across the 3 categories. Use the same shape as `agents/reflection-extractor.md` and reuse its guidance (realization / judgment / counterfactual). Keep the body under 300 words total. Output frontmatter:
+Generate a fresh reflection across the 3 categories. Use the same shape as `agents/reflection-extractor.md` and reuse its guidance (realization / judgment / counterfactual). Keep the body under 300 words total. Use this output frontmatter.
 
 ```
 ---
@@ -56,7 +56,7 @@ The `promoted_via: reflect-skill` field marks manual promotions so audits can di
 
 ### Step 3: Confirm
 
-Show the user the composed reflection in a fenced block. Ask: "Promote this to `$MD`? (yes / edit / cancel)"
+Show the user the composed reflection in a fenced block, then ask "Promote this to `$MD`? (yes / edit / cancel)".
 
 - `yes` → Step 4
 - `edit` → ask what to change, regenerate, return to Step 3
@@ -88,7 +88,7 @@ echo "Promoted to $MD"
 - Never read transcripts outside the current session.
 - Never call `claude --bare` recursively. This skill runs in the main session, not in a subagent.
 
-## When NOT to use this
+## When not to use this
 
 - The Stop hook is working and the latest reflection is `confidence: confirmed` (not placeholder). Re-running `/reflect` would overwrite a higher-quality extraction.
 - You want to edit a reflection from an old session. That requires manual edit of `$KDIR/reflection/<old-sid>.md`, not this skill.
@@ -96,5 +96,7 @@ echo "Promoted to $MD"
 
 ## Related
 
-- `agents/reflection-extractor.md`: shares the 3-category output shape.
-- `hooks/lifecycle/reflection-extract.sh`: the primary auto-extraction path this skill complements.
+| File                                    | Relation                                                |
+| --------------------------------------- | ------------------------------------------------------- |
+| `agents/reflection-extractor.md`        | Shares the 3-category output shape                      |
+| `hooks/lifecycle/reflection-extract.sh` | The primary auto-extraction path this skill complements |

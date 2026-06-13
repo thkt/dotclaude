@@ -26,7 +26,7 @@ Present DA results with verdict table + actionable items. Revise approaches base
 
 ## Step 5: Design Composition
 
-Compose optimal design from surviving approaches. Work through two perspectives in order:
+Compose optimal design from surviving approaches. Work through two perspectives in order.
 
 ### 5-1. Domain Perspective (What)
 
@@ -42,7 +42,7 @@ Technology-independent business logic modeling. Include only what the Why Outcom
 
 ### 5-2. Technical Perspective (How)
 
-Translate domain understanding into implementation design:
+Translate domain understanding into implementation design.
 
 ```markdown
 ### Technical Perspective

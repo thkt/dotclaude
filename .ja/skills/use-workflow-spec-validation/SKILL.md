@@ -8,7 +8,7 @@ context: fork
 user-invocable: false
 ---
 
-# Workflow: SOW/Spec Validation
+# ワークフロー: SOW/Spec 検証
 
 ## ID 体系
 
@@ -20,8 +20,7 @@ user-invocable: false
 | Spec         | NFR-NNN        | Validates: AC-N  |
 | Spec         | AS-NNN         | -                |
 
-優先度 (P0/P1/P2) と Gate ルールは `reviewer-spec` エージェントで定義する。
-以下の各チェックは発見事項の種別ごとに優先度を割り当てる。
+優先度 (P0/P1/P2) と Gate ルールは `reviewer-spec` エージェントで定義する。以下の各チェックは発見事項の種別ごとに優先度を割り当てる。
 
 ## チェック
 
@@ -136,9 +135,9 @@ reviewer の発見事項に追記する Markdown。
 ```markdown
 ## Consistency Findings
 
-| ID      | Priority | Check      | Location                         | CC Impact                        | Fix                                  |
-| ------- | -------- | ---------- | -------------------------------- | -------------------------------- | ------------------------------------ |
-| CON-001 | P0/P1/P2 | check name | sow.md:section / spec.md:section | この記述を読んだとき CC が何をするか | "明確化せよ" ではなく具体的な書き換え |
+| ID      | Priority | Check      | Location                         | CC Impact                          | Fix                                  |
+| ------- | -------- | ---------- | -------------------------------- | ---------------------------------- | ------------------------------------ |
+| CON-001 | P0/P1/P2 | check name | sow.md:section / spec.md:section | What CC will do when it reads this | Concrete rewrite, not "clarify this" |
 ```
 
 発見事項のフォーマットと Gate への寄与は `reviewer-spec` エージェントに従う。

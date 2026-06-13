@@ -16,14 +16,14 @@ argument-hint: "[context or issue reference]"
 
 ## 実行
 
-| Step | 動作                                                                       |
-| ---- | -------------------------------------------------------------------------- |
-| 1    | ステージ済みを読む: `git status`, `git diff --staged` (並列)               |
-| 2    | 候補を 3 つ生成 (scope や言い回しを変える。Type Detection と Rules を参照) |
-| 3    | AskUserQuestion で提示 → ユーザーが選択またはカスタマイズ (Other)         |
-| 4    | 選択されたコミットを実行 (sandbox 互換)                                    |
+| Step | アクション                                                         |
+| ---- | ------------------------------------------------------------------ |
+| 1    | ステージ済みを読む: `git status`, `git diff --staged` (並列)       |
+| 2    | 候補を 3 つ生成 (scope や言い回しを変える。種別判定とルールを参照) |
+| 3    | AskUserQuestion で提示 → ユーザーが選択またはカスタマイズ (Other)  |
+| 4    | 選択されたコミットを実行 (sandbox 互換)                            |
 
-## Type 判定
+## 種別判定
 
 diff のコンテキストから type を推定する。
 
@@ -41,7 +41,7 @@ diff のコンテキストから type を推定する。
 
 判別不能な場合は `feat` をデフォルトとする。
 
-## Rules
+## ルール
 
 | Rule    | ガイドライン                                         |
 | ------- | ---------------------------------------------------- |
@@ -58,20 +58,20 @@ feat(api)!: remove deprecated endpoints  # BREAKING CHANGE
 ## Sandbox 互換コミット
 
 ```bash
-# 複数行: ファイルベース
+# Multi-line: file-based
 cat > /tmp/claude/commit-msg.txt << 'EOF'
 <message>
 EOF
 git commit -F /tmp/claude/commit-msg.txt
 mv /tmp/claude/commit-msg.txt ~/.Trash/ 2>/dev/null || true
 
-# 1 行: -m を複数指定
+# Single-line: multiple -m flags
 git commit -m "subject" -m "body"
 ```
 
 ## エラー処理
 
-| エラー                   | 動作                     |
+| エラー                   | アクション               |
 | ------------------------ | ------------------------ |
 | ステージ済みファイルなし | "Nothing staged" を報告  |
 | 空の diff                | 最小限のメッセージを返す |
