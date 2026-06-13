@@ -1,6 +1,6 @@
 # Vague Terms
 
-Applies to test descriptions, Issue/PR bodies, commit messages, Spec/SOW, code comments, and technical docs. Specify ambiguous software-development terms before use.
+Applies to test descriptions, Issue / PR bodies, commit messages, Spec / SOW, code comments, and technical docs. Specify ambiguous software-development terms before use.
 
 ## Define Concretely
 
@@ -9,7 +9,7 @@ Applies to test descriptions, Issue/PR bodies, commit messages, Spec/SOW, code c
 | correct / normal / abnormal                 | No baseline                 | Condition and expected result      |
 | usual / ordinary / standard / general       | Whose usual?                | Default value or precondition      |
 | expected value / as intended / as specified | Empty reference             | Concrete value or behavior         |
-| process (noun/verb)                         | What operation?             | Transform, validate, persist, etc. |
+| process (noun / verb)                       | What operation?             | Transform, validate, persist, etc. |
 | data / information                          | What data?                  | User name, order list, etc.        |
 | without issues                              | What was actually checked?  | List verified conditions           |
 | appropriately / properly                    | What counts as appropriate? | Concrete operation and criteria    |

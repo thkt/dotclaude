@@ -32,12 +32,12 @@ Subagents are spawned via the Task tool, not auto-loaded. Agent / AskUserQuestio
 | name                            | Yes      | Lowercase + hyphens. Need not match the filename. Unique per scope (on duplicate, one is discarded without warning) |
 | description                     | Yes      | States when to delegate. Used for delegation routing                                                                |
 | tools, disallowedTools          | No       | Comma- or space-separated string. Omitting inherits all tools. Bash matcher syntax (`Bash(git log:*)`) supported    |
-| model                           | No       | sonnet / opus / haiku / fable / inherit / full-id. Default: `inherit`                                               |
+| model                           | No       | sonnet / opus / haiku / fable / inherit / full-id. Defaults to `inherit`                                            |
 | permissionMode, maxTurns        | No       | As needed                                                                                                           |
 | skills                          | No       | Injects skill contents at spawn time. Plugin form: `<plugin>:<skill>`                                               |
 | mcpServers, hooks               | No       | As needed                                                                                                           |
 | memory                          | No       | `user` / `project` / `local`. Enabling auto-grants Read / Write / Edit                                              |
-| background                      | No       | Boolean. Default: `false`                                                                                           |
+| background                      | No       | Boolean. Defaults to `false`                                                                                        |
 | effort                          | No       | low / medium / high / xhigh / max                                                                                   |
 | isolation, color, initialPrompt | No       | As needed                                                                                                           |
 
@@ -51,7 +51,7 @@ Subagents are spawned via the Task tool, not auto-loaded. Agent / AskUserQuestio
 
 ## Memory selection criteria
 
-After assignment, remove memory from agents whose project scope stays empty.
+The required conditions for granting memory are below. After assignment, remove memory from agents whose project scope stays empty.
 
 | Required condition | Description                                            | Example                              |
 | ------------------ | ------------------------------------------------------ | ------------------------------------ |

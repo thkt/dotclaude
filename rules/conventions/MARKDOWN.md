@@ -17,7 +17,7 @@ Conventions for Markdown files under `.claude/`.
 
 ## File scope
 
-Files under `.ja/` are canonical; edit `.ja/` first, then mirror to the English file at the path without the `.ja/` prefix in the same commit. Scope is judged by the path without the `.ja/` prefix.
+Files under `.ja/` are canonical; edit `.ja/` first, then mirror to the English file at the path without the `.ja/` prefix in the same commit. Scope is judged by the path without the `.ja/` prefix. Non-Markdown files such as scripts follow the same mirror discipline. They are identical copies rather than translations; edit `.ja/` and reflect to the English-side path in the same commit.
 
 | Scope        | Paths                                                             |
 | ------------ | ----------------------------------------------------------------- |
@@ -33,6 +33,8 @@ Files under `.ja/` are canonical; edit `.ja/` first, then mirror to the English 
 | `()`   | Supplementary condition only                  | `Skip for follow-up (same session)`   |
 | `>`    | Priority order (prefer left, fall back right) | `CLI tool > built-in equivalent`      |
 | `→`    | Step sequence                                 | `Observe → analyze → conclude`        |
+| `§`    | Section reference                             | `phase.md § Gate rule`                |
+| `+`    | Composition of components                     | `root causes + Gate decision`         |
 
 ## Inline code
 

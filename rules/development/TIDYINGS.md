@@ -14,7 +14,7 @@
 | Variables  | Remove unused, inline single-use, let → const        |
 | Comments   | Remove resolved TODOs, remove dead code              |
 | Types (TS) | Remove inferable, any → specific                     |
-| Formatting | Consistent semicolons/quotes/commas                  |
+| Formatting | Consistent semicolons / quotes / commas              |
 | Naming     | Fix typos, case inconsistencies                      |
 | Temp files | Remove temp files created for iteration in this task |
 

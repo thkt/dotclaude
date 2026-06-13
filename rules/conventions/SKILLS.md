@@ -33,15 +33,17 @@ skills/
 
 ## YAML Frontmatter
 
-| Field          | Required | Notes                                                       |
-| -------------- | -------- | ----------------------------------------------------------- |
-| name           | Yes      | Lowercase + hyphens, ≤64 chars                              |
-| description    | Yes      | Third person, ≤1024 chars                                   |
-| when_to_use    | No       | EN/JP trigger phrases                                       |
-| allowed-tools  | No       | Space-separated                                             |
-| agent          | No       | Links to an agent under `agents/`                           |
-| context        | No       | fork = sub-agent, inline = main                             |
-| user-invocable | No       | Default true. false hides from the / menu (internal skills) |
+| Field          | Required | Notes                                                                            |
+| -------------- | -------- | -------------------------------------------------------------------------------- |
+| name           | Yes      | Lowercase + hyphens, ≤64 chars                                                   |
+| description    | Yes      | Third person, ≤1024 chars                                                        |
+| when_to_use    | No       | EN/JP trigger phrases                                                            |
+| allowed-tools  | No       | Space-separated                                                                  |
+| agent          | No       | Links to an agent under `agents/`                                                |
+| context        | No       | fork = sub-agent, inline = main                                                  |
+| user-invocable | No       | Default true. false hides from the / menu (internal skills)                      |
+| model          | No       | Model override for execution (e.g. opus). Inherits the invoking model when unset |
+| argument-hint  | No       | Argument hint shown in the / menu (e.g. `"[decision title]"`)                    |
 
 ## Reference notation
 
@@ -75,11 +77,11 @@ Skill input arguments expand at invocation time. Use `$ARGUMENTS` to capture mul
 
 Quality axes beyond the frontmatter and size rules above. A skill can satisfy every mechanical rule and still read poorly.
 
-| Axis                        | Pass condition                                                         | Fail signal                                                        |
-| --------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Single responsibility       | One task per skill. A second unrelated trigger is a split signal       | description joins 2+ unrelated capabilities                        |
-| Description distinctiveness | Sentence 1 enumerates the capability with concrete verbs and objects   | Generic verbs like helps with or manages that fit many skills      |
-| Imperative voice            | Body commands the agent directly                                       | Passive recital of what the skill does                             |
-| Verifiable completion       | Steps end with checkable conditions and an explicit stop point         | Done-state absent, or a confirmation order with no check condition |
-| Concrete calibration        | One Good/Bad pair, Yes/Not contrast, or numeric threshold per judgment | Rules stated abstractly with no example                            |
-| Progressive disclosure      | SKILL.md stays thin; detail moves to references/                       | Inline dumps that belong in references/                            |
+| Axis                        | Pass condition                                                           | Fail signal                                                        |
+| --------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| Single responsibility       | One task per skill. A second unrelated trigger is a split signal         | description joins 2+ unrelated capabilities                        |
+| Description distinctiveness | Sentence 1 enumerates the capability with concrete verbs and objects     | Generic verbs like helps with or manages that fit many skills      |
+| Imperative voice            | Body commands the agent directly                                         | Passive recital of what the skill does                             |
+| Verifiable completion       | Steps end with checkable conditions and an explicit stop point           | Done-state absent, or a confirmation order with no check condition |
+| Concrete calibration        | A Good / Bad pair, Yes / Not contrast, or numeric threshold per judgment | Rules stated abstractly with no example                            |
+| Progressive disclosure      | SKILL.md stays thin; detail moves to references/                         | Inline dumps that belong in references/                            |

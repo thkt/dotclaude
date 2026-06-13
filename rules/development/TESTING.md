@@ -58,4 +58,4 @@ Test names state the spec they verify (e.g. "rejects deposit when amount is nega
 
 ## Coverage Gate
 
-Do not let C0 / C1 drop in a PR. The gate is delta-only with no absolute floor, avoiding number targeting. Define absolute thresholds in the project's spec NFR when needed (e.g. security tools may keep C0 ≥90%). Exceptions are auto-generated code, data definitions, test files, and legacy in migration.
+Do not let C0 / C1 drop in a PR. The gate is evaluated on the delta with no absolute floor, avoiding number targeting. Define absolute thresholds in the non-functional requirements when needed (e.g. security tools may keep C0 ≥90%). Exceptions are auto-generated code, data definitions, test files, and legacy code in migration.

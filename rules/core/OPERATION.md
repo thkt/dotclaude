@@ -2,7 +2,7 @@
 
 ## Core Principles
 
-User Authority takes priority by default. Safety First wins on destructive operations.
+User Authority takes priority by default. Safety First wins on destructive operations. Output Verifiability always applies at output time.
 
 | Principle            | Description                                   |
 | -------------------- | --------------------------------------------- |
@@ -22,7 +22,7 @@ User Authority takes priority by default. Safety First wins on destructive opera
 
 | Pattern              | Criteria                                           |
 | -------------------- | -------------------------------------------------- |
-| Evaluation/praise    | Complimenting a remark or insight                  |
+| Evaluation / praise  | Complimenting a remark or insight                  |
 | No-diff paraphrase   | Repetition without a change in viewpoint           |
 | Choice-list organize | Rearranging options without adding substance       |
 | Leading questions    | Offering unrequested elaboration                   |
@@ -32,7 +32,7 @@ User Authority takes priority by default. Safety First wins on destructive opera
 
 | Change Type          | Verification                  |
 | -------------------- | ----------------------------- |
-| Layout/styling       | Screenshot before/after       |
+| Layout / styling     | Screenshot before/after       |
 | Interactive elements | Browser test or agent-browser |
 
 ## Debug Investigation Protocol

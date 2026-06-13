@@ -2,24 +2,24 @@
 
 ## Priority Matrix
 
-| Priority   | Principle                |
-| ---------- | ------------------------ |
-| Foundation | Outcome-driven           |
-| Critical   | Occam's Razor            |
-| Critical   | Progressive Enhancement  |
-| Default    | Readable Code            |
-| Default    | Miller's Law             |
-| Default    | TDD/Baby Steps           |
-| Default    | DRY                      |
-| Default    | YAGNI                    |
-| Default    | Strong Inference         |
-| Default    | Measurement              |
-| Contextual | SOLID                    |
-| Contextual | Container/Presentational |
-| Contextual | Law of Demeter           |
-| Contextual | Leaky Abstraction        |
-| Contextual | AI-Assisted Development  |
-| Contextual | TIDYINGS                 |
+| Priority   | Principle                  |
+| ---------- | -------------------------- |
+| Foundation | Outcome-driven             |
+| Critical   | Occam's Razor              |
+| Critical   | Progressive Enhancement    |
+| Default    | Readable Code              |
+| Default    | Miller's Law               |
+| Default    | TDD / Baby Steps           |
+| Default    | DRY                        |
+| Default    | YAGNI                      |
+| Default    | Strong Inference           |
+| Default    | Measurement                |
+| Contextual | SOLID                      |
+| Contextual | Container / Presentational |
+| Contextual | Law of Demeter             |
+| Contextual | Leaky Abstraction          |
+| Contextual | AI-Assisted Development    |
+| Contextual | TIDYINGS                   |
 
 ## Triggers
 
