@@ -1,38 +1,46 @@
-<!-- /audit-adr-gaps Step 7 report skeleton. Placeholders substituted from findings. -->
+# ADR Gaps Audit Report Template
 
-# ADR Gaps Audit: <YYYY-MM-DD>-<HHMMSS>
+The skeleton that /census Step 7 emits. Repeat the Large File Decisions `###` section per large file and the Prose Document Decisions `###` section per document. Record a file or document with no decisions as "no decisions found".
+
+## Template
+
+Substitute `{...}` from findings. For enum cells, pick the matching value from the `/`-separated choices. The three ADR Promotion Candidates rows show the challenge-verdict to Final mapping (keep→ADR / downgrade→inline-comment / drop→skip); write the one matching row per candidate.
+
+```markdown
+# ADR Gaps Audit: {YYYY-MM-DD}-{HHMMSS}
 
 ## Summary
 
 | Metric                   | Value |
 | ------------------------ | ----- |
-| Large files scanned      | N     |
-| Documents scanned        | N     |
-| Decision candidates      | N     |
-| ADR-covered (excluded)   | N     |
-| Net new candidates       | N     |
-| ADR promotion candidates | N     |
+| Large files scanned      | {N}   |
+| Documents scanned        | {N}   |
+| Decision candidates      | {N}   |
+| ADR-covered (excluded)   | {N}   |
+| Net new candidates       | {N}   |
+| ADR promotion candidates | {N}   |
 
 ## Large File Decisions
 
-### src/foo.rs (NNN lines)
+### {file} ({N} lines)
 
-| #   | Line | Decision | Documented? | Incomplete-contract? | Impact | Reversibility |
-| --- | ---- | -------- | ----------- | -------------------- | ------ | ------------- |
-| 1   | 42   | ...      | Partial     | Yes                  | H      | low           |
+| #   | Line   | Decision  | Documented?        | Incomplete-contract? | Impact    | Reversibility       |
+| --- | ------ | --------- | ------------------ | -------------------- | --------- | ------------------- |
+| 1   | {line} | {summary} | Yes / Partial / No | Yes / No             | H / M / L | high / medium / low |
 
 ## Prose Document Decisions
 
-### README.md
+### {file}
 
-| #   | Line | Decision Verb | Decision | ADR Coverage |
-| --- | ---- | ------------- | -------- | ------------ |
-| 1   | 12   | must not      | ...      | None         |
+| #   | Line   | Decision Verb | Decision  | ADR Coverage    |
+| --- | ------ | ------------- | --------- | --------------- |
+| 1   | {line} | {verb}        | {summary} | None / ADR-{id} |
 
 ## ADR Promotion Candidates (post-challenge)
 
-| #   | Candidate                       | Initial | Challenge | Final          |
-| --- | ------------------------------- | ------- | --------- | -------------- |
-| 1   | `<source>:<line>` - `<summary>` | promote | keep      | ADR            |
-| 2   | `<source>:<line>` - `<summary>` | promote | downgrade | inline-comment |
-| 3   | `<source>:<line>` - `<summary>` | promote | drop      | skip           |
+| #   | Candidate                   | Initial | Challenge | Final          |
+| --- | --------------------------- | ------- | --------- | -------------- |
+| 1   | {source}:{line} - {summary} | promote | keep      | ADR            |
+| 2   | {source}:{line} - {summary} | promote | downgrade | inline-comment |
+| 3   | {source}:{line} - {summary} | promote | drop      | skip           |
+```

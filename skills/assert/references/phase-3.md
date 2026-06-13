@@ -6,12 +6,10 @@ The output is a list of promoted adversarial findings (with `[adversarial]` sour
 
 ## Triage
 
-| #   | Action                                        |
-| --- | --------------------------------------------- |
-| 1   | Read the failing assertion description        |
-| 2   | Read the target code (file:line ± 30 lines)   |
-| 3   | Search for intent from § Intent Sources below |
-| 4   | Apply verdict rules                           |
+1. Read the failing assertion description
+2. Read the target code (file:line ± 30 lines)
+3. Search for intent from § Intent Sources below
+4. Apply verdict rules
 
 ## Intent Sources
 

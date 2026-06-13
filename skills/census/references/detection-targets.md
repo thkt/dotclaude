@@ -1,4 +1,4 @@
-<!-- /audit-adr-gaps Step 2 detection targets. Scan top-level and docs/ for these. -->
+<!-- /census Step 2 detection targets. Scan top-level and docs/ for these. -->
 
 | Filename pattern                                                     | Likely content                       |
 | -------------------------------------------------------------------- | ------------------------------------ |

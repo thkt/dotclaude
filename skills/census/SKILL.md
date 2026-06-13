@@ -1,13 +1,13 @@
 ---
-name: audit-adr-gaps
-description: Discover undocumented design decisions and challenge each candidate via critic-design before promotion. Rank by impact and reversibility, produce ADR promotion candidates. Treat each candidate as a position arguing for ADR status, not a fact to be filed. Pairs with audit-adr-drift, which scans existing ADRs for drift against code.
+name: census
+description: Discover undocumented design decisions and challenge each candidate via critic-design before promotion. Rank by impact and reversibility, produce ADR promotion candidates. Treat each candidate as a position arguing for ADR status, not a fact to be filed. Pairs with adrift, which scans existing ADRs for drift against code.
 when_to_use: 判断未記録の発掘, undocumented decisions, ADR候補発掘, 設計判断棚卸し, decision archaeology, design rationale audit
-allowed-tools: Read Write Edit LS Bash(git:*) Bash(gh:*) Bash(ugrep:*) Bash(bfs:*) Bash(wc:*) Task AskUserQuestion
+allowed-tools: Read Write LS Bash(mkdir:*) Bash(date:*) Bash(python3:*) Bash(ugrep:*) Bash(bfs:*) Bash(wc:*) Task AskUserQuestion
 model: opus
 argument-hint: "[--threshold=N] [--paths=path,path]"
 ---
 
-# /audit-adr-gaps - ADR Gaps Audit
+# /census - ADR Gaps Audit
 
 Discover design decisions that exist in the code but have no ADR. Each candidate is challenged by critic-design (Step 6.2) before promotion. The final list is what survived the adversarial pass, not what the initial scan found. Produce a ranked list of ADR promotion candidates so the next refactor has a complete decision baseline.
 
@@ -17,14 +17,14 @@ Discover design decisions that exist in the code but have no ADR. Each candidate
 - Before refactoring, you want to know which decisions to preserve vs question
 - New maintainers need a map of "why is the code shaped this way"
 
-### Pairing with /audit-adr-drift
+### Pairing with /adrift
 
-`/audit-adr-gaps` and `/audit-adr-drift` form an ADR-baseline audit pair. Run order depends on whether ADRs already exist, not a fixed sequence.
+`/census` and `/adrift` form an ADR-baseline audit pair. Run order depends on whether ADRs already exist, not a fixed sequence.
 
-| Repo state            | Run first                                              | Then                                            |
-| --------------------- | ------------------------------------------------------ | ----------------------------------------------- |
-| ADRs exist            | `/audit-adr-drift` (drift between ADR and code)        | `/audit-adr-gaps` (gaps drift cannot see)       |
-| ADRs absent or sparse | `/audit-adr-gaps` (mine decisions into ADR candidates) | `/audit-adr-drift` (verify once ADRs are added) |
+| Repo state            | Run first                                      | Then                                   |
+| --------------------- | ---------------------------------------------- | -------------------------------------- |
+| ADRs exist            | `/adrift` (drift between ADR and code)         | `/census` (gaps drift cannot see)      |
+| ADRs absent or sparse | `/census` (mine decisions into ADR candidates) | `/adrift` (verify once ADRs are added) |
 
 ## Input
 
@@ -37,20 +37,7 @@ Discover design decisions that exist in the code but have no ADR. Each candidate
 - Reject unknown flags with an explicit error rather than silently ignore
 - All flags optional; with no input, auto-detect everything and run challenge
 
-## Execution
-
-| Step | Action                                                                                     |
-| ---- | ------------------------------------------------------------------------------------------ |
-| 1    | Detect large files exceeding threshold (default >400 lines)                                |
-| 2    | Detect prose documents likely to contain decisions (README, CONTRIBUTING, etc.)            |
-| 3    | Run language-appropriate reviewer on each large file; cross-reference with existing ADRs   |
-| 4    | Extract decision-shaped sentences from prose documents; cross-reference with existing ADRs |
-| 5    | Tag each candidate with impact (H/M/L) and reversibility (high/medium/low)                 |
-| 6    | Rank initial candidates; spawn critic-design to challenge them (skip if `--no-challenge`)  |
-| 7    | Write report to `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-gaps.md`                             |
-| 8    | List post-challenge ADR promotion candidates as follow-up issues                           |
-
-### Step 1: Large File Detection
+## Step 1: Large File Detection
 
 ```bash
 # Find source files exceeding the threshold
@@ -67,11 +54,11 @@ bfs <repo-root> -type f \( -name '*.rs' -o -name '*.ts' -o -name '*.tsx' -o -nam
 
 Default threshold is 400 lines (one-screen ceiling).
 
-### Step 2: Document Detection
+## Step 2: Document Detection
 
 Scan top-level and `docs/` for decision-bearing documents (README, CONTRIBUTING, SECURITY, THREAT_MODEL, ARCHITECTURE, DESIGN, CLAUDE.md / AGENTS.md, Makefile / justfile, linter configs). Full pattern-to-content table: ${CLAUDE_SKILL_DIR}/references/detection-targets.md.
 
-### Step 3: Large File Decision Mining
+## Step 3: Large File Decision Mining
 
 For files exceeding 800 lines (2x threshold), run a triage sub-step first: spawn the reviewer with a "scan first 200 lines and estimate finding density (findings per 100 lines)" instruction, then AskUserQuestion with three options:
 
@@ -81,7 +68,7 @@ For files exceeding 800 lines (2x threshold), run a triage sub-step first: spawn
 
 For files at or below 800 lines, proceed directly to full scan.
 
-For each large file (full or truncated scope), spawn the matching reviewer via Task (same routing as `/audit-adr-drift` Step 5). The reviewer answers:
+For each large file (full or truncated scope), spawn the matching reviewer via Task (same routing as `/adrift` Step 5). The reviewer answers:
 
 - Why is this file shaped at this granularity?
 - What invariant or contract does it carry that a reader cannot derive from the code?
@@ -92,7 +79,7 @@ Findings format: `file:line` + decision summary + evidence (code comment, naming
 
 After collecting findings, cross-reference each one against the ADR directory (if any). Drop findings already covered by an ADR (record count as "ADR-covered (excluded)" in the summary).
 
-### Step 4: Prose Decision Extraction
+## Step 4: Prose Decision Extraction
 
 For each detected document, find sentences containing decision verbs and check for ADR coverage:
 
@@ -101,22 +88,13 @@ For each detected document, find sentences containing decision verbs and check f
 
 Each match is a candidate. Then for each candidate, search the ADR directory (if any) for cross-reference. Drop candidates already covered by an ADR.
 
-#### External ADR Dependency Detection
+### External ADR Dependency Detection
 
-In addition to prose docs, scan source code for `per ADR-NNNN` / `see ADR-NNNN` / `ADR-NNNN` reference patterns:
+In addition to prose docs, detect `ADR-NNNN` references in source code that are not promoted locally. Run `python3 ${CLAUDE_SKILL_DIR}/../_lib/external-adr-refs.py --json`. It auto-detects the canonical ADR directories (docs/decisions, docs/adr, architecture/decisions, adr) and returns `ADR-NNNN` references whose `NNNN-*.md` has no local match as `external_refs`. In a repo with no ADR directory, every reference is external.
 
-```bash
-ugrep -r -n -E "(per |see |governed by )?ADR-[0-9]{4}" --include="*.rs" --include="*.ts" --include="*.tsx" --include="*.py" --include="*.go" --include="*.md" --include="*.toml" .
-```
+Record each id in `external_refs` as an External ADR Dependency candidate. External ADR dependencies are flagged for promotion (write a scout-local ADR that supersedes or imports the external decision). This is impact=H by default because cross-repo ADR drift is silent and hard to detect after the fact.
 
-For each captured ADR id, check whether the matching `NNNN-*.md` exists in the local ADR directory:
-
-- Local match → existing ADR coverage, skip
-- No local match → record as External ADR Dependency candidate
-
-External ADR dependencies are flagged for promotion (write a scout-local ADR that supersedes or imports the external decision). This is impact=H by default because cross-repo ADR drift is silent and hard to detect after the fact.
-
-### Step 5: Impact + Reversibility Tagging
+## Step 5: Impact + Reversibility Tagging
 
 | Impact | Criteria                                                              |
 | ------ | --------------------------------------------------------------------- |
@@ -130,9 +108,9 @@ External ADR dependencies are flagged for promotion (write a scout-local ADR tha
 | medium        | Reversal requires coordinated changes across 2-5 files           |
 | low           | Reversal requires migration, deprecation cycle, or schema change |
 
-### Step 6: Ranking and Challenge
+## Step 6: Ranking and Challenge
 
-#### 6.1 Initial Ranking
+### 6.1 Initial Ranking
 
 ADR promotion candidates = (impact=H) AND (reversibility=low OR medium).
 
@@ -140,7 +118,7 @@ Findings with `incomplete-contract=Yes` are also promoted regardless of `documen
 
 Other findings are recorded but not promoted (informational).
 
-#### 6.2 Devil's Advocate Challenge
+### 6.2 Devil's Advocate Challenge
 
 Skip this sub-step if `--no-challenge` is set.
 
@@ -168,7 +146,9 @@ Record the challenge verdict alongside the initial ranking. The final candidate 
 
 When agent is unavailable or times out, fall back to initial ranking with a `challenge_skipped: timeout` note in the summary.
 
-### Step 7: Report Output
+## Step 7: Report Output
+
+Write the report following ${CLAUDE_SKILL_DIR}/templates/report-template.md, substituting placeholders from findings. Add a per-file summary line `keep N / downgrade N / drop N`. If `--no-challenge` was set, omit the Challenge and Final columns and use the initial ranking. After writing, print a console summary: candidate count, ADR promotion candidate count.
 
 ```bash
 mkdir -p docs/audit
@@ -176,30 +156,18 @@ STAMP=$(date -u +%Y-%m-%d-%H%M%S)  # UTC date + HHMMSS; same-day reruns never co
 REPORT="docs/audit/${STAMP}-adr-gaps.md"
 ```
 
-Write the report following ${CLAUDE_SKILL_DIR}/templates/report-template.md, substituting placeholders (`<YYYY-MM-DD>-<HHMMSS>`, `<source>:<line>`, `<summary>`) from findings. Add a per-file summary line `keep N / downgrade N / drop N`. If `--no-challenge` was set, omit the Challenge and Final columns and use the initial ranking.
+## Hand-off
 
-### Step 8: Follow-up Hand-off
+Print only the post-challenge `keep` candidates and offer to invoke `/adr` for each, or aggregate them into a single tracking issue via `/issue`. `downgrade` candidates are listed as comment-strengthening tasks (not ADRs). `drop` candidates are recorded in the report for traceability but not surfaced as follow-up. This skill only mines and nominates decisions: ADR drafting goes to `/adr`, drift scan against existing ADRs to `/adrift`, and code changes and README body updates are out of scope (extraction only). Cross-repo scope clusters use `scripts/audit-adr-scopes.py` directly (this skill is single-repo by design).
 
-Print only the post-challenge `keep` candidates and offer to invoke `/adr` for each, or aggregate them into a single tracking issue via `/issue`. `downgrade` candidates are listed as comment-strengthening tasks (not ADRs). `drop` candidates are recorded in the report for traceability but not surfaced as follow-up.
+## Completion Criteria
 
-## Output
+Finish only when all of the following hold. Record the reason for any unmet item in the report.
 
-- Report path: `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-gaps.md`
-- Console summary: candidate count, promotion candidate count
-- Optional: ADR drafting via `/adr` or tracking issue via `/issue`
-
-## Out of Scope
-
-- Drafting the ADRs themselves (use `/adr` after this skill produces the candidate list)
-- Implementing code changes
-- Updating README/CONTRIBUTING/etc. bodies (only extraction here)
-- Drift scan against existing ADRs (use `/audit-adr-drift`)
-- Cross-repo scope cluster detection (use `scripts/audit-adr-scopes.py` directly; this skill is single-repo by design)
-
-## Acceptance Criteria
-
-- [ ] Report file exists at `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-gaps.md`
-- [ ] Every large file exceeding threshold has a section
-- [ ] Every scanned document has an extraction section (or "no decisions found")
-- [ ] Every candidate has impact + reversibility tags
-- [ ] ADR promotion candidates are listed at the end with a one-line rationale
+| Item       | Condition                                                                  |
+| ---------- | -------------------------------------------------------------------------- |
+| Report     | `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-gaps.md` exists                      |
+| Large file | Every file exceeding threshold has a section                               |
+| Document   | Every scanned document has an extraction section (or "no decisions found") |
+| Tags       | Every candidate has impact + reversibility                                 |
+| Candidates | ADR promotion candidates listed at the end with a one-line rationale       |

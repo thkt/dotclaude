@@ -1,4 +1,4 @@
-<!-- /audit-adr-gaps の判定基準。Step 6.2 で critic-design に渡す。 -->
+<!-- /census の判定基準。Step 6.2 で critic-design に渡す。 -->
 
 ## incomplete-contract の例
 

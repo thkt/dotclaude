@@ -51,7 +51,7 @@ Phases whose Mode column is `parallel (required)` issue all Task / Bash / Codex 
 
 ## Report
 
-The leader does not generate the gate itself; it decodes the JSON decision block returned by enhancer-evidence and relays it verbatim. The template is `${CLAUDE_SKILL_DIR}/templates/report.md`. All gate-related rules are consolidated in `${CLAUDE_SKILL_DIR}/references/phase-4.md`.
+The leader does not generate the gate itself; it decodes the JSON decision block returned by enhancer-evidence and relays it verbatim. The template is `${CLAUDE_SKILL_DIR}/templates/report-template.md`. All gate-related rules are consolidated in `${CLAUDE_SKILL_DIR}/references/phase-4.md`.
 
 | Looking for                                        | Section in phase-4.md        |
 | -------------------------------------------------- | ---------------------------- |

@@ -1,4 +1,4 @@
-<!-- /audit-adr-gaps decision criteria. Pass to critic-design in Step 6.2. -->
+<!-- /census decision criteria. Pass to critic-design in Step 6.2. -->
 
 ## incomplete-contract examples
 

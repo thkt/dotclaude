@@ -51,7 +51,7 @@ Base ブランチは、指定があれば `--base <branch>` を、なければ `
 
 ## レポート
 
-leader は gate を生成せず、enhancer-evidence が返す JSON decision ブロックを decode して report として中継する。テンプレートは `${CLAUDE_SKILL_DIR}/templates/report.md`、ゲート関連ルールは `${CLAUDE_SKILL_DIR}/references/phase-4.md` に集約されている。
+leader は gate を生成せず、enhancer-evidence が返す JSON decision ブロックを decode して report として中継する。テンプレートは `${CLAUDE_SKILL_DIR}/templates/report-template.md`、ゲート関連ルールは `${CLAUDE_SKILL_DIR}/references/phase-4.md` に集約されている。
 
 | 知りたいこと                                 | phase-4.md セクション |
 | -------------------------------------------- | --------------------- |

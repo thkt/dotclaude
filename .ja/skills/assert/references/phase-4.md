@@ -78,11 +78,9 @@ leader は gate を prose から読まず、enhancer-evidence のレポート先
 
 decode が成功すれば、leader は decode した gate をそのまま最終 gate とする。唯一の降格が Ready から Ready (caveat) への変換で、bootstrap が環境的に失敗し、かつ decode した findings が 0 のときのみ適用する (§ Bootstrap 失敗処理)。
 
-| #   | アクション                                                                                                                                       |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | enhancer の Task 出力をファイルに保存し、gate-decode.py に渡す                                                                                   |
-| 2   | exit 0 なら stdout の decision JSON (gate / findings / build / tests) をそのまま使う                                                             |
-| 3   | exit 1 (ブロック欠落、パース失敗、enum 違反、クロスチェック不一致) なら enhancer を 1 度だけ再起動し、2 度目の失敗で NotReady に fail-close する |
+1. enhancer の Task 出力をファイルに保存し、gate-decode.py に渡す
+2. exit 0 なら stdout の decision JSON (gate / findings / build / tests) をそのまま使う
+3. exit 1 (ブロック欠落、パース失敗、enum 違反、クロスチェック不一致) なら enhancer を 1 度だけ再起動し、2 度目の失敗で NotReady に fail-close する
 
 ## /goal 統合
 
