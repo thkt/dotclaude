@@ -1,21 +1,21 @@
 # Phase 3: Intent Assertion
 
-After Phase 2a returns, the orchestrator (Claude Code) triages failing adversarial tests one by one. This phase has no parallel work; it runs after all of Phase 2 completes.
+After Phase 2a returns, the orchestrator (Claude Code) triages failing adversarial tests one by one. It runs after all of Phase 2 completes.
 
 The output is a list of promoted adversarial findings (with `[adversarial]` source tag), passed to Phase 4.
 
-## Triage Steps
+## Triage
 
-| Step | Action                                        |
-| ---- | --------------------------------------------- |
-| 1    | Read the failing assertion description        |
-| 2    | Read the target code (file:line ± 30 lines)   |
-| 3    | Search for intent from § Intent Sources below |
-| 4    | Apply verdict rules                           |
+| #   | Action                                        |
+| --- | --------------------------------------------- |
+| 1   | Read the failing assertion description        |
+| 2   | Read the target code (file:line ± 30 lines)   |
+| 3   | Search for intent from § Intent Sources below |
+| 4   | Apply verdict rules                           |
 
 ## Intent Sources
 
-OUTCOME.md is the top-priority source because it defines what "done" looks like. Check in order from top.
+Check OUTCOME.md first, then the rest in order from top.
 
 | Source               | Search Pattern                                                            |
 | -------------------- | ------------------------------------------------------------------------- |
@@ -49,10 +49,10 @@ Record excluded tests in the report using this format.
 
 ## Metrics
 
-None of these affect the gate decision; they are recorded as informational only.
+None of these affect the gate decision; they are recorded as informational only. survival_rate and generation_rate are computed by `${CLAUDE_SKILL_DIR}/scripts/parse-adversarial.py` (re-run after triage with `--promoted <promoted_fail count>`). exclusion_rate is computed from the triage result in this phase.
 
-| Metric          | Formula                             | Recorded In            |
-| --------------- | ----------------------------------- | ---------------------- |
-| survival_rate   | `passed / (passed + promoted_fail)` | Evidence table         |
-| exclusion_rate  | `excluded / total_fail`             | Report (informational) |
-| generation_rate | `total_tests / scoped_files`        | Report (informational) |
+| Metric          | Formula                             | Source               | Recorded In            |
+| --------------- | ----------------------------------- | -------------------- | ---------------------- |
+| survival_rate   | `passed / (passed + promoted_fail)` | parse-adversarial.py | Evidence table         |
+| exclusion_rate  | `excluded / total_fail`             | this phase           | Report (informational) |
+| generation_rate | `total_tests / scoped_files`        | parse-adversarial.py | Report (informational) |

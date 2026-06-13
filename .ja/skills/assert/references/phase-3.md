@@ -1,21 +1,21 @@
 # Phase 3: Intent Assertion
 
-Phase 2a の結果が返ったあと、orchestrator (Claude Code) が失敗した adversarial test を 1 件ずつトリアージする。この phase に並列処理はなく、Phase 2 全体の完了後に走る。
+Phase 2a の結果が返ったあと、orchestrator (Claude Code) が失敗した adversarial test を 1 件ずつトリアージする。Phase 2 全体の完了後に走る。
 
 出力は promote された adversarial findings のリスト (`[adversarial]` ソースタグ付き) で、Phase 4 に渡す。
 
 ## トリアージ手順
 
-| Step | アクション                                |
-| ---- | ----------------------------------------- |
-| 1    | 失敗 assertion の説明を読む               |
-| 2    | 対象コードを読む (file:line の前後 30 行) |
-| 3    | 下記 § Intent Sources から intent を探す  |
-| 4    | 判定ルールを適用                          |
+| #   | アクション                                |
+| --- | ----------------------------------------- |
+| 1   | 失敗 assertion の説明を読む               |
+| 2   | 対象コードを読む (file:line の前後 30 行) |
+| 3   | 下記 § Intent Sources から intent を探す  |
+| 4   | 判定ルールを適用                          |
 
 ## Intent Sources
 
-OUTCOME.md は「完了」の定義そのものなので、最優先で確認する。以下、上から順に確認。
+OUTCOME.md を最優先で確認し、以下を上から順に確認する。
 
 | Source               | 検索パターン                                                        |
 | -------------------- | ------------------------------------------------------------------- |
@@ -42,17 +42,17 @@ OUTCOME.md は「完了」の定義そのものなので、最優先で確認す
 ```markdown
 ### Excluded Adversarial Tests
 
-| # | Test             | Reason                                                                            |
-| - | ---------------- | --------------------------------------------------------------------------------- |
-| 1 | test_null_throws | test encodes wrong expectation. Function returns null by design (line 42 comment) |
+| #   | Test             | Reason                                                                            |
+| --- | ---------------- | --------------------------------------------------------------------------------- |
+| 1   | test_null_throws | test encodes wrong expectation. Function returns null by design (line 42 comment) |
 ```
 
 ## メトリクス
 
-いずれもゲート判定には使わず、参考情報として記録する。
+いずれもゲート判定には使わず、参考情報として記録する。survival_rate と generation_rate は `${CLAUDE_SKILL_DIR}/scripts/parse-adversarial.py` が算出する (triage 後に `--promoted <promoted_fail 件数>` を添えて再実行)。exclusion_rate は triage 結果から算出する。
 
-| Metric          | 計算式                              | 記録先      |
-| --------------- | ----------------------------------- | ----------- |
-| survival_rate   | `passed / (passed + promoted_fail)` | Evidence 表 |
-| exclusion_rate  | `excluded / total_fail`             | レポート    |
-| generation_rate | `total_tests / scoped_files`        | レポート    |
+| Metric          | 計算式                              | 算出元               | 記録先      |
+| --------------- | ----------------------------------- | -------------------- | ----------- |
+| survival_rate   | `passed / (passed + promoted_fail)` | parse-adversarial.py | Evidence 表 |
+| exclusion_rate  | `excluded / total_fail`             | この phase           | レポート    |
+| generation_rate | `total_tests / scoped_files`        | parse-adversarial.py | レポート    |

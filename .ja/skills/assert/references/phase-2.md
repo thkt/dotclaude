@@ -8,12 +8,12 @@
 | Challenger       | critic-audit     | Phase 1 の重複除去済み findings | 120s         |
 | Verifier         | critic-evidence  | Phase 1 の重複除去済み findings | 120s         |
 
-## 2a. Adversarial Testing (worktree 内で Codex exec)
+## 2a. Adversarial Testing
 
-Phase 0 の成功が前提で、失敗していた場合はスキップする。実行する場合、`<adversarial-prompt>` には下記 § Codex プロンプトを使い、スコープファイル一覧を埋め込む。
+Phase 0 の成功が前提で、失敗していた場合はスキップする。`<adversarial-prompt>` には下記 § Codex プロンプトを使い、スコープファイル一覧を埋め込む。フラグは `${CLAUDE_SKILL_DIR}/references/phase-1.md` § 1c. テスト実行 と同じ。worktree 内で下記コマンドを実行する。
 
 ```bash
-codex exec -C <worktree-path> --full-auto "<adversarial-prompt>"
+codex exec -c sandbox_workspace_write.network_access=true -C <worktree-path> --full-auto "<adversarial-prompt>" </dev/null
 ```
 
 ## Codex プロンプト
@@ -52,15 +52,15 @@ ADVERSARIAL_RESULTS_END
 
 ## 結果のパース
 
-`ADVERSARIAL_RESULTS_START` と `ADVERSARIAL_RESULTS_END` の間の出力を parse する。results block がない場合は、テスト 0 件として扱う。この時 Evidence 表の Adversarial 列は `skipped` とし、ゲートはブロックしない。
+Codex 出力は background Bash の output-file をそのまま `${CLAUDE_SKILL_DIR}/scripts/parse-adversarial.py` に渡す (`$TMPDIR` へ再リダイレクトしない)。
 
-| Field          | ソース        |
-| -------------- | ------------- |
-| test_name      | results block |
-| target         | file:line     |
-| assertion      | results block |
-| result         | PASS / FAIL   |
-| failure_detail | FAIL のみ     |
+```bash
+"${CLAUDE_SKILL_DIR}/scripts/parse-adversarial.py" <codex-output-file> --scoped-files <N>
+```
+
+スクリプトは JSON `{tests, total, passed, failed, generation_rate, survival_rate}` を返す。`total = 0` の場合は Evidence 表の Adversarial 列を `skipped` とし、ゲートはブロックしない。survival_rate は Phase 3 の triage 後に `--promoted <N>` を添えて再実行すると算出される (`${CLAUDE_SKILL_DIR}/references/phase-3.md` § メトリクス)。
+
+各 test のフィールド (test_name / target / assertion / result / failure_detail) は JSON の `tests` 配列に入る。`result` の扱いは下表。
 
 | result | アクション                        |
 | ------ | --------------------------------- |

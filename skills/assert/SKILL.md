@@ -51,30 +51,30 @@ Phases whose Mode column is `parallel (required)` issue all Task / Bash / Codex 
 
 ## Report
 
-The leader does not generate the gate itself; it decodes the JSON decision block returned by enhancer-evidence and relays it verbatim. The template is ${CLAUDE_SKILL_DIR}/templates/report.md. All gate-related rules are consolidated in ${CLAUDE_SKILL_DIR}/references/phase-4.md.
+The leader does not generate the gate itself; it decodes the JSON decision block returned by enhancer-evidence and relays it verbatim. The template is `${CLAUDE_SKILL_DIR}/templates/report.md`. All gate-related rules are consolidated in `${CLAUDE_SKILL_DIR}/references/phase-4.md`.
 
-| Looking for                                      | Section in phase-4.md        |
-| ------------------------------------------------ | ---------------------------- |
-| Ready / Ready (caveat) / NotReady decision rule  | § Gate Rule                  |
-| JSON decision block decode procedure             | § Gate Decode                |
-| Gate routing on bootstrap failure                | § Bootstrap Failure Handling |
-| When to state gate = Ready in completion message | § /goal Integration          |
+| Looking for                                        | Section in phase-4.md        |
+| -------------------------------------------------- | ---------------------------- |
+| Ready / Ready (caveat) / NotReady decision rule    | § Gate Rule                  |
+| JSON decision block decode procedure               | § Gate Decode                |
+| Gate routing on bootstrap failure                  | § Bootstrap Failure Handling |
+| When to state `gate = Ready` in completion message | § /goal Integration          |
 
 ## Error Handling
 
-| Error                                 | Recovery                                                                                                                         |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| codex not installed                   | Print install instructions, abort                                                                                                |
-| Bootstrap fail / Step 1-3 (env)       | Skip Phase 1c + 2a, continue static-only. Gate routing is ${CLAUDE_SKILL_DIR}/references/phase-4.md § Bootstrap Failure Handling |
-| Bootstrap fail / Step 4 (build smoke) | Skip Phase 1c + 2a. Gate routing is ${CLAUDE_SKILL_DIR}/references/phase-4.md § Bootstrap Failure Handling                       |
-| Bootstrap timeout (300s overall)      | Treat as Step 4 fail if Step 4 had started; otherwise as Step 1-3 fail                                                           |
-| Codex review fails                    | Log error, proceed with audit reviewers only                                                                                     |
-| Codex exec timeout (600s)             | Skip that phase, log in report                                                                                                   |
-| Reviewer stall (120s)                 | Proceed without, log warning                                                                                                     |
-| Challenger stall                      | Proceed with verifier only                                                                                                       |
-| Verifier stall                        | Proceed with challenger only                                                                                                     |
-| Integrator stall                      | Leader synthesizes manually (simplified report)                                                                                  |
-| Worktree cleanup fails                | Log warning, suggest manual cleanup                                                                                              |
+| Error                            | Recovery                                                                                                                           |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| codex not installed              | Print install instructions, abort                                                                                                  |
+| Bootstrap fail / env             | Skip Phase 1c + 2a, continue static-only. Gate routing is `${CLAUDE_SKILL_DIR}/references/phase-4.md` § Bootstrap Failure Handling |
+| Bootstrap fail / build smoke     | Skip Phase 1c + 2a. Gate routing is `${CLAUDE_SKILL_DIR}/references/phase-4.md` § Bootstrap Failure Handling                       |
+| Bootstrap timeout (780s overall) | Treat as build smoke fail if the build had started; otherwise as env fail                                                          |
+| Codex review fails               | Log error, proceed with audit reviewers only                                                                                       |
+| Codex exec timeout (600s)        | Skip that phase, log in report                                                                                                     |
+| Reviewer stall (120s)            | Proceed without, log warning                                                                                                       |
+| Challenger stall                 | Proceed with verifier only                                                                                                         |
+| Verifier stall                   | Proceed with challenger only                                                                                                       |
+| Integrator stall                 | Leader synthesizes manually (simplified report)                                                                                    |
+| Worktree cleanup fails           | Log warning, suggest manual cleanup                                                                                                |
 
 ## Escalation
 
@@ -83,7 +83,7 @@ The leader does not generate the gate itself; it decodes the JSON decision block
 | Any issue (challenger / verifier / adversarial) | Block merge, suggest `/fix`                                                             |
 | Architectural root causes found                 | Suggest `/think` for design review                                                      |
 | Adversarial tests reveal coverage gap           | Suggest `/code` to add tests                                                            |
-| gate = Ready (caveat)                           | Re-run /assert after restoring environment (or accept dynamic-evidence gap consciously) |
+| `gate = Ready (caveat)`                         | Re-run /assert after restoring environment (or accept dynamic-evidence gap consciously) |
 
 ## Completion Criteria
 
