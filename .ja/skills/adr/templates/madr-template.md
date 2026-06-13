@@ -1,0 +1,64 @@
+# MADR テンプレート
+
+決定タイプによらず、MADR v4 の同一骨格を使う。必須セクションは全タイプ共通（Title, Context and Problem Statement, Considered Options 2+, Decision Outcome）。タイプごとに異なるのは More Information 配下に置く推奨トピックだけで、その決定に該当するトピックのみを `### {topic}` として含める。
+
+## テンプレート
+
+`{...}` は作成時に置き換える。任意と記したセクションは、書く内容がなければ見出しごと省略する。
+
+```markdown
+---
+status: "{proposed | rejected | accepted | deprecated | superseded by ADR-NNNN}"
+date: {YYYY-MM-DD}
+decision-makers: {名前またはロール}
+---
+
+# {Adopt X for Y 形式の決定タイトル}
+
+## Context and Problem Statement
+
+{なぜこの決定が必要か。問いの形で締めてよい}
+
+## Decision Drivers
+
+- {任意。選択を導いた基準を箇条書きで}
+
+## Considered Options
+
+- {option 1}
+- {option 2。2 つ以上列挙する}
+
+## Decision Outcome
+
+Chosen option: "{選択した option}", because {選んだ理由}.
+
+### Consequences
+
+- Good, because {良い帰結}
+- Bad, because {悪い帰結}
+
+### Confirmation
+
+{実装が決定と一致しているかの検証方法。CI コマンドやレビュー手順など}
+
+## Pros and Cons of the Options
+
+{任意。option ごとに以下を繰り返す}
+
+### {option}
+
+{1 行の説明}
+
+- Good, because {利点}
+- Bad, because {欠点}
+
+## More Information
+
+### {タイプ別推奨トピック}
+
+{決定タイプの推奨トピックのうち決定に該当するもののみ。トピックごとに ### 見出しを繰り返す}
+
+### Reassessment Triggers
+
+- {決定を再評価する条件}
+```

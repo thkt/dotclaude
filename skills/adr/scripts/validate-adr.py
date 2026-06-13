@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""Usage: validate-adr.py <adr-file>
+
+stdout: JSON { file, errors, warnings, checks }
+exit: 0 if no errors (warnings allowed), 1 if errors
+"""
+
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+from adr_common import fail, split_frontmatter
+
+# Confirmation is an h3 under Decision Outcome; the substring check matches it too
+REQUIRED_SECTIONS = (
+    "Context and Problem Statement",
+    "Considered Options",
+    "Decision Outcome",
+    "Confirmation",
+)
+
+
+def count_options(lines):
+    """Bullets or numbered items directly under ## Considered Options."""
+    in_options = False
+    count = 0
+    for line in lines:
+        if re.match(r"^## Considered Options\s*$", line):
+            in_options = True
+            continue
+        if in_options and line.startswith("## "):
+            in_options = False
+        if in_options and re.match(r"^\s*([-*]|\d+\.)\s", line):
+            count += 1
+    return count
+
+
+def lint_check(path):
+    """('checks' | 'warnings', message) from markdownlint-cli2, if installed."""
+    if not shutil.which("markdownlint-cli2"):
+        return "checks", "markdown_lint=skipped (markdownlint-cli2 not installed)"
+    candidates = [
+        os.environ.get("MARKDOWNLINT_CONFIG"),
+        ".markdownlint.json",
+        str(Path.home() / ".claude" / ".markdownlint.json"),
+    ]
+    config = next((c for c in candidates if c and Path(c).is_file()), None)
+    cmd = ["markdownlint-cli2"] + (["--config", config] if config else []) + [str(path)]
+    if subprocess.run(cmd, capture_output=True).returncode == 0:
+        return "checks", "markdown_lint=ok"
+    return "warnings", "markdown_lint=issues (run markdownlint-cli2 for details)"
+
+
+def main():
+    adr_file = sys.argv[1] if len(sys.argv) > 1 else ""
+    path = Path(adr_file)
+    if not path.is_file():
+        fail(f"Error: file not found: {adr_file}")
+
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    results = {"errors": [], "warnings": [], "checks": []}
+
+    for section in REQUIRED_SECTIONS:
+        if f"## {section}" in text:
+            results["checks"].append(f"section:{section}=ok")
+        else:
+            results["errors"].append(f"missing_section:{section}")
+
+    # MADR v4 frontmatter: status and date are optional but recommended
+    frontmatter, _ = split_frontmatter(text)
+    if frontmatter:
+        results["checks"].append("frontmatter=present")
+        for meta in ("status", "date"):
+            raw = next((l for l in frontmatter if l.startswith(f"{meta}:")), None)
+            if raw:
+                results["checks"].append(f"metadata:{meta}=ok [{raw}]")
+            else:
+                results["warnings"].append(
+                    f"missing_metadata:{meta} (recommended in MADR v4 frontmatter)"
+                )
+    else:
+        results["warnings"].append(
+            "missing_frontmatter (MADR v4 supports optional YAML frontmatter"
+            " for status/date/decision-makers)"
+        )
+
+    options_count = count_options(lines)
+    if options_count >= 2:
+        results["checks"].append(f"options_count={options_count}")
+    elif options_count == 1:
+        results["warnings"].append("options_count=1 (recommended: 2+)")
+    else:
+        results["errors"].append("options_count=0")
+
+    if any(line.startswith("# ") for line in lines):
+        results["checks"].append("title_heading=ok")
+    else:
+        results["errors"].append("title_heading=missing")
+
+    kind, message = lint_check(path)
+    results[kind].append(message)
+
+    print(json.dumps({"file": path.name, **results}, indent=2))
+    sys.exit(1 if results["errors"] else 0)
+
+
+if __name__ == "__main__":
+    main()
