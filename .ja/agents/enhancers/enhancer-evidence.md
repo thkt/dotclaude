@@ -160,7 +160,7 @@ team-integration の統合ロジックを再利用する。
 
 ## Gate Decision (Phase 6)
 
-調整済み根拠からゲートを計算する。完全なルール参照は `~/.claude/skills/assert/references/gate-decision.md`。ブロッキング入力がトリガーされない場合に限り `gate: Ready` を出力する。それ以外は `gate: NotReady`。
+調整済み根拠からゲートを計算する。完全なルール参照は `~/.claude/skills/assert/references/phase-4.md`。ブロッキング入力がトリガーされない場合に限り `gate: Ready` を出力する。それ以外は `gate: NotReady`。
 
 | Input                | Blocks Ready        | Source                   |
 | -------------------- | ------------------- | ------------------------ |

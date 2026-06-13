@@ -160,7 +160,7 @@ Reuses team-integration synthesis logic.
 
 ## Gate Decision (Phase 6)
 
-Compute gate from reconciled evidence. Full rule reference: `~/.claude/skills/assert/references/gate-decision.md`. Output `gate: Ready` iff no blocking input is triggered. Otherwise `gate: NotReady`.
+Compute gate from reconciled evidence. Full rule reference: `~/.claude/skills/assert/references/phase-4.md`. Output `gate: Ready` iff no blocking input is triggered. Otherwise `gate: NotReady`.
 
 | Input                    | Blocks Ready          | Source                        |
 | ------------------------ | --------------------- | ----------------------------- |
