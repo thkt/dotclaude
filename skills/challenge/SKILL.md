@@ -7,9 +7,9 @@ model: opus
 argument-hint: "[proposal file | description]"
 ---
 
-# /challenge
+# /challenge - GO / NO-GO verdict on a proposal
 
-Two-phase challenge. Phase 1 grills, Phase 2 spawns critic-design.
+Judge in two phases whether a discovered problem is real and a proposed idea usable. Phase 1 grills from evidence on its own, Phase 2 lands two critic-design as devil's advocate. The next decision then proceeds on a verified GO / NO-GO.
 
 ## Input
 

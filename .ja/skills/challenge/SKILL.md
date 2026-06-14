@@ -7,9 +7,9 @@ model: opus
 argument-hint: "[proposal file | description]"
 ---
 
-# /challenge
+# /challenge - 提案の GO / NO-GO 判定
 
-2 フェーズ challenge。Phase 1 で grill、Phase 2 で critic-design を spawn する。
+発見した問題が本物か、提案したアイデアが使えるかを 2 フェーズで判定する。Phase 1 が証拠で自力 grill し、Phase 2 が critic-design 2 体で devil's advocate を当てる。次の意思決定が検証済みの GO / NO-GO を土台に進めるようにする。
 
 ## 入力
 
