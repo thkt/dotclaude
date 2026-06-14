@@ -1,7 +1,7 @@
 ---
 name: challenge
-description: Two-phase challenge to a proposal/design/plan/analysis. Phase 1 grills the user with one-question-at-a-time interviews to surface assumptions and trade-offs. Phase 2 spawns critic-design with the surfaced material as devil's advocate input. Do NOT use for code review findings (use /audit) or outcome assertion (use /assert which has built-in adversarial testing).
-when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, 質問攻め, 詰めて, grill me, 壁打ち
+description: Two-phase challenge to a proposal/design/plan/analysis. Phase 1 loops subagent verification and advisor judgment over evidence (OUTCOME.md + parallel subagents) to self-resolve design-tree branches, asking the user only the irreversible residual and proceeding on stated assumptions for the rest. Phase 2 spawns two critic-design subagents (internal attack + OUTCOME.md attack) as devil's advocate input. Do NOT use for code review findings (use /audit) or outcome assertion (use /assert which has built-in adversarial testing).
+when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, grill me, 壁打ち
 allowed-tools: Read LS Task Bash(ugrep:*) Bash(bfs:*) AskUserQuestion
 model: opus
 argument-hint: "[proposal file | description]"
@@ -18,15 +18,25 @@ Two-phase challenge. Phase 1 grills, Phase 2 spawns critic-design.
 
 ## Phase 1 Grill
 
-Ask one question at a time. Each question must include a recommended answer presented as the top option in AskUserQuestion. Walk down each branch of the design tree, resolving dependencies one-by-one.
+Self-resolve from evidence, then sort the residual by reversibility. Block only the irreversible branches, proceed on stated assumptions for the rest, and let the user veto after the run.
+
+| Step | Action                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Read OUTCOME.md if present. Its done state / non-goals / constraints stand in for part of the user's intent (consistent with PREFLIGHT)                                                                                                                                                                                                                                                                                                                 |
+| 2    | Enumerate design-tree branches and classify each as fact (uniquely determined by evidence) or preference (priority / scope intent / trade-off choice)                                                                                                                                                                                                                                                                                                   |
+| 3    | Run the loop. subagents verify fact branches in parallel → advisor synthesizes + audits the classification + names the next evidence gap → the main session organizes the results and decides whether to continue. Break when the gap no longer resolves                                                                                                                                                                                                |
+| 4    | If a verified fact branch falsifies the proposal's core claim (the core targets a state that already holds, or a verified fact contradicts it), halt and skip Phase 2. If the core is alive and only a sub-claim is dead, proceed on the live remainder. Halt only on a refutation backed by fact-branch evidence, not on advisor opinion alone. critic-design on a dead proposal is wasted. Put the refutation in the Devil verdict slot of the output |
+| 5    | The residual at break is the proven preference. advisor scores each residual with a best-guess plus reversibility / blast-radius                                                                                                                                                                                                                                                                                                                        |
+| 6    | Ask via AskUserQuestion only the irreversible or high-impact residual. For the rest, proceed on the best-guess as a stated assumption logged in the output Assumptions                                                                                                                                                                                                                                                                                  |
 
 ### Rules
 
-| Rule                      | Detail                                                                                                                                   |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Code-resolvable questions | If the answer lives in the code, run ugrep / bfs instead of asking                                                                       |
-| Question budget           | Cap at 7 across the phase. If hitting cap with branches still open, summarise the unresolved set and let user decide whether to continue |
-| Stop conditions           | All decision branches resolved, user signals "enough", or budget hit                                                                     |
+| Rule                  | Detail                                                                                                                                                                                                           |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Classification basis  | Split fact vs preference by question type, mechanically, not by advisor confidence. Treating a preference as fact guts the grill                                                                                 |
+| Loop termination      | Break when advisor reports that no further evidence would change the classification, fixing the residual as the proven preference. Cap at 3 rounds; branches unresolved after 3 rounds also fall to the residual |
+| Residual sorting      | Reversible and low-impact proceeds on a stated best-guess assumption. Only the irreversible or high-impact blocks via AskUserQuestion. Cap 7                                                                     |
+| Self-resolution trace | Mark branches skipped via subagent and residuals advanced on assumption in the output, leaving the user a way to veto a misjudgement                                                                             |
 
 ### Output to Phase 2
 
@@ -40,19 +50,30 @@ Aggregate grill findings into critic-design input schema before spawning.
 | decisions        | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded) |
 | trade-offs       | trade-offs surfaced during grill                                                                         |
 | referenced_files | files cited or read during grill                                                                         |
+| outcome_ref      | OUTCOME.md path plus a digest of its done state / non-goals / constraints, if present                    |
 
 ## Phase 2 Devil
 
-| Step | Action                                                                                                                           |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Compose Phase 2 input from Phase 1 aggregation + original $ARGUMENTS context                                                     |
-| 2    | Spawn critic-design via Task (subagent_type: critic-design, background: false). Mention ARCHITECTURE.md or equivalent if present |
-| 3    | Wait for completion, capture verdict + weaknesses                                                                                |
+Split the roles across the Phase 1 advisor and two Phase 2 critics to avoid a duplicated adversarial pass. Keep critic-design's devil's advocate nature intact and split only the attack axis into internal and OUTCOME.md.
+
+| Pass                             | Role                                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Phase 1 advisor                  | Evidence synthesis + self-consistency check against gathered evidence + classification audit      |
+| Phase 2 critic-design (internal) | Attack the proposal on its own terms (hidden weaknesses, failure modes)                           |
+| Phase 2 critic-design (outcome)  | Attack whether it reaches OUTCOME.md (outcome fit / non-goal / constraint breach). Skip if absent |
+
+| Step | Action                                                                                                                                                                                                                                            |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Compose Phase 2 input from Phase 1 aggregation + original $ARGUMENTS context                                                                                                                                                                      |
+| 2    | Spawn two critic-design via Task in parallel (subagent_type: critic-design, background: false). One attacks internally, one takes outcome_ref to attack OUTCOME.md. Skip the outcome one if OUTCOME.md absent. Mention ARCHITECTURE.md if present |
+| 3    | Wait for both, reconcile verdicts + weaknesses (dedupe overlap)                                                                                                                                                                                   |
 
 ## Output
 
-| Section          | Content                                                     |
-| ---------------- | ----------------------------------------------------------- |
-| Grill summary    | Surfaced assumptions, decisions, trade-offs (one-line each) |
-| Devil verdict    | critic-design output verbatim                               |
-| Actionable items | Top 3 concrete actions (keep / remove / revise)             |
+| Section          | Content                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Grill summary    | Surfaced assumptions, decisions, trade-offs (one-line each)                                       |
+| Evidence scope   | List of branches self-resolved, plus a note that the verdict is a challenge within evidence range |
+| Assumptions      | Residuals advanced on a best-guess and their reversibility. The user's veto targets               |
+| Devil verdict    | Both critic-design verdicts (internal + outcome), reconciled                                      |
+| Actionable items | Top 3 concrete actions (keep / remove / revise)                                                   |

@@ -1,7 +1,7 @@
 ---
 name: challenge
-description: 提案、設計、計画、分析を 2 フェーズで challenge する。Phase 1 は 1 問ずつインタビューで前提と trade-off を引き出す grill。Phase 2 は引き出した素材を critic-design に渡して devil's advocate spawn する。コードレビュー findings には使わない (/audit を使用)。outcome assertion にも使わない (/assert に組み込み adversarial testing がある)。
-when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, 質問攻め, 詰めて, grill me, 壁打ち
+description: 提案、設計、計画、分析を 2 フェーズで challenge する。Phase 1 は OUTCOME.md と subagent 検証と advisor 判断をループで回して証拠から分岐を自力解決し、残差は不可逆分岐だけ最小限聞き他は仮定明記で進める grill。Phase 2 は引き出した素材を critic-design 2 体 (内部攻撃 + OUTCOME.md 攻撃) に渡して devil's advocate spawn する。コードレビュー findings には使わない (/audit を使用)。outcome assertion にも使わない (/assert に組み込み adversarial testing がある)。
+when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, grill me, 壁打ち
 allowed-tools: Read LS Task Bash(ugrep:*) Bash(bfs:*) AskUserQuestion
 model: opus
 argument-hint: "[proposal file | description]"
@@ -18,41 +18,62 @@ argument-hint: "[proposal file | description]"
 
 ## Phase 1 Grill
 
-1 問ずつ質問する。各質問には推奨回答を含め、AskUserQuestion の最上位選択肢として提示する。設計ツリーの各分岐を辿り、依存関係を 1 つずつ解決していく。
+証拠で自力解決し、残差は可逆性で振り分ける。不可逆分岐だけブロックし、他は仮定明記で進めてユーザーは実行後に veto する。
+
+| Step | アクション                                                                                                                                                                                                                                                                                                                                                        |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | OUTCOME.md があれば読む。done 状態 / non-goal / constraint がユーザー intent の一部を肩代わりする (PREFLIGHT と一貫)                                                                                                                                                                                                                                              |
+| 2    | 設計ツリーの分岐を列挙し、各分岐を事実 (証拠で一意に定まる) か選好 (優先順位 / scope 意図 / trade-off の選好) に分類する                                                                                                                                                                                                                                          |
+| 3    | ループを回す。subagent が事実分岐を並列検証 → advisor が統合 + 分類監査 + 次に解くべき証拠 gap を提示 → メインセッションが結果を整理し継続判断。解けなくなったら break                                                                                                                                                                                            |
+| 4    | 検証済み事実分岐が提案の中核主張を反証したら (中核が既に成立済みの状態を対象、または検証済み事実と矛盾) halt し Phase 2 を skip。中核が生きていて一部 sub-claim だけ死んでいる場合は生存部分で続行する。反証は事実分岐の証拠に裏付くものに限り advisor の見解だけでは halt しない。死んだ提案への critic-design は無駄打ち。出力では Devil verdict に反証を据える |
+| 5    | break 時点の残差が証明済みの真の選好。advisor が各残差に best-guess と可逆性 / 影響度を付ける                                                                                                                                                                                                                                                                     |
+| 6    | 不可逆または影響大の残差だけ AskUserQuestion で最小質問。それ以外は best-guess を仮定として進め、出力の Assumptions に明記する                                                                                                                                                                                                                                    |
 
 ### ルール
 
-| ルール             | 詳細                                                                                                      |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| コードで分かる質問 | 答えがコードにあるなら ugrep / bfs で確認、ユーザーには聞かない                                           |
-| 質問数上限         | フェーズ全体で 7 問まで。上限到達時に未解決分岐があれば、未解決セットを要約してユーザーに継続判断を求める |
-| 終了条件           | 全分岐解決、ユーザーが "enough" 宣言、または上限到達                                                      |
+| ルール         | 詳細                                                                                                                                                |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 分類基準       | 事実か選好かは質問種別で機械的に切る。advisor の自信度では切らない。誤って選好を事実扱いすると grill の核を潰す                                     |
+| ループ終了     | advisor が「これ以上の証拠では分類が変わらない」と報告したら break し、残差を真の選好と確定する。上限 3 round。3 round で解けない分岐も残差に落とす |
+| 残差の振り分け | 可逆かつ影響小は best-guess の仮定明記で進む。不可逆または影響大のみ AskUserQuestion でブロックし最小質問。上限 7 問                                |
+| 自力解決の明示 | subagent で飛ばした分岐と仮定で進めた残差を出力に明記し、ユーザーが誤判定を veto できる逃げ道を残す                                                 |
 
 ### Phase 2 への出力
 
 grill findings を critic-design 入力スキーマに集約してから spawn する。
 
-| Field            | 出所                                                             |
-| ---------------- | ---------------------------------------------------------------- |
-| source           | "user-grill"                                                     |
-| artifact_type    | $ARGUMENTS から推定 (spec / plan / design / ADR / doc)           |
-| approach         | proposal core の 1 行要約                                        |
-| decisions        | grill 中に固まったアーキレベル判断 (用語確認や scope 細部は除外) |
-| trade-offs       | grill 中に表面化した trade-off                                   |
-| referenced_files | grill 中に参照または読まれたファイル                             |
+| Field            | 出所                                                                  |
+| ---------------- | --------------------------------------------------------------------- |
+| source           | "user-grill"                                                          |
+| artifact_type    | $ARGUMENTS から推定 (spec / plan / design / ADR / doc)                |
+| approach         | proposal core の 1 行要約                                             |
+| decisions        | grill 中に固まったアーキレベル判断 (用語確認や scope 細部は除外)      |
+| trade-offs       | grill 中に表面化した trade-off                                        |
+| referenced_files | grill 中に参照または読まれたファイル                                  |
+| outcome_ref      | OUTCOME.md のパスと done 状態 / non-goal / constraint の要約 (あれば) |
 
 ## Phase 2 Devil
 
-| Step | アクション                                                                                                                    |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Phase 1 集約 + 元の $ARGUMENTS コンテキストから Phase 2 入力を組み立てる                                                      |
-| 2    | Task で critic-design を spawn する (subagent_type: critic-design, background: false)。ARCHITECTURE.md 等が存在すれば言及する |
-| 3    | 完了待機、verdict + weaknesses を取得                                                                                         |
+Phase 1 advisor と Phase 2 の 2 critic で役割を分け、adversarial pass の重複を避ける。critic-design の devil's advocate 性は保ち、攻撃軸だけ内部と OUTCOME.md に分ける。
+
+| Pass                            | 役割                                                                                                |
+| ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Phase 1 advisor                 | 証拠統合 + 集めた証拠との自己整合チェック + 分類監査                                                |
+| Phase 2 critic-design (内部)    | 提案そのものを攻撃する (隠れた弱点、failure mode)                                                   |
+| Phase 2 critic-design (outcome) | OUTCOME.md に届くかを攻撃する (outcome 適合 / non-goal / constraint 侵害)。OUTCOME.md 不在なら skip |
+
+| Step | アクション                                                                                                                                                                                                                    |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Phase 1 集約 + 元の $ARGUMENTS コンテキストから Phase 2 入力を組み立てる                                                                                                                                                      |
+| 2    | critic-design を 2 体 Task で並列 spawn (subagent_type: critic-design, background: false)。一方は内部攻撃、一方は outcome_ref を渡して OUTCOME.md 攻撃。OUTCOME.md 不在なら outcome 側は skip。ARCHITECTURE.md 等があれば言及 |
+| 3    | 両者の完了待機、verdict + weaknesses を突き合わせる (重複は dedupe)                                                                                                                                                           |
 
 ## 出力
 
-| セクション       | 内容                                                   |
-| ---------------- | ------------------------------------------------------ |
-| Grill summary    | 表面化した assumption、decisions、trade-offs (各 1 行) |
-| Devil verdict    | critic-design 出力をそのまま提示                       |
-| Actionable items | 具体アクションのトップ 3 (keep / remove / revise)      |
+| セクション       | 内容                                                             |
+| ---------------- | ---------------------------------------------------------------- |
+| Grill summary    | 表面化した assumption、decisions、trade-offs (各 1 行)           |
+| Evidence scope   | 自力解決した分岐一覧と、verdict が証拠範囲内の挑戦である旨の注記 |
+| Assumptions      | best-guess で進めた残差とその可逆性。ユーザーが veto する対象    |
+| Devil verdict    | critic-design 2 体の verdict (内部 + outcome) を突き合わせて提示 |
+| Actionable items | 具体アクションのトップ 3 (keep / remove / revise)                |
