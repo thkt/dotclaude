@@ -52,7 +52,7 @@ Aggregate grill findings into critic-design input schema before spawning.
 
 ## Phase 2 Devil
 
-Split the roles across the Phase 1 advisor and two Phase 2 critics to avoid a duplicated adversarial pass. Keep critic-design's devil's advocate nature intact and split only the attack axis into internal and OUTCOME.md.
+Split the roles across the Phase 1 advisor and two Phase 2 critics to avoid a duplicated adversarial pass. Keep critic-design's devil's advocate nature (adversarially probing for holes) intact and split only the attack axis into internal and OUTCOME.md.
 
 | Pass                             | Role                                                                                              |
 | -------------------------------- | ------------------------------------------------------------------------------------------------- |
