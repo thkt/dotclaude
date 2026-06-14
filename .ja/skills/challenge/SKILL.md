@@ -20,7 +20,7 @@ argument-hint: "[proposal file | description]"
 
 証拠で自力解決し、残差は可逆性で振り分ける。不可逆分岐だけブロックし、他は仮定明記で進めてユーザーは実行後に veto する。
 
-1. OUTCOME.md があれば読む。done 状態 / non-goal / constraint がユーザー intent の一部を肩代わりする (PREFLIGHT と一貫)
+1. OUTCOME.md があれば読む。done 状態 / non-goal / constraint がユーザー intent の一部を肩代わりする (PREFLIGHT と一貫)。無ければ $ARGUMENTS と会話から outcome を推定し AskUserQuestion で確認する。確定した outcome を Phase 2 の outcome critic に評価軸として渡す
 2. 設計ツリーの分岐を列挙し、各分岐を事実 (証拠で一意に定まる) か選好 (優先順位 / scope 意図 / trade-off の選好) に分類する
 3. ループを回す。subagent が事実分岐を並列検証 → advisor が統合 + 分類監査 + 次に解くべき証拠 gap を提示 → メインセッションが結果を整理し継続判断。解けなくなったら break
 4. 検証済み事実分岐が提案の中核主張を反証したら (中核が既に成立済みの状態を対象、または検証済み事実と矛盾) halt し Phase 2 を skip。中核が生きていて一部 sub-claim だけ死んでいる場合は生存部分で続行する。反証は事実分岐の証拠に裏付くものに限り advisor の見解だけでは halt しない。死んだ提案への critic-design は無駄打ち。出力では Devil verdict に反証を据える
@@ -40,31 +40,31 @@ argument-hint: "[proposal file | description]"
 
 grill findings を critic-design 入力スキーマに集約してから spawn する。
 
-| Field            | 出所                                                                  |
-| ---------------- | --------------------------------------------------------------------- |
-| source           | "user-grill"                                                          |
-| artifact_type    | $ARGUMENTS から推定 (spec / plan / design / ADR / doc)                |
-| approach         | proposal core の 1 行要約                                             |
-| decisions        | grill 中に固まったアーキレベル判断 (用語確認や scope 細部は除外)      |
-| trade-offs       | grill 中に表面化した trade-off                                        |
-| referenced_files | grill 中に参照または読まれたファイル                                  |
-| outcome_ref      | OUTCOME.md のパスと done 状態 / non-goal / constraint の要約 (あれば) |
+| Field            | 出所                                                                                                                   |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| source           | "user-grill"                                                                                                           |
+| artifact_type    | $ARGUMENTS から推定 (spec / plan / design / ADR / doc)                                                                 |
+| approach         | proposal core の 1 行要約                                                                                              |
+| decisions        | grill 中に固まったアーキレベル判断 (用語確認や scope 細部は除外)                                                       |
+| trade-offs       | grill 中に表面化した trade-off                                                                                         |
+| referenced_files | grill 中に参照または読まれたファイル                                                                                   |
+| outcome_ref      | OUTCOME.md のパスと done 状態 / non-goal / constraint の要約。OUTCOME.md が無ければ Step 1 で確認した outcome を入れる |
 
 ## Phase 2 Devil
 
 Phase 1 advisor と Phase 2 の 2 critic で役割を分け、敵対的 pass の重複を避ける。critic-design の devil's advocate (敵対的に穴を探す) 性は保ち、攻撃軸だけ内部と OUTCOME.md に分ける。
 
-| Pass                            | 役割                                                                                                |
-| ------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Phase 1 advisor                 | 証拠統合 + 集めた証拠との自己整合チェック + 分類監査                                                |
-| Phase 2 critic-design (内部)    | 提案そのものを攻撃する (隠れた弱点、failure mode)                                                   |
-| Phase 2 critic-design (outcome) | OUTCOME.md に届くかを攻撃する (outcome 適合 / non-goal / constraint 侵害)。OUTCOME.md 不在なら skip |
+| Pass                            | 役割                                                                                                                                            |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phase 1 advisor                 | 証拠統合 + 集めた証拠との自己整合チェック + 分類監査                                                                                            |
+| Phase 2 critic-design (内部)    | 提案そのものを攻撃する (隠れた弱点、failure mode)                                                                                               |
+| Phase 2 critic-design (outcome) | outcome (OUTCOME.md または Step 1 で確認したもの) に届くかを攻撃する (outcome 適合 / non-goal / constraint 侵害)。どちらも取れないときだけ skip |
 
-| Step | アクション                                                                                                                                                                                                                    |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Phase 1 集約 + 元の $ARGUMENTS コンテキストから Phase 2 入力を組み立てる                                                                                                                                                      |
-| 2    | critic-design を 2 体 Task で並列 spawn (subagent_type: critic-design, background: false)。一方は内部攻撃、一方は outcome_ref を渡して OUTCOME.md 攻撃。OUTCOME.md 不在なら outcome 側は skip。ARCHITECTURE.md 等があれば言及 |
-| 3    | 両者の完了待機、verdict + weaknesses を突き合わせる (重複は dedupe)                                                                                                                                                           |
+| Step | アクション                                                                                                                                                                                                                            |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Phase 1 集約 + 元の $ARGUMENTS コンテキストから Phase 2 入力を組み立てる                                                                                                                                                              |
+| 2    | critic-design を 2 体 Task で並列 spawn (subagent_type: critic-design, background: false)。一方は内部攻撃、一方は outcome_ref を渡して outcome 攻撃。outcome がどちらも取れないなら outcome 側は skip。ARCHITECTURE.md 等があれば言及 |
+| 3    | 両者の完了待機、verdict + weaknesses を突き合わせる (重複は dedupe)                                                                                                                                                                   |
 
 ## 出力
 

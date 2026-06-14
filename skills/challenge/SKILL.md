@@ -20,7 +20,7 @@ Judge in two phases whether a discovered problem is real and a proposed idea usa
 
 Self-resolve from evidence, then sort the residual by reversibility. Block only the irreversible branches, proceed on stated assumptions for the rest, and let the user veto after the run.
 
-1. Read OUTCOME.md if present. Its done state / non-goals / constraints stand in for part of the user's intent (consistent with PREFLIGHT)
+1. Read OUTCOME.md if present. Its done state / non-goals / constraints stand in for part of the user's intent (consistent with PREFLIGHT). If absent, infer the outcome from $ARGUMENTS and the conversation and confirm it via AskUserQuestion. Pass the confirmed outcome to the Phase 2 outcome critic as its evaluation axis
 2. Enumerate design-tree branches and classify each as fact (uniquely determined by evidence) or preference (priority / scope intent / trade-off choice)
 3. Run the loop. subagents verify fact branches in parallel → advisor synthesizes + audits the classification + names the next evidence gap → the main session organizes the results and decides whether to continue. Break when the gap no longer resolves
 4. If a verified fact branch falsifies the proposal's core claim (the core targets a state that already holds, or a verified fact contradicts it), halt and skip Phase 2. If the core is alive and only a sub-claim is dead, proceed on the live remainder. Halt only on a refutation backed by fact-branch evidence, not on advisor opinion alone. critic-design on a dead proposal is wasted. Put the refutation in the Devil verdict slot of the output
@@ -40,31 +40,31 @@ Self-resolve from evidence, then sort the residual by reversibility. Block only 
 
 Aggregate grill findings into critic-design input schema before spawning.
 
-| Field            | Source                                                                                                   |
-| ---------------- | -------------------------------------------------------------------------------------------------------- |
-| source           | "user-grill"                                                                                             |
-| artifact_type    | inferred from $ARGUMENTS (spec / plan / design / ADR / doc)                                              |
-| approach         | one-line summary of the proposal core                                                                    |
-| decisions        | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded) |
-| trade-offs       | trade-offs surfaced during grill                                                                         |
-| referenced_files | files cited or read during grill                                                                         |
-| outcome_ref      | OUTCOME.md path plus a digest of its done state / non-goals / constraints, if present                    |
+| Field            | Source                                                                                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| source           | "user-grill"                                                                                                                            |
+| artifact_type    | inferred from $ARGUMENTS (spec / plan / design / ADR / doc)                                                                             |
+| approach         | one-line summary of the proposal core                                                                                                   |
+| decisions        | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded)                                |
+| trade-offs       | trade-offs surfaced during grill                                                                                                        |
+| referenced_files | files cited or read during grill                                                                                                        |
+| outcome_ref      | OUTCOME.md path plus a digest of its done state / non-goals / constraints. If OUTCOME.md is absent, use the outcome confirmed in Step 1 |
 
 ## Phase 2 Devil
 
 Split the roles across the Phase 1 advisor and two Phase 2 critics to avoid a duplicated adversarial pass. Keep critic-design's devil's advocate nature (adversarially probing for holes) intact and split only the attack axis into internal and OUTCOME.md.
 
-| Pass                             | Role                                                                                              |
-| -------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Phase 1 advisor                  | Evidence synthesis + self-consistency check against gathered evidence + classification audit      |
-| Phase 2 critic-design (internal) | Attack the proposal on its own terms (hidden weaknesses, failure modes)                           |
-| Phase 2 critic-design (outcome)  | Attack whether it reaches OUTCOME.md (outcome fit / non-goal / constraint breach). Skip if absent |
+| Pass                             | Role                                                                                                                                                                 |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phase 1 advisor                  | Evidence synthesis + self-consistency check against gathered evidence + classification audit                                                                         |
+| Phase 2 critic-design (internal) | Attack the proposal on its own terms (hidden weaknesses, failure modes)                                                                                              |
+| Phase 2 critic-design (outcome)  | Attack whether it reaches the outcome (OUTCOME.md or the one confirmed in Step 1) on outcome fit / non-goal / constraint breach. Skip only when neither is available |
 
-| Step | Action                                                                                                                                                                                                                                            |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Compose Phase 2 input from Phase 1 aggregation + original $ARGUMENTS context                                                                                                                                                                      |
-| 2    | Spawn two critic-design via Task in parallel (subagent_type: critic-design, background: false). One attacks internally, one takes outcome_ref to attack OUTCOME.md. Skip the outcome one if OUTCOME.md absent. Mention ARCHITECTURE.md if present |
-| 3    | Wait for both, reconcile verdicts + weaknesses (dedupe overlap)                                                                                                                                                                                   |
+| Step | Action                                                                                                                                                                                                                                                        |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Compose Phase 2 input from Phase 1 aggregation + original $ARGUMENTS context                                                                                                                                                                                  |
+| 2    | Spawn two critic-design via Task in parallel (subagent_type: critic-design, background: false). One attacks internally, one takes outcome_ref to attack the outcome. Skip the outcome one only if no outcome is available. Mention ARCHITECTURE.md if present |
+| 3    | Wait for both, reconcile verdicts + weaknesses (dedupe overlap)                                                                                                                                                                                               |
 
 ## Output
 
