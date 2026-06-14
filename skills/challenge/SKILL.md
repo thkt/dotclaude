@@ -1,6 +1,6 @@
 ---
 name: challenge
-description: Two-phase challenge that judges whether a discovered problem is real and whether a proposed idea is usable. Phase 1 loops subagent verification and advisor judgment over evidence (OUTCOME.md + parallel subagents) to self-resolve design-tree branches, asking the user only the irreversible residual and proceeding on stated assumptions for the rest. Phase 2 spawns two critic-design subagents (internal attack + OUTCOME.md attack) as devil's advocate input. The verdict leads the output: real / false / conditional for a problem, usable / unusable / needs-revision for an idea. Do NOT use for code review findings (use /audit) or outcome assertion (use /assert which has built-in adversarial testing).
+description: Two-phase challenge that judges whether a discovered problem is real and whether a proposed idea is usable. Phase 1 loops subagent verification and advisor judgment over evidence (OUTCOME.md + parallel subagents) to self-resolve design-tree branches, asking the user only the irreversible residual and proceeding on stated assumptions for the rest. Phase 2 spawns two critic-design subagents (internal attack + OUTCOME.md attack) as devil's advocate input. The verdict leads the output as a simple GO / NO-GO. Do NOT use for code review findings (use /audit) or outcome assertion (use /assert which has built-in adversarial testing).
 when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, grill me, 壁打ち
 allowed-tools: Read LS Task Bash(ugrep:*) Bash(bfs:*) AskUserQuestion
 model: opus
@@ -72,12 +72,12 @@ Split the roles across the Phase 1 advisor and two Phase 2 critics to avoid a du
 
 The point of challenge is to judge whether a discovered problem is real and whether a proposed idea is usable. Lead with the Verdict; everything after it backs the judgment and names the next move.
 
-| Section          | Content                                                                                                  |
-| ---------------- | -------------------------------------------------------------------------------------------------------- |
-| Verdict          | real / false / conditional for a problem, usable / unusable / needs-revision for an idea. One line, first |
-| Why              | The fact-branch evidence behind the verdict (reproduction / refutation)                                  |
-| Grill summary    | Surfaced assumptions, decisions, trade-offs (one-line each)                                              |
-| Evidence scope   | List of branches self-resolved, plus a note that the verdict is a challenge within evidence range        |
-| Assumptions      | Residuals advanced on a best-guess and their reversibility. The user's veto targets                      |
-| Devil verdict    | Both critic-design verdicts (internal + outcome), reconciled                                             |
-| Actionable items | Top 3 concrete actions (keep / remove / revise)                                                          |
+| Section          | Content                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Verdict          | GO / NO-GO. Note the condition if conditional. One line, first                                    |
+| Why              | The fact-branch evidence behind the verdict (reproduction / refutation)                           |
+| Grill summary    | Surfaced assumptions, decisions, trade-offs (one-line each)                                       |
+| Evidence scope   | List of branches self-resolved, plus a note that the verdict is a challenge within evidence range |
+| Assumptions      | Residuals advanced on a best-guess and their reversibility. The user's veto targets               |
+| Devil verdict    | Both critic-design verdicts (internal + outcome), reconciled                                      |
+| Actionable items | Top 3 concrete actions (keep / remove / revise)                                                   |
