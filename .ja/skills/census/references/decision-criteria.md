@@ -1,14 +1,40 @@
-<!-- /census の判定基準。Step 6.2 で critic-design に渡す。 -->
+# /census 判定基準
+
+Step 5 の tagging / ranking / critic-design challenge で使う。Step 5b で critic-design に全文を渡す。
 
 ## incomplete-contract の例
 
-finding が `incomplete-contract` となるのは、コードの comment が「何が真か」を述べる一方で「何が真であり続けるべきか」を述べていないとき。例: SSRF-safe な HTTP client の field に「redirect disabled for SSRF」と注記があるが、「user URL を扱う future の command はこの client を MUST 使用」という rule が無い場合。security invariant や設計 rationale で頻出するパターンで、reader が「この状態は維持すべき」と推測することに依存している。このような finding は `documented?` の値に関わらず強い ADR 候補となる。欠けている forward-looking な rule こそ、ADR が唯一提供できるものだから。
+finding が `incomplete-contract` となるのは、コードのコメントが「何が真か」を述べる一方で「何が真であり続けるべきか」を述べていないとき。典型例は、SSRF-safe な HTTP クライアントのフィールドに「redirect disabled for SSRF」と注記があるが、「ユーザー URL を扱う将来のコマンドはこのクライアントを必ず使用する」というルールが無いケース。セキュリティ不変条件や設計根拠で頻出するパターンで、読み手が「この状態は維持すべき」と推測することに依存している。このような finding は `documented?` の値に関わらず強い ADR 候補となる。欠けている forward-looking なルールこそ、ADR が唯一提供できるものだから。
 
 ## ADR worth ヒューリスティック
 
-scout 試運転 2026-05-13 で経験的に導出した heuristic。既存の enforcement mechanism (lint 設定、型システム、自動 test) は、機械的な決定については ADR の文章より強い。ADR は mechanism が役に立たない以下の 2 カテゴリに限定する。
+既存の強制機構 (lint 設定、型システム、自動テスト) は、機械的な決定については ADR の文章より強い。ADR は機構が役に立たない以下の 2 カテゴリに限定する。
 
-1. tool で強制できない不変条件 (例: 「field X は Y と同時に使ってはいけない」が両方同型のとき)
-2. 公開 API 互換性のコミットメント (例: exit code 規約、JSON 出力 schema)
+1. ツールで強制できない不変条件 (例: 「フィールド X は Y と同時に使ってはいけない」が両方同型のとき)
+2. 公開 API 互換性のコミットメント (例: exit code 規約、JSON 出力スキーマ)
 
-事実宣言型 config (deny.toml, Cargo.toml `[lints.*]`) はそれ自体が source of truth であり、ADR への複製は drift リスクを生む。config block への 1-2 行の policy コメントで通常は十分。
+事実宣言型の設定 (deny.toml、Cargo.toml `[lints.*]`) はそれ自体が信頼できる唯一の情報源であり、ADR への複製は drift リスクを生む。設定ブロックへの 1〜2 行のポリシーコメントで通常は十分。
+
+## impact + reversibility 基準
+
+| Impact | 判定基準                                                        |
+| ------ | --------------------------------------------------------------- |
+| H      | モジュール境界を跨ぐ公開 API に影響、2 つ以上サブシステムを支配 |
+| M      | 単一モジュールの内部契約                                        |
+| L      | 局所的なスタイル / 命名                                         |
+
+| Reversibility | 判定基準                                               |
+| ------------- | ------------------------------------------------------ |
+| high          | 1 箇所の編集で巻き戻し可能                             |
+| medium        | 2〜5 ファイルの連動した編集が必要                      |
+| low           | マイグレーション / 非推奨サイクル / スキーマ変更が必要 |
+
+## Devil's Advocate challenge の観点
+
+critic-design は初期昇格候補の各々に以下で挑む。
+
+- 将来の貢献者はそのルールで本当に得をするか。読み手は誰か
+- 既に非 ADR の機構 (コメント + テスト、事実宣言型設定の deny.toml / Cargo.toml lints、型システム、lint) が守っているなら、ADR は冗長ではないか
+- ADR がロックインを生むリスクは無いか (進化すべき決定の過剰文書化)
+- モノリシック境界の候補の場合、ADR が現状維持を正当化し、分割への圧力を弱めないか
+- バグか不変条件か。現コードが誤りで変更すべきなら、bug-fix の後続として提示し ADR にしない。現コードが意図的で保持すべきなら ADR 化を検討する。誤った挙動を意図的と文書化しない

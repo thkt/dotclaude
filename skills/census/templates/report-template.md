@@ -1,6 +1,6 @@
 # ADR Gaps Audit Report Template
 
-The skeleton that /census Step 7 emits. Repeat the Large File Decisions `###` section per large file and the Prose Document Decisions `###` section per document. Record a file or document with no decisions as "no decisions found".
+The skeleton that /census Step 6 emits. Repeat the Source File Decisions `###` section per source file and the Prose Document Decisions `###` section per document. Record a file or document with no decisions as "no decisions found".
 
 ## Template
 
@@ -11,16 +11,17 @@ Substitute `{...}` from findings. For enum cells, pick the matching value from t
 
 ## Summary
 
-| Metric                   | Value |
-| ------------------------ | ----- |
-| Large files scanned      | {N}   |
-| Documents scanned        | {N}   |
-| Decision candidates      | {N}   |
-| ADR-covered (excluded)   | {N}   |
-| Net new candidates       | {N}   |
-| ADR promotion candidates | {N}   |
+| Metric                   | Value         |
+| ------------------------ | ------------- |
+| Scope                    | {repo / path} |
+| Source files scanned     | {N}           |
+| Documents scanned        | {N}           |
+| Decision candidates      | {N}           |
+| ADR-covered (excluded)   | {N}           |
+| Net new candidates       | {N}           |
+| ADR promotion candidates | {N}           |
 
-## Large File Decisions
+## Source File Decisions
 
 ### {file} ({N} lines)
 
@@ -32,9 +33,9 @@ Substitute `{...}` from findings. For enum cells, pick the matching value from t
 
 ### {file}
 
-| #   | Line   | Decision Verb | Decision  | ADR Coverage    |
-| --- | ------ | ------------- | --------- | --------------- |
-| 1   | {line} | {verb}        | {summary} | None / ADR-{id} |
+| #   | Line   | Decision Verb | Decision  | ADR Coverage    | Impact    | Reversibility       |
+| --- | ------ | ------------- | --------- | --------------- | --------- | ------------------- |
+| 1   | {line} | {verb}        | {summary} | None / ADR-{id} | H / M / L | high / medium / low |
 
 ## ADR Promotion Candidates (post-challenge)
 

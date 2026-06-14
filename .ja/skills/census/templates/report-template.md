@@ -1,6 +1,6 @@
 # ADR Gaps Audit レポートテンプレート
 
-/census Step 7 が出力するレポートの骨格。Large File Decisions は大型ファイルごと、Prose Document Decisions はドキュメントごとに `###` セクションを繰り返す。判断が無いファイル/ドキュメントは "no decisions found" と記録する。
+/census Step 6 が出力するレポートの骨格。Source File Decisions はソースファイルごと、Prose Document Decisions はドキュメントごとに `###` セクションを繰り返す。判断が無いファイル/ドキュメントは "no decisions found" と記録する。
 
 ## テンプレート
 
@@ -11,16 +11,17 @@
 
 ## Summary
 
-| Metric                   | Value |
-| ------------------------ | ----- |
-| Large files scanned      | {N}   |
-| Documents scanned        | {N}   |
-| Decision candidates      | {N}   |
-| ADR-covered (excluded)   | {N}   |
-| Net new candidates       | {N}   |
-| ADR promotion candidates | {N}   |
+| Metric                   | Value         |
+| ------------------------ | ------------- |
+| Scope                    | {repo / path} |
+| Source files scanned     | {N}           |
+| Documents scanned        | {N}           |
+| Decision candidates      | {N}           |
+| ADR-covered (excluded)   | {N}           |
+| Net new candidates       | {N}           |
+| ADR promotion candidates | {N}           |
 
-## Large File Decisions
+## Source File Decisions
 
 ### {file} ({N} lines)
 
@@ -32,9 +33,9 @@
 
 ### {file}
 
-| #   | Line   | Decision Verb | Decision  | ADR Coverage    |
-| --- | ------ | ------------- | --------- | --------------- |
-| 1   | {line} | {verb}        | {summary} | None / ADR-{id} |
+| #   | Line   | Decision Verb | Decision  | ADR Coverage    | Impact    | Reversibility       |
+| --- | ------ | ------------- | --------- | --------------- | --------- | ------------------- |
+| 1   | {line} | {verb}        | {summary} | None / ADR-{id} | H / M / L | high / medium / low |
 
 ## ADR Promotion Candidates (post-challenge)
 
