@@ -22,9 +22,9 @@ Grill the proposal from evidence on its own, then return only the unresolved res
 1. Read OUTCOME.md if present. Its done state / non-goals / constraints stand in for part of the user's intent. If absent, infer the outcome from $ARGUMENTS and the conversation and confirm it via AskUserQuestion. Pass the confirmed outcome to the Phase 2 outcome critic as its evaluation axis
 2. Enumerate design-tree branches and classify each as fact (uniquely determined by evidence) or preference (priority / scope intent / trade-off). Split mechanically by question type, not by advisor confidence. Treating a preference as fact guts the grill
 3. Run the loop. subagents verify fact branches in parallel → advisor synthesizes + audits the classification + names the next evidence gap → the main session organizes the results and decides whether to continue. Break when no further evidence would change the classification. Cap at 3 rounds; branches unresolved after 3 rounds fall to the residual
-4. If a verified fact branch falsifies the proposal's core claim (the core targets a state that already holds, or a verified fact contradicts it), halt and skip Phase 2. If the core is alive and only a sub-claim is dead, proceed on the live remainder. Halt only on a refutation backed by fact-branch evidence, not on advisor opinion alone. critic-design on a dead proposal is wasted. Put the refutation in the Devil verdict slot of the output
+4. If a verified fact branch falsifies the proposal's core claim (the core targets a state that already holds, or a verified fact contradicts it), halt and skip Phase 2. If the core is alive and only a sub-claim is dead, proceed on the live remainder. Halt only on a refutation backed by fact-branch evidence, not on advisor opinion alone. critic-design on a dead proposal is wasted. Put the refutation in the Why of the output
 5. The residual at break is the proven preference. advisor scores each residual with a best-guess plus reversibility / blast-radius
-6. Sort the residual by reversibility and impact. Ask via AskUserQuestion only the irreversible or high-impact ones (cap 7). For the rest, proceed on the best-guess as a stated assumption logged in the output Assumptions. Keep the branches skipped via subagent and the residuals advanced on assumption in the output, leaving the user a way to veto a misjudgement
+6. Sort the residual by reversibility and impact. Ask via AskUserQuestion only the irreversible or high-impact ones (cap 7). For the rest, proceed on the best-guess as a stated assumption logged as a veto note in the output Why. Keep the branches skipped via subagent and the residuals advanced on assumption in the Why, leaving the user a way to veto a misjudgement
 
 ### Output to Phase 2
 
@@ -56,14 +56,10 @@ Land the Phase 1 material on two critic-design (internal attack / OUTCOME.md att
 
 ## Output
 
-Lead with the Verdict; everything after it backs the judgment and names the next move.
+Lead with the Verdict, concentrate the backing in Why, name the next move in Actionable items.
 
-| Section          | Content                                                                                           |
-| ---------------- | ------------------------------------------------------------------------------------------------- |
-| Verdict          | GO / NO-GO. Note the condition if conditional. One line, first                                    |
-| Why              | The fact-branch evidence behind the verdict (reproduction / refutation)                           |
-| Grill summary    | Surfaced assumptions, decisions, trade-offs (one-line each)                                       |
-| Evidence scope   | List of branches self-resolved, plus a note that the verdict is a challenge within evidence range |
-| Assumptions      | Residuals advanced on a best-guess and their reversibility. The user's veto targets               |
-| Devil verdict    | Both critic-design verdicts (internal / outcome), reconciled                                      |
-| Actionable items | Top 3 concrete actions (keep / remove / revise)                                                   |
+| Section          | Content                                                                                                                                                                                                                                                                                                           |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Verdict          | GO / NO-GO. Note the condition if conditional. One line, first                                                                                                                                                                                                                                                    |
+| Why              | The fact-branch evidence behind the verdict (reproduction / refutation), woven together with the two critic-design verdicts (internal / outcome) and a veto note on residuals advanced on a best-guess with their reversibility. Close with a one-line note that the verdict is a challenge within evidence range |
+| Actionable items | Top 3 concrete actions (keep / remove / revise)                                                                                                                                                                                                                                                                   |
