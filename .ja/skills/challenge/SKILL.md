@@ -30,9 +30,9 @@ argument-hint: "[proposal file | description]"
 
 grill findings を critic-design 入力スキーマに集約してから起動する。
 
-| 項目             | 導出元                                                                                            |
+| 項目             | ソース                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------- |
-| source           | "user-grill"                                                                                      |
+| source           | user-grill                                                                                        |
 | artifact_type    | `$ARGUMENTS` から推定 (spec / plan / design / ADR / doc)                                          |
 | approach         | 提案の中核の 1 行要約                                                                             |
 | decisions        | grill 中に固まったアーキテクチャレベルの判断 (用語確認やスコープ細部は除外)                       |

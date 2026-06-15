@@ -32,7 +32,7 @@ Aggregate grill findings into critic-design input schema before spawning.
 
 | Field            | Source                                                                                                                                  |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| source           | "user-grill"                                                                                                                            |
+| source           | user-grill                                                                                                                              |
 | artifact_type    | inferred from $ARGUMENTS (spec / plan / design / ADR / doc)                                                                             |
 | approach         | one-line summary of the proposal core                                                                                                   |
 | decisions        | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded)                                |
