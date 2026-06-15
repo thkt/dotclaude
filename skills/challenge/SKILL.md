@@ -9,7 +9,7 @@ argument-hint: "[proposal file | description]"
 
 # /challenge - GO / NO-GO verdict on a proposal
 
-Judge in two phases whether a discovered problem is real and a proposed idea usable. Phase 1 grills from evidence on its own, Phase 2 lands two critic-design as devil's advocate. The next decision then proceeds on a verified GO / NO-GO.
+Judge in two phases whether a discovered problem is real and a proposed idea usable, so the next decision proceeds from a verified GO / NO-GO.
 
 ## Input
 
@@ -18,7 +18,7 @@ Judge in two phases whether a discovered problem is real and a proposed idea usa
 
 ## Phase 1 Grill
 
-Self-resolve from evidence, then sort the residual by reversibility. Block only the irreversible branches, proceed on stated assumptions for the rest, and let the user veto after the run.
+Grill the proposal from evidence on its own, then return only the unresolved residual to the user, sorted by reversibility.
 
 1. Read OUTCOME.md if present. Its done state / non-goals / constraints stand in for part of the user's intent (consistent with PREFLIGHT). If absent, infer the outcome from $ARGUMENTS and the conversation and confirm it via AskUserQuestion. Pass the confirmed outcome to the Phase 2 outcome critic as its evaluation axis
 2. Enumerate design-tree branches and classify each as fact (uniquely determined by evidence) or preference (priority / scope intent / trade-off choice). Split mechanically by question type, not by advisor confidence. Treating a preference as fact guts the grill
@@ -43,7 +43,7 @@ Aggregate grill findings into critic-design input schema before spawning.
 
 ## Phase 2 Devil
 
-Split the roles across the Phase 1 advisor and two Phase 2 critics to avoid a duplicated adversarial pass. Keep critic-design's devil's advocate nature (adversarially probing for holes) intact and split only the attack axis into internal and OUTCOME.md.
+Land the Phase 1 material on two critic-design (internal attack + OUTCOME.md attack), adversarially probing for holes.
 
 | Pass                             | Role                                                                                                                                                                 |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -59,7 +59,7 @@ Split the roles across the Phase 1 advisor and two Phase 2 critics to avoid a du
 
 ## Output
 
-The point of challenge is to judge whether a discovered problem is real and whether a proposed idea is usable. Lead with the Verdict; everything after it backs the judgment and names the next move.
+Lead with the Verdict; everything after it backs the judgment and names the next move.
 
 | Section          | Content                                                                                           |
 | ---------------- | ------------------------------------------------------------------------------------------------- |
