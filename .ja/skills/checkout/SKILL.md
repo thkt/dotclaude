@@ -67,6 +67,6 @@ argument-hint: "[context or ticket number]"
 
 ## 表示形式
 
-### 成功時
+### 成功
 
 Created branch: `[selected-branch-name]`
