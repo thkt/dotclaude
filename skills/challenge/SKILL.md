@@ -13,8 +13,7 @@ Judge in two phases whether a discovered problem is real and a proposed idea usa
 
 ## Input
 
-- `$ARGUMENTS`: what to challenge (proposal file path or description)
-- If `$ARGUMENTS` is empty: stop and ask user to specify target. Silent target inference from conversation has high misfire risk.
+`$ARGUMENTS` may contain the challenge target (a proposal file path or description). If empty, stop and ask the user to specify the target, since silent inference from the conversation has high misfire risk. If non-empty, treat it as the challenge target.
 
 ## Phase 1 Grill
 

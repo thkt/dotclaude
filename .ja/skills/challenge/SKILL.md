@@ -13,8 +13,7 @@ argument-hint: "[proposal file | description]"
 
 ## 入力
 
-- `$ARGUMENTS`: challenge 対象 (proposal ファイルパスまたは記述)
-- `$ARGUMENTS` が空: 停止して対象指定をユーザーに求める。会話からの暗黙的対象推論は誤射リスクが高い。
+`$ARGUMENTS` は challenge 対象 (proposal ファイルパスまたは記述) を含み得る。空なら会話からの暗黙的推論は誤射リスクが高いため、停止して対象指定をユーザーに求める。非空ならそれを challenge 対象として扱う。
 
 ## Phase 1 Grill
 
