@@ -30,8 +30,8 @@ Outcome-based assertion needs the outcome it is asserting against. Read `.claude
 | Condition                             | Action                                                                      |
 | ------------------------------------- | --------------------------------------------------------------------------- |
 | `.claude/OUTCOME.md` exists           | Read and cache the Behavior / Non-goals / Constraints sections              |
-| `.claude/OUTCOME.md` absent           | Generate stub via /outcome, then proceed                                    |
-| Behavior empty or all sections TBD    | Treat as absent. Run /outcome                                               |
+| `.claude/OUTCOME.md` absent           | Generate stub via `/outcome`, then proceed                                  |
+| Behavior empty or all sections TBD    | Treat as absent. Run `/outcome`                                             |
 | Asserted change touches a Non-goal    | Flag in report as Intent Assertion finding; let Phase 4 decide if it blocks |
 | Asserted change violates a Constraint | Promote as `[adversarial]` finding (Issues>0 routes to NotReady)            |
 
@@ -39,15 +39,15 @@ Outcome-based assertion needs the outcome it is asserting against. Read `.claude
 
 Phases whose Mode column is `parallel (required)` issue all Task / Bash / Codex exec calls concurrently within a single response (sequential invocation negates the fan-out and doubles wall time).
 
-| Phase | Action              | Executor                   | Mode                | Depends On | Detail                                              |
-| ----- | ------------------- | -------------------------- | ------------------- | ---------- | --------------------------------------------------- |
-| pre   | OUTCOME.md read     | orchestrator (Read)        | sequential          | -          | Pre-flight section above                            |
-| 0     | Bootstrap worktree  | orchestrator (Bash)        | sequential          | pre        | ${CLAUDE_SKILL_DIR}/references/phase-0.md           |
-| 1     | Evidence collection | Codex CLI + audit agents   | parallel (required) | Phase 0    | ${CLAUDE_SKILL_DIR}/references/phase-1.md           |
-| 2     | Deep assertion      | Codex CLI + audit agents   | parallel (required) | Phase 1    | ${CLAUDE_SKILL_DIR}/references/phase-2.md           |
-| 3     | Intent assertion    | orchestrator (Claude Code) | sequential          | Phase 2    | ${CLAUDE_SKILL_DIR}/references/phase-3.md           |
-| 4     | Evidence synthesis  | enhancer-evidence          | single task         | Phase 3    | ${CLAUDE_SKILL_DIR}/references/phase-4.md           |
-| final | Worktree cleanup    | orchestrator (Bash)        | sequential          | Always     | ${CLAUDE_SKILL_DIR}/references/phase-0.md § Cleanup |
+| Phase | Action              | Executor                   | Mode                | Depends On | Detail                                                |
+| ----- | ------------------- | -------------------------- | ------------------- | ---------- | ----------------------------------------------------- |
+| pre   | OUTCOME.md read     | orchestrator (Read)        | sequential          | -          | Pre-flight section above                              |
+| 0     | Bootstrap worktree  | orchestrator (Bash)        | sequential          | pre        | `${CLAUDE_SKILL_DIR}/references/phase-0.md`           |
+| 1     | Evidence collection | Codex CLI + audit agents   | parallel (required) | Phase 0    | `${CLAUDE_SKILL_DIR}/references/phase-1.md`           |
+| 2     | Deep assertion      | Codex CLI + audit agents   | parallel (required) | Phase 1    | `${CLAUDE_SKILL_DIR}/references/phase-2.md`           |
+| 3     | Intent assertion    | orchestrator (Claude Code) | sequential          | Phase 2    | `${CLAUDE_SKILL_DIR}/references/phase-3.md`           |
+| 4     | Evidence synthesis  | enhancer-evidence          | single task         | Phase 3    | `${CLAUDE_SKILL_DIR}/references/phase-4.md`           |
+| final | Worktree cleanup    | orchestrator (Bash)        | sequential          | Always     | `${CLAUDE_SKILL_DIR}/references/phase-0.md` § Cleanup |
 
 ## Report
 
@@ -58,7 +58,7 @@ The leader does not generate the gate itself; it decodes the JSON decision block
 | Ready / Ready (caveat) / NotReady decision rule    | § Gate Rule                  |
 | JSON decision block decode procedure               | § Gate Decode                |
 | Gate routing on bootstrap failure                  | § Bootstrap Failure Handling |
-| When to state `gate = Ready` in completion message | § /goal Integration          |
+| When to state `gate = Ready` in completion message | § `/goal` Integration        |
 
 ## Error Handling
 
@@ -78,12 +78,12 @@ The leader does not generate the gate itself; it decodes the JSON decision block
 
 ## Escalation
 
-| Condition                                       | Action                                                                                  |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Any issue (challenger / verifier / adversarial) | Block merge, suggest `/fix`                                                             |
-| Architectural root causes found                 | Suggest `/think` for design review                                                      |
-| Adversarial tests reveal coverage gap           | Suggest `/code` to add tests                                                            |
-| `gate = Ready (caveat)`                         | Re-run /assert after restoring environment (or accept dynamic-evidence gap consciously) |
+| Condition                                       | Action                                                                                    |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Any issue (challenger / verifier / adversarial) | Block merge, suggest `/fix`                                                               |
+| Architectural root causes found                 | Suggest `/think` for design review                                                        |
+| Adversarial tests reveal coverage gap           | Suggest `/code` to add tests                                                              |
+| `gate = Ready (caveat)`                         | Re-run `/assert` after restoring environment (or accept dynamic-evidence gap consciously) |
 
 ## Completion Criteria
 

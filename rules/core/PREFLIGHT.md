@@ -21,9 +21,13 @@ Read `.claude/OUTCOME.md` at task start and judge scope against the outcome. Ski
 | Task intent is unclear                | Name what is unclear and stop                             |
 | Issue URL or external spec referenced | Present plan (changes, files, TODO) and wait for approval |
 
+### How to ask
+
+Attach your hypothesis (the answer you expect) to each clarifying question. The user corrects the hypothesis instead of explaining from scratch, and your level of understanding shows at the same time. Once you can predict the answers to the questions you would ask next, understanding is sufficient. Stop asking and move to presenting the plan.
+
 ## Task Decomposition
 
-Split when any threshold is exceeded.
+Split when any threshold is exceeded. A task whose title joins two actions with "and" is also a signal of two or more responsibilities; consider splitting it.
 
 | Condition | Threshold |
 | --------- | --------- |

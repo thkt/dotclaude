@@ -17,15 +17,19 @@ If no SOW/Spec found, fall back to PR description + commit messages as intent so
 | AC coverage | unchecked `- [ ]` items in `sow.md` | SOW found  | missing      |
 | FR coverage | FR table rows in `spec.md`          | Spec found | missing      |
 | Scope creep | diff vs all intent sources          | always     | out-of-scope |
+| Impl-wrong  | diff behavior vs spec AC/FR         | always     | wrong        |
+
+Quote the intent line behind every flag. A `wrong` or `missing` flag with no quoted AC/FR line is impression-based; drop it. This screening covers the same three conformance categories as reviewer-conformance; for a deep standalone pass on any branch, run that agent instead.
 
 ### Output format
 
 ```
-SOW/Spec Alignment: [CLEAN | MISSING <N> | OUT-OF-SCOPE <N> | BOTH]
+SOW/Spec Alignment: [CLEAN | MISSING <N> | OUT-OF-SCOPE <N> | WRONG <N> | MIXED]
 Intent source: <sow.md + spec.md path | PR description | commit messages>
-Missing (AC): AC-N - <description>
-Missing (FR): FR-NNN - <description>
+Missing (AC): AC-N - <description> (spec: "<quoted line>")
+Missing (FR): FR-NNN - <description> (spec: "<quoted line>")
 Out-of-scope: <file or area> - not traceable to stated intent
+Wrong: <AC-N/FR-NNN> - implemented but <gap> (spec: "<quoted line>")
 ```
 
 Skip silently if no intent source is available at all.

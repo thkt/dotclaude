@@ -2,7 +2,7 @@
 name: census
 description: Discover design decisions that exist in code but have no ADR, and produce an ADR promotion candidate list ranked by impact and reversibility. Pairs with adrift, which scans existing ADRs for drift against code.
 when_to_use: 判断未記録の発掘, undocumented decisions, ADR候補発掘, 設計判断棚卸し, decision archaeology, design rationale audit
-allowed-tools: Read Write LS Bash(mkdir:*) Bash(date:*) Bash(python3:*) Bash(ugrep:*) Task AskUserQuestion
+allowed-tools: Read Write LS Bash(mkdir:*) Bash(date:*) Bash(python3:*) Bash(ugrep:*) Bash(git:*) Task AskUserQuestion
 model: opus
 argument-hint: "[file or directory]"
 ---
@@ -13,13 +13,7 @@ Discover design decisions that exist in the code but have no ADR. Produce a rank
 
 ## Input
 
-`$ARGUMENTS` is an optional path naming the audit scope. Behavior follows the table below. When scoped to a path, the result is a partial decision baseline, so record the target in the report Summary's Scope row.
-
-| `$ARGUMENTS`   | Scope                                                          |
-| -------------- | -------------------------------------------------------------- |
-| none           | Whole repository. Step 1 lists source files, Step 2 lists docs |
-| file path      | Mine that file only. Skip the doc steps if it is a source file |
-| directory path | Limit Step 1 / Step 2 to that subtree                          |
+`$ARGUMENTS` is an optional path naming the audit scope. No argument means the whole repository (Step 1 lists source files, Step 2 lists docs); a file path mines that file alone (skipping the doc steps if it is a source file); a directory path limits Step 1 / Step 2 to that subtree. When scoped to a path, the result is a partial decision baseline, so record the target in the report Summary's Scope row.
 
 ## Decision Criteria
 
@@ -37,6 +31,10 @@ Skip this step when the target is a single source file. With a directory target,
 
 ## Step 3: Source File Decision Mining
 
+Gather evidence from two channels per source file. The reviewer covers code-internal evidence, census covers git history; both are recorded in a shared format and then cross-referenced against ADRs.
+
+### 3a Reviewer mining
+
 For each source file, spawn the reviewer subagent matching its language via Task. The reviewer answers the following.
 
 - Why does this file have this granularity and shape?
@@ -44,7 +42,13 @@ For each source file, spawn the reviewer subagent matching its language via Task
 - Is there a comment or module-doc that records the rationale?
 - Does the comment describe only the current state and omit the rule for future contributors? (the `incomplete-contract` pattern)
 
-Record each finding as `file:line` + decision summary + evidence (comment/naming/module-doc) + `documented?` + `incomplete-contract?`. After collecting findings, cross-reference against the ADR directory if any, and drop findings already covered by an ADR (record the count as "ADR-covered (excluded)" in the summary).
+### 3b Commit message mining
+
+The reviewer has no git access, so census itself runs `git log --follow --format='%h %s' -- <file>` and extracts commits containing decision verbs (list in detection-targets.md). Commit messages are often the primary record of the "why" a comment omits, either corroborating a 3a finding or surfacing a standalone decision.
+
+### 3c Recording and ADR cross-reference
+
+Record each finding as `file:line` + decision summary + evidence (comment/naming/module-doc/commit) + `documented?` + `incomplete-contract?`. Commit-sourced findings use `commit <sha>` as evidence. After collecting findings, cross-reference against the ADR directory if any, and drop findings already covered by an ADR (record the count as "ADR-covered (excluded)" in the summary).
 
 ## Step 4: Prose Decision Extraction
 
@@ -60,13 +64,7 @@ Findings with `incomplete-contract=Yes` are promoted regardless of `documented?`
 
 ### 5b Devil's Advocate Challenge
 
-Spawn `critic-design` via Task with the initial promotion candidate list and decision-criteria.md. critic-design challenges each candidate with the challenge angles and returns one of the verdicts below. Record the verdict alongside the initial ranking. The final candidate list = candidates marked `keep` + those marked `downgrade` (with target ADR), minus those marked `drop`.
-
-| Verdict     | Meaning                                                                                                                                     |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `keep`      | ADR worth, file as standalone or merge with related candidates                                                                              |
-| `downgrade` | Not standalone ADR; absorb into a related ADR section or strengthen comments                                                                |
-| `drop`      | Not ADR-worthy; config/comment/test already covers it, cost > value, or the candidate is a bug (surface as a bug-fix follow-up, not an ADR) |
+Spawn `critic-design` via Task with the initial promotion candidate list and `${CLAUDE_SKILL_DIR}/references/decision-criteria.md`. `critic-design` challenges each candidate with the challenge angles and returns one of the Verdict values (`keep` / `downgrade` / `drop`) defined in `${CLAUDE_SKILL_DIR}/references/decision-criteria.md`. Record the verdict alongside the initial ranking.
 
 ## Step 6: Report Output
 

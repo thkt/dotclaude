@@ -83,7 +83,7 @@ Phase 3 の検索を実行する間、各コマンドと生の出力をこの会
 
 Phase 3 の末尾で、Source が「このセッションで実行していない外部システムの振る舞い」(hook の発火タイミング、action/parser の要求 schema、ライブラリ API の挙動、引用文献の主張) を参照し、かつ load-bearing (結論、Next Action、Disconfirmation のいずれかがその claim の正しさに依存) な発見事項を抽出する。トリガーは構造的に適用する。両条件に一致する全 finding が対象で、self-judge による除外は認めない。
 
-抽出した claim を一括で一次ソースと突合する。web docs は `scout fetch <公式 docs URL>`、GitHub 上のソースは `scout repo-read` / `scout repo-overview` を使う。verbatim の引用を監査証跡 scratch に記録する。
+抽出した claim を一括で一次ソースと突合する。web docs は `scout fetch <公式 docs URL>`、GitHub 上のソースは `scout repo-read` / `scout repo-overview` を使う。verbatim の引用を監査証跡 scratch に記録する。ライブラリ API 挙動の verify は `~/.claude/rules/development/SOURCING.md` (framework-behavior authority) を、/code の write-time と同じ知識で verify-time に適用したものにあたる。
 
 一次ソースが辿れない場合 (paywall、docs 不在、fetch 失敗) は finding を残しつつ `unverified external claim` とマークする。unverified な claim を Disconfirmation の根拠や Next Action の前提に使ってはならない。
 

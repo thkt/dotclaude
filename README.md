@@ -79,7 +79,7 @@ install specific workflow sets:
 **Available Plugins**:
 
 - **complete-workflow-system**: Full development workflow with quality gates
-  (/think, /code, /audit, /research, /feature, /swarm)
+  (/think, /code, /audit, /research, /build, /swarm)
 - **quick-actions**: Fast bug fixes (/fix), AI slop removal (/polish)
 - **git-utilities**: Git workflow helpers (/commit, /branch, /pr, /issue,
   /preview)

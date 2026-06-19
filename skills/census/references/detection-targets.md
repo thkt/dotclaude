@@ -1,6 +1,6 @@
 # /census detection targets
 
-Step 2 scans file patterns, Step 4 scans decision verbs.
+Step 2 scans file patterns. Step 3 (commit messages) and Step 4 (document prose) scan decision verbs.
 
 | Filename pattern                                                     | Likely content                       |
 | -------------------------------------------------------------------- | ------------------------------------ |
@@ -14,9 +14,12 @@ Step 2 scans file patterns, Step 4 scans decision verbs.
 | `Makefile` / `justfile`                                              | Build flow decisions                 |
 | Linter config (`Cargo.toml` `[lints.*]`, `.eslintrc`, `oxlint.json`) | Rule selection rationale             |
 
-## Decision verbs (Step 4)
+## Decision verbs (Step 3 / Step 4)
 
-Within detected documents, nominate sentences containing these verbs.
+Within detected documents, or within commit messages, nominate sentences containing these verbs.
 
-- English: "decide", "choose", "adopt", "reject", "deprecate", "must not", "never", "always"
-- Japanese: "決定", "採用", "禁止", "方針", "選定", "排除", "従う", "規約"
+| Type   | English                     | Japanese             |
+| ------ | --------------------------- | -------------------- |
+| Select | `decide` `choose` `adopt`   | `決定` `採用` `選定` |
+| Reject | `reject` `deprecate`        | `禁止` `排除`        |
+| Oblige | `must not` `never` `always` | `方針` `従う` `規約` |

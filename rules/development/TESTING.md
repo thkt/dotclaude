@@ -31,12 +31,10 @@ Do not chase uniform coverage. Cover impact-heavy areas deeper. Depth is the Lev
 
 Start from perspectives, and use coverage only to detect gaps.
 
-| Step | Action                                                                                        |
-| ---- | --------------------------------------------------------------------------------------------- |
-| 1    | Read the spec of the code under test and list the conditions it must satisfy                  |
-| 2    | Pick the perspectives matching the signature and domain from the Perspective Checklist        |
-| 3    | Write tests that satisfy the conditions (Step 1) and perspectives (Step 2)                    |
-| 4    | Run coverage; for any uncovered branch / condition, add a test using the matching perspective |
+1. Read the spec of the code under test and list the conditions it must satisfy
+2. Pick the perspectives matching the signature and domain from the Perspective Checklist
+3. Write tests that satisfy the conditions (Step 1) and perspectives (Step 2)
+4. Run coverage; for any uncovered branch / condition, add a test using the matching perspective
 
 ### Perspective Checklist
 
@@ -55,6 +53,21 @@ Start from perspectives, and use coverage only to detect gaps.
 ## Test Naming
 
 Test names state the spec they verify (e.g. "rejects deposit when amount is negative").
+
+## Bug-fix reproduction test
+
+A bug fix adds one test that reproduces the bug before touching the cause, and confirms it fails (Red) before fixing. After the fix, run the full suite and confirm the reproduction test turns green with no regression left behind. That reproduction test stays as a permanent guard catching the same bug if it recurs.
+
+## Test double preference
+
+A dependency closer to the real thing catches integration drift. Pick by the order below, and fall to a lower tier only when a higher one cannot be used (too slow / external side effects / non-deterministic).
+
+| Kind | When to use                                                                      |
+| ---- | -------------------------------------------------------------------------------- |
+| Real | First choice when the real thing is fast enough with closed side effects         |
+| Fake | Real thing is slow or external. A lightweight working impl replaces its behavior |
+| Stub | When fixing return values alone is enough                                        |
+| Mock | Only when the call itself (count / arguments) is the verification target         |
 
 ## Coverage Gate
 

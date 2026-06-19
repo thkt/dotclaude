@@ -61,15 +61,15 @@ confirmation (same functionality)
 
 ## Command → Skill/Agent Mapping
 
-| Command    | Skills Used                               | Agents Used                                                     |
-| ---------- | ----------------------------------------- | --------------------------------------------------------------- |
-| `/think`   | -                                         | -                                                               |
-| `/code`    | use-workflow-code, use-workflow-tdd-cycle | generator-test                                                  |
-| `/audit`   | -                                         | tier-based reviewer agents (3 or file-routed from 17)           |
-| `/fix`     | use-context-root-cause-analysis           | generator-test, resolver-build                                  |
-| `/polish`  | -                                         | enhancer-code                                                   |
-| `/feature` | think, code, audit, fix, polish (chained) | -                                                               |
-| `/swarm`   | use-workflow-code                         | architect-feature, team-qa, generator-test, team-implementation |
+| Command   | Skills Used                               | Agents Used                                                     |
+| --------- | ----------------------------------------- | --------------------------------------------------------------- |
+| `/think`  | -                                         | -                                                               |
+| `/code`   | use-workflow-code, use-workflow-tdd-cycle | generator-test                                                  |
+| `/audit`  | -                                         | tier-based reviewer agents (3 or file-routed from 17)           |
+| `/fix`    | use-context-root-cause-analysis           | generator-test, resolver-build                                  |
+| `/polish` | -                                         | enhancer-code                                                   |
+| `/build`  | think, code, audit, fix, polish (chained) | -                                                               |
+| `/swarm`  | use-workflow-code                         | architect-feature, team-qa, generator-test, team-implementation |
 
 ## File Structure
 

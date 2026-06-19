@@ -9,7 +9,7 @@ argument-hint: "[adr-directory]"
 
 # /adrift - ADR vs Code Drift Scanner
 
-Scan each ADR's Decision Outcome section against the current codebase. Record drift with file:line, modification direction, and priority so ADRs can serve as a usable refactoring baseline.
+Scan each ADR's Decision Outcome section against the current codebase. Record drift with `file:line`, modification direction, and priority so ADRs can serve as a usable refactoring baseline.
 
 ## Input
 
@@ -40,14 +40,14 @@ Run `python3 ${CLAUDE_SKILL_DIR}/../_lib/external-adr-refs.py --adr-dir <adr-dir
 
 ## Step 5: Reviewer Selection
 
-Detect repo language by manifest file and run the matching reviewer subagents via Task tool. Subagents receive the candidate file:line list plus the ADR Decision Outcome text. They flag semantic gaps clippy or grep cannot detect.
+Detect repo language by manifest file and run the matching reviewer subagents via Task tool. Subagents receive the candidate `file:line` list plus the ADR Decision Outcome text. They flag semantic gaps clippy or grep cannot detect.
 
-| Manifest                    | Reviewer subagents to spawn                  |
-| --------------------------- | -------------------------------------------- |
-| `Cargo.toml`                | reviewer-rust + reviewer-design              |
-| `package.json`              | reviewer-strictness + reviewer-design        |
-| `package.json` with `*.tsx` | reviewer-strictness + reviewer-react-pattern |
-| Other / Unknown             | reviewer-design                              |
+| Manifest                  | Reviewer subagents to spawn                  |
+| ------------------------- | -------------------------------------------- |
+| Cargo.toml                | reviewer-rust + reviewer-design              |
+| package.json              | reviewer-strictness + reviewer-design        |
+| package.json with `*.tsx` | reviewer-strictness + reviewer-react-pattern |
+| Other / Unknown           | reviewer-design                              |
 
 ## Step 6: Modification Direction
 
@@ -67,7 +67,7 @@ Detect repo language by manifest file and run the matching reviewer subagents vi
 
 ## Step 8: Report Output
 
-Write the report following ${CLAUDE_SKILL_DIR}/templates/report-template.md, substituting placeholders from findings. After writing, print a console summary: ADR count, finding count, per-priority count breakdown, unverifiable count.
+Write the report following `${CLAUDE_SKILL_DIR}/templates/report-template.md`, substituting placeholders from findings. After writing, print a console summary: ADR count, finding count, per-priority count breakdown, unverifiable count.
 
 ```bash
 mkdir -p docs/audit

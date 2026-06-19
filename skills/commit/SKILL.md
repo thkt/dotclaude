@@ -1,31 +1,29 @@
 ---
 name: commit
-description: Analyze Git diff and generate Conventional Commits format messages.
+description: Analyze Git diff, generate a Conventional Commits format message, and run the commit.
 when_to_use: コミットして, コミット作成, commit changes
-allowed-tools: Bash(git:*) Bash(cat:*) Bash(mv:*) AskUserQuestion
+allowed-tools: Bash(git:*) Bash(cat:*) Bash(mv:*)
 model: haiku
 argument-hint: "[context or issue reference]"
 ---
 
-# /commit - Git Commit Message Generator
+# /commit - Git Commit Execution
+
+Analyze the staged Git changes, generate a Conventional Commits format message, and run the commit.
 
 ## Input
 
-- Context or issue reference: `$ARGUMENTS` (optional)
-- If `$ARGUMENTS` is empty → analyze staged changes only
+`$ARGUMENTS` may contain context or an issue reference. Trim whitespace; if empty, analyze staged changes only. If non-empty, treat it as a hint for the message scope or footer.
 
 ## Execution
 
-| Step | Action                                                                   |
-| ---- | ------------------------------------------------------------------------ |
-| 1    | Read staged: `git status`, `git diff --staged` (parallel)                |
-| 2    | Generate 3 candidates (varied scope/wording, see Type Detection + Rules) |
-| 3    | Present via AskUserQuestion → user selects or customizes (Other)         |
-| 4    | Execute selected commit (sandbox-compatible)                             |
+1. Run `git status` and `git diff --staged` in parallel to read the staged changes
+2. Generate one message from the changes and `$ARGUMENTS`, following Type Detection and Rules
+3. Run the commit directly via the sandbox-compatible commit
 
 ## Type Detection
 
-Infer type from diff context:
+Infer type from diff context. Default to feat if unclear.
 
 | Type     | When to use                                |
 | -------- | ------------------------------------------ |
@@ -39,16 +37,9 @@ Infer type from diff context:
 | style    | Formatting, whitespace, linting            |
 | ci       | CI/CD configuration changes                |
 
-Default to `feat` if unclear.
-
 ## Rules
 
-| Rule    | Guideline                                            |
-| ------- | ---------------------------------------------------- |
-| Subject | ≤72 chars, imperative, lowercase, no period          |
-| Footer  | `BREAKING CHANGE:`, `Closes #123`, `Co-authored-by:` |
-
-## Examples
+Subject is ≤72 chars, imperative, lowercase, no period. Footer uses `BREAKING CHANGE:` / `Closes #123` / `Co-authored-by:`.
 
 ```text
 feat(auth): add OAuth2 authentication support
@@ -58,15 +49,11 @@ feat(api)!: remove deprecated endpoints  # BREAKING CHANGE
 ## Sandbox-Compatible Commit
 
 ```bash
-# Multi-line: file-based
 cat > /tmp/claude/commit-msg.txt << 'EOF'
 <message>
 EOF
 git commit -F /tmp/claude/commit-msg.txt
 mv /tmp/claude/commit-msg.txt ~/.Trash/ 2>/dev/null || true
-
-# Single-line: multiple -m flags
-git commit -m "subject" -m "body"
 ```
 
 ## Error Handling
@@ -78,20 +65,6 @@ git commit -m "subject" -m "body"
 | No git repository | Report "Not a git repo" |
 | Pre-commit failed | Report hook error       |
 
-## Display Format
+## Output
 
-### Preview
-
-```markdown
-## Commit Preview
-
-> <type>(<scope>): <description>
-
-<body>
-
-`<footer>`
-```
-
-### Success
-
-Committed: `[short-hash]` <type>(<scope>): <description>
+Report the executed commit in one line.

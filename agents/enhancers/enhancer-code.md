@@ -23,6 +23,8 @@ Preservation wins on every conflict. Only delete what you can prove is waste, an
 
 Banned phrasing inside skip reasons: "looks unused", "probably dead", "seems redundant". If you reach for these, run the verification check before deciding.
 
+Chesterton's Fence: understand why a construct exists before removing it. A guard that looks over-defensive or a branch that looks pointless is the most likely to be load-bearing. If tracing usages / comments / tests cannot establish its reason, leave it rather than remove it.
+
 ## Input
 
 A scope of files to simplify. Default is git diff against base.
@@ -104,15 +106,15 @@ On conflict with a removal target, preservation wins.
 
 ## Test Audit
 
-| Smell                         | Fix                                             |
-| ----------------------------- | ----------------------------------------------- |
-| Vague test names              | 3-part: what / scenario / expected              |
-| Mixed AAA phases              | Separate Arrange, Act, Assert with blank lines  |
-| Copy-pasted test cases        | Consolidate with `test.each` / parameterized    |
-| Duplicate setup across tests  | Extract to `beforeEach` or shared helper        |
-| Multiple assertions same path | Reduce to minimal covering set                  |
-| Verbose assertion chains      | Use targeted matchers (`toMatchObject`, etc.)   |
-| Over-mocked internals         | Test behavior via public API, remove impl mocks |
+| Smell                                     | Fix                                                                                                  |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Vague test names                          | 3-part: what / scenario / expected                                                                   |
+| Mixed AAA phases                          | Separate Arrange, Act, Assert with blank lines                                                       |
+| Copy-pasted test cases                    | Consolidate with `test.each` / parameterized                                                         |
+| Duplicate setup across tests              | Extract to `beforeEach` or shared helper                                                             |
+| Multiple assertions same path             | Reduce to minimal covering set                                                                       |
+| Verbose assertion chains                  | Use targeted matchers (`toMatchObject`, etc.)                                                        |
+| Over-mocked internals                     | Test behavior via public API, remove impl mocks                                                      |
 | Contract-pinning test flagged for removal | Rewrite to a concrete literal (wire format, authz, allowlist, cross-module invariant); do not delete |
 
 ## Process

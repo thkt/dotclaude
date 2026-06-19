@@ -2,7 +2,7 @@
 name: census
 description: コードに存在するが ADR の無い設計判断を発掘し、impact と reversibility でランク付けした ADR 化候補リストを生成する。既存 ADR とコードの drift スキャンを担う adrift と組む。
 when_to_use: 判断未記録の発掘, undocumented decisions, ADR候補発掘, 設計判断棚卸し, decision archaeology, design rationale audit
-allowed-tools: Read Write LS Bash(mkdir:*) Bash(date:*) Bash(python3:*) Bash(ugrep:*) Task AskUserQuestion
+allowed-tools: Read Write LS Bash(mkdir:*) Bash(date:*) Bash(python3:*) Bash(ugrep:*) Bash(git:*) Task AskUserQuestion
 model: opus
 argument-hint: "[file or directory]"
 ---
@@ -13,13 +13,7 @@ argument-hint: "[file or directory]"
 
 ## 入力
 
-`$ARGUMENTS` は監査スコープを表す任意のパス。スコープに応じて下表のとおり動く。スコープを限定したときは部分的な判断ベースラインになるため、レポート Summary の Scope 行に対象を記録する。
-
-| `$ARGUMENTS`     | スコープ                                                               |
-| ---------------- | ---------------------------------------------------------------------- |
-| なし             | リポジトリ全体。Step 1 でソースファイル、Step 2 で docs を列挙         |
-| ファイルパス     | そのファイルのみ発掘する。ソースファイルなら docs 系ステップはスキップ |
-| ディレクトリパス | その subtree に Step 1 / Step 2 を限定                                 |
+`$ARGUMENTS` は監査スコープを表す任意のパス。引数なしならリポジトリ全体、ファイルパスならそのファイル単体 (ソースなら docs 系ステップはスキップ)、ディレクトリパスならその subtree に絞る。スコープを限定したときは、レポート Summary の Scope 行に対象を記録する。
 
 ## 判定基準
 
@@ -29,13 +23,17 @@ argument-hint: "[file or directory]"
 
 ファイルが直接指定された場合はこのステップをスキップし、そのファイルを Step 3 の対象とする。それ以外は `python3 ${CLAUDE_SKILL_DIR}/scripts/list-source-files.py <scope>` を実行し、ソースファイルの一覧を取得する (`<scope>` はディレクトリ指定時はそのパス、引数なし時はリポジトリルート)。
 
-ファイル数が多い (目安 20 件超、リポジトリ規模に応じて調整) 場合は、Step 3 の reviewer fan-out に入る前に AskUserQuestion でフォーカスを確認する (サブディレクトリ / 上位 N 件 / 特定モジュールなど)。目安以下ならフォーカス確認を省き、全件を Step 3 に渡す。
+ファイル数が多い (目安 20 件超、リポジトリ規模に応じて調整) 場合は、Step 3 の reviewer を並列起動する前に AskUserQuestion でフォーカスを確認する (サブディレクトリ / 上位 N 件 / 特定モジュールなど)。目安以下なら確認を省き、全件を Step 3 に渡す。
 
 ## Step 2: ドキュメント検出
 
-対象がソースファイル単体のときはこのステップをスキップする。ディレクトリ指定時はその subtree、引数なし時はトップ階層と `docs/` 配下を対象に、判断記述を含みやすいドキュメントをスキャンする。対象パターンは `${CLAUDE_SKILL_DIR}/references/detection-targets.md`。
+対象がソースファイル単体のときはスキップ。ディレクトリ指定時はその subtree、引数なし時はトップ階層と `docs/` 配下を対象に、判断記述を含みやすいドキュメントをスキャンする。対象パターンは `${CLAUDE_SKILL_DIR}/references/detection-targets.md`。
 
 ## Step 3: ソースファイルからの判断発掘
+
+各ソースファイルから 2 系統で根拠を集める。reviewer がコード内部を、`/census` が git 履歴を担い、共通フォーマットで記録してから ADR と相互参照する。
+
+### 3a reviewer による発掘
 
 各ソースファイルについて、その言語に合う reviewer subagent を Task で起動する。reviewer は以下に答える。
 
@@ -44,7 +42,13 @@ argument-hint: "[file or directory]"
 - 根拠を記録したコメントや module-doc があるか
 - コメントが現状だけを述べ、将来の貢献者向けのルールを欠いていないか (`incomplete-contract` パターン)
 
-各検出事項は `file:line` + 判断概要 + 根拠 (コメント / 命名 / module-doc) + `documented?` + `incomplete-contract?` で記録する。収集後、ADR ディレクトリがあれば相互参照し、既存 ADR で覆われたものは除外する (サマリーに "ADR-covered (excluded)" の件数を記録)。
+### 3b commit メッセージからの発掘
+
+reviewer は git にアクセスできないため、`/census` 自身が `git log --follow --format='%h %s' -- <file>` を実行し、決定動詞 (一覧は detection-targets.md) を含む commit を抽出する。commit メッセージはコメントが省いた「なぜ」を含むことが多く、3a の検出事項を裏付ける、または単独で新たな判断を示す。
+
+### 3c 記録と ADR 相互参照
+
+各検出事項は `file:line` + 判断概要 + 根拠 (コメント / 命名 / module-doc / commit) + `documented?` + `incomplete-contract?` で記録する。commit 由来は `commit <sha>` を根拠とする。収集後、ADR ディレクトリがあれば相互参照し、既存 ADR で覆われたものは除外する (サマリーに "ADR-covered (excluded)" の件数を記録)。
 
 ## Step 4: 散文ドキュメントからの抽出
 
@@ -60,17 +64,11 @@ Step 3 と Step 4 の各候補に impact と reversibility を付与する。ADR
 
 ### 5b Devil's Advocate Challenge
 
-`critic-design` を Task で起動し、初期の昇格候補リストと decision-criteria.md を渡す。critic-design は challenge 観点で各候補に挑み、下表のいずれかを返す。判定は初期ランク付けと並べて記録する。最終候補リストは `keep` と、吸収先 ADR を明示した `downgrade` で構成し、`drop` は除外する。
-
-| 判定        | 意味                                                                                                                                   |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `keep`      | ADR 化に値する。単独 ADR または関連候補と統合して起票                                                                                  |
-| `downgrade` | 単独 ADR ではなく、関連 ADR 内のセクションに吸収またはコメント強化                                                                     |
-| `drop`      | ADR 不要。設定 / コメント / テストで既に守られている、コストが価値を上回る、または候補が bug (bug-fix の後続として提示し ADR にしない) |
+`critic-design` を Task で起動し、初期の昇格候補リストと `${CLAUDE_SKILL_DIR}/references/decision-criteria.md` を渡す。`critic-design` は同ファイルの challenge 観点で各候補に挑み、Verdict (`keep` / `downgrade` / `drop`) のいずれかを返す。判定は初期ランク付けと並べて記録する。
 
 ## Step 6: レポート出力
 
-`${CLAUDE_SKILL_DIR}/templates/report-template.md` に従い、placeholder を検出事項から置換してレポートを書く。ファイル毎のサマリー行 `keep N / downgrade N / drop N` を追加する。書き終えたら 候補数 / ADR 化候補数 をコンソールに出力する。
+`${CLAUDE_SKILL_DIR}/templates/report-template.md` に従い、プレースホルダーを検出事項から置換してレポートを書く。ファイル毎のサマリー行 `keep N / downgrade N / drop N` を追加する。書き終えたら 候補数 / ADR 化候補数 をコンソールに出力する。
 
 ```bash
 mkdir -p docs/audit

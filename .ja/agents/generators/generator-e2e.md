@@ -13,15 +13,17 @@ model: opus
 | ---------------- | ------------------------------------------------------------------------- |
 | Spec から E2E へ | Type: e2e の T-NNN シナリオから Playwright spec ファイルを生成する        |
 | 実行中アプリ駆動 | 起動中の dev server に対して agent-browser でインタラクションをキャプチャ |
-| 安定セレクタ     | アサーション対象に data-testid > role > text > CSS の優先順位             |
+| 安定セレクタ     | アサーション対象に role > text > data-testid > CSS の優先順位             |
 
 ## Posture
 
 内部状態ではなく、観測可能な UI をテストする。ユーザーが見るもの (可視要素、exit code、応答テキスト) をアサートし、内部 store 内容や実装ルーティングをアサートしない。
 
-安定セレクタを優先する。data-testid > role + name > text content > CSS selector の優先順位を使う。CSS セレクタはスタイルリファクタで壊れるため最後の手段。
+ユーザー視点のセレクタを優先する。role + name > text content > data-testid > CSS selector の順。role と text はユーザーの知覚に対応し、CSS セレクタはスタイルリファクタで壊れるため最後の手段。
 
-禁止される待機とアサーション: `page.waitForTimeout(<ms>)` (代わりに `page.waitForSelector` または `expect().toBeVisible()` を使う)、内部 store フィールドへのアサーション、クラス名のみに依存する脆いセレクタ。
+Web-first アサーションを使う。自動リトライする `await expect(locator).toBeVisible()` を使い、同期版 `expect(await locator.isVisible()).toBe(true)` は flaky になるため使わない。`page.waitForTimeout(<ms>)` も禁止 (代わりに `expect().toBeVisible()` か `page.waitForSelector`)。
+
+各テストは独立させ、共有状態や実行順序に依存せず単独で通過させる。共有セットアップは `beforeEach` に置く。サードパーティや非決定的な依存は `page.route(url, route => route.fulfill(...))` でモックして安定させる。
 
 ## Side Effects
 
@@ -73,9 +75,9 @@ model: opus
 
 | Priority | Strategy     | Example                                    |
 | -------- | ------------ | ------------------------------------------ |
-| 1        | data-testid  | page.getByTestId("send-button")            |
-| 2        | Role + name  | page.getByRole("button", { name: "Send" }) |
-| 3        | Text content | page.getByText("Submit")                   |
+| 1        | Role + name  | page.getByRole("button", { name: "Send" }) |
+| 2        | Text content | page.getByText("Submit")                   |
+| 3        | data-testid  | page.getByTestId("send-button")            |
 | 4        | CSS selector | page.locator(".submit-btn") (last resort)  |
 
 ## Playwright Test Format

@@ -24,16 +24,26 @@ background: true
 
 reasoning 内で禁止する表現: アクターを名指しせずに "could be exploited"、脅威ベクトルを特定せずに "looks suspicious"。
 
+## Never パターン
+
+カテゴリ的に安全でない構造は、攻撃経路を辿らずとも脅威モデルが自明なので Critical として報告する (姿勢の「攻撃経路のない推測」には当たらない。脅威が構造に内在する)。
+
+- 本番シークレットのハードコード
+- TLS / 証明書検証の無効化
+- 外部入力の eval / exec
+- 常に許可を返す認可チェック
+
 ## 解析フェーズ
 
-| Phase | アクション           | フォーカスエリア                                                                  |
-| ----- | -------------------- | --------------------------------------------------------------------------------- |
-| 1     | injection スキャン   | SQL、Command、XSS パターン                                                        |
-| 2     | Auth/AuthZ スキャン  | identity spoofing、token forgery、権限昇格、セッション固定                        |
-| 3     | 設定不備             | CORS bypass、ヘッダーインジェクション、シークレット露出 (OWASP A05)               |
-| 4     | 依存関係スキャン     | npm/yarn audit の結果                                                             |
-| 5     | SSRF 検出            | ユーザー入力の URL ハンドリング                                                   |
-| 6     | フロントエンド taint | source から sink へのデータフロー (`references/frontend-taint-checklist.md` 参照) |
+| Phase | アクション           | フォーカスエリア                                                                                                                                   |
+| ----- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | injection スキャン   | SQL、Command、XSS パターン                                                                                                                         |
+| 2     | Auth/AuthZ スキャン  | identity spoofing、token forgery、権限昇格、セッション固定                                                                                         |
+| 3     | 設定不備             | CORS bypass、ヘッダーインジェクション、シークレット露出 (OWASP A05)                                                                                |
+| 4     | 依存関係スキャン     | npm/yarn audit の結果                                                                                                                              |
+| 5     | SSRF 検出            | ユーザー入力の URL ハンドリング                                                                                                                    |
+| 6     | フロントエンド taint | source から sink へのデータフロー (`references/frontend-taint-checklist.md` 参照)                                                                  |
+| 7     | AI/LLM I/O           | モデル出力 / ツール結果 / エージェント出力を untrusted 入力として扱う。それらから組み立てた描画 / 実行 / クエリの unsafe な処理 (OWASP LLM Top 10) |
 
 ## 報告基準
 

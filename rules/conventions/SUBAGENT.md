@@ -69,6 +69,18 @@ The required conditions for granting memory are below. After assignment, remove 
 | Output                 | DM payload or file artifacts         |
 | Error Handling         | Recovery behavior                    |
 
+## Finding severity
+
+When a reviewer- agent lists advisory findings, tag each with one of the labels below so the consumer (/audit or the user) separates must-fix from preference. Unlabeled findings mix Critical with Nit, and the nit flood buries the must-fix items.
+
+Agents returning their own gate verdict (reviewer-spec Ready / NotReady, critic- confirmed / disputed, etc.) use their own scheme and do not layer this label on top.
+
+| Label    | Meaning                                                       |
+| -------- | ------------------------------------------------------------- |
+| Critical | Correctness / safety / behavior breaks unless fixed. Blocking |
+| Nit      | Good to fix but optional. Style or minor readability          |
+| Optional | A suggestion. The implementer decides, fine to skip           |
+
 ## Reference notation
 
 Relative path resolution depends on the launching project.
