@@ -1,26 +1,30 @@
 # Docs Template
 
-## Structure
+When /issue classifies the request as docs, it generates the title and body from this skeleton.
+
+## Template
+
+`{...}` is replaced with content at generation.
 
 ```markdown
 ## What & Why
 
-[What documentation needs to be added or changed]
-[Why - what problem does the reader face without this?]
+{What documentation needs to be added or changed}
+{Why - what problem does the reader face without this?}
 
 ## Location
 
-[File path or section to modify]
+{File path or section to modify}
 
 ## Changes
 
-- [Specific change 1]
-- [Specific change 2]
+- {Specific change 1}
+- {Specific change 2}
 
 ## Scope
 
-- **In scope**: [What this issue covers]
-- **Out of scope**: [Related docs not addressed here]
+- In scope: {What this issue covers}
+- Out of scope: {Related docs not addressed here}
 ```
 
 ## Guidelines

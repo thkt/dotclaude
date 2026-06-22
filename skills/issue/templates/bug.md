@@ -1,44 +1,46 @@
-# Bug Report Template
+# Bug Template
 
-## Structure
+When /issue classifies the request as bug, it generates the title and body from this skeleton.
+
+## Template
+
+`{...}` is replaced with content at generation. Sections marked `(optional)` are omitted, heading and all, when there is nothing to say. Fixed items (the reproduction, expected/actual) stay unmarked; tentative items (a suspected cause, an inferred fix direction) carry a `(tentative: <action at pickup>)` mark (§ Confidence Marking).
 
 ```markdown
 ## What & Why
 
-[What is broken - 1 sentence]
-[User impact - why this matters]
+{What is broken - 1 sentence}
+{User impact - why this matters}
 
 ## Steps to Reproduce
 
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
+1. {Step 1}
+2. {Step 2}
+3. {Step 3}
 
 ## Expected vs Actual
 
-- **Expected**: [Specific value or behavior]
-- **Actual**: [Error message or actual value]
+- Expected: {Specific value or behavior}
+- Actual: {Error message or actual value}
 
 ## Scope
 
-- **In scope**: [What this issue fixes]
-- **Out of scope**: [Related but not addressed here]
+- In scope: {What this issue fixes}
+- Out of scope: {Related but not addressed here}
 
 ## Constraints (optional)
 
-- [Fix constraints: no breaking changes, root cause not workaround, etc.]
+- {Fix constraints: no breaking changes, root cause not workaround, etc.}
 
 ## Premises (optional)
 
-- [Unverified assumption the fix depends on, with a recheck marker: "User-reported error not yet reproduced on current binary; confirm before fixing"]
+- {Unverified assumption the fix depends on, with a recheck marker: "User-reported error not yet reproduced on current binary; confirm before fixing"}
 
 ## Environment (optional)
 
-- Browser/OS: [e.g., Chrome 120 / macOS 14]
-- Version: [e.g., v1.2.3]
+- Browser/OS: {e.g., Chrome 120 / macOS 14}
+- Version: {e.g., v1.2.3}
 ```
-
-Sections marked (optional) are omitted when there is nothing to say. Fixed items (the reproduction, expected/actual) stay unmarked; tentative items (a suspected cause, an inferred fix direction) carry a `(tentative: <action at pickup>)` mark (see Confidence Marking).
 
 ## Guidelines
 
