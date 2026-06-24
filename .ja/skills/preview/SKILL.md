@@ -15,15 +15,13 @@ argument-hint: "[PR URL or number]"
 
 ## 実行
 
-| Step | 動作                                                                                                           |
-| ---- | -------------------------------------------------------------------------------------------------------------- |
-| 1    | PR 識別: `gh pr view $ARGUMENTS --json number,title,body,labels,files,url` (フォールバック: `$ARGUMENTS` 省略) |
-| 2    | PR がない、または作業ツリーが dirty (`git status --porcelain`) なら中止                                        |
-| 3    | PR を checkout: `gh pr checkout $PR`                                                                           |
-| 4    | PR コンテキストを並列収集 (下記参照)                                                                           |
-| 5    | 各変更ファイルを diff hunks 外も含めて完全に読む                                                               |
-| 6    | プロセスに沿ってレビュー: 概観 → ファイルごと → 依存影響 → findings                                            |
-| 7    | 構造化スクリーニングレポートを出力                                                                             |
+1. PR 識別: `gh pr view $ARGUMENTS --json number,title,body,labels,files,url` (フォールバック: `$ARGUMENTS` 省略)
+2. PR がない、または作業ツリーが dirty (`git status --porcelain`) なら中止
+3. PR を checkout: `gh pr checkout $PR`
+4. PR コンテキストを並列収集 (下記参照)
+5. 各変更ファイルを diff hunks 外も含めて完全に読む
+6. プロセスに沿ってレビュー: 概観 → ファイルごと → 依存影響 → findings
+7. 構造化スクリーニングレポートを出力
 
 ### PR コンテキスト収集
 

@@ -1,6 +1,6 @@
 ---
 name: build
-description: challenge / checkout / research / think / code / 品質 / commit を連結した実装オーケストレーター。前提の GO / NO-GO 検証からブランチ作成、設計、TDD 実装、code-review + audit の品質層、コミットまで一気通貫で通す。新機能・リファクタリング・マイグレーションなど計画から実装までを要する作業全般に使う。計画済みの単一実装には使わない (/code を使う)。バグ修正には使わない (/fix を使う)。実装なしの計画のみにも使わない (/think を使う)。
+description: challenge / checkout / research / think / code / 品質 / commit / pr を連結した実装オーケストレーター。前提の GO / NO-GO 検証からブランチ作成、設計、TDD 実装、内部 audit と外部 polish (Codex + cleanup) を積む品質層、コミット、PR 作成まで一気通貫で通す。新機能・リファクタリング・マイグレーションなど計画から実装までを要する作業全般に使う。計画済みの単一実装には使わない (/code を使う)。バグ修正には使わない (/fix を使う)。実装なしの計画のみにも使わない (/think を使う)。
 when_to_use: 一気通貫で実装, 新機能, 計画を要するリファクタリング, 大規模マイグレーション, build, end-to-end implementation
 allowed-tools: Skill Bash(npm run) Bash(npm run:*) Bash(npm test:*) Bash(yarn run) Bash(yarn run:*) Bash(pnpm run) Bash(pnpm run:*) Bash(bun run) Bash(bun run:*) Bash(make:*) Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git show:*) Bash(git ls-files:*) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(date:*) Bash(mkdir:*) Edit MultiEdit Write Read LS Task TaskCreate TaskList TaskUpdate AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
@@ -9,7 +9,7 @@ argument-hint: "[implementation task]"
 
 # /build - 実装オーケストレーター
 
-`/challenge` → `/checkout` → `/research` → `/think` → `/code` → 品質 → `/commit` を連結し、前提の GO 検証からテスト検証済み実装のコミットまで一気通貫で行う。新機能に限らずリファクタリングやマイグレーションも対象。全フェーズを必須実行する (早期終了なし)。
+`/challenge` → `/checkout` → `/research` → `/think` → `/code` → 品質 → `/commit` → `/pr` を連結し、前提の GO 検証からテスト検証済み実装のコミットと PR 作成まで一気通貫で行う。新機能に限らずリファクタリングやマイグレーションも対象。全フェーズを必須実行する (早期終了なし)。
 
 ## 入力
 
@@ -20,7 +20,7 @@ argument-hint: "[implementation task]"
 1. CLAUDE.md, package.json, Cargo.toml などをコンテキストスキャン
 2. PREFLIGHT を実行
 3. 推論や不明点を解消
-4. TaskCreate で追跡 (Phase 2-8)
+4. TaskCreate で追跡 (Phase 2-9)
 
 ## Phase 2: challenge
 
@@ -47,31 +47,24 @@ argument-hint: "[implementation task]"
 
 ## Phase 7: 品質
 
-変更ファイルは `git diff main...HEAD --name-only` で取得する。残課題はユーザーに提示して判断を仰ぐ。
+変更ファイルは `git diff main...HEAD --name-only` で取得する。Phase 6 (`/code`) が lint / type / test / readability / coverage の機械的ベースラインを通すため、Phase 7 は内部 audit と外部 polish の2レイヤーを積む。audit は security / resilience / causation / encapsulation の多次元レビューを adversarial challenge と severity 付きで通す。polish は外部 Codex (non-Claude 視点で Self-Enhancement バイアスを突く) と simplify / enhancer-code の cleanup を積む。残課題はユーザーに提示して判断を仰ぐ。
 
-| Step | 動作                                                                                  | 終了条件                                         |
-| ---- | ------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| 1    | `Skill("code-review", "medium")` で選別                                               | high / critical なし → Step 4 へ                 |
-| 2    | high / critical が残れば `Skill("audit")` で深掘り検証                                | 0 critical / high → Step 4 へ                    |
-| 3    | Step 2 snapshot の critical / high finding ID で `Skill("fix", "<ID>")` → iteration++ | max 3 到達または解消 → Step 4 へ                 |
-| 4    | テスト pass を確認                                                                    | テスト失敗 → 修正 (max 2)。なお失敗 → 残課題提示 |
+| Step | 動作                                                                                             | 終了条件                                            |
+| ---- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| 1    | `Skill("audit")` を diff に対して実行する (severity 付与、adversarial challenge)                 | critical / high が 0 なら Step 3 へ                 |
+| 2    | snapshot の critical / high finding を `Skill("fix", "<ID>")` で潰し、再 audit する (1 ラウンド) | critical / high が 0、または 3 ラウンドで Step 3 へ |
+| 3    | `Skill("polish")` を uncommitted diff へ実行する (外部 Codex + cleanup、修正を直接適用)          | Codex 未導入なら cleanup のみで継続                 |
+| 4    | テスト pass を確認する                                                                           | 失敗時は最大 2 回修正。なお失敗なら残課題を提示     |
+
+polish の修正がテストを壊したら polish 内で stash する。残課題は Phase 8 commit 前に提示する。
 
 ## Phase 8: commit
 
-品質 + テスト pass の後に `Skill("commit", ...)` を実行し、変更を Conventional Commits 形式でコミットする。planning 成果物と実装が 1 コミットに入る。残課題が未解決なら commit 前にユーザーに提示する。
+品質層と全テスト pass の後に `Skill("commit", ...)` を実行し、変更を Conventional Commits 形式でコミットする。planning 成果物と実装が 1 コミットに入る。残課題が未解決なら commit 前にユーザーに提示する。
 
-## 再開
+## Phase 9: PR
 
-既存成果物から resume 地点を検出する。challenge は永続成果物を残さないため、research 成果物の有無を最初の検出キーにする。デフォルトブランチ上のままなら該当 Phase の前に Phase 3 (checkout) を通す。再入時は残フェーズを TaskCreate してから継続する (Phase 1 を飛ばすため list が作られない)。
-
-| 成果物                       | 再開地点            |
-| ---------------------------- | ------------------- |
-| research なし & SOW なし     | Phase 2 (challenge) |
-| research あり & SOW なし     | Phase 5 (think)     |
-| SOW `draft`                  | Phase 5 (think)     |
-| SOW `in-progress` で実装なし | Phase 6 (code)      |
-| 実装済みで品質チェック未完了 | Phase 7 (品質)      |
-| 品質 pass で未コミット       | Phase 8 (commit)    |
+`Skill("pr", $ARGUMENTS)` を実行し、コミットした変更から PR を作成する。pr は本文をプレビューして AskUserQuestion で作成を確認するため、build 側で追加のゲートは設けない。
 
 ## エラー処理
 
@@ -84,6 +77,7 @@ argument-hint: "[implementation task]"
 | 品質ループ枯渇 (3 ラウンド)               | 残りを提示しユーザーが判断             |
 | `/code` 品質ゲートが AC 未達を表示        | Phase 6 か 7 への再入を提案            |
 | `/commit` 失敗                            | エラーを提示しユーザーに尋ねる         |
+| `/pr` 失敗・キャンセル                    | エラーを提示しユーザーに尋ねる         |
 
 ## 検証
 
@@ -95,4 +89,6 @@ argument-hint: "[implementation task]"
 - SOW + Spec 生成済み
 - 全テスト pass
 - `/code` AC カバレッジ
+- polish 通過 (Codex review + cleanup)
 - コミット済み
+- PR 作成済み

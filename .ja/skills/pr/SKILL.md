@@ -1,179 +1,98 @@
 ---
 name: pr
-description: ブランチ変更を分析して PR 説明文を生成する。
+description: ブランチ変更を分析して PR を作成する。prose review で本文を投稿前に精査する。
 when_to_use: PR作って, プルリクエスト, pull request, PR作成
 allowed-tools: Bash(git:*) Bash(gh:*) Read AskUserQuestion Skill
 model: opus
 argument-hint: "[issue reference or context]"
 ---
 
-# /pr - Pull Request 説明文生成
+# /pr - Pull Request 作成
+
+ブランチ変更を分析してタイトルと本文を生成し、prose review で本文を投稿前に精査してから PR を作成する。
 
 ## 入力
 
-- Issue 参照またはコンテキスト: `$ARGUMENTS` (任意、例: `#456`)
-- `$ARGUMENTS` が空 → 現在ブランチからのみ生成
-
-## 実行
-
-| Step | 動作                                                                         |
-| ---- | ---------------------------------------------------------------------------- |
-| 1    | 分析: `git status`, `git diff <base>...HEAD`, `git log <base>..HEAD` (並列)  |
-| 2    | base ブランチを検出 (Base ブランチ検出を参照)                                |
-| 3    | AskUserQuestion で base ブランチを選択 (選択肢: main / develop / [検出済み]) |
-| 4    | UI 変更検出 (下記参照)                                                       |
-| 5    | PR テンプレートに従いタイトルと本文を生成 (下記参照)                         |
-| 6    | prose review で本文をインライン精査 (下記参照)                               |
-| 7    | PR プレビュー → AskUserQuestion: "Create this PR?"                           |
-| 8    | UI 変更時: Skill で `use-workflow-pageshot` を PR 本文と共に呼ぶ (下記参照)  |
-| 9    | push コマンドを表示 (手動実行)                                               |
-| 10   | PR 作成: `gh pr create --title "..." --body "..."`                           |
-| 11   | pageshot 成果物が存在: 成果物パスと手動貼り付け案内を表示                    |
-
-## 分析ソース
-
-| カテゴリ | ソース                   |
-| -------- | ------------------------ |
-| Changes  | `git diff <base>...HEAD` |
-| Commits  | `git log <base>..HEAD`   |
-| Files    | `git diff --name-status` |
-
-## 変更種別検出
-
-| 種別     | キーワード                      |
-| -------- | ------------------------------- |
-| Feature  | feat, add, new, implement       |
-| Bug Fix  | fix, bug, issue, resolve        |
-| Refactor | refactor, restructure, optimize |
-| Docs     | docs, readme, documentation     |
+`$ARGUMENTS` は Issue 参照またはコンテキスト (任意、例 `#456`)。空なら現在ブランチからのみ生成する。
 
 ## 言語
 
-${CLAUDE_SKILL_DIR}/../../settings.json から `language` を読み、その言語で PR 本文を翻訳する。未設定なら英語をデフォルト。技術用語、コード、識別子は翻訳しない。
+`${CLAUDE_SKILL_DIR}/../../settings.json` から `language` を読み、その言語で PR 本文を翻訳する。未設定なら英語をデフォルト。技術用語、コード、識別子は翻訳しない。
 
-## タイトルルール
+## 実行
 
-| ルール        | 形式                                                 |
-| ------------- | ---------------------------------------------------- |
-| Prefix        | なし (`feat:`, `fix:` など使わない)                  |
-| With Issue    | Issue タイトルをそのまま使う                         |
-| Without Issue | 命令形動詞 + 説明 (72 文字以内)                      |
-| Examples      | `Add user authentication`, `Fix login timeout issue` |
+commit なし、Git リポジトリでない、gh 認証失敗 のいずれかを検出したら、エラーを報告して中止する。
 
-## PR テンプレート
+1. base ブランチを検出 (§ Base ブランチ検出)
+2. base ブランチを AskUserQuestion で選択 (main / develop / 検出済み)
+3. § 分析ソースの各コマンドを並列実行する
+4. UI 変更を検出 (§ UI 変更検出)
+5. テンプレートを選ぶ (§ PR テンプレート)
+6. 選んだテンプレートに従いタイトルと本文を生成 (§ タイトルルール)
+7. `${CLAUDE_SKILL_DIR}/references/prose-review.md` と、本文言語に対応する空句ファイル (日本語なら `${CLAUDE_SKILL_DIR}/references/phrases.ja.md`、英語なら `${CLAUDE_SKILL_DIR}/references/phrases.en.md`) の基準で本文をインライン精査
+8. PR をプレビュー → AskUserQuestion: "Create this PR?"
+9. UI 変更があれば Skill で `use-workflow-pageshot` を PR 本文と共に呼ぶ (§ Pageshot 統合)
+10. 現在ブランチを push (§ Push)
+11. `gh pr create --title "..." --body "..."` で PR を作成。本文は直接文字列で渡し、heredoc (`<<EOF`) は sandbox 制約のため避ける
+12. pageshot 成果物があれば表示 (§ Pageshot 統合)
 
-${CLAUDE_SKILL_DIR}/templates/pr.md
+## 分析ソース
 
-### Design Decisions の検出
-
-`Design Decisions` は commit ごとでなく PR レベルで集約する。`git diff <base>...HEAD` と `git log <base>..HEAD` から検出する。ルーチンな実装のみ (明示的トレードオフなし) → Design Decisions セクションを省略する。
-
-| シグナル                               | 例                               |
-| -------------------------------------- | -------------------------------- |
-| 同等な代替肢の中で明示的に選択         | "Used X over Y because..."       |
-| パフォーマンス/型/互換性のトレードオフ | "Chose X to avoid Y"             |
-| 既存パターンからの逸脱                 | "Deviated from X for..."         |
-| ライブラリ/API の選定                  | "Selected X (over Y) because..." |
+| カテゴリ | ソース                                 |
+| -------- | -------------------------------------- |
+| Changes  | `git diff <base>...HEAD`               |
+| Commits  | `git log <base>..HEAD`                 |
+| Files    | `git diff --name-status <base>...HEAD` |
 
 ## Base ブランチ検出
 
 ```bash
 BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-# Fallback: main → master → develop
+BASE=${BASE:-main}
 ```
 
 ## UI 変更検出
 
-`git diff --name-only {base}...HEAD` が以下の拡張子を含めば UI 変更とみなす。UI 変更なし → Pageshot 統合をスキップ。
+§ 分析ソースの diff を読み込んで視覚出力への影響を判断する。ロジック / 型 / テスト / ドキュメントのみの変更は UI 変更なしとして § Pageshot 統合をスキップする。最終判定は pageshot のレンダリングが担うので、frontend シグナルがあって影響が曖昧なら UI 変更ありに倒す。以下のいずれかで視覚出力に影響する変更があれば UI 変更とみなす。
 
-| 拡張子                                          | 種別        |
-| ----------------------------------------------- | ----------- |
-| `.tsx` / `.jsx` / `.vue` / `.svelte` / `.astro` | Component   |
-| `.html`                                         | Page        |
-| `.css` / `.scss` / `.sass` / `.less`            | Style       |
-| `*.module.css` / `*.module.scss`                | CSS Modules |
+- JSX / テンプレート / HTML のマークアップ
+- CSS / クラス名 / インラインスタイル
+- 色 / 間隔 / タイポグラフィのデザイントークン
+- 画像 / アイコン / フォントのアセット
+- `tailwind.config` などスタイル生成 config
+
+## タイトルルール
+
+- Issue 参照ありなら Issue タイトルをそのまま使う
+- Issue 参照なしなら命令形動詞 + 説明 (72 文字以内)
+- prefix は付けない (`feat:`, `fix:` 等)。Issue タイトルにあれば外す
+
+## PR テンプレート
+
+- リポジトリに PR テンプレートがあればそれを利用、なければ同梱の `${CLAUDE_SKILL_DIR}/templates/pr.md` を使う
+- case-insensitive、`.github/pull_request_template.md` > `pull_request_template.md` > `docs/pull_request_template.md` > `PULL_REQUEST_TEMPLATE/` ディレクトリの順で優先する
+- `gh pr create --body` はテンプレを自動適用しないので、骨格を読み取って本文に組み込む
+- UI 変更検出時にリポジトリテンプレを採用するなら、`Preview URL:` 行と `## How to Test` セクションを必ず補う (§ Pageshot 統合)
+
+## Design Decisions の検出
+
+`Design Decisions` は commit 単位でなく PR 全体で集約し、§ 分析ソースの diff と log から検出する。以下のシグナルがあれば記載し、明示的なトレードオフがなくルーチンな実装だけなら省略する。
+
+- 同等な代替肢の中で明示的に選択
+- パフォーマンス / 型 / 互換性のトレードオフ
+- 既存パターンからの逸脱
+- ライブラリ / API の選定
 
 ## Pageshot 統合
 
-Skill ツールで `use-workflow-pageshot` skill を呼ぶ。入力は現在の PR 本文文字列。
+`Skill("use-workflow-pageshot")` を現在の PR 本文文字列を入力に呼ぶ。本文には上部近くの `Preview URL: <URL>` 行と、番号付きリストの `## How to Test` セクションが必要。skill は stdout に mode 行を 1 つ返す。
 
-```
-Skill invoke: use-workflow-pageshot
-Input: <PR body string>
-```
+- `mode=screenshot artifact=<path>` / `mode=video artifact=<path>` パスを表示し、GitHub の PR 説明か最初のコメントへドラッグ & ドロップするよう案内
+- `mode=failed` 欠落項目を報告し、pageshot をスキップして PR 作成を続行
 
-呼び出し前に PR 本文に以下が必要。
+## Push
 
-- 上部近くに `Preview URL: <URL>` 行
-- `## How to Test` セクション (番号付きリスト)
-
-skill は stdout に 1 行返す。
-
-```
-mode=screenshot artifact=/path/to/step-01.png
-```
-
-または
-
-```
-mode=video artifact=/path/to/capture.mp4
-```
-
-`mode=failed` のとき、欠落項目を報告して PR 作成を続行する (pageshot をスキップ)。
-
-PR 作成後、以下を表示する。
-
-```text
-Pageshot generated: <absolute path>
-Drag and drop it into the PR description or first comment on GitHub.
-```
-
-## Prose Review
-
-### 構造 (PR 固有)
-
-| チェック       | 質問                                                                     |
-| -------------- | ------------------------------------------------------------------------ |
-| Why stated     | 変更理由 (何でなく) が冒頭 1-3 行にあるか                                |
-| Test evidence  | 検証が具体的か (実行コマンド、テストファイル、スクリーンショット)        |
-| Scope          | 変更が集中しているか、無関係な編集が混ざっていないか                     |
-| Reviewer focus | レビュー優先度が明確か ("focus on X", "skim Y")                          |
-| Risk surfaced  | マイグレーション、ロールバック、パフォーマンスのリスクが明示されているか |
-
-### Anti-AI-pattern
-
-| パターン           | シグナル                                                                        | 修正                               |
-| ------------------ | ------------------------------------------------------------------------------- | ---------------------------------- |
-| Boilerplate opener | `This PR introduces/implements/adds...`                                         | 解決した問題やアウトカムから始める |
-| Empty intensifier  | `comprehensive`, `robust`, `seamless`, `thorough`                               | 削除するか具体 (件数、名前) に置換 |
-| Filler verb        | `leverage`, `utilize`, `facilitate`                                             | `use`, `do`, `let` を使う          |
-| Vague quantifier   | `various changes`, `multiple improvements`, `several fixes`                     | 列挙するか件数を示す               |
-| Hedge stacking     | `might potentially`, `could possibly`, `may perhaps`                            | hedge は最大 1 つ、または断言する  |
-| Filler phrase      | `It should be noted that...`, `Happy to discuss`, `Looking forward to thoughts` | 削除。事実を述べるか直接尋ねる     |
-
-### Push (手動)
-
-`git push` を直接実行しない。コマンドを表示して確認を待つ。
-
-```text
-Run this to push: git push -u origin HEAD
-```
-
-## エラー処理
-
-| エラー               | 動作                    |
-| -------------------- | ----------------------- |
-| commit なし          | "No commits" を報告     |
-| base ブランチなし    | main をデフォルトとする |
-| Git リポジトリでない | "Not a git repo" を報告 |
-| gh 認証失敗          | 認証エラーを報告        |
-
-## ルール
-
-| ルール             | 詳細                                     |
-| ------------------ | ---------------------------------------- |
-| Title: prefix なし | `feat:`, `fix:`, `refactor:` などなし    |
-| Body: 直接文字列   | heredoc (`<<EOF`) を避ける、sandbox 制約 |
+§ 実行 step 8 で承認されたら、`git push -u origin HEAD` で現在ブランチを push する。
 
 ## 表示形式
 

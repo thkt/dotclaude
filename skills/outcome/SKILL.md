@@ -18,21 +18,17 @@ Generate or update `.claude/OUTCOME.md` interactively. This skill is also the la
 
 ## Generate
 
-| Step | Action                                                                                  |
-| ---- | --------------------------------------------------------------------------------------- |
-| 1    | Read ${CLAUDE_SKILL_DIR}/templates/outcome.md (structure and examples)                  |
-| 2    | Collect Behavior (≥1, subject named), Non-goals, Constraints via AskUserQuestion (3 Qs) |
-| 3    | Run each Behavior through the Outcome test; rewrite failures and re-present             |
-| 4    | Fill the template and Write `.claude/OUTCOME.md`                                        |
+1. Read `${CLAUDE_SKILL_DIR}/templates/outcome.md` (structure and examples)
+2. Collect Behavior (≥1, subject named), Non-goals, Constraints in one AskUserQuestion call, one question per item (3 Qs)
+3. Run each Behavior through the Outcome test; rewrite failures and re-present to the user
+4. Fill the template and Write `.claude/OUTCOME.md`
 
 ## Update
 
-| Step | Action                                                              |
-| ---- | ------------------------------------------------------------------- |
-| 1    | Read `.claude/OUTCOME.md` and present the current three sections    |
-| 2    | Confirm which sections change and their content via AskUserQuestion |
-| 3    | Run each changed Behavior through the Outcome test, then Edit       |
+1. Read `.claude/OUTCOME.md` and present the current three sections
+2. Confirm which sections change and their content via AskUserQuestion
+3. Run each changed Behavior through the Outcome test, then Edit
 
 ## Done condition
 
-Do not Write or Edit until every Behavior passes all four Outcome test checks.
+Write or Edit only after every Behavior satisfies all four Outcome test checks.

@@ -13,13 +13,13 @@ argument-hint: "[bug or issue description]"
 
 ## 入力
 
-`$ARGUMENTS` はバグ説明、または `/audit` snapshot の finding ID (例: `RC-001`, `SEC-003`)。対象は小さく十分理解されている 1〜3 ファイル規模の問題に限る。`$ARGUMENTS` のパターンでモードに分岐する。
+`$ARGUMENTS` はバグ説明、または `/audit` で `${CLAUDE_SKILL_DIR}/../../workspace/history/` に作成された snapshot の finding ID (例: `RC-001`, `SEC-003`)。対象は十分に理解できている 1〜3 ファイル規模の問題に限る。`$ARGUMENTS` のパターンでモードに分岐する。
 
-| パターン            | モード          | 動作                                                                                                                                                                                                                                      |
-| ------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/^[A-Z]+-[0-9]+$/` | Finding ID 解決 | `${CLAUDE_SKILL_DIR}/../../workspace/history/` の最新 snapshot を読み findings[] の ID 一致を探す。severity / fix_type / root cause を保持し Outcome Anchor とビルドチェックを省いてトリアージへ。不在ならエラー提示 + Standard Flow 提案 |
-| 空                  | Fix プロンプト  | AskUserQuestion で Fix type (Bug fix / Error message / Test failure) と Description (Other で自由記述) を尋ねて実行                                                                                                                       |
-| その他              | Standard Flow   | バグ説明とみなし Outcome Anchor から実行                                                                                                                                                                                                  |
+| パターン            | モード          | 動作                                                                                                                                                                                |
+| ------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/^[A-Z]+-[0-9]+$/` | Finding ID 解決 | snapshot を読み findings[] の ID 一致を探す。severity / fix_type / root cause を保持し Outcome Anchor とビルドチェックを省いてトリアージへ。不在ならエラー提示 + Standard Flow 提案 |
+| 空                  | Fix プロンプト  | AskUserQuestion で Fix type (Bug fix / Error message / Test failure) と Description (Other で自由記述) を尋ねて実行                                                                 |
+| その他              | Standard Flow   | バグ説明とみなし Outcome Anchor から実行                                                                                                                                            |
 
 ## 委譲マップ
 
@@ -32,16 +32,16 @@ argument-hint: "[bug or issue description]"
 
 ## Outcome Anchor
 
-ビルドチェックの前に `.claude/OUTCOME.md` を読む。不在なら /outcome で stub を生成。バグまたは修正が outcome 状態の中にあるか確認する。範囲外なら § エスカレーション。
+ビルドチェックの前に `.claude/OUTCOME.md` を読む。不在なら `/outcome` で stub を生成。バグまたは修正が outcome 状態の中にあるか確認する。範囲外なら § エスカレーション。
 
 ## ビルドチェック
 
 package.json やプロジェクト設定からビルドコマンドを検出して実行。
 
-| 結果         | 動作                                                  |
-| ------------ | ----------------------------------------------------- |
-| ビルドエラー | `Task` を `subagent_type: resolver-build` で起動、END |
-| エラーなし   | トリアージに進む                                      |
+| 結果         | 動作                                            |
+| ------------ | ----------------------------------------------- |
+| ビルドエラー | `Task(subagent_type: resolver-build)` 起動、END |
+| エラーなし   | トリアージに進む                                |
 
 ## トリアージ
 

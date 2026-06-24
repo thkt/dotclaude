@@ -69,25 +69,28 @@ install specific workflow sets:
 3. **Install specific plugin** (choose one or more):
 
    ```bash
-   /plugin install complete-workflow-system  # Full TDD/RGRC workflow
-   /plugin install quick-actions             # /fix, /polish
-   /plugin install git-utilities             # /commit, /branch, /pr, /issue
-   /plugin install documentation-tools       # /adr, /docs
-   /plugin install browser-workflows         # agent-browser (E2E via /code)
+   /plugin install plan     # /outcome, /think, /research, /probe, /slice
+   /plugin install build    # /build, /code, /fix, /swarm, /shake, /prototype
+   /plugin install review   # /audit, /polish, /preview, /challenge, /assert
+   /plugin install ship     # /commit, /checkout, /pr, /issue
+   /plugin install toolkit  # /adr, /adrift, /census, /reflect
    ```
 
 **Available Plugins**:
 
-- **complete-workflow-system**: Full development workflow with quality gates
-  (/think, /code, /audit, /research, /build, /swarm)
-- **quick-actions**: Fast bug fixes (/fix), AI slop removal (/polish)
-- **git-utilities**: Git workflow helpers (/commit, /branch, /pr, /issue,
-  /preview)
-- **documentation-tools**: ADR creation (/adr) and domain glossary (/glossary)
-- **browser-workflows**: E2E testing via /code E2E Phase (agent-browser)
-- **productivity-tools**: Inbox aggregation from GitHub, Slack, Calendar (/inbox)
-- **development-skills**: 21 reference skills for TDD, principles, patterns,
-  security, doc lookup, and more
+- **plan**: Planning and design (/outcome for outcome definition, /think for
+  design exploration and SOW/Spec generation, /research for technical
+  investigation, /probe for repository spec extraction, /slice for breaking
+  plans into vertical-slice issues) plus architecture agents
+- **build**: Implementation and testing (/build for end-to-end orchestration,
+  /code, /fix, /swarm with TDD/RGRC cycle and quality gates, /shake for
+  flaky-test detection, /prototype for throwaway prototypes)
+- **review**: Quality and review (/audit, /polish, /preview, /challenge,
+  /assert) with 21 specialized reviewer agents
+- **ship**: Git and release (/commit, /checkout, /pr, /issue)
+- **toolkit**: Utilities and patterns (/adr for decision records, /adrift for
+  ADR-vs-code drift, /census for undocumented-decision discovery, /reflect for
+  session reflection) plus frontend pattern references
 
 ### Option 2: Manual Installation (Full Configuration)
 

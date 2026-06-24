@@ -4,39 +4,39 @@ Stub template and project-shape examples for `.claude/OUTCOME.md`. The /outcome 
 
 ## Template
 
-Each repository's `.claude/OUTCOME.md` follows the structure below. Behavior is required; Indicators are optional and only included when they sharpen a Behavior. Per-slot inline examples may be added as `<!-- e.g. ... -->` comments.
+Each repository's `.claude/OUTCOME.md` follows the structure below. `{...}` is replaced with content at generation time. Behavior is required; Indicators are optional, included only when they sharpen a Behavior and dropped with the heading otherwise. Inline examples are added as `<!-- e.g. ... -->` comments.
 
 ```markdown
 # OUTCOME
 
 ## Outcome state
 
-[Optional opening prose. The project's reason for being and the direction it evolves toward. Aspirational language allowed.]
+{Optional opening prose. The project's reason for being and the direction it evolves toward. Aspirational language allowed.}
 
 ### Behavior
 
-[Subject (human user / AI agent / system) holds the named state in the done condition. Implementation-independent. Observable. One bullet per distinct behavior.]
+{Subject (human user / AI agent / system) holds the named state in the done condition. Implementation-independent. Observable. One bullet per distinct behavior.}
 
 <!-- e.g. AI agents fix violations within the same edit cycle and never bypass the hook -->
 <!-- e.g. Developers integrate the API without referencing internal source -->
 
 ### Indicators
 
-[Optional. States that corroborate the Behavior above. Numeric, temporal, or aspirational direction. Skip the section if none sharpen the Behavior.]
+{Optional. States that corroborate the Behavior above. Numeric, temporal, or aspirational direction. Skip the section if none sharpen the Behavior.}
 
 | Indicator  | Value                     | Corroborates            |
 | ---------- | ------------------------- | ----------------------- |
-| Time       | [bound]                   | [which Behavior bullet] |
-| Error rate | [bound]                   | [which Behavior bullet] |
-| Value      | [beneficiary holds value] | [which Behavior bullet] |
+| Time       | {bound}                   | {which Behavior bullet} |
+| Error rate | {bound}                   | {which Behavior bullet} |
+| Value      | {beneficiary holds value} | {which Behavior bullet} |
 
 ## Non-goals
 
-[Bullet list. Explicitly out of scope.]
+{Bullet list. Explicitly out of scope.}
 
 ## Constraints
 
-[Bullet list. Immovable technical, legal, or organizational limits.]
+{Bullet list. Immovable technical, legal, or organizational limits.}
 ```
 
 ## Examples

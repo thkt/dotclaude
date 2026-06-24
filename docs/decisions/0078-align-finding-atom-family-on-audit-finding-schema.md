@@ -18,24 +18,24 @@ adversarial な指摘を出すスキルは critic-design (issue/challenge が sp
 
 ## Considered Options
 
-- Option 1: 共通コア (Severity / Evidence / 一行 claim / ID) + role 別 extension。critic-design は Location=section, 検証=disconfirming probe を extension に持つ
+- Option 1: 共通コア (Severity / Evidence / 一行 claim / ID) + role 別 extension。各 producer はコアのサブセットを投影し、critic-design は disconfirming probe を extension に持つ
 - Option 2: finding-schema へ flat 統一。critic-design も Location=file:line, Trigger を必須化
 - Option 3: 統一しない。critic-design は独自語彙のまま
 
 ## Decision Outcome
 
-Option 1 を採用する。issue/audit/assert/challenge の finding atom は audit finding-schema の共通コア (Severity / Evidence / 一行 claim / ID) を base format とし、role 固有の欄は extension に残す。この family 方針で実改修が要るのは critic-design のみ。audit reviewers は finding-schema を canonical に持ち、enhancer-evidence は projection 済み、critic-audit/critic-evidence は atom を出さず裁定するだけで、いずれも既に整合している。
+Option 1 を採用する。issue/audit/assert/challenge の finding atom は audit finding-schema の共通コア (Severity / Evidence / 一行 claim / ID) を base format とし、各 producer は consume 形態でコアのサブセットを投影する。machine routing する enhancer-evidence は ID 含む投影、ephemeral な critic-design は Severity/Evidence/一行 claim を投影し ID/Location は出さない。role 固有の欄は extension に残す。この family 方針で実改修が要るのは critic-design のみ。audit reviewers は finding-schema を canonical に持ち、enhancer-evidence は projection 済み、critic-audit/critic-evidence は atom を出さず裁定するだけで、いずれも既に整合している。
 
 ### 共通コアと extension の境界
 
-critic-design weakness と audit finding は Severity / Evidence / 一行 claim / ID を共有する。critic-design はこの語彙に寄せ、Finding を一行 claim に、Supporting evidence を Evidence に対応させる。Viewpoint (攻撃レンズ) は finding 種別を表す Category とは別軸なので寄せず、critic-design 固有の extension に残す。乖離する欄は role 別 extension として両者が別々に持つ。
+critic-design weakness は audit finding の共通コアのうち Severity / Evidence / 一行 claim を投影する。critic-design はこの語彙に寄せ、Finding を一行 claim に、Supporting evidence を Evidence に対応させる。ID は machine routing しない ephemeral な weakness では出さない。Viewpoint (攻撃レンズ) は finding 種別を表す Category とは別軸なので寄せず、critic-design 固有の extension に残す。乖離する欄は role 別 extension として両者が別々に持つ。
 
-| 欄         | audit finding   | critic-design weakness        |
-| ---------- | --------------- | ----------------------------- |
-| 分類軸     | Category (種別) | Viewpoint (攻撃レンズ)        |
-| Location   | `file:line`     | artifact の section 参照      |
-| Trigger    | runtime 条件    | n/a (前提 X が偽なら、で代替) |
-| 検証モデル | ±20 行を読む    | disconfirming probe を立てる  |
+| 欄         | audit finding   | critic-design weakness         |
+| ---------- | --------------- | ------------------------------ |
+| 分類軸     | Category (種別) | Viewpoint (攻撃レンズ)         |
+| Location   | `file:line`     | Finding 散文に埋込、専用欄なし |
+| Trigger    | runtime 条件    | n/a (前提 X が偽なら、で代替)  |
+| 検証モデル | ±20 行を読む    | disconfirming probe を立てる   |
 
 ### 判定 wrapper と transport は producer/consumer に残す
 
@@ -45,11 +45,11 @@ critic-design weakness と audit finding は Severity / Evidence / 一行 claim 
 
 - Good, issue/challenge の出力が audit/assert と同じ Severity/Evidence/ID 語彙で読め、認知の対応付けコストが消える
 - Good, finding-id routing (ADR-0077) を将来 critic-design 出力へ広げる際の field 基盤が既に揃う
-- Bad, critic-design.md の出力 schema を改修し、Finding/Supporting evidence を core 語彙へ rename する必要がある。Viewpoint は extension として残す。issue/challenge は consumer として追従するが本文 spawn 側の改修は最小
+- Bad, critic-design.md の出力 schema を改修し、Supporting evidence を Evidence へ rename する必要がある。Viewpoint / disconfirming probe は extension に残し、Severity は 3-level を維持。issue/challenge は consumer として追従するが本文 spawn 側の改修は最小
 
 ### Confirmation
 
-issue/audit/assert/challenge の finding/weakness 出力が共通コア語彙 (Severity/Evidence/一行 claim/ID) を base に持つことを family 条件とする。実改修は critic-design.md のみで、その出力欄が共通コアを持ち extension 欄 (Viewpoint, Location=section, disconfirming probe) のみ独自であることを diff で確認する。enhancer-evidence / audit reviewers は整合済みで変更せず、critic-audit/critic-evidence は atom 非生成で対象外。
+family の base format は finding-schema の共通コア (Severity / Evidence / 一行 claim / ID)。各 producer は consume 形態でコアのサブセットを投影し、machine routing する enhancer-evidence は ID 含む投影、ephemeral な critic-design は Severity/Evidence/一行 claim のみ投影する。実改修は critic-design.md の Supporting evidence → Evidence rename のみで、Viewpoint / disconfirming probe を extension に残し ID/Location は出さないことを diff で確認する。Severity 3-level (critical なし) は projection の意図的制約。enhancer-evidence / audit reviewers は整合済みで変更せず、critic-audit/critic-evidence は atom 非生成で対象外。
 
 ## Pros and Cons of the Options
 

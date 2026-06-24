@@ -1,36 +1,40 @@
 # PR Template
 
-## Structure
+When /pr cannot find a repository PR template, it generates the body from this skeleton.
+
+## Template
+
+Replace `{...}` with content at generation time. Omit an `(optional)` section, heading and all, when there is nothing to write.
 
 ```markdown
 Preview URL: http://localhost:3000
 
 ## What & Why
 
-[What this PR does - 1-2 sentences]
-[Why - what problem it solves or what it enables]
+{What this PR does - 1-2 sentences}
+{Why - what problem it solves or what it enables}
 
 ## Changes
 
-- [Change 1: what was done and why]
-- [Change 2: what was done and why]
+- {Change 1: what was done and why}
+- {Change 2: what was done and why}
 
 ## Scope (optional)
 
-- **Not included**: [What this PR intentionally does NOT do]
+- Not included: {What this PR intentionally does NOT do}
 
-## Design Decisions
+## Design Decisions (optional)
 
-- [Why this approach was chosen over alternatives]
+- {Why this approach was chosen over alternatives}
 
 ## How to Test
 
-1. [Step]
-2. [Expected result]
+1. {Step}
+2. {Expected result}
 
 ## Related
 
-- Closes #[issue]
+- Closes #{issue}
 ```
 
 `Preview URL:` is required only for PRs with UI changes (read by use-workflow-pageshot). Omit when no UI changes.

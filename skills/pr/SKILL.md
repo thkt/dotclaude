@@ -1,179 +1,98 @@
 ---
 name: pr
-description: Analyze branch changes and generate PR description.
+description: Analyze branch changes and create a PR. Refine the body via prose review before posting.
 when_to_use: PR作って, プルリクエスト, pull request, PR作成
 allowed-tools: Bash(git:*) Bash(gh:*) Read AskUserQuestion Skill
 model: opus
 argument-hint: "[issue reference or context]"
 ---
 
-# /pr - Pull Request Description Generator
+# /pr - Pull Request Creator
+
+Analyze branch changes, generate the title and body, refine the body via prose review, and create the PR.
 
 ## Input
 
-- Issue reference or context: `$ARGUMENTS` (optional, e.g., `#456`)
-- If `$ARGUMENTS` is empty → generate from current branch only
-
-## Execution
-
-| Step | Action                                                                             |
-| ---- | ---------------------------------------------------------------------------------- |
-| 1    | Analyze: `git status`, `git diff <base>...HEAD`, `git log <base>..HEAD` (parallel) |
-| 2    | Detect base branch (see Base Branch Detection)                                     |
-| 3    | Select base branch via AskUserQuestion (options: main / develop / [detected])      |
-| 4    | UI Change Detection (see below)                                                    |
-| 5    | Generate PR title + body following PR template (see below)                         |
-| 6    | Refine body inline via prose review (see below)                                    |
-| 7    | Preview PR → AskUserQuestion: "Create this PR?"                                    |
-| 8    | If UI changes: Skill invoke `use-workflow-pageshot` with PR body (see below)       |
-| 9    | Display push command (manual run)                                                  |
-| 10   | Create PR: `gh pr create --title "..." --body "..."`                               |
-| 11   | If pageshot artifact exists: display artifact path + manual paste guidance         |
-
-## Analysis Sources
-
-| Category | Source                   |
-| -------- | ------------------------ |
-| Changes  | `git diff <base>...HEAD` |
-| Commits  | `git log <base>..HEAD`   |
-| Files    | `git diff --name-status` |
-
-## Change Type Detection
-
-| Type     | Keywords                        |
-| -------- | ------------------------------- |
-| Feature  | feat, add, new, implement       |
-| Bug Fix  | fix, bug, issue, resolve        |
-| Refactor | refactor, restructure, optimize |
-| Docs     | docs, readme, documentation     |
+`$ARGUMENTS` is an Issue reference or context (optional, e.g. `#456`). If empty, generate from the current branch only.
 
 ## Language
 
-Read `language` from ${CLAUDE_SKILL_DIR}/../../settings.json and translate the PR body into that language. If unset, default to English. Keep technical terms, code, and identifiers untranslated.
+Read `language` from `${CLAUDE_SKILL_DIR}/../../settings.json` and translate the PR body into that language. If unset, default to English. Keep technical terms, code, and identifiers untranslated.
 
-## Title Rules
+## Execution
 
-| Rule          | Format                                               |
-| ------------- | ---------------------------------------------------- |
-| Prefix        | None (no `feat:`, `fix:`, etc.)                      |
-| With Issue    | Use Issue title as-is                                |
-| Without Issue | Imperative verb + description (≤72)                  |
-| Examples      | `Add user authentication`, `Fix login timeout issue` |
+If there are no commits, the directory is not a git repository, or gh auth fails, report the error and abort.
 
-## PR Template
+1. Detect the base branch (§ Base Branch Detection)
+2. Select the base branch via AskUserQuestion (main / develop / detected)
+3. Run the § Analysis Sources commands in parallel
+4. Detect UI changes (§ UI Change Detection)
+5. Select the template (§ PR Template)
+6. Generate the title and body following the selected template (§ Title Rules)
+7. Refine the body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language (`${CLAUDE_SKILL_DIR}/references/phrases.ja.md` for Japanese, `${CLAUDE_SKILL_DIR}/references/phrases.en.md` for English)
+8. Preview the PR → AskUserQuestion: "Create this PR?"
+9. If UI changes, invoke `use-workflow-pageshot` via Skill with the PR body (§ Pageshot Integration)
+10. Push the current branch (§ Push)
+11. Create the PR with `gh pr create --title "..." --body "..."`. Pass the body as a direct string and avoid heredoc (`<<EOF`) due to the sandbox restriction
+12. If a pageshot artifact exists, display it (§ Pageshot Integration)
 
-${CLAUDE_SKILL_DIR}/templates/pr.md
+## Analysis Sources
 
-### Design Decisions Detection
-
-Aggregate `Design Decisions` at the PR level, not per-commit. Detect from `git diff <base>...HEAD` and `git log <base>..HEAD`. Routine implementation only (no explicit tradeoff) → omit the Design Decisions section.
-
-| Signal                                      | Example                          |
-| ------------------------------------------- | -------------------------------- |
-| Equal alternatives, explicit choice         | "Used X over Y because..."       |
-| Performance / type / compatibility tradeoff | "Chose X to avoid Y"             |
-| Deviation from existing patterns            | "Deviated from X for..."         |
-| Library / API selection                     | "Selected X (over Y) because..." |
+| Category | Source                                 |
+| -------- | -------------------------------------- |
+| Changes  | `git diff <base>...HEAD`               |
+| Commits  | `git log <base>..HEAD`                 |
+| Files    | `git diff --name-status <base>...HEAD` |
 
 ## Base Branch Detection
 
 ```bash
 BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-# Fallback: main → master → develop
+BASE=${BASE:-main}
 ```
 
 ## UI Change Detection
 
-UI change if `git diff --name-only {base}...HEAD` contains any of these extensions. No UI change → skip Pageshot Integration.
+Read the diff from § Analysis Sources to judge visual impact. Logic / type / test / docs-only changes are not UI changes, so skip Pageshot Integration. Pageshot's rendering is the final judge, so when frontend signals are present and the impact is ambiguous, lean toward a UI change. A change affecting visual output through any of the following counts as a UI change.
 
-| Extension                                       | Kind        |
-| ----------------------------------------------- | ----------- |
-| `.tsx` / `.jsx` / `.vue` / `.svelte` / `.astro` | Component   |
-| `.html`                                         | Page        |
-| `.css` / `.scss` / `.sass` / `.less`            | Style       |
-| `*.module.css` / `*.module.scss`                | CSS Modules |
+- markup in JSX / templates / HTML
+- CSS / class names / inline styles
+- design tokens for color / spacing / typography
+- assets such as images / icons / fonts
+- style-generating config such as `tailwind.config`
+
+## Title Rules
+
+- With an Issue reference, use the Issue title as-is
+- Without one, imperative verb + description (≤72)
+- No prefix (`feat:`, `fix:`, etc.); strip it from the Issue title if present
+
+## PR Template
+
+- If the repository has a PR template, use it; otherwise use the bundled `${CLAUDE_SKILL_DIR}/templates/pr.md`
+- Case-insensitive, in priority order `.github/pull_request_template.md` > `pull_request_template.md` > `docs/pull_request_template.md` > a `PULL_REQUEST_TEMPLATE/` directory
+- `gh pr create --body` does not auto-apply the template, so read the skeleton and fold it into the body
+- When a repo template is adopted and UI changes are detected, add a `Preview URL:` line and a `## How to Test` section (§ Pageshot Integration)
+
+## Design Decisions Detection
+
+Aggregate `Design Decisions` across the whole PR, not per-commit, detecting from the diff and log in § Analysis Sources. Record a decision when any signal below is present; omit the section when the work is routine implementation with no explicit tradeoff.
+
+- Explicit choice among equal alternatives
+- Performance / type / compatibility tradeoff
+- Deviation from existing patterns
+- Library / API selection
 
 ## Pageshot Integration
 
-Invoke the `use-workflow-pageshot` skill via the Skill tool. Input is the current PR body string.
+Call `Skill("use-workflow-pageshot")` with the current PR body string as input. The body must contain a `Preview URL: <URL>` line near the top and a `## How to Test` section as a numbered list. The skill returns a single mode line on stdout.
 
-```
-Skill invoke: use-workflow-pageshot
-Input: <PR body string>
-```
+- `mode=screenshot artifact=<path>` / `mode=video artifact=<path>` display the path and advise dragging it into the PR description or first comment on GitHub
+- `mode=failed` report missing items, skip pageshot, and continue PR creation
 
-The PR body must contain the following before invoking.
+## Push
 
-- A `Preview URL: <URL>` line near the top
-- A `## How to Test` section (numbered list)
-
-The skill returns a single stdout line.
-
-```
-mode=screenshot artifact=/path/to/step-01.png
-```
-
-or
-
-```
-mode=video artifact=/path/to/capture.mp4
-```
-
-On `mode=failed`, report missing items and continue PR creation (skip pageshot).
-
-After PR creation, display the following.
-
-```text
-Pageshot generated: <absolute path>
-Drag and drop it into the PR description or first comment on GitHub.
-```
-
-## Prose Review
-
-### Structure (PR-specific)
-
-| Check          | Question                                                             |
-| -------------- | -------------------------------------------------------------------- |
-| Why stated     | Is the reason for the change (not just what) in the top 1-3 lines?   |
-| Test evidence  | Is verification concrete (command run, test file, screenshot link)?  |
-| Scope          | Is the change focused, or does it bundle unrelated edits?            |
-| Reviewer focus | Is the review priority clear ("focus on X", "skim Y")?               |
-| Risk surfaced  | Are migration, rollback, or performance risks called out explicitly? |
-
-### Anti-AI-pattern
-
-| Pattern            | Signal                                                                          | Fix                                            |
-| ------------------ | ------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Boilerplate opener | `This PR introduces/implements/adds...`                                         | Start with the problem solved or outcome       |
-| Empty intensifier  | `comprehensive`, `robust`, `seamless`, `thorough`                               | Drop or replace with specifics (counts, names) |
-| Filler verb        | `leverage`, `utilize`, `facilitate`                                             | Use `use`, `do`, `let`                         |
-| Vague quantifier   | `various changes`, `multiple improvements`, `several fixes`                     | Enumerate or count                             |
-| Hedge stacking     | `might potentially`, `could possibly`, `may perhaps`                            | One hedge maximum, or commit                   |
-| Filler phrase      | `It should be noted that...`, `Happy to discuss`, `Looking forward to thoughts` | Delete. State the fact or ask directly         |
-
-### Push (Manual)
-
-Never execute `git push` directly. Display the command and wait for confirmation.
-
-```text
-Run this to push: git push -u origin HEAD
-```
-
-## Error Handling
-
-| Error             | Action                  |
-| ----------------- | ----------------------- |
-| No commits        | Report "No commits"     |
-| No base branch    | Default to main         |
-| No git repository | Report "Not a git repo" |
-| gh auth failure   | Report auth error       |
-
-## Rules
-
-| Rule                | Detail                                        |
-| ------------------- | --------------------------------------------- |
-| Title: No prefix    | No `feat:`, `fix:`, `refactor:` etc.          |
-| Body: Direct string | Avoid heredoc (`<<EOF`) - sandbox restriction |
+After approval (§ Execution step 8), push the current branch with `git push -u origin HEAD`.
 
 ## Display Format
 
