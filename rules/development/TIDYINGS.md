@@ -1,3 +1,17 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
+  - "**/*.cjs"
+  - "**/*.rs"
+  - "**/*.py"
+  - "**/*.go"
+  - "**/*.swift"
+---
+
 # Tidyings
 
 | Scope | Description                                          |

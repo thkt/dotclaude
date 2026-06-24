@@ -1,3 +1,17 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
+  - "**/*.cjs"
+  - "**/*.rs"
+  - "**/*.py"
+  - "**/*.go"
+  - "**/*.swift"
+---
+
 # Sourcing
 
 When writing framework or library API code, training-data memory drifts from the pinned version. Treat the pinned version's official docs as the authoritative source, write from the docs rather than memory, and leave a citation on non-obvious APIs.

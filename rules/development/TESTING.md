@@ -1,3 +1,17 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
+  - "**/*.cjs"
+  - "**/*.rs"
+  - "**/*.py"
+  - "**/*.go"
+  - "**/*.swift"
+---
+
 # Testing
 
 Covers coverage perspectives, priority areas, test naming, and the delta-based gate.
