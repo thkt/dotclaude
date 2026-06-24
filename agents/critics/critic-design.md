@@ -152,7 +152,7 @@ Claims that withstood viewpoint checks. List only what passed.
 
 ### Weaknesses
 
-| Viewpoint | Severity | Finding                                                           | Supporting evidence                      | Disconfirming probe                                                                       |
+| Viewpoint | Severity | Finding                                                           | Evidence                                 | Disconfirming probe                                                                       |
 | --------- | -------- | ----------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------- |
 | V2        | high     | Section 3 claims single-tenant but section 5 references multi-org | section 5 references multi-org tenant_id | searched for a tenant-boundary guard reconciling both sections; none found → claim stands |
 | V4        | medium   | Under slow network, service method has no retry or fallback       | no retry/backoff in method signature     | checked for upstream retry middleware; none → claim stands                                |
@@ -166,7 +166,7 @@ Claims that withstood viewpoint checks. List only what passed.
 | verdict          | confirmed / weakened / needs_revision |
 ```
 
-Supporting evidence is a concrete cite (file:line or search result). Disconfirming probe is the refutation search plus its result (claim stands, weakened, or `skipped (budget)`).
+Evidence is a concrete cite (file:line or search result). Disconfirming probe is the refutation search plus its result (claim stands, weakened, or `skipped (budget)`).
 
 ## Error Handling
 

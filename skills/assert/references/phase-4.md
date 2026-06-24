@@ -78,11 +78,9 @@ The leader does not read the gate from prose; it mechanically decodes the fenced
 
 After a clean decode, the leader takes the decoded gate verbatim as the final gate. The only downgrade is Ready to Ready (caveat), applied only when bootstrap failed environmentally and the decoded findings = 0 (§ Bootstrap Failure Handling).
 
-| #   | Action                                                                                                                                               |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Save the enhancer Task output to a file and pass it to gate-decode.py                                                                                |
-| 2   | On exit 0, use the decision JSON (gate / findings / build / tests) from stdout verbatim                                                              |
-| 3   | On exit 1 (missing block, parse failure, enum violation, cross-check mismatch), re-spawn the enhancer once; a second failure fail-closes to NotReady |
+1. Save the enhancer Task output to a file and pass it to gate-decode.py
+2. On exit 0, use the decision JSON (gate / findings / build / tests) from stdout verbatim
+3. On exit 1 (missing block, parse failure, enum violation, cross-check mismatch), re-spawn the enhancer once; a second failure fail-closes to NotReady
 
 ## /goal Integration
 

@@ -13,97 +13,73 @@ argument-hint: "[bug or issue description]"
 
 ## 入力
 
-- `$ARGUMENTS` にバグ説明、または `/audit` の Suggestion ID (例: `SUG-001`)
-- スコープは小さく、十分理解されている問題 (1-3 ファイル)
+`$ARGUMENTS` はバグ説明、または `/audit` で `${CLAUDE_SKILL_DIR}/../../workspace/history/` に作成された snapshot の finding ID (例: `RC-001`, `SEC-003`)。対象は十分に理解できている 1〜3 ファイル規模の問題に限る。`$ARGUMENTS` のパターンでモードに分岐する。
 
-### ルーティング
-
-| `$ARGUMENTS` パターン | モード                           |
-| --------------------- | -------------------------------- |
-| `/^SUG-[0-9]+$/`      | Suggestion ID モード             |
-| 空                    | Fix プロンプト (AskUserQuestion) |
-| その他                | Standard Flow                    |
-
-### Fix プロンプト
-
-`$ARGUMENTS` が空のとき AskUserQuestion で尋ねる。
-
-| 質問        | 選択肢                                 |
-| ----------- | -------------------------------------- |
-| Fix type    | Bug fix / Error message / Test failure |
-| Description | [Other で自由記述]                     |
-
-### Suggestion ID モード
-
-| Step | 動作                                                                  |
-| ---- | --------------------------------------------------------------------- |
-| 1    | ${CLAUDE_SKILL_DIR}/../../workspace/history/ から最新 snapshot を読む |
-| 2    | ID で一致する suggestion を探す                                       |
-| 3    | 直接修正を適用 (RCA をスキップ。audit findings を信頼)                |
-| 4    | テスト pass を確認                                                    |
-| 5    | 対象を絞った再 audit を提案: `/audit <modified files>`                |
+| パターン            | モード          | 動作                                                                                                                                                                                |
+| ------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/^[A-Z]+-[0-9]+$/` | Finding ID 解決 | snapshot を読み findings[] の ID 一致を探す。severity / fix_type / root cause を保持し Outcome Anchor とビルドチェックを省いてトリアージへ。不在ならエラー提示 + Standard Flow 提案 |
+| 空                  | Fix プロンプト  | AskUserQuestion で Fix type (Bug fix / Error message / Test failure) と Description (Other で自由記述) を尋ねて実行                                                                 |
+| その他              | Standard Flow   | バグ説明とみなし Outcome Anchor から実行                                                                                                                                            |
 
 ## 委譲マップ
 
-| 種別      | 委譲先                                             | 目的                                        |
-| --------- | -------------------------------------------------- | ------------------------------------------- |
-| Skill     | use-context-root-cause-analysis                    | 非自明バグへの 5 Whys                       |
-| Agent     | generator-test                                     | symptom + 再現手順から regression test 生成 |
-| Agent     | resolver-build                                     | TypeScript やビルドエラーの triage          |
-| Reference | ${CLAUDE_SKILL_DIR}/references/defense-in-depth.md | Recurring/Systematic への多層検証           |
+| 種別      | 委譲先                                               | 目的                                        |
+| --------- | ---------------------------------------------------- | ------------------------------------------- |
+| Skill     | `use-context-root-cause-analysis`                    | 非自明バグへの 5 Whys                       |
+| Agent     | `generator-test`                                     | symptom + 再現手順から regression test 生成 |
+| Agent     | `resolver-build`                                     | TypeScript やビルドエラーの triage          |
+| Reference | `${CLAUDE_SKILL_DIR}/references/defense-in-depth.md` | Recurring / Systematic への多層検証         |
 
-## 実行
+## Outcome Anchor
 
-### Outcome Anchor
+ビルドチェックの前に `.claude/OUTCOME.md` を読む。不在なら `/outcome` で stub を生成。バグまたは修正が outcome 状態の中にあるか確認する。範囲外なら § エスカレーション。
 
-ビルドチェックの前に `.claude/OUTCOME.md` を読む。不在なら /outcome で stub を生成。バグまたは修正が outcome 状態の中にあるか確認する。範囲外ならエスカレーション (下記参照)。
+## ビルドチェック
 
-### ビルドチェック
+package.json やプロジェクト設定からビルドコマンドを検出して実行。
 
-プロジェクトのビルドコマンドを実行 (package.json やプロジェクト設定から検出)。
+| 結果         | 動作                                            |
+| ------------ | ----------------------------------------------- |
+| ビルドエラー | `Task(subagent_type: resolver-build)` 起動、END |
+| エラーなし   | トリアージに進む                                |
 
-| 結果         | 動作                                                  |
-| ------------ | ----------------------------------------------------- |
-| ビルドエラー | `Task` を `subagent_type: resolver-build` で起動、END |
-| エラーなし   | トリアージに進む                                      |
+## トリアージ
 
-### トリアージ
+Obvious は RCA と regression test 生成の双方を省くため、誤修正リスクの低い finding に限る。
 
-| 条件                                           | パス                        |
-| ---------------------------------------------- | --------------------------- |
-| 単一箇所が特定 + 1-3 行修正 + 類似パターンなし | Obvious: 直接修正           |
-| 断続的、複数の再現条件、または根本原因が不明   | Non-obvious: フルプロトコル |
+| 入力       | 条件                                            | パス        |
+| ---------- | ----------------------------------------------- | ----------- |
+| バグ説明   | 単一箇所が特定 + 1〜3 行修正 + 類似パターンなし | Obvious     |
+| バグ説明   | 断続的、複数の再現条件、または根本原因が不明    | Non-obvious |
+| Finding ID | `fix_type: auto` かつ severity low / med        | Obvious     |
+| Finding ID | それ以外 (critical / high、または auto 以外)    | Non-obvious |
 
-### Obvious: 直接修正
+## Obvious
 
-| Step | 動作                                               |
-| ---- | -------------------------------------------------- |
-| 1    | 最小限の修正を適用                                 |
-| 2    | 影響コードをカバーするテストを実行 (なければ skip) |
+1. 最小限の修正を適用
+2. 影響コードをカバーするテストがあれば実行
 
-### Non-obvious: フルプロトコル
+## Non-obvious
 
-| Step | 動作                                                                                             |
-| ---- | ------------------------------------------------------------------------------------------------ |
-| 1    | `Skill("use-context-root-cause-analysis")` で 5 Whys。出力: Symptom / Root cause / Pattern       |
-| 2    | `Task(subagent_type: generator-test)` で regression test (symptom と再現手順のみ渡す)            |
-| 3    | regression test が Red であることを確認                                                          |
-| 4    | 修正を適用                                                                                       |
-| 5    | regression test が Green、他のテストに regression がないことを確認                               |
-| 6    | Pattern ∈ {Recurring, Systematic} なら ${CLAUDE_SKILL_DIR}/references/defense-in-depth.md を適用 |
+1. `Skill("use-context-root-cause-analysis")` を起動して 5 Whys を実行する。Finding ID 経由なら、snapshot の root cause を 5 Whys の起点として渡す。Symptom / Root cause / Pattern を出力する。
+2. `Task(subagent_type: generator-test)` で regression test (symptom と再現手順のみ渡す)
+3. regression test が Red であることを確認
+4. 修正を適用
+5. regression test が Green、他のテストに regression がないことを確認
+6. Pattern が Recurring または Systematic なら `${CLAUDE_SKILL_DIR}/references/defense-in-depth.md` を適用
 
 ## エスカレーション
 
-客観的トリガー。自己評価による信頼度判断はしない。異なる修正試行が 3 回失敗するなら、ローカルバグでなくアーキテクチャ問題の可能性が高い。エスカレーションなしで 4 回目を試みない。
+客観的トリガーで分岐し、自己評価による信頼度判断はしない。エスカレーションなしで 4 回目の修正を試みない。
 
-| トリガー                       | 動作                                                      |
-| ------------------------------ | --------------------------------------------------------- |
-| RCA で根本原因が特定できない   | エスカレーション → `/research`                            |
-| 修正試行が 3 回失敗            | 停止。完全なコンテキストで `/research` にエスカレーション |
-| 複数ファイル影響 (>3 ファイル) | 委譲 → `/code`                                            |
-| 新機能スコープ                 | 委譲 → `/think`                                           |
-| Pattern = Systematic           | エスカレーション → `/research`                            |
-| Fix が OUTCOME.md スコープ外   | ユーザーに確認。Non-goals を再定義するか `/code` に委譲   |
+| トリガー                          | 動作                                                        |
+| --------------------------------- | ----------------------------------------------------------- |
+| RCA で根本原因が特定できない      | `/research` にエスカレーション                              |
+| 修正後もテスト失敗                | 根本原因を再分析。3 回失敗で `/research` にエスカレーション |
+| 複数ファイル影響 (4 ファイル以上) | `/code` に委譲                                              |
+| 新機能スコープ                    | `/think` に委譲                                             |
+| Pattern = Systematic              | `/research` にエスカレーション                              |
+| Fix が OUTCOME.md スコープ外      | ユーザーに確認。Non-goals を再定義するか `/code` に委譲     |
 
 ## エラー処理
 
@@ -111,13 +87,13 @@ argument-hint: "[bug or issue description]"
 | --------------------------- | ---------------------------------------- |
 | resolver-build 失敗         | エラーを提示しユーザーに指示を仰ぐ       |
 | generator-test タイムアウト | regression test をスキップして修正を続行 |
-| 修正後もテスト失敗          | 根本原因を再分析またはエスカレーション   |
 
 ## 検証
 
-| チェック                          | 必須                            |
-| --------------------------------- | ------------------------------- |
-| 根本原因の特定 (Non-obvious パス) | Yes                             |
-| 全テスト pass                     | Yes                             |
-| RCA からの Pattern フィールド記録 | Yes (Non-obvious パス)          |
-| 必要時の defense-in-depth 適用    | Yes (Recurring/Systematic のみ) |
+| チェック                           | 必須                              |
+| ---------------------------------- | --------------------------------- |
+| 根本原因の特定 (Non-obvious パス)  | Yes                               |
+| 全テスト pass                      | Yes                               |
+| RCA からの Pattern フィールド記録  | Yes (Non-obvious パス)            |
+| 必要時の defense-in-depth 適用     | Yes (Recurring / Systematic のみ) |
+| Finding ID 経由なら再 audit を提案 | Yes (Finding ID パス)             |

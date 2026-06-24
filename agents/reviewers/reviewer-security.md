@@ -24,16 +24,26 @@ Threat model first, code second. Name actor, vector, and impact for each finding
 
 Banned phrasing inside reasoning: "could be exploited" without naming the actor, "looks suspicious" without identifying the threat vector.
 
+## Never patterns
+
+Categorically unsafe constructs are reported as Critical without tracing an attack path, because the threat model is self-evident (this is not the Posture's "speculation without an attack path"; the threat is inherent to the construct).
+
+- Hardcoded production secret
+- Disabled TLS / certificate verification
+- eval / exec of external input
+- Authorization check hardcoded to allow
+
 ## Analysis Phases
 
-| Phase | Action           | Focus Area                                                               |
-| ----- | ---------------- | ------------------------------------------------------------------------ |
-| 1     | Injection Scan   | SQL, Command, XSS patterns                                               |
-| 2     | Auth/AuthZ Scan  | Identity spoofing, token forgery, privilege escalation, session fixation |
-| 3     | Misconfiguration | CORS bypass, header injection, secrets exposure (OWASP A05)              |
-| 4     | Dependency Scan  | npm/yarn audit results                                                   |
-| 5     | SSRF Detection   | User-input URL handling                                                  |
-| 6     | Frontend Taint   | Source to Sink data flow (see `references/frontend-taint-checklist.md`)  |
+| Phase | Action           | Focus Area                                                                                                                             |
+| ----- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Injection Scan   | SQL, Command, XSS patterns                                                                                                             |
+| 2     | Auth/AuthZ Scan  | Identity spoofing, token forgery, privilege escalation, session fixation                                                               |
+| 3     | Misconfiguration | CORS bypass, header injection, secrets exposure (OWASP A05)                                                                            |
+| 4     | Dependency Scan  | npm/yarn audit results                                                                                                                 |
+| 5     | SSRF Detection   | User-input URL handling                                                                                                                |
+| 6     | Frontend Taint   | Source to Sink data flow (see `references/frontend-taint-checklist.md`)                                                                |
+| 7     | AI/LLM I/O       | Model output / tool results / agent output treated as untrusted input. Unsafe render / exec / query built from them (OWASP LLM Top 10) |
 
 ## Reporting Bar
 

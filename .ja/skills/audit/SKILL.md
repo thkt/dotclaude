@@ -113,7 +113,7 @@ Pre-flight (下記) から開始。ユーザーに結果を表示する前に sn
 | 7    | snapshot を history に保存                                                                        |
 | 8    | ${CLAUDE_SKILL_DIR}/templates/output.md で snapshot から Markdown を render し表示する            |
 
-#### ファイルルーティング
+### ファイルルーティング
 
 Leader は各ターゲットファイルをパスで分類し、該当 reviewer にのみ割り当てる。reviewer-causation は表に含まない。Wave 1 reviewer がすべて完了した後、逐次実行する (下記逐次依存関係)。Leader は同じファイル一覧 + Wave 1 全 findings を入力に spawn する。
 
@@ -130,7 +130,7 @@ Leader は各ターゲットファイルをパスで分類し、該当 reviewer 
 | `test.*`, `*.test.*` | reviewer-coverage, reviewer-testability                                                                                                                                                                                                                                                          |
 | その他               | reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-document                                                                                                                                                                                                                     |
 
-#### Sub-reviewer の spawn
+### Sub-reviewer の spawn
 
 各 sub-reviewer は Task で直接 spawn する。
 
@@ -148,7 +148,7 @@ opus + advisor + 深い分析は stream watchdog を超過するため、sonnet 
 
 このステップの目的は fan-out。該当 sub-reviewer をすべて 1 つのレスポンス内で並列 Task call として spawn する。reviewer 1 件につき 1 Task call。逐次 spawn は並列性を打ち消し、turn を浪費する。
 
-#### パイプラインの役割
+### パイプラインの役割
 
 | Role       | subagent_type    | 目的                                |
 | ---------- | ---------------- | ----------------------------------- |
@@ -156,7 +156,7 @@ opus + advisor + 深い分析は stream watchdog を超過するため、sonnet 
 | verifier   | critic-evidence  | findings を検証 (positive evidence) |
 | integrator | team-integration | root cause に統合                   |
 
-#### 逐次依存関係
+### 逐次依存関係
 
 | Reviewer   | 依存                       | 理由                                                                 |
 | ---------- | -------------------------- | -------------------------------------------------------------------- |
@@ -165,7 +165,7 @@ opus + advisor + 深い分析は stream watchdog を超過するため、sonnet 
 | verifier   | Wave 1 reviewer のみ       | PF はスキップ (ツール出力自体が evidence)                            |
 | integrator | challenger + verifier + PF | reconcile した Wave 1 と PF を統合; Wave 1 の cross-reference を追加 |
 
-#### ハンドオフ (スタンドアロン)
+### ハンドオフ (スタンドアロン)
 
 エージェントはスタンドアロン。Leader は Task 完了で取得し、Task prompt で spawn する。
 

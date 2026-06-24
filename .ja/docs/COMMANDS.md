@@ -60,15 +60,15 @@ graph TD
 
 ## Command → Skill/Agent マッピング
 
-| コマンド   | 使用 Skill                                | 使用 Agent                                                       |
-| ---------- | ----------------------------------------- | ---------------------------------------------------------------- |
-| `/think`   | -                                         | -                                                                |
-| `/code`    | use-workflow-code, use-workflow-tdd-cycle | generator-test                                                   |
-| `/audit`   | -                                         | tier ベースの reviewer agent (3 つまたは 17 からファイル ルート) |
-| `/fix`     | use-context-root-cause-analysis           | generator-test, resolver-build                                   |
-| `/polish`  | -                                         | enhancer-code                                                    |
-| `/feature` | think, code, audit, fix, polish (連鎖)    | -                                                                |
-| `/swarm`   | use-workflow-code                         | architect-feature, team-qa, generator-test, team-implementation  |
+| コマンド  | 使用 Skill                                | 使用 Agent                                                       |
+| --------- | ----------------------------------------- | ---------------------------------------------------------------- |
+| `/think`  | -                                         | -                                                                |
+| `/code`   | use-workflow-code, use-workflow-tdd-cycle | generator-test                                                   |
+| `/audit`  | -                                         | tier ベースの reviewer agent (3 つまたは 17 からファイル ルート) |
+| `/fix`    | use-context-root-cause-analysis           | generator-test, resolver-build                                   |
+| `/polish` | -                                         | enhancer-code                                                    |
+| `/build`  | think, code, audit, fix, polish (連鎖)    | -                                                                |
+| `/swarm`  | use-workflow-code                         | architect-feature, team-qa, generator-test, team-implementation  |
 
 ## ファイル構造
 

@@ -39,26 +39,26 @@ Base ブランチは、指定があれば `--base <branch>` を、なければ `
 
 モード列が `parallel (required)` のフェーズでは、Task / Bash / Codex exec の呼び出しをすべて 1 レスポンス内で同時に発行する。逐次的に呼び出すと fan-out の効果が打ち消され、wall time が倍になる。
 
-| Phase | アクション          | 実行者                     | モード              | 依存    | 詳細                                                       |
-| ----- | ------------------- | -------------------------- | ------------------- | ------- | ---------------------------------------------------------- |
-| pre   | OUTCOME.md 読込     | orchestrator (Read)        | sequential          | -       | 上記 Pre-flight セクション                                 |
-| 0     | Bootstrap worktree  | orchestrator (Bash)        | sequential          | pre     | ${CLAUDE_SKILL_DIR}/references/phase-0.md                  |
-| 1     | Evidence collection | Codex CLI + audit agents   | parallel (required) | Phase 0 | ${CLAUDE_SKILL_DIR}/references/phase-1.md                  |
-| 2     | Deep assertion      | Codex CLI + audit agents   | parallel (required) | Phase 1 | ${CLAUDE_SKILL_DIR}/references/phase-2.md                  |
-| 3     | Intent assertion    | orchestrator (Claude Code) | sequential          | Phase 2 | ${CLAUDE_SKILL_DIR}/references/phase-3.md                  |
-| 4     | Evidence synthesis  | enhancer-evidence          | single task         | Phase 3 | ${CLAUDE_SKILL_DIR}/references/phase-4.md                  |
-| final | Worktree cleanup    | orchestrator (Bash)        | sequential          | Always  | ${CLAUDE_SKILL_DIR}/references/phase-0.md § クリーンアップ |
+| Phase | アクション          | 実行者                     | モード              | 依存    | 詳細                                                         |
+| ----- | ------------------- | -------------------------- | ------------------- | ------- | ------------------------------------------------------------ |
+| pre   | OUTCOME.md 読込     | orchestrator (Read)        | sequential          | -       | 上記 Pre-flight セクション                                   |
+| 0     | Bootstrap worktree  | orchestrator (Bash)        | sequential          | pre     | `${CLAUDE_SKILL_DIR}/references/phase-0.md`                  |
+| 1     | Evidence collection | Codex CLI + audit agents   | parallel (required) | Phase 0 | `${CLAUDE_SKILL_DIR}/references/phase-1.md`                  |
+| 2     | Deep assertion      | Codex CLI + audit agents   | parallel (required) | Phase 1 | `${CLAUDE_SKILL_DIR}/references/phase-2.md`                  |
+| 3     | Intent assertion    | orchestrator (Claude Code) | sequential          | Phase 2 | `${CLAUDE_SKILL_DIR}/references/phase-3.md`                  |
+| 4     | Evidence synthesis  | enhancer-evidence          | single task         | Phase 3 | `${CLAUDE_SKILL_DIR}/references/phase-4.md`                  |
+| final | Worktree cleanup    | orchestrator (Bash)        | sequential          | Always  | `${CLAUDE_SKILL_DIR}/references/phase-0.md` § クリーンアップ |
 
 ## レポート
 
-leader は gate を生成せず、enhancer-evidence が返す JSON decision ブロックを decode して report として中継する。テンプレートは `${CLAUDE_SKILL_DIR}/templates/report.md`、ゲート関連ルールは `${CLAUDE_SKILL_DIR}/references/phase-4.md` に集約されている。
+leader は gate を生成せず、enhancer-evidence が返す JSON decision ブロックを decode して report として中継する。テンプレートは `${CLAUDE_SKILL_DIR}/templates/report-template.md`、ゲート関連ルールは `${CLAUDE_SKILL_DIR}/references/phase-4.md` に集約されている。
 
 | 知りたいこと                                 | phase-4.md セクション |
 | -------------------------------------------- | --------------------- |
 | Ready / Ready (caveat) / NotReady の判定条件 | § Gate ルール         |
 | JSON decision ブロックの decode 手順         | § Gate Decode         |
 | Bootstrap 失敗時の gate 分岐                 | § Bootstrap 失敗処理  |
-| 完了メッセージに `gate = Ready` を書く条件   | § /goal 統合          |
+| 完了メッセージに `gate = Ready` を書く条件   | § `/goal` 統合        |
 
 ## エラー処理
 

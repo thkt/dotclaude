@@ -44,13 +44,13 @@ argument-hint: "[decision title]"
 
 新しい ADR が既存を置き換える場合。旧 ADR で変わるのは `status` と `date` のみで、決定内容はそのまま保持する。
 
-| Step | アクション                                                                   |
-| ---- | ---------------------------------------------------------------------------- |
-| 1    | 通常の 6 フェーズプロセスで新規 ADR を作成                                   |
-| 2    | 新規 ADR の `More Information` で先行 ADR を引用 (例: `Supersedes ADR-NNNN`) |
-| 3    | 旧 ADR の `status:` を `superseded by ADR-NNNN` に変更                       |
-| 4    | 旧 ADR の `date:` を当日に更新                                               |
-| 5    | ${CLAUDE_SKILL_DIR}/scripts/update-index.py を実行してインデックスを更新     |
+| Step | アクション                                                                 |
+| ---- | -------------------------------------------------------------------------- |
+| 1    | 通常の 6 フェーズプロセスで新規 ADR を作成                                 |
+| 2    | 新規 ADR の More Information で先行 ADR を引用 (例: `Supersedes ADR-NNNN`) |
+| 3    | 旧 ADR の `status:` を `superseded by ADR-NNNN` に変更                     |
+| 4    | 旧 ADR の `date:` を当日に更新                                             |
+| 5    | `${CLAUDE_SKILL_DIR}/scripts/update-index.py` を実行してインデックスを更新 |
 
 ## 決定タイプ
 
@@ -65,14 +65,14 @@ argument-hint: "[decision title]"
 
 ## 6 フェーズプロセス
 
-| Step | Phase      | 内容                                                                                                                            |
-| ---- | ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Pre-Check  | ${CLAUDE_SKILL_DIR}/scripts/pre-check.py "$TITLE" を実行。`similar_adrs` が空でなければ続行前にユーザーへ重複を確認             |
-| 2    | Type       | 決定の意図で決定タイプを判定し、決定タイプ表から推奨トピックを選ぶ                                                              |
-| 3    | References | プロジェクトドキュメント、issue、外部リソースを収集                                                                             |
-| 4    | Validate   | 書き込み後 ${CLAUDE_SKILL_DIR}/scripts/validate-adr.py "$ADR_FILE" を実行。exit 0 + 空の `errors[]` で合格。`warnings[]` は参考 |
-| 5    | Index      | ${CLAUDE_SKILL_DIR}/scripts/update-index.py を実行し、index README を再生成                                                     |
-| 6    | Recovery   | ディレクトリ欠損、重複、セクション欠落への対応                                                                                  |
+| Step | Phase      | 内容                                                                                                                              |
+| ---- | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Pre-Check  | `${CLAUDE_SKILL_DIR}/scripts/pre-check.py "$TITLE"` を実行。`similar_adrs` が空でなければ続行前にユーザーへ重複を確認             |
+| 2    | Type       | 決定の意図で決定タイプを判定し、決定タイプ表から推奨トピックを選ぶ                                                                |
+| 3    | References | プロジェクトドキュメント、issue、外部リソースを収集                                                                               |
+| 4    | Validate   | 書き込み後 `${CLAUDE_SKILL_DIR}/scripts/validate-adr.py "$ADR_FILE"` を実行。exit 0 + 空の `errors[]` で合格。`warnings[]` は参考 |
+| 5    | Index      | `${CLAUDE_SKILL_DIR}/scripts/update-index.py` を実行し、index README を再生成                                                     |
+| 6    | Recovery   | ディレクトリ欠損、重複、セクション欠落への対応                                                                                    |
 
 ## 出力
 
@@ -83,9 +83,9 @@ argument-hint: "[decision title]"
 
 ## 参照
 
-| トピック | リソース                                       |
-| -------- | ---------------------------------------------- |
-| MADR     | ${CLAUDE_SKILL_DIR}/references/madr-format.md  |
-| Fowler   | ${CLAUDE_SKILL_DIR}/references/fowler-adr.md   |
-| Template | ${CLAUDE_SKILL_DIR}/templates/madr-template.md |
-| Scripts  | ${CLAUDE_SKILL_DIR}/scripts/                   |
+| トピック | リソース                                         |
+| -------- | ------------------------------------------------ |
+| MADR     | `${CLAUDE_SKILL_DIR}/references/madr-format.md`  |
+| Fowler   | `${CLAUDE_SKILL_DIR}/references/fowler-adr.md`   |
+| Template | `${CLAUDE_SKILL_DIR}/templates/madr-template.md` |
+| Scripts  | `${CLAUDE_SKILL_DIR}/scripts/`                   |

@@ -16,16 +16,22 @@
     {
       "name": "plan",
       "source": "./",
-      "description": "Planning and design: /think for design exploration and SOW/Spec generation, /research for technical investigation, plus architecture agents",
+      "description": "Planning and design: /outcome for outcome definition, /think for design exploration and SOW/Spec generation, /research for technical investigation, /probe for repository spec extraction, /slice for breaking plans into vertical-slice issues, plus architecture agents",
       "version": "3.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["planning", "design", "sow", "spec", "architecture", "research"],
+      "keywords": ["planning", "design", "outcome", "sow", "spec", "architecture", "research"],
       "category": "Planning",
-      "commands": ["./skills/think/SKILL.md", "./skills/research/SKILL.md"],
+      "commands": [
+        "./skills/outcome/SKILL.md",
+        "./skills/think/SKILL.md",
+        "./skills/research/SKILL.md",
+        "./skills/probe/SKILL.md",
+        "./skills/slice/SKILL.md"
+      ],
       "agents": [
         "./agents/architects/architect-feature.md",
         "./agents/explorers/explorer-feature.md",
@@ -37,20 +43,22 @@
     {
       "name": "build",
       "source": "./",
-      "description": "Implementation and testing: /code, /fix, /feature, /swarm with TDD/RGRC cycle and quality gates",
+      "description": "Implementation and testing: /build for end-to-end orchestration, /code, /fix, /swarm with TDD/RGRC cycle and quality gates, /shake for flaky-test detection, /prototype for throwaway prototypes",
       "version": "3.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["tdd", "rgrc", "implementation", "testing", "feature", "fix"],
+      "keywords": ["tdd", "rgrc", "implementation", "testing", "prototype", "flaky", "fix"],
       "category": "Implementation",
       "commands": [
+        "./skills/build/SKILL.md",
         "./skills/code/SKILL.md",
         "./skills/fix/SKILL.md",
-        "./skills/feature/SKILL.md",
-        "./skills/swarm/SKILL.md"
+        "./skills/swarm/SKILL.md",
+        "./skills/shake/SKILL.md",
+        "./skills/prototype/SKILL.md"
       ],
       "agents": [
         "./agents/teams/team-implementation.md",
@@ -61,15 +69,12 @@
         "./agents/generators/generator-e2e.md",
         "./agents/evaluators/evaluator-test.md"
       ],
-      "skills": [
-        "./skills/tdd-cycle/SKILL.md",
-        "./skills/use-workflow-code/SKILL.md"
-      ]
+      "skills": ["./skills/use-workflow-tdd-cycle/SKILL.md", "./skills/use-workflow-code/SKILL.md"]
     },
     {
       "name": "review",
       "source": "./",
-      "description": "Quality and review: /audit, /polish, /preview, /challenge with 21 specialized reviewer agents",
+      "description": "Quality and review: /audit, /polish, /preview, /challenge, /assert with 21 specialized reviewer agents",
       "version": "3.0.0",
       "author": {
         "name": "thkt",
@@ -110,7 +115,7 @@
         "./agents/reviewers/reviewer-prompt.md"
       ],
       "skills": [
-        "./skills/root-cause-analysis/SKILL.md",
+        "./skills/use-context-root-cause-analysis/SKILL.md",
         "./skills/use-context-reviewer-readability/SKILL.md",
         "./skills/use-context-reviewer-security/SKILL.md",
         "./skills/use-context-reviewer-silence/SKILL.md",
@@ -141,27 +146,20 @@
     {
       "name": "toolkit",
       "source": "./",
-      "description": "Utilities and patterns: /inbox, /watch, /glossary, /adr plus frontend pattern references",
+      "description": "Utilities and patterns: /adr for decision records, /adrift for ADR-vs-code drift, /census for undocumented-decision discovery, /reflect for session reflection, plus frontend pattern references",
       "version": "3.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": [
-        "inbox",
-        "watch",
-        "glossary",
-        "adr",
-        "patterns",
-        "frontend",
-        "productivity"
-      ],
+      "keywords": ["adr", "adrift", "census", "reflect", "patterns", "frontend", "productivity"],
       "category": "Utilities",
       "commands": [
-        "./skills/watch/SKILL.md",
-        "./skills/glossary/SKILL.md",
-        "./skills/adr/SKILL.md"
+        "./skills/adr/SKILL.md",
+        "./skills/adrift/SKILL.md",
+        "./skills/census/SKILL.md",
+        "./skills/reflect/SKILL.md"
       ],
       "skills": [
         "./skills/use-cli-gcloud/SKILL.md",

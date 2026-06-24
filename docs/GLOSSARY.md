@@ -129,7 +129,6 @@ flowchart LR
 | **NFR-NNN** | Non-Functional Requirement | Spec    | NFR-001 |
 | **BR-NNN**  | Business Rule              | Spec    | BR-001  |
 | **RC-NNN**  | Root Cause                 | Audit   | RC-001  |
-| **SUG-NNN** | Suggestion                 | Audit   | SUG-001 |
 
 ### Traceability
 

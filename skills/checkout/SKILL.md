@@ -1,29 +1,35 @@
 ---
 name: checkout
-description: Analyze Git changes and suggest appropriate branch names.
-when_to_use: ブランチ名, ブランチ作成, branch name
+description: Analyze Git changes and create a new branch with an appropriate name.
+when_to_use: ブランチ作成, ブランチ切って, ブランチ名, branch name
 allowed-tools: Bash(git:*) AskUserQuestion
 model: haiku
 argument-hint: "[context or ticket number]"
 ---
 
-# /checkout - Git Branch Name Generator
+# /checkout - Git Branch Creation
+
+Analyze Git changes, propose branch names that follow the naming convention, and create a new branch with the name the user picks.
 
 ## Input
 
-- Context or ticket number: `$ARGUMENTS` (optional)
-- If `$ARGUMENTS` is empty → analyze git diff/status only
+`$ARGUMENTS` may contain context or a ticket number. Trim whitespace; if empty, analyze the Git changes alone. If non-empty, treat it as a hint for the branch name scope or ticket ID.
 
 ## Execution
 
-| Step | Action                                                |
-| ---- | ----------------------------------------------------- |
-| 1    | Read changes: `git status`, `git diff` (parallel)     |
-| 2    | Generate 3 branch name candidates (see Branch Naming) |
-| 3    | Present options via `AskUserQuestion` with reasons    |
-| 4    | Create selected branch via `git checkout -b`          |
+1. Run `git status` and `git diff` in parallel to read the changes
+2. Generate 3 branch name candidates that follow the naming convention from the changes and `$ARGUMENTS`
+3. Present each candidate with a selection reason via `AskUserQuestion` and let the user pick one
+4. Create the new branch via `git checkout -b <selected name>`
 
 ## Branch Naming
+
+Determine the type from the changes (each type's trigger is in the table below) and assemble the branch name in this format.
+
+```text
+<type>/<scope>-<description>
+<type>/<ticket>-<description>
+```
 
 | Prefix    | Use Case             | Trigger               |
 | --------- | -------------------- | --------------------- |
@@ -35,38 +41,18 @@ argument-hint: "[context or ticket number]"
 | chore/    | Maintenance          | Dependencies, config  |
 | perf/     | Performance          | Optimization, caching |
 
-## Format
-
-```text
-<type>/<scope>-<description>
-<type>/<ticket>-<description>
-```
-
-| Good                             | Bad                            |
-| -------------------------------- | ------------------------------ |
-| `feature/auth-add-oauth-support` | `new-feature` (no type)        |
-| `fix/api-resolve-timeout-issue`  | `feature/ADD_USER` (uppercase) |
-| `feature/PROJ-123-user-search`   | `fix/bug` (too vague)          |
-
-## Rules
-
-| Do                        | Don't                       |
-| ------------------------- | --------------------------- |
-| Use lowercase             | Use spaces/underscores      |
-| Use hyphens as separators | Use CamelCase/PascalCase    |
-| Keep concise (2-4 words)  | Make vague names ("update") |
-| Include ticket ID         | Include dates               |
+- Compose it from lowercase and hyphen separators; do not use spaces, underscores, or CamelCase
+- Keep scope and description to 2-4 words and avoid vague words (such as update)
+- If `$ARGUMENTS` has a ticket ID, include it at the `<ticket>` position; do not include dates
 
 ## Error Handling
 
-| Error             | Action                   |
-| ----------------- | ------------------------ |
-| No changes        | Report "No changes"      |
-| Branch exists     | Suggest alternative name |
-| No git repository | Report "Not a git repo"  |
+| Error             | Action                      |
+| ----------------- | --------------------------- |
+| No changes        | Report there are no changes |
+| Branch exists     | Suggest an alternative name |
+| No git repository | Report it is not a git repo |
 
-## Display Format
+## Output
 
-### Success
-
-Created branch: `[selected-branch-name]`
+Report the created branch name on a single line.

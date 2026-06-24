@@ -113,7 +113,7 @@ Start with Pre-flight (see below). Save snapshot before displaying any results t
 | 7    | Save snapshot to history                                                                         |
 | 8    | Render Markdown from snapshot via ${CLAUDE_SKILL_DIR}/templates/output.md and display            |
 
-#### File Routing
+### File Routing
 
 Leader classifies each target file by path and assigns to relevant reviewers only. reviewer-causation is not in this table. It runs sequentially after all Wave 1 reviewers complete (see Sequential Dependencies). Leader spawns it with the same file list + all Wave 1 findings as input.
 
@@ -130,7 +130,7 @@ Leader classifies each target file by path and assigns to relevant reviewers onl
 | `test.*`, `*.test.*` | reviewer-coverage, reviewer-testability                                                                                                                                                                                                                                                          |
 | Other                | reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-document                                                                                                                                                                                                                     |
 
-#### Sub-reviewer Spawn
+### Sub-reviewer Spawn
 
 Each sub-reviewer is spawned directly via Task.
 
@@ -148,7 +148,7 @@ Opus + advisor + deep analysis exceeds the stream watchdog, so the sonnet overri
 
 Fan-out is the point of this step. Spawn all applicable sub-reviewers as parallel Task calls within a single response. One Task call per reviewer. Sequential spawning defeats the parallelism and wastes turns.
 
-#### Pipeline Roles
+### Pipeline Roles
 
 | Role       | subagent_type    | Purpose                             |
 | ---------- | ---------------- | ----------------------------------- |
@@ -156,7 +156,7 @@ Fan-out is the point of this step. Spawn all applicable sub-reviewers as paralle
 | verifier   | critic-evidence  | Verify findings (positive evidence) |
 | integrator | team-integration | Reconcile into root causes          |
 
-#### Sequential Dependencies
+### Sequential Dependencies
 
 | Reviewer   | Depends On                 | Reason                                                           |
 | ---------- | -------------------------- | ---------------------------------------------------------------- |
@@ -165,7 +165,7 @@ Fan-out is the point of this step. Spawn all applicable sub-reviewers as paralle
 | verifier   | Wave 1 reviewers only      | PF skipped (tool output is itself the evidence)                  |
 | integrator | challenger + verifier + PF | Combines reconciled Wave 1 with PF; adds Wave 1 cross-references |
 
-#### Handoff (Standalone)
+### Handoff (Standalone)
 
 Agents are standalone. Leader collects via Task completion; spawns via Task prompt.
 

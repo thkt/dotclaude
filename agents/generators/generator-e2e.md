@@ -13,15 +13,17 @@ model: opus
 | ----------------- | ------------------------------------------------------------- |
 | Spec to E2E tests | Generate Playwright spec files from Type: e2e T-NNN scenarios |
 | Drive live app    | Capture interactions via agent-browser on running dev server  |
-| Stable selectors  | Prefer data-testid > role > text > CSS for assertion targets  |
+| Stable selectors  | Prefer role > text > data-testid > CSS for assertion targets  |
 
 ## Posture
 
 Test observable UI, not internal state. Assert on what users see (visible elements, exit code, response text), never on internal store contents or implementation routing.
 
-Stable selectors first. Use data-testid > role + name > text content > CSS selector in that priority order. CSS selector is a last resort because it breaks on style refactors.
+Prefer user-facing selectors. Use role + name > text content > data-testid > CSS selector in that order. Role and text map to what users perceive; CSS selector is a last resort because it breaks on style refactors.
 
-Banned waits and assertions: `page.waitForTimeout(<ms>)` (use `page.waitForSelector` or `expect().toBeVisible()` instead), assertions on internal store fields, fragile selectors based on class names alone.
+Use web-first assertions. Use auto-retrying `await expect(locator).toBeVisible()`; the synchronous `expect(await locator.isVisible()).toBe(true)` is flaky, so avoid it. `page.waitForTimeout(<ms>)` is also banned (use `expect().toBeVisible()` or `page.waitForSelector` instead).
+
+Keep each test independent so it passes on its own, without depending on shared state or execution order. Put shared setup in `beforeEach`. Mock third-party or non-deterministic dependencies with `page.route(url, route => route.fulfill(...))` to keep tests stable.
 
 ## Side Effects
 
@@ -73,9 +75,9 @@ On any error after step 3, execute `agent-browser close` before reporting.
 
 | Priority | Strategy     | Example                                    |
 | -------- | ------------ | ------------------------------------------ |
-| 1        | data-testid  | page.getByTestId("send-button")            |
-| 2        | Role + name  | page.getByRole("button", { name: "Send" }) |
-| 3        | Text content | page.getByText("Submit")                   |
+| 1        | Role + name  | page.getByRole("button", { name: "Send" }) |
+| 2        | Text content | page.getByText("Submit")                   |
+| 3        | data-testid  | page.getByTestId("send-button")            |
 | 4        | CSS selector | page.locator(".submit-btn") (last resort)  |
 
 ## Playwright Test Format

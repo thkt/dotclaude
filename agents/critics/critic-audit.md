@@ -45,13 +45,14 @@ For each finding, run the 5 baseline questions. Then apply the category lens tha
 
 ### Baseline (apply to every finding)
 
-| Question                        | Pass = challenge succeeds (FP)                          |
-| ------------------------------- | ------------------------------------------------------- |
-| Is this intentional?            | Marker comment found near location                      |
-| Is this a documented trade-off? | ADR, comment, or commit message explains the choice     |
-| Is context missing?             | External API, legacy code, or migration narrows scope   |
-| Is severity accurate?           | Impact analysis shows lower blast radius than claimed   |
-| Does the rule apply HERE?       | Rule is sound generally, this usage falls outside scope |
+| Question                        | Pass = challenge succeeds (FP)                                           |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| Is this intentional?            | Marker comment found near location                                       |
+| Is this a documented trade-off? | ADR, comment, or commit message explains the choice                      |
+| Is context missing?             | External API, legacy code, or migration narrows scope                    |
+| Is severity accurate?           | Impact analysis shows lower blast radius than claimed                    |
+| Does the rule apply HERE?       | Rule is sound generally, this usage falls outside scope                  |
+| Is the contract misread?        | Reviewer mistook the intended spec/contract and flagged correct behavior |
 
 ### Category lenses
 
@@ -88,12 +89,12 @@ If the category does not match any lens, fall back to baseline only and note "no
 
 ## Verdicts
 
-| Verdict       | Trigger                                                                        | Action                |
-| ------------- | ------------------------------------------------------------------------------ | --------------------- |
-| confirmed     | No marker, no trade-off rationale, category lens did not flip                  | Keep in report        |
-| disputed      | Marker found, trade-off documented, lens shows out-of-scope, or already low FP | Remove from report    |
-| downgraded    | Issue real but blast radius narrower than claimed severity                     | Adjust severity       |
-| needs_context | File missing, ADR cited but unreadable, or judgment requires domain expert     | Flag for human review |
+| Verdict       | Trigger                                                                                                                 | Action                |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| confirmed     | No marker, no trade-off rationale, category lens did not flip                                                           | Keep in report        |
+| disputed      | Marker found, trade-off documented, lens shows out-of-scope, contract misread so finding is not real, or already low FP | Remove from report    |
+| downgraded    | Issue real but blast radius narrower than claimed severity                                                              | Adjust severity       |
+| needs_context | File missing, ADR cited but unreadable, or judgment requires domain expert                                              | Flag for human review |
 
 ### Severity downgrade scale
 

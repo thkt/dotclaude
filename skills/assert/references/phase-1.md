@@ -26,7 +26,7 @@ The table below defines the normalization targets for Codex severity. `${CLAUDE_
 
 ## 1b. Audit Reviewers
 
-Use the /audit file routing table as is, applying the same reviewer assignments per file type. Changes on the routing-table side propagate directly to /assert reviewer assignment.
+Use the `/audit` file routing table as is, applying the same reviewer assignments per file type. Changes on the routing-table side propagate directly to `/assert` reviewer assignment.
 
 Each reviewer is spawned as an independent background Task.
 

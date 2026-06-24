@@ -36,11 +36,12 @@ Banned phrasing inside reasoning: "this should be faster" without measurement, "
 
 ## Thresholds
 
-| Metric | Target |
-| ------ | ------ |
-| FCP    | < 1.8s |
-| LCP    | < 2.5s |
-| CLS    | < 0.1  |
+| Metric | Target  |
+| ------ | ------- |
+| FCP    | < 1.8s  |
+| LCP    | < 2.5s  |
+| INP    | < 200ms |
+| CLS    | < 0.1   |
 
 ## Distinction from reviewer-efficiency
 

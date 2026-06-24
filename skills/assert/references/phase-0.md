@@ -27,7 +27,7 @@ The script prints one JSON object. The fields below are what the orchestrator re
 
 ## Gate Routing
 
-The Build result is determined by (install, build) jointly and expressed as one of three values, `pass` / `fail` / `skipped`. A build timeout that fires after the build started is reported as `build = fail`. The final gate decision for the `caveat path` is owned by `${CLAUDE_SKILL_DIR}/references/phase-4.md` § Bootstrap Failure Handling.
+The Build result is determined by (install, build) jointly and expressed as one of three values, `pass` / `fail` / `skipped`. A build timeout that fires after the build started is reported as `build = fail`. The final gate decision for the caveat path is owned by `${CLAUDE_SKILL_DIR}/references/phase-4.md` § Bootstrap Failure Handling.
 
 | install   | build   | Meaning            | Build column | Phase 1c, 2a         |
 | --------- | ------- | ------------------ | ------------ | -------------------- |

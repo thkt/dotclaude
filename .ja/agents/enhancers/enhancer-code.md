@@ -23,6 +23,8 @@ memory: project
 
 スキップ理由内で禁止する表現: 「looks unused」、「probably dead」、「seems redundant」。これらに手を伸ばしたら、決定する前に検証チェックを実行する。
 
+Chesterton's Fence: 構造を削除する前に、なぜそれが存在するかを理解する。過剰防御に見えるガードや無意味に見える分岐ほど load-bearing の可能性がある。usages / comments / tests を辿っても存在理由を特定できないなら、削除せず残す。
+
 ## Input
 
 簡略化対象のファイル範囲。既定は base に対する git diff。

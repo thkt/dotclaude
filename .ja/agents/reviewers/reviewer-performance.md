@@ -36,11 +36,12 @@ background: true
 
 ## 閾値
 
-| 指標 | 目標   |
-| ---- | ------ |
-| FCP  | < 1.8s |
-| LCP  | < 2.5s |
-| CLS  | < 0.1  |
+| 指標 | 目標    |
+| ---- | ------- |
+| FCP  | < 1.8s  |
+| LCP  | < 2.5s  |
+| INP  | < 200ms |
+| CLS  | < 0.1   |
 
 ## reviewer-efficiency との区別
 

@@ -1,6 +1,6 @@
 ---
-status: "accepted"
-date: 2026-05-30
+status: "superseded by ADR-0075"
+date: 2026-06-13
 decision-makers: thkt
 ---
 

@@ -1,58 +1,64 @@
 ---
 name: challenge
-description: Two-phase challenge to a proposal/design/plan/analysis. Phase 1 grills the user with one-question-at-a-time interviews to surface assumptions and trade-offs. Phase 2 spawns critic-design with the surfaced material as devil's advocate input. Do NOT use for code review findings (use /audit) or outcome assertion (use /assert which has built-in adversarial testing).
-when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, 質問攻め, 詰めて, grill me, 壁打ち
-allowed-tools: Read LS Task Bash(ugrep:*) Bash(bfs:*) AskUserQuestion
+description: Two-phase challenge that judges whether a discovered problem is real and whether a proposed idea is usable. Phase 1 loops subagent verification and advisor judgment over evidence (OUTCOME.md + parallel subagents) to self-resolve design-tree branches, asking the user only the irreversible residual and proceeding on stated assumptions for the rest. Phase 2 spawns two critic-design subagents (internal attack / OUTCOME.md attack) as devil's advocate input. The verdict leads the output as a simple GO / NO-GO. Do NOT use for code review findings (use /audit) or outcome assertion (use /assert which has built-in adversarial testing).
+when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, grill me, 壁打ち
+allowed-tools: Read LS Task AskUserQuestion
 model: opus
 argument-hint: "[proposal file | description]"
 ---
 
-# /challenge
+# /challenge - GO / NO-GO verdict on a proposal
 
-Two-phase challenge. Phase 1 grills, Phase 2 spawns critic-design.
+Judge in two phases whether a discovered problem is real and a proposed idea usable, so the next decision proceeds from a verified GO / NO-GO.
 
 ## Input
 
-- `$ARGUMENTS`: what to challenge (proposal file path or description)
-- If `$ARGUMENTS` is empty: stop and ask user to specify target. Silent target inference from conversation has high misfire risk.
+`$ARGUMENTS` may contain the challenge target (a proposal file path or description). If empty, stop and ask the user to specify the target, since silent inference from the conversation has high misfire risk. If non-empty, treat it as the challenge target.
 
 ## Phase 1 Grill
 
-Ask one question at a time. Each question must include a recommended answer presented as the top option in AskUserQuestion. Walk down each branch of the design tree, resolving dependencies one-by-one.
+Grill the proposal from evidence on its own, then return only the unresolved residual to the user, sorted by reversibility. Each open question in the proposal is either a fact or a preference; facts get verified and may overturn the core. A preference that survives verification becomes the residual, routed to the user by reversibility.
 
-### Rules
-
-| Rule                      | Detail                                                                                                                                   |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Code-resolvable questions | If the answer lives in the code, run ugrep / bfs instead of asking                                                                       |
-| Question budget           | Cap at 7 across the phase. If hitting cap with branches still open, summarise the unresolved set and let user decide whether to continue |
-| Stop conditions           | All decision branches resolved, user signals "enough", or budget hit                                                                     |
+1. Read OUTCOME.md if present. Its done state / non-goals / constraints stand in for part of the user's intent. If absent, infer the outcome from $ARGUMENTS and the conversation and confirm it via AskUserQuestion. Pass the confirmed outcome to the Phase 2 outcome critic as its evaluation axis
+2. List the open questions in the proposal and sort each into fact or preference. A fact is a question evidence settles to one answer; a preference is one needing a choice (priority / scope / trade-off). Sort by the nature of the question, not by advisor confidence. Do not treat a preference as fact
+3. Run a loop to verify the facts. subagents check facts in parallel → advisor synthesizes, re-checks the sorting, and names the next evidence to get → the main session organizes the results and decides whether to continue. Break when no further evidence would change the sorting. Cap at 3 rounds; questions left unresolved fall to the residual
+4. If a verified fact overturns the proposal's core (the core targets a state that already holds, or a verified fact contradicts it), stop and skip Phase 2. If the core survives and only a sub-claim is broken, proceed on the surviving part. Stop only when fact evidence backs it, not on advisor opinion alone. Put the grounds for overturning in the Why
+5. The questions left at break are the residual, genuine preferences proven through verification. advisor scores each residual with a best-guess plus reversibility / blast-radius, then asks via AskUserQuestion only the irreversible or high-impact ones (cap 7). For the rest, proceed on the best-guess as a stated assumption logged in the output Why. Keep the questions skipped via subagent and the residuals advanced on assumption in the Why, leaving the user a way to veto later
 
 ### Output to Phase 2
 
 Aggregate grill findings into critic-design input schema before spawning.
 
-| Field            | Source                                                                                                   |
-| ---------------- | -------------------------------------------------------------------------------------------------------- |
-| source           | "user-grill"                                                                                             |
-| artifact_type    | inferred from $ARGUMENTS (spec / plan / design / ADR / doc)                                              |
-| approach         | one-line summary of the proposal core                                                                    |
-| decisions        | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded) |
-| trade-offs       | trade-offs surfaced during grill                                                                         |
-| referenced_files | files cited or read during grill                                                                         |
+| Field            | Source                                                                                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| source           | user-grill                                                                                                                              |
+| artifact_type    | inferred from $ARGUMENTS (spec / plan / design / ADR / doc)                                                                             |
+| approach         | one-line summary of the proposal core                                                                                                   |
+| decisions        | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded)                                |
+| trade-offs       | trade-offs surfaced during grill                                                                                                        |
+| referenced_files | files cited or read during grill                                                                                                        |
+| outcome_ref      | OUTCOME.md path plus a digest of its done state / non-goals / constraints. If OUTCOME.md is absent, use the outcome confirmed in Step 1 |
 
 ## Phase 2 Devil
 
-| Step | Action                                                                                                                           |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Compose Phase 2 input from Phase 1 aggregation + original $ARGUMENTS context                                                     |
-| 2    | Spawn critic-design via Task (subagent_type: critic-design, background: false). Mention ARCHITECTURE.md or equivalent if present |
-| 3    | Wait for completion, capture verdict + weaknesses                                                                                |
+Land the Phase 1 material on two critic-design (internal attack / OUTCOME.md attack), adversarially probing for holes.
+
+| Pass                     | Role                                                                               |
+| ------------------------ | ---------------------------------------------------------------------------------- |
+| advisor                  | Evidence synthesis / self-consistency check / sorting audit                        |
+| critic-design (internal) | Attack the proposal on its own terms (hidden weaknesses, failure modes)            |
+| critic-design (outcome)  | Attack whether it reaches the outcome (outcome fit / non-goal / constraint breach) |
+
+1. Compose the Phase 2 input from the Phase 1 aggregation and the original $ARGUMENTS context
+2. Spawn two critic-design via Task in parallel (subagent_type: critic-design, background: false). One handles the internal attack, the other takes outcome_ref for the outcome attack (skip when no outcome is available). Mention ARCHITECTURE.md if present
+3. Wait for both, reconcile verdicts and weaknesses, and dedupe overlap
 
 ## Output
 
-| Section          | Content                                                     |
-| ---------------- | ----------------------------------------------------------- |
-| Grill summary    | Surfaced assumptions, decisions, trade-offs (one-line each) |
-| Devil verdict    | critic-design output verbatim                               |
-| Actionable items | Top 3 concrete actions (keep / remove / revise)             |
+Lead with the Verdict, concentrate the backing in Why, name the next move in Actionable items.
+
+| Section          | Content                                                                                                                                                                                                                                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Verdict          | GO / NO-GO. Note the condition if conditional. One line, first                                                                                                                                                                                                                                  |
+| Why              | The fact-verification evidence (reproduction / refutation), the two critic-design verdicts (internal / outcome), and the residuals advanced on a best-guess with their reversibility (the user's veto targets). Close with a one-line note that the verdict is a judgment within evidence range |
+| Actionable items | Top 3 concrete actions (keep / remove / revise)                                                                                                                                                                                                                                                 |

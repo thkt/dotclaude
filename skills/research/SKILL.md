@@ -83,7 +83,7 @@ When a finding states "no caller" / "X is the only Y" / "X is the exhaustive lis
 
 At the end of Phase 3, extract findings whose Source references behavior of an external system this session did not execute (hook firing timing, action/parser required schema, library API behavior, cited-paper claims) and that is load-bearing: the conclusion, a Next Action, or the Disconfirmation depends on the claim being true. The trigger is structural. Apply to every finding matching both conditions, no self-judged exemptions.
 
-Verify each extracted claim against its primary source in one batch: `scout fetch <official docs URL>` for web docs, `scout repo-read` / `scout repo-overview` for GitHub-hosted sources. Record verbatim quotes to the audit trail scratch.
+Verify each extracted claim against its primary source in one batch: `scout fetch <official docs URL>` for web docs, `scout repo-read` / `scout repo-overview` for GitHub-hosted sources. Record verbatim quotes to the audit trail scratch. Verifying library API behavior applies `~/.claude/rules/development/SOURCING.md` (framework-behavior authority) at verify-time, the same knowledge /code applies at write-time.
 
 If a primary source is unreachable (paywall, no docs exist, fetch failure), keep the finding but mark it `unverified external claim`. An unverified claim must not serve as Disconfirmation evidence or as the premise of a Next Action.
 
