@@ -26,13 +26,11 @@ allowed-tools: Read Write Edit Bash LS Glob Grep
 | ファイル     | `/tmp/probe-{repo}-{YYYYMMDD}/findings.md` (ephemeral) |
 | テンプレート | ${CLAUDE_SKILL_DIR}/templates/findings.md              |
 
-## 手順
-
-### Step 1: Outcome 読み込み
+## Phase 1: Outcome 読み込み
 
 `.claude/OUTCOME.md` の Behavior / Non-goals / Constraints の各項目を観点リストに追加する。ADR があれば見出しと status を列挙する。
 
-### Step 2: 観点パス探索
+## Phase 2: 観点パス探索
 
 観点ごとに以下の手順を 1 観点ずつ順に実行する。
 
@@ -43,7 +41,7 @@ allowed-tools: Read Write Edit Bash LS Glob Grep
 5. 必要なら 1 問だけ問う
 6. 次の観点へ
 
-### Step 3: 不整合スイープ
+## Phase 3: 不整合スイープ
 
 各観点パス完了後、grep で検知する。
 
@@ -54,11 +52,11 @@ allowed-tools: Read Write Edit Bash LS Glob Grep
 | ログ整合性          | redact ラッパー vs ログ文での素値                                |
 | ADR Call Site Index | ADR に記載された関数名が現存するか / 行番号が drift していないか |
 
-### Step 4: 質問フェーズ
+## Phase 4: 質問
 
 詰まったときに 1 問だけ問う。回答がなければ「未解決」マークを付けて進める。findings.md の Open Questions に durable に記録する。
 
-### Step 5: 自己リフレクション
+## Phase 5: 自己リフレクション
 
 findings.md 末尾に skill 挙動を記録する (質問数、詰まり箇所のパターン、Positive issue の有無、観点パスの破綻有無)。
 

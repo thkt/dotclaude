@@ -1,169 +1,100 @@
 ---
 name: research
-description: Probe project and technical questions. Findings are positions to be challenged with explicit sources, not conclusions. Phase 5 advisor pass argues against the synthesis before it lands. Do NOT use for design planning or SOW/Spec generation (use /think instead).
+description: Probe project and technical questions. Findings are positions to be challenged with explicit sources, not conclusions. Phase 6 advisor pass argues against the synthesis before it lands. Do NOT use for design planning or SOW / Spec generation (use /think instead).
 when_to_use: 調査して, 調べて, リサーチ, investigate, 分析して, issueやろう, issue見て, 横並びチェック, 類似パターン検出, refactor 横展開
-allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(git show:*) Bash(wc:*) Bash(scout:*) Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(git show:*) Bash(wc:*) Bash(scout:*) Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(codegraph:*) WebFetch WebSearch
 model: opus
 context: fork
 argument-hint: "[research subject or question]"
 ---
 
-# /research
+# /research - Project & Technical Investigation
 
-Investigate codebase with source-based findings, without implementation. Findings are positions to be challenged. Phase 5 advisor pass argues against the synthesis before it lands.
+Investigate codebase with source-based findings, without implementation. Findings are positions to be challenged. Phase 6 advisor pass argues against the synthesis before it lands.
 
 ## Input
 
-- Research subject: `$ARGUMENTS` (required free-text topic or question)
-- If `$ARGUMENTS` is empty, prompt via AskUserQuestion.
+The research subject is taken from `$ARGUMENTS`, a required free-text topic or question. If empty, prompt via AskUserQuestion.
 
-## Execution
+## Phase 1: Outcome Anchor
 
-| Phase | Action                               | Detail                                                                                                                                                                                                                                     |
-| ----- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 0     | Outcome Anchor                       | Read `.claude/OUTCOME.md`; if absent, generate the stub via /outcome. Confirm investigation scope aligns with outcome state                                                                                                                |
-| 1     | Prior research scan                  | bfs same-subject files in `.claude/workspace/research/`. Inherit Findings/Constraints                                                                                                                                                      |
-| 2     | Intent + Domain clarification        | Ask via AskUserQuestion (skip if obvious from `$ARGUMENTS`)                                                                                                                                                                                |
-| 3     | Domain-scoped parallel investigation | Task(Explore) + targeted Read/ugrep/bfs, scoped by Domain. Capture command + raw output to scratch. Cross-method verify when claim drives PR scope or crosses repo. Close with primary-source verification of load-bearing external claims |
-| 4     | Strong Inference (Bug only)          | ≥3 hypotheses, discriminating tests, eliminate. After root cause confirmed, same-origin artifact sweep                                                                                                                                     |
-| 5     | Advisor pre-synthesis check          | Invoke `advisor()` with no parameters. Skip per conditions in Phase 5 section                                                                                                                                                              |
-| 6     | Synthesis                            | Merge prior baseline, source pass for findings. Disconfirmation only if Phase 4 was skipped                                                                                                                                                |
+Read `.claude/OUTCOME.md`. If absent, generate the stub via /outcome. Confirm the investigation scope aligns with the outcome state. If the investigation steps into Non-goals, confirm with the user before proceeding.
 
-### Phase 0: Outcome Anchor
-
-Read `.claude/OUTCOME.md`. If absent, generate the stub via /outcome. Confirm the investigation scope aligns with the outcome state. If the investigation steps into Non-goals, explicitly confirm with user before proceeding.
-
-### Phase 1: Prior Research Scan
+## Phase 2: Prior Research Scan
 
 Derive subject slug from `$ARGUMENTS` (lowercase, hyphenated). Run `bfs .claude/workspace/research -name '*<slug>*.md'`. If no match, skip and note "No prior research found for `<slug>`". For each match, the table below shows the carry-forward mapping.
 
-| Extract                 | Carry forward as                          |
-| ----------------------- | ----------------------------------------- |
-| Key Findings table      | Phase 6 baseline (re-verify or supersede) |
-| Constraints table       | Phase 3 input (do not re-discover)        |
-| Disconfirmation results | Phase 6 reference                         |
+| Extract                 | Carry to | Handling                           |
+| ----------------------- | -------- | ---------------------------------- |
+| Key Findings table      | Phase 7  | Re-verify or supersede as baseline |
+| Constraints table       | Phase 4  | Use as input, do not re-discover   |
+| Disconfirmation results | Phase 7  | Reference                          |
 
-### Phase 2: Intent + Domain Clarification
+## Phase 3: Intent and Domain Clarification
 
-Skip if `$ARGUMENTS` clearly indicates both. Otherwise ask via AskUserQuestion. Domain drives Phase 3 scoping. Domain=General applies no scoping.
+Skip if `$ARGUMENTS` clearly indicates both. Otherwise ask via AskUserQuestion. Domain drives Phase 4 scoping. Domain=General applies no scoping.
 
 | Question        | Options                                              |
 | --------------- | ---------------------------------------------------- |
 | Research intent | Feature planning / Bug investigation / Understanding |
 | Domain          | Data model / API / Infrastructure / General          |
 
-### Phase 3: Domain-Scoped Parallel Investigation
+## Phase 4: Domain-Scoped Parallel Investigation
 
-Run in parallel. For Feature planning intent, additionally invoke `Task(subagent_type: explorer-feature)` to trace execution paths and map architecture for the relevant feature area. State sources directly for all findings as they accumulate: file:line for facts, "inferred from X" for inferences, "unknown, requires X" for unverified claims.
+Launch Explore / ugrep / bfs / Read in parallel. For Feature planning intent, also invoke `Task(subagent_type: explorer-feature)` to trace execution paths and map architecture. If Explore returns empty, re-run with broader keywords. State the source for each finding in place (facts `file:line`, inferences `inferred from X`, unverified `unknown, requires X`). Also append each command and its raw output verbatim to the scratch. This is the audit trail; Phase 7 Disconfirmation quotes it directly and does not reconstruct.
 
-| Tool                           | Purpose                             | Domain Scoping                                                     |
-| ------------------------------ | ----------------------------------- | ------------------------------------------------------------------ |
-| `Task(subagent_type: Explore)` | File / symbol / reference discovery | Pass Domain glob roots in the prompt                               |
-| `ugrep` / `bfs` (Bash)         | Pattern / identifier search         | Append Domain-aligned terms (e.g., API → "endpoint route handler") |
-| Read                           | Targeted reads on identified files  | Use Domain glob roots as starting point                            |
+When the repo has a `.codegraph/` index, refresh it with `codegraph sync`, then resolve structural questions (who calls, what breaks, which tests are affected) with codegraph first. Get callers with `codegraph callers <symbol>` and the blast radius plus affected tests with `codegraph impact <symbol>`, and cite that output as the finding's source. A ugrep / grep search for the symbol name is not accepted as a source for these questions. In a repo without the index, do not init unprompted; fall back to Explore / ugrep. Use ugrep / grep only for free-text content search.
 
-Use the following Domain glob roots.
+Scope every search by Domain using the roots and terms below. Pass the roots to Explore in its prompt, append the terms to ugrep / bfs, and start Read from the roots. If a Domain's glob roots are all missing, fall back to General.
 
-| Domain         | Suggested roots                                                 |
-| -------------- | --------------------------------------------------------------- |
-| Data model     | `schema/`, `models/`, `db/`, `drizzle/`, `prisma/`, `*.sql`     |
-| API            | `routes/`, `handlers/`, `controllers/`, `api/`, `server/`       |
-| Infrastructure | `terraform/`, `infra/`, `ci/`, `.github/`, `deploy/`, `docker/` |
-| General        | (no scoping; let Explore find)                                  |
+| Domain         | Glob roots                                                      | Domain-aligned terms            |
+| -------------- | --------------------------------------------------------------- | ------------------------------- |
+| Data model     | `schema/`, `models/`, `db/`, `drizzle/`, `prisma/`, `*.sql`     | model, migration, table, column |
+| API            | `routes/`, `handlers/`, `controllers/`, `api/`, `server/`       | endpoint, route, handler        |
+| Infrastructure | `terraform/`, `infra/`, `ci/`, `.github/`, `deploy/`, `docker/` | pipeline, deploy, provision     |
+| General        | No scoping. Let Explore find                                    | none                            |
 
-### Audit trail capture
+### Verification
 
-As Phase 3 searches run, append each command verbatim and its raw output to a scratch buffer in this conversation. Phase 6 Disconfirmation quotes from this scratch directly. Reconstruct nothing. The actual command and actual output is the audit trail.
+At the close, apply the checks in `${CLAUDE_SKILL_DIR}/references/verification.md`. Use Cross-method verification for exhaustiveness findings and primary-source verification for external-behavior claims, structurally, with no self-judged exclusion of a finding. Verifying library API behavior applies `~/.claude/rules/development/SOURCING.md`. When scout is unavailable (missing / network fails), fall back to WebFetch / WebSearch.
 
-### Cross-method verification
+## Phase 5: Strong Inference (Bug investigation only)
 
-When a finding states "no caller" / "X is the only Y" / "X is the exhaustive list of Y" / "not used in [repo set]" and that claim drives downstream PR scope or crosses repo boundary, verify with at least 2 of: ugrep / bfs, Task(Explore), targeted Read. If results disagree, flag the discrepancy and identify the tool error before recording. Single-tool zero result is suspect, not authoritative.
+Skip when intent is Feature planning or Understanding. Apply `~/.claude/rules/core/OPERATION.md § Debug Investigation Protocol` to eliminate the bug, then once the root cause is confirmed, run `${CLAUDE_SKILL_DIR}/references/verification.md § Same-origin sweep`.
 
-### Primary-source verification (Phase 3 close)
+## Phase 6: Advisor Pre-Synthesis Check
 
-At the end of Phase 3, extract findings whose Source references behavior of an external system this session did not execute (hook firing timing, action/parser required schema, library API behavior, cited-paper claims) and that is load-bearing: the conclusion, a Next Action, or the Disconfirmation depends on the claim being true. The trigger is structural. Apply to every finding matching both conditions, no self-judged exemptions.
+Invoke `advisor()` with no parameters. Advisor sees full conversation history including Phase 3 answers, Phase 4 findings, and the audit trail scratch. If it flags a missed area or weak inference, return to Phase 4 to narrow the scoping.
 
-Verify each extracted claim against its primary source in one batch: `scout fetch <official docs URL>` for web docs, `scout repo-read` / `scout repo-overview` for GitHub-hosted sources. Record verbatim quotes to the audit trail scratch. Verifying library API behavior applies `~/.claude/rules/development/SOURCING.md` (framework-behavior authority) at verify-time, the same knowledge /code applies at write-time.
+Skip the invocation when all conditions hold, and record the skip reason in the output.
 
-If a primary source is unreachable (paywall, no docs exist, fetch failure), keep the finding but mark it `unverified external claim`. An unverified claim must not serve as Disconfirmation evidence or as the premise of a Next Action.
+- Phase 2 hit prior research and the current run inherits only
+- Intent is Understanding and Domain is General
+- No claim crosses a repository boundary or drives PR scope
 
-### Phase 4: Strong Inference (Bug investigation only)
+## Phase 7: Synthesis
 
-Apply Debug Investigation Protocol from `~/.claude/rules/core/OPERATION.md`.
-
-| Step | Action                                                            |
-| ---- | ----------------------------------------------------------------- |
-| 1    | Observation                                                       |
-| 2    | Pattern analysis (find working similar code, diff against broken) |
-| 3    | Generate ≥3 hypotheses                                            |
-| 4    | Discriminating test per hypothesis                                |
-| 5    | Elimination, then conclusion                                      |
-| 6    | Same-origin artifact sweep (below)                                |
-
-Skip when intent is Feature planning or Understanding.
-
-### Same-origin artifact sweep (after root cause confirmed)
-
-A root cause rarely corrupts exactly one file. Sweep the artifacts that share its origin for sibling defects. They may be of a different kind than the root cause (a sibling can violate its consumer's schema while the root cause was a placeholder corruption).
-
-| Step | Action                                                                                                                                                                                                                                                   |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Locate the commit that introduced the root-cause file (`git log --follow --diff-filter=A`), then enumerate every file in that commit (`git show --stat`)                                                                                                 |
-| 2    | If the commit message or file header carries a generation marker ("auto-generated from X", template/deploy notes), add all files originating from X to the sweep                                                                                         |
-| 3    | For each sibling, identify its consumer (the action / parser / loader that reads it), fetch the consumer's required spec inline (same scout procedure as Primary-source verification), and check the sibling against it                                  |
-| 4    | When siblings cross-reference each other's values (a config's keys / block-list vs a form's options), diff the value sets and flag self-defeating alignments (a block-list containing every selectable value, a reference to a value no sibling defines) |
-| 5    | Record per sibling: pass / same-kind defect / different-kind defect, with evidence                                                                                                                                                                       |
-
-### Phase 5: Advisor Pre-Synthesis Check
-
-Invoke `advisor()` with no parameters. Advisor sees full conversation history including Phase 2 answers, Phase 3 findings, and the audit trail scratch.
-
-Skip when all conditions hold.
-
-- Phase 1 hit prior research and current run inherits only
-- Intent = Understanding and Domain = General
-- No claim crosses repo boundary or drives PR scope
-
-If advisor flags missed area or weak inference, return to Phase 3 for targeted scoping. Record skip reason in output if applicable.
-
-### Phase 6: Synthesis
-
-| Step                 | Action                                                                                                                                                                                                                         |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Merge prior baseline | If Phase 1 found prior research, integrate inherited Findings/Constraints into Key Findings, marking re-verified or superseded                                                                                                 |
-| Source pass          | Each finding states its basis: file:line / command output for facts, "inferred from X (source)" for inferences, "unknown, requires X" for gaps                                                                                 |
-| Disconfirmation      | If Phase 4 was skipped, quote the command and raw output from the Phase 3 scratch verbatim (no reconstruction). Treat 0 hits as "tool may be misused" before "absence". If Phase 4 ran, write "Covered by Phase 4 elimination" |
-| Coverage check       | All Phase 2 questions answered, or noted as "unknown, requires X" with investigation method                                                                                                                                    |
-
-## Error Handling
-
-| Error                                       | Action                                                                                                     |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Explore returns empty                       | Re-run with broader keywords, note in findings                                                             |
-| Intent unclear after Phase 2                | Stop, name the ambiguity, ask user                                                                         |
-| Domain glob roots all missing               | Fall back to Domain=General scoping                                                                        |
-| scout unavailable (missing / network fails) | Mark affected findings `unverified (tool unavailable)` in Coverage Notes. Never skip verification silently |
+1. If Phase 2 found prior research, integrate the inherited findings / constraints into Key Findings, marking each re-verified or superseded
+2. Confirm each finding carries a source in the Phase 4 format. Back facts with `file:line` or command output; mark gaps `unknown, requires X`
+3. Record Disconfirmation. If Phase 5 ran, write `Covered by Phase 5 elimination`; if skipped, quote the command and raw output from the scratch verbatim. Treat 0 hits as possible tool misuse before absence.
+4. Confirm every Phase 3 question is answered or recorded as `unknown, requires X`.
 
 ## Output
 
-| Item       | Value                                             |
-| ---------- | ------------------------------------------------- |
-| Session ID | ${CLAUDE_SESSION_ID}                              |
-| File       | `.claude/workspace/research/YYYY-MM-DD-<slug>.md` |
-| Template   | ${CLAUDE_SKILL_DIR}/templates/research.md         |
+Generate the report following the skeleton in `${CLAUDE_SKILL_DIR}/templates/research.md`, fill in `${CLAUDE_SESSION_ID}`, and save to `.claude/workspace/research/YYYY-MM-DD-<slug>.md`.
 
-## Verification
+## Completion Criteria
 
-| Check                                                                                  | Required     |
-| -------------------------------------------------------------------------------------- | ------------ |
-| OUTCOME.md present (Phase 0)?                                                          | Yes          |
-| `Prior research` field filled (slug or `none found`)?                                  | Yes          |
-| All findings have explicit sources or "unknown, requires X" notes?                     | Yes          |
-| Phase 3 audit trail scratch captured (command + raw output verbatim)?                  | Yes          |
-| Cross-method verification performed for "no caller" / "exhaustive enumeration" claims? | Yes (or N/A) |
-| Load-bearing external claims verified against primary sources (or marked unverified)?  | Yes (or N/A) |
-| Same-origin artifact sweep performed (Bug intent with root cause confirmed)?           | Yes (or N/A) |
-| Phase 5 advisor invoked or skip reason recorded?                                       | Yes          |
-| Disconfirmation recorded (if Phase 4 skipped)?                                         | Yes          |
-| Output saved to `workspace/research/`?                                                 | Yes          |
-| Next Steps section in template included?                                               | Yes          |
+Not done until all are satisfied. An item whose Condition carries "(...)" is required only when applicable.
+
+| Item              | Condition                                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
+| OUTCOME           | `.claude/OUTCOME.md` present (Phase 1)                                                             |
+| Prior research    | `Prior research` field filled (slug or `none found`)                                               |
+| Source            | Every finding has an explicit source or an `unknown, requires X` note                              |
+| Audit trail       | Phase 4 scratch captured with commands and raw output verbatim                                     |
+| Cross-method      | Cross-method verification performed for exhaustiveness claims (when such a claim exists)           |
+| Primary source    | Load-bearing external claims verified against primary sources, or marked unverified (when present) |
+| Same-origin sweep | Sweep performed when Bug intent confirmed a root cause (when applicable)                           |
+| advisor           | Phase 6 advisor invoked, or skip reason recorded                                                   |
+| Save              | Output saved to `workspace/research/`                                                              |

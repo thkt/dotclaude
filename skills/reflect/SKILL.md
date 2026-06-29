@@ -14,9 +14,7 @@ This is not the primary path. The Stop hook is. Use this skill in any of these c
 - You want to override or edit the auto-extracted content before the next session reads it.
 - You suspect the Stop hook is broken on this machine and want to verify the knowledge store stays current.
 
-## Procedure
-
-### Step 0: Resolve paths
+## Setup: Resolve paths
 
 Run once at the top of the skill.
 
@@ -29,7 +27,7 @@ INDEX="$KDIR/reflection-index.jsonl"
 
 If `$KDIR` does not exist, advise the user to run a session under the Stop hook at least once (the directory is created on first auto-extraction) or set `REFLECT_KNOWLEDGE_DIR` explicitly.
 
-### Step 1: Read the current state
+## Phase 1: Read the current state
 
 Print the following to the user, in this order.
 
@@ -37,7 +35,7 @@ Print the following to the user, in this order.
 2. Is it a placeholder (`placeholder: true`)? Flag it.
 3. Latest 3 entries from `$INDEX` (so the user sees the local history).
 
-### Step 2: Compose
+## Phase 2: Compose
 
 Generate a fresh reflection across the 3 categories. Use the same shape as `agents/reflection-extractor.md` and reuse its guidance (realization / judgment / counterfactual). Keep the body under 300 words total. Use this output frontmatter.
 
@@ -54,15 +52,15 @@ promoted_via: reflect-skill
 
 The `promoted_via: reflect-skill` field marks manual promotions so audits can distinguish them from auto-extracted reflections.
 
-### Step 3: Confirm
+## Phase 3: Confirm
 
 Show the user the composed reflection in a fenced block, then ask "Promote this to `$MD`? (yes / edit / cancel)".
 
-- `yes` → Step 4
-- `edit` → ask what to change, regenerate, return to Step 3
+- `yes` → Phase 4
+- `edit` → ask what to change, regenerate, return to Phase 3
 - `cancel` → exit without writing
 
-### Step 4: Write and index
+## Phase 4: Write and index
 
 ```bash
 # Atomic write: stage to a temp file, then move.

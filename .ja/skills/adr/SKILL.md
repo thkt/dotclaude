@@ -44,13 +44,11 @@ argument-hint: "[decision title]"
 
 新しい ADR が既存を置き換える場合。旧 ADR で変わるのは `status` と `date` のみで、決定内容はそのまま保持する。
 
-| Step | アクション                                                                 |
-| ---- | -------------------------------------------------------------------------- |
-| 1    | 通常の 6 フェーズプロセスで新規 ADR を作成                                 |
-| 2    | 新規 ADR の More Information で先行 ADR を引用 (例: `Supersedes ADR-NNNN`) |
-| 3    | 旧 ADR の `status:` を `superseded by ADR-NNNN` に変更                     |
-| 4    | 旧 ADR の `date:` を当日に更新                                             |
-| 5    | `${CLAUDE_SKILL_DIR}/scripts/update-index.py` を実行してインデックスを更新 |
+1. 通常の 6 フェーズプロセスで新規 ADR を作成
+2. 新規 ADR の More Information で先行 ADR を引用 (例: `Supersedes ADR-NNNN`)
+3. 旧 ADR の `status:` を `superseded by ADR-NNNN` に変更
+4. 旧 ADR の `date:` を当日に更新
+5. `${CLAUDE_SKILL_DIR}/scripts/update-index.py` を実行してインデックスを更新
 
 ## 決定タイプ
 

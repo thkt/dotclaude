@@ -13,21 +13,21 @@ Scan each ADR's Decision Outcome section against the current codebase. Record dr
 
 ## Input
 
-`$ARGUMENTS` may contain a single ADR directory path. Trim whitespace and treat an empty string as auto-detect (Step 1). If non-empty, treat the value as a path relative to repo root and reject if it does not exist.
+`$ARGUMENTS` may contain a single ADR directory path. Trim whitespace and treat an empty string as auto-detect (Phase 1). If non-empty, treat the value as a path relative to repo root and reject if it does not exist.
 
-## Step 1: ADR Detection
+## Phase 1: ADR Detection
 
 Treat only `docs/decisions/` (MADR-style) as the ADR directory. If it does not exist, treat the repo as having no ADRs and abort with "No ADRs found, run /census first". Use a different path only when `$ARGUMENTS` specifies one explicitly.
 
-## Step 2: Status Extraction
+## Phase 2: Status Extraction
 
 Parse each ADR's front matter or top section for Status. Map Superseded ADRs to their successor via `Superseded by [...]` link.
 
-## Step 3: Decision Outcome Symbol Extraction
+## Phase 3: Decision Outcome Symbol Extraction
 
 Extract code-identifiers (function names, type names, module names, file paths) and bullet-point decisions from the `## Decision Outcome` section (fall back to `## Decision` for older MADR). Skip prose-only ADRs (record as "unverifiable, prose-only").
 
-## Step 4: Reference Search
+## Phase 4: Reference Search
 
 For each extracted symbol, apply the following.
 
@@ -36,9 +36,9 @@ For each extracted symbol, apply the following.
 
 ### External ADR Cross-Check
 
-Run `python3 ${CLAUDE_SKILL_DIR}/../_lib/external-adr-refs.py --adr-dir <adr-dir> --json`. It matches `ADR-NNNN` references across the codebase against the `NNNN-*.md` files in the ADR directory detected in Step 1 and returns ids with no local match as `external_refs`. Record these as External ADR dependencies in a separate section. This catches the case where a meta ADR lives in a different repo (e.g., a shared `dotclaude` config) and has not been promoted locally.
+Run `python3 ${CLAUDE_SKILL_DIR}/../_lib/external-adr-refs.py --adr-dir <adr-dir> --json`. It matches `ADR-NNNN` references across the codebase against the `NNNN-*.md` files in the ADR directory detected in Phase 1 and returns ids with no local match as `external_refs`. Record these as External ADR dependencies in a separate section. This catches the case where a meta ADR lives in a different repo (e.g., a shared `dotclaude` config) and has not been promoted locally.
 
-## Step 5: Reviewer Selection
+## Phase 5: Reviewer Selection
 
 Detect repo language by manifest file and run the matching reviewer subagents via Task tool. Subagents receive the candidate `file:line` list plus the ADR Decision Outcome text. They flag semantic gaps clippy or grep cannot detect.
 
@@ -49,7 +49,7 @@ Detect repo language by manifest file and run the matching reviewer subagents vi
 | package.json with `*.tsx` | reviewer-strictness + reviewer-react-pattern |
 | Other / Unknown           | reviewer-design                              |
 
-## Step 6: Modification Direction
+## Phase 6: Modification Direction
 
 | Direction    | When                                                 |
 | ------------ | ---------------------------------------------------- |
@@ -57,7 +57,7 @@ Detect repo language by manifest file and run the matching reviewer subagents vi
 | `adr-update` | Code is the correct contract; ADR is stale           |
 | `accept`     | Drift is cosmetic, deprecated comment, or documented |
 
-## Step 7: Priority
+## Phase 7: Priority
 
 | Priority | Criteria                                          |
 | -------- | ------------------------------------------------- |
@@ -65,7 +65,7 @@ Detect repo language by manifest file and run the matching reviewer subagents vi
 | M        | Internal API affected, single downstream consumer |
 | L        | Comment / doc-string only, or dead reference      |
 
-## Step 8: Report Output
+## Phase 8: Report Output
 
 Write the report following `${CLAUDE_SKILL_DIR}/templates/report-template.md`, substituting placeholders from findings. After writing, print a console summary: ADR count, finding count, per-priority count breakdown, unverifiable count.
 
@@ -85,10 +85,10 @@ REPORT="docs/audit/${STAMP}-adr-drift.md"
 
 Finish only when all of the following hold. Record the reason for any unmet item in the report.
 
-| Item     | Condition                                                                         |
-| -------- | --------------------------------------------------------------------------------- |
-| Report   | `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-drift.md` exists                            |
-| Per-ADR  | Every ADR has a Per-ADR Findings section (findings / "no drift" / "unverifiable") |
-| Findings | Every drift records file:line / direction / priority                              |
-| Status   | Superseded ADRs reflect `Superseded` in Status                                    |
-| External | External ADR references, if any, recorded in External ADR Dependencies            |
+| Item     | Condition                                                                                                                              |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Report   | `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-drift.md` exists                                                                                 |
+| Per-ADR  | Every ADR is accounted for in Per-ADR Findings (drift / unverifiable as individual subsections, no drift may be batched into one line) |
+| Findings | Every drift records file:line / direction / priority                                                                                   |
+| Status   | Superseded ADRs reflect `Superseded` in Status                                                                                         |
+| External | External ADR references, if any, recorded in External ADR Dependencies                                                                 |

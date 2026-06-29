@@ -25,17 +25,15 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 
 /slice は分解と依存順 publish が価値。1 件だけなら /issue を使う。今すぐ実装するなら /swarm を使う。
 
-## Process
-
-### 1. 文脈を集める
+## Phase 1: 文脈を集める
 
 会話文脈にある計画から作業する。`$ARGUMENTS` に issue 参照があれば本文とコメントを読む。
 
-### 2. コードベース探索 (任意)
+## Phase 2: コードベース探索 (任意)
 
 未探索なら現状を把握する。issue のタイトル / 説明はプロジェクトの用語集に従い、触る領域の ADR を尊重する。実装を楽にする prefactor の機会を探す ("変更を楽にしてから、楽な変更をする")。横断的な探索が要るときだけ Explore エージェントを 1 体起動する。per-slice の spawn はしない。
 
-### 3. 垂直スライスを起草する
+## Phase 3: 垂直スライスを起草する
 
 計画を tracer bullet issue に割る。横スライス (1 レイヤーだけ) ではなく縦スライス。
 
@@ -45,7 +43,7 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 | 単独検証可能 | 完了スライスはそれ単体で demo または検証できる           |
 | prefactor 先 | prefactor が要るなら最初のスライスに置く                 |
 
-### 4. ユーザーに確認する
+## Phase 4: ユーザーに確認する
 
 提案分解を番号付きリストで提示する。各スライスに以下を示す。
 
@@ -57,7 +55,7 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 
 次を問う。粒度は妥当か (粗すぎ / 細かすぎ)。依存関係は正しいか。merge / split すべきスライスはあるか。ユーザーが承認するまで反復する。
 
-### 5. issue を publish する
+## Phase 5: issue を publish する
 
 承認後、batch publish の前に AskUserQuestion で最終確認する ("これら N 件の issue を作成する?")。N 件作成は外向きで巻き戻しにくいため、確認なしの自動 publish はしない。
 
@@ -115,7 +113,7 @@ mv /tmp/claude/slice-body.md ~/.Trash/ 2>/dev/null || true
 
 ## Display Format
 
-### Preview (Step 4)
+### Preview (Phase 4)
 
 ```markdown
 ## Slice 分解 (N 件)

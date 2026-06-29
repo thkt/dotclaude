@@ -37,7 +37,7 @@ Aggregate grill findings into critic-design input schema before spawning.
 | decisions        | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded)                                |
 | trade-offs       | trade-offs surfaced during grill                                                                                                        |
 | referenced_files | files cited or read during grill                                                                                                        |
-| outcome_ref      | OUTCOME.md path plus a digest of its done state / non-goals / constraints. If OUTCOME.md is absent, use the outcome confirmed in Step 1 |
+| outcome_ref      | OUTCOME.md path plus a digest of its done state / non-goals / constraints. If OUTCOME.md is absent, use the outcome confirmed in Phase 1 |
 
 ## Phase 2 Devil
 

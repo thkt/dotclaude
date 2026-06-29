@@ -130,13 +130,26 @@ Leader は各ターゲットファイルをパスで分類し、該当 reviewer 
 | `test.*`, `*.test.*` | reviewer-coverage, reviewer-testability                                                                                                                                                                                                                                                          |
 | その他               | reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-document                                                                                                                                                                                                                     |
 
+### Churn 地図の事前計算
+
+ファイルルーティング後、reviewer を spawn する前に、Leader はターゲットファイルごとに過去 fix コミット数を集計し churn 地図を作る。複数ファイルに跨る scope で、reviewer が後続ファイルを浅く流す tunnel-vision を防ぐ。
+
+ファイルごとに実行し、出力行数を fix コミット数として読む。
+
+```bash
+git log --grep=fix --oneline -- <file>
+```
+
+集計結果を fix コミット数の多い順に並べ、全 reviewer prompt にそのまま注入する。集計は Leader が 1 回だけ行う (reviewer 自己集計は発火が不安定なため、Leader 注入に集約する)。churn 0 のファイルも一覧から外さない。
+
 ### Sub-reviewer の spawn
 
 各 sub-reviewer は Task で直接 spawn する。
 
 - subagent_type: reviewer 名 (例: `reviewer-security`)
 - model: `sonnet` (上書き; 診断で確認した opus watchdog タイムアウトを回避)
-- Prompt: 割り当てファイル一覧 + focus + finding schema + 信頼性制約
+- Prompt: 割り当てファイル一覧 + focus + finding schema + 信頼性制約 + churn 地図
+- churn 地図に添える指示: スコープが複数ファイルに跨るとき、churn 上位の経路を必ず追跡対象に含め、最初の 1 ファイルで budget を使い切らない
 - team_name なし (スタンドアロン background エージェント)
 
 信頼性制約 (全 reviewer prompt にそのまま含める)。

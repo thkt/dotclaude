@@ -12,6 +12,7 @@
 | Default    | TDD / Baby Steps           |
 | Default    | DRY                        |
 | Default    | YAGNI                      |
+| Default    | Reuse Ordering             |
 | Default    | Strong Inference           |
 | Default    | Measurement                |
 | Contextual | SOLID                      |
@@ -31,6 +32,7 @@
 | Complex-first                | Occam's Razor    |
 | Single hypothesis            | Strong Inference |
 | Coordinated call sites >= 2  | YAGNI Boundary   |
+| Before new code or a new dep | Reuse Ordering   |
 | Post-write verbose           | Occam's Razor    |
 | Extra files or unasked scope | Overeagerness    |
 
@@ -50,19 +52,26 @@ Write for your later self and one teammate who shares the context. If shrinking 
 
 ## DRY
 
-| Type           | Criterion                                 | Action       |
-| -------------- | ----------------------------------------- | ------------ |
-| Same knowledge | one change forces all instances to change | Apply DRY    |
-| Similar code   | each copy could evolve independently      | Do not merge |
+- When one change forces all instances to change, it is the same knowledge, so apply DRY
+- When each copy could evolve independently, it is merely similar code, so do not merge
 
 ## YAGNI Boundary
 
 YAGNI prohibits unneeded features and speculative code paths. It does not prohibit choosing better structure at equal cost. Occam's Razor > YAGNI Boundary.
 
-| Step          | Criteria                                                                                       |
-| ------------- | ---------------------------------------------------------------------------------------------- |
-| Gate          | call sites >= 2 or domain-obvious (auth, logging, error handling)                              |
-| Decision axis | equal cost (line count, indirection depth, import count) → prefer fewer coordinated call sites |
+- Open the abstraction gate when call sites are >= 2, or the domain is obvious like auth, logging, or error handling
+- When cost measured by line count, indirection depth, and import count is equal, prefer fewer coordinated call sites
+
+## Reuse Ordering
+
+After understanding the problem and before writing code, work through these top to bottom. If a higher rung holds, do not drop to a lower one. When two options are the same size, pick the one that is correct on edge cases. Reducing how much you write never drops validation, error handling, security, or accessibility.
+
+1. Don't build what isn't needed. Skip a speculative need
+2. Reuse an existing helper / util / pattern in this codebase
+3. Reach for the standard library before hand-rolling
+4. Use a native platform feature. `<input type="date">` over a picker, CSS over JS, DB constraint over app code
+5. Use an installed dependency. No new dep for what a few lines do
+6. Write new code only when nothing above fits. Keep it the minimum that works
 
 ## Measurement
 

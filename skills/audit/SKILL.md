@@ -130,13 +130,26 @@ Leader classifies each target file by path and assigns to relevant reviewers onl
 | `test.*`, `*.test.*` | reviewer-coverage, reviewer-testability                                                                                                                                                                                                                                                          |
 | Other                | reviewer-duplication, reviewer-reuse, reviewer-efficiency, reviewer-document                                                                                                                                                                                                                     |
 
+### Churn Map Pre-computation
+
+After file routing and before spawning reviewers, the Leader builds a churn map by counting prior fix commits per target file. This prevents the tunnel-vision where a reviewer gives later files a shallow pass on multi-file scope.
+
+Run per file and read the output line count as the fix-commit count.
+
+```bash
+git log --grep=fix --oneline -- <file>
+```
+
+Sort the result by descending fix-commit count and inject it verbatim into every reviewer prompt. The Leader does this once (reviewer self-counting fires unreliably, so counting is consolidated into Leader injection). Do not drop files with churn 0 from the list.
+
 ### Sub-reviewer Spawn
 
 Each sub-reviewer is spawned directly via Task.
 
 - subagent_type: the reviewer name (e.g., `reviewer-security`)
 - model: `sonnet` (override; avoids opus watchdog timeouts observed in diagnostic)
-- Prompt: assigned file list + focus + finding schema + reliability constraints
+- Prompt: assigned file list + focus + finding schema + reliability constraints + churn map
+- Directive accompanying the churn map: when scope spans multiple files, trace each high-churn path and do not exhaust the budget on the first file
 - No team_name (standalone background agents)
 
 Reliability constraints (include verbatim in every reviewer prompt).

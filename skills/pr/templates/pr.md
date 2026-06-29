@@ -4,7 +4,7 @@ When /pr cannot find a repository PR template, it generates the body from this s
 
 ## Template
 
-Replace `{...}` with content at generation time. Omit an `(optional)` section, heading and all, when there is nothing to write.
+Replace `{...}` with content at generation time. Omit an `(optional)` section, heading and all, when there is nothing to write. Include `Preview URL:` only for PRs with UI changes (read by `use-workflow-pageshot`).
 
 ```markdown
 Preview URL: http://localhost:3000
@@ -37,15 +37,13 @@ Preview URL: http://localhost:3000
 - Closes #{issue}
 ```
 
-`Preview URL:` is required only for PRs with UI changes (read by use-workflow-pageshot). Omit when no UI changes.
-
 ## Guidelines
 
-| Field            | OK                                                 | NG                                                 |
-| ---------------- | -------------------------------------------------- | -------------------------------------------------- |
-| What & Why       | "Add CSV export to unblock offline analysis"       | "Add CSV export feature" (no Why)                  |
-| Changes          | "Add ExportButton - chosen over menu for 1-click"  | "Added files" (no reasoning)                       |
-| Scope            | "Auth token refresh is not included (separate PR)" | (omitted on large PRs - reviewer guesses boundary) |
-| Design Decisions | "Used streaming to avoid OOM on large datasets"    | (omitted - forces reviewer to guess why)           |
-| How to Test      | "Click Export → verify .csv downloads with 3 rows" | "Test the feature" (vague)                         |
-| Preview URL      | "Preview URL: http://localhost:3000/dashboard"     | (missing despite UI changes)                       |
+| Field            | OK                                               | NG                                               |
+| ---------------- | ------------------------------------------------ | ------------------------------------------------ |
+| What & Why       | Add CSV export to unblock offline analysis       | Add CSV export feature (no Why)                  |
+| Changes          | Add ExportButton, chosen over menu for 1-click   | Added files (no reasoning)                       |
+| Scope            | Auth token refresh is not included (separate PR) | Omitted on large PRs (reviewer guesses boundary) |
+| Design Decisions | Used streaming to avoid OOM on large datasets    | Omitted (forces reviewer to guess why)           |
+| How to Test      | Click Export → verify .csv downloads with 3 rows | Test the feature (vague)                         |
+| Preview URL      | Preview URL: http://localhost:3000/dashboard     | Missing despite UI changes                       |

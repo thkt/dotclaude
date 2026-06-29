@@ -68,6 +68,10 @@ Judge backtick use by whether removal causes misreading. Being a literal or an i
 | Skills     | 1          |
 | Rules/Docs | 3          |
 
+## Section vocabulary
+
+For a skill with a sequential procedure, the top-level sequential unit is always `## Phase N`. Reserve `Step` for a second tier that subdivides one Phase (such as a numbered column inside a single Phase's table). A non-sequential prep or reference section keeps its own name (Input, Setup, Output) and is not a Phase. Independent enumerated checks (dimensions, categories) are not Phases either.
+
 ## Forbidden references
 
 | Pattern               | Reason                                        |

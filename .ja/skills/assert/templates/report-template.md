@@ -1,10 +1,10 @@
 # Assertion レポートテンプレート
 
-/assert 最終レポートの骨格。gate と findings の値は enhancer-evidence の JSON decision ブロックから decode した値をそのまま転記する (references/phase-4.md § Gate Decode)。
+`/assert` 最終レポートの骨格。gate と findings の値は、enhancer-evidence の JSON decision ブロックから decode した値をそのまま転記する (`${CLAUDE_SKILL_DIR}/references/phase-4.md § Gate Decode`)。
 
 ## テンプレート
 
-`{...}` は生成時に置き換える。gate が `Ready (caveat)` のときは gate 行に `caveat: dynamic evidence skipped` を付記する。
+`{...}` は生成時に置き換える。gate が `Ready (caveat)` のときは、gate 行に `caveat: dynamic evidence skipped` を付記する。
 
 ```markdown
 ## Assertion Report
@@ -27,15 +27,15 @@
 
 ### Blockers
 
-{全 issue + build/test 失敗を Fix 提案とソースタグ (challenger / verifier / adversarial) 付きで。gate = Ready のときは (none)}
+{全 issue と build / test 失敗を、Fix 提案とソースタグ (challenger / verifier / adversarial) を添えて記載する。gate が Ready のときは (none)}
 
 ### Root Causes
 
-{RC-001 形式。説明、カテゴリ、findings、action 付き}
+{RC-001 形式。説明 / カテゴリ / findings / action を添える}
 
 ### Issues
 
-{High / Medium severity 表。Source タグ、File:Line、Description、Evidence。複数ソース検出はすべてのタグを表示。例: [challenger, adversarial]}
+{High / Medium severity の表。列は Source タグ / File:Line / Description / Evidence。複数ソースで検出された場合はすべてのタグを表示する (例: challenger, adversarial)}
 
 ### Adversarial Test Results
 
@@ -43,9 +43,5 @@
 
 ### Outcome Evidence
 
-{build/test pass/fail、stderr 抜粋付き}
-
-### Diff from previous
-
-{workspace/history/ との比較で Resolved / New / Carried}
+{build / test の pass / fail。stderr 抜粋を添える}
 ```

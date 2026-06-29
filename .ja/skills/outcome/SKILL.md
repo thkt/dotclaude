@@ -3,6 +3,7 @@ name: outcome
 description: .claude/OUTCOME.md を対話的に生成 / 更新する。不在や空 (Behavior 空 / 全セクションが未記入) なら AskUserQuestion で収集して stub を生成し、既存なら現状を提示して更新する。
 when_to_use: OUTCOME作って, OUTCOME更新, アウトカム定義, create outcome, update outcome
 allowed-tools: Read Write Edit AskUserQuestion
+model: opus
 ---
 
 # /outcome - OUTCOME.md 生成 / 更新
@@ -18,7 +19,7 @@ allowed-tools: Read Write Edit AskUserQuestion
 
 ## 生成
 
-1. `${CLAUDE_SKILL_DIR}/templates/outcome.md` を読む (構造と例)
+1. `${CLAUDE_SKILL_DIR}/templates/outcome.md` を読む (構造)
 2. Behavior (1 つ以上、主体明示)、Non-goals、Constraints の 3 項目を、AskUserQuestion 1 回で各項目 1 問ずつ収集する
 3. 各 Behavior をアウトカムテストに通す。fail なら書き直してユーザーに再提示する
 4. テンプレートに流し込み、`.claude/OUTCOME.md` を Write

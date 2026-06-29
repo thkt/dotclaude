@@ -1,6 +1,6 @@
 # Docs テンプレート
 
-/issue が docs 種別と判定したとき、この骨格でタイトルと本文を生成する。
+`/issue` が docs 種別と判定したとき、この骨格でタイトルと本文を生成する。
 
 ## テンプレート
 
@@ -29,9 +29,9 @@
 
 ## ガイドライン
 
-| フィールド | OK                                                      | NG                           |
-| ---------- | ------------------------------------------------------- | ---------------------------- |
-| What & Why | "Add setup guide - new contributors can't onboard"      | "Add setup guide" (Why なし) |
-| Location   | "`docs/getting-started.md`, Setup section"              | "Somewhere in docs" (曖昧)   |
-| Changes    | "Add prerequisites list, install steps, verify command" | "Write setup documentation"  |
-| Scope      | "Only local dev setup, not CI/CD"                       | (省略)                       |
+| フィールド | OK                                                      | NG                                  |
+| ---------- | ------------------------------------------------------- | ----------------------------------- |
+| What & Why | セットアップガイドを追加。新規貢献者が onboard できない | セットアップガイドを追加 (Why なし) |
+| Location   | `docs/getting-started.md` の Setup セクション           | docs のどこか (曖昧)                |
+| Changes    | 前提条件リスト、インストール手順、確認コマンドを追加    | セットアップ文書を書く              |
+| Scope      | ローカル開発セットアップのみ、CI/CD は対象外            | (省略)                              |

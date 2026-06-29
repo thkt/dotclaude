@@ -44,10 +44,10 @@ When /issue classifies the request as bug, it generates the title and body from 
 
 ## Guidelines
 
-| Field              | OK                                          | NG                               |
-| ------------------ | ------------------------------------------- | -------------------------------- |
-| What & Why         | "Login fails, blocking 30% of users"        | "Login is broken"                |
-| Expected vs Actual | "Expected: 200 OK / Actual: 500 with ESQL"  | "Works correctly" (vague)        |
-| Scope - Out of     | "Auth refactor is out of scope"             | (omitted)                        |
-| Constraints        | "Fix root cause, not workaround"            | (omitted when fix is risky)      |
-| Premises           | "Reproduce on current binary before fixing" | Unverified report stated as fact |
+| Field              | OK                                            | NG                               |
+| ------------------ | --------------------------------------------- | -------------------------------- |
+| What & Why         | Login fails, blocking 30% of users            | Login is broken                  |
+| Expected vs Actual | Expected: 200 OK / Actual: 500 error response | Works correctly (vague)          |
+| Scope - Out of     | Auth refactor is out of scope                 | (omitted)                        |
+| Constraints        | Fix root cause, not workaround                | (omitted when fix is risky)      |
+| Premises           | Reproduce on current binary before fixing     | Unverified report stated as fact |

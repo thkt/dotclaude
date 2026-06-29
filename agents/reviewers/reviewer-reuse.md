@@ -25,16 +25,17 @@ Banned phrasing inside reasoning: "writing new is faster" without confirming not
 
 ## Scope
 
-Find opportunities to use EXISTING code instead of writing new code. This is NOT duplication detection (that is reviewer-duplication / DRY). This reviewer answers, does the codebase already have something that does this?
+Find opportunities to use what already exists instead of writing new code or adding a new dependency. This is NOT duplication detection (that is reviewer-duplication / DRY). This reviewer answers, does something that does this already exist? Try sources top-down in this order (this codebase → standard library → native platform → installed dependency). In scope: hand-rolled logic that stdlib/native covers, and a new dependency added when native or an installed dep would do.
 
 ## Analysis Phases
 
-| Phase | Action           | Focus                                                        |
-| ----- | ---------------- | ------------------------------------------------------------ |
-| 1     | Utility Scan     | Existing helpers/utils that could replace newly written code |
-| 2     | Pattern Match    | Established codebase patterns the new code should follow     |
-| 3     | Inline Expansion | Hand-rolled logic replaceable by existing function/module    |
-| 4     | Import Check     | Available but unused imports that already provide needed API |
+| Phase | Action            | Focus                                                                                                                 |
+| ----- | ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 1     | Utility Scan      | Existing helpers/utils that could replace newly written code                                                          |
+| 2     | Pattern Match     | Established codebase patterns the new code should follow                                                              |
+| 3     | Inline Expansion  | Hand-rolled logic replaceable by existing function/module                                                             |
+| 4     | Import Check      | Available but unused imports that already provide needed API                                                          |
+| 5     | stdlib/native/dep | Hand-rolled logic that stdlib/native platform covers; a new dependency added when native or an installed dep would do |
 
 ## Search Strategy
 
@@ -71,11 +72,11 @@ Follow finding-schema.md.
 | Field        | Value                                                                        |
 | ------------ | ---------------------------------------------------------------------------- |
 | Prefix       | REUSE                                                                        |
-| Categories   | utility / pattern / inline / unused_import                                   |
+| Categories   | utility / pattern / inline / unused_import / stdlib / native                 |
 | Severity     | high / medium / low                                                          |
 | Verification | pattern_search. Does the existing utility handle all edge cases of new code? |
 
-Evidence pairs new code and existing utility as `New: file:line snippet / Existing: file:line snippet`.
+Evidence pairs new code and existing utility as `New: file:line snippet / Existing: file:line snippet`. stdlib/native categories have no repo-side pair, so replace `Existing:` with the API/feature name (e.g. `Use: Intl.DateTimeFormat`, `Use: <input type="date">`).
 
 ```markdown
 ## Summary
@@ -87,5 +88,7 @@ Evidence pairs new code and existing utility as `New: file:line snippet / Existi
 | pattern        | count |
 | inline         | count |
 | unused_import  | count |
+| stdlib         | count |
+| native         | count |
 | files_reviewed | count |
 ```

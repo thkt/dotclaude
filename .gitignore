@@ -102,3 +102,7 @@ BACKLOG.md
 
 # Backups
 backups/
+
+# PR review loop runtime state
+loops/pr-review-state.json
+loops/drafts/

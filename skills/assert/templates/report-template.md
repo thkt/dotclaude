@@ -44,8 +44,4 @@ Replace `{...}` at generation time. When gate is `Ready (caveat)`, append `cavea
 ### Outcome Evidence
 
 {build/test pass/fail with stderr excerpts}
-
-### Diff from previous
-
-{Resolved / New / Carried versus workspace/history/}
 ```

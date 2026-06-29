@@ -135,7 +135,7 @@ Examples for "Outcome is a feature".
 - FAIL: "A tracking file is created" (deliverable)
 - PASS: "Startup time reduced from 8s to <1s" (measurable result)
 
-If Why-related P0 count >= 1 OR quality findings >= 2, add a blocker entry "Why Statement is weak. Run Step 0 (Why Discovery) wall-bouncing before proceeding."
+If Why-related P0 count >= 1 OR quality findings >= 2, add a blocker entry "Why Statement is weak. Run Discovery wall-bouncing before proceeding."
 
 ## Why Fidelity Check
 

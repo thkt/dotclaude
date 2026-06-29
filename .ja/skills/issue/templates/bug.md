@@ -1,6 +1,6 @@
 # Bug テンプレート
 
-/issue が bug 種別と判定したとき、この骨格でタイトルと本文を生成する。
+`/issue` が bug 種別と判定したとき、この骨格でタイトルと本文を生成する。
 
 ## テンプレート
 
@@ -34,7 +34,7 @@
 
 ## Premises (任意)
 
-- {修正が依存する未検証の前提。再確認マーカー付き: "ユーザー報告のエラーは現行バイナリで未再現。修正前に確認する"}
+- {修正が依存する未検証の前提。再確認マーカー付き: `ユーザー報告のエラーは現行バイナリで未再現。修正前に確認する`}
 
 ## Environment (任意)
 
@@ -44,10 +44,10 @@
 
 ## ガイドライン
 
-| フィールド         | OK                                          | NG                           |
-| ------------------ | ------------------------------------------- | ---------------------------- |
-| What & Why         | "Login fails, blocking 30% of users"        | "Login is broken"            |
-| Expected vs Actual | "Expected: 200 OK / Actual: 500 with ESQL"  | "Works correctly" (曖昧)     |
-| Scope - Out of     | "Auth refactor is out of scope"             | (省略)                       |
-| Constraints        | "Fix root cause, not workaround"            | (修正がリスキーなときに省略) |
-| Premises           | "Reproduce on current binary before fixing" | 未検証の報告を事実として書く |
+| フィールド         | OK                                            | NG                           |
+| ------------------ | --------------------------------------------- | ---------------------------- |
+| What & Why         | ログイン失敗でユーザーの 30% がブロックされる | ログインが壊れている         |
+| Expected vs Actual | Expected: 200 OK / Actual: 500 エラー応答     | 正しく動く (曖昧)            |
+| Scope - Out of     | 認証リファクタは対象外                        | (省略)                       |
+| Constraints        | 対症療法でなく根本原因を修正                  | (修正がリスキーなときに省略) |
+| Premises           | 現行バイナリで再現してから修正                | 未検証の報告を事実として書く |

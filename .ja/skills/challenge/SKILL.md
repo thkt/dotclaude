@@ -15,7 +15,7 @@ argument-hint: "[proposal file | description]"
 
 `$ARGUMENTS` には challenge 対象 (proposal のファイルパスまたは記述) を渡せる。空の場合、会話からの暗黙的な推論は誤判定のリスクが高いため、停止して対象の指定をユーザーに求める。非空なら、その内容を challenge 対象として扱う。
 
-## Phase 1 Grill
+## Phase 1: Grill
 
 証拠で proposal を自力で grill し、解けない残差だけを可逆性で振り分けてユーザーに返す。提案内の論点はそれぞれ事実か判断に分かれ、事実は検証して中核を覆しうる。検証後に残った判断が残差で、可逆性でユーザーへ振り分ける。
 
@@ -29,17 +29,17 @@ argument-hint: "[proposal file | description]"
 
 grill findings を critic-design 入力スキーマに集約してから起動する。
 
-| 項目             | ソース                                                                                            |
-| ---------------- | ------------------------------------------------------------------------------------------------- |
-| source           | user-grill                                                                                        |
-| artifact_type    | `$ARGUMENTS` から推定 (spec / plan / design / ADR / doc)                                          |
-| approach         | 提案の中核の 1 行要約                                                                             |
-| decisions        | grill 中に固まったアーキテクチャレベルの判断 (用語確認やスコープ細部は除外)                       |
-| trade-offs       | grill 中に表面化した trade-off                                                                    |
-| referenced_files | grill 中に参照または読まれたファイル                                                              |
-| outcome_ref      | OUTCOME.md のパスと done 状態 / non-goal / constraint の要約 (無ければ Step 1 で確認した outcome) |
+| 項目             | ソース                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| source           | user-grill                                                                                         |
+| artifact_type    | `$ARGUMENTS` から推定 (spec / plan / design / ADR / doc)                                           |
+| approach         | 提案の中核の 1 行要約                                                                              |
+| decisions        | grill 中に固まったアーキテクチャレベルの判断 (用語確認やスコープ細部は除外)                        |
+| trade-offs       | grill 中に表面化した trade-off                                                                     |
+| referenced_files | grill 中に参照または読まれたファイル                                                               |
+| outcome_ref      | OUTCOME.md のパスと done 状態 / non-goal / constraint の要約 (無ければ Phase 1 で確認した outcome) |
 
-## Phase 2 Devil
+## Phase 2: Devil
 
 Phase 1 で引き出した素材を critic-design 2 体 (内部攻撃 / OUTCOME.md 攻撃) に敵対的に当て、穴を探す。
 

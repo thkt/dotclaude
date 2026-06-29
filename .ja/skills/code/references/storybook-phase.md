@@ -1,6 +1,6 @@
 # Storybook フェーズ
 
-/code Step 7。条件をすべて満たしたときのみ、変更されたコンポーネントの CSF3 stories を生成する。
+`/code` Step 7。条件をすべて満たしたときのみ、変更されたコンポーネントの CSF3 stories を生成する。
 
 ## 条件
 

@@ -1,6 +1,6 @@
 # Feature テンプレート
 
-/issue が feature 種別と判定したとき、この骨格でタイトルと本文を生成する。
+`/issue` が feature 種別と判定したとき、この骨格でタイトルと本文を生成する。
 
 ## テンプレート
 
@@ -24,7 +24,7 @@
 
 ## Approach (任意)
 
-- {仮の実装方針。確定要件ではなく出発点: "既存構成に合わせて OrderService 配下に配置 (仮: 着手時に判断)"}
+- {仮の実装方針。確定要件ではなく出発点: `既存構成に合わせて OrderService 配下に配置 (仮: 着手時に判断)`}
 
 ## Constraints (任意)
 
@@ -32,7 +32,7 @@
 
 ## Premises (任意)
 
-- {作業が依存する未検証の前提。再確認マーカー付き: "Design ref: <link>。着手前に最新版を確認" / "対象ファイルは調査時点の候補。着手時に再確認"}
+- {作業が依存する未検証の前提。再確認マーカー付き: `Design ref: <link>。着手前に最新版を確認` / `対象ファイルは調査時点の候補。着手時に再確認`}
 
 ## Testing Decisions
 
@@ -44,12 +44,12 @@
 
 ## ガイドライン
 
-| フィールド          | OK                                                     | NG                                |
-| ------------------- | ------------------------------------------------------ | --------------------------------- |
-| What & Why          | "Add CSV export so users can analyze offline"          | "Add CSV export" (Why なし)       |
-| Acceptance Criteria | "When user clicks Export, a .csv downloads"            | "CSV export works correctly"      |
-| Scope - Out of      | "Excel format is out of scope"                         | (省略)                            |
-| Approach            | "match OrderService structure; decide at pickup"       | Inferred HOW を確定要件として書く |
-| Constraints         | "Must not add new dependencies"                        | (既知の制約があるのに省略)        |
-| Premises            | "Figma node 9-2191; confirm latest before starting"    | 未検証のデザインを事実として書く  |
-| Testing Decisions   | "Test the CSV serializer; mirror tests/orders.test.ts" | "TBD" または理由なしのスキップ    |
+| フィールド          | OK                                                    | NG                                |
+| ------------------- | ----------------------------------------------------- | --------------------------------- |
+| What & Why          | オフライン分析のため CSV エクスポートを追加           | CSV エクスポートを追加 (Why なし) |
+| Acceptance Criteria | Export クリックで .csv がダウンロードされる           | CSV エクスポートが正しく動く      |
+| Scope - Out of      | Excel 形式は対象外                                    | (省略)                            |
+| Approach            | OrderService の構成に合わせる。着手時に判断           | 推論した HOW を確定要件として書く |
+| Constraints         | 新規依存を追加しない                                  | (既知の制約があるのに省略)        |
+| Premises            | Figma node 9-2191。着手前に最新版を確認               | 未検証のデザインを事実として書く  |
+| Testing Decisions   | CSV シリアライザをテスト。tests/orders.test.ts を踏襲 | TBD または理由なしのスキップ      |

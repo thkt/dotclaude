@@ -1,6 +1,6 @@
 # MADR テンプレート
 
-決定タイプによらず、MADR v4 の同一骨格を使う。必須セクションは全タイプ共通（Title, Context and Problem Statement, Considered Options 2+, Decision Outcome）。タイプごとに異なるのは More Information 配下に置く推奨トピックだけで、その決定に該当するトピックのみを `### {topic}` として含める。
+テンプレートは全決定タイプで共通。タイプで変わるのは More Information 配下の推奨トピックだけで、決定タイプで選んだものを `### {topic}` として並べる。
 
 ## テンプレート
 
@@ -9,8 +9,8 @@
 ```markdown
 ---
 status: "{proposed | rejected | accepted | deprecated | superseded by ADR-NNNN}"
-date: {YYYY-MM-DD}
-decision-makers: {名前またはロール}
+date: "{YYYY-MM-DD}"
+decision-makers: "{名前またはロール}"
 ---
 
 # {Adopt X for Y 形式の決定タイトル}

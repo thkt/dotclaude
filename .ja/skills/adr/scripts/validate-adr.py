@@ -15,7 +15,8 @@ from pathlib import Path
 
 from adr_common import fail, split_frontmatter
 
-# Confirmation is an h3 under Decision Outcome; the substring check matches it too
+# Confirmation is an h3 under Decision Outcome; the others are h2. Section
+# detection allows either level so a valid h3 Confirmation is not flagged missing.
 REQUIRED_SECTIONS = (
     "Context and Problem Statement",
     "Considered Options",
@@ -66,7 +67,7 @@ def main():
     results = {"errors": [], "warnings": [], "checks": []}
 
     for section in REQUIRED_SECTIONS:
-        if f"## {section}" in text:
+        if re.search(rf"^#{{2,3}} {re.escape(section)}\s*$", text, flags=re.M):
             results["checks"].append(f"section:{section}=ok")
         else:
             results["errors"].append(f"missing_section:{section}")

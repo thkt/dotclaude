@@ -12,6 +12,7 @@
 | Default    | TDD / Baby Steps           |
 | Default    | DRY                        |
 | Default    | YAGNI                      |
+| Default    | Reuse Ordering             |
 | Default    | Strong Inference           |
 | Default    | Measurement                |
 | Contextual | SOLID                      |
@@ -31,6 +32,7 @@
 | 複雑優先                         | Occam's Razor    |
 | 仮説が単一                       | Strong Inference |
 | 連動する呼び出し箇所 2 以上      | YAGNI Boundary   |
+| 新規コード or 依存追加の直前     | Reuse Ordering   |
 | 書いた後に冗長                   | Occam's Razor    |
 | 余分なファイル or 未要求スコープ | Overeagerness    |
 
@@ -50,19 +52,26 @@ Make it Work → Make it Resilient (エラー発生時) → Make it Fast (遅さ
 
 ## DRY
 
-| 種別       | 基準                                 | アクション   |
-| ---------- | ------------------------------------ | ------------ |
-| 同じ知識   | 一箇所の変更が全箇所の変更を強制する | DRY を適用   |
-| 似たコード | 各コピーが独立に進化しうる           | マージしない |
+- 一箇所の変更が全箇所の変更を強制するなら、同じ知識とみなして DRY を適用する
+- 各コピーが独立に進化しうるなら、それは単に似ているだけのコードなのでマージしない
 
 ## YAGNI Boundary
 
 YAGNI は不要な機能と投機的なコードパスを禁ずる。同等コストで構造改善を選ぶことは禁じない。Occam's Razor > YAGNI Boundary。
 
-| ステップ | 基準                                                                            |
-| -------- | ------------------------------------------------------------------------------- |
-| ゲート   | 呼び出し箇所 2 以上 or ドメイン自明 (auth, logging, error handling)             |
-| 判断軸   | 同等コスト (行数、間接度、import 数) なら、連動する呼び出し箇所が少ない方を選ぶ |
+- 呼び出し箇所が 2 以上、または auth や logging、error handling のようにドメインが自明なら、抽象化のゲートを開く
+- 行数・間接度・import 数で測ったコストが同等なら、連動する呼び出し箇所が少ない方を選ぶ
+
+## Reuse Ordering
+
+問題を理解した後、コードを書く前に、上から順に検討する。上位で済むなら下位に降りない。同等の選択肢が 2 つあれば、エッジケースで正しく動く方を選ぶ。再利用で書く量を減らしても、検証 / エラー処理 / セキュリティ / アクセシビリティは省かない。
+
+1. 不要なら作らない。投機的な必要性は飛ばす
+2. コードベースの既存 helper / util / pattern を再利用する
+3. 手書きする前に標準ライブラリを検討する
+4. native platform を使う。picker より `<input type="date">`、JS より CSS、app コードより DB 制約
+5. 既存依存を使う。数行で済むものに新規依存を足さない
+6. 上で埋まらないときだけ新規実装する。動く最小限で書く
 
 ## Measurement
 

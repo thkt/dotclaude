@@ -74,11 +74,11 @@ Gemini Grounding と Google 検索による Web 検索とページ取得。
 
 ### 適用条件
 
-| recall                                | Grep \*.jsonl                 |
+| recall                                | Grep *.jsonl                  |
 | ------------------------------------- | ----------------------------- |
-| 過去の解: "how did I fix X"           | 現セッションのみ              |
-| パターン想起: "what tool for Y"       | 既知の特定セッション ファイル |
-| プロジェクト横断: "where did I use Z" |                               |
+| 過去の解: `how did I fix X`           | 現セッションのみ              |
+| パターン想起: `what tool for Y`       | 既知の特定セッション ファイル |
+| プロジェクト横断: `where did I use Z` |                               |
 
 ## xr
 

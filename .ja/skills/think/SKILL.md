@@ -1,52 +1,99 @@
 ---
 name: think
-description: "組み込みの adversarial challenge (Step 4: critic-design) を伴う設計探索。challenge を生き残ったアプローチから SOW と Spec を生成する。計画意図のないコードベース調査には使わない (代わりに /research を使う)。"
+description: critic-design による adversarial challenge を伴う設計探索。生き残ったアプローチから SOW と Spec を生成する。計画意図のないコードベース調査には使わない (代わりに /research)。
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
-allowed-tools: Read Write LS Task TaskCreate TaskList AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[task description]"
 ---
 
-# /think
+# /think - 設計探索
 
-adversarial challenge を伴う深い設計探索。2 つ以上のアプローチを比較し、critic-design をぶつけ (Step 4)、challenge を生き残ったアプローチだけを Spec に到達させる。アプローチは選び取る選択肢ではなく、論証にかける立場である。
+adversarial challenge を伴う深い設計探索。2 つ以上のアプローチを比較し、`critic-design` による批判にかけ、生き残ったアプローチだけを Spec に到達させる。アプローチは単に選ぶ選択肢ではなく、批判に耐えるか検証する対象として扱う。
 
 ## 入力
 
-`$ARGUMENTS` のタスク説明、調査コンテキスト、または空なら AskUserQuestion。
+`$ARGUMENTS` でタスク説明、調査コンテキストを受け取る。空なら AskUserQuestion でユーザーに確認する。
 
-## 実行
+## Phase 1: アウトカム参照
 
-| Step  | アクション       | 詳細                                                                               |
-| ----- | ---------------- | ---------------------------------------------------------------------------------- |
-| 0     | Outcome Anchor   | `.claude/OUTCOME.md` を読む。不在なら /outcome で stub を生成                      |
-| 1     | Why Discovery    | ${CLAUDE_SKILL_DIR}/references/step-1-why-discovery.md (OUTCOME.md を前提とする)   |
-| 2     | Q&A による明確化 | スコープ、優先度 (MoSCoW)、制約、リスク (必要に応じて)                             |
-| 3-6   | 設計探索         | ${CLAUDE_SKILL_DIR}/references/step-3-6-design-exploration.md                      |
-| 7     | ユーザーレビュー | トレードオフの根拠とともに設計を提示、承認を待つ                                   |
-| 7.5   | ADR の提案       | 技術判断に ADR が必要か問う。単純な機能では省略                                    |
-| 8-9   | SOW と Spec      | ${CLAUDE_SKILL_DIR}/references/step-8-9-document-generation.md                     |
-| 10-11 | レビュー + 分割  | ${CLAUDE_SKILL_DIR}/references/step-10-11-review-decomposition.md                  |
-| 12    | View 生成        | planning slug を `use-workflow-plan-preview` に渡す。返された URL をユーザーに共有 |
+`.claude/OUTCOME.md` を読む。存在しない場合は `/outcome` で stub を生成する。
 
-## 出力
+## Phase 2: 成果探索
 
-Session ID: ${CLAUDE_SESSION_ID}
+### Why
 
-常にこの正確なパスを使う。Write tool が親ディレクトリを必要に応じて作成する。
+最初に達成すべき成果を確立する。以下の各質問の回答が、`${CLAUDE_SKILL_DIR}/templates/sow.md` の Why セクションの対応フィールドにあたる。
 
-`.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` と `spec.md`
+| 質問                               | フィールド    |
+| ---------------------------------- | ------------- |
+| 誰がこれを必要としている？         | For           |
+| どんな痛みが存在する？その根拠は？ | Problem       |
+| 計測可能な結果、成功とは何？       | Outcome       |
+| なぜ今やる？                       | Urgency       |
+| やらないとどうなる？               | Inaction cost |
 
-## 検証
+5 フィールドが明確になるまで次のステップへ進まない。曖昧または仮定の項目があるときは AskUserQuestion で詰める。
 
-- [ ] OUTCOME.md が存在 (Step 0)
-- [ ] Why Statement が確立されている (Step 1)
-- [ ] コードベースが探索されている (Step 3)
-- [ ] 2 つ以上のアプローチが比較されている (Step 4)
-- [ ] DA チャレンジが適用されている (Step 5)
-- [ ] 設計が構成されている (Step 6)
-- [ ] ユーザーレビュー済み (Step 7)
-- [ ] sow.md と spec.md が生成されている (Steps 8-9)
-- [ ] Spec レビューを通過 (Step 10)
-- [ ] タスク分割: マイルストーン、最初の一手、スコープ削減候補 (Step 11)
-- [ ] View 生成済みで `http://localhost:4321/spec/<short-slug>` URL を共有済み (Step 12)
+- 1 メッセージにつき 1 質問し、推奨回答とその根拠を添える
+- コードベースで解決できるなら、問う前に探索する
+- 別の解釈を対比的に提示し、ユーザーが意図を言語化する手助けをする
+- 抽象度の高い曖昧な outcome は、対象と測定方法を詰めて具体化する
+
+### スコープとリスク
+
+`.claude/OUTCOME.md` と Why で未確定なら、スコープ / 優先度 / 制約 / リスクを AskUserQuestion で詰める。答えは `${CLAUDE_SKILL_DIR}/templates/sow.md` の Scope と Risks にあたる。確定済みなら省略する。
+
+## Phase 3: 設計探索
+
+最初に関連コードを読み、パターン / 制約 / アーキテクチャ / 先行例を把握する。`.claude/workspace/research/` をタスクのキーワードで `bfs` 検索し、該当する調査出力があれば読んで過去のコンテキストを引き継ぐ。
+
+### アプローチ生成
+
+以下の視点から異なる 2 つ以上のアプローチを生成する。アプローチが独立した技術判断を含むときは、各判断を推奨とトレードオフを添えて別の選択質問として提示する。密に結合した判断のみまとめる。
+
+| 視点        | 質問                                    |
+| ----------- | --------------------------------------- |
+| Pragmatist  | 動く中で最も単純な解は？                |
+| Architect   | 拡張性があり構造が良いものは？          |
+| DX Advocate | 開発者 / ユーザー体験に最も良いものは？ |
+
+### 設計
+
+1. 生成したアプローチに `critic-design` を起動し、判定テーブルと実行可能項目を受け取る
+2. 発見事項でフィルタした設計を、トレードオフの根拠とともにユーザーに提示し、承認を待つ
+3. 承認後、技術判断に ADR が必要か問う。単純な機能では省略する
+
+## Phase 4: SOW / Spec 生成
+
+### SOW
+
+- テンプレート `${CLAUDE_SKILL_DIR}/templates/sow.md` を設計コンテキストから埋め、`.claude/workspace/planning/YYYY-MM-DD-{feature}/sow.md` に出力する
+- ID は AC-N 形式。セクション固有のルールはテンプレート内の注記に従う
+
+### Spec
+
+- テンプレート `${CLAUDE_SKILL_DIR}/templates/spec.md` を SOW から生成し、`.claude/workspace/planning/{same-dir}/spec.md` に出力する
+- ID は FR-001 / T-001 / NFR-001 形式。セクション固有のルールはテンプレート内の注記に従う
+- multi-phase では Implementation テーブルの Depends を埋める。後続セッションの並行スケジューリングの handoff になる
+
+### 文章精査
+
+生成後、`${CLAUDE_SKILL_DIR}/references/prose-review.md` と本文言語に対応する空句ファイル (日本語なら `${CLAUDE_SKILL_DIR}/references/phrases.ja.md`、英語なら `${CLAUDE_SKILL_DIR}/references/phrases.en.md`) の基準で `sow.md` と `spec.md` をインライン精査する。
+
+## Phase 5: Spec レビューとスコープ調整
+
+1. 各 Phase のユニークファイル数を数え、5 以上なら独立 Unit (独自の SOW / Spec) に分割する。これは実装スライスではなく AC をより小さな outcome ユニットへ再分解することにあたり、contract の変更なので新しい AC はユーザーと確認する。
+2. Spec (分割した各 Unit を含む) に `reviewer-spec` を起動する。Ready なら通過。NotReady なら P0 ブロッカーを修正して再起動する (最大 3 ループ)。3 ループ後も残るブロッカーはユーザーに提示して進める。
+
+## 完了条件
+
+全項目を満たすまで終了しない。満たせない項目は、理由をユーザーに提示する。
+
+- [ ] OUTCOME.md が存在
+- [ ] Why Statement を確立
+- [ ] 2 つ以上のアプローチを比較
+- [ ] adversarial challenge (critic-design) を適用
+- [ ] 設計をユーザーがレビューし承認
+- [ ] sow.md と spec.md が生成
+- [ ] Spec レビューを通過

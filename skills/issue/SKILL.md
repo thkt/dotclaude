@@ -25,12 +25,13 @@ Read `language` from `${CLAUDE_SKILL_DIR}/../../settings.json` and translate the
 2. Detect type from description (§ Type Detection)
 3. Select the template (§ Template Source)
 4. Generate title + body following template; mark fixed/tentative (§ Confidence Marking)
-5. Filter drafted claims via premise check (§ Premise Check)
-6. Refine body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language (`${CLAUDE_SKILL_DIR}/references/phrases.ja.md` for Japanese, `${CLAUDE_SKILL_DIR}/references/phrases.en.md` for English)
-7. Verify premises via `/challenge` (GO / NO-GO), feature / bug only (§ Adversarial Challenge)
-8. Preview issue + tentative items → AskUserQuestion: "Create this issue?"
-9. Write the body to a temp file, attach labels, and run `gh issue create --body-file` (§ Labels; sandbox-compatible, avoids escaping a long body)
-10. Capture issue URL from command output
+5. Assess whether the issue is epic-sized and should split (§ Split Assessment)
+6. Filter drafted claims via premise check (§ Premise Check)
+7. Refine body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language (`${CLAUDE_SKILL_DIR}/references/phrases.ja.md` for Japanese, `${CLAUDE_SKILL_DIR}/references/phrases.en.md` for English)
+8. Verify premises via `/challenge` (GO / NO-GO), feature / bug only (§ Adversarial Challenge)
+9. Preview issue + tentative items → AskUserQuestion: "Create this issue?"
+10. Write the body to a temp file, attach labels, run `gh issue create --body-file`, and capture the issue URL from its output (§ Labels; sandbox-compatible, avoids escaping a long body)
+11. If split was approved in step 5, hand the published issue to /slice (§ Split Assessment)
 
 ## Type Detection
 
@@ -45,12 +46,7 @@ Default to `feature` if unclear. The title takes a bracketed prefix of the capit
 
 ## Template Source
 
-Prefer a repository Issue template; fall back to the skill's bundled template. Detect by listing `.md` files via `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'`. Whichever becomes the skeleton, the rest of the flow (Confidence Marking → Premise Check → prose review → challenge) runs the same.
-
-| Priority | Condition                                                                 | Template to use                                                                                       |
-| -------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 1        | A GitHub template matches the type (filename or `name` contains the type) | Read its body; strip the leading frontmatter (`name` / `about` / `labels` / `title`) for the skeleton |
-| 2        | No match                                                                  | `${CLAUDE_SKILL_DIR}/templates/<type>.md`                                                             |
+List `.md` files via `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'`. If a GitHub template matches the type (filename or `name` contains the type), read its body and strip the leading frontmatter (`name` / `about` / `labels` / `title`) for the skeleton; otherwise use `${CLAUDE_SKILL_DIR}/templates/<type>.md`. Whichever becomes the skeleton, the rest of the flow (Confidence Marking → Premise Check → prose review → challenge) runs the same.
 
 ## Confidence Marking
 
@@ -67,6 +63,10 @@ Mark which parts of the body are fixed vs tentative, so the implementer can tell
 | User decided it, or it is the ask (What & Why, Acceptance Criteria, explicit Scope / Constraints) | fixed     | unmarked           | -                                                     |
 | AI-inferred HOW (placement, approach, format), or a decision the user left open                   | tentative | `(tentative: ...)` | "decide at pickup" / "change if a better fit appears" |
 | Fact not yet verified (residual Premise Check could not settle)                                   | tentative | `(tentative: ...)` | "recheck at pickup"                                   |
+
+## Split Assessment
+
+When two or more criteria are each independently implementable, ask via AskUserQuestion whether to split, offering "keep as one issue" or "split into an epic + child issues". Do not count fine-grained checks that only verify one deliverable; they stay within one issue. Never auto-split, since publishing N issues is hard to unwind. On approval, publish this issue as the epic and run the rest of the flow from the premise check onward unchanged on it. Once its number is captured, run `Skill("slice", "#<epic-number>")` at step 10.
 
 ## Premise Check
 

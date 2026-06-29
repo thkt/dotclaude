@@ -29,9 +29,9 @@ When /issue classifies the request as chore, it generates the title and body fro
 
 ## Guidelines
 
-| Field       | OK                                                  | NG                              |
-| ----------- | --------------------------------------------------- | ------------------------------- |
-| What & Why  | "Upgrade React 18→19, unblocks concurrent features" | "Upgrade React" (no Why)        |
-| Changes     | "Update package.json, fix breaking API calls"       | "Update dependencies" (vague)   |
-| Scope       | "Only React core, not React Router"                 | (omitted)                       |
-| Constraints | "No behavior changes to existing components"        | (omitted when scope is unclear) |
+| Field       | OK                                                | NG                              |
+| ----------- | ------------------------------------------------- | ------------------------------- |
+| What & Why  | Upgrade React 18→19, unblocks concurrent features | Upgrade React (no Why)          |
+| Changes     | Update package.json, fix breaking API calls       | Update dependencies (vague)     |
+| Scope       | Only React core, not React Router                 | (omitted)                       |
+| Constraints | No behavior changes to existing components        | (omitted when scope is unclear) |

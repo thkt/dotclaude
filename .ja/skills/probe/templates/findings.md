@@ -1,9 +1,18 @@
-# /probe Findings: <repo>
+# Probe Findings レポートテンプレート
 
-- Date: YYYY-MM-DD
-- Target: <absolute path>
+/probe が観点パスを辿りながら issue 候補を記録する findings.md のテンプレート。`/tmp/probe-{repo}-{YYYYMMDD}/findings.md` (ephemeral) に保存する。
+
+## テンプレート
+
+`{...}` は生成時に置き換える。Issues が最終アウトプットで severity 判定はない。Issue ブロックは候補ごとに繰り返す。
+
+```markdown
+# /probe Findings: {repo}
+
+- Date: {YYYY-MM-DD}
+- Target: {absolute path}
 - Outcome source: .claude/OUTCOME.md
-- Scope: <例: Constraint 1 を深掘り、他は浅サンプル>
+- Scope: {例: Constraint 1 を深掘り、他は浅サンプル}
 
 ## Outcome Recap
 
@@ -17,17 +26,17 @@
 
 <!-- 観点パス中に発見した issue 候補。これが最終アウトプット。severity なし、Category と Body のみ。 -->
 
-### Issue-1: <Conventional Commits 形式の draft title>
+### Issue-1: {Conventional Commits 形式の draft title}
 
 - Category: Inconsistency (Issue カテゴリより選択)
 - Labels: security, refactor, consistency
 - Body:
-  - 現状: <観察された実装、file:line で根拠提示>
-  - 課題: <OUTCOME / ADR との乖離>
-  - 提案: <具体的な修正方針>
-  - 影響: <効果と工数>
+  - 現状: {観察された実装、file:line で根拠提示}
+  - 課題: {OUTCOME / ADR との乖離}
+  - 提案: {具体的な修正方針}
+  - 影響: {効果と工数}
 
-### Issue-2: <title>
+### Issue-2: {title}
 
 - Category: ADR drift
 - Labels: docs, ADR drift
@@ -49,8 +58,9 @@
 
 <!-- skill 挙動ログ。質問数、詰まり箇所のパターン、Positive issue の有無、観点パスの破綻有無。 -->
 
-- 観点パス: <破綻なし / 破綻箇所と原因>
-- 質問数: <N> / 観点数: <M>
-- 詰まり箇所のパターン: <例: ADR と実装の用語ズレで頻発>
-- Positive issues: <N 件>
-- 新たな学び: <この dogfood で得た知見>
+- 観点パス: {破綻なし / 破綻箇所と原因}
+- 質問数: {N} / 観点数: {M}
+- 詰まり箇所のパターン: {例: ADR と実装の用語ズレで頻発}
+- Positive issues: {N} 件
+- 新たな学び: {この dogfood で得た知見}
+```

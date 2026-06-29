@@ -44,12 +44,12 @@ When /issue classifies the request as feature, it generates the title and body f
 
 ## Guidelines
 
-| Field               | OK                                                     | NG                                         |
-| ------------------- | ------------------------------------------------------ | ------------------------------------------ |
-| What & Why          | "Add CSV export so users can analyze offline"          | "Add CSV export" (no Why)                  |
-| Acceptance Criteria | "When user clicks Export, a .csv downloads"            | "CSV export works correctly"               |
-| Scope - Out of      | "Excel format is out of scope"                         | (omitted)                                  |
-| Approach            | "match OrderService structure; decide at pickup"       | Inferred HOW stated as a fixed requirement |
-| Constraints         | "Must not add new dependencies"                        | (omitted when there are known constraints) |
-| Premises            | "Figma node 9-2191; confirm latest before starting"    | Unverified design stated as fact           |
-| Testing Decisions   | "Test the CSV serializer; mirror tests/orders.test.ts" | "TBD" or skipped without rationale         |
+| Field               | OK                                                   | NG                                         |
+| ------------------- | ---------------------------------------------------- | ------------------------------------------ |
+| What & Why          | Add CSV export so users can analyze offline          | Add CSV export (no Why)                    |
+| Acceptance Criteria | When user clicks Export, a .csv downloads            | CSV export works correctly                 |
+| Scope - Out of      | Excel format is out of scope                         | (omitted)                                  |
+| Approach            | match OrderService structure; decide at pickup       | Inferred HOW stated as a fixed requirement |
+| Constraints         | Must not add new dependencies                        | (omitted when there are known constraints) |
+| Premises            | Figma node 9-2191; confirm latest before starting    | Unverified design stated as fact           |
+| Testing Decisions   | Test the CSV serializer; mirror tests/orders.test.ts | TBD or skipped without rationale           |

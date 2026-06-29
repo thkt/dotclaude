@@ -25,17 +25,15 @@ Take the plan source from `$ARGUMENTS`. For an issue reference (number / URL / p
 
 /slice's value is decomposition and dependency-ordered publish. For one issue use /issue. To implement now use /swarm.
 
-## Process
-
-### 1. Gather context
+## Phase 1: Gather context
 
 Work from the plan in conversation context. If `$ARGUMENTS` carries an issue reference, read its body and comments.
 
-### 2. Explore the codebase (optional)
+## Phase 2: Explore the codebase (optional)
 
 If not yet explored, understand the current state. Issue titles / descriptions follow the project glossary and respect ADRs in the area you touch. Look for prefactor opportunities that make the change easier ("make the change easy, then make the easy change"). Spawn one Explore agent only when a cross-cutting sweep is needed; no per-slice spawns.
 
-### 3. Draft vertical slices
+## Phase 3: Draft vertical slices
 
 Split the plan into tracer-bullet issues. Vertical slices (through all layers), not horizontal (one layer only).
 
@@ -45,7 +43,7 @@ Split the plan into tracer-bullet issues. Vertical slices (through all layers), 
 | Self-verifiable | A completed slice is demoable or verifiable on its own         |
 | Prefactor first | If prefactoring is needed, put it in the first slice           |
 
-### 4. Quiz the user
+## Phase 4: Quiz the user
 
 Present the proposed breakdown as a numbered list. For each slice show the following.
 
@@ -57,7 +55,7 @@ Present the proposed breakdown as a numbered list. For each slice show the follo
 
 Ask: does the granularity feel right (too coarse / too fine), are the dependencies correct, should any slices be merged or split. Iterate until the user approves.
 
-### 5. Publish the issues
+## Phase 5: Publish the issues
 
 After approval, confirm once more via AskUserQuestion before batch publish ("Create these N issues?"). Creating N issues is outward-facing and hard to unwind, so never auto-publish without confirmation.
 
@@ -115,7 +113,7 @@ Repeat this in dependency order for multiple slices, capturing each issue number
 
 ## Display Format
 
-### Preview (Step 4)
+### Preview (Phase 4)
 
 ```markdown
 ## Slice breakdown (N)

@@ -1,6 +1,6 @@
 # E2E フェーズ
 
-/code Step 8。条件をすべて満たしたときのみ、`generator-e2e` で Spec の e2e シナリオから Playwright テストを生成する。
+`/code` Step 8。条件をすべて満たしたときのみ、`generator-e2e` で Spec の e2e シナリオから Playwright テストを生成する。
 
 ## 条件
 

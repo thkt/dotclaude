@@ -26,13 +26,11 @@ No arguments. Target is the entire repository at current working directory. Scop
 | File     | `/tmp/probe-{repo}-{YYYYMMDD}/findings.md` (ephemeral) |
 | Template | ${CLAUDE_SKILL_DIR}/templates/findings.md              |
 
-## Process
-
-### Step 1: Outcome Loading
+## Phase 1: Outcome Loading
 
 Add each item under Behavior / Non-goals / Constraints in `.claude/OUTCOME.md` to the aspect list. If ADR exists, enumerate headings with status.
 
-### Step 2: Pass-by-Aspect Exploration
+## Phase 2: Pass-by-Aspect Exploration
 
 Run the following sequence per aspect, one aspect at a time.
 
@@ -43,7 +41,7 @@ Run the following sequence per aspect, one aspect at a time.
 5. Ask one question if needed
 6. Move to next aspect
 
-### Step 3: Inconsistency Sweep
+## Phase 3: Inconsistency Sweep
 
 After each aspect pass, detect via grep.
 
@@ -54,11 +52,11 @@ After each aspect pass, detect via grep.
 | Logging hygiene     | Redact wrapper vs raw value in log statements                 |
 | ADR Call Site Index | Function names listed in ADR still exist / line numbers drift |
 
-### Step 4: Question Phase
+## Phase 4: Questions
 
 Ask one question only when stuck. Mark as "unresolved" and proceed if no answer. Durably record in findings.md Open Questions.
 
-### Step 5: Self-Reflection
+## Phase 5: Self-Reflection
 
 Record skill behavior at the end of findings.md (question count, friction patterns, Positive issue presence, aspect pass breakage).
 

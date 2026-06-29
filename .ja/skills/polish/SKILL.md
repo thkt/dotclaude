@@ -19,7 +19,7 @@ Codex でレビューし、findings を `critic-audit` が adversarial challenge
 
 外部の Codex レビューを実行して findings を出す。`which codex` が失敗したら Phase 3 に進む。
 
-`codex review "Review for logic, architecture, data flow, and code simplicity (flag over-complexity and unnecessary indirection)"` を実行する。codex 0.141.0 では scope flag (`--uncommitted` / `--base` / `--commit`) が PROMPT 引数と排他なので、単純化観点を載せた PROMPT を渡すときは scope flag を付けない。codex が自前で `git status` を読み、staged / unstaged / untracked の変更を検出してレビューする。PROMPT を省くと Codex 既定のレビューになり単純化観点が抜けるため必ず渡す。
+`codex review "Review for logic, architecture, data flow, and code simplicity (flag over-complexity and unnecessary indirection)"` を実行する。codex が自前で `git status` を読み、staged / unstaged / untracked の変更を検出してレビューする。PROMPT を省くと Codex 既定のレビューになり単純化観点が抜けるため必ず渡す。
 
 ## Phase 2: Adversarial challenge と修正
 

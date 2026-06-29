@@ -25,12 +25,13 @@ argument-hint: "[issue description]"
 2. 説明から種別を検出 (§ 種別判定)
 3. テンプレートを選ぶ (§ テンプレート選択)
 4. テンプレートに従いタイトルと本文を生成し、確定/仮をマーク (§ 確信度マーキング)
-5. 下書きした主張を前提チェックでフィルタ (§ 前提チェック)
-6. `${CLAUDE_SKILL_DIR}/references/prose-review.md` と、本文言語に対応する空句ファイル (日本語なら `${CLAUDE_SKILL_DIR}/references/phrases.ja.md`、英語なら `${CLAUDE_SKILL_DIR}/references/phrases.en.md`) の基準で本文をインライン精査
-7. `/challenge` で前提を検証 (GO / NO-GO)、feature / bug のみ (§ Adversarial Challenge)
-8. Issue プレビュー + 仮項目 → AskUserQuestion: "Create this issue?"
-9. 本文を一時ファイルに書き出し、ラベルを付けて `gh issue create --body-file` で実行 (§ ラベル。sandbox 互換で長い本文のエスケープを回避)
-10. コマンド出力から Issue URL を取得
+5. epic 規模で分割すべきか判定 (§ 分割判定)
+6. 下書きした主張を前提チェックでフィルタ (§ 前提チェック)
+7. `${CLAUDE_SKILL_DIR}/references/prose-review.md` と、本文言語に対応する空句ファイル (日本語なら `${CLAUDE_SKILL_DIR}/references/phrases.ja.md`、英語なら `${CLAUDE_SKILL_DIR}/references/phrases.en.md`) の基準で本文をインライン精査
+8. `/challenge` で前提を検証 (GO / NO-GO)、feature / bug のみ (§ Adversarial Challenge)
+9. Issue プレビュー + 仮項目 → AskUserQuestion: "Create this issue?"
+10. 本文を一時ファイルに書き出し、ラベルを付けて `gh issue create --body-file` で起票し、出力から Issue URL を取得 (§ ラベル。sandbox 互換で長い本文のエスケープを回避)
+11. step 5 で分割を承認していれば、起票した issue を /slice に渡す (§ 分割判定)
 
 ## 種別判定
 
@@ -45,12 +46,7 @@ argument-hint: "[issue description]"
 
 ## テンプレート選択
 
-リポジトリに Issue テンプレートがあればそれを優先し、なければスキル同梱のテンプレートを使う。検出は `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'` で `.md` を列挙して行う。どちらを骨格にしても以降のフロー (確信度マーキング → 前提チェック → 文章レビュー → challenge) は同じく通す。
-
-| 優先 | 条件                                                                  | 使うテンプレート                                                                            |
-| ---- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| 1    | 種別に一致する GitHub テンプレート (ファイル名や `name` が種別を含む) | その本文を読み、先頭 frontmatter (`name` / `about` / `labels` / `title`) を外して骨格にする |
-| 2    | 一致なし                                                              | `${CLAUDE_SKILL_DIR}/templates/<type>.md`                                                   |
+`gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'` で `.md` を列挙し、種別に一致する GitHub テンプレート (ファイル名や `name` が種別を含む) があれば、その本文を読んで先頭 frontmatter (`name` / `about` / `labels` / `title`) を外し骨格にする。一致しなければ `${CLAUDE_SKILL_DIR}/templates/<type>.md` を使う。どちらを骨格にしても以降のフロー (確信度マーキング → 前提チェック → 文章レビュー → challenge) は同じく通す。
 
 ## 確信度マーキング
 
@@ -67,6 +63,10 @@ argument-hint: "[issue description]"
 | ユーザーが明示した要件 (What & Why, Acceptance Criteria, 明示的な Scope / Constraints) | 確定 | 無印        | -                                             |
 | AI が推論した HOW (配置、方針、フォーマット)、またはユーザーが残した未決定の判断       | 仮   | `(仮: ...)` | 「着手時に判断」/「より良い案があれば変更可」 |
 | 事実が未検証 (前提チェックで決着できなかった残余)                                      | 仮   | `(仮: ...)` | 「着手時に再確認」                            |
+
+## 分割判定
+
+独立して実装可能な criteria が 2 つ以上あれば、AskUserQuestion で分割を問う。選択肢は「1 issue のまま」か「epic + 子 issue に分割」。1 つの成果物を検証するだけの細かいチェックは数えず、1 issue 内に留める。N 件の起票は取り消しにくいため自動分割はしない。承認時はこの issue を epic として起票し、前提チェック以降のフローはそのまま epic に通す。番号取得後、step 10 で `Skill("slice", "#<epic 番号>")` を実行する。
 
 ## 前提チェック
 

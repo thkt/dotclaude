@@ -14,9 +14,7 @@ allowed-tools: Read Write Bash
 - 次のセッションが読む前に、自動抽出された内容を上書きまたは編集したいとき。
 - このマシンで Stop hook が壊れている疑いがあり、knowledge store が最新に保たれているか検証したいとき。
 
-## 手順
-
-### Step 0: パス解決
+## Setup: パス解決
 
 skill の冒頭で 1 回実行する。
 
@@ -29,7 +27,7 @@ INDEX="$KDIR/reflection-index.jsonl"
 
 `$KDIR` が存在しない場合は、Stop hook の下でセッションを少なくとも 1 回実行する (ディレクトリは初回の自動抽出で作成される) か、`REFLECT_KNOWLEDGE_DIR` を明示的に設定するようユーザーに伝える。
 
-### Step 1: 現状の読み取り
+## Phase 1: 現状の読み取り
 
 以下をこの順でユーザーに表示する。
 
@@ -37,7 +35,7 @@ INDEX="$KDIR/reflection-index.jsonl"
 2. placeholder (`placeholder: true`) か。該当すればフラグする。
 3. `$INDEX` の最新 3 エントリ (ユーザーがローカル履歴を確認できるように)。
 
-### Step 2: 生成
+## Phase 2: 生成
 
 3 カテゴリにわたる新しい reflection を生成する。`agents/reflection-extractor.md` と同じ形を使い、そのガイダンス (realization / judgment / counterfactual) を再利用する。body は合計 300 words 以内に収める。出力の frontmatter は次を使う。
 
@@ -54,15 +52,15 @@ promoted_via: reflect-skill
 
 `promoted_via: reflect-skill` フィールドは手動昇格の印で、監査が自動抽出された reflection と区別できるようにする。
 
-### Step 3: 確認
+## Phase 3: 確認
 
 生成した reflection を fenced block でユーザーに見せ、「`$MD` へ昇格する? (yes / edit / cancel)」と問う。
 
-- `yes` → Step 4
-- `edit` → 変更点を尋ね、再生成して Step 3 に戻る
+- `yes` → Phase 4
+- `edit` → 変更点を尋ね、再生成して Phase 3 に戻る
 - `cancel` → 書き込まずに終了
 
-### Step 4: 書き込みと index 追記
+## Phase 4: 書き込みと index 追記
 
 ```bash
 # Atomic write: stage to a temp file, then move.

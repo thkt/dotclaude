@@ -29,9 +29,9 @@ When /issue classifies the request as docs, it generates the title and body from
 
 ## Guidelines
 
-| Field      | OK                                                      | NG                          |
-| ---------- | ------------------------------------------------------- | --------------------------- |
-| What & Why | "Add setup guide - new contributors can't onboard"      | "Add setup guide" (no Why)  |
-| Location   | "`docs/getting-started.md`, Setup section"              | "Somewhere in docs" (vague) |
-| Changes    | "Add prerequisites list, install steps, verify command" | "Write setup documentation" |
-| Scope      | "Only local dev setup, not CI/CD"                       | (omitted)                   |
+| Field      | OK                                                    | NG                        |
+| ---------- | ----------------------------------------------------- | ------------------------- |
+| What & Why | Add setup guide. New contributors can't onboard       | Add setup guide (no Why)  |
+| Location   | `docs/getting-started.md`, Setup section              | Somewhere in docs (vague) |
+| Changes    | Add prerequisites list, install steps, verify command | Write setup documentation |
+| Scope      | Only local dev setup, not CI/CD                       | (omitted)                 |

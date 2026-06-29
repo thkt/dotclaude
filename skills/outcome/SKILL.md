@@ -3,6 +3,7 @@ name: outcome
 description: Generates and updates .claude/OUTCOME.md interactively. When the file is absent or empty (no Behavior / all sections TBD), collects content via AskUserQuestion and writes the stub; when present, shows the current state and applies updates.
 when_to_use: OUTCOME作って, OUTCOME更新, アウトカム定義, create outcome, update outcome
 allowed-tools: Read Write Edit AskUserQuestion
+model: opus
 ---
 
 # /outcome - OUTCOME.md generation and update
@@ -18,7 +19,7 @@ Generate or update `.claude/OUTCOME.md` interactively. This skill is also the la
 
 ## Generate
 
-1. Read `${CLAUDE_SKILL_DIR}/templates/outcome.md` (structure and examples)
+1. Read `${CLAUDE_SKILL_DIR}/templates/outcome.md` (structure)
 2. Collect Behavior (≥1, subject named), Non-goals, Constraints in one AskUserQuestion call, one question per item (3 Qs)
 3. Run each Behavior through the Outcome test; rewrite failures and re-present to the user
 4. Fill the template and Write `.claude/OUTCOME.md`

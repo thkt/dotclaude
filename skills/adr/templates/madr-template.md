@@ -1,6 +1,6 @@
 # MADR Template
 
-Every decision type uses the same MADR v4 skeleton. Required sections are common to all types (Title, Context and Problem Statement, Considered Options 2+, Decision Outcome). The only per-type difference is the recommended topics under More Information; include only those that apply to the decision, as `### {topic}`.
+The template is common to every decision type. The only per-type variation is the recommended topics under More Information; list the ones selected for the decision type as `### {topic}`.
 
 ## Template
 
@@ -9,8 +9,8 @@ Replace `{...}` at creation time. Omit a section marked optional, heading includ
 ```markdown
 ---
 status: "{proposed | rejected | accepted | deprecated | superseded by ADR-NNNN}"
-date: { YYYY-MM-DD }
-decision-makers: { names or roles }
+date: "{YYYY-MM-DD}"
+decision-makers: "{names or roles}"
 ---
 
 # {Decision title in "Adopt X for Y" form}

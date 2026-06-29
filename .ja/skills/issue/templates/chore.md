@@ -1,6 +1,6 @@
 # Chore テンプレート
 
-/issue が chore 種別と判定したとき、この骨格でタイトルと本文を生成する。
+`/issue` が chore 種別と判定したとき、この骨格でタイトルと本文を生成する。
 
 ## テンプレート
 
@@ -29,9 +29,9 @@
 
 ## ガイドライン
 
-| フィールド  | OK                                                   | NG                           |
-| ----------- | ---------------------------------------------------- | ---------------------------- |
-| What & Why  | "Upgrade React 18→19, unblocks concurrent features" | "Upgrade React" (Why なし)   |
-| Changes     | "Update package.json, fix breaking API calls"        | "Update dependencies" (曖昧) |
-| Scope       | "Only React core, not React Router"                  | (省略)                       |
-| Constraints | "No behavior changes to existing components"         | (スコープ不明確時に省略)     |
+| フィールド  | OK                                           | NG                       |
+| ----------- | -------------------------------------------- | ------------------------ |
+| What & Why  | React 18 → 19 へ更新、concurrent 機能を解放  | React を更新 (Why なし)  |
+| Changes     | package.json 更新、破壊的 API 呼び出しを修正 | 依存を更新 (曖昧)        |
+| Scope       | React core のみ、React Router は対象外       | (省略)                   |
+| Constraints | 既存コンポーネントの振る舞いは変えない       | (スコープ不明確時に省略) |

@@ -11,5 +11,5 @@ PR 本文が満たすべき構造を確認する。
 | Why stated     | 変更理由 (何でなく) が冒頭 1-3 行にあるか                                |
 | Test evidence  | 検証が具体的か (実行コマンド、テストファイル、スクリーンショット)        |
 | Scope          | 変更が集中しているか、無関係な編集が混ざっていないか                     |
-| Reviewer focus | レビュー優先度が明確か ("focus on X", "skim Y")                          |
+| Reviewer focus | レビュー優先度が明確か (`focus on X`, `skim Y`)                          |
 | Risk surfaced  | マイグレーション、ロールバック、パフォーマンスのリスクが明示されているか |

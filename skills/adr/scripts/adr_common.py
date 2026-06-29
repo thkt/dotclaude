@@ -40,9 +40,17 @@ def guard_skill_dir(adr_dir, hint):
 
 
 def split_frontmatter(text):
-    """(frontmatter lines, body lines) split on the first pair of --- delimiters."""
-    parts = re.split(r"^---[ \t]*$\n?", text, maxsplit=2, flags=re.M)
-    if len(parts) == 1:
-        return [], parts[0].splitlines()
-    body = parts[0] + parts[2] if len(parts) > 2 else parts[0]
-    return parts[1].splitlines(), body.splitlines()
+    """(frontmatter lines, body lines).
+
+    Frontmatter only when the file opens with a --- line and has a closing ---
+    line. A --- elsewhere (e.g. a body horizontal rule) is never a delimiter, and
+    an unclosed opening --- yields no frontmatter.
+    """
+    lines = text.splitlines()
+    fence = re.compile(r"^---[ \t]*$")
+    if not lines or not fence.match(lines[0]):
+        return [], lines
+    for i in range(1, len(lines)):
+        if fence.match(lines[i]):
+            return lines[1:i], lines[i + 1 :]
+    return [], lines

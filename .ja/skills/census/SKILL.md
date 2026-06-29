@@ -13,23 +13,23 @@ argument-hint: "[file or directory]"
 
 ## 入力
 
-`$ARGUMENTS` は監査スコープを表す任意のパス。引数なしならリポジトリ全体、ファイルパスならそのファイル単体 (ソースなら docs 系ステップはスキップ)、ディレクトリパスならその subtree に絞る。スコープを限定したときは、レポート Summary の Scope 行に対象を記録する。
+`$ARGUMENTS` は監査スコープを表す任意のパス。引数なしならリポジトリ全体、ファイルパスならそのファイル単体 (ソースなら docs 系フェーズはスキップ)、ディレクトリパスならその subtree に絞る。スコープを限定したときは、レポート Summary の Scope 行に対象を記録する。
 
 ## 判定基準
 
-判定に関わる基準 (impact / reversibility、incomplete-contract の定義、ADR 化価値のヒューリスティック、challenge 観点) はすべて `${CLAUDE_SKILL_DIR}/references/decision-criteria.md` にある。各 Step はこれを基準として適用する。
+判定に関わる基準 (impact / reversibility、incomplete-contract の定義、ADR 化価値のヒューリスティック、challenge 観点) はすべて `${CLAUDE_SKILL_DIR}/references/decision-criteria.md` にある。各 Phase はこれを基準として適用する。
 
-## Step 1: ソースファイル列挙
+## Phase 1: ソースファイル列挙
 
-ファイルが直接指定された場合はこのステップをスキップし、そのファイルを Step 3 の対象とする。それ以外は `python3 ${CLAUDE_SKILL_DIR}/scripts/list-source-files.py <scope>` を実行し、ソースファイルの一覧を取得する (`<scope>` はディレクトリ指定時はそのパス、引数なし時はリポジトリルート)。
+ファイルが直接指定された場合はこのフェーズをスキップし、そのファイルを Phase 3 の対象とする。それ以外は `python3 ${CLAUDE_SKILL_DIR}/scripts/list-source-files.py <scope>` を実行し、ソースファイルの一覧を取得する (`<scope>` はディレクトリ指定時はそのパス、引数なし時はリポジトリルート)。
 
-ファイル数が多い (目安 20 件超、リポジトリ規模に応じて調整) 場合は、Step 3 の reviewer を並列起動する前に AskUserQuestion でフォーカスを確認する (サブディレクトリ / 上位 N 件 / 特定モジュールなど)。目安以下なら確認を省き、全件を Step 3 に渡す。
+ファイル数が多い (目安 20 件超、リポジトリ規模に応じて調整) 場合は、Phase 3 の reviewer を並列起動する前に AskUserQuestion でフォーカスを確認する (サブディレクトリ / 上位 N 件 / 特定モジュールなど)。目安以下なら確認を省き、全件を Phase 3 に渡す。
 
-## Step 2: ドキュメント検出
+## Phase 2: ドキュメント検出
 
 対象がソースファイル単体のときはスキップ。ディレクトリ指定時はその subtree、引数なし時はトップ階層と `docs/` 配下を対象に、判断記述を含みやすいドキュメントをスキャンする。対象パターンは `${CLAUDE_SKILL_DIR}/references/detection-targets.md`。
 
-## Step 3: ソースファイルからの判断発掘
+## Phase 3: ソースファイルからの判断発掘
 
 各ソースファイルから 2 系統で根拠を集める。reviewer がコード内部を、`/census` が git 履歴を担い、共通フォーマットで記録してから ADR と相互参照する。
 
@@ -50,15 +50,15 @@ reviewer は git にアクセスできないため、`/census` 自身が `git lo
 
 各検出事項は `file:line` + 判断概要 + 根拠 (コメント / 命名 / module-doc / commit) + `documented?` + `incomplete-contract?` で記録する。commit 由来は `commit <sha>` を根拠とする。収集後、ADR ディレクトリがあれば相互参照し、既存 ADR で覆われたものは除外する (サマリーに "ADR-covered (excluded)" の件数を記録)。
 
-## Step 4: 散文ドキュメントからの抽出
+## Phase 4: 散文ドキュメントからの抽出
 
 検出された各ドキュメントについて、決定動詞 (一覧は detection-targets.md) を含む文を検索し、各一致を候補化する。続いて各候補について ADR ディレクトリ (もしあれば) を相互参照し、既存 ADR で覆われている候補は除外する。
 
-## Step 5: ランク付けと Challenge
+## Phase 5: ランク付けと Challenge
 
 ### 5a タグ付けと初期ランク付け
 
-Step 3 と Step 4 の各候補に impact と reversibility を付与する。ADR 化候補は `(impact = H) AND (reversibility = low OR medium)` を満たすもの。
+Phase 3 と Phase 4 の各候補に impact と reversibility を付与する。ADR 化候補は `(impact = H) AND (reversibility = low OR medium)` を満たすもの。
 
 `incomplete-contract=Yes` の検出事項は `documented?` の値に関わらず昇格する。それ以外の検出事項は記録するが昇格しない (情報提供のみ)。
 
@@ -66,9 +66,9 @@ Step 3 と Step 4 の各候補に impact と reversibility を付与する。ADR
 
 `critic-design` を Task で起動し、初期の昇格候補リストと `${CLAUDE_SKILL_DIR}/references/decision-criteria.md` を渡す。`critic-design` は同ファイルの challenge 観点で各候補に挑み、Verdict (`keep` / `downgrade` / `drop`) のいずれかを返す。判定は初期ランク付けと並べて記録する。
 
-## Step 6: レポート出力
+## Phase 6: レポート出力
 
-`${CLAUDE_SKILL_DIR}/templates/report-template.md` に従い、プレースホルダーを検出事項から置換してレポートを書く。ファイル毎のサマリー行 `keep N / downgrade N / drop N` を追加する。書き終えたら 候補数 / ADR 化候補数 をコンソールに出力する。
+`${CLAUDE_SKILL_DIR}/templates/report-template.md` に従い、プレースホルダーを検出事項から置換してレポートを書く。ADR Promotion Candidates 表の直後に、全候補を集計した 1 行 `keep N / downgrade N / drop N` を追加する。書き終えたら 候補数 / ADR 化候補数 をコンソールに出力する。
 
 ```bash
 mkdir -p docs/audit
@@ -90,7 +90,7 @@ REPORT="docs/audit/${STAMP}-adr-gaps.md"
 | 項目           | 条件                                                                     |
 | -------------- | ------------------------------------------------------------------------ |
 | レポート       | `docs/audit/<YYYY-MM-DD>-<HHMMSS>-adr-gaps.md` が存在                    |
-| ソースファイル | レビューした各ファイルにセクション                                       |
+| ソースファイル | レビューした各ファイルを記載 (判断なしは末尾 1 行に束ねてよい)           |
 | ドキュメント   | スキャンした各ドキュメントに抽出セクション ("no decisions found" でも可) |
 | タグ           | 各候補に impact と reversibility が付与                                  |
 | ADR 化候補     | 末尾にリスト (一行の根拠付き)                                            |
