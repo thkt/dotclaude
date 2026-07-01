@@ -106,3 +106,7 @@ backups/
 # PR review loop runtime state
 loops/pr-review-state.json
 loops/drafts/
+
+# Job / daemon runtime state
+jobs/
+daemon/
