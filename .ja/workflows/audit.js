@@ -1,9 +1,9 @@
 export const meta = {
   name: "audit",
   description:
-    'Deterministic audit fan-out. File routing (glob table) runs in the script, so reviewer selection cannot drift; git I/O and each reviewer / critic run as agents. Pipeline is reviewer -> challenge -> verify -> integrate, not reviewer -> aggregate. Callable standalone or nested from build via workflow("audit").',
+    '決定論的な audit fan-out。ファイルの routing (glob 表) は script 内で走るため reviewer 選択は drift しない。git I/O と各 reviewer / critic は agent として走る。pipeline は reviewer -> challenge -> verify -> integrate であり reviewer -> aggregate ではない。standalone でも build から workflow("audit") で nested にも呼べる。',
   whenToUse:
-    "Run when a diff needs the full adversarial reviewer set fired every time, not left to the main loop's discretion. The interactive /audit skill stays the launcher (focus / scope prompts); this workflow owns the fan-out.",
+    "diff に対して adversarial な reviewer 一式を決定論的に発火させ、review を main loop の裁量に委ねない。/audit または Workflow({name:'audit'}) で直接起動する。launcher skill は無い。起動前に scope や focus が不明なら、ユーザーに 2 点を尋ねる。focus (all / security / performance / quality / a11y) と scope (staged の HEAD diff、path、別 repo のいずれか)。それらを args として渡す。例 Workflow({name:'audit', args:{focus:'security', scope:'src/'}})。args を省くと focus=all で HEAD diff を audit する。この workflow が clarification の受け渡しと fan-out の両方を所有する。",
   phases: [
     { title: "Pre-flight" },
     { title: "Route" },
@@ -15,20 +15,18 @@ export const meta = {
   ],
 };
 
-// Why routing lives in the script, not an agent: /audit assigns reviewers by a
-// pure glob table (extension -> reviewer list). An agent re-deriving that table
-// would reintroduce the exact drift this workflow exists to remove. So the table
-// is ported to JS and applied deterministically; agents only do what needs a
-// tool (git diff / log) or a judgement (the reviews themselves). Reviewers run
-// on sonnet, mirroring /audit's hard-won lesson: opus + deep analysis stalls the
-// stream watchdog. Pilot cut, logged not silent: reviewer-causation (5 Whys over
-// all findings) and multi-run aggregation are deferred until the seam is proven.
+// routing を agent でなく script に置く理由。/audit は純粋な glob 表 (拡張子 -> reviewer
+// list) で reviewer を割り当てる。agent がその表を再導出すると、この workflow が消すために
+// 存在するまさにその drift を再び持ち込む。だから表は JS に移植して決定論的に適用し、agent は
+// tool を要する処理 (git diff / log) か判断 (review 自体) だけを行う。reviewer は sonnet で
+// 走る。/audit の教訓に倣う。opus + 深い解析は stream watchdog を stall させる。silent でなく
+// 明示した pilot cut。reviewer-causation (全 findings への 5 Whys) と複数 run の集約は seam が
+// 実証されるまで deferred。
 
-// args may arrive as an object (preferred) or, if a caller stringifies it, as a
-// JSON-encoded string. Normalize once so scope does not swallow the whole blob
-// and focus / repo / skipPreflight stay readable regardless of how it was passed:
-// a string that parses to an object is that object; any other string is the
-// scope shorthand.
+// args は object (推奨) で来ることも、呼び出し側が stringify すれば JSON 文字列で来ることも
+// ある。一度だけ正規化し、scope が blob 全体を飲み込まず、渡され方に依らず focus / repo /
+// skipPreflight を読めるようにする。object に parse できる文字列はその object とし、それ以外の
+// 文字列は scope の短縮記法とする。
 const opts = (() => {
   if (typeof args === "object" && args) return args;
   if (typeof args !== "string") return {};
@@ -38,7 +36,7 @@ const opts = (() => {
       const parsed = JSON.parse(s);
       if (parsed && typeof parsed === "object") return parsed;
     } catch {
-      // malformed JSON: fall through and treat the raw string as scope
+      // 壊れた JSON。抜けて raw 文字列を scope として扱う
     }
   }
   return { scope: args };
@@ -47,20 +45,19 @@ const opts = (() => {
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const focus = typeof opts.focus === "string" ? opts.focus : "all";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
-// noLimit skips the >30-file guard; skipPreflight lets a caller (build, whose
-// Code phase already drove tests to green) suppress the redundant test run.
+// noLimit は >30 ファイルの guard を skip する。skipPreflight は呼び出し側 (build。その Code
+// phase が既に test を green まで回した) が冗長な test 実行を抑止できるようにする。
 const noLimit = opts.noLimit === true;
 const skipPreflight = opts.skipPreflight === true;
 const anchor = (p) =>
   repo
-    ? `Run every git command from the repository at ${repo} (begin each shell command with \`cd ${repo} && \`).\n\n${p}`
+    ? `repo ${repo} から全 git コマンドを実行せよ (各シェルコマンドを \`cd ${repo} && \` で始めよ)。\n\n${p}`
     : p;
 
-// Snapshot persistence is a disk side-effect, not part of the return contract.
-// The script cannot touch the filesystem or call Date.now() (both throw / are
-// blocked in the sandbox), so a bash agent stamps the timestamp with `date -u`,
-// reads $CLAUDE_SESSION_ID and the branch, computes the delta against the most
-// recent prior snapshot, and writes the file. Its result is not consumed.
+// snapshot の永続化は disk 副作用で、return 契約の一部ではない。script は filesystem に触れず
+// Date.now() も呼べない (どちらも sandbox で throw / block される) ため、bash agent が
+// `date -u` で timestamp を刻み、$CLAUDE_SESSION_ID と branch を読み、直近の prior snapshot との
+// delta を計算してファイルを書く。その結果は消費されない。
 const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   phase("Snapshot");
   const payload = JSON.stringify({
@@ -73,13 +70,13 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   });
   await agent(
     anchor(
-      `You are the snapshot stage of an audit. Write a JSON record of this run to ` +
-        `"$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).json" (mkdir -p the directory first). ` +
-        `Start from this payload and add three fields you resolve via shell: "session" from $CLAUDE_SESSION_ID, ` +
-        `"branch" from \`git rev-parse --abbrev-ref HEAD\`, and "generated_at" from \`date -u +%Y-%m-%dT%H:%M:%SZ\`. ` +
-        `Also add "delta": compare this run's raw_findings to the most recent existing audit-*.json in that directory ` +
-        `(match on file + message) and record { resolved, new, carried } as counts; if no prior snapshot exists, use zeros and note "first run". ` +
-        `Do not review code or change any finding. Payload:\n${payload}`,
+      `あなたは audit の snapshot 段階だ。この run の JSON 記録を ` +
+        `"$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).json" に書け (先に mkdir -p でディレクトリを作る)。` +
+        `この payload を起点に、シェルで解決する 3 フィールドを足せ。$CLAUDE_SESSION_ID から "session"、` +
+        `\`git rev-parse --abbrev-ref HEAD\` から "branch"、\`date -u +%Y-%m-%dT%H:%M:%SZ\` から "generated_at"。` +
+        `さらに "delta" を足せ。この run の raw_findings を同ディレクトリの直近の audit-*.json と比較し ` +
+        `(file + message でマッチ)、{ resolved, new, carried } を件数で記録する。prior snapshot が無ければ 0 とし "first run" と注記する。` +
+        `コードを review したり finding を変更したりするな。Payload:\n${payload}`,
     ),
     {
       agentType: "general-purpose",
@@ -90,22 +87,13 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   );
 };
 
-// /audit routing table, ported then language-split. strictness targets typed
-// files (ts / tsx); react-pattern targets JSX files (jsx / tsx). Plain js / ts
-// get neither, so a pure-js audit no longer fires those two on empty. Heuristic,
-// not a guarantee: React written without JSX loses react-pattern. Keys are
-// matched against each file by the classify() rules below; a file takes the
-// first matching row.
+// /audit の routing 表を移植し言語別に分けたもの。strictness は型付きファイル (ts / tsx) を
+// 対象とし、react-pattern は JSX ファイル (jsx / tsx) を対象とする。素の js / ts はどちらも
+// 付かないため、純 js の audit ではこの 2 つが空振りしなくなった。保証でなく heuristic。
+// JSX なしで書かれた React は react-pattern を失う。キーは下の classify() の規則で各ファイルと
+// マッチし、ファイルは最初にマッチした行を取る。
 const ROUTING = {
-  "*.sh": [
-    "security",
-    "silence",
-    "duplication",
-    "reuse",
-    "efficiency",
-    "operations",
-    "resilience",
-  ],
+  "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
   "*.js": [
     "security",
     "silence",
@@ -190,17 +178,12 @@ const ROUTING = {
   ],
   "*.md": ["prompt", "document"],
   "*.yaml,*.json": ["encapsulation", "document"],
-  "*.css,*.html": [
-    "accessibility",
-    "progressive",
-    "performance",
-    "duplication",
-  ],
+  "*.css,*.html": ["accessibility", "progressive", "performance", "duplication"],
   test: ["coverage", "testability"],
   default: ["duplication", "reuse", "efficiency", "document"],
 };
 
-// /audit focus filter. Final per-file set = routed reviewers intersect focus set.
+// /audit の focus フィルタ。最終的なファイルごとの集合 = routed reviewer と focus 集合の積。
 const FOCUS = {
   security: ["security", "silence"],
   performance: ["performance", "efficiency", "progressive"],
@@ -241,8 +224,7 @@ const classify = (p) => {
   if (e === ".rs") return ROUTING["*.rs"];
   if (e === ".py") return ROUTING["*.py"];
   if (e === ".md") return ROUTING["*.md"];
-  if (e === ".yaml" || e === ".yml" || e === ".json")
-    return ROUTING["*.yaml,*.json"];
+  if (e === ".yaml" || e === ".yml" || e === ".json") return ROUTING["*.yaml,*.json"];
   if (e === ".css" || e === ".html") return ROUTING["*.css,*.html"];
   return ROUTING.default;
 };
@@ -316,25 +298,24 @@ const PREFLIGHT_SCHEMA = {
   },
 };
 
-// ---- Pre-flight ∥ Route: two independent stages, one barrier ----
-// Pre-flight runs the test suite (test I/O); Route lists changed files + churn
-// (git I/O). They share no data, so running them concurrently costs only
-// max(preflight, route) instead of the serial sum. Bare phase() races under
-// parallel(), so each thunk names its own group via opts.phase.
+// ---- Pre-flight ∥ Route。独立した 2 段、barrier は 1 つ ----
+// Pre-flight は test suite を回す (test I/O)。Route は変更ファイル + churn を列挙する
+// (git I/O)。両者はデータを共有しないため、並行に走らせても直列和でなく
+// max(preflight, route) のコストで済む。素の phase() は parallel() 下で race するので、各
+// thunk は opts.phase で自分の group を名指す。
 const scopeInstr = scope
-  ? `Scope is "${scope}". Run \`git diff --name-only ${scope}\` for the file list.`
-  : `No scope given. List staged + modified files: union of \`git diff --name-only HEAD\` and \`git diff --name-only --staged\`.`;
+  ? `Scope は "${scope}"。ファイル一覧は \`git diff --name-only ${scope}\` を実行する。`
+  : `Scope が無い。staged + modified のファイルを列挙する。\`git diff --name-only HEAD\` と \`git diff --name-only --staged\` の和集合。`;
 const [preFlightRaw, route] = await parallel([
-  // Pre-flight: tests-only by design. Static analysis is the gates hook's job
-  // (running linters here would duplicate it and invent behavior the /audit
-  // skill forbids). A test failure is recorded as context but does NOT block and
-  // does NOT become a finding. Skipped when a caller already drove tests to
-  // green (build's Code phase), so the nested run does not re-run the suite.
+  // Pre-flight。設計上 tests-only。静的解析は gates hook の担当 (ここで linter を回すと重複し、
+  // /audit skill が禁じる挙動を発明することになる)。test の失敗は context として記録するが
+  // block せず、finding にもしない。呼び出し側が既に test を green まで回した場合 (build の
+  // Code phase) は skip し、nested run で suite を再実行しない。
   async () => {
-    if (skipPreflight) return { ran: false, note: "skipped by caller" };
+    if (skipPreflight) return { ran: false, note: "呼び出し側により skip" };
     const pf = (await agent(
       anchor(
-        `You are the pre-flight stage of an audit. Detect the project's task runner (package.json -> npm/yarn/pnpm/bun, Cargo.toml -> cargo, pyproject.toml -> poetry/uv, Makefile -> make, Taskfile.yml -> task), find its test script (try test, test:unit, test:ci, spec in order; fall back to \`command -v\` for vitest/jest/pytest/cargo test), and run it once with a 60-second timeout. Record pass/fail counts and the exit code. A non-zero exit or a timeout is recorded, not blocked; do not fix anything and do not review code. If no runner or test script is found, return ran=false with the reason in note.`,
+        `あなたは audit の pre-flight 段階だ。プロジェクトの task runner を検出せよ (package.json -> npm/yarn/pnpm/bun、Cargo.toml -> cargo、pyproject.toml -> poetry/uv、Makefile -> make、Taskfile.yml -> task)。その test script を見つけ (test, test:unit, test:ci, spec の順に試す。無ければ vitest/jest/pytest/cargo test を \`command -v\` で探す)、60 秒の timeout で 1 度だけ実行せよ。pass/fail の件数と exit code を記録する。非ゼロ exit や timeout は記録するが block しない。何も修正せず、コードを review もするな。runner か test script が見つからなければ、理由を note に入れて ran=false を返せ。`,
       ),
       {
         agentType: "general-purpose",
@@ -343,27 +324,27 @@ const [preFlightRaw, route] = await parallel([
         model: "sonnet",
         schema: PREFLIGHT_SCHEMA,
       },
-    )) || { ran: false, note: "pre-flight agent returned no output" };
+    )) || { ran: false, note: "pre-flight agent が出力を返さなかった" };
     log(
       pf.ran
-        ? `Pre-flight: ${pf.command} -> ${pf.tests_passed || 0} passed, ${pf.tests_failed || 0} failed (exit ${pf.exit_code}).`
-        : `Pre-flight skipped: ${pf.note}`,
+        ? `Pre-flight: ${pf.command} -> pass ${pf.tests_passed || 0}, fail ${pf.tests_failed || 0} (exit ${pf.exit_code})。`
+        : `Pre-flight skip: ${pf.note}`,
     );
     return pf;
   },
-  // Route: list changed files + churn, then map to reviewers in JS below.
+  // Route。変更ファイル + churn を列挙し、下の JS で reviewer にマッピングする。
   () =>
     agent(
       anchor(
-        `You are the routing stage of an audit. ${scopeInstr}\n` +
-          `For each file, count how many past fix commits touched it: \`git log --grep=fix --oneline -- <file>\` and read the line count as churn (0 is fine, keep the file). Return every file with its churn. Do not review anything; this stage only lists files.`,
+        `あなたは audit の routing 段階だ。${scopeInstr}\n` +
+          `各ファイルについて、過去に触れた fix commit の数を数えよ。\`git log --grep=fix --oneline -- <file>\` の行数を churn として読む (0 でも良い。そのファイルは残す)。全ファイルを churn 付きで返せ。何も review するな。この段階はファイルを列挙するだけだ。`,
       ),
       { label: "route", phase: "Route", schema: ROUTE_SCHEMA },
     ),
 ]);
 const preFlight = preFlightRaw || {
   ran: false,
-  note: "pre-flight stage failed",
+  note: "pre-flight 段階が失敗",
 };
 
 const files = ((route && route.files) || []).filter((f) => f.path);
@@ -371,11 +352,11 @@ if (!files.length) {
   return {
     findings: [],
     skipped: [],
-    why: "No files to audit for the given scope.",
+    why: "指定 scope に audit 対象ファイルが無い。",
   };
 }
 
-// Deterministic routing: reviewer -> assigned files, then focus filter.
+// 決定論的 routing。reviewer -> 割り当てファイル、その後 focus フィルタ。
 const focusSet = FOCUS[focus] === undefined ? null : FOCUS[focus];
 const assign = {};
 for (const f of files) {
@@ -389,20 +370,18 @@ const assignments = Object.entries(assign).map(([reviewer, fs]) => ({
   files: fs,
 }));
 
-// File-count policy. The interactive /audit prompts to narrow scope past 30
-// files; headless has no prompt, so warn loudly and continue (the deterministic
-// half of the policy is the batch-split below, which bounds per-agent load).
-// --no-limit / an explicit scope suppress the warning.
+// ファイル数ポリシー。対話版の /audit は 30 ファイルを超えると scope を絞る prompt を出す。
+// headless には prompt が無いので、大きく warn して継続する (ポリシーの決定論的な半分は下の
+// batch-split で、per-agent 負荷を有界化する)。--no-limit / 明示的な scope は warn を抑止する。
 if (files.length > 30 && !scope && !noLimit) {
   log(
-    `File-count policy: ${files.length} files exceed the soft limit of 30 and no scope was given. Continuing headless (no narrow-scope prompt); pass a scope or noLimit to silence this.`,
+    `ファイル数ポリシー。${files.length} ファイルが soft limit の 30 を超え、scope も無い。headless で継続する (narrow-scope の prompt は無い)。warn を消すには scope か noLimit を渡す。`,
   );
 }
 
-// Batch-split: cap each agent at 10 files so a reviewer with a wide assignment
-// fans out into several bounded units instead of one overloaded call. Units
-// carry their reviewer label so skips and raw_findings stay attributable after
-// the parallel results are flattened.
+// Batch-split。各 agent を 10 ファイルに上限を設け、割り当ての広い reviewer が 1 つの過負荷な
+// 呼び出しでなく複数の有界な unit に fan-out するようにする。unit は reviewer ラベルを持ち、
+// parallel 結果が flatten された後も skip と raw_findings を帰属可能に保つ。
 const BATCH = 10;
 const units = [];
 for (const a of assignments) {
@@ -424,23 +403,23 @@ const churnMap = files
   .map((f) => `${f.path}: ${f.churn}`)
   .join("\n");
 log(
-  `Routed ${files.length} file(s) to ${assignments.length} reviewer(s) in ${units.length} unit(s) [focus=${focus}]: ${assignments
+  `${files.length} ファイルを ${assignments.length} reviewer / ${units.length} unit に routing [focus=${focus}]: ${assignments
     .map((a) => a.reviewer)
     .join(", ")}`,
 );
 
-// ---- Review: every routed reviewer fires, in parallel, on sonnet ----
+// ---- Review。routing された全 reviewer が並行に、sonnet で発火する ----
 phase("Review");
 const RELIABILITY =
-  "Do NOT call the advisor tool; work autonomously from your own analysis. Complete within 8 minutes; if uncertain about a finding, include it rather than skip (the challenger prunes false positives). When the scope spans several files, follow the high-churn paths and do not spend the whole budget on the first file.";
+  "advisor tool を呼ぶな。自分の解析だけで autonomous に進めよ。8 分以内に完了せよ。finding に確信が持てなければ、skip せず含めよ (false positive は challenger が刈る)。scope が複数ファイルに跨るときは high-churn の path を追い、最初のファイルで budget を使い切るな。";
 const raw = await parallel(
   units.map(
     (u) => () =>
       agent(
         anchor(
-          `reviewer-${u.reviewer}. Review these files from the diff: ${u.files.join(", ")}. ` +
-            `Base the review on \`git diff ${scope || "HEAD"}\` for those paths. Every finding needs file:line. Return findings with severity.\n` +
-            `Churn (fix-commit counts, high = fragile):\n${churnMap}\n\n${RELIABILITY}`,
+          `reviewer-${u.reviewer}。diff からこれらのファイルを review せよ: ${u.files.join(", ")}。` +
+            `review は \`git diff ${scope || "HEAD"}\` のそれらの path に基づけ。全 finding に file:line が要る。severity 付きで finding を返せ。\n` +
+            `Churn (fix-commit の数。高 = 壊れやすい):\n${churnMap}\n\n${RELIABILITY}`,
         ),
         {
           agentType: `reviewer-${u.reviewer}`,
@@ -453,8 +432,8 @@ const raw = await parallel(
   ),
 );
 const findings = raw.filter(Boolean).flatMap((r) => r.findings || []);
-// raw_findings keeps per-reviewer attribution for the snapshot, captured before
-// the flatten above drops which unit produced what.
+// raw_findings は snapshot のために reviewer ごとの帰属を保つ。上の flatten がどの unit が何を
+// 生んだかを落とす前に取得する。
 const rawFindings = [];
 units.forEach((u, i) => {
   const res = raw[i];
@@ -471,18 +450,17 @@ units.forEach((u, i) => {
     }
   }
 });
-// Skip accounting is per-unit, not per-reviewer. A reviewer split into several
-// units can have one unit stall while its siblings return; keying the skip on
-// the reviewer would set "produced" from any surviving unit and hide the files
-// the stalled unit never reviewed. Record each failed unit with its files so the
-// unreviewed gap stays visible in the snapshot.
+// skip の集計は unit ごとで、reviewer ごとではない。複数 unit に分かれた reviewer は 1 unit が
+// stall しても兄弟が返ることがある。skip を reviewer で key にすると、生き残ったどれかの unit
+// から "produced" が立ち、stall した unit が review しなかったファイルを隠す。失敗した各 unit を
+// ファイル付きで記録し、未 review の gap を snapshot で可視に保つ。
 const skipped = units
   .filter((_, i) => !raw[i])
   .map((u) => ({
     reviewer: u.reviewer,
     label: u.label,
     files: u.files,
-    reason: "no output / stall",
+    reason: "出力なし / stall",
   }));
 
 if (!findings.length) {
@@ -490,27 +468,26 @@ if (!findings.length) {
   return { findings: [], assignments, skipped };
 }
 
-// ---- Challenge ∥ Verify -> Integrate (reviewer -> aggregate is forbidden) ----
-// Challenge and Verify are independent passes over the SAME findings, keyed by
-// file:line, so they run concurrently. Serial today, verify only saw survivors;
-// running on the full set makes verify's cost scale with the prune rate, which
-// is acceptable while that rate stays low. Integrate reconciles with a fixed
-// rule that reproduces serial membership exactly (see its prompt), so this is a
-// latency win with zero quality delta. Bare phase() races under parallel(); each
-// thunk names its group via opts.phase.
+// ---- Challenge ∥ Verify -> Integrate (reviewer -> aggregate は禁止) ----
+// Challenge と Verify は同じ findings に対する独立した pass で、file:line を key にするため
+// 並行に走る。従来の直列では verify は survivor しか見なかった。全集合で走らせると verify の
+// コストは prune 率に比例するが、その率が低いうちは許容できる。Integrate は直列の membership を
+// 正確に再現する固定規則で reconcile する (その prompt を参照)。よってこれは品質差ゼロの
+// latency 改善。素の phase() は parallel() 下で race する。各 thunk は opts.phase で group を
+// 名指す。
 const findingsJson = JSON.stringify(findings);
 const [challenged, verified] = await parallel([
   () =>
     agent(
       anchor(
-        `critic-audit. Challenge these findings to prune false positives. Each finding is a position to be argued, not a fact. Reference each finding by its file:line. Findings:\n${findingsJson}`,
+        `critic-audit。これらの finding を challenge し false positive を刈れ。各 finding は事実でなく、論証されるべき position だ。各 finding は file:line で参照せよ。Findings:\n${findingsJson}`,
       ),
       { agentType: "critic-audit", phase: "Challenge", label: "challenge" },
     ),
   () =>
     agent(
       anchor(
-        `critic-evidence. Verify these findings by tracing concrete execution paths (positive evidence, not intuition). For each finding, reference it by file:line and supply the execution-path evidence plus a severity. Findings:\n${findingsJson}`,
+        `critic-evidence。具体的な実行経路を辿って (直感でなく positive evidence) これらの finding を検証せよ。各 finding を file:line で参照し、実行経路の evidence と severity を与えよ。Findings:\n${findingsJson}`,
       ),
       { agentType: "critic-evidence", phase: "Verify", label: "verify" },
     ),
@@ -519,10 +496,10 @@ const [challenged, verified] = await parallel([
 phase("Integrate");
 const integrated = await agent(
   anchor(
-    `team-integration. Reconcile two independent passes over the same findings, matched by file:line, into cross-domain root causes and a severity-ordered list.\n` +
-      `Membership rule: the challenge pass decides which findings survive. A finding the challenge pass pruned as a false positive stays pruned even if the verification pass found evidence for it. The verification pass only supplies execution-path evidence and severity for the survivors; it never revives a pruned finding.\n` +
-      `Challenge pass (membership / false-positive pruning):\n${challenged}\n\n` +
-      `Verification pass (execution-path evidence + severity):\n${verified}`,
+    `team-integration。同じ findings に対する 2 つの独立した pass を file:line でマッチさせ、cross-domain の root cause と severity 順のリストに reconcile せよ。\n` +
+      `Membership 規則。どの finding が生き残るかは challenge pass が決める。challenge pass が false positive として刈った finding は、verification pass がその evidence を見つけても刈られたまま。verification pass は survivor に実行経路の evidence と severity を与えるだけで、刈られた finding を復活させない。\n` +
+      `Challenge pass (membership / false-positive の刈り込み):\n${challenged}\n\n` +
+      `Verification pass (実行経路の evidence + severity):\n${verified}`,
   ),
   {
     agentType: "team-integration",

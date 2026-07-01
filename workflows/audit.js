@@ -3,7 +3,7 @@ export const meta = {
   description:
     'Deterministic audit fan-out. File routing (glob table) runs in the script, so reviewer selection cannot drift; git I/O and each reviewer / critic run as agents. Pipeline is reviewer -> challenge -> verify -> integrate, not reviewer -> aggregate. Callable standalone or nested from build via workflow("audit").',
   whenToUse:
-    "Run when a diff needs the full adversarial reviewer set fired every time, not left to the main loop's discretion. The interactive /audit skill stays the launcher (focus / scope prompts); this workflow owns the fan-out.",
+    "Fires the full adversarial reviewer set on a diff deterministically, instead of leaving review to the main loop's discretion. Invoked directly as /audit or Workflow({name:'audit'}); there is no launcher skill. BEFORE invoking, if scope or focus is unclear, ask the user two things: focus (all / security / performance / quality / a11y) and scope (the staged HEAD diff, a path, or another repo). Then pass them as args, e.g. Workflow({name:'audit', args:{focus:'security', scope:'src/'}}); omit args to audit the HEAD diff with focus=all. This workflow owns both the clarification handoff and the fan-out.",
   phases: [
     { title: "Pre-flight" },
     { title: "Route" },
@@ -97,15 +97,7 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
 // matched against each file by the classify() rules below; a file takes the
 // first matching row.
 const ROUTING = {
-  "*.sh": [
-    "security",
-    "silence",
-    "duplication",
-    "reuse",
-    "efficiency",
-    "operations",
-    "resilience",
-  ],
+  "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
   "*.js": [
     "security",
     "silence",
@@ -190,12 +182,7 @@ const ROUTING = {
   ],
   "*.md": ["prompt", "document"],
   "*.yaml,*.json": ["encapsulation", "document"],
-  "*.css,*.html": [
-    "accessibility",
-    "progressive",
-    "performance",
-    "duplication",
-  ],
+  "*.css,*.html": ["accessibility", "progressive", "performance", "duplication"],
   test: ["coverage", "testability"],
   default: ["duplication", "reuse", "efficiency", "document"],
 };
@@ -241,8 +228,7 @@ const classify = (p) => {
   if (e === ".rs") return ROUTING["*.rs"];
   if (e === ".py") return ROUTING["*.py"];
   if (e === ".md") return ROUTING["*.md"];
-  if (e === ".yaml" || e === ".yml" || e === ".json")
-    return ROUTING["*.yaml,*.json"];
+  if (e === ".yaml" || e === ".yml" || e === ".json") return ROUTING["*.yaml,*.json"];
   if (e === ".css" || e === ".html") return ROUTING["*.css,*.html"];
   return ROUTING.default;
 };

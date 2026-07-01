@@ -2,14 +2,24 @@
 name: build
 description: Comprehensive implementation orchestrator chaining challenge / checkout / research / think / code / quality / commit / pr. Runs end-to-end from GO/NO-GO premise verification through branch creation, design, TDD implementation, a quality layer stacking internal audit and external polish (Codex + cleanup), commit, and PR creation. Use for any work spanning planning to implementation: new features, refactoring, migrations. Do NOT use for a single planned implementation (use /code). Do NOT use for bug fixes (use /fix). Do NOT use for planning only without implementation (use /think).
 when_to_use: 一気通貫で実装, 新機能, 計画を要するリファクタリング, 大規模マイグレーション, build, end-to-end implementation
-allowed-tools: Skill Bash(npm run) Bash(npm run:*) Bash(npm test:*) Bash(yarn run) Bash(yarn run:*) Bash(pnpm run) Bash(pnpm run:*) Bash(bun run) Bash(bun run:*) Bash(make:*) Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git show:*) Bash(git ls-files:*) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(date:*) Bash(mkdir:*) Edit MultiEdit Write Read LS Task TaskCreate TaskList TaskUpdate AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Skill Workflow Bash(npm run) Bash(npm run:*) Bash(npm test:*) Bash(yarn run) Bash(yarn run:*) Bash(pnpm run) Bash(pnpm run:*) Bash(bun run) Bash(bun run:*) Bash(make:*) Bash(git diff:*) Bash(git status:*) Bash(git log:*) Bash(git show:*) Bash(git ls-files:*) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(date:*) Bash(mkdir:*) Edit MultiEdit Write Read LS Task TaskCreate TaskList TaskUpdate AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[implementation task]"
 ---
 
 # /build - Implementation Orchestrator
 
-Chains `/challenge` → `/checkout` → `/research` → `/think` → `/code` → quality → `/commit` → `/pr`, running end-to-end from premise GO verification through committing test-verified implementation to PR creation. Covers not just new features but refactoring and migrations. Every phase is mandatory (no early exit).
+Chains `/challenge` → `/checkout` → `/research` → `/think` → `/code` → quality → `/commit` → `/pr`, running end-to-end from premise GO verification through committing test-verified implementation to PR creation. Covers not just new features but refactoring and migrations. For tasks that clear the Phase 2 scope gate, every machinery phase must run through a Skill dispatch.
+
+## Dispatch, not inline
+
+This orchestrator's core value lives in the critic-design / reviewer agents / external Codex that each sub-skill spawns. Those cannot be reproduced inside build's own conversation context. Running a machinery phase's work inline means `Skill(X)` never fires and adversarial coverage drops to zero. The critic-design attack on think's SOW/Spec, audit's reviewer swarm, and polish's external Codex all get skipped, and the implementation reaches commit on the orchestrator's own self-assessment alone. That defeats the reason build was invoked.
+
+| Phase group                                  | Handling                                                                                                                           |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| challenge / research / think / code / polish | Always call `Skill(X)` and wait for its return before the next phase. Inline substitution is forbidden (it bypasses the machinery) |
+| audit                                        | Always call `Workflow({name:"audit"})`. A deterministic script owns the fan-out, so inline substitution is forbidden               |
+| checkout / commit / pr                       | Thin wrappers. Inline and dispatch yield the same result. Dispatch is optional                                                     |
 
 ## Input
 
@@ -22,40 +32,39 @@ Take the implementation task from `$ARGUMENTS` (optional). If empty, ask the use
 3. Resolve inferences and unknowns
 4. Track with TaskCreate (Phase 2-9)
 
-## Phase 2: challenge
+## Phase 2: challenge + scope gate
 
-Run `Skill("challenge", $ARGUMENTS)` to verify the implementation premise as GO / NO-GO.
+Run `Skill("challenge", $ARGUMENTS)` to verify the implementation premise as GO / NO-GO. This phase carries both premise verification and scope sizing.
 
-- NO-GO → present the refuting evidence and stop. Designing or implementing on a dead premise is wasted effort
-- GO → pass Verdict / decisions / trade-offs / Actionable items into Phase 5 (think). Feeding the premise that challenge settled into think's design as a starting point turns the double critic-design attack (challenge and think) into a relationship where the premise GO/NO-GO feeds the design approach
+| challenge result                                                                       | routing                                                                                                                                                                                  |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NO-GO                                                                                  | Present the refuting evidence and stop                                                                                                                                                   |
+| GO and single-file / single-concern with empty decisions (no design decision survives) | Full build is disproportionate. Propose switching to /code (planned single implementation) or /fix (bug) via AskUserQuestion; on the user's choice, delegate to that skill and end build |
+| GO and involves design decisions or multiple layers                                    | Continue to the full chain from Phase 3. Pass Verdict / decisions / trade-offs / Actionable items into Phase 5 (think)                                                                   |
 
 ## Phase 3: Branch
 
-Run `Skill("checkout", $ARGUMENTS)` to create the working branch. Creating it after challenge GO avoids branching for a NO-GO proposal. The subsequent research / think / code artifacts and the final commit all land on this branch, keeping main clean. At the start the diff is empty, so naming leans mainly on `$ARGUMENTS`. Skip if already off the default branch.
+Run `Skill("checkout", $ARGUMENTS)` to create the working branch. A thin wrapper, so inline is fine. At the start the diff is empty, so naming leans mainly on `$ARGUMENTS`. Skip if already off the default branch.
 
 ## Phase 4: research
 
-Run `Skill("research", $ARGUMENTS)`.
-
-Output goes to `.claude/workspace/research/YYYY-MM-DD-<slug>.md`. Phase 5 detects it as prior research.
+Run `Skill("research", $ARGUMENTS)`. A machinery phase, so dispatch is required. Substituting the research inline skips the advisor pass and the subagent swarm. Skip when there are no unknowns, but dispatch when you do run it. Output goes to `.claude/workspace/research/YYYY-MM-DD-<slug>.md`. Phase 5 detects it as prior research.
 
 ## Phase 5: Design
 
-Run `Skill("think", $ARGUMENTS)`. Generate SOW + Spec from the Phase 2 challenge output (verdict / decisions / trade-offs) and the Phase 4 research results as input.
-
-Output is `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` + `spec.md`.
+Run `Skill("think", $ARGUMENTS)`. A machinery phase, so dispatch is required. Writing the SOW/Spec inline skips the critic-design attack. Generate SOW + Spec from the Phase 2 challenge output (verdict / decisions / trade-offs) and the Phase 4 research results as input. Output is `.claude/workspace/planning/YYYY-MM-DD-[feature]/sow.md` + `spec.md`.
 
 ## Phase 6: Implementation
 
-Run `Skill("code", $ARGUMENTS)`. `/code` auto-detects the SOW from the Phase 5 output.
+Run `Skill("code", $ARGUMENTS)`. A machinery phase, so dispatch is required. Implementing inline skips the RGRC cycle and the quality gates. `/code` auto-detects the SOW from the Phase 5 output.
 
 ## Phase 7: Quality
 
-Get changed files with `git diff main...HEAD --name-only`. Phase 6 (`/code`) passes the mechanical baseline of lint / type / test / readability / coverage, so Phase 7 stacks two layers, internal audit and external polish. Audit runs a multi-dimensional review of security / resilience / causation / encapsulation under adversarial challenge with severity. Polish stacks external Codex (a non-Claude lens that counters Self-Enhancement bias) plus simplify / enhancer-code cleanup. Present any remaining issues to the user for a decision.
+Get changed files with `git diff main...HEAD --name-only`. Both audit and polish are machinery phases and require dispatch. Convincing yourself you "reviewed it" inline skips the reviewer swarm and the external Codex. Phase 6 (`/code`) passes the mechanical baseline of lint / type / test / readability / coverage, so Phase 7 stacks two layers, internal audit and external polish. Audit runs a multi-dimensional review of security / resilience / causation / encapsulation under adversarial challenge with severity. Polish stacks external Codex (a non-Claude lens that counters Self-Enhancement bias) plus simplify / enhancer-code cleanup. Present any remaining issues to the user for a decision.
 
 | Step | Action                                                                                                   | Exit condition                                                       |
 | ---- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| 1    | Run `Skill("audit")` against the diff (assigns severity, adversarial challenge)                          | 0 critical/high → go to Step 3                                       |
+| 1    | Run `Workflow({name:"audit"})` against the diff (assigns severity, adversarial challenge)                | 0 critical/high → go to Step 3                                       |
 | 2    | Fix each snapshot critical/high finding ID with `Skill("fix", "<ID>")`, then re-audit; this is one round | 0 critical/high or 3 rounds reached → go to Step 3                   |
 | 3    | Run `Skill("polish")` against the uncommitted diff (external Codex + cleanup, fixes directly)            | Codex not installed → continue with cleanup only                     |
 | 4    | Confirm tests pass                                                                                       | Test failure → fix (max 2). Still failing → present remaining issues |
@@ -64,11 +73,11 @@ If a polish fix breaks tests, polish stashes it internally. Surface any remainin
 
 ## Phase 8: commit
 
-After the quality layer and all tests pass, run `Skill("commit", ...)` to commit the changes in Conventional Commits format. Planning artifacts and implementation land in one commit. If issues remain unresolved, present them to the user before committing.
+After the quality layer and all tests pass, run `Skill("commit", ...)` to commit the changes in Conventional Commits format. A thin wrapper, so inline is fine. Planning artifacts and implementation land in one commit. If issues remain unresolved, present them to the user before committing.
 
 ## Phase 9: PR
 
-Run `Skill("pr", $ARGUMENTS)` to create a PR from the committed changes. pr previews the body and confirms creation via AskUserQuestion, so build adds no extra gate.
+Run `Skill("pr", $ARGUMENTS)` to create a PR from the committed changes. A thin wrapper, so inline is fine, but reproduce the body preview and the AskUserQuestion creation confirm even inline.
 
 ## Error handling
 
@@ -85,14 +94,14 @@ Run `Skill("pr", $ARGUMENTS)` to create a PR from the committed changes. pr prev
 
 ## Validation
 
-End only when every check holds. Present the reason to the user for any check that cannot be met.
+The checks below apply when Phase 2's scope gate routed to the full chain. If build redirected to /code or /fix, follow that skill's completion criteria instead. End only when every check holds. Present the reason to the user for any check that cannot be met.
 
-- challenge GO verdict
-- Working branch created
-- PREFLIGHT passed
-- SOW + Spec generated
-- All tests pass
-- `/code` AC coverage
-- Polish passed (Codex review + cleanup)
-- Committed
-- PR created
+- [ ] PREFLIGHT passed
+- [ ] challenge GO verdict
+- [ ] Working branch created
+- [ ] SOW + Spec generated
+- [ ] All tests pass
+- [ ] `/code` AC coverage
+- [ ] Polish passed (Codex review + cleanup)
+- [ ] Committed
+- [ ] PR created
