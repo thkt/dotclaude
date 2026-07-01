@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "ignorePatterns": ["plugins/**", "node_modules/**"],
+  "globals": {
+    "agent": "readonly",
+    "parallel": "readonly",
+    "pipeline": "readonly",
+    "phase": "readonly",
+    "log": "readonly",
+    "workflow": "readonly",
+    "args": "readonly",
+    "budget": "readonly"
+  },
+  "rules": {
+    "no-unused-vars": "error"
+  }
+}
