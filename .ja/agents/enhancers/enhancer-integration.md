@@ -1,5 +1,5 @@
 ---
-name: team-integration
+name: enhancer-integration
 description: チャレンジと検証の結果を、ドメイン横断の根本原因へ統合する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus

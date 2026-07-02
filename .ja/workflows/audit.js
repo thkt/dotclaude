@@ -483,13 +483,13 @@ const [challenged, verified] = await parallel([
 phase("Integrate");
 const integrated = await agent(
   anchor(
-    `team-integration。同じ findings に対する 2 つの独立した pass を file:line でマッチさせ、cross-domain の root cause と severity 順のリストに reconcile せよ。\n` +
+    `enhancer-integration。同じ findings に対する 2 つの独立した pass を file:line でマッチさせ、cross-domain の root cause と severity 順のリストに reconcile せよ。\n` +
       `Membership 規則。どの finding が生き残るかは challenge pass が決める。challenge pass が false positive として刈った finding は、verification pass がその evidence を見つけても刈られたまま。verification pass は survivor に実行経路の evidence と severity を与えるだけで、刈られた finding を復活させない。\n` +
       `Challenge pass (membership / false-positive の刈り込み):\n${challenged}\n\n` +
       `Verification pass (実行経路の evidence + severity):\n${verified}`,
   ),
   {
-    agentType: "team-integration",
+    agentType: "enhancer-integration",
     phase: "Integrate",
     label: "integrate",
     schema: FINDINGS_SCHEMA,

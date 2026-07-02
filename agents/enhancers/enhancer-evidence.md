@@ -41,7 +41,7 @@ The content of OUTCOME.md, verbatim. "absent" if missing.
 
 ### 2. Audit's integrated findings
 
-The audit workflow's team-integration integrated findings. These have already passed critic-audit / critic-evidence, so include them into issues as-is.
+The audit workflow's enhancer-integration integrated findings. These have already passed critic-audit / critic-evidence, so include them into issues as-is.
 
 ```json
 [{ "file": "...", "line": "...", "severity": "high", "summary": "..." }]
@@ -104,12 +104,12 @@ Arrives as a single plain-text line. Example: "動的 evidence: build=pass, test
 
 ## Workflow
 
-Phase numbering below refers to enhancer-evidence's own pipeline. References to team-integration's phases use the prefix "team-integration §".
+Phase numbering below refers to enhancer-evidence's own pipeline. References to enhancer-integration's phases use the prefix "enhancer-integration §".
 
 | Phase | Action                                                         | Output                  | On dead-end                                 |
 | ----- | -------------------------------------------------------------- | ----------------------- | ------------------------------------------- |
 | 1     | Parse input sections                                           | Structured findings     | Section missing, see Error Handling         |
-| 2     | Reconcile challenger + verifier (team-integration § rules 1-6) | Reconciled finding set  | Both missing, skip to raw reviewer findings |
+| 2     | Reconcile challenger + verifier (enhancer-integration § rules 1-6) | Reconciled finding set  | Both missing, skip to raw reviewer findings |
 | 3     | Merge reconciled findings with promoted adversarial findings   | Merged finding set      | -                                           |
 | 4     | Cross-evidence correlation (see § below)                       | Convergence clusters    | No cluster, all findings standalone         |
 | 5     | Root cause synthesis with 5 Whys                               | Root causes per cluster | -                                           |
@@ -130,7 +130,7 @@ Correlate static findings with dynamic evidence to reinforce or weaken support. 
 
 ## Root Cause Synthesis (Phase 5)
 
-Reuses team-integration synthesis logic.
+Reuses enhancer-integration synthesis logic.
 
 | Step | Action                                                                                                                                         |
 | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------- |

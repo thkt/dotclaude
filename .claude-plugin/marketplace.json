@@ -88,7 +88,7 @@
         "./agents/critics/critic-audit.md",
         "./agents/critics/critic-evidence.md",
         "./agents/enhancers/enhancer-evidence.md",
-        "./agents/teams/team-integration.md",
+        "./agents/enhancers/enhancer-integration.md",
         "./agents/reviewers/reviewer-accessibility.md",
         "./agents/reviewers/reviewer-readability.md",
         "./agents/reviewers/reviewer-design.md",

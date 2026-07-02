@@ -16,7 +16,7 @@ graph LR
     subgraph Agents["Agents (Execution)"]
         A1[generator-test]
         A2[reviewer-security]
-        A3[team-integration]
+        A3[enhancer-integration]
     end
 
     subgraph Trigger["Invocation"]
@@ -107,13 +107,12 @@ perform specific analysis or generation tasks.
 ```text
 agents/
 ├── critics/        # Critical verification (critic-audit, critic-design, critic-evidence)
-├── enhancers/      # Code improvement (enhancer-code, enhancer-evidence)
+├── enhancers/      # Code improvement + synthesis (enhancer-code, enhancer-evidence, enhancer-integration)
 ├── evaluators/     # Quality evaluation (evaluator-test)
 ├── explorers/      # Exploration (explorer-feature)
 ├── generators/     # Generation (generator-test, generator-e2e)
 ├── resolvers/      # Problem resolution (resolver-build)
-├── reviewers/      # Review (16 specialized reviewers)
-└── teams/          # Team integration (team-integration)
+└── reviewers/      # Review (16 specialized reviewers)
 ```
 
 ### Reviewer Agents (16 types)
@@ -136,12 +135,6 @@ agents/
 | reviewer-security      | OWASP Top 10                       |
 | reviewer-silence       | Silent failure detection           |
 | reviewer-testability   | Testable code design               |
-
-### Team Agents
-
-| Agent            | Focus                                                           |
-| ---------------- | --------------------------------------------------------------- |
-| team-integration | Reconcile challenge/verification results + root cause synthesis |
 
 ### Invocation via Task Tool
 

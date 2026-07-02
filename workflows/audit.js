@@ -492,13 +492,13 @@ const [challenged, verified] = await parallel([
 phase("Integrate");
 const integrated = await agent(
   anchor(
-    `team-integration. Reconcile two independent passes over the same findings, matched by file:line, into cross-domain root causes and a severity-ordered list.\n` +
+    `enhancer-integration. Reconcile two independent passes over the same findings, matched by file:line, into cross-domain root causes and a severity-ordered list.\n` +
       `Membership rule: the challenge pass decides which findings survive. A finding the challenge pass pruned as a false positive stays pruned even if the verification pass found evidence for it. The verification pass only supplies execution-path evidence and severity for the survivors; it never revives a pruned finding.\n` +
       `Challenge pass (membership / false-positive pruning):\n${challenged}\n\n` +
       `Verification pass (execution-path evidence + severity):\n${verified}`,
   ),
   {
-    agentType: "team-integration",
+    agentType: "enhancer-integration",
     phase: "Integrate",
     label: "integrate",
     schema: FINDINGS_SCHEMA,
