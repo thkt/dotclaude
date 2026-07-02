@@ -1,90 +1,240 @@
 export const meta = {
   name: "build",
   description:
-    "Autonomous end-to-end build. challenge / branch / research / think / code / audit / polish / ship run headless as deterministic script stages, so every machinery fan-out fires instead of being inlined. Review at the draft PR.",
+    "Autonomous end-to-end build. Taking an issue with a Plan section refined via /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Audit / Polish / Backlog / Ship run headlessly as deterministic script stages. Review happens on a draft PR.",
   whenToUse:
-    "Fire-and-forget implementation. You walk away and come back to a draft PR, where you review the logged assumptions and the audit result. Reach for this when the task is specified enough to advance residual choices on best-guess; when it needs live steering mid-flight, drive the phases interactively instead.",
+    'Fire-and-forget implementation. Finish the refine-with-a-human stage in /issue, then pass that issue number ("123" / "#123") / URL / {issue, repo} as args. Step away and come back to a draft PR with recorded assumptions, audit results, and backlog issues to review. If in-flight steering is needed, drive the phases interactively.',
   phases: [
-    { title: "Challenge" },
+    { title: "Load" },
+    { title: "Revalidate" },
     { title: "Branch" },
-    { title: "Research" },
-    { title: "Think" },
     { title: "Code" },
     { title: "Audit" },
     { title: "Polish" },
+    { title: "Backlog" },
     { title: "Ship" },
   ],
 };
 
-// Autonomous build owns each phase's fan-out at the script level, because a
-// spawned agent cannot spawn its own sub-agents (nested spawn is blocked). The
-// interactive /build skill relies on that nesting (challenge -> critic-design,
-// audit -> reviewer swarm); here the script flattens it to one level, except
-// audit, which delegates to workflow("audit") so it keeps /audit's full routing
-// table (nesting a workflow is one level deep, which is allowed). Fidelity cuts
-// are deliberate and logged, not silent: code runs a single implementer rather
-// than /code's RGRC machinery, and interactive gates are replaced by best-guess
-// assumptions surfaced at the draft PR.
+// Assuming the upstream /issue finished premise verification and human refinement,
+// build does not reinvent the plan. The issue body's ## Plan section is the single
+// planning source; extraction is left to the LLM but verification belongs to the
+// script: the Plan heading check and U/T id collection are deterministic regexes,
+// structural validation is validate(), and silent drops in extraction are rejected
+// by exact id-set comparison. Code moving between issue filing and build launch is
+// caught fail-closed by Revalidate (exists/matches checks on preconditions). Stages
+// whose fan-out lives inside them are delegated to nested workflows (code / audit /
+// polish; one level of nesting is allowed).
 
-const task = typeof args === "string" ? args : (args && args.task) || "";
-if (!task) {
-  return { stopped: "no-task", why: "Pass the implementation task as args (string or {task})." };
+phase("Load");
+
+const input = typeof args === "object" && args ? args : {};
+const issueRef = String(typeof args === "string" ? args : input.issue || "").trim();
+// Deterministically pull the issue number from the tail of "123" / "#123" / an issue URL.
+const issueNumber = (issueRef.match(/(\d+)\D*$/) || [])[1] || "";
+if (!issueRef || !issueNumber) {
+  return {
+    stopped: "no-issue",
+    why: 'Pass the issue as args ("123" / "#123" / URL / {issue, repo}).',
+  };
 }
 
-// Optional repo target. When set, the build runs against a repository other than
-// the session cwd. Every filesystem / git / build step must be anchored there;
-// relying on "subagents inherit the session cwd" is model-discretion and would
-// misfire when the build is launched from elsewhere. anchor() prepends an
-// absolute cd so the starting cwd is irrelevant rather than assumed. guard is a
-// deterministic backstop for the hard-to-reverse steps (branch, commit, push,
-// PR): confirm the repo root before mutating, since the run completes headless
-// with no chance to intervene mid-flight.
-const repo = typeof args === "object" && args && typeof args.repo === "string" ? args.repo : "";
+// When repo is set, pin every step to that repository regardless of the session cwd.
+// Relying on "subagents inherit the session cwd" is model discretion and breaks when
+// launched from elsewhere. anchor() prepends an absolute cd so the starting cwd is
+// irrelevant. guard is a deterministic backstop for the hard-to-reverse steps
+// (branch / commit / push / PR): with no chance to intervene during a headless run,
+// it makes the agent confirm the repo root before mutating git.
+const repo = typeof input.repo === "string" ? input.repo : "";
 const anchor = (p) =>
   repo
-    ? `Run every git, file, and build command from the repository at ${repo} (begin each shell command with \`cd ${repo} && \`, which persists for that command's own follow-ups).\n\n${p}`
+    ? `Run every git, file, and build command from the repository at ${repo} (begin each shell command with \`cd ${repo} && \`).\n\n${p}`
     : p;
 const guard = repo
-  ? ` Before this step's first commit, push, or branch mutation, run \`cd ${repo} && git rev-parse --show-toplevel\` and confirm it prints ${repo}; if it prints anything else, abort without mutating git and report the mismatch.`
+  ? ` Before the first commit / push / branch change in this step, run \`cd ${repo} && git rev-parse --show-toplevel\` and confirm the output is ${repo}. If it differs, abort without mutating git and report the mismatch.`
   : "";
 
-const VERDICT_SCHEMA = {
+const FETCH_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["verdict", "why", "decisions", "assumptions"],
+  required: ["found", "body"],
   properties: {
-    verdict: { type: "string", enum: ["GO", "NO-GO"] },
-    why: { type: "string" },
-    decisions: { type: "array", items: { type: "string" } },
-    tradeoffs: { type: "array", items: { type: "string" } },
-    assumptions: {
-      type: "array",
-      items: { type: "string" },
-      description: "residual preferences advanced on best-guess; user veto targets at the PR",
+    found: { type: "boolean" },
+    body: {
+      type: "string",
+      description: "The issue body verbatim. No summarizing or reformatting",
     },
   },
 };
 
-const CRITIQUE_SCHEMA = {
+// Equivalent to think.js's PLAN_SCHEMA + preconditions + backlog_candidates.
+// Extraction structures the plan written in the issue; it is not re-planning.
+const EXTRACT_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["verdict", "weaknesses"],
-  properties: {
-    verdict: { type: "string" },
-    weaknesses: { type: "array", items: { type: "string" } },
-  },
-};
-
-const PLANNING_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  required: ["dir", "summary"],
+  required: [
+    "dir",
+    "outcome",
+    "decisions",
+    "assumptions",
+    "units",
+    "test_command",
+    "preconditions",
+    "backlog_candidates",
+  ],
   properties: {
     dir: {
       type: "string",
-      description: "planning dir, e.g. .claude/workspace/planning/YYYY-MM-DD-slug",
+      description: "Planning dir, e.g. .claude/workspace/planning/YYYY-MM-DD-slug",
     },
-    summary: { type: "string" },
+    outcome: {
+      type: "string",
+      description:
+        "One-line description of the done state (implementation-independent, observable)",
+    },
+    decisions: { type: "array", items: { type: "string" } },
+    assumptions: {
+      type: "array",
+      items: { type: "string" },
+      description: "Best-guess residuals recorded in the issue. The user's veto targets on the PR",
+    },
+    non_goals: { type: "array", items: { type: "string" } },
+    constraints: { type: "array", items: { type: "string" } },
+    units: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "goal", "files", "contract", "tests", "depends_on"],
+        properties: {
+          id: {
+            type: "string",
+            description: "U-001 format. Use the ids from the issue body as-is",
+          },
+          goal: {
+            type: "string",
+            description: "One-line description of the behavior this unit delivers",
+          },
+          files: {
+            type: "array",
+            items: { type: "string" },
+            description: "File paths to create or modify",
+          },
+          contract: {
+            type: "string",
+            description: "Public interface: a sketch of signatures / CLI flags / schemas",
+          },
+          tests: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["id", "name", "given", "when", "then"],
+              properties: {
+                id: { type: "string", description: "T-001 format (unique across the plan)" },
+                name: {
+                  type: "string",
+                  description: "Statement of the spec being verified. Becomes the test name",
+                },
+                given: { type: "string" },
+                when: { type: "string" },
+                // JSON Schema property definition, not a thenable (BDD given/when/then)
+                // oxlint-disable-next-line unicorn/no-thenable
+                then: { type: "string" },
+              },
+            },
+          },
+          depends_on: {
+            type: "array",
+            items: { type: "string" },
+            description: "Ids of prerequisite units. Empty array if none",
+          },
+        },
+      },
+    },
+    test_command: { type: "string", description: "Test command, e.g. cargo test / bun test" },
+    preconditions: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["path"],
+        properties: {
+          path: { type: "string", description: "Existing file the plan presupposes" },
+          pattern: {
+            type: "string",
+            description: "Symbol / string expected to exist in that file",
+          },
+        },
+      },
+      description: "Existing code the issue's plan presupposes. Empty array if none",
+    },
+    backlog_candidates: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["summary"],
+        properties: {
+          summary: { type: "string" },
+        },
+      },
+      description: "Out-of-scope candidates written in the issue. Empty array if none",
+    },
+  },
+};
+
+const REVALIDATE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["results"],
+  properties: {
+    results: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["path", "pattern", "exists", "matches"],
+        properties: {
+          path: { type: "string" },
+          pattern: { type: "string" },
+          exists: { type: "boolean" },
+          matches: { type: "boolean" },
+        },
+      },
+    },
+  },
+};
+
+const BACKLOG_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["posted", "deferred"],
+  properties: {
+    posted: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["title", "url"],
+        properties: {
+          title: { type: "string" },
+          url: { type: "string" },
+        },
+      },
+    },
+    deferred: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["title", "reason"],
+        properties: {
+          title: { type: "string" },
+          reason: { type: "string" },
+        },
+      },
+    },
   },
 };
 
@@ -99,150 +249,308 @@ const SHIP_SCHEMA = {
   },
 };
 
-// ---- Challenge: premise -> two critic-design attacks -> GO/NO-GO ----
-phase("Challenge");
-const premise = await agent(
-  anchor(`You are the premise-analysis stage of an autonomous build. Task: "${task}".\n`) +
-    `Read .claude/OUTCOME.md if present for the outcome axis. List the open questions in the task, sort each into fact (evidence settles it) or preference (needs a choice). Verify the facts against the codebase. Report a one-line approach summary, the architectural decisions that crystallised, the trade-offs, and the residual preferences you would otherwise ask the user (these become logged assumptions).\n` +
-    `Return that package as your final text.`,
-  { label: "premise", phase: "Challenge" },
-);
-const critiques = await parallel([
-  () =>
-    agent(
-      anchor(
-        `critic-design, internal attack. Attack this build premise on its own terms (hidden weaknesses, failure modes). Premise:\n${premise}`,
-      ),
-      { agentType: "critic-design", phase: "Challenge", schema: CRITIQUE_SCHEMA },
-    ),
-  () =>
-    agent(
-      anchor(
-        `critic-design, outcome attack. Read .claude/OUTCOME.md and attack whether this premise reaches the outcome (outcome fit, non-goal breach, constraint breach). Premise:\n${premise}`,
-      ),
-      { agentType: "critic-design", phase: "Challenge", schema: CRITIQUE_SCHEMA },
-    ),
-]);
-const verdict = await agent(
-  `Reconcile the premise and the two critic-design attacks into a single GO/NO-GO verdict for an autonomous build.\n` +
-    `Premise:\n${premise}\n\nInternal attack:\n${JSON.stringify(critiques[0])}\n\nOutcome attack:\n${JSON.stringify(critiques[1])}\n\n` +
-    `Rule NO-GO only when fact evidence overturns the core (targets a state that already holds, or a verified fact contradicts it). Otherwise GO, proceeding on the surviving part. List residual preferences as assumptions.`,
-  { label: "verdict", phase: "Challenge", schema: VERDICT_SCHEMA },
-);
-if (verdict.verdict === "NO-GO") {
-  return { stopped: "NO-GO", why: verdict.why, decisions: verdict.decisions };
-}
-log(`GO. ${verdict.assumptions.length} residual(s) advanced on best-guess (veto at the PR).`);
+// Port of think.js's validate() + non-empty content checks. Deterministically rejects
+// structural defects (duplicate ids / dangling or cyclic depends_on / missing tests)
+// and empty content (contract / name / given / when / then).
+const validate = (plan) => {
+  const errors = [];
+  const units = plan.units || [];
+  if (!units.length) errors.push("units is empty. Define at least one implementation unit");
+  const ids = new Set(units.map((u) => u.id));
+  if (ids.size !== units.length) errors.push("duplicate unit ids");
+  const testIds = new Set();
+  for (const u of units) {
+    if (!u.tests.length) errors.push(`${u.id} has no test scenario`);
+    if (!u.files.length) errors.push(`${u.id} has no target files`);
+    if (!String(u.goal || "").trim()) errors.push(`${u.id} has an empty goal`);
+    if (!String(u.contract || "").trim()) errors.push(`${u.id} has an empty contract`);
+    for (const t of u.tests) {
+      if (testIds.has(t.id)) errors.push(`duplicate test id ${t.id}`);
+      testIds.add(t.id);
+      for (const field of ["name", "given", "when", "then"]) {
+        if (!String(t[field] || "").trim()) errors.push(`${t.id} has an empty ${field}`);
+      }
+    }
+    for (const d of u.depends_on) {
+      if (!ids.has(d)) errors.push(`${u.id}'s depends_on ${d} points to a nonexistent unit`);
+    }
+  }
+  // Cycle detection (DFS)
+  const state = new Map();
+  const visit = (id, path) => {
+    if (state.get(id) === "done") return;
+    if (state.get(id) === "visiting") {
+      errors.push(`depends_on cycle: ${[...path, id].join(" -> ")}`);
+      return;
+    }
+    state.set(id, "visiting");
+    const u = units.find((x) => x.id === id);
+    for (const d of (u && u.depends_on) || []) visit(d, [...path, id]);
+    state.set(id, "done");
+  };
+  for (const u of units) visit(u.id, []);
+  return errors;
+};
 
-// ---- Branch ----
+// ---- Load: verbatim fetch -> Plan heading check -> deterministic id collection -> extract -> validate + cross-check ----
+const fetched = await agent(
+  anchor(
+    `Fetch the body of GitHub issue ${issueRef}. Use the gh CLI (e.g. gh issue view ${issueRef} --json body) and return the body verbatim with no summarizing, reformatting, or omission. If the issue is not found or the fetch fails, return found: false.`,
+  ),
+  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA },
+);
+if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
+  return {
+    stopped: "no-issue-body",
+    why: `Could not fetch the body of issue ${issueRef}. Check the issue number and repo.`,
+  };
+}
+const body = fetched.body;
+
+// The Plan heading check and id collection run deterministically in the script,
+// before the extract agent.
+const planHeading = body.match(/^##\s+Plan\b.*$/m);
+if (!planHeading) {
+  return {
+    stopped: "no-plan",
+    why: "The issue body has no ## Plan section. Refine the plan via /issue before launching build.",
+  };
+}
+const afterHeading = body.slice(planHeading.index + planHeading[0].length);
+const nextSection = afterHeading.search(/^##[^#]/m);
+const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
+const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[0]));
+const bodyUnitIds = idSet(/\bU-\d{3}\b/g);
+const bodyTestIds = idSet(/\bT-\d{3}\b/g);
+
+const plan = await agent(
+  anchor(
+    `Extract a structured plan from the ## Plan section of the following GitHub issue body. Do not re-plan, summarize, or fill in gaps; structure exactly what is written. ` +
+      `Preserve every unit id (U-NNN) and test id (T-NNN) from the body (omissions are rejected by a downstream deterministic cross-check). ` +
+      `preconditions is the list of {path, pattern} of existing code the plan presupposes; backlog_candidates are out-of-scope candidates written in the issue. Empty arrays if absent from the body.\n\n---\n${body}`,
+  ),
+  { label: "extract", phase: "Load", agentType: "general-purpose", schema: EXTRACT_SCHEMA },
+);
+if (!plan) {
+  return { stopped: "extraction-failed", why: "The extract agent returned no plan." };
+}
+
+const blockers = validate(plan);
+if (blockers.length) {
+  return {
+    stopped: "invalid-plan",
+    blockers,
+    why: "The extracted plan fails structural validation.",
+  };
+}
+
+// Reject silent drops / fabrications in extraction via exact id-set comparison.
+const planUnitIds = new Set(plan.units.map((u) => u.id));
+const planTestIds = new Set(plan.units.flatMap((u) => u.tests.map((t) => t.id)));
+const setDiff = (a, b) => [...a].filter((x) => !b.has(x));
+const mismatch = {
+  units_missing: setDiff(bodyUnitIds, planUnitIds),
+  units_extra: setDiff(planUnitIds, bodyUnitIds),
+  tests_missing: setDiff(bodyTestIds, planTestIds),
+  tests_extra: setDiff(planTestIds, bodyTestIds),
+};
+if (Object.values(mismatch).some((l) => l.length)) {
+  return {
+    stopped: "extraction-mismatch",
+    detail: mismatch,
+    why: "The U/T id sets in the issue body and the extraction do not match.",
+  };
+}
+log(
+  `Plan extracted: ${plan.units.length} unit(s), ${planTestIds.size} test scenario(s), id cross-check pass.`,
+);
+
+// ---- Revalidate: re-verify preconditions against the current codebase (evidence + script gate) ----
+// Catches, fail-closed, the possibility that the presupposed code moved between issue
+// filing and build launch. Misses are decided by the script's filter, not by the
+// agent's self-report.
+phase("Revalidate");
+const preconditions = plan.preconditions || [];
+if (preconditions.length) {
+  const reval = await agent(
+    anchor(
+      `Re-verify the plan's preconditions against the current codebase. For each {path, pattern}, actually run commands to check the path's existence (exists) and the pattern's grep match (matches; with no pattern, same as exists), and return all ${preconditions.length} in results. Do not be lenient.\n${JSON.stringify(preconditions)}`,
+    ),
+    {
+      label: "revalidate",
+      phase: "Revalidate",
+      agentType: "general-purpose",
+      schema: REVALIDATE_SCHEMA,
+    },
+  );
+  if (!reval || !Array.isArray(reval.results) || reval.results.length !== preconditions.length) {
+    return {
+      stopped: "revalidate-failed",
+      detail: reval,
+      why: "The revalidate agent did not return results for every precondition.",
+    };
+  }
+  const drift = reval.results.filter((r) => !r.exists || !r.matches);
+  if (drift.length) {
+    return {
+      stopped: "plan-drift",
+      drift,
+      why: "Code the issue's plan presupposes is absent from the current codebase. Update the issue and relaunch.",
+    };
+  }
+  log(`Revalidate: all ${preconditions.length} precondition(s) pass.`);
+}
+
+// ---- Branch: check out a working branch ----
 phase("Branch");
 const branch = await agent(
   anchor(
-    `Check out a new git working branch for: "${task}". Choose a conventional branch name (type then short slug) from the task and run git checkout -b with that name. If already off the default branch, keep the current branch. Report the branch name as your final text.${guard}`,
+    `Check out a new git working branch for issue #${issueNumber} "${plan.outcome}". Pick a conventional branch name (type + short slug) and run git checkout -b with it. If already on a non-default branch, keep the current branch. Report the branch name as your final text.${guard}`,
   ),
   { label: "checkout", phase: "Branch", agentType: "general-purpose" },
 );
 
-// ---- Research (light; skips cleanly when there are no unknowns) ----
-phase("Research");
-const research = await parallel([
-  () =>
-    agent(
-      anchor(
-        `Explore the codebase for prior art, patterns, and constraints relevant to: "${task}". Report file:line anchors. medium breadth.`,
-      ),
-      { agentType: "Explore", phase: "Research", label: "explore:patterns" },
-    ),
-  () =>
-    agent(
-      anchor(
-        `Explore the codebase for integration points, existing helpers to reuse, and edge cases relevant to: "${task}". Report file:line anchors. medium breadth.`,
-      ),
-      { agentType: "Explore", phase: "Research", label: "explore:integration" },
-    ),
-]);
-const researchDigest = research.filter(Boolean).join("\n\n");
-
-// ---- Think: SOW/Spec -> critic-design ----
-phase("Think");
-const planning = await agent(
-  anchor(`Generate a SOW and Spec for an autonomous build of: "${task}".\n`) +
-    `Inputs. Challenge decisions: ${JSON.stringify(verdict.decisions)}. Trade-offs: ${JSON.stringify(verdict.tradeoffs || [])}. Assumptions (log these in the SOW Why): ${JSON.stringify(verdict.assumptions)}.\n` +
-    `Research:\n${researchDigest}\n\n` +
-    `Run \`date -u +%Y-%m-%d\` for the slug. Write .claude/workspace/planning/<date>-<slug>/sow.md (AC-N ids) and spec.md (FR-001 / T-001 / NFR-001 ids). Return the dir and a one-line summary.`,
-  { label: "plan", phase: "Think", agentType: "general-purpose", schema: PLANNING_SCHEMA },
-);
-await agent(
-  anchor(
-    `critic-design. Attack the SOW and Spec at ${planning.dir} for hidden weaknesses, unstated assumptions, and outcome drift. Report a verdict table and actionable items.`,
-  ),
-  { agentType: "critic-design", phase: "Think", label: "critic:spec" },
-);
-// ---- Code: single implementer (fidelity cut vs /code RGRC machinery) ----
+// ---- Code: delegated to workflow("code") (per-unit Red -> Green + independent verify) ----
+// preconditions / backlog_candidates are consumed on the build side, so code receives
+// only the PLAN_SCHEMA equivalent.
 phase("Code");
-log("Code phase runs a single implementer agent, not /code's full RGRC machinery.");
-await agent(
-  anchor(
-    `Implement the SOW and Spec at ${planning.dir}. Test-first (TDD): write failing tests from the T-NNN scenarios, implement to green, refactor. Run the project's lint / type-check / test gates and keep going until every AC is met and tests pass. Do not commit.`,
-  ),
-  { label: "implement", phase: "Code", agentType: "general-purpose" },
-);
+const stripPreconditions = (p) =>
+  Object.fromEntries(
+    Object.entries(p).filter(([k]) => k !== "preconditions" && k !== "backlog_candidates"),
+  );
+const code =
+  (await workflow("code", { plan: stripPreconditions(plan), repo, model: "sonnet" })) || null;
+if (!code || code.stopped) {
+  return { stopped: "code-failed", detail: code, planning: plan.dir };
+}
+if (!code.tests_pass || !code.gates_pass)
+  log(
+    `code's independent verify failed (tests=${code.tests_pass} gates=${code.gates_pass}). Advancing to audit; it surfaces on the PR.`,
+  );
 
-// ---- Audit: delegate to the deterministic audit workflow (full routing) ----
-// workflow("audit") owns the fan-out: it ports /audit's glob routing table to
-// JS and fires every routed reviewer -> critic-audit -> critic-evidence ->
-// team-integration. Nesting a workflow is one level deep, which is allowed, so
-// build keeps /audit fidelity here instead of the old 6-reviewer cut. No scope
-// is passed, so audit routes the uncommitted diff (code has not committed yet),
-// which is the whole implementation.
+// ---- Audit ∥ Polish review -> fix -> re-audit loop (at most 3 audit runs) ----
+// The audit fan-out is owned by workflow("audit") (/audit's glob routing table +
+// reviewer -> challenge -> verify -> integrate). No scope is passed, so it routes
+// the uncommitted diff, i.e. the whole implementation. The code phase already got
+// tests green, so preflight is skipped. Polish's review mode is read-only, so the
+// external Codex lens runs on the same diff alongside the audit.
 phase("Audit");
-const audit = (await workflow("audit", { repo })) || { findings: [] };
+const [audit0, review] = await parallel([
+  () => workflow("audit", { repo, skipPreflight: true }),
+  () => workflow("polish", { repo, mode: "review" }),
+]);
+let audit = audit0 || { findings: [] };
 log(
-  `Audit fired ${(audit.assignments || []).length} reviewer group(s), ${(audit.skipped || []).length} skipped.`,
+  `Audit fired ${(audit.assignments || []).length} reviewer group(s); polish lens ${review && review.codex_available ? "active" : "inactive"}.`,
 );
-const blocking = (audit.findings || []).filter(
-  (f) => f.severity === "critical" || f.severity === "high",
-);
-if (blocking.length) {
-  log(`Fixing ${blocking.length} critical/high finding(s).`);
+const criticalHigh = (a) =>
+  (a.findings || []).filter((f) => f.severity === "critical" || f.severity === "high");
+const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
+  severity: f.severity === "P1" ? "high" : "medium",
+  summary: `${f.title}: ${f.detail}`,
+  file: f.file || "",
+}));
+// Loop fix -> re-audit until 0 critical/high. The old version fixed once with no
+// re-audit, i.e. the fixes were never verified. Only the final round's fixes stay
+// unverified (the re-audit budget is spent) and surface on the PR.
+let toFix = [...criticalHigh(audit), ...polishSurvivors];
+let reaudited = true;
+for (let round = 1; round <= 3 && toFix.length; round++) {
+  log(`Fix round ${round}: fixing ${toFix.length} finding(s).`);
   await agent(
+    anchor(`Fix these review findings and confirm tests pass:\n${JSON.stringify(toFix)}`),
+    { agentType: "general-purpose", phase: "Audit", label: `fix:${round}` },
+  );
+  if (round === 3) {
+    reaudited = false;
+    log("Fix round cap reached. The final round's fixes are not re-audited and surface on the PR.");
+    break;
+  }
+  audit = (await workflow("audit", { repo, skipPreflight: true })) || { findings: [] };
+  toFix = criticalHigh(audit);
+}
+const residualBlocking = reaudited ? criticalHigh(audit) : [];
+
+// ---- Polish: cleanup only (simplify -> enhancer-code -> test validation) ----
+// The review lens was consumed in the Audit phase, so only the mutators run here.
+phase("Polish");
+const cleanup = await workflow("polish", { repo, mode: "cleanup" });
+
+// ---- Backlog: file out-of-scope discoveries as issues (hybrid) ----
+// Candidate sources are the out-of-scope candidates written in the issue body
+// (source: issue) plus discoveries during the build. Cross-check against existing
+// issues and auto-post only the ones confidently new. Uncertain candidates go to the
+// PR body for human triage. Mass-producing duplicate issues erodes trust in the
+// automation, so when in doubt lean toward deferred.
+phase("Backlog");
+const backlogCandidates = [
+  ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
+  ...(code.anomalies || []).map((a) => ({
+    source: "code",
+    summary: `Red unconfirmed in ${a.unit} (${a.kind}): ${a.notes}`,
+  })),
+  ...(audit.findings || [])
+    .filter((f) => f.severity === "medium" || f.severity === "low")
+    .map((f) => ({ source: "audit", summary: f.summary, file: f.file, severity: f.severity })),
+  ...((review && review.needs_context) || []).map((f) => ({
+    source: "polish",
+    summary: `${f.title}: ${f.why || f.detail}`,
+  })),
+];
+let backlog = { posted: [], deferred: [] };
+if (backlogCandidates.length) {
+  backlog = (await agent(
     anchor(
-      `Fix these critical/high audit findings, then confirm tests still pass:\n${JSON.stringify(blocking)}`,
+      `Backlog stage: file GitHub issues for out-of-scope problems discovered during the build. Originating build issue: #${issueNumber}. Candidates:\n${JSON.stringify(backlogCandidates)}\n` +
+        `For each candidate: (1) judge whether it deserves an issue (actionable, outside this build's scope, non-trivial; merge duplicates and rephrasings into one). ` +
+        `(2) Cross-check against existing issues via the gh CLI issue search (state open, keywords from the candidate).\n` +
+        `File issues only for candidates you are confident are new (at most 5). Apply the label build-discovered; if the repo lacks it, set it up first via gh's label subcommand (color BFD4F2, description "out-of-scope problems discovered by autonomous builds"; if that fails, file without the label). Note the source and the originating build issue #${issueNumber} in the issue body.\n` +
+        `Defer any candidate that looks like a possible duplicate or that you are unsure about, with a reason, instead of posting. If gh is unavailable, defer every candidate.`,
     ),
-    { agentType: "general-purpose", phase: "Audit", label: "fix" },
+    { label: "backlog", phase: "Backlog", agentType: "general-purpose", schema: BACKLOG_SCHEMA },
+  )) || {
+    posted: [],
+    deferred: backlogCandidates.map((c) => ({
+      title: `[${c.source}] ${c.summary}`,
+      reason: "the backlog agent returned nothing",
+    })),
+  };
+  log(
+    `Backlog: posted ${backlog.posted.length} issue(s), ${backlog.deferred.length} to the PR body.`,
   );
 }
 
-// ---- Polish: external Codex + enhancer-code cleanup ----
-phase("Polish");
-await agent(
-  anchor(
-    `Run external Codex review on the uncommitted diff if the \`codex\` CLI is installed (a non-Claude lens against self-enhancement bias), apply its safe fixes, then run enhancer-code style cleanup (simplify, clarify). If codex is not installed, do cleanup only. If any fix breaks tests, revert that fix. Do not commit.`,
-  ),
-  { label: "polish", phase: "Polish", agentType: "general-purpose" },
-);
-
 // ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
 phase("Ship");
-const shipPrompt = anchor(
-  `Commit all changes (planning artifacts + implementation) in one Conventional Commits commit. ` +
-    `Then push the branch and open a draft pull request using the gh CLI in draft mode. ` +
-    `The PR body must list the logged assumptions so the user can veto: ${JSON.stringify(verdict.assumptions)}. ` +
-    `Report committed status and the PR url.${guard}`,
+const ship = await agent(
+  anchor(
+    `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit. ` +
+      `Push the branch and open a draft pull request via the gh CLI.\n` +
+      `The PR body must include all of the following. (1) The closing reference to the originating issue: "Closes #${issueNumber}". ` +
+      `(2) Assumptions recorded in the plan (the user's veto targets): ${JSON.stringify(plan.assumptions)}. ` +
+      `(3) Issues posted by the backlog stage: ${JSON.stringify(backlog.posted)}. ` +
+      `(4) Backlog candidates awaiting human triage: ${JSON.stringify(backlog.deferred)}. ` +
+      `(5) Unresolved critical/high findings: ${JSON.stringify(residualBlocking)}${reaudited ? "" : " (state clearly that the final fix round has not been re-audited)"}. ` +
+      `(6) code's Red-unconfirmed anomalies: ${JSON.stringify(code.anomalies || [])}. ` +
+      `(7) code's independent verify result (tests=${code.tests_pass} gates=${code.gates_pass})${code.tests_pass && code.gates_pass ? "" : `; failure detail: ${JSON.stringify(code.verify_output)}`}.\n` +
+      `Report the committed state and the PR url.${guard}`,
+  ),
+  { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
 );
-const ship = await agent(shipPrompt, {
-  label: "ship",
-  phase: "Ship",
-  agentType: "general-purpose",
-  schema: SHIP_SCHEMA,
-});
 
 return {
-  verdict: verdict.verdict,
+  issue: issueNumber,
   branch,
-  planning: planning.dir,
+  planning: plan.dir,
+  units_completed: code.completed.length,
+  code_anomalies: (code.anomalies || []).length,
+  code_verified: code.tests_pass && code.gates_pass,
   audit_findings: (audit.findings || []).length,
-  assumptions: verdict.assumptions,
+  residual_blocking: residualBlocking.length,
+  polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
+  backlog_posted: backlog.posted,
+  backlog_deferred: backlog.deferred.length,
+  assumptions: plan.assumptions,
   pr_url: ship.pr_url,
   committed: ship.committed,
 };

@@ -1,90 +1,218 @@
 export const meta = {
   name: "build",
   description:
-    "Autonomous end-to-end build. challenge / branch / research / think / code / audit / polish / ship run headless as deterministic script stages, so every machinery fan-out fires instead of being inlined. Review at the draft PR.",
+    "autonomous な end-to-end build。/issue で練られた Plan 節付き issue を入力に、Load (verbatim fetch -> 決定論 id 収集 -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Audit / Polish / Backlog / Ship が決定論的 script stage として headless に走る。レビューは draft PR で行う。",
   whenToUse:
-    "Fire-and-forget implementation. You walk away and come back to a draft PR, where you review the logged assumptions and the audit result. Reach for this when the task is specified enough to advance residual choices on best-guess; when it needs live steering mid-flight, drive the phases interactively instead.",
+    'fire-and-forget の実装。人間と練る工程は /issue で完結させ、その issue 番号 ("123" / "#123") / URL / {issue, repo} を args で渡す。離席して戻ると draft PR があり、記録された assumption と audit 結果と backlog issue をレビューする。飛行中の操舵が要るなら対話で phase を回す。',
   phases: [
-    { title: "Challenge" },
+    { title: "Load" },
+    { title: "Revalidate" },
     { title: "Branch" },
-    { title: "Research" },
-    { title: "Think" },
     { title: "Code" },
     { title: "Audit" },
     { title: "Polish" },
+    { title: "Backlog" },
     { title: "Ship" },
   ],
 };
 
-// Autonomous build owns each phase's fan-out at the script level, because a
-// spawned agent cannot spawn its own sub-agents (nested spawn is blocked). The
-// interactive /build skill relies on that nesting (challenge -> critic-design,
-// audit -> reviewer swarm); here the script flattens it to one level, except
-// audit, which delegates to workflow("audit") so it keeps /audit's full routing
-// table (nesting a workflow is one level deep, which is allowed). Fidelity cuts
-// are deliberate and logged, not silent: code runs a single implementer rather
-// than /code's RGRC machinery, and interactive gates are replaced by best-guess
-// assumptions surfaced at the draft PR.
+// 上流の /issue が premise 検証と人間との refine を終えている前提で、build は plan の
+// 再発明をしない。issue 本文の ## Plan 節が唯一の計画ソースで、抽出は LLM に任せるが
+// 検証は script が持つ: Plan 見出し検査と U/T id 収集は決定論 regex、構造検証は
+// validate()、抽出の silent drop は id 集合の exact 比較で reject する。issue 起票から
+// build 起動までの間に前提コードが動いた可能性は Revalidate (preconditions の
+// exists/matches 検査) が fail-close で捕まえる。fan-out を内側に持つ stage は入れ子
+// workflow に委譲する (code / audit / polish。入れ子は 1 段まで許可)。
 
-const task = typeof args === "string" ? args : (args && args.task) || "";
-if (!task) {
-  return { stopped: "no-task", why: "Pass the implementation task as args (string or {task})." };
+phase("Load");
+
+const input = typeof args === "object" && args ? args : {};
+const issueRef = String(typeof args === "string" ? args : input.issue || "").trim();
+// "123" / "#123" / issue URL の末尾から issue 番号を決定論で取り出す。
+const issueNumber = (issueRef.match(/(\d+)\D*$/) || [])[1] || "";
+if (!issueRef || !issueNumber) {
+  return {
+    stopped: "no-issue",
+    why: 'issue を args で渡す ("123" / "#123" / URL / {issue, repo})。',
+  };
 }
 
-// Optional repo target. When set, the build runs against a repository other than
-// the session cwd. Every filesystem / git / build step must be anchored there;
-// relying on "subagents inherit the session cwd" is model-discretion and would
-// misfire when the build is launched from elsewhere. anchor() prepends an
-// absolute cd so the starting cwd is irrelevant rather than assumed. guard is a
-// deterministic backstop for the hard-to-reverse steps (branch, commit, push,
-// PR): confirm the repo root before mutating, since the run completes headless
-// with no chance to intervene mid-flight.
-const repo = typeof args === "object" && args && typeof args.repo === "string" ? args.repo : "";
+// repo 指定時は session cwd と無関係にその repository へ固定する。「subagent は session cwd を
+// 引き継ぐ」に頼るのは model 裁量で、別の場所から起動されると事故る。anchor() が絶対 cd を
+// 前置して開始 cwd を無関係にする。guard は取り返しの利きにくい step (branch / commit / push /
+// PR) の決定論的な backstop で、headless 完走中に介入の機会が無いぶん、git を変更する前に
+// repo root を確認させる。
+const repo = typeof input.repo === "string" ? input.repo : "";
 const anchor = (p) =>
   repo
-    ? `Run every git, file, and build command from the repository at ${repo} (begin each shell command with \`cd ${repo} && \`, which persists for that command's own follow-ups).\n\n${p}`
+    ? `git / ファイル / ビルドのコマンドはすべて ${repo} の repository から実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
     : p;
 const guard = repo
-  ? ` Before this step's first commit, push, or branch mutation, run \`cd ${repo} && git rev-parse --show-toplevel\` and confirm it prints ${repo}; if it prints anything else, abort without mutating git and report the mismatch.`
+  ? ` この step で最初の commit / push / branch 変更を行う前に \`cd ${repo} && git rev-parse --show-toplevel\` を実行し、出力が ${repo} であることを確認する。異なる場合は git を変更せず中断し、不一致を報告する。`
   : "";
 
-const VERDICT_SCHEMA = {
+const FETCH_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["verdict", "why", "decisions", "assumptions"],
+  required: ["found", "body"],
   properties: {
-    verdict: { type: "string", enum: ["GO", "NO-GO"] },
-    why: { type: "string" },
-    decisions: { type: "array", items: { type: "string" } },
-    tradeoffs: { type: "array", items: { type: "string" } },
-    assumptions: {
-      type: "array",
-      items: { type: "string" },
-      description: "residual preferences advanced on best-guess; user veto targets at the PR",
-    },
+    found: { type: "boolean" },
+    body: { type: "string", description: "issue 本文の verbatim。要約・整形をしない" },
   },
 };
 
-const CRITIQUE_SCHEMA = {
+// think.js の PLAN_SCHEMA 相当 + preconditions + backlog_candidates。抽出は issue に
+// 書かれた plan の構造化であって再計画ではない。
+const EXTRACT_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["verdict", "weaknesses"],
-  properties: {
-    verdict: { type: "string" },
-    weaknesses: { type: "array", items: { type: "string" } },
-  },
-};
-
-const PLANNING_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  required: ["dir", "summary"],
+  required: [
+    "dir",
+    "outcome",
+    "decisions",
+    "assumptions",
+    "units",
+    "test_command",
+    "preconditions",
+    "backlog_candidates",
+  ],
   properties: {
     dir: {
       type: "string",
-      description: "planning dir, e.g. .claude/workspace/planning/YYYY-MM-DD-slug",
+      description: "planning dir。例 .claude/workspace/planning/YYYY-MM-DD-slug",
     },
-    summary: { type: "string" },
+    outcome: { type: "string", description: "done 状態の 1 行記述 (実装非依存、観測可能)" },
+    decisions: { type: "array", items: { type: "string" } },
+    assumptions: {
+      type: "array",
+      items: { type: "string" },
+      description: "issue に記録された best-guess の残余。PR でのユーザー拒否対象",
+    },
+    non_goals: { type: "array", items: { type: "string" } },
+    constraints: { type: "array", items: { type: "string" } },
+    units: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "goal", "files", "contract", "tests", "depends_on"],
+        properties: {
+          id: { type: "string", description: "U-001 形式。issue 本文の id をそのまま使う" },
+          goal: { type: "string", description: "この unit が届ける振る舞いの 1 行記述" },
+          files: {
+            type: "array",
+            items: { type: "string" },
+            description: "作成・変更するファイルパス",
+          },
+          contract: {
+            type: "string",
+            description: "公開インターフェース。signature / CLI flag / schema の素描",
+          },
+          tests: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["id", "name", "given", "when", "then"],
+              properties: {
+                id: { type: "string", description: "T-001 形式 (plan 全体で一意)" },
+                name: { type: "string", description: "検証する仕様の言明。テスト名になる" },
+                given: { type: "string" },
+                when: { type: "string" },
+                // JSON Schema の property 定義であり thenable ではない (BDD の given/when/then)
+                // oxlint-disable-next-line unicorn/no-thenable
+                then: { type: "string" },
+              },
+            },
+          },
+          depends_on: {
+            type: "array",
+            items: { type: "string" },
+            description: "先行 unit の id。無ければ空配列",
+          },
+        },
+      },
+    },
+    test_command: { type: "string", description: "テスト実行コマンド。例 cargo test / bun test" },
+    preconditions: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["path"],
+        properties: {
+          path: { type: "string", description: "plan が前提とする既存ファイル" },
+          pattern: { type: "string", description: "そのファイルに存在するはずの symbol / 文字列" },
+        },
+      },
+      description: "issue の plan が前提とする既存コード。無ければ空配列",
+    },
+    backlog_candidates: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["summary"],
+        properties: {
+          summary: { type: "string" },
+        },
+      },
+      description: "issue に書かれた scope 外候補。無ければ空配列",
+    },
+  },
+};
+
+const REVALIDATE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["results"],
+  properties: {
+    results: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["path", "pattern", "exists", "matches"],
+        properties: {
+          path: { type: "string" },
+          pattern: { type: "string" },
+          exists: { type: "boolean" },
+          matches: { type: "boolean" },
+        },
+      },
+    },
+  },
+};
+
+const BACKLOG_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["posted", "deferred"],
+  properties: {
+    posted: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["title", "url"],
+        properties: {
+          title: { type: "string" },
+          url: { type: "string" },
+        },
+      },
+    },
+    deferred: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["title", "reason"],
+        properties: {
+          title: { type: "string" },
+          reason: { type: "string" },
+        },
+      },
+    },
   },
 };
 
@@ -99,150 +227,300 @@ const SHIP_SCHEMA = {
   },
 };
 
-// ---- Challenge: premise -> two critic-design attacks -> GO/NO-GO ----
-phase("Challenge");
-const premise = await agent(
-  anchor(`You are the premise-analysis stage of an autonomous build. Task: "${task}".\n`) +
-    `Read .claude/OUTCOME.md if present for the outcome axis. List the open questions in the task, sort each into fact (evidence settles it) or preference (needs a choice). Verify the facts against the codebase. Report a one-line approach summary, the architectural decisions that crystallised, the trade-offs, and the residual preferences you would otherwise ask the user (these become logged assumptions).\n` +
-    `Return that package as your final text.`,
-  { label: "premise", phase: "Challenge" },
-);
-const critiques = await parallel([
-  () =>
-    agent(
-      anchor(
-        `critic-design, internal attack. Attack this build premise on its own terms (hidden weaknesses, failure modes). Premise:\n${premise}`,
-      ),
-      { agentType: "critic-design", phase: "Challenge", schema: CRITIQUE_SCHEMA },
-    ),
-  () =>
-    agent(
-      anchor(
-        `critic-design, outcome attack. Read .claude/OUTCOME.md and attack whether this premise reaches the outcome (outcome fit, non-goal breach, constraint breach). Premise:\n${premise}`,
-      ),
-      { agentType: "critic-design", phase: "Challenge", schema: CRITIQUE_SCHEMA },
-    ),
-]);
-const verdict = await agent(
-  `Reconcile the premise and the two critic-design attacks into a single GO/NO-GO verdict for an autonomous build.\n` +
-    `Premise:\n${premise}\n\nInternal attack:\n${JSON.stringify(critiques[0])}\n\nOutcome attack:\n${JSON.stringify(critiques[1])}\n\n` +
-    `Rule NO-GO only when fact evidence overturns the core (targets a state that already holds, or a verified fact contradicts it). Otherwise GO, proceeding on the surviving part. List residual preferences as assumptions.`,
-  { label: "verdict", phase: "Challenge", schema: VERDICT_SCHEMA },
-);
-if (verdict.verdict === "NO-GO") {
-  return { stopped: "NO-GO", why: verdict.why, decisions: verdict.decisions };
-}
-log(`GO. ${verdict.assumptions.length} residual(s) advanced on best-guess (veto at the PR).`);
+// think.js の validate() 移植 + content 非空検査。構造 (id 重複 / 宙吊り / 循環 / テスト
+// 欠落) と内容 (contract / name / given / when / then の空) を決定論で reject する。
+const validate = (plan) => {
+  const errors = [];
+  const units = plan.units || [];
+  if (!units.length) errors.push("units が空。実装 unit を 1 件以上定義する");
+  const ids = new Set(units.map((u) => u.id));
+  if (ids.size !== units.length) errors.push("unit id が重複している");
+  const testIds = new Set();
+  for (const u of units) {
+    if (!u.tests.length) errors.push(`${u.id} に test scenario が無い`);
+    if (!u.files.length) errors.push(`${u.id} に対象ファイルが無い`);
+    if (!String(u.goal || "").trim()) errors.push(`${u.id} の goal が空`);
+    if (!String(u.contract || "").trim()) errors.push(`${u.id} の contract が空`);
+    for (const t of u.tests) {
+      if (testIds.has(t.id)) errors.push(`test id ${t.id} が重複している`);
+      testIds.add(t.id);
+      for (const field of ["name", "given", "when", "then"]) {
+        if (!String(t[field] || "").trim()) errors.push(`${t.id} の ${field} が空`);
+      }
+    }
+    for (const d of u.depends_on) {
+      if (!ids.has(d)) errors.push(`${u.id} の depends_on ${d} が存在しない unit を指す`);
+    }
+  }
+  // 循環検出 (DFS)
+  const state = new Map();
+  const visit = (id, path) => {
+    if (state.get(id) === "done") return;
+    if (state.get(id) === "visiting") {
+      errors.push(`depends_on が循環している: ${[...path, id].join(" -> ")}`);
+      return;
+    }
+    state.set(id, "visiting");
+    const u = units.find((x) => x.id === id);
+    for (const d of (u && u.depends_on) || []) visit(d, [...path, id]);
+    state.set(id, "done");
+  };
+  for (const u of units) visit(u.id, []);
+  return errors;
+};
 
-// ---- Branch ----
+// ---- Load: verbatim fetch -> Plan 見出し検査 -> 決定論 id 収集 -> extract -> validate + cross-check ----
+const fetched = await agent(
+  anchor(
+    `GitHub issue ${issueRef} の本文を取得する。gh CLI (例: gh issue view ${issueRef} --json body) を使い、body は要約・整形・省略を一切せず verbatim で返す。issue が見つからない・取得に失敗した場合は found: false を返す。`,
+  ),
+  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA },
+);
+if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
+  return {
+    stopped: "no-issue-body",
+    why: `issue ${issueRef} の本文を取得できなかった。issue 番号と repo を確認する。`,
+  };
+}
+const body = fetched.body;
+
+// Plan 見出し検査と id 収集は extract agent より前に script が決定論で行う。
+const planHeading = body.match(/^##\s+Plan\b.*$/m);
+if (!planHeading) {
+  return {
+    stopped: "no-plan",
+    why: "issue 本文に ## Plan 節が無い。/issue で plan を練ってから build を起動する。",
+  };
+}
+const afterHeading = body.slice(planHeading.index + planHeading[0].length);
+const nextSection = afterHeading.search(/^##[^#]/m);
+const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
+const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[0]));
+const bodyUnitIds = idSet(/\bU-\d{3}\b/g);
+const bodyTestIds = idSet(/\bT-\d{3}\b/g);
+
+const plan = await agent(
+  anchor(
+    `次の GitHub issue 本文の ## Plan 節から構造化 plan を抽出する。再計画・要約・補完はせず、書かれている内容をそのまま構造化する。` +
+      `unit id (U-NNN) と test id (T-NNN) は本文のものを漏れなく保持する (欠落は後段の決定論 cross-check で reject される)。` +
+      `preconditions は plan が前提とする既存コードの {path, pattern} 一覧、backlog_candidates は issue に書かれた scope 外候補。本文に無ければ空配列。\n\n---\n${body}`,
+  ),
+  { label: "extract", phase: "Load", agentType: "general-purpose", schema: EXTRACT_SCHEMA },
+);
+if (!plan) {
+  return { stopped: "extraction-failed", why: "extract agent が plan を返さなかった。" };
+}
+
+const blockers = validate(plan);
+if (blockers.length) {
+  return { stopped: "invalid-plan", blockers, why: "抽出された plan が構造検証を通らない。" };
+}
+
+// 抽出での silent drop / 捏造を id 集合の exact 比較で reject する。
+const planUnitIds = new Set(plan.units.map((u) => u.id));
+const planTestIds = new Set(plan.units.flatMap((u) => u.tests.map((t) => t.id)));
+const setDiff = (a, b) => [...a].filter((x) => !b.has(x));
+const mismatch = {
+  units_missing: setDiff(bodyUnitIds, planUnitIds),
+  units_extra: setDiff(planUnitIds, bodyUnitIds),
+  tests_missing: setDiff(bodyTestIds, planTestIds),
+  tests_extra: setDiff(planTestIds, bodyTestIds),
+};
+if (Object.values(mismatch).some((l) => l.length)) {
+  return {
+    stopped: "extraction-mismatch",
+    detail: mismatch,
+    why: "issue 本文の U/T id 集合と抽出結果が一致しない。",
+  };
+}
+log(
+  `plan 抽出: unit ${plan.units.length} 件、test scenario ${planTestIds.size} 件、id cross-check pass。`,
+);
+
+// ---- Revalidate: preconditions を現在の codebase に対して再検証 (evidence + script gate) ----
+// issue 起票から build 起動までの間に前提コードが動いた可能性を fail-close で捕まえる。
+// miss の判定は agent の自己申告でなく script の filter が行う。
+phase("Revalidate");
+const preconditions = plan.preconditions || [];
+if (preconditions.length) {
+  const reval = await agent(
+    anchor(
+      `plan の preconditions を現在の codebase に対して再検証する。各 {path, pattern} について、path の存在 (exists) と pattern の grep 一致 (matches。pattern 無しなら exists と同値) を実際にコマンドで確認し、全 ${preconditions.length} 件を results で返す。判定を甘くしない。\n${JSON.stringify(preconditions)}`,
+    ),
+    {
+      label: "revalidate",
+      phase: "Revalidate",
+      agentType: "general-purpose",
+      schema: REVALIDATE_SCHEMA,
+    },
+  );
+  if (!reval || !Array.isArray(reval.results) || reval.results.length !== preconditions.length) {
+    return {
+      stopped: "revalidate-failed",
+      detail: reval,
+      why: "revalidate agent が全 preconditions の results を返さなかった。",
+    };
+  }
+  const drift = reval.results.filter((r) => !r.exists || !r.matches);
+  if (drift.length) {
+    return {
+      stopped: "plan-drift",
+      drift,
+      why: "issue の plan が前提とするコードが現在の codebase に無い。issue を更新してから再起動する。",
+    };
+  }
+  log(`revalidate: preconditions ${preconditions.length} 件 全 pass。`);
+}
+
+// ---- Branch: 作業 branch を checkout ----
 phase("Branch");
 const branch = await agent(
   anchor(
-    `Check out a new git working branch for: "${task}". Choose a conventional branch name (type then short slug) from the task and run git checkout -b with that name. If already off the default branch, keep the current branch. Report the branch name as your final text.${guard}`,
+    `issue #${issueNumber} "${plan.outcome}" のための新しい git 作業 branch を checkout する。conventional な branch 名 (type + 短い slug) を選び、その名前で git checkout -b を実行する。既に default branch 以外に居るなら現在の branch を維持する。branch 名を最終テキストで報告する。${guard}`,
   ),
   { label: "checkout", phase: "Branch", agentType: "general-purpose" },
 );
 
-// ---- Research (light; skips cleanly when there are no unknowns) ----
-phase("Research");
-const research = await parallel([
-  () =>
-    agent(
-      anchor(
-        `Explore the codebase for prior art, patterns, and constraints relevant to: "${task}". Report file:line anchors. medium breadth.`,
-      ),
-      { agentType: "Explore", phase: "Research", label: "explore:patterns" },
-    ),
-  () =>
-    agent(
-      anchor(
-        `Explore the codebase for integration points, existing helpers to reuse, and edge cases relevant to: "${task}". Report file:line anchors. medium breadth.`,
-      ),
-      { agentType: "Explore", phase: "Research", label: "explore:integration" },
-    ),
-]);
-const researchDigest = research.filter(Boolean).join("\n\n");
-
-// ---- Think: SOW/Spec -> critic-design ----
-phase("Think");
-const planning = await agent(
-  anchor(`Generate a SOW and Spec for an autonomous build of: "${task}".\n`) +
-    `Inputs. Challenge decisions: ${JSON.stringify(verdict.decisions)}. Trade-offs: ${JSON.stringify(verdict.tradeoffs || [])}. Assumptions (log these in the SOW Why): ${JSON.stringify(verdict.assumptions)}.\n` +
-    `Research:\n${researchDigest}\n\n` +
-    `Run \`date -u +%Y-%m-%d\` for the slug. Write .claude/workspace/planning/<date>-<slug>/sow.md (AC-N ids) and spec.md (FR-001 / T-001 / NFR-001 ids). Return the dir and a one-line summary.`,
-  { label: "plan", phase: "Think", agentType: "general-purpose", schema: PLANNING_SCHEMA },
-);
-await agent(
-  anchor(
-    `critic-design. Attack the SOW and Spec at ${planning.dir} for hidden weaknesses, unstated assumptions, and outcome drift. Report a verdict table and actionable items.`,
-  ),
-  { agentType: "critic-design", phase: "Think", label: "critic:spec" },
-);
-// ---- Code: single implementer (fidelity cut vs /code RGRC machinery) ----
+// ---- Code: workflow("code") に委譲 (unit ごとの Red -> Green + 独立 verify) ----
+// preconditions / backlog_candidates は build 側で消費済みなので、code へは
+// PLAN_SCHEMA 相当だけを渡す。
 phase("Code");
-log("Code phase runs a single implementer agent, not /code's full RGRC machinery.");
-await agent(
-  anchor(
-    `Implement the SOW and Spec at ${planning.dir}. Test-first (TDD): write failing tests from the T-NNN scenarios, implement to green, refactor. Run the project's lint / type-check / test gates and keep going until every AC is met and tests pass. Do not commit.`,
-  ),
-  { label: "implement", phase: "Code", agentType: "general-purpose" },
-);
+const stripPreconditions = (p) =>
+  Object.fromEntries(
+    Object.entries(p).filter(([k]) => k !== "preconditions" && k !== "backlog_candidates"),
+  );
+const code =
+  (await workflow("code", { plan: stripPreconditions(plan), repo, model: "sonnet" })) || null;
+if (!code || code.stopped) {
+  return { stopped: "code-failed", detail: code, planning: plan.dir };
+}
+if (!code.tests_pass || !code.gates_pass)
+  log(
+    `code の独立 verify が fail (tests=${code.tests_pass} gates=${code.gates_pass})。audit へ前進し PR に表面化する。`,
+  );
 
-// ---- Audit: delegate to the deterministic audit workflow (full routing) ----
-// workflow("audit") owns the fan-out: it ports /audit's glob routing table to
-// JS and fires every routed reviewer -> critic-audit -> critic-evidence ->
-// team-integration. Nesting a workflow is one level deep, which is allowed, so
-// build keeps /audit fidelity here instead of the old 6-reviewer cut. No scope
-// is passed, so audit routes the uncommitted diff (code has not committed yet),
-// which is the whole implementation.
+// ---- Audit ∥ Polish review -> fix -> re-audit loop (audit 実行は最大 3 回) ----
+// audit は workflow("audit") が fan-out を所有する (/audit の glob routing 表 + reviewer ->
+// challenge -> verify -> integrate)。scope を渡さないので uncommitted diff、つまり実装全体を
+// route する。code phase がテストを green にしているので preflight は省く。polish の review
+// mode は読み取りのみで、同じ diff に外部 Codex レンズを audit と並走できる。
 phase("Audit");
-const audit = (await workflow("audit", { repo })) || { findings: [] };
+const [audit0, review] = await parallel([
+  () => workflow("audit", { repo, skipPreflight: true }),
+  () => workflow("polish", { repo, mode: "review" }),
+]);
+let audit = audit0 || { findings: [] };
 log(
-  `Audit fired ${(audit.assignments || []).length} reviewer group(s), ${(audit.skipped || []).length} skipped.`,
+  `audit が ${(audit.assignments || []).length} reviewer group を発火、polish レンズは ${review && review.codex_available ? "有効" : "無効"}。`,
 );
-const blocking = (audit.findings || []).filter(
-  (f) => f.severity === "critical" || f.severity === "high",
-);
-if (blocking.length) {
-  log(`Fixing ${blocking.length} critical/high finding(s).`);
+const criticalHigh = (a) =>
+  (a.findings || []).filter((f) => f.severity === "critical" || f.severity === "high");
+const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
+  severity: f.severity === "P1" ? "high" : "medium",
+  summary: `${f.title}: ${f.detail}`,
+  file: f.file || "",
+}));
+// fix -> re-audit を 0 critical/high まで回す。旧版は fix 1 回で re-audit なし、つまり fix の
+// 検証が無かった。最終 round の fix だけは re-audit 予算が尽きるため未検証のまま PR に
+// 表面化する。
+let toFix = [...criticalHigh(audit), ...polishSurvivors];
+let reaudited = true;
+for (let round = 1; round <= 3 && toFix.length; round++) {
+  log(`fix round ${round}: ${toFix.length} 件を修正。`);
   await agent(
     anchor(
-      `Fix these critical/high audit findings, then confirm tests still pass:\n${JSON.stringify(blocking)}`,
+      `これらの review findings を修正し、テストが通ることを確認する:\n${JSON.stringify(toFix)}`,
     ),
-    { agentType: "general-purpose", phase: "Audit", label: "fix" },
+    { agentType: "general-purpose", phase: "Audit", label: `fix:${round}` },
+  );
+  if (round === 3) {
+    reaudited = false;
+    log("fix round 上限。最終 round の fix は re-audit されず、PR に表面化する。");
+    break;
+  }
+  audit = (await workflow("audit", { repo, skipPreflight: true })) || { findings: [] };
+  toFix = criticalHigh(audit);
+}
+const residualBlocking = reaudited ? criticalHigh(audit) : [];
+
+// ---- Polish: cleanup のみ (simplify -> enhancer-code -> テスト検証) ----
+// review レンズは Audit phase で消化済みなので、ここは mutator だけを回す。
+phase("Polish");
+const cleanup = await workflow("polish", { repo, mode: "cleanup" });
+
+// ---- Backlog: scope 外の発見を issue 化する (ハイブリッド) ----
+// 候補源は issue 本文に書かれた scope 外候補 (source: issue) と build 中の発見。既存 issue と
+// 照合して新規と確信できるものだけ自動 post する。確信の持てない候補は PR body に回して
+// 人間が triage する。重複 issue の量産は自動化への信頼を下げるので、迷ったら deferred に倒す。
+phase("Backlog");
+const backlogCandidates = [
+  ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
+  ...(code.anomalies || []).map((a) => ({
+    source: "code",
+    summary: `${a.unit} で Red 未確認 (${a.kind}): ${a.notes}`,
+  })),
+  ...(audit.findings || [])
+    .filter((f) => f.severity === "medium" || f.severity === "low")
+    .map((f) => ({ source: "audit", summary: f.summary, file: f.file, severity: f.severity })),
+  ...((review && review.needs_context) || []).map((f) => ({
+    source: "polish",
+    summary: `${f.title}: ${f.why || f.detail}`,
+  })),
+];
+let backlog = { posted: [], deferred: [] };
+if (backlogCandidates.length) {
+  backlog = (await agent(
+    anchor(
+      `build 中に発見された scope 外の問題を GitHub issue 化する backlog stage。build 元 issue: #${issueNumber}。候補:\n${JSON.stringify(backlogCandidates)}\n` +
+        `各候補について次を行う。(1) issue に値するか判定する (actionable で、この build の scope 外で、些末でない。重複や言い換えは 1 件に統合する)。` +
+        `(2) gh CLI の issue 検索 (state open、候補のキーワード) で既存 issue との重複を照合する。\n` +
+        `新規と確信できるものだけ issue を立てる (上限 5 件)。label build-discovered を付け、repo に無ければ gh の label サブコマンドで先に用意する (色 BFD4F2、説明は「autonomous build が発見した scope 外の問題」。用意に失敗したら label なしで立てる)。issue 本文に出所 (source) と発見元の build 元 issue #${issueNumber} を記す。\n` +
+        `重複の疑いがある・判断に迷う候補は post せず deferred に回し、理由を書く。gh が使えない場合は全候補を deferred にする。`,
+    ),
+    { label: "backlog", phase: "Backlog", agentType: "general-purpose", schema: BACKLOG_SCHEMA },
+  )) || {
+    posted: [],
+    deferred: backlogCandidates.map((c) => ({
+      title: `[${c.source}] ${c.summary}`,
+      reason: "backlog agent が結果を返さなかった",
+    })),
+  };
+  log(
+    `backlog: issue ${backlog.posted.length} 件を post、${backlog.deferred.length} 件を PR body へ。`,
   );
 }
 
-// ---- Polish: external Codex + enhancer-code cleanup ----
-phase("Polish");
-await agent(
-  anchor(
-    `Run external Codex review on the uncommitted diff if the \`codex\` CLI is installed (a non-Claude lens against self-enhancement bias), apply its safe fixes, then run enhancer-code style cleanup (simplify, clarify). If codex is not installed, do cleanup only. If any fix breaks tests, revert that fix. Do not commit.`,
-  ),
-  { label: "polish", phase: "Polish", agentType: "general-purpose" },
-);
-
-// ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
+// ---- Ship: commit + draft PR (外向きの操作なので draft = 可逆) ----
 phase("Ship");
-const shipPrompt = anchor(
-  `Commit all changes (planning artifacts + implementation) in one Conventional Commits commit. ` +
-    `Then push the branch and open a draft pull request using the gh CLI in draft mode. ` +
-    `The PR body must list the logged assumptions so the user can veto: ${JSON.stringify(verdict.assumptions)}. ` +
-    `Report committed status and the PR url.${guard}`,
+const ship = await agent(
+  anchor(
+    `全変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にする。` +
+      `branch を push し、gh CLI で draft の pull request を開く。\n` +
+      `PR body には次を全て載せる。(1) 元 issue を閉じる参照 "Closes #${issueNumber}"。` +
+      `(2) plan に記録された assumption (ユーザーの拒否対象): ${JSON.stringify(plan.assumptions)}。` +
+      `(3) backlog で post した issue: ${JSON.stringify(backlog.posted)}。` +
+      `(4) 人間の triage 待ち backlog 候補: ${JSON.stringify(backlog.deferred)}。` +
+      `(5) 未解決の critical/high findings: ${JSON.stringify(residualBlocking)}${reaudited ? "" : " (最終 fix round は re-audit されていない旨を明記する)"}。` +
+      `(6) code の Red 未確認 anomaly: ${JSON.stringify(code.anomalies || [])}。` +
+      `(7) code の独立 verify 結果 (tests=${code.tests_pass} gates=${code.gates_pass})${code.tests_pass && code.gates_pass ? "" : `。fail の詳細: ${JSON.stringify(code.verify_output)}`}。\n` +
+      `committed 状態と PR url を報告する。${guard}`,
+  ),
+  { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
 );
-const ship = await agent(shipPrompt, {
-  label: "ship",
-  phase: "Ship",
-  agentType: "general-purpose",
-  schema: SHIP_SCHEMA,
-});
 
 return {
-  verdict: verdict.verdict,
+  issue: issueNumber,
   branch,
-  planning: planning.dir,
+  planning: plan.dir,
+  units_completed: code.completed.length,
+  code_anomalies: (code.anomalies || []).length,
+  code_verified: code.tests_pass && code.gates_pass,
   audit_findings: (audit.findings || []).length,
-  assumptions: verdict.assumptions,
+  residual_blocking: residualBlocking.length,
+  polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
+  backlog_posted: backlog.posted,
+  backlog_deferred: backlog.deferred.length,
+  assumptions: plan.assumptions,
   pr_url: ship.pr_url,
   committed: ship.committed,
 };
