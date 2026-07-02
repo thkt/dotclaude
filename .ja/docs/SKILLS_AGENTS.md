@@ -112,11 +112,11 @@ agents/
 ├── explorers/      # 探索 (explorer-feature)
 ├── generators/     # 生成 (generator-test, generator-e2e)
 ├── resolvers/      # 問題解決 (resolver-build)
-├── reviewers/      # レビュー (18 種の専門 reviewer)
+├── reviewers/      # レビュー (17 種の専門 reviewer)
 └── teams/          # チーム統合 (team-integration, team-qa, team-implementation)
 ```
 
-### Reviewer Agents (18 種)
+### Reviewer Agents (17 種)
 
 | Agent                  | 焦点                              |
 | ---------------------- | --------------------------------- |
@@ -129,7 +129,6 @@ agents/
 | reviewer-efficiency    | アルゴリズム コスト、ホット パス  |
 | reviewer-encapsulation | 型設計、不変条件の強制            |
 | reviewer-operations    | エラー境界、ロギング              |
-| reviewer-performance   | React レンダリング、bundle サイズ |
 | reviewer-progressive   | CSS-first、JS 削減                |
 | reviewer-prompt        | LLM プロンプト定義の品質          |
 | reviewer-readability   | コード構造、可読性                |

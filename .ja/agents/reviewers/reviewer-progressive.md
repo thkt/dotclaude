@@ -33,14 +33,14 @@ CSS first、JS last。ブラウザ ネイティブのプリミティブ (transit
 | 4        | イベント ハンドラ       | resize、scroll、matchMedia          |
 | 5        | 代替マップ              | スキルの CSS 代替にパターンをマッチ |
 
-## reviewer-performance との区別
+## reviewer-react-pattern との区別
 
-| 本 reviewer (reviewer-progressive) | reviewer-performance              |
-| ---------------------------------- | --------------------------------- |
-| "JS の代わりに CSS でできるか"     | "この React コードは十分に速いか" |
-| JS から CSS への置換機会           | レンダー最適化、バンドル分割      |
-| ブラウザ API 代替の検出            | React 固有のフック/エフェクト解析 |
-| JS コードを完全に除去              | 既存の JS/React コードを最適化    |
+| 本 reviewer (reviewer-progressive) | reviewer-react-pattern              |
+| ---------------------------------- | ----------------------------------- |
+| "JS の代わりに CSS でできるか"     | "この React コードは慣用句的で速いか" |
+| JS から CSS への置換機会           | レンダー最適化、hook/Effect 解析    |
+| ブラウザ API 代替の検出            | React 固有のパターン準拠            |
+| JS コードを完全に除去              | 既存の React コードを再構成/最適化  |
 
 ## キャリブレーション
 

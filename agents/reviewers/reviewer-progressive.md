@@ -33,14 +33,14 @@ Banned phrasing inside reasoning: "JS is more flexible" without naming the flexi
 | 4     | Event Handlers   | resize, scroll, matchMedia                    |
 | 5     | Alternative Map  | Match patterns to CSS alternatives from skill |
 
-## Distinction from reviewer-performance
+## Distinction from reviewer-react-pattern
 
-| This reviewer (reviewer-progressive) | reviewer-performance                  |
-| ------------------------------------ | ------------------------------------- |
-| "Can CSS do this instead of JS?"     | "Is this React code fast enough?"     |
-| JS to CSS replacement opportunities  | Render optimization, bundle splitting |
-| Browser API alternative detection    | React-specific hook/effect analysis   |
-| Eliminates JS code entirely          | Optimizes existing JS/React code      |
+| This reviewer (reviewer-progressive) | reviewer-react-pattern                    |
+| ------------------------------------ | ----------------------------------------- |
+| "Can CSS do this instead of JS?"     | "Is this React code idiomatic and fast?"  |
+| JS to CSS replacement opportunities  | Render optimization, hook/Effect analysis |
+| Browser API alternative detection    | React-specific pattern compliance         |
+| Eliminates JS code entirely          | Restructures/optimizes existing React code |
 
 ## Calibration
 

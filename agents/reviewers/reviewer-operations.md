@@ -31,7 +31,8 @@ Banned phrasing inside reasoning: "user can refresh" without confirming the user
 | 2     | Loading State Check | Suspense fallbacks, skeleton screens                                          |
 | 3     | Observability Audit | Critical paths without structured logging, error correlation, or alertability |
 | 4     | Performance Budget  | Bundle size, lazy loading, code splitting                                     |
-| 5     | Fault Isolation     | Blast radius containment, fallback paths, circuit breakers                    |
+
+Cascade impact when boundaries themselves fail (circuit breakers, fault isolation, blast-radius scenarios) belongs to reviewer-resilience.
 
 ## Distinction from reviewer-silence
 
@@ -77,7 +78,7 @@ Follow finding-schema.md.
 | Field        | Value                                                                                   |
 | ------------ | --------------------------------------------------------------------------------------- |
 | Prefix       | OPS                                                                                     |
-| Categories   | error-boundary / loading-state / logging / performance / degradation                    |
+| Categories   | error-boundary / loading-state / logging / performance                                  |
 | Severity     | critical / high / medium / low                                                          |
 | Verification | pattern_search or call_site_check. Is this component user-facing or in a critical path? |
 
@@ -93,6 +94,5 @@ Reasoning should name blast radius (what breaks, who notices).
 | loading_state  | count |
 | logging        | count |
 | performance    | count |
-| degradation    | count |
 | files_reviewed | count |
 ```
