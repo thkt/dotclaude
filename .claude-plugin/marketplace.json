@@ -35,10 +35,8 @@
       "agents": [
         "./agents/architects/architect-feature.md",
         "./agents/explorers/explorer-feature.md",
-        "./agents/critics/critic-design.md",
-        "./agents/reviewers/reviewer-spec.md"
-      ],
-      "skills": ["./skills/use-workflow-spec-validation/SKILL.md"]
+        "./agents/critics/critic-design.md"
+      ]
     },
     {
       "name": "build",

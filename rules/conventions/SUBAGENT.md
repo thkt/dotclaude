@@ -73,7 +73,7 @@ The required conditions for granting memory are below. After assignment, remove 
 
 When a reviewer- agent lists advisory findings, tag each with one of the labels below so the consumer (/audit or the user) separates must-fix from preference. Unlabeled findings mix Critical with Nit, and the nit flood buries the must-fix items.
 
-Agents returning their own gate verdict (reviewer-spec Ready / NotReady, critic- confirmed / disputed, etc.) use their own scheme and do not layer this label on top.
+Agents returning their own gate verdict (critic- confirmed / disputed, etc.) use their own scheme and do not layer this label on top.
 
 | Label    | Meaning                                                       |
 | -------- | ------------------------------------------------------------- |

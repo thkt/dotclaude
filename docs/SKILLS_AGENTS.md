@@ -47,7 +47,7 @@ Skills are "knowledge modules" that provide domain-specific knowledge when AI ex
 
 | Category       | Skills                                                                                         | Purpose                          |
 | -------------- | ---------------------------------------------------------------------------------------------- | -------------------------------- |
-| Workflow       | use-workflow-code, use-workflow-tdd-cycle, use-workflow-pageshot, use-workflow-spec-validation | Multi-phase workflow definitions |
+| Workflow       | use-workflow-code, use-workflow-tdd-cycle, use-workflow-pageshot | Multi-phase workflow definitions |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                       | Domain knowledge for agents      |
 | CLI wrapper    | use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase                               | CLI tool integration             |
 | User-invocable | think, research, code, audit, polish, feature, fix, adr, swarm, etc.                           | Slash command entry points       |
@@ -113,11 +113,11 @@ agents/
 ├── explorers/      # Exploration (explorer-feature)
 ├── generators/     # Generation (generator-test, generator-e2e)
 ├── resolvers/      # Problem resolution (resolver-build)
-├── reviewers/      # Review (20 specialized reviewers)
+├── reviewers/      # Review (19 specialized reviewers)
 └── teams/          # Team integration (team-integration, team-qa, team-implementation)
 ```
 
-### Reviewer Agents (20 types)
+### Reviewer Agents (19 types)
 
 | Agent                  | Focus                              |
 | ---------------------- | ---------------------------------- |
@@ -139,7 +139,6 @@ agents/
 | reviewer-reuse         | Existing code reuse opportunities  |
 | reviewer-security      | OWASP Top 10                       |
 | reviewer-silence       | Silent failure detection           |
-| reviewer-spec          | SOW/Spec Ready/NotReady gate       |
 | reviewer-testability   | Testable code design               |
 
 ### Team Agents

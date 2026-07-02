@@ -16,7 +16,7 @@ paths:
 | true           | -          | 短縮名                | commit, fix, audit                              |
 | false          | CLI ラップ | `use-cli-<cli>`       | use-cli-recall, use-cli-scout                   |
 | false          | Agent 専用 | `use-context-<agent>` | use-context-reviewer-security                   |
-| false          | Workflow   | `use-workflow-<noun>` | use-workflow-code, use-workflow-spec-validation |
+| false          | Workflow   | `use-workflow-<noun>` | use-workflow-code, use-workflow-tdd-cycle |
 
 ## ディレクトリ構造
 

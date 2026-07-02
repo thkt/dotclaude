@@ -81,10 +81,9 @@ Generate ≥2 distinct approaches from the perspectives below. When approaches c
 
 After generation, review sow.md and spec.md inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` and the empty-phrase file matching the body language (`${CLAUDE_SKILL_DIR}/references/phrases.ja.md` for Japanese, `${CLAUDE_SKILL_DIR}/references/phrases.en.md` for English).
 
-## Phase 5: Spec Review and Scope Adjustment
+## Phase 5: Scope Adjustment
 
-1. Count unique files per Phase; when 5 or more, split into independent Units (each with own SOW / Spec). This re-decomposes the AC into smaller outcome units rather than slicing the implementation, and is a contract change, so confirm the new ACs with the user.
-2. Invoke `reviewer-spec` on the Spec, including any split-out Units. If Ready, pass. If NotReady, fix P0 blockers and re-invoke (max 3 loops). After 3 loops, present any remaining blockers to the user and proceed.
+Count unique files per Phase; when 5 or more, split into independent Units (each with own SOW / Spec). This re-decomposes the AC into smaller outcome units rather than slicing the implementation, and is a contract change, so confirm the new ACs with the user.
 
 ## Completion Criteria
 
@@ -96,4 +95,3 @@ Not done until all items are satisfied. For any item you cannot satisfy, present
 - [ ] Adversarial challenge (critic-design) applied
 - [ ] Design reviewed and approved by the user
 - [ ] sow.md and spec.md generated
-- [ ] Spec review passed

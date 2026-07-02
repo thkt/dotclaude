@@ -19,9 +19,9 @@ background: true
 
 ## Scope Notes
 
-このエージェントは `/audit` の reviewer pool に入らない。reviewer-spec と同様、下記の独自フォーマットを使い `finding-schema.md` には従わない。
+このエージェントは `/audit` の reviewer pool に入らない。下記の独自フォーマットを使い `finding-schema.md` には従わない。
 
-Spec 軸専用。実装後の diff を元 spec と照合する (post-implementation)。spec 自体の実装可能性を実装前に判定する reviewer-spec とは別の関心事。詳細は Distinction を参照。
+Spec 軸専用。実装後の diff を元 spec と照合する (post-implementation)。
 
 ## Posture
 
@@ -68,12 +68,12 @@ diff の固定点は呼び出し元の指定 (commit SHA、branch、tag、merge-
 
 ## Distinction from related reviewers
 
-| Concern | このレビュアー (conformance) | reviewer-spec                | reviewer-causation  |
-| ------- | ---------------------------- | ---------------------------- | ------------------- |
-| Lens    | 実装は spec どおりか         | spec は実装可能か            | 修正は根本原因か    |
-| Timing  | 実装後 (diff vs spec)        | 実装前 (sow.md/spec.md gate) | 修正レビュー時      |
-| Output  | 3 カテゴリ + spec 引用       | Ready/NotReady + CON-\*      | 5 Whys + patch 検出 |
-| /audit  | pool 外                      | pool 外                      | Wave 1 後に 1 回    |
+| Concern | このレビュアー (conformance) | reviewer-causation  |
+| ------- | ---------------------------- | ------------------- |
+| Lens    | 実装は spec どおりか         | 修正は根本原因か    |
+| Timing  | 実装後 (diff vs spec)        | 修正レビュー時      |
+| Output  | 3 カテゴリ + spec 引用       | 5 Whys + patch 検出 |
+| /audit  | pool 外                      | Wave 1 後に 1 回    |
 
 ## Error Handling
 

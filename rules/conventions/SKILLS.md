@@ -16,7 +16,7 @@ Choose by category. Generic names like helper, utils, tools are not allowed.
 | true           | -          | Short name            | commit, fix, audit                              |
 | false          | CLI wrap   | `use-cli-<cli>`       | use-cli-recall, use-cli-scout                   |
 | false          | Agent-only | `use-context-<agent>` | use-context-reviewer-security                   |
-| false          | Workflow   | `use-workflow-<noun>` | use-workflow-code, use-workflow-spec-validation |
+| false          | Workflow   | `use-workflow-<noun>` | use-workflow-code, use-workflow-tdd-cycle |
 
 ## Directory structure
 
