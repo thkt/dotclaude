@@ -171,11 +171,10 @@ const ROUTING = {
     "operations",
     "resilience",
   ],
-  "*.md": ["prompt", "document"],
-  "*.yaml,*.json": ["encapsulation", "document"],
+  "*.md": ["prompt"],
   "*.css,*.html": ["accessibility", "progressive", "duplication"],
   test: ["coverage", "testability"],
-  default: ["duplication", "reuse", "efficiency", "document"],
+  default: ["duplication", "reuse", "efficiency"],
 };
 
 // /audit focus filter. Final per-file set = routed reviewers intersect focus set.
@@ -187,14 +186,12 @@ const FOCUS = {
     "design",
     "react-pattern",
     "rust",
-    "encapsulation",
     "causation",
     "resilience",
     "duplication",
     "reuse",
     "testability",
     "operations",
-    "document",
     "prompt",
     "silence",
   ],

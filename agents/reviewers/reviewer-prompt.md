@@ -88,14 +88,6 @@ Reviewer agent (`agents/reviewers/`) required sections: title, Purpose, Analysis
 | Scope unclear (what file covers)     | REPORT (medium), add scope table |
 | Rules without anti-patterns/examples | REPORT (low), add calibration    |
 
-## Distinction from reviewer-document
-
-| This reviewer (prompt)                   | reviewer-document                     |
-| ---------------------------------------- | ------------------------------------- |
-| LLM-facing files (agents, skills, rules) | Human-facing docs (README, API, arch) |
-| Token efficiency, format compliance      | Readability, completeness, audience   |
-| "Can an LLM parse this efficiently?"     | "Can a human follow this?"            |
-
 ## Calibration
 
 See `~/.claude/skills/audit/references/calibration-examples.md` section PQ.

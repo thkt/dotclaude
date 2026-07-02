@@ -96,7 +96,6 @@
         "./agents/reviewers/reviewer-accessibility.md",
         "./agents/reviewers/reviewer-readability.md",
         "./agents/reviewers/reviewer-design.md",
-        "./agents/reviewers/reviewer-document.md",
         "./agents/reviewers/reviewer-duplication.md",
         "./agents/reviewers/reviewer-efficiency.md",
         "./agents/reviewers/reviewer-operations.md",
@@ -107,7 +106,6 @@
         "./agents/reviewers/reviewer-silence.md",
         "./agents/reviewers/reviewer-coverage.md",
         "./agents/reviewers/reviewer-testability.md",
-        "./agents/reviewers/reviewer-encapsulation.md",
         "./agents/reviewers/reviewer-prompt.md"
       ],
       "skills": [

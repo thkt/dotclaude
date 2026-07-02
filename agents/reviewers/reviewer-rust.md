@@ -42,15 +42,15 @@ Banned phrasing inside reasoning: "we know it's safe" without a SAFETY block cit
 
 ## Distinction from related reviewers
 
-| Concern                       | This reviewer (rust) | reviewer-design         | reviewer-silence         | reviewer-encapsulation |
-| ----------------------------- | -------------------- | ----------------------- | ------------------------ | ---------------------- |
-| Lens                          | Rust-idiomatic?      | Module earns interface? | Silent failure pattern?  | Domain modeled well?   |
-| `let _ = ` swallowed `Result` | Idiom violation      | Out of scope            | Empty handler equivalent | Out of scope           |
-| `Box<dyn Trait>` overuse      | Trait design smell   | Out of scope            | Out of scope             | Out of scope           |
-| `unsafe` without SAFETY       | Invariant gap        | Out of scope            | Out of scope             | Out of scope           |
-| `clone()` abuse               | Ownership smell      | Out of scope            | Out of scope             | Out of scope           |
-| async blocking call           | Boundary violation   | Out of scope            | Out of scope             | Out of scope           |
-| Scope                         | `*.rs` only          | Any language            | Any language             | Any language           |
+| Concern                       | This reviewer (rust) | reviewer-design         | reviewer-silence         |
+| ----------------------------- | -------------------- | ----------------------- | ------------------------ |
+| Lens                          | Rust-idiomatic?      | Module earns interface? | Silent failure pattern?  |
+| `let _ = ` swallowed `Result` | Idiom violation      | Out of scope            | Empty handler equivalent |
+| `Box<dyn Trait>` overuse      | Trait design smell   | Out of scope            | Out of scope             |
+| `unsafe` without SAFETY       | Invariant gap        | Out of scope            | Out of scope             |
+| `clone()` abuse               | Ownership smell      | Out of scope            | Out of scope             |
+| async blocking call           | Boundary violation   | Out of scope            | Out of scope             |
+| Scope                         | `*.rs` only          | Any language            | Any language             |
 
 `let _ = result_value` may receive findings from both this reviewer (RU2 error discipline) and reviewer-silence (SF1 catch equivalent). Complementary, not duplicate.
 

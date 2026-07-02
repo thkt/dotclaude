@@ -113,11 +113,11 @@ agents/
 ├── explorers/      # Exploration (explorer-feature)
 ├── generators/     # Generation (generator-test, generator-e2e)
 ├── resolvers/      # Problem resolution (resolver-build)
-├── reviewers/      # Review (18 specialized reviewers)
+├── reviewers/      # Review (16 specialized reviewers)
 └── teams/          # Team integration (team-integration, team-qa, team-implementation)
 ```
 
-### Reviewer Agents (18 types)
+### Reviewer Agents (16 types)
 
 | Agent                  | Focus                              |
 | ---------------------- | ---------------------------------- |
@@ -126,10 +126,8 @@ agents/
 | reviewer-coverage      | Test coverage quality              |
 | reviewer-design        | Module depth via deletion test     |
 | reviewer-react-pattern | React design patterns              |
-| reviewer-document      | Documentation quality              |
 | reviewer-duplication   | Cross-file DRY analysis            |
 | reviewer-efficiency    | Algorithmic cost, hot paths        |
-| reviewer-encapsulation | Type design, invariant enforcement |
 | reviewer-operations    | Error boundaries, logging          |
 | reviewer-progressive   | CSS-first, JS reduction            |
 | reviewer-prompt        | LLM prompt definition quality      |

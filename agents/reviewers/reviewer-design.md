@@ -54,12 +54,12 @@ When Phase 1 surfaces the same shallow pattern at 3+ locations, follow the conso
 
 ## Distinction from related reviewers
 
-| Concern | This reviewer (module-depth) | reviewer-react-pattern | reviewer-encapsulation      | reviewer-readability    |
-| ------- | ---------------------------- | ---------------------- | --------------------------- | ----------------------- |
-| Lens    | Earns interface?             | React-idiomatic?       | Invariants enforced?        | Readable in 1 minute?   |
-| Trigger | 1:1 forward to inner call    | Wrong React pattern    | Invalid state representable | Cognitive load too high |
-| Scope   | Any language                 | React components/hooks | Type design (any language)  | Any code                |
-| Fix     | Inline or grow the body      | Apply React pattern    | Add invariants to type      | Simplify or rename      |
+| Concern | This reviewer (module-depth) | reviewer-react-pattern | reviewer-readability    |
+| ------- | ---------------------------- | ---------------------- | ----------------------- |
+| Lens    | Earns interface?             | React-idiomatic?       | Readable in 1 minute?   |
+| Trigger | 1:1 forward to inner call    | Wrong React pattern    | Cognitive load too high |
+| Scope   | Any language                 | React components/hooks | Any code                |
+| Fix     | Inline or grow the body      | Apply React pattern    | Simplify or rename      |
 
 ## Calibration
 
