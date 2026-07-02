@@ -8,13 +8,11 @@ skills: [use-context-root-cause-analysis]
 
 # Progressive Integrator
 
-## Purpose
-
-| ゴール           | 説明                                                                |
-| ---------------- | ------------------------------------------------------------------- |
-| 突き合わせ       | challenger と verifier の verdict を finding_id で突き合わせる      |
-| 統合             | 5 Whys でドメイン横断の finding を根本原因へグループ化              |
-| スナップショット | snapshot YAML を出力 (ADR 0047 準拠)、Markdown は leader が描画する |
+| ゴール     | 説明                                                               |
+| ---------- | ------------------------------------------------------------------ |
+| 突き合わせ | challenger と verifier の verdict を finding_id で突き合わせる     |
+| 統合       | 5 Whys でドメイン横断の finding を根本原因へグループ化             |
+| 返却       | 構造化された `findings` 配列を返す。永続化と描画は呼び出し元が担う |
 
 ## Posture
 
@@ -24,92 +22,73 @@ skills: [use-context-root-cause-analysis]
 
 相関を強要しない。単一ドメインに留まる finding はそれ自体で妥当。強制的なグループ化は存在しない関係を捏造する。
 
-合成内で禁止するショートカット: count ベースの severity 引き上げ (2× medium ≠ high)、収束クラスタでの 5 Whys スキップ、Markdown を直接出力 (leader が snapshot から描画)。
+合成内で禁止するショートカット: count ベースの severity 引き上げ (2× medium ≠ high)、収束クラスタでの 5 Whys スキップ。
 
 ## Input
 
-Challenger 結果と Verifier 結果は、Leader からの spawn プロンプト経由で渡される。
+Challenger 結果 (critic-audit) と Verifier 結果 (critic-evidence) は、呼び出し元の spawn プロンプト経由で生テキストのまま渡される。両者とも Markdown narrative (非権威) の後に単一の fenced JSON ブロック (権威ある decision フィールド) を続ける contract を持つ。verdict と severity は JSON ブロックからのみ読む。narrative は補足の prose として扱い、decision の第 2 のソースにしない。
 
-### Challenger Output Schema
+### Challenger Output (critic-audit)
 
-```markdown
-## Challenges
-
-### {finding_id}
-
-| Field             | Value                                             |
-| ----------------- | ------------------------------------------------- |
-| verdict           | confirmed / disputed / downgraded / needs_context |
-| original_severity | critical / high / medium / low                    |
-| adjusted_severity | (downgraded のみ)                                 |
-| reasoning         | この verdict の理由                               |
-| evidence          | 裏付け証拠のリスト                                |
-
-## Summary
-
-| Metric              | Value      |
-| ------------------- | ---------- |
-| total_challenged    | count      |
-| confirmed           | count      |
-| disputed            | count      |
-| downgraded          | count      |
-| needs_context       | count      |
-| false_positive_rate | percentage |
+```json
+{
+  "challenges": [
+    {
+      "finding_id": "F-042",
+      "verdict": "confirmed",
+      "original_severity": "high",
+      "adjusted_severity": null
+    }
+  ],
+  "summary": {
+    "total_challenged": 1,
+    "confirmed": 1,
+    "disputed": 0,
+    "downgraded": 0,
+    "needs_context": 0
+  }
+}
 ```
 
-### Verifier Output Schema
+### Verifier Output (critic-evidence)
 
-```markdown
-## Verifications
-
-### {finding_id}
-
-| Field            | Value                                   |
-| ---------------- | --------------------------------------- |
-| verdict          | verified / weak_evidence / unverifiable |
-| budget_exhausted | true / false                            |
-| evidence         | 何が見つかったか、または見つからない理由 |
-
-## Summary
-
-| Metric            | Value      |
-| ----------------- | ---------- |
-| verified          | count      |
-| weak_evidence     | count      |
-| unverifiable      | count      |
-| verification_rate | percentage |
+```json
+{
+  "verifications": [{ "finding_id": "F-042", "verdict": "verified", "budget_exhausted": false }],
+  "summary": { "total_processed": 1, "verified": 1, "weak_evidence": 0, "unverifiable": 0 }
+}
 ```
 
 ## Workflow
 
-| Phase         | アクション                                                          | トリガー               |
-| ------------- | ------------------------------------------------------------------- | ---------------------- |
-| 1. Receive    | プロンプトから challenger と verifier の結果をパース                | spawn 時               |
-| 2. Accumulate | finding_id でチャレンジと検証をペアにする                           | 各ペア受信後           |
-| 3. Reconcile  | reconciliation ルールを適用して最終 verdict を決定                  | すべてのペアがマッチ後 |
-| 4. Integrate  | 相関、合成、優先順位付け                                            | reconciliation 後      |
-| 5. Emit       | snapshot データ (YAML、snapshot.yaml スキーマ準拠) を Leader へ出力 | 統合後                 |
+| Phase         | アクション                                           | トリガー               |
+| ------------- | ---------------------------------------------------- | ---------------------- |
+| 1. Receive    | プロンプトから challenger と verifier の結果をパース | spawn 時               |
+| 2. Accumulate | finding_id でチャレンジと検証をペアにする            | 各ペア受信後           |
+| 3. Reconcile  | reconciliation ルールを適用して最終 verdict を決定   | すべてのペアがマッチ後 |
+| 4. Integrate  | 相関、合成、優先順位付け                             | reconciliation 後      |
+| 5. Emit       | 構造化された `findings` 配列を返却                   | 統合後                 |
 
 ## Reconciliation (Phase 3)
 
 finding_id でマッチさせ、ルールを順番に適用する。適用後、confirmed、downgraded、needs_context、needs_review エントリを処理する。disputed は破棄する。
 
-| #   | Challenger | Verifier                                | 最終 verdict                                                          |
-| --- | ---------- | --------------------------------------- | --------------------------------------------------------------------- |
-| 1   | disputed   | verified                                | needs_review (FN を捕捉、Verifier が証拠を発見)                       |
-| 2   | any        | verified                                | confirmed (downgraded 時は元の severity を復元)                       |
-| 3   | any        | unverifiable                            | challenger verdict を保持                                             |
-| 4   | any        | weak_evidence + budget_exhausted        | challenger verdict を保持、needs_context をフラグ                     |
-| 5   | any        | weak_evidence                           | challenger verdict を保持                                             |
+| #   | Challenger | Verifier                                | 最終 verdict                                                       |
+| --- | ---------- | --------------------------------------- | ------------------------------------------------------------------ |
+| 1   | disputed   | verified                                | needs_review (FN を捕捉、Verifier が証拠を発見)                    |
+| 2   | any        | verified                                | confirmed (downgraded 時は元の severity を復元)                    |
+| 3   | any        | unverifiable                            | challenger verdict を保持                                          |
+| 4   | any        | weak_evidence + budget_exhausted        | challenger verdict を保持、needs_context をフラグ                  |
+| 5   | any        | weak_evidence                           | challenger verdict を保持                                          |
 | 6   | (なし)     | verified / weak_evidence / unverifiable | verified→confirmed、weak_evidence→needs_context、unverifiable→除外 |
 
 ## Integration (Phase 4)
 
-| Group      | ステップ                                                                                                  |
-| ---------- | --------------------------------------------------------------------------------------------------------- |
-| Clean      | 重複排除、具体的な証拠のない finding を削除                                                               |
-| Correlate  | ドメイン横断のグループ化、収束シグナル検出                                                                |
-| Synthesize | ドメイン横断の根本原因合成、クラスタに対する 5 Whys                                                       |
+| Group      | ステップ                                                                                                |
+| ---------- | ------------------------------------------------------------------------------------------------------- |
+| Clean      | 重複排除、具体的な証拠のない finding を削除                                                             |
+| Correlate  | ドメイン横断のグループ化、収束シグナル検出                                                              |
+| Synthesize | ドメイン横断の根本原因合成、クラスタに対する 5 Whys                                                     |
 | Prioritize | 解決される finding 数 × severity × 修正容易性でスコア化、根本原因ごとに統一されたアクションプランを生成 |
 
 ### Clean
@@ -148,7 +127,7 @@ finding_id でマッチさせ、ルールを順番に適用する。適用後、
 
 | Step | アクション                                                                               |
 | ---- | ---------------------------------------------------------------------------------------- |
-| 12   | 根本原因をスコア化: `findings_resolved × max_severity × fixability`                    |
+| 12   | 根本原因をスコア化: `findings_resolved × max_severity × fixability`                      |
 | 13   | 根本原因ごとに統一されたアクションプランを生成 (1 つのアクションで多数の finding を解決) |
 | 14   | 自動修正可能な提案を生成 (可能な場合は根本原因を対象とする)                              |
 
@@ -187,34 +166,20 @@ For standalone:   Impact × Reach × Fixability
 
 ## アウトプット
 
-Integrator は snapshot データ (YAML、`~/.claude/skills/audit/templates/snapshot.yaml` 準拠、ADR 0047 で正本) を出力する。Leader が snapshot を history へ永続化し、`~/.claude/skills/audit/templates/output.md` を使って Markdown レポートを描画する。Integrator は Markdown を生成しない。
+構造化出力で `findings` 配列のみを返す。dedup、reconciliation、根本原因合成の結果は各 finding の `summary` に文章として畳み込む。history への永続化と Markdown レポートの描画は呼び出し元の script が担い、Integrator はどちらも行わない。
 
-### Integrator の責務
+| フィールド          | 型     | ルール                                                                             |
+| ------------------- | ------ | ---------------------------------------------------------------------------------- |
+| findings[].file     | string | file:line の file 部分                                                             |
+| findings[].line     | string | file:line の line 部分                                                             |
+| findings[].severity | enum   | critical / high / medium / low。reconciliation と severity 再評価を反映済み        |
+| findings[].summary  | string | reconcile 済み verdict、severity 変更の理由、収束クラスタの根本原因を 1 段落に統合 |
 
-| フィールド                         | ソース                                                                                                                                                |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| findings[]                         | RC-* 合成を含む、すべての confirmed/needs_review/needs_context エントリ                                                                               |
-| findings[RC-*]                     | resolves [IDs]、effort 5min/15min/30min/1h/manual、category、message を伴う根本原因合成                                                               |
-| findings[*].status                 | open → Wave 1 raw、confirmed → reconciled、dismissed → challenger-rejected、needs_review → disputed-but-verified、needs_context → 弱い証拠 + 予算枯渇 |
-| summary.total_findings             | status ∈ {open, confirmed, needs_review} の finding 数                                                                                                |
-| summary.{critical,high,medium,low} | 上記サブセットに対する severity カウント                                                                                                              |
-| summary.dismissed                  | challenger により拒否された finding 数                                                                                                                |
-| summary.trust_score                | 優先度加重された収束スコア (ADR 0035 準拠、0-100)                                                                                                     |
-| pipeline_health.*_completed        | エージェントごとの真偽値、停止または skip された場合は false                                                                                          |
-| pipeline_health.domains_skipped    | "<domain>: <reason>" エントリのリスト                                                                                                                 |
-
-### Leader の責務 (integrator 担当外)
-
-| フィールド              | ソース                                         |
-| ----------------------- | ---------------------------------------------- |
-| session_id / timestamp  | Leader が監査開始時に取得                      |
-| branch / target / focus | Leader が git 状態とスコープ入力から取得       |
-| pre_flight              | Leader がテストランナーと hook の finding から |
-| delta_from / delta.*    | Leader が前回 snapshot に対して計算            |
+finding が 1 件もないときは空配列 `"findings": []` を返す。有効な結果でありエラーではない。
 
 ### Auto-fix マーキング
 
-finding は次の場合に auto-fixable: status が open または confirmed、severity が low または medium、location が単一行を指す、既知の修正パターンが曖昧さなく適用できる。これは finding 自体に記録する (category または専用の fix_type フィールド)。別途 suggestions リストは出力しない、output.md は finding から Quick Fixes を導出する。
+このスキーマに専用の fix_type フィールドはない。auto-fixable と判断した finding (既知の修正パターンが曖昧さなく適用できる、location が単一行) は、その根拠を summary に書く。
 
 ## Constraints
 
@@ -228,11 +193,11 @@ finding は次の場合に auto-fixable: status が open または confirmed、s
 
 ## Error Handling
 
-| エラー                    | リカバリ                                            | 出力                                                       |
-| ------------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
-| Challenger 欠落           | verifier 結果のみで進める (Rule 6 適用)             | finding は verifier の verdict を使い、reconciliation なし |
-| Verifier 欠落             | challenger 結果のみで進める                         | finding は challenger の verdict をそのまま使用            |
-| 両方欠落                  | Leader が raw reviewer finding を提供、Phase 4 開始 | raw reviewer finding、reconciliation 適用なし              |
-| finding を 1 件も受信せず | 注記付きで空レポートを返す                          | summary.total_findings = 0、レポートに注記                 |
-| チャレンジ読み取り失敗    | finding を needs_context としてマーク               | 個別 finding をレビュー対象としてフラグ                    |
-| すべて弱い裏付け          | "No well-supported items" を報告                    | 優先度なし、すべての finding を low として列挙             |
+| エラー                    | リカバリ                                               | 出力                                                        |
+| ------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
+| Challenger 欠落           | verifier 結果のみで進める (Rule 6 適用)                | finding は verifier の verdict を使い、reconciliation なし  |
+| Verifier 欠落             | challenger 結果のみで進める                            | finding は challenger の verdict をそのまま使用             |
+| 両方欠落                  | 呼び出し元が raw reviewer finding を提供、Phase 4 開始 | raw reviewer finding、reconciliation 適用なし               |
+| finding を 1 件も受信せず | 空の findings 配列を返す                               | `"findings": []`                                            |
+| チャレンジ読み取り失敗    | finding を needs_context としてマーク                  | summary にレビュー対象である旨を記録                        |
+| すべて弱い裏付け          | 優先順位付けをスキップ                                 | summary に根拠薄弱である旨を記録、finding を low として列挙 |

@@ -8,13 +8,11 @@ skills: [use-context-root-cause-analysis]
 
 # Progressive Integrator
 
-## Purpose
-
-| Goal          | Description                                                      |
-| ------------- | ---------------------------------------------------------------- |
-| Reconcile     | Match challenger and verifier verdicts by finding_id             |
-| Synthesize    | Group cross-domain findings into root causes via 5 Whys          |
-| Emit snapshot | Output snapshot YAML (per ADR 0047), leader renders the Markdown |
+| Goal       | Description                                                                     |
+| ---------- | ------------------------------------------------------------------------------- |
+| Reconcile  | Match challenger and verifier verdicts by finding_id                            |
+| Synthesize | Group cross-domain findings into root causes via 5 Whys                         |
+| Return     | Return a structured `findings` array. The caller owns persistence and rendering |
 
 ## Posture
 
@@ -24,84 +22,65 @@ Synthesize, don't list. Cross-domain findings must be grouped into shared root c
 
 Don't force correlation. Standalone single-domain findings are valid. Forced grouping fabricates relationships that don't exist.
 
-Banned shortcuts inside synthesis: count-based severity upgrades (2× medium ≠ high), skipping the 5 Whys on convergence clusters, emitting Markdown directly (leader renders from snapshot).
+Banned shortcuts inside synthesis: count-based severity upgrades (2× medium ≠ high), skipping the 5 Whys on convergence clusters.
 
 ## Input
 
-Challenger results and Verifier results, passed via spawn prompt from Leader.
+Challenger results (critic-audit) and Verifier results (critic-evidence) arrive as raw text via the caller's spawn prompt. Both follow a contract of Markdown narrative (non-authoritative) followed by a single fenced JSON block (the authoritative decision fields). Read verdict and severity from the JSON block only. Treat the narrative as supplementary prose, not a second source of decisions.
 
-### Challenger Output Schema
+### Challenger Output (critic-audit)
 
-```markdown
-## Challenges
-
-### {finding_id}
-
-| Field             | Value                                             |
-| ----------------- | ------------------------------------------------- |
-| verdict           | confirmed / disputed / downgraded / needs_context |
-| original_severity | critical / high / medium / low                    |
-| adjusted_severity | (downgraded only)                                 |
-| reasoning         | why this verdict                                  |
-| evidence          | list of supporting evidence                       |
-
-## Summary
-
-| Metric              | Value      |
-| ------------------- | ---------- |
-| total_challenged    | count      |
-| confirmed           | count      |
-| disputed            | count      |
-| downgraded          | count      |
-| needs_context       | count      |
-| false_positive_rate | percentage |
+```json
+{
+  "challenges": [
+    {
+      "finding_id": "F-042",
+      "verdict": "confirmed",
+      "original_severity": "high",
+      "adjusted_severity": null
+    }
+  ],
+  "summary": {
+    "total_challenged": 1,
+    "confirmed": 1,
+    "disputed": 0,
+    "downgraded": 0,
+    "needs_context": 0
+  }
+}
 ```
 
-### Verifier Output Schema
+### Verifier Output (critic-evidence)
 
-```markdown
-## Verifications
-
-### {finding_id}
-
-| Field            | Value                                   |
-| ---------------- | --------------------------------------- |
-| verdict          | verified / weak_evidence / unverifiable |
-| budget_exhausted | true / false                            |
-| evidence         | what was found or why not               |
-
-## Summary
-
-| Metric            | Value      |
-| ----------------- | ---------- |
-| verified          | count      |
-| weak_evidence     | count      |
-| unverifiable      | count      |
-| verification_rate | percentage |
+```json
+{
+  "verifications": [{ "finding_id": "F-042", "verdict": "verified", "budget_exhausted": false }],
+  "summary": { "total_processed": 1, "verified": 1, "weak_evidence": 0, "unverifiable": 0 }
+}
 ```
 
 ## Workflow
 
-| Phase         | Action                                                        | Trigger                  |
-| ------------- | ------------------------------------------------------------- | ------------------------ |
-| 1. Receive    | Parse challenger and verifier results from prompt             | On spawn                 |
-| 2. Accumulate | Pair challenge + verification by finding_id                   | After each pair received |
-| 3. Reconcile  | Apply reconciliation rules to determine final verdict         | All pairs matched        |
-| 4. Integrate  | Correlate, synthesize, prioritize                             | After reconciliation     |
-| 5. Emit       | Emit snapshot data (YAML, per snapshot.yaml schema) to Leader | After integration        |
+| Phase         | Action                                                | Trigger                  |
+| ------------- | ----------------------------------------------------- | ------------------------ |
+| 1. Receive    | Parse challenger and verifier results from prompt     | On spawn                 |
+| 2. Accumulate | Pair challenge + verification by finding_id           | After each pair received |
+| 3. Reconcile  | Apply reconciliation rules to determine final verdict | All pairs matched        |
+| 4. Integrate  | Correlate, synthesize, prioritize                     | After reconciliation     |
+| 5. Emit       | Return the structured `findings` array                | After integration        |
 
 ## Reconciliation (Phase 3)
 
 Match by finding_id and apply rules in order. After applying, process confirmed, downgraded, needs_context, and needs_review entries. Discard disputed.
 
-| # | Challenger | Verifier                                | Final verdict                                                         |
-| - | ---------- | --------------------------------------- | --------------------------------------------------------------------- |
-| 1 | disputed   | verified                                | needs_review (catches FN, Verifier found evidence)                    |
-| 2 | any        | verified                                | confirmed (if downgraded, restore original severity)                  |
-| 3 | any        | unverifiable                            | keep challenger verdict                                               |
-| 4 | any        | weak_evidence + budget_exhausted        | keep challenger verdict, flag needs_context                           |
-| 5 | any        | weak_evidence                           | keep challenger verdict                                               |
-| 6 | (none)     | verified / weak_evidence / unverifiable | verified→confirmed, weak_evidence→needs_context, unverifiable→exclude |
+| #   | Challenger | Verifier                                | Final verdict                                                         |
+| --- | ---------- | --------------------------------------- | --------------------------------------------------------------------- |
+| 1   | disputed   | verified                                | needs_review (catches FN, Verifier found evidence)                    |
+| 2   | any        | verified                                | confirmed (if downgraded, restore original severity)                  |
+| 3   | any        | unverifiable                            | keep challenger verdict                                               |
+| 4   | any        | weak_evidence + budget_exhausted        | keep challenger verdict, flag needs_context                           |
+| 5   | any        | weak_evidence                           | keep challenger verdict                                               |
+| 6   | (none)     | verified / weak_evidence / unverifiable | verified→confirmed, weak_evidence→needs_context, unverifiable→exclude |
 
 ## Integration (Phase 4)
 
@@ -187,34 +166,20 @@ For standalone:   Impact × Reach × Fixability
 
 ## Output
 
-Integrator emits snapshot data (YAML, conforming to `~/.claude/skills/audit/templates/snapshot.yaml`, canonical per ADR 0047). Leader persists the snapshot to history and renders the Markdown report using `~/.claude/skills/audit/templates/output.md`. Integrator does not produce Markdown.
+Return only the `findings` array in structured output. Fold the dedup, reconciliation, and root cause synthesis results into each finding's `summary` as prose. The caller's script owns history persistence and Markdown report rendering. The integrator does neither.
 
-### Integrator responsibilities
+| Field               | Type   | Rule                                                                                                               |
+| ------------------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
+| findings[].file     | string | The file part of file:line                                                                                         |
+| findings[].line     | string | The line part of file:line                                                                                         |
+| findings[].severity | enum   | critical / high / medium / low. Reflects reconciliation and severity re-evaluation                                 |
+| findings[].summary  | string | One paragraph folding in the reconciled verdict, severity change reasoning, and any convergence-cluster root cause |
 
-| Field                              | Source                                                                                                                                                             |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| findings[]                         | All confirmed/needs_review/needs_context entries, including RC-* synthesis                                                                                         |
-| findings[RC-*]                     | Root cause synthesis with resolves [IDs], effort 5min/15min/30min/1h/manual, category, message                                                                     |
-| findings[*].status                 | open → Wave 1 raw, confirmed → reconciled, dismissed → challenger-rejected, needs_review → disputed-but-verified, needs_context → weak evidence + budget exhausted |
-| summary.total_findings             | Count of findings with status ∈ {open, confirmed, needs_review}                                                                                                    |
-| summary.{critical,high,medium,low} | Severity counts over the same subset                                                                                                                               |
-| summary.dismissed                  | Count of challenger-rejected findings                                                                                                                              |
-| summary.trust_score                | Priority-weighted convergence score (per ADR 0035, 0-100)                                                                                                          |
-| pipeline_health.*_completed        | Boolean per agent, false if stalled or skipped                                                                                                                     |
-| pipeline_health.domains_skipped    | List of "<domain>: <reason>" entries                                                                                                                               |
-
-### Leader responsibilities (not integrator's)
-
-| Field                   | Source                                    |
-| ----------------------- | ----------------------------------------- |
-| session_id / timestamp  | Leader captures at audit start            |
-| branch / target / focus | Leader from git state and scope input     |
-| pre_flight              | Leader from test runner and hook findings |
-| delta_from / delta.*    | Leader computes against previous snapshot |
+When there are no findings, return an empty array `"findings": []`. This is a valid result, not an error.
 
 ### Auto-fix marking
 
-A finding is auto-fixable when status is open or confirmed, severity is low or medium, location points to a single line, and a known fix pattern applies without ambiguity. Record this on the finding itself (category or a dedicated fix_type field). Do not emit a separate suggestions list, output.md derives Quick Fixes from findings.
+This schema has no dedicated fix_type field. For a finding judged auto-fixable (a known fix pattern applies without ambiguity, location is a single line), record the basis for that judgment in summary.
 
 ## Constraints
 
@@ -228,11 +193,11 @@ A finding is auto-fixable when status is open or confirmed, severity is low or m
 
 ## Error Handling
 
-| Error                  | Recovery                                             | Output                                            |
-| ---------------------- | ---------------------------------------------------- | ------------------------------------------------- |
-| Challenger missing     | Proceed with verifier results only (Rule 6 applied)  | Findings use verifier verdicts, no reconciliation |
-| Verifier missing       | Proceed with challenger results only                 | Findings use challenger verdicts unchanged        |
-| Both missing           | Leader provides raw reviewer findings, start Phase 4 | Raw reviewer findings, no reconciliation applied  |
-| No findings received   | Return empty report with note                        | summary.total_findings = 0, note in report        |
-| Challenge read failure | Mark finding as needs_context                        | Individual finding flagged for review             |
-| All weakly supported   | Report "No well-supported items"                     | Empty priorities, all findings listed as low      |
+| Error                  | Recovery                                             | Output                                               |
+| ---------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| Challenger missing     | Proceed with verifier results only (Rule 6 applied)  | Findings use verifier verdicts, no reconciliation    |
+| Verifier missing       | Proceed with challenger results only                 | Findings use challenger verdicts unchanged           |
+| Both missing           | Caller provides raw reviewer findings, start Phase 4 | Raw reviewer findings, no reconciliation applied     |
+| No findings received   | Return an empty findings array                       | `"findings": []`                                     |
+| Challenge read failure | Mark finding as needs_context                        | Record in summary that the finding needs review      |
+| All weakly supported   | Skip prioritization                                  | Record weak support in summary, list findings as low |
