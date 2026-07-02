@@ -71,7 +71,6 @@ flowchart TD
 | ----------------------- | ------------------------------- |
 | "TDD", "test-driven"    | use-workflow-tdd-cycle          |
 | "OWASP", "セキュリティ" | use-context-reviewer-security   |
-| "any", "type safety"    | use-context-reviewer-strictness |
 | "5 Whys", "root cause"  | use-context-root-cause-analysis |
 
 ### File Structure
@@ -118,7 +117,7 @@ agents/
 └── teams/          # Team integration (team-integration, team-qa, team-implementation)
 ```
 
-### Reviewer Agents (21 types)
+### Reviewer Agents (20 types)
 
 | Agent                  | Focus                              |
 | ---------------------- | ---------------------------------- |
@@ -141,7 +140,6 @@ agents/
 | reviewer-security      | OWASP Top 10                       |
 | reviewer-silence       | Silent failure detection           |
 | reviewer-spec          | SOW/Spec Ready/NotReady gate       |
-| reviewer-strictness    | TypeScript type safety             |
 | reviewer-testability   | Testable code design               |
 
 ### Team Agents

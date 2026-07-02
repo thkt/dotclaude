@@ -1,6 +1,6 @@
 ---
 name: use-context-reviewer-readability
-description: Code readability review. Do NOT use for security (use-context-reviewer-security), type errors (use-context-reviewer-strictness), error handling (use-context-reviewer-silence), or test design (use-context-reviewer-testability).
+description: Code readability review. Do NOT use for security (use-context-reviewer-security), error handling (use-context-reviewer-silence), or test design (use-context-reviewer-testability).
 when_to_use: 可読性, 明確, 命名, 変数名, 関数名, ネスト, 関数設計, コメント, 複雑, Miller's Law, ミラーの法則, 認知負荷, AI-generated, 過剰設計
 allowed-tools: Read Task Bash(ugrep:*) Bash(bfs:*)
 agent: reviewer-readability
