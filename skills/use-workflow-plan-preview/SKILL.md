@@ -1,7 +1,7 @@
 ---
 name: use-workflow-plan-preview
 description: Internal helper for /think Step 11. Renders SOW.md + Spec.md as an integrated Astro view and returns a dev server URL.
-when_to_use: Called only from /think Step 11 after reviewer-spec passes. Not user-invokable.
+when_to_use: Called only from /think Step 11. Not user-invokable.
 allowed-tools: Read Write Edit Bash
 user-invocable: false
 ---

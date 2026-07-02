@@ -47,7 +47,7 @@ Skills は「ナレッジ モジュール」。AI がタスク実行時にドメ
 
 | カテゴリ       | Skills                                                                                         | 用途                                  |
 | -------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Workflow       | use-workflow-code, use-workflow-tdd-cycle, use-workflow-pageshot, use-workflow-spec-validation | 多段ワークフロー定義                  |
+| Workflow       | use-workflow-code, use-workflow-tdd-cycle, use-workflow-pageshot | 多段ワークフロー定義                  |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                       | エージェント向けドメイン知識          |
 | CLI ラッパー   | use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase                               | CLI ツール統合                        |
 | User-invocable | think, research, code, audit, polish, feature, fix, adr, swarm 等                              | スラッシュ コマンド エントリ ポイント |
@@ -112,11 +112,11 @@ agents/
 ├── explorers/      # 探索 (explorer-feature)
 ├── generators/     # 生成 (generator-test, generator-e2e)
 ├── resolvers/      # 問題解決 (resolver-build)
-├── reviewers/      # レビュー (19 種の専門 reviewer)
+├── reviewers/      # レビュー (18 種の専門 reviewer)
 └── teams/          # チーム統合 (team-integration, team-qa, team-implementation)
 ```
 
-### Reviewer Agents (19 種)
+### Reviewer Agents (18 種)
 
 | Agent                  | 焦点                              |
 | ---------------------- | --------------------------------- |
@@ -137,7 +137,6 @@ agents/
 | reviewer-reuse         | 既存コードの再利用機会            |
 | reviewer-security      | OWASP Top 10                      |
 | reviewer-silence       | サイレント失敗の検出              |
-| reviewer-spec          | SOW/Spec の Ready/NotReady ゲート |
 | reviewer-testability   | テスト可能なコード設計            |
 
 ### Team Agents

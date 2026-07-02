@@ -19,9 +19,9 @@ background: true
 
 ## Scope Notes
 
-This agent is not part of the `/audit` reviewer pool. Like reviewer-spec, it uses the custom format below, not `finding-schema.md`.
+This agent is not part of the `/audit` reviewer pool. It uses the custom format below, not `finding-schema.md`.
 
-Spec axis only. It checks the implemented diff against the originating spec (post-implementation). This is a different concern from reviewer-spec, which judges a spec's implementability before implementation. See Distinction.
+Spec axis only. It checks the implemented diff against the originating spec (post-implementation).
 
 ## Posture
 
@@ -68,12 +68,12 @@ Every finding carries Category + quoted spec line + Location + Severity. A findi
 
 ## Distinction from related reviewers
 
-| Concern | This reviewer (conformance)        | reviewer-spec                            | reviewer-causation     |
-| ------- | ---------------------------------- | ---------------------------------------- | ---------------------- |
-| Lens    | Does the impl match the spec?      | Is the spec implementable?               | Is the fix root-cause? |
-| Timing  | Post-implementation (diff vs spec) | Pre-implementation (sow.md/spec.md gate) | At fix review          |
-| Output  | 3 categories + spec quote          | Ready/NotReady + CON-\*                  | 5 Whys + patch detect  |
-| /audit  | Out of pool                        | Out of pool                              | Once after Wave 1      |
+| Concern | This reviewer (conformance)        | reviewer-causation     |
+| ------- | ---------------------------------- | ---------------------- |
+| Lens    | Does the impl match the spec?      | Is the fix root-cause? |
+| Timing  | Post-implementation (diff vs spec) | At fix review          |
+| Output  | 3 categories + spec quote          | 5 Whys + patch detect  |
+| /audit  | Out of pool                        | Once after Wave 1      |
 
 ## Error Handling
 

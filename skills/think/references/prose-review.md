@@ -1,6 +1,6 @@
 # Prose Review
 
-Review the generated SOW / Spec body and fix redundancy that shows up in form and structure. Structural validity is gated by reviewer-spec and out of scope here. Lexical empty phrases are also out of scope here and are checked in a separate step of the flow.
+Review the generated SOW / Spec body and fix redundancy that shows up in form and structure. Structural validity is out of scope here. Lexical empty phrases are also out of scope here and are checked in a separate step of the flow.
 
 | Pattern                   | Signal                                                                                              | Fix                                                                                          |
 | ------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |

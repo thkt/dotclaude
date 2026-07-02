@@ -88,16 +88,6 @@ const PLANNING_SCHEMA = {
   },
 };
 
-const SPEC_GATE_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  required: ["ready", "blockers"],
-  properties: {
-    ready: { type: "boolean" },
-    blockers: { type: "array", items: { type: "string" } },
-  },
-};
-
 const SHIP_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -173,7 +163,7 @@ const research = await parallel([
 ]);
 const researchDigest = research.filter(Boolean).join("\n\n");
 
-// ---- Think: SOW/Spec -> critic-design -> reviewer-spec gate (max 3) ----
+// ---- Think: SOW/Spec -> critic-design ----
 phase("Think");
 const planning = await agent(
   anchor(`Generate a SOW and Spec for an autonomous build of: "${task}".\n`) +
@@ -188,34 +178,6 @@ await agent(
   ),
   { agentType: "critic-design", phase: "Think", label: "critic:spec" },
 );
-let specGate = { ready: false, blockers: [] };
-for (let round = 1; round <= 3; round++) {
-  specGate = await agent(
-    anchor(
-      `reviewer-spec. Binary Ready/NotReady gate on ${planning.dir}/spec.md. Report P0 blockers.`,
-    ),
-    {
-      agentType: "reviewer-spec",
-      phase: "Think",
-      label: `spec-gate:${round}`,
-      schema: SPEC_GATE_SCHEMA,
-    },
-  );
-  if (specGate.ready) break;
-  if (round < 3) {
-    await agent(
-      anchor(
-        `Fix the P0 spec blockers in ${planning.dir}/spec.md: ${JSON.stringify(specGate.blockers)}. Edit the file in place.`,
-      ),
-      { agentType: "general-purpose", phase: "Think", label: `spec-fix:${round}` },
-    );
-  }
-}
-if (!specGate.ready)
-  log(
-    `Spec gate not Ready after 3 rounds; proceeding with blockers: ${JSON.stringify(specGate.blockers)}`,
-  );
-
 // ---- Code: single implementer (fidelity cut vs /code RGRC machinery) ----
 phase("Code");
 log("Code phase runs a single implementer agent, not /code's full RGRC machinery.");
@@ -279,7 +241,6 @@ return {
   verdict: verdict.verdict,
   branch,
   planning: planning.dir,
-  spec_ready: specGate.ready,
   audit_findings: (audit.findings || []).length,
   assumptions: verdict.assumptions,
   pr_url: ship.pr_url,
