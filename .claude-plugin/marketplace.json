@@ -100,7 +100,6 @@
         "./agents/reviewers/reviewer-duplication.md",
         "./agents/reviewers/reviewer-efficiency.md",
         "./agents/reviewers/reviewer-operations.md",
-        "./agents/reviewers/reviewer-performance.md",
         "./agents/reviewers/reviewer-progressive.md",
         "./agents/reviewers/reviewer-reuse.md",
         "./agents/reviewers/reviewer-causation.md",
@@ -159,7 +158,6 @@
       ],
       "skills": [
         "./skills/use-cli-gcloud/SKILL.md",
-        "./skills/use-context-reviewer-performance/SKILL.md",
         "./skills/use-cli-recall/SKILL.md",
         "./skills/use-cli-scout/SKILL.md"
       ]

@@ -28,10 +28,12 @@ Banned phrasing inside reasoning: "could fail" without a scenario, "might break"
 | Phase | Action                | Focus                                                                     |
 | ----- | --------------------- | ------------------------------------------------------------------------- |
 | 1     | Architecture Mapping  | Entry points, dependencies, critical paths, single points of failure      |
-| 2     | Error Handling        | Missing retries, unhandled failures, swallowed errors, silent defaults    |
-| 3     | Auth / Data Integrity | Cross-user data access, missing ownership checks, cascade side effects    |
+| 2     | Error Handling        | Missing retries, unhandled failures, missing fallback paths               |
+| 3     | Data Integrity        | Cascade side effects, downstream propagation of partial failures          |
 | 4     | Resource Exhaustion   | Rate limits, queue bounds, connection pool limits, cost ceilings          |
 | 5     | State Consistency     | Race conditions, partial writes, missing transactions, cache invalidation |
+
+Per-block detection of swallowed errors and silent defaults belongs to reviewer-silence; missing ownership checks and cross-user data access belong to reviewer-security (Auth/AuthZ). This reviewer covers them only when they converge into a failure scenario with user impact.
 
 ## Distinction from related reviewers
 
@@ -41,7 +43,7 @@ Banned phrasing inside reasoning: "could fail" without a scenario, "might break"
 | operations | Per-component boundary/log/loading presence | Cascade impact when boundaries themselves fail     |
 | causation  | Backward 5 Whys from observed symptom       | Forward projection from hypothetical trigger       |
 | efficiency | TOCTOU as correctness or perf bug           | TOCTOU as failure mode with user impact            |
-| security   | Threat actor and attack vector              | Incident scenario without actor (DB timeout, OOM)  |
+| security   | Threat actor and attack vector (incl. AuthZ) | Incident scenario without actor (DB timeout, OOM)  |
 
 Failure-driven, not pattern-driven. Start from "what could break?" then trace to user impact. Each row above is a complementary lens, not a duplicate finding.
 
@@ -69,7 +71,7 @@ Follow finding-schema.md.
 | Field        | Value                                                     |
 | ------------ | --------------------------------------------------------- |
 | Prefix       | CHX                                                       |
-| Categories   | auth / data / resource / cascade / infra / state          |
+| Categories   | data / resource / cascade / infra / state                 |
 | blast_radius | critical / high / medium / low (replaces severity)        |
 | Extra        | failure (what breaks), hypothesis (When X, system will Y) |
 

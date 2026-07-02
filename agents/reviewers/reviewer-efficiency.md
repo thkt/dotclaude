@@ -25,7 +25,7 @@ Banned phrasing inside reasoning: "this is slow" without naming the path frequen
 
 ## Scope
 
-Detect runtime and resource inefficiencies in code changes. Language-agnostic. This is NOT frontend performance optimization (that is reviewer-performance / PERF). This reviewer answers, is this code doing more work than necessary?
+Detect runtime and resource inefficiencies in code changes. Language-agnostic. React re-render efficiency belongs to reviewer-react-pattern; bundle size belongs to reviewer-operations. This reviewer answers, is this code doing more work than necessary?
 
 ## Analysis Phases
 
@@ -47,15 +47,6 @@ Before flagging, check execution frequency.
 | Hot path  | Every tool call, every render, loops | Flag any waste   |
 | Warm path | Per-request, per-command             | Flag moderate+   |
 | Cold path | One-time setup, manual scripts       | Flag only severe |
-
-## Distinction from reviewer-performance
-
-| This reviewer (EFF)               | reviewer-performance (PERF)              |
-| --------------------------------- | ---------------------------------------- |
-| Language-agnostic code efficiency | React rendering, bundle size, Web Vitals |
-| "This jq call is redundant"       | "This component re-renders too often"    |
-| Shell, Rust, TS, any language     | Frontend-specific (React/Next.js)        |
-| Runtime resource waste            | User-perceived performance               |
 
 ## Distinction from reviewer-causation
 

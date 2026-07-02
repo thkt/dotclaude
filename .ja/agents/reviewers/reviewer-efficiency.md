@@ -25,7 +25,7 @@ background: true
 
 ## スコープ
 
-コード変更における実行時とリソースの非効率を検出する。言語非依存。これはフロントエンド性能最適化ではない (それは reviewer-performance / PERF)。本 reviewer が答えるのは "このコードは必要以上の処理をしていないか" である。
+コード変更における実行時とリソースの非効率を検出する。言語非依存。React の再レンダー効率は reviewer-react-pattern、バンドルサイズは reviewer-operations が担当する。本 reviewer が答えるのは "このコードは必要以上の処理をしていないか" である。
 
 ## 解析フェーズ
 
@@ -47,15 +47,6 @@ background: true
 | Hot path  | 全ツール呼び出し、全レンダー、ループ   | 任意の無駄を指摘   |
 | Warm path | リクエストごと、コマンドごと           | 中程度以上を指摘   |
 | Cold path | 一回限りのセットアップ、手動スクリプト | 重大なもののみ指摘 |
-
-## reviewer-performance との区別
-
-| 本 reviewer (EFF)           | reviewer-performance (PERF)                |
-| --------------------------- | ------------------------------------------ |
-| 言語非依存のコード効率      | React レンダー、バンドルサイズ、Web Vitals |
-| "この jq 呼び出しは冗長"    | "このコンポーネントは再レンダーが多すぎる" |
-| Shell、Rust、TS、任意の言語 | フロントエンド固有 (React/Next.js)         |
-| 実行時のリソース無駄        | ユーザー体感の性能                         |
 
 ## reviewer-causation との区別
 

@@ -38,7 +38,7 @@ Categorically unsafe constructs are reported as Critical without tracing an atta
 | Phase | Action           | Focus Area                                                                                                                             |
 | ----- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | 1     | Injection Scan   | SQL, Command, XSS patterns                                                                                                             |
-| 2     | Auth/AuthZ Scan  | Identity spoofing, token forgery, privilege escalation, session fixation                                                               |
+| 2     | Auth/AuthZ Scan  | Identity spoofing, token forgery, privilege escalation, session fixation, missing ownership checks, cross-user data access (IDOR)      |
 | 3     | Misconfiguration | CORS bypass, header injection, secrets exposure (OWASP A05)                                                                            |
 | 4     | Dependency Scan  | npm/yarn audit results                                                                                                                 |
 | 5     | SSRF Detection   | User-input URL handling                                                                                                                |
