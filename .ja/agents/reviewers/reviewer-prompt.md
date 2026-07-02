@@ -88,14 +88,6 @@ reviewer エージェント (`agents/reviewers/`) の必須セクション: titl
 | スコープが不明瞭 (どのファイルが対象か) | REPORT (medium)、scope テーブルを追加  |
 | アンチパターン/例のないルール           | REPORT (low)、キャリブレーションを追加 |
 
-## reviewer-document との区別
-
-| この reviewer (prompt)                   | reviewer-document                        |
-| ---------------------------------------- | ---------------------------------------- |
-| LLM 向けファイル (agents, skills, rules) | 人間向けドキュメント (README, API, arch) |
-| トークン効率、フォーマット準拠           | 可読性、完全性、対象読者                 |
-| "LLM がこれを効率よくパースできるか?"    | "人間がこれをたどれるか?"                |
-
 ## キャリブレーション
 
 `~/.claude/skills/audit/references/calibration-examples.md` の PQ セクションを参照。

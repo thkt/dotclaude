@@ -167,11 +167,10 @@ const ROUTING = {
     "operations",
     "resilience",
   ],
-  "*.md": ["prompt", "document"],
-  "*.yaml,*.json": ["encapsulation", "document"],
+  "*.md": ["prompt"],
   "*.css,*.html": ["accessibility", "progressive", "duplication"],
   test: ["coverage", "testability"],
-  default: ["duplication", "reuse", "efficiency", "document"],
+  default: ["duplication", "reuse", "efficiency"],
 };
 
 // /audit の focus フィルタ。最終的なファイルごとの集合 = routed reviewer と focus 集合の積。
@@ -183,14 +182,12 @@ const FOCUS = {
     "design",
     "react-pattern",
     "rust",
-    "encapsulation",
     "causation",
     "resilience",
     "duplication",
     "reuse",
     "testability",
     "operations",
-    "document",
     "prompt",
     "silence",
   ],
