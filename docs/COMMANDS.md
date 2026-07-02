@@ -69,7 +69,6 @@ confirmation (same functionality)
 | `/fix`    | use-context-root-cause-analysis           | generator-test, resolver-build                                  |
 | `/polish` | -                                         | enhancer-code                                                   |
 | `/build`  | think, code, audit, fix, polish (chained) | -                                                               |
-| `/swarm`  | use-workflow-code                         | architect-feature, team-qa, generator-test, team-implementation |
 
 ## File Structure
 

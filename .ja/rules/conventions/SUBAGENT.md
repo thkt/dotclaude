@@ -11,17 +11,16 @@ paths:
 
 命名パターンは小文字 + ハイフン `<role>-<scope>` のみ。ファイルは role の複数形サブディレクトリに置く。
 
-| Role 接頭辞 | 用途                 | 例                  |
-| ----------- | -------------------- | ------------------- |
-| architect-  | 設計構成             | architect-feature   |
-| critic-     | 反論                 | critic-design       |
-| enhancer-   | コード改善           | enhancer-code       |
-| evaluator-  | 品質評価             | evaluator-test      |
-| explorer-   | コードベース探索     | explorer-feature    |
-| generator-  | アーティファクト生成 | generator-test      |
-| resolver-   | エラー修正           | resolver-build      |
-| reviewer-   | 検査                 | reviewer-security   |
-| team-       | swarm 参加者         | team-implementation |
+| Role 接頭辞 | 用途                 | 例                |
+| ----------- | -------------------- | ----------------- |
+| critic-     | 反論                 | critic-design     |
+| enhancer-   | コード改善           | enhancer-code     |
+| evaluator-  | 品質評価             | evaluator-test    |
+| explorer-   | コードベース探索     | explorer-feature  |
+| generator-  | アーティファクト生成 | generator-test    |
+| resolver-   | エラー修正           | resolver-build    |
+| reviewer-   | 検査                 | reviewer-security |
+| team-       | 結果の統合           | team-integration  |
 
 ## YAML Frontmatter
 

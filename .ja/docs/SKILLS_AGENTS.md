@@ -50,7 +50,7 @@ Skills は「ナレッジ モジュール」。AI がタスク実行時にドメ
 | Workflow       | use-workflow-code, use-workflow-tdd-cycle, use-workflow-pageshot | 多段ワークフロー定義                  |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                       | エージェント向けドメイン知識          |
 | CLI ラッパー   | use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase                               | CLI ツール統合                        |
-| User-invocable | think, research, code, audit, polish, feature, fix, adr, swarm 等                              | スラッシュ コマンド エントリ ポイント |
+| User-invocable | think, research, code, audit, polish, feature, fix, adr 等                              | スラッシュ コマンド エントリ ポイント |
 
 ### ロード機構
 
@@ -105,7 +105,6 @@ user-invocable: false # スラッシュ コマンドとして起動可能か
 
 ```text
 agents/
-├── architects/     # 設計 (architect-feature)
 ├── critics/        # 反論検証 (critic-audit, critic-design, critic-evidence)
 ├── enhancers/      # コード改善 (enhancer-code, enhancer-evidence)
 ├── evaluators/     # 品質評価 (evaluator-test)
@@ -113,7 +112,7 @@ agents/
 ├── generators/     # 生成 (generator-test, generator-e2e)
 ├── resolvers/      # 問題解決 (resolver-build)
 ├── reviewers/      # レビュー (15 種の専門 reviewer)
-└── teams/          # チーム統合 (team-integration, team-qa, team-implementation)
+└── teams/          # チーム統合 (team-integration)
 ```
 
 ### Reviewer Agents (15 種)
@@ -141,8 +140,6 @@ agents/
 | Agent               | 焦点                                               |
 | ------------------- | -------------------------------------------------- |
 | team-integration    | 反論/検証結果の調整 + 根本原因の合成               |
-| team-qa             | peer DM 経由のノンブロッキング QA 参加者           |
-| team-implementation | 割り当てられたファイルとテストの RGRC サイクル実装 |
 
 ### Task ツールでの起動
 
