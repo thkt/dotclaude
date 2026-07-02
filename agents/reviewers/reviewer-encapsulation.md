@@ -23,6 +23,8 @@ Make invalid states unrepresentable. The type system is the first line of defens
 
 Banned phrasing inside reasoning: "we always validate at boundary" without showing the enforcement, "trust the caller" without documenting the contract.
 
+Mechanical type correctness (any usage, strict mode, assertions) is out of scope and belongs to the gates linters. This reviewer covers modeling quality (domain-concept expression, encapsulation, invariants).
+
 ## Analysis Phases
 
 | Phase | Action                | Focus                                   |
@@ -31,15 +33,6 @@ Banned phrasing inside reasoning: "we always validate at boundary" without showi
 | 2     | Encapsulation Check   | Exposed internals, mutable access       |
 | 3     | Expression Assessment | Compile-time vs runtime, self-document  |
 | 4     | Enforcement Audit     | Construction validation, mutation guard |
-
-## Distinction from reviewer-strictness
-
-| This reviewer (type-design)         | reviewer-strictness                |
-| ----------------------------------- | ---------------------------------- |
-| Modeling quality (domain concepts)  | Mechanical correctness (TS rules)  |
-| Encapsulation, invariant expression | any usage, strict mode, assertions |
-| "Is this type well-designed?"       | "Is this type safe?"               |
-| Language-agnostic principles        | TypeScript-specific checks         |
 
 ## Scoring (per type)
 

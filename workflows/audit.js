@@ -90,12 +90,12 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   );
 };
 
-// /audit routing table, ported then language-split. strictness targets typed
-// files (ts / tsx); react-pattern targets JSX files (jsx / tsx). Plain js / ts
-// get neither, so a pure-js audit no longer fires those two on empty. Heuristic,
+// /audit routing table, ported then language-split. react-pattern targets JSX
+// files (jsx / tsx), so a pure-js audit does not fire it on empty. Heuristic,
 // not a guarantee: React written without JSX loses react-pattern. Keys are
 // matched against each file by the classify() rules below; a file takes the
-// first matching row.
+// first matching row. Mechanical type checks (any / assertions / strict mode)
+// belong to the gates linters, not a reviewer.
 const ROUTING = {
   "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
   "*.js": [
@@ -113,7 +113,6 @@ const ROUTING = {
   "*.ts": [
     "security",
     "silence",
-    "strictness",
     "duplication",
     "reuse",
     "efficiency",
@@ -141,7 +140,6 @@ const ROUTING = {
   "*.tsx": [
     "security",
     "silence",
-    "strictness",
     "duplication",
     "reuse",
     "efficiency",
@@ -170,7 +168,6 @@ const ROUTING = {
   "*.py": [
     "security",
     "silence",
-    "strictness",
     "duplication",
     "reuse",
     "efficiency",
@@ -195,7 +192,6 @@ const FOCUS = {
     "readability",
     "design",
     "react-pattern",
-    "strictness",
     "rust",
     "encapsulation",
     "causation",

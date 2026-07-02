@@ -45,8 +45,8 @@ Detect repo language by manifest file and run the matching reviewer subagents vi
 | Manifest                  | Reviewer subagents to spawn                  |
 | ------------------------- | -------------------------------------------- |
 | Cargo.toml                | reviewer-rust + reviewer-design              |
-| package.json              | reviewer-strictness + reviewer-design        |
-| package.json with `*.tsx` | reviewer-strictness + reviewer-react-pattern |
+| package.json              | reviewer-design                              |
+| package.json with `*.tsx` | reviewer-react-pattern + reviewer-design     |
 | Other / Unknown           | reviewer-design                              |
 
 ## Phase 6: Modification Direction

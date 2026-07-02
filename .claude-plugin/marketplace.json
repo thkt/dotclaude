@@ -111,7 +111,6 @@
         "./agents/reviewers/reviewer-coverage.md",
         "./agents/reviewers/reviewer-testability.md",
         "./agents/reviewers/reviewer-encapsulation.md",
-        "./agents/reviewers/reviewer-strictness.md",
         "./agents/reviewers/reviewer-prompt.md"
       ],
       "skills": [
@@ -119,8 +118,7 @@
         "./skills/use-context-reviewer-readability/SKILL.md",
         "./skills/use-context-reviewer-security/SKILL.md",
         "./skills/use-context-reviewer-silence/SKILL.md",
-        "./skills/use-context-reviewer-testability/SKILL.md",
-        "./skills/use-context-reviewer-strictness/SKILL.md"
+        "./skills/use-context-reviewer-testability/SKILL.md"
       ]
     },
     {

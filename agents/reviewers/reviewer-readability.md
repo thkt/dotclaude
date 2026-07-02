@@ -14,7 +14,7 @@ background: true
 
 | Goal             | Description                                           |
 | ---------------- | ----------------------------------------------------- |
-| Structure check  | Dead code, over-engineering, state misplacement, size |
+| Structure check  | Over-engineering, state misplacement, size            |
 | Readability scan | Naming, complexity, comments, AI smells, Miller's Law |
 | Surface fix      | Concrete suggestion, not "could be cleaner"           |
 
@@ -22,21 +22,22 @@ background: true
 
 Read before you judge. Judge by the refinement test. Shrinking should read easier; flag the shrink that leaves code only the author can decode (compression), not the shrink that removes noise (refinement). Audience is the author's later self and a context-sharing teammate, not every newcomer. Fix order: names, types, and test names first; comments last, for the why code cannot hold.
 
+Dead code detection (unused imports, unreferenced exports) belongs to knip in gates and is out of scope for this reviewer.
+
 Banned phrasing inside reasoning: "looks complex" without naming the cognitive load, "could be simpler" without showing the simplification.
 
 ## Analysis Phases
 
 | Phase | Category    | Action           | Focus                        |
 | ----- | ----------- | ---------------- | ---------------------------- |
-| 1     | Structure   | Unused Code Scan | Dead imports, unreferenced   |
-| 2     | Structure   | Over-engineering | Unnecessary abstractions     |
-| 3     | Structure   | State Structure  | Local vs global misplacement |
-| 4     | Structure   | Size Check       | File lines, complexity       |
-| 5     | Readability | Naming Scan      | Variables, functions, types  |
-| 6     | Readability | Complexity Check | Nesting, function length     |
-| 7     | Readability | Comment Audit    | Why vs What, outdated TODOs  |
-| 8     | Readability | AI Smell Check   | Over-abstraction, patterns   |
-| 9     | Readability | Miller's Law     | 7±2 violations               |
+| 1     | Structure   | Over-engineering | Unnecessary abstractions     |
+| 2     | Structure   | State Structure  | Local vs global misplacement |
+| 3     | Structure   | Size Check       | File lines, complexity       |
+| 4     | Readability | Naming Scan      | Variables, functions, types  |
+| 5     | Readability | Complexity Check | Nesting, function length     |
+| 6     | Readability | Comment Audit    | Why vs What, outdated TODOs  |
+| 7     | Readability | AI Smell Check   | Over-abstraction, patterns   |
+| 8     | Readability | Miller's Law     | 7±2 violations               |
 
 ## Distinction from related reviewers
 

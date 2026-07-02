@@ -87,11 +87,11 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   );
 };
 
-// /audit の routing 表を移植し言語別に分けたもの。strictness は型付きファイル (ts / tsx) を
-// 対象とし、react-pattern は JSX ファイル (jsx / tsx) を対象とする。素の js / ts はどちらも
-// 付かないため、純 js の audit ではこの 2 つが空振りしなくなった。保証でなく heuristic。
-// JSX なしで書かれた React は react-pattern を失う。キーは下の classify() の規則で各ファイルと
-// マッチし、ファイルは最初にマッチした行を取る。
+// /audit の routing 表を移植し言語別に分けたもの。react-pattern は JSX ファイル (jsx / tsx) を
+// 対象とし、純 js の audit で空振りしない。保証でなく heuristic。JSX なしで書かれた React は
+// react-pattern を失う。キーは下の classify() の規則で各ファイルとマッチし、ファイルは最初に
+// マッチした行を取る。型の機械的チェック (any / アサーション / strict モード) は gates の
+// リンタが担い、reviewer は持たない。
 const ROUTING = {
   "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
   "*.js": [
@@ -109,7 +109,6 @@ const ROUTING = {
   "*.ts": [
     "security",
     "silence",
-    "strictness",
     "duplication",
     "reuse",
     "efficiency",
@@ -137,7 +136,6 @@ const ROUTING = {
   "*.tsx": [
     "security",
     "silence",
-    "strictness",
     "duplication",
     "reuse",
     "efficiency",
@@ -166,7 +164,6 @@ const ROUTING = {
   "*.py": [
     "security",
     "silence",
-    "strictness",
     "duplication",
     "reuse",
     "efficiency",
@@ -191,7 +188,6 @@ const FOCUS = {
     "readability",
     "design",
     "react-pattern",
-    "strictness",
     "rust",
     "encapsulation",
     "causation",

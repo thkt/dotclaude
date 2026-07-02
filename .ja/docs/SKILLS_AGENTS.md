@@ -71,7 +71,6 @@ flowchart TD
 | ----------------------- | ------------------------------- |
 | "TDD", "test-driven"    | use-workflow-tdd-cycle          |
 | "OWASP", "セキュリティ" | use-context-reviewer-security   |
-| "any", "type safety"    | use-context-reviewer-strictness |
 | "5 Whys", "root cause"  | use-context-root-cause-analysis |
 
 ### ファイル構造
@@ -113,11 +112,11 @@ agents/
 ├── explorers/      # 探索 (explorer-feature)
 ├── generators/     # 生成 (generator-test, generator-e2e)
 ├── resolvers/      # 問題解決 (resolver-build)
-├── reviewers/      # レビュー (20 種の専門 reviewer)
+├── reviewers/      # レビュー (19 種の専門 reviewer)
 └── teams/          # チーム統合 (team-integration, team-qa, team-implementation)
 ```
 
-### Reviewer Agents (20 種)
+### Reviewer Agents (19 種)
 
 | Agent                  | 焦点                              |
 | ---------------------- | --------------------------------- |
@@ -139,7 +138,6 @@ agents/
 | reviewer-security      | OWASP Top 10                      |
 | reviewer-silence       | サイレント失敗の検出              |
 | reviewer-spec          | SOW/Spec の Ready/NotReady ゲート |
-| reviewer-strictness    | TypeScript 型安全                 |
 | reviewer-testability   | テスト可能なコード設計            |
 
 ### Team Agents

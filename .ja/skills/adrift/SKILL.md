@@ -45,8 +45,8 @@ argument-hint: "[adr-directory]"
 | マニフェスト              | 起動する reviewer subagent                   |
 | ------------------------- | -------------------------------------------- |
 | Cargo.toml                | reviewer-rust + reviewer-design              |
-| package.json              | reviewer-strictness + reviewer-design        |
-| package.json with `*.tsx` | reviewer-strictness + reviewer-react-pattern |
+| package.json              | reviewer-design                              |
+| package.json with `*.tsx` | reviewer-react-pattern + reviewer-design     |
 | その他 / 不明             | reviewer-design                              |
 
 ## Phase 6: 修正方向
