@@ -16,7 +16,7 @@ graph LR
     subgraph Agents["Agents (Execution)"]
         A1[generator-test]
         A2[reviewer-security]
-        A3[team-integration]
+        A3[enhancer-integration]
     end
 
     subgraph Trigger["Invocation"]
@@ -106,13 +106,12 @@ user-invocable: false # スラッシュ コマンドとして起動可能か
 ```text
 agents/
 ├── critics/        # 反論検証 (critic-audit, critic-design, critic-evidence)
-├── enhancers/      # コード改善 (enhancer-code, enhancer-evidence)
+├── enhancers/      # コード改善・結果統合 (enhancer-code, enhancer-evidence, enhancer-integration)
 ├── evaluators/     # 品質評価 (evaluator-test)
 ├── explorers/      # 探索 (explorer-feature)
 ├── generators/     # 生成 (generator-test, generator-e2e)
 ├── resolvers/      # 問題解決 (resolver-build)
-├── reviewers/      # レビュー (15 種の専門 reviewer)
-└── teams/          # チーム統合 (team-integration)
+└── reviewers/      # レビュー (15 種の専門 reviewer)
 ```
 
 ### Reviewer Agents (15 種)
@@ -134,12 +133,6 @@ agents/
 | reviewer-security      | OWASP Top 10                      |
 | reviewer-silence       | サイレント失敗の検出              |
 | reviewer-testability   | テスト可能なコード設計            |
-
-### Team Agents
-
-| Agent               | 焦点                                               |
-| ------------------- | -------------------------------------------------- |
-| team-integration    | 反論/検証結果の調整 + 根本原因の合成               |
 
 ### Task ツールでの起動
 

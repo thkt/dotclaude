@@ -1,5 +1,5 @@
 ---
-name: team-integration
+name: enhancer-integration
 description: Reconcile challenge and verification results into cross-domain root causes.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
