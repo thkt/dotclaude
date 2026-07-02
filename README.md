@@ -70,7 +70,7 @@ install specific workflow sets:
 
    ```bash
    /plugin install plan     # /outcome, /think, /research, /probe, /slice
-   /plugin install build    # /build, /code, /fix, /swarm, /shake, /prototype
+   /plugin install build    # /build, /code, /fix, /shake, /prototype
    /plugin install review   # /audit, /polish, /preview, /challenge, /assert
    /plugin install ship     # /commit, /checkout, /pr, /issue
    /plugin install toolkit  # /adr, /adrift, /census, /reflect
@@ -83,7 +83,7 @@ install specific workflow sets:
   investigation, /probe for repository spec extraction, /slice for breaking
   plans into vertical-slice issues) plus architecture agents
 - **build**: Implementation and testing (/build for end-to-end orchestration,
-  /code, /fix, /swarm with TDD/RGRC cycle and quality gates, /shake for
+  /code, /fix with TDD/RGRC cycle and quality gates, /shake for
   flaky-test detection, /prototype for throwaway prototypes)
 - **review**: Quality and review (/audit, /polish, /preview, /challenge,
   /assert) with 21 specialized reviewer agents

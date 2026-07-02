@@ -50,7 +50,7 @@ Skills are "knowledge modules" that provide domain-specific knowledge when AI ex
 | Workflow       | use-workflow-code, use-workflow-tdd-cycle, use-workflow-pageshot | Multi-phase workflow definitions |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                       | Domain knowledge for agents      |
 | CLI wrapper    | use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase                               | CLI tool integration             |
-| User-invocable | think, research, code, audit, polish, feature, fix, adr, swarm, etc.                           | Slash command entry points       |
+| User-invocable | think, research, code, audit, polish, feature, fix, adr, etc.                                  | Slash command entry points       |
 
 ### Loading Mechanism
 
@@ -106,7 +106,6 @@ perform specific analysis or generation tasks.
 
 ```text
 agents/
-├── architects/     # Design (architect-feature)
 ├── critics/        # Critical verification (critic-audit, critic-design, critic-evidence)
 ├── enhancers/      # Code improvement (enhancer-code, enhancer-evidence)
 ├── evaluators/     # Quality evaluation (evaluator-test)
@@ -114,7 +113,7 @@ agents/
 ├── generators/     # Generation (generator-test, generator-e2e)
 ├── resolvers/      # Problem resolution (resolver-build)
 ├── reviewers/      # Review (16 specialized reviewers)
-└── teams/          # Team integration (team-integration, team-qa, team-implementation)
+└── teams/          # Team integration (team-integration)
 ```
 
 ### Reviewer Agents (16 types)
@@ -140,11 +139,9 @@ agents/
 
 ### Team Agents
 
-| Agent               | Focus                                                           |
-| ------------------- | --------------------------------------------------------------- |
-| team-integration    | Reconcile challenge/verification results + root cause synthesis |
-| team-qa             | Non-blocking QA participant via peer DM                         |
-| team-implementation | RGRC cycle implementation for assigned files and tests          |
+| Agent            | Focus                                                           |
+| ---------------- | --------------------------------------------------------------- |
+| team-integration | Reconcile challenge/verification results + root cause synthesis |
 
 ### Invocation via Task Tool
 

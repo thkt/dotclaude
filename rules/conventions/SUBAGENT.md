@@ -11,17 +11,16 @@ Conventions for sub-agent files under `.claude/agents/`.
 
 The naming pattern is lowercase + hyphens `<role>-<scope>` only. Files live in plural role subdirectories.
 
-| Role prefix | Purpose               | Example             |
-| ----------- | --------------------- | ------------------- |
-| architect-  | Design composition    | architect-feature   |
-| critic-     | Adversarial challenge | critic-design       |
-| enhancer-   | Code refinement       | enhancer-code       |
-| evaluator-  | Quality scoring       | evaluator-test      |
-| explorer-   | Codebase mapping      | explorer-feature    |
-| generator-  | Artifact creation     | generator-test      |
-| resolver-   | Error fixing          | resolver-build      |
-| reviewer-   | Inspection            | reviewer-security   |
-| team-       | Swarm participant     | team-implementation |
+| Role prefix | Purpose               | Example           |
+| ----------- | --------------------- | ----------------- |
+| critic-     | Adversarial challenge | critic-design     |
+| enhancer-   | Code refinement       | enhancer-code     |
+| evaluator-  | Quality scoring       | evaluator-test    |
+| explorer-   | Codebase mapping      | explorer-feature  |
+| generator-  | Artifact creation     | generator-test    |
+| resolver-   | Error fixing          | resolver-build    |
+| reviewer-   | Inspection            | reviewer-security |
+| team-       | Result synthesis      | team-integration  |
 
 ## YAML Frontmatter
 

@@ -17,13 +17,12 @@ Take the plan source from `$ARGUMENTS`. For an issue reference (number / URL / p
 
 ## Distinction from related skills
 
-| Skill                      | Output                                    | Medium / timing                      |
-| -------------------------- | ----------------------------------------- | ------------------------------------ |
-| /slice (this)              | Durable GitHub issues in dependency order | A queue for a human to pick up later |
-| /issue                     | One issue (premise + critic verification) | File a single request                |
-| architect-feature + /swarm | Ephemeral in-session parallel blueprint   | Design for implementing now          |
+| Skill         | Output                                    | Medium / timing                      |
+| ------------- | ----------------------------------------- | ------------------------------------ |
+| /slice (this) | Durable GitHub issues in dependency order | A queue for a human to pick up later |
+| /issue        | One issue (premise + critic verification) | File a single request                |
 
-/slice's value is decomposition and dependency-ordered publish. For one issue use /issue. To implement now use /swarm.
+/slice's value is decomposition and dependency-ordered publish. For one issue use /issue. To implement now use /code or /build.
 
 ## Phase 1: Gather context
 
