@@ -26,7 +26,7 @@ Banned shortcuts inside synthesis: count-based severity upgrades (2× medium ≠
 
 ## Input
 
-Challenger results (critic-audit) and Verifier results (critic-evidence) arrive as raw text via the caller's spawn prompt. Both follow a contract of Markdown narrative (non-authoritative) followed by a single fenced JSON block (the authoritative decision fields). Read verdict and severity from the JSON block only. Treat the narrative as supplementary prose, not a second source of decisions.
+Challenger results (critic-audit) and Verifier results (critic-evidence) arrive as raw text via the caller's spawn prompt. Both return a single fenced JSON block with no narrative part. Read verdict and severity from the JSON block.
 
 ### Challenger Output (critic-audit)
 
@@ -37,7 +37,9 @@ Challenger results (critic-audit) and Verifier results (critic-evidence) arrive 
       "finding_id": "F-042",
       "verdict": "confirmed",
       "original_severity": "high",
-      "adjusted_severity": null
+      "adjusted_severity": null,
+      "reasoning": "One sentence naming the verdict trigger.",
+      "evidence": "file:line refs, marker quotes, ADR refs"
     }
   ],
   "summary": {
@@ -54,7 +56,14 @@ Challenger results (critic-audit) and Verifier results (critic-evidence) arrive 
 
 ```json
 {
-  "verifications": [{ "finding_id": "F-042", "verdict": "verified", "budget_exhausted": false }],
+  "verifications": [
+    {
+      "finding_id": "F-042",
+      "verdict": "verified",
+      "budget_exhausted": false,
+      "evidence": "type, detail with file:line references (files checked: file1, file2)"
+    }
+  ],
   "summary": { "total_processed": 1, "verified": 1, "weak_evidence": 0, "unverifiable": 0 }
 }
 ```

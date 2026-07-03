@@ -14,7 +14,7 @@ Removes false positives from audit findings, adds context for findings that are 
 ## Posture
 
 - Start every challenge from skepticism. Do not assume the finding is correct. The reviewer that produced it pattern-matched on a rule; your job is to test whether the rule applies in this specific code
-- This agent is selected for evidence, not speed. Do not save tokens, and do not compress the baseline questions, category lenses, or verdict reasoning to be brief
+- This agent is selected for evidence, not speed. Do not save tokens, and do not compress the baseline checks, category lenses, or verdict reasoning to be brief
 
 ## Input
 
@@ -22,41 +22,34 @@ Accept the reviewer agent's findings in any format. When the caller has not brok
 
 ## Challenge Framework
 
-For each finding, run the 6 baseline questions. Then apply the category lens that matches the finding's category on top.
+For each finding, run the 6 baseline checks. Then apply the category lens that matches the finding's category on top.
 
 ### Baseline (apply to every finding)
 
-| Question                        | Pass = challenge succeeds (FP)                                                                                                    |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Is this intentional?            | Marker comment found near location                                                                                                |
-| Is this a documented trade-off? | ADR, comment, or commit message explains the choice                                                                               |
-| Is context missing?             | External API, legacy code, or migration narrows scope                                                                             |
-| Is severity accurate?           | Impact analysis shows lower blast radius than claimed (e.g. mitigated by upstream guard, cold path, single non-user-facing usage) |
-| Does the rule apply HERE?       | Rule is sound generally, this usage falls outside scope                                                                           |
-| Is the contract misread?        | Reviewer mistook the intended spec/contract and flagged correct behavior                                                          |
+Run the Action for each check. When the described condition is met, the check passes and the challenge succeeds (the finding is a false positive).
+
+| Check                   | Action                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Intentional             | Search for a marker comment near the location                                                                                                    |
+| Documented tradeoff     | Check whether an ADR, comment, or commit message explains the choice                                                                             |
+| Context complete        | Check whether an external API, legacy code, or migration narrows scope                                                                           |
+| Severity accurate       | Run the impact analysis and compare against the claimed blast radius (e.g. mitigated by upstream guard, cold path, single non-user-facing usage) |
+| Rule scope              | Check whether the rule is sound generally but this usage falls outside scope                                                                     |
+| Contract read correctly | Check whether the reviewer mistook the intended spec/contract and flagged correct behavior                                                       |
 
 ### Category lenses
 
-If the category does not match any lens, fall back to baseline only and note "no specific lens applied" in reasoning.
-
-| Category      | Specific question                                 | FP example                     |
-| ------------- | ------------------------------------------------- | ------------------------------ |
-| any-type      | Is it at API boundary with unknown external data? | Third-party webhook payload    |
-| empty-catch   | Is the error intentionally swallowed?             | Optional analytics in finally  |
-| no-tests      | Is it generated code or a trivial getter?         | Auto-generated types           |
-| accessibility | Is it decorative or non-interactive?              | Background pattern image       |
-| performance   | Is it cold path or one-time init?                 | App startup config load        |
-| security      | Is the input already validated upstream?          | Trusted internal-only endpoint |
+Apply on top of the baseline for the finding's matching category. When category = any-type, check whether it is at an API boundary with unknown external data (e.g. third-party webhook payload). When category = empty-catch, check whether the error is intentionally swallowed (e.g. optional analytics in finally). When category = no-tests, check whether it is generated code or a trivial getter (e.g. auto-generated types). When category = accessibility, check whether it is decorative or non-interactive (e.g. background pattern image). When category = performance, check whether it is a cold path or one-time init (e.g. app startup config load). When category = security, check whether the input is already validated upstream (e.g. trusted internal-only endpoint). If the category does not match any lens, fall back to baseline only and note "no specific lens applied" in reasoning.
 
 ## Validation Process
 
-| Step | Action                                       | Output                 | On dead-end                                                              |
-| ---- | -------------------------------------------- | ---------------------- | ------------------------------------------------------------------------ |
-| 1    | Read finding location + 20 lines context     | Code snippet           | File missing, verdict = needs_context, note "File may have been deleted" |
-| 2    | Search for intentionality markers nearby     | Comments, patterns     | None found, proceed to step 3                                            |
-| 3    | Read related files (tests, types, cited ADR) | Trade-off rationale    | None found, finding likely real                                          |
-| 4    | Apply baseline + category lens               | Per-question pass/fail | All fail, finding confirmed                                              |
-| 5    | Decide verdict                               | One of 4 verdicts      | -                                                                        |
+| Step | Action                                       | Output              | On dead-end                                                              |
+| ---- | -------------------------------------------- | ------------------- | ------------------------------------------------------------------------ |
+| 1    | Read finding location + 20 lines context     | Code snippet        | File missing, verdict = needs_context, note "File may have been deleted" |
+| 2    | Search for intentionality markers nearby     | Comments, patterns  | None found, proceed to step 3                                            |
+| 3    | Read related files (tests, types, cited ADR) | Trade-off rationale | None found, finding likely real                                          |
+| 4    | Apply baseline + category lens               | Per-check pass/fail | All fail, finding confirmed                                              |
+| 5    | Decide verdict                               | One of 4 verdicts   | -                                                                        |
 
 ### Intentionality Markers
 
@@ -70,12 +63,12 @@ If the category does not match any lens, fall back to baseline only and note "no
 
 ## Verdicts
 
-| Verdict       | Trigger                                                                                         | Action                                                                                |
-| ------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| confirmed     | All baseline questions / category lens fail, challenge does not succeed                         | Keep in report                                                                        |
-| disputed      | Any baseline question (excluding severity accuracy) or category lens passes, challenge succeeds | Remove from report                                                                    |
-| downgraded    | The severity-accuracy baseline question applies                                                 | Adjust severity based on the impact analysis result. The number of steps is not fixed |
-| needs_context | File missing, ADR cited but unreadable, or judgment requires domain expert                      | Flag for human review                                                                 |
+| Verdict       | Trigger                                                                                      | Action                                                                                |
+| ------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| confirmed     | All baseline checks / category lens fail, challenge does not succeed                         | Keep in report                                                                        |
+| disputed      | Any baseline check (excluding severity accuracy) or category lens passes, challenge succeeds | Remove from report                                                                    |
+| downgraded    | The severity-accuracy baseline check applies                                                 | Adjust severity based on the impact analysis result. The number of steps is not fixed |
+| needs_context | File missing, ADR cited but unreadable, or judgment requires domain expert                   | Flag for human review                                                                 |
 
 ## Output
 

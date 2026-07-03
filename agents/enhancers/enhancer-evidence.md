@@ -49,7 +49,7 @@ The audit workflow's enhancer-integration integrated findings. These have alread
 
 ### 3. Challenge pass on Codex findings (critic-audit, raw)
 
-critic-audit returns a Markdown narrative (reasoning, evidence) plus an authoritative JSON decision block. Read verdict and severity from the JSON block only. When both challenger and verifier stall, a placeholder text "(challenge stall / findings なし)" arrives instead, and the corresponding Codex findings are excluded from issues.
+critic-audit has no narrative and returns only a single JSON decision block. Read verdict and severity from the JSON block. When both challenger and verifier stall, a placeholder text "(challenge stall / findings なし)" arrives instead, and the corresponding Codex findings are excluded from issues.
 
 ```json
 {
@@ -58,7 +58,9 @@ critic-audit returns a Markdown narrative (reasoning, evidence) plus an authorit
       "finding_id": "F-042",
       "verdict": "confirmed",
       "original_severity": "high",
-      "adjusted_severity": null
+      "adjusted_severity": null,
+      "reasoning": "One sentence naming the verdict trigger.",
+      "evidence": "file:line refs, marker quotes, ADR refs"
     }
   ],
   "summary": {
@@ -73,11 +75,18 @@ critic-audit returns a Markdown narrative (reasoning, evidence) plus an authorit
 
 ### 4. Verification pass on Codex findings (critic-evidence, raw)
 
-critic-evidence returns a Markdown narrative (effort, evidence) plus an authoritative JSON decision block. Read verdict from the JSON block only.
+critic-evidence has no narrative and returns only a single JSON decision block. Read verdict from the JSON block.
 
 ```json
 {
-  "verifications": [{ "finding_id": "F-042", "verdict": "verified", "budget_exhausted": false }],
+  "verifications": [
+    {
+      "finding_id": "F-042",
+      "verdict": "verified",
+      "budget_exhausted": false,
+      "evidence": "type, detail with file:line references (files checked: file1, file2)"
+    }
+  ],
   "summary": { "total_processed": 1, "verified": 1, "weak_evidence": 0, "unverifiable": 0 }
 }
 ```
@@ -106,15 +115,15 @@ Arrives as a single plain-text line. Example: "動的 evidence: build=pass, test
 
 Phase numbering below refers to enhancer-evidence's own pipeline. References to enhancer-integration's phases use the prefix "enhancer-integration §".
 
-| Phase | Action                                                         | Output                  | On dead-end                                 |
-| ----- | -------------------------------------------------------------- | ----------------------- | ------------------------------------------- |
-| 1     | Parse input sections                                           | Structured findings     | Section missing, see Error Handling         |
+| Phase | Action                                                             | Output                  | On dead-end                                 |
+| ----- | ------------------------------------------------------------------ | ----------------------- | ------------------------------------------- |
+| 1     | Parse input sections                                               | Structured findings     | Section missing, see Error Handling         |
 | 2     | Reconcile challenger + verifier (enhancer-integration § rules 1-6) | Reconciled finding set  | Both missing, skip to raw reviewer findings |
-| 3     | Merge reconciled findings with promoted adversarial findings   | Merged finding set      | -                                           |
-| 4     | Cross-evidence correlation (see § below)                       | Convergence clusters    | No cluster, all findings standalone         |
-| 5     | Root cause synthesis with 5 Whys                               | Root causes per cluster | -                                           |
-| 6     | Finalize issues / root_causes (see § below)                    | Structured output       | -                                           |
-| 7     | Generate report                                                | Report string           | -                                           |
+| 3     | Merge reconciled findings with promoted adversarial findings       | Merged finding set      | -                                           |
+| 4     | Cross-evidence correlation (see § below)                           | Convergence clusters    | No cluster, all findings standalone         |
+| 5     | Root cause synthesis with 5 Whys                                   | Root causes per cluster | -                                           |
+| 6     | Finalize issues / root_causes (see § below)                        | Structured output       | -                                           |
+| 7     | Generate report                                                    | Report string           | -                                           |
 
 ## Cross-Evidence Correlation (Phase 4)
 

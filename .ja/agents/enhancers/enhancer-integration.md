@@ -26,7 +26,7 @@ skills: [use-context-root-cause-analysis]
 
 ## Input
 
-Challenger 結果 (critic-audit) と Verifier 結果 (critic-evidence) は、呼び出し元の spawn プロンプト経由で生テキストのまま渡される。両者とも Markdown narrative (非権威) の後に単一の fenced JSON ブロック (権威ある decision フィールド) を続ける contract を持つ。verdict と severity は JSON ブロックからのみ読む。narrative は補足の prose として扱い、decision の第 2 のソースにしない。
+Challenger 結果 (critic-audit) と Verifier 結果 (critic-evidence) は、呼び出し元の spawn プロンプト経由で生テキストのまま渡される。両者とも narrative を持たず、単一の fenced JSON ブロックのみを返す contract を持つ。verdict と severity は JSON ブロックから読む。
 
 ### Challenger Output (critic-audit)
 
@@ -37,7 +37,9 @@ Challenger 結果 (critic-audit) と Verifier 結果 (critic-evidence) は、呼
       "finding_id": "F-042",
       "verdict": "confirmed",
       "original_severity": "high",
-      "adjusted_severity": null
+      "adjusted_severity": null,
+      "reasoning": "One sentence naming the verdict trigger.",
+      "evidence": "file:line refs, marker quotes, ADR refs"
     }
   ],
   "summary": {
@@ -54,7 +56,14 @@ Challenger 結果 (critic-audit) と Verifier 結果 (critic-evidence) は、呼
 
 ```json
 {
-  "verifications": [{ "finding_id": "F-042", "verdict": "verified", "budget_exhausted": false }],
+  "verifications": [
+    {
+      "finding_id": "F-042",
+      "verdict": "verified",
+      "budget_exhausted": false,
+      "evidence": "type, detail with file:line references (files checked: file1, file2)"
+    }
+  ],
   "summary": { "total_processed": 1, "verified": 1, "weak_evidence": 0, "unverifiable": 0 }
 }
 ```
