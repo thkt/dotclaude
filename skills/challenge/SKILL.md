@@ -2,7 +2,7 @@
 name: challenge
 description: Two-phase challenge that judges whether a discovered problem is real and whether a proposed idea is usable. Phase 1 loops subagent verification and advisor judgment over evidence (OUTCOME.md + parallel subagents) to self-resolve design-tree branches, asking the user only the irreversible residual and proceeding on stated assumptions for the rest. Phase 2 spawns two critic-design subagents (internal attack / OUTCOME.md attack) as devil's advocate input. The verdict leads the output as a simple GO / NO-GO. Do NOT use for code review findings (use /audit) or outcome assertion (use /assert which has built-in adversarial testing).
 when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, grill me, 壁打ち
-allowed-tools: Read LS Task AskUserQuestion
+allowed-tools: Read LS Task AskUserQuestion Bash(node:*)
 model: opus
 argument-hint: "[proposal file | description]"
 ---
@@ -29,14 +29,14 @@ Grill the proposal from evidence on its own, then return only the unresolved res
 
 Aggregate grill findings into critic-design input schema before spawning.
 
-| Field            | Source                                                                                                                                  |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| source           | user-grill                                                                                                                              |
-| artifact_type    | inferred from $ARGUMENTS (spec / plan / design / ADR / doc)                                                                             |
-| approach         | one-line summary of the proposal core                                                                                                   |
-| decisions        | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded)                                |
-| trade-offs       | trade-offs surfaced during grill                                                                                                        |
-| referenced_files | files cited or read during grill                                                                                                        |
+| Field            | Source                                                                                                                                   |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| source           | user-grill                                                                                                                               |
+| artifact_type    | inferred from $ARGUMENTS (spec / plan / design / ADR / doc)                                                                              |
+| approach         | one-line summary of the proposal core                                                                                                    |
+| decisions        | architectural-level decisions crystallised during grill (terminology checks and scope minutiae excluded)                                 |
+| trade-offs       | trade-offs surfaced during grill                                                                                                         |
+| referenced_files | files cited or read during grill                                                                                                         |
 | outcome_ref      | OUTCOME.md path plus a digest of its done state / non-goals / constraints. If OUTCOME.md is absent, use the outcome confirmed in Phase 1 |
 
 ## Phase 2 Devil
@@ -50,15 +50,16 @@ Land the Phase 1 material on two critic-design (internal attack / OUTCOME.md att
 | critic-design (outcome)  | Attack whether it reaches the outcome (outcome fit / non-goal / constraint breach) |
 
 1. Compose the Phase 2 input from the Phase 1 aggregation and the original $ARGUMENTS context
-2. Spawn two critic-design via Task in parallel (subagent_type: critic-design, background: false). One handles the internal attack, the other takes outcome_ref for the outcome attack (skip when no outcome is available). Mention ARCHITECTURE.md if present
+2. Spawn two critic-design via Task in parallel (subagent_type: critic-design, run_in_background: false). One handles the internal attack, the other takes outcome_ref for the outcome attack (skip when no outcome is available). Mention ARCHITECTURE.md if present. Instruct each critic-design to return its result as a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[] }`
 3. Wait for both, reconcile verdicts and weaknesses, and dedupe overlap
+4. Aggregate the reconciled overall verdict and the Phase 1 residuals (best-guess assumptions, flagged irreversible / underspecified by reversibility) into a VERDICT_SCHEMA-equivalent JSON `{ verdict, assumptions: [{ text, irreversible, underspecified }] }` and pipe it on stdin to `node scripts/issue-gate/verdict-gate.mjs --title "<challenge target title verbatim>"`. Pass the challenge target title literally, not paraphrased (the script normalizes it). Take the returned verdict as the final judgment and do not hand-override it to GO. The gate downgrades a GO to NO-GO one-way on any irreversible assumption / more than 7 assumptions / underspecified
 
 ## Output
 
 Lead with the Verdict, concentrate the backing in Why, name the next move in Actionable items.
 
-| Section          | Content                                                                                                                                                                                                                                                                                         |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Verdict          | GO / NO-GO. Note the condition if conditional. One line, first                                                                                                                                                                                                                                  |
-| Why              | The fact-verification evidence (reproduction / refutation), the two critic-design verdicts (internal / outcome), and the residuals advanced on a best-guess with their reversibility (the user's veto targets). Close with a one-line note that the verdict is a judgment within evidence range |
-| Actionable items | Top 3 concrete actions (keep / remove / revise)                                                                                                                                                                                                                                                 |
+| Section          | Content                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Verdict          | GO / NO-GO. Note the condition if conditional. One line, first                                                                                                                                                                                                                                                                                                                                          |
+| Why              | The fact-verification evidence (reproduction / refutation), the two critic-design verdicts (internal / outcome), the verdict-gate downgrade reasons if any (irreversible-assumption / max-assumptions / underspecified), and the residuals advanced on a best-guess with their reversibility (the user's veto targets). Close with a one-line note that the verdict is a judgment within evidence range |
+| Actionable items | Top 3 concrete actions (keep / remove / revise)                                                                                                                                                                                                                                                                                                                                                         |

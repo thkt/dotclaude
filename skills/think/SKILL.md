@@ -2,7 +2,7 @@
 name: think
 description: Design exploration with an adversarial challenge by critic-design. Generates SOW and Spec from the surviving approaches. Do NOT use for codebase investigation without planning intent (use /research instead).
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
-allowed-tools: Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(node:*)
 model: opus
 argument-hint: "[task description]"
 ---
@@ -60,8 +60,8 @@ Generate ≥2 distinct approaches from the perspectives below. When approaches c
 
 ### Design
 
-1. Spawn `critic-design` against the generated approaches and take its verdict table and actionable items
-2. Present the design filtered by the findings to the user with trade-off rationale and wait for approval
+1. Spawn `critic-design` against the generated approaches (run_in_background: false) and take its verdict table and actionable items. Include the task title verbatim in the spawn prompt. Instruct it to return a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[], actionable: string[] }`
+2. If the verdict is NO-GO, resolve the blockers inline before proceeding (revise the approach or re-spawn the critic). Present the design filtered by the findings to the user with trade-off rationale and wait for approval
 3. Once approved, ask whether the technical decisions warrant an ADR. Skip for simple features
 
 ## Phase 4: SOW / Spec Generation
@@ -76,6 +76,10 @@ Generate ≥2 distinct approaches from the perspectives below. When approaches c
 - Generate the template `${CLAUDE_SKILL_DIR}/templates/spec.md` from the SOW and write to `.claude/workspace/planning/{same-dir}/spec.md`
 - IDs use the FR-001 / T-001 / NFR-001 format. Follow the section-specific rules in the template's notes
 - For multi-phase work, fill the Implementation table's Depends; it is the handoff for concurrent scheduling in a later session
+
+### Plan Check
+
+Serialize the Spec's Implementation table into the plan-gate PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], depends_on: string[], tests: [{ id, name, given, when, then }] }] }`) and pipe it on stdin to `node scripts/issue-gate/plan-gate.mjs --title "<task title verbatim>"`. If ready is false, resolve the errors (empty units / empty test_command / dangling depends_on / cycle / empty fields) before proceeding to completion. Pass the task title literally, not paraphrased (the script normalizes it).
 
 ### Prose Review
 
