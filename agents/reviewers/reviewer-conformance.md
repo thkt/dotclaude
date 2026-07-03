@@ -9,8 +9,6 @@ background: true
 
 # Spec Conformance Reviewer
 
-## Purpose
-
 | Goal              | Description                                                                      |
 | ----------------- | -------------------------------------------------------------------------------- |
 | Conformance match | Decide whether the implemented diff faithfully meets the originating issue/spec  |

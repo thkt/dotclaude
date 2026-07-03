@@ -10,8 +10,6 @@ memory: project
 
 # Build Error Resolver
 
-## Purpose
-
 | Goal                 | Description                                            |
 | -------------------- | ------------------------------------------------------ |
 | 最小修正             | 可能な限り小さな diff でビルドエラーを解決             |

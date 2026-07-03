@@ -7,8 +7,6 @@ model: opus
 
 # Test Quality Evaluator
 
-## Purpose
-
 | Goal              | Description                                             |
 | ----------------- | ------------------------------------------------------- |
 | Map spec to tests | Verify each Spec T-NNN scenario has at least one test   |

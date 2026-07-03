@@ -15,7 +15,27 @@ Completion: Quality Gates
 
 ### SOW/Spec Auto-detection
 
-See ${CLAUDE_SKILL_DIR}/../\_lib/sow-resolution.md
+`$ARGUMENTS`: Calling slash command's full argument string (e.g., `/fix "add login"` → `$ARGUMENTS = "add login"`).
+
+Discovery steps.
+
+1. Check `.claude/workspace/.current-sow` for tracked SOW path
+2. If not found → `bfs .claude/workspace/planning -name 'sow.md'`
+3. Select latest by directory name date (`YYYY-MM-DD-*`, newest first)
+4. If 2+ SOWs share the same latest date → AskUserQuestion to select
+5. If found → read SOW + corresponding `spec.md`
+6. Extract. Acceptance Criteria, Implementation Plan, Constraints
+
+Behavior by SOW state.
+
+| State                  | Behavior                                                           |
+| ---------------------- | ------------------------------------------------------------------ |
+| SOW + spec             | AC + Implementation Plan drive implementation                      |
+| SOW only               | AC drives implementation, `$ARGUMENTS` fills implementation detail |
+| No SOW                 | `$ARGUMENTS` is sole instruction                                   |
+| `$ARGUMENTS` conflicts | SOW wins; flag conflict to user via AskUserQuestion                |
+
+If SOW exists, update status `draft` or `completed` → `in-progress`.
 
 ### Test Generation
 

@@ -9,8 +9,6 @@ background: true
 
 # Reuse Reviewer
 
-## Purpose
-
 | Goal                         | Description                                           |
 | ---------------------------- | ----------------------------------------------------- |
 | Detect duplication of intent | New code that re-implements an existing utility       |

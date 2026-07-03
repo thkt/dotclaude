@@ -10,8 +10,6 @@ background: true
 
 # Root Cause Reviewer
 
-## Purpose
-
 | Goal             | Description                                                 |
 | ---------------- | ----------------------------------------------------------- |
 | Detect patches   | Flag fixes that silence symptoms instead of removing cause  |

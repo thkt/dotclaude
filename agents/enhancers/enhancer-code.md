@@ -9,8 +9,6 @@ memory: project
 
 # Code Simplifier
 
-## Purpose
-
 | Goal              | Description                                                    |
 | ----------------- | -------------------------------------------------------------- |
 | Remove waste      | Strip AI slop, redundant tests, defensive excess               |

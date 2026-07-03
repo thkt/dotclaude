@@ -9,8 +9,6 @@ background: true
 
 # Progressive Enhancer
 
-## Purpose
-
 | Goal              | Description                                                  |
 | ----------------- | ------------------------------------------------------------ |
 | Detect JS overuse | Find JS patterns where browser-native CSS would suffice      |

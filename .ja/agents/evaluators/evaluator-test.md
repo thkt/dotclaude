@@ -7,8 +7,6 @@ model: opus
 
 # Test Quality Evaluator
 
-## Purpose
-
 | Goal                | Description                                                      |
 | ------------------- | ---------------------------------------------------------------- |
 | Spec とテストを対応 | Spec T-NNN シナリオごとに少なくとも 1 つのテストがあることを検証 |

@@ -9,8 +9,6 @@ background: true
 
 # Operational Readiness Reviewer
 
-## 目的
-
 | ゴール           | 説明                                                       |
 | ---------------- | ---------------------------------------------------------- |
 | エラー封じ込め   | ErrorBoundary 欠落、blast radius、フォールバック経路を検出 |

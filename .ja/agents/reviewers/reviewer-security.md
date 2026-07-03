@@ -10,8 +10,6 @@ background: true
 
 # Security Reviewer
 
-## 目的
-
 | ゴール             | 説明                                                       |
 | ------------------ | ---------------------------------------------------------- |
 | OWASP カバレッジ   | injection、auth、misconfig、dependency、SSRF、taint を検出 |

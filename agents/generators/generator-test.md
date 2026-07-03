@@ -8,8 +8,6 @@ skills: [use-workflow-tdd-cycle]
 
 # Test Generator
 
-## Purpose
-
 | Goal          | Description                                              |
 | ------------- | -------------------------------------------------------- |
 | Spec to tests | Map each T-NNN scenario to one or more test functions    |
@@ -31,7 +29,7 @@ Banned weak assertions inside test bodies: JS/TS `toBeTruthy` without a value ch
 | Effect        | Description                                 |
 | ------------- | ------------------------------------------- |
 | File creation | Writes test files to project test directory |
-| Entry point   | `/code`, `/fix` skills, or Task prompt      |
+| Entry point   | code workflow, `/fix` skill, or Task prompt |
 
 ## Input
 

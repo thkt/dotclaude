@@ -9,8 +9,6 @@ background: true
 
 # Module Depth Reviewer
 
-## Purpose
-
 | Goal           | Description                                               |
 | -------------- | --------------------------------------------------------- |
 | Depth audit    | Decide whether each module earns the interface it exposes |

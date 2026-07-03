@@ -15,20 +15,15 @@ export const meta = {
   ],
 };
 
-// Why routing lives in the script, not an agent: /audit assigns reviewers by a
-// pure glob table (extension -> reviewer list). An agent re-deriving that table
-// would reintroduce the exact drift this workflow exists to remove. So the table
-// is ported to JS and applied deterministically; agents only do what needs a
-// tool (git diff / log) or a judgement (the reviews themselves). Reviewers run
-// on sonnet, mirroring /audit's hard-won lesson: opus + deep analysis stalls the
-// stream watchdog. Pilot cut, logged not silent: reviewer-causation (5 Whys over
-// all findings) and multi-run aggregation are deferred until the seam is proven.
+// Routing lives in the script, not an agent: an agent re-deriving the glob
+// table would reintroduce the exact drift this workflow exists to remove.
+// Reviewers run on sonnet because opus + deep analysis stalls the stream
+// watchdog. reviewer-causation and multi-run aggregation are deferred until
+// the seam is proven.
 
-// args may arrive as an object (preferred) or, if a caller stringifies it, as a
-// JSON-encoded string. Normalize once so scope does not swallow the whole blob
-// and focus / repo / skipPreflight stay readable regardless of how it was passed:
-// a string that parses to an object is that object; any other string is the
-// scope shorthand.
+// args may arrive as an object or, if a caller stringifies it, as a JSON-encoded
+// string. Normalize once: a string that parses to an object is that object; any
+// other string is the scope shorthand.
 const opts = (() => {
   if (typeof args === "object" && args) return args;
   if (typeof args !== "string") return {};
@@ -47,8 +42,8 @@ const opts = (() => {
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const focus = typeof opts.focus === "string" ? opts.focus : "all";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
-// noLimit skips the >30-file guard; skipPreflight lets a caller (build, whose
-// Code phase already drove tests to green) suppress the redundant test run.
+// noLimit skips the >30-file guard; skipPreflight lets a caller that already
+// drove tests to green (build's Code phase) suppress the redundant test run.
 const noLimit = opts.noLimit === true;
 const skipPreflight = opts.skipPreflight === true;
 const anchor = (p) =>
@@ -56,11 +51,10 @@ const anchor = (p) =>
     ? `Run every git command from the repository at ${repo} (begin each shell command with \`cd ${repo} && \`).\n\n${p}`
     : p;
 
-// Snapshot persistence is a disk side-effect, not part of the return contract.
-// The script cannot touch the filesystem or call Date.now() (both throw / are
-// blocked in the sandbox), so a bash agent stamps the timestamp with `date -u`,
-// reads $CLAUDE_SESSION_ID and the branch, computes the delta against the most
-// recent prior snapshot, and writes the file. Its result is not consumed.
+// The script cannot touch the filesystem or call Date.now() (both throw in the
+// sandbox), so a bash agent resolves the timestamp, session, branch, and the
+// delta against the prior snapshot, then writes the file. A disk side-effect;
+// its result is not consumed.
 const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   phase("Snapshot");
   const payload = JSON.stringify({
@@ -90,12 +84,10 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   );
 };
 
-// /audit routing table, ported then language-split. react-pattern targets JSX
-// files (jsx / tsx), so a pure-js audit does not fire it on empty. Heuristic,
-// not a guarantee: React written without JSX loses react-pattern. Keys are
-// matched against each file by the classify() rules below; a file takes the
-// first matching row. Mechanical type checks (any / assertions / strict mode)
-// belong to the gates linters, not a reviewer.
+// /audit routing table. react-pattern only attaches to JSX files (jsx / tsx), so a
+// pure-js audit does not fire it on empty. Heuristic: React written without JSX
+// loses react-pattern. A file takes the first matching row via classify(). Mechanical
+// type checks (any / assertions / strict mode) belong to the gates linters, not a reviewer.
 const ROUTING = {
   "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
   "*.js": [
@@ -177,7 +169,7 @@ const ROUTING = {
   default: ["duplication", "reuse", "efficiency"],
 };
 
-// /audit focus filter. Final per-file set = routed reviewers intersect focus set.
+// /audit focus filter, intersected with the routed reviewers.
 const FOCUS = {
   security: ["security", "silence"],
   performance: ["react-pattern", "efficiency", "progressive"],
@@ -289,20 +281,15 @@ const PREFLIGHT_SCHEMA = {
   },
 };
 
-// ---- Pre-flight ∥ Route: two independent stages, one barrier ----
-// Pre-flight runs the test suite (test I/O); Route lists changed files + churn
-// (git I/O). They share no data, so running them concurrently costs only
-// max(preflight, route) instead of the serial sum. Bare phase() races under
-// parallel(), so each thunk names its own group via opts.phase.
+// ---- Pre-flight ∥ Route: two stages that share no data run concurrently ----
+// Bare phase() races under parallel(), so each thunk names its own group via
+// opts.phase.
 const scopeInstr = scope
   ? `Scope is "${scope}". Run \`git diff --name-only ${scope}\` for the file list.`
   : `No scope given. List staged + modified files: union of \`git diff --name-only HEAD\` and \`git diff --name-only --staged\`.`;
 const [preFlightRaw, route] = await parallel([
-  // Pre-flight: tests-only by design. Static analysis is the gates hook's job
-  // (running linters here would duplicate it and invent behavior the /audit
-  // skill forbids). A test failure is recorded as context but does NOT block and
-  // does NOT become a finding. Skipped when a caller already drove tests to
-  // green (build's Code phase), so the nested run does not re-run the suite.
+  // Tests-only; static analysis is the gates hook's job. A test failure is
+  // recorded as context but does not block and does not become a finding.
   async () => {
     if (skipPreflight) return { ran: false, note: "skipped by caller" };
     const pf = (await agent(
@@ -324,7 +311,6 @@ const [preFlightRaw, route] = await parallel([
     );
     return pf;
   },
-  // Route: list changed files + churn, then map to reviewers in JS below.
   () =>
     agent(
       anchor(
@@ -348,7 +334,6 @@ if (!files.length) {
   };
 }
 
-// Deterministic routing: reviewer -> assigned files, then focus filter.
 const focusSet = FOCUS[focus] === undefined ? null : FOCUS[focus];
 const assign = {};
 for (const f of files) {
@@ -362,20 +347,16 @@ const assignments = Object.entries(assign).map(([reviewer, fs]) => ({
   files: fs,
 }));
 
-// File-count policy. The interactive /audit prompts to narrow scope past 30
-// files; headless has no prompt, so warn loudly and continue (the deterministic
-// half of the policy is the batch-split below, which bounds per-agent load).
-// --no-limit / an explicit scope suppress the warning.
+// The interactive /audit prompts to narrow scope past 30 files; headless has
+// no prompt, so warn and continue.
 if (files.length > 30 && !scope && !noLimit) {
   log(
     `File-count policy: ${files.length} files exceed the soft limit of 30 and no scope was given. Continuing headless (no narrow-scope prompt); pass a scope or noLimit to silence this.`,
   );
 }
 
-// Batch-split: cap each agent at 10 files so a reviewer with a wide assignment
-// fans out into several bounded units instead of one overloaded call. Units
-// carry their reviewer label so skips and raw_findings stay attributable after
-// the parallel results are flattened.
+// Cap each agent at 10 files. Units carry their reviewer label so skips and
+// raw_findings stay attributable after the parallel results are flattened.
 const BATCH = 10;
 const units = [];
 for (const a of assignments) {
@@ -402,7 +383,7 @@ log(
     .join(", ")}`,
 );
 
-// ---- Review: every routed reviewer fires, in parallel, on sonnet ----
+// ---- Review ----
 phase("Review");
 const RELIABILITY =
   "Do NOT call the advisor tool; work autonomously from your own analysis. Complete within 8 minutes; if uncertain about a finding, include it rather than skip (the challenger prunes false positives). When the scope spans several files, follow the high-churn paths and do not spend the whole budget on the first file.";
@@ -426,8 +407,8 @@ const raw = await parallel(
   ),
 );
 const findings = raw.filter(Boolean).flatMap((r) => r.findings || []);
-// raw_findings keeps per-reviewer attribution for the snapshot, captured before
-// the flatten above drops which unit produced what.
+// Capture per-reviewer attribution for the snapshot before the flatten above
+// drops which unit produced what.
 const rawFindings = [];
 units.forEach((u, i) => {
   const res = raw[i];
@@ -444,11 +425,8 @@ units.forEach((u, i) => {
     }
   }
 });
-// Skip accounting is per-unit, not per-reviewer. A reviewer split into several
-// units can have one unit stall while its siblings return; keying the skip on
-// the reviewer would set "produced" from any surviving unit and hide the files
-// the stalled unit never reviewed. Record each failed unit with its files so the
-// unreviewed gap stays visible in the snapshot.
+// Skip accounting is per-unit: keying on the reviewer would set "produced" from
+// any surviving unit and hide the files a stalled unit never reviewed.
 const skipped = units
   .filter((_, i) => !raw[i])
   .map((u) => ({
@@ -464,13 +442,8 @@ if (!findings.length) {
 }
 
 // ---- Challenge ∥ Verify -> Integrate (reviewer -> aggregate is forbidden) ----
-// Challenge and Verify are independent passes over the SAME findings, keyed by
-// file:line, so they run concurrently. Serial today, verify only saw survivors;
-// running on the full set makes verify's cost scale with the prune rate, which
-// is acceptable while that rate stays low. Integrate reconciles with a fixed
-// rule that reproduces serial membership exactly (see its prompt), so this is a
-// latency win with zero quality delta. Bare phase() races under parallel(); each
-// thunk names its group via opts.phase.
+// Two independent passes over the same findings run concurrently; Integrate
+// reconciles them with a fixed rule.
 const findingsJson = JSON.stringify(findings);
 const [challenged, verified] = await parallel([
   () =>
@@ -478,14 +451,14 @@ const [challenged, verified] = await parallel([
       anchor(
         `critic-audit. Challenge these findings to prune false positives. Each finding is a position to be argued, not a fact. Reference each finding by its file:line. Findings:\n${findingsJson}`,
       ),
-      { agentType: "critic-audit", phase: "Challenge", label: "challenge" },
+      { agentType: "critic-audit", phase: "Challenge", label: "challenge", model: "opus" },
     ),
   () =>
     agent(
       anchor(
         `critic-evidence. Verify these findings by tracing concrete execution paths (positive evidence, not intuition). For each finding, reference it by file:line and supply the execution-path evidence plus a severity. Findings:\n${findingsJson}`,
       ),
-      { agentType: "critic-evidence", phase: "Verify", label: "verify" },
+      { agentType: "critic-evidence", phase: "Verify", label: "verify", model: "opus" },
     ),
 ]);
 
@@ -501,6 +474,7 @@ const integrated = await agent(
     agentType: "enhancer-integration",
     phase: "Integrate",
     label: "integrate",
+    model: "opus",
     schema: FINDINGS_SCHEMA,
   },
 );

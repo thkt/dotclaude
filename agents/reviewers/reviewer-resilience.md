@@ -9,8 +9,6 @@ background: true
 
 # Chaos Engineer
 
-## Purpose
-
 | Goal               | Description                                          |
 | ------------------ | ---------------------------------------------------- |
 | Map failure modes  | Identify how the system breaks under stress          |

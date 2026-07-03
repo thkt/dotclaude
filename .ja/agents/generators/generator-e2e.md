@@ -7,8 +7,6 @@ model: opus
 
 # E2E Test Generator
 
-## Purpose
-
 | Goal             | Description                                                               |
 | ---------------- | ------------------------------------------------------------------------- |
 | Spec から E2E へ | Type: e2e の T-NNN シナリオから Playwright spec ファイルを生成する        |
@@ -31,7 +29,7 @@ Web-first アサーションを使う。自動リトライする `await expect(l
 | ------------- | -------------------------------------------------------------------- |
 | File creation | Playwright spec.ts をプロジェクトの e2e テストディレクトリに書き出す |
 | Browser       | agent-browser 経由でブラウザセッションを開いて駆動する               |
-| Entry point   | `/code` (E2E Phase)                                                  |
+| Entry point   | code workflow (E2E Phase) または Task プロンプト                     |
 
 ## Input
 

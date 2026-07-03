@@ -9,8 +9,6 @@ background: true
 
 # Operational Readiness Reviewer
 
-## Purpose
-
 | Goal              | Description                                                |
 | ----------------- | ---------------------------------------------------------- |
 | Error containment | Detect missing ErrorBoundary, blast radius, fallback paths |
