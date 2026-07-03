@@ -69,8 +69,8 @@ install specific workflow sets:
 3. **Install specific plugin** (choose one or more):
 
    ```bash
-   /plugin install plan     # /outcome, /think, /research, /probe, /slice
-   /plugin install build    # /build, /code, /fix, /shake, /prototype
+   /plugin install plan     # /outcome, /think, /research, /slice
+   /plugin install build    # /build, /code, /fix, /shake
    /plugin install review   # /audit, /polish, /preview, /challenge, /assert
    /plugin install ship     # /commit, /checkout, /pr, /issue
    /plugin install toolkit  # /adr, /adrift, /census, /reflect
@@ -80,11 +80,11 @@ install specific workflow sets:
 
 - **plan**: Planning and design (/outcome for outcome definition, /think for
   design exploration and SOW/Spec generation, /research for technical
-  investigation, /probe for repository spec extraction, /slice for breaking
-  plans into vertical-slice issues) plus architecture agents
+  investigation, /slice for breaking plans into vertical-slice issues) plus
+  architecture agents
 - **build**: Implementation and testing (/build for end-to-end orchestration,
   /code, /fix with TDD/RGRC cycle and quality gates, /shake for
-  flaky-test detection, /prototype for throwaway prototypes)
+  flaky-test detection)
 - **review**: Quality and review (/audit, /polish, /preview, /challenge,
   /assert) with 21 specialized reviewer agents
 - **ship**: Git and release (/commit, /checkout, /pr, /issue)

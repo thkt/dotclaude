@@ -16,7 +16,7 @@
     {
       "name": "plan",
       "source": "./",
-      "description": "Planning and design: /outcome for outcome definition, /think for design exploration and SOW/Spec generation, /research for technical investigation, /probe for repository spec extraction, /slice for breaking plans into vertical-slice issues, plus architecture agents",
+      "description": "Planning and design: /outcome for outcome definition, /think for design exploration and SOW/Spec generation, /research for technical investigation, /slice for breaking plans into vertical-slice issues, plus architecture agents",
       "version": "3.0.0",
       "author": {
         "name": "thkt",
@@ -29,7 +29,6 @@
         "./skills/outcome/SKILL.md",
         "./skills/think/SKILL.md",
         "./skills/research/SKILL.md",
-        "./skills/probe/SKILL.md",
         "./skills/slice/SKILL.md"
       ],
       "agents": [
@@ -40,21 +39,20 @@
     {
       "name": "build",
       "source": "./",
-      "description": "Implementation and testing: /build for end-to-end orchestration, /code, /fix with TDD/RGRC cycle and quality gates, /shake for flaky-test detection, /prototype for throwaway prototypes",
+      "description": "Implementation and testing: /build for end-to-end orchestration, /code, /fix with TDD/RGRC cycle and quality gates, /shake for flaky-test detection",
       "version": "3.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["tdd", "rgrc", "implementation", "testing", "prototype", "flaky", "fix"],
+      "keywords": ["tdd", "rgrc", "implementation", "testing", "flaky", "fix"],
       "category": "Implementation",
       "commands": [
         "./skills/build/SKILL.md",
         "./skills/code/SKILL.md",
         "./skills/fix/SKILL.md",
-        "./skills/shake/SKILL.md",
-        "./skills/prototype/SKILL.md"
+        "./skills/shake/SKILL.md"
       ],
       "agents": [
         "./agents/resolvers/resolver-build.md",
