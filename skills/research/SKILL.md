@@ -2,7 +2,7 @@
 name: research
 description: Probe project and technical questions. Findings are positions to be challenged with explicit sources, not conclusions. Phase 6 advisor pass argues against the synthesis before it lands. Do NOT use for design planning or SOW / Spec generation (use /think instead).
 when_to_use: 調査して, 調べて, リサーチ, investigate, 分析して, issueやろう, issue見て, 横並びチェック, 類似パターン検出, refactor 横展開
-allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(git show:*) Bash(wc:*) Bash(scout:*) Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(codegraph:*) WebFetch WebSearch
+allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(git show:*) Bash(wc:*) Bash(scout:*) Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(codegraph:*) Bash(node:*) WebFetch WebSearch
 model: opus
 context: fork
 argument-hint: "[research subject or question]"
@@ -41,7 +41,7 @@ Skip if `$ARGUMENTS` clearly indicates both. Otherwise ask via AskUserQuestion. 
 
 ## Phase 4: Domain-Scoped Parallel Investigation
 
-Launch Explore / ugrep / bfs / Read in parallel. For Feature planning intent, also invoke `Task(subagent_type: explorer-feature)` to trace execution paths and map architecture. If Explore returns empty, re-run with broader keywords. State the source for each finding in place (facts `file:line`, inferences `inferred from X`, unverified `unknown, requires X`). Also append each command and its raw output verbatim to the scratch. This is the audit trail; Phase 7 Disconfirmation quotes it directly and does not reconstruct.
+Launch Explore / ugrep / bfs / Read in parallel. For Feature planning intent, also invoke `Task(subagent_type: explorer-feature, run_in_background: false)` to trace execution paths and map architecture. Include the research subject title verbatim in the spawn prompt. Instruct explorer-feature to return its result as a single JSON object `{ findings: [{ statement: string, source: string }] }`. If Explore returns empty, re-run with broader keywords. State the source for each finding in place (facts `file:line`, inferences `inferred from X`, unverified `unknown, requires X`). Also append each command and its raw output verbatim to the scratch. This is the audit trail; Phase 7 Disconfirmation quotes it directly and does not reconstruct.
 
 When the repo has a `.codegraph/` index, refresh it with `codegraph sync`, then resolve structural questions (who calls, what breaks, which tests are affected) with codegraph first. Get callers with `codegraph callers <symbol>` and the blast radius plus affected tests with `codegraph impact <symbol>`, and cite that output as the finding's source. A ugrep / grep search for the symbol name is not accepted as a source for these questions. In a repo without the index, do not init unprompted; fall back to Explore / ugrep. Use ugrep / grep only for free-text content search.
 
