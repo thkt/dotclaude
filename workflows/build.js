@@ -251,30 +251,46 @@ const SHIP_SCHEMA = {
 
 // Port of think.js's validate() + non-empty content checks. Deterministically rejects
 // structural defects (duplicate ids / dangling or cyclic depends_on / missing tests)
-// and empty content (contract / name / given / when / then).
+// and empty content (test_command / contract / name / given / when / then).
+//
+// DRY debt: this is a hand-maintained copy of scripts/issue-gate/lib/plan-validate.mjs
+// (the canonical plan-gate, locked by plan-gate.bats T-011). The workflow runtime wraps
+// this file as an AsyncFunction body, so build.js cannot import that module. The copy is
+// kept in lockstep by scripts/issue-gate/tests/contract-build-port.test.mjs, which extracts
+// the body between the two CONTRACT-TEST markers below, evals it, and asserts it returns
+// identical errors on every shared fixture. Editing this block without updating the canonical
+// (or vice versa) fails that test. Do not rename or remove the markers.
+// CONTRACT-TEST-BEGIN validate
 const validate = (plan) => {
   const errors = [];
-  const units = plan.units || [];
+  const units = Array.isArray(plan.units) ? plan.units : [];
   if (!units.length) errors.push("units is empty. Define at least one implementation unit");
+  if (!String(plan.test_command || "").trim()) errors.push("test_command is empty");
+
   const ids = new Set(units.map((u) => u.id));
   if (ids.size !== units.length) errors.push("duplicate unit ids");
+
   const testIds = new Set();
   for (const u of units) {
-    if (!u.tests.length) errors.push(`${u.id} has no test scenario`);
-    if (!u.files.length) errors.push(`${u.id} has no target files`);
+    const tests = Array.isArray(u.tests) ? u.tests : [];
+    const files = Array.isArray(u.files) ? u.files : [];
+    const dependsOn = Array.isArray(u.depends_on) ? u.depends_on : [];
+    if (!tests.length) errors.push(`${u.id} has no test scenario`);
+    if (!files.length) errors.push(`${u.id} has no target files`);
     if (!String(u.goal || "").trim()) errors.push(`${u.id} has an empty goal`);
     if (!String(u.contract || "").trim()) errors.push(`${u.id} has an empty contract`);
-    for (const t of u.tests) {
+    for (const t of tests) {
       if (testIds.has(t.id)) errors.push(`duplicate test id ${t.id}`);
       testIds.add(t.id);
       for (const field of ["name", "given", "when", "then"]) {
         if (!String(t[field] || "").trim()) errors.push(`${t.id} has an empty ${field}`);
       }
     }
-    for (const d of u.depends_on) {
+    for (const d of dependsOn) {
       if (!ids.has(d)) errors.push(`${u.id}'s depends_on ${d} points to a nonexistent unit`);
     }
   }
+
   // Cycle detection (DFS)
   const state = new Map();
   const visit = (id, path) => {
@@ -285,12 +301,14 @@ const validate = (plan) => {
     }
     state.set(id, "visiting");
     const u = units.find((x) => x.id === id);
-    for (const d of (u && u.depends_on) || []) visit(d, [...path, id]);
+    for (const d of u && Array.isArray(u.depends_on) ? u.depends_on : []) visit(d, [...path, id]);
     state.set(id, "done");
   };
   for (const u of units) visit(u.id, []);
+
   return errors;
 };
+// CONTRACT-TEST-END validate
 
 // ---- Load: verbatim fetch -> Plan heading check -> deterministic id collection -> extract -> validate + cross-check ----
 const fetched = await agent(
