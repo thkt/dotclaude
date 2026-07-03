@@ -23,9 +23,9 @@ A proposal artifact in any form. When the caller has not broken it into structur
 
 ## Validation Viewpoints
 
-Applied in Validation Process Step 5. Walk through top to bottom. An entry with no condition clause always applies; an entry with one applies only when it matches.
+Applied in Validation Process Step 5. Walk through top to bottom.
 
-| Viewpoint                  | Procedure                                                                                                                                                                                                             |
+| Check                      | Action                                                                                                                                                                                                                |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Hidden assumption          | Question the taken-for-granted and surface hidden assumptions                                                                                                                                                         |
 | Hidden cost                | Look for hidden cost in complexity, maintenance burden, learning curve                                                                                                                                                |
