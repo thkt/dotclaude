@@ -8,8 +8,6 @@ memory: project
 
 # Feature Explorer
 
-## Purpose
-
 | Goal              | Description                                        |
 | ----------------- | -------------------------------------------------- |
 | Trace execution   | Map call chains from entry points through layers   |

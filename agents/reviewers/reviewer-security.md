@@ -10,8 +10,6 @@ background: true
 
 # Security Reviewer
 
-## Purpose
-
 | Goal                 | Description                                                |
 | -------------------- | ---------------------------------------------------------- |
 | OWASP coverage       | Detect injection, auth, misconfig, dependency, SSRF, taint |

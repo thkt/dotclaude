@@ -9,8 +9,6 @@ background: true
 
 # Prompt Reviewer
 
-## Purpose
-
 | Goal              | Description                                            |
 | ----------------- | ------------------------------------------------------ |
 | Token efficiency  | Detect verbose prose where table form parses cleaner   |

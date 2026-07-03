@@ -9,8 +9,6 @@ background: true
 
 # Efficiency Reviewer
 
-## Purpose
-
 | Goal               | Description                                               |
 | ------------------ | --------------------------------------------------------- |
 | Detect waste       | Redundant computation, repeated reads, missed concurrency |

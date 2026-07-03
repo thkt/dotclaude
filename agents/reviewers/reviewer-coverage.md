@@ -10,8 +10,6 @@ background: true
 
 # Test Coverage Reviewer
 
-## Purpose
-
 | Goal          | Description                                                 |
 | ------------- | ----------------------------------------------------------- |
 | Gap detection | Untested paths, missing error/edge cases, negative branches |

@@ -9,8 +9,6 @@ background: true
 
 # Duplication Reviewer
 
-## Purpose
-
 | Goal                 | Description                                                |
 | -------------------- | ---------------------------------------------------------- |
 | Cross-file detection | Find functions, blocks, and patterns repeated across files |

@@ -10,8 +10,6 @@ background: true
 
 # Silent Failure Reviewer
 
-## Purpose
-
 | Goal              | Description                                                                   |
 | ----------------- | ----------------------------------------------------------------------------- |
 | Audit suppression | Log-only catch, rationale-less swallow, intentional-suppression justification |

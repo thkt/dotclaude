@@ -10,8 +10,6 @@ memory: project
 
 # Build Error Resolver
 
-## Purpose
-
 | Goal               | Description                                               |
 | ------------------ | --------------------------------------------------------- |
 | Minimal fix        | Resolve build error with the smallest possible diff       |

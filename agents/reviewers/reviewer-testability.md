@@ -10,8 +10,6 @@ background: true
 
 # Testability Reviewer
 
-## Purpose
-
 | Goal              | Description                                               |
 | ----------------- | --------------------------------------------------------- |
 | Detect coupling   | Hidden imports, tight binding, mixed pure and impure code |

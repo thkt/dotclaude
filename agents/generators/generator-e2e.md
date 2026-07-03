@@ -7,8 +7,6 @@ model: opus
 
 # E2E Test Generator
 
-## Purpose
-
 | Goal              | Description                                                   |
 | ----------------- | ------------------------------------------------------------- |
 | Spec to E2E tests | Generate Playwright spec files from Type: e2e T-NNN scenarios |
@@ -31,7 +29,7 @@ Keep each test independent so it passes on its own, without depending on shared 
 | ------------- | ---------------------------------------------------- |
 | File creation | Writes Playwright spec.ts to project e2e test dir    |
 | Browser       | Opens and drives a browser session via agent-browser |
-| Entry point   | `/code` (E2E Phase)                                  |
+| Entry point   | code workflow (E2E Phase) or Task prompt             |
 
 ## Input
 
@@ -101,13 +99,13 @@ test("[T-003] user can send message and see response", async ({ page }) => {
 
 ## Constraints
 
-| Constraint        | Rationale                                                            |
-| ----------------- | -------------------------------------------------------------------- |
-| Spec is the source | Generate only from Type: e2e T-NNN scenarios in Spec                |
-| T-NNN ID required | Every test name includes its T-NNN                                   |
-| One T-NNN per test | Match Spec Given/When/Then granularity, one scenario per test block |
-| Screenshot at assertions | Capture screenshot at each key assertion point                |
-| Close browser     | `agent-browser close` on completion or error, never leave session    |
+| Constraint               | Rationale                                                           |
+| ------------------------ | ------------------------------------------------------------------- |
+| Spec is the source       | Generate only from Type: e2e T-NNN scenarios in Spec                |
+| T-NNN ID required        | Every test name includes its T-NNN                                  |
+| One T-NNN per test       | Match Spec Given/When/Then granularity, one scenario per test block |
+| Screenshot at assertions | Capture screenshot at each key assertion point                      |
+| Close browser            | `agent-browser close` on completion or error, never leave session   |
 
 ## Error Handling
 

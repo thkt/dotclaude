@@ -10,8 +10,6 @@ background: true
 
 # Accessibility Reviewer
 
-## Purpose
-
 | Goal            | Description                                                       |
 | --------------- | ----------------------------------------------------------------- |
 | WCAG compliance | Audit semantics, forms, ARIA, keyboard, alt text against WCAG 2.2 |

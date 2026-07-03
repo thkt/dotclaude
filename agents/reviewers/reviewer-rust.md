@@ -9,8 +9,6 @@ background: true
 
 # Rust Reviewer
 
-## Purpose
-
 | Goal              | Description                                                            |
 | ----------------- | ---------------------------------------------------------------------- |
 | Idiom compliance  | Detect clone abuse, manual loops where iterator combinators fit        |

@@ -10,8 +10,6 @@ background: true
 
 # Code Quality Reviewer
 
-## Purpose
-
 | Goal             | Description                                           |
 | ---------------- | ----------------------------------------------------- |
 | Structure check  | Over-engineering, state misplacement, size            |

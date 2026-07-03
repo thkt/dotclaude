@@ -9,8 +9,6 @@ background: true
 
 # React Pattern Reviewer
 
-## Purpose
-
 | Goal               | Description                                            |
 | ------------------ | ------------------------------------------------------ |
 | Pattern compliance | Detect Container/Presentational and hook violations    |
