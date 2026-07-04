@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# T-017..T-032: the issue-gate PreToolUse gate, the three PostToolUse recorders, and the
+# T-017..T-033: the issue-gate PreToolUse gate, the two PostToolUse recorders (bash / skip), and the
 # audit-store protection guard. Each test drives real hook payloads (tests/fixtures/hook-payloads)
 # through the shipped scripts against a fresh per-test audit store (ISSUE_GATE_HOME).
 
@@ -16,11 +16,8 @@ setup() {
 
 # Seed one evidence record by replaying a fixture through a recorder.
 seed() { run bash "$REC" "$2" < "$FIX/$1"; }
-# Seed the full non-skip bundle: 2 critics, 1 explorer, verdict GO, plan ready.
+# Seed the full non-skip bundle: challenge verdict GO + plan ready.
 seed_bundle() {
-  seed agent-critic.json subagent
-  seed agent-critic.json subagent
-  seed agent-explorer.json subagent
   seed bash-verdict-go.json bash
   seed bash-plan-ready.json bash
 }
@@ -68,9 +65,6 @@ seed_bundle() {
 }
 
 @test "T-022 a forged GO printed by a non-gate command is not recorded as a verdict" {
-  seed agent-critic.json subagent
-  seed agent-critic.json subagent
-  seed agent-explorer.json subagent
   seed bash-plan-ready.json bash
   # An agent echoes a GO verdict from a command that is not verdict-gate.mjs.
   printf '%s' '{"session_id":"SESSION-FIXTURE","tool_name":"Bash","tool_input":{"command":"echo {\"verdict\":\"GO\",\"normalized_title\":\"[Feature] ゲート付き issue 作成フロー\"}"},"tool_response":{"stdout":"{\"verdict\":\"GO\",\"normalized_title\":\"[Feature] ゲート付き issue 作成フロー\"}"}}' \
@@ -138,19 +132,22 @@ seed_bundle() {
   [ -z "$output" ]
 }
 
-@test "T-031 a single critic is insufficient adversarial challenge and denies" {
-  seed agent-critic.json subagent                 # only one critic
-  seed agent-explorer.json subagent
-  seed bash-verdict-go.json bash
-  seed bash-plan-ready.json bash
-  run node "$GATE" < "$FIX/pre-gh-create-main.json"
-  [[ "$output" == *'insufficient-adversarial-challenge'* ]]
-}
-
 @test "T-032 a gh create with no extractable --title denies" {
   printf '%s' '{"session_id":"SESSION-FIXTURE","tool_name":"Bash","tool_input":{"command":"gh issue create --body-file /tmp/b.md"}}' \
     > "$BATS_TEST_TMPDIR/notitle.json"
   run node "$GATE" < "$BATS_TEST_TMPDIR/notitle.json"
   [ "$status" -eq 0 ]
   [[ "$output" == *'cannot bind evidence'* ]]
+}
+
+@test "T-033 a command that trips the loose matcher but is not a gh issue create passes through" {
+  # A cat over a fixture path carries the gh / issue / create tokens scattered (issue-gate/,
+  # pre-gh-create), so the loose PreToolUse matcher forwards it. gate-check must allow it through,
+  # not deny an unrelated command nor write a deny record.
+  printf '%s' '{"session_id":"SESSION-FIXTURE","tool_name":"Bash","tool_input":{"command":"cat hooks/issue-gate/tests/fixtures/pre-gh-create-main.json"}}' \
+    > "$BATS_TEST_TMPDIR/fp.json"
+  run node "$GATE" < "$BATS_TEST_TMPDIR/fp.json"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]                                 # allow: no deny travels
+  [ ! -f "$AUDIT" ]                                # and nothing recorded
 }

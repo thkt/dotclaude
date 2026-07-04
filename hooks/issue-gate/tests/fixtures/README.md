@@ -23,16 +23,14 @@ node gen-fixtures.mjs ./hook-payloads
 
 ## The payloads
 
-| File                           | Event                       | Role in tests                                                               |
-| ------------------------------ | --------------------------- | --------------------------------------------------------------------------- |
-| `agent-critic.json`            | PostToolUse Agent           | completed `critic-design`, verbatim title (seed x2 for the 2-critic bundle) |
-| `agent-explorer.json`          | PostToolUse Agent           | completed `explorer-feature` research spawn                                 |
-| `bash-verdict-go.json`         | PostToolUse Bash            | a `verdict-gate.mjs` run returning GO                                       |
-| `bash-plan-ready.json`         | PostToolUse Bash            | a `plan-gate.mjs` run returning ready                                       |
-| `bash-gh-create-success.json`  | PostToolUse Bash            | a successful `gh issue create` (issue URL on stdout) -> consumes            |
-| `pre-gh-create-main.json`      | PreToolUse Bash             | the gate input, main agent                                                  |
-| `pre-gh-create-subagent.json`  | PreToolUse Bash             | subagent-origin (`agent_id`) -> exemption path                              |
-| `pre-gh-create-mismatch.json`  | PreToolUse Bash             | a near-but-different title -> title mismatch deny                           |
-| `pre-bash-nonmatching.json`    | PreToolUse Bash             | a non-gh command -> fast-exit                                               |
-| `askuserquestion-skip.json`    | PostToolUse AskUserQuestion | the fixed `判定スキップ` header -> skip record                              |
-| `askuserquestion-nonskip.json` | PostToolUse AskUserQuestion | a different header -> not recorded                                          |
+| File                           | Event                       | Role in tests                                                    |
+| ------------------------------ | --------------------------- | ---------------------------------------------------------------- |
+| `bash-verdict-go.json`         | PostToolUse Bash            | a `verdict-gate.mjs` run returning GO                            |
+| `bash-plan-ready.json`         | PostToolUse Bash            | a `plan-gate.mjs` run returning ready                            |
+| `bash-gh-create-success.json`  | PostToolUse Bash            | a successful `gh issue create` (issue URL on stdout) -> consumes |
+| `pre-gh-create-main.json`      | PreToolUse Bash             | the gate input, main agent                                       |
+| `pre-gh-create-subagent.json`  | PreToolUse Bash             | subagent-origin (`agent_id`) -> exemption path                   |
+| `pre-gh-create-mismatch.json`  | PreToolUse Bash             | a near-but-different title -> title mismatch deny                |
+| `pre-bash-nonmatching.json`    | PreToolUse Bash             | a non-gh command -> fast-exit                                    |
+| `askuserquestion-skip.json`    | PostToolUse AskUserQuestion | the fixed `判定スキップ` header -> skip record                   |
+| `askuserquestion-nonskip.json` | PostToolUse AskUserQuestion | a different header -> not recorded                               |

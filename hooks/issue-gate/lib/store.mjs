@@ -31,6 +31,16 @@ export const extractTitle = (cmd) => {
   return "";
 };
 
+// True iff the command actually invokes `gh issue create` as contiguous command tokens at a
+// command boundary, not merely because the loose PreToolUse matcher caught the gh / issue / create
+// tokens scattered across an unrelated command (a file path under issue-gate/, a commit message
+// quoting the phrase). A real invocation is always contiguous, so requiring contiguity here cannot
+// let a real create slip the gate; it only stops the loose matcher's false positives from being
+// denied. Not adversary-proof (a create hidden behind a variable evades it), matching this gate's
+// discipline-not-security threat model already visible in the agent_id / skip exemptions.
+export const isGhIssueCreate = (cmd) =>
+  /(^|[\s;&|(])gh\s+issue\s+create(\s|$)/.test(String(cmd ?? ""));
+
 // Store location. ISSUE_GATE_HOME overrides the directory so tests can point at a temp dir.
 export const storeDir = () =>
   process.env.ISSUE_GATE_HOME || join(homedir(), ".claude", "state", "issue-gate");
@@ -88,18 +98,13 @@ export const evaluate = (records, ctx) => {
   const skipCount = sess.filter((r) => r.kind === "skip").length;
   const consumedSkip = sess.filter((r) => r.kind === "consumed" && r.via === "skip").length;
 
-  // Full evidence bundle for this title (the non-skip challenge -> research -> think pipeline).
-  const titleSubagents = sess.filter(
-    (r) =>
-      r.kind === "subagent" &&
-      r.status === "completed" &&
-      (r.result_len || 0) > 0 &&
-      normalizeTitle(r.prompt || "").includes(nt),
-  );
-  const critics = titleSubagents.filter((r) => (r.subagent_type || "").includes("critic")).length;
-  const explorers = titleSubagents.filter((r) =>
-    (r.subagent_type || "").includes("explorer"),
-  ).length;
+  // Evidence bundle for this title: a GO challenge verdict + a ready plan. Both are emitted by a
+  // synchronous gate script (verdict-gate.mjs / plan-gate.mjs) whose Bash PostToolUse the recorder
+  // captures at completion, and both bind the verbatim title. The adversarial-critic and research-
+  // explorer spawn counts were dropped: on this harness a subagent spawn records at launch (async),
+  // never at completion, so a `status === "completed"` count could never be satisfied; and the count
+  // only ever proved a spawn fired, not that the critique reached the verdict (which verdict-gate
+  // binds directly). See the discipline-not-security note above.
   const verdictGo = sess.some(
     (r) => r.kind === "verdict" && r.normalized_title === nt && r.verdict === "GO",
   );
@@ -107,8 +112,9 @@ export const evaluate = (records, ctx) => {
     (r) => r.kind === "plan" && r.normalized_title === nt && r.ready === true,
   );
 
-  const bundleComplete = critics >= 2 && explorers >= 1 && verdictGo && planReady;
-  if (bundleComplete && consumedBundle === 0) return { decision: "allow", via: "bundle", reasons: [] };
+  const bundleComplete = verdictGo && planReady;
+  if (bundleComplete && consumedBundle === 0)
+    return { decision: "allow", via: "bundle", reasons: [] };
 
   // Deliberate human gate-exemption for docs / chore / minor-bug (recorded via the fixed-header
   // AskUserQuestion). Session-scoped and single-use: N skips allow N creates.
@@ -119,8 +125,6 @@ export const evaluate = (records, ctx) => {
   else {
     if (!verdictGo) reasons.push("no-challenge-GO");
     if (!planReady) reasons.push("no-plan-ready");
-    if (explorers < 1) reasons.push("no-research-explorer");
-    if (critics < 2) reasons.push("insufficient-adversarial-challenge");
   }
   return { decision: "deny", via: null, reasons };
 };
