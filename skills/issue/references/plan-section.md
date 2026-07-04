@@ -88,4 +88,4 @@ The build workflow reads the Plan section and assembles a structured plan isomor
 | Stable anchor of a precondition line              | preconditions[].pattern             | string (optional) |
 | Each line under `## Backlog candidates`           | backlog_candidates                  | string[]          |
 
-preconditions and backlog_candidates are not required fields of PLAN_SCHEMA (think.js); they are extra information the build workflow picks up from the Plan section. Extraction relies solely on markdown heading and bullet structure and requires no special marker or comment notation.
+preconditions and backlog_candidates are not required fields of the think skill's structured plan; they are extra information the build workflow picks up from the Plan section. Extraction relies solely on markdown heading and bullet structure and requires no special marker or comment notation.

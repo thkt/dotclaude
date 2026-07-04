@@ -27,7 +27,7 @@ const bodyFor = (unitIds, testIds) =>
     "",
   ].join("\n");
 
-// think.js validate() 相当 + content 非空検査を通る抽出済み plan。
+// build の validate() + content 非空検査を通る抽出済み plan。
 const makePlan = (overrides = {}) => ({
   dir: ".claude/workspace/planning/2026-07-03-sample",
   outcome: "sample outcome",
