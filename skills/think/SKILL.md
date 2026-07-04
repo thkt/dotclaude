@@ -13,7 +13,7 @@ Deep design exploration with adversarial challenge. Compare ≥2 approaches, put
 
 ## Input
 
-Receive the task description and research context from `$ARGUMENTS`. If empty, confirm with the user via AskUserQuestion.
+Receive the task description and research context from `$ARGUMENTS`. If empty, confirm with the user via AskUserQuestion. The first line of `$ARGUMENTS` is the task title; pass that first line verbatim, unparaphrased, wherever a verbatim title is required (the critic-design spawn prompt and plan-gate `--title`).
 
 ## Phase 1: Outcome Reference
 
