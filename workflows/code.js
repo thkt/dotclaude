@@ -1,9 +1,9 @@
 export const meta = {
   name: "code",
   description:
-    'TDD workflow that takes the think workflow\'s structured plan and runs Red -> Green per unit under script enforcement. An unconfirmed Red (tests passing from the start) is recorded as an anomaly, and at the end an independent agent verifies the full suite + lint + type-check. Writing tests after the fact and skipping Red cannot happen structurally. Callable standalone or nested from build via workflow("code").',
+    'TDD workflow that takes a structured plan (units / test_command) and runs Red -> Green per unit under script enforcement. An unconfirmed Red (tests passing from the start) is recorded as an anomaly, and at the end an independent agent verifies the full suite + lint + type-check. Writing tests after the fact and skipping Red cannot happen structurally. Callable standalone or nested from build via workflow("code").',
   whenToUse:
-    "Headless TDD implementation. args is {plan, repo, model}; plan is the plan returned by the think workflow (with units / test_command). model (optional) propagates only to the Red / Green implementation agents.",
+    "Headless TDD implementation. args is {plan, repo, model}; plan is a structured plan with units / test_command (as produced by the think skill or build's planning). model (optional) propagates only to the Red / Green implementation agents.",
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
@@ -33,7 +33,7 @@ const plan = input.plan;
 if (!plan || !Array.isArray(plan.units) || !plan.units.length) {
   return {
     stopped: "no-plan",
-    why: "Pass the think workflow's plan (units required) as args.plan.",
+    why: "Pass a structured plan (units required) as args.plan.",
   };
 }
 const repo = typeof input.repo === "string" ? input.repo : "";
@@ -80,7 +80,7 @@ const VERIFY_SCHEMA = {
   },
 };
 
-// Order by dependency (already validated by think, but fail-close on a malformed
+// Order by dependency (already validated upstream, but fail-close on a malformed
 // plan from a standalone call).
 const units = [];
 const placed = new Set();

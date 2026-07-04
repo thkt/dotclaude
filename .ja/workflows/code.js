@@ -1,9 +1,9 @@
 export const meta = {
   name: "code",
   description:
-    'think workflow の構造化 plan を受け取り、unit ごとに Red -> Green を script 強制で回す TDD workflow。Red 未確認 (テストが最初から通る) は anomaly として記録され、最後に独立 agent が全 suite + lint + type-check を検証する。テスト後書きと Red 省略が構造的に起きない。単体でも、build から workflow("code") 経由の入れ子でも呼べる。',
+    '構造化 plan (units / test_command) を受け取り、unit ごとに Red -> Green を script 強制で回す TDD workflow。Red 未確認 (テストが最初から通る) は anomaly として記録され、最後に独立 agent が全 suite + lint + type-check を検証する。テスト後書きと Red 省略が構造的に起きない。単体でも、build から workflow("code") 経由の入れ子でも呼べる。',
   whenToUse:
-    "headless に TDD 実装を回したいとき。args は {plan, repo, model}。plan は think workflow の返り値の plan (units / test_command を持つ)。model (任意) は Red / Green 実装 agent にのみ伝播する。",
+    "headless に TDD 実装を回したいとき。args は {plan, repo, model}。plan は units / test_command を持つ構造化 plan (think skill の返り値または build の plan 生成)。model (任意) は Red / Green 実装 agent にのみ伝播する。",
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
@@ -30,7 +30,7 @@ const input = (() => {
 })();
 const plan = input.plan;
 if (!plan || !Array.isArray(plan.units) || !plan.units.length) {
-  return { stopped: "no-plan", why: "args.plan に think workflow の plan (units 必須) を渡す。" };
+  return { stopped: "no-plan", why: "args.plan に構造化 plan (units 必須) を渡す。" };
 }
 const repo = typeof input.repo === "string" ? input.repo : "";
 const anchor = (p) =>
@@ -76,7 +76,7 @@ const VERIFY_SCHEMA = {
   },
 };
 
-// 依存順に整列する (think の validate 済みだが、単体呼び出しの malformed plan に fail-close)。
+// 依存順に整列する (上流で validate 済みだが、単体呼び出しの malformed plan に fail-close)。
 const units = [];
 const placed = new Set();
 let progressed = true;
