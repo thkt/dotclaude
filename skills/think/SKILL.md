@@ -79,7 +79,7 @@ Generate ≥2 distinct approaches from the perspectives below. When approaches c
 
 ### Plan Check
 
-Serialize the Spec's Implementation table into the plan-gate PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], depends_on: string[], tests: [{ id, name, given, when, then }] }] }`) and pipe it on stdin to `node scripts/issue-gate/plan-gate.mjs --title "<task title verbatim>"`. If ready is false, resolve the errors (empty units / empty test_command / dangling depends_on / cycle / empty fields) before proceeding to completion. Pass the task title literally, not paraphrased (the script normalizes it).
+Serialize the Spec's Implementation table into the plan-gate PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], depends_on: string[], tests: [{ id, name, given, when, then }] }] }`) and pipe it on stdin to `node ${CLAUDE_SKILL_DIR}/../../scripts/issue-gate/plan-gate.mjs --title "<task title verbatim>"`. If ready is false, resolve the errors (empty units / empty test_command / dangling depends_on / cycle / empty fields) before proceeding to completion. Pass the task title literally, not paraphrased (the script normalizes it).
 
 ### Prose Review
 
