@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
-# T-017..T-033: the issue-gate PreToolUse gate, the two PostToolUse recorders (bash / skip), and the
-# audit-store protection guard. Each test drives real hook payloads (tests/fixtures/hook-payloads)
-# through the shipped scripts against a fresh per-test audit store (ISSUE_GATE_HOME).
+# T-017..T-033: the issue-gate PreToolUse gate and the two PostToolUse recorders (bash / skip).
+# Each test drives real hook payloads (tests/fixtures/hook-payloads) through the shipped scripts
+# against a fresh per-test audit store (ISSUE_GATE_HOME).
 
 setup() {
   DIR="$BATS_TEST_DIRNAME/.."
@@ -9,7 +9,6 @@ setup() {
   GATE="$DIR/gate-check.mjs"
   PRE="$DIR/pre-issue-create.sh"
   REC="$DIR/record.sh"
-  PROTECT="$DIR/protect-store.sh"
   export ISSUE_GATE_HOME="$BATS_TEST_TMPDIR/store"
   AUDIT="$ISSUE_GATE_HOME/audit.jsonl"
 }
@@ -116,18 +115,6 @@ seed_bundle() {
 
 @test "T-028 a non-gh Bash command fast-exits with no gate output" {
   run bash "$PRE" < "$FIX/pre-bash-nonmatching.json"
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
-}
-
-@test "T-029 protect-store denies an Edit/Write to the audit store" {
-  run bash "$PROTECT" <<< '{"tool_name":"Write","tool_input":{"file_path":"/h/state/issue-gate/audit.jsonl"}}'
-  [ "$status" -eq 0 ]
-  [[ "$output" == *'"permissionDecision":"deny"'* ]]
-}
-
-@test "T-030 protect-store ignores an unrelated file path" {
-  run bash "$PROTECT" <<< '{"tool_name":"Write","tool_input":{"file_path":"/h/src/main.rs"}}'
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }

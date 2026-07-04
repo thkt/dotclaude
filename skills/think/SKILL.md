@@ -5,6 +5,12 @@ when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, pl
 allowed-tools: Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(node:*)
 model: opus
 argument-hint: "[task description]"
+hooks:
+  PostToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "~/.claude/hooks/issue-gate/record.sh bash"
 ---
 
 # /think - Design Exploration

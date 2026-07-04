@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# PostToolUse recorder wrapper. Wired twice from settings.json with a kind arg:
-#   record.sh bash      (matcher Bash)
-#   record.sh skip      (matcher AskUserQuestion)
+# PostToolUse recorder wrapper. Wired from skill frontmatter hooks with a kind arg:
+#   record.sh bash      (challenge / think SKILL.md, matcher Bash)
+#   record.sh skip      (issue SKILL.md, matcher AskUserQuestion)
 # Best-effort: no node means no record. The gate, not the recorder, fails closed.
 input="$(cat)"
 command -v node >/dev/null 2>&1 || exit 0

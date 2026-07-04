@@ -5,6 +5,17 @@ when_to_use: Issue作って, Issue書いて, Issue作成, GitHub Issue, issueを
 allowed-tools: Bash(gh:*) Bash(cat:*) Bash(ugrep:*) Bash(test:*) Read Task Skill AskUserQuestion
 model: opus
 argument-hint: "[issue description]"
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "~/.claude/hooks/issue-gate/pre-issue-create.sh"
+  PostToolUse:
+    - matcher: "AskUserQuestion"
+      hooks:
+        - type: command
+          command: "~/.claude/hooks/issue-gate/record.sh skip"
 ---
 
 # /issue - GitHub Issue 生成
