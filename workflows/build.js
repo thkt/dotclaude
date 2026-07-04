@@ -67,7 +67,7 @@ const FETCH_SCHEMA = {
   },
 };
 
-// Equivalent to think.js's PLAN_SCHEMA + preconditions + backlog_candidates.
+// Schema of the structured plan (units + preconditions + backlog_candidates) carried in the issue's Plan section.
 // Extraction structures the plan written in the issue; it is not re-planning.
 const EXTRACT_SCHEMA = {
   type: "object",
@@ -249,7 +249,7 @@ const SHIP_SCHEMA = {
   },
 };
 
-// Port of think.js's validate() + non-empty content checks. Deterministically rejects
+// Re-validation of the structured plan + non-empty content checks. Deterministically rejects
 // structural defects (duplicate ids / dangling or cyclic depends_on / missing tests)
 // and empty content (test_command / contract / name / given / when / then).
 //

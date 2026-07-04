@@ -61,7 +61,7 @@ const FETCH_SCHEMA = {
   },
 };
 
-// think.js の PLAN_SCHEMA 相当 + preconditions + backlog_candidates。抽出は issue に
+// issue の Plan 節が持つ構造化 plan (units + preconditions + backlog_candidates) の schema。抽出は issue に
 // 書かれた plan の構造化であって再計画ではない。
 const EXTRACT_SCHEMA = {
   type: "object",
@@ -227,7 +227,7 @@ const SHIP_SCHEMA = {
   },
 };
 
-// think.js の validate() 移植 + content 非空検査。構造 (id 重複 / 宙吊り / 循環 / テスト
+// 構造化 plan の再検証 + content 非空検査。構造 (id 重複 / 宙吊り / 循環 / テスト
 // 欠落) と内容 (contract / name / given / when / then の空) を決定論で reject する。
 const validate = (plan) => {
   const errors = [];
