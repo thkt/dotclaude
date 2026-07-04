@@ -10,16 +10,16 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "~/.claude/hooks/issue-gate/pre-issue-create.sh"
+          command: "~/.claude/hooks/veto/pre-issue-create.sh"
   PostToolUse:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "~/.claude/hooks/issue-gate/record.sh bash"
+          command: "~/.claude/hooks/veto/record.sh bash"
     - matcher: "AskUserQuestion"
       hooks:
         - type: command
-          command: "~/.claude/hooks/issue-gate/record.sh skip"
+          command: "~/.claude/hooks/veto/record.sh skip"
 ---
 
 # /issue - GitHub Issue Generator
@@ -49,7 +49,7 @@ Read `language` from `${CLAUDE_SKILL_DIR}/../../settings.json` and translate the
 11. Generate the structured plan via the think skill (§ Think)
 12. Write the structured plan out into the body as a `## Plan` section, then run the round-trip fidelity check and the precondition existence check (§ Plan Write-Out)
 13. Preview issue + tentative items → AskUserQuestion: "Create this issue?"
-14. Write the body to a temp file, attach labels, run `gh issue create --title "<the step 5 title verbatim>" --body-file <path>`, and capture the issue URL from its output. Use for `--title` the exact same string passed to challenge / research / think (issue-gate binds the evidence bundle by this title, so any divergence denies the create) (§ Labels; sandbox-compatible, avoids escaping a long body)
+14. Write the body to a temp file, attach labels, run `gh issue create --title "<the step 5 title verbatim>" --body-file <path>`, and capture the issue URL from its output. Use for `--title` the exact same string passed to challenge / research / think (veto binds the evidence bundle by this title, so any divergence denies the create) (§ Labels; sandbox-compatible, avoids escaping a long body)
 15. If split was approved in step 6, hand the published issue to /slice (§ Split Assessment)
 
 ## Why Wall-Bouncing
@@ -79,7 +79,7 @@ Default to `feature` if unclear. The title takes a bracketed prefix of the capit
 
 ## Skip Branch
 
-docs / chore and minor bugs skip challenge / research / think / plan write-out (steps 9-12) and instead confirm the exemption with the user via an AskUserQuestion with the header `判定スキップ` (options are the detected type). This confirmation becomes the issue-gate skip record, letting a create through without the adversarial flow. A qualifying example of a minor bug is a typo fix. A non-qualifying example is an intermittent bug with the root cause unidentified; that case does not skip and runs steps 9-12 as usual. A skipped issue gets a footer note in the body, "minor; may be handled via /fix", keeping the /fix path visible. A bug qualifies as minor only when all three criteria below hold.
+docs / chore and minor bugs skip challenge / research / think / plan write-out (steps 9-12) and instead confirm the exemption with the user via an AskUserQuestion with the header `判定スキップ` (options are the detected type). This confirmation becomes the veto skip record, letting a create through without the adversarial flow. A qualifying example of a minor bug is a typo fix. A non-qualifying example is an intermittent bug with the root cause unidentified; that case does not skip and runs steps 9-12 as usual. A skipped issue gets a footer note in the body, "minor; may be handled via /fix", keeping the /fix path visible. A bug qualifies as minor only when all three criteria below hold.
 
 | Criterion     | Content                                   |
 | ------------- | ----------------------------------------- |
@@ -126,7 +126,7 @@ Sifts the claims already drafted into the body. Not a discovery phase. No agent 
 
 ## Adversarial Challenge
 
-Run `Skill("challenge", "<drafted title + body>")` only for feature or bug where the skip branch does not apply (skip when empty). Make the first line of the string the issue title so it flows through as the challenge verbatim title into critic spawns and verdict-gate (it becomes the issue-gate challenge evidence). Passing the same verification the build workflow uses (premise → 2 attacks → verdict + script gate) up front means a GO issue can be handed to build as-is. The returned verdict and findings never enter the issue body; collect them into the preview's challenge block.
+Run `Skill("challenge", "<drafted title + body>")` only for feature or bug where the skip branch does not apply (skip when empty). Make the first line of the string the issue title so it flows through as the challenge verbatim title into critic spawns and verdict-gate (it becomes the veto challenge evidence). Passing the same verification the build workflow uses (premise → 2 attacks → verdict + script gate) up front means a GO issue can be handed to build as-is. The returned verdict and findings never enter the issue body; collect them into the preview's challenge block.
 
 | Verdict | Handling                                                                                                                     |
 | ------- | ---------------------------------------------------------------------------------------------------------------------------- |
@@ -137,11 +137,11 @@ The NO-GO wall-bouncing loop. Using why and gate (when the script gate downgrade
 
 ## Research
 
-For feature / bug where the skip branch does not apply, run `Skill("research", "<issue title verbatim>\n\nIntent: <Feature planning for feature, Bug investigation for bug>. <research question derived from the issue body>")` and fold the key results into the body's evidence and think's input. Leading with the verbatim issue title and stating the intent satisfies the condition for research to spawn explorer-feature with the issue title in its prompt (that explorer record becomes the issue-gate research evidence). When stopped: unresearchable comes back, wall-bounce each missing item via AskUserQuestion with a hypothesis attached, fold the answers in, and re-run. This wall-bouncing runs at most 2 times. Items still unresolved at the cap stay in the body under a tentative mark, with their handling left to the user.
+For feature / bug where the skip branch does not apply, run `Skill("research", "<issue title verbatim>\n\nIntent: <Feature planning for feature, Bug investigation for bug>. <research question derived from the issue body>")` and fold the key results into the body's evidence and think's input. Leading with the verbatim issue title and stating the intent satisfies the condition for research to spawn explorer-feature with the issue title in its prompt (that explorer record becomes the veto research evidence). When stopped: unresearchable comes back, wall-bounce each missing item via AskUserQuestion with a hypothesis attached, fold the answers in, and re-run. This wall-bouncing runs at most 2 times. Items still unresolved at the cap stay in the body under a tentative mark, with their handling left to the user.
 
 ## Think
 
-Run `Skill("think", "<title + body>\n\nResearch: <research summary>")` with the research results attached, obtaining the structured plan. Make the first line the issue title so think's verbatim title flows into plan-gate (it becomes the issue-gate plan evidence). When ready=false comes back, settle each blocker via AskUserQuestion with a hypothesis attached and re-run. Settling ready=false runs at most 2 times. Items still not ready at the cap stay in the body under a tentative mark, with how to proceed left to the user.
+Run `Skill("think", "<title + body>\n\nResearch: <research summary>")` with the research results attached, obtaining the structured plan. Make the first line the issue title so think's verbatim title flows into plan-gate (it becomes the veto plan evidence). When ready=false comes back, settle each blocker via AskUserQuestion with a hypothesis attached and re-run. Settling ready=false runs at most 2 times. Items still not ready at the cap stay in the body under a tentative mark, with how to proceed left to the user.
 
 ## Plan Write-Out
 

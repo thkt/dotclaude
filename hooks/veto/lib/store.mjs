@@ -1,4 +1,4 @@
-// Shared audit-store access + gate evaluation for the issue-gate hooks.
+// Shared audit-store access + gate evaluation for the veto hooks.
 // The recorders append evidence records here; gate-check.mjs reads them back and
 // evaluate() decides whether a `gh issue create` may proceed. Title binding reuses the
 // canonical normalizeTitle so this gate and the skill-invoked verdict-gate / plan-gate can
@@ -33,7 +33,7 @@ export const extractTitle = (cmd) => {
 
 // True iff the command actually invokes `gh issue create` as contiguous command tokens at a
 // command boundary, not merely because the loose PreToolUse matcher caught the gh / issue / create
-// tokens scattered across an unrelated command (a file path under issue-gate/, a commit message
+// tokens scattered across an unrelated command (a file path under veto/, a commit message
 // quoting the phrase). A real invocation is always contiguous, so requiring contiguity here cannot
 // let a real create slip the gate; it only stops the loose matcher's false positives from being
 // denied. Not adversary-proof (a create hidden behind a variable evades it), matching this gate's
@@ -41,9 +41,9 @@ export const extractTitle = (cmd) => {
 export const isGhIssueCreate = (cmd) =>
   /(^|[\s;&|(])gh\s+issue\s+create(\s|$)/.test(String(cmd ?? ""));
 
-// Store location. ISSUE_GATE_HOME overrides the directory so tests can point at a temp dir.
+// Store location. VETO_HOME overrides the directory so tests can point at a temp dir.
 export const storeDir = () =>
-  process.env.ISSUE_GATE_HOME || join(homedir(), ".claude", "state", "issue-gate");
+  process.env.VETO_HOME || join(homedir(), ".claude", "state", "veto");
 export const auditPath = () => join(storeDir(), "audit.jsonl");
 
 // Append one record as a JSONL line, creating the store dir on first write.
@@ -85,7 +85,7 @@ export const evaluate = (records, ctx) => {
       decision: "allow",
       via: "agent_id",
       reasons: [],
-      systemMessage: `issue-gate: subagent-originated gh issue create exempted (agent_id=${agentId}); recorded to the audit log.`,
+      systemMessage: `veto: subagent-originated gh issue create exempted (agent_id=${agentId}); recorded to the audit log.`,
     };
   }
 

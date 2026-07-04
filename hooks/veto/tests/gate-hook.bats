@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
-# T-017..T-033: the issue-gate PreToolUse gate and the two PostToolUse recorders (bash / skip).
+# T-017..T-033: the veto PreToolUse gate and the two PostToolUse recorders (bash / skip).
 # Each test drives real hook payloads (tests/fixtures/hook-payloads) through the shipped scripts
-# against a fresh per-test audit store (ISSUE_GATE_HOME).
+# against a fresh per-test audit store (VETO_HOME).
 
 setup() {
   DIR="$BATS_TEST_DIRNAME/.."
@@ -9,8 +9,8 @@ setup() {
   GATE="$DIR/gate-check.mjs"
   PRE="$DIR/pre-issue-create.sh"
   REC="$DIR/record.sh"
-  export ISSUE_GATE_HOME="$BATS_TEST_TMPDIR/store"
-  AUDIT="$ISSUE_GATE_HOME/audit.jsonl"
+  export VETO_HOME="$BATS_TEST_TMPDIR/store"
+  AUDIT="$VETO_HOME/audit.jsonl"
 }
 
 # Seed one evidence record by replaying a fixture through a recorder.
@@ -128,10 +128,10 @@ seed_bundle() {
 }
 
 @test "T-033 a command that trips the loose matcher but is not a gh issue create passes through" {
-  # A cat over a fixture path carries the gh / issue / create tokens scattered (issue-gate/,
+  # A cat over a fixture path carries the gh / issue / create tokens scattered (veto/,
   # pre-gh-create), so the loose PreToolUse matcher forwards it. gate-check must allow it through,
   # not deny an unrelated command nor write a deny record.
-  printf '%s' '{"session_id":"SESSION-FIXTURE","tool_name":"Bash","tool_input":{"command":"cat hooks/issue-gate/tests/fixtures/pre-gh-create-main.json"}}' \
+  printf '%s' '{"session_id":"SESSION-FIXTURE","tool_name":"Bash","tool_input":{"command":"cat hooks/veto/tests/fixtures/pre-gh-create-main.json"}}' \
     > "$BATS_TEST_TMPDIR/fp.json"
   run node "$GATE" < "$BATS_TEST_TMPDIR/fp.json"
   [ "$status" -eq 0 ]
