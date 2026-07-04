@@ -2,7 +2,7 @@
 name: challenge
 description: 発見した問題が本物か、提案したアイデアが使えるかを 2 フェーズで判定する。Phase 1 は OUTCOME.md と subagent 検証と advisor 判断をループで回して証拠から分岐を自力解決し、残差は不可逆分岐だけ最小限聞き他は仮定明記で進める grill。Phase 2 は引き出した素材を critic-design 2 体 (内部攻撃 / OUTCOME.md 攻撃) に渡して devil's advocate spawn する。判定は GO / NO-GO を最上段に出す。コードレビュー findings には使わない (/audit を使用)。outcome assertion にも使わない (/assert に組み込み adversarial testing がある)。
 when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, grill me, 壁打ち
-allowed-tools: Read LS Task AskUserQuestion Bash(node:*)
+allowed-tools: Read LS Task AskUserQuestion Bash(python3:*)
 model: opus
 argument-hint: "[proposal file | description]"
 hooks:
@@ -10,7 +10,7 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "~/.claude/hooks/veto/record.sh bash"
+          command: "~/.claude/hooks/veto/veto.py record bash"
 ---
 
 # /challenge - 提案の GO / NO-GO 判定
@@ -58,7 +58,7 @@ Phase 1 で引き出した素材を critic-design 2 体 (内部攻撃 / OUTCOME.
 1. Phase 1 の集約と元の `$ARGUMENTS` コンテキストから Phase 2 入力を組み立てる
 2. critic-design を 2 体、Task で並列に起動する (subagent_type: critic-design、run_in_background: false)。一方は内部攻撃、もう一方は outcome_ref を渡して outcome 攻撃 (outcome を確定できなければスキップ)。ARCHITECTURE.md 等があれば言及する。各 critic-design の spawn prompt には challenge 対象の title を verbatim で含める (言い換えない)。各 critic-design には結果を `{ verdict: "GO" | "NO-GO", weaknesses: string[] }` の JSON 1 object で返すよう指示する
 3. 両者の完了を待ち、verdict と weaknesses を突き合わせて重複を除去する
-4. 突き合わせた総合 verdict と Phase 1 の残差 (best-guess で進めた仮定。可逆性で irreversible / underspecified を付与) を `{ verdict, assumptions: [{ text, irreversible, underspecified }] }` の VERDICT_SCHEMA 相当 JSON に集約し、`node ${CLAUDE_SKILL_DIR}/../../hooks/veto/verdict-gate.mjs --title "<challenge 対象の title を verbatim>"` に stdin で pipe する。title は challenge 対象の title を言い換えず literal で渡す (正規化は script が行う)。返った verdict を最終判定として採用し、手動で GO に上書きしない。gate は GO を不可逆仮定 / 仮定 7 超 / underspecified のいずれかで NO-GO へ一方向降格する
+4. 突き合わせた総合 verdict と Phase 1 の残差 (best-guess で進めた仮定。可逆性で irreversible / underspecified を付与) を `{ verdict, assumptions: [{ text, irreversible, underspecified }] }` の VERDICT_SCHEMA 相当 JSON に集約し、`python3 ${CLAUDE_SKILL_DIR}/../../hooks/veto/veto.py verdict-gate --title "<challenge 対象の title を verbatim>"` に stdin で pipe する。title は challenge 対象の title を言い換えず literal で渡す (正規化は script が行う)。返った verdict を最終判定として採用し、手動で GO に上書きしない。gate は GO を不可逆仮定 / 仮定 7 超 / underspecified のいずれかで NO-GO へ一方向降格する
 
 ## 出力
 

@@ -15,11 +15,11 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "~/.claude/hooks/veto/record.sh bash"
+          command: "~/.claude/hooks/veto/veto.py record bash"
     - matcher: "AskUserQuestion"
       hooks:
         - type: command
-          command: "~/.claude/hooks/veto/record.sh skip"
+          command: "~/.claude/hooks/veto/veto.py record skip"
 ---
 
 # /issue - GitHub Issue 生成
