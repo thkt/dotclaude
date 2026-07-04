@@ -4,7 +4,7 @@
 // that title (challenge GO + plan ready), or an unconsumed human skip record, or the call is
 // subagent-originated (agent_id exemption).
 // Any other case denies. Fail-closed: a parse failure or a missing title denies.
-import { readStdin } from "../../scripts/issue-gate/lib/normalize-title.mjs";
+import { readStdin } from "./lib/normalize-title.mjs";
 import {
   readRecords,
   evaluate,

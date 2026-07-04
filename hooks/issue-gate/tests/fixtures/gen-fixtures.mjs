@@ -27,7 +27,7 @@ write("bash-verdict-go.json", {
   ...base,
   hook_event_name: "PostToolUse",
   tool_name: "Bash",
-  tool_input: { command: `node scripts/issue-gate/verdict-gate.mjs --title "${TITLE}"` },
+  tool_input: { command: `node hooks/issue-gate/verdict-gate.mjs --title "${TITLE}"` },
   tool_response: {
     stdout: JSON.stringify({
       verdict: "GO",
@@ -47,7 +47,7 @@ write("bash-plan-ready.json", {
   ...base,
   hook_event_name: "PostToolUse",
   tool_name: "Bash",
-  tool_input: { command: `node scripts/issue-gate/plan-gate.mjs --title "${TITLE}"` },
+  tool_input: { command: `node hooks/issue-gate/plan-gate.mjs --title "${TITLE}"` },
   tool_response: {
     stdout: JSON.stringify({ ready: true, errors: [], normalized_title: TITLE }),
     stderr: "",

@@ -6,7 +6,7 @@
 import { appendFileSync, readFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import { normalizeTitle } from "../../../scripts/issue-gate/lib/normalize-title.mjs";
+import { normalizeTitle } from "./normalize-title.mjs";
 
 // Re-export so the gate and the recorder bind titles through the one canonical normalizer.
 export { normalizeTitle };
