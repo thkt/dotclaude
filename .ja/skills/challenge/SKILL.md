@@ -58,7 +58,7 @@ Phase 1 で引き出した素材を critic-design 2 体 (内部攻撃 / OUTCOME.
 1. Phase 1 の集約と元の `$ARGUMENTS` コンテキストから Phase 2 入力を組み立てる
 2. critic-design を 2 体、Task で並列に起動する (subagent_type: critic-design、run_in_background: false)。一方は内部攻撃、もう一方は outcome_ref を渡して outcome 攻撃 (outcome を確定できなければスキップ)。ARCHITECTURE.md 等があれば言及する。各 critic-design の spawn prompt には challenge 対象の title を verbatim で含める (言い換えない)。各 critic-design には結果を `{ verdict: "GO" | "NO-GO", weaknesses: string[] }` の JSON 1 object で返すよう指示する
 3. 両者の完了を待ち、verdict と weaknesses を突き合わせて重複を除去する
-4. 突き合わせた総合 verdict と Phase 1 の残差 (best-guess で進めた仮定。可逆性で irreversible / underspecified を付与) を `{ verdict, assumptions: [{ text, irreversible, underspecified }] }` の VERDICT_SCHEMA 相当 JSON に集約し、`node ${CLAUDE_SKILL_DIR}/../../scripts/issue-gate/verdict-gate.mjs --title "<challenge 対象の title を verbatim>"` に stdin で pipe する。title は challenge 対象の title を言い換えず literal で渡す (正規化は script が行う)。返った verdict を最終判定として採用し、手動で GO に上書きしない。gate は GO を不可逆仮定 / 仮定 7 超 / underspecified のいずれかで NO-GO へ一方向降格する
+4. 突き合わせた総合 verdict と Phase 1 の残差 (best-guess で進めた仮定。可逆性で irreversible / underspecified を付与) を `{ verdict, assumptions: [{ text, irreversible, underspecified }] }` の VERDICT_SCHEMA 相当 JSON に集約し、`node ${CLAUDE_SKILL_DIR}/../../hooks/issue-gate/verdict-gate.mjs --title "<challenge 対象の title を verbatim>"` に stdin で pipe する。title は challenge 対象の title を言い換えず literal で渡す (正規化は script が行う)。返った verdict を最終判定として採用し、手動で GO に上書きしない。gate は GO を不可逆仮定 / 仮定 7 超 / underspecified のいずれかで NO-GO へ一方向降格する
 
 ## 出力
 

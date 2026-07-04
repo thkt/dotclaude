@@ -1,6 +1,6 @@
 // Canonical plan-readiness validation. plan-gate.mjs is the standalone script wrapper;
 // workflows/build.js keeps a marker-wrapped hand-maintained copy of this logic (it cannot
-// import across the workflow runtime). scripts/issue-gate/tests/contract-build-port.test.mjs
+// import across the workflow runtime). hooks/issue-gate/tests/contract-build-port.test.mjs
 // extracts that copy and asserts it returns identical errors to this function on every shared
 // fixture, so the DRY debt has a single guard. Keep this body and the build.js copy in lockstep.
 //

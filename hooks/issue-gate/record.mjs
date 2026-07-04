@@ -3,7 +3,7 @@
 // wrappers. Reads the hook payload on stdin and appends the matching evidence record to the
 // audit store. Best-effort: a payload that does not match the expected shape is a silent no-op
 // (the gate, not the recorder, is the fail-closed decision point).
-import { readStdin } from "../../scripts/issue-gate/lib/normalize-title.mjs";
+import { readStdin } from "./lib/normalize-title.mjs";
 import { readRecords, append, consumptionFor, normalizeTitle, extractTitle } from "./lib/store.mjs";
 
 const now = () => new Date().toISOString();

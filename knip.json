@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "workflows/*.js",
+    ".ja/workflows/*.js",
+    "workflows/tests/**/*.test.js",
+    ".ja/workflows/tests/**/*.test.js",
+    "workflows/tests/index.js",
+    ".ja/workflows/tests/index.js"
+  ],
+  "project": ["workflows/**/*.js", ".ja/workflows/**/*.js"],
+  "ignoreDependencies": ["oxlint", "oxfmt"]
+}

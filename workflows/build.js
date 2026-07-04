@@ -253,10 +253,10 @@ const SHIP_SCHEMA = {
 // structural defects (duplicate ids / dangling or cyclic depends_on / missing tests)
 // and empty content (test_command / contract / name / given / when / then).
 //
-// DRY debt: this is a hand-maintained copy of scripts/issue-gate/lib/plan-validate.mjs
+// DRY debt: this is a hand-maintained copy of hooks/issue-gate/lib/plan-validate.mjs
 // (the canonical plan-gate, locked by plan-gate.bats T-011). The workflow runtime wraps
 // this file as an AsyncFunction body, so build.js cannot import that module. The copy is
-// kept in lockstep by scripts/issue-gate/tests/contract-build-port.test.mjs, which extracts
+// kept in lockstep by hooks/issue-gate/tests/contract-build-port.test.mjs, which extracts
 // the body between the two CONTRACT-TEST markers below, evals it, and asserts it returns
 // identical errors on every shared fixture. Editing this block without updating the canonical
 // (or vice versa) fails that test. Do not rename or remove the markers.
