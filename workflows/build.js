@@ -253,17 +253,22 @@ const SHIP_SCHEMA = {
 // structural defects (duplicate ids / dangling or cyclic depends_on / missing tests)
 // and empty content (test_command / contract / name / given / when / then).
 //
-// DRY debt: this is a hand-maintained copy of hooks/veto/lib/plan-validate.mjs
+// DRY debt: this is a hand-maintained copy of validate_plan in hooks/veto/veto.py
 // (the canonical plan-gate, locked by plan-gate.bats T-011). The workflow runtime wraps
-// this file as an AsyncFunction body, so build.js cannot import that module. The copy is
-// kept in lockstep by hooks/veto/tests/contract-build-port.test.mjs, which extracts
-// the body between the two CONTRACT-TEST markers below, evals it, and asserts it returns
-// identical errors on every shared fixture. Editing this block without updating the canonical
-// (or vice versa) fails that test. Do not rename or remove the markers.
+// this file as an AsyncFunction body, so build.js cannot import the canonical (and it is
+// Python). The copy is kept in lockstep by hooks/veto/tests/contract_build_port.py, which
+// extracts the body between the two CONTRACT-TEST markers below, runs it via node, and
+// asserts it returns identical errors on every shared fixture. Editing this block without
+// updating the canonical (or vice versa) fails that test. Do not rename or remove the markers.
 // CONTRACT-TEST-BEGIN validate
 const validate = (plan) => {
   const errors = [];
-  const units = Array.isArray(plan.units) ? plan.units : [];
+  // Non-object entries get a position-based placeholder id so they surface as
+  // "<id> has no ..." errors (collapsing them to one shared id would emit a
+  // spurious "duplicate unit ids").
+  const units = (Array.isArray(plan.units) ? plan.units : []).map((u, i) =>
+    u && typeof u === "object" && !Array.isArray(u) ? u : { id: `units[${i}]` },
+  );
   if (!units.length) errors.push("units is empty. Define at least one implementation unit");
   if (!String(plan.test_command || "").trim()) errors.push("test_command is empty");
 
@@ -271,8 +276,10 @@ const validate = (plan) => {
   if (ids.size !== units.length) errors.push("duplicate unit ids");
 
   const testIds = new Set();
-  for (const u of units) {
-    const tests = Array.isArray(u.tests) ? u.tests : [];
+  for (const [i, u] of units.entries()) {
+    const tests = (Array.isArray(u.tests) ? u.tests : []).map((t, j) =>
+      t && typeof t === "object" && !Array.isArray(t) ? t : { id: `units[${i}].tests[${j}]` },
+    );
     const files = Array.isArray(u.files) ? u.files : [];
     const dependsOn = Array.isArray(u.depends_on) ? u.depends_on : [];
     if (!tests.length) errors.push(`${u.id} has no test scenario`);

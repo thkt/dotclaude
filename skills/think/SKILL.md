@@ -2,7 +2,7 @@
 name: think
 description: Design exploration with an adversarial challenge by critic-design. Generates SOW and Spec from the surviving approaches. Do NOT use for codebase investigation without planning intent (use /research instead).
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
-allowed-tools: Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(node:*)
+allowed-tools: Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(python3:*)
 model: opus
 argument-hint: "[task description]"
 hooks:
@@ -10,7 +10,7 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "~/.claude/hooks/veto/record.sh bash"
+          command: "~/.claude/hooks/veto/veto.py record bash"
 ---
 
 # /think - Design Exploration
@@ -85,7 +85,7 @@ Generate ≥2 distinct approaches from the perspectives below. When approaches c
 
 ### Plan Check
 
-Serialize the Spec's Implementation table into the plan-gate PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], depends_on: string[], tests: [{ id, name, given, when, then }] }] }`) and pipe it on stdin to `node ${CLAUDE_SKILL_DIR}/../../hooks/veto/plan-gate.mjs --title "<task title verbatim>"`. If ready is false, resolve the errors (empty units / empty test_command / dangling depends_on / cycle / empty fields) before proceeding to completion. Pass the task title literally, not paraphrased (the script normalizes it).
+Serialize the Spec's Implementation table into the plan-gate PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], depends_on: string[], tests: [{ id, name, given, when, then }] }] }`) and pipe it on stdin to `python3 ${CLAUDE_SKILL_DIR}/../../hooks/veto/veto.py plan-gate --title "<task title verbatim>"`. If ready is false, resolve the errors (empty units / empty test_command / dangling depends_on / cycle / empty fields) before proceeding to completion. Pass the task title literally, not paraphrased (the script normalizes it).
 
 ### Prose Review
 
