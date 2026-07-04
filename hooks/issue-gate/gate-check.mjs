@@ -5,7 +5,14 @@
 // unconsumed human skip record, or the call is subagent-originated (agent_id exemption).
 // Any other case denies. Fail-closed: a parse failure or a missing title denies.
 import { readStdin } from "../../scripts/issue-gate/lib/normalize-title.mjs";
-import { readRecords, evaluate, append, normalizeTitle, extractTitle } from "./lib/store.mjs";
+import {
+  readRecords,
+  evaluate,
+  append,
+  normalizeTitle,
+  extractTitle,
+  isGhIssueCreate,
+} from "./lib/store.mjs";
 
 // Emit a PreToolUse deny and record it, then exit 0 (the deny travels in the JSON, not the code).
 const deny = (payload, title, reason) => {
@@ -39,6 +46,13 @@ try {
 }
 
 const command = payload?.tool_input?.command ?? "";
+
+// The PreToolUse matcher is deliberately loose (it forwards any command whose payload carries the
+// gh / issue / create tokens) so a real create can never fast-exit past the gate. Precise detection
+// lives here: if this is not actually a gh issue create invocation, the loose matcher caught it by
+// accident, so allow it through untouched rather than denying an unrelated command.
+if (!isGhIssueCreate(command)) process.exit(0);
+
 const rawTitle = extractTitle(command);
 const nt = normalizeTitle(rawTitle);
 

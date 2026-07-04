@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # PreToolUse gate on `gh issue create`. Fast-exit for anything else. Fail-closed: deny when node
 # is unavailable or gate-check errors. Otherwise gate-check.mjs owns the allow / deny decision.
+#
+# The case matcher is intentionally loose: it forwards any Bash payload carrying the gh / issue /
+# create tokens, even scattered (file paths, a commit message quoting the phrase). Do NOT tighten
+# it to a contiguous phrase to cut false positives -- a real create that the tightened glob missed
+# would fast-exit past the gate (a bypass, worse than a false positive). Precise create detection
+# lives in gate-check.mjs (isGhIssueCreate), which passes a non-create through instead of denying.
 input="$(cat)"
 case "$input" in
   *'"tool_name":"Bash"'*gh*issue*create*) ;;

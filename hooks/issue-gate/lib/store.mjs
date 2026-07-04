@@ -31,6 +31,16 @@ export const extractTitle = (cmd) => {
   return "";
 };
 
+// True iff the command actually invokes `gh issue create` as contiguous command tokens at a
+// command boundary, not merely because the loose PreToolUse matcher caught the gh / issue / create
+// tokens scattered across an unrelated command (a file path under issue-gate/, a commit message
+// quoting the phrase). A real invocation is always contiguous, so requiring contiguity here cannot
+// let a real create slip the gate; it only stops the loose matcher's false positives from being
+// denied. Not adversary-proof (a create hidden behind a variable evades it), matching this gate's
+// discipline-not-security threat model already visible in the agent_id / skip exemptions.
+export const isGhIssueCreate = (cmd) =>
+  /(^|[\s;&|(])gh\s+issue\s+create(\s|$)/.test(String(cmd ?? ""));
+
 // Store location. ISSUE_GATE_HOME overrides the directory so tests can point at a temp dir.
 export const storeDir = () =>
   process.env.ISSUE_GATE_HOME || join(homedir(), ".claude", "state", "issue-gate");
@@ -108,7 +118,8 @@ export const evaluate = (records, ctx) => {
   );
 
   const bundleComplete = critics >= 2 && explorers >= 1 && verdictGo && planReady;
-  if (bundleComplete && consumedBundle === 0) return { decision: "allow", via: "bundle", reasons: [] };
+  if (bundleComplete && consumedBundle === 0)
+    return { decision: "allow", via: "bundle", reasons: [] };
 
   // Deliberate human gate-exemption for docs / chore / minor-bug (recorded via the fixed-header
   // AskUserQuestion). Session-scoped and single-use: N skips allow N creates.

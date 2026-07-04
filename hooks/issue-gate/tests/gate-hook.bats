@@ -154,3 +154,15 @@ seed_bundle() {
   [ "$status" -eq 0 ]
   [[ "$output" == *'cannot bind evidence'* ]]
 }
+
+@test "T-033 a command that trips the loose matcher but is not a gh issue create passes through" {
+  # A cat over a fixture path carries the gh / issue / create tokens scattered (issue-gate/,
+  # pre-gh-create), so the loose PreToolUse matcher forwards it. gate-check must allow it through,
+  # not deny an unrelated command nor write a deny record.
+  printf '%s' '{"session_id":"SESSION-FIXTURE","tool_name":"Bash","tool_input":{"command":"cat hooks/issue-gate/tests/fixtures/pre-gh-create-main.json"}}' \
+    > "$BATS_TEST_TMPDIR/fp.json"
+  run node "$GATE" < "$BATS_TEST_TMPDIR/fp.json"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]                                 # allow: no deny travels
+  [ ! -f "$AUDIT" ]                                # and nothing recorded
+}
