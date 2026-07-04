@@ -13,7 +13,7 @@ case "$input" in
   *) exit 0 ;;
 esac
 
-DENY_NODE='{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"issue-gate: node unavailable or gate errored, cannot verify evidence (fail-closed)"}}'
+DENY_NODE='{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"veto: node unavailable or gate errored, cannot verify evidence (fail-closed)"}}'
 command -v node >/dev/null 2>&1 || { printf '%s\n' "$DENY_NODE"; exit 0; }
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

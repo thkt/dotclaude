@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# T-013..T-016: conformance of the challenge / think / research skills to the issue-gate
+# T-013..T-016: conformance of the challenge / think / research skills to the veto
 # contract. Greps the SKILL.md files (JA canonical + EN mirror) for the required wiring so a
 # future edit that drops the gate call, the node permission, the foreground spawn, or the JSON
 # output contract fails here.

@@ -28,7 +28,7 @@ const deny = (payload, title, reason) => {
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
         permissionDecision: "deny",
-        permissionDecisionReason: `issue-gate: ${reason}`,
+        permissionDecisionReason: `veto: ${reason}`,
       },
     })}\n`,
   );

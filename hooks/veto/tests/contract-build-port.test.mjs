@@ -1,5 +1,5 @@
 // T-033..T-035: contract test locking workflows/build.js's marker-wrapped validate copy to
-// the canonical hooks/issue-gate/lib/plan-validate.mjs. build.js cannot import the canonical
+// the canonical hooks/veto/lib/plan-validate.mjs. build.js cannot import the canonical
 // (its body is wrapped as a workflow AsyncFunction), so the two are kept in lockstep here:
 // the build.js copy is extracted between CONTRACT-TEST markers, imported as a module, and
 // asserted to return identical errors to the canonical on every shared plans fixture.
@@ -7,7 +7,7 @@
 // Extraction writes the marker-delimited body to a temp .mjs and dynamic-imports it (no eval /
 // Function constructor, which the guardrails hook blocks).
 //
-// Run: node --test hooks/issue-gate/tests/contract-build-port.test.mjs
+// Run: node --test hooks/veto/tests/contract-build-port.test.mjs
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
