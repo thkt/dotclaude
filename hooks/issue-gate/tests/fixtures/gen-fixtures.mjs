@@ -20,46 +20,7 @@ const base = {
 // Emit compact single-line JSON to mirror the on-the-wire hook payload. The PreToolUse gate
 // wrapper matches `"tool_name":"Bash"` with no whitespace, exactly as Claude Code delivers it;
 // pretty-printing here would insert a `": "` space and diverge from production.
-const write = (name, obj) =>
-  writeFileSync(join(outdir, name), `${JSON.stringify(obj)}\n`, "utf8");
-
-// -- Agent PostToolUse: a completed critic-design subagent carrying the verbatim title ----------
-write("agent-critic.json", {
-  ...base,
-  hook_event_name: "PostToolUse",
-  tool_name: "Agent",
-  tool_input: {
-    description: "Adversarial design challenge",
-    prompt: `Challenge this proposal. Title (verbatim): ${TITLE}\nReturn a single JSON object {verdict, weaknesses}.`,
-    subagent_type: "critic-design",
-    run_in_background: false,
-  },
-  tool_response: {
-    status: "completed",
-    agentType: "critic-design",
-    content: [{ type: "text", text: '{"verdict":"GO","weaknesses":["consume timing"]}' }],
-  },
-  duration_ms: 5210,
-});
-
-// -- Agent PostToolUse: a completed explorer-feature subagent (research spawn) -------------------
-write("agent-explorer.json", {
-  ...base,
-  hook_event_name: "PostToolUse",
-  tool_name: "Agent",
-  tool_input: {
-    description: "Trace execution paths",
-    prompt: `Map the architecture for the issue titled (verbatim): ${TITLE}\nReturn {findings:[...]}.`,
-    subagent_type: "explorer-feature",
-    run_in_background: false,
-  },
-  tool_response: {
-    status: "completed",
-    agentType: "explorer-feature",
-    content: [{ type: "text", text: '{"findings":[{"statement":"hook chain tail","source":"settings.json"}]}' }],
-  },
-  duration_ms: 8800,
-});
+const write = (name, obj) => writeFileSync(join(outdir, name), `${JSON.stringify(obj)}\n`, "utf8");
 
 // -- Bash PostToolUse: a verdict-gate run returning GO for the title ----------------------------
 write("bash-verdict-go.json", {
@@ -144,7 +105,8 @@ write("pre-bash-nonmatching.json", {
 });
 
 // -- AskUserQuestion PostToolUse: the fixed skip header, kind = docs ----------------------------
-const skipQ = "この issue は docs / chore / minor-bug のため challenge / research / think を免除しますか?";
+const skipQ =
+  "この issue は docs / chore / minor-bug のため challenge / research / think を免除しますか?";
 write("askuserquestion-skip.json", {
   ...base,
   hook_event_name: "PostToolUse",
@@ -163,7 +125,11 @@ write("askuserquestion-skip.json", {
       },
     ],
   },
-  tool_response: { questions: [{ question: skipQ }], answers: { [skipQ]: "docs" }, annotations: {} },
+  tool_response: {
+    questions: [{ question: skipQ }],
+    answers: { [skipQ]: "docs" },
+    annotations: {},
+  },
 });
 
 // -- AskUserQuestion PostToolUse: a different header (must NOT be recorded as a skip) -----------
@@ -173,9 +139,20 @@ write("askuserquestion-nonskip.json", {
   hook_event_name: "PostToolUse",
   tool_name: "AskUserQuestion",
   tool_input: {
-    questions: [{ question: otherQ, header: "作成確認", options: [{ label: "はい", description: "作成" }], multiSelect: false }],
+    questions: [
+      {
+        question: otherQ,
+        header: "作成確認",
+        options: [{ label: "はい", description: "作成" }],
+        multiSelect: false,
+      },
+    ],
   },
-  tool_response: { questions: [{ question: otherQ }], answers: { [otherQ]: "はい" }, annotations: {} },
+  tool_response: {
+    questions: [{ question: otherQ }],
+    answers: { [otherQ]: "はい" },
+    annotations: {},
+  },
 });
 
-console.log("wrote fixtures to", outdir);
+process.stdout.write(`wrote fixtures to ${outdir}\n`);

@@ -4,13 +4,7 @@
 // audit store. Best-effort: a payload that does not match the expected shape is a silent no-op
 // (the gate, not the recorder, is the fail-closed decision point).
 import { readStdin } from "../../scripts/issue-gate/lib/normalize-title.mjs";
-import {
-  readRecords,
-  append,
-  consumptionFor,
-  normalizeTitle,
-  extractTitle,
-} from "./lib/store.mjs";
+import { readRecords, append, consumptionFor, normalizeTitle, extractTitle } from "./lib/store.mjs";
 
 const now = () => new Date().toISOString();
 
@@ -23,28 +17,6 @@ try {
 }
 const kind = process.argv[2];
 const sessionId = p?.session_id ?? null;
-
-// PostToolUse Agent: record a completed critic / explorer subagent so the gate can confirm the
-// adversarial challenge and research spawns ran for this title. The verbatim title lives in the
-// spawn prompt (a convention the challenge / research / think skills enforce).
-if (kind === "subagent") {
-  const type = p?.tool_input?.subagent_type ?? "";
-  if (!/critic|explorer/.test(type)) process.exit(0);
-  const resp = p?.tool_response ?? {};
-  const text = Array.isArray(resp.content)
-    ? resp.content.map((c) => c?.text ?? "").join("")
-    : "";
-  append({
-    kind: "subagent",
-    ts: now(),
-    session_id: sessionId,
-    subagent_type: type,
-    prompt: p?.tool_input?.prompt ?? "",
-    status: resp.status ?? "",
-    result_len: text.length,
-  });
-  process.exit(0);
-}
 
 // PostToolUse Bash: three observations from one matcher.
 if (kind === "bash") {

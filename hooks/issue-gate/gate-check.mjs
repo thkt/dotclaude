@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // PreToolUse gate on `gh issue create`. Reads the hook payload on stdin, extracts the issue
 // title, and allows the create only when the audit store holds a complete evidence bundle for
-// that title (challenge GO + plan ready + research explorer + 2 adversarial critics), or an
-// unconsumed human skip record, or the call is subagent-originated (agent_id exemption).
+// that title (challenge GO + plan ready), or an unconsumed human skip record, or the call is
+// subagent-originated (agent_id exemption).
 // Any other case denies. Fail-closed: a parse failure or a missing title denies.
 import { readStdin } from "../../scripts/issue-gate/lib/normalize-title.mjs";
 import {

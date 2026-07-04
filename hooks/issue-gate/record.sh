@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# PostToolUse recorder wrapper. Wired three times from settings.json with a kind arg:
-#   record.sh subagent  (matcher Agent)
+# PostToolUse recorder wrapper. Wired twice from settings.json with a kind arg:
 #   record.sh bash      (matcher Bash)
 #   record.sh skip      (matcher AskUserQuestion)
 # Best-effort: no node means no record. The gate, not the recorder, fails closed.
