@@ -12,6 +12,10 @@ hooks:
         - type: command
           command: "~/.claude/hooks/issue-gate/pre-issue-create.sh"
   PostToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "~/.claude/hooks/issue-gate/record.sh bash"
     - matcher: "AskUserQuestion"
       hooks:
         - type: command
