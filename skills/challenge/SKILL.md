@@ -13,7 +13,7 @@ Judge in two phases whether a discovered problem is real and a proposed idea usa
 
 ## Input
 
-`$ARGUMENTS` may contain the challenge target (a proposal file path or description). If empty, stop and ask the user to specify the target, since silent inference from the conversation has high misfire risk. If non-empty, treat it as the challenge target.
+`$ARGUMENTS` may contain the challenge target (a proposal file path or description). If empty, stop and ask the user to specify the target, since silent inference from the conversation has high misfire risk. If non-empty, treat it as the challenge target. When `$ARGUMENTS` is a multi-line description, its first line is the challenge target title; pass that first line verbatim, unparaphrased, wherever a verbatim title is required (the critic-design spawn prompts and verdict-gate `--title`).
 
 ## Phase 1 Grill
 
@@ -50,7 +50,7 @@ Land the Phase 1 material on two critic-design (internal attack / OUTCOME.md att
 | critic-design (outcome)  | Attack whether it reaches the outcome (outcome fit / non-goal / constraint breach) |
 
 1. Compose the Phase 2 input from the Phase 1 aggregation and the original $ARGUMENTS context
-2. Spawn two critic-design via Task in parallel (subagent_type: critic-design, run_in_background: false). One handles the internal attack, the other takes outcome_ref for the outcome attack (skip when no outcome is available). Mention ARCHITECTURE.md if present. Instruct each critic-design to return its result as a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[] }`
+2. Spawn two critic-design via Task in parallel (subagent_type: critic-design, run_in_background: false). One handles the internal attack, the other takes outcome_ref for the outcome attack (skip when no outcome is available). Mention ARCHITECTURE.md if present. Include the challenge target title verbatim in each critic-design spawn prompt (do not paraphrase). Instruct each critic-design to return its result as a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[] }`
 3. Wait for both, reconcile verdicts and weaknesses, and dedupe overlap
 4. Aggregate the reconciled overall verdict and the Phase 1 residuals (best-guess assumptions, flagged irreversible / underspecified by reversibility) into a VERDICT_SCHEMA-equivalent JSON `{ verdict, assumptions: [{ text, irreversible, underspecified }] }` and pipe it on stdin to `node scripts/issue-gate/verdict-gate.mjs --title "<challenge target title verbatim>"`. Pass the challenge target title literally, not paraphrased (the script normalizes it). Take the returned verdict as the final judgment and do not hand-override it to GO. The gate downgrades a GO to NO-GO one-way on any irreversible assumption / more than 7 assumptions / underspecified
 

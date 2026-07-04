@@ -41,7 +41,7 @@ argument-hint: "[research subject or question]"
 
 ## Phase 4: ドメインスコープ並列調査
 
-Explore / ugrep / bfs / Read を並列起動する。意図が Feature planning なら `Task(subagent_type: explorer-feature、run_in_background: false)` も加え、実行経路からアーキテクチャを把握する。spawn prompt には調査対象の title を verbatim で含める。explorer-feature には結果を `{ findings: [{ statement: string, source: string }] }` の JSON 1 object で返すよう指示する。空が返ったらキーワードを広げて再実行する。発見事項にはその場でソースを書く (事実 `file:line`、推論 `inferred from X`、未検証 `unknown, requires X`)。各コマンドと生出力も scratch にそのまま追記する。これが監査証跡で、Phase 7 の Disconfirmation はここから直接引用し再構築しない。
+Explore / ugrep / bfs / Read を並列起動する。意図が Feature planning または Bug investigation なら `Task(subagent_type: explorer-feature、run_in_background: false)` も加え、実行経路からアーキテクチャを把握する (Feature planning は将来経路、Bug investigation は該当バグの実行経路を追う)。spawn prompt には調査対象の title を verbatim で含める。explorer-feature には結果を `{ findings: [{ statement: string, source: string }] }` の JSON 1 object で返すよう指示する。空が返ったらキーワードを広げて再実行する。発見事項にはその場でソースを書く (事実 `file:line`、推論 `inferred from X`、未検証 `unknown, requires X`)。各コマンドと生出力も scratch にそのまま追記する。これが監査証跡で、Phase 7 の Disconfirmation はここから直接引用し再構築しない。
 
 `.codegraph/` index があるとき、`codegraph sync` で index を更新してから、構造質問 (誰が呼ぶ、何が壊れる、どのテストに波及する) を `codegraph` で先に解決する。呼び出し元は `codegraph callers <symbol>`、影響範囲と波及テストは `codegraph impact <symbol>` で読み、出力を finding のソースに引用する。同じ質問を ugrep / grep で symbol 名検索した結果はソースに認めない。
 

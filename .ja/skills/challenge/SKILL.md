@@ -13,7 +13,7 @@ argument-hint: "[proposal file | description]"
 
 ## 入力
 
-`$ARGUMENTS` には challenge 対象 (proposal のファイルパスまたは記述) を渡せる。空の場合、会話からの暗黙的な推論は誤判定のリスクが高いため、停止して対象の指定をユーザーに求める。非空なら、その内容を challenge 対象として扱う。
+`$ARGUMENTS` には challenge 対象 (proposal のファイルパスまたは記述) を渡せる。空の場合、会話からの暗黙的な推論は誤判定のリスクが高いため、停止して対象の指定をユーザーに求める。非空なら、その内容を challenge 対象として扱う。$ARGUMENTS が複数行の記述のとき、その先頭行が challenge 対象の title。verbatim title が要る箇所 (critic-design の spawn prompt と verdict-gate の `--title`) には、この先頭行をそのまま言い換えずに渡す。
 
 ## Phase 1: Grill
 
@@ -50,7 +50,7 @@ Phase 1 で引き出した素材を critic-design 2 体 (内部攻撃 / OUTCOME.
 | critic-design (outcome) | outcome に届くかを攻撃する (適合 / non-goal / constraint 侵害) |
 
 1. Phase 1 の集約と元の `$ARGUMENTS` コンテキストから Phase 2 入力を組み立てる
-2. critic-design を 2 体、Task で並列に起動する (subagent_type: critic-design、run_in_background: false)。一方は内部攻撃、もう一方は outcome_ref を渡して outcome 攻撃 (outcome を確定できなければスキップ)。ARCHITECTURE.md 等があれば言及する。各 critic-design には結果を `{ verdict: "GO" | "NO-GO", weaknesses: string[] }` の JSON 1 object で返すよう指示する
+2. critic-design を 2 体、Task で並列に起動する (subagent_type: critic-design、run_in_background: false)。一方は内部攻撃、もう一方は outcome_ref を渡して outcome 攻撃 (outcome を確定できなければスキップ)。ARCHITECTURE.md 等があれば言及する。各 critic-design の spawn prompt には challenge 対象の title を verbatim で含める (言い換えない)。各 critic-design には結果を `{ verdict: "GO" | "NO-GO", weaknesses: string[] }` の JSON 1 object で返すよう指示する
 3. 両者の完了を待ち、verdict と weaknesses を突き合わせて重複を除去する
 4. 突き合わせた総合 verdict と Phase 1 の残差 (best-guess で進めた仮定。可逆性で irreversible / underspecified を付与) を `{ verdict, assumptions: [{ text, irreversible, underspecified }] }` の VERDICT_SCHEMA 相当 JSON に集約し、`node scripts/issue-gate/verdict-gate.mjs --title "<challenge 対象の title を verbatim>"` に stdin で pipe する。title は challenge 対象の title を言い換えず literal で渡す (正規化は script が行う)。返った verdict を最終判定として採用し、手動で GO に上書きしない。gate は GO を不可逆仮定 / 仮定 7 超 / underspecified のいずれかで NO-GO へ一方向降格する
 
