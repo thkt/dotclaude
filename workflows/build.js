@@ -288,9 +288,11 @@ const validate = (plan) => {
 // ---- Load: verbatim fetch -> Plan heading check -> deterministic id collection -> extract -> validate + cross-check ----
 const fetched = await agent(
   anchor(
-    `Fetch the body of GitHub issue ${issueRef}. Use the gh CLI (e.g. gh issue view ${issueRef} --json body) and return the body verbatim with no summarizing, reformatting, or omission. If the issue is not found or the fetch fails, return found: false.`,
+    `Fetch the body of GitHub issue ${issueRef} with a fixed command — do not summarize or reformat. ` +
+      `Run exactly \`gh issue view ${issueRef} --json body --jq .body\` and return its stdout verbatim as body ` +
+      `(the --jq extraction is verbatim by construction; do not edit it). If the command exits non-zero (issue not found / fetch failed), return found: false.`,
   ),
-  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA },
+  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA, model: "haiku" },
 );
 if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
   return {
@@ -509,17 +511,31 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
+// The PR body is a fail-closed relay of structured facts the script already holds
+// (assumptions / backlog candidates / unresolved findings / not-re-audited warning /
+// verify result). Its assembly is delegated to the deterministic renderer
+// workflows/build/pr-body.py so a section is never silently dropped or softened; the
+// agent only writes the commit message (a diff summary — genuinely its job), runs
+// git, pipes this payload into the renderer, and opens the PR with the body file.
 phase("Ship");
+const shipPayload = {
+  issue: issueNumber,
+  assumptions: plan.assumptions || [],
+  backlog_candidates: backlogCandidates,
+  residual_blocking: residualBlocking,
+  reaudited,
+  code_anomalies: code.anomalies || [],
+  tests_pass: code.tests_pass,
+  gates_pass: code.gates_pass,
+  verify_output: code.tests_pass && code.gates_pass ? "" : code.verify_output || "",
+};
 const ship = await agent(
   anchor(
-    `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit. ` +
-      `Push the branch and open a draft pull request via the gh CLI.\n` +
-      `The PR body must include all of the following. (1) The closing reference to the originating issue: "Closes #${issueNumber}". ` +
-      `(2) Assumptions recorded in the plan (the user's veto targets): ${JSON.stringify(plan.assumptions)}. ` +
-      `(3) Out-of-scope backlog candidates for the user to file as issues via the /issue skill (the build intentionally does not file them; list them under a clear heading so the user can triage and run /issue on the ones worth filing): ${JSON.stringify(backlogCandidates)}. ` +
-      `(4) Unresolved critical/high findings: ${JSON.stringify(residualBlocking)}${reaudited ? "" : " (state clearly that the final fix round has not been re-audited)"}. ` +
-      `(5) code's Red-unconfirmed anomalies: ${JSON.stringify(code.anomalies || [])}. ` +
-      `(6) code's independent verify result (tests=${code.tests_pass} gates=${code.gates_pass})${code.tests_pass && code.gates_pass ? "" : `; failure detail: ${JSON.stringify(code.verify_output)}`}.\n` +
+    `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit — you write the commit message (summarize the diff). ` +
+      `Push the branch, then open a draft pull request whose body is generated deterministically (do not hand-write the PR body):\n` +
+      `(1) write this exact JSON to a temp file:\n${JSON.stringify(shipPayload)}\n` +
+      `(2) from the repository root run \`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> > <bodyfile>\`;\n` +
+      `(3) run \`gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),
   { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },

@@ -264,9 +264,11 @@ const validate = (plan) => {
 // ---- Load: verbatim fetch -> Plan 見出し検査 -> 決定論 id 収集 -> extract -> validate + cross-check ----
 const fetched = await agent(
   anchor(
-    `GitHub issue ${issueRef} の本文を取得する。gh CLI (例: gh issue view ${issueRef} --json body) を使い、body は要約・整形・省略を一切せず verbatim で返す。issue が見つからない・取得に失敗した場合は found: false を返す。`,
+    `GitHub issue ${issueRef} の本文を固定コマンドで取得する。要約・整形をしない。` +
+      `\`gh issue view ${issueRef} --json body --jq .body\` をそのまま実行し、その stdout を body として verbatim で返す` +
+      `(--jq 抽出は構造上 verbatim。編集しない)。コマンドが非 0 で終了した (issue が見つからない・取得失敗) 場合は found: false を返す。`,
   ),
-  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA },
+  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA, model: "haiku" },
 );
 if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
   return {
@@ -477,17 +479,30 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (外向きの操作なので draft = 可逆) ----
+// PR body は script が既に持つ構造化事実 (assumption / backlog 候補 / 未解決 finding /
+// 未 re-audit 警告 / verify 結果) の fail-closed な転記。組み立ては決定論 renderer
+// workflows/build/pr-body.py に委ね、セクションの欠落や和らげを起こさせない。agent は
+// commit メッセージ (diff 要約。本来 agent の仕事) を書き、git を実行し、この payload を
+// renderer にパイプして body file で PR を開くだけ。
 phase("Ship");
+const shipPayload = {
+  issue: issueNumber,
+  assumptions: plan.assumptions || [],
+  backlog_candidates: backlogCandidates,
+  residual_blocking: residualBlocking,
+  reaudited,
+  code_anomalies: code.anomalies || [],
+  tests_pass: code.tests_pass,
+  gates_pass: code.gates_pass,
+  verify_output: code.tests_pass && code.gates_pass ? "" : code.verify_output || "",
+};
 const ship = await agent(
   anchor(
-    `全変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にする。` +
-      `branch を push し、gh CLI で draft の pull request を開く。\n` +
-      `PR body には次を全て載せる。(1) 元 issue を閉じる参照 "Closes #${issueNumber}"。` +
-      `(2) plan に記録された assumption (ユーザーの拒否対象): ${JSON.stringify(plan.assumptions)}。` +
-      `(3) ユーザーが /issue skill で起票するための scope 外 backlog 候補 (build は意図的に起票しない。ユーザーが triage して起票に値するものに /issue を回せるよう、明確な見出しの下に列挙する): ${JSON.stringify(backlogCandidates)}。` +
-      `(4) 未解決の critical/high findings: ${JSON.stringify(residualBlocking)}${reaudited ? "" : " (最終 fix round は re-audit されていない旨を明記する)"}。` +
-      `(5) code の Red 未確認 anomaly: ${JSON.stringify(code.anomalies || [])}。` +
-      `(6) code の独立 verify 結果 (tests=${code.tests_pass} gates=${code.gates_pass})${code.tests_pass && code.gates_pass ? "" : `。fail の詳細: ${JSON.stringify(code.verify_output)}`}。\n` +
+    `全変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にする。commit メッセージは自分で書く (diff を要約する)。` +
+      `branch を push し、body を決定論生成した draft pull request を開く (PR body を手書きしない):\n` +
+      `(1) この JSON をそのまま temp file に書き出す:\n${JSON.stringify(shipPayload)}\n` +
+      `(2) repository root から \`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> > <bodyfile>\` を実行する。\n` +
+      `(3) \`gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +
       `committed 状態と PR url を報告する。${guard}`,
   ),
   { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
