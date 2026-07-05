@@ -77,6 +77,10 @@ dump.sql
 .playwright-cli/
 mcp-needs-auth-cache.json
 
+# Python
+__pycache__/
+*.pyc
+
 # Cache
 cache/
 stats-cache.json

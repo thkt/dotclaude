@@ -358,22 +358,31 @@ log(
   `Plan extracted: ${plan.units.length} unit(s), ${planTestIds.size} test scenario(s), id cross-check pass.`,
 );
 
-// ---- Revalidate: re-verify preconditions against the current codebase (evidence + script gate) ----
+// ---- Revalidate: re-verify preconditions against the current codebase (deterministic script gate) ----
 // Catches, fail-closed, the possibility that the presupposed code moved between issue
-// filing and build launch. Misses are decided by the script's filter, not by the
-// agent's self-report.
+// filing and build launch. The exists/matches verdict is produced by the deterministic
+// verifier workflows/build/revalidate.py, not by LLM judgment: the check (test -f + literal
+// grep) needs no reasoning, only shell access the workflow runtime lacks, so the agent is a
+// pure launcher that pipes the preconditions in and echoes the verifier's stdout back. The
+// drift decision then stays in the script's filter below.
 phase("Revalidate");
 const preconditions = plan.preconditions || [];
 if (preconditions.length) {
   const reval = await agent(
     anchor(
-      `Re-verify the plan's preconditions against the current codebase. For each {path, pattern}, actually run commands to check the path's existence (exists) and the pattern's grep match (matches; with no pattern, same as exists), and return all ${preconditions.length} in results. Do not be lenient.\n${JSON.stringify(preconditions)}`,
+      `Re-verify the plan's preconditions with the deterministic verifier — do not judge exists/matches yourself. ` +
+        `Steps: (1) write this exact JSON to a temp file; (2) from the repository root run ` +
+        `\`python3 "$HOME/.claude/workflows/build/revalidate.py" < <tempfile>\`; ` +
+        `(3) return the verifier's stdout "results" array verbatim (all ${preconditions.length} entries, unchanged — do not add, drop, or edit any). ` +
+        `The verifier prints {"results":[{path,pattern,exists,matches}]}.\n` +
+        `Preconditions JSON:\n${JSON.stringify(preconditions)}`,
     ),
     {
       label: "revalidate",
       phase: "Revalidate",
       agentType: "general-purpose",
       schema: REVALIDATE_SCHEMA,
+      model: "haiku",
     },
   );
   if (!reval || !Array.isArray(reval.results) || reval.results.length !== preconditions.length) {

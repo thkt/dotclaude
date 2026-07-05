@@ -329,21 +329,30 @@ log(
   `plan 抽出: unit ${plan.units.length} 件、test scenario ${planTestIds.size} 件、id cross-check pass。`,
 );
 
-// ---- Revalidate: preconditions を現在の codebase に対して再検証 (evidence + script gate) ----
+// ---- Revalidate: preconditions を現在の codebase に対して再検証 (決定論 script gate) ----
 // issue 起票から build 起動までの間に前提コードが動いた可能性を fail-close で捕まえる。
-// miss の判定は agent の自己申告でなく script の filter が行う。
+// exists/matches の判定は LLM でなく決定論 verifier workflows/build/revalidate.py が下す:
+// チェック (test -f + literal grep) は推論不要で、workflow runtime に無い shell アクセスだけを
+// 要するので、agent は preconditions を流し込んで verifier の stdout をそのまま返すだけの
+// 起動役にする。drift 判定は下の script の filter が持つ。
 phase("Revalidate");
 const preconditions = plan.preconditions || [];
 if (preconditions.length) {
   const reval = await agent(
     anchor(
-      `plan の preconditions を現在の codebase に対して再検証する。各 {path, pattern} について、path の存在 (exists) と pattern の grep 一致 (matches。pattern 無しなら exists と同値) を実際にコマンドで確認し、全 ${preconditions.length} 件を results で返す。判定を甘くしない。\n${JSON.stringify(preconditions)}`,
+      `plan の preconditions を決定論 verifier で再検証する。exists/matches を自分で判定しない。` +
+        `手順: (1) この JSON をそのまま temp file に書き出す。(2) repository root から ` +
+        `\`python3 "$HOME/.claude/workflows/build/revalidate.py" < <tempfile>\` を実行する。` +
+        `(3) verifier の stdout "results" 配列を verbatim で返す (全 ${preconditions.length} 件、追加・削除・編集をしない)。` +
+        `verifier は {"results":[{path,pattern,exists,matches}]} を出力する。\n` +
+        `Preconditions JSON:\n${JSON.stringify(preconditions)}`,
     ),
     {
       label: "revalidate",
       phase: "Revalidate",
       agentType: "general-purpose",
       schema: REVALIDATE_SCHEMA,
+      model: "haiku",
     },
   );
   if (!reval || !Array.isArray(reval.results) || reval.results.length !== preconditions.length) {
