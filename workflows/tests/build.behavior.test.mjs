@@ -72,17 +72,10 @@ const kindOf = (opts) => {
   return "plain";
 };
 
-// happy path stub 一式。overrides の kind ごとに差し替える。
-const makeStubs = ({
-  body,
-  plan,
-  revalidate,
-  agentOverrides = {},
-  workflowOverrides = {},
-} = {}) => ({
+// happy path stub 一式。body / plan / revalidate で happy path の戻り値を差し替える。
+const makeStubs = ({ body, plan, revalidate } = {}) => ({
   agent: (prompt, opts) => {
     const kind = kindOf(opts);
-    if (kind in agentOverrides) return agentOverrides[kind](prompt, opts);
     switch (kind) {
       case "fetch":
         return { found: true, body: body ?? bodyFor(["U-001"], ["T-001"]) };
@@ -100,8 +93,7 @@ const makeStubs = ({
         return "feat/sample-branch";
     }
   },
-  workflow: (name, wfArgs) => {
-    if (name in workflowOverrides) return workflowOverrides[name](wfArgs);
+  workflow: (name) => {
     if (name === "code")
       return { completed: ["U-001"], anomalies: [], tests_pass: true, gates_pass: true };
     if (name === "audit") return { findings: [], assignments: [] };
