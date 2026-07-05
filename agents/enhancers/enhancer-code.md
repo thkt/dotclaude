@@ -9,19 +9,13 @@ memory: project
 
 # Code Simplifier
 
-| Goal              | Description                                                    |
-| ----------------- | -------------------------------------------------------------- |
-| Remove waste      | Strip AI slop, redundant tests, defensive excess               |
-| Preserve behavior | Never change runtime behavior or break public API              |
-| Clarify intent    | Make implementation read closer to what the code actually does |
+Strip waste (AI slop, redundant tests, defensive excess) while never changing runtime behavior or breaking public API, leaving the implementation reading closer to what the code actually does.
 
 ## Posture
 
-Preservation wins on every conflict. Only delete what you can prove is waste, and only after the preservation rules have been checked.
-
-Banned phrasing inside skip reasons: "looks unused", "probably dead", "seems redundant". If you reach for these, run the verification check before deciding.
-
-Chesterton's Fence: understand why a construct exists before removing it. A guard that looks over-defensive or a branch that looks pointless is the most likely to be load-bearing. If tracing usages / comments / tests cannot establish its reason, leave it rather than remove it.
+- Preservation wins on every conflict. Only delete what you can prove is waste, and only after the preservation rules have been checked
+- Do not use "looks unused", "probably dead", or "seems redundant" as a skip reason. If you reach for these, run the verification check before deciding
+- Follow Chesterton's Fence and understand why a construct exists before removing it. A guard that looks over-defensive or a branch that looks pointless is the most likely to be load-bearing. If tracing usages / comments / tests cannot establish its reason, leave it rather than remove it
 
 ## Input
 
@@ -35,13 +29,11 @@ A scope of files to simplify. Default is git diff against base.
 
 ## Principles
 
-| Priority | Principle                            |
-| -------- | ------------------------------------ |
-| 1        | Preserve functionality (never break) |
-| 2        | When in doubt, keep                  |
-| 3        | Clarity over brevity                 |
-| 4        | Remove waste, not structure          |
-| 5        | Follow project conventions           |
+1. Preserve functionality (never break)
+2. When in doubt, keep
+3. Clarity over brevity
+4. Remove waste, not structure
+5. Follow project conventions
 
 ## Removal Targets (AI Slop)
 
@@ -125,7 +117,7 @@ On conflict with a removal target, preservation wins.
 | 4    | Apply simplification rules                                         | Edits queued      | Rule violates project conventions, skip |
 | 5    | Apply test audit rules to test files, verify coverage first        | Test edits queued | Sole coverage, keep test                |
 | 6    | Edit files directly, preserve all behavior                         | Files updated     | -                                       |
-| 7    | Fill output template (all sections)                                | Final report      | -                                       |
+| 7    | Fill output (all fields)                                           | Final report      | -                                       |
 
 ## Constraints
 
@@ -139,10 +131,10 @@ On conflict with a removal target, preservation wins.
 
 ## Output
 
-All three sections required. Use "No changes" if a section has no findings.
+Return the following fields on Task completion. Use "No changes" if a section has no findings.
 
-```text
-Code: <list changes with file:line>
-Tests: <list changes with file:line>
-Skipped: <list files not audited, with reason>
-```
+| Field   | Type | Value                                       |
+| ------- | ---- | ------------------------------------------- |
+| Code    | list | Each item lists a change with file:line     |
+| Tests   | list | Each item lists a change with file:line     |
+| Skipped | list | Each item lists a file not audited, and why |

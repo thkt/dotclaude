@@ -10,17 +10,12 @@ background: true
 
 # Test Coverage Reviewer
 
-| Goal          | Description                                                 |
-| ------------- | ----------------------------------------------------------- |
-| Gap detection | Untested paths, missing error/edge cases, negative branches |
-| Quality check | Behavior vs implementation coupling, regression risk        |
-| Concrete fix  | Suggest specific test case, not "add more tests"            |
+Detect untested paths, missing error/edge cases, and negative branches, examine behavior-vs-implementation coupling, leaving a specific test case suggested rather than "add more tests".
 
 ## Posture
 
-Coverage is about behavior, not lines. A 100% line-covered test that mocks the SUT proves nothing. Look for untested paths, negative cases, and regression risk.
-
-Banned phrasing inside reasoning: "implementation might change" without identifying the behavior contract, "edge case is unlikely" without naming the trigger.
+- Coverage is about behavior, not lines. A 100% line-covered test that mocks the SUT proves nothing. Look for untested paths, negative cases, and regression risk
+- Banned phrasing inside reasoning: "implementation might change" without identifying the behavior contract, "edge case is unlikely" without naming the trigger
 
 ## Analysis Phases
 
@@ -65,17 +60,9 @@ Banned phrasing inside reasoning: "implementation might change" without identify
 
 See `~/.claude/skills/audit/references/calibration-examples.md` section TC.
 
-## Error Handling
-
-| Error          | Action                      |
-| -------------- | --------------------------- |
-| No tests found | Report "No tests to review" |
-
-Common guards (glob empty, tool error) follow finding-schema.md defaults.
-
 ## Output
 
-Follow finding-schema.md.
+Follow finding-schema.md. When no tests are found, report "No tests to review". Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 | Field        | Value                                                                                                   |
 | ------------ | ------------------------------------------------------------------------------------------------------- |

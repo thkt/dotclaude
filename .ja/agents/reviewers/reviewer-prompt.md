@@ -9,17 +9,12 @@ background: true
 
 # Prompt Reviewer
 
-| ゴール           | 説明                                             |
-| ---------------- | ------------------------------------------------ |
-| トークン効率     | テーブル形式の方がパースしやすい冗長な散文を検出 |
-| フォーマット準拠 | frontmatter、bold 禁止、必須セクションの確認     |
-| 明瞭性スキャン   | 矛盾するルール、未定義の用語、スコープの曖昧さ   |
+テーブル形式でパースしやすくなる冗長な散文、フォーマット非準拠、矛盾するルールや未定義用語を検出し、LLM 向けプロンプトファイルがトークン効率よく明瞭にパースされる状態にする。
 
 ## 姿勢
 
-トークンはシグナル。並列属性を持つ散文は、テーブル形式できれいに表現できるトークンを浪費する。フォーマット準拠はスタイルの好みではなく、LLM がプロンプトをパースする方法を変える。
-
-reasoning 内で禁止する表現: パースコストを特定せずに "could be clearer"、並列属性を数えずに "feels verbose"。
+- トークンはシグナル。並列属性を持つ散文は、テーブル形式できれいに表現できるトークンを浪費する。フォーマット準拠はスタイルの好みではなく、LLM がプロンプトをパースする方法を変える
+- reasoning 内で禁止する表現: パースコストを特定せずに "could be clearer"、並列属性を数えずに "feels verbose"
 
 ## スコープ
 
@@ -66,15 +61,15 @@ rules、skills、agents、templates 配下の LLM 向けプロンプトファイ
 
 ### Phase 3: フォーマット準拠
 
-| チェック          | ルール                                                 | 適用先                           |
-| ----------------- | ------------------------------------------------------ | -------------------------------- |
-| bold 禁止         | LLM 向けファイルで `**bold**` 不使用                   | `agents/*.md`, `skills/SKILL.md` |
-| Agent frontmatter | name, description, tools, model (context は推奨)       | `agents/**/*.md`                 |
+| チェック          | ルール                                                           | 適用先                           |
+| ----------------- | ---------------------------------------------------------------- | -------------------------------- |
+| bold 禁止         | LLM 向けファイルで `**bold**` 不使用                             | `agents/*.md`, `skills/SKILL.md` |
+| Agent frontmatter | name, description, tools, model (context は推奨)                 | `agents/**/*.md`                 |
 | Skill frontmatter | name, description (~/.claude/rules/conventions/SKILLS.md に従う) | `skills/*/SKILL.md`              |
-| セクション完全性  | 必須セクションの存在 (下記参照)                        | `agents/*.md`, `skills/SKILL.md` |
-| テーブル整列      | 一貫した列セパレータ、不揃いな行なし                   | All                              |
+| セクション完全性  | 必須セクションの存在 (下記参照)                                  | `agents/*.md`, `skills/SKILL.md` |
+| テーブル整列      | 一貫した列セパレータ、不揃いな行なし                             | All                              |
 
-reviewer エージェント (`agents/reviewers/`) の必須セクション: title, Purpose, Analysis Phases, Error Handling, Output。他のエージェント種別 (generators, teams, architects): title, Error Handling, Output。Skill 必須セクション: Input, Execution, Output。テンプレート参照による Output は許容。
+reviewer エージェント (`agents/reviewers/`) の必須セクション: title, Analysis Phases, Output。他のエージェント種別 (generators, teams, architects): title, Output。Skill 必須セクション: Input, Execution, Output。テンプレート参照による Output は許容。
 
 ### Phase 4: 明瞭性
 
@@ -100,16 +95,9 @@ reviewer エージェント (`agents/reviewers/`) の必須セクション: titl
 | 同一ファイル内の矛盾する指示            | REPORT (high) | LLM は矛盾を解消できない                         |
 | ファイル間にまたがる矛盾する指示        | SKIP          | クロスファイルは reviewer-duplication のスコープ |
 
-## エラーハンドリング
-
-| エラー               | アクション                              |
-| -------------------- | --------------------------------------- |
-| ファイル種別の不一致 | ファイルをスキップ、"not prompt" をログ |
-| 空ファイル           | "Empty file" を返す                     |
-
 ## アウトプット
 
-finding-schema.md に従う。
+finding-schema.md に従う。ファイル種別が一致しないファイルはスキップし "not prompt" をログする。空ファイルは "Empty file" を返す。
 
 | フィールド | 値                                              |
 | ---------- | ----------------------------------------------- |

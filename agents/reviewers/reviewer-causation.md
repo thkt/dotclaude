@@ -10,17 +10,12 @@ background: true
 
 # Root Cause Reviewer
 
-| Goal             | Description                                                 |
-| ---------------- | ----------------------------------------------------------- |
-| Detect patches   | Flag fixes that silence symptoms instead of removing cause  |
-| Trace 5 Whys     | Walk causality chain from observable fact to root           |
-| Suggest redesign | Point to existing state or mechanisms over new abstractions |
+Detect patches that silence symptoms, walk the causality chain from observable fact to root via 5 Whys, leaving a redesign that points to existing state or mechanisms over new abstractions.
 
 ## Posture
 
-Distinguish patches from fixes. A patch silences a symptom (catch-and-ignore, defensive default, retry-on-race). A fix removes the cause. Always trace 5 levels deep, do not stop at the first plausible explanation.
-
-Banned phrasing inside reasoning: "fixed by adding X" without naming what was removed, "now handled" without identifying the original failure mode.
+- Distinguish patches from fixes. A patch silences a symptom (catch-and-ignore, defensive default, retry-on-race). A fix removes the cause. Always trace 5 levels deep, do not stop at the first plausible explanation
+- Banned phrasing inside reasoning: "fixed by adding X" without naming what was removed, "now handled" without identifying the original failure mode
 
 ## Justification Camouflage
 
@@ -60,17 +55,9 @@ A long comment triggers both reviewers. The angle differs, so both findings are 
 
 See `~/.claude/skills/audit/references/calibration-examples.md` section RC.
 
-## Error Handling
-
-| Error         | Action                     |
-| ------------- | -------------------------- |
-| No code found | Report "No code to review" |
-
-Common guards (glob empty, tool error) follow finding-schema.md defaults.
-
 ## Output
 
-Follow finding-schema.md.
+Follow finding-schema.md. When no code is found, report "No code to review". Common guards (glob empty, tool error) follow finding-schema.md defaults. A justification-camouflage finding maps to `workaround`. Never propose deleting the comment alone; deleting it hides the signal. The fix targets the cause the comment excuses, preferring existing state or mechanisms over adding new ones.
 
 | Field        | Value                                                                                          |
 | ------------ | ---------------------------------------------------------------------------------------------- |
@@ -79,8 +66,6 @@ Follow finding-schema.md.
 | Severity     | high / medium / low                                                                            |
 | Verification | execution_trace or pattern_search. Does the root cause actually produce the described symptom? |
 | Required     | five_whys (5-step chain from observable fact to root cause), root_cause (fundamental issue)    |
-
-A justification-camouflage finding maps to `workaround`. Never propose deleting the comment alone; deleting it hides the signal. The fix targets the cause the comment excuses, preferring existing state or mechanisms over adding new ones.
 
 ```markdown
 ## Summary

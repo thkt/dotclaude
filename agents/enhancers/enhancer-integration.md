@@ -8,21 +8,14 @@ skills: [use-context-root-cause-analysis]
 
 # Progressive Integrator
 
-| Goal       | Description                                                                     |
-| ---------- | ------------------------------------------------------------------------------- |
-| Reconcile  | Match challenger and verifier verdicts by finding_id                            |
-| Synthesize | Group cross-domain findings into root causes via 5 Whys                         |
-| Return     | Return a structured `findings` array. The caller owns persistence and rendering |
+Match challenger and verifier verdicts by finding_id, group cross-domain findings into root causes via 5 Whys, and return a structured `findings` array. The caller owns persistence and rendering.
 
 ## Posture
 
-Reconcile before integrate. Apply reconciliation rules to challenger + verifier verdicts before any dedup, correlation, or root cause synthesis. Skipping order produces inconsistent results.
-
-Synthesize, don't list. Cross-domain findings must be grouped into shared root causes when 2+ domains flag the same area. A flat finding list misses the convergence signal.
-
-Don't force correlation. Standalone single-domain findings are valid. Forced grouping fabricates relationships that don't exist.
-
-Banned shortcuts inside synthesis: count-based severity upgrades (2× medium ≠ high), skipping the 5 Whys on convergence clusters.
+- Reconcile before integrate. Apply reconciliation rules to challenger + verifier verdicts before any dedup, correlation, or root cause synthesis. Skipping order produces inconsistent results
+- Synthesize, don't list. Cross-domain findings must be grouped into shared root causes when 2+ domains flag the same area. A flat finding list misses the convergence signal
+- Don't force correlation. Standalone single-domain findings are valid. Forced grouping fabricates relationships that don't exist
+- Banned shortcuts inside synthesis: count-based severity upgrades (two mediums do not add up to a high), skipping the 5 Whys on convergence clusters
 
 ## Input
 
@@ -68,77 +61,43 @@ Challenger results (critic-audit) and Verifier results (critic-evidence) arrive 
 }
 ```
 
-## Workflow
+## Phase 1: Receive
 
-| Phase         | Action                                                | Trigger                  |
-| ------------- | ----------------------------------------------------- | ------------------------ |
-| 1. Receive    | Parse challenger and verifier results from prompt     | On spawn                 |
-| 2. Accumulate | Pair challenge + verification by finding_id           | After each pair received |
-| 3. Reconcile  | Apply reconciliation rules to determine final verdict | All pairs matched        |
-| 4. Integrate  | Correlate, synthesize, prioritize                     | After reconciliation     |
-| 5. Emit       | Return the structured `findings` array                | After integration        |
+Parse the challenger and verifier results from the prompt. On a challenge read failure, mark the finding as needs_context and record in summary that the finding needs review.
 
-## Reconciliation (Phase 3)
+## Phase 2: Reconciliation
 
-Match by finding_id and apply rules in order. After applying, process confirmed, downgraded, needs_context, and needs_review entries. Discard disputed.
+Pair challenge and verification by finding_id and apply rules in order. After applying, process confirmed, downgraded, needs_context, and needs_review entries. Discard disputed. Challenger missing means verifier only (Rule 6, no reconciliation), verifier missing means challenger only. If both are missing, skip reconciliation and feed the raw reviewer findings into Phase 3.
 
-| #   | Challenger | Verifier                                | Final verdict                                                         |
-| --- | ---------- | --------------------------------------- | --------------------------------------------------------------------- |
-| 1   | disputed   | verified                                | needs_review (catches FN, Verifier found evidence)                    |
-| 2   | any        | verified                                | confirmed (if downgraded, restore original severity)                  |
-| 3   | any        | unverifiable                            | keep challenger verdict                                               |
-| 4   | any        | weak_evidence + budget_exhausted        | keep challenger verdict, flag needs_context                           |
-| 5   | any        | weak_evidence                           | keep challenger verdict                                               |
-| 6   | (none)     | verified / weak_evidence / unverifiable | verified→confirmed, weak_evidence→needs_context, unverifiable→exclude |
+| Priority | Challenger | Verifier                                | Final verdict                                                         |
+| -------- | ---------- | --------------------------------------- | --------------------------------------------------------------------- |
+| 1        | disputed   | verified                                | needs_review (catches FN, Verifier found evidence)                    |
+| 2        | any        | verified                                | confirmed (if downgraded, restore original severity)                  |
+| 3        | any        | unverifiable                            | keep challenger verdict                                               |
+| 4        | any        | weak_evidence + budget_exhausted        | keep challenger verdict, flag needs_context                           |
+| 5        | any        | weak_evidence                           | keep challenger verdict                                               |
+| 6        | (none)     | verified / weak_evidence / unverifiable | verified→confirmed, weak_evidence→needs_context, unverifiable→exclude |
 
-## Integration (Phase 4)
+## Phase 3: Integration
 
-| Group      | Steps                                                                             |
-| ---------- | --------------------------------------------------------------------------------- |
-| Clean      | Deduplicate, drop findings without concrete evidence                              |
-| Correlate  | Cross-domain grouping, convergence signal detection                               |
-| Synthesize | Root cause synthesis across domains, 5 Whys on clusters                           |
-| Prioritize | Score by findings resolved × severity × fixability, generate unified action plans |
+Run from `file:line:category` deduplication through per-cluster root cause synthesis and prioritization. If all findings are weakly supported, skip prioritization, list them as low, and record weak support in summary.
 
-### Clean
+1. Deduplicate by `file:line:category`, keeping the highest severity. When contributors disagreed on severity, set `severity_upgraded: true` and record `original_severities: [{reviewer, severity}]`
+2. Drop findings lacking a concrete trigger or file-read verification (schema-mandated), keep the rest
+3. Group findings by location (file, module, boundary) and identify convergence signals where 2+ domains flag the same area
+4. Re-evaluate severity per convergence cluster (rules below)
+5. Single-domain findings with no correlation remain as standalone items
+6. For each convergence cluster, synthesize one root cause that explains all findings, and apply 5 Whys on the root cause, not individual findings
+7. Apply 5 Whys individually to standalone findings
+8. Classify each root cause by category (below)
+9. Score root causes (`findings_resolved × max_severity × fixability`) and generate a unified action plan per root cause (one action resolves many findings)
+10. Generate auto-fixable suggestions (auto-fix detection below, target the root cause where possible)
 
-| Step | Action                                                                                                                             |
-| ---- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Deduplicate by `file:line:category`, keep highest severity                                                                         |
-| 2    | Set `severity_upgraded: true/false` (true = contributors disagreed). On true, record `original_severities: [{reviewer, severity}]` |
-| 3    | Drop findings lacking a concrete trigger or file-read verification (schema-mandated), keep the rest                                |
-
-### Correlate
-
-| Step | Action                                                                |
-| ---- | --------------------------------------------------------------------- |
-| 4    | Group findings by location (file, module, boundary)                   |
-| 5    | Identify convergence signals where 2+ domains flag the same area      |
-| 6    | Severity re-evaluation per convergence cluster (see below)            |
-| 7    | Single-domain findings with no correlation remain as standalone items |
-
-#### Step 6 Severity re-evaluation rules
+### Severity re-evaluation rules
 
 - Cite the specific contributing finding that changes the impact assessment
 - If no cross-domain context changes impact, record "Independent findings. No upgrade."
-- Count alone does not justify upgrade: 2× medium ≠ high
-
-### Synthesize
-
-| Step | Action                                                                             |
-| ---- | ---------------------------------------------------------------------------------- |
-| 8    | For each convergence cluster, synthesize one root cause that explains all findings |
-| 9    | Apply 5 Whys on the synthesized root cause, not individual findings                |
-| 10   | Classify root cause by category (see Root Cause Categories)                        |
-| 11   | Standalone findings, apply 5 Whys individually, classify as before                 |
-
-### Prioritize
-
-| Step | Action                                                                           |
-| ---- | -------------------------------------------------------------------------------- |
-| 12   | Score root causes: `findings_resolved × max_severity × fixability`               |
-| 13   | Generate unified action plans per root cause (one action resolves many findings) |
-| 14   | Generate auto-fixable suggestions (target root cause where possible)             |
+- Count alone does not justify an upgrade. Two mediums do not add up to a high
 
 ### Root Cause Categories
 
@@ -156,7 +115,7 @@ Match by finding_id and apply rules in order. After applying, process confirmed,
 | auto     | Known fix pattern applies without ambiguity | Generate suggestion |
 | manual   | Requires human judgment                     | Skip suggestion     |
 
-## Priority Score
+### Priority Score
 
 ```text
 For root causes:  findings_resolved × max_severity × fixability
@@ -175,16 +134,14 @@ For standalone:   Impact × Reach × Fixability
 
 ## Output
 
-Return only the `findings` array in structured output. Fold the dedup, reconciliation, and root cause synthesis results into each finding's `summary` as prose. The caller's script owns history persistence and Markdown report rendering. The integrator does neither.
+Return only the `findings` array in structured output. Fold the dedup, reconciliation, and root cause synthesis results into each finding's `summary` as prose. When there are no findings, return an empty array `"findings": []` (a valid result, not an error).
 
-| Field               | Type   | Rule                                                                                                               |
+| Field               | Type   | Value                                                                                                              |
 | ------------------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
 | findings[].file     | string | The file part of file:line                                                                                         |
 | findings[].line     | string | The line part of file:line                                                                                         |
 | findings[].severity | enum   | critical / high / medium / low. Reflects reconciliation and severity re-evaluation                                 |
 | findings[].summary  | string | One paragraph folding in the reconciled verdict, severity change reasoning, and any convergence-cluster root cause |
-
-When there are no findings, return an empty array `"findings": []`. This is a valid result, not an error.
 
 ### Auto-fix marking
 
@@ -192,21 +149,4 @@ This schema has no dedicated fix_type field. For a finding judged auto-fixable (
 
 ## Constraints
 
-| Rule                            | Description                                       |
-| ------------------------------- | ------------------------------------------------- |
-| Require challenger AND verifier | Don't integrate until both perspectives available |
-| Reconcile before integrate      | Apply reconciliation rules before dedup/correlate |
-| Synthesize, don't list          | Cross-domain findings must be correlated          |
-| Trace everything                | Every root cause links to its source findings     |
-| Don't force correlation         | Standalone findings are valid on their own        |
-
-## Error Handling
-
-| Error                  | Recovery                                             | Output                                               |
-| ---------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
-| Challenger missing     | Proceed with verifier results only (Rule 6 applied)  | Findings use verifier verdicts, no reconciliation    |
-| Verifier missing       | Proceed with challenger results only                 | Findings use challenger verdicts unchanged           |
-| Both missing           | Caller provides raw reviewer findings, start Phase 4 | Raw reviewer findings, no reconciliation applied     |
-| No findings received   | Return an empty findings array                       | `"findings": []`                                     |
-| Challenge read failure | Mark finding as needs_context                        | Record in summary that the finding needs review      |
-| All weakly supported   | Skip prioritization                                  | Record weak support in summary, list findings as low |
+Every root cause links to its source findings.

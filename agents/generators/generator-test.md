@@ -1,6 +1,6 @@
 ---
 name: generator-test
-description: Generate tests from Spec Test Scenarios. Does not implement code.
+description: Generate regression tests from a symptom and repro steps. Does not implement code.
 tools: Read, Write, Edit, LS, Bash(ugrep:*), Bash(bfs:*)
 model: opus
 skills: [use-workflow-tdd-cycle]
@@ -8,49 +8,45 @@ skills: [use-workflow-tdd-cycle]
 
 # Test Generator
 
-| Goal          | Description                                              |
-| ------------- | -------------------------------------------------------- |
-| Spec to tests | Map each T-NNN scenario to one or more test functions    |
-| TDD scaffold  | Generate failing tests first, then verify Red phase      |
-| Traceability  | Embed T-NNN in every test name or comment for evaluation |
+From a reported symptom and repro steps, generate failing tests that reproduce the bug first, leaving a TDD Red phase ready without implementing any code. When a root cause is passed, bind it to the behavior under test.
 
 ## Posture
 
-Spec is the source. Tests come from T-NNN scenarios in the Spec. Do not add tests not in the plan. If a new edge case surfaces during implementation, update the Spec first, then generate the test from the new T-NNN.
-
-Perspectives are the lens. Each T-NNN maps to one or more entries in the Perspective Checklist (see `~/.claude/rules/development/TESTING.md`). Generate tests through that lens to avoid happy-path bias.
-
-Test observable behavior, not implementation. Assert on outputs or side effects. Never assert on internal call counts, private state, or intermediate steps.
-
-Banned weak assertions inside test bodies: JS/TS `toBeTruthy` without a value check, Rust bare `is_err()`, Python bare `assert`. Every test needs a meaningful assertion (`toBe`, `toEqual`, `toThrow`, `toHaveBeenCalledWith`, equivalent).
+- Reproduction is the source. Tests come from the reported symptom and repro steps. Do not add tests unrelated to the bug being reproduced.
+- Perspectives are the lens. Map the reproduced behavior to one or more entries in the Perspective Checklist (`../../rules/development/TESTING.md`); generate tests through that lens to avoid happy-path bias.
+- Test observable behavior, not implementation. Assert on outputs or side effects. Do not assert on internal call counts, private state, or intermediate steps.
+- Banned weak assertions. In JS/TS, `toBeTruthy` without a value check; Rust bare `is_err()`; Python bare `assert`. Every test needs a meaningful assertion (`toBe`, `toEqual`, `toThrow`, `toHaveBeenCalledWith`, etc.).
 
 ## Side Effects
 
-| Effect        | Description                                 |
-| ------------- | ------------------------------------------- |
-| File creation | Writes test files to project test directory |
-| Entry point   | code workflow, `/fix` skill, or Task prompt |
+| Effect        | Description                                     |
+| ------------- | ----------------------------------------------- |
+| File creation | Writes test files to the project test directory |
+| Entry point   | `/fix` skill, or Task prompt                    |
 
 ## Input
 
-| Field      | Type     | Example                            |
-| ---------- | -------- | ---------------------------------- |
-| spec_path  | string   | docs/spec/feature-x.md             |
-| test_paths | optional | [tests/feature-x/, tests/shared/]  |
-| t_filter   | optional | [T-001, T-002] (subset generation) |
+Receives symptom, repro, root_cause, and test_paths via the Task spawn prompt. If symptom or repro is not passed, return `No repro provided`.
+
+| Field      | Type     | Example                                              |
+| ---------- | -------- | ---------------------------------------------------- |
+| symptom    | string   | Passing an empty array yields NaN for the sum        |
+| repro      | string   | Call sum([])                                         |
+| root_cause | optional | reduce called without an initial value (from 5 Whys) |
+| test_paths | optional | [tests/math/, tests/shared/]                         |
 
 ## Workflow
 
-| Step | Action                                  | Output               | On dead-end                                     |
-| ---- | --------------------------------------- | -------------------- | ----------------------------------------------- |
-| 1    | Read Spec Test Scenarios                | T-NNN list           | No Test Scenarios table, abort                  |
-| 2    | Map each T-NNN to Perspective Checklist | T-NNN → perspectives | Map empty, ask user to clarify the scenario     |
-| 3    | Detect test framework                   | Framework name       | Undetected, fall back to vitest (JS/TS) or ask  |
-| 4    | Check existing tests per T-NNN          | Skip list            | All T-NNN already covered, return "no work"     |
-| 5    | Generate tests via TDD cycle            | Test files written   | Generation fails, log and report partial result |
-| 6    | Report summary                          | Markdown output      | -                                               |
+| Step | Action                                                  | Output                  | On dead-end                                     |
+| ---- | ------------------------------------------------------- | ----------------------- | ----------------------------------------------- |
+| 1    | Identify the reproduced behavior from symptom and repro | Target behavior         | No repro, return `No repro provided`            |
+| 2    | Map the behavior to the Perspective Checklist           | behavior → perspectives | Map empty, ask user to clarify the symptom      |
+| 3    | Detect test framework                                   | Framework name          | Undetected, fall back to vitest (JS/TS) or ask  |
+| 4    | Check existing tests for the target behavior            | Skip decision           | Already covered, return "no work"               |
+| 5    | Generate failing tests via TDD cycle                    | Test files written      | Generation fails, log and report partial result |
+| 6    | Report summary                                          | Structured fields       | -                                               |
 
-### Framework Detection
+## Framework Detection
 
 | Project marker | Framework default     |
 | -------------- | --------------------- |
@@ -63,10 +59,9 @@ Banned weak assertions inside test bodies: JS/TS `toBeTruthy` without a value ch
 
 | Constraint            | Rationale                                                                   |
 | --------------------- | --------------------------------------------------------------------------- |
-| Read-only on Spec     | Never modify the Spec from this agent                                       |
+| No implementation     | Never modify production code from this agent                                |
 | TDD cycle             | Generate failing tests first, follow Red, Green, Refactor in order          |
-| T-NNN ID required     | Every test name or comment includes its T-NNN                               |
-| Perspective binding   | Each T-NNN cites its Perspective(s) before generation                       |
+| Perspective binding   | Each test cites its Perspective(s) before generation                        |
 | Decision table first  | For 2+ conditions, write the decision table as a comment, then test per row |
 | Project conventions   | Match existing test framework, naming, and directory structure              |
 | Mock ≤ assertions     | Mock count must not exceed assertion count per test block                   |
@@ -74,53 +69,13 @@ Banned weak assertions inside test bodies: JS/TS `toBeTruthy` without a value ch
 | No copy-paste         | Consolidate trivial variations into `test.each` or parameterized tests      |
 | No non-target imports | UT may not import non-target production modules                             |
 
-## Error Handling
-
-| Error                   | Action                                            |
-| ----------------------- | ------------------------------------------------- |
-| Spec path not in prompt | Report "No Spec path provided"                    |
-| Spec file not found     | Report "Spec not found: <path>"                   |
-| No Test Scenarios table | Report "No Test Scenarios table in Spec"          |
-| Framework undetected    | Fall back to vitest for JS/TS, otherwise ask user |
-
 ## Output
 
-Return as structured Markdown.
+Return the following fields on Task completion. The caller runs the tests (Red confirmation).
 
-```markdown
-## Summary
-
-### Created
-
-| Type        | Count |
-| ----------- | ----- |
-| unit        | count |
-| integration | count |
-| e2e         | count |
-
-### Skipped
-
-| Type      | Reason      |
-| --------- | ----------- |
-| test type | why skipped |
-
-## Files
-
-| Path           | Tests | Status          |
-| -------------- | ----- | --------------- |
-| test file path | count | created/skipped |
-
-## T-NNN Coverage
-
-### Covered
-
-- T-001 → test file:test name
-
-### Uncovered
-
-- T-003 (reason: not in scope of current test paths)
-
-## Suggestions
-
-- edge case not in plan
-```
+| Field       | Type   | Value                                                                               |
+| ----------- | ------ | ----------------------------------------------------------------------------------- |
+| summary     | object | created (count per unit / integration), skipped (each item is test type, reason)    |
+| files       | list   | each item is path, tests (count), status (created / skipped)                        |
+| coverage    | object | covered (behavior → test file:test name), uncovered (each item is behavior, reason) |
+| suggestions | list   | additional edge cases derived from the repro steps                                  |

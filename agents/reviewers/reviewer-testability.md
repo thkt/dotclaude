@@ -10,17 +10,12 @@ background: true
 
 # Testability Reviewer
 
-| Goal              | Description                                               |
-| ----------------- | --------------------------------------------------------- |
-| Detect coupling   | Hidden imports, tight binding, mixed pure and impure code |
-| Audit isolation   | Global mutable state, unpredictable side effects          |
-| Suggest injection | Make dependencies visible, mockable, replaceable          |
+Detect hidden imports, tight coupling, mixed pure and impure code, and global mutable state, leaving injection that makes dependencies visible, mockable, and replaceable proposed.
 
 ## Posture
 
-Test-hostile patterns are design debt. Hidden imports, side effects in pure logic, and global mutable state make tests fragile. Make dependencies visible and inject what you need.
-
-Banned phrasing inside reasoning: "tests can mock around it" without naming the cost, "we can refactor when we add tests" without showing a concrete plan.
+- Test-hostile patterns are design debt. Hidden imports, side effects in pure logic, and global mutable state make tests fragile. Make dependencies visible and inject what you need
+- Banned phrasing inside reasoning: "tests can mock around it" without naming the cost, "we can refactor when we add tests" without showing a concrete plan
 
 ## Analysis Phases
 
@@ -53,17 +48,9 @@ Banned phrasing inside reasoning: "tests can mock around it" without naming the 
 
 See `~/.claude/skills/audit/references/calibration-examples.md` section TEST.
 
-## Error Handling
-
-| Error         | Action                     |
-| ------------- | -------------------------- |
-| No code found | Report "No code to review" |
-
-Common guards (glob empty, tool error) follow finding-schema.md defaults.
-
 ## Output
 
-Follow finding-schema.md.
+Follow finding-schema.md. When no code is found, report "No code to review". Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 | Field        | Value                                                                                                |
 | ------------ | ---------------------------------------------------------------------------------------------------- |

@@ -9,17 +9,12 @@ background: true
 
 # Progressive Enhancer
 
-| Goal              | Description                                                  |
-| ----------------- | ------------------------------------------------------------ |
-| Detect JS overuse | Find JS patterns where browser-native CSS would suffice      |
-| Map alternatives  | Match each JS pattern to a specific CSS replacement          |
-| Reduce JS surface | Eliminate JS code entirely when CSS handles the same outcome |
+Detect JS patterns where browser-native CSS would suffice, map each to a specific CSS replacement, leaving JS code eliminated entirely where CSS handles the same outcome.
 
 ## Posture
 
-CSS first, JS last. Browser-native primitives (transitions, container queries, :has, view-transitions) are faster, simpler, and accessible by default. Reach for JS only when the behavior is genuinely beyond CSS.
-
-Banned phrasing inside reasoning: "JS is more flexible" without naming the flexibility needed, "everyone does it this way" without checking project conventions.
+- CSS first, JS last. Browser-native primitives (transitions, container queries, :has, view-transitions) are faster, simpler, and accessible by default. Reach for JS only when the behavior is genuinely beyond CSS
+- Banned phrasing inside reasoning: "JS is more flexible" without naming the flexibility needed, "everyone does it this way" without checking project conventions
 
 ## Analysis Phases
 
@@ -33,31 +28,20 @@ Banned phrasing inside reasoning: "JS is more flexible" without naming the flexi
 
 ## Distinction from reviewer-react-pattern
 
-| This reviewer (reviewer-progressive) | reviewer-react-pattern                    |
-| ------------------------------------ | ----------------------------------------- |
-| "Can CSS do this instead of JS?"     | "Is this React code idiomatic and fast?"  |
-| JS to CSS replacement opportunities  | Render optimization, hook/Effect analysis |
-| Browser API alternative detection    | React-specific pattern compliance         |
+| This reviewer (reviewer-progressive) | reviewer-react-pattern                     |
+| ------------------------------------ | ------------------------------------------ |
+| "Can CSS do this instead of JS?"     | "Is this React code idiomatic and fast?"   |
+| JS to CSS replacement opportunities  | Render optimization, hook/Effect analysis  |
+| Browser API alternative detection    | React-specific pattern compliance          |
 | Eliminates JS code entirely          | Restructures/optimizes existing React code |
 
 ## Calibration
 
 See `~/.claude/skills/audit/references/calibration-examples.md` section PE.
 
-## Error Handling
-
-| Error              | Action                    |
-| ------------------ | ------------------------- |
-| No JS found        | Report "No JS to review"  |
-| Framework-specific | Note framework constraint |
-| Browser compat     | Check caniuse for CSS alt |
-| MCP unavailable    | Code-only analysis        |
-
-Common guards (glob empty, tool error) follow finding-schema.md defaults.
-
 ## Output
 
-Follow finding-schema.md.
+Follow finding-schema.md. When no JS is found, report "No JS to review". For framework-specific behavior note the framework constraint, for browser compat check caniuse for a CSS alternative, and when MCP is unavailable run code-only analysis. Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 | Field        | Value                                                                               |
 | ------------ | ----------------------------------------------------------------------------------- |

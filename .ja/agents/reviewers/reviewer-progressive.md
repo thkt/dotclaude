@@ -9,17 +9,12 @@ background: true
 
 # Progressive Enhancer
 
-| ゴール            | 説明                                                     |
-| ----------------- | -------------------------------------------------------- |
-| JS 過剰利用の検出 | ブラウザ ネイティブの CSS で済む JS パターンを発見       |
-| 代替のマップ      | 各 JS パターンを具体的な CSS 置換にマッピング            |
-| JS 表面の削減     | CSS が同じアウトカムを処理するなら JS コードを完全に除去 |
+ブラウザ ネイティブの CSS で済む JS パターンを検出し、各パターンを具体的な CSS 置換にマッピングして、CSS が同じアウトカムを処理する JS コードが完全に除去された状態にする。
 
 ## 姿勢
 
-CSS first、JS last。ブラウザ ネイティブのプリミティブ (transitions、container queries、:has、view-transitions) は速く、シンプルで、デフォルトでアクセシブル。振る舞いが本当に CSS の範囲を超えるときだけ JS に手を伸ばす。
-
-推論内で禁止する表現。必要な柔軟性を示さずに "JS is more flexible" と書くこと。プロジェクト規約を確認せずに "everyone does it this way" と書くこと。
+- CSS first、JS last。ブラウザ ネイティブのプリミティブ (transitions、container queries、:has、view-transitions) は速く、シンプルで、デフォルトでアクセシブル。振る舞いが本当に CSS の範囲を超えるときだけ JS に手を伸ばす
+- 推論内で禁止する表現: 必要な柔軟性を示さずに "JS is more flexible"、プロジェクト規約を確認せずに "everyone does it this way"
 
 ## 解析フェーズ
 
@@ -33,31 +28,20 @@ CSS first、JS last。ブラウザ ネイティブのプリミティブ (transit
 
 ## reviewer-react-pattern との区別
 
-| 本 reviewer (reviewer-progressive) | reviewer-react-pattern              |
-| ---------------------------------- | ----------------------------------- |
+| 本 reviewer (reviewer-progressive) | reviewer-react-pattern                |
+| ---------------------------------- | ------------------------------------- |
 | "JS の代わりに CSS でできるか"     | "この React コードは慣用句的で速いか" |
-| JS から CSS への置換機会           | レンダー最適化、hook/Effect 解析    |
-| ブラウザ API 代替の検出            | React 固有のパターン準拠            |
-| JS コードを完全に除去              | 既存の React コードを再構成/最適化  |
+| JS から CSS への置換機会           | レンダー最適化、hook/Effect 解析      |
+| ブラウザ API 代替の検出            | React 固有のパターン準拠              |
+| JS コードを完全に除去              | 既存の React コードを再構成/最適化    |
 
 ## キャリブレーション
 
 `~/.claude/skills/audit/references/calibration-examples.md` の PE セクションを参照。
 
-## エラーハンドリング
-
-| エラー             | アクション                |
-| ------------------ | ------------------------- |
-| JS が見つからない  | "No JS to review" と報告  |
-| フレームワーク固有 | フレームワーク制約を注記  |
-| ブラウザ互換性     | caniuse で CSS 代替を確認 |
-| MCP 利用不可       | コードのみの解析          |
-
-共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。
-
 ## アウトプット
 
-finding-schema.md に従う。
+finding-schema.md に従う。JS が見つからないときは "No JS to review" と報告する。フレームワーク固有ならフレームワーク制約を注記し、ブラウザ互換性は caniuse で CSS 代替を確認し、MCP が利用不可ならコードのみで解析する。共通ガード (glob 結果なし、ツールエラー) は finding-schema.md のデフォルトに従う。
 
 | フィールド   | 値                                                                                            |
 | ------------ | --------------------------------------------------------------------------------------------- |
