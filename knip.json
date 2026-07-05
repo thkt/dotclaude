@@ -3,10 +3,12 @@
   "entry": [
     "workflows/*.js",
     ".ja/workflows/*.js",
-    "workflows/tests/**/*.test.js",
-    ".ja/workflows/tests/**/*.test.js",
+    "workflows/**/*.test.js",
+    ".ja/workflows/**/*.test.js",
     "workflows/tests/index.js",
-    ".ja/workflows/tests/index.js"
+    ".ja/workflows/tests/index.js",
+    "skills/issue/tests/**/*.test.js",
+    ".ja/skills/issue/tests/**/*.test.js"
   ],
   "project": ["workflows/**/*.js", ".ja/workflows/**/*.js"],
   "ignoreDependencies": ["oxlint", "oxfmt"]

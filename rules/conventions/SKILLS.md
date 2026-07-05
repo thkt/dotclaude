@@ -11,12 +11,12 @@ Conventions for skill files under `.claude/skills/`.
 
 Choose by category. Generic names like helper, utils, tools are not allowed.
 
-| user-invocable | Binding    | Pattern               | Examples                                        |
-| -------------- | ---------- | --------------------- | ----------------------------------------------- |
-| true           | -          | Short name            | commit, fix, audit                              |
-| false          | CLI wrap   | `use-cli-<cli>`       | use-cli-recall, use-cli-scout                   |
-| false          | Agent-only | `use-context-<agent>` | use-context-reviewer-security                   |
-| false          | Workflow   | `use-workflow-<noun>` | use-workflow-code, use-workflow-tdd-cycle |
+| user-invocable | Binding    | Pattern               | Examples                                      |
+| -------------- | ---------- | --------------------- | --------------------------------------------- |
+| true           | -          | Short name            | commit, fix, audit                            |
+| false          | CLI wrap   | `use-cli-<cli>`       | use-cli-recall, use-cli-scout                 |
+| false          | Agent-only | `use-context-<agent>` | use-context-reviewer-security                 |
+| false          | Workflow   | `use-workflow-<noun>` | use-workflow-tdd-cycle, use-workflow-pageshot |
 
 ## Directory structure
 

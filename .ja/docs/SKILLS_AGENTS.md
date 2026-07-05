@@ -45,12 +45,12 @@ Skills は「ナレッジ モジュール」。AI がタスク実行時にドメ
 
 ### カテゴリ
 
-| カテゴリ       | Skills                                                                                         | 用途                                  |
-| -------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Workflow       | use-workflow-code, use-workflow-tdd-cycle, use-workflow-pageshot | 多段ワークフロー定義                  |
-| Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                       | エージェント向けドメイン知識          |
-| CLI ラッパー   | use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase                               | CLI ツール統合                        |
-| User-invocable | think, research, code, audit, polish, feature, fix, adr 等                              | スラッシュ コマンド エントリ ポイント |
+| カテゴリ       | Skills                                                           | 用途                                  |
+| -------------- | ---------------------------------------------------------------- | ------------------------------------- |
+| Workflow       | use-workflow-tdd-cycle, use-workflow-pageshot                    | 多段ワークフロー定義                  |
+| Context        | use-context-reviewer-\*, use-context-root-cause-analysis         | エージェント向けドメイン知識          |
+| CLI ラッパー   | use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase | CLI ツール統合                        |
+| User-invocable | think, research, code, audit, polish, feature, fix, adr 等       | スラッシュ コマンド エントリ ポイント |
 
 ### ロード機構
 
@@ -107,32 +107,31 @@ user-invocable: false # スラッシュ コマンドとして起動可能か
 agents/
 ├── critics/        # 反論検証 (critic-audit, critic-design, critic-evidence)
 ├── enhancers/      # コード改善・結果統合 (enhancer-code, enhancer-evidence, enhancer-integration)
-├── evaluators/     # 品質評価 (evaluator-test)
 ├── explorers/      # 探索 (explorer-feature)
-├── generators/     # 生成 (generator-test, generator-e2e)
+├── generators/     # 生成 (generator-test)
 ├── resolvers/      # 問題解決 (resolver-build)
 └── reviewers/      # レビュー (15 種の専門 reviewer)
 ```
 
 ### Reviewer Agents (15 種)
 
-| Agent                  | 焦点                              |
-| ---------------------- | --------------------------------- |
-| reviewer-accessibility | WCAG 2.2 適合                     |
-| reviewer-causation     | 5 Whys 根本原因分析               |
-| reviewer-coverage      | テスト カバレッジ品質             |
-| reviewer-design        | React 設計パターン                |
-| reviewer-duplication   | クロスファイル DRY 分析           |
-| reviewer-efficiency    | アルゴリズム コスト、ホット パス  |
-| reviewer-operations    | エラー境界、ロギング              |
-| reviewer-progressive   | CSS-first、JS 削減                |
-| reviewer-prompt        | LLM プロンプト定義の品質          |
-| reviewer-readability   | コード構造、可読性                |
-| reviewer-resilience    | 耐障害性の弱点分析                |
-| reviewer-reuse         | 既存コードの再利用機会            |
-| reviewer-security      | OWASP Top 10                      |
-| reviewer-silence       | サイレント失敗の検出              |
-| reviewer-testability   | テスト可能なコード設計            |
+| Agent                  | 焦点                             |
+| ---------------------- | -------------------------------- |
+| reviewer-accessibility | WCAG 2.2 適合                    |
+| reviewer-causation     | 5 Whys 根本原因分析              |
+| reviewer-coverage      | テスト カバレッジ品質            |
+| reviewer-design        | React 設計パターン               |
+| reviewer-duplication   | クロスファイル DRY 分析          |
+| reviewer-efficiency    | アルゴリズム コスト、ホット パス |
+| reviewer-operations    | エラー境界、ロギング             |
+| reviewer-progressive   | CSS-first、JS 削減               |
+| reviewer-prompt        | LLM プロンプト定義の品質         |
+| reviewer-readability   | コード構造、可読性               |
+| reviewer-resilience    | 耐障害性の弱点分析               |
+| reviewer-reuse         | 既存コードの再利用機会           |
+| reviewer-security      | OWASP Top 10                     |
+| reviewer-silence       | サイレント失敗の検出             |
+| reviewer-testability   | テスト可能なコード設計           |
 
 ### Task ツールでの起動
 

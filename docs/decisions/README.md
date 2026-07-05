@@ -34,7 +34,7 @@ This directory contains important decisions about the project's architecture.
 | [0026](0026-recognize-spec-code-convergence-in-llm-instructions.md) | ADR-0026: LLM指示設計における仕様-コード収束則を認識する | accepted | 2026-03-20 |
 | [0027](0027-centralize-plugin-definitions-in-sentinels.md) | ADR-0027: プラグイン定義を sentinels リポに集約する | proposed | 2026-03-20 |
 | [0028](0028-build-test-quality-gate-with-oxc-parser.md) | ADR 0028: oxc_parser によるテスト品質ゲート litmus の構築 | proposed | 2026-03-20 |
-| [0029](0029-integrate-e2e-test-generation-into-spec-driven-workflow.md) | ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合 | proposed | 2026-03-21 |
+| [0029](0029-integrate-e2e-test-generation-into-spec-driven-workflow.md) | ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合 | superseded by ADR-0082 | 2026-07-05 |
 | [0030](0030-build-session-monitor-tui-mado.md) | ADR 0030: Claude Code セッション監視 TUI mado の構築 | proposed | 2026-03-22 |
 | [0031](0031-adopt-local-embedding-ort-ruri-v3.md) | ADR-0031: ort + Ruri v3 によるローカル embedding 基盤の構築 | proposed | 2026-03-22 |
 | [0032](0032-build-esa-semantic-search-cli-sae.md) | ADR-0032: Build esa semantic search CLI (sae) | proposed | 2026-03-23 |
@@ -63,7 +63,7 @@ This directory contains important decisions about the project's architecture.
 | [0054](0054-adopt-workflow-prefix-for-workflow-skills.md) | Adopt workflow- prefix for workflow skills | superseded by ADR-0055 | 2026-04-24 |
 | [0055](0055-consolidate-user-invocable-false-skills-under-use-prefix.md) | ADR-0055: Consolidate user-invocable:false skills under unified use- prefix with role subcategories | accepted | 2026-04-24 |
 | [0056](0056-remove-redundant-cli-wrapper-skills.md) | ADR-0056: Remove redundant CLI wrapper skills (use-cli-git/gh/npm) | accepted | 2026-04-29 |
-| [0057](0057-make-evaluator-test-a-pure-measurement-agent.md) | Make evaluator-test a Pure Measurement Agent | accepted | 2026-05-01 |
+| [0057](0057-make-evaluator-test-a-pure-measurement-agent.md) | Make evaluator-test a Pure Measurement Agent | retired 2026-07-05. evaluator-test agent removed; Spec-conformance role moved to reviewer-conformance wired into build.js Audit | 2026-05-01 |
 | [0058](0058-inline-single-consumer-agent-context-skills-into-agents.md) | Inline single-consumer agent context skills into agents | accepted | 2026-05-01 |
 | [0059](0059-adopt-tier-3-lite-github-label-strategy.md) | Adopt Tier 3 lite GitHub label strategy across personal projects | Accepted | 2026-05-02 |
 | [0060](0060-adopt-agent-friendly-cli-design-principles.md) | Adopt Agent-Friendly CLI Design Principles | accepted | 2026-05-03 |
@@ -88,6 +88,7 @@ This directory contains important decisions about the project's architecture.
 | [0079](0079-purify-polish-to-external-cli-cleanup-and-fix-audit-boundary.md) | ADR-0079: polish を Codex + cleanup へ純化し audit との境界を確定する | accepted | 2026-06-23 |
 | [0080](0080-design-workflow-outcome-evaluation-instrument-first.md) | ADR-0080: skill/workflow 成果の評価を instrument-first で設計する | accepted | 2026-06-24 |
 | [0081](0081-move-machinery-fan-out-from-skill-prose-to-deterministic-workflow.md) | ADR-0081: machinery の fan-out を skill prose から決定論 workflow へ移す | accepted | 2026-07-01 |
+| [0082](0082-retire-generator-e2e-agent.md) | ADR 0082: generator-e2e エージェントの廃止 | accepted | 2026-07-05 |
 
 ## By Status
 
@@ -102,7 +103,6 @@ This directory contains important decisions about the project's architecture.
 - **0023**: ADR-0023: Build sharpen - rg output optimizer for AI consumption
 - **0027**: ADR-0027: プラグイン定義を sentinels リポに集約する
 - **0028**: ADR 0028: oxc_parser によるテスト品質ゲート litmus の構築
-- **0029**: ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合
 - **0030**: ADR 0030: Claude Code セッション監視 TUI mado の構築
 - **0031**: ADR-0031: ort + Ruri v3 によるローカル embedding 基盤の構築
 - **0032**: ADR-0032: Build esa semantic search CLI (sae)
@@ -149,7 +149,6 @@ This directory contains important decisions about the project's architecture.
 - **0051**: ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent
 - **0055**: ADR-0055: Consolidate user-invocable:false skills under unified use- prefix with role subcategories
 - **0056**: ADR-0056: Remove redundant CLI wrapper skills (use-cli-git/gh/npm)
-- **0057**: Make evaluator-test a Pure Measurement Agent
 - **0058**: Inline single-consumer agent context skills into agents
 - **0060**: Adopt Agent-Friendly CLI Design Principles
 - **0061**: Adopt meta-edit declaration pattern as a new sentinel
@@ -171,10 +170,12 @@ This directory contains important decisions about the project's architecture.
 - **0079**: ADR-0079: polish を Codex + cleanup へ純化し audit との境界を確定する
 - **0080**: ADR-0080: skill/workflow 成果の評価を instrument-first で設計する
 - **0081**: ADR-0081: machinery の fan-out を skill prose から決定論 workflow へ移す
+- **0082**: ADR 0082: generator-e2e エージェントの廃止
 
 ### Superseded
 
 - **0006**: Adopt Deterministic Script Pattern
+- **0029**: ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合
 - **0052**: ADR-0052: Unify skill naming with `use-*` prefix for CLI wrapper skills
 - **0053**: Adopt ctx- prefix for agent-only skills
 - **0054**: Adopt workflow- prefix for workflow skills
@@ -204,5 +205,5 @@ This project uses [MADR (Markdown Any Decision Records)](https://adr.github.io/m
 
 ---
 
-*Last updated: 2026-07-01*
+*Last updated: 2026-07-05*
 *Auto-generated by: update-index.py*

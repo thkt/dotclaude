@@ -45,12 +45,12 @@ Skills are "knowledge modules" that provide domain-specific knowledge when AI ex
 
 ### Categories
 
-| Category       | Skills                                                                                         | Purpose                          |
-| -------------- | ---------------------------------------------------------------------------------------------- | -------------------------------- |
-| Workflow       | use-workflow-code, use-workflow-tdd-cycle, use-workflow-pageshot | Multi-phase workflow definitions |
-| Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                       | Domain knowledge for agents      |
-| CLI wrapper    | use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase                               | CLI tool integration             |
-| User-invocable | think, research, code, audit, polish, feature, fix, adr, etc.                                  | Slash command entry points       |
+| Category       | Skills                                                           | Purpose                          |
+| -------------- | ---------------------------------------------------------------- | -------------------------------- |
+| Workflow       | use-workflow-tdd-cycle, use-workflow-pageshot                    | Multi-phase workflow definitions |
+| Context        | use-context-reviewer-\*, use-context-root-cause-analysis         | Domain knowledge for agents      |
+| CLI wrapper    | use-cli-recall, use-cli-scout, use-cli-gcloud, use-cli-heptabase | CLI tool integration             |
+| User-invocable | think, research, code, audit, polish, feature, fix, adr, etc.    | Slash command entry points       |
 
 ### Loading Mechanism
 
@@ -108,33 +108,32 @@ perform specific analysis or generation tasks.
 agents/
 ├── critics/        # Critical verification (critic-audit, critic-design, critic-evidence)
 ├── enhancers/      # Code improvement + synthesis (enhancer-code, enhancer-evidence, enhancer-integration)
-├── evaluators/     # Quality evaluation (evaluator-test)
 ├── explorers/      # Exploration (explorer-feature)
-├── generators/     # Generation (generator-test, generator-e2e)
+├── generators/     # Generation (generator-test)
 ├── resolvers/      # Problem resolution (resolver-build)
 └── reviewers/      # Review (16 specialized reviewers)
 ```
 
 ### Reviewer Agents (16 types)
 
-| Agent                  | Focus                              |
-| ---------------------- | ---------------------------------- |
-| reviewer-accessibility | WCAG 2.2 conformance               |
-| reviewer-causation     | 5 Whys root cause analysis         |
-| reviewer-coverage      | Test coverage quality              |
-| reviewer-design        | Module depth via deletion test     |
-| reviewer-react-pattern | React design patterns              |
-| reviewer-duplication   | Cross-file DRY analysis            |
-| reviewer-efficiency    | Algorithmic cost, hot paths        |
-| reviewer-operations    | Error boundaries, logging          |
-| reviewer-progressive   | CSS-first, JS reduction            |
-| reviewer-prompt        | LLM prompt definition quality      |
-| reviewer-readability   | Code structure, readability        |
-| reviewer-resilience    | Resilience weakness analysis       |
-| reviewer-reuse         | Existing code reuse opportunities  |
-| reviewer-security      | OWASP Top 10                       |
-| reviewer-silence       | Silent failure detection           |
-| reviewer-testability   | Testable code design               |
+| Agent                  | Focus                             |
+| ---------------------- | --------------------------------- |
+| reviewer-accessibility | WCAG 2.2 conformance              |
+| reviewer-causation     | 5 Whys root cause analysis        |
+| reviewer-coverage      | Test coverage quality             |
+| reviewer-design        | Module depth via deletion test    |
+| reviewer-react-pattern | React design patterns             |
+| reviewer-duplication   | Cross-file DRY analysis           |
+| reviewer-efficiency    | Algorithmic cost, hot paths       |
+| reviewer-operations    | Error boundaries, logging         |
+| reviewer-progressive   | CSS-first, JS reduction           |
+| reviewer-prompt        | LLM prompt definition quality     |
+| reviewer-readability   | Code structure, readability       |
+| reviewer-resilience    | Resilience weakness analysis      |
+| reviewer-reuse         | Existing code reuse opportunities |
+| reviewer-security      | OWASP Top 10                      |
+| reviewer-silence       | Silent failure detection          |
+| reviewer-testability   | Testable code design              |
 
 ### Invocation via Task Tool
 

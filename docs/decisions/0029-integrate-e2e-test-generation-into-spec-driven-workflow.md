@@ -1,6 +1,6 @@
 ---
-status: "proposed"
-date: 2026-03-21
+status: "superseded by ADR-0082"
+date: 2026-07-05
 ---
 
 # ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合
@@ -26,17 +26,17 @@ Spec駆動のE2Eテスト生成を /codeと /featureに統合する。専用agen
 
 ## Considered Options
 
-* A: /e2e を subagent 化 (既存 /e2e をそのまま /code から呼び出し)
-* B: generator-e2e 新設 (Spec 駆動の専用 agent + /e2e 廃止)
-* C: generator-test に統合 (generator-test に agent-browser を追加)
+- A: /e2e を subagent 化 (既存 /e2e をそのまま /code から呼び出し)
+- B: generator-e2e 新設 (Spec 駆動の専用 agent + /e2e 廃止)
+- C: generator-test に統合 (generator-test に agent-browser を追加)
 
 ### 検討したアプローチ
 
-| アプローチ                 | 概要                                    | 判定 |
-| -------------------------- | --------------------------------------- | ---- |
-| A: /e2e を subagent 化     | 既存 /e2e をそのまま /code から呼び出し | 却下 |
-| B: generator-e2e 新設 | Spec 駆動の専用 agent + /e2e 廃止       | 採用 |
-| C: generator-test に統合   | generator-test に agent-browser を追加  | 却下 |
+| アプローチ               | 概要                                    | 判定 |
+| ------------------------ | --------------------------------------- | ---- |
+| A: /e2e を subagent 化   | 既存 /e2e をそのまま /code から呼び出し | 却下 |
+| B: generator-e2e 新設    | Spec 駆動の専用 agent + /e2e 廃止       | 採用 |
+| C: generator-test に統合 | generator-test に agent-browser を追加  | 却下 |
 
 ### Approach A 却下理由
 
@@ -60,7 +60,7 @@ Spec駆動のE2Eテスト生成を /codeと /featureに統合する。専用agen
 | ファイル                                                     | 変更内容                                                       |
 | ------------------------------------------------------------ | -------------------------------------------------------------- |
 | `templates/spec/template.md`                                 | Test Scenarios に `Type: e2e` 行追加                           |
-| `agents/generators/generator-e2e.md`                    | 新規作成（Spec 駆動 + agent-browser）                          |
+| `agents/generators/generator-e2e.md`                         | 新規作成（Spec 駆動 + agent-browser）                          |
 | `skills/code/SKILL.md`                                       | E2E phase（dev server 検出 + 条件付き spawn + error handling） |
 | `skills/feature/SKILL.md`                                    | Phase 4.5 拡張（スクショ後に E2E 生成）                        |
 | `skills/orchestrating-workflows/references/code-workflow.md` | E2E phase 追記                                                 |
