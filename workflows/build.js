@@ -387,14 +387,25 @@ if (preconditions.length) {
       model: "haiku",
     },
   );
-  if (!reval || !Array.isArray(reval.results) || reval.results.length !== preconditions.length) {
+  if (!reval || !Array.isArray(reval.results)) {
     return {
       stopped: "revalidate-failed",
       detail: reval,
-      why: "The revalidate agent did not return results for every precondition.",
+      why: "The revalidate agent returned no results array.",
     };
   }
-  const drift = reval.results.filter((r) => !r.exists || !r.matches);
+  // Bind each precondition to its result by (path, pattern) rather than trusting a
+  // bare count: a launcher that reorders, drops-and-duplicates, or substitutes an
+  // entry keeps the length identical, so a count check alone would mask a real drift.
+  // A precondition with no matching exists&&matches result (missing or failed) is drift.
+  const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
+  const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
+  const drift = [];
+  for (const pc of preconditions) {
+    const r = resultByKey.get(keyOf(pc));
+    if (!r) drift.push({ ...pc, exists: false, matches: false, missing: true });
+    else if (!r.exists || !r.matches) drift.push(r);
+  }
   if (drift.length) {
     return {
       stopped: "plan-drift",
@@ -473,7 +484,11 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
   audit = (await workflow("audit", { repo, skipPreflight: true })) || { findings: [] };
   toFix = criticalHigh(audit);
 }
-const residualBlocking = reaudited ? criticalHigh(audit) : [];
+// When re-audited, criticalHigh(audit) is the (empty, by loop exit) verified set.
+// When the round cap was hit (reaudited === false), toFix holds the final round's
+// critical/high findings that were fixed but never re-audited — surface them so the
+// PR enumerates the possibly-unresolved blockers instead of only a generic warning.
+const residualBlocking = reaudited ? criticalHigh(audit) : toFix;
 
 // ---- Polish: cleanup only (simplify -> enhancer-code -> test validation) ----
 // The review lens was consumed in the Audit phase, so only the mutators run here.
@@ -490,12 +505,11 @@ const cleanup = await workflow("polish", { repo, mode: "cleanup" });
 // the ones worth filing via the /issue skill, which carries the premise-check /
 // challenge refinement build expects from an issue.
 phase("Backlog");
+// code.anomalies are NOT folded in here: they are Red-unconfirmed build-integrity
+// signals, rendered once under the PR's dedicated "Anomalies" section (via
+// shipPayload.code_anomalies). Folding them here too listed every anomaly twice.
 const backlogCandidates = [
   ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
-  ...(code.anomalies || []).map((a) => ({
-    source: "code",
-    summary: `Red unconfirmed in ${a.unit} (${a.kind}): ${a.notes}`,
-  })),
   ...(audit.findings || [])
     .filter((f) => f.severity === "medium" || f.severity === "low")
     .map((f) => ({ source: "audit", summary: f.summary, file: f.file, severity: f.severity })),
@@ -519,7 +533,11 @@ if (backlogCandidates.length) {
 // not-re-audited warning / verify result); only that tail is delegated to the
 // deterministic renderer workflows/build/pr-body.py, so a fact section is never
 // silently dropped or softened. The agent appends the rendered tail rather than
-// retyping it.
+// retyping it, and chains the append with `gh pr create` via `&&` so that if the
+// renderer fails (malformed / missing-field payload → exit 1, no output) the PR is
+// not created at all, rather than shipping one missing the fail-closed tail. The
+// pass/fail gating of the verify log lives only in pr-body.py (it reads
+// verify_output solely on failure), so the payload passes it through unconditionally.
 phase("Ship");
 const shipPayload = {
   issue: issueNumber,
@@ -530,7 +548,7 @@ const shipPayload = {
   code_anomalies: code.anomalies || [],
   tests_pass: code.tests_pass,
   gates_pass: code.gates_pass,
-  verify_output: code.tests_pass && code.gates_pass ? "" : code.verify_output || "",
+  verify_output: code.verify_output || "",
 };
 const ship = await agent(
   anchor(
@@ -538,8 +556,9 @@ const ship = await agent(
       `Push the branch, then open a draft pull request. Its body is a human-facing Summary you write, followed by deterministic fact sections rendered from data (do not hand-write the fact sections):\n` +
       `(1) write a terse "## Summary" to a body file for the human reviewer — markdown bullets, not prose paragraphs: what this PR implements (outcome: ${JSON.stringify(plan.outcome)}), the approach in a line, and where to focus review. At most ~5 bullets; no filler, no invented facts.\n` +
       `(2) write this exact JSON to a temp file:\n${JSON.stringify(shipPayload)}\n` +
-      `(3) append the deterministic sections to the body file: from the repository root run \`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile>\`;\n` +
-      `(4) run \`gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
+      `(3) append the fact tail and open the PR as ONE \`&&\` chain, so a renderer failure aborts before the PR is created — from the repository root run ` +
+      `\`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile> && gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
+      `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do NOT create the PR by other means — report committed with an empty pr_url and the error instead, so the missing fact tail surfaces rather than shipping a PR without it.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),
   { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },

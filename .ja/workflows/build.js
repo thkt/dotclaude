@@ -357,14 +357,24 @@ if (preconditions.length) {
       model: "haiku",
     },
   );
-  if (!reval || !Array.isArray(reval.results) || reval.results.length !== preconditions.length) {
+  if (!reval || !Array.isArray(reval.results)) {
     return {
       stopped: "revalidate-failed",
       detail: reval,
-      why: "revalidate agent が全 preconditions の results を返さなかった。",
+      why: "revalidate agent が results 配列を返さなかった。",
     };
   }
-  const drift = reval.results.filter((r) => !r.exists || !r.matches);
+  // 各 precondition を (path, pattern) で result に束縛する。単なる件数一致に頼らない:
+  // launcher が並べ替え・drop して重複補填・差し替えをしても長さは同じになり、件数だけでは
+  // 実 drift を見逃す。対応する exists&&matches result が無い (欠落 or 失敗) precondition は drift。
+  const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
+  const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
+  const drift = [];
+  for (const pc of preconditions) {
+    const r = resultByKey.get(keyOf(pc));
+    if (!r) drift.push({ ...pc, exists: false, matches: false, missing: true });
+    else if (!r.exists || !r.matches) drift.push(r);
+  }
   if (drift.length) {
     return {
       stopped: "plan-drift",
@@ -444,7 +454,11 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
   audit = (await workflow("audit", { repo, skipPreflight: true })) || { findings: [] };
   toFix = criticalHigh(audit);
 }
-const residualBlocking = reaudited ? criticalHigh(audit) : [];
+// re-audit 済みなら criticalHigh(audit) は (ループ退出条件より空の) 検証済み集合。
+// round 上限に達した (reaudited === false) 場合、toFix は最終 round で修正したが
+// re-audit していない critical/high findings を保持する。汎用警告だけでなく PR に
+// 「未解決の可能性がある blocker」を列挙するため surface する。
+const residualBlocking = reaudited ? criticalHigh(audit) : toFix;
 
 // ---- Polish: cleanup のみ (simplify -> enhancer-code -> テスト検証) ----
 // review レンズは Audit phase で消化済みなので、ここは mutator だけを回す。
@@ -457,13 +471,12 @@ const cleanup = await workflow("polish", { repo, mode: "cleanup" });
 // 未成熟で重複しやすい issue を量産し、自動化への信頼を下げる。起票は最終出力に委ねる —
 // 候補を PR body と戻り値に載せ、起票に値するものはユーザーが /issue skill で立てる。
 // /issue は build が issue に期待する premise-check / challenge の refine を通す。
+// code.anomalies はここに畳まない: Red 未確認の build 健全性シグナルであり、PR の専用
+// "Anomalies" 節 (shipPayload.code_anomalies 経由) で一度だけ描画する。ここにも畳むと
+// 各 anomaly が二重に列挙されていた。
 phase("Backlog");
 const backlogCandidates = [
   ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
-  ...(code.anomalies || []).map((a) => ({
-    source: "code",
-    summary: `${a.unit} で Red 未確認 (${a.kind}): ${a.notes}`,
-  })),
   ...(audit.findings || [])
     .filter((f) => f.severity === "medium" || f.severity === "low")
     .map((f) => ({ source: "audit", summary: f.summary, file: f.file, severity: f.severity })),
@@ -484,7 +497,10 @@ if (backlogCandidates.length) {
 // (commit メッセージと同様)。その下に、script が既に持つ構造化事実 (assumption /
 // backlog 候補 / 未解決 finding / 未 re-audit 警告 / verify 結果) の fail-closed な転記が
 // 続く。この tail だけを決定論 renderer workflows/build/pr-body.py に委ね、事実セクションの
-// 欠落や和らげを起こさせない。agent は tail を再入力せず append する。
+// 欠落や和らげを起こさせない。agent は tail を再入力せず append し、append と `gh pr create` を
+// `&&` で連結する。renderer が失敗 (payload 不正 / 必須欠落 → exit 1、出力なし) したら PR は
+// 一切作られず、tail の欠けた PR を出さない。verify ログの pass/fail 判定は pr-body.py だけが
+// 持つ (失敗時のみ verify_output を読む) ので、payload は無条件でそれを渡す。
 phase("Ship");
 const shipPayload = {
   issue: issueNumber,
@@ -495,7 +511,7 @@ const shipPayload = {
   code_anomalies: code.anomalies || [],
   tests_pass: code.tests_pass,
   gates_pass: code.gates_pass,
-  verify_output: code.tests_pass && code.gates_pass ? "" : code.verify_output || "",
+  verify_output: code.verify_output || "",
 };
 const ship = await agent(
   anchor(
@@ -503,8 +519,9 @@ const ship = await agent(
       `branch を push し、draft pull request を開く。body は自分で書く人間向け Summary と、データから決定論生成した事実セクションの 2 部構成にする (事実セクションは手書きしない):\n` +
       `(1) 人間レビュアー向けの簡潔な "## Summary" を body file に書く — 散文の段落でなく markdown の箇条書きで: この PR が何を実装したか (outcome: ${JSON.stringify(plan.outcome)})、アプローチを 1 行、レビューで注視すべき箇所。最大 5 項目程度、冗長表現も事実の捏造もしない。\n` +
       `(2) この JSON をそのまま temp file に書き出す:\n${JSON.stringify(shipPayload)}\n` +
-      `(3) 事実セクションを body file に追記する: repository root から \`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile>\` を実行する。\n` +
-      `(4) \`gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +
+      `(3) 事実 tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、renderer 失敗時は PR を作る前に中断する — repository root から ` +
+      `\`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile> && gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +
+      `pr-body.py は payload が不正・必須フィールド欠落なら非 0 で終了し (何も出力しない)。チェーンが失敗したら他の手段で PR を作らず、committed と空の pr_url とエラーを報告する。tail の欠けた PR を出すより欠落を surface する。\n` +
       `committed 状態と PR url を報告する。${guard}`,
   ),
   { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },

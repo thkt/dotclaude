@@ -4,7 +4,7 @@
 Run: python3 workflows/build/tests/pr_body_test.py
 
 render() is exercised directly; the CLI contract (stdin JSON -> stdout markdown,
-fail-closed exit 1 on a bad payload) is exercised via subprocess.
+fail-closed exit 1 on a bad or incomplete payload) is exercised via subprocess.
 """
 
 import importlib.util
@@ -39,7 +39,6 @@ class RenderTest(unittest.TestCase):
     def test_closes_and_status_line(self):
         body = pr_body.render(FULL)
         self.assertIn("Closes #123", body)
-        # One-line status chip carries the safety-critical facts.
         self.assertIn("`verify tests=pass gates=pass` · `blocking 1`", body)
 
     def test_lists_use_bold_labels_and_bullets(self):
@@ -55,24 +54,23 @@ class RenderTest(unittest.TestCase):
 
     def test_clean_run_omits_empty_sections_and_stays_short(self):
         body = pr_body.render(CLEAN)
-        # No "None" noise; informational sections are dropped entirely.
         self.assertNotIn("None", body)
         self.assertNotIn("**Assumptions", body)
         self.assertNotIn("**Backlog", body)
+        self.assertNotIn("**Unresolved", body)
         self.assertNotIn("**Anomalies", body)
-        # But the safety-critical status is still present.
         self.assertIn("`blocking 0`", body)
-        # A clean run is compact: only Closes + the status line carry content
-        # (plus the leading rule); no per-section "None" blocks.
         non_empty = [ln for ln in body.splitlines() if ln.strip() and ln.strip() != "---"]
         self.assertEqual(len(non_empty), 2, non_empty)
 
-    def test_not_reaudited_warns_and_drops_the_clean_findings_list(self):
-        body = pr_body.render({**FULL, "reaudited": False, "residual_blocking": []})
-        self.assertIn("`blocking not re-audited`", body)
+    def test_not_reaudited_warns_and_still_lists_residual(self):
+        # Round-3 cap: the warning appears AND the unverified findings are enumerated
+        # (they are no longer hidden behind a generic warning).
+        body = pr_body.render({**FULL, "reaudited": False})
+        self.assertIn("`blocking 1 (not re-audited)`", body)
         self.assertIn("> **Not re-audited**", body)
-        # When not re-audited the callout stands in for the findings list.
-        self.assertNotIn("**Unresolved critical/high**", body)
+        self.assertIn("**Unresolved critical/high**", body)
+        self.assertIn("- [high] leak (y.js)", body)
 
     def test_verify_failure_uses_collapsed_details(self):
         body = pr_body.render({**FULL, "tests_pass": False, "verify_output": "boom stacktrace"})
@@ -80,15 +78,30 @@ class RenderTest(unittest.TestCase):
         self.assertIn("<details><summary>verify output</summary>", body)
         self.assertIn("```\nboom stacktrace\n```", body)
 
+    def test_verify_output_containing_a_fence_does_not_break_out(self):
+        # A test log that itself contains ``` must not terminate the code block early.
+        log = "assert failed on:\n```\nfoo\n```\nend"
+        body = pr_body.render({**FULL, "gates_pass": False, "verify_output": log})
+        # The chosen fence is longer than the longest backtick run in the log.
+        self.assertIn("````\n" + log + "\n````", body)
+
     def test_verify_pass_has_no_details_block(self):
         body = pr_body.render(FULL)
         self.assertNotIn("<details>", body)
         self.assertNotIn("```", body)
 
+    def test_non_dict_item_degrades_instead_of_crashing(self):
+        # A malformed (non-dict) list item must not raise and drop the whole tail.
+        body = pr_body.render({**CLEAN, "backlog_candidates": ["a bare string", None]})
+        self.assertIn("**Backlog — file via `/issue`**", body)
+        self.assertIn("- a bare string", body)
+
+    def test_list_item_newline_stays_on_one_line(self):
+        body = pr_body.render({**CLEAN, "assumptions": ["line one\n# not a heading"]})
+        self.assertIn("- line one # not a heading", body)
+        self.assertNotIn("\n# not a heading", body)
+
     def test_leads_with_blank_line_and_rule_for_safe_append(self):
-        # Appended after the agent's Summary via >>, the tail must start with a blank
-        # line then a horizontal rule so the summary's last line is never parsed as a
-        # setext heading and the two parts stay visually separated.
         self.assertTrue(pr_body.render(FULL).startswith("\n\n---\n\n"))
 
 
@@ -111,6 +124,15 @@ class CliTest(unittest.TestCase):
     def test_non_object_fails_closed(self):
         proc = self._run("[1,2,3]")
         self.assertEqual(proc.returncode, 1)
+
+    def test_missing_required_key_fails_closed(self):
+        # A shipPayload that dropped a safety-critical key must not render a
+        # plausible "clean" body — it must exit 1 so the caller's && chain aborts.
+        for key in ("reaudited", "tests_pass", "gates_pass"):
+            payload = {k: v for k, v in FULL.items() if k != key}
+            proc = self._run(json.dumps(payload))
+            self.assertEqual(proc.returncode, 1, f"missing {key} should fail closed")
+            self.assertEqual(proc.stdout, "")
 
 
 if __name__ == "__main__":
