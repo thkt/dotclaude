@@ -1,33 +1,29 @@
 #!/usr/bin/env python3
 """Usage: pr-body.py   (ship payload JSON on stdin)
 
-Deterministically render the build workflow's draft-PR body from structured data
-build.js already holds, so the Ship agent does not hand-write it. The PR body is a
-fail-closed surface -- it must always carry the user's veto targets (assumptions),
-the unresolved critical/high findings, the "not re-audited" warning, and the verify
-result -- and an LLM asked to "include all of the following" can silently drop or
-soften a section. Moving the assembly here makes section presence and the
-conditional wording tested code, not prompt adherence. The Ship agent is reduced to:
-write the commit message, run git commit/push, pipe this payload in, and open the PR
-with the generated body file. The commit message (a diff summary) stays the LLM's.
+Deterministically render the build workflow's draft-PR fact tail from structured
+data build.js already holds, so the Ship agent does not hand-write it. The PR body
+is a fail-closed surface -- it must always carry the verify result, the unresolved
+critical/high count, and the "not re-audited" warning -- and an LLM asked to
+"include all of the following" can silently drop or soften a section. Moving the
+assembly here makes those guarantees tested code, not prompt adherence. The agent
+writes only the lead "## Summary" (the human reviewer's entry point) and appends
+this tail below it.
+
+Format is deliberately terse and markdown-structured (a one-line status, bold
+labels, bullets, a collapsed <details> for a failure log). Safety-critical facts
+live in the always-present status line / callout; purely informational lists
+(assumptions, backlog, anomalies) are shown only when non-empty, so a clean run
+stays short instead of repeating "None" per section.
 
 stdin:  JSON {issue, assumptions[], backlog_candidates[], residual_blocking[],
               reaudited, code_anomalies[], tests_pass, gates_pass, verify_output}
-stdout: the PR body markdown.
-exit 0 on a completed run. exit 1 on a parse error (fail-closed: a malformed payload
-never yields a body that silently omits the required sections).
+stdout: the markdown fact tail, led by a blank line + horizontal rule.
+exit 0 on a completed run. exit 1 on a parse error (fail-closed).
 """
 
 import json
 import sys
-
-
-def _lines(items, render, empty):
-    """Render a bullet list via render(item), or the empty placeholder."""
-    items = items if isinstance(items, list) else []
-    if not items:
-        return empty
-    return "\n".join(f"- {render(x)}" for x in items)
 
 
 def _suffix(*parts):
@@ -36,70 +32,59 @@ def _suffix(*parts):
     return f" ({', '.join(kept)})" if kept else ""
 
 
+def _list(items):
+    return items if isinstance(items, list) else []
+
+
 def render(payload):
     issue = str(payload.get("issue", "")).strip()
     reaudited = bool(payload.get("reaudited", True))
-    tests_pass = bool(payload.get("tests_pass"))
-    gates_pass = bool(payload.get("gates_pass"))
+    tests = "pass" if payload.get("tests_pass") else "FAIL"
+    gates = "pass" if payload.get("gates_pass") else "FAIL"
+    residual = _list(payload.get("residual_blocking"))
 
-    sections = []
-    sections.append(f"Closes #{issue}" if issue else "Closes #")
+    out = [f"Closes #{issue}" if issue else "Closes #"]
 
-    sections.append(
-        "## Assumptions (veto targets)\n"
-        + _lines(payload.get("assumptions"), lambda a: str(a), "_None recorded._")
-    )
+    blocking = str(len(residual)) if reaudited else "not re-audited"
+    out.append(f"`verify tests={tests} gates={gates}` · `blocking {blocking}`")
 
-    sections.append(
-        "## Backlog candidates\n"
-        "The build does not file these. Triage and run `/issue` on the ones worth filing.\n\n"
-        + _lines(
-            payload.get("backlog_candidates"),
-            lambda c: f"[{c.get('source', '?')}] {c.get('summary', '')}".rstrip()
-            + _suffix(c.get("file"), c.get("severity")),
-            "_None._",
-        )
-    )
+    if not reaudited:
+        out.append("> **Not re-audited** — final fix round unverified; blocking findings may remain.")
 
-    if reaudited:
-        finding_block = _lines(
-            payload.get("residual_blocking"),
-            lambda f: f"[{f.get('severity', '?')}] {f.get('summary', '')}".rstrip()
-            + _suffix(f.get("file")),
-            "_None; audit reached zero critical/high._",
-        )
-    else:
-        # residual_blocking is empty by construction when the fix-round cap was hit;
-        # the real signal is that the last round's fixes were never re-audited.
-        finding_block = (
-            "> The final fix round was not re-audited (re-audit budget spent); "
-            "unresolved critical/high findings may remain."
-        )
-    sections.append("## Unresolved critical/high findings\n" + finding_block)
-
-    sections.append(
-        "## Red-unconfirmed anomalies\n"
-        + _lines(
-            payload.get("code_anomalies"),
-            lambda a: f"{a.get('unit', '?')} ({a.get('kind', '?')}): {a.get('notes', '')}".rstrip(),
-            "_None._",
-        )
-    )
-
-    verify = f"tests: {'pass' if tests_pass else 'FAIL'}, gates: {'pass' if gates_pass else 'FAIL'}"
-    if not (tests_pass and gates_pass):
+    if tests == "FAIL" or gates == "FAIL":
         detail = payload.get("verify_output")
         if detail:
             body = detail if isinstance(detail, str) else json.dumps(detail, indent=2)
-            verify += "\n\n```\n" + body + "\n```"
-    sections.append("## Independent verify\n" + verify)
+            out.append(f"<details><summary>verify output</summary>\n\n```\n{body}\n```\n\n</details>")
 
-    # Lead with a blank line + horizontal rule so this machine-rendered tail stays
-    # cleanly separated when appended (>>) below the agent's hand-written Summary,
-    # regardless of the summary's trailing newline (the blank line prevents the rule
-    # from being parsed as a setext heading underline for the last summary line). The
-    # rule also signals to human reviewers where the auto-generated section begins.
-    return "\n\n---\n\n" + "\n\n".join(sections) + "\n"
+    def section(label, items, render_item):
+        items = _list(items)
+        if items:
+            out.append(f"**{label}**\n" + "\n".join(f"- {render_item(x)}" for x in items))
+
+    section("Assumptions (veto targets)", payload.get("assumptions"), str)
+    section(
+        "Backlog — file via `/issue`",
+        payload.get("backlog_candidates"),
+        lambda c: f"[{c.get('source', '?')}] {c.get('summary', '')}".rstrip()
+        + _suffix(c.get("file"), c.get("severity")),
+    )
+    if reaudited:
+        section(
+            "Unresolved critical/high",
+            residual,
+            lambda f: f"[{f.get('severity', '?')}] {f.get('summary', '')}".rstrip() + _suffix(f.get("file")),
+        )
+    section(
+        "Anomalies (Red unconfirmed)",
+        payload.get("code_anomalies"),
+        lambda a: f"{a.get('unit', '?')} ({a.get('kind', '?')}): {a.get('notes', '')}".rstrip(),
+    )
+
+    # Lead with a blank line + rule so this machine tail stays separated when appended
+    # (>>) below the agent's Summary, without turning the summary's last line into a
+    # setext heading, and to signal where the auto-generated section begins.
+    return "\n\n---\n\n" + "\n\n".join(out) + "\n"
 
 
 def main():

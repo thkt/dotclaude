@@ -501,7 +501,7 @@ const ship = await agent(
   anchor(
     `全変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にする。commit メッセージは自分で書く (diff を要約する)。` +
       `branch を push し、draft pull request を開く。body は自分で書く人間向け Summary と、データから決定論生成した事実セクションの 2 部構成にする (事実セクションは手書きしない):\n` +
-      `(1) 人間レビュアー向けの "## Summary" を body file に書く: この PR が何を実装したか (outcome: ${JSON.stringify(plan.outcome)})、取ったアプローチ、レビュアーが注視すべき箇所。数文か箇条書き — 事実を捏造しない。\n` +
+      `(1) 人間レビュアー向けの簡潔な "## Summary" を body file に書く — 散文の段落でなく markdown の箇条書きで: この PR が何を実装したか (outcome: ${JSON.stringify(plan.outcome)})、アプローチを 1 行、レビューで注視すべき箇所。最大 5 項目程度、冗長表現も事実の捏造もしない。\n` +
       `(2) この JSON をそのまま temp file に書き出す:\n${JSON.stringify(shipPayload)}\n` +
       `(3) 事実セクションを body file に追記する: repository root から \`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile>\` を実行する。\n` +
       `(4) \`gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +

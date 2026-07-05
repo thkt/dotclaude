@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for workflows/build/pr-body.py (deterministic draft-PR body renderer).
+"""Tests for workflows/build/pr-body.py (deterministic draft-PR fact renderer).
 
 Run: python3 workflows/build/tests/pr_body_test.py
 
@@ -32,56 +32,64 @@ FULL = {
     "gates_pass": True,
     "verify_output": "",
 }
+CLEAN = {"issue": "9", "reaudited": True, "tests_pass": True, "gates_pass": True}
 
 
 class RenderTest(unittest.TestCase):
-    def test_closes_reference(self):
-        self.assertIn("Closes #123", pr_body.render(FULL))
-
-    def test_all_required_headings_present(self):
+    def test_closes_and_status_line(self):
         body = pr_body.render(FULL)
-        for heading in [
-            "## Assumptions (veto targets)",
-            "## Backlog candidates",
-            "## Unresolved critical/high findings",
-            "## Red-unconfirmed anomalies",
-            "## Independent verify",
-        ]:
-            self.assertIn(heading, body)
+        self.assertIn("Closes #123", body)
+        # One-line status chip carries the safety-critical facts.
+        self.assertIn("`verify tests=pass gates=pass` · `blocking 1`", body)
 
-    def test_lists_are_rendered(self):
+    def test_lists_use_bold_labels_and_bullets(self):
         body = pr_body.render(FULL)
+        self.assertIn("**Assumptions (veto targets)**", body)
         self.assertIn("- assume A", body)
-        self.assertIn("[issue] cand one (x.js)", body)
-        self.assertIn("[high] leak (y.js)", body)
-        self.assertIn("U-001 (no-red): flaky", body)
+        self.assertIn("**Backlog — file via `/issue`**", body)
+        self.assertIn("- [issue] cand one (x.js)", body)
+        self.assertIn("**Unresolved critical/high**", body)
+        self.assertIn("- [high] leak (y.js)", body)
+        self.assertIn("**Anomalies (Red unconfirmed)**", body)
+        self.assertIn("- U-001 (no-red): flaky", body)
 
-    def test_empty_sections_show_placeholder(self):
-        body = pr_body.render({"issue": "9", "reaudited": True, "tests_pass": True, "gates_pass": True})
-        self.assertIn("_None recorded._", body)  # assumptions
-        self.assertIn("_None; audit reached zero critical/high._", body)  # findings
+    def test_clean_run_omits_empty_sections_and_stays_short(self):
+        body = pr_body.render(CLEAN)
+        # No "None" noise; informational sections are dropped entirely.
+        self.assertNotIn("None", body)
+        self.assertNotIn("**Assumptions", body)
+        self.assertNotIn("**Backlog", body)
+        self.assertNotIn("**Anomalies", body)
+        # But the safety-critical status is still present.
+        self.assertIn("`blocking 0`", body)
+        # A clean run is compact: only Closes + the status line carry content
+        # (plus the leading rule); no per-section "None" blocks.
+        non_empty = [ln for ln in body.splitlines() if ln.strip() and ln.strip() != "---"]
+        self.assertEqual(len(non_empty), 2, non_empty)
 
-    def test_not_reaudited_emits_warning_not_a_clean_list(self):
+    def test_not_reaudited_warns_and_drops_the_clean_findings_list(self):
         body = pr_body.render({**FULL, "reaudited": False, "residual_blocking": []})
-        self.assertIn("final fix round was not re-audited", body.lower())
-        self.assertNotIn("_None; audit reached zero critical/high._", body)
+        self.assertIn("`blocking not re-audited`", body)
+        self.assertIn("> **Not re-audited**", body)
+        # When not re-audited the callout stands in for the findings list.
+        self.assertNotIn("**Unresolved critical/high**", body)
 
-    def test_verify_failure_includes_detail_block(self):
+    def test_verify_failure_uses_collapsed_details(self):
         body = pr_body.render({**FULL, "tests_pass": False, "verify_output": "boom stacktrace"})
-        self.assertIn("tests: FAIL", body)
+        self.assertIn("`verify tests=FAIL gates=pass`", body)
+        self.assertIn("<details><summary>verify output</summary>", body)
         self.assertIn("```\nboom stacktrace\n```", body)
 
-    def test_verify_pass_has_no_detail_block(self):
+    def test_verify_pass_has_no_details_block(self):
         body = pr_body.render(FULL)
-        self.assertIn("tests: pass, gates: pass", body)
+        self.assertNotIn("<details>", body)
         self.assertNotIn("```", body)
 
     def test_leads_with_blank_line_and_rule_for_safe_append(self):
         # Appended after the agent's Summary via >>, the tail must start with a blank
         # line then a horizontal rule so the summary's last line is never parsed as a
         # setext heading and the two parts stay visually separated.
-        body = pr_body.render(FULL)
-        self.assertTrue(body.startswith("\n\n---\n\n"), repr(body[:8]))
+        self.assertTrue(pr_body.render(FULL).startswith("\n\n---\n\n"))
 
 
 class CliTest(unittest.TestCase):

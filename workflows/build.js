@@ -536,7 +536,7 @@ const ship = await agent(
   anchor(
     `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit — you write the commit message (summarize the diff). ` +
       `Push the branch, then open a draft pull request. Its body is a human-facing Summary you write, followed by deterministic fact sections rendered from data (do not hand-write the fact sections):\n` +
-      `(1) write a concise "## Summary" to a body file for the human reviewer: what this PR implements (outcome: ${JSON.stringify(plan.outcome)}), the approach taken, and where reviewers should focus. A few sentences or bullets — no invented facts.\n` +
+      `(1) write a terse "## Summary" to a body file for the human reviewer — markdown bullets, not prose paragraphs: what this PR implements (outcome: ${JSON.stringify(plan.outcome)}), the approach in a line, and where to focus review. At most ~5 bullets; no filler, no invented facts.\n` +
       `(2) write this exact JSON to a temp file:\n${JSON.stringify(shipPayload)}\n` +
       `(3) append the deterministic sections to the body file: from the repository root run \`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile>\`;\n` +
       `(4) run \`gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
