@@ -11,16 +11,16 @@ paths:
 
 カテゴリ別に選ぶ。helper, utils, tools のような汎用名は使わない。
 
-| user-invocable | バインド   | パターン              | 例                                              |
-| -------------- | ---------- | --------------------- | ----------------------------------------------- |
-| true           | -          | 短縮名                | commit, fix, audit                              |
-| false          | CLI ラップ | `use-cli-<cli>`       | use-cli-recall, use-cli-scout                   |
-| false          | Agent 専用 | `use-context-<agent>` | use-context-reviewer-security                   |
-| false          | Workflow   | `use-workflow-<noun>` | use-workflow-code, use-workflow-tdd-cycle |
+| user-invocable | バインド   | パターン              | 例                                            |
+| -------------- | ---------- | --------------------- | --------------------------------------------- |
+| true           | -          | 短縮名                | commit, fix, audit                            |
+| false          | CLI ラップ | `use-cli-<cli>`       | use-cli-recall, use-cli-scout                 |
+| false          | Agent 専用 | `use-context-<agent>` | use-context-reviewer-security                 |
+| false          | Workflow   | `use-workflow-<noun>` | use-workflow-tdd-cycle, use-workflow-pageshot |
 
 ## ディレクトリ構造
 
-すべてのスキルは skills/ 直下に置く。Claude は SKILL.md を最初に読み、references は必要なときだけ読む。共有フラグメントは _lib/ 直下に置く。
+すべてのスキルは skills/ 直下に置く。Claude は SKILL.md を最初に読み、references は必要なときだけ読む。共有フラグメントは \_lib/ 直下に置く。
 
 ```text
 skills/

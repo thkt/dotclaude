@@ -15,7 +15,6 @@ paths:
 | ----------- | -------------------- | ----------------- |
 | critic-     | 反論                 | critic-design     |
 | enhancer-   | コード改善・結果統合 | enhancer-code     |
-| evaluator-  | 品質評価             | evaluator-test    |
 | explorer-   | コードベース探索     | explorer-feature  |
 | generator-  | アーティファクト生成 | generator-test    |
 | resolver-   | エラー修正           | resolver-build    |

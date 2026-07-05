@@ -33,8 +33,7 @@ Commands are orchestrators, no implementation details.
 ```markdown
 # Good: /code
 
-- Skills: use-workflow-code (RGRC definition)
-- Agents: generator-test (test generation)
+- Skills: use-workflow-tdd-cycle (RGRC cycle definition)
 - Native: /goal (optional autonomous iteration)
 
 # Bad
@@ -61,14 +60,14 @@ confirmation (same functionality)
 
 ## Command → Skill/Agent Mapping
 
-| Command   | Skills Used                               | Agents Used                                                     |
-| --------- | ----------------------------------------- | --------------------------------------------------------------- |
-| `/think`  | -                                         | -                                                               |
-| `/code`   | use-workflow-code, use-workflow-tdd-cycle | generator-test                                                  |
-| `/audit`  | -                                         | tier-based reviewer agents (3 or file-routed from 17)           |
-| `/fix`    | use-context-root-cause-analysis           | generator-test, resolver-build                                  |
-| `/polish` | -                                         | enhancer-code                                                   |
-| `/build`  | think, code, audit, fix, polish (chained) | -                                                               |
+| Command   | Skills Used                               | Agents Used                                           |
+| --------- | ----------------------------------------- | ----------------------------------------------------- |
+| `/think`  | -                                         | -                                                     |
+| `/code`   | use-workflow-tdd-cycle                    | -                                                     |
+| `/audit`  | -                                         | tier-based reviewer agents (3 or file-routed from 17) |
+| `/fix`    | use-context-root-cause-analysis           | generator-test, resolver-build                        |
+| `/polish` | -                                         | enhancer-code                                         |
+| `/build`  | think, code, audit, fix, polish (chained) | -                                                     |
 
 ## File Structure
 

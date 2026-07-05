@@ -31,10 +31,7 @@
         "./skills/research/SKILL.md",
         "./skills/slice/SKILL.md"
       ],
-      "agents": [
-        "./agents/explorers/explorer-feature.md",
-        "./agents/critics/critic-design.md"
-      ]
+      "agents": ["./agents/explorers/explorer-feature.md", "./agents/critics/critic-design.md"]
     },
     {
       "name": "build",
@@ -57,11 +54,9 @@
       "agents": [
         "./agents/resolvers/resolver-build.md",
         "./agents/enhancers/enhancer-code.md",
-        "./agents/generators/generator-test.md",
-        "./agents/generators/generator-e2e.md",
-        "./agents/evaluators/evaluator-test.md"
+        "./agents/generators/generator-test.md"
       ],
-      "skills": ["./skills/use-workflow-tdd-cycle/SKILL.md", "./skills/use-workflow-code/SKILL.md"]
+      "skills": ["./skills/use-workflow-tdd-cycle/SKILL.md"]
     },
     {
       "name": "review",
