@@ -78,7 +78,11 @@ const mergeIssues = (findings) => {
       .replace(/^\[|\]$/g, "");
     const sev = SEVERITY_MAP[key] === undefined ? null : SEVERITY_MAP[key];
     if (!sev) continue;
-    const sources = Array.isArray(f.source) ? f.source : f.source ? [f.source] : [];
+    const sources = Array.isArray(f.source)
+      ? f.source
+      : f.source
+        ? [f.source]
+        : [];
     const k = `${f.file || ""}:${f.line || 0}`;
     const prev = groups.get(k);
     if (!prev) {
@@ -117,7 +121,8 @@ const BOOTSTRAP_SCHEMA = {
     scope_files: { type: "array", items: { type: "string" } },
     outcome: {
       type: "string",
-      description: "OUTCOME.md の Behavior / Non-goals / Constraints 要約。不在なら absent",
+      description:
+        "OUTCOME.md の Behavior / Non-goals / Constraints 要約。不在なら absent",
     },
     worktree_ok: { type: "boolean" },
     worktree_path: { type: "string" },
@@ -212,7 +217,10 @@ const SYNTH_SCHEMA = {
         properties: {
           file: { type: "string" },
           line: { type: "number" },
-          severity: { type: "string", enum: ["critical", "high", "medium", "low"] },
+          severity: {
+            type: "string",
+            enum: ["critical", "high", "medium", "low"],
+          },
           summary: { type: "string" },
           source: { type: "array", items: { type: "string" } },
         },
@@ -260,7 +268,10 @@ if (!boot.codex_available) {
   };
 }
 if (boot.mode === "none") {
-  return { stopped: "no-changes", why: boot.reason || "assert 対象の変更が無い。" };
+  return {
+    stopped: "no-changes",
+    why: boot.reason || "assert 対象の変更が無い。",
+  };
 }
 
 // env fail (worktree 不可 / install fail) と build smoke fail (対象がビルドできない) を区別する。
@@ -277,7 +288,13 @@ log(
 let gate = "NotReady";
 let issues = [];
 let testsCol = "skipped";
-let adversarialSummary = { total: 0, passed: 0, failed: 0, promoted: 0, excluded: 0 };
+let adversarialSummary = {
+  total: 0,
+  passed: 0,
+  failed: 0,
+  promoted: 0,
+  excluded: 0,
+};
 let synth = null;
 let codexReview = null;
 let audit = null;
@@ -325,7 +342,11 @@ try {
   // target mode は path を素通しする。audit の Route は git diff ベースなので target mode では
   // 列挙が痩せる可能性がある (既知の制約。Codex review と adversarial は明示 file list で補う)。
   const auditScope =
-    boot.mode === "diff" ? (boot.diff_kind === "branch" ? `${base}...HEAD` : "") : scope;
+    boot.mode === "diff"
+      ? boot.diff_kind === "branch"
+        ? `${base}...HEAD`
+        : ""
+      : scope;
   const codexScopeInstr =
     boot.mode === "target"
       ? `target mode なので scope flag を付けず、対象ファイル一覧を PROMPT で指名して \`codex review "Review these files: ${boot.scope_files.join(", ")}"\` を実行する。`
@@ -352,11 +373,14 @@ try {
           schema: CODEX_REVIEW_SCHEMA,
         },
       );
-      const findings = ((codexReview && codexReview.findings) || []).map((f) => ({
-        ...f,
-        source: "codex",
-      }));
-      if (!findings.length) return { codexFindings: findings, challenged: null, verified: null };
+      const findings = ((codexReview && codexReview.findings) || []).map(
+        (f) => ({
+          ...f,
+          source: "codex",
+        }),
+      );
+      if (!findings.length)
+        return { codexFindings: findings, challenged: null, verified: null };
       // ---- Challenge: Codex findings への challenger ∥ verifier ----
       // 各 agent の opts.phase が Challenge group を指定する。bare phase() は audit thunk と
       // 並走して global phase state を race させるため呼ばない (audit.js の workaround と同旨)。
@@ -367,14 +391,24 @@ try {
             anchor(
               `critic-audit として、外部 Codex review の finding を challenge し false positive を刈る。finding は事実ではなく、立証されるべき主張として扱う。各 finding は file:line で参照する。Findings:\n${codexJson}`,
             ),
-            { agentType: "critic-audit", phase: "Challenge", label: "challenge", model: "opus" },
+            {
+              agentType: "critic-audit",
+              phase: "Challenge",
+              label: "challenge",
+              model: "opus",
+            },
           ),
         () =>
           agent(
             anchor(
               `critic-evidence として、外部 Codex review の finding を検証する。直感ではなく、具体的な実行経路を辿った positive evidence に基づく。各 finding を file:line で参照し、実行経路の evidence と severity を与える。Findings:\n${codexJson}`,
             ),
-            { agentType: "critic-evidence", phase: "Challenge", label: "verify", model: "opus" },
+            {
+              agentType: "critic-evidence",
+              phase: "Challenge",
+              label: "verify",
+              model: "opus",
+            },
           ),
       ]);
       return { codexFindings: findings, challenged: ch, verified: vf };
@@ -391,7 +425,9 @@ try {
   }));
   log(
     `Evidence: codex ${codexFindings.length} 件 / audit ${auditFindings.length} 件` +
-      (codexReview && codexReview.ran === false ? " (codex review 失敗、audit のみ)" : ""),
+      (codexReview && codexReview.ran === false
+        ? " (codex review 失敗、audit のみ)"
+        : ""),
   );
 
   // ---- Triage: 失敗 adversarial テストの intent 照合 ----
@@ -430,7 +466,8 @@ try {
     advFails.forEach((t, i) => {
       const v = verdicts[i];
       // triage が stall したら fail-close で promote する (見逃しより誤検知を取る)
-      if (v && v.verdict === "exclude") excluded.push({ ...t, reason: v.reason });
+      if (v && v.verdict === "exclude")
+        excluded.push({ ...t, reason: v.reason });
       else
         promoted.push({
           file: (t.target || "").split(":")[0],
@@ -483,7 +520,12 @@ try {
   // gate 規則 (skill phase-4 § Gate Rule)。build smoke fail / test fail / issues 1 件以上は
   // NotReady。severity は修正優先度のヒントに留まり、gate には影響しない。caveat は動的
   // evidence が env 起因などで欠けたときだけで、issues 0 が前提。
-  if (buildCol === "fail" || testsCol === "fail" || issues.length > 0 || challengeStalled) {
+  if (
+    buildCol === "fail" ||
+    testsCol === "fail" ||
+    issues.length > 0 ||
+    challengeStalled
+  ) {
     gate = "NotReady";
   } else if (!envFail && (testsCol === "pass" || testsCol === "no-runner")) {
     gate = "Ready";
@@ -506,7 +548,9 @@ try {
   );
 }
 
-log(`Gate: ${gate} (build=${buildCol}, tests=${testsCol}, issues=${issues.length})`);
+log(
+  `Gate: ${gate} (build=${buildCol}, tests=${testsCol}, issues=${issues.length})`,
+);
 
 return {
   gate,

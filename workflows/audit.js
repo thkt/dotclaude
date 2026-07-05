@@ -89,7 +89,15 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
 // loses react-pattern. A file takes the first matching row via classify(). Mechanical
 // type checks (any / assertions / strict mode) belong to the gates linters, not a reviewer.
 const ROUTING = {
-  "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
+  "*.sh": [
+    "security",
+    "silence",
+    "duplication",
+    "reuse",
+    "efficiency",
+    "operations",
+    "resilience",
+  ],
   "*.js": [
     "security",
     "silence",
@@ -207,7 +215,8 @@ const classify = (p) => {
   if (e === ".rs") return ROUTING["*.rs"];
   if (e === ".py") return ROUTING["*.py"];
   if (e === ".md") return ROUTING["*.md"];
-  if (e === ".yaml" || e === ".yml" || e === ".json") return ROUTING["*.yaml,*.json"];
+  if (e === ".yaml" || e === ".yml" || e === ".json")
+    return ROUTING["*.yaml,*.json"];
   if (e === ".css" || e === ".html") return ROUTING["*.css,*.html"];
   return ROUTING.default;
 };
@@ -451,14 +460,24 @@ const [challenged, verified] = await parallel([
       anchor(
         `critic-audit. Challenge these findings to prune false positives. Each finding is a position to be argued, not a fact. Reference each finding by its file:line. Findings:\n${findingsJson}`,
       ),
-      { agentType: "critic-audit", phase: "Challenge", label: "challenge", model: "opus" },
+      {
+        agentType: "critic-audit",
+        phase: "Challenge",
+        label: "challenge",
+        model: "opus",
+      },
     ),
   () =>
     agent(
       anchor(
         `critic-evidence. Verify these findings by tracing concrete execution paths (positive evidence, not intuition). For each finding, reference it by file:line and supply the execution-path evidence plus a severity. Findings:\n${findingsJson}`,
       ),
-      { agentType: "critic-evidence", phase: "Verify", label: "verify", model: "opus" },
+      {
+        agentType: "critic-evidence",
+        phase: "Verify",
+        label: "verify",
+        model: "opus",
+      },
     ),
 ]);
 

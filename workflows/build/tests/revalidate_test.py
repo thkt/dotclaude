@@ -26,10 +26,15 @@ class RunTest(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
         self.addCleanup(self._tmp.cleanup)
-        (self.root / "present.js").write_text("export const sampleSymbol = 1;\n", encoding="utf-8")
+        (self.root / "present.js").write_text(
+            "export const sampleSymbol = 1;\n", encoding="utf-8"
+        )
 
     def verdicts(self, preconditions):
-        return {(r["path"], r["pattern"]): (r["exists"], r["matches"]) for r in revalidate.run(preconditions, self.root)}
+        return {
+            (r["path"], r["pattern"]): (r["exists"], r["matches"])
+            for r in revalidate.run(preconditions, self.root)
+        }
 
     def test_pattern_present_matches(self):
         v = self.verdicts([{"path": "present.js", "pattern": "sampleSymbol"}])
@@ -45,9 +50,7 @@ class RunTest(unittest.TestCase):
         self.assertEqual(v[("missing.js", "anything")], (False, False))
 
     def test_no_pattern_tracks_existence(self):
-        v = revalidate.run(
-            [{"path": "present.js"}, {"path": "missing.js"}], self.root
-        )
+        v = revalidate.run([{"path": "present.js"}, {"path": "missing.js"}], self.root)
         self.assertEqual((v[0]["exists"], v[0]["matches"]), (True, True))
         self.assertEqual((v[1]["exists"], v[1]["matches"]), (False, False))
 
@@ -64,7 +67,9 @@ class RunTest(unittest.TestCase):
         ]
         results = revalidate.run(pre, self.root)
         self.assertEqual(len(results), 3)
-        self.assertEqual([r["path"] for r in results], ["present.js", "missing.js", "present.js"])
+        self.assertEqual(
+            [r["path"] for r in results], ["present.js", "missing.js", "present.js"]
+        )
 
     def test_none_pattern_normalized_to_empty_string(self):
         results = revalidate.run([{"path": "present.js", "pattern": None}], self.root)
@@ -98,16 +103,33 @@ class CliTest(unittest.TestCase):
     def _run(self, stdin, cwd=None):
         return subprocess.run(
             [sys.executable, str(SCRIPT)],
-            input=stdin, capture_output=True, text=True, cwd=cwd,
+            input=stdin,
+            capture_output=True,
+            text=True,
+            cwd=cwd,
         )
 
     def test_stdin_to_stdout_contract(self):
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / "f.txt").write_text("has anchor here", encoding="utf-8")
-            proc = self._run(json.dumps([{"path": "f.txt", "pattern": "anchor"}]), cwd=tmp)
+            proc = self._run(
+                json.dumps([{"path": "f.txt", "pattern": "anchor"}]), cwd=tmp
+            )
             self.assertEqual(proc.returncode, 0)
             out = json.loads(proc.stdout)
-            self.assertEqual(out, {"results": [{"path": "f.txt", "pattern": "anchor", "exists": True, "matches": True}]})
+            self.assertEqual(
+                out,
+                {
+                    "results": [
+                        {
+                            "path": "f.txt",
+                            "pattern": "anchor",
+                            "exists": True,
+                            "matches": True,
+                        }
+                    ]
+                },
+            )
 
     def test_empty_array_yields_empty_results(self):
         proc = self._run("[]")

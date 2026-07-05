@@ -131,7 +131,10 @@ const EXTRACT_SCHEMA = {
               additionalProperties: false,
               required: ["id", "name", "given", "when", "then"],
               properties: {
-                id: { type: "string", description: "T-001 format (unique across the plan)" },
+                id: {
+                  type: "string",
+                  description: "T-001 format (unique across the plan)",
+                },
                 name: {
                   type: "string",
                   description: "Statement of the spec being verified. Becomes the test name",
@@ -152,7 +155,10 @@ const EXTRACT_SCHEMA = {
         },
       },
     },
-    test_command: { type: "string", description: "Test command, e.g. cargo test / bun test" },
+    test_command: {
+      type: "string",
+      description: "Test command, e.g. cargo test / bun test",
+    },
     preconditions: {
       type: "array",
       items: {
@@ -160,7 +166,10 @@ const EXTRACT_SCHEMA = {
         additionalProperties: false,
         required: ["path"],
         properties: {
-          path: { type: "string", description: "Existing file the plan presupposes" },
+          path: {
+            type: "string",
+            description: "Existing file the plan presupposes",
+          },
           pattern: {
             type: "string",
             description: "Symbol / string expected to exist in that file",
@@ -292,7 +301,13 @@ const fetched = await agent(
       `Run exactly \`gh issue view ${issueRef} --json body --jq .body\` and return its stdout verbatim as body ` +
       `(the --jq extraction is verbatim by construction; do not edit it). If the command exits non-zero (issue not found / fetch failed), return found: false.`,
   ),
-  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA, model: "haiku" },
+  {
+    label: "fetch",
+    phase: "Load",
+    agentType: "general-purpose",
+    schema: FETCH_SCHEMA,
+    model: "haiku",
+  },
 );
 if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
   return {
@@ -324,10 +339,18 @@ const plan = await agent(
       `Preserve every unit id (U-NNN) and test id (T-NNN) from the body (omissions are rejected by a downstream deterministic cross-check). ` +
       `preconditions is the list of {path, pattern} of existing code the plan presupposes; backlog_candidates are out-of-scope candidates written in the issue. Empty arrays if absent from the body.\n\n---\n${body}`,
   ),
-  { label: "extract", phase: "Load", agentType: "general-purpose", schema: EXTRACT_SCHEMA },
+  {
+    label: "extract",
+    phase: "Load",
+    agentType: "general-purpose",
+    schema: EXTRACT_SCHEMA,
+  },
 );
 if (!plan) {
-  return { stopped: "extraction-failed", why: "The extract agent returned no plan." };
+  return {
+    stopped: "extraction-failed",
+    why: "The extract agent returned no plan.",
+  };
 }
 
 const blockers = validate(plan);
@@ -434,7 +457,11 @@ const stripPreconditions = (p) =>
     Object.entries(p).filter(([k]) => k !== "preconditions" && k !== "backlog_candidates"),
   );
 const code =
-  (await workflow("code", { plan: stripPreconditions(plan), repo, model: "sonnet" })) || null;
+  (await workflow("code", {
+    plan: stripPreconditions(plan),
+    repo,
+    model: "sonnet",
+  })) || null;
 if (!code || code.stopped) {
   return { stopped: "code-failed", detail: code, planning: plan.dir };
 }
@@ -481,7 +508,9 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
     log("Fix round cap reached. The final round's fixes are not re-audited and surface on the PR.");
     break;
   }
-  audit = (await workflow("audit", { repo, skipPreflight: true })) || { findings: [] };
+  audit = (await workflow("audit", { repo, skipPreflight: true })) || {
+    findings: [],
+  };
   toFix = criticalHigh(audit);
 }
 // When re-audited, criticalHigh(audit) is the (empty, by loop exit) verified set.
@@ -512,7 +541,12 @@ const backlogCandidates = [
   ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
   ...(audit.findings || [])
     .filter((f) => f.severity === "medium" || f.severity === "low")
-    .map((f) => ({ source: "audit", summary: f.summary, file: f.file, severity: f.severity })),
+    .map((f) => ({
+      source: "audit",
+      summary: f.summary,
+      file: f.file,
+      severity: f.severity,
+    })),
   ...((review && review.needs_context) || []).map((f) => ({
     source: "polish",
     summary: `${f.title}: ${f.why || f.detail}`,
@@ -561,7 +595,12 @@ const ship = await agent(
       `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do NOT create the PR by other means — report committed with an empty pr_url and the error instead, so the missing fact tail surfaces rather than shipping a PR without it.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),
-  { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
+  {
+    label: "ship",
+    phase: "Ship",
+    agentType: "general-purpose",
+    schema: SHIP_SCHEMA,
+  },
 );
 
 return {

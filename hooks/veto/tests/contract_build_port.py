@@ -32,8 +32,10 @@ def extract_body(source):
     start = source.find(BEGIN)
     end = source.find(END)
     if start == -1 or end == -1 or end < start:
-        raise ValueError(f"CONTRACT-TEST markers not found in build.js (start={start}, end={end})")
-    return source[start + len(BEGIN):end]
+        raise ValueError(
+            f"CONTRACT-TEST markers not found in build.js (start={start}, end={end})"
+        )
+    return source[start + len(BEGIN) : end]
 
 
 def run_js_validate(source, plans):
@@ -42,7 +44,9 @@ def run_js_validate(source, plans):
     body = extract_body(source)
     with tempfile.TemporaryDirectory(prefix="contract-") as d:
         d = Path(d)
-        (d / "extracted.mjs").write_text(body + "\nexport { validate };\n", encoding="utf-8")
+        (d / "extracted.mjs").write_text(
+            body + "\nexport { validate };\n", encoding="utf-8"
+        )
         (d / "run.mjs").write_text(
             'import { readFileSync } from "node:fs";\n'
             'import { validate } from "./extracted.mjs";\n'
@@ -53,7 +57,9 @@ def run_js_validate(source, plans):
         (d / "plans.json").write_text(json.dumps(plans), encoding="utf-8")
         out = subprocess.run(
             ["node", str(d / "run.mjs"), str(d / "plans.json")],
-            capture_output=True, text=True, check=True,
+            capture_output=True,
+            text=True,
+            check=True,
         )
         return json.loads(out.stdout)
 
@@ -74,7 +80,9 @@ class ContractBuildPort(unittest.TestCase):
     def test_t033_build_js_validate_matches_canonical_on_every_fixture(self):
         source = BUILD_JS.read_text(encoding="utf-8")
         plans = load_plans()
-        self.assertGreaterEqual(len(plans), 2, "expected at least the valid + invalid plans fixtures")
+        self.assertGreaterEqual(
+            len(plans), 2, "expected at least the valid + invalid plans fixtures"
+        )
         js_errors = run_js_validate(source, [plan for _, plan in plans])
         for (name, plan), js in zip(plans, js_errors):
             self.assertEqual(

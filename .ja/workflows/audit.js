@@ -87,7 +87,15 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
 // heuristic を含む。ファイルは classify() で最初にマッチした行に決まる。型の機械的チェック
 // (any / アサーション / strict モード) は gates のリンタが担い、reviewer は持たない。
 const ROUTING = {
-  "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
+  "*.sh": [
+    "security",
+    "silence",
+    "duplication",
+    "reuse",
+    "efficiency",
+    "operations",
+    "resilience",
+  ],
   "*.js": [
     "security",
     "silence",
@@ -205,7 +213,8 @@ const classify = (p) => {
   if (e === ".rs") return ROUTING["*.rs"];
   if (e === ".py") return ROUTING["*.py"];
   if (e === ".md") return ROUTING["*.md"];
-  if (e === ".yaml" || e === ".yml" || e === ".json") return ROUTING["*.yaml,*.json"];
+  if (e === ".yaml" || e === ".yml" || e === ".json")
+    return ROUTING["*.yaml,*.json"];
   if (e === ".css" || e === ".html") return ROUTING["*.css,*.html"];
   return ROUTING.default;
 };
@@ -447,14 +456,24 @@ const [challenged, verified] = await parallel([
       anchor(
         `critic-audit として、これらの finding を challenge し false positive を刈る。finding は事実ではなく、立証されるべき主張として扱う。各 finding は file:line で参照する。Findings:\n${findingsJson}`,
       ),
-      { agentType: "critic-audit", phase: "Challenge", label: "challenge", model: "opus" },
+      {
+        agentType: "critic-audit",
+        phase: "Challenge",
+        label: "challenge",
+        model: "opus",
+      },
     ),
   () =>
     agent(
       anchor(
         `critic-evidence として、これらの finding を検証する。直感ではなく、具体的な実行経路を辿った positive evidence に基づく。各 finding を file:line で参照し、実行経路の evidence と severity を与える。Findings:\n${findingsJson}`,
       ),
-      { agentType: "critic-evidence", phase: "Verify", label: "verify", model: "opus" },
+      {
+        agentType: "critic-evidence",
+        phase: "Verify",
+        label: "verify",
+        model: "opus",
+      },
     ),
 ]);
 

@@ -73,7 +73,9 @@ class RenderTest(unittest.TestCase):
         self.assertIn("- [high] leak (y.js)", body)
 
     def test_verify_failure_uses_collapsed_details(self):
-        body = pr_body.render({**FULL, "tests_pass": False, "verify_output": "boom stacktrace"})
+        body = pr_body.render(
+            {**FULL, "tests_pass": False, "verify_output": "boom stacktrace"}
+        )
         self.assertIn("`verify tests=FAIL gates=pass`", body)
         self.assertIn("<details><summary>verify output</summary>", body)
         self.assertIn("```\nboom stacktrace\n```", body)

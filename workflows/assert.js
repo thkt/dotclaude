@@ -81,7 +81,11 @@ const mergeIssues = (findings) => {
       .replace(/^\[|\]$/g, "");
     const sev = SEVERITY_MAP[key] === undefined ? null : SEVERITY_MAP[key];
     if (!sev) continue;
-    const sources = Array.isArray(f.source) ? f.source : f.source ? [f.source] : [];
+    const sources = Array.isArray(f.source)
+      ? f.source
+      : f.source
+        ? [f.source]
+        : [];
     const k = `${f.file || ""}:${f.line || 0}`;
     const prev = groups.get(k);
     if (!prev) {
@@ -120,7 +124,8 @@ const BOOTSTRAP_SCHEMA = {
     scope_files: { type: "array", items: { type: "string" } },
     outcome: {
       type: "string",
-      description: "Digest of OUTCOME.md Behavior / Non-goals / Constraints. absent if missing",
+      description:
+        "Digest of OUTCOME.md Behavior / Non-goals / Constraints. absent if missing",
     },
     worktree_ok: { type: "boolean" },
     worktree_path: { type: "string" },
@@ -162,7 +167,10 @@ const TEST_RUN_SCHEMA = {
     outcome: { type: "string", enum: ["pass", "fail", "no-runner", "skipped"] },
     passed: { type: "number" },
     failed: { type: "number" },
-    notes: { type: "string", description: "on fail, the gist of the stderr tail" },
+    notes: {
+      type: "string",
+      description: "on fail, the gist of the stderr tail",
+    },
   },
 };
 
@@ -215,7 +223,10 @@ const SYNTH_SCHEMA = {
         properties: {
           file: { type: "string" },
           line: { type: "number" },
-          severity: { type: "string", enum: ["critical", "high", "medium", "low"] },
+          severity: {
+            type: "string",
+            enum: ["critical", "high", "medium", "low"],
+          },
           summary: { type: "string" },
           source: { type: "array", items: { type: "string" } },
         },
@@ -275,13 +286,21 @@ const buildCol = envFail ? "skipped" : boot.build;
 const dynamicOk = !envFail && buildCol !== "fail";
 log(
   `Bootstrap: mode=${boot.mode} files=${boot.scope_files.length} build=${buildCol}` +
-    (dynamicOk ? "" : ` (dynamic verification skipped: ${boot.reason || "env fail"})`),
+    (dynamicOk
+      ? ""
+      : ` (dynamic verification skipped: ${boot.reason || "env fail"})`),
 );
 
 let gate = "NotReady";
 let issues = [];
 let testsCol = "skipped";
-let adversarialSummary = { total: 0, passed: 0, failed: 0, promoted: 0, excluded: 0 };
+let adversarialSummary = {
+  total: 0,
+  passed: 0,
+  failed: 0,
+  promoted: 0,
+  excluded: 0,
+};
 let synth = null;
 let codexReview = null;
 let audit = null;
@@ -332,7 +351,11 @@ try {
   // target mode may under-enumerate (known limitation; Codex review and adversarial
   // compensate with an explicit file list).
   const auditScope =
-    boot.mode === "diff" ? (boot.diff_kind === "branch" ? `${base}...HEAD` : "") : scope;
+    boot.mode === "diff"
+      ? boot.diff_kind === "branch"
+        ? `${base}...HEAD`
+        : ""
+      : scope;
   const codexScopeInstr =
     boot.mode === "target"
       ? `Target mode: run \`codex review "Review these files: ${boot.scope_files.join(", ")}"\` naming the target files in the PROMPT, without a scope flag.`
@@ -361,11 +384,14 @@ try {
           schema: CODEX_REVIEW_SCHEMA,
         },
       );
-      const findings = ((codexReview && codexReview.findings) || []).map((f) => ({
-        ...f,
-        source: "codex",
-      }));
-      if (!findings.length) return { codexFindings: findings, challenged: null, verified: null };
+      const findings = ((codexReview && codexReview.findings) || []).map(
+        (f) => ({
+          ...f,
+          source: "codex",
+        }),
+      );
+      if (!findings.length)
+        return { codexFindings: findings, challenged: null, verified: null };
       // ---- Challenge: challenger ∥ verifier over the Codex findings ----
       // Each agent's opts.phase assigns the Challenge group. A bare phase() would race the
       // global phase state against the audit thunk running concurrently, so it is not called
@@ -377,14 +403,24 @@ try {
             anchor(
               `As critic-audit, challenge the external Codex review findings and prune false positives. Treat each finding as a claim to be proven, not a fact. Reference each finding by file:line. Findings:\n${codexJson}`,
             ),
-            { agentType: "critic-audit", phase: "Challenge", label: "challenge", model: "opus" },
+            {
+              agentType: "critic-audit",
+              phase: "Challenge",
+              label: "challenge",
+              model: "opus",
+            },
           ),
         () =>
           agent(
             anchor(
               `As critic-evidence, verify the external Codex review findings. Base verdicts on positive evidence from tracing concrete execution paths, not intuition. Reference each finding by file:line, and attach execution-path evidence and a severity. Findings:\n${codexJson}`,
             ),
-            { agentType: "critic-evidence", phase: "Challenge", label: "verify", model: "opus" },
+            {
+              agentType: "critic-evidence",
+              phase: "Challenge",
+              label: "verify",
+              model: "opus",
+            },
           ),
       ]);
       return { codexFindings: findings, challenged: ch, verified: vf };
@@ -401,7 +437,9 @@ try {
   }));
   log(
     `Evidence: codex ${codexFindings.length} findings / audit ${auditFindings.length} findings` +
-      (codexReview && codexReview.ran === false ? " (codex review failed, audit only)" : ""),
+      (codexReview && codexReview.ran === false
+        ? " (codex review failed, audit only)"
+        : ""),
   );
 
   // ---- Triage: intent matching for failed adversarial tests ----
@@ -441,7 +479,8 @@ try {
     advFails.forEach((t, i) => {
       const v = verdicts[i];
       // if triage stalls, promote fail-close (prefer a false positive over a miss)
-      if (v && v.verdict === "exclude") excluded.push({ ...t, reason: v.reason });
+      if (v && v.verdict === "exclude")
+        excluded.push({ ...t, reason: v.reason });
       else
         promoted.push({
           file: (t.target || "").split(":")[0],
@@ -495,7 +534,12 @@ try {
   // issues means NotReady. Severity remains a fix-priority hint and never affects the
   // gate. caveat applies only when dynamic evidence is missing for env reasons, and
   // presumes zero issues.
-  if (buildCol === "fail" || testsCol === "fail" || issues.length > 0 || challengeStalled) {
+  if (
+    buildCol === "fail" ||
+    testsCol === "fail" ||
+    issues.length > 0 ||
+    challengeStalled
+  ) {
     gate = "NotReady";
   } else if (!envFail && (testsCol === "pass" || testsCol === "no-runner")) {
     gate = "Ready";
@@ -518,7 +562,9 @@ try {
   );
 }
 
-log(`Gate: ${gate} (build=${buildCol}, tests=${testsCol}, issues=${issues.length})`);
+log(
+  `Gate: ${gate} (build=${buildCol}, tests=${testsCol}, issues=${issues.length})`,
+);
 
 return {
   gate,

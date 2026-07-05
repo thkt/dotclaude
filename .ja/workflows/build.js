@@ -57,7 +57,10 @@ const FETCH_SCHEMA = {
   required: ["found", "body"],
   properties: {
     found: { type: "boolean" },
-    body: { type: "string", description: "issue 本文の verbatim。要約・整形をしない" },
+    body: {
+      type: "string",
+      description: "issue 本文の verbatim。要約・整形をしない",
+    },
   },
 };
 
@@ -81,7 +84,10 @@ const EXTRACT_SCHEMA = {
       type: "string",
       description: "planning dir。例 .claude/workspace/planning/YYYY-MM-DD-slug",
     },
-    outcome: { type: "string", description: "done 状態の 1 行記述 (実装非依存、観測可能)" },
+    outcome: {
+      type: "string",
+      description: "done 状態の 1 行記述 (実装非依存、観測可能)",
+    },
     decisions: { type: "array", items: { type: "string" } },
     assumptions: {
       type: "array",
@@ -97,8 +103,14 @@ const EXTRACT_SCHEMA = {
         additionalProperties: false,
         required: ["id", "goal", "files", "contract", "tests", "depends_on"],
         properties: {
-          id: { type: "string", description: "U-001 形式。issue 本文の id をそのまま使う" },
-          goal: { type: "string", description: "この unit が届ける振る舞いの 1 行記述" },
+          id: {
+            type: "string",
+            description: "U-001 形式。issue 本文の id をそのまま使う",
+          },
+          goal: {
+            type: "string",
+            description: "この unit が届ける振る舞いの 1 行記述",
+          },
           files: {
             type: "array",
             items: { type: "string" },
@@ -115,8 +127,14 @@ const EXTRACT_SCHEMA = {
               additionalProperties: false,
               required: ["id", "name", "given", "when", "then"],
               properties: {
-                id: { type: "string", description: "T-001 形式 (plan 全体で一意)" },
-                name: { type: "string", description: "検証する仕様の言明。テスト名になる" },
+                id: {
+                  type: "string",
+                  description: "T-001 形式 (plan 全体で一意)",
+                },
+                name: {
+                  type: "string",
+                  description: "検証する仕様の言明。テスト名になる",
+                },
                 given: { type: "string" },
                 when: { type: "string" },
                 // JSON Schema の property 定義であり thenable ではない (BDD の given/when/then)
@@ -133,7 +151,10 @@ const EXTRACT_SCHEMA = {
         },
       },
     },
-    test_command: { type: "string", description: "テスト実行コマンド。例 cargo test / bun test" },
+    test_command: {
+      type: "string",
+      description: "テスト実行コマンド。例 cargo test / bun test",
+    },
     preconditions: {
       type: "array",
       items: {
@@ -141,8 +162,14 @@ const EXTRACT_SCHEMA = {
         additionalProperties: false,
         required: ["path"],
         properties: {
-          path: { type: "string", description: "plan が前提とする既存ファイル" },
-          pattern: { type: "string", description: "そのファイルに存在するはずの symbol / 文字列" },
+          path: {
+            type: "string",
+            description: "plan が前提とする既存ファイル",
+          },
+          pattern: {
+            type: "string",
+            description: "そのファイルに存在するはずの symbol / 文字列",
+          },
         },
       },
       description: "issue の plan が前提とする既存コード。無ければ空配列",
@@ -268,7 +295,13 @@ const fetched = await agent(
       `\`gh issue view ${issueRef} --json body --jq .body\` をそのまま実行し、その stdout を body として verbatim で返す` +
       `(--jq 抽出は構造上 verbatim。編集しない)。コマンドが非 0 で終了した (issue が見つからない・取得失敗) 場合は found: false を返す。`,
   ),
-  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA, model: "haiku" },
+  {
+    label: "fetch",
+    phase: "Load",
+    agentType: "general-purpose",
+    schema: FETCH_SCHEMA,
+    model: "haiku",
+  },
 );
 if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
   return {
@@ -299,15 +332,27 @@ const plan = await agent(
       `unit id (U-NNN) と test id (T-NNN) は本文のものを漏れなく保持する (欠落は後段の決定論 cross-check で reject される)。` +
       `preconditions は plan が前提とする既存コードの {path, pattern} 一覧、backlog_candidates は issue に書かれた scope 外候補。本文に無ければ空配列。\n\n---\n${body}`,
   ),
-  { label: "extract", phase: "Load", agentType: "general-purpose", schema: EXTRACT_SCHEMA },
+  {
+    label: "extract",
+    phase: "Load",
+    agentType: "general-purpose",
+    schema: EXTRACT_SCHEMA,
+  },
 );
 if (!plan) {
-  return { stopped: "extraction-failed", why: "extract agent が plan を返さなかった。" };
+  return {
+    stopped: "extraction-failed",
+    why: "extract agent が plan を返さなかった。",
+  };
 }
 
 const blockers = validate(plan);
 if (blockers.length) {
-  return { stopped: "invalid-plan", blockers, why: "抽出された plan が構造検証を通らない。" };
+  return {
+    stopped: "invalid-plan",
+    blockers,
+    why: "抽出された plan が構造検証を通らない。",
+  };
 }
 
 // 抽出での silent drop / 捏造を id 集合の exact 比較で reject する。
@@ -403,7 +448,11 @@ const stripPreconditions = (p) =>
     Object.entries(p).filter(([k]) => k !== "preconditions" && k !== "backlog_candidates"),
   );
 const code =
-  (await workflow("code", { plan: stripPreconditions(plan), repo, model: "sonnet" })) || null;
+  (await workflow("code", {
+    plan: stripPreconditions(plan),
+    repo,
+    model: "sonnet",
+  })) || null;
 if (!code || code.stopped) {
   return { stopped: "code-failed", detail: code, planning: plan.dir };
 }
@@ -451,7 +500,9 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
     log("fix round 上限。最終 round の fix は re-audit されず、PR に表面化する。");
     break;
   }
-  audit = (await workflow("audit", { repo, skipPreflight: true })) || { findings: [] };
+  audit = (await workflow("audit", { repo, skipPreflight: true })) || {
+    findings: [],
+  };
   toFix = criticalHigh(audit);
 }
 // re-audit 済みなら criticalHigh(audit) は (ループ退出条件より空の) 検証済み集合。
@@ -479,7 +530,12 @@ const backlogCandidates = [
   ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
   ...(audit.findings || [])
     .filter((f) => f.severity === "medium" || f.severity === "low")
-    .map((f) => ({ source: "audit", summary: f.summary, file: f.file, severity: f.severity })),
+    .map((f) => ({
+      source: "audit",
+      summary: f.summary,
+      file: f.file,
+      severity: f.severity,
+    })),
   ...((review && review.needs_context) || []).map((f) => ({
     source: "polish",
     summary: `${f.title}: ${f.why || f.detail}`,
@@ -524,7 +580,12 @@ const ship = await agent(
       `pr-body.py は payload が不正・必須フィールド欠落なら非 0 で終了し (何も出力しない)。チェーンが失敗したら他の手段で PR を作らず、committed と空の pr_url とエラーを報告する。tail の欠けた PR を出すより欠落を surface する。\n` +
       `committed 状態と PR url を報告する。${guard}`,
   ),
-  { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
+  {
+    label: "ship",
+    phase: "Ship",
+    agentType: "general-purpose",
+    schema: SHIP_SCHEMA,
+  },
 );
 
 return {

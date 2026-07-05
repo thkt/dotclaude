@@ -84,7 +84,14 @@ const makeStubs = ({ body, plan, revalidate } = {}) => ({
       case "revalidate":
         return (
           revalidate ?? {
-            results: [{ path: "sample.js", pattern: "sampleSymbol", exists: true, matches: true }],
+            results: [
+              {
+                path: "sample.js",
+                pattern: "sampleSymbol",
+                exists: true,
+                matches: true,
+              },
+            ],
           }
         );
       case "ship":
@@ -95,7 +102,12 @@ const makeStubs = ({ body, plan, revalidate } = {}) => ({
   },
   workflow: (name) => {
     if (name === "code")
-      return { completed: ["U-001"], anomalies: [], tests_pass: true, gates_pass: true };
+      return {
+        completed: ["U-001"],
+        anomalies: [],
+        tests_pass: true,
+        gates_pass: true,
+      };
     if (name === "audit") return { findings: [], assignments: [] };
     if (name === "polish")
       return {
@@ -108,13 +120,18 @@ const makeStubs = ({ body, plan, revalidate } = {}) => ({
   },
 });
 
-const agentCallsOf = (calls, kind) => calls.agent.filter((c) => kindOf(c.opts) === kind);
+const agentCallsOf = (calls, kind) =>
+  calls.agent.filter((c) => kindOf(c.opts) === kind);
 
 // ---- T-012 ----
 test("args 空は stopped: no-issue、Plan 節なし本文は stopped: no-plan で fail-close する", async () => {
   const empty = await runWorkflow(buildJs, { args: {}, stubs: makeStubs() });
   assert.equal(empty.result.stopped, "no-issue", "args 空で stopped: no-issue");
-  assert.equal(empty.calls.workflow.length, 0, "no-issue 後に入れ子 workflow が走らない");
+  assert.equal(
+    empty.calls.workflow.length,
+    0,
+    "no-issue 後に入れ子 workflow が走らない",
+  );
   assert.ok(
     empty.calls.phase.every((p) => p === "Load"),
     "no-issue 後に Load 以外の phase が走らない",
@@ -122,10 +139,20 @@ test("args 空は stopped: no-issue、Plan 節なし本文は stopped: no-plan �
 
   const noPlan = await runWorkflow(buildJs, {
     args: { issue: "123" },
-    stubs: makeStubs({ body: "Plan 見出しの無い issue 本文。\n\n## Context\n\n説明のみ。" }),
+    stubs: makeStubs({
+      body: "Plan 見出しの無い issue 本文。\n\n## Context\n\n説明のみ。",
+    }),
   });
-  assert.equal(noPlan.result.stopped, "no-plan", "## Plan 見出し無しで stopped: no-plan");
-  assert.equal(noPlan.calls.workflow.length, 0, "no-plan 後に入れ子 workflow が走らない");
+  assert.equal(
+    noPlan.result.stopped,
+    "no-plan",
+    "## Plan 見出し無しで stopped: no-plan",
+  );
+  assert.equal(
+    noPlan.calls.workflow.length,
+    0,
+    "no-plan 後に入れ子 workflow が走らない",
+  );
   assert.equal(
     agentCallsOf(noPlan.calls, "extract").length,
     0,
@@ -160,7 +187,11 @@ test("構造欠陥と content 空 (contract / given) はいずれも stopped: in
       args: { issue: "123" },
       stubs: makeStubs({ plan }),
     });
-    assert.equal(result.stopped, "invalid-plan", `variant ${expect} で stopped: invalid-plan`);
+    assert.equal(
+      result.stopped,
+      "invalid-plan",
+      `variant ${expect} で stopped: invalid-plan`,
+    );
     assert.ok(Array.isArray(result.blockers), "blockers が配列で返る");
     assert.ok(
       result.blockers.some((b) => expect.test(String(b))),
@@ -242,22 +273,45 @@ test("Revalidate は 1 miss で stopped: plan-drift、全 pass で Branch へ進
       plan: driftPlan,
       revalidate: {
         results: [
-          { path: "sample.js", pattern: "sampleSymbol", exists: true, matches: true },
-          { path: "missing.js", pattern: "goneSymbol", exists: false, matches: false },
+          {
+            path: "sample.js",
+            pattern: "sampleSymbol",
+            exists: true,
+            matches: true,
+          },
+          {
+            path: "missing.js",
+            pattern: "goneSymbol",
+            exists: false,
+            matches: false,
+          },
         ],
       },
     }),
   });
-  assert.equal(miss.result.stopped, "plan-drift", "1 miss で stopped: plan-drift");
+  assert.equal(
+    miss.result.stopped,
+    "plan-drift",
+    "1 miss で stopped: plan-drift",
+  );
   assert.ok(
     JSON.stringify(miss.result).includes("missing.js"),
     "drift 一覧に miss した path が載る",
   );
-  assert.ok(!miss.calls.phase.includes("Branch"), "plan-drift 後に Branch へ進まない");
+  assert.ok(
+    !miss.calls.phase.includes("Branch"),
+    "plan-drift 後に Branch へ進まない",
+  );
 
   // all-pass case: Branch phase に到達する
-  const pass = await runWorkflow(buildJs, { args: { issue: "123" }, stubs: makeStubs() });
-  assert.ok(pass.calls.phase.includes("Branch"), "全 pass で Branch phase に到達する");
+  const pass = await runWorkflow(buildJs, {
+    args: { issue: "123" },
+    stubs: makeStubs(),
+  });
+  assert.ok(
+    pass.calls.phase.includes("Branch"),
+    "全 pass で Branch phase に到達する",
+  );
 
   // 空 case: revalidate agent が呼ばれず Branch に到達する
   const empty = await runWorkflow(buildJs, {
@@ -269,22 +323,41 @@ test("Revalidate は 1 miss で stopped: plan-drift、全 pass で Branch へ進
     0,
     "preconditions 空で revalidate agent が呼ばれない",
   );
-  assert.ok(empty.calls.phase.includes("Branch"), "preconditions 空でも Branch phase に到達する");
+  assert.ok(
+    empty.calls.phase.includes("Branch"),
+    "preconditions 空でも Branch phase に到達する",
+  );
 });
 
 // ---- T-016 ----
 test("happy path の phase 順が Load → Revalidate → Branch → Code → Audit → Polish → Backlog → Ship で、code に model: sonnet が渡り challenge / think / research が呼ばれない", async () => {
-  const { calls } = await runWorkflow(buildJs, { args: { issue: "123" }, stubs: makeStubs() });
+  const { calls } = await runWorkflow(buildJs, {
+    args: { issue: "123" },
+    stubs: makeStubs(),
+  });
 
   assert.deepEqual(
     calls.phase,
-    ["Load", "Revalidate", "Branch", "Code", "Audit", "Polish", "Backlog", "Ship"],
+    [
+      "Load",
+      "Revalidate",
+      "Branch",
+      "Code",
+      "Audit",
+      "Polish",
+      "Backlog",
+      "Ship",
+    ],
     "phase 順が Load → Revalidate → Branch → Code → Audit → Polish → Backlog → Ship",
   );
 
   const codeCalls = calls.workflow.filter((c) => c.name === "code");
   assert.equal(codeCalls.length, 1, "workflow('code') が 1 回呼ばれる");
-  assert.equal(codeCalls[0].args.model, "sonnet", "code に model: sonnet が渡る");
+  assert.equal(
+    codeCalls[0].args.model,
+    "sonnet",
+    "code に model: sonnet が渡る",
+  );
   assert.ok(
     !("preconditions" in codeCalls[0].args.plan),
     "code へ渡す plan から preconditions が strip される",
@@ -351,7 +424,10 @@ test("Backlog 候補が Ship の PR body prompt と戻り値 backlog_candidates 
   );
 
   // 候補は戻り値にも surface する
-  assert.ok(Array.isArray(result.backlog_candidates), "戻り値に backlog_candidates 配列が載る");
+  assert.ok(
+    Array.isArray(result.backlog_candidates),
+    "戻り値に backlog_candidates 配列が載る",
+  );
   assert.ok(
     result.backlog_candidates.some(
       (c) => c.source === "issue" && c.summary === "issue 由来の scope 外候補",
