@@ -35,7 +35,7 @@ const issueNumber = (issueRef.match(/(\d+)\D*$/) || [])[1] || "";
 if (!issueRef || !issueNumber) {
   return {
     stopped: "no-issue",
-    why: 'Pass the issue as args ("123" / "#123" / URL / {issue, repo}).',
+    why: 'Pass the issue as args ("123" / "#123" / URL / {issue, repo}). On resume the runtime does not carry args, so re-pass it: Workflow({scriptPath, resumeFromRunId, args}).',
   };
 }
 
