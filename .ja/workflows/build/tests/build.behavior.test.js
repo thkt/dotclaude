@@ -67,15 +67,20 @@ const kindOf = (opts) => {
   if ("units" in p) return "extract";
   if ("results" in p) return "revalidate";
   if ("spec_found" in p) return "conformance";
+  if ("translations" in p) return "translate";
   if ("pr_url" in p) return "ship";
   return "plain";
 };
 
 // happy path stub 一式。body / plan / revalidate で happy path の戻り値を差し替える。
-const makeStubs = ({ body, plan, revalidate, conformance } = {}) => ({
+const makeStubs = ({ body, plan, revalidate, conformance, translate } = {}) => ({
   agent: (prompt, opts) => {
     const kind = kindOf(opts);
     switch (kind) {
+      case "translate":
+        // 既定は fail-open (translations 無し) で英語原文を維持。翻訳の反映を検証する
+        // テストだけが translate stub を渡す。
+        return translate ? translate(prompt) : { notes: "no-translations" };
       case "fetch":
         return { found: true, body: body ?? bodyFor(["U-001"], ["T-001"]) };
       case "extract":
@@ -236,6 +241,39 @@ test("抽出での unit / test の silent drop は stopped: extraction-mismatch 
   assert.ok(
     JSON.stringify(b.result.detail).includes("T-003"),
     "不一致 test id T-003 が detail に載る",
+  );
+});
+
+test("契約 prose 中の T-NNN 参照は定義でないので cross-check に載らず extraction-mismatch にならない", async () => {
+  // contract 文の「既存の T-106 は変更しない」は参照であって定義ではない。
+  // 定義された受け入れテストは T-109 のみで、抽出も T-109 のみを返す。
+  const body = [
+    "## Plan",
+    "",
+    "Outcome: sample outcome",
+    "test_command: echo test",
+    "",
+    "### U-001: unit の見出し",
+    "",
+    "- contract: 既存の T-106 とプロダクションコードは変更しない",
+    "",
+    "受け入れテスト。",
+    "",
+    "- T-109: test scenario",
+    "",
+  ].join("\n");
+  const base = makePlan().units[0];
+  const plan = makePlan({
+    units: [{ ...base, tests: [{ ...base.tests[0], id: "T-109" }] }],
+  });
+  const r = await runWorkflow(buildJs, {
+    args: { issue: "123" },
+    stubs: makeStubs({ body, plan }),
+  });
+  assert.notEqual(
+    r.result.stopped,
+    "extraction-mismatch",
+    "prose 参照 T-106 を欠落テストと誤検出しない",
   );
 });
 
@@ -417,9 +455,101 @@ test("conformance findings が独立軸として surface し fix loop / residual
   assert.equal(result.conformance_findings, 1, "戻り値 conformance_findings が 1");
 
   // 独立軸: conformance finding は fix loop を起動せず、blocking count にも混ざらない
-  const fixCalls = calls.agent.filter((c) => c.opts && /^fix:/.test(c.opts.label || ""));
+  const fixCalls = calls.agent.filter((c) => c.opts && (c.opts.label || "").startsWith("fix:"));
   assert.equal(fixCalls.length, 0, "conformance finding は fix loop を起動しない");
   assert.equal(result.residual_blocking, 0, "conformance finding は blocking count に混ざらない");
+});
+
+// tail の情報系セクション (backlog / assumptions / 未解決 finding / conformance /
+// anomaly) の自由記述は reviewer が英語で吐くので、Ship 直前に対象言語へ翻訳 + 圧縮する。
+// 訳文が shipPayload に反映され、ship prompt (PR body payload) に載ることを検証する。
+test("translate-tail の訳文が shipPayload に反映され ship prompt に載る", async () => {
+  const plan = makePlan({
+    assumptions: ["assume in EN"],
+    backlog_candidates: [{ summary: "backlog in EN" }],
+  });
+  const { calls } = await runWorkflow(buildJs, {
+    args: { issue: "123" },
+    stubs: makeStubs({
+      plan,
+      // 入力配列は prompt の最終行 (言語マーカーに依存しない)。各 {id,text} の text を
+      // JA<...> でラップし、id を付けて返す。
+      translate: (prompt) => {
+        const arr = JSON.parse(prompt.trim().split("\n").pop());
+        return { translations: arr.map((o) => ({ id: o.id, text: `JA<${o.text}>` })) };
+      },
+    }),
+  });
+
+  // translate agent は slots が非空 (assumption + backlog) なので 1 回呼ばれる
+  const translateCalls = agentCallsOf(calls, "translate");
+  assert.equal(translateCalls.length, 1, "translate-tail agent が 1 回呼ばれる");
+
+  // 訳文が ship prompt (shipPayload JSON) に載り、英語原文は残らない
+  const shipCalls = agentCallsOf(calls, "ship");
+  assert.equal(shipCalls.length, 1, "ship agent が 1 回呼ばれる");
+  assert.ok(
+    shipCalls[0].prompt.includes("JA<backlog in EN>"),
+    "ship prompt に翻訳済み backlog summary が載る",
+  );
+  assert.ok(
+    shipCalls[0].prompt.includes("JA<assume in EN>"),
+    "ship prompt に翻訳済み assumption が載る",
+  );
+});
+
+// 訳が id 順を入れ替えて返っても、消費側は id で突合して正しい slot へ書き戻す。
+test("translate-tail の訳が順序入れ替えでも id で正しい slot に反映される", async () => {
+  const plan = makePlan({
+    assumptions: ["assume A"],
+    backlog_candidates: [{ summary: "backlog B" }],
+  });
+  const { calls } = await runWorkflow(buildJs, {
+    args: { issue: "123" },
+    stubs: makeStubs({
+      plan,
+      // id を保ったまま順序を反転して返す (位置ベースなら取り違える)
+      translate: (prompt) => {
+        const arr = JSON.parse(prompt.trim().split("\n").pop());
+        return { translations: arr.map((o) => ({ id: o.id, text: `JA<${o.text}>` })).reverse() };
+      },
+    }),
+  });
+
+  const shipCalls = agentCallsOf(calls, "ship");
+  assert.equal(shipCalls.length, 1, "ship agent が 1 回呼ばれる");
+  assert.ok(
+    shipCalls[0].prompt.includes("JA<backlog B>"),
+    "順序反転でも backlog summary に自分の訳が載る",
+  );
+  assert.ok(
+    shipCalls[0].prompt.includes("JA<assume A>"),
+    "順序反転でも assumption に自分の訳が載る",
+  );
+});
+
+// 訳の id が入力と一致しない (欠落・取り違え) とき、消費側は fail-open で英語原文を
+// 維持し PR を block しない。
+test("translate-tail の訳 id が入力と一致しないなら英語原文で ship を継続する", async () => {
+  const plan = makePlan({
+    backlog_candidates: [{ summary: "backlog in EN" }],
+  });
+  const { calls } = await runWorkflow(buildJs, {
+    args: { issue: "123" },
+    stubs: makeStubs({
+      plan,
+      // slot 0 の訳が無く、存在しない id 5 の訳を返す (取り違え)
+      translate: () => ({ translations: [{ id: 5, text: "only one" }] }),
+    }),
+  });
+
+  const shipCalls = agentCallsOf(calls, "ship");
+  assert.equal(shipCalls.length, 1, "ship agent が 1 回呼ばれる");
+  assert.ok(
+    shipCalls[0].prompt.includes("backlog in EN"),
+    "id 不一致時は英語原文の backlog summary が ship prompt に残る",
+  );
+  assert.ok(!shipCalls[0].prompt.includes("only one"), "id 不一致の訳は採用されない");
 });
 
 test("実環境で Plan 節付き issue が Load → Revalidate → Branch → Code と進み、Plan 節なし issue が stopped: no-plan を返す (manual acceptance、done 前必須)", () => {
