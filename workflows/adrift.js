@@ -7,28 +7,25 @@ export const meta = {
   phases: [{ title: "Detect" }, { title: "Scan" }, { title: "Report" }],
 };
 
-// Port of the /adrift skill. Four design points.
-// 1. The manifest -> reviewer routing table (skill Phase 5) becomes a script constant. Under
-//    skill operation the LLM could skip reviewer routing; the workflow looks it up mechanically
-//    from the manifest verdict.
+// Four design points.
+// 1. The manifest -> reviewer routing table becomes a script constant. Letting the LLM choose
+//    lets it skip reviewer routing; the workflow looks it up mechanically from the manifest verdict.
 // 2. Per-ADR extract -> search -> review runs through pipeline() independently (the slowest ADR
 //    does not block the rest). An extract stall is recorded as unverifiable so it never drops
-//    out of the exhaustive Per-ADR listing (skill completion criterion) — fail-close.
+//    out of the exhaustive Per-ADR listing (fail-close).
 // 3. Finding dedup, priority merge, and Summary counts are computed by the script.
 // 4. No external assets. External ADR references are classified by a raw agent search + a
-//    script set difference (internalizing the former external-adr-refs.py), and the report
-//    structure is embedded in the Report prompt.
+//    script set difference, and the report structure is embedded in the Report prompt.
 //
-// Deliberate deviation from the skill: the handoff step "confirm whether to file H-priority
-// findings via /issue" is impossible mid-workflow (no interactivity), so H candidates are
-// recorded in the report's Follow-up Issue Candidates and the return value for human triage.
+// H-priority findings cannot be confirmed for /issue filing (interactive) mid-workflow, so they
+// are recorded in the report's Follow-up Issue Candidates and the return value for human triage.
 
 const isIdList = (s) => {
   const tokens = s.split(/[\s,]+/).filter(Boolean);
   return tokens.length > 0 && tokens.every((t) => /^(adr-?)?\d+$/i.test(t));
 };
 
-const opts = (() => {
+const parseArgs = () => {
   if (typeof args === "string") {
     try {
       const parsed = JSON.parse(args);
@@ -40,7 +37,8 @@ const opts = (() => {
     return isIdList(args) ? { focus: args } : { dir: args };
   }
   return args && typeof args === "object" ? args : {};
-})();
+};
+const opts = parseArgs();
 const dir = typeof opts.dir === "string" ? opts.dir.trim() : "";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
 
@@ -65,8 +63,7 @@ const anchor = (p) =>
     ? `Run every git / file / search command from the ${repo} repository (start each shell command with \`cd ${repo} && \`).\n\n${p}`
     : p;
 
-// Routing table from skill Phase 5. Reviewer subagents are looked up mechanically from the
-// manifest verdict.
+// Routing table that looks up reviewer subagents mechanically from the manifest verdict.
 const REVIEWERS = {
   rust: ["reviewer-rust", "reviewer-design"],
   ts: ["reviewer-design"],
@@ -74,9 +71,8 @@ const REVIEWERS = {
   other: ["reviewer-design"],
 };
 
-// Criteria from skill Phase 6 / Phase 7, embedded into reviewer prompts (kept as plain string
-// consts because guardrails sqli-concat false-positives on keyword words inside interpolated
-// template call arguments).
+// Criteria embedded into reviewer prompts (kept as plain string consts because guardrails
+// sqli-concat false-positives on keyword words inside interpolated template call arguments).
 const DIRECTION_RULES =
   "code-fix when the ADR is the correct current contract and the code has drifted / " +
   "adr-update when the code is the correct current contract and the ADR is stale / " +
@@ -246,8 +242,7 @@ if (!detect.found || !detect.adrs.length) {
   };
 }
 // External-reference classification is a script set difference (referenced ids − local ids).
-// This internalizes the deterministic core of the former external-adr-refs.py: the Detect
-// agent searches, this code classifies.
+// The Detect agent searches, this code classifies.
 const localIds = new Set(detect.adrs.map((a) => parseInt(a.id, 10)));
 const externalRefs = (() => {
   const byRef = new Map();
@@ -281,7 +276,7 @@ log(
 // ---- Scan: per ADR, run extract -> reviewer matching independently ----
 const perAdr = await pipeline(
   targets,
-  // stage 1: status / symbol extraction and reference search (skill Phase 2-4)
+  // stage 1: status / symbol extraction and reference search
   (a) =>
     agent(
       anchor(
@@ -299,7 +294,7 @@ const perAdr = await pipeline(
         schema: EXTRACT_SCHEMA,
       },
     ),
-  // stage 2: semantic matching by routed reviewers (skill Phase 5-7)
+  // stage 2: semantic matching by routed reviewers
   async (ex, a) => {
     if (!ex) {
       // an extract stall stays in the Per-ADR listing as unverifiable (fail-close)
@@ -376,7 +371,7 @@ log(
   `Scan: findings=${allFindings.length} (H=${counts.H}, M=${counts.M}, L=${counts.L}), unverifiable=${unverifiable.length}/${scanned.length}`,
 );
 
-// ---- Report: report output (skill Phase 8; the structure lives in the prompt, no template) ----
+// ---- Report: report output (the structure lives in the prompt, no template) ----
 phase("Report");
 const focusNote = focus.length
   ? `This run is narrowed by focus [${focus.join(", ")}] to ${scanned.length}/${detect.adrs.length} ADRs. State this in one line right after the Summary.\n\n`

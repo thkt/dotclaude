@@ -31,6 +31,14 @@ FULL = {
     "tests_pass": True,
     "gates_pass": True,
     "verify_output": "",
+    "conformance": [
+        {
+            "category": "missing",
+            "spec_line": "T-003 rejects negative",
+            "location": "pay.js:12",
+            "detail": "no test for T-003",
+        }
+    ],
 }
 CLEAN = {"issue": "9", "reaudited": True, "tests_pass": True, "gates_pass": True}
 
@@ -52,15 +60,28 @@ class RenderTest(unittest.TestCase):
         self.assertIn("**Anomalies (Red unconfirmed)**", body)
         self.assertIn("- U-001 (no-red): flaky", body)
 
+    def test_conformance_is_a_separate_section_not_in_blocking_count(self):
+        # reviewer-conformance's Spec-axis findings surface in their own section and
+        # must NOT be merged into the blocking count (that stays the residual count).
+        body = pr_body.render(FULL)
+        self.assertIn(
+            "**Spec conformance (separate axis, review independently)**", body
+        )
+        self.assertIn("- [missing] no test for T-003 (pay.js:12, T-003 rejects negative)", body)
+        self.assertIn("`blocking 1`", body)
+
     def test_clean_run_omits_empty_sections_and_stays_short(self):
         body = pr_body.render(CLEAN)
         self.assertNotIn("None", body)
         self.assertNotIn("**Assumptions", body)
         self.assertNotIn("**Backlog", body)
         self.assertNotIn("**Unresolved", body)
+        self.assertNotIn("**Spec conformance", body)
         self.assertNotIn("**Anomalies", body)
         self.assertIn("`blocking 0`", body)
-        non_empty = [ln for ln in body.splitlines() if ln.strip() and ln.strip() != "---"]
+        non_empty = [
+            ln for ln in body.splitlines() if ln.strip() and ln.strip() != "---"
+        ]
         self.assertEqual(len(non_empty), 2, non_empty)
 
     def test_not_reaudited_warns_and_still_lists_residual(self):

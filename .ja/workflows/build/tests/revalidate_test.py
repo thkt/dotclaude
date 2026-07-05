@@ -81,10 +81,15 @@ class RunTest(unittest.TestCase):
         # The docstring promises fixed-string matching. A regex metachar pattern must
         # match only its literal text, so a regression to re.search would fail here.
         (self.root / "cfg.js").write_text("const x = cfg[0].bar;\n", encoding="utf-8")
-        v = self.verdicts([
-            {"path": "cfg.js", "pattern": "cfg[0]"},  # present literally
-            {"path": "cfg.js", "pattern": "c.g"},  # regex would match "cfg"; literal absent
-        ])
+        v = self.verdicts(
+            [
+                {"path": "cfg.js", "pattern": "cfg[0]"},  # present literally
+                {
+                    "path": "cfg.js",
+                    "pattern": "c.g",
+                },  # regex would match "cfg"; literal absent
+            ]
+        )
         self.assertEqual(v[("cfg.js", "cfg[0]")], (True, True))
         self.assertEqual(v[("cfg.js", "c.g")], (True, False))
 
@@ -92,7 +97,8 @@ class RunTest(unittest.TestCase):
         # build.js binds results to preconditions; a non-dict entry must not crash or
         # drop a result (which would break that binding), just resolve to false/false.
         results = revalidate.run(
-            [{"path": "present.js", "pattern": "sampleSymbol"}, "not-a-dict", None], self.root
+            [{"path": "present.js", "pattern": "sampleSymbol"}, "not-a-dict", None],
+            self.root,
         )
         self.assertEqual(len(results), 3)
         self.assertEqual((results[1]["exists"], results[1]["matches"]), (False, False))

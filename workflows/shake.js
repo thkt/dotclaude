@@ -7,9 +7,9 @@ export const meta = {
   phases: [{ title: "Route" }, { title: "Shake" }, { title: "Fix" }],
 };
 
-// Port of the /shake skill. Three design points.
+// Three design points.
 // 1. "≥10 runs per dimension" is enforced twice: by schema (runs minItems) and by script
-//    recount. Under skill operation the LLM could thin the count via self-report; in the
+//    recount. Left to the LLM, the count could be thinned via self-report; in the
 //    workflow, a dimension without 10 individual run records counts as unshaken and is
 //    structurally shut out of a stable verdict (fail-close).
 // 2. Classification (confirmed-flaky / latent-flaky / stable) is computed by script rule
@@ -17,13 +17,13 @@ export const meta = {
 // 3. The 4 dimensions + smell scan run in parallel per target, and targets flow
 //    independently through a pipeline (the slowest target does not block the rest).
 //
-// Deliberate addition over the skill: an inconclusive verdict. When a shake agent stalls
+// An inconclusive verdict. When a shake agent stalls
 // or records fewer than 10 runs, the dimension becomes unshaken, and inconclusive is the
 // catch basin that keeps such targets from claiming stable.
 // The run-number placeholder in commands is {RUN} (angle brackets are avoided because
 // guardrails raw-html misreads them as HTML tags).
 
-const opts = (() => {
+const parseArgs = () => {
   if (typeof args === "string") {
     try {
       const parsed = JSON.parse(args);
@@ -34,7 +34,8 @@ const opts = (() => {
     return { scope: args };
   }
   return args && typeof args === "object" ? args : {};
-})();
+};
+const opts = parseArgs();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const base = typeof opts.base === "string" ? opts.base : "main";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
@@ -53,7 +54,7 @@ const DIMENSIONS = [
   { key: "seed", exposes: "direct PRNG dependence" },
 ];
 
-// Scope Invariant and anti-gaming (skill § Scope Invariant / § Anti-gaming). Shared
+// Scope Invariant and anti-gaming. Shared
 // norms embedded in both the fix and the invariant-check prompts.
 const INVARIANT_RULES =
   `A flaky fix changes how a test runs, never what it asserts.\n` +
@@ -61,7 +62,7 @@ const INVARIANT_RULES =
   `What is forbidden is loosening an assertion or widening a tolerance, skipping / .only-ing / removing the test, replacing a real assertion with an always-pass stub, adding a blanket retry, tampering with the shake command or count. ` +
   `The forbidden routes convert a flake into a silent gap, which is worse than the flake itself.`;
 
-// skill § Fix direction. Trigger to root-cause fix mapping.
+// Trigger to root-cause fix mapping.
 const FIX_DIRECTIONS =
   `wall-clock -> inject a clock; fake timers (jest.useFakeTimers, tokio::time::pause)\n` +
   `random -> pin the seed; assert on derived invariants, not raw draws\n` +
@@ -380,7 +381,7 @@ const results = await pipeline(
         history += `attempt ${attempt} left residual flake on re-shake (${fix.reshake})\n`;
       }
       if (!fix.applied) {
-        // skill § Stop point: a flake that survives 3 fix attempts is reported as a blocker, not weakened away
+        // a flake that survives 3 fix attempts is reported as a blocker, not weakened away
         fix.blocker = `The flake survived ${fix.attempts} fix attempts. Reported as a blocker without weakening the test.`;
       }
     }

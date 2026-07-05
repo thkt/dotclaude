@@ -344,6 +344,7 @@ const plan = await agent(
     phase: "Load",
     agentType: "general-purpose",
     schema: EXTRACT_SCHEMA,
+    model: "sonnet",
   },
 );
 if (!plan) {
@@ -422,7 +423,12 @@ const [reval, branch] = await parallel([
       anchor(
         `Check out a new git working branch for issue #${issueNumber} "${plan.outcome}". Pick a conventional branch name (type + short slug) and run git checkout -b with it. If already on a non-default branch, keep the current branch. Report the branch name as your final text.${guard}`,
       ),
-      { label: "checkout", phase: "Branch", agentType: "general-purpose", model: "haiku" },
+      {
+        label: "checkout",
+        phase: "Branch",
+        agentType: "general-purpose",
+        model: "haiku",
+      },
     ),
 ]);
 if (preconditions.length) {
@@ -484,17 +490,80 @@ if (!code.tests_pass || !code.gates_pass)
     `code's independent verify failed (tests=${code.tests_pass} gates=${code.gates_pass}). Advancing to audit; it surfaces on the PR.`,
   );
 
-// ---- Audit ∥ Polish review -> fix -> re-audit loop (at most 3 audit runs) ----
+// ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit loop (at most 3 audit runs) ----
 // The audit fan-out is owned by workflow("audit") (/audit's glob routing table +
 // reviewer -> challenge -> verify -> integrate). No scope is passed, so it routes
 // the uncommitted diff, i.e. the whole implementation. The code phase already got
 // tests green, so preflight is skipped. Polish's review mode is read-only, so the
 // external Codex lens runs on the same diff alongside the audit.
+// reviewer-conformance checks the Spec axis independently: does the implementation
+// match the issue's Plan? Its findings are a separate axis from the quality findings,
+// so the consumer must NOT merge or rerank them into toFix / residualBlocking; they
+// surface in a dedicated PR section instead (reviewer-conformance's Posture).
+const CONFORMANCE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["spec_found", "findings"],
+  properties: {
+    spec_found: {
+      type: "boolean",
+      description: "true when a spec to conform against (the issue's Plan) was found and reviewed",
+    },
+    findings: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["category", "spec_line", "location", "detail"],
+        properties: {
+          category: {
+            type: "string",
+            enum: ["missing", "scope_creep", "wrong"],
+            description: "missing/partial, scope creep, or implemented-but-wrong",
+          },
+          spec_line: {
+            type: "string",
+            description: "the quoted spec / issue line the finding is about",
+          },
+          location: {
+            type: "string",
+            description: "file:line in the diff, or the scope-creep location",
+          },
+          detail: { type: "string" },
+        },
+      },
+    },
+  },
+};
 phase("Audit");
-const [audit0, review] = await parallel([
+const [audit0, review, conformance] = await parallel([
   () => workflow("audit", { repo, skipPreflight: true }),
   () => workflow("polish", { repo, mode: "review" }),
+  () =>
+    agent(
+      anchor(
+        `Conformance review against the originating issue. The spec is GitHub issue #${issueNumber}: ` +
+          `read it with \`gh issue view ${issueNumber}\`. The implementation to review is the UNCOMMITTED ` +
+          `working-tree diff (this build has not committed yet), so use \`git diff HEAD\` plus the untracked ` +
+          `files (new test/impl files) shown by \`git status --porcelain\`. ` +
+          `Do NOT use main...HEAD (HEAD is still the branch point). Report the 3 categories ` +
+          `(missing/partial, scope creep, implemented-but-wrong) with the spec line quoted. ` +
+          `If no spec is available, return spec_found=false with an empty findings array.`,
+      ),
+      {
+        label: "conformance",
+        phase: "Audit",
+        agentType: "reviewer-conformance",
+        schema: CONFORMANCE_SCHEMA,
+      },
+    ),
 ]);
+const conf = conformance || { spec_found: false, findings: [] };
+log(
+  conf.spec_found
+    ? `conformance: ${conf.findings.length} spec deviation(s) (independent axis, surfaced in a separate PR section).`
+    : "conformance: no spec to conform against found, skipped.",
+);
 let audit = audit0 || { findings: [] };
 log(
   `Audit fired ${(audit.assignments || []).length} reviewer group(s); polish lens ${review && review.codex_available ? "active" : "inactive"}.`,
@@ -517,7 +586,12 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
     anchor(
       `Fix these review findings and confirm tests pass. The findings are as follows.\n${JSON.stringify(toFix)}`,
     ),
-    { agentType: "general-purpose", phase: "Audit", label: `fix:${round}` },
+    {
+      agentType: "general-purpose",
+      phase: "Audit",
+      label: `fix:${round}`,
+      model: "sonnet",
+    },
   );
   if (round === 3) {
     reaudited = false;
@@ -531,7 +605,7 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
 }
 // When re-audited, criticalHigh(audit) is the (empty, by loop exit) verified set.
 // When the round cap was hit (reaudited === false), toFix holds the final round's
-// critical/high findings that were fixed but never re-audited — surface them so the
+// critical/high findings that were fixed but never re-audited. Surface them so the
 // PR enumerates the possibly-unresolved blockers instead of only a generic warning.
 const residualBlocking = reaudited ? criticalHigh(audit) : toFix;
 
@@ -545,9 +619,9 @@ const cleanup = await workflow("polish", { repo, mode: "cleanup" });
 // (source: issue) plus discoveries during the build (code / audit / polish). The
 // build deliberately does not file these itself: auto-posting from a headless run
 // mass-produces under-refined, duplicate-prone issues and erodes trust in the
-// automation. Issue creation is instead deferred to the final output — the
+// automation. Issue creation is instead deferred to the final output. The
 // candidates are surfaced in the PR body and the return value, and the user files
-// the ones worth filing via the /issue skill, which carries the premise-check /
+// the ones worth filing via /issue, which carries the premise-check /
 // challenge refinement build expects from an issue.
 phase("Backlog");
 // code.anomalies are NOT folded in here: they are Red-unconfirmed build-integrity
@@ -576,7 +650,7 @@ if (backlogCandidates.length) {
 
 // ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
 // The PR is read by human reviewers, so its body pairs two parts with different
-// owners. The lead Summary — what this PR does, why, and where to look — is genuinely
+// owners. The lead Summary (what this PR does, why, and where to look) is genuinely
 // generative and is the reviewer's entry point, so the agent writes it (like the
 // commit message). Below it sits a fail-closed relay of structured facts the script
 // already holds (assumptions / backlog candidates / unresolved findings /
@@ -599,6 +673,7 @@ const shipPayload = {
   tests_pass: code.tests_pass,
   gates_pass: code.gates_pass,
   verify_output: code.verify_output || "",
+  conformance: conf.spec_found ? conf.findings : [],
 };
 const ship = await agent(
   anchor(
@@ -616,6 +691,7 @@ const ship = await agent(
     phase: "Ship",
     agentType: "general-purpose",
     schema: SHIP_SCHEMA,
+    model: "sonnet",
   },
 );
 
@@ -628,6 +704,7 @@ return {
   code_verified: code.tests_pass && code.gates_pass,
   audit_findings: (audit.findings || []).length,
   residual_blocking: residualBlocking.length,
+  conformance_findings: (conf.findings || []).length,
   polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
   backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,

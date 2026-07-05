@@ -22,7 +22,8 @@ stdout, rather than a plausible-looking "clean" body -- a missing key must surfa
 (via the caller's `&&` chain aborting the PR), not default to a reassuring value.
 
 stdin:  JSON {issue, assumptions[], backlog_candidates[], residual_blocking[],
-              reaudited, code_anomalies[], tests_pass, gates_pass, verify_output}
+              reaudited, code_anomalies[], tests_pass, gates_pass, verify_output,
+              conformance[]}
 stdout: the markdown fact tail, led by a blank line + horizontal rule.
 exit 0 on a completed run. exit 1 on a parse error or a missing required key.
 """
@@ -114,7 +115,16 @@ def render(payload):
         "Unresolved critical/high",
         residual,
         lambda f: (
-            f"[{f.get('severity', '?')}] {f.get('summary', '')}".rstrip() + _suffix(f.get("file"))
+            f"[{f.get('severity', '?')}] {f.get('summary', '')}".rstrip()
+            + _suffix(f.get("file"))
+        ),
+    )
+    section(
+        "Spec conformance (separate axis, review independently)",
+        payload.get("conformance"),
+        lambda f: (
+            f"[{f.get('category', '?')}] {f.get('detail', '')}".rstrip()
+            + _suffix(f.get("location"), f.get("spec_line"))
         ),
     )
     section(

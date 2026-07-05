@@ -23,7 +23,7 @@ export const meta = {
 // args は object でも、呼び出し側で stringify された JSON 文字列でも渡ってくる。object に
 // parse できる文字列は parse 結果を、それ以外の文字列は scope の短縮記法とみなして、
 // ここで一度だけ正規化する。
-const opts = (() => {
+const parseArgs = () => {
   if (typeof args === "object" && args) return args;
   if (typeof args !== "string") return {};
   const s = args.trim();
@@ -36,7 +36,8 @@ const opts = (() => {
     }
   }
   return { scope: args };
-})();
+};
+const opts = parseArgs();
 
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const focus = typeof opts.focus === "string" ? opts.focus : "all";
@@ -50,9 +51,10 @@ const anchor = (p) =>
     ? `git コマンドはすべて repo ${repo} で実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
     : p;
 
-// script は filesystem に触れられず Date.now() も呼べない (sandbox が throw する)。そこで
-// bash agent 側で timestamp・session・branch・prior snapshot との delta を解決してファイルに
-// 書く。disk への副作用が目的で、戻り値は使わない。
+// script は filesystem に触れられず Date.now() も呼べない (sandbox が throw する)。timestamp・
+// branch・prior snapshot との delta 計算は決定論的な bookkeeping なので、LLM に推論
+// させず audit/snapshot.py に寄せた。agent は payload を一時ファイルに書いてそのスクリプトを
+// 1 回叩くだけ。disk への副作用が目的で、戻り値は使わない。
 const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   phase("Snapshot");
   const payload = JSON.stringify({
@@ -65,19 +67,18 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   });
   await agent(
     anchor(
-      `あなたは audit の Snapshot 段階を担当する。この run の JSON 記録を ` +
-        `"$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).json" に書く (先に mkdir -p でディレクトリを作る)。` +
-        `この payload を土台に、シェルでしか取れない 3 フィールドを足す。$CLAUDE_SESSION_ID から "session"、` +
-        `\`git rev-parse --abbrev-ref HEAD\` から "branch"、\`date -u +%Y-%m-%dT%H:%M:%SZ\` から "generated_at"。` +
-        `さらに "delta" を足す。この run の raw_findings を同ディレクトリで直近の audit-*.json と比較し ` +
-        `(file + message でマッチ)、{ resolved, new, carried } を件数で記録する。prior snapshot が無ければ全て 0 とし "first run" と注記する。` +
-        `コードの review や finding の変更はしない。Payload は次のとおり。\n${payload}`,
+      `あなたは audit の Snapshot 段階を担当する。次の JSON payload を一時ファイルに書き、` +
+        `\`python3 "$HOME/.claude/workflows/audit/snapshot.py" < <tempfile>\` を 1 回実行する。` +
+        `スクリプトが timestamp・branch・prior snapshot との delta ` +
+        `(file + message でマッチした resolved / new / carried) を解決し、` +
+        `$HOME/.claude/workspace/history/ に記録を書いて出力パスを stdout に返す。` +
+        `コードの review や finding の変更はしない。他の方法でファイルを書かない。Payload は次のとおり。\n${payload}`,
     ),
     {
       agentType: "general-purpose",
       phase: "Snapshot",
       label: "snapshot",
-      model: "sonnet",
+      model: "haiku",
     },
   );
 };
@@ -314,7 +315,7 @@ const [preFlightRaw, route] = await parallel([
         `あなたは audit の Route 段階を担当する。${scopeInstr}\n` +
           `各ファイルについて、そのファイルに触れた fix commit の数を数える。\`git log --grep=fix --oneline -- <file>\` の行数を churn とする (0 でも構わない。そのファイルも残す)。全ファイルを churn 付きで返す。review はしない。この段階の仕事はファイルの列挙だけ。`,
       ),
-      { label: "route", phase: "Route", schema: ROUTE_SCHEMA },
+      { label: "route", phase: "Route", schema: ROUTE_SCHEMA, model: "haiku" },
     ),
 ]);
 const preFlight = preFlightRaw || {

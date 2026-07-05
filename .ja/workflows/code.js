@@ -14,7 +14,7 @@ export const meta = {
 
 // args は object で届くことも、caller が stringify すると JSON 文字列で届くこともある。
 // 一度だけ正規化する。nested の workflow("code", {plan}) は object で届くのでその分岐を残す。
-const input = (() => {
+const parseArgs = () => {
   if (typeof args === "object" && args) return args;
   if (typeof args !== "string") return {};
   const s = args.trim();
@@ -27,7 +27,8 @@ const input = (() => {
     }
   }
   return {};
-})();
+};
+const input = parseArgs();
 const plan = input.plan;
 if (!plan || !Array.isArray(plan.units) || !plan.units.length) {
   return {
@@ -218,6 +219,7 @@ const verify = (await agent(
     phase: "Verify",
     agentType: "general-purpose",
     schema: VERIFY_SCHEMA,
+    model: "sonnet",
   },
 )) || {
   tests_pass: false,

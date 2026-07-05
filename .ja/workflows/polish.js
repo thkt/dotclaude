@@ -7,12 +7,12 @@ export const meta = {
   phases: [{ title: "Review" }, { title: "Challenge" }, { title: "Fix" }, { title: "Cleanup" }],
 };
 
-// /polish skill の flatten。triage 表を script に置くのは、agent に verdict の解釈を任せると
+// triage 表を script に置くのは、agent に verdict の解釈を任せると
 // disputed を「念のため修正」したり needs_context を黙って落としたりする drift が入るため。
 // mode を持つのは build との合成のため。build は audit と並走させたい review (読み取りのみ) と、
 // fix 統合後に走らせたい cleanup を別のタイミングで呼ぶ。
 
-const opts = (() => {
+const parseArgs = () => {
   if (typeof args === "string") {
     try {
       const parsed = JSON.parse(args);
@@ -23,7 +23,8 @@ const opts = (() => {
     return { scope: args };
   }
   return args && typeof args === "object" ? args : {};
-})();
+};
+const opts = parseArgs();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
 const mode = opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
@@ -147,6 +148,7 @@ if (mode !== "cleanup") {
       phase: "Review",
       agentType: "general-purpose",
       schema: CODEX_SCHEMA,
+      model: "sonnet",
     },
   )) || { available: false, has_changes: true, findings: [] };
   if (!codex.has_changes) {
@@ -172,9 +174,10 @@ if (mode !== "cleanup") {
         phase: "Challenge",
         label: "challenge",
         schema: VERDICTS_SCHEMA,
+        model: "opus",
       },
     );
-    // challenge が落ちたら全 findings を confirmed 扱いで前進する (skill の Error Handling と同じ)
+    // challenge が落ちたら全 findings を confirmed 扱いで前進する (fail-open)
     verdicts = challenged
       ? challenged.verdicts
       : codex.findings.map((f) => ({
@@ -225,25 +228,36 @@ if (mode !== "cleanup") {
         phase: "Fix",
         agentType: "general-purpose",
         schema: FIX_SCHEMA,
+        model: "sonnet",
       },
     );
   }
 }
 
 // ---- Cleanup: simplify -> enhancer-code -> テスト検証 ----
-// どちらも bug 探しではないので critic-audit challenge を通さず直接適用する (skill Phase 3 と同じ)。
+// どちらも bug 探しではないので critic-audit challenge を通さず直接適用する。
 phase("Cleanup");
 await agent(
   anchor(
     `Skill tool で skill "simplify" を呼び、現在の diff に cleanup 専用パス (reuse / simplification / efficiency / altitude) を適用する。引数なしで拒否されたら diff の scope を渡す。commit しない。`,
   ),
-  { label: "simplify", phase: "Cleanup", agentType: "general-purpose" },
+  {
+    label: "simplify",
+    phase: "Cleanup",
+    agentType: "general-purpose",
+    model: "sonnet",
+  },
 );
 await agent(
   anchor(
     `現在の diff から AI slop を除去し simplification ルールを適用し、テストを監査する。simplify の編集より preservation ルール (迷ったら残す) を優先する。`,
   ),
-  { agentType: "enhancer-code", phase: "Cleanup", label: "enhancer" },
+  {
+    agentType: "enhancer-code",
+    phase: "Cleanup",
+    label: "enhancer",
+    model: "sonnet",
+  },
 );
 const cleanup = (await agent(
   anchor(
@@ -254,6 +268,7 @@ const cleanup = (await agent(
     phase: "Cleanup",
     agentType: "general-purpose",
     schema: CLEANUP_SCHEMA,
+    model: "sonnet",
   },
 )) || {
   edits: [],
