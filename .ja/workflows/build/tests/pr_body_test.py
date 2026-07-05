@@ -76,6 +76,13 @@ class RenderTest(unittest.TestCase):
         self.assertIn("tests: pass, gates: pass", body)
         self.assertNotIn("```", body)
 
+    def test_leads_with_blank_line_and_rule_for_safe_append(self):
+        # Appended after the agent's Summary via >>, the tail must start with a blank
+        # line then a horizontal rule so the summary's last line is never parsed as a
+        # setext heading and the two parts stay visually separated.
+        body = pr_body.render(FULL)
+        self.assertTrue(body.startswith("\n\n---\n\n"), repr(body[:8]))
+
 
 class CliTest(unittest.TestCase):
     def _run(self, stdin):

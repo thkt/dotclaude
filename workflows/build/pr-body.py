@@ -94,7 +94,12 @@ def render(payload):
             verify += "\n\n```\n" + body + "\n```"
     sections.append("## Independent verify\n" + verify)
 
-    return "\n\n".join(sections) + "\n"
+    # Lead with a blank line + horizontal rule so this machine-rendered tail stays
+    # cleanly separated when appended (>>) below the agent's hand-written Summary,
+    # regardless of the summary's trailing newline (the blank line prevents the rule
+    # from being parsed as a setext heading underline for the last summary line). The
+    # rule also signals to human reviewers where the auto-generated section begins.
+    return "\n\n---\n\n" + "\n\n".join(sections) + "\n"
 
 
 def main():

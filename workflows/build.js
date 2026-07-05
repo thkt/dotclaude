@@ -511,12 +511,15 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
-// The PR body is a fail-closed relay of structured facts the script already holds
-// (assumptions / backlog candidates / unresolved findings / not-re-audited warning /
-// verify result). Its assembly is delegated to the deterministic renderer
-// workflows/build/pr-body.py so a section is never silently dropped or softened; the
-// agent only writes the commit message (a diff summary — genuinely its job), runs
-// git, pipes this payload into the renderer, and opens the PR with the body file.
+// The PR is read by human reviewers, so its body pairs two parts with different
+// owners. The lead Summary — what this PR does, why, and where to look — is genuinely
+// generative and is the reviewer's entry point, so the agent writes it (like the
+// commit message). Below it sits a fail-closed relay of structured facts the script
+// already holds (assumptions / backlog candidates / unresolved findings /
+// not-re-audited warning / verify result); only that tail is delegated to the
+// deterministic renderer workflows/build/pr-body.py, so a fact section is never
+// silently dropped or softened. The agent appends the rendered tail rather than
+// retyping it.
 phase("Ship");
 const shipPayload = {
   issue: issueNumber,
@@ -532,10 +535,11 @@ const shipPayload = {
 const ship = await agent(
   anchor(
     `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit — you write the commit message (summarize the diff). ` +
-      `Push the branch, then open a draft pull request whose body is generated deterministically (do not hand-write the PR body):\n` +
-      `(1) write this exact JSON to a temp file:\n${JSON.stringify(shipPayload)}\n` +
-      `(2) from the repository root run \`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> > <bodyfile>\`;\n` +
-      `(3) run \`gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
+      `Push the branch, then open a draft pull request. Its body is a human-facing Summary you write, followed by deterministic fact sections rendered from data (do not hand-write the fact sections):\n` +
+      `(1) write a concise "## Summary" to a body file for the human reviewer: what this PR implements (outcome: ${JSON.stringify(plan.outcome)}), the approach taken, and where reviewers should focus. A few sentences or bullets — no invented facts.\n` +
+      `(2) write this exact JSON to a temp file:\n${JSON.stringify(shipPayload)}\n` +
+      `(3) append the deterministic sections to the body file: from the repository root run \`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile>\`;\n` +
+      `(4) run \`gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),
   { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },

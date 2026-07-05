@@ -479,11 +479,12 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (外向きの操作なので draft = 可逆) ----
-// PR body は script が既に持つ構造化事実 (assumption / backlog 候補 / 未解決 finding /
-// 未 re-audit 警告 / verify 結果) の fail-closed な転記。組み立ては決定論 renderer
-// workflows/build/pr-body.py に委ね、セクションの欠落や和らげを起こさせない。agent は
-// commit メッセージ (diff 要約。本来 agent の仕事) を書き、git を実行し、この payload を
-// renderer にパイプして body file で PR を開くだけ。
+// PR は人間レビュアーも読むので、body は所有者の異なる 2 部構成にする。冒頭の Summary
+// (何を・なぜ・どこを見るか) はレビュアーの入口で本質的に生成なので agent が書く
+// (commit メッセージと同様)。その下に、script が既に持つ構造化事実 (assumption /
+// backlog 候補 / 未解決 finding / 未 re-audit 警告 / verify 結果) の fail-closed な転記が
+// 続く。この tail だけを決定論 renderer workflows/build/pr-body.py に委ね、事実セクションの
+// 欠落や和らげを起こさせない。agent は tail を再入力せず append する。
 phase("Ship");
 const shipPayload = {
   issue: issueNumber,
@@ -499,10 +500,11 @@ const shipPayload = {
 const ship = await agent(
   anchor(
     `全変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にする。commit メッセージは自分で書く (diff を要約する)。` +
-      `branch を push し、body を決定論生成した draft pull request を開く (PR body を手書きしない):\n` +
-      `(1) この JSON をそのまま temp file に書き出す:\n${JSON.stringify(shipPayload)}\n` +
-      `(2) repository root から \`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> > <bodyfile>\` を実行する。\n` +
-      `(3) \`gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +
+      `branch を push し、draft pull request を開く。body は自分で書く人間向け Summary と、データから決定論生成した事実セクションの 2 部構成にする (事実セクションは手書きしない):\n` +
+      `(1) 人間レビュアー向けの "## Summary" を body file に書く: この PR が何を実装したか (outcome: ${JSON.stringify(plan.outcome)})、取ったアプローチ、レビュアーが注視すべき箇所。数文か箇条書き — 事実を捏造しない。\n` +
+      `(2) この JSON をそのまま temp file に書き出す:\n${JSON.stringify(shipPayload)}\n` +
+      `(3) 事実セクションを body file に追記する: repository root から \`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile>\` を実行する。\n` +
+      `(4) \`gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +
       `committed 状態と PR url を報告する。${guard}`,
   ),
   { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
