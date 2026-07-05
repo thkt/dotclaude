@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034  # VETO/PRE/AUDIT are referenced by the .bats files that load this
 # Shared setup for the veto bats suites: script paths + a fresh per-test audit store.
 # Loaded via `load helpers`; each suite's setup() calls common_setup then adds its FIX dir.
 common_setup() {
