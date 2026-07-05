@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-"""veto: evidence gate for gh issue create. All subcommands live in this single file.
+"""veto: gh issue create の evidence gate。単一ファイルに全 subcommand を集約する。
 
-  veto.py gate                    Reads a PreToolUse hook payload from stdin, returns allow / deny
-  veto.py record bash|skip        Reads a PostToolUse payload from stdin, records to the audit store
-  veto.py plan-gate --title T     Reads plan JSON from stdin, returns {ready, errors, normalized_title}
-  veto.py verdict-gate --title T  Reads verdict JSON from stdin, applies the one-way GO -> NO-GO downgrade
-  veto.py research-gate --title T --file F  Declares a saved research output exists, bound to the title
+  veto.py gate                    PreToolUse hook payload を stdin で受け、allow / deny を返す
+  veto.py record bash|skip        PostToolUse payload を stdin で受け、audit store に記録する
+  veto.py plan-gate --title T     plan JSON を stdin で受け、{ready, errors, normalized_title} を返す
+  veto.py verdict-gate --title T  verdict JSON を stdin で受け、一方向 GO -> NO-GO downgrade を適用する
+  veto.py research-gate --title T --file F  保存済み research 出力の存在を title に紐付けて宣言する
 
-The fail-closed boundary is gate / plan-gate / verdict-gate / research-gate (parse failure or a
-missing file means deny / exit 1). record is best-effort (a payload of the wrong shape is a silent
-no-op). Threat model is discipline-not-security: a discipline gate with explicit agent_id / skip
-exemptions, not a defense against adversarial evasion.
+fail-closed の境界は gate / plan-gate / verdict-gate / research-gate (parse 失敗・file 不在は deny / exit 1)。
+record は best-effort (形が合わない payload は silent no-op)。脅威モデルは discipline-not-security:
+agent_id / skip の明示的 exemption を持つ規律ゲートで、敵対的回避への防御ではない。
 """
 
 import hashlib
@@ -31,12 +30,12 @@ GATE_MAX_ASSUMPTIONS = 7
 
 
 def normalize_title(title):
-    """Trim and collapse runs of whitespace to one space, so titles differing only in whitespace bind to the same evidence bundle."""
+    """trim + 連続空白を 1 スペースに畳む。空白差だけの title を同じ evidence bundle に束ねる。"""
     return " ".join(str(title or "").split())
 
 
 def flag_arg(argv, flag):
-    """Return the value following flag in argv, or "" when absent."""
+    """argv から flag の次の値を取り出す。無ければ ""。"""
     try:
         i = argv.index(flag)
         return argv[i + 1]
@@ -49,8 +48,8 @@ def title_arg(argv):
 
 
 def extract_title(cmd):
-    """Extract the --title value from a gh issue create command string. Handles --title "x" / 'x' / =x / -t.
-    Tries the 4 quoted forms first, the 2 bare forms last."""
+    """gh issue create コマンド文字列から --title 値を取り出す。--title "x" / 'x' / =x / -t 対応。
+    quoted 4 形を先に、bare 2 形を最後に試す。"""
     s = str(cmd or "")
     patterns = [
         r'--title[=\s]+"((?:[^"\\]|\\.)*)"',
@@ -68,8 +67,8 @@ def extract_title(cmd):
 
 
 def is_gh_issue_create(cmd):
-    """True only for a contiguous `gh issue create` at a command boundary. Precise detection so the
-    loose PreToolUse matcher's catches (tokens scattered across paths or commit messages) are not denied."""
+    """コマンド境界で連続する `gh issue create` のみ真。loose な PreToolUse matcher が拾った
+    無関係コマンド (パスやコミットメッセージに散在する token) を deny しないための精密判定。"""
     return (
         re.search(r"(^|[\s;&|(])gh\s+issue\s+create(\s|$)", str(cmd or "")) is not None
     )
@@ -81,7 +80,7 @@ def is_gh_issue_create(cmd):
 
 
 def store_dir():
-    """Overridable via VETO_HOME (tests point it at a temp dir)."""
+    """VETO_HOME で override 可能 (テストが temp dir を指す)。"""
     return Path(
         os.environ.get("VETO_HOME") or Path.home() / ".claude" / "state" / "veto"
     )
@@ -92,7 +91,7 @@ def audit_path():
 
 
 def append_record(record):
-    """audit.jsonl carries session_id / title, so keep it owner-only (dir 0700 / file 0600)."""
+    """audit.jsonl は session_id / title を含むので owner-only (dir 0700 / file 0600)。"""
     store_dir().mkdir(parents=True, exist_ok=True, mode=0o700)
     fd = os.open(audit_path(), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
     with os.fdopen(fd, "a", encoding="utf-8") as f:
@@ -100,8 +99,8 @@ def append_record(record):
 
 
 def read_records():
-    """Read all records. Broken or empty lines are skipped (the gate fails closed on missing
-    evidence anyway, so a parse error need not abort)."""
+    """全レコードを読む。壊れた行・空行は skip (gate は evidence 不在で fail-closed
+    するので、parse エラーで落とす必要がない)。"""
     p = audit_path()
     if not p.exists():
         return []
@@ -115,12 +114,12 @@ def read_records():
 
 
 def dumps(obj):
-    """JSON.stringify-compatible compact JSON (does not escape non-ASCII)."""
+    """JSON.stringify 互換の compact JSON (非 ASCII をエスケープしない)。"""
     return json.dumps(obj, separators=(",", ":"), ensure_ascii=False)
 
 
 def deny_json(reason):
-    """PreToolUse deny response envelope. Shared by policy denies (cmd_gate) and code-error denies (main)."""
+    """PreToolUse の deny 応答 envelope。policy deny (cmd_gate) と code-error deny (main) で共用。"""
     return dumps(
         {
             "hookSpecificOutput": {
@@ -146,13 +145,13 @@ def now():
 
 
 def evaluate(records, ctx):
-    """Decide whether the gh issue create may pass.
+    """gh issue create を通してよいか判定する。
     ctx: {session_id, agent_id, normalized_title}
-    Returns: {decision: allow|deny, via, reasons, system_message?}"""
+    返り値: {decision: allow|deny, via, reasons, system_message?}"""
     nt = ctx["normalized_title"]
 
-    # agent_id exemption: subagent-originated creates (headless /build etc.). A documented residual
-    # bypass, allowed on condition it is surfaced via systemMessage and leaves an exemption record.
+    # agent_id exemption: subagent 発の create (headless /build 等)。systemMessage で可視化し
+    # exemption record を残すことを条件に許可する documented residual bypass。
     if ctx.get("agent_id"):
         return {
             "decision": "allow",
@@ -166,7 +165,7 @@ def evaluate(records, ctx):
 
     sess = [r for r in records if r.get("session_id") == ctx["session_id"]]
 
-    # single-use consumption tally
+    # single-use の消費計上
     consumed_bundle = sum(
         1
         for r in sess
@@ -179,9 +178,9 @@ def evaluate(records, ctx):
         1 for r in sess if r.get("kind") == "consumed" and r.get("via") == "skip"
     )
 
-    # The evidence bundle for this title: research done + challenge GO + plan ready. Each is the
-    # output of a synchronous gate script (research-gate / verdict-gate / plan-gate) captured by
-    # the recorder via Bash PostToolUse.
+    # この title の evidence bundle: research done + challenge GO + plan ready。いずれも同期
+    # gate script (research-gate / verdict-gate / plan-gate) の出力を Bash PostToolUse で
+    # recorder が捕捉したもの。
     research_done = any(
         r.get("kind") == "research" and r.get("normalized_title") == nt for r in sess
     )
@@ -202,8 +201,8 @@ def evaluate(records, ctx):
     if bundle_complete and consumed_bundle == 0:
         return {"decision": "allow", "via": "bundle", "reasons": []}
 
-    # Explicit human exemption for docs / chore / minor-bug (recorded via the fixed-header
-    # AskUserQuestion). Single-use within the session: N skips permit N creates.
+    # docs / chore / minor-bug の人間による明示 exemption (固定 header の AskUserQuestion で記録)。
+    # session 内 single-use: N skip が N create を許す。
     if skip_count - consumed_skip > 0:
         return {"decision": "allow", "via": "skip", "reasons": []}
 
@@ -221,8 +220,8 @@ def evaluate(records, ctx):
 
 
 def consumption_for(records, ctx):
-    """What record should consume after a successful create. Mirrors evaluate()'s allow paths.
-    The agent_id path was already recorded at gate time, so it consumes nothing."""
+    """成功した create の後に record が消費すべきもの。evaluate() の allow パスを鏡映しにする。
+    agent_id パスは gate 時に記録済みなので消費しない。"""
     r = evaluate(records, ctx)
     if r["decision"] != "allow" or r["via"] == "agent_id":
         return None
@@ -235,17 +234,17 @@ def consumption_for(records, ctx):
 
 
 def validate_plan(plan):
-    """Canonical plan-readiness validation. workflows/build.js keeps a marker-fenced manual copy,
-    and tests/contract_build_port.py asserts both return identical errors on every fixture.
-    Error strings stay in lockstep with the build.js copy.
+    """plan readiness の canonical 検証。workflows/build.js は marker で囲った手動コピーを持ち、
+    tests/contract_build_port.py が全 fixture で同一エラーを返すことを保証する。
+    エラー文字列は build.js コピーと lockstep 維持。
 
-    Missing array fields are treated as empty (arbitrary stdin must not crash the gate). Content
-    and structure defects come back as errors, not exceptions."""
+    配列 field の欠落は空扱い (任意の stdin で gate を落とさない)。内容・構造の欠陥は
+    例外でなく errors として返す。"""
     errors = []
     units = plan.get("units")
     units = units if isinstance(units, list) else []
-    # Non-dict entries get a position-based placeholder id so they surface as "<id> has no ..."
-    # errors (folding them into a shared id would fabricate duplicate unit ids).
+    # 非 dict の entry は位置ベースの placeholder id を与えて "<id> has no ..." 系の errors と
+    # して表面化させる (共有 id に畳むと偽の duplicate unit ids が出る)。
     units = [
         u if isinstance(u, dict) else {"id": f"units[{i}]"} for i, u in enumerate(units)
     ]
@@ -324,8 +323,8 @@ def read_stdin():
 
 
 def parse_json_object(raw, prefix, schema):
-    """Parse stdin JSON as an object. Failure exits 1 (fail-closed).
-    sys.exit(str) prints the message to stderr and exits 1."""
+    """stdin JSON を object として parse する。失敗は exit 1 (fail-closed)。
+    sys.exit(str) は message を stderr に出して exit 1 する。"""
     try:
         obj = json.loads(raw)
     except json.JSONDecodeError as e:
@@ -336,7 +335,7 @@ def parse_json_object(raw, prefix, schema):
 
 
 def cmd_plan_gate(argv):
-    """Deterministic plan-readiness check ported from workflows/build.js validate."""
+    """workflows/build.js validate 由来の決定論的 plan-readiness チェック。"""
     raw = read_stdin()
     plan = parse_json_object(raw, "plan-gate", "PLAN_SCHEMA")
     errors = validate_plan(plan)
@@ -352,9 +351,9 @@ def cmd_plan_gate(argv):
 
 
 def cmd_verdict_gate(argv):
-    """Deterministic residual gate. One-way GO -> NO-GO downgrade only; never upgrades a NO-GO to GO.
-    A non-dict assumption entry carries no flags but still counts toward max-assumptions, and is
-    surfaced as a producer bug via warnings."""
+    """決定論的 residual gate。一方向 GO -> NO-GO downgrade のみ。NO-GO を GO に上げることはない。
+    非 dict の assumption entry は flag なし扱いだが、件数としては max-assumptions に数え、
+    warnings で producer バグとして可視化する。"""
     raw = read_stdin()
     inp = parse_json_object(raw, "verdict-gate", "VERDICT_SCHEMA")
     if inp.get("verdict") not in ("GO", "NO-GO"):
@@ -394,9 +393,9 @@ def cmd_verdict_gate(argv):
 
 
 def cmd_research_gate(argv):
-    """Presence check for a research run. Declares that a saved, non-empty research output file
-    exists, bound to the title. Content quality is not inspected (discipline-not-security).
-    A missing or empty file exits 1 (fail-closed); with no stdout, the recorder records nothing."""
+    """research 実行の presence チェック。保存済み research 出力ファイルの存在 (非空) を
+    title に紐付けて宣言する。内容の質は見ない (discipline-not-security)。
+    file 不在・空は exit 1 (fail-closed) で、stdout が出ないため recorder にも記録されない。"""
     path = flag_arg(argv, "--file")
     if not path:
         sys.exit("research-gate: --file <research output path> is required")
@@ -417,14 +416,13 @@ def cmd_research_gate(argv):
 
 
 def cmd_gate():
-    """PreToolUse gate on `gh issue create`. Allows only when this title has its evidence bundle
-    (challenge GO + plan ready) or an unconsumed skip record, or when subagent-originated
-    (agent_id exemption). Everything else is denied. Parse failure or a missing title also
-    denies (fail-closed)."""
+    """PreToolUse gate on `gh issue create`。この title の evidence bundle (challenge GO +
+    plan ready) か未消費の skip record があるとき、または subagent 発 (agent_id exemption)
+    のときだけ許可する。それ以外は deny。parse 失敗・title 不在も deny (fail-closed)。"""
 
     def deny(payload, title, reason) -> NoReturn:
-        # Emitting the deny response takes priority over writing the record (dropping the deny
-        # JSON on a record failure would degrade into the wrapper's generic DENY and lose the reason).
+        # deny 応答の出力は record 書き込みより優先する (record 失敗で deny JSON を
+        # 落とすと wrapper の generic DENY に化けて理由が消える)。
         try:
             append_record(
                 {
@@ -453,9 +451,8 @@ def cmd_gate():
 
     command = (payload.get("tool_input") or {}).get("command", "")
 
-    # The PreToolUse matcher (pre-issue-create.sh) is intentionally loose (it forwards even
-    # scattered gh / issue / create tokens), so a non-create here is a matcher false positive.
-    # Pass it through rather than denying.
+    # PreToolUse matcher (pre-issue-create.sh) は意図的に loose (gh / issue / create token が
+    # 散在するだけでも forward) なので、実 create でなければ matcher の誤爆。deny せず素通しする。
     if not is_gh_issue_create(command):
         sys.exit(0)
 
@@ -481,8 +478,8 @@ def cmd_gate():
             f"no evidence bundle for this issue title ({', '.join(result['reasons'])})",
         )
 
-    # Allow. The agent_id path records the exemption while surfacing it. bundle / skip allow
-    # silently (consumption is tallied by record bash when the create succeeds).
+    # allow。agent_id パスは exemption を可視化しつつ記録する。bundle / skip は silent allow
+    # (消費は create 成功時に record bash が計上する)。
     if result["via"] == "agent_id":
         append_record(
             {
@@ -499,8 +496,8 @@ def cmd_gate():
 
 
 def cmd_record(kind):
-    """PostToolUse recorder. Best-effort: a payload of an unexpected shape is a silent no-op
-    (the fail-closed decision point is the gate, not the recorder)."""
+    """PostToolUse recorder。best-effort: 期待した形でない payload は silent no-op
+    (fail-closed の決定点は recorder でなく gate)。"""
     try:
         payload = json.loads(read_stdin())
     except (json.JSONDecodeError, UnicodeDecodeError):
@@ -512,10 +509,10 @@ def cmd_record(kind):
         cmd = (payload.get("tool_input") or {}).get("command", "")
         stdout = (payload.get("tool_response") or {}).get("stdout", "")
 
-        # (a) a verdict-gate run  -> record GO / NO-GO bound to the title
-        # (b) a plan-gate run     -> record the ready flag bound to the title
-        # (c) a research-gate run -> record research done bound to the title
-        # The optional quote absorbs the closing quote of a quoted path (e.g. "$DIR/veto.py").
+        # (a) verdict-gate 実行  -> GO / NO-GO を title に紐付けて記録
+        # (b) plan-gate 実行     -> ready flag を title に紐付けて記録
+        # (c) research-gate 実行 -> research done を title に紐付けて記録
+        # quote 許容は quoted path (例 "$DIR/veto.py") の閉じ quote 用。
         gate_run = re.search(
             r"veto\.py[\"']?\s+(verdict-gate|plan-gate|research-gate)\b", cmd
         )
@@ -562,10 +559,9 @@ def cmd_record(kind):
                 )
             return
 
-        # (d) a successful gh issue create -> consume the bundle / skip that was used (single-use).
-        # Detection reuses the same is_gh_issue_create as the gate (duplicating the predicate
-        # would be a divergence source). The agent_id path already recorded its exemption at
-        # gate time, so it is excluded.
+        # (d) 成功した gh issue create -> 使った bundle / skip を消費 (single-use)。
+        # 判定は gate と同じ is_gh_issue_create に統一 (述語の二重化は divergence 源)。
+        # agent_id パスは gate 時に exemption 記録済みなので対象外。
         if is_gh_issue_create(cmd) and not payload.get("agent_id"):
             if not re.search(r"github\.com/\S+/issues/\d+", stdout):
                 return
@@ -589,8 +585,8 @@ def cmd_record(kind):
                 )
         return
 
-    # AskUserQuestion: record a human gate-exemption only when the fixed header 判定スキップ is
-    # present. The chosen kind (docs / chore / minor-bug) is the answer to that question.
+    # AskUserQuestion: 固定 header 判定スキップ があるときだけ人間の gate-exemption を記録。
+    # 選ばれた kind (docs / chore / minor-bug) はその質問への answer。
     if kind == "skip":
         questions = (payload.get("tool_input") or {}).get("questions") or []
         skip_q = next(
@@ -615,9 +611,9 @@ def main():
         try:
             cmd_gate()
         except Exception:
-            # A code failure fails closed with a reason distinguishable from a policy deny
-            # (no evidence). The traceback goes to stderr (the wrapper routes it to gate.log).
-            # SystemExit does not inherit Exception, so cmd_gate's normal exits pass through here.
+            # コード異常は policy deny (no evidence) と区別できる理由で fail-closed する。
+            # traceback は stderr へ (wrapper が gate.log に回す)。SystemExit は Exception を
+            # 継承しないので、cmd_gate 内の正常 exit はここを素通りする。
             traceback.print_exc()
             print(
                 deny_json(
@@ -627,8 +623,8 @@ def main():
             )
             sys.exit(0)
     elif sub == "record":
-        # record always exits 0 (best-effort), but the fact that evidence was dropped goes to
-        # stderr (silence would make a store failure indistinguishable from a no-challenge-GO deny).
+        # record は常に exit 0 (best-effort) だが、evidence を落とした事実は stderr に残す
+        # (無音だと store 障害が no-challenge-GO deny と区別できない)。
         try:
             cmd_record(sys.argv[2] if len(sys.argv) > 2 else "")
         except Exception as e:
@@ -645,8 +641,8 @@ def main():
                 "research-gate": cmd_research_gate,
             }[sub](sys.argv[2:])
         except Exception as e:
-            # Code failures that parse_json_object does not catch also become a structured
-            # fail-closed (exit 1 + reason) instead of a raw traceback.
+            # parse_json_object が拾わないコード異常も生 traceback でなく構造化した
+            # fail-closed (exit 1 + 理由) にする。
             print(
                 f"veto: {sub} errored: {type(e).__name__}: {e} (fail-closed)",
                 file=sys.stderr,

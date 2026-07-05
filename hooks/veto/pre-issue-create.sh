@@ -22,6 +22,8 @@ DIR="$(cd "${BASH_SOURCE[0]%/*}" && pwd)"
 # the redirect fails, the command fails, and the generic DENY below keeps it fail-closed.
 # -m 700 keeps the store dir owner-only whichever component creates it first (veto.py uses 0o700).
 LOG_DIR="${VETO_HOME:-$HOME/.claude/state/veto}"
+# shellcheck disable=SC2174  # -m applying only to the leaf is intended: the leaf IS the store
+# dir; parents (~/.claude/state) hold no secrets. Python's mkdir(mode=0o700) behaves the same.
 mkdir -p -m 700 "$LOG_DIR" 2>/dev/null || true
 out="$(printf '%s' "$input" | python3 "$DIR/veto.py" gate 2>>"$LOG_DIR/gate.log")" || { printf '%s\n' "$DENY"; exit 0; }
 printf '%s' "$out"

@@ -229,45 +229,69 @@ const SHIP_SCHEMA = {
 
 // 構造化 plan の再検証 + content 非空検査。構造 (id 重複 / 宙吊り / 循環 / テスト
 // 欠落) と内容 (contract / name / given / when / then の空) を決定論で reject する。
+//
+// DRY 負債: これは hooks/veto/veto.py の validate_plan (canonical な plan-gate、
+// plan-gate.bats T-011 でロック) の手動メンテコピー。workflow runtime はこのファイルを
+// AsyncFunction 本体として wrap するため、build.js は canonical を import できない
+// (しかも Python)。コピーは hooks/veto/tests/contract_build_port.py が lockstep に保つ:
+// 下の 2 つの CONTRACT-TEST marker 間から本体を抽出し node で実行して、全共有 fixture で
+// canonical と同一の errors を返すことを assert する。canonical を更新せずにこの block を
+// 編集する (逆も同様) とそのテストが落ちる。marker のリネーム・削除は禁止。
+// CONTRACT-TEST-BEGIN validate
 const validate = (plan) => {
   const errors = [];
-  const units = plan.units || [];
-  if (!units.length) errors.push("units が空。実装 unit を 1 件以上定義する");
+  // 非 object エントリには位置ベースの placeholder id を与え、"<id> has no ..." エラー
+  // として表面化させる (共有 id に畳むと偽の "duplicate unit ids" が出る)。
+  const units = (Array.isArray(plan.units) ? plan.units : []).map((u, i) =>
+    u && typeof u === "object" && !Array.isArray(u) ? u : { id: `units[${i}]` },
+  );
+  if (!units.length) errors.push("units is empty. Define at least one implementation unit");
+  if (!String(plan.test_command || "").trim()) errors.push("test_command is empty");
+
   const ids = new Set(units.map((u) => u.id));
-  if (ids.size !== units.length) errors.push("unit id が重複している");
+  if (ids.size !== units.length) errors.push("duplicate unit ids");
+
   const testIds = new Set();
-  for (const u of units) {
-    if (!u.tests.length) errors.push(`${u.id} に test scenario が無い`);
-    if (!u.files.length) errors.push(`${u.id} に対象ファイルが無い`);
-    if (!String(u.goal || "").trim()) errors.push(`${u.id} の goal が空`);
-    if (!String(u.contract || "").trim()) errors.push(`${u.id} の contract が空`);
-    for (const t of u.tests) {
-      if (testIds.has(t.id)) errors.push(`test id ${t.id} が重複している`);
+  for (const [i, u] of units.entries()) {
+    const tests = (Array.isArray(u.tests) ? u.tests : []).map((t, j) =>
+      t && typeof t === "object" && !Array.isArray(t) ? t : { id: `units[${i}].tests[${j}]` },
+    );
+    const files = Array.isArray(u.files) ? u.files : [];
+    const dependsOn = Array.isArray(u.depends_on) ? u.depends_on : [];
+    if (!tests.length) errors.push(`${u.id} has no test scenario`);
+    if (!files.length) errors.push(`${u.id} has no target files`);
+    if (!String(u.goal || "").trim()) errors.push(`${u.id} has an empty goal`);
+    if (!String(u.contract || "").trim()) errors.push(`${u.id} has an empty contract`);
+    for (const t of tests) {
+      if (testIds.has(t.id)) errors.push(`duplicate test id ${t.id}`);
       testIds.add(t.id);
       for (const field of ["name", "given", "when", "then"]) {
-        if (!String(t[field] || "").trim()) errors.push(`${t.id} の ${field} が空`);
+        if (!String(t[field] || "").trim()) errors.push(`${t.id} has an empty ${field}`);
       }
     }
-    for (const d of u.depends_on) {
-      if (!ids.has(d)) errors.push(`${u.id} の depends_on ${d} が存在しない unit を指す`);
+    for (const d of dependsOn) {
+      if (!ids.has(d)) errors.push(`${u.id}'s depends_on ${d} points to a nonexistent unit`);
     }
   }
+
   // 循環検出 (DFS)
   const state = new Map();
   const visit = (id, path) => {
     if (state.get(id) === "done") return;
     if (state.get(id) === "visiting") {
-      errors.push(`depends_on が循環している: ${[...path, id].join(" -> ")}`);
+      errors.push(`depends_on cycle: ${[...path, id].join(" -> ")}`);
       return;
     }
     state.set(id, "visiting");
     const u = units.find((x) => x.id === id);
-    for (const d of (u && u.depends_on) || []) visit(d, [...path, id]);
+    for (const d of u && Array.isArray(u.depends_on) ? u.depends_on : []) visit(d, [...path, id]);
     state.set(id, "done");
   };
   for (const u of units) visit(u.id, []);
+
   return errors;
 };
+// CONTRACT-TEST-END validate
 
 // ---- Load: verbatim fetch -> Plan 見出し検査 -> 決定論 id 収集 -> extract -> validate + cross-check ----
 const fetched = await agent(
