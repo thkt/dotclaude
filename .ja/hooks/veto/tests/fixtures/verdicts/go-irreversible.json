@@ -1,1 +1,10 @@
-{"verdict":"GO","assumptions":[{"text":"drop prod table","irreversible":true,"basis":"data migration"}]}
+{
+  "verdict": "GO",
+  "assumptions": [
+    {
+      "text": "drop prod table",
+      "irreversible": true,
+      "basis": "data migration"
+    }
+  ]
+}

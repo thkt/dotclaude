@@ -1,1 +1,19 @@
-{"session_id":"SESSION-FIXTURE","transcript_path":"/repo/transcript.jsonl","cwd":"/repo","prompt_id":"PROMPT-FIXTURE","permission_mode":"auto","effort":{"level":"medium"},"hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"gh issue create --title \"[Feature] ゲート付き issue 作成フロー\" --body-file /tmp/body.md"},"tool_response":{"stdout":"https://github.com/thkt/dotclaude/issues/900","stderr":"","interrupted":false},"duration_ms":2100}
+{
+  "session_id": "SESSION-FIXTURE",
+  "transcript_path": "/repo/transcript.jsonl",
+  "cwd": "/repo",
+  "prompt_id": "PROMPT-FIXTURE",
+  "permission_mode": "auto",
+  "effort": { "level": "medium" },
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "gh issue create --title \"[Feature] ゲート付き issue 作成フロー\" --body-file /tmp/body.md"
+  },
+  "tool_response": {
+    "stdout": "https://github.com/thkt/dotclaude/issues/900",
+    "stderr": "",
+    "interrupted": false
+  },
+  "duration_ms": 2100
+}

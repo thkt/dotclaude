@@ -1,1 +1,11 @@
-{"verdict":"GO","assumptions":[{"text":"pick a framework","irreversible":false,"underspecified":true,"basis":"no constraint given"}]}
+{
+  "verdict": "GO",
+  "assumptions": [
+    {
+      "text": "pick a framework",
+      "irreversible": false,
+      "underspecified": true,
+      "basis": "no constraint given"
+    }
+  ]
+}

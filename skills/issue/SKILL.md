@@ -32,7 +32,7 @@ Generate a GitHub Issue with a structured title and body, verifying drafted clai
 
 ## Language
 
-Read `language` from `${CLAUDE_SKILL_DIR}/../../settings.json` and translate the issue body and templates into that language. If unset, default to English. Keep technical terms, code, and identifiers untranslated.
+Read `language` from `${CLAUDE_SKILL_DIR}/../../settings.json` and translate the issue body and templates into that language. If unset, default to English. Only identifiers, code, commands, and proper nouns stay in English; do not mix loose English words that have a plain equivalent in the configured language into the prose. Template-derived headings and Plan-section extraction keywords stay in English.
 
 ## Title Discipline
 

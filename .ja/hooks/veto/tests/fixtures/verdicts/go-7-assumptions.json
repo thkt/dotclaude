@@ -1,8 +1,12 @@
-{"verdict":"GO","assumptions":[
-{"text":"a1","irreversible":false,"basis":"b"},
-{"text":"a2","irreversible":false,"basis":"b"},
-{"text":"a3","irreversible":false,"basis":"b"},
-{"text":"a4","irreversible":false,"basis":"b"},
-{"text":"a5","irreversible":false,"basis":"b"},
-{"text":"a6","irreversible":false,"basis":"b"},
-{"text":"a7","irreversible":false,"basis":"b"}]}
+{
+  "verdict": "GO",
+  "assumptions": [
+    { "text": "a1", "irreversible": false, "basis": "b" },
+    { "text": "a2", "irreversible": false, "basis": "b" },
+    { "text": "a3", "irreversible": false, "basis": "b" },
+    { "text": "a4", "irreversible": false, "basis": "b" },
+    { "text": "a5", "irreversible": false, "basis": "b" },
+    { "text": "a6", "irreversible": false, "basis": "b" },
+    { "text": "a7", "irreversible": false, "basis": "b" }
+  ]
+}

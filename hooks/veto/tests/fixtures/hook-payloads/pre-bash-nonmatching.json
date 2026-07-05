@@ -1,1 +1,11 @@
-{"session_id":"SESSION-FIXTURE","transcript_path":"/repo/transcript.jsonl","cwd":"/repo","prompt_id":"PROMPT-FIXTURE","permission_mode":"auto","effort":{"level":"medium"},"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"echo \"hello world\""}}
+{
+  "session_id": "SESSION-FIXTURE",
+  "transcript_path": "/repo/transcript.jsonl",
+  "cwd": "/repo",
+  "prompt_id": "PROMPT-FIXTURE",
+  "permission_mode": "auto",
+  "effort": { "level": "medium" },
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": { "command": "echo \"hello world\"" }
+}
