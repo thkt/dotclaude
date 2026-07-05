@@ -7,13 +7,13 @@ export const meta = {
   phases: [{ title: "Review" }, { title: "Challenge" }, { title: "Fix" }, { title: "Cleanup" }],
 };
 
-// Flatten of the /polish skill. The triage table lives in the script because
+// The triage table lives in the script because
 // leaving verdict interpretation to an agent invites drift: "fixing disputed
 // findings just in case" or silently dropping needs_context. The mode option
 // exists for composition with build, which wants review (read-only) running in
 // parallel with audit, and cleanup running later after the merged fix pass.
 
-const opts = (() => {
+const parseArgs = () => {
   if (typeof args === "string") {
     try {
       const parsed = JSON.parse(args);
@@ -24,7 +24,8 @@ const opts = (() => {
     return { scope: args };
   }
   return args && typeof args === "object" ? args : {};
-})();
+};
+const opts = parseArgs();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
 const mode = opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
@@ -151,6 +152,7 @@ if (mode !== "cleanup") {
       phase: "Review",
       agentType: "general-purpose",
       schema: CODEX_SCHEMA,
+      model: "sonnet",
     },
   )) || { available: false, has_changes: true, findings: [] };
   if (!codex.has_changes) {
@@ -180,10 +182,10 @@ if (mode !== "cleanup") {
         phase: "Challenge",
         label: "challenge",
         schema: VERDICTS_SCHEMA,
+        model: "opus",
       },
     );
-    // If the challenge dies, advance with every finding treated as confirmed
-    // (same as the skill's Error Handling).
+    // If the challenge dies, advance with every finding treated as confirmed (fail-open).
     verdicts = challenged
       ? challenged.verdicts
       : codex.findings.map((f) => ({
@@ -235,26 +237,36 @@ if (mode !== "cleanup") {
         phase: "Fix",
         agentType: "general-purpose",
         schema: FIX_SCHEMA,
+        model: "sonnet",
       },
     );
   }
 }
 
 // ---- Cleanup: simplify -> enhancer-code -> test validation ----
-// Neither hunts bugs, so both apply directly without a critic-audit challenge
-// (same as the skill's Phase 3).
+// Neither hunts bugs, so both apply directly without a critic-audit challenge.
 phase("Cleanup");
 await agent(
   anchor(
     `Invoke the Skill tool with skill "simplify" for a cleanup-only pass (reuse, simplification, efficiency, altitude) on the current diff. If it rejects a no-arg invocation, pass the diff scope. Do not commit.`,
   ),
-  { label: "simplify", phase: "Cleanup", agentType: "general-purpose" },
+  {
+    label: "simplify",
+    phase: "Cleanup",
+    agentType: "general-purpose",
+    model: "sonnet",
+  },
 );
 await agent(
   anchor(
     `Remove AI slop from the current diff, apply simplification rules, then audit tests. Your preservation rule (when in doubt, keep) takes priority over simplify's edits.`,
   ),
-  { agentType: "enhancer-code", phase: "Cleanup", label: "enhancer" },
+  {
+    agentType: "enhancer-code",
+    phase: "Cleanup",
+    label: "enhancer",
+    model: "sonnet",
+  },
 );
 const cleanup = (await agent(
   anchor(
@@ -265,6 +277,7 @@ const cleanup = (await agent(
     phase: "Cleanup",
     agentType: "general-purpose",
     schema: CLEANUP_SCHEMA,
+    model: "sonnet",
   },
 )) || {
   edits: [],

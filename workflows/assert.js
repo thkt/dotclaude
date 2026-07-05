@@ -14,15 +14,14 @@ export const meta = {
   ],
 };
 
-// Port of the /assert skill. Four design points.
+// Four design points.
 // 1. The static reviewer fan-out reuses the nested workflow("audit") instead of duplicating
-//    the routing table (preserving skill phase-1's "routing table changes propagate to
-//    /assert directly" in workflow form). Audit findings already passed critic-audit /
-//    critic-evidence inside audit, so assert's Challenge applies only to Codex findings,
-//    avoiding a double challenge by the same agents.
-// 2. gate-decode.py's enum / cross-check is replaced by schema + script rule. Instead of
-//    decoding the gate from the enhancer's prose, the script computes it by rule from
-//    (build, tests, issues), so the re-spawn / fail-close machinery itself becomes unneeded.
+//    the routing table (so a routing-table change propagates to assert directly). Audit
+//    findings already passed critic-audit / critic-evidence inside audit, so assert's Challenge
+//    applies only to Codex findings, avoiding a double challenge by the same agents.
+// 2. The gate is computed by schema + script rule. Instead of decoding the gate from the
+//    enhancer's prose, the script computes it by rule from (build, tests, issues), so the
+//    re-spawn / fail-close machinery itself becomes unneeded.
 // 3. worktree.py / bootstrap.py are deterministic scripts, so agents run them as-is
 //    (the workflow script cannot touch the filesystem). The session id resolves via the
 //    agent environment's $CLAUDE_SESSION_ID, so setup and cleanup derive the same branch /
@@ -30,11 +29,10 @@ export const meta = {
 // 4. adversarial (codex 600s) starts with Evidence and runs behind Challenge / Triage
 //    (putting it in a barrier would let the longest stage block everything).
 //
-// Deliberate deviation from the skill: when OUTCOME.md is absent, do NOT generate a stub
-// via /outcome. assert is verification and has no write side-effects on the target repo.
-// Record the absence in the report and move on.
+// When OUTCOME.md is absent, do NOT generate a stub via /outcome. assert is verification and
+// has no write side-effects on the target repo. Record the absence in the report and move on.
 
-const opts = (() => {
+const parseArgs = () => {
   if (typeof args === "string") {
     try {
       const parsed = JSON.parse(args);
@@ -45,7 +43,8 @@ const opts = (() => {
     return { scope: args };
   }
   return args && typeof args === "object" ? args : {};
-})();
+};
+const opts = parseArgs();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const base = typeof opts.base === "string" ? opts.base : "main";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
@@ -274,8 +273,7 @@ if (boot.mode === "none") {
 
 // Distinguish env fail (worktree impossible / install fail) from build smoke fail (the
 // target itself does not build). Only env fail may demote to caveat. Demoting a build
-// smoke fail would produce a false Ready that lets a broken build reach merge
-// (skill phase-4 § Bootstrap Failure Handling).
+// smoke fail would produce a false Ready that lets a broken build reach merge.
 const envFail = !boot.worktree_ok || boot.install === "fail";
 const buildCol = envFail ? "skipped" : boot.build;
 const dynamicOk = !envFail && buildCol !== "fail";
@@ -300,9 +298,9 @@ let audit = null;
 
 try {
   // ---- Evidence: audit ∥ Codex review ∥ test run ∥ adversarial generation ----
-  // test / adversarial (up to 600s) are left running un-awaited while we proceed to
-  // Challenge, collected right before Triage. The challenger / verifier only need
-  // audit + Codex review.
+  // test / adversarial (up to 600s) are left running un-awaited, and Triage, which depends
+  // only on those two, is started immediately as triageP so it overlaps behind the codex +
+  // audit barrier. The challenger / verifier only need audit + Codex review.
   // guardrails sqli-concat scans template literals in call arguments, so prompts that
   // contain codex's execution subcommand name are built as bare assignments first and
   // then passed to anchor / agent.
@@ -334,10 +332,79 @@ try {
         agentType: "general-purpose",
         phase: "Evidence",
         label: "adversarial",
-        model: "sonnet",
+        model: "opus",
         schema: ADVERSARIAL_SCHEMA,
       }).catch(() => null)
     : Promise.resolve(null);
+
+  // ---- Triage (overlapped): intent matching for failed adversarial tests ----
+  // Triage depends only on adversarial / test, so run it here without waiting for the codex
+  // + audit barrier, hiding it behind both poles. audit is the longest pole (~24 min measured)
+  // and gates Synthesize, so placing triage serially after the barrier would put triage's own
+  // duration on the critical path in full (adversarial is capped at 600s and always finishes
+  // before the barrier). Because it runs concurrently, do not call a bare phase("Triage"); each
+  // agent's opts.phase forms the group (avoids racing the global phase state against the audit
+  // thunk; same rationale as the Challenge group).
+  // A FAIL can be either "a bug found" or "the test wrote a wrong expectation". If an intent
+  // source (OUTCOME.md -> SOW/Spec -> ADR -> commits -> comments -> docstring -> README ->
+  // test names) contradicts the test's expectation, exclude; otherwise (no source / source
+  // supports the expectation), promote.
+  const triageP = (async () => {
+    const testRun = await testRunP;
+    const adversarial = await adversarialP;
+    const tCol = dynamicOk ? (testRun && testRun.outcome) || "skipped" : "skipped";
+    const advTests = (adversarial && adversarial.ran && adversarial.tests) || [];
+    const advFails = advTests.filter((t) => t.result === "FAIL");
+    const promoted = [];
+    const excluded = [];
+    if (advFails.length) {
+      const verdicts = await parallel(
+        advFails.map(
+          (t) => () =>
+            agent(
+              anchor(
+                `You handle the intent triage of assert. Decide whether one failed adversarial test is "a real bug found" or "a wrong expectation on the test side".\n` +
+                  `The test is as follows. ${JSON.stringify(t)}\n` +
+                  `Read the target code (${t.target}) with 30 lines of context, and look for intent sources top-down. The order is .claude/OUTCOME.md, SOW / Spec under .claude/workspace/planning/, ADRs such as docs/decisions/, git log of the target file, comments within 10 lines of the target code, the target function's docstring, README, names of existing tests of the same function.\n` +
+                  `If an intent source contradicts the test's expectation, exclude (quote the source in reason); otherwise promote.`,
+              ),
+              {
+                agentType: "general-purpose",
+                phase: "Triage",
+                label: `triage:${t.test_name}`,
+                model: "sonnet",
+                schema: TRIAGE_SCHEMA,
+              },
+            ),
+        ),
+      );
+      advFails.forEach((t, i) => {
+        const v = verdicts[i];
+        // if triage stalls, promote fail-close (prefer a false positive over a miss)
+        if (v && v.verdict === "exclude") excluded.push({ ...t, reason: v.reason });
+        else
+          promoted.push({
+            file: (t.target || "").split(":")[0],
+            line: Number((t.target || "").split(":")[1]) || 0,
+            severity: "high",
+            summary: `[adversarial] ${t.assertion}: ${t.failure_detail || t.test_name}`,
+            source: "adversarial",
+          });
+      });
+    }
+    return {
+      testRun,
+      testsCol: tCol,
+      promoted,
+      advSummary: {
+        total: advTests.length,
+        passed: advTests.filter((t) => t.result === "PASS").length,
+        failed: advFails.length,
+        promoted: promoted.length,
+        excluded: excluded.length,
+      },
+    };
+  })().catch(() => null);
 
   // audit scope: branch diff uses base...HEAD, uncommitted uses audit's default (HEAD
   // diff), target mode passes the path through. audit's Route is git-diff based, so
@@ -426,61 +493,12 @@ try {
       (codexReview && codexReview.ran === false ? " (codex review failed, audit only)" : ""),
   );
 
-  // ---- Triage: intent matching for failed adversarial tests ----
-  // A FAIL can be either "a bug found" or "the test wrote a wrong expectation". If an
-  // intent source (OUTCOME.md -> SOW/Spec -> ADR -> commits -> comments -> docstring ->
-  // README -> test names) contradicts the test's expectation, exclude; otherwise
-  // (no source / source supports the expectation), promote.
-  const testRun = await testRunP;
-  const adversarial = await adversarialP;
-  testsCol = dynamicOk ? (testRun && testRun.outcome) || "skipped" : "skipped";
-  const advTests = (adversarial && adversarial.ran && adversarial.tests) || [];
-  const advFails = advTests.filter((t) => t.result === "FAIL");
-  const promoted = [];
-  const excluded = [];
-  if (advFails.length) {
-    phase("Triage");
-    const verdicts = await parallel(
-      advFails.map(
-        (t) => () =>
-          agent(
-            anchor(
-              `You handle the intent triage of assert. Decide whether one failed adversarial test is "a real bug found" or "a wrong expectation on the test side".\n` +
-                `The test is as follows. ${JSON.stringify(t)}\n` +
-                `Read the target code (${t.target}) with 30 lines of context, and look for intent sources top-down. The order is .claude/OUTCOME.md, SOW / Spec under .claude/workspace/planning/, ADRs such as docs/decisions/, git log of the target file, comments within 10 lines of the target code, the target function's docstring, README, names of existing tests of the same function.\n` +
-                `If an intent source contradicts the test's expectation, exclude (quote the source in reason); otherwise promote.`,
-            ),
-            {
-              agentType: "general-purpose",
-              phase: "Triage",
-              label: `triage:${t.test_name}`,
-              model: "sonnet",
-              schema: TRIAGE_SCHEMA,
-            },
-          ),
-      ),
-    );
-    advFails.forEach((t, i) => {
-      const v = verdicts[i];
-      // if triage stalls, promote fail-close (prefer a false positive over a miss)
-      if (v && v.verdict === "exclude") excluded.push({ ...t, reason: v.reason });
-      else
-        promoted.push({
-          file: (t.target || "").split(":")[0],
-          line: Number((t.target || "").split(":")[1]) || 0,
-          severity: "high",
-          summary: `[adversarial] ${t.assertion}: ${t.failure_detail || t.test_name}`,
-          source: "adversarial",
-        });
-    });
-  }
-  adversarialSummary = {
-    total: advTests.length,
-    passed: advTests.filter((t) => t.result === "PASS").length,
-    failed: advFails.length,
-    promoted: promoted.length,
-    excluded: excluded.length,
-  };
+  // ---- Triage collection: fold in the result of the overlapped triageP ----
+  const triageRes = await triageP;
+  const testRun = triageRes ? triageRes.testRun : null;
+  testsCol = triageRes ? triageRes.testsCol : "skipped";
+  const promoted = (triageRes && triageRes.promoted) || [];
+  adversarialSummary = (triageRes && triageRes.advSummary) || adversarialSummary;
   log(
     dynamicOk
       ? `Dynamic evidence: tests=${testsCol}, adversarial ${adversarialSummary.total} tests (FAIL ${adversarialSummary.failed}, promoted ${adversarialSummary.promoted}, excluded ${adversarialSummary.excluded})`
@@ -513,7 +531,7 @@ try {
   // if the enhancer stalls, assemble issues fail-close from the pre-integration material
   issues = mergeIssues(synth ? synth.issues : [...auditFindings, ...promoted]);
 
-  // Gate rule (skill phase-4 § Gate Rule). Build smoke fail / test fail / one or more
+  // Gate rule. Build smoke fail / test fail / one or more
   // issues means NotReady. Severity remains a fix-priority hint and never affects the
   // gate. caveat applies only when dynamic evidence is missing for env reasons, and
   // presumes zero issues.

@@ -14,24 +14,24 @@ export const meta = {
   ],
 };
 
-// /assert skill の port。設計上の要点は 4 つ。
+// 設計上の要点は 4 つ。
 // 1. 静的 reviewer fan-out は routing 表を複製せず workflow("audit") の入れ子で再利用する
-//    (skill phase-1 の「routing 表の変更が /assert に直接伝播する」を workflow でも保つ)。
-//    audit 内で critic-audit / critic-evidence を通過済みのため、assert 側の Challenge は
-//    Codex findings のみに掛け、同一 agent による二重 challenge を避ける。
-// 2. gate-decode.py の enum / cross-check は schema + script 判定に置き換える。gate を
-//    enhancer の散文から decode するのではなく、(build, tests, issues) から script が
-//    規則で計算するため、re-spawn / fail-close の機構自体が不要になる。
+//    (routing 表の変更が assert に直接伝播する性質を保つため)。audit 内で
+//    critic-audit / critic-evidence を通過済みのため、assert 側の Challenge は Codex findings
+//    のみに掛け、同一 agent による二重 challenge を避ける。
+// 2. gate 判定は schema + script で計算する。gate を enhancer の散文から decode するのではなく、
+//    (build, tests, issues) から script が規則で計算するため、re-spawn / fail-close の機構自体が
+//    不要になる。
 // 3. worktree.py / bootstrap.py は決定論 script なので agent にそのまま実行させる
 //    (script は filesystem に触れられない)。session id は agent 環境の $CLAUDE_SESSION_ID で
 //    解決し、生成と cleanup が同じ id から branch / path を導出するため drift しない。
 // 4. adversarial (codex 600s) は Evidence と同時に始め、Challenge / Triage の裏で走らせる
 //    (barrier に入れると最長 stage が全体を塞ぐ)。
 //
-// skill からの意図的な逸脱: OUTCOME.md 不在時に /outcome で stub 生成しない。assert は
-// 検証であり、対象 repo への書き込み副作用を持たない。不在は report に記録して前進する。
+// OUTCOME.md 不在時に /outcome で stub 生成しない。assert は検証であり、対象 repo への
+// 書き込み副作用を持たない。不在は report に記録して前進する。
 
-const opts = (() => {
+const parseArgs = () => {
   if (typeof args === "string") {
     try {
       const parsed = JSON.parse(args);
@@ -42,7 +42,8 @@ const opts = (() => {
     return { scope: args };
   }
   return args && typeof args === "object" ? args : {};
-})();
+};
+const opts = parseArgs();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const base = typeof opts.base === "string" ? opts.base : "main";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
@@ -271,7 +272,7 @@ if (boot.mode === "none") {
 
 // env fail (worktree 不可 / install fail) と build smoke fail (対象がビルドできない) を区別する。
 // caveat 落としは env fail のみに許す。build smoke fail を caveat に落とすと壊れたビルドが
-// merge に届く false-Ready を生む (skill phase-4 § Bootstrap Failure Handling)。
+// merge に届く false-Ready を生む。
 const envFail = !boot.worktree_ok || boot.install === "fail";
 const buildCol = envFail ? "skipped" : boot.build;
 const dynamicOk = !envFail && buildCol !== "fail";
@@ -296,8 +297,9 @@ let audit = null;
 
 try {
   // ---- Evidence: audit ∥ Codex review ∥ test 実行 ∥ adversarial 生成 ----
-  // test / adversarial (最長 600s) は await せず走らせたまま Challenge に進み、Triage の直前で
-  // 回収する。challenger / verifier が必要とするのは audit + Codex review だけ。
+  // test / adversarial (最長 600s) は await せず走らせたまま、その両者だけに依存する Triage も
+  // triageP として即座に並走させ、codex + audit の barrier の裏に隠す。challenger / verifier が
+  // 必要とするのは audit + Codex review だけ。
   // guardrails sqli-concat は call 引数の template literal を走査するため、codex の実行系
   // subcommand 名を含む prompt は素の代入で組んでから anchor / agent に渡す。
   phase("Evidence");
@@ -328,10 +330,76 @@ try {
         agentType: "general-purpose",
         phase: "Evidence",
         label: "adversarial",
-        model: "sonnet",
+        model: "opus",
         schema: ADVERSARIAL_SCHEMA,
       }).catch(() => null)
     : Promise.resolve(null);
+
+  // ---- Triage (並走): 失敗 adversarial テストの intent 照合 ----
+  // Triage は adversarial / test だけに依存するので、codex + audit の barrier を待たずここで
+  // 走らせ、両ポールの裏に隠す。audit が最長ポール (実測 ~24 分) で Synthesize を gate するため、
+  // barrier 後に逐次で載せると triage 自身の所要が critical path に丸ごと乗る (adversarial は上限
+  // 600s なので barrier より先に必ず終わる)。並走するため bare phase("Triage") は呼ばず、各 agent の
+  // opts.phase で group を張る (audit thunk との global phase state race を避ける。Challenge group と同旨)。
+  // FAIL は「バグ発見」と「テスト側が誤った期待を書いた」の両方がありうる。intent source
+  // (OUTCOME.md -> SOW/Spec -> ADR -> commit -> コメント -> docstring -> README -> テスト名) が
+  // テストの期待と矛盾すれば exclude、それ以外 (source 不在 / source が期待を裏付ける) は promote。
+  const triageP = (async () => {
+    const testRun = await testRunP;
+    const adversarial = await adversarialP;
+    const tCol = dynamicOk ? (testRun && testRun.outcome) || "skipped" : "skipped";
+    const advTests = (adversarial && adversarial.ran && adversarial.tests) || [];
+    const advFails = advTests.filter((t) => t.result === "FAIL");
+    const promoted = [];
+    const excluded = [];
+    if (advFails.length) {
+      const verdicts = await parallel(
+        advFails.map(
+          (t) => () =>
+            agent(
+              anchor(
+                `assert の intent triage を担当する。失敗した adversarial テスト 1 件が「実バグの発見」か「テスト側の誤った期待」かを判定する。\n` +
+                  `テストは次のとおり。${JSON.stringify(t)}\n` +
+                  `対象コード (${t.target}) を前後 30 行読み、intent source を上から順に探す。順序は .claude/OUTCOME.md、.claude/workspace/planning/ の SOW / Spec、docs/decisions/ 等の ADR、対象ファイルの git log、対象コード近傍 10 行のコメント、対象関数の docstring、README、同関数の既存テスト名。\n` +
+                  `intent source がテストの期待と矛盾すれば exclude (reason に source を引用)、それ以外は promote。`,
+              ),
+              {
+                agentType: "general-purpose",
+                phase: "Triage",
+                label: `triage:${t.test_name}`,
+                model: "sonnet",
+                schema: TRIAGE_SCHEMA,
+              },
+            ),
+        ),
+      );
+      advFails.forEach((t, i) => {
+        const v = verdicts[i];
+        // triage が stall したら fail-close で promote する (見逃しより誤検知を取る)
+        if (v && v.verdict === "exclude") excluded.push({ ...t, reason: v.reason });
+        else
+          promoted.push({
+            file: (t.target || "").split(":")[0],
+            line: Number((t.target || "").split(":")[1]) || 0,
+            severity: "high",
+            summary: `[adversarial] ${t.assertion}: ${t.failure_detail || t.test_name}`,
+            source: "adversarial",
+          });
+      });
+    }
+    return {
+      testRun,
+      testsCol: tCol,
+      promoted,
+      advSummary: {
+        total: advTests.length,
+        passed: advTests.filter((t) => t.result === "PASS").length,
+        failed: advFails.length,
+        promoted: promoted.length,
+        excluded: excluded.length,
+      },
+    };
+  })().catch(() => null);
 
   // audit の scope: branch diff は base...HEAD、uncommitted は audit 既定 (HEAD diff)、
   // target mode は path を素通しする。audit の Route は git diff ベースなので target mode では
@@ -416,60 +484,12 @@ try {
       (codexReview && codexReview.ran === false ? " (codex review 失敗、audit のみ)" : ""),
   );
 
-  // ---- Triage: 失敗 adversarial テストの intent 照合 ----
-  // FAIL は「バグ発見」と「テスト側が誤った期待を書いた」の両方がありうる。intent source
-  // (OUTCOME.md -> SOW/Spec -> ADR -> commit -> コメント -> docstring -> README -> テスト名) が
-  // テストの期待と矛盾すれば exclude、それ以外 (source 不在 / source が期待を裏付ける) は promote。
-  const testRun = await testRunP;
-  const adversarial = await adversarialP;
-  testsCol = dynamicOk ? (testRun && testRun.outcome) || "skipped" : "skipped";
-  const advTests = (adversarial && adversarial.ran && adversarial.tests) || [];
-  const advFails = advTests.filter((t) => t.result === "FAIL");
-  const promoted = [];
-  const excluded = [];
-  if (advFails.length) {
-    phase("Triage");
-    const verdicts = await parallel(
-      advFails.map(
-        (t) => () =>
-          agent(
-            anchor(
-              `assert の intent triage を担当する。失敗した adversarial テスト 1 件が「実バグの発見」か「テスト側の誤った期待」かを判定する。\n` +
-                `テストは次のとおり。${JSON.stringify(t)}\n` +
-                `対象コード (${t.target}) を前後 30 行読み、intent source を上から順に探す。順序は .claude/OUTCOME.md、.claude/workspace/planning/ の SOW / Spec、docs/decisions/ 等の ADR、対象ファイルの git log、対象コード近傍 10 行のコメント、対象関数の docstring、README、同関数の既存テスト名。\n` +
-                `intent source がテストの期待と矛盾すれば exclude (reason に source を引用)、それ以外は promote。`,
-            ),
-            {
-              agentType: "general-purpose",
-              phase: "Triage",
-              label: `triage:${t.test_name}`,
-              model: "sonnet",
-              schema: TRIAGE_SCHEMA,
-            },
-          ),
-      ),
-    );
-    advFails.forEach((t, i) => {
-      const v = verdicts[i];
-      // triage が stall したら fail-close で promote する (見逃しより誤検知を取る)
-      if (v && v.verdict === "exclude") excluded.push({ ...t, reason: v.reason });
-      else
-        promoted.push({
-          file: (t.target || "").split(":")[0],
-          line: Number((t.target || "").split(":")[1]) || 0,
-          severity: "high",
-          summary: `[adversarial] ${t.assertion}: ${t.failure_detail || t.test_name}`,
-          source: "adversarial",
-        });
-    });
-  }
-  adversarialSummary = {
-    total: advTests.length,
-    passed: advTests.filter((t) => t.result === "PASS").length,
-    failed: advFails.length,
-    promoted: promoted.length,
-    excluded: excluded.length,
-  };
+  // ---- Triage 回収: 並走させた triageP の結果を取り込む ----
+  const triageRes = await triageP;
+  const testRun = triageRes ? triageRes.testRun : null;
+  testsCol = triageRes ? triageRes.testsCol : "skipped";
+  const promoted = (triageRes && triageRes.promoted) || [];
+  adversarialSummary = (triageRes && triageRes.advSummary) || adversarialSummary;
   log(
     dynamicOk
       ? `動的 evidence: tests=${testsCol}, adversarial ${adversarialSummary.total} 本 (FAIL ${adversarialSummary.failed}、promote ${adversarialSummary.promoted}、exclude ${adversarialSummary.excluded})`
@@ -502,7 +522,7 @@ try {
   // enhancer が stall したら統合前の素材から fail-close で issues を組む
   issues = mergeIssues(synth ? synth.issues : [...auditFindings, ...promoted]);
 
-  // gate 規則 (skill phase-4 § Gate Rule)。build smoke fail / test fail / issues 1 件以上は
+  // gate 規則。build smoke fail / test fail / issues 1 件以上は
   // NotReady。severity は修正優先度のヒントに留まり、gate には影響しない。caveat は動的
   // evidence が env 起因などで欠けたときだけで、issues 0 が前提。
   if (buildCol === "fail" || testsCol === "fail" || issues.length > 0 || challengeStalled) {

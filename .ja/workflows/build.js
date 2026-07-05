@@ -337,6 +337,7 @@ const plan = await agent(
     phase: "Load",
     agentType: "general-purpose",
     schema: EXTRACT_SCHEMA,
+    model: "sonnet",
   },
 );
 if (!plan) {
@@ -413,7 +414,12 @@ const [reval, branch] = await parallel([
       anchor(
         `issue #${issueNumber} "${plan.outcome}" のための新しい git 作業 branch を checkout する。conventional な branch 名 (type + 短い slug) を選び、その名前で git checkout -b を実行する。既に default branch 以外に居るなら現在の branch を維持する。branch 名を最終テキストで報告する。${guard}`,
       ),
-      { label: "checkout", phase: "Branch", agentType: "general-purpose", model: "haiku" },
+      {
+        label: "checkout",
+        phase: "Branch",
+        agentType: "general-purpose",
+        model: "haiku",
+      },
     ),
 ]);
 if (preconditions.length) {
@@ -474,16 +480,74 @@ if (!code.tests_pass || !code.gates_pass)
     `code の独立 verify が fail (tests=${code.tests_pass} gates=${code.gates_pass})。audit へ前進し PR に表面化する。`,
   );
 
-// ---- Audit ∥ Polish review -> fix -> re-audit loop (audit 実行は最大 3 回) ----
+// ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit loop (audit 実行は最大 3 回) ----
 // audit は workflow("audit") が fan-out を所有する (/audit の glob routing 表 + reviewer ->
 // challenge -> verify -> integrate)。scope を渡さないので uncommitted diff、つまり実装全体を
 // route する。code phase がテストを green にしているので preflight は省く。polish の review
 // mode は読み取りのみで、同じ diff に外部 Codex レンズを audit と並走できる。
+// reviewer-conformance は「実装が issue の Plan と一致するか」の Spec 軸を独立に見る。この軸の
+// findings は quality findings と別軸なので、消費側で toFix / residualBlocking に merge も
+// rerank もせず、PR の専用セクションに独立して surface する (reviewer-conformance の Posture)。
+const CONFORMANCE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["spec_found", "findings"],
+  properties: {
+    spec_found: {
+      type: "boolean",
+      description: "照合対象の spec (issue の Plan) が見つかり review した場合 true",
+    },
+    findings: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["category", "spec_line", "location", "detail"],
+        properties: {
+          category: {
+            type: "string",
+            enum: ["missing", "scope_creep", "wrong"],
+            description: "欠落/部分実装、scope creep、実装誤り",
+          },
+          spec_line: { type: "string", description: "対象となる spec / issue の引用行" },
+          location: {
+            type: "string",
+            description: "diff 内の file:line、または scope creep の箇所",
+          },
+          detail: { type: "string" },
+        },
+      },
+    },
+  },
+};
 phase("Audit");
-const [audit0, review] = await parallel([
+const [audit0, review, conformance] = await parallel([
   () => workflow("audit", { repo, skipPreflight: true }),
   () => workflow("polish", { repo, mode: "review" }),
+  () =>
+    agent(
+      anchor(
+        `originating issue に対する conformance review。spec は GitHub issue #${issueNumber}: ` +
+          `\`gh issue view ${issueNumber}\` で読む。review 対象は UNCOMMITTED な working-tree diff ` +
+          `(この build はまだ commit していない) なので、\`git diff HEAD\` と ` +
+          `\`git status --porcelain\` が示す untracked file (新規の test/impl file) を対象にする。` +
+          `main...HEAD は使わない (HEAD はまだ branch 分岐点)。3 category (欠落/部分実装、scope creep、` +
+          `実装誤り) を spec 行を引用して報告する。spec が見つからなければ spec_found=false と空の findings を返す。`,
+      ),
+      {
+        label: "conformance",
+        phase: "Audit",
+        agentType: "reviewer-conformance",
+        schema: CONFORMANCE_SCHEMA,
+      },
+    ),
 ]);
+const conf = conformance || { spec_found: false, findings: [] };
+log(
+  conf.spec_found
+    ? `conformance: ${conf.findings.length} 件の spec 逸脱 (独立軸、PR に別セクションで surface)。`
+    : "conformance: 照合対象の spec 未検出、skip。",
+);
 let audit = audit0 || { findings: [] };
 log(
   `audit が ${(audit.assignments || []).length} reviewer group を発火、polish レンズは ${review && review.codex_available ? "有効" : "無効"}。`,
@@ -506,7 +570,12 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
     anchor(
       `これらの review findings を修正し、テストが通ることを確認する。findings は次のとおり。\n${JSON.stringify(toFix)}`,
     ),
-    { agentType: "general-purpose", phase: "Audit", label: `fix:${round}` },
+    {
+      agentType: "general-purpose",
+      phase: "Audit",
+      label: `fix:${round}`,
+      model: "sonnet",
+    },
   );
   if (round === 3) {
     reaudited = false;
@@ -532,8 +601,8 @@ const cleanup = await workflow("polish", { repo, mode: "cleanup" });
 // ---- Backlog: scope 外の発見を「ユーザーが起票する候補」として集める ----
 // 候補源は issue 本文に書かれた scope 外候補 (source: issue) と build 中の発見 (code /
 // audit / polish)。build はこれを自分で起票しない: headless 実行からの自動 post は
-// 未成熟で重複しやすい issue を量産し、自動化への信頼を下げる。起票は最終出力に委ねる —
-// 候補を PR body と戻り値に載せ、起票に値するものはユーザーが /issue skill で立てる。
+// 未成熟で重複しやすい issue を量産し、自動化への信頼を下げる。起票は最終出力に委ねる。
+// 候補を PR body と戻り値に載せ、起票に値するものはユーザーが /issue で立てる。
 // /issue は build が issue に期待する premise-check / challenge の refine を通す。
 // code.anomalies はここに畳まない: Red 未確認の build 健全性シグナルであり、PR の専用
 // "Anomalies" 節 (shipPayload.code_anomalies 経由) で一度だけ描画する。ここにも畳むと
@@ -581,6 +650,7 @@ const shipPayload = {
   tests_pass: code.tests_pass,
   gates_pass: code.gates_pass,
   verify_output: code.verify_output || "",
+  conformance: conf.spec_found ? conf.findings : [],
 };
 const ship = await agent(
   anchor(
@@ -598,6 +668,7 @@ const ship = await agent(
     phase: "Ship",
     agentType: "general-purpose",
     schema: SHIP_SCHEMA,
+    model: "sonnet",
   },
 );
 
@@ -610,6 +681,7 @@ return {
   code_verified: code.tests_pass && code.gates_pass,
   audit_findings: (audit.findings || []).length,
   residual_blocking: residualBlocking.length,
+  conformance_findings: (conf.findings || []).length,
   polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
   backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,

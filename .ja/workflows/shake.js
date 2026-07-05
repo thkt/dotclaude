@@ -7,21 +7,21 @@ export const meta = {
   phases: [{ title: "Route" }, { title: "Shake" }, { title: "Fix" }],
 };
 
-// /shake skill の port。設計上の要点は 3 つ。
-// 1. 「各次元 ≥10 回」は schema (runs minItems) + script 検算の二重で強制する。skill 運用では
-//    LLM が回数を自己申告で間引けたが、workflow では 10 件の個別 run 記録が無い次元を
+// 設計上の要点は 3 つ。
+// 1. 「各次元 ≥10 回」は schema (runs minItems) + script 検算の二重で強制する。LLM に任せると
+//    回数を自己申告で間引けるが、workflow では 10 件の個別 run 記録が無い次元を
 //    unshaken として扱い、stable 判定から構造的に締め出す (fail-close)。
 // 2. 分類 (confirmed-flaky / latent-flaky / stable) は agent の申告ではなく、run 記録と
 //    smell hit から script が規則で計算する。
 // 3. 4 次元 + smell scan は target ごとに並列、target 間は pipeline で独立に流す
 //    (最長 target が全体を塞がない)。
 //
-// skill からの意図的な追加: verdict に inconclusive を足す。shake agent の stall や
+// verdict に inconclusive を足す。shake agent の stall や
 // 10 回未満の記録で次元が unshaken になった場合、stable を名乗らせないための受け皿。
 // コマンド内の回番号プレースホルダーは {RUN} (角括弧は guardrails raw-html が HTML タグと
 // 誤検知するため使わない)。
 
-const opts = (() => {
+const parseArgs = () => {
   if (typeof args === "string") {
     try {
       const parsed = JSON.parse(args);
@@ -32,7 +32,8 @@ const opts = (() => {
     return { scope: args };
   }
   return args && typeof args === "object" ? args : {};
-})();
+};
+const opts = parseArgs();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const base = typeof opts.base === "string" ? opts.base : "main";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
@@ -51,7 +52,7 @@ const DIMENSIONS = [
   { key: "seed", exposes: "PRNG への直接依存" },
 ];
 
-// Scope Invariant と anti-gaming (skill § Scope Invariant / § Anti-gaming)。fix と
+// Scope Invariant と anti-gaming。fix と
 // invariant check の両 prompt に埋め込む共通規範。
 const INVARIANT_RULES =
   `flaky fix はテストの実行方法を変えるものであり、assert 内容を変えるものではない。\n` +
@@ -59,7 +60,7 @@ const INVARIANT_RULES =
   `禁止されるのは assertion の緩和や tolerance の拡大、テストの skip / .only 化 / 除去、常に通る stub への置換、blanket retry の追加、shake コマンドや回数の改変。` +
   `禁止ルートは flaky を silent gap に変換するため、flake そのものより悪い。`;
 
-// skill § Fix direction。trigger と root-cause fix の対応表。
+// trigger と root-cause fix の対応表。
 const FIX_DIRECTIONS =
   `wall-clock -> clock を注入する。fake timers (jest.useFakeTimers, tokio::time::pause)\n` +
   `random -> seed を固定する。生の乱数値でなく導出された不変条件を assert する\n` +
@@ -382,7 +383,7 @@ const results = await pipeline(
         history += `試行 ${attempt} は re-shake で残存 (${fix.reshake})\n`;
       }
       if (!fix.applied) {
-        // skill § Stop point: 3 回の fix 試行を生き延びた flake は弱体化でなく blocker 報告
+        // 3 回の fix 試行を生き延びた flake は弱体化でなく blocker 報告
         fix.blocker = `flake が ${fix.attempts} 回の fix 試行を生き延びた。テストを弱めず blocker として報告する。`;
       }
     }

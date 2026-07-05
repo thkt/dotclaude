@@ -7,26 +7,25 @@ export const meta = {
   phases: [{ title: "Detect" }, { title: "Scan" }, { title: "Report" }],
 };
 
-// /adrift skill の port。設計上の要点は 4 つ。
-// 1. manifest -> reviewer の routing 表 (skill Phase 5) は script の定数にする。skill 運用では
-//    LLM が reviewer 選択を省略できたが、workflow では manifest 判定値から機械的に引く。
+// 設計上の要点は 4 つ。
+// 1. manifest -> reviewer の routing 表は script の定数にする。LLM に選ばせると reviewer 選択を
+//    省略できるが、workflow では manifest 判定値から機械的に引く。
 // 2. ADR ごとの extract -> search -> review は pipeline で独立に流す (最長 ADR が全体を
 //    塞がない)。extract の stall は unverifiable として記録し、レポートの Per-ADR 完全列挙
-//    (skill 完了条件) から漏らさない (fail-close)。
+//    から漏らさない (fail-close)。
 // 3. findings の dedup と優先度 merge、Summary の件数集計は script が計算する。
-// 4. 外部資産は持たない。external ADR 参照の分類は agent の生検索 + script の集合差で行い
-//    (旧 external-adr-refs.py の内部化)、レポート構成は Report prompt に内包する。
+// 4. 外部資産は持たない。external ADR 参照の分類は agent の生検索 + script の集合差で行い、
+//    レポート構成は Report prompt に内包する。
 //
-// skill からの意図的な逸脱: 引き継ぎの「H 優先度を /issue で起票するか確認」は workflow 中
-// 対話不能のため、レポートの Follow-up Issue Candidates と return に記録して人間の triage に
-// 委ねる。
+// H 優先度の findings は workflow 中に /issue 起票の確認 (対話) ができないため、レポートの
+// Follow-up Issue Candidates と return に記録して人間の triage に委ねる。
 
 const isIdList = (s) => {
   const tokens = s.split(/[\s,]+/).filter(Boolean);
   return tokens.length > 0 && tokens.every((t) => /^(adr-?)?\d+$/i.test(t));
 };
 
-const opts = (() => {
+const parseArgs = () => {
   if (typeof args === "string") {
     try {
       const parsed = JSON.parse(args);
@@ -38,7 +37,8 @@ const opts = (() => {
     return isIdList(args) ? { focus: args } : { dir: args };
   }
   return args && typeof args === "object" ? args : {};
-})();
+};
+const opts = parseArgs();
 const dir = typeof opts.dir === "string" ? opts.dir.trim() : "";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
 
@@ -63,7 +63,7 @@ const anchor = (p) =>
     ? `git / ファイル / 検索のコマンドはすべて ${repo} の repository から実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
     : p;
 
-// skill Phase 5 の routing 表。manifest 判定値から reviewer subagent を機械的に引く。
+// manifest 判定値から reviewer subagent を機械的に引く routing 表。
 const REVIEWERS = {
   rust: ["reviewer-rust", "reviewer-design"],
   ts: ["reviewer-design"],
@@ -71,7 +71,7 @@ const REVIEWERS = {
   other: ["reviewer-design"],
 };
 
-// skill Phase 6 / Phase 7 の判定基準。reviewer prompt に埋め込む
+// reviewer prompt に埋め込む判定基準
 // (プレーン文字列 const にするのは guardrails sqli-concat が call 引数の補間 template 内の
 // キーワード語を誤検知するため)。
 const DIRECTION_RULES =
@@ -241,8 +241,7 @@ if (!detect.found || !detect.adrs.length) {
     why: detect.reason || "No ADRs found, run /census first",
   };
 }
-// external 参照の分類は script の集合差 (参照 id − ローカル id)。旧 external-adr-refs.py の
-// 決定論部分の内部化で、検索は Detect agent、分類はここが持つ。
+// external 参照の分類は script の集合差 (参照 id − ローカル id)。検索は Detect agent、分類はここ。
 const localIds = new Set(detect.adrs.map((a) => parseInt(a.id, 10)));
 const externalRefs = (() => {
   const byRef = new Map();
@@ -276,7 +275,7 @@ log(
 // ---- Scan: ADR ごとに extract -> reviewer 照合を独立に流す ----
 const perAdr = await pipeline(
   targets,
-  // stage 1: status / symbol 抽出と参照検索 (skill Phase 2-4)
+  // stage 1: status / symbol 抽出と参照検索
   (a) =>
     agent(
       anchor(
@@ -294,7 +293,7 @@ const perAdr = await pipeline(
         schema: EXTRACT_SCHEMA,
       },
     ),
-  // stage 2: routing した reviewer による意味的照合 (skill Phase 5-7)
+  // stage 2: routing した reviewer による意味的照合
   async (ex, a) => {
     if (!ex) {
       // extract stall は unverifiable として Per-ADR 列挙に残す (fail-close)
@@ -371,7 +370,7 @@ log(
   `Scan: findings=${allFindings.length} (H=${counts.H}, M=${counts.M}, L=${counts.L}), unverifiable=${unverifiable.length}/${scanned.length}`,
 );
 
-// ---- Report: レポート出力 (skill Phase 8。構成は prompt に内包し template を持たない) ----
+// ---- Report: レポート出力 (構成は prompt に内包し template を持たない) ----
 phase("Report");
 const focusNote = focus.length
   ? `この実行は focus [${focus.join(", ")}] で対象を ${scanned.length}/${detect.adrs.length} ADR に絞っている。Summary の直後にその旨を 1 行で明記する。\n\n`

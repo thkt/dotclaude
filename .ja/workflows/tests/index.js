@@ -1,12 +1,25 @@
 // Node v26 は `node --test <dir>` でディレクトリを走査せず entry module として spawn する。
-// この index がディレクトリ解決の入口になり、配下の全 *.test.js / *.test.mjs を読み込む。
+// この index が `node --test workflows/tests/` の入口になり、workflows/ 配下の全 *.test.js を
+// 再帰的に読み込む。テストは対象ワークフローの subdir に置ける。
 import { readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 
-const here = dirname(fileURLToPath(import.meta.url));
-for (const name of readdirSync(here)
-  .filter((f) => f.endsWith(".test.js") || f.endsWith(".test.mjs"))
-  .sort()) {
-  await import(pathToFileURL(join(here, name)).href);
+const workflowsRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+function* testFiles(dir) {
+  for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  )) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      yield* testFiles(full);
+    } else if (entry.name.endsWith(".test.js")) {
+      yield full;
+    }
+  }
+}
+
+for (const file of testFiles(workflowsRoot)) {
+  await import(pathToFileURL(file).href);
 }

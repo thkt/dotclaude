@@ -24,7 +24,7 @@ export const meta = {
 // args may arrive as an object or, if a caller stringifies it, as a JSON-encoded
 // string. Normalize once: a string that parses to an object is that object; any
 // other string is the scope shorthand.
-const opts = (() => {
+const parseArgs = () => {
   if (typeof args === "object" && args) return args;
   if (typeof args !== "string") return {};
   const s = args.trim();
@@ -37,7 +37,8 @@ const opts = (() => {
     }
   }
   return { scope: args };
-})();
+};
+const opts = parseArgs();
 
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const focus = typeof opts.focus === "string" ? opts.focus : "all";
@@ -52,9 +53,11 @@ const anchor = (p) =>
     : p;
 
 // The script cannot touch the filesystem or call Date.now() (both throw in the
-// sandbox), so a bash agent resolves the timestamp, session, branch, and the
-// delta against the prior snapshot, then writes the file. A disk side-effect;
-// its result is not consumed.
+// sandbox). Resolving the timestamp, branch, and the delta against the
+// prior snapshot is deterministic bookkeeping, so instead of making an LLM reason
+// through it, that work moved to audit/snapshot.py; the agent only writes the
+// payload to a temp file and runs the script once. A disk side-effect; its result
+// is not consumed.
 const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   phase("Snapshot");
   const payload = JSON.stringify({
@@ -67,19 +70,18 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   });
   await agent(
     anchor(
-      `You are the snapshot stage of an audit. Write a JSON record of this run to ` +
-        `"$HOME/.claude/workspace/history/audit-$(date -u +%Y-%m-%d-%H%M%S).json" (mkdir -p the directory first). ` +
-        `Start from this payload and add three fields you resolve via shell: "session" from $CLAUDE_SESSION_ID, ` +
-        `"branch" from \`git rev-parse --abbrev-ref HEAD\`, and "generated_at" from \`date -u +%Y-%m-%dT%H:%M:%SZ\`. ` +
-        `Also add "delta": compare this run's raw_findings to the most recent existing audit-*.json in that directory ` +
-        `(match on file + message) and record { resolved, new, carried } as counts; if no prior snapshot exists, use zeros and note "first run". ` +
-        `Do not review code or change any finding. The payload is as follows.\n${payload}`,
+      `You are the snapshot stage of an audit. Write the following JSON payload to a temp file and run ` +
+        `\`python3 "$HOME/.claude/workflows/audit/snapshot.py" < <tempfile>\` once. ` +
+        `The script resolves the timestamp, branch, and the delta against the ` +
+        `prior snapshot (resolved / new / carried, matched on file + message), writes the record under ` +
+        `$HOME/.claude/workspace/history/, and prints the output path to stdout. ` +
+        `Do not review code or change any finding. Do not write the file by any other means. The payload is as follows.\n${payload}`,
     ),
     {
       agentType: "general-purpose",
       phase: "Snapshot",
       label: "snapshot",
-      model: "sonnet",
+      model: "haiku",
     },
   );
 };
@@ -317,7 +319,7 @@ const [preFlightRaw, route] = await parallel([
         `You are the routing stage of an audit. ${scopeInstr}\n` +
           `For each file, count how many past fix commits touched it: \`git log --grep=fix --oneline -- <file>\` and read the line count as churn (0 is fine, keep the file). Return every file with its churn. Do not review anything; this stage only lists files.`,
       ),
-      { label: "route", phase: "Route", schema: ROUTE_SCHEMA },
+      { label: "route", phase: "Route", schema: ROUTE_SCHEMA, model: "haiku" },
     ),
 ]);
 const preFlight = preFlightRaw || {

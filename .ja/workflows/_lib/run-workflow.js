@@ -11,10 +11,7 @@ const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 // stubs.agent / stubs.workflow は (prompt|name, opts|args) を受けて stub 結果を返す。
 // calls は agent / workflow / phase の呼び出し capture。
 export async function runWorkflow(scriptPath, { args = {}, stubs = {} } = {}) {
-  const source = readFileSync(scriptPath, "utf8").replace(
-    /^export const meta/m,
-    "const meta",
-  );
+  const source = readFileSync(scriptPath, "utf8").replace(/^export const meta/m, "const meta");
   const calls = { agent: [], workflow: [], phase: [] };
   const logs = [];
 
@@ -35,15 +32,7 @@ export async function runWorkflow(scriptPath, { args = {}, stubs = {} } = {}) {
     logs.push(message);
   };
 
-  const run = new AsyncFunction(
-    "args",
-    "agent",
-    "workflow",
-    "parallel",
-    "phase",
-    "log",
-    source,
-  );
+  const run = new AsyncFunction("args", "agent", "workflow", "parallel", "phase", "log", source);
   const result = await run(args, agent, workflow, parallel, phase, log);
   return { result, calls, logs };
 }

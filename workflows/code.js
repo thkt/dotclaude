@@ -15,7 +15,7 @@ export const meta = {
 
 // args may arrive as an object or, if a caller stringifies it, as a JSON string.
 // Normalize once. Keep the object branch: nested workflow("code", {plan}) arrives as an object.
-const input = (() => {
+const parseArgs = () => {
   if (typeof args === "object" && args) return args;
   if (typeof args !== "string") return {};
   const s = args.trim();
@@ -28,7 +28,8 @@ const input = (() => {
     }
   }
   return {};
-})();
+};
+const input = parseArgs();
 const plan = input.plan;
 if (!plan || !Array.isArray(plan.units) || !plan.units.length) {
   return {
@@ -224,6 +225,7 @@ const verify = (await agent(
     phase: "Verify",
     agentType: "general-purpose",
     schema: VERIFY_SCHEMA,
+    model: "sonnet",
   },
 )) || {
   tests_pass: false,
