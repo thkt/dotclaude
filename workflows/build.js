@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Autonomous end-to-end build. Taking an issue with a Plan section refined via /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Audit / Polish / Backlog / Ship run headlessly as deterministic script stages. Review happens on a draft PR.",
   whenToUse:
-    'Fire-and-forget implementation. Finish the refine-with-a-human stage in /issue, then pass that issue number ("123" / "#123") / URL / {issue, repo} as args. Step away and come back to a draft PR with recorded assumptions, audit results, and backlog issues to review. If in-flight steering is needed, drive the phases interactively.',
+    'Fire-and-forget implementation. Finish the refine-with-a-human stage in /issue, then pass that issue number ("123" / "#123") / URL / {issue, repo} as args. Step away and come back to a draft PR with recorded assumptions, audit results, and out-of-scope backlog candidates listed for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -206,38 +206,6 @@ const REVALIDATE_SCHEMA = {
   },
 };
 
-const BACKLOG_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  required: ["posted", "deferred"],
-  properties: {
-    posted: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["title", "url"],
-        properties: {
-          title: { type: "string" },
-          url: { type: "string" },
-        },
-      },
-    },
-    deferred: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["title", "reason"],
-        properties: {
-          title: { type: "string" },
-          reason: { type: "string" },
-        },
-      },
-    },
-  },
-};
-
 const SHIP_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -320,9 +288,11 @@ const validate = (plan) => {
 // ---- Load: verbatim fetch -> Plan heading check -> deterministic id collection -> extract -> validate + cross-check ----
 const fetched = await agent(
   anchor(
-    `Fetch the body of GitHub issue ${issueRef}. Use the gh CLI (e.g. gh issue view ${issueRef} --json body) and return the body verbatim with no summarizing, reformatting, or omission. If the issue is not found or the fetch fails, return found: false.`,
+    `Fetch the body of GitHub issue ${issueRef} with a fixed command — do not summarize or reformat. ` +
+      `Run exactly \`gh issue view ${issueRef} --json body --jq .body\` and return its stdout verbatim as body ` +
+      `(the --jq extraction is verbatim by construction; do not edit it). If the command exits non-zero (issue not found / fetch failed), return found: false.`,
   ),
-  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA },
+  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA, model: "haiku" },
 );
 if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
   return {
@@ -390,32 +360,52 @@ log(
   `Plan extracted: ${plan.units.length} unit(s), ${planTestIds.size} test scenario(s), id cross-check pass.`,
 );
 
-// ---- Revalidate: re-verify preconditions against the current codebase (evidence + script gate) ----
+// ---- Revalidate: re-verify preconditions against the current codebase (deterministic script gate) ----
 // Catches, fail-closed, the possibility that the presupposed code moved between issue
-// filing and build launch. Misses are decided by the script's filter, not by the
-// agent's self-report.
+// filing and build launch. The exists/matches verdict is produced by the deterministic
+// verifier workflows/build/revalidate.py, not by LLM judgment: the check (test -f + literal
+// grep) needs no reasoning, only shell access the workflow runtime lacks, so the agent is a
+// pure launcher that pipes the preconditions in and echoes the verifier's stdout back. The
+// drift decision then stays in the script's filter below.
 phase("Revalidate");
 const preconditions = plan.preconditions || [];
 if (preconditions.length) {
   const reval = await agent(
     anchor(
-      `Re-verify the plan's preconditions against the current codebase. For each {path, pattern}, actually run commands to check the path's existence (exists) and the pattern's grep match (matches; with no pattern, same as exists), and return all ${preconditions.length} in results. Do not be lenient.\n${JSON.stringify(preconditions)}`,
+      `Re-verify the plan's preconditions with the deterministic verifier — do not judge exists/matches yourself. ` +
+        `Steps: (1) write this exact JSON to a temp file; (2) from the repository root run ` +
+        `\`python3 "$HOME/.claude/workflows/build/revalidate.py" < <tempfile>\`; ` +
+        `(3) return the verifier's stdout "results" array verbatim (all ${preconditions.length} entries, unchanged — do not add, drop, or edit any). ` +
+        `The verifier prints {"results":[{path,pattern,exists,matches}]}.\n` +
+        `Preconditions JSON:\n${JSON.stringify(preconditions)}`,
     ),
     {
       label: "revalidate",
       phase: "Revalidate",
       agentType: "general-purpose",
       schema: REVALIDATE_SCHEMA,
+      model: "haiku",
     },
   );
-  if (!reval || !Array.isArray(reval.results) || reval.results.length !== preconditions.length) {
+  if (!reval || !Array.isArray(reval.results)) {
     return {
       stopped: "revalidate-failed",
       detail: reval,
-      why: "The revalidate agent did not return results for every precondition.",
+      why: "The revalidate agent returned no results array.",
     };
   }
-  const drift = reval.results.filter((r) => !r.exists || !r.matches);
+  // Bind each precondition to its result by (path, pattern) rather than trusting a
+  // bare count: a launcher that reorders, drops-and-duplicates, or substitutes an
+  // entry keeps the length identical, so a count check alone would mask a real drift.
+  // A precondition with no matching exists&&matches result (missing or failed) is drift.
+  const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
+  const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
+  const drift = [];
+  for (const pc of preconditions) {
+    const r = resultByKey.get(keyOf(pc));
+    if (!r) drift.push({ ...pc, exists: false, matches: false, missing: true });
+    else if (!r.exists || !r.matches) drift.push(r);
+  }
   if (drift.length) {
     return {
       stopped: "plan-drift",
@@ -494,26 +484,32 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
   audit = (await workflow("audit", { repo, skipPreflight: true })) || { findings: [] };
   toFix = criticalHigh(audit);
 }
-const residualBlocking = reaudited ? criticalHigh(audit) : [];
+// When re-audited, criticalHigh(audit) is the (empty, by loop exit) verified set.
+// When the round cap was hit (reaudited === false), toFix holds the final round's
+// critical/high findings that were fixed but never re-audited — surface them so the
+// PR enumerates the possibly-unresolved blockers instead of only a generic warning.
+const residualBlocking = reaudited ? criticalHigh(audit) : toFix;
 
 // ---- Polish: cleanup only (simplify -> enhancer-code -> test validation) ----
 // The review lens was consumed in the Audit phase, so only the mutators run here.
 phase("Polish");
 const cleanup = await workflow("polish", { repo, mode: "cleanup" });
 
-// ---- Backlog: file out-of-scope discoveries as issues (hybrid) ----
+// ---- Backlog: collect out-of-scope discoveries as candidates for the user ----
 // Candidate sources are the out-of-scope candidates written in the issue body
-// (source: issue) plus discoveries during the build. Cross-check against existing
-// issues and auto-post only the ones confidently new. Uncertain candidates go to the
-// PR body for human triage. Mass-producing duplicate issues erodes trust in the
-// automation, so when in doubt lean toward deferred.
+// (source: issue) plus discoveries during the build (code / audit / polish). The
+// build deliberately does not file these itself: auto-posting from a headless run
+// mass-produces under-refined, duplicate-prone issues and erodes trust in the
+// automation. Issue creation is instead deferred to the final output — the
+// candidates are surfaced in the PR body and the return value, and the user files
+// the ones worth filing via the /issue skill, which carries the premise-check /
+// challenge refinement build expects from an issue.
 phase("Backlog");
+// code.anomalies are NOT folded in here: they are Red-unconfirmed build-integrity
+// signals, rendered once under the PR's dedicated "Anomalies" section (via
+// shipPayload.code_anomalies). Folding them here too listed every anomaly twice.
 const backlogCandidates = [
   ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
-  ...(code.anomalies || []).map((a) => ({
-    source: "code",
-    summary: `Red unconfirmed in ${a.unit} (${a.kind}): ${a.notes}`,
-  })),
   ...(audit.findings || [])
     .filter((f) => f.severity === "medium" || f.severity === "low")
     .map((f) => ({ source: "audit", summary: f.summary, file: f.file, severity: f.severity })),
@@ -522,42 +518,47 @@ const backlogCandidates = [
     summary: `${f.title}: ${f.why || f.detail}`,
   })),
 ];
-let backlog = { posted: [], deferred: [] };
 if (backlogCandidates.length) {
-  backlog = (await agent(
-    anchor(
-      `Backlog stage: file GitHub issues for out-of-scope problems discovered during the build. Originating build issue: #${issueNumber}. Candidates:\n${JSON.stringify(backlogCandidates)}\n` +
-        `For each candidate: (1) judge whether it deserves an issue (actionable, outside this build's scope, non-trivial; merge duplicates and rephrasings into one). ` +
-        `(2) Cross-check against existing issues via the gh CLI issue search (state open, keywords from the candidate).\n` +
-        `File issues only for candidates you are confident are new (at most 5). Apply the label build-discovered; if the repo lacks it, set it up first via gh's label subcommand (color BFD4F2, description "out-of-scope problems discovered by autonomous builds"; if that fails, file without the label). Note the source and the originating build issue #${issueNumber} in the issue body.\n` +
-        `Defer any candidate that looks like a possible duplicate or that you are unsure about, with a reason, instead of posting. If gh is unavailable, defer every candidate.`,
-    ),
-    { label: "backlog", phase: "Backlog", agentType: "general-purpose", schema: BACKLOG_SCHEMA },
-  )) || {
-    posted: [],
-    deferred: backlogCandidates.map((c) => ({
-      title: `[${c.source}] ${c.summary}`,
-      reason: "the backlog agent returned nothing",
-    })),
-  };
   log(
-    `Backlog: posted ${backlog.posted.length} issue(s), ${backlog.deferred.length} to the PR body.`,
+    `Backlog: ${backlogCandidates.length} out-of-scope candidate(s) surfaced for the user to file via /issue.`,
   );
 }
 
 // ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
+// The PR is read by human reviewers, so its body pairs two parts with different
+// owners. The lead Summary — what this PR does, why, and where to look — is genuinely
+// generative and is the reviewer's entry point, so the agent writes it (like the
+// commit message). Below it sits a fail-closed relay of structured facts the script
+// already holds (assumptions / backlog candidates / unresolved findings /
+// not-re-audited warning / verify result); only that tail is delegated to the
+// deterministic renderer workflows/build/pr-body.py, so a fact section is never
+// silently dropped or softened. The agent appends the rendered tail rather than
+// retyping it, and chains the append with `gh pr create` via `&&` so that if the
+// renderer fails (malformed / missing-field payload → exit 1, no output) the PR is
+// not created at all, rather than shipping one missing the fail-closed tail. The
+// pass/fail gating of the verify log lives only in pr-body.py (it reads
+// verify_output solely on failure), so the payload passes it through unconditionally.
 phase("Ship");
+const shipPayload = {
+  issue: issueNumber,
+  assumptions: plan.assumptions || [],
+  backlog_candidates: backlogCandidates,
+  residual_blocking: residualBlocking,
+  reaudited,
+  code_anomalies: code.anomalies || [],
+  tests_pass: code.tests_pass,
+  gates_pass: code.gates_pass,
+  verify_output: code.verify_output || "",
+};
 const ship = await agent(
   anchor(
-    `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit. ` +
-      `Push the branch and open a draft pull request via the gh CLI.\n` +
-      `The PR body must include all of the following. (1) The closing reference to the originating issue: "Closes #${issueNumber}". ` +
-      `(2) Assumptions recorded in the plan (the user's veto targets): ${JSON.stringify(plan.assumptions)}. ` +
-      `(3) Issues posted by the backlog stage: ${JSON.stringify(backlog.posted)}. ` +
-      `(4) Backlog candidates awaiting human triage: ${JSON.stringify(backlog.deferred)}. ` +
-      `(5) Unresolved critical/high findings: ${JSON.stringify(residualBlocking)}${reaudited ? "" : " (state clearly that the final fix round has not been re-audited)"}. ` +
-      `(6) code's Red-unconfirmed anomalies: ${JSON.stringify(code.anomalies || [])}. ` +
-      `(7) code's independent verify result (tests=${code.tests_pass} gates=${code.gates_pass})${code.tests_pass && code.gates_pass ? "" : `; failure detail: ${JSON.stringify(code.verify_output)}`}.\n` +
+    `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit — you write the commit message (summarize the diff). ` +
+      `Push the branch, then open a draft pull request. Its body is a human-facing Summary you write, followed by deterministic fact sections rendered from data (do not hand-write the fact sections):\n` +
+      `(1) write a terse "## Summary" to a body file for the human reviewer — markdown bullets, not prose paragraphs: what this PR implements (outcome: ${JSON.stringify(plan.outcome)}), the approach in a line, and where to focus review. At most ~5 bullets; no filler, no invented facts.\n` +
+      `(2) write this exact JSON to a temp file:\n${JSON.stringify(shipPayload)}\n` +
+      `(3) append the fact tail and open the PR as ONE \`&&\` chain, so a renderer failure aborts before the PR is created — from the repository root run ` +
+      `\`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile> && gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
+      `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do NOT create the PR by other means — report committed with an empty pr_url and the error instead, so the missing fact tail surfaces rather than shipping a PR without it.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),
   { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
@@ -573,8 +574,7 @@ return {
   audit_findings: (audit.findings || []).length,
   residual_blocking: residualBlocking.length,
   polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
-  backlog_posted: backlog.posted,
-  backlog_deferred: backlog.deferred.length,
+  backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,
   pr_url: ship.pr_url,
   committed: ship.committed,

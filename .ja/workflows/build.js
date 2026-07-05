@@ -3,7 +3,7 @@ export const meta = {
   description:
     "autonomous な end-to-end build。/issue で練られた Plan 節付き issue を入力に、Load (verbatim fetch -> 決定論 id 収集 -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Audit / Polish / Backlog / Ship が決定論的 script stage として headless に走る。レビューは draft PR で行う。",
   whenToUse:
-    'fire-and-forget の実装。人間と練る工程は /issue で完結させ、その issue 番号 ("123" / "#123") / URL / {issue, repo} を args で渡す。離席して戻ると draft PR があり、記録された assumption と audit 結果と backlog issue をレビューする。飛行中の操舵が要るなら対話で phase を回す。',
+    'fire-and-forget の実装。人間と練る工程は /issue で完結させ、その issue 番号 ("123" / "#123") / URL / {issue, repo} を args で渡す。離席して戻ると draft PR があり、記録された assumption と audit 結果、そして /issue で起票するための scope 外 backlog 候補が列挙されている。飛行中の操舵が要るなら対話で phase を回す。',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -184,38 +184,6 @@ const REVALIDATE_SCHEMA = {
   },
 };
 
-const BACKLOG_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  required: ["posted", "deferred"],
-  properties: {
-    posted: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["title", "url"],
-        properties: {
-          title: { type: "string" },
-          url: { type: "string" },
-        },
-      },
-    },
-    deferred: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["title", "reason"],
-        properties: {
-          title: { type: "string" },
-          reason: { type: "string" },
-        },
-      },
-    },
-  },
-};
-
 const SHIP_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -296,9 +264,11 @@ const validate = (plan) => {
 // ---- Load: verbatim fetch -> Plan 見出し検査 -> 決定論 id 収集 -> extract -> validate + cross-check ----
 const fetched = await agent(
   anchor(
-    `GitHub issue ${issueRef} の本文を取得する。gh CLI (例: gh issue view ${issueRef} --json body) を使い、body は要約・整形・省略を一切せず verbatim で返す。issue が見つからない・取得に失敗した場合は found: false を返す。`,
+    `GitHub issue ${issueRef} の本文を固定コマンドで取得する。要約・整形をしない。` +
+      `\`gh issue view ${issueRef} --json body --jq .body\` をそのまま実行し、その stdout を body として verbatim で返す` +
+      `(--jq 抽出は構造上 verbatim。編集しない)。コマンドが非 0 で終了した (issue が見つからない・取得失敗) 場合は found: false を返す。`,
   ),
-  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA },
+  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA, model: "haiku" },
 );
 if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
   return {
@@ -361,31 +331,50 @@ log(
   `plan 抽出: unit ${plan.units.length} 件、test scenario ${planTestIds.size} 件、id cross-check pass。`,
 );
 
-// ---- Revalidate: preconditions を現在の codebase に対して再検証 (evidence + script gate) ----
+// ---- Revalidate: preconditions を現在の codebase に対して再検証 (決定論 script gate) ----
 // issue 起票から build 起動までの間に前提コードが動いた可能性を fail-close で捕まえる。
-// miss の判定は agent の自己申告でなく script の filter が行う。
+// exists/matches の判定は LLM でなく決定論 verifier workflows/build/revalidate.py が下す:
+// チェック (test -f + literal grep) は推論不要で、workflow runtime に無い shell アクセスだけを
+// 要するので、agent は preconditions を流し込んで verifier の stdout をそのまま返すだけの
+// 起動役にする。drift 判定は下の script の filter が持つ。
 phase("Revalidate");
 const preconditions = plan.preconditions || [];
 if (preconditions.length) {
   const reval = await agent(
     anchor(
-      `plan の preconditions を現在の codebase に対して再検証する。各 {path, pattern} について、path の存在 (exists) と pattern の grep 一致 (matches。pattern 無しなら exists と同値) を実際にコマンドで確認し、全 ${preconditions.length} 件を results で返す。判定を甘くしない。\n${JSON.stringify(preconditions)}`,
+      `plan の preconditions を決定論 verifier で再検証する。exists/matches を自分で判定しない。` +
+        `手順: (1) この JSON をそのまま temp file に書き出す。(2) repository root から ` +
+        `\`python3 "$HOME/.claude/workflows/build/revalidate.py" < <tempfile>\` を実行する。` +
+        `(3) verifier の stdout "results" 配列を verbatim で返す (全 ${preconditions.length} 件、追加・削除・編集をしない)。` +
+        `verifier は {"results":[{path,pattern,exists,matches}]} を出力する。\n` +
+        `Preconditions JSON:\n${JSON.stringify(preconditions)}`,
     ),
     {
       label: "revalidate",
       phase: "Revalidate",
       agentType: "general-purpose",
       schema: REVALIDATE_SCHEMA,
+      model: "haiku",
     },
   );
-  if (!reval || !Array.isArray(reval.results) || reval.results.length !== preconditions.length) {
+  if (!reval || !Array.isArray(reval.results)) {
     return {
       stopped: "revalidate-failed",
       detail: reval,
-      why: "revalidate agent が全 preconditions の results を返さなかった。",
+      why: "revalidate agent が results 配列を返さなかった。",
     };
   }
-  const drift = reval.results.filter((r) => !r.exists || !r.matches);
+  // 各 precondition を (path, pattern) で result に束縛する。単なる件数一致に頼らない:
+  // launcher が並べ替え・drop して重複補填・差し替えをしても長さは同じになり、件数だけでは
+  // 実 drift を見逃す。対応する exists&&matches result が無い (欠落 or 失敗) precondition は drift。
+  const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
+  const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
+  const drift = [];
+  for (const pc of preconditions) {
+    const r = resultByKey.get(keyOf(pc));
+    if (!r) drift.push({ ...pc, exists: false, matches: false, missing: true });
+    else if (!r.exists || !r.matches) drift.push(r);
+  }
   if (drift.length) {
     return {
       stopped: "plan-drift",
@@ -465,24 +454,29 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
   audit = (await workflow("audit", { repo, skipPreflight: true })) || { findings: [] };
   toFix = criticalHigh(audit);
 }
-const residualBlocking = reaudited ? criticalHigh(audit) : [];
+// re-audit 済みなら criticalHigh(audit) は (ループ退出条件より空の) 検証済み集合。
+// round 上限に達した (reaudited === false) 場合、toFix は最終 round で修正したが
+// re-audit していない critical/high findings を保持する。汎用警告だけでなく PR に
+// 「未解決の可能性がある blocker」を列挙するため surface する。
+const residualBlocking = reaudited ? criticalHigh(audit) : toFix;
 
 // ---- Polish: cleanup のみ (simplify -> enhancer-code -> テスト検証) ----
 // review レンズは Audit phase で消化済みなので、ここは mutator だけを回す。
 phase("Polish");
 const cleanup = await workflow("polish", { repo, mode: "cleanup" });
 
-// ---- Backlog: scope 外の発見を issue 化する (ハイブリッド) ----
-// 候補源は issue 本文に書かれた scope 外候補 (source: issue) と build 中の発見。既存 issue と
-// 照合して新規と確信できるものだけ自動 post する。確信の持てない候補は PR body に回して
-// 人間が triage する。重複 issue の量産は自動化への信頼を下げるので、迷ったら deferred に倒す。
+// ---- Backlog: scope 外の発見を「ユーザーが起票する候補」として集める ----
+// 候補源は issue 本文に書かれた scope 外候補 (source: issue) と build 中の発見 (code /
+// audit / polish)。build はこれを自分で起票しない: headless 実行からの自動 post は
+// 未成熟で重複しやすい issue を量産し、自動化への信頼を下げる。起票は最終出力に委ねる —
+// 候補を PR body と戻り値に載せ、起票に値するものはユーザーが /issue skill で立てる。
+// /issue は build が issue に期待する premise-check / challenge の refine を通す。
+// code.anomalies はここに畳まない: Red 未確認の build 健全性シグナルであり、PR の専用
+// "Anomalies" 節 (shipPayload.code_anomalies 経由) で一度だけ描画する。ここにも畳むと
+// 各 anomaly が二重に列挙されていた。
 phase("Backlog");
 const backlogCandidates = [
   ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
-  ...(code.anomalies || []).map((a) => ({
-    source: "code",
-    summary: `${a.unit} で Red 未確認 (${a.kind}): ${a.notes}`,
-  })),
   ...(audit.findings || [])
     .filter((f) => f.severity === "medium" || f.severity === "low")
     .map((f) => ({ source: "audit", summary: f.summary, file: f.file, severity: f.severity })),
@@ -491,42 +485,43 @@ const backlogCandidates = [
     summary: `${f.title}: ${f.why || f.detail}`,
   })),
 ];
-let backlog = { posted: [], deferred: [] };
 if (backlogCandidates.length) {
-  backlog = (await agent(
-    anchor(
-      `build 中に発見された scope 外の問題を GitHub issue 化する backlog stage。build 元 issue: #${issueNumber}。候補:\n${JSON.stringify(backlogCandidates)}\n` +
-        `各候補について次を行う。(1) issue に値するか判定する (actionable で、この build の scope 外で、些末でない。重複や言い換えは 1 件に統合する)。` +
-        `(2) gh CLI の issue 検索 (state open、候補のキーワード) で既存 issue との重複を照合する。\n` +
-        `新規と確信できるものだけ issue を立てる (上限 5 件)。label build-discovered を付け、repo に無ければ gh の label サブコマンドで先に用意する (色 BFD4F2、説明は「autonomous build が発見した scope 外の問題」。用意に失敗したら label なしで立てる)。issue 本文に出所 (source) と発見元の build 元 issue #${issueNumber} を記す。\n` +
-        `重複の疑いがある・判断に迷う候補は post せず deferred に回し、理由を書く。gh が使えない場合は全候補を deferred にする。`,
-    ),
-    { label: "backlog", phase: "Backlog", agentType: "general-purpose", schema: BACKLOG_SCHEMA },
-  )) || {
-    posted: [],
-    deferred: backlogCandidates.map((c) => ({
-      title: `[${c.source}] ${c.summary}`,
-      reason: "backlog agent が結果を返さなかった",
-    })),
-  };
   log(
-    `backlog: issue ${backlog.posted.length} 件を post、${backlog.deferred.length} 件を PR body へ。`,
+    `backlog: scope 外候補 ${backlogCandidates.length} 件を、ユーザーが /issue で起票するため surface。`,
   );
 }
 
 // ---- Ship: commit + draft PR (外向きの操作なので draft = 可逆) ----
+// PR は人間レビュアーも読むので、body は所有者の異なる 2 部構成にする。冒頭の Summary
+// (何を・なぜ・どこを見るか) はレビュアーの入口で本質的に生成なので agent が書く
+// (commit メッセージと同様)。その下に、script が既に持つ構造化事実 (assumption /
+// backlog 候補 / 未解決 finding / 未 re-audit 警告 / verify 結果) の fail-closed な転記が
+// 続く。この tail だけを決定論 renderer workflows/build/pr-body.py に委ね、事実セクションの
+// 欠落や和らげを起こさせない。agent は tail を再入力せず append し、append と `gh pr create` を
+// `&&` で連結する。renderer が失敗 (payload 不正 / 必須欠落 → exit 1、出力なし) したら PR は
+// 一切作られず、tail の欠けた PR を出さない。verify ログの pass/fail 判定は pr-body.py だけが
+// 持つ (失敗時のみ verify_output を読む) ので、payload は無条件でそれを渡す。
 phase("Ship");
+const shipPayload = {
+  issue: issueNumber,
+  assumptions: plan.assumptions || [],
+  backlog_candidates: backlogCandidates,
+  residual_blocking: residualBlocking,
+  reaudited,
+  code_anomalies: code.anomalies || [],
+  tests_pass: code.tests_pass,
+  gates_pass: code.gates_pass,
+  verify_output: code.verify_output || "",
+};
 const ship = await agent(
   anchor(
-    `全変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にする。` +
-      `branch を push し、gh CLI で draft の pull request を開く。\n` +
-      `PR body には次を全て載せる。(1) 元 issue を閉じる参照 "Closes #${issueNumber}"。` +
-      `(2) plan に記録された assumption (ユーザーの拒否対象): ${JSON.stringify(plan.assumptions)}。` +
-      `(3) backlog で post した issue: ${JSON.stringify(backlog.posted)}。` +
-      `(4) 人間の triage 待ち backlog 候補: ${JSON.stringify(backlog.deferred)}。` +
-      `(5) 未解決の critical/high findings: ${JSON.stringify(residualBlocking)}${reaudited ? "" : " (最終 fix round は re-audit されていない旨を明記する)"}。` +
-      `(6) code の Red 未確認 anomaly: ${JSON.stringify(code.anomalies || [])}。` +
-      `(7) code の独立 verify 結果 (tests=${code.tests_pass} gates=${code.gates_pass})${code.tests_pass && code.gates_pass ? "" : `。fail の詳細: ${JSON.stringify(code.verify_output)}`}。\n` +
+    `全変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にする。commit メッセージは自分で書く (diff を要約する)。` +
+      `branch を push し、draft pull request を開く。body は自分で書く人間向け Summary と、データから決定論生成した事実セクションの 2 部構成にする (事実セクションは手書きしない):\n` +
+      `(1) 人間レビュアー向けの簡潔な "## Summary" を body file に書く — 散文の段落でなく markdown の箇条書きで: この PR が何を実装したか (outcome: ${JSON.stringify(plan.outcome)})、アプローチを 1 行、レビューで注視すべき箇所。最大 5 項目程度、冗長表現も事実の捏造もしない。\n` +
+      `(2) この JSON をそのまま temp file に書き出す:\n${JSON.stringify(shipPayload)}\n` +
+      `(3) 事実 tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、renderer 失敗時は PR を作る前に中断する — repository root から ` +
+      `\`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile> && gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +
+      `pr-body.py は payload が不正・必須フィールド欠落なら非 0 で終了し (何も出力しない)。チェーンが失敗したら他の手段で PR を作らず、committed と空の pr_url とエラーを報告する。tail の欠けた PR を出すより欠落を surface する。\n` +
       `committed 状態と PR url を報告する。${guard}`,
   ),
   { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
@@ -542,8 +537,7 @@ return {
   audit_findings: (audit.findings || []).length,
   residual_blocking: residualBlocking.length,
   polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
-  backlog_posted: backlog.posted,
-  backlog_deferred: backlog.deferred.length,
+  backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,
   pr_url: ship.pr_url,
   committed: ship.committed,
