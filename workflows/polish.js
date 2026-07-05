@@ -4,12 +4,7 @@ export const meta = {
     'Deterministic Codex review + cleanup. Codex findings always pass through a critic-audit challenge, and the triage (confirmed / disputed / downgraded / needs_context) is decided by the script, so findings are never aggregated as facts and the challenge cannot be skipped. Callable standalone or nested from build via workflow("polish").',
   whenToUse:
     "Headless external-lens review of a diff plus AI-slop removal. args is a scope string, or {scope, repo, mode}. mode: full (default) runs review -> fix -> cleanup; review returns the challenged findings without fixing; cleanup runs only simplify + enhancer-code + test validation. For a deep internal-reviewer audit use the audit workflow.",
-  phases: [
-    { title: "Review" },
-    { title: "Challenge" },
-    { title: "Fix" },
-    { title: "Cleanup" },
-  ],
+  phases: [{ title: "Review" }, { title: "Challenge" }, { title: "Fix" }, { title: "Cleanup" }],
 };
 
 // Flatten of the /polish skill. The triage table lives in the script because
@@ -32,8 +27,7 @@ const opts = (() => {
 })();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
-const mode =
-  opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
+const mode = opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
 
 const anchor = (p) =>
   repo
@@ -178,8 +172,8 @@ if (mode !== "cleanup") {
     const challenged = await agent(
       anchor(
         `critic-audit. Adversarially challenge this full set of external Codex review findings and return a verdict per finding.\n` +
-          `Verdict criteria: confirmed = real and the severity holds / disputed = false positive / downgraded = real but severity inflated (put the lowered severity in severity) / needs_context = undecidable from code alone, needs human context.\n` +
-          `Findings:\n${JSON.stringify(codex.findings)}`,
+          `The verdict criteria are as follows. confirmed = real and the severity holds / disputed = false positive / downgraded = real but severity inflated (put the lowered severity in severity) / needs_context = undecidable from code alone, needs human context.\n` +
+          `The findings are as follows.\n${JSON.stringify(codex.findings)}`,
       ),
       {
         agentType: "critic-audit",
@@ -210,10 +204,8 @@ if (mode !== "cleanup") {
         continue;
       }
       if (v.verdict === "disputed") continue;
-      const severity =
-        v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
-      if (severity === "P1" || severity === "P2")
-        survivors.push({ ...f, severity });
+      const severity = v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
+      if (severity === "P1" || severity === "P2") survivors.push({ ...f, severity });
     }
     log(
       `triage: ${survivors.length} survived / ${needsContext.length} needs_context / ${codex.findings.length - survivors.length - needsContext.length} dropped`,
@@ -236,7 +228,7 @@ if (mode !== "cleanup") {
       anchor(
         `Fix the findings that survived the challenge, highest severity first. ${scopeNote}\n` +
           `After fixing, detect and run the project's test command; roll back any fix that breaks tests via git stash. Do not commit.\n` +
-          `Findings:\n${JSON.stringify(survivors)}`,
+          `The findings are as follows.\n${JSON.stringify(survivors)}`,
       ),
       {
         label: "fix",

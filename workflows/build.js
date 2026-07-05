@@ -297,7 +297,7 @@ const validate = (plan) => {
 // ---- Load: verbatim fetch -> Plan heading check -> deterministic id collection -> extract -> validate + cross-check ----
 const fetched = await agent(
   anchor(
-    `Fetch the body of GitHub issue ${issueRef} with a fixed command — do not summarize or reformat. ` +
+    `Fetch the body of GitHub issue ${issueRef} with a fixed command; do not summarize or reformat. ` +
       `Run exactly \`gh issue view ${issueRef} --json body --jq .body\` and return its stdout verbatim as body ` +
       `(the --jq extraction is verbatim by construction; do not edit it). If the command exits non-zero (issue not found / fetch failed), return found: false.`,
   ),
@@ -390,30 +390,47 @@ log(
 // grep) needs no reasoning, only shell access the workflow runtime lacks, so the agent is a
 // pure launcher that pipes the preconditions in and echoes the verifier's stdout back. The
 // drift decision then stays in the script's filter below.
+// Runs in parallel with Branch (checkout): the two are mutually independent (both
+// depend only on plan). Trade-off: if Revalidate stops on drift, the checked-out
+// branch is left behind (creation only, no commits, so reclaiming it is trivial).
+// The stopped returns include branch to surface it.
 phase("Revalidate");
 const preconditions = plan.preconditions || [];
-if (preconditions.length) {
-  const reval = await agent(
-    anchor(
-      `Re-verify the plan's preconditions with the deterministic verifier — do not judge exists/matches yourself. ` +
-        `Steps: (1) write this exact JSON to a temp file; (2) from the repository root run ` +
-        `\`python3 "$HOME/.claude/workflows/build/revalidate.py" < <tempfile>\`; ` +
-        `(3) return the verifier's stdout "results" array verbatim (all ${preconditions.length} entries, unchanged — do not add, drop, or edit any). ` +
-        `The verifier prints {"results":[{path,pattern,exists,matches}]}.\n` +
-        `Preconditions JSON:\n${JSON.stringify(preconditions)}`,
+const [reval, branch] = await parallel([
+  () =>
+    preconditions.length
+      ? agent(
+          anchor(
+            `Re-verify the plan's preconditions with the deterministic verifier; do not judge exists/matches yourself. ` +
+              `The steps are, (1) write this exact JSON to a temp file; (2) from the repository root run ` +
+              `\`python3 "$HOME/.claude/workflows/build/revalidate.py" < <tempfile>\`; ` +
+              `(3) return the verifier's stdout "results" array verbatim (all ${preconditions.length} entries, unchanged; do not add, drop, or edit any). ` +
+              `The verifier prints {"results":[{path,pattern,exists,matches}]}.\n` +
+              `The preconditions JSON is as follows.\n${JSON.stringify(preconditions)}`,
+          ),
+          {
+            label: "revalidate",
+            phase: "Revalidate",
+            agentType: "general-purpose",
+            schema: REVALIDATE_SCHEMA,
+            model: "haiku",
+          },
+        )
+      : Promise.resolve(null),
+  () =>
+    agent(
+      anchor(
+        `Check out a new git working branch for issue #${issueNumber} "${plan.outcome}". Pick a conventional branch name (type + short slug) and run git checkout -b with it. If already on a non-default branch, keep the current branch. Report the branch name as your final text.${guard}`,
+      ),
+      { label: "checkout", phase: "Branch", agentType: "general-purpose", model: "haiku" },
     ),
-    {
-      label: "revalidate",
-      phase: "Revalidate",
-      agentType: "general-purpose",
-      schema: REVALIDATE_SCHEMA,
-      model: "haiku",
-    },
-  );
+]);
+if (preconditions.length) {
   if (!reval || !Array.isArray(reval.results)) {
     return {
       stopped: "revalidate-failed",
       detail: reval,
+      branch,
       why: "The revalidate agent returned no results array.",
     };
   }
@@ -433,20 +450,17 @@ if (preconditions.length) {
     return {
       stopped: "plan-drift",
       drift,
+      branch,
       why: "Code the issue's plan presupposes is absent from the current codebase. Update the issue and relaunch.",
     };
   }
   log(`Revalidate: all ${preconditions.length} precondition(s) pass.`);
 }
 
-// ---- Branch: check out a working branch ----
+// The checkout agent already ran in parallel with Revalidate above; emit the phase
+// marker here, after the drift gate, so the observable trace stays
+// Load → Revalidate → Branch → Code (and plan-drift stops never reach Branch).
 phase("Branch");
-const branch = await agent(
-  anchor(
-    `Check out a new git working branch for issue #${issueNumber} "${plan.outcome}". Pick a conventional branch name (type + short slug) and run git checkout -b with it. If already on a non-default branch, keep the current branch. Report the branch name as your final text.${guard}`,
-  ),
-  { label: "checkout", phase: "Branch", agentType: "general-purpose" },
-);
 
 // ---- Code: delegated to workflow("code") (per-unit Red -> Green + independent verify) ----
 // preconditions / backlog_candidates are consumed on the build side, so code receives
@@ -500,7 +514,9 @@ let reaudited = true;
 for (let round = 1; round <= 3 && toFix.length; round++) {
   log(`Fix round ${round}: fixing ${toFix.length} finding(s).`);
   await agent(
-    anchor(`Fix these review findings and confirm tests pass:\n${JSON.stringify(toFix)}`),
+    anchor(
+      `Fix these review findings and confirm tests pass. The findings are as follows.\n${JSON.stringify(toFix)}`,
+    ),
     { agentType: "general-purpose", phase: "Audit", label: `fix:${round}` },
   );
   if (round === 3) {
@@ -586,13 +602,13 @@ const shipPayload = {
 };
 const ship = await agent(
   anchor(
-    `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit — you write the commit message (summarize the diff). ` +
-      `Push the branch, then open a draft pull request. Its body is a human-facing Summary you write, followed by deterministic fact sections rendered from data (do not hand-write the fact sections):\n` +
-      `(1) write a terse "## Summary" to a body file for the human reviewer — markdown bullets, not prose paragraphs: what this PR implements (outcome: ${JSON.stringify(plan.outcome)}), the approach in a line, and where to focus review. At most ~5 bullets; no filler, no invented facts.\n` +
-      `(2) write this exact JSON to a temp file:\n${JSON.stringify(shipPayload)}\n` +
-      `(3) append the fact tail and open the PR as ONE \`&&\` chain, so a renderer failure aborts before the PR is created — from the repository root run ` +
+    `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit; you write the commit message (summarize the diff). ` +
+      `Push the branch, then open a draft pull request. Its body is a human-facing Summary you write, followed by deterministic fact sections rendered from data (do not hand-write the fact sections). The steps are as follows.\n` +
+      `(1) write a terse "## Summary" to a body file for the human reviewer, in markdown bullets rather than prose paragraphs. Cover what this PR implements (the outcome is ${JSON.stringify(plan.outcome)}), the approach in a line, and where to focus review. At most ~5 bullets; no filler, no invented facts.\n` +
+      `(2) write this exact JSON to a temp file.\n${JSON.stringify(shipPayload)}\n` +
+      `(3) append the fact tail and open the PR as ONE \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
       `\`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile> && gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
-      `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do NOT create the PR by other means — report committed with an empty pr_url and the error instead, so the missing fact tail surfaces rather than shipping a PR without it.\n` +
+      `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do NOT create the PR by other means. Report committed with an empty pr_url and the error instead, so the missing fact tail surfaces rather than shipping a PR without it.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),
   {

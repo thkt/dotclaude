@@ -44,11 +44,7 @@ const repo = typeof opts.repo === "string" ? opts.repo : "";
 
 // focus は id ("0061" / "ADR-0061") またはキーワードの列。配列と文字列の両方を受ける。
 // id は数値一致、非数値はファイル名 / タイトルへの部分一致で照合する。
-const focus = (
-  Array.isArray(opts.focus)
-    ? opts.focus
-    : String(opts.focus || "").split(/[\s,]+/)
-)
+const focus = (Array.isArray(opts.focus) ? opts.focus : String(opts.focus || "").split(/[\s,]+/))
   .map((t) =>
     String(t)
       .trim()
@@ -79,13 +75,13 @@ const REVIEWERS = {
 // (プレーン文字列 const にするのは guardrails sqli-concat が call 引数の補間 template 内の
 // キーワード語を誤検知するため)。
 const DIRECTION_RULES =
-  "code-fix: ADR が現契約として正しく、コードが drift している / " +
-  "adr-update: コードが現契約として正しく、ADR が陳腐化している / " +
-  "accept: drift が些末、非推奨コメント済み、またはドキュメント済み";
+  "code-fix は ADR が現契約として正しくコードが drift しているとき / " +
+  "adr-update はコードが現契約として正しく ADR が陳腐化しているとき / " +
+  "accept は drift が些末、非推奨コメント済み、またはドキュメント済みのとき";
 const PRIORITY_RULES =
-  "H: 公開 API に影響、または下流利用側が 2 つ以上 / " +
-  "M: 内部 API に影響、下流利用側は 1 つ / " +
-  "L: コメント / docstring のみ、または無効な参照";
+  "H は公開 API に影響するか下流利用側が 2 つ以上のとき / " +
+  "M は内部 API に影響し下流利用側が 1 つのとき / " +
+  "L はコメント / docstring のみか無効な参照のとき";
 const PRIORITY_RANK = { H: 3, M: 2, L: 1 };
 
 const DETECT_SCHEMA = {
@@ -111,8 +107,7 @@ const DETECT_SCHEMA = {
     manifest: { type: "string", enum: ["rust", "ts", "tsx", "other"] },
     adr_refs: {
       type: "array",
-      description:
-        "ADR ディレクトリ外で見つかった ADR-NNNN 参照の生リスト (分類は script が行う)",
+      description: "ADR ディレクトリ外で見つかった ADR-NNNN 参照の生リスト (分類は script が行う)",
       items: {
         type: "object",
         additionalProperties: false,
@@ -200,8 +195,7 @@ const mergeFindings = (lists) => {
   for (const f of lists.flat()) {
     const k = `${f.file}:${f.line}`;
     const prev = map.get(k);
-    if (!prev || PRIORITY_RANK[f.priority] > PRIORITY_RANK[prev.priority])
-      map.set(k, f);
+    if (!prev || PRIORITY_RANK[f.priority] > PRIORITY_RANK[prev.priority]) map.set(k, f);
   }
   return [...map.values()].sort(
     (a, b) =>
@@ -221,7 +215,7 @@ const detect = (await agent(
     `adrift の Detect 段階を担当する。\n` +
       `1. ${dirInstr}\n` +
       `2. ディレクトリ内の NNNN-*.md を列挙し、id (NNNN)、file (相対パス)、title (見出し) を adrs に記録する。\n` +
-      `3. manifest 判定: Cargo.toml があれば rust。package.json があり *.tsx ファイルが存在すれば tsx、無ければ ts。どちらも無ければ other。\n` +
+      `3. manifest を判定する。Cargo.toml があれば rust。package.json があり *.tsx ファイルが存在すれば tsx、無ければ ts。どちらも無ければ other。\n` +
       `4. \`ugrep -rniw 'ADR-[0-9]{4}'\` でリポジトリ全体の ADR 参照を検索し、ADR ディレクトリ自体・fixture・node_modules / target / dist / build / vendor を除外した hit を adr_refs (file, line, id は NNNN の 4 桁) に記録する。ローカル ADR の有無で分類はしない。\n` +
       `ADR 本文の解析はしない。この段階の仕事は検出と列挙だけ。`,
   ),
@@ -339,11 +333,11 @@ const perAdr = await pipeline(
           agent(
             anchor(
               `${rv} として、ADR ${a.id} (${a.title}) の Decision Outcome と現コードの意味的 drift を判定する。clippy や grep で拾える表層ではなく、決定内容と実装の意味的ギャップを見る。\n` +
-                `Decision Outcome:\n${ex.outcome_text}\n\n` +
-                `参照候補 (ugrep hit):\n${JSON.stringify(ex.candidates)}\n\n` +
+                `Decision Outcome は次のとおり。\n${ex.outcome_text}\n\n` +
+                `参照候補 (ugrep hit) は次のとおり。\n${JSON.stringify(ex.candidates)}\n\n` +
                 `各 drift を file:line で特定し、direction と priority を次の基準で付ける。\n` +
-                `direction 基準: ${DIRECTION_RULES}\n` +
-                `priority 基準: ${PRIORITY_RULES}\n` +
+                `direction の基準は ${DIRECTION_RULES}。\n` +
+                `priority の基準は ${PRIORITY_RULES}。\n` +
                 `drift が無ければ findings: [] で返す。ADR 本文の編集もコード修正もしない。`,
             ),
             {
@@ -369,9 +363,7 @@ const perAdr = await pipeline(
 );
 
 const scanned = perAdr.filter(Boolean);
-const allFindings = scanned.flatMap((r) =>
-  r.findings.map((f) => ({ ...f, adr: r.adr.id })),
-);
+const allFindings = scanned.flatMap((r) => r.findings.map((f) => ({ ...f, adr: r.adr.id })));
 const counts = { H: 0, M: 0, L: 0 };
 for (const f of allFindings) counts[f.priority] += 1;
 const unverifiable = scanned.filter((r) => !r.verifiable);
@@ -382,18 +374,18 @@ log(
 // ---- Report: レポート出力 (skill Phase 8。構成は prompt に内包し template を持たない) ----
 phase("Report");
 const focusNote = focus.length
-  ? `Focus スコープ: この実行は focus [${focus.join(", ")}] で対象を ${scanned.length}/${detect.adrs.length} ADR に絞っている。Summary の直後にその旨を 1 行で明記する。\n\n`
+  ? `この実行は focus [${focus.join(", ")}] で対象を ${scanned.length}/${detect.adrs.length} ADR に絞っている。Summary の直後にその旨を 1 行で明記する。\n\n`
   : "";
 const report = (await agent(
   anchor(
     `adrift の Report 段階を担当する。以下の findings JSON から次の構成のレポートを書く。\n` +
-      `手順: \`mkdir -p docs/audit\` の後、\`STAMP=$(date -u +%Y-%m-%d-%H%M%S)\` で docs/audit/\${STAMP}-adr-drift.md に書く。\n` +
-      `構成: 見出しは "# ADR Drift Scan: {STAMP}"。セクションは "## Summary" (Metric | Value の表。行は ADRs scanned / Drift findings / H priority / M priority / L priority / Unverifiable ADRs)、"## Per-ADR Findings"、"## External ADR Dependencies" (File:Line | External ADR ref | Recommended action の表。action は "Promote to local ADR or supersede locally")、"## Follow-up Issue Candidates" (\`- [ ] ADR {id} drift at {file}:{line}: {summary}\` のチェックリスト) の順。\n` +
+      `手順は \`mkdir -p docs/audit\` の後、\`STAMP=$(date -u +%Y-%m-%d-%H%M%S)\` で docs/audit/\${STAMP}-adr-drift.md に書く。\n` +
+      `構成は次のとおり。見出しは "# ADR Drift Scan: {STAMP}"。セクションは "## Summary" (Metric | Value の表。行は ADRs scanned / Drift findings / H priority / M priority / L priority / Unverifiable ADRs)、"## Per-ADR Findings"、"## External ADR Dependencies" (File:Line | External ADR ref | Recommended action の表。action は "Promote to local ADR or supersede locally")、"## Follow-up Issue Candidates" (\`- [ ] ADR {id} drift at {file}:{line}: {summary}\` のチェックリスト) の順。\n` +
       `Per-ADR Findings では drift の無い ADR を "ADRs {ids}: no drift." の 1 行に束ね、drift / unverifiable の ADR にのみ "### ADR {id}: {title}" サブセクション (Status / Result 行 + File:Line | Description | Direction | Priority の表。unverifiable は理由を Result に書き表を省略) を立てる。\n` +
-      `完全性の要件: (1) 全 ADR を Per-ADR Findings に漏れなく記載する。(2) 各 drift に file:line / direction / priority を記録する。(3) superseded な ADR の Status に Superseded を反映する。(4) external_refs が空なら External ADR Dependencies を、H 優先度が 0 件なら Follow-up Issue Candidates を、見出しごと省略する。\n\n` +
+      `完全性の要件は次の 4 つ。(1) 全 ADR を Per-ADR Findings に漏れなく記載する。(2) 各 drift に file:line / direction / priority を記録する。(3) superseded な ADR の Status に Superseded を反映する。(4) external_refs が空なら External ADR Dependencies を、H 優先度が 0 件なら Follow-up Issue Candidates を、見出しごと省略する。\n\n` +
       focusNote +
-      `Summary 件数 (この値をそのまま使う): ADRs scanned=${scanned.length}, findings=${allFindings.length}, H=${counts.H}, M=${counts.M}, L=${counts.L}, unverifiable=${unverifiable.length}\n\n` +
-      `Per-ADR 結果:\n${JSON.stringify(
+      `Summary 件数は次の値をそのまま使う。ADRs scanned=${scanned.length}, findings=${allFindings.length}, H=${counts.H}, M=${counts.M}, L=${counts.L}, unverifiable=${unverifiable.length}\n\n` +
+      `Per-ADR 結果は次のとおり。\n${JSON.stringify(
         scanned.map((r) => ({
           id: r.adr.id,
           title: r.adr.title,
@@ -404,7 +396,7 @@ const report = (await agent(
           findings: r.findings,
         })),
       )}\n\n` +
-      `External ADR 参照 (external_refs):\n${JSON.stringify(externalRefs)}`,
+      `External ADR 参照 (external_refs) は次のとおり。\n${JSON.stringify(externalRefs)}`,
   ),
   {
     agentType: "general-purpose",

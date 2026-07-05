@@ -49,14 +49,12 @@ const RED_SCHEMA = {
   properties: {
     red_confirmed: {
       type: "boolean",
-      description:
-        "true when you ran the tests you wrote and confirmed they fail as expected",
+      description: "true when you ran the tests you wrote and confirmed they fail as expected",
     },
     test_files: { type: "array", items: { type: "string" } },
     notes: {
       type: "string",
-      description:
-        "when red_confirmed is false, the reason (e.g. the behavior already exists)",
+      description: "when red_confirmed is false, the reason (e.g. the behavior already exists)",
     },
   },
 };
@@ -123,12 +121,10 @@ const anomalies = [];
 phase("Implement");
 for (const unit of units) {
   const ctx =
-    `Unit ${unit.id}: ${unit.goal}\nTarget files: ${JSON.stringify(unit.files)}\n` +
-    `Contract: ${unit.contract}\nTest scenarios: ${JSON.stringify(unit.tests)}\n` +
-    `Test command: ${testCmd}\n` +
-    (completed.length
-      ? `Units already implemented: ${completed.join(", ")}\n`
-      : "");
+    `Unit ${unit.id}'s goal is "${unit.goal}". The target files are ${JSON.stringify(unit.files)}.\n` +
+    `The contract is ${unit.contract}. The test scenarios are ${JSON.stringify(unit.tests)}.\n` +
+    `The test command is ${testCmd}.\n` +
+    (completed.length ? `The units already implemented are ${completed.join(", ")}.\n` : "");
 
   // Red: write tests and confirm failure by running them. Write no implementation.
   let red = await agent(
@@ -152,7 +148,7 @@ for (const unit of units) {
     red = await agent(
       anchor(
         `TDD Red step retry. ${ctx}` +
-          `Last time the tests did not fail: ${red.notes}\n` +
+          `Last time the tests did not fail. The reason was ${red.notes}.\n` +
           `Scrutinize whether the tests really verify the target behavior (assertions are not empty, the target code is invoked). ` +
           `If the behavior is unimplemented they should fail. If after scrutiny the tests still pass, judge the behavior as already implemented and keep red_confirmed=false with the reason in notes.`,
       ),
@@ -165,13 +161,10 @@ for (const unit of units) {
       },
     );
   }
-  if (!red)
-    return { stopped: "red-failed", unit: unit.id, completed, anomalies };
+  if (!red) return { stopped: "red-failed", unit: unit.id, completed, anomalies };
   if (!red.red_confirmed) {
     anomalies.push({ unit: unit.id, kind: "no-red", notes: red.notes });
-    log(
-      `${unit.id}: Red unconfirmed (${red.notes}). Skipping the implement step.`,
-    );
+    log(`${unit.id}: Red unconfirmed (${red.notes}). Skipping the implement step.`);
     completed.push(unit.id);
     continue;
   }
@@ -181,7 +174,7 @@ for (const unit of units) {
     anchor(
       `TDD Green step. ${ctx}` +
         `Write the minimal implementation that makes the failing tests in ${JSON.stringify(red.test_files)} pass. ` +
-        `Weakening, skipping, or deleting test assertions is forbidden (if the test structure needs fixing, write it in notes and return green=false). ` +
+        `Changes that weaken / skip / delete test assertions are forbidden (if the test structure needs fixing, write it in notes and return green=false). ` +
         `After passing, refactor while keeping the tests green. Re-run the unit's tests and report.`,
     ),
     {
@@ -196,7 +189,7 @@ for (const unit of units) {
     green = await agent(
       anchor(
         `TDD Green step retry. ${ctx}` +
-          `Last time the tests did not pass: ${green.notes}\nIdentify the cause, fix the implementation, and make the unit's tests pass. Weakening tests is forbidden.`,
+          `Last time the tests did not pass. The reason was ${green.notes}.\nIdentify the cause, fix the implementation, and make the unit's tests pass. Weakening tests is forbidden.`,
       ),
       {
         label: `green2:${unit.id}`,
