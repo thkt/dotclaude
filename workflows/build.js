@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Autonomous end-to-end build. Taking an issue with a Plan section refined via /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Audit / Polish / Backlog / Ship run headlessly as deterministic script stages. Review happens on a draft PR.",
   whenToUse:
-    'Fire-and-forget implementation. Finish the refine-with-a-human stage in /issue, then pass that issue number ("123" / "#123") / URL / {issue, repo} as args. Step away and come back to a draft PR with recorded assumptions, audit results, and backlog issues to review. If in-flight steering is needed, drive the phases interactively.',
+    'Fire-and-forget implementation. Finish the refine-with-a-human stage in /issue, then pass that issue number ("123" / "#123") / URL / {issue, repo} as args. Step away and come back to a draft PR with recorded assumptions, audit results, and out-of-scope backlog candidates listed for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -200,38 +200,6 @@ const REVALIDATE_SCHEMA = {
           pattern: { type: "string" },
           exists: { type: "boolean" },
           matches: { type: "boolean" },
-        },
-      },
-    },
-  },
-};
-
-const BACKLOG_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  required: ["posted", "deferred"],
-  properties: {
-    posted: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["title", "url"],
-        properties: {
-          title: { type: "string" },
-          url: { type: "string" },
-        },
-      },
-    },
-    deferred: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["title", "reason"],
-        properties: {
-          title: { type: "string" },
-          reason: { type: "string" },
         },
       },
     },
@@ -501,12 +469,15 @@ const residualBlocking = reaudited ? criticalHigh(audit) : [];
 phase("Polish");
 const cleanup = await workflow("polish", { repo, mode: "cleanup" });
 
-// ---- Backlog: file out-of-scope discoveries as issues (hybrid) ----
+// ---- Backlog: collect out-of-scope discoveries as candidates for the user ----
 // Candidate sources are the out-of-scope candidates written in the issue body
-// (source: issue) plus discoveries during the build. Cross-check against existing
-// issues and auto-post only the ones confidently new. Uncertain candidates go to the
-// PR body for human triage. Mass-producing duplicate issues erodes trust in the
-// automation, so when in doubt lean toward deferred.
+// (source: issue) plus discoveries during the build (code / audit / polish). The
+// build deliberately does not file these itself: auto-posting from a headless run
+// mass-produces under-refined, duplicate-prone issues and erodes trust in the
+// automation. Issue creation is instead deferred to the final output — the
+// candidates are surfaced in the PR body and the return value, and the user files
+// the ones worth filing via the /issue skill, which carries the premise-check /
+// challenge refinement build expects from an issue.
 phase("Backlog");
 const backlogCandidates = [
   ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
@@ -522,26 +493,9 @@ const backlogCandidates = [
     summary: `${f.title}: ${f.why || f.detail}`,
   })),
 ];
-let backlog = { posted: [], deferred: [] };
 if (backlogCandidates.length) {
-  backlog = (await agent(
-    anchor(
-      `Backlog stage: file GitHub issues for out-of-scope problems discovered during the build. Originating build issue: #${issueNumber}. Candidates:\n${JSON.stringify(backlogCandidates)}\n` +
-        `For each candidate: (1) judge whether it deserves an issue (actionable, outside this build's scope, non-trivial; merge duplicates and rephrasings into one). ` +
-        `(2) Cross-check against existing issues via the gh CLI issue search (state open, keywords from the candidate).\n` +
-        `File issues only for candidates you are confident are new (at most 5). Apply the label build-discovered; if the repo lacks it, set it up first via gh's label subcommand (color BFD4F2, description "out-of-scope problems discovered by autonomous builds"; if that fails, file without the label). Note the source and the originating build issue #${issueNumber} in the issue body.\n` +
-        `Defer any candidate that looks like a possible duplicate or that you are unsure about, with a reason, instead of posting. If gh is unavailable, defer every candidate.`,
-    ),
-    { label: "backlog", phase: "Backlog", agentType: "general-purpose", schema: BACKLOG_SCHEMA },
-  )) || {
-    posted: [],
-    deferred: backlogCandidates.map((c) => ({
-      title: `[${c.source}] ${c.summary}`,
-      reason: "the backlog agent returned nothing",
-    })),
-  };
   log(
-    `Backlog: posted ${backlog.posted.length} issue(s), ${backlog.deferred.length} to the PR body.`,
+    `Backlog: ${backlogCandidates.length} out-of-scope candidate(s) surfaced for the user to file via /issue.`,
   );
 }
 
@@ -553,11 +507,10 @@ const ship = await agent(
       `Push the branch and open a draft pull request via the gh CLI.\n` +
       `The PR body must include all of the following. (1) The closing reference to the originating issue: "Closes #${issueNumber}". ` +
       `(2) Assumptions recorded in the plan (the user's veto targets): ${JSON.stringify(plan.assumptions)}. ` +
-      `(3) Issues posted by the backlog stage: ${JSON.stringify(backlog.posted)}. ` +
-      `(4) Backlog candidates awaiting human triage: ${JSON.stringify(backlog.deferred)}. ` +
-      `(5) Unresolved critical/high findings: ${JSON.stringify(residualBlocking)}${reaudited ? "" : " (state clearly that the final fix round has not been re-audited)"}. ` +
-      `(6) code's Red-unconfirmed anomalies: ${JSON.stringify(code.anomalies || [])}. ` +
-      `(7) code's independent verify result (tests=${code.tests_pass} gates=${code.gates_pass})${code.tests_pass && code.gates_pass ? "" : `; failure detail: ${JSON.stringify(code.verify_output)}`}.\n` +
+      `(3) Out-of-scope backlog candidates for the user to file as issues via the /issue skill (the build intentionally does not file them; list them under a clear heading so the user can triage and run /issue on the ones worth filing): ${JSON.stringify(backlogCandidates)}. ` +
+      `(4) Unresolved critical/high findings: ${JSON.stringify(residualBlocking)}${reaudited ? "" : " (state clearly that the final fix round has not been re-audited)"}. ` +
+      `(5) code's Red-unconfirmed anomalies: ${JSON.stringify(code.anomalies || [])}. ` +
+      `(6) code's independent verify result (tests=${code.tests_pass} gates=${code.gates_pass})${code.tests_pass && code.gates_pass ? "" : `; failure detail: ${JSON.stringify(code.verify_output)}`}.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),
   { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
@@ -573,8 +526,7 @@ return {
   audit_findings: (audit.findings || []).length,
   residual_blocking: residualBlocking.length,
   polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
-  backlog_posted: backlog.posted,
-  backlog_deferred: backlog.deferred.length,
+  backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,
   pr_url: ship.pr_url,
   committed: ship.committed,
