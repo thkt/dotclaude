@@ -322,9 +322,10 @@ if (!planHeading) {
 const afterHeading = body.slice(planHeading.index + planHeading[0].length);
 const nextSection = afterHeading.search(/^##[^#]/m);
 const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
-const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[0]));
-const bodyUnitIds = idSet(/\bU-\d{3}\b/g);
-const bodyTestIds = idSet(/\bT-\d{3}\b/g);
+// id は定義位置でのみ拾い、prose 参照は拾わない (plan-section.md 参照)。
+const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[1]));
+const bodyUnitIds = idSet(/^###\s+(U-\d{3})\b/gm);
+const bodyTestIds = idSet(/^[ \t]*[-*+][ \t]+(T-\d{3})\b/gm);
 
 const plan = await agent(
   anchor(
@@ -479,6 +480,13 @@ if (!code.tests_pass || !code.gates_pass)
   log(
     `code の独立 verify が fail (tests=${code.tests_pass} gates=${code.gates_pass})。audit へ前進し PR に表面化する。`,
   );
+// workflow("code") は自前の `▸ code` グループで走るため Code phase ボックスに直接 agent が
+// 付かず「Not started」のままになる。この安価な agent 1 体で着火・完了させ、code phase が
+// 届けた内容の run-log recap も兼ねる。
+await agent(
+  `Summarize in one line what the code phase delivered: ${plan.units.length} unit(s) implemented, independent verify tests=${code.tests_pass} gates=${code.gates_pass}. Return the sentence only.`,
+  { label: "code-summary", phase: "Code", model: "haiku" },
+);
 
 // ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit loop (audit 実行は最大 3 回) ----
 // audit は workflow("audit") が fan-out を所有する (/audit の glob routing 表 + reviewer ->
@@ -597,6 +605,13 @@ const residualBlocking = reaudited ? criticalHigh(audit) : toFix;
 // review レンズは Audit phase で消化済みなので、ここは mutator だけを回す。
 phase("Polish");
 const cleanup = await workflow("polish", { repo, mode: "cleanup" });
+// workflow("polish") は自前の `▸ polish` グループで走るため Polish phase ボックスに直接 agent
+// が付かない。Code phase と同じく agent 1 体で着火・完了させる。
+const cleanupEdits = cleanup?.cleanup?.edits?.length ?? 0;
+await agent(
+  `Summarize in one line what the polish phase did: ${cleanupEdits} cleanup edit(s) applied, tests_pass=${cleanup?.cleanup?.tests_pass}. Return the sentence only.`,
+  { label: "polish-summary", phase: "Polish", model: "haiku" },
+);
 
 // ---- Backlog: scope 外の発見を「ユーザーが起票する候補」として集める ----
 // 候補源は issue 本文に書かれた scope 外候補 (source: issue) と build 中の発見 (code /
@@ -640,23 +655,99 @@ if (backlogCandidates.length) {
 // 一切作られず、tail の欠けた PR を出さない。verify ログの pass/fail 判定は pr-body.py だけが
 // 持つ (失敗時のみ verify_output を読む) ので、payload は無条件でそれを渡す。
 phase("Ship");
+
+// tail のラベルは pr-body.py が言語化するが、finding 本文は reviewer が英語で吐くので
+// そのまま出ていた。人間レビュアーも読むため、fail-closed でない情報系セクションの
+// 自由記述だけを対象言語へ翻訳 + 軽く圧縮する。安全事実 (verify status / not-reaudited
+// 警告 / verify_output ログ) と、file:line・severity・件数・識別子といった構造化フィールド
+// は対象外で決定論のまま残す。source の finding を mutate しないよう copy に対して行う。
+const shipAssumptions = [...(plan.assumptions || [])];
+const shipBacklog = backlogCandidates.map((c) => ({ ...c }));
+const shipResidual = residualBlocking.map((f) => ({ ...f }));
+const shipAnomalies = (code.anomalies || []).map((a) => ({ ...a }));
+const shipConformance = conf.spec_found ? conf.findings.map((f) => ({ ...f })) : [];
+
+// 翻訳対象の自由記述だけを id 付きで集める。書き戻しは set() 経由で、構造化
+// フィールドには触れない。空文字列は翻訳に送らない。
+const slots = [];
+shipAssumptions.forEach((t, i) => {
+  if (typeof t === "string" && t.trim())
+    slots.push({ text: t, set: (v) => (shipAssumptions[i] = v) });
+});
+for (const c of shipBacklog)
+  if (c.summary && c.summary.trim()) slots.push({ text: c.summary, set: (v) => (c.summary = v) });
+for (const f of shipResidual)
+  if (f.summary && f.summary.trim()) slots.push({ text: f.summary, set: (v) => (f.summary = v) });
+for (const f of shipConformance)
+  if (f.detail && f.detail.trim()) slots.push({ text: f.detail, set: (v) => (f.detail = v) });
+for (const a of shipAnomalies)
+  if (a.notes && a.notes.trim()) slots.push({ text: a.notes, set: (v) => (a.notes = v) });
+
+if (slots.length) {
+  // 単一利用の schema。各要素に入力の id を付けて返させ、id で書き戻す。順序が
+  // 入れ替わっても取り違えず、全 id が揃わなければ fail-open で英語原文を維持。
+  const TRANSLATION_SCHEMA = {
+    type: "object",
+    additionalProperties: false,
+    required: ["translations"],
+    properties: {
+      translations: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["id", "text"],
+          properties: { id: { type: "integer" }, text: { type: "string" } },
+        },
+      },
+    },
+  };
+  const translated = await agent(
+    anchor(
+      `\`$HOME/.claude/settings.json\` の \`language\` を読む (未設定なら english)。` +
+        `次の JSON 配列は PR 本文の情報系セクション (backlog / assumptions / 未解決 finding / conformance / anomaly) の自由記述。各要素の \`text\` を \`language\` へ翻訳し、冗長な散文は締めて短くする。english のときも軽い圧縮のためこの手順を通す。\n` +
+        `厳守: (a) file:line・パス・数値・件数・severity ラベル・識別子・コード片は原文のまま残す。(b) 事実を足さない・削らない。訳と圧縮のみで、新しい主張や件数を作らない。(c) 出力 \`translations\` は各要素に入力の \`id\` を付けて全件返す。順序は問わないが id は入力と一致させる。\n` +
+        `入力:\n${JSON.stringify(slots.map((s, i) => ({ id: i, text: s.text })))}`,
+    ),
+    {
+      label: "translate-tail",
+      phase: "Ship",
+      schema: TRANSLATION_SCHEMA,
+      model: "sonnet",
+    },
+  );
+  const out = translated && translated.translations;
+  // id で突合。全 slot 分の訳が揃ったときだけ反映し、欠落・取り違え・順序入れ替えは
+  // 英語原文で継続する。
+  const byId = new Map();
+  if (Array.isArray(out))
+    for (const o of out)
+      if (o && Number.isInteger(o.id) && typeof o.text === "string" && o.text.trim())
+        byId.set(o.id, o.text);
+  if (slots.every((_, i) => byId.has(i))) {
+    slots.forEach((s, i) => s.set(byId.get(i)));
+  } else {
+    log(`translate-tail: 訳が ${byId.size}/${slots.length} 件、英語原文で ship を継続。`);
+  }
+}
+
 const shipPayload = {
   issue: issueNumber,
-  assumptions: plan.assumptions || [],
-  backlog_candidates: backlogCandidates,
-  residual_blocking: residualBlocking,
+  assumptions: shipAssumptions,
+  backlog_candidates: shipBacklog,
+  residual_blocking: shipResidual,
   reaudited,
-  code_anomalies: code.anomalies || [],
+  code_anomalies: shipAnomalies,
   tests_pass: code.tests_pass,
   gates_pass: code.gates_pass,
   verify_output: code.verify_output || "",
-  conformance: conf.spec_found ? conf.findings : [],
+  conformance: shipConformance,
 };
 const ship = await agent(
   anchor(
     `全変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にする。commit メッセージは自分で書く (diff を要約する)。` +
-      `branch を push し、draft pull request を開く。body は自分で書く人間向け Summary と、データから決定論生成した事実セクションの 2 部構成にする (事実セクションは手書きしない)。手順は次のとおり。\n` +
-      `(1) 人間レビュアー向けの簡潔な "## Summary" を body file に書く。散文の段落でなく markdown の箇条書きで、この PR が何を実装したか (outcome は ${JSON.stringify(plan.outcome)})、アプローチを 1 行、レビューで注視すべき箇所を書く。最大 5 項目程度、冗長表現も事実の捏造もしない。\n` +
+      `branch を push し、draft pull request を開く。body は PR テンプレートから自分で書く人間向け部分と、データから決定論生成した事実セクションの 2 部構成にする (事実セクションは手書きしない)。手順は次のとおり。\n` +
+      `(1) \`$HOME/.claude/settings.json\` の \`language\` を読み (未設定なら英語)、人間向け body をその言語で書く。code・識別子・技術用語は翻訳しない。PR テンプレートを選ぶ。repository にあればそれを使い (case-insensitive、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)、なければ bundled \`$HOME/.claude/skills/pr/templates/pr.md\` を使う。skeleton を読んで body file に畳み込む。人間向けセクションだけを埋め、レビュアーが一目で意図をつかめるようにする。この PR が何を実装したか (outcome は ${JSON.stringify(plan.outcome)})、アプローチ、レビューで注視すべき箇所を、リストとコンパクトな table で簡潔に書く。冗長表現も事実の捏造もしない。決定論 tail が既に出すセクションはスキップする。Related / Closes (tail が \`Closes #\` を出す) と Scope / Backlog (tail が backlog を出す)。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実際の diff から埋め、空ならセクションごと省く。\n` +
       `(2) この JSON をそのまま temp file に書き出す。\n${JSON.stringify(shipPayload)}\n` +
       `(3) 事実 tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、renderer 失敗時は PR を作る前に中断する。repository root から ` +
       `\`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile> && gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +

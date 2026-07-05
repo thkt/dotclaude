@@ -329,9 +329,10 @@ if (!planHeading) {
 const afterHeading = body.slice(planHeading.index + planHeading[0].length);
 const nextSection = afterHeading.search(/^##[^#]/m);
 const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
-const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[0]));
-const bodyUnitIds = idSet(/\bU-\d{3}\b/g);
-const bodyTestIds = idSet(/\bT-\d{3}\b/g);
+// Match ids at their definition position only, not prose references (see plan-section.md).
+const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[1]));
+const bodyUnitIds = idSet(/^###\s+(U-\d{3})\b/gm);
+const bodyTestIds = idSet(/^[ \t]*[-*+][ \t]+(T-\d{3})\b/gm);
 
 const plan = await agent(
   anchor(
@@ -489,6 +490,13 @@ if (!code.tests_pass || !code.gates_pass)
   log(
     `code's independent verify failed (tests=${code.tests_pass} gates=${code.gates_pass}). Advancing to audit; it surfaces on the PR.`,
   );
+// workflow("code") runs under its own `▸ code` group, so the Code phase box has no direct
+// agent and would render "Not started" forever. This one cheap agent lights it up and
+// completes it, doubling as a run-log recap of what the code phase delivered.
+await agent(
+  `Summarize in one line what the code phase delivered: ${plan.units.length} unit(s) implemented, independent verify tests=${code.tests_pass} gates=${code.gates_pass}. Return the sentence only.`,
+  { label: "code-summary", phase: "Code", model: "haiku" },
+);
 
 // ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit loop (at most 3 audit runs) ----
 // The audit fan-out is owned by workflow("audit") (/audit's glob routing table +
@@ -613,6 +621,13 @@ const residualBlocking = reaudited ? criticalHigh(audit) : toFix;
 // The review lens was consumed in the Audit phase, so only the mutators run here.
 phase("Polish");
 const cleanup = await workflow("polish", { repo, mode: "cleanup" });
+// workflow("polish") runs under its own `▸ polish` group, so the Polish phase box needs one
+// direct agent to light up and complete — same pattern as the Code phase above.
+const cleanupEdits = cleanup?.cleanup?.edits?.length ?? 0;
+await agent(
+  `Summarize in one line what the polish phase did: ${cleanupEdits} cleanup edit(s) applied, tests_pass=${cleanup?.cleanup?.tests_pass}. Return the sentence only.`,
+  { label: "polish-summary", phase: "Polish", model: "haiku" },
+);
 
 // ---- Backlog: collect out-of-scope discoveries as candidates for the user ----
 // Candidate sources are the out-of-scope candidates written in the issue body
@@ -663,23 +678,104 @@ if (backlogCandidates.length) {
 // pass/fail gating of the verify log lives only in pr-body.py (it reads
 // verify_output solely on failure), so the payload passes it through unconditionally.
 phase("Ship");
+
+// The tail labels are localized by pr-body.py, but the finding bodies come from the
+// reviewers in English, so they printed as-is. Since human reviewers read the PR too,
+// translate + lightly compress only the free-text of the informational (not
+// fail-closed) sections into the target language. Safety facts (verify status /
+// not-reaudited warning / verify_output log) and structured fields (file:line,
+// severity, counts, identifiers) are excluded and stay deterministic. Operate on
+// copies so the source finding objects are not mutated.
+const shipAssumptions = [...(plan.assumptions || [])];
+const shipBacklog = backlogCandidates.map((c) => ({ ...c }));
+const shipResidual = residualBlocking.map((f) => ({ ...f }));
+const shipAnomalies = (code.anomalies || []).map((a) => ({ ...a }));
+const shipConformance = conf.spec_found ? conf.findings.map((f) => ({ ...f })) : [];
+
+// Collect only the translatable free-text with an id. Writing back goes through
+// set(), never touching structured fields. Empty strings are not sent to translation.
+const slots = [];
+shipAssumptions.forEach((t, i) => {
+  if (typeof t === "string" && t.trim())
+    slots.push({ text: t, set: (v) => (shipAssumptions[i] = v) });
+});
+for (const c of shipBacklog)
+  if (c.summary && c.summary.trim()) slots.push({ text: c.summary, set: (v) => (c.summary = v) });
+for (const f of shipResidual)
+  if (f.summary && f.summary.trim()) slots.push({ text: f.summary, set: (v) => (f.summary = v) });
+for (const f of shipConformance)
+  if (f.detail && f.detail.trim()) slots.push({ text: f.detail, set: (v) => (f.detail = v) });
+for (const a of shipAnomalies)
+  if (a.notes && a.notes.trim()) slots.push({ text: a.notes, set: (v) => (a.notes = v) });
+
+if (slots.length) {
+  // Single-use schema. Force each element to carry back the input id, and write back
+  // by id: a reordered response is not misassigned, and unless every id is present it
+  // is fail-open, keeping the English originals.
+  const TRANSLATION_SCHEMA = {
+    type: "object",
+    additionalProperties: false,
+    required: ["translations"],
+    properties: {
+      translations: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["id", "text"],
+          properties: { id: { type: "integer" }, text: { type: "string" } },
+        },
+      },
+    },
+  };
+  const translated = await agent(
+    anchor(
+      `Read \`language\` from \`$HOME/.claude/settings.json\` (english if unset). ` +
+        `The following JSON array is the free-text of the PR body's informational sections (backlog / assumptions / unresolved findings / conformance / anomaly). Translate each element's \`text\` into \`language\` and tighten verbose prose. Run this step even for english, for the light compression.\n` +
+        `Strict: (a) keep file:line, paths, numbers, counts, severity labels, identifiers, and code fragments verbatim. (b) Add no facts and drop none. Translate and compress only; invent no new claim or count. (c) Return \`translations\` with every element carrying the input \`id\`; order is free but each id must match the input.\n` +
+        `Input:\n${JSON.stringify(slots.map((s, i) => ({ id: i, text: s.text })))}`,
+    ),
+    {
+      label: "translate-tail",
+      phase: "Ship",
+      schema: TRANSLATION_SCHEMA,
+      model: "sonnet",
+    },
+  );
+  const out = translated && translated.translations;
+  // Match by id. Apply only when a translation exists for every slot; a missing,
+  // misassigned, or reordered response ships with the English originals.
+  const byId = new Map();
+  if (Array.isArray(out))
+    for (const o of out)
+      if (o && Number.isInteger(o.id) && typeof o.text === "string" && o.text.trim())
+        byId.set(o.id, o.text);
+  if (slots.every((_, i) => byId.has(i))) {
+    slots.forEach((s, i) => s.set(byId.get(i)));
+  } else {
+    log(
+      `translate-tail: ${byId.size}/${slots.length} translated, shipping with English originals.`,
+    );
+  }
+}
+
 const shipPayload = {
   issue: issueNumber,
-  assumptions: plan.assumptions || [],
-  backlog_candidates: backlogCandidates,
-  residual_blocking: residualBlocking,
+  assumptions: shipAssumptions,
+  backlog_candidates: shipBacklog,
+  residual_blocking: shipResidual,
   reaudited,
-  code_anomalies: code.anomalies || [],
+  code_anomalies: shipAnomalies,
   tests_pass: code.tests_pass,
   gates_pass: code.gates_pass,
   verify_output: code.verify_output || "",
-  conformance: conf.spec_found ? conf.findings : [],
+  conformance: shipConformance,
 };
 const ship = await agent(
   anchor(
     `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit; you write the commit message (summarize the diff). ` +
-      `Push the branch, then open a draft pull request. Its body is a human-facing Summary you write, followed by deterministic fact sections rendered from data (do not hand-write the fact sections). The steps are as follows.\n` +
-      `(1) write a terse "## Summary" to a body file for the human reviewer, in markdown bullets rather than prose paragraphs. Cover what this PR implements (the outcome is ${JSON.stringify(plan.outcome)}), the approach in a line, and where to focus review. At most ~5 bullets; no filler, no invented facts.\n` +
+      `Push the branch, then open a draft pull request. Its body is a human-facing part you write from a PR template, followed by deterministic fact sections rendered from data (do not hand-write the fact sections). The steps are as follows.\n` +
+      `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`$HOME/.claude/skills/pr/templates/pr.md\`; read the skeleton and fold it into the body file. Fill only the human-facing sections so a reviewer grasps the intent at a glance: what this PR implements (the outcome is ${JSON.stringify(plan.outcome)}), the approach, and where to focus review. Use lists and compact tables, keep it terse, no filler, no invented facts. SKIP any template section the deterministic tail already covers: Related / Closes (the tail emits \`Closes #\`) and Scope / Backlog (the tail emits the backlog). Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
       `(2) write this exact JSON to a temp file.\n${JSON.stringify(shipPayload)}\n` +
       `(3) append the fact tail and open the PR as ONE \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
       `\`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile> && gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
