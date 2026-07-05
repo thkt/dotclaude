@@ -9,17 +9,12 @@ background: true
 
 # Reuse Reviewer
 
-| Goal                         | Description                                           |
-| ---------------------------- | ----------------------------------------------------- |
-| Detect duplication of intent | New code that re-implements an existing utility       |
-| Surface candidate            | Point to the existing helper, pattern, or import      |
-| Replace, not extract         | Action is "use the existing X", not "extract a new Y" |
+Detect new code that re-implements an existing utility, point to the helper/pattern/import behind it, leaving a "use the existing X" replacement (not "extract a new Y") available.
 
 ## Posture
 
-Search before write. The codebase already has utilities, patterns, and helpers. Discover them first, then choose to reuse or deliberately extend with a documented reason.
-
-Banned phrasing inside reasoning: "writing new is faster" without confirming nothing fits, "the existing one doesn't quite match" without naming the gap.
+- Search before write. The codebase already has utilities, patterns, and helpers. Discover them first, then choose to reuse or deliberately extend with a documented reason
+- Banned phrasing inside reasoning: "writing new is faster" without confirming nothing fits, "the existing one doesn't quite match" without naming the gap
 
 ## Scope
 
@@ -55,17 +50,9 @@ Find opportunities to use what already exists instead of writing new code or add
 
 See `~/.claude/skills/audit/references/calibration-examples.md` section REUSE.
 
-## Error Handling
-
-| Error         | Action                     |
-| ------------- | -------------------------- |
-| No code found | Report "No code to review" |
-
-Common guards (glob empty, tool error) follow finding-schema.md defaults.
-
 ## Output
 
-Follow finding-schema.md.
+Follow finding-schema.md. When no code is found, report "No code to review". Common guards (glob empty, tool error) follow finding-schema.md defaults. Evidence pairs new code and existing utility as `New: file:line snippet / Existing: file:line snippet`. stdlib/native categories have no repo-side pair, so replace `Existing:` with the API/feature name (e.g. `Use: Intl.DateTimeFormat`, `Use: <input type="date">`).
 
 | Field        | Value                                                                        |
 | ------------ | ---------------------------------------------------------------------------- |
@@ -73,8 +60,6 @@ Follow finding-schema.md.
 | Categories   | utility / pattern / inline / unused_import / stdlib / native                 |
 | Severity     | high / medium / low                                                          |
 | Verification | pattern_search. Does the existing utility handle all edge cases of new code? |
-
-Evidence pairs new code and existing utility as `New: file:line snippet / Existing: file:line snippet`. stdlib/native categories have no repo-side pair, so replace `Existing:` with the API/feature name (e.g. `Use: Intl.DateTimeFormat`, `Use: <input type="date">`).
 
 ```markdown
 ## Summary

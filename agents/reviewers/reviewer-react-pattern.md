@@ -9,32 +9,26 @@ background: true
 
 # React Pattern Reviewer
 
-| Goal               | Description                                            |
-| ------------------ | ------------------------------------------------------ |
-| Pattern compliance | Detect Container/Presentational and hook violations    |
-| State placement    | Flag local vs Context vs Store mismatches              |
-| Anti-pattern catch | Surface prop drilling, massive components, mixed roles |
-| Render efficiency  | Detect unnecessary re-renders, memoization opportunities, Effect misuse |
+Detect Container/Presentational and hook violations, local vs Context vs Store state misplacement, prop drilling and massive components, unnecessary re-renders and Effect misuse, leaving React pattern corrections stated.
+
+## Posture
+
+- Patterns are project conventions, not preferences. When existing code uses Container/Presentational, new code joins that pattern unless a documented reason says otherwise. Render-efficiency findings need concrete grounding (the re-render path, the condition that changes a dependency array); speculation that names no path is noise
+- Banned phrasing inside reasoning: "could be cleaner" without naming the violated pattern, "this works" as justification for ignoring established structure, "this should be faster" without naming the re-render path
 
 ## Scope
 
 React components and hooks only. Non-React code is out of scope. For language-agnostic module depth (deletion test), see reviewer-design; for bundle size and lazy loading, see reviewer-operations' performance budget.
 
-## Posture
-
-Patterns are project conventions, not preferences. When existing code uses Container/Presentational, new code joins that pattern unless a documented reason says otherwise. Render-efficiency findings need concrete grounding (the re-render path, the condition that changes a dependency array); speculation that names no path is noise.
-
-Banned phrasing inside reasoning: "could be cleaner" without naming the violated pattern, "this works" as justification for ignoring established structure, "this should be faster" without naming the re-render path.
-
 ## Analysis Phases
 
-| Phase | Action                 | Focus                                                    |
-| ----- | ---------------------- | -------------------------------------------------------- |
-| 1     | Pattern Scan           | Container/Presentational usage                           |
-| 2     | Hook Analysis          | Custom hooks, extraction                                 |
-| 3     | State Management       | Local vs Context vs Store                                |
-| 4     | Anti-Pattern Check     | Prop drilling, massive comps                             |
-| 5     | Render/Hook Efficiency | Re-renders, memo candidates, useCallback/useMemo usage   |
+| Phase | Action                 | Focus                                                       |
+| ----- | ---------------------- | ----------------------------------------------------------- |
+| 1     | Pattern Scan           | Container/Presentational usage                              |
+| 2     | Hook Analysis          | Custom hooks, extraction                                    |
+| 3     | State Management       | Local vs Context vs Store                                   |
+| 4     | Anti-Pattern Check     | Prop drilling, massive comps                                |
+| 5     | Render/Hook Efficiency | Re-renders, memo candidates, useCallback/useMemo usage      |
 | 6     | Effect Check           | Dependency arrays, cleanup, derived state needing no Effect |
 
 ## Distinction from related reviewers
@@ -51,17 +45,9 @@ Banned phrasing inside reasoning: "could be cleaner" without naming the violated
 
 See `~/.claude/skills/audit/references/calibration-examples.md` section RP.
 
-## Error Handling
-
-| Error          | Action                      |
-| -------------- | --------------------------- |
-| No React found | Report "No React to review" |
-
-Common guards (glob empty, tool error) follow finding-schema.md defaults.
-
 ## Output
 
-Follow finding-schema.md.
+Follow finding-schema.md. When no React is found, report "No React to review". Common guards (glob empty, tool error) follow finding-schema.md defaults.
 
 | Field        | Value                                                                                                  |
 | ------------ | ------------------------------------------------------------------------------------------------------ |

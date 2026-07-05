@@ -9,17 +9,12 @@ background: true
 
 # Efficiency Reviewer
 
-| Goal               | Description                                               |
-| ------------------ | --------------------------------------------------------- |
-| Detect waste       | Redundant computation, repeated reads, missed concurrency |
-| Identify path      | Classify hot, warm, cold path before flagging             |
-| Resource awareness | Memory leaks, unbounded growth, broad reads               |
+Detect redundant computation, repeated reads, and missed concurrency, classifying hot/warm/cold path frequency before flagging, leaving waste stated with its execution context.
 
 ## Posture
 
-Efficiency findings need execution context. Hot path waste matters, cold path waste rarely does. Always identify path frequency before flagging.
-
-Banned phrasing inside reasoning: "this is slow" without naming the path frequency, "could be optimized" without measuring the gain.
+- Hot path waste matters, cold path waste rarely does. Always identify path frequency before flagging
+- Banned phrasing inside reasoning: "this is slow" without naming the path frequency, "could be optimized" without measuring the gain
 
 ## Scope
 
@@ -59,17 +54,9 @@ Before flagging, check execution frequency.
 
 See `~/.claude/skills/audit/references/calibration-examples.md` section EFF.
 
-## Error Handling
-
-| Error         | Action                     |
-| ------------- | -------------------------- |
-| No code found | Report "No code to review" |
-
-Common guards (glob empty, tool error) follow finding-schema.md defaults. Cold-path minor issues excluded unless consolidation raises severity (see schema's Context Test).
-
 ## Output
 
-Follow finding-schema.md.
+Follow finding-schema.md. When no code is found, report "No code to review". Common guards (glob empty, tool error) follow finding-schema.md defaults. Cold-path minor issues excluded unless consolidation raises severity (see schema's Context Test).
 
 | Field        | Value                                                                             |
 | ------------ | --------------------------------------------------------------------------------- |

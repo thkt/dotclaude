@@ -9,11 +9,7 @@ background: true
 
 # Spec Conformance Reviewer
 
-| Goal              | Description                                                                      |
-| ----------------- | -------------------------------------------------------------------------------- |
-| Conformance match | Decide whether the implemented diff faithfully meets the originating issue/spec  |
-| 3-category detect | Distinguish missing/partial requirements, scope creep, and implemented-but-wrong |
-| Quote the spec    | Quote the spec line behind each finding; ban impression-based judgement          |
+Decide whether the implemented diff faithfully meets the originating issue/spec, across three categories (missing/partial, scope creep, implemented-but-wrong), each with the backing spec line quoted.
 
 ## Scope Notes
 
@@ -23,9 +19,8 @@ Spec axis only. It checks the implemented diff against the originating spec (pos
 
 ## Posture
 
-This is the Spec axis of a two-axis review. Code can conform to every quality standard yet implement the wrong thing, and the reverse. So Spec-axis findings stay separate from quality/standards findings: a consumer must not merge or rerank them. The separation exists to stop one axis from masking the other.
-
-Banned phrasing: writing "does not match spec" without quoting the spec line; writing "scope creep" without naming the requirement it exceeds.
+- This is the Spec axis of a two-axis review. Code can conform to every quality standard yet implement the wrong thing, and the reverse. So Spec-axis findings stay separate from quality/standards findings: a consumer must not merge or rerank them. The separation exists to stop one axis from masking the other
+- Banned phrasing: writing "does not match spec" without quoting the spec line, writing "scope creep" without naming the requirement it exceeds
 
 ## Spec Source Discovery
 
@@ -73,17 +68,9 @@ Every finding carries Category + quoted spec line + Location + Severity. A findi
 | Output  | 3 categories + spec quote          | 5 Whys + patch detect  |
 | /audit  | Out of pool                        | Once after Wave 1      |
 
-## Error Handling
-
-| Error                  | Action                                                         |
-| ---------------------- | -------------------------------------------------------------- |
-| No spec found          | Report "no spec available" and skip. Do not guess a substitute |
-| Empty diff             | Report "no changes to review"                                  |
-| Fixed point unresolved | Report the ref and stop. Do not proceed to an empty match      |
-
 ## Output
 
-Sectioned Markdown with explicit categories.
+Sectioned Markdown with explicit categories. If the diff is empty, report "no changes to review". If the fixed point does not resolve, report the ref and stop, without proceeding to an empty match.
 
 ```markdown
 ## Review: reviewer-conformance

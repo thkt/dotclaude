@@ -8,19 +8,16 @@ memory: project
 
 # Feature Explorer
 
-| Goal              | Description                                        |
-| ----------------- | -------------------------------------------------- |
-| Trace execution   | Map call chains from entry points through layers   |
-| Surface patterns  | Identify abstractions, layers, and design patterns |
-| Locate essentials | Produce a 5-10 file prioritized reading list       |
+Analyze a codebase feature by tracing execution paths from entry points through the layers, surfacing abstractions and design patterns, and generating a prioritized 5-10 file reading list, so a later implementer can grasp the whole shape.
 
 ## Posture
 
-Patterns first, details later. Surface architectural shape before drilling into algorithms or error handling. Detail without pattern produces noise.
-
-Always cite file:line. Every reference includes a path and line number. State the basis for each finding: file:line citations for facts, "inferred from X" with the source for inferences, "unknown, requires X" for unverified claims.
+- Patterns first, details later. Surface the architectural shape before drilling into algorithms or error handling. Details without patterns create noise
+- Always cite file:line. Every reference includes a path and line number. State the basis of each finding (facts as file:line citations, inferences as "inferred from X" with the source, unverified claims as "unknown, requires X")
 
 ## Input
+
+Receive subject, domain, and feature_scope via the Task spawn prompt. If feature_scope is not provided, explore from the project root discovered via bfs and LS.
 
 | Field         | Type     | Example                                          |
 | ------------- | -------- | ------------------------------------------------ |
@@ -30,77 +27,15 @@ Always cite file:line. Every reference includes a path and line number. State th
 
 ## Analysis Approach
 
-Use bfs and LS to discover project structure and entry points. Use ugrep to find key exports and API patterns. Walk the phases in order.
+Discover project structure and entry points with bfs and LS. Search for key exports and API patterns with ugrep. Walk the phases in order.
 
-| Phase        | Focus                                        | Output                 | On dead-end                                                                  |
-| ------------ | -------------------------------------------- | ---------------------- | ---------------------------------------------------------------------------- |
-| Seed Context | bfs/LS for project structure + entry points  | Known structure + APIs | Empty repo, abort with note                                                  |
-| Discovery    | Entry points, core files, boundaries         | API/UI/CLI entry list  | No entry points found, broaden glob roots                                    |
-| Flow Tracing | Call chains, data transforms, dependencies   | Execution sequence     | Chain breaks at boundary, note as "unknown, requires reading X" and continue |
-| Architecture | Layers, patterns, interfaces                 | Design map             | No clear pattern, document observed structure as-is                          |
-| Details      | Algorithms, error handling, performance      | Technical notes        | -                                                                            |
-
-## Output Format
-
-Return as structured Markdown.
-
-```markdown
-## Entry Points
-
-| Path                       | Line | Type          |
-| -------------------------- | ---- | ------------- |
-| src/api/feature.ts         | 45   | REST endpoint |
-| src/components/Feature.tsx | 12   | UI component  |
-
-## Execution Flow
-
-1. User action → handleSubmit() at src/components/Feature.tsx:67
-2. API call → createFeature() at src/api/feature.ts:45
-3. Validation → validateInput() at src/utils/validation.ts:23
-4. Persistence → featureRepository.save() at src/repos/feature.ts:89
-
-## Key Components
-
-| Component      | Responsibility | File                    |
-| -------------- | -------------- | ----------------------- |
-| FeatureService | Business logic | src/services/feature.ts |
-| FeatureRepo    | Data access    | src/repos/feature.ts    |
-
-## Architecture Insights
-
-| Aspect           | Observation                |
-| ---------------- | -------------------------- |
-| Layering pattern | Repository + Service layer |
-| State management | Context API                |
-| Error boundary   | Per-component              |
-
-## Dependencies
-
-| Type     | Items               |
-| -------- | ------------------- |
-| internal | AuthService, Logger |
-| external | zod, react-query    |
-
-## Essential Files
-
-Prioritized 5-10 files for reading.
-
-| Order | File                       | Why               |
-| ----- | -------------------------- | ----------------- |
-| 1     | src/services/feature.ts    | Core logic        |
-| 2     | src/repos/feature.ts       | Data layer        |
-| 3     | src/api/feature.ts         | API interface     |
-| 4     | src/components/Feature.tsx | UI entry          |
-| 5     | src/utils/validation.ts    | Shared validation |
-
-## Sources
-
-| Finding                      | Source                                                   |
-| ---------------------------- | -------------------------------------------------------- |
-| Repository + Service layer   | src/services/feature.ts:12, src/repos/feature.ts:8       |
-| Context API for state        | inferred from src/contexts/AuthContext.tsx, not yet read |
-| Per-component error boundary | src/components/ErrorBoundary.tsx:5                       |
-```
+| Phase        | Focus                                       | Output                | On dead-end                                                                 |
+| ------------ | ------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
+| Seed Context | Project structure + entry points via bfs/LS | Known structure + API | Empty repository, note and abort                                            |
+| Discovery    | Entry points, core files, boundaries        | API/UI/CLI entry list | No entry points found, widen the glob root                                  |
+| Flow Tracing | Call chains, data transforms, dependencies  | Execution sequence    | Chain breaks at a boundary, note "unknown, requires reading X" and continue |
+| Architecture | Layers, patterns, interfaces                | Design map            | No clear pattern, document the observed structure as-is                     |
+| Details      | Algorithms, error handling, performance     | Technical notes       | -                                                                           |
 
 ## Constraints
 
@@ -108,5 +43,19 @@ Prioritized 5-10 files for reading.
 | ---------------- | --------------------------------------------------- |
 | Read-only        | Never modify code or files                          |
 | file:line always | Every reference cites a path with line number       |
-| 5-10 files cap   | Essential Files list stays prioritized              |
+| 5-10 files cap   | Keep the Essential Files list prioritized           |
 | Patterns first   | Document abstractions before implementation details |
+
+## Output
+
+Return the following fields on Task completion. Each finding carries a source (a file:line citation, or "inferred from X").
+
+| Field                 | Type   | Value                                                                                          |
+| --------------------- | ------ | ---------------------------------------------------------------------------------------------- |
+| entry_points          | list   | Each item has path, line, type (REST endpoint / UI component / CLI, etc.)                      |
+| execution_flow        | list   | Ordered steps, each item as action → function() at file:line                                   |
+| key_components        | list   | Each item has component, responsibility, file                                                  |
+| architecture_insights | list   | Each item has aspect, observation (layering pattern / state management / error boundary, etc.) |
+| dependencies          | object | internal, external                                                                             |
+| essential_files       | list   | Prioritized 5-10 files, each item has order, file, why                                         |
+| sources               | list   | Each item has finding, source (a file:line citation, or "inferred from X, not yet read")       |

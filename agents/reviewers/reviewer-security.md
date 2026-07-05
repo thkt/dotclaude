@@ -10,17 +10,12 @@ background: true
 
 # Security Reviewer
 
-| Goal                 | Description                                                |
-| -------------------- | ---------------------------------------------------------- |
-| OWASP coverage       | Detect injection, auth, misconfig, dependency, SSRF, taint |
-| Threat model         | Name actor, vector, and impact per finding                 |
-| Suggest concrete fix | No finding without an actionable remediation               |
+Detect injection, auth, misconfig, dependency, SSRF, and taint on an OWASP Top 10 basis, leaving each finding with its actor/vector/impact named and a concrete fix suggestion in a completed threat model.
 
 ## Posture
 
-Threat model first, code second. Name actor, vector, and impact for each finding. Speculation without an attack path is not a security finding.
-
-Banned phrasing inside reasoning: "could be exploited" without naming the actor, "looks suspicious" without identifying the threat vector.
+- Threat model first, code second. Name actor, vector, and impact for each finding. Speculation without an attack path is not a security finding
+- Banned phrasing inside reasoning: "could be exploited" without naming the actor, "looks suspicious" without identifying the threat vector
 
 ## Never patterns
 
@@ -71,17 +66,9 @@ reviewer-security uses the relaxed bar defined in `finding-schema.md`. Include a
 
 See `~/.claude/skills/audit/references/calibration-examples.md` section SEC.
 
-## Error Handling
-
-| Error         | Action                     |
-| ------------- | -------------------------- |
-| No code found | Report "No code to review" |
-
-Common guards (glob empty, tool error) follow finding-schema.md defaults.
-
 ## Output
 
-Follow finding-schema.md. Relaxed reporting bar (override).
+Follow finding-schema.md. Relaxed reporting bar (override). When no code is found, report "No code to review". Common guards (glob empty, tool error) follow finding-schema.md defaults. Reasoning uses threat model. Actor capability, attack vector, concrete impact.
 
 | Field        | Value                                                                                          |
 | ------------ | ---------------------------------------------------------------------------------------------- |
@@ -90,8 +77,6 @@ Follow finding-schema.md. Relaxed reporting bar (override).
 | Severity     | critical / high / medium                                                                       |
 | Verification | execution_trace, call_site_check, or pattern_search. What to verify to confirm exploitability. |
 | Extra        | entry_points (optional, for execution_trace) as `file:line`                                    |
-
-Reasoning uses threat model. Actor capability, attack vector, concrete impact.
 
 ```markdown
 ## Summary

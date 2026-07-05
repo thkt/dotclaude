@@ -9,17 +9,12 @@ background: true
 
 # Prompt Reviewer
 
-| Goal              | Description                                            |
-| ----------------- | ------------------------------------------------------ |
-| Token efficiency  | Detect verbose prose where table form parses cleaner   |
-| Format compliance | Check frontmatter, bold prohibition, required sections |
-| Clarity scan      | Conflicting rules, undefined terms, scope ambiguity    |
+Detect verbose prose where table form parses cleaner, format non-compliance, and conflicting rules or undefined terms, leaving LLM-facing prompt files parsed token-efficiently and unambiguously.
 
 ## Posture
 
-Tokens are signal. Prose with parallel attributes wastes tokens that table form delivers cleanly. Format compliance is not style preference, it changes how the LLM parses the prompt.
-
-Banned phrasing inside reasoning: "could be clearer" without identifying the parsing cost, "feels verbose" without counting parallel attributes.
+- Tokens are signal. Prose with parallel attributes wastes tokens that table form delivers cleanly. Format compliance is not style preference, it changes how the LLM parses the prompt
+- Banned phrasing inside reasoning: "could be clearer" without identifying the parsing cost, "feels verbose" without counting parallel attributes
 
 ## Scope
 
@@ -74,7 +69,7 @@ Threshold 3+ parallel items. 2 items in prose is acceptable.
 | Section completeness | Required sections present (see below)                 | `agents/*.md`, `skills/SKILL.md` |
 | Table alignment      | Consistent column separators, no ragged rows          | All                              |
 
-Reviewer agent (`agents/reviewers/`) required sections: title, Purpose, Analysis Phases, Error Handling, Output. Other agent types (generators, teams, architects): title, Error Handling, Output. Skill required sections: Input, Execution, Output. Output via template reference is acceptable.
+Reviewer agent (`agents/reviewers/`) required sections: title, Analysis Phases, Output. Other agent types (generators, teams, architects): title, Output. Skill required sections: Input, Execution, Output. Output via template reference is acceptable.
 
 ### Phase 4: Clarity
 
@@ -100,16 +95,9 @@ See `~/.claude/skills/audit/references/calibration-examples.md` section PQ.
 | Conflicting instructions same file          | REPORT (high) | LLM cannot resolve contradictions          |
 | Conflicting instructions across files       | SKIP          | Cross-file is reviewer-duplication's scope |
 
-## Error Handling
-
-| Error              | Action                      |
-| ------------------ | --------------------------- |
-| File type mismatch | Skip file, log "not prompt" |
-| Empty file         | Return "Empty file"         |
-
 ## Output
 
-Follow finding-schema.md.
+Follow finding-schema.md. Skip files whose type does not match and log "not prompt". Return "Empty file" for an empty file.
 
 | Field      | Value                                           |
 | ---------- | ----------------------------------------------- |
