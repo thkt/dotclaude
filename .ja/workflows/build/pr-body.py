@@ -16,14 +16,26 @@ live in the always-present status line / callout; purely informational lists
 (assumptions, backlog, anomalies) are shown only when non-empty, so a clean run
 stays short instead of repeating "None" per section.
 
+Fail-closed in two directions: an unparseable payload OR one missing a
+safety-critical key (reaudited / tests_pass / gates_pass) exits 1 with nothing on
+stdout, rather than a plausible-looking "clean" body -- a missing key must surface
+(via the caller's `&&` chain aborting the PR), not default to a reassuring value.
+
 stdin:  JSON {issue, assumptions[], backlog_candidates[], residual_blocking[],
               reaudited, code_anomalies[], tests_pass, gates_pass, verify_output}
 stdout: the markdown fact tail, led by a blank line + horizontal rule.
-exit 0 on a completed run. exit 1 on a parse error (fail-closed).
+exit 0 on a completed run. exit 1 on a parse error or a missing required key.
 """
 
 import json
 import sys
+
+REQUIRED_KEYS = ("reaudited", "tests_pass", "gates_pass")
+
+
+def fail(message):
+    print(f"Error: {message}", file=sys.stderr)
+    sys.exit(1)
 
 
 def _suffix(*parts):
@@ -36,6 +48,16 @@ def _list(items):
     return items if isinstance(items, list) else []
 
 
+def _fence(text):
+    """A backtick fence at least one longer than the longest backtick run in text,
+    so a code block never terminates early on content that itself contains ```."""
+    longest = current = 0
+    for ch in text:
+        current = current + 1 if ch == "`" else 0
+        longest = max(longest, current)
+    return "`" * max(3, longest + 1)
+
+
 def render(payload):
     issue = str(payload.get("issue", "")).strip()
     reaudited = bool(payload.get("reaudited", True))
@@ -45,7 +67,7 @@ def render(payload):
 
     out = [f"Closes #{issue}" if issue else "Closes #"]
 
-    blocking = str(len(residual)) if reaudited else "not re-audited"
+    blocking = str(len(residual)) + ("" if reaudited else " (not re-audited)")
     out.append(f"`verify tests={tests} gates={gates}` · `blocking {blocking}`")
 
     if not reaudited:
@@ -57,16 +79,27 @@ def render(payload):
         detail = payload.get("verify_output")
         if detail:
             body = detail if isinstance(detail, str) else json.dumps(detail, indent=2)
+            fence = _fence(body)
             out.append(
-                f"<details><summary>verify output</summary>\n\n```\n{body}\n```\n\n</details>"
+                f"<details><summary>verify output</summary>\n\n{fence}\n{body}\n{fence}\n\n</details>"
             )
 
     def section(label, items, render_item):
         items = _list(items)
-        if items:
-            out.append(
-                f"**{label}**\n" + "\n".join(f"- {render_item(x)}" for x in items)
-            )
+        if not items:
+            return
+        lines = []
+        for x in items:
+            try:
+                text = render_item(x)
+            except (AttributeError, TypeError, KeyError):
+                # A malformed (e.g. non-dict) item must not crash the render and drop
+                # the whole fail-closed tail; degrade to its raw string instead.
+                text = str(x)
+            # Keep each item on one line so an embedded newline can't break the list
+            # or promote a following line to a heading.
+            lines.append("- " + " ".join(str(text).split("\n")))
+        out.append(f"**{label}**\n" + "\n".join(lines))
 
     section("Assumptions (veto targets)", payload.get("assumptions"), str)
     section(
@@ -77,15 +110,13 @@ def render(payload):
             + _suffix(c.get("file"), c.get("severity"))
         ),
     )
-    if reaudited:
-        section(
-            "Unresolved critical/high",
-            residual,
-            lambda f: (
-                f"[{f.get('severity', '?')}] {f.get('summary', '')}".rstrip()
-                + _suffix(f.get("file"))
-            ),
-        )
+    section(
+        "Unresolved critical/high",
+        residual,
+        lambda f: (
+            f"[{f.get('severity', '?')}] {f.get('summary', '')}".rstrip() + _suffix(f.get("file"))
+        ),
+    )
     section(
         "Anomalies (Red unconfirmed)",
         payload.get("code_anomalies"),
@@ -104,11 +135,12 @@ def main():
     try:
         payload = json.loads(sys.stdin.read())
     except json.JSONDecodeError as exc:
-        print(f"Error: ship payload is not valid JSON: {exc}", file=sys.stderr)
-        sys.exit(1)
+        fail(f"ship payload is not valid JSON: {exc}")
     if not isinstance(payload, dict):
-        print("Error: ship payload must be a JSON object", file=sys.stderr)
-        sys.exit(1)
+        fail("ship payload must be a JSON object")
+    missing = [k for k in REQUIRED_KEYS if k not in payload]
+    if missing:
+        fail(f"ship payload missing required key(s): {', '.join(missing)}")
     sys.stdout.write(render(payload))
 
 

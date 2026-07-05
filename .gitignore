@@ -90,6 +90,9 @@ stats-cache.json
 # Runtime
 logs/
 plans/
+# but the veto test fixtures live in a dir named "plans" — keep them tracked
+!hooks/veto/tests/fixtures/plans/
+!.ja/hooks/veto/tests/fixtures/plans/
 session-env/
 sessions/
 

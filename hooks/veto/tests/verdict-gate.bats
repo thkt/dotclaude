@@ -39,7 +39,7 @@ verdict_gate() { python3 "$VETO" verdict-gate --title "${1:-T}"; }
 }
 
 @test "T-005 NO-GO input is never upgraded (one-way downgrade rule)" {
-  run verdict_gate < "$FIX/nogo.json"
+  run verdict_gate < "$FIX/no-go.json"
   [ "$status" -eq 0 ]
   [[ "$output" == *'"verdict":"NO-GO"'* ]]
   [[ "$output" == *'"downgraded":false'* ]]

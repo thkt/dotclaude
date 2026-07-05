@@ -1,0 +1,1 @@
+{"test_command":"bats t","units":[{"id":"U-001","goal":"g","files":["a.mjs"],"depends_on":[],"tests":[{"id":"T-001","name":"n","given":"g","when":"w","then":"t"}]}]}
