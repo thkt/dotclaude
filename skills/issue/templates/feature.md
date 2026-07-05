@@ -4,7 +4,7 @@ When /issue classifies the request as feature, it generates the title and body f
 
 ## Template
 
-`{...}` is replaced with content at generation. Sections marked `(optional)` are omitted, heading and all, when there is nothing to say. Fixed items (the ask, AC, decided constraints) stay unmarked; tentative items (AI-inferred HOW, an open decision) carry a `(tentative: <action at pickup>)` mark (§ Confidence Marking).
+`{...}` is replaced with content at generation. Sections marked `(optional)` are omitted, heading and all, when there is nothing to say. Fixed items (the ask, AC, decided constraints) stay unmarked; tentative items (AI-inferred HOW, an open decision) carry a `(tentative: <action at pickup>)` mark (criteria in references/tentative-marking.md).
 
 ```markdown
 ## What & Why

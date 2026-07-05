@@ -27,6 +27,7 @@ python3 gen_fixtures.py ./hook-payloads
 | ------------------------------ | --------------------------- | ---------------------------------------------------------------- |
 | `bash-verdict-go.json`         | PostToolUse Bash            | a `veto.py verdict-gate` run returning GO                        |
 | `bash-plan-ready.json`         | PostToolUse Bash            | a `veto.py plan-gate` run returning ready                        |
+| `bash-research-done.json`      | PostToolUse Bash            | a `veto.py research-gate` run declaring research done            |
 | `bash-gh-create-success.json`  | PostToolUse Bash            | a successful `gh issue create` (issue URL on stdout) -> consumes |
 | `pre-gh-create-main.json`      | PreToolUse Bash             | the gate input, main agent                                       |
 | `pre-gh-create-subagent.json`  | PreToolUse Bash             | subagent-origin (`agent_id`) -> exemption path                   |

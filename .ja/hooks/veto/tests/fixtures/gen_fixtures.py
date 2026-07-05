@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Regenerates the hook-payload fixtures. Shapes are taken from live capture (session 38b8fba4)
-and sanitized: session_id / cwd / prompt_id replaced with placeholders, probe content swapped
-for a realistic issue title. Run: python3 gen_fixtures.py <outdir>"""
+"""hook-payload fixture を再生成する。形は実キャプチャ (session 38b8fba4) 由来で sanitize 済み:
+session_id / cwd / prompt_id を placeholder に置換し、probe 内容を現実的な issue タイトルに
+差し替えている。実行: python3 gen_fixtures.py <outdir>"""
 
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from veto import dumps  # noqa: E402  (fixtures must serialize exactly as the shipped script does)
+from veto import dumps  # noqa: E402  (fixture は出荷スクリプトと同一のシリアライズを使う)
 
 outdir = Path(sys.argv[1])
 outdir.mkdir(parents=True, exist_ok=True)
@@ -23,14 +23,14 @@ BASE = {
 }
 
 
-# Emit compact single-line JSON to mirror the on-the-wire hook payload. The PreToolUse gate
-# wrapper matches `"tool_name":"Bash"` with no whitespace, exactly as Claude Code delivers it;
-# pretty-printing here would insert a `": "` space and diverge from production.
+# on-the-wire の hook payload に合わせて compact な single-line JSON で出力する。PreToolUse gate
+# の wrapper は Claude Code が届けるままの空白なし `"tool_name":"Bash"` を match するため、
+# ここで pretty-print すると `": "` のスペースが入り本番と乖離する。
 def write(name, obj):
     (outdir / name).write_text(dumps({**BASE, **obj}) + "\n", encoding="utf-8")
 
 
-# -- Bash PostToolUse: a verdict-gate run returning GO for the title ----------------------------
+# -- Bash PostToolUse: title に対して GO を返す verdict-gate 実行 --------------------------------
 write("bash-verdict-go.json", {
     "hook_event_name": "PostToolUse",
     "tool_name": "Bash",
@@ -49,7 +49,7 @@ write("bash-verdict-go.json", {
     "duration_ms": 120,
 })
 
-# -- Bash PostToolUse: a plan-gate run returning ready=true for the title -----------------------
+# -- Bash PostToolUse: title に対して ready=true を返す plan-gate 実行 ---------------------------
 write("bash-plan-ready.json", {
     "hook_event_name": "PostToolUse",
     "tool_name": "Bash",
@@ -62,7 +62,7 @@ write("bash-plan-ready.json", {
     "duration_ms": 130,
 })
 
-# -- Bash PostToolUse: a research-gate run declaring a saved research output for the title ------
+# -- Bash PostToolUse: title に対する保存済み research 出力を宣言する research-gate 実行 ---------
 RESEARCH_FILE = ".claude/workspace/research/2026-07-05-gated-issue-flow.md"
 write("bash-research-done.json", {
     "hook_event_name": "PostToolUse",
@@ -78,7 +78,7 @@ write("bash-research-done.json", {
     "duration_ms": 110,
 })
 
-# -- Bash PostToolUse: a successful gh issue create (issue URL on stdout), main agent -----------
+# -- Bash PostToolUse: 成功した gh issue create (stdout に issue URL)、main agent ----------------
 write("bash-gh-create-success.json", {
     "hook_event_name": "PostToolUse",
     "tool_name": "Bash",
@@ -91,14 +91,14 @@ write("bash-gh-create-success.json", {
     "duration_ms": 2100,
 })
 
-# -- Bash PreToolUse: a main-agent gh issue create (the gate input) -----------------------------
+# -- Bash PreToolUse: main agent の gh issue create (gate への入力) ------------------------------
 write("pre-gh-create-main.json", {
     "hook_event_name": "PreToolUse",
     "tool_name": "Bash",
     "tool_input": {"command": f'gh issue create --title "{TITLE}" --body-file /tmp/body.md'},
 })
 
-# -- Bash PreToolUse: a subagent-originated gh issue create (agent_id exemption) ----------------
+# -- Bash PreToolUse: subagent 発の gh issue create (agent_id exemption) -------------------------
 write("pre-gh-create-subagent.json", {
     "hook_event_name": "PreToolUse",
     "tool_name": "Bash",
@@ -107,21 +107,21 @@ write("pre-gh-create-subagent.json", {
     "tool_input": {"command": f'gh issue create --title "{TITLE}" --body-file /tmp/body.md'},
 })
 
-# -- Bash PreToolUse: a main-agent gh create with a near-but-different title (title mismatch) ---
+# -- Bash PreToolUse: 似て非なる title の main agent gh create (title 不一致) --------------------
 write("pre-gh-create-mismatch.json", {
     "hook_event_name": "PreToolUse",
     "tool_name": "Bash",
     "tool_input": {"command": f'gh issue create --title "{TITLE} 改" --body-file /tmp/body.md'},
 })
 
-# -- Bash PreToolUse: a non-gh command (fast-exit) ----------------------------------------------
+# -- Bash PreToolUse: gh 以外のコマンド (fast-exit) ----------------------------------------------
 write("pre-bash-nonmatching.json", {
     "hook_event_name": "PreToolUse",
     "tool_name": "Bash",
     "tool_input": {"command": 'echo "hello world"'},
 })
 
-# -- AskUserQuestion PostToolUse: the fixed skip header, kind = docs ----------------------------
+# -- AskUserQuestion PostToolUse: 固定 skip header、kind = docs ----------------------------------
 SKIP_Q = "この issue は docs / chore / minor-bug のため challenge / research / think を免除しますか?"
 write("askuserquestion-skip.json", {
     "hook_event_name": "PostToolUse",
@@ -147,7 +147,7 @@ write("askuserquestion-skip.json", {
     },
 })
 
-# -- AskUserQuestion PostToolUse: a different header (must NOT be recorded as a skip) -----------
+# -- AskUserQuestion PostToolUse: 別 header (skip として記録されてはならない) --------------------
 OTHER_Q = "この issue を作成しますか?"
 write("askuserquestion-nonskip.json", {
     "hook_event_name": "PostToolUse",
