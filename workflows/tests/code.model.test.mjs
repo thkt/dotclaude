@@ -32,10 +32,16 @@ const retryingAgentStub = (prompt, opts) => {
   if (label.startsWith("red2:"))
     return { red_confirmed: true, test_files: ["t.test.js"], notes: "" };
   if (label.startsWith("red:"))
-    return { red_confirmed: false, test_files: [], notes: "passed unexpectedly" };
+    return {
+      red_confirmed: false,
+      test_files: [],
+      notes: "passed unexpectedly",
+    };
   if (label.startsWith("green2:")) return { green: true, notes: "" };
-  if (label.startsWith("green:")) return { green: false, notes: "still failing" };
-  if (label === "verify") return { tests_pass: true, gates_pass: true, output_tail: "" };
+  if (label.startsWith("green:"))
+    return { green: false, notes: "still failing" };
+  if (label === "verify")
+    return { tests_pass: true, gates_pass: true, output_tail: "" };
   throw new Error(`unexpected label: ${label}`);
 };
 
@@ -45,7 +51,8 @@ const happyAgentStub = (prompt, opts) => {
   if (label.startsWith("red:"))
     return { red_confirmed: true, test_files: ["t.test.js"], notes: "" };
   if (label.startsWith("green:")) return { green: true, notes: "" };
-  if (label === "verify") return { tests_pass: true, gates_pass: true, output_tail: "" };
+  if (label === "verify")
+    return { tests_pass: true, gates_pass: true, output_tail: "" };
   throw new Error(`unexpected label: ${label}`);
 };
 
@@ -55,10 +62,20 @@ test("model 指定時に Red / Green とその retry の 4 呼び出しへ伝播
     stubs: { agent: retryingAgentStub },
   });
 
-  const redGreen = calls.agent.filter((c) => /^(red|red2|green|green2):/.test(c.opts.label));
-  assert.equal(redGreen.length, 4, "red / red2 / green / green2 calls are all present");
+  const redGreen = calls.agent.filter((c) =>
+    /^(red|red2|green|green2):/.test(c.opts.label),
+  );
+  assert.equal(
+    redGreen.length,
+    4,
+    "red / red2 / green / green2 calls are all present",
+  );
   for (const call of redGreen) {
-    assert.equal(call.opts.model, "sonnet", `${call.opts.label} opts carries model: "sonnet"`);
+    assert.equal(
+      call.opts.model,
+      "sonnet",
+      `${call.opts.label} opts carries model: "sonnet"`,
+    );
   }
 
   const verify = calls.agent.find((c) => c.opts.label === "verify");
@@ -73,7 +90,10 @@ test("model 未指定で agent opts に model キーが存在せず既存呼び�
   });
 
   for (const call of calls.agent) {
-    assert.ok(!("model" in call.opts), `${call.opts.label} opts has no model key`);
+    assert.ok(
+      !("model" in call.opts),
+      `${call.opts.label} opts has no model key`,
+    );
   }
   assert.deepEqual(result.completed, ["U-1"], "completed contains the unit id");
   assert.equal(result.tests_pass, true, "verify tests_pass is returned as-is");

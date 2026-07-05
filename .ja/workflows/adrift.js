@@ -44,7 +44,11 @@ const repo = typeof opts.repo === "string" ? opts.repo : "";
 
 // focus は id ("0061" / "ADR-0061") またはキーワードの列。配列と文字列の両方を受ける。
 // id は数値一致、非数値はファイル名 / タイトルへの部分一致で照合する。
-const focus = (Array.isArray(opts.focus) ? opts.focus : String(opts.focus || "").split(/[\s,]+/))
+const focus = (
+  Array.isArray(opts.focus)
+    ? opts.focus
+    : String(opts.focus || "").split(/[\s,]+/)
+)
   .map((t) =>
     String(t)
       .trim()
@@ -107,7 +111,8 @@ const DETECT_SCHEMA = {
     manifest: { type: "string", enum: ["rust", "ts", "tsx", "other"] },
     adr_refs: {
       type: "array",
-      description: "ADR ディレクトリ外で見つかった ADR-NNNN 参照の生リスト (分類は script が行う)",
+      description:
+        "ADR ディレクトリ外で見つかった ADR-NNNN 参照の生リスト (分類は script が行う)",
       items: {
         type: "object",
         additionalProperties: false,
@@ -131,7 +136,10 @@ const EXTRACT_SCHEMA = {
     status: { type: "string", description: "Accepted / Superseded 等" },
     superseded_by: { type: "string" },
     verifiable: { type: "boolean", description: "散文のみの ADR は false" },
-    outcome_text: { type: "string", description: "Decision Outcome セクション本文" },
+    outcome_text: {
+      type: "string",
+      description: "Decision Outcome セクション本文",
+    },
     symbols: { type: "array", items: { type: "string" } },
     candidates: {
       type: "array",
@@ -165,7 +173,10 @@ const FINDINGS_SCHEMA = {
           file: { type: "string" },
           line: { type: "number" },
           summary: { type: "string" },
-          direction: { type: "string", enum: ["code-fix", "adr-update", "accept"] },
+          direction: {
+            type: "string",
+            enum: ["code-fix", "adr-update", "accept"],
+          },
           priority: { type: "string", enum: ["H", "M", "L"] },
         },
       },
@@ -189,7 +200,8 @@ const mergeFindings = (lists) => {
   for (const f of lists.flat()) {
     const k = `${f.file}:${f.line}`;
     const prev = map.get(k);
-    if (!prev || PRIORITY_RANK[f.priority] > PRIORITY_RANK[prev.priority]) map.set(k, f);
+    if (!prev || PRIORITY_RANK[f.priority] > PRIORITY_RANK[prev.priority])
+      map.set(k, f);
   }
   return [...map.values()].sort(
     (a, b) =>
@@ -357,7 +369,9 @@ const perAdr = await pipeline(
 );
 
 const scanned = perAdr.filter(Boolean);
-const allFindings = scanned.flatMap((r) => r.findings.map((f) => ({ ...f, adr: r.adr.id })));
+const allFindings = scanned.flatMap((r) =>
+  r.findings.map((f) => ({ ...f, adr: r.adr.id })),
+);
 const counts = { H: 0, M: 0, L: 0 };
 for (const f of allFindings) counts[f.priority] += 1;
 const unverifiable = scanned.filter((r) => !r.verifiable);

@@ -27,7 +27,9 @@ export const meta = {
 phase("Load");
 
 const input = typeof args === "object" && args ? args : {};
-const issueRef = String(typeof args === "string" ? args : input.issue || "").trim();
+const issueRef = String(
+  typeof args === "string" ? args : input.issue || "",
+).trim();
 // "123" / "#123" / issue URL の末尾から issue 番号を決定論で取り出す。
 const issueNumber = (issueRef.match(/(\d+)\D*$/) || [])[1] || "";
 if (!issueRef || !issueNumber) {
@@ -57,7 +59,10 @@ const FETCH_SCHEMA = {
   required: ["found", "body"],
   properties: {
     found: { type: "boolean" },
-    body: { type: "string", description: "issue 本文の verbatim。要約・整形をしない" },
+    body: {
+      type: "string",
+      description: "issue 本文の verbatim。要約・整形をしない",
+    },
   },
 };
 
@@ -79,14 +84,19 @@ const EXTRACT_SCHEMA = {
   properties: {
     dir: {
       type: "string",
-      description: "planning dir。例 .claude/workspace/planning/YYYY-MM-DD-slug",
+      description:
+        "planning dir。例 .claude/workspace/planning/YYYY-MM-DD-slug",
     },
-    outcome: { type: "string", description: "done 状態の 1 行記述 (実装非依存、観測可能)" },
+    outcome: {
+      type: "string",
+      description: "done 状態の 1 行記述 (実装非依存、観測可能)",
+    },
     decisions: { type: "array", items: { type: "string" } },
     assumptions: {
       type: "array",
       items: { type: "string" },
-      description: "issue に記録された best-guess の残余。PR でのユーザー拒否対象",
+      description:
+        "issue に記録された best-guess の残余。PR でのユーザー拒否対象",
     },
     non_goals: { type: "array", items: { type: "string" } },
     constraints: { type: "array", items: { type: "string" } },
@@ -97,8 +107,14 @@ const EXTRACT_SCHEMA = {
         additionalProperties: false,
         required: ["id", "goal", "files", "contract", "tests", "depends_on"],
         properties: {
-          id: { type: "string", description: "U-001 形式。issue 本文の id をそのまま使う" },
-          goal: { type: "string", description: "この unit が届ける振る舞いの 1 行記述" },
+          id: {
+            type: "string",
+            description: "U-001 形式。issue 本文の id をそのまま使う",
+          },
+          goal: {
+            type: "string",
+            description: "この unit が届ける振る舞いの 1 行記述",
+          },
           files: {
             type: "array",
             items: { type: "string" },
@@ -106,7 +122,8 @@ const EXTRACT_SCHEMA = {
           },
           contract: {
             type: "string",
-            description: "公開インターフェース。signature / CLI flag / schema の素描",
+            description:
+              "公開インターフェース。signature / CLI flag / schema の素描",
           },
           tests: {
             type: "array",
@@ -115,8 +132,14 @@ const EXTRACT_SCHEMA = {
               additionalProperties: false,
               required: ["id", "name", "given", "when", "then"],
               properties: {
-                id: { type: "string", description: "T-001 形式 (plan 全体で一意)" },
-                name: { type: "string", description: "検証する仕様の言明。テスト名になる" },
+                id: {
+                  type: "string",
+                  description: "T-001 形式 (plan 全体で一意)",
+                },
+                name: {
+                  type: "string",
+                  description: "検証する仕様の言明。テスト名になる",
+                },
                 given: { type: "string" },
                 when: { type: "string" },
                 // JSON Schema の property 定義であり thenable ではない (BDD の given/when/then)
@@ -133,7 +156,10 @@ const EXTRACT_SCHEMA = {
         },
       },
     },
-    test_command: { type: "string", description: "テスト実行コマンド。例 cargo test / bun test" },
+    test_command: {
+      type: "string",
+      description: "テスト実行コマンド。例 cargo test / bun test",
+    },
     preconditions: {
       type: "array",
       items: {
@@ -141,8 +167,14 @@ const EXTRACT_SCHEMA = {
         additionalProperties: false,
         required: ["path"],
         properties: {
-          path: { type: "string", description: "plan が前提とする既存ファイル" },
-          pattern: { type: "string", description: "そのファイルに存在するはずの symbol / 文字列" },
+          path: {
+            type: "string",
+            description: "plan が前提とする既存ファイル",
+          },
+          pattern: {
+            type: "string",
+            description: "そのファイルに存在するはずの symbol / 文字列",
+          },
         },
       },
       description: "issue の plan が前提とする既存コード。無ければ空配列",
@@ -213,8 +245,10 @@ const validate = (plan) => {
   const units = (Array.isArray(plan.units) ? plan.units : []).map((u, i) =>
     u && typeof u === "object" && !Array.isArray(u) ? u : { id: `units[${i}]` },
   );
-  if (!units.length) errors.push("units is empty. Define at least one implementation unit");
-  if (!String(plan.test_command || "").trim()) errors.push("test_command is empty");
+  if (!units.length)
+    errors.push("units is empty. Define at least one implementation unit");
+  if (!String(plan.test_command || "").trim())
+    errors.push("test_command is empty");
 
   const ids = new Set(units.map((u) => u.id));
   if (ids.size !== units.length) errors.push("duplicate unit ids");
@@ -222,23 +256,28 @@ const validate = (plan) => {
   const testIds = new Set();
   for (const [i, u] of units.entries()) {
     const tests = (Array.isArray(u.tests) ? u.tests : []).map((t, j) =>
-      t && typeof t === "object" && !Array.isArray(t) ? t : { id: `units[${i}].tests[${j}]` },
+      t && typeof t === "object" && !Array.isArray(t)
+        ? t
+        : { id: `units[${i}].tests[${j}]` },
     );
     const files = Array.isArray(u.files) ? u.files : [];
     const dependsOn = Array.isArray(u.depends_on) ? u.depends_on : [];
     if (!tests.length) errors.push(`${u.id} has no test scenario`);
     if (!files.length) errors.push(`${u.id} has no target files`);
     if (!String(u.goal || "").trim()) errors.push(`${u.id} has an empty goal`);
-    if (!String(u.contract || "").trim()) errors.push(`${u.id} has an empty contract`);
+    if (!String(u.contract || "").trim())
+      errors.push(`${u.id} has an empty contract`);
     for (const t of tests) {
       if (testIds.has(t.id)) errors.push(`duplicate test id ${t.id}`);
       testIds.add(t.id);
       for (const field of ["name", "given", "when", "then"]) {
-        if (!String(t[field] || "").trim()) errors.push(`${t.id} has an empty ${field}`);
+        if (!String(t[field] || "").trim())
+          errors.push(`${t.id} has an empty ${field}`);
       }
     }
     for (const d of dependsOn) {
-      if (!ids.has(d)) errors.push(`${u.id}'s depends_on ${d} points to a nonexistent unit`);
+      if (!ids.has(d))
+        errors.push(`${u.id}'s depends_on ${d} points to a nonexistent unit`);
     }
   }
 
@@ -252,7 +291,8 @@ const validate = (plan) => {
     }
     state.set(id, "visiting");
     const u = units.find((x) => x.id === id);
-    for (const d of u && Array.isArray(u.depends_on) ? u.depends_on : []) visit(d, [...path, id]);
+    for (const d of u && Array.isArray(u.depends_on) ? u.depends_on : [])
+      visit(d, [...path, id]);
     state.set(id, "done");
   };
   for (const u of units) visit(u.id, []);
@@ -268,7 +308,13 @@ const fetched = await agent(
       `\`gh issue view ${issueRef} --json body --jq .body\` をそのまま実行し、その stdout を body として verbatim で返す` +
       `(--jq 抽出は構造上 verbatim。編集しない)。コマンドが非 0 で終了した (issue が見つからない・取得失敗) 場合は found: false を返す。`,
   ),
-  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA, model: "haiku" },
+  {
+    label: "fetch",
+    phase: "Load",
+    agentType: "general-purpose",
+    schema: FETCH_SCHEMA,
+    model: "haiku",
+  },
 );
 if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
   return {
@@ -288,7 +334,8 @@ if (!planHeading) {
 }
 const afterHeading = body.slice(planHeading.index + planHeading[0].length);
 const nextSection = afterHeading.search(/^##[^#]/m);
-const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
+const planSection =
+  nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
 const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[0]));
 const bodyUnitIds = idSet(/\bU-\d{3}\b/g);
 const bodyTestIds = idSet(/\bT-\d{3}\b/g);
@@ -299,20 +346,34 @@ const plan = await agent(
       `unit id (U-NNN) と test id (T-NNN) は本文のものを漏れなく保持する (欠落は後段の決定論 cross-check で reject される)。` +
       `preconditions は plan が前提とする既存コードの {path, pattern} 一覧、backlog_candidates は issue に書かれた scope 外候補。本文に無ければ空配列。\n\n---\n${body}`,
   ),
-  { label: "extract", phase: "Load", agentType: "general-purpose", schema: EXTRACT_SCHEMA },
+  {
+    label: "extract",
+    phase: "Load",
+    agentType: "general-purpose",
+    schema: EXTRACT_SCHEMA,
+  },
 );
 if (!plan) {
-  return { stopped: "extraction-failed", why: "extract agent が plan を返さなかった。" };
+  return {
+    stopped: "extraction-failed",
+    why: "extract agent が plan を返さなかった。",
+  };
 }
 
 const blockers = validate(plan);
 if (blockers.length) {
-  return { stopped: "invalid-plan", blockers, why: "抽出された plan が構造検証を通らない。" };
+  return {
+    stopped: "invalid-plan",
+    blockers,
+    why: "抽出された plan が構造検証を通らない。",
+  };
 }
 
 // 抽出での silent drop / 捏造を id 集合の exact 比較で reject する。
 const planUnitIds = new Set(plan.units.map((u) => u.id));
-const planTestIds = new Set(plan.units.flatMap((u) => u.tests.map((t) => t.id)));
+const planTestIds = new Set(
+  plan.units.flatMap((u) => u.tests.map((t) => t.id)),
+);
 const setDiff = (a, b) => [...a].filter((x) => !b.has(x));
 const mismatch = {
   units_missing: setDiff(bodyUnitIds, planUnitIds),
@@ -357,7 +418,11 @@ if (preconditions.length) {
       model: "haiku",
     },
   );
-  if (!reval || !Array.isArray(reval.results) || reval.results.length !== preconditions.length) {
+  if (
+    !reval ||
+    !Array.isArray(reval.results) ||
+    reval.results.length !== preconditions.length
+  ) {
     return {
       stopped: "revalidate-failed",
       detail: reval,
@@ -390,10 +455,16 @@ const branch = await agent(
 phase("Code");
 const stripPreconditions = (p) =>
   Object.fromEntries(
-    Object.entries(p).filter(([k]) => k !== "preconditions" && k !== "backlog_candidates"),
+    Object.entries(p).filter(
+      ([k]) => k !== "preconditions" && k !== "backlog_candidates",
+    ),
   );
 const code =
-  (await workflow("code", { plan: stripPreconditions(plan), repo, model: "sonnet" })) || null;
+  (await workflow("code", {
+    plan: stripPreconditions(plan),
+    repo,
+    model: "sonnet",
+  })) || null;
 if (!code || code.stopped) {
   return { stopped: "code-failed", detail: code, planning: plan.dir };
 }
@@ -417,7 +488,9 @@ log(
   `audit が ${(audit.assignments || []).length} reviewer group を発火、polish レンズは ${review && review.codex_available ? "有効" : "無効"}。`,
 );
 const criticalHigh = (a) =>
-  (a.findings || []).filter((f) => f.severity === "critical" || f.severity === "high");
+  (a.findings || []).filter(
+    (f) => f.severity === "critical" || f.severity === "high",
+  );
 const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
   severity: f.severity === "P1" ? "high" : "medium",
   summary: `${f.title}: ${f.detail}`,
@@ -438,10 +511,14 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
   );
   if (round === 3) {
     reaudited = false;
-    log("fix round 上限。最終 round の fix は re-audit されず、PR に表面化する。");
+    log(
+      "fix round 上限。最終 round の fix は re-audit されず、PR に表面化する。",
+    );
     break;
   }
-  audit = (await workflow("audit", { repo, skipPreflight: true })) || { findings: [] };
+  audit = (await workflow("audit", { repo, skipPreflight: true })) || {
+    findings: [],
+  };
   toFix = criticalHigh(audit);
 }
 const residualBlocking = reaudited ? criticalHigh(audit) : [];
@@ -466,7 +543,12 @@ const backlogCandidates = [
   })),
   ...(audit.findings || [])
     .filter((f) => f.severity === "medium" || f.severity === "low")
-    .map((f) => ({ source: "audit", summary: f.summary, file: f.file, severity: f.severity })),
+    .map((f) => ({
+      source: "audit",
+      summary: f.summary,
+      file: f.file,
+      severity: f.severity,
+    })),
   ...((review && review.needs_context) || []).map((f) => ({
     source: "polish",
     summary: `${f.title}: ${f.why || f.detail}`,
@@ -495,7 +577,8 @@ const shipPayload = {
   code_anomalies: code.anomalies || [],
   tests_pass: code.tests_pass,
   gates_pass: code.gates_pass,
-  verify_output: code.tests_pass && code.gates_pass ? "" : code.verify_output || "",
+  verify_output:
+    code.tests_pass && code.gates_pass ? "" : code.verify_output || "",
 };
 const ship = await agent(
   anchor(
@@ -507,7 +590,12 @@ const ship = await agent(
       `(4) \`gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +
       `committed 状態と PR url を報告する。${guard}`,
   ),
-  { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
+  {
+    label: "ship",
+    phase: "Ship",
+    agentType: "general-purpose",
+    schema: SHIP_SCHEMA,
+  },
 );
 
 return {
@@ -519,7 +607,8 @@ return {
   code_verified: code.tests_pass && code.gates_pass,
   audit_findings: (audit.findings || []).length,
   residual_blocking: residualBlocking.length,
-  polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
+  polish_cleanup:
+    cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
   backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,
   pr_url: ship.pr_url,

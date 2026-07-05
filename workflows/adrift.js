@@ -46,7 +46,11 @@ const repo = typeof opts.repo === "string" ? opts.repo : "";
 
 // focus is a list of ids ("0061" / "ADR-0061") or keywords, accepted as array or string.
 // Ids match numerically; non-numeric tokens substring-match against file name / title.
-const focus = (Array.isArray(opts.focus) ? opts.focus : String(opts.focus || "").split(/[\s,]+/))
+const focus = (
+  Array.isArray(opts.focus)
+    ? opts.focus
+    : String(opts.focus || "").split(/[\s,]+/)
+)
   .map((t) =>
     String(t)
       .trim()
@@ -135,7 +139,10 @@ const EXTRACT_SCHEMA = {
     status: { type: "string", description: "Accepted / Superseded etc." },
     superseded_by: { type: "string" },
     verifiable: { type: "boolean", description: "false for prose-only ADRs" },
-    outcome_text: { type: "string", description: "Decision Outcome section body" },
+    outcome_text: {
+      type: "string",
+      description: "Decision Outcome section body",
+    },
     symbols: { type: "array", items: { type: "string" } },
     candidates: {
       type: "array",
@@ -169,7 +176,10 @@ const FINDINGS_SCHEMA = {
           file: { type: "string" },
           line: { type: "number" },
           summary: { type: "string" },
-          direction: { type: "string", enum: ["code-fix", "adr-update", "accept"] },
+          direction: {
+            type: "string",
+            enum: ["code-fix", "adr-update", "accept"],
+          },
           priority: { type: "string", enum: ["H", "M", "L"] },
         },
       },
@@ -193,7 +203,8 @@ const mergeFindings = (lists) => {
   for (const f of lists.flat()) {
     const k = `${f.file}:${f.line}`;
     const prev = map.get(k);
-    if (!prev || PRIORITY_RANK[f.priority] > PRIORITY_RANK[prev.priority]) map.set(k, f);
+    if (!prev || PRIORITY_RANK[f.priority] > PRIORITY_RANK[prev.priority])
+      map.set(k, f);
   }
   return [...map.values()].sort(
     (a, b) =>
@@ -362,7 +373,9 @@ const perAdr = await pipeline(
 );
 
 const scanned = perAdr.filter(Boolean);
-const allFindings = scanned.flatMap((r) => r.findings.map((f) => ({ ...f, adr: r.adr.id })));
+const allFindings = scanned.flatMap((r) =>
+  r.findings.map((f) => ({ ...f, adr: r.adr.id })),
+);
 const counts = { H: 0, M: 0, L: 0 };
 for (const f of allFindings) counts[f.priority] += 1;
 const unverifiable = scanned.filter((r) => !r.verifiable);

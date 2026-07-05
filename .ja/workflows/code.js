@@ -30,7 +30,10 @@ const input = (() => {
 })();
 const plan = input.plan;
 if (!plan || !Array.isArray(plan.units) || !plan.units.length) {
-  return { stopped: "no-plan", why: "args.plan に構造化 plan (units 必須) を渡す。" };
+  return {
+    stopped: "no-plan",
+    why: "args.plan に構造化 plan (units 必須) を渡す。",
+  };
 }
 const repo = typeof input.repo === "string" ? input.repo : "";
 const anchor = (p) =>
@@ -45,12 +48,14 @@ const RED_SCHEMA = {
   properties: {
     red_confirmed: {
       type: "boolean",
-      description: "書いたテストを実行し、期待どおり fail することを確認できたら true",
+      description:
+        "書いたテストを実行し、期待どおり fail することを確認できたら true",
     },
     test_files: { type: "array", items: { type: "string" } },
     notes: {
       type: "string",
-      description: "red_confirmed が false の場合はその理由 (既に振る舞いが存在する等)",
+      description:
+        "red_confirmed が false の場合はその理由 (既に振る舞いが存在する等)",
     },
   },
 };
@@ -60,7 +65,10 @@ const GREEN_SCHEMA = {
   additionalProperties: false,
   required: ["green", "notes"],
   properties: {
-    green: { type: "boolean", description: "unit のテストが全て pass したら true" },
+    green: {
+      type: "boolean",
+      description: "unit のテストが全て pass したら true",
+    },
     notes: { type: "string" },
   },
 };
@@ -71,7 +79,10 @@ const VERIFY_SCHEMA = {
   required: ["tests_pass", "gates_pass", "output_tail"],
   properties: {
     tests_pass: { type: "boolean" },
-    gates_pass: { type: "boolean", description: "lint / type-check が pass したら true" },
+    gates_pass: {
+      type: "boolean",
+      description: "lint / type-check が pass したら true",
+    },
     output_tail: { type: "string", description: "失敗時は失敗箇所の出力末尾" },
   },
 };
@@ -93,7 +104,10 @@ while (progressed && units.length < plan.units.length) {
 }
 if (units.length < plan.units.length) {
   const stuck = plan.units.filter((u) => !placed.has(u.id)).map((u) => u.id);
-  return { stopped: "invalid-plan", why: `depends_on を解決できない unit: ${stuck.join(", ")}` };
+  return {
+    stopped: "invalid-plan",
+    why: `depends_on を解決できない unit: ${stuck.join(", ")}`,
+  };
 }
 
 const testCmd = plan.test_command || "";
@@ -143,10 +157,13 @@ for (const unit of units) {
       },
     );
   }
-  if (!red) return { stopped: "red-failed", unit: unit.id, completed, anomalies };
+  if (!red)
+    return { stopped: "red-failed", unit: unit.id, completed, anomalies };
   if (!red.red_confirmed) {
     anomalies.push({ unit: unit.id, kind: "no-red", notes: red.notes });
-    log(`${unit.id}: Red 未確認 (${red.notes})。実装 step を skip して次の unit へ。`);
+    log(
+      `${unit.id}: Red 未確認 (${red.notes})。実装 step を skip して次の unit へ。`,
+    );
     completed.push(unit.id);
     continue;
   }
@@ -201,8 +218,17 @@ const verify = (await agent(
   anchor(
     `検証 stage。実装には関与していない。全テスト suite (${testCmd}) とプロジェクトの lint / type-check gate を実行し、結果をそのまま報告する。修正はしない。`,
   ),
-  { label: "verify", phase: "Verify", agentType: "general-purpose", schema: VERIFY_SCHEMA },
-)) || { tests_pass: false, gates_pass: false, output_tail: "verify agent が結果を返さなかった" };
+  {
+    label: "verify",
+    phase: "Verify",
+    agentType: "general-purpose",
+    schema: VERIFY_SCHEMA,
+  },
+)) || {
+  tests_pass: false,
+  gates_pass: false,
+  output_tail: "verify agent が結果を返さなかった",
+};
 
 log(
   `code: ${completed.length}/${units.length} unit 完了、anomaly ${anomalies.length} 件、verify tests=${verify.tests_pass} gates=${verify.gates_pass}。`,

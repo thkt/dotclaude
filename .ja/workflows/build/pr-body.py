@@ -49,36 +49,49 @@ def render(payload):
     out.append(f"`verify tests={tests} gates={gates}` · `blocking {blocking}`")
 
     if not reaudited:
-        out.append("> **Not re-audited** — final fix round unverified; blocking findings may remain.")
+        out.append(
+            "> **Not re-audited** — final fix round unverified; blocking findings may remain."
+        )
 
     if tests == "FAIL" or gates == "FAIL":
         detail = payload.get("verify_output")
         if detail:
             body = detail if isinstance(detail, str) else json.dumps(detail, indent=2)
-            out.append(f"<details><summary>verify output</summary>\n\n```\n{body}\n```\n\n</details>")
+            out.append(
+                f"<details><summary>verify output</summary>\n\n```\n{body}\n```\n\n</details>"
+            )
 
     def section(label, items, render_item):
         items = _list(items)
         if items:
-            out.append(f"**{label}**\n" + "\n".join(f"- {render_item(x)}" for x in items))
+            out.append(
+                f"**{label}**\n" + "\n".join(f"- {render_item(x)}" for x in items)
+            )
 
     section("Assumptions (veto targets)", payload.get("assumptions"), str)
     section(
         "Backlog — file via `/issue`",
         payload.get("backlog_candidates"),
-        lambda c: f"[{c.get('source', '?')}] {c.get('summary', '')}".rstrip()
-        + _suffix(c.get("file"), c.get("severity")),
+        lambda c: (
+            f"[{c.get('source', '?')}] {c.get('summary', '')}".rstrip()
+            + _suffix(c.get("file"), c.get("severity"))
+        ),
     )
     if reaudited:
         section(
             "Unresolved critical/high",
             residual,
-            lambda f: f"[{f.get('severity', '?')}] {f.get('summary', '')}".rstrip() + _suffix(f.get("file")),
+            lambda f: (
+                f"[{f.get('severity', '?')}] {f.get('summary', '')}".rstrip()
+                + _suffix(f.get("file"))
+            ),
         )
     section(
         "Anomalies (Red unconfirmed)",
         payload.get("code_anomalies"),
-        lambda a: f"{a.get('unit', '?')} ({a.get('kind', '?')}): {a.get('notes', '')}".rstrip(),
+        lambda a: (
+            f"{a.get('unit', '?')} ({a.get('kind', '?')}): {a.get('notes', '')}".rstrip()
+        ),
     )
 
     # Lead with a blank line + rule so this machine tail stays separated when appended

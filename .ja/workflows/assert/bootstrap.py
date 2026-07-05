@@ -123,8 +123,11 @@ def _real_runner(cmd, cwd, timeout):
     """Run cmd in cwd with a timeout. Return exit code, or TIMED_OUT on timeout."""
     try:
         proc = subprocess.run(
-            cmd, cwd=str(cwd), timeout=timeout,
-            capture_output=True, text=True,
+            cmd,
+            cwd=str(cwd),
+            timeout=timeout,
+            capture_output=True,
+            text=True,
         )
         return proc.returncode
     except subprocess.TimeoutExpired:

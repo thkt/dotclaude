@@ -64,7 +64,9 @@ class RenderTest(unittest.TestCase):
         self.assertIn("`blocking 0`", body)
         # A clean run is compact: only Closes + the status line carry content
         # (plus the leading rule); no per-section "None" blocks.
-        non_empty = [ln for ln in body.splitlines() if ln.strip() and ln.strip() != "---"]
+        non_empty = [
+            ln for ln in body.splitlines() if ln.strip() and ln.strip() != "---"
+        ]
         self.assertEqual(len(non_empty), 2, non_empty)
 
     def test_not_reaudited_warns_and_drops_the_clean_findings_list(self):
@@ -75,7 +77,9 @@ class RenderTest(unittest.TestCase):
         self.assertNotIn("**Unresolved critical/high**", body)
 
     def test_verify_failure_uses_collapsed_details(self):
-        body = pr_body.render({**FULL, "tests_pass": False, "verify_output": "boom stacktrace"})
+        body = pr_body.render(
+            {**FULL, "tests_pass": False, "verify_output": "boom stacktrace"}
+        )
         self.assertIn("`verify tests=FAIL gates=pass`", body)
         self.assertIn("<details><summary>verify output</summary>", body)
         self.assertIn("```\nboom stacktrace\n```", body)

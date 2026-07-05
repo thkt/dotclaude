@@ -4,7 +4,12 @@ export const meta = {
     'Deterministic Codex review + cleanup. Codex findings always pass through a critic-audit challenge, and the triage (confirmed / disputed / downgraded / needs_context) is decided by the script, so findings are never aggregated as facts and the challenge cannot be skipped. Callable standalone or nested from build via workflow("polish").',
   whenToUse:
     "Headless external-lens review of a diff plus AI-slop removal. args is a scope string, or {scope, repo, mode}. mode: full (default) runs review -> fix -> cleanup; review returns the challenged findings without fixing; cleanup runs only simplify + enhancer-code + test validation. For a deep internal-reviewer audit use the audit workflow.",
-  phases: [{ title: "Review" }, { title: "Challenge" }, { title: "Fix" }, { title: "Cleanup" }],
+  phases: [
+    { title: "Review" },
+    { title: "Challenge" },
+    { title: "Fix" },
+    { title: "Cleanup" },
+  ],
 };
 
 // Flatten of the /polish skill. The triage table lives in the script because
@@ -27,7 +32,8 @@ const opts = (() => {
 })();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
-const mode = opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
+const mode =
+  opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
 
 const anchor = (p) =>
   repo
@@ -42,8 +48,14 @@ const CODEX_SCHEMA = {
   additionalProperties: false,
   required: ["available", "has_changes", "findings"],
   properties: {
-    available: { type: "boolean", description: "whether the codex CLI was usable" },
-    has_changes: { type: "boolean", description: "whether the diff has changes to polish" },
+    available: {
+      type: "boolean",
+      description: "whether the codex CLI was usable",
+    },
+    has_changes: {
+      type: "boolean",
+      description: "whether the diff has changes to polish",
+    },
     findings: {
       type: "array",
       items: {
@@ -140,10 +152,19 @@ if (mode !== "cleanup") {
         `In codex 0.141.0 the scope flags (--uncommitted / --base / --commit) are mutually exclusive with the PROMPT argument, so pass no scope flag when sending the simplicity-lens PROMPT (Codex reads git status itself). Omitting the PROMPT drops the simplicity lens, so always pass it.\n` +
         `Structure the output into findings. Assign ids F1, F2, ..., and copy Codex's P1/P2/P3 as severity (judge from impact when absent). ${scopeNote}`,
     ),
-    { label: "codex", phase: "Review", agentType: "general-purpose", schema: CODEX_SCHEMA },
+    {
+      label: "codex",
+      phase: "Review",
+      agentType: "general-purpose",
+      schema: CODEX_SCHEMA,
+    },
   )) || { available: false, has_changes: true, findings: [] };
   if (!codex.has_changes) {
-    return { mode, polished: false, why: "no changes in the diff, nothing to polish" };
+    return {
+      mode,
+      polished: false,
+      why: "no changes in the diff, nothing to polish",
+    };
   }
   log(
     codex.available
@@ -171,7 +192,11 @@ if (mode !== "cleanup") {
     // (same as the skill's Error Handling).
     verdicts = challenged
       ? challenged.verdicts
-      : codex.findings.map((f) => ({ id: f.id, verdict: "confirmed", severity: f.severity }));
+      : codex.findings.map((f) => ({
+          id: f.id,
+          verdict: "confirmed",
+          severity: f.severity,
+        }));
 
     // The script triages deterministically: confirmed / downgraded become fix
     // candidates, disputed is dropped, needs_context surfaces to the caller.
@@ -185,8 +210,10 @@ if (mode !== "cleanup") {
         continue;
       }
       if (v.verdict === "disputed") continue;
-      const severity = v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
-      if (severity === "P1" || severity === "P2") survivors.push({ ...f, severity });
+      const severity =
+        v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
+      if (severity === "P1" || severity === "P2")
+        survivors.push({ ...f, severity });
     }
     log(
       `triage: ${survivors.length} survived / ${needsContext.length} needs_context / ${codex.findings.length - survivors.length - needsContext.length} dropped`,
@@ -194,7 +221,12 @@ if (mode !== "cleanup") {
   }
 
   if (mode === "review") {
-    return { mode, codex_available: codex.available, survivors, needs_context: needsContext };
+    return {
+      mode,
+      codex_available: codex.available,
+      survivors,
+      needs_context: needsContext,
+    };
   }
 
   // ---- Fix: repair the surviving findings ----
@@ -206,7 +238,12 @@ if (mode !== "cleanup") {
           `After fixing, detect and run the project's test command; roll back any fix that breaks tests via git stash. Do not commit.\n` +
           `Findings:\n${JSON.stringify(survivors)}`,
       ),
-      { label: "fix", phase: "Fix", agentType: "general-purpose", schema: FIX_SCHEMA },
+      {
+        label: "fix",
+        phase: "Fix",
+        agentType: "general-purpose",
+        schema: FIX_SCHEMA,
+      },
     );
   }
 }
@@ -231,8 +268,18 @@ const cleanup = (await agent(
   anchor(
     `Detect and run the project's test command. On failure, roll back the cleanup edits (the changes just made by simplify / enhancer-code) via git stash and report stashed: true. List the applied edit summaries with file:line in edits. Do not commit.`,
   ),
-  { label: "validate", phase: "Cleanup", agentType: "general-purpose", schema: CLEANUP_SCHEMA },
-)) || { edits: [], tests_pass: false, stashed: false, notes: "validate agent returned nothing" };
+  {
+    label: "validate",
+    phase: "Cleanup",
+    agentType: "general-purpose",
+    schema: CLEANUP_SCHEMA,
+  },
+)) || {
+  edits: [],
+  tests_pass: false,
+  stashed: false,
+  notes: "validate agent returned nothing",
+};
 
 return {
   mode,

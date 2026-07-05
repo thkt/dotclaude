@@ -49,12 +49,14 @@ const RED_SCHEMA = {
   properties: {
     red_confirmed: {
       type: "boolean",
-      description: "true when you ran the tests you wrote and confirmed they fail as expected",
+      description:
+        "true when you ran the tests you wrote and confirmed they fail as expected",
     },
     test_files: { type: "array", items: { type: "string" } },
     notes: {
       type: "string",
-      description: "when red_confirmed is false, the reason (e.g. the behavior already exists)",
+      description:
+        "when red_confirmed is false, the reason (e.g. the behavior already exists)",
     },
   },
 };
@@ -64,7 +66,10 @@ const GREEN_SCHEMA = {
   additionalProperties: false,
   required: ["green", "notes"],
   properties: {
-    green: { type: "boolean", description: "true when all of the unit's tests pass" },
+    green: {
+      type: "boolean",
+      description: "true when all of the unit's tests pass",
+    },
     notes: { type: "string" },
   },
 };
@@ -75,8 +80,14 @@ const VERIFY_SCHEMA = {
   required: ["tests_pass", "gates_pass", "output_tail"],
   properties: {
     tests_pass: { type: "boolean" },
-    gates_pass: { type: "boolean", description: "true when lint / type-check pass" },
-    output_tail: { type: "string", description: "on failure, the tail of the failing output" },
+    gates_pass: {
+      type: "boolean",
+      description: "true when lint / type-check pass",
+    },
+    output_tail: {
+      type: "string",
+      description: "on failure, the tail of the failing output",
+    },
   },
 };
 
@@ -98,7 +109,10 @@ while (progressed && units.length < plan.units.length) {
 }
 if (units.length < plan.units.length) {
   const stuck = plan.units.filter((u) => !placed.has(u.id)).map((u) => u.id);
-  return { stopped: "invalid-plan", why: `unresolvable depends_on for units: ${stuck.join(", ")}` };
+  return {
+    stopped: "invalid-plan",
+    why: `unresolvable depends_on for units: ${stuck.join(", ")}`,
+  };
 }
 
 const testCmd = plan.test_command || "";
@@ -112,7 +126,9 @@ for (const unit of units) {
     `Unit ${unit.id}: ${unit.goal}\nTarget files: ${JSON.stringify(unit.files)}\n` +
     `Contract: ${unit.contract}\nTest scenarios: ${JSON.stringify(unit.tests)}\n` +
     `Test command: ${testCmd}\n` +
-    (completed.length ? `Units already implemented: ${completed.join(", ")}\n` : "");
+    (completed.length
+      ? `Units already implemented: ${completed.join(", ")}\n`
+      : "");
 
   // Red: write tests and confirm failure by running them. Write no implementation.
   let red = await agent(
@@ -149,10 +165,13 @@ for (const unit of units) {
       },
     );
   }
-  if (!red) return { stopped: "red-failed", unit: unit.id, completed, anomalies };
+  if (!red)
+    return { stopped: "red-failed", unit: unit.id, completed, anomalies };
   if (!red.red_confirmed) {
     anomalies.push({ unit: unit.id, kind: "no-red", notes: red.notes });
-    log(`${unit.id}: Red unconfirmed (${red.notes}). Skipping the implement step.`);
+    log(
+      `${unit.id}: Red unconfirmed (${red.notes}). Skipping the implement step.`,
+    );
     completed.push(unit.id);
     continue;
   }
@@ -207,7 +226,12 @@ const verify = (await agent(
   anchor(
     `Verification stage. You were not involved in the implementation. Run the full test suite (${testCmd}) and the project's lint / type-check gates, and report the results as they are. Do not fix anything.`,
   ),
-  { label: "verify", phase: "Verify", agentType: "general-purpose", schema: VERIFY_SCHEMA },
+  {
+    label: "verify",
+    phase: "Verify",
+    agentType: "general-purpose",
+    schema: VERIFY_SCHEMA,
+  },
 )) || {
   tests_pass: false,
   gates_pass: false,

@@ -80,6 +80,7 @@ mcp-needs-auth-cache.json
 # Python
 __pycache__/
 *.pyc
+.ruff_cache/
 
 # Cache
 cache/

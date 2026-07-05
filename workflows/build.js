@@ -29,7 +29,9 @@ export const meta = {
 phase("Load");
 
 const input = typeof args === "object" && args ? args : {};
-const issueRef = String(typeof args === "string" ? args : input.issue || "").trim();
+const issueRef = String(
+  typeof args === "string" ? args : input.issue || "",
+).trim();
 // Deterministically pull the issue number from the tail of "123" / "#123" / an issue URL.
 const issueNumber = (issueRef.match(/(\d+)\D*$/) || [])[1] || "";
 if (!issueRef || !issueNumber) {
@@ -85,7 +87,8 @@ const EXTRACT_SCHEMA = {
   properties: {
     dir: {
       type: "string",
-      description: "Planning dir, e.g. .claude/workspace/planning/YYYY-MM-DD-slug",
+      description:
+        "Planning dir, e.g. .claude/workspace/planning/YYYY-MM-DD-slug",
     },
     outcome: {
       type: "string",
@@ -96,7 +99,8 @@ const EXTRACT_SCHEMA = {
     assumptions: {
       type: "array",
       items: { type: "string" },
-      description: "Best-guess residuals recorded in the issue. The user's veto targets on the PR",
+      description:
+        "Best-guess residuals recorded in the issue. The user's veto targets on the PR",
     },
     non_goals: { type: "array", items: { type: "string" } },
     constraints: { type: "array", items: { type: "string" } },
@@ -113,7 +117,8 @@ const EXTRACT_SCHEMA = {
           },
           goal: {
             type: "string",
-            description: "One-line description of the behavior this unit delivers",
+            description:
+              "One-line description of the behavior this unit delivers",
           },
           files: {
             type: "array",
@@ -122,7 +127,8 @@ const EXTRACT_SCHEMA = {
           },
           contract: {
             type: "string",
-            description: "Public interface: a sketch of signatures / CLI flags / schemas",
+            description:
+              "Public interface: a sketch of signatures / CLI flags / schemas",
           },
           tests: {
             type: "array",
@@ -131,10 +137,14 @@ const EXTRACT_SCHEMA = {
               additionalProperties: false,
               required: ["id", "name", "given", "when", "then"],
               properties: {
-                id: { type: "string", description: "T-001 format (unique across the plan)" },
+                id: {
+                  type: "string",
+                  description: "T-001 format (unique across the plan)",
+                },
                 name: {
                   type: "string",
-                  description: "Statement of the spec being verified. Becomes the test name",
+                  description:
+                    "Statement of the spec being verified. Becomes the test name",
                 },
                 given: { type: "string" },
                 when: { type: "string" },
@@ -152,7 +162,10 @@ const EXTRACT_SCHEMA = {
         },
       },
     },
-    test_command: { type: "string", description: "Test command, e.g. cargo test / bun test" },
+    test_command: {
+      type: "string",
+      description: "Test command, e.g. cargo test / bun test",
+    },
     preconditions: {
       type: "array",
       items: {
@@ -160,14 +173,18 @@ const EXTRACT_SCHEMA = {
         additionalProperties: false,
         required: ["path"],
         properties: {
-          path: { type: "string", description: "Existing file the plan presupposes" },
+          path: {
+            type: "string",
+            description: "Existing file the plan presupposes",
+          },
           pattern: {
             type: "string",
             description: "Symbol / string expected to exist in that file",
           },
         },
       },
-      description: "Existing code the issue's plan presupposes. Empty array if none",
+      description:
+        "Existing code the issue's plan presupposes. Empty array if none",
     },
     backlog_candidates: {
       type: "array",
@@ -179,7 +196,8 @@ const EXTRACT_SCHEMA = {
           summary: { type: "string" },
         },
       },
-      description: "Out-of-scope candidates written in the issue. Empty array if none",
+      description:
+        "Out-of-scope candidates written in the issue. Empty array if none",
     },
   },
 };
@@ -237,8 +255,10 @@ const validate = (plan) => {
   const units = (Array.isArray(plan.units) ? plan.units : []).map((u, i) =>
     u && typeof u === "object" && !Array.isArray(u) ? u : { id: `units[${i}]` },
   );
-  if (!units.length) errors.push("units is empty. Define at least one implementation unit");
-  if (!String(plan.test_command || "").trim()) errors.push("test_command is empty");
+  if (!units.length)
+    errors.push("units is empty. Define at least one implementation unit");
+  if (!String(plan.test_command || "").trim())
+    errors.push("test_command is empty");
 
   const ids = new Set(units.map((u) => u.id));
   if (ids.size !== units.length) errors.push("duplicate unit ids");
@@ -246,23 +266,28 @@ const validate = (plan) => {
   const testIds = new Set();
   for (const [i, u] of units.entries()) {
     const tests = (Array.isArray(u.tests) ? u.tests : []).map((t, j) =>
-      t && typeof t === "object" && !Array.isArray(t) ? t : { id: `units[${i}].tests[${j}]` },
+      t && typeof t === "object" && !Array.isArray(t)
+        ? t
+        : { id: `units[${i}].tests[${j}]` },
     );
     const files = Array.isArray(u.files) ? u.files : [];
     const dependsOn = Array.isArray(u.depends_on) ? u.depends_on : [];
     if (!tests.length) errors.push(`${u.id} has no test scenario`);
     if (!files.length) errors.push(`${u.id} has no target files`);
     if (!String(u.goal || "").trim()) errors.push(`${u.id} has an empty goal`);
-    if (!String(u.contract || "").trim()) errors.push(`${u.id} has an empty contract`);
+    if (!String(u.contract || "").trim())
+      errors.push(`${u.id} has an empty contract`);
     for (const t of tests) {
       if (testIds.has(t.id)) errors.push(`duplicate test id ${t.id}`);
       testIds.add(t.id);
       for (const field of ["name", "given", "when", "then"]) {
-        if (!String(t[field] || "").trim()) errors.push(`${t.id} has an empty ${field}`);
+        if (!String(t[field] || "").trim())
+          errors.push(`${t.id} has an empty ${field}`);
       }
     }
     for (const d of dependsOn) {
-      if (!ids.has(d)) errors.push(`${u.id}'s depends_on ${d} points to a nonexistent unit`);
+      if (!ids.has(d))
+        errors.push(`${u.id}'s depends_on ${d} points to a nonexistent unit`);
     }
   }
 
@@ -276,7 +301,8 @@ const validate = (plan) => {
     }
     state.set(id, "visiting");
     const u = units.find((x) => x.id === id);
-    for (const d of u && Array.isArray(u.depends_on) ? u.depends_on : []) visit(d, [...path, id]);
+    for (const d of u && Array.isArray(u.depends_on) ? u.depends_on : [])
+      visit(d, [...path, id]);
     state.set(id, "done");
   };
   for (const u of units) visit(u.id, []);
@@ -292,7 +318,13 @@ const fetched = await agent(
       `Run exactly \`gh issue view ${issueRef} --json body --jq .body\` and return its stdout verbatim as body ` +
       `(the --jq extraction is verbatim by construction; do not edit it). If the command exits non-zero (issue not found / fetch failed), return found: false.`,
   ),
-  { label: "fetch", phase: "Load", agentType: "general-purpose", schema: FETCH_SCHEMA, model: "haiku" },
+  {
+    label: "fetch",
+    phase: "Load",
+    agentType: "general-purpose",
+    schema: FETCH_SCHEMA,
+    model: "haiku",
+  },
 );
 if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
   return {
@@ -313,7 +345,8 @@ if (!planHeading) {
 }
 const afterHeading = body.slice(planHeading.index + planHeading[0].length);
 const nextSection = afterHeading.search(/^##[^#]/m);
-const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
+const planSection =
+  nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
 const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[0]));
 const bodyUnitIds = idSet(/\bU-\d{3}\b/g);
 const bodyTestIds = idSet(/\bT-\d{3}\b/g);
@@ -324,10 +357,18 @@ const plan = await agent(
       `Preserve every unit id (U-NNN) and test id (T-NNN) from the body (omissions are rejected by a downstream deterministic cross-check). ` +
       `preconditions is the list of {path, pattern} of existing code the plan presupposes; backlog_candidates are out-of-scope candidates written in the issue. Empty arrays if absent from the body.\n\n---\n${body}`,
   ),
-  { label: "extract", phase: "Load", agentType: "general-purpose", schema: EXTRACT_SCHEMA },
+  {
+    label: "extract",
+    phase: "Load",
+    agentType: "general-purpose",
+    schema: EXTRACT_SCHEMA,
+  },
 );
 if (!plan) {
-  return { stopped: "extraction-failed", why: "The extract agent returned no plan." };
+  return {
+    stopped: "extraction-failed",
+    why: "The extract agent returned no plan.",
+  };
 }
 
 const blockers = validate(plan);
@@ -341,7 +382,9 @@ if (blockers.length) {
 
 // Reject silent drops / fabrications in extraction via exact id-set comparison.
 const planUnitIds = new Set(plan.units.map((u) => u.id));
-const planTestIds = new Set(plan.units.flatMap((u) => u.tests.map((t) => t.id)));
+const planTestIds = new Set(
+  plan.units.flatMap((u) => u.tests.map((t) => t.id)),
+);
 const setDiff = (a, b) => [...a].filter((x) => !b.has(x));
 const mismatch = {
   units_missing: setDiff(bodyUnitIds, planUnitIds),
@@ -387,7 +430,11 @@ if (preconditions.length) {
       model: "haiku",
     },
   );
-  if (!reval || !Array.isArray(reval.results) || reval.results.length !== preconditions.length) {
+  if (
+    !reval ||
+    !Array.isArray(reval.results) ||
+    reval.results.length !== preconditions.length
+  ) {
     return {
       stopped: "revalidate-failed",
       detail: reval,
@@ -420,10 +467,16 @@ const branch = await agent(
 phase("Code");
 const stripPreconditions = (p) =>
   Object.fromEntries(
-    Object.entries(p).filter(([k]) => k !== "preconditions" && k !== "backlog_candidates"),
+    Object.entries(p).filter(
+      ([k]) => k !== "preconditions" && k !== "backlog_candidates",
+    ),
   );
 const code =
-  (await workflow("code", { plan: stripPreconditions(plan), repo, model: "sonnet" })) || null;
+  (await workflow("code", {
+    plan: stripPreconditions(plan),
+    repo,
+    model: "sonnet",
+  })) || null;
 if (!code || code.stopped) {
   return { stopped: "code-failed", detail: code, planning: plan.dir };
 }
@@ -448,7 +501,9 @@ log(
   `Audit fired ${(audit.assignments || []).length} reviewer group(s); polish lens ${review && review.codex_available ? "active" : "inactive"}.`,
 );
 const criticalHigh = (a) =>
-  (a.findings || []).filter((f) => f.severity === "critical" || f.severity === "high");
+  (a.findings || []).filter(
+    (f) => f.severity === "critical" || f.severity === "high",
+  );
 const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
   severity: f.severity === "P1" ? "high" : "medium",
   summary: `${f.title}: ${f.detail}`,
@@ -462,15 +517,21 @@ let reaudited = true;
 for (let round = 1; round <= 3 && toFix.length; round++) {
   log(`Fix round ${round}: fixing ${toFix.length} finding(s).`);
   await agent(
-    anchor(`Fix these review findings and confirm tests pass:\n${JSON.stringify(toFix)}`),
+    anchor(
+      `Fix these review findings and confirm tests pass:\n${JSON.stringify(toFix)}`,
+    ),
     { agentType: "general-purpose", phase: "Audit", label: `fix:${round}` },
   );
   if (round === 3) {
     reaudited = false;
-    log("Fix round cap reached. The final round's fixes are not re-audited and surface on the PR.");
+    log(
+      "Fix round cap reached. The final round's fixes are not re-audited and surface on the PR.",
+    );
     break;
   }
-  audit = (await workflow("audit", { repo, skipPreflight: true })) || { findings: [] };
+  audit = (await workflow("audit", { repo, skipPreflight: true })) || {
+    findings: [],
+  };
   toFix = criticalHigh(audit);
 }
 const residualBlocking = reaudited ? criticalHigh(audit) : [];
@@ -498,7 +559,12 @@ const backlogCandidates = [
   })),
   ...(audit.findings || [])
     .filter((f) => f.severity === "medium" || f.severity === "low")
-    .map((f) => ({ source: "audit", summary: f.summary, file: f.file, severity: f.severity })),
+    .map((f) => ({
+      source: "audit",
+      summary: f.summary,
+      file: f.file,
+      severity: f.severity,
+    })),
   ...((review && review.needs_context) || []).map((f) => ({
     source: "polish",
     summary: `${f.title}: ${f.why || f.detail}`,
@@ -530,7 +596,8 @@ const shipPayload = {
   code_anomalies: code.anomalies || [],
   tests_pass: code.tests_pass,
   gates_pass: code.gates_pass,
-  verify_output: code.tests_pass && code.gates_pass ? "" : code.verify_output || "",
+  verify_output:
+    code.tests_pass && code.gates_pass ? "" : code.verify_output || "",
 };
 const ship = await agent(
   anchor(
@@ -542,7 +609,12 @@ const ship = await agent(
       `(4) run \`gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),
-  { label: "ship", phase: "Ship", agentType: "general-purpose", schema: SHIP_SCHEMA },
+  {
+    label: "ship",
+    phase: "Ship",
+    agentType: "general-purpose",
+    schema: SHIP_SCHEMA,
+  },
 );
 
 return {
@@ -554,7 +626,8 @@ return {
   code_verified: code.tests_pass && code.gates_pass,
   audit_findings: (audit.findings || []).length,
   residual_blocking: residualBlocking.length,
-  polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
+  polish_cleanup:
+    cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
   backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,
   pr_url: ship.pr_url,

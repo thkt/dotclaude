@@ -4,7 +4,12 @@ export const meta = {
     'Codex review + cleanup を決定論的に行う workflow。Codex の findings は critic-audit の challenge を必ず通り、triage (confirmed / disputed / downgraded / needs_context) は script が判定するため、fact 扱いの集約や challenge の skip が起きない。単体でも、build から workflow("polish") 経由の入れ子でも呼べる。',
   whenToUse:
     "diff の外部レンズ review と AI slop 除去を headless に行う。args は scope 文字列、または {scope, repo, mode}。mode: full (既定) は review -> fix -> cleanup、review は challenge 済み findings を返すだけ (fix しない)、cleanup は simplify + enhancer-code + テスト検証のみ。内部 reviewer の深い audit は audit workflow を使う。",
-  phases: [{ title: "Review" }, { title: "Challenge" }, { title: "Fix" }, { title: "Cleanup" }],
+  phases: [
+    { title: "Review" },
+    { title: "Challenge" },
+    { title: "Fix" },
+    { title: "Cleanup" },
+  ],
 };
 
 // /polish skill の flatten。triage 表を script に置くのは、agent に verdict の解釈を任せると
@@ -26,7 +31,8 @@ const opts = (() => {
 })();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
-const mode = opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
+const mode =
+  opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
 
 const anchor = (p) =>
   repo
@@ -42,7 +48,10 @@ const CODEX_SCHEMA = {
   required: ["available", "has_changes", "findings"],
   properties: {
     available: { type: "boolean", description: "codex CLI が使えたか" },
-    has_changes: { type: "boolean", description: "diff に polish 対象の変更があるか" },
+    has_changes: {
+      type: "boolean",
+      description: "diff に polish 対象の変更があるか",
+    },
     findings: {
       type: "array",
       items: {
@@ -108,9 +117,16 @@ const CLEANUP_SCHEMA = {
   additionalProperties: false,
   required: ["edits", "tests_pass", "stashed"],
   properties: {
-    edits: { type: "array", items: { type: "string" }, description: "file:line 付きの編集要約" },
+    edits: {
+      type: "array",
+      items: { type: "string" },
+      description: "file:line 付きの編集要約",
+    },
     tests_pass: { type: "boolean" },
-    stashed: { type: "boolean", description: "テスト失敗で cleanup 編集を巻き戻したか" },
+    stashed: {
+      type: "boolean",
+      description: "テスト失敗で cleanup 編集を巻き戻したか",
+    },
     notes: { type: "string" },
   },
 };
@@ -132,7 +148,12 @@ if (mode !== "cleanup") {
         `codex 0.141.0 では scope flag (--uncommitted / --base / --commit) と PROMPT 引数が排他なので、simplicity レンズの PROMPT を渡すときは scope flag を付けない (Codex 自身が git status を読む)。PROMPT を省くと simplicity レンズが落ちるため必ず渡す。\n` +
         `出力を findings に構造化する。id は F1, F2, ... と振り、severity は Codex の P1/P2/P3 を写す (無ければ影響度から判定する)。${scopeNote}`,
     ),
-    { label: "codex", phase: "Review", agentType: "general-purpose", schema: CODEX_SCHEMA },
+    {
+      label: "codex",
+      phase: "Review",
+      agentType: "general-purpose",
+      schema: CODEX_SCHEMA,
+    },
   )) || { available: false, has_changes: true, findings: [] };
   if (!codex.has_changes) {
     return { mode, polished: false, why: "diff に変更が無く polish 対象なし" };
@@ -162,7 +183,11 @@ if (mode !== "cleanup") {
     // challenge が落ちたら全 findings を confirmed 扱いで前進する (skill の Error Handling と同じ)
     verdicts = challenged
       ? challenged.verdicts
-      : codex.findings.map((f) => ({ id: f.id, verdict: "confirmed", severity: f.severity }));
+      : codex.findings.map((f) => ({
+          id: f.id,
+          verdict: "confirmed",
+          severity: f.severity,
+        }));
 
     // triage は script が決定論的に行う。confirmed / downgraded が fix 候補、disputed は落とす、
     // needs_context は呼び出し元に表面化する。fix 候補は P1/P2 のみ (P3 は cleanup 領分)。
@@ -175,8 +200,10 @@ if (mode !== "cleanup") {
         continue;
       }
       if (v.verdict === "disputed") continue;
-      const severity = v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
-      if (severity === "P1" || severity === "P2") survivors.push({ ...f, severity });
+      const severity =
+        v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
+      if (severity === "P1" || severity === "P2")
+        survivors.push({ ...f, severity });
     }
     log(
       `triage: 生存 ${survivors.length} / needs_context ${needsContext.length} / 棄却 ${codex.findings.length - survivors.length - needsContext.length}`,
@@ -184,7 +211,12 @@ if (mode !== "cleanup") {
   }
 
   if (mode === "review") {
-    return { mode, codex_available: codex.available, survivors, needs_context: needsContext };
+    return {
+      mode,
+      codex_available: codex.available,
+      survivors,
+      needs_context: needsContext,
+    };
   }
 
   // ---- Fix: 生存 findings の修正 ----
@@ -196,7 +228,12 @@ if (mode !== "cleanup") {
           `修正後にプロジェクトのテストコマンドを検出して実行し、テストを壊した fix は git stash で巻き戻す。commit しない。\n` +
           `Findings:\n${JSON.stringify(survivors)}`,
       ),
-      { label: "fix", phase: "Fix", agentType: "general-purpose", schema: FIX_SCHEMA },
+      {
+        label: "fix",
+        phase: "Fix",
+        agentType: "general-purpose",
+        schema: FIX_SCHEMA,
+      },
     );
   }
 }
@@ -220,7 +257,12 @@ const cleanup = (await agent(
   anchor(
     `プロジェクトのテストコマンドを検出して実行する。失敗したら cleanup の編集 (直前の simplify / enhancer-code による変更) を git stash で巻き戻し、stashed: true で報告する。適用された編集の要約を file:line 付きで edits に列挙する。commit しない。`,
   ),
-  { label: "validate", phase: "Cleanup", agentType: "general-purpose", schema: CLEANUP_SCHEMA },
+  {
+    label: "validate",
+    phase: "Cleanup",
+    agentType: "general-purpose",
+    schema: CLEANUP_SCHEMA,
+  },
 )) || {
   edits: [],
   tests_pass: false,

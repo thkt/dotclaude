@@ -138,7 +138,13 @@ const SMELL_SCHEMA = {
         properties: {
           smell: {
             type: "string",
-            enum: ["wall-clock", "unseeded-random", "fixed-sleep", "shared-state", "fixed-path-io"],
+            enum: [
+              "wall-clock",
+              "unseeded-random",
+              "fixed-sleep",
+              "shared-state",
+              "fixed-path-io",
+            ],
           },
           location: { type: "string", description: "file:line" },
           evidence: { type: "string" },
@@ -175,7 +181,12 @@ const INVARIANT_SCHEMA = {
 // 全 pass = stable、全 fail = broken (flaky でなく常時失敗、scope 外として報告)、
 // 混在 = flaky。
 const dimVerdict = (result) => {
-  if (!result || !result.ran || !Array.isArray(result.runs) || result.runs.length < RUNS) {
+  if (
+    !result ||
+    !result.ran ||
+    !Array.isArray(result.runs) ||
+    result.runs.length < RUNS
+  ) {
     return "unshaken";
   }
   const passes = result.runs.filter((r) => r.pass).length;
@@ -206,7 +217,11 @@ const route = (await agent(
     model: "sonnet",
     schema: ROUTE_SCHEMA,
   },
-)) || { ecosystem: "", targets: [], reason: "route agent が出力を返さなかった" };
+)) || {
+  ecosystem: "",
+  targets: [],
+  reason: "route agent が出力を返さなかった",
+};
 
 if (!route.targets.length) {
   return { stopped: "no-targets", why: route.reason || "対象テストが無い。" };
@@ -218,7 +233,10 @@ const results = await pipeline(
   route.targets,
   // stage 1: 4 次元 shake ∥ 静的 smell scan
   async (t) => {
-    const dims = DIMENSIONS.map((d) => ({ ...d, command: (t.commands || {})[d.key] || "" }));
+    const dims = DIMENSIONS.map((d) => ({
+      ...d,
+      command: (t.commands || {})[d.key] || "",
+    }));
     const [smell, ...shakes] = await parallel([
       () =>
         agent(
@@ -237,7 +255,12 @@ const results = await pipeline(
           },
         ),
       ...dims.map((d) => () => {
-        if (!d.command) return Promise.resolve({ ran: false, runs: [], notes: "unsupported" });
+        if (!d.command)
+          return Promise.resolve({
+            ran: false,
+            runs: [],
+            notes: "unsupported",
+          });
         return agent(
           anchor(
             `shake の ${d.key} 次元を担当する (露出対象: ${d.exposes})。コマンド \`${d.command}\` を ${RUNS} 回実行する。{RUN} が含まれる場合は回番号 1..${RUNS} に置換する。\n` +
@@ -261,7 +284,9 @@ const results = await pipeline(
         dimension: d.key,
         verdict,
         fails:
-          verdict === "flaky" || verdict === "broken" ? r.runs.filter((x) => !x.pass).length : 0,
+          verdict === "flaky" || verdict === "broken"
+            ? r.runs.filter((x) => !x.pass).length
+            : 0,
         note: (r && r.notes) || "",
       };
     });
@@ -282,10 +307,18 @@ const results = await pipeline(
     else verdict = "stable";
     log(
       `${t.id}: ${verdict}` +
-        (triggers.length ? ` (trigger: ${triggers.map((d) => d.dimension).join(", ")})` : ""),
+        (triggers.length
+          ? ` (trigger: ${triggers.map((d) => d.dimension).join(", ")})`
+          : ""),
     );
 
-    const fix = { applied: false, attempts: 0, reshake: "", invariant: "", blocker: "" };
+    const fix = {
+      applied: false,
+      attempts: 0,
+      reshake: "",
+      invariant: "",
+      blocker: "",
+    };
     if (verdict === "confirmed-flaky") {
       let history = "";
       for (let attempt = 1; attempt <= MAX_FIX_ATTEMPTS; attempt++) {
@@ -345,7 +378,8 @@ const results = await pipeline(
         ]);
         // invariant 違反は fix 成立と認めない (stall も fail-close で違反扱い)
         if (!inv || !inv.held) {
-          fix.invariant = (inv && inv.reason) || "invariant check stall (fail-close)";
+          fix.invariant =
+            (inv && inv.reason) || "invariant check stall (fail-close)";
           history += `試行 ${attempt}: invariant 違反。${fix.invariant}\n`;
           continue;
         }
@@ -360,7 +394,9 @@ const results = await pipeline(
           fix.reshake = `全 trigger 次元 ${RUNS}/${RUNS} stable`;
           break;
         }
-        fix.reshake = residual.map((r) => `${r.dimension}=${r.verdict}`).join(", ");
+        fix.reshake = residual
+          .map((r) => `${r.dimension}=${r.verdict}`)
+          .join(", ");
         history += `試行 ${attempt}: re-shake で残存 (${fix.reshake})\n`;
       }
       if (!fix.applied) {
@@ -372,7 +408,10 @@ const results = await pipeline(
       id: t.id,
       file: t.file,
       verdict,
-      triggers: triggers.map((d) => ({ dimension: d.dimension, fails: `${d.fails}/${RUNS}` })),
+      triggers: triggers.map((d) => ({
+        dimension: d.dimension,
+        fails: `${d.fails}/${RUNS}`,
+      })),
       broken: broken.map((d) => d.dimension),
       unshaken: unshaken.map((d) => d.dimension),
       smells,
@@ -397,5 +436,9 @@ return {
   ecosystem: route.ecosystem,
   runs_per_dimension: RUNS,
   targets: verdictsOut,
-  blockers: blockers.map((r) => ({ id: r.id, file: r.file, why: r.fix.blocker })),
+  blockers: blockers.map((r) => ({
+    id: r.id,
+    file: r.file,
+    why: r.fix.blocker,
+  })),
 };
