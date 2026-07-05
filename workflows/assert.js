@@ -81,11 +81,7 @@ const mergeIssues = (findings) => {
       .replace(/^\[|\]$/g, "");
     const sev = SEVERITY_MAP[key] === undefined ? null : SEVERITY_MAP[key];
     if (!sev) continue;
-    const sources = Array.isArray(f.source)
-      ? f.source
-      : f.source
-        ? [f.source]
-        : [];
+    const sources = Array.isArray(f.source) ? f.source : f.source ? [f.source] : [];
     const k = `${f.file || ""}:${f.line || 0}`;
     const prev = groups.get(k);
     if (!prev) {
@@ -124,8 +120,7 @@ const BOOTSTRAP_SCHEMA = {
     scope_files: { type: "array", items: { type: "string" } },
     outcome: {
       type: "string",
-      description:
-        "Digest of OUTCOME.md Behavior / Non-goals / Constraints. absent if missing",
+      description: "Digest of OUTCOME.md Behavior / Non-goals / Constraints. absent if missing",
     },
     worktree_ok: { type: "boolean" },
     worktree_path: { type: "string" },
@@ -286,9 +281,7 @@ const buildCol = envFail ? "skipped" : boot.build;
 const dynamicOk = !envFail && buildCol !== "fail";
 log(
   `Bootstrap: mode=${boot.mode} files=${boot.scope_files.length} build=${buildCol}` +
-    (dynamicOk
-      ? ""
-      : ` (dynamic verification skipped: ${boot.reason || "env fail"})`),
+    (dynamicOk ? "" : ` (dynamic verification skipped: ${boot.reason || "env fail"})`),
 );
 
 let gate = "NotReady";
@@ -351,11 +344,7 @@ try {
   // target mode may under-enumerate (known limitation; Codex review and adversarial
   // compensate with an explicit file list).
   const auditScope =
-    boot.mode === "diff"
-      ? boot.diff_kind === "branch"
-        ? `${base}...HEAD`
-        : ""
-      : scope;
+    boot.mode === "diff" ? (boot.diff_kind === "branch" ? `${base}...HEAD` : "") : scope;
   const codexScopeInstr =
     boot.mode === "target"
       ? `Target mode: run \`codex review "Review these files: ${boot.scope_files.join(", ")}"\` naming the target files in the PROMPT, without a scope flag.`
@@ -384,14 +373,11 @@ try {
           schema: CODEX_REVIEW_SCHEMA,
         },
       );
-      const findings = ((codexReview && codexReview.findings) || []).map(
-        (f) => ({
-          ...f,
-          source: "codex",
-        }),
-      );
-      if (!findings.length)
-        return { codexFindings: findings, challenged: null, verified: null };
+      const findings = ((codexReview && codexReview.findings) || []).map((f) => ({
+        ...f,
+        source: "codex",
+      }));
+      if (!findings.length) return { codexFindings: findings, challenged: null, verified: null };
       // ---- Challenge: challenger ∥ verifier over the Codex findings ----
       // Each agent's opts.phase assigns the Challenge group. A bare phase() would race the
       // global phase state against the audit thunk running concurrently, so it is not called
@@ -401,7 +387,7 @@ try {
         () =>
           agent(
             anchor(
-              `As critic-audit, challenge the external Codex review findings and prune false positives. Treat each finding as a claim to be proven, not a fact. Reference each finding by file:line. Findings:\n${codexJson}`,
+              `As critic-audit, challenge the external Codex review findings and prune false positives. Treat each finding as a claim to be proven, not a fact. Reference each finding by file:line. The findings are as follows.\n${codexJson}`,
             ),
             {
               agentType: "critic-audit",
@@ -413,7 +399,7 @@ try {
         () =>
           agent(
             anchor(
-              `As critic-evidence, verify the external Codex review findings. Base verdicts on positive evidence from tracing concrete execution paths, not intuition. Reference each finding by file:line, and attach execution-path evidence and a severity. Findings:\n${codexJson}`,
+              `As critic-evidence, verify the external Codex review findings. Base verdicts on positive evidence from tracing concrete execution paths, not intuition. Reference each finding by file:line, and attach execution-path evidence and a severity. The findings are as follows.\n${codexJson}`,
             ),
             {
               agentType: "critic-evidence",
@@ -437,9 +423,7 @@ try {
   }));
   log(
     `Evidence: codex ${codexFindings.length} findings / audit ${auditFindings.length} findings` +
-      (codexReview && codexReview.ran === false
-        ? " (codex review failed, audit only)"
-        : ""),
+      (codexReview && codexReview.ran === false ? " (codex review failed, audit only)" : ""),
   );
 
   // ---- Triage: intent matching for failed adversarial tests ----
@@ -462,8 +446,8 @@ try {
           agent(
             anchor(
               `You handle the intent triage of assert. Decide whether one failed adversarial test is "a real bug found" or "a wrong expectation on the test side".\n` +
-                `Test: ${JSON.stringify(t)}\n` +
-                `Read the target code (${t.target}) with 30 lines of context, and look for intent sources top-down: .claude/OUTCOME.md, SOW / Spec under .claude/workspace/planning/, ADRs such as docs/decisions/, git log of the target file, comments within 10 lines of the target code, the target function's docstring, README, names of existing tests of the same function.\n` +
+                `The test is as follows. ${JSON.stringify(t)}\n` +
+                `Read the target code (${t.target}) with 30 lines of context, and look for intent sources top-down. The order is .claude/OUTCOME.md, SOW / Spec under .claude/workspace/planning/, ADRs such as docs/decisions/, git log of the target file, comments within 10 lines of the target code, the target function's docstring, README, names of existing tests of the same function.\n` +
                 `If an intent source contradicts the test's expectation, exclude (quote the source in reason); otherwise promote.`,
             ),
             {
@@ -479,8 +463,7 @@ try {
     advFails.forEach((t, i) => {
       const v = verdicts[i];
       // if triage stalls, promote fail-close (prefer a false positive over a miss)
-      if (v && v.verdict === "exclude")
-        excluded.push({ ...t, reason: v.reason });
+      if (v && v.verdict === "exclude") excluded.push({ ...t, reason: v.reason });
       else
         promoted.push({
           file: (t.target || "").split(":")[0],
@@ -510,13 +493,13 @@ try {
   synth = await agent(
     anchor(
       `As enhancer-evidence, integrate the static findings, outcome evidence, and adversarial results into root causes and a final issues set.\n` +
-        `Outcome criteria (OUTCOME.md):\n${boot.outcome}\n\n` +
-        `Integrated findings from the audit workflow (critic-verified; include them in issues as-is):\n${JSON.stringify(auditFindings)}\n\n` +
-        `Challenge pass over the Codex findings (this pass decides membership; findings pruned as false positives stay pruned even if the verification pass found evidence):\n${challenged || "(challenge stalled / no findings)"}\n\n` +
-        `Verification pass over the Codex findings (only attaches execution-path evidence and severity to survivors):\n${verified || "(verify stalled / no findings)"}\n\n` +
+        `The Outcome criteria (OUTCOME.md) are as follows.\n${boot.outcome}\n\n` +
+        `The integrated findings from the audit workflow (critic-verified; include them in issues as-is) are as follows.\n${JSON.stringify(auditFindings)}\n\n` +
+        `The challenge pass over the Codex findings (this pass decides membership; findings pruned as false positives stay pruned even if the verification pass found evidence) is as follows.\n${challenged || "(challenge stalled / no findings)"}\n\n` +
+        `The verification pass over the Codex findings (only attaches execution-path evidence and severity to survivors) is as follows.\n${verified || "(verify stalled / no findings)"}\n\n` +
         `${challengeStalled ? "Both challenger and verifier stalled, so the Codex findings are unverified. Do not include them in issues; surface this in the report.\n\n" : ""}` +
-        `Promoted adversarial findings (include in issues as-is):\n${JSON.stringify(promoted)}\n\n` +
-        `Dynamic evidence: build=${buildCol}, tests=${testsCol}${testRun && testRun.notes ? ` (${testRun.notes})` : ""}\n\n` +
+        `The promoted adversarial findings (include in issues as-is) are as follows.\n${JSON.stringify(promoted)}\n\n` +
+        `The dynamic evidence is build=${buildCol}, tests=${testsCol}${testRun && testRun.notes ? ` (${testRun.notes})` : ""}.\n\n` +
         `Include Constraint violations and Non-goal incursions in issues on equal footing regardless of origin. The report contains the evidence table (Build / Tests / Issues / Adversarial), root causes, and a fix suggestion per issue. Do not decide the gate (the script computes it by rule).`,
     ),
     {
@@ -534,12 +517,7 @@ try {
   // issues means NotReady. Severity remains a fix-priority hint and never affects the
   // gate. caveat applies only when dynamic evidence is missing for env reasons, and
   // presumes zero issues.
-  if (
-    buildCol === "fail" ||
-    testsCol === "fail" ||
-    issues.length > 0 ||
-    challengeStalled
-  ) {
+  if (buildCol === "fail" || testsCol === "fail" || issues.length > 0 || challengeStalled) {
     gate = "NotReady";
   } else if (!envFail && (testsCol === "pass" || testsCol === "no-runner")) {
     gate = "Ready";
@@ -562,9 +540,7 @@ try {
   );
 }
 
-log(
-  `Gate: ${gate} (build=${buildCol}, tests=${testsCol}, issues=${issues.length})`,
-);
+log(`Gate: ${gate} (build=${buildCol}, tests=${testsCol}, issues=${issues.length})`);
 
 return {
   gate,

@@ -382,30 +382,46 @@ log(
 // チェック (test -f + literal grep) は推論不要で、workflow runtime に無い shell アクセスだけを
 // 要するので、agent は preconditions を流し込んで verifier の stdout をそのまま返すだけの
 // 起動役にする。drift 判定は下の script の filter が持つ。
+// Branch (checkout) とは相互独立 (両者とも plan にしか依存しない) なので並列に走らせる。
+// トレードオフ: Revalidate が drift で stop した場合、checkout 済み branch が残る
+// (作成のみで commit は無いので回収は容易)。stopped return に branch を含めて可視化する。
 phase("Revalidate");
 const preconditions = plan.preconditions || [];
-if (preconditions.length) {
-  const reval = await agent(
-    anchor(
-      `plan の preconditions を決定論 verifier で再検証する。exists/matches を自分で判定しない。` +
-        `手順: (1) この JSON をそのまま temp file に書き出す。(2) repository root から ` +
-        `\`python3 "$HOME/.claude/workflows/build/revalidate.py" < <tempfile>\` を実行する。` +
-        `(3) verifier の stdout "results" 配列を verbatim で返す (全 ${preconditions.length} 件、追加・削除・編集をしない)。` +
-        `verifier は {"results":[{path,pattern,exists,matches}]} を出力する。\n` +
-        `Preconditions JSON:\n${JSON.stringify(preconditions)}`,
+const [reval, branch] = await parallel([
+  () =>
+    preconditions.length
+      ? agent(
+          anchor(
+            `plan の preconditions を決定論 verifier で再検証する。exists/matches を自分で判定しない。` +
+              `手順は、(1) この JSON をそのまま temp file に書き出す。(2) repository root から ` +
+              `\`python3 "$HOME/.claude/workflows/build/revalidate.py" < <tempfile>\` を実行する。` +
+              `(3) verifier の stdout "results" 配列を verbatim で返す (全 ${preconditions.length} 件、追加・削除・編集をしない)。` +
+              `verifier は {"results":[{path,pattern,exists,matches}]} を出力する。\n` +
+              `Preconditions JSON は次のとおり。\n${JSON.stringify(preconditions)}`,
+          ),
+          {
+            label: "revalidate",
+            phase: "Revalidate",
+            agentType: "general-purpose",
+            schema: REVALIDATE_SCHEMA,
+            model: "haiku",
+          },
+        )
+      : Promise.resolve(null),
+  () =>
+    agent(
+      anchor(
+        `issue #${issueNumber} "${plan.outcome}" のための新しい git 作業 branch を checkout する。conventional な branch 名 (type + 短い slug) を選び、その名前で git checkout -b を実行する。既に default branch 以外に居るなら現在の branch を維持する。branch 名を最終テキストで報告する。${guard}`,
+      ),
+      { label: "checkout", phase: "Branch", agentType: "general-purpose", model: "haiku" },
     ),
-    {
-      label: "revalidate",
-      phase: "Revalidate",
-      agentType: "general-purpose",
-      schema: REVALIDATE_SCHEMA,
-      model: "haiku",
-    },
-  );
+]);
+if (preconditions.length) {
   if (!reval || !Array.isArray(reval.results)) {
     return {
       stopped: "revalidate-failed",
       detail: reval,
+      branch,
       why: "revalidate agent が results 配列を返さなかった。",
     };
   }
@@ -424,20 +440,17 @@ if (preconditions.length) {
     return {
       stopped: "plan-drift",
       drift,
+      branch,
       why: "issue の plan が前提とするコードが現在の codebase に無い。issue を更新してから再起動する。",
     };
   }
   log(`revalidate: preconditions ${preconditions.length} 件 全 pass。`);
 }
 
-// ---- Branch: 作業 branch を checkout ----
+// checkout agent は上で Revalidate と並列に実行済み。phase マーカーは drift gate の後で
+// 発火させ、観測可能な trace を Load → Revalidate → Branch → Code に保つ
+// (plan-drift stop は Branch に到達しない)。
 phase("Branch");
-const branch = await agent(
-  anchor(
-    `issue #${issueNumber} "${plan.outcome}" のための新しい git 作業 branch を checkout する。conventional な branch 名 (type + 短い slug) を選び、その名前で git checkout -b を実行する。既に default branch 以外に居るなら現在の branch を維持する。branch 名を最終テキストで報告する。${guard}`,
-  ),
-  { label: "checkout", phase: "Branch", agentType: "general-purpose" },
-);
 
 // ---- Code: workflow("code") に委譲 (unit ごとの Red -> Green + 独立 verify) ----
 // preconditions / backlog_candidates は build 側で消費済みなので、code へは
@@ -491,7 +504,7 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
   log(`fix round ${round}: ${toFix.length} 件を修正。`);
   await agent(
     anchor(
-      `これらの review findings を修正し、テストが通ることを確認する:\n${JSON.stringify(toFix)}`,
+      `これらの review findings を修正し、テストが通ることを確認する。findings は次のとおり。\n${JSON.stringify(toFix)}`,
     ),
     { agentType: "general-purpose", phase: "Audit", label: `fix:${round}` },
   );
@@ -572,10 +585,10 @@ const shipPayload = {
 const ship = await agent(
   anchor(
     `全変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にする。commit メッセージは自分で書く (diff を要約する)。` +
-      `branch を push し、draft pull request を開く。body は自分で書く人間向け Summary と、データから決定論生成した事実セクションの 2 部構成にする (事実セクションは手書きしない):\n` +
-      `(1) 人間レビュアー向けの簡潔な "## Summary" を body file に書く — 散文の段落でなく markdown の箇条書きで: この PR が何を実装したか (outcome: ${JSON.stringify(plan.outcome)})、アプローチを 1 行、レビューで注視すべき箇所。最大 5 項目程度、冗長表現も事実の捏造もしない。\n` +
-      `(2) この JSON をそのまま temp file に書き出す:\n${JSON.stringify(shipPayload)}\n` +
-      `(3) 事実 tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、renderer 失敗時は PR を作る前に中断する — repository root から ` +
+      `branch を push し、draft pull request を開く。body は自分で書く人間向け Summary と、データから決定論生成した事実セクションの 2 部構成にする (事実セクションは手書きしない)。手順は次のとおり。\n` +
+      `(1) 人間レビュアー向けの簡潔な "## Summary" を body file に書く。散文の段落でなく markdown の箇条書きで、この PR が何を実装したか (outcome は ${JSON.stringify(plan.outcome)})、アプローチを 1 行、レビューで注視すべき箇所を書く。最大 5 項目程度、冗長表現も事実の捏造もしない。\n` +
+      `(2) この JSON をそのまま temp file に書き出す。\n${JSON.stringify(shipPayload)}\n` +
+      `(3) 事実 tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、renderer 失敗時は PR を作る前に中断する。repository root から ` +
       `\`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile> && gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +
       `pr-body.py は payload が不正・必須フィールド欠落なら非 0 で終了し (何も出力しない)。チェーンが失敗したら他の手段で PR を作らず、committed と空の pr_url とエラーを報告する。tail の欠けた PR を出すより欠落を surface する。\n` +
       `committed 状態と PR url を報告する。${guard}`,

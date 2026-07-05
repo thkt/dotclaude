@@ -57,8 +57,8 @@ const DIMENSIONS = [
 // norms embedded in both the fix and the invariant-check prompts.
 const INVARIANT_RULES =
   `A flaky fix changes how a test runs, never what it asserts.\n` +
-  `Allowed: clock injection / fake timers, pinning the seed, per-test state isolation, mocking the I/O boundary, unique temp dir / port per test.\n` +
-  `Forbidden: loosening an assertion or widening a tolerance, skipping / .only-ing / removing the test, replacing a real assertion with an always-pass stub, adding a blanket retry, tampering with the shake command or count. ` +
+  `What is allowed is clock injection / fake timers, pinning the seed, per-test state isolation, mocking the I/O boundary, unique temp dir / port per test.\n` +
+  `What is forbidden is loosening an assertion or widening a tolerance, skipping / .only-ing / removing the test, replacing a real assertion with an always-pass stub, adding a blanket retry, tampering with the shake command or count. ` +
   `The forbidden routes convert a flake into a silent gap, which is worse than the flake itself.`;
 
 // skill § Fix direction. Trigger to root-cause fix mapping.
@@ -140,13 +140,7 @@ const SMELL_SCHEMA = {
         properties: {
           smell: {
             type: "string",
-            enum: [
-              "wall-clock",
-              "unseeded-random",
-              "fixed-sleep",
-              "shared-state",
-              "fixed-path-io",
-            ],
+            enum: ["wall-clock", "unseeded-random", "fixed-sleep", "shared-state", "fixed-path-io"],
           },
           location: { type: "string", description: "file:line" },
           evidence: { type: "string" },
@@ -183,12 +177,7 @@ const INVARIANT_SCHEMA = {
 // (same rank as a stall). All pass = stable; all fail = broken (constant failure, not
 // flaky; reported as out of scope); mixed = flaky.
 const dimVerdict = (result) => {
-  if (
-    !result ||
-    !result.ran ||
-    !Array.isArray(result.runs) ||
-    result.runs.length < RUNS
-  ) {
+  if (!result || !result.ran || !Array.isArray(result.runs) || result.runs.length < RUNS) {
     return "unshaken";
   }
   const passes = result.runs.filter((r) => r.pass).length;
@@ -208,7 +197,7 @@ const route = (await agent(
       `1. ${scopeInstr}\n` +
       `2. Identify the test ecosystem (cargo test / nextest / jest / vitest etc.) from the project manifest.\n` +
       `3. Build the 4 dimension commands per target. Each command runs only that target once; the shake runner loops it ${RUNS} times. Including the string {RUN} substitutes the run number (1..${RUNS}) at execution time.\n` +
-      `   repeat: plain repeated normal run / order: randomize test order with a different seed each run (use {RUN} as the seed) / parallelism: alternate serial and max-worker (a one-liner branching on {RUN} parity) / seed: a different explicit seed each run if the suite accepts one, else an empty string.\n` +
+      `   repeat is a plain repeated normal run / order randomizes test order with a different seed each run (use {RUN} as the seed) / parallelism alternates serial and max-worker (a one-liner branching on {RUN} parity) / seed is a different explicit seed each run if the suite accepts one, else an empty string.\n` +
       `   For jest, for example, order is --shuffle with a seed, parallelism toggles --runInBand vs max workers. If a dimension cannot be constructed for the ecosystem, use an empty string.\n` +
       `Do not run or fix tests. This stage's job is deciding the commands only.`,
   ),
@@ -240,8 +229,8 @@ const results = await pipeline(
         agent(
           anchor(
             `You handle the static smell scan of shake. Scan the target test ${t.file} and its setup / fixtures / helpers with ugrep, and report signs of latent flakiness even where the test currently passes.\n` +
-              `Smells and grep patterns: wall-clock (Date.now, new Date(, Instant::now, SystemTime::, time.Now) / unseeded-random (Math.random, thread_rng, rand::random, faker) / fixed-sleep (setTimeout, thread::sleep, tokio::time::sleep, sleep() / shared-state (static mut, mutable module-level globals, singletons, missing per-test reset) / fixed-path-io (fixed /tmp paths, fixed ports, real network, env reads).\n` +
-              `Per hit, write file:line, the evidence, and the root-cause fix direction. Fix direction mapping:\n${FIX_DIRECTIONS}\n` +
+              `The smells and grep patterns are as follows. wall-clock (Date.now, new Date(, Instant::now, SystemTime::, time.Now) / unseeded-random (Math.random, thread_rng, rand::random, faker) / fixed-sleep (setTimeout, thread::sleep, tokio::time::sleep, sleep() / shared-state (static mut, mutable module-level globals, singletons, missing per-test reset) / fixed-path-io (fixed /tmp paths, fixed ports, real network, env reads).\n` +
+              `Per hit, write file:line, the evidence, and the root-cause fix direction. The fix-direction mapping is as follows.\n${FIX_DIRECTIONS}\n` +
               `Do not do a general review of the test logic itself.`,
           ),
           {
@@ -261,7 +250,7 @@ const results = await pipeline(
           });
         return agent(
           anchor(
-            `You handle the ${d.key} dimension of shake (exposes: ${d.exposes}). Run the command \`${d.command}\` ${RUNS} times. If it contains {RUN}, substitute the run number 1..${RUNS}.\n` +
+            `You handle the ${d.key} dimension of shake (it exposes ${d.exposes}). Run the command \`${d.command}\` ${RUNS} times. If it contains {RUN}, substitute the run number 1..${RUNS}.\n` +
               `Record each run's pass/fail as one element in runs (${RUNS} elements required; omitting runs or substituting an aggregate is not allowed). For failed runs, copy the gist of the error into note.\n` +
               `Do not change the test code or the command. Do not reduce the count. Even if you become convinced it is flaky midway, run all ${RUNS} times.`,
           ),
@@ -282,9 +271,7 @@ const results = await pipeline(
         dimension: d.key,
         verdict,
         fails:
-          verdict === "flaky" || verdict === "broken"
-            ? r.runs.filter((x) => !x.pass).length
-            : 0,
+          verdict === "flaky" || verdict === "broken" ? r.runs.filter((x) => !x.pass).length : 0,
         note: (r && r.notes) || "",
       };
     });
@@ -305,9 +292,7 @@ const results = await pipeline(
     else verdict = "stable";
     log(
       `${t.id}: ${verdict}` +
-        (triggers.length
-          ? ` (trigger: ${triggers.map((d) => d.dimension).join(", ")})`
-          : ""),
+        (triggers.length ? ` (trigger: ${triggers.map((d) => d.dimension).join(", ")})` : ""),
     );
 
     const fix = {
@@ -324,11 +309,11 @@ const results = await pipeline(
         const fixed = await agent(
           anchor(
             `You handle the fix stage of shake. Fix the root cause of the confirmed-flaky test ${t.file} (attempt ${attempt}/${MAX_FIX_ATTEMPTS}).\n` +
-              `Trigger dimensions: ${triggers.map((d) => `${d.dimension} (${d.fails}/${RUNS} fail)`).join(", ")}\n` +
-              `Static smells (root-cause candidates):\n${JSON.stringify(smells)}\n` +
-              `Fix direction mapping:\n${FIX_DIRECTIONS}\n\n${INVARIANT_RULES}\n` +
+              `The trigger dimensions are ${triggers.map((d) => `${d.dimension} (${d.fails}/${RUNS} fail)`).join(", ")}.\n` +
+              `The static smells (root-cause candidates) are as follows.\n${JSON.stringify(smells)}\n` +
+              `The fix-direction mapping is as follows.\n${FIX_DIRECTIONS}\n\n${INVARIANT_RULES}\n` +
               (history
-                ? `\nPrior attempts and failure reasons (if a prior attempt violated the invariant, roll it back first, then fix properly):\n${history}`
+                ? `\nThe prior attempts and failure reasons are as follows (if a prior attempt violated the invariant, roll it back first, then fix properly).\n${history}`
                 : ""),
           ),
           {
@@ -340,7 +325,7 @@ const results = await pipeline(
           },
         );
         if (!fixed || !fixed.applied) {
-          history += `attempt ${attempt}: no fix applied (${(fixed && fixed.summary) || "agent stall"})\n`;
+          history += `attempt ${attempt} applied no fix (${(fixed && fixed.summary) || "agent stall"})\n`;
           continue;
         }
         // independent invariant check ∥ re-shake of the trigger dimensions
@@ -376,9 +361,8 @@ const results = await pipeline(
         ]);
         // an invariant violation does not count as a fix (a stall is treated as a violation, fail-close)
         if (!inv || !inv.held) {
-          fix.invariant =
-            (inv && inv.reason) || "invariant check stall (fail-close)";
-          history += `attempt ${attempt}: invariant violation. ${fix.invariant}\n`;
+          fix.invariant = (inv && inv.reason) || "invariant check stall (fail-close)";
+          history += `attempt ${attempt} violated the invariant. ${fix.invariant}\n`;
           continue;
         }
         const reshakeVerdicts = triggers.map((trg, i) => ({
@@ -392,10 +376,8 @@ const results = await pipeline(
           fix.reshake = `all trigger dimensions ${RUNS}/${RUNS} stable`;
           break;
         }
-        fix.reshake = residual
-          .map((r) => `${r.dimension}=${r.verdict}`)
-          .join(", ");
-        history += `attempt ${attempt}: residual flake on re-shake (${fix.reshake})\n`;
+        fix.reshake = residual.map((r) => `${r.dimension}=${r.verdict}`).join(", ");
+        history += `attempt ${attempt} left residual flake on re-shake (${fix.reshake})\n`;
       }
       if (!fix.applied) {
         // skill § Stop point: a flake that survives 3 fix attempts is reported as a blocker, not weakened away

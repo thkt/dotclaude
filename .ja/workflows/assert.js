@@ -78,11 +78,7 @@ const mergeIssues = (findings) => {
       .replace(/^\[|\]$/g, "");
     const sev = SEVERITY_MAP[key] === undefined ? null : SEVERITY_MAP[key];
     if (!sev) continue;
-    const sources = Array.isArray(f.source)
-      ? f.source
-      : f.source
-        ? [f.source]
-        : [];
+    const sources = Array.isArray(f.source) ? f.source : f.source ? [f.source] : [];
     const k = `${f.file || ""}:${f.line || 0}`;
     const prev = groups.get(k);
     if (!prev) {
@@ -121,8 +117,7 @@ const BOOTSTRAP_SCHEMA = {
     scope_files: { type: "array", items: { type: "string" } },
     outcome: {
       type: "string",
-      description:
-        "OUTCOME.md の Behavior / Non-goals / Constraints 要約。不在なら absent",
+      description: "OUTCOME.md の Behavior / Non-goals / Constraints 要約。不在なら absent",
     },
     worktree_ok: { type: "boolean" },
     worktree_path: { type: "string" },
@@ -342,11 +337,7 @@ try {
   // target mode は path を素通しする。audit の Route は git diff ベースなので target mode では
   // 列挙が痩せる可能性がある (既知の制約。Codex review と adversarial は明示 file list で補う)。
   const auditScope =
-    boot.mode === "diff"
-      ? boot.diff_kind === "branch"
-        ? `${base}...HEAD`
-        : ""
-      : scope;
+    boot.mode === "diff" ? (boot.diff_kind === "branch" ? `${base}...HEAD` : "") : scope;
   const codexScopeInstr =
     boot.mode === "target"
       ? `target mode なので scope flag を付けず、対象ファイル一覧を PROMPT で指名して \`codex review "Review these files: ${boot.scope_files.join(", ")}"\` を実行する。`
@@ -373,14 +364,11 @@ try {
           schema: CODEX_REVIEW_SCHEMA,
         },
       );
-      const findings = ((codexReview && codexReview.findings) || []).map(
-        (f) => ({
-          ...f,
-          source: "codex",
-        }),
-      );
-      if (!findings.length)
-        return { codexFindings: findings, challenged: null, verified: null };
+      const findings = ((codexReview && codexReview.findings) || []).map((f) => ({
+        ...f,
+        source: "codex",
+      }));
+      if (!findings.length) return { codexFindings: findings, challenged: null, verified: null };
       // ---- Challenge: Codex findings への challenger ∥ verifier ----
       // 各 agent の opts.phase が Challenge group を指定する。bare phase() は audit thunk と
       // 並走して global phase state を race させるため呼ばない (audit.js の workaround と同旨)。
@@ -389,7 +377,7 @@ try {
         () =>
           agent(
             anchor(
-              `critic-audit として、外部 Codex review の finding を challenge し false positive を刈る。finding は事実ではなく、立証されるべき主張として扱う。各 finding は file:line で参照する。Findings:\n${codexJson}`,
+              `critic-audit として、外部 Codex review の finding を challenge し false positive を刈る。finding は事実ではなく、立証されるべき主張として扱う。各 finding は file:line で参照する。Findings は次のとおり。\n${codexJson}`,
             ),
             {
               agentType: "critic-audit",
@@ -401,7 +389,7 @@ try {
         () =>
           agent(
             anchor(
-              `critic-evidence として、外部 Codex review の finding を検証する。直感ではなく、具体的な実行経路を辿った positive evidence に基づく。各 finding を file:line で参照し、実行経路の evidence と severity を与える。Findings:\n${codexJson}`,
+              `critic-evidence として、外部 Codex review の finding を検証する。直感ではなく、具体的な実行経路を辿った positive evidence に基づく。各 finding を file:line で参照し、実行経路の evidence と severity を与える。Findings は次のとおり。\n${codexJson}`,
             ),
             {
               agentType: "critic-evidence",
@@ -425,9 +413,7 @@ try {
   }));
   log(
     `Evidence: codex ${codexFindings.length} 件 / audit ${auditFindings.length} 件` +
-      (codexReview && codexReview.ran === false
-        ? " (codex review 失敗、audit のみ)"
-        : ""),
+      (codexReview && codexReview.ran === false ? " (codex review 失敗、audit のみ)" : ""),
   );
 
   // ---- Triage: 失敗 adversarial テストの intent 照合 ----
@@ -449,8 +435,8 @@ try {
           agent(
             anchor(
               `assert の intent triage を担当する。失敗した adversarial テスト 1 件が「実バグの発見」か「テスト側の誤った期待」かを判定する。\n` +
-                `テスト: ${JSON.stringify(t)}\n` +
-                `対象コード (${t.target}) を前後 30 行読み、intent source を上から順に探す: .claude/OUTCOME.md、.claude/workspace/planning/ の SOW / Spec、docs/decisions/ 等の ADR、対象ファイルの git log、対象コード近傍 10 行のコメント、対象関数の docstring、README、同関数の既存テスト名。\n` +
+                `テストは次のとおり。${JSON.stringify(t)}\n` +
+                `対象コード (${t.target}) を前後 30 行読み、intent source を上から順に探す。順序は .claude/OUTCOME.md、.claude/workspace/planning/ の SOW / Spec、docs/decisions/ 等の ADR、対象ファイルの git log、対象コード近傍 10 行のコメント、対象関数の docstring、README、同関数の既存テスト名。\n` +
                 `intent source がテストの期待と矛盾すれば exclude (reason に source を引用)、それ以外は promote。`,
             ),
             {
@@ -466,8 +452,7 @@ try {
     advFails.forEach((t, i) => {
       const v = verdicts[i];
       // triage が stall したら fail-close で promote する (見逃しより誤検知を取る)
-      if (v && v.verdict === "exclude")
-        excluded.push({ ...t, reason: v.reason });
+      if (v && v.verdict === "exclude") excluded.push({ ...t, reason: v.reason });
       else
         promoted.push({
           file: (t.target || "").split(":")[0],
@@ -497,13 +482,13 @@ try {
   synth = await agent(
     anchor(
       `enhancer-evidence として、静的 findings、outcome evidence、adversarial 結果を root cause と最終 issues 集合に統合する。\n` +
-        `Outcome 基準 (OUTCOME.md):\n${boot.outcome}\n\n` +
-        `audit workflow の統合済み findings (critic 検証済み。そのまま issues に含める):\n${JSON.stringify(auditFindings)}\n\n` +
-        `Codex findings への challenge pass (membership はこの pass が決める。false positive として刈られた finding は verification pass が evidence を見つけていても復活させない):\n${challenged || "(challenge stall / findings なし)"}\n\n` +
-        `Codex findings への verification pass (survivor への実行経路 evidence と severity 付与のみ):\n${verified || "(verify stall / findings なし)"}\n\n` +
+        `Outcome 基準 (OUTCOME.md) は次のとおり。\n${boot.outcome}\n\n` +
+        `audit workflow の統合済み findings (critic 検証済み。そのまま issues に含める) は次のとおり。\n${JSON.stringify(auditFindings)}\n\n` +
+        `Codex findings への challenge pass (membership はこの pass が決める。false positive として刈られた finding は verification pass が evidence を見つけていても復活させない) は次のとおり。\n${challenged || "(challenge stall / findings なし)"}\n\n` +
+        `Codex findings への verification pass (survivor への実行経路 evidence と severity 付与のみ) は次のとおり。\n${verified || "(verify stall / findings なし)"}\n\n` +
         `${challengeStalled ? "challenger / verifier が双方 stall したため、Codex findings は未検証。issues に含めず report で表面化する。\n\n" : ""}` +
-        `Promoted adversarial findings (そのまま issues に含める):\n${JSON.stringify(promoted)}\n\n` +
-        `動的 evidence: build=${buildCol}, tests=${testsCol}${testRun && testRun.notes ? ` (${testRun.notes})` : ""}\n\n` +
+        `Promoted adversarial findings (そのまま issues に含める) は次のとおり。\n${JSON.stringify(promoted)}\n\n` +
+        `動的 evidence は build=${buildCol}, tests=${testsCol}${testRun && testRun.notes ? ` (${testRun.notes})` : ""}。\n\n` +
         `Constraint 違反や Non-goal 侵犯は出所を問わず issues に同格で含める。report には evidence table (Build / Tests / Issues / Adversarial)、root causes、issue ごとの fix 提案を書く。gate の判定はしない (script が規則で計算する)。`,
     ),
     {
@@ -520,12 +505,7 @@ try {
   // gate 規則 (skill phase-4 § Gate Rule)。build smoke fail / test fail / issues 1 件以上は
   // NotReady。severity は修正優先度のヒントに留まり、gate には影響しない。caveat は動的
   // evidence が env 起因などで欠けたときだけで、issues 0 が前提。
-  if (
-    buildCol === "fail" ||
-    testsCol === "fail" ||
-    issues.length > 0 ||
-    challengeStalled
-  ) {
+  if (buildCol === "fail" || testsCol === "fail" || issues.length > 0 || challengeStalled) {
     gate = "NotReady";
   } else if (!envFail && (testsCol === "pass" || testsCol === "no-runner")) {
     gate = "Ready";
@@ -548,9 +528,7 @@ try {
   );
 }
 
-log(
-  `Gate: ${gate} (build=${buildCol}, tests=${testsCol}, issues=${issues.length})`,
-);
+log(`Gate: ${gate} (build=${buildCol}, tests=${testsCol}, issues=${issues.length})`);
 
 return {
   gate,

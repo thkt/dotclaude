@@ -46,11 +46,7 @@ const repo = typeof opts.repo === "string" ? opts.repo : "";
 
 // focus is a list of ids ("0061" / "ADR-0061") or keywords, accepted as array or string.
 // Ids match numerically; non-numeric tokens substring-match against file name / title.
-const focus = (
-  Array.isArray(opts.focus)
-    ? opts.focus
-    : String(opts.focus || "").split(/[\s,]+/)
-)
+const focus = (Array.isArray(opts.focus) ? opts.focus : String(opts.focus || "").split(/[\s,]+/))
   .map((t) =>
     String(t)
       .trim()
@@ -82,13 +78,13 @@ const REVIEWERS = {
 // consts because guardrails sqli-concat false-positives on keyword words inside interpolated
 // template call arguments).
 const DIRECTION_RULES =
-  "code-fix: the ADR is the correct current contract and the code has drifted / " +
-  "adr-update: the code is the correct current contract and the ADR is stale / " +
-  "accept: the drift is trivial, already marked deprecated in a comment, or documented";
+  "code-fix when the ADR is the correct current contract and the code has drifted / " +
+  "adr-update when the code is the correct current contract and the ADR is stale / " +
+  "accept when the drift is trivial, already marked deprecated in a comment, or documented";
 const PRIORITY_RULES =
-  "H: affects a public API, or 2+ downstream consumers / " +
-  "M: affects an internal API, 1 downstream consumer / " +
-  "L: comment / docstring only, or an invalid reference";
+  "H when it affects a public API or 2+ downstream consumers / " +
+  "M when it affects an internal API with 1 downstream consumer / " +
+  "L when it is comment / docstring only, or an invalid reference";
 const PRIORITY_RANK = { H: 3, M: 2, L: 1 };
 
 const DETECT_SCHEMA = {
@@ -203,8 +199,7 @@ const mergeFindings = (lists) => {
   for (const f of lists.flat()) {
     const k = `${f.file}:${f.line}`;
     const prev = map.get(k);
-    if (!prev || PRIORITY_RANK[f.priority] > PRIORITY_RANK[prev.priority])
-      map.set(k, f);
+    if (!prev || PRIORITY_RANK[f.priority] > PRIORITY_RANK[prev.priority]) map.set(k, f);
   }
   return [...map.values()].sort(
     (a, b) =>
@@ -224,7 +219,7 @@ const detect = (await agent(
     `You handle the Detect stage of adrift.\n` +
       `1. ${dirInstr}\n` +
       `2. List the NNNN-*.md files in the directory and record id (NNNN), file (relative path), and title (heading) in adrs.\n` +
-      `3. Manifest verdict: rust if Cargo.toml exists. If package.json exists, tsx when *.tsx files exist, otherwise ts. Otherwise other.\n` +
+      `3. Decide the manifest verdict. rust if Cargo.toml exists. If package.json exists, tsx when *.tsx files exist, otherwise ts. Otherwise other.\n` +
       `4. Search the whole repository for ADR references with \`ugrep -rniw 'ADR-[0-9]{4}'\` and record the hits in adr_refs (file, line, id as 4-digit NNNN), excluding the ADR directory itself, fixtures, and node_modules / target / dist / build / vendor. Do not classify against local ADRs.\n` +
       `Do not analyze ADR bodies. This stage's job is detection and listing only.`,
   ),
@@ -343,11 +338,11 @@ const perAdr = await pipeline(
           agent(
             anchor(
               `As ${rv}, judge semantic drift between the Decision Outcome of ADR ${a.id} (${a.title}) and the current code. Look at the semantic gap between the decision and the implementation, not surface issues clippy or grep would catch.\n` +
-                `Decision Outcome:\n${ex.outcome_text}\n\n` +
-                `Reference candidates (ugrep hits):\n${JSON.stringify(ex.candidates)}\n\n` +
+                `The Decision Outcome is as follows.\n${ex.outcome_text}\n\n` +
+                `The reference candidates (ugrep hits) are as follows.\n${JSON.stringify(ex.candidates)}\n\n` +
                 `Pin each drift to file:line and assign direction and priority by these criteria.\n` +
-                `direction criteria: ${DIRECTION_RULES}\n` +
-                `priority criteria: ${PRIORITY_RULES}\n` +
+                `The direction criteria are ${DIRECTION_RULES}.\n` +
+                `The priority criteria are ${PRIORITY_RULES}.\n` +
                 `If there is no drift, return findings: []. Do not edit the ADR body or fix the code.`,
             ),
             {
@@ -373,9 +368,7 @@ const perAdr = await pipeline(
 );
 
 const scanned = perAdr.filter(Boolean);
-const allFindings = scanned.flatMap((r) =>
-  r.findings.map((f) => ({ ...f, adr: r.adr.id })),
-);
+const allFindings = scanned.flatMap((r) => r.findings.map((f) => ({ ...f, adr: r.adr.id })));
 const counts = { H: 0, M: 0, L: 0 };
 for (const f of allFindings) counts[f.priority] += 1;
 const unverifiable = scanned.filter((r) => !r.verifiable);
@@ -386,18 +379,18 @@ log(
 // ---- Report: report output (skill Phase 8; the structure lives in the prompt, no template) ----
 phase("Report");
 const focusNote = focus.length
-  ? `Focus scope: this run is narrowed by focus [${focus.join(", ")}] to ${scanned.length}/${detect.adrs.length} ADRs. State this in one line right after the Summary.\n\n`
+  ? `This run is narrowed by focus [${focus.join(", ")}] to ${scanned.length}/${detect.adrs.length} ADRs. State this in one line right after the Summary.\n\n`
   : "";
 const report = (await agent(
   anchor(
     `You handle the Report stage of adrift. Write a report with the following structure from the findings JSON below.\n` +
-      `Steps: after \`mkdir -p docs/audit\`, write to docs/audit/\${STAMP}-adr-drift.md with \`STAMP=$(date -u +%Y-%m-%d-%H%M%S)\`.\n` +
-      `Structure: the title is "# ADR Drift Scan: {STAMP}". Sections in order: "## Summary" (a Metric | Value table with rows ADRs scanned / Drift findings / H priority / M priority / L priority / Unverifiable ADRs), "## Per-ADR Findings", "## External ADR Dependencies" (a File:Line | External ADR ref | Recommended action table; the action is "Promote to local ADR or supersede locally"), "## Follow-up Issue Candidates" (a checklist of \`- [ ] ADR {id} drift at {file}:{line}: {summary}\`).\n` +
+      `The steps are, after \`mkdir -p docs/audit\`, write to docs/audit/\${STAMP}-adr-drift.md with \`STAMP=$(date -u +%Y-%m-%d-%H%M%S)\`.\n` +
+      `The structure is as follows. The title is "# ADR Drift Scan: {STAMP}". Sections in order: "## Summary" (a Metric | Value table with rows ADRs scanned / Drift findings / H priority / M priority / L priority / Unverifiable ADRs), "## Per-ADR Findings", "## External ADR Dependencies" (a File:Line | External ADR ref | Recommended action table; the action is "Promote to local ADR or supersede locally"), "## Follow-up Issue Candidates" (a checklist of \`- [ ] ADR {id} drift at {file}:{line}: {summary}\`).\n` +
       `In Per-ADR Findings, bundle no-drift ADRs into one "ADRs {ids}: no drift." line, and give a "### ADR {id}: {title}" subsection (Status / Result lines + a File:Line | Description | Direction | Priority table; for unverifiable, state the reason in Result and omit the table) only to drifted / unverifiable ADRs.\n` +
-      `Completeness requirements: (1) List every ADR in Per-ADR Findings without omission. (2) Record file:line / direction / priority for each drift. (3) Reflect Superseded in the Status of superseded ADRs. (4) Omit the External ADR Dependencies heading entirely when external_refs is empty, and the Follow-up Issue Candidates heading entirely when there are zero H-priority findings.\n\n` +
+      `The completeness requirements are the following 4. (1) List every ADR in Per-ADR Findings without omission. (2) Record file:line / direction / priority for each drift. (3) Reflect Superseded in the Status of superseded ADRs. (4) Omit the External ADR Dependencies heading entirely when external_refs is empty, and the Follow-up Issue Candidates heading entirely when there are zero H-priority findings.\n\n` +
       focusNote +
-      `Summary counts (use these values as-is): ADRs scanned=${scanned.length}, findings=${allFindings.length}, H=${counts.H}, M=${counts.M}, L=${counts.L}, unverifiable=${unverifiable.length}\n\n` +
-      `Per-ADR results:\n${JSON.stringify(
+      `Use these Summary counts as-is. ADRs scanned=${scanned.length}, findings=${allFindings.length}, H=${counts.H}, M=${counts.M}, L=${counts.L}, unverifiable=${unverifiable.length}\n\n` +
+      `The per-ADR results are as follows.\n${JSON.stringify(
         scanned.map((r) => ({
           id: r.adr.id,
           title: r.adr.title,
@@ -408,7 +401,7 @@ const report = (await agent(
           findings: r.findings,
         })),
       )}\n\n` +
-      `External ADR references (external_refs):\n${JSON.stringify(externalRefs)}`,
+      `The external ADR references (external_refs) are as follows.\n${JSON.stringify(externalRefs)}`,
   ),
   {
     agentType: "general-purpose",

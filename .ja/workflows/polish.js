@@ -4,12 +4,7 @@ export const meta = {
     'Codex review + cleanup を決定論的に行う workflow。Codex の findings は critic-audit の challenge を必ず通り、triage (confirmed / disputed / downgraded / needs_context) は script が判定するため、fact 扱いの集約や challenge の skip が起きない。単体でも、build から workflow("polish") 経由の入れ子でも呼べる。',
   whenToUse:
     "diff の外部レンズ review と AI slop 除去を headless に行う。args は scope 文字列、または {scope, repo, mode}。mode: full (既定) は review -> fix -> cleanup、review は challenge 済み findings を返すだけ (fix しない)、cleanup は simplify + enhancer-code + テスト検証のみ。内部 reviewer の深い audit は audit workflow を使う。",
-  phases: [
-    { title: "Review" },
-    { title: "Challenge" },
-    { title: "Fix" },
-    { title: "Cleanup" },
-  ],
+  phases: [{ title: "Review" }, { title: "Challenge" }, { title: "Fix" }, { title: "Cleanup" }],
 };
 
 // /polish skill の flatten。triage 表を script に置くのは、agent に verdict の解釈を任せると
@@ -31,8 +26,7 @@ const opts = (() => {
 })();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
-const mode =
-  opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
+const mode = opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
 
 const anchor = (p) =>
   repo
@@ -170,8 +164,8 @@ if (mode !== "cleanup") {
     const challenged = await agent(
       anchor(
         `critic-audit。外部 Codex review の findings 一式を adversarial に challenge し、finding ごとに verdict を返す。\n` +
-          `verdict の基準: confirmed = 実在し severity も妥当 / disputed = false positive / downgraded = 実在するが severity 過大 (下げた severity を severity に入れる) / needs_context = コードだけでは判定できず人間の文脈が要る。\n` +
-          `Findings:\n${JSON.stringify(codex.findings)}`,
+          `verdict の基準は次のとおり。confirmed = 実在し severity も妥当 / disputed = false positive / downgraded = 実在するが severity 過大 (下げた severity を severity に入れる) / needs_context = コードだけでは判定できず人間の文脈が要る。\n` +
+          `Findings は次のとおり。\n${JSON.stringify(codex.findings)}`,
       ),
       {
         agentType: "critic-audit",
@@ -200,10 +194,8 @@ if (mode !== "cleanup") {
         continue;
       }
       if (v.verdict === "disputed") continue;
-      const severity =
-        v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
-      if (severity === "P1" || severity === "P2")
-        survivors.push({ ...f, severity });
+      const severity = v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
+      if (severity === "P1" || severity === "P2") survivors.push({ ...f, severity });
     }
     log(
       `triage: 生存 ${survivors.length} / needs_context ${needsContext.length} / 棄却 ${codex.findings.length - survivors.length - needsContext.length}`,
@@ -226,7 +218,7 @@ if (mode !== "cleanup") {
       anchor(
         `challenge を生き残った findings を severity の高い順に修正する。${scopeNote}\n` +
           `修正後にプロジェクトのテストコマンドを検出して実行し、テストを壊した fix は git stash で巻き戻す。commit しない。\n` +
-          `Findings:\n${JSON.stringify(survivors)}`,
+          `Findings は次のとおり。\n${JSON.stringify(survivors)}`,
       ),
       {
         label: "fix",

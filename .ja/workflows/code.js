@@ -48,14 +48,12 @@ const RED_SCHEMA = {
   properties: {
     red_confirmed: {
       type: "boolean",
-      description:
-        "書いたテストを実行し、期待どおり fail することを確認できたら true",
+      description: "書いたテストを実行し、期待どおり fail することを確認できたら true",
     },
     test_files: { type: "array", items: { type: "string" } },
     notes: {
       type: "string",
-      description:
-        "red_confirmed が false の場合はその理由 (既に振る舞いが存在する等)",
+      description: "red_confirmed が false の場合はその理由 (既に振る舞いが存在する等)",
     },
   },
 };
@@ -118,10 +116,10 @@ const anomalies = [];
 phase("Implement");
 for (const unit of units) {
   const ctx =
-    `Unit ${unit.id}: ${unit.goal}\n対象ファイル: ${JSON.stringify(unit.files)}\n` +
-    `Contract: ${unit.contract}\nTest scenarios: ${JSON.stringify(unit.tests)}\n` +
-    `テスト実行: ${testCmd}\n` +
-    (completed.length ? `実装済み unit: ${completed.join(", ")}\n` : "");
+    `Unit ${unit.id} のゴールは「${unit.goal}」。対象ファイルは ${JSON.stringify(unit.files)}。\n` +
+    `contract は ${unit.contract}。test scenarios は ${JSON.stringify(unit.tests)}。\n` +
+    `テスト実行コマンドは ${testCmd}。\n` +
+    (completed.length ? `実装済み unit は ${completed.join(", ")}。\n` : "");
 
   // Red: テストを書き、fail を実行で確認する。実装は書かない。
   let red = await agent(
@@ -144,7 +142,7 @@ for (const unit of units) {
     red = await agent(
       anchor(
         `TDD の Red step 再試行。${ctx}` +
-          `前回テストが fail しなかった: ${red.notes}\n` +
+          `前回テストが fail しなかった。理由は ${red.notes}。\n` +
           `テストが対象の振る舞いを本当に検証しているか精査する (assertion が空でないか、対象コードを呼んでいるか)。` +
           `振る舞いが未実装なら fail するはずである。精査後もテストが pass するなら、振る舞いは実装済みと judged し red_confirmed=false のまま理由を notes に書く。`,
       ),
@@ -157,13 +155,10 @@ for (const unit of units) {
       },
     );
   }
-  if (!red)
-    return { stopped: "red-failed", unit: unit.id, completed, anomalies };
+  if (!red) return { stopped: "red-failed", unit: unit.id, completed, anomalies };
   if (!red.red_confirmed) {
     anomalies.push({ unit: unit.id, kind: "no-red", notes: red.notes });
-    log(
-      `${unit.id}: Red 未確認 (${red.notes})。実装 step を skip して次の unit へ。`,
-    );
+    log(`${unit.id}: Red 未確認 (${red.notes})。実装 step を skip して次の unit へ。`);
     completed.push(unit.id);
     continue;
   }
@@ -173,7 +168,7 @@ for (const unit of units) {
     anchor(
       `TDD の Green step。${ctx}` +
         `テストファイル ${JSON.stringify(red.test_files)} の failing test を pass させる最小の実装を書く。` +
-        `テストの assertion を弱める・skip する・削除する変更は禁止 (テスト構造の修正が必要なら notes に書いて green=false で返す)。` +
+        `テストの assertion を弱める / skip する / 削除する変更は禁止 (テスト構造の修正が必要なら notes に書いて green=false で返す)。` +
         `pass 後、テストを green に保ったまま refactor する。unit のテストを再実行して報告する。`,
     ),
     {
@@ -188,7 +183,7 @@ for (const unit of units) {
     green = await agent(
       anchor(
         `TDD の Green step 再試行。${ctx}` +
-          `前回 pass しなかった: ${green.notes}\n原因を特定して実装を修正し、unit のテストを pass させる。テストの弱体化は禁止。`,
+          `前回 pass しなかった。理由は ${green.notes}。\n原因を特定して実装を修正し、unit のテストを pass させる。テストの弱体化は禁止。`,
       ),
       {
         label: `green2:${unit.id}`,

@@ -55,8 +55,8 @@ const DIMENSIONS = [
 // invariant check の両 prompt に埋め込む共通規範。
 const INVARIANT_RULES =
   `flaky fix はテストの実行方法を変えるものであり、assert 内容を変えるものではない。\n` +
-  `許容: clock 注入 / fake timers、seed 固定、テストごとの状態隔離、I/O boundary の mock、一意な temp dir / port。\n` +
-  `禁止: assertion の緩和や tolerance の拡大、テストの skip / .only 化 / 除去、常に通る stub への置換、blanket retry の追加、shake コマンドや回数の改変。` +
+  `許容されるのは clock 注入 / fake timers、seed 固定、テストごとの状態隔離、I/O boundary の mock、一意な temp dir / port。\n` +
+  `禁止されるのは assertion の緩和や tolerance の拡大、テストの skip / .only 化 / 除去、常に通る stub への置換、blanket retry の追加、shake コマンドや回数の改変。` +
   `禁止ルートは flaky を silent gap に変換するため、flake そのものより悪い。`;
 
 // skill § Fix direction。trigger と root-cause fix の対応表。
@@ -138,13 +138,7 @@ const SMELL_SCHEMA = {
         properties: {
           smell: {
             type: "string",
-            enum: [
-              "wall-clock",
-              "unseeded-random",
-              "fixed-sleep",
-              "shared-state",
-              "fixed-path-io",
-            ],
+            enum: ["wall-clock", "unseeded-random", "fixed-sleep", "shared-state", "fixed-path-io"],
           },
           location: { type: "string", description: "file:line" },
           evidence: { type: "string" },
@@ -181,12 +175,7 @@ const INVARIANT_SCHEMA = {
 // 全 pass = stable、全 fail = broken (flaky でなく常時失敗、scope 外として報告)、
 // 混在 = flaky。
 const dimVerdict = (result) => {
-  if (
-    !result ||
-    !result.ran ||
-    !Array.isArray(result.runs) ||
-    result.runs.length < RUNS
-  ) {
+  if (!result || !result.ran || !Array.isArray(result.runs) || result.runs.length < RUNS) {
     return "unshaken";
   }
   const passes = result.runs.filter((r) => r.pass).length;
@@ -206,8 +195,8 @@ const route = (await agent(
       `1. ${scopeInstr}\n` +
       `2. project manifest から test ecosystem (cargo test / nextest / jest / vitest 等) を特定する。\n` +
       `3. target ごとに 4 次元のコマンドを組む。各コマンドは対象テストだけを 1 回実行するもので、shake 実行者が ${RUNS} 回ループする前提。文字列 {RUN} を含めると実行時に回番号 (1..${RUNS}) へ置換される。\n` +
-      `   repeat: そのまま繰り返す通常実行 / order: 実行順を毎回異なる seed で randomize ({RUN} を seed に使う) / parallelism: serial と max-worker を交互に切り替え ({RUN} の偶奇で分岐する 1 行コマンド) / seed: suite が明示 seed を受けるなら毎回異なる seed、受けないなら空文字列。\n` +
-      `   例: jest なら order は --shuffle と seed 指定、parallelism は --runInBand と最大 worker の切替。次元が ecosystem 的に構成不能なら空文字列にする。\n` +
+      `   repeat はそのまま繰り返す通常実行 / order は実行順を毎回異なる seed で randomize ({RUN} を seed に使う) / parallelism は serial と max-worker を交互に切り替え ({RUN} の偶奇で分岐する 1 行コマンド) / seed は suite が明示 seed を受けるなら毎回異なる seed、受けないなら空文字列。\n` +
+      `   例として jest なら order は --shuffle と seed 指定、parallelism は --runInBand と最大 worker の切替。次元が ecosystem 的に構成不能なら空文字列にする。\n` +
       `テストの実行も修正もしない。この段階の仕事はコマンドの決定だけ。`,
   ),
   {
@@ -242,8 +231,8 @@ const results = await pipeline(
         agent(
           anchor(
             `shake の静的 smell scan を担当する。対象テスト ${t.file} とその setup / fixture / helper を ugrep で走査し、現在 pass していても潜在 flaky な兆候を報告する。\n` +
-              `smell と grep パターン: wall-clock (Date.now, new Date(, Instant::now, SystemTime::, time.Now) / unseeded-random (Math.random, thread_rng, rand::random, faker) / fixed-sleep (setTimeout, thread::sleep, tokio::time::sleep, sleep() / shared-state (static mut, module-level の可変 global, singleton, per-test reset の欠如) / fixed-path-io (固定 /tmp パス, 固定 port, 実 network, env 読み)。\n` +
-              `hit ごとに file:line、根拠、root-cause fix の方向を書く。fix 方向の対応表:\n${FIX_DIRECTIONS}\n` +
+              `smell と grep パターンは次のとおり。wall-clock (Date.now, new Date(, Instant::now, SystemTime::, time.Now) / unseeded-random (Math.random, thread_rng, rand::random, faker) / fixed-sleep (setTimeout, thread::sleep, tokio::time::sleep, sleep() / shared-state (static mut, module-level の可変 global, singleton, per-test reset の欠如) / fixed-path-io (固定 /tmp パス, 固定 port, 実 network, env 読み)。\n` +
+              `hit ごとに file:line、根拠、root-cause fix の方向を書く。fix 方向の対応表は次のとおり。\n${FIX_DIRECTIONS}\n` +
               `テスト本体のロジックに関する一般レビューはしない。`,
           ),
           {
@@ -263,7 +252,7 @@ const results = await pipeline(
           });
         return agent(
           anchor(
-            `shake の ${d.key} 次元を担当する (露出対象: ${d.exposes})。コマンド \`${d.command}\` を ${RUNS} 回実行する。{RUN} が含まれる場合は回番号 1..${RUNS} に置換する。\n` +
+            `shake の ${d.key} 次元を担当する (露出対象は ${d.exposes})。コマンド \`${d.command}\` を ${RUNS} 回実行する。{RUN} が含まれる場合は回番号 1..${RUNS} に置換する。\n` +
               `各回の pass/fail を runs に 1 回 1 要素で記録する (${RUNS} 要素必須。省略や集計での置き換えは不可)。fail した回は note にエラーの要点を写す。\n` +
               `テストコードもコマンドも変更しない。回数を減らさない。途中で flaky と確信しても ${RUNS} 回すべて実行する。`,
           ),
@@ -284,9 +273,7 @@ const results = await pipeline(
         dimension: d.key,
         verdict,
         fails:
-          verdict === "flaky" || verdict === "broken"
-            ? r.runs.filter((x) => !x.pass).length
-            : 0,
+          verdict === "flaky" || verdict === "broken" ? r.runs.filter((x) => !x.pass).length : 0,
         note: (r && r.notes) || "",
       };
     });
@@ -307,9 +294,7 @@ const results = await pipeline(
     else verdict = "stable";
     log(
       `${t.id}: ${verdict}` +
-        (triggers.length
-          ? ` (trigger: ${triggers.map((d) => d.dimension).join(", ")})`
-          : ""),
+        (triggers.length ? ` (trigger: ${triggers.map((d) => d.dimension).join(", ")})` : ""),
     );
 
     const fix = {
@@ -326,11 +311,11 @@ const results = await pipeline(
         const fixed = await agent(
           anchor(
             `shake の fix 段階を担当する。confirmed-flaky なテスト ${t.file} の root cause を修正する (試行 ${attempt}/${MAX_FIX_ATTEMPTS})。\n` +
-              `trigger 次元: ${triggers.map((d) => `${d.dimension} (${d.fails}/${RUNS} fail)`).join(", ")}\n` +
-              `静的 smell (根本原因の候補):\n${JSON.stringify(smells)}\n` +
-              `fix 方向の対応表:\n${FIX_DIRECTIONS}\n\n${INVARIANT_RULES}\n` +
+              `trigger 次元は ${triggers.map((d) => `${d.dimension} (${d.fails}/${RUNS} fail)`).join(", ")}。\n` +
+              `静的 smell (根本原因の候補) は次のとおり。\n${JSON.stringify(smells)}\n` +
+              `fix 方向の対応表は次のとおり。\n${FIX_DIRECTIONS}\n\n${INVARIANT_RULES}\n` +
               (history
-                ? `\n前回までの試行と失敗理由 (invariant 違反があれば先に巻き戻してから正しく直す):\n${history}`
+                ? `\n前回までの試行と失敗理由は次のとおり (invariant 違反があれば先に巻き戻してから正しく直す)。\n${history}`
                 : ""),
           ),
           {
@@ -342,7 +327,7 @@ const results = await pipeline(
           },
         );
         if (!fixed || !fixed.applied) {
-          history += `試行 ${attempt}: fix 適用に至らず (${(fixed && fixed.summary) || "agent stall"})\n`;
+          history += `試行 ${attempt} は fix 適用に至らず (${(fixed && fixed.summary) || "agent stall"})\n`;
           continue;
         }
         // 独立した invariant check ∥ trigger 次元の re-shake
@@ -378,9 +363,8 @@ const results = await pipeline(
         ]);
         // invariant 違反は fix 成立と認めない (stall も fail-close で違反扱い)
         if (!inv || !inv.held) {
-          fix.invariant =
-            (inv && inv.reason) || "invariant check stall (fail-close)";
-          history += `試行 ${attempt}: invariant 違反。${fix.invariant}\n`;
+          fix.invariant = (inv && inv.reason) || "invariant check stall (fail-close)";
+          history += `試行 ${attempt} は invariant 違反。${fix.invariant}\n`;
           continue;
         }
         const reshakeVerdicts = triggers.map((trg, i) => ({
@@ -394,10 +378,8 @@ const results = await pipeline(
           fix.reshake = `全 trigger 次元 ${RUNS}/${RUNS} stable`;
           break;
         }
-        fix.reshake = residual
-          .map((r) => `${r.dimension}=${r.verdict}`)
-          .join(", ");
-        history += `試行 ${attempt}: re-shake で残存 (${fix.reshake})\n`;
+        fix.reshake = residual.map((r) => `${r.dimension}=${r.verdict}`).join(", ");
+        history += `試行 ${attempt} は re-shake で残存 (${fix.reshake})\n`;
       }
       if (!fix.applied) {
         // skill § Stop point: 3 回の fix 試行を生き延びた flake は弱体化でなく blocker 報告

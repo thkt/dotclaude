@@ -73,7 +73,7 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
         `"branch" from \`git rev-parse --abbrev-ref HEAD\`, and "generated_at" from \`date -u +%Y-%m-%dT%H:%M:%SZ\`. ` +
         `Also add "delta": compare this run's raw_findings to the most recent existing audit-*.json in that directory ` +
         `(match on file + message) and record { resolved, new, carried } as counts; if no prior snapshot exists, use zeros and note "first run". ` +
-        `Do not review code or change any finding. Payload:\n${payload}`,
+        `Do not review code or change any finding. The payload is as follows.\n${payload}`,
     ),
     {
       agentType: "general-purpose",
@@ -89,15 +89,7 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
 // loses react-pattern. A file takes the first matching row via classify(). Mechanical
 // type checks (any / assertions / strict mode) belong to the gates linters, not a reviewer.
 const ROUTING = {
-  "*.sh": [
-    "security",
-    "silence",
-    "duplication",
-    "reuse",
-    "efficiency",
-    "operations",
-    "resilience",
-  ],
+  "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
   "*.js": [
     "security",
     "silence",
@@ -215,8 +207,7 @@ const classify = (p) => {
   if (e === ".rs") return ROUTING["*.rs"];
   if (e === ".py") return ROUTING["*.py"];
   if (e === ".md") return ROUTING["*.md"];
-  if (e === ".yaml" || e === ".yml" || e === ".json")
-    return ROUTING["*.yaml,*.json"];
+  if (e === ".yaml" || e === ".yml" || e === ".json") return ROUTING["*.yaml,*.json"];
   if (e === ".css" || e === ".html") return ROUTING["*.css,*.html"];
   return ROUTING.default;
 };
@@ -401,9 +392,9 @@ const raw = await parallel(
     (u) => () =>
       agent(
         anchor(
-          `reviewer-${u.reviewer}. Review these files from the diff: ${u.files.join(", ")}. ` +
+          `reviewer-${u.reviewer}. Review these files from the diff. The targets are ${u.files.join(", ")}. ` +
             `Base the review on \`git diff ${scope || "HEAD"}\` for those paths. Every finding needs file:line. Return findings with severity.\n` +
-            `Churn (fix-commit counts, high = fragile):\n${churnMap}\n\n${RELIABILITY}`,
+            `The churn (fix-commit counts, high = fragile) is as follows.\n${churnMap}\n\n${RELIABILITY}`,
         ),
         {
           agentType: `reviewer-${u.reviewer}`,
@@ -458,7 +449,7 @@ const [challenged, verified] = await parallel([
   () =>
     agent(
       anchor(
-        `critic-audit. Challenge these findings to prune false positives. Each finding is a position to be argued, not a fact. Reference each finding by its file:line. Findings:\n${findingsJson}`,
+        `critic-audit. Challenge these findings to prune false positives. Each finding is a position to be argued, not a fact. Reference each finding by its file:line. The findings are as follows.\n${findingsJson}`,
       ),
       {
         agentType: "critic-audit",
@@ -470,7 +461,7 @@ const [challenged, verified] = await parallel([
   () =>
     agent(
       anchor(
-        `critic-evidence. Verify these findings by tracing concrete execution paths (positive evidence, not intuition). For each finding, reference it by file:line and supply the execution-path evidence plus a severity. Findings:\n${findingsJson}`,
+        `critic-evidence. Verify these findings by tracing concrete execution paths (positive evidence, not intuition). For each finding, reference it by file:line and supply the execution-path evidence plus a severity. The findings are as follows.\n${findingsJson}`,
       ),
       {
         agentType: "critic-evidence",
@@ -486,8 +477,8 @@ const integrated = await agent(
   anchor(
     `enhancer-integration. Reconcile two independent passes over the same findings, matched by file:line, into cross-domain root causes and a severity-ordered list.\n` +
       `Membership rule: the challenge pass decides which findings survive. A finding the challenge pass pruned as a false positive stays pruned even if the verification pass found evidence for it. The verification pass only supplies execution-path evidence and severity for the survivors; it never revives a pruned finding.\n` +
-      `Challenge pass (membership / false-positive pruning):\n${challenged}\n\n` +
-      `Verification pass (execution-path evidence + severity):\n${verified}`,
+      `The challenge pass (membership / false-positive pruning) is as follows.\n${challenged}\n\n` +
+      `The verification pass (execution-path evidence + severity) is as follows.\n${verified}`,
   ),
   {
     agentType: "enhancer-integration",

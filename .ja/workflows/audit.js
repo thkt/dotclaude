@@ -71,7 +71,7 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
         `\`git rev-parse --abbrev-ref HEAD\` から "branch"、\`date -u +%Y-%m-%dT%H:%M:%SZ\` から "generated_at"。` +
         `さらに "delta" を足す。この run の raw_findings を同ディレクトリで直近の audit-*.json と比較し ` +
         `(file + message でマッチ)、{ resolved, new, carried } を件数で記録する。prior snapshot が無ければ全て 0 とし "first run" と注記する。` +
-        `コードの review や finding の変更はしない。Payload:\n${payload}`,
+        `コードの review や finding の変更はしない。Payload は次のとおり。\n${payload}`,
     ),
     {
       agentType: "general-purpose",
@@ -87,15 +87,7 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
 // heuristic を含む。ファイルは classify() で最初にマッチした行に決まる。型の機械的チェック
 // (any / アサーション / strict モード) は gates のリンタが担い、reviewer は持たない。
 const ROUTING = {
-  "*.sh": [
-    "security",
-    "silence",
-    "duplication",
-    "reuse",
-    "efficiency",
-    "operations",
-    "resilience",
-  ],
+  "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
   "*.js": [
     "security",
     "silence",
@@ -213,8 +205,7 @@ const classify = (p) => {
   if (e === ".rs") return ROUTING["*.rs"];
   if (e === ".py") return ROUTING["*.py"];
   if (e === ".md") return ROUTING["*.md"];
-  if (e === ".yaml" || e === ".yml" || e === ".json")
-    return ROUTING["*.yaml,*.json"];
+  if (e === ".yaml" || e === ".yml" || e === ".json") return ROUTING["*.yaml,*.json"];
   if (e === ".css" || e === ".html") return ROUTING["*.css,*.html"];
   return ROUTING.default;
 };
@@ -398,9 +389,9 @@ const raw = await parallel(
     (u) => () =>
       agent(
         anchor(
-          `reviewer-${u.reviewer} として、次のファイルを review する: ${u.files.join(", ")}。` +
+          `reviewer-${u.reviewer} として、次のファイルを review する。対象は ${u.files.join(", ")}。` +
             `review の根拠は \`git diff ${scope || "HEAD"}\` の該当 path に置く。finding には必ず file:line を付け、severity を添えて返す。\n` +
-            `Churn (fix commit の数。多いほど壊れやすい):\n${churnMap}\n\n${RELIABILITY}`,
+            `Churn (fix commit の数。多いほど壊れやすい) は次のとおり。\n${churnMap}\n\n${RELIABILITY}`,
         ),
         {
           agentType: `reviewer-${u.reviewer}`,
@@ -454,7 +445,7 @@ const [challenged, verified] = await parallel([
   () =>
     agent(
       anchor(
-        `critic-audit として、これらの finding を challenge し false positive を刈る。finding は事実ではなく、立証されるべき主張として扱う。各 finding は file:line で参照する。Findings:\n${findingsJson}`,
+        `critic-audit として、これらの finding を challenge し false positive を刈る。finding は事実ではなく、立証されるべき主張として扱う。各 finding は file:line で参照する。Findings は次のとおり。\n${findingsJson}`,
       ),
       {
         agentType: "critic-audit",
@@ -466,7 +457,7 @@ const [challenged, verified] = await parallel([
   () =>
     agent(
       anchor(
-        `critic-evidence として、これらの finding を検証する。直感ではなく、具体的な実行経路を辿った positive evidence に基づく。各 finding を file:line で参照し、実行経路の evidence と severity を与える。Findings:\n${findingsJson}`,
+        `critic-evidence として、これらの finding を検証する。直感ではなく、具体的な実行経路を辿った positive evidence に基づく。各 finding を file:line で参照し、実行経路の evidence と severity を与える。Findings は次のとおり。\n${findingsJson}`,
       ),
       {
         agentType: "critic-evidence",
@@ -482,8 +473,8 @@ const integrated = await agent(
   anchor(
     `enhancer-integration として、同じ findings に対する独立した 2 つの pass を file:line で突き合わせ、cross-domain の root cause と severity 順のリストに reconcile する。\n` +
       `Membership 規則。どの finding を残すかは challenge pass が決める。challenge pass が false positive として刈った finding は、verification pass が evidence を見つけていても刈られたままにする。verification pass の役割は survivor に実行経路の evidence と severity を与えることだけで、刈られた finding を復活させない。\n` +
-      `Challenge pass (membership / false positive の刈り込み):\n${challenged}\n\n` +
-      `Verification pass (実行経路の evidence + severity):\n${verified}`,
+      `Challenge pass (membership / false positive の刈り込み) は次のとおり。\n${challenged}\n\n` +
+      `Verification pass (実行経路の evidence + severity) は次のとおり。\n${verified}`,
   ),
   {
     agentType: "enhancer-integration",
