@@ -30,8 +30,44 @@ exit 0 on a completed run. exit 1 on a parse error or a missing required key.
 
 import json
 import sys
+from pathlib import Path
 
 REQUIRED_KEYS = ("reaudited", "tests_pass", "gates_pass")
+
+# Human-facing labels by body language. Only prose labels translate; the GitHub
+# keyword `Closes`, the code-fenced status line, and command names like `/issue`
+# stay verbatim so auto-close and copy-paste keep working. Unknown languages fall
+# back to English. Kept in code (not agent-provided) so the tail stays deterministic.
+LABELS = {
+    "english": {
+        "not_reaudited": "> **Not re-audited**. Final fix round unverified; blocking findings may remain.",
+        "verify_output": "verify output",
+        "assumptions": "Assumptions (veto targets)",
+        "backlog": "Backlog (file via `/issue`)",
+        "unresolved": "Unresolved critical/high",
+        "conformance": "Spec conformance (separate axis, review independently)",
+        "anomalies": "Anomalies (Red unconfirmed)",
+    },
+    "japanese": {
+        "not_reaudited": "> **未再audit**。最終修正ラウンドが未検証。blocking findings が残っている可能性がある。",
+        "verify_output": "verify 出力",
+        "assumptions": "前提 (veto 対象)",
+        "backlog": "Backlog (`/issue` で起票)",
+        "unresolved": "未解決 critical/high",
+        "conformance": "Spec 適合性 (別軸、独立にレビュー)",
+        "anomalies": "異常 (Red 未確認)",
+    },
+}
+
+
+def _default_language():
+    """The user's PR-body language from the dotclaude settings. Best-effort: any
+    read/parse failure falls back to English so the tail still renders."""
+    try:
+        with open(Path.home() / ".claude" / "settings.json") as f:
+            return json.load(f).get("language") or "english"
+    except (OSError, json.JSONDecodeError):
+        return "english"
 
 
 def fail(message):
@@ -65,6 +101,8 @@ def render(payload):
     tests = "pass" if payload.get("tests_pass") else "FAIL"
     gates = "pass" if payload.get("gates_pass") else "FAIL"
     residual = _list(payload.get("residual_blocking"))
+    lang = (payload.get("language") or "english").lower()
+    L = LABELS.get(lang, LABELS["english"])
 
     out = [f"Closes #{issue}" if issue else "Closes #"]
 
@@ -72,9 +110,7 @@ def render(payload):
     out.append(f"`verify tests={tests} gates={gates}` · `blocking {blocking}`")
 
     if not reaudited:
-        out.append(
-            "> **Not re-audited** — final fix round unverified; blocking findings may remain."
-        )
+        out.append(L["not_reaudited"])
 
     if tests == "FAIL" or gates == "FAIL":
         detail = payload.get("verify_output")
@@ -82,7 +118,7 @@ def render(payload):
             body = detail if isinstance(detail, str) else json.dumps(detail, indent=2)
             fence = _fence(body)
             out.append(
-                f"<details><summary>verify output</summary>\n\n{fence}\n{body}\n{fence}\n\n</details>"
+                f"<details><summary>{L['verify_output']}</summary>\n\n{fence}\n{body}\n{fence}\n\n</details>"
             )
 
     def section(label, items, render_item):
@@ -102,9 +138,9 @@ def render(payload):
             lines.append("- " + " ".join(str(text).split("\n")))
         out.append(f"**{label}**\n" + "\n".join(lines))
 
-    section("Assumptions (veto targets)", payload.get("assumptions"), str)
+    section(L["assumptions"], payload.get("assumptions"), str)
     section(
-        "Backlog — file via `/issue`",
+        L["backlog"],
         payload.get("backlog_candidates"),
         lambda c: (
             f"[{c.get('source', '?')}] {c.get('summary', '')}".rstrip()
@@ -112,7 +148,7 @@ def render(payload):
         ),
     )
     section(
-        "Unresolved critical/high",
+        L["unresolved"],
         residual,
         lambda f: (
             f"[{f.get('severity', '?')}] {f.get('summary', '')}".rstrip()
@@ -120,7 +156,7 @@ def render(payload):
         ),
     )
     section(
-        "Spec conformance (separate axis, review independently)",
+        L["conformance"],
         payload.get("conformance"),
         lambda f: (
             f"[{f.get('category', '?')}] {f.get('detail', '')}".rstrip()
@@ -128,7 +164,7 @@ def render(payload):
         ),
     )
     section(
-        "Anomalies (Red unconfirmed)",
+        L["anomalies"],
         payload.get("code_anomalies"),
         lambda a: (
             f"{a.get('unit', '?')} ({a.get('kind', '?')}): {a.get('notes', '')}".rstrip()
@@ -151,6 +187,7 @@ def main():
     missing = [k for k in REQUIRED_KEYS if k not in payload]
     if missing:
         fail(f"ship payload missing required key(s): {', '.join(missing)}")
+    payload.setdefault("language", _default_language())
     sys.stdout.write(render(payload))
 
 

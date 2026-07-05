@@ -53,7 +53,7 @@ class RenderTest(unittest.TestCase):
         body = pr_body.render(FULL)
         self.assertIn("**Assumptions (veto targets)**", body)
         self.assertIn("- assume A", body)
-        self.assertIn("**Backlog — file via `/issue`**", body)
+        self.assertIn("**Backlog (file via `/issue`)**", body)
         self.assertIn("- [issue] cand one (x.js)", body)
         self.assertIn("**Unresolved critical/high**", body)
         self.assertIn("- [high] leak (y.js)", body)
@@ -116,7 +116,7 @@ class RenderTest(unittest.TestCase):
     def test_non_dict_item_degrades_instead_of_crashing(self):
         # A malformed (non-dict) list item must not raise and drop the whole tail.
         body = pr_body.render({**CLEAN, "backlog_candidates": ["a bare string", None]})
-        self.assertIn("**Backlog — file via `/issue`**", body)
+        self.assertIn("**Backlog (file via `/issue`)**", body)
         self.assertIn("- a bare string", body)
 
     def test_list_item_newline_stays_on_one_line(self):
@@ -126,6 +126,25 @@ class RenderTest(unittest.TestCase):
 
     def test_leads_with_blank_line_and_rule_for_safe_append(self):
         self.assertTrue(pr_body.render(FULL).startswith("\n\n---\n\n"))
+
+    def test_japanese_translates_prose_labels_but_keeps_github_keyword(self):
+        # language: japanese translates the human-facing section labels; the GitHub
+        # magic keyword `Closes` and the `/issue` command name must stay verbatim.
+        body = pr_body.render({**FULL, "language": "japanese"})
+        self.assertIn("Closes #123", body)
+        self.assertIn("**前提 (veto 対象)**", body)
+        self.assertIn("**Backlog (`/issue` で起票)**", body)
+        self.assertIn("**未解決 critical/high**", body)
+        self.assertIn("**異常 (Red 未確認)**", body)
+        self.assertIn("**Spec 適合性 (別軸、独立にレビュー)**", body)
+
+    def test_japanese_not_reaudited_callout_translates(self):
+        body = pr_body.render({**FULL, "reaudited": False, "language": "japanese"})
+        self.assertIn("> **未再audit**", body)
+
+    def test_unknown_language_falls_back_to_english(self):
+        body = pr_body.render({**FULL, "language": "klingon"})
+        self.assertIn("**Assumptions (veto targets)**", body)
 
 
 class CliTest(unittest.TestCase):
@@ -147,6 +166,13 @@ class CliTest(unittest.TestCase):
     def test_non_object_fails_closed(self):
         proc = self._run("[1,2,3]")
         self.assertEqual(proc.returncode, 1)
+
+    def test_language_in_payload_is_honored_over_settings(self):
+        # An explicit payload language wins, so the CLI output does not depend on the
+        # machine's settings.json for this case.
+        proc = self._run(json.dumps({**FULL, "language": "japanese"}))
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn("前提 (veto 対象)", proc.stdout)
 
     def test_missing_required_key_fails_closed(self):
         # A shipPayload that dropped a safety-critical key must not render a

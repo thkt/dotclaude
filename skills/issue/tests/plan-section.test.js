@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const targets = {
   ja: join(root, ".ja", "skills", "issue", "references", "plan-section.md"),
   en: join(root, "skills", "issue", "references", "plan-section.md"),
@@ -29,22 +29,14 @@ test("plan-section.md が Plan 節の構成 (id 記法・前提小節・受け�
     assert.match(doc, /when/i, `${lang}: when`);
     assert.match(doc, /then/i, `${lang}: then`);
     assert.match(doc, /test_command/, `${lang}: test_command の置き場`);
-    assert.match(
-      doc,
-      /^## Backlog candidates/m,
-      `${lang}: ## Backlog candidates`,
-    );
+    assert.match(doc, /^## Backlog candidates/m, `${lang}: ## Backlog candidates`);
   }
 });
 
 test("precondition の authoring 規則が stable anchor と投稿前実在検証を含む", () => {
   const ja = read(targets.ja);
   assert.match(ja, /既存.{0,10}依存先のみ/, "ja: 既存依存先のみ");
-  assert.match(
-    ja,
-    /新規作成ファイル.{0,20}載せない/,
-    "ja: 新規作成ファイルは載せない",
-  );
+  assert.match(ja, /新規作成ファイル.{0,20}載せない/, "ja: 新規作成ファイルは載せない");
   assert.match(ja, /stable anchor/, "ja: stable anchor");
   assert.match(ja, /(exported|公開シンボル)/, "ja: exported / 公開シンボル名");
   assert.match(
@@ -95,10 +87,7 @@ test("抽出 contract が共有可能で machine block の残骸が無い", () =
     for (const field of fields) {
       assert.match(doc, field, `${lang}: 抽出 contract フィールド ${field}`);
     }
-    assert.ok(
-      !doc.includes("build-plan:v1"),
-      `${lang}: build-plan:v1 残骸なし`,
-    );
+    assert.ok(!doc.includes("build-plan:v1"), `${lang}: build-plan:v1 残骸なし`);
     assert.ok(!doc.includes("<details>"), `${lang}: <details> 残骸なし`);
     assert.ok(!doc.includes("```json"), `${lang}: json fence 指定なし`);
   }
