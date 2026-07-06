@@ -50,6 +50,11 @@ const anchor = (p) =>
   repo
     ? `git コマンドはすべて repo ${repo} で実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
     : p;
+// plugin 対応の asset 解決。plugin として配布されたとき bundled asset は ~/.claude では
+// なく ~/.claude/plugins 配下に置かれる。shell 断片は dev-tree のパスを先に試すので、
+// dev tree での動作は変わらない。
+const bundled = (rel) =>
+  `"$(P="$HOME/.claude/${rel}"; [ -f "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
 
 // script は filesystem に触れられず Date.now() も呼べない (sandbox が throw する)。timestamp・
 // branch・prior snapshot との delta 計算は決定論的な bookkeeping なので、LLM に推論
@@ -68,7 +73,7 @@ const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   await agent(
     anchor(
       `あなたは audit の Snapshot 段階を担当する。次の JSON payload を一時ファイルに書き、` +
-        `\`python3 "$HOME/.claude/workflows/audit/snapshot.py" < <tempfile>\` を 1 回実行する。` +
+        `\`python3 ${bundled("workflows/audit/snapshot.py")} < <tempfile>\` を 1 回実行する。` +
         `スクリプトが timestamp・branch・prior snapshot との delta ` +
         `(file + message でマッチした resolved / new / carried) を解決し、` +
         `$HOME/.claude/workspace/history/ に記録を書いて出力パスを stdout に返す。` +

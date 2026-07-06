@@ -1,0 +1,5 @@
+{
+  "name": "build",
+  "version": "0.1.0",
+  "description": "Autonomous end-to-end build workflow (build/code/audit/polish) with bundled deterministic assets"
+}
