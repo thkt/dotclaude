@@ -5,12 +5,6 @@ when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, pl
 allowed-tools: Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(python3:*)
 model: opus
 argument-hint: "[task description]"
-hooks:
-  PostToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "~/.claude/hooks/veto/veto.py record bash"
 ---
 
 # /think - Design Exploration

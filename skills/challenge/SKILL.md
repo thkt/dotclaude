@@ -5,12 +5,6 @@ when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴
 allowed-tools: Read LS Task AskUserQuestion Bash(python3:*)
 model: opus
 argument-hint: "[proposal file | description]"
-hooks:
-  PostToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "~/.claude/hooks/veto/veto.py record bash"
 ---
 
 # /challenge - GO / NO-GO verdict on a proposal
