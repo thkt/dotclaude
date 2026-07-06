@@ -1,5 +1,4 @@
 // marketplace/build/ (plugin 配布物) は workflows/ と skills/ からの実ファイルコピー。
-// install copier が symlink を skip するため symlink 化できず二重管理になっている。
 // このテストが dev tree と配布物の byte 一致を強制し、片側だけの編集を commit 前に検出する。
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -14,8 +13,8 @@ while (!existsSync(join(root, "marketplace")) && root !== dirname(root)) {
   root = dirname(root);
 }
 
-// 配布物として同期する必要があるのは正確にこの 8 ファイル。
-// .claude-plugin/{plugin,marketplace}.json は plugin 専用で dev tree に対応物を持たない。
+// 配布物として同期する必要があるのは正確にこの 21 ファイル。
+// .claude-plugin/{plugin,marketplace}.json と hooks/hooks.json は plugin 専用で dev tree に対応物を持たない。
 const MIRRORED = [
   "workflows/build.js",
   "workflows/code.js",
@@ -25,6 +24,20 @@ const MIRRORED = [
   "workflows/build/pr-body.py",
   "workflows/audit/snapshot.py",
   "skills/pr/templates/pr.md",
+  "hooks/veto/pre-issue-create.sh",
+  "hooks/veto/veto.py",
+  "hooks/veto/record-bash.sh",
+  "skills/issue/SKILL.md",
+  "skills/issue/references/phrases.en.md",
+  "skills/issue/references/phrases.ja.md",
+  "skills/issue/references/plan-section.md",
+  "skills/issue/references/premise-check.md",
+  "skills/issue/references/prose-review.md",
+  "skills/issue/references/tentative-marking.md",
+  "skills/issue/templates/bug.md",
+  "skills/issue/templates/chore.md",
+  "skills/issue/templates/docs.md",
+  "skills/issue/templates/feature.md",
 ];
 
 for (const rel of MIRRORED) {

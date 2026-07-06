@@ -5,21 +5,6 @@ when_to_use: Issue作って, Issue書いて, Issue作成, GitHub Issue, issueを
 allowed-tools: Bash(gh:*) Bash(cat:*) Bash(ugrep:*) Bash(test:*) Bash(python3:*) Read Task Skill AskUserQuestion
 model: opus
 argument-hint: "[issue description]"
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "~/.claude/hooks/veto/pre-issue-create.sh"
-  PostToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "~/.claude/hooks/veto/veto.py record bash"
-    - matcher: "AskUserQuestion"
-      hooks:
-        - type: command
-          command: "~/.claude/hooks/veto/veto.py record skip"
 ---
 
 # /issue - GitHub Issue 生成
@@ -32,7 +17,7 @@ hooks:
 
 ## 言語
 
-`${CLAUDE_SKILL_DIR}/../../settings.json` から `language` を読み、その言語で Issue 本文とテンプレートを翻訳する。未設定なら英語をデフォルトとする。英語のまま残すのは識別子 / コード / コマンド / 固有名だけで、設定言語に平易な同義語がある英単語を地の文に混ぜない。テンプレート由来の見出しと Plan 節の抽出キーワードは英語のまま維持する。
+`~/.claude/settings.json` から `language` を読み、その言語で Issue 本文とテンプレートを翻訳する。未設定なら英語をデフォルトとする。英語のまま残すのは識別子 / コード / コマンド / 固有名だけで、設定言語に平易な同義語がある英単語を地の文に混ぜない。テンプレート由来の見出しと Plan 節の抽出キーワードは英語のまま維持する。
 
 ## タイトル規律
 
