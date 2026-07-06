@@ -1,9 +1,9 @@
 export const meta = {
   name: "build",
   description:
-    "autonomous な end-to-end build。/issue で練られた Plan 節付き issue を入力に、Load (verbatim fetch -> 決定論 id 収集 -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Audit / Polish / Backlog / Ship が決定論的 script stage として headless に走る。レビューは draft PR で行う。",
+    "Autonomous end-to-end build. Taking an issue with a Plan section refined via /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Audit / Polish / Backlog / Ship run headlessly as deterministic script stages. Review happens on a draft PR.",
   whenToUse:
-    'fire-and-forget の実装。人間と練る工程は /issue で完結させ、その issue 番号 ("123" / "#123") / URL / {issue, repo} を args で渡す。離席して戻ると draft PR があり、記録された assumption と audit 結果、そして /issue で起票するための scope 外 backlog 候補が列挙されている。飛行中の操舵が要るなら対話で phase を回す。',
+    'Fire-and-forget implementation. Finish the refine-with-a-human stage in /issue, then pass that issue number ("123" / "#123") / URL / {issue, repo} as args. Step away and come back to a draft PR with recorded assumptions and audit results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -16,40 +16,56 @@ export const meta = {
   ],
 };
 
-// 上流の /issue が premise 検証と人間との refine を終えている前提で、build は plan の
-// 再発明をしない。issue 本文の ## Plan 節が唯一の計画ソースで、抽出は LLM に任せるが
-// 検証は script が持つ: Plan 見出し検査と U/T id 収集は決定論 regex、構造検証は
-// validate()、抽出の silent drop は id 集合の exact 比較で reject する。issue 起票から
-// build 起動までの間に前提コードが動いた可能性は Revalidate (preconditions の
-// exists/matches 検査) が fail-close で捕まえる。fan-out を内側に持つ stage は入れ子
-// workflow に委譲する (code / audit / polish。入れ子は 1 段まで許可)。
+// Assuming the upstream /issue finished premise verification and human refinement,
+// build does not reinvent the plan. The issue body's ## Plan section is the single
+// planning source; extraction is left to the LLM but verification belongs to the
+// script: the Plan heading check and U/T id collection are deterministic regexes,
+// structural validation is validate(), and silent drops in extraction are rejected
+// by exact id-set comparison. Code moving between issue filing and build launch is
+// caught fail-closed by Revalidate (exists/matches checks on preconditions). Stages
+// whose fan-out lives inside them are delegated to nested workflows (code / audit /
+// polish; one level of nesting is allowed).
 
 phase("Load");
 
 const input = typeof args === "object" && args ? args : {};
 const issueRef = String(typeof args === "string" ? args : input.issue || "").trim();
-// "123" / "#123" / issue URL の末尾から issue 番号を決定論で取り出す。
+// Deterministically pull the issue number from the tail of "123" / "#123" / an issue URL.
 const issueNumber = (issueRef.match(/(\d+)\D*$/) || [])[1] || "";
 if (!issueRef || !issueNumber) {
   return {
     stopped: "no-issue",
-    why: 'issue を args で渡す ("123" / "#123" / URL / {issue, repo})。',
+    why: 'Pass the issue as args ("123" / "#123" / URL / {issue, repo}). On resume the runtime does not carry args, so re-pass it: Workflow({scriptPath, resumeFromRunId, args}).',
   };
 }
 
-// repo 指定時は session cwd と無関係にその repository へ固定する。「subagent は session cwd を
-// 引き継ぐ」に頼るのは model 裁量で、別の場所から起動されると事故る。anchor() が絶対 cd を
-// 前置して開始 cwd を無関係にする。guard は取り返しの利きにくい step (branch / commit / push /
-// PR) の決定論的な backstop で、headless 完走中に介入の機会が無いぶん、git を変更する前に
-// repo root を確認させる。
+// When repo is set, pin every step to that repository regardless of the session cwd.
+// Relying on "subagents inherit the session cwd" is model discretion and breaks when
+// launched from elsewhere. anchor() prepends an absolute cd so the starting cwd is
+// irrelevant. guard is a deterministic backstop for the hard-to-reverse steps
+// (branch / commit / push / PR): with no chance to intervene during a headless run,
+// it makes the agent confirm the repo root before mutating git.
 const repo = typeof input.repo === "string" ? input.repo : "";
 const anchor = (p) =>
   repo
-    ? `git / ファイル / ビルドのコマンドはすべて ${repo} の repository から実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
+    ? `Run every git, file, and build command from the repository at ${repo} (begin each shell command with \`cd ${repo} && \`).\n\n${p}`
     : p;
 const guard = repo
-  ? ` この step で最初の commit / push / branch 変更を行う前に \`cd ${repo} && git rev-parse --show-toplevel\` を実行し、出力が ${repo} であることを確認する。異なる場合は git を変更せず中断し、不一致を報告する。`
+  ? ` Before the first commit / push / branch change in this step, run \`cd ${repo} && git rev-parse --show-toplevel\` and confirm the output is ${repo}. If it differs, abort without mutating git and report the mismatch.`
   : "";
+// Plugin-aware indirection. When this script ships as a plugin, sibling workflows
+// load under the plugin namespace (build:code) and bundled assets live under
+// ~/.claude/plugins instead of ~/.claude. Both helpers try the bare dev-tree form
+// first / fall back to it, so the dev tree keeps working unchanged.
+const sibling = async (name, a) => {
+  try {
+    return await workflow(`build:${name}`, a);
+  } catch {
+    return await workflow(name, a);
+  }
+};
+const bundled = (rel) =>
+  `"$(P="$HOME/.claude/${rel}"; [ -f "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
 
 const FETCH_SCHEMA = {
   type: "object",
@@ -59,13 +75,13 @@ const FETCH_SCHEMA = {
     found: { type: "boolean" },
     body: {
       type: "string",
-      description: "issue 本文の verbatim。要約・整形をしない",
+      description: "The issue body verbatim. No summarizing or reformatting",
     },
   },
 };
 
-// issue の Plan 節が持つ構造化 plan (units + preconditions + backlog_candidates) の schema。抽出は issue に
-// 書かれた plan の構造化であって再計画ではない。
+// Schema of the structured plan (units + preconditions + backlog_candidates) carried in the issue's Plan section.
+// Extraction structures the plan written in the issue; it is not re-planning.
 const EXTRACT_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -82,17 +98,18 @@ const EXTRACT_SCHEMA = {
   properties: {
     dir: {
       type: "string",
-      description: "planning dir。例 .claude/workspace/planning/YYYY-MM-DD-slug",
+      description: "Planning dir, e.g. .claude/workspace/planning/YYYY-MM-DD-slug",
     },
     outcome: {
       type: "string",
-      description: "done 状態の 1 行記述 (実装非依存、観測可能)",
+      description:
+        "One-line description of the done state (implementation-independent, observable)",
     },
     decisions: { type: "array", items: { type: "string" } },
     assumptions: {
       type: "array",
       items: { type: "string" },
-      description: "issue に記録された best-guess の残余。PR でのユーザー拒否対象",
+      description: "Best-guess residuals recorded in the issue. The user's veto targets on the PR",
     },
     non_goals: { type: "array", items: { type: "string" } },
     constraints: { type: "array", items: { type: "string" } },
@@ -105,20 +122,20 @@ const EXTRACT_SCHEMA = {
         properties: {
           id: {
             type: "string",
-            description: "U-001 形式。issue 本文の id をそのまま使う",
+            description: "U-001 format. Use the ids from the issue body as-is",
           },
           goal: {
             type: "string",
-            description: "この unit が届ける振る舞いの 1 行記述",
+            description: "One-line description of the behavior this unit delivers",
           },
           files: {
             type: "array",
             items: { type: "string" },
-            description: "作成・変更するファイルパス",
+            description: "File paths to create or modify",
           },
           contract: {
             type: "string",
-            description: "公開インターフェース。signature / CLI flag / schema の素描",
+            description: "Public interface: a sketch of signatures / CLI flags / schemas",
           },
           tests: {
             type: "array",
@@ -129,15 +146,15 @@ const EXTRACT_SCHEMA = {
               properties: {
                 id: {
                   type: "string",
-                  description: "T-001 形式 (plan 全体で一意)",
+                  description: "T-001 format (unique across the plan)",
                 },
                 name: {
                   type: "string",
-                  description: "検証する仕様の言明。テスト名になる",
+                  description: "Statement of the spec being verified. Becomes the test name",
                 },
                 given: { type: "string" },
                 when: { type: "string" },
-                // JSON Schema の property 定義であり thenable ではない (BDD の given/when/then)
+                // JSON Schema property definition, not a thenable (BDD given/when/then)
                 // oxlint-disable-next-line unicorn/no-thenable
                 then: { type: "string" },
               },
@@ -146,14 +163,14 @@ const EXTRACT_SCHEMA = {
           depends_on: {
             type: "array",
             items: { type: "string" },
-            description: "先行 unit の id。無ければ空配列",
+            description: "Ids of prerequisite units. Empty array if none",
           },
         },
       },
     },
     test_command: {
       type: "string",
-      description: "テスト実行コマンド。例 cargo test / bun test",
+      description: "Test command, e.g. cargo test / bun test",
     },
     preconditions: {
       type: "array",
@@ -164,15 +181,15 @@ const EXTRACT_SCHEMA = {
         properties: {
           path: {
             type: "string",
-            description: "plan が前提とする既存ファイル",
+            description: "Existing file the plan presupposes",
           },
           pattern: {
             type: "string",
-            description: "そのファイルに存在するはずの symbol / 文字列",
+            description: "Symbol / string expected to exist in that file",
           },
         },
       },
-      description: "issue の plan が前提とする既存コード。無ければ空配列",
+      description: "Existing code the issue's plan presupposes. Empty array if none",
     },
     backlog_candidates: {
       type: "array",
@@ -184,7 +201,7 @@ const EXTRACT_SCHEMA = {
           summary: { type: "string" },
         },
       },
-      description: "issue に書かれた scope 外候補。無ければ空配列",
+      description: "Out-of-scope candidates written in the issue. Empty array if none",
     },
   },
 };
@@ -222,21 +239,23 @@ const SHIP_SCHEMA = {
   },
 };
 
-// 構造化 plan の再検証 + content 非空検査。構造 (id 重複 / 宙吊り / 循環 / テスト
-// 欠落) と内容 (contract / name / given / when / then の空) を決定論で reject する。
+// Re-validation of the structured plan + non-empty content checks. Deterministically rejects
+// structural defects (duplicate ids / dangling or cyclic depends_on / missing tests)
+// and empty content (test_command / contract / name / given / when / then).
 //
-// DRY 負債: これは hooks/veto/veto.py の validate_plan (canonical な plan-gate、
-// plan-gate.bats T-011 でロック) の手動メンテコピー。workflow runtime はこのファイルを
-// AsyncFunction 本体として wrap するため、build.js は canonical を import できない
-// (しかも Python)。コピーは hooks/veto/tests/contract_build_port.py が lockstep に保つ:
-// 下の 2 つの CONTRACT-TEST marker 間から本体を抽出し node で実行して、全共有 fixture で
-// canonical と同一の errors を返すことを assert する。canonical を更新せずにこの block を
-// 編集する (逆も同様) とそのテストが落ちる。marker のリネーム・削除は禁止。
+// DRY debt: this is a hand-maintained copy of validate_plan in hooks/veto/veto.py
+// (the canonical plan-gate, locked by plan-gate.bats T-011). The workflow runtime wraps
+// this file as an AsyncFunction body, so build.js cannot import the canonical (and it is
+// Python). The copy is kept in lockstep by hooks/veto/tests/contract_build_port.py, which
+// extracts the body between the two CONTRACT-TEST markers below, runs it via node, and
+// asserts it returns identical errors on every shared fixture. Editing this block without
+// updating the canonical (or vice versa) fails that test. Do not rename or remove the markers.
 // CONTRACT-TEST-BEGIN validate
 const validate = (plan) => {
   const errors = [];
-  // 非 object エントリには位置ベースの placeholder id を与え、"<id> has no ..." エラー
-  // として表面化させる (共有 id に畳むと偽の "duplicate unit ids" が出る)。
+  // Non-object entries get a position-based placeholder id so they surface as
+  // "<id> has no ..." errors (collapsing them to one shared id would emit a
+  // spurious "duplicate unit ids").
   const units = (Array.isArray(plan.units) ? plan.units : []).map((u, i) =>
     u && typeof u === "object" && !Array.isArray(u) ? u : { id: `units[${i}]` },
   );
@@ -269,7 +288,7 @@ const validate = (plan) => {
     }
   }
 
-  // 循環検出 (DFS)
+  // Cycle detection (DFS)
   const state = new Map();
   const visit = (id, path) => {
     if (state.get(id) === "done") return;
@@ -288,12 +307,19 @@ const validate = (plan) => {
 };
 // CONTRACT-TEST-END validate
 
-// ---- Load: verbatim fetch -> Plan 見出し検査 -> 決定論 id 収集 -> extract -> validate + cross-check ----
+// gh verifies TLS through macOS Security.framework/trustd, whose validation network
+// the Bash sandbox blocks -> OSStatus -26276 (evaluation cannot complete). git
+// (OpenSSL, offline chain validation) is unaffected, so only gh needs to escape.
+const ghUnsandboxed =
+  " The `gh` command fails TLS verification inside the Bash sandbox, so run the Bash call that invokes `gh` with dangerouslyDisableSandbox: true; keep git and every other command sandboxed.";
+
+// ---- Load: verbatim fetch -> Plan heading check -> deterministic id collection -> extract -> validate + cross-check ----
 const fetched = await agent(
   anchor(
-    `GitHub issue ${issueRef} の本文を固定コマンドで取得する。要約・整形をしない。` +
-      `\`gh issue view ${issueRef} --json body --jq .body\` をそのまま実行し、その stdout を body として verbatim で返す` +
-      `(--jq 抽出は構造上 verbatim。編集しない)。コマンドが非 0 で終了した (issue が見つからない・取得失敗) 場合は found: false を返す。`,
+    `Fetch the body of GitHub issue ${issueRef} with a fixed command; do not summarize or reformat. ` +
+      `Run exactly \`gh issue view ${issueRef} --json body --jq .body\` and return its stdout verbatim as body ` +
+      `(the --jq extraction is verbatim by construction; do not edit it). If the command exits non-zero (issue not found / fetch failed), return found: false.` +
+      ghUnsandboxed,
   ),
   {
     label: "fetch",
@@ -306,32 +332,33 @@ const fetched = await agent(
 if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
   return {
     stopped: "no-issue-body",
-    why: `issue ${issueRef} の本文を取得できなかった。issue 番号と repo を確認する。`,
+    why: `Could not fetch the body of issue ${issueRef}. Check the issue number and repo.`,
   };
 }
 const body = fetched.body;
 
-// Plan 見出し検査と id 収集は extract agent より前に script が決定論で行う。
+// The Plan heading check and id collection run deterministically in the script,
+// before the extract agent.
 const planHeading = body.match(/^##\s+Plan\b.*$/m);
 if (!planHeading) {
   return {
     stopped: "no-plan",
-    why: "issue 本文に ## Plan 節が無い。/issue で plan を練ってから build を起動する。",
+    why: "The issue body has no ## Plan section. Refine the plan via /issue before launching build.",
   };
 }
 const afterHeading = body.slice(planHeading.index + planHeading[0].length);
 const nextSection = afterHeading.search(/^##[^#]/m);
 const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
-// id は定義位置でのみ拾い、prose 参照は拾わない (plan-section.md 参照)。
+// Match ids at their definition position only, not prose references (see plan-section.md).
 const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[1]));
 const bodyUnitIds = idSet(/^###\s+(U-\d{3})\b/gm);
 const bodyTestIds = idSet(/^[ \t]*[-*+][ \t]+(T-\d{3})\b/gm);
 
 const plan = await agent(
   anchor(
-    `次の GitHub issue 本文の ## Plan 節から構造化 plan を抽出する。再計画・要約・補完はせず、書かれている内容をそのまま構造化する。` +
-      `unit id (U-NNN) と test id (T-NNN) は本文のものを漏れなく保持する (欠落は後段の決定論 cross-check で reject される)。` +
-      `preconditions は plan が前提とする既存コードの {path, pattern} 一覧、backlog_candidates は issue に書かれた scope 外候補。本文に無ければ空配列。\n\n---\n${body}`,
+    `Extract a structured plan from the ## Plan section of the following GitHub issue body. Do not re-plan, summarize, or fill in gaps; structure exactly what is written. ` +
+      `Preserve every unit id (U-NNN) and test id (T-NNN) from the body (omissions are rejected by a downstream deterministic cross-check). ` +
+      `preconditions is the list of {path, pattern} of existing code the plan presupposes; backlog_candidates are out-of-scope candidates written in the issue. Empty arrays if absent from the body.\n\n---\n${body}`,
   ),
   {
     label: "extract",
@@ -344,7 +371,7 @@ const plan = await agent(
 if (!plan) {
   return {
     stopped: "extraction-failed",
-    why: "extract agent が plan を返さなかった。",
+    why: "The extract agent returned no plan.",
   };
 }
 
@@ -353,11 +380,11 @@ if (blockers.length) {
   return {
     stopped: "invalid-plan",
     blockers,
-    why: "抽出された plan が構造検証を通らない。",
+    why: "The extracted plan fails structural validation.",
   };
 }
 
-// 抽出での silent drop / 捏造を id 集合の exact 比較で reject する。
+// Reject silent drops / fabrications in extraction via exact id-set comparison.
 const planUnitIds = new Set(plan.units.map((u) => u.id));
 const planTestIds = new Set(plan.units.flatMap((u) => u.tests.map((t) => t.id)));
 const setDiff = (a, b) => [...a].filter((x) => !b.has(x));
@@ -371,22 +398,24 @@ if (Object.values(mismatch).some((l) => l.length)) {
   return {
     stopped: "extraction-mismatch",
     detail: mismatch,
-    why: "issue 本文の U/T id 集合と抽出結果が一致しない。",
+    why: "The U/T id sets in the issue body and the extraction do not match.",
   };
 }
 log(
-  `plan 抽出: unit ${plan.units.length} 件、test scenario ${planTestIds.size} 件、id cross-check pass。`,
+  `Plan extracted: ${plan.units.length} unit(s), ${planTestIds.size} test scenario(s), id cross-check pass.`,
 );
 
-// ---- Revalidate: preconditions を現在の codebase に対して再検証 (決定論 script gate) ----
-// issue 起票から build 起動までの間に前提コードが動いた可能性を fail-close で捕まえる。
-// exists/matches の判定は LLM でなく決定論 verifier workflows/build/revalidate.py が下す:
-// チェック (test -f + literal grep) は推論不要で、workflow runtime に無い shell アクセスだけを
-// 要するので、agent は preconditions を流し込んで verifier の stdout をそのまま返すだけの
-// 起動役にする。drift 判定は下の script の filter が持つ。
-// Branch (checkout) とは相互独立 (両者とも plan にしか依存しない) なので並列に走らせる。
-// トレードオフ: Revalidate が drift で stop した場合、checkout 済み branch が残る
-// (作成のみで commit は無いので回収は容易)。stopped return に branch を含めて可視化する。
+// ---- Revalidate: re-verify preconditions against the current codebase (deterministic script gate) ----
+// Catches, fail-closed, the possibility that the presupposed code moved between issue
+// filing and build launch. The exists/matches verdict is produced by the deterministic
+// verifier workflows/build/revalidate.py, not by LLM judgment: the check (test -f + literal
+// grep) needs no reasoning, only shell access the workflow runtime lacks, so the agent is a
+// pure launcher that pipes the preconditions in and echoes the verifier's stdout back. The
+// drift decision then stays in the script's filter below.
+// Runs in parallel with Branch (checkout): the two are mutually independent (both
+// depend only on plan). Trade-off: if Revalidate stops on drift, the checked-out
+// branch is left behind (creation only, no commits, so reclaiming it is trivial).
+// The stopped returns include branch to surface it.
 phase("Revalidate");
 const preconditions = plan.preconditions || [];
 const [reval, branch] = await parallel([
@@ -394,12 +423,12 @@ const [reval, branch] = await parallel([
     preconditions.length
       ? agent(
           anchor(
-            `plan の preconditions を決定論 verifier で再検証する。exists/matches を自分で判定しない。` +
-              `手順は、(1) この JSON をそのまま temp file に書き出す。(2) repository root から ` +
-              `\`python3 "$HOME/.claude/workflows/build/revalidate.py" < <tempfile>\` を実行する。` +
-              `(3) verifier の stdout "results" 配列を verbatim で返す (全 ${preconditions.length} 件、追加・削除・編集をしない)。` +
-              `verifier は {"results":[{path,pattern,exists,matches}]} を出力する。\n` +
-              `Preconditions JSON は次のとおり。\n${JSON.stringify(preconditions)}`,
+            `Re-verify the plan's preconditions with the deterministic verifier; do not judge exists/matches yourself. ` +
+              `The steps are, (1) write this exact JSON to a temp file; (2) from the repository root run ` +
+              `\`python3 ${bundled("workflows/build/revalidate.py")} < <tempfile>\`; ` +
+              `(3) return the verifier's stdout "results" array verbatim (all ${preconditions.length} entries, unchanged; do not add, drop, or edit any). ` +
+              `The verifier prints {"results":[{path,pattern,exists,matches}]}.\n` +
+              `The preconditions JSON is as follows.\n${JSON.stringify(preconditions)}`,
           ),
           {
             label: "revalidate",
@@ -413,7 +442,7 @@ const [reval, branch] = await parallel([
   () =>
     agent(
       anchor(
-        `issue #${issueNumber} "${plan.outcome}" のための新しい git 作業 branch を checkout する。conventional な branch 名 (type + 短い slug) を選び、その名前で git checkout -b を実行する。既に default branch 以外に居るなら現在の branch を維持する。branch 名を最終テキストで報告する。${guard}`,
+        `Check out a new git working branch for issue #${issueNumber} "${plan.outcome}". Pick a conventional branch name (type + short slug) and run git checkout -b with it. If already on a non-default branch, keep the current branch. Report the branch name as your final text.${guard}`,
       ),
       {
         label: "checkout",
@@ -429,12 +458,13 @@ if (preconditions.length) {
       stopped: "revalidate-failed",
       detail: reval,
       branch,
-      why: "revalidate agent が results 配列を返さなかった。",
+      why: "The revalidate agent returned no results array.",
     };
   }
-  // 各 precondition を (path, pattern) で result に束縛する。単なる件数一致に頼らない:
-  // launcher が並べ替え・drop して重複補填・差し替えをしても長さは同じになり、件数だけでは
-  // 実 drift を見逃す。対応する exists&&matches result が無い (欠落 or 失敗) precondition は drift。
+  // Bind each precondition to its result by (path, pattern) rather than trusting a
+  // bare count: a launcher that reorders, drops-and-duplicates, or substitutes an
+  // entry keeps the length identical, so a count check alone would mask a real drift.
+  // A precondition with no matching exists&&matches result (missing or failed) is drift.
   const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
   const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
   const drift = [];
@@ -448,27 +478,27 @@ if (preconditions.length) {
       stopped: "plan-drift",
       drift,
       branch,
-      why: "issue の plan が前提とするコードが現在の codebase に無い。issue を更新してから再起動する。",
+      why: "Code the issue's plan presupposes is absent from the current codebase. Update the issue and relaunch.",
     };
   }
-  log(`revalidate: preconditions ${preconditions.length} 件 全 pass。`);
+  log(`Revalidate: all ${preconditions.length} precondition(s) pass.`);
 }
 
-// checkout agent は上で Revalidate と並列に実行済み。phase マーカーは drift gate の後で
-// 発火させ、観測可能な trace を Load → Revalidate → Branch → Code に保つ
-// (plan-drift stop は Branch に到達しない)。
+// The checkout agent already ran in parallel with Revalidate above; emit the phase
+// marker here, after the drift gate, so the observable trace stays
+// Load → Revalidate → Branch → Code (and plan-drift stops never reach Branch).
 phase("Branch");
 
-// ---- Code: workflow("code") に委譲 (unit ごとの Red -> Green + 独立 verify) ----
-// preconditions / backlog_candidates は build 側で消費済みなので、code へは
-// PLAN_SCHEMA 相当だけを渡す。
+// ---- Code: delegated to workflow("code") (per-unit Red -> Green + independent verify) ----
+// preconditions / backlog_candidates are consumed on the build side, so code receives
+// only the PLAN_SCHEMA equivalent.
 phase("Code");
 const stripPreconditions = (p) =>
   Object.fromEntries(
     Object.entries(p).filter(([k]) => k !== "preconditions" && k !== "backlog_candidates"),
   );
 const code =
-  (await workflow("code", {
+  (await sibling("code", {
     plan: stripPreconditions(plan),
     repo,
     model: "sonnet",
@@ -478,24 +508,26 @@ if (!code || code.stopped) {
 }
 if (!code.tests_pass || !code.gates_pass)
   log(
-    `code の独立 verify が fail (tests=${code.tests_pass} gates=${code.gates_pass})。audit へ前進し PR に表面化する。`,
+    `code's independent verify failed (tests=${code.tests_pass} gates=${code.gates_pass}). Advancing to audit; it surfaces on the PR.`,
   );
-// workflow("code") は自前の `▸ code` グループで走るため Code phase ボックスに直接 agent が
-// 付かず「Not started」のままになる。この安価な agent 1 体で着火・完了させ、code phase が
-// 届けた内容の run-log recap も兼ねる。
+// workflow("code") runs under its own `▸ code` group, so the Code phase box has no direct
+// agent and would render "Not started" forever. This one cheap agent lights it up and
+// completes it, doubling as a run-log recap of what the code phase delivered.
 await agent(
   `Summarize in one line what the code phase delivered: ${plan.units.length} unit(s) implemented, independent verify tests=${code.tests_pass} gates=${code.gates_pass}. Return the sentence only.`,
   { label: "code-summary", phase: "Code", model: "haiku" },
 );
 
-// ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit loop (audit 実行は最大 3 回) ----
-// audit は workflow("audit") が fan-out を所有する (/audit の glob routing 表 + reviewer ->
-// challenge -> verify -> integrate)。scope を渡さないので uncommitted diff、つまり実装全体を
-// route する。code phase がテストを green にしているので preflight は省く。polish の review
-// mode は読み取りのみで、同じ diff に外部 Codex レンズを audit と並走できる。
-// reviewer-conformance は「実装が issue の Plan と一致するか」の Spec 軸を独立に見る。この軸の
-// findings は quality findings と別軸なので、消費側で toFix / residualBlocking に merge も
-// rerank もせず、PR の専用セクションに独立して surface する (reviewer-conformance の Posture)。
+// ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit loop (at most 3 audit runs) ----
+// The audit fan-out is owned by workflow("audit") (/audit's glob routing table +
+// reviewer -> challenge -> verify -> integrate). No scope is passed, so it routes
+// the uncommitted diff, i.e. the whole implementation. The code phase already got
+// tests green, so preflight is skipped. Polish's review mode is read-only, so the
+// external Codex lens runs on the same diff alongside the audit.
+// reviewer-conformance checks the Spec axis independently: does the implementation
+// match the issue's Plan? Its findings are a separate axis from the quality findings,
+// so the consumer must NOT merge or rerank them into toFix / residualBlocking; they
+// surface in a dedicated PR section instead (reviewer-conformance's Posture).
 const CONFORMANCE_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -503,7 +535,7 @@ const CONFORMANCE_SCHEMA = {
   properties: {
     spec_found: {
       type: "boolean",
-      description: "照合対象の spec (issue の Plan) が見つかり review した場合 true",
+      description: "true when a spec to conform against (the issue's Plan) was found and reviewed",
     },
     findings: {
       type: "array",
@@ -515,12 +547,15 @@ const CONFORMANCE_SCHEMA = {
           category: {
             type: "string",
             enum: ["missing", "scope_creep", "wrong"],
-            description: "欠落/部分実装、scope creep、実装誤り",
+            description: "missing/partial, scope creep, or implemented-but-wrong",
           },
-          spec_line: { type: "string", description: "対象となる spec / issue の引用行" },
+          spec_line: {
+            type: "string",
+            description: "the quoted spec / issue line the finding is about",
+          },
           location: {
             type: "string",
-            description: "diff 内の file:line、または scope creep の箇所",
+            description: "file:line in the diff, or the scope-creep location",
           },
           detail: { type: "string" },
         },
@@ -530,17 +565,19 @@ const CONFORMANCE_SCHEMA = {
 };
 phase("Audit");
 const [audit0, review, conformance] = await parallel([
-  () => workflow("audit", { repo, skipPreflight: true }),
-  () => workflow("polish", { repo, mode: "review" }),
+  () => sibling("audit", { repo, skipPreflight: true }),
+  () => sibling("polish", { repo, mode: "review" }),
   () =>
     agent(
       anchor(
-        `originating issue に対する conformance review。spec は GitHub issue #${issueNumber}: ` +
-          `\`gh issue view ${issueNumber}\` で読む。review 対象は UNCOMMITTED な working-tree diff ` +
-          `(この build はまだ commit していない) なので、\`git diff HEAD\` と ` +
-          `\`git status --porcelain\` が示す untracked file (新規の test/impl file) を対象にする。` +
-          `main...HEAD は使わない (HEAD はまだ branch 分岐点)。3 category (欠落/部分実装、scope creep、` +
-          `実装誤り) を spec 行を引用して報告する。spec が見つからなければ spec_found=false と空の findings を返す。`,
+        `Conformance review against the originating issue. The spec is GitHub issue #${issueNumber}: ` +
+          `read it with \`gh issue view ${issueNumber}\`. The implementation to review is the UNCOMMITTED ` +
+          `working-tree diff (this build has not committed yet), so use \`git diff HEAD\` plus the untracked ` +
+          `files (new test/impl files) shown by \`git status --porcelain\`. ` +
+          `Do NOT use main...HEAD (HEAD is still the branch point). Report the 3 categories ` +
+          `(missing/partial, scope creep, implemented-but-wrong) with the spec line quoted. ` +
+          `If no spec is available, return spec_found=false with an empty findings array.` +
+          ghUnsandboxed,
       ),
       {
         label: "conformance",
@@ -553,12 +590,12 @@ const [audit0, review, conformance] = await parallel([
 const conf = conformance || { spec_found: false, findings: [] };
 log(
   conf.spec_found
-    ? `conformance: ${conf.findings.length} 件の spec 逸脱 (独立軸、PR に別セクションで surface)。`
-    : "conformance: 照合対象の spec 未検出、skip。",
+    ? `conformance: ${conf.findings.length} spec deviation(s) (independent axis, surfaced in a separate PR section).`
+    : "conformance: no spec to conform against found, skipped.",
 );
 let audit = audit0 || { findings: [] };
 log(
-  `audit が ${(audit.assignments || []).length} reviewer group を発火、polish レンズは ${review && review.codex_available ? "有効" : "無効"}。`,
+  `Audit fired ${(audit.assignments || []).length} reviewer group(s); polish lens ${review && review.codex_available ? "active" : "inactive"}.`,
 );
 const criticalHigh = (a) =>
   (a.findings || []).filter((f) => f.severity === "critical" || f.severity === "high");
@@ -567,16 +604,16 @@ const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
   summary: `${f.title}: ${f.detail}`,
   file: f.file || "",
 }));
-// fix -> re-audit を 0 critical/high まで回す。旧版は fix 1 回で re-audit なし、つまり fix の
-// 検証が無かった。最終 round の fix だけは re-audit 予算が尽きるため未検証のまま PR に
-// 表面化する。
+// Loop fix -> re-audit until 0 critical/high. The old version fixed once with no
+// re-audit, i.e. the fixes were never verified. Only the final round's fixes stay
+// unverified (the re-audit budget is spent) and surface on the PR.
 let toFix = [...criticalHigh(audit), ...polishSurvivors];
 let reaudited = true;
 for (let round = 1; round <= 3 && toFix.length; round++) {
-  log(`fix round ${round}: ${toFix.length} 件を修正。`);
+  log(`Fix round ${round}: fixing ${toFix.length} finding(s).`);
   await agent(
     anchor(
-      `これらの review findings を修正し、テストが通ることを確認する。findings は次のとおり。\n${JSON.stringify(toFix)}`,
+      `Fix these review findings and confirm tests pass. The findings are as follows.\n${JSON.stringify(toFix)}`,
     ),
     {
       agentType: "general-purpose",
@@ -587,42 +624,45 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
   );
   if (round === 3) {
     reaudited = false;
-    log("fix round 上限。最終 round の fix は re-audit されず、PR に表面化する。");
+    log("Fix round cap reached. The final round's fixes are not re-audited and surface on the PR.");
     break;
   }
-  audit = (await workflow("audit", { repo, skipPreflight: true })) || {
+  audit = (await sibling("audit", { repo, skipPreflight: true })) || {
     findings: [],
   };
   toFix = criticalHigh(audit);
 }
-// re-audit 済みなら criticalHigh(audit) は (ループ退出条件より空の) 検証済み集合。
-// round 上限に達した (reaudited === false) 場合、toFix は最終 round で修正したが
-// re-audit していない critical/high findings を保持する。汎用警告だけでなく PR に
-// 「未解決の可能性がある blocker」を列挙するため surface する。
+// When re-audited, criticalHigh(audit) is the (empty, by loop exit) verified set.
+// When the round cap was hit (reaudited === false), toFix holds the final round's
+// critical/high findings that were fixed but never re-audited. Surface them so the
+// PR enumerates the possibly-unresolved blockers instead of only a generic warning.
 const residualBlocking = reaudited ? criticalHigh(audit) : toFix;
 
-// ---- Polish: cleanup のみ (simplify -> enhancer-code -> テスト検証) ----
-// review レンズは Audit phase で消化済みなので、ここは mutator だけを回す。
+// ---- Polish: cleanup only (simplify -> enhancer-code -> test validation) ----
+// The review lens was consumed in the Audit phase, so only the mutators run here.
 phase("Polish");
-const cleanup = await workflow("polish", { repo, mode: "cleanup" });
-// workflow("polish") は自前の `▸ polish` グループで走るため Polish phase ボックスに直接 agent
-// が付かない。Code phase と同じく agent 1 体で着火・完了させる。
+const cleanup = await sibling("polish", { repo, mode: "cleanup" });
+// workflow("polish") runs under its own `▸ polish` group, so the Polish phase box needs one
+// direct agent to light up and complete — same pattern as the Code phase above.
 const cleanupEdits = cleanup?.cleanup?.edits?.length ?? 0;
 await agent(
   `Summarize in one line what the polish phase did: ${cleanupEdits} cleanup edit(s) applied, tests_pass=${cleanup?.cleanup?.tests_pass}. Return the sentence only.`,
   { label: "polish-summary", phase: "Polish", model: "haiku" },
 );
 
-// ---- Backlog: scope 外の発見を「ユーザーが起票する候補」として集める ----
-// 候補源は issue 本文に書かれた scope 外候補 (source: issue) と build 中の発見 (code /
-// audit / polish)。build はこれを自分で起票しない: headless 実行からの自動 post は
-// 未成熟で重複しやすい issue を量産し、自動化への信頼を下げる。起票は最終出力に委ねる。
-// 候補を PR body と戻り値に載せ、起票に値するものはユーザーが /issue で立てる。
-// /issue は build が issue に期待する premise-check / challenge の refine を通す。
-// code.anomalies はここに畳まない: Red 未確認の build 健全性シグナルであり、PR の専用
-// "Anomalies" 節 (shipPayload.code_anomalies 経由) で一度だけ描画する。ここにも畳むと
-// 各 anomaly が二重に列挙されていた。
+// ---- Backlog: collect out-of-scope discoveries as candidates for the user ----
+// Candidate sources are the out-of-scope candidates written in the issue body
+// (source: issue) plus discoveries during the build (code / audit / polish). The
+// build deliberately does not file these itself: auto-posting from a headless run
+// mass-produces under-refined, duplicate-prone issues and erodes trust in the
+// automation. Issue creation is instead deferred to the final output. The
+// candidates are surfaced in the PR body and the return value, and the user files
+// the ones worth filing via /issue, which carries the premise-check /
+// challenge refinement build expects from an issue.
 phase("Backlog");
+// code.anomalies are NOT folded in here: they are Red-unconfirmed build-integrity
+// signals, rendered once under the PR's dedicated "Anomalies" section (via
+// shipPayload.code_anomalies). Folding them here too listed every anomaly twice.
 const backlogCandidates = [
   ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
   ...(audit.findings || [])
@@ -640,42 +680,45 @@ const backlogCandidates = [
 ];
 if (backlogCandidates.length) {
   log(
-    `backlog: scope 外候補 ${backlogCandidates.length} 件を、ユーザーが /issue で起票するため surface。`,
+    `Backlog: ${backlogCandidates.length} out-of-scope candidate(s) surfaced for the user to file via /issue.`,
   );
 }
 
-// ---- Ship: commit + draft PR (外向きの操作なので draft = 可逆) ----
-// PR は人間レビュアーも読むので、body は所有者の異なる 2 部構成にする。冒頭の Summary
-// (何を・なぜ・どこを見るか) はレビュアーの入口で本質的に生成なので agent が書く
-// (commit メッセージと同様)。その下に、script が既に持つ構造化事実 (assumption /
-// backlog 候補 / 未解決 finding / 未 re-audit 警告 / verify 結果) の fail-closed な転記が
-// 続く。この tail だけを決定論 renderer workflows/build/pr-body.py に委ね、事実セクションの
-// 欠落や和らげを起こさせない。agent は tail を再入力せず append し、append と `gh pr create` を
-// `&&` で連結する。renderer が失敗 (payload 不正 / 必須欠落 → exit 1、出力なし) したら PR は
-// 一切作られず、tail の欠けた PR を出さない。verify ログの pass/fail 判定は pr-body.py だけが
-// 持つ (失敗時のみ verify_output を読む) ので、payload は無条件でそれを渡す。
+// ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
+// The PR is read by human reviewers, so its body pairs two parts with different
+// owners. The lead Summary (what this PR does, why, and where to look) is genuinely
+// generative and is the reviewer's entry point, so the agent writes it (like the
+// commit message). Below it sits a fail-closed relay of structured facts the script
+// already holds (assumptions / unresolved findings / conformance /
+// not-re-audited warning / verify result); only that tail is delegated to the
+// deterministic renderer workflows/build/pr-body.py, so a fact section is never
+// silently dropped or softened. The agent appends the rendered tail rather than
+// retyping it, and chains the append with `gh pr create` via `&&` so that if the
+// renderer fails (malformed / missing-field payload → exit 1, no output) the PR is
+// not created at all, rather than shipping one missing the fail-closed tail. The
+// pass/fail gating of the verify log lives only in pr-body.py (it reads
+// verify_output solely on failure), so the payload passes it through unconditionally.
 phase("Ship");
 
-// tail のラベルは pr-body.py が言語化するが、finding 本文は reviewer が英語で吐くので
-// そのまま出ていた。人間レビュアーも読むため、fail-closed でない情報系セクションの
-// 自由記述だけを対象言語へ翻訳 + 軽く圧縮する。安全事実 (verify status / not-reaudited
-// 警告 / verify_output ログ) と、file:line・severity・件数・識別子といった構造化フィールド
-// は対象外で決定論のまま残す。source の finding を mutate しないよう copy に対して行う。
+// The tail labels are localized by pr-body.py, but the finding bodies come from the
+// reviewers in English, so they printed as-is. Since human reviewers read the PR too,
+// translate + lightly compress only the free-text of the informational (not
+// fail-closed) sections into the target language. Safety facts (verify status /
+// not-reaudited warning / verify_output log) and structured fields (file:line,
+// severity, counts, identifiers) are excluded and stay deterministic. Operate on
+// copies so the source finding objects are not mutated.
 const shipAssumptions = [...(plan.assumptions || [])];
-const shipBacklog = backlogCandidates.map((c) => ({ ...c }));
 const shipResidual = residualBlocking.map((f) => ({ ...f }));
 const shipAnomalies = (code.anomalies || []).map((a) => ({ ...a }));
 const shipConformance = conf.spec_found ? conf.findings.map((f) => ({ ...f })) : [];
 
-// 翻訳対象の自由記述だけを id 付きで集める。書き戻しは set() 経由で、構造化
-// フィールドには触れない。空文字列は翻訳に送らない。
+// Collect only the translatable free-text with an id. Writing back goes through
+// set(), never touching structured fields. Empty strings are not sent to translation.
 const slots = [];
 shipAssumptions.forEach((t, i) => {
   if (typeof t === "string" && t.trim())
     slots.push({ text: t, set: (v) => (shipAssumptions[i] = v) });
 });
-for (const c of shipBacklog)
-  if (c.summary && c.summary.trim()) slots.push({ text: c.summary, set: (v) => (c.summary = v) });
 for (const f of shipResidual)
   if (f.summary && f.summary.trim()) slots.push({ text: f.summary, set: (v) => (f.summary = v) });
 for (const f of shipConformance)
@@ -684,8 +727,9 @@ for (const a of shipAnomalies)
   if (a.notes && a.notes.trim()) slots.push({ text: a.notes, set: (v) => (a.notes = v) });
 
 if (slots.length) {
-  // 単一利用の schema。各要素に入力の id を付けて返させ、id で書き戻す。順序が
-  // 入れ替わっても取り違えず、全 id が揃わなければ fail-open で英語原文を維持。
+  // Single-use schema. Force each element to carry back the input id, and write back
+  // by id: a reordered response is not misassigned, and unless every id is present it
+  // is fail-open, keeping the English originals.
   const TRANSLATION_SCHEMA = {
     type: "object",
     additionalProperties: false,
@@ -704,10 +748,10 @@ if (slots.length) {
   };
   const translated = await agent(
     anchor(
-      `\`$HOME/.claude/settings.json\` の \`language\` を読む (未設定なら english)。` +
-        `次の JSON 配列は PR 本文の情報系セクション (backlog / assumptions / 未解決 finding / conformance / anomaly) の自由記述。各要素の \`text\` を \`language\` へ翻訳し、冗長な散文は締めて短くする。english のときも軽い圧縮のためこの手順を通す。\n` +
-        `厳守: (a) file:line・パス・数値・件数・severity ラベル・識別子・コード片は原文のまま残す。(b) 事実を足さない・削らない。訳と圧縮のみで、新しい主張や件数を作らない。(c) 出力 \`translations\` は各要素に入力の \`id\` を付けて全件返す。順序は問わないが id は入力と一致させる。\n` +
-        `入力:\n${JSON.stringify(slots.map((s, i) => ({ id: i, text: s.text })))}`,
+      `Read \`language\` from \`$HOME/.claude/settings.json\` (english if unset). ` +
+        `The following JSON array is the free-text of the PR body's informational sections (assumptions / unresolved findings / conformance / anomaly). Translate each element's \`text\` into \`language\` and tighten verbose prose. Run this step even for english, for the light compression.\n` +
+        `Strict: (a) keep file:line, paths, numbers, counts, severity labels, identifiers, and code fragments verbatim. (b) Add no facts and drop none. Translate and compress only; invent no new claim or count. (c) Return \`translations\` with every element carrying the input \`id\`; order is free but each id must match the input.\n` +
+        `Input:\n${JSON.stringify(slots.map((s, i) => ({ id: i, text: s.text })))}`,
     ),
     {
       label: "translate-tail",
@@ -717,8 +761,8 @@ if (slots.length) {
     },
   );
   const out = translated && translated.translations;
-  // id で突合。全 slot 分の訳が揃ったときだけ反映し、欠落・取り違え・順序入れ替えは
-  // 英語原文で継続する。
+  // Match by id. Apply only when a translation exists for every slot; a missing,
+  // misassigned, or reordered response ships with the English originals.
   const byId = new Map();
   if (Array.isArray(out))
     for (const o of out)
@@ -727,14 +771,15 @@ if (slots.length) {
   if (slots.every((_, i) => byId.has(i))) {
     slots.forEach((s, i) => s.set(byId.get(i)));
   } else {
-    log(`translate-tail: 訳が ${byId.size}/${slots.length} 件、英語原文で ship を継続。`);
+    log(
+      `translate-tail: ${byId.size}/${slots.length} translated, shipping with English originals.`,
+    );
   }
 }
 
 const shipPayload = {
   issue: issueNumber,
   assumptions: shipAssumptions,
-  backlog_candidates: shipBacklog,
   residual_blocking: shipResidual,
   reaudited,
   code_anomalies: shipAnomalies,
@@ -745,14 +790,14 @@ const shipPayload = {
 };
 const ship = await agent(
   anchor(
-    `全変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にする。commit メッセージは自分で書く (diff を要約する)。` +
-      `branch を push し、draft pull request を開く。body は PR テンプレートから自分で書く人間向け部分と、データから決定論生成した事実セクションの 2 部構成にする (事実セクションは手書きしない)。手順は次のとおり。\n` +
-      `(1) \`$HOME/.claude/settings.json\` の \`language\` を読み (未設定なら英語)、人間向け body をその言語で書く。code・識別子・技術用語は翻訳しない。PR テンプレートを選ぶ。repository にあればそれを使い (case-insensitive、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)、なければ bundled \`$HOME/.claude/skills/pr/templates/pr.md\` を使う。skeleton を読んで body file に畳み込む。人間向けセクションだけを埋め、レビュアーが一目で意図をつかめるようにする。この PR が何を実装したか (outcome は ${JSON.stringify(plan.outcome)})、アプローチ、レビューで注視すべき箇所を、リストとコンパクトな table で簡潔に書く。冗長表現も事実の捏造もしない。決定論 tail が既に出すセクションはスキップする。Related / Closes (tail が \`Closes #\` を出す) と Scope / Backlog (tail が backlog を出す)。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実際の diff から埋め、空ならセクションごと省く。\n` +
-      `(2) この JSON をそのまま temp file に書き出す。\n${JSON.stringify(shipPayload)}\n` +
-      `(3) 事実 tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、renderer 失敗時は PR を作る前に中断する。repository root から ` +
-      `\`python3 "$HOME/.claude/workflows/build/pr-body.py" < <tempfile> >> <bodyfile> && gh pr create --draft --title "<commit subject>" --body-file <bodyfile>\` を実行する。\n` +
-      `pr-body.py は payload が不正・必須フィールド欠落なら非 0 で終了し (何も出力しない)。チェーンが失敗したら他の手段で PR を作らず、committed と空の pr_url とエラーを報告する。tail の欠けた PR を出すより欠落を surface する。\n` +
-      `committed 状態と PR url を報告する。${guard}`,
+    `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit; you write the commit message (summarize the diff). ` +
+      `Push the branch, then open a draft pull request. Its body is a human-facing part you write from a PR template, followed by deterministic fact sections rendered from data (do not hand-write the fact sections). The steps are as follows.\n` +
+      `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`${bundled("skills/pr/templates/pr.md")}\`; read the skeleton and fold it into the body file. Fill only the human-facing sections, ordered so a reviewer grasps it fast: lead with WHY (the problem this solves and the outcome it reaches, ${JSON.stringify(plan.outcome)}), then WHAT changed and the approach, then where to focus review. Use lists and compact tables, keep it terse, no filler, no invented facts. SKIP Related / Closes (the tail emits \`Closes #\`). SKIP Scope / Backlog too: out-of-scope candidates are intentionally not surfaced in the PR (they are returned for the user to file via /issue). Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
+      `(2) write this exact JSON to a temp file.\n${JSON.stringify(shipPayload)}\n` +
+      `(3) append the fact tail and open the PR as ONE \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
+      `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
+      `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do NOT create the PR by other means. Report committed with an empty pr_url and the error instead, so the missing fact tail surfaces rather than shipping a PR without it.\n` +
+      `Report the committed state and the PR url.${guard}${ghUnsandboxed}`,
   ),
   {
     label: "ship",
