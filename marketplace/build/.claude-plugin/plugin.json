@@ -1,5 +1,0 @@
-{
-  "name": "build",
-  "version": "0.2.0",
-  "description": "Autonomous end-to-end build workflow (build/code/audit/polish) with the /issue refine stage, its veto evidence-gate hooks, and bundled deterministic assets"
-}
