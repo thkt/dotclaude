@@ -6,131 +6,25 @@
     "url": "https://github.com/thkt"
   },
   "metadata": {
-    "description": "Usage-based development workflow system organized by phase: plan, build, review, ship, and toolkit. Install all phases together; skills call across plugins (e.g. /issue in ship invokes /challenge in review and /research, /think, /slice in plan).",
-    "version": "3.0.0",
-    "architecture": "monorepo-marketplace",
-    "adr": "docs/decisions/0003-marketplace.md"
+    "description": "Autonomous development workflow toolkit distributed as one self-contained plugin. Installing build clones the whole repository once, so every skill, agent, and workflow loads under the build: namespace with no cross-plugin duplication.",
+    "version": "4.0.0",
+    "architecture": "single-plugin",
+    "adr": "docs/decisions/0083-collapse-marketplace-to-single-build-plugin.md"
   },
   "plugins": [
     {
-      "name": "plan",
-      "source": { "source": "github", "repo": "thkt/dotclaude" },
-      "description": "Planning and design: /outcome for outcome definition, /think for design exploration and SOW/Spec generation, /research for technical investigation, /slice for breaking plans into vertical-slice issues, plus architecture agents",
-      "version": "3.0.0",
-      "author": {
-        "name": "thkt",
-        "url": "https://github.com/thkt"
-      },
-      "license": "MIT",
-      "keywords": ["planning", "design", "outcome", "sow", "spec", "architecture", "research"],
-      "category": "Planning",
-      "commands": [
-        "./skills/outcome/SKILL.md",
-        "./skills/think/SKILL.md",
-        "./skills/research/SKILL.md",
-        "./skills/slice/SKILL.md"
-      ],
-      "agents": ["./agents/explorers/explorer-feature.md", "./agents/critics/critic-design.md"]
-    },
-    {
       "name": "build",
       "source": { "source": "github", "repo": "thkt/dotclaude" },
-      "description": "Implementation and testing: /build for end-to-end orchestration, /code, /fix with TDD/RGRC cycle and quality gates, /shake for flaky-test detection",
-      "version": "3.0.0",
+      "description": "End-to-end autonomous build. Refine an issue with /issue, hand the issue number to the build workflow, and get a draft PR after Load / Code / Audit / Polish / Ship. Bundles the full reviewer and critic agent set, the code / audit / polish / shake / assert / adrift workflows, and the planning and git skills (/think, /research, /commit, /pr).",
+      "version": "4.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["tdd", "rgrc", "implementation", "testing", "flaky", "fix"],
+      "keywords": ["build", "tdd", "issue", "audit", "polish", "workflow", "autonomous", "review"],
       "category": "Implementation",
-      "commands": ["./skills/fix/SKILL.md"],
-      "agents": [
-        "./agents/resolvers/resolver-build.md",
-        "./agents/enhancers/enhancer-code.md",
-        "./agents/generators/generator-test.md"
-      ],
-      "skills": ["./skills/use-workflow-tdd-cycle/SKILL.md"]
-    },
-    {
-      "name": "review",
-      "source": { "source": "github", "repo": "thkt/dotclaude" },
-      "description": "Quality and review: /audit, /polish, /preview, /challenge, /assert with 21 specialized reviewer agents",
-      "version": "3.0.0",
-      "author": {
-        "name": "thkt",
-        "url": "https://github.com/thkt"
-      },
-      "license": "MIT",
-      "keywords": ["audit", "review", "quality", "polish", "challenge", "security", "readability"],
-      "category": "Quality",
-      "commands": ["./skills/preview/SKILL.md", "./skills/challenge/SKILL.md"],
-      "agents": [
-        "./agents/critics/critic-audit.md",
-        "./agents/critics/critic-evidence.md",
-        "./agents/enhancers/enhancer-evidence.md",
-        "./agents/enhancers/enhancer-integration.md",
-        "./agents/reviewers/reviewer-accessibility.md",
-        "./agents/reviewers/reviewer-readability.md",
-        "./agents/reviewers/reviewer-design.md",
-        "./agents/reviewers/reviewer-duplication.md",
-        "./agents/reviewers/reviewer-efficiency.md",
-        "./agents/reviewers/reviewer-operations.md",
-        "./agents/reviewers/reviewer-progressive.md",
-        "./agents/reviewers/reviewer-reuse.md",
-        "./agents/reviewers/reviewer-causation.md",
-        "./agents/reviewers/reviewer-security.md",
-        "./agents/reviewers/reviewer-silence.md",
-        "./agents/reviewers/reviewer-coverage.md",
-        "./agents/reviewers/reviewer-testability.md",
-        "./agents/reviewers/reviewer-prompt.md"
-      ],
-      "skills": [
-        "./skills/use-context-root-cause-analysis/SKILL.md",
-        "./skills/use-context-reviewer-readability/SKILL.md",
-        "./skills/use-context-reviewer-security/SKILL.md",
-        "./skills/use-context-reviewer-silence/SKILL.md",
-        "./skills/use-context-reviewer-testability/SKILL.md"
-      ]
-    },
-    {
-      "name": "ship",
-      "source": { "source": "github", "repo": "thkt/dotclaude" },
-      "description": "Git and release: /commit, /checkout, /pr, /issue with conventional commits and PR generation. Requires the plan and review plugins: /issue invokes /challenge (review) and /research, /think, /slice (plan)",
-      "version": "3.0.0",
-      "author": {
-        "name": "thkt",
-        "url": "https://github.com/thkt"
-      },
-      "license": "MIT",
-      "keywords": ["git", "commit", "checkout", "pr", "issue", "conventional-commits"],
-      "category": "Git",
-      "commands": [
-        "./skills/commit/SKILL.md",
-        "./skills/checkout/SKILL.md",
-        "./skills/pr/SKILL.md",
-        "./skills/issue/SKILL.md"
-      ],
-      "skills": []
-    },
-    {
-      "name": "toolkit",
-      "source": { "source": "github", "repo": "thkt/dotclaude" },
-      "description": "Utilities and patterns: /adr for decision records, /adrift for ADR-vs-code drift, /census for undocumented-decision discovery, plus frontend pattern references",
-      "version": "3.0.0",
-      "author": {
-        "name": "thkt",
-        "url": "https://github.com/thkt"
-      },
-      "license": "MIT",
-      "keywords": ["adr", "adrift", "census", "patterns", "frontend", "productivity"],
-      "category": "Utilities",
-      "commands": ["./skills/adr/SKILL.md", "./skills/census/SKILL.md"],
-      "skills": [
-        "./skills/use-cli-gcloud/SKILL.md",
-        "./skills/use-cli-recall/SKILL.md",
-        "./skills/use-cli-scout/SKILL.md"
-      ]
+      "commands": ["./skills/issue/SKILL.md", "./skills/fix/SKILL.md"]
     }
   ]
 }
