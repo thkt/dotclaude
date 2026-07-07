@@ -14,7 +14,7 @@
   "plugins": [
     {
       "name": "plan",
-      "source": "./",
+      "source": { "source": "github", "repo": "thkt/dotclaude" },
       "description": "Planning and design: /outcome for outcome definition, /think for design exploration and SOW/Spec generation, /research for technical investigation, /slice for breaking plans into vertical-slice issues, plus architecture agents",
       "version": "3.0.0",
       "author": {
@@ -34,7 +34,7 @@
     },
     {
       "name": "build",
-      "source": "./",
+      "source": { "source": "github", "repo": "thkt/dotclaude" },
       "description": "Implementation and testing: /build for end-to-end orchestration, /code, /fix with TDD/RGRC cycle and quality gates, /shake for flaky-test detection",
       "version": "3.0.0",
       "author": {
@@ -44,12 +44,7 @@
       "license": "MIT",
       "keywords": ["tdd", "rgrc", "implementation", "testing", "flaky", "fix"],
       "category": "Implementation",
-      "commands": [
-        "./skills/build/SKILL.md",
-        "./skills/code/SKILL.md",
-        "./skills/fix/SKILL.md",
-        "./skills/shake/SKILL.md"
-      ],
+      "commands": ["./skills/fix/SKILL.md"],
       "agents": [
         "./agents/resolvers/resolver-build.md",
         "./agents/enhancers/enhancer-code.md",
@@ -59,7 +54,7 @@
     },
     {
       "name": "review",
-      "source": "./",
+      "source": { "source": "github", "repo": "thkt/dotclaude" },
       "description": "Quality and review: /audit, /polish, /preview, /challenge, /assert with 21 specialized reviewer agents",
       "version": "3.0.0",
       "author": {
@@ -69,13 +64,7 @@
       "license": "MIT",
       "keywords": ["audit", "review", "quality", "polish", "challenge", "security", "readability"],
       "category": "Quality",
-      "commands": [
-        "./skills/audit/SKILL.md",
-        "./skills/polish/SKILL.md",
-        "./skills/preview/SKILL.md",
-        "./skills/challenge/SKILL.md",
-        "./skills/assert/SKILL.md"
-      ],
+      "commands": ["./skills/preview/SKILL.md", "./skills/challenge/SKILL.md"],
       "agents": [
         "./agents/critics/critic-audit.md",
         "./agents/critics/critic-evidence.md",
@@ -106,7 +95,7 @@
     },
     {
       "name": "ship",
-      "source": "./",
+      "source": { "source": "github", "repo": "thkt/dotclaude" },
       "description": "Git and release: /commit, /checkout, /pr, /issue with conventional commits and PR generation. Requires the plan and review plugins: /issue invokes /challenge (review) and /research, /think, /slice (plan)",
       "version": "3.0.0",
       "author": {
@@ -126,22 +115,17 @@
     },
     {
       "name": "toolkit",
-      "source": "./",
-      "description": "Utilities and patterns: /adr for decision records, /adrift for ADR-vs-code drift, /census for undocumented-decision discovery, /reflect for session reflection, plus frontend pattern references",
+      "source": { "source": "github", "repo": "thkt/dotclaude" },
+      "description": "Utilities and patterns: /adr for decision records, /adrift for ADR-vs-code drift, /census for undocumented-decision discovery, plus frontend pattern references",
       "version": "3.0.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["adr", "adrift", "census", "reflect", "patterns", "frontend", "productivity"],
+      "keywords": ["adr", "adrift", "census", "patterns", "frontend", "productivity"],
       "category": "Utilities",
-      "commands": [
-        "./skills/adr/SKILL.md",
-        "./skills/adrift/SKILL.md",
-        "./skills/census/SKILL.md",
-        "./skills/reflect/SKILL.md"
-      ],
+      "commands": ["./skills/adr/SKILL.md", "./skills/census/SKILL.md"],
       "skills": [
         "./skills/use-cli-gcloud/SKILL.md",
         "./skills/use-cli-recall/SKILL.md",
