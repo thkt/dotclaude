@@ -5,6 +5,21 @@ when_to_use: Issue作って, Issue書いて, Issue作成, GitHub Issue, refine a
 allowed-tools: Bash(gh:*) Bash(cat:*) Bash(ugrep:*) Bash(test:*) Bash(python3:*) Read Task Skill AskUserQuestion
 model: opus
 argument-hint: "[issue description]"
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "../../hooks/veto/pre-issue-create.sh"
+  PostToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "../../hooks/veto/veto.py record bash"
+    - matcher: "AskUserQuestion"
+      hooks:
+        - type: command
+          command: "../../hooks/veto/veto.py record skip"
 ---
 
 # /issue - GitHub Issue Generator

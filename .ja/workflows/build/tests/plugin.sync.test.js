@@ -13,8 +13,9 @@ while (!existsSync(join(root, "marketplace")) && root !== dirname(root)) {
   root = dirname(root);
 }
 
-// 配布物として同期する必要があるのは正確にこの 21 ファイル。
-// .claude-plugin/{plugin,marketplace}.json と hooks/hooks.json は plugin 専用で dev tree に対応物を持たない。
+// 配布物として同期する必要があるのは正確にこの 20 ファイル。
+// veto hook は skills/*/SKILL.md の frontmatter が担うため hooks/hooks.json は持たない。
+// .claude-plugin/{plugin,marketplace}.json は plugin 専用で dev tree に対応物を持たない。
 const MIRRORED = [
   "workflows/build.js",
   "workflows/code.js",
@@ -26,7 +27,6 @@ const MIRRORED = [
   "skills/pr/templates/pr.md",
   "hooks/veto/pre-issue-create.sh",
   "hooks/veto/veto.py",
-  "hooks/veto/record-bash.sh",
   "skills/issue/SKILL.md",
   "skills/issue/references/phrases.en.md",
   "skills/issue/references/phrases.ja.md",
