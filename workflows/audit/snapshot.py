@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
 """Usage: snapshot.py   (audit payload JSON on stdin)
 
-Deterministically record one audit run to $HOME/.claude/workspace/history/ and
-compute the resolved/new/carried delta against the most recent prior snapshot.
-audit.js used to hand this to a general-purpose LLM agent, which walked the file
-glob and the finding-by-finding diff token by token and took minutes serially at
-the tail of the run. The work is pure bookkeeping (glob, match on file+message,
-count, write JSON), so moving it here turns a multi-minute agent into a single
-sub-second shell call and makes the delta rule tested code, not prompt adherence.
-
-The workflow script itself cannot touch the filesystem or read env, so the caller
-still spawns a shell agent -- but that agent's whole job is now `snapshot.py <
-payload`, not reasoning about the diff.
+Record one audit run to $HOME/.claude/workspace/history/ and compute the
+resolved/new/carried delta against the most recent prior snapshot.
 
 stdin:  JSON {scope, focus, pre_flight, raw_findings[], findings[], skipped[]}
         each raw_findings entry carries at least {file, message}.
@@ -33,11 +24,12 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import NoReturn
 
 HISTORY_DIR = Path(os.path.expanduser("~")) / ".claude" / "workspace" / "history"
 
 
-def fail(message):
+def fail(message) -> NoReturn:
     print(f"Error: {message}", file=sys.stderr)
     sys.exit(1)
 

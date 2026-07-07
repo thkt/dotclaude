@@ -10,7 +10,7 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "~/.claude/hooks/veto/veto.py record bash"
+          command: "../../hooks/veto/veto.py record bash"
 ---
 
 # /challenge - GO / NO-GO verdict on a proposal

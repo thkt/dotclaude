@@ -7,11 +7,6 @@ export const meta = {
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
-// main loop 裁量の RGRC は「テストをまとめて後書き」「Red 確認を飛ばす」という省略が
-// 起きうる。この workflow は unit 単位の Red -> Green を script の loop が所有し、
-// Red の確認結果を schema で受け取って記録する。Green の自己申告は信用せず、最後に実装に
-// 関与していない独立 agent が全 suite を再実行する (reward hack 対策)。
-
 // args は object で届くことも、caller が stringify すると JSON 文字列で届くこともある。
 // 一度だけ正規化する。nested の workflow("code", {plan}) は object で届くのでその分岐を残す。
 const parseArgs = () => {
@@ -122,7 +117,6 @@ for (const unit of units) {
     `テスト実行コマンドは ${testCmd}。\n` +
     (completed.length ? `実装済み unit は ${completed.join(", ")}。\n` : "");
 
-  // Red: テストを書き、fail を実行で確認する。実装は書かない。
   let red = await agent(
     anchor(
       `TDD の Red step。${ctx}` +
@@ -164,7 +158,6 @@ for (const unit of units) {
     continue;
   }
 
-  // Green: テストが pass するまで実装し、その後 refactor する。テストは変更しない。
   let green = await agent(
     anchor(
       `TDD の Green step。${ctx}` +

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Tests for workflows/audit/snapshot.py (deterministic audit-run recorder).
+"""workflows/audit/snapshot.py (決定論的 audit-run recorder) のテスト。
 
 Run: python3 workflows/audit/tests/snapshot_test.py
 
-compute_delta() is exercised directly; the CLI contract (stdin JSON -> a written
-audit-*.json carrying resolved fields + delta, path on stdout, exit 1 on a bad
-payload) is exercised via subprocess with an isolated HOME.
+compute_delta() は直接呼び出しで検証する。CLI 契約 (stdin JSON -> 解決済み
+フィールド + delta を持つ audit-*.json の書き込み、stdout にパス、不正 payload
+で exit 1) は隔離した HOME を使った subprocess 経由で検証する。
 """
 
 import importlib.util
@@ -19,6 +19,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SCRIPT = HERE.parent / "snapshot.py"
 _spec = importlib.util.spec_from_file_location("snapshot", SCRIPT)
+assert _spec is not None and _spec.loader is not None
 snapshot = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(snapshot)
 
@@ -94,9 +95,7 @@ class CliTest(unittest.TestCase):
             result = self._run(second, home)
             self.assertEqual(result.returncode, 0, result.stderr)
             record = json.loads(Path(result.stdout.strip()).read_text())
-            self.assertEqual(
-                record["delta"], {"resolved": 1, "new": 1, "carried": 1}
-            )
+            self.assertEqual(record["delta"], {"resolved": 1, "new": 1, "carried": 1})
 
     def test_unparseable_payload_exits_1_and_writes_nothing(self):
         with tempfile.TemporaryDirectory() as home:
@@ -111,7 +110,9 @@ class CliTest(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertEqual(result.stdout, "")
             history = Path(home) / ".claude" / "workspace" / "history"
-            self.assertFalse(any(history.glob("audit-*.json")) if history.exists() else False)
+            self.assertFalse(
+                any(history.glob("audit-*.json")) if history.exists() else False
+            )
 
 
 if __name__ == "__main__":

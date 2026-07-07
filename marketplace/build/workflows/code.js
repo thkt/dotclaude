@@ -7,12 +7,6 @@ export const meta = {
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
-// RGRC at the main loop's discretion can degrade: tests written in bulk afterwards,
-// Red confirmation skipped. This workflow has the script's loop own
-// the per-unit Red -> Green, receiving the Red confirmation via schema and recording
-// it. Green's self-report is not trusted: an independent agent uninvolved in the
-// implementation re-runs the full suite at the end (reward-hack countermeasure).
-
 // args may arrive as an object or, if a caller stringifies it, as a JSON string.
 // Normalize once. Keep the object branch: nested workflow("code", {plan}) arrives as an object.
 const parseArgs = () => {
@@ -127,7 +121,6 @@ for (const unit of units) {
     `The test command is ${testCmd}.\n` +
     (completed.length ? `The units already implemented are ${completed.join(", ")}.\n` : "");
 
-  // Red: write tests and confirm failure by running them. Write no implementation.
   let red = await agent(
     anchor(
       `TDD Red step. ${ctx}` +
@@ -170,7 +163,6 @@ for (const unit of units) {
     continue;
   }
 
-  // Green: implement until the tests pass, then refactor. Do not modify the tests.
   let green = await agent(
     anchor(
       `TDD Green step. ${ctx}` +

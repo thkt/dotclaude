@@ -22,10 +22,9 @@ export const meta = {
 // 2. The gate is computed by schema + script rule. Instead of decoding the gate from the
 //    enhancer's prose, the script computes it by rule from (build, tests, issues), so the
 //    re-spawn / fail-close machinery itself becomes unneeded.
-// 3. worktree.py / bootstrap.py are deterministic scripts, so agents run them as-is
-//    (the workflow script cannot touch the filesystem). The session id resolves via the
-//    agent environment's $CLAUDE_SESSION_ID, so setup and cleanup derive the same branch /
-//    path from the same id and never drift.
+// 3. worktree.py / bootstrap.py are deterministic scripts, so agents run them as-is.
+//    The session id resolves via the agent environment's $CLAUDE_SESSION_ID, so setup and
+//    cleanup derive the same branch / path from the same id and never drift.
 // 4. adversarial (codex 600s) starts with Evidence and runs behind Challenge / Triage
 //    (putting it in a barrier would let the longest stage block everything).
 //

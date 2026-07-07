@@ -17,8 +17,7 @@ export const meta = {
 
 // routing は agent ではなく script に置く。agent に glob 表を再導出させると、この workflow が
 // なくすはずの drift を持ち込み直すことになる。reviewer に sonnet を使うのは、opus で深い解析を
-// させると stream watchdog が stall するため。reviewer-causation の追加と複数 run の集約は、
-// seam の必要性が実証されるまで見送り。
+// させると stream watchdog が stall するため。
 
 // args は object でも、呼び出し側で stringify された JSON 文字列でも渡ってくる。object に
 // parse できる文字列は parse 結果を、それ以外の文字列は scope の短縮記法とみなして、
@@ -56,10 +55,9 @@ const anchor = (p) =>
 const bundled = (rel) =>
   `"$(P="$HOME/.claude/${rel}"; [ -f "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
 
-// script は filesystem に触れられず Date.now() も呼べない (sandbox が throw する)。timestamp・
-// branch・prior snapshot との delta 計算は決定論的な bookkeeping なので、LLM に推論
-// させず audit/snapshot.py に寄せた。agent は payload を一時ファイルに書いてそのスクリプトを
-// 1 回叩くだけ。disk への副作用が目的で、戻り値は使わない。
+// timestamp・branch・prior snapshot との delta 計算は audit/snapshot.py が行う。agent は
+// payload を一時ファイルに書いてそのスクリプトを 1 回叩くだけで、disk への副作用が目的、
+// 戻り値は使わない。
 const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   phase("Snapshot");
   const payload = JSON.stringify({

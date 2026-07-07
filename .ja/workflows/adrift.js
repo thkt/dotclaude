@@ -189,7 +189,6 @@ const REPORT_SCHEMA = {
   },
 };
 
-// reviewer 出力を file:line で dedup する。衝突時は高優先度を残す。
 const mergeFindings = (lists) => {
   const map = new Map();
   for (const f of lists.flat()) {

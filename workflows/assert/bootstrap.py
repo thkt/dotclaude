@@ -32,7 +32,6 @@ INSTALL_TIMEOUT = 180
 BUILD_TIMEOUT = 600
 
 # Project type detection: first match in this order wins (references/phase-0.md).
-# (marker filename, project_type)
 PROJECT_MARKERS = [
     ("package.json", "node"),
     ("Cargo.toml", "rust"),
@@ -76,7 +75,6 @@ def fail(message):
 
 
 def detect_project_type(worktree):
-    """Return the project type string, or None if no marker is present."""
     for marker, ptype in PROJECT_MARKERS:
         if (worktree / marker).is_file():
             return ptype
@@ -120,7 +118,6 @@ TIMED_OUT = object()
 
 
 def _real_runner(cmd, cwd, timeout):
-    """Run cmd in cwd with a timeout. Return exit code, or TIMED_OUT on timeout."""
     try:
         proc = subprocess.run(
             cmd,

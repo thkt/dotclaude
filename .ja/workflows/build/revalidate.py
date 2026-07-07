@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
 """Usage: revalidate.py   (preconditions JSON on stdin)
 
-Deterministically re-verify a plan's preconditions against the working tree so the
-build workflow's Revalidate gate does not depend on an LLM faithfully running
-test / grep. The build.js Revalidate agent is reduced to a launcher: it pipes the
-preconditions JSON into this script and returns the stdout verbatim, so the drift
-verdict is this script's, not the model's.
+plan の precondition を working tree に対して決定的に再検証する。
 
-stdin:  JSON array of {path, pattern?} — existing code the issue's plan presupposes.
-        path is relative to the process cwd (the repo root). pattern is an optional
-        literal (fixed-string, not regex) substring expected to occur in that file.
-stdout: JSON {results: [{path, pattern, exists, matches}]}, one per input in order.
-          exists  = path is a regular file
-          matches = with no pattern, equals exists; otherwise exists AND the literal
-                    pattern occurs in the file's bytes
-exit 0 on a completed run (read the verdict from JSON). exit 1 on usage / parse error
--- fail-closed: a malformed payload is never silently treated as "all preconditions
-pass". The drift decision (any exists=false or matches=false) stays in build.js.
+stdin:  {path, pattern?} の JSON 配列。issue の plan が前提とする既存コード。
+        path は process cwd (repo root) からの相対。pattern は任意で、その
+        ファイルに含まれるはずの literal (fixed-string、regex ではない) 部分文字列。
+stdout: JSON {results: [{path, pattern, exists, matches}]}、入力順に 1 件ずつ。
+          exists  = path が通常ファイル
+          matches = pattern 無しなら exists と同じ。pattern 有りなら exists かつ
+                    その literal pattern がファイルの bytes に出現する
+完了時は exit 0 (verdict は JSON から読む)。usage / parse error 時は exit 1。
+fail-closed で、壊れた payload を「全 precondition pass」と黙って扱うことはない。
+drift 判定 (exists=false / matches=false のいずれか) は build.js 側に残る。
 """
 
 import json
@@ -25,10 +21,10 @@ from pathlib import Path
 
 
 def verify_one(root, entry):
-    """Return {path, pattern, exists, matches} for one precondition entry.
+    """1 件の precondition entry について {path, pattern, exists, matches} を返す。
 
-    A non-object entry, or one whose file is unreadable, resolves to
-    exists/matches false (fail-closed) rather than raising.
+    非オブジェクトの entry、または読めないファイルの entry は、例外を投げず
+    exists/matches を false に解決する (fail-closed)。
     """
     path = str(entry.get("path", "")) if isinstance(entry, dict) else ""
     raw_pattern = entry.get("pattern", "") if isinstance(entry, dict) else ""
@@ -47,7 +43,7 @@ def verify_one(root, entry):
 
 
 def run(preconditions, root=Path(".")):
-    """Verify every precondition against root, preserving input order and count."""
+    """全 precondition を root に対して検証し、入力の順序と件数を保つ。"""
     return [verify_one(root, entry) for entry in preconditions]
 
 
