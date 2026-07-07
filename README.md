@@ -9,8 +9,8 @@ development principles, and workflow optimizations.
 
 This repository contains personal configurations for Claude AI, including:
 
-- Custom slash commands for systematic development workflows (47 skills)
-- Specialized AI agents for code review, generation, and analysis (38 agents)
+- Custom slash commands for systematic development workflows (25 skills)
+- Specialized AI agents for code review, generation, and analysis (27 agents)
 - Core AI operation principles and development best practices
 - Quality pipeline hooks (guardrails, formatter, reviews, gates)
 - Japanese language support
@@ -21,27 +21,22 @@ This repository contains personal configurations for Claude AI, including:
 .claude/
 ├── CLAUDE.md              # Main configuration (AI reads this)
 ├── README.md              # This file - Quick start guide
-├── adr/                   # Architecture Decision Records
 ├── rules/                 # Rule definitions
 │   ├── core/             # Core AI operation principles
 │   ├── conventions/      # Documentation conventions
 │   ├── development/      # Development patterns & methodologies
 │   ├── frameworks/       # Framework-specific rules
 │   └── workflows/        # Workflow guides
-├── skills/               # Skill-based knowledge modules (47 skills)
-├── agents/               # Specialized AI agents (33 agents)
-│   ├── architects/       # Feature architecture designers
+├── skills/               # Skill-based knowledge modules (25 skills)
+├── agents/               # Specialized AI agents (27 agents)
 │   ├── critics/          # Finding challengers (devils-advocate)
 │   ├── enhancers/        # Code enhancers & simplifiers
-│   ├── evaluators/       # Quality evaluators
 │   ├── explorers/        # Codebase exploration agents
 │   ├── generators/       # Code/test/git generators
 │   ├── resolvers/        # Build error resolvers
-│   ├── reviewers/        # Code review agents (20 reviewers)
-│   └── teams/            # Integrators & implementers
-├── docs/                  # Design docs & guides
+│   └── reviewers/        # Code review agents (18 reviewers)
+├── docs/                  # Design docs & guides (ADRs under decisions/)
 ├── hooks/                 # Pre/Post tool-use hooks
-├── scripts/               # Utility scripts
 ├── output-styles/         # Output style definitions
 ├── .claude-plugin/        # Plugin marketplace config
 └── .ja/                   # Japanese translations
@@ -86,7 +81,7 @@ install specific workflow sets:
   /code, /fix with TDD/RGRC cycle and quality gates, /shake for
   flaky-test detection)
 - **review**: Quality and review (/audit, /polish, /preview, /challenge,
-  /assert) with 21 specialized reviewer agents
+  /assert) with 18 specialized reviewer agents
 - **ship**: Git and release (/commit, /checkout, /pr, /issue)
 - **toolkit**: Utilities and patterns (/adr for decision records, /adrift for
   ADR-vs-code drift, /census for undocumented-decision discovery, /reflect for
