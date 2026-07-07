@@ -16,15 +16,11 @@ export const meta = {
   ],
 };
 
-// Assuming the upstream /issue finished premise verification and human refinement,
-// build does not reinvent the plan. The issue body's ## Plan section is the single
-// planning source; extraction is left to the LLM but verification belongs to the
-// script: the Plan heading check and U/T id collection are deterministic regexes,
-// structural validation is validate(), and silent drops in extraction are rejected
-// by exact id-set comparison. Code moving between issue filing and build launch is
-// caught fail-closed by Revalidate (exists/matches checks on preconditions). Stages
-// whose fan-out lives inside them are delegated to nested workflows (code / audit /
-// polish; one level of nesting is allowed).
+// The upstream /issue already handled premise verification and human refinement, so
+// build does not re-plan: the issue body's ## Plan section is the single planning
+// source, and while extraction is left to the LLM, verification belongs to the script.
+// Stages whose fan-out lives inside them are delegated to nested workflows (code /
+// audit / polish; one level of nesting is allowed).
 
 phase("Load");
 
@@ -40,11 +36,10 @@ if (!issueRef || !issueNumber) {
 }
 
 // When repo is set, pin every step to that repository regardless of the session cwd.
-// Relying on "subagents inherit the session cwd" is model discretion and breaks when
-// launched from elsewhere. anchor() prepends an absolute cd so the starting cwd is
-// irrelevant. guard is a deterministic backstop for the hard-to-reverse steps
-// (branch / commit / push / PR): with no chance to intervene during a headless run,
-// it makes the agent confirm the repo root before mutating git.
+// anchor() prepends an absolute cd so the starting cwd is irrelevant. guard is a
+// deterministic backstop for the hard-to-reverse steps (branch / commit / push / PR):
+// with no chance to intervene during a headless run, it makes the agent confirm the
+// repo root before mutating git.
 const repo = typeof input.repo === "string" ? input.repo : "";
 const anchor = (p) =>
   repo
@@ -81,7 +76,6 @@ const FETCH_SCHEMA = {
 };
 
 // Schema of the structured plan (units + preconditions + backlog_candidates) carried in the issue's Plan section.
-// Extraction structures the plan written in the issue; it is not re-planning.
 const EXTRACT_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -244,12 +238,11 @@ const SHIP_SCHEMA = {
 // and empty content (test_command / contract / name / given / when / then).
 //
 // DRY debt: this is a hand-maintained copy of validate_plan in hooks/veto/veto.py
-// (the canonical plan-gate, locked by plan-gate.bats T-011). The workflow runtime wraps
-// this file as an AsyncFunction body, so build.js cannot import the canonical (and it is
-// Python). The copy is kept in lockstep by hooks/veto/tests/contract_build_port.py, which
-// extracts the body between the two CONTRACT-TEST markers below, runs it via node, and
-// asserts it returns identical errors on every shared fixture. Editing this block without
-// updating the canonical (or vice versa) fails that test. Do not rename or remove the markers.
+// (the canonical plan-gate, locked by plan-gate.bats T-011). The copy is kept in lockstep
+// by hooks/veto/tests/contract_build_port.py, which extracts the body between the two
+// CONTRACT-TEST markers below, runs it via node, and asserts it returns identical errors
+// on every shared fixture. Editing this block without updating the canonical (or vice
+// versa) fails that test. Do not rename or remove the markers.
 // CONTRACT-TEST-BEGIN validate
 const validate = (plan) => {
   const errors = [];
@@ -337,8 +330,6 @@ if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
 }
 const body = fetched.body;
 
-// The Plan heading check and id collection run deterministically in the script,
-// before the extract agent.
 const planHeading = body.match(/^##\s+Plan\b.*$/m);
 if (!planHeading) {
   return {
@@ -408,10 +399,8 @@ log(
 // ---- Revalidate: re-verify preconditions against the current codebase (deterministic script gate) ----
 // Catches, fail-closed, the possibility that the presupposed code moved between issue
 // filing and build launch. The exists/matches verdict is produced by the deterministic
-// verifier workflows/build/revalidate.py, not by LLM judgment: the check (test -f + literal
-// grep) needs no reasoning, only shell access the workflow runtime lacks, so the agent is a
-// pure launcher that pipes the preconditions in and echoes the verifier's stdout back. The
-// drift decision then stays in the script's filter below.
+// verifier workflows/build/revalidate.py, not by LLM judgment; the agent pipes the
+// preconditions in and echoes the verifier's stdout back.
 // Runs in parallel with Branch (checkout): the two are mutually independent (both
 // depend only on plan). Trade-off: if Revalidate stops on drift, the checked-out
 // branch is left behind (creation only, no commits, so reclaiming it is trivial).
@@ -511,8 +500,8 @@ if (!code.tests_pass || !code.gates_pass)
     `code's independent verify failed (tests=${code.tests_pass} gates=${code.gates_pass}). Advancing to audit; it surfaces on the PR.`,
   );
 // workflow("code") runs under its own `▸ code` group, so the Code phase box has no direct
-// agent and would render "Not started" forever. This one cheap agent lights it up and
-// completes it, doubling as a run-log recap of what the code phase delivered.
+// agent. This one cheap agent lights it up and completes it, doubling as a run-log recap
+// of what the code phase delivered.
 await agent(
   `Summarize in one line what the code phase delivered: ${plan.units.length} unit(s) implemented, independent verify tests=${code.tests_pass} gates=${code.gates_pass}. Return the sentence only.`,
   { label: "code-summary", phase: "Code", model: "haiku" },
@@ -604,8 +593,7 @@ const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
   summary: `${f.title}: ${f.detail}`,
   file: f.file || "",
 }));
-// Loop fix -> re-audit until 0 critical/high. The old version fixed once with no
-// re-audit, i.e. the fixes were never verified. Only the final round's fixes stay
+// Loop fix -> re-audit until 0 critical/high. Only the final round's fixes stay
 // unverified (the re-audit budget is spent) and surface on the PR.
 let toFix = [...criticalHigh(audit), ...polishSurvivors];
 let reaudited = true;
@@ -653,16 +641,14 @@ await agent(
 // ---- Backlog: collect out-of-scope discoveries as candidates for the user ----
 // Candidate sources are the out-of-scope candidates written in the issue body
 // (source: issue) plus discoveries during the build (code / audit / polish). The
-// build deliberately does not file these itself: auto-posting from a headless run
-// mass-produces under-refined, duplicate-prone issues and erodes trust in the
-// automation. Issue creation is instead deferred to the final output. The
-// candidates are surfaced in the PR body and the return value, and the user files
-// the ones worth filing via /issue, which carries the premise-check /
-// challenge refinement build expects from an issue.
+// build does not file these itself; issue creation is deferred to the final output.
+// The candidates are surfaced in the return value, and the user files the ones worth
+// filing via /issue, which carries the premise-check / challenge refinement build
+// expects from an issue.
 phase("Backlog");
 // code.anomalies are NOT folded in here: they are Red-unconfirmed build-integrity
 // signals, rendered once under the PR's dedicated "Anomalies" section (via
-// shipPayload.code_anomalies). Folding them here too listed every anomaly twice.
+// shipPayload.code_anomalies).
 const backlogCandidates = [
   ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
   ...(audit.findings || [])

@@ -18,8 +18,7 @@ export const meta = {
 // Routing lives in the script, not an agent: an agent re-deriving the glob
 // table would reintroduce the exact drift this workflow exists to remove.
 // Reviewers run on sonnet because opus + deep analysis stalls the stream
-// watchdog. reviewer-causation and multi-run aggregation are deferred until
-// the seam is proven.
+// watchdog.
 
 // args may arrive as an object or, if a caller stringifies it, as a JSON-encoded
 // string. Normalize once: a string that parses to an object is that object; any
@@ -57,12 +56,9 @@ const anchor = (p) =>
 const bundled = (rel) =>
   `"$(P="$HOME/.claude/${rel}"; [ -f "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
 
-// The script cannot touch the filesystem or call Date.now() (both throw in the
-// sandbox). Resolving the timestamp, branch, and the delta against the
-// prior snapshot is deterministic bookkeeping, so instead of making an LLM reason
-// through it, that work moved to audit/snapshot.py; the agent only writes the
-// payload to a temp file and runs the script once. A disk side-effect; its result
-// is not consumed.
+// audit/snapshot.py resolves the timestamp, branch, and the delta against the
+// prior snapshot. The agent only writes the payload to a temp file and runs the
+// script once; the disk side-effect is the goal, its result is not consumed.
 const writeSnapshot = async ({ preFlight, rawFindings, findings, skipped }) => {
   phase("Snapshot");
   const payload = JSON.stringify({

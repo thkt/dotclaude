@@ -189,7 +189,6 @@ const REPORT_SCHEMA = {
   },
 };
 
-// Dedup reviewer output by file:line. On collision the higher priority wins.
 const mergeFindings = (lists) => {
   const map = new Map();
   for (const f of lists.flat()) {

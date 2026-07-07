@@ -22,9 +22,9 @@ export const meta = {
 // 2. gate 判定は schema + script で計算する。gate を enhancer の散文から decode するのではなく、
 //    (build, tests, issues) から script が規則で計算するため、re-spawn / fail-close の機構自体が
 //    不要になる。
-// 3. worktree.py / bootstrap.py は決定論 script なので agent にそのまま実行させる
-//    (script は filesystem に触れられない)。session id は agent 環境の $CLAUDE_SESSION_ID で
-//    解決し、生成と cleanup が同じ id から branch / path を導出するため drift しない。
+// 3. worktree.py / bootstrap.py は決定論 script なので agent にそのまま実行させる。
+//    session id は agent 環境の $CLAUDE_SESSION_ID で解決し、生成と cleanup が同じ id から
+//    branch / path を導出するため drift しない。
 // 4. adversarial (codex 600s) は Evidence と同時に始め、Challenge / Triage の裏で走らせる
 //    (barrier に入れると最長 stage が全体を塞ぐ)。
 //

@@ -1,29 +1,19 @@
 #!/usr/bin/env python3
 """Usage: snapshot.py   (audit payload JSON on stdin)
 
-Deterministically record one audit run to $HOME/.claude/workspace/history/ and
-compute the resolved/new/carried delta against the most recent prior snapshot.
-audit.js used to hand this to a general-purpose LLM agent, which walked the file
-glob and the finding-by-finding diff token by token and took minutes serially at
-the tail of the run. The work is pure bookkeeping (glob, match on file+message,
-count, write JSON), so moving it here turns a multi-minute agent into a single
-sub-second shell call and makes the delta rule tested code, not prompt adherence.
-
-The workflow script itself cannot touch the filesystem or read env, so the caller
-still spawns a shell agent -- but that agent's whole job is now `snapshot.py <
-payload`, not reasoning about the diff.
+audit の 1 実行を $HOME/.claude/workspace/history/ に記録し、直近の prior
+snapshot に対する resolved/new/carried の delta を計算する。
 
 stdin:  JSON {scope, focus, pre_flight, raw_findings[], findings[], skipped[]}
-        each raw_findings entry carries at least {file, message}.
-stdout: the path of the JSON record written.
-exit 0 on success. exit 1 on an unparseable payload (nothing written).
+        各 raw_findings entry は最低限 {file, message} を持つ。
+stdout: 書き込んだ JSON record のパス。
+exit 0 は成功。exit 1 は payload が parse 不能 (何も書かない)。
 
-Resolved fields (shell / prior snapshot), added to the record:
-  branch        git rev-parse --abbrev-ref HEAD (falls back to "unknown")
+record に追加される解決済みフィールド (シェル / prior snapshot 由来):
+  branch        git rev-parse --abbrev-ref HEAD ("unknown" にフォールバック)
   generated_at  UTC ISO-8601
-  delta         {resolved, new, carried} counts vs the most recent prior
-                audit-*.json, matched on (file, message); first run -> all 0 with
-                note "first run".
+  delta         直近の audit-*.json に対する {resolved, new, carried} カウント。
+                (file, message) で照合。初回は全て 0 + note "first run"。
 """
 
 import glob
@@ -33,11 +23,12 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import NoReturn
 
 HISTORY_DIR = Path(os.path.expanduser("~")) / ".claude" / "workspace" / "history"
 
 
-def fail(message):
+def fail(message) -> NoReturn:
     print(f"Error: {message}", file=sys.stderr)
     sys.exit(1)
 
@@ -47,10 +38,10 @@ def finding_key(f):
 
 
 def compute_delta(current_raw, prior_raw):
-    """resolved = in prior only, new = in current only, carried = in both.
+    """resolved = prior のみ、new = current のみ、carried = 両方に存在。
 
-    prior_raw is None when no prior snapshot exists; the caller records a
-    "first run" note in that case.
+    prior snapshot が無いとき prior_raw は None。その場合は "first run" note を
+    記録する。
     """
     if prior_raw is None:
         return {"resolved": 0, "new": 0, "carried": 0, "note": "first run"}
@@ -64,11 +55,11 @@ def compute_delta(current_raw, prior_raw):
 
 
 def latest_prior_raw(history_dir):
-    """raw_findings of the most recent prior audit-*.json, or None if none exists.
+    """直近の prior audit-*.json の raw_findings。存在しなければ None。
 
-    Sorted by filename; the name embeds a UTC timestamp so lexical order is
-    chronological. A prior file that is unreadable or lacks raw_findings is
-    skipped rather than aborting the run.
+    ファイル名でソートする。名前に UTC timestamp が入るため辞書順が時系列に
+    なる。読めない、あるいは raw_findings を欠く prior ファイルは run を
+    中断せずスキップする。
     """
     priors = sorted(glob.glob(str(history_dir / "audit-*.json")), reverse=True)
     for path in priors:

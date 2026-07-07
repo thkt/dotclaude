@@ -8,7 +8,7 @@ never drift: branch = assert-<id>, path = .claude/worktrees/assert-<id>. git run
 from the process cwd (the repo root), so the path is relative to it.
 
 Create removes any stale worktree and branch first, then adds a fresh one from
-HEAD. The order is fixed in the script rather than left to the caller.
+HEAD.
 
 stdout (create):  JSON {branch, path, status: "created"}
 stdout (cleanup): JSON {branch, path, status: "removed"}
@@ -23,7 +23,6 @@ import sys
 
 
 def _real_runner(cmd):
-    """Run a git command. Return (returncode, stderr)."""
     proc = subprocess.run(cmd, capture_output=True, text=True)
     return proc.returncode, proc.stderr
 

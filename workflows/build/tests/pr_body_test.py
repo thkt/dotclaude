@@ -93,8 +93,7 @@ class RenderTest(unittest.TestCase):
         self.assertEqual(len(non_empty), 3, non_empty)
 
     def test_not_reaudited_warns_and_still_lists_residual(self):
-        # Round-3 cap: the warning appears AND the unverified findings are enumerated
-        # (they are no longer hidden behind a generic warning).
+        # Round-3 cap: the warning appears AND the unverified findings are enumerated.
         body = pr_body.render({**FULL, "reaudited": False})
         self.assertIn("`blocking 1 (not re-audited)`", body)
         self.assertIn("> **Not re-audited**", body)

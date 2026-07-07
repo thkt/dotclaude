@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Tests for workflows/build/revalidate.py (the deterministic Revalidate verifier).
+"""workflows/build/revalidate.py (決定的な Revalidate verifier) のテスト。
 
 Run: python3 workflows/build/tests/revalidate_test.py
 
-run() is exercised directly against a tempdir; the CLI contract (stdin JSON ->
-stdout {results}, fail-closed exit 1 on a bad payload) is exercised via subprocess.
+run() は tempdir に対して直接呼ぶ。CLI contract (stdin JSON -> stdout {results}、
+壊れた payload には fail-closed で exit 1) は subprocess 経由で確認する。
 """
 
 import json
@@ -42,7 +42,7 @@ class RunTest(unittest.TestCase):
 
     def test_pattern_absent_does_not_match(self):
         v = self.verdicts([{"path": "present.js", "pattern": "goneSymbol"}])
-        # File exists but the literal is not there: exists true, matches false -> drift.
+        # ファイルは存在するが literal が無い場合、exists true / matches false -> drift。
         self.assertEqual(v[("present.js", "goneSymbol")], (True, False))
 
     def test_missing_file(self):
@@ -73,13 +73,13 @@ class RunTest(unittest.TestCase):
 
     def test_none_pattern_normalized_to_empty_string(self):
         results = revalidate.run([{"path": "present.js", "pattern": None}], self.root)
-        # REVALIDATE_SCHEMA requires pattern to be a string; None becomes "".
+        # REVALIDATE_SCHEMA は pattern を string に要求する。None は "" になる。
         self.assertEqual(results[0]["pattern"], "")
         self.assertTrue(results[0]["matches"])
 
     def test_pattern_is_literal_not_regex(self):
-        # The docstring promises fixed-string matching. A regex metachar pattern must
-        # match only its literal text, so a regression to re.search would fail here.
+        # docstring は fixed-string マッチを約束する。regex メタ文字の pattern は
+        # literal text だけにマッチするので、re.search への退行はここで落ちる。
         (self.root / "cfg.js").write_text("const x = cfg[0].bar;\n", encoding="utf-8")
         v = self.verdicts(
             [
@@ -94,8 +94,8 @@ class RunTest(unittest.TestCase):
         self.assertEqual(v[("cfg.js", "c.g")], (True, False))
 
     def test_malformed_entry_is_fail_closed_and_count_preserved(self):
-        # build.js binds results to preconditions; a non-dict entry must not crash or
-        # drop a result (which would break that binding), just resolve to false/false.
+        # build.js は results を preconditions に対応づける。non-dict entry は crash も
+        # result の脱落 (対応づけが壊れる) もせず、false/false に解決するだけにする。
         results = revalidate.run(
             [{"path": "present.js", "pattern": "sampleSymbol"}, "not-a-dict", None],
             self.root,

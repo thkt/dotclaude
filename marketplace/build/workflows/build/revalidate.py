@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 """Usage: revalidate.py   (preconditions JSON on stdin)
 
-Deterministically re-verify a plan's preconditions against the working tree so the
-build workflow's Revalidate gate does not depend on an LLM faithfully running
-test / grep. The build.js Revalidate agent is reduced to a launcher: it pipes the
-preconditions JSON into this script and returns the stdout verbatim, so the drift
-verdict is this script's, not the model's.
+Deterministically re-verify a plan's preconditions against the working tree.
 
 stdin:  JSON array of {path, pattern?} — existing code the issue's plan presupposes.
         path is relative to the process cwd (the repo root). pattern is an optional

@@ -2,13 +2,10 @@
 """Usage: pr-body.py   (ship payload JSON on stdin)
 
 Deterministically render the build workflow's draft-PR fact tail from structured
-data build.js already holds, so the Ship agent does not hand-write it. The PR body
-is a fail-closed surface -- it must always carry the verify result, the unresolved
-critical/high count, and the "not re-audited" warning -- and an LLM asked to
-"include all of the following" can silently drop or soften a section. Moving the
-assembly here makes those guarantees tested code, not prompt adherence. The agent
-writes only the lead "## Summary" (the human reviewer's entry point) and appends
-this tail below it.
+data build.js already holds. The PR body is a fail-closed surface -- it must
+always carry the verify result, the unresolved critical/high count, and the
+"not re-audited" warning. The agent writes only the lead "## Summary" (the human
+reviewer's entry point) and appends this tail below it.
 
 Format is deliberately terse and markdown-structured (a one-line label naming the
 block as auto-generated, a one-line status, bold labels, bullets, a collapsed
