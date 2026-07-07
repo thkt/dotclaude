@@ -61,31 +61,21 @@ install specific workflow sets:
    /plugin
    ```
 
-3. **Install specific plugin** (choose one or more):
+3. **Install the plugin**:
 
    ```bash
-   /plugin install plan     # /outcome, /think, /research, /slice
-   /plugin install build    # /build, /code, /fix, /shake
-   /plugin install review   # /audit, /polish, /preview, /challenge, /assert
-   /plugin install ship     # /commit, /checkout, /pr, /issue
-   /plugin install toolkit  # /adr, /adrift, /census, /reflect
+   /plugin install build
    ```
 
 **Available Plugins**:
 
-- **plan**: Planning and design (/outcome for outcome definition, /think for
-  design exploration and SOW/Spec generation, /research for technical
-  investigation, /slice for breaking plans into vertical-slice issues) plus
-  architecture agents
-- **build**: Implementation and testing (/build for end-to-end orchestration,
-  /code, /fix with TDD/RGRC cycle and quality gates, /shake for
-  flaky-test detection)
-- **review**: Quality and review (/audit, /polish, /preview, /challenge,
-  /assert) with 18 specialized reviewer agents
-- **ship**: Git and release (/commit, /checkout, /pr, /issue)
-- **toolkit**: Utilities and patterns (/adr for decision records, /adrift for
-  ADR-vs-code drift, /census for undocumented-decision discovery, /reflect for
-  session reflection) plus frontend pattern references
+- **build**: Self-contained development workflow toolkit. Installing it clones
+  the whole repository once, so every skill, agent, and workflow loads under the
+  build: namespace. Refine an issue with /issue, hand the issue number to the
+  build workflow, and get a draft PR after Load / Code / Audit / Polish / Ship.
+  Bundles the planning skills (/think, /research, /slice, /outcome), the reviewer
+  and critic agents, the code / audit / polish / shake / assert / adrift
+  workflows, the git skills (/commit, /checkout, /pr), and /adr, /census.
 
 ### Option 2: Manual Installation (Full Configuration)
 
