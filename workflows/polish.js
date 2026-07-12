@@ -183,6 +183,7 @@ if (mode !== "cleanup") {
         label: "challenge",
         schema: VERDICTS_SCHEMA,
         model: "opus",
+        effort: "xhigh",
       },
     );
     // If the challenge dies, advance with every finding treated as confirmed (fail-open).
@@ -237,7 +238,8 @@ if (mode !== "cleanup") {
         phase: "Fix",
         agentType: "general-purpose",
         schema: FIX_SCHEMA,
-        model: "sonnet",
+        model: "opus",
+        effort: "xhigh",
       },
     );
   }

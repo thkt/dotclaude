@@ -175,6 +175,7 @@ if (mode !== "cleanup") {
         label: "challenge",
         schema: VERDICTS_SCHEMA,
         model: "opus",
+        effort: "xhigh",
       },
     );
     // challenge が落ちたら全 findings を confirmed 扱いで前進する (fail-open)
@@ -228,7 +229,8 @@ if (mode !== "cleanup") {
         phase: "Fix",
         agentType: "general-purpose",
         schema: FIX_SCHEMA,
-        model: "sonnet",
+        model: "opus",
+        effort: "xhigh",
       },
     );
   }

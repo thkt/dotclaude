@@ -22,7 +22,7 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 | /slice (これ) | 依存順の永続 GitHub issue 群       | 後で人間が拾うためのキュー |
 | /issue        | 単一 issue (premise + critic 検証) | 1 件の要求を起票する       |
 
-/slice は分解と依存順 publish が価値。1 件だけなら /issue を使う。今すぐ実装するなら /code か /build を使う。
+/slice は分解と依存順 publish が価値。1 件だけなら /issue を使う。slice が生む issue には `## Plan` がまだ無く、そのまま /build に渡すと build が ephemeral plan を自動生成して進む (人間レビュー未経由の assumption 付き)。plan の精度を上げたいスライスは、まず /issue で洗練して Plan を付与してから /build に渡す。既に構造化 plan を手元に持つなら /code を使う。
 
 ## Phase 1: 文脈を集める
 

@@ -1,4 +1,5 @@
-// U-003: code.js が任意 input.model を Red / Green 実装 agent にのみ伝播することの行動検証。
+// U-003: code.js が任意 input.model を Red / Green 実装 agent にのみ伝播し (未指定時は opus)、
+// 実装 agent が常に effort xhigh で走ることの行動検証。
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -63,6 +64,7 @@ test("model 指定時に Red / Green とその retry の 4 呼び出しへ伝播
   assert.equal(redGreen.length, 4, "red / red2 / green / green2 の 4 呼び出しがある");
   for (const call of redGreen) {
     assert.equal(call.opts.model, "haiku", `${call.opts.label} の opts に model: "haiku" がある`);
+    assert.equal(call.opts.effort, "xhigh", `${call.opts.label} の opts に effort: "xhigh" がある`);
   }
 
   const verify = calls.agent.find((c) => c.opts.label === "verify");
@@ -74,7 +76,7 @@ test("model 指定時に Red / Green とその retry の 4 呼び出しへ伝播
   );
 });
 
-test("model 未指定で Red / Green の opts に model キーが存在せず既存呼び出し形が完走する", async () => {
+test("model 未指定で Red / Green の opts が既定の opus と effort xhigh を持ち完走する", async () => {
   const { result, calls } = await runWorkflow(codeJs, {
     args: { plan, repo: "" },
     stubs: { agent: happyAgentStub },
@@ -85,7 +87,8 @@ test("model 未指定で Red / Green の opts に model キーが存在せず既
       assert.equal(call.opts.model, "sonnet", "verify の opts は固定 sonnet を持つ");
       continue;
     }
-    assert.ok(!("model" in call.opts), `${call.opts.label} の opts に model キーが無い`);
+    assert.equal(call.opts.model, "opus", `${call.opts.label} の opts が既定の opus を持つ`);
+    assert.equal(call.opts.effort, "xhigh", `${call.opts.label} の opts に effort: "xhigh" がある`);
   }
   assert.deepEqual(result.completed, ["U-1"], "completed に unit id が入る");
   assert.equal(result.tests_pass, true, "verify の tests_pass がそのまま返る");

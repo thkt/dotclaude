@@ -56,10 +56,18 @@ Acceptance tests.
 Apply these 5 rules to `### Preconditions`.
 
 1. List existing dependencies only. Files newly created by a unit are never listed as preconditions
-2. Anchors are limited to a stable anchor (an exported / public symbol name). Do not anchor on private implementation details or comment strings
+2. Anchors are limited to a single stable anchor (one exported / public symbol name) that `ugrep -F` matches as a literal fixed string. Do not anchor on private implementation details, comment strings, line numbers, or a slash-joined list of symbols; none of those match under `ugrep -F`
 3. When no stable symbol exists, write the line as path only
 4. Each line takes one of two forms: path only, or path + stable anchor
-5. Verify existence before posting the issue: check each path with `test -f <path>` and each anchor with `ugrep -F '<pattern>' <path>`; fix or drop any line that fails
+5. Paths are repo-root-relative (a path that drops a repo prefix like `workspace/` fails verification)
+
+## Pre-posting verification
+
+Before posting the issue, verify the paths the Plan section lists against the current codebase. Run every check from the same repository root as the build workflow's Revalidate.
+
+1. Verify each `### Preconditions` line: paths via `test -f <path>`, anchors via `ugrep -F '<pattern>' <path>`. Fix or drop any failing line
+2. Verify every `units[].files` entry that refers to an existing file with `test -f <path>`, and fix any failing path
+3. If even one unit lists an existing file in `files`, the `### Preconditions` subsection needs at least one line. Treat an empty or absent subsection as a failure, not a pass, and add one precondition line anchoring the load-bearing dependency
 
 ## Extraction contract
 

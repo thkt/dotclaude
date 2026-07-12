@@ -3,7 +3,7 @@ export const meta = {
   description:
     '構造化 plan (units / test_command) を受け取り、unit ごとに Red -> Green を script 強制で回す TDD workflow。Red 未確認 (テストが最初から通る) は anomaly として記録され、最後に独立 agent が全 suite + lint + type-check を検証する。テスト後書きと Red 省略が構造的に起きない。単体でも、build から workflow("code") 経由の入れ子でも呼べる。',
   whenToUse:
-    "headless に TDD 実装を回したいとき。args は {plan, repo, model}。plan は units / test_command を持つ構造化 plan (think skill の返り値または build の plan 生成)。model (任意) は Red / Green 実装 agent にのみ伝播する。",
+    "headless に TDD 実装を回したいとき。args は {plan, repo, model}。plan は units / test_command を持つ構造化 plan (think skill の返り値または build の plan 生成)。model (任意) は Red / Green 実装 agent にのみ伝播する (未指定時は opus)。実装 agent の effort は xhigh 固定。",
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
@@ -107,6 +107,8 @@ if (units.length < plan.units.length) {
 const testCmd = plan.test_command || "";
 const completed = [];
 const anomalies = [];
+// Red/Green (+ retry) の 4 呼び出し全てで共有する。model/effort の変更は 1 箇所で済む。
+const implementOpts = { model: input.model || "opus", effort: "xhigh" };
 
 // ---- Implement: unit ごとに Red -> Green (working tree を共有するため直列) ----
 phase("Implement");
@@ -129,7 +131,7 @@ for (const unit of units) {
       phase: `Unit ${unit.id}`,
       agentType: "general-purpose",
       schema: RED_SCHEMA,
-      ...(input.model ? { model: input.model } : {}),
+      ...implementOpts,
     },
   );
   if (red && !red.red_confirmed) {
@@ -146,7 +148,7 @@ for (const unit of units) {
         phase: `Unit ${unit.id}`,
         agentType: "general-purpose",
         schema: RED_SCHEMA,
-        ...(input.model ? { model: input.model } : {}),
+        ...implementOpts,
       },
     );
   }
@@ -170,7 +172,7 @@ for (const unit of units) {
       phase: `Unit ${unit.id}`,
       agentType: "general-purpose",
       schema: GREEN_SCHEMA,
-      ...(input.model ? { model: input.model } : {}),
+      ...implementOpts,
     },
   );
   if (green && !green.green) {
@@ -184,7 +186,7 @@ for (const unit of units) {
         phase: `Unit ${unit.id}`,
         agentType: "general-purpose",
         schema: GREEN_SCHEMA,
-        ...(input.model ? { model: input.model } : {}),
+        ...implementOpts,
       },
     );
   }
