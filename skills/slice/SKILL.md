@@ -22,7 +22,7 @@ Take the plan source from `$ARGUMENTS`. For an issue reference (number / URL / p
 | /slice (this) | Durable GitHub issues in dependency order | A queue for a human to pick up later |
 | /issue        | One issue (premise + critic verification) | File a single request                |
 
-/slice's value is decomposition and dependency-ordered publish. For one issue use /issue. To implement now use /code or /build.
+/slice's value is decomposition and dependency-ordered publish. For one issue use /issue. A sliced issue carries no `## Plan` yet; handing it straight to /build makes build auto-generate an ephemeral plan and proceed (with a not-human-reviewed assumption recorded). For slices where plan quality matters, refine via /issue first to attach a Plan, then hand it to /build; use /code when you already hold a structured plan.
 
 ## Phase 1: Gather context
 

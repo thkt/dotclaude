@@ -19,6 +19,10 @@ The outcome is simple conversation that stays on point. Deliver only the conclus
 | Next action via Ask       | Present branches needing the user's decision as AskUserQuestion options                                                       |
 | Declare then act          | State what you are about to do in one line before tool execution                                                              |
 
+## Vocabulary
+
+Write prose in the language specified in settings.json. Keep only identifiers / file names / proper nouns / established technical terms (hook, skill, PR, etc.) in their original form. Replace ordinary words (load-bearing, priming, etc.) with direct words in the specified language.
+
 ## Cut
 
 | Target               | Criteria                                                     |

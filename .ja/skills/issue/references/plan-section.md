@@ -56,10 +56,18 @@ test_command: <テスト実行コマンド 1 行。例 cargo test / node --test 
 `### 前提` には次の 5 規則を適用する。
 
 1. 既存の依存先のみを載せる。unit が作る新規作成ファイルは前提に載せない
-2. anchor は stable anchor (exported / 公開シンボル名) に限る。private な実装詳細やコメント文字列を anchor にしない
+2. anchor は stable anchor (公開シンボル名) を 1 つだけ書き、`ugrep -F` が固定文字列としてそのまま一致するものに限る。private な実装詳細・コメント文字列・行番号・スラッシュで連結したシンボル列は anchor にしない (いずれも `ugrep -F` では一致しない)
 3. 安定したシンボルが無ければ path のみの行にする
 4. 各行は path 単独、または path + stable anchor の 2 形式のどちらかにする
-5. issue 投稿前に実在を検証する。path は `test -f <path>`、anchor は `ugrep -F '<pattern>' <path>` で確認し、失敗した行は修正するか落とす
+5. path はリポジトリルート起点で書く (`workspace/` などリポジトリ接頭辞を落とした path は検証に失敗する)
+
+## 投稿前検証
+
+issue 投稿前に、Plan 節が記載したパスの実在を現行コードベースに対して検証する。検証は build workflow の Revalidate と同じリポジトリルートで実行する。
+
+1. `### 前提` の各行を検証する。path は `test -f <path>`、anchor は `ugrep -F '<pattern>' <path>` で確認し、失敗した行は修正するか落とす
+2. `units[].files` のうち既存ファイルを指す行を `test -f <path>` で検証し、失敗したパスを直す
+3. `files` に既存ファイルを載せる unit が 1 つでもあれば、`### 前提` 節に最低 1 行が必要。空 / 不在の節は合格でなく失敗とみなし、要となる依存を anchor する前提行を 1 つ足す
 
 ## 抽出 contract
 

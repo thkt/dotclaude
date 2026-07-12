@@ -459,6 +459,7 @@ const [challenged, verified] = await parallel([
         phase: "Challenge",
         label: "challenge",
         model: "opus",
+        effort: "xhigh",
       },
     ),
   () =>
@@ -471,6 +472,7 @@ const [challenged, verified] = await parallel([
         phase: "Verify",
         label: "verify",
         model: "opus",
+        effort: "xhigh",
       },
     ),
 ]);
@@ -488,6 +490,7 @@ const integrated = await agent(
     phase: "Integrate",
     label: "integrate",
     model: "opus",
+    effort: "xhigh",
     schema: FINDINGS_SCHEMA,
   },
 );

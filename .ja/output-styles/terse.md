@@ -19,6 +19,10 @@ keep-coding-instructions: true
 | 次アクションは Ask   | ユーザーの判断が要る分岐は AskUserQuestion で選択肢として出す               |
 | 宣言してから実行     | ツール実行前に何をするかを 1 行で宣言する                                   |
 
+## 語彙
+
+地の文は settings.json で指定した言語で書く。原語のままにするのは識別子 / ファイル名 / 固有名詞 / 定着した技術用語 (hook, skill, PR など) のみ。一般語 (load-bearing, priming など) は指定言語の直接語に置き換える。
+
 ## 削るもの
 
 | 対象             | 基準                                           |
