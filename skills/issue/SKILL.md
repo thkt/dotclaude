@@ -9,7 +9,7 @@ argument-hint: "[issue description]"
 
 # /issue - GitHub Issue Generator
 
-A standalone issue-creation skill. It requires no upstream stage (challenge / research / think) and never nests them. When their artifacts exist in the conversation context, use them: the challenge verdict for the posting judgment, research findings as the body's evidence, and think's structured plan written out as the `## Plan` section. The human decides which stages an issue goes through.
+A standalone issue-creation skill. It requires no challenge / research / think upstream and never nests them. When their artifacts exist in the conversation context, use them: the challenge verdict for the posting judgment, research findings as the body's evidence, and think's structured plan written out as the `## Plan` section. The human decides which stages an issue goes through.
 
 ## Input
 
@@ -23,7 +23,7 @@ Read `language` from `~/.claude/settings.json` and translate the issue body and 
 
 1. Read `.claude/OUTCOME.md` if present and check that the issue serves the outcome
 2. Detect the type from the description
-3. For feature / bug, if the Why (who needs this, what pain exists, what counts as success) is not readable from the description, pin it down through wall-bouncing
+3. For feature / bug, if the Why is not readable from the description, pin it down through wall-bouncing
 4. Select the template, generate the title + body, and mark fixed / tentative per the confidence-marking criteria
 5. Assess whether the issue is epic-sized and should split
 
@@ -50,7 +50,7 @@ A bug meeting all three criteria below is minor, and handling it directly via /f
 
 ### Why wall-bouncing
 
-Establish the issue's Why before drafting the body. One question per message, attaching a hypothesis (the answer you expect) as the recommended option. Questions the codebase can answer are explored via Read / ugrep before asking. Once the three points below are readable from the description, or you can predict the answers to the questions you would ask next, stop asking and move to drafting.
+Establish the issue's Why before drafting the body. One question per message, attaching the answer you expect as the hypothesis in the recommended option. Questions the codebase can answer are explored via Read / ugrep before asking. Once the three points below are readable from the description, or you can predict the answers to the questions you would ask next, stop asking and move to drafting.
 
 | Question                                    | Where it lands in the body |
 | ------------------------------------------- | -------------------------- |
@@ -60,7 +60,7 @@ Establish the issue's Why before drafting the body. One question per message, at
 
 ### Template source
 
-List `.md` files via `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'`. If a GitHub template matches the type (filename or `name` contains the type), read its body and strip the leading frontmatter (`name` / `about` / `labels` / `title`) for the skeleton; otherwise use `templates/<type>.md` directly under the skill directory.
+List `.md` files via `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'`. If a GitHub template whose filename or `name` contains the type exists, read its body and strip the leading frontmatter fields `name` / `about` / `labels` / `title` for the skeleton. Otherwise use `templates/<type>.md` directly under the skill directory.
 
 ### Confidence marking
 
@@ -72,7 +72,7 @@ When two or more criteria are each independently implementable, ask via AskUserQ
 
 ## Phase 2: Refinement
 
-1. Refine the body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language (`phrases.ja.md` for Japanese, `phrases.en.md` for English). After the Plan section is appended in Phase 3, apply the same criteria to it as well
+1. Refine the body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language: `phrases.ja.md` for Japanese, `phrases.en.md` for English. After the Plan section is appended in Phase 3, apply the same criteria to it as well
 2. If a challenge verdict / findings exist in the conversation, fold only what belongs in the body, once. The verdict and findings themselves never enter the body
 
 ## Phase 3: Plan Write-Out
@@ -85,7 +85,7 @@ Run this phase only when a structured plan from /think exists in the conversatio
 
 ## Phase 4: Publishing
 
-1. Present the issue preview. Collect any inline tentative marks into a tentative block (adding no new content, mirroring what the body already carries; omit it at zero items), then confirm via AskUserQuestion: "Create this issue?"
+1. Present the issue preview. Collect any inline tentative marks into a tentative block. Add no new content, mirror what the body already carries, and omit the block at zero items. Then confirm via AskUserQuestion: "Create this issue?"
 2. Write the body to a temp file, attach labels, and run `gh issue create --title "<title>" --body-file <path>`. Capture the issue URL from its output
 3. If split was approved in Phase 1, suggest running /slice with the published epic number. Do not launch it automatically
 

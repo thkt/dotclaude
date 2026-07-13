@@ -16,6 +16,6 @@ Write for a teammate who shares context and can open the linked docs. The issue 
 | Pattern                | Fix                                                                                                                                   |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Doc transcription      | Fold restated linked docs or logs into link + one-line takeaway; write only the delta                                                 |
-| Repeated decision      | State the same design reason once, where the decision lands. Option comparisons stay out of the body (think's role)                   |
-| Over-specified AC      | Keep the criterion, drop authoring details (story names, enumerated config values)                                                    |
+| Repeated decision      | State the same design reason once, where the decision lands. Option comparisons stay out of the body and belong to think                   |
+| Over-specified AC      | Keep the criterion, drop authoring details such as story names and enumerated config values                                                    |
 | One claim per sentence | Cut a sentence exceeding ~25 words (Japanese: 60 characters), or a paragraph packing decision + rationale + references, at each claim |
