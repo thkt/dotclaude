@@ -19,19 +19,7 @@ argument-hint: "[task description]"
 
 `.claude/OUTCOME.md` を読む。存在しない場合は `/outcome` で生成する。
 
-### Why
-
-最初に達成すべき成果を確立する。以下の 5 つの質問に答え、Why として確定する。5 つ全てが明確になるまで次のステップへ進まない。曖昧または仮定の項目があるときは AskUserQuestion で詰める。
-
-- 誰がこれを必要としている？
-- どんな痛みが存在する？その根拠は？
-- 計測可能な結果、成功とは何？
-- なぜ今やる？
-- やらないとどうなる？
-
-### スコープとリスク
-
-`.claude/OUTCOME.md` と Why で未確定なら、スコープ / 優先度 / 制約 / リスクを AskUserQuestion で詰める。確定済みなら省略する。
+設計の前に Why を確立する。誰が必要とし、どんな痛みがあり (根拠は何か)、何が成功で、なぜ今やり、やらないとどうなるか。この 5 点が $ARGUMENTS と会話から読めるまで AskUserQuestion で詰める。スコープ / 優先度 / 制約 / リスクも未確定なら同時に詰め、確定済みなら省略する。
 
 ## Phase 2: 設計探索
 
@@ -53,13 +41,11 @@ argument-hint: "[task description]"
 
 ## Phase 3: Plan 生成
 
-1. 承認された設計を unit (独立して実装可能な成果の束) に分解し、実装順に並べて PLAN_SCHEMA 相当 JSON (`{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`) に直列化する。units の並び順がそのまま実装順になる
-2. id は U-001 / T-001 形式の連番を振る。T-NNN は plan 全体で一意にする
-3. contract は生成でなく選択で書く。実在する出典の引用 (コードの path + 公開シンボル > docs/wiki > pinned version の公式 docs deep link) + やりたいこと 1 行。出典が無い新規の形は signature を発明せず、やりたいこと 1 行に留めて形の決定は実装に委ねる
-4. tests[].name は条件と期待結果を 1 行で言い切る言明にする (そのままテスト名になる)。given / when / then の詳述はしない。振る舞いの固定はこの言明が担う
-5. 各 unit のユニークファイル数を数え、5 以上ならより小さな unit へ再分解する。切り直しは実装手順ではなく成果を軸に行う。contract の変更にあたるため、新しい unit 構成はユーザーと確認する
-6. スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
-7. 直列化した plan を自己点検する。必須フィールドの欠落、id の重複、空の units / tests / goal / contract を確認して直す。最終検証は build の Load validate が行う
+1. 承認された設計を unit (独立して実装可能な成果の束) に分解し、実装順に並べて PLAN_SCHEMA 相当 JSON (`{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`) に直列化する。並び順がそのまま実装順。id は U-001 / T-001 形式の連番で、T-NNN は plan 全体で一意にする
+2. contract は生成でなく選択で書く。実在する出典の引用 (コードの path + 公開シンボル > docs/wiki > pinned version の公式 docs deep link) + やりたいこと 1 行。出典が無い新規の形は signature を発明せず、やりたいこと 1 行に留めて形の決定は実装に委ねる
+3. tests[].name は条件と期待結果を 1 行で言い切る言明にする (そのままテスト名になる)。given / when / then の詳述はしない。振る舞いの固定はこの言明が担う
+4. 各 unit のユニークファイル数が 5 以上なら、成果を軸により小さな unit へ再分解し、新しい unit 構成をユーザーと確認する。スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
+5. 直列化した plan を自己点検する (必須フィールドの欠落、id の重複、空の units / tests / goal / contract)。最終検証は build の Load validate が行う
 
 ## 出力
 
@@ -72,14 +58,3 @@ argument-hint: "[task description]"
 | blockers           | ready = false の原因のうちユーザー判断が要る論点。呼び出し元が AskUserQuestion で決着させる対象 |
 | backlog candidates | スコープ外へ切り出した候補 (issue の `## Backlog candidates` の材料)。無ければ `なし`           |
 | 設計要約           | 採用アプローチ、比較したアプローチ、`critic-design` の判定、ADR 要否                            |
-
-## 完了条件
-
-全項目を満たすまで終了しない。満たせない項目は、理由をユーザーに提示する。
-
-- [ ] OUTCOME.md が存在
-- [ ] Why を確立
-- [ ] 2 つ以上のアプローチを比較
-- [ ] 敵対的批判 (critic-design) を適用
-- [ ] 設計をユーザーがレビューし承認
-- [ ] 構造化 plan が自己点検を通過し、呼び出し元に返された

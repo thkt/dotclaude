@@ -19,19 +19,7 @@ Deep design exploration with adversarial critique by `critic-design`. Compare 2+
 
 Read `.claude/OUTCOME.md`. If it does not exist, generate it via `/outcome`.
 
-### Why
-
-Establish the outcome to achieve first. Answer the following 5 questions and settle them as the Why. Do not proceed to the next step until all 5 are clear. When an item is vague or assumed, pin it down via AskUserQuestion.
-
-- Who needs this?
-- What pain exists? What is the evidence?
-- What measurable result counts as success?
-- Why now?
-- What happens if we don't?
-
-### Scope and Risks
-
-If unresolved by `.claude/OUTCOME.md` and the Why, pin down scope / priority / constraints / risks via AskUserQuestion. Skip when already settled.
+Establish the Why before designing. Who needs this, what pain exists (and its evidence), what counts as success, why now, and what happens if we don't. Pin these 5 points down via AskUserQuestion until they are readable from $ARGUMENTS and the conversation. Pin down scope / priority / constraints / risks at the same time if unsettled; skip when already settled.
 
 ## Phase 2: Design Exploration
 
@@ -53,13 +41,11 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 
 ## Phase 3: Plan Generation
 
-1. Decompose the approved design into units (an independently implementable bundle of outcome) and serialize them in implementation order into PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`). The listed order of units is the implementation order
-2. Assign sequential ids in U-001 / T-001 format. Keep T-NNN unique across the whole plan
-3. Write each contract by selection, not generation. A citation of a real source (code path + public symbol > docs/wiki page > deep link into the pinned version's official docs) plus a one-line intent. For a new shape with no citable source, do not invent a signature; keep the one intent line and leave the shape to implementation
-4. Make each tests[].name a one-line statement of condition + expected result (it becomes the test name verbatim). Do not elaborate given / when / then; the statement itself pins the behavior
-5. Count unique files per unit; if 5 or more, re-decompose it into smaller units. Cut along outcomes, not implementation steps. Since this changes the contract, confirm the new unit composition with the user
-6. Candidates carved out of scope stay out of the plan and go to backlog candidates
-7. Self-check the serialized plan. Look for missing required fields, duplicate ids, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
+1. Decompose the approved design into units (an independently implementable bundle of outcome) and serialize them in implementation order into PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`). The listed order is the implementation order. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan
+2. Write each contract by selection, not generation. A citation of a real source (code path + public symbol > docs/wiki page > deep link into the pinned version's official docs) plus a one-line intent. For a new shape with no citable source, do not invent a signature; keep the one intent line and leave the shape to implementation
+3. Make each tests[].name a one-line statement of condition + expected result (it becomes the test name verbatim). Do not elaborate given / when / then; the statement itself pins the behavior
+4. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
+5. Self-check the serialized plan (missing required fields, duplicate ids, empty units / tests / goal / contract). Final validation is performed by build's Load validate
 
 ## Output
 
@@ -72,14 +58,3 @@ Return the following to the caller in conversation.
 | blockers           | Causes of ready = false that need a user decision. The caller settles each via AskUserQuestion |
 | backlog candidates | Candidates carved out of scope (they feed the issue's `## Backlog candidates`). `none` if none |
 | design summary     | Adopted approach, compared approaches, `critic-design` verdicts, ADR needed or not             |
-
-## Completion Criteria
-
-Do not finish until every item is met. For items that cannot be met, present the reason to the user.
-
-- [ ] OUTCOME.md exists
-- [ ] Why established
-- [ ] 2+ approaches compared
-- [ ] Adversarial critique (critic-design) applied
-- [ ] Design reviewed and approved by the user
-- [ ] Structured plan passed the self-check and was returned to the caller
