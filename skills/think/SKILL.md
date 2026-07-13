@@ -9,7 +9,7 @@ argument-hint: "[task description]"
 
 # /think - Design Exploration
 
-Deep design exploration with adversarial critique by `critic-design`. Compare 2+ approaches, subject them to critique, and let only the surviving approach reach the structured plan. Treat approaches as candidates to be verified against critique, not merely options to pick from. The plan is returned to the caller in conversation, not written to files. Its only persistent home is the issue's `## Plan` section written by `/issue`.
+Compare 2+ approaches, subject them to `critic-design` critique, and let only the surviving approach reach the structured plan. The plan is returned to the caller in conversation, not written to files. Its only persistent home is the issue's `## Plan` section written by `/issue`.
 
 ## Input
 
@@ -19,7 +19,7 @@ Deep design exploration with adversarial critique by `critic-design`. Compare 2+
 
 Read `.claude/OUTCOME.md`. If it does not exist, generate it via `/outcome`.
 
-Establish the Why before designing. Who needs this, what pain exists (and its evidence), what counts as success, why now, and what happens if we don't. Pin these 5 points down via AskUserQuestion until they are readable from $ARGUMENTS and the conversation. Pin down scope / priority / constraints / risks at the same time if unsettled; skip when already settled.
+Establish the Why before designing. Who needs this, what pain exists and what is its evidence, what counts as success, why now, and what happens if we don't. Pin these 5 points down via AskUserQuestion until they are readable from $ARGUMENTS and the conversation. Pin down scope / priority / constraints / risks at the same time if unsettled; skip when already settled.
 
 ## Phase 2: Design Exploration
 
@@ -35,16 +35,16 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 
 ### Design
 
-1. Launch `critic-design` on the generated approaches and receive the verdict table and actionable items. Include the task title verbatim in the spawn prompt. Instruct it to return its result as a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[], actionable: string[] }`
-2. If the verdict is NO-GO, resolve blockers inline before proceeding (fix the approach or relaunch the critic). Present the findings-filtered design to the user with trade-off rationale, and wait for approval
+1. Launch `critic-design` on the generated approaches. Include the task title verbatim in the spawn prompt, and have it return a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[], actionable: string[] }`
+2. If the verdict is NO-GO, resolve blockers inline before proceeding. Fix the approach, or relaunch the critic. Present the weakness-filtered design to the user with trade-off rationale, and wait for approval
 3. After approval, ask whether the technical decision needs an ADR. Skip for simple features
 
 ## Phase 3: Plan Generation
 
-1. Decompose the approved design into units (an independently implementable bundle of outcome) and serialize them in implementation order into PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`). The listed order is the implementation order. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan
-2. Write contract and tests[].name per the authoring rules in `${CLAUDE_SKILL_DIR}/../issue/references/plan-section.md` (contract is a citation plus a one-line intent; tests[].name is a one-line statement of condition + expected result)
+1. Decompose the approved design into units. A unit is an independently implementable bundle of outcome. Serialize them in implementation order into PLAN_SCHEMA-equivalent JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`; the listed order is the implementation order. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan
+2. Write contract and tests[].name per the authoring rules in `${CLAUDE_SKILL_DIR}/../issue/references/plan-section.md`
 3. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
-4. Self-check the serialized plan (missing required fields, duplicate ids, empty units / tests / goal / contract). Final validation is performed by build's Load validate
+4. Self-check the serialized plan. Look for missing required fields, duplicate ids, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
 
 ## Output
 
@@ -53,7 +53,7 @@ Return the following to the caller in conversation.
 | Item               | Content                                                                                        |
 | ------------------ | ---------------------------------------------------------------------------------------------- |
 | ready              | true when the plan passed the self-check and no undecided points remain                        |
-| plan               | The validated structured plan (PLAN_SCHEMA JSON)                                               |
+| plan               | The self-checked structured plan                                                               |
 | blockers           | Causes of ready = false that need a user decision. The caller settles each via AskUserQuestion |
-| backlog candidates | Candidates carved out of scope (they feed the issue's `## Backlog candidates`). `none` if none |
-| design summary     | Adopted approach, compared approaches, `critic-design` verdicts, ADR needed or not             |
+| backlog candidates | Candidates carved out of scope. They feed the issue's `## Backlog candidates`. "none" if none  |
+| design summary     | Adopted approach, compared approaches, the `critic-design` verdict, ADR needed or not          |
