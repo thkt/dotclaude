@@ -9,7 +9,7 @@ argument-hint: "[issue description]"
 
 # /issue - GitHub Issue Generator
 
-A standalone issue-creation skill. It requires no upstream stage (challenge / research / think) and never nests them. When their artifacts exist in the conversation context, use them: the challenge verdict as posting-judgment material, research findings as the body's evidence, and think's structured plan written out as the `## Plan` section. Premise verification belongs to /challenge, investigation to /research, design and plan generation to /think, and the human decides which stages an issue goes through.
+A standalone issue-creation skill. It requires no upstream stage (challenge / research / think) and never nests them. When their artifacts exist in the conversation context, use them: the challenge verdict for the posting judgment, research findings as the body's evidence, and think's structured plan written out as the `## Plan` section. The human decides which stages an issue goes through.
 
 ## Input
 
@@ -40,7 +40,7 @@ Default to `feature` if unclear. The title takes a bracketed prefix of the capit
 
 ### The /fix route for minor bugs
 
-A bug meeting all three criteria below is minor, and handling it directly via /fix without filing is an option. When filing anyway, add a footer note to the body, "minor; may be handled via /fix", keeping the /fix path visible. A typical example is a typo fix. An intermittent bug with the root cause unidentified does not qualify.
+A bug meeting all three criteria below is minor, and handling it directly via /fix without filing is an option. When filing anyway, add a footer note to the body, "minor; may be handled via /fix". An intermittent bug with the root cause unidentified does not qualify.
 
 | Criterion     | Content                                   |
 | ------------- | ----------------------------------------- |
@@ -60,11 +60,11 @@ Establish the issue's Why before drafting the body. One question per message, at
 
 ### Template source
 
-List `.md` files via `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'`. If a GitHub template matches the type (filename or `name` contains the type), read its body and strip the leading frontmatter (`name` / `about` / `labels` / `title`) for the skeleton; otherwise use `templates/<type>.md` directly under the skill directory. Whichever becomes the skeleton, the rest of the flow runs the same.
+List `.md` files via `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'`. If a GitHub template matches the type (filename or `name` contains the type), read its body and strip the leading frontmatter (`name` / `about` / `labels` / `title`) for the skeleton; otherwise use `templates/<type>.md` directly under the skill directory.
 
 ### Confidence marking
 
-Requirements the user decided stay unmarked. Add an inline `(tentative: <action at pickup>)` only to decisions the user left open and facts not yet verified, and put issue-level premises that attach to no specific line in the Premises section. The marker word follows the language setting in settings.json (`仮` under Japanese). build extracts tentative marks as assumptions and surfaces them on the draft PR as veto targets the user can overturn. An uncertain HOW is omitted, not written down with a mark.
+Requirements the user decided stay unmarked. Add an inline `(tentative: <action at pickup>)` only to decisions the user left open and facts not yet verified, and put issue-level premises that attach to no specific line in the Premises section. build extracts tentative marks as assumptions and surfaces them on the draft PR as veto targets the user can overturn. Do not write an uncertain HOW at all.
 
 ### Split assessment
 
@@ -77,7 +77,7 @@ When two or more criteria are each independently implementable, ask via AskUserQ
 
 ## Phase 3: Plan Write-Out
 
-Run this phase only when a structured plan from /think exists in the conversation context; otherwise omit the section entirely. An issue without a Plan is still accepted by build via an ephemeral plan, but plan quality is higher through /think.
+Run this phase only when a structured plan from /think exists in the conversation context; otherwise omit the section entirely.
 
 1. Transfer units / tests / preconditions / test_command into the `## Plan` section following the format and authoring rules in `${CLAUDE_SKILL_DIR}/references/plan-section.md`
 2. Verify the existence of the written paths and the line-count rules per plan-section.md § Pre-posting verification
@@ -86,7 +86,7 @@ Run this phase only when a structured plan from /think exists in the conversatio
 ## Phase 4: Publishing
 
 1. Present the issue preview. Collect any inline tentative marks into a tentative block (adding no new content, mirroring what the body already carries; omit it at zero items), then confirm via AskUserQuestion: "Create this issue?"
-2. Write the body to a temp file, attach labels, and run `gh issue create --title "<title>" --body-file <path>`. Capture the issue URL from its output (sandbox-compatible, avoids escaping a long body)
+2. Write the body to a temp file, attach labels, and run `gh issue create --title "<title>" --body-file <path>`. Capture the issue URL from its output
 3. If split was approved in Phase 1, suggest running /slice with the published epic number. Do not launch it automatically
 
 ### Labels
