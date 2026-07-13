@@ -27,17 +27,15 @@ Grill the proposal from evidence on its own, then return only the unresolved res
 
 ### Input to Phase 2
 
-Aggregate the Phase 1 findings into the critic-design input schema before spawning.
+Aggregate the Phase 1 findings into the following shape before spawning.
 
-| Field            | Source                                                                                                                                   |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| source           | user-grill                                                                                                                               |
-| artifact_type    | inferred from $ARGUMENTS (spec / plan / design / ADR / doc)                                                                              |
-| approach         | one-line summary of the proposal core                                                                                                    |
-| decisions        | architecture-level decisions settled in Phase 1 (terminology checks and scope minutiae excluded)                                         |
-| trade-offs       | trade-offs surfaced in Phase 1                                                                                                           |
-| referenced_files | files read in Phase 1                                                                                                                    |
-| outcome_ref      | OUTCOME.md path plus a digest of its done state / non-goals / constraints. If OUTCOME.md is absent, use the outcome confirmed in Phase 1 |
+| Field            | Source                                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| approach         | one-line summary of the proposal core                                                                                                       |
+| decisions        | architecture-level decisions settled in Phase 1 (terminology checks and scope minutiae excluded)                                            |
+| trade-offs       | trade-offs surfaced in Phase 1                                                                                                              |
+| referenced_files | files read in Phase 1                                                                                                                       |
+| outcome_ref      | OUTCOME.md path plus a digest of its Outcome state / Non-goals / Constraints. If OUTCOME.md is absent, use the outcome confirmed in Phase 1 |
 
 ## Phase 2 Devil
 
