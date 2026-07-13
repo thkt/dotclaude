@@ -490,7 +490,7 @@ const integrated = await agent(
     phase: "Integrate",
     label: "integrate",
     model: "opus",
-    effort: "xhigh",
+    effort: "high",
     schema: FINDINGS_SCHEMA,
   },
 );

@@ -696,7 +696,7 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
       phase: "Audit",
       label: `fix:${round}`,
       model: "opus",
-      effort: "xhigh",
+      effort: "high",
     },
   );
   if (round === 3) {
