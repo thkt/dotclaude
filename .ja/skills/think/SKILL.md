@@ -42,10 +42,9 @@ argument-hint: "[task description]"
 ## Phase 3: Plan 生成
 
 1. 承認された設計を unit (独立して実装可能な成果の束) に分解し、実装順に並べて PLAN_SCHEMA 相当 JSON (`{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`) に直列化する。並び順がそのまま実装順。id は U-001 / T-001 形式の連番で、T-NNN は plan 全体で一意にする
-2. contract は生成でなく選択で書く。実在する出典の引用 (コードの path + 公開シンボル > docs/wiki > pinned version の公式 docs deep link) + やりたいこと 1 行。出典が無い新規の形は signature を発明せず、やりたいこと 1 行に留めて形の決定は実装に委ねる
-3. tests[].name は条件と期待結果を 1 行で言い切る言明にする (そのままテスト名になる)。given / when / then の詳述はしない。振る舞いの固定はこの言明が担う
-4. 各 unit のユニークファイル数が 5 以上なら、成果を軸により小さな unit へ再分解し、新しい unit 構成をユーザーと確認する。スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
-5. 直列化した plan を自己点検する (必須フィールドの欠落、id の重複、空の units / tests / goal / contract)。最終検証は build の Load validate が行う
+2. contract と tests[].name の書き方は `${CLAUDE_SKILL_DIR}/../issue/references/plan-section.md` の authoring 規則に従う (contract は引用 + やりたいこと 1 行、tests[].name は条件と期待結果の 1 行言明)
+3. 各 unit のユニークファイル数が 5 以上なら、成果を軸により小さな unit へ再分解し、新しい unit 構成をユーザーと確認する。スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
+4. 直列化した plan を自己点検する (必須フィールドの欠落、id の重複、空の units / tests / goal / contract)。最終検証は build の Load validate が行う
 
 ## 出力
 

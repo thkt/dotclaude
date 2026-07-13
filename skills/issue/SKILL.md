@@ -90,7 +90,7 @@ When two or more criteria are each independently implementable, ask via AskUserQ
 
 Run this phase only when a structured plan from /think exists in the conversation context; otherwise omit the section entirely. An issue without a Plan is still accepted by build via an ephemeral plan, but plan quality is higher through /think.
 
-1. Transfer units / tests / preconditions / test_command into the `## Plan` section following the format in `${CLAUDE_SKILL_DIR}/references/plan-section.md`. Write contracts by selection, not generation (a citation plus an intent; rules in plan-section.md § Contract authoring rules)
+1. Transfer units / tests / preconditions / test_command into the `## Plan` section following the format and authoring rules in `${CLAUDE_SKILL_DIR}/references/plan-section.md`
 2. Verify the existence of the written paths and the line-count rules per plan-section.md § Pre-posting verification
 3. Append the `## Backlog candidates` section. List the candidates the plan carved out of scope; write "none" when there are none
 

@@ -1,6 +1,6 @@
 # Plan Section Format
 
-Defines the format of the `## Plan` section in an issue body and the contract by which the build workflow extracts a structured plan from it. This is the shared source for the issue SKILL.md and build.js; change the format here first, then propagate to both. Extraction relies solely on markdown heading and bullet structure, with no hidden machine block.
+Defines the format of the `## Plan` section in an issue body and the contract by which the build workflow extracts a structured plan from it. This is the shared source for the issue SKILL.md and build.js; change the format here first, then propagate to both.
 
 ## Skeleton
 
@@ -62,8 +62,8 @@ Before posting the issue, verify from the same repository root as the build work
 1. Verify each `### Preconditions` line: paths via `test -f <path>`, anchors via `ugrep -F '<pattern>' <path>`. Fix or drop any failing line
 2. Verify every `units[].files` entry that refers to an existing file with `test -f <path>`, and fix any failing path
 3. If even one unit lists an existing file in `files`, the `### Preconditions` subsection needs at least one line. Treat an empty or absent subsection as a failure, and add one precondition line anchoring the load-bearing dependency
-4. Fix any field exceeding the line-count rules by splitting
+4. Check for line-count rule overflow
 
 ## Extraction
 
-The build workflow maps the Plan section into its own schema (build.js's EXTRACT_SCHEMA) via LLM extraction, and stops omissions and fabrications with a fail-close validate plus a deterministic cross-check of the U-NNN / T-NNN id sets. What the writer must keep stable is this skeleton, not a field vocabulary; stable headings and bullets carry extraction stability.
+The build workflow maps the Plan section into its own schema (build.js's EXTRACT_SCHEMA) via LLM extraction, and stops omissions and fabrications with a fail-close validate plus a deterministic cross-check of the U-NNN / T-NNN id sets. What the writer must keep stable is this skeleton, not a field vocabulary; stable headings and bullets carry extraction stability. No hidden machine block.

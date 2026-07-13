@@ -42,10 +42,9 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 ## Phase 3: Plan Generation
 
 1. Decompose the approved design into units (an independently implementable bundle of outcome) and serialize them in implementation order into PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`). The listed order is the implementation order. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan
-2. Write each contract by selection, not generation. A citation of a real source (code path + public symbol > docs/wiki page > deep link into the pinned version's official docs) plus a one-line intent. For a new shape with no citable source, do not invent a signature; keep the one intent line and leave the shape to implementation
-3. Make each tests[].name a one-line statement of condition + expected result (it becomes the test name verbatim). Do not elaborate given / when / then; the statement itself pins the behavior
-4. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
-5. Self-check the serialized plan (missing required fields, duplicate ids, empty units / tests / goal / contract). Final validation is performed by build's Load validate
+2. Write contract and tests[].name per the authoring rules in `${CLAUDE_SKILL_DIR}/../issue/references/plan-section.md` (contract is a citation plus a one-line intent; tests[].name is a one-line statement of condition + expected result)
+3. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
+4. Self-check the serialized plan (missing required fields, duplicate ids, empty units / tests / goal / contract). Final validation is performed by build's Load validate
 
 ## Output
 

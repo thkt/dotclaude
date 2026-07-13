@@ -52,7 +52,7 @@ Land the Phase 1 material on two critic-design (internal attack / OUTCOME.md att
 1. Compose the Phase 2 input from the Phase 1 aggregation and the original $ARGUMENTS context
 2. Spawn two critic-design via Task in parallel (subagent_type: critic-design, run_in_background: false). One handles the internal attack, the other takes `outcome_ref` for the outcome attack (skip when no outcome is available). Mention `ARCHITECTURE.md` if present. Include the challenge target title verbatim in each spawn prompt, and instruct each critic-design to return its result as a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[] }`
 3. Wait for both, reconcile verdicts and weaknesses, and dedupe overlap
-4. Aggregate the overall verdict and the Phase 1 residuals into VERDICT_SCHEMA (`{ verdict, assumptions: [{ text, irreversible, underspecified }] }`) and apply the one-way downgrade rule. When an irreversible assumption remains, assumptions exceed 7, or an underspecified assumption exists, downgrade to NO-GO regardless of how good the content looks. The downgrade is one-way; never hand-override a rule-hit verdict back to GO
+4. Aggregate the overall verdict and the Phase 1 residuals into VERDICT_SCHEMA (`{ verdict, assumptions: [{ text, irreversible, underspecified }] }`). When an irreversible assumption remains, assumptions exceed 7, or an underspecified assumption exists, downgrade to NO-GO regardless of how good the content looks, and never hand-override it back to GO
 
 ## Output
 

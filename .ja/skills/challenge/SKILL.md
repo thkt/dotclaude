@@ -52,7 +52,7 @@ Phase 1 で引き出した素材を critic-design 2 体 (内部攻撃 / OUTCOME.
 1. Phase 1 の集約と元の `$ARGUMENTS` コンテキストから Phase 2 入力を組み立てる
 2. critic-design を 2 体、Task で並列に起動する (subagent_type: critic-design、run_in_background: false)。一方は内部攻撃、もう一方は `outcome_ref` を渡して outcome 攻撃 (outcome を確定できなければスキップ)。`ARCHITECTURE.md` 等があれば言及する。起動プロンプトには challenge 対象の title をそのまま含め、結果は `{ verdict: "GO" | "NO-GO", weaknesses: string[] }` の JSON 1 object で返すよう指示する
 3. 両者の完了を待ち、verdict と weaknesses を突き合わせて重複を除去する
-4. 総合 verdict と Phase 1 の残差を VERDICT_SCHEMA (`{ verdict, assumptions: [{ text, irreversible, underspecified }] }`) に集約し、一方向の降格規則を適用する。不可逆な仮定が残っている / 仮定が 7 件を超える / underspecified な仮定があるときは、内容の出来に関わらず NO-GO へ降格する。降格は一方向で、規則に該当した verdict を手動で GO に戻さない
+4. 総合 verdict と Phase 1 の残差を VERDICT_SCHEMA (`{ verdict, assumptions: [{ text, irreversible, underspecified }] }`) に集約する。不可逆な仮定が残っている / 仮定が 7 件を超える / underspecified な仮定があるときは、内容の出来に関わらず NO-GO へ降格し、手動で GO に戻さない
 
 ## 出力
 
