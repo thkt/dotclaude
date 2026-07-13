@@ -1,8 +1,10 @@
-# Plan Section Format
+# Plan Draft Format
 
-Defines the format of the `## Plan` section in an issue body and the contract by which the build workflow extracts a structured plan from it. This is the shared source for the think SKILL.md and build.js; change the format here first, then propagate to both. /think drafts this format to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`, and /issue transfers it into the issue body as-is.
+Defines the format of the draft /think writes to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`, and the contract by which the build workflow extracts a structured plan from it. This is the shared source for the think SKILL.md and build.js; change the format here first, then propagate to both. /issue transfers both sections of the draft into the issue body as-is, so this format is the issue's Plan section verbatim.
 
 ## Skeleton
+
+The draft file consists of exactly these 2 sections.
 
 ```markdown
 ## Plan
@@ -66,4 +68,4 @@ Before writing out the draft, verify from the same repository root as the build 
 
 ## Extraction
 
-The build workflow maps the Plan section into build.js's EXTRACT_SCHEMA via LLM extraction, and stops omissions and fabrications with a fail-close validate plus a deterministic cross-check of the U-NNN / T-NNN id sets. What the writer must keep stable is this skeleton, not a field vocabulary; stable headings and bullets carry extraction stability. No hidden machine block.
+The build workflow maps the transferred Plan section into build.js's EXTRACT_SCHEMA via LLM extraction, and stops omissions and fabrications with a fail-close validate plus a deterministic cross-check of the U-NNN / T-NNN id sets. What the writer must keep stable is this skeleton, not a field vocabulary; stable headings and bullets carry extraction stability. No hidden machine block.

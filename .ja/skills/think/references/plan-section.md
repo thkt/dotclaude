@@ -1,8 +1,10 @@
-# Plan 節フォーマット
+# Plan 下書きフォーマット
 
-issue 本文の `## Plan` 節の書式と、build workflow がそこから構造化 plan を抽出する contract を定義する。think SKILL.md と build.js の共有 source であり、書式の変更はこのファイルを更新してから両者に反映する。/think はこの書式で `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に下書きし、/issue がそれを issue 本文へそのまま移設する。
+/think が `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に書き出す下書きの書式と、build workflow がそこから構造化 plan を抽出する contract を定義する。think SKILL.md と build.js の共有 source であり、書式の変更はこのファイルを更新してから両者に反映する。/issue は下書きの両節を issue 本文へそのまま移設するため、この書式がそのまま issue の Plan 節になる。
 
 ## 骨格
+
+下書きファイルは次の 2 節だけで構成する。
 
 ```markdown
 ## Plan
@@ -66,4 +68,4 @@ U-NNN は 001 からの連番で plan 内一意。T-NNN は plan 全体で一意
 
 ## 抽出
 
-build workflow は Plan 節を LLM 抽出で build.js の EXTRACT_SCHEMA に写し、fail-close の validate と U-NNN / T-NNN id の決定論クロスチェックで欠落と捏造を止める。書き手が守るのはフィールドの語彙でなくこの骨格で、見出しと箇条書きの安定が抽出の安定を担う。機械用の隠し block は置かない。
+build workflow は issue へ移設された Plan 節を LLM 抽出で build.js の EXTRACT_SCHEMA に写し、fail-close の validate と U-NNN / T-NNN id の決定論クロスチェックで欠落と捏造を止める。書き手が守るのはフィールドの語彙でなくこの骨格で、見出しと箇条書きの安定が抽出の安定を担う。機械用の隠し block は置かない。
