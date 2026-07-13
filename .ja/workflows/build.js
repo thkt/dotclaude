@@ -582,7 +582,7 @@ await agent(
   { label: "code-summary", phase: "Code", model: "haiku" },
 );
 
-// ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit ループ (audit は最大 3 回) ----
+// ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit ループ (audit は最大 2 回) ----
 // audit の fan-out は workflow("audit") が持つ (/audit の glob routing table +
 // reviewer -> challenge -> verify -> integrate)。scope を渡さないので、uncommitted diff
 // すなわち実装全体を route する。code phase で既に test は green なので preflight は skip する。
@@ -655,10 +655,19 @@ log(
     ? `conformance: ${conf.findings.length} spec deviation(s) (independent axis, surfaced in a separate PR section).`
     : "conformance: no spec to conform against found, skipped.",
 );
+// stall した / 空の reviewer run は clean pass ではない。audit.js は stall した reviewer を
+// 非空の `skipped` (output を出さなかった unit) で signal し、`.stopped` key は emit しない。
+// bare な falsy check だと {findings:[], skipped:[...]} を clean と読み、未 review の file を
+// certify したまま ship してしまう。falsy / 明示的 stopped / skipped 非空のいずれかで fail closed。
+const auditStalled = (r) => !r || r.stopped || (r.skipped || []).length > 0;
 let audit = audit0 || { findings: [] };
 log(
   `Audit fired ${(audit.assignments || []).length} reviewer group(s); polish lens ${review && review.codex_available ? "active" : "inactive"}.`,
 );
+if (auditStalled(audit0))
+  log(
+    "Primary audit did not complete (stopped, stalled reviewer, or falsy). Failing closed: not certifying a clean pass.",
+  );
 const criticalHigh = (a) =>
   (a.findings || []).filter((f) => f.severity === "critical" || f.severity === "high");
 const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
@@ -668,9 +677,15 @@ const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
 }));
 // 0 critical/high になるまで fix -> re-audit を loop する。最終 round の fix だけが
 // 未検証のまま残り (re-audit budget を使い切るため) PR に surface する。
+// MAX_FIX_ROUNDS は fix round の上限 (上の Audit phase コメントの「at most 2 audit runs」
+// とは別概念。あちらは audit0 + loop 内 re-audit 1 回の audit run 数)。
+const MAX_FIX_ROUNDS = 2;
 let toFix = [...criticalHigh(audit), ...polishSurvivors];
-let reaudited = true;
-for (let round = 1; round <= 3 && toFix.length; round++) {
+// stall した primary audit を clean と certify しないよう、reaudited を audit0 から seed する。
+// findings 空の stall (skipped 非空) が not-reaudited banner を surface する。loop はこの flag を
+// false へ倒すだけで、true へ戻すことはない。
+let reaudited = !auditStalled(audit0);
+for (let round = 1; round <= MAX_FIX_ROUNDS && toFix.length; round++) {
   log(`Fix round ${round}: fixing ${toFix.length} finding(s).`);
   await agent(
     anchor(
@@ -684,14 +699,41 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
       effort: "high",
     },
   );
-  if (round === 3) {
+  if (round === MAX_FIX_ROUNDS) {
     reaudited = false;
     log("Fix round cap reached. The final round's fixes are not re-audited and surface on the PR.");
     break;
   }
-  audit = (await sibling("audit", { repo, skipPreflight: true })) || {
-    findings: [],
-  };
+  // 再監査は scope を絞らず post-fix diff 全体を対象にする。以前は fix 対象 findings が指す
+  // file へ scope を絞る最適化だったが、finding metadata から scope を導くと coverage が複数
+  // 軸で壊れた。fix agent の巻き添え編集 (共有 helper、新規テスト) が scope 外に落ちて再走査
+  // されず、diff path に 1 件も一致しない scope は空 audit を返して本物の clean pass と区別
+  // できず、未検証の finding path が audit の shell / agent text へ raw 展開されていた。全体
+  // 再監査は編集された全 file をカバーし、下の backlog と count consumer 向けに `audit` を
+  // 現在の diff 全体の結果へ保つ。
+  // 完了しなかった re-audit は fail closed にする。falsy resolve、明示的 {stopped}、stall shape
+  // ({findings:[], skipped:[...]}、audit.js が stall した reviewer に対して実際に emit する shape)
+  // は clean pass の証拠ではない。{findings:[]} へ coerce すると toFix が空になり reaudited=true
+  // で loop を抜け、実行されなかった re-verify を clean と certify してしまう。round cap と
+  // 同じ扱いにして、この round の fix 済みだが未検証の findings を residual として PR に surface
+  // する (code phase の if (!code || code.stopped) fail-closed 契約と揃える)。await は try/catch で
+  // 包み、reject した re-audit (sibling の bare fallback は reject しうる) がここで fail closed に
+  // なるようにする。build を abort して tests-green な Code 成果を PR 無しで捨てるのを防ぐ。
+  let reauditResult;
+  try {
+    reauditResult = await sibling("audit", { repo, skipPreflight: true });
+  } catch (e) {
+    log(`Re-audit threw (${e?.message ?? e}). Treating as incomplete.`);
+    reauditResult = null;
+  }
+  if (auditStalled(reauditResult)) {
+    reaudited = false;
+    log(
+      "Re-audit did not complete (stopped, stalled reviewer, or empty). Failing closed: this round's findings surface on the PR unverified.",
+    );
+    break;
+  }
+  audit = reauditResult;
   toFix = criticalHigh(audit);
 }
 // re-audit された場合、criticalHigh(audit) は (loop 脱出により空の) 検証済み集合。
