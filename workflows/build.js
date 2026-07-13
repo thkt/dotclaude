@@ -575,10 +575,11 @@ const code =
   (await sibling("code", {
     plan: stripPreconditions(plan),
     repo,
-    // Pin the mechanical per-unit TDD loop to sonnet. The plan carries contracts and
-    // test scenarios, so implementation is mechanical; this is the intended cost floor,
-    // kept explicit here rather than silently inheriting code.js's opus default on every build.
-    model: "sonnet",
+    // Pin the per-unit TDD loop to opus (user decision 2026-07-13; cost is not a constraint).
+    // Keeps implementation headroom for weak-contract cases like the ephemeral-plan path,
+    // and matches code.js's standalone default. Kept explicit here so build does not
+    // silently track a future change of code.js's default.
+    model: "opus",
   })) || null;
 if (!code || code.stopped) {
   return { stopped: "code-failed", detail: code, planning: plan.dir };
