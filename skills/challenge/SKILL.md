@@ -9,7 +9,7 @@ argument-hint: "[proposal file | description]"
 
 # /challenge - GO / NO-GO verdict on a proposal
 
-Judge in two phases whether a discovered problem is real and a proposed idea usable, so the next decision starts from a verified GO / NO-GO.
+Judge the proposal in two phases, so the next decision starts from a verified GO / NO-GO.
 
 ## Input
 
@@ -21,7 +21,7 @@ Grill the proposal from evidence on its own, then return only the unresolved res
 
 1. Read OUTCOME.md if present. If absent, infer the outcome from $ARGUMENTS and the conversation and confirm it via AskUserQuestion. The confirmed outcome becomes the evaluation axis of the Phase 2 outcome attack
 2. List the open questions in the proposal and sort each into fact (evidence settles it to one answer) or preference (a choice over priority / scope / trade-offs). Sort by the nature of the question, not by advisor confidence
-3. Run the verification loop. subagents check facts in parallel, advisor re-checks the sorting and names the next evidence to get, and the main session decides whether to continue. Break when more evidence no longer changes the sorting (cap 3 rounds). Questions left unverified carry over to the residual
+3. Run the verification loop. subagents check facts in parallel, advisor re-checks the sorting and names the next evidence, and the main session decides whether to continue. Break when more evidence no longer changes the sorting (cap 3 rounds). Unsettled questions carry over to the residual
 4. If a verified fact overturns the proposal's core (the targeted state already holds, or it contradicts a fact), skip Phase 2 and put the grounds for overturning in the Why. Do not stop on advisor opinion alone. If only a sub-claim broke, proceed on the surviving part
 5. The questions left are the residual. advisor attaches a hypothesis plus reversibility / blast-radius to each, and only the irreversible or high-impact ones go to AskUserQuestion (cap 7). Proceed on the hypothesis as an assumption for the rest. Keep every residual advanced on assumption and every question delegated to subagents in the Why
 
@@ -32,14 +32,14 @@ Aggregate the Phase 1 findings into the following shape before spawning.
 | Field            | Source                                                                                                                                      |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | approach         | one-line summary of the proposal core                                                                                                       |
-| decisions        | architecture-level decisions settled in Phase 1 (terminology checks and scope minutiae excluded)                                            |
-| trade-offs       | trade-offs surfaced in Phase 1                                                                                                              |
-| referenced_files | files read in Phase 1                                                                                                                       |
+| decisions        | settled architecture-level decisions (terminology checks and scope minutiae excluded)                                            |
+| trade-offs       | surfaced trade-offs                                                                                                              |
+| referenced_files | files read                                                                                                                       |
 | outcome_ref      | OUTCOME.md path plus a digest of its Outcome state / Non-goals / Constraints. If OUTCOME.md is absent, use the outcome confirmed in Phase 1 |
 
 ## Phase 2 Devil
 
-Land the Phase 1 material on two critic-design (internal attack / OUTCOME.md attack), adversarially probing for holes.
+Land the Phase 1 material on two critic-design, adversarially probing for holes.
 
 | Pass                     | Role                                                                       |
 | ------------------------ | -------------------------------------------------------------------------- |
@@ -47,10 +47,9 @@ Land the Phase 1 material on two critic-design (internal attack / OUTCOME.md att
 | critic-design (internal) | Attack the proposal on its own terms (hidden weaknesses and failure paths) |
 | critic-design (outcome)  | Attack whether it reaches the outcome (fit / non-goal / constraint breach) |
 
-1. Compose the input from the Phase 1 aggregation and the original `$ARGUMENTS`
-2. Spawn two critic-design via Task in parallel (subagent_type: critic-design, run_in_background: false). One handles the internal attack, the other takes `outcome_ref` for the outcome attack (omit when no outcome is available). Mention `ARCHITECTURE.md` if present. Include the target title verbatim in each spawn prompt, and have each return a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[] }`
-3. Wait for both, reconcile the verdicts and weaknesses, and drop the overlap
-4. Aggregate the overall verdict and the Phase 1 residuals into VERDICT_SCHEMA (`{ verdict, assumptions: [{ text, irreversible, underspecified }] }`). When an irreversible assumption remains, assumptions exceed 7, or an underspecified assumption exists, downgrade to NO-GO regardless of how good the content looks, and never hand-override it back to GO
+1. Spawn two critic-design via Task in parallel (subagent_type: critic-design, run_in_background: false). One handles the internal attack, the other takes `outcome_ref` for the outcome attack (omit when no outcome is available). Mention `ARCHITECTURE.md` if present. Include the target title verbatim in each spawn prompt, and have each return a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[] }`
+2. Wait for both, reconcile the verdicts and weaknesses, and drop the overlap
+3. Aggregate the overall verdict and the Phase 1 residuals into VERDICT_SCHEMA (`{ verdict, assumptions: [{ text, irreversible, underspecified }] }`). When an irreversible assumption remains, assumptions exceed 7, or an underspecified assumption exists, downgrade to NO-GO regardless of how good the content looks, and never hand-override it back to GO
 
 ## Output
 
@@ -58,6 +57,6 @@ Put the verdict first, the backing in Why, and the next move in Actionable items
 
 | Section          | Content                                                                                                                                        |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Verdict          | GO / NO-GO, one line, first. Note the condition if conditional, and the reason if downgraded                                                   |
+| Verdict          | One GO / NO-GO line. Note the condition if conditional, and the reason if downgraded                                                   |
 | Why              | Fact-verification results, the two critic-design verdicts (internal / outcome), and every residual advanced on assumption (with reversibility) |
 | Actionable items | Top 3 concrete actions (keep / remove / revise)                                                                                                |
