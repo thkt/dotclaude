@@ -4,10 +4,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
+const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const targets = {
-  ja: join(root, ".ja", "skills", "issue", "references", "plan-section.md"),
-  en: join(root, "skills", "issue", "references", "plan-section.md"),
+  ja: join(root, ".ja", "skills", "think", "references", "plan-section.md"),
+  en: join(root, "skills", "think", "references", "plan-section.md"),
 };
 
 function read(path) {

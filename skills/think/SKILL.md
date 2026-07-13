@@ -42,7 +42,7 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 ## Phase 3: Plan Generation
 
 1. Decompose the approved design into units. A unit is an independently implementable bundle of outcome. Serialize them in implementation order into PLAN_SCHEMA-equivalent JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan
-2. Write contract and tests[].name per the authoring rules in `${CLAUDE_SKILL_DIR}/../issue/references/plan-section.md`
+2. Write contract and tests[].name per the authoring rules in `${CLAUDE_SKILL_DIR}/references/plan-section.md`
 3. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
 4. Self-check the serialized plan. Look for missing required fields, duplicate ids, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
 5. Write the self-checked plan in plan-section.md format to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`. Derive the lowercase hyphenated slug from the task title. Include both the `## Plan` and `## Backlog candidates` sections
@@ -51,11 +51,11 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 
 Return the following to the caller in conversation.
 
-| Item               | Content                                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| ready              | true when the plan passed the self-check and no undecided points remain                        |
-| plan               | The self-checked structured plan                                                               |
-| plan file          | Path of the written `.plan.md`                                                                 |
-| blockers           | Causes of ready = false that need a user decision                                              |
-| backlog candidates | Candidates carved out of scope. "none" if none                                                 |
-| design summary     | Adopted approach, compared approaches, the `critic-design` verdict, ADR needed or not          |
+| Item               | Content                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| ready              | true when the plan passed the self-check and no undecided points remain               |
+| plan               | The self-checked structured plan                                                      |
+| plan file          | Path of the written `.plan.md`                                                        |
+| blockers           | Causes of ready = false that need a user decision                                     |
+| backlog candidates | Candidates carved out of scope. "none" if none                                        |
+| design summary     | Adopted approach, compared approaches, the `critic-design` verdict, ADR needed or not |

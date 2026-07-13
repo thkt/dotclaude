@@ -79,7 +79,7 @@ When two or more criteria are each independently implementable, ask via AskUserQ
 
 Run this phase only when a /think plan exists; otherwise omit the section entirely. The `*.plan.md` draft under `.claude/workspace/planning/` is the source of truth: Read the newest one matching the issue title. When no draft exists but a plan is in conversation, use that.
 
-1. Paste the draft's `## Plan` and `## Backlog candidates` into the body as-is. The format and authoring rules are `${CLAUDE_SKILL_DIR}/references/plan-section.md`; follow the same format when transcribing from a conversation plan
+1. Paste the draft's `## Plan` and `## Backlog candidates` into the body as-is. The format is owned by /think and defined in `${CLAUDE_SKILL_DIR}/../think/references/plan-section.md`; follow the same format when transcribing from a conversation plan
 2. Verify the existence of the written paths and the line-count rules per plan-section.md § Pre-posting verification
 3. Append the `## Backlog candidates` section if absent. List the candidates the plan carved out of scope; write "none" when there are none
 
