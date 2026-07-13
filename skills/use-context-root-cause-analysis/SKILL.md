@@ -46,7 +46,7 @@ Ask "why" five times, descending through abstraction levels.
 
 ### Pattern Enum
 
-Consumers (e.g., `/fix` Non-obvious flow) branch on the Pattern field to decide whether to apply defense-in-depth or escalate.
+Consumers such as the `/fix` Non-obvious flow branch on the Pattern field to decide whether to apply defense-in-depth or escalate.
 
 | Value      | Meaning                                           |
 | ---------- | ------------------------------------------------- |

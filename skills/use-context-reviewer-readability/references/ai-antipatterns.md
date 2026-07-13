@@ -76,6 +76,6 @@ function calculateDiscount(amount, userType) {
 
 Abstract only in the following cases.
 
-1. Same pattern appears 3+ times (DRY)
+1. Same pattern appears 3+ times
 2. Multiple implementations actually needed
 3. Current approach measurably fails

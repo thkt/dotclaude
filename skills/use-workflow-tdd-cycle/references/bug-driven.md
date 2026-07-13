@@ -8,7 +8,7 @@ How `/fix` uses TDD for bug fixes. Builds on ${CLAUDE_SKILL_DIR}/SKILL.md (RGRC 
 | ---------- | ----------------------------------------- |
 | Source     | Bug description and reproduction steps    |
 | Approach   | Write failing test → Fix → Add edge cases |
-| Test state | Active (not skipped)                      |
+| Test state | Active; not skipped                       |
 | Focus      | Regression prevention                     |
 
 ## Workflow
