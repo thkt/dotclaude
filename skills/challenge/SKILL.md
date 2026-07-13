@@ -13,7 +13,7 @@ Judge the proposal in two phases, so the next decision starts from a verified GO
 
 ## Input
 
-`$ARGUMENTS` carries the target. It may be a proposal file path or a description. If empty, stop and ask the user to specify the target; do not infer it from the conversation. When multi-line, treat the first line as the target title and pass it verbatim, unparaphrased, into the critic-design spawn prompts.
+`$ARGUMENTS` carries the target. It may be a proposal file path or a description. If empty, stop and ask the user to specify the target; do not infer it from the conversation. When multi-line, the first line is the target title.
 
 ## Phase 1 Grill
 

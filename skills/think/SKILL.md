@@ -9,11 +9,11 @@ argument-hint: "[task description]"
 
 # /think - Design Exploration
 
-Compare 2+ approaches, subject them to `critic-design` critique, and let only the surviving approach reach the structured plan. The plan is returned to the caller in conversation, not written to files. Its only persistent home is the issue's `## Plan` section written by `/issue`.
+Compare 2+ approaches, subject them to `critic-design` critique, and let only the surviving approach reach the structured plan. Return the plan in conversation, not in files; persistence is left to `/issue`'s Plan write-out.
 
 ## Input
 
-`$ARGUMENTS` carries the task description and research context. If empty, confirm with the user via AskUserQuestion. The first line of $ARGUMENTS is the task title; pass that first line verbatim, unparaphrased, into the `critic-design` spawn prompt.
+`$ARGUMENTS` carries the task description and research context. If empty, confirm with the user via AskUserQuestion. The first line is the task title.
 
 ## Phase 1: Outcome Exploration
 

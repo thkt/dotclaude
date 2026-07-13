@@ -9,11 +9,11 @@ argument-hint: "[task description]"
 
 # /think - 設計探索
 
-2 つ以上のアプローチを比較して `critic-design` の批判にかけ、生き残ったアプローチだけを構造化 plan に到達させる。plan はファイルに書かず会話で呼び出し元に返す。永続先は `/issue` が書き下ろす issue の `## Plan` 節が唯一。
+2 つ以上のアプローチを比較して `critic-design` の批判にかけ、生き残ったアプローチだけを構造化 plan に到達させる。plan はファイルに書かず会話で返し、永続化は `/issue` の Plan 書き下ろしに委ねる。
 
 ## 入力
 
-`$ARGUMENTS` でタスク説明、調査コンテキストを受け取る。空なら AskUserQuestion でユーザーに確認する。$ARGUMENTS の先頭行がタスクのタイトル。`critic-design` の起動プロンプトには、この先頭行を言い換えずに渡す。
+`$ARGUMENTS` でタスク説明、調査コンテキストを受け取る。空なら AskUserQuestion でユーザーに確認する。先頭行がタスクのタイトル。
 
 ## Phase 1: 成果探索
 
