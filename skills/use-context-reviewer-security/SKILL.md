@@ -36,7 +36,7 @@ LLM01 covers apps that pass untrusted content to an LLM. The sink is the prompt 
 | A01   | Open Redirect (Taint)     | URL param → `location.href` without validation                                                                                         | Domain allowlist or relative-only                                                     |
 | A04   | Insecure Design           | `postMessage` handler without origin check                                                                                             | Strict `event.origin` comparison                                                      |
 | A02   | Sensitive Data Exposure   | JWT stored in localStorage/sessionStorage                                                                                              | httpOnly cookie instead                                                               |
-| LLM01 | Prompt Injection (LLM)    | Untrusted or caller-controlled value (RAG docs, fetched content, tool results, role args) reaches the prompt with no data-only framing | Delimit untrusted content as data; map caller values to fixed enumerated instructions |
+| LLM01 | Prompt Injection (LLM)    | Untrusted or caller-controlled value such as RAG docs, fetched content, tool results, or role args reaches the prompt with no data-only framing | Delimit untrusted content as data; map caller values to fixed enumerated instructions |
 
 ## Reporting
 
