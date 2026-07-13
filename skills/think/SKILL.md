@@ -23,7 +23,7 @@ Establish the Why before designing. Who needs this, what pain exists and what is
 
 ## Phase 2: Design Exploration
 
-Read the relevant code first to grasp patterns / constraints / architecture / prior art. Search `.claude/workspace/research/` with task keywords via `bfs`, and if matching research output exists, read it to inherit prior context.
+Read the relevant code first to grasp patterns / constraints / architecture / prior art. Search `.claude/workspace/research/` with task keywords via `bfs`, and read any matching research output.
 
 ### Approach Generation
 
@@ -41,7 +41,7 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 
 ## Phase 3: Plan Generation
 
-1. Decompose the approved design into units. A unit is an independently implementable bundle of outcome. Serialize them in implementation order into PLAN_SCHEMA-equivalent JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`; the listed order is the implementation order. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan
+1. Decompose the approved design into units. A unit is an independently implementable bundle of outcome. Serialize them in implementation order into PLAN_SCHEMA-equivalent JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan
 2. Write contract and tests[].name per the authoring rules in `${CLAUDE_SKILL_DIR}/../issue/references/plan-section.md`
 3. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
 4. Self-check the serialized plan. Look for missing required fields, duplicate ids, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
@@ -54,6 +54,6 @@ Return the following to the caller in conversation.
 | ------------------ | ---------------------------------------------------------------------------------------------- |
 | ready              | true when the plan passed the self-check and no undecided points remain                        |
 | plan               | The self-checked structured plan                                                               |
-| blockers           | Causes of ready = false that need a user decision. The caller settles each via AskUserQuestion |
-| backlog candidates | Candidates carved out of scope. They feed the issue's `## Backlog candidates`. "none" if none  |
+| blockers           | Causes of ready = false that need a user decision                                              |
+| backlog candidates | Candidates carved out of scope. "none" if none                                                 |
 | design summary     | Adopted approach, compared approaches, the `critic-design` verdict, ADR needed or not          |
