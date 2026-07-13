@@ -15,7 +15,7 @@ Take the decision title from `$ARGUMENTS` and shape it into a specific action li
 
 ## Adoption Gate
 
-Proceed to the 6-Phase Process only when all three conditions hold. Otherwise skip the ADR; if condition 1 or 2 is missing, record the decision as a `CONTEXT.md` entry (or an equivalent design note), and if only condition 3 is missing, record it in the commit message body.
+Proceed to the 6-Phase Process only when all three conditions hold. Otherwise skip the ADR; if condition 1 or 2 is missing, record the decision as a `CONTEXT.md` entry or an equivalent design note, and if only condition 3 is missing, record it in the commit message body.
 
 1. Hard to reverse. Changing the decision later carries meaningful cost
 2. Surprising without context. A future reader will ask "why this way?"
@@ -37,8 +37,8 @@ Proceed to the 6-Phase Process only when all three conditions hold. Otherwise sk
 | status          | No       | One of proposed, rejected, accepted, deprecated, superseded by ADR-NNNN. YAML quotes required; no links |
 | date            | No       | YYYY-MM-DD of creation; updated only when the ADR is superseded                                         |
 | decision-makers | No       | List of names or roles. Renamed from `deciders` in v4                                                   |
-| consulted       | No       | Subject-matter experts (two-way)                                                                        |
-| informed        | No       | Stakeholders kept up-to-date (one-way)                                                                  |
+| consulted       | No       | Subject-matter experts; two-way exchange                                                                        |
+| informed        | No       | Stakeholders kept up-to-date; one-way                                                                  |
 
 ### Supersede Procedure
 
@@ -54,7 +54,7 @@ When a new ADR replaces an existing one. Only `status` and `date` change in the 
 
 ## Decision Type
 
-Pick the decision type by the decision's intent; it only affects which recommended More Information topics to include. Per-section guidance is common to all types: Context 3 lines, Options 3-5 lines each, Consequences 2-3 bullets.
+The decision type only affects which recommended More Information topics to include. Per-section guidance is common to all types: Context 3 lines, Options 3-5 lines each, Consequences 2-3 bullets.
 
 | Decision type        | Use Case                   | Line limit | Recommended topics                                                            |
 | -------------------- | -------------------------- | ---------- | ----------------------------------------------------------------------------- |
