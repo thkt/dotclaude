@@ -1,6 +1,6 @@
 # Plan 節フォーマット
 
-issue 本文の `## Plan` 節の書式と、build workflow がそこから構造化 plan を抽出する contract を定義する。issue SKILL.md と build.js の共有 source であり、書式の変更はこのファイルを更新してから両者に反映する。/think はこの書式で `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に下書きし、/issue がそれを issue 本文へ貼り付ける。
+issue 本文の `## Plan` 節の書式と、build workflow がそこから構造化 plan を抽出する contract を定義する。think SKILL.md と build.js の共有 source であり、書式の変更はこのファイルを更新してから両者に反映する。/think はこの書式で `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に下書きし、/issue がそれを issue 本文へそのまま移設する。
 
 ## 骨格
 
@@ -43,7 +43,7 @@ U-NNN は 001 からの連番で plan 内一意。T-NNN は plan 全体で一意
 
 1. 引用は次の優先順で選ぶ。コードベースの既存の形 > docs/wiki のページ > pinned version の公式 docs の該当 API への deep link。コードの形は path + 公開シンボルで書き、前提と同じ stable anchor 規則に従う。外部ライブラリの引用は SOURCING.md の規律に従う
 2. 引用に従う点と変える点を、やりたいことの 1 行として添える。引用できる出典が無い新規の形は、signature を発明せずやりたいことの 1 行に留め、形の決定は実装に委ねる。振る舞いは受け入れテストが固定する
-3. 引用した path + シンボルは `### 前提` にも載せ、投稿前検証と build の Revalidate の対象にする
+3. 引用した path + シンボルは `### 前提` にも載せ、書き出し前検証と build の Revalidate の対象にする
 
 ## 前提 (preconditions) の authoring 規則
 
@@ -55,9 +55,9 @@ U-NNN は 001 からの連番で plan 内一意。T-NNN は plan 全体で一意
 4. 各行は path 単独、または path + stable anchor の 2 形式のどちらかにする
 5. path はリポジトリルート起点で書く。`workspace/` などリポジトリ接頭辞を落とした path は検証に失敗する
 
-## 投稿前検証
+## 書き出し前検証
 
-issue 投稿前に、build workflow の Revalidate と同じリポジトリルートで検証する。
+下書きの書き出し前に、build workflow の Revalidate と同じリポジトリルートで検証する。
 
 1. `### 前提` の各行を検証する。path は `test -f <path>`、anchor は `ugrep -F '<pattern>' <path>` で確認し、失敗した行は修正するか落とす
 2. `units[].files` のうち既存ファイルを指す行を `test -f <path>` で検証し、失敗したパスを直す

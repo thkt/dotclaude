@@ -1,15 +1,15 @@
 ---
 name: issue
-description: Generate GitHub Issue with structured title and body. Standalone; requires no upstream stage. When challenge / research / think artifacts exist in the conversation, they feed the body's evidence and the `## Plan` section.
+description: Generate GitHub Issue with structured title and body. Standalone; requires no upstream stage. When challenge / research artifacts exist in the conversation, they feed the body's evidence; when a /think plan draft exists, it is transferred into the `## Plan` section.
 when_to_use: Issue作って, Issue書いて, Issue作成, GitHub Issue, prepare for build
-allowed-tools: Bash(gh:*) Bash(cat:*) Bash(ugrep:*) Bash(test:*) Read AskUserQuestion
+allowed-tools: Bash(gh:*) Bash(cat:*) Bash(ugrep:*) Read AskUserQuestion
 model: opus
 argument-hint: "[issue description]"
 ---
 
 # /issue - GitHub Issue Generator
 
-A standalone issue-creation skill. It requires no challenge / research / think upstream and never nests them. When their artifacts exist in the conversation context, use them: the challenge verdict for the posting judgment, research findings as the body's evidence, and think's structured plan written out as the `## Plan` section. The human decides which stages an issue goes through.
+A standalone issue-creation skill. It requires no challenge / research / think upstream and never nests them. When their artifacts exist in the conversation context, use them: the challenge verdict for the posting judgment, research findings as the body's evidence, and /think's plan draft transferred into the `## Plan` section. The human decides which stages an issue goes through.
 
 ## Input
 
@@ -72,16 +72,12 @@ When two or more criteria are each independently implementable, ask via AskUserQ
 
 ## Phase 2: Refinement
 
-1. Refine the body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language: `phrases.ja.md` for Japanese, `phrases.en.md` for English. After the Plan section is appended in Phase 3, apply the same criteria to it as well
+1. Refine the body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language: `phrases.ja.md` for Japanese, `phrases.en.md` for English. The Plan section transferred in Phase 3 is out of scope; leave it untouched
 2. If a challenge verdict / findings exist in the conversation, fold only what belongs in the body, once. The verdict and findings themselves never enter the body
 
-## Phase 3: Plan Write-Out
+## Phase 3: Plan Transfer
 
-Run this phase only when a /think plan exists; otherwise omit the section entirely. The `*.plan.md` draft under `.claude/workspace/planning/` is the source of truth: Read the newest one matching the issue title. When no draft exists but a plan is in conversation, use that.
-
-1. Paste the draft's `## Plan` and `## Backlog candidates` into the body as-is. The format is owned by /think and defined in `${CLAUDE_SKILL_DIR}/../think/references/plan-section.md`; follow the same format when transcribing from a conversation plan
-2. Verify the existence of the written paths and the line-count rules per plan-section.md § Pre-posting verification
-3. Append the `## Backlog candidates` section if absent. List the candidates the plan carved out of scope; write "none" when there are none
+Run this phase only when a /think plan draft exists; otherwise omit the section entirely. Read the newest `*.plan.md` under `.claude/workspace/planning/` matching the issue title, and transfer both the `## Plan` and `## Backlog candidates` sections into the body as-is. Format and verification are owned by /think at write-out time and by build's Load validate; do not touch the transferred content.
 
 ## Phase 4: Publishing
 

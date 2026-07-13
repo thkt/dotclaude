@@ -2,7 +2,7 @@
 name: think
 description: Design exploration with adversarial critique by critic-design. Assembles the surviving approach into a structured plan, self-checks it, and returns it to the caller. The issue's Plan section is the plan's only persistent home. Do NOT use for codebase investigation without planning intent (use /research instead).
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
-allowed-tools: Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(test:*)
 model: opus
 argument-hint: "[task description]"
 ---
@@ -45,7 +45,7 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 2. Write contract and tests[].name per the authoring rules in `${CLAUDE_SKILL_DIR}/references/plan-section.md`
 3. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
 4. Self-check the serialized plan. Look for missing required fields, duplicate ids, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
-5. Write the self-checked plan in plan-section.md format to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`. Derive the lowercase hyphenated slug from the task title. Include both the `## Plan` and `## Backlog candidates` sections
+5. Run plan-section.md § Pre-writeout verification, then write the passing plan in plan-section.md format to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`. Derive the lowercase hyphenated slug from the task title. Include both the `## Plan` and `## Backlog candidates` sections
 
 ## Output
 

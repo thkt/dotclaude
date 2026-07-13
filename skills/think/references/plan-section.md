@@ -1,6 +1,6 @@
 # Plan Section Format
 
-Defines the format of the `## Plan` section in an issue body and the contract by which the build workflow extracts a structured plan from it. This is the shared source for the issue SKILL.md and build.js; change the format here first, then propagate to both. /think drafts this format to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`, and /issue pastes it into the issue body.
+Defines the format of the `## Plan` section in an issue body and the contract by which the build workflow extracts a structured plan from it. This is the shared source for the think SKILL.md and build.js; change the format here first, then propagate to both. /think drafts this format to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`, and /issue transfers it into the issue body as-is.
 
 ## Skeleton
 
@@ -43,7 +43,7 @@ Select, do not generate. Never sketch behavior in prose or invent new code fragm
 
 1. Pick the citation in this priority order: an existing shape in the codebase > a docs/wiki page > a deep link to the API in the pinned version's official docs. Write a code shape as path + public symbol under the same stable-anchor rules as Preconditions. External-library citations follow SOURCING.md
 2. Add what to follow and what to change relative to the citation as the one intent line. For a new shape with no citable source, do not invent a signature; keep the one intent line and leave the shape to implementation. Behavior is pinned by the acceptance tests
-3. Cited paths + symbols also go into `### Preconditions`, putting them under pre-posting verification and build's Revalidate
+3. Cited paths + symbols also go into `### Preconditions`, putting them under pre-writeout verification and build's Revalidate
 
 ## Precondition authoring rules
 
@@ -55,9 +55,9 @@ Apply these 5 rules to `### Preconditions`.
 4. Each line takes one of two forms: path only, or path + stable anchor
 5. Paths are repo-root-relative. A path that drops a repo prefix like `workspace/` fails verification
 
-## Pre-posting verification
+## Pre-writeout verification
 
-Before posting the issue, verify from the same repository root as the build workflow's Revalidate.
+Before writing out the draft, verify from the same repository root as the build workflow's Revalidate.
 
 1. Verify each `### Preconditions` line: paths via `test -f <path>`, anchors via `ugrep -F '<pattern>' <path>`. Fix or drop any failing line
 2. Verify every `units[].files` entry that refers to an existing file with `test -f <path>`, and fix any failing path
