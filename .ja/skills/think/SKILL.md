@@ -2,14 +2,14 @@
 name: think
 description: critic-design による敵対的批判を伴う設計探索。生き残った案を構造化 plan にまとめ、自己点検して呼び出し元に返す。plan の永続先は issue の Plan 節が唯一。計画意図のないコードベース調査には使わない (代わりに /research)。
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
-allowed-tools: Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[task description]"
 ---
 
 # /think - 設計探索
 
-2 つ以上の案を比較して `critic-design` の批判にかけ、生き残った案だけを構造化 plan に到達させる。plan はファイルに書かず会話で返し、永続化は `/issue` の Plan 書き下ろしに委ねる。
+2 つ以上の案を比較して `critic-design` の批判にかけ、生き残った案だけを構造化 plan に到達させる。plan は plan-section 書式の下書きファイルに書き出して会話でも返す。永続化は `/issue` が issue の Plan 節へ貼り付けて行う。
 
 ## 入力
 
@@ -45,6 +45,7 @@ argument-hint: "[task description]"
 2. contract と tests[].name の書き方は `${CLAUDE_SKILL_DIR}/../issue/references/plan-section.md` の authoring 規則に従う
 3. 1 つの unit が触るファイルが 5 つ以上なら、成果を軸により小さな unit へ再分解し、新しい unit 構成をユーザーと確認する。スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
 4. 直列化した plan を自己点検する。必須フィールドの欠落、id の重複、空の units / tests / goal / contract を確認して直す。最終検証は build の Load validate が行う
+5. 自己点検を通った plan を plan-section.md の書式で `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に書き出す。slug はタスクのタイトルから小文字ハイフン区切りで作る。`## Plan` と `## Backlog candidates` の両節を含める
 
 ## 出力
 
@@ -54,6 +55,7 @@ argument-hint: "[task description]"
 | ------------------ | -------------------------------------------------------------------- |
 | ready              | plan が自己点検を通過し、かつ未決着の論点なしで true                 |
 | plan               | 自己点検済みの構造化 plan                                            |
+| plan file          | 書き出した `.plan.md` のパス                                         |
 | blockers           | ready = false の原因のうちユーザー判断が要る論点                     |
 | backlog candidates | スコープ外へ切り出した候補。無ければ「なし」                         |
 | 設計要約           | 採用した案、比較した案、`critic-design` の判定、ADR 要否             |

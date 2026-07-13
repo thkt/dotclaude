@@ -1,6 +1,6 @@
 # Plan 節フォーマット
 
-issue 本文の `## Plan` 節の書式と、build workflow がそこから構造化 plan を抽出する contract を定義する。issue SKILL.md と build.js の共有 source であり、書式の変更はこのファイルを更新してから両者に反映する。
+issue 本文の `## Plan` 節の書式と、build workflow がそこから構造化 plan を抽出する contract を定義する。issue SKILL.md と build.js の共有 source であり、書式の変更はこのファイルを更新してから両者に反映する。/think はこの書式で `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に下書きし、/issue がそれを issue 本文へ貼り付ける。
 
 ## 骨格
 

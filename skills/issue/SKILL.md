@@ -77,11 +77,11 @@ When two or more criteria are each independently implementable, ask via AskUserQ
 
 ## Phase 3: Plan Write-Out
 
-Run this phase only when a structured plan from /think exists in the conversation context; otherwise omit the section entirely.
+Run this phase only when a /think plan exists; otherwise omit the section entirely. The `*.plan.md` draft under `.claude/workspace/planning/` is the source of truth: Read the newest one matching the issue title. When no draft exists but a plan is in conversation, use that.
 
-1. Transfer units / tests / preconditions / test_command into the `## Plan` section following the format and authoring rules in `${CLAUDE_SKILL_DIR}/references/plan-section.md`
+1. Paste the draft's `## Plan` and `## Backlog candidates` into the body as-is. The format and authoring rules are `${CLAUDE_SKILL_DIR}/references/plan-section.md`; follow the same format when transcribing from a conversation plan
 2. Verify the existence of the written paths and the line-count rules per plan-section.md § Pre-posting verification
-3. Append the `## Backlog candidates` section. List the candidates the plan carved out of scope; write "none" when there are none
+3. Append the `## Backlog candidates` section if absent. List the candidates the plan carved out of scope; write "none" when there are none
 
 ## Phase 4: Publishing
 

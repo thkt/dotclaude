@@ -2,14 +2,14 @@
 name: think
 description: Design exploration with adversarial critique by critic-design. Assembles the surviving approach into a structured plan, self-checks it, and returns it to the caller. The issue's Plan section is the plan's only persistent home. Do NOT use for codebase investigation without planning intent (use /research instead).
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
-allowed-tools: Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[task description]"
 ---
 
 # /think - Design Exploration
 
-Compare 2+ approaches, subject them to `critic-design` critique, and let only the surviving approach reach the structured plan. Return the plan in conversation, not in files; persistence is left to `/issue`'s Plan write-out.
+Compare 2+ approaches, subject them to `critic-design` critique, and let only the surviving approach reach the structured plan. Write the plan to a draft file in plan-section format and also return it in conversation. Persistence happens when `/issue` pastes it into the issue's Plan section.
 
 ## Input
 
@@ -45,6 +45,7 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 2. Write contract and tests[].name per the authoring rules in `${CLAUDE_SKILL_DIR}/../issue/references/plan-section.md`
 3. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
 4. Self-check the serialized plan. Look for missing required fields, duplicate ids, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
+5. Write the self-checked plan in plan-section.md format to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`. Derive the lowercase hyphenated slug from the task title. Include both the `## Plan` and `## Backlog candidates` sections
 
 ## Output
 
@@ -54,6 +55,7 @@ Return the following to the caller in conversation.
 | ------------------ | ---------------------------------------------------------------------------------------------- |
 | ready              | true when the plan passed the self-check and no undecided points remain                        |
 | plan               | The self-checked structured plan                                                               |
+| plan file          | Path of the written `.plan.md`                                                                 |
 | blockers           | Causes of ready = false that need a user decision                                              |
 | backlog candidates | Candidates carved out of scope. "none" if none                                                 |
 | design summary     | Adopted approach, compared approaches, the `critic-design` verdict, ADR needed or not          |

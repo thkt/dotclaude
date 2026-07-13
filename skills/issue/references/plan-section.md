@@ -1,6 +1,6 @@
 # Plan Section Format
 
-Defines the format of the `## Plan` section in an issue body and the contract by which the build workflow extracts a structured plan from it. This is the shared source for the issue SKILL.md and build.js; change the format here first, then propagate to both.
+Defines the format of the `## Plan` section in an issue body and the contract by which the build workflow extracts a structured plan from it. This is the shared source for the issue SKILL.md and build.js; change the format here first, then propagate to both. /think drafts this format to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`, and /issue pastes it into the issue body.
 
 ## Skeleton
 
