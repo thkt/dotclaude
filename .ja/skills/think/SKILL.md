@@ -53,11 +53,13 @@ argument-hint: "[task description]"
 
 ## Phase 3: Plan 生成
 
-1. 承認された設計を unit (独立して実装可能な成果の束) に分解し、PLAN_SCHEMA 相当 JSON (`{ test_command, units: [{ id, goal, contract, files: string[], depends_on: string[], tests: [{ id, name, given, when, then }] }] }`) に直列化する
-2. id は U-001 / T-001 形式の連番を振る。T-NNN は plan 全体で一意にする。unit 間に依存があるときは depends_on を埋める。後続セッションはこれを材料に実装順と並行実行を判断する
-3. 各 unit のユニークファイル数を数え、5 以上ならより小さな unit へ再分解する。切り直しは実装手順ではなく成果を軸に行う。contract の変更にあたるため、新しい unit 構成はユーザーと確認する
-4. スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
-5. 直列化した plan を自己点検する。必須フィールドの欠落、id の重複、depends_on の宙吊り参照、空の units / tests / goal / contract を確認して直す。最終検証は build の Load validate が行う
+1. 承認された設計を unit (独立して実装可能な成果の束) に分解し、実装順に並べて PLAN_SCHEMA 相当 JSON (`{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`) に直列化する。units の並び順がそのまま実装順になる
+2. id は U-001 / T-001 形式の連番を振る。T-NNN は plan 全体で一意にする
+3. contract は生成でなく選択で書く。実在する出典の引用 (コードの path + 公開シンボル > docs/wiki > pinned version の公式 docs deep link) + やりたいこと 1 行。出典が無い新規の形は signature を発明せず、やりたいこと 1 行に留めて形の決定は実装に委ねる
+4. tests[].name は条件と期待結果を 1 行で言い切る言明にする (そのままテスト名になる)。given / when / then の詳述はしない。振る舞いの固定はこの言明が担う
+5. 各 unit のユニークファイル数を数え、5 以上ならより小さな unit へ再分解する。切り直しは実装手順ではなく成果を軸に行う。contract の変更にあたるため、新しい unit 構成はユーザーと確認する
+6. スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
+7. 直列化した plan を自己点検する。必須フィールドの欠落、id の重複、空の units / tests / goal / contract を確認して直す。最終検証は build の Load validate が行う
 
 ## 出力
 

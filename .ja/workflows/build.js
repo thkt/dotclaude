@@ -117,7 +117,7 @@ const EXTRACT_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["id", "goal", "files", "contract", "tests", "depends_on"],
+        required: ["id", "goal", "files", "contract", "tests"],
         properties: {
           id: {
             type: "string",
@@ -134,14 +134,15 @@ const EXTRACT_SCHEMA = {
           },
           contract: {
             type: "string",
-            description: "Public interface: a sketch of signatures / CLI flags / schemas",
+            description:
+              "A citation (existing code path + symbol / docs page / official docs deep link) plus a one-line intent",
           },
           tests: {
             type: "array",
             items: {
               type: "object",
               additionalProperties: false,
-              required: ["id", "name", "given", "when", "then"],
+              required: ["id", "name"],
               properties: {
                 id: {
                   type: "string",
@@ -149,20 +150,11 @@ const EXTRACT_SCHEMA = {
                 },
                 name: {
                   type: "string",
-                  description: "Statement of the spec being verified. Becomes the test name",
+                  description:
+                    "One-line statement of the spec being verified (condition + expected result). Becomes the test name",
                 },
-                given: { type: "string" },
-                when: { type: "string" },
-                // JSON Schema property definition, not a thenable (BDD given/when/then)
-                // oxlint-disable-next-line unicorn/no-thenable
-                then: { type: "string" },
               },
             },
-          },
-          depends_on: {
-            type: "array",
-            items: { type: "string" },
-            description: "Ids of prerequisite units. Empty array if none",
           },
         },
       },
@@ -239,8 +231,8 @@ const SHIP_SCHEMA = {
 };
 
 // Re-validation of the structured plan + non-empty content checks. Deterministically rejects
-// structural defects (duplicate ids / dangling or cyclic depends_on / missing tests)
-// and empty content (test_command / contract / name / given / when / then).
+// structural defects (duplicate ids / missing tests) and empty content
+// (test_command / contract / name). Units run in listed order; there is no depends_on.
 //
 // This is the canonical plan validator (ADR-0084 retired the veto plan-gate that
 // this block was originally ported from). Load's validate is the last line of
@@ -265,7 +257,6 @@ const validate = (plan) => {
       t && typeof t === "object" && !Array.isArray(t) ? t : { id: `units[${i}].tests[${j}]` },
     );
     const files = Array.isArray(u.files) ? u.files : [];
-    const dependsOn = Array.isArray(u.depends_on) ? u.depends_on : [];
     if (!tests.length) errors.push(`${u.id} has no test scenario`);
     if (!files.length) errors.push(`${u.id} has no target files`);
     if (!String(u.goal || "").trim()) errors.push(`${u.id} has an empty goal`);
@@ -273,29 +264,9 @@ const validate = (plan) => {
     for (const t of tests) {
       if (testIds.has(t.id)) errors.push(`duplicate test id ${t.id}`);
       testIds.add(t.id);
-      for (const field of ["name", "given", "when", "then"]) {
-        if (!String(t[field] || "").trim()) errors.push(`${t.id} has an empty ${field}`);
-      }
-    }
-    for (const d of dependsOn) {
-      if (!ids.has(d)) errors.push(`${u.id}'s depends_on ${d} points to a nonexistent unit`);
+      if (!String(t.name || "").trim()) errors.push(`${t.id} has an empty name`);
     }
   }
-
-  // Cycle detection (DFS)
-  const state = new Map();
-  const visit = (id, path) => {
-    if (state.get(id) === "done") return;
-    if (state.get(id) === "visiting") {
-      errors.push(`depends_on cycle: ${[...path, id].join(" -> ")}`);
-      return;
-    }
-    state.set(id, "visiting");
-    const u = units.find((x) => x.id === id);
-    for (const d of u && Array.isArray(u.depends_on) ? u.depends_on : []) visit(d, [...path, id]);
-    state.set(id, "done");
-  };
-  for (const u of units) visit(u.id, []);
 
   return errors;
 };
@@ -367,7 +338,7 @@ const extractPrompt =
 const generatePrompt =
   `The following GitHub issue body has no ## Plan section. Derive a structured plan from the issue body alone; do not invent scope beyond what the issue asks. ` +
   `Explore the repository first to ground the plan in reality: pick concrete file paths, list preconditions ({path, pattern} of existing code the plan presupposes), and read the project config to determine the real test_command. ` +
-  `Decompose the work into small dependency-ordered units with U-001-style ids; give each unit test scenarios with plan-wide-unique T-001-style ids, a spec-statement name, and given/when/then. ` +
+  `Decompose the work into small units with U-001-style ids, listed in implementation order; give each unit test scenarios with plan-wide-unique T-001-style ids and a one-line spec-statement name (condition + expected result). Write each contract by selection, not generation: a citation (existing code path + symbol, a docs page, or an official-docs deep link) plus a one-line intent. ` +
   `Set dir to .claude/workspace/planning/<YYYY-MM-DD>-<slug> using today's date from the shell. ` +
   `Record every best-guess decision you make in assumptions; backlog_candidates are out-of-scope candidates mentioned in the issue. Empty arrays if none.\n\n${fencedBody}`;
 

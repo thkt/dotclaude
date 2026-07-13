@@ -53,11 +53,13 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 
 ## Phase 3: Plan Generation
 
-1. Decompose the approved design into units (an independently implementable bundle of outcome) and serialize them into PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], depends_on: string[], tests: [{ id, name, given, when, then }] }] }`)
-2. Assign sequential ids in U-001 / T-001 format. Keep T-NNN unique across the whole plan. When units depend on each other, fill depends_on. Later sessions use it to decide implementation order and parallelism
-3. Count unique files per unit; if 5 or more, re-decompose it into smaller units. Cut along outcomes, not implementation steps. Since this changes the contract, confirm the new unit composition with the user
-4. Candidates carved out of scope stay out of the plan and go to backlog candidates
-5. Self-check the serialized plan. Look for missing required fields, duplicate ids, dangling depends_on references, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
+1. Decompose the approved design into units (an independently implementable bundle of outcome) and serialize them in implementation order into PLAN_SCHEMA-equivalent JSON (`{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`). The listed order of units is the implementation order
+2. Assign sequential ids in U-001 / T-001 format. Keep T-NNN unique across the whole plan
+3. Write each contract by selection, not generation. A citation of a real source (code path + public symbol > docs/wiki page > deep link into the pinned version's official docs) plus a one-line intent. For a new shape with no citable source, do not invent a signature; keep the one intent line and leave the shape to implementation
+4. Make each tests[].name a one-line statement of condition + expected result (it becomes the test name verbatim). Do not elaborate given / when / then; the statement itself pins the behavior
+5. Count unique files per unit; if 5 or more, re-decompose it into smaller units. Cut along outcomes, not implementation steps. Since this changes the contract, confirm the new unit composition with the user
+6. Candidates carved out of scope stay out of the plan and go to backlog candidates
+7. Self-check the serialized plan. Look for missing required fields, duplicate ids, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
 
 ## Output
 

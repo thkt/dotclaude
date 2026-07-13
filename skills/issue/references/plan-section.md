@@ -21,21 +21,17 @@ test_command: <one-line test command, e.g. cargo test / node --test tests/>
 
 - files: `src/foo.rs`, `tests/foo.test.rs`
 - contract: <one citation line + one intent line>
-- depends_on: none
 
 Acceptance tests.
 
-- T-001 <one-line statement of the spec being verified; becomes the test name>
-  - given: <initial state, one line>
-  - when: <action, one line>
-  - then: <expected result, one line>
+- T-001 <one-line statement of condition + expected result; becomes the test name>
 
 ## Backlog candidates
 
 - <candidate to carve out of scope, one line each>
 ```
 
-U-NNN is sequential from 001 and unique within the plan. T-NNN is unique across the whole plan (not restarted per unit).
+U-NNN is sequential from 001 and unique within the plan. T-NNN is unique across the whole plan (not restarted per unit). List units in implementation order; the listed order is the implementation order.
 
 ## Line-count rules
 
@@ -68,6 +64,6 @@ Before posting the issue, verify from the same repository root as the build work
 3. If even one unit lists an existing file in `files`, the `### Preconditions` subsection needs at least one line. Treat an empty or absent subsection as a failure, and add one precondition line anchoring the load-bearing dependency
 4. Fix any field exceeding the line-count rules by splitting
 
-## Extraction fields
+## Extraction
 
-The build workflow assembles a structured plan isomorphic to PLAN_SCHEMA from the Plan section. The mapping is outcome / test_command / units[].{id, goal, files, contract, tests, depends_on} / tests[].{id, name, given, when, then} / preconditions[].{path, pattern} / backlog_candidates ("none" under depends_on means an empty array). decisions / assumptions / non_goals / constraints are picked up from the issue body as a whole, and dir is decided by the workflow.
+The build workflow maps the Plan section into its own schema (build.js's EXTRACT_SCHEMA) via LLM extraction, and stops omissions and fabrications with a fail-close validate plus a deterministic cross-check of the U-NNN / T-NNN id sets. What the writer must keep stable is this skeleton, not a field vocabulary; stable headings and bullets carry extraction stability.

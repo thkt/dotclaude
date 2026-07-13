@@ -84,29 +84,8 @@ const VERIFY_SCHEMA = {
   },
 };
 
-// Order by dependency (already validated upstream, but fail-close on a malformed
-// plan from a standalone call).
-const units = [];
-const placed = new Set();
-let progressed = true;
-while (progressed && units.length < plan.units.length) {
-  progressed = false;
-  for (const u of plan.units) {
-    if (placed.has(u.id)) continue;
-    if ((u.depends_on || []).every((d) => placed.has(d))) {
-      units.push(u);
-      placed.add(u.id);
-      progressed = true;
-    }
-  }
-}
-if (units.length < plan.units.length) {
-  const stuck = plan.units.filter((u) => !placed.has(u.id)).map((u) => u.id);
-  return {
-    stopped: "invalid-plan",
-    why: `unresolvable depends_on for units: ${stuck.join(", ")}`,
-  };
-}
+// The plan lists units in implementation order; run them as listed.
+const units = plan.units;
 
 const testCmd = plan.test_command || "";
 const completed = [];
