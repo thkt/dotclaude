@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# PreToolUse hook: block gh issue/pr create when title/headings are not in configured language
-# Uses bash (not zsh) because BASH_REMATCH is required for heading regex extraction.
+# PreToolUse hook: block gh issue/pr create when the title is not in the configured
+# language. Body headings are exempt: /issue keeps template-derived headings in English.
+# Uses bash (not zsh) because BASH_REMATCH is required for regex extraction.
 set -euo pipefail
 
 input=$(cat)
@@ -32,8 +33,6 @@ esac
 
 has_lang() { local LC_ALL=en_US.UTF-8; [[ "$1" =~ $char_pattern ]]; }
 
-errors=()
-
 # Extract --title (double-quoted or single-quoted) — BASH_REMATCH, zero forks
 title=""
 if [[ "$command_str" =~ --title[[:space:]]+\"(([^\"\\]|\\.)*)\" ]]; then
@@ -42,31 +41,6 @@ elif [[ "$command_str" =~ --title[[:space:]]+\'([^\']*)\' ]]; then
   title="${BASH_REMATCH[1]}"
 fi
 if [[ -n "$title" ]] && ! has_lang "$title"; then
-  errors+=("title: $title")
-fi
-
-# Extract --body — BASH_REMATCH, zero forks
-body=""
-if [[ "$command_str" =~ --body[[:space:]]+\"(([^\"\\]|\\.)*)\" ]]; then
-  body="${BASH_REMATCH[1]}"
-elif [[ "$command_str" =~ --body[[:space:]]+\'([^\']*)\' ]]; then
-  body="${BASH_REMATCH[1]}"
-fi
-if [[ -n "$body" ]]; then
-  # Unescape literal \n to newline via parameter expansion (no sed fork)
-  body="${body//\\n/$'\n'}"
-  while IFS= read -r line; do
-    if [[ "$line" =~ ^#{1,6}[[:space:]](.+)$ ]]; then
-      heading="${BASH_REMATCH[1]}"
-      heading="${heading%"${heading##*[![:space:]]}"}"
-      [[ -n "$heading" ]] && ! has_lang "$heading" && errors+=("heading: $heading")
-    fi
-  done <<< "$body"
-fi
-
-if [[ ${#errors[@]} -gt 0 ]]; then
-  reason="language: ${lang} — Items still in English:"
-  for e in "${errors[@]}"; do reason+=$'\n'"- $e"; done
-  reason+=$'\n\n'"Translate title and headings to ${lang} before creating."
+  reason="language: ${lang} — title still in English: ${title}"$'\n\n'"Translate the title to ${lang} before creating."
   jq -nc --arg r "$reason" '{"decision":"block","reason":$r}'
 fi
