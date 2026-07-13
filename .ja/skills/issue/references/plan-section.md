@@ -1,22 +1,13 @@
 # Plan 節フォーマット
 
-issue 本文の `## Plan` 節の書式と、build workflow (think 経由) がそこから構造化 plan を抽出する contract を定義する。issue SKILL.md と build.js の共有 source であり、書式の変更はこのファイルを更新してから両者に反映する。Plan 節は人間が読める markdown のみで構成し、機械用の隠し block は置かない。
+issue 本文の `## Plan` 節の書式と、build workflow がそこから構造化 plan を抽出する contract を定義する。issue SKILL.md と build.js の共有 source であり、書式の変更はこのファイルを更新してから両者に反映する。抽出は markdown の見出しと箇条書きの構造のみに依存し、機械用の隠し block は置かない。
 
-## Plan 節の構成
-
-| 要素               | 位置                    | 内容                                                                     |
-| ------------------ | ----------------------- | ------------------------------------------------------------------------ |
-| 導入 prose         | `## Plan` 直下          | outcome の 1 行 (done 状態、実装非依存、観測可能) + test_command の 1 行 |
-| 前提               | `### 前提`              | unit 群が依存する既存コードの箇条書き                                    |
-| unit 小節          | `### U-NNN` (連番)      | goal 言い切り + files + contract prose + 受け入れテスト + 依存           |
-| Backlog candidates | `## Backlog candidates` | 本 issue のスコープ外に切り出す候補の箇条書き。無ければ「なし」          |
-
-骨格の例。
+## 骨格
 
 ```markdown
 ## Plan
 
-Outcome: <done 状態の 1 行>
+Outcome: <done 状態の 1 行。実装非依存、観測可能>
 test_command: <テスト実行コマンド 1 行。例 cargo test / node --test tests/>
 
 ### 前提
@@ -29,29 +20,36 @@ test_command: <テスト実行コマンド 1 行。例 cargo test / node --test 
 <goal の言い切り 1 行。この unit が届ける振る舞い>
 
 - files: `src/foo.rs`, `tests/foo.test.rs`
-- contract: <公開インターフェースの prose。signature / CLI flag / schema の素描>
+- contract: <引用 1 行 + やりたいこと 1 行>
 - depends_on: なし
 
 受け入れテスト。
 
-- T-001 <検証する仕様の言明。テスト名になる>
-  - given: <前提状態>
-  - when: <操作>
-  - then: <期待結果>
+- T-001 <検証する仕様の言明 1 行。テスト名になる>
+  - given: <前提状態 1 行>
+  - when: <操作 1 行>
+  - then: <期待結果 1 行>
 
 ## Backlog candidates
 
-- <スコープ外に切り出す候補>
+- <スコープ外に切り出す候補。1 件 1 行>
 ```
 
-### id 記法
+U-NNN は 001 からの連番で plan 内一意。T-NNN は plan 全体で一意 (unit ごとに振り直さない)。
 
-| id    | 対象               | 規則                                      |
-| ----- | ------------------ | ----------------------------------------- |
-| U-NNN | unit (`### U-NNN`) | 001 からの連番。plan 内で一意             |
-| T-NNN | 受け入れテスト     | plan 全体で一意 (unit ごとに振り直さない) |
+## 行数規則
 
-### 前提 (preconditions) の authoring 規則
+各 field の上限は骨格に示した行数。超過は文章の追加でなく分割 (unit を割る、backlog へ切り出す) で解消する。
+
+## contract の authoring 規則
+
+生成でなく選択で書く。prose で振る舞いを素描したり、コード片を新造したりせず、contract は引用 + やりたいことのセットで書く。引用は検証可能で、生成した素描は検証不能なため。
+
+1. 引用は次の優先順で選ぶ。コードベースの既存の形 (path + 公開シンボル、前提と同じ stable anchor 規則) > docs/wiki のページ > 外部ライブラリは pinned version の公式 docs の該当 API への deep link (SOURCING.md の規律)
+2. やりたいこと (引用に従う点 / 変える点) を 1 行添える。引用できる出典が無い新規の形は、signature を発明せずやりたいことの 1 行に留め、形の決定は実装に委ねる。振る舞いは受け入れテストが固定する
+3. 引用した path + シンボルは `### 前提` にも載せ、投稿前検証と build の Revalidate の対象にする
+
+## 前提 (preconditions) の authoring 規則
 
 `### 前提` には次の 5 規則を適用する。
 
@@ -63,36 +61,13 @@ test_command: <テスト実行コマンド 1 行。例 cargo test / node --test 
 
 ## 投稿前検証
 
-issue 投稿前に、Plan 節が記載したパスの実在を現行コードベースに対して検証する。検証は build workflow の Revalidate と同じリポジトリルートで実行する。
+issue 投稿前に、build workflow の Revalidate と同じリポジトリルートで検証する。
 
 1. `### 前提` の各行を検証する。path は `test -f <path>`、anchor は `ugrep -F '<pattern>' <path>` で確認し、失敗した行は修正するか落とす
 2. `units[].files` のうち既存ファイルを指す行を `test -f <path>` で検証し、失敗したパスを直す
-3. `files` に既存ファイルを載せる unit が 1 つでもあれば、`### 前提` 節に最低 1 行が必要。空 / 不在の節は合格でなく失敗とみなし、要となる依存を anchor する前提行を 1 つ足す
+3. `files` に既存ファイルを載せる unit が 1 つでもあれば、`### 前提` 節に最低 1 行が必要。空 / 不在の節は失敗とみなし、要となる依存を anchor する前提行を 1 つ足す
+4. 行数規則を超えた field を分割で直す
 
-## 抽出 contract
+## 抽出フィールド
 
-build workflow は Plan 節を読み、think workflow の PLAN_SCHEMA と同型の構造化 plan を組み立てる。Plan 節の各要素は次のフィールドに対応する。preconditions と backlog_candidates は think skill が返す構造化 plan の必須フィールドではなく、Plan 節から build workflow が拾う追加情報。抽出は markdown の見出しと箇条書きの構造のみに依存し、特別なマーカーやコメント記法を要求しない。
-
-| Plan 節の要素                    | フィールド                          | 型              |
-| -------------------------------- | ----------------------------------- | --------------- |
-| planning dir (workflow が決める) | dir                                 | string          |
-| 導入 prose の outcome 行         | outcome                             | string          |
-| issue 本文の決定事項             | decisions                           | string[]        |
-| issue 本文の仮マーク・仮定       | assumptions                         | string[]        |
-| issue 本文の non-goal            | non_goals                           | string[]        |
-| issue 本文の制約                 | constraints                         | string[]        |
-| `### U-NNN` 小節の列             | units                               | object[]        |
-| U-NNN の id                      | units[].id                          | string          |
-| goal 言い切り行                  | units[].goal                        | string          |
-| files 箇条書き                   | units[].files                       | string[]        |
-| contract prose                   | units[].contract                    | string          |
-| 受け入れテストの列               | units[].tests                       | object[]        |
-| T-NNN の id                      | units[].tests[].id                  | string          |
-| テストの言明                     | units[].tests[].name                | string          |
-| given / when / then の各行       | units[].tests[].given / when / then | string          |
-| depends_on 行 (「なし」は空配列) | units[].depends_on                  | string[]        |
-| 導入 prose の test_command 行    | test_command                        | string          |
-| `### 前提` の各行                | preconditions                       | object[]        |
-| 前提行の path                    | preconditions[].path                | string          |
-| 前提行の stable anchor           | preconditions[].pattern             | string (省略可) |
-| `## Backlog candidates` の各行   | backlog_candidates                  | string[]        |
+build workflow は Plan 節から PLAN_SCHEMA 同型の構造化 plan を組み立てる。対応は outcome / test_command / units[].{id, goal, files, contract, tests, depends_on} / tests[].{id, name, given, when, then} / preconditions[].{path, pattern} / backlog_candidates (depends_on の「なし」は空配列)。decisions / assumptions / non_goals / constraints は issue 本文全体から拾い、dir は workflow が決める。

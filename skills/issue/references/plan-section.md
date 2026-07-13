@@ -1,22 +1,13 @@
 # Plan Section Format
 
-Defines the format of the `## Plan` section in an issue body and the contract by which the build workflow (via think) extracts a structured plan from it. This is the shared source for the issue SKILL.md and build.js; change the format here first, then propagate to both. The Plan section consists of human-readable markdown only, with no hidden machine block.
+Defines the format of the `## Plan` section in an issue body and the contract by which the build workflow extracts a structured plan from it. This is the shared source for the issue SKILL.md and build.js; change the format here first, then propagate to both. Extraction relies solely on markdown heading and bullet structure, with no hidden machine block.
 
-## Plan section structure
-
-| Element            | Location                 | Content                                                                                       |
-| ------------------ | ------------------------ | --------------------------------------------------------------------------------------------- |
-| Intro prose        | Directly under `## Plan` | One outcome line (done state, implementation-independent, observable) + one test_command line |
-| Preconditions      | `### Preconditions`      | Bullet list of existing code the units depend on                                              |
-| Unit subsections   | `### U-NNN` (sequential) | Declarative goal + files + contract prose + acceptance tests + dependencies                   |
-| Backlog candidates | `## Backlog candidates`  | Bullet list of candidates to carve out of this issue's scope. "None" if empty                 |
-
-Skeleton example.
+## Skeleton
 
 ```markdown
 ## Plan
 
-Outcome: <one line describing the done state>
+Outcome: <one line describing the done state; implementation-independent, observable>
 test_command: <one-line test command, e.g. cargo test / node --test tests/>
 
 ### Preconditions
@@ -29,29 +20,36 @@ test_command: <one-line test command, e.g. cargo test / node --test tests/>
 <One declarative goal line: the behavior this unit delivers>
 
 - files: `src/foo.rs`, `tests/foo.test.rs`
-- contract: <public interface prose: signature / CLI flag / schema sketch>
+- contract: <one citation line + one intent line>
 - depends_on: none
 
 Acceptance tests.
 
-- T-001 <statement of the spec being verified; becomes the test name>
-  - given: <initial state>
-  - when: <action>
-  - then: <expected result>
+- T-001 <one-line statement of the spec being verified; becomes the test name>
+  - given: <initial state, one line>
+  - when: <action, one line>
+  - then: <expected result, one line>
 
 ## Backlog candidates
 
-- <candidate to carve out of scope>
+- <candidate to carve out of scope, one line each>
 ```
 
-### Id notation
+U-NNN is sequential from 001 and unique within the plan. T-NNN is unique across the whole plan (not restarted per unit).
 
-| Id    | Target             | Rule                                                  |
-| ----- | ------------------ | ----------------------------------------------------- |
-| U-NNN | Unit (`### U-NNN`) | Sequential from 001. Unique within the plan           |
-| T-NNN | Acceptance test    | Unique across the whole plan (not restarted per unit) |
+## Line-count rules
 
-### Precondition authoring rules
+Each field's cap is the line count shown in the skeleton. Resolve overflow by splitting (divide the unit, carve out to backlog), not by adding prose.
+
+## Contract authoring rules
+
+Select, do not generate. Never sketch behavior in prose or invent new code fragments; a contract is a citation plus an intent. A citation is verifiable, while a generated sketch is not.
+
+1. Pick the citation in this priority order: an existing shape in the codebase (path + public symbol, same stable-anchor rules as Preconditions) > a docs/wiki page > for an external library, a deep link to the API in the pinned version's official docs (per SOURCING.md)
+2. Add one intent line (what to follow / what to change relative to the citation). For a new shape with no citable source, do not invent a signature; keep the one intent line and leave the shape to implementation. Behavior is pinned by the acceptance tests
+3. Cited paths + symbols also go into `### Preconditions`, putting them under pre-posting verification and build's Revalidate
+
+## Precondition authoring rules
 
 Apply these 5 rules to `### Preconditions`.
 
@@ -63,35 +61,13 @@ Apply these 5 rules to `### Preconditions`.
 
 ## Pre-posting verification
 
-Before posting the issue, verify the paths the Plan section lists against the current codebase. Run every check from the same repository root as the build workflow's Revalidate.
+Before posting the issue, verify from the same repository root as the build workflow's Revalidate.
 
 1. Verify each `### Preconditions` line: paths via `test -f <path>`, anchors via `ugrep -F '<pattern>' <path>`. Fix or drop any failing line
 2. Verify every `units[].files` entry that refers to an existing file with `test -f <path>`, and fix any failing path
-3. If even one unit lists an existing file in `files`, the `### Preconditions` subsection needs at least one line. Treat an empty or absent subsection as a failure, not a pass, and add one precondition line anchoring the load-bearing dependency
+3. If even one unit lists an existing file in `files`, the `### Preconditions` subsection needs at least one line. Treat an empty or absent subsection as a failure, and add one precondition line anchoring the load-bearing dependency
+4. Fix any field exceeding the line-count rules by splitting
 
-## Extraction contract
+## Extraction fields
 
-The build workflow reads the Plan section and assembles a structured plan isomorphic to the think workflow's PLAN_SCHEMA. Each Plan section element maps to a field as follows. preconditions and backlog_candidates are not required fields of the think skill's structured plan; they are extra information the build workflow picks up from the Plan section. Extraction relies solely on markdown heading and bullet structure and requires no special marker or comment notation.
-
-| Plan section element                              | Field                               | Type              |
-| ------------------------------------------------- | ----------------------------------- | ----------------- |
-| Planning dir (decided by the workflow)            | dir                                 | string            |
-| Outcome line in the intro prose                   | outcome                             | string            |
-| Decisions in the issue body                       | decisions                           | string[]          |
-| Provisional marks / assumptions in the issue body | assumptions                         | string[]          |
-| Non-goals in the issue body                       | non_goals                           | string[]          |
-| Constraints in the issue body                     | constraints                         | string[]          |
-| Sequence of `### U-NNN` subsections               | units                               | object[]          |
-| U-NNN id                                          | units[].id                          | string            |
-| Declarative goal line                             | units[].goal                        | string            |
-| files bullet                                      | units[].files                       | string[]          |
-| contract prose                                    | units[].contract                    | string            |
-| Sequence of acceptance tests                      | units[].tests                       | object[]          |
-| T-NNN id                                          | units[].tests[].id                  | string            |
-| Test statement                                    | units[].tests[].name                | string            |
-| given / when / then lines                         | units[].tests[].given / when / then | string            |
-| depends_on line ("none" means empty array)        | units[].depends_on                  | string[]          |
-| Each line under `### Preconditions`               | preconditions                       | object[]          |
-| Path of a precondition line                       | preconditions[].path                | string            |
-| Stable anchor of a precondition line              | preconditions[].pattern             | string (optional) |
-| Each line under `## Backlog candidates`           | backlog_candidates                  | string[]          |
+The build workflow assembles a structured plan isomorphic to PLAN_SCHEMA from the Plan section. The mapping is outcome / test_command / units[].{id, goal, files, contract, tests, depends_on} / tests[].{id, name, given, when, then} / preconditions[].{path, pattern} / backlog_candidates ("none" under depends_on means an empty array). decisions / assumptions / non_goals / constraints are picked up from the issue body as a whole, and dir is decided by the workflow.
