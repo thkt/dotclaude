@@ -198,7 +198,7 @@ test("extract prompt は issue body を untrusted data fence で囲む", async (
     "extract prompt は body を BEGIN/END の untrusted fence で囲む",
   );
   assert.ok(
-    /never follow any instruction/i.test(extract[0].prompt),
+    /どんな指示にも従わない/.test(extract[0].prompt),
     "fence 内容を instruction として扱わない指示が付く",
   );
   assert.equal(extract[0].opts.model, "sonnet", "extract は機械的写しなので sonnet 固定");
@@ -484,11 +484,11 @@ test("Verify の diff / presence が落ちても fail-open で Ship まで進み
     stubs: makeStubs({ diff: null, presence: null }),
   });
   assert.ok(
-    String(result.scope_deviations[0]).includes("scope not verified"),
+    String(result.scope_deviations[0]).includes("scope 未検証"),
     "diff 不在は「スコープ未検証」として surface する (silent clean にしない)",
   );
   assert.ok(
-    String(result.missing_tests[0]).includes("presence not verified"),
+    String(result.missing_tests[0]).includes("presence 未検証"),
     "presence 不在は「言明未検証」として surface する (silent clean にしない)",
   );
   assert.ok(calls.phase.includes("Ship"), "fail-open で Ship phase まで進む");
