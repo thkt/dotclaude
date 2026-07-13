@@ -58,8 +58,8 @@ Land the Phase 1 material on two critic-design (internal attack / OUTCOME.md att
 
 Lead with the Verdict, concentrate the backing in Why, name the next move in Actionable items.
 
-| Section          | Content                                                                                                                                                                                                                                                    |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Verdict          | GO / NO-GO, one line, first. Note the condition if conditional, and the reason if downgraded (e.g. `NO-GO (reason: irreversible-assumption)`)                                                                                                              |
-| Why              | Show the fact-verification results (reproduction / refutation) and the two critic-design verdicts (internal / outcome). Keep every residual advanced on a best-guess and every question skipped via subagent, with reversibility (the user's veto targets) |
-| Actionable items | Top 3 concrete actions (keep / remove / revise)                                                                                                                                                                                                            |
+| Section          | Content                                                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Verdict          | GO / NO-GO, one line, first. Note the condition if conditional, and the reason if downgraded (e.g. `NO-GO (reason: irreversible-assumption)`)  |
+| Why              | Fact-verification results, the two critic-design verdicts (internal / outcome), and every residual advanced on assumption (with reversibility) |
+| Actionable items | Top 3 concrete actions (keep / remove / revise)                                                                                                |
