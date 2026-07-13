@@ -8,7 +8,7 @@ model: opus
 
 # /outcome - OUTCOME.md 生成 / 更新
 
-`.claude/OUTCOME.md` を対話的に生成 / 更新する。他スキルが `OUTCOME.md` 不在を検知したときの受け皿でもある。強制停止にせず対話生成にするのは新規リポの立ち上げを止めないため。警告だけで素通りさせないのは、曖昧な outcome のまま作業が進むのを防ぐため。
+他スキルが `OUTCOME.md` 不在を検知したときの受け皿。強制停止や警告のみの素通りにはせず、対話で生成する。
 
 ## 分岐
 
@@ -19,8 +19,8 @@ model: opus
 
 ## 生成
 
-1. `${CLAUDE_SKILL_DIR}/templates/outcome.md` を読む (構造)
-2. Behavior (1 つ以上、主体明示)、Non-goals、Constraints の 3 項目を、AskUserQuestion 1 回で各項目 1 問ずつ収集する
+1. `${CLAUDE_SKILL_DIR}/templates/outcome.md` を読む
+2. Behavior、Non-goals、Constraints の 3 項目を AskUserQuestion 1 回で各 1 問ずつ収集する。Behavior は 1 つ以上で主体を明示する
 3. 各 Behavior をアウトカムテストに通す。fail なら書き直してユーザーに再提示する
 4. テンプレートに流し込み、`.claude/OUTCOME.md` を Write
 
@@ -28,8 +28,4 @@ model: opus
 
 1. `.claude/OUTCOME.md` を読み、現状の 3 セクションを提示
 2. 変更するセクションとその内容を AskUserQuestion で確認
-3. 変更後の Behavior をアウトカムテストに通してから Edit
-
-## 完了条件
-
-すべての Behavior がアウトカムテストの 4 項目を満たしてから、Write / Edit する。
+3. 変更後の Behavior をアウトカムテストに通してから Edit する

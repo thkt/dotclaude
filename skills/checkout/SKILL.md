@@ -9,8 +9,6 @@ argument-hint: "[context or ticket number]"
 
 # /checkout - Git Branch Creation
 
-Analyze Git changes, propose branch names that follow the naming convention, and create a new branch with the name the user picks.
-
 ## Input
 
 `$ARGUMENTS` may contain context or a ticket number. Trim whitespace; if empty, analyze the Git changes alone. If non-empty, treat it as a hint for the branch name scope or ticket ID.
@@ -24,14 +22,14 @@ Analyze Git changes, propose branch names that follow the naming convention, and
 
 ## Branch Naming
 
-Determine the type from the changes (each type's trigger is in the table below) and assemble the branch name in this format.
+Determine the type from the changes and assemble the branch name in this format. Each type's trigger is in the table below.
 
 ```text
 <type>/<scope>-<description>
 <type>/<ticket>-<description>
 ```
 
-| Prefix    | Use Case             | Trigger               |
+| Prefix    | Purpose              | Trigger               |
 | --------- | -------------------- | --------------------- |
 | feature/  | New functionality    | New files, components |
 | fix/      | Bug fixes            | Error corrections     |
@@ -42,7 +40,7 @@ Determine the type from the changes (each type's trigger is in the table below) 
 | perf/     | Performance          | Optimization, caching |
 
 - Compose it from lowercase and hyphen separators; do not use spaces, underscores, or CamelCase
-- Keep scope and description to 2-4 words and avoid vague words (such as update)
+- Keep scope and description to 2-4 words and avoid vague words such as update
 - If `$ARGUMENTS` has a ticket ID, include it at the `<ticket>` position; do not include dates
 
 ## Error Handling

@@ -14,7 +14,7 @@ Driven by the Pattern field from `use-context-root-cause-analysis` (5 Whys outpu
 
 ## The Four Layers
 
-Each layer validates independently. Full coverage makes the bug structurally impossible.
+Each layer validates independently.
 
 | Layer | Type                  | Purpose              | Applies when                        | Example                              |
 | ----- | --------------------- | -------------------- | ----------------------------------- | ------------------------------------ |
@@ -27,7 +27,7 @@ Each layer validates independently. Full coverage makes the bug structurally imp
 
 1. Trace data flow from where the bad value originates to where it is consumed
 2. Map all checkpoints data passes through
-3. Select layers by Pattern (§ When to Apply)
+3. Select layers by Pattern. The mapping is in § When to Apply
 4. Add validation at each selected layer
 5. Test each layer independently by bypassing one and confirming another catches it
 

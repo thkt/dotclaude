@@ -4,7 +4,7 @@
 
 ## テンプレート
 
-`{...}` は findings から置換する。enum セルは、`/` 区切りの選択肢から該当値を選ぶ。ADR Promotion Candidates の 3 行は、challenge 判定と Final の対応を示す例 (keep は ADR、downgrade は inline-comment、drop は skip)。候補ごとに該当する 1 行を書く。
+`{...}` は検出事項から置換する。enum セルは、`/` 区切りの選択肢から該当値を選ぶ。ADR Promotion Candidates の 3 行は challenge 判定と Final の対応例で、keep は ADR、downgrade は inline-comment、drop は skip に対応する。候補ごとに該当する 1 行を書く。
 
 ```markdown
 # ADR Gaps Audit: {YYYY-MM-DD}-{HHMMSS}

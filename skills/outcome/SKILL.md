@@ -8,7 +8,7 @@ model: opus
 
 # /outcome - OUTCOME.md generation and update
 
-Generate or update `.claude/OUTCOME.md` interactively. This skill is also the landing point when another skill detects a missing OUTCOME.md. Interactive generation instead of hard-stop keeps new-repo bootstrap moving. Not proceeding on a mere warning prevents work from continuing against a vague outcome.
+The landing point when another skill detects a missing OUTCOME.md. Neither hard-stop nor warn-and-pass; generate interactively.
 
 ## Branch
 
@@ -19,8 +19,8 @@ Generate or update `.claude/OUTCOME.md` interactively. This skill is also the la
 
 ## Generate
 
-1. Read `${CLAUDE_SKILL_DIR}/templates/outcome.md` (structure)
-2. Collect Behavior (≥1, subject named), Non-goals, Constraints in one AskUserQuestion call, one question per item (3 Qs)
+1. Read `${CLAUDE_SKILL_DIR}/templates/outcome.md`
+2. Collect Behavior, Non-goals, Constraints in one AskUserQuestion call, one question per item. Behavior needs 1 or more entries with the subject named
 3. Run each Behavior through the Outcome test; rewrite failures and re-present to the user
 4. Fill the template and Write `.claude/OUTCOME.md`
 
@@ -29,7 +29,3 @@ Generate or update `.claude/OUTCOME.md` interactively. This skill is also the la
 1. Read `.claude/OUTCOME.md` and present the current three sections
 2. Confirm which sections change and their content via AskUserQuestion
 3. Run each changed Behavior through the Outcome test, then Edit
-
-## Done condition
-
-Write or Edit only after every Behavior satisfies all four Outcome test checks.

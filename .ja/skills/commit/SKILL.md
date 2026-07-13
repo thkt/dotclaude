@@ -9,8 +9,6 @@ argument-hint: "[context or issue reference]"
 
 # /commit - Git コミット実行
 
-Git のステージ済み変更を分析し、Conventional Commits 形式のメッセージを生成して、そのままコミットを実行する。
-
 ## 入力
 
 `$ARGUMENTS` はコンテキストまたは Issue 参照を含み得る。空白を除去し、空文字列ならステージ済み変更のみで解析する。非空ならメッセージの scope やフッターのヒントとして扱う。
