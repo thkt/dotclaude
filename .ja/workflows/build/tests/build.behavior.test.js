@@ -1,5 +1,5 @@
 // U-004: build.js が Load (fetch -> 決定論 id 収集 -> extract -> validate + id cross-check) /
-// Revalidate / Branch / Code (sonnet) / Audit / Polish / Backlog (source: issue) / Ship の
+// Revalidate / Branch / Code (opus) / Audit / Polish / Backlog (source: issue) / Ship の
 // 実行ループになることの行動検証。fail-close 分岐・phase 順・stopped 値 snapshot を自動検証する。
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -456,7 +456,7 @@ test("Revalidate は 1 miss で stopped: plan-drift、全 pass で Branch へ進
   assert.ok(empty.calls.phase.includes("Branch"), "preconditions 空でも Branch phase に到達する");
 });
 
-test("happy path の phase 順が Load → Revalidate → Branch → Code → Audit → Polish → Backlog → Ship で、code に model: sonnet が渡り challenge / think / research が呼ばれない", async () => {
+test("happy path の phase 順が Load → Revalidate → Branch → Code → Audit → Polish → Backlog → Ship で、code に model: opus が渡り challenge / think / research が呼ばれない", async () => {
   const { calls } = await runWorkflow(buildJs, {
     args: { issue: "123" },
     stubs: makeStubs(),
@@ -470,7 +470,7 @@ test("happy path の phase 順が Load → Revalidate → Branch → Code → Au
 
   const codeCalls = calls.workflow.filter((c) => c.name === "code");
   assert.equal(codeCalls.length, 1, "workflow('code') が 1 回呼ばれる");
-  assert.equal(codeCalls[0].args.model, "sonnet", "code に model: sonnet が渡る");
+  assert.equal(codeCalls[0].args.model, "opus", "code に model: opus が渡る");
   assert.ok(
     !("preconditions" in codeCalls[0].args.plan),
     "code へ渡す plan から preconditions が strip される",

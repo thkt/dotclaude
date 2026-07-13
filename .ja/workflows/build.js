@@ -563,10 +563,10 @@ const code =
   (await sibling("code", {
     plan: stripPreconditions(plan),
     repo,
-    // 機械的な per-unit TDD ループは sonnet に固定する。plan が contract と test
-    // シナリオを持つので実装は機械的で、これが意図した cost floor。ここで明示し、build
-    // ごとに code.js の opus 既定を暗黙継承させない。
-    model: "sonnet",
+    // per-unit TDD ループは opus に固定する (2026-07-13 ユーザー決定、コストは制約にしない)。
+    // ephemeral plan 経路など contract が弱いケースでも実装品質の余裕を持たせ、
+    // code.js の standalone 既定 (opus) とも揃える。code.js の既定変更に左右されないようここで明示する。
+    model: "opus",
   })) || null;
 if (!code || code.stopped) {
   return { stopped: "code-failed", detail: code, planning: plan.dir };
