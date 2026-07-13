@@ -42,6 +42,10 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 | 単独検証可能 | 完了スライスはそれ単体で demo または検証できる           |
 | prefactor 先 | prefactor が要るなら最初のスライスに置く                 |
 
+### 被覆チェック
+
+起草後、計画の要求単位 (user story / acceptance criteria / FR 相当) を列挙し、どのスライスにも割り当てられていない単位を抽出する。取りこぼし (偽陰性) を偽検出 (偽陽性) より重く扱い、疑わしい単位は未カバーに含める。未カバーは Phase 4 のプレビューに明示する。
+
 ## Phase 4: ユーザーに確認する
 
 提案分解を番号付きリストで提示する。各スライスに以下を示す。
@@ -52,7 +56,7 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 | Blocked by   | 先に完了すべき他スライス (あれば)        |
 | User stories | このスライスが満たす user story (あれば) |
 
-次を問う。粒度は妥当か (粗すぎ / 細かすぎ)。依存関係は正しいか。merge / split すべきスライスはあるか。ユーザーが承認するまで反復する。
+次を問う。粒度は妥当か (粗すぎ / 細かすぎ)。依存関係は正しいか。merge / split すべきスライスはあるか。未カバー単位をどう扱うか (既存スライスへ割り当て / 新スライス / 理由付きで意図的除外)。ユーザーが承認するまで反復する。
 
 ## Phase 5: issue を publish する
 
@@ -120,6 +124,8 @@ mv /tmp/claude/slice-body.md ~/.Trash/ 2>/dev/null || true
 1. <Title>
    - Blocked by: <slices or なし>
    - User stories: <ids or なし>
+
+未カバー: <どのスライスにも載らない要求単位 or なし>
 ```
 
 ### Success

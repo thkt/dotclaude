@@ -57,8 +57,13 @@ The criteria and procedures for each step (type detection / skip branch / Why wa
 Run Phases 2-3 only for feature / bug where the skip branch does not apply.
 
 1. Sift the drafted claims per the criteria in `${CLAUDE_SKILL_DIR}/references/premise-check.md`
-2. Refine the body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language (`phrases.ja.md` for Japanese, `phrases.en.md` for English). After the Plan section is appended in Phase 3, apply the same criteria to it as well
-3. Verify premises via challenge
+2. Verify via the source-coverage check that the source's requirements are reflected in the body
+3. Refine the body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language (`phrases.ja.md` for Japanese, `phrases.en.md` for English). After the Plan section is appended in Phase 3, apply the same criteria to it as well
+4. Verify premises via challenge
+
+### Source-Coverage Check
+
+Decompose the requirements of the source (the parent issue, or failing that the conversation that led to filing) and list the elements not reflected in the body. Weigh misses (false negatives) over false alarms (false positives). Each unreflected element goes through the residual-resolution loop (at most 2 times) and becomes one of fold into the body / mark tentative as out-of-scope (mirrored into `## Backlog candidates` in Phase 3) / discard as a false positive.
 
 ### Adversarial Challenge
 
@@ -88,7 +93,7 @@ Write the structured plan the think skill returned out into the body as a `## Pl
 1. Transfer units / tests / preconditions / test_command into the plan-section.md skeleton. When a spec or convention is already verbalized in a `docs/wiki/` page, quote the page in the contract prose instead of re-explaining (e.g. "chunk boundaries follow the spec in `docs/wiki/chunker.md`"). Implementers trace to code via the page's target code paths
 2. Round-trip fidelity check. Re-extract the structure from the written Plan section per the plan-section.md extraction contract and reconcile it against the think plan. The reconciled fields are the unit id set / depends_on / test id set / test name / test_command. On mismatch, rewrite the Plan section (at most 2 times). If the mismatch persists, present the diff to the user for judgment
 3. Verify the existence of the written paths per plan-section.md § Pre-posting verification
-4. Append the `## Backlog candidates` section. List the candidates the plan carved out of scope; write "none" when there are none
+4. Append the `## Backlog candidates` section. List the candidates the plan carved out of scope plus the elements the source-coverage check ruled out of scope; write "none" when there are none
 
 ## Phase 4: Publishing
 

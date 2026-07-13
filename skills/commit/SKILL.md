@@ -39,7 +39,7 @@ Infer type from diff context. Default to feat if unclear.
 
 ## Rules
 
-Subject is ≤72 chars, imperative, lowercase, no period. Footer uses `BREAKING CHANGE:` / `Closes #123` / `Co-authored-by:`.
+Subject is ≤72 chars, imperative, lowercase, no period. The body carries the why the diff cannot show, such as the motivation or the decision rationale, and is omitted when the diff makes it obvious. Footer uses `BREAKING CHANGE:` / `Closes #123` / `Co-authored-by:`.
 
 ```text
 feat(auth): add OAuth2 authentication support

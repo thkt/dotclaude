@@ -596,7 +596,7 @@ await agent(
   { label: "code-summary", phase: "Code", model: "haiku" },
 );
 
-// ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit loop (at most 3 audit runs) ----
+// ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit loop (at most 2 audit runs) ----
 // The audit fan-out is owned by workflow("audit") (/audit's glob routing table +
 // reviewer -> challenge -> verify -> integrate). No scope is passed, so it routes
 // the uncommitted diff, i.e. the whole implementation. The code phase already got
@@ -671,10 +671,20 @@ log(
     ? `conformance: ${conf.findings.length} spec deviation(s) (independent axis, surfaced in a separate PR section).`
     : "conformance: no spec to conform against found, skipped.",
 );
+// A stalled or empty reviewer run is not a clean pass. audit.js signals a stall
+// via a non-empty `skipped` (units that produced no output), never a `.stopped`
+// key, so a bare falsy check reads {findings:[], skipped:[...]} as clean and lets
+// unreviewed files ship certified. Fail closed on falsy, an explicit stopped, or
+// any skipped reviewer.
+const auditStalled = (r) => !r || r.stopped || (r.skipped || []).length > 0;
 let audit = audit0 || { findings: [] };
 log(
   `Audit fired ${(audit.assignments || []).length} reviewer group(s); polish lens ${review && review.codex_available ? "active" : "inactive"}.`,
 );
+if (auditStalled(audit0))
+  log(
+    "Primary audit did not complete (stopped, stalled reviewer, or falsy). Failing closed: not certifying a clean pass.",
+  );
 const criticalHigh = (a) =>
   (a.findings || []).filter((f) => f.severity === "critical" || f.severity === "high");
 const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
@@ -684,9 +694,15 @@ const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
 }));
 // Loop fix -> re-audit until 0 critical/high. Only the final round's fixes stay
 // unverified (the re-audit budget is spent) and surface on the PR.
+// MAX_FIX_ROUNDS caps fix rounds (distinct from the "at most 2 audit runs" count
+// at the Audit-phase comment above, which counts audit0 + one in-loop re-audit).
+const MAX_FIX_ROUNDS = 2;
 let toFix = [...criticalHigh(audit), ...polishSurvivors];
-let reaudited = true;
-for (let round = 1; round <= 3 && toFix.length; round++) {
+// A stalled primary audit must not certify clean: seed reaudited from it so an
+// empty-findings stall (skipped non-empty) surfaces the not-reaudited banner. The
+// loop only ever flips this false, never back to true.
+let reaudited = !auditStalled(audit0);
+for (let round = 1; round <= MAX_FIX_ROUNDS && toFix.length; round++) {
   log(`Fix round ${round}: fixing ${toFix.length} finding(s).`);
   await agent(
     anchor(
@@ -700,14 +716,44 @@ for (let round = 1; round <= 3 && toFix.length; round++) {
       effort: "high",
     },
   );
-  if (round === 3) {
+  if (round === MAX_FIX_ROUNDS) {
     reaudited = false;
     log("Fix round cap reached. The final round's fixes are not re-audited and surface on the PR.");
     break;
   }
-  audit = (await sibling("audit", { repo, skipPreflight: true })) || {
-    findings: [],
-  };
+  // Re-audit the whole post-fix diff, unscoped. An earlier optimization narrowed the
+  // scope to the fixed findings' own files, but deriving scope from finding metadata
+  // broke coverage on several axes: the fix agent's collateral edits (shared helpers,
+  // new tests) fell outside the scope and were never re-scanned; a scope that matched
+  // zero diff paths returned an empty audit indistinguishable from a genuine clean
+  // pass; and the unvalidated finding paths were interpolated raw into the audit's
+  // shell / agent text. A full re-audit covers every edited file and keeps `audit` a
+  // current, whole-diff result for the backlog and count consumers below.
+  // Fail closed on a re-audit that did not complete: a falsy resolve, an explicit
+  // {stopped}, or a stall shape ({findings:[], skipped:[...]}, the shape audit.js
+  // actually emits for a stalled reviewer) is not evidence of a clean pass. Coercing
+  // it to {findings:[]} would empty toFix, exit the loop with reaudited=true, and
+  // certify a re-verify that never ran. Instead treat it like the round cap: keep
+  // this round's fixed-but-unverified findings as the residual and surface them on
+  // the PR (mirrors the code phase's if (!code || code.stopped) fail-closed contract).
+  // The await is wrapped so a rejected re-audit (sibling's bare fallback can reject)
+  // fails closed here instead of aborting the build and discarding tests-green Code
+  // work with no PR.
+  let reauditResult;
+  try {
+    reauditResult = await sibling("audit", { repo, skipPreflight: true });
+  } catch (e) {
+    log(`Re-audit threw (${e?.message ?? e}). Treating as incomplete.`);
+    reauditResult = null;
+  }
+  if (auditStalled(reauditResult)) {
+    reaudited = false;
+    log(
+      "Re-audit did not complete (stopped, stalled reviewer, or empty). Failing closed: this round's findings surface on the PR unverified.",
+    );
+    break;
+  }
+  audit = reauditResult;
   toFix = criticalHigh(audit);
 }
 // When re-audited, criticalHigh(audit) is the (empty, by loop exit) verified set.

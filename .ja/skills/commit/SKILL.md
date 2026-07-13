@@ -39,7 +39,7 @@ diff のコンテキストから type を推定する。判別不能な場合は
 
 ## ルール
 
-Subject は 72 文字以内の命令形 / 小文字 / ピリオドなし。Footer には `BREAKING CHANGE:` / `Closes #123` / `Co-authored-by:` を使う。
+Subject は 72 文字以内の命令形 / 小文字 / ピリオドなし。Body には変更の動機や判断の理由など diff から読み取れない why を書き、diff から自明なら省略する。Footer には `BREAKING CHANGE:` / `Closes #123` / `Co-authored-by:` を使う。
 
 ```text
 feat(auth): add OAuth2 authentication support

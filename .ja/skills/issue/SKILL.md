@@ -57,8 +57,13 @@ gate や verdict が通らないとき、残余 (findings / missing / blockers) 
 feature / bug かつ Skip 分岐に非該当のときだけ、Phase 2〜3 を通す。
 
 1. 下書きした主張を `${CLAUDE_SKILL_DIR}/references/premise-check.md` の基準でふるいにかける
-2. `${CLAUDE_SKILL_DIR}/references/prose-review.md` と、本文言語に対応する空句ファイル (日本語なら `phrases.ja.md`、英語なら `phrases.en.md`) の基準で本文をインライン精査する。Phase 3 で Plan 節を追記した後は、Plan 節にも同じ基準を適用する
-3. challenge で前提を検証する
+2. 派生元被覆チェックで、派生元の要求が本文に反映されているか検証する
+3. `${CLAUDE_SKILL_DIR}/references/prose-review.md` と、本文言語に対応する空句ファイル (日本語なら `phrases.ja.md`、英語なら `phrases.en.md`) の基準で本文をインライン精査する。Phase 3 で Plan 節を追記した後は、Plan 節にも同じ基準を適用する
+4. challenge で前提を検証する
+
+### 派生元被覆チェック
+
+派生元 (親 issue、無ければ起票に至った会話履歴) の要求を分解し、本文に反映されていない要素を列挙する。取りこぼし (偽陰性) を偽検出 (偽陽性) より重く扱う。未反映要素は残余解消ループ (最大 2 回) で、本文へ反映 / スコープ外として仮マーク (Phase 3 で `## Backlog candidates` に写す) / 誤検知として破棄、のいずれかに決める。
 
 ### Adversarial Challenge
 
@@ -88,7 +93,7 @@ think が返した構造化 plan を、`${CLAUDE_SKILL_DIR}/references/plan-sect
 1. units / tests / 前提 / test_command を plan-section.md の骨格へ写す。仕様・規約が `docs/wiki/` のページに言語化済みなら、contract prose で再説明せずページを引用する (例: 「チャンク境界は `docs/wiki/chunker.md` の仕様に従う」)。実装者はページの対象コードパスからコードへ辿る
 2. round-trip fidelity check。書いた Plan 節から plan-section.md の抽出 contract に従い構造を再抽出し、think plan と突合する。突合フィールドは unit id 集合 / depends_on / test id 集合 / test name / test_command。不一致があれば Plan 節を書き直す (最大 2 回)。解消しなければ差分をユーザーに提示して判断を仰ぐ
 3. 記載したパスの実在を plan-section.md § 投稿前検証 の手順で検証する
-4. `## Backlog candidates` 節を追記する。plan がスコープ外へ切り出した候補を列挙し、無ければ「なし」と書く
+4. `## Backlog candidates` 節を追記する。plan がスコープ外へ切り出した候補と、派生元被覆チェックでスコープ外とした要素を列挙し、無ければ「なし」と書く
 
 ## Phase 4: 起票
 

@@ -42,6 +42,10 @@ Split the plan into tracer-bullet issues. Vertical slices (through all layers), 
 | Self-verifiable | A completed slice is demoable or verifiable on its own         |
 | Prefactor first | If prefactoring is needed, put it in the first slice           |
 
+### Coverage check
+
+After drafting, enumerate the plan's requirement units (user stories / acceptance criteria / FR-equivalents) and extract the units assigned to no slice. Weigh misses (false negatives) over false alarms (false positives); include doubtful units among the uncovered. Surface the uncovered units in the Phase 4 preview.
+
 ## Phase 4: Quiz the user
 
 Present the proposed breakdown as a numbered list. For each slice show the following.
@@ -52,7 +56,7 @@ Present the proposed breakdown as a numbered list. For each slice show the follo
 | Blocked by   | Which other slices must complete first (if any) |
 | User stories | Which user stories this slice covers (if any)   |
 
-Ask: does the granularity feel right (too coarse / too fine), are the dependencies correct, should any slices be merged or split. Iterate until the user approves.
+Ask: does the granularity feel right (too coarse / too fine), are the dependencies correct, should any slices be merged or split, and how to handle the uncovered units (assign to an existing slice / a new slice / deliberately exclude with a reason). Iterate until the user approves.
 
 ## Phase 5: Publish the issues
 
@@ -120,6 +124,8 @@ Repeat this in dependency order for multiple slices, capturing each issue number
 1. <Title>
    - Blocked by: <slices or none>
    - User stories: <ids or none>
+
+Uncovered: <requirement units on no slice or none>
 ```
 
 ### Success

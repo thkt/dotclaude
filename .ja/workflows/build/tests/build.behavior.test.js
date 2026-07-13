@@ -594,10 +594,15 @@ test("conformance findings が独立軸として surface し fix loop / residual
   assert.equal(result.conformance_findings, 1, "戻り値 conformance_findings が 1");
 
   // 独立軸: conformance finding は fix loop を起動せず、blocking count にも混ざらない
-  const fixCalls = calls.agent.filter((c) => c.opts && (c.opts.label || "").startsWith("fix:"));
+  const fixCalls = fixCallsOf(calls);
   assert.equal(fixCalls.length, 0, "conformance finding は fix loop を起動しない");
   assert.equal(result.residual_blocking, 0, "conformance finding は blocking count に混ざらない");
 });
+
+// fix:${round} agent 呼び出しは schema を持たない (kindOf は "plain" を返す) ので
+// agentCallsOf/kindOf では拾えない。label prefix で直接 filter する。
+const fixCallsOf = (calls) =>
+  calls.agent.filter((c) => c.opts && (c.opts.label || "").startsWith("fix:"));
 
 // Round-aware audit stub seam: returns finding on the first call (round 1), clean on
 // every re-audit after, so a fix-loop test can exercise the round that clears it.
@@ -622,7 +627,7 @@ test("audit の critical/high finding が fix loop を opus+high で起動し、
   });
 
   // fix loop が 1 round 起動し、fix agent は opus + effort high で呼ばれ finding を受け取る。
-  const fixCalls = calls.agent.filter((c) => c.opts && (c.opts.label || "").startsWith("fix:"));
+  const fixCalls = fixCallsOf(calls);
   assert.equal(fixCalls.length, 1, "high finding で fix loop が 1 round 起動する");
   assert.equal(fixCalls[0].opts.model, "opus", "fix agent は model: opus で呼ばれる");
   assert.equal(fixCalls[0].opts.effort, "high", "fix agent は effort: high で呼ばれる");
@@ -644,7 +649,7 @@ test("audit の critical finding も fix loop を起動し、re-audit clear で 
       audit: onceThenClean(criticalFinding),
     }),
   });
-  const fixCalls = calls.agent.filter((c) => c.opts && (c.opts.label || "").startsWith("fix:"));
+  const fixCalls = fixCallsOf(calls);
   assert.equal(fixCalls.length, 1, "critical finding で fix loop が 1 round 起動する");
   assert.ok(
     fixCalls[0].prompt.includes("critical finding"),
@@ -653,10 +658,13 @@ test("audit の critical finding も fix loop を起動し、re-audit clear で 
   assert.equal(result.residual_blocking, 0, "re-audit clear で residual_blocking 0");
 });
 
-// audit が 3 round 修正しても critical/high を返し続けると、round cap 分岐
-// (build.js: round === 3 で reaudited=false + break) を踏む。fix agent は 3 回で
-// 打ち切られ、最終 round の未 re-audit finding が residual_blocking に残り、cap ログが出る。
-test("audit が修正後も high を返し続けると 3 round で cap し reaudited=false で residual に残す", async () => {
+// U-001 / T-001: fix -> 再監査ループの round 上限は 3 から 2 に縮む。critical/high を返し続ける
+// 入力では、初回 audit + loop 内 re-audit 1 回の計 2 audit run で loop が停止し (build.js:
+// round === 2 で reaudited=false + break)、最終 round の fix は再監査されず residual_blocking に
+// 残る。上限到達を log する既存挙動 (Fix round cap reached) と Ship 到達は維持される。
+// audit run 数は sibling("audit") が build:audit で throw -> audit へ fallback するため、
+// name === "audit" の成功 capture 数で数える (audit0 + loop 内 re-audit)。
+test("fix → 再監査ループが最大 2 audit run で停止する", async () => {
   const stubbornFinding = { severity: "high", summary: "stubborn finding", file: "s.js" };
   const { calls, result, logs } = await runWorkflow(buildJs, {
     args: { issue: "123" },
@@ -665,18 +673,147 @@ test("audit が修正後も high を返し続けると 3 round で cap し reaud
       audit: () => ({ findings: [stubbornFinding], assignments: [] }),
     }),
   });
-  const fixCalls = calls.agent.filter((c) => c.opts && (c.opts.label || "").startsWith("fix:"));
-  assert.equal(fixCalls.length, 3, "fix loop は最大 3 round で打ち切られる");
+  const auditRuns = calls.workflow.filter((c) => c.name === "audit");
+  assert.equal(auditRuns.length, 2, "audit run は最大 2 回で停止する (初回 audit + re-audit 1 回)");
+  const fixCalls = fixCallsOf(calls);
+  assert.equal(fixCalls.length, 2, "fix → 再監査ループは最大 2 round で打ち切られる");
   assert.equal(
     result.residual_blocking,
     1,
-    "cap 到達時、最終 round の未 re-audit finding が residual_blocking に残る",
+    "上限到達時、最終 round の fix は再監査されず residual_blocking に残る",
   );
   assert.ok(
     logs.some((l) => l.includes("Fix round cap reached")),
-    "round cap 到達ログが出る",
+    "上限到達を log する既存挙動が維持される",
   );
-  assert.ok(calls.phase.includes("Ship"), "cap 到達でも Ship phase まで進む");
+  // cap 到達時 reaudited=false が shipPayload 経由で ship prompt (PR body payload) に serialize
+  // される。pr-body.py の "Not re-audited" banner はこの flag から描画されるので、値の伝播を pin
+  // し、flag は載るが値が誤って serialize される narrow な mis-serialization を検出する。
+  const shipCalls = agentCallsOf(calls, "ship");
+  assert.equal(shipCalls.length, 1, "ship agent が 1 回呼ばれる");
+  assert.ok(
+    shipCalls[0].prompt.includes('"reaudited":false'),
+    "cap 到達時 reaudited=false が ship prompt (PR body payload) に載る",
+  );
+  assert.ok(calls.phase.includes("Ship"), "上限到達でも Ship phase まで進む");
+});
+
+// audit.js が stall した reviewer を signal する実際の shape。findings は空だが skipped が
+// 非空で、"no output / stall" を持つ。{stopped:true} は audit.js が emit しない fiction な
+// ので、この real shape で fail-closed 契約を検証する。
+const stalledAudit = () => ({
+  findings: [],
+  assignments: [],
+  skipped: [
+    {
+      reviewer: "reviewer-security",
+      label: "security",
+      files: ["s.js"],
+      reason: "no output / stall",
+    },
+  ],
+});
+
+// re-audit が stall shape ({findings:[], skipped:[...]}) を返した場合は fail closed にする。
+// {findings:[]} へ coerce すると toFix が空になり reaudited=true で loop を抜け、実行され
+// なかった re-verify を clean と certify してしまう (fail-open)。round-aware seam で初回
+// audit は high finding、re-audit は skipped 非空の stall shape を返し、reaudited=false +
+// residual に残す + fail-closed log + Ship 到達を検証する。
+test("re-audit が stall shape (skipped 非空) を返すと fail closed で reaudited=false・residual に残す", async () => {
+  const highFinding = { severity: "high", summary: "sample high finding", file: "sample.js" };
+  let round = 0;
+  const { calls, result, logs } = await runWorkflow(buildJs, {
+    args: { issue: "123" },
+    stubs: makeStubs({
+      // 初回 audit は high finding、re-audit (2 回目) は完了せず stall shape を返す。
+      audit: () => (round++ === 0 ? { findings: [highFinding], assignments: [] } : stalledAudit()),
+    }),
+  });
+  const fixCalls = fixCallsOf(calls);
+  assert.equal(fixCalls.length, 1, "初回 high finding で fix loop が 1 round 起動する");
+  assert.equal(
+    result.residual_blocking,
+    1,
+    "re-audit が stall shape なら fix 済みだが未検証の finding が residual_blocking に残る",
+  );
+  assert.ok(
+    logs.some((l) => l.includes("Re-audit did not complete")),
+    "fail-closed log が出る",
+  );
+  const shipCalls = agentCallsOf(calls, "ship");
+  assert.equal(shipCalls.length, 1, "ship agent が 1 回呼ばれる");
+  assert.ok(
+    shipCalls[0].prompt.includes('"reaudited":false'),
+    "stall re-audit では reaudited=false が ship prompt に載る (clean と certify しない)",
+  );
+  assert.ok(calls.phase.includes("Ship"), "fail closed でも Ship phase まで進む");
+});
+
+// 初回 (primary) audit が stall shape を返しても clean と certify しない。findings 空 +
+// polish survivors 空で fix loop は起動しないが、reaudited=false が banner を出す。skipped
+// non-empty を clean pass と誤認する fail-open (build.js 658) の回帰ガード。
+test("primary audit が stall shape を返すと reaudited=false で certify しない", async () => {
+  const { calls, result, logs } = await runWorkflow(buildJs, {
+    args: { issue: "123" },
+    stubs: makeStubs({
+      // 全 audit run が stall shape を返す (primary で stall を踏む)。
+      audit: () => stalledAudit(),
+    }),
+  });
+  const fixCalls = fixCallsOf(calls);
+  assert.equal(
+    fixCalls.length,
+    0,
+    "stall の primary audit は findings 空なので fix loop を起動しない",
+  );
+  assert.equal(
+    result.residual_blocking,
+    0,
+    "surface できる finding は無いので residual_blocking 0",
+  );
+  assert.ok(
+    logs.some((l) => l.includes("Primary audit did not complete")),
+    "primary stall の fail-closed log が出る",
+  );
+  const shipCalls = agentCallsOf(calls, "ship");
+  assert.ok(
+    shipCalls[0].prompt.includes('"reaudited":false'),
+    "primary stall では reaudited=false が ship prompt に載る (clean と certify しない)",
+  );
+  assert.ok(calls.phase.includes("Ship"), "primary stall でも Ship phase まで進む");
+});
+
+// re-audit の sibling 呼び出しが reject (throw) しても build を abort せず fail closed にする。
+// sibling() の bare fallback は reject しうるので、await を try/catch で包んで tests-green な
+// Code 成果を PR 無しで捨てない (build.js 707 の error boundary)。
+test("re-audit が reject しても build を abort せず fail closed で Ship まで進む", async () => {
+  const highFinding = { severity: "high", summary: "sample high finding", file: "sample.js" };
+  let round = 0;
+  const { calls, result, logs } = await runWorkflow(buildJs, {
+    args: { issue: "123" },
+    stubs: makeStubs({
+      // 初回 audit は high finding、re-audit (2 回目) は throw する。
+      audit: () => {
+        if (round++ === 0) return { findings: [highFinding], assignments: [] };
+        throw new Error("audit crashed");
+      },
+    }),
+  });
+  const fixCalls = fixCallsOf(calls);
+  assert.equal(fixCalls.length, 1, "初回 high finding で fix loop が 1 round 起動する");
+  assert.equal(
+    result.residual_blocking,
+    1,
+    "re-audit が reject なら fix 済みだが未検証の finding が residual_blocking に残る",
+  );
+  assert.ok(
+    logs.some((l) => l.includes("Re-audit threw")),
+    "reject を捕捉した fail-closed log が出る",
+  );
+  assert.ok(
+    calls.phase.includes("Ship"),
+    "reject でも Ship phase まで進む (build は abort しない)",
+  );
 });
 
 // polish review の survivors が fix loop に載ることの検証。makeStubs が polish stub を
@@ -697,7 +834,7 @@ test("polish review の survivors が P1->high / 非P1->medium に写像され f
       },
     }),
   });
-  const fixCalls = calls.agent.filter((c) => c.opts && (c.opts.label || "").startsWith("fix:"));
+  const fixCalls = fixCallsOf(calls);
   assert.equal(fixCalls.length, 1, "survivors があると fix loop が 1 round 起動する");
   assert.ok(
     fixCalls[0].prompt.includes('"severity":"high"') &&
