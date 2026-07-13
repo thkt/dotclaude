@@ -1,17 +1,16 @@
 export const meta = {
   name: "build",
   description:
-    "Autonomous end-to-end build. Taking an issue with a Plan section refined via /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Audit / Polish / Backlog / Ship run headlessly as deterministic script stages. An issue without a Plan section proceeds via an ephemeral plan generated inside Load (recorded as an assumption; the issue is left untouched). Review happens on a draft PR.",
+    "Autonomous end-to-end build. Taking an issue with a Plan section refined via /think + /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Verify / Polish / Ship run headlessly as deterministic script stages. Correctness checking is a comparison against the plan's own anchors (preconditions, files scope, T-NNN statements, conformance), not an open-ended defect hunt; heavy assurance (/audit, /polish review) is human-invoked on the draft PR (ADR-0085).",
   whenToUse:
-    'Fire-and-forget implementation. Pass an issue number ("123" / "#123") / URL / {issue, repo} as args. An issue without a Plan section is also accepted (the plan is auto-generated; quality is below the /think + /issue path). Step away and come back to a draft PR with recorded assumptions and audit results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
+    'Implementation of a plan-backed issue. Pass an issue number ("123" / "#123") / URL / {issue, repo} as args. An issue without a ## Plan section fail-closes with a proposal to refine it via /think + /issue first. Step away and come back to a draft PR with recorded assumptions, conformance findings, and deterministic verify results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
     { title: "Branch" },
     { title: "Code" },
-    { title: "Audit" },
+    { title: "Verify" },
     { title: "Polish" },
-    { title: "Backlog" },
     { title: "Ship" },
   ],
 };
@@ -20,12 +19,11 @@ export const meta = {
 // standalone stages), so build does not re-plan: the issue body's ## Plan section is
 // the single planning source, and while extraction is left to the LLM, verification
 // belongs to the script.
-// An issue without a Plan section does not fail-close: Load generates an ephemeral
-// plan from the issue body and runs it through the same validate. The generated plan
-// is not written back to the issue (a relaunch regenerates), so the fact that it never
-// passed human review is pinned at the head of assumptions as a veto target on the PR.
+// An issue without a Plan section fail-closes: build implements verified selections
+// only (ADR-0085), so it proposes refining the issue via /think + /issue instead of
+// generating an ephemeral plan.
 // Stages whose fan-out lives inside them are delegated to nested workflows (code /
-// audit / polish; one level of nesting is allowed).
+// polish; one level of nesting is allowed).
 
 phase("Load");
 
@@ -219,6 +217,39 @@ const REVALIDATE_SCHEMA = {
   },
 };
 
+const DIFF_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["files"],
+  properties: {
+    files: {
+      type: "array",
+      items: { type: "string" },
+      description: "Changed plus untracked file paths, repo-root-relative",
+    },
+  },
+};
+
+const TEST_PRESENCE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["results"],
+  properties: {
+    results: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["name", "found"],
+        properties: {
+          name: { type: "string" },
+          found: { type: "boolean" },
+        },
+      },
+    },
+  },
+};
+
 const SHIP_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -304,28 +335,29 @@ if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
 }
 const body = fetched.body;
 
+// build implements verified selections only: without a human-reviewed ## Plan
+// section there is no anchor set to verify against, so fail-close with a
+// refinement proposal instead of generating an ephemeral plan (ADR-0085).
 const planHeading = body.match(/^##\s+Plan\b.*$/m);
-const hasPlanSection = Boolean(planHeading);
-// A missing Plan section does not fail-close; an ephemeral plan is generated instead.
-// Deterministic id collection yields empty sets (the body defines no ids), so the
-// cross-check is skipped.
-let bodyUnitIds = new Set();
-let bodyTestIds = new Set();
-if (hasPlanSection) {
-  const afterHeading = body.slice(planHeading.index + planHeading[0].length);
-  const nextSection = afterHeading.search(/^##[^#]/m);
-  const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
-  // Match ids at their definition position only, not prose references (see think templates/plan.md).
-  const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[1]));
-  bodyUnitIds = idSet(/^###\s+(U-\d{3})\b/gm);
-  bodyTestIds = idSet(/^[ \t]*[-*+][ \t]+(T-\d{3})\b/gm);
-} else {
-  log("No ## Plan section in the issue; generating an ephemeral plan from the issue body.");
+if (!planHeading) {
+  return {
+    stopped: "no-plan",
+    why:
+      `Issue ${issueRef} has no ## Plan section, so there is nothing verified to implement against. ` +
+      `Refine the issue first: run /think to design and draft the plan, then /issue to transfer it into the issue's ## Plan section, and relaunch build.`,
+  };
 }
+const afterHeading = body.slice(planHeading.index + planHeading[0].length);
+const nextSection = afterHeading.search(/^##[^#]/m);
+const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
+// Match ids at their definition position only, not prose references (see think templates/plan.md).
+const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[1]));
+const bodyUnitIds = idSet(/^###\s+(U-\d{3})\b/gm);
+const bodyTestIds = idSet(/^[ \t]*[-*+][ \t]+(T-\d{3})\b/gm);
 
 // The issue body is untrusted input: on a public repo any issue editor is a valid
-// actor, so a bare `---\n${body}` lets body text pose as instructions to the extract /
-// generate agents. Wrap it in an explicit data fence and tell the agent to treat the
+// actor, so a bare `---\n${body}` lets body text pose as instructions to the extract
+// agent. Wrap it in an explicit data fence and tell the agent to treat the
 // fenced content strictly as data, never as instructions, so an injected directive in
 // the body cannot steer the plan.
 const fencedBody =
@@ -335,21 +367,14 @@ const extractPrompt =
   `Extract a structured plan from the ## Plan section of the following GitHub issue body. Do not re-plan, summarize, or fill in gaps; structure exactly what is written. ` +
   `Preserve every unit id (U-NNN) and test id (T-NNN) from the body (omissions are rejected by a downstream deterministic cross-check). ` +
   `preconditions is the list of {path, pattern} of existing code the plan presupposes; backlog_candidates are out-of-scope candidates written in the issue. Empty arrays if absent from the body.\n\n${fencedBody}`;
-const generatePrompt =
-  `The following GitHub issue body has no ## Plan section. Derive a structured plan from the issue body alone; do not invent scope beyond what the issue asks. ` +
-  `Explore the repository first to ground the plan in reality: pick concrete file paths, list preconditions ({path, pattern} of existing code the plan presupposes), and read the project config to determine the real test_command. ` +
-  `Decompose the work into small units with U-001-style ids, listed in implementation order; give each unit test scenarios with plan-wide-unique T-001-style ids and a one-line spec-statement name (condition + expected result). Write each contract by selection, not generation: a citation (existing code path + symbol, a docs page, or an official-docs deep link) plus a one-line intent. ` +
-  `Set dir to .claude/workspace/planning/<YYYY-MM-DD>-<slug> using today's date from the shell. ` +
-  `Record every best-guess decision you make in assumptions; backlog_candidates are out-of-scope candidates mentioned in the issue. Empty arrays if none.\n\n${fencedBody}`;
 
-const plan = await agent(anchor(hasPlanSection ? extractPrompt : generatePrompt), {
-  label: hasPlanSection ? "extract" : "generate-plan",
+const plan = await agent(anchor(extractPrompt), {
+  label: "extract",
   phase: "Load",
   agentType: "general-purpose",
   schema: EXTRACT_SCHEMA,
-  // extract is mechanical, so it is pinned to sonnet; generation needs planning
-  // quality, so it inherits the session model.
-  ...(hasPlanSection ? { model: "sonnet" } : {}),
+  // extract is mechanical, so it is pinned to sonnet.
+  model: "sonnet",
 });
 if (!plan) {
   return {
@@ -367,86 +392,26 @@ if (blockers.length) {
   };
 }
 
+// Reject silent drops / fabrications in extraction via exact id-set comparison.
 const planTestIds = new Set(plan.units.flatMap((u) => u.tests.map((t) => t.id)));
-if (hasPlanSection) {
-  // Reject silent drops / fabrications in extraction via exact id-set comparison.
-  const planUnitIds = new Set(plan.units.map((u) => u.id));
-  const setDiff = (a, b) => [...a].filter((x) => !b.has(x));
-  const mismatch = {
-    units_missing: setDiff(bodyUnitIds, planUnitIds),
-    units_extra: setDiff(planUnitIds, bodyUnitIds),
-    tests_missing: setDiff(bodyTestIds, planTestIds),
-    tests_extra: setDiff(planTestIds, bodyTestIds),
+const planUnitIds = new Set(plan.units.map((u) => u.id));
+const setDiff = (a, b) => [...a].filter((x) => !b.has(x));
+const mismatch = {
+  units_missing: setDiff(bodyUnitIds, planUnitIds),
+  units_extra: setDiff(planUnitIds, bodyUnitIds),
+  tests_missing: setDiff(bodyTestIds, planTestIds),
+  tests_extra: setDiff(planTestIds, bodyTestIds),
+};
+if (Object.values(mismatch).some((l) => l.length)) {
+  return {
+    stopped: "extraction-mismatch",
+    detail: mismatch,
+    why: "The U/T id sets in the issue body and the extraction do not match.",
   };
-  if (Object.values(mismatch).some((l) => l.length)) {
-    return {
-      stopped: "extraction-mismatch",
-      detail: mismatch,
-      why: "The U/T id sets in the issue body and the extraction do not match.",
-    };
-  }
-  log(
-    `Plan extracted: ${plan.units.length} unit(s), ${planTestIds.size} test scenario(s), id cross-check pass.`,
-  );
-} else {
-  // A generated plan never passed human review and has no id definitions in the issue
-  // to cross-check, so the issue path's deterministic id gate has no counterpart here.
-  // Restore an explicit gate for the generated path: critic-design attacks the plan and
-  // a NO-GO verdict fail-closes, so an unsound auto-derived plan never reaches Code.
-  const CRITIQUE_SCHEMA = {
-    type: "object",
-    additionalProperties: false,
-    required: ["verdict", "weaknesses"],
-    properties: {
-      verdict: { type: "string", enum: ["GO", "NO-GO"] },
-      weaknesses: { type: "array", items: { type: "string" } },
-    },
-  };
-  const critique = await agent(
-    anchor(
-      `critic-design. Adversarially review this auto-generated implementation plan for issue #${issueNumber} "${plan.outcome}". ` +
-        `It was derived from the issue body with no human review, so attack it: unsound or missing unit decomposition, wrong or missing preconditions, scope invented beyond what the issue asks, untestable scenarios, or a wrong test_command. ` +
-        `Return verdict "GO" if the plan is sound enough to implement as-is, or "NO-GO" if a blocking flaw makes implementing it unsafe, and list the concrete flaws in weaknesses.\n` +
-        `The plan is as follows.\n${JSON.stringify(plan)}`,
-    ),
-    {
-      label: "critique-plan",
-      phase: "Load",
-      agentType: "critic-design",
-      schema: CRITIQUE_SCHEMA,
-      model: "opus",
-      effort: "xhigh",
-    },
-  );
-  // Only an explicit NO-GO stops; a dead critic (null) fails open to keep a flaky
-  // reviewer from blocking every plan-less build, matching the fail-open idiom of the
-  // other adversarial layers (audit / polish challenge).
-  if (critique && critique.verdict === "NO-GO") {
-    return {
-      stopped: "generated-plan-rejected",
-      weaknesses: critique.weaknesses || [],
-      why: "critic-design rejected the auto-generated plan. Refine the issue into a ## Plan section (via /issue) and relaunch.",
-    };
-  }
-  // The fact that it never passed human review is pinned at the head of assumptions and
-  // surfaced as a veto target on the PR.
-  plan.assumptions = [
-    "Plan was auto-generated by build from the issue body (the issue has no ## Plan section); the unit split and test scenarios have not been human-reviewed.",
-    ...(plan.assumptions || []),
-  ];
-  log(
-    `Plan generated: ${plan.units.length} unit(s), ${planTestIds.size} test scenario(s), critic-design ${
-      critique && critique.verdict ? critique.verdict : "unavailable"
-    } (ephemeral; not written back to the issue).`,
-  );
 }
-
-// Typed provenance the caller can machine-check: "issue" = extracted from a
-// human-reviewed ## Plan section, "generated" = auto-derived from the issue body
-// (never human-reviewed). Script-owned and deterministic, so plan trust is a field on
-// the result, not only the leading assumptions bullet; a downstream gate can branch on
-// it instead of parsing prose.
-plan.plan_source = hasPlanSection ? "issue" : "generated";
+log(
+  `Plan extracted: ${plan.units.length} unit(s), ${planTestIds.size} test scenario(s), id cross-check pass.`,
+);
 
 // ---- Revalidate: re-verify preconditions against the current codebase (deterministic script gate) ----
 // Catches, fail-closed, the possibility that the presupposed code moved between issue
@@ -543,9 +508,7 @@ const code =
     plan: stripPreconditions(plan),
     repo,
     // Pin the per-unit TDD loop to opus (user decision 2026-07-13; cost is not a constraint).
-    // Keeps implementation headroom for weak-contract cases like the ephemeral-plan path,
-    // and matches code.js's standalone default. Kept explicit here so build does not
-    // silently track a future change of code.js's default.
+    // Kept explicit here so build does not silently track a future change of code.js's default.
     model: "opus",
   })) || null;
 if (!code || code.stopped) {
@@ -553,7 +516,7 @@ if (!code || code.stopped) {
 }
 if (!code.tests_pass || !code.gates_pass)
   log(
-    `code's independent verify failed (tests=${code.tests_pass} gates=${code.gates_pass}). Advancing to audit; it surfaces on the PR.`,
+    `code's independent verify failed (tests=${code.tests_pass} gates=${code.gates_pass}). Advancing to Verify; it surfaces on the PR.`,
   );
 // workflow("code") runs under its own `▸ code` group, so the Code phase box has no direct
 // agent. This one cheap agent lights it up and completes it, doubling as a run-log recap
@@ -563,16 +526,17 @@ await agent(
   { label: "code-summary", phase: "Code", model: "haiku" },
 );
 
-// ---- Audit ∥ Polish review ∥ Conformance -> fix -> re-audit loop (at most 2 audit runs) ----
-// The audit fan-out is owned by workflow("audit") (/audit's glob routing table +
-// reviewer -> challenge -> verify -> integrate). No scope is passed, so it routes
-// the uncommitted diff, i.e. the whole implementation. The code phase already got
-// tests green, so preflight is skipped. Polish's review mode is read-only, so the
-// external Codex lens runs on the same diff alongside the audit.
-// reviewer-conformance checks the Spec axis independently: does the implementation
-// match the issue's Plan? Its findings are a separate axis from the quality findings,
-// so the consumer must NOT merge or rerank them into toFix / residualBlocking; they
-// surface in a dedicated PR section instead (reviewer-conformance's Posture).
+// ---- Verify: deterministic selection checks (diff scope + T-NNN presence) ∥ conformance ----
+// The plan is a verified selection (citation contracts + one-line test statements),
+// so correctness checking compares the implementation against the plan's own anchors
+// instead of hunting defects with a reviewer fan-out (ADR-0085). The deterministic
+// part of security / silence is the static analyzers' job (gates hooks already ran at
+// edit time inside code); heavy assurance (/audit, /polish review) is human-invoked
+// on the PR. Both checks here fail open: deviations surface on the PR instead of
+// discarding a tests-green build.
+// reviewer-conformance checks the Spec axis with the only LLM review left: does the
+// implementation match the issue's Plan? Its findings surface in a dedicated PR
+// section (reviewer-conformance's Posture) and are never merged into other lists.
 const CONFORMANCE_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -608,10 +572,48 @@ const CONFORMANCE_SCHEMA = {
     },
   },
 };
-phase("Audit");
-const [audit0, review, conformance] = await parallel([
-  () => sibling("audit", { repo, skipPreflight: true }),
-  () => sibling("polish", { repo, mode: "review" }),
+phase("Verify");
+// code.js writes each T-NNN scenario's name verbatim as the test name, so a literal
+// fixed-string search inside the unit's own files is a deterministic presence check.
+const testChecks = plan.units.map((u) => ({
+  files: u.files,
+  names: u.tests.map((t) => t.name),
+}));
+const allTestNames = testChecks.flatMap((c) => c.names);
+const [diff, testPresence, conformance] = await parallel([
+  () =>
+    agent(
+      anchor(
+        `List the files this build changed, mechanically; do not judge or filter. From the repository root run ` +
+          `\`git diff HEAD --name-only\` and \`git status --porcelain\`, and return files as the union of the changed paths ` +
+          `and the untracked paths (the porcelain "??" entries), repo-root-relative, one entry per file.`,
+      ),
+      {
+        label: "diff-files",
+        phase: "Verify",
+        agentType: "general-purpose",
+        schema: DIFF_SCHEMA,
+        model: "haiku",
+      },
+    ),
+  () =>
+    agent(
+      anchor(
+        `Verify the plan's test statements are present verbatim with the deterministic verifier; do not judge found yourself. ` +
+          `The steps are, (1) write this exact JSON to a temp file; (2) from the repository root run ` +
+          `\`python3 ${bundled("workflows/build/verify-tests.py")} < <tempfile>\`; ` +
+          `(3) return the verifier's stdout "results" array verbatim (all ${allTestNames.length} entries, unchanged; do not add, drop, or edit any). ` +
+          `The verifier prints {"results":[{name,found}]}.\n` +
+          `The checks JSON is as follows.\n${JSON.stringify(testChecks)}`,
+      ),
+      {
+        label: "verify-tests",
+        phase: "Verify",
+        agentType: "general-purpose",
+        schema: TEST_PRESENCE_SCHEMA,
+        model: "haiku",
+      },
+    ),
   () =>
     agent(
       anchor(
@@ -626,111 +628,38 @@ const [audit0, review, conformance] = await parallel([
       ),
       {
         label: "conformance",
-        phase: "Audit",
+        phase: "Verify",
         agentType: "reviewer-conformance",
         schema: CONFORMANCE_SCHEMA,
       },
     ),
 ]);
+// Scope check: every changed file is either a planned file or a planning artifact
+// under plan.dir. A missing diff listing is itself surfaced (fail open, but visibly).
+const planFiles = new Set(plan.units.flatMap((u) => u.files));
+const scopeDeviations =
+  diff && Array.isArray(diff.files)
+    ? diff.files.filter((f) => f && !planFiles.has(f) && !(plan.dir && f.startsWith(plan.dir)))
+    : ["diff listing unavailable; scope not verified"];
+// Presence check: bind results by name; a name with no found=true result is missing.
+let missingTests;
+if (testPresence && Array.isArray(testPresence.results)) {
+  const foundByName = new Map(testPresence.results.map((r) => [r.name, r.found === true]));
+  missingTests = allTestNames.filter((n) => !foundByName.get(n));
+} else {
+  missingTests = ["test-statement verification unavailable; presence not verified"];
+}
 const conf = conformance || { spec_found: false, findings: [] };
 log(
-  conf.spec_found
-    ? `conformance: ${conf.findings.length} spec deviation(s) (independent axis, surfaced in a separate PR section).`
-    : "conformance: no spec to conform against found, skipped.",
+  `Verify: scope deviations ${scopeDeviations.length}, missing test statements ${missingTests.length}, ` +
+    (conf.spec_found
+      ? `conformance ${conf.findings.length} spec deviation(s).`
+      : "conformance skipped (no spec found)."),
 );
-// A stalled or empty reviewer run is not a clean pass. audit.js signals a stall
-// via a non-empty `skipped` (units that produced no output), never a `.stopped`
-// key, so a bare falsy check reads {findings:[], skipped:[...]} as clean and lets
-// unreviewed files ship certified. Fail closed on falsy, an explicit stopped, or
-// any skipped reviewer.
-const auditStalled = (r) => !r || r.stopped || (r.skipped || []).length > 0;
-let audit = audit0 || { findings: [] };
-log(
-  `Audit fired ${(audit.assignments || []).length} reviewer group(s); polish lens ${review && review.codex_available ? "active" : "inactive"}.`,
-);
-if (auditStalled(audit0))
-  log(
-    "Primary audit did not complete (stopped, stalled reviewer, or falsy). Failing closed: not certifying a clean pass.",
-  );
-const criticalHigh = (a) =>
-  (a.findings || []).filter((f) => f.severity === "critical" || f.severity === "high");
-const polishSurvivors = ((review && review.survivors) || []).map((f) => ({
-  severity: f.severity === "P1" ? "high" : "medium",
-  summary: `${f.title}: ${f.detail}`,
-  file: f.file || "",
-}));
-// Loop fix -> re-audit until 0 critical/high. Only the final round's fixes stay
-// unverified (the re-audit budget is spent) and surface on the PR.
-// MAX_FIX_ROUNDS caps fix rounds (distinct from the "at most 2 audit runs" count
-// at the Audit-phase comment above, which counts audit0 + one in-loop re-audit).
-const MAX_FIX_ROUNDS = 2;
-let toFix = [...criticalHigh(audit), ...polishSurvivors];
-// A stalled primary audit must not certify clean: seed reaudited from it so an
-// empty-findings stall (skipped non-empty) surfaces the not-reaudited banner. The
-// loop only ever flips this false, never back to true.
-let reaudited = !auditStalled(audit0);
-for (let round = 1; round <= MAX_FIX_ROUNDS && toFix.length; round++) {
-  log(`Fix round ${round}: fixing ${toFix.length} finding(s).`);
-  await agent(
-    anchor(
-      `Fix these review findings and confirm tests pass. The findings are as follows.\n${JSON.stringify(toFix)}`,
-    ),
-    {
-      agentType: "general-purpose",
-      phase: "Audit",
-      label: `fix:${round}`,
-      model: "opus",
-      effort: "high",
-    },
-  );
-  if (round === MAX_FIX_ROUNDS) {
-    reaudited = false;
-    log("Fix round cap reached. The final round's fixes are not re-audited and surface on the PR.");
-    break;
-  }
-  // Re-audit the whole post-fix diff, unscoped. An earlier optimization narrowed the
-  // scope to the fixed findings' own files, but deriving scope from finding metadata
-  // broke coverage on several axes: the fix agent's collateral edits (shared helpers,
-  // new tests) fell outside the scope and were never re-scanned; a scope that matched
-  // zero diff paths returned an empty audit indistinguishable from a genuine clean
-  // pass; and the unvalidated finding paths were interpolated raw into the audit's
-  // shell / agent text. A full re-audit covers every edited file and keeps `audit` a
-  // current, whole-diff result for the backlog and count consumers below.
-  // Fail closed on a re-audit that did not complete: a falsy resolve, an explicit
-  // {stopped}, or a stall shape ({findings:[], skipped:[...]}, the shape audit.js
-  // actually emits for a stalled reviewer) is not evidence of a clean pass. Coercing
-  // it to {findings:[]} would empty toFix, exit the loop with reaudited=true, and
-  // certify a re-verify that never ran. Instead treat it like the round cap: keep
-  // this round's fixed-but-unverified findings as the residual and surface them on
-  // the PR (mirrors the code phase's if (!code || code.stopped) fail-closed contract).
-  // The await is wrapped so a rejected re-audit (sibling's bare fallback can reject)
-  // fails closed here instead of aborting the build and discarding tests-green Code
-  // work with no PR.
-  let reauditResult;
-  try {
-    reauditResult = await sibling("audit", { repo, skipPreflight: true });
-  } catch (e) {
-    log(`Re-audit threw (${e?.message ?? e}). Treating as incomplete.`);
-    reauditResult = null;
-  }
-  if (auditStalled(reauditResult)) {
-    reaudited = false;
-    log(
-      "Re-audit did not complete (stopped, stalled reviewer, or empty). Failing closed: this round's findings surface on the PR unverified.",
-    );
-    break;
-  }
-  audit = reauditResult;
-  toFix = criticalHigh(audit);
-}
-// When re-audited, criticalHigh(audit) is the (empty, by loop exit) verified set.
-// When the round cap was hit (reaudited === false), toFix holds the final round's
-// critical/high findings that were fixed but never re-audited. Surface them so the
-// PR enumerates the possibly-unresolved blockers instead of only a generic warning.
-const residualBlocking = reaudited ? criticalHigh(audit) : toFix;
 
 // ---- Polish: cleanup only (simplify -> enhancer-code -> test validation) ----
-// The review lens was consumed in the Audit phase, so only the mutators run here.
+// The review lens (Codex) is retired from build (ADR-0085); /polish stays available
+// for the human to run on the PR. Only the mutators run here.
 phase("Polish");
 const cleanup = await sibling("polish", { repo, mode: "cleanup" });
 // workflow("polish") runs under its own `▸ polish` group, so the Polish phase box needs one
@@ -741,31 +670,13 @@ await agent(
   { label: "polish-summary", phase: "Polish", model: "haiku" },
 );
 
-// ---- Backlog: collect out-of-scope discoveries as candidates for the user ----
-// Candidate sources are the out-of-scope candidates written in the issue body
-// (source: issue) plus discoveries during the build (code / audit / polish). The
-// build does not file these itself; issue creation is deferred to the final output.
-// The candidates are surfaced in the return value, and the user files the ones worth
-// filing via /issue (running /challenge, /research, or /think first where warranted).
-phase("Backlog");
-// code.anomalies are NOT folded in here: they are Red-unconfirmed build-integrity
-// signals, rendered once under the PR's dedicated "Anomalies" section (via
-// shipPayload.code_anomalies).
-const backlogCandidates = [
-  ...(plan.backlog_candidates || []).map((c) => ({ ...c, source: "issue" })),
-  ...(audit.findings || [])
-    .filter((f) => f.severity === "medium" || f.severity === "low")
-    .map((f) => ({
-      source: "audit",
-      summary: f.summary,
-      file: f.file,
-      severity: f.severity,
-    })),
-  ...((review && review.needs_context) || []).map((f) => ({
-    source: "polish",
-    summary: `${f.title}: ${f.why || f.detail}`,
-  })),
-];
+// Backlog candidates are the out-of-scope candidates written in the issue body.
+// The build does not file these itself; they are surfaced in the return value and
+// the user files the ones worth filing via /issue.
+const backlogCandidates = (plan.backlog_candidates || []).map((c) => ({
+  ...c,
+  source: "issue",
+}));
 if (backlogCandidates.length) {
   log(
     `Backlog: ${backlogCandidates.length} out-of-scope candidate(s) surfaced for the user to file via /issue.`,
@@ -777,9 +688,9 @@ if (backlogCandidates.length) {
 // owners. The lead Summary (what this PR does, why, and where to look) is genuinely
 // generative and is the reviewer's entry point, so the agent writes it (like the
 // commit message). Below it sits a fail-closed relay of structured facts the script
-// already holds (assumptions / unresolved findings / conformance /
-// not-re-audited warning / verify result); only that tail is delegated to the
-// deterministic renderer workflows/build/pr-body.py, so a fact section is never
+// already holds (assumptions / verify result / scope deviations / missing test
+// statements / conformance / the /audit invitation); only that tail is delegated to
+// the deterministic renderer workflows/build/pr-body.py, so a fact section is never
 // silently dropped or softened. The agent appends the rendered tail rather than
 // retyping it, and chains the append with `gh pr create` via `&&` so that if the
 // renderer fails (malformed / missing-field payload → exit 1, no output) the PR is
@@ -792,11 +703,10 @@ phase("Ship");
 // reviewers in English, so they printed as-is. Since human reviewers read the PR too,
 // translate + lightly compress only the free-text of the informational (not
 // fail-closed) sections into the target language. Safety facts (verify status /
-// not-reaudited warning / verify_output log) and structured fields (file:line,
-// severity, counts, identifiers) are excluded and stay deterministic. Operate on
-// copies so the source finding objects are not mutated.
+// verify_output log) and structured fields (file:line, severity, counts,
+// identifiers) are excluded and stay deterministic. Operate on copies so the source
+// finding objects are not mutated.
 const shipAssumptions = [...(plan.assumptions || [])];
-const shipResidual = residualBlocking.map((f) => ({ ...f }));
 const shipAnomalies = (code.anomalies || []).map((a) => ({ ...a }));
 const shipConformance = conf.spec_found ? conf.findings.map((f) => ({ ...f })) : [];
 
@@ -807,8 +717,6 @@ shipAssumptions.forEach((t, i) => {
   if (typeof t === "string" && t.trim())
     slots.push({ text: t, set: (v) => (shipAssumptions[i] = v) });
 });
-for (const f of shipResidual)
-  if (f.summary && f.summary.trim()) slots.push({ text: f.summary, set: (v) => (f.summary = v) });
 for (const f of shipConformance)
   if (f.detail && f.detail.trim()) slots.push({ text: f.detail, set: (v) => (f.detail = v) });
 for (const a of shipAnomalies)
@@ -837,7 +745,7 @@ if (slots.length) {
   const translated = await agent(
     anchor(
       `Read \`language\` from \`$HOME/.claude/settings.json\` (english if unset). ` +
-        `The following JSON array is the free-text of the PR body's informational sections (assumptions / unresolved findings / conformance / anomaly). Translate each element's \`text\` into \`language\` and tighten verbose prose. Run this step even for english, for the light compression.\n` +
+        `The following JSON array is the free-text of the PR body's informational sections (assumptions / conformance / anomaly). Translate each element's \`text\` into \`language\` and tighten verbose prose. Run this step even for english, for the light compression.\n` +
         `Strict: (a) keep file:line, paths, numbers, counts, severity labels, identifiers, and code fragments verbatim. (b) Add no facts and drop none. Translate and compress only; invent no new claim or count. (c) Return \`translations\` with every element carrying the input \`id\`; order is free but each id must match the input.\n` +
         `Input:\n${JSON.stringify(slots.map((s, i) => ({ id: i, text: s.text })))}`,
     ),
@@ -868,8 +776,8 @@ if (slots.length) {
 const shipPayload = {
   issue: issueNumber,
   assumptions: shipAssumptions,
-  residual_blocking: shipResidual,
-  reaudited,
+  scope_deviations: scopeDeviations,
+  missing_tests: missingTests,
   code_anomalies: shipAnomalies,
   tests_pass: code.tests_pass,
   gates_pass: code.gates_pass,
@@ -900,12 +808,11 @@ return {
   issue: issueNumber,
   branch,
   planning: plan.dir,
-  plan_source: plan.plan_source,
   units_completed: code.completed.length,
   code_anomalies: (code.anomalies || []).length,
   code_verified: code.tests_pass && code.gates_pass,
-  audit_findings: (audit.findings || []).length,
-  residual_blocking: residualBlocking.length,
+  scope_deviations: scopeDeviations,
+  missing_tests: missingTests,
   conformance_findings: (conf.findings || []).length,
   polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
   backlog_candidates: backlogCandidates,
