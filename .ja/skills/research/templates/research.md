@@ -65,9 +65,9 @@ Prior research: {引き継いだファイルの slug、または "none found"}
 
 ## Disconfirmation チェック
 
-<!-- Phase 7 の出力。Phase 5 を実施したときは `Covered by Phase 5 elimination` と書く。省略したときは Phase 4 の scratch から実行コマンドと生出力を verbatim 引用する。0 件は「不在」と断じる前に「ツール誤用の可能性」とみなす。 -->
+<!-- Phase 7 の出力。Phase 5 を実施したときは `Covered by Phase 5 elimination` と書く。省略したときは Phase 4 の scratch から実行コマンドと生出力をそのまま引用する。0 件は「不在」と断じる前に「ツール誤用の可能性」とみなす。 -->
 
-{Phase 5 実施時は `Covered by Phase 5 elimination`。省略時はコマンドと生出力を verbatim 引用し、クロスチェック結果を添える}
+{Phase 5 実施時は `Covered by Phase 5 elimination`。省略時はコマンドと生出力をそのまま引用し、クロスチェック結果を添える}
 
 ## References
 

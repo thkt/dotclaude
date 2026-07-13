@@ -13,7 +13,7 @@ Break a plan into independently-grabbable issues. Each issue is a tracer bullet,
 
 ## Input
 
-Take the plan source from `$ARGUMENTS`. For an issue reference (number / URL / path), fetch the body and comments via `gh issue view <N>`. If empty, work from a plan already in conversation context; if none, ask what to break down via AskUserQuestion.
+Take the plan source from `$ARGUMENTS`. For an issue reference given as a number, URL, or path, fetch the body and comments via `gh issue view <N>`. If empty, work from a plan already in conversation context; if none, ask what to break down via AskUserQuestion.
 
 ## Distinction from related skills
 
@@ -22,7 +22,7 @@ Take the plan source from `$ARGUMENTS`. For an issue reference (number / URL / p
 | /slice (this) | Durable GitHub issues in dependency order | A queue for a human to pick up later |
 | /issue        | One issue                                 | File a single request                |
 
-/slice's value is decomposition and dependency-ordered publish. For one issue use /issue. A sliced issue carries no `## Plan` yet; handing it straight to /build makes build auto-generate an ephemeral plan and proceed (with a not-human-reviewed assumption recorded). For slices where plan quality matters, generate a plan via /think and append it to the issue as a `## Plan` section before handing it to /build; use /code when you already hold a structured plan.
+/slice's value is decomposition and dependency-ordered publish. For one issue use /issue. A sliced issue carries no `## Plan` yet; handing it straight to /build makes build auto-generate an ephemeral plan and proceed, recording a not-human-reviewed assumption. For slices where plan quality matters, generate a plan via /think and append it to the issue as a `## Plan` section before handing it to /build; use /code when you already hold a structured plan.
 
 ## Phase 1: Gather context
 
@@ -30,7 +30,7 @@ Work from the plan in conversation context. If `$ARGUMENTS` carries an issue ref
 
 ## Phase 2: Explore the codebase (optional)
 
-If not yet explored, understand the current state. Issue titles / descriptions follow the project glossary and respect ADRs in the area you touch. Look for prefactor opportunities that make the change easier ("make the change easy, then make the easy change"). Spawn one Explore agent only when a cross-cutting sweep is needed; no per-slice spawns.
+If not yet explored, understand the current state. Issue titles / descriptions follow the project glossary and respect ADRs in the area you touch. Look for prefactor opportunities that make the change easier. Spawn one Explore agent only when a cross-cutting sweep is needed; no per-slice spawns.
 
 ## Phase 3: Draft vertical slices
 
@@ -44,7 +44,7 @@ Split the plan into tracer-bullet issues. Vertical slices (through all layers), 
 
 ### Coverage check
 
-After drafting, enumerate the plan's requirement units (user stories / acceptance criteria / FR-equivalents) and extract the units assigned to no slice. Weigh misses (false negatives) over false alarms (false positives); include doubtful units among the uncovered. Surface the uncovered units in the Phase 4 preview.
+After drafting, enumerate the plan's requirement units, meaning user stories / acceptance criteria / FR-equivalents, and extract the units assigned to no slice. Weigh misses over false alarms; include doubtful units among the uncovered. Surface the uncovered units in the Phase 4 preview.
 
 ## Phase 4: Quiz the user
 
@@ -56,13 +56,13 @@ Present the proposed breakdown as a numbered list. For each slice show the follo
 | Blocked by   | Which other slices must complete first (if any) |
 | User stories | Which user stories this slice covers (if any)   |
 
-Ask: does the granularity feel right (too coarse / too fine), are the dependencies correct, should any slices be merged or split, and how to handle the uncovered units (assign to an existing slice / a new slice / deliberately exclude with a reason). Iterate until the user approves.
+Ask: is the granularity neither too coarse nor too fine, are the dependencies correct, should any slices be merged or split, and how to handle the uncovered units. The handling options are assigning to an existing slice, a new slice, or deliberate exclusion with a reason. Iterate until the user approves.
 
 ## Phase 5: Publish the issues
 
-After approval, confirm once more via AskUserQuestion before batch publish ("Create these N issues?"). Creating N issues is outward-facing and hard to unwind, so never auto-publish without confirmation.
+After approval, confirm once more via AskUserQuestion before batch publish: "Create these N issues?". Creating N issues is outward-facing and hard to unwind, so never auto-publish without confirmation.
 
-On approval, publish in dependency order (blockers first). Create blockers first and capture their numbers so "Blocked by" can reference real issue numbers. Use the template below and Sandbox-Compatible Create per issue. Do not attach a triage label (AFK consumer wiring is out of scope). Do not close or modify any parent issue.
+On approval, publish in dependency order with blockers first. Create blockers first and capture their numbers so "Blocked by" can reference real issue numbers. Use the template below and Sandbox-Compatible Create per issue. Do not attach a triage label; AFK consumer wiring is out of scope. Do not close or modify any parent issue.
 
 ## Issue Template
 
@@ -73,7 +73,7 @@ A reference to the parent issue (only if the source was an existing issue; other
 
 ## What to build
 
-A concise description of this vertical slice. Describe the end-to-end behavior, not layer-by-layer implementation. Avoid specific file paths or code snippets, which go stale fast. Exception: a snippet a prototype produced that encodes a decision more precisely than prose (state machine / reducer / schema / type). Note it came from a prototype and trim to the decision-rich parts.
+A concise description of this vertical slice. Describe the end-to-end behavior, not layer-by-layer implementation. Avoid specific file paths or code snippets, which go stale fast. Exception: a state machine / reducer / schema / type snippet a prototype produced that encodes a decision more precisely than prose. Note it came from a prototype and trim to the decision-rich parts.
 
 ## Acceptance criteria
 
