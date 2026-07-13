@@ -21,13 +21,65 @@ Read `language` from `~/.claude/settings.json` and translate the issue body and 
 
 ## Phase 1: Drafting
 
-The criteria and procedures for each step (type detection / Why wall-bouncing / template source / split assessment / the /fix route for minor bugs) follow `${CLAUDE_SKILL_DIR}/references/drafting.md`.
-
 1. Read `.claude/OUTCOME.md` if present and check that the issue serves the outcome
 2. Detect the type from the description
 3. For feature / bug, if the Why (who needs this, what pain exists, what counts as success) is not readable from the description, pin it down through wall-bouncing
-4. Select the template, generate the title + body, and mark fixed / tentative per the criteria in `${CLAUDE_SKILL_DIR}/references/tentative-marking.md`
+4. Select the template, generate the title + body, and mark fixed / tentative per the confidence-marking criteria
 5. Assess whether the issue is epic-sized and should split
+
+### Type detection
+
+Default to `feature` if unclear. The title takes a bracketed prefix of the capitalized type.
+
+| Type    | When to use                                             |
+| ------- | ------------------------------------------------------- |
+| bug     | Something existing is broken or not working as expected |
+| feature | New capability or enhancement request                   |
+| docs    | Documentation additions or corrections                  |
+| chore   | Maintenance, config, or dependency updates              |
+
+### The /fix route for minor bugs
+
+A bug meeting all three criteria below is minor, and handling it directly via /fix without filing is an option. When filing anyway, add a footer note to the body, "minor; may be handled via /fix", keeping the /fix path visible. A typical example is a typo fix. An intermittent bug with the root cause unidentified does not qualify.
+
+| Criterion     | Content                                   |
+| ------------- | ----------------------------------------- |
+| Change extent | Fits within 1 file                        |
+| Reproduction  | The reproduction steps are settled        |
+| Investigation | No cross-codebase investigation is needed |
+
+### Why wall-bouncing
+
+Establish the issue's Why before drafting the body. One question per message, attaching a hypothesis (the answer you expect) as the recommended option. Questions the codebase can answer are explored via Read / ugrep before asking. Once the three points below are readable from the description, or you can predict the answers to the questions you would ask next, stop asking and move to drafting.
+
+| Question                                    | Where it lands in the body |
+| ------------------------------------------- | -------------------------- |
+| Who needs this?                             | What & Why                 |
+| What pain exists, and what is the evidence? | What & Why                 |
+| What measurable result counts as success?   | Acceptance Criteria        |
+
+### Template source
+
+List `.md` files via `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'`. If a GitHub template matches the type (filename or `name` contains the type), read its body and strip the leading frontmatter (`name` / `about` / `labels` / `title`) for the skeleton; otherwise use `templates/<type>.md` directly under the skill directory. Whichever becomes the skeleton, the rest of the flow runs the same.
+
+### Confidence marking
+
+Mark which parts of the body are fixed vs tentative, so the implementer can tell a requirement to honor from an undecided judgment or unverified fact.
+
+- A first pass, not a verification pass; settling facts is delegated to /challenge
+- Mark sparingly, only where it changes implementer action. Marking every line buries the marks that matter and defeats the distinction
+- Tentative marks stay inline at the item they qualify. The Premises section stays reserved for issue-level premises that do not attach to a specific line (design refs, global assumptions)
+- The marker word follows the language setting in settings.json (`仮` under Japanese)
+
+| Origin                                                                                            | State     | Notation           | Action phrase                                         |
+| ------------------------------------------------------------------------------------------------- | --------- | ------------------ | ----------------------------------------------------- |
+| User decided it, or it is the ask (What & Why, Acceptance Criteria, explicit Scope / Constraints) | fixed     | unmarked           | -                                                     |
+| AI-inferred HOW (placement, approach, format), or a decision the user left open                   | tentative | `(tentative: ...)` | "decide at pickup" / "change if a better fit appears" |
+| Fact not yet verified (a claim left unverified in the body)                                       | tentative | `(tentative: ...)` | "recheck at pickup"                                   |
+
+### Split assessment
+
+When two or more criteria are each independently implementable, ask via AskUserQuestion whether to split, offering "keep as one issue" or "split into an epic and child issues". Do not count fine-grained checks that only verify one deliverable; they stay within one issue. Never auto-split, since publishing N issues is hard to unwind. On approval, publish this issue as the epic and run the rest of the flow unchanged on it. Once its number is captured, suggest running /slice in Phase 4.
 
 ## Phase 2: Refinement
 
