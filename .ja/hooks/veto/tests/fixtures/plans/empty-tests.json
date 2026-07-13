@@ -1,1 +1,0 @@
-{"test_command":"bats t","units":[{"id":"U-001","goal":"g","files":["a.mjs"],"contract":"c","depends_on":[],"tests":[]}]}

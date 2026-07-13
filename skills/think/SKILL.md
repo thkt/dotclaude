@@ -1,16 +1,10 @@
 ---
 name: think
-description: Design exploration with adversarial critique by critic-design. Assembles the surviving approach into a structured plan, validates it via plan-gate, and returns it to the caller. The issue's Plan section is the plan's only persistent home. Do NOT use for codebase investigation without planning intent (use /research instead).
+description: Design exploration with adversarial critique by critic-design. Assembles the surviving approach into a structured plan, self-checks it, and returns it to the caller. The issue's Plan section is the plan's only persistent home. Do NOT use for codebase investigation without planning intent (use /research instead).
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
-allowed-tools: Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(python3:*)
+allowed-tools: Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[task description]"
-hooks:
-  PostToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "../../hooks/veto/veto.py record bash"
 ---
 
 # /think - Design Exploration
@@ -19,7 +13,7 @@ Deep design exploration with adversarial critique by `critic-design`. Compare 2+
 
 ## Input
 
-`$ARGUMENTS` carries the task description and research context. If empty, confirm with the user via AskUserQuestion. The first line of $ARGUMENTS is the task title; pass that first line verbatim, unparaphrased, wherever a verbatim title is required (the `critic-design` spawn prompt and plan-gate `--title`).
+`$ARGUMENTS` carries the task description and research context. If empty, confirm with the user via AskUserQuestion. The first line of $ARGUMENTS is the task title; pass that first line verbatim, unparaphrased, into the `critic-design` spawn prompt.
 
 ## Phase 1: Outcome Exploration
 
@@ -63,8 +57,7 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 2. Assign sequential ids in U-001 / T-001 format. Keep T-NNN unique across the whole plan. When units depend on each other, fill depends_on. Later sessions use it to decide implementation order and parallelism
 3. Count unique files per unit; if 5 or more, re-decompose it into smaller units. Cut along outcomes, not implementation steps. Since this changes the contract, confirm the new unit composition with the user
 4. Candidates carved out of scope stay out of the plan and go to backlog candidates
-5. Pipe the JSON on stdin to `python3 ${CLAUDE_SKILL_DIR}/../../hooks/veto/veto.py plan-gate --title "<task title verbatim>"`. Pass the task title literally without paraphrasing. The script performs normalization
-6. Resolve the errors returned by the gate yourself and re-run
+5. Self-check the serialized plan. Look for missing required fields, duplicate ids, dangling depends_on references, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
 
 ## Output
 
@@ -72,7 +65,7 @@ Return the following to the caller in conversation.
 
 | Item               | Content                                                                                        |
 | ------------------ | ---------------------------------------------------------------------------------------------- |
-| ready              | true when plan-gate passed and no undecided points remain                                      |
+| ready              | true when the plan passed the self-check and no undecided points remain                        |
 | plan               | The validated structured plan (PLAN_SCHEMA JSON)                                               |
 | blockers           | Causes of ready = false that need a user decision. The caller settles each via AskUserQuestion |
 | backlog candidates | Candidates carved out of scope (they feed the issue's `## Backlog candidates`). `none` if none |
@@ -87,4 +80,4 @@ Do not finish until every item is met. For items that cannot be met, present the
 - [ ] 2+ approaches compared
 - [ ] Adversarial critique (critic-design) applied
 - [ ] Design reviewed and approved by the user
-- [ ] Structured plan passed plan-gate and was returned to the caller
+- [ ] Structured plan passed the self-check and was returned to the caller

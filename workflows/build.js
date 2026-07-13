@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Autonomous end-to-end build. Taking an issue with a Plan section refined via /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Audit / Polish / Backlog / Ship run headlessly as deterministic script stages. An issue without a Plan section proceeds via an ephemeral plan generated inside Load (recorded as an assumption; the issue is left untouched). Review happens on a draft PR.",
   whenToUse:
-    'Fire-and-forget implementation. Finish the refine-with-a-human stage in /issue, then pass that issue number ("123" / "#123") / URL / {issue, repo} as args. An issue without a Plan section is also accepted (the plan is auto-generated; quality is below the /issue path). Step away and come back to a draft PR with recorded assumptions and audit results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
+    'Fire-and-forget implementation. Pass an issue number ("123" / "#123") / URL / {issue, repo} as args. An issue without a Plan section is also accepted (the plan is auto-generated; quality is below the /think + /issue path). Step away and come back to a draft PR with recorded assumptions and audit results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -16,9 +16,10 @@ export const meta = {
   ],
 };
 
-// The upstream /issue already handled premise verification and human refinement, so
-// build does not re-plan: the issue body's ## Plan section is the single planning
-// source, and while extraction is left to the LLM, verification belongs to the script.
+// Upstream refinement is human-driven (/challenge, /research, /think, /issue run as
+// standalone stages), so build does not re-plan: the issue body's ## Plan section is
+// the single planning source, and while extraction is left to the LLM, verification
+// belongs to the script.
 // An issue without a Plan section does not fail-close: Load generates an ephemeral
 // plan from the issue body and runs it through the same validate. The generated plan
 // is not written back to the issue (a relaunch regenerates), so the fact that it never
@@ -241,13 +242,9 @@ const SHIP_SCHEMA = {
 // structural defects (duplicate ids / dangling or cyclic depends_on / missing tests)
 // and empty content (test_command / contract / name / given / when / then).
 //
-// DRY debt: this is a hand-maintained copy of validate_plan in hooks/veto/veto.py
-// (the canonical plan-gate, locked by plan-gate.bats T-011). The copy is kept in lockstep
-// by hooks/veto/tests/contract_build_port.py, which extracts the body between the two
-// CONTRACT-TEST markers below, runs it via node, and asserts it returns identical errors
-// on every shared fixture. Editing this block without updating the canonical (or vice
-// versa) fails that test. Do not rename or remove the markers.
-// CONTRACT-TEST-BEGIN validate
+// This is the canonical plan validator (ADR-0084 retired the veto plan-gate that
+// this block was originally ported from). Load's validate is the last line of
+// defense for plan quality in the human-driven upstream flow.
 const validate = (plan) => {
   const errors = [];
   // Non-object entries get a position-based placeholder id so they surface as
@@ -302,7 +299,6 @@ const validate = (plan) => {
 
   return errors;
 };
-// CONTRACT-TEST-END validate
 
 // gh verifies TLS through macOS Security.framework/trustd, whose validation network
 // the Bash sandbox blocks -> OSStatus -26276 (evaluation cannot complete). git
@@ -779,8 +775,7 @@ await agent(
 // (source: issue) plus discoveries during the build (code / audit / polish). The
 // build does not file these itself; issue creation is deferred to the final output.
 // The candidates are surfaced in the return value, and the user files the ones worth
-// filing via /issue, which carries the premise-check / challenge refinement build
-// expects from an issue.
+// filing via /issue (running /challenge, /research, or /think first where warranted).
 phase("Backlog");
 // code.anomalies are NOT folded in here: they are Red-unconfirmed build-integrity
 // signals, rendered once under the PR's dedicated "Anomalies" section (via

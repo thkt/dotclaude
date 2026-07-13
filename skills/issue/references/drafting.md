@@ -1,6 +1,6 @@
 # Drafting Criteria and Procedures
 
-The criteria and procedures each Phase 1 (drafting) step follows. Defines type detection / skip branch / Why wall-bouncing / template source / split assessment.
+The criteria and procedures each Phase 1 (drafting) step follows. Defines type detection / Why wall-bouncing / template source / split assessment / the /fix route for minor bugs.
 
 ## Type detection
 
@@ -13,9 +13,9 @@ Default to `feature` if unclear. The title takes a bracketed prefix of the capit
 | docs    | Documentation additions or corrections                  |
 | chore   | Maintenance, config, or dependency updates              |
 
-## Skip branch
+## The /fix route for minor bugs
 
-docs / chore and minor bugs skip Phases 2-3. Instead, confirm the exemption with the user via an AskUserQuestion with the header `判定スキップ` (options are the detected type). This confirmation becomes the veto skip record, letting a create through without the adversarial flow. A skipped issue gets a footer note in the body, "minor; may be handled via /fix", keeping the /fix path visible. A bug qualifies as minor only when all three criteria below hold. A typical example is a typo fix. An intermittent bug with the root cause unidentified does not qualify.
+A bug meeting all three criteria below is minor, and handling it directly via /fix without filing is an option. When filing anyway, add a footer note to the body, "minor; may be handled via /fix", keeping the /fix path visible. A typical example is a typo fix. An intermittent bug with the root cause unidentified does not qualify.
 
 | Criterion     | Content                                   |
 | ------------- | ----------------------------------------- |
@@ -39,4 +39,4 @@ List `.md` files via `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLA
 
 ## Split assessment
 
-When two or more criteria are each independently implementable, ask via AskUserQuestion whether to split, offering "keep as one issue" or "split into an epic and child issues". Do not count fine-grained checks that only verify one deliverable; they stay within one issue. Never auto-split, since publishing N issues is hard to unwind. On approval, publish this issue as the epic and run the rest of the flow unchanged on it. Once its number is captured, hand it to /slice in Phase 4.
+When two or more criteria are each independently implementable, ask via AskUserQuestion whether to split, offering "keep as one issue" or "split into an epic and child issues". Do not count fine-grained checks that only verify one deliverable; they stay within one issue. Never auto-split, since publishing N issues is hard to unwind. On approval, publish this issue as the epic and run the rest of the flow unchanged on it. Once its number is captured, suggest running /slice in Phase 4.

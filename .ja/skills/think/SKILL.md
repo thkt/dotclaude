@@ -1,16 +1,10 @@
 ---
 name: think
-description: critic-design による敵対的批判を伴う設計探索。生き残ったアプローチを構造化 plan にまとめ、plan-gate で検証して呼び出し元に返す。plan の永続先は issue の Plan 節が唯一。計画意図のないコードベース調査には使わない (代わりに /research)。
+description: critic-design による敵対的批判を伴う設計探索。生き残ったアプローチを構造化 plan にまとめ、自己点検して呼び出し元に返す。plan の永続先は issue の Plan 節が唯一。計画意図のないコードベース調査には使わない (代わりに /research)。
 when_to_use: 計画して, 設計して, アプローチ検討, 方針決め, planning, design exploration
-allowed-tools: Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(python3:*)
+allowed-tools: Read LS Task AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[task description]"
-hooks:
-  PostToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "../../hooks/veto/veto.py record bash"
 ---
 
 # /think - 設計探索
@@ -19,7 +13,7 @@ hooks:
 
 ## 入力
 
-`$ARGUMENTS` でタスク説明、調査コンテキストを受け取る。空なら AskUserQuestion でユーザーに確認する。$ARGUMENTS の先頭行がタスクのタイトル。タイトルをそのまま要求する箇所 (`critic-design` の起動プロンプトと plan-gate の `--title`) には、この先頭行を言い換えずに渡す。
+`$ARGUMENTS` でタスク説明、調査コンテキストを受け取る。空なら AskUserQuestion でユーザーに確認する。$ARGUMENTS の先頭行がタスクのタイトル。`critic-design` の起動プロンプトには、この先頭行を言い換えずに渡す。
 
 ## Phase 1: 成果探索
 
@@ -63,8 +57,7 @@ hooks:
 2. id は U-001 / T-001 形式の連番を振る。T-NNN は plan 全体で一意にする。unit 間に依存があるときは depends_on を埋める。後続セッションはこれを材料に実装順と並行実行を判断する
 3. 各 unit のユニークファイル数を数え、5 以上ならより小さな unit へ再分解する。切り直しは実装手順ではなく成果を軸に行う。contract の変更にあたるため、新しい unit 構成はユーザーと確認する
 4. スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
-5. JSON を標準入力で `python3 ${CLAUDE_SKILL_DIR}/../../hooks/veto/veto.py plan-gate --title "<タスクのタイトルをそのまま>"` に渡す。タイトルは言い換えず一字一句そのまま渡す。正規化はスクリプト側が行う
-6. gate が返した errors は自力で解消して再実行する
+5. 直列化した plan を自己点検する。必須フィールドの欠落、id の重複、depends_on の宙吊り参照、空の units / tests / goal / contract を確認して直す。最終検証は build の Load validate が行う
 
 ## 出力
 
@@ -72,7 +65,7 @@ hooks:
 
 | 項目               | 内容                                                                                            |
 | ------------------ | ----------------------------------------------------------------------------------------------- |
-| ready              | plan-gate 通過かつ未決着の論点なしで true                                                       |
+| ready              | plan が自己点検を通過し、かつ未決着の論点なしで true                                            |
 | plan               | 検証済みの構造化 plan (PLAN_SCHEMA JSON)                                                        |
 | blockers           | ready = false の原因のうちユーザー判断が要る論点。呼び出し元が AskUserQuestion で決着させる対象 |
 | backlog candidates | スコープ外へ切り出した候補 (issue の `## Backlog candidates` の材料)。無ければ `なし`           |
@@ -87,4 +80,4 @@ hooks:
 - [ ] 2 つ以上のアプローチを比較
 - [ ] 敵対的批判 (critic-design) を適用
 - [ ] 設計をユーザーがレビューし承認
-- [ ] 構造化 plan が plan-gate を通過し、呼び出し元に返された
+- [ ] 構造化 plan が自己点検を通過し、呼び出し元に返された
