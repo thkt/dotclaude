@@ -9,11 +9,9 @@ argument-hint: "[issue reference or context]"
 
 # /pr - Pull Request 作成
 
-ブランチ変更を分析してタイトルと本文を生成し、prose review で本文を投稿前に精査してから PR を作成する。
-
 ## 入力
 
-`$ARGUMENTS` は Issue 参照またはコンテキスト (任意、例 `#456`)。空なら現在ブランチからのみ生成する。
+`$ARGUMENTS` は Issue 参照またはコンテキスト。任意で、例は `#456`。空なら現在ブランチからのみ生成する。
 
 ## 言語
 
@@ -24,16 +22,16 @@ argument-hint: "[issue reference or context]"
 commit なし、Git リポジトリでない、gh 認証失敗 のいずれかを検出したら、エラーを報告して中止する。
 
 1. base ブランチを検出 (§ Base ブランチ検出)
-2. base ブランチを AskUserQuestion で選択 (main / develop / 検出済み)
+2. base ブランチを AskUserQuestion で選択する。選択肢は main / develop / 検出済み
 3. § 分析ソースの各コマンドを並列実行する
 4. UI 変更を検出 (§ UI 変更検出)
 5. テンプレートを選ぶ (§ PR テンプレート)
 6. 選んだテンプレートに従いタイトルと本文を生成 (§ タイトルルール)
-7. `${CLAUDE_SKILL_DIR}/references/prose-review.md` と、本文言語に対応する空句ファイル (日本語なら `${CLAUDE_SKILL_DIR}/references/phrases.ja.md`、英語なら `${CLAUDE_SKILL_DIR}/references/phrases.en.md`) の基準で本文をインライン精査
+7. `${CLAUDE_SKILL_DIR}/references/prose-review.md` と、本文言語に対応する空句ファイルの基準で本文をインライン精査する。空句ファイルは日本語なら `phrases.ja.md`、英語なら `phrases.en.md`
 8. PR をプレビュー → AskUserQuestion: "Create this PR?"
 9. UI 変更があれば Skill で `use-workflow-pageshot` を PR 本文と共に呼ぶ (§ Pageshot 統合)
 10. 現在ブランチを push (§ Push)
-11. `gh pr create --title "..." --body "..."` で PR を作成。本文は直接文字列で渡し、heredoc (`<<EOF`) は sandbox 制約のため避ける
+11. `gh pr create --title "..." --body "..."` で PR を作成。本文は直接文字列で渡し、heredoc `<<EOF` は sandbox 制約のため使わない
 12. pageshot 成果物があれば表示 (§ Pageshot 統合)
 
 ## 分析ソース
@@ -64,8 +62,8 @@ BASE=${BASE:-main}
 ## タイトルルール
 
 - Issue 参照ありなら Issue タイトルをそのまま使う
-- Issue 参照なしなら命令形動詞 + 説明 (72 文字以内)
-- prefix は付けない (`feat:`, `fix:` 等)。Issue タイトルにあれば外す
+- Issue 参照なしなら 72 文字以内の命令形動詞 + 説明
+- `feat:` や `fix:` のような prefix は付けない。Issue タイトルにあれば外す
 
 ## PR テンプレート
 

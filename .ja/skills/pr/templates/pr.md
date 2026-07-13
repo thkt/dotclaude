@@ -4,7 +4,7 @@
 
 ## テンプレート
 
-`{...}` は生成時に内容へ置き換える。`(任意)` のセクションは、書くことがなければ見出しごと省略する。`Preview URL:` は UI 変更がある PR にのみ記載する (`use-workflow-pageshot` が読む)。
+`{...}` は生成時に内容へ置き換える。`(任意)` のセクションは、書くことがなければ見出しごと省略する。`Preview URL:` は UI 変更がある PR にのみ記載し、`use-workflow-pageshot` が読む。
 
 ```markdown
 Preview URL: http://localhost:3000
