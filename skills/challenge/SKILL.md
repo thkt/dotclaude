@@ -60,6 +60,6 @@ Lead with the Verdict, concentrate the backing in Why, name the next move in Act
 
 | Section          | Content                                                                                                                                        |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Verdict          | GO / NO-GO, one line, first. Note the condition if conditional, and the reason if downgraded (e.g. `NO-GO (reason: irreversible-assumption)`)  |
+| Verdict          | GO / NO-GO, one line, first. Note the condition if conditional, and the reason if downgraded                                                   |
 | Why              | Fact-verification results, the two critic-design verdicts (internal / outcome), and every residual advanced on assumption (with reversibility) |
 | Actionable items | Top 3 concrete actions (keep / remove / revise)                                                                                                |
