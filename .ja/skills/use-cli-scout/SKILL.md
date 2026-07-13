@@ -25,9 +25,9 @@ user-invocable: false
 
 | use-cli-scout                        | 組み込み WebFetch / WebSearch     |
 | ------------------------------------ | --------------------------------- |
-| 最新ドキュメント、リリースノート     | 使わない (scout を優先)           |
-| GitHub リポジトリ探索                | 使わない (scout repo-\* を優先)   |
-| 編集済みレポート付きディープリサーチ | 利用不可 (scout research を使用)  |
+| 最新ドキュメント、リリースノート     | 使わない。scout を優先            |
+| GitHub リポジトリ探索                | 使わない。scout repo-\* を優先    |
+| 編集済みレポート付きディープリサーチ | 利用不可。scout research を使う   |
 | Markdown クリーンなページ抽出        | WebFetch には Markdown 変換がない |
 
 ## 前提

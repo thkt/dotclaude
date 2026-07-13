@@ -8,7 +8,9 @@ user-invocable: false
 
 # use-cli-recall
 
-## Triggers (call without deliberation)
+## Triggers
+
+When one applies, call without deliberation.
 
 | Trigger              | Signal                                     |
 | -------------------- | ------------------------------------------ |
@@ -22,11 +24,11 @@ user-invocable: false
 
 | Purpose           | Command                                                     |
 | ----------------- | ----------------------------------------------------------- |
-| Search            | `recall search "query"` (or `recall "query"` as shorthand)  |
+| Search            | `recall search "query"`. Shorthand: `recall "query"`         |
 | Last N days       | `recall search "query" --days N`                            |
 | Project filter    | `recall search "query" --project <path>`                    |
 | Source filter     | `recall search "query" --source claude` or `--source codex` |
-| Limit results     | `recall search "query" --limit N` (default 10, max 100)     |
+| Limit results     | `recall search "query" --limit N`. Default 10, max 100       |
 | Show session      | `recall show <session-id>`                                  |
 | Status            | `recall status`                                             |
 | Incremental index | `recall index`                                              |
@@ -34,7 +36,7 @@ user-invocable: false
 
 ## Query composition
 
-Write bilingual queries upfront (e.g. `recall "認証 auth"`). FTS5 trigram tokenization cannot match JA terms of 2 chars or fewer (認証/依存 hit 0), and embeddings do not bridge EN⇄JA (thkt/recall#51). Including both languages covers each search path.
+Write bilingual queries upfront (e.g. `recall "認証 auth"`). FTS5 trigram tokenization cannot match JA terms of 2 chars or fewer; 認証 and 依存 hit 0. Embeddings do not bridge EN⇄JA (thkt/recall#51). Including both languages covers each search path.
 
 ## Weak-result retry
 
@@ -42,7 +44,7 @@ recall does not expand queries (caller-is-LLM, thkt/recall#25). Hybrid search re
 
 ## Pairing with code search
 
-Past decisions (use-cli-recall) vs current code state (`ugrep` / `bfs`). Run both on these triggers.
+use-cli-recall answers past decisions; `ugrep` / `bfs` answer the current code state. Run both on these triggers.
 
 | Trigger              | recall query                  | code search                  |
 | -------------------- | ----------------------------- | ---------------------------- |
