@@ -1,5 +1,5 @@
 // U-003: behavior test that code.js propagates an optional input.model only to the
-// Red / Green implementation agents (defaulting to opus), which always run at effort xhigh.
+// Red / Green implementation agents (defaulting to opus), which always run at effort high.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -64,7 +64,7 @@ test("model 指定時に Red / Green とその retry の 4 呼び出しへ伝播
   assert.equal(redGreen.length, 4, "red / red2 / green / green2 calls are all present");
   for (const call of redGreen) {
     assert.equal(call.opts.model, "haiku", `${call.opts.label} opts carries model: "haiku"`);
-    assert.equal(call.opts.effort, "xhigh", `${call.opts.label} opts carries effort: "xhigh"`);
+    assert.equal(call.opts.effort, "high", `${call.opts.label} opts carries effort: "high"`);
   }
 
   const verify = calls.agent.find((c) => c.opts.label === "verify");
@@ -76,7 +76,7 @@ test("model 指定時に Red / Green とその retry の 4 呼び出しへ伝播
   );
 });
 
-test("model 未指定で Red / Green の opts が既定の opus と effort xhigh を持ち完走する", async () => {
+test("model 未指定で Red / Green の opts が既定の opus と effort high を持ち完走する", async () => {
   const { result, calls } = await runWorkflow(codeJs, {
     args: { plan, repo: "" },
     stubs: { agent: happyAgentStub },
@@ -88,7 +88,7 @@ test("model 未指定で Red / Green の opts が既定の opus と effort xhigh
       continue;
     }
     assert.equal(call.opts.model, "opus", `${call.opts.label} opts carries the default opus`);
-    assert.equal(call.opts.effort, "xhigh", `${call.opts.label} opts carries effort: "xhigh"`);
+    assert.equal(call.opts.effort, "high", `${call.opts.label} opts carries effort: "high"`);
   }
   assert.deepEqual(result.completed, ["U-1"], "completed contains the unit id");
   assert.equal(result.tests_pass, true, "verify tests_pass is returned as-is");

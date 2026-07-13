@@ -4,7 +4,7 @@ Confirm scope before implementation. Skip for questions / read-only / follow-up 
 
 ## Outcome Reference
 
-Read `.claude/OUTCOME.md` at task start and judge scope against the outcome. Skip the re-read when OUTCOME.md was already read earlier in this session.
+Read `.claude/OUTCOME.md` at task start and judge scope against the outcome. Skip the re-read when OUTCOME.md was already read earlier in this session. Right before fixing scope, ask "and then what happens after this change?" and verbalize second-order effects (callers, operations, other tasks) in one line.
 
 | Condition                             | Action                                                                |
 | ------------------------------------- | --------------------------------------------------------------------- |
@@ -38,11 +38,12 @@ Split when any threshold is exceeded. A task whose title joins two actions with 
 
 ## Rationalization Counters
 
-| Excuse                          | Counter                                                        |
-| ------------------------------- | -------------------------------------------------------------- |
-| Simple follow-up                | Check the minimum scope and eliminate unneeded scope changes   |
-| Already understand the codebase | Check when you last read the target files, then verify         |
-| User wants speed over process   | Implementing with the right process ends up faster             |
-| Covered by the plan             | Scope check verifies current state, which a plan does not      |
-| Root fix is too costly          | Leave cost judgment to the user                                |
-| Implement from scratch          | Search the project for existing implementations before writing |
+| Excuse                               | Counter                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------- |
+| Simple follow-up                     | Check the minimum scope and eliminate unneeded scope changes              |
+| Already understand the codebase      | Check when you last read the target files, then verify                    |
+| User wants speed over process        | Implementing with the right process ends up faster                        |
+| Covered by the plan                  | Scope check verifies current state, which a plan does not                 |
+| Root fix is too costly               | Leave cost judgment to the user                                           |
+| Implement from scratch               | Search the project for existing implementations before writing            |
+| This existing code looks unnecessary | Do not remove it until you can explain why it exists (Chesterton's Fence) |

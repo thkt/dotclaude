@@ -2,49 +2,62 @@
 
 ## Priority Matrix
 
-| Priority   | Principle                  |
-| ---------- | -------------------------- |
-| Foundation | Outcome-driven             |
-| Critical   | Occam's Razor              |
-| Critical   | Progressive Enhancement    |
-| Default    | Readable Code              |
-| Default    | Miller's Law               |
-| Default    | TDD / Baby Steps           |
-| Default    | DRY                        |
-| Default    | YAGNI                      |
-| Default    | Reuse Ordering             |
-| Default    | Strong Inference           |
-| Default    | Measurement                |
-| Contextual | SOLID                      |
-| Contextual | Container / Presentational |
-| Contextual | Law of Demeter             |
-| Contextual | Leaky Abstraction          |
-| Contextual | AI-Assisted Development    |
-| Contextual | TIDYINGS                   |
+| Priority   | Principle                               |
+| ---------- | --------------------------------------- |
+| Foundation | Outcome-driven                          |
+| Foundation | Backcasting                             |
+| Critical   | Occam's Razor                           |
+| Critical   | Progressive Enhancement                 |
+| Critical   | Systems Thinking                        |
+| Default    | Readable Code                           |
+| Default    | Miller's Law                            |
+| Default    | TDD / Baby Steps                        |
+| Default    | DRY                                     |
+| Default    | YAGNI Boundary                          |
+| Default    | Reuse Ordering                          |
+| Default    | Strong Inference                        |
+| Default    | Measurement                             |
+| Contextual | SOLID                                   |
+| Contextual | Container / Presentational              |
+| Contextual | Law of Demeter                          |
+| Contextual | AI-Assisted Development (Overeagerness) |
+| Contextual | TIDYINGS                                |
 
 ## Triggers
 
-| Trigger                      | Principle        |
-| ---------------------------- | ---------------- |
-| New task or unclear goal     | Backcasting      |
-| Method chains >2             | Law of Demeter   |
-| Shrank code into obfuscation | Readable Code    |
-| Complex-first                | Occam's Razor    |
-| Single hypothesis            | Strong Inference |
-| Coordinated call sites >= 2  | YAGNI Boundary   |
-| Before new code or a new dep | Reuse Ordering   |
-| Post-write verbose           | Occam's Razor    |
-| Extra files or unasked scope | Overeagerness    |
+| Trigger                                          | Principle               |
+| ------------------------------------------------ | ----------------------- |
+| New task or unclear goal                         | Backcasting             |
+| Method chains >2                                 | Law of Demeter          |
+| Shrank code into obfuscation                     | Readable Code           |
+| Complex-first                                    | Occam's Razor           |
+| Started Resilient / Fast / Flexible before Work  | Progressive Enhancement |
+| Single hypothesis                                | Strong Inference        |
+| Two failed fixes under the same assumption       | Strong Inference        |
+| Local improvement leaves the whole flat or worse | Systems Thinking        |
+| Fix for the same symptom recurs                  | Systems Thinking        |
+| Coordinated call sites >= 2                      | YAGNI Boundary          |
+| Before new code or a new dep                     | Reuse Ordering          |
+| Post-write verbose                               | Occam's Razor           |
+| Extra files or unasked scope                     | Overeagerness           |
 
 ## Conflict Resolution
 
 - Outcome-driven defines the why, Backcasting the goal, and the other principles the path.
+- Systems Thinking sets the scope to optimize (the whole system that carries the outcome), and Occam's Razor picks the simplest approach within that scope.
 - When in doubt, simple > clever, concrete > abstract, working > perfect, readable > DRY.
 - Occam's Razor does not count temporary symptom relief as an achievement, and picks only the simplest approach that does not degrade the output quality directly tied to outcome achievement.
 
 ## Progressive Enhancement
 
 Make it Work → Make it Resilient (when errors occur) → Make it Fast (when slowness measured) → Make it Flexible (when users request)
+
+## Systems Thinking
+
+A sum of local optima is not a global optimum. Each part's obligation is contributing to the aim of the whole system, not maximizing its own output. Judge a change by its impact on the whole system that carries the outcome, not by the locality it touches.
+
+- A local metric can improve while the whole stays flat when the bottleneck is elsewhere. Identify the constraint before optimizing
+- Repeated symptomatic shortcuts atrophy the capacity for fundamental solutions (Shifting the Burden). Before choosing a fix, judge whether it reduces the need for the fundamental solution or merely defers it
 
 ## Readable Code
 
@@ -72,6 +85,10 @@ After understanding the problem and before writing code, work through these top 
 4. Use a native platform feature. `<input type="date">` over a picker, CSS over JS, DB constraint over app code
 5. Use an installed dependency. No new dep for what a few lines do
 6. Write new code only when nothing above fits. Keep it the minimum that works
+
+## Strong Inference
+
+Hold multiple competing hypotheses and eliminate them. When two fixes under the same assumption have failed, switch from fixing the error (single-loop) to questioning the assumption itself (double-loop). Verbalize the governing assumption before forming the next hypothesis.
 
 ## Measurement
 

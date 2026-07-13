@@ -239,7 +239,7 @@ if (mode !== "cleanup") {
         agentType: "general-purpose",
         schema: FIX_SCHEMA,
         model: "opus",
-        effort: "xhigh",
+        effort: "high",
       },
     );
   }
