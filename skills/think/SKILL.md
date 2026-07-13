@@ -9,7 +9,7 @@ argument-hint: "[task description]"
 
 # /think - Design Exploration
 
-Compare 2+ approaches, subject them to `critic-design` critique, and let only the surviving approach reach the structured plan. Write the plan to a draft file in plan-section format and also return it in conversation. Persistence happens when `/issue` pastes it into the issue's Plan section.
+Compare 2+ approaches, subject them to `critic-design` critique, and let only the surviving approach reach the structured plan. Write the plan to a draft file following the templates/plan.md skeleton and also return it in conversation. Persistence happens when `/issue` transfers it into the issue's Plan section.
 
 ## Input
 
@@ -42,10 +42,37 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 ## Phase 3: Plan Generation
 
 1. Decompose the approved design into units. A unit is an independently implementable bundle of outcome. Serialize them in implementation order into PLAN_SCHEMA-equivalent JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan
-2. Write contract and tests[].name per the authoring rules in `${CLAUDE_SKILL_DIR}/references/plan-section.md`
+2. Write contract and tests[].name per the authoring rules below
 3. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
 4. Self-check the serialized plan. Look for missing required fields, duplicate ids, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
-5. Run plan-section.md § Pre-writeout verification, then write the passing plan in plan-section.md format to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`. Derive the lowercase hyphenated slug from the task title. Include both the `## Plan` and `## Backlog candidates` sections
+5. Run the pre-writeout verification, then write the passing plan following the `${CLAUDE_SKILL_DIR}/templates/plan.md` skeleton to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`. Derive the lowercase hyphenated slug from the task title. Include both the `## Plan` and `## Backlog candidates` sections
+
+### Contract authoring rules
+
+Select, do not generate. Never sketch behavior in prose or invent new code fragments; a contract is a citation plus an intent. A citation is verifiable, while a generated sketch is not.
+
+1. Pick the citation in this priority order: an existing shape in the codebase > a docs/wiki page > a deep link to the API in the pinned version's official docs. Write a code shape as path + public symbol under the same stable-anchor rules as Preconditions. External-library citations follow SOURCING.md
+2. Add what to follow and what to change relative to the citation as the one intent line. For a new shape with no citable source, do not invent a signature; keep the one intent line and leave the shape to implementation. Behavior is pinned by the acceptance tests
+3. Cited paths + symbols also go into `### Preconditions`, putting them under pre-writeout verification and build's Revalidate
+
+### Precondition authoring rules
+
+Apply these 5 rules to `### Preconditions`.
+
+1. List existing dependencies only. Files newly created by a unit are never listed as preconditions
+2. Anchors are limited to a single stable anchor, one exported / public symbol name, that `ugrep -F` matches as a literal fixed string. Do not anchor on private implementation details, comment strings, line numbers, or a slash-joined list of symbols; none of those match under `ugrep -F`
+3. When no stable symbol exists, write the line as path only
+4. Each line takes one of two forms: path only, or path + stable anchor
+5. Paths are repo-root-relative. A path that drops a repo prefix like `workspace/` fails verification
+
+### Pre-writeout verification
+
+Before writing out the draft, verify from the same repository root as the build workflow's Revalidate.
+
+1. Verify each `### Preconditions` line: paths via `test -f <path>`, anchors via `ugrep -F '<pattern>' <path>`. Fix or drop any failing line
+2. Verify every `units[].files` entry that refers to an existing file with `test -f <path>`, and fix any failing path
+3. If even one unit lists an existing file in `files`, the `### Preconditions` subsection needs at least one line. Treat an empty or absent subsection as a failure, and add one precondition line anchoring the load-bearing dependency
+4. Check for overflow against the line-count rules in templates/plan.md
 
 ## Output
 

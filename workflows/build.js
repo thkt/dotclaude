@@ -315,7 +315,7 @@ if (hasPlanSection) {
   const afterHeading = body.slice(planHeading.index + planHeading[0].length);
   const nextSection = afterHeading.search(/^##[^#]/m);
   const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
-  // Match ids at their definition position only, not prose references (see plan-section.md).
+  // Match ids at their definition position only, not prose references (see think templates/plan.md).
   const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[1]));
   bodyUnitIds = idSet(/^###\s+(U-\d{3})\b/gm);
   bodyTestIds = idSet(/^[ \t]*[-*+][ \t]+(T-\d{3})\b/gm);

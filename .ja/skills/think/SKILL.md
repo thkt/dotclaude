@@ -9,7 +9,7 @@ argument-hint: "[task description]"
 
 # /think - 設計探索
 
-2 つ以上の案を比較して `critic-design` の批判にかけ、生き残った案だけを構造化 plan に到達させる。plan は plan-section 書式の下書きファイルに書き出して会話でも返す。永続化は `/issue` が issue の Plan 節へ貼り付けて行う。
+2 つ以上の案を比較して `critic-design` の批判にかけ、生き残った案だけを構造化 plan に到達させる。plan は templates/plan.md の骨格で下書きファイルに書き出し、会話でも返す。永続化は `/issue` が issue の Plan 節へ移設して行う。
 
 ## 入力
 
@@ -42,10 +42,37 @@ argument-hint: "[task description]"
 ## Phase 3: Plan 生成
 
 1. 承認された設計を unit に分解する。unit は独立して実装可能な成果の束。実装順に並べて PLAN_SCHEMA 相当の JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }` に直列化する。id は U-001 / T-001 形式の連番で、T-NNN は plan 全体で一意にする
-2. contract と tests[].name の書き方は `${CLAUDE_SKILL_DIR}/references/plan-section.md` の authoring 規則に従う
+2. contract と tests[].name の書き方は下の authoring 規則に従う
 3. 1 つの unit が触るファイルが 5 つ以上なら、成果を軸により小さな unit へ再分解し、新しい unit 構成をユーザーと確認する。スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
 4. 直列化した plan を自己点検する。必須フィールドの欠落、id の重複、空の units / tests / goal / contract を確認して直す。最終検証は build の Load validate が行う
-5. plan-section.md § 書き出し前検証 を実行し、通った plan を plan-section.md の書式で `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に書き出す。slug はタスクのタイトルから小文字ハイフン区切りで作る。`## Plan` と `## Backlog candidates` の両節を含める
+5. 書き出し前検証を実行し、通った plan を `${CLAUDE_SKILL_DIR}/templates/plan.md` の骨格で `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に書き出す。slug はタスクのタイトルから小文字ハイフン区切りで作る。`## Plan` と `## Backlog candidates` の両節を含める
+
+### contract の authoring 規則
+
+生成でなく選択で書く。prose で振る舞いを素描したり、コード片を新造したりせず、contract は引用 + やりたいことのセットで書く。引用は検証可能で、生成した素描は検証不能なため。
+
+1. 引用は次の優先順で選ぶ。コードベースの既存の形 > docs/wiki のページ > pinned version の公式 docs の該当 API への deep link。コードの形は path + 公開シンボルで書き、前提と同じ stable anchor 規則に従う。外部ライブラリの引用は SOURCING.md の規律に従う
+2. 引用に従う点と変える点を、やりたいことの 1 行として添える。引用できる出典が無い新規の形は、signature を発明せずやりたいことの 1 行に留め、形の決定は実装に委ねる。振る舞いは受け入れテストが固定する
+3. 引用した path + シンボルは `### 前提` にも載せ、書き出し前検証と build の Revalidate の対象にする
+
+### 前提 (preconditions) の authoring 規則
+
+`### 前提` には次の 5 規則を適用する。
+
+1. 既存の依存先のみを載せる。unit が作る新規作成ファイルは前提に載せない
+2. anchor は公開シンボル名の stable anchor を 1 つだけ書き、`ugrep -F` が固定文字列としてそのまま一致するものに限る。private な実装詳細・コメント文字列・行番号・スラッシュで連結したシンボル列は `ugrep -F` で一致しないため anchor にしない
+3. 安定したシンボルが無ければ path のみの行にする
+4. 各行は path 単独、または path + stable anchor の 2 形式のどちらかにする
+5. path はリポジトリルート起点で書く。`workspace/` などリポジトリ接頭辞を落とした path は検証に失敗する
+
+### 書き出し前検証
+
+下書きの書き出し前に、build workflow の Revalidate と同じリポジトリルートで検証する。
+
+1. `### 前提` の各行を検証する。path は `test -f <path>`、anchor は `ugrep -F '<pattern>' <path>` で確認し、失敗した行は修正するか落とす
+2. `units[].files` のうち既存ファイルを指す行を `test -f <path>` で検証し、失敗したパスを直す
+3. `files` に既存ファイルを載せる unit が 1 つでもあれば、`### 前提` 節に最低 1 行が必要。空 / 不在の節は失敗とみなし、要となる依存を anchor する前提行を 1 つ足す
+4. templates/plan.md の行数規則の超過が無いか確認する
 
 ## 出力
 
