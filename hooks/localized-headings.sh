@@ -16,7 +16,10 @@ read -r tool_name command_str < <(echo "$input" | jq -r '[.tool_name // "", .too
 # @tsv doubles backslashes — undo to get original command string
 command_str="${command_str//\\\\/\\}"
 
-[[ "$command_str" =~ gh[[:space:]]+(issue|pr)[[:space:]]+create ]] || exit 0
+# Match only at a command position (start, after ; & | or $() — not inside
+# heredoc / echo data that merely contains the literal string.
+create_re='(^|[;&|][[:space:]]*|\$\()[[:space:]]*gh[[:space:]]+(issue|pr)[[:space:]]+create'
+[[ "$command_str" =~ $create_re ]] || exit 0
 
 # Language → Unicode pattern (Latin-script languages cannot be distinguished from English)
 lang=$(jq -r '.language // ""' "$HOME/.claude/settings.json" 2>/dev/null)
