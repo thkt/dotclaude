@@ -24,8 +24,8 @@ _spec.loader.exec_module(pr_body)
 FULL = {
     "issue": "123",
     "assumptions": ["assume A", "assume B"],
-    "residual_blocking": [{"severity": "high", "summary": "leak", "file": "y.js"}],
-    "reaudited": True,
+    "scope_deviations": ["extra.js"],
+    "missing_tests": ["rejects negative amounts"],
     "code_anomalies": [{"unit": "U-001", "kind": "no-red", "notes": "flaky"}],
     "tests_pass": True,
     "gates_pass": True,
@@ -39,14 +39,17 @@ FULL = {
         }
     ],
 }
-CLEAN = {"issue": "9", "reaudited": True, "tests_pass": True, "gates_pass": True}
+CLEAN = {"issue": "9", "tests_pass": True, "gates_pass": True}
 
 
 class RenderTest(unittest.TestCase):
     def test_closes_and_status_line(self):
         body = pr_body.render(FULL)
         self.assertIn("Closes #123", body)
-        self.assertIn("`verify tests=pass gates=pass` · `blocking 1`", body)
+        self.assertIn(
+            "`verify tests=pass gates=pass` · `scope-deviations 1` · `missing-tests 1`",
+            body,
+        )
 
     def test_leads_with_auto_generated_label(self):
         # A reviewer who did not launch the build must be told the terse block below
@@ -60,45 +63,50 @@ class RenderTest(unittest.TestCase):
         # The label leads the tail, above Closes.
         self.assertLess(body.index("Auto-generated"), body.index("Closes"))
 
+    def test_audit_invite_is_always_present(self):
+        # Heavy assurance is human-invoked (ADR-0085): the standing /audit invitation
+        # must render on full and clean runs alike.
+        for payload in (FULL, CLEAN):
+            body = pr_body.render(payload)
+            self.assertIn("run `/audit`", body)
+
     def test_lists_use_bold_labels_and_bullets(self):
         body = pr_body.render(FULL)
         self.assertIn("**Assumptions (veto targets)**", body)
         self.assertIn("- assume A", body)
         self.assertNotIn("Backlog", body)
-        self.assertIn("**Unresolved critical/high**", body)
-        self.assertIn("- [high] leak (y.js)", body)
+        self.assertIn("**Files outside the plan's scope**", body)
+        self.assertIn("- `extra.js`", body)
+        self.assertIn("**Planned test statements not found**", body)
+        self.assertIn("- rejects negative amounts", body)
         self.assertIn("**Anomalies (Red unconfirmed)**", body)
         self.assertIn("- U-001 (no-red): flaky", body)
+        # The audit fan-out is retired from build (ADR-0085): no residual section.
+        self.assertNotIn("Unresolved", body)
+        self.assertNotIn("re-audit", body)
 
-    def test_conformance_is_a_separate_section_not_in_blocking_count(self):
+    def test_conformance_is_a_separate_section_not_in_deviation_counts(self):
         # reviewer-conformance's issue-axis findings surface in their own section and
-        # must NOT be merged into the blocking count (that stays the residual count).
+        # must NOT be merged into the deterministic deviation counts.
         body = pr_body.render(FULL)
         self.assertIn("**Issue conformance (review independently)**", body)
         self.assertIn("- [missing] no test for T-003 (pay.js:12, T-003 rejects negative)", body)
-        self.assertIn("`blocking 1`", body)
+        self.assertIn("`scope-deviations 1`", body)
 
     def test_clean_run_omits_empty_sections_and_stays_short(self):
         body = pr_body.render(CLEAN)
         self.assertNotIn("None", body)
         self.assertNotIn("**Assumptions", body)
-        self.assertNotIn("**Unresolved", body)
+        self.assertNotIn("**Files outside", body)
+        self.assertNotIn("**Planned test statements", body)
         self.assertNotIn("**Issue conformance", body)
         self.assertNotIn("**Anomalies", body)
-        self.assertIn("`blocking 0`", body)
+        self.assertIn("`scope-deviations 0` · `missing-tests 0`", body)
         non_empty = [
             ln for ln in body.splitlines() if ln.strip() and ln.strip() != "---"
         ]
-        # header label + Closes line + status line
-        self.assertEqual(len(non_empty), 3, non_empty)
-
-    def test_not_reaudited_warns_and_still_lists_residual(self):
-        # Round-3 cap: the warning appears AND the unverified findings are enumerated.
-        body = pr_body.render({**FULL, "reaudited": False})
-        self.assertIn("`blocking 1 (not re-audited)`", body)
-        self.assertIn("> **Not re-audited**", body)
-        self.assertIn("**Unresolved critical/high**", body)
-        self.assertIn("- [high] leak (y.js)", body)
+        # header label + Closes line + status line + audit invitation
+        self.assertEqual(len(non_empty), 4, non_empty)
 
     def test_verify_failure_uses_collapsed_details(self):
         body = pr_body.render(
@@ -136,18 +144,17 @@ class RenderTest(unittest.TestCase):
 
     def test_japanese_translates_prose_labels_but_keeps_github_keyword(self):
         # language: japanese translates the human-facing section labels; the GitHub
-        # magic keyword `Closes` and the `/issue` command name must stay verbatim.
+        # magic keyword `Closes` and the `/audit` command name must stay verbatim.
         body = pr_body.render({**FULL, "language": "japanese"})
         self.assertIn("Closes #123", body)
         self.assertIn("_build workflow が自動生成。", body)
         self.assertIn("**前提 (veto 対象)**", body)
-        self.assertIn("**未解決 critical/high**", body)
+        self.assertIn("**Plan スコープ外の変更ファイル**", body)
+        self.assertIn("**テストとして見つからない plan の言明**", body)
         self.assertIn("**異常 (Red 未確認)**", body)
         self.assertIn("**Issue 適合性 (独立レビュー)**", body)
-
-    def test_japanese_not_reaudited_callout_translates(self):
-        body = pr_body.render({**FULL, "reaudited": False, "language": "japanese"})
-        self.assertIn("> **未再audit**", body)
+        self.assertIn("`/audit`", body)
+        self.assertIn("重い担保は人間駆動", body)
 
     def test_unknown_language_falls_back_to_english(self):
         body = pr_body.render({**FULL, "language": "klingon"})
@@ -184,7 +191,7 @@ class CliTest(unittest.TestCase):
     def test_missing_required_key_fails_closed(self):
         # A shipPayload that dropped a safety-critical key must not render a
         # plausible "clean" body — it must exit 1 so the caller's && chain aborts.
-        for key in ("reaudited", "tests_pass", "gates_pass"):
+        for key in ("tests_pass", "gates_pass"):
             payload = {k: v for k, v in FULL.items() if k != key}
             proc = self._run(json.dumps(payload))
             self.assertEqual(proc.returncode, 1, f"missing {key} should fail closed")
