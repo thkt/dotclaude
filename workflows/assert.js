@@ -345,7 +345,7 @@ try {
   // agent's opts.phase forms the group (avoids racing the global phase state against the audit
   // thunk; same rationale as the Challenge group).
   // A FAIL can be either "a bug found" or "the test wrote a wrong expectation". If an intent
-  // source (OUTCOME.md -> SOW/Spec -> ADR -> commits -> comments -> docstring -> README ->
+  // source (OUTCOME.md -> plan -> DR -> commits -> comments -> docstring -> README ->
   // test names) contradicts the test's expectation, exclude; otherwise (no source / source
   // supports the expectation), promote.
   const triageP = (async () => {
@@ -364,7 +364,7 @@ try {
               anchor(
                 `You handle the intent triage of assert. Decide whether one failed adversarial test is "a real bug found" or "a wrong expectation on the test side".\n` +
                   `The test is as follows. ${JSON.stringify(t)}\n` +
-                  `Read the target code (${t.target}) with 30 lines of context, and look for intent sources top-down. The order is .claude/OUTCOME.md, SOW / Spec under .claude/workspace/planning/, ADRs such as docs/decisions/, git log of the target file, comments within 10 lines of the target code, the target function's docstring, README, names of existing tests of the same function.\n` +
+                  `Read the target code (${t.target}) with 30 lines of context, and look for intent sources top-down. The order is .claude/OUTCOME.md, the plan under .claude/workspace/planning/ or the issue's Plan section, DRs such as docs/decisions/, git log of the target file, comments within 10 lines of the target code, the target function's docstring, README, names of existing tests of the same function.\n` +
                   `If an intent source contradicts the test's expectation, exclude (quote the source in reason); otherwise promote.`,
               ),
               {

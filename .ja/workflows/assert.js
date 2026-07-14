@@ -342,7 +342,7 @@ try {
   // 600s なので barrier より先に必ず終わる)。並走するため bare phase("Triage") は呼ばず、各 agent の
   // opts.phase で group を張る (audit thunk との global phase state race を避ける。Challenge group と同旨)。
   // FAIL は「バグ発見」と「テスト側が誤った期待を書いた」の両方がありうる。intent source
-  // (OUTCOME.md -> SOW/Spec -> ADR -> commit -> コメント -> docstring -> README -> テスト名) が
+  // (OUTCOME.md -> plan -> DR -> commit -> コメント -> docstring -> README -> テスト名) が
   // テストの期待と矛盾すれば exclude、それ以外 (source 不在 / source が期待を裏付ける) は promote。
   const triageP = (async () => {
     const testRun = await testRunP;
@@ -360,7 +360,7 @@ try {
               anchor(
                 `assert の intent triage を担当する。失敗した adversarial テスト 1 件が「実バグの発見」か「テスト側の誤った期待」かを判定する。\n` +
                   `テストは次のとおり。${JSON.stringify(t)}\n` +
-                  `対象コード (${t.target}) を前後 30 行読み、intent source を上から順に探す。順序は .claude/OUTCOME.md、.claude/workspace/planning/ の SOW / Spec、docs/decisions/ 等の ADR、対象ファイルの git log、対象コード近傍 10 行のコメント、対象関数の docstring、README、同関数の既存テスト名。\n` +
+                  `対象コード (${t.target}) を前後 30 行読み、intent source を上から順に探す。順序は .claude/OUTCOME.md、.claude/workspace/planning/ の plan または issue の Plan 節、docs/decisions/ 等の DR、対象ファイルの git log、対象コード近傍 10 行のコメント、対象関数の docstring、README、同関数の既存テスト名。\n` +
                   `intent source がテストの期待と矛盾すれば exclude (reason に source を引用)、それ以外は promote。`,
               ),
               {

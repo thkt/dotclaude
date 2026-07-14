@@ -1,6 +1,6 @@
 # Vague Terms
 
-Applies to test descriptions, Issue / PR bodies, commit messages, Spec / SOW, code comments, and technical docs. Specify ambiguous software-development terms before use.
+Applies to test descriptions, Issue / PR bodies, commit messages, plans, code comments, and technical docs. Specify ambiguous software-development terms before use.
 
 The tables below are a quick reference, not an exhaustive list. Before finalizing, reread the output and concretize any term whose baseline a reader could not reconstruct, whether or not it appears below.
 
