@@ -23,19 +23,31 @@ const parseArgs = () => {
   }
   return {};
 };
+
 const input = parseArgs();
 const plan = input.plan;
+
 if (!plan || !Array.isArray(plan.units) || !plan.units.length) {
   return {
     stopped: "no-plan",
     why: "構造化 plan (units 必須) を args.plan に渡す。",
   };
 }
+
 const repo = typeof input.repo === "string" ? input.repo : "";
 const anchor = (p) =>
   repo
     ? `すべての git / ファイル / ビルドコマンドを ${repo} のリポジトリから実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
     : p;
+
+// plan の units は実装順に並んでいる。並び順のまま実行する。
+const units = plan.units;
+const testCmd = plan.test_command || "";
+const completed = [];
+const anomalies = [];
+// Red / Green (+ retry) と直接実装の全 agent 呼び出しで共有し、model / effort の変更が
+// 1 箇所で済むようにする。
+const implementOpts = { model: input.model || "opus", effort: "xhigh" };
 
 const RED_SCHEMA = {
   type: "object",
@@ -67,37 +79,11 @@ const GREEN_SCHEMA = {
   },
 };
 
-const VERIFY_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  required: ["tests_pass", "gates_pass", "output_tail"],
-  properties: {
-    tests_pass: { type: "boolean" },
-    gates_pass: {
-      type: "boolean",
-      description: "lint / type-check が pass したとき true",
-    },
-    output_tail: {
-      type: "string",
-      description: "失敗時、失敗出力の末尾",
-    },
-  },
-};
-
-// plan の units は実装順に並んでいる。並び順のまま実行する。
-const units = plan.units;
-
-const testCmd = plan.test_command || "";
-const completed = [];
-const anomalies = [];
-// Red / Green (+ retry) と直接実装の全 agent 呼び出しで共有し、model / effort の変更が
-// 1 箇所で済むようにする。
-const implementOpts = { model: input.model || "opus", effort: "xhigh" };
-
 // ---- Implement: unit ごとに実装 (直列。working tree を共有するため) ----
 // tests を持つ unit は Red → Green、tests が空の unit は直接実装 1 段。どちらにするかは
 // plan (人間レビュー済み) が選択し、runtime に TDD 要否の裁量は無い。
 phase("Implement");
+
 for (const unit of units) {
   const tests = Array.isArray(unit.tests) ? unit.tests : [];
   const ctx =
@@ -124,6 +110,7 @@ for (const unit of units) {
         ...implementOpts,
       },
     );
+
     if (impl && !impl.green) {
       impl = await agent(
         anchor(
@@ -139,6 +126,7 @@ for (const unit of units) {
         },
       );
     }
+
     if (!impl || !impl.green) {
       return {
         stopped: "unit-failed",
@@ -148,8 +136,11 @@ for (const unit of units) {
         anomalies,
       };
     }
+
     completed.push(unit.id);
+
     log(`${unit.id}: 直接実装 done (${completed.length}/${units.length})。`);
+
     continue;
   }
 
@@ -168,6 +159,7 @@ for (const unit of units) {
       ...implementOpts,
     },
   );
+
   if (red && !red.red_confirmed) {
     // Red 未確認 = 振る舞いが既に存在するか、テストが空振りしている。1 回だけ精査する。
     red = await agent(
@@ -186,7 +178,9 @@ for (const unit of units) {
       },
     );
   }
+
   if (!red) return { stopped: "red-failed", unit: unit.id, completed, anomalies };
+
   if (!red.red_confirmed) {
     anomalies.push({ unit: unit.id, kind: "no-red", notes: red.notes });
     log(`${unit.id}: Red 未確認 (${red.notes})。implement step を skip する。`);
@@ -210,6 +204,7 @@ for (const unit of units) {
       ...implementOpts,
     },
   );
+
   if (green && !green.green) {
     green = await agent(
       anchor(
@@ -225,6 +220,7 @@ for (const unit of units) {
       },
     );
   }
+
   if (!green || !green.green) {
     return {
       stopped: "unit-failed",
@@ -238,8 +234,26 @@ for (const unit of units) {
   log(`${unit.id}: Red → Green done (${completed.length}/${units.length})。`);
 }
 
+const VERIFY_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["tests_pass", "gates_pass", "output_tail"],
+  properties: {
+    tests_pass: { type: "boolean" },
+    gates_pass: {
+      type: "boolean",
+      description: "lint / type-check が pass したとき true",
+    },
+    output_tail: {
+      type: "string",
+      description: "失敗時、失敗出力の末尾",
+    },
+  },
+};
+
 // ---- Verify: 実装に関与していない独立 agent が全体を再実行する ----
 phase("Verify");
+
 const verify = (await agent(
   anchor(
     `検証 stage。全テスト suite (${testCmd}) とプロジェクトの lint / type-check gate を実行し、結果をそのまま報告する。何も修正しない。`,
