@@ -7,7 +7,7 @@
   },
   "metadata": {
     "description": "Autonomous development workflow toolkit distributed as one self-contained plugin. Installing build clones the whole repository once, so every skill, agent, and workflow loads under the build: namespace with no cross-plugin duplication.",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "architecture": "single-plugin",
     "adr": "docs/decisions/0083-collapse-marketplace-to-single-build-plugin.md"
   },
@@ -16,7 +16,7 @@
       "name": "build",
       "source": { "source": "github", "repo": "thkt/dotclaude" },
       "description": "End-to-end autonomous build. File an issue with /issue (optionally after /challenge, /research, and /think), hand the issue number to the build workflow, and get a draft PR after Load / Code / Audit / Polish / Ship. Bundles the full reviewer and critic agent set, the code / audit / polish / shake / assert / adrift workflows, and the planning and git skills (/think, /research, /commit, /pr).",
-      "version": "4.0.0",
+      "version": "4.0.1",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
