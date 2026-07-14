@@ -112,8 +112,8 @@ for (const unit of units) {
   if (!tests.length) {
     let impl = await agent(
       anchor(
-        `Direct implementation step (this unit pins no new behavior; the plan gave it no test scenarios). ${ctx}` +
-          `Implement per the contract. Keep the existing test suite green (${testCmd}); weakening / skipping / deleting existing tests is forbidden. ` +
+        `Direct implementation step. ${ctx}` +
+          `Implement per the contract; write no new tests. Keep the existing test suite green (${testCmd}); weakening / skipping / deleting existing tests is forbidden. ` +
           `Run the suite and report green.`,
       ),
       {
@@ -157,7 +157,7 @@ for (const unit of units) {
     anchor(
       `TDD Red step. ${ctx}` +
         `Write each test scenario (T-NNN) as a failing test. Use the scenario's name verbatim as the test name. ` +
-        `Write no implementation code whatsoever. Run the tests and confirm each fails for the intended reason (an unrun Red is blind), then report. ` +
+        `Write no implementation code whatsoever. Run the tests and confirm each fails for the intended reason, then report. ` +
         `If the tests do not fail, do not implement; write the reason in notes.`,
     ),
     {
@@ -176,7 +176,7 @@ for (const unit of units) {
         `TDD Red step retry. ${ctx}` +
           `Last time the tests did not fail. The reason was ${red.notes}.\n` +
           `Scrutinize whether the tests really verify the target behavior (assertions are not empty, the target code is invoked). ` +
-          `If the behavior is unimplemented they should fail. If after scrutiny the tests still pass, judge the behavior as already implemented and keep red_confirmed=false with the reason in notes.`,
+          `If after scrutiny the tests still pass, judge the behavior as already implemented and keep red_confirmed=false with the reason in notes.`,
       ),
       {
         label: `red2:${unit.id}`,
@@ -199,8 +199,8 @@ for (const unit of units) {
     anchor(
       `TDD Green step. ${ctx}` +
         `Write the minimal implementation that makes the failing tests in ${JSON.stringify(red.test_files)} pass. ` +
-        `Work in vertical slices: make one test pass at a time, never bulk-implement against all tests at once. ` +
-        `Changes that weaken / skip / delete test assertions are forbidden (if the test structure needs fixing, write it in notes and return green=false). ` +
+        `Make one test pass at a time; never bulk-implement against all tests at once. ` +
+        `Changes that weaken / skip / delete test assertions are forbidden. If the test structure needs fixing, write it in notes and return green=false. ` +
         `After passing, refactor while keeping the tests green. Re-run the unit's tests and report.`,
     ),
     {
@@ -243,7 +243,7 @@ for (const unit of units) {
 phase("Verify");
 const verify = (await agent(
   anchor(
-    `Verification stage. You were not involved in the implementation. Run the full test suite (${testCmd}) and the project's lint / type-check gates, and report the results as they are. Do not fix anything.`,
+    `Verification stage. Run the full test suite (${testCmd}) and the project's lint / type-check gates, and report the results as they are. Fix nothing.`,
   ),
   {
     label: "verify",

@@ -3,7 +3,7 @@ export const meta = {
   description:
     "自律的な end-to-end build。/think + /issue で精緻化した Plan 節付き issue を入力に、Load (逐語 fetch → 決定論 id 収集 → 抽出 → validate + id クロスチェック) / Revalidate / Branch / Code / Verify / Polish / Ship を headless の決定論 script stage として実行する。正しさの確認は plan 自身のアンカー (前提、files スコープ、T-NNN 言明、conformance) との比較であり、開放的な欠陥探索ではない。重い担保 (/audit、/polish review) は draft PR に対して人間が起動する (ADR-0085)。",
   whenToUse:
-    'plan 付き issue の実装。issue 番号 ("123" / "#123") / URL / {issue, repo} を args に渡す。## Plan 節の無い issue は fail-close し、先に /think + /issue での精緻化を提案する。離席して戻れば、前提・conformance findings・決定論 verify 結果を記録した draft PR ができている。スコープ外の backlog 候補は workflow の戻り値で返り、/issue で起票する。途中で舵を取る場合は phase を対話的に進める。',
+    'plan 付き issue の実装。issue 番号 ("123" / "#123") / URL / {issue, repo} を args に渡す。## Plan 節の無い issue は fail-close し、先に /think + /issue での精緻化を提案する。離席して戻れば、前提 / conformance findings / 決定論 verify 結果を記録した draft PR ができている。スコープ外の backlog 候補は workflow の戻り値で返り、/issue で起票する。途中で舵を取る場合は phase を対話的に進める。',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -39,7 +39,7 @@ if (!issueRef || !issueNumber) {
 const repo = typeof input.repo === "string" ? input.repo : "";
 const anchor = (p) =>
   repo
-    ? `すべての git・ファイル・ビルドコマンドを ${repo} のリポジトリから実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
+    ? `すべての git / ファイル / ビルドコマンドを ${repo} のリポジトリから実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
     : p;
 const guard = repo
   ? ` この step で最初の commit / push / ブランチ変更を行う前に \`cd ${repo} && git rev-parse --show-toplevel\` を実行し、出力が ${repo} であることを確認する。異なる場合は git を変更せず中断し、不一致を報告する。`
@@ -205,7 +205,7 @@ const SHIP_SCHEMA = obj(["committed", "pr_url"], {
 const relayVerifier = ({ what, script, shape, payload, count }) =>
   `${what}を決定論 verifier で検証する。判定を自分で下さない。手順は、(1) この JSON をそのまま一時ファイルに書く。` +
   `(2) リポジトリルートから \`python3 ${bundled(script)} < <tempfile>\` を実行する。` +
-  `(3) verifier の stdout の "results" 配列を逐語で返す (全 ${count} 件、追加・削除・編集をしない)。` +
+  `(3) verifier の stdout の "results" 配列を、全 ${count} 件そのまま返す。追加 / 削除 / 編集をしない。` +
   `verifier は ${shape} を出力する。\n` +
   `入力 JSON は以下。\n${JSON.stringify(payload)}`;
 
@@ -313,7 +313,7 @@ const fencedBody =
 
 const plan = await agent(
   anchor(
-    `以下の GitHub issue 本文の ## Plan 節から構造化 plan を抽出する。再計画・要約・補完をせず、書かれているものをそのまま構造化する。` +
+    `以下の GitHub issue 本文の ## Plan 節から構造化 plan を抽出する。再計画 / 要約 / 補完をせず、書かれているものをそのまま構造化する。` +
       `本文の unit id (U-NNN) と test id (T-NNN) をすべて保持する (欠落は下流の決定論クロスチェックが reject する)。` +
       `preconditions は plan が前提にする既存コードの {path, pattern} の一覧、backlog_candidates は issue に書かれたスコープ外候補。本文に無ければ空配列。\n\n${fencedBody}`,
   ),
@@ -414,7 +414,7 @@ if (preconditions.length) {
       why: "revalidate agent が results 配列を返さなかった。",
     };
   }
-  // 件数でなく (path, pattern) で前提と結果を突き合わせる。並べ替え・重複置換・
+  // 件数でなく (path, pattern) で前提と結果を突き合わせる。並べ替え / 重複置換 / 
   // すり替えは件数が同じままになる。exists&&matches の一致結果が無い前提は drift。
   const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
   const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
@@ -517,7 +517,7 @@ const [diff, testPresence, conformance] = await parallel([
       anchor(
         `この build が変更したファイルを機械的に列挙する。判定やフィルタをしない。リポジトリルートから ` +
           `\`git diff HEAD --name-only\` と \`git status --porcelain\` を実行し、変更パスと未追跡パス ` +
-          `(porcelain の "??" 行) の和集合を、リポジトリルート起点・1 ファイル 1 要素で files として返す。`,
+          `(porcelain の "??" 行) の和集合を、リポジトリルート起点、1 ファイル 1 要素で files として返す。`,
       ),
       {
         label: "diff-files",
@@ -655,7 +655,7 @@ if (slots.length) {
   const translated = await agent(
     anchor(
       `\`$HOME/.claude/settings.json\` から \`language\` を読む (未設定なら english)。` +
-        `以下の JSON 配列は PR body の情報系セクション (assumptions / conformance / anomaly) の自由記述。各要素の \`text\` を \`language\` へ翻訳し、冗長な文を引き締める。english でも軽い圧縮のためこの step を実行する。\n` +
+        `以下の JSON 配列は PR body の情報系セクション (assumptions / conformance / anomaly) の自由記述。各要素の \`text\` を \`language\` へ翻訳し、冗長な文を引き締める。english でもこの step を実行する。\n` +
         `厳守: (a) file:line、パス、数値、件数、severity ラベル、識別子、コード片は逐語で保持する。(b) 事実を足さず落とさない。翻訳と圧縮のみ行い、新しい主張や件数を作らない。(c) すべての要素に入力の \`id\` を付けて \`translations\` を返す。順序は自由だが id は入力と一致させる。\n` +
         `入力:\n${JSON.stringify(slots.map((s, i) => ({ id: i, text: s.text })))}`,
     ),
@@ -694,11 +694,11 @@ const ship = await agent(
   anchor(
     `すべての変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にまとめる。commit メッセージは自分で書く (diff を要約する)。` +
       `ブランチを push し、draft pull request を開く。本文は PR テンプレートから自分で書く人間向けパートと、データから決定論レンダリングされる fact セクションで構成する (fact セクションを手書きしない)。手順は以下。\n` +
-      `(1) \`$HOME/.claude/settings.json\` から \`language\` を読み (未設定なら英語)、その言語で人間向け本文を書く。コード・識別子・専門用語は翻訳しない。PR テンプレートはリポジトリのものがあれば使う (大文字小文字の区別なし、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)。無ければ同梱の \`${bundled("skills/pr/templates/pr.md")}\` を使う。骨格を読んで body ファイルへ折り込む。人間向けセクションだけを、レビュアーが速く掴める順で埋める。先頭に WHY (解決する問題と到達する成果、${JSON.stringify(plan.outcome)})、次に WHAT (変更内容とアプローチ)、最後にレビューの注目点。リストと小さな表を使い、簡潔に書き、埋め草と事実の捏造をしない。Related / Closes は書かない (tail が \`Closes #\` を出す)。Scope / Backlog も書かない。スコープ外候補は意図的に PR へ出さない (戻り値で返り、/issue で起票する)。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実 diff から埋め、空なら節ごと省略する。\n` +
+      `(1) \`$HOME/.claude/settings.json\` から \`language\` を読み (未設定なら英語)、その言語で人間向け本文を書く。コード / 識別子 / 専門用語は翻訳しない。PR テンプレートはリポジトリのものがあれば使う (大文字小文字の区別なし、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)。無ければ同梱の \`${bundled("skills/pr/templates/pr.md")}\` を使う。骨格を読んで body ファイルへ折り込む。人間向けセクションだけを、レビュアーが速く掴める順で埋める。先頭に WHY (解決する問題と到達する成果、${JSON.stringify(plan.outcome)})、次に WHAT (変更内容とアプローチ)、最後にレビューの注目点。リストと小さな表を使い、簡潔に書き、埋め草と事実の捏造をしない。Related / Closes は書かない (tail が \`Closes #\` を出す)。Scope / Backlog も書かない。スコープ外候補は PR に載せない。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実 diff から埋め、空なら節ごと省略する。\n` +
       `(2) この JSON をそのまま一時ファイルに書く。\n${JSON.stringify(shipPayload)}\n` +
       `(3) fact tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、レンダラー失敗時は PR 作成前に中断させる。リポジトリルートから ` +
       `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft --title "<commit の subject>" --body-file <bodyfile>\` を実行する。\n` +
-      `pr-body.py は payload が壊れているか必須フィールドを欠くと非ゼロで終了する (何も出力しない)。チェーンが失敗したら他の手段で PR を作らない。committed と空の pr_url とエラーを報告し、fact tail の欠落を隠さず surface する。\n` +
+      `pr-body.py は payload が壊れているか必須フィールドを欠くと非ゼロで終了する (何も出力しない)。チェーンが失敗したら他の手段で PR を作らない。committed と空の pr_url とエラーを報告する。\n` +
       `committed の状態と PR url を報告する。${guard}${ghUnsandboxed}`,
   ),
   {

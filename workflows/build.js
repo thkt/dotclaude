@@ -210,7 +210,7 @@ const relayVerifier = ({ what, script, shape, payload, count }) =>
   `Run the deterministic verifier for ${what}; do not judge the verdict yourself. ` +
   `The steps are, (1) write this exact JSON to a temp file; (2) from the repository root run ` +
   `\`python3 ${bundled(script)} < <tempfile>\`; ` +
-  `(3) return the verifier's stdout "results" array verbatim (all ${count} entries, unchanged; do not add, drop, or edit any). ` +
+  `(3) return the verifier's stdout "results" array verbatim, all ${count} entries; add, drop, or edit none. ` +
   `The verifier prints ${shape}.\n` +
   `The input JSON is as follows.\n${JSON.stringify(payload)}`;
 
@@ -672,7 +672,7 @@ if (slots.length) {
   const translated = await agent(
     anchor(
       `Read \`language\` from \`$HOME/.claude/settings.json\` (english if unset). ` +
-        `The following JSON array is the free-text of the PR body's informational sections (assumptions / conformance / anomaly). Translate each element's \`text\` into \`language\` and tighten verbose prose. Run this step even for english, for the light compression.\n` +
+        `The following JSON array is the free-text of the PR body's informational sections (assumptions / conformance / anomaly). Translate each element's \`text\` into \`language\` and tighten verbose prose. Run this step even for english.\n` +
         `Strict: (a) keep file:line, paths, numbers, counts, severity labels, identifiers, and code fragments verbatim. (b) Add no facts and drop none. Translate and compress only; invent no new claim or count. (c) Return \`translations\` with every element carrying the input \`id\`; order is free but each id must match the input.\n` +
         `Input:\n${JSON.stringify(slots.map((s, i) => ({ id: i, text: s.text })))}`,
     ),
@@ -713,11 +713,11 @@ const ship = await agent(
   anchor(
     `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit; you write the commit message (summarize the diff). ` +
       `Push the branch, then open a draft pull request. Its body is a human-facing part you write from a PR template, followed by deterministic fact sections rendered from data (do not hand-write the fact sections). The steps are as follows.\n` +
-      `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`${bundled("skills/pr/templates/pr.md")}\`; read the skeleton and fold it into the body file. Fill only the human-facing sections, ordered so a reviewer grasps it fast: lead with WHY (the problem this solves and the outcome it reaches, ${JSON.stringify(plan.outcome)}), then WHAT changed and the approach, then where to focus review. Use lists and compact tables, keep it terse, no filler, no invented facts. SKIP Related / Closes (the tail emits \`Closes #\`). SKIP Scope / Backlog too: out-of-scope candidates are intentionally not surfaced in the PR (they are returned for the user to file via /issue). Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
+      `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`${bundled("skills/pr/templates/pr.md")}\`; read the skeleton and fold it into the body file. Fill only the human-facing sections, ordered so a reviewer grasps it fast: lead with WHY (the problem this solves and the outcome it reaches, ${JSON.stringify(plan.outcome)}), then WHAT changed and the approach, then where to focus review. Use lists and compact tables, keep it terse, no filler, no invented facts. SKIP Related / Closes (the tail emits \`Closes #\`). SKIP Scope / Backlog too; out-of-scope candidates do not go in the PR. Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
       `(2) write this exact JSON to a temp file.\n${JSON.stringify(shipPayload)}\n` +
       `(3) append the fact tail and open the PR as ONE \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
       `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
-      `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do NOT create the PR by other means. Report committed with an empty pr_url and the error instead, so the missing fact tail surfaces rather than shipping a PR without it.\n` +
+      `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do NOT create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
       `Report the committed state and the PR url.${guard}${ghUnsandboxed}`,
   ),
   {

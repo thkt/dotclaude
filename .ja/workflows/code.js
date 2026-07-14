@@ -34,7 +34,7 @@ if (!plan || !Array.isArray(plan.units) || !plan.units.length) {
 const repo = typeof input.repo === "string" ? input.repo : "";
 const anchor = (p) =>
   repo
-    ? `すべての git・ファイル・ビルドコマンドを ${repo} のリポジトリから実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
+    ? `すべての git / ファイル / ビルドコマンドを ${repo} のリポジトリから実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
     : p;
 
 const RED_SCHEMA = {
@@ -112,8 +112,8 @@ for (const unit of units) {
   if (!tests.length) {
     let impl = await agent(
       anchor(
-        `直接実装 step (この unit は新しい振る舞いを固定しない。plan が test scenario を与えていない)。${ctx}` +
-          `contract に従って実装する。既存のテスト suite (${testCmd}) を green に保つ。既存テストの弱体化・skip・削除は禁止。` +
+        `直接実装 step。${ctx}` +
+          `contract に従って実装する。新しいテストは書かない。既存のテスト suite (${testCmd}) を green に保つ。既存テストの弱体化 / skip / 削除は禁止。` +
           `suite を実行して green を報告する。`,
       ),
       {
@@ -157,7 +157,7 @@ for (const unit of units) {
     anchor(
       `TDD Red step。${ctx}` +
         `各 test scenario (T-NNN) を失敗するテストとして書く。scenario の name をテスト名として逐語で使う。` +
-        `実装コードは一切書かない。テストを実行し、それぞれが意図した理由で失敗することを確認して報告する (実行していない Red は盲目)。` +
+        `実装コードは一切書かない。テストを実行し、それぞれが意図した理由で失敗することを確認して報告する。` +
         `テストが失敗しない場合は実装せず、理由を notes に書く。`,
     ),
     {
@@ -174,8 +174,8 @@ for (const unit of units) {
       anchor(
         `TDD Red step retry。${ctx}` +
           `前回テストが失敗しなかった。理由は ${red.notes}。\n` +
-          `テストが対象の振る舞いを本当に検証しているか精査する (assertion が空でない、対象コードが呼ばれている)。` +
-          `振る舞いが未実装なら失敗するはず。精査後もテストが pass するなら、振る舞いは実装済みと判断して red_confirmed=false のまま理由を notes に書く。`,
+          `assertion が空でないか、対象コードが呼ばれているかを精査し、テストが対象の振る舞いを本当に検証しているか確かめる。` +
+          `精査後もテストが pass するなら、振る舞いは実装済みと判断して red_confirmed=false のまま理由を notes に書く。`,
       ),
       {
         label: `red2:${unit.id}`,
@@ -198,8 +198,8 @@ for (const unit of units) {
     anchor(
       `TDD Green step。${ctx}` +
         `${JSON.stringify(red.test_files)} の失敗しているテストを pass させる最小の実装を書く。` +
-        `縦のスライスで進める: テストを 1 つずつ pass させ、全テストに対してまとめて実装しない。` +
-        `テストの assertion を弱める・skip する・削除する変更は禁止 (テスト構造の修正が必要なら notes に書いて green=false を返す)。` +
+        `テストを 1 つずつ pass させ、全テストに対してまとめて実装しない。` +
+        `テストの assertion を弱める / skip する / 削除する変更は禁止。テスト構造の修正が必要なら notes に書いて green=false を返す。` +
         `pass 後、テストを green に保ったままリファクタする。unit のテストを再実行して報告する。`,
     ),
     {
@@ -242,7 +242,7 @@ for (const unit of units) {
 phase("Verify");
 const verify = (await agent(
   anchor(
-    `検証 stage。あなたは実装に関与していない。全テスト suite (${testCmd}) とプロジェクトの lint / type-check gate を実行し、結果をそのまま報告する。何も修正しない。`,
+    `検証 stage。全テスト suite (${testCmd}) とプロジェクトの lint / type-check gate を実行し、結果をそのまま報告する。何も修正しない。`,
   ),
   {
     label: "verify",
