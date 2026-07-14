@@ -24,8 +24,10 @@ phase("Load");
 
 const input = typeof args === "object" && args ? args : {};
 const issueRef = String(typeof args === "string" ? args : input.issue || "").trim();
-// Deterministically pull the issue number from the tail of "123" / "#123" / an issue URL.
-const issueNumber = (issueRef.match(/(\d+)\D*$/) || [])[1] || "";
+// Accept only a bare number, #number, or an issue URL. A freeform description that
+// merely contains digits (e.g. "a11y") must not be read as an issue reference.
+const issueNumber =
+  (issueRef.match(/^#?(\d+)$/) || issueRef.match(/\/issues\/(\d+)(?:[/?#]|$)/) || [])[1] || "";
 if (!issueRef || !issueNumber) {
   return {
     stopped: "no-issue",
@@ -419,7 +421,9 @@ if (!code.tests_pass || !code.gates_pass)
   log(
     `code's independent verify failed (tests=${code.tests_pass} gates=${code.gates_pass}). Advancing to Verify; it surfaces on the PR.`,
   );
-log(`Code: ${plan.units.length} unit(s) implemented, independent verify tests=${code.tests_pass} gates=${code.gates_pass}.`);
+log(
+  `Code: ${plan.units.length} unit(s) implemented, independent verify tests=${code.tests_pass} gates=${code.gates_pass}.`,
+);
 
 // ---- Cleanup: simplify skill + test validation ----
 // The review lens (Codex) is retired from build (ADR-0085); /polish stays available

@@ -23,8 +23,10 @@ phase("Load");
 
 const input = typeof args === "object" && args ? args : {};
 const issueRef = String(typeof args === "string" ? args : input.issue || "").trim();
-// "123" / "#123" / issue URL の末尾から issue 番号を決定論で取り出す。
-const issueNumber = (issueRef.match(/(\d+)\D*$/) || [])[1] || "";
+// 受け付けるのは数字単体 / #数字 / issue URL のみ。数字を含むだけの自由記述
+// ("a11y" など) を issue 参照と読まない。
+const issueNumber =
+  (issueRef.match(/^#?(\d+)$/) || issueRef.match(/\/issues\/(\d+)(?:[/?#]|$)/) || [])[1] || "";
 if (!issueRef || !issueNumber) {
   return {
     stopped: "no-issue",
@@ -410,7 +412,9 @@ if (!code.tests_pass || !code.gates_pass)
   log(
     `code の独立 verify が失敗 (tests=${code.tests_pass} gates=${code.gates_pass})。Verify へ進み、PR に surface する。`,
   );
-log(`Code: ${plan.units.length} unit 実装、独立 verify tests=${code.tests_pass} gates=${code.gates_pass}。`);
+log(
+  `Code: ${plan.units.length} unit 実装、独立 verify tests=${code.tests_pass} gates=${code.gates_pass}。`,
+);
 
 // ---- Cleanup: simplify skill + test 検証 ----
 // review lens (Codex) は build から外れた (ADR-0085)。/polish は人間が PR に起動できる
