@@ -7,8 +7,8 @@ export const meta = {
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
-// args may arrive as an object or, if a caller stringifies it, as a JSON string.
-// Normalize once. Keep the object branch: nested workflow("code", {plan}) arrives as an object.
+// args may arrive as an object or a stringified JSON; normalize once. Nested
+// workflow("code", {plan}) arrives as an object.
 const parseArgs = () => {
   if (typeof args === "object" && args) return args;
   if (typeof args !== "string") return {};
@@ -18,7 +18,7 @@ const parseArgs = () => {
       const parsed = JSON.parse(s);
       if (parsed && typeof parsed === "object") return parsed;
     } catch {
-      // malformed JSON: fall through and fail-close as no-plan
+      // malformed JSON falls through to the no-plan fail-close
     }
   }
   return {};
@@ -43,7 +43,7 @@ const units = plan.units;
 const testCmd = plan.test_command || "";
 const completed = [];
 const anomalies = [];
-// Shared across all 4 Red/Green (+ retry) agent calls, so a model/effort change lands once.
+// Shared by every implementation agent so a model/effort change lands once.
 const implementOpts = { model: input.model || "opus", effort: "xhigh" };
 
 const RED_SCHEMA = {
@@ -76,10 +76,9 @@ const GREEN_SCHEMA = {
   },
 };
 
-// ---- Implement: per unit (serial; the working tree is shared) ----
-// A unit with tests runs Red -> Green; a unit with no tests runs one direct
-// implementation step. The plan (human-reviewed) selects which, so no TDD-or-not
-// discretion exists at runtime.
+// ---- Implement: per unit, serial (the working tree is shared) ----
+// A unit with tests runs Red -> Green; one with no tests runs a single direct step.
+// The plan selects which; no TDD-or-not discretion exists at runtime.
 phase("Implement");
 for (const unit of units) {
   const tests = Array.isArray(unit.tests) ? unit.tests : [];
@@ -90,8 +89,8 @@ for (const unit of units) {
     `When writing framework / library API code, follow the pinned version's official docs rather than memory. Read docs with the WebFetch tool, not via shell. If unreachable, mark that API usage unverified in a code comment and keep implementing.\n` +
     (completed.length ? `The units already implemented are ${completed.join(", ")}.\n` : "");
 
-  // No test scenarios: the plan decided this unit pins no new behavior
-  // (docs / config). Implement directly and keep the existing suite green.
+  // No tests is the plan's selection (docs / config). Implement directly and keep
+  // the existing suite green.
   if (!tests.length) {
     let impl = await agent(
       anchor(

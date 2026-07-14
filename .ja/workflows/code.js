@@ -7,8 +7,8 @@ export const meta = {
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
-// args は object でも、呼び出し元が文字列化した JSON でも届く。1 回だけ正規化する。
-// object 分岐は残す: 入れ子の workflow("code", {plan}) は object で届く。
+// args は object でも文字列化 JSON でも届くので 1 回だけ正規化する。入れ子の
+// workflow("code", {plan}) は object で届く。
 const parseArgs = () => {
   if (typeof args === "object" && args) return args;
   if (typeof args !== "string") return {};
@@ -18,7 +18,7 @@ const parseArgs = () => {
       const parsed = JSON.parse(s);
       if (parsed && typeof parsed === "object") return parsed;
     } catch {
-      // 壊れた JSON: fall through して no-plan で fail-close する
+      // 壊れた JSON は no-plan の fail-close に落とす
     }
   }
   return {};
@@ -45,8 +45,7 @@ const units = plan.units;
 const testCmd = plan.test_command || "";
 const completed = [];
 const anomalies = [];
-// Red / Green (+ retry) と直接実装の全 agent 呼び出しで共有し、model / effort の変更が
-// 1 箇所で済むようにする。
+// 全実装 agent で共有し、model / effort の変更を 1 箇所にする。
 const implementOpts = { model: input.model || "opus", effort: "xhigh" };
 
 const RED_SCHEMA = {
@@ -79,9 +78,9 @@ const GREEN_SCHEMA = {
   },
 };
 
-// ---- Implement: unit ごとに実装 (直列。working tree を共有するため) ----
-// tests を持つ unit は Red → Green、tests が空の unit は直接実装 1 段。どちらにするかは
-// plan (人間レビュー済み) が選択し、runtime に TDD 要否の裁量は無い。
+// ---- Implement: unit ごとに直列で実装 (working tree を共有するため) ----
+// tests を持つ unit は Red → Green、空の unit は直接実装 1 段。選択は plan が持ち、
+// runtime に TDD 要否の裁量は無い。
 phase("Implement");
 
 for (const unit of units) {
@@ -93,8 +92,7 @@ for (const unit of units) {
     `フレームワーク / ライブラリの API を書くときは、記憶でなく pinned version の公式 docs に従う。docs は WebFetch で読み、シェル経由では取得しない。読めなければその API 使用を未確認としてコード内コメントに残し、実装は続ける。\n` +
     (completed.length ? `実装済みの unit は ${completed.join(", ")}。\n` : "");
 
-  // test scenario 無し: この unit は新しい振る舞いを固定しないと plan が決めた
-  // (docs / 設定)。直接実装し、既存 suite を green に保つ。
+  // tests 無しは plan の選択 (docs / 設定)。直接実装して既存 suite を green に保つ。
   if (!tests.length) {
     let impl = await agent(
       anchor(
