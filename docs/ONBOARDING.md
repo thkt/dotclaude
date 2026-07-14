@@ -50,7 +50,7 @@ context7 ██░░░░░░░░░░░░░░░░░░ 3 calls
 - `/commit` - Generates a Conventional Commits message from staged diff. Run after edits instead of writing commit messages manually.
 - `/audit` - Orchestrates multiple specialized reviewers (security, type safety, silent failures, etc.) against the current codebase.
 - `/challenge` - Devil's advocate pass on a proposal, design, or plan. Use before committing to an architecture decision.
-- `/think` - Design exploration that produces SOW + Spec documents. Entry point for any non-trivial new feature.
+- `/think` - Design exploration that produces a plan (transferred to the issue's Plan section). Entry point for any non-trivial new feature.
 - `/polish` - Light review + cleanup pass. Use after a feature lands to catch slop before the next PR.
 - `/release-notes` - Surfaces the latest Claude Code changelog and flags anything relevant to the current environment.
 - `/plugin` - Lists installed plugins; use to enable/disable marketplace entries.

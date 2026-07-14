@@ -50,7 +50,7 @@ context7 ██░░░░░░░░░░░░░░░░░░ 3 calls
 - `/commit`. ステージ済み diff から Conventional Commits メッセージを生成する。手書きする代わりに編集後に実行する。
 - `/audit`. 専門 reviewer (security, type safety, silent failures 等) を編成し、現コードベースに対して実行する。
 - `/challenge`. 提案、設計、計画への悪魔の代弁者パス。アーキテクチャ判断を確定する前に使う。
-- `/think`. SOW + Spec ドキュメントを生成する設計探索。非自明な新機能のエントリ ポイント。
+- `/think`. plan を生成する設計探索 (issue の Plan 節へ転記)。非自明な新機能のエントリ ポイント。
 - `/polish`. 軽いレビューとクリーンアップ パス。機能の落着後に slop を捕まえる。
 - `/release-notes`. 最新の Claude Code 変更履歴を確認し、現環境に関連するものを示す。
 - `/plugin`. インストール済みプラグインを一覧表示。マーケットプレイス エントリの有効化/無効化に使う。

@@ -1,35 +1,35 @@
 # レビューチェックリスト
 
-## SOW/Spec 整合性
+## Plan 整合性
 
 ファイルごとレビューの前に実行する。
 
-### Step 1: SOW/Spec の特定
+### Step 1: plan の特定
 
-${CLAUDE_SKILL_DIR}/../../workspace/planning/ で、ブランチ名や PR タイトルの語を含むディレクトリを探す。そのディレクトリ内で `sow.md` と `spec.md` を探す。
+plan は起点となる issue の `## Plan` 節にある。ブランチや commit messages の issue 参照から `gh issue view <N>` で取得する。issue が見つからない場合、${CLAUDE_SKILL_DIR}/../../workspace/planning/ で、ブランチ名や PR タイトルに一致する `*.plan.md` を探す。
 
-SOW/Spec が見つからない場合、PR 説明 + commit messages を意図のソースとしてフォールバックし、AC/FR の行はスキップする。
+plan が見つからない場合、PR 説明 + commit messages を意図のソースとしてフォールバックし、U/T の行はスキップする。
 
 ### Step 2: チェック
 
-| チェック    | ソース                             | 条件      | フラグ       |
-| ----------- | ---------------------------------- | --------- | ------------ |
-| AC coverage | `sow.md` の未チェック `- [ ]` 項目 | SOW あり  | missing      |
-| FR coverage | `spec.md` の FR テーブル行         | Spec あり | missing      |
-| Scope creep | diff vs 全意図ソース               | 常時      | out-of-scope |
-| Impl-wrong  | diff の振る舞い vs spec AC/FR      | 常時      | wrong        |
+| チェック      | ソース                               | 条件      | フラグ       |
+| ------------- | ------------------------------------ | --------- | ------------ |
+| Unit coverage | Plan 節の U-NNN unit                 | plan あり | missing      |
+| Test coverage | Plan 節の T-NNN 受け入れテスト       | plan あり | missing      |
+| Scope creep   | diff vs 全意図ソース                 | 常時      | out-of-scope |
+| Impl-wrong    | diff の振る舞い vs unit goal / T-NNN | 常時      | wrong        |
 
-各フラグの根拠となる意図の行を引用する。引用 AC/FR 行を欠く `wrong` / `missing` は印象判定なので落とす。このスクリーニングは reviewer-conformance と同じ 3 適合性カテゴリを覆う。任意のブランチで深い standalone パスが要るときはそのエージェントを起動する。
+各フラグの根拠となる意図の行を引用する。引用 U-NNN / T-NNN 行を欠く `wrong` / `missing` は印象判定なので落とす。このスクリーニングは reviewer-conformance と同じ 3 適合性カテゴリを覆う。任意のブランチで深い standalone パスが要るときはそのエージェントを起動する。
 
 ### 出力形式
 
 ```
-SOW/Spec Alignment: [CLEAN | MISSING <N> | OUT-OF-SCOPE <N> | WRONG <N> | MIXED]
-Intent source: <sow.md + spec.md path | PR description | commit messages>
-Missing (AC): AC-N - <description> (spec: "<quoted line>")
-Missing (FR): FR-NNN - <description> (spec: "<quoted line>")
+Plan Alignment: [CLEAN | MISSING <N> | OUT-OF-SCOPE <N> | WRONG <N> | MIXED]
+Intent source: <issue #N Plan section | *.plan.md path | PR description | commit messages>
+Missing (U): U-NNN - <description> (plan: "<quoted line>")
+Missing (T): T-NNN - <description> (plan: "<quoted line>")
 Out-of-scope: <file or area> - not traceable to stated intent
-Wrong: <AC-N/FR-NNN> - implemented but <gap> (spec: "<quoted line>")
+Wrong: <U-NNN/T-NNN> - implemented but <gap> (plan: "<quoted line>")
 ```
 
 意図ソースが何もない場合は黙ってスキップする。
