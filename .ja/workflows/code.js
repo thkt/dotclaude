@@ -104,7 +104,7 @@ for (const unit of units) {
     `Unit ${unit.id} の goal は「${unit.goal}」。対象ファイルは ${JSON.stringify(unit.files)}。\n` +
     `contract は ${unit.contract}。test scenario は ${JSON.stringify(tests)}。\n` +
     `テストコマンドは ${testCmd}。\n` +
-    `フレームワーク / ライブラリの API を書くときは、記憶でなく pinned version の公式 docs に従う。\n` +
+    `フレームワーク / ライブラリの API を書くときは、記憶でなく pinned version の公式 docs に従う。docs は WebFetch で読み、シェル経由では取得しない。読めなければその API 使用を unverified としてコード内コメントに残し、実装は続ける。\n` +
     (completed.length ? `実装済みの unit は ${completed.join(", ")}。\n` : "");
 
   // test scenario 無し: この unit は新しい振る舞いを固定しないと plan が決めた

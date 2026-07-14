@@ -104,7 +104,7 @@ for (const unit of units) {
     `Unit ${unit.id}'s goal is "${unit.goal}". The target files are ${JSON.stringify(unit.files)}.\n` +
     `The contract is ${unit.contract}. The test scenarios are ${JSON.stringify(tests)}.\n` +
     `The test command is ${testCmd}.\n` +
-    `When writing framework / library API code, follow the pinned version's official docs rather than memory.\n` +
+    `When writing framework / library API code, follow the pinned version's official docs rather than memory. Read docs with the WebFetch tool, not via shell. If unreachable, mark that API usage unverified in a code comment and keep implementing.\n` +
     (completed.length ? `The units already implemented are ${completed.join(", ")}.\n` : "");
 
   // No test scenarios: the plan decided this unit pins no new behavior
