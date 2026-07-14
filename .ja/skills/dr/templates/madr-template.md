@@ -8,7 +8,7 @@
 
 ```markdown
 ---
-status: "{proposed | rejected | accepted | deprecated | superseded by ADR-NNNN}"
+status: "{proposed | rejected | accepted | deprecated | superseded by DR-NNNN}"
 date: "{YYYY-MM-DD}"
 decision-makers: "{名前またはロール}"
 ---

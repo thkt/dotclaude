@@ -37,7 +37,7 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 
 1. Launch `critic-design` on the generated approaches. Include the task title verbatim in the spawn prompt, and have it return a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[], actionable: string[] }`
 2. If the verdict is NO-GO, resolve blockers inline before proceeding. Fix the approach, or relaunch the critic. Present the weakness-filtered design to the user with trade-off rationale, and wait for approval
-3. After approval, ask whether the technical decision needs an ADR. Skip for simple features
+3. After approval, ask whether the technical decision needs a DR. Skip for simple features
 
 ## Phase 3: Plan Generation
 
@@ -78,11 +78,11 @@ Before writing out the draft, verify from the same repository root as the build 
 
 Return the following to the caller in conversation.
 
-| Item               | Content                                                                               |
-| ------------------ | ------------------------------------------------------------------------------------- |
-| ready              | true when the plan passed the self-check and no undecided points remain               |
-| plan               | The self-checked structured plan                                                      |
-| plan file          | Path of the written `.plan.md`                                                        |
-| blockers           | Causes of ready = false that need a user decision                                     |
-| backlog candidates | Candidates carved out of scope. "none" if none                                        |
-| design summary     | Adopted approach, compared approaches, the `critic-design` verdict, ADR needed or not |
+| Item               | Content                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| ready              | true when the plan passed the self-check and no undecided points remain              |
+| plan               | The self-checked structured plan                                                     |
+| plan file          | Path of the written `.plan.md`                                                       |
+| blockers           | Causes of ready = false that need a user decision                                    |
+| backlog candidates | Candidates carved out of scope. "none" if none                                       |
+| design summary     | Adopted approach, compared approaches, the `critic-design` verdict, DR needed or not |

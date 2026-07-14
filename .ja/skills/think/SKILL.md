@@ -37,7 +37,7 @@ argument-hint: "[task description]"
 
 1. 生成した案に `critic-design` を起動する。起動プロンプトにはタスクのタイトルを一字一句そのまま含め、結果は `{ verdict: "GO" | "NO-GO", weaknesses: string[], actionable: string[] }` の JSON オブジェクト 1 つで返させる
 2. 判定が NO-GO なら blocker をその場で解消してから進む。案を直すか、critic を再起動する。弱点を潰した設計を、トレードオフの根拠とともにユーザーに提示し、承認を待つ
-3. 承認後、技術判断に ADR が必要か問う。単純な機能では省略する
+3. 承認後、技術判断に DR が必要か問う。単純な機能では省略する
 
 ## Phase 3: Plan 生成
 
@@ -78,11 +78,11 @@ argument-hint: "[task description]"
 
 以下を会話で呼び出し元に返す。
 
-| 項目               | 内容                                                     |
-| ------------------ | -------------------------------------------------------- |
-| ready              | plan が自己点検を通過し、かつ未決着の論点なしで true     |
-| plan               | 自己点検済みの構造化 plan                                |
-| plan file          | 書き出した `.plan.md` のパス                             |
-| blockers           | ready = false の原因のうちユーザー判断が要る論点         |
-| backlog candidates | スコープ外へ切り出した候補。無ければ「なし」             |
-| 設計要約           | 採用した案、比較した案、`critic-design` の判定、ADR 要否 |
+| 項目               | 内容                                                    |
+| ------------------ | ------------------------------------------------------- |
+| ready              | plan が自己点検を通過し、かつ未決着の論点なしで true    |
+| plan               | 自己点検済みの構造化 plan                               |
+| plan file          | 書き出した `.plan.md` のパス                            |
+| blockers           | ready = false の原因のうちユーザー判断が要る論点        |
+| backlog candidates | スコープ外へ切り出した候補。無ければ「なし」            |
+| 設計要約           | 採用した案、比較した案、`critic-design` の判定、DR 要否 |
