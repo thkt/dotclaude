@@ -1,7 +1,7 @@
 export const meta = {
   name: "build",
   description:
-    "Autonomous end-to-end build. Taking an issue with a Plan section refined via /think + /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Verify / Polish / Ship run headlessly as deterministic script stages. Correctness checking is a comparison against the plan's own anchors (preconditions, files scope, T-NNN statements, conformance), not an open-ended defect hunt; heavy assurance (/audit, /polish review) is human-invoked on the draft PR (ADR-0085).",
+    "Autonomous end-to-end build. Taking an issue with a Plan section refined via /think + /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Polish / Verify / Ship run headlessly as deterministic script stages. Correctness checking is a comparison against the plan's own anchors (preconditions, files scope, T-NNN statements, conformance), not an open-ended defect hunt; heavy assurance (/audit, /polish review) is human-invoked on the draft PR (ADR-0085).",
   whenToUse:
     'Implementation of a plan-backed issue. Pass an issue number ("123" / "#123") / URL / {issue, repo} as args. An issue without a ## Plan section fail-closes with a proposal to refine it via /think + /issue first. Step away and come back to a draft PR with recorded assumptions, conformance findings, and deterministic verify results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
   phases: [
@@ -9,8 +9,8 @@ export const meta = {
     { title: "Revalidate" },
     { title: "Branch" },
     { title: "Code" },
-    { title: "Verify" },
     { title: "Polish" },
+    { title: "Verify" },
     { title: "Ship" },
   ],
 };
@@ -19,7 +19,7 @@ export const meta = {
 // issue's ## Plan section is the single planning source. Extraction is left to the
 // LLM; verification belongs to the script. An issue without a Plan section
 // fail-closes: build implements verified selections only (ADR-0085). Fan-out stages
-// are delegated to nested workflows (code / polish).
+// are delegated to nested workflows (code).
 
 phase("Load");
 
@@ -133,7 +133,6 @@ const fencedBody =
 // Schema of the structured plan (units + preconditions + backlog_candidates) carried in the issue's Plan section.
 const EXTRACT_SCHEMA = obj(
   [
-    "dir",
     "outcome",
     "decisions",
     "assumptions",
@@ -143,10 +142,6 @@ const EXTRACT_SCHEMA = obj(
     "backlog_candidates",
   ],
   {
-    dir: {
-      type: "string",
-      description: "Planning dir, e.g. .claude/workspace/planning/YYYY-MM-DD-slug",
-    },
     outcome: {
       type: "string",
       description:
@@ -158,8 +153,6 @@ const EXTRACT_SCHEMA = obj(
       items: { type: "string" },
       description: "Best-guess residuals recorded in the issue. The user's veto targets on the PR",
     },
-    non_goals: { type: "array", items: { type: "string" } },
-    constraints: { type: "array", items: { type: "string" } },
     units: {
       type: "array",
       items: obj(["id", "goal", "files", "contract", "tests"], {
@@ -415,15 +408,6 @@ if (preconditions.length) {
 // Code (and plan-drift stops never reach Branch).
 phase("Branch");
 
-// Nested workflows run under their own `▸ name` group, so their phase box has no
-// direct agent. One cheap agent lights it up and doubles as a run-log recap.
-const phaseSummary = (phaseName, text) =>
-  agent(`Summarize in one line ${text}. Return the sentence only.`, {
-    label: `${phaseName.toLowerCase()}-summary`,
-    phase: phaseName,
-    model: "haiku",
-  });
-
 // ---- Code: delegated to workflow("code") (per-unit Red -> Green + independent verify) ----
 phase("Code");
 // preconditions / backlog_candidates are consumed on the build side, so code
@@ -441,16 +425,46 @@ const code =
     model: "opus",
   })) || null;
 if (!code || code.stopped) {
-  return { stopped: "code-failed", detail: code, planning: plan.dir };
+  return { stopped: "code-failed", detail: code };
 }
 if (!code.tests_pass || !code.gates_pass)
   log(
     `code's independent verify failed (tests=${code.tests_pass} gates=${code.gates_pass}). Advancing to Verify; it surfaces on the PR.`,
   );
-await phaseSummary(
-  "Code",
-  `what the code phase delivered: ${plan.units.length} unit(s) implemented, independent verify tests=${code.tests_pass} gates=${code.gates_pass}`,
-);
+log(`Code: ${plan.units.length} unit(s) implemented, independent verify tests=${code.tests_pass} gates=${code.gates_pass}.`);
+
+// ---- Polish: cleanup (simplify skill + test validation) ----
+// The review lens (Codex) is retired from build (ADR-0085); /polish stays available
+// for the human to run on the PR. Cleanup runs before Verify so the verified tree
+// is the shipped tree.
+const CLEANUP_SCHEMA = obj(["edits", "tests_pass", "stashed"], {
+  edits: {
+    type: "array",
+    items: { type: "string" },
+    description: "Summaries of the applied edits, with file:line",
+  },
+  tests_pass: { type: "boolean" },
+  stashed: {
+    type: "boolean",
+    description: "true when the cleanup edits were rolled back on test failure",
+  },
+});
+phase("Polish");
+const cleanup = (await agent(
+  anchor(
+    `Invoke the Skill tool with skill "simplify" for a cleanup-only pass (reuse, simplification, efficiency, altitude) on the current diff. If it rejects a no-arg invocation, pass the diff scope. ` +
+      `Then detect and run the project's test command. On failure, roll back the cleanup edits via git stash and report stashed: true. ` +
+      `List the applied edit summaries with file:line in edits. Do not commit.`,
+  ),
+  {
+    label: "cleanup",
+    phase: "Polish",
+    agentType: "general-purpose",
+    schema: CLEANUP_SCHEMA,
+    model: "sonnet",
+  },
+)) || { edits: [], tests_pass: false, stashed: false };
+log(`Polish: ${cleanup.edits.length} cleanup edit(s), tests_pass=${cleanup.tests_pass}.`);
 
 // ---- Verify: deterministic selection checks (diff scope + T-NNN presence) ∥ conformance ----
 // The plan is a verified selection, so correctness checking compares the
@@ -570,15 +584,16 @@ const [diff, testPresence, conformance] = await parallel([
         phase: "Verify",
         agentType: "reviewer-conformance",
         schema: CONFORMANCE_SCHEMA,
+        model: "sonnet",
       },
     ),
 ]);
-// Scope check: every changed file is either a planned file or a planning artifact
-// under plan.dir. A missing diff listing is itself surfaced (fail open, but visibly).
+// Scope check: every changed file is either a planned file or under
+// .claude/workspace/ (think's plan draft and similar). A missing diff listing is itself surfaced (fail open, but visibly).
 const planFiles = new Set(plan.units.flatMap((u) => u.files));
 const scopeDeviations =
   diff && Array.isArray(diff.files)
-    ? diff.files.filter((f) => f && !planFiles.has(f) && !(plan.dir && f.startsWith(plan.dir)))
+    ? diff.files.filter((f) => f && !planFiles.has(f) && !f.startsWith(".claude/workspace/"))
     : ["diff listing unavailable; scope not verified"];
 // Presence check: bind results by name; a name with no found=true result is missing.
 // With zero declared statements the relay never ran, and there is nothing to miss.
@@ -597,16 +612,6 @@ log(
     (conf.spec_found
       ? `conformance ${conf.findings.length} spec deviation(s).`
       : "conformance skipped (no spec found)."),
-);
-
-// ---- Polish: cleanup only (simplify -> enhancer-code -> test validation) ----
-// The review lens (Codex) is retired from build (ADR-0085); /polish stays available
-// for the human to run on the PR.
-phase("Polish");
-const cleanup = await sibling("polish", { repo, mode: "cleanup" });
-await phaseSummary(
-  "Polish",
-  `what the polish phase did: ${cleanup?.cleanup?.edits?.length ?? 0} cleanup edit(s) applied, tests_pass=${cleanup?.cleanup?.tests_pass}`,
 );
 
 // Backlog candidates are the out-of-scope candidates written in the issue body.
@@ -713,7 +718,7 @@ const SHIP_SCHEMA = obj(["committed", "pr_url"], {
 
 const ship = await agent(
   anchor(
-    `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit; you write the commit message (summarize the diff). ` +
+    `Turn all changes into a single Conventional Commits commit; you write the commit message (summarize the diff). ` +
       `Push the branch, then open a draft pull request. Its body is a human-facing part you write from a PR template, followed by deterministic fact sections rendered from data (do not hand-write the fact sections). The steps are as follows.\n` +
       `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`${bundled("skills/pr/templates/pr.md")}\`; read the skeleton and fold it into the body file. Fill only the human-facing sections, ordered so a reviewer grasps it fast: lead with the problem this solves and the outcome it reaches (${JSON.stringify(plan.outcome)}), then what changed and the approach, then where to focus review. Use lists and compact tables, keep it terse, no filler, no invented facts. Skip Related / Closes; the tail emits \`Closes #\`. Skip Scope / Backlog too; out-of-scope candidates do not go in the PR. Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
       `(2) write this exact JSON to a temp file.\n${JSON.stringify(shipPayload)}\n` +
@@ -734,14 +739,13 @@ const ship = await agent(
 return {
   issue: issueNumber,
   branch,
-  planning: plan.dir,
   units_completed: code.completed.length,
   code_anomalies: (code.anomalies || []).length,
   code_verified: code.tests_pass && code.gates_pass,
   scope_deviations: scopeDeviations,
   missing_tests: missingTests,
   conformance_findings: (conf.findings || []).length,
-  polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
+  polish_cleanup: cleanup.tests_pass,
   backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,
   pr_url: ship.pr_url,

@@ -1,7 +1,7 @@
 export const meta = {
   name: "build",
   description:
-    "自律的な end-to-end build。/think + /issue で精緻化した Plan 節付き issue を入力に、Load (逐語 fetch → 決定論 id 収集 → 抽出 → validate + id クロスチェック) / Revalidate / Branch / Code / Verify / Polish / Ship を headless の決定論 script stage として実行する。正しさの確認は plan 自身のアンカー (前提、files スコープ、T-NNN 言明、conformance) との比較であり、開放的な欠陥探索ではない。重い担保 (/audit、/polish review) は draft PR に対して人間が起動する (ADR-0085)。",
+    "自律的な end-to-end build。/think + /issue で精緻化した Plan 節付き issue を入力に、Load (逐語 fetch → 決定論 id 収集 → 抽出 → validate + id クロスチェック) / Revalidate / Branch / Code / Polish / Verify / Ship を headless の決定論 script stage として実行する。正しさの確認は plan 自身のアンカー (前提、files スコープ、T-NNN 言明、conformance) との比較であり、開放的な欠陥探索ではない。重い担保 (/audit、/polish review) は draft PR に対して人間が起動する (ADR-0085)。",
   whenToUse:
     'plan 付き issue の実装。issue 番号 ("123" / "#123") / URL / {issue, repo} を args に渡す。## Plan 節の無い issue は fail-close し、先に /think + /issue での精緻化を提案する。離席して戻れば、前提 / conformance findings / 決定論 verify 結果を記録した draft PR ができている。スコープ外の backlog 候補は workflow の戻り値で返り、/issue で起票する。途中で舵を取る場合は phase を対話的に進める。',
   phases: [
@@ -9,8 +9,8 @@ export const meta = {
     { title: "Revalidate" },
     { title: "Branch" },
     { title: "Code" },
-    { title: "Verify" },
     { title: "Polish" },
+    { title: "Verify" },
     { title: "Ship" },
   ],
 };
@@ -18,7 +18,7 @@ export const meta = {
 // 上流の精緻化は人間駆動 (ADR-0084) であり、build は再計画しない。issue の ## Plan 節が
 // 唯一の計画ソース。抽出は LLM に委ね、検証は script が持つ。Plan 節の無い issue は
 // fail-close する。build は検証済みの選択だけを実装する (ADR-0085)。fan-out を持つ
-// stage は入れ子 workflow (code / polish) に委譲する。
+// stage は入れ子 workflow (code) に委譲する。
 
 phase("Load");
 
@@ -132,7 +132,6 @@ const fencedBody =
 // issue の Plan 節が運ぶ構造化 plan (units + preconditions + backlog_candidates) の schema。
 const EXTRACT_SCHEMA = obj(
   [
-    "dir",
     "outcome",
     "decisions",
     "assumptions",
@@ -142,10 +141,6 @@ const EXTRACT_SCHEMA = obj(
     "backlog_candidates",
   ],
   {
-    dir: {
-      type: "string",
-      description: "planning ディレクトリ。例 .claude/workspace/planning/YYYY-MM-DD-slug",
-    },
     outcome: {
       type: "string",
       description: "done 状態の 1 行 (実装非依存、観測可能)",
@@ -156,8 +151,6 @@ const EXTRACT_SCHEMA = obj(
       items: { type: "string" },
       description: "issue に記録された仮置きの残差。PR 上でユーザーが覆せる veto 対象",
     },
-    non_goals: { type: "array", items: { type: "string" } },
-    constraints: { type: "array", items: { type: "string" } },
     units: {
       type: "array",
       items: obj(["id", "goal", "files", "contract", "tests"], {
@@ -406,15 +399,6 @@ if (preconditions.length) {
 // Load → Revalidate → Branch → Code に保つ (plan-drift の停止は Branch に到達しない)。
 phase("Branch");
 
-// 入れ子 workflow は自分の `▸ name` グループで走るため、その phase box には直属 agent が
-// 無い。安価な agent 1 体で box を点灯させ、run log の要約を兼ねる。
-const phaseSummary = (phaseName, text) =>
-  agent(`${text}を 1 行で要約する。その 1 文だけを返す。`, {
-    label: `${phaseName.toLowerCase()}-summary`,
-    phase: phaseName,
-    model: "haiku",
-  });
-
 // ---- Code: workflow("code") へ委譲 (unit ごとの Red → Green + 独立 verify) ----
 phase("Code");
 // preconditions / backlog_candidates は build 側で消費するので、code へは PLAN_SCHEMA
@@ -432,16 +416,45 @@ const code =
     model: "opus",
   })) || null;
 if (!code || code.stopped) {
-  return { stopped: "code-failed", detail: code, planning: plan.dir };
+  return { stopped: "code-failed", detail: code };
 }
 if (!code.tests_pass || !code.gates_pass)
   log(
     `code の独立 verify が失敗 (tests=${code.tests_pass} gates=${code.gates_pass})。Verify へ進み、PR に surface する。`,
   );
-await phaseSummary(
-  "Code",
-  `code phase の成果: ${plan.units.length} unit 実装、独立 verify tests=${code.tests_pass} gates=${code.gates_pass}`,
-);
+log(`Code: ${plan.units.length} unit 実装、独立 verify tests=${code.tests_pass} gates=${code.gates_pass}。`);
+
+// ---- Polish: cleanup (simplify skill + test 検証) ----
+// review lens (Codex) は build から外れた (ADR-0085)。/polish は人間が PR に起動できる
+// 形で残る。cleanup は Verify の前に走らせ、検証の対象を出荷する tree にする。
+const CLEANUP_SCHEMA = obj(["edits", "tests_pass", "stashed"], {
+  edits: {
+    type: "array",
+    items: { type: "string" },
+    description: "適用した編集の要約 (file:line 付き)",
+  },
+  tests_pass: { type: "boolean" },
+  stashed: {
+    type: "boolean",
+    description: "テスト失敗で cleanup 編集を巻き戻したとき true",
+  },
+});
+phase("Polish");
+const cleanup = (await agent(
+  anchor(
+    `Skill ツールで skill "simplify" を起動し、現在の diff に cleanup 限定の pass (再利用 / 簡素化 / 効率 / 高度) をかける。引数なしを拒否されたら diff の scope を渡す。` +
+      `続けてプロジェクトのテストコマンドを検出して実行する。失敗したら cleanup の編集を git stash で戻し stashed: true を報告する。` +
+      `適用した編集の要約を file:line 付きで edits に列挙する。commit しない。`,
+  ),
+  {
+    label: "cleanup",
+    phase: "Polish",
+    agentType: "general-purpose",
+    schema: CLEANUP_SCHEMA,
+    model: "sonnet",
+  },
+)) || { edits: [], tests_pass: false, stashed: false };
+log(`Polish: cleanup 編集 ${cleanup.edits.length} 件、tests_pass=${cleanup.tests_pass}。`);
 
 // ---- Verify: 決定論の選択チェック (diff スコープ + T-NNN 照合) ∥ conformance ----
 // plan は検証済みの選択なので、正しさの確認は reviewer fan-out の欠陥探索でなく、plan
@@ -559,15 +572,16 @@ const [diff, testPresence, conformance] = await parallel([
         phase: "Verify",
         agentType: "reviewer-conformance",
         schema: CONFORMANCE_SCHEMA,
+        model: "sonnet",
       },
     ),
 ]);
-// スコープ検査。変更ファイルは plan の files か、plan.dir 配下の planning 成果物の
+// スコープ検査。変更ファイルは plan の files か、.claude/workspace/ 配下 (think の plan 下書きなど) の
 // いずれかに収まる。diff 一覧を取得できないこと自体も surface する (fail-open だが可視)。
 const planFiles = new Set(plan.units.flatMap((u) => u.files));
 const scopeDeviations =
   diff && Array.isArray(diff.files)
-    ? diff.files.filter((f) => f && !planFiles.has(f) && !(plan.dir && f.startsWith(plan.dir)))
+    ? diff.files.filter((f) => f && !planFiles.has(f) && !f.startsWith(".claude/workspace/"))
     : ["diff 一覧を取得できず scope 未検証"];
 // 存在チェック。結果を name で突き合わせ、found=true の結果が無い name を欠落とする。
 // 宣言された言明が 0 件なら relay は走っておらず、欠落の対象も無い。
@@ -586,16 +600,6 @@ log(
     (conf.spec_found
       ? `conformance の spec 逸脱 ${conf.findings.length} 件。`
       : "conformance は skip (spec 無し)。"),
-);
-
-// ---- Polish: cleanup のみ (simplify → enhancer-code → test 検証) ----
-// review lens (Codex) は build から外れた (ADR-0085)。/polish は人間が PR に起動できる
-// 形で残る。
-phase("Polish");
-const cleanup = await sibling("polish", { repo, mode: "cleanup" });
-await phaseSummary(
-  "Polish",
-  `polish phase の内容: cleanup 編集 ${cleanup?.cleanup?.edits?.length ?? 0} 件適用、tests_pass=${cleanup?.cleanup?.tests_pass}`,
 );
 
 // backlog 候補は issue 本文に書かれたスコープ外候補。build は起票せず、価値のあるものを
@@ -694,7 +698,7 @@ const SHIP_SCHEMA = obj(["committed", "pr_url"], {
 
 const ship = await agent(
   anchor(
-    `すべての変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にまとめる。commit メッセージは自分で書く (diff を要約する)。` +
+    `すべての変更を 1 つの Conventional Commits commit にまとめる。commit メッセージは自分で書く (diff を要約する)。` +
       `ブランチを push し、draft pull request を開く。本文は PR テンプレートから自分で書く人間向けパートと、データから決定論レンダリングされる fact セクションで構成する (fact セクションを手書きしない)。手順は以下。\n` +
       `(1) \`$HOME/.claude/settings.json\` から \`language\` を読み (未設定なら英語)、その言語で人間向け本文を書く。コード / 識別子 / 専門用語は翻訳しない。PR テンプレートはリポジトリのものがあれば使う (大文字小文字の区別なし、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)。無ければ同梱の \`${bundled("skills/pr/templates/pr.md")}\` を使う。骨格を読んで body ファイルへ折り込む。人間向けセクションだけを、レビュアーが速く掴める順で埋める。先頭に解決する問題と到達する成果 (${JSON.stringify(plan.outcome)})、次に変更内容とアプローチ、最後にレビューの注目点。リストと小さな表を使い、簡潔に書き、埋め草と事実の捏造をしない。Related / Closes は書かない (tail が \`Closes #\` を出す)。Scope / Backlog も書かない。スコープ外候補は PR に載せない。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実 diff から埋め、空なら節ごと省略する。\n` +
       `(2) この JSON をそのまま一時ファイルに書く。\n${JSON.stringify(shipPayload)}\n` +
@@ -715,14 +719,13 @@ const ship = await agent(
 return {
   issue: issueNumber,
   branch,
-  planning: plan.dir,
   units_completed: code.completed.length,
   code_anomalies: (code.anomalies || []).length,
   code_verified: code.tests_pass && code.gates_pass,
   scope_deviations: scopeDeviations,
   missing_tests: missingTests,
   conformance_findings: (conf.findings || []).length,
-  polish_cleanup: cleanup && cleanup.cleanup ? cleanup.cleanup.tests_pass : null,
+  polish_cleanup: cleanup.tests_pass,
   backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,
   pr_url: ship.pr_url,
