@@ -9,6 +9,7 @@ Write for a teammate who shares context and can open the linked docs. The issue 
 | Problem stated | Is the problem or request in 1-3 lines at the top?                                                                      |
 | Concreteness   | Bug: are reproduction steps concrete? Feature: is the use case concrete? Is the expected outcome not left to inference? |
 | Delta focus    | Does it skip what the code shows and stay on why and done conditions?                                                   |
+| Section fit    | Does each section carry only what its heading asks?                                                                     |
 | Length         | Does the body fit in ~40 lines? If it overflows, cut it or split into another issue / link                              |
 
 ## Redundancy patterns
@@ -16,6 +17,6 @@ Write for a teammate who shares context and can open the linked docs. The issue 
 | Pattern                | Fix                                                                                                                                   |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Doc transcription      | Fold restated linked docs or logs into link + one-line takeaway; write only the delta                                                 |
-| Repeated decision      | State the same design reason once, where the decision lands. Option comparisons stay out of the body and belong to think                   |
-| Over-specified AC      | Keep the criterion, drop authoring details such as story names and enumerated config values                                                    |
+| Repeated decision      | State the same design reason once, where the decision lands. Option comparisons stay out of the body and belong to think              |
+| Over-specified AC      | Keep the criterion, drop authoring details such as story names and enumerated config values                                           |
 | One claim per sentence | Cut a sentence exceeding ~25 words (Japanese: 60 characters), or a paragraph packing decision + rationale + references, at each claim |

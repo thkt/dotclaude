@@ -9,7 +9,7 @@ argument-hint: "[issue description]"
 
 # /issue - GitHub Issue Generator
 
-A standalone issue-creation skill. It requires no challenge / research / think upstream and never nests them. When their artifacts exist in the conversation context, use them: the challenge verdict for the posting judgment, research findings as the body's evidence, and /think's plan draft transferred into the `## Plan` section. The human decides which stages an issue goes through.
+A standalone issue-creation skill. When `/challenge` / `/research` / `/think` artifacts exist in the conversation context, use them: the `/challenge` verdict for the posting judgment, `/research` findings as the body's evidence, and `/think`'s plan draft transferred into the `## Plan` section. The human decides which stages an issue goes through.
 
 ## Input
 
