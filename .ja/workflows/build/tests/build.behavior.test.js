@@ -70,7 +70,16 @@ const kindOf = (opts) => {
 
 // happy path stub 一式。body / plan / revalidate / diff / presence / conformance で
 // happy path の戻り値を差し替える。diff / presence は値でも関数 (prompt を受ける) でもよい。
-const makeStubs = ({ body, plan, revalidate, conformance, translate, diff, presence, critique } = {}) => ({
+const makeStubs = ({
+  body,
+  plan,
+  revalidate,
+  conformance,
+  translate,
+  diff,
+  presence,
+  critique,
+} = {}) => ({
   agent: (prompt, opts) => {
     const kind = kindOf(opts);
     switch (kind) {
@@ -131,9 +140,9 @@ const makeStubs = ({ body, plan, revalidate, conformance, translate, diff, prese
         tests_pass: true,
         gates_pass: true,
       };
-    // 実 runtime の意味論: 未知の workflow 名は throw する。plugin 名前空間の build:* は
-    // dev tree では未知なので、sibling() の fallback がここで発火する。audit は ADR-0085 で
-    // build から外れたので、呼ばれたらこの throw が (fallback ではなく) テストを落とす。
+    // 実 runtime の意味論: 未知の workflow 名は throw する。sibling() は code を先に試して
+    // ここで解決するので build:code へ fallback しない。audit は ADR-0085 で build から
+    // 外れたので、呼ばれたらこの throw が (fallback ではなく) テストを落とす。
     throw new Error(`unknown workflow: ${name}`);
   },
 });
@@ -442,13 +451,13 @@ test("happy path の phase 順が Load → Revalidate → Branch → Code → Cl
   );
   assert.equal(cleanupCalls[0].opts.model, "sonnet", "cleanup agent は sonnet 固定");
 
-  // sibling() が build:X を先に試して dev tree では throw → X に fallback するので、
-  // capture には plugin 名と bare 名の両方が現れる。audit は集合に現れない (ADR-0085)。
+  // sibling() は素の dev tree 形 (code) を先に試し、解決すれば build:code に fallback しない。
+  // dev tree では code が返るので capture には code のみが現れる。audit は集合に現れない (ADR-0085)。
   const names = new Set(calls.workflow.map((c) => c.name));
   assert.deepEqual(
     [...names].sort(),
-    ["build:code", "code"],
-    "workflow capture に code (+ build: 名前空間の試行) のみが現れる",
+    ["code"],
+    "workflow capture に dev-tree の code のみが現れる (build:code に fallback しない)",
   );
   for (const banned of ["audit", "polish", "challenge", "think", "research"]) {
     assert.ok(!names.has(banned), `workflow('${banned}') が呼ばれない`);

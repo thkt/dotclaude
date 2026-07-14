@@ -50,9 +50,9 @@ const guard = repo
 // ~/.claude/plugins. Both try the bare dev-tree form first, so the dev tree keeps working.
 const sibling = async (name, a) => {
   try {
-    return await workflow(`build:${name}`, a);
-  } catch {
     return await workflow(name, a);
+  } catch {
+    return await workflow(`build:${name}`, a);
   }
 };
 const bundled = (rel) =>
@@ -323,7 +323,11 @@ if (planHeading) {
 
   const blockers = validate(plan);
   if (blockers.length) {
-    return { stopped: "invalid-plan", blockers, why: "The extracted plan fails structural validation." };
+    return {
+      stopped: "invalid-plan",
+      blockers,
+      why: "The extracted plan fails structural validation.",
+    };
   }
 
   // Reject silent drops / fabrications in extraction via exact id-set comparison.
@@ -354,7 +358,11 @@ if (planHeading) {
   plan = drafted.plan;
   const blockers = validate(plan);
   if (blockers.length) {
-    return { stopped: "invalid-plan", blockers, why: "The generated plan fails structural validation." };
+    return {
+      stopped: "invalid-plan",
+      blockers,
+      why: "The generated plan fails structural validation.",
+    };
   }
 }
 
