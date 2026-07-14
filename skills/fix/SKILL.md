@@ -18,8 +18,8 @@ Rapidly fix small bugs with root cause analysis and TDD verification.
 | Pattern                                       | Mode                  | Action                                                                                                                                                                                                                                                        |
 | --------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/^[A-Z]+-[0-9]+$/`                           | Finding ID Resolution | Read the latest snapshot from `${CLAUDE_SKILL_DIR}/../../workspace/history/` and find the ID match in findings[]. Carry severity / fix_type / root cause, skip Outcome Anchor and Build Check, enter Triage. If absent, present error + suggest Standard Flow |
-| Finding with file / line / severity / summary | Direct Finding Input  | Return value of the audit workflow (a single JSON finding, or text carrying file:line + severity + summary). Use file:line as the RCA starting point, skip Outcome Anchor and Build Check, enter Triage                                                       |
-| empty                                         | Fix Prompt            | Ask via AskUserQuestion for Fix type (Bug fix / Error message / Test failure) and Description (free text via Other), then execute                                                                                                                             |
+| Finding with file / line / severity / summary | Direct Finding Input  | Return value of the audit workflow: a single JSON finding, or text carrying file:line + severity + summary. Use file:line as the RCA starting point, skip Outcome Anchor and Build Check, enter Triage                                                       |
+| empty                                         | Fix Prompt            | Ask via AskUserQuestion for Fix type from Bug fix / Error message / Test failure and Description as free text via Other, then execute                                                                                                                             |
 | otherwise                                     | Standard Flow         | Treat as a bug description and run from Outcome Anchor                                                                                                                                                                                                        |
 
 When Direct Finding Input carries multiple findings, handle them one at a time in descending severity order. When the impact spans 4+ files, check the multi-file trigger in § Escalation first.
@@ -55,7 +55,7 @@ Obvious skips both RCA and regression test generation, so it is limited to findi
 | Bug desc             | Single location identified + 1-3 line fix + no similar pattern | Obvious     |
 | Bug desc             | Intermittent, multiple repro conditions, or unknown root cause | Non-obvious |
 | Finding ID           | `fix_type: auto` and severity low / med                        | Obvious     |
-| Finding ID           | Otherwise (critical / high, or not auto)                       | Non-obvious |
+| Finding ID           | severity critical / high, or fix_type not auto                 | Non-obvious |
 | Direct Finding Input | severity low / med and a 1-3 line fix                          | Obvious     |
 | Direct Finding Input | severity critical / high, or the fix is non-obvious            | Non-obvious |
 
@@ -66,8 +66,8 @@ Obvious skips both RCA and regression test generation, so it is limited to findi
 
 ## Non-obvious
 
-1. Run 5 Whys via `Skill("use-context-root-cause-analysis")`. If via Finding ID or Direct Finding Input, pass the finding's file:line and summary (plus the snapshot root cause when available) as the 5 Whys starting point. Output Symptom / Root cause / Pattern.
-2. `Task(subagent_type: generator-test)` for regression test (pass symptom + repro only)
+1. Run 5 Whys via `Skill("use-context-root-cause-analysis")`. If via Finding ID or Direct Finding Input, pass the finding's file:line and summary as the 5 Whys starting point, adding the snapshot root cause when available. Output Symptom / Root cause / Pattern.
+2. `Task(subagent_type: generator-test)` for the regression test. Pass symptom + repro steps only
 3. Verify regression test is Red
 4. Apply fix
 5. Verify regression test is Green and no other tests regressed

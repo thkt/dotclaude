@@ -9,8 +9,6 @@ user-invocable: false
 
 # use-workflow-pageshot - PR スクリーンショット/動画ヘルパー
 
-UI 変更が検出されたときに `/pr` から呼び出される内部ヘルパー。ユーザーが直接呼び出すものではない。
-
 ## 入力
 
 | フィールド  | ソース                                                    |

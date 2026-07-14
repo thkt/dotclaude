@@ -9,11 +9,9 @@ argument-hint: "[issue reference or context]"
 
 # /pr - Pull Request Creator
 
-Analyze branch changes, generate the title and body, refine the body via prose review, and create the PR.
-
 ## Input
 
-`$ARGUMENTS` is an Issue reference or context (optional, e.g. `#456`). If empty, generate from the current branch only.
+`$ARGUMENTS` is an Issue reference or context. Optional; e.g. `#456`. If empty, generate from the current branch only.
 
 ## Language
 
@@ -24,16 +22,16 @@ Read `language` from `${CLAUDE_SKILL_DIR}/../../settings.json` and translate the
 If there are no commits, the directory is not a git repository, or gh auth fails, report the error and abort.
 
 1. Detect the base branch (§ Base Branch Detection)
-2. Select the base branch via AskUserQuestion (main / develop / detected)
+2. Select the base branch via AskUserQuestion. The options are main / develop / detected
 3. Run the § Analysis Sources commands in parallel
 4. Detect UI changes (§ UI Change Detection)
 5. Select the template (§ PR Template)
 6. Generate the title and body following the selected template (§ Title Rules)
-7. Refine the body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language (`${CLAUDE_SKILL_DIR}/references/phrases.ja.md` for Japanese, `${CLAUDE_SKILL_DIR}/references/phrases.en.md` for English)
+7. Refine the body inline against `${CLAUDE_SKILL_DIR}/references/prose-review.md` plus the empty-phrase file matching the body language: `phrases.ja.md` for Japanese, `phrases.en.md` for English
 8. Preview the PR → AskUserQuestion: "Create this PR?"
 9. If UI changes, invoke `use-workflow-pageshot` via Skill with the PR body (§ Pageshot Integration)
 10. Push the current branch (§ Push)
-11. Create the PR with `gh pr create --title "..." --body "..."`. Pass the body as a direct string and avoid heredoc (`<<EOF`) due to the sandbox restriction
+11. Create the PR with `gh pr create --title "..." --body "..."`. Pass the body as a direct string; heredoc `<<EOF` is unusable under the sandbox restriction
 12. If a pageshot artifact exists, display it (§ Pageshot Integration)
 
 ## Analysis Sources
@@ -64,8 +62,8 @@ Read the diff from § Analysis Sources to judge visual impact. Logic / type / te
 ## Title Rules
 
 - With an Issue reference, use the Issue title as-is
-- Without one, imperative verb + description (≤72)
-- No prefix (`feat:`, `fix:`, etc.); strip it from the Issue title if present
+- Without one, an imperative verb + description within 72 characters
+- No prefix such as `feat:` or `fix:`; strip it from the Issue title if present
 
 ## PR Template
 

@@ -156,7 +156,7 @@ function safeHref(url: string): string {
 
 ## Review Workflow
 
-1. Identify taint sources (user input, API responses, URL parameters)
-2. Trace data flow to sinks (DOM manipulation, navigation, storage)
+1. Identify taint sources: user input, API responses, URL parameters
+2. Trace data flow to sinks: DOM manipulation, navigation, storage
 3. Verify sanitization/validation exists at every source-to-sink path
-4. Check that sanitization cannot be bypassed (error paths, conditional logic)
+4. Check that sanitization cannot be bypassed via error paths or conditional logic

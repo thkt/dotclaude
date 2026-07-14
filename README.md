@@ -71,8 +71,9 @@ install specific workflow sets:
 
 - **build**: Self-contained development workflow toolkit. Installing it clones
   the whole repository once, so every skill, agent, and workflow loads under the
-  build: namespace. Refine an issue with /issue, hand the issue number to the
-  build workflow, and get a draft PR after Load / Code / Audit / Polish / Ship.
+  build: namespace. File an issue with /issue (optionally after /challenge,
+  /research, and /think), hand the issue number to the build workflow, and get
+  a draft PR after Load / Code / Audit / Polish / Ship.
   Bundles the planning skills (/think, /research, /slice, /outcome), the reviewer
   and critic agents, the code / audit / polish / shake / assert / adrift
   workflows, the git skills (/commit, /checkout, /pr), and /adr, /census.

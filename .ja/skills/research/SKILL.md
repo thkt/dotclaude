@@ -10,7 +10,7 @@ argument-hint: "[research subject or question]"
 
 # /research - プロジェクト / 技術調査
 
-コードベースを調査し、発見事項をソース付きで記録する。実装は伴わない。発見事項は確定した結論ではなく、反証にさらすべき主張として扱う。Phase 6 では、統合が確定する前に advisor がそれへ反論する。
+コードベースを調査し、発見事項をソース付きで記録する。実装は伴わない。
 
 ## 入力
 
@@ -22,7 +22,7 @@ argument-hint: "[research subject or question]"
 
 ## Phase 2: 過去調査スキャン
 
-`$ARGUMENTS` から調査対象の slug (小文字、ハイフン区切り) を作り、`bfs .claude/workspace/research -name '*<slug>*.md'` で過去の調査ファイルを探す。見つからなければスキップして「No prior research found for `<slug>`」と注記する。見つかった各ファイルには、下表のとおり引き継ぐ。
+`$ARGUMENTS` から小文字ハイフン区切りの slug を作り、`bfs .claude/workspace/research -name '*<slug>*.md'` で過去の調査ファイルを探す。見つからなければスキップして「No prior research found for `<slug>`」と注記する。見つかった各ファイルには、下表のとおり引き継ぐ。
 
 | 抽出元               | 引き継ぎ先 | 扱い                                 |
 | -------------------- | ---------- | ------------------------------------ |
@@ -41,9 +41,9 @@ argument-hint: "[research subject or question]"
 
 ## Phase 4: ドメインスコープ並列調査
 
-Explore / ugrep / bfs / Read を並列起動する。意図が Feature planning または Bug investigation なら `Task(subagent_type: explorer-feature、run_in_background: false)` も加え、実行経路からアーキテクチャを把握する (Feature planning は将来経路、Bug investigation は該当バグの実行経路を追う)。spawn prompt には調査対象の title を verbatim で含める。explorer-feature には結果を `{ findings: [{ statement: string, source: string }] }` の JSON 1 object で返すよう指示する。空が返ったらキーワードを広げて再実行する。発見事項にはその場でソースを書く (事実 `file:line`、推論 `inferred from X`、未検証 `unknown, requires X`)。各コマンドと生出力も scratch にそのまま追記する。これが監査証跡で、Phase 7 の Disconfirmation はここから直接引用し再構築しない。
+Explore / ugrep / bfs / Read を並列起動する。意図が Feature planning または Bug investigation なら `Task(subagent_type: explorer-feature、run_in_background: false)` も加え、実行経路からアーキテクチャを把握する。Feature planning は将来経路を、Bug investigation は該当バグの実行経路を追う。spawn prompt には調査対象のタイトルをそのまま含める。explorer-feature には結果を `{ findings: [{ statement: string, source: string }] }` の JSON 1 object で返すよう指示する。空が返ったらキーワードを広げて再実行する。発見事項にはその場でソースを書く。事実は `file:line`、推論は `inferred from X`、未検証は `unknown, requires X`。各コマンドと生出力も scratch にそのまま追記する。これが監査証跡で、Phase 7 の Disconfirmation はここから直接引用し再構築しない。
 
-`.codegraph/` index があるとき、`codegraph sync` で index を更新してから、構造質問 (誰が呼ぶ、何が壊れる、どのテストに波及する) を `codegraph` で先に解決する。呼び出し元は `codegraph callers <symbol>`、影響範囲と波及テストは `codegraph impact <symbol>` で読み、出力を finding のソースに引用する。同じ質問を ugrep / grep で symbol 名検索した結果はソースに認めない。
+`.codegraph/` index があるとき、`codegraph sync` で index を更新してから、誰が呼ぶ・何が壊れる・どのテストに波及する、といった構造質問を `codegraph` で先に解決する。呼び出し元は `codegraph callers <symbol>`、影響範囲と波及テストは `codegraph impact <symbol>` で読み、出力を finding のソースに引用する。同じ質問を ugrep / grep で symbol 名検索した結果はソースに認めない。
 
 下表のルートと語でドメインごとにスコープする。Explore にはプロンプトでルートを渡し、ugrep / bfs には語を追加し、Read はルートを起点にする。対象ドメインの glob ルートが全て不在なら General にフォールバックする。
 
@@ -56,7 +56,7 @@ Explore / ugrep / bfs / Read を並列起動する。意図が Feature planning 
 
 ### 検証
 
-締めで `${CLAUDE_SKILL_DIR}/references/verification.md` の検証を適用する。網羅性 finding には Cross-method 検証、外部システムの挙動に関する主張には一次ソース検証を構造的に適用し、自己判断による finding 除外は認めない。ライブラリ API 挙動の検証は `~/.claude/rules/development/SOURCING.md` を適用する。scout が使えない (不在 / 接続失敗) ときは WebFetch / WebSearch にフォールバックする。
+締めで `${CLAUDE_SKILL_DIR}/references/verification.md` の検証を適用する。網羅性 finding には Cross-method 検証、外部システムの挙動に関する主張には一次ソース検証を構造的に適用し、自己判断による finding 除外は認めない。ライブラリ API 挙動の検証は `~/.claude/rules/development/SOURCING.md` を適用する。scout が不在か接続に失敗したときは WebFetch / WebSearch にフォールバックする。
 
 ## Phase 5: Strong Inference (Bug investigation のみ)
 
@@ -64,7 +64,7 @@ Explore / ugrep / bfs / Read を並列起動する。意図が Feature planning 
 
 ## Phase 6: Advisor 事前統合チェック
 
-パラメータなしで `advisor()` を起動する。advisor は会話履歴全体 (Phase 3 の回答、Phase 4 の発見事項、監査証跡 scratch を含む) を参照する。見落とし領域や弱い推論を指摘されたら、Phase 4 に戻ってスコープを絞り直す。
+パラメータなしで `advisor()` を起動する。advisor は会話履歴全体を参照する。見落とし領域や弱い推論を指摘されたら、Phase 4 に戻ってスコープを絞り直す。
 
 以下の条件がすべて成立するときは起動を省略し、その理由を出力に記録する。
 
@@ -90,7 +90,7 @@ Explore / ugrep / bfs / Read を並列起動する。意図が Feature planning 
 | 項目              | 条件                                                                                                            |
 | ----------------- | --------------------------------------------------------------------------------------------------------------- |
 | OUTCOME           | `.claude/OUTCOME.md` が存在する (Phase 1)                                                                       |
-| Prior research    | `Prior research` フィールドが埋まっている (slug または `none found`)                                            |
+| Prior research    | `Prior research` フィールドが埋まっている。値は slug または `none found`                                        |
 | ソース            | すべての発見事項に明示的なソース、または `unknown, requires X` 注記がある                                       |
 | 監査証跡          | Phase 4 の scratch を、コマンドと生出力をそのままで取得した                                                     |
 | Cross-method      | 網羅性主張に Cross-method 検証を実施した (該当する主張がある場合)                                               |

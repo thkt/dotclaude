@@ -4,7 +4,7 @@ When /pr cannot find a repository PR template, it generates the body from this s
 
 ## Template
 
-Replace `{...}` with content at generation time. Omit an `(optional)` section, heading and all, when there is nothing to write. Include `Preview URL:` only for PRs with UI changes (read by `use-workflow-pageshot`).
+Replace `{...}` with content at generation time. Omit an `(optional)` section, heading and all, when there is nothing to write. Include `Preview URL:` only for PRs with UI changes; `use-workflow-pageshot` reads it.
 
 ```markdown
 Preview URL: http://localhost:3000

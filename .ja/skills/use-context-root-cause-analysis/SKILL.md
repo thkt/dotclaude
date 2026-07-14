@@ -41,12 +41,12 @@ user-invocable: false
 | フィールド | 説明                              |
 | ---------- | --------------------------------- |
 | Symptom    | ユーザーから見た失敗              |
-| Root cause | なぜ失敗したか (5 Whys の結果)    |
+| Root cause | 5 Whys で辿り着いた失敗の原因     |
 | Pattern    | Isolated / Recurring / Systematic |
 
 ### Pattern Enum
 
-利用側 (例 `/fix` の Non-obvious flow) は Pattern フィールドで分岐し、defense-in-depth を適用するか escalate するかを判断する。
+`/fix` の Non-obvious flow のような利用側は Pattern フィールドで分岐し、defense-in-depth を適用するか escalate するかを判断する。
 
 | 値         | 意味                                           |
 | ---------- | ---------------------------------------------- |

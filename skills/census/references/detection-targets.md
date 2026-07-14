@@ -1,6 +1,6 @@
 # /census detection targets
 
-Step 2 scans file patterns. Step 3 (commit messages) and Step 4 (document prose) scan decision verbs.
+Phase 2 scans file patterns. Phase 3 commit-message mining and Phase 4 document-prose extraction scan decision verbs.
 
 | Filename pattern                                                     | Likely content                       |
 | -------------------------------------------------------------------- | ------------------------------------ |
@@ -14,9 +14,7 @@ Step 2 scans file patterns. Step 3 (commit messages) and Step 4 (document prose)
 | `Makefile` / `justfile`                                              | Build flow decisions                 |
 | Linter config (`Cargo.toml` `[lints.*]`, `.eslintrc`, `oxlint.json`) | Rule selection rationale             |
 
-## Decision verbs (Step 3 / Step 4)
-
-Within detected documents, or within commit messages, nominate sentences containing these verbs.
+## Decision verbs
 
 | Type   | English                     | Japanese             |
 | ------ | --------------------------- | -------------------- |

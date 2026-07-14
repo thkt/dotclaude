@@ -10,7 +10,7 @@ user-invocable: false
 
 # Readability Review
 
-Thresholds are based on cognitive limits (working memory, one-screen focus) and established metrics (McCabe complexity).
+Thresholds are based on cognitive limits such as working memory and one-screen focus, and established metrics such as McCabe complexity.
 
 | Target                | Recommended | Why                                          |
 | --------------------- | ----------- | -------------------------------------------- |
@@ -24,11 +24,11 @@ Thresholds are based on cognitive limits (working memory, one-screen focus) and 
 
 | ID  | Pattern                       | Fix                              |
 | --- | ----------------------------- | -------------------------------- |
-| RD1 | `processData()` (vague)       | `validateUserEmail()`            |
+| RD1 | Vague `processData()`         | `validateUserEmail()`            |
 | RD1 | Misleading identifiers        | Names reveal intent              |
 | RD2 | Nesting > 3 levels            | Guard clauses, extract functions |
 | RD2 | Function > 30 lines           | Decompose                        |
-| RD3 | Comment: `// increment i`     | Delete (self-evident)            |
+| RD3 | Comment: `// increment i`     | Delete; self-evident             |
 | RD3 | Comment: `// TODO: fix later` | Create issue or fix now          |
 | RD4 | Interface for single impl     | Remove until 2nd impl            |
 | RD4 | Class for stateless logic     | Pure function                    |

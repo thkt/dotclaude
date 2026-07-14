@@ -11,14 +11,14 @@ argument-hint: "[PR URL or number]"
 
 ## 入力
 
-- PR 参照: `$ARGUMENTS` (URL、番号、または空 → 現在ブランチから検出)
+`$ARGUMENTS` は URL、番号、または空。空なら現在ブランチから検出する。
 
 ## 実行
 
-1. PR 識別: `gh pr view $ARGUMENTS --json number,title,body,labels,files,url` (フォールバック: `$ARGUMENTS` 省略)
-2. PR がない、または作業ツリーが dirty (`git status --porcelain`) なら中止
+1. PR 識別: `gh pr view $ARGUMENTS --json number,title,body,labels,files,url`。失敗したら `$ARGUMENTS` なしで再実行する
+2. PR がない、または作業ツリーが dirty なら中止する。判定は `git status --porcelain`
 3. PR を checkout: `gh pr checkout $PR`
-4. PR コンテキストを並列収集 (下記参照)
+4. PR コンテキストを並列収集する (§ PR コンテキスト収集)
 5. 各変更ファイルを diff hunks 外も含めて完全に読む
 6. プロセスに沿ってレビュー: 概観 → ファイルごと → 依存影響 → findings
 7. 構造化スクリーニングレポートを出力
@@ -61,7 +61,7 @@ gh の出力フィールドに `author` を含めない。
 | 簡潔     | `[imo]`/`[nits]`/`[info]` は 3 行、`[must]`/`[want]` は根拠付きで最大 5 行 |
 | 敬意     | 努力を認める、命令を避ける                                                 |
 | 提案的   | "Consider..." を使い、"This is wrong" は避ける                             |
-| 著者向け | コメントは verbatim で投稿される可能性あり、PR 著者向けに詳細度を調整      |
+| 著者向け | コメントはそのまま投稿されうるため、PR 著者向けに詳細度を調整              |
 
 ## 出力
 

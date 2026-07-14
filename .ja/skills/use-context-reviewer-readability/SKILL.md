@@ -10,7 +10,7 @@ user-invocable: false
 
 # 可読性レビュー
 
-しきい値は認知限界 (作業記憶、1 画面集中) と確立されたメトリクス (McCabe complexity) に基づく。
+しきい値は、作業記憶や 1 画面集中といった認知限界と、McCabe complexity のような確立されたメトリクスに基づく。
 
 | 目標         | 推奨値 | 根拠                                |
 | ------------ | ------ | ----------------------------------- |
@@ -24,11 +24,11 @@ user-invocable: false
 
 | ID  | パターン                       | 修正                       |
 | --- | ------------------------------ | -------------------------- |
-| RD1 | `processData()` (曖昧)         | `validateUserEmail()`      |
+| RD1 | 曖昧な `processData()`         | `validateUserEmail()`      |
 | RD1 | 誤解を招く識別子               | 名前は意図を表す           |
 | RD2 | ネスト > 3 階層                | guard clause、関数抽出     |
 | RD2 | 関数 > 30 行                   | 分解                       |
-| RD3 | コメント: `// increment i`     | 削除 (自明)                |
+| RD3 | コメント: `// increment i`     | 自明なので削除             |
 | RD3 | コメント: `// TODO: fix later` | issue 化または今修正       |
 | RD4 | 単一実装の interface           | 2 つ目の実装が出るまで削除 |
 | RD4 | 状態を持たないロジックの class | 純粋関数                   |

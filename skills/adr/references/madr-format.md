@@ -8,7 +8,7 @@ MADR is a streamlined markdown template for recording architectural decisions. T
 | ----------- | ------------------------------------------------------------------- |
 | Granularity | One markdown file per architectural decision                        |
 | Filename    | `nnnn-title-with-dashes.md`. 4-digit number, lowercase dashed title |
-| Location    | `docs/decisions/` (MADR default and this skill's enforced path)     |
+| Location    | `docs/decisions/`. The MADR default, fixed by this skill            |
 
 ## Required Sections
 

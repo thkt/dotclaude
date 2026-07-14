@@ -11,16 +11,16 @@ argument-hint: "[PR URL or number]"
 
 ## Input
 
-- PR reference: `$ARGUMENTS` (URL, number, or empty → detect from current branch)
+`$ARGUMENTS` is a URL, a number, or empty. If empty, detect from the current branch.
 
 ## Execution
 
 | Step | Action                                                                                                       |
 | ---- | ------------------------------------------------------------------------------------------------------------ |
-| 1    | Identify PR: `gh pr view $ARGUMENTS --json number,title,body,labels,files,url` (fallback: omit `$ARGUMENTS`) |
-| 2    | Abort if no PR found or working tree is dirty (`git status --porcelain`)                                     |
+| 1    | Identify PR: `gh pr view $ARGUMENTS --json number,title,body,labels,files,url`. On failure, retry without `$ARGUMENTS` |
+| 2    | Abort if no PR found or working tree is dirty. Check via `git status --porcelain`                                     |
 | 3    | Checkout PR: `gh pr checkout $PR`                                                                            |
-| 4    | Gather PR context in parallel (see below)                                                                    |
+| 4    | Gather PR context in parallel (§ PR context gathering)                                                                    |
 | 5    | Read each changed file in full, including code outside the diff hunks                                        |
 | 6    | Review per process: overview → per-file → dependency impact → findings                                       |
 | 7    | Output structured screening report                                                                           |

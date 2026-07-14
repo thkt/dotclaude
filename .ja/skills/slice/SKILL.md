@@ -9,20 +9,18 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 
 # /slice - 計画を垂直スライス issue に分解
 
-計画を独立して着手可能な issue 群へ分解する。各 issue は tracer bullet、つまり schema / API / UI / test の全レイヤーを端から端まで貫く 1 本の細い縦串で、単独で demo または検証できる。
-
 ## 入力
 
-`$ARGUMENTS` から計画のソースを取る。issue 参照 (番号 / URL / パス) なら `gh issue view <N>` で本文とコメントを取得する。空ならまず会話文脈にある計画を使い、無ければ何を分解するか AskUserQuestion で問う。
+`$ARGUMENTS` から計画のソースを取る。番号 / URL / パスの issue 参照なら `gh issue view <N>` で本文とコメントを取得する。空ならまず会話文脈にある計画を使い、無ければ何を分解するか AskUserQuestion で問う。
 
 ## 他スキルとの区別
 
-| スキル        | 産物                               | 媒体 / タイミング          |
-| ------------- | ---------------------------------- | -------------------------- |
-| /slice (これ) | 依存順の永続 GitHub issue 群       | 後で人間が拾うためのキュー |
-| /issue        | 単一 issue (premise + critic 検証) | 1 件の要求を起票する       |
+| スキル        | 産物                         | 媒体 / タイミング          |
+| ------------- | ---------------------------- | -------------------------- |
+| /slice (これ) | 依存順の永続 GitHub issue 群 | 後で人間が拾うためのキュー |
+| /issue        | 単一 issue                   | 1 件の要求を起票する       |
 
-/slice は分解と依存順 publish が価値。1 件だけなら /issue を使う。slice が生む issue には `## Plan` がまだ無く、そのまま /build に渡すと build が ephemeral plan を自動生成して進む (人間レビュー未経由の assumption 付き)。plan の精度を上げたいスライスは、まず /issue で洗練して Plan を付与してから /build に渡す。既に構造化 plan を手元に持つなら /code を使う。
+/slice は分解と依存順 publish が価値。1 件だけなら /issue を使う。slice が生む issue には `## Plan` がまだ無く、そのまま /build に渡すと build が ephemeral plan を自動生成して進み、人間レビュー未経由の assumption が付く。plan の精度を上げたいスライスは、/think で plan を作り issue の `## Plan` 節へ書き足してから /build に渡す。既に構造化 plan を手元に持つなら /code を使う。
 
 ## Phase 1: 文脈を集める
 
@@ -30,7 +28,7 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 
 ## Phase 2: コードベース探索 (任意)
 
-未探索なら現状を把握する。issue のタイトル / 説明はプロジェクトの用語集に従い、触る領域の ADR を尊重する。実装を楽にする prefactor の機会を探す ("変更を楽にしてから、楽な変更をする")。横断的な探索が要るときだけ Explore エージェントを 1 体起動する。per-slice の spawn はしない。
+未探索なら現状を把握する。issue のタイトル / 説明はプロジェクトの用語集に従い、触る領域の ADR を尊重する。実装を楽にする prefactor の機会を探す。横断的な探索が要るときだけ Explore エージェントを 1 体起動する。per-slice の spawn はしない。
 
 ## Phase 3: 垂直スライスを起草する
 
@@ -44,7 +42,7 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 
 ### 被覆チェック
 
-起草後、計画の要求単位 (user story / acceptance criteria / FR 相当) を列挙し、どのスライスにも割り当てられていない単位を抽出する。取りこぼし (偽陰性) を偽検出 (偽陽性) より重く扱い、疑わしい単位は未カバーに含める。未カバーは Phase 4 のプレビューに明示する。
+起草後、user story / acceptance criteria / FR 相当の要求単位を列挙し、どのスライスにも割り当てられていない単位を抽出する。取りこぼしを偽検出より重く扱い、疑わしい単位は未カバーに含める。未カバーは Phase 4 のプレビューに明示する。
 
 ## Phase 4: ユーザーに確認する
 
@@ -56,13 +54,13 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 | Blocked by   | 先に完了すべき他スライス (あれば)        |
 | User stories | このスライスが満たす user story (あれば) |
 
-次を問う。粒度は妥当か (粗すぎ / 細かすぎ)。依存関係は正しいか。merge / split すべきスライスはあるか。未カバー単位をどう扱うか (既存スライスへ割り当て / 新スライス / 理由付きで意図的除外)。ユーザーが承認するまで反復する。
+次を問う。粒度は粗すぎず細かすぎないか。依存関係は正しいか。merge / split すべきスライスはあるか。未カバー単位をどう扱うか。扱いの選択肢は既存スライスへの割り当て / 新スライス / 理由付きの意図的除外。ユーザーが承認するまで反復する。
 
 ## Phase 5: issue を publish する
 
-承認後、batch publish の前に AskUserQuestion で最終確認する ("これら N 件の issue を作成する?")。N 件作成は外向きで巻き戻しにくいため、確認なしの自動 publish はしない。
+承認後、batch publish の前に AskUserQuestion で「これら N 件の issue を作成する?」と最終確認する。N 件作成は外向きで巻き戻しにくいため、確認なしの自動 publish はしない。
 
-承認したら依存順 (blocker 先) に publish する。"Blocked by" に実 issue 番号を書けるよう、blocker を先に作りその番号を捕捉する。各 issue は下記 template と Sandbox-Compatible Create を使う。triage label は付けない (AFK consumer 連携は対象外)。親 issue は close も変更もしない。
+承認したら blocker を先にする依存順で publish する。"Blocked by" に実 issue 番号を書けるよう、blocker を先に作りその番号を捕捉する。各 issue は下記 template と Sandbox-Compatible Create を使う。triage label は付けない。AFK consumer 連携は対象外。親 issue は close も変更もしない。
 
 ## Issue Template
 
@@ -73,7 +71,7 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 
 ## What to build
 
-この垂直スライスの簡潔な説明。レイヤーごとの実装手順でなく、端から端までの振る舞いを書く。具体的なファイルパスやコードスニペットは陳腐化が速いので避ける。例外は prototype が生んだ、散文より正確に決定を符号化するスニペット (state machine / reducer / schema / 型) のみ。その場合は prototype 由来と一言添え、決定に効く部分だけに刈り込む。
+この垂直スライスの簡潔な説明。レイヤーごとの実装手順でなく、端から端までの振る舞いを書く。具体的なファイルパスやコードスニペットは陳腐化が速いので避ける。例外は prototype が生んだ、散文より正確に決定を符号化する state machine / reducer / schema / 型のスニペットのみ。その場合は prototype 由来と一言添え、決定に効く部分だけに刈り込む。
 
 ## Acceptance criteria
 

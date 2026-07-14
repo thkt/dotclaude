@@ -37,18 +37,7 @@ const makePlan = (overrides = {}) => ({
       goal: "sample goal",
       files: ["sample.js"],
       contract: "sample contract",
-      tests: [
-        {
-          id: "T-001",
-          name: "sample spec statement",
-          given: "sample given",
-          when: "sample when",
-          // BDD の given/when/then フィールドであり thenable ではない
-          // oxlint-disable-next-line unicorn/no-thenable
-          then: "sample then",
-        },
-      ],
-      depends_on: [],
+      tests: [{ id: "T-001", name: "sample spec statement" }],
     },
   ],
   test_command: "echo test",
@@ -291,7 +280,7 @@ test("critique-plan agent の effort が xhigh のままである", async () => 
   );
 });
 
-test("構造欠陥と content 空 (contract / given) はいずれも stopped: invalid-plan になる", async () => {
+test("構造欠陥と content 空 (contract / name) はいずれも stopped: invalid-plan になる", async () => {
   const variants = [
     { plan: makePlan({ units: [] }), expect: /units/ },
     {
@@ -305,11 +294,11 @@ test("構造欠陥と content 空 (contract / given) はいずれも stopped: in
         units: [
           {
             ...makePlan().units[0],
-            tests: [{ ...makePlan().units[0].tests[0], given: "" }],
+            tests: [{ ...makePlan().units[0].tests[0], name: "" }],
           },
         ],
       }),
-      expect: /given/,
+      expect: /name/,
     },
   ];
   for (const { plan, expect } of variants) {

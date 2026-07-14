@@ -22,7 +22,7 @@ Read `.claude/OUTCOME.md`. If absent, generate the stub via /outcome. Confirm th
 
 ## Phase 2: Prior Research Scan
 
-Derive subject slug from `$ARGUMENTS` (lowercase, hyphenated). Run `bfs .claude/workspace/research -name '*<slug>*.md'`. If no match, skip and note "No prior research found for `<slug>`". For each match, the table below shows the carry-forward mapping.
+Derive the lowercase hyphenated subject slug from `$ARGUMENTS`. Run `bfs .claude/workspace/research -name '*<slug>*.md'`. If no match, skip and note "No prior research found for `<slug>`". For each match, the table below shows the carry-forward mapping.
 
 | Extract                 | Carry to | Handling                           |
 | ----------------------- | -------- | ---------------------------------- |
@@ -41,9 +41,9 @@ Skip if `$ARGUMENTS` clearly indicates both. Otherwise ask via AskUserQuestion. 
 
 ## Phase 4: Domain-Scoped Parallel Investigation
 
-Launch Explore / ugrep / bfs / Read in parallel. For Feature planning or Bug investigation intent, also invoke `Task(subagent_type: explorer-feature, run_in_background: false)` to trace execution paths and map architecture (Feature planning traces the prospective path, Bug investigation the failing path). Include the research subject title verbatim in the spawn prompt. Instruct explorer-feature to return its result as a single JSON object `{ findings: [{ statement: string, source: string }] }`. If Explore returns empty, re-run with broader keywords. State the source for each finding in place (facts `file:line`, inferences `inferred from X`, unverified `unknown, requires X`). Also append each command and its raw output verbatim to the scratch. This is the audit trail; Phase 7 Disconfirmation quotes it directly and does not reconstruct.
+Launch Explore / ugrep / bfs / Read in parallel. For Feature planning or Bug investigation intent, also invoke `Task(subagent_type: explorer-feature, run_in_background: false)` to trace execution paths and map architecture. Feature planning traces the prospective path, Bug investigation the failing path. Include the research subject title verbatim in the spawn prompt. Instruct explorer-feature to return its result as a single JSON object `{ findings: [{ statement: string, source: string }] }`. If Explore returns empty, re-run with broader keywords. State the source for each finding in place: facts `file:line`, inferences `inferred from X`, unverified `unknown, requires X`. Also append each command and its raw output verbatim to the scratch. This is the audit trail; Phase 7 Disconfirmation quotes it directly and does not reconstruct.
 
-When the repo has a `.codegraph/` index, refresh it with `codegraph sync`, then resolve structural questions (who calls, what breaks, which tests are affected) with codegraph first. Get callers with `codegraph callers <symbol>` and the blast radius plus affected tests with `codegraph impact <symbol>`, and cite that output as the finding's source. A ugrep / grep search for the symbol name is not accepted as a source for these questions. In a repo without the index, do not init unprompted; fall back to Explore / ugrep. Use ugrep / grep only for free-text content search.
+When the repo has a `.codegraph/` index, refresh it with `codegraph sync`, then resolve structural questions such as who calls, what breaks, and which tests are affected with codegraph first. Get callers with `codegraph callers <symbol>` and the blast radius plus affected tests with `codegraph impact <symbol>`, and cite that output as the finding's source. A ugrep / grep search for the symbol name is not accepted as a source for these questions. In a repo without the index, do not init unprompted; fall back to Explore / ugrep. Use ugrep / grep only for free-text content search.
 
 Scope every search by Domain using the roots and terms below. Pass the roots to Explore in its prompt, append the terms to ugrep / bfs, and start Read from the roots. If a Domain's glob roots are all missing, fall back to General.
 
@@ -90,7 +90,7 @@ Not done until all are satisfied. An item whose Condition carries "(...)" is req
 | Item              | Condition                                                                                          |
 | ----------------- | -------------------------------------------------------------------------------------------------- |
 | OUTCOME           | `.claude/OUTCOME.md` present (Phase 1)                                                             |
-| Prior research    | `Prior research` field filled (slug or `none found`)                                               |
+| Prior research    | `Prior research` field filled with the slug or `none found`                                        |
 | Source            | Every finding has an explicit source or an `unknown, requires X` note                              |
 | Audit trail       | Phase 4 scratch captured with commands and raw output verbatim                                     |
 | Cross-method      | Cross-method verification performed for exhaustiveness claims (when such a claim exists)           |

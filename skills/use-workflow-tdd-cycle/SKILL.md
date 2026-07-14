@@ -31,7 +31,7 @@ Test behavior via public API. Mock only at system boundaries.
 
 | Context                  | Reason                            |
 | ------------------------ | --------------------------------- |
-| Prototypes (throwaway)   | Discard likely, cost > benefit    |
+| Throwaway prototypes     | Discard likely, cost > benefit    |
 | External API integration | Mock the API, not the integration |
 | Simple one-off scripts   | Shorter than the test would be    |
 | UI experiments           | Visual first, extract logic later |
@@ -62,7 +62,7 @@ Test behavior via public API. Mock only at system boundaries.
 | -------- | ------------ | ----------------------------------------------------------------------------------- | ------------------------------ |
 | Red      | Failing test | Verify failure matches the intended behavior gap, not syntax/import errors          | Test passes immediately        |
 | Green    | Pass test    | "You can sin" - dirty OK                                                            | Over-implementing              |
-| Refactor | Refine       | Keep tests green. Shrink only while it reads easier (~/.claude/rules/PRINCIPLES.md) | Changing behavior; compressing |
+| Refactor | Refine       | Keep tests green. Shrink only while it reads easier, per ~/.claude/rules/PRINCIPLES.md | Changing behavior; compressing |
 | Commit   | Save state   | All checks pass                                                                     | Skipping checks                |
 
 ## Baby Steps (2-min cycle)
@@ -87,11 +87,9 @@ Right (vertical):
 | #   | Hazard from horizontal slices                                              |
 | --- | -------------------------------------------------------------------------- |
 | 1   | Bulk-written tests verify imagined behavior instead of real behavior       |
-| 2   | Tests degrade into structural assertions (data shape, signature) only      |
-| 3   | Sensitivity to behavior change drops (pass when broken, fail when correct) |
+| 2   | Tests degrade into structural assertions of data shape or signature only   |
+| 3   | Sensitivity to behavior change drops: pass when broken, fail when correct  |
 | 4   | Implementation knowledge follows test structure instead of guiding it      |
-
-Adapted from mattpocock/skills `tdd` SKILL.md.
 
 ## Test Failure Judgment
 
@@ -103,7 +101,7 @@ When a test fails, decide whether to fix the test or the implementation.
 | Test bug | Test diverges from spec   | Fix test                             |
 | Unclear  | Spec ambiguous or missing | Escalate to user                     |
 
-For bug-driven flows (`/fix`), reproduction steps serve as the spec.
+For `/fix`'s bug-driven flow, reproduction steps serve as the spec.
 
 ## Test Design
 
@@ -131,7 +129,7 @@ One test, one concept. If two tests assert the same function with the same argum
 
 ## Mock
 
-Mock at system boundaries: external APIs, databases, file system, network, non-deterministic dependencies (time, random), slow dependencies that block the 2-min cycle.
+Mock at system boundaries: external APIs, databases, file system, network, non-deterministic dependencies such as time and random, and slow dependencies that block the 2-min cycle.
 
 | Rule                | Threshold                        |
 | ------------------- | -------------------------------- |

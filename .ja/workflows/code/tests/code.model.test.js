@@ -19,7 +19,6 @@ const plan = {
       goal: "sample goal",
       files: ["sample.js"],
       contract: "sample contract",
-      depends_on: [],
       tests: [],
     },
   ],

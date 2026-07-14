@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Autonomous end-to-end build. Taking an issue with a Plan section refined via /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Audit / Polish / Backlog / Ship run headlessly as deterministic script stages. An issue without a Plan section proceeds via an ephemeral plan generated inside Load (recorded as an assumption; the issue is left untouched). Review happens on a draft PR.",
   whenToUse:
-    'Fire-and-forget implementation. Finish the refine-with-a-human stage in /issue, then pass that issue number ("123" / "#123") / URL / {issue, repo} as args. An issue without a Plan section is also accepted (the plan is auto-generated; quality is below the /issue path). Step away and come back to a draft PR with recorded assumptions and audit results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
+    'Fire-and-forget implementation. Pass an issue number ("123" / "#123") / URL / {issue, repo} as args. An issue without a Plan section is also accepted (the plan is auto-generated; quality is below the /think + /issue path). Step away and come back to a draft PR with recorded assumptions and audit results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -16,9 +16,10 @@ export const meta = {
   ],
 };
 
-// The upstream /issue already handled premise verification and human refinement, so
-// build does not re-plan: the issue body's ## Plan section is the single planning
-// source, and while extraction is left to the LLM, verification belongs to the script.
+// Upstream refinement is human-driven (/challenge, /research, /think, /issue run as
+// standalone stages), so build does not re-plan: the issue body's ## Plan section is
+// the single planning source, and while extraction is left to the LLM, verification
+// belongs to the script.
 // An issue without a Plan section does not fail-close: Load generates an ephemeral
 // plan from the issue body and runs it through the same validate. The generated plan
 // is not written back to the issue (a relaunch regenerates), so the fact that it never
@@ -116,7 +117,7 @@ const EXTRACT_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["id", "goal", "files", "contract", "tests", "depends_on"],
+        required: ["id", "goal", "files", "contract", "tests"],
         properties: {
           id: {
             type: "string",
@@ -133,14 +134,15 @@ const EXTRACT_SCHEMA = {
           },
           contract: {
             type: "string",
-            description: "Public interface: a sketch of signatures / CLI flags / schemas",
+            description:
+              "A citation (existing code path + symbol / docs page / official docs deep link) plus a one-line intent",
           },
           tests: {
             type: "array",
             items: {
               type: "object",
               additionalProperties: false,
-              required: ["id", "name", "given", "when", "then"],
+              required: ["id", "name"],
               properties: {
                 id: {
                   type: "string",
@@ -148,20 +150,11 @@ const EXTRACT_SCHEMA = {
                 },
                 name: {
                   type: "string",
-                  description: "Statement of the spec being verified. Becomes the test name",
+                  description:
+                    "One-line statement of the spec being verified (condition + expected result). Becomes the test name",
                 },
-                given: { type: "string" },
-                when: { type: "string" },
-                // JSON Schema property definition, not a thenable (BDD given/when/then)
-                // oxlint-disable-next-line unicorn/no-thenable
-                then: { type: "string" },
               },
             },
-          },
-          depends_on: {
-            type: "array",
-            items: { type: "string" },
-            description: "Ids of prerequisite units. Empty array if none",
           },
         },
       },
@@ -238,16 +231,12 @@ const SHIP_SCHEMA = {
 };
 
 // Re-validation of the structured plan + non-empty content checks. Deterministically rejects
-// structural defects (duplicate ids / dangling or cyclic depends_on / missing tests)
-// and empty content (test_command / contract / name / given / when / then).
+// structural defects (duplicate ids / missing tests) and empty content
+// (test_command / contract / name). Units run in listed order; there is no depends_on.
 //
-// DRY debt: this is a hand-maintained copy of validate_plan in hooks/veto/veto.py
-// (the canonical plan-gate, locked by plan-gate.bats T-011). The copy is kept in lockstep
-// by hooks/veto/tests/contract_build_port.py, which extracts the body between the two
-// CONTRACT-TEST markers below, runs it via node, and asserts it returns identical errors
-// on every shared fixture. Editing this block without updating the canonical (or vice
-// versa) fails that test. Do not rename or remove the markers.
-// CONTRACT-TEST-BEGIN validate
+// This is the canonical plan validator (ADR-0084 retired the veto plan-gate that
+// this block was originally ported from). Load's validate is the last line of
+// defense for plan quality in the human-driven upstream flow.
 const validate = (plan) => {
   const errors = [];
   // Non-object entries get a position-based placeholder id so they surface as
@@ -268,7 +257,6 @@ const validate = (plan) => {
       t && typeof t === "object" && !Array.isArray(t) ? t : { id: `units[${i}].tests[${j}]` },
     );
     const files = Array.isArray(u.files) ? u.files : [];
-    const dependsOn = Array.isArray(u.depends_on) ? u.depends_on : [];
     if (!tests.length) errors.push(`${u.id} has no test scenario`);
     if (!files.length) errors.push(`${u.id} has no target files`);
     if (!String(u.goal || "").trim()) errors.push(`${u.id} has an empty goal`);
@@ -276,33 +264,12 @@ const validate = (plan) => {
     for (const t of tests) {
       if (testIds.has(t.id)) errors.push(`duplicate test id ${t.id}`);
       testIds.add(t.id);
-      for (const field of ["name", "given", "when", "then"]) {
-        if (!String(t[field] || "").trim()) errors.push(`${t.id} has an empty ${field}`);
-      }
-    }
-    for (const d of dependsOn) {
-      if (!ids.has(d)) errors.push(`${u.id}'s depends_on ${d} points to a nonexistent unit`);
+      if (!String(t.name || "").trim()) errors.push(`${t.id} has an empty name`);
     }
   }
 
-  // Cycle detection (DFS)
-  const state = new Map();
-  const visit = (id, path) => {
-    if (state.get(id) === "done") return;
-    if (state.get(id) === "visiting") {
-      errors.push(`depends_on cycle: ${[...path, id].join(" -> ")}`);
-      return;
-    }
-    state.set(id, "visiting");
-    const u = units.find((x) => x.id === id);
-    for (const d of u && Array.isArray(u.depends_on) ? u.depends_on : []) visit(d, [...path, id]);
-    state.set(id, "done");
-  };
-  for (const u of units) visit(u.id, []);
-
   return errors;
 };
-// CONTRACT-TEST-END validate
 
 // gh verifies TLS through macOS Security.framework/trustd, whose validation network
 // the Bash sandbox blocks -> OSStatus -26276 (evaluation cannot complete). git
@@ -348,7 +315,7 @@ if (hasPlanSection) {
   const afterHeading = body.slice(planHeading.index + planHeading[0].length);
   const nextSection = afterHeading.search(/^##[^#]/m);
   const planSection = nextSection === -1 ? afterHeading : afterHeading.slice(0, nextSection);
-  // Match ids at their definition position only, not prose references (see plan-section.md).
+  // Match ids at their definition position only, not prose references (see think templates/plan.md).
   const idSet = (re) => new Set([...planSection.matchAll(re)].map((m) => m[1]));
   bodyUnitIds = idSet(/^###\s+(U-\d{3})\b/gm);
   bodyTestIds = idSet(/^[ \t]*[-*+][ \t]+(T-\d{3})\b/gm);
@@ -371,7 +338,7 @@ const extractPrompt =
 const generatePrompt =
   `The following GitHub issue body has no ## Plan section. Derive a structured plan from the issue body alone; do not invent scope beyond what the issue asks. ` +
   `Explore the repository first to ground the plan in reality: pick concrete file paths, list preconditions ({path, pattern} of existing code the plan presupposes), and read the project config to determine the real test_command. ` +
-  `Decompose the work into small dependency-ordered units with U-001-style ids; give each unit test scenarios with plan-wide-unique T-001-style ids, a spec-statement name, and given/when/then. ` +
+  `Decompose the work into small units with U-001-style ids, listed in implementation order; give each unit test scenarios with plan-wide-unique T-001-style ids and a one-line spec-statement name (condition + expected result). Write each contract by selection, not generation: a citation (existing code path + symbol, a docs page, or an official-docs deep link) plus a one-line intent. ` +
   `Set dir to .claude/workspace/planning/<YYYY-MM-DD>-<slug> using today's date from the shell. ` +
   `Record every best-guess decision you make in assumptions; backlog_candidates are out-of-scope candidates mentioned in the issue. Empty arrays if none.\n\n${fencedBody}`;
 
@@ -779,8 +746,7 @@ await agent(
 // (source: issue) plus discoveries during the build (code / audit / polish). The
 // build does not file these itself; issue creation is deferred to the final output.
 // The candidates are surfaced in the return value, and the user files the ones worth
-// filing via /issue, which carries the premise-check / challenge refinement build
-// expects from an issue.
+// filing via /issue (running /challenge, /research, or /think first where warranted).
 phase("Backlog");
 // code.anomalies are NOT folded in here: they are Red-unconfirmed build-integrity
 // signals, rendered once under the PR's dedicated "Anomalies" section (via

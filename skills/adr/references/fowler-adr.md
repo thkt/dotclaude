@@ -19,7 +19,7 @@ Typically a single page, at most two. Capture the decision, its context, and sig
 | ---------------- | ------------------------------------------------------- |
 | Inverted pyramid | Critical info first. Supporting detail later            |
 | Brevity          | Single page preferred. Link out for supporting material |
-| Markdown         | Lives in the source repo, diffable alongside code       |
+| Markdown         | Lives in the repository, diffable alongside code        |
 
 ## Required Content Elements
 

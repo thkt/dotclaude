@@ -4,7 +4,7 @@ The skeleton that `/census` Phase 6 emits. Repeat the Source File Decisions `###
 
 ## Template
 
-Substitute `{...}` from findings. For enum cells, pick the matching value from the `/`-separated choices. The three ADR Promotion Candidates rows show the challenge-verdict to Final mapping (keep is ADR, downgrade is inline-comment, drop is skip). Write the one matching row per candidate.
+Substitute `{...}` from findings. For enum cells, pick the matching value from the `/`-separated choices. The three ADR Promotion Candidates rows show the challenge-verdict to Final mapping: keep is ADR, downgrade is inline-comment, drop is skip. Write the one matching row per candidate.
 
 ```markdown
 # ADR Gaps Audit: {YYYY-MM-DD}-{HHMMSS}

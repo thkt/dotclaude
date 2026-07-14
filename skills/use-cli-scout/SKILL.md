@@ -25,9 +25,9 @@ Run `scout <subcommand> --help` for options, `--json` envelope, exit codes, stdi
 
 | use-cli-scout                      | Built-in WebFetch / WebSearch      |
 | ---------------------------------- | ---------------------------------- |
-| Latest docs, release notes         | Never (scout preferred)            |
-| GitHub repository exploration      | Never (scout repo-\* preferred)    |
-| Deep research with compiled report | Unavailable (use scout research)   |
+| Latest docs, release notes         | Never; scout preferred             |
+| GitHub repository exploration      | Never; scout repo-\* preferred     |
+| Deep research with compiled report | Unavailable; use scout research    |
 | Markdown-clean page extraction     | WebFetch lacks Markdown conversion |
 
 ## Prerequisite
