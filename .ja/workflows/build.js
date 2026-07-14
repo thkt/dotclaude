@@ -49,9 +49,9 @@ const guard = repo
 // どちらも素の dev tree 形を先に試すので、dev tree はそのまま動く。
 const sibling = async (name, a) => {
   try {
-    return await workflow(`build:${name}`, a);
-  } catch {
     return await workflow(name, a);
+  } catch {
+    return await workflow(`build:${name}`, a);
   }
 };
 const bundled = (rel) =>
