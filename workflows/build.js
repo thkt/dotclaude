@@ -1,7 +1,7 @@
 export const meta = {
   name: "build",
   description:
-    "Autonomous end-to-end build. Taking an issue with a Plan section refined via /think + /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Polish / Verify / Ship run headlessly as deterministic script stages. Correctness checking is a comparison against the plan's own anchors (preconditions, files scope, T-NNN statements, conformance), not an open-ended defect hunt; heavy assurance (/audit, /polish review) is human-invoked on the draft PR (ADR-0085).",
+    "Autonomous end-to-end build. Taking an issue with a Plan section refined via /think + /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Cleanup / Verify / Ship run headlessly as deterministic script stages. Correctness checking is a comparison against the plan's own anchors (preconditions, files scope, T-NNN statements, conformance), not an open-ended defect hunt; heavy assurance (/audit, /polish review) is human-invoked on the draft PR (ADR-0085).",
   whenToUse:
     'Implementation of a plan-backed issue. Pass an issue number ("123" / "#123") / URL / {issue, repo} as args. An issue without a ## Plan section fail-closes with a proposal to refine it via /think + /issue first. Step away and come back to a draft PR with recorded assumptions, conformance findings, and deterministic verify results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
   phases: [
@@ -9,7 +9,7 @@ export const meta = {
     { title: "Revalidate" },
     { title: "Branch" },
     { title: "Code" },
-    { title: "Polish" },
+    { title: "Cleanup" },
     { title: "Verify" },
     { title: "Ship" },
   ],
@@ -421,7 +421,7 @@ if (!code.tests_pass || !code.gates_pass)
   );
 log(`Code: ${plan.units.length} unit(s) implemented, independent verify tests=${code.tests_pass} gates=${code.gates_pass}.`);
 
-// ---- Polish: cleanup (simplify skill + test validation) ----
+// ---- Cleanup: simplify skill + test validation ----
 // The review lens (Codex) is retired from build (ADR-0085); /polish stays available
 // for the human to run on the PR. Cleanup runs before Verify so the verified tree
 // is the shipped tree.
@@ -437,7 +437,7 @@ const CLEANUP_SCHEMA = obj(["edits", "tests_pass", "stashed"], {
     description: "true when the cleanup edits were rolled back on test failure",
   },
 });
-phase("Polish");
+phase("Cleanup");
 const cleanup = (await agent(
   anchor(
     `Invoke the Skill tool with skill "simplify" for a cleanup-only pass (reuse, simplification, efficiency, altitude) on the current diff. If it rejects a no-arg invocation, pass the diff scope. ` +
@@ -446,13 +446,13 @@ const cleanup = (await agent(
   ),
   {
     label: "cleanup",
-    phase: "Polish",
+    phase: "Cleanup",
     agentType: "general-purpose",
     schema: CLEANUP_SCHEMA,
     model: "sonnet",
   },
 )) || { edits: [], tests_pass: false, stashed: false };
-log(`Polish: ${cleanup.edits.length} cleanup edit(s), tests_pass=${cleanup.tests_pass}.`);
+log(`Cleanup: ${cleanup.edits.length} edit(s), tests_pass=${cleanup.tests_pass}.`);
 
 // ---- Verify: deterministic selection checks (diff scope + T-NNN presence) ∥ conformance ----
 // Correctness checking compares against the plan's anchors, not a defect hunt
@@ -721,7 +721,7 @@ return {
   scope_deviations: scopeDeviations,
   missing_tests: missingTests,
   conformance_findings: (conf.findings || []).length,
-  polish_cleanup: cleanup.tests_pass,
+  cleanup_tests_pass: cleanup.tests_pass,
   backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,
   pr_url: ship.pr_url,

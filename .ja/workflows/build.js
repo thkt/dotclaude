@@ -1,7 +1,7 @@
 export const meta = {
   name: "build",
   description:
-    "自律的な end-to-end build。/think + /issue で精緻化した Plan 節付き issue を入力に、Load (逐語 fetch → 決定論 id 収集 → 抽出 → validate + id クロスチェック) / Revalidate / Branch / Code / Polish / Verify / Ship を headless の決定論 script stage として実行する。正しさの確認は plan 自身のアンカー (前提、files スコープ、T-NNN 言明、conformance) との比較であり、開放的な欠陥探索ではない。重い担保 (/audit、/polish review) は draft PR に対して人間が起動する (ADR-0085)。",
+    "自律的な end-to-end build。/think + /issue で精緻化した Plan 節付き issue を入力に、Load (逐語 fetch → 決定論 id 収集 → 抽出 → validate + id クロスチェック) / Revalidate / Branch / Code / Cleanup / Verify / Ship を headless の決定論 script stage として実行する。正しさの確認は plan 自身のアンカー (前提、files スコープ、T-NNN 言明、conformance) との比較であり、開放的な欠陥探索ではない。重い担保 (/audit、/polish review) は draft PR に対して人間が起動する (ADR-0085)。",
   whenToUse:
     'plan 付き issue の実装。issue 番号 ("123" / "#123") / URL / {issue, repo} を args に渡す。## Plan 節の無い issue は fail-close し、先に /think + /issue での精緻化を提案する。離席して戻れば、前提 / conformance findings / 決定論 verify 結果を記録した draft PR ができている。スコープ外の backlog 候補は workflow の戻り値で返り、/issue で起票する。途中で舵を取る場合は phase を対話的に進める。',
   phases: [
@@ -9,7 +9,7 @@ export const meta = {
     { title: "Revalidate" },
     { title: "Branch" },
     { title: "Code" },
-    { title: "Polish" },
+    { title: "Cleanup" },
     { title: "Verify" },
     { title: "Ship" },
   ],
@@ -412,7 +412,7 @@ if (!code.tests_pass || !code.gates_pass)
   );
 log(`Code: ${plan.units.length} unit 実装、独立 verify tests=${code.tests_pass} gates=${code.gates_pass}。`);
 
-// ---- Polish: cleanup (simplify skill + test 検証) ----
+// ---- Cleanup: simplify skill + test 検証 ----
 // review lens (Codex) は build から外れた (ADR-0085)。/polish は人間が PR に起動できる
 // 形で残る。cleanup は Verify の前に走らせ、検証の対象を出荷する tree にする。
 const CLEANUP_SCHEMA = obj(["edits", "tests_pass", "stashed"], {
@@ -427,7 +427,7 @@ const CLEANUP_SCHEMA = obj(["edits", "tests_pass", "stashed"], {
     description: "テスト失敗で cleanup 編集を巻き戻したとき true",
   },
 });
-phase("Polish");
+phase("Cleanup");
 const cleanup = (await agent(
   anchor(
     `Skill ツールで skill "simplify" を起動し、現在の diff に cleanup 限定の pass (再利用 / 簡素化 / 効率 / 高度) をかける。引数なしを拒否されたら diff の scope を渡す。` +
@@ -436,13 +436,13 @@ const cleanup = (await agent(
   ),
   {
     label: "cleanup",
-    phase: "Polish",
+    phase: "Cleanup",
     agentType: "general-purpose",
     schema: CLEANUP_SCHEMA,
     model: "sonnet",
   },
 )) || { edits: [], tests_pass: false, stashed: false };
-log(`Polish: cleanup 編集 ${cleanup.edits.length} 件、tests_pass=${cleanup.tests_pass}。`);
+log(`Cleanup: 編集 ${cleanup.edits.length} 件、tests_pass=${cleanup.tests_pass}。`);
 
 // ---- Verify: 決定論の選択チェック (diff スコープ + T-NNN 照合) ∥ conformance ----
 // 正しさの確認は欠陥探索でなく plan のアンカーとの比較で行う (ADR-0085)。静的解析は
@@ -705,7 +705,7 @@ return {
   scope_deviations: scopeDeviations,
   missing_tests: missingTests,
   conformance_findings: (conf.findings || []).length,
-  polish_cleanup: cleanup.tests_pass,
+  cleanup_tests_pass: cleanup.tests_pass,
   backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,
   pr_url: ship.pr_url,

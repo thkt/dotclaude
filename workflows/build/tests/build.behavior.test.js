@@ -381,7 +381,7 @@ test("Revalidate は 1 miss で stopped: plan-drift、全 pass で Branch へ進
   assert.ok(empty.calls.phase.includes("Branch"), "preconditions 空でも Branch phase に到達する");
 });
 
-test("happy path の phase 順が Load → Revalidate → Branch → Code → Polish → Verify → Ship で、code に model: opus が渡り audit / polish / challenge / think / research が呼ばれない", async () => {
+test("happy path の phase 順が Load → Revalidate → Branch → Code → Cleanup → Verify → Ship で、code に model: opus が渡り audit / polish / challenge / think / research が呼ばれない", async () => {
   const { calls } = await runWorkflow(buildJs, {
     args: { issue: "123" },
     stubs: makeStubs(),
@@ -389,8 +389,8 @@ test("happy path の phase 順が Load → Revalidate → Branch → Code → Po
 
   assert.deepEqual(
     calls.phase,
-    ["Load", "Revalidate", "Branch", "Code", "Polish", "Verify", "Ship"],
-    "phase 順が Load → Revalidate → Branch → Code → Polish → Verify → Ship (cleanup 後の tree を検証する)",
+    ["Load", "Revalidate", "Branch", "Code", "Cleanup", "Verify", "Ship"],
+    "phase 順が Load → Revalidate → Branch → Code → Cleanup → Verify → Ship (cleanup 後の tree を検証する)",
   );
 
   const codeCalls = calls.workflow.filter((c) => c.name === "code");
@@ -716,10 +716,10 @@ test("translate-tail の訳 id が入力と一致しないなら英語原文で 
   assert.ok(!shipCalls[0].prompt.includes("only one"), "id 不一致の訳は採用されない");
 });
 
-test("実環境で Plan 節付き issue が Load → Revalidate → Branch → Code → Polish → Verify と進み、Plan 節なし issue が stopped: no-plan になる (manual acceptance、done 前必須)", () => {
+test("実環境で Plan 節付き issue が Load → Revalidate → Branch → Code → Cleanup → Verify と進み、Plan 節なし issue が stopped: no-plan になる (manual acceptance、done 前必須)", () => {
   // harness green だけで完了にしないための manual gate。実際に build workflow を
   // Plan 節付き / Plan 節なしの実 issue で起動し、前者の phase log が
-  // Load → Revalidate → Branch → Code → Polish → Verify の順に出て PR tail に /audit 案内が載ること、
+  // Load → Revalidate → Branch → Code → Cleanup → Verify の順に出て PR tail に /audit 案内が載ること、
   // 後者が stopped: no-plan で /think + /issue の提案を返すことを確認したら
   // ADR0085_MANUAL_ACCEPTANCE=pass を付けてテストを実行する。
   assert.equal(
