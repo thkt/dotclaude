@@ -17,7 +17,7 @@ Conventions for Markdown files under `.claude/`.
 
 ## File scope
 
-Files under `.ja/` are canonical; edit `.ja/` first, then mirror to the English file at the path without the `.ja/` prefix in the same commit. Scope is judged by the path without the `.ja/` prefix. Non-Markdown files such as scripts follow the same mirror discipline. They are identical copies rather than translations; edit `.ja/` and reflect to the English-side path in the same commit. The exception is a workflow script that embeds LLM-facing prompts, such as workflows/build.js: its prose (comments / prompts / message strings) is translated, while code structure, identifiers, stopped values, and JSON keys stay identical. Do not sync the exception files with cp; it clobbers the Japanese side with English.
+Files under `.ja/` are canonical; edit `.ja/` first, then mirror to the English file at the path without the `.ja/` prefix in the same commit. Scope is judged by the path without the `.ja/` prefix. The mirroring form is decided by content, not file type. A file that carries prose (Markdown, and a prompt-embedding script such as workflows/build.js) has its prose (comments / prompts / message strings) translated, while code structure, identifiers, stopped values, and JSON keys stay identical. A script with no prose is an identical copy. Never sync translated files with cp; it clobbers one side's intent with the other side's language.
 
 | Scope        | Paths                                                             |
 | ------------ | ----------------------------------------------------------------- |
