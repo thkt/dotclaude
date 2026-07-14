@@ -92,6 +92,7 @@ This directory contains important decisions about the project's architecture.
 | [0083](0083-collapse-marketplace-to-single-build-plugin.md) | Marketplace を単一 build plugin に集約する | accepted | 2026-07-07 |
 | [0084](0084-retire-issue-gate-and-hand-issue-flow-orchestration-to-human.md) | ADR-0084: issue-gate を廃止し issue フローのオーケストレーションを人間に返す | accepted | 2026-07-13 |
 | [0085](0085-replace-builds-audit-fan-out-with-selection-based-verification.md) | ADR-0085: build の audit fan-out を選択ベース検証に置換する | accepted | 2026-07-14 |
+| [0086](0086-draft-plans-for-plan-less-issues-via-a-nested-workflow.md) | ADR-0086: Plan 節なし issue の plan を nested workflow で自律生成する | accepted | 2026-07-14 |
 
 ## By Status
 
@@ -175,6 +176,7 @@ This directory contains important decisions about the project's architecture.
 - **0083**: Marketplace を単一 build plugin に集約する
 - **0084**: ADR-0084: issue-gate を廃止し issue フローのオーケストレーションを人間に返す
 - **0085**: ADR-0085: build の audit fan-out を選択ベース検証に置換する
+- **0086**: ADR-0086: Plan 節なし issue の plan を nested workflow で自律生成する
 
 ### Superseded
 
