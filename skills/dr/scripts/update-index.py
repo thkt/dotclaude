@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Usage: update-index.py [adr-directory]
+"""Usage: update-index.py [dr-directory]
 
-Regenerates <adr-dir>/README.md from the ADR files.
+Regenerates <dr-dir>/README.md from the Decision Record files.
 stdout: path to the updated index file
 stderr: directory not found etc. with exit 1
 """
@@ -11,7 +11,7 @@ import sys
 import tempfile
 from datetime import date
 
-from adr_common import fail, guard_skill_dir, resolve_adr_dir, split_frontmatter
+from dr_common import fail, guard_skill_dir, resolve_dr_dir, split_frontmatter
 
 STATUS_SECTIONS = (
     ("proposed", "Proposed"),
@@ -22,11 +22,11 @@ STATUS_SECTIONS = (
 )
 
 HEADER = """\
-# Architecture Decision Records
+# Decision Records
 
-This directory contains important decisions about the project's architecture.
+This directory contains important decisions about the project.
 
-## ADR List
+## DR List
 
 | Number | Title | Status | Date |
 |--------|-------|--------|------|
@@ -37,10 +37,10 @@ FOOTER = """\
 
 This project uses [MADR (Markdown Any Decision Records)](https://adr.github.io/madr/) format, v4.
 
-### How to Create an ADR
+### How to Create a Decision Record
 
 ```bash
-/adr "Decision Title"
+/dr "Decision Title"
 ```
 
 ### Status Meanings
@@ -48,8 +48,8 @@ This project uses [MADR (Markdown Any Decision Records)](https://adr.github.io/m
 - **Proposed**: Awaiting review
 - **Accepted**: Approved, implementing or completed
 - **Rejected**: Considered but not adopted
-- **Deprecated**: Retired without a replacement ADR
-- **Superseded**: Replaced by another ADR (e.g. `superseded by ADR-NNNN`)
+- **Deprecated**: Retired without a replacement DR
+- **Superseded**: Replaced by another DR (e.g. `superseded by DR-NNNN`)
 
 ---
 
@@ -58,7 +58,7 @@ This project uses [MADR (Markdown Any Decision Records)](https://adr.github.io/m
 """
 
 
-def parse_adr(path):
+def parse_dr(path):
     """(title, status, date) from frontmatter and the first # heading."""
     frontmatter, body = split_frontmatter(path.read_text(encoding="utf-8"))
     status = next(
@@ -76,17 +76,17 @@ def parse_adr(path):
 
 
 def main():
-    adr_dir = resolve_adr_dir(sys.argv[1] if len(sys.argv) > 1 else None)
-    if not adr_dir.is_dir():
-        fail(f"Error: directory not found: {adr_dir}")
-    guard_skill_dir(adr_dir, "Set ADR_DIR env var or pass an explicit ADR archive path.")
+    dr_dir = resolve_dr_dir(sys.argv[1] if len(sys.argv) > 1 else None)
+    if not dr_dir.is_dir():
+        fail(f"Error: directory not found: {dr_dir}")
+    guard_skill_dir(dr_dir, "Set DR_DIR env var or pass an explicit DR archive path.")
 
     rows = []
     by_status = {key: [] for key, _ in STATUS_SECTIONS}
-    for adr_file in sorted(adr_dir.rglob("[0-9][0-9][0-9][0-9]-*.md")):
-        number = adr_file.name[:4]
-        title, status, date_str = parse_adr(adr_file)
-        rows.append(f"| [{number}]({adr_file.name}) | {title} | {status} | {date_str} |")
+    for dr_file in sorted(dr_dir.rglob("[0-9][0-9][0-9][0-9]-*.md")):
+        number = dr_file.name[:4]
+        title, status, date_str = parse_dr(dr_file)
+        rows.append(f"| [{number}]({dr_file.name}) | {title} | {status} | {date_str} |")
         for key, _ in STATUS_SECTIONS:
             if status.startswith(key):
                 by_status[key].append((number, title))
@@ -101,8 +101,8 @@ def main():
             parts.append(f"### {heading}\n\n{entries}\n")
     parts.append(FOOTER.format(update_date=date.today().isoformat()))
 
-    index_file = adr_dir / "README.md"
-    fd, temp_path = tempfile.mkstemp(dir=adr_dir)
+    index_file = dr_dir / "README.md"
+    fd, temp_path = tempfile.mkstemp(dir=dr_dir)
     with os.fdopen(fd, "w", encoding="utf-8") as temp_file:
         temp_file.write("\n".join(parts))
     os.replace(temp_path, index_file)

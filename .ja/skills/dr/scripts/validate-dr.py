@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Usage: validate-adr.py <adr-file>
+"""Usage: validate-dr.py <dr-file>
 
 stdout: JSON { file, errors, warnings, checks }
 exit: 0 if no errors (warnings allowed), 1 if errors
@@ -13,7 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from adr_common import fail, split_frontmatter
+from dr_common import fail, split_frontmatter
 
 # Confirmation is an h3 under Decision Outcome; the others are h2. Section
 # detection allows either level so a valid h3 Confirmation is not flagged missing.
@@ -57,10 +57,10 @@ def lint_check(path):
 
 
 def main():
-    adr_file = sys.argv[1] if len(sys.argv) > 1 else ""
-    path = Path(adr_file)
+    dr_file = sys.argv[1] if len(sys.argv) > 1 else ""
+    path = Path(dr_file)
     if not path.is_file():
-        fail(f"Error: file not found: {adr_file}")
+        fail(f"Error: file not found: {dr_file}")
 
     text = path.read_text(encoding="utf-8")
     lines = text.splitlines()

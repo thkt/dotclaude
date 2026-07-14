@@ -1,25 +1,25 @@
-# ADR Gaps Audit Report Template
+# DR Gaps Audit Report Template
 
 The skeleton that `/census` Phase 6 emits. Repeat the Source File Decisions `###` section per source file and the Prose Document Decisions `###` section per document. Batch source files with no decisions into one trailing line. Record a document with no decisions as `no decisions found` under its `###`.
 
 ## Template
 
-Substitute `{...}` from findings. For enum cells, pick the matching value from the `/`-separated choices. The three ADR Promotion Candidates rows show the challenge-verdict to Final mapping: keep is ADR, downgrade is inline-comment, drop is skip. Write the one matching row per candidate.
+Substitute `{...}` from findings. For enum cells, pick the matching value from the `/`-separated choices. The three DR Promotion Candidates rows show the challenge-verdict to Final mapping: keep is DR, downgrade is inline-comment, drop is skip. Write the one matching row per candidate.
 
 ```markdown
-# ADR Gaps Audit: {YYYY-MM-DD}-{HHMMSS}
+# DR Gaps Audit: {YYYY-MM-DD}-{HHMMSS}
 
 ## Summary
 
-| Metric                   | Value         |
-| ------------------------ | ------------- |
-| Scope                    | {repo / path} |
-| Source files scanned     | {N}           |
-| Documents scanned        | {N}           |
-| Decision candidates      | {N}           |
-| ADR-covered (excluded)   | {N}           |
-| Net new candidates       | {N}           |
-| ADR promotion candidates | {N}           |
+| Metric                  | Value         |
+| ----------------------- | ------------- |
+| Scope                   | {repo / path} |
+| Source files scanned    | {N}           |
+| Documents scanned       | {N}           |
+| Decision candidates     | {N}           |
+| DR-covered (excluded)   | {N}           |
+| Net new candidates      | {N}           |
+| DR promotion candidates | {N}           |
 
 ## Source File Decisions
 
@@ -37,15 +37,15 @@ No net-new decisions in {files}.
 
 ### {file}
 
-| #   | Line   | Decision Verb | Decision  | ADR Coverage    | Impact    | Reversibility       |
-| --- | ------ | ------------- | --------- | --------------- | --------- | ------------------- |
-| 1   | {line} | {verb}        | {summary} | None / ADR-{id} | H / M / L | high / medium / low |
+| #   | Line   | Decision Verb | Decision  | DR Coverage    | Impact    | Reversibility       |
+| --- | ------ | ------------- | --------- | -------------- | --------- | ------------------- |
+| 1   | {line} | {verb}        | {summary} | None / DR-{id} | H / M / L | high / medium / low |
 
-## ADR Promotion Candidates (post-challenge)
+## DR Promotion Candidates (post-challenge)
 
 | #   | Candidate                   | Initial | Challenge | Final          |
 | --- | --------------------------- | ------- | --------- | -------------- |
-| 1   | {source}:{line} - {summary} | promote | keep      | ADR            |
+| 1   | {source}:{line} - {summary} | promote | keep      | DR             |
 | 2   | {source}:{line} - {summary} | promote | downgrade | inline-comment |
 | 3   | {source}:{line} - {summary} | promote | drop      | skip           |
 

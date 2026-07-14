@@ -1,8 +1,8 @@
-# Architecture Decision Records
+# Decision Records
 
-This directory contains important decisions about the project's architecture.
+This directory contains important decisions about the project.
 
-## ADR List
+## DR List
 
 | Number | Title | Status | Date |
 |--------|-------|--------|------|
@@ -197,10 +197,10 @@ This directory contains important decisions about the project's architecture.
 
 This project uses [MADR (Markdown Any Decision Records)](https://adr.github.io/madr/) format, v4.
 
-### How to Create an ADR
+### How to Create a Decision Record
 
 ```bash
-/adr "Decision Title"
+/dr "Decision Title"
 ```
 
 ### Status Meanings
@@ -208,8 +208,8 @@ This project uses [MADR (Markdown Any Decision Records)](https://adr.github.io/m
 - **Proposed**: Awaiting review
 - **Accepted**: Approved, implementing or completed
 - **Rejected**: Considered but not adopted
-- **Deprecated**: Retired without a replacement ADR
-- **Superseded**: Replaced by another ADR (e.g. `superseded by ADR-NNNN`)
+- **Deprecated**: Retired without a replacement DR
+- **Superseded**: Replaced by another DR (e.g. `superseded by DR-NNNN`)
 
 ---
 

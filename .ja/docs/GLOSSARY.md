@@ -6,118 +6,73 @@
 
 ## ドキュメント
 
-| 用語 | 正式名称                       | 用途                 | 生成元              | 読み手 | ライフサイクル |
-| ---- | ------------------------------ | -------------------- | ------------------- | ------ | -------------- |
-| ADR  | Architecture Decision Record   | 技術判断の記録       | `/adr`              | 人間   | 受理後は不変   |
-| SOW  | Statement of Work              | 計画、スコープ、基準 | `/think`            | AI     | 承認後は静的   |
-| Spec | Specification                  | 実装詳細、テスト     | `/think`            | AI     | 承認後は静的   |
-| IDR  | Implementation Decision Record | 実装記録             | `git commit` フック | 人間   | 追記のみ       |
+| 用語 | 正式名称            | 用途                           | 生成元   | 読み手    | ライフサイクル         |
+| ---- | ------------------- | ------------------------------ | -------- | --------- | ---------------------- |
+| DR   | Decision Record     | 技術判断の記録                 | `/dr`    | 人間      | 受理後は不変           |
+| plan | Implementation Plan | スコープ、unit、受け入れテスト | `/think` | AI + 人間 | 下書き後、issue で凍結 |
 
-### ADR. Architecture Decision Record
+### DR. Decision Record
 
 答えること: 「なぜこのアプローチを選んだのか」
 
-技術判断 (技術選定、アーキテクチャ パターン、廃止、プロセス変更) の根拠を記録する。MADR 形式の prose スタイルで書き、数か月から数年後に文脈を理解する必要がある人間の読者に最適化する。
+技術判断 (技術選定、アーキテクチャ パターン、廃止、プロセス変更) の根拠を記録する。MADR 形式の prose スタイルで書き、数か月から数年後に文脈を理解する必要がある人間の読者に最適化する。すべての判断がアーキテクチャに限るわけではないため、Architecture に限定せず Decision Record として記録する。
 
 主な特性:
 
-- 読み手は将来の開発者。プロジェクトに加わった人が ADR を読むことで過去の判断を理解できる
-- 受理後は不変。新たな ADR で置換されるが、編集はしない
-- プレースホルダより prose。ADR-0008 で、人間向けドキュメントは構造化テーブルではなく物語的に書くと定めた
+- 読み手は将来の開発者。プロジェクトに加わった人が DR を読むことで過去の判断を理解できる
+- 受理後は不変。新たな DR で置換されるが、編集はしない
 - 判断種別ごとに 4 つのテンプレート バリアントがある: technology-selection, architecture-pattern, deprecation, process-change
 
-配置: `adr/NNNN-title.md`
+配置: `docs/decisions/NNNN-title.md`
 
-### SOW. Statement of Work
+### plan. Implementation Plan
 
-答えること: 「何を作るのか、完了の判定はどうするのか」
+答えること: 「何を、どの順で作り、各ステップをどう検証するのか」
 
-スコープ、受け入れ基準、実装アプローチを定める計画文書。`/think` の中で、設計探索 (アプローチ比較、自己反論、ドメイン/技術視点) の後に作成される。
-
-主な特性:
-
-- 読み手は AI。`/validate` と `/code` が機械的にパースできる構造化テーブル
-- 承認後は静的。ユーザーが承認したら SOW は変更しない
-- AC-N 受け入れ基準。シンプルな番号付きチェックリスト (WHEN/THEN 形式ではない。ADR-0008 で未使用の I-001/A-001 体系から簡略化された)
-- YAGNI チェックリストを含む。除外する機能を明示し、スコープ膨張を防ぐ
-- Spec と対。SOW は「何を/なぜ」、Spec は「どう」を定める
-
-配置: `workspace/planning/YYYY-MM-DD-[feature]/sow.md`
-
-### Spec. Specification
-
-答えること: 「具体的にどう実装するのか」
-
-SOW の受け入れ基準を機能要件、テスト シナリオ、ドメイン モデルに落とす。`/code` 実装の主入力。
+`/think` が設計探索 (アプローチ比較、`critic-design` 反論) の後に下書きする。`templates/plan.md` の骨子に沿って `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に書き、`/issue` が両セクションを issue の Plan 節へそのまま転記する。build ワークフローが U-NNN / T-NNN の id 集合を抽出し、unit 単位で実装する。
 
 主な特性:
 
-- 読み手は AI。完全な追跡性を持つ構造化テーブル (`FR-001 Implements: AC-001` → `T-001 Validates: FR-001`)
-- 承認後は静的。SOW と一緒にロックされる
-- ドメイン モデルの深さは可変。CLI/設定向けには簡潔なデータ モデル、ビジネス アプリ向けには詳細なエンティティ/ビジネス ルール/イベント (ADR-0008 の閾値: エンティティ 3 以上またはビジネス ルール 3 以上)
-- テスト シナリオが詳細を持つ。テスト計画は SOW ではなく Spec にある (ADR-0008 で重複を排除)
-- 追跡性マトリクス。すべての AC が FR、テスト、NFR にマップされる
+- 読み手は AI と人間。build が構造を機械的に抽出し、人間は build 実行前に issue 上でレビューする
+- セクションは 2 つのみ。`## Plan` (Outcome, test_command, Preconditions, U-NNN unit) と `## Backlog candidates`
+- issue で凍結。Plan 節へ転記されたら、その節が build の消費する正となる
+- unit が受け入れテストを持つ。各 U-NNN は T-NNN テストで挙動を固定する。docs / config の unit はテストを省き、build が直接実装する
 
-配置: `workspace/planning/YYYY-MM-DD-[feature]/spec.md`
-
-### IDR. Implementation Decision Record
-
-答えること: 「実装中に実際に何が起きたか」
-
-各コミットの変更を自動生成する記録。コーディング中に下した判断を捕捉する。`claude-idr` (Rust バイナリ) が git pre-commit フック時にセッション ログと diff を分析して作成する。
-
-主な特性:
-
-- 読み手は人間レビュアー。構造化データではなく、変更の物語的なサマリ
-- 追記のみ。各コミットが新規 IDR ファイルを追加し、過去のものは変更しない
-- 自動。手動操作不要。フックが git diff + セッション コンテキストから生成する
-- SOW へ追跡可能。SOW があれば同じディレクトリに置かれ、計画から実行へのリンクを提供する
-- 連番。feature ディレクトリ内で `idr-01.md`, `idr-02.md`, ... と続く
-
-配置: `workspace/planning/[feature]/idr-NN.md` または `workspace/planning/YYYY-MM-DD/idr-NN.md`
+配置: `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`、その後 issue の `## Plan` 節
 
 ### ドキュメントの関係
 
 ```mermaid
 flowchart LR
-    SOW -->|details| Spec
-    Spec -->|implements| Code
-    Code -->|records| IDR
-    ADR -.->|references| SOW
-    IDR -.->|traces back| SOW
+    Think["/think"] -->|drafts| plan
+    plan -->|transferred by /issue| Issue
+    Issue -->|extracted by build| Code
+    DR -.->|referenced by| plan
 ```
 
-| 関係         | 仕組み                                            |
-| ------------ | ------------------------------------------------- |
-| SOW → Spec  | SOW の AC-N → Spec の FR-NNN `Implements: AC-N`  |
-| Spec → Code | `/code` が Spec を実装入力として読む              |
-| Code → IDR  | git commit フックが diff から IDR を自動生成      |
-| ADR → SOW   | `/think` Step 5.5 が主要判断に対し ADR を提案する |
-| IDR → SOW   | IDR は同ディレクトリに置かれ、計画へ追跡可能      |
+| 関係         | 仕組み                                                       |
+| ------------ | ------------------------------------------------------------ |
+| think → plan | `/think` が `templates/plan.md` に沿って plan を下書きする   |
+| plan → Issue | `/issue` が `## Plan` と `## Backlog candidates` を転記する  |
+| Issue → Code | build が U-NNN / T-NNN を抽出し unit 単位で実装する          |
+| DR → plan    | `/think` が主要判断に対し DR を提案し、plan がそれを参照する |
 
 ## ID 規約
 
-| 接頭辞  | 意味                       | 利用先 | 例      |
-| ------- | -------------------------- | ------ | ------- |
-| AC-NNN  | Acceptance Criteria        | SOW    | AC-001  |
-| FR-NNN  | Functional Requirement     | Spec   | FR-001  |
-| T-NNN   | Test Scenario              | Spec   | T-001   |
-| NFR-NNN | Non-Functional Requirement | Spec   | NFR-001 |
-| BR-NNN  | Business Rule              | Spec   | BR-001  |
-| RC-NNN  | Root Cause                 | Audit  | RC-001  |
-| SUG-NNN | Suggestion                 | Audit  | SUG-001 |
+| 接頭辞 | 意味                           | 利用先 | 例    |
+| ------ | ------------------------------ | ------ | ----- |
+| U-NNN  | Unit (実装スライス)            | plan   | U-001 |
+| T-NNN  | Test Scenario (受け入れテスト) | plan   | T-001 |
 
 ### 追跡性
 
 ```text
-AC-001 ← FR-001 ← T-001
-              ↑        ↑
-           NFR-001   BR-001
+U-001 → T-001
 ```
 
-ID はドキュメント間で追跡される。SOW 受け入れ基準 → Spec 要件 → テスト シナリオ。
+ID は plan 内で追跡される。各 unit U-NNN が受け入れテスト T-NNN を持つ。T-NNN は plan 全体で一意で、unit ごとに振り直さない。
 
 ## 関連
 
 - [DESIGN](./DESIGN.md). アーキテクチャ概要
-- [HOOKS](./HOOKS.md). IDR 生成の詳細
+- [HOOKS](./HOOKS.md). フックパイプライン

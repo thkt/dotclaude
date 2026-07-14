@@ -8,7 +8,7 @@ Replace `{...}` at creation time. Omit a section marked optional, heading includ
 
 ```markdown
 ---
-status: "{proposed | rejected | accepted | deprecated | superseded by ADR-NNNN}"
+status: "{proposed | rejected | accepted | deprecated | superseded by DR-NNNN}"
 date: "{YYYY-MM-DD}"
 decision-makers: "{names or roles}"
 ---
