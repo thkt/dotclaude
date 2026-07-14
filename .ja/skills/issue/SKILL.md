@@ -9,7 +9,7 @@ argument-hint: "[issue description]"
 
 # /issue - GitHub Issue 生成
 
-単独で成立する起票スキル。challenge / research / think を前段として要求せず、ネスト起動もしない。会話コンテキストに成果物があれば、challenge の verdict は起票判断に、research の発見は本文の根拠に使い、/think の plan 下書きは `## Plan` 節へ移設する。どの段を通すかは人間が決める。
+単独で成立する起票スキル。会話コンテキストに `/challenge` / `/research` / `/think` の成果物があれば、`/challenge` の verdict は起票判断に、`/research` の発見は本文の根拠に使い、`/think` の plan 下書きは `## Plan` 節へ移設する。どの段を通すかは人間が決める
 
 ## 入力
 
