@@ -381,7 +381,7 @@ if (preconditions.length) {
       why: "revalidate agent が results 配列を返さなかった。",
     };
   }
-  // 件数でなく (path, pattern) で前提と結果を突き合わせる。並べ替え / 重複置換 / 
+  // 件数でなく (path, pattern) で前提と結果を突き合わせる。並べ替え / 重複置換 /
   // すり替えは件数が同じままになる。exists&&matches の一致結果が無い前提は drift。
   const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
   const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
@@ -696,7 +696,7 @@ const ship = await agent(
   anchor(
     `すべての変更 (planning 成果物 + 実装) を 1 つの Conventional Commits commit にまとめる。commit メッセージは自分で書く (diff を要約する)。` +
       `ブランチを push し、draft pull request を開く。本文は PR テンプレートから自分で書く人間向けパートと、データから決定論レンダリングされる fact セクションで構成する (fact セクションを手書きしない)。手順は以下。\n` +
-      `(1) \`$HOME/.claude/settings.json\` から \`language\` を読み (未設定なら英語)、その言語で人間向け本文を書く。コード / 識別子 / 専門用語は翻訳しない。PR テンプレートはリポジトリのものがあれば使う (大文字小文字の区別なし、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)。無ければ同梱の \`${bundled("skills/pr/templates/pr.md")}\` を使う。骨格を読んで body ファイルへ折り込む。人間向けセクションだけを、レビュアーが速く掴める順で埋める。先頭に WHY (解決する問題と到達する成果、${JSON.stringify(plan.outcome)})、次に WHAT (変更内容とアプローチ)、最後にレビューの注目点。リストと小さな表を使い、簡潔に書き、埋め草と事実の捏造をしない。Related / Closes は書かない (tail が \`Closes #\` を出す)。Scope / Backlog も書かない。スコープ外候補は PR に載せない。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実 diff から埋め、空なら節ごと省略する。\n` +
+      `(1) \`$HOME/.claude/settings.json\` から \`language\` を読み (未設定なら英語)、その言語で人間向け本文を書く。コード / 識別子 / 専門用語は翻訳しない。PR テンプレートはリポジトリのものがあれば使う (大文字小文字の区別なし、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)。無ければ同梱の \`${bundled("skills/pr/templates/pr.md")}\` を使う。骨格を読んで body ファイルへ折り込む。人間向けセクションだけを、レビュアーが速く掴める順で埋める。先頭に解決する問題と到達する成果 (${JSON.stringify(plan.outcome)})、次に変更内容とアプローチ、最後にレビューの注目点。リストと小さな表を使い、簡潔に書き、埋め草と事実の捏造をしない。Related / Closes は書かない (tail が \`Closes #\` を出す)。Scope / Backlog も書かない。スコープ外候補は PR に載せない。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実 diff から埋め、空なら節ごと省略する。\n` +
       `(2) この JSON をそのまま一時ファイルに書く。\n${JSON.stringify(shipPayload)}\n` +
       `(3) fact tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、レンダラー失敗時は PR 作成前に中断させる。リポジトリルートから ` +
       `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft --title "<commit の subject>" --body-file <bodyfile>\` を実行する。\n` +

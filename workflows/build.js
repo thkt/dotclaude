@@ -557,10 +557,10 @@ const [diff, testPresence, conformance] = await parallel([
     agent(
       anchor(
         `Conformance review against the originating issue. The spec is GitHub issue #${issueNumber}: ` +
-          `read it with \`gh issue view ${issueNumber}\`. The implementation to review is the UNCOMMITTED ` +
+          `read it with \`gh issue view ${issueNumber}\`. The implementation to review is the uncommitted ` +
           `working-tree diff (this build has not committed yet), so use \`git diff HEAD\` plus the untracked ` +
           `files (new test/impl files) shown by \`git status --porcelain\`. ` +
-          `Do NOT use main...HEAD (HEAD is still the branch point). Report the 3 categories ` +
+          `Do not use main...HEAD (HEAD is still the branch point). Report the 3 categories ` +
           `(missing/partial, scope creep, implemented-but-wrong) with the spec line quoted. ` +
           `If no spec is available, return spec_found=false with an empty findings array.` +
           ghUnsandboxed,
@@ -715,11 +715,11 @@ const ship = await agent(
   anchor(
     `Turn all changes (planning artifacts + implementation) into a single Conventional Commits commit; you write the commit message (summarize the diff). ` +
       `Push the branch, then open a draft pull request. Its body is a human-facing part you write from a PR template, followed by deterministic fact sections rendered from data (do not hand-write the fact sections). The steps are as follows.\n` +
-      `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`${bundled("skills/pr/templates/pr.md")}\`; read the skeleton and fold it into the body file. Fill only the human-facing sections, ordered so a reviewer grasps it fast: lead with WHY (the problem this solves and the outcome it reaches, ${JSON.stringify(plan.outcome)}), then WHAT changed and the approach, then where to focus review. Use lists and compact tables, keep it terse, no filler, no invented facts. SKIP Related / Closes (the tail emits \`Closes #\`). SKIP Scope / Backlog too; out-of-scope candidates do not go in the PR. Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
+      `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`${bundled("skills/pr/templates/pr.md")}\`; read the skeleton and fold it into the body file. Fill only the human-facing sections, ordered so a reviewer grasps it fast: lead with the problem this solves and the outcome it reaches (${JSON.stringify(plan.outcome)}), then what changed and the approach, then where to focus review. Use lists and compact tables, keep it terse, no filler, no invented facts. Skip Related / Closes; the tail emits \`Closes #\`. Skip Scope / Backlog too; out-of-scope candidates do not go in the PR. Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
       `(2) write this exact JSON to a temp file.\n${JSON.stringify(shipPayload)}\n` +
-      `(3) append the fact tail and open the PR as ONE \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
+      `(3) append the fact tail and open the PR as one \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
       `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
-      `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do NOT create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
+      `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do not create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
       `Report the committed state and the PR url.${guard}${ghUnsandboxed}`,
   ),
   {
