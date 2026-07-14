@@ -34,7 +34,7 @@ Acceptance tests.
 
 ## Guidelines
 
-Ids U-NNN / T-NNN are both sequential from 001. T-NNN is unique across the whole plan and never restarts per unit. List units in implementation order; the listed order is the implementation order. Each field's cap is the line count shown in the skeleton; resolve overflow by splitting, not by adding prose. Divide the unit, or carve out to backlog.
+Ids U-NNN / T-NNN are both sequential from 001. T-NNN is unique across the whole plan and never restarts per unit. List units in implementation order; the listed order is the implementation order. Each field's cap is the line count shown in the skeleton; resolve overflow by splitting, not by adding prose. Divide the unit, or carve out to backlog. Write acceptance tests on units that pin behavior. A unit with no verifiable behavior (docs / config) omits the whole "Acceptance tests." block, and build implements it directly instead of Red -> Green.
 
 | Field         | OK                                                   | NG                                      |
 | ------------- | ---------------------------------------------------- | --------------------------------------- |

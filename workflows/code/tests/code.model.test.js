@@ -19,6 +19,20 @@ const plan = {
       goal: "sample goal",
       files: ["sample.js"],
       contract: "sample contract",
+      tests: [{ id: "T-001", name: "sample spec statement" }],
+    },
+  ],
+};
+
+// tests が空の unit は plan の選択により Red→Green でなく直接実装になる。
+const noTestPlan = {
+  test_command: "echo test",
+  units: [
+    {
+      id: "U-1",
+      goal: "docs goal",
+      files: ["README.md"],
+      contract: "docs contract",
       tests: [],
     },
   ],
@@ -91,6 +105,48 @@ test("model 未指定で Red / Green の opts が既定の opus と effort xhigh
   }
   assert.deepEqual(result.completed, ["U-1"], "completed contains the unit id");
   assert.equal(result.tests_pass, true, "verify tests_pass is returned as-is");
+});
+
+test("tests 空の unit は Red / Green を呼ばず直接実装 (impl) 1 段で完走し、model / effort が伝播する", async () => {
+  const directStub = (prompt, opts) => {
+    const label = opts.label ?? "";
+    if (label.startsWith("impl:")) return { green: true, notes: "" };
+    if (label === "verify") return { tests_pass: true, gates_pass: true, output_tail: "" };
+    throw new Error(`unexpected label: ${label}`);
+  };
+  const { result, calls } = await runWorkflow(codeJs, {
+    args: { plan: noTestPlan, repo: "", model: "haiku" },
+    stubs: { agent: directStub },
+  });
+
+  const labels = calls.agent.map((c) => c.opts.label);
+  assert.ok(
+    labels.every((l) => !/^(red|red2|green|green2):/.test(l)),
+    "Red / Green agent は呼ばれない",
+  );
+  const impl = calls.agent.find((c) => c.opts.label === "impl:U-1");
+  assert.ok(impl, "直接実装 agent impl:U-1 が呼ばれる");
+  assert.equal(impl.opts.model, "haiku", "impl に input.model が伝播する");
+  assert.equal(impl.opts.effort, "xhigh", "impl は effort xhigh で走る");
+  assert.deepEqual(result.completed, ["U-1"], "直接実装 unit が completed に載る");
+});
+
+test("tests 空の unit の直接実装が 2 回失敗すると stopped: unit-failed で fail-close する", async () => {
+  const failingStub = (prompt, opts) => {
+    const label = opts.label ?? "";
+    if (label.startsWith("impl2:")) return { green: false, notes: "still red" };
+    if (label.startsWith("impl:")) return { green: false, notes: "suite failed" };
+    throw new Error(`unexpected label: ${label}`);
+  };
+  const { result, calls } = await runWorkflow(codeJs, {
+    args: { plan: noTestPlan, repo: "" },
+    stubs: { agent: failingStub },
+  });
+  assert.equal(result.stopped, "unit-failed", "retry 後も green でなければ unit-failed");
+  assert.ok(
+    calls.agent.some((c) => c.opts.label === "impl2:U-1"),
+    "直接実装の retry (impl2) が 1 回走る",
+  );
 });
 
 test("静的 gate が JA / EN の code.js と tests/*.js で pass する", () => {

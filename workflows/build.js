@@ -224,8 +224,10 @@ const phaseSummary = (phaseName, text) =>
   });
 
 // Re-validation of the structured plan + non-empty content checks. Deterministically
-// rejects structural defects (duplicate ids / missing tests) and empty content
+// rejects structural defects (duplicate ids) and empty content
 // (test_command / contract / name). Units run in listed order; there is no depends_on.
+// An empty tests array is legal: the plan selects it for units with no verifiable
+// behavior (docs / config), and code implements those directly instead of Red -> Green.
 // This is the canonical plan validator: the last line of defense for plan quality in
 // the human-driven upstream flow.
 const validate = (plan) => {
@@ -247,7 +249,6 @@ const validate = (plan) => {
       t && typeof t === "object" && !Array.isArray(t) ? t : { id: `units[${i}].tests[${j}]` },
     );
     const files = Array.isArray(u.files) ? u.files : [];
-    if (!tests.length) errors.push(`${u.id} has no test scenario`);
     if (!files.length) errors.push(`${u.id} has no target files`);
     if (!String(u.goal || "").trim()) errors.push(`${u.id} has an empty goal`);
     if (!String(u.contract || "").trim()) errors.push(`${u.id} has an empty contract`);
@@ -512,10 +513,13 @@ const CONFORMANCE_SCHEMA = obj(["spec_found", "findings"], {
 phase("Verify");
 // code.js writes each T-NNN scenario's name verbatim as the test name, so a literal
 // fixed-string search inside the unit's own files is a deterministic presence check.
-const testChecks = plan.units.map((u) => ({
-  files: u.files,
-  names: u.tests.map((t) => t.name),
-}));
+// Units the plan gave no tests (direct implementation) have nothing to check.
+const testChecks = plan.units
+  .filter((u) => u.tests.length)
+  .map((u) => ({
+    files: u.files,
+    names: u.tests.map((t) => t.name),
+  }));
 const allTestNames = testChecks.flatMap((c) => c.names);
 const [diff, testPresence, conformance] = await parallel([
   () =>
@@ -534,24 +538,26 @@ const [diff, testPresence, conformance] = await parallel([
       },
     ),
   () =>
-    agent(
-      anchor(
-        relayVerifier({
-          what: "the plan's test statements",
-          script: "workflows/build/verify-tests.py",
-          shape: '{"results":[{name,found}]}',
-          payload: testChecks,
-          count: allTestNames.length,
-        }),
-      ),
-      {
-        label: "verify-tests",
-        phase: "Verify",
-        agentType: "general-purpose",
-        schema: TEST_PRESENCE_SCHEMA,
-        model: "haiku",
-      },
-    ),
+    allTestNames.length
+      ? agent(
+          anchor(
+            relayVerifier({
+              what: "the plan's test statements",
+              script: "workflows/build/verify-tests.py",
+              shape: '{"results":[{name,found}]}',
+              payload: testChecks,
+              count: allTestNames.length,
+            }),
+          ),
+          {
+            label: "verify-tests",
+            phase: "Verify",
+            agentType: "general-purpose",
+            schema: TEST_PRESENCE_SCHEMA,
+            model: "haiku",
+          },
+        )
+      : Promise.resolve(null),
   () =>
     agent(
       anchor(
@@ -580,8 +586,11 @@ const scopeDeviations =
     ? diff.files.filter((f) => f && !planFiles.has(f) && !(plan.dir && f.startsWith(plan.dir)))
     : ["diff listing unavailable; scope not verified"];
 // Presence check: bind results by name; a name with no found=true result is missing.
+// With zero declared statements the relay never ran, and there is nothing to miss.
 let missingTests;
-if (testPresence && Array.isArray(testPresence.results)) {
+if (!allTestNames.length) {
+  missingTests = [];
+} else if (testPresence && Array.isArray(testPresence.results)) {
   const foundByName = new Map(testPresence.results.map((r) => [r.name, r.found === true]));
   missingTests = allTestNames.filter((n) => !foundByName.get(n));
 } else {

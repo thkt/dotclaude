@@ -41,7 +41,7 @@ Generate 2+ distinct approaches from the following perspectives. When approaches
 
 ## Phase 3: Plan Generation
 
-1. Decompose the approved design into units. A unit is an independently implementable bundle of outcome. Serialize them in implementation order into PLAN_SCHEMA-equivalent JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan
+1. Decompose the approved design into units. A unit is an independently implementable bundle of outcome. Serialize them in implementation order into PLAN_SCHEMA-equivalent JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan. A unit with no verifiable behavior (docs / config) gets an empty tests array
 2. Write contract and tests[].name per the authoring rules below
 3. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
 4. Self-check the serialized plan. Look for missing required fields, duplicate ids, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate

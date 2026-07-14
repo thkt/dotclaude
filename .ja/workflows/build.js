@@ -218,10 +218,11 @@ const phaseSummary = (phaseName, text) =>
     model: "haiku",
   });
 
-// 構造化 plan の再検証 + 非空チェック。構造欠陥 (id 重複 / test 欠落) と空 content
+// 構造化 plan の再検証 + 非空チェック。構造欠陥 (id 重複) と空 content
 // (test_command / contract / name) を決定論で reject する。unit は並び順で実行し、
-// depends_on は無い。これが canonical な plan validator で、人間駆動の上流フローに
-// おける plan 品質の最終防衛線。
+// depends_on は無い。tests の空配列は合法で、検証可能な振る舞いが無い unit (docs /
+// 設定) に plan が選択し、code は Red→Green でなく直接実装で扱う。これが canonical な
+// plan validator で、人間駆動の上流フローにおける plan 品質の最終防衛線。
 const validate = (plan) => {
   const errors = [];
   // object でない要素には位置ベースの placeholder id を与え、「<id> に ... が無い」の
@@ -241,7 +242,6 @@ const validate = (plan) => {
       t && typeof t === "object" && !Array.isArray(t) ? t : { id: `units[${i}].tests[${j}]` },
     );
     const files = Array.isArray(u.files) ? u.files : [];
-    if (!tests.length) errors.push(`${u.id} に test scenario が無い`);
     if (!files.length) errors.push(`${u.id} に対象 files が無い`);
     if (!String(u.goal || "").trim()) errors.push(`${u.id} の goal が空`);
     if (!String(u.contract || "").trim()) errors.push(`${u.id} の contract が空`);
@@ -502,11 +502,14 @@ const CONFORMANCE_SCHEMA = obj(["spec_found", "findings"], {
 });
 phase("Verify");
 // code.js は各 T-NNN scenario の name をテスト名として逐語使用するので、unit 自身の
-// files 内の固定文字列検索が決定論の存在チェックになる。
-const testChecks = plan.units.map((u) => ({
-  files: u.files,
-  names: u.tests.map((t) => t.name),
-}));
+// files 内の固定文字列検索が決定論の存在チェックになる。plan が tests を与えなかった
+// unit (直接実装) には照合対象が無い。
+const testChecks = plan.units
+  .filter((u) => u.tests.length)
+  .map((u) => ({
+    files: u.files,
+    names: u.tests.map((t) => t.name),
+  }));
 const allTestNames = testChecks.flatMap((c) => c.names);
 const [diff, testPresence, conformance] = await parallel([
   () =>
@@ -525,24 +528,26 @@ const [diff, testPresence, conformance] = await parallel([
       },
     ),
   () =>
-    agent(
-      anchor(
-        relayVerifier({
-          what: "plan のテスト言明",
-          script: "workflows/build/verify-tests.py",
-          shape: '{"results":[{name,found}]}',
-          payload: testChecks,
-          count: allTestNames.length,
-        }),
-      ),
-      {
-        label: "verify-tests",
-        phase: "Verify",
-        agentType: "general-purpose",
-        schema: TEST_PRESENCE_SCHEMA,
-        model: "haiku",
-      },
-    ),
+    allTestNames.length
+      ? agent(
+          anchor(
+            relayVerifier({
+              what: "plan のテスト言明",
+              script: "workflows/build/verify-tests.py",
+              shape: '{"results":[{name,found}]}',
+              payload: testChecks,
+              count: allTestNames.length,
+            }),
+          ),
+          {
+            label: "verify-tests",
+            phase: "Verify",
+            agentType: "general-purpose",
+            schema: TEST_PRESENCE_SCHEMA,
+            model: "haiku",
+          },
+        )
+      : Promise.resolve(null),
   () =>
     agent(
       anchor(
@@ -570,8 +575,11 @@ const scopeDeviations =
     ? diff.files.filter((f) => f && !planFiles.has(f) && !(plan.dir && f.startsWith(plan.dir)))
     : ["diff 一覧を取得できず scope 未検証"];
 // 存在チェック。結果を name で突き合わせ、found=true の結果が無い name を欠落とする。
+// 宣言された言明が 0 件なら relay は走っておらず、欠落の対象も無い。
 let missingTests;
-if (testPresence && Array.isArray(testPresence.results)) {
+if (!allTestNames.length) {
+  missingTests = [];
+} else if (testPresence && Array.isArray(testPresence.results)) {
   const foundByName = new Map(testPresence.results.map((r) => [r.name, r.found === true]));
   missingTests = allTestNames.filter((n) => !foundByName.get(n));
 } else {

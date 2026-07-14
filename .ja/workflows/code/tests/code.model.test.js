@@ -1,5 +1,5 @@
-// U-003: code.js が任意 input.model を Red / Green 実装 agent にのみ伝播し (未指定時は opus)、
-// 実装 agent が常に effort xhigh で走ることの行動検証。
+// U-003: behavior test that code.js propagates an optional input.model only to the
+// Red / Green implementation agents (defaulting to opus), which always run at effort xhigh.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -19,13 +19,27 @@ const plan = {
       goal: "sample goal",
       files: ["sample.js"],
       contract: "sample contract",
+      tests: [{ id: "T-001", name: "sample spec statement" }],
+    },
+  ],
+};
+
+// tests が空の unit は plan の選択により Red→Green でなく直接実装になる。
+const noTestPlan = {
+  test_command: "echo test",
+  units: [
+    {
+      id: "U-1",
+      goal: "docs goal",
+      files: ["README.md"],
+      contract: "docs contract",
       tests: [],
     },
   ],
 };
 
-// red / green は 1 回目に失敗を返して retry (red2 / green2) を発火させ、
-// 4 呼び出し (red, red2, green, green2) すべてを capture させる stub。
+// red / green fail on the first call to fire the retries (red2 / green2), so all
+// 4 calls (red, red2, green, green2) get captured.
 const retryingAgentStub = (prompt, opts) => {
   const label = opts.label ?? "";
   if (label.startsWith("red2:"))
@@ -53,25 +67,25 @@ const happyAgentStub = (prompt, opts) => {
 
 test("model 指定時に Red / Green とその retry の 4 呼び出しへ伝播し Verify は固定 sonnet のまま", async () => {
   const { calls } = await runWorkflow(codeJs, {
-    // Verify の固定 sonnet と別の model を渡し、下の assertion が input.model の
-    // 伝播と固定値を区別できるようにする。
+    // A model distinct from Verify's fixed sonnet, so the assertions below can
+    // tell input.model propagation apart from the fixed value.
     args: { plan, repo: "", model: "haiku" },
     stubs: { agent: retryingAgentStub },
   });
 
   const redGreen = calls.agent.filter((c) => /^(red|red2|green|green2):/.test(c.opts.label));
-  assert.equal(redGreen.length, 4, "red / red2 / green / green2 の 4 呼び出しがある");
+  assert.equal(redGreen.length, 4, "red / red2 / green / green2 calls are all present");
   for (const call of redGreen) {
-    assert.equal(call.opts.model, "haiku", `${call.opts.label} の opts に model: "haiku" がある`);
-    assert.equal(call.opts.effort, "xhigh", `${call.opts.label} の opts に effort: "xhigh" がある`);
+    assert.equal(call.opts.model, "haiku", `${call.opts.label} opts carries model: "haiku"`);
+    assert.equal(call.opts.effort, "xhigh", `${call.opts.label} opts carries effort: "xhigh"`);
   }
 
   const verify = calls.agent.find((c) => c.opts.label === "verify");
-  assert.ok(verify, "verify 呼び出しがある");
+  assert.ok(verify, "verify call is present");
   assert.equal(
     verify.opts.model,
     "sonnet",
-    "verify の opts は input.model でなく固定 sonnet を持つ",
+    "verify opts carries the fixed sonnet, not input.model",
   );
 });
 
@@ -83,14 +97,56 @@ test("model 未指定で Red / Green の opts が既定の opus と effort xhigh
 
   for (const call of calls.agent) {
     if (call.opts.label === "verify") {
-      assert.equal(call.opts.model, "sonnet", "verify の opts は固定 sonnet を持つ");
+      assert.equal(call.opts.model, "sonnet", "verify opts carries the fixed sonnet");
       continue;
     }
-    assert.equal(call.opts.model, "opus", `${call.opts.label} の opts が既定の opus を持つ`);
-    assert.equal(call.opts.effort, "xhigh", `${call.opts.label} の opts に effort: "xhigh" がある`);
+    assert.equal(call.opts.model, "opus", `${call.opts.label} opts carries the default opus`);
+    assert.equal(call.opts.effort, "xhigh", `${call.opts.label} opts carries effort: "xhigh"`);
   }
-  assert.deepEqual(result.completed, ["U-1"], "completed に unit id が入る");
-  assert.equal(result.tests_pass, true, "verify の tests_pass がそのまま返る");
+  assert.deepEqual(result.completed, ["U-1"], "completed contains the unit id");
+  assert.equal(result.tests_pass, true, "verify tests_pass is returned as-is");
+});
+
+test("tests 空の unit は Red / Green を呼ばず直接実装 (impl) 1 段で完走し、model / effort が伝播する", async () => {
+  const directStub = (prompt, opts) => {
+    const label = opts.label ?? "";
+    if (label.startsWith("impl:")) return { green: true, notes: "" };
+    if (label === "verify") return { tests_pass: true, gates_pass: true, output_tail: "" };
+    throw new Error(`unexpected label: ${label}`);
+  };
+  const { result, calls } = await runWorkflow(codeJs, {
+    args: { plan: noTestPlan, repo: "", model: "haiku" },
+    stubs: { agent: directStub },
+  });
+
+  const labels = calls.agent.map((c) => c.opts.label);
+  assert.ok(
+    labels.every((l) => !/^(red|red2|green|green2):/.test(l)),
+    "Red / Green agent は呼ばれない",
+  );
+  const impl = calls.agent.find((c) => c.opts.label === "impl:U-1");
+  assert.ok(impl, "直接実装 agent impl:U-1 が呼ばれる");
+  assert.equal(impl.opts.model, "haiku", "impl に input.model が伝播する");
+  assert.equal(impl.opts.effort, "xhigh", "impl は effort xhigh で走る");
+  assert.deepEqual(result.completed, ["U-1"], "直接実装 unit が completed に載る");
+});
+
+test("tests 空の unit の直接実装が 2 回失敗すると stopped: unit-failed で fail-close する", async () => {
+  const failingStub = (prompt, opts) => {
+    const label = opts.label ?? "";
+    if (label.startsWith("impl2:")) return { green: false, notes: "still red" };
+    if (label.startsWith("impl:")) return { green: false, notes: "suite failed" };
+    throw new Error(`unexpected label: ${label}`);
+  };
+  const { result, calls } = await runWorkflow(codeJs, {
+    args: { plan: noTestPlan, repo: "" },
+    stubs: { agent: failingStub },
+  });
+  assert.equal(result.stopped, "unit-failed", "retry 後も green でなければ unit-failed");
+  assert.ok(
+    calls.agent.some((c) => c.opts.label === "impl2:U-1"),
+    "直接実装の retry (impl2) が 1 回走る",
+  );
 });
 
 test("静的 gate が JA / EN の code.js と tests/*.js で pass する", () => {

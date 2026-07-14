@@ -41,7 +41,7 @@ argument-hint: "[task description]"
 
 ## Phase 3: Plan 生成
 
-1. 承認された設計を unit に分解する。unit は独立して実装可能な成果の束。実装順に並べて PLAN_SCHEMA 相当の JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }` に直列化する。id は U-001 / T-001 形式の連番で、T-NNN は plan 全体で一意にする
+1. 承認された設計を unit に分解する。unit は独立して実装可能な成果の束。実装順に並べて PLAN_SCHEMA 相当の JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }` に直列化する。id は U-001 / T-001 形式の連番で、T-NNN は plan 全体で一意にする。検証可能な振る舞いが無い unit (docs / 設定) は tests を空配列にする
 2. contract と tests[].name の書き方は下の authoring 規則に従う
 3. 1 つの unit が触るファイルが 5 つ以上なら、成果を軸により小さな unit へ再分解し、新しい unit 構成をユーザーと確認する。スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
 4. 直列化した plan を自己点検する。必須フィールドの欠落、id の重複、空の units / tests / goal / contract を確認して直す。最終検証は build の Load validate が行う

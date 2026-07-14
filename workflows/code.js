@@ -1,9 +1,9 @@
 export const meta = {
   name: "code",
   description:
-    'TDD workflow that takes a structured plan (units / test_command) and runs Red -> Green per unit under script enforcement. An unconfirmed Red (tests passing from the start) is recorded as an anomaly, and at the end an independent agent verifies the full suite + lint + type-check. Writing tests after the fact and skipping Red cannot happen structurally. Callable standalone or nested from build via workflow("code").',
+    'TDD workflow that takes a structured plan (units / test_command) and implements per unit under script enforcement. A unit with test scenarios runs Red -> Green; a unit with no tests (docs / config, no verifiable behavior) runs a single direct-implementation step, so whether TDD applies is selected in the plan, not decided at runtime. An unconfirmed Red is recorded as an anomaly, and at the end an independent agent verifies the full suite + lint + type-check. Callable standalone or nested from build via workflow("code").',
   whenToUse:
-    "Headless TDD implementation. args is {plan, repo, model}; plan is a structured plan with units / test_command (as produced by the think skill or build's planning). model (optional) propagates only to the Red / Green implementation agents (defaults to opus). The implementation agents run at effort xhigh.",
+    "Headless plan implementation. args is {plan, repo, model}; plan is a structured plan with units / test_command (as produced by the think skill). model (optional) propagates only to the implementation agents (defaults to opus). The implementation agents run at effort xhigh.",
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
@@ -93,20 +93,71 @@ const anomalies = [];
 // Shared across all 4 Red/Green (+ retry) agent calls, so a model/effort change lands once.
 const implementOpts = { model: input.model || "opus", effort: "xhigh" };
 
-// ---- Implement: Red -> Green per unit (serial; the working tree is shared) ----
+// ---- Implement: per unit (serial; the working tree is shared) ----
+// A unit with tests runs Red -> Green; a unit with no tests runs one direct
+// implementation step. The plan (human-reviewed) selects which, so no TDD-or-not
+// discretion exists at runtime.
 phase("Implement");
 for (const unit of units) {
+  const tests = Array.isArray(unit.tests) ? unit.tests : [];
   const ctx =
     `Unit ${unit.id}'s goal is "${unit.goal}". The target files are ${JSON.stringify(unit.files)}.\n` +
-    `The contract is ${unit.contract}. The test scenarios are ${JSON.stringify(unit.tests)}.\n` +
+    `The contract is ${unit.contract}. The test scenarios are ${JSON.stringify(tests)}.\n` +
     `The test command is ${testCmd}.\n` +
+    `When writing framework / library API code, follow the pinned version's official docs rather than memory.\n` +
     (completed.length ? `The units already implemented are ${completed.join(", ")}.\n` : "");
+
+  // No test scenarios: the plan decided this unit pins no new behavior
+  // (docs / config). Implement directly and keep the existing suite green.
+  if (!tests.length) {
+    let impl = await agent(
+      anchor(
+        `Direct implementation step (this unit pins no new behavior; the plan gave it no test scenarios). ${ctx}` +
+          `Implement per the contract. Keep the existing test suite green (${testCmd}); weakening / skipping / deleting existing tests is forbidden. ` +
+          `Run the suite and report green.`,
+      ),
+      {
+        label: `impl:${unit.id}`,
+        phase: `Unit ${unit.id}`,
+        agentType: "general-purpose",
+        schema: GREEN_SCHEMA,
+        ...implementOpts,
+      },
+    );
+    if (impl && !impl.green) {
+      impl = await agent(
+        anchor(
+          `Direct implementation retry. ${ctx}` +
+            `Last time the suite did not pass. The reason was ${impl.notes}.\nIdentify the cause, fix the implementation, and make the suite pass. Weakening tests is forbidden.`,
+        ),
+        {
+          label: `impl2:${unit.id}`,
+          phase: `Unit ${unit.id}`,
+          agentType: "general-purpose",
+          schema: GREEN_SCHEMA,
+          ...implementOpts,
+        },
+      );
+    }
+    if (!impl || !impl.green) {
+      return {
+        stopped: "unit-failed",
+        unit: unit.id,
+        why: (impl && impl.notes) || "the implement agent returned no result",
+        completed,
+        anomalies,
+      };
+    }
+    completed.push(unit.id);
+    log(`${unit.id}: direct implementation done (${completed.length}/${units.length}).`);
+    continue;
+  }
 
   let red = await agent(
     anchor(
       `TDD Red step. ${ctx}` +
         `Write each test scenario (T-NNN) as a failing test. Use the scenario's name verbatim as the test name. ` +
-        `Write no implementation code whatsoever. Run the tests and confirm they fail as expected, then report. ` +
+        `Write no implementation code whatsoever. Run the tests and confirm each fails for the intended reason (an unrun Red is blind), then report. ` +
         `If the tests do not fail, do not implement; write the reason in notes.`,
     ),
     {
@@ -148,6 +199,7 @@ for (const unit of units) {
     anchor(
       `TDD Green step. ${ctx}` +
         `Write the minimal implementation that makes the failing tests in ${JSON.stringify(red.test_files)} pass. ` +
+        `Work in vertical slices: make one test pass at a time, never bulk-implement against all tests at once. ` +
         `Changes that weaken / skip / delete test assertions are forbidden (if the test structure needs fixing, write it in notes and return green=false). ` +
         `After passing, refactor while keeping the tests green. Re-run the unit's tests and report.`,
     ),

@@ -494,6 +494,32 @@ test("Verify の diff / presence が落ちても fail-open で Ship まで進み
   assert.ok(calls.phase.includes("Ship"), "fail-open で Ship phase まで進む");
 });
 
+test("tests 空の unit は invalid-plan にならず、言明 0 件なら presence relay agent を呼ばない", async () => {
+  const plan = makePlan({
+    units: [
+      {
+        id: "U-001",
+        goal: "docs goal",
+        files: ["sample.js"],
+        contract: "docs contract",
+        tests: [],
+      },
+    ],
+  });
+  const { calls, result } = await runWorkflow(buildJs, {
+    args: { issue: "123" },
+    stubs: makeStubs({ body: bodyFor(["U-001"], []), plan }),
+  });
+  assert.equal(result.stopped, undefined, "tests 空の unit で fail-close しない (plan の選択として合法)");
+  assert.equal(
+    agentCallsOf(calls, "presence").length,
+    0,
+    "宣言された言明が 0 件なら verify-tests relay agent を呼ばない",
+  );
+  assert.deepEqual(result.missing_tests, [], "照合対象が無いので missing_tests は空");
+  assert.ok(calls.phase.includes("Ship"), "直接実装 unit だけの plan でも Ship まで完走する");
+});
+
 test("stopped 値集合の snapshot が 9 値と exact match し、audit 経路の残骸が無い", () => {
   const source = readFileSync(buildJs, "utf8");
   const stopped = new Set();
