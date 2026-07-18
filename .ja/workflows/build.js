@@ -65,12 +65,6 @@ const obj = (required, properties) => ({
   properties,
 });
 
-// gh の TLS 検証 (trustd) を Bash sandbox が塞ぐ。git (OpenSSL) は影響を受けないため、
-// sandbox を抜けるのは gh だけにする。settings.json の恒久対応は plugin に同梱されず、
-// 配布先はこの prompt fallback に頼る。
-const ghUnsandboxed =
-  " `gh` コマンドは Bash sandbox 内で TLS 検証に失敗するため、`gh` を呼ぶ Bash は dangerouslyDisableSandbox: true で実行する。git ほか他のコマンドは sandbox 内のままにする。";
-
 const FETCH_SCHEMA = obj(["found", "body"], {
   found: { type: "boolean" },
   body: {
@@ -84,8 +78,7 @@ const fetched = await agent(
   anchor(
     `GitHub issue ${issueRef} の本文を固定コマンドで取得する。要約や整形をしない。` +
       `\`gh issue view ${issueRef} --json body --jq .body\` を正確に実行し、その stdout を body として逐語で返す。` +
-      `コマンドが非ゼロで終了した場合 (issue が無い / 取得失敗) は found: false を返す。` +
-      ghUnsandboxed,
+      `コマンドが非ゼロで終了した場合 (issue が無い / 取得失敗) は found: false を返す。`,
   ),
   {
     label: "fetch",
@@ -605,8 +598,7 @@ const [diff, testPresence, conformance] = await parallel([
           `(この build はまだ commit していない) なので、\`git diff HEAD\` と \`git status --porcelain\` が示す ` +
           `未追跡ファイル (新規の test / 実装ファイル) を使う。main...HEAD は使わない (HEAD はまだ分岐点にある)。` +
           `3 分類 (missing/partial、scope creep、implemented-but-wrong) を spec 行の引用付きで報告する。` +
-          `spec が無ければ spec_found=false と空の findings を返す。` +
-          ghUnsandboxed,
+          `spec が無ければ spec_found=false と空の findings を返す。`,
       ),
       {
         label: "conformance",
@@ -742,7 +734,7 @@ const ship = await agent(
       `(3) fact tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、レンダラー失敗時は PR 作成前に中断させる。リポジトリルートから ` +
       `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft --title "<commit の subject>" --body-file <bodyfile>\` を実行する。\n` +
       `pr-body.py は payload が壊れているか必須フィールドを欠くと非ゼロで終了する (何も出力しない)。チェーンが失敗したら他の手段で PR を作らない。committed と空の pr_url とエラーを報告する。\n` +
-      `committed の状態と PR url を報告する。${guard}${ghUnsandboxed}`,
+      `committed の状態と PR url を報告する。${guard}`,
   ),
   {
     label: "ship",

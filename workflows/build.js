@@ -66,12 +66,6 @@ const obj = (required, properties) => ({
   properties,
 });
 
-// The Bash sandbox blocks gh's TLS validation (trustd); git (OpenSSL) is unaffected,
-// so only gh escapes the sandbox. The settings.json fix is not shipped with the
-// plugin, so consumers rely on this prompt fallback.
-const ghUnsandboxed =
-  " The `gh` command fails TLS verification inside the Bash sandbox, so run the Bash call that invokes `gh` with dangerouslyDisableSandbox: true; keep git and every other command sandboxed.";
-
 const FETCH_SCHEMA = obj(["found", "body"], {
   found: { type: "boolean" },
   body: {
@@ -85,8 +79,7 @@ const fetched = await agent(
   anchor(
     `Fetch the body of GitHub issue ${issueRef} with a fixed command; do not summarize or reformat. ` +
       `Run exactly \`gh issue view ${issueRef} --json body --jq .body\` and return its stdout verbatim as body. ` +
-      `If the command exits non-zero (issue not found / fetch failed), return found: false.` +
-      ghUnsandboxed,
+      `If the command exits non-zero (issue not found / fetch failed), return found: false.`,
   ),
   {
     label: "fetch",
@@ -628,8 +621,7 @@ const [diff, testPresence, conformance] = await parallel([
           `files (new test/impl files) shown by \`git status --porcelain\`. ` +
           `Do not use main...HEAD (HEAD is still the branch point). Report the 3 categories ` +
           `(missing/partial, scope creep, implemented-but-wrong) with the spec line quoted. ` +
-          `If no spec is available, return spec_found=false with an empty findings array.` +
-          ghUnsandboxed,
+          `If no spec is available, return spec_found=false with an empty findings array.`,
       ),
       {
         label: "conformance",
@@ -770,7 +762,7 @@ const ship = await agent(
       `(3) append the fact tail and open the PR as one \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
       `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
       `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do not create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
-      `Report the committed state and the PR url.${guard}${ghUnsandboxed}`,
+      `Report the committed state and the PR url.${guard}`,
   ),
   {
     label: "ship",
