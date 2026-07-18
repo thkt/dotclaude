@@ -141,6 +141,8 @@ srt --version
 }
 ```
 
+build workflow は `gh` を sandbox 内で実行する。macOS で sandbox を有効にしている場合、`gh` の TLS 検証に `~/.claude/settings.json` の `sandbox.enableWeakerNetworkIsolation: true` が必要になる。未設定だと build が issue 取得段で失敗する。
+
 ### Hook ツール (推奨)
 
 Claude Code セッション中に自動実行される品質パイプラインフック。手動介入なしで lint エラー検出、コード整形、静的解析の注入、品質ゲートの強制を行う。
