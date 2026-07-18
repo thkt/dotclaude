@@ -153,6 +153,8 @@ Create `~/.srt-settings.json` for custom settings:
 }
 ```
 
+The build workflow runs `gh` inside the sandbox. On macOS with the sandbox enabled, `gh`'s TLS verification requires `sandbox.enableWeakerNetworkIsolation: true` in `~/.claude/settings.json`. Without it, the build fails at the issue-fetch step.
+
 ### Hook Tools (Recommended)
 
 Quality pipeline hooks that run automatically during Claude Code sessions. These
