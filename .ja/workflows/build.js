@@ -3,7 +3,7 @@ export const meta = {
   description:
     "自律的な end-to-end build。/think + /issue で精緻化した Plan 節付き issue を入力に、Load (逐語 fetch → 決定論 id 収集 → 抽出 → validate + id クロスチェック) / Revalidate / Branch / Code / Cleanup / Verify / Ship を headless の決定論 script stage として実行する。Plan 節なし issue は入れ子の draft-plan workflow が plan を下書きする (ADR-0086)。正しさの確認は plan 自身のアンカー (前提、files スコープ、T-NNN 言明、conformance) との比較であり、開放的な欠陥探索ではない。重い担保 (/audit、/polish review) は draft PR に対して人間が起動する (ADR-0085)。",
   whenToUse:
-    'plan 付き issue の実装。issue 番号 ("123" / "#123") / URL / {issue, repo} を args に渡す。## Plan 節の無い issue は plan を自動生成する (ゴール + a11y、critic-design gate 付き。品質は /think + /issue path に劣る)。離席して戻れば、前提 / conformance findings / 決定論 verify 結果を記録した draft PR ができている。スコープ外の backlog 候補は workflow の戻り値で返り、/issue で起票する。途中で舵を取る場合は phase を対話的に進める。',
+    'plan 付き issue の実装。args には {issue, repo} を渡す (issue は番号 "123" / "#123" か URL、repo は対象リポジトリの絶対パス)。repo の無い args は no-repo で早期 stop する。## Plan 節の無い issue は plan を自動生成する (ゴール + a11y、critic-design gate 付き。品質は /think + /issue path に劣る)。離席して戻れば、前提 / conformance findings / 決定論 verify 結果を記録した draft PR ができている。スコープ外の backlog 候補は workflow の戻り値で返り、/issue で起票する。途中で舵を取る場合は phase を対話的に進める。',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -21,8 +21,16 @@ export const meta = {
 
 phase("Load");
 
-const input = typeof args === "object" && args ? args : {};
-const issueRef = String(typeof args === "string" ? args : input.issue || "").trim();
+// ハーネスはオブジェクト args を JSON 文字列化して渡すことがある。その形も decode する。
+let argsValue = args;
+if (typeof argsValue === "string" && argsValue.trim().startsWith("{")) {
+  try {
+    const decoded = JSON.parse(argsValue);
+    if (decoded && typeof decoded === "object") argsValue = decoded;
+  } catch {}
+}
+const input = typeof argsValue === "object" && argsValue ? argsValue : {};
+const issueRef = String(typeof argsValue === "string" ? argsValue : input.issue || "").trim();
 // 受け付けるのは数字単体 / #数字 / issue URL のみ。数字を含むだけの自由記述
 // ("a11y" など) を issue 参照と読まない。
 const issueNumber =
@@ -34,17 +42,20 @@ if (!issueRef || !issueNumber) {
   };
 }
 
-// repo 指定時は session cwd に関わらず全 step をそのリポジトリへ固定する。anchor() が
-// 絶対パスの cd を前置し、guard が取り消しにくい git 変更 (branch / commit / push / PR)
-// の前に repo ルートを確認させる。
+// 全 step を session cwd に関わらず対象リポジトリへ固定する。anchor() が絶対パスの
+// cd を前置し、guard が取り消しにくい git 変更 (branch / commit / push / PR) の前に
+// repo ルートを確認させる。repo が無いと agent は自身の cwd から「リポジトリ」を
+// 解決し、別の checkout で step を実行しうる。
 const repo = typeof input.repo === "string" ? input.repo : "";
+if (!repo) {
+  return {
+    stopped: "no-repo",
+    why: `対象リポジトリを args.repo (絶対パス) で渡す: Workflow({name: "build", args: {issue: "${issueNumber}", repo: "/abs/path"}})。`,
+  };
+}
 const anchor = (p) =>
-  repo
-    ? `すべての git / ファイル / ビルドコマンドを ${repo} のリポジトリから実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
-    : p;
-const guard = repo
-  ? ` この step で最初の commit / push / ブランチ変更を行う前に \`cd ${repo} && git rev-parse --show-toplevel\` を実行し、出力が ${repo} であることを確認する。異なる場合は git を変更せず中断し、不一致を報告する。`
-  : "";
+  `すべての git / ファイル / ビルドコマンドを ${repo} のリポジトリから実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`;
+const guard = ` この step で最初の commit / push / ブランチ変更を行う前に \`cd ${repo} && git rev-parse --show-toplevel\` を実行し、出力が ${repo} であることを確認する。異なる場合は git を変更せず中断し、不一致を報告する。`;
 // plugin 配布では sibling が build: 名前空間、bundled が ~/.claude/plugins を解決する。
 // どちらも素の dev tree 形を先に試すので、dev tree はそのまま動く。
 const sibling = async (name, a) => {
@@ -74,10 +85,12 @@ const FETCH_SCHEMA = obj(["found", "body"], {
 });
 
 // ---- Load: 逐語 fetch → Plan 見出し確認 → 決定論 id 収集 → 抽出 → validate + クロスチェック ----
+// 先頭の "#" はシェルコメントになり gh の引数がゼロになる。除去する。
+const fetchRef = issueRef.replace(/^#/, "");
 const fetched = await agent(
   anchor(
-    `GitHub issue ${issueRef} の本文を固定コマンドで取得する。要約や整形をしない。` +
-      `\`gh issue view ${issueRef} --json body --jq .body\` を正確に実行し、その stdout を body として逐語で返す。` +
+    `GitHub issue ${fetchRef} の本文を固定コマンドで取得する。要約や整形をしない。` +
+      `\`gh issue view ${fetchRef} --json body --jq .body\` を正確に実行し、その stdout を body として逐語で返す。` +
       `コマンドが非ゼロで終了した場合 (issue が無い / 取得失敗) は found: false を返す。`,
   ),
   {
