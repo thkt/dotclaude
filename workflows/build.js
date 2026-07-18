@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Autonomous end-to-end build. Taking an issue with a Plan section refined via /think + /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Cleanup / Verify / Ship run headlessly as deterministic script stages. A plan-less issue has its plan drafted by the nested draft-plan workflow (ADR-0086). Correctness checking is a comparison against the plan's own anchors (preconditions, files scope, T-NNN statements, conformance), not an open-ended defect hunt; heavy assurance (/audit, /polish review) is human-invoked on the draft PR (ADR-0085).",
   whenToUse:
-    'Implementation of a plan-backed issue. Pass an issue number ("123" / "#123") / URL / {issue, repo} as args. An issue without a ## Plan section has a plan auto-drafted (goal + a11y, critic-design gated); its quality is below the /think + /issue path. Step away and come back to a draft PR with recorded assumptions, conformance findings, and deterministic verify results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
+    'Implementation of a plan-backed issue. Pass {issue, repo} as args, where issue is a number ("123" / "#123") or URL and repo is the absolute path of the target repository; args without repo stop early as no-repo. An issue without a ## Plan section has a plan auto-drafted (goal + a11y, critic-design gated); its quality is below the /think + /issue path. Step away and come back to a draft PR with recorded assumptions, conformance findings, and deterministic verify results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -22,8 +22,16 @@ export const meta = {
 
 phase("Load");
 
-const input = typeof args === "object" && args ? args : {};
-const issueRef = String(typeof args === "string" ? args : input.issue || "").trim();
+// The harness may deliver object args as a JSON-encoded string; decode that form too.
+let argsValue = args;
+if (typeof argsValue === "string" && argsValue.trim().startsWith("{")) {
+  try {
+    const decoded = JSON.parse(argsValue);
+    if (decoded && typeof decoded === "object") argsValue = decoded;
+  } catch {}
+}
+const input = typeof argsValue === "object" && argsValue ? argsValue : {};
+const issueRef = String(typeof argsValue === "string" ? argsValue : input.issue || "").trim();
 // Accept only a bare number, #number, or an issue URL. A freeform description that
 // merely contains digits (e.g. "a11y") must not be read as an issue reference.
 const issueNumber =
@@ -35,17 +43,21 @@ if (!issueRef || !issueNumber) {
   };
 }
 
-// When repo is set, pin every step to that repository regardless of the session cwd:
+// Every step is pinned to the target repository regardless of the session cwd:
 // anchor() prepends an absolute cd; guard makes the agent confirm the repo root
-// before the hard-to-reverse git mutations (branch / commit / push / PR).
+// before the hard-to-reverse git mutations (branch / commit / push / PR). Without
+// repo, agents resolve "the repository" from their own cwd and can run steps in
+// the wrong checkout.
 const repo = typeof input.repo === "string" ? input.repo : "";
+if (!repo) {
+  return {
+    stopped: "no-repo",
+    why: `Pass the target repository as args.repo (absolute path): Workflow({name: "build", args: {issue: "${issueNumber}", repo: "/abs/path"}}).`,
+  };
+}
 const anchor = (p) =>
-  repo
-    ? `Run every git, file, and build command from the repository at ${repo} (begin each shell command with \`cd ${repo} && \`).\n\n${p}`
-    : p;
-const guard = repo
-  ? ` Before the first commit / push / branch change in this step, run \`cd ${repo} && git rev-parse --show-toplevel\` and confirm the output is ${repo}. If it differs, abort without mutating git and report the mismatch.`
-  : "";
+  `Run every git, file, and build command from the repository at ${repo} (begin each shell command with \`cd ${repo} && \`).\n\n${p}`;
+const guard = ` Before the first commit / push / branch change in this step, run \`cd ${repo} && git rev-parse --show-toplevel\` and confirm the output is ${repo}. If it differs, abort without mutating git and report the mismatch.`;
 // As a plugin, sibling resolves the build: namespace and bundled resolves
 // ~/.claude/plugins. Both try the bare dev-tree form first, so the dev tree keeps working.
 const sibling = async (name, a) => {
@@ -75,10 +87,12 @@ const FETCH_SCHEMA = obj(["found", "body"], {
 });
 
 // ---- Load: verbatim fetch -> Plan heading check -> deterministic id collection -> extract -> validate + cross-check ----
+// A leading "#" would start a shell comment and leave gh with zero args; strip it.
+const fetchRef = issueRef.replace(/^#/, "");
 const fetched = await agent(
   anchor(
-    `Fetch the body of GitHub issue ${issueRef} with a fixed command; do not summarize or reformat. ` +
-      `Run exactly \`gh issue view ${issueRef} --json body --jq .body\` and return its stdout verbatim as body. ` +
+    `Fetch the body of GitHub issue ${fetchRef} with a fixed command; do not summarize or reformat. ` +
+      `Run exactly \`gh issue view ${fetchRef} --json body --jq .body\` and return its stdout verbatim as body. ` +
       `If the command exits non-zero (issue not found / fetch failed), return found: false.`,
   ),
   {
