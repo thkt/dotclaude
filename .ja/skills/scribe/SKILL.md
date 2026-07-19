@@ -1,0 +1,66 @@
+---
+name: scribe
+description: 過去の closed PR/issue から繰り返しの共通項を抽出し、最新コードと突き合わせて docs/wiki/ に PR で提案する。
+when_to_use: scribe 実行, wiki 抽出, 共通項の蒸留, PR/issue からの知見蓄積, run scribe, wiki extraction, distill recurring patterns
+allowed-tools: Bash(git:*) Bash(gh:*) Read Write Edit LS
+---
+
+# /scribe - PR / issue 共通項の wiki 蓄積
+
+このリポジトリの過去の merged PR / closed issue から、定型手順 / 規約や再発指摘 / 失敗パターンとして繰り返し現れる共通項を抽出し、最新コードと突き合わせて `docs/wiki/` に蓄積する。提案は必ず PR で行い、マージが人間の承認になる。
+
+## 不変条件
+
+| 条件          | 内容                                                                                      |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| PR 経由       | デフォルトブランチへ直接コミット / プッシュしない                                         |
+| 進捗の記録    | 前回どこまで読んだかは、最後にマージされた scribe PR の mergedAt が示す                   |
+| 閾値 2 件     | 根拠となる PR / issue が 2 件未満の共通項はページにせず `docs/wiki/_candidates.md` に置く |
+| 事実のみ      | PR / issue に書かれた事実と、現在のコードで確認できた事実のみ書く。推測で埋めない         |
+| worktree 隔離 | 編集 / commit は隔離 worktree 内で行い、ユーザーの作業ツリーを動かさない                  |
+
+## Phase 1: 前提確認とオンボーディング
+
+1. `gh pr list --label scribe --state open --limit 1` で未マージの scribe PR を確認する。あれば追い越さず、中断して報告する
+2. `docs/wiki/README.md` が無ければ `${CLAUDE_SKILL_DIR}/templates/readme.md` のテンプレートで作成し、後続の PR に含める
+3. scribe ラベルが無ければ `gh label create scribe --description "scribe による wiki 提案"` で作成する
+
+## Phase 2: スコープ決定
+
+1. 最後にマージされた scribe PR の mergedAt を `gh pr list --label scribe --state merged --limit 1 --json mergedAt -q '.[0].mergedAt'` で取得する
+2. mergedAt が取れなければ初回。`gh pr list --state merged --search '-label:scribe'` と `gh issue list --state closed` の全件を対象にする
+3. mergedAt が取れたら、`gh pr list --state merged --search "-label:scribe merged:><mergedAt>"` の PR と `gh issue list --state closed --search "closed:><mergedAt>"` の issue を対象にする
+4. 対象が 0 件なら「新規なし」と報告して終了する
+
+## Phase 3: 抽出
+
+1. `docs/wiki/*.md` と `docs/wiki/_candidates.md` を読み、既存ページ / 候補を把握する
+2. スコープの各 PR / issue を `gh pr view <番号> --comments` / `gh issue view <番号> --comments` で本文 / コメントまで読む
+3. 読んだ内容を次の表で振り分ける。設計判断とその経緯は `docs/decisions/` の領分なので対象外
+
+| 該当先                     | 操作                                            |
+| -------------------------- | ----------------------------------------------- |
+| 既存ページの共通項         | 根拠に `#番号` を追記し、内容に変化があれば更新 |
+| 候補に2件目の根拠          | ページへ昇格し、候補の行を消す                  |
+| どこにも無い繰り返しの兆し | `_candidates.md` に「内容1行 + #番号」で追記    |
+| 1 度きりの個別事情         | 書かない                                        |
+
+## Phase 4: 最新コードとの突き合わせ
+
+ページ化 / 昇格 / 更新の前に、各共通項を現在のコードと突き合わせる。成立を確認した項目には現行コードの根拠を `path` または `path:行番号` で PR / issue 番号と並べて付記し、検証で落とした項目は `§ Phase 5: PR 作成` の PR 本文に列挙する。
+
+| 確認                                              | 不成立時の扱い                                     |
+| ------------------------------------------------- | -------------------------------------------------- |
+| 規約 / 手順が現在の実装でも成立するか             | 書かない。既存ページの項目なら不成立として更新する |
+| lint / hook / CI で既に機械的に強制されていないか | 二重管理になるため書かない                         |
+| 参照するパス / コマンドが現存するか               | 現行のパス / コマンドに直して書く                  |
+
+## Phase 5: PR 作成
+
+上限は 1 回あたり最大 3 ページで、昇格 + 更新の合計として数え、`_candidates.md` の編集は数えない。超過分は根拠件数の多い順に優先し、残しを PR 本文に明記する。変更が何も無ければ PR を作らない。候補追記のみでも PR を作る。
+
+1. `git fetch origin <デフォルトブランチ>` の後、`origin/<デフォルトブランチ>` から隔離 worktree とブランチ `scribe/<yyyymmdd-HHMMSS>` を作る
+2. worktree 内で `${CLAUDE_SKILL_DIR}/templates/page.md` の骨格に従って `docs/wiki/` を編集し、メッセージ `docs(wiki): <共通項名, ...> を追加/更新` でコミットする
+3. push して `gh pr create --base <デフォルトブランチ>` を実行する。タイトル `[scribe] <共通項名, ...> を追加/更新`、ラベル scribe
+4. 本文には追加 / 昇格 / 更新したページ、候補への追記、読んだ PR / issue の範囲、検証で落とした項目、打ち切った残しを書く
+5. worktree を削除する
