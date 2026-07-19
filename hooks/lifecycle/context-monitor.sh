@@ -31,4 +31,6 @@ LAST_WARNED=100
 [ "$REMAINING" -ge $((LAST_WARNED - 5)) ] && exit 0
 
 printf '%d\n' "$REMAINING" > "$WARN_FILE"
-printf '⚠️ Context残り%d%% — /delta で発見を記録してから /compact を実行してな\n' "$REMAINING"
+# Reassurance line: bare remaining-% counts can push the model into self-trimming or
+# handoff offers (prompting-claude-fable-5, "Rare cases of context-budget concern").
+printf '⚠️ Context残り%d%% — /delta で発見を記録してから /compact を実行してな。残量を理由に作業を切り詰めたり引き継ぎを提案したりせんでええ。compact 後も続きから進められる\n' "$REMAINING"

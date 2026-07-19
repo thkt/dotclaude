@@ -47,7 +47,7 @@ Extract the common patterns that recur across this repository's past merged PRs 
 
 ## Phase 4: Cross-check against the latest code
 
-Before creating, promoting, or updating a page, cross-check each pattern against the current code. For each item that holds, add the current-code evidence as `path` or `path:line` next to the PR / issue numbers, and list the items dropped by verification in the PR body of `§ Phase 5: PR creation`.
+Before creating, promoting, or updating a page, cross-check each pattern against the current code. For each item that holds, add the current-code location as reference code, written as `path` + symbol name (no line numbers), and list the items dropped by verification in the PR body of `§ Phase 5: PR creation`.
 
 | Check                                                         | When it fails                                                                 |
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
@@ -55,12 +55,14 @@ Before creating, promoting, or updating a page, cross-check each pattern against
 | Is it already mechanically enforced by lint / hook / CI?      | Do not write it; it would duplicate management                                |
 | Do the referenced paths/commands still exist?                 | Rewrite with the current paths/commands                                       |
 
+In addition, sweep the reference code of every page under `docs/wiki/*.md`, including existing pages unrelated to this run's scope. Mechanically verify that the file exists and that the symbol name greps within the file, and for a broken reference, reread the current code and relink it. If the pattern itself no longer holds because its referent is gone, update the page as no longer holding. This reference repair does not count toward the 3-page cap in Phase 5.
+
 ## Phase 5: PR creation
 
-The cap is 3 pages per run, counted as promotions + updates combined; edits to `_candidates.md` do not count. Beyond the cap, prioritize by evidence count and state the leftovers in the PR body. If there is no change at all, do not create a PR. Create a PR even for candidate-only additions.
+The cap is 3 pages per run, counted as promotions + updates combined; edits to `_candidates.md` and reference repairs from Phase 4 do not count. Beyond the cap, prioritize by evidence count and state the leftovers in the PR body. If there is no change at all, do not create a PR. Create a PR even for candidate-only additions.
 
 1. After `git fetch origin <default branch>`, create an isolated worktree and branch `scribe/<yyyymmdd-HHMMSS>` from `origin/<default branch>`
 2. Edit `docs/wiki/` inside the worktree following the skeleton in `${CLAUDE_SKILL_DIR}/templates/page.md`, and commit with the message `docs(wiki): <pattern names, ...> を追加/更新`
 3. Push and run `gh pr create --base <default branch>`. Title `[scribe] <pattern names, ...> を追加/更新`, label scribe
-4. In the body, write the added/promoted/updated pages, candidate additions, the range of PRs / issues read, the items dropped by verification, and any leftovers
+4. In the body, write the added/promoted/updated pages, candidate additions, reference-repaired pages, the range of PRs / issues read, the items dropped by verification, and any leftovers
 5. Remove the worktree

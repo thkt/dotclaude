@@ -3,7 +3,7 @@ export const meta = {
   description:
     '構造化 plan (units / test_command) を受け取り、unit ごとに script 制御で実装する TDD workflow。test scenario を持つ unit は Red → Green で実装し、tests が空の unit (docs / 設定など検証可能な振る舞いが無いもの) は直接実装 1 段で扱う。TDD の要否は runtime でなく plan が選択する。未確認の Red は anomaly として記録し、最後に実装へ関与していない独立 agent が全 suite + lint + type-check を検証する。単独でも build からの workflow("code") でも呼べる。',
   whenToUse:
-    "headless の plan 実装。args は {plan, repo, model}。plan は units / test_command を持つ構造化 plan (think skill が生成する形)。model (任意) は実装 agent にのみ伝播する (default は opus)。実装 agent は effort xhigh で走る。",
+    "headless の plan 実装。args は {plan, repo, model}。plan は units / test_command を持つ構造化 plan (think skill が生成する形)。model (任意) は実装 agent にのみ伝播する (default は fable)。実装 agent は effort xhigh で走る。",
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
@@ -49,7 +49,7 @@ const anomalies = [];
 // 呼び出し元へそのまま渡す
 const stopUnit = (stopped, unit, why) => ({ stopped, unit: unit.id, why, completed, anomalies });
 // 全実装 agent で共有し、model / effort の変更を 1 箇所にする。
-const implementOpts = { model: input.model || "opus", effort: "xhigh" };
+const implementOpts = { model: input.model || "fable", effort: "xhigh" };
 
 const RED_SCHEMA = {
   type: "object",

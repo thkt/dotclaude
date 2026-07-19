@@ -483,8 +483,8 @@ const code =
   (await sibling("code", {
     plan: stripPreconditions(plan),
     repo,
-    // Pinned to opus (user decision 2026-07-13). Do not silently track code.js's default.
-    model: "opus",
+    // Pinned to fable (user decision 2026-07-20). Do not silently track code.js's default.
+    model: "fable",
   })) || null;
 if (!code || code.stopped) {
   return { stopped: "code-failed", detail: code };

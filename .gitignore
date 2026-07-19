@@ -116,3 +116,6 @@ backups/
 # Job / daemon runtime state
 jobs/
 daemon/
+daemon.lock
+daemon.status.json
+gh-pr-status-cache.json
