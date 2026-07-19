@@ -3,7 +3,7 @@ export const meta = {
   description:
     'Codex review + cleanup を決定論的に行う workflow。Codex の findings は critic-audit の challenge を必ず通り、triage (confirmed / disputed / downgraded / needs_context) は script が判定するため、fact 扱いの集約や challenge の skip が起きない。単体でも、build から workflow("polish") 経由の入れ子でも呼べる。',
   whenToUse:
-    "diff の外部レンズ review と AI slop 除去を headless に行う。args は scope 文字列、または {scope, repo, mode}。mode: full (既定) は review -> fix -> cleanup、review は challenge 済み findings を返すだけ (fix しない)、cleanup は simplify + enhancer-code + テスト検証のみ。内部 reviewer の深い audit は audit workflow を使う。",
+    "diff の外部レンズ review と AI slop 除去を headless に行う。args は scope 文字列、または {scope, repo, mode, base}。scope 省略時は uncommitted な変更、無ければ base branch (既定 main) より先行する commit の diff (push 済み branch diff) を対象とする。mode: full (既定) は review -> fix -> cleanup、review は challenge 済み findings を返すだけ (fix しない)、cleanup は simplify + enhancer-code + テスト検証のみ。内部 reviewer の深い audit は audit workflow を使う。",
   phases: [{ title: "Review" }, { title: "Challenge" }, { title: "Fix" }, { title: "Cleanup" }],
 };
 
@@ -28,24 +28,33 @@ const opts = parseArgs();
 const scope = typeof opts.scope === "string" ? opts.scope : "";
 const repo = typeof opts.repo === "string" ? opts.repo : "";
 const mode = opts.mode === "review" || opts.mode === "cleanup" ? opts.mode : "full";
+const base = typeof opts.base === "string" ? opts.base : "main";
 
 const anchor = (p) =>
   repo
     ? `git / ファイル / ビルドのコマンドはすべて ${repo} の repository から実行する (各シェルコマンドを \`cd ${repo} && \` で始める)。\n\n${p}`
     : p;
-const scopeNote = scope
-  ? `対象 scope は ${scope}。scope 外のファイルに触れる fix は落とす。`
-  : "対象は git diff HEAD (staged + unstaged)。diff 外のファイルに触れる fix は落とす。";
+const scopeNote = (diffKind) =>
+  scope
+    ? `対象 scope は ${scope}。scope 外のファイルに触れる fix は落とす。`
+    : diffKind === "branch"
+      ? `対象は git diff ${base}...HEAD (push 済み branch diff)。diff 外のファイルに触れる fix は落とす。`
+      : "対象は git diff HEAD (staged + unstaged)。diff 外のファイルに触れる fix は落とす。";
 
 const CODEX_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["available", "has_changes", "findings"],
+  required: ["available", "has_changes", "diff_kind", "findings"],
   properties: {
     available: { type: "boolean", description: "codex CLI が使えたか" },
     has_changes: {
       type: "boolean",
       description: "diff に polish 対象の変更があるか",
+    },
+    diff_kind: {
+      type: "string",
+      enum: ["uncommitted", "branch", ""],
+      description: "対象 diff の種類。branch は base より先行する commit の diff",
     },
     findings: {
       type: "array",
@@ -126,7 +135,7 @@ const CLEANUP_SCHEMA = {
   },
 };
 
-let codex = { available: false, has_changes: true, findings: [] };
+let codex = { available: false, has_changes: true, diff_kind: "", findings: [] };
 let verdicts = [];
 let survivors = [];
 let needsContext = [];
@@ -135,13 +144,19 @@ let fix = null;
 if (mode !== "cleanup") {
   // ---- Review: 外部 Codex レンズ ----
   phase("Review");
+  const detectNote = scope
+    ? `まず \`git status\` と \`git diff HEAD\` で polish 対象の変更が存在するか確認する。無ければ has_changes: false、diff_kind 空で返す。あれば diff_kind: uncommitted とする。`
+    : `まず対象 diff の種類を判定する。\`git status --porcelain\` に出力があれば diff_kind: uncommitted。無ければ \`git rev-list --count ${base}..HEAD\` が 1 以上で diff_kind: branch (push 済み branch diff)。どちらにも該当しなければ has_changes: false、diff_kind 空で返す。`;
   codex = (await agent(
     anchor(
-      `外部 Codex review stage。まず \`git status\` と \`git diff HEAD\` で polish 対象の変更が存在するか確認する。無ければ has_changes: false で返す。\n` +
+      `外部 Codex review stage。${detectNote}\n` +
         `次に \`which codex\` を確認する。無ければ available: false、findings 空で返す。\n` +
-        `あれば \`codex review "Review for logic, architecture, data flow, and code simplicity (flag over-complexity and unnecessary indirection)"\` を実行する。` +
-        `codex 0.141.0 では scope flag (--uncommitted / --base / --commit) と PROMPT 引数が排他なので、simplicity レンズの PROMPT を渡すときは scope flag を付けない (Codex 自身が git status を読む)。PROMPT を省くと simplicity レンズが落ちるため必ず渡す。\n` +
-        `出力を findings に構造化する。id は F1, F2, ... と振り、severity は Codex の P1/P2/P3 を写す (無ければ影響度から判定する)。${scopeNote}`,
+        `diff_kind が branch のときは \`codex review --base ${base}\` を実行する (codex 0.144.6 では scope flag (--uncommitted / --base / --commit) と PROMPT 引数が排他のため、branch diff では PROMPT を渡せず simplicity レンズは Codex 既定レンズに落ちる)。\n` +
+        `それ以外は \`codex review "Review for logic, architecture, data flow, and code simplicity (flag over-complexity and unnecessary indirection)"\` を実行する。PROMPT を渡すときは scope flag を付けない (Codex 自身が git status を読む)。PROMPT を省くと simplicity レンズが落ちるため uncommitted では必ず渡す。\n` +
+        `出力を findings に構造化する。id は F1, F2, ... と振り、severity は Codex の P1/P2/P3 を写す (無ければ影響度から判定する)。` +
+        (scope
+          ? `対象 scope は ${scope}。scope 外のファイルに触れる findings は落とす。`
+          : `判定した diff (uncommitted なら git diff HEAD、branch なら git diff ${base}...HEAD) の外のファイルに触れる findings は落とす。`),
     ),
     {
       label: "codex",
@@ -150,7 +165,7 @@ if (mode !== "cleanup") {
       schema: CODEX_SCHEMA,
       model: "sonnet",
     },
-  )) || { available: false, has_changes: true, findings: [] };
+  )) || { available: false, has_changes: true, diff_kind: "", findings: [] };
   if (!codex.has_changes) {
     return { mode, polished: false, why: "diff に変更が無く polish 対象なし" };
   }
@@ -210,6 +225,7 @@ if (mode !== "cleanup") {
     return {
       mode,
       codex_available: codex.available,
+      diff_kind: codex.diff_kind,
       survivors,
       needs_context: needsContext,
     };
@@ -220,7 +236,7 @@ if (mode !== "cleanup") {
     phase("Fix");
     fix = await agent(
       anchor(
-        `challenge を生き残った findings を severity の高い順に修正する。${scopeNote}\n` +
+        `challenge を生き残った findings を severity の高い順に修正する。${scopeNote(codex.diff_kind)}\n` +
           `修正後にプロジェクトのテストコマンドを検出して実行し、テストを壊した fix は git stash で巻き戻す。commit しない。\n` +
           `Findings は次のとおり。\n${JSON.stringify(survivors)}`,
       ),
@@ -239,9 +255,11 @@ if (mode !== "cleanup") {
 // ---- Cleanup: simplify -> enhancer-code -> テスト検証 ----
 // どちらも bug 探しではないので critic-audit challenge を通さず直接適用する。
 phase("Cleanup");
+const cleanupTarget =
+  codex.diff_kind === "branch" ? `git diff ${base}...HEAD (push 済み branch diff)` : "現在の diff";
 await agent(
   anchor(
-    `Skill tool で skill "simplify" を呼び、現在の diff に cleanup 専用パス (reuse / simplification / efficiency / altitude) を適用する。引数なしで拒否されたら diff の scope を渡す。commit しない。`,
+    `Skill tool で skill "simplify" を呼び、${cleanupTarget}に cleanup 専用パス (reuse / simplification / efficiency / altitude) を適用する。引数なしで拒否されたら diff の scope を渡す。commit しない。`,
   ),
   {
     label: "simplify",
@@ -252,7 +270,7 @@ await agent(
 );
 await agent(
   anchor(
-    `現在の diff から AI slop を除去し simplification ルールを適用し、テストを監査する。simplify の編集より preservation ルール (迷ったら残す) を優先する。`,
+    `${cleanupTarget}から AI slop を除去し simplification ルールを適用し、テストを監査する。simplify の編集より preservation ルール (迷ったら残す) を優先する。`,
   ),
   {
     agentType: "enhancer-code",
@@ -282,6 +300,7 @@ const cleanup = (await agent(
 return {
   mode,
   codex_available: codex.available,
+  diff_kind: codex.diff_kind,
   findings: codex.findings.length,
   survivors: survivors.length,
   fixed: fix ? fix.fixed : [],
