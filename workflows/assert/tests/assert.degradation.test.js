@@ -80,3 +80,45 @@ test("adversarial agent が null を返す時、result.adversarial が stall を
     "genuine no-tests には stall marker が無く、stall と 0 件を区別できる",
   );
 });
+
+test("adversarial agent が ran: false を自己申告した時、result.adversarial が診断理由付きで未実行を示す", async () => {
+  const selfSkipRun = await runWorkflow(assertJs, {
+    args: {},
+    stubs: { agent: makeAgent({ ran: false, tests: [], notes: "sandbox denied codex exec" }) },
+  });
+  const adv = selfSkipRun.result && selfSkipRun.result.adversarial;
+  assert.ok(adv, "自己申告未実行時も result.adversarial が返る");
+  assert.equal(
+    adv.stall,
+    "not run: sandbox denied codex exec",
+    "自己申告の未実行は診断理由 notes 付きで記録され、agent 無出力 (no output / stall) と区別できる",
+  );
+});
+
+test("triage block 内で throw が起きた時、result.adversarial が stall を示しテスト 0 件と区別できる", async () => {
+  // testRunP / adversarialP は agent 側で .catch(() => null) 済みのため、block throw の再現には
+  // catch なしで await parallel される triage verdict agent (label "triage:*") を使う。harness の
+  // parallel は thunk の throw で reject するので IIFE ごと throw し、外側の .catch(() => null)
+  // が triageRes を null に畳む。この throw class 全体で stall marker が summary に残ることを
+  // 固定する。
+  const failTest = {
+    test_name: "t1",
+    target: "src/foo.js:3",
+    assertion: "x",
+    result: "FAIL",
+    failure_detail: "boom",
+  };
+  const throwingAgent = (prompt, opts) => {
+    const label = opts && opts.label;
+    if (label && label.startsWith("triage:")) throw new Error("triage agent crashed");
+    return makeAgent({ ran: true, tests: [failTest] })(prompt, opts);
+  };
+  const thrownRun = await runWorkflow(assertJs, { args: {}, stubs: { agent: throwingAgent } });
+  const adv = thrownRun.result && thrownRun.result.adversarial;
+  assert.ok(adv, "throw 時も result.adversarial が返る");
+  assert.equal(
+    adv.stall,
+    "triage stage threw / no output",
+    "triage block の throw が stall として記録され、clean な 0 件と区別できる",
+  );
+});

@@ -359,7 +359,8 @@ const perDr = await pipeline(
       dr: a,
       status: ex.status,
       superseded_by: ex.superseded_by || "",
-      verifiable: true,
+      // A DR whose reviewers all stalled verified nothing, so it counts as unverifiable
+      verifiable: alive.length > 0,
       note: stalled.length ? `reviewers stalled (unmatched): ${stalled.join(", ")}` : "",
       skipped,
       findings: mergeFindings(alive.map((r) => r.findings)),
@@ -428,6 +429,11 @@ return {
   findings: allFindings,
   priorities: counts,
   unverifiable: unverifiable.map((r) => ({ id: r.dr.id, note: r.note })),
+  // Surface the per-DR reviewer-stall records on the primary channel (the return value)
+  // too; the Report agent's prompt serialization alone survives only in LLM-authored markdown
+  skipped: scanned
+    .filter((r) => (r.skipped || []).length)
+    .map((r) => ({ id: r.dr.id, skipped: r.skipped })),
   external_refs: externalRefs,
   followup_candidates: allFindings.filter((f) => f.priority === "H"),
 };

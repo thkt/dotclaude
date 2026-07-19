@@ -45,6 +45,9 @@ const units = plan.units;
 const testCmd = plan.test_command || "";
 const completed = [];
 const anomalies = [];
+// unit 途中終了の返り値は 3 サイト共通の shape。completed / anomalies を閉じ込め、部分進捗を
+// 呼び出し元へそのまま渡す
+const stopUnit = (stopped, unit, why) => ({ stopped, unit: unit.id, why, completed, anomalies });
 // 全実装 agent で共有し、model / effort の変更を 1 箇所にする。
 const implementOpts = { model: input.model || "opus", effort: "xhigh" };
 
@@ -126,13 +129,11 @@ for (const unit of units) {
     }
 
     if (!impl || !impl.green) {
-      return {
-        stopped: "unit-failed",
-        unit: unit.id,
-        why: (impl && impl.notes) || "implement agent が結果を返さなかった",
-        completed,
-        anomalies,
-      };
+      return stopUnit(
+        "unit-failed",
+        unit,
+        (impl && impl.notes) || "implement agent が結果を返さなかった",
+      );
     }
 
     completed.push(unit.id);
@@ -177,14 +178,7 @@ for (const unit of units) {
     );
   }
 
-  if (!red)
-    return {
-      stopped: "red-failed",
-      unit: unit.id,
-      why: "red agent が結果を返さなかった",
-      completed,
-      anomalies,
-    };
+  if (!red) return stopUnit("red-failed", unit, "red agent が結果を返さなかった");
 
   if (!red.red_confirmed) {
     anomalies.push({ unit: unit.id, kind: "no-red", notes: red.notes });
@@ -227,13 +221,11 @@ for (const unit of units) {
   }
 
   if (!green || !green.green) {
-    return {
-      stopped: "unit-failed",
-      unit: unit.id,
-      why: (green && green.notes) || "green agent が結果を返さなかった",
-      completed,
-      anomalies,
-    };
+    return stopUnit(
+      "unit-failed",
+      unit,
+      (green && green.notes) || "green agent が結果を返さなかった",
+    );
   }
   completed.push(unit.id);
   log(`${unit.id}: Red → Green done (${completed.length}/${units.length})。`);

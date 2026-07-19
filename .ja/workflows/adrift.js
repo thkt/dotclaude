@@ -359,7 +359,8 @@ const perDr = await pipeline(
       dr: a,
       status: ex.status,
       superseded_by: ex.superseded_by || "",
-      verifiable: true,
+      // 全 reviewer が stall した DR は何も検証できていないため unverifiable として数える
+      verifiable: alive.length > 0,
       note: stalled.length ? `reviewer stall (未照合): ${stalled.join(", ")}` : "",
       skipped,
       findings: mergeFindings(alive.map((r) => r.findings)),
@@ -428,6 +429,11 @@ return {
   findings: allFindings,
   priorities: counts,
   unverifiable: unverifiable.map((r) => ({ id: r.dr.id, note: r.note })),
+  // reviewer stall の per-DR 記録を一次チャネル (返り値) にも載せる。Report agent の
+  // prompt 直列化だけでは LLM 著の markdown にしか残らない
+  skipped: scanned
+    .filter((r) => (r.skipped || []).length)
+    .map((r) => ({ id: r.dr.id, skipped: r.skipped })),
   external_refs: externalRefs,
   followup_candidates: allFindings.filter((f) => f.priority === "H"),
 };
