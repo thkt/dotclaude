@@ -8,14 +8,13 @@ always carry the verify result and the standing note that heavier assurance
 only the lead "## Summary" (the human reviewer's entry point) and appends this
 tail below it.
 
-Format is deliberately terse and markdown-structured: a one-line label naming the
-block as auto-generated, the Closes line, then a collapsed <details> whose
-<summary> is the status line (HTML <code>, since markdown does not render inside
-<summary>). Safety-critical facts stay visible even collapsed because they live
-in that summary; the audit invitation, the failure log (a nested <details>), and
-the purely informational lists (assumptions, scope deviations, missing test
-statements, anomalies) fold away, shown only when non-empty, so a clean run
-stays short instead of repeating "None" per section.
+Format is deliberately terse and markdown-structured (a one-line label naming the
+block as auto-generated, a one-line status, bold labels, bullets, a collapsed
+<details> for a failure log). Safety-critical facts
+live in the always-present status line / callout; purely informational lists
+(assumptions, scope deviations, missing test statements, anomalies) are shown
+only when non-empty, so a clean run stays short instead of repeating "None" per
+section.
 
 Fail-closed in two directions: an unparseable payload OR one missing a
 safety-critical key (tests_pass / gates_pass) exits 1 with nothing on
@@ -109,23 +108,17 @@ def render(payload):
 
     out = [L["tail_header"], f"Closes #{issue}" if issue else "Closes #"]
 
-    # Everything below the status line folds into one <details> (reviewer request:
-    # the tail should not dominate the PR body). The status line itself is the
-    # <summary>, so pass/FAIL stays visible while collapsed; markdown does not
-    # render inside <summary>, hence <code> instead of backticks.
-    summary = (
-        f"<code>verify tests={tests} gates={gates}</code> · "
-        f"<code>scope-deviations {len(scope)}</code> · "
-        f"<code>missing-tests {len(missing)}</code>"
+    out.append(
+        f"`verify tests={tests} gates={gates}` · `scope-deviations {len(scope)}` · `missing-tests {len(missing)}`"
     )
-    folded = [L["audit_invite"]]
+    out.append(L["audit_invite"])
 
     if tests == "FAIL" or gates == "FAIL":
         detail = payload.get("verify_output")
         if detail:
             body = detail if isinstance(detail, str) else json.dumps(detail, indent=2)
             fence = _fence(body)
-            folded.append(
+            out.append(
                 f"<details><summary>{L['verify_output']}</summary>\n\n{fence}\n{body}\n{fence}\n\n</details>"
             )
 
@@ -144,7 +137,7 @@ def render(payload):
             # Keep each item on one line so an embedded newline can't break the list
             # or promote a following line to a heading.
             lines.append("- " + " ".join(str(text).split("\n")))
-        folded.append(f"**{label}**\n" + "\n".join(lines))
+        out.append(f"**{label}**\n" + "\n".join(lines))
 
     section(L["assumptions"], payload.get("assumptions"), str)
     section(L["scope_deviations"], scope, lambda f: f"`{f}`")
@@ -163,14 +156,6 @@ def render(payload):
         lambda a: (
             f"{a.get('unit', '?')} ({a.get('kind', '?')}): {a.get('notes', '')}".rstrip()
         ),
-    )
-
-    # Blank lines around the folded content keep GitHub rendering the markdown
-    # inside the HTML <details> block.
-    out.append(
-        f"<details>\n<summary>{summary}</summary>\n\n"
-        + "\n\n".join(folded)
-        + "\n\n</details>"
     )
 
     # Lead with a blank line + rule so this machine tail stays separated when appended

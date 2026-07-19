@@ -43,14 +43,11 @@ CLEAN = {"issue": "9", "tests_pass": True, "gates_pass": True}
 
 
 class RenderTest(unittest.TestCase):
-    def test_closes_and_status_summary(self):
-        # The status line is the <summary> of the folded tail: HTML <code> (markdown
-        # does not render inside <summary>) so pass/FAIL stays visible while collapsed.
+    def test_closes_and_status_line(self):
         body = pr_body.render(FULL)
         self.assertIn("Closes #123", body)
         self.assertIn(
-            "<summary><code>verify tests=pass gates=pass</code> · "
-            "<code>scope-deviations 1</code> · <code>missing-tests 1</code></summary>",
+            "`verify tests=pass gates=pass` · `scope-deviations 1` · `missing-tests 1`",
             body,
         )
 
@@ -94,7 +91,7 @@ class RenderTest(unittest.TestCase):
         body = pr_body.render(FULL)
         self.assertIn("**Issue conformance (review independently)**", body)
         self.assertIn("- [missing] no test for T-003 (pay.js:12, T-003 rejects negative)", body)
-        self.assertIn("<code>scope-deviations 1</code>", body)
+        self.assertIn("`scope-deviations 1`", body)
 
     def test_clean_run_omits_empty_sections_and_stays_short(self):
         body = pr_body.render(CLEAN)
@@ -104,19 +101,18 @@ class RenderTest(unittest.TestCase):
         self.assertNotIn("**Planned test statements", body)
         self.assertNotIn("**Issue conformance", body)
         self.assertNotIn("**Anomalies", body)
-        self.assertIn("<code>scope-deviations 0</code> · <code>missing-tests 0</code>", body)
+        self.assertIn("`scope-deviations 0` · `missing-tests 0`", body)
         non_empty = [
             ln for ln in body.splitlines() if ln.strip() and ln.strip() != "---"
         ]
-        # header label + Closes line + <details> + <summary> status + audit
-        # invitation + </details>
-        self.assertEqual(len(non_empty), 6, non_empty)
+        # header label + Closes line + status line + audit invitation
+        self.assertEqual(len(non_empty), 4, non_empty)
 
     def test_verify_failure_uses_collapsed_details(self):
         body = pr_body.render(
             {**FULL, "tests_pass": False, "verify_output": "boom stacktrace"}
         )
-        self.assertIn("<code>verify tests=FAIL gates=pass</code>", body)
+        self.assertIn("`verify tests=FAIL gates=pass`", body)
         self.assertIn("<details><summary>verify output</summary>", body)
         self.assertIn("```\nboom stacktrace\n```", body)
 
@@ -127,23 +123,10 @@ class RenderTest(unittest.TestCase):
         # The chosen fence is longer than the longest backtick run in the log.
         self.assertIn("````\n" + log + "\n````", body)
 
-    def test_verify_pass_has_no_nested_log_details(self):
-        # The outer fold is always present; the nested verify-output log is not.
+    def test_verify_pass_has_no_details_block(self):
         body = pr_body.render(FULL)
-        self.assertEqual(body.count("<details>"), 1)
-        self.assertNotIn("verify output", body)
+        self.assertNotIn("<details>", body)
         self.assertNotIn("```", body)
-
-    def test_informational_content_is_inside_the_fold(self):
-        # The header and Closes stay visible; the audit invite and every
-        # informational section collapse below the status summary.
-        body = pr_body.render(FULL)
-        opens = body.index("<summary>")
-        closes = body.rindex("</details>")
-        self.assertLess(body.index("Closes #123"), body.index("<details>"))
-        for marker in ("run `/audit`", "**Assumptions", "**Anomalies"):
-            self.assertLess(opens, body.index(marker), marker)
-            self.assertLess(body.index(marker), closes, marker)
 
     def test_non_dict_item_degrades_instead_of_crashing(self):
         # A malformed (non-dict) list item must not raise and drop the whole tail.
