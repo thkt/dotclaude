@@ -461,8 +461,8 @@ const code =
   (await sibling("code", {
     plan: stripPreconditions(plan),
     repo,
-    // opus 固定 (2026-07-13 のユーザー判断)。code.js の default 変更を暗黙に追従しない。
-    model: "opus",
+    // fable 固定 (2026-07-20 のユーザー判断)。code.js の default 変更を暗黙に追従しない。
+    model: "fable",
   })) || null;
 if (!code || code.stopped) {
   return { stopped: "code-failed", detail: code };

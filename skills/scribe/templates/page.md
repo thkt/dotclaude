@@ -4,22 +4,25 @@
 
 ## Template
 
-Each page is structured in the order 内容 → 定型手順 → 根拠. Readers use the content and the procedure; the evidence is a footnote of provenance. Attach both the PR/issue numbers of the original discussions and the verified location in the current code, so readers can trace why the convention exists and where it holds today.
+Each page is structured in the order 内容 → 定型手順 → 参照コード → 根拠. In 参照コード, write the current-code locations verified in Phase 4 as `path` + symbol name (function / type / heading), with no line numbers. Transcribe a code excerpt only when the shape of the pattern itself is the point, up to a few lines. In 根拠, write the PR/issue numbers of the original discussions.
 
 ```markdown
 # <共通項名>
 
 ## 内容
 
-何をする/しないかの言語化（1〜3文）。
+何をする/しないかの言語化（1〜3 文）。
 
 ## 定型手順
 
 繰り返す手順・チェックリスト（あれば）。
 
+## 参照コード
+
+- `path/to/file` の `シンボル名`（何が読めるか1行）
+
 ## 根拠
 
 - #12 何があったか1行
 - #34 何があったか1行
-- 現行コード: `path/to/file:行`（検証済みの成立根拠）
 ```

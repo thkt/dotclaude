@@ -12,6 +12,11 @@ import { runWorkflow } from "../../_lib/run-workflow.js";
 const here = dirname(fileURLToPath(import.meta.url));
 const buildJs = join(here, "..", "..", "build.js");
 
+// build.js の no-repo gate を通す共有 args。repo は anchor / guard の文字列組み立てに
+// しか使われないので、絶対 path 形の固定値 1 つで全テストを賄える。
+const repo = "/abs/target-repo";
+const args = { issue: "123", repo };
+
 // Plan 節付き issue body。unitIds / testIds は決定論 id 収集の対象になるリテラル。
 const bodyFor = (unitIds, testIds) =>
   [
@@ -170,11 +175,42 @@ test("数字を含む自由記述は issue 参照と誤認せず stopped: no-iss
   assert.equal(agentCallsOf(desc.calls, "fetch").length, 0, "誤認した issue を fetch しない");
 });
 
-// 有効な参照形式 (数字単体 / #数字 / issue URL) は同じ番号を取り出す。
-test("数字単体 / #数字 / issue URL から同じ issue 番号を抽出する", async () => {
+// repo 無し args の no-repo gate (build.js の if (!repo)) を regression として pin する。
+// gate は issue-ref check 通過後・Load fetch agent 起動前に fire するので、有効な issue 参照
+// を持つ object 形 ({issue}) と bare string 形 ("123") の両方が fetch 0 回で止まる。
+test("args.repo 欠落 (object / bare string) は stopped: no-repo で fetch 前に fail-close する", async () => {
+  for (const argsWithoutRepo of [{ issue: "123" }, "123"]) {
+    const form = typeof argsWithoutRepo === "string" ? "bare string" : "object";
+    const run = await runWorkflow(buildJs, { args: argsWithoutRepo, stubs: makeStubs() });
+    assert.equal(
+      run.result.stopped,
+      "no-repo",
+      `${form} 形は issue-ref check を通過し stopped: no-repo で止まる (no-issue でなく)`,
+    );
+    assert.equal(
+      agentCallsOf(run.calls, "fetch").length,
+      0,
+      `${form} 形は Load fetch agent 起動前に止まる`,
+    );
+    assert.equal(
+      run.calls.workflow.length,
+      0,
+      `${form} 形は no-repo 後に入れ子 workflow が走らない`,
+    );
+  }
+});
+
+// 有効な参照形式 (数字単体 / #数字 / issue URL) は repo 付き args で同じ番号を取り出す。
+// string 単体の args は repo を運べず no-repo gate (stopped: no-repo) で fetch 前に
+// 止まるため、参照形式の受理は { issue: ref, repo } の形でのみ観測できる。
+test("数字単体 / #数字 / issue URL を repo 付き args で渡すと同じ issue 番号を抽出し fetch が各 1 回走る", async () => {
   for (const ref of ["123", "#123", "https://github.com/o/r/issues/123"]) {
-    const run = await runWorkflow(buildJs, { args: ref, stubs: makeStubs() });
-    assert.notEqual(run.result.stopped, "no-issue", `${ref} は issue 参照として受理される`);
+    const run = await runWorkflow(buildJs, {
+      args: { issue: ref, repo },
+      stubs: makeStubs(),
+    });
+    assert.equal(run.result.stopped, undefined, `${ref} は repo 付き args で fail-close しない`);
+    assert.equal(run.result.issue, "123", `${ref} から同じ issue 番号 123 を抽出する`);
     assert.equal(agentCallsOf(run.calls, "fetch").length, 1, `${ref} で fetch が 1 回走る`);
   }
 });
@@ -183,7 +219,7 @@ test("数字単体 / #数字 / issue URL から同じ issue 番号を抽出す�
 // build は続行する (ADR-0086)。extract label は使わず、下書き plan で Ship まで進む。
 test("Plan 節なし本文は build 内 draftPlan で plan を下書きし Ship まで進む", async () => {
   const noPlan = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({
       body: "Plan 見出しの無い issue 本文。\n\n## Context\n\n説明のみ。",
     }),
@@ -204,7 +240,7 @@ test("Plan 節なし本文は build 内 draftPlan で plan を下書きし Ship 
 // し、Code へ進まない (ADR-0086)。
 test("critic-design NO-GO は stopped: generated-plan-rejected で Code へ進まない", async () => {
   const rejected = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({
       body: "Plan 見出しの無い issue 本文。",
       critique: { verdict: "NO-GO", weaknesses: ["unit 分解が不健全"] },
@@ -226,7 +262,7 @@ test("critic-design NO-GO は stopped: generated-plan-rejected で Code へ進�
 // では bare `---` でなく明示的な data fence で囲み、fence 内容を instruction として扱わない
 // 指示を付けて prompt injection を鈍らせる。
 test("extract prompt は issue body を untrusted data fence で囲む", async () => {
-  const withPlan = await runWorkflow(buildJs, { args: { issue: "123" }, stubs: makeStubs() });
+  const withPlan = await runWorkflow(buildJs, { args, stubs: makeStubs() });
   const extract = agentCallsOf(withPlan.calls, "extract");
   assert.equal(extract.length, 1, "Plan 節あり path で extract agent が 1 回呼ばれる");
   assert.ok(
@@ -264,7 +300,7 @@ test("構造欠陥と content 空 (contract / name) はいずれも stopped: inv
   ];
   for (const { plan, expect } of variants) {
     const { result } = await runWorkflow(buildJs, {
-      args: { issue: "123" },
+      args,
       stubs: makeStubs({ plan }),
     });
     assert.equal(result.stopped, "invalid-plan", `variant ${expect} で stopped: invalid-plan`);
@@ -294,7 +330,7 @@ test("抽出での unit / test の silent drop は stopped: extraction-mismatch 
     ],
   });
   const a = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({ body, plan: unitDrop }),
   });
   assert.equal(
@@ -319,7 +355,7 @@ test("抽出での unit / test の silent drop は stopped: extraction-mismatch 
     ],
   });
   const b = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({ body, plan: testDrop }),
   });
   assert.equal(
@@ -356,7 +392,7 @@ test("契約 prose 中の T-NNN 参照は定義でないので cross-check に�
     units: [{ ...base, tests: [{ ...base.tests[0], id: "T-109" }] }],
   });
   const r = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({ body, plan }),
   });
   assert.notEqual(
@@ -375,7 +411,7 @@ test("Revalidate は 1 miss で stopped: plan-drift、全 pass で Branch へ進
     ],
   });
   const miss = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({
       plan: driftPlan,
       revalidate: {
@@ -405,14 +441,14 @@ test("Revalidate は 1 miss で stopped: plan-drift、全 pass で Branch へ進
 
   // all-pass case: Branch phase に到達する
   const pass = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs(),
   });
   assert.ok(pass.calls.phase.includes("Branch"), "全 pass で Branch phase に到達する");
 
   // 空 case: revalidate agent が呼ばれず Branch に到達する
   const empty = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({ plan: makePlan({ preconditions: [] }) }),
   });
   assert.equal(
@@ -423,9 +459,9 @@ test("Revalidate は 1 miss で stopped: plan-drift、全 pass で Branch へ進
   assert.ok(empty.calls.phase.includes("Branch"), "preconditions 空でも Branch phase に到達する");
 });
 
-test("happy path の phase 順が Load → Revalidate → Branch → Code → Cleanup → Verify → Ship で、code に model: opus が渡り audit / polish / challenge / think / research が呼ばれない", async () => {
+test("happy path の phase 順が Load → Revalidate → Branch → Code → Cleanup → Verify → Ship で、code に model: fable が渡り audit / polish / challenge / think / research が呼ばれない", async () => {
   const { calls } = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs(),
   });
 
@@ -437,7 +473,7 @@ test("happy path の phase 順が Load → Revalidate → Branch → Code → Cl
 
   const codeCalls = calls.workflow.filter((c) => c.name === "code");
   assert.equal(codeCalls.length, 1, "workflow('code') が 1 回呼ばれる");
-  assert.equal(codeCalls[0].args.model, "opus", "code に model: opus が渡る");
+  assert.equal(codeCalls[0].args.model, "fable", "code に model: fable が渡る");
   assert.ok(
     !("preconditions" in codeCalls[0].args.plan),
     "code へ渡す plan から preconditions が strip される",
@@ -468,7 +504,7 @@ test("happy path の phase 順が Load → Revalidate → Branch → Code → Cl
 
 test("Verify のスコープ検査が plan 外の diff file を surface し、.claude/workspace/ 配下は除外する", async () => {
   const { calls, result } = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({
       diff: {
         files: ["sample.js", "extra.js", ".claude/workspace/planning/2026-07-03-sample/plan.json"],
@@ -490,7 +526,7 @@ test("Verify のスコープ検査が plan 外の diff file を surface し、.c
 
 test("Verify の T-NNN 照合が見つからない言明を surface し、verifier への relay prompt に checks JSON が載る", async () => {
   const { calls, result } = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({
       presence: { results: [{ name: "sample spec statement", found: false }] },
     }),
@@ -521,7 +557,7 @@ test("Verify の T-NNN 照合が見つからない言明を surface し、verifi
 
 test("Verify の diff / presence が落ちても fail-open で Ship まで進み、未検証が明示される", async () => {
   const { calls, result } = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({ diff: null, presence: null }),
   });
   assert.ok(
@@ -548,7 +584,7 @@ test("tests 空の unit は invalid-plan にならず、言明 0 件なら prese
     ],
   });
   const { calls, result } = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({ body: bodyFor(["U-001"], []), plan }),
   });
   assert.equal(
@@ -565,7 +601,7 @@ test("tests 空の unit は invalid-plan にならず、言明 0 件なら prese
   assert.ok(calls.phase.includes("Ship"), "直接実装 unit だけの plan でも Ship まで完走する");
 });
 
-test("stopped 値集合の snapshot が 9 値と exact match し、audit 経路の残骸が無い", () => {
+test("stopped 値集合の snapshot が 11 値と exact match し、audit 経路の残骸が無い", () => {
   const source = readFileSync(buildJs, "utf8");
   const stopped = new Set();
   for (const m of source.matchAll(/stopped:\s*"([^"]+)"/g)) stopped.add(m[1]);
@@ -579,11 +615,12 @@ test("stopped 値集合の snapshot が 9 値と exact match し、audit 経路�
       "invalid-plan",
       "no-issue",
       "no-issue-body",
+      "no-repo",
       "plan-drift",
       "plan-generation-failed",
       "revalidate-failed",
     ],
-    "stopped リテラル集合が 10 値と exact match する (draftPlan の inline 化で generated-plan-rejected / plan-generation-failed が build.js に入る)",
+    "stopped リテラル集合が 11 値と exact match する (repo 必須化で no-repo が build.js に入る)",
   );
   const explore = source.match(/agentType:\s*"Explore"/g) || [];
   assert.equal(explore.length, 0, 'agentType: "Explore" が 0 件');
@@ -600,7 +637,7 @@ test("Backlog 候補は PR body に出さず戻り値 backlog_candidates にの�
     backlog_candidates: [{ summary: "issue 由来の scope 外候補" }],
   });
   const { calls, result } = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({ plan }),
   });
 
@@ -626,7 +663,7 @@ test("Backlog 候補は PR body に出さず戻り値 backlog_candidates にの�
 // 独立軸として Ship の PR body payload と戻り値 conformance_findings に surface する。
 test("conformance findings が独立軸として surface し、決定論の逸脱リストに混ざらない", async () => {
   const { calls, result } = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({
       conformance: {
         spec_found: true,
@@ -677,7 +714,7 @@ test("translate-tail の訳文が shipPayload に反映され ship prompt に載
     assumptions: ["assume in EN"],
   });
   const { calls } = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({
       plan,
       conformance: {
@@ -718,7 +755,7 @@ test("translate-tail の訳が順序入れ替えでも id で正しい slot に�
     assumptions: ["assume A"],
   });
   const { calls } = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({
       plan,
       conformance: {
@@ -749,7 +786,7 @@ test("translate-tail の訳が順序入れ替えでも id で正しい slot に�
 // 維持し PR を block しない。
 test("translate-tail の訳 id が入力と一致しないなら英語原文で ship を継続する", async () => {
   const { calls } = await runWorkflow(buildJs, {
-    args: { issue: "123" },
+    args,
     stubs: makeStubs({
       conformance: {
         spec_found: true,

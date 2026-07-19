@@ -3,7 +3,7 @@ export const meta = {
   description:
     'TDD workflow that takes a structured plan (units / test_command) and implements per unit under script enforcement. A unit with test scenarios runs Red -> Green; a unit with no tests (docs / config, no verifiable behavior) runs a single direct-implementation step, so whether TDD applies is selected in the plan, not decided at runtime. An unconfirmed Red is recorded as an anomaly, and at the end an independent agent verifies the full suite + lint + type-check. Callable standalone or nested from build via workflow("code").',
   whenToUse:
-    "Headless plan implementation. args is {plan, repo, model}; plan is a structured plan with units / test_command (as produced by the think skill). model (optional) propagates only to the implementation agents (defaults to opus). The implementation agents run at effort xhigh.",
+    "Headless plan implementation. args is {plan, repo, model}; plan is a structured plan with units / test_command (as produced by the think skill). model (optional) propagates only to the implementation agents (defaults to fable). The implementation agents run at effort xhigh.",
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
@@ -47,7 +47,7 @@ const anomalies = [];
 // the run-level arrays so the caller still sees partial progress
 const stopUnit = (stopped, unit, why) => ({ stopped, unit: unit.id, why, completed, anomalies });
 // Shared by every implementation agent so a model/effort change lands once.
-const implementOpts = { model: input.model || "opus", effort: "xhigh" };
+const implementOpts = { model: input.model || "fable", effort: "xhigh" };
 
 const RED_SCHEMA = {
   type: "object",
