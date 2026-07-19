@@ -350,12 +350,18 @@ const perDr = await pipeline(
       ),
     );
     const alive = reviewed.filter(Boolean);
+    // Per-item stall accounting mirrors workflows/audit.js: a reviewer whose agent returned no
+    // output is recorded by name with reason "no output / stall", and the note is filled on any
+    // stall (not only total wipeout) so a partial stall stays visible in the Per-DR listing.
+    const stalled = reviewers.filter((_, i) => !reviewed[i]);
+    const skipped = stalled.map((rv) => ({ reviewer: rv, reason: "no output / stall" }));
     return {
       dr: a,
       status: ex.status,
       superseded_by: ex.superseded_by || "",
       verifiable: true,
-      note: alive.length ? "" : "all reviewers stalled (unmatched)",
+      note: stalled.length ? `reviewers stalled (unmatched): ${stalled.join(", ")}` : "",
+      skipped,
       findings: mergeFindings(alive.map((r) => r.findings)),
     };
   },
@@ -392,6 +398,7 @@ const report = (await agent(
           superseded_by: r.superseded_by || "",
           verifiable: r.verifiable,
           note: r.note,
+          skipped: r.skipped || [],
           findings: r.findings,
         })),
       )}\n\n` +

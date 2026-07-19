@@ -276,7 +276,15 @@ const results = await pipeline(
         note: (r && r.notes) || "",
       };
     });
-    return { dimResults, smells: (smell && smell.smells) || [] };
+    // A smell-scan stall (agent returned no output) is carried so the per-target result
+    // can distinguish an empty smells list from a stalled scan from a genuine no-smell
+    // scan. The string mirrors adrift.js's "no output / stall" and stays English in both
+    // the EN and .ja versions (structured token, not localized prose).
+    return {
+      dimResults,
+      smells: (smell && smell.smells) || [],
+      smellScan: smell ? "" : "no output / stall",
+    };
   },
   // stage 2: script classification -> fix loop for confirmed-flaky only
   async (shaken, t) => {
@@ -396,12 +404,19 @@ const results = await pipeline(
       broken: broken.map((d) => d.dimension),
       unshaken: unshaken.map((d) => d.dimension),
       smells,
+      // Emitted only on a smell-scan stall, so a genuine stable target carries no stall
+      // marker and the two are distinguishable in the per-target result.
+      ...(shaken.smellScan ? { smellScan: shaken.smellScan } : {}),
       fix,
     };
   },
 );
 
 const verdictsOut = results.filter(Boolean);
+// Targets the pipeline dropped to null (a stage returned no output) are recovered by
+// index-zipping route.targets with results, mirroring audit.js's per-unit drop
+// accounting, so a silently vanished target surfaces as an id instead of disappearing.
+const dropped = route.targets.filter((_, i) => !results[i]).map((t) => t.id);
 const blockers = verdictsOut.filter((r) => r.fix && r.fix.blocker);
 const counts = verdictsOut.reduce((acc, r) => {
   acc[r.verdict] = (acc[r.verdict] || 0) + 1;
@@ -410,13 +425,16 @@ const counts = verdictsOut.reduce((acc, r) => {
 log(
   `Shake done: ${verdictsOut.length} targets (${Object.entries(counts)
     .map(([k, v]) => `${k}=${v}`)
-    .join(", ")})` + (blockers.length ? ` blockers=${blockers.length}` : ""),
+    .join(", ")})` +
+    (dropped.length ? ` dropped=${dropped.length}` : "") +
+    (blockers.length ? ` blockers=${blockers.length}` : ""),
 );
 
 return {
   ecosystem: route.ecosystem,
   runs_per_dimension: RUNS,
   targets: verdictsOut,
+  dropped,
   blockers: blockers.map((r) => ({
     id: r.id,
     file: r.file,

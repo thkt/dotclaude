@@ -177,7 +177,14 @@ for (const unit of units) {
     );
   }
 
-  if (!red) return { stopped: "red-failed", unit: unit.id, completed, anomalies };
+  if (!red)
+    return {
+      stopped: "red-failed",
+      unit: unit.id,
+      why: "red agent が結果を返さなかった",
+      completed,
+      anomalies,
+    };
 
   if (!red.red_confirmed) {
     anomalies.push({ unit: unit.id, kind: "no-red", notes: red.notes });

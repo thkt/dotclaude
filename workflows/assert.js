@@ -391,6 +391,14 @@ try {
           });
       });
     }
+    // An adversarial stage stall (agent returned no output, or ran: false without a completed
+    // test set) is carried so result.adversarial can distinguish a stalled / not-executed stage
+    // from a genuine no-tests run — both otherwise report total 0. The string mirrors shake.js's
+    // smellScan "no output / stall" and stays English in both the EN and .ja versions (structured
+    // token, not localized prose). Only mark it when dynamicOk is true: when dynamic verification
+    // is skipped for env reasons, adversarialP is a resolved null by design, and that env skip is
+    // surfaced separately (Dynamic evidence: skipped), not as an agent stall.
+    const advStalled = dynamicOk && !(adversarial && adversarial.ran);
     return {
       testRun,
       testsCol: tCol,
@@ -401,6 +409,9 @@ try {
         failed: advFails.length,
         promoted: promoted.length,
         excluded: excluded.length,
+        // Emitted only on a stall, so a genuine no-tests run carries no stall marker and the two
+        // are distinguishable in result.adversarial.
+        ...(advStalled ? { stall: "no output / stall" } : {}),
       },
     };
   })().catch(() => null);
@@ -498,9 +509,12 @@ try {
   testsCol = triageRes ? triageRes.testsCol : "skipped";
   const promoted = (triageRes && triageRes.promoted) || [];
   adversarialSummary = (triageRes && triageRes.advSummary) || adversarialSummary;
+  const advPart =
+    adversarialSummary.stall ||
+    `${adversarialSummary.total} tests (FAIL ${adversarialSummary.failed}, promoted ${adversarialSummary.promoted}, excluded ${adversarialSummary.excluded})`;
   log(
     dynamicOk
-      ? `Dynamic evidence: tests=${testsCol}, adversarial ${adversarialSummary.total} tests (FAIL ${adversarialSummary.failed}, promoted ${adversarialSummary.promoted}, excluded ${adversarialSummary.excluded})`
+      ? `Dynamic evidence: tests=${testsCol}, adversarial ${advPart}`
       : "Dynamic evidence: skipped (bootstrap failure)",
   );
 

@@ -169,7 +169,14 @@ for (const unit of units) {
       },
     );
   }
-  if (!red) return { stopped: "red-failed", unit: unit.id, completed, anomalies };
+  if (!red)
+    return {
+      stopped: "red-failed",
+      unit: unit.id,
+      why: "the red agent returned no result",
+      completed,
+      anomalies,
+    };
   if (!red.red_confirmed) {
     anomalies.push({ unit: unit.id, kind: "no-red", notes: red.notes });
     log(`${unit.id}: Red unconfirmed (${red.notes}). Skipping the implement step.`);

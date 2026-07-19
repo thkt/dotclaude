@@ -18,13 +18,14 @@ background: true
 
 ## スコープ
 
-| In Scope                   | Out of Scope                             |
-| -------------------------- | ---------------------------------------- |
-| `rules/**/*.md`            | コードファイル (`*.ts`, `*.rs` など)     |
-| `skills/*/SKILL.md`        | 人間向けドキュメント (README, CHANGELOG) |
-| `skills/*/references/*.md` | コンテンツの正確性 (ドメイン固有)        |
-| `agents/**/*.md`           | セキュリティ懸念                         |
-| `templates/**/*.md`        | .ja/ 翻訳 (ルール上、構造のみ対象)       |
+| In Scope                   | Out of Scope                                                  |
+| -------------------------- | ------------------------------------------------------------- |
+| `workflows/*.js`           | 汎用的なコードロジック                                        |
+| `rules/**/*.md`            | コードファイル (`*.ts`, `*.rs` など。`workflows/*.js` を除く) |
+| `skills/*/SKILL.md`        | 人間向けドキュメント (README, CHANGELOG)                      |
+| `skills/*/references/*.md` | コンテンツの正確性 (ドメイン固有)                             |
+| `agents/**/*.md`           | セキュリティ懸念                                              |
+| `templates/**/*.md`        | .ja/ 翻訳 (ルール上、構造のみ対象)                            |
 
 rules、skills、agents、templates 配下の LLM 向けプロンプトファイルの品質レビュー。
 
@@ -61,13 +62,14 @@ rules、skills、agents、templates 配下の LLM 向けプロンプトファイ
 
 ### Phase 3: フォーマット準拠
 
-| チェック          | ルール                                                           | 適用先                           |
-| ----------------- | ---------------------------------------------------------------- | -------------------------------- |
-| bold 禁止         | LLM 向けファイルで `**bold**` 不使用                             | `agents/*.md`, `skills/SKILL.md` |
-| Agent frontmatter | name, description, tools, model (context は推奨)                 | `agents/**/*.md`                 |
-| Skill frontmatter | name, description (~/.claude/rules/conventions/SKILLS.md に従う) | `skills/*/SKILL.md`              |
-| セクション完全性  | 必須セクションの存在 (下記参照)                                  | `agents/*.md`, `skills/SKILL.md` |
-| テーブル整列      | 一貫した列セパレータ、不揃いな行なし                             | All                              |
+| チェック             | ルール                                                                                  | 適用先                           |
+| -------------------- | --------------------------------------------------------------------------------------- | -------------------------------- |
+| bold 禁止            | LLM 向けファイルで `**bold**` 不使用                                                    | `agents/*.md`, `skills/SKILL.md` |
+| Agent frontmatter    | name, description, tools, model (context は推奨)                                        | `agents/**/*.md`                 |
+| Skill frontmatter    | name, description (~/.claude/rules/conventions/SKILLS.md に従う)                        | `skills/*/SKILL.md`              |
+| Workflow degradation | 失敗/欠落 sub-result を喪失粒度で記録 (~/.claude/rules/conventions/WORKFLOWS.md に従う) | `workflows/*.js`                 |
+| セクション完全性     | 必須セクションの存在 (下記参照)                                                         | `agents/*.md`, `skills/SKILL.md` |
+| テーブル整列         | 一貫した列セパレータ、不揃いな行なし                                                    | All                              |
 
 reviewer エージェント (`agents/reviewers/`) の必須セクション: title, Analysis Phases, Output。他のエージェント種別 (generators, teams, architects): title, Output。Skill 必須セクション: Input, Execution, Output。テンプレート参照による Output は許容。
 

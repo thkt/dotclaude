@@ -387,6 +387,14 @@ try {
           });
       });
     }
+    // adversarial stage の stall (agent が no output、または ran: false でテスト集合を完了しな
+    // かった) を持ち回り、result.adversarial で「stall / 未実行の stage」と「genuine な no-tests
+    // run」を区別できるようにする (両者ともそのままでは total 0)。文字列は shake.js の smellScan
+    // "no output / stall" に揃え、EN 版と .ja 版で同一 (localized prose ではなく structured
+    // token)。dynamicOk が真のときだけ marker を立てる。env 都合で dynamic 検証を skip したときは
+    // adversarialP が設計上 resolved null になり、その env skip は別途 (動的 evidence: skip) で
+    // 面出しされるため agent stall とは区別する。
+    const advStalled = dynamicOk && !(adversarial && adversarial.ran);
     return {
       testRun,
       testsCol: tCol,
@@ -397,6 +405,9 @@ try {
         failed: advFails.length,
         promoted: promoted.length,
         excluded: excluded.length,
+        // stall 時のみ emit するので genuine な no-tests run には stall marker が付かず、両者を
+        // result.adversarial 上で区別できる。
+        ...(advStalled ? { stall: "no output / stall" } : {}),
       },
     };
   })().catch(() => null);
@@ -490,9 +501,12 @@ try {
   testsCol = triageRes ? triageRes.testsCol : "skipped";
   const promoted = (triageRes && triageRes.promoted) || [];
   adversarialSummary = (triageRes && triageRes.advSummary) || adversarialSummary;
+  const advPart =
+    adversarialSummary.stall ||
+    `${adversarialSummary.total} 本 (FAIL ${adversarialSummary.failed}、promote ${adversarialSummary.promoted}、exclude ${adversarialSummary.excluded})`;
   log(
     dynamicOk
-      ? `動的 evidence: tests=${testsCol}, adversarial ${adversarialSummary.total} 本 (FAIL ${adversarialSummary.failed}、promote ${adversarialSummary.promoted}、exclude ${adversarialSummary.excluded})`
+      ? `動的 evidence: tests=${testsCol}, adversarial ${advPart}`
       : "動的 evidence: skip (bootstrap 失敗)",
   );
 
