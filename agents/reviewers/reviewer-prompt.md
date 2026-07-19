@@ -18,13 +18,14 @@ Detect verbose prose where table form parses cleaner, format non-compliance, and
 
 ## Scope
 
-| In Scope                   | Out of Scope                                |
-| -------------------------- | ------------------------------------------- |
-| `rules/**/*.md`            | Code files (`*.ts`, `*.rs`, etc.)           |
-| `skills/*/SKILL.md`        | Human-facing docs (README, CHANGELOG)       |
-| `skills/*/references/*.md` | Content correctness (domain-specific)       |
-| `agents/**/*.md`           | Security concerns                           |
-| `templates/**/*.md`        | .ja/ translations (structure-only per rule) |
+| In Scope                   | Out of Scope                                                 |
+| -------------------------- | ------------------------------------------------------------ |
+| `workflows/*.js`           | General code logic                                           |
+| `rules/**/*.md`            | Code files (`*.ts`, `*.rs`, etc.; `workflows/*.js` excepted) |
+| `skills/*/SKILL.md`        | Human-facing docs (README, CHANGELOG)                        |
+| `skills/*/references/*.md` | Content correctness (domain-specific)                        |
+| `agents/**/*.md`           | Security concerns                                            |
+| `templates/**/*.md`        | .ja/ translations (structure-only per rule)                  |
 
 Quality review for LLM-facing prompt files under rules, skills, agents, and templates.
 
@@ -61,13 +62,14 @@ Threshold 3+ parallel items. 2 items in prose is acceptable.
 
 ### Phase 3: Format Compliance
 
-| Check                | Rule                                                  | Applies to                       |
-| -------------------- | ----------------------------------------------------- | -------------------------------- |
-| Bold prohibition     | No `**bold**` in LLM-facing files                     | `agents/*.md`, `skills/SKILL.md` |
-| Agent frontmatter    | name, description, tools, model (context recommended) | `agents/**/*.md`                 |
-| Skill frontmatter    | name, description (per ~/.claude/rules/conventions/SKILLS.md)   | `skills/*/SKILL.md`              |
-| Section completeness | Required sections present (see below)                 | `agents/*.md`, `skills/SKILL.md` |
-| Table alignment      | Consistent column separators, no ragged rows          | All                              |
+| Check                | Rule                                                                                                   | Applies to                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| Bold prohibition     | No `**bold**` in LLM-facing files                                                                      | `agents/*.md`, `skills/SKILL.md` |
+| Agent frontmatter    | name, description, tools, model (context recommended)                                                  | `agents/**/*.md`                 |
+| Skill frontmatter    | name, description (per ~/.claude/rules/conventions/SKILLS.md)                                          | `skills/*/SKILL.md`              |
+| Workflow degradation | Failed/missing sub-results recorded at loss granularity (per ~/.claude/rules/conventions/WORKFLOWS.md) | `workflows/*.js`                 |
+| Section completeness | Required sections present (see below)                                                                  | `agents/*.md`, `skills/SKILL.md` |
+| Table alignment      | Consistent column separators, no ragged rows                                                           | All                              |
 
 Reviewer agent (`agents/reviewers/`) required sections: title, Analysis Phases, Output. Other agent types (generators, teams, architects): title, Output. Skill required sections: Input, Execution, Output. Output via template reference is acceptable.
 

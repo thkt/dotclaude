@@ -387,6 +387,16 @@ try {
           });
       });
     }
+    // adversarial stage の stall (agent が no output、または ran: false でテスト集合を完了しな
+    // かった) を持ち回り、result.adversarial で「stall / 未実行の stage」と「genuine な no-tests
+    // run」を区別できるようにする (両者ともそのままでは total 0)。agent 無出力 (crash) は
+    // shake.js の smellScan に揃えた "no output / stall"、自己申告の未実行 (ran: false) は
+    // 診断理由 adversarial.notes を "not run: <notes>" で持ち、この 2 状態も潰さない。文字列は
+    // EN 版と .ja 版で同一 (localized prose ではなく structured token)。dynamicOk が真のとき
+    // だけ marker を立てる。env 都合で dynamic 検証を skip したときは adversarialP が設計上
+    // resolved null になり、その env skip は別途 (動的 evidence: skip) で面出しされるため
+    // agent stall とは区別する。
+    const advStalled = dynamicOk && !(adversarial && adversarial.ran);
     return {
       testRun,
       testsCol: tCol,
@@ -397,6 +407,15 @@ try {
         failed: advFails.length,
         promoted: promoted.length,
         excluded: excluded.length,
+        // stall 時のみ emit するので genuine な no-tests run には stall marker が付かず、両者を
+        // result.adversarial 上で区別できる。
+        ...(advStalled
+          ? {
+              stall: adversarial
+                ? `not run: ${adversarial.notes || "no reason reported"}`
+                : "no output / stall",
+            }
+          : {}),
       },
     };
   })().catch(() => null);
@@ -489,10 +508,18 @@ try {
   const testRun = triageRes ? triageRes.testRun : null;
   testsCol = triageRes ? triageRes.testsCol : "skipped";
   const promoted = (triageRes && triageRes.promoted) || [];
-  adversarialSummary = (triageRes && triageRes.advSummary) || adversarialSummary;
+  // triage block は自分の throw を .catch(() => null) に畳む。この marker が無いと throw した
+  // block が「0 本」と報告され、clean な no-tests run と区別できない
+  adversarialSummary = (triageRes && triageRes.advSummary) || {
+    ...adversarialSummary,
+    ...(dynamicOk ? { stall: "triage stage threw / no output" } : {}),
+  };
+  const advPart =
+    adversarialSummary.stall ||
+    `${adversarialSummary.total} 本 (FAIL ${adversarialSummary.failed}、promote ${adversarialSummary.promoted}、exclude ${adversarialSummary.excluded})`;
   log(
     dynamicOk
-      ? `動的 evidence: tests=${testsCol}, adversarial ${adversarialSummary.total} 本 (FAIL ${adversarialSummary.failed}、promote ${adversarialSummary.promoted}、exclude ${adversarialSummary.excluded})`
+      ? `動的 evidence: tests=${testsCol}, adversarial ${advPart}`
       : "動的 evidence: skip (bootstrap 失敗)",
   );
 

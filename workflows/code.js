@@ -43,6 +43,9 @@ const units = plan.units;
 const testCmd = plan.test_command || "";
 const completed = [];
 const anomalies = [];
+// The three mid-loop terminal returns share this shape; completed / anomalies close over
+// the run-level arrays so the caller still sees partial progress
+const stopUnit = (stopped, unit, why) => ({ stopped, unit: unit.id, why, completed, anomalies });
 // Shared by every implementation agent so a model/effort change lands once.
 const implementOpts = { model: input.model || "opus", effort: "xhigh" };
 
@@ -122,13 +125,11 @@ for (const unit of units) {
       );
     }
     if (!impl || !impl.green) {
-      return {
-        stopped: "unit-failed",
-        unit: unit.id,
-        why: (impl && impl.notes) || "the implement agent returned no result",
-        completed,
-        anomalies,
-      };
+      return stopUnit(
+        "unit-failed",
+        unit,
+        (impl && impl.notes) || "the implement agent returned no result",
+      );
     }
     completed.push(unit.id);
     log(`${unit.id}: direct implementation done (${completed.length}/${units.length}).`);
@@ -169,7 +170,7 @@ for (const unit of units) {
       },
     );
   }
-  if (!red) return { stopped: "red-failed", unit: unit.id, completed, anomalies };
+  if (!red) return stopUnit("red-failed", unit, "the red agent returned no result");
   if (!red.red_confirmed) {
     anomalies.push({ unit: unit.id, kind: "no-red", notes: red.notes });
     log(`${unit.id}: Red unconfirmed (${red.notes}). Skipping the implement step.`);
@@ -209,13 +210,11 @@ for (const unit of units) {
     );
   }
   if (!green || !green.green) {
-    return {
-      stopped: "unit-failed",
-      unit: unit.id,
-      why: (green && green.notes) || "the green agent returned no result",
-      completed,
-      anomalies,
-    };
+    return stopUnit(
+      "unit-failed",
+      unit,
+      (green && green.notes) || "the green agent returned no result",
+    );
   }
   completed.push(unit.id);
   log(`${unit.id}: Red -> Green done (${completed.length}/${units.length}).`);

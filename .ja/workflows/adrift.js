@@ -107,7 +107,8 @@ const DETECT_SCHEMA = {
     manifest: { type: "string", enum: ["rust", "ts", "tsx", "other"] },
     dr_refs: {
       type: "array",
-      description: "DR ディレクトリ外で見つかった記録参照 (旧来の A 接頭辞形式と DR-NNNN の両方) の生リスト (分類は script が行う)",
+      description:
+        "DR ディレクトリ外で見つかった記録参照 (旧来の A 接頭辞形式と DR-NNNN の両方) の生リスト (分類は script が行う)",
       items: {
         type: "object",
         additionalProperties: false,
@@ -349,12 +350,19 @@ const perDr = await pipeline(
       ),
     );
     const alive = reviewed.filter(Boolean);
+    // per-item の stall 計上は workflows/audit.js に倣う。agent が無出力だった reviewer を
+    // reason "no output / stall" 付きで名指し記録し、全滅時のみでなく部分 stall でも note を
+    // 埋めることで、部分 stall が Per-DR listing に残るようにする。
+    const stalled = reviewers.filter((_, i) => !reviewed[i]);
+    const skipped = stalled.map((rv) => ({ reviewer: rv, reason: "no output / stall" }));
     return {
       dr: a,
       status: ex.status,
       superseded_by: ex.superseded_by || "",
-      verifiable: true,
-      note: alive.length ? "" : "reviewer 全滅 (未照合)",
+      // 全 reviewer が stall した DR は何も検証できていないため unverifiable として数える
+      verifiable: alive.length > 0,
+      note: stalled.length ? `reviewer stall (未照合): ${stalled.join(", ")}` : "",
+      skipped,
       findings: mergeFindings(alive.map((r) => r.findings)),
     };
   },
@@ -391,6 +399,7 @@ const report = (await agent(
           superseded_by: r.superseded_by || "",
           verifiable: r.verifiable,
           note: r.note,
+          skipped: r.skipped || [],
           findings: r.findings,
         })),
       )}\n\n` +
@@ -420,6 +429,11 @@ return {
   findings: allFindings,
   priorities: counts,
   unverifiable: unverifiable.map((r) => ({ id: r.dr.id, note: r.note })),
+  // reviewer stall の per-DR 記録を一次チャネル (返り値) にも載せる。Report agent の
+  // prompt 直列化だけでは LLM 著の markdown にしか残らない
+  skipped: scanned
+    .filter((r) => (r.skipped || []).length)
+    .map((r) => ({ id: r.dr.id, skipped: r.skipped })),
   external_refs: externalRefs,
   followup_candidates: allFindings.filter((f) => f.priority === "H"),
 };

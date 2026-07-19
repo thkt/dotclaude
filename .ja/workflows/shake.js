@@ -278,7 +278,15 @@ const results = await pipeline(
         note: (r && r.notes) || "",
       };
     });
-    return { dimResults, smells: (smell && smell.smells) || [] };
+    // smell scan の stall (agent が no output) を持ち回り、per-target 結果で「stall した
+    // scan の空 smells」と「genuine な no-smell scan」を区別できるようにする。文字列は
+    // adrift.js の "no output / stall" に揃え、EN 版と .ja 版で同一 (localized prose では
+    // なく structured token)。
+    return {
+      dimResults,
+      smells: (smell && smell.smells) || [],
+      smellScan: smell ? "" : "no output / stall",
+    };
   },
   // stage 2: script 分類 -> confirmed-flaky のみ fix ループ
   async (shaken, t) => {
@@ -398,12 +406,19 @@ const results = await pipeline(
       broken: broken.map((d) => d.dimension),
       unshaken: unshaken.map((d) => d.dimension),
       smells,
+      // smell scan が stall した時だけ出す。genuine stable な target には stall marker が
+      // 付かず、両者を per-target 結果で区別できる。
+      ...(shaken.smellScan ? { smellScan: shaken.smellScan } : {}),
       fix,
     };
   },
 );
 
 const verdictsOut = results.filter(Boolean);
+// pipeline が null に落とした target (stage が no output) を route.targets と results の
+// index-zip で復元し、audit.js の per-unit drop accounting に倣う。silently 消えた
+// target を id として最終返り値へ残す。
+const dropped = route.targets.filter((_, i) => !results[i]).map((t) => t.id);
 const blockers = verdictsOut.filter((r) => r.fix && r.fix.blocker);
 const counts = verdictsOut.reduce((acc, r) => {
   acc[r.verdict] = (acc[r.verdict] || 0) + 1;
@@ -412,13 +427,16 @@ const counts = verdictsOut.reduce((acc, r) => {
 log(
   `Shake 完了: ${verdictsOut.length} target (${Object.entries(counts)
     .map(([k, v]) => `${k}=${v}`)
-    .join(", ")})` + (blockers.length ? ` blocker=${blockers.length}` : ""),
+    .join(", ")})` +
+    (dropped.length ? ` dropped=${dropped.length}` : "") +
+    (blockers.length ? ` blocker=${blockers.length}` : ""),
 );
 
 return {
   ecosystem: route.ecosystem,
   runs_per_dimension: RUNS,
   targets: verdictsOut,
+  dropped,
   blockers: blockers.map((r) => ({
     id: r.id,
     file: r.file,
