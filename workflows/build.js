@@ -274,31 +274,73 @@ const PLAN_SCHEMA = obj(
   },
 );
 
+// Per-unit overrun cap; coupled with /think Phase 3's unit-size guidance (files <= 3,
+// tests <= 4) -- do not change one side without the other. A seam unit's tests
+// legitimately cross the boundary between units, so its files count grows for a
+// structural reason, not bloat; only non-seam (implementation) units are checked.
+// Separate from validate() (structural correctness). Shared by both plan sources:
+// the extract path (below, after the id cross-check) and draftPlan (below, its own
+// generate/feedback/regenerate cycle).
+const UNIT_CAPS = { files: 3, tests: 4 };
+const oversizedUnits = (p) =>
+  p.units.filter((u) => {
+    if (u.seam === true) return false;
+    const fileCount = Array.isArray(u.files) ? u.files.length : 0;
+    const testCount = Array.isArray(u.tests) ? u.tests.length : 0;
+    return fileCount > UNIT_CAPS.files || testCount > UNIT_CAPS.tests;
+  });
+
 // Draft a plan from a plan-less issue body: explore the repo, set the goal itself
-// (a11y criteria for UI work), then gate with critic-design (the counterpart to the
-// has-plan id cross-check). Build-internal, so it is a local function rather than a
-// standalone workflow (ADR-0086). Returns { plan } on GO, { stopped } on NO-GO.
+// (a11y criteria for UI work), enforce UNIT_CAPS with one feedback-driven regenerate,
+// then gate with critic-design (the counterpart to the has-plan id cross-check).
+// Build-internal, so it is a local function rather than a standalone workflow
+// (ADR-0086). Returns { plan } on GO, { stopped } on NO-GO / still oversized.
 const draftPlan = async () => {
-  const drafted = await agent(
-    anchor(
-      `The following GitHub issue body has no ## Plan section. Derive a structured plan from the body alone; do not invent scope beyond what the issue asks. ` +
-        `Explore the repository first to ground the plan in reality: real file paths, preconditions from existing code, a test_command read from the project config. ` +
-        `outcome is a done-state goal; set one yourself if the issue names none, and when the work touches UI include a11y criteria (keyboard-only completion, errors announced to screen readers, and similar) in outcome and test scenarios. ` +
-        `List units in implementation order; a unit with no verifiable behavior (docs / config) gets an empty tests array. ` +
-        `Per-unit tests stub their own boundaries, so layers can each be green while never being connected. Once the plan has 2 or more tested units, give it a seam unit (seam: true) placed last: its tests run the real modules across the unit boundary, fake only I/O with external systems, and assert that the connections between units (calls, transitions, data handoffs) are actually wired. Every other unit is seam: false. ` +
-        `Write each contract by selection, not generation (a citation plus a one-line intent). ` +
-        `When an existing module has the same shape as the one being planned (a matching set of screens or layers, in any domain), record it as reference_module and make U-001 its structure replication with an empty tests array; set null only when no module matches, and say why in an assumption. ` +
-        `Record every best-guess decision you make in assumptions.\n\n${fencedBody}`,
-    ),
-    {
+  const basePrompt =
+    `The following GitHub issue body has no ## Plan section. Derive a structured plan from the body alone; do not invent scope beyond what the issue asks. ` +
+    `Explore the repository first to ground the plan in reality: real file paths, preconditions from existing code, a test_command read from the project config. ` +
+    `outcome is a done-state goal; set one yourself if the issue names none, and when the work touches UI include a11y criteria (keyboard-only completion, errors announced to screen readers, and similar) in outcome and test scenarios. ` +
+    `List units in implementation order; a unit with no verifiable behavior (docs / config) gets an empty tests array. Keep each non-seam unit within UNIT_CAPS (files <= ${UNIT_CAPS.files}, tests <= ${UNIT_CAPS.tests}); split a unit further rather than letting either count exceed its cap. ` +
+    `Per-unit tests stub their own boundaries, so layers can each be green while never being connected. Once the plan has 2 or more tested units, give it a seam unit (seam: true) placed last: its tests run the real modules across the unit boundary, fake only I/O with external systems, and assert that the connections between units (calls, transitions, data handoffs) are actually wired. Every other unit is seam: false. ` +
+    `Write each contract by selection, not generation (a citation plus a one-line intent). ` +
+    `When an existing module has the same shape as the one being planned (a matching set of screens or layers, in any domain), record it as reference_module and make U-001 its structure replication with an empty tests array; set null only when no module matches, and say why in an assumption. ` +
+    `Record every best-guess decision you make in assumptions.\n\n${fencedBody}`;
+
+  const generate = (feedback) =>
+    agent(anchor(feedback ? `${basePrompt}\n\n${feedback}` : basePrompt), {
       label: "generate-plan",
       phase: "Load",
       agentType: "general-purpose",
       schema: PLAN_SCHEMA,
-    },
-  );
+    });
+
+  let drafted = await generate();
   if (!drafted) {
     return { stopped: "plan-generation-failed", why: "The generate agent returned no plan." };
+  }
+
+  // UNIT_CAPS enforcement for the autonomous draft path: the generate prompt above
+  // already names the caps preventively, but a miss gets exactly one feedback-driven
+  // regenerate (not a loop) naming the oversized unit ids; a plan still oversized
+  // after that retry stops rather than looping or silently shipping bloat.
+  let oversized = oversizedUnits(drafted);
+  if (oversized.length) {
+    drafted = await generate(
+      `The previous draft exceeded UNIT_CAPS (files <= ${UNIT_CAPS.files}, tests <= ${UNIT_CAPS.tests}) in unit(s) ${oversized.map((u) => u.id).join(", ")}. Split those units further so every non-seam unit stays within the caps, then return the complete plan again.`,
+    );
+    if (!drafted) {
+      return { stopped: "plan-generation-failed", why: "The generate agent returned no plan." };
+    }
+    oversized = oversizedUnits(drafted);
+    if (oversized.length) {
+      return {
+        stopped: "oversized-unit",
+        units: oversized.map((u) => u.id),
+        why:
+          `A non-seam unit still exceeds UNIT_CAPS (files <= ${UNIT_CAPS.files} / tests <= ${UNIT_CAPS.tests}) after one feedback-driven ` +
+          "regenerate. Refine the issue into a ## Plan section (via /issue) and relaunch.",
+      };
+    }
   }
 
   const CRITIQUE_SCHEMA = obj(["verdict", "weaknesses"], {
@@ -310,6 +352,7 @@ const draftPlan = async () => {
       `critic-design. Adversarially review the auto-generated implementation plan for issue #${issueNumber} "${drafted.outcome}". ` +
         `It was derived from the body with no human review, so attack it: unsound or missing unit decomposition, wrong or missing preconditions, scope invented beyond what the issue asks, untestable scenarios, or a wrong test_command. ` +
         `Also attack reference_module: null despite a same-shaped module in the repository, a path that is not the closest match, or missing counterpart files / conventions. ` +
+        `Also attack unit bloat: a non-seam unit that is still doing too much even though it passed the UNIT_CAPS count check. Name it as a weakness, but bloat alone is not a NO-GO reason -- a separate deterministic gate already enforces the file/test count caps for this plan; verdict NO-GO only for a blocking flaw beyond size. ` +
         `Return verdict "GO" if it is sound enough to implement as-is, or "NO-GO" if a blocking flaw makes it unsafe, and list the concrete flaws in weaknesses.\n` +
         `The plan is as follows.\n${JSON.stringify(drafted)}`,
     ),
@@ -403,6 +446,18 @@ if (planHeading) {
       why: "The U/T id sets in the issue body and the extraction do not match.",
     };
   }
+
+  // UNIT_CAPS overrun check for the extract path (declared above, shared with draftPlan).
+  const oversized = oversizedUnits(plan);
+  if (oversized.length) {
+    return {
+      stopped: "oversized-unit",
+      units: oversized.map((u) => u.id),
+      why:
+        `A non-seam unit exceeds UNIT_CAPS (files <= ${UNIT_CAPS.files} / tests <= ${UNIT_CAPS.tests}). Split it further ` +
+        "per /think Phase 3's unit-size guidance, then refine the issue's Plan via /issue and relaunch.",
+    };
+  }
   log(
     `Plan extracted: ${plan.units.length} unit(s), ${planTestIds.size} test scenario(s), id cross-check pass.`,
   );
@@ -487,7 +542,7 @@ const [reval, branchRes, baseline] = await parallel([
       anchor(
         `Check out a new git working branch for issue #${issueNumber} "${plan.outcome}". Pick a conventional branch name (type + short slug) and ` +
           (baseBranch
-            ? `create it from ${baseBranch} via \`git checkout -b <name> ${baseBranch}\`. `
+            ? `create it from ${baseBranch} via \`git checkout -b {name} ${baseBranch}\`. `
             : `run git checkout -b with it. `) +
           `If already on a non-default branch, keep the current branch. Return only the branch name in the branch field.${guard}`,
       ),
@@ -818,8 +873,7 @@ const [diff, testPresence, conformance, structure] = await parallel([
 // Changed files stay within the plan's files or .claude/workspace/ (think's plan
 // draft). A missing diff listing is itself surfaced.
 const planFiles = new Set(plan.units.flatMap((u) => u.files));
-const baselineUntracked =
-  baseline && Array.isArray(baseline.untracked) ? baseline.untracked : [];
+const baselineUntracked = baseline && Array.isArray(baseline.untracked) ? baseline.untracked : [];
 // porcelain emits a directory as a single "dir/" line, so also match by prefix.
 const preexisting = (f) =>
   baselineUntracked.some((b) => b && (f === b || f.startsWith(b.endsWith("/") ? b : `${b}/`)));
@@ -979,7 +1033,7 @@ const ship = await agent(
       `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`${bundled("skills/pr/templates/pr.md")}\`; read the skeleton and fold it into the body file. Fill only the human-facing sections, ordered so a reviewer grasps it fast: lead with the problem this solves and the outcome it reaches (${JSON.stringify(plan.outcome)}), then what changed and the approach, then where to focus review. No filler, no invented facts. Skip Related / Closes; the tail emits \`Closes #\`. Skip Scope / Backlog too; out-of-scope candidates do not go in the PR. Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
       `(2) write this exact JSON to a temp file.\n${JSON.stringify(shipPayload)}\n` +
       `(3) append the fact tail and open the PR as one \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
-      `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title "<your commit subject>" --body-file <bodyfile>\`.\n` +
+      `\`python3 ${bundled("workflows/build/pr-body.py")} < {tempfile} >> {bodyfile} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title "{your commit subject}" --body-file {bodyfile}\`.\n` +
       `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do not create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),

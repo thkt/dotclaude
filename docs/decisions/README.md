@@ -93,6 +93,7 @@ This directory contains important decisions about the project.
 | [0084](0084-retire-issue-gate-and-hand-issue-flow-orchestration-to-human.md) | ADR-0084: issue-gate を廃止し issue フローのオーケストレーションを人間に返す | accepted | 2026-07-13 |
 | [0085](0085-replace-builds-audit-fan-out-with-selection-based-verification.md) | ADR-0085: build の audit fan-out を選択ベース検証に置換する | accepted | 2026-07-14 |
 | [0086](0086-draft-plans-for-plan-less-issues-in-build.md) | ADR-0086: Plan 節なし issue の plan を build 内で自律生成する | accepted | 2026-07-14 |
+| [0087](0087-enforce-unit-size-caps-with-regeneration-in-build.md) | ADR-0087: unit サイズ上限を build に決定論強制し、超過時は再生成 + fail-closed で処理する | accepted | 2026-07-22 |
 
 ## By Status
 
@@ -112,7 +113,7 @@ This directory contains important decisions about the project.
 - **0032**: ADR-0032: Build esa semantic search CLI (sae)
 - **0033**: ADR-0033: shields に Recursive Unwrap Stack を追加
 - **0034**: ADR-0034: embedding + storage ユーティリティの共有クレート化 (rurico)
-- **0038**: ADR-0038: hook pipelineに stencils を追加しコードパターンをカタログ化する
+- **0038**: ADR-0038: hook pipeline に stencils を追加しコードパターンをカタログ化する
 - **0039**: ADR-0039: PreToolUse hook に tempos を追加し litmus library 統合で TDD リズムを強制する
 - **0041**: ADR-0041: carte を CCPlanView からフォークする運用方針
 - **0064**: Adopt always-rerun pre-commit gate for silent commit prevention
@@ -120,11 +121,11 @@ This directory contains important decisions about the project.
 ### Accepted
 
 - **0001**: ADR 0001: code.md コマンドの責任分離
-- **0002**: ADR 0002: /fix モジュール化とTDD共通化
+- **0002**: ADR 0002: /fix モジュール化と TDD 共通化
 - **0004**: ADR 0004: スキル中心アーキテクチャへの再構成
-- **0005**: ADR-0005: ドキュメントの役割分離とAI最適化
+- **0005**: ADR-0005: ドキュメントの役割分離と AI 最適化
 - **0008**: ADR-0008: 読み手別テンプレート最適化の採用
-- **0009**: IDR生成システムの外部リポジトリ化（Rustバイナリ）
+- **0009**: IDR 生成システムの外部リポジトリ化（Rust バイナリ）
 - **0010**: Schema-First API ドキュメント生成と Dual Output
 - **0011**: Audit パイプラインに Evidence Verifier を追加
 - **0012**: ADR-0012: Flatten Audit Pipeline - Remove Compound Reviewers
@@ -135,7 +136,7 @@ This directory contains important decisions about the project.
 - **0020**: ADR-0020: kagami - 技術スタックと収集方式の選定
 - **0024**: ADR-0024: Adopt two-layer Delta for compaction resilience
 - **0025**: ADR-0025: ralph-loop を退役しネイティブ /goal を採用
-- **0026**: ADR-0026: LLM指示設計における仕様-コード収束則を認識する
+- **0026**: ADR-0026: LLM 指示設計における仕様-コード収束則を認識する
 - **0034**: ADR-0034: LaunchAgent によるバックログライフサイクル自動化
 - **0035**: Record convergence signals in audit/verify dedup and move reconciliation into enhancer-evidence
 - **0037**: ADR-0037: sae フィルタヘルパーを amici 抽出前提で yomu パターンに揃える
@@ -180,10 +181,10 @@ This directory contains important decisions about the project.
 
 ### Superseded
 
-- **0003**: Marketplace構造の維持
+- **0003**: Marketplace 構造の維持
 - **0006**: Adopt Deterministic Script Pattern
 - **0029**: ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合
-- **0036**: LLMによるクロスセッション知識合成wikiプラグインの構築
+- **0036**: LLM によるクロスセッション知識合成 wiki プラグインの構築
 - **0052**: ADR-0052: Unify skill naming with `use-*` prefix for CLI wrapper skills
 - **0053**: Adopt ctx- prefix for agent-only skills
 - **0054**: Adopt workflow- prefix for workflow skills

@@ -262,31 +262,72 @@ const PLAN_SCHEMA = obj(
   },
 );
 
+// unit 1 つあたりの上限。/think Phase 3 の unit サイズ指針 (files <= 3 / tests <= 4) と
+// 結合しているので、片方だけを変えない (どちらかを変えたら両方見直す)。seam unit の
+// テストは unit 間の境界を跨いで実モジュールを動かすため files が正当に増える (境界
+// 跨ぎテストの構造上の理由であり肥大ではない)。実測の肥大は非 seam の実装 unit に出る
+// ので、そちらだけを検査する。validate() (構造検証) とは別関数。2 つの plan ソース
+// (下の extract 経路、id クロスチェック後) と draftPlan (下、独自の generate/feedback/
+// regenerate サイクルを持つ) の両方で共有する。
+const UNIT_CAPS = { files: 3, tests: 4 };
+const oversizedUnits = (p) =>
+  p.units.filter((u) => {
+    if (u.seam === true) return false;
+    const fileCount = Array.isArray(u.files) ? u.files.length : 0;
+    const testCount = Array.isArray(u.tests) ? u.tests.length : 0;
+    return fileCount > UNIT_CAPS.files || testCount > UNIT_CAPS.tests;
+  });
+
 // Plan 節なし issue 本文から plan を下書きする。リポジトリを探索し、ゴールを自ら設定し
-// (UI なら a11y criteria 込み)、critic-design gate を通す (Plan 節あり path の id クロス
-// チェック相当)。build 専用なので単独 workflow でなくローカル関数にする (ADR-0086)。GO で
-// { plan }、NO-GO で { stopped } を返す。
+// (UI なら a11y criteria 込み)、UNIT_CAPS を 1 回の feedback 付き再生成で担保してから
+// critic-design gate を通す (Plan 節あり path の id クロスチェック相当)。build 専用なので
+// 単独 workflow でなくローカル関数にする (ADR-0086)。GO で { plan }、NO-GO / 再生成後も
+// 超過なら { stopped } を返す。
 const draftPlan = async () => {
-  const drafted = await agent(
-    anchor(
-      `以下の GitHub issue 本文には ## Plan 節が無い。本文だけから構造化 plan を導き、issue が求める以上のスコープを発明しない。` +
-        `まずリポジトリを探索して plan を現実に接地させる。実在のファイルパス、既存コードからの preconditions、プロジェクト設定を読んで決めた test_command。` +
-        `outcome は done 状態のゴール。issue に明示が無ければ自分で設定し、UI に触れる作業なら a11y criteria (キーボードのみで全操作が完結する、エラーがスクリーンリーダーに通知される、など) を outcome と test scenario に含める。` +
-        `unit は実装順に並べ、検証可能な振る舞いが無い unit (docs / 設定) は tests を空配列にする。` +
-        `unit ごとのテストは自分の境界を stub するので、各層が緑のまま結線されないことが起こる。テストを持つ unit が 2 つ以上になる plan には seam unit (seam: true) を最後に置く。そのテストは unit 間の境界を跨いで実モジュールを動かし、偽装はシステム外部との I/O に限り、unit どうしをつなぐ接続 (呼び出し、遷移、データの受け渡し) が実際に結線されていることを assert する。他の unit はすべて seam: false。` +
-        `contract は生成でなく選択で書く (引用 + やりたいことの 1 行)。` +
-        `計画対象と同じ形を持つ既存モジュール (ドメインを問わず、画面の組か layer の組が一致するもの) があれば reference_module に記録し、U-001 をその構造複製 (tests は空配列) にする。null にするのは一致するモジュールが無いときだけで、理由を assumption に書く。` +
-        `自分が置いた best-guess の判断はすべて assumptions に記録する。\n\n${fencedBody}`,
-    ),
-    {
+  const basePrompt =
+    `以下の GitHub issue 本文には ## Plan 節が無い。本文だけから構造化 plan を導き、issue が求める以上のスコープを発明しない。` +
+    `まずリポジトリを探索して plan を現実に接地させる。実在のファイルパス、既存コードからの preconditions、プロジェクト設定を読んで決めた test_command。` +
+    `outcome は done 状態のゴール。issue に明示が無ければ自分で設定し、UI に触れる作業なら a11y criteria (キーボードのみで全操作が完結する、エラーがスクリーンリーダーに通知される、など) を outcome と test scenario に含める。` +
+    `unit は実装順に並べ、検証可能な振る舞いが無い unit (docs / 設定) は tests を空配列にする。非 seam unit は UNIT_CAPS (files <= ${UNIT_CAPS.files}、tests <= ${UNIT_CAPS.tests}) の範囲に収める。どちらかが上限を超えるくらいなら unit をさらに分割する。` +
+    `unit ごとのテストは自分の境界を stub するので、各層が緑のまま結線されないことが起こる。テストを持つ unit が 2 つ以上になる plan には seam unit (seam: true) を最後に置く。そのテストは unit 間の境界を跨いで実モジュールを動かし、偽装はシステム外部との I/O に限り、unit どうしをつなぐ接続 (呼び出し、遷移、データの受け渡し) が実際に結線されていることを assert する。他の unit はすべて seam: false。` +
+    `contract は生成でなく選択で書く (引用 + やりたいことの 1 行)。` +
+    `計画対象と同じ形を持つ既存モジュール (ドメインを問わず、画面の組か layer の組が一致するもの) があれば reference_module に記録し、U-001 をその構造複製 (tests は空配列) にする。null にするのは一致するモジュールが無いときだけで、理由を assumption に書く。` +
+    `自分が置いた best-guess の判断はすべて assumptions に記録する。\n\n${fencedBody}`;
+
+  const generate = (feedback) =>
+    agent(anchor(feedback ? `${basePrompt}\n\n${feedback}` : basePrompt), {
       label: "generate-plan",
       phase: "Load",
       agentType: "general-purpose",
       schema: PLAN_SCHEMA,
-    },
-  );
+    });
+
+  let drafted = await generate();
   if (!drafted) {
     return { stopped: "plan-generation-failed", why: "generate agent が plan を返さなかった。" };
+  }
+
+  // 自律下書き経路への UNIT_CAPS 適用。上の generate prompt で予防的に明記済みだが、それ
+  // でも超過したら超過 unit id を feedback にした 1 回だけの再生成 (ループではない) を行う。
+  // 再生成後も超過が残るなら、無限ループや肥大の黙認でなく stop する。
+  let oversized = oversizedUnits(drafted);
+  if (oversized.length) {
+    drafted = await generate(
+      `直前の下書きは unit ${oversized.map((u) => u.id).join(", ")} で UNIT_CAPS (files <= ${UNIT_CAPS.files}、tests <= ${UNIT_CAPS.tests}) を超過した。該当 unit をさらに分割し、すべての非 seam unit を上限内に収めた上で plan 全体を返し直す。`,
+    );
+    if (!drafted) {
+      return { stopped: "plan-generation-failed", why: "generate agent が plan を返さなかった。" };
+    }
+    oversized = oversizedUnits(drafted);
+    if (oversized.length) {
+      return {
+        stopped: "oversized-unit",
+        units: oversized.map((u) => u.id),
+        why:
+          `1 回の feedback 付き再生成後も非 seam unit が UNIT_CAPS (files <= ${UNIT_CAPS.files} / tests <= ${UNIT_CAPS.tests}) を超えている。` +
+          "issue を ## Plan 節へ精緻化して (/issue) 再実行する。",
+      };
+    }
   }
 
   const CRITIQUE_SCHEMA = obj(["verdict", "weaknesses"], {
@@ -298,6 +339,7 @@ const draftPlan = async () => {
       `critic-design。issue #${issueNumber}「${drafted.outcome}」向けに自動生成された実装 plan を敵対的にレビューする。` +
         `本文から人間レビュー無しで導かれたので攻撃する。unit 分解の不健全さや欠落、preconditions の誤りや欠落、issue が求める以上に発明されたスコープ、検証不能な scenario、誤った test_command を探す。` +
         `reference_module も攻撃する。リポジトリに同形モジュールがあるのに null、最近似でない path、対応ファイルや conventions の欠落を探す。` +
+        `unit の肥大も攻撃する。UNIT_CAPS の件数チェックは通過していても、非 seam unit がまだ多くを背負い過ぎていないか探す。weaknesses には挙げるが、肥大単独では NO-GO にしない (この plan の files/tests 件数上限は別の決定論ゲートが既に担保している)。NO-GO はサイズを超えた blocking な欠陥のときだけにする。` +
         `そのまま実装して安全なら verdict "GO"、blocking な欠陥があれば "NO-GO" を返し、具体的な欠陥を weaknesses に列挙する。\n` +
         `plan は以下。\n${JSON.stringify(drafted)}`,
     ),
@@ -387,6 +429,18 @@ if (planHeading) {
       why: "issue 本文と抽出結果の U/T id 集合が一致しない。",
     };
   }
+
+  // UNIT_CAPS 超過検査 (extract 経路。定義は上に共有で置いてあり draftPlan と共有する)。
+  const oversized = oversizedUnits(plan);
+  if (oversized.length) {
+    return {
+      stopped: "oversized-unit",
+      units: oversized.map((u) => u.id),
+      why:
+        `非 seam unit が UNIT_CAPS (files <= ${UNIT_CAPS.files} / tests <= ${UNIT_CAPS.tests}) を超えている。` +
+        "/think Phase 3 の unit サイズ上限に沿って unit をさらに分割し、issue を /issue で精緻化して再実行する。",
+    };
+  }
   log(
     `Plan 抽出: ${plan.units.length} unit / ${planTestIds.size} test scenario、id クロスチェック pass。`,
   );
@@ -463,7 +517,7 @@ const [reval, branchRes, baseline] = await parallel([
       anchor(
         `issue #${issueNumber}「${plan.outcome}」の作業ブランチを新規に checkout する。慣例に沿ったブランチ名 (type + 短い slug) を選び、` +
           (baseBranch
-            ? `\`git checkout -b <name> ${baseBranch}\` で ${baseBranch} を起点に作成する。`
+            ? `\`git checkout -b {name} ${baseBranch}\` で ${baseBranch} を起点に作成する。`
             : `git checkout -b を実行する。`) +
           `既に default 以外のブランチにいる場合は現在のブランチを維持する。branch フィールドにブランチ名だけを返す。${guard}`,
       ),
@@ -791,8 +845,7 @@ const [diff, testPresence, conformance, structure] = await parallel([
 // 変更ファイルは plan の files か .claude/workspace/ 配下 (think の plan 下書き) に収まる。
 // diff 一覧を取得できないこと自体も surface する。
 const planFiles = new Set(plan.units.flatMap((u) => u.files));
-const baselineUntracked =
-  baseline && Array.isArray(baseline.untracked) ? baseline.untracked : [];
+const baselineUntracked = baseline && Array.isArray(baseline.untracked) ? baseline.untracked : [];
 // porcelain はディレクトリを "dir/" の 1 行で出すので prefix でも突き合わせる。
 const preexisting = (f) =>
   baselineUntracked.some((b) => b && (f === b || f.startsWith(b.endsWith("/") ? b : `${b}/`)));
@@ -946,7 +999,7 @@ const ship = await agent(
       `(1) \`$HOME/.claude/settings.json\` から \`language\` を読み (未設定なら英語)、その言語で人間向け本文を書く。コード / 識別子 / 専門用語は翻訳しない。PR テンプレートはリポジトリのものがあれば使う (大文字小文字の区別なし、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)。無ければ同梱の \`${bundled("skills/pr/templates/pr.md")}\` を使う。骨格を読んで body ファイルへ折り込む。人間向けセクションだけを、レビュアーが速く掴める順で埋める。先頭に解決する問題と到達する成果 (${JSON.stringify(plan.outcome)})、次に変更内容とアプローチ、最後にレビューの注目点。埋め草と事実の捏造をしない。Related / Closes は書かない (tail が \`Closes #\` を出す)。Scope / Backlog も書かない。スコープ外候補は PR に載せない。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実 diff から埋め、空なら節ごと省略する。\n` +
       `(2) この JSON をそのまま一時ファイルに書く。\n${JSON.stringify(shipPayload)}\n` +
       `(3) fact tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、レンダラー失敗時は PR 作成前に中断させる。リポジトリルートから ` +
-      `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title "<commit の subject>" --body-file <bodyfile>\` を実行する。\n` +
+      `\`python3 ${bundled("workflows/build/pr-body.py")} < {tempfile} >> {bodyfile} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title "{commit subject}" --body-file {bodyfile}\` を実行する。\n` +
       `pr-body.py は payload が壊れているか必須フィールドを欠くと非ゼロで終了する (何も出力しない)。チェーンが失敗したら他の手段で PR を作らない。committed と空の pr_url とエラーを報告する。\n` +
       `committed の状態と PR url を報告する。${guard}`,
   ),

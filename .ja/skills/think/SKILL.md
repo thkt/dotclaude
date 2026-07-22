@@ -35,7 +35,7 @@ argument-hint: "[task description]"
 2. tests[].name は条件 + 期待結果の 1 行言明。code workflow がテスト名として逐語使用し、build が固定文字列で照合する
 3. 検証可能な振る舞いが無い unit (docs / 設定) は tests を空配列にする。build はその unit を直接実装で扱う
 4. 各 unit のテストは自分の境界を stub するので、tests を持つ unit が 2 つ以上になったら seam unit をちょうど 1 つ最後に置き `seam: true` を付ける。その tests は unit 間の境界を跨いで実モジュールを動かし、偽装はシステム外部との I/O に限り、unit どうしをつなぐ接続を assert する。seam unit が無い plan は build の `validate()` が reject する
-5. unit の上限は files 3 つ、tests 4 個。実測で 6〜7 ファイルの unit は実装 agent 1 体あたり 17〜46 分かかり、build 全体の wall-clock の支配項になる。上限を超えた unit は成果を軸に分割し、分割で生じた新しい unit 構成をユーザーと確認する。スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
+5. unit の上限は files 3 つ、tests 4 個。実測で 6〜7 ファイルの unit は実装 agent 1 体あたり 17〜46 分かかり、build 全体の wall-clock の支配項になる。上限を超えた unit は成果を軸に分割し、分割で生じた新しい unit 構成をユーザーと確認する。スコープ外へ切り出した候補は plan に入れず backlog candidates に回す。この上限は `workflows/build.js` の `UNIT_CAPS` として決定論的に強制される。変更はこの記述と `UNIT_CAPS` を同一コミットで揃える
 6. 自己点検 (必須フィールドの欠落、id の重複、空の units / tests / goal / contract) と書き出し前検証を通し、`${CLAUDE_SKILL_DIR}/templates/plan.md` の骨格で `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に書き出す。slug はタイトルの小文字ハイフン区切り。`## Plan` と `## Backlog candidates` の両節を含める
 
 ### reference_module
