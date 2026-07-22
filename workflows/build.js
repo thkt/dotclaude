@@ -22,7 +22,7 @@ export const meta = {
 
 phase("Load");
 
-// The harness may deliver object args as a JSON-encoded string; decode that form too.
+// The harness may deliver object args as a JSON-encoded string.
 let argsValue = args;
 if (typeof argsValue === "string" && argsValue.trim().startsWith("{")) {
   try {
@@ -43,15 +43,13 @@ if (!issueRef || !issueNumber) {
   };
 }
 
-// Every step is pinned to the target repository regardless of the session cwd:
-// anchor() prepends an absolute cd; guard makes the agent confirm the repo root
-// before the hard-to-reverse git mutations (branch / commit / push / PR). Without
-// repo, agents resolve "the repository" from their own cwd and can run steps in
-// the wrong checkout.
+// Without repo, agents resolve "the repository" from their own cwd and can run
+// steps in the wrong checkout. anchor pins every step to the target repository;
+// guard makes the agent confirm the repo root before the hard-to-reverse git
+// mutations (branch / commit / push / PR).
 const repo = typeof input.repo === "string" ? input.repo : "";
-// Optional base branch. When given it is used both as the starting point of a
-// fresh checkout and as the PR base (slice PRs aggregating into an epic branch).
-// Unset keeps the default-branch behavior.
+// base serves the flow that aggregates slice PRs into an epic branch, used both
+// as the starting point of a fresh checkout and as the PR base.
 const baseBranch = typeof input.base === "string" ? input.base.trim() : "";
 if (!repo) {
   return {
@@ -74,7 +72,8 @@ const sibling = async (name, a) => {
 const bundled = (rel) =>
   `"$(P="$HOME/.claude/${rel}"; [ -f "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
 
-// JSON-schema boilerplate: every node is a closed object with required keys.
+// Closed objects throughout, so extra fields and omissions in LLM output are
+// rejected at the schema layer.
 const obj = (required, properties) => ({
   type: "object",
   additionalProperties: false,
@@ -91,7 +90,7 @@ const FETCH_SCHEMA = obj(["found", "body"], {
 });
 
 // ---- Load: verbatim fetch -> Plan heading check -> deterministic id collection -> extract -> validate + cross-check ----
-// A leading "#" would start a shell comment and leave gh with zero args; strip it.
+// A leading "#" would start a shell comment and leave gh with zero args.
 const fetchRef = issueRef.replace(/^#/, "");
 const fetched = await agent(
   anchor(
@@ -115,15 +114,10 @@ if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
 }
 const body = fetched.body;
 
-// Structural plan validation, shared by both plan sources. Deterministically rejects
-// duplicate ids and empty content (test_command / contract / name). An empty tests
-// array is legal (code implements that unit directly). The last line of defense for
-// plan quality.
-//
-// The seam rule exists because per-unit tests stub their own boundaries, so a plan
-// whose units are each green can still ship layers that were never connected to each
-// other (kizalas #558 / PR 575: mapper returned nulls, pagination and the new/edit
-// affordances were never wired, 44 unit tests green). Once two units carry tests there
+// Structural validation shared by both plan sources. An empty tests array is legal
+// (code implements that unit directly). The seam rule exists because per-unit tests
+// stub their own boundaries, so a plan whose units are each green can still ship
+// layers that were never connected to each other. Once two units carry tests there
 // is a seam between them, and only a test crossing it fails when the wiring is absent.
 const validate = (plan) => {
   const errors = [];
@@ -274,13 +268,9 @@ const PLAN_SCHEMA = obj(
   },
 );
 
-// Per-unit overrun cap; coupled with /think Phase 3's unit-size guidance (files <= 3,
-// tests <= 4) -- do not change one side without the other. A seam unit's tests
-// legitimately cross the boundary between units, so its files count grows for a
-// structural reason, not bloat; only non-seam (implementation) units are checked.
-// Separate from validate() (structural correctness). Shared by both plan sources:
-// the extract path (below, after the id cross-check) and draftPlan (below, its own
-// generate/feedback/regenerate cycle).
+// Coupled with /think Phase 3's unit-size guidance; do not change one side without
+// the other. A seam unit's tests cross the boundary between units, so its files
+// count legitimately grows. Only non-seam units are checked.
 const UNIT_CAPS = { files: 3, tests: 4 };
 const oversizedUnits = (p) =>
   p.units.filter((u) => {
@@ -290,11 +280,9 @@ const oversizedUnits = (p) =>
     return fileCount > UNIT_CAPS.files || testCount > UNIT_CAPS.tests;
   });
 
-// Draft a plan from a plan-less issue body: explore the repo, set the goal itself
-// (a11y criteria for UI work), enforce UNIT_CAPS with one feedback-driven regenerate,
-// then gate with critic-design (the counterpart to the has-plan id cross-check).
-// Build-internal, so it is a local function rather than a standalone workflow
-// (ADR-0086). Returns { plan } on GO, { stopped } on NO-GO / still oversized.
+// Plan drafting for a plan-less issue. The critic-design gate is the counterpart
+// to the has-plan id cross-check. Build-internal, so it is a local function rather
+// than a standalone workflow (ADR-0086). Returns { plan } on GO, { stopped } otherwise.
 const draftPlan = async () => {
   const basePrompt =
     `The following GitHub issue body has no ## Plan section. Derive a structured plan from the body alone; do not invent scope beyond what the issue asks. ` +
@@ -319,10 +307,7 @@ const draftPlan = async () => {
     return { stopped: "plan-generation-failed", why: "The generate agent returned no plan." };
   }
 
-  // UNIT_CAPS enforcement for the autonomous draft path: the generate prompt above
-  // already names the caps preventively, but a miss gets exactly one feedback-driven
-  // regenerate (not a loop) naming the oversized unit ids; a plan still oversized
-  // after that retry stops rather than looping or silently shipping bloat.
+  // Exactly one regenerate, avoiding both an endless loop and silently shipped bloat.
   let oversized = oversizedUnits(drafted);
   if (oversized.length) {
     drafted = await generate(
@@ -352,7 +337,7 @@ const draftPlan = async () => {
       `critic-design. Adversarially review the auto-generated implementation plan for issue #${issueNumber} "${drafted.outcome}". ` +
         `It was derived from the body with no human review, so attack it: unsound or missing unit decomposition, wrong or missing preconditions, scope invented beyond what the issue asks, untestable scenarios, or a wrong test_command. ` +
         `Also attack reference_module: null despite a same-shaped module in the repository, a path that is not the closest match, or missing counterpart files / conventions. ` +
-        `Also attack unit bloat: a non-seam unit that is still doing too much even though it passed the UNIT_CAPS count check. Name it as a weakness, but bloat alone is not a NO-GO reason -- a separate deterministic gate already enforces the file/test count caps for this plan; verdict NO-GO only for a blocking flaw beyond size. ` +
+        `Also attack unit bloat: a non-seam unit that is still doing too much even though it passed the UNIT_CAPS count check. Name it as a weakness, but bloat alone is not a NO-GO reason; verdict NO-GO only for a blocking flaw beyond size. ` +
         `Return verdict "GO" if it is sound enough to implement as-is, or "NO-GO" if a blocking flaw makes it unsafe, and list the concrete flaws in weaknesses.\n` +
         `The plan is as follows.\n${JSON.stringify(drafted)}`,
     ),
@@ -385,9 +370,6 @@ const draftPlan = async () => {
   return { plan: drafted };
 };
 
-// build gets its plan from one of two sources. A human-reviewed ## Plan section is
-// extracted verbatim and id-cross-checked. A plan-less issue is drafted by the
-// build-internal draftPlan (autonomous goal + a11y, critic-design gated), ADR-0086.
 const planHeading = body.match(/^##\s+Plan\b.*$/m);
 let plan;
 
@@ -403,7 +385,7 @@ if (planHeading) {
   plan = await agent(
     anchor(
       `Extract a structured plan from the ## Plan section of the following GitHub issue body. Do not re-plan, summarize, or fill in gaps; structure exactly what is written. ` +
-        `Preserve every unit id (U-NNN) and test id (T-NNN) from the body (omissions are rejected by a downstream deterministic cross-check). ` +
+        `Preserve every unit id (U-NNN) and test id (T-NNN) from the body. ` +
         `preconditions is the list of {path, pattern} of existing code the plan presupposes; backlog_candidates are out-of-scope candidates written in the issue. Empty arrays if absent from the body.\n` +
         `seam is true only for a unit the body marks \`seam: true\`; every other unit is false. Do not infer it from the unit's content.\n\n${fencedBody}`,
     ),
@@ -447,7 +429,6 @@ if (planHeading) {
     };
   }
 
-  // UNIT_CAPS overrun check for the extract path (declared above, shared with draftPlan).
   const oversized = oversizedUnits(plan);
   if (oversized.length) {
     return {
@@ -462,7 +443,6 @@ if (planHeading) {
     `Plan extracted: ${plan.units.length} unit(s), ${planTestIds.size} test scenario(s), id cross-check pass.`,
   );
 } else {
-  // No ## Plan: draft a plan + goal from the body (ADR-0086).
   log("No ## Plan section; drafting a plan from the issue body.");
   const drafted = await draftPlan();
   if (drafted.stopped) return drafted;
@@ -509,9 +489,7 @@ const preconditions = plan.preconditions || [];
 const BRANCH_SCHEMA = obj(["branch"], {
   branch: { type: "string", description: "the checked-out branch name, nothing else" },
 });
-// Untracked files at run start. Subtracts pre-existing working-tree clutter from
-// Verify's scope deviations (observed: .claude/ operational files and spec dirs
-// listed as deviations on every run).
+// Subtracts pre-existing working-tree clutter from Verify's scope deviations.
 const UNTRACKED_SCHEMA = obj(["untracked"], {
   untracked: { type: "array", items: { type: "string" } },
 });
@@ -579,13 +557,11 @@ if (preconditions.length) {
     };
   }
   // Bind by (path, pattern), not by count: reordered or substituted entries keep the
-  // length identical. No matching exists&&matches result is drift.
+  // length identical.
   const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
   const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
-  // A precondition with no result is a relay drop, not an absent file (observed:
-  // a non-code svg asset got dropped from the check and an existing file stopped
-  // the build as missing). Re-verify just the dropped entries once; if still
-  // unreported, stop as revalidate-incomplete, distinct from plan-drift.
+  // A precondition with no result can be a relay drop rather than an absent file,
+  // so it stops as revalidate-incomplete, distinct from plan-drift.
   let unreported = preconditions.filter((pc) => !resultByKey.has(keyOf(pc)));
   if (unreported.length) {
     const retry = await agent(
@@ -667,9 +643,8 @@ log(
 );
 
 // ---- Cleanup: simplify skill + test validation ----
-// The review lens (Codex) is retired from build (ADR-0085); /polish stays available
-// for the human to run on the PR. Cleanup runs before Verify so the verified tree
-// is the shipped tree.
+// The review lens does not belong to build (ADR-0085); /polish is human-invoked on
+// the PR. Cleanup runs before Verify so the verified tree is the shipped tree.
 const CLEANUP_SCHEMA = obj(["edits", "tests_pass", "stashed"], {
   edits: {
     type: "array",
@@ -888,8 +863,6 @@ const scopeDeviations =
         (f) => f && !coveredByPlan(f) && !f.startsWith(".claude/workspace/") && !preexisting(f),
       )
     : ["diff listing unavailable; scope not verified"];
-// Bind by name; a name with no found=true result is missing. With zero declared
-// statements the relay never ran and nothing can be missing.
 let missingTests;
 if (!allTestNames.length) {
   missingTests = [];
@@ -923,9 +896,9 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
-// The agent writes the lead Summary; the fact tail is rendered by the deterministic
-// pr-body.py so a fact section is never silently dropped. The append and gh pr create
-// are chained with && so a renderer failure aborts before the PR is created.
+// The fact tail is rendered by the deterministic pr-body.py so a fact section is
+// never silently dropped. The append and gh pr create are chained with && so a
+// renderer failure aborts before the PR is created.
 phase("Ship");
 
 // Translate + compress only the informational free-text; safety facts and structured
@@ -934,8 +907,7 @@ const shipAssumptions = [...(plan.assumptions || [])];
 const shipAnomalies = (code.anomalies || []).map((a) => ({ ...a }));
 const shipConformance = conf.spec_found ? conf.findings.map((f) => ({ ...f })) : [];
 
-// Collect only the translatable free-text with an id. Writing back goes through
-// set(), never touching structured fields. Empty strings are not sent.
+// Writing back goes through set(), never touching structured fields.
 const slots = [];
 shipAssumptions.forEach((t, i) => {
   if (typeof t === "string" && t.trim())
@@ -991,10 +963,8 @@ if (slots.length) {
   }
 }
 
-// The plan's manual verification section (optional). A plan without unit tests
-// leaves acceptance to a human's manual check, which never gets run before merge
-// unless it reaches the PR. Deterministically collect the bullets; the fact tail
-// renders them as a checklist.
+// A plan without unit tests leaves acceptance to a human's manual check, which
+// never gets run before merge unless it reaches the PR.
 const manualHeading = body.match(/^###\s+(実機確認|Manual verification)\b.*$/m);
 let manualChecks = [];
 if (manualHeading) {
