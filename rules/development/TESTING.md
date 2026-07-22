@@ -66,7 +66,7 @@ Start from perspectives, and use coverage only to detect gaps.
 
 ## Test Naming
 
-Test names state the spec they verify (e.g. "rejects deposit when amount is negative").
+Test names state the spec they verify as a condition and expected result (e.g. "rejects deposit when amount is negative"). The ideal name survives a refactor of the implementation as is. When a name contains implementation vocabulary (method names / internal steps), replace it with the domain's condition and expected-result vocabulary.
 
 ## Bug-fix reproduction test
 
@@ -74,7 +74,7 @@ A bug fix adds one test that reproduces the bug before touching the cause, and c
 
 ## Test double preference
 
-A dependency closer to the real thing catches integration drift. Pick by the order below, and fall to a lower tier only when a higher one cannot be used (too slow / external side effects / non-deterministic).
+A dependency closer to the real thing catches integration drift. Pick by the order below, and fall to a lower tier only when a higher one cannot be used (too slow / external side effects / non-deterministic). Assert against observable behavior (return value / state change). Verifying a call itself is reserved for outbound side effects where the call is the spec (notification send / audit log, anything unobservable via return value or state); replace any other call verification with a return-value or state assert.
 
 | Kind | When to use                                                                      |
 | ---- | -------------------------------------------------------------------------------- |

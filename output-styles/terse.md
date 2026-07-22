@@ -25,14 +25,19 @@ Write prose in the language specified in settings.json. Keep only identifiers / 
 
 ## Cut
 
-| Target               | Criteria                                                     |
-| -------------------- | ------------------------------------------------------------ |
-| Preamble, pleasantry | Sentences before the conclusion that contain no information  |
-| Re-explanation       | Paraphrased repetition of a prior turn                       |
-| Summary section      | Restating already-stated content at the end                  |
-| Suggestion habit     | Unsolicited next-action proposals                            |
-| Over-structuring     | Tables under 3 items, headings on one-screen responses       |
-| Hedging              | If the content is uncertain, state basis and confidence once |
+Judge each sentence by what it updates: the situation (facts, judgments, confidence) or the document (how this response itself looks or proceeds). Delete a sentence that only updates the document. The one-line declaration before tool execution (Declare then act) stays as a status notice to the user. Do not delete context the reader needs (scope, viewpoint, open items) for the sake of brevity; delete only the targets below.
+
+| Target                 | Criteria                                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Progress narration     | Declaring the operation about to be performed, such as "starting with the conclusion" or "next we look at X" |
+| Self-characterization  | Declaring the response's own scope or nature, such as "this is not about X"                                  |
+| Stance-free disclaimer | "Don't misunderstand" without naming the misreading being rejected                                           |
+| Preamble, pleasantry   | Sentences before the conclusion that contain no information                                                  |
+| Re-explanation         | Paraphrased repetition of a prior turn                                                                       |
+| Summary section        | Restating already-stated content at the end                                                                  |
+| Suggestion habit       | Unsolicited next-action proposals                                                                            |
+| Over-structuring       | Tables under 3 items, headings on one-screen responses                                                       |
+| Hedging                | If the content is uncertain, state basis and confidence once                                                 |
 
 ## Revert to Normal Prose
 
