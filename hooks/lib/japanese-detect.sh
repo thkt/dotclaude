@@ -4,6 +4,8 @@
 
 JAPANESE_CHAR_THRESHOLD=50
 
+# Optional $1 overrides the threshold (short inputs like commit messages need a lower bar)
 has_japanese() {
-  [[ $(LC_ALL=en_US.UTF-8 grep -o '[ぁ-んァ-ヶー一-龥]' | wc -l) -ge $JAPANESE_CHAR_THRESHOLD ]]
+  local threshold=${1:-$JAPANESE_CHAR_THRESHOLD}
+  [[ $(LC_ALL=en_US.UTF-8 grep -o '[ぁ-んァ-ヶー一-龥]' | wc -l) -ge $threshold ]]
 }

@@ -18,7 +18,8 @@ case "$input" in
   *) exit 0 ;;
 esac
 
-read -r tool_name file_path < <(echo "$input" | jq -r '[.tool_name // "", .tool_input.file_path // ""] | @tsv' 2>/dev/null) || true
+# printf, not echo: zsh echo expands backslash escapes and corrupts the JSON (\n inside strings)
+read -r tool_name file_path < <(printf '%s' "$input" | jq -r '[.tool_name // "", .tool_input.file_path // ""] | @tsv' 2>/dev/null) || true
 
 case "$tool_name" in
   Write|Edit|MultiEdit) ;;
@@ -51,14 +52,15 @@ if [[ ! -f "$TEXTLINT_CONFIG" ]]; then
 fi
 
 # Determine runtime: bun > npx
+# Array, not string: zsh does not word-split "$runner", so "bun x" would run as one command name
 if command -v bun &>/dev/null; then
-  runner="bun x"
+  runner=(bun x)
 else
-  runner="npx"
+  runner=(npx)
 fi
 
 # Run textlint --fix
 cd "$TEXTLINT_DIR" || exit 0
-$runner textlint --fix --config "$TEXTLINT_CONFIG" "$file_path" >/dev/null 2>&1 || true
+"${runner[@]}" textlint --fix --config "$TEXTLINT_CONFIG" "$file_path" >/dev/null 2>&1 || true
 
 exit 0

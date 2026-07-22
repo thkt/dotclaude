@@ -1,6 +1,6 @@
 #!/bin/zsh
-# PreToolUse hook: lint text + structure review checklist for gh issue/pr create
-# Returns advisory (approve + additionalContext) with textlint results and structure checklist
+# PreToolUse hook: lint text for gh issue/pr create (+ structure review checklist) and git commit
+# Returns advisory (approve + additionalContext) with textlint results; checklist is issue/pr only
 set -euo pipefail
 
 TEXTLINT_DIR="$HOME/.claude/hooks/textlint"
@@ -13,13 +13,14 @@ STRUCTURE_CHECKLIST='## 構造レビュー（ワークスロップ防止）\n\nb
 
 input=$(cat)
 
-# Fast-exit: skip jq+grep forks unless input is a Bash `gh ... create` call
+# Fast-exit: skip jq+grep forks unless input is a Bash `gh ... create` or `git commit` call
 case "$input" in
-  *'"tool_name":"Bash"'*gh*create*) ;;
+  *'"tool_name":"Bash"'*gh*create* | *'"tool_name":"Bash"'*git*commit*) ;;
   *) exit 0 ;;
 esac
 
-read -r tool_name command_str < <(echo "$input" | jq -r '[.tool_name // "", .tool_input.command // ""] | @tsv' 2>/dev/null) || true
+# printf, not echo: zsh echo expands backslash escapes and corrupts the JSON (\n inside strings)
+read -r tool_name command_str < <(printf '%s' "$input" | jq -r '[.tool_name // "", .tool_input.command // ""] | @tsv' 2>/dev/null) || true
 # @tsv doubles backslashes — undo to get original command string
 command_str="${command_str//\\\\/\\}"
 
@@ -27,38 +28,76 @@ if [[ -z "$command_str" ]]; then
   exit 0
 fi
 
-if ! [[ "$command_str" =~ gh[[:space:]]+(issue|pr)[[:space:]]+create ]]; then
+mode=""
+if [[ "$command_str" =~ gh[[:space:]]+(issue|pr)[[:space:]]+create ]]; then
+  mode="ghcreate"
+elif [[ "$command_str" =~ git[[:space:]]+commit ]]; then
+  mode="commit"
+else
   exit 0
 fi
 
-body=$(echo "$command_str" | sed -nE 's/.*--body "(([^"\\]|\\.)*)".*/\1/p')
-if [[ -z "$body" ]]; then
-  body=$(echo "$command_str" | sed -nE "s/.*--body '([^']*)'.*/\1/p")
+if [[ "$mode" == "ghcreate" ]]; then
+  body=$(printf '%s\n' "$command_str" | sed -nE 's/.*--body "(([^"\\]|\\.)*)".*/\1/p')
+  if [[ -z "$body" ]]; then
+    body=$(printf '%s\n' "$command_str" | sed -nE "s/.*--body '([^']*)'.*/\1/p")
+  fi
+  # The extracted body still carries \n escape sequences from the flattened command; expand them
+  if [[ -n "$body" ]]; then
+    body=$(printf '%b' "$body")
+  fi
+else
+  # Commit messages are usually multiline heredocs; @tsv flattens newlines, so re-extract raw
+  command_raw=$(printf '%s' "$input" | jq -r '.tool_input.command // ""' 2>/dev/null) || true
+  body=$(printf '%s\n' "$command_raw" | awk "/<<'EOF'/{flag=1;next}/^EOF\$/{flag=0}flag")
+  if [[ -z "$body" ]]; then
+    body=$(printf '%s\n' "$command_raw" | sed -nE 's/.*-m "(([^"\\]|\\.)*)".*/\1/p')
+  fi
+  if [[ -z "$body" ]]; then
+    body=$(printf '%s\n' "$command_raw" | sed -nE "s/.*-m '([^']*)'.*/\1/p")
+  fi
 fi
 
 if [[ -z "$body" ]]; then
   exit 0
 fi
+
+ja_threshold=""
+[[ "$mode" == "commit" ]] && ja_threshold=10
 
 lint_section=""
-if [[ -f "$TEXTLINT_CONFIG" ]] && echo "$body" | has_japanese; then
-  tmpfile=$(mktemp /tmp/textlint-lint-XXXXXX.md)
-  trap 'rm -f "$tmpfile"' EXIT
-  echo "$body" > "$tmpfile"
+if [[ -f "$TEXTLINT_CONFIG" ]] && printf '%s' "$body" | has_japanese $ja_threshold; then
+  # BSD mktemp only substitutes trailing X's, so make a temp dir and put the .md inside
+  tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/textlint-lint-XXXXXX")
+  tmpfile="$tmpdir/body.md"
+  trap 'rm -rf "$tmpdir"' EXIT
+  printf '%s\n' "$body" > "$tmpfile"
 
+  # Array, not string: zsh does not word-split "$runner", so "bun x" would run as one command name
   if command -v bun &>/dev/null; then
-    runner="bun x"
+    runner=(bun x)
   else
-    runner="npx"
+    runner=(npx)
   fi
 
   cd "$TEXTLINT_DIR" || exit 0
-  lint_output=$($runner textlint --config "$TEXTLINT_CONFIG" "$tmpfile" 2>/dev/null) || true
+  lint_output=$("${runner[@]}" textlint --config "$TEXTLINT_CONFIG" "$tmpfile" 2>/dev/null) || true
+
+  target_label="body"
+  [[ "$mode" == "commit" ]] && target_label="commit message"
 
   if [[ -n "$lint_output" ]]; then
-    lint_clean=$(echo "$lint_output" | grep -v "^$tmpfile$" | sed "s|$tmpfile|body|g")
-    lint_section="## textlint 校正結果\n\n以下の指摘を確認し、必要に応じて body テキストを修正してください。\n\n$lint_clean\n\n"
+    lint_clean=$(printf '%s\n' "$lint_output" | grep -v "^$tmpfile$" | sed "s|$tmpfile|$target_label|g")
+    lint_section="## textlint 校正結果\n\n以下の指摘を確認し、必要に応じて $target_label テキストを修正してください。\n\n$lint_clean\n\n"
   fi
 fi
 
-jq -nc --arg r "textlint: 日本語校正 + 構造レビュー" --arg c "${lint_section}${STRUCTURE_CHECKLIST}" '{"decision":"approve","reason":$r,"additionalContext":$c}'
+if [[ "$mode" == "commit" ]]; then
+  # No structure checklist for commits; stay silent when there is nothing to fix
+  if [[ -z "$lint_section" ]]; then
+    exit 0
+  fi
+  jq -nc --arg r "textlint: commit message 校正" --arg c "$lint_section" '{"decision":"approve","reason":$r,"additionalContext":$c}'
+else
+  jq -nc --arg r "textlint: 日本語校正 + 構造レビュー" --arg c "${lint_section}${STRUCTURE_CHECKLIST}" '{"decision":"approve","reason":$r,"additionalContext":$c}'
+fi

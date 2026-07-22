@@ -9,7 +9,11 @@
         "max": 3
       }
     },
-    "preset-ja-spacing": true,
+    "preset-ja-spacing": {
+      "ja-space-between-half-and-full-width": {
+        "space": ["alphabets", "numbers"]
+      }
+    },
     "ja-hiragana-keishikimeishi": true,
     "ja-hiragana-fukushi": true,
     "ja-hiragana-hojodoushi": true,
