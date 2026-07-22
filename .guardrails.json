@@ -1,4 +1,5 @@
 {
+  "diffAware": true,
   "rules": {
     "sqliConcat": false
   }

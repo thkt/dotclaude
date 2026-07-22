@@ -21,7 +21,7 @@ export const meta = {
 
 phase("Load");
 
-// ハーネスはオブジェクト args を JSON 文字列化して渡すことがある。その形も decode する。
+// ハーネスはオブジェクト args を JSON 文字列化して渡すことがある。
 let argsValue = args;
 if (typeof argsValue === "string" && argsValue.trim().startsWith("{")) {
   try {
@@ -42,13 +42,12 @@ if (!issueRef || !issueNumber) {
   };
 }
 
-// 全 step を session cwd に関わらず対象リポジトリへ固定する。anchor() が絶対パスの
-// cd を前置し、guard が取り消しにくい git 変更 (branch / commit / push / PR) の前に
-// repo ルートを確認させる。repo が無いと agent は自身の cwd から「リポジトリ」を
-// 解決し、別の checkout で step を実行しうる。
+// repo が無いと agent は自身の cwd から「リポジトリ」を解決し、別の checkout で
+// step を実行しうる。anchor が全 step を対象リポジトリへ固定し、guard が取り消し
+// にくい git 変更 (branch / commit / push / PR) の前に repo ルートを確認させる。
 const repo = typeof input.repo === "string" ? input.repo : "";
-// 任意の base ブランチ。指定時は新規 checkout の起点と PR の base の両方に使う
-// (epic ブランチへスライス PR を集約するフロー)。未指定なら従来どおり default。
+// base は epic ブランチへスライス PR を集約するフローで、新規 checkout の起点と
+// PR の base の両方に使う。
 const baseBranch = typeof input.base === "string" ? input.base.trim() : "";
 if (!repo) {
   return {
@@ -71,7 +70,7 @@ const sibling = async (name, a) => {
 const bundled = (rel) =>
   `"$(P="$HOME/.claude/${rel}"; [ -f "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
 
-// JSON-schema の boilerplate。すべてのノードは required 付きの閉じた object にする。
+// 閉じた object に統一し、LLM 出力の余分なフィールドと欠落を schema 層で reject する。
 const obj = (required, properties) => ({
   type: "object",
   additionalProperties: false,
@@ -88,7 +87,7 @@ const FETCH_SCHEMA = obj(["found", "body"], {
 });
 
 // ---- Load: 逐語 fetch → Plan 見出し確認 → 決定論 id 収集 → 抽出 → validate + クロスチェック ----
-// 先頭の "#" はシェルコメントになり gh の引数がゼロになる。除去する。
+// 先頭の "#" はシェルコメントになり gh の引数がゼロになる。
 const fetchRef = issueRef.replace(/^#/, "");
 const fetched = await agent(
   anchor(
@@ -112,15 +111,10 @@ if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
 }
 const body = fetched.body;
 
-// plan の構造検証。両 plan ソース共通。id 重複と空 content (test_command / contract /
-// name) を決定論で reject する。tests の空配列は合法 (その unit は code が直接実装で
-// 扱う)。plan 品質の最終防衛線。
-//
-// seam 規則がある理由は、unit ごとのテストが自分の境界を stub するため、各 unit が緑
-// のまま層と層が結線されていない実装を ship しうること (kizalas #558 / PR 575: mapper
-// が null を返し、ページネーションと新規登録・編集の導線が未配線のまま unit テスト 44
-// 件が緑)。テストを持つ unit が 2 つ以上あれば両者の間に継ぎ目があり、そこを横断する
-// テストだけが結線漏れで落ちる。
+// 両 plan ソース共通の構造検証。tests の空配列は合法 (その unit は code が直接実装で
+// 扱う)。seam 規則があるのは、unit ごとのテストが自分の境界を stub するため、各 unit
+// が緑のまま層と層が結線されていない実装を ship しうるから。テストを持つ unit が
+// 2 つ以上あれば両者の間に継ぎ目があり、そこを横断するテストだけが結線漏れで落ちる。
 const validate = (plan) => {
   const errors = [];
   // object でない要素は位置 placeholder id で surface させる。共有 id は偽の重複を出す。
@@ -262,31 +256,64 @@ const PLAN_SCHEMA = obj(
   },
 );
 
-// Plan 節なし issue 本文から plan を下書きする。リポジトリを探索し、ゴールを自ら設定し
-// (UI なら a11y criteria 込み)、critic-design gate を通す (Plan 節あり path の id クロス
-// チェック相当)。build 専用なので単独 workflow でなくローカル関数にする (ADR-0086)。GO で
-// { plan }、NO-GO で { stopped } を返す。
+// /think Phase 3 の unit サイズ指針と結合しているので、片方だけを変えない。seam unit
+// のテストは unit 間の境界を跨いで実モジュールを動かすため files が正当に増える。
+// 検査対象は非 seam unit に限る。
+const UNIT_CAPS = { files: 3, tests: 4 };
+const oversizedUnits = (p) =>
+  p.units.filter((u) => {
+    if (u.seam === true) return false;
+    const fileCount = Array.isArray(u.files) ? u.files.length : 0;
+    const testCount = Array.isArray(u.tests) ? u.tests.length : 0;
+    return fileCount > UNIT_CAPS.files || testCount > UNIT_CAPS.tests;
+  });
+
+// Plan 節なし issue の plan 下書き。critic-design gate が Plan 節あり path の id
+// クロスチェックに相当する。build 専用なので単独 workflow でなくローカル関数にする
+// (ADR-0086)。GO で { plan }、それ以外は { stopped } を返す。
 const draftPlan = async () => {
-  const drafted = await agent(
-    anchor(
-      `以下の GitHub issue 本文には ## Plan 節が無い。本文だけから構造化 plan を導き、issue が求める以上のスコープを発明しない。` +
-        `まずリポジトリを探索して plan を現実に接地させる。実在のファイルパス、既存コードからの preconditions、プロジェクト設定を読んで決めた test_command。` +
-        `outcome は done 状態のゴール。issue に明示が無ければ自分で設定し、UI に触れる作業なら a11y criteria (キーボードのみで全操作が完結する、エラーがスクリーンリーダーに通知される、など) を outcome と test scenario に含める。` +
-        `unit は実装順に並べ、検証可能な振る舞いが無い unit (docs / 設定) は tests を空配列にする。` +
-        `unit ごとのテストは自分の境界を stub するので、各層が緑のまま結線されないことが起こる。テストを持つ unit が 2 つ以上になる plan には seam unit (seam: true) を最後に置く。そのテストは unit 間の境界を跨いで実モジュールを動かし、偽装はシステム外部との I/O に限り、unit どうしをつなぐ接続 (呼び出し、遷移、データの受け渡し) が実際に結線されていることを assert する。他の unit はすべて seam: false。` +
-        `contract は生成でなく選択で書く (引用 + やりたいことの 1 行)。` +
-        `計画対象と同じ形を持つ既存モジュール (ドメインを問わず、画面の組か layer の組が一致するもの) があれば reference_module に記録し、U-001 をその構造複製 (tests は空配列) にする。null にするのは一致するモジュールが無いときだけで、理由を assumption に書く。` +
-        `自分が置いた best-guess の判断はすべて assumptions に記録する。\n\n${fencedBody}`,
-    ),
-    {
+  const basePrompt =
+    `以下の GitHub issue 本文には ## Plan 節が無い。本文だけから構造化 plan を導き、issue が求める以上のスコープを発明しない。` +
+    `まずリポジトリを探索して plan を現実に接地させる。実在のファイルパス、既存コードからの preconditions、プロジェクト設定を読んで決めた test_command。` +
+    `outcome は done 状態のゴール。issue に明示が無ければ自分で設定し、UI に触れる作業なら a11y criteria (キーボードのみで全操作が完結する、エラーがスクリーンリーダーに通知される、など) を outcome と test scenario に含める。` +
+    `unit は実装順に並べ、検証可能な振る舞いが無い unit (docs / 設定) は tests を空配列にする。非 seam unit は UNIT_CAPS (files <= ${UNIT_CAPS.files}、tests <= ${UNIT_CAPS.tests}) の範囲に収める。どちらかが上限を超えるくらいなら unit をさらに分割する。` +
+    `unit ごとのテストは自分の境界を stub するので、各層が緑のまま結線されないことが起こる。テストを持つ unit が 2 つ以上になる plan には seam unit (seam: true) を最後に置く。そのテストは unit 間の境界を跨いで実モジュールを動かし、偽装はシステム外部との I/O に限り、unit どうしをつなぐ接続 (呼び出し、遷移、データの受け渡し) が実際に結線されていることを assert する。他の unit はすべて seam: false。` +
+    `contract は生成でなく選択で書く (引用 + やりたいことの 1 行)。` +
+    `計画対象と同じ形を持つ既存モジュール (ドメインを問わず、画面の組か layer の組が一致するもの) があれば reference_module に記録し、U-001 をその構造複製 (tests は空配列) にする。null にするのは一致するモジュールが無いときだけで、理由を assumption に書く。` +
+    `自分が置いた best-guess の判断はすべて assumptions に記録する。\n\n${fencedBody}`;
+
+  const generate = (feedback) =>
+    agent(anchor(feedback ? `${basePrompt}\n\n${feedback}` : basePrompt), {
       label: "generate-plan",
       phase: "Load",
       agentType: "general-purpose",
       schema: PLAN_SCHEMA,
-    },
-  );
+    });
+
+  let drafted = await generate();
   if (!drafted) {
     return { stopped: "plan-generation-failed", why: "generate agent が plan を返さなかった。" };
+  }
+
+  // 再生成は 1 回に限り、無限ループと超過の黙認をどちらも避ける。
+  let oversized = oversizedUnits(drafted);
+  if (oversized.length) {
+    drafted = await generate(
+      `直前の下書きは unit ${oversized.map((u) => u.id).join(", ")} で UNIT_CAPS (files <= ${UNIT_CAPS.files}、tests <= ${UNIT_CAPS.tests}) を超過した。該当 unit をさらに分割し、すべての非 seam unit を上限内に収めた上で plan 全体を返し直す。`,
+    );
+    if (!drafted) {
+      return { stopped: "plan-generation-failed", why: "generate agent が plan を返さなかった。" };
+    }
+    oversized = oversizedUnits(drafted);
+    if (oversized.length) {
+      return {
+        stopped: "oversized-unit",
+        units: oversized.map((u) => u.id),
+        why:
+          `1 回の feedback 付き再生成後も非 seam unit が UNIT_CAPS (files <= ${UNIT_CAPS.files} / tests <= ${UNIT_CAPS.tests}) を超えている。` +
+          "issue を ## Plan 節へ精緻化して (/issue) 再実行する。",
+      };
+    }
   }
 
   const CRITIQUE_SCHEMA = obj(["verdict", "weaknesses"], {
@@ -298,6 +325,7 @@ const draftPlan = async () => {
       `critic-design。issue #${issueNumber}「${drafted.outcome}」向けに自動生成された実装 plan を敵対的にレビューする。` +
         `本文から人間レビュー無しで導かれたので攻撃する。unit 分解の不健全さや欠落、preconditions の誤りや欠落、issue が求める以上に発明されたスコープ、検証不能な scenario、誤った test_command を探す。` +
         `reference_module も攻撃する。リポジトリに同形モジュールがあるのに null、最近似でない path、対応ファイルや conventions の欠落を探す。` +
+        `unit の肥大も攻撃する。UNIT_CAPS の件数チェックは通過していても、非 seam unit がまだ多くを背負い過ぎていないか探す。weaknesses には挙げるが、肥大単独では NO-GO にせず、NO-GO はサイズを超えた blocking な欠陥のときだけにする。` +
         `そのまま実装して安全なら verdict "GO"、blocking な欠陥があれば "NO-GO" を返し、具体的な欠陥を weaknesses に列挙する。\n` +
         `plan は以下。\n${JSON.stringify(drafted)}`,
     ),
@@ -330,9 +358,6 @@ const draftPlan = async () => {
   return { plan: drafted };
 };
 
-// build は 2 つのソースから plan を得る。人間レビュー済みの ## Plan 節は逐語抽出して id
-// クロスチェックする。Plan 節なし issue は build 内の draftPlan が下書きする (ゴール自律
-// 設定 + a11y、critic-design gate 付き。ADR-0086)。
 const planHeading = body.match(/^##\s+Plan\b.*$/m);
 let plan;
 
@@ -348,7 +373,7 @@ if (planHeading) {
   plan = await agent(
     anchor(
       `以下の GitHub issue 本文の ## Plan 節から構造化 plan を抽出する。再計画 / 要約 / 補完をせず、書かれているものをそのまま構造化する。` +
-        `本文の unit id (U-NNN) と test id (T-NNN) をすべて保持する (欠落は下流の決定論クロスチェックが reject する)。` +
+        `本文の unit id (U-NNN) と test id (T-NNN) をすべて保持する。` +
         `preconditions は plan が前提にする既存コードの {path, pattern} の一覧、backlog_candidates は issue に書かれたスコープ外候補。本文に無ければ空配列。\n` +
         `seam は本文が \`seam: true\` と記した unit だけ true、他はすべて false。unit の内容から推測しない。\n\n${fencedBody}`,
     ),
@@ -387,11 +412,21 @@ if (planHeading) {
       why: "issue 本文と抽出結果の U/T id 集合が一致しない。",
     };
   }
+
+  const oversized = oversizedUnits(plan);
+  if (oversized.length) {
+    return {
+      stopped: "oversized-unit",
+      units: oversized.map((u) => u.id),
+      why:
+        `非 seam unit が UNIT_CAPS (files <= ${UNIT_CAPS.files} / tests <= ${UNIT_CAPS.tests}) を超えている。` +
+        "/think Phase 3 の unit サイズ上限に沿って unit をさらに分割し、issue を /issue で精緻化して再実行する。",
+    };
+  }
   log(
     `Plan 抽出: ${plan.units.length} unit / ${planTestIds.size} test scenario、id クロスチェック pass。`,
   );
 } else {
-  // Plan 節なし: 本文から plan + ゴールを下書きする (ADR-0086)。
   log("## Plan 節なし。issue 本文から plan を下書きする。");
   const drafted = await draftPlan();
   if (drafted.stopped) return drafted;
@@ -431,8 +466,7 @@ const preconditions = plan.preconditions || [];
 const BRANCH_SCHEMA = obj(["branch"], {
   branch: { type: "string", description: "checkout 済みブランチ名のみ" },
 });
-// run 開始時点の未追跡ファイル。build 以前から作業ツリーにある私物を Verify の scope
-// 逸脱から差し引く (実測: .claude/ 運用ファイルや仕様書 dir が毎回逸脱として並んだ)。
+// build 以前から作業ツリーにある私物を Verify の scope 逸脱から差し引く。
 const UNTRACKED_SCHEMA = obj(["untracked"], {
   untracked: { type: "array", items: { type: "string" } },
 });
@@ -463,7 +497,7 @@ const [reval, branchRes, baseline] = await parallel([
       anchor(
         `issue #${issueNumber}「${plan.outcome}」の作業ブランチを新規に checkout する。慣例に沿ったブランチ名 (type + 短い slug) を選び、` +
           (baseBranch
-            ? `\`git checkout -b <name> ${baseBranch}\` で ${baseBranch} を起点に作成する。`
+            ? `\`git checkout -b {name} ${baseBranch}\` で ${baseBranch} を起点に作成する。`
             : `git checkout -b を実行する。`) +
           `既に default 以外のブランチにいる場合は現在のブランチを維持する。branch フィールドにブランチ名だけを返す。${guard}`,
       ),
@@ -500,12 +534,10 @@ if (preconditions.length) {
     };
   }
   // 件数でなく (path, pattern) で突き合わせる。並べ替えやすり替えは件数が変わらない。
-  // exists&&matches の一致結果が無い前提は drift。
   const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
   const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
-  // 結果が返らなかった前提は「ファイル不在」でなく relay の取りこぼし (実測: 非コードの
-  // svg 資産が検査から落ち、存在するファイルが missing 扱いで誤停止した)。欠落分だけ
-  // 1 回再検証し、それでも欠けるなら plan-drift と区別して revalidate-incomplete で止める。
+  // 結果が返らなかった前提はファイル不在でなく relay の取りこぼしでありうるので、
+  // plan-drift と区別して止める。
   let unreported = preconditions.filter((pc) => !resultByKey.has(keyOf(pc)));
   if (unreported.length) {
     const retry = await agent(
@@ -586,8 +618,8 @@ log(
 );
 
 // ---- Cleanup: simplify skill + test 検証 ----
-// review lens (Codex) は build から外れた (ADR-0085)。/polish は人間が PR に起動できる
-// 形で残る。cleanup は Verify の前に走らせ、検証の対象を出荷する tree にする。
+// review lens は build に置かない (ADR-0085)。/polish は人間が PR に起動する。cleanup
+// を Verify の前に走らせ、検証の対象を出荷する tree にする。
 const CLEANUP_SCHEMA = obj(["edits", "tests_pass", "stashed"], {
   edits: {
     type: "array",
@@ -791,8 +823,7 @@ const [diff, testPresence, conformance, structure] = await parallel([
 // 変更ファイルは plan の files か .claude/workspace/ 配下 (think の plan 下書き) に収まる。
 // diff 一覧を取得できないこと自体も surface する。
 const planFiles = new Set(plan.units.flatMap((u) => u.files));
-const baselineUntracked =
-  baseline && Array.isArray(baseline.untracked) ? baseline.untracked : [];
+const baselineUntracked = baseline && Array.isArray(baseline.untracked) ? baseline.untracked : [];
 // porcelain はディレクトリを "dir/" の 1 行で出すので prefix でも突き合わせる。
 const preexisting = (f) =>
   baselineUntracked.some((b) => b && (f === b || f.startsWith(b.endsWith("/") ? b : `${b}/`)));
@@ -806,8 +837,6 @@ const scopeDeviations =
         (f) => f && !coveredByPlan(f) && !f.startsWith(".claude/workspace/") && !preexisting(f),
       )
     : ["diff 一覧を取得できず scope 未検証"];
-// name で突き合わせ、found=true が無い name を欠落とする。言明 0 件なら relay は走らず
-// 欠落も無い。
 let missingTests;
 if (!allTestNames.length) {
   missingTests = [];
@@ -839,9 +868,8 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (外向きの操作なので draft = 可逆) ----
-// PR body は 2 部構成。冒頭の Summary は agent が書き、fact tail は pr-body.py が決定論で
-// 描画する (fact 節を黙って落とさない)。追記と gh pr create を && で連結し、レンダラー
-// 失敗時は PR 作成前に中断させる。
+// fact tail は pr-body.py が決定論で描画し、fact 節を黙って落とさせない。追記と
+// gh pr create を && で連結し、レンダラー失敗時は PR 作成前に中断させる。
 phase("Ship");
 
 // 情報系セクションの自由記述だけを対象言語へ翻訳 + 圧縮する。安全系の事実と構造化
@@ -850,8 +878,7 @@ const shipAssumptions = [...(plan.assumptions || [])];
 const shipAnomalies = (code.anomalies || []).map((a) => ({ ...a }));
 const shipConformance = conf.spec_found ? conf.findings.map((f) => ({ ...f })) : [];
 
-// 翻訳対象の自由記述だけを id 付きで集める。書き戻しは set() 経由に限り、構造化
-// フィールドへ触れない。空文字列は送らない。
+// 書き戻しは set() 経由に限り、構造化フィールドへ触れない。
 const slots = [];
 shipAssumptions.forEach((t, i) => {
   if (typeof t === "string" && t.trim())
@@ -904,9 +931,8 @@ if (slots.length) {
   }
 }
 
-// plan の実機確認節 (任意)。単体テストを持たない plan は受け入れ判定が人間の実機確認に
-// 残るが、PR に載らないと merge 前に踏まれない。決定論で bullet を拾い、fact tail に
-// チェックリストとして転記する。
+// 単体テストを持たない plan は受け入れ判定が人間の実機確認に残るが、PR に載らないと
+// merge 前に踏まれない。
 const manualHeading = body.match(/^###\s+(実機確認|Manual verification)\b.*$/m);
 let manualChecks = [];
 if (manualHeading) {
@@ -946,7 +972,7 @@ const ship = await agent(
       `(1) \`$HOME/.claude/settings.json\` から \`language\` を読み (未設定なら英語)、その言語で人間向け本文を書く。コード / 識別子 / 専門用語は翻訳しない。PR テンプレートはリポジトリのものがあれば使う (大文字小文字の区別なし、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)。無ければ同梱の \`${bundled("skills/pr/templates/pr.md")}\` を使う。骨格を読んで body ファイルへ折り込む。人間向けセクションだけを、レビュアーが速く掴める順で埋める。先頭に解決する問題と到達する成果 (${JSON.stringify(plan.outcome)})、次に変更内容とアプローチ、最後にレビューの注目点。埋め草と事実の捏造をしない。Related / Closes は書かない (tail が \`Closes #\` を出す)。Scope / Backlog も書かない。スコープ外候補は PR に載せない。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実 diff から埋め、空なら節ごと省略する。\n` +
       `(2) この JSON をそのまま一時ファイルに書く。\n${JSON.stringify(shipPayload)}\n` +
       `(3) fact tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、レンダラー失敗時は PR 作成前に中断させる。リポジトリルートから ` +
-      `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title "<commit の subject>" --body-file <bodyfile>\` を実行する。\n` +
+      `\`python3 ${bundled("workflows/build/pr-body.py")} < {tempfile} >> {bodyfile} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title "{commit subject}" --body-file {bodyfile}\` を実行する。\n` +
       `pr-body.py は payload が壊れているか必須フィールドを欠くと非ゼロで終了する (何も出力しない)。チェーンが失敗したら他の手段で PR を作らない。committed と空の pr_url とエラーを報告する。\n` +
       `committed の状態と PR url を報告する。${guard}`,
   ),

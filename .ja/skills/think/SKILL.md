@@ -21,7 +21,7 @@ argument-hint: "[task description]"
 
 ## Phase 2: 設計探索
 
-関連コードを読み、`.claude/workspace/research/` をタスクのキーワードで `bfs` 検索して該当する調査出力があれば読む。異なる視点 (動く最小解 / 構造と拡張性 / 開発体験) から 2 つ以上の案を生成する。独立した技術判断は 1 つの質問に束ねず、推奨とトレードオフを添えて別々に問う。
+案は現実のコードと既存の調査に接地させる。関連コードを読み、`.claude/workspace/research/` にタスクに該当する調査出力があれば読む。異なる視点 (動く最小解 / 構造と拡張性 / 開発体験) から 2 つ以上の案を生成する。独立した技術判断は 1 つの質問に束ねず、推奨とトレードオフを添えて別々に問う。
 
 1. 案に `critic-design` を起動する。プロンプトにタスクのタイトルを一字一句そのまま含め、結果は `{ verdict: "GO" | "NO-GO", weaknesses: string[], actionable: string[] }` の JSON オブジェクト 1 つで返させる
 2. NO-GO は blocker をその場で解消してから進む。生き残った設計をトレードオフの根拠とともにユーザーに提示し、承認を待つ
@@ -29,18 +29,18 @@ argument-hint: "[task description]"
 
 ## Phase 3: Plan 生成
 
-承認された設計を、独立して実装可能な成果の束 (unit) に実装順で分解し、PLAN_SCHEMA 相当の JSON `{ test_command, reference_module, units: [{ id, goal, contract, files: string[], tests: [{ id, name }], seam }] }` に直列化する。分解はテスト先行で構成する。(1) 設計全体から受け入れテスト候補を列挙する。(2) テストを成果のまとまりごとに 4 個以下の束へ分ける。(3) 各束が触るファイルを割り当てて unit にし、割り当てが 4 ファイル以上になった束はさらに分ける。検証可能な振る舞いの無い成果 (docs / 設定) は tests 空の unit として別途足す。unit の大きさは上限との比較で機械的に決まり、サイズ判断を後回しにしない。
+承認された設計を、独立して実装可能な成果の束 (unit) に実装順で分解し、PLAN_SCHEMA 相当の JSON `{ test_command, reference_module, units: [{ id, goal, contract, files: string[], tests: [{ id, name }], seam }] }` に直列化する。分解はテスト先行で構成し、unit の大きさはテストの束から機械的に決める。設計全体から受け入れテスト候補を列挙し、成果のまとまりごとに 4 個以下の束へ分け、各束が触るファイルを割り当てて unit にする。割り当てが 4 ファイル以上になった束はさらに分ける。検証可能な振る舞いの無い成果 (docs / 設定) は tests 空の unit として別途足す。
 
 1. id は U-001 / T-001 形式の連番で、T-NNN は plan 全体で一意にする
 2. tests[].name は条件 + 期待結果の 1 行言明。code workflow がテスト名として逐語使用し、build が固定文字列で照合する
 3. 検証可能な振る舞いが無い unit (docs / 設定) は tests を空配列にする。build はその unit を直接実装で扱う
 4. 各 unit のテストは自分の境界を stub するので、tests を持つ unit が 2 つ以上になったら seam unit をちょうど 1 つ最後に置き `seam: true` を付ける。その tests は unit 間の境界を跨いで実モジュールを動かし、偽装はシステム外部との I/O に限り、unit どうしをつなぐ接続を assert する。seam unit が無い plan は build の `validate()` が reject する
-5. unit の上限は files 3 つ、tests 4 個。実測で 6〜7 ファイルの unit は実装 agent 1 体あたり 17〜46 分かかり、build 全体の wall-clock の支配項になる。上限を超えた unit は成果を軸に分割し、分割で生じた新しい unit 構成をユーザーと確認する。スコープ外へ切り出した候補は plan に入れず backlog candidates に回す
+5. unit の上限は files 3 つ、tests 4 個。上限を超えた unit は成果を軸に分割し、分割で生じた新しい unit 構成をユーザーと確認する。スコープ外へ切り出した候補は plan に入れず backlog candidates に回す。この上限は `workflows/build.js` の `UNIT_CAPS` として決定論的に強制される。変更はこの記述と `UNIT_CAPS` を同一コミットで揃える
 6. 自己点検 (必須フィールドの欠落、id の重複、空の units / tests / goal / contract) と書き出し前検証を通し、`${CLAUDE_SKILL_DIR}/templates/plan.md` の骨格で `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md` に書き出す。slug はタイトルの小文字ハイフン区切り。`## Plan` と `## Backlog candidates` の両節を含める
 
 ### reference_module
 
-contract の引用は 1 箇所の振る舞いで、周辺構造の手組みは止められない。計画対象と同じ形 (ドメイン不問で、画面の組か layer の組が一致) の既存モジュールを探し、`reference_module: { path, files, instances }` に記録する。構造を運ぶのは `reference_module` セクション自体で、全 unit がそこを参照する。骨格が 4 ファイル未満に収まるときだけ U-001 をその構造複製 (同じディレクトリ配置・コンポーネント名・export 名、tests は空配列) にし、収まらないときは layer ごとに unit を割って各 unit が担当分を複製する。現実的な規模のモジュールは後者になり、U-001 を骨格一括にすると Phase 3 のファイル数規則と衝突する。維持する共有慣例 (合成する共有コンポーネント、フォーマット処理の置き場所、状態の渡し方) を明記し、逸脱は plan に理由を書いたときのみ許す。候補が複数なら画面の組がもっとも近いものを選び、他は prose に名前を挙げる。一致が無ければ null とし、この形が新規である理由を prose に書く (理由の無い null は planning の欠陥)。instances が 2 以上なら「N 例目」と prose に書き、実装者へ設計でなく複製を指示する。
+contract の引用は 1 箇所の振る舞いで、周辺構造の手組みは止められない。計画対象と同じ形 (ドメイン不問で、画面の組か layer の組が一致) の既存モジュールを探し、`reference_module: { path, files, instances }` に記録する。構造を運ぶのは `reference_module` セクション自体で、全 unit がそこを参照する。骨格が 4 ファイル未満に収まるときだけ U-001 をその構造複製 (同じディレクトリ配置・コンポーネント名・export 名、tests は空配列) にし、収まらないときは layer ごとに unit を割って各 unit が担当分を複製する。維持する共有慣例 (合成する共有コンポーネント、フォーマット処理の置き場所、状態の渡し方) を明記し、逸脱は plan に理由を書いたときのみ許す。候補が複数なら画面の組がもっとも近いものを選び、他は prose に名前を挙げる。一致が無ければ null とし、この形が新規である理由を prose に書く (理由の無い null は planning の欠陥)。instances が 2 以上なら「N 例目」と prose に書き、実装者へ設計でなく複製を指示する。
 
 ### contract
 

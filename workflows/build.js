@@ -22,7 +22,7 @@ export const meta = {
 
 phase("Load");
 
-// The harness may deliver object args as a JSON-encoded string; decode that form too.
+// The harness may deliver object args as a JSON-encoded string.
 let argsValue = args;
 if (typeof argsValue === "string" && argsValue.trim().startsWith("{")) {
   try {
@@ -43,15 +43,13 @@ if (!issueRef || !issueNumber) {
   };
 }
 
-// Every step is pinned to the target repository regardless of the session cwd:
-// anchor() prepends an absolute cd; guard makes the agent confirm the repo root
-// before the hard-to-reverse git mutations (branch / commit / push / PR). Without
-// repo, agents resolve "the repository" from their own cwd and can run steps in
-// the wrong checkout.
+// Without repo, agents resolve "the repository" from their own cwd and can run
+// steps in the wrong checkout. anchor pins every step to the target repository;
+// guard makes the agent confirm the repo root before the hard-to-reverse git
+// mutations (branch / commit / push / PR).
 const repo = typeof input.repo === "string" ? input.repo : "";
-// Optional base branch. When given it is used both as the starting point of a
-// fresh checkout and as the PR base (slice PRs aggregating into an epic branch).
-// Unset keeps the default-branch behavior.
+// base serves the flow that aggregates slice PRs into an epic branch, used both
+// as the starting point of a fresh checkout and as the PR base.
 const baseBranch = typeof input.base === "string" ? input.base.trim() : "";
 if (!repo) {
   return {
@@ -74,7 +72,8 @@ const sibling = async (name, a) => {
 const bundled = (rel) =>
   `"$(P="$HOME/.claude/${rel}"; [ -f "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
 
-// JSON-schema boilerplate: every node is a closed object with required keys.
+// Closed objects throughout, so extra fields and omissions in LLM output are
+// rejected at the schema layer.
 const obj = (required, properties) => ({
   type: "object",
   additionalProperties: false,
@@ -91,7 +90,7 @@ const FETCH_SCHEMA = obj(["found", "body"], {
 });
 
 // ---- Load: verbatim fetch -> Plan heading check -> deterministic id collection -> extract -> validate + cross-check ----
-// A leading "#" would start a shell comment and leave gh with zero args; strip it.
+// A leading "#" would start a shell comment and leave gh with zero args.
 const fetchRef = issueRef.replace(/^#/, "");
 const fetched = await agent(
   anchor(
@@ -115,15 +114,10 @@ if (!fetched || !fetched.found || !String(fetched.body || "").trim()) {
 }
 const body = fetched.body;
 
-// Structural plan validation, shared by both plan sources. Deterministically rejects
-// duplicate ids and empty content (test_command / contract / name). An empty tests
-// array is legal (code implements that unit directly). The last line of defense for
-// plan quality.
-//
-// The seam rule exists because per-unit tests stub their own boundaries, so a plan
-// whose units are each green can still ship layers that were never connected to each
-// other (kizalas #558 / PR 575: mapper returned nulls, pagination and the new/edit
-// affordances were never wired, 44 unit tests green). Once two units carry tests there
+// Structural validation shared by both plan sources. An empty tests array is legal
+// (code implements that unit directly). The seam rule exists because per-unit tests
+// stub their own boundaries, so a plan whose units are each green can still ship
+// layers that were never connected to each other. Once two units carry tests there
 // is a seam between them, and only a test crossing it fails when the wiring is absent.
 const validate = (plan) => {
   const errors = [];
@@ -274,31 +268,64 @@ const PLAN_SCHEMA = obj(
   },
 );
 
-// Draft a plan from a plan-less issue body: explore the repo, set the goal itself
-// (a11y criteria for UI work), then gate with critic-design (the counterpart to the
-// has-plan id cross-check). Build-internal, so it is a local function rather than a
-// standalone workflow (ADR-0086). Returns { plan } on GO, { stopped } on NO-GO.
+// Coupled with /think Phase 3's unit-size guidance; do not change one side without
+// the other. A seam unit's tests cross the boundary between units, so its files
+// count legitimately grows. Only non-seam units are checked.
+const UNIT_CAPS = { files: 3, tests: 4 };
+const oversizedUnits = (p) =>
+  p.units.filter((u) => {
+    if (u.seam === true) return false;
+    const fileCount = Array.isArray(u.files) ? u.files.length : 0;
+    const testCount = Array.isArray(u.tests) ? u.tests.length : 0;
+    return fileCount > UNIT_CAPS.files || testCount > UNIT_CAPS.tests;
+  });
+
+// Plan drafting for a plan-less issue. The critic-design gate is the counterpart
+// to the has-plan id cross-check. Build-internal, so it is a local function rather
+// than a standalone workflow (ADR-0086). Returns { plan } on GO, { stopped } otherwise.
 const draftPlan = async () => {
-  const drafted = await agent(
-    anchor(
-      `The following GitHub issue body has no ## Plan section. Derive a structured plan from the body alone; do not invent scope beyond what the issue asks. ` +
-        `Explore the repository first to ground the plan in reality: real file paths, preconditions from existing code, a test_command read from the project config. ` +
-        `outcome is a done-state goal; set one yourself if the issue names none, and when the work touches UI include a11y criteria (keyboard-only completion, errors announced to screen readers, and similar) in outcome and test scenarios. ` +
-        `List units in implementation order; a unit with no verifiable behavior (docs / config) gets an empty tests array. ` +
-        `Per-unit tests stub their own boundaries, so layers can each be green while never being connected. Once the plan has 2 or more tested units, give it a seam unit (seam: true) placed last: its tests run the real modules across the unit boundary, fake only I/O with external systems, and assert that the connections between units (calls, transitions, data handoffs) are actually wired. Every other unit is seam: false. ` +
-        `Write each contract by selection, not generation (a citation plus a one-line intent). ` +
-        `When an existing module has the same shape as the one being planned (a matching set of screens or layers, in any domain), record it as reference_module and make U-001 its structure replication with an empty tests array; set null only when no module matches, and say why in an assumption. ` +
-        `Record every best-guess decision you make in assumptions.\n\n${fencedBody}`,
-    ),
-    {
+  const basePrompt =
+    `The following GitHub issue body has no ## Plan section. Derive a structured plan from the body alone; do not invent scope beyond what the issue asks. ` +
+    `Explore the repository first to ground the plan in reality: real file paths, preconditions from existing code, a test_command read from the project config. ` +
+    `outcome is a done-state goal; set one yourself if the issue names none, and when the work touches UI include a11y criteria (keyboard-only completion, errors announced to screen readers, and similar) in outcome and test scenarios. ` +
+    `List units in implementation order; a unit with no verifiable behavior (docs / config) gets an empty tests array. Keep each non-seam unit within UNIT_CAPS (files <= ${UNIT_CAPS.files}, tests <= ${UNIT_CAPS.tests}); split a unit further rather than letting either count exceed its cap. ` +
+    `Per-unit tests stub their own boundaries, so layers can each be green while never being connected. Once the plan has 2 or more tested units, give it a seam unit (seam: true) placed last: its tests run the real modules across the unit boundary, fake only I/O with external systems, and assert that the connections between units (calls, transitions, data handoffs) are actually wired. Every other unit is seam: false. ` +
+    `Write each contract by selection, not generation (a citation plus a one-line intent). ` +
+    `When an existing module has the same shape as the one being planned (a matching set of screens or layers, in any domain), record it as reference_module and make U-001 its structure replication with an empty tests array; set null only when no module matches, and say why in an assumption. ` +
+    `Record every best-guess decision you make in assumptions.\n\n${fencedBody}`;
+
+  const generate = (feedback) =>
+    agent(anchor(feedback ? `${basePrompt}\n\n${feedback}` : basePrompt), {
       label: "generate-plan",
       phase: "Load",
       agentType: "general-purpose",
       schema: PLAN_SCHEMA,
-    },
-  );
+    });
+
+  let drafted = await generate();
   if (!drafted) {
     return { stopped: "plan-generation-failed", why: "The generate agent returned no plan." };
+  }
+
+  // Exactly one regenerate, avoiding both an endless loop and silently shipped bloat.
+  let oversized = oversizedUnits(drafted);
+  if (oversized.length) {
+    drafted = await generate(
+      `The previous draft exceeded UNIT_CAPS (files <= ${UNIT_CAPS.files}, tests <= ${UNIT_CAPS.tests}) in unit(s) ${oversized.map((u) => u.id).join(", ")}. Split those units further so every non-seam unit stays within the caps, then return the complete plan again.`,
+    );
+    if (!drafted) {
+      return { stopped: "plan-generation-failed", why: "The generate agent returned no plan." };
+    }
+    oversized = oversizedUnits(drafted);
+    if (oversized.length) {
+      return {
+        stopped: "oversized-unit",
+        units: oversized.map((u) => u.id),
+        why:
+          `A non-seam unit still exceeds UNIT_CAPS (files <= ${UNIT_CAPS.files} / tests <= ${UNIT_CAPS.tests}) after one feedback-driven ` +
+          "regenerate. Refine the issue into a ## Plan section (via /issue) and relaunch.",
+      };
+    }
   }
 
   const CRITIQUE_SCHEMA = obj(["verdict", "weaknesses"], {
@@ -310,6 +337,7 @@ const draftPlan = async () => {
       `critic-design. Adversarially review the auto-generated implementation plan for issue #${issueNumber} "${drafted.outcome}". ` +
         `It was derived from the body with no human review, so attack it: unsound or missing unit decomposition, wrong or missing preconditions, scope invented beyond what the issue asks, untestable scenarios, or a wrong test_command. ` +
         `Also attack reference_module: null despite a same-shaped module in the repository, a path that is not the closest match, or missing counterpart files / conventions. ` +
+        `Also attack unit bloat: a non-seam unit that is still doing too much even though it passed the UNIT_CAPS count check. Name it as a weakness, but bloat alone is not a NO-GO reason; verdict NO-GO only for a blocking flaw beyond size. ` +
         `Return verdict "GO" if it is sound enough to implement as-is, or "NO-GO" if a blocking flaw makes it unsafe, and list the concrete flaws in weaknesses.\n` +
         `The plan is as follows.\n${JSON.stringify(drafted)}`,
     ),
@@ -342,9 +370,6 @@ const draftPlan = async () => {
   return { plan: drafted };
 };
 
-// build gets its plan from one of two sources. A human-reviewed ## Plan section is
-// extracted verbatim and id-cross-checked. A plan-less issue is drafted by the
-// build-internal draftPlan (autonomous goal + a11y, critic-design gated), ADR-0086.
 const planHeading = body.match(/^##\s+Plan\b.*$/m);
 let plan;
 
@@ -360,7 +385,7 @@ if (planHeading) {
   plan = await agent(
     anchor(
       `Extract a structured plan from the ## Plan section of the following GitHub issue body. Do not re-plan, summarize, or fill in gaps; structure exactly what is written. ` +
-        `Preserve every unit id (U-NNN) and test id (T-NNN) from the body (omissions are rejected by a downstream deterministic cross-check). ` +
+        `Preserve every unit id (U-NNN) and test id (T-NNN) from the body. ` +
         `preconditions is the list of {path, pattern} of existing code the plan presupposes; backlog_candidates are out-of-scope candidates written in the issue. Empty arrays if absent from the body.\n` +
         `seam is true only for a unit the body marks \`seam: true\`; every other unit is false. Do not infer it from the unit's content.\n\n${fencedBody}`,
     ),
@@ -403,11 +428,21 @@ if (planHeading) {
       why: "The U/T id sets in the issue body and the extraction do not match.",
     };
   }
+
+  const oversized = oversizedUnits(plan);
+  if (oversized.length) {
+    return {
+      stopped: "oversized-unit",
+      units: oversized.map((u) => u.id),
+      why:
+        `A non-seam unit exceeds UNIT_CAPS (files <= ${UNIT_CAPS.files} / tests <= ${UNIT_CAPS.tests}). Split it further ` +
+        "per /think Phase 3's unit-size guidance, then refine the issue's Plan via /issue and relaunch.",
+    };
+  }
   log(
     `Plan extracted: ${plan.units.length} unit(s), ${planTestIds.size} test scenario(s), id cross-check pass.`,
   );
 } else {
-  // No ## Plan: draft a plan + goal from the body (ADR-0086).
   log("No ## Plan section; drafting a plan from the issue body.");
   const drafted = await draftPlan();
   if (drafted.stopped) return drafted;
@@ -454,9 +489,7 @@ const preconditions = plan.preconditions || [];
 const BRANCH_SCHEMA = obj(["branch"], {
   branch: { type: "string", description: "the checked-out branch name, nothing else" },
 });
-// Untracked files at run start. Subtracts pre-existing working-tree clutter from
-// Verify's scope deviations (observed: .claude/ operational files and spec dirs
-// listed as deviations on every run).
+// Subtracts pre-existing working-tree clutter from Verify's scope deviations.
 const UNTRACKED_SCHEMA = obj(["untracked"], {
   untracked: { type: "array", items: { type: "string" } },
 });
@@ -487,7 +520,7 @@ const [reval, branchRes, baseline] = await parallel([
       anchor(
         `Check out a new git working branch for issue #${issueNumber} "${plan.outcome}". Pick a conventional branch name (type + short slug) and ` +
           (baseBranch
-            ? `create it from ${baseBranch} via \`git checkout -b <name> ${baseBranch}\`. `
+            ? `create it from ${baseBranch} via \`git checkout -b {name} ${baseBranch}\`. `
             : `run git checkout -b with it. `) +
           `If already on a non-default branch, keep the current branch. Return only the branch name in the branch field.${guard}`,
       ),
@@ -524,13 +557,11 @@ if (preconditions.length) {
     };
   }
   // Bind by (path, pattern), not by count: reordered or substituted entries keep the
-  // length identical. No matching exists&&matches result is drift.
+  // length identical.
   const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
   const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
-  // A precondition with no result is a relay drop, not an absent file (observed:
-  // a non-code svg asset got dropped from the check and an existing file stopped
-  // the build as missing). Re-verify just the dropped entries once; if still
-  // unreported, stop as revalidate-incomplete, distinct from plan-drift.
+  // A precondition with no result can be a relay drop rather than an absent file,
+  // so it stops as revalidate-incomplete, distinct from plan-drift.
   let unreported = preconditions.filter((pc) => !resultByKey.has(keyOf(pc)));
   if (unreported.length) {
     const retry = await agent(
@@ -612,9 +643,8 @@ log(
 );
 
 // ---- Cleanup: simplify skill + test validation ----
-// The review lens (Codex) is retired from build (ADR-0085); /polish stays available
-// for the human to run on the PR. Cleanup runs before Verify so the verified tree
-// is the shipped tree.
+// The review lens does not belong to build (ADR-0085); /polish is human-invoked on
+// the PR. Cleanup runs before Verify so the verified tree is the shipped tree.
 const CLEANUP_SCHEMA = obj(["edits", "tests_pass", "stashed"], {
   edits: {
     type: "array",
@@ -818,8 +848,7 @@ const [diff, testPresence, conformance, structure] = await parallel([
 // Changed files stay within the plan's files or .claude/workspace/ (think's plan
 // draft). A missing diff listing is itself surfaced.
 const planFiles = new Set(plan.units.flatMap((u) => u.files));
-const baselineUntracked =
-  baseline && Array.isArray(baseline.untracked) ? baseline.untracked : [];
+const baselineUntracked = baseline && Array.isArray(baseline.untracked) ? baseline.untracked : [];
 // porcelain emits a directory as a single "dir/" line, so also match by prefix.
 const preexisting = (f) =>
   baselineUntracked.some((b) => b && (f === b || f.startsWith(b.endsWith("/") ? b : `${b}/`)));
@@ -834,8 +863,6 @@ const scopeDeviations =
         (f) => f && !coveredByPlan(f) && !f.startsWith(".claude/workspace/") && !preexisting(f),
       )
     : ["diff listing unavailable; scope not verified"];
-// Bind by name; a name with no found=true result is missing. With zero declared
-// statements the relay never ran and nothing can be missing.
 let missingTests;
 if (!allTestNames.length) {
   missingTests = [];
@@ -869,9 +896,9 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
-// The agent writes the lead Summary; the fact tail is rendered by the deterministic
-// pr-body.py so a fact section is never silently dropped. The append and gh pr create
-// are chained with && so a renderer failure aborts before the PR is created.
+// The fact tail is rendered by the deterministic pr-body.py so a fact section is
+// never silently dropped. The append and gh pr create are chained with && so a
+// renderer failure aborts before the PR is created.
 phase("Ship");
 
 // Translate + compress only the informational free-text; safety facts and structured
@@ -880,8 +907,7 @@ const shipAssumptions = [...(plan.assumptions || [])];
 const shipAnomalies = (code.anomalies || []).map((a) => ({ ...a }));
 const shipConformance = conf.spec_found ? conf.findings.map((f) => ({ ...f })) : [];
 
-// Collect only the translatable free-text with an id. Writing back goes through
-// set(), never touching structured fields. Empty strings are not sent.
+// Writing back goes through set(), never touching structured fields.
 const slots = [];
 shipAssumptions.forEach((t, i) => {
   if (typeof t === "string" && t.trim())
@@ -937,10 +963,8 @@ if (slots.length) {
   }
 }
 
-// The plan's manual verification section (optional). A plan without unit tests
-// leaves acceptance to a human's manual check, which never gets run before merge
-// unless it reaches the PR. Deterministically collect the bullets; the fact tail
-// renders them as a checklist.
+// A plan without unit tests leaves acceptance to a human's manual check, which
+// never gets run before merge unless it reaches the PR.
 const manualHeading = body.match(/^###\s+(実機確認|Manual verification)\b.*$/m);
 let manualChecks = [];
 if (manualHeading) {
@@ -979,7 +1003,7 @@ const ship = await agent(
       `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`${bundled("skills/pr/templates/pr.md")}\`; read the skeleton and fold it into the body file. Fill only the human-facing sections, ordered so a reviewer grasps it fast: lead with the problem this solves and the outcome it reaches (${JSON.stringify(plan.outcome)}), then what changed and the approach, then where to focus review. No filler, no invented facts. Skip Related / Closes; the tail emits \`Closes #\`. Skip Scope / Backlog too; out-of-scope candidates do not go in the PR. Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
       `(2) write this exact JSON to a temp file.\n${JSON.stringify(shipPayload)}\n` +
       `(3) append the fact tail and open the PR as one \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
-      `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title "<your commit subject>" --body-file <bodyfile>\`.\n` +
+      `\`python3 ${bundled("workflows/build/pr-body.py")} < {tempfile} >> {bodyfile} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title "{your commit subject}" --body-file {bodyfile}\`.\n` +
       `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do not create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),
