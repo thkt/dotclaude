@@ -134,6 +134,42 @@ test("seam: true の unit だけ Red / Green の prompt に内部層 stub 禁止
   assert.doesNotMatch(withoutSeam, /seam unit/, "seam: false の unit には seam 指示が載らない");
 });
 
+// 実装中の advisor 相談は build の設計 (blocker は anomaly として記録して進み、重い assurance
+// は draft PR 上で人間が起動する) と噛み合わないので、3 経路すべての実装 prompt に
+// no-advisor constraint が載り、Verify には載らないことを固定する (#221)。
+test("direct impl / Red / Green の prompt に advisor 禁止と anomaly 記録への誘導が載り Verify には載らない", async () => {
+  const directStub = (prompt, opts) => {
+    const label = opts.label ?? "";
+    if (label.startsWith("impl:")) return { green: true, notes: "" };
+    if (label === "verify") return { tests_pass: true, gates_pass: true, output_tail: "" };
+    throw new Error(`unexpected label: ${label}`);
+  };
+  const { calls: tddCalls } = await runWorkflow(codeJs, {
+    args: { plan, repo: "" },
+    stubs: { agent: happyAgentStub },
+  });
+  const { calls: directCalls } = await runWorkflow(codeJs, {
+    args: { plan: noTestPlan, repo: "" },
+    stubs: { agent: directStub },
+  });
+
+  const implementCalls = [...tddCalls.agent, ...directCalls.agent].filter((c) =>
+    /^(red|green|impl):/.test(c.opts.label),
+  );
+  assert.equal(implementCalls.length, 3, "red / green / impl の 3 経路が揃う");
+  for (const call of implementCalls) {
+    assert.match(call.prompt, /advisor tool/, `${call.opts.label} に advisor 禁止が載る`);
+    assert.match(call.prompt, /anomaly/, `${call.opts.label} に anomaly 記録への誘導が載る`);
+  }
+
+  const verify = tddCalls.agent.find((c) => c.opts.label === "verify");
+  assert.doesNotMatch(
+    verify.prompt,
+    /advisor/,
+    "Verify の prompt に advisor constraint は載らない",
+  );
+});
+
 test("tests 空の unit は Red / Green を呼ばず直接実装 (impl) 1 段で完走し、model / effort が伝播する", async () => {
   const directStub = (prompt, opts) => {
     const label = opts.label ?? "";
