@@ -1,5 +1,5 @@
 // U-003: behavior test that code.js propagates an optional input.model only to the
-// Red / Green implementation agents (defaulting to fable), which always run at effort xhigh.
+// Red / Green implementation agents (defaulting to sonnet), which always run at effort xhigh.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -89,7 +89,7 @@ test("model 指定時に Red / Green とその retry の 4 呼び出しへ伝播
   );
 });
 
-test("model 未指定で Red / Green の opts が既定の fable と effort xhigh を持ち完走する", async () => {
+test("model 未指定で Red / Green の opts が既定の sonnet と effort xhigh を持ち完走する", async () => {
   const { result, calls } = await runWorkflow(codeJs, {
     args: { plan, repo: "" },
     stubs: { agent: happyAgentStub },
@@ -100,11 +100,38 @@ test("model 未指定で Red / Green の opts が既定の fable と effort xhig
       assert.equal(call.opts.model, "sonnet", "verify opts carries the fixed sonnet");
       continue;
     }
-    assert.equal(call.opts.model, "fable", `${call.opts.label} opts carries the default fable`);
+    assert.equal(call.opts.model, "sonnet", `${call.opts.label} opts carries the default sonnet`);
     assert.equal(call.opts.effort, "xhigh", `${call.opts.label} opts carries effort: "xhigh"`);
   }
   assert.deepEqual(result.completed, ["U-1"], "completed contains the unit id");
   assert.equal(result.tests_pass, true, "verify tests_pass is returned as-is");
+});
+
+// seam unit のテストだけが層と層の結線漏れで落ちる。内部層を stub すると unit の意味が
+// 消えるので、その禁止を Red / Green の prompt に載せることを固定する (kizalas #558)。
+test("seam: true の unit だけ Red / Green の prompt に内部層 stub 禁止と導線 assert の指示が載る", async () => {
+  const seamPlan = (seam) => ({
+    test_command: "echo test",
+    units: [{ ...plan.units[0], seam }],
+  });
+
+  const promptsFor = async (seam) => {
+    const { calls } = await runWorkflow(codeJs, {
+      args: { plan: seamPlan(seam), repo: "" },
+      stubs: { agent: happyAgentStub },
+    });
+    return calls.agent
+      .filter((c) => /^(red|green):/.test(c.opts.label))
+      .map((c) => c.prompt)
+      .join("\n");
+  };
+
+  const withSeam = await promptsFor(true);
+  assert.match(withSeam, /seam unit/, "seam unit である旨が prompt に載る");
+  assert.match(withSeam, /stub/, "内部層 stub の禁止が prompt に載る");
+
+  const withoutSeam = await promptsFor(false);
+  assert.doesNotMatch(withoutSeam, /seam unit/, "seam: false の unit には seam 指示が載らない");
 });
 
 test("tests 空の unit は Red / Green を呼ばず直接実装 (impl) 1 段で完走し、model / effort が伝播する", async () => {

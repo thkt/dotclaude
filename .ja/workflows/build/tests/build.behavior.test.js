@@ -1,5 +1,5 @@
 // ADR-0085: build.js が Load (fetch -> Plan 節必須 -> 決定論 id 収集 -> extract -> validate +
-// id cross-check) / Revalidate / Branch / Code (opus) / Verify (決定論スコープ + T-NNN 照合 ∥
+// id cross-check) / Revalidate / Branch / Code (sonnet) / Verify (決定論スコープ + T-NNN 照合 ∥
 // conformance) / Polish (cleanup のみ) / Ship の実行ループになることの行動検証。
 // audit fan-out / fix loop の不在・fail-close 分岐・phase 順・stopped 値 snapshot を自動検証する。
 import { test } from "node:test";
@@ -64,6 +64,8 @@ const kindOf = (opts) => {
     const item = (p.results.items && p.results.items.properties) || {};
     return "name" in item ? "presence" : "revalidate";
   }
+  if ("branch" in p) return "branch";
+  if ("untracked" in p) return "untracked";
   if ("files" in p) return "diff";
   if ("edits" in p) return "cleanup";
   if ("verdict" in p) return "critique";
@@ -124,6 +126,10 @@ const makeStubs = ({
           results: checks.flatMap((c) => c.names.map((name) => ({ name, found: true }))),
         };
       }
+      case "branch":
+        return { branch: "feat/sample-branch" };
+      case "untracked":
+        return { untracked: [] };
       case "cleanup":
         return { edits: [], tests_pass: true, stashed: false };
       case "critique":
@@ -312,6 +318,62 @@ test("構造欠陥と content 空 (contract / name) はいずれも stopped: inv
   }
 });
 
+// unit ごとのテストは自分の境界を stub するため、各 unit が緑でも層が結線されない
+// (kizalas #558 / PR 575)。テストを持つ unit が 2 つ以上ある plan は seam unit を要求する。
+test("テストを持つ unit が 2 つ以上で seam unit が無い plan は stopped: invalid-plan、seam: true があれば通る", async () => {
+  const twoTestedUnits = (seam) => [
+    { ...makePlan().units[0], seam: false },
+    {
+      id: "U-002",
+      goal: "second goal",
+      files: ["second.js"],
+      contract: "second contract",
+      tests: [{ id: "T-002", name: "second spec statement" }],
+      seam,
+    },
+  ];
+
+  const missing = await runWorkflow(buildJs, {
+    args,
+    stubs: makeStubs({ plan: makePlan({ units: twoTestedUnits(false) }) }),
+  });
+  assert.equal(missing.result.stopped, "invalid-plan", "seam unit 無しは invalid-plan で止まる");
+  assert.ok(
+    missing.result.blockers.some((b) => /seam/.test(String(b))),
+    "blockers に seam unit を要求する文言が載る",
+  );
+
+  const present = await runWorkflow(buildJs, {
+    args,
+    stubs: makeStubs({ plan: makePlan({ units: twoTestedUnits(true) }) }),
+  });
+  assert.notEqual(present.result.stopped, "invalid-plan", "seam: true があれば validate を通る");
+});
+
+// tests が空の unit は境界を持たないので seam の対象外。docs / 設定だけの plan が
+// seam 要求で止まらないことを固定する。
+test("テストを持つ unit が 1 つ以下なら seam unit が無くても validate を通る", async () => {
+  const { result } = await runWorkflow(buildJs, {
+    args,
+    stubs: makeStubs({
+      plan: makePlan({
+        units: [
+          { ...makePlan().units[0], seam: false },
+          {
+            id: "U-002",
+            goal: "docs only",
+            files: ["README.md"],
+            contract: "docs contract",
+            tests: [],
+            seam: false,
+          },
+        ],
+      }),
+    }),
+  });
+  assert.notEqual(result.stopped, "invalid-plan", "tests 空の unit は seam 要求を発火させない");
+});
+
 test("抽出での unit / test の silent drop は stopped: extraction-mismatch で決定論検出される", async () => {
   const body = bodyFor(["U-001", "U-002"], ["T-001", "T-002", "T-003"]);
   const base = makePlan().units[0];
@@ -351,6 +413,8 @@ test("抽出での unit / test の silent drop は stopped: extraction-mismatch 
         ...base,
         id: "U-002",
         tests: [{ ...base.tests[0], id: "T-002" }],
+        // seam 検査でなく id クロスチェックを見るケースなので seam は満たしておく
+        seam: true,
       },
     ],
   });
@@ -459,7 +523,7 @@ test("Revalidate は 1 miss で stopped: plan-drift、全 pass で Branch へ進
   assert.ok(empty.calls.phase.includes("Branch"), "preconditions 空でも Branch phase に到達する");
 });
 
-test("happy path の phase 順が Load → Revalidate → Branch → Code → Cleanup → Verify → Ship で、code に model: fable が渡り audit / polish / challenge / think / research が呼ばれない", async () => {
+test("happy path の phase 順が Load → Revalidate → Branch → Code → Cleanup → Verify → Ship で、code に model: sonnet が渡り audit / polish / challenge / think / research が呼ばれない", async () => {
   const { calls } = await runWorkflow(buildJs, {
     args,
     stubs: makeStubs(),
@@ -473,7 +537,7 @@ test("happy path の phase 順が Load → Revalidate → Branch → Code → Cl
 
   const codeCalls = calls.workflow.filter((c) => c.name === "code");
   assert.equal(codeCalls.length, 1, "workflow('code') が 1 回呼ばれる");
-  assert.equal(codeCalls[0].args.model, "fable", "code に model: fable が渡る");
+  assert.equal(codeCalls[0].args.model, "sonnet", "code に model: sonnet が渡る");
   assert.ok(
     !("preconditions" in codeCalls[0].args.plan),
     "code へ渡す plan から preconditions が strip される",
@@ -601,7 +665,7 @@ test("tests 空の unit は invalid-plan にならず、言明 0 件なら prese
   assert.ok(calls.phase.includes("Ship"), "直接実装 unit だけの plan でも Ship まで完走する");
 });
 
-test("stopped 値集合の snapshot が 11 値と exact match し、audit 経路の残骸が無い", () => {
+test("stopped 値集合の snapshot が 12 値と exact match し、audit 経路の残骸が無い", () => {
   const source = readFileSync(buildJs, "utf8");
   const stopped = new Set();
   for (const m of source.matchAll(/stopped:\s*"([^"]+)"/g)) stopped.add(m[1]);
@@ -619,8 +683,9 @@ test("stopped 値集合の snapshot が 11 値と exact match し、audit 経路
       "plan-drift",
       "plan-generation-failed",
       "revalidate-failed",
+      "revalidate-incomplete",
     ],
-    "stopped リテラル集合が 11 値と exact match する (repo 必須化で no-repo が build.js に入る)",
+    "stopped リテラル集合が 12 値と exact match する (repo 必須化で no-repo が build.js に入る)",
   );
   const explore = source.match(/agentType:\s*"Explore"/g) || [];
   assert.equal(explore.length, 0, 'agentType: "Explore" が 0 件');

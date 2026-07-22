@@ -3,7 +3,7 @@ export const meta = {
   description:
     'TDD workflow that takes a structured plan (units / test_command) and implements per unit under script enforcement. A unit with test scenarios runs Red -> Green; a unit with no tests (docs / config, no verifiable behavior) runs a single direct-implementation step, so whether TDD applies is selected in the plan, not decided at runtime. An unconfirmed Red is recorded as an anomaly, and at the end an independent agent verifies the full suite + lint + type-check. Callable standalone or nested from build via workflow("code").',
   whenToUse:
-    "Headless plan implementation. args is {plan, repo, model}; plan is a structured plan with units / test_command (as produced by the think skill). model (optional) propagates only to the implementation agents (defaults to fable). The implementation agents run at effort xhigh.",
+    "Headless plan implementation. args is {plan, repo, model}; plan is a structured plan with units / test_command (as produced by the think skill). model (optional) propagates only to the implementation agents (defaults to sonnet). The implementation agents run at effort xhigh.",
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
@@ -46,8 +46,10 @@ const anomalies = [];
 // The three mid-loop terminal returns share this shape; completed / anomalies close over
 // the run-level arrays so the caller still sees partial progress
 const stopUnit = (stopped, unit, why) => ({ stopped, unit: unit.id, why, completed, anomalies });
-// Shared by every implementation agent so a model/effort change lands once.
-const implementOpts = { model: input.model || "fable", effort: "xhigh" };
+// Shared by every implementation agent so a model/effort change lands once. Implementation
+// executes the plan's contract / tests, so sonnet suffices; repeated failure here signals a
+// defective plan.
+const implementOpts = { model: input.model || "sonnet", effort: "xhigh" };
 
 const RED_SCHEMA = {
   type: "object",
@@ -69,27 +71,63 @@ const RED_SCHEMA = {
 const GREEN_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["green", "notes"],
+  required: ["green", "notes", "deferred"],
   properties: {
     green: {
       type: "boolean",
       description: "true when all of the unit's tests pass",
     },
     notes: { type: "string" },
+    deferred: {
+      type: "array",
+      items: { type: "string" },
+      description:
+        "items required by the contract / files that this unit did not implement; empty array if none. Only items listed here count as legitimate deferrals and are recorded as anomalies",
+    },
   },
+};
+
+// Deferral detection turns the agent's self-report (deferred) into anomalies in the
+// script. Guards against a silent scope cut shipping green with code_anomalies: 0
+// (kizalas #578).
+const recordDeferred = (unit, result) => {
+  if (result && Array.isArray(result.deferred) && result.deferred.length) {
+    anomalies.push({ unit: unit.id, kind: "scope-cut", notes: result.deferred.join(" / ") });
+    log(`${unit.id}: recorded ${result.deferred.length} deferred item(s) as an anomaly.`);
+  }
 };
 
 // ---- Implement: per unit, serial (the working tree is shared) ----
 // A unit with tests runs Red -> Green; one with no tests runs a single direct step.
 // The plan selects which; no TDD-or-not discretion exists at runtime.
 phase("Implement");
+
+// The reference module (when the plan names one) is what keeps a new feature shaped like
+// its neighbors. A contract cites one behavior; without this, the surrounding structure
+// gets hand-rolled and drifts from the established shape.
+const ref = plan.reference_module;
+const referenceModuleCtx = ref?.path
+  ? `This feature replicates the structure of the existing module ${ref.path}` +
+    (ref.instances >= 2 ? ` (the ${ref.instances + 1}th instance of an established shape)` : "") +
+    `. Read its files before writing: ${JSON.stringify(ref.files || [])}. ` +
+    `Mirror its directory layout, component names, export names, and the shared components it composes; do not hand-roll an equivalent. ` +
+    (ref.conventions?.length ? `Conventions to keep: ${ref.conventions.join(" / ")}. ` : "") +
+    `Deviating from the reference module is allowed only when the plan says so; state any deviation in your result.\n`
+  : "";
+
 for (const unit of units) {
   const tests = Array.isArray(unit.tests) ? unit.tests : [];
   const ctx =
     `Unit ${unit.id}'s goal is "${unit.goal}". The target files are ${JSON.stringify(unit.files)}.\n` +
     `The contract is ${unit.contract}. The test scenarios are ${JSON.stringify(tests)}.\n` +
     `The test command is ${testCmd}.\n` +
+    referenceModuleCtx +
     `When writing framework / library API code, follow the pinned version's official docs rather than memory. Read docs with the WebFetch tool, not via shell. If unreachable, mark that API usage unverified in a code comment and keep implementing.\n` +
+    `Before reporting the result, audit each claim against a tool result from this session. Report only work you can point to evidence for; state unverified items as such in notes.\n` +
+    `Unit-test convenience is never a reason to drop part of the feature. Do not omit a shared component, a data fetch, or a navigation affordance because it would need a Router / Suspense / permission context; stub that boundary in the test instead. Deferrals absent from the plan are forbidden, including narrowing the implementation behind a code comment claiming a later unit will do it. If part of what the contract / files require must go unimplemented, list it in deferred (it is recorded as an anomaly and surfaced on the PR).\n` +
+    (unit.seam === true
+      ? `This is the plan's seam unit: its tests are what catch units that are each green in isolation but never connected. Run the real modules across the unit boundary; fake only I/O with systems external to this one. Stubbing an internal layer here defeats the unit. Assert that the connections between what the preceding units built (calls, transitions, data handoffs) exist and are actually reachable; showing a leaf piece works on its own is not enough.\n`
+      : "") +
     (completed.length ? `The units already implemented are ${completed.join(", ")}.\n` : "");
 
   // No tests is the plan's selection (docs / config). Implement directly and keep
@@ -131,6 +169,7 @@ for (const unit of units) {
         (impl && impl.notes) || "the implement agent returned no result",
       );
     }
+    recordDeferred(unit, impl);
     completed.push(unit.id);
     log(`${unit.id}: direct implementation done (${completed.length}/${units.length}).`);
     continue;
@@ -141,6 +180,7 @@ for (const unit of units) {
       `TDD Red step. ${ctx}` +
         `Write each test scenario (T-NNN) as a failing test. Use the scenario's name verbatim as the test name. ` +
         `Write no implementation code whatsoever. Run the tests and confirm each fails for the intended reason, then report. ` +
+        `Deleting, moving, renaming, or emptying an existing file to manufacture a Red is forbidden. When the target behavior is already implemented, that is the correct state: keep red_confirmed=false and write the reason in notes. ` +
         `If the tests do not fail, do not implement; write the reason in notes.`,
     ),
     {
@@ -216,6 +256,7 @@ for (const unit of units) {
       (green && green.notes) || "the green agent returned no result",
     );
   }
+  recordDeferred(unit, green);
   completed.push(unit.id);
   log(`${unit.id}: Red -> Green done (${completed.length}/${units.length}).`);
 }
@@ -263,6 +304,12 @@ log(
 return {
   completed,
   anomalies,
+  // With every unit's tests empty the suite verified nothing; the real automated
+  // verification is the gates. Make it explicit so the caller never misreads
+  // "all tests green" as an independent signal.
+  verification: units.some((u) => (Array.isArray(u.tests) ? u.tests : []).length)
+    ? "tests+gates"
+    : "gates-only",
   tests_pass: verify.tests_pass,
   gates_pass: verify.gates_pass,
   verify_output: verify.output_tail,
