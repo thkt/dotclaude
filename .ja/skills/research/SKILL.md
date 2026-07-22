@@ -14,15 +14,15 @@ argument-hint: "[research subject or question]"
 
 ## 入力
 
-調査対象は `$ARGUMENTS` で受け取る。`$ARGUMENTS` は必須で、自由記述のトピックまたは質問。空なら AskUserQuestion でユーザーに確認する。
+調査対象は `$ARGUMENTS` で受け取る。自由記述のトピックまたは質問。空なら AskUserQuestion でユーザーに確認する。
 
 ## Phase 1: アウトカム参照
 
-`.claude/OUTCOME.md` を読む。存在しない場合は `/outcome` で stub を生成する。調査スコープが outcome 状態に整合するか確認する。調査が Non-goals に踏み込む場合は、進める前にユーザーに確認する。
+`.claude/OUTCOME.md` を読む。存在しない場合は `/outcome` で stub を生成する。調査が Non-goals に踏み込む場合は、進める前にユーザーに確認する。
 
 ## Phase 2: 過去調査スキャン
 
-`$ARGUMENTS` から小文字ハイフン区切りの slug を作り、`bfs .claude/workspace/research -name '*<slug>*.md'` で過去の調査ファイルを探す。見つからなければスキップして「No prior research found for `<slug>`」と注記する。見つかった各ファイルには、下表のとおり引き継ぐ。
+`$ARGUMENTS` から小文字ハイフン区切りの slug を作り、`bfs .claude/workspace/research -name '*<slug>*.md'` で過去の調査ファイルを探す。見つからなければ「No prior research found for `<slug>`」と注記して先へ進む。見つかった各ファイルは下表のとおり引き継ぐ。
 
 | 抽出元               | 引き継ぎ先 | 扱い                                 |
 | -------------------- | ---------- | ------------------------------------ |
@@ -32,20 +32,17 @@ argument-hint: "[research subject or question]"
 
 ## Phase 3: 意図とドメインの明確化
 
-`$ARGUMENTS` で意図とドメインの両方が明確なら省略する。そうでなければ AskUserQuestion で尋ねる。ドメインは Phase 4 のスコープを決める。ドメインが General のときはスコープを絞らない。
-
-| 質問       | 選択肢                                               |
-| ---------- | ---------------------------------------------------- |
-| 調査の意図 | Feature planning / Bug investigation / Understanding |
-| ドメイン   | Data model / API / Infrastructure / General          |
+`$ARGUMENTS` で意図とドメインの両方が明確なら省略する。そうでなければ AskUserQuestion で、意図は Feature planning / Bug investigation / Understanding から、ドメインは Data model / API / Infrastructure / General から選ばせる。ドメインは Phase 4 のスコープを決め、General はスコープなし。
 
 ## Phase 4: ドメインスコープ並列調査
 
-Explore / ugrep / bfs / Read を並列起動する。意図が Feature planning または Bug investigation なら `Task(subagent_type: explorer-feature、run_in_background: false)` も加え、実行経路からアーキテクチャを把握する。Feature planning は将来経路を、Bug investigation は該当バグの実行経路を追う。spawn prompt には調査対象のタイトルをそのまま含める。explorer-feature には結果を `{ findings: [{ statement: string, source: string }] }` の JSON 1 object で返すよう指示する。空が返ったらキーワードを広げて再実行する。発見事項にはその場でソースを書く。事実は `file:line`、推論は `inferred from X`、未検証は `unknown, requires X`。各コマンドと生出力も scratch にそのまま追記する。これが監査証跡で、Phase 7 の Disconfirmation はここから直接引用し再構築しない。
+Explore / ugrep / bfs / Read を並列起動する。発見事項にはその場でソースを書く。事実は `file:line`、推論は `inferred from X`、未検証は `unknown, requires X`。各コマンドと生出力は scratch にそのまま追記する。これが監査証跡で、Phase 7 の Disconfirmation はここから直接引用し再構築しない。
 
-`.codegraph/` index があるとき、`codegraph sync` で index を更新してから、誰が呼ぶ・何が壊れる・どのテストに波及する、といった構造質問を `codegraph` で先に解決する。呼び出し元は `codegraph callers <symbol>`、影響範囲と波及テストは `codegraph impact <symbol>` で読み、出力を finding のソースに引用する。同じ質問を ugrep / grep で symbol 名検索した結果はソースに認めない。
+意図が Feature planning または Bug investigation なら `Task(subagent_type: explorer-feature, run_in_background: false)` も起動し、実行経路を把握する。Feature planning は将来経路を、Bug investigation は該当バグの実行経路を追う。spawn prompt には調査対象のタイトルをそのまま含め、結果は `{ findings: [{ statement: string, source: string }] }` の JSON 1 object で返させる。空が返ったらキーワードを広げて再実行する。
 
-下表のルートと語でドメインごとにスコープする。Explore にはプロンプトでルートを渡し、ugrep / bfs には語を追加し、Read はルートを起点にする。対象ドメインの glob ルートが全て不在なら General にフォールバックする。
+`.codegraph/` index があるときは `codegraph sync` で更新し、誰が呼ぶ・何が壊れる・どのテストに波及する、といった構造質問は codegraph で先に解決する。呼び出し元は `codegraph callers <symbol>`、影響範囲と波及テストは `codegraph impact <symbol>` で読み、出力を finding のソースに引用する。同じ質問への ugrep / grep の symbol 名検索はソースに認めない。index が無い repo では無断で init せず Explore / ugrep にフォールバックし、ugrep / grep は自由記述の内容検索に限って使う。
+
+ドメインは下表でスコープする。Explore にはプロンプトでルートを渡し、ugrep / bfs には語を追加し、Read はルートを起点にする。対象ドメインの glob ルートが全て不在なら General にフォールバックする。
 
 | ドメイン       | glob ルート                                                     | ドメインに沿った語              |
 | -------------- | --------------------------------------------------------------- | ------------------------------- |
@@ -56,17 +53,17 @@ Explore / ugrep / bfs / Read を並列起動する。意図が Feature planning 
 
 ### 検証
 
-締めで `${CLAUDE_SKILL_DIR}/references/verification.md` の検証を適用する。網羅性 finding には Cross-method 検証、外部システムの挙動に関する主張には一次ソース検証を構造的に適用し、自己判断による finding 除外は認めない。ライブラリ API 挙動の検証は `~/.claude/rules/development/SOURCING.md` を適用する。scout が不在か接続に失敗したときは WebFetch / WebSearch にフォールバックする。
+締めで `${CLAUDE_SKILL_DIR}/references/verification.md` の検証を適用する。網羅性 finding には Cross-method 検証、外部システムの挙動に関する主張には一次ソース検証を構造的に適用し、自己判断による finding 除外は認めない。ライブラリ API 挙動の検証は `~/.claude/rules/development/SOURCING.md` を適用し、scout が不在か接続に失敗したときは WebFetch / WebSearch にフォールバックする。
 
 ## Phase 5: Strong Inference (Bug investigation のみ)
 
-意図が Feature planning または Understanding のときは省略する。`~/.claude/rules/core/OPERATION.md § Debug Investigation Protocol` を適用してバグを消去し、root cause を確定したら `${CLAUDE_SKILL_DIR}/references/verification.md § Same-origin sweep` を実施する。
+`~/.claude/rules/core/OPERATION.md § Debug Investigation Protocol` を適用してバグを消去し、root cause を確定したら `${CLAUDE_SKILL_DIR}/references/verification.md § Same-origin sweep` を実施する。
 
 ## Phase 6: Advisor 事前統合チェック
 
 パラメータなしで `advisor()` を起動する。advisor は会話履歴全体を参照する。見落とし領域や弱い推論を指摘されたら、Phase 4 に戻ってスコープを絞り直す。
 
-以下の条件がすべて成立するときは起動を省略し、その理由を出力に記録する。
+以下の条件がすべて成立するときのみ起動を省略し、その理由を出力に記録する。
 
 - Phase 2 で過去調査がヒットし、現在の実行は引き継ぎのみ
 - 意図が Understanding かつドメインが General
@@ -75,7 +72,7 @@ Explore / ugrep / bfs / Read を並列起動する。意図が Feature planning 
 ## Phase 7: 統合
 
 1. Phase 2 で過去調査が見つかれば、引き継いだ発見事項 / 制約を Key Findings に統合し、再検証済み / 上書き済みを示す
-2. 各発見事項が Phase 4 の形式でソースを持つことを確認する。事実は `file:line` またはコマンド出力で裏付け、不足は `unknown, requires X` とする
+2. 各発見事項が Phase 4 の記法でソースを持つことを確認する。事実は `file:line` またはコマンド出力で裏付け、不足は `unknown, requires X` とする
 3. Disconfirmation を記録する。Phase 5 実施時は `Covered by Phase 5 elimination`、省略時は scratch から実行コマンドと生出力をそのまま引用する。0 件の結果は「不在」と断じる前に「ツール誤用の可能性」とみなす
 4. Phase 3 の質問にすべて回答した、または `unknown, requires X` と記録したことを確認する
 

@@ -47,7 +47,7 @@ Extract the common patterns that recur across this repository's past merged PRs 
 
 ## Phase 4: Cross-check against the latest code
 
-Before creating, promoting, or updating a page, cross-check each pattern against the current code. For each item that holds, add the current-code location as reference code, written as `path` + symbol name (no line numbers), and list the items dropped by verification in the PR body of `§ Phase 5: PR creation`.
+Before creating, promoting, or updating a page, cross-check each pattern against the current code. For each item that holds, add the current-code location as reference code, written as `path` + symbol name (no line numbers), and list the items dropped by verification in the PR body of `§ Phase 6: PR creation`.
 
 | Check                                                         | When it fails                                                                 |
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
@@ -55,14 +55,20 @@ Before creating, promoting, or updating a page, cross-check each pattern against
 | Is it already mechanically enforced by lint / hook / CI?      | Do not write it; it would duplicate management                                |
 | Do the referenced paths/commands still exist?                 | Rewrite with the current paths/commands                                       |
 
-In addition, sweep the reference code of every page under `docs/wiki/*.md`, including existing pages unrelated to this run's scope. Mechanically verify that the file exists and that the symbol name greps within the file, and for a broken reference, reread the current code and relink it. If the pattern itself no longer holds because its referent is gone, update the page as no longer holding. This reference repair does not count toward the 3-page cap in Phase 5.
+In addition, sweep the reference code of every page under `docs/wiki/*.md`, including existing pages unrelated to this run's scope. Mechanically verify that the file exists and that the symbol name greps within the file, and for a broken reference, reread the current code and relink it. If the pattern itself no longer holds because its referent is gone, update the page as no longer holding.
 
-## Phase 5: PR creation
+## Phase 5: 由来 link judgment
 
-The cap is 3 pages per run, counted as promotions + updates combined; edits to `_candidates.md` and reference repairs from Phase 4 do not count. Beyond the cap, prioritize by evidence count and state the leftovers in the PR body. If there is no change at all, do not create a PR. Create a PR even for candidate-only additions.
+For a page being created, promoted, or updated, write the DR file path in its 由来 section only when the pattern derives from a specific DR decision under `docs/decisions/`. The gate is the counterfactual test "if that DR were superseded, would this page need rewriting?", and the link is added only on Yes. With three or more links on one page, reapply the counterfactual test to each link and remove those that come back No.
+
+In addition, sweep the 由来 links of every page, including existing pages. Verify the DR file exists and check its status; if superseded, read the successor DR, relink 由来 to the successor when the pattern still holds, and update the page as no longer holding when it does not.
+
+## Phase 6: PR creation
+
+The cap is 3 pages per run, counted as promotions + updates combined; edits to `_candidates.md`, reference repairs from `§ Phase 4: Cross-check against the latest code`, and 由来 repairs from `§ Phase 5: 由来 link judgment` do not count. Beyond the cap, prioritize by evidence count and state the leftovers in the PR body. If there is no change at all, do not create a PR. Create a PR even for candidate-only additions.
 
 1. After `git fetch origin <default branch>`, create an isolated worktree and branch `scribe/<yyyymmdd-HHMMSS>` from `origin/<default branch>`
 2. Edit `docs/wiki/` inside the worktree following the skeleton in `${CLAUDE_SKILL_DIR}/templates/page.md`, and commit with the message `docs(wiki): <pattern names, ...> を追加/更新`
 3. Push and run `gh pr create --base <default branch>`. Title `[scribe] <pattern names, ...> を追加/更新`, label scribe
-4. In the body, write the added/promoted/updated pages, candidate additions, reference-repaired pages, the range of PRs / issues read, the items dropped by verification, and any leftovers
+4. In the body, write the added/promoted/updated pages, candidate additions, reference-repaired / 由来-repaired pages, the range of PRs / issues read, the items dropped by verification, and any leftovers
 5. Remove the worktree

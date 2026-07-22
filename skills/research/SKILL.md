@@ -10,19 +10,19 @@ argument-hint: "[research subject or question]"
 
 # /research - Project & Technical Investigation
 
-Investigate codebase with source-based findings, without implementation. Findings are positions to be challenged. Phase 6 advisor pass argues against the synthesis before it lands.
+Investigate the codebase and record findings with sources, without implementation.
 
 ## Input
 
-The research subject is taken from `$ARGUMENTS`, a required free-text topic or question. If empty, prompt via AskUserQuestion.
+The research subject is taken from `$ARGUMENTS`, a free-text topic or question. If empty, prompt via AskUserQuestion.
 
 ## Phase 1: Outcome Anchor
 
-Read `.claude/OUTCOME.md`. If absent, generate the stub via /outcome. Confirm the investigation scope aligns with the outcome state. If the investigation steps into Non-goals, confirm with the user before proceeding.
+Read `.claude/OUTCOME.md`. If absent, generate the stub via /outcome. If the investigation steps into Non-goals, confirm with the user before proceeding.
 
 ## Phase 2: Prior Research Scan
 
-Derive the lowercase hyphenated subject slug from `$ARGUMENTS`. Run `bfs .claude/workspace/research -name '*<slug>*.md'`. If no match, skip and note "No prior research found for `<slug>`". For each match, the table below shows the carry-forward mapping.
+Derive the lowercase hyphenated subject slug from `$ARGUMENTS` and search prior research with `bfs .claude/workspace/research -name '*<slug>*.md'`. If no match, note "No prior research found for `<slug>`" and move on. For each match, carry forward per the table below.
 
 | Extract                 | Carry to | Handling                           |
 | ----------------------- | -------- | ---------------------------------- |
@@ -32,20 +32,17 @@ Derive the lowercase hyphenated subject slug from `$ARGUMENTS`. Run `bfs .claude
 
 ## Phase 3: Intent and Domain Clarification
 
-Skip if `$ARGUMENTS` clearly indicates both. Otherwise ask via AskUserQuestion. Domain drives Phase 4 scoping. Domain=General applies no scoping.
-
-| Question        | Options                                              |
-| --------------- | ---------------------------------------------------- |
-| Research intent | Feature planning / Bug investigation / Understanding |
-| Domain          | Data model / API / Infrastructure / General          |
+Skip if `$ARGUMENTS` clearly indicates both. Otherwise ask via AskUserQuestion, with intent chosen from Feature planning / Bug investigation / Understanding and Domain from Data model / API / Infrastructure / General. Domain drives Phase 4 scoping, and General applies no scoping.
 
 ## Phase 4: Domain-Scoped Parallel Investigation
 
-Launch Explore / ugrep / bfs / Read in parallel. For Feature planning or Bug investigation intent, also invoke `Task(subagent_type: explorer-feature, run_in_background: false)` to trace execution paths and map architecture. Feature planning traces the prospective path, Bug investigation the failing path. Include the research subject title verbatim in the spawn prompt. Instruct explorer-feature to return its result as a single JSON object `{ findings: [{ statement: string, source: string }] }`. If Explore returns empty, re-run with broader keywords. State the source for each finding in place: facts `file:line`, inferences `inferred from X`, unverified `unknown, requires X`. Also append each command and its raw output verbatim to the scratch. This is the audit trail; Phase 7 Disconfirmation quotes it directly and does not reconstruct.
+Launch Explore / ugrep / bfs / Read in parallel. State the source for each finding in place. Facts are `file:line`, inferences `inferred from X`, unverified `unknown, requires X`. Append each command and its raw output verbatim to the scratch. This is the audit trail; Phase 7 Disconfirmation quotes it directly and does not reconstruct.
 
-When the repo has a `.codegraph/` index, refresh it with `codegraph sync`, then resolve structural questions such as who calls, what breaks, and which tests are affected with codegraph first. Get callers with `codegraph callers <symbol>` and the blast radius plus affected tests with `codegraph impact <symbol>`, and cite that output as the finding's source. A ugrep / grep search for the symbol name is not accepted as a source for these questions. In a repo without the index, do not init unprompted; fall back to Explore / ugrep. Use ugrep / grep only for free-text content search.
+For Feature planning or Bug investigation intent, also invoke `Task(subagent_type: explorer-feature, run_in_background: false)` to trace execution paths. Feature planning traces the prospective path, Bug investigation the failing path. Include the research subject title verbatim in the spawn prompt, and have it return a single JSON object `{ findings: [{ statement: string, source: string }] }`. If it returns empty, re-run with broader keywords.
 
-Scope every search by Domain using the roots and terms below. Pass the roots to Explore in its prompt, append the terms to ugrep / bfs, and start Read from the roots. If a Domain's glob roots are all missing, fall back to General.
+When the repo has a `.codegraph/` index, refresh it with `codegraph sync` and resolve structural questions such as who calls, what breaks, and which tests are affected with codegraph first. Get callers with `codegraph callers <symbol>` and the blast radius plus affected tests with `codegraph impact <symbol>`, and cite that output as the finding's source. A ugrep / grep search for the symbol name is not accepted as a source for the same questions. In a repo without the index, do not init unprompted; fall back to Explore / ugrep, and use ugrep / grep only for free-text content search.
+
+Scope by Domain per the table below. Pass the roots to Explore in its prompt, append the terms to ugrep / bfs, and start Read from the roots. If the target Domain's glob roots are all missing, fall back to General.
 
 | Domain         | Glob roots                                                      | Domain-aligned terms            |
 | -------------- | --------------------------------------------------------------- | ------------------------------- |
@@ -56,17 +53,17 @@ Scope every search by Domain using the roots and terms below. Pass the roots to 
 
 ### Verification
 
-At the close, apply the checks in `${CLAUDE_SKILL_DIR}/references/verification.md`. Use Cross-method verification for exhaustiveness findings and primary-source verification for external-behavior claims, structurally, with no self-judged exclusion of a finding. Verifying library API behavior applies `~/.claude/rules/development/SOURCING.md`. When scout is unavailable (missing / network fails), fall back to WebFetch / WebSearch.
+At the close, apply the checks in `${CLAUDE_SKILL_DIR}/references/verification.md`. Use Cross-method verification for exhaustiveness findings and primary-source verification for external-behavior claims, structurally, with no self-judged exclusion of a finding. Verifying library API behavior applies `~/.claude/rules/development/SOURCING.md`, and when scout is unavailable (missing / network fails), fall back to WebFetch / WebSearch.
 
 ## Phase 5: Strong Inference (Bug investigation only)
 
-Skip when intent is Feature planning or Understanding. Apply `~/.claude/rules/core/OPERATION.md § Debug Investigation Protocol` to eliminate the bug, then once the root cause is confirmed, run `${CLAUDE_SKILL_DIR}/references/verification.md § Same-origin sweep`.
+Apply `~/.claude/rules/core/OPERATION.md § Debug Investigation Protocol` to eliminate the bug, then once the root cause is confirmed, run `${CLAUDE_SKILL_DIR}/references/verification.md § Same-origin sweep`.
 
 ## Phase 6: Advisor Pre-Synthesis Check
 
-Invoke `advisor()` with no parameters. Advisor sees full conversation history including Phase 3 answers, Phase 4 findings, and the audit trail scratch. If it flags a missed area or weak inference, return to Phase 4 to narrow the scoping.
+Invoke `advisor()` with no parameters. Advisor sees the full conversation history. If it flags a missed area or weak inference, return to Phase 4 to narrow the scoping.
 
-Skip the invocation when all conditions hold, and record the skip reason in the output.
+Skip the invocation only when all conditions hold, and record the skip reason in the output.
 
 - Phase 2 hit prior research and the current run inherits only
 - Intent is Understanding and Domain is General
@@ -76,8 +73,8 @@ Skip the invocation when all conditions hold, and record the skip reason in the 
 
 1. If Phase 2 found prior research, integrate the inherited findings / constraints into Key Findings, marking each re-verified or superseded
 2. Confirm each finding carries a source in the Phase 4 format. Back facts with `file:line` or command output; mark gaps `unknown, requires X`
-3. Record Disconfirmation. If Phase 5 ran, write `Covered by Phase 5 elimination`; if skipped, quote the command and raw output from the scratch verbatim. Treat 0 hits as possible tool misuse before absence.
-4. Confirm every Phase 3 question is answered or recorded as `unknown, requires X`.
+3. Record Disconfirmation. If Phase 5 ran, write `Covered by Phase 5 elimination`; if skipped, quote the command and raw output from the scratch verbatim. Treat 0 hits as possible tool misuse before absence
+4. Confirm every Phase 3 question is answered or recorded as `unknown, requires X`
 
 ## Output
 
