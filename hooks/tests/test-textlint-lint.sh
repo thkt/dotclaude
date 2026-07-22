@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Integration tests for textlint-lint.sh (PreToolUse hook)
+# The hook is exec'd directly (shebang zsh) — running it under bash masks
+# zsh-specific behavior (echo backslash expansion, no word splitting)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -7,16 +9,18 @@ source "$SCRIPT_DIR/test-helpers.sh"
 HOOK="$SCRIPT_DIR/../textlint-lint.sh"
 
 test_issue_create_advisory() {
-  echo "T-006: gh issue create with problematic body returns advisory"
-  local body='革命的な技術で業界を変えます。することができます。'
+  echo "T-006: gh issue create with problematic body returns textlint findings"
+  # ≥50 Japanese chars (has_japanese threshold) with a deterministic finding (redundant expression)
+  local body='この機能はユーザーが設定を変更することができます。この説明は日本語判定の五十文字閾値を超えるための追加の文章です。'
   local cmd="gh issue create --title \"test\" --body \"$body\""
   local json
   json=$(make_bash_json "$cmd")
   local output
-  output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
   assert_contains "outputs JSON" "decision" "$output"
   assert_contains "decision is approve" "approve" "$output"
-  assert_contains "has additionalContext" "additionalContext" "$output"
+  assert_contains "has textlint findings" "textlint 校正結果" "$output"
+  assert_contains "has structure checklist" "構造レビュー" "$output"
 }
 
 test_issue_create_clean() {
@@ -26,35 +30,81 @@ test_issue_create_clean() {
   local json
   json=$(make_bash_json "$cmd")
   local output
-  output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
   assert_contains "has structure checklist" "構造レビュー" "$output"
   assert_contains "decision is approve" "approve" "$output"
+  assert_not_contains "no textlint findings" "textlint 校正結果" "$output"
 }
 
 test_non_gh_command_skipped() {
   echo "T-008: git status is skipped"
   local json='{"tool_name":"Bash","tool_input":{"command":"git status"}}'
   local output
-  output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
   assert_empty "no output for git status" "$output"
 }
 
 test_pr_create_advisory() {
   echo "T-010: gh pr create with problematic body returns advisory"
-  local body='革命的な技術で業界を変えます。'
+  local body='この機能はユーザーが設定を変更することができます。この説明は日本語判定の五十文字閾値を超えるための追加の文章です。'
   local cmd="gh pr create --title \"test\" --body \"$body\""
   local json
   json=$(make_bash_json "$cmd")
   local output
-  output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
   assert_contains "outputs advisory" "additionalContext" "$output"
+  assert_contains "has textlint findings" "textlint 校正結果" "$output"
+}
+
+test_pr_create_multiline_body() {
+  echo "T-015: gh pr create with multiline body still lints (zsh echo regression)"
+  local body=$'一行目は複数行の本文が正しく抽出されることを確認する文です。\nこれは、二行目、で、読点、が、多す、ぎます。\n三行目は日本語判定の五十文字閾値を確実に超えるための追加の文章です。'
+  local cmd="gh pr create --title \"test\" --body \"$body\""
+  local json
+  json=$(make_bash_json "$cmd")
+  local output
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
+  assert_contains "has textlint findings" "textlint 校正結果" "$output"
+  assert_contains "flags max-ten" "max-ten" "$output"
+}
+
+test_commit_heredoc_advisory() {
+  echo "T-016: git commit heredoc message with findings returns advisory without checklist"
+  local cmd=$'git commit -m "$(cat <<\'EOF\'\nfix(hooks): 処理を行うことが出来ます\n\nこれは、テスト、です、が、読点、が、多すぎ、ます。\nEOF\n)"'
+  local json
+  json=$(make_bash_json "$cmd")
+  local output
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
+  assert_contains "has textlint findings" "textlint 校正結果" "$output"
+  assert_contains "labels commit message" "commit message" "$output"
+  assert_not_contains "no structure checklist for commit" "構造レビュー" "$output"
+}
+
+test_commit_inline_advisory() {
+  echo "T-017: git commit -m inline message with findings returns advisory"
+  local cmd='git commit -m "fix: これは、読点、が、多い、修正、です。"'
+  local json
+  json=$(make_bash_json "$cmd")
+  local output
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
+  assert_contains "has textlint findings" "textlint 校正結果" "$output"
+}
+
+test_commit_clean_silent() {
+  echo "T-018: clean git commit message stays silent"
+  local cmd='git commit -m "fix(hooks): commit message の textlint 対応を追加する"'
+  local json
+  json=$(make_bash_json "$cmd")
+  local output
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
+  assert_empty "no output for clean commit" "$output"
 }
 
 test_non_bash_tool_skipped() {
   echo "T-012: Write tool is skipped"
   local json='{"tool_name":"Write","tool_input":{"file_path":"/some/file.md"}}'
   local output
-  output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
   assert_empty "no output for Write tool" "$output"
 }
 
@@ -62,7 +112,7 @@ test_no_body_skipped() {
   echo "T-013: gh issue create without --body is skipped"
   local json='{"tool_name":"Bash","tool_input":{"command":"gh issue create --title \"test\""}}'
   local output
-  output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
   assert_empty "no output without --body" "$output"
 }
 
@@ -73,7 +123,7 @@ test_english_body_structure_only() {
   local json
   json=$(make_bash_json "$cmd")
   local output
-  output=$(echo "$json" | bash "$HOOK" 2>/dev/null) || true
+  output=$(echo "$json" | "$HOOK" 2>/dev/null) || true
   assert_contains "has structure checklist" "構造レビュー" "$output"
   assert_contains "decision is approve" "approve" "$output"
 }
@@ -83,6 +133,10 @@ test_issue_create_advisory
 test_issue_create_clean
 test_non_gh_command_skipped
 test_pr_create_advisory
+test_pr_create_multiline_body
+test_commit_heredoc_advisory
+test_commit_inline_advisory
+test_commit_clean_silent
 test_non_bash_tool_skipped
 test_no_body_skipped
 test_english_body_structure_only

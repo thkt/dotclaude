@@ -3,7 +3,7 @@ export const meta = {
   description:
     '構造化 plan (units / test_command) を受け取り、unit ごとに script 制御で実装する TDD workflow。test scenario を持つ unit は Red → Green で実装し、tests が空の unit (docs / 設定など検証可能な振る舞いが無いもの) は直接実装 1 段で扱う。TDD の要否は runtime でなく plan が選択する。未確認の Red は anomaly として記録し、最後に実装へ関与していない独立 agent が全 suite + lint + type-check を検証する。単独でも build からの workflow("code") でも呼べる。',
   whenToUse:
-    "headless の plan 実装。args は {plan, repo, model}。plan は units / test_command を持つ構造化 plan (think skill が生成する形)。model (任意) は実装 agent にのみ伝播する (default は fable)。実装 agent は effort xhigh で走る。",
+    "headless の plan 実装。args は {plan, repo, model}。plan は units / test_command を持つ構造化 plan (think skill が生成する形)。model (任意) は実装 agent にのみ伝播する (default は sonnet)。実装 agent は effort xhigh で走る。",
   phases: [{ title: "Implement" }, { title: "Verify" }],
 };
 
@@ -48,8 +48,9 @@ const anomalies = [];
 // unit 途中終了の返り値は 3 サイト共通の shape。completed / anomalies を閉じ込め、部分進捗を
 // 呼び出し元へそのまま渡す
 const stopUnit = (stopped, unit, why) => ({ stopped, unit: unit.id, why, completed, anomalies });
-// 全実装 agent で共有し、model / effort の変更を 1 箇所にする。
-const implementOpts = { model: input.model || "fable", effort: "xhigh" };
+// 全実装 agent で共有し、model / effort の変更を 1 箇所にする。実装は plan の contract /
+// tests を実行する段なので sonnet で足りる。ここで失敗が続くなら plan の欠陥シグナル。
+const implementOpts = { model: input.model || "sonnet", effort: "xhigh" };
 
 const RED_SCHEMA = {
   type: "object",
@@ -71,14 +72,29 @@ const RED_SCHEMA = {
 const GREEN_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["green", "notes"],
+  required: ["green", "notes", "deferred"],
   properties: {
     green: {
       type: "boolean",
       description: "unit のテストがすべて pass したとき true",
     },
     notes: { type: "string" },
+    deferred: {
+      type: "array",
+      items: { type: "string" },
+      description:
+        "contract / files が求める実装のうち、この unit で実装しなかった項目。無ければ空配列。ここに列挙されたものだけが正当な先送りとして anomaly に記録される",
+    },
   },
+};
+
+// 先送りの検出は agent の自己申告 (deferred) を script が anomaly 化する。緑のまま
+// 無断で scope を狭めた実装が code_anomalies: 0 で ship された再発防止 (kizalas #578)。
+const recordDeferred = (unit, result) => {
+  if (result && Array.isArray(result.deferred) && result.deferred.length) {
+    anomalies.push({ unit: unit.id, kind: "scope-cut", notes: result.deferred.join(" / ") });
+    log(`${unit.id}: 先送り ${result.deferred.length} 件を anomaly に記録。`);
+  }
 };
 
 // ---- Implement: unit ごとに直列で実装 (working tree を共有するため) ----
@@ -86,13 +102,31 @@ const GREEN_SCHEMA = {
 // runtime に TDD 要否の裁量は無い。
 phase("Implement");
 
+// 参照モジュール (plan が指名したとき) が新機能を隣人と同じ形に保つ。contract が引用する
+// のは 1 つの振る舞いなので、これが無いと周辺構造が手組みされ、確立された形から逸れる。
+const ref = plan.reference_module;
+const referenceModuleCtx = ref?.path
+  ? `この機能は既存モジュール ${ref.path} の構造を複製する` +
+    (ref.instances >= 2 ? ` (確立された形の ${ref.instances + 1} 例目)` : "") +
+    `。書く前にそのファイルを読む: ${JSON.stringify(ref.files || [])}。` +
+    `ディレクトリ配置、コンポーネント名、export 名、合成している共有コンポーネントを踏襲し、等価物を手組みしない。` +
+    (ref.conventions?.length ? `維持する慣例: ${ref.conventions.join(" / ")}。` : "") +
+    `参照モジュールからの逸脱は plan が明記したときのみ許され、逸脱は結果に記す。\n`
+  : "";
+
 for (const unit of units) {
   const tests = Array.isArray(unit.tests) ? unit.tests : [];
   const ctx =
     `Unit ${unit.id} の goal は「${unit.goal}」。対象ファイルは ${JSON.stringify(unit.files)}。\n` +
     `contract は ${unit.contract}。test scenario は ${JSON.stringify(tests)}。\n` +
     `テストコマンドは ${testCmd}。\n` +
+    referenceModuleCtx +
     `フレームワーク / ライブラリの API を書くときは、記憶でなく pinned version の公式 docs に従う。docs は WebFetch で読み、シェル経由では取得しない。読めなければその API 使用を未確認としてコード内コメントに残し、実装は続ける。\n` +
+    `結果を報告する前に、各 claim をこのセッションの tool result と突き合わせる。evidence を指せる作業のみ報告し、未検証のものは notes にその旨を書く。\n` +
+    `単体テストの都合を理由に機能の一部を落とすことは禁止。Router / Suspense / 権限 context が要るという理由で、共有コンポーネント・データ取得・遷移導線を省いてはならない。テスト側でその境界を差し替える。plan に無い先送りは禁止で、コード内コメントで「別ユニット」「後続に委ねる」と宣言して実装を狭めることも禁止。contract / files が求める実装の一部をやむを得ず実装しない場合は deferred に列挙する (anomaly として記録され PR に surface される)。\n` +
+    (unit.seam === true
+      ? `この unit は plan の seam unit で、各 unit が単体では緑のまま結線されていない状態を捕まえるのがそのテストの役割。unit 間の境界を跨いで実モジュールを動かし、偽装はシステム外部との I/O に限る。ここで内部の層を stub すると unit の意味が消える。先行 unit が作った部品どうしの接続 (呼び出し、遷移、データの受け渡し) が存在し、実際に到達可能であることを assert する。末端の部品が単体で動くことの確認では足りない。\n`
+      : "") +
     (completed.length ? `実装済みの unit は ${completed.join(", ")}。\n` : "");
 
   // tests 無しは plan の選択 (docs / 設定)。直接実装して既存 suite を green に保つ。
@@ -136,6 +170,7 @@ for (const unit of units) {
       );
     }
 
+    recordDeferred(unit, impl);
     completed.push(unit.id);
 
     log(`${unit.id}: 直接実装 done (${completed.length}/${units.length})。`);
@@ -148,6 +183,7 @@ for (const unit of units) {
       `TDD Red step。${ctx}` +
         `各 test scenario (T-NNN) を失敗するテストとして書く。scenario の name をテスト名として逐語で使う。` +
         `実装コードは一切書かない。テストを実行し、それぞれが意図した理由で失敗することを確認して報告する。` +
+        `Red を作るために既存ファイルを削除・移動・リネーム・空化することは禁止。対象の挙動が既に実装済みなら、それが正しい状態なので red_confirmed=false のまま理由を notes に書く。` +
         `テストが失敗しない場合は実装せず、理由を notes に書く。`,
     ),
     {
@@ -192,7 +228,7 @@ for (const unit of units) {
       `TDD Green step。${ctx}` +
         `${JSON.stringify(red.test_files)} の失敗しているテストを pass させる最小の実装を書く。` +
         `テストを 1 つずつ pass させ、全テストに対してまとめて実装しない。` +
-        `テストの assertion を弱める / skip する / 削除する変更は禁止。テスト構造の修正が必要なら notes に書いて green=false を返す。` +
+        `テストの assertion を弱める / skip する / 削除する変更は禁止。テスト構造の修正が必要なら notes に書いて green = false を返す。` +
         `pass 後、テストを green に保ったままリファクタする。unit のテストを再実行して報告する。`,
     ),
     {
@@ -227,6 +263,7 @@ for (const unit of units) {
       (green && green.notes) || "green agent が結果を返さなかった",
     );
   }
+  recordDeferred(unit, green);
   completed.push(unit.id);
   log(`${unit.id}: Red → Green done (${completed.length}/${units.length})。`);
 }
@@ -275,6 +312,11 @@ log(
 return {
   completed,
   anomalies,
+  // 全 unit の tests が空なら suite は何も検証しておらず、自動検証の実体は gates のみ。
+  // 呼び出し元が「テスト全緑」を独立した信号と誤読しないよう明示する。
+  verification: units.some((u) => (Array.isArray(u.tests) ? u.tests : []).length)
+    ? "tests+gates"
+    : "gates-only",
   tests_pass: verify.tests_pass,
   gates_pass: verify.gates_pass,
   verify_output: verify.output_tail,

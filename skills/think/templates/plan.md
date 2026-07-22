@@ -11,6 +11,15 @@
 
 Outcome: {one line describing the done state; implementation-independent, observable}
 test_command: {one-line test command, e.g. cargo test / node --test tests/}
+reference_module: {module root of the existing same-shaped module, or null + why this shape is new}
+
+### Reference module
+
+{Omit the whole subsection when reference_module is null.}
+
+- instances: {how many existing features already share this shape; say "Nth instance" when 2 or more}
+- files: {each file to replicate, with its role: `src/foo/list.tsx` list screen}
+- conventions: {shared conventions later units must keep: composed components, where formatting lives, how state is passed}
 
 ### Preconditions
 
@@ -22,6 +31,7 @@ test_command: {one-line test command, e.g. cargo test / node --test tests/}
 
 - files: {`src/foo.rs`, `tests/foo.test.rs`}
 - contract: {one citation line + one intent line}
+- seam: {true only on the seam unit; omit the line on every other unit}
 
 Acceptance tests.
 
@@ -34,7 +44,9 @@ Acceptance tests.
 
 ## Guidelines
 
-Ids U-NNN / T-NNN are both sequential from 001. T-NNN is unique across the whole plan and never restarts per unit. List units in implementation order; the listed order is the implementation order. Each field's cap is the line count shown in the skeleton; resolve overflow by splitting, not by adding prose. Divide the unit, or carve out to backlog. Write acceptance tests on units that pin behavior. A unit with no verifiable behavior (docs / config) omits the whole "Acceptance tests." block, and build implements it directly instead of Red -> Green.
+Ids U-NNN / T-NNN are both sequential from 001. T-NNN is unique across the whole plan and never restarts per unit. List units in implementation order; the listed order is the implementation order. Among units whose implementation order is not forced by dependencies, place those carrying tweak-prone decisions such as data models, type interfaces, and UX flows first, and purely mechanical ones last. Review attention reaches the decisions most likely to change first, and a reversed decision costs less rework. Each field's cap is the line count shown in the skeleton; resolve overflow by splitting, not by adding prose. Divide the unit, or carve out to backlog. Write acceptance tests on units that pin behavior. A unit with no verifiable behavior (docs / config) omits the whole "Acceptance tests." block, and build implements it directly instead of Red -> Green.
+
+Each unit's tests stub that unit's own boundaries, so units can be individually green while the layers between them were never connected. Once the plan has 2 or more units carrying tests, give it exactly one seam unit, placed last, marked `- seam: true`. Its T-NNN run the real modules across the unit boundary, fake only I/O with external systems, and assert that the connections between units (calls, transitions, data handoffs) are actually wired. build's `validate()` rejects a plan of 2 or more tested units with no seam unit, so the marker is required rather than advisory.
 
 | Field         | OK                                                   | NG                                      |
 | ------------- | ---------------------------------------------------- | --------------------------------------- |

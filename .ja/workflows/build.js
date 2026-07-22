@@ -3,7 +3,7 @@ export const meta = {
   description:
     "自律的な end-to-end build。/think + /issue で精緻化した Plan 節付き issue を入力に、Load (逐語 fetch → 決定論 id 収集 → 抽出 → validate + id クロスチェック) / Revalidate / Branch / Code / Cleanup / Verify / Ship を headless の決定論 script stage として実行する。Plan 節なし issue は入れ子の draft-plan workflow が plan を下書きする (ADR-0086)。正しさの確認は plan 自身のアンカー (前提、files スコープ、T-NNN 言明、conformance) との比較であり、開放的な欠陥探索ではない。重い担保 (/audit、/polish review) は draft PR に対して人間が起動する (ADR-0085)。",
   whenToUse:
-    'plan 付き issue の実装。args には {issue, repo} を渡す (issue は番号 "123" / "#123" か URL、repo は対象リポジトリの絶対パス)。repo の無い args は no-repo で早期 stop する。## Plan 節の無い issue は plan を自動生成する (ゴール + a11y、critic-design gate 付き。品質は /think + /issue path に劣る)。離席して戻れば、前提 / conformance findings / 決定論 verify 結果を記録した draft PR ができている。スコープ外の backlog 候補は workflow の戻り値で返り、/issue で起票する。途中で舵を取る場合は phase を対話的に進める。',
+    'plan 付き issue の実装。args には {issue, repo, base?} を渡す (issue は番号 "123" / "#123" か URL、repo は対象リポジトリの絶対パス、base は任意で PR の base ブランチと新規 checkout の起点。epic ブランチ集約フローで使う)。repo の無い args は no-repo で早期 stop する。## Plan 節の無い issue は plan を自動生成する (ゴール + a11y、critic-design gate 付き。品質は /think + /issue path に劣る)。離席して戻れば、前提 / conformance findings / 決定論 verify 結果を記録した draft PR ができている。スコープ外の backlog 候補は workflow の戻り値で返り、/issue で起票する。途中で舵を取る場合は phase を対話的に進める。',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -47,6 +47,9 @@ if (!issueRef || !issueNumber) {
 // repo ルートを確認させる。repo が無いと agent は自身の cwd から「リポジトリ」を
 // 解決し、別の checkout で step を実行しうる。
 const repo = typeof input.repo === "string" ? input.repo : "";
+// 任意の base ブランチ。指定時は新規 checkout の起点と PR の base の両方に使う
+// (epic ブランチへスライス PR を集約するフロー)。未指定なら従来どおり default。
+const baseBranch = typeof input.base === "string" ? input.base.trim() : "";
 if (!repo) {
   return {
     stopped: "no-repo",
@@ -89,8 +92,8 @@ const FETCH_SCHEMA = obj(["found", "body"], {
 const fetchRef = issueRef.replace(/^#/, "");
 const fetched = await agent(
   anchor(
-    `GitHub issue ${fetchRef} の本文を固定コマンドで取得する。要約や整形をしない。` +
-      `\`gh issue view ${fetchRef} --json body --jq .body\` を正確に実行し、その stdout を body として逐語で返す。` +
+    `\`gh issue view ${fetchRef} --json body --jq .body\` を正確に実行し、その stdout を body として逐語で返す。` +
+      `要約や整形をしない。` +
       `コマンドが非ゼロで終了した場合 (issue が無い / 取得失敗) は found: false を返す。`,
   ),
   {
@@ -112,6 +115,12 @@ const body = fetched.body;
 // plan の構造検証。両 plan ソース共通。id 重複と空 content (test_command / contract /
 // name) を決定論で reject する。tests の空配列は合法 (その unit は code が直接実装で
 // 扱う)。plan 品質の最終防衛線。
+//
+// seam 規則がある理由は、unit ごとのテストが自分の境界を stub するため、各 unit が緑
+// のまま層と層が結線されていない実装を ship しうること (kizalas #558 / PR 575: mapper
+// が null を返し、ページネーションと新規登録・編集の導線が未配線のまま unit テスト 44
+// 件が緑)。テストを持つ unit が 2 つ以上あれば両者の間に継ぎ目があり、そこを横断する
+// テストだけが結線漏れで落ちる。
 const validate = (plan) => {
   const errors = [];
   // object でない要素は位置 placeholder id で surface させる。共有 id は偽の重複を出す。
@@ -138,6 +147,15 @@ const validate = (plan) => {
       testIds.add(t.id);
       if (!String(t.name || "").trim()) errors.push(`${t.id} の name が空`);
     }
+  }
+
+  const tested = units.filter((u) => (Array.isArray(u.tests) ? u.tests : []).length);
+  if (tested.length >= 2 && !tested.some((u) => u.seam === true)) {
+    errors.push(
+      "seam unit が無い。テストを持つ unit が 2 つ以上ある plan は seam: true の unit を " +
+        "1 つ以上持つ。seam unit のテストは unit 間の境界を跨いで実モジュールを動かし " +
+        "(偽装はシステム外部との I/O に限る)、unit どうしをつなぐ接続を assert する",
+    );
   }
 
   return errors;
@@ -172,8 +190,13 @@ const PLAN_SCHEMA = obj(
     },
     units: {
       type: "array",
-      items: obj(["id", "goal", "files", "contract", "tests"], {
+      items: obj(["id", "goal", "files", "contract", "tests", "seam"], {
         id: { type: "string", description: "U-001 形式の連番" },
+        seam: {
+          type: "boolean",
+          description:
+            "この unit のテストが unit 間の境界を跨ぐとき true。実モジュールを端から端まで動かし、偽装はシステム外部との I/O に限り、unit どうしをつなぐ接続を assert する。依存を stub して 1 層だけをテストする unit は false",
+        },
         goal: { type: "string", description: "この unit が届ける振る舞いの 1 行" },
         files: {
           type: "array",
@@ -201,6 +224,28 @@ const PLAN_SCHEMA = obj(
       type: "string",
       description: "テストコマンド。例 cargo test / bun test",
     },
+    reference_module: {
+      type: ["object", "null"],
+      description:
+        "この機能が構造を複製する既存の同形モジュール。形が新規なら null。後続 unit はその慣例を維持する",
+      properties: {
+        path: { type: "string", description: "参照モジュールのルート" },
+        files: {
+          type: "array",
+          items: { type: "string" },
+          description: "複製するファイル。リポジトリルート起点",
+        },
+        instances: {
+          type: "number",
+          description: "この形を既に共有する既存機能の数",
+        },
+        conventions: {
+          type: "array",
+          items: { type: "string" },
+          description: "後続 unit が維持する共有慣例",
+        },
+      },
+    },
     preconditions: {
       type: "array",
       items: obj(["path"], {
@@ -224,13 +269,14 @@ const PLAN_SCHEMA = obj(
 const draftPlan = async () => {
   const drafted = await agent(
     anchor(
-      `以下の GitHub issue 本文には ## Plan 節が無い。本文だけから構造化 plan を導く。issue が求める以上のスコープを発明しない。` +
-        `まずリポジトリを探索して plan を現実に接地させる。具体的なファイルパスを選び、preconditions ({path, pattern} の既存コード) を挙げ、プロジェクト設定を読んで実際の test_command を決める。` +
-        `outcome には done 状態のゴールを設定する。issue に明示のゴールが無ければ自分で設定する。` +
-        `UI に触れる作業なら、outcome と test scenario に a11y criteria を含める (キーボードのみで全操作が完結する、エラーがスクリーンリーダーに通知される、など)。` +
-        `作業を小さな unit に分解し、U-001 形式の id を実装順に振る。各 unit に plan 全体で一意な T-001 形式の id と、条件 + 期待結果の 1 行言明を name に持つ test scenario を与える。検証可能な振る舞いが無い unit (docs / 設定) は tests を空配列にする。` +
-        `contract は生成でなく選択で書く。引用 (既存コードの path + シンボル、docs ページ、公式 docs の deep link) + やりたいことの 1 行。` +
-        `自分が置いた best-guess の判断はすべて assumptions に記録する。backlog_candidates は issue が触れたスコープ外候補。無ければ空配列。\n\n${fencedBody}`,
+      `以下の GitHub issue 本文には ## Plan 節が無い。本文だけから構造化 plan を導き、issue が求める以上のスコープを発明しない。` +
+        `まずリポジトリを探索して plan を現実に接地させる。実在のファイルパス、既存コードからの preconditions、プロジェクト設定を読んで決めた test_command。` +
+        `outcome は done 状態のゴール。issue に明示が無ければ自分で設定し、UI に触れる作業なら a11y criteria (キーボードのみで全操作が完結する、エラーがスクリーンリーダーに通知される、など) を outcome と test scenario に含める。` +
+        `unit は実装順に並べ、検証可能な振る舞いが無い unit (docs / 設定) は tests を空配列にする。` +
+        `unit ごとのテストは自分の境界を stub するので、各層が緑のまま結線されないことが起こる。テストを持つ unit が 2 つ以上になる plan には seam unit (seam: true) を最後に置く。そのテストは unit 間の境界を跨いで実モジュールを動かし、偽装はシステム外部との I/O に限り、unit どうしをつなぐ接続 (呼び出し、遷移、データの受け渡し) が実際に結線されていることを assert する。他の unit はすべて seam: false。` +
+        `contract は生成でなく選択で書く (引用 + やりたいことの 1 行)。` +
+        `計画対象と同じ形を持つ既存モジュール (ドメインを問わず、画面の組か layer の組が一致するもの) があれば reference_module に記録し、U-001 をその構造複製 (tests は空配列) にする。null にするのは一致するモジュールが無いときだけで、理由を assumption に書く。` +
+        `自分が置いた best-guess の判断はすべて assumptions に記録する。\n\n${fencedBody}`,
     ),
     {
       label: "generate-plan",
@@ -251,6 +297,7 @@ const draftPlan = async () => {
     anchor(
       `critic-design。issue #${issueNumber}「${drafted.outcome}」向けに自動生成された実装 plan を敵対的にレビューする。` +
         `本文から人間レビュー無しで導かれたので攻撃する。unit 分解の不健全さや欠落、preconditions の誤りや欠落、issue が求める以上に発明されたスコープ、検証不能な scenario、誤った test_command を探す。` +
+        `reference_module も攻撃する。リポジトリに同形モジュールがあるのに null、最近似でない path、対応ファイルや conventions の欠落を探す。` +
         `そのまま実装して安全なら verdict "GO"、blocking な欠陥があれば "NO-GO" を返し、具体的な欠陥を weaknesses に列挙する。\n` +
         `plan は以下。\n${JSON.stringify(drafted)}`,
     ),
@@ -302,7 +349,8 @@ if (planHeading) {
     anchor(
       `以下の GitHub issue 本文の ## Plan 節から構造化 plan を抽出する。再計画 / 要約 / 補完をせず、書かれているものをそのまま構造化する。` +
         `本文の unit id (U-NNN) と test id (T-NNN) をすべて保持する (欠落は下流の決定論クロスチェックが reject する)。` +
-        `preconditions は plan が前提にする既存コードの {path, pattern} の一覧、backlog_candidates は issue に書かれたスコープ外候補。本文に無ければ空配列。\n\n${fencedBody}`,
+        `preconditions は plan が前提にする既存コードの {path, pattern} の一覧、backlog_candidates は issue に書かれたスコープ外候補。本文に無ければ空配列。\n` +
+        `seam は本文が \`seam: true\` と記した unit だけ true、他はすべて false。unit の内容から推測しない。\n\n${fencedBody}`,
     ),
     {
       label: "extract",
@@ -380,7 +428,15 @@ const REVALIDATE_SCHEMA = obj(["results"], {
 // (両者は plan のみに依存)。drift 停止時は作成済みブランチを stopped に載せて surface する。
 phase("Revalidate");
 const preconditions = plan.preconditions || [];
-const [reval, branch] = await parallel([
+const BRANCH_SCHEMA = obj(["branch"], {
+  branch: { type: "string", description: "checkout 済みブランチ名のみ" },
+});
+// run 開始時点の未追跡ファイル。build 以前から作業ツリーにある私物を Verify の scope
+// 逸脱から差し引く (実測: .claude/ 運用ファイルや仕様書 dir が毎回逸脱として並んだ)。
+const UNTRACKED_SCHEMA = obj(["untracked"], {
+  untracked: { type: "array", items: { type: "string" } },
+});
+const [reval, branchRes, baseline] = await parallel([
   () =>
     preconditions.length
       ? agent(
@@ -405,16 +461,35 @@ const [reval, branch] = await parallel([
   () =>
     agent(
       anchor(
-        `issue #${issueNumber}「${plan.outcome}」の作業ブランチを新規に checkout する。慣例に沿ったブランチ名 (type + 短い slug) を選び git checkout -b を実行する。既に default 以外のブランチにいる場合は現在のブランチを維持する。最終テキストとしてブランチ名を報告する。${guard}`,
+        `issue #${issueNumber}「${plan.outcome}」の作業ブランチを新規に checkout する。慣例に沿ったブランチ名 (type + 短い slug) を選び、` +
+          (baseBranch
+            ? `\`git checkout -b <name> ${baseBranch}\` で ${baseBranch} を起点に作成する。`
+            : `git checkout -b を実行する。`) +
+          `既に default 以外のブランチにいる場合は現在のブランチを維持する。branch フィールドにブランチ名だけを返す。${guard}`,
       ),
       {
         label: "checkout",
         phase: "Branch",
         agentType: "general-purpose",
+        schema: BRANCH_SCHEMA,
+        model: "haiku",
+      },
+    ),
+  () =>
+    agent(
+      anchor(
+        `\`git status --porcelain --untracked-files=all\` を実行し、"??" 行のパスをリポジトリルート起点で untracked に列挙する (ディレクトリ単位に畳まずファイル単位で返る)。判定やフィルタをしない。`,
+      ),
+      {
+        label: "baseline-untracked",
+        phase: "Revalidate",
+        agentType: "general-purpose",
+        schema: UNTRACKED_SCHEMA,
         model: "haiku",
       },
     ),
 ]);
+const branch = (branchRes && branchRes.branch) || "";
 if (preconditions.length) {
   if (!reval || !Array.isArray(reval.results)) {
     return {
@@ -428,11 +503,45 @@ if (preconditions.length) {
   // exists&&matches の一致結果が無い前提は drift。
   const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
   const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
+  // 結果が返らなかった前提は「ファイル不在」でなく relay の取りこぼし (実測: 非コードの
+  // svg 資産が検査から落ち、存在するファイルが missing 扱いで誤停止した)。欠落分だけ
+  // 1 回再検証し、それでも欠けるなら plan-drift と区別して revalidate-incomplete で止める。
+  let unreported = preconditions.filter((pc) => !resultByKey.has(keyOf(pc)));
+  if (unreported.length) {
+    const retry = await agent(
+      anchor(
+        relayVerifier({
+          what: "plan の前提 (前回の relay で欠落した分。コード以外の資産パスも 1 件も省略しない)",
+          script: "workflows/build/revalidate.py",
+          shape: '{"results":[{path,pattern,exists,matches}]}',
+          payload: unreported,
+          count: unreported.length,
+        }),
+      ),
+      {
+        label: "revalidate2",
+        phase: "Revalidate",
+        agentType: "general-purpose",
+        schema: REVALIDATE_SCHEMA,
+        model: "haiku",
+      },
+    );
+    if (retry && Array.isArray(retry.results))
+      for (const r of retry.results) resultByKey.set(keyOf(r), r);
+    unreported = preconditions.filter((pc) => !resultByKey.has(keyOf(pc)));
+    if (unreported.length) {
+      return {
+        stopped: "revalidate-incomplete",
+        unreported,
+        branch,
+        why: "verifier が一部の前提に結果を返さなかった (ファイル不在の plan-drift とは別)。再実行する。",
+      };
+    }
+  }
   const drift = [];
   for (const pc of preconditions) {
     const r = resultByKey.get(keyOf(pc));
-    if (!r) drift.push({ ...pc, exists: false, matches: false, missing: true });
-    else if (!r.exists || !r.matches) drift.push(r);
+    if (!r.exists || !r.matches) drift.push(r);
   }
   if (drift.length) {
     return {
@@ -461,8 +570,9 @@ const code =
   (await sibling("code", {
     plan: stripPreconditions(plan),
     repo,
-    // fable 固定 (2026-07-20 のユーザー判断)。code.js の default 変更を暗黙に追従しない。
-    model: "fable",
+    // 実装は plan の contract / tests を実行する段で、設計判断は plan 側 (think /
+    // critic-design) が済ませている。code.js の default 変更を暗黙に追従しない。
+    model: "sonnet",
   })) || null;
 if (!code || code.stopped) {
   return { stopped: "code-failed", detail: code };
@@ -531,6 +641,33 @@ const TEST_PRESENCE_SCHEMA = obj(["results"], {
   },
 });
 
+// plan の参照モジュールからの構造 drift。conformance は「spec の求めを満たすか」に、
+// こちらは「隣人と同じ形か」に答える。contract が引用するのは 1 つの振る舞いなので、
+// 周辺構造はどのアンカーにも捕まらず手組みされうる。
+const STRUCTURE_SCHEMA = obj(["reference_checked", "findings"], {
+  reference_checked: {
+    type: "boolean",
+    description: "plan が参照モジュールを指名し、それと比較できたとき true",
+  },
+  findings: {
+    type: "array",
+    items: obj(["category", "location", "reference", "detail"], {
+      category: {
+        type: "string",
+        enum: ["missing_file", "hand_rolled", "naming", "convention"],
+        description:
+          "対応ファイルの不在、共有コンポーネントの再利用でなく再実装、名前の逸脱、共有慣例の破れのいずれか",
+      },
+      location: { type: "string", description: "diff 中の file:line" },
+      reference: {
+        type: "string",
+        description: "逸脱元となる参照モジュール側の対応 path + シンボル",
+      },
+      detail: { type: "string" },
+    }),
+  },
+});
+
 const CONFORMANCE_SCHEMA = obj(["spec_found", "findings"], {
   spec_found: {
     type: "boolean",
@@ -538,11 +675,17 @@ const CONFORMANCE_SCHEMA = obj(["spec_found", "findings"], {
   },
   findings: {
     type: "array",
-    items: obj(["category", "spec_line", "location", "detail"], {
+    items: obj(["category", "severity", "spec_line", "location", "detail"], {
       category: {
         type: "string",
         enum: ["missing", "scope_creep", "wrong"],
         description: "missing/partial、scope creep、implemented-but-wrong のいずれか",
+      },
+      severity: {
+        type: "string",
+        enum: ["high", "medium", "low"],
+        description:
+          "high は受け入れ条件を満たせなくする欠落 / 誤実装、medium は挙動が spec と食い違うが主要フローは動くもの、low は表記や軽微な差",
       },
       spec_line: {
         type: "string",
@@ -566,12 +709,13 @@ const testChecks = plan.units
     names: u.tests.map((t) => t.name),
   }));
 const allTestNames = testChecks.flatMap((c) => c.names);
-const [diff, testPresence, conformance] = await parallel([
+const refModule = plan.reference_module;
+const [diff, testPresence, conformance, structure] = await parallel([
   () =>
     agent(
       anchor(
         `この build が変更したファイルを機械的に列挙する。判定やフィルタをしない。リポジトリルートから ` +
-          `\`git diff HEAD --name-only\` と \`git status --porcelain\` を実行し、変更パスと未追跡パス ` +
+          `\`git diff HEAD --name-only\` と \`git status --porcelain --untracked-files=all\` を実行し、変更パスと未追跡パス ` +
           `(porcelain の "??" 行) の和集合を、リポジトリルート起点、1 ファイル 1 要素で files として返す。`,
       ),
       {
@@ -609,9 +753,7 @@ const [diff, testPresence, conformance] = await parallel([
         `起点 issue に対する conformance review。spec は GitHub issue #${issueNumber} で、` +
           `\`gh issue view ${issueNumber}\` で読む。レビュー対象は未 commit の working-tree diff ` +
           `(この build はまだ commit していない) なので、\`git diff HEAD\` と \`git status --porcelain\` が示す ` +
-          `未追跡ファイル (新規の test / 実装ファイル) を使う。main...HEAD は使わない (HEAD はまだ分岐点にある)。` +
-          `3 分類 (missing/partial、scope creep、implemented-but-wrong) を spec 行の引用付きで報告する。` +
-          `spec が無ければ spec_found=false と空の findings を返す。`,
+          `未追跡ファイルを使う。main...HEAD は使わない (HEAD はまだ分岐点にある)。`,
       ),
       {
         label: "conformance",
@@ -621,13 +763,48 @@ const [diff, testPresence, conformance] = await parallel([
         model: "sonnet",
       },
     ),
+  () =>
+    refModule?.path
+      ? agent(
+          anchor(
+            `この build の実装を、plan が複製対象に指名した参照モジュール ${refModule.path} と比較し、` +
+              `構造上の逸脱のみを schema の 4 分類で報告する (欠陥や spec conformance は対象外)。` +
+              `参照側のファイルは ${JSON.stringify(refModule.files || [])}。` +
+              (refModule.conventions?.length
+                ? `携える慣例は ${JSON.stringify(refModule.conventions)}。`
+                : "") +
+              `レビュー対象は未 commit の working-tree diff なので、\`git diff HEAD\` と ` +
+              `\`git status --porcelain\` が示す未追跡ファイルを使う。main...HEAD は使わない。` +
+              `判定の前に参照モジュールのファイルを読み、参照モジュールが実際に行っていることだけを報告する。` +
+              `従っていない慣例を発明しない。`,
+          ),
+          {
+            label: "structure",
+            phase: "Verify",
+            agentType: "reviewer-reuse",
+            schema: STRUCTURE_SCHEMA,
+            model: "sonnet",
+          },
+        )
+      : Promise.resolve({ reference_checked: false, findings: [] }),
 ]);
 // 変更ファイルは plan の files か .claude/workspace/ 配下 (think の plan 下書き) に収まる。
 // diff 一覧を取得できないこと自体も surface する。
 const planFiles = new Set(plan.units.flatMap((u) => u.files));
+const baselineUntracked =
+  baseline && Array.isArray(baseline.untracked) ? baseline.untracked : [];
+// porcelain はディレクトリを "dir/" の 1 行で出すので prefix でも突き合わせる。
+const preexisting = (f) =>
+  baselineUntracked.some((b) => b && (f === b || f.startsWith(b.endsWith("/") ? b : `${b}/`)));
+// diff agent が --untracked-files=all を守らずディレクトリを "dir/" の 1 行で返しても
+// 偽陽性にしないよう、plan files 側も prefix で突き合わせる (モデル挙動に依存しない後段防御)。
+const coveredByPlan = (f) =>
+  planFiles.has(f) || (f.endsWith("/") && [...planFiles].some((p) => p.startsWith(f)));
 const scopeDeviations =
   diff && Array.isArray(diff.files)
-    ? diff.files.filter((f) => f && !planFiles.has(f) && !f.startsWith(".claude/workspace/"))
+    ? diff.files.filter(
+        (f) => f && !coveredByPlan(f) && !f.startsWith(".claude/workspace/") && !preexisting(f),
+      )
     : ["diff 一覧を取得できず scope 未検証"];
 // name で突き合わせ、found=true が無い name を欠落とする。言明 0 件なら relay は走らず
 // 欠落も無い。
@@ -641,11 +818,15 @@ if (!allTestNames.length) {
   missingTests = ["テスト言明の照合を実行できず presence 未検証"];
 }
 const conf = conformance || { spec_found: false, findings: [] };
+const struct = structure || { reference_checked: false, findings: [] };
 log(
   `Verify: scope 逸脱 ${scopeDeviations.length} 件、欠落テスト言明 ${missingTests.length} 件、` +
     (conf.spec_found
-      ? `conformance の spec 逸脱 ${conf.findings.length} 件。`
-      : "conformance は skip (spec 無し)。"),
+      ? `conformance の spec 逸脱 ${conf.findings.length} 件 (うち high ${conf.findings.filter((f) => f.severity === "high").length} 件)、`
+      : "conformance は skip (spec 無し)、") +
+    (struct.reference_checked
+      ? `structure の逸脱 ${struct.findings.length} 件 (${refModule.path} 比)。`
+      : "structure は skip (plan に参照モジュール無し)。"),
 );
 
 // build は起票しない。スコープ外候補は戻り値で返し、ユーザーが /issue で起票する。
@@ -677,6 +858,9 @@ shipAssumptions.forEach((t, i) => {
     slots.push({ text: t, set: (v) => (shipAssumptions[i] = v) });
 });
 for (const f of shipConformance)
+  if (f.detail && f.detail.trim()) slots.push({ text: f.detail, set: (v) => (f.detail = v) });
+const shipStructure = struct.reference_checked ? struct.findings.map((f) => ({ ...f })) : [];
+for (const f of shipStructure)
   if (f.detail && f.detail.trim()) slots.push({ text: f.detail, set: (v) => (f.detail = v) });
 for (const a of shipAnomalies)
   if (a.notes && a.notes.trim()) slots.push({ text: a.notes, set: (v) => (a.notes = v) });
@@ -720,6 +904,18 @@ if (slots.length) {
   }
 }
 
+// plan の実機確認節 (任意)。単体テストを持たない plan は受け入れ判定が人間の実機確認に
+// 残るが、PR に載らないと merge 前に踏まれない。決定論で bullet を拾い、fact tail に
+// チェックリストとして転記する。
+const manualHeading = body.match(/^###\s+(実機確認|Manual verification)\b.*$/m);
+let manualChecks = [];
+if (manualHeading) {
+  const afterManual = body.slice(manualHeading.index + manualHeading[0].length);
+  const manualEnd = afterManual.search(/^#{2,3}\s/m);
+  const manualSection = manualEnd === -1 ? afterManual : afterManual.slice(0, manualEnd);
+  manualChecks = [...manualSection.matchAll(/^[ \t]*[-*+][ \t]+(.+)$/gm)].map((m) => m[1].trim());
+}
+
 const shipPayload = {
   issue: issueNumber,
   assumptions: shipAssumptions,
@@ -730,6 +926,8 @@ const shipPayload = {
   gates_pass: code.gates_pass,
   verify_output: code.verify_output || "",
   conformance: shipConformance,
+  structure: shipStructure,
+  manual_checks: manualChecks,
 };
 
 const SHIP_SCHEMA = obj(["committed", "pr_url"], {
@@ -740,12 +938,15 @@ const SHIP_SCHEMA = obj(["committed", "pr_url"], {
 
 const ship = await agent(
   anchor(
-    `すべての変更を 1 つの Conventional Commits commit にまとめる。commit メッセージは自分で書く (diff を要約する)。` +
+    `この build の変更を 1 つの Conventional Commits commit にまとめる。commit メッセージは自分で書く (diff を要約する)。` +
+      `stage する範囲は自分で絞る。\`git add -A\` と \`git add .\` は使わない。追跡済みファイルの変更はそのまま stage してよいが、` +
+      `未追跡ファイル (\`git status --porcelain --untracked-files=all\` の "??" 行。ディレクトリ単位に畳まずファイル単位で判定する) は、plan の files ${JSON.stringify([...planFiles])} に含まれるか、この run で自分が作成したものだけを stage する。` +
+      `それ以外の未追跡ファイルは build 以前から作業ツリーにあったものなので stage しない (仕様書・調査メモ・ローカル設定が PR に混入する)。stage しなかった未追跡パスは結果に列挙する。\n` +
       `ブランチを push し、draft pull request を開く。本文は PR テンプレートから自分で書く人間向けパートと、データから決定論レンダリングされる fact セクションで構成する (fact セクションを手書きしない)。手順は以下。\n` +
-      `(1) \`$HOME/.claude/settings.json\` から \`language\` を読み (未設定なら英語)、その言語で人間向け本文を書く。コード / 識別子 / 専門用語は翻訳しない。PR テンプレートはリポジトリのものがあれば使う (大文字小文字の区別なし、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)。無ければ同梱の \`${bundled("skills/pr/templates/pr.md")}\` を使う。骨格を読んで body ファイルへ折り込む。人間向けセクションだけを、レビュアーが速く掴める順で埋める。先頭に解決する問題と到達する成果 (${JSON.stringify(plan.outcome)})、次に変更内容とアプローチ、最後にレビューの注目点。リストと小さな表を使い、簡潔に書き、埋め草と事実の捏造をしない。Related / Closes は書かない (tail が \`Closes #\` を出す)。Scope / Backlog も書かない。スコープ外候補は PR に載せない。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実 diff から埋め、空なら節ごと省略する。\n` +
+      `(1) \`$HOME/.claude/settings.json\` から \`language\` を読み (未設定なら英語)、その言語で人間向け本文を書く。コード / 識別子 / 専門用語は翻訳しない。PR テンプレートはリポジトリのものがあれば使う (大文字小文字の区別なし、優先順 \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > \`PULL_REQUEST_TEMPLATE/\` ディレクトリ)。無ければ同梱の \`${bundled("skills/pr/templates/pr.md")}\` を使う。骨格を読んで body ファイルへ折り込む。人間向けセクションだけを、レビュアーが速く掴める順で埋める。先頭に解決する問題と到達する成果 (${JSON.stringify(plan.outcome)})、次に変更内容とアプローチ、最後にレビューの注目点。埋め草と事実の捏造をしない。Related / Closes は書かない (tail が \`Closes #\` を出す)。Scope / Backlog も書かない。スコープ外候補は PR に載せない。Design Decisions は plan の decisions (${JSON.stringify(plan.decisions || [])}) と実 diff から埋め、空なら節ごと省略する。\n` +
       `(2) この JSON をそのまま一時ファイルに書く。\n${JSON.stringify(shipPayload)}\n` +
       `(3) fact tail の追記と PR 作成を 1 つの \`&&\` チェーンで行い、レンダラー失敗時は PR 作成前に中断させる。リポジトリルートから ` +
-      `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft --title "<commit の subject>" --body-file <bodyfile>\` を実行する。\n` +
+      `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title "<commit の subject>" --body-file <bodyfile>\` を実行する。\n` +
       `pr-body.py は payload が壊れているか必須フィールドを欠くと非ゼロで終了する (何も出力しない)。チェーンが失敗したら他の手段で PR を作らない。committed と空の pr_url とエラーを報告する。\n` +
       `committed の状態と PR url を報告する。${guard}`,
   ),
@@ -764,9 +965,16 @@ return {
   units_completed: code.completed.length,
   code_anomalies: (code.anomalies || []).length,
   code_verified: code.tests_pass && code.gates_pass,
+  // 全 unit の tests が空の plan は自動検証が gates のみで、受け入れ判定は人間の
+  // 実機確認が前提になる。その状態を呼び出し元へ明示する。
+  verification: allTestNames.length ? "tests+gates" : "gates-only",
   scope_deviations: scopeDeviations,
   missing_tests: missingTests,
   conformance_findings: (conf.findings || []).length,
+  // high は受け入れ条件を満たせない欠落 / 誤実装。0 でない戻り値は Ship 済みでも
+  // 呼び出し元がすぐ修正に入るべき信号 (件数だけでは重大性が読めなかった反省)。
+  conformance_high: (conf.findings || []).filter((f) => f.severity === "high").length,
+  structure_findings: (struct.findings || []).length,
   cleanup_tests_pass: cleanup.tests_pass,
   backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,

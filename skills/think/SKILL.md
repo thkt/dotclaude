@@ -9,70 +9,57 @@ argument-hint: "[task description]"
 
 # /think - Design Exploration
 
-Compare 2+ approaches, subject them to `critic-design` critique, and let only the surviving approach reach the structured plan. Write the plan to a draft file following the templates/plan.md skeleton and also return it in conversation. Persistence happens when `/issue` transfers it into the issue's Plan section.
+Subject 2+ approaches to `critic-design` critique, and let only the surviving approach reach the structured plan. Write the plan to a draft file following the templates/plan.md skeleton and also return it in conversation. Persistence happens when `/issue` transfers it into the issue's Plan section.
 
 ## Input
 
 `$ARGUMENTS` carries the task description and research context. If empty, confirm with the user via AskUserQuestion. The first line is the task title.
 
-## Phase 1: Outcome Exploration
+## Phase 1: Establish the Why
 
-Read `.claude/OUTCOME.md`. If it does not exist, generate it via `/outcome`.
-
-Establish the Why before designing. Who needs this, what pain exists and what is its evidence, what counts as success, why now, and what happens if we don't. Pin these 5 points down via AskUserQuestion until they are readable from $ARGUMENTS and the conversation. Pin down scope / priority / constraints / risks at the same time if unsettled; skip when already settled.
+Read `.claude/OUTCOME.md`. If it does not exist, generate it via `/outcome`. Who needs this and with what pain (with evidence), what counts as success, and why now. Design starts only once this Why is readable from $ARGUMENTS and the conversation. Do not proceed on placeholders; pin it down via AskUserQuestion.
 
 ## Phase 2: Design Exploration
 
-Read the relevant code first to grasp patterns / constraints / architecture / prior art. Search `.claude/workspace/research/` with task keywords via `bfs`, and read any matching research output.
+Read the relevant code, search `.claude/workspace/research/` with task keywords via `bfs`, and read any matching research output. Generate 2+ approaches from distinct perspectives (simplest thing that works / structure and extensibility / developer experience). Do not bundle independent technical decisions into one question; ask each separately with a recommendation and trade-offs.
 
-### Approach Generation
-
-Generate 2+ distinct approaches from the following perspectives. When approaches contain independent technical decisions, present each decision as a separate choice question with a recommendation and trade-offs. Bundle only tightly coupled decisions.
-
-- Pragmatist asks for the simplest thing that works
-- Architect asks for what is extensible and well-structured
-- DX Advocate asks for what is best for developer / user experience
-
-### Design
-
-1. Launch `critic-design` on the generated approaches. Include the task title verbatim in the spawn prompt, and have it return a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[], actionable: string[] }`
-2. If the verdict is NO-GO, resolve blockers inline before proceeding. Fix the approach, or relaunch the critic. Present the weakness-filtered design to the user with trade-off rationale, and wait for approval
-3. After approval, ask whether the technical decision needs a DR. Skip for simple features
+1. Launch `critic-design` on the approaches. Include the task title verbatim in the prompt, and have it return a single JSON object `{ verdict: "GO" | "NO-GO", weaknesses: string[], actionable: string[] }`
+2. On NO-GO, resolve blockers inline before proceeding. Present the surviving design to the user with trade-off rationale, and wait for approval
+3. After approval, ask whether the technical decision needs a DR
 
 ## Phase 3: Plan Generation
 
-1. Decompose the approved design into units. A unit is an independently implementable bundle of outcome. Serialize them in implementation order into PLAN_SCHEMA-equivalent JSON `{ test_command, units: [{ id, goal, contract, files: string[], tests: [{ id, name }] }] }`. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan. A unit with no verifiable behavior (docs / config) gets an empty tests array
-2. Write contract and tests[].name per the authoring rules below
-3. If a unit touches 5 or more unique files, re-decompose it into smaller units along outcomes and confirm the new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
-4. Self-check the serialized plan. Look for missing required fields, duplicate ids, and empty units / tests / goal / contract, and fix them. Final validation is performed by build's Load validate
-5. Run the pre-writeout verification, then write the passing plan following the `${CLAUDE_SKILL_DIR}/templates/plan.md` skeleton to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`. Derive the lowercase hyphenated slug from the task title. Include both the `## Plan` and `## Backlog candidates` sections
+Decompose the approved design into units, independently implementable bundles of outcome, in implementation order, and serialize them into PLAN_SCHEMA-equivalent JSON `{ test_command, reference_module, units: [{ id, goal, contract, files: string[], tests: [{ id, name }], seam }] }`. Construct the decomposition tests-first. (1) Enumerate acceptance-test candidates from the whole design. (2) Group the tests into bundles of 4 or fewer, one bundle per unit of outcome. (3) Assign each bundle the files it touches to form a unit, and split any bundle whose assignment reaches 4 or more files. Outcomes with no verifiable behavior (docs / config) are added separately as units with empty tests. Unit size is decided mechanically against the caps; never defer the size judgment.
 
-### Contract authoring rules
+1. Assign sequential ids in U-001 / T-001 format, with T-NNN unique across the whole plan
+2. tests[].name is a one-line condition + expected-result statement. The code workflow uses it verbatim as the test name, and build matches it as a fixed string
+3. A unit with no verifiable behavior (docs / config) gets an empty tests array. build handles that unit as direct implementation
+4. Each unit's tests stub that unit's own boundaries, so once 2 or more units carry tests, place exactly one seam unit last and mark it `seam: true`. Its tests run the real modules across the unit boundary, fake only I/O with external systems, and assert the connections between units. build's `validate()` rejects a plan with no seam unit
+5. A unit's caps are 3 files and 4 tests. Measured runs show a 6-7 file unit costs one implementation agent 17-46 minutes and becomes the dominant term in the build's wall-clock. Split any unit over the caps along outcomes, and confirm the resulting new unit composition with the user. Candidates carved out of scope stay out of the plan and go to backlog candidates
+6. Pass the self-check (missing required fields, duplicate ids, empty units / tests / goal / contract) and the pre-writeout verification, then write the plan following the `${CLAUDE_SKILL_DIR}/templates/plan.md` skeleton to `.claude/workspace/planning/YYYY-MM-DD-<slug>.plan.md`. The slug is the lowercase hyphenated title. Include both the `## Plan` and `## Backlog candidates` sections
 
-Select, do not generate. Never sketch behavior in prose or invent new code fragments; a contract is a citation plus an intent. A citation is verifiable, while a generated sketch is not.
+### reference_module
 
-1. Pick the citation in this priority order: an existing shape in the codebase > a docs/wiki page > a deep link to the API in the pinned version's official docs. Write a code shape as path + public symbol under the same stable-anchor rules as Preconditions. External-library citations follow SOURCING.md
-2. Add what to follow and what to change relative to the citation as the one intent line. For a new shape with no citable source, do not invent a signature; keep the one intent line and leave the shape to implementation. Behavior is pinned by the acceptance tests
-3. Cited paths + symbols also go into `### Preconditions`, putting them under pre-writeout verification and build's Revalidate
+A contract cites a behavior at one call site, which cannot stop the surrounding structure from being hand-rolled. Search for an existing module with the same shape as the one being planned (a matching set of screens or layers, in any domain), record it as `reference_module: { path, files, instances }`. The `reference_module` section itself is what carries the structure, and every unit refers to it. Make U-001 its structure replication (same directory layout, component names, export names; tests is an empty array) only when the skeleton fits under 4 files; otherwise split units by layer and let each unit replicate its own slice. A module of realistic size takes the latter path, and bundling the whole skeleton into U-001 collides with Phase 3's file-count rule. State the shared conventions to keep (which shared components it composes, where formatting lives, how state is passed); deviating is allowed only with a stated reason in the plan. When several candidates match, pick the one whose screen set is closest and name the others in the prose. When none matches, write null and say in the prose why this shape is new (a null with no reason is a planning defect). When instances is 2 or more, say "Nth instance" in the prose, telling the implementer to replicate rather than design.
 
-### Precondition authoring rules
+### contract
 
-Apply these 5 rules to `### Preconditions`.
+Select, do not generate. Never sketch behavior in prose or invent new code fragments; a contract is a citation plus one intent line. Pick the citation in this priority order: an existing shape in the codebase (path + public symbol, under the same stable-anchor rules as Preconditions) > a docs/wiki page > a deep link into the pinned version's official docs; external libraries follow SOURCING.md. For a new shape with no citable source, do not invent a signature; leave the shape to implementation and let the acceptance tests pin the behavior. Cited paths + symbols also go into `### Preconditions`.
 
-1. List existing dependencies only. Files newly created by a unit are never listed as preconditions
-2. Anchors are limited to a single stable anchor, one exported / public symbol name, that `ugrep -F` matches as a literal fixed string. Do not anchor on private implementation details, comment strings, line numbers, or a slash-joined list of symbols; none of those match under `ugrep -F`
-3. When no stable symbol exists, write the line as path only
-4. Each line takes one of two forms: path only, or path + stable anchor
-5. Paths are repo-root-relative. A path that drops a repo prefix like `workspace/` fails verification
+### Preconditions
+
+List existing dependencies only, each line repo-root-relative in one of two forms: path only, or path + stable anchor. An anchor is limited to a single exported / public symbol name that `ugrep -F` matches as a literal fixed string; never private implementation details, comment strings, or line numbers. When no stable symbol exists, write the line as path only. Files newly created by a unit are never listed.
 
 ### Pre-writeout verification
 
-Before writing out the draft, verify from the same repository root as the build workflow's Revalidate.
+Verify from the same repository root as the build workflow's Revalidate; fix or drop any failing line.
 
-1. Verify each `### Preconditions` line: paths via `test -f <path>`, anchors via `ugrep -F '<pattern>' <path>`. Fix or drop any failing line
-2. Verify every `units[].files` entry that refers to an existing file with `test -f <path>`, and fix any failing path
-3. If even one unit lists an existing file in `files`, the `### Preconditions` subsection needs at least one line. Treat an empty or absent subsection as a failure, and add one precondition line anchoring the load-bearing dependency
-4. Check for overflow against the line-count rules in templates/plan.md
+1. Each `### Preconditions` line: paths via `test -f <path>`, anchors via `ugrep -F '<pattern>' <path>`
+2. Every `units[].files` and `reference_module.files` entry that refers to an existing file, via `test -f <path>`
+3. If any unit touches an existing file while `### Preconditions` is empty or absent, that is a failure; add a line anchoring the load-bearing dependency
+4. A `reference_module: null` with no stated reason in the prose fails
+5. No overflow against the line-count rules in templates/plan.md
+6. Count each unit's `files` entries and T-NNN entries; no unit has 4 or more files or 5 or more tests. If one does, split it and re-verify
 
 ## Output
 

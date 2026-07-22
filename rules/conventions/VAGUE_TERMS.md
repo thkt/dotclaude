@@ -35,3 +35,13 @@ Models do not generalize an instruction from one item to another, nor infer scop
 | List is illustrative | "such as A, B, C (not limited to these)" |
 | List is exhaustive   | "exactly these: A, B, C"                 |
 | Apply broadly        | "every section, not just the first"      |
+
+## Delete Document-Updating Sentences
+
+Judge each sentence by what it updates: the situation (facts about the subject, judgments, confidence) or the document (how the document itself looks or proceeds). Delete a sentence that only updates the document. Typical forms that slip into AI-generated bodies are the three below (not limited to these).
+
+| Form                   | Description                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| Progress narration     | Announcing in place what the document is about to say or do  |
+| Self-characterization  | Declaring the document's own scope or nature                 |
+| Stance-free disclaimer | Adding a supplement without naming the misreading it rejects |

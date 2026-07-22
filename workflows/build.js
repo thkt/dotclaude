@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Autonomous end-to-end build. Taking an issue with a Plan section refined via /think + /issue as input, Load (verbatim fetch -> deterministic id collection -> extract -> validate + id cross-check) / Revalidate / Branch / Code / Cleanup / Verify / Ship run headlessly as deterministic script stages. A plan-less issue has its plan drafted by the nested draft-plan workflow (ADR-0086). Correctness checking is a comparison against the plan's own anchors (preconditions, files scope, T-NNN statements, conformance), not an open-ended defect hunt; heavy assurance (/audit, /polish review) is human-invoked on the draft PR (ADR-0085).",
   whenToUse:
-    'Implementation of a plan-backed issue. Pass {issue, repo} as args, where issue is a number ("123" / "#123") or URL and repo is the absolute path of the target repository; args without repo stop early as no-repo. An issue without a ## Plan section has a plan auto-drafted (goal + a11y, critic-design gated); its quality is below the /think + /issue path. Step away and come back to a draft PR with recorded assumptions, conformance findings, and deterministic verify results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
+    'Implementation of a plan-backed issue. Pass {issue, repo, base?} as args, where issue is a number ("123" / "#123") or URL, repo is the absolute path of the target repository, and base (optional) is both the PR base branch and the starting point of a fresh checkout (for the epic-branch aggregation flow); args without repo stop early as no-repo. An issue without a ## Plan section has a plan auto-drafted (goal + a11y, critic-design gated); its quality is below the /think + /issue path. Step away and come back to a draft PR with recorded assumptions, conformance findings, and deterministic verify results; out-of-scope backlog candidates are returned in the workflow result for you to file via /issue. If in-flight steering is needed, drive the phases interactively.',
   phases: [
     { title: "Load" },
     { title: "Revalidate" },
@@ -49,6 +49,10 @@ if (!issueRef || !issueNumber) {
 // repo, agents resolve "the repository" from their own cwd and can run steps in
 // the wrong checkout.
 const repo = typeof input.repo === "string" ? input.repo : "";
+// Optional base branch. When given it is used both as the starting point of a
+// fresh checkout and as the PR base (slice PRs aggregating into an epic branch).
+// Unset keeps the default-branch behavior.
+const baseBranch = typeof input.base === "string" ? input.base.trim() : "";
 if (!repo) {
   return {
     stopped: "no-repo",
@@ -91,8 +95,8 @@ const FETCH_SCHEMA = obj(["found", "body"], {
 const fetchRef = issueRef.replace(/^#/, "");
 const fetched = await agent(
   anchor(
-    `Fetch the body of GitHub issue ${fetchRef} with a fixed command; do not summarize or reformat. ` +
-      `Run exactly \`gh issue view ${fetchRef} --json body --jq .body\` and return its stdout verbatim as body. ` +
+    `Run exactly \`gh issue view ${fetchRef} --json body --jq .body\` and return its stdout verbatim as body; ` +
+      `do not summarize or reformat. ` +
       `If the command exits non-zero (issue not found / fetch failed), return found: false.`,
   ),
   {
@@ -115,6 +119,12 @@ const body = fetched.body;
 // duplicate ids and empty content (test_command / contract / name). An empty tests
 // array is legal (code implements that unit directly). The last line of defense for
 // plan quality.
+//
+// The seam rule exists because per-unit tests stub their own boundaries, so a plan
+// whose units are each green can still ship layers that were never connected to each
+// other (kizalas #558 / PR 575: mapper returned nulls, pagination and the new/edit
+// affordances were never wired, 44 unit tests green). Once two units carry tests there
+// is a seam between them, and only a test crossing it fails when the wiring is absent.
 const validate = (plan) => {
   const errors = [];
   // Non-object entries surface via a position placeholder id; a shared id would
@@ -142,6 +152,15 @@ const validate = (plan) => {
       testIds.add(t.id);
       if (!String(t.name || "").trim()) errors.push(`${t.id} has an empty name`);
     }
+  }
+
+  const tested = units.filter((u) => (Array.isArray(u.tests) ? u.tests : []).length);
+  if (tested.length >= 2 && !tested.some((u) => u.seam === true)) {
+    errors.push(
+      "no seam unit. With 2 or more tested units, mark at least one unit seam: true - " +
+        "a unit whose tests run the real modules across the boundary between units " +
+        "(faking only I/O with external systems) and assert the connections between units",
+    );
   }
 
   return errors;
@@ -179,8 +198,13 @@ const PLAN_SCHEMA = obj(
     },
     units: {
       type: "array",
-      items: obj(["id", "goal", "files", "contract", "tests"], {
+      items: obj(["id", "goal", "files", "contract", "tests", "seam"], {
         id: { type: "string", description: "Sequential id in U-001 format" },
+        seam: {
+          type: "boolean",
+          description:
+            "true when this unit's tests cross the boundary between units - they run the real modules end to end, faking only I/O with external systems, and assert the connections between units. false for a unit that tests one layer with its dependencies stubbed",
+        },
         goal: {
           type: "string",
           description: "One-line description of the behavior this unit delivers",
@@ -212,6 +236,28 @@ const PLAN_SCHEMA = obj(
       type: "string",
       description: "Test command, e.g. cargo test / bun test",
     },
+    reference_module: {
+      type: ["object", "null"],
+      description:
+        "Existing same-shaped module whose structure this feature replicates, or null when the shape is new. Later units keep its conventions",
+      properties: {
+        path: { type: "string", description: "Module root of the reference module" },
+        files: {
+          type: "array",
+          items: { type: "string" },
+          description: "Files to replicate, repo-root-relative",
+        },
+        instances: {
+          type: "number",
+          description: "How many existing features already share this shape",
+        },
+        conventions: {
+          type: "array",
+          items: { type: "string" },
+          description: "Shared conventions later units must keep",
+        },
+      },
+    },
     preconditions: {
       type: "array",
       items: obj(["path"], {
@@ -236,12 +282,13 @@ const draftPlan = async () => {
   const drafted = await agent(
     anchor(
       `The following GitHub issue body has no ## Plan section. Derive a structured plan from the body alone; do not invent scope beyond what the issue asks. ` +
-        `Explore the repository first to ground the plan in reality: pick concrete file paths, list preconditions ({path, pattern} of existing code), and read the project config to determine the real test_command. ` +
-        `Set outcome to a done-state goal. If the issue names no explicit goal, set one yourself. ` +
-        `When the work touches UI, include a11y criteria in outcome and in the test scenarios (all operations complete with keyboard only, errors announced to screen readers, and similar). ` +
-        `Decompose the work into small units with U-001-style ids, listed in implementation order. Give each unit test scenarios with plan-wide-unique T-001-style ids and a one-line condition + expected-result name. A unit with no verifiable behavior (docs / config) gets an empty tests array. ` +
-        `Write each contract by selection, not generation: a citation (existing code path + symbol, a docs page, or an official-docs deep link) plus a one-line intent. ` +
-        `Record every best-guess decision you make in assumptions. backlog_candidates are out-of-scope candidates the issue mentions. Empty arrays if none.\n\n${fencedBody}`,
+        `Explore the repository first to ground the plan in reality: real file paths, preconditions from existing code, a test_command read from the project config. ` +
+        `outcome is a done-state goal; set one yourself if the issue names none, and when the work touches UI include a11y criteria (keyboard-only completion, errors announced to screen readers, and similar) in outcome and test scenarios. ` +
+        `List units in implementation order; a unit with no verifiable behavior (docs / config) gets an empty tests array. ` +
+        `Per-unit tests stub their own boundaries, so layers can each be green while never being connected. Once the plan has 2 or more tested units, give it a seam unit (seam: true) placed last: its tests run the real modules across the unit boundary, fake only I/O with external systems, and assert that the connections between units (calls, transitions, data handoffs) are actually wired. Every other unit is seam: false. ` +
+        `Write each contract by selection, not generation (a citation plus a one-line intent). ` +
+        `When an existing module has the same shape as the one being planned (a matching set of screens or layers, in any domain), record it as reference_module and make U-001 its structure replication with an empty tests array; set null only when no module matches, and say why in an assumption. ` +
+        `Record every best-guess decision you make in assumptions.\n\n${fencedBody}`,
     ),
     {
       label: "generate-plan",
@@ -262,6 +309,7 @@ const draftPlan = async () => {
     anchor(
       `critic-design. Adversarially review the auto-generated implementation plan for issue #${issueNumber} "${drafted.outcome}". ` +
         `It was derived from the body with no human review, so attack it: unsound or missing unit decomposition, wrong or missing preconditions, scope invented beyond what the issue asks, untestable scenarios, or a wrong test_command. ` +
+        `Also attack reference_module: null despite a same-shaped module in the repository, a path that is not the closest match, or missing counterpart files / conventions. ` +
         `Return verdict "GO" if it is sound enough to implement as-is, or "NO-GO" if a blocking flaw makes it unsafe, and list the concrete flaws in weaknesses.\n` +
         `The plan is as follows.\n${JSON.stringify(drafted)}`,
     ),
@@ -313,7 +361,8 @@ if (planHeading) {
     anchor(
       `Extract a structured plan from the ## Plan section of the following GitHub issue body. Do not re-plan, summarize, or fill in gaps; structure exactly what is written. ` +
         `Preserve every unit id (U-NNN) and test id (T-NNN) from the body (omissions are rejected by a downstream deterministic cross-check). ` +
-        `preconditions is the list of {path, pattern} of existing code the plan presupposes; backlog_candidates are out-of-scope candidates written in the issue. Empty arrays if absent from the body.\n\n${fencedBody}`,
+        `preconditions is the list of {path, pattern} of existing code the plan presupposes; backlog_candidates are out-of-scope candidates written in the issue. Empty arrays if absent from the body.\n` +
+        `seam is true only for a unit the body marks \`seam: true\`; every other unit is false. Do not infer it from the unit's content.\n\n${fencedBody}`,
     ),
     {
       label: "extract",
@@ -402,7 +451,16 @@ const REVALIDATE_SCHEMA = obj(["results"], {
 // surfaced in the stopped return.
 phase("Revalidate");
 const preconditions = plan.preconditions || [];
-const [reval, branch] = await parallel([
+const BRANCH_SCHEMA = obj(["branch"], {
+  branch: { type: "string", description: "the checked-out branch name, nothing else" },
+});
+// Untracked files at run start. Subtracts pre-existing working-tree clutter from
+// Verify's scope deviations (observed: .claude/ operational files and spec dirs
+// listed as deviations on every run).
+const UNTRACKED_SCHEMA = obj(["untracked"], {
+  untracked: { type: "array", items: { type: "string" } },
+});
+const [reval, branchRes, baseline] = await parallel([
   () =>
     preconditions.length
       ? agent(
@@ -427,16 +485,35 @@ const [reval, branch] = await parallel([
   () =>
     agent(
       anchor(
-        `Check out a new git working branch for issue #${issueNumber} "${plan.outcome}". Pick a conventional branch name (type + short slug) and run git checkout -b with it. If already on a non-default branch, keep the current branch. Report the branch name as your final text.${guard}`,
+        `Check out a new git working branch for issue #${issueNumber} "${plan.outcome}". Pick a conventional branch name (type + short slug) and ` +
+          (baseBranch
+            ? `create it from ${baseBranch} via \`git checkout -b <name> ${baseBranch}\`. `
+            : `run git checkout -b with it. `) +
+          `If already on a non-default branch, keep the current branch. Return only the branch name in the branch field.${guard}`,
       ),
       {
         label: "checkout",
         phase: "Branch",
         agentType: "general-purpose",
+        schema: BRANCH_SCHEMA,
+        model: "haiku",
+      },
+    ),
+  () =>
+    agent(
+      anchor(
+        `Run \`git status --porcelain --untracked-files=all\` and list the "??" line paths, repo-root-relative, as untracked (per file, never collapsed to a directory). No judgment, no filtering.`,
+      ),
+      {
+        label: "baseline-untracked",
+        phase: "Revalidate",
+        agentType: "general-purpose",
+        schema: UNTRACKED_SCHEMA,
         model: "haiku",
       },
     ),
 ]);
+const branch = (branchRes && branchRes.branch) || "";
 if (preconditions.length) {
   if (!reval || !Array.isArray(reval.results)) {
     return {
@@ -450,11 +527,46 @@ if (preconditions.length) {
   // length identical. No matching exists&&matches result is drift.
   const keyOf = (o) => JSON.stringify([o.path, o.pattern || ""]);
   const resultByKey = new Map(reval.results.map((r) => [keyOf(r), r]));
+  // A precondition with no result is a relay drop, not an absent file (observed:
+  // a non-code svg asset got dropped from the check and an existing file stopped
+  // the build as missing). Re-verify just the dropped entries once; if still
+  // unreported, stop as revalidate-incomplete, distinct from plan-drift.
+  let unreported = preconditions.filter((pc) => !resultByKey.has(keyOf(pc)));
+  if (unreported.length) {
+    const retry = await agent(
+      anchor(
+        relayVerifier({
+          what: "the plan's preconditions dropped by the previous relay (omit none, including non-code asset paths)",
+          script: "workflows/build/revalidate.py",
+          shape: '{"results":[{path,pattern,exists,matches}]}',
+          payload: unreported,
+          count: unreported.length,
+        }),
+      ),
+      {
+        label: "revalidate2",
+        phase: "Revalidate",
+        agentType: "general-purpose",
+        schema: REVALIDATE_SCHEMA,
+        model: "haiku",
+      },
+    );
+    if (retry && Array.isArray(retry.results))
+      for (const r of retry.results) resultByKey.set(keyOf(r), r);
+    unreported = preconditions.filter((pc) => !resultByKey.has(keyOf(pc)));
+    if (unreported.length) {
+      return {
+        stopped: "revalidate-incomplete",
+        unreported,
+        branch,
+        why: "The verifier returned no result for some preconditions (distinct from plan-drift, where the file is absent). Relaunch.",
+      };
+    }
+  }
   const drift = [];
   for (const pc of preconditions) {
     const r = resultByKey.get(keyOf(pc));
-    if (!r) drift.push({ ...pc, exists: false, matches: false, missing: true });
-    else if (!r.exists || !r.matches) drift.push(r);
+    if (!r.exists || !r.matches) drift.push(r);
   }
   if (drift.length) {
     return {
@@ -483,8 +595,10 @@ const code =
   (await sibling("code", {
     plan: stripPreconditions(plan),
     repo,
-    // Pinned to fable (user decision 2026-07-20). Do not silently track code.js's default.
-    model: "fable",
+    // Implementation executes the plan's contract / tests; design judgment already
+    // happened on the plan side (think / critic-design). Do not silently track
+    // code.js's default.
+    model: "sonnet",
   })) || null;
 if (!code || code.stopped) {
   return { stopped: "code-failed", detail: code };
@@ -554,6 +668,33 @@ const TEST_PRESENCE_SCHEMA = obj(["results"], {
   },
 });
 
+// Structural drift from the plan's reference module. Conformance answers "does it do what
+// the spec asked"; this answers "is it shaped like its neighbors". A contract cites one
+// behavior, so the structure around it can be hand-rolled without any anchor catching it.
+const STRUCTURE_SCHEMA = obj(["reference_checked", "findings"], {
+  reference_checked: {
+    type: "boolean",
+    description: "true when the plan named a reference module and it was compared against",
+  },
+  findings: {
+    type: "array",
+    items: obj(["category", "location", "reference", "detail"], {
+      category: {
+        type: "string",
+        enum: ["missing_file", "hand_rolled", "naming", "convention"],
+        description:
+          "counterpart file absent, shared component reimplemented instead of reused, diverging names, or a broken shared convention",
+      },
+      location: { type: "string", description: "file:line in the diff" },
+      reference: {
+        type: "string",
+        description: "the reference module's counterpart path + symbol this deviates from",
+      },
+      detail: { type: "string" },
+    }),
+  },
+});
+
 const CONFORMANCE_SCHEMA = obj(["spec_found", "findings"], {
   spec_found: {
     type: "boolean",
@@ -561,11 +702,17 @@ const CONFORMANCE_SCHEMA = obj(["spec_found", "findings"], {
   },
   findings: {
     type: "array",
-    items: obj(["category", "spec_line", "location", "detail"], {
+    items: obj(["category", "severity", "spec_line", "location", "detail"], {
       category: {
         type: "string",
         enum: ["missing", "scope_creep", "wrong"],
         description: "missing/partial, scope creep, or implemented-but-wrong",
+      },
+      severity: {
+        type: "string",
+        enum: ["high", "medium", "low"],
+        description:
+          "high is a gap / wrong implementation that defeats an acceptance criterion, medium is behavior that diverges from spec while the main flow still works, low is wording or minor differences",
       },
       spec_line: {
         type: "string",
@@ -589,12 +736,13 @@ const testChecks = plan.units
     names: u.tests.map((t) => t.name),
   }));
 const allTestNames = testChecks.flatMap((c) => c.names);
-const [diff, testPresence, conformance] = await parallel([
+const refModule = plan.reference_module;
+const [diff, testPresence, conformance, structure] = await parallel([
   () =>
     agent(
       anchor(
         `List the files this build changed, mechanically; do not judge or filter. From the repository root run ` +
-          `\`git diff HEAD --name-only\` and \`git status --porcelain\`, and return files as the union of the changed paths ` +
+          `\`git diff HEAD --name-only\` and \`git status --porcelain --untracked-files=all\`, and return files as the union of the changed paths ` +
           `and the untracked paths (the porcelain "??" entries), repo-root-relative, one entry per file.`,
       ),
       {
@@ -632,10 +780,7 @@ const [diff, testPresence, conformance] = await parallel([
         `Conformance review against the originating issue. The spec is GitHub issue #${issueNumber}: ` +
           `read it with \`gh issue view ${issueNumber}\`. The implementation to review is the uncommitted ` +
           `working-tree diff (this build has not committed yet), so use \`git diff HEAD\` plus the untracked ` +
-          `files (new test/impl files) shown by \`git status --porcelain\`. ` +
-          `Do not use main...HEAD (HEAD is still the branch point). Report the 3 categories ` +
-          `(missing/partial, scope creep, implemented-but-wrong) with the spec line quoted. ` +
-          `If no spec is available, return spec_found=false with an empty findings array.`,
+          `files shown by \`git status --porcelain\`; do not use main...HEAD (HEAD is still the branch point).`,
       ),
       {
         label: "conformance",
@@ -645,13 +790,49 @@ const [diff, testPresence, conformance] = await parallel([
         model: "sonnet",
       },
     ),
+  () =>
+    refModule?.path
+      ? agent(
+          anchor(
+            `Compare this build's implementation against the reference module ${refModule.path}, which the plan ` +
+              `named as the structure to replicate, and report structural deviations only (not defects, not spec ` +
+              `conformance) in the schema's 4 categories. Its files are ${JSON.stringify(refModule.files || [])}. ` +
+              (refModule.conventions?.length
+                ? `The conventions it carries are ${JSON.stringify(refModule.conventions)}. `
+                : "") +
+              `The implementation to review is the uncommitted working-tree diff, so use \`git diff HEAD\` plus the ` +
+              `untracked files shown by \`git status --porcelain\`; do not use main...HEAD. ` +
+              `Read the reference module's files before judging, and report only what it actually does; ` +
+              `do not invent conventions it does not follow.`,
+          ),
+          {
+            label: "structure",
+            phase: "Verify",
+            agentType: "reviewer-reuse",
+            schema: STRUCTURE_SCHEMA,
+            model: "sonnet",
+          },
+        )
+      : Promise.resolve({ reference_checked: false, findings: [] }),
 ]);
 // Changed files stay within the plan's files or .claude/workspace/ (think's plan
 // draft). A missing diff listing is itself surfaced.
 const planFiles = new Set(plan.units.flatMap((u) => u.files));
+const baselineUntracked =
+  baseline && Array.isArray(baseline.untracked) ? baseline.untracked : [];
+// porcelain emits a directory as a single "dir/" line, so also match by prefix.
+const preexisting = (f) =>
+  baselineUntracked.some((b) => b && (f === b || f.startsWith(b.endsWith("/") ? b : `${b}/`)));
+// Even when the diff agent ignores --untracked-files=all and returns a directory as a
+// single "dir/" line, avoid false positives by also matching plan files by prefix
+// (a late-stage defense independent of model behavior).
+const coveredByPlan = (f) =>
+  planFiles.has(f) || (f.endsWith("/") && [...planFiles].some((p) => p.startsWith(f)));
 const scopeDeviations =
   diff && Array.isArray(diff.files)
-    ? diff.files.filter((f) => f && !planFiles.has(f) && !f.startsWith(".claude/workspace/"))
+    ? diff.files.filter(
+        (f) => f && !coveredByPlan(f) && !f.startsWith(".claude/workspace/") && !preexisting(f),
+      )
     : ["diff listing unavailable; scope not verified"];
 // Bind by name; a name with no found=true result is missing. With zero declared
 // statements the relay never ran and nothing can be missing.
@@ -665,11 +846,15 @@ if (!allTestNames.length) {
   missingTests = ["test-statement verification unavailable; presence not verified"];
 }
 const conf = conformance || { spec_found: false, findings: [] };
+const struct = structure || { reference_checked: false, findings: [] };
 log(
   `Verify: scope deviations ${scopeDeviations.length}, missing test statements ${missingTests.length}, ` +
     (conf.spec_found
-      ? `conformance ${conf.findings.length} spec deviation(s).`
-      : "conformance skipped (no spec found)."),
+      ? `conformance ${conf.findings.length} spec deviation(s) (${conf.findings.filter((f) => f.severity === "high").length} high), `
+      : "conformance skipped (no spec found), ") +
+    (struct.reference_checked
+      ? `structure ${struct.findings.length} deviation(s) from ${refModule.path}.`
+      : "structure skipped (no reference module in plan)."),
 );
 
 // build files nothing; out-of-scope candidates return to the user to file via /issue.
@@ -703,6 +888,9 @@ shipAssumptions.forEach((t, i) => {
     slots.push({ text: t, set: (v) => (shipAssumptions[i] = v) });
 });
 for (const f of shipConformance)
+  if (f.detail && f.detail.trim()) slots.push({ text: f.detail, set: (v) => (f.detail = v) });
+const shipStructure = struct.reference_checked ? struct.findings.map((f) => ({ ...f })) : [];
+for (const f of shipStructure)
   if (f.detail && f.detail.trim()) slots.push({ text: f.detail, set: (v) => (f.detail = v) });
 for (const a of shipAnomalies)
   if (a.notes && a.notes.trim()) slots.push({ text: a.notes, set: (v) => (a.notes = v) });
@@ -749,6 +937,19 @@ if (slots.length) {
   }
 }
 
+// The plan's manual verification section (optional). A plan without unit tests
+// leaves acceptance to a human's manual check, which never gets run before merge
+// unless it reaches the PR. Deterministically collect the bullets; the fact tail
+// renders them as a checklist.
+const manualHeading = body.match(/^###\s+(実機確認|Manual verification)\b.*$/m);
+let manualChecks = [];
+if (manualHeading) {
+  const afterManual = body.slice(manualHeading.index + manualHeading[0].length);
+  const manualEnd = afterManual.search(/^#{2,3}\s/m);
+  const manualSection = manualEnd === -1 ? afterManual : afterManual.slice(0, manualEnd);
+  manualChecks = [...manualSection.matchAll(/^[ \t]*[-*+][ \t]+(.+)$/gm)].map((m) => m[1].trim());
+}
+
 const shipPayload = {
   issue: issueNumber,
   assumptions: shipAssumptions,
@@ -759,6 +960,8 @@ const shipPayload = {
   gates_pass: code.gates_pass,
   verify_output: code.verify_output || "",
   conformance: shipConformance,
+  structure: shipStructure,
+  manual_checks: manualChecks,
 };
 
 const SHIP_SCHEMA = obj(["committed", "pr_url"], {
@@ -769,12 +972,14 @@ const SHIP_SCHEMA = obj(["committed", "pr_url"], {
 
 const ship = await agent(
   anchor(
-    `Turn all changes into a single Conventional Commits commit; you write the commit message (summarize the diff). ` +
+    `Turn this build's changes into a single Conventional Commits commit; you write the commit message (summarize the diff). ` +
+      `Scope what you stage yourself; never use \`git add -A\` or \`git add .\`. Modifications to tracked files may be staged as they are, but stage an untracked path (a "??" line in \`git status --porcelain --untracked-files=all\`, judged per file, never per directory) only when it appears in the plan's files ${JSON.stringify([...planFiles])} or you created it during this run. ` +
+      `Every other untracked path predates this build and must stay unstaged, otherwise specification documents, research notes, and local config leak into the PR. List any untracked path you left unstaged in your result.\n` +
       `Push the branch, then open a draft pull request. Its body is a human-facing part you write from a PR template, followed by deterministic fact sections rendered from data (do not hand-write the fact sections). The steps are as follows.\n` +
-      `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`${bundled("skills/pr/templates/pr.md")}\`; read the skeleton and fold it into the body file. Fill only the human-facing sections, ordered so a reviewer grasps it fast: lead with the problem this solves and the outcome it reaches (${JSON.stringify(plan.outcome)}), then what changed and the approach, then where to focus review. Use lists and compact tables, keep it terse, no filler, no invented facts. Skip Related / Closes; the tail emits \`Closes #\`. Skip Scope / Backlog too; out-of-scope candidates do not go in the PR. Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
+      `(1) Read \`language\` from \`$HOME/.claude/settings.json\` (default English if unset) and write the human-facing body in that language, keeping code, identifiers, and technical terms untranslated. Choose the PR template: the repository's if present (case-insensitive, priority \`.github/pull_request_template.md\` > \`pull_request_template.md\` > \`docs/pull_request_template.md\` > a \`PULL_REQUEST_TEMPLATE/\` directory), otherwise the bundled \`${bundled("skills/pr/templates/pr.md")}\`; read the skeleton and fold it into the body file. Fill only the human-facing sections, ordered so a reviewer grasps it fast: lead with the problem this solves and the outcome it reaches (${JSON.stringify(plan.outcome)}), then what changed and the approach, then where to focus review. No filler, no invented facts. Skip Related / Closes; the tail emits \`Closes #\`. Skip Scope / Backlog too; out-of-scope candidates do not go in the PR. Fill Design Decisions from the plan decisions (${JSON.stringify(plan.decisions || [])}) and the actual diff; omit the section if empty rather than inventing.\n` +
       `(2) write this exact JSON to a temp file.\n${JSON.stringify(shipPayload)}\n` +
       `(3) append the fact tail and open the PR as one \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
-      `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft --title "<your commit subject>" --body-file <bodyfile>\`.\n` +
+      `\`python3 ${bundled("workflows/build/pr-body.py")} < <tempfile> >> <bodyfile> && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title "<your commit subject>" --body-file <bodyfile>\`.\n` +
       `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do not create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
       `Report the committed state and the PR url.${guard}`,
   ),
@@ -793,9 +998,16 @@ return {
   units_completed: code.completed.length,
   code_anomalies: (code.anomalies || []).length,
   code_verified: code.tests_pass && code.gates_pass,
+  // A plan whose units all have empty tests is auto-verified by gates alone;
+  // acceptance then rests on human manual checks. Make that state explicit.
+  verification: allTestNames.length ? "tests+gates" : "gates-only",
   scope_deviations: scopeDeviations,
   missing_tests: missingTests,
   conformance_findings: (conf.findings || []).length,
+  // high defeats an acceptance criterion. A non-zero value is a signal for the caller
+  // to start fixing immediately even though the PR shipped (a bare count hid severity).
+  conformance_high: (conf.findings || []).filter((f) => f.severity === "high").length,
+  structure_findings: (struct.findings || []).length,
   cleanup_tests_pass: cleanup.tests_pass,
   backlog_candidates: backlogCandidates,
   assumptions: plan.assumptions,
