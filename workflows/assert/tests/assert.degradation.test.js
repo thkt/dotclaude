@@ -396,7 +396,7 @@ test("T-011 a run whose findings all carry a recognised severity reports zero dr
 });
 
 // U-003: assert records one row per settled run in $HOME/.claude/history/assert-runs.jsonl,
-// following build.js's recordRun (workflows/assert/record.py already accepts arbitrary payload
+// following build.js's recordRun (workflows/assert/record.ts already accepts arbitrary payload
 // keys, so this unit only wires assert.js to build that payload and hand it to the agent that
 // runs the recorder). A failed record must not stop the run (WORKFLOWS.md § Degradation
 // recording), so a recorder returning nothing still lets the gate reach its own return value,
