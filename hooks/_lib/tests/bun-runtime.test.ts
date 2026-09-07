@@ -6,10 +6,6 @@
 // at that path on the machine running the hook, so this checks the constant against the real
 // filesystem rather than trusting the literal. darwin-only: DR-0114's path is a Homebrew-on-
 // macOS convention (`/opt/homebrew/bin/bun`), and this plan does not cover a Linux host.
-//
-// node:test's `skip` test option is confirmed via a local run against the installed Node
-// (v26.8.1): `node --test` reports a test given `{ skip: <truthy> }` as `ok ... # SKIP <reason>`
-// rather than running its body.
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import test from "node:test";
