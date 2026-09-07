@@ -14,11 +14,11 @@ plan の `reference_module` (kind: module) が指す既存 skill の構造を複
 1. `reference_module` (kind: module) が指す既存 skill の SKILL.md を読み、複製する各ファイル (references/、templates/ 配下) について、本文中に明示的なポインタ (節見出し、パスの言及) があるかを確認する
 2. 複製先の SKILL.md 本体に、同じ形のポインタが実在するかを `grep` で確認する
 3. ポインタが無ければ、SKILL.md へポインタを足す。列や骨格の内容そのものを重複させず、ファイルへの参照だけを書く
-4. conformance レビューがこの欠落を Missing/partial として検出できるよう、reference_module の記述に「呼び出し元 SKILL.md からの到達可能性」を含める
+4. conformance レビューがこの欠落を missing として検出できるよう、reference_module の記述に「呼び出し元 SKILL.md からの到達可能性」を含める
 
 ## 参照コード
 
-- `agents/reviewers/reviewer-conformance.md` の Missing/partial（spec が求める記述が本文に欠けている場合を検出する区分）
+- `agents/reviewers/reviewer-conformance.md` の Analysis 表の `missing` 区分（spec が求める記述が本文に欠けている場合を検出する区分）
 - `skills/think/templates/plan.md` の Reference module（files/conventions は複製するファイル一覧を持つが、呼び出し元 SKILL.md からの到達性は検査しない）
 
 ## 根拠
