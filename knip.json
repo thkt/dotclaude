@@ -6,6 +6,7 @@
     "workflows/_lib/gate.ts",
     ".ja/workflows/_lib/gate.ts",
     "workflows/build/record.ts",
+    "workflows/assert/record.ts",
     "workflows/**/*.test.{js,ts}",
     "workflows/tests/index.js",
     "hooks/**/tests/*.test.ts",
