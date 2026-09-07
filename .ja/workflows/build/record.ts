@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: record.ts   (build run payload JSON on stdin)
+// Usage: record.ts   (build の run payload JSON を stdin で受ける)
 //
 // $HOME/.claude/history/build-runs.jsonl に build run を 1 行追記する。
 //
@@ -94,7 +94,7 @@ export function countPlanQualityStops(path: string): WindowCounts | null {
   const startedIds: unknown[] = [];
   for (const row of rows) {
     if (row.reason === "started") {
-      startedIds.push(row.run_id);
+      startedIds.push(row.run_id ?? null);
       if (startedIds.length > WINDOW_SIZE) startedIds.shift();
     }
   }
@@ -102,7 +102,11 @@ export function countPlanQualityStops(path: string): WindowCounts | null {
 
   let stops = 0;
   for (const row of rows) {
-    if (row.reason !== "started" && row.plan_quality === true && windowIds.has(row.run_id)) {
+    if (
+      row.reason !== "started" &&
+      row.plan_quality === true &&
+      windowIds.has(row.run_id ?? null)
+    ) {
       stops += 1;
     }
   }
@@ -133,9 +137,13 @@ export function main(): number {
   const payload = loaded as Record<string, unknown>;
 
   const { run_id: suppliedRunId, ...rest } = payload;
-  // build は同じ秒の中で start して stop しうるため、timestamp では両者を区別できない。
-  // stop 行を自分の start 行へ結び付けるのは run_id である。
-  const runId = suppliedRunId ? String(suppliedRunId) : randomUUID().replace(/-/g, "");
+  // build は同じ秒内に start と stop を起こせるので timestamp では 2 つを分けられない。stop 行を
+  // start 行へ結ぶのが run_id。supplied と見なすのは空でない文字列だけ。run_id を作るのは recorder
+  // 自身で、出力は文字列。Python 版でも空のコンテナの str() はここで新規発行になっていた。
+  const runId =
+    typeof suppliedRunId === "string" && suppliedRunId !== ""
+      ? suppliedRunId
+      : randomUUID().replace(/-/g, "");
 
   const historyDir = join(homedir(), ".claude", "history");
   const runsPath = join(historyDir, "build-runs.jsonl");

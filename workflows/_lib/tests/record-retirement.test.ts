@@ -95,15 +95,12 @@ test(
 // read the source text and pull out what the recorder prompt actually invokes, never a
 // copied-in literal (docs/wiki/workflow-const-source-text-check.md).
 //
-// Both files' prompts spell step (2) as a shell invocation inside a template literal, quoted
-// with escaped backticks (\`...\`) on the line naming "(2)"; only the wording around them
-// differs between the EN imperative ("run \`...\`;") and the .ja phrasing ("\`...\` を実行する。").
-// The escaped pair is what is matched: the template literal's own backtick opens the line, so
-// a plain backtick match would capture the prose before the invocation instead.
-function extractStep2Invocation(source: string): string | null {
-  const line = source.split(/\r\n|\r|\n/).find((candidate) => candidate.includes("(2)"));
-  if (!line) return null;
-  const m = line.match(/\\`(.+?)\\`/);
+// Both files' prompts carry the recorder invocation inside a template literal, quoted with
+// escaped backticks (\`...\`). The anchor is the escaped pair that names the recorder file,
+// not the prose around it: the template literal's own backtick opens the line, and other
+// prompts in the same file number their steps the same way.
+function extractRecorderInvocation(source: string): string | null {
+  const m = source.match(/\\`([^`\n]*\brecord\.(?:ts|py)\b[^`\n]*)\\`/);
   return m ? m[1] : null;
 }
 
@@ -126,8 +123,8 @@ test(
   () => {
     for (const { label, path } of RECORDER_PROMPT_SOURCES) {
       const source = readFileSync(join(REPO_ROOT, path), "utf8");
-      const invocation = extractStep2Invocation(source);
-      assert.ok(invocation, `${label} recorder prompt's step (2) is extractable from source`);
+      const invocation = extractRecorderInvocation(source);
+      assert.ok(invocation, `${label} recorder prompt's invocation is extractable from source`);
       // One fixed line per source, carrying no offender list, so a --require-output anchor on
       // the Red gate can seal on exactly one line rather than on a set that could reorder.
       assert.ok(

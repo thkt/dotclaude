@@ -33,7 +33,6 @@ interface FixtureCase {
   stdin: string;
   exit: number;
   stdout: string;
-  stderr: string;
   rows: Array<Record<string, unknown> | string>;
 }
 
@@ -105,12 +104,9 @@ function assertRowShape(
   }
 }
 
-/** The fixture's stdout is a single JSON line (or "" for the exit-1 cases). Parsed and
- * compared the same shape-aware way as a row -- except "path", which the fixture froze as
- * the literal absolute path from whatever temp $HOME U-001's fixture-generation run happened
- * to get. Every test run mints its own $HOME (withTempHome), so that literal can never recur;
- * "path" is instead checked against this run's own historyPath(home), the same way run_id and
- * generated_at are checked by shape rather than by value. */
+/** The fixture's stdout is a single JSON line (or "" for the exit-1 cases), compared the same
+ * shape-aware way as a row. "path" is frozen as <history-path> because every run mints its own
+ * $HOME; it resolves to this run's historyPath(home). */
 function assertStdoutShape(
   actualStdout: string,
   expectedStdout: string,
@@ -122,13 +118,9 @@ function assertStdoutShape(
     return;
   }
   assert.equal(actualStdout.endsWith("\n"), true, `${label}: stdout ends with a newline`);
-  const { path: actualPath, ...actualRest } = JSON.parse(actualStdout) as Record<string, unknown>;
-  const { path: _expectedPath, ...expectedRest } = JSON.parse(expectedStdout) as Record<
-    string,
-    unknown
-  >;
-  assert.equal(actualPath, historyPath(home), `${label}: stdout.path`);
-  assertRowShape(actualRest, expectedRest, `${label}: stdout`);
+  const expected = JSON.parse(expectedStdout) as Record<string, unknown>;
+  if (expected.path === "<history-path>") expected.path = historyPath(home);
+  assertRowShape(JSON.parse(actualStdout) as Record<string, unknown>, expected, `${label}: stdout`);
 }
 
 /** One appended row, compared against the fixture's row: a raw seed line the fixture kept as
@@ -235,4 +227,34 @@ test("T-110 a history the process cannot read back still prints path and run_id 
       "unreadable history: run_id",
     );
   });
+});
+
+// Only a non-empty string counts as a supplied run_id. The Python recorder minted a fresh id for
+// its falsy values ("" and empty containers among them); a JS truthiness test would have written
+// "[object Object]" or "" as the row's run_id instead.
+test("T-115 a run_id that is not a non-empty string is treated as absent and a fresh uuid is minted", () => {
+  for (const supplied of [{}, [], "", 0, null]) {
+    withTempHome((home) => {
+      const result = runCli(
+        home,
+        JSON.stringify({
+          issue: "386",
+          repo: "/abs/target-repo",
+          reason: "stopped",
+          run_id: supplied,
+        }),
+      );
+      assert.equal(result.status, 0, `run_id ${JSON.stringify(supplied)}: exit code`);
+      const printed = JSON.parse(result.stdout) as Record<string, unknown>;
+      assert.match(String(printed.run_id), UUID4HEX, `run_id ${JSON.stringify(supplied)}: minted`);
+      const [row] = readLines(historyPath(home)).map(
+        (line) => JSON.parse(line) as Record<string, unknown>,
+      );
+      assert.equal(
+        row.run_id,
+        printed.run_id,
+        `run_id ${JSON.stringify(supplied)}: row matches stdout`,
+      );
+    });
+  }
 });

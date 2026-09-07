@@ -4,8 +4,7 @@
     "seed_lines": [],
     "stdin": "{\"gate\": \"Ready\", \"gate_reason\": [\"build pass\", \"tests pass\", \"0 issues\"], \"build\": \"pass\", \"tests\": \"pass\", \"mode\": \"diff\", \"issue_counts\": {\"critical\": 0, \"high\": 0, \"medium\": 0, \"low\": 0}, \"dropped_findings\": 0}",
     "exit": 0,
-    "stdout": "{\"path\": \"/var/folders/mv/9vj8x1010916rllt6m9c06cm0000gn/T/tmpklx4zz9j/.claude/history/assert-runs.jsonl\"}\n",
-    "stderr": "",
+    "stdout": "{\"path\": \"<history-path>\"}\n",
     "rows": [
       {
         "gate": "Ready",
@@ -34,7 +33,53 @@
     "stdin": "not json",
     "exit": 1,
     "stdout": "",
-    "stderr": "Error: unparseable payload: Expecting value: line 1 column 1 (char 0)\n",
     "rows": []
+  },
+  {
+    "name": "appends_to_existing_history",
+    "seed_lines": [
+      "{\"gate\": \"NotReady\", \"gate_reason\": [\"build fail\"], \"build\": \"fail\", \"tests\": \"pass\", \"mode\": \"diff\", \"issue_counts\": {\"critical\": 0, \"high\": 1, \"medium\": 0, \"low\": 0}, \"dropped_findings\": 0, \"generated_at\": \"2026-09-01T00:00:00Z\"}"
+    ],
+    "stdin": "{\"gate\": \"Ready\", \"gate_reason\": [\"build pass\", \"tests pass\", \"0 issues\"], \"build\": \"pass\", \"tests\": \"pass\", \"mode\": \"diff\", \"issue_counts\": {\"critical\": 0, \"high\": 0, \"medium\": 0, \"low\": 0}, \"dropped_findings\": 0}",
+    "exit": 0,
+    "stdout": "{\"path\": \"<history-path>\"}\n",
+    "rows": [
+      {
+        "gate": "NotReady",
+        "gate_reason": [
+          "build fail"
+        ],
+        "build": "fail",
+        "tests": "pass",
+        "mode": "diff",
+        "issue_counts": {
+          "critical": 0,
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "dropped_findings": 0,
+        "generated_at": "<utc-iso8601-Z>"
+      },
+      {
+        "gate": "Ready",
+        "gate_reason": [
+          "build pass",
+          "tests pass",
+          "0 issues"
+        ],
+        "build": "pass",
+        "tests": "pass",
+        "mode": "diff",
+        "issue_counts": {
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "dropped_findings": 0,
+        "generated_at": "<utc-iso8601-Z>"
+      }
+    ]
   }
 ]

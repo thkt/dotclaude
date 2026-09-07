@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: record.ts   (assert run payload JSON on stdin)
+// Usage: record.ts   (assert の run payload JSON を stdin で受ける)
 //
 // $HOME/.claude/history/assert-runs.jsonl に assert run を 1 行追記する。
 //

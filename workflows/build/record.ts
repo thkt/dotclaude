@@ -90,11 +90,12 @@ export function countPlanQualityStops(path: string): WindowCounts | null {
 
   // A run_id enters the window once, when its started row is seen, so a later stop for
   // the same run_id can still land inside a window whose started row aged it out only
-  // once WINDOW_SIZE more recent runs started after it.
+  // once WINDOW_SIZE more recent runs started after it. A missing key and a JSON null read
+  // the same, as the Python version's dict.get did.
   const startedIds: unknown[] = [];
   for (const row of rows) {
     if (row.reason === "started") {
-      startedIds.push(row.run_id);
+      startedIds.push(row.run_id ?? null);
       if (startedIds.length > WINDOW_SIZE) startedIds.shift();
     }
   }
@@ -102,7 +103,11 @@ export function countPlanQualityStops(path: string): WindowCounts | null {
 
   let stops = 0;
   for (const row of rows) {
-    if (row.reason !== "started" && row.plan_quality === true && windowIds.has(row.run_id)) {
+    if (
+      row.reason !== "started" &&
+      row.plan_quality === true &&
+      windowIds.has(row.run_id ?? null)
+    ) {
       stops += 1;
     }
   }
@@ -134,8 +139,13 @@ export function main(): number {
 
   const { run_id: suppliedRunId, ...rest } = payload;
   // A build can start and stop within the same second, so a timestamp cannot separate the
-  // two; the run_id is what joins a stop row back to its start row.
-  const runId = suppliedRunId ? String(suppliedRunId) : randomUUID().replace(/-/g, "");
+  // two; the run_id is what joins a stop row back to its start row. Only a non-empty string
+  // counts as supplied: the recorder is the sole producer of run_id and prints a string, and
+  // the Python version's str() of an empty container minted a fresh id here as well.
+  const runId =
+    typeof suppliedRunId === "string" && suppliedRunId !== ""
+      ? suppliedRunId
+      : randomUUID().replace(/-/g, "");
 
   const historyDir = join(homedir(), ".claude", "history");
   const runsPath = join(historyDir, "build-runs.jsonl");

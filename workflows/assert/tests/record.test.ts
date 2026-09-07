@@ -26,7 +26,6 @@ interface FixtureCase {
   stdin: string;
   exit: number;
   stdout: string;
-  stderr: string;
   rows: Array<Record<string, unknown> | string>;
 }
 
@@ -96,12 +95,9 @@ function assertRowShape(
   }
 }
 
-/** The fixture's stdout is a single JSON line (or "" for the exit-1 case). Parsed and
- * compared the same shape-aware way as a row -- except "path", which the fixture froze as
- * the literal absolute path from whatever temp $HOME U-001's fixture-generation run happened
- * to get. Every test run mints its own $HOME (withTempHome), so that literal can never recur;
- * "path" is instead checked against this run's own historyPath(home), the same way
- * generated_at is checked by shape rather than by value. */
+/** The fixture's stdout is a single JSON line (or "" for the exit-1 cases), compared the same
+ * shape-aware way as a row. "path" is frozen as <history-path> because every run mints its own
+ * $HOME; it resolves to this run's historyPath(home). */
 function assertStdoutShape(
   actualStdout: string,
   expectedStdout: string,
@@ -113,13 +109,9 @@ function assertStdoutShape(
     return;
   }
   assert.equal(actualStdout.endsWith("\n"), true, `${label}: stdout ends with a newline`);
-  const { path: actualPath, ...actualRest } = JSON.parse(actualStdout) as Record<string, unknown>;
-  const { path: _expectedPath, ...expectedRest } = JSON.parse(expectedStdout) as Record<
-    string,
-    unknown
-  >;
-  assert.equal(actualPath, historyPath(home), `${label}: stdout.path`);
-  assertRowShape(actualRest, expectedRest, `${label}: stdout`);
+  const expected = JSON.parse(expectedStdout) as Record<string, unknown>;
+  if (expected.path === "<history-path>") expected.path = historyPath(home);
+  assertRowShape(JSON.parse(actualStdout) as Record<string, unknown>, expected, `${label}: stdout`);
 }
 
 /** One appended row, compared against the fixture's row: a raw seed line the fixture kept as
