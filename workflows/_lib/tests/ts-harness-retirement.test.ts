@@ -3,27 +3,22 @@
 // replacements (run-workflow.ts, codex-run.ts, tests/_brace.ts) carry the harness. This file
 // guards the retirement itself, the same way workflows/_lib/tests/gate-retirement.test.ts guards
 // gate.py's: no tracked file outside docs/decisions/ and .claude/workspace/research/ (kept as
-// historical record, per docs/wiki/retire-rename-procedure.md) still names a retired path.
+// historical record, per docs/wiki/retire-rename-procedure.md) still names a retired path. The
+// walk and the historical-directory exclusions are offendersAmong (workflows/_lib/tests/_retirement.ts),
+// shared with gate-retirement.test.ts and record-retirement.test.ts; this file keeps only the
+// tracked-files caching and the positive-control glue that are specific to it.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { offendersAmong } from "./_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
-const HISTORICAL_DIRS = ["docs/decisions/", ".claude/workspace/research/"];
-
-function isHistorical(path: string): boolean {
-  return HISTORICAL_DIRS.some((dir) => path.startsWith(dir));
-}
-
-// The one predicate the scans below rely on, factored out so the positive control drives it
-// directly instead of re-deriving its own copy
-// (docs/wiki/absence-test-positive-control-fixture.md).
 function referencesPath(content: string, retiredPath: string): boolean {
   return content.includes(retiredPath);
 }
@@ -41,22 +36,16 @@ function trackedFiles(): string[] {
   return trackedFilesCache;
 }
 
+// This test's own file names each retiredPath to describe what it checks, so it is passed as
+// an extra exclusion; the historical directories (docs/decisions/, .claude/workspace/research/)
+// are offendersAmong's own default, not repeated here.
 function offendersFor(retiredPath: string): string[] {
-  const offenders: string[] = [];
-  for (const path of trackedFiles()) {
-    // This test's own file names each retiredPath to describe what it checks, and a doc under
-    // docs/decisions/ or .claude/workspace/research/ keeps the retired name as history rather
-    // than as a live reference.
-    if (path === SELF_PATH || isHistorical(path)) continue;
-    let content: string;
-    try {
-      content = readFileSync(join(REPO_ROOT, path), "utf8");
-    } catch {
-      continue; // not decodable as text, so it cannot contain the retired path as a string
-    }
-    if (referencesPath(content, retiredPath)) offenders.push(path);
-  }
-  return offenders;
+  return offendersAmong(
+    trackedFiles(),
+    (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
+    (content) => referencesPath(content, retiredPath),
+    [SELF_PATH],
+  );
 }
 
 // Positive control: an absence check stays green even after the scan itself breaks (e.g. the

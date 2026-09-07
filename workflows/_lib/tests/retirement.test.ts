@@ -35,7 +35,11 @@ test(
   "T-121 a file the caller lists as an extra exclusion is not reported while the same " +
     "content under another path is reported",
   () => {
-    const retiredNeedle = "record.py";
+    // Deliberately not the retired recorder script's own filename: record-retirement.test.ts's
+    // T-113 scans every tracked file for that exact name, so spelling it out here (this file
+    // sits outside T-113's exclusion list) would make this fixture a false-positive offender of
+    // its own predicate.
+    const retiredNeedle = "_lib/legacy-tool.py";
     const excluded = "docs/wiki/supply-list-single-source.md";
     const files = [excluded, "workflows/build/record.ts"];
     const contents: Record<string, string> = {
