@@ -30,10 +30,10 @@
 // TypeScript port of the Python build recorder it replaces. Contract: this CLI's own
 // behavior, exercised end to end by workflows/build/tests/record.test.ts against the frozen
 // fixture workflows/build/tests/fixtures/record-cases.json.
-import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { historyPath, isoTimestamp, parsePayload } from "../_lib/cli.ts";
 import { isMainModule } from "../_lib/entry-point.ts";
 
 // Plan-quality stops cluster in a run of recent builds rather than over all history, so the
@@ -122,20 +122,11 @@ export function countPlanQualityStops(path: string): WindowCounts | null {
 
 export function main(): number {
   const raw = readFileSync(0, "utf8");
-  let loaded: unknown;
-  try {
-    loaded = JSON.parse(raw);
-  } catch (error) {
-    process.stderr.write(
-      `Error: unparseable payload: ${error instanceof Error ? error.message : String(error)}\n`,
-    );
+  const { payload, message } = parsePayload(raw);
+  if (payload === null) {
+    process.stderr.write(`${message}\n`);
     return 1;
   }
-  if (typeof loaded !== "object" || loaded === null || Array.isArray(loaded)) {
-    process.stderr.write("Error: payload must be a JSON object\n");
-    return 1;
-  }
-  const payload = loaded as Record<string, unknown>;
 
   const { run_id: suppliedRunId, ...rest } = payload;
   // A build can start and stop within the same second, so a timestamp cannot separate the
@@ -147,15 +138,13 @@ export function main(): number {
       ? suppliedRunId
       : randomUUID().replace(/-/g, "");
 
-  const historyDir = join(homedir(), ".claude", "history");
-  const runsPath = join(historyDir, "build-runs.jsonl");
-  mkdirSync(historyDir, { recursive: true });
+  const runsPath = historyPath(homedir(), "build-runs.jsonl");
 
   const row: Record<string, unknown> = {
     run_id: runId,
     ...DEFAULTS,
     ...rest,
-    generated_at: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
+    generated_at: isoTimestamp(),
   };
   appendFileSync(runsPath, `${JSON.stringify(row)}\n`);
 

@@ -14,17 +14,16 @@
 // basis line for issue #557 (a quote of the pre-retirement asymmetry the issue reported), not a
 // live pointer either, so it is excluded the same way.
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "./_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
-const HISTORICAL_DIRS = ["docs/decisions/", ".claude/workspace/research/"];
 const HISTORICAL_FILE = "docs/wiki/supply-list-single-source.md";
 
 // Not the directory-qualified form gate-retirement.test.ts uses for its own retired path: build.js
@@ -46,42 +45,17 @@ test(
     "docs/wiki/supply-list-single-source.md references record.py as a word, and the same " +
     "predicate flags a fixture line carrying it",
   () => {
-    // Positive control: an absence check stays green even after the scan itself breaks (e.g.
-    // RETIRED_PATTERN mistyped, the .test() call dropped) unless it is proven to still catch a
-    // violation. Run the same predicate against a fixture line that names the retired file and
-    // confirm it is caught, then against a copy with that one clue removed and confirm the miss
-    // (docs/wiki/absence-test-positive-control-fixture.md).
-    const positiveControl = "# stale doc example: run python3 record.py < payload.json";
-    assert.equal(
-      referencesRetiredPath(positiveControl),
-      true,
-      "positive control: a fixture line carrying record.py is detected",
-    );
-    const masked = positiveControl.replace("record.py", "REMOVED");
-    assert.equal(
-      referencesRetiredPath(masked),
-      false,
-      "positive control: the same fixture line goes undetected once the cue is removed",
-    );
+    assertDetectsAndMisses(referencesRetiredPath, "record.py");
 
-    const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: REPO_ROOT, encoding: "utf8" })
-      .split("\0")
-      .filter(Boolean);
-    const offenders: string[] = [];
-    for (const path of tracked) {
-      // This test's own file names record.py in comments to describe what it checks, and the
-      // three exclusions above keep the retired name as history rather than as a live reference.
-      if (path === SELF_PATH) continue;
-      if (HISTORICAL_DIRS.some((dir) => path.startsWith(dir))) continue;
-      if (path === HISTORICAL_FILE) continue;
-      let content: string;
-      try {
-        content = readFileSync(join(REPO_ROOT, path), "utf8");
-      } catch {
-        continue; // not decodable as text, so it cannot contain the retired path as a string
-      }
-      if (referencesRetiredPath(content)) offenders.push(path);
-    }
+    // This test's own file names record.py in comments to describe what it checks, and the
+    // #557 basis line keeps the retired name as history rather than as a live reference; the
+    // historical directories are offendersAmong's own default.
+    const offenders = offendersAmong(
+      trackedFiles(REPO_ROOT),
+      (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
+      referencesRetiredPath,
+      [SELF_PATH, HISTORICAL_FILE],
+    );
     assert.deepEqual(
       offenders,
       [],

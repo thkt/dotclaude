@@ -17,35 +17,24 @@
 // TypeScript port of the Python assert recorder it replaces. Contract: this CLI's own
 // behavior, exercised end to end by workflows/assert/tests/record.test.ts against the frozen
 // fixture workflows/assert/tests/fixtures/record-cases.json.
-import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { historyPath, isoTimestamp, parsePayload } from "../_lib/cli.ts";
 import { isMainModule } from "../_lib/entry-point.ts";
 
 export function main(): number {
   const raw = readFileSync(0, "utf8");
-  let loaded: unknown;
-  try {
-    loaded = JSON.parse(raw);
-  } catch (error) {
-    process.stderr.write(
-      `Error: unparseable payload: ${error instanceof Error ? error.message : String(error)}\n`,
-    );
+  const { payload, message } = parsePayload(raw);
+  if (payload === null) {
+    process.stderr.write(`${message}\n`);
     return 1;
   }
-  if (typeof loaded !== "object" || loaded === null || Array.isArray(loaded)) {
-    process.stderr.write("Error: payload must be a JSON object\n");
-    return 1;
-  }
-  const payload = loaded as Record<string, unknown>;
 
-  const historyDir = join(homedir(), ".claude", "history");
-  const runsPath = join(historyDir, "assert-runs.jsonl");
-  mkdirSync(historyDir, { recursive: true });
+  const runsPath = historyPath(homedir(), "assert-runs.jsonl");
 
   const row: Record<string, unknown> = {
     ...payload,
-    generated_at: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
+    generated_at: isoTimestamp(),
   };
   appendFileSync(runsPath, `${JSON.stringify(row)}\n`);
 

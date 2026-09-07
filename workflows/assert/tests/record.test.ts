@@ -5,161 +5,74 @@
 // stdin/stdout/row/exit against it case by case. generated_at is frozen in the fixture as the
 // placeholder <utc-iso8601-Z> because it is minted fresh on every run; that key is compared by
 // shape, everything else by exact value. Unlike workflows/build/record.ts, assert is 1 run 1
-// line: no run_id joins rows and stdout carries only {path}.
+// line: no run_id joins rows and stdout carries only {path}. The replay itself (runCli,
+// withTempHome, seedHistory, readLines, assertRowLine, assertStdoutShape, fixture) lives in
+// workflows/_lib/tests/_cli-fixture.ts, shared with workflows/build/tests/record.test.ts;
+// workflows/_lib/tests/cli-fixture.test.ts covers that shared replay's own key-order and
+// placeholder-resolution behavior directly.
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import {
+  assertRowLine,
+  assertStdoutShape,
+  fixture,
+  historyPath,
+  readLines,
+  runCli,
+  seedHistory,
+  withTempHome,
+  type FixtureCase,
+} from "../../_lib/tests/_cli-fixture.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "record.ts");
+const HISTORY_NAME = "assert-runs.jsonl";
 const FIXTURES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "record-cases.json"), "utf8"),
 ) as FixtureCase[];
-
-interface FixtureCase {
-  name: string;
-  seed_lines: string[];
-  stdin: string;
-  exit: number;
-  stdout: string;
-  rows: Array<Record<string, unknown> | string>;
-}
-
-interface CliRun {
-  status: number | null;
-  stdout: string;
-  stderr: string;
-}
 
 const UTC_ISO8601_Z = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 const SHAPE_CHECKS: Record<string, RegExp> = {
   "<utc-iso8601-Z>": UTC_ISO8601_Z,
 };
 
-function runCli(home: string, stdin: string): CliRun {
-  const result = spawnSync(process.execPath, [SCRIPT], {
-    input: stdin,
-    encoding: "utf8",
-    env: { ...process.env, HOME: home, PATH: "" },
-  });
-  return { status: result.status, stdout: result.stdout, stderr: result.stderr };
-}
-
-function historyPath(home: string): string {
-  return join(home, ".claude", "history", "assert-runs.jsonl");
-}
-
-function seedHistory(home: string, lines: readonly string[]): string {
-  const path = historyPath(home);
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, lines.map((line) => `${line}\n`).join(""));
-  return path;
-}
-
-function readLines(path: string): string[] {
-  if (!existsSync(path)) return [];
-  return readFileSync(path, "utf8")
-    .split("\n")
-    .filter((line) => line.trim() !== "");
-}
-
-function withTempHome<T>(fn: (home: string) => T): T {
-  const home = mkdtempSync(join(tmpdir(), "record-test-"));
-  try {
-    return fn(home);
-  } finally {
-    rmSync(home, { recursive: true, force: true });
-  }
-}
-
-/** Asserts `actual` carries the same keys, in the same order, as `expected`, and that each
- * value matches -- exactly, except a value naming one of SHAPE_CHECKS is checked by regex
- * instead, since generated_at is minted fresh on every run. */
-function assertRowShape(
-  actual: Record<string, unknown>,
-  expected: Record<string, unknown>,
-  label: string,
-): void {
-  assert.deepEqual(Object.keys(actual), Object.keys(expected), `${label}: key order`);
-  for (const [key, expectedValue] of Object.entries(expected)) {
-    const shape = typeof expectedValue === "string" ? SHAPE_CHECKS[expectedValue] : undefined;
-    if (shape) {
-      assert.match(String(actual[key]), shape, `${label}.${key}: shape`);
-    } else {
-      assert.deepEqual(actual[key], expectedValue, `${label}.${key}: value`);
-    }
-  }
-}
-
-/** The fixture's stdout is a single JSON line (or "" for the exit-1 cases), compared the same
- * shape-aware way as a row. "path" is frozen as <history-path> because every run mints its own
- * $HOME; it resolves to this run's historyPath(home). */
-function assertStdoutShape(
-  actualStdout: string,
-  expectedStdout: string,
-  home: string,
-  label: string,
-): void {
-  if (expectedStdout === "") {
-    assert.equal(actualStdout, "", `${label}: stdout`);
-    return;
-  }
-  assert.equal(actualStdout.endsWith("\n"), true, `${label}: stdout ends with a newline`);
-  const expected = JSON.parse(expectedStdout) as Record<string, unknown>;
-  if (expected.path === "<history-path>") expected.path = historyPath(home);
-  assertRowShape(JSON.parse(actualStdout) as Record<string, unknown>, expected, `${label}: stdout`);
-}
-
-/** One appended row, compared against the fixture's row: a raw seed line the fixture kept as
- * an un-reparsed string compares literally, everything else parses as JSON first. */
-function assertRowLine(
-  actualLine: string,
-  expectedRow: Record<string, unknown> | string,
-  label: string,
-): void {
-  if (typeof expectedRow === "string") {
-    assert.equal(actualLine, expectedRow, `${label}: raw line`);
-    return;
-  }
-  assertRowShape(JSON.parse(actualLine) as Record<string, unknown>, expectedRow, label);
-}
-
-function fixture(name: string): FixtureCase {
-  const found = FIXTURES.find((entry) => entry.name === name);
-  assert.ok(found, `fixture case ${name} exists in record-cases.json`);
-  return found as FixtureCase;
-}
-
 test("T-111 every frozen case in record-cases.json reproduces the python recorder's exit code, stdout keys, and the appended row's keys in order, with generated_at compared by shape", () => {
   for (const testCase of FIXTURES) {
     withTempHome((home) => {
-      if (testCase.seed_lines.length > 0) {
-        seedHistory(home, testCase.seed_lines);
+      const seedLines = testCase.seed_lines ?? [];
+      if (seedLines.length > 0) {
+        seedHistory(home, HISTORY_NAME, seedLines);
       }
-      const result = runCli(home, testCase.stdin);
+      const result = runCli(SCRIPT, home, testCase.stdin);
       assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
-      assertStdoutShape(result.stdout, testCase.stdout, home, testCase.name);
+      assertStdoutShape(
+        result.stdout,
+        testCase.stdout,
+        { "<history-path>": historyPath(home, HISTORY_NAME) },
+        SHAPE_CHECKS,
+        testCase.name,
+      );
 
-      const actualLines = readLines(historyPath(home));
-      assert.equal(actualLines.length, testCase.rows.length, `${testCase.name}: row count`);
+      const rows = testCase.rows ?? [];
+      const actualLines = readLines(historyPath(home, HISTORY_NAME));
+      assert.equal(actualLines.length, rows.length, `${testCase.name}: row count`);
       actualLines.forEach((line, index) => {
-        assertRowLine(line, testCase.rows[index], `${testCase.name}: row ${index}`);
+        assertRowLine(line, rows[index], SHAPE_CHECKS, `${testCase.name}: row ${index}`);
       });
     });
   }
 });
 
 test("T-112 an unparseable payload exits 1, prints nothing to stdout, starts stderr with the python recorder's message prefix, and leaves no file behind", () => {
-  const testCase = fixture("not_json");
+  const testCase = fixture(FIXTURES, "not_json");
   withTempHome((home) => {
-    const result = runCli(home, testCase.stdin);
+    const result = runCli(SCRIPT, home, testCase.stdin);
     assert.equal(result.status, 1, "not_json: exit code");
     assert.equal(result.stdout, "", "not_json: stdout");
     assert.equal(result.stderr.startsWith("Error: "), true, "not_json: stderr prefix");
-    assert.equal(existsSync(historyPath(home)), false, "not_json: no file written");
+    assert.equal(existsSync(historyPath(home, HISTORY_NAME)), false, "not_json: no file written");
   });
 });

@@ -4,22 +4,23 @@
 // still names the retired path, and the EN / .ja copies of code.js agree on the replacement.
 //
 // Full-tree scan per docs/wiki/retire-rename-procedure.md: update both trees and docs in one
-// change, then confirm zero residual references across git ls-files. A mention under
-// docs/decisions/ is kept as historical record by that same procedure, so it is excluded here
-// rather than counted as a leftover reference.
+// change, then confirm zero residual references across git ls-files. The walk itself is
+// offendersAmong (workflows/_lib/tests/_retirement.ts), shared with record-retirement.test.ts
+// and ts-harness-retirement.test.ts, so the historical-directory exclusions it applies
+// (docs/decisions/ and .claude/workspace/research/, kept as historical record by that same
+// procedure) live in one place rather than a copy per test file.
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "./_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
 const RETIRED_PATH = "_lib/gate.py";
-const HISTORICAL_DIR = "docs/decisions/";
 
 // The one predicate the absence scan below relies on, factored out so the positive
 // control can drive it directly instead of re-deriving its own copy
@@ -29,45 +30,22 @@ function referencesRetiredPath(content: string): boolean {
 }
 
 test("T-014 no tracked file references _lib/gate.py", () => {
-  // Positive control: an absence check stays green even after the scan itself breaks
-  // (e.g. RETIRED_PATH mistyped, the .includes() call dropped) unless it is proven to still
-  // catch a violation. Run the same predicate against a fixture that names the retired path
-  // and confirm it is caught, then against a copy with that one clue removed and confirm the
-  // miss (docs/wiki/absence-test-positive-control-fixture.md).
-  const positiveControl = `# stale doc example: run python3 workflows/${RETIRED_PATH}`;
-  assert.equal(
-    referencesRetiredPath(positiveControl),
-    true,
-    "positive control: a copy carrying the cue is detected",
-  );
-  const masked = positiveControl.replace(RETIRED_PATH, "REMOVED");
-  assert.equal(masked.includes(RETIRED_PATH), false, "the masked copy no longer carries the cue");
-  assert.equal(
-    referencesRetiredPath(masked),
-    false,
-    "positive control: the same violation goes undetected once the cue is removed",
-  );
+  assertDetectsAndMisses(referencesRetiredPath, RETIRED_PATH);
 
-  const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: REPO_ROOT, encoding: "utf8" })
-    .split("\0")
-    .filter(Boolean);
-  const offenders: string[] = [];
-  for (const path of tracked) {
-    // This test's own file names RETIRED_PATH to describe what it checks, and a DR under
-    // docs/decisions/ keeps the retired name as history rather than as a live reference.
-    if (path === SELF_PATH || path.startsWith(HISTORICAL_DIR)) continue;
-    let content: string;
-    try {
-      content = readFileSync(join(REPO_ROOT, path), "utf8");
-    } catch {
-      continue; // not decodable as text, so it cannot contain the retired path as a string
-    }
-    if (referencesRetiredPath(content)) offenders.push(path);
-  }
+  // This test's own file names RETIRED_PATH to describe what it checks, so it is passed as an
+  // extra exclusion; the historical directories (docs/decisions/, .claude/workspace/research/)
+  // are offendersAmong's own default, not repeated here.
+  const offenders = offendersAmong(
+    trackedFiles(REPO_ROOT),
+    (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
+    referencesRetiredPath,
+    [SELF_PATH],
+  );
   assert.deepEqual(
     offenders,
     [],
-    `files still naming ${RETIRED_PATH} (docs/decisions/ is kept as history, not counted): ${offenders.join(", ")}`,
+    `files still naming ${RETIRED_PATH} (docs/decisions/ and .claude/workspace/research/ are ` +
+      `kept as history, not counted): ${offenders.join(", ")}`,
   );
 });
 
