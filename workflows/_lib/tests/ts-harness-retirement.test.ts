@@ -5,15 +5,14 @@
 // gate.py's: no tracked file outside docs/decisions/ and .claude/workspace/research/ (kept as
 // historical record, per docs/wiki/retire-rename-procedure.md) still names a retired path. The
 // walk and the historical-directory exclusions are offendersAmong (workflows/_lib/tests/_retirement.ts),
-// shared with gate-retirement.test.ts and record-retirement.test.ts; this file keeps only the
-// tracked-files caching and the positive-control glue that are specific to it.
+// shared with gate-retirement.test.ts and record-retirement.test.ts, as are the tracked-file
+// list and the positive control; this file keeps only its retired paths and their predicate.
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { offendersAmong } from "./_retirement.ts";
+import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "./_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
@@ -23,53 +22,21 @@ function referencesPath(content: string, retiredPath: string): boolean {
   return content.includes(retiredPath);
 }
 
-// The tree does not change while this file's tests run, and T-043 checks 2 retired paths
-// against it, so the git spawn is cached after the first call rather than repeated per path.
-let trackedFilesCache: string[] | null = null;
-function trackedFiles(): string[] {
-  trackedFilesCache ??= execFileSync("git", ["ls-files", "-z"], {
-    cwd: REPO_ROOT,
-    encoding: "utf8",
-  })
-    .split("\0")
-    .filter(Boolean);
-  return trackedFilesCache;
-}
-
 // This test's own file names each retiredPath to describe what it checks, so it is passed as
 // an extra exclusion; the historical directories (docs/decisions/, .claude/workspace/research/)
 // are offendersAmong's own default, not repeated here.
 function offendersFor(retiredPath: string): string[] {
   return offendersAmong(
-    trackedFiles(),
+    trackedFiles(REPO_ROOT),
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
     (content) => referencesPath(content, retiredPath),
     [SELF_PATH],
   );
 }
 
-// Positive control: an absence check stays green even after the scan itself breaks (e.g. the
-// retired path mistyped, the .includes() call dropped) unless it is proven to still catch a
-// violation. Run the same predicate against a fixture naming the retired path and confirm it is
-// caught, then against a copy with that one clue removed and confirm the miss.
-function assertDetectsAndMisses(retiredPath: string): void {
-  const positiveControl = `# stale doc example: run node workflows/${retiredPath}`;
-  assert.equal(
-    referencesPath(positiveControl, retiredPath),
-    true,
-    `positive control (${retiredPath}): a copy carrying the cue is detected`,
-  );
-  const masked = positiveControl.replace(retiredPath, "REMOVED");
-  assert.equal(
-    referencesPath(masked, retiredPath),
-    false,
-    `positive control (${retiredPath}): the same violation goes undetected once the cue is removed`,
-  );
-}
-
 test("T-042 no tracked file outside docs/decisions/ and .claude/workspace/research/ references _lib/run-workflow.js", () => {
   const RETIRED_PATH = "_lib/run-workflow.js";
-  assertDetectsAndMisses(RETIRED_PATH);
+  assertDetectsAndMisses((content) => referencesPath(content, RETIRED_PATH), RETIRED_PATH);
 
   const offenders = offendersFor(RETIRED_PATH);
   assert.deepEqual(
@@ -82,7 +49,7 @@ test("T-042 no tracked file outside docs/decisions/ and .claude/workspace/resear
 
 test("T-043 no tracked file outside docs/decisions/ and .claude/workspace/research/ references _lib/codex-run.js or _lib/tests/_brace.js", () => {
   for (const retiredPath of ["_lib/codex-run.js", "_lib/tests/_brace.js"]) {
-    assertDetectsAndMisses(retiredPath);
+    assertDetectsAndMisses((content) => referencesPath(content, retiredPath), retiredPath);
 
     const offenders = offendersFor(retiredPath);
     assert.deepEqual(

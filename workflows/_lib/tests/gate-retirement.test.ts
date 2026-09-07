@@ -10,12 +10,11 @@
 // (docs/decisions/ and .claude/workspace/research/, kept as historical record by that same
 // procedure) live in one place rather than a copy per test file.
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { offendersAmong } from "./_retirement.ts";
+import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "./_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
@@ -31,33 +30,13 @@ function referencesRetiredPath(content: string): boolean {
 }
 
 test("T-014 no tracked file references _lib/gate.py", () => {
-  // Positive control: an absence check stays green even after the scan itself breaks
-  // (e.g. RETIRED_PATH mistyped, the .includes() call dropped) unless it is proven to still
-  // catch a violation. Run the same predicate against a fixture that names the retired path
-  // and confirm it is caught, then against a copy with that one clue removed and confirm the
-  // miss (docs/wiki/absence-test-positive-control-fixture.md).
-  const positiveControl = `# stale doc example: run python3 workflows/${RETIRED_PATH}`;
-  assert.equal(
-    referencesRetiredPath(positiveControl),
-    true,
-    "positive control: a copy carrying the cue is detected",
-  );
-  const masked = positiveControl.replace(RETIRED_PATH, "REMOVED");
-  assert.equal(masked.includes(RETIRED_PATH), false, "the masked copy no longer carries the cue");
-  assert.equal(
-    referencesRetiredPath(masked),
-    false,
-    "positive control: the same violation goes undetected once the cue is removed",
-  );
+  assertDetectsAndMisses(referencesRetiredPath, RETIRED_PATH);
 
-  const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: REPO_ROOT, encoding: "utf8" })
-    .split("\0")
-    .filter(Boolean);
   // This test's own file names RETIRED_PATH to describe what it checks, so it is passed as an
   // extra exclusion; the historical directories (docs/decisions/, .claude/workspace/research/)
   // are offendersAmong's own default, not repeated here.
   const offenders = offendersAmong(
-    tracked,
+    trackedFiles(REPO_ROOT),
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
     referencesRetiredPath,
     [SELF_PATH],

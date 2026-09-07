@@ -1,8 +1,8 @@
 /// <reference types="node" />
-// Shared by workflows/build/tests/record.test.ts and workflows/assert/tests/record.test.ts --
-// and, from a later unit, an argv-based CLI fixture such as #631's validate-issue-body -- all
-// of which need to launch a CLI under a temp HOME, replay a frozen fixture case (stdin in,
-// exit code and stdout out), and compare the result against the frozen case with certain
+// Shared by workflows/build/tests/record.test.ts and workflows/assert/tests/record.test.ts,
+// and open to an argv-based CLI fixture such as #631's validate-issue-body: each needs to
+// launch a CLI under a temp HOME, replay a frozen fixture case (argv and stdin in, exit code
+// and stdout out), and compare the result against the frozen case with certain
 // values (a minted uuid, a resolved history path) checked by shape instead of exact value.
 // This module gives that replay one home, in the same shape as
 // workflows/_lib/tests/_brace.ts (small, independently testable, named exports; no .ja
@@ -35,11 +35,12 @@ import { join } from "node:path";
 import { historyPath } from "../cli.ts";
 export { historyPath };
 
-/** One frozen replay case: stdin in, exit code and stdout out. seed_lines and rows are
- * optional -- only a history-backed CLI seeds a file before the run and checks appended rows
- * after it. */
+/** One frozen replay case: argv and stdin in, exit code and stdout out. argv is optional for
+ * a stdin-only CLI; seed_lines and rows are optional -- only a history-backed CLI seeds a file
+ * before the run and checks appended rows after it. */
 export interface FixtureCase {
   name: string;
+  argv?: string[];
   seed_lines?: string[];
   stdin: string;
   exit: number;
@@ -53,10 +54,15 @@ export interface CliRun {
   stderr: string;
 }
 
-/** Run `scriptPath` under a temp HOME, feeding `stdin`, with PATH cleared so the CLI cannot
- * lean on anything found via the ambient PATH. */
-export function runCli(scriptPath: string, home: string, stdin: string): CliRun {
-  const result = spawnSync(process.execPath, [scriptPath], {
+/** Run `scriptPath` with `argv` under a temp HOME, feeding `stdin`, with PATH cleared so the
+ * CLI cannot lean on anything found via the ambient PATH. */
+export function runCli(
+  scriptPath: string,
+  home: string,
+  stdin: string,
+  argv: readonly string[] = [],
+): CliRun {
+  const result = spawnSync(process.execPath, [scriptPath, ...argv], {
     input: stdin,
     encoding: "utf8",
     env: { ...process.env, HOME: home, PATH: "" },
