@@ -62,7 +62,6 @@
 - tests を持つ unit は plan の files に、そのテストが動かすモジュールを含める。Red が触れるのは files にあるものだけなので、files 外を import するテストは Red を確立できない #600
 - plan 文の Markdown 整形は日本語中の ASCII 数字前後に空白を入れるため、テスト名照合は空白の連なりの有無を許容しないと候補を取りこぼす #609
 - unittest.main(verbosity=2) の verbose reporter は判定 (FAIL/ERROR) を行末に置くため、行頭マーカーのみを見る失敗検出は Python スイートの失敗を常に取りこぼす #609
-- gate レポートの中継はシェル→agent 経由で確率的に途中で切れるため、呼び出し側が読まない stdout_tail 等のフィールドは既定サイズを呼び出し元で絞る #614
 - skills 配下の Python を TypeScript へ移すとき、.github/workflows/test.yml の Node tests step は glob を手動で足さないと拾わない。Python 側は find なので .py を消せば自動で外れるが、.ts を足しても自動では入らない #615
 - exit 0 の hook の stdout print は単独では届かず hook_payload の notify (systemMessage/additionalContext) 経由が要る #618
 - settings.json で matcher 共通 command が if だけ Write/Edit に分かれる複数登録は重複でない #618
