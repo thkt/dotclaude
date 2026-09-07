@@ -10,6 +10,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { trackedEntries } from "../shebang_scope.ts";
 
 const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(TEST_DIR, "..", "..", "..");
@@ -84,20 +85,21 @@ test("T-006 the Node tests step in .github/workflows/test.yml carries hooks/**/t
   assert.match(step.slice(0, step.indexOf("- name:", 1)), /"hooks\/\*\*\/tests\/\*\.test\.ts"/);
 });
 
-// hooks/_lib/hook_payload.ts and its differential test already clear oxlint's ignorePatterns
-// today (oxlint has no hooks/ entry to drop them with); the gap is tsconfig's include, which the
-// tsc half below exercises through the real compiler instead of a re-implemented glob match.
-// Kept as one assertion pair per file so a future ignorePatterns/exclude entry that reintroduces
-// a hooks/ drop fails here rather than silently narrowing coverage again.
-const HOOKS_TS_FILES = [
-  "hooks/_lib/hook_payload.ts",
-  "hooks/_lib/tests/hook-payload-parity.test.ts",
-];
+// Every tracked .ts under hooks/, fixtures included: a fixture .ts is a real tsc / oxlint
+// subject here. Spawned inside a test like the two listings above, so a missing git fails T-007
+// and T-014 by name rather than the whole file.
+let hooksTsFiles: string[] | undefined;
+function listHooksTsFiles(): string[] {
+  hooksTsFiles ??= trackedEntries("hooks/*.ts")
+    .map(([, absolutePath]) => toPosix(path.relative(ROOT, absolutePath)))
+    .sort();
+  return hooksTsFiles;
+}
 
 test("T-007 neither .oxlintrc.json's ignorePatterns nor tsconfig.json's exclude drops hooks/", () => {
   const oxlintSet = listOxlintFiles();
   const tscSet = listTypeCheckedFiles();
-  for (const file of HOOKS_TS_FILES) {
+  for (const file of listHooksTsFiles()) {
     assert.ok(
       oxlintSet.some((entry) => entry.endsWith(file)),
       `oxlint's ignorePatterns dropped ${file}`,
@@ -107,4 +109,28 @@ test("T-007 neither .oxlintrc.json's ignorePatterns nor tsconfig.json's exclude 
       `tsconfig's exclude (or a missing include) dropped ${file}`,
     );
   }
+});
+
+// An empty derivation would let T-007 pass having checked nothing, and a derivation that
+// drops a known file would let tsc / oxlint scope narrow unnoticed, so the set is pinned by
+// content (docs/wiki/count-comparison-masks-filtered-set-drift.md).
+test("T-014 the hooks .ts set the toolchain scope check reads is derived from the tracked tree, is not empty, and contains every .ts this plan adds under hooks/", () => {
+  const hooksTs = listHooksTsFiles();
+  assert.ok(hooksTs.length > 0, "the derived hooks/*.ts set is empty");
+
+  const planAddedFiles = [
+    "hooks/_lib/shebang_scope.ts",
+    "hooks/_lib/tests/shebang-scope.test.ts",
+    "hooks/_lib/tests/shebang-ts.test.ts",
+    "hooks/_lib/tests/fixtures/shebang/exec-bit-wrong-shebang.ts",
+    "hooks/_lib/tests/fixtures/shebang/stale-env-bun.ts",
+    "hooks/_lib/tests/fixtures/shebang/_lib/has-shebang.ts",
+    "hooks/_lib/tests/bun-runtime.test.ts",
+  ];
+  const missing = planAddedFiles.filter((file) => !hooksTs.includes(file));
+  assert.deepEqual(
+    missing,
+    [],
+    `the derived hooks/*.ts set is missing .ts files this plan adds: ${missing.join(", ")}`,
+  );
 });

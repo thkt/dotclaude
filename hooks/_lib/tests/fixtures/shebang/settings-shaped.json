@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/_lib/tests/fixtures/shebang/exec-bit-wrong-shebang.ts"
+          }
+        ]
+      }
+    ]
+  }
+}

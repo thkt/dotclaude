@@ -24,5 +24,9 @@
   ],
   "ignoreBinaries": ["codex"],
   "ignoreDependencies": ["oxfmt", "^@?textlint"],
-  "ignoreFiles": ["workflows/tests/fixtures/**", "skills/*/test/cases/**"]
+  "ignoreFiles": [
+    "workflows/tests/fixtures/**",
+    "hooks/**/tests/fixtures/**",
+    "skills/*/test/cases/**"
+  ]
 }
