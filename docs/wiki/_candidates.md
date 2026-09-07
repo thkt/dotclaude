@@ -76,6 +76,9 @@
 - knip の project glob は TS 化した層 (hooks/**、skills/**/*.ts) を足さないと、その層の .ts は dead-export 検出ゼロのまま tsc だけが見る (research)
 - docs/SPEC.md の確認コマンドは CI の test.yml の glob とずれる (.test.ts と sandbox が無い)。片方を正本にする (research)
 - issue を拾う前に ## Plan の有無と Blocked by の open 状態で着手可能性を機械的に絞る。build は Plan の無い issue を no-plan で止める (research)
+- build 計画の語りを実装のコメントに残さない #667
+- `/// <reference types="node" />` 等のディレクティブは新規ファイル自身が実際に対象 API を使うかで要否を判定する。同じ形の参照ファイルに無くても確認せず複製すると規約からの逸脱になる #667
+- 契約が現時点で呼び出し元の無い機能 (argv 対応等) を明示的に要求するとき、既存の呼び出し元だけを満たす実装はそのギャップが自身のテストから見えない #667
 
 ## 棄却
 
