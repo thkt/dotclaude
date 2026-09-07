@@ -7,13 +7,14 @@ scenes: []
 
 ## 内容
 
-git 管理外のファイル (gitignore 配下、ローカル生成物) のパスを、commit される成果物から参照しない。参照側だけが main に載り、他の環境には参照先が無い状態になる。参照の実在を機械的に確認する仕組みがあると、その参照は壊れていると判定される。
+git 管理外のファイル (gitignore 配下、ローカル生成物) のパスを、commit される成果物から参照しない。参照側だけが main に載り、他の環境には参照先が無い状態になる。参照の実在を機械的に確認する仕組みがあると、その参照は壊れていると判定される。削除済みファイルのパスを典拠として引き続けるコメントも同じ形で、読み手は存在しない文書へ送られる。
 
 ## 定型手順
 
 1. commit する文書にパスを書く前に、`git ls-files <path>` でそのパスが管理下かを確認する
 2. 管理外なら、パスの代わりに由来の種別だけを書く
 3. 参照を残したいなら、参照先を tracked にするか、参照側を gitignore 配下へ移す
+4. ファイルを削除・rename するときは、`git grep` でそのパスを引くコメントと文書を洗い出し、生きた典拠に書き換える
 
 ## 参照コード
 
@@ -24,3 +25,4 @@ git 管理外のファイル (gitignore 配下、ローカル生成物) のパ�
 
 - #188 #190 untracked ファイルへの参照が main に載り dangling になった
 - #232 `.claude/workspace/research/` を scribe の入力に追加する際、evidence として research のファイルパスを wiki page に書く案を、Phase 4 の参照掃除が壊れた参照と判定するためこの理由で落とした
+- (research) `workflows/assert/bootstrap.py` と `worktree.py` (と `.ja` ミラー) が 64 日前に削除された `references/phase-0.md` / `phase-4.md` を gate 経路の典拠として引き、`docs/wiki/harness-production-divergence.md` が改名済みの `run-workflow.test.js` を名指していた
