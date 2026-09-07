@@ -11,7 +11,7 @@
 //   --gate-id ID            identifier echoed into the report (default: gate)
 //   --failure-route ROUTE   where a fail verdict routes (default: triage)
 //   --timeout-ms N          command timeout in milliseconds (default: 600000)
-//   --tail-bytes N          bytes of stdout/stderr kept in the report (default: 12000)
+//   --tail-bytes N          bytes of stdout/stderr kept in the report, 0 for none (default: 12000)
 //   --require-output LINE   repeatable; LINE must equal one complete output line
 //   --forbid-output TEXT    repeatable; TEXT must not occur anywhere in the output
 //   --calibrate             run the Red command to discover its failure output
@@ -341,7 +341,9 @@ export function parseArgs(argv: string[]): ValidatedOptions {
         options.timeout_ms = positiveInt(value, flag);
         break;
       case "--tail-bytes":
-        options.tail_bytes = positiveInt(value, flag);
+        // 0 keeps no tail at all, for a caller whose relay must never see command output
+        // inside the report.
+        options.tail_bytes = value.trim() === "0" ? 0 : positiveInt(value, flag);
         break;
       case "--require-output":
         options.required_output.push(value);

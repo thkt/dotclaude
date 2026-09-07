@@ -391,6 +391,20 @@ test("T-015 the command runGate assembles launches gate.ts with node", async () 
   );
 });
 
+// A relay once returned the report's nested stdout_tail as its stdout (#663). The report the
+// relay carries holds no tail, and the relay is told what its stdout is.
+test("T-018 the assembled gate command keeps no output tail in the report, and the relay prompt names the whole JSON document as its stdout", async () => {
+  const { calls } = await run();
+  const calibrate = calls.agent.find((c) => c.opts.label === "calibrate:U-1");
+  assert.ok(calibrate, "the calibration gate ran");
+  assert.match(calibrate.prompt, /'--tail-bytes' '0'/, "the report carries no output tail");
+  assert.match(
+    calibrate.prompt,
+    /return the whole document; never a field copied from inside it/,
+    "the relay is told its stdout is the whole document the command printed",
+  );
+});
+
 // Seam test: the "agent" tool is the one external system this unit fakes, but the shell
 // command it is asked to run is real. The stub below cuts that literal command out of the
 // prompt (the same text the previous test pins) and actually executes it with the repo's real

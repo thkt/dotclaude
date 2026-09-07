@@ -530,3 +530,47 @@ test("T-035 a failing line older than the tail window is still a calibration can
     assert.equal(anchored.report.verdict, "pass", "anchored: verdict");
   });
 });
+
+// The report travels back through a relay agent that fills a {stdout, stderr} schema. With the
+// command's own output embedded as stdout_tail / stderr_tail, one relay copied that nested tail
+// into its stdout field instead of the report (#663), and the caller read no report at all.
+// --tail-bytes 0 leaves nothing inside the report that can be mistaken for the report.
+test("T-036 --tail-bytes 0 is accepted, the report carries no output tails, and the anchor and calibration still read the whole output", () => {
+  withTempDir((cwd) => {
+    const command = "printf 'not ok 1 - T-001 x\\nok 2 - T-002 y\\n'; exit 1";
+    const anchored = runCli([
+      "--cwd",
+      cwd,
+      "--command",
+      command,
+      "--expect",
+      "fail",
+      "--require-output",
+      "not ok 1 - T-001 x",
+      "--tail-bytes",
+      "0",
+    ]);
+    assert.equal(anchored.status, 0, "anchored: exit code");
+    assert.equal(anchored.report.verdict, "pass", "anchored: verdict");
+    const evidence = anchored.report.evidence as { stdout_tail: string; stderr_tail: string };
+    assert.equal(evidence.stdout_tail, "", "anchored: no stdout tail in the report");
+    assert.equal(evidence.stderr_tail, "", "anchored: no stderr tail in the report");
+
+    const calibrated = runCli([
+      "--cwd",
+      cwd,
+      "--command",
+      command,
+      "--calibrate",
+      "--planned-test",
+      "T-001:x",
+      "--tail-bytes",
+      "0",
+    ]);
+    assert.deepEqual(
+      (calibrated.report.candidates as { text: string }[]).map((c) => c.text),
+      ["not ok 1 - T-001 x"],
+      "calibrate: the candidate comes from the whole output, not the tail",
+    );
+  });
+});
