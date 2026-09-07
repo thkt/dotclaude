@@ -107,6 +107,7 @@ const relayStdout = async (unit, label, command) => {
     anchor(
       `次のコマンドを書かれたとおりに実行し、終了ステータスによらず stdout を逐語で stdout に、stderr を逐語で stderr に返す。\n` +
         `引数の中に別のコマンド行が引用されていることがある。そちらは実行しない。下の 1 行を先頭から末尾まで、そのまま 1 回だけ実行する。\n` +
+        `stdout はコマンド自身が出力したもの。それが JSON 文書なら文書全体を返す。その中のフィールドを写して返してはいけない。\n` +
         `${command}`,
     ),
     {
@@ -132,10 +133,12 @@ const parsedReport = (stdout) => {
   }
 };
 
-// レポートは agent を経由して戻るので、長いものは途中で切れる (5.7 KB のものが解析できない形で
-// 届いた)。長さの大半は 2 つの出力 tail で、ここは読まない。読むのは verdict と classification と
-// candidates。gate.ts の既定は tail 1 つあたり 12 KB。
-const GATE_TAIL_BYTES = "800";
+// レポートは agent を経由して戻り、agent は {stdout, stderr} の schema を埋める。コマンドの出力が
+// stdout_tail として report の中に入っていると、relay がその入れ子の tail を report でなく stdout
+// に写し、unit が gate_did_not_report で止まった (#663)。ここは tail を読まない。読むのは verdict と
+// classification と candidates で、calibration の候補は tail でなく出力全体から取る (gate.ts)。
+// なので report に tail を一切残さず、report と見誤る中身を無くす。
+const GATE_TAIL_BYTES = "0";
 
 // gate.ts は Node の TypeScript 型ストリップの上で動く。それより古い node のシェルでは最初の
 // 型注釈でコマンドが死に、stdout には何も出ない。中継した stderr だけが原因を名指す場所になる。

@@ -11,7 +11,7 @@
 //   --gate-id ID            report に載せる識別子 (default: gate)
 //   --failure-route ROUTE   fail 判定の戻り先 (default: triage)
 //   --timeout-ms N          コマンドのタイムアウト、ミリ秒 (default: 600000)
-//   --tail-bytes N          report に残す stdout/stderr のバイト数 (default: 12000)
+//   --tail-bytes N          report に残す stdout/stderr のバイト数、0 なら残さない (default: 12000)
 //   --require-output LINE   繰り返し可。LINE は出力の完全な 1 行と一致すること
 //   --forbid-output TEXT    繰り返し可。TEXT が出力のどこにも現れないこと
 //   --calibrate             Red コマンドを実行し、その失敗出力を得る
@@ -338,7 +338,9 @@ export function parseArgs(argv: string[]): ValidatedOptions {
         options.timeout_ms = positiveInt(value, flag);
         break;
       case "--tail-bytes":
-        options.tail_bytes = positiveInt(value, flag);
+        // 0 は tail を一切残さない。relay に report の中のコマンド出力を見せてはいけない
+        // 呼び出し側のため。
+        options.tail_bytes = value.trim() === "0" ? 0 : positiveInt(value, flag);
         break;
       case "--require-output":
         options.required_output.push(value);

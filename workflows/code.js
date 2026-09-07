@@ -105,6 +105,7 @@ const relayStdout = async (unit, label, command) => {
     anchor(
       `Run this command exactly as written and return its stdout verbatim in stdout and its stderr verbatim in stderr, whatever its exit status.\n` +
         `The arguments may quote another command line. Do not run that one. Run the single line below, start to end, exactly once.\n` +
+        `stdout is what the command itself printed. When that is a JSON document, return the whole document; never a field copied from inside it.\n` +
         `${command}`,
     ),
     {
@@ -130,10 +131,13 @@ const parsedReport = (stdout) => {
   }
 };
 
-// The report crosses back through an agent and a long one comes back truncated (a 5.7 KB one
-// arrived unparseable). Most of the length is the two output tails, which nothing here reads;
-// the script reads verdict, classification, and candidates. gate.ts defaults the tails to 12 KB.
-const GATE_TAIL_BYTES = "800";
+// The report crosses back through an agent, which fills a {stdout, stderr} schema. With the
+// command's output embedded as stdout_tail, one relay copied that nested tail into its stdout
+// field instead of the report, and the unit stopped as gate_did_not_report (#663). Nothing here
+// reads the tails: the script reads verdict, classification, and candidates, and the
+// calibration candidates come from the whole output (gate.ts), not the tail. So the report
+// carries no tail at all, and there is nothing inside it to mistake for the report.
+const GATE_TAIL_BYTES = "0";
 
 // gate.ts runs on Node's TypeScript type stripping. A shell whose node predates it kills the
 // command at the first type annotation and writes nothing to stdout, so the relayed stderr is
