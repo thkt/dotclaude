@@ -18,6 +18,7 @@ scenes: []
 3. ugrep の alternation は ERE で `a|b` と書く。`\|` は literal 扱いになり grep が空振りする
 4. 構造を持つミラー (script や fixture) は行数一致や AST 同一で検証する
 5. script が literal で探す見出しは、翻訳せず両ツリーで同じ綴りにする。解析のアンカーは散文ではない
+6. ツリーを走査するテストは `.ja/` も対象に含める。EN だけを読む走査は canonical 側を無検査にする
 
 ## 参照コード
 
@@ -25,6 +26,7 @@ scenes: []
 - `hooks/_lib/mirror_prose.py` の `check_english` と `is_english_target` (英語側に残った日本語 prose を拾う)
 - `hooks/edit/mirror_prose_guard.py` (編集のたびに 1 ファイルを見る PostToolUse hook)
 - `hooks/_lib/tests/mirror_prose_test.py` (hook が見ていない間に入った分をリポジトリ全域で走査する)
+- `workflows/_lib/tests/reference-notation.test.js` の `WORKFLOW_TREE_DIRS` (EN と `.ja/` の 2 ツリーを列挙して同じ検査を回す)
 
 ## 由来
 
@@ -42,3 +44,4 @@ scenes: []
 - #537 research のカーソル判定を mtime から最終コミット時刻へ書き換えるコミットが英語側の SKILL.md だけを直し、`.ja/skills/scribe/SKILL.md` が旧記述のまま残った。同一 PR 内の後続コミットで .ja 側を追従させて解消した
 - #562 codex-herdr の実装で `workflows/code.js` と `workflows/build.js` の変更はコミット 991d4a19 に含まれたが、対応する `.ja` ミラー編集は同一コミットにも他のどのコミットにも含まれず、未コミットの作業ツリー変更のまま残った
 - #554 `workflows/code.js` の no-plan why メッセージから `args.plan` という識別子を落としたが、`.ja/workflows/code.js` 側の対応する文言は変更前のまま残り、両ツリーで停止メッセージの内容が食い違った
+- (research) `reference-notation.test.js` が `workflows/` だけを走査していた。`.ja/workflows/polish.js` に bare な `$HOME/.claude/` パスを入れても suite は green で、EN 側に入れると赤になることを変異で確認した

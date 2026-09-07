@@ -72,7 +72,10 @@
 - 手元の gate (oxlint / oxfmt) は Python を見ないので、push 前に CI と同じ版の ruff (0.16.4) を手元で走らせる。E501 だけで CI が落ちた #623
 - PR 本文の Review focus 節で、振る舞いが変わったファイルと comment のみの変更ファイルを分けて示す #648
 - TS 化で knip.json の glob 拡張だけでは足りず、CLI 入口ファイル (entry) と静的 import されない test fixture (ignoreFiles) は明示しないと未使用 export として新規に誤検出される #653
-- gate.ts が --tail-bytes で絞った tail テキストを anchor check (--require-output/--forbid-output) と calibration の候補抽出にも使うと、大きい suite では失敗行が窓の外に落ちる #659
+- 既存の共有 helper (entry-point.ts の isMainModule) があるのに、移植元の手書き同等処理をそのまま写した (research)
+- knip の project glob は TS 化した層 (hooks/**、skills/**/*.ts) を足さないと、その層の .ts は dead-export 検出ゼロのまま tsc だけが見る (research)
+- docs/SPEC.md の確認コマンドは CI の test.yml の glob とずれる (.test.ts と sandbox が無い)。片方を正本にする (research)
+- issue を拾う前に ## Plan の有無と Blocked by の open 状態で着手可能性を機械的に絞る。build は Plan の無い issue を no-plan で止める (research)
 
 ## 棄却
 
