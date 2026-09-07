@@ -73,6 +73,7 @@
 - 手元の gate (oxlint / oxfmt) は Python を見ないので、push 前に CI と同じ版の ruff (0.16.4) を手元で走らせる。E501 だけで CI が落ちた #623
 - PR 本文の Review focus 節で、振る舞いが変わったファイルと comment のみの変更ファイルを分けて示す #648
 - TS 化で knip.json の glob 拡張だけでは足りず、CLI 入口ファイル (entry) と静的 import されない test fixture (ignoreFiles) は明示しないと未使用 export として新規に誤検出される #653
+- gate.ts が --tail-bytes で絞った tail テキストを anchor check (--require-output/--forbid-output) と calibration の候補抽出にも使うと、大きい suite では失敗行が窓の外に落ちる #659
 
 ## 棄却
 
