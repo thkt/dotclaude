@@ -324,13 +324,13 @@ let auditDegraded = false;
 let auditReason = "";
 
 // ---- Run recording: one jsonl row per settled run, modeled on build.js's recordRun ----
-// record.py copies the payload verbatim, so a key added here needs no change there.
+// record.ts copies the payload verbatim, so a key added here needs no change there.
 const RECORD_SCHEMA = {
   type: "object",
   additionalProperties: false,
   required: ["path"],
   properties: {
-    path: { type: "string", description: "path from record.py's stdout JSON, verbatim" },
+    path: { type: "string", description: "path from record.ts's stdout JSON, verbatim" },
   },
 };
 const recordRun = async () => {
@@ -357,7 +357,7 @@ const recordRun = async () => {
     written = await agent(
       anchor(
         `Record one assert run; do not judge, summarize, or edit any value. The steps are, (1) write this exact JSON to a temp file; ` +
-          `(2) run \`python3 ${SCRIPTS}/record.py < <tempfile>\`; ` +
+          `(2) run \`node ${SCRIPTS}/record.ts < <tempfile>\`; ` +
           `(3) return the script's stdout path verbatim. ` +
           `The script prints {"path":...}.\n` +
           `The input JSON is as follows.\n${JSON.stringify(payload)}`,

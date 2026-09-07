@@ -61,7 +61,7 @@ const PLAN_QUALITY = {
   "plan-drift": true,
   "code-failed": false,
 };
-// record.py が path/run_id の横に出す window tally の key。RECORD_SCHEMA の properties はここから
+// record.ts が path/run_id の横に出す window tally の key。RECORD_SCHEMA の properties はここから
 // 導くので、key の追加・改名・型変更は 1 箇所で済む。
 const RECORD_COUNT_TYPES = {
   started: "number",
@@ -75,20 +75,20 @@ const RECORD_SCHEMA = {
   additionalProperties: false,
   required: ["run_id"],
   properties: {
-    path: { type: "string", description: "record.py の stdout JSON の path をそのまま" },
-    run_id: { type: "string", description: "record.py の stdout JSON の run_id をそのまま" },
+    path: { type: "string", description: "record.ts の stdout JSON の path をそのまま" },
+    run_id: { type: "string", description: "record.ts の stdout JSON の run_id をそのまま" },
     // window tally の 4 key は optional。RUNS_PATH を読み返せない run では 4 つとも
-    // 揃って落ちる (record.py の count_plan_quality_stops の docstring)。
+    // 揃って落ちる (record.ts の count_plan_quality_stops の docstring)。
     ...Object.fromEntries(
       Object.entries(RECORD_COUNT_TYPES).map(([key, type]) => [
         key,
-        { type, description: `record.py の stdout JSON の ${key} をそのまま、存在すれば` },
+        { type, description: `record.ts の stdout JSON の ${key} をそのまま、存在すれば` },
       ]),
     ),
   },
 };
 // workflow script は時計を持たず、乱数も引けない (rules/conventions/WORKFLOWS.md § Script
-// evaluation form) ので、runId は record.py が発行する。
+// evaluation form) ので、runId は record.ts が発行する。
 let runId = "";
 let recordedCounts = {};
 // anchor より上の gate は行を残さずに返る。plan 品質の信号ではなく、記録の agent を固定する
@@ -109,7 +109,7 @@ const recordRun = async (reason, fields = {}) => {
   const written = await agent(
     anchor(
       `build の 1 実行を記録する。値を判断・要約・編集しない。手順は、(1) この JSON をそのまま一時ファイルへ書く。` +
-        `(2) \`python3 ${bundled("workflows/build/record.py")} < <tempfile>\` を実行する。` +
+        `(2) \`node ${bundled("workflows/build/record.ts")} < <tempfile>\` を実行する。` +
         `(3) script の stdout の path、run_id、started、stops、trigger_met、skipped_lines をそのまま返す。後ろの 4 つは stdout に無ければ省く。` +
         `script は {"path":...,"run_id":...,"started":...,"stops":...,"trigger_met":...,"skipped_lines":...} を出力する。\n` +
         `入力 JSON は次のとおり。\n${JSON.stringify(payload)}`,
@@ -138,7 +138,7 @@ const recordRun = async (reason, fields = {}) => {
   // tally がまるごと無い、つまり記録側 agent の relay 失敗だけを run log に残す。
   if (Object.keys(recordedCounts).length === 0) {
     log(
-      `"${reason}" の行の window tally が record.py から届かなかったので、この run の返り値に started/stops/trigger_met/skipped_lines は無い。`,
+      `"${reason}" の行の window tally が record.ts から届かなかったので、この run の返り値に started/stops/trigger_met/skipped_lines は無い。`,
     );
   }
 };
@@ -506,7 +506,9 @@ if (refModuleLines.length === 1) {
   const reason = refModuleLine.match(REFERENCE_MODULE_REASON_RE)?.[1];
   if (kind !== undefined || reason !== undefined) {
     const extracted =
-      plan.reference_module && typeof plan.reference_module === "object" && !Array.isArray(plan.reference_module)
+      plan.reference_module &&
+      typeof plan.reference_module === "object" &&
+      !Array.isArray(plan.reference_module)
         ? plan.reference_module
         : {};
     plan.reference_module = {

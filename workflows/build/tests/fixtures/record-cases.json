@@ -1,0 +1,263 @@
+[
+  {
+    "name": "payload",
+    "seed_lines": [],
+    "stdin": "{\"issue\": \"386\", \"repo\": \"/abs/target-repo\", \"branch\": \"feat/sample\", \"reason\": \"no-plan\", \"plan_quality\": true}",
+    "exit": 0,
+    "stdout": "{\"path\": \"<history-path>\", \"run_id\": \"<uuid4hex>\", \"started\": 0, \"stops\": 0, \"trigger_met\": false, \"skipped_lines\": 0}\n",
+    "rows": [
+      {
+        "run_id": "<uuid4hex>",
+        "issue": "386",
+        "repo": "/abs/target-repo",
+        "branch": "feat/sample",
+        "reason": "no-plan",
+        "plan_quality": true,
+        "generated_at": "<utc-iso8601-Z>"
+      }
+    ]
+  },
+  {
+    "name": "reason_started",
+    "seed_lines": [],
+    "stdin": "{\"issue\": \"386\", \"repo\": \"/abs/target-repo\", \"branch\": \"feat/sample\", \"reason\": \"started\", \"plan_quality\": true}",
+    "exit": 0,
+    "stdout": "{\"path\": \"<history-path>\", \"run_id\": \"<uuid4hex>\", \"started\": 1, \"stops\": 0, \"trigger_met\": false, \"skipped_lines\": 0}\n",
+    "rows": [
+      {
+        "run_id": "<uuid4hex>",
+        "issue": "386",
+        "repo": "/abs/target-repo",
+        "branch": "feat/sample",
+        "reason": "started",
+        "plan_quality": true,
+        "generated_at": "<utc-iso8601-Z>"
+      }
+    ]
+  },
+  {
+    "name": "nested_reason",
+    "seed_lines": [],
+    "stdin": "{\"issue\": \"386\", \"repo\": \"/abs/target-repo\", \"branch\": \"feat/sample\", \"reason\": \"no-plan\", \"plan_quality\": true, \"nested_reason\": \"invalid-plan\"}",
+    "exit": 0,
+    "stdout": "{\"path\": \"<history-path>\", \"run_id\": \"<uuid4hex>\", \"started\": 0, \"stops\": 0, \"trigger_met\": false, \"skipped_lines\": 0}\n",
+    "rows": [
+      {
+        "run_id": "<uuid4hex>",
+        "issue": "386",
+        "repo": "/abs/target-repo",
+        "branch": "feat/sample",
+        "reason": "no-plan",
+        "plan_quality": true,
+        "nested_reason": "invalid-plan",
+        "generated_at": "<utc-iso8601-Z>"
+      }
+    ]
+  },
+  {
+    "name": "not_json",
+    "seed_lines": [],
+    "stdin": "not json",
+    "exit": 1,
+    "stdout": "",
+    "rows": []
+  },
+  {
+    "name": "non_object_payload",
+    "seed_lines": [],
+    "stdin": "[\"not\", \"an\", \"object\"]",
+    "exit": 1,
+    "stdout": "",
+    "rows": []
+  },
+  {
+    "name": "window_20_trigger_met",
+    "seed_lines": [
+      "{\"run_id\": \"run-old\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-old\", \"reason\": \"no-plan\", \"plan_quality\": true}",
+      "{\"run_id\": \"run-0\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-0\", \"reason\": \"no-plan\", \"plan_quality\": true}",
+      "{\"run_id\": \"run-1\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-1\", \"reason\": \"no-plan\", \"plan_quality\": true}",
+      "{\"run_id\": \"run-2\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-2\", \"reason\": \"no-plan\", \"plan_quality\": true}",
+      "{\"run_id\": \"run-3\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-4\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-5\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-6\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-7\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-8\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-9\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-10\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-11\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-12\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-13\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-14\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-15\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-16\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-17\", \"reason\": \"started\", \"plan_quality\": false}",
+      "{\"run_id\": \"run-18\", \"reason\": \"started\", \"plan_quality\": false}"
+    ],
+    "stdin": "{\"issue\": \"386\", \"repo\": \"/abs/target-repo\", \"branch\": \"feat/sample\", \"reason\": \"started\", \"plan_quality\": false}",
+    "exit": 0,
+    "stdout": "{\"path\": \"<history-path>\", \"run_id\": \"<uuid4hex>\", \"started\": 20, \"stops\": 3, \"trigger_met\": true, \"skipped_lines\": 0}\n",
+    "rows": [
+      {
+        "run_id": "run-old",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-old",
+        "reason": "no-plan",
+        "plan_quality": true
+      },
+      {
+        "run_id": "run-0",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-0",
+        "reason": "no-plan",
+        "plan_quality": true
+      },
+      {
+        "run_id": "run-1",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-1",
+        "reason": "no-plan",
+        "plan_quality": true
+      },
+      {
+        "run_id": "run-2",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-2",
+        "reason": "no-plan",
+        "plan_quality": true
+      },
+      {
+        "run_id": "run-3",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-4",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-5",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-6",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-7",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-8",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-9",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-10",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-11",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-12",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-13",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-14",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-15",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-16",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-17",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "run-18",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "<uuid4hex>",
+        "issue": "386",
+        "repo": "/abs/target-repo",
+        "branch": "feat/sample",
+        "reason": "started",
+        "plan_quality": false,
+        "generated_at": "<utc-iso8601-Z>"
+      }
+    ]
+  },
+  {
+    "name": "unparseable_seed_line_skipped",
+    "seed_lines": [
+      "{not valid json",
+      "{\"run_id\": \"run-pre\", \"reason\": \"started\", \"plan_quality\": false}"
+    ],
+    "stdin": "{\"issue\": \"386\", \"repo\": \"/abs/target-repo\", \"branch\": \"feat/sample\", \"reason\": \"started\", \"plan_quality\": false}",
+    "exit": 0,
+    "stdout": "{\"path\": \"<history-path>\", \"run_id\": \"<uuid4hex>\", \"started\": 2, \"stops\": 0, \"trigger_met\": false, \"skipped_lines\": 1}\n",
+    "rows": [
+      "{not valid json",
+      {
+        "run_id": "run-pre",
+        "reason": "started",
+        "plan_quality": false
+      },
+      {
+        "run_id": "<uuid4hex>",
+        "issue": "386",
+        "repo": "/abs/target-repo",
+        "branch": "feat/sample",
+        "reason": "started",
+        "plan_quality": false,
+        "generated_at": "<utc-iso8601-Z>"
+      }
+    ]
+  }
+]

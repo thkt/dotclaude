@@ -61,7 +61,7 @@ const PLAN_QUALITY = {
   "plan-drift": true,
   "code-failed": false,
 };
-// The window-tally keys record.py prints beside path/run_id. RECORD_SCHEMA derives its matching
+// The window-tally keys record.ts prints beside path/run_id. RECORD_SCHEMA derives its matching
 // properties from this map, so a key added, renamed, or retyped changes in one place.
 const RECORD_COUNT_TYPES = {
   started: "number",
@@ -75,19 +75,19 @@ const RECORD_SCHEMA = {
   additionalProperties: false,
   required: ["run_id"],
   properties: {
-    path: { type: "string", description: "path from record.py's stdout JSON, verbatim" },
-    run_id: { type: "string", description: "run_id from record.py's stdout JSON, verbatim" },
-    // The four window-tally keys are optional: record.py omits all four together when it
+    path: { type: "string", description: "path from record.ts's stdout JSON, verbatim" },
+    run_id: { type: "string", description: "run_id from record.ts's stdout JSON, verbatim" },
+    // The four window-tally keys are optional: record.ts omits all four together when it
     // cannot read RUNS_PATH back (see its count_plan_quality_stops docstring).
     ...Object.fromEntries(
       Object.entries(RECORD_COUNT_TYPES).map(([key, type]) => [
         key,
-        { type, description: `${key} from record.py's stdout JSON, verbatim, when present` },
+        { type, description: `${key} from record.ts's stdout JSON, verbatim, when present` },
       ]),
     ),
   },
 };
-// record.py mints runId, because a workflow script has neither a clock nor a random source
+// record.ts mints runId, because a workflow script has neither a clock nor a random source
 // (rules/conventions/WORKFLOWS.md § Script evaluation form).
 let runId = "";
 let recordedCounts = {};
@@ -109,7 +109,7 @@ const recordRun = async (reason, fields = {}) => {
   const written = await agent(
     anchor(
       `Record one build run; do not judge, summarize, or edit any value. The steps are, (1) write this exact JSON to a temp file; ` +
-        `(2) run \`python3 ${bundled("workflows/build/record.py")} < <tempfile>\`; ` +
+        `(2) run \`node ${bundled("workflows/build/record.ts")} < <tempfile>\`; ` +
         `(3) return the script's stdout path, run_id, started, stops, trigger_met, and skipped_lines verbatim, omitting any of the last four the stdout does not carry. ` +
         `The script prints {"path":...,"run_id":...,"started":...,"stops":...,"trigger_met":...,"skipped_lines":...}.\n` +
         `The input JSON is as follows.\n${JSON.stringify(payload)}`,
@@ -138,7 +138,7 @@ const recordRun = async (reason, fields = {}) => {
   // recording). Only a wholly missing tally, an agent relay failure, needs the run log.
   if (Object.keys(recordedCounts).length === 0) {
     log(
-      `record.py's window tally for the "${reason}" row is unavailable, so this run's return value carries no started/stops/trigger_met/skipped_lines.`,
+      `record.ts's window tally for the "${reason}" row is unavailable, so this run's return value carries no started/stops/trigger_met/skipped_lines.`,
     );
   }
 };
@@ -518,7 +518,9 @@ if (refModuleLines.length === 1) {
   const reason = refModuleLine.match(REFERENCE_MODULE_REASON_RE)?.[1];
   if (kind !== undefined || reason !== undefined) {
     const extracted =
-      plan.reference_module && typeof plan.reference_module === "object" && !Array.isArray(plan.reference_module)
+      plan.reference_module &&
+      typeof plan.reference_module === "object" &&
+      !Array.isArray(plan.reference_module)
         ? plan.reference_module
         : {};
     plan.reference_module = {
