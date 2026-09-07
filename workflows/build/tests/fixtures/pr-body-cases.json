@@ -1,0 +1,170 @@
+[
+  {
+    "name": "full",
+    "stdin": "{\"issue\": \"123\", \"scope_deviations\": [\"extra.js\"], \"missing_tests\": [\"rejects negative amounts\"], \"code_anomalies\": [{\"unit\": \"U-001\", \"kind\": \"no-red\", \"notes\": \"flaky\"}], \"tests_pass\": true, \"gates_pass\": true, \"verify_output\": \"\", \"conformance\": [{\"category\": \"missing\", \"severity\": \"high\", \"spec_line\": \"T-003 rejects negative\", \"location\": \"pay.js:12\", \"detail\": \"no test for T-003\"}]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #123\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 1</code> · <code>missing-tests 1</code> · <code>conformance 1 (1 high)</code></summary>\n\n**Files outside the plan's scope**\n- `extra.js`\n\n**Planned test statements not found**\n- rejects negative amounts\n\n**Issue conformance (review independently)**\n- `[high] missing` no test for T-003\n  `pay.js:12` · spec: T-003 rejects negative\n\n**Anomalies (Red unconfirmed)**\n- U-001 (no-red): flaky\n\n</details>\n"
+  },
+  {
+    "name": "clean",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code>\n"
+  },
+  {
+    "name": "full_language_japanese",
+    "stdin": "{\"issue\": \"123\", \"scope_deviations\": [\"extra.js\"], \"missing_tests\": [\"rejects negative amounts\"], \"code_anomalies\": [{\"unit\": \"U-001\", \"kind\": \"no-red\", \"notes\": \"flaky\"}], \"tests_pass\": true, \"gates_pass\": true, \"verify_output\": \"\", \"conformance\": [{\"category\": \"missing\", \"severity\": \"high\", \"spec_line\": \"T-003 rejects negative\", \"location\": \"pay.js:12\", \"detail\": \"no test for T-003\"}], \"language\": \"japanese\"}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_下は build workflow の自動検証結果。plan との突合までで、コードの欠陥を探すレビューはしていない。PR の本筋からは外れるので任意だが、status 行の逸脱件数が非ゼロなら見る。_\n\nCloses #123\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 1</code> · <code>missing-tests 1</code> · <code>conformance 1 (1 high)</code></summary>\n\n**Plan スコープ外の変更ファイル**\n- `extra.js`\n\n**テストとして見つからない plan の言明**\n- rejects negative amounts\n\n**Issue 適合性 (独立レビュー)**\n- `[high] missing` no test for T-003\n  `pay.js:12` · spec: T-003 rejects negative\n\n**異常 (Red 未確認)**\n- U-001 (no-red): flaky\n\n</details>\n"
+  },
+  {
+    "name": "full_untouched_plan_files",
+    "stdin": "{\"issue\": \"123\", \"scope_deviations\": [\"extra.js\"], \"missing_tests\": [\"rejects negative amounts\"], \"code_anomalies\": [{\"unit\": \"U-001\", \"kind\": \"no-red\", \"notes\": \"flaky\"}], \"tests_pass\": true, \"gates_pass\": true, \"verify_output\": \"\", \"conformance\": [{\"category\": \"missing\", \"severity\": \"high\", \"spec_line\": \"T-003 rejects negative\", \"location\": \"pay.js:12\", \"detail\": \"no test for T-003\"}], \"untouched_plan_files\": [\"app/schema.ts\"]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #123\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 1</code> · <code>missing-tests 1</code> · <code>untouched-plan-files 1</code> · <code>conformance 1 (1 high)</code></summary>\n\n**Files outside the plan's scope**\n- `extra.js`\n\n**Planned files never changed**\n- `app/schema.ts`\n\n**Planned test statements not found**\n- rejects negative amounts\n\n**Issue conformance (review independently)**\n- `[high] missing` no test for T-003\n  `pay.js:12` · spec: T-003 rejects negative\n\n**Anomalies (Red unconfirmed)**\n- U-001 (no-red): flaky\n\n</details>\n"
+  },
+  {
+    "name": "conformance_and_structure_mixed",
+    "stdin": "{\"issue\": \"123\", \"scope_deviations\": [\"extra.js\"], \"missing_tests\": [\"rejects negative amounts\"], \"code_anomalies\": [{\"unit\": \"U-001\", \"kind\": \"no-red\", \"notes\": \"flaky\"}], \"tests_pass\": true, \"gates_pass\": true, \"verify_output\": \"\", \"conformance\": [{\"category\": \"wrong\", \"severity\": \"high\", \"detail\": \"a\"}, {\"category\": \"wrong\", \"severity\": \"low\", \"detail\": \"b\"}], \"structure\": [{\"category\": \"naming\", \"detail\": \"c\"}]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #123\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 1</code> · <code>missing-tests 1</code> · <code>conformance 2 (1 high)</code> · <code>structure 1</code></summary>\n\n**Files outside the plan's scope**\n- `extra.js`\n\n**Planned test statements not found**\n- rejects negative amounts\n\n**Issue conformance (review independently)**\n- `[high] wrong` a\n- `[low] wrong` b\n\n**Structural deviations from the reference module**\n- `[naming]` c\n\n**Anomalies (Red unconfirmed)**\n- U-001 (no-red): flaky\n\n</details>\n"
+  },
+  {
+    "name": "tests_pass_false_verify_output",
+    "stdin": "{\"issue\": \"123\", \"scope_deviations\": [\"extra.js\"], \"missing_tests\": [\"rejects negative amounts\"], \"code_anomalies\": [{\"unit\": \"U-001\", \"kind\": \"no-red\", \"notes\": \"flaky\"}], \"tests_pass\": false, \"gates_pass\": true, \"verify_output\": \"boom stacktrace\", \"conformance\": [{\"category\": \"missing\", \"severity\": \"high\", \"spec_line\": \"T-003 rejects negative\", \"location\": \"pay.js:12\", \"detail\": \"no test for T-003\"}]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #123\n\n<details>\n<summary><code>verify tests=FAIL gates=pass</code> · <code>scope-deviations 1</code> · <code>missing-tests 1</code> · <code>conformance 1 (1 high)</code></summary>\n\n<details><summary>verify output</summary>\n\n```\nboom stacktrace\n```\n\n</details>\n\n**Files outside the plan's scope**\n- `extra.js`\n\n**Planned test statements not found**\n- rejects negative amounts\n\n**Issue conformance (review independently)**\n- `[high] missing` no test for T-003\n  `pay.js:12` · spec: T-003 rejects negative\n\n**Anomalies (Red unconfirmed)**\n- U-001 (no-red): flaky\n\n</details>\n"
+  },
+  {
+    "name": "verify_output_with_fence",
+    "stdin": "{\"issue\": \"123\", \"scope_deviations\": [\"extra.js\"], \"missing_tests\": [\"rejects negative amounts\"], \"code_anomalies\": [{\"unit\": \"U-001\", \"kind\": \"no-red\", \"notes\": \"flaky\"}], \"tests_pass\": true, \"gates_pass\": false, \"verify_output\": \"assert failed on:\\n```\\nfoo\\n```\\nend\", \"conformance\": [{\"category\": \"missing\", \"severity\": \"high\", \"spec_line\": \"T-003 rejects negative\", \"location\": \"pay.js:12\", \"detail\": \"no test for T-003\"}]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #123\n\n<details>\n<summary><code>verify tests=pass gates=FAIL</code> · <code>scope-deviations 1</code> · <code>missing-tests 1</code> · <code>conformance 1 (1 high)</code></summary>\n\n<details><summary>verify output</summary>\n\n````\nassert failed on:\n```\nfoo\n```\nend\n````\n\n</details>\n\n**Files outside the plan's scope**\n- `extra.js`\n\n**Planned test statements not found**\n- rejects negative amounts\n\n**Issue conformance (review independently)**\n- `[high] missing` no test for T-003\n  `pay.js:12` · spec: T-003 rejects negative\n\n**Anomalies (Red unconfirmed)**\n- U-001 (no-red): flaky\n\n</details>\n"
+  },
+  {
+    "name": "anomaly_with_evidence",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"code_anomalies\": [{\"unit\": \"U-001\", \"kind\": \"no-red\", \"notes\": \"the behavior is already implemented\", \"evidence\": [\"`src/slack.rs:120` classify delegates to from_reqwest\", \"`cargo test --lib slack` -> 94 passed\"]}]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code></summary>\n\n**Anomalies (Red unconfirmed)**\n- U-001 (no-red): the behavior is already implemented\n  <details><summary>2 evidence lines</summary>\n\n  - `src/slack.rs:120` classify delegates to from_reqwest\n  - `cargo test --lib slack` -> 94 passed\n\n  </details>\n\n</details>\n"
+  },
+  {
+    "name": "anomaly_without_evidence",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"code_anomalies\": [{\"unit\": \"U-002\", \"kind\": \"scope-cut\", \"notes\": \"x / y\"}]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code></summary>\n\n**Anomalies (Red unconfirmed)**\n- U-002 (scope-cut): x / y\n\n</details>\n"
+  },
+  {
+    "name": "structure_without_severity",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"structure\": [{\"category\": \"hand_rolled\", \"location\": \"ui/card.tsx:8\", \"reference\": \"ui/panel.tsx:Frame\", \"detail\": \"reimplements the shared frame\"}]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code> · <code>structure 1</code></summary>\n\n**Structural deviations from the reference module**\n- `[hand_rolled]` reimplements the shared frame\n  `ui/card.tsx:8` · ref: ui/panel.tsx:Frame\n\n</details>\n"
+  },
+  {
+    "name": "conformance_non_dict_item",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"conformance\": [\"a bare string\", null]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code> · <code>conformance 2</code></summary>\n\n**Issue conformance (review independently)**\n- a bare string\n- None\n\n</details>\n"
+  },
+  {
+    "name": "missing_tests_with_newline",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"missing_tests\": [\"line one\\n# not a heading\"]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 1</code></summary>\n\n**Planned test statements not found**\n- line one # not a heading\n\n</details>\n"
+  },
+  {
+    "name": "scope_status_agent_failed",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"scope_status\": \"agent-failed\", \"scope_deviations\": []}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<code>verify tests=pass gates=pass</code> · <code>scope-deviations not run</code> · <code>missing-tests 0</code>\n"
+  },
+  {
+    "name": "test_presence_status_agent_failed",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"test_presence_status\": \"agent-failed\", \"missing_tests\": []}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests not run</code>\n"
+  },
+  {
+    "name": "conformance_status_agent_failed",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"conformance_status\": \"agent-failed\", \"conformance\": []}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code> · <code>conformance not run</code>\n"
+  },
+  {
+    "name": "conformance_status_no_spec",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"conformance_status\": \"no-spec\", \"conformance\": []}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code> · <code>conformance not run</code>\n"
+  },
+  {
+    "name": "structure_status_no_reference",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"structure_status\": \"no-reference\", \"structure\": []}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code>\n"
+  },
+  {
+    "name": "test_presence_status_no_tests",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"test_presence_status\": \"no-tests\", \"missing_tests\": []}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code>\n"
+  },
+  {
+    "name": "japanese_not_run",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"language\": \"japanese\", \"scope_status\": \"agent-failed\"}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_下は build workflow の自動検証結果。plan との突合までで、コードの欠陥を探すレビューはしていない。PR の本筋からは外れるので任意だが、status 行の逸脱件数が非ゼロなら見る。_\n\nCloses #9\n\n<code>verify tests=pass gates=pass</code> · <code>scope-deviations 未実行</code> · <code>missing-tests 0</code>\n"
+  },
+  {
+    "name": "conformance_order_low_first",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"conformance\": [{\"category\": \"a\", \"severity\": \"low\", \"detail\": \"low finding\"}, {\"category\": \"b\", \"severity\": \"medium\", \"detail\": \"medium finding\"}, {\"category\": \"c\", \"severity\": \"high\", \"detail\": \"high finding\"}]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code> · <code>conformance 3 (1 high)</code></summary>\n\n**Issue conformance (review independently)**\n- `[high] c` high finding\n- `[medium] b` medium finding\n- `[low] a` low finding\n\n</details>\n"
+  },
+  {
+    "name": "conformance_order_stable_same_severity",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"conformance\": [{\"category\": \"a\", \"severity\": \"low\", \"detail\": \"low item\"}, {\"category\": \"b\", \"severity\": \"high\", \"detail\": \"first high\"}, {\"category\": \"c\", \"severity\": \"high\", \"detail\": \"second high\"}]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code> · <code>conformance 3 (2 high)</code></summary>\n\n**Issue conformance (review independently)**\n- `[high] b` first high\n- `[high] c` second high\n- `[low] a` low item\n\n</details>\n"
+  },
+  {
+    "name": "conformance_order_no_severity_last",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"conformance\": [{\"category\": \"a\", \"detail\": \"no severity finding\"}, {\"category\": \"b\", \"severity\": \"low\", \"detail\": \"low finding\"}, {\"category\": \"c\", \"severity\": \"high\", \"detail\": \"high finding\"}]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code> · <code>conformance 3 (1 high)</code></summary>\n\n**Issue conformance (review independently)**\n- `[high] c` high finding\n- `[low] b` low finding\n- `[a]` no severity finding\n\n</details>\n"
+  },
+  {
+    "name": "language_klingon",
+    "stdin": "{\"issue\": \"123\", \"scope_deviations\": [\"extra.js\"], \"missing_tests\": [\"rejects negative amounts\"], \"code_anomalies\": [{\"unit\": \"U-001\", \"kind\": \"no-red\", \"notes\": \"flaky\"}], \"tests_pass\": true, \"gates_pass\": true, \"verify_output\": \"\", \"conformance\": [{\"category\": \"missing\", \"severity\": \"high\", \"spec_line\": \"T-003 rejects negative\", \"location\": \"pay.js:12\", \"detail\": \"no test for T-003\"}], \"language\": \"klingon\"}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #123\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 1</code> · <code>missing-tests 1</code> · <code>conformance 1 (1 high)</code></summary>\n\n**Files outside the plan's scope**\n- `extra.js`\n\n**Planned test statements not found**\n- rejects negative amounts\n\n**Issue conformance (review independently)**\n- `[high] missing` no test for T-003\n  `pay.js:12` · spec: T-003 rejects negative\n\n**Anomalies (Red unconfirmed)**\n- U-001 (no-red): flaky\n\n</details>\n"
+  },
+  {
+    "name": "not_json",
+    "stdin": "not json",
+    "exit": 1,
+    "stdout": ""
+  },
+  {
+    "name": "non_object_array",
+    "stdin": "[1,2,3]",
+    "exit": 1,
+    "stdout": ""
+  },
+  {
+    "name": "missing_tests_pass",
+    "stdin": "{\"issue\": \"123\", \"scope_deviations\": [\"extra.js\"], \"missing_tests\": [\"rejects negative amounts\"], \"code_anomalies\": [{\"unit\": \"U-001\", \"kind\": \"no-red\", \"notes\": \"flaky\"}], \"tests_pass\": true, \"gates_pass\": true, \"verify_output\": \"\", \"conformance\": [{\"category\": \"missing\", \"severity\": \"high\", \"spec_line\": \"T-003 rejects negative\", \"location\": \"pay.js:12\", \"detail\": \"no test for T-003\"}]}",
+    "exit": 1,
+    "stdout": ""
+  },
+  {
+    "name": "missing_gates_pass",
+    "stdin": "{\"issue\": \"123\", \"scope_deviations\": [\"extra.js\"], \"missing_tests\": [\"rejects negative amounts\"], \"code_anomalies\": [{\"unit\": \"U-001\", \"kind\": \"no-red\", \"notes\": \"flaky\"}], \"tests_pass\": true, \"gates_pass\": true, \"verify_output\": \"\", \"conformance\": [{\"category\": \"missing\", \"severity\": \"high\", \"spec_line\": \"T-003 rejects negative\", \"location\": \"pay.js:12\", \"detail\": \"no test for T-003\"}]}",
+    "exit": 1,
+    "stdout": ""
+  },
+  {
+    "name": "manual_checks",
+    "stdin": "{\"issue\": \"9\", \"tests_pass\": true, \"gates_pass\": true, \"manual_checks\": [\"run the migration against staging\", \"confirm `npm run build` succeeds locally\"]}",
+    "exit": 0,
+    "stdout": "\n\n---\n\n_Below is the build workflow's automated verification. It checks the diff against the plan and does not hunt for code defects. It sits off the PR's main thread, so reading it is optional. Open it when a deviation count in the status line is non-zero._\n\nCloses #9\n\n<details>\n<summary><code>verify tests=pass gates=pass</code> · <code>scope-deviations 0</code> · <code>missing-tests 0</code></summary>\n\n**Manual verification checklist (complete before merge)**\n- [ ] run the migration against staging\n- [ ] confirm `npm run build` succeeds locally\n\n</details>\n"
+  }
+]
