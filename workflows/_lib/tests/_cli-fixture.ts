@@ -29,7 +29,11 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { historyPath as cliHistoryPath } from "../cli.ts";
+// Re-exported so a caller (a test, or seedHistory/readLines below) reaches the same function
+// the CLI under test calls through this fixture module, without hand-joining
+// ".claude"/"history" a second time.
+import { historyPath } from "../cli.ts";
+export { historyPath };
 
 /** One frozen replay case: stdin in, exit code and stdout out. seed_lines and rows are
  * optional -- only a history-backed CLI seeds a file before the run and checks appended rows
@@ -126,13 +130,6 @@ export function fixture(fixtures: readonly FixtureCase[], name: string): Fixture
   const found = fixtures.find((entry) => entry.name === name);
   assert.ok(found, `fixture case ${name} exists in the loaded fixtures`);
   return found as FixtureCase;
-}
-
-/** The path a history file named `name` lives at under `home`. Delegates to
- * workflows/_lib/cli.ts's historyPath -- the same function the CLI under test calls -- so a
- * test never hand-joins ".claude"/"history" a second time. */
-export function historyPath(home: string, name: string): string {
-  return cliHistoryPath(home, name);
 }
 
 /** Writes `lines` (each newline-terminated) to the history file named `name` under `home`,

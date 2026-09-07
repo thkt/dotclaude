@@ -11,12 +11,10 @@
 // offendersAmong is the pure core: it takes the file list and a reader as arguments instead of
 // calling `git ls-files` / `readFileSync` itself, so a caller test can drive it with a
 // synthetic tree and a reader that fails on demand instead of depending on this repository's
-// real tree (workflows/_lib/tests/retirement.test.ts's T-120-T-122 do exactly that). The
-// git-backed wrapper a real retirement test calls (trackedFiles, offendersFor,
-// assertDetectsAndMisses) is added in a later unit once a caller reads it. The historical-dir
-// constant (docs/decisions/, .claude/workspace/research/) that offendersAmong's real body
-// excludes by default lands with that body in the Green step, once this scaffold has a caller
-// to keep it from being an unused export.
+// real tree (workflows/_lib/tests/retirement.test.ts's T-120-T-122 do exactly that).
+// gate-retirement.test.ts and ts-harness-retirement.test.ts are its git-backed callers;
+// record-retirement.test.ts still carries its own copy of this walk and migrates to it in a
+// later unit.
 
 const HISTORICAL_DIRS = ["docs/decisions/", ".claude/workspace/research/"];
 
@@ -25,11 +23,7 @@ function isHistorical(path: string): boolean {
 }
 
 /** The subset of `files` whose content `matches` flags, walked in `files` order and skipping
- * a historical path, a path in `extraExclusions`, or a path `read` cannot read.
- *
- * Scaffold only: this Red-step body satisfies none of retirement.test.ts's T-120-T-122 on
- * purpose. The Green step gives it its real walk (skip excluded paths, call `read`, catch a
- * read failure and continue rather than abort, keep a match in `files` order). */
+ * a historical path, a path in `extraExclusions`, or a path `read` cannot read. */
 export function offendersAmong(
   files: string[],
   read: (path: string) => string,
@@ -38,7 +32,6 @@ export function offendersAmong(
 ): string[] {
   const offenders: string[] = [];
   for (const path of files) {
-    // Skip historical directories and extra exclusions
     if (isHistorical(path) || extraExclusions.includes(path)) continue;
 
     let content: string;

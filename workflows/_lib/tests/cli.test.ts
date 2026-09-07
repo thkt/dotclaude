@@ -3,20 +3,11 @@
 // workflows/build/record.ts's `main`, the history-directory resolver that takes `home` as an
 // explicit argument, and the second-precision UTC timestamp formatter.
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, rmSync, statSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 import { historyPath, isoTimestamp, parsePayload } from "../cli.ts";
-
-function withTempHome<T>(fn: (home: string) => T): T {
-  const home = mkdtempSync(join(tmpdir(), "cli-test-"));
-  try {
-    return fn(home);
-  } finally {
-    rmSync(home, { recursive: true, force: true });
-  }
-}
+import { withTempHome } from "./_cli-fixture.ts";
 
 test(
   "T-116 parsing text that is not JSON yields no payload and the message that starts with " +
