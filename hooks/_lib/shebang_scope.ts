@@ -11,6 +11,7 @@
 // constant is written; every exec-bit check and every shebang-content check reads it from here
 // rather than typing the literal again.
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -19,19 +20,33 @@ import { fileURLToPath } from "node:url";
 // hooks/_lib/tests). Internal only: no consumer outside trackedEntries needs the repo root yet.
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-/** DR-0114's absolute bun interpreter path -- see the module docstring above.
- * TODO(planned, not yet implemented by this scaffold): fix this to "#!/opt/homebrew/bin/bun". */
-export const SHEBANG: string = "";
+/** DR-0114's absolute bun interpreter path -- see the module docstring above. */
+export const SHEBANG: string = "#!/opt/homebrew/bin/bun";
 
 /** shebang_test.py's STALE_SHEBANG, generalized: the .py side's fixed literal becomes an
  * argument every check below takes instead, so this constant is the single value a real caller
- * (a future CI-wired script) and hooks/_lib/tests/shebang-ts.test.ts both pass in.
- * TODO(planned, not yet implemented by this scaffold): fix this to "#!/usr/bin/env bun". */
-export const STALE_SHEBANG: string = "";
+ * (a future CI-wired script) and hooks/_lib/tests/shebang-ts.test.ts both pass in. */
+export const STALE_SHEBANG: string = "#!/usr/bin/env bun";
 
-// EXEC_MODE (shebang_test.py's third mirrored constant) stays deferred: it is an internal detail
-// of executableShebangOffenders' own git-mode comparison, not a value any caller passes in, so
-// it has no reason to be exported until that function's body is implemented for real.
+// shebang_test.py's EXEC_MODE, mirrored: an internal detail of executableShebangOffenders' and
+// settingsCommandShebangOffenders' own git-mode comparison, not a value any caller passes in, so
+// it stays unexported.
+const EXEC_MODE = "100755";
+
+// The positive-control fixtures under this directory (docs/wiki/absence-test-positive-control-
+// fixture.md) must never enter a broad hooks/-wide scan's real-subject set, but a caller that
+// names a fixture path directly (or that already supplies its own exclude pathspec) means it,
+// so the default exclusion below applies only when neither is true -- see trackedEntries.
+const FIXTURES_ROOT = "hooks/_lib/tests/fixtures";
+const DEFAULT_FIXTURES_EXCLUDE = `:(exclude)${FIXTURES_ROOT}/**`;
+
+function isExcludePathspec(token: string): boolean {
+  return token.startsWith(":(exclude)") || token.startsWith(":!");
+}
+
+function targetsFixtures(token: string): boolean {
+  return token.includes(FIXTURES_ROOT);
+}
 
 /** (git file mode, absolute path) for every file the discovery pathspec matches.
  *
@@ -41,13 +56,39 @@ export const STALE_SHEBANG: string = "";
  * before its first `git add`. `--others` entries carry no stage/mode field, so their mode reads
  * as "" (an entry can never legitimately claim EXEC_MODE without git having staged it).
  *
- * TODO(planned, not yet implemented by this scaffold): the contract's default pathspec is meant
- * to exclude hooks/_lib/tests/fixtures/** so fixture data never enters the discovery set; this
- * function does not yet apply that exclusion. */
-export function trackedEntries(pattern: string): Array<[mode: string, absolutePath: string]> {
+ * `pattern` accepts either one pathspec or several -- git unions include tokens and subtracts
+ * `:(exclude)`-magic ones within a single `--` argument list, so an array of tokens (an include
+ * glob plus a caller-supplied exclude, as hooks/_lib/tests/shebang-ts.test.ts's real-subject
+ * checks pass) resolves in one git call rather than a per-token reimplementation.
+ *
+ * When the caller supplies neither an exclude token nor a pattern that itself names a path under
+ * fixtures/, this appends the default fixtures exclude above so a hooks/-wide scan never returns
+ * positive-control fixture data on its own; a pathspec that already targets (or already excludes)
+ * fixtures/ is left as the caller wrote it, so a direct fixture lookup still finds its file. */
+export function trackedEntries(
+  pattern: string | readonly string[],
+): Array<[mode: string, absolutePath: string]> {
+  const tokens = typeof pattern === "string" ? [pattern] : [...pattern];
+  const hasExplicitExclude = tokens.some(isExcludePathspec);
+  const includesFixturesDirectly = tokens
+    .filter((token) => !isExcludePathspec(token))
+    .some(targetsFixtures);
+  const gitPathspecs =
+    hasExplicitExclude || includesFixturesDirectly ? tokens : [...tokens, DEFAULT_FIXTURES_EXCLUDE];
+
   const output = execFileSync(
     "git",
-    ["-C", REPO, "ls-files", "-s", "--cached", "--others", "--exclude-standard", "--", pattern],
+    [
+      "-C",
+      REPO,
+      "ls-files",
+      "-s",
+      "--cached",
+      "--others",
+      "--exclude-standard",
+      "--",
+      ...gitPathspecs,
+    ],
     { encoding: "utf8" },
   );
   const entries: Array<[string, string]> = [];
@@ -62,52 +103,116 @@ export function trackedEntries(pattern: string): Array<[mode: string, absolutePa
   return entries;
 }
 
+/** shebang_test.py's `_first_line`: the file's first line, without its trailing newline. Reads
+ * as utf8 like the python side's `encoding="utf-8"` open. */
+function firstLine(absolutePath: string): string {
+  const text = readFileSync(absolutePath, "utf8");
+  const newline = text.indexOf("\n");
+  return newline === -1 ? text : text.slice(0, newline);
+}
+
 /** shebang_test.py's ExecutableShebang.test_T_001, generalized to take the pathspec and the
  * expected shebang as arguments instead of the fixed `hooks/*.py` + SHEBANG pair, so
  * hooks/_lib/tests/shebang-ts.test.ts can point the same function at hooks/'s real .ts files
  * and, separately, at a positive-control fixture (docs/wiki/absence-test-positive-control-
- * fixture.md).
- *
- * TODO(planned, not yet implemented by this scaffold): resolve `pathspec` to entries (reusing
- * trackedEntries for a single pathspec, unioned across each token for an array), filter entries
- * whose mode is the exec bit, read each survivor's first line, and collect the REPO-relative
- * paths whose first line does not equal `shebang`. */
+ * fixture.md). */
 export function executableShebangOffenders(
-  _pathspec: string | readonly string[],
-  _shebang: string,
+  pathspec: string | readonly string[],
+  shebang: string,
 ): string[] {
-  return [];
+  const offenders: string[] = [];
+  for (const [mode, absolutePath] of trackedEntries(pathspec)) {
+    if (mode !== EXEC_MODE) continue;
+    if (firstLine(absolutePath) !== shebang) {
+      offenders.push(path.relative(REPO, absolutePath));
+    }
+  }
+  return offenders;
 }
 
 /** shebang_test.py's NoStaleShebang.test_T_002, generalized the same way: `pathspec` replaces
- * the fixed `hooks/*` scan and `staleLine` replaces the fixed STALE_SHEBANG literal.
- *
- * TODO(planned, not yet implemented by this scaffold): resolve `pathspec` to entries, read each
- * tracked file's text (skipping files that fail to decode as UTF-8, as shebang_test.py's
- * NoStaleShebang does), and collect the REPO-relative paths whose lines include `staleLine`. */
+ * the fixed `hooks/*` scan and `staleLine` replaces the fixed STALE_SHEBANG literal. Skips
+ * entries that are not a readable file (a `--others` entry can name a path git still lists but
+ * that no longer exists on disk), mirroring the python side's `is_file()` guard; readFileSync's
+ * `utf8` decoding never throws on invalid bytes the way python's strict utf-8 does, so there is
+ * no equivalent of its `UnicodeDecodeError` skip to port. */
 export function staleShebangOffenders(
-  _pathspec: string | readonly string[],
-  _staleLine: string,
+  pathspec: string | readonly string[],
+  staleLine: string,
 ): string[] {
-  return [];
+  const offenders: string[] = [];
+  for (const [, absolutePath] of trackedEntries(pathspec)) {
+    let text: string;
+    try {
+      text = readFileSync(absolutePath, "utf8");
+    } catch {
+      continue;
+    }
+    if (text.split("\n").includes(staleLine)) {
+      offenders.push(path.relative(REPO, absolutePath));
+    }
+  }
+  return offenders;
+}
+
+function collectDotTsCommandTokens(node: unknown, out: string[]): void {
+  if (Array.isArray(node)) {
+    for (const item of node) collectDotTsCommandTokens(item, out);
+    return;
+  }
+  if (node !== null && typeof node === "object") {
+    const record = node as Record<string, unknown>;
+    if (typeof record.command === "string") {
+      for (const token of record.command.split(/\s+/)) {
+        if (token.startsWith("~/.claude/") && token.endsWith(".ts")) {
+          out.push(token.slice("~/.claude/".length));
+        }
+      }
+    }
+    for (const value of Object.values(record)) collectDotTsCommandTokens(value, out);
+  }
 }
 
 /** shebang_test.py's SettingsCommandShebang.test_T_003, generalized to take the settings tree
  * as a plain argument instead of reading settings.json off disk itself, so the same function
- * checks the repository's real settings.json and a settings-shaped fixture object alike.
- *
- * TODO(planned, not yet implemented by this scaffold): walk `settings.hooks`, collect every
- * command token ending in ".ts", resolve each `~/.claude/`-relative token to REPO, and collect
- * the REPO-relative paths that are not tracked with the exec bit and the first line `shebang`. */
-export function settingsCommandShebangOffenders(_settings: unknown, _shebang: string): string[] {
-  return [];
+ * checks the repository's real settings.json and a settings-shaped fixture object alike. */
+export function settingsCommandShebangOffenders(settings: unknown, shebang: string): string[] {
+  const hooksNode =
+    settings !== null && typeof settings === "object"
+      ? (settings as Record<string, unknown>).hooks
+      : undefined;
+  const relativeScripts: string[] = [];
+  collectDotTsCommandTokens(hooksNode ?? {}, relativeScripts);
+
+  const trackedModes = new Map<string, string>();
+  for (const [mode, absolutePath] of trackedEntries("hooks/**/*.ts")) {
+    trackedModes.set(path.relative(REPO, absolutePath), mode);
+  }
+
+  const offenders: string[] = [];
+  for (const rel of relativeScripts) {
+    const mode = trackedModes.get(rel);
+    let ready = mode === EXEC_MODE;
+    if (ready) {
+      try {
+        ready = firstLine(path.join(REPO, rel)) === shebang;
+      } catch {
+        ready = false;
+      }
+    }
+    if (!ready) offenders.push(rel);
+  }
+  return offenders;
 }
 
 /** shebang_test.py's LibHasNoShebang.test_T_004, generalized to take the pathspec as an
- * argument instead of the fixed `hooks/_lib/*.py` scan.
- *
- * TODO(planned, not yet implemented by this scaffold): resolve `pathspec` to entries and collect
- * the REPO-relative paths whose first line starts with "#!". */
-export function libHasShebangOffenders(_pathspec: string | readonly string[]): string[] {
-  return [];
+ * argument instead of the fixed `hooks/_lib/*.py` scan. */
+export function libHasShebangOffenders(pathspec: string | readonly string[]): string[] {
+  const offenders: string[] = [];
+  for (const [, absolutePath] of trackedEntries(pathspec)) {
+    if (firstLine(absolutePath).startsWith("#!")) {
+      offenders.push(path.relative(REPO, absolutePath));
+    }
+  }
+  return offenders;
 }
