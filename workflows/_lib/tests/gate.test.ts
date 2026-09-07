@@ -488,3 +488,45 @@ test("T-034 a trailing unittest verdict counts as a failure marker and a passing
     [fail, error],
   );
 });
+
+// code.js passes --tail-bytes 800, and a suite of a few hundred tests ends with a TAP summary
+// longer than that, so a failing line that only the tail could see is never seen. The anchor
+// checks and the calibration candidates read the whole output; the tails are report payload.
+test("T-035 a failing line older than the tail window is still a calibration candidate and still satisfies --require-output", () => {
+  withTempDir((cwd) => {
+    const command =
+      "printf 'not ok 1 - T-001 x\\n'; for i in $(seq 1 60); do printf 'ok %s - filler line that pushes the failure out of the tail\\n' \"$i\"; done; exit 1";
+    const calibrated = runCli([
+      "--cwd",
+      cwd,
+      "--command",
+      command,
+      "--calibrate",
+      "--planned-test",
+      "T-001:x",
+      "--tail-bytes",
+      "200",
+    ]);
+    assert.equal(calibrated.report.verdict, "pass", "calibrate: verdict");
+    assert.deepEqual(
+      (calibrated.report.candidates as { text: string }[]).map((c) => c.text),
+      ["not ok 1 - T-001 x"],
+      "calibrate: the failing line outside the tail is the candidate",
+    );
+
+    const anchored = runCli([
+      "--cwd",
+      cwd,
+      "--command",
+      command,
+      "--expect",
+      "fail",
+      "--require-output",
+      "not ok 1 - T-001 x",
+      "--tail-bytes",
+      "200",
+    ]);
+    assert.equal(anchored.status, 0, "anchored: exit code");
+    assert.equal(anchored.report.verdict, "pass", "anchored: verdict");
+  });
+});
