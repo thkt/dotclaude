@@ -24,7 +24,6 @@ import {
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..", "..");
 const FIXTURES_DIR = "hooks/_lib/tests/fixtures/shebang";
-const FIXTURES_EXCLUDE = ":(exclude)hooks/_lib/tests/fixtures/shebang/**";
 
 // The exact fixture files' contents are the load-bearing part of each positive control (an
 // exec-bit .ts with a wrong first line, a file carrying the stale bun line, a _lib-shaped .ts
@@ -42,7 +41,7 @@ function readJson(relativePath: string): unknown {
 }
 
 test("T-010 every executable tracked .ts under hooks/ opens with the bun shebang, and the same check flags the exec-bit fixture whose first line is wrong", () => {
-  const realOffenders = executableShebangOffenders(["hooks/**/*.ts", FIXTURES_EXCLUDE], SHEBANG);
+  const realOffenders = executableShebangOffenders("hooks/**/*.ts", SHEBANG);
   assert.deepEqual(
     realOffenders,
     [],
@@ -58,7 +57,7 @@ test("T-010 every executable tracked .ts under hooks/ opens with the bun shebang
 });
 
 test("T-011 no tracked file under hooks/ carries a stale #!/usr/bin/env bun line, and the same check flags the fixture that carries one", () => {
-  const realOffenders = staleShebangOffenders(["hooks/**", FIXTURES_EXCLUDE], STALE_SHEBANG);
+  const realOffenders = staleShebangOffenders("hooks/**", STALE_SHEBANG);
   assert.deepEqual(
     realOffenders,
     [],
@@ -84,15 +83,17 @@ test("T-012 every .ts settings.json names as a hook command carries the exec bit
 
   const fixtureSettings = readJson(`${FIXTURES_DIR}/settings-shaped.json`);
   const fixtureOffenders = settingsCommandShebangOffenders(fixtureSettings, SHEBANG);
+  // The fixture names a tracked file that has the exec bit and the wrong first line, so the
+  // flag comes from the comparison itself and not from the file being absent.
   assert.deepEqual(
     fixtureOffenders,
-    ["hooks/notify_bun_example.ts"],
+    [EXEC_BIT_FIXTURE_REL],
     "the settings-shaped positive-control fixture must flag the .ts it names as a command",
   );
 });
 
 test("T-013 no tracked .ts under hooks/_lib/ carries a shebang line, and the same check flags the _lib-shaped fixture that carries one", () => {
-  const realOffenders = libHasShebangOffenders(["hooks/_lib/**/*.ts", FIXTURES_EXCLUDE]);
+  const realOffenders = libHasShebangOffenders("hooks/_lib/**/*.ts");
   assert.deepEqual(
     realOffenders,
     [],

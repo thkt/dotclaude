@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/notify_bun_example.ts"
+            "command": "~/.claude/hooks/_lib/tests/fixtures/shebang/exec-bit-wrong-shebang.ts"
           }
         ]
       }

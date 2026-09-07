@@ -25,7 +25,12 @@ export const SHEBANG: string = "#!/opt/homebrew/bin/bun";
 
 /** shebang_test.py's STALE_SHEBANG, generalized: the .py side's fixed literal becomes an
  * argument every check below takes instead, so this constant is the single value a real caller
- * (a future CI-wired script) and hooks/_lib/tests/shebang-ts.test.ts both pass in. */
+ * (a future CI-wired script) and hooks/_lib/tests/shebang-ts.test.ts both pass in.
+ *
+ * Stale is defined per check scope. For the hooks/ checks it is this line alone, not
+ * `#!/usr/bin/env node`: the two tracked .ts files carrying that line, skills/_lib/harness_hash.ts
+ * and workflows/_lib/gate.ts, sit outside hooks/ and never enter these checks' subject set, and
+ * DR-0114's absolute-path requirement applies to hook entry points only. */
 export const STALE_SHEBANG: string = "#!/usr/bin/env bun";
 
 // shebang_test.py's EXEC_MODE, mirrored: an internal detail of executableShebangOffenders' and
@@ -37,7 +42,7 @@ const EXEC_MODE = "100755";
 // fixture.md) must never enter a broad hooks/-wide scan's real-subject set, but a caller that
 // names a fixture path directly (or that already supplies its own exclude pathspec) means it,
 // so the default exclusion below applies only when neither is true -- see trackedEntries.
-const FIXTURES_ROOT = "hooks/_lib/tests/fixtures";
+export const FIXTURES_ROOT = "hooks/_lib/tests/fixtures";
 const DEFAULT_FIXTURES_EXCLUDE = `:(exclude)${FIXTURES_ROOT}/**`;
 
 function isExcludePathspec(token: string): boolean {
@@ -94,10 +99,10 @@ export function trackedEntries(
   const entries: Array<[string, string]> = [];
   for (const line of output.split("\n")) {
     if (!line) continue;
+    // A `--others` entry is the bare path with no stage field, so it carries no tab.
     const tab = line.indexOf("\t");
-    const rel = line.slice(tab + 1);
-    const meta = line.slice(0, tab);
-    const mode = meta.split(" ")[0] ?? "";
+    const rel = tab === -1 ? line : line.slice(tab + 1);
+    const mode = tab === -1 ? "" : (line.slice(0, tab).split(" ")[0] ?? "");
     entries.push([mode, path.join(REPO, rel)]);
   }
   return entries;
@@ -184,14 +189,11 @@ export function settingsCommandShebangOffenders(settings: unknown, shebang: stri
   const relativeScripts: string[] = [];
   collectDotTsCommandTokens(hooksNode ?? {}, relativeScripts);
 
-  const trackedModes = new Map<string, string>();
-  for (const [mode, absolutePath] of trackedEntries("hooks/**/*.ts")) {
-    trackedModes.set(path.relative(REPO, absolutePath), mode);
-  }
-
   const offenders: string[] = [];
   for (const rel of relativeScripts) {
-    const mode = trackedModes.get(rel);
+    // Looked up by its own path rather than through a hooks/-wide scan, so a script under
+    // fixtures/ (the positive control) is compared on its real mode and first line too.
+    const mode = trackedEntries(rel)[0]?.[0];
     let ready = mode === EXEC_MODE;
     if (ready) {
       try {
