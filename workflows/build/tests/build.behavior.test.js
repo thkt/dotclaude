@@ -12,7 +12,7 @@ import { runWorkflow } from "../../_lib/run-workflow.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const buildJs = join(here, "..", "..", "build.js");
-const recordPy = join(here, "..", "record.py");
+const recordTs = join(here, "..", "record.ts");
 
 // The shared args clearing build.js's no-repo gate. repo is used only to assemble the anchor
 // and guard strings, so one fixed absolute path covers every test.
@@ -55,7 +55,7 @@ const makePlan = (overrides = {}) => ({
   ...overrides,
 });
 
-// The run_id record.py mints. A later row carrying it back is what ties two rows to one build.
+// The run_id record.ts mints. A later row carrying it back is what ties two rows to one build.
 const RECORDED_RUN_ID = "a1b2c3d4e5f6";
 
 // Classifies an agent call by the shape of its schema rather than by its label string, which
@@ -102,7 +102,7 @@ const makeStubs = ({
     const kind = kindOf(opts);
     switch (kind) {
       case "record":
-        // The default stands in for record.py's stdout; a function override runs the real script.
+        // The default stands in for record.ts's stdout; a function override runs the real script.
         if (record !== undefined) return typeof record === "function" ? record(prompt) : record;
         return { path: "/home/sample/.claude/history/build-runs.jsonl", run_id: RECORDED_RUN_ID };
       case "translate":
@@ -1759,11 +1759,11 @@ test("a recorder returning no run_id leaves the build running and logs the lost 
   );
 });
 
-// T-008: the seam. Every case above stubs the recorder, so build.js and record.py can each be
+// T-008: the seam. Every case above stubs the recorder, so build.js and record.ts can each be
 // right while the payload never reaches the file.
-// HOME points at a temporary directory, matching record.py's HISTORY_DIR, so the developer's own
+// HOME points at a temporary directory, matching record.ts's HISTORY_DIR, so the developer's own
 // build-runs.jsonl is never written.
-test("T-008 a no-plan stop reaches the real record.py as a plan-quality row joined to the start row", async () => {
+test("T-008 a no-plan stop reaches the real record.ts as a plan-quality row joined to the start row", async () => {
   const home = mkdtempSync(join(tmpdir(), "build-record-seam-"));
   try {
     const { result } = await runWorkflow(buildJs, {
@@ -1773,12 +1773,12 @@ test("T-008 a no-plan stop reaches the real record.py as a plan-quality row join
         record: (prompt) => {
           // The payload is the prompt's last line, where recordRun puts the stringified JSON.
           const payload = prompt.trim().split("\n").pop();
-          const res = spawnSync("python3", [recordPy], {
+          const res = spawnSync(process.execPath, [recordTs], {
             input: payload,
             encoding: "utf8",
             env: { ...process.env, HOME: home },
           });
-          assert.equal(res.status, 0, `record.py exits 0 (stderr: ${res.stderr})`);
+          assert.equal(res.status, 0, `record.ts exits 0 (stderr: ${res.stderr})`);
           return JSON.parse(res.stdout);
         },
       }),
@@ -1804,9 +1804,9 @@ test("T-008 a no-plan stop reaches the real record.py as a plan-quality row join
   }
 });
 
-// U-002: record.py's stdout carries the window tally alongside path/run_id. stop() and the
+// U-002: record.ts's stdout carries the window tally alongside path/run_id. stop() and the
 // final return must relay that same tally rather than dropping it on the way to the caller.
-test("T-009 a no-plan stop run through the real record.py returns counts matching the rows on disk", async () => {
+test("T-009 a no-plan stop run through the real record.ts returns counts matching the rows on disk", async () => {
   const home = mkdtempSync(join(tmpdir(), "build-record-counts-"));
   try {
     let lastCounts = null;
@@ -1816,38 +1816,38 @@ test("T-009 a no-plan stop run through the real record.py returns counts matchin
         body: "An issue body with no Plan heading.\n\n## Context\n\nExplanation only.",
         record: (prompt) => {
           const payload = prompt.trim().split("\n").pop();
-          const res = spawnSync("python3", [recordPy], {
+          const res = spawnSync(process.execPath, [recordTs], {
             input: payload,
             encoding: "utf8",
             env: { ...process.env, HOME: home },
           });
-          assert.equal(res.status, 0, `record.py exits 0 (stderr: ${res.stderr})`);
+          assert.equal(res.status, 0, `record.ts exits 0 (stderr: ${res.stderr})`);
           lastCounts = JSON.parse(res.stdout);
           return lastCounts;
         },
       }),
     });
     assert.equal(result.stopped, "no-plan");
-    assert.ok(lastCounts, "record.py ran at least once");
+    assert.ok(lastCounts, "record.ts ran at least once");
     assert.equal(
       result.started,
       lastCounts.started,
-      "the stopped return's started count matches what record.py read off the rows on disk",
+      "the stopped return's started count matches what record.ts read off the rows on disk",
     );
     assert.equal(
       result.stops,
       lastCounts.stops,
-      "the stopped return's stops count matches what record.py read off the rows on disk",
+      "the stopped return's stops count matches what record.ts read off the rows on disk",
     );
     assert.equal(
       result.trigger_met,
       lastCounts.trigger_met,
-      "the stopped return's trigger_met matches record.py's own verdict",
+      "the stopped return's trigger_met matches record.ts's own verdict",
     );
     assert.equal(
       result.skipped_lines,
       lastCounts.skipped_lines,
-      "the stopped return's skipped_lines matches record.py's own count",
+      "the stopped return's skipped_lines matches record.ts's own count",
     );
   } finally {
     rmSync(home, { recursive: true, force: true });
@@ -1870,14 +1870,14 @@ test("T-010 a recorder that returns no counts leaves the build running and logs 
   );
 });
 
-// Not record.py's docstring: the prompt and the docstring can drift together while the real
+// Not record.ts's header comment: the prompt and the docstring can drift together while the real
 // output moves on, and neither side is what the caller reads back. Running the script is the
 // only source that cannot go stale, so both prose copies are held to it.
-test("T-011 the JSON example in the recorder prompt carries every key the real record.py prints", async () => {
+test("T-011 the JSON example in the recorder prompt carries every key the real record.ts prints", async () => {
   const home = mkdtempSync(join(tmpdir(), "build-record-keys-"));
   let printed;
   try {
-    const res = spawnSync("python3", [recordPy], {
+    const res = spawnSync(process.execPath, [recordTs], {
       input: JSON.stringify({
         issue: "1",
         repo: "/abs/repo",
@@ -1888,20 +1888,20 @@ test("T-011 the JSON example in the recorder prompt carries every key the real r
       encoding: "utf8",
       env: { ...process.env, HOME: home },
     });
-    assert.equal(res.status, 0, `record.py exits 0 (stderr: ${res.stderr})`);
+    assert.equal(res.status, 0, `record.ts exits 0 (stderr: ${res.stderr})`);
     printed = Object.keys(JSON.parse(res.stdout));
   } finally {
     rmSync(home, { recursive: true, force: true });
   }
-  assert.ok(printed.length > 0, "record.py prints at least one key");
+  assert.ok(printed.length > 0, "record.ts prints at least one key");
 
-  const recordSource = await readFile(recordPy, "utf8");
+  const recordSource = await readFile(recordTs, "utf8");
   const stdoutLine = recordSource.match(/stdout:\s*one line of JSON,\s*\{([^}]+)\}/);
-  assert.ok(stdoutLine, "record.py's docstring states the stdout key set");
+  assert.ok(stdoutLine, "record.ts's header comment states the stdout key set");
   assert.deepEqual(
     new Set(stdoutLine[1].split(",").map((k) => k.trim())),
     new Set(printed),
-    "record.py's docstring names the keys it actually prints",
+    "record.ts's header comment names the keys it actually prints",
   );
 
   const { calls } = await runWorkflow(buildJs, { args, stubs: makeStubs() });
@@ -1910,7 +1910,7 @@ test("T-011 the JSON example in the recorder prompt carries every key the real r
     assert.match(
       recordPrompt,
       new RegExp(`"${key}"`),
-      `the recorder prompt's JSON example names "${key}", one of the keys record.py printed`,
+      `the recorder prompt's JSON example names "${key}", one of the keys record.ts printed`,
     );
   }
 });

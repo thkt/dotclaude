@@ -1,7 +1,7 @@
 /// <reference types="node" />
-// Behavior tests for workflows/assert/record.ts, the TypeScript port of record.py (Python 版).
+// Behavior tests for workflows/assert/record.ts, the TypeScript port of the Python assert recorder.
 // T-111 replays the frozen fixture in tests/fixtures/record-cases.json, produced by running
-// record.py itself (see workflows/assert/tests/record_test.py, U-001), and compares the port's
+// the Python recorder itself before it was retired (U-001), and compares the port's
 // stdin/stdout/row/exit against it case by case. generated_at is frozen in the fixture as the
 // placeholder <utc-iso8601-Z> because it is minted fresh on every run; that key is compared by
 // shape, everything else by exact value. Unlike workflows/build/record.ts, assert is 1 run 1

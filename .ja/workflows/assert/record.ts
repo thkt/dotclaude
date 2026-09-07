@@ -13,7 +13,7 @@
 // 解決して行に加えるフィールド:
 //   generated_at  UTC ISO-8601
 //
-// workflows/assert/record.py (Python 版) の TypeScript 移植。Contract: この CLI 自身の挙動。
+// 置き換え元の Python 版 assert recorder の TypeScript 移植。Contract: この CLI 自身の挙動。
 // workflows/assert/tests/record.test.ts が、固定 fixture workflows/assert/tests/fixtures/record-cases.json
 // に対してエンドツーエンドで検査する。
 import { appendFileSync, mkdirSync, readFileSync } from "node:fs";

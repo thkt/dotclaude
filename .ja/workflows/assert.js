@@ -322,13 +322,13 @@ let auditDegraded = false;
 let auditReason = "";
 
 // ---- Run recording: 確定した run ごとに 1 行。build.js の recordRun に倣う ----
-// record.py は payload をそのまま複製するので、ここでキーを増やしても向こう側は変えなくてよい。
+// record.ts は payload をそのまま複製するので、ここでキーを増やしても向こう側は変えなくてよい。
 const RECORD_SCHEMA = {
   type: "object",
   additionalProperties: false,
   required: ["path"],
   properties: {
-    path: { type: "string", description: "record.py の stdout JSON から得た path をそのまま" },
+    path: { type: "string", description: "record.ts の stdout JSON から得た path をそのまま" },
   },
 };
 const recordRun = async () => {
@@ -355,7 +355,7 @@ const recordRun = async () => {
     written = await agent(
       anchor(
         `assert の 1 run を記録する。値を判断・要約・編集しない。手順は、(1) 次の JSON を一時ファイルへそのまま書く。` +
-          `(2) \`python3 ${SCRIPTS}/record.py < <tempfile>\` を実行する。` +
+          `(2) \`node ${SCRIPTS}/record.ts < <tempfile>\` を実行する。` +
           `(3) script の stdout の path をそのまま返す。` +
           `script は {"path":...} を print する。\n` +
           `入力 JSON は次のとおり。\n${JSON.stringify(payload)}`,

@@ -1,4 +1,4 @@
-// Only agent responses are faked; record.py really runs, so what is asserted is the row on disk
+// Only agent responses are faked; record.ts really runs, so what is asserted is the row on disk
 // rather than the payload the run assembled. No other path shows whether Synthesize's issues and
 // recordRun's issue_counts stay in step.
 import { test } from "node:test";
@@ -13,20 +13,20 @@ import { bootOk, recordCallsOf, recordPayloadOf } from "./_fixtures.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const assertJs = join(here, "..", "..", "assert.js");
-const recordPy = join(here, "..", "record.py");
+const recordTs = join(here, "..", "record.ts");
 
 // HISTORY_DIR derives from $HOME, so HOME points at a temporary directory: the real history is
 // never rewritten and records never mix between tests.
 const runRecord = (payload) => {
   const home = mkdtempSync(join(tmpdir(), "assert-record-seam-"));
   try {
-    const res = spawnSync("python3", [recordPy], {
+    const res = spawnSync(process.execPath, [recordTs], {
       input: JSON.stringify(payload),
       encoding: "utf8",
       env: { ...process.env, HOME: home },
     });
-    assert.equal(res.status, 0, `record.py exits 0 (stderr: ${res.stderr})`);
-    // record.py writes one row per run, so the file holds exactly what this run appended.
+    assert.equal(res.status, 0, `record.ts exits 0 (stderr: ${res.stderr})`);
+    // record.ts writes one row per run, so the file holds exactly what this run appended.
     const out = JSON.parse(res.stdout);
     const lines = readFileSync(out.path, "utf8").trim().split("\n");
     return JSON.parse(lines[lines.length - 1]);
@@ -36,7 +36,7 @@ const runRecord = (payload) => {
 };
 
 // "record" is left unstubbed so its payload is read off calls.agent rather than fabricated,
-// then carried to the real record.py below.
+// then carried to the real record.ts below.
 const agentStub = (issues) => (prompt, opts) => {
   const label = opts && opts.label;
   if (label === "bootstrap") return bootOk;
@@ -56,7 +56,7 @@ const tallyBySeverity = (issues) => {
   return counts;
 };
 
-test("T-016 the row the real record.py wrote carries the same per-severity counts as the returned issues", async () => {
+test("T-016 the row the real record.ts wrote carries the same per-severity counts as the returned issues", async () => {
   const issues = [
     { file: "a.js", line: 10, severity: "high", summary: "x", source: ["audit"] },
     { file: "b.js", line: 20, severity: "medium", summary: "y", source: ["audit"] },
@@ -76,7 +76,7 @@ test("T-016 the row the real record.py wrote carries the same per-severity count
   assert.deepEqual(
     row.issue_counts,
     tallyBySeverity(result.issues),
-    "the per-severity counts in the row the real record.py wrote to disk match a tally taken " +
+    "the per-severity counts in the row the real record.ts wrote to disk match a tally taken " +
       "straight off assert's own returned issues",
   );
 });

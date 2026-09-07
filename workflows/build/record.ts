@@ -27,7 +27,7 @@
 //   trigger_met   stops >= STOP_TRIGGER.
 //   skipped_lines count of lines in RUNS_PATH that do not parse as a JSON object.
 //
-// TypeScript port of workflows/build/record.py (Python 版). Contract: this CLI's own
+// TypeScript port of the Python build recorder it replaces. Contract: this CLI's own
 // behavior, exercised end to end by workflows/build/tests/record.test.ts against the frozen
 // fixture workflows/build/tests/fixtures/record-cases.json.
 import { appendFileSync, mkdirSync, readFileSync } from "node:fs";

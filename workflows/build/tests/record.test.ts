@@ -1,7 +1,7 @@
 /// <reference types="node" />
-// Behavior tests for workflows/build/record.ts, the TypeScript port of record.py (Python 版).
+// Behavior tests for workflows/build/record.ts, the TypeScript port of the Python build recorder.
 // T-107..T-110 replay the frozen fixture in tests/fixtures/record-cases.json, produced by
-// running record.py itself (see workflows/build/tests/record_test.py, U-001), and compare the
+// running the Python recorder itself before it was retired (U-001), and compare the
 // port's stdin/stdout/row/exit against it case by case. run_id and generated_at are frozen in
 // the fixture as the placeholders <uuid4hex> and <utc-iso8601-Z> because both are minted fresh
 // on every run; those two keys are compared by shape, everything else by exact value.

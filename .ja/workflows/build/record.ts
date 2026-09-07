@@ -27,7 +27,7 @@
 //   trigger_met   stops >= STOP_TRIGGER。
 //   skipped_lines RUNS_PATH の行のうち JSON object として parse できなかった行数。
 //
-// workflows/build/record.py (Python 版) の TypeScript 移植。Contract: この CLI 自身の挙動。
+// 置き換え元の Python 版 build recorder の TypeScript 移植。Contract: この CLI 自身の挙動。
 // workflows/build/tests/record.test.ts が、固定 fixture workflows/build/tests/fixtures/record-cases.json
 // に対してエンドツーエンドで検査する。
 import { appendFileSync, mkdirSync, readFileSync } from "node:fs";

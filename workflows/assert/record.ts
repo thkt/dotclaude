@@ -14,7 +14,7 @@
 // Resolved fields, added to the row:
 //   generated_at  UTC ISO-8601
 //
-// TypeScript port of workflows/assert/record.py (Python 版). Contract: this CLI's own
+// TypeScript port of the Python assert recorder it replaces. Contract: this CLI's own
 // behavior, exercised end to end by workflows/assert/tests/record.test.ts against the frozen
 // fixture workflows/assert/tests/fixtures/record-cases.json.
 import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
