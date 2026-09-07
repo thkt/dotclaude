@@ -62,7 +62,6 @@
 - tests を持つ unit は plan の files に、そのテストが動かすモジュールを含める。Red が触れるのは files にあるものだけなので、files 外を import するテストは Red を確立できない #600
 - plan 文の Markdown 整形は日本語中の ASCII 数字前後に空白を入れるため、テスト名照合は空白の連なりの有無を許容しないと候補を取りこぼす #609
 - unittest.main(verbosity=2) の verbose reporter は判定 (FAIL/ERROR) を行末に置くため、行頭マーカーのみを見る失敗検出は Python スイートの失敗を常に取りこぼす #609
-- gate レポートの中継はシェル→agent 経由で確率的に途中で切れるため、呼び出し側が読まない stdout_tail 等のフィールドは既定サイズを呼び出し元で絞る #614
 - skills 配下の Python を TypeScript へ移すとき、.github/workflows/test.yml の Node tests step は glob を手動で足さないと拾わない。Python 側は find なので .py を消せば自動で外れるが、.ts を足しても自動では入らない #615
 - exit 0 の hook の stdout print は単独では届かず hook_payload の notify (systemMessage/additionalContext) 経由が要る #618
 - settings.json で matcher 共通 command が if だけ Write/Edit に分かれる複数登録は重複でない #618
@@ -73,7 +72,10 @@
 - 手元の gate (oxlint / oxfmt) は Python を見ないので、push 前に CI と同じ版の ruff (0.16.4) を手元で走らせる。E501 だけで CI が落ちた #623
 - PR 本文の Review focus 節で、振る舞いが変わったファイルと comment のみの変更ファイルを分けて示す #648
 - TS 化で knip.json の glob 拡張だけでは足りず、CLI 入口ファイル (entry) と静的 import されない test fixture (ignoreFiles) は明示しないと未使用 export として新規に誤検出される #653
-- gate.ts が --tail-bytes で絞った tail テキストを anchor check (--require-output/--forbid-output) と calibration の候補抽出にも使うと、大きい suite では失敗行が窓の外に落ちる #659
+- 既存の共有 helper (entry-point.ts の isMainModule) があるのに、移植元の手書き同等処理をそのまま写した (research)
+- knip の project glob は TS 化した層 (hooks/**、skills/**/*.ts) を足さないと、その層の .ts は dead-export 検出ゼロのまま tsc だけが見る (research)
+- docs/SPEC.md の確認コマンドは CI の test.yml の glob とずれる (.test.ts と sandbox が無い)。片方を正本にする (research)
+- issue を拾う前に ## Plan の有無と Blocked by の open 状態で着手可能性を機械的に絞る。build は Plan の無い issue を no-plan で止める (research)
 
 ## 棄却
 

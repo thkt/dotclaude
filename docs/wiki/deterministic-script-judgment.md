@@ -36,3 +36,4 @@ scenes: []
 - #230 閾値を skill の散文から外した
 - #389 issue の plan 選定と節の切り出しを pick-plan.py へ出し、種別ごとの必須節を FLOOR として validator に持たせた。移す過程で「slug が issue のタイトルに一致する」という前提が崩れ、実行で確かめられる形にして初めて分かった
 - #623 build の戻り値と PR 本文が agent の読みで git の事実と食い違った。commit の実在は verifier の report で、変更ファイル一覧は diff-files.py で、PR タイトルは script が issue タイトルから決める形にし、relay agent には stdout の逐語中継だけを残した
+- (research) `workflows/assert.js` の Cleanup が worktree の削除を best-effort の agent prompt に委ねていて、168 MB の assert worktree が 1 週間残置していた。削除は入力から一意に決まる操作で、agent の判断を要さない
