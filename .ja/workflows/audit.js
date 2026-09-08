@@ -79,23 +79,23 @@ const fenced = (value) => {
 const bundled = (rel) =>
   `"$(P="$HOME/.claude/${rel}"; [ -e "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" -not -path "*/.ja/*" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
 
-// timestamp・branch の解決は audit/snapshot.py が行い、agent は payload を一時ファイルに書いて
+// timestamp・branch の解決は audit/snapshot.ts が行い、agent は payload を一時ファイルに書いて
 // 1 回叩くだけ。disk への副作用が目的。build_record は payload のキーをそのまま record の項目に
 // するので、record で読ませたいものはここへ渡す。
-// 件数は stdin を受けた snapshot.py が数える。prompt 経由で payload を書き写す agent は途中で
+// 件数は stdin を受けた snapshot.ts が数える。prompt 経由で payload を書き写す agent は途中で
 // 要約しうるので、切り詰めた当人に報告させない。
 const SNAPSHOT_SCHEMA = {
   type: "object",
   additionalProperties: false,
   required: ["path", "counts"],
   properties: {
-    path: { type: "string", description: "snapshot.py の stdout JSON の path をそのまま" },
+    path: { type: "string", description: "snapshot.ts の stdout JSON の path をそのまま" },
     counts: {
       type: "object",
       additionalProperties: false,
       required: ["raw_findings", "findings", "skipped", "needs_context", "zero_reviewer_files"],
       description:
-        "snapshot.py の stdout JSON の counts をそのまま。自分で数え直さず、値を書き換えない",
+        "snapshot.ts の stdout JSON の counts をそのまま。自分で数え直さず、値を書き換えない",
       properties: {
         raw_findings: { type: "integer" },
         findings: { type: "integer" },
@@ -138,7 +138,7 @@ const writeSnapshot = async ({
   const written = await agent(
     anchor(
       `あなたは audit の Snapshot 段階を担当する。次の JSON payload を一時ファイルに書き、` +
-        `\`python3 ${bundled("workflows/audit/snapshot.py")} < <tempfile>\` を 1 回実行する。` +
+        `\`node ${bundled("workflows/audit/snapshot.ts")} < <tempfile>\` を 1 回実行する。` +
         `スクリプトが timestamp・branch を解決し、` +
         `$HOME/.claude/history/ に記録を書き、{path, counts} の JSON 1 行を stdout に返す。` +
         `payload は一字一句そのまま書く。要約・省略・整形・再生成はしない。長さを理由に切り詰めない。` +
@@ -156,7 +156,7 @@ const writeSnapshot = async ({
       schema: SNAPSHOT_SCHEMA,
     },
   );
-  // 照合は script が持つ。突き合わせる相手は snapshot.py が数えた counts で、agent の
+  // 照合は script が持つ。突き合わせる相手は snapshot.ts が数えた counts で、agent の
   // 申告ではない。agent は書き写す当人なので、自分が削った分を自分で報告することになる。
   const expected = {
     raw_findings: rawFindings.length,
