@@ -21,6 +21,8 @@
     ".ja/workflows/build/record.ts",
     ".ja/workflows/build/pr-body.ts",
     ".ja/workflows/assert/record.ts",
+    ".ja/workflows/assert/worktree.ts",
+    ".ja/workflows/assert/bootstrap.ts",
     ".ja/workflows/build/revalidate.ts",
     ".ja/workflows/build/verify-tests.ts",
     ".ja/workflows/build/diff-files.ts",
