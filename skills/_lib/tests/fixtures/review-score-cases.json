@@ -1,0 +1,439 @@
+[
+  {
+    "name": "scoring_recall_separates_flagging_from_catching",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "v2",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "v3",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "hit"
+        },
+        {
+          "file": "v2",
+          "verdict": "below_severity"
+        },
+        {
+          "file": "v3",
+          "verdict": "other_finding"
+        }
+      ]
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json"],
+    "exit": 0,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 3,\n    \"clean\": 0,\n    \"hit\": 1,\n    \"below_severity\": 1,\n    \"other_finding\": 1,\n    \"miss\": 0,\n    \"false_positive\": 0,\n    \"below_min_findings\": 0\n  },\n  \"metrics\": {\n    \"recall_detection\": 1.0,\n    \"recall_expected\": 0.667,\n    \"recall_strict\": 0.333,\n    \"fp_rate\": null\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 3,\n      \"hit\": 1,\n      \"recall_strict\": 0.333\n    }\n  },\n  \"diff\": null,\n  \"unknownVerdicts\": []\n}\n"
+  },
+  {
+    "name": "scoring_fp_rate_counts_only_clean_false_positive",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "s1",
+          "expected": "no_finding"
+        },
+        {
+          "file": "s2",
+          "expected": "no_finding"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "hit"
+        },
+        {
+          "file": "s1",
+          "verdict": "false_positive"
+        },
+        {
+          "file": "s2",
+          "verdict": "pass"
+        }
+      ]
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json"],
+    "exit": 0,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 1,\n    \"clean\": 2,\n    \"hit\": 1,\n    \"below_severity\": 0,\n    \"other_finding\": 0,\n    \"miss\": 0,\n    \"false_positive\": 1,\n    \"below_min_findings\": 0\n  },\n  \"metrics\": {\n    \"recall_detection\": 1.0,\n    \"recall_expected\": 1.0,\n    \"recall_strict\": 1.0,\n    \"fp_rate\": 0.5\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 1,\n      \"hit\": 1,\n      \"recall_strict\": 1.0\n    }\n  },\n  \"diff\": null,\n  \"unknownVerdicts\": []\n}\n"
+  },
+  {
+    "name": "scoring_unreported_case_counts_as_miss",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "v2",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "hit"
+        }
+      ]
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json"],
+    "exit": 0,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 2,\n    \"clean\": 0,\n    \"hit\": 1,\n    \"below_severity\": 0,\n    \"other_finding\": 0,\n    \"miss\": 1,\n    \"false_positive\": 0,\n    \"below_min_findings\": 0\n  },\n  \"metrics\": {\n    \"recall_detection\": 0.5,\n    \"recall_expected\": 0.5,\n    \"recall_strict\": 0.5,\n    \"fp_rate\": null\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 2,\n      \"hit\": 1,\n      \"recall_strict\": 0.5\n    }\n  },\n  \"diff\": null,\n  \"unknownVerdicts\": []\n}\n"
+  },
+  {
+    "name": "scoring_verdict_outside_closed_set_is_reported",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "full_hit"
+        }
+      ]
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json"],
+    "exit": 1,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 1,\n    \"clean\": 0,\n    \"hit\": 0,\n    \"below_severity\": 0,\n    \"other_finding\": 0,\n    \"miss\": 0,\n    \"false_positive\": 0,\n    \"below_min_findings\": 0\n  },\n  \"metrics\": {\n    \"recall_detection\": 0.0,\n    \"recall_expected\": 0.0,\n    \"recall_strict\": 0.0,\n    \"fp_rate\": null\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 1,\n      \"hit\": 0,\n      \"recall_strict\": 0.0\n    }\n  },\n  \"diff\": null,\n  \"unknownVerdicts\": [\n    \"full_hit\"\n  ]\n}\n"
+  },
+  {
+    "name": "scoring_new_verdict_counted_under_its_own_key",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "below_min_findings"
+        }
+      ]
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json"],
+    "exit": 0,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 1,\n    \"clean\": 0,\n    \"hit\": 0,\n    \"below_severity\": 0,\n    \"other_finding\": 0,\n    \"miss\": 0,\n    \"false_positive\": 0,\n    \"below_min_findings\": 1\n  },\n  \"metrics\": {\n    \"recall_detection\": 0.0,\n    \"recall_expected\": 0.0,\n    \"recall_strict\": 0.0,\n    \"fp_rate\": null\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 1,\n      \"hit\": 0,\n      \"recall_strict\": 0.0\n    }\n  },\n  \"diff\": null,\n  \"unknownVerdicts\": []\n}\n"
+  },
+  {
+    "name": "scoring_closed_set_accepts_new_verdict_only",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "v2",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "below_min_findings"
+        },
+        {
+          "file": "v2",
+          "verdict": "totally_unknown"
+        }
+      ]
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json"],
+    "exit": 1,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 2,\n    \"clean\": 0,\n    \"hit\": 0,\n    \"below_severity\": 0,\n    \"other_finding\": 0,\n    \"miss\": 0,\n    \"false_positive\": 0,\n    \"below_min_findings\": 1\n  },\n  \"metrics\": {\n    \"recall_detection\": 0.0,\n    \"recall_expected\": 0.0,\n    \"recall_strict\": 0.0,\n    \"fp_rate\": null\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 2,\n      \"hit\": 0,\n      \"recall_strict\": 0.0\n    }\n  },\n  \"diff\": null,\n  \"unknownVerdicts\": [\n    \"totally_unknown\"\n  ]\n}\n"
+  },
+  {
+    "name": "scoring_per_category_recall_splits_strict_hits",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "v2",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "v3",
+          "expected": "detected",
+          "category": "LLM01",
+          "severity_min": "high"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "hit"
+        },
+        {
+          "file": "v2",
+          "verdict": "miss"
+        },
+        {
+          "file": "v3",
+          "verdict": "miss"
+        }
+      ]
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json"],
+    "exit": 0,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 3,\n    \"clean\": 0,\n    \"hit\": 1,\n    \"below_severity\": 0,\n    \"other_finding\": 0,\n    \"miss\": 2,\n    \"false_positive\": 0,\n    \"below_min_findings\": 0\n  },\n  \"metrics\": {\n    \"recall_detection\": 0.333,\n    \"recall_expected\": 0.333,\n    \"recall_strict\": 0.333,\n    \"fp_rate\": null\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 2,\n      \"hit\": 1,\n      \"recall_strict\": 0.5\n    },\n    \"LLM01\": {\n      \"total\": 1,\n      \"hit\": 0,\n      \"recall_strict\": 0.0\n    }\n  },\n  \"diff\": null,\n  \"unknownVerdicts\": []\n}\n"
+  },
+  {
+    "name": "scoring_previous_metric_written_as_prose_leaves_diff_empty",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "hit"
+        }
+      ],
+      "previous.json": {
+        "metrics": {
+          "recall_strict": "58% (7/12)"
+        }
+      }
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json", "<home>/previous.json"],
+    "exit": 0,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 1,\n    \"clean\": 0,\n    \"hit\": 1,\n    \"below_severity\": 0,\n    \"other_finding\": 0,\n    \"miss\": 0,\n    \"false_positive\": 0,\n    \"below_min_findings\": 0\n  },\n  \"metrics\": {\n    \"recall_detection\": 1.0,\n    \"recall_expected\": 1.0,\n    \"recall_strict\": 1.0,\n    \"fp_rate\": null\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 1,\n      \"hit\": 1,\n      \"recall_strict\": 1.0\n    }\n  },\n  \"diff\": {\n    \"recall_detection\": null,\n    \"recall_expected\": null,\n    \"recall_strict\": null,\n    \"fp_rate\": null\n  },\n  \"unknownVerdicts\": []\n}\n"
+  },
+  {
+    "name": "scoring_diff_against_previous_run_taken_per_metric",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "v2",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "s1",
+          "expected": "no_finding"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "hit"
+        },
+        {
+          "file": "v2",
+          "verdict": "hit"
+        },
+        {
+          "file": "s1",
+          "verdict": "pass"
+        }
+      ],
+      "previous.json": {
+        "metrics": {
+          "recall_strict": 0.5,
+          "fp_rate": 0.0
+        }
+      }
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json", "<home>/previous.json"],
+    "exit": 0,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 2,\n    \"clean\": 1,\n    \"hit\": 2,\n    \"below_severity\": 0,\n    \"other_finding\": 0,\n    \"miss\": 0,\n    \"false_positive\": 0,\n    \"below_min_findings\": 0\n  },\n  \"metrics\": {\n    \"recall_detection\": 1.0,\n    \"recall_expected\": 1.0,\n    \"recall_strict\": 1.0,\n    \"fp_rate\": 0.0\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 2,\n      \"hit\": 2,\n      \"recall_strict\": 1.0\n    }\n  },\n  \"diff\": {\n    \"recall_detection\": null,\n    \"recall_expected\": null,\n    \"recall_strict\": 0.5,\n    \"fp_rate\": 0.0\n  },\n  \"unknownVerdicts\": []\n}\n"
+  },
+  {
+    "name": "pre_widening_original_six_verdicts_score_unchanged",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "v2",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "v3",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "v4",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "s1",
+          "expected": "no_finding"
+        },
+        {
+          "file": "s2",
+          "expected": "no_finding"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "hit"
+        },
+        {
+          "file": "v2",
+          "verdict": "below_severity"
+        },
+        {
+          "file": "v3",
+          "verdict": "other_finding"
+        },
+        {
+          "file": "v4",
+          "verdict": "miss"
+        },
+        {
+          "file": "s1",
+          "verdict": "false_positive"
+        },
+        {
+          "file": "s2",
+          "verdict": "pass"
+        }
+      ]
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json"],
+    "exit": 0,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 4,\n    \"clean\": 2,\n    \"hit\": 1,\n    \"below_severity\": 1,\n    \"other_finding\": 1,\n    \"miss\": 1,\n    \"false_positive\": 1,\n    \"below_min_findings\": 0\n  },\n  \"metrics\": {\n    \"recall_detection\": 0.75,\n    \"recall_expected\": 0.5,\n    \"recall_strict\": 0.25,\n    \"fp_rate\": 0.5\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 4,\n      \"hit\": 1,\n      \"recall_strict\": 0.25\n    }\n  },\n  \"diff\": null,\n  \"unknownVerdicts\": []\n}\n"
+  },
+  {
+    "name": "results_json_wrapped_in_results_key",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        }
+      ],
+      "results.json": {
+        "results": [
+          {
+            "file": "v1",
+            "verdict": "hit"
+          }
+        ]
+      }
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json"],
+    "exit": 0,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 1,\n    \"clean\": 0,\n    \"hit\": 1,\n    \"below_severity\": 0,\n    \"other_finding\": 0,\n    \"miss\": 0,\n    \"false_positive\": 0,\n    \"below_min_findings\": 0\n  },\n  \"metrics\": {\n    \"recall_detection\": 1.0,\n    \"recall_expected\": 1.0,\n    \"recall_strict\": 1.0,\n    \"fp_rate\": null\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 1,\n      \"hit\": 1,\n      \"recall_strict\": 1.0\n    }\n  },\n  \"diff\": null,\n  \"unknownVerdicts\": []\n}\n"
+  },
+  {
+    "name": "insufficient_argv_exits_2_with_empty_stdout",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        }
+      ]
+    },
+    "argv": ["<home>/expected.json"],
+    "exit": 2,
+    "stdout": ""
+  },
+  {
+    "name": "unknown_verdict_among_known_exits_1",
+    "files": {
+      "expected.json": [
+        {
+          "file": "v1",
+          "expected": "detected",
+          "category": "A03",
+          "severity_min": "high"
+        },
+        {
+          "file": "s1",
+          "expected": "no_finding"
+        }
+      ],
+      "results.json": [
+        {
+          "file": "v1",
+          "verdict": "hit"
+        },
+        {
+          "file": "s1",
+          "verdict": "suspicious"
+        }
+      ]
+    },
+    "argv": ["<home>/expected.json", "<home>/results.json"],
+    "exit": 1,
+    "stdout": "{\n  \"counts\": {\n    \"flagged\": 1,\n    \"clean\": 1,\n    \"hit\": 1,\n    \"below_severity\": 0,\n    \"other_finding\": 0,\n    \"miss\": 0,\n    \"false_positive\": 0,\n    \"below_min_findings\": 0\n  },\n  \"metrics\": {\n    \"recall_detection\": 1.0,\n    \"recall_expected\": 1.0,\n    \"recall_strict\": 1.0,\n    \"fp_rate\": 0.0\n  },\n  \"byCategory\": {\n    \"A03\": {\n      \"total\": 1,\n      \"hit\": 1,\n      \"recall_strict\": 1.0\n    }\n  },\n  \"diff\": null,\n  \"unknownVerdicts\": [\n    \"suspicious\"\n  ]\n}\n"
+  }
+]
