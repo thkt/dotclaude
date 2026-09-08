@@ -213,3 +213,14 @@ test("T-260 a ratio landing exactly halfway rounds to the even digit, the way py
   );
   assert.equal(threeHits.metrics.recall_strict, 0.188);
 });
+
+test("T-261 the verdict set section of the harness document states that below_min_findings enters only the denominator of recall_strict", () => {
+  // recall_strict stays hit / flagged. A reader who cannot tell which side the verdict falls
+  // on reads a run's recall as covering cases it never counted.
+  const doc = readFileSync(join(ROOT, "skills", "_lib", "review-harness.md"), "utf8");
+  const afterHeading = doc.slice(doc.indexOf("## Verdict set"));
+  const section = afterHeading.slice(0, afterHeading.indexOf("## expected.json schema"));
+  for (const word of ["below_min_findings", "recall_strict", "denominator", "numerator"]) {
+    assert.ok(section.includes(word), `the Verdict set section states ${word}`);
+  }
+});
