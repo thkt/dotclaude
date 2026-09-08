@@ -1,0 +1,43 @@
+[
+  {
+    "name": "create",
+    "argv": [
+      "fixture-session"
+    ],
+    "stdin": "",
+    "exit": 0,
+    "stdout": "{\"branch\": \"assert-fixture-session\", \"path\": \".claude/worktrees/assert-fixture-session\", \"status\": \"created\"}\n",
+    "stderr": ""
+  },
+  {
+    "name": "cleanup",
+    "argv": [
+      "--cleanup",
+      "fixture-session"
+    ],
+    "stdin": "",
+    "exit": 0,
+    "stdout": "{\"branch\": \"assert-fixture-session\", \"path\": \".claude/worktrees/assert-fixture-session\", \"status\": \"removed\"}\n",
+    "stderr": ""
+  },
+  {
+    "name": "usage_zero_args",
+    "argv": [],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "Usage: worktree.py <session-id> | worktree.py --cleanup <session-id>\n"
+  },
+  {
+    "name": "usage_three_args",
+    "argv": [
+      "a",
+      "b",
+      "c"
+    ],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "Usage: worktree.py <session-id> | worktree.py --cleanup <session-id>\n"
+  }
+]
