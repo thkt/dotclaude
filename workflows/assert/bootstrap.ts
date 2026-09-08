@@ -36,7 +36,7 @@ const INSTALL_TIMEOUT = 180;
 const BUILD_TIMEOUT = 600;
 
 // First match in this order wins. This list itself is canonical; no external doc defines the
-// order. Mirrors bootstrap.py's `PROJECT_MARKERS`.
+// order. Mirrors the retired Python bootstrap script's `PROJECT_MARKERS`.
 const PROJECT_MARKERS: ReadonlyArray<readonly [marker: string, ptype: string]> = [
   ["package.json", "node"],
   ["Cargo.toml", "rust"],
@@ -46,7 +46,7 @@ const PROJECT_MARKERS: ReadonlyArray<readonly [marker: string, ptype: string]> =
   ["Gemfile", "ruby"],
 ];
 
-// First matching lock file wins. Mirrors bootstrap.py's `NPM_LOCK_COMMANDS`.
+// First matching lock file wins. Mirrors the retired Python bootstrap script's `NPM_LOCK_COMMANDS`.
 const NPM_LOCK_COMMANDS: ReadonlyArray<readonly [lock: string, cmd: readonly string[]]> = [
   ["bun.lockb", ["bun", "install", "--frozen-lockfile"]],
   ["bun.lock", ["bun", "install", "--frozen-lockfile"]],
@@ -56,7 +56,7 @@ const NPM_LOCK_COMMANDS: ReadonlyArray<readonly [lock: string, cmd: readonly str
 ];
 const NPM_INSTALL_DEFAULT: readonly string[] = ["npm", "install"];
 
-// null means the type has no dependency step. Mirrors bootstrap.py's `INSTALL_COMMANDS`.
+// null means the type has no dependency step. Mirrors the retired Python bootstrap script's `INSTALL_COMMANDS`.
 const INSTALL_COMMANDS: Record<string, readonly string[] | null> = {
   rust: ["cargo", "fetch"],
   make: null,
@@ -65,7 +65,7 @@ const INSTALL_COMMANDS: Record<string, readonly string[] | null> = {
   ruby: ["bundle", "install"],
 };
 
-// null means the type has no build concept (build=skipped, proceed). Mirrors bootstrap.py's
+// null means the type has no build concept (build=skipped, proceed). Mirrors the retired Python bootstrap script's
 // `BUILD_COMMANDS`.
 const BUILD_COMMANDS: Record<string, readonly string[] | null> = {
   rust: ["cargo", "build"],
@@ -77,12 +77,12 @@ const BUILD_COMMANDS: Record<string, readonly string[] | null> = {
 
 /** Marks a runner result as "timed out" rather than a real exit code, so the timeout path
  * travels the same return type as a normal status -- an int sentinel would collide with a
- * real exit code. Mirrors bootstrap.py's `TIMED_OUT = object()`. */
+ * real exit code. Mirrors the retired Python bootstrap script's `TIMED_OUT = object()`. */
 export const TIMED_OUT: unique symbol = Symbol("bootstrap-timed-out");
 
 /** Runs one command in `cwd`, returning its exit status, TIMED_OUT after `timeoutSeconds`, or
  * 127 when the binary is not found. The seam `run` calls through, so a test can inject a fake
- * in place of a real spawn. Mirrors bootstrap.py's `Runner = Callable[[Sequence[str], Path,
+ * in place of a real spawn. Mirrors the retired Python bootstrap script's `Runner = Callable[[Sequence[str], Path,
  * int], object]`. */
 export type Runner = (
   cmd: readonly string[],
@@ -91,7 +91,7 @@ export type Runner = (
 ) => number | typeof TIMED_OUT;
 
 /** Spawns `cmd[0]` with `cmd.slice(1)` in `cwd`, capturing nothing (the caller reads only the
- * exit status). Mirrors bootstrap.py's `_real_runner`. */
+ * exit status). Mirrors the retired Python bootstrap script's `_real_runner`. */
 function realRunner(cmd: readonly string[], cwd: string, timeoutSeconds: number): number | typeof TIMED_OUT {
   const result = spawnSync(cmd[0], cmd.slice(1), { cwd, timeout: timeoutSeconds * 1000 });
   if (result.error && (result.error as NodeJS.ErrnoException).code === "ETIMEDOUT") {
@@ -113,7 +113,7 @@ function isFile(path: string): boolean {
 }
 
 /** The project type marked by the first table entry in PROJECT_MARKERS order whose marker
- * file `worktree` carries, or null when none match. Mirrors bootstrap.py's
+ * file `worktree` carries, or null when none match. Mirrors the retired Python bootstrap script's
  * `detect_project_type`. */
 export function detectProjectType(worktree: string): string | null {
   for (const [marker, ptype] of PROJECT_MARKERS) {
@@ -125,7 +125,7 @@ export function detectProjectType(worktree: string): string | null {
 }
 
 /** The dependency-install command for `ptype` inside `worktree`, or null when the type has no
- * dependency step. Mirrors bootstrap.py's `install_command`. */
+ * dependency step. Mirrors the retired Python bootstrap script's `install_command`. */
 export function installCommand(worktree: string, ptype: string): readonly string[] | null {
   if (ptype === "node") {
     for (const [lock, cmd] of NPM_LOCK_COMMANDS) {
@@ -139,7 +139,7 @@ export function installCommand(worktree: string, ptype: string): readonly string
 }
 
 /** Whether `worktree`'s package.json declares a non-empty `scripts.build`. Mirrors
- * bootstrap.py's `_has_npm_build_script`: a missing or unparseable package.json, or a
+ * the retired Python bootstrap script's `_has_npm_build_script`: a missing or unparseable package.json, or a
  * scripts.build that is absent/empty, both read as false rather than throwing. */
 function hasNpmBuildScript(worktree: string): boolean {
   let raw: unknown;
@@ -159,7 +159,7 @@ function hasNpmBuildScript(worktree: string): boolean {
 }
 
 /** The build-smoke command for `ptype` inside `worktree`, or null when the type has no build
- * concept. Mirrors bootstrap.py's `build_command`. */
+ * concept. Mirrors the retired Python bootstrap script's `build_command`. */
 export function buildCommand(worktree: string, ptype: string): readonly string[] | null {
   if (ptype === "node") {
     return hasNpmBuildScript(worktree) ? ["npm", "run", "build"] : null;
@@ -178,7 +178,7 @@ interface BootstrapResult {
 
 /** Detects the project type in `worktree`, installs dependencies, and runs the build smoke,
  * reporting every step's outcome in the returned object -- a step failure never throws, it
- * lands in the result. Mirrors bootstrap.py's `run`. */
+ * lands in the result. Mirrors the retired Python bootstrap script's `run`. */
 export function run(worktree: string, runner: Runner = realRunner): BootstrapResult {
   const ptype = detectProjectType(worktree);
   const result: BootstrapResult = {
@@ -242,7 +242,7 @@ function isDirectory(path: string): boolean {
 }
 
 /** Serializes `result` the way Python's `json.dumps` formats a flat dict -- a space after
- * every `:` and `,` -- so bootstrap.ts's stdout matches bootstrap.py's byte for byte;
+ * every `:` and `,` -- so bootstrap.ts's stdout matches the retired Python bootstrap script's byte for byte;
  * `JSON.stringify`'s compact separators would not. Every field of `run`'s result is a string
  * or null, so per-value `JSON.stringify` (for its quoting/escaping) plus manual joining
  * covers the whole shape without reaching for a general pretty-printer. */
@@ -253,14 +253,15 @@ function toPythonJson(result: BootstrapResult): string {
   return `{${parts.join(", ")}}`;
 }
 
-/** argv dispatch mirroring bootstrap.py's `main`: exactly one `<worktree-path>` argument that
+/** argv dispatch mirroring the retired Python bootstrap script's `main`: exactly one `<worktree-path>` argument that
  * names a directory runs `run` and prints its JSON result; anything else prints the usage line
- * to stderr and exits 1. Error text keeps bootstrap.py's own name so a caller comparing stderr
- * against the frozen fixture sees no change from the port. */
+ * to stderr and exits 1. The usage line names this script's own current entry point
+ * (bootstrap.ts), matching the header comment above -- the retired script no longer exists to
+ * compare against, so keeping its name here would misdirect a caller (U-005). */
 export function main(): number {
   const args = process.argv.slice(2);
   if (args.length !== 1) {
-    process.stderr.write("Usage: bootstrap.py <worktree-path>\n");
+    process.stderr.write("Usage: bootstrap.ts <worktree-path>\n");
     return 1;
   }
   const [worktree] = args;

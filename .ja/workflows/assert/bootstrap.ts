@@ -35,7 +35,7 @@ const INSTALL_TIMEOUT = 180;
 const BUILD_TIMEOUT = 600;
 
 // この順で最初に一致したものが勝つ。この順序自体が正典であり、外部の文書には依らない。
-// bootstrap.py の `PROJECT_MARKERS` に対応する。
+// 退役した Python 版 bootstrap script の `PROJECT_MARKERS` に対応する。
 const PROJECT_MARKERS: ReadonlyArray<readonly [marker: string, ptype: string]> = [
   ["package.json", "node"],
   ["Cargo.toml", "rust"],
@@ -45,7 +45,7 @@ const PROJECT_MARKERS: ReadonlyArray<readonly [marker: string, ptype: string]> =
   ["Gemfile", "ruby"],
 ];
 
-// 最初に一致した lock file のコマンドが勝つ。bootstrap.py の `NPM_LOCK_COMMANDS` に対応する。
+// 最初に一致した lock file のコマンドが勝つ。退役した Python 版 bootstrap script の `NPM_LOCK_COMMANDS` に対応する。
 const NPM_LOCK_COMMANDS: ReadonlyArray<readonly [lock: string, cmd: readonly string[]]> = [
   ["bun.lockb", ["bun", "install", "--frozen-lockfile"]],
   ["bun.lock", ["bun", "install", "--frozen-lockfile"]],
@@ -55,7 +55,7 @@ const NPM_LOCK_COMMANDS: ReadonlyArray<readonly [lock: string, cmd: readonly str
 ];
 const NPM_INSTALL_DEFAULT: readonly string[] = ["npm", "install"];
 
-// null はその種別に依存ステップが無いことを表す。bootstrap.py の `INSTALL_COMMANDS` に対応する。
+// null はその種別に依存ステップが無いことを表す。退役した Python 版 bootstrap script の `INSTALL_COMMANDS` に対応する。
 const INSTALL_COMMANDS: Record<string, readonly string[] | null> = {
   rust: ["cargo", "fetch"],
   make: null,
@@ -64,7 +64,7 @@ const INSTALL_COMMANDS: Record<string, readonly string[] | null> = {
   ruby: ["bundle", "install"],
 };
 
-// null はその種別に build 概念が無いことを表す (build=skipped、前進)。bootstrap.py の
+// null はその種別に build 概念が無いことを表す (build=skipped、前進)。退役した Python 版 bootstrap script の
 // `BUILD_COMMANDS` に対応する。
 const BUILD_COMMANDS: Record<string, readonly string[] | null> = {
   rust: ["cargo", "build"],
@@ -76,12 +76,12 @@ const BUILD_COMMANDS: Record<string, readonly string[] | null> = {
 
 /** runner の結果を実在の exit code ではなく "timed out" として印付けし、timeout 経路が通常の
  * status と同じ戻り値型を通れるようにする -- int の sentinel は実在の exit code と衝突する。
- * bootstrap.py の `TIMED_OUT = object()` に対応する。 */
+ * 退役した Python 版 bootstrap script の `TIMED_OUT = object()` に対応する。 */
 export const TIMED_OUT: unique symbol = Symbol("bootstrap-timed-out");
 
 /** `cwd` で 1 つのコマンドを実行し、その exit status、`timeoutSeconds` 後の TIMED_OUT、または
  * バイナリが見つからないときの 127 を返す。test が実際の spawn の代わりに fake を注入できる
- * よう、`run` はこの seam 越しに呼ぶ。bootstrap.py の `Runner = Callable[[Sequence[str], Path,
+ * よう、`run` はこの seam 越しに呼ぶ。退役した Python 版 bootstrap script の `Runner = Callable[[Sequence[str], Path,
  * int], object]` に対応する。 */
 export type Runner = (
   cmd: readonly string[],
@@ -90,7 +90,7 @@ export type Runner = (
 ) => number | typeof TIMED_OUT;
 
 /** `cwd` で `cmd[0]` を `cmd.slice(1)` とともに起動し、何も capture しない (呼び出し側は
- * exit status しか読まない)。bootstrap.py の `_real_runner` に対応する。 */
+ * exit status しか読まない)。退役した Python 版 bootstrap script の `_real_runner` に対応する。 */
 function realRunner(cmd: readonly string[], cwd: string, timeoutSeconds: number): number | typeof TIMED_OUT {
   const result = spawnSync(cmd[0], cmd.slice(1), { cwd, timeout: timeoutSeconds * 1000 });
   if (result.error && (result.error as NodeJS.ErrnoException).code === "ETIMEDOUT") {
@@ -112,7 +112,7 @@ function isFile(path: string): boolean {
 }
 
 /** PROJECT_MARKERS の順序で `worktree` が持つ最初のマーカーファイルが表すプロジェクト種別、
- * どれも一致しなければ null。bootstrap.py の `detect_project_type` に対応する。 */
+ * どれも一致しなければ null。退役した Python 版 bootstrap script の `detect_project_type` に対応する。 */
 export function detectProjectType(worktree: string): string | null {
   for (const [marker, ptype] of PROJECT_MARKERS) {
     if (isFile(join(worktree, marker))) {
@@ -123,7 +123,7 @@ export function detectProjectType(worktree: string): string | null {
 }
 
 /** `worktree` 内の `ptype` に対する依存 install コマンド、その種別に依存ステップが無ければ
- * null。bootstrap.py の `install_command` に対応する。 */
+ * null。退役した Python 版 bootstrap script の `install_command` に対応する。 */
 export function installCommand(worktree: string, ptype: string): readonly string[] | null {
   if (ptype === "node") {
     for (const [lock, cmd] of NPM_LOCK_COMMANDS) {
@@ -137,7 +137,7 @@ export function installCommand(worktree: string, ptype: string): readonly string
 }
 
 /** `worktree` の package.json が空でない `scripts.build` を宣言しているかどうか。
- * bootstrap.py の `_has_npm_build_script` に対応する: package.json が無い・parse できない、
+ * 退役した Python 版 bootstrap script の `_has_npm_build_script` に対応する: package.json が無い・parse できない、
  * または scripts.build が無い・空のときは、いずれも throw ではなく false として読む。 */
 function hasNpmBuildScript(worktree: string): boolean {
   let raw: unknown;
@@ -157,7 +157,7 @@ function hasNpmBuildScript(worktree: string): boolean {
 }
 
 /** `worktree` 内の `ptype` に対する build-smoke コマンド、その種別に build 概念が無ければ
- * null。bootstrap.py の `build_command` に対応する。 */
+ * null。退役した Python 版 bootstrap script の `build_command` に対応する。 */
 export function buildCommand(worktree: string, ptype: string): readonly string[] | null {
   if (ptype === "node") {
     return hasNpmBuildScript(worktree) ? ["npm", "run", "build"] : null;
@@ -176,7 +176,7 @@ interface BootstrapResult {
 
 /** `worktree` のプロジェクト種別を検出し、依存を install し、build smoke を実行して、各
  * ステップの結果を返す object に載せる -- ステップの失敗では決して throw せず、結果に載る。
- * bootstrap.py の `run` に対応する。 */
+ * 退役した Python 版 bootstrap script の `run` に対応する。 */
 export function run(worktree: string, runner: Runner = realRunner): BootstrapResult {
   const ptype = detectProjectType(worktree);
   const result: BootstrapResult = {
@@ -240,7 +240,7 @@ function isDirectory(path: string): boolean {
 }
 
 /** `result` を Python の `json.dumps` が flat dict に対して整形する形 -- `:` と `,` の後に
- * 必ず空白を 1 つ置く -- のまま serialize し、bootstrap.ts の stdout が bootstrap.py の stdout
+ * 必ず空白を 1 つ置く -- のまま serialize し、bootstrap.ts の stdout が 退役した Python 版 bootstrap script の stdout
  * と byte 単位で一致するようにする。`JSON.stringify` の compact な区切りではそうならない。
  * `run` の結果の各 field は string か null なので、値ごとの `JSON.stringify` (quoting/escaping
  * 用) と手動での結合だけで、汎用の pretty-printer に頼らずこの形全体をカバーできる。 */
@@ -251,14 +251,15 @@ function toPythonJson(result: BootstrapResult): string {
   return `{${parts.join(", ")}}`;
 }
 
-/** bootstrap.py の `main` に対応する argv dispatch: directory を指す `<worktree-path>` を
+/** 退役した Python 版 bootstrap script の `main` に対応する argv dispatch: directory を指す `<worktree-path>` を
  * ちょうど 1 つ渡されたときだけ `run` を実行しその JSON 結果を出力する。それ以外は usage
- * 行を stderr に出して exit 1。エラー文言は bootstrap.py 自身の名前のまま保つので、stderr を
- * 固定 fixture と比較する呼び出し側には移植による変化が見えない。 */
+ * 行を stderr に出して exit 1。usage 行は冒頭の header comment と同じくこの script 自身の
+ * 現在の entry point (bootstrap.ts) を名指す -- 退役した script はもう比較対象として存在しない
+ * ため、その名前を保ったままでは呼び出し側を誤導する (U-005)。 */
 export function main(): number {
   const args = process.argv.slice(2);
   if (args.length !== 1) {
-    process.stderr.write("Usage: bootstrap.py <worktree-path>\n");
+    process.stderr.write("Usage: bootstrap.ts <worktree-path>\n");
     return 1;
   }
   const [worktree] = args;

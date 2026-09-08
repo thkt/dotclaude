@@ -25,12 +25,12 @@ import { spawnSync } from "node:child_process";
 import { isMainModule } from "../_lib/entry-point.ts";
 
 /** 1 つのコマンドを実行し、その exit status と stderr を返す。test が実際の spawn の代わりに
- * fake を注入できるよう、create/cleanup はこの seam 越しに呼ぶ。worktree.py の
+ * fake を注入できるよう、create/cleanup はこの seam 越しに呼ぶ。退役した Python 版 worktree manager の
  * `Runner = Callable[[Sequence[str]], tuple[int, str]]` に対応する。 */
 export type Runner = (cmd: readonly string[]) => { status: number; stderr: string };
 
 /** `cmd[0]` を `cmd.slice(1)` とともに起動し、stderr を text として capture する。
- * worktree.py の `_real_runner` に対応する。そちらは `subprocess.run(cmd,
+ * 退役した Python 版 worktree manager の `_real_runner` に対応する。そちらは `subprocess.run(cmd,
  * capture_output=True, text=True, check=False)` を実行し `(returncode, stderr)` を
  * 返す。 */
 function realRunner(cmd: readonly string[]): { status: number; stderr: string } {
@@ -45,7 +45,7 @@ export function paths(sessionId: string): { branch: string; path: string } {
 }
 
 /** 前回の run から残った worktree と branch を除去する。エラーは無視する: 古い状態の除去に
- * 失敗しても run を失敗させてはならない。worktree.py の `_remove` に対応する。 */
+ * 失敗しても run を失敗させてはならない。退役した Python 版 worktree manager の `_remove` に対応する。 */
 function removeStale(branch: string, path: string, runner: Runner): void {
   runner(["git", "worktree", "remove", path, "--force"]);
   runner(["git", "branch", "-D", branch]);
@@ -84,10 +84,11 @@ export function cleanup(
   return { branch, path, status: "removed" };
 }
 
-/** worktree.py の `main` に対応する argv dispatch: `--cleanup <id>` は cleanup を、
- * `<id>` は create を実行し、それ以外は usage 行を stderr に出す。usage の文言は
- * worktree.py 自身の名前のまま保つので、stderr を固定 fixture と比較する呼び出し側には
- * 移植による変化が見えない。 */
+/** 退役した Python 版 worktree manager の `main` に対応する argv dispatch: `--cleanup <id>` は cleanup を、
+ * `<id>` は create を実行し、それ以外は usage 行を stderr に出す。usage の文言は冒頭の
+ * header comment と同じくこの script 自身の現在の entry point (worktree.ts) を名指す --
+ * 退役した manager はもう比較対象として存在しないため、その名前を保ったままでは呼び出し側を
+ * 誤導する (U-005)。 */
 export function main(): number {
   const args = process.argv.slice(2);
   if (args.length === 2 && args[0] === "--cleanup") {
@@ -99,7 +100,7 @@ export function main(): number {
     process.stdout.write(`${JSON.stringify(result)}\n`);
     return result.status === "error" ? 1 : 0;
   }
-  process.stderr.write("Usage: worktree.py <session-id> | worktree.py --cleanup <session-id>\n");
+  process.stderr.write("Usage: worktree.ts <session-id> | worktree.ts --cleanup <session-id>\n");
   return 1;
 }
 

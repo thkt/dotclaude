@@ -26,7 +26,7 @@
     "stdin": "",
     "exit": 1,
     "stdout": "",
-    "stderr": "Usage: worktree.py <session-id> | worktree.py --cleanup <session-id>\n"
+    "stderr": "Usage: worktree.ts <session-id> | worktree.ts --cleanup <session-id>\n"
   },
   {
     "name": "usage_three_args",
@@ -38,6 +38,6 @@
     "stdin": "",
     "exit": 1,
     "stdout": "",
-    "stderr": "Usage: worktree.py <session-id> | worktree.py --cleanup <session-id>\n"
+    "stderr": "Usage: worktree.ts <session-id> | worktree.ts --cleanup <session-id>\n"
   }
 ]

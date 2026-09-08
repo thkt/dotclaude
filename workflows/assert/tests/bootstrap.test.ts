@@ -13,7 +13,7 @@
 //
 // T-165 and T-166 exercise detectProjectType/installCommand/buildCommand directly against real
 // temporary directories -- the table-order precedence and the node lock/build-script rules
-// bootstrap.py's own table comments document as canonical.
+// the retired Python bootstrap script's own table comments document as canonical.
 //
 // T-167 exercises the three-way gate split (workflows/assert.js's envFail/dynamicOk read
 // (install, build) jointly, not build alone -- #656) through `run` with an injected Runner, the

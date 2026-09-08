@@ -11,7 +11,7 @@
 // `status: created` on stdout alone would not show that cwd took effect or that this
 // repository (not some other one) was touched, so T-162 also greps `git worktree list` for the
 // worktree before and after cleanup. The frozen fixture worktree-cases.json (produced by
-// running worktree.py itself, U-001) supplies T-163's argv-usage half, replayed the same way
+// running the retired Python worktree manager itself, U-001) supplies T-163's argv-usage half, replayed the same way
 // workflows/assert/tests/record.test.ts replays record-cases.json.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";

@@ -26,11 +26,11 @@ import { spawnSync } from "node:child_process";
 import { isMainModule } from "../_lib/entry-point.ts";
 
 /** Runs one command, returning its exit status and stderr. The seam create/cleanup call
- * through, so a test can inject a fake in place of a real spawn. Mirrors worktree.py's
+ * through, so a test can inject a fake in place of a real spawn. Mirrors the retired Python worktree manager's
  * `Runner = Callable[[Sequence[str]], tuple[int, str]]`. */
 export type Runner = (cmd: readonly string[]) => { status: number; stderr: string };
 
-/** Spawns `cmd[0]` with `cmd.slice(1)`, capturing stderr as text. Mirrors worktree.py's
+/** Spawns `cmd[0]` with `cmd.slice(1)`, capturing stderr as text. Mirrors the retired Python worktree manager's
  * `_real_runner`, which runs `subprocess.run(cmd, capture_output=True, text=True,
  * check=False)` and reports `(returncode, stderr)`. */
 function realRunner(cmd: readonly string[]): { status: number; stderr: string } {
@@ -45,7 +45,7 @@ export function paths(sessionId: string): { branch: string; path: string } {
 }
 
 /** Removes any worktree and branch left over from a prior run. Errors are ignored: failing to
- * clear stale state must not fail the run. Mirrors worktree.py's `_remove`. */
+ * clear stale state must not fail the run. Mirrors the retired Python worktree manager's `_remove`. */
 function removeStale(branch: string, path: string, runner: Runner): void {
   runner(["git", "worktree", "remove", path, "--force"]);
   runner(["git", "branch", "-D", branch]);
@@ -84,10 +84,11 @@ export function cleanup(
   return { branch, path, status: "removed" };
 }
 
-/** argv dispatch mirroring worktree.py's `main`: `--cleanup <id>` runs cleanup,
- * `<id>` runs create, anything else prints the usage line to stderr. The usage text keeps
- * worktree.py's own name so a caller comparing stderr against the frozen fixture sees no
- * change from the port. */
+/** argv dispatch mirroring the retired Python worktree manager's `main`: `--cleanup <id>` runs cleanup,
+ * `<id>` runs create, anything else prints the usage line to stderr. The usage text names this
+ * script's own current entry point (worktree.ts), matching the header comment above -- the
+ * retired manager no longer exists to compare against, so keeping its name here would misdirect
+ * a caller (U-005). */
 export function main(): number {
   const args = process.argv.slice(2);
   if (args.length === 2 && args[0] === "--cleanup") {
@@ -99,7 +100,7 @@ export function main(): number {
     process.stdout.write(`${JSON.stringify(result)}\n`);
     return result.status === "error" ? 1 : 0;
   }
-  process.stderr.write("Usage: worktree.py <session-id> | worktree.py --cleanup <session-id>\n");
+  process.stderr.write("Usage: worktree.ts <session-id> | worktree.ts --cleanup <session-id>\n");
   return 1;
 }
 
