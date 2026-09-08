@@ -198,7 +198,7 @@ const sealAnchor = async (unit, report) => {
     : { line: null, why: "the offered id is not a calibration candidate" };
 };
 
-const verifyCommitScript = bundled("workflows/code/verify-commit.py");
+const verifyCommitScript = bundled("workflows/code/verify-commit.ts");
 
 // With the flag off the implementation agent's own boolean stays the only signal.
 const suiteFailure = async (unit, label, route, extraArgs) => {
@@ -268,7 +268,7 @@ const commitPostcondition = async (unit, baselineHead, body, files) => {
   const relayed = await relayStdout(
     unit,
     "commitcheck",
-    `printf %s ${shq(payload)} | python3 ${verifyCommitScript}`,
+    `printf %s ${shq(payload)} | node ${verifyCommitScript}`,
   );
   if (relayed === null) {
     return { status: "unreported", why: "the commit verifier returned no output", head: null };

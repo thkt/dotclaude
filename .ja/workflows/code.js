@@ -198,7 +198,7 @@ const sealAnchor = async (unit, report) => {
     : { line: null, why: "提示された id が calibration の候補ではない" };
 };
 
-const verifyCommitScript = bundled("workflows/code/verify-commit.py");
+const verifyCommitScript = bundled("workflows/code/verify-commit.ts");
 
 // フラグが off のときは実装 agent 自身の boolean だけが signal のままになる。
 const suiteFailure = async (unit, label, route, extraArgs) => {
@@ -268,7 +268,7 @@ const commitPostcondition = async (unit, baselineHead, body, files) => {
   const relayed = await relayStdout(
     unit,
     "commitcheck",
-    `printf %s ${shq(payload)} | python3 ${verifyCommitScript}`,
+    `printf %s ${shq(payload)} | node ${verifyCommitScript}`,
   );
   if (relayed === null) {
     return { status: "unreported", why: "commit verifier が出力を返さなかった", head: null };
