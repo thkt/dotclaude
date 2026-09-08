@@ -18,7 +18,7 @@ reviewer 系の agent を新しく作る、または作り直すときは、test
 
 ## 参照コード
 
-- `skills/_lib/review_score.py`（corpus から Recall と FP Rate を出す）
+- `skills/_lib/review_score.ts`（corpus から Recall と FP Rate を出す）
 - `rules/development/TESTING.md` の reviewer の行（測定を要求する側）
 
 ## 根拠

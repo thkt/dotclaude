@@ -143,10 +143,10 @@ export function assertStdoutShape(
 }
 
 /** The fixture case named `name` in `fixtures`. */
-export function fixture(fixtures: readonly FixtureCase[], name: string): FixtureCase {
+export function fixture<T extends { name: string }>(fixtures: readonly T[], name: string): T {
   const found = fixtures.find((entry) => entry.name === name);
   assert.ok(found, `fixture case ${name} exists in the loaded fixtures`);
-  return found as FixtureCase;
+  return found as T;
 }
 
 /** Writes `lines` (each newline-terminated) to the history file named `name` under `home`,
