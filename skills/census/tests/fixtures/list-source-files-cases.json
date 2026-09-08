@@ -1,0 +1,33 @@
+[
+  {
+    "name": "every_ext_prune_dir_and_tie_in_one_tree_orders_by_lines_then_path_descending",
+    "files": {
+      "mod.cjs": "a\nb\nc\n",
+      "app.tsx": "const x = 1;\n",
+      "mod.mjs": "a\nb\nc\n",
+      "README.md": "notes\n",
+      "main.rs": "fn main() {}\n",
+      "index.ts": "export const a = 1;\nexport const b = 2;\n",
+      "empty.jsx": "",
+      "script.py": "print(1)\n",
+      "App.swift": "print(1)\n",
+      "main.go": "package main\nfunc main() {}\n",
+      "target/built.rs": "a\nb\n",
+      "node_modules/vendor.js": "a\nb\n",
+      "sub/no-newline.js": "no trailing newline line1\nline2",
+      ".git/hooks.py": "a\nb\n"
+    },
+    "argv": [
+      "<root>"
+    ],
+    "exit": 0,
+    "stdout": "3 <root>/mod.mjs\n3 <root>/mod.cjs\n2 <root>/sub/no-newline.js\n2 <root>/main.go\n2 <root>/index.ts\n1 <root>/script.py\n1 <root>/main.rs\n1 <root>/app.tsx\n1 <root>/App.swift\n0 <root>/empty.jsx\n"
+  },
+  {
+    "name": "no_argv_exits_2_with_empty_stdout",
+    "files": {},
+    "argv": [],
+    "exit": 2,
+    "stdout": ""
+  }
+]
