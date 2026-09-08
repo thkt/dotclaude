@@ -1,0 +1,138 @@
+[
+  {
+    "name": "pattern_present_matches",
+    "files": [
+      {
+        "path": "present.js",
+        "content": "export const sampleSymbol = 1;\n"
+      }
+    ],
+    "stdin": "[{\"path\": \"present.js\", \"pattern\": \"sampleSymbol\"}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"path\": \"present.js\", \"pattern\": \"sampleSymbol\", \"exists\": true, \"matches\": true}]}\n"
+  },
+  {
+    "name": "pattern_absent_does_not_match",
+    "files": [
+      {
+        "path": "present.js",
+        "content": "export const sampleSymbol = 1;\n"
+      }
+    ],
+    "stdin": "[{\"path\": \"present.js\", \"pattern\": \"goneSymbol\"}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"path\": \"present.js\", \"pattern\": \"goneSymbol\", \"exists\": true, \"matches\": false}]}\n"
+  },
+  {
+    "name": "no_pattern_tracks_existence",
+    "files": [
+      {
+        "path": "present.js",
+        "content": "export const sampleSymbol = 1;\n"
+      }
+    ],
+    "stdin": "[{\"path\": \"present.js\"}, {\"path\": \"missing.js\"}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"path\": \"present.js\", \"pattern\": \"\", \"exists\": true, \"matches\": true}, {\"path\": \"missing.js\", \"pattern\": \"\", \"exists\": false, \"matches\": false}]}\n"
+  },
+  {
+    "name": "missing_file",
+    "files": [],
+    "stdin": "[{\"path\": \"missing.js\", \"pattern\": \"anything\"}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"path\": \"missing.js\", \"pattern\": \"anything\", \"exists\": false, \"matches\": false}]}\n"
+  },
+  {
+    "name": "pattern_less_directory_exists",
+    "files": [
+      {
+        "path": "adir/.keep",
+        "content": ""
+      }
+    ],
+    "stdin": "[{\"path\": \"adir\"}, {\"path\": \"adir/\"}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"path\": \"adir\", \"pattern\": \"\", \"exists\": true, \"matches\": true}, {\"path\": \"adir/\", \"pattern\": \"\", \"exists\": true, \"matches\": true}]}\n"
+  },
+  {
+    "name": "directory_carrying_a_pattern_does_not_exist",
+    "files": [
+      {
+        "path": "adir/.keep",
+        "content": ""
+      }
+    ],
+    "stdin": "[{\"path\": \"adir\", \"pattern\": \"anything\"}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"path\": \"adir\", \"pattern\": \"anything\", \"exists\": false, \"matches\": false}]}\n"
+  },
+  {
+    "name": "order_and_count_preserved",
+    "files": [
+      {
+        "path": "present.js",
+        "content": "export const sampleSymbol = 1;\n"
+      }
+    ],
+    "stdin": "[{\"path\": \"present.js\", \"pattern\": \"sampleSymbol\"}, {\"path\": \"missing.js\", \"pattern\": \"x\"}, {\"path\": \"present.js\"}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"path\": \"present.js\", \"pattern\": \"sampleSymbol\", \"exists\": true, \"matches\": true}, {\"path\": \"missing.js\", \"pattern\": \"x\", \"exists\": false, \"matches\": false}, {\"path\": \"present.js\", \"pattern\": \"\", \"exists\": true, \"matches\": true}]}\n"
+  },
+  {
+    "name": "none_pattern_normalized_to_empty_string",
+    "files": [
+      {
+        "path": "present.js",
+        "content": "export const sampleSymbol = 1;\n"
+      }
+    ],
+    "stdin": "[{\"path\": \"present.js\", \"pattern\": null}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"path\": \"present.js\", \"pattern\": \"\", \"exists\": true, \"matches\": true}]}\n"
+  },
+  {
+    "name": "pattern_is_literal_not_regex",
+    "files": [
+      {
+        "path": "cfg.js",
+        "content": "const x = cfg[0].bar;\n"
+      }
+    ],
+    "stdin": "[{\"path\": \"cfg.js\", \"pattern\": \"cfg[0]\"}, {\"path\": \"cfg.js\", \"pattern\": \"c.g\"}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"path\": \"cfg.js\", \"pattern\": \"cfg[0]\", \"exists\": true, \"matches\": true}, {\"path\": \"cfg.js\", \"pattern\": \"c.g\", \"exists\": true, \"matches\": false}]}\n"
+  },
+  {
+    "name": "malformed_entry_is_fail_closed_and_count_preserved",
+    "files": [
+      {
+        "path": "present.js",
+        "content": "export const sampleSymbol = 1;\n"
+      }
+    ],
+    "stdin": "[{\"path\": \"present.js\", \"pattern\": \"sampleSymbol\"}, \"not-a-dict\", null]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"path\": \"present.js\", \"pattern\": \"sampleSymbol\", \"exists\": true, \"matches\": true}, {\"path\": \"\", \"pattern\": \"\", \"exists\": false, \"matches\": false}, {\"path\": \"\", \"pattern\": \"\", \"exists\": false, \"matches\": false}]}\n"
+  },
+  {
+    "name": "empty_array_yields_empty_results",
+    "files": [],
+    "stdin": "[]",
+    "exit": 0,
+    "stdout": "{\"results\": []}\n"
+  },
+  {
+    "name": "not_json",
+    "files": [],
+    "stdin": "not json",
+    "exit": 1,
+    "stdout": ""
+  },
+  {
+    "name": "non_array_payload_fails_closed",
+    "files": [],
+    "stdin": "{\"path\": \"x\"}",
+    "exit": 1,
+    "stdout": ""
+  }
+]
