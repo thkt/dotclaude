@@ -129,7 +129,7 @@ const makeStubs = ({
           }
         );
       case "diff": {
-        // Stands in for diff-files.py's stdout. The default matches the plan's files (no scope
+        // Stands in for diff-files.ts's stdout. The default matches the plan's files (no scope
         // escape). A null override takes the fail-open route; an object override is the report.
         const report =
           diff === undefined
@@ -141,7 +141,7 @@ const makeStubs = ({
       }
       case "presence": {
         // The default reads the checks JSON at the tail of the prompt and returns every name
-        // as found: true, the same shape as verify-tests.py's happy relay.
+        // as found: true, the same shape as verify-tests.ts's happy relay.
         if (presence !== undefined)
           return typeof presence === "function" ? presence(prompt) : presence;
         const checks = JSON.parse(prompt.trim().split("\n").pop());
@@ -163,7 +163,7 @@ const makeStubs = ({
       case "ship":
         return ship ?? { committed: true, pr_url: "https://example.com/pr/1" };
       case "prverify":
-        // Stands in for verify-pr.py's stdout. The default is a PR that matches its declaration.
+        // Stands in for verify-pr.ts's stdout. The default is a PR that matches its declaration.
         if (prVerify !== undefined)
           return typeof prVerify === "function" ? prVerify(prompt) : prVerify;
         return { stdout: JSON.stringify({ verdict: "pass", blockers: [] }) };
@@ -1048,7 +1048,7 @@ test("Revalidate stops at plan-drift on one miss, advances to Branch when all pa
 });
 
 // ---- U-003: the existence check on reference_module's paths (script-driven, no LLM) ----
-// revalidate.py takes the {path, pattern?} shape, so reference_module.path and files are mixed
+// revalidate.ts takes the {path, pattern?} shape, so reference_module.path and files are mixed
 // into the payload in that same shape and the drift is detected by the script's exists / matches
 // decision alone.
 const refModulePreconditionsPlan = (reference_module) => makePlan({ reference_module });
@@ -1332,8 +1332,8 @@ test("Verify's T-NNN match surfaces a statement it could not find, and the relay
   const presenceCalls = agentCallsOf(calls, "presence");
   assert.equal(presenceCalls.length, 1, "the verify-tests relay agent runs once");
   assert.ok(
-    presenceCalls[0].prompt.includes("verify-tests.py"),
-    "the relay prompt names the deterministic verifier verify-tests.py",
+    presenceCalls[0].prompt.includes("verify-tests.ts"),
+    "the relay prompt names the deterministic verifier verify-tests.ts",
   );
   assert.ok(
     presenceCalls[0].prompt.includes('"names":["sample spec statement"]'),
@@ -1432,11 +1432,11 @@ test("Verify's diff, conformance, and structure measure from Branch's branch-poi
 // A haiku relay told to run `git diff <sha>` resolved HEAD itself and measured from there, so
 // the committed unit file read as untouched in the PR. The listing is a script call whose
 // payload carries the baseline, and the agent only copies its stdout.
-test("Verify's diff listing is a diff-files.py relay carrying the repo and the branch-point base in its payload", async () => {
+test("Verify's diff listing is a diff-files.ts relay carrying the repo and the branch-point base in its payload", async () => {
   const { calls } = await runWorkflow(buildJs, { args, stubs: makeStubs() });
   const diffCall = calls.agent.find((c) => c.opts.label === "diff-files");
   assert.ok(diffCall, "the diff-files relay ran");
-  assert.match(diffCall.prompt, /diff-files\.py/, "it names the deterministic verifier");
+  assert.match(diffCall.prompt, /diff-files\.ts/, "it names the deterministic verifier");
   assert.ok(
     diffCall.prompt.includes(`'{"repo":"${repo}","base":"a1b2c3d4e5f6a7b8"}'`),
     "the payload carries the repo and the branch-point sha as a single-quoted argv element",

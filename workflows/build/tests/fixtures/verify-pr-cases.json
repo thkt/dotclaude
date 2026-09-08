@@ -1,0 +1,79 @@
+[
+  {
+    "name": "passes_when_gh_returns_a_matching_draft_pull_request",
+    "gh": "#!/bin/sh\nprintf '%s' \"{\\\"url\\\": \\\"https://github.com/o/r/pull/7\\\", \\\"isDraft\\\": true, \\\"baseRefName\\\": \\\"main\\\", \\\"headRefName\\\": \\\"feat/x\\\"}\"\nprintf '%s' \"\" >&2\nexit 0\n",
+    "stdin": "{\"repository\": \"o/r\", \"branch\": \"feat/x\", \"base_branch\": \"main\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-ship/v1\",\n  \"verdict\": \"pass\",\n  \"classification\": \"pass\",\n  \"reason_codes\": [],\n  \"failure_route\": null,\n  \"blockers\": [],\n  \"url\": \"https://github.com/o/r/pull/7\",\n  \"is_draft\": true,\n  \"base_ref_name\": \"main\",\n  \"head_ref_name\": \"feat/x\",\n  \"title\": null\n}\n"
+  },
+  {
+    "name": "fails_and_withholds_the_url_when_the_pull_request_is_not_a_draft",
+    "gh": "#!/bin/sh\nprintf '%s' \"{\\\"url\\\": \\\"https://github.com/o/r/pull/7\\\", \\\"isDraft\\\": false, \\\"baseRefName\\\": \\\"main\\\", \\\"headRefName\\\": \\\"feat/x\\\"}\"\nprintf '%s' \"\" >&2\nexit 0\n",
+    "stdin": "{\"repository\": \"o/r\", \"branch\": \"feat/x\", \"base_branch\": \"main\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-ship/v1\",\n  \"verdict\": \"fail\",\n  \"classification\": \"ship_verification_failed\",\n  \"reason_codes\": [\n    \"ship_verification_failed\"\n  ],\n  \"failure_route\": \"blocked\",\n  \"blockers\": [\n    \"pull request is not a draft (isDraft=False)\"\n  ],\n  \"url\": null,\n  \"is_draft\": false,\n  \"base_ref_name\": \"main\",\n  \"head_ref_name\": \"feat/x\",\n  \"title\": null\n}\n"
+  },
+  {
+    "name": "fails_when_the_pull_request_targets_another_base",
+    "gh": "#!/bin/sh\nprintf '%s' \"{\\\"url\\\": \\\"https://github.com/o/r/pull/7\\\", \\\"isDraft\\\": true, \\\"baseRefName\\\": \\\"develop\\\", \\\"headRefName\\\": \\\"feat/x\\\"}\"\nprintf '%s' \"\" >&2\nexit 0\n",
+    "stdin": "{\"repository\": \"o/r\", \"branch\": \"feat/x\", \"base_branch\": \"main\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-ship/v1\",\n  \"verdict\": \"fail\",\n  \"classification\": \"ship_verification_failed\",\n  \"reason_codes\": [\n    \"ship_verification_failed\"\n  ],\n  \"failure_route\": \"blocked\",\n  \"blockers\": [\n    \"base branch is 'develop', not the declared 'main'\"\n  ],\n  \"url\": null,\n  \"is_draft\": true,\n  \"base_ref_name\": \"develop\",\n  \"head_ref_name\": \"feat/x\",\n  \"title\": null\n}\n"
+  },
+  {
+    "name": "fails_when_the_head_branch_is_not_the_one_the_build_pushed",
+    "gh": "#!/bin/sh\nprintf '%s' \"{\\\"url\\\": \\\"https://github.com/o/r/pull/7\\\", \\\"isDraft\\\": true, \\\"baseRefName\\\": \\\"main\\\", \\\"headRefName\\\": \\\"other\\\"}\"\nprintf '%s' \"\" >&2\nexit 0\n",
+    "stdin": "{\"repository\": \"o/r\", \"branch\": \"feat/x\", \"base_branch\": \"main\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-ship/v1\",\n  \"verdict\": \"fail\",\n  \"classification\": \"ship_verification_failed\",\n  \"reason_codes\": [\n    \"ship_verification_failed\"\n  ],\n  \"failure_route\": \"blocked\",\n  \"blockers\": [\n    \"head branch is 'other', not the declared 'feat/x'\"\n  ],\n  \"url\": null,\n  \"is_draft\": true,\n  \"base_ref_name\": \"main\",\n  \"head_ref_name\": \"other\",\n  \"title\": null\n}\n"
+  },
+  {
+    "name": "fails_when_gh_exits_nonzero_rather_than_raising",
+    "gh": "#!/bin/sh\nprintf '%s' \"\"\nprintf '%s' \"no pull requests found\" >&2\nexit 1\n",
+    "stdin": "{\"repository\": \"o/r\", \"branch\": \"feat/x\", \"base_branch\": \"main\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-ship/v1\",\n  \"verdict\": \"fail\",\n  \"classification\": \"ship_verification_failed\",\n  \"reason_codes\": [\n    \"ship_verification_failed\"\n  ],\n  \"failure_route\": \"blocked\",\n  \"blockers\": [\n    \"gh pr view exited 1: no pull requests found\"\n  ],\n  \"url\": null,\n  \"is_draft\": null,\n  \"base_ref_name\": null,\n  \"head_ref_name\": null,\n  \"title\": null\n}\n"
+  },
+  {
+    "name": "fails_when_gh_prints_output_that_is_not_json",
+    "gh": "#!/bin/sh\nprintf '%s' \"<html>not json</html>\"\nprintf '%s' \"\" >&2\nexit 0\n",
+    "stdin": "{\"repository\": \"o/r\", \"branch\": \"feat/x\", \"base_branch\": \"main\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-ship/v1\",\n  \"verdict\": \"fail\",\n  \"classification\": \"ship_verification_failed\",\n  \"reason_codes\": [\n    \"ship_verification_failed\"\n  ],\n  \"failure_route\": \"blocked\",\n  \"blockers\": [\n    \"pull request is not a draft (isDraft=None)\",\n    \"base branch is None, not the declared 'main'\",\n    \"head branch is None, not the declared 'feat/x'\",\n    \"pull request carries no url\"\n  ],\n  \"url\": null,\n  \"is_draft\": null,\n  \"base_ref_name\": null,\n  \"head_ref_name\": null,\n  \"title\": null\n}\n"
+  },
+  {
+    "name": "passes_when_the_pull_request_carries_the_declared_title",
+    "gh": "#!/bin/sh\nprintf '%s' \"{\\\"url\\\": \\\"https://github.com/o/r/pull/7\\\", \\\"isDraft\\\": true, \\\"baseRefName\\\": \\\"main\\\", \\\"headRefName\\\": \\\"feat/x\\\", \\\"title\\\": \\\"[\\\\u5b9f\\\\u88c5] \\\\u30b5\\\\u30f3\\\\u30d7\\\\u30eb\\\\u6a5f\\\\u80fd\\\\u3092\\\\u8ffd\\\\u52a0\\\\u3059\\\\u308b\\\"}\"\nprintf '%s' \"\" >&2\nexit 0\n",
+    "stdin": "{\"repository\": \"o/r\", \"branch\": \"feat/x\", \"base_branch\": \"main\", \"title\": \"[\\u5b9f\\u88c5] \\u30b5\\u30f3\\u30d7\\u30eb\\u6a5f\\u80fd\\u3092\\u8ffd\\u52a0\\u3059\\u308b\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-ship/v1\",\n  \"verdict\": \"pass\",\n  \"classification\": \"pass\",\n  \"reason_codes\": [],\n  \"failure_route\": null,\n  \"blockers\": [],\n  \"url\": \"https://github.com/o/r/pull/7\",\n  \"is_draft\": true,\n  \"base_ref_name\": \"main\",\n  \"head_ref_name\": \"feat/x\",\n  \"title\": \"[実装] サンプル機能を追加する\"\n}\n"
+  },
+  {
+    "name": "fails_when_the_pull_request_title_differs_from_the_declared_one",
+    "gh": "#!/bin/sh\nprintf '%s' \"{\\\"url\\\": \\\"https://github.com/o/r/pull/7\\\", \\\"isDraft\\\": true, \\\"baseRefName\\\": \\\"main\\\", \\\"headRefName\\\": \\\"feat/x\\\", \\\"title\\\": \\\"Add the sample feature\\\"}\"\nprintf '%s' \"\" >&2\nexit 0\n",
+    "stdin": "{\"repository\": \"o/r\", \"branch\": \"feat/x\", \"base_branch\": \"main\", \"title\": \"[\\u5b9f\\u88c5] \\u30b5\\u30f3\\u30d7\\u30eb\\u6a5f\\u80fd\\u3092\\u8ffd\\u52a0\\u3059\\u308b\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-ship/v1\",\n  \"verdict\": \"fail\",\n  \"classification\": \"ship_verification_failed\",\n  \"reason_codes\": [\n    \"ship_verification_failed\"\n  ],\n  \"failure_route\": \"blocked\",\n  \"blockers\": [\n    \"pull request title is 'Add the sample feature', not the declared '[実装] サンプル機能を追加する'\"\n  ],\n  \"url\": null,\n  \"is_draft\": true,\n  \"base_ref_name\": \"main\",\n  \"head_ref_name\": \"feat/x\",\n  \"title\": \"Add the sample feature\"\n}\n"
+  },
+  {
+    "name": "leaves_the_title_unchecked_when_none_is_declared",
+    "gh": "#!/bin/sh\nprintf '%s' \"{\\\"url\\\": \\\"https://github.com/o/r/pull/7\\\", \\\"isDraft\\\": true, \\\"baseRefName\\\": \\\"main\\\", \\\"headRefName\\\": \\\"feat/x\\\", \\\"title\\\": \\\"Add the sample feature\\\"}\"\nprintf '%s' \"\" >&2\nexit 0\n",
+    "stdin": "{\"repository\": \"o/r\", \"branch\": \"feat/x\", \"base_branch\": \"main\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-ship/v1\",\n  \"verdict\": \"pass\",\n  \"classification\": \"pass\",\n  \"reason_codes\": [],\n  \"failure_route\": null,\n  \"blockers\": [],\n  \"url\": \"https://github.com/o/r/pull/7\",\n  \"is_draft\": true,\n  \"base_ref_name\": \"main\",\n  \"head_ref_name\": \"feat/x\",\n  \"title\": \"Add the sample feature\"\n}\n"
+  },
+  {
+    "name": "exits_1_when_neither_repository_nor_cwd_says_which_repository_to_ask",
+    "gh": "",
+    "stdin": "{\"branch\": \"feat/x\", \"base_branch\": \"main\"}",
+    "exit": 1,
+    "stdout": ""
+  },
+  {
+    "name": "exits_1_on_a_relative_working_directory",
+    "gh": "",
+    "stdin": "{\"repository\": \"o/r\", \"branch\": \"b\", \"base_branch\": \"main\", \"cwd\": \"rel\"}",
+    "exit": 1,
+    "stdout": ""
+  }
+]

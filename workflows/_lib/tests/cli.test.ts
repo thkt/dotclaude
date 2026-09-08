@@ -6,8 +6,32 @@ import assert from "node:assert/strict";
 import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
-import { historyPath, isoTimestamp, parsePayload } from "../cli.ts";
+import { historyPath, isoTimestamp, parseJson, parsePayload } from "../cli.ts";
 import { withTempHome } from "./_cli-fixture.ts";
+
+test("T-139 parseJson returns the parsed value for a JSON array, object, and scalar alike", () => {
+  for (const text of ["[1, 2, 3]", '{"a": 1}', '"hello"', "42"]) {
+    const result = parseJson(text);
+    assert.ok("value" in result, `${text}: expected a value, got ${JSON.stringify(result)}`);
+    assert.deepEqual((result as { value: unknown }).value, JSON.parse(text), `${text}: value`);
+  }
+});
+
+test("T-140 parseJson returns the parser's message and no value for text that is not JSON", () => {
+  const text = "not json at all";
+  let expectedMessage: string;
+  try {
+    JSON.parse(text);
+    throw new Error("expected JSON.parse to throw for this fixture text");
+  } catch (error) {
+    expectedMessage = error instanceof Error ? error.message : String(error);
+  }
+
+  const result = parseJson(text);
+  assert.ok(!("value" in result), `expected no value, got ${JSON.stringify(result)}`);
+  assert.ok("error" in result, `expected an error, got ${JSON.stringify(result)}`);
+  assert.equal((result as { error: string }).error, expectedMessage);
+});
 
 test(
   "T-116 parsing text that is not JSON yields no payload and the message that starts with " +

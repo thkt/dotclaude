@@ -1,0 +1,140 @@
+[
+  {
+    "name": "lists_committed_uncommitted_and_untracked_files_from_the_branch_point",
+    "setup": [
+      {
+        "type": "write",
+        "path": "a.txt",
+        "content": "a\n"
+      },
+      {
+        "type": "git",
+        "args": ["add", "a.txt"]
+      },
+      {
+        "type": "git",
+        "args": ["commit", "-q", "-m", "chore: seed"]
+      },
+      {
+        "type": "write",
+        "path": "b.txt",
+        "content": "b\n"
+      },
+      {
+        "type": "git",
+        "args": ["add", "b.txt"]
+      },
+      {
+        "type": "git",
+        "args": ["commit", "-q", "-m", "feat(b): add b"]
+      },
+      {
+        "type": "write",
+        "path": "a.txt",
+        "content": "a2\n"
+      },
+      {
+        "type": "write",
+        "path": "c.txt",
+        "content": "c\n"
+      },
+      {
+        "type": "write",
+        "path": "dir/d.txt",
+        "content": "d\n"
+      }
+    ],
+    "stdin": "{\"repo\": \"<repo>\", \"base\": \"3a2dd422111f2d257466b0c28d3542e362c1b5e5\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-diff/v1\",\n  \"files\": [\n    \"a.txt\",\n    \"b.txt\",\n    \"c.txt\",\n    \"dir/d.txt\"\n  ],\n  \"base\": \"<base-sha>\",\n  \"error\": \"\"\n}\n"
+  },
+  {
+    "name": "untracked_paths_with_spaces_arrive_unquoted",
+    "setup": [
+      {
+        "type": "write",
+        "path": "a.txt",
+        "content": "a\n"
+      },
+      {
+        "type": "git",
+        "args": ["add", "a.txt"]
+      },
+      {
+        "type": "git",
+        "args": ["commit", "-q", "-m", "chore: seed"]
+      },
+      {
+        "type": "write",
+        "path": "with space.txt",
+        "content": "s\n"
+      }
+    ],
+    "stdin": "{\"repo\": \"<repo>\", \"base\": \"3a2dd422111f2d257466b0c28d3542e362c1b5e5\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-diff/v1\",\n  \"files\": [\n    \"with space.txt\"\n  ],\n  \"base\": \"<base-sha>\",\n  \"error\": \"\"\n}\n"
+  },
+  {
+    "name": "returns_null_files_and_the_git_error_on_an_unknown_base",
+    "setup": [
+      {
+        "type": "write",
+        "path": "a.txt",
+        "content": "a\n"
+      },
+      {
+        "type": "git",
+        "args": ["add", "a.txt"]
+      },
+      {
+        "type": "git",
+        "args": ["commit", "-q", "-m", "chore: seed"]
+      }
+    ],
+    "stdin": "{\"repo\": \"<repo>\", \"base\": \"0123456789abcdef\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-diff/v1\",\n  \"files\": null,\n  \"base\": \"<base-sha>\",\n  \"error\": \"fatal: ambiguous argument '0123456789abcdef': unknown revision or path not in the working tree.\\nUse '--' to separate paths from revisions, like this:\\n'git <command> [<revision>...] -- [<file>...]'\"\n}\n"
+  },
+  {
+    "name": "returns_an_empty_list_when_nothing_changed",
+    "setup": [
+      {
+        "type": "write",
+        "path": "a.txt",
+        "content": "a\n"
+      },
+      {
+        "type": "git",
+        "args": ["add", "a.txt"]
+      },
+      {
+        "type": "git",
+        "args": ["commit", "-q", "-m", "chore: seed"]
+      }
+    ],
+    "stdin": "{\"repo\": \"<repo>\", \"base\": \"3a2dd422111f2d257466b0c28d3542e362c1b5e5\"}",
+    "exit": 0,
+    "stdout": "{\n  \"protocol\": \"claude-build-diff/v1\",\n  \"files\": [],\n  \"base\": \"<base-sha>\",\n  \"error\": \"\"\n}\n"
+  },
+  {
+    "name": "exits_1_on_a_relative_repo_path",
+    "setup": [],
+    "stdin": "{\"repo\": \"rel\", \"base\": \"HEAD\"}",
+    "exit": 1,
+    "stdout": ""
+  },
+  {
+    "name": "exits_1_when_base_is_missing",
+    "setup": [],
+    "stdin": "{\"repo\": \"/abs/repo\"}",
+    "exit": 1,
+    "stdout": ""
+  },
+  {
+    "name": "exits_1_on_invalid_json",
+    "setup": [],
+    "stdin": "{not json",
+    "exit": 1,
+    "stdout": ""
+  }
+]

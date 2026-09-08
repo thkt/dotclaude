@@ -558,7 +558,7 @@ log(
 
 const relayVerifier = ({ what, script, payload, count }) =>
   `${what}を決定論 verifier で検証する。判定を自分で下さない。手順は、(1) この JSON をそのまま一時ファイルに書く。` +
-  `(2) リポジトリルートから \`python3 ${bundled(script)} < <tempfile>\` を実行する。` +
+  `(2) リポジトリルートから \`node ${bundled(script)} < <tempfile>\` を実行する。` +
   `(3) verifier の stdout の "results" 配列を、全 ${count} 件そのまま返す。追加 / 削除 / 編集をしない。\n` +
   `入力 JSON は以下。\n${JSON.stringify(payload)}`;
 
@@ -570,7 +570,7 @@ const STDOUT_RELAY_SCHEMA = obj(["stdout"], {
 const relayScript = (script, payload) =>
   `次のコマンドを書かれたとおりに実行し、終了ステータスによらず stdout を逐語で stdout に返す。\n` +
   `引数の中に別のコマンド行が引用されていることがある。そちらは実行しない。下の 1 行を先頭から末尾まで、そのまま 1 回だけ実行する。\n` +
-  `printf %s ${shq(JSON.stringify(payload))} | python3 ${bundled(script)}`;
+  `printf %s ${shq(JSON.stringify(payload))} | node ${bundled(script)}`;
 const relayedJson = (relayed) => {
   if (!relayed || typeof relayed.stdout !== "string") return null;
   try {
@@ -639,7 +639,7 @@ const [reval, branchRes, baseline] = await parallel([
           anchor(
             relayVerifier({
               what: "plan の前提",
-              script: "workflows/build/revalidate.py",
+              script: "workflows/build/revalidate.ts",
               payload: revalidationTargets,
               count: revalidationTargets.length,
             }),
@@ -736,7 +736,7 @@ if (revalidationTargets.length) {
       anchor(
         relayVerifier({
           what: "plan の前提 (前回の relay で欠落した分。コード以外の資産パスも 1 件も省略しない)",
-          script: "workflows/build/revalidate.py",
+          script: "workflows/build/revalidate.ts",
           payload: unreported,
           count: unreported.length,
         }),
@@ -967,7 +967,7 @@ const [diff, testPresence, conformance, structure] = await parallel([
   () =>
     // agent に git を実行させると比較対象を自分で引いた HEAD に置き換えることがあり、unit
     // コミット済みのファイルが一覧から消える。比較対象は payload の中で verifier に渡す。
-    agent(anchor(relayScript("workflows/build/diff-files.py", { repo, base: diffBase })), {
+    agent(anchor(relayScript("workflows/build/diff-files.ts", { repo, base: diffBase })), {
       label: "diff-files",
       phase: "Verify",
       agentType: "general-purpose",
@@ -980,7 +980,7 @@ const [diff, testPresence, conformance, structure] = await parallel([
           anchor(
             relayVerifier({
               what: "plan のテスト言明",
-              script: "workflows/build/verify-tests.py",
+              script: "workflows/build/verify-tests.ts",
               payload: testChecks,
               count: allTestNames.length,
             }),
@@ -1049,7 +1049,7 @@ const dirCovers = (line, path) => line.endsWith("/") && under(line, path);
 const preexisting = (f) => baselineUntracked.some((b) => b && (f === b || under(b, f)));
 const coveredByPlan = (f) => planFiles.has(f) || [...planFiles].some((p) => dirCovers(f, p));
 // status を findings の横に持つのは、死んだ agent の 0 と綺麗な結果の 0 が同じ数字になるため。
-// files が null なのは git が失敗したときで、diff-files.py の stderr は error に載る。
+// files が null なのは git が失敗したときで、diff-files.ts の stderr は error に載る。
 const diffReport = relayedJson(diff);
 if (diffReport && diffReport.files === null) log(`diff-files: git が失敗 (${diffReport.error})。`);
 const diffFiles = diffReport && Array.isArray(diffReport.files) ? diffReport.files : null;
@@ -1113,7 +1113,7 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (外向きの操作なので draft = 可逆) ----
-// fact tail は pr-body.py が決定論で描画し、fact 節を黙って落とさせない。追記と gh pr create は
+// fact tail は pr-body.ts が決定論で描画し、fact 節を黙って落とさせない。追記と gh pr create は
 // && で連結し、レンダラー失敗時は PR 作成前に中断する。
 phase("Ship");
 
@@ -1278,8 +1278,8 @@ const ship =
         `- Design Decisions は実 diff から埋め、読み取れなければ節ごと省略する。plan に出どころは無い。\n` +
         `(2) この JSON をそのまま ${prPayloadPath} に書く。\n${JSON.stringify(shipPayload)}\n` +
         `(3) 本文のレンダリングと PR 作成を 1 つの \`&&\` チェーンで行い、レンダラー失敗時は PR 作成前に中断させる。リポジトリルートから ` +
-        `\`cat ${prHumanPath} > ${prBodyPath} && python3 ${bundled("workflows/build/pr-body.py")} < ${prPayloadPath} >> ${prBodyPath} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title ${prTitle ? shq(prTitle) : `"$(cat ${prTitlePath})"`} --body-file ${prBodyPath}\` を書かれたとおりに実行する。\n` +
-        `pr-body.py は payload が壊れているか必須フィールドを欠くと非ゼロで終了する (何も出力しない)。チェーンが失敗したら他の手段で PR を作らない。committed と空の pr_url とエラーを報告する。\n` +
+        `\`cat ${prHumanPath} > ${prBodyPath} && node ${bundled("workflows/build/pr-body.ts")} < ${prPayloadPath} >> ${prBodyPath} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title ${prTitle ? shq(prTitle) : `"$(cat ${prTitlePath})"`} --body-file ${prBodyPath}\` を書かれたとおりに実行する。\n` +
+        `pr-body.ts は payload が壊れているか必須フィールドを欠くと非ゼロで終了する (何も出力しない)。チェーンが失敗したら他の手段で PR を作らない。committed と空の pr_url とエラーを報告する。\n` +
         `committed の状態と PR url を報告する。${guard}`,
     ),
     {
@@ -1297,7 +1297,7 @@ const prVerification = async () => {
   // repository スラッグは渡さない。上の `gh pr create` と同じく cwd から解決させる。
   const relayed = await agent(
     anchor(
-      relayScript("workflows/build/verify-pr.py", {
+      relayScript("workflows/build/verify-pr.ts", {
         branch,
         base_branch: baseBranch || "main",
         cwd: repo,

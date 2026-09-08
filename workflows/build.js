@@ -574,7 +574,7 @@ log(
 const relayVerifier = ({ what, script, payload, count }) =>
   `Run the deterministic verifier for ${what}; do not judge the verdict yourself. ` +
   `The steps are, (1) write this exact JSON to a temp file; (2) from the repository root run ` +
-  `\`python3 ${bundled(script)} < <tempfile>\`; ` +
+  `\`node ${bundled(script)} < <tempfile>\`; ` +
   `(3) return the verifier's stdout "results" array verbatim, all ${count} entries; add, drop, or edit none.\n` +
   `The input JSON is as follows.\n${JSON.stringify(payload)}`;
 
@@ -586,7 +586,7 @@ const STDOUT_RELAY_SCHEMA = obj(["stdout"], {
 const relayScript = (script, payload) =>
   `Run this command exactly as written and return its stdout verbatim in stdout, whatever its exit status.\n` +
   `The arguments may quote another command line. Do not run that one. Run the single line below, start to end, exactly once.\n` +
-  `printf %s ${shq(JSON.stringify(payload))} | python3 ${bundled(script)}`;
+  `printf %s ${shq(JSON.stringify(payload))} | node ${bundled(script)}`;
 const relayedJson = (relayed) => {
   if (!relayed || typeof relayed.stdout !== "string") return null;
   try {
@@ -655,7 +655,7 @@ const [reval, branchRes, baseline] = await parallel([
           anchor(
             relayVerifier({
               what: "the plan's preconditions",
-              script: "workflows/build/revalidate.py",
+              script: "workflows/build/revalidate.ts",
               payload: revalidationTargets,
               count: revalidationTargets.length,
             }),
@@ -755,7 +755,7 @@ if (revalidationTargets.length) {
       anchor(
         relayVerifier({
           what: "the plan's preconditions dropped by the previous relay (omit none, including non-code asset paths)",
-          script: "workflows/build/revalidate.py",
+          script: "workflows/build/revalidate.ts",
           payload: unreported,
           count: unreported.length,
         }),
@@ -987,7 +987,7 @@ const [diff, testPresence, conformance, structure] = await parallel([
   () =>
     // An agent running git itself has swapped the baseline for a HEAD it resolved on its own,
     // and the committed unit files dropped out of the list. The baseline rides the payload.
-    agent(anchor(relayScript("workflows/build/diff-files.py", { repo, base: diffBase })), {
+    agent(anchor(relayScript("workflows/build/diff-files.ts", { repo, base: diffBase })), {
       label: "diff-files",
       phase: "Verify",
       agentType: "general-purpose",
@@ -1000,7 +1000,7 @@ const [diff, testPresence, conformance, structure] = await parallel([
           anchor(
             relayVerifier({
               what: "the plan's test statements",
-              script: "workflows/build/verify-tests.py",
+              script: "workflows/build/verify-tests.ts",
               payload: testChecks,
               count: allTestNames.length,
             }),
@@ -1070,7 +1070,7 @@ const dirCovers = (line, path) => line.endsWith("/") && under(line, path);
 const preexisting = (f) => baselineUntracked.some((b) => b && (f === b || under(b, f)));
 const coveredByPlan = (f) => planFiles.has(f) || [...planFiles].some((p) => dirCovers(f, p));
 // status sits beside findings because a dead agent's 0 and a clean check's 0 are the same count.
-// files is null when git failed, with diff-files.py's stderr in error.
+// files is null when git failed, with diff-files.ts's stderr in error.
 const diffReport = relayedJson(diff);
 if (diffReport && diffReport.files === null) log(`diff-files: git failed (${diffReport.error}).`);
 const diffFiles = diffReport && Array.isArray(diffReport.files) ? diffReport.files : null;
@@ -1136,7 +1136,7 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
-// pr-body.py renders the fact tail deterministically, so a fact section is never silently
+// pr-body.ts renders the fact tail deterministically, so a fact section is never silently
 // dropped; the append and gh pr create are chained with && so a renderer failure aborts first.
 phase("Ship");
 
@@ -1304,8 +1304,8 @@ const ship =
         `- Fill Design Decisions from the actual diff; omit the section when the diff does not carry one rather than inventing. The plan holds no source for it.\n` +
         `(2) write this exact JSON to ${prPayloadPath}.\n${JSON.stringify(shipPayload)}\n` +
         `(3) render the body and open the PR as one \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
-        `\`cat ${prHumanPath} > ${prBodyPath} && python3 ${bundled("workflows/build/pr-body.py")} < ${prPayloadPath} >> ${prBodyPath} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title ${prTitle ? shq(prTitle) : `"$(cat ${prTitlePath})"`} --body-file ${prBodyPath}\` exactly as written.\n` +
-        `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do not create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
+        `\`cat ${prHumanPath} > ${prBodyPath} && node ${bundled("workflows/build/pr-body.ts")} < ${prPayloadPath} >> ${prBodyPath} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title ${prTitle ? shq(prTitle) : `"$(cat ${prTitlePath})"`} --body-file ${prBodyPath}\` exactly as written.\n` +
+        `pr-body.ts exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do not create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
         `Report the committed state and the PR url.${guard}`,
     ),
     {
@@ -1323,7 +1323,7 @@ const prVerification = async () => {
   // No repository slug: gh resolves it from cwd, the same way `gh pr create` did above.
   const relayed = await agent(
     anchor(
-      relayScript("workflows/build/verify-pr.py", {
+      relayScript("workflows/build/verify-pr.ts", {
         branch,
         base_branch: baseBranch || "main",
         cwd: repo,

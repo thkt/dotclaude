@@ -19,7 +19,7 @@ build が生成する PR 本文のうち、自由記述の情報系セクショ�
 
 ## 参照コード
 
-- `workflows/build/pr-body.py` (`Only prose labels translate; the GitHub keyword Closes, the code-fenced status line...stay verbatim` の設計コメント)
+- `workflows/build/pr-body.ts` (`Only prose labels translate; the GitHub keyword Closes, the code-fenced status line...stay verbatim` の設計コメント)
 
 ## 根拠
 
