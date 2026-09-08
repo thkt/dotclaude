@@ -1,6 +1,6 @@
 /// <reference types="node" />
-// Behavioral parity tests for skills/outcome/scripts/validate-outcome.ts against
-// skills/outcome/scripts/validate-outcome.py, replayed from the frozen fixture
+// Behavioral parity tests for skills/outcome/scripts/validate-outcome.ts against the retired
+// Python original, replayed from the frozen fixture
 // skills/outcome/tests/fixtures/validate-outcome-cases.json (U-001). Reuses the shared
 // runCli/withTempHome/fixture/assertStdoutShape harness from workflows/_lib/tests/_cli-fixture.ts
 // instead of hand-rolling a second CLI-replay loop (skills/_lib/tests/harness-hash-cli.test.ts

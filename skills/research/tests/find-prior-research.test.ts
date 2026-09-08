@@ -1,6 +1,6 @@
 /// <reference types="node" />
-// Behavioral parity tests for skills/research/scripts/find-prior-research.ts against
-// skills/research/scripts/find-prior-research.py, replayed from the frozen fixture
+// Behavioral parity tests for skills/research/scripts/find-prior-research.ts against the retired
+// Python original, replayed from the frozen fixture
 // skills/research/tests/fixtures/find-prior-research-cases.json (U-001). Reuses the shared
 // runCli/withTempHome/fixture/assertStdoutShape harness from workflows/_lib/tests/_cli-fixture.ts
 // (skills/outcome/tests/validate-outcome.test.ts carries the sibling pattern for

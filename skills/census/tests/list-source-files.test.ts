@@ -1,6 +1,6 @@
 /// <reference types="node" />
-// Behavioral parity tests for skills/census/scripts/list-source-files.ts against
-// skills/census/scripts/list-source-files.py, replayed from the frozen fixture
+// Behavioral parity tests for skills/census/scripts/list-source-files.ts against the retired
+// Python original, replayed from the frozen fixture
 // skills/census/tests/fixtures/list-source-files-cases.json (built the same way U-001 built
 // skills/outcome/tests/fixtures/validate-outcome-cases.json and
 // skills/research/tests/fixtures/find-prior-research-cases.json: run the real
