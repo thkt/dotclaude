@@ -8,6 +8,7 @@
     "workflows/build/record.ts",
     "workflows/build/pr-body.ts",
     "workflows/assert/record.ts",
+    "workflows/assert/worktree.ts",
     "workflows/audit/snapshot.ts",
     ".ja/workflows/audit/snapshot.ts",
     "workflows/build/revalidate.ts",
