@@ -46,7 +46,7 @@ function recordingRunner(calls: string[][]): Runner {
  * workflows/code/tests/verify-commit.test.ts's withUnitRepo / workflows/build/tests/
  * diff-files.test.ts's buildRepo. Returns the repository's absolute path. */
 function initRepo(root: string): string {
-  const repo = mktempRepoDir(root);
+  const repo = mkdtempSync(join(root, "worktree-repo-"));
   const git = (args: readonly string[]) => spawnSync("git", ["-C", repo, ...args], { encoding: "utf8" });
   git(["init", "-q", "-b", "main"]);
   git(["config", "user.email", "t@example.com"]);
@@ -55,14 +55,6 @@ function initRepo(root: string): string {
   git(["add", "README.md"]);
   git(["commit", "-q", "-m", "chore: seed"]);
   return repo;
-}
-
-function mktempRepoDirImpl(root: string, prefix: string): string {
-  return mkdtempSync(join(root, prefix));
-}
-
-function mktempRepoDir(root: string): string {
-  return mktempRepoDirImpl(root, "worktree-repo-");
 }
 
 /** `git worktree list`'s stdout for `repo`. */
