@@ -38,8 +38,8 @@
 // stdout: markdown の fact tail。先頭は空行 + 水平線。
 // exit 0 は完了時。exit 1 は parse error または必須 key の欠落時。
 //
-// 置き換え元の Python 版 build workflow PR-body tail renderer
-// (workflows/build/pr-body.py) の TypeScript 移植。Contract: この CLI 自身の挙動。
+// 置き換え元の Python 版 build workflow PR-body tail renderer の TypeScript 移植。
+// Contract: この CLI 自身の挙動。
 // workflows/build/tests/pr-body.test.ts が、固定 fixture
 // workflows/build/tests/fixtures/pr-body-cases.json に対してエンドツーエンドで検査する。
 import { readFileSync } from "node:fs";
@@ -113,12 +113,16 @@ function detailsWrap(content: string): string {
   return tagWrap("details", content);
 }
 
+/** `value` が plain object かどうか。`typeof value === "object"` だけでは配列や null も
+ * 通ってしまうので、それらを除く。 */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 /** `value` を文字列キーの record として読む。plain object でない値は空にする (Python 版
  * renderer の `_mapping` を写す。list もスカラーも同じくキー無しとして扱う)。 */
 function asMapping(value: unknown): Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
+  return isPlainObject(value) ? value : {};
 }
 
 /** `value` を配列として読む。配列でない値は空にする (`_list` を写す)。 */
@@ -183,22 +187,23 @@ function fence(text: string): string {
   return "`".repeat(Math.max(3, longest + 1));
 }
 
+/** `value` を plain-object record として読むか、`what` を添えて送出する。finding/anomaly
+ * のガードが共有する、非 mapping を section の degrade 経路へ回すための同一チェック。 */
+function asRecordOrThrow(value: unknown, what: string): Record<string, unknown> {
+  if (!isPlainObject(value)) throw new TypeError(`${what} is not a mapping`);
+  return value;
+}
+
 /** 非 mapping では送出し、section の degrade 経路へ回して raw string に落とさせる。 */
 function finding(f: unknown, label: string, sourceKey: string): string[] {
-  if (typeof f !== "object" || f === null || Array.isArray(f)) {
-    throw new TypeError("finding is not a mapping");
-  }
-  const d = f as Record<string, unknown>;
+  const d = asRecordOrThrow(f, "finding");
   const detail = "detail" in d ? d.detail : "";
   return [`\`${tag(d)}\` ${pyStr(detail)}`.trimEnd(), evidence(d.location, label, d[sourceKey])];
 }
 
 /** 非 mapping では送出し、section の degrade 経路へ回して raw string に落とさせる。 */
 function anomaly(a: unknown): string[] {
-  if (typeof a !== "object" || a === null || Array.isArray(a)) {
-    throw new TypeError("anomaly is not a mapping");
-  }
-  const d = a as Record<string, unknown>;
+  const d = asRecordOrThrow(a, "anomaly");
   const unit = "unit" in d ? d.unit : "?";
   const kind = "kind" in d ? d.kind : "?";
   const notes = "notes" in d ? d.notes : "";
@@ -364,11 +369,11 @@ export function main(): number {
     );
     return 1;
   }
-  if (typeof loaded !== "object" || loaded === null || Array.isArray(loaded)) {
+  if (!isPlainObject(loaded)) {
     fail("ship payload must be a JSON object");
     return 1;
   }
-  const payload = loaded as Record<string, unknown>;
+  const payload = loaded;
   const missingKeys = REQUIRED_KEYS.filter((key) => !(key in payload));
   if (missingKeys.length > 0) {
     fail(`ship payload missing required key(s): ${missingKeys.join(", ")}`);

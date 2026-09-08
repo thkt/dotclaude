@@ -42,8 +42,8 @@
 // stdout: the markdown fact tail, led by a blank line + horizontal rule.
 // exit 0 on a completed run. exit 1 on a parse error or a missing required key.
 //
-// TypeScript port of the Python build workflow PR-body tail renderer it replaces
-// (workflows/build/pr-body.py). Contract: this CLI's own behavior, exercised end to end by
+// TypeScript port of the Python build workflow PR-body tail renderer it replaces.
+// Contract: this CLI's own behavior, exercised end to end by
 // workflows/build/tests/pr-body.test.ts against the frozen fixture
 // workflows/build/tests/fixtures/pr-body-cases.json.
 import { readFileSync } from "node:fs";
@@ -117,12 +117,16 @@ function detailsWrap(content: string): string {
   return tagWrap("details", content);
 }
 
+/** True for a plain object -- excludes an array and null, which `typeof value === "object"`
+ * on its own would admit. */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 /** `value` as a string-keyed record, empty for anything that is not a plain object (mirrors
  * the Python renderer's `_mapping`, which treats a list or a scalar the same way: no keys). */
 function asMapping(value: unknown): Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
+  return isPlainObject(value) ? value : {};
 }
 
 /** `value` as an array, empty for anything that is not one (mirrors `_list`). */
@@ -187,22 +191,23 @@ function fence(text: string): string {
   return "`".repeat(Math.max(3, longest + 1));
 }
 
+/** `value` as a plain-object record, or throws naming `what` -- the one check finding's and
+ * anomaly's mapping guards share to route a non-mapping item to the section's degrade path. */
+function asRecordOrThrow(value: unknown, what: string): Record<string, unknown> {
+  if (!isPlainObject(value)) throw new TypeError(`${what} is not a mapping`);
+  return value;
+}
+
 /** A non-mapping throws, which routes it to the section's degrade path as a raw string. */
 function finding(f: unknown, label: string, sourceKey: string): string[] {
-  if (typeof f !== "object" || f === null || Array.isArray(f)) {
-    throw new TypeError("finding is not a mapping");
-  }
-  const d = f as Record<string, unknown>;
+  const d = asRecordOrThrow(f, "finding");
   const detail = "detail" in d ? d.detail : "";
   return [`\`${tag(d)}\` ${pyStr(detail)}`.trimEnd(), evidence(d.location, label, d[sourceKey])];
 }
 
 /** A non-mapping throws, which routes it to the section's degrade path as a raw string. */
 function anomaly(a: unknown): string[] {
-  if (typeof a !== "object" || a === null || Array.isArray(a)) {
-    throw new TypeError("anomaly is not a mapping");
-  }
-  const d = a as Record<string, unknown>;
+  const d = asRecordOrThrow(a, "anomaly");
   const unit = "unit" in d ? d.unit : "?";
   const kind = "kind" in d ? d.kind : "?";
   const notes = "notes" in d ? d.notes : "";
@@ -367,11 +372,11 @@ export function main(): number {
     );
     return 1;
   }
-  if (typeof loaded !== "object" || loaded === null || Array.isArray(loaded)) {
+  if (!isPlainObject(loaded)) {
     fail("ship payload must be a JSON object");
     return 1;
   }
-  const payload = loaded as Record<string, unknown>;
+  const payload = loaded;
   const missingKeys = REQUIRED_KEYS.filter((key) => !(key in payload));
   if (missingKeys.length > 0) {
     fail(`ship payload missing required key(s): ${missingKeys.join(", ")}`);
