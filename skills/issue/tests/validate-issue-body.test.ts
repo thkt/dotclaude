@@ -1,51 +1,65 @@
-// These start skills/issue/scripts/validate-issue-body.py as a real subprocess and pin its CLI
-// contract (arguments -> stdout JSON -> exit code). They stay off python's test discovery.
-//
-// The CLI contract:
-//   Usage: validate-issue-body.py <template-file> <title> <body-file>
-//   stdout: JSON { errors, warnings, checks }
-//   exit: 0 if no errors (warnings allowed), 1 if errors
-//
-// The skeleton is read from the first code block under <template-file>'s "## Template" heading.
-// "## Template" and "## Guidelines" themselves are not part of it. A section whose heading ends in
-// "(optional)" is optional and falls outside missing_section. The match runs on sets and ignores
-// the order of the sections in the body.
-import { test } from "node:test";
+/// <reference types="node" />
+// Behavior tests for skills/issue/scripts/validate-issue-body.ts, the TypeScript port of
+// validate-issue-body.py. T-001 through T-026 (this file's git-mv'd former
+// validate-issue-body.test.js, 20 test() calls / 26 scenarios once T-013/T-014/T-015/T-017/
+// T-018's loops are counted) drive the port directly through runCli instead of
+// spawnSync("python3", ...), and read the floor via the FLOOR import instead of a source
+// regex. T-192 replays the frozen fixture in fixtures/validate-issue-body-cases.json, produced
+// by running the Python script itself before it was retired (U-001), and compares the port's
+// exit code and its errors / warnings / checks arrays against it case by case; the fixture's
+// <body-path>/<template-path> placeholders are text substituted for temp files this run seeds
+// with the same body (and, for unreadable_skeleton, the same broken template) each case names.
+// T-193 exercises the exported FLOOR / FLOOR_ALIASES / ALLOWED_EXTRA directly against the
+// Python source, the way pick-plan.test.ts's floorFor helper (now retired there) read
+// validate-issue-body.py's FLOOR.
 import assert from "node:assert/strict";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { spawnSync } from "node:child_process";
+import { dirname, join } from "node:path";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+import {
+  runCli,
+  type CliRun,
+  type FixtureCase,
+} from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import {
+  ALLOWED_EXTRA,
+  FLOOR,
+  FLOOR_ALIASES,
+  type ValidationResults,
+} from "../scripts/validate-issue-body.ts";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const root = join(here, "..", "..", "..");
-const script = join(root, "skills", "issue", "scripts", "validate-issue-body.py");
-const bugTemplate = join(root, "skills", "issue", "templates", "bug.md");
-const choreTemplate = join(root, "skills", "issue", "templates", "chore.md");
-const featureTemplate = join(root, "skills", "issue", "templates", "feature.md");
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(HERE, "..", "..", "..");
+const SCRIPT = join(HERE, "..", "scripts", "validate-issue-body.ts");
+const HOME = join(tmpdir(), "validate-issue-body-home");
+const bugTemplate = join(ROOT, "skills", "issue", "templates", "bug.md");
+const choreTemplate = join(ROOT, "skills", "issue", "templates", "chore.md");
+const featureTemplate = join(ROOT, "skills", "issue", "templates", "feature.md");
 
 // The body is written to a temporary file before being passed. validate-outcome.py also takes a
 // file path argument, so this matches the shape the caller (/issue's Phase 4 validation) uses.
-// The floor is read from the script so a change there fails these fixtures instead of drifting.
-const floorFor = (type) => {
-  const src = readFileSync(script, "utf8");
-  const block = src.match(/^FLOOR = \{([\s\S]*?)^\}/m)?.[1] ?? "";
-  const row = block.match(new RegExp(`"${type}":\\s*\\(([^)]*)\\)`))?.[1] ?? "";
-  return [...row.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-};
+// The floor comes straight from the FLOOR export (U-005's plan for skill-contract.test.js and
+// slice/tests/contract.test.js does the same), replacing the source-regex read the retired .js
+// version used.
+const floorFor = (type: string): readonly string[] => FLOOR[type] ?? [];
 
-const runValidate = (templatePath, title, bodyText) => {
+interface RunValidateResult {
+  status: number | null;
+  out: ValidationResults | null;
+  stderr: string;
+}
+
+const runValidate = (templatePath: string, title: string, bodyText: string): RunValidateResult => {
   const dir = mkdtempSync(join(tmpdir(), "validate-issue-body-"));
   try {
     const bodyPath = join(dir, "body.md");
     writeFileSync(bodyPath, bodyText, "utf8");
-    const res = spawnSync("python3", [script, templatePath, title, bodyPath], {
-      encoding: "utf8",
-    });
-    let out;
+    const res: CliRun = runCli(SCRIPT, HOME, "", [templatePath, title, bodyPath]);
+    let out: ValidationResults | null = null;
     try {
-      out = JSON.parse(res.stdout);
+      out = JSON.parse(res.stdout) as ValidationResults;
     } catch {
       out = null;
     }
@@ -232,6 +246,7 @@ test("T-012 a repository .md template is read as the skeleton and does not close
     const body = `## What & Why\n\nx\n\n## Scope\n\ny\n\n${floor}\n## Notes\n\nz\n`;
     const { status, out } = runValidate(template, "[Feature] Add CSV export", body);
     assert.equal(status, 0, `a correct body passes (${JSON.stringify(out)})`);
+    assert.ok(out, "stdout parses as JSON");
     assert.deepEqual(out.errors, [], "no error is raised");
     assert.ok(
       out.checks.includes("section:What & Why=ok"),
@@ -273,7 +288,9 @@ test("T-014 a body built from each template's own required sections passes valid
     const path = join(root, "skills", "issue", "templates", `${type}.md`);
     const src = await readFile(path, "utf8");
     const after = src.slice(src.search(/^## Template$/m));
-    const fence = after.match(/```(?:markdown)?\n([\s\S]*?)```/)[1];
+    const fenceMatch = after.match(/```(?:markdown)?\n([\s\S]*?)```/);
+    assert.ok(fenceMatch, `${type}: the skeleton carries a fenced code block`);
+    const fence = fenceMatch[1];
     let optional = false;
     const body = fence
       .split("\n")
@@ -286,6 +303,7 @@ test("T-014 a body built from each template's own required sections passes valid
       .replace(/\{[^}]*\}/g, "x");
     const title = `[${type[0].toUpperCase()}${type.slice(1)}] sample`;
     const { status, out } = runValidate(path, title, `${body}\n`);
+    assert.ok(out, `${type}: stdout parses as JSON`);
     assert.deepEqual(out.errors, [], `${type}: a body from its own skeleton raises no error`);
     assert.equal(status, 0, `${type}: it exits 0`);
   }
@@ -310,6 +328,7 @@ test("T-015 the repository's own forms are read as skeletons rather than passing
     const title = `[${type[0].toUpperCase()}${type.slice(1)}] sample`;
     const { status, out } = runValidate(path, title, body);
     assert.equal(status, 0, `${form}: a body carrying every label passes (${JSON.stringify(out)})`);
+    assert.ok(out, `${form}: stdout parses as JSON`);
     assert.ok(
       out.checks.some((c) => c.startsWith("section:")),
       `${form}: the parser reported the sections it read (${out.checks.join(", ")})`,
@@ -327,6 +346,7 @@ test("T-016 a skeleton yielding no section is an error, not a free pass", () => 
     writeFileSync(form, "name: Feature\nentries:\n  - type: textarea\n", "utf8");
     const { status, out } = runValidate(form, "[Feature] sample", "## Anything\n\nx\n");
     assert.equal(status, 1, "it exits 1");
+    assert.ok(out, "stdout parses as JSON");
     assert.ok(
       out.errors.some((e) => e.startsWith("unreadable_skeleton:")),
       `the error names the unreadable skeleton (${out.errors.join(", ")})`,
@@ -361,6 +381,7 @@ test("T-017 a body meeting the form but missing the type's floor is an error", a
     );
     const { status, out } = runValidate(path, `[${type[0].toUpperCase()}${type.slice(1)}] x`, body);
     assert.equal(status, 1, `${form}: it exits 1 without the floor`);
+    assert.ok(out, `${form}: stdout parses as JSON`);
     for (const name of uncovered) {
       assert.ok(
         out.errors.includes(`missing_section:${name}`),
@@ -387,6 +408,7 @@ test("T-018 only a type the detection table carries clears the title check", asy
   assert.equal(runValidate(form, "[Feature] x", body).status, 0, "the detected type clears it");
   const epic = runValidate(form, "[Epic] x", body);
   assert.equal(epic.status, 1, "a type with no skeleton does not clear it");
+  assert.ok(epic.out, "stdout parses as JSON");
   assert.ok(
     epic.out.errors.some((e) => e.startsWith("type_mismatch:")),
     `the error names the mismatch (${epic.out.errors.join(", ")})`,
@@ -399,9 +421,13 @@ test("T-018 only a type the detection table carries clears the title check", asy
 // passed with no error, which is the state a filing reaches when nobody wrote it.
 test("T-019 a body still carrying the template's prompts is an error", () => {
   const src = readFileSync(featureTemplate, "utf8");
-  const fence = src.slice(src.search(/^## Template$/m)).match(/```(?:markdown)?\n([\s\S]*?)```/)[1];
-  const { status, out } = runValidate(featureTemplate, "[Feature] sample", fence);
+  const fenceMatch = src
+    .slice(src.search(/^## Template$/m))
+    .match(/```(?:markdown)?\n([\s\S]*?)```/);
+  assert.ok(fenceMatch, "feature.md carries a fenced code block");
+  const { status, out } = runValidate(featureTemplate, "[Feature] sample", fenceMatch[1]);
   assert.equal(status, 1, "it exits 1");
+  assert.ok(out, "stdout parses as JSON");
   assert.ok(
     out.errors.some((e) => e.startsWith("placeholder_left:")),
     `expected placeholder_left, got ${JSON.stringify(out.errors)}`,
@@ -430,6 +456,7 @@ test("T-020 a required section holding nothing but an empty checkbox is an error
   ].join("\n");
   const { status, out } = runValidate(featureTemplate, "[Feature] sample", body);
   assert.equal(status, 1, "it exits 1");
+  assert.ok(out, "stdout parses as JSON");
   assert.deepEqual(out.errors, ["unfilled_section:Acceptance Criteria"]);
 });
 
@@ -455,7 +482,8 @@ test("T-021 braces naming a shape in prose are not read as an unwritten prompt",
     "",
   ].join("\n");
   const { status, out } = runValidate(featureTemplate, "[Feature] sample", body);
-  assert.equal(status, 0, `it exits 0, got ${JSON.stringify(out.errors)}`);
+  assert.equal(status, 0, `it exits 0, got ${JSON.stringify(out?.errors)}`);
+  assert.ok(out, "stdout parses as JSON");
   assert.ok(out.checks.includes("placeholder=none"), "it records that no prompt is left");
 });
 
@@ -482,16 +510,22 @@ test("T-022 a required section holding nothing but TBD is an error", () => {
   ].join("\n");
   const { status, out } = runValidate(featureTemplate, "[Feature] sample", body);
   assert.equal(status, 1, "it exits 1");
+  assert.ok(out, "stdout parses as JSON");
   assert.deepEqual(out.errors, ["unfilled_section:Testing Decisions"]);
 });
 
-const runContentOnly = (bodyText) => {
+interface RunContentOnlyResult {
+  status: number | null;
+  out: ValidationResults;
+}
+
+const runContentOnly = (bodyText: string): RunContentOnlyResult => {
   const dir = mkdtempSync(join(tmpdir(), "validate-issue-body-"));
   try {
     const bodyPath = join(dir, "body.md");
     writeFileSync(bodyPath, bodyText, "utf8");
-    const res = spawnSync("python3", [script, "--content-only", bodyPath], { encoding: "utf8" });
-    return { status: res.status, out: JSON.parse(res.stdout) };
+    const res: CliRun = runCli(SCRIPT, HOME, "", ["--content-only", bodyPath]);
+    return { status: res.status, out: JSON.parse(res.stdout) as ValidationResults };
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -560,7 +594,8 @@ test("T-026 a form label that differs from the bug floor only in case satisfies 
       "",
     ].join("\n");
     const { status, out } = runValidate(form, "[Bug] x", body);
-    assert.equal(status, 0, `it exits 0, got ${JSON.stringify(out.errors)}`);
+    assert.equal(status, 0, `it exits 0, got ${JSON.stringify(out?.errors)}`);
+    assert.ok(out, "stdout parses as JSON");
     assert.ok(
       !out.errors.includes("missing_section:Steps to Reproduce"),
       "the lowercase form label stands in for the floor's capitalization",
@@ -614,11 +649,208 @@ test("T-025 a Japanese form's required sections satisfy the bug floor", () => {
       "",
     ].join("\n");
     const { status, out } = runValidate(form, "[Bug] x", body);
-    assert.equal(status, 0, `it exits 0, got ${JSON.stringify(out.errors)}`);
+    assert.equal(status, 0, `it exits 0, got ${JSON.stringify(out?.errors)}`);
+    assert.ok(out, "stdout parses as JSON");
     for (const name of floorFor("bug")) {
       assert.ok(!out.errors.includes(`missing_section:${name}`), `${name} is not reported missing`);
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+const FIXTURES = JSON.parse(
+  readFileSync(join(HERE, "fixtures", "validate-issue-body-cases.json"), "utf8"),
+) as FixtureCase[];
+
+const bugForm = join(ROOT, ".github", "ISSUE_TEMPLATE", "bug.yml");
+
+// One body per fixture case, reconstructed to match the case validate-issue-body.test.js's
+// T-001/T-003/T-011/T-016/T-017/T-019/T-023 (still defined above, driven through runCli now
+// rather than spawnSync) built when the fixture was recorded (U-001's commit message names the
+// mapping). unreadable_skeleton and form_floor read the real files the original test read
+// rather than repeating their content, so a template/form edit that would have broken T-016/
+// T-017 breaks this fixture replay too.
+function bodyFor(name: string): string {
+  switch (name) {
+    case "missing_section":
+      return [
+        "## What & Why",
+        "",
+        "Login fails for some users.",
+        "",
+        "## Steps to Reproduce",
+        "",
+        "1. Open app",
+        "2. Log in",
+        "",
+        "## Scope",
+        "",
+        "- In scope: login flow",
+        "- Out of scope: signup flow",
+        "",
+      ].join("\n");
+    case "type_mismatch":
+      return [
+        "## What & Why",
+        "",
+        "Login fails for some users.",
+        "",
+        "## Acceptance Criteria",
+        "",
+        "- [ ] When user logs in, session persists",
+        "",
+        "## Scope",
+        "",
+        "- In scope: login flow",
+        "- Out of scope: signup flow",
+        "",
+        "## Testing Decisions",
+        "",
+        "- Cover the session persistence path",
+        "",
+      ].join("\n");
+    case "unknown_section":
+      return [
+        "## What & Why",
+        "",
+        "Login fails for some users.",
+        "",
+        "## Steps to Reproduce",
+        "",
+        "1. Open app",
+        "",
+        "## Expected vs Actual",
+        "",
+        "- Expected: 200 OK",
+        "- Actual: 500 error",
+        "",
+        "## Scope",
+        "",
+        "- In scope: login flow",
+        "",
+        "## Changes",
+        "",
+        "- Rewrote the session handler",
+        "",
+      ].join("\n");
+    case "unreadable_skeleton":
+      return "## Anything\n\nx\n";
+    case "form_floor": {
+      const labels = [...readFileSync(bugForm, "utf8").matchAll(/^\s*label:\s*(.+?)\s*$/gm)].map(
+        (m) => m[1],
+      );
+      return labels.map((label) => `## ${label}\n\nx\n`).join("\n");
+    }
+    case "placeholder_left": {
+      const src = readFileSync(featureTemplate, "utf8");
+      const fence = src
+        .slice(src.search(/^## Template$/m))
+        .match(/```(?:markdown)?\n([\s\S]*?)```/);
+      if (!fence) throw new Error("feature.md carries no fenced skeleton");
+      return fence[1];
+    }
+    case "content_only_unwritten":
+      return ["## Plan", "", "{Outcome}", ""].join("\n");
+    default:
+      throw new Error(`no body builder for fixture case ${name}`);
+  }
+}
+
+interface CaseSetup {
+  placeholders: Record<string, string>;
+  cleanup: () => void;
+}
+
+function setupCase(name: string): CaseSetup {
+  const dir = mkdtempSync(join(tmpdir(), "validate-issue-body-"));
+  const bodyPath = join(dir, "body.md");
+  writeFileSync(bodyPath, bodyFor(name), "utf8");
+  const placeholders: Record<string, string> = { "<body-path>": bodyPath };
+  // unreadable_skeleton is the one case whose argv also carries <template-path>: a .yml the
+  // parser cannot read any section out of, matching T-016's synthetic feature.yml.
+  if (name === "unreadable_skeleton") {
+    const templatePath = join(dir, "feature.yml");
+    writeFileSync(templatePath, "name: Feature\nentries:\n  - type: textarea\n", "utf8");
+    placeholders["<template-path>"] = templatePath;
+  }
+  return { placeholders, cleanup: () => rmSync(dir, { recursive: true, force: true }) };
+}
+
+function resolvePlaceholders(text: string, placeholders: Record<string, string>): string {
+  let out = text;
+  for (const [key, value] of Object.entries(placeholders)) out = out.split(key).join(value);
+  return out;
+}
+
+test("T-192 every frozen validate-issue-body case reproduces the python cli's exit code and its errors, warnings and checks arrays in order", () => {
+  for (const testCase of FIXTURES) {
+    const { placeholders, cleanup } = setupCase(testCase.name);
+    try {
+      const argv = (testCase.argv ?? []).map((arg) => resolvePlaceholders(arg, placeholders));
+      const result: CliRun = runCli(SCRIPT, HOME, testCase.stdin, argv);
+      assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
+      const expected = JSON.parse(testCase.stdout) as ValidationResults;
+      let actual: ValidationResults | null = null;
+      try {
+        actual = JSON.parse(result.stdout) as ValidationResults;
+      } catch {
+        actual = null;
+      }
+      assert.deepEqual(
+        actual,
+        expected,
+        `${testCase.name}: errors/warnings/checks (actual stdout: ${result.stdout})`,
+      );
+    } finally {
+      cleanup();
+    }
+  }
+});
+
+/** The `{"key": (...)}` rows of the dict literal named `varName` in `src`, each tuple read as
+ * its quoted entries in order. Mirrors pick-plan.test.ts's (now-retired) floorFor helper,
+ * generalized to also read FLOOR_ALIASES. */
+function parseDictOfTuples(src: string, varName: string): Record<string, string[]> {
+  const block = src.match(new RegExp(`^${varName} = \\{([\\s\\S]*?)^\\}`, "m"))?.[1] ?? "";
+  const result: Record<string, string[]> = {};
+  for (const row of block.matchAll(/"([^"]+)":\s*\(([^)]*)\)/g)) {
+    result[row[1]] = [...row[2].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  }
+  return result;
+}
+
+/** The quoted entries of the `frozenset({...})` literal named `varName` in `src`. */
+function parseFrozenset(src: string, varName: string): string[] {
+  const block = src.match(new RegExp(`^${varName} = frozenset\\(\\{([^}]*)\\}\\)`, "m"))?.[1] ?? "";
+  return [...block.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+}
+
+test("T-193 the exported floor, floor aliases and allowed extra sections carry the same entries the python validator declared", () => {
+  const src = readFileSync(
+    join(ROOT, "skills", "issue", "scripts", "validate-issue-body.py"),
+    "utf8",
+  );
+  const expectedFloor = parseDictOfTuples(src, "FLOOR");
+  const expectedAliases = parseDictOfTuples(src, "FLOOR_ALIASES");
+  const expectedExtra = parseFrozenset(src, "ALLOWED_EXTRA").sort();
+
+  assert.ok(Object.keys(expectedFloor).length > 0, "the python source's FLOOR is readable");
+  assert.ok(
+    Object.keys(expectedAliases).length > 0,
+    "the python source's FLOOR_ALIASES is readable",
+  );
+  assert.ok(expectedExtra.length > 0, "the python source's ALLOWED_EXTRA is readable");
+
+  assert.deepEqual(FLOOR, expectedFloor, "FLOOR carries the same entries as the python source");
+  assert.deepEqual(
+    FLOOR_ALIASES,
+    expectedAliases,
+    "FLOOR_ALIASES carries the same entries as the python source",
+  );
+  assert.deepEqual(
+    [...ALLOWED_EXTRA].sort(),
+    expectedExtra,
+    "ALLOWED_EXTRA carries the same entries as the python source",
+  );
 });
