@@ -1,17 +1,27 @@
 /// <reference types="node" />
 // Behavior tests for workflows/code/verify-commit.ts, the TypeScript port of
-// workflows/code/verify-commit.py (commit postcondition verification). Mirrors
+// workflows/code/verify-commit.py (commit postcondition verification). T-151..T-154 mirror
 // workflows/code/tests/verify_commit_test.py's setUp/commit_unit/verify helpers directly:
 // each test builds a temp repository with real git (a fixture standing in for the plumbing
-// would not catch a check that reads the wrong git output) and calls verify() in-process
-// rather than spawning the CLI, per this unit's contract.
+// would not catch a check that reads the wrong git output) and calls verify() in-process.
+//
+// T-155..T-157 cover the CLI wrapper (main) instead: they spawn the real script through
+// workflows/_lib/tests/_cli-fixture.ts's runCli and replay workflows/code/tests/fixtures/
+// verify-commit-cases.json, the frozen record of the Python verifier's stdin/stdout/stderr/exit
+// (U-002). in-process verify() calls cannot exercise stdin reading, stdout's indent-2 JSON
+// framing, or the exit-1-on-bad-JSON path, since those live in main(), not verify().
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
+import { runCli } from "../../_lib/tests/_cli-fixture.ts";
 import { verify } from "../verify-commit.ts";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const SCRIPT = join(HERE, "..", "verify-commit.ts");
 
 const BODY =
   "collapse repeated spaces\n\nUnit: U-001\nContract: src/x.ts squeeze\nTests: T-001\nSeam: false";
@@ -220,6 +230,93 @@ test(
       commitUnit(handle.repo, "feat(core)!: collapse repeated spaces");
       const report = verifyUnit(handle);
       assert.equal(report.verdict, "pass", "breaking-change case: verdict");
+    });
+  },
+);
+
+interface FixtureCase {
+  name: string;
+  stdin: string;
+  exit: number;
+  stdout: string;
+  stderr: string;
+}
+
+interface VerifyCommitFixture {
+  cases: FixtureCase[];
+  pass_report: string;
+}
+
+const FIXTURE = JSON.parse(
+  readFileSync(join(HERE, "fixtures", "verify-commit-cases.json"), "utf8"),
+) as VerifyCommitFixture;
+
+test(
+  "T-155 every git-free case in verify-commit-cases.json reproduces the python verifier's " +
+    "exit code, empty stdout, and exact stderr line",
+  () => {
+    // stdin_not_json is excluded here: its fixture stderr embeds the Python json module's own
+    // error text ("Expecting value: line 1 column 1 (char 0)"), which Node's JSON.parse does
+    // not reproduce. T-156 covers that one case with a prefix check instead of this exact-line
+    // check every other git-free case gets.
+    const cases = FIXTURE.cases.filter((testCase) => testCase.name !== "stdin_not_json");
+    assert.ok(cases.length > 0, "fixture carries at least one git-free case");
+    for (const testCase of cases) {
+      const result = runCli(SCRIPT, tmpdir(), testCase.stdin);
+      assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
+      assert.equal(result.stdout, testCase.stdout, `${testCase.name}: stdout`);
+      assert.equal(result.stderr, testCase.stderr, `${testCase.name}: stderr`);
+    }
+  },
+);
+
+test(
+  "T-156 stdin that is not JSON exits 1 with an empty stdout and a stderr line that starts " +
+    "with stdin is not valid JSON",
+  () => {
+    const testCase = FIXTURE.cases.find((entry) => entry.name === "stdin_not_json");
+    assert.ok(testCase, "fixture carries the stdin_not_json case");
+    const result = runCli(SCRIPT, tmpdir(), (testCase as FixtureCase).stdin);
+    assert.equal(result.status, 1, "exit code");
+    assert.equal(result.stdout, "", "stdout");
+    assert.equal(
+      result.stderr.startsWith("stdin is not valid JSON"),
+      true,
+      `stderr: ${result.stderr}`,
+    );
+  },
+);
+
+test(
+  "T-157 a valid payload against a temp repo prints the fixture's pass_report byte for byte " +
+    "once head and parent are replaced by the sha40 placeholder",
+  () => {
+    withUnitRepo((handle) => {
+      commitUnit(handle.repo, "feat(core): collapse repeated spaces");
+      const stdin = JSON.stringify({
+        repo: handle.repo,
+        baseline_head: handle.baseline,
+        unit_files: ["src/x.ts", "tests/x.test.ts"],
+        body: BODY,
+      });
+      // A real repo needs git on PATH, so this pass case alone restores it -- runCli clears
+      // PATH by default so the git-free cases above cannot lean on the ambient PATH.
+      const result = runCli(SCRIPT, tmpdir(), stdin, [], {
+        env: { PATH: process.env.PATH ?? "" },
+      });
+      assert.equal(result.status, 0, "exit code");
+      const report = JSON.parse(result.stdout) as Record<string, unknown>;
+      const SHA40 = /^[0-9a-f]{40}$/;
+      assert.match(String(report.head), SHA40, "head is a sha40");
+      assert.match(String(report.parent), SHA40, "parent is a sha40");
+      const expected = FIXTURE.pass_report
+        .replace('"head": "<sha40>"', `"head": "${report.head}"`)
+        .replace('"parent": "<sha40>"', `"parent": "${report.parent}"`);
+      assert.equal(
+        result.stdout,
+        expected,
+        "stdout matches the fixture's pass_report byte for byte",
+      );
     });
   },
 );
