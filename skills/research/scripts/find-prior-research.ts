@@ -6,16 +6,16 @@
 // overlap. A filename's date prefix (YYYY-MM-DD-) stays out of the matching.
 //
 // stdout: JSON { candidates: [{file, shared}, ...], slug_words: int }
-//   candidates: shared descending; ties settle by file name ascending. find-prior-research.py's
-//   own tie order rides on Path.iterdir()'s directory order, which is not stable across
-//   filesystems, so this port fixes the order instead of reproducing that instability.
+//   candidates: shared descending; ties settle by file name ascending. The retired Python
+//   original's own tie order rode on Path.iterdir()'s directory order, which is not stable
+//   across filesystems, so this port fixes the order instead of reproducing that instability.
 // exit: 0
 //
-// TypeScript port of find-prior-research.py, mirroring skills/outcome/scripts/validate-outcome.ts's
+// TypeScript port of the retired Python original, mirroring skills/outcome/scripts/validate-outcome.ts's
 // own header and its isMainModule(import.meta.url) entry point. Carries the DATE_PREFIX / words /
-// main port from find-prior-research.py, in node:* only.
+// main port, in node:* only.
 //
-// Contract: skills/research/scripts/find-prior-research.py. Exercised by
+// Contract: this script's own behavior, pinned by the fixture below. Exercised by
 // skills/research/tests/find-prior-research.test.ts, replayed from
 // skills/research/tests/fixtures/find-prior-research-cases.json (U-001).
 //
@@ -69,7 +69,7 @@ export function main(argv: readonly string[]): number {
     if (shared > 0) candidates.push({ file: name, shared });
   }
   // shared descending; ties settle by file name ascending (see header) rather than
-  // find-prior-research.py's own filesystem-dependent iterdir() arrival order.
+  // the retired Python original's own filesystem-dependent iterdir() arrival order.
   candidates.sort((a, b) => b.shared - a.shared || a.file.localeCompare(b.file));
 
   process.stdout.write(`${JSON.stringify({ candidates, slug_words: slugWords.size }, null, 2)}\n`);

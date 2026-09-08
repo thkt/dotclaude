@@ -7,13 +7,13 @@
 //   flow:  generate | update
 // exit: 0 if no errors (warnings allowed), 1 if errors
 //
-// validate-outcome.py の TypeScript 移植。skills/_lib/harness_hash.ts 自身の header と
+// 退役した Python 版からの TypeScript 移植。skills/_lib/harness_hash.ts 自身の header と
 // isMainModule(import.meta.url) という entry point の形をそのまま踏襲する。
-// validate-outcome.py の REQUIRED_SECTIONS / FILLED_SECTIONS / INDICATORS /
+// REQUIRED_SECTIONS / FILLED_SECTIONS / INDICATORS /
 // PLACEHOLDER_LINE / PLACEHOLDER_CELL / section_body / is_unfilled / report / main を
 // node:* のみで移植する。
 //
-// Contract: skills/outcome/scripts/validate-outcome.py。
+// Contract: このスクリプト自身の振る舞い。下記の fixture が固定する。
 // skills/outcome/tests/validate-outcome.test.ts が検証し、
 // skills/outcome/tests/fixtures/validate-outcome-cases.json (U-001) から再生する。
 import { existsSync, readFileSync, statSync } from "node:fs";

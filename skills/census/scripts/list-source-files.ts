@@ -4,11 +4,11 @@
 // Output: "<lines> <path>" per line, source files largest-first.
 // exit: 0 on a normal listing, 2 with no argument.
 //
-// TypeScript port of list-source-files.py, mirroring skills/outcome/scripts/validate-outcome.ts's
+// TypeScript port of the retired Python original, mirroring skills/outcome/scripts/validate-outcome.ts's
 // own header shape and its isMainModule(import.meta.url) entry point. Carries the EXTS / PRUNE /
-// source_files / count_lines / main port from list-source-files.py, in node:* only.
+// source_files / count_lines / main port, in node:* only.
 //
-// Contract: skills/census/scripts/list-source-files.py. Exercised by
+// Contract: this script's own behavior, pinned by the fixture below. Exercised by
 // skills/census/tests/list-source-files.test.ts, replayed from
 // skills/census/tests/fixtures/list-source-files-cases.json.
 import { readFileSync, readdirSync } from "node:fs";

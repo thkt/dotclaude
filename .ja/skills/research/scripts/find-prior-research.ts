@@ -6,16 +6,16 @@
 // ファイル名の日付プレフィックス (YYYY-MM-DD-) は照合の対象から外れる。
 //
 // stdout: JSON { candidates: [{file, shared}, ...], slug_words: int }
-//   candidates: shared 降順。同点はファイル名の昇順で解決する。find-prior-research.py
+//   candidates: shared 降順。同点はファイル名の昇順で解決する。退役した Python 版
 //   自身の同点順は Path.iterdir() のディレクトリ順に乗っており、ファイルシステム間で
 //   安定しないため、この移植ではその不安定さを再現せず順序を固定する。
 // exit: 0
 //
-// find-prior-research.py の TypeScript 移植。skills/outcome/scripts/validate-outcome.ts
+// 退役した Python 版からの TypeScript 移植。skills/outcome/scripts/validate-outcome.ts
 // 自身の header と isMainModule(import.meta.url) という entry point の形をそのまま
-// 踏襲する。find-prior-research.py の DATE_PREFIX / words / main を node:* のみで移植する。
+// 踏襲する。DATE_PREFIX / words / main を node:* のみで移植する。
 //
-// Contract: skills/research/scripts/find-prior-research.py。
+// Contract: このスクリプト自身の振る舞い。下記の fixture が固定する。
 // skills/research/tests/find-prior-research.test.ts が検証し、
 // skills/research/tests/fixtures/find-prior-research-cases.json (U-001) から再生する。
 //
@@ -69,7 +69,7 @@ export function main(argv: readonly string[]): number {
     if (shared > 0) candidates.push({ file: name, shared });
   }
   // shared 降順。同点はファイル名の昇順で解決する (header 参照)。
-  // find-prior-research.py 自身のファイルシステム依存な iterdir() 到着順ではない。
+  // 退役した Python 版自身のファイルシステム依存な iterdir() 到着順ではない。
   candidates.sort((a, b) => b.shared - a.shared || a.file.localeCompare(b.file));
 
   process.stdout.write(`${JSON.stringify({ candidates, slug_words: slugWords.size }, null, 2)}\n`);

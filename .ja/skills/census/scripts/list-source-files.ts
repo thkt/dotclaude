@@ -4,12 +4,12 @@
 // Output: "<lines> <path>" per line, source files largest-first.
 // exit: 0 on a normal listing, 2 with no argument.
 //
-// list-source-files.py の TypeScript 移植。skills/outcome/scripts/validate-outcome.ts
+// 退役した Python 版からの TypeScript 移植。skills/outcome/scripts/validate-outcome.ts
 // 自身の header の形と isMainModule(import.meta.url) という entry point をそのまま
-// 踏襲する。list-source-files.py の EXTS / PRUNE / source_files / count_lines / main を
+// 踏襲する。EXTS / PRUNE / source_files / count_lines / main を
 // node:* のみで移植する。
 //
-// Contract: skills/census/scripts/list-source-files.py。
+// Contract: このスクリプト自身の振る舞い。下記の fixture が固定する。
 // skills/census/tests/list-source-files.test.ts が検証し、
 // skills/census/tests/fixtures/list-source-files-cases.json から再生する。
 import { readFileSync, readdirSync } from "node:fs";

@@ -26,7 +26,7 @@ Read `.claude/OUTCOME.md`. If absent, generate the stub via /outcome. If the inv
 
 ## Phase 2: Prior Research Scan
 
-Derive the lowercase hyphenated subject slug from `$ARGUMENTS` and run `${CLAUDE_SKILL_DIR}/scripts/find-prior-research.py <slug> .claude/workspace/research`. Parse the JSON `{ candidates: [{file, shared}, ...], slug_words: int }` (shared descending) from stdout.
+Derive the lowercase hyphenated subject slug from `$ARGUMENTS` and run `${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts <slug> .claude/workspace/research`. Parse the JSON `{ candidates: [{file, shared}, ...], slug_words: int }` (shared descending) from stdout.
 
 - No candidates: set the report's Prior research to `none found` and move on
 - A candidate with shared >= 2, or with shared equal to `slug_words`: carry forward per the table below

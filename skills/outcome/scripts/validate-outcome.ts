@@ -7,12 +7,12 @@
 //   flow:  generate | update
 // exit: 0 if no errors (warnings allowed), 1 if errors
 //
-// TypeScript port of validate-outcome.py, mirroring skills/_lib/harness_hash.ts's own header
-// and its isMainModule(import.meta.url) entry point. Carries the REQUIRED_SECTIONS /
+// TypeScript port of the retired Python original, mirroring skills/_lib/harness_hash.ts's own
+// header and its isMainModule(import.meta.url) entry point. Carries the REQUIRED_SECTIONS /
 // FILLED_SECTIONS / INDICATORS / PLACEHOLDER_LINE / PLACEHOLDER_CELL / section_body /
-// is_unfilled / report / main port from validate-outcome.py, in node:* only.
+// is_unfilled / report / main port, in node:* only.
 //
-// Contract: skills/outcome/scripts/validate-outcome.py. Exercised by
+// Contract: this script's own behavior, pinned by the fixture below. Exercised by
 // skills/outcome/tests/validate-outcome.test.ts, replayed from
 // skills/outcome/tests/fixtures/validate-outcome-cases.json (U-001).
 import { existsSync, readFileSync, statSync } from "node:fs";
