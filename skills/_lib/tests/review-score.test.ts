@@ -64,7 +64,10 @@ test("T-171 a missing argument exits 2 with the usage line on stderr and nothing
   const missingArg = runFixtureCase(fixture(CASES, "insufficient_argv_exits_2_with_empty_stdout"));
   assert.equal(missingArg.status, 2, `exit code (stderr: ${missingArg.stderr})`);
   assert.equal(missingArg.stdout, "");
-  assert.match(missingArg.stderr, /usage/i);
+  assert.ok(
+    missingArg.stderr.startsWith("usage: review_score."),
+    `stderr must open with the usage prefix: ${missingArg.stderr}`,
+  );
 
   const unknownVerdict = fixture(CASES, "unknown_verdict_among_known_exits_1");
   const run = runFixtureCase(unknownVerdict);
@@ -171,4 +174,42 @@ test("T-173 the verdict table in skills/_lib/review-harness.md and the VERDICTS 
   assert.equal(baselineReport.counts.clean, fpDen);
 
   assert.equal(baselineReport.counts.below_min_findings, 0);
+});
+
+test("T-259 every flag case in a harness corpus names the category its detection row points at, and the scorer buckets every entry of every corpus as flagged or clean", () => {
+  const harnessSkills = globSync("skills/*/test/expected.json", { cwd: ROOT }).map(
+    (path: string) => path.split("/")[1],
+  );
+  assert.ok(harnessSkills.length > 0, "at least one harness skill exists in the repo under test");
+  for (const skill of harnessSkills) {
+    const entries = JSON.parse(
+      readFileSync(join(ROOT, "skills", skill, "test", "expected.json"), "utf8"),
+    ) as Case[];
+    for (const entry of entries) {
+      if (entry.expected !== "detected") continue;
+      assert.ok(
+        entry.category,
+        `${skill}: ${entry.file} names no category, so a miss on it lands in the uncategorized bucket and points at no detection row`,
+      );
+    }
+    // An entry whose `expected` is neither of the two the scorer buckets on would be read by
+    // neither counter, and the report would silently cover fewer cases than the corpus holds.
+    const report = score(entries, []);
+    assert.equal(report.counts.flagged + report.counts.clean, entries.length, skill);
+    assert.equal(report.counts.miss, report.counts.flagged, skill);
+  }
+});
+
+test("T-260 a ratio landing exactly halfway rounds to the even digit, the way python's round(x, 3) does rather than the way Math.round does", () => {
+  // 1/16 is the smallest denominator that lands on the boundary: python writes 0.062 and
+  // Math.round writes 0.063. The corpus reaches it once a category bucket holds 16 cases.
+  const sixteen = Array.from({ length: 16 }, (_, i) => flagged(`v${i}`));
+  const oneHit = score(sixteen, [{ file: "v0", verdict: "hit" }]);
+  assert.equal(oneHit.metrics.recall_strict, 0.062);
+
+  const threeHits = score(
+    sixteen,
+    [0, 1, 2].map((i) => ({ file: `v${i}`, verdict: "hit" })),
+  );
+  assert.equal(threeHits.metrics.recall_strict, 0.188);
 });

@@ -75,8 +75,20 @@ export interface Report {
   unknownVerdicts: (string | null)[];
 }
 
+/** Python の `round(x, 3)` に相当する。ちょうど中間に来た値は偶数側へ丸める。`Math.round` は
+ * 切り上げるので、1/16 は Python が 0.062、`Math.round` は 0.063 を返す。分母が 16 で割り切れる
+ * ときにこの境界へ乗る。 */
+function round3(value: number): number {
+  const scaled = value * 1000;
+  const floor = Math.floor(scaled);
+  const remainder = scaled - floor;
+  if (remainder > 0.5) return (floor + 1) / 1000;
+  if (remainder < 0.5) return floor / 1000;
+  return (floor % 2 === 0 ? floor : floor + 1) / 1000;
+}
+
 function ratio(hit: number, total: number): number | null {
-  return total === 0 ? null : Math.round((hit / total) * 1000) / 1000;
+  return total === 0 ? null : round3(hit / total);
 }
 
 export function score(
@@ -150,10 +162,7 @@ export function score(
       const baseline = before[key];
       // `baseline == null` ではない。過去のログは指標を文章で書いており、それを引き算すると
       // 採点全体が壊れてしまう。
-      diff[key] =
-        value === null || typeof baseline !== "number"
-          ? null
-          : Math.round((value - baseline) * 1000) / 1000;
+      diff[key] = value === null || typeof baseline !== "number" ? null : round3(value - baseline);
     }
   }
 

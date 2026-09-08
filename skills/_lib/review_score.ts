@@ -74,8 +74,20 @@ export interface Report {
   unknownVerdicts: (string | null)[];
 }
 
+/** Python's `round(x, 3)`: a value landing exactly halfway goes to the even digit, where
+ * `Math.round` goes up. 1/16 is 0.062 in Python and 0.063 through `Math.round`, and any
+ * denominator divisible by 16 lands on that boundary. */
+function round3(value: number): number {
+  const scaled = value * 1000;
+  const floor = Math.floor(scaled);
+  const remainder = scaled - floor;
+  if (remainder > 0.5) return (floor + 1) / 1000;
+  if (remainder < 0.5) return floor / 1000;
+  return (floor % 2 === 0 ? floor : floor + 1) / 1000;
+}
+
 function ratio(hit: number, total: number): number | null {
-  return total === 0 ? null : Math.round((hit / total) * 1000) / 1000;
+  return total === 0 ? null : round3(hit / total);
 }
 
 export function score(
@@ -149,10 +161,7 @@ export function score(
       const baseline = before[key];
       // Not `baseline == null`: earlier logs wrote a metric as prose, and subtracting one
       // took the whole scoring down.
-      diff[key] =
-        value === null || typeof baseline !== "number"
-          ? null
-          : Math.round((value - baseline) * 1000) / 1000;
+      diff[key] = value === null || typeof baseline !== "number" ? null : round3(value - baseline);
     }
   }
 
