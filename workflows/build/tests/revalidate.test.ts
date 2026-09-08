@@ -1,9 +1,9 @@
 /// <reference types="node" />
-// Behavior tests for workflows/build/revalidate.ts, the TypeScript port of the Python
-// precondition verifier revalidate.py it replaces. T-141 replays every frozen case in
+// Behavior tests for workflows/build/revalidate.ts, the TypeScript port of the retired Python
+// precondition verifier it replaces. T-141 replays every frozen case in
 // tests/fixtures/revalidate-cases.json, produced by running the Python verifier itself before
-// it is retired (U-003), and compares the port's exit code and parsed stdout against it case
-// by case. T-142 exercises the fail-closed stderr contract for an unparseable payload and for
+// it was retired (U-003, U-009), and compares the port's exit code and parsed stdout against it
+// case by case. T-142 exercises the fail-closed stderr contract for an unparseable payload and for
 // a payload that parses but is not a JSON array. The replay (runCli, withTempHome, fixture)
 // lives in workflows/_lib/tests/_cli-fixture.ts, shared with workflows/build/tests/record.test.ts.
 //

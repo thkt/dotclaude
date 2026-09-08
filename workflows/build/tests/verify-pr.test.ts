@@ -1,9 +1,9 @@
 /// <reference types="node" />
-// Behavior tests for workflows/build/verify-pr.ts, the TypeScript port of the Python PR
-// verifier verify-pr.py it replaces. T-147 replays every frozen case in
+// Behavior tests for workflows/build/verify-pr.ts, the TypeScript port of the retired Python PR
+// verifier it replaces. T-147 replays every frozen case in
 // tests/fixtures/verify-pr-cases.json, produced by running the Python verifier itself before
-// it is retired (U-004), and compares the port's exit code and parsed stdout against it case
-// by case. Each case whose `gh` field is non-empty gets a fake `gh` executable dropped into a
+// it was retired (U-004, U-009), and compares the port's exit code and parsed stdout against it
+// case by case. Each case whose `gh` field is non-empty gets a fake `gh` executable dropped into a
 // temp directory with PATH pointed at that directory alone, so the CLI's own `gh pr view`
 // call reaches this fake instead of a real `gh`; a case with no `gh` field never reaches the
 // spawn (its payload fails validation first) and runs with PATH left empty. T-148 exercises

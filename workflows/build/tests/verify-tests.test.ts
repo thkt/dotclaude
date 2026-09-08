@@ -1,9 +1,9 @@
 /// <reference types="node" />
-// Behavior tests for workflows/build/verify-tests.ts, the TypeScript port of the Python
-// test-presence verifier workflows/build/verify-tests.py it replaces. T-143 replays every
-// frozen case in tests/fixtures/verify-tests-cases.json, produced by running the Python
-// verifier itself before it is retired (U-003), and compares the port's exit code and parsed
-// stdout against it case by case. T-144 exercises the fail-closed stderr contract for an
+// Behavior tests for workflows/build/verify-tests.ts, the TypeScript port of the retired Python
+// test-presence verifier it replaces. T-143 replays every frozen case in
+// tests/fixtures/verify-tests-cases.json, produced by running the Python verifier itself before
+// it was retired (U-003, U-009), and compares the port's exit code and parsed stdout against it
+// case by case. T-144 exercises the fail-closed stderr contract for an
 // unparseable payload and for a payload that parses but is not a JSON array. The replay
 // (runCli, withTempHome, fixture) lives in workflows/_lib/tests/_cli-fixture.ts, shared with
 // workflows/build/tests/record.test.ts and workflows/build/tests/revalidate.test.ts.

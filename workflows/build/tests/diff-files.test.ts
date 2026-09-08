@@ -1,9 +1,9 @@
 /// <reference types="node" />
-// Behavior tests for workflows/build/diff-files.ts, the TypeScript port of the Python
-// change-listing verifier diff-files.py it replaces. T-145 replays every frozen case in
+// Behavior tests for workflows/build/diff-files.ts, the TypeScript port of the retired Python
+// change-listing verifier it replaces. T-145 replays every frozen case in
 // tests/fixtures/diff-files-cases.json, produced by running the Python verifier itself before
-// it is retired (U-004), and compares the port's exit code and parsed stdout against it case
-// by case. T-146 exercises the fail-closed stderr contract for a relative repo path, a missing
+// it was retired (U-004, U-009), and compares the port's exit code and parsed stdout against it
+// case by case. T-146 exercises the fail-closed stderr contract for a relative repo path, a missing
 // base, and text that is not JSON. The replay (runCli, withTempHome, fixture) lives in
 // workflows/_lib/tests/_cli-fixture.ts, shared with workflows/build/tests/record.test.ts and
 // workflows/build/tests/revalidate.test.ts.
