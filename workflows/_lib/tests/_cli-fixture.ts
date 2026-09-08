@@ -54,18 +54,29 @@ export interface CliRun {
   stderr: string;
 }
 
+/** `cwd` and `env` for a `runCli` call that needs the CLI under test to read a file relative to
+ * a caller-chosen directory, or to reach a real binary (`git`, `gh`) through a restored PATH. */
+export interface RunCliOptions {
+  cwd?: string;
+  env?: Record<string, string>;
+}
+
 /** Run `scriptPath` with `argv` under a temp HOME, feeding `stdin`, with PATH cleared so the
- * CLI cannot lean on anything found via the ambient PATH. */
+ * CLI cannot lean on anything found via the ambient PATH. `options.cwd` passes straight through
+ * to `spawnSync`, and `options.env` layers over the cleared-PATH env above -- so a caller can
+ * restore PATH (to reach a real `git`/`gh`) while HOME still points at the temp home. */
 export function runCli(
   scriptPath: string,
   home: string,
   stdin: string,
   argv: readonly string[] = [],
+  options: RunCliOptions = {},
 ): CliRun {
   const result = spawnSync(process.execPath, [scriptPath, ...argv], {
     input: stdin,
     encoding: "utf8",
-    env: { ...process.env, HOME: home, PATH: "" },
+    cwd: options.cwd,
+    env: { ...process.env, HOME: home, PATH: "", ...options.env },
   });
   return { status: result.status, stdout: result.stdout, stderr: result.stderr };
 }
