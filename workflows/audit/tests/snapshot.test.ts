@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Behavior tests for workflows/audit/snapshot.ts, the TypeScript port of the Python audit
-// recorder workflows/audit/snapshot.py. T-131..T-133 replay the frozen fixture in
+// recorder. T-131..T-133 replay the frozen fixture in
 // tests/fixtures/snapshot-cases.json, produced by running the Python recorder itself before
 // it was retired (U-001), and compare the port's stdin/stdout/record/exit against it case by
 // case. Unlike workflows/build/record.ts (one growing history/build-runs.jsonl), this

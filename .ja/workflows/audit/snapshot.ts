@@ -17,7 +17,7 @@
 //   branch        git rev-parse --abbrev-ref HEAD ("unknown" にフォールバック)
 //   generated_at  UTC ISO-8601
 //
-// 置き換え元の Python 版 audit recorder (workflows/audit/snapshot.py) の TypeScript 移植。
+// 置き換え元の Python 版 audit recorder の TypeScript 移植。
 // Contract: この CLI 自身の挙動。workflows/audit/tests/snapshot.test.ts が、固定 fixture
 // workflows/audit/tests/fixtures/snapshot-cases.json に対してエンドツーエンドで検査する。
 import { readFileSync, writeFileSync } from "node:fs";
@@ -35,7 +35,7 @@ export const COUNTED_ARRAYS = [
 ] as const;
 
 /** `git rev-parse --abbrev-ref HEAD`。非 0 終了時や spawn 自体のエラー (PATH に git が無い)
- * では "unknown" にフォールバックする。workflows/audit/snapshot.py の git_branch を写す。
+ * では "unknown" にフォールバックする。Python 版の git_branch を写す。
  * Python 版の subprocess.run(timeout=10) と同じく 10s の timeout で走らせる。 */
 export function gitBranch(): string {
   const result = spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
@@ -48,8 +48,8 @@ export function gitBranch(): string {
 }
 
 /** 無いキーは省かず 0 と数える。呼び出し元が毎回同じキー集合を読めるので、配列が丸ごと
- * 落ちた場合もフィールドの欠落でなく件数の不一致として出る。workflows/audit/snapshot.py
- * の counted_arrays を写す。 */
+ * 落ちた場合もフィールドの欠落でなく件数の不一致として出る。Python 版の
+ * counted_arrays を写す。 */
 export function countedArrays(record: Record<string, unknown>): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const key of COUNTED_ARRAYS) {
@@ -60,7 +60,7 @@ export function countedArrays(record: Record<string, unknown>): Record<string, n
 }
 
 /** disk に書く record: payload 自身のキーを元の順序のまま持ち、続けて `branch`、
- * `generated_at` を加える。workflows/audit/snapshot.py の build_record を写す。 */
+ * `generated_at` を加える。Python 版の build_record を写す。 */
 export function buildRecord(
   payload: Record<string, unknown>,
   branch: string,

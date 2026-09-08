@@ -17,7 +17,7 @@
 //   branch        git rev-parse --abbrev-ref HEAD (falls back to "unknown")
 //   generated_at  UTC ISO-8601
 //
-// TypeScript port of the Python audit recorder it replaces (workflows/audit/snapshot.py).
+// TypeScript port of the Python audit recorder it replaces.
 // Contract: this CLI's own behavior, exercised end to end by
 // workflows/audit/tests/snapshot.test.ts against the frozen fixture
 // workflows/audit/tests/fixtures/snapshot-cases.json.
@@ -36,7 +36,7 @@ export const COUNTED_ARRAYS = [
 ] as const;
 
 /** `git rev-parse --abbrev-ref HEAD`, falling back to "unknown" on a non-zero exit or a
- * spawn error (git missing from PATH), mirroring workflows/audit/snapshot.py's git_branch.
+ * spawn error (git missing from PATH), mirroring the Python version's git_branch.
  * Runs with a 10s timeout, same as the Python version's subprocess.run(timeout=10). */
 export function gitBranch(): string {
   const result = spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
@@ -50,7 +50,7 @@ export function gitBranch(): string {
 
 /** An absent key counts 0 rather than being omitted, so the caller reads the same key set
  * every run and a dropped array is a count mismatch instead of a missing field. Mirrors
- * workflows/audit/snapshot.py's counted_arrays. */
+ * the Python version's counted_arrays. */
 export function countedArrays(record: Record<string, unknown>): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const key of COUNTED_ARRAYS) {
@@ -61,7 +61,7 @@ export function countedArrays(record: Record<string, unknown>): Record<string, n
 }
 
 /** The record written to disk: the payload's own keys in order, then `branch`, then
- * `generated_at`. Mirrors workflows/audit/snapshot.py's build_record. */
+ * `generated_at`. Mirrors the Python version's build_record. */
 export function buildRecord(
   payload: Record<string, unknown>,
   branch: string,
