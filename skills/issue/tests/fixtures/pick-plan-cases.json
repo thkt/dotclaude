@@ -1,0 +1,41 @@
+[
+  {
+    "name": "path_mode",
+    "argv": [
+      "<draft-path>"
+    ],
+    "stdin": "",
+    "exit": 0,
+    "stdout": "{\n  \"path\": \"<draft-path>\",\n  \"slug\": \"add-csv-export\",\n  \"date\": \"2026-08-19\",\n  \"plan\": \"## Plan\\n\\nOutcome: add-csv-export is done\\n\\n### U-001 first\\n\\n- files: `a.js`\\n\",\n  \"backlog\": \"## Backlog candidates\\n\\n- something out of scope\\n\",\n  \"candidates\": [],\n  \"ambiguous\": false\n}\n"
+  },
+  {
+    "name": "ambiguous_tie",
+    "argv": [
+      "[Feature] build の話",
+      "<draft-dir>"
+    ],
+    "stdin": "",
+    "exit": 0,
+    "stdout": "{\n  \"path\": null,\n  \"slug\": null,\n  \"date\": null,\n  \"plan\": null,\n  \"backlog\": null,\n  \"candidates\": [\n    {\n      \"path\": \"<draft-dir>/2026-08-19-build-stop-reasons.plan.md\",\n      \"slug\": \"build-stop-reasons\",\n      \"date\": \"2026-08-19\",\n      \"score\": 1\n    },\n    {\n      \"path\": \"<draft-dir>/2026-08-18-build-unit-caps.plan.md\",\n      \"slug\": \"build-unit-caps\",\n      \"date\": \"2026-08-18\",\n      \"score\": 1\n    }\n  ],\n  \"ambiguous\": true\n}\n"
+  },
+  {
+    "name": "single_match",
+    "argv": [
+      "[Feature] add csv export",
+      "<draft-dir>"
+    ],
+    "stdin": "",
+    "exit": 0,
+    "stdout": "{\n  \"path\": \"<draft-dir>/2026-08-19-add-csv-export.plan.md\",\n  \"slug\": \"add-csv-export\",\n  \"date\": \"2026-08-19\",\n  \"plan\": \"## Plan\\n\\nOutcome: add-csv-export is done\\n\\n### U-001 first\\n\\n- files: `a.js`\\n\",\n  \"backlog\": \"## Backlog candidates\\n\\n- something out of scope\\n\",\n  \"candidates\": [\n    {\n      \"path\": \"<draft-dir>/2026-08-19-add-csv-export.plan.md\",\n      \"slug\": \"add-csv-export\",\n      \"date\": \"2026-08-19\",\n      \"score\": 3\n    },\n    {\n      \"path\": \"<draft-dir>/2026-08-18-rename-buttons.plan.md\",\n      \"slug\": \"rename-buttons\",\n      \"date\": \"2026-08-18\",\n      \"score\": 0\n    }\n  ],\n  \"ambiguous\": false\n}\n"
+  },
+  {
+    "name": "missing_directory",
+    "argv": [
+      "[Feature] x",
+      "<draft-dir>"
+    ],
+    "stdin": "",
+    "exit": 0,
+    "stdout": "{\n  \"path\": null,\n  \"slug\": null,\n  \"date\": null,\n  \"plan\": null,\n  \"backlog\": null,\n  \"candidates\": [],\n  \"ambiguous\": false\n}\n"
+  }
+]
