@@ -22,6 +22,7 @@
 // 自身の挙動。workflows/assert/tests/worktree.test.ts が、固定 fixture
 // workflows/assert/tests/fixtures/worktree-cases.json に対してエンドツーエンドで検査する。
 import { spawnSync } from "node:child_process";
+import { toPythonJson } from "../_lib/cli.ts";
 import { isMainModule } from "../_lib/entry-point.ts";
 
 /** 1 つのコマンドを実行し、その exit status と stderr を返す。test が実際の spawn の代わりに
@@ -54,10 +55,7 @@ function removeStale(branch: string, path: string, runner: Runner): void {
 /** `sessionId` に対する古い worktree/branch を除去し、続けて HEAD から新規の worktree を
  * 追加する。失敗時は、throw する代わりに返す object が `status: "error"` を持ち、exit code を
  * `reason` に、git の stderr を添える -- それを `main` が exit 1 に変換する。 */
-export function create(
-  sessionId: string,
-  runner: Runner = realRunner,
-): Record<string, unknown> {
+export function create(sessionId: string, runner: Runner = realRunner): Record<string, unknown> {
   const { branch, path } = paths(sessionId);
   removeStale(branch, path, runner);
   const { status, stderr } = runner(["git", "worktree", "add", "-b", branch, path, "HEAD"]);
@@ -75,10 +73,7 @@ export function create(
 
 /** `sessionId` の worktree と branch を除去する。`create` の古い状態除去と同じく
  * best-effort: 失敗を報告することは無い。 */
-export function cleanup(
-  sessionId: string,
-  runner: Runner = realRunner,
-): Record<string, unknown> {
+export function cleanup(sessionId: string, runner: Runner = realRunner): Record<string, unknown> {
   const { branch, path } = paths(sessionId);
   removeStale(branch, path, runner);
   return { branch, path, status: "removed" };
@@ -92,12 +87,12 @@ export function cleanup(
 export function main(): number {
   const args = process.argv.slice(2);
   if (args.length === 2 && args[0] === "--cleanup") {
-    process.stdout.write(`${JSON.stringify(cleanup(args[1]))}\n`);
+    process.stdout.write(`${toPythonJson(cleanup(args[1]))}\n`);
     return 0;
   }
   if (args.length === 1 && !args[0].startsWith("-")) {
     const result = create(args[0]);
-    process.stdout.write(`${JSON.stringify(result)}\n`);
+    process.stdout.write(`${toPythonJson(result)}\n`);
     return result.status === "error" ? 1 : 0;
   }
   process.stderr.write("Usage: worktree.ts <session-id> | worktree.ts --cleanup <session-id>\n");

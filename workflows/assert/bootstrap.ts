@@ -30,6 +30,7 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { toPythonJson } from "../_lib/cli.ts";
 import { isMainModule } from "../_lib/entry-point.ts";
 
 const INSTALL_TIMEOUT = 180;
@@ -92,7 +93,11 @@ export type Runner = (
 
 /** Spawns `cmd[0]` with `cmd.slice(1)` in `cwd`, capturing nothing (the caller reads only the
  * exit status). Mirrors the retired Python bootstrap script's `_real_runner`. */
-function realRunner(cmd: readonly string[], cwd: string, timeoutSeconds: number): number | typeof TIMED_OUT {
+function realRunner(
+  cmd: readonly string[],
+  cwd: string,
+  timeoutSeconds: number,
+): number | typeof TIMED_OUT {
   const result = spawnSync(cmd[0], cmd.slice(1), { cwd, timeout: timeoutSeconds * 1000 });
   if (result.error && (result.error as NodeJS.ErrnoException).code === "ETIMEDOUT") {
     return TIMED_OUT;
@@ -239,18 +244,6 @@ function isDirectory(path: string): boolean {
   } catch {
     return false;
   }
-}
-
-/** Serializes `result` the way Python's `json.dumps` formats a flat dict -- a space after
- * every `:` and `,` -- so bootstrap.ts's stdout matches the retired Python bootstrap script's byte for byte;
- * `JSON.stringify`'s compact separators would not. Every field of `run`'s result is a string
- * or null, so per-value `JSON.stringify` (for its quoting/escaping) plus manual joining
- * covers the whole shape without reaching for a general pretty-printer. */
-function toPythonJson(result: BootstrapResult): string {
-  const parts = Object.entries(result).map(
-    ([key, value]) => `${JSON.stringify(key)}: ${JSON.stringify(value)}`,
-  );
-  return `{${parts.join(", ")}}`;
 }
 
 /** argv dispatch mirroring the retired Python bootstrap script's `main`: exactly one `<worktree-path>` argument that

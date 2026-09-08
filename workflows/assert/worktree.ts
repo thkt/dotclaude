@@ -23,6 +23,7 @@
 // behavior, exercised end to end by workflows/assert/tests/worktree.test.ts against the frozen
 // fixture workflows/assert/tests/fixtures/worktree-cases.json.
 import { spawnSync } from "node:child_process";
+import { toPythonJson } from "../_lib/cli.ts";
 import { isMainModule } from "../_lib/entry-point.ts";
 
 /** Runs one command, returning its exit status and stderr. The seam create/cleanup call
@@ -54,10 +55,7 @@ function removeStale(branch: string, path: string, runner: Runner): void {
 /** Removes any stale worktree/branch for `sessionId`, then adds a fresh worktree from HEAD.
  * On failure the returned object carries `status: "error"` with the exit code in `reason` and
  * git's stderr, instead of throwing -- `main` turns that into exit 1. */
-export function create(
-  sessionId: string,
-  runner: Runner = realRunner,
-): Record<string, unknown> {
+export function create(sessionId: string, runner: Runner = realRunner): Record<string, unknown> {
   const { branch, path } = paths(sessionId);
   removeStale(branch, path, runner);
   const { status, stderr } = runner(["git", "worktree", "add", "-b", branch, path, "HEAD"]);
@@ -75,10 +73,7 @@ export function create(
 
 /** Removes the worktree and branch for `sessionId`. Best-effort, like `create`'s stale-state
  * removal: it never reports failure. */
-export function cleanup(
-  sessionId: string,
-  runner: Runner = realRunner,
-): Record<string, unknown> {
+export function cleanup(sessionId: string, runner: Runner = realRunner): Record<string, unknown> {
   const { branch, path } = paths(sessionId);
   removeStale(branch, path, runner);
   return { branch, path, status: "removed" };
@@ -92,12 +87,12 @@ export function cleanup(
 export function main(): number {
   const args = process.argv.slice(2);
   if (args.length === 2 && args[0] === "--cleanup") {
-    process.stdout.write(`${JSON.stringify(cleanup(args[1]))}\n`);
+    process.stdout.write(`${toPythonJson(cleanup(args[1]))}\n`);
     return 0;
   }
   if (args.length === 1 && !args[0].startsWith("-")) {
     const result = create(args[0]);
-    process.stdout.write(`${JSON.stringify(result)}\n`);
+    process.stdout.write(`${toPythonJson(result)}\n`);
     return result.status === "error" ? 1 : 0;
   }
   process.stderr.write("Usage: worktree.ts <session-id> | worktree.ts --cleanup <session-id>\n");

@@ -74,3 +74,14 @@ export function historyPath(home: string, name: string): string {
 export function isoTimestamp(date: Date = new Date()): string {
   return date.toISOString().replace(/\.\d{3}Z$/, "Z");
 }
+
+/** A JSON object rendered the way Python's `json.dumps` renders one: `", "` between entries
+ * and `": "` after each key, where `JSON.stringify` writes neither space. A port whose stdout
+ * is compared byte for byte against a frozen Python capture needs those spaces. Values are
+ * rendered by `JSON.stringify`, which agrees with Python on every scalar these CLIs emit. */
+export function toPythonJson(value: object): string {
+  const parts = Object.entries(value).map(
+    ([key, entry]) => `${JSON.stringify(key)}: ${JSON.stringify(entry)}`,
+  );
+  return `{${parts.join(", ")}}`;
+}

@@ -29,6 +29,7 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { toPythonJson } from "../_lib/cli.ts";
 import { isMainModule } from "../_lib/entry-point.ts";
 
 const INSTALL_TIMEOUT = 180;
@@ -91,7 +92,11 @@ export type Runner = (
 
 /** `cwd` で `cmd[0]` を `cmd.slice(1)` とともに起動し、何も capture しない (呼び出し側は
  * exit status しか読まない)。退役した Python 版 bootstrap script の `_real_runner` に対応する。 */
-function realRunner(cmd: readonly string[], cwd: string, timeoutSeconds: number): number | typeof TIMED_OUT {
+function realRunner(
+  cmd: readonly string[],
+  cwd: string,
+  timeoutSeconds: number,
+): number | typeof TIMED_OUT {
   const result = spawnSync(cmd[0], cmd.slice(1), { cwd, timeout: timeoutSeconds * 1000 });
   if (result.error && (result.error as NodeJS.ErrnoException).code === "ETIMEDOUT") {
     return TIMED_OUT;
@@ -237,18 +242,6 @@ function isDirectory(path: string): boolean {
   } catch {
     return false;
   }
-}
-
-/** `result` を Python の `json.dumps` が flat dict に対して整形する形 -- `:` と `,` の後に
- * 必ず空白を 1 つ置く -- のまま serialize し、bootstrap.ts の stdout が 退役した Python 版 bootstrap script の stdout
- * と byte 単位で一致するようにする。`JSON.stringify` の compact な区切りではそうならない。
- * `run` の結果の各 field は string か null なので、値ごとの `JSON.stringify` (quoting/escaping
- * 用) と手動での結合だけで、汎用の pretty-printer に頼らずこの形全体をカバーできる。 */
-function toPythonJson(result: BootstrapResult): string {
-  const parts = Object.entries(result).map(
-    ([key, value]) => `${JSON.stringify(key)}: ${JSON.stringify(value)}`,
-  );
-  return `{${parts.join(", ")}}`;
 }
 
 /** 退役した Python 版 bootstrap script の `main` に対応する argv dispatch: directory を指す `<worktree-path>` を

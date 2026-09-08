@@ -3,7 +3,8 @@
 // bootstrap runner it replaces.
 //
 // T-164 replays the frozen fixture in tests/fixtures/bootstrap-cases.json, produced by running
-// the Python bootstrap runner itself before it was retired (U-001), through the real CLI
+// the Python bootstrap runner itself before it was retired (U-001) with the script's own name
+// masked as `<script>` in the usage line, through the real CLI
 // (runCli, PATH cleared -- none of the three frozen cases starts a subprocess, so cwd and env
 // pass through unset). The fixture's `<worktree-path>` placeholder is resolved to a real
 // temporary directory before the argv is built, and back into the expected stdout/stderr
@@ -36,6 +37,11 @@ import {
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "bootstrap.ts");
+// The usage line is the one string the retired Python printed that names the script itself, so
+// the capture carries it masked and each side resolves it to its own entry point: the retired
+// runner printed its own python file name, this one prints bootstrap.ts, and carrying the
+// retired name forward would misdirect a caller (U-005).
+const SCRIPT_PLACEHOLDER = "<script>";
 const WORKTREE_PLACEHOLDER = "<worktree-path>";
 
 interface BootstrapFixtureCase extends FixtureCase {
@@ -65,9 +71,11 @@ test("T-164 every frozen case in bootstrap-cases.json reproduces the python scri
       const expectedStdout = usesWorktree
         ? testCase.stdout.replaceAll(WORKTREE_PLACEHOLDER, worktreePath)
         : testCase.stdout;
-      const expectedStderr = usesWorktree
-        ? testCase.stderr.replaceAll(WORKTREE_PLACEHOLDER, worktreePath)
-        : testCase.stderr;
+      const expectedStderr = (
+        usesWorktree
+          ? testCase.stderr.replaceAll(WORKTREE_PLACEHOLDER, worktreePath)
+          : testCase.stderr
+      ).replaceAll(SCRIPT_PLACEHOLDER, "bootstrap.ts");
       assert.equal(result.stdout, expectedStdout, `${testCase.name}: stdout`);
       assert.equal(result.stderr, expectedStderr, `${testCase.name}: stderr`);
     });
@@ -88,7 +96,11 @@ test("T-165 the project type is the first marker in the table order that the wor
 
   withTempHome((home) => {
     const dir = mkdtempSync(join(home, "no-markers-"));
-    assert.equal(detectProjectType(dir), null, "a worktree with no marker file has no detected type");
+    assert.equal(
+      detectProjectType(dir),
+      null,
+      "a worktree with no marker file has no detected type",
+    );
     const result = run(dir);
     assert.equal(result.project_type, null, "no-marker run: project_type stays null");
     assert.equal(result.reason, "project-type-unknown", "no-marker run: reason names the gap");
@@ -162,7 +174,11 @@ test("T-167 install fail leaves build skipped for the env-failure path, install 
     const result = run(dir, buildFailRunner);
     assert.equal(result.install, "ok", "install-ok-build-fail: install status");
     assert.equal(result.build, "fail", "install-ok-build-fail: build status (broken build smoke)");
-    assert.equal(result.reason, "build-exit-1", "install-ok-build-fail: reason carries the exit code");
+    assert.equal(
+      result.reason,
+      "build-exit-1",
+      "install-ok-build-fail: reason carries the exit code",
+    );
   });
 
   withTempHome((home) => {
@@ -171,6 +187,10 @@ test("T-167 install fail leaves build skipped for the env-failure path, install 
     const result = run(dir, buildTimeoutRunner);
     assert.equal(result.install, "ok", "build-timeout: install still ok");
     assert.equal(result.build, "fail", "build-timeout: build reported as fail, not an env failure");
-    assert.equal(result.reason, "build-timeout", "build-timeout: reason names the timeout, not env:*");
+    assert.equal(
+      result.reason,
+      "build-timeout",
+      "build-timeout: reason names the timeout, not env:*",
+    );
   });
 });

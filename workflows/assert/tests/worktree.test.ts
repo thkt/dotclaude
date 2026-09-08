@@ -10,9 +10,14 @@
 // repository, PATH restored so the CLI's own `git` calls reach the real binary. A JSON
 // `status: created` on stdout alone would not show that cwd took effect or that this
 // repository (not some other one) was touched, so T-162 also greps `git worktree list` for the
-// worktree before and after cleanup. The frozen fixture worktree-cases.json (produced by
-// running the retired Python worktree manager itself, U-001) supplies T-163's argv-usage half, replayed the same way
-// workflows/assert/tests/record.test.ts replays record-cases.json.
+// worktree before and after cleanup, and it reads the JSON rather than the bytes.
+//
+// T-168 is what pins the bytes: it replays every case in the frozen fixture
+// worktree-cases.json against the real CLI, the way workflows/assert/tests/record.test.ts
+// replays record-cases.json and bootstrap.test.ts's T-164 replays bootstrap-cases.json. The
+// fixture is the retired Python worktree manager's own captured output (U-001) with one token
+// masked: the usage line names the script itself, so `<script>` stands where the capture read
+// the python entry point, and each side resolves it to its own.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -33,6 +38,14 @@ const FIXTURES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "worktree-cases.json"), "utf8"),
 ) as WorktreeFixtureCase[];
 
+// The usage line is the one string the retired Python printed that names the script itself, so
+// the capture carries it masked and each side resolves it to its own entry point: the retired
+// manager printed its own python file name, this one prints worktree.ts, and carrying the
+// retired name forward would misdirect a caller (U-005).
+const SCRIPT_PLACEHOLDER = "<script>";
+
+const resolveScript = (text: string): string => text.replaceAll(SCRIPT_PLACEHOLDER, "worktree.ts");
+
 /** A Runner stub that records every command it was asked to run and reports success, so
  * create/cleanup can be exercised without touching real git. */
 function recordingRunner(calls: string[][]): Runner {
@@ -47,7 +60,8 @@ function recordingRunner(calls: string[][]): Runner {
  * diff-files.test.ts's buildRepo. Returns the repository's absolute path. */
 function initRepo(root: string): string {
   const repo = mkdtempSync(join(root, "worktree-repo-"));
-  const git = (args: readonly string[]) => spawnSync("git", ["-C", repo, ...args], { encoding: "utf8" });
+  const git = (args: readonly string[]) =>
+    spawnSync("git", ["-C", repo, ...args], { encoding: "utf8" });
   git(["init", "-q", "-b", "main"]);
   git(["config", "user.email", "t@example.com"]);
   git(["config", "user.name", "t"]);
@@ -139,6 +153,25 @@ test("T-163 a create whose git invocation fails reports status error with the ex
     });
     assert.equal(result.status, usageCase.exit, "usage: exit code");
     assert.equal(result.stdout, usageCase.stdout, "usage: stdout");
-    assert.equal(result.stderr, usageCase.stderr, "usage: stderr");
+    assert.equal(result.stderr, resolveScript(usageCase.stderr), "usage: stderr");
+  });
+});
+
+test("T-264 every frozen case in worktree-cases.json reproduces the python manager's exit code, stdout bytes and stderr, with the script name resolved from its placeholder", () => {
+  // Byte comparison, not JSON.parse: python's json.dumps writes ": " and ", " where
+  // JSON.stringify writes neither, and reading the parsed object back would pass either way.
+  assert.ok(FIXTURES.length > 0, "the frozen fixture carries at least one case");
+  withTempHome((home) => {
+    const repo = initRepo(home);
+    for (const testCase of FIXTURES) {
+      const needsRepo = (testCase.argv ?? []).includes("fixture-session");
+      const result = runCli(SCRIPT, home, testCase.stdin, testCase.argv ?? [], {
+        cwd: needsRepo ? repo : undefined,
+        env: { PATH: needsRepo ? (process.env.PATH ?? "") : "" },
+      });
+      assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
+      assert.equal(result.stdout, resolveScript(testCase.stdout), `${testCase.name}: stdout`);
+      assert.equal(result.stderr, resolveScript(testCase.stderr), `${testCase.name}: stderr`);
+    }
   });
 });

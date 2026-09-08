@@ -25,6 +25,6 @@
     "stdin": "",
     "exit": 1,
     "stdout": "",
-    "stderr": "Usage: bootstrap.ts <worktree-path>\n"
+    "stderr": "Usage: <script> <worktree-path>\n"
   }
 ]
