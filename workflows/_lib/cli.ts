@@ -24,24 +24,34 @@ export interface PayloadResult {
   message: string | null;
 }
 
+/** Parse `text` as JSON, a pure function: `{ value }` on success, or `{ error }` carrying the
+ * parser's message on failure -- it touches neither stdin nor stderr. parsePayload's own
+ * JSON.parse attempt lives here now; parsePayload calls this and layers its own message
+ * prefix and object-shape check on top. */
+export function parseJson(text: string): { value: unknown } | { error: string } {
+  try {
+    return { value: JSON.parse(text) };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
 /** Parse `text` as a JSON object. Mirrors the two checks workflows/build/record.ts's `main`
  * ported from the Python recorder it replaces: unparseable text, then a value that parses but
  * is not a plain object (an array, a scalar, or null). The message text and prefix match the
- * Python recorder's so a caller switching to this module changes no stderr contract.
+ * Python recorder's so a caller switching to this module changes no stderr contract. The
+ * JSON.parse attempt itself is parseJson's; this function adds only the message prefix and
+ * the object-shape check.
  *
  * hooks/_lib/hook_payload.ts's `parse` is not reused here: it fails open to `{}`, which would
  * turn a malformed payload into a silently-empty row instead of the exit-1-and-write-nothing
  * behavior this CLI's callers require. */
 export function parsePayload(text: string): PayloadResult {
-  let loaded: unknown;
-  try {
-    loaded = JSON.parse(text);
-  } catch (error) {
-    return {
-      payload: null,
-      message: `Error: unparseable payload: ${error instanceof Error ? error.message : String(error)}`,
-    };
+  const parsed = parseJson(text);
+  if ("error" in parsed) {
+    return { payload: null, message: `Error: unparseable payload: ${parsed.error}` };
   }
+  const loaded = parsed.value;
   if (typeof loaded !== "object" || loaded === null || Array.isArray(loaded)) {
     return { payload: null, message: "Error: payload must be a JSON object" };
   }

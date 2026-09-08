@@ -24,25 +24,34 @@ export interface PayloadResult {
   message: string | null;
 }
 
+/** `text` を JSON として parse する純関数。成功なら `{ value }`、失敗なら parser の message を
+ * 積んだ `{ error }` を返す -- stdin にも stderr にも触れない。parsePayload 自身の JSON.parse
+ * 試行は今やここに住む。parsePayload はこれを呼び、自分の message 接頭辞と object 形状検査を
+ * その上に重ねる。 */
+export function parseJson(text: string): { value: unknown } | { error: string } {
+  try {
+    return { value: JSON.parse(text) };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
 /** `text` を JSON object として parse する。workflows/build/record.ts の `main` が置き換え元の
  * Python recorder から移植した 2 つの検査をそのまま踏襲する: parse できないテキスト、次に
  * parse はできるが plain object でない値 (array, スカラー, null)。message の文言と接頭辞は
  * Python 版 recorder のものと一致させ、この module へ切り替える呼び出し側の stderr 契約を
- * 変えない。
+ * 変えない。JSON.parse を試みること自体は parseJson の役目で、この関数が重ねるのは message
+ * 接頭辞と object 形状検査だけ。
  *
  * hooks/_lib/hook_payload.ts の `parse` はここでは再利用しない: あちらは `{}` へ fail open する
  * ため、壊れた payload が exit 1 で何も書かないこの CLI の呼び出し側の挙動ではなく、
  * 静かに空の行になってしまう。 */
 export function parsePayload(text: string): PayloadResult {
-  let loaded: unknown;
-  try {
-    loaded = JSON.parse(text);
-  } catch (error) {
-    return {
-      payload: null,
-      message: `Error: unparseable payload: ${error instanceof Error ? error.message : String(error)}`,
-    };
+  const parsed = parseJson(text);
+  if ("error" in parsed) {
+    return { payload: null, message: `Error: unparseable payload: ${parsed.error}` };
   }
+  const loaded = parsed.value;
   if (typeof loaded !== "object" || loaded === null || Array.isArray(loaded)) {
     return { payload: null, message: "Error: payload must be a JSON object" };
   }
