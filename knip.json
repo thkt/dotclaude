@@ -18,8 +18,9 @@
     "skills/**/tests/**/*.test.{js,ts}",
     "skills/_lib/harness_hash.ts",
     ".ja/skills/_lib/harness_hash.ts",
-    "skills/**/scripts/*.{js,mjs}",
-    ".ja/skills/**/scripts/*.{js,mjs}"
+    "skills/_lib/review_score.ts",
+    "skills/**/scripts/*.{js,mjs,ts}",
+    ".ja/skills/**/scripts/*.{js,mjs,ts}"
   ],
   "project": [
     "workflows/**/*.{js,ts}",
