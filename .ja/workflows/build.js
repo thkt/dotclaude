@@ -1113,7 +1113,7 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (外向きの操作なので draft = 可逆) ----
-// fact tail は pr-body.py が決定論で描画し、fact 節を黙って落とさせない。追記と gh pr create は
+// fact tail は pr-body.ts が決定論で描画し、fact 節を黙って落とさせない。追記と gh pr create は
 // && で連結し、レンダラー失敗時は PR 作成前に中断する。
 phase("Ship");
 
@@ -1278,8 +1278,8 @@ const ship =
         `- Design Decisions は実 diff から埋め、読み取れなければ節ごと省略する。plan に出どころは無い。\n` +
         `(2) この JSON をそのまま ${prPayloadPath} に書く。\n${JSON.stringify(shipPayload)}\n` +
         `(3) 本文のレンダリングと PR 作成を 1 つの \`&&\` チェーンで行い、レンダラー失敗時は PR 作成前に中断させる。リポジトリルートから ` +
-        `\`cat ${prHumanPath} > ${prBodyPath} && python3 ${bundled("workflows/build/pr-body.py")} < ${prPayloadPath} >> ${prBodyPath} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title ${prTitle ? shq(prTitle) : `"$(cat ${prTitlePath})"`} --body-file ${prBodyPath}\` を書かれたとおりに実行する。\n` +
-        `pr-body.py は payload が壊れているか必須フィールドを欠くと非ゼロで終了する (何も出力しない)。チェーンが失敗したら他の手段で PR を作らない。committed と空の pr_url とエラーを報告する。\n` +
+        `\`cat ${prHumanPath} > ${prBodyPath} && node ${bundled("workflows/build/pr-body.ts")} < ${prPayloadPath} >> ${prBodyPath} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title ${prTitle ? shq(prTitle) : `"$(cat ${prTitlePath})"`} --body-file ${prBodyPath}\` を書かれたとおりに実行する。\n` +
+        `pr-body.ts は payload が壊れているか必須フィールドを欠くと非ゼロで終了する (何も出力しない)。チェーンが失敗したら他の手段で PR を作らない。committed と空の pr_url とエラーを報告する。\n` +
         `committed の状態と PR url を報告する。${guard}`,
     ),
     {

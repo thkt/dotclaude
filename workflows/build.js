@@ -1136,7 +1136,7 @@ if (backlogCandidates.length) {
 }
 
 // ---- Ship: commit + draft PR (outward-facing, so draft = reversible) ----
-// pr-body.py renders the fact tail deterministically, so a fact section is never silently
+// pr-body.ts renders the fact tail deterministically, so a fact section is never silently
 // dropped; the append and gh pr create are chained with && so a renderer failure aborts first.
 phase("Ship");
 
@@ -1304,8 +1304,8 @@ const ship =
         `- Fill Design Decisions from the actual diff; omit the section when the diff does not carry one rather than inventing. The plan holds no source for it.\n` +
         `(2) write this exact JSON to ${prPayloadPath}.\n${JSON.stringify(shipPayload)}\n` +
         `(3) render the body and open the PR as one \`&&\` chain, so a renderer failure aborts before the PR is created; from the repository root run ` +
-        `\`cat ${prHumanPath} > ${prBodyPath} && python3 ${bundled("workflows/build/pr-body.py")} < ${prPayloadPath} >> ${prBodyPath} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title ${prTitle ? shq(prTitle) : `"$(cat ${prTitlePath})"`} --body-file ${prBodyPath}\` exactly as written.\n` +
-        `pr-body.py exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do not create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
+        `\`cat ${prHumanPath} > ${prBodyPath} && node ${bundled("workflows/build/pr-body.ts")} < ${prPayloadPath} >> ${prBodyPath} && gh pr create --draft ${baseBranch ? `--base ${baseBranch} ` : ""}--title ${prTitle ? shq(prTitle) : `"$(cat ${prTitlePath})"`} --body-file ${prBodyPath}\` exactly as written.\n` +
+        `pr-body.ts exits non-zero (writing nothing) if the payload is malformed or missing a required field; if the chain fails, do not create the PR by other means. Report committed with an empty pr_url and the error instead.\n` +
         `Report the committed state and the PR url.${guard}`,
     ),
     {
