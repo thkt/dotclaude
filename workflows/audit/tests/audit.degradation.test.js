@@ -89,7 +89,7 @@ test("T-022 a finding dropped as disputed stays in the snapshot payload's raw_fi
   );
 });
 
-// The shape of the counts snapshot.py returns on stdout. The agent brings it back unchanged.
+// The shape of the counts snapshot.ts returns on stdout. The agent brings it back unchanged.
 const counts = (over) => ({
   raw_findings: 2,
   findings: 1,
@@ -123,7 +123,7 @@ test("T-028 a downgraded finding keeps both its original severity and the lowere
   );
 });
 
-test("T-024 a run where snapshot.py's count disagrees with the payload returns the name of the lost array", async () => {
+test("T-024 a run where snapshot.ts's count disagrees with the payload returns the name of the lost array", async () => {
   const { result } = await run({
     challenge: BOTH_CONFIRMED,
     integrate: INTEGRATED,
@@ -141,7 +141,7 @@ test("T-024 a run where snapshot.py's count disagrees with the payload returns t
   assert.equal(
     result.snapshot.actual.raw_findings,
     1,
-    "the actual count snapshot.py measured survives too",
+    "the actual count snapshot.ts measured survives too",
   );
 });
 
