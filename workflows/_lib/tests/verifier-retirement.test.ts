@@ -74,9 +74,9 @@ test(
 // template-literal line: both names' python3-vs-node choice sits ahead of `${bundled(script)}`,
 // several template-literal lines below the `const … =` that starts the statement
 // (docs/wiki/workflow-const-source-text-check.md — read from source text, never a copied-in
-// literal). The Ship prompt's pr-body line passes a literal ("workflows/build/pr-body.py") to
-// bundled(), not the script parameter, so it never matches `${bundled(script)}` and stays
-// structurally out of this extraction.
+// literal). The Ship prompt's pr-body line passes a literal path to bundled(), not the script
+// parameter, so it never matches `${bundled(script)}` and stays structurally out of this
+// extraction.
 function extractConstStatement(source: string, constName: string): string | null {
   const m = source.match(new RegExp(`const\\s+${constName}\\s*=[\\s\\S]*?\`;`));
   return m ? m[0] : null;
