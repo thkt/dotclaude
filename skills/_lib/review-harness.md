@@ -10,7 +10,7 @@ Labels, expectations, or hints in the dispatch prompt contaminate Recall (found 
 2. Launch the reviewer agent with the Agent tool. The prompt carries the target path and the output format, and nothing else. The words flag, clean, vuln, safe, test, and expected are banned, as is any description of what a file holds
 3. Fix the comparison criteria before dispatch. Do not move them afterwards
 4. Pick each case's verdict from the table below and record the run as an array of `{file, verdict}` in `<skill>/test/results/YYYY-MM-DD-*.json`
-5. Run `python3 skills/_lib/review_score.py <skill>/test/expected.json <results> [previous-results]`. Do not count the metrics by hand
+5. Run `node skills/_lib/review_score.ts <skill>/test/expected.json <results> [previous-results]`. Do not count the metrics by hand
 6. Run `node skills/_lib/harness_hash.ts <skill>` and write the three printed keys as top-level keys of the record
 
 The sequential naming and the paired structure still let an agent guess it is looking at a test set. Going fully blind would mean embedding the cases in realistic scaffolding; removing label leakage comes first.
@@ -29,14 +29,14 @@ A record names by hash what the run measured. `skills/_lib/tests/harness-freshne
 
 These seven, and nothing else. Earlier logs each invented their own wording (`true`, `full_hit`, `detected_below_severity_min`), which left the runs incomparable. `below_min_findings` enters only the denominator of `recall_strict` (`hit` / `flagged`), never the numerator, the same treatment as `below_severity`.
 
-| verdict              | Meaning                                                 |
-| -------------------- | ------------------------------------------------------- |
-| `hit`                | The expected finding, reported at severity_min or above |
-| `below_severity`     | The expected finding, reported below severity_min       |
-| `other_finding`      | A finding on the file, but not the expected one         |
-| `miss`               | No finding on the file                                  |
-| `pass`               | A clean case that drew no finding                       |
-| `false_positive`     | A clean case that drew a finding                        |
+| verdict              | Meaning                                                         |
+| -------------------- | --------------------------------------------------------------- |
+| `hit`                | The expected finding, reported at severity_min or above         |
+| `below_severity`     | The expected finding, reported below severity_min               |
+| `other_finding`      | A finding on the file, but not the expected one                 |
+| `miss`               | No finding on the file                                          |
+| `pass`               | A clean case that drew no finding                               |
+| `false_positive`     | A clean case that drew a finding                                |
 | `below_min_findings` | Fewer findings than min_findings, each at severity_min or above |
 
 ## expected.json schema

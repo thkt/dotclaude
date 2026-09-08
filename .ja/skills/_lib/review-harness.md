@@ -10,7 +10,7 @@ dispatch prompt にラベル、期待値、ヒントを含めると Recall が�
 2. reviewer agent を Agent tool で起動する。prompt には対象パスと出力フォーマットだけを書く。flag、clean、vuln、safe、テスト、期待の語と、各ファイルが何を含むかの説明は禁止
 3. 照合基準を dispatch 前に固定する。後出しで基準を動かさない
 4. 各ケースの判定を下表の verdict から選び、`{file, verdict}` の配列として `<skill>/test/results/YYYY-MM-DD-*.json` に記録する
-5. `python3 skills/_lib/review_score.py <skill>/test/expected.json <results> [previous-results]` を実行する。指標を自分で数えない
+5. `node skills/_lib/review_score.ts <skill>/test/expected.json <results> [previous-results]` を実行する。指標を自分で数えない
 6. `node skills/_lib/harness_hash.ts <skill>` を実行し、印字された 3 つのキーを記録ファイルの直下キーとして書く
 
 連番命名とペア構造から、agent が「テスト集合」と推測しうる状態は残っている。完全な blind には現実的な scaffolding への埋め込みが要るが、ラベル漏洩の除去を優先する。
@@ -29,14 +29,14 @@ dispatch prompt にラベル、期待値、ヒントを含めると Recall が�
 
 この 7 つに限る。過去のログは実行ごとに独自の語 (`true`、`full_hit`、`detected_below_severity_min`) を使っており、実行どうしを比べられなくなっていた。`below_min_findings` は `recall_strict` (`hit`/`flagged`) の分母にのみ入り、分子には入らない。`below_severity` と同じ扱いである。
 
-| verdict              | 意味                                                  |
-| -------------------- | ----------------------------------------------------- |
-| `hit`                | 期待した finding を severity_min 以上で報告した       |
-| `below_severity`     | 期待した finding を報告したが severity_min 未満       |
-| `other_finding`      | ファイルに finding は出たが期待したものではない       |
-| `miss`               | ファイルに finding が出なかった                       |
-| `pass`               | clean ケースで finding が出なかった                   |
-| `false_positive`     | clean ケースで finding が出た                         |
+| verdict              | 意味                                                                |
+| -------------------- | ------------------------------------------------------------------- |
+| `hit`                | 期待した finding を severity_min 以上で報告した                     |
+| `below_severity`     | 期待した finding を報告したが severity_min 未満                     |
+| `other_finding`      | ファイルに finding は出たが期待したものではない                     |
+| `miss`               | ファイルに finding が出なかった                                     |
+| `pass`               | clean ケースで finding が出なかった                                 |
+| `false_positive`     | clean ケースで finding が出た                                       |
 | `below_min_findings` | min_findings に届かない件数だが、報告された指摘は severity_min 以上 |
 
 ## expected.json スキーマ

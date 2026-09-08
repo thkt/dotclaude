@@ -94,7 +94,7 @@ paths:
 | hook (`.py` / `.sh`)                  | 1                | プロセスを起動して stdin から stdout を観測できる       |
 | workflow スクリプト                   | 1                | スタブ実行で phase、停止、返り値を観測できる            |
 | skill の `scripts/`                   | 1                | CLI として stdin から stdout を観測できる               |
-| reviewer skill と reviewer agent 本文 | 1                | corpus と `review_score.py` で Recall と FP Rate が出る |
+| reviewer skill と reviewer agent 本文 | 1                | corpus と `review_score.ts` で Recall と FP Rate が出る |
 | それ以外の skill 本文                 | 2                | 実行が LLM 依存で非決定。対応物との照合が上限           |
 | `rules/` と `docs/`                   | 3                | 実行主体を持たない                                      |
 

@@ -94,7 +94,7 @@ A document with no runner has no tier 1, and a document with no counterpart has 
 | Hook (`.py` / `.sh`)                     | 1                      | The process starts, and stdin to stdout is observable                                                |
 | Workflow script                          | 1                      | A stubbed run makes phases, stops, and return values visible                                         |
 | A skill's `scripts/`                     | 1                      | It runs as a CLI, stdin to stdout                                                                    |
-| Reviewer skill and reviewer agent bodies | 1                      | The corpus and `review_score.py` produce Recall and FP Rate                                          |
+| Reviewer skill and reviewer agent bodies | 1                      | The corpus and `review_score.ts` produce Recall and FP Rate                                          |
 | Any other skill body                     | 2                      | Running it depends on an LLM and is non-deterministic. Matching against a counterpart is the ceiling |
 | `rules/` and `docs/`                     | 3                      | They have no runner                                                                                  |
 
