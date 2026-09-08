@@ -14,6 +14,8 @@
     "workflows/build/verify-tests.ts",
     "workflows/build/diff-files.ts",
     "workflows/build/verify-pr.ts",
+    "workflows/code/verify-commit.ts",
+    ".ja/workflows/code/verify-commit.ts",
     ".ja/workflows/build/record.ts",
     ".ja/workflows/build/pr-body.ts",
     ".ja/workflows/assert/record.ts",

@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "name": "repo_not_absolute",
+      "stdin": "{\"repo\": \"relative\", \"baseline_head\": \"x\", \"unit_files\": [], \"body\": \"b\"}",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "repo must be an absolute path\n"
+    },
+    {
+      "name": "baseline_head_empty",
+      "stdin": "{\"repo\": \"/abs/target-repo\", \"unit_files\": [], \"body\": \"b\"}",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "baseline_head must be a non-empty string\n"
+    },
+    {
+      "name": "body_empty",
+      "stdin": "{\"repo\": \"/abs/target-repo\", \"baseline_head\": \"abc\", \"unit_files\": []}",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "body must be a non-empty string\n"
+    },
+    {
+      "name": "unit_files_not_array",
+      "stdin": "{\"repo\": \"/abs/target-repo\", \"baseline_head\": \"abc\", \"body\": \"b\", \"unit_files\": \"not-an-array\"}",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "unit_files must be an array of non-empty strings\n"
+    },
+    {
+      "name": "unit_files_empty",
+      "stdin": "{\"repo\": \"/abs/target-repo\", \"baseline_head\": \"abc\", \"body\": \"b\", \"unit_files\": []}",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "unit_files must not be empty\n"
+    },
+    {
+      "name": "payload_not_object",
+      "stdin": "[\"not\", \"an\", \"object\"]",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "payload must be a JSON object\n"
+    },
+    {
+      "name": "stdin_not_json",
+      "stdin": "not json",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "stdin is not valid JSON: Expecting value: line 1 column 1 (char 0)\n"
+    }
+  ],
+  "pass_report": "{\n  \"protocol\": \"claude-code-commit/v1\",\n  \"verdict\": \"pass\",\n  \"classification\": \"pass\",\n  \"reason_codes\": [],\n  \"failure_route\": null,\n  \"blockers\": [],\n  \"head\": \"<sha40>\",\n  \"parent\": \"<sha40>\",\n  \"committed_files\": [\n    \"src/x.ts\"\n  ],\n  \"outside_scope\": [],\n  \"subject\": \"feat(core): collapse repeated spaces\"\n}\n"
+}
