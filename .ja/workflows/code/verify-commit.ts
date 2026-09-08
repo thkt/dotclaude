@@ -41,9 +41,13 @@ export const COMMIT_TYPES = [
 ] as const;
 const SUBJECT_SHAPE = new RegExp(`^(?:${COMMIT_TYPES.join("|")})(?:\\([^()]+\\))?!?: \\S.*$`);
 
+/** verifier が受け付けない payload。verify() は export され直接テストされるので、置き換え元の
+ * Python の fail() のようにプロセスを終わらせず送出する。CLI 契約の stderr 1 行と exit 1 に
+ * 変えるのは main() だけ。 */
+class PayloadError extends Error {}
+
 function fail(message: string): never {
-  process.stderr.write(`${message}\n`);
-  process.exit(1);
+  throw new PayloadError(message);
 }
 
 /** `git -C repo <args>` を実行し、exit status と stdout を返す。execFileSync ではなく
@@ -180,15 +184,26 @@ export function verify(payload: unknown): Record<string, unknown> {
   };
 }
 
-function main(): number {
+export function main(): number {
   const raw = readFileSync(0, "utf8");
   let payload: unknown;
   try {
     payload = JSON.parse(raw);
   } catch (error) {
-    fail(`stdin is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
+    process.stderr.write(
+      `stdin is not valid JSON: ${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    return 1;
   }
-  process.stdout.write(`${JSON.stringify(verify(payload), null, 2)}\n`);
+  let report: Record<string, unknown>;
+  try {
+    report = verify(payload);
+  } catch (error) {
+    if (!(error instanceof PayloadError)) throw error;
+    process.stderr.write(`${error.message}\n`);
+    return 1;
+  }
+  process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   return 0;
 }
 

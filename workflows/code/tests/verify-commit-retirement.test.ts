@@ -115,12 +115,21 @@ test(
 // source text and pull out what the commitcheck prompt actually invokes, never a copied-in
 // literal (docs/wiki/workflow-const-source-text-check.md). Unlike build.js's recorder prompt,
 // code.js's commitcheck command is not built inside an outer prompt string (no backslash
-// escaping the backtick), and the invocation references the script path only through the
-// `verifyCommitScript` variable, not the literal "verify-commit" text — so the anchor here is
-// that identifier rather than the retired/replacement filename, inside the one plain backtick
-// template literal that names it.
+// escaping the backtick), and the invocation names the script only through the
+// `verifyCommitScript` variable.
+//
+// That split is why one extraction is not enough. The backtick carries the interpreter and
+// the variable, so it cannot tell verify-commit.ts from verify-commit.py: the path lives in
+// the `const verifyCommitScript = bundled(...)` statement, and pointing that statement back
+// at the retired script leaves the backtick's text identical. The two extractions below read
+// the two halves, and T-160 asserts on both.
 function extractCommitcheckInvocation(source: string): string | null {
   const m = source.match(/`([^`\n]*\bverifyCommitScript\b[^`\n]*)`/);
+  return m ? m[1] : null;
+}
+
+function extractVerifyCommitScriptPath(source: string): string | null {
+  const m = source.match(/const\s+verifyCommitScript\s*=\s*bundled\(\s*"([^"]+)"\s*\)/);
   return m ? m[1] : null;
 }
 
@@ -140,6 +149,13 @@ test(
   () => {
     for (const { label, path } of COMMITCHECK_PROMPT_SOURCES) {
       const source = readFileSync(join(REPO_ROOT, path), "utf8");
+      const scriptPath = extractVerifyCommitScriptPath(source);
+      assert.equal(
+        scriptPath,
+        "workflows/code/verify-commit.ts",
+        `${label} points verifyCommitScript at ${scriptPath}, not at the replacement script`,
+      );
+
       const invocation = extractCommitcheckInvocation(source);
       assert.ok(invocation, `${label} commitcheck prompt's invocation is extractable from source`);
       // One fixed line, carrying no offender list, so a --require-output anchor on the Red
