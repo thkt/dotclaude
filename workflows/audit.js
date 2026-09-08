@@ -79,23 +79,23 @@ const fenced = (value) => {
 const bundled = (rel) =>
   `"$(P="$HOME/.claude/${rel}"; [ -e "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" -not -path "*/.ja/*" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
 
-// audit/snapshot.py resolves the timestamp and branch; the agent only writes the payload to a
+// audit/snapshot.ts resolves the timestamp and branch; the agent only writes the payload to a
 // temp file and runs it once, for the disk side-effect. build_record turns the payload keys
 // into the record's fields verbatim, so whatever a reader must find in the record is passed here.
-// The counts come from snapshot.py, which counted the stdin it received: an agent transcribing
+// The counts come from snapshot.ts, which counted the stdin it received: an agent transcribing
 // the payload through a prompt can thin it, and must not be the one reporting on the cut.
 const SNAPSHOT_SCHEMA = {
   type: "object",
   additionalProperties: false,
   required: ["path", "counts"],
   properties: {
-    path: { type: "string", description: "path from snapshot.py's stdout JSON, verbatim" },
+    path: { type: "string", description: "path from snapshot.ts's stdout JSON, verbatim" },
     counts: {
       type: "object",
       additionalProperties: false,
       required: ["raw_findings", "findings", "skipped", "needs_context", "zero_reviewer_files"],
       description:
-        "counts from snapshot.py's stdout JSON, verbatim. Do not recount and do not alter the values",
+        "counts from snapshot.ts's stdout JSON, verbatim. Do not recount and do not alter the values",
       properties: {
         raw_findings: { type: "integer" },
         findings: { type: "integer" },
@@ -138,7 +138,7 @@ const writeSnapshot = async ({
   const written = await agent(
     anchor(
       `You are the snapshot stage of an audit. Write the following JSON payload to a temp file and run ` +
-        `\`python3 ${bundled("workflows/audit/snapshot.py")} < <tempfile>\` once. ` +
+        `\`node ${bundled("workflows/audit/snapshot.ts")} < <tempfile>\` once. ` +
         `The script resolves the timestamp and branch, writes the record under ` +
         `$HOME/.claude/history/, and prints one line of JSON, {path, counts}, to stdout. ` +
         `Write the payload verbatim. Do not summarize, omit, reformat, or regenerate it, and do not truncate it for length. ` +
@@ -157,7 +157,7 @@ const writeSnapshot = async ({
       schema: SNAPSHOT_SCHEMA,
     },
   );
-  // The script owns the comparison, and what it compares against is the count snapshot.py
+  // The script owns the comparison, and what it compares against is the count snapshot.ts
   // took of its own stdin, not the agent's report. The agent is the party doing the
   // transcribing, so it would be reporting on what it itself dropped.
   const expected = {

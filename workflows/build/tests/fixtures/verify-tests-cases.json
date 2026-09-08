@@ -1,0 +1,143 @@
+[
+  {
+    "name": "verbatim_statement_found",
+    "files": [
+      {
+        "path": "foo.js",
+        "content": "export const foo = 1;\n"
+      },
+      {
+        "path": "foo.test.js",
+        "content": "test(\"rejects negative amounts\", () => {});\n"
+      }
+    ],
+    "stdin": "[{\"files\": [\"foo.js\", \"foo.test.js\"], \"names\": [\"rejects negative amounts\"]}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"name\": \"rejects negative amounts\", \"found\": true}]}\n"
+  },
+  {
+    "name": "statement_absent_not_found",
+    "files": [
+      {
+        "path": "foo.js",
+        "content": "export const foo = 1;\n"
+      },
+      {
+        "path": "foo.test.js",
+        "content": "test(\"rejects negative amounts\", () => {});\n"
+      }
+    ],
+    "stdin": "[{\"files\": [\"foo.js\", \"foo.test.js\"], \"names\": [\"accepts zero amounts\"]}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"name\": \"accepts zero amounts\", \"found\": false}]}\n"
+  },
+  {
+    "name": "textlint_full_width_space_matches",
+    "files": [
+      {
+        "path": "gate.test.js",
+        "content": "test(\"issues が0件の run の gate は Ready のままになる\", () => {});\n"
+      }
+    ],
+    "stdin": "[{\"files\": [\"gate.test.js\"], \"names\": [\"issues \\u304c 0 \\u4ef6\\u306e run \\u306e gate \\u306f Ready \\u306e\\u307e\\u307e\\u306b\\u306a\\u308b\"]}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"name\": \"issues \\u304c 0 \\u4ef6\\u306e run \\u306e gate \\u306f Ready \\u306e\\u307e\\u307e\\u306b\\u306a\\u308b\", \"found\": true}]}\n"
+  },
+  {
+    "name": "statement_split_across_lines_matches",
+    "files": [
+      {
+        "path": "wrapped.test.js",
+        "content": "test(\n  \"rejects negative\n  amounts\",\n  () => {},\n);\n"
+      }
+    ],
+    "stdin": "[{\"files\": [\"wrapped.test.js\"], \"names\": [\"rejects negative amounts\"]}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"name\": \"rejects negative amounts\", \"found\": true}]}\n"
+  },
+  {
+    "name": "whitespace_only_name_not_found",
+    "files": [
+      {
+        "path": "foo.js",
+        "content": "export const foo = 1;\n"
+      },
+      {
+        "path": "foo.test.js",
+        "content": "test(\"rejects negative amounts\", () => {});\n"
+      }
+    ],
+    "stdin": "[{\"files\": [\"foo.test.js\"], \"names\": [\"   \"]}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"name\": \"   \", \"found\": false}]}\n"
+  },
+  {
+    "name": "missing_file_not_found",
+    "files": [],
+    "stdin": "[{\"files\": [\"gone.test.js\"], \"names\": [\"rejects negative amounts\"]}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"name\": \"rejects negative amounts\", \"found\": false}]}\n"
+  },
+  {
+    "name": "search_scoped_to_unit_files",
+    "files": [
+      {
+        "path": "foo.js",
+        "content": "export const foo = 1;\n"
+      },
+      {
+        "path": "foo.test.js",
+        "content": "test(\"rejects negative amounts\", () => {});\n"
+      }
+    ],
+    "stdin": "[{\"files\": [\"foo.js\"], \"names\": [\"rejects negative amounts\"]}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"name\": \"rejects negative amounts\", \"found\": false}]}\n"
+  },
+  {
+    "name": "names_flatten_in_input_order",
+    "files": [
+      {
+        "path": "foo.js",
+        "content": "export const foo = 1;\n"
+      },
+      {
+        "path": "foo.test.js",
+        "content": "test(\"rejects negative amounts\", () => {});\n"
+      }
+    ],
+    "stdin": "[{\"files\": [\"foo.test.js\"], \"names\": [\"rejects negative amounts\"]}, {\"files\": [\"foo.js\"], \"names\": [\"accepts zero amounts\"]}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"name\": \"rejects negative amounts\", \"found\": true}, {\"name\": \"accepts zero amounts\", \"found\": false}]}\n"
+  },
+  {
+    "name": "non_dict_entry_skipped",
+    "files": [
+      {
+        "path": "foo.js",
+        "content": "export const foo = 1;\n"
+      },
+      {
+        "path": "foo.test.js",
+        "content": "test(\"rejects negative amounts\", () => {});\n"
+      }
+    ],
+    "stdin": "[\"bare string\", {\"files\": [\"foo.test.js\"], \"names\": [\"rejects negative amounts\"]}]",
+    "exit": 0,
+    "stdout": "{\"results\": [{\"name\": \"rejects negative amounts\", \"found\": true}]}\n"
+  },
+  {
+    "name": "not_json",
+    "files": [],
+    "stdin": "not json",
+    "exit": 1,
+    "stdout": ""
+  },
+  {
+    "name": "non_array_payload_fails_closed",
+    "files": [],
+    "stdin": "{\"files\": []}",
+    "exit": 1,
+    "stdout": ""
+  }
+]
