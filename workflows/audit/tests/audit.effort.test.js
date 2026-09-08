@@ -72,7 +72,7 @@ test("a run whose challenge stub returns verdicts carries challenge_ran=true and
 });
 
 // Left as general-purpose it would carry unrestricted Bash, and neither generator-snapshot's
-// tools restriction (Write and python3 only) nor its Posture would apply.
+// tools restriction (Write and node only) nor its Posture would apply.
 test("the Snapshot stage passes generator-snapshot as the agentType", async () => {
   const { calls } = await runToIntegrate();
   const snapshotCalls = calls.agent.filter((c) => c.opts && c.opts.label === "snapshot");
