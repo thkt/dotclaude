@@ -9,7 +9,8 @@ import { existsSync, globSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { runCli, withTempHome } from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import { fixture, runCli, withTempHome } from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import type { CliRun } from "../../../workflows/_lib/tests/_cli-fixture.ts";
 import { VERDICTS, score } from "../review_score.ts";
 import type { Case, Previous } from "../review_score.ts";
 
@@ -31,19 +32,9 @@ const CASES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "review-score-cases.json"), "utf8"),
 ) as FixtureCase[];
 
-function findCase(name: string): FixtureCase {
-  const found = CASES.find((entry) => entry.name === name);
-  assert.ok(found, `fixture case ${name} exists in review-score-cases.json`);
-  return found as FixtureCase;
-}
-
 /** Writes `entry.files` under a fresh temp HOME, resolves the `<home>` placeholders in its
  * argv, and spawns the CLI -- the replay every CLI-facing scenario below drives through. */
-function runFixtureCase(entry: FixtureCase): {
-  status: number | null;
-  stdout: string;
-  stderr: string;
-} {
+function runFixtureCase(entry: FixtureCase): CliRun {
   return withTempHome((home) => {
     for (const [name, content] of Object.entries(entry.files)) {
       writeFileSync(join(home, name), JSON.stringify(content));
@@ -70,12 +61,12 @@ test("T-170 every frozen case in review-score-cases.json reproduces the python s
 });
 
 test("T-171 a missing argument exits 2 with the usage line on stderr and nothing on stdout, and a verdict outside the closed set exits 1 with the report still printed", () => {
-  const missingArg = runFixtureCase(findCase("insufficient_argv_exits_2_with_empty_stdout"));
+  const missingArg = runFixtureCase(fixture(CASES, "insufficient_argv_exits_2_with_empty_stdout"));
   assert.equal(missingArg.status, 2, `exit code (stderr: ${missingArg.stderr})`);
   assert.equal(missingArg.stdout, "");
   assert.match(missingArg.stderr, /usage/i);
 
-  const unknownVerdict = findCase("unknown_verdict_among_known_exits_1");
+  const unknownVerdict = fixture(CASES, "unknown_verdict_among_known_exits_1");
   const run = runFixtureCase(unknownVerdict);
   assert.equal(run.status, 1, `exit code (stderr: ${run.stderr})`);
   assert.deepEqual(JSON.parse(run.stdout), JSON.parse(unknownVerdict.stdout));
