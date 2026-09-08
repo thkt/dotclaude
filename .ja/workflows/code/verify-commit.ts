@@ -2,9 +2,8 @@
 /// <reference types="node" />
 // Usage: verify-commit.ts   (commit 事後条件の payload JSON を stdin で受ける)
 //
-// workflows/code/verify-commit.py の TypeScript 移植: unit コミットが workflow の宣言どおりに
-// 着地したかを、commit agent の自己申告ではなく Git に照会して検証する。この移植が複製する
-// stdin/stdout の契約全体は、そちらのファイルを参照。
+// 置き換え元の Python 版 commit 検証器の TypeScript 移植: unit コミットが workflow の宣言どおりに
+// 着地したかを、commit agent の自己申告ではなく Git に照会して検証する。
 //
 // stdin: JSON {repo, baseline_head, unit_files, body}
 //   repo           リポジトリの絶対パス
@@ -99,7 +98,7 @@ function subjectBlockers(subject: string): string[] {
   return blockers;
 }
 
-/** workflows/code/verify-commit.py の verify() が行う 5 つの事後条件検査を実行し、
+/** 置き換え元の Python 版 verify() が行っていたのと同じ 5 つの事後条件検査を実行し、
  * 同じ report 形状を同じ key 順で返す。 */
 export function verify(payload: unknown): Record<string, unknown> {
   if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {

@@ -1221,7 +1221,7 @@ const runSlug = `${issueNumber || "no-issue"}-${String(branch).replace(/[^\w.-]+
 
 // pr-writing.md のタイトル規則 (issue タイトルから feat: / fix: の prefix を外す) は script が
 // 適用する。Ship agent は issue を引かずに自作のタイトルで PR を開くことがある。Load が title を
-// 取得できなかった run では空。type の一覧は verify-commit.py の COMMIT_TYPES と同じで、任意の
+// 取得できなかった run では空。type の一覧は verify-commit.ts の COMMIT_TYPES と同じで、任意の
 // 単語を外すと "WIP:" や "RFC:" が消える。
 const CONVENTIONAL_PREFIX =
   /^(?:feat|fix|refactor|docs|test|chore|perf|style|ci)(?:\([^()]*\))?!?:\s*/i;

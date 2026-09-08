@@ -1,9 +1,9 @@
 /// <reference types="node" />
-// Behavior tests for workflows/code/verify-commit.ts, the TypeScript port of
-// workflows/code/verify-commit.py (commit postcondition verification). T-151..T-154 mirror
-// workflows/code/tests/verify_commit_test.py's setUp/commit_unit/verify helpers directly:
-// each test builds a temp repository with real git (a fixture standing in for the plumbing
-// would not catch a check that reads the wrong git output) and calls verify() in-process.
+// Behavior tests for workflows/code/verify-commit.ts, the TypeScript port of the Python
+// commit postcondition verifier it replaces. T-151..T-154 mirror that Python suite's
+// setUp/commit_unit/verify helpers directly: each test builds a temp repository with real
+// git (a fixture standing in for the plumbing would not catch a check that reads the wrong
+// git output) and calls verify() in-process.
 //
 // T-155..T-157 cover the CLI wrapper (main) instead: they spawn the real script through
 // workflows/_lib/tests/_cli-fixture.ts's runCli and replay workflows/code/tests/fixtures/

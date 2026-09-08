@@ -2,9 +2,9 @@
 /// <reference types="node" />
 // Usage: verify-commit.ts   (commit postcondition payload JSON on stdin)
 //
-// TypeScript port of workflows/code/verify-commit.py: verify against Git that a unit commit
-// landed as the workflow declared it, instead of trusting the commit agent's self-report. See
-// that file for the full stdin/stdout contract this port replicates.
+// TypeScript port of the Python commit verifier it replaces: verify against Git that a unit
+// commit landed as the workflow declared it, instead of trusting the commit agent's
+// self-report.
 //
 // stdin: JSON {repo, baseline_head, unit_files, body}
 //   repo           absolute path to the repository
@@ -99,7 +99,7 @@ function subjectBlockers(subject: string): string[] {
   return blockers;
 }
 
-/** Runs the five postcondition checks workflows/code/verify-commit.py's verify() runs and
+/** Runs the same five postcondition checks the Python verify() it replaces used to run and
  * returns the same report shape, in the same key order. */
 export function verify(payload: unknown): Record<string, unknown> {
   if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
