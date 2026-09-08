@@ -7,7 +7,7 @@
 // skills/outcome/scripts/validate-outcome.ts), and hooks/_lib/shebang_scope.ts's trackedEntries
 // for the git-index mode check (T-182) instead of a standalone statSync or spawn.
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -106,3 +106,24 @@ test(
     assert.equal(firstLine, "#!/usr/bin/env node", "shebang line");
   },
 );
+
+test("T-262 a broken symlink ending in .md is skipped and the real candidates are still reported", () => {
+  // Python's Path.is_file() answers False for a broken symlink, so the scan walks past it.
+  // statSync throws instead, which took the whole run down with a stack trace and exit 1.
+  withTempHome((home) => {
+    const workDir = mkdtempSync(join(tmpdir(), "find-prior-research-broken-link-"));
+    try {
+      writeFileSync(join(workDir, "target-thing.md"), "body\n");
+      symlinkSync(join(workDir, "gone.md"), join(workDir, "dangling-thing.md"));
+
+      const run = runCli(SCRIPT, home, "", ["thing"], { cwd: workDir });
+      assert.equal(run.status, 0, `exit code (stderr: ${run.stderr})`);
+      assert.deepEqual(JSON.parse(run.stdout), {
+        candidates: [{ file: "target-thing.md", shared: 1 }],
+        slug_words: 1,
+      });
+    } finally {
+      rmSync(workDir, { recursive: true, force: true });
+    }
+  });
+});

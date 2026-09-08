@@ -11,7 +11,7 @@
 // Contract: this script's own behavior, pinned by the fixture below. Exercised by
 // skills/census/tests/list-source-files.test.ts, replayed from
 // skills/census/tests/fixtures/list-source-files-cases.json.
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
@@ -29,6 +29,17 @@ export const EXTS = [
 ] as const;
 export const PRUNE = new Set(["target", "node_modules", ".git"]);
 
+/** os.walk's split between dirnames and filenames, which stats through a symlink: everything
+ * that is not a directory lands among the filenames, a symlink to a file and a broken symlink
+ * included. Dirent.isFile() answers false for both, because it never follows the link. */
+function isDirectory(path: string): boolean {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
 /** Every file under `dir` whose name ends in one of EXTS, walked depth-first with any
  * directory named in PRUNE left unvisited -- the TS mirror of os.walk's dirnames[:] = [...]
  * pruning, which also stops nothing but recursion into that directory. */
@@ -36,10 +47,12 @@ export function sourceFiles(dir: string): string[] {
   const found: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (PRUNE.has(entry.name)) continue;
+    if (isDirectory(full)) {
+      // os.walk's followlinks=False lists a symlinked directory among dirnames and does not
+      // descend into it.
+      if (PRUNE.has(entry.name) || entry.isSymbolicLink()) continue;
       found.push(...sourceFiles(full));
-    } else if (entry.isFile() && EXTS.some((ext) => entry.name.endsWith(ext))) {
+    } else if (EXTS.some((ext) => entry.name.endsWith(ext))) {
       found.push(full);
     }
   }

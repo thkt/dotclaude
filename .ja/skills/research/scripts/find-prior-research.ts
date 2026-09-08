@@ -44,6 +44,16 @@ function intersectionSize(a: Set<string>, b: Set<string>): number {
   return count;
 }
 
+/** Python の Path.is_file() と同じ扱い。壊れた symlink や読めない親ディレクトリによる OSError
+ * は、走査を止めるのではなく「ファイルではない」として読む。statSync はそこで送出する。 */
+function isFile(path: string): boolean {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
+
 export function main(argv: readonly string[]): number {
   const slug = argv[0] ?? "";
   const searchDir = argv[1] ?? "";
@@ -63,7 +73,7 @@ export function main(argv: readonly string[]): number {
   for (const name of entries) {
     if (!name.endsWith(".md")) continue;
     const filePath = join(dirPath, name);
-    if (!statSync(filePath).isFile()) continue;
+    if (!isFile(filePath)) continue;
     const stem = name.slice(0, -".md".length).replace(DATE_PREFIX, "");
     const shared = intersectionSize(slugWords, words(stem));
     if (shared > 0) candidates.push({ file: name, shared });

@@ -12,7 +12,7 @@
 // Contract: このスクリプト自身の振る舞い。下記の fixture が固定する。
 // skills/census/tests/list-source-files.test.ts が検証し、
 // skills/census/tests/fixtures/list-source-files-cases.json から再生する。
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
@@ -30,6 +30,17 @@ export const EXTS = [
 ] as const;
 export const PRUNE = new Set(["target", "node_modules", ".git"]);
 
+/** os.walk が dirnames と filenames を分ける基準で、symlink をたどって stat する。ディレクトリ
+ * でないものはすべて filenames 側に落ち、ファイルへの symlink も壊れた symlink も含まれる。
+ * Dirent.isFile() は link をたどらないので、そのどちらにも false を返す。 */
+function isDirectory(path: string): boolean {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
 /** `dir` 配下で名前が EXTS のいずれかで終わるファイルをすべて、PRUNE に名前のある
  * ディレクトリを未訪問のまま残しつつ深さ優先で歩く -- os.walk の dirnames[:] = [...] と
  * 同じ枝刈りの TS 版で、そちらもそのディレクトリへの再帰だけを止める。 */
@@ -37,10 +48,12 @@ export function sourceFiles(dir: string): string[] {
   const found: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (PRUNE.has(entry.name)) continue;
+    if (isDirectory(full)) {
+      // os.walk's followlinks=False lists a symlinked directory among dirnames and does not
+      // descend into it.
+      if (PRUNE.has(entry.name) || entry.isSymbolicLink()) continue;
       found.push(...sourceFiles(full));
-    } else if (entry.isFile() && EXTS.some((ext) => entry.name.endsWith(ext))) {
+    } else if (EXTS.some((ext) => entry.name.endsWith(ext))) {
       found.push(full);
     }
   }

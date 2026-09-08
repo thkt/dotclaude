@@ -15,13 +15,21 @@
 // find-prior-research), so a case is compared with assert.equal on the full text rather than
 // assertStdoutShape's JSON-aware comparison.
 import assert from "node:assert/strict";
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { trackedEntries } from "../../../hooks/_lib/shebang_scope.ts";
-import { runCli, withTempHome } from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import { fixture, runCli, withTempHome } from "../../../workflows/_lib/tests/_cli-fixture.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "list-source-files.ts");
@@ -46,12 +54,6 @@ interface ListSourceFilesCase {
 const CASES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "list-source-files-cases.json"), "utf8"),
 ) as ListSourceFilesCase[];
-
-function fixture(name: string): ListSourceFilesCase {
-  const found = CASES.find((entry) => entry.name === name);
-  assert.ok(found, `fixture case ${name} exists in the loaded fixtures`);
-  return found as ListSourceFilesCase;
-}
 
 /** Writes `files` (relative path -> content, directories implied by "/" in the key) under a
  * fresh temp root, returning that root's absolute path. */
@@ -91,7 +93,7 @@ test(
     assert.ok(CASES.length > 0, "the frozen fixture carries at least one case");
     withTempHome((home) => {
       for (const testCase of CASES) {
-        runCase(fixture(testCase.name), home);
+        runCase(fixture(CASES, testCase.name), home);
       }
     });
   },
@@ -132,4 +134,32 @@ test("T-186 the script is tracked with mode 100755 in the git index and opens wi
   assert.equal(mode, "100755", "git index mode");
   const firstLine = readFileSync(absolutePath, "utf8").split(/\r?\n/, 1)[0];
   assert.equal(firstLine, "#!/usr/bin/env node", "shebang line");
+});
+
+test("T-263 a symlink to a source file is listed and a symlinked directory is listed without being descended into", () => {
+  // os.walk splits dirnames from filenames by stat through the link, so a symlink to a source
+  // file belongs in the listing. Dirent.isFile() answers false for it and dropped it silently.
+  withTempHome((home) => {
+    const root = mkdtempSync(join(tmpdir(), "list-source-files-symlink-"));
+    try {
+      writeFileSync(join(root, "real.ts"), "one\ntwo\n");
+      symlinkSync(join(root, "real.ts"), join(root, "link.ts"));
+      mkdirSync(join(root, "sub"));
+      writeFileSync(join(root, "sub", "deep.ts"), "x\n");
+      // followlinks=False: the walk lists this among the directories and stops there, so
+      // sub/deep.ts must not be counted a second time through it.
+      symlinkSync(join(root, "sub"), join(root, "sublink"));
+
+      const run = runCli(SCRIPT, home, "", [root], { cwd: REPO_ROOT });
+      assert.equal(run.status, 0, `exit code (stderr: ${run.stderr})`);
+      const listed = run.stdout
+        .split("\n")
+        .filter((line) => line.trim())
+        .map((line) => line.slice(line.indexOf(" ") + 1).replace(`${root}/`, ""))
+        .sort();
+      assert.deepEqual(listed, ["link.ts", "real.ts", "sub/deep.ts"]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
