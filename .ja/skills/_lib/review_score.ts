@@ -5,13 +5,13 @@
 // stdout: JSON { counts, metrics, byCategory, diff, unknownVerdicts }
 // exit: verdict が全て閉じた集合の中なら 0、外があれば 1、引数が足りなければ 2
 //
-// review_score.py の VERDICTS / score / main を TypeScript へ移植したもの。results は素の
+// 置き換え元の Python 版 scorer の VERDICTS / score / main を TypeScript へ移植したもの。results は素の
 // 配列か `{results: [...]}` の wrapper のどちらでも読み、unknownVerdicts が空でなければ
 // exit 1、引数が足りなければ usage を stderr へ書いて exit 2 にする。Python の snake_case な
 // 識別子は harness_hash.ts で既に行ったのと同じリネームで TS 側では camelCase になる。
 // Report のフィールド名 (byCategory, unknownVerdicts, below_severity, ...) は
-// review_score.py がそのまま出力する wire format であり TS の識別子ではないため、
-// review_score.py の綴りのまま残す。
+// Python 版がそのまま出力していた wire format であり TS の識別子ではないため、
+// 綴りをそのまま残す。
 import { readFileSync } from "node:fs";
 import { isMainModule } from "../../workflows/_lib/entry-point.ts";
 

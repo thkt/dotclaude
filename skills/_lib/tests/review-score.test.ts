@@ -1,7 +1,7 @@
 /// <reference types="node" />
-// Behavior tests for skills/_lib/review_score.ts: the TS port of review_score.py's VERDICTS,
+// Behavior tests for skills/_lib/review_score.ts: the TS port of the Python scorer's VERDICTS,
 // score(), and CLI main(). skills/_lib/tests/fixtures/review-score-cases.json (built by U-001)
-// freezes review_score.py's own argv -> exit/stdout, so the CLI-facing scenarios below replay
+// freezes the Python scorer's own argv -> exit/stdout, so the CLI-facing scenarios below replay
 // it through workflows/_lib/tests/_cli-fixture.ts's runCli/withTempHome rather than
 // hand-writing new cases that could drift from the Python scorer they must match.
 import assert from "node:assert/strict";

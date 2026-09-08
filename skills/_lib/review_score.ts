@@ -5,12 +5,12 @@
 // stdout: JSON { counts, metrics, byCategory, diff, unknownVerdicts }
 // exit: 0 when every verdict is in the closed set, 1 otherwise, 2 when an argument is missing
 //
-// TypeScript port of review_score.py's VERDICTS, score, and main: reads results as either a
+// TypeScript port of the Python reviewer scorer it replaces (VERDICTS, score, main): reads results as either a
 // bare array or a `{results: [...]}` wrapper, exits 1 when unknownVerdicts is non-empty, exits
 // 2 with a usage line on stderr when an argument is missing. Python's snake_case identifiers
 // carry over as TS camelCase, the same rename harness_hash.ts already made; the JSON field
 // names in Report (byCategory, unknownVerdicts, below_severity, ...) stay exactly as
-// review_score.py prints them, since they are wire format, not TS identifiers.
+// the Python version printed them, since they are wire format, not TS identifiers.
 import { readFileSync } from "node:fs";
 import { isMainModule } from "../../workflows/_lib/entry-point.ts";
 

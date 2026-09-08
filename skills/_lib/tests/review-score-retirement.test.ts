@@ -6,7 +6,7 @@
 // TESTING.md reviewer row invoke review_score.ts through node rather than review_score.py
 // through python3.
 //
-// Same shape as workflows/_lib/tests/record-retirement.test.ts, which guards record.py's own
+// Same shape as workflows/_lib/tests/record-retirement.test.ts, which guards its own
 // retirement: offendersAmong/trackedFiles/assertDetectsAndMisses from
 // workflows/_lib/tests/_retirement.ts drive a full-tree scan, and only the helper's own
 // defaults (docs/decisions/, .claude/workspace/research/) plus this file itself are excluded.
@@ -29,7 +29,7 @@ const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
 // A word boundary, not a bare substring: review_score.py.bak or my_review_score.py would not
 // count as the retired file being referenced. Mirrors record-retirement.test.ts's own
-// RETIRED_PATTERN for record.py.
+// RETIRED_PATTERN.
 const RETIRED_PATTERN = /(^|[^\w.-])review_score\.py\b/;
 
 // The one predicate the absence scan below relies on, factored out so the positive control can
