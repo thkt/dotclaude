@@ -38,7 +38,6 @@
   ],
   "ignoreBinaries": ["codex"],
   "ignoreDependencies": ["oxfmt", "^@?textlint"],
-  "ignoreExportsUsedInFile": { "function": true },
   "ignoreFiles": [
     "workflows/tests/fixtures/**",
     "hooks/**/tests/fixtures/**",

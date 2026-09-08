@@ -28,7 +28,7 @@ const HISTORICAL_FILE = "docs/wiki/deterministic-script-judgment.md";
 // The four retired scripts named as bare filenames (no directory: build.js calls
 // bundled("workflows/build/revalidate.py") but the RECORD_SCHEMA-style description strings and
 // prompt comments name the bare filename with no directory at all, the same asymmetry
-// record-retirement.test.ts's RETIRED_PATTERN comment describes for record.py). One regex
+// record-retirement.test.ts's own RETIRED_PATTERN comment describes). One regex
 // covers all four, each guarded the same way: a preceding word/dot/hyphen character rules out a
 // match inside a longer name, and \b after ".py" rules out a match against a longer extension.
 const RETIRED_NAMES = ["revalidate.py", "verify-tests.py", "diff-files.py", "verify-pr.py"];
