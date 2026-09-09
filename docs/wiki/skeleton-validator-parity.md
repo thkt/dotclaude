@@ -1,5 +1,5 @@
 ---
-globs: ["**/skills/**/templates/*.md", "**/skills/**/scripts/validate-*.py", "workflows/build.js"]
+globs: ["**/skills/**/templates/*.md", "**/skills/**/scripts/validate-*.ts", "workflows/build.js"]
 scenes: []
 ---
 
@@ -18,8 +18,8 @@ scenes: []
 
 ## 参照コード
 
-- `skills/issue/scripts/validate-issue-body.py` の `FLOOR`（型ごとに必須となる節。骨格が省いても足される）
-- `skills/dr/scripts/validate-dr.py`（必須節と frontmatter を検査する）
+- `skills/issue/scripts/validate-issue-body.ts` の `FLOOR`（型ごとに必須となる節。骨格が省いても足される）
+- `skills/dr/scripts/validate-dr.ts`（必須節と frontmatter を検査する）
 - `workflows/build.js` の `REFERENCE_MODULE_LINE_RE`（骨格が節を省略しても、本文の `reference_module:` 行から kind/reason を正規表現で決定的に補うフォールバック）
 
 ## 根拠

@@ -1,6 +1,6 @@
 # Validation errors
 
-${CLAUDE_SKILL_DIR}/scripts/validate-issue-body.py writes `{errors, warnings, checks}` to stdout as JSON. It exits 1 when `errors` carries one or more entries. Fix each error per the table below, then run the script again.
+${CLAUDE_SKILL_DIR}/scripts/validate-issue-body.ts writes `{errors, warnings, checks}` to stdout as JSON. It exits 1 when `errors` carries one or more entries. Fix each error per the table below, then run the script again.
 
 | Error                                              | Action                                                                                                                                                                     |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

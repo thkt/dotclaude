@@ -27,13 +27,13 @@ Proceed to the process only when all three conditions below hold. When one is mi
 
 | Step | Stage     | Actions                                                                                                                                                                                            |
 | ---- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Pre-Check | Run ${CLAUDE_SKILL_DIR}/scripts/pre-check.py "$TITLE". What it consumes from the return is `dr_dir` and `filename` (where to write), `date` (frontmatter), and `similar_drs` (duplicate check)     |
+| 1    | Pre-Check | Run ${CLAUDE_SKILL_DIR}/scripts/pre-check.ts "$TITLE". What it consumes from the return is `dr_dir` and `filename` (where to write), `date` (frontmatter), and `similar_drs` (duplicate check)     |
 | 2    | Type      | Determine the decision type by the decision's intent and pick its recommended topics (§ Decision Type)                                                                                             |
 | 3    | Sources   | Gather project docs, issues, external resources                                                                                                                                                    |
 | 4    | Draft     | Copy ${CLAUDE_SKILL_DIR}/templates/madr-template.md into `dr_dir` under the name `filename` and fill it from what was gathered (§ YAML Frontmatter)                                                |
 | 5    | Challenge | Only for a DR that carves an exception into an existing DR's principle or supersedes one, run `/challenge` and record the verdict and the condition it holds under as one line in More Information |
-| 6    | Validate  | Run ${CLAUDE_SKILL_DIR}/scripts/validate-dr.py "$DR_FILE". exit 0 passes. What failed lands in `errors[]`, and `warnings[]` is advisory                                                            |
-| 7    | Index     | Run ${CLAUDE_SKILL_DIR}/scripts/update-index.py to regenerate `dr_dir/README.md`                                                                                                                   |
+| 6    | Validate  | Run ${CLAUDE_SKILL_DIR}/scripts/validate-dr.ts "$DR_FILE". exit 0 passes. What failed lands in `errors[]`, and `warnings[]` is advisory                                                            |
+| 7    | Index     | Run ${CLAUDE_SKILL_DIR}/scripts/update-index.ts to regenerate `dr_dir/README.md`                                                                                                                   |
 
 ## Decision Type
 
@@ -66,7 +66,7 @@ When the status is proposed, edit the body directly and run Validate and Index. 
 2. Cite the predecessor in the new DR's More Information (e.g. `Supersedes DR-NNNN`)
 3. In the old DR, change `status:` to `superseded by DR-NNNN`
 4. Update the old DR's `date:` to today
-5. Run ${CLAUDE_SKILL_DIR}/scripts/update-index.py to refresh the index
+5. Run ${CLAUDE_SKILL_DIR}/scripts/update-index.ts to refresh the index
 
 ## Error Handling
 

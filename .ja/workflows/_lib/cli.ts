@@ -74,3 +74,14 @@ export function historyPath(home: string, name: string): string {
 export function isoTimestamp(date: Date = new Date()): string {
   return date.toISOString().replace(/\.\d{3}Z$/, "Z");
 }
+
+/** Python の `json.dumps` と同じ形の JSON object 文字列。項目の間は `", "`、key の後ろは
+ * `": "` で、`JSON.stringify` はどちらの空白も書かない。凍結した Python の出力と stdout を
+ * byte 単位で比べる移植版には、この空白が要る。値の描画は `JSON.stringify` に任せる。ここで
+ * 出る scalar はすべて Python と表記が一致する。 */
+export function toPythonJson(value: object): string {
+  const parts = Object.entries(value).map(
+    ([key, entry]) => `${JSON.stringify(key)}: ${JSON.stringify(entry)}`,
+  );
+  return `{${parts.join(", ")}}`;
+}

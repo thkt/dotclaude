@@ -56,7 +56,7 @@
 - hako.sh の run_agent/run_login は agents.sh の agent 名検証より前に workspace 解決 (git clone) を実行し、validate-then-assemble の順序を逆転させている。未知の agent 名でも検証失敗前にクローンの副作用が生じ、後始末もされない #556
 - 参照モジュールが 1 ファイル内で T-NNN を T-001 から再採番する規約を持つとき、新規追加した複数ファイルに渡って単一の連番を通すと、後続ファイルがどこも T-001 から採番されない構造逸脱として検出される #556
 - 実装単位 ID (U-NNN 等) を DR/README のような持続文書で引用するとき、その ID を定義する issue 番号を併記しないと、番号は issue ごとに再利用されるため単体で追跡できない #585
-- DR 番号は pre-check.py の返り値をそのまま採らず、未マージの他 PR が先に同じ番号を使っていないか確認してから確定する #491
+- DR 番号は pre-check.ts の返り値をそのまま採らず、未マージの他 PR が先に同じ番号を使っていないか確認してから確定する #491
 - 原因未確定かつローカル再現しない不具合は、推測に基づく修正を当てず再現条件を確定する診断計測を先に足す #590
 - Red gate の test_command は、失敗行の文字列が実行間で完全一致する出力形式 (reporter) を要求する #596
 - tests を持つ unit は plan の files に、そのテストが動かすモジュールを含める。Red が触れるのは files にあるものだけなので、files 外を import するテストは Red を確立できない #600
@@ -72,7 +72,6 @@
 - 手元の gate (oxlint/oxfmt) は Python を見ないので、push 前に CI と同じ版の ruff (0.16.4) を手元で走らせる。E501 だけで CI が落ちた #623
 - PR 本文の Review focus 節で、振る舞いが変わったファイルと comment のみの変更ファイルを分けて示す #648
 - TS 化で knip.json の glob 拡張だけでは足りず、CLI 入口ファイル (entry) と静的 import されない test fixture (ignoreFiles) は明示しないと未使用 export として新規に誤検出される #653
-- 既存の共有 helper (entry-point.ts の isMainModule) があるのに、移植元の手書き同等処理をそのまま写した (research)
 - knip の project glob は TS 化した層 (hooks/**、skills/**/*.ts) を足さないと、その層の .ts は dead-export 検出ゼロのまま tsc だけが見る (research)
 - docs/SPEC.md の確認コマンドは CI の test.yml の glob とずれる (.test.ts と sandbox が無い)。片方を正本にする (research)
 - issue を拾う前に ## Plan の有無と Blocked by の open 状態で着手可能性を機械的に絞る。build は Plan の無い issue を no-plan で止める (research)
@@ -82,6 +81,10 @@
 - Python の round(x, n) (round-half-to-even) を TS へ移すとき Math.round は half-up で丸め、境界値で不一致になる。round-half-to-even を実装する round3 相当の関数を用意し、実測 (全 hit/total ペアを Python の round と突き合わせ) で確認する #672
 - 退役対象ファイル名の残存参照を grep で検査するとき、ブランチ単体の diff では 0 件でも、他 PR が分岐後に main へ入れた新規参照 (退役前は正当だった記述) を merge 後の状態で検査すると検出される。ブランチ diff でなく origin/main との合流点を対象にする #669
 - 退役する対象と同じファイルにあるテストクラスを一括で消す前に、各クラスが実際に退役対象そのものを検査しているかを個別に確認する。1 クラスだけ別の対象 (ドキュメント散文など) を検査しており、退役対象と無関係なら一緒に消さず残す/復元する #672
+- Python の Path.is_file() は壊れたシンボリックリンクの OSError を握って False を返すが、Node の statSync は例外を投げてクラッシュする #675
+- Node の Dirent.isFile() はシンボリックリンクを辿らずファイル一覧から落とすが、Python の os.walk はシンボリックリンクのファイルを辿って一覧に含める #675
+- 退役対象ファイルの consumer 一覧は、Plan の手作業列挙だと機械的な grep 網羅より見落としやすい #675
+- TS 移植で Node の existsSync はディレクトリにも true を返すため、Python の Path.is_file() が担っていたファイル種別チェックを個別に書かないとガードを素通りしてクラッシュする #679
 
 ## 棄却
 

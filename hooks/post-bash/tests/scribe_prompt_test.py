@@ -100,7 +100,7 @@ class TestScribePrompt(unittest.TestCase):
 
         HOME moves to a fresh temp dir so should_prompt's cooldown stamp
         (~/.cache/claude-scribe_trigger.last) never touches this machine's real one, the same
-        isolation hooks/lifecycle/tests/recall_index_test.py uses for its own stamp file.
+        isolation hooks/lifecycle/tests/recall-index.test.ts uses for its own stamp file.
 
         gh_responses is None on every path where should_prompt is expected to return before
         it ever calls gh (no docs/wiki, or the tool_response-failure short-circuit): PATH

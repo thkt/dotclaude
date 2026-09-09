@@ -1,5 +1,5 @@
 ---
-globs: ["**/scripts/**/*.py", "workflows/**/*.py", "**/tests/**/*.ts", "agents/**/*.md"]
+globs: ["**/scripts/**/*.py", "workflows/**/*.ts", "**/tests/**/*.ts", "agents/**/*.md"]
 scenes: ["implement"]
 ---
 

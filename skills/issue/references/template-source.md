@@ -4,7 +4,7 @@ Settle where the skeleton of a filed issue comes from. Both `/issue` and `/slice
 
 Enumerate the templates via `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'`. Look for the skeleton matching the type by working down the table and take the first that answers. The repository's own comes first so that a web-UI filing and a CLI filing carry the same skeleton.
 
-The top two state the minimum the web UI asks someone to fill in. Adding sections at CLI filing time is not a deviation. A feature carries `Acceptance Criteria` and `Testing Decisions` even when the skeleton omits them. A bug carries `Steps to Reproduce` and `Expected vs Actual`. Those two live in `validate-issue-body.py`'s `FLOOR` per type, which adds them whatever the skeleton requires.
+The top two state the minimum the web UI asks someone to fill in. Adding sections at CLI filing time is not a deviation. A feature carries `Acceptance Criteria` and `Testing Decisions` even when the skeleton omits them. A bug carries `Steps to Reproduce` and `Expected vs Actual`. Those two live in `validate-issue-body.ts`'s `FLOOR` per type, which adds them whatever the skeleton requires.
 
 | Skeleton                          | How the section names are read                                                                                                |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
