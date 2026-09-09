@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { OUTPUT_KEYS } from "../scripts/pre-check.ts";
+import { REQUIRED_SECTIONS, RECOMMENDED_SECTIONS, STATUS_VALUES } from "../scripts/validate-dr.ts";
+import { STATUS_SECTIONS } from "../scripts/update-index.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const at = (lang, ...parts) =>
@@ -12,24 +15,9 @@ const pair = (...parts) => ({ ja: at("ja", ...parts), en: at("en", ...parts) });
 const skills = pair("SKILL.md");
 const templates = pair("templates", "madr-template.md");
 const formats = pair("references", "madr-format.md");
-const preChecks = pair("scripts", "pre-check.py");
-const validates = pair("scripts", "validate-dr.py");
-const indexes = pair("scripts", "update-index.py");
 
-const outputKeys = (src) => {
-  // Bounded to the dumps call rather than to an indent width, so reformatting the call does not
-  // change what the contract reads as.
-  const block = src.slice(src.indexOf("json.dumps("), src.indexOf("indent=2"));
-  return [...block.matchAll(/"(\w+)":/g)].map((m) => m[1]);
-};
-const statusValues = (src) =>
-  (src.match(/^STATUS_VALUES = re\.compile\(r"([^"]+)"\)/m)?.[1] ?? "").split("|");
-const indexSections = (src) => [...src.matchAll(/^\s{4}\("(\w+)", "\w+"\),$/gm)].map((m) => m[1]);
-const requiredSections = (src) => [...src.matchAll(/^\s{4}"([^"]+)",$/gm)].map((m) => m[1]);
-const recommendedSections = (src) =>
-  [...(src.match(/^RECOMMENDED_SECTIONS = \(([^)]*)\)/m)?.[1] ?? "").matchAll(/"([^"]+)"/g)].map(
-    (m) => m[1],
-  );
+// STATUS_VALUES is compiled as ^(?:a|b|c)$, so the alternation is the list of values it accepts.
+const statusValues = (regex) => regex.source.replace(/^\^\(\?:/, "").replace(/\)\$$/, "").split("|");
 
 const eachLanguage = async (paths, check) => {
   for (const [lang, path] of Object.entries(paths)) {
@@ -39,14 +27,10 @@ const eachLanguage = async (paths, check) => {
 
 // A key SKILL.md never names is a key the agent never reads. Without filename the auto-numbering
 // is thrown away and the agent invents a name of its own.
-test("SKILL.md uses pre-check.py's output keys", async () => {
-  const keys = outputKeys(await readFile(preChecks.en, "utf8"));
+test("SKILL.md uses pre-check's output keys", async () => {
+  const keys = OUTPUT_KEYS;
   assert.ok(keys.includes("filename"), `the output keys are readable (${keys.join(", ")})`);
   assert.ok(keys.length >= 6, `six or more keys are present (${keys.length})`);
-  // Only the prose differs between the two copies, so a key that moved on one side alone would
-  // leave the two skills documenting different JSON.
-  const ja = outputKeys(await readFile(preChecks.ja, "utf8"));
-  assert.deepEqual(ja, keys, "both copies return the same keys");
 
   // number rides inside filename, slug inside both, and status is always "ok", so none of the
   // three reaches the body.
@@ -58,7 +42,7 @@ test("SKILL.md uses pre-check.py's output keys", async () => {
   });
 });
 
-// validate-dr.py never checks the status value, so a spelling left over from the rename would
+// validate-dr.ts never checks the status value, so a spelling left over from the rename would
 // pass unnoticed and split the supersede identifier in two.
 test("madr-format writes the supersede identifier as DR-NNNN", () =>
   eachLanguage(formats, (doc, lang) => {
@@ -92,11 +76,9 @@ test("every frontmatter field has a slot in the template", async () => {
 
 // With a required section missing from the template, every DR written fails at Validate with
 // missing_section.
-test("the required sections match between the template and validate-dr.py", async () => {
-  const sections = requiredSections(await readFile(validates.en, "utf8"));
+test("the required sections match between the template and validate-dr", async () => {
+  const sections = REQUIRED_SECTIONS;
   assert.ok(sections.length >= 4, `the required sections are readable (${sections.join(" / ")})`);
-  const ja = requiredSections(await readFile(validates.ja, "utf8"));
-  assert.deepEqual(ja, sections, "both copies require the same sections");
   await eachLanguage(templates, (doc, lang) => {
     for (const section of sections) {
       assert.match(doc, new RegExp(`^#{2,3} ${section}$`, "m"), `${lang}: the ${section} heading`);
@@ -146,7 +128,7 @@ test("every section a step cites exists", () =>
 
 // The opening sentence of Decision Type says the type changes the recommended topics alone, so a
 // fourth column puts the table at odds with the sentence above it. Nothing reads a per-type line
-// cap either: the type is never written into the DR, so validate-dr.py cannot look one up.
+// cap either: the type is never written into the DR, so validate-dr.ts cannot look one up.
 test("the decision type table carries type, use case, and topics only", () =>
   eachLanguage(skills, (doc, lang) => {
     const row = doc.split("\n").find((line) => line.startsWith("| technology-selection"));
@@ -159,13 +141,11 @@ test("the decision type table carries type, use case, and topics only", () =>
 // madr-format is what stops the section from being filed as optional while the body requires it.
 // 58 of 101 existing DRs lack the section, which is what a missing piece produces.
 test("every recommended section reaches the template, the body, and the format reference", async () => {
-  const sections = recommendedSections(await readFile(validates.en, "utf8"));
+  const sections = RECOMMENDED_SECTIONS;
   assert.ok(
     sections.length >= 1,
     `the recommended sections are readable (${sections.join(" / ")})`,
   );
-  const ja = recommendedSections(await readFile(validates.ja, "utf8"));
-  assert.deepEqual(ja, sections, "both copies recommend the same sections");
   for (const section of sections) {
     await eachLanguage(templates, (doc, lang) => {
       assert.match(doc, new RegExp(`^#{2,3} ${section}$`, "m"), `${lang}: the ${section} heading`);
@@ -182,20 +162,18 @@ test("every recommended section reaches the template, the body, and the format r
   }
 });
 
-// update-index.py buckets By Status with status.startswith(), so a status value no section key
+// update-index.ts buckets By Status with status.startswith(), so a status value no section key
 // matches lands in no group and drops out of the index with nothing reported. Two DRs were lost
-// that way ("Accepted" capitalised, and a free-text retirement note) before validate-dr.py
+// that way ("Accepted" capitalised, and a free-text retirement note) before validate-dr.ts
 // started rejecting values outside the lifecycle.
-test("every status value has a section in update-index.py and a row in madr-format", async () => {
-  const values = statusValues(await readFile(validates.en, "utf8"));
+test("every status value has a section in update-index and a row in madr-format", async () => {
+  const values = statusValues(STATUS_VALUES);
   assert.ok(values.length >= 5, `the status values are readable (${values.join(" / ")})`);
-  const ja = statusValues(await readFile(validates.ja, "utf8"));
-  assert.deepEqual(ja, values, "both copies accept the same values");
-  const sections = indexSections(await readFile(indexes.en, "utf8"));
+  const sections = STATUS_SECTIONS.map(([key]) => key);
   assert.ok(sections.length >= 5, `the index sections are readable (${sections.join(", ")})`);
   for (const value of values) {
     const key = value.split(" ")[0];
-    assert.ok(sections.includes(key), `update-index.py buckets ${key} (${sections.join(", ")})`);
+    assert.ok(sections.includes(key), `the ${key} key buckets into update-index (${sections.join(", ")})`);
   }
   await eachLanguage(formats, (doc, lang) => {
     for (const value of values) {
