@@ -23,8 +23,8 @@ skill は `skills/<name>/SKILL.md` を本体とし、Skill tool が読み込む�
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | frontmatter の必須           | `name`、`description`、`allowed-tools` の 3 つを 29 件すべてが持つ。`model` は 16 件、`argument-hint` は 14 件、`user-invocable` は 12 件、`context` は 7 件、`agent` は 4 件 |
 | `${CLAUDE_SKILL_DIR}`        | skill 自身のディレクトリを指す。`../` で 1 つ上がると `skills/` に届き、他の skill の scripts へ辿れる                                                                        |
-| `allowed-tools` と呼び出し形 | SKILL.md が書くコマンドと `allowed-tools` の許可が一致しないと拒否される。`Bash(node:*)` を持たない skill は `node` で script を呼べない                                     |
-| テストの置き場               | `skills/<name>/tests/*.test.ts`。CI は `node --test` に渡す glob `skills/**/tests/*.test.ts` で拾うので、`docs/` 配下に置くと走らない                                          |
+| `allowed-tools` と呼び出し形 | SKILL.md が書くコマンドと `allowed-tools` の許可が一致しないと拒否される。script のパスを覆う `Bash(...)` の grant を持たない skill はその script を呼べない |
+| テストの置き場               | `skills/<name>/tests/*_test.py` または `*.test.ts`。CI は前者を `find … '*_test.py'`、後者を `node --test "skills/**/tests/*.test.ts"` で拾うので、`docs/` 配下に置くと走らない |
 | テストの ROOT 解決           | `HERE.parents[2]` がリポジトリ root になる。`skills/<name>/tests/` から 3 つ上がった位置                                                                                      |
 
 ## 要求

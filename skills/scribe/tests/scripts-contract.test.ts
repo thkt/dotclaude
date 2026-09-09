@@ -9,17 +9,19 @@
 // helper gives its callers, for the same real temp-repo commit sequence T-235 replays.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { find, readScenes, SCENES } from "../scripts/find_wiki_rule.ts";
 import { merge, readStore, triage, type Triaged } from "../scripts/triage.ts";
 import { verify, type TriageReport } from "../scripts/verify_run.ts";
 
 // skills/scribe/tests -> skills/scribe -> skills -> repo root, the same climb
 // skills/scribe/tests/find-wiki-rule.test.ts's own REPO_ROOT constant makes.
-const REPO_ROOT = join(import.meta.dirname, "..", "..", "..");
+const HERE = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = join(HERE, "..", "..", "..");
 const WIKI = join(REPO_ROOT, "docs", "wiki");
 
 // README and _candidates are not rule pages, so they carry no scenes -- the same exclusion
@@ -27,9 +29,7 @@ const WIKI = join(REPO_ROOT, "docs", "wiki");
 const NOT_A_RULE = new Set(["README.md", "_candidates.md"]);
 
 function wikiPages(): string[] {
-  return spawnSync("ls", [WIKI], { encoding: "utf8" })
-    .stdout.split("\n")
-    .filter((name) => name.endsWith(".md") && !NOT_A_RULE.has(name));
+  return readdirSync(WIKI).filter((name) => name.endsWith(".md") && !NOT_A_RULE.has(name));
 }
 
 test(
