@@ -88,7 +88,7 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 | PostToolUse       | `Write\|Edit`      | `gates`                                         | なし               | 120     |
 | PostToolUse       | `Bash`             | `gates changed`                                 | なし               | 120     |
 | PostToolUse       | `*`                | `integrations/amphetamine_agent_session.py background` | なし        | 15      |
-| SessionStart      | `*`                | `lifecycle/recall_index.py`                     | なし               | 60      |
+| SessionStart      | `*`                | `lifecycle/recall_index.ts`                     | なし               | 60      |
 | SessionStart      | `*`                | `herdr-agent-state.sh session`                  | なし               | 10      |
 | UserPromptSubmit  | なし               | `integrations/amphetamine_agent_session.py acquire` | なし           | 15      |
 | UserPromptSubmit  | なし               | `codegraph prompt-hook`                         | なし               | 10      |
@@ -114,7 +114,7 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | `textlint_fix.py`               | Write / Edit (`*.md`)   | 日本語判定を通った Markdown を textlint で自動修正                | advisory  |
 | `mirror_prose_guard.py`         | Write / Edit (`.ja/**`) | 日本語を 1 文字も含まない `.ja/` ファイルを警告する。止めない     | advisory  |
 | `amphetamine_agent_session.py`  | UserPromptSubmit / PostToolUse / Stop | session_id 単位の参照カウントで Mac のスリープを抑止 | fail-open |
-| `recall_index.py`               | SessionStart            | recall の横断索引をバックグラウンドで追いつかせる                 | fail-open |
+| `recall_index.ts`               | SessionStart            | recall の横断索引をバックグラウンドで追いつかせる                 | fail-open |
 | `failure-alert.sh`              | Stop / StopFailure      | `end_turn` 以外の終了で音を鳴らす。サブエージェントは対象外       | fail-open |
 | `statusline.sh`                 | `statusLine` キー       | モデル名と使用率を描画する。部分表示を許容。`hooks` マップではなく最上位の `statusLine` に登録する | fail-open |
 | `herdr-agent-state.sh`          | SessionStart            | herdr の環境変数が揃うときだけ状態を送る                          | fail-open |
