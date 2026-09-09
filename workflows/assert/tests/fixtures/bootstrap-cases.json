@@ -1,0 +1,30 @@
+[
+  {
+    "name": "empty_dir_project_type_unknown",
+    "argv": [
+      "<worktree-path>"
+    ],
+    "stdin": "",
+    "exit": 0,
+    "stdout": "{\"project_type\": null, \"install\": \"skip\", \"build\": \"skipped\", \"install_cmd\": null, \"build_cmd\": null, \"reason\": \"project-type-unknown\"}\n",
+    "stderr": ""
+  },
+  {
+    "name": "nonexistent_path",
+    "argv": [
+      "<worktree-path>"
+    ],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "Error: not a directory: <worktree-path>\n"
+  },
+  {
+    "name": "usage_wrong_arg_count",
+    "argv": [],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "Usage: <script> <worktree-path>\n"
+  }
+]
