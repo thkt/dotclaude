@@ -84,6 +84,7 @@
 - Python の Path.is_file() は壊れたシンボリックリンクの OSError を握って False を返すが、Node の statSync は例外を投げてクラッシュする #675
 - Node の Dirent.isFile() はシンボリックリンクを辿らずファイル一覧から落とすが、Python の os.walk はシンボリックリンクのファイルを辿って一覧に含める #675
 - 退役対象ファイルの consumer 一覧は、Plan の手作業列挙だと機械的な grep 網羅より見落としやすい #675
+- TS 移植で Node の existsSync はディレクトリにも true を返すため、Python の Path.is_file() が担っていたファイル種別チェックを個別に書かないとガードを素通りしてクラッシュする #679
 
 ## 棄却
 
