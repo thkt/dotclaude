@@ -23,9 +23,20 @@ import { readFileSync } from "node:fs";
 import { parse } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
+// 置き換え元の validator は引数不足のとき module docstring を丸ごと stderr に書いていた。
+// Usage の 2 行だけではなく、--content-only の段落と stdout/exit のまとめも読み手が見る。
+// 変わるのはスクリプト自身の名前だけ (U-005)。EN 側と同じ綴りのまま残すのは、これが
+// 読み手に渡る wire format であり、workflows/tests/ja-ts-parity.test.js が本体の一致を
+// 見るため。
 const USAGE =
   "Usage: validate-issue-body.ts <template-file> <title> <body-file>\n" +
-  "       validate-issue-body.ts --content-only <body-file>";
+  "       validate-issue-body.ts --content-only <body-file>\n" +
+  "\n" +
+  "--content-only runs the checks that need no skeleton. The number route edits an issue filed\n" +
+  "against a template nobody recorded, so those are all it can run.\n" +
+  "\n" +
+  "stdout: JSON { errors, warnings, checks }\n" +
+  "exit: 0 if no errors (warnings allowed), 1 if errors\n";
 
 const TYPE_PREFIX = /^\[([A-Za-z]+)\]/;
 const HEADING = /^## (.+?)\s*$/gm;

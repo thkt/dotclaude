@@ -24,9 +24,21 @@ import { readFileSync } from "node:fs";
 import { parse } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
+// The retired validator wrote its whole module docstring to stderr on a missing argument,
+// not the two Usage lines alone: the --content-only paragraph and the stdout/exit summary
+// were part of what a caller read. Only the script's own name changes (U-005).
+// The retired validator wrote its whole module docstring to stderr on a missing argument,
+// not the two Usage lines alone: the --content-only paragraph and the stdout/exit summary
+// were part of what a caller read. Only the script's own name changes (U-005).
 const USAGE =
   "Usage: validate-issue-body.ts <template-file> <title> <body-file>\n" +
-  "       validate-issue-body.ts --content-only <body-file>";
+  "       validate-issue-body.ts --content-only <body-file>\n" +
+  "\n" +
+  "--content-only runs the checks that need no skeleton. The number route edits an issue filed\n" +
+  "against a template nobody recorded, so those are all it can run.\n" +
+  "\n" +
+  "stdout: JSON { errors, warnings, checks }\n" +
+  "exit: 0 if no errors (warnings allowed), 1 if errors\n";
 
 const TYPE_PREFIX = /^\[([A-Za-z]+)\]/;
 const HEADING = /^## (.+?)\s*$/gm;

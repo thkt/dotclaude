@@ -141,7 +141,7 @@ export function rank(title: string, directory: string): Draft[] {
   return rows;
 }
 
-function main(argv: string[]): number {
+export function main(argv: string[]): number {
   if (argv.length < 1) {
     process.stderr.write("Usage: pick-plan.ts <issue-title | plan-path> [planning-dir]\n");
     return 1;

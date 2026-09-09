@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url";
 import { trackedEntries } from "../../../hooks/_lib/shebang_scope.ts";
 import {
   runCli,
+  withTempHome,
   type CliRun,
   type FixtureCase,
 } from "../../../workflows/_lib/tests/_cli-fixture.ts";
@@ -25,7 +26,6 @@ import { rank, slugify } from "../scripts/pick-plan.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "pick-plan.ts");
-const HOME = join(tmpdir(), "pick-plan-home");
 const FIXTURES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "pick-plan-cases.json"), "utf8"),
 ) as FixtureCase[];
@@ -51,7 +51,7 @@ const DRAFT = (slug: string): string =>
   ].join("\n");
 
 const run = (...args: string[]): { status: number | null; out: Record<string, unknown> | null } => {
-  const res: CliRun = runCli(SCRIPT, HOME, "", args);
+  const res: CliRun = withTempHome((home) => runCli(SCRIPT, home, "", args));
   return {
     status: res.status,
     out: res.stdout ? (JSON.parse(res.stdout) as Record<string, unknown>) : null,
@@ -121,7 +121,7 @@ test("T-190 every frozen pick-plan case reproduces the python cli's exit code an
     const { placeholders, cleanup } = setupCase(testCase.name);
     try {
       const argv = (testCase.argv ?? []).map((arg) => resolvePlaceholders(arg, placeholders));
-      const result: CliRun = runCli(SCRIPT, HOME, testCase.stdin, argv);
+      const result: CliRun = withTempHome((home) => runCli(SCRIPT, home, testCase.stdin, argv));
       assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
       assert.equal(
         result.stdout,

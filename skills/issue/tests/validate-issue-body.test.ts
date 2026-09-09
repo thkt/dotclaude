@@ -18,6 +18,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   runCli,
+  withTempHome,
   type CliRun,
   type FixtureCase,
 } from "../../../workflows/_lib/tests/_cli-fixture.ts";
@@ -31,7 +32,6 @@ import {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
 const SCRIPT = join(HERE, "..", "scripts", "validate-issue-body.ts");
-const HOME = join(tmpdir(), "validate-issue-body-home");
 const bugTemplate = join(ROOT, "skills", "issue", "templates", "bug.md");
 const choreTemplate = join(ROOT, "skills", "issue", "templates", "chore.md");
 const featureTemplate = join(ROOT, "skills", "issue", "templates", "feature.md");
@@ -54,7 +54,9 @@ const runValidate = (templatePath: string, title: string, bodyText: string): Run
   try {
     const bodyPath = join(dir, "body.md");
     writeFileSync(bodyPath, bodyText, "utf8");
-    const res: CliRun = runCli(SCRIPT, HOME, "", [templatePath, title, bodyPath]);
+    const res: CliRun = withTempHome((home) =>
+      runCli(SCRIPT, home, "", [templatePath, title, bodyPath]),
+    );
     let out: ValidationResults | null = null;
     try {
       out = JSON.parse(res.stdout) as ValidationResults;
@@ -522,7 +524,9 @@ const runContentOnly = (bodyText: string): RunContentOnlyResult => {
   try {
     const bodyPath = join(dir, "body.md");
     writeFileSync(bodyPath, bodyText, "utf8");
-    const res: CliRun = runCli(SCRIPT, HOME, "", ["--content-only", bodyPath]);
+    const res: CliRun = withTempHome((home) =>
+      runCli(SCRIPT, home, "", ["--content-only", bodyPath]),
+    );
     return { status: res.status, out: JSON.parse(res.stdout) as ValidationResults };
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -786,7 +790,7 @@ test("T-192 every frozen validate-issue-body case reproduces the python cli's ex
     const { placeholders, cleanup } = setupCase(testCase.name);
     try {
       const argv = (testCase.argv ?? []).map((arg) => resolvePlaceholders(arg, placeholders));
-      const result: CliRun = runCli(SCRIPT, HOME, testCase.stdin, argv);
+      const result: CliRun = withTempHome((home) => runCli(SCRIPT, home, testCase.stdin, argv));
       assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
       const expected = JSON.parse(testCase.stdout) as ValidationResults;
       let actual: ValidationResults | null = null;
@@ -850,5 +854,41 @@ test("the exported floor, floor aliases and allowed extra sections carry the sam
     Array.from(ALLOWED_EXTRA).sort(),
     ["Backlog candidates", "Blocked by", "Parent", "Plan"],
     "ALLOWED_EXTRA matches the Python validator",
+  );
+});
+
+test("T-193 the exported floor, floor aliases and allowed extra sections carry the entries the python validator declared", () => {
+  // The three tables decide which sections a body must carry, so a key silently lost in the
+  // port lets a body through that the retired validator rejected.
+  assert.deepEqual(Object.keys(FLOOR).sort(), ["bug", "feature"]);
+  assert.deepEqual(FLOOR.feature, ["Acceptance Criteria", "Testing Decisions"]);
+  assert.deepEqual(FLOOR.bug, ["Steps to Reproduce", "Expected vs Actual"]);
+  assert.deepEqual(Object.keys(FLOOR_ALIASES).sort(), ["Expected vs Actual", "Steps to Reproduce"]);
+  assert.deepEqual(FLOOR_ALIASES["Steps to Reproduce"], ["再現手順"]);
+  assert.deepEqual(FLOOR_ALIASES["Expected vs Actual"], ["期待 / 実際"]);
+  assert.deepEqual([...ALLOWED_EXTRA].sort(), [
+    "Backlog candidates",
+    "Blocked by",
+    "Parent",
+    "Plan",
+  ]);
+});
+
+test("T-265 a missing argument writes the whole usage text to stderr and exits 1, not the two Usage lines alone", () => {
+  // The python validator printed its module docstring, so the --content-only paragraph and the
+  // stdout/exit summary reached the caller too. Nothing else in the suite reads this stderr.
+  const run = withTempHome((home) => runCli(SCRIPT, home, "", []));
+  assert.equal(run.status, 1, `exit code (stderr: ${run.stderr})`);
+  assert.equal(run.stdout, "");
+  assert.equal(
+    run.stderr,
+    "Usage: validate-issue-body.ts <template-file> <title> <body-file>\n" +
+      "       validate-issue-body.ts --content-only <body-file>\n" +
+      "\n" +
+      "--content-only runs the checks that need no skeleton. The number route edits an issue filed\n" +
+      "against a template nobody recorded, so those are all it can run.\n" +
+      "\n" +
+      "stdout: JSON { errors, warnings, checks }\n" +
+      "exit: 0 if no errors (warnings allowed), 1 if errors\n\n",
   );
 });
