@@ -19,7 +19,11 @@ test("settings.json grants ast-grep in the space form every other entry in permi
   // The tail of permissions.allow (agent-browser, agy, bfs, cargo, ...) is kept alphabetical.
   // ast-grep sorts between the existing, currently-adjacent agy and bfs entries.
   const spaceForm = /^Bash\(([\w-]+) \*\)$/;
-  const names = allow.filter((entry) => spaceForm.test(entry)).map((entry) => entry.match(spaceForm)[1]);
+  const names: string[] = [];
+  for (const entry of allow as string[]) {
+    const m = spaceForm.exec(entry);
+    if (m) names.push(m[1]);
+  }
   const i = names.indexOf("ast-grep");
   assert.ok(i > 0, `ast-grep is present among the space-form Bash entries: ${names.join(", ")}`);
   assert.equal(names[i - 1], "agy", "ast-grep sorts right after agy");
@@ -32,7 +36,7 @@ test("enhancer-code and generator-test are the only agent definitions whose tool
   const entries = await readdir(dir, { recursive: true, withFileTypes: true });
   const files = entries
     .filter((e) => e.isFile() && e.name.endsWith(".md"))
-    .map((e) => join(e.parentPath ?? e.path, e.name));
+    .map((e) => join(e.parentPath, e.name));
 
   const granters = [];
   for (const file of files) {

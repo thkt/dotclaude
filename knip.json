@@ -38,20 +38,26 @@
     "skills/_lib/review_score.ts",
     ".ja/skills/_lib/review_score.ts",
     "skills/**/scripts/*.{js,mjs,ts}",
-    ".ja/skills/**/scripts/*.{js,mjs,ts}"
+    ".ja/skills/**/scripts/*.{js,mjs,ts}",
+    "tests/*.test.{js,ts}",
+    "agents/**/tests/*.test.{js,ts}"
   ],
   "project": [
     "workflows/**/*.{js,ts}",
     ".ja/workflows/**/*.{js,ts}",
     "hooks/**/*.ts",
     "skills/**/*.{js,mjs,ts}",
-    ".ja/skills/**/*.{js,mjs,ts}"
+    ".ja/skills/**/*.{js,mjs,ts}",
+    "tests/**/*.{js,ts}",
+    "agents/**/*.{js,ts}"
   ],
   "ignoreBinaries": ["codex", "markdownlint-cli2"],
   "ignoreDependencies": ["oxfmt", "^@?textlint"],
   "ignoreFiles": [
     "workflows/tests/fixtures/**",
     "hooks/**/tests/fixtures/**",
+    "tests/fixtures/**",
+    "agents/**/tests/fixtures/**",
     "skills/*/test/cases/**"
   ]
 }

@@ -1,42 +1,80 @@
-// Extraction stays layout-agnostic; a profile carries every layout-specific judgment.
+#!/usr/bin/env node
+/// <reference types="node" />
+// Usage: import { cellText, cellsOf, isColumnRuler, fillRatio, escapeCell, buildColumns,
+// rowToCells, profiles, sheetToMarkdown, sheetFileName } from "./convert.ts"
+//
+// convert.js の TypeScript 移植。抽出は書式に依存させず、書式ごとの判定はすべてプロファイル
+// が持つ。
+//
+// Contract: 退役した JavaScript 版 converter の cellText / cellsOf / isColumnRuler /
+// fillRatio / escapeCell / buildColumns / rowToCells / profiles / sheetToMarkdown /
+// sheetFileName。skills/transcribe/tests/convert.test.ts が検証する。
 
-/** Dates, formulas, errors and rich text each arrive in their own shape. */
-export function cellText(cell) {
+interface CellWithText {
+  text: unknown;
+}
+interface CellWithFormula {
+  formula: unknown;
+  value?: unknown;
+}
+interface CellWithError {
+  error: unknown;
+}
+type StructuredCell = CellWithText | CellWithFormula | CellWithError;
+
+/** 日付、数式、エラー、リッチテキストはそれぞれ別の形で入る。 */
+export function cellText(cell: unknown): string {
   if (cell == null) return "";
   if (cell instanceof Date) return cell.toISOString().slice(0, 10);
   if (typeof cell === "object") {
-    if ("text" in cell) return String(cell.text);
-    if ("formula" in cell) return cell.value != null ? String(cell.value) : `=${cell.formula}`;
-    if ("error" in cell) return String(cell.error);
+    const structured = cell as unknown as StructuredCell;
+    if ("text" in structured) return String(structured.text);
+    if ("formula" in structured) {
+      return structured.value != null ? String(structured.value) : `=${structured.formula}`;
+    }
+    if ("error" in structured) return String(structured.error);
     return JSON.stringify(cell);
   }
   return String(cell);
 }
 
+interface CellInfo {
+  col: number;
+  text: string;
+}
+
 /**
- * A business spreadsheet spreads one item across several cells via merges, so the column
- * position is what lets the table columns and the item nesting be restored later.
+ * 業務 Excel は 1 項目をセル結合で複数セルに広げるため、列位置が表の列と項目の
+ * 入れ子を後から復元する手がかりになる。
  */
-export function cellsOf(row) {
-  const out = [];
+export function cellsOf(row: unknown[]): CellInfo[] {
+  const out: CellInfo[] = [];
   for (let i = 0; i < row.length; i++) {
-    // A no-break space inside a cell survives trim() and defeats a later grep of the output.
-    const text = cellText(row[i]).replace(/\u00a0/g, " ").trim();
+    // 語中の NBSP は trim() を通り抜け、出力を後から grep するときに当たらなくなる。
+    const text = cellText(row[i])
+      .replace(/\u00a0/g, " ")
+      .trim();
     if (text !== "") out.push({ col: i, text });
   }
   return out;
 }
 
-const textsOf = (cells) => cells.map((cell) => cell.text);
+const textsOf = (cells: CellInfo[]): string[] => cells.map((cell) => cell.text);
 
-/** A row of nothing but 1,2,3,... is Excel's column-number guide, not content. */
-export function isColumnRuler(texts) {
+/** 1,2,3,... と連番だけが並ぶ行は Excel 上の列番号ガイドで、内容ではない。 */
+export function isColumnRuler(texts: string[]): boolean {
   if (texts.length < 10) return false;
   return texts.every((text, i) => text === String(i + 1));
 }
 
-/** The lower the ratio, the more layout-only empty cells, and the more conversion pays off. */
-export function fillRatio(sheets) {
+interface FillRatio {
+  total: number;
+  filled: number;
+  ratio: number;
+}
+
+/** 充填率が低いほどレイアウト目的の空セルが多く、整形の効果が大きい。 */
+export function fillRatio(sheets: Iterable<{ rows: unknown[][] }>): FillRatio {
   let total = 0;
   let filled = 0;
   for (const sheet of sheets) {
@@ -48,17 +86,22 @@ export function fillRatio(sheets) {
   return { total, filled, ratio: total === 0 ? 0 : filled / total };
 }
 
-export function escapeCell(text) {
+export function escapeCell(text: string): string {
   return text.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
 }
 
+interface Column {
+  start: number;
+  end: number;
+  label: string;
+}
+
 /**
- * A data cell lands in the interval its column position falls in, so an empty middle
- * column does not shift the columns to its right.
+ * データ行のセルは列位置が入る区間へ割り当てるので、途中の列が空でも右の列がずれない。
  */
-export function buildColumns(head, sub) {
+export function buildColumns(head: CellInfo[], sub: CellInfo[]): Column[] {
   const starts = [...new Set([...head, ...sub].map((cell) => cell.col))].sort((a, b) => a - b);
-  const labelAt = new Map();
+  const labelAt = new Map<number, string>();
   for (const cell of [...head, ...sub]) labelAt.set(cell.col, cell.text);
   return starts.map((start, i) => ({
     start,
@@ -67,24 +110,36 @@ export function buildColumns(head, sub) {
   }));
 }
 
-export function rowToCells(cells, columns, nestColumnLabel) {
-  const slots = columns.map(() => []);
+export function rowToCells(
+  cells: CellInfo[],
+  columns: Column[],
+  nestColumnLabel: string | null,
+): string[] {
+  const slots: string[][] = columns.map(() => []);
   for (const cell of cells) {
     let index = columns.findIndex((column) => cell.col >= column.start && cell.col < column.end);
     if (index < 0) index = 0;
-    // In a nesting column, the cell position within the column carries the depth.
-    const nested = nestColumnLabel && columns[index].label.includes(nestColumnLabel);
+    // 入れ子を表す列では、列内のセル位置が階層の深さを表す。
+    const nested = nestColumnLabel != null && columns[index].label.includes(nestColumnLabel);
     const depth = nested ? cell.col - columns[index].start : 0;
     slots[index].push("　".repeat(Math.max(0, depth)) + cell.text);
   }
   return slots.map((values) => escapeCell(values.join(" ")));
 }
 
+export interface Profile {
+  docHeaderFirstCell: string | null;
+  heading: RegExp | null;
+  tableHeadWords: RegExp | null;
+  nestColumnLabel: string | null;
+  code: RegExp | null;
+}
+
 /**
- * A judgment set to null is not performed, so generic reads nothing as a table and an
- * unknown layout loses no cells.
+ * 値が null の判定は行わないため、generic は表として解釈せず、書式が未知の
+ * ファイルでもセルを落とさない。
  */
-export const profiles = {
+export const profiles: Record<string, Profile> = {
   generic: {
     docHeaderFirstCell: null,
     heading: null,
@@ -101,19 +156,24 @@ export const profiles = {
   },
 };
 
-// A header word also appears alone in the body, so the column count joins the word as a header condition.
-function isTableHead(cells, profile) {
+// 本文にもヘッダ語と同じ 1 セルが現れるので、語だけでなく列数もヘッダの条件にする。
+function isTableHead(cells: CellInfo[], profile: Profile): boolean {
   if (!profile.tableHeadWords) return false;
   return cells.length >= 3 && profile.tableHeadWords.test(cells[0].text);
 }
 
-export function sheetToMarkdown(sheet, profile = profiles.generic) {
+export interface Sheet {
+  name: string;
+  rows: unknown[][];
+}
+
+export function sheetToMarkdown(sheet: Sheet, profile: Profile = profiles.generic): string {
   const rows = sheet.rows.map(cellsOf);
-  const lines = [`# ${sheet.name}`, ""];
+  const lines: string[] = [`# ${sheet.name}`, ""];
   let i = 0;
 
   if (profile.docHeaderFirstCell && rows[0]?.[0]?.text === profile.docHeaderFirstCell) {
-    const meta = [];
+    const meta: string[] = [];
     for (const row of rows.slice(0, 3)) {
       if (!row.length || isColumnRuler(textsOf(row))) continue;
       meta.push(row.map((cell) => cell.text).join(" / "));
@@ -122,7 +182,7 @@ export function sheetToMarkdown(sheet, profile = profiles.generic) {
     i = 3;
   }
 
-  let code = [];
+  let code: string[] = [];
   const flushCode = () => {
     if (!code.length) return;
     lines.push("```", ...code, "```", "");
@@ -149,14 +209,14 @@ export function sheetToMarkdown(sheet, profile = profiles.generic) {
       flushCode();
       const head = cells;
       let next = i + 1;
-      let sub = [];
-      // A data row always starts at the first column, so a row empty there is the second header tier.
+      let sub: CellInfo[] = [];
+      // データ行は必ず先頭列から始まるので、そこが空の行を 2 段目のヘッダとみなす。
       if (rows[next]?.length && rows[next][0].col > head[0].col) {
         sub = rows[next];
         next++;
       }
       const columns = buildColumns(head, sub);
-      const body = [];
+      const body: string[][] = [];
       while (next < rows.length) {
         const row = rows[next];
         if (!row.length) break;
@@ -198,6 +258,6 @@ export function sheetToMarkdown(sheet, profile = profiles.generic) {
   );
 }
 
-export function sheetFileName(index, name) {
+export function sheetFileName(index: number, name: string): string {
   return `${String(index).padStart(2, "0")}_${name.replace(/[/\\:*?"<>|]/g, "_")}.md`;
 }
