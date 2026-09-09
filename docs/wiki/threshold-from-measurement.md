@@ -18,7 +18,7 @@ scenes: ["plan"]
 
 ## 参照コード
 
-- `skills/scribe/scripts/triage.py` の `COMMIT_CAP`（暫定値と、見直しの契機を書いた例）
+- `skills/scribe/scripts/triage.ts` の `COMMIT_CAP`（暫定値と、見直しの契機を書いた例）
 - `workflows/build.js` の `UNIT_CAPS`（unit あたりの files と tests の上限）
 
 ## 根拠
@@ -26,4 +26,4 @@ scenes: ["plan"]
 - #219 build の validate へ unit サイズ上限の縮小ゲートを追加した
 - #220 plan 品質ゲートを強化し、textlint を commit メッセージへ対応させた
 - #224 audit の critic 層を opus から sonnet へ切り替える trial
-- #225 scribe の入力ソースへ workspace/research/ を追加した
+- #225 scribe の入力ソースへ workspace/research/を追加した
