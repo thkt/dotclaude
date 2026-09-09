@@ -25,7 +25,7 @@ const trackedTests = async () => {
 // literal carrying an interpolation is read as its raw source, which is enough to spot the
 // language; evaluating it would need the surrounding scope.
 const REGISTRATION = /^\s*(?:test|it|describe)(?:\.\w+)?\(\s*(["'`])((?:[^\\]|\\.)*?)\1/gm;
-export const testNames = (source) => [...source.matchAll(REGISTRATION)].map((m) => m[2]);
+export const testNames = (source: string) => [...source.matchAll(REGISTRATION)].map((m) => m[2]);
 
 test("no test on the English side is named in Japanese", async () => {
   const offenders = [];

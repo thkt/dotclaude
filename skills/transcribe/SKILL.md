@@ -14,7 +14,7 @@ The Read tool cannot open an xlsx. Use hucre, installed in this repository, as a
 1. Look at the shape of the contents.
 
 ```bash
-node ${CLAUDE_SKILL_DIR}/scripts/cli.js list <xlsx>
+node ${CLAUDE_SKILL_DIR}/scripts/cli.ts list <xlsx>
 ```
 
 The sheet list and the fill ratio come out. The fill ratio is the share of cells holding a value, and it decides the next branch.
@@ -29,20 +29,20 @@ The sheet list and the fill ratio come out. The fill ratio is the share of cells
 3. Convert. Write the output outside the repository, or wherever the user asked for.
 
 ```bash
-node ${CLAUDE_SKILL_DIR}/scripts/cli.js extract <xlsx> --out <dir> [--profile <name>] [--sheet <n|name>]
+node ${CLAUDE_SKILL_DIR}/scripts/cli.ts extract <xlsx> --out <dir> [--profile <name>] [--sheet <n|name>]
 ```
 
 4. Check that nothing was lost. Do not skip this check. A wrong layout judgment deletes cells without raising an error, so reconciliation is the only thing that reveals it.
 
 ```bash
-node ${CLAUDE_SKILL_DIR}/scripts/cli.js verify <xlsx> <dir>
+node ${CLAUDE_SKILL_DIR}/scripts/cli.ts verify <xlsx> <dir>
 ```
 
 `OK: every cell of N sheets survived into the output.` means done. On a loss it returns the sheet name and the first 40 characters of a lost cell, so fix the profile's judgment and run it again.
 
 ## Profiles
 
-Layout-specific judgment lives in a profile. The definitions are in `profiles` in `scripts/convert.js`.
+Layout-specific judgment lives in a profile. The definitions are in `profiles` in `scripts/convert.ts`.
 
 Reach for `generic` first on an unknown layout. Add a profile only when you want tables restored. A profile carries five judgments, and a judgment set to null is not performed.
 

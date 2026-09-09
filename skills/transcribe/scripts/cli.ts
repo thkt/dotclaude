@@ -1,9 +1,20 @@
 #!/usr/bin/env node
+/// <reference types="node" />
+// Usage: cli.ts <list|extract|verify> <xlsx> [args]
 //   list    <xlsx>                          print the sheet list and the fill ratio
 //   extract <xlsx> --out <dir> [options]    convert sheets into Markdown
 //   verify  <xlsx> <dir>                    check that every source cell survived into the output
+//
+// TypeScript port of cli.js: the same parseArgs/list/extract/verify flow, usage wording, and
+// exit codes (2 for a usage or argument error, 1 for a missing sheet or a lost cell), built on
+// node:* alone. readXlsx and the Workbook/Sheet shapes it returns come from hucre/xlsx's own
+// types rather than a hand-rolled duplicate.
+//
+// Contract: the retired JavaScript cli's parseArgs, list, extract, and verify. No
+// exports: unlike convert.ts, this file is a CLI entry point read directly, not imported.
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
+import type { Sheet, Workbook } from "hucre/xlsx";
 import {
   cellText,
   fillRatio,
@@ -11,12 +22,18 @@ import {
   profiles,
   sheetFileName,
   sheetToMarkdown,
-} from "./convert.js";
+} from "./convert.ts";
 
-const out = (text) => process.stdout.write(`${text}\n`);
-const err = (text) => process.stderr.write(`${text}\n`);
+const out = (text: string): void => {
+  process.stdout.write(`${text}\n`);
+};
+const err = (text: string): void => {
+  process.stderr.write(`${text}\n`);
+};
 
-let readXlsx;
+type ReadXlsx = typeof import("hucre/xlsx").readXlsx;
+
+let readXlsx: ReadXlsx;
 try {
   ({ readXlsx } = await import("hucre/xlsx"));
 } catch {
@@ -27,9 +44,14 @@ try {
   process.exit(2);
 }
 
-const parseArgs = (argv) => {
-  const positional = [];
-  const options = {};
+interface ParsedArgs {
+  positional: string[];
+  options: Record<string, string>;
+}
+
+const parseArgs = (argv: string[]): ParsedArgs => {
+  const positional: string[] = [];
+  const options: Record<string, string> = {};
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg.startsWith("--")) options[arg.slice(2)] = argv[++i];
@@ -42,16 +64,16 @@ const { positional, options } = parseArgs(process.argv.slice(2));
 const [command, source, target] = positional;
 
 if (!command || !source) {
-  err("usage: cli.js <list|extract|verify> <xlsx> [args]");
+  err("usage: cli.ts <list|extract|verify> <xlsx> [args]");
   process.exit(2);
 }
 
 const buffer = await readFile(source);
 
 if (command === "list") {
-  const workbook = await readXlsx(buffer);
+  const workbook: Workbook = await readXlsx(buffer);
   const { total, filled, ratio } = fillRatio(workbook.sheets);
-  for (const [index, sheet] of workbook.sheets.entries()) {
+  for (const [index, sheet] of workbook.sheets.entries() as IterableIterator<[number, Sheet]>) {
     out(`[${index}] ${sheet.name} - ${sheet.rows.length} rows`);
   }
   out(
@@ -78,8 +100,8 @@ if (command === "extract") {
   // The read result drops the original sheet position that the file name needs, and the
   // predicate is the only place it is still visible.
   const only = options.sheet;
-  let resolved = null;
-  let filter;
+  let resolved: number | null = null;
+  let filter: Parameters<ReadXlsx>[1];
   if (only != null && /^\d+$/.test(only)) {
     resolved = Number(only);
     filter = { sheets: [resolved] };
@@ -92,14 +114,14 @@ if (command === "extract") {
       },
     };
   }
-  const workbook = await readXlsx(buffer, filter);
+  const workbook: Workbook = await readXlsx(buffer, filter);
   if (only != null && workbook.sheets.length === 0) {
     err(`no such sheet: ${only}. Check the name and index with list.`);
     process.exit(1);
   }
   await mkdir(outDir, { recursive: true });
 
-  const index = [
+  const index: string[] = [
     `# ${source.split("/").pop()}`,
     "",
     `profile: \`${profileName}\``,
@@ -107,7 +129,7 @@ if (command === "extract") {
     "| # | Sheet | Rows | File |",
     "| --- | --- | --- | --- |",
   ];
-  for (const [position, sheet] of workbook.sheets.entries()) {
+  for (const [position, sheet] of workbook.sheets.entries() as IterableIterator<[number, Sheet]>) {
     const number = resolved ?? position;
     const file = sheetFileName(number, sheet.name);
     await writeFile(`${outDir}/${file}`, sheetToMarkdown(sheet, profile));
@@ -125,10 +147,16 @@ if (command === "verify") {
     err("verify requires the output directory.");
     process.exit(2);
   }
-  const workbook = await readXlsx(buffer);
-  const missing = [];
-  for (const [index, sheet] of workbook.sheets.entries()) {
-    let markdown;
+  const workbook: Workbook = await readXlsx(buffer);
+  interface MissingSheet {
+    sheet: string;
+    reason?: string;
+    lost?: number;
+    sample?: string;
+  }
+  const missing: MissingSheet[] = [];
+  for (const [index, sheet] of workbook.sheets.entries() as IterableIterator<[number, Sheet]>) {
+    let markdown: string;
     try {
       markdown = await readFile(`${target}/${sheetFileName(index, sheet.name)}`, "utf8");
     } catch {
@@ -140,9 +168,7 @@ if (command === "verify") {
     let lost = 0;
     let sample = "";
     for (const row of sheet.rows) {
-      const cells = row
-        .map((cell) => cellText(cell).trim())
-        .filter((t) => t !== "");
+      const cells = row.map((cell) => cellText(cell).trim()).filter((t) => t !== "");
       // A column ruler never survives into the Markdown, so counting it would report a
       // loss on every sheet and bury the real ones.
       if (isColumnRuler(cells)) continue;

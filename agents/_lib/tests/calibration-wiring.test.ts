@@ -16,14 +16,14 @@ const sides = {
   },
 };
 
-const mdFiles = (dir) =>
+const mdFiles = (dir: string) =>
   readdirSync(dir)
-    .filter((f) => f.endsWith(".md"))
+    .filter((f: string) => f.endsWith(".md"))
     .sort();
 
 // Takes the section symbol and the owning reviewer from each file's H1 of the form
 // "# CHX (reviewer-resilience)". The filename carries the same symbol.
-const sectionsOf = (calDir) => {
+const sectionsOf = (calDir: string) => {
   const out = new Map();
   for (const file of mdFiles(calDir)) {
     const m = readFileSync(join(calDir, file), "utf8").match(
@@ -38,7 +38,7 @@ const sectionsOf = (calDir) => {
 
 // The section symbol a reviewer definition references. A reviewer with no Calibration section is
 // null.
-const refsOf = (revDir) => {
+const refsOf = (revDir: string) => {
   const out = new Map();
   for (const file of mdFiles(revDir)) {
     const doc = readFileSync(join(revDir, file), "utf8");
@@ -98,13 +98,13 @@ test("every top-level heading is a section heading", () => {
 // Code examples are not translated. Diverging content between ja and en would show different code
 // while claiming to give the same calibration.
 test("the code examples match between ja and en", () => {
-  const blocks = (p) => readFileSync(p, "utf8").match(/^```[a-z]*\n[\s\S]*?^```/gm) || [];
+  const blocks = (p: string) => readFileSync(p, "utf8").match(/^```[a-z]*\n[\s\S]*?^```/gm) || [];
   assert.deepEqual(mdFiles(sides.ja.cal), mdFiles(sides.en.cal), "both sides hold the same files");
   for (const file of mdFiles(sides.en.cal)) {
     const ja = blocks(join(sides.ja.cal, file));
     const en = blocks(join(sides.en.cal, file));
     assert.equal(ja.length, en.length, `${file}: the code block counts match`);
-    ja.forEach((block, i) => assert.equal(block, en[i], `${file}: code block ${i + 1} matches`));
+    ja.forEach((block: string, i: number) => assert.equal(block, en[i], `${file}: code block ${i + 1} matches`));
   }
 });
 
@@ -127,7 +127,7 @@ test("every reviewer audit routes to states the severity scale it answers on", (
   const routed = routedReviewers();
   for (const lang of Object.keys(sides)) {
     for (const name of routed) {
-      const file = join(sides[lang].rev, `reviewer-${name}.md`);
+      const file = join(sides[lang as keyof typeof sides].rev, `reviewer-${name}.md`);
       const doc = readFileSync(file, "utf8");
       if (!SEVERITY_ROW.test(doc)) offenders.push(`${lang}: reviewer-${name}`);
     }

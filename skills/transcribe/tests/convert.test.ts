@@ -1,21 +1,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-const scriptPath = join(root, "skills", "transcribe", "scripts", "convert.js");
-const { cellText, fillRatio, isColumnRuler, profiles, sheetToMarkdown } = await import(scriptPath);
+import { cellText, fillRatio, isColumnRuler, profiles, sheetFileName, sheetToMarkdown } from "../scripts/convert.ts";
 
 // A business Excel spreads one item across several cells by merging them. In a merged run every
 // cell after the first arrives as null, so the rows are built keeping their column positions.
-const row = (...pairs) => {
-  const cells = Array.from({ length: 20 }, () => null);
+const row = (...pairs: [number, unknown][]): unknown[] => {
+  const cells: unknown[] = Array.from({ length: 20 }, () => null);
   for (const [col, value] of pairs) cells[col] = value;
   return cells;
 };
 
-const sheetOf = (...rows) => ({ name: "S", rows });
+const sheetOf = (...rows: unknown[][]): { name: string; rows: unknown[][] } => ({ name: "S", rows });
 
 test("collapses the merged cells and restores the data into a table along the header column positions", () => {
   const markdown = sheetToMarkdown(
@@ -121,7 +116,7 @@ test("a newline inside a cell becomes <br> and a pipe is escaped so the table st
 
 test("a no-break space inside a cell becomes a plain space so the output stays greppable", () => {
   const markdown = sheetToMarkdown(
-    sheetOf(row([2, "\u9805\u756a"], [4, "\u8aac\u660e"]), row([2, "1"], [4, "account\u00a0name"])),
+    sheetOf(row([2, "項番"], [4, "説明"]), row([2, "1"], [4, "account\u00a0name"])),
     profiles["ja-api-spec"],
   );
 
@@ -136,4 +131,16 @@ test("the fill rate returns the share of cells carrying a value and is 0 on an e
     ratio: 0.25,
   });
   assert.equal(fillRatio([{ rows: [] }]).ratio, 0);
+});
+
+test("T-249 cellText renders a Date as YYYY-MM-DD, a formula cell by its value or by =formula when the value is missing, and an error cell by its code", () => {
+  assert.equal(cellText(new Date("2024-04-17T00:00:00Z")), "2024-04-17");
+  assert.equal(cellText({ formula: "B1*2", value: 84 }), "84");
+  assert.equal(cellText({ formula: "B1*2" }), "=B1*2");
+  assert.equal(cellText({ error: "#N/A" }), "#N/A");
+});
+
+test("T-250 sheetFileName pads the index to two digits and replaces every path-unsafe character in the sheet name with an underscore", () => {
+  assert.equal(sheetFileName(1, "Sheet/One"), "01_Sheet_One.md");
+  assert.equal(sheetFileName(12, 'A:B*C?D"E<F>G|H\\I'), "12_A_B_C_D_E_F_G_H_I.md");
 });
