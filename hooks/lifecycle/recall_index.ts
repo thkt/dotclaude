@@ -1,8 +1,8 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// SessionStart hook: catch up recall's cross-session index in the background. The TypeScript
-// port of hooks/lifecycle/recall_index.py (unit U-003); recall_index.py's docstring holds the
-// reasoning (SessionStart over SessionEnd, why this is advisory-only) and applies here unchanged.
+// SessionStart hook: catch up recall's cross-session index in the background. Ports the retired
+// Python hook's reasoning unchanged: SessionStart over SessionEnd, and why this stays
+// advisory-only.
 //
 // Advisory: never blocks the prompt, and every exit path below is exit 0 -- a hook whose own
 // failure blocks the session would be worse than the indexing it skips.

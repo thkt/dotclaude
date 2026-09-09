@@ -1,10 +1,10 @@
 /// <reference types="node" />
-// Ports hooks/lifecycle/tests/recall_index_test.py's five scenarios to recall_index.ts's side
-// (unit U-003). The hook names recall by its full path, so the stub -- the same #!/bin/sh
-// script recall_index_test.py uses -- goes in through CLAUDE_RECALL_BIN, and HOME is swapped
-// per fixture so the throttle stamp never touches this machine's own file. The Python file's
-// five cases fold into T-243..T-246 here, pairing "skip vs. run" and "compact vs. startup" the
-// way this plan's scenario names read each as one behavior.
+// Ports the retired Python hook test's five scenarios to recall_index.ts's side (unit U-003).
+// The hook names recall by its full path, so the stub -- the same #!/bin/sh script the retired
+// test used -- goes in through CLAUDE_RECALL_BIN, and HOME is swapped per fixture so the
+// throttle stamp never touches this machine's own file. The Python file's five cases fold into
+// T-243..T-246 here, pairing "skip vs. run" and "compact vs. startup" the way this plan's
+// scenario names read each as one behavior.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -25,7 +25,7 @@ import { run } from "../../_lib/tests/_hook-harness.ts";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "recall_index.ts");
 
-// Same stub recall_index_test.py's STUB_BODY uses: log every invocation's argv to $RECALL_LOG.
+// Same stub the retired Python test's STUB_BODY used: log every invocation's argv to $RECALL_LOG.
 const STUB_BODY = '#!/bin/sh\nprintf \'%s\\n\' "$*" >> "$RECALL_LOG"\n';
 
 interface Fixture {
@@ -64,7 +64,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 // The hook detaches recall, so the log needs the job to land before it is read -- mirrors
-// recall_index_test.py's run_hook polling loop.
+// the retired Python test's run_hook polling loop.
 async function waitForLog(logPath: string): Promise<string> {
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const text = readFileSync(logPath, "utf8");
