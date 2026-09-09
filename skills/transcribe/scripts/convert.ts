@@ -6,7 +6,7 @@
 // TypeScript port of convert.js. Extraction stays layout-agnostic; a profile carries every
 // layout-specific judgment.
 //
-// Contract: skills/transcribe/scripts/convert.js's cellText, cellsOf, isColumnRuler,
+// Contract: the retired JavaScript converter's cellText, cellsOf, isColumnRuler,
 // fillRatio, escapeCell, buildColumns, rowToCells, profiles, sheetToMarkdown, and
 // sheetFileName. Exercised by skills/transcribe/tests/convert.test.ts.
 
@@ -51,7 +51,9 @@ export function cellsOf(row: unknown[]): CellInfo[] {
   const out: CellInfo[] = [];
   for (let i = 0; i < row.length; i++) {
     // A no-break space inside a cell survives trim() and defeats a later grep of the output.
-    const text = cellText(row[i]).replace(/\u00a0/g, " ").trim();
+    const text = cellText(row[i])
+      .replace(/\u00a0/g, " ")
+      .trim();
     if (text !== "") out.push({ col: i, text });
   }
   return out;

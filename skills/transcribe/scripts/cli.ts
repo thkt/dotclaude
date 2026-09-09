@@ -10,7 +10,7 @@
 // node:* alone. readXlsx and the Workbook/Sheet shapes it returns come from hucre/xlsx's own
 // types rather than a hand-rolled duplicate.
 //
-// Contract: skills/transcribe/scripts/cli.js's parseArgs, list, extract, and verify. No
+// Contract: the retired JavaScript cli's parseArgs, list, extract, and verify. No
 // exports: unlike convert.ts, this file is a CLI entry point read directly, not imported.
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
@@ -168,9 +168,7 @@ if (command === "verify") {
     let lost = 0;
     let sample = "";
     for (const row of sheet.rows) {
-      const cells = row
-        .map((cell) => cellText(cell).trim())
-        .filter((t) => t !== "");
+      const cells = row.map((cell) => cellText(cell).trim()).filter((t) => t !== "");
       // A column ruler never survives into the Markdown, so counting it would report a
       // loss on every sheet and bury the real ones.
       if (isColumnRuler(cells)) continue;

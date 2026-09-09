@@ -6,7 +6,7 @@
 // convert.js の TypeScript 移植。抽出は書式に依存させず、書式ごとの判定はすべてプロファイル
 // が持つ。
 //
-// Contract: skills/transcribe/scripts/convert.js の cellText / cellsOf / isColumnRuler /
+// Contract: 退役した JavaScript 版 converter の cellText / cellsOf / isColumnRuler /
 // fillRatio / escapeCell / buildColumns / rowToCells / profiles / sheetToMarkdown /
 // sheetFileName。skills/transcribe/tests/convert.test.ts が検証する。
 
@@ -51,7 +51,9 @@ export function cellsOf(row: unknown[]): CellInfo[] {
   const out: CellInfo[] = [];
   for (let i = 0; i < row.length; i++) {
     // 語中の NBSP は trim() を通り抜け、出力を後から grep するときに当たらなくなる。
-    const text = cellText(row[i]).replace(/\u00a0/g, " ").trim();
+    const text = cellText(row[i])
+      .replace(/\u00a0/g, " ")
+      .trim();
     if (text !== "") out.push({ col: i, text });
   }
   return out;

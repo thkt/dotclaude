@@ -9,7 +9,7 @@
 // (usage と引数不備が 2、sheet 無しと cell 欠落が 1) は同じで、node:* だけで書く。readXlsx が
 // 返す Workbook/Sheet の形は自前で複製せず、hucre/xlsx 自身の型をそのまま使う。
 //
-// Contract: skills/transcribe/scripts/cli.js の parseArgs / list / extract / verify。
+// Contract: 退役した JavaScript 版 cli の parseArgs / list / extract / verify。
 // export は持たない。convert.ts と違い、このファイルは直接実行される CLI のエントリポイントで
 // あり、他から import されない。
 
@@ -168,9 +168,7 @@ if (command === "verify") {
     let lost = 0;
     let sample = "";
     for (const row of sheet.rows) {
-      const cells = row
-        .map((cell) => cellText(cell).trim())
-        .filter((t) => t !== "");
+      const cells = row.map((cell) => cellText(cell).trim()).filter((t) => t !== "");
       // 列番号のものさしは変換後の Markdown に残らないため、数えると毎シート欠落として
       // 報告され、本物の欠落が埋もれる。
       if (isColumnRuler(cells)) continue;

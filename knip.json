@@ -51,6 +51,8 @@
   "ignoreFiles": [
     "workflows/tests/fixtures/**",
     "hooks/**/tests/fixtures/**",
+    "tests/fixtures/**",
+    "agents/**/tests/fixtures/**",
     "skills/*/test/cases/**"
   ]
 }

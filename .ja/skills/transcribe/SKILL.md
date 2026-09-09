@@ -14,7 +14,7 @@ Read ツールは xlsx を開けない。このリポジトリに入れた hucre
 1. 中身の形を見る。
 
 ```bash
-node ${CLAUDE_SKILL_DIR}/scripts/cli.js list <xlsx>
+node ${CLAUDE_SKILL_DIR}/scripts/cli.ts list <xlsx>
 ```
 
 シート一覧と充填率が出る。充填率は値が入っているセルの割合で、ここで次の分岐が決まる。
@@ -29,20 +29,20 @@ node ${CLAUDE_SKILL_DIR}/scripts/cli.js list <xlsx>
 3. 整形する。出力先はリポジトリの外か、ユーザーが指定した場所にする。
 
 ```bash
-node ${CLAUDE_SKILL_DIR}/scripts/cli.js extract <xlsx> --out <dir> [--profile <name>] [--sheet <n|name>]
+node ${CLAUDE_SKILL_DIR}/scripts/cli.ts extract <xlsx> --out <dir> [--profile <name>] [--sheet <n|name>]
 ```
 
 4. 欠落が無いか確かめる。この確認を飛ばさない。書式判定を誤るとエラーを出さずにセルが消えるため、消えたかどうかは照合でしか分からない。
 
 ```bash
-node ${CLAUDE_SKILL_DIR}/scripts/cli.js verify <xlsx> <dir>
+node ${CLAUDE_SKILL_DIR}/scripts/cli.ts verify <xlsx> <dir>
 ```
 
 `OK: every cell of N sheets survived into the output.` が出たら完了。欠落があればシート名と欠落セルの先頭 40 字を返すので、プロファイルの判定を直してから再実行する。
 
 ## プロファイル
 
-書式固有の判定はプロファイルが持つ。`scripts/convert.js` の `profiles` に定義がある。
+書式固有の判定はプロファイルが持つ。`scripts/convert.ts` の `profiles` に定義がある。
 
 未知の書式にはまず `generic` を使う。表として整形したい場合だけプロファイルを足す。プロファイルが持つ判定は 5 つで、null にした判定は行わない。
 
