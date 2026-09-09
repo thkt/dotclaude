@@ -27,13 +27,13 @@ argument-hint: "[decision title]"
 
 | Step | 工程      | 内容                                                                                                                                                                 |
 | ---- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Pre-Check | ${CLAUDE_SKILL_DIR}/scripts/pre-check.py "$TITLE" を実行する。返り値から使うのは `dr_dir` と `filename` (書き込み先)、`date` (frontmatter)、`similar_drs` (重複判定) |
+| 1    | Pre-Check | ${CLAUDE_SKILL_DIR}/scripts/pre-check.ts "$TITLE" を実行する。返り値から使うのは `dr_dir` と `filename` (書き込み先)、`date` (frontmatter)、`similar_drs` (重複判定) |
 | 2    | Type      | 決定の意図で決定タイプを判定し、推奨トピックを選ぶ (§ 決定タイプ)                                                                                                    |
 | 3    | Sources   | プロジェクトドキュメント、issue、外部リソースを収集する                                                                                                              |
 | 4    | Draft     | ${CLAUDE_SKILL_DIR}/templates/madr-template.md を `dr_dir` 配下に `filename` で写し、収集した内容で埋める (§ YAML Frontmatter)                                       |
 | 5    | Challenge | 既存 DR の原則に例外を作る、または既存 DR を supersede する場合だけ `/challenge` を通し、verdict と成立条件を More Information に 1 行で残す                         |
-| 6    | Validate  | ${CLAUDE_SKILL_DIR}/scripts/validate-dr.py "$DR_FILE" を実行する。exit 0 なら合格。落ちた項目は `errors[]` に入り、`warnings[]` は参考                               |
-| 7    | Index     | ${CLAUDE_SKILL_DIR}/scripts/update-index.py を実行し、`dr_dir/README.md` を再生成する                                                                                |
+| 6    | Validate  | ${CLAUDE_SKILL_DIR}/scripts/validate-dr.ts "$DR_FILE" を実行する。exit 0 なら合格。落ちた項目は `errors[]` に入り、`warnings[]` は参考                               |
+| 7    | Index     | ${CLAUDE_SKILL_DIR}/scripts/update-index.ts を実行し、`dr_dir/README.md` を再生成する                                                                                |
 
 ## 決定タイプ
 
@@ -66,7 +66,7 @@ status が proposed なら本文を直接編集し、Validate と Index を実�
 2. 新規 DR の More Information で先行 DR を引用する (例: `Supersedes DR-NNNN`)
 3. 旧 DR の `status:` を `superseded by DR-NNNN` に変更する
 4. 旧 DR の `date:` を当日に更新する
-5. ${CLAUDE_SKILL_DIR}/scripts/update-index.py を実行してインデックスを更新する
+5. ${CLAUDE_SKILL_DIR}/scripts/update-index.ts を実行してインデックスを更新する
 
 ## エラー処理
 
