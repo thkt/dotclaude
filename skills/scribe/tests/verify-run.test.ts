@@ -201,7 +201,7 @@ test("T-224 a run one commit short of the report returns ok false, exits 1, and 
   });
 });
 
-test("T-225 a row moved to 棄却 and a deferred row entering 昇格待ち both move the expected remaining count, and a store absent at base counts as zero rows", () => {
+test("T-225 a row moved to the rejected section and a deferred row entering the waiting section both move the expected remaining count, and a store absent at base counts as zero rows", () => {
   // (a) A row Phase 4 dropped into 棄却 clears an expected line the same way a committed page
   // does, so the run still balances.
   {

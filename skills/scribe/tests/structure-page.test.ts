@@ -76,52 +76,46 @@ function tableDataRows(body: string): string[] {
   return lines.slice(2);
 }
 
-test(
-  "T-227 findStructurePages returns the same page set as an independent frontmatter scan of docs/wiki, compared as names",
-  () => {
-    const found = findStructurePages(WIKI).map((p) => p.split("/").pop());
-    const expected = structurePagesByScan();
-    assert.ok(expected.length > 0, "docs/wiki carries at least one kind: structure page");
-    assert.deepEqual(found, expected);
-  },
-);
+test("T-227 findStructurePages returns the same page set as an independent frontmatter scan of docs/wiki, compared as names", () => {
+  const found = findStructurePages(WIKI).map((p) => p.split("/").pop());
+  const expected = structurePagesByScan();
+  assert.ok(expected.length > 0, "docs/wiki carries at least one kind: structure page");
+  assert.deepEqual(found, expected);
+});
 
-test(
-  "T-228 the 境界 bullets and the 契約 and 要求 table rows come back as three lists with the header and separator rows excluded",
-  () => {
-    const pages = findStructurePages(WIKI);
-    assert.ok(pages.length > 0, "docs/wiki carries at least one kind: structure page");
-    for (const page of pages) {
-      const text = readFileSync(page, "utf8");
-      const claims = readClaims(page);
-      for (const section of ["境界", "契約", "要求"]) {
-        assert.ok(section in claims, `${page}: ${section}`);
-      }
-
-      const expectedBoundary = bulletRows(sectionBody(text, "境界"));
-      assert.deepEqual(claims["境界"], expectedBoundary, `${page}: 境界`);
-
-      for (const section of ["契約", "要求"]) {
-        const expectedRows = tableDataRows(sectionBody(text, section));
-        assert.deepEqual(claims[section], expectedRows, `${page}: ${section}`);
-        for (const row of claims[section]) {
-          assert.doesNotMatch(
-            row,
-            /^\|(?: *-+ *\|)+$/,
-            `${page}: ${section} carries a separator row`,
-          );
-        }
-      }
-
-      // 境界 comes back as its own collection, not merged with the table sections.
-      assert.notDeepEqual(
-        claims["境界"],
-        claims["契約"],
-        `${page}: 境界 and 契約 come back separately`,
-      );
+test("T-228 the boundary bullets and the contract and requirement table rows come back as three lists with the header and separator rows excluded", () => {
+  const pages = findStructurePages(WIKI);
+  assert.ok(pages.length > 0, "docs/wiki carries at least one kind: structure page");
+  for (const page of pages) {
+    const text = readFileSync(page, "utf8");
+    const claims = readClaims(page);
+    for (const section of ["境界", "契約", "要求"]) {
+      assert.ok(section in claims, `${page}: ${section}`);
     }
-  },
-);
+
+    const expectedBoundary = bulletRows(sectionBody(text, "境界"));
+    assert.deepEqual(claims["境界"], expectedBoundary, `${page}: 境界`);
+
+    for (const section of ["契約", "要求"]) {
+      const expectedRows = tableDataRows(sectionBody(text, section));
+      assert.deepEqual(claims[section], expectedRows, `${page}: ${section}`);
+      for (const row of claims[section]) {
+        assert.doesNotMatch(
+          row,
+          /^\|(?: *-+ *\|)+$/,
+          `${page}: ${section} carries a separator row`,
+        );
+      }
+    }
+
+    // 境界 comes back as its own collection, not merged with the table sections.
+    assert.notDeepEqual(
+      claims["境界"],
+      claims["契約"],
+      `${page}: 境界 and 契約 come back separately`,
+    );
+  }
+});
 
 function extractUnitCaps(source: string): { files: number; tests: number } | null {
   const match = source.match(/UNIT_CAPS\s*=\s*\{\s*files:\s*(\d+),\s*tests:\s*(\d+)\s*\}/);
@@ -140,33 +134,30 @@ function referencedPath(claims: Record<string, string[]>, name: string): string 
   return join(REPO_ROOT, (match as RegExpMatchArray)[1]);
 }
 
-test(
-  "T-229 the unit caps workflow-structure.md states equal build.js's UNIT_CAPS, and a copy of build.js with the constant renamed makes the extraction fail",
-  () => {
-    const claims = readClaims(PAGE);
-    const row = claims["要求"].find((r) => r.includes("`build` の unit"));
-    assert.ok(row, "要求 states build's unit caps");
-    const match = (row as string).match(/files (\d+) \/ tests (\d+)/);
-    assert.ok(match, `要求 states build's unit caps as 'files N / tests N': ${row}`);
-    const pageCaps = {
-      files: Number((match as RegExpMatchArray)[1]),
-      tests: Number((match as RegExpMatchArray)[2]),
-    };
+test("T-229 the unit caps workflow-structure.md states equal build.js's UNIT_CAPS, and a copy of build.js with the constant renamed makes the extraction fail", () => {
+  const claims = readClaims(PAGE);
+  const row = claims["要求"].find((r) => r.includes("`build` の unit"));
+  assert.ok(row, "要求 states build's unit caps");
+  const match = (row as string).match(/files (\d+) \/ tests (\d+)/);
+  assert.ok(match, `要求 states build's unit caps as 'files N / tests N': ${row}`);
+  const pageCaps = {
+    files: Number((match as RegExpMatchArray)[1]),
+    tests: Number((match as RegExpMatchArray)[2]),
+  };
 
-    const scriptPath = referencedPath(claims, "UNIT_CAPS");
-    const scriptSource = readFileSync(scriptPath, "utf8");
-    const scriptCaps = extractUnitCaps(scriptSource);
-    assert.ok(scriptCaps !== null, `${scriptPath} carries a UNIT_CAPS constant`);
-    assert.deepEqual(pageCaps, scriptCaps);
+  const scriptPath = referencedPath(claims, "UNIT_CAPS");
+  const scriptSource = readFileSync(scriptPath, "utf8");
+  const scriptCaps = extractUnitCaps(scriptSource);
+  assert.ok(scriptCaps !== null, `${scriptPath} carries a UNIT_CAPS constant`);
+  assert.deepEqual(pageCaps, scriptCaps);
 
-    const renamed = scriptSource.replaceAll("UNIT_CAPS", "UNIT_CAPS_RENAMED");
-    assert.equal(
-      extractUnitCaps(renamed),
-      null,
-      "renaming the constant the page's 参照コード names makes the check unable to find it",
-    );
-  },
-);
+  const renamed = scriptSource.replaceAll("UNIT_CAPS", "UNIT_CAPS_RENAMED");
+  assert.equal(
+    extractUnitCaps(renamed),
+    null,
+    "renaming the constant the page's 参照コード names makes the check unable to find it",
+  );
+});
 
 /** Every quoted glob token the Node tests step's `run:` block lists in test.yml, read from the
  * workflow file itself rather than restated here, so a step content change shows up as a
@@ -181,36 +172,33 @@ function ciNodeTestGlobs(): string[] {
   return [...block.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 }
 
-test(
-  "T-230 every workflow the page names reaches a no-repo stop carrying why, and CI's Node tests glob in test.yml covers this test file",
-  () => {
-    const claims = readClaims(PAGE);
-    const content = claims["内容"].join("\n");
-    const names = [...content.matchAll(/`([a-z]+)`/g)].map((m) => m[1]);
-    assert.ok(names.length > 0, "内容 names the workflows in backticks");
-    for (const name of names) {
-      const scriptPath = join(REPO_ROOT, "workflows", `${name}.js`);
-      assert.ok(existsSync(scriptPath), `${name}: ${scriptPath} exists`);
-      const source = readFileSync(scriptPath, "utf8");
-      const inline = source.includes('stopped: "no-repo"');
-      const viaHelper = /stop\(\s*["']no-repo["']/.test(source);
-      assert.ok(inline || viaHelper, `${name}: reaches a no-repo stop`);
-      // The claim is `{ stopped: "<理由>", why }`, so the second key is checked too. Without
-      // this the row reads as covered while only half of it is.
-      assert.match(
-        source,
-        /why:\s*[`"']/,
-        `${name}: the stop carries why alongside stopped, as { stopped, why } states`,
-      );
-    }
-
-    const globLines = ciNodeTestGlobs();
-    assert.ok(globLines.length > 0, "Node tests step carries at least one quoted glob");
-
-    const thisFileRelative = "skills/scribe/tests/structure-page.test.ts";
-    assert.ok(
-      globLines.some((glob) => globToRegExp(glob).test(thisFileRelative)),
-      `Node tests glob covers ${thisFileRelative}`,
+test("T-230 every workflow the page names reaches a no-repo stop carrying why, and CI's Node tests glob in test.yml covers this test file", () => {
+  const claims = readClaims(PAGE);
+  const content = claims["内容"].join("\n");
+  const names = [...content.matchAll(/`([a-z]+)`/g)].map((m) => m[1]);
+  assert.ok(names.length > 0, "内容 names the workflows in backticks");
+  for (const name of names) {
+    const scriptPath = join(REPO_ROOT, "workflows", `${name}.js`);
+    assert.ok(existsSync(scriptPath), `${name}: ${scriptPath} exists`);
+    const source = readFileSync(scriptPath, "utf8");
+    const inline = source.includes('stopped: "no-repo"');
+    const viaHelper = /stop\(\s*["']no-repo["']/.test(source);
+    assert.ok(inline || viaHelper, `${name}: reaches a no-repo stop`);
+    // The claim is `{ stopped: "<理由>", why }`, so the second key is checked too. Without
+    // this the row reads as covered while only half of it is.
+    assert.match(
+      source,
+      /why:\s*[`"']/,
+      `${name}: the stop carries why alongside stopped, as { stopped, why } states`,
     );
-  },
-);
+  }
+
+  const globLines = ciNodeTestGlobs();
+  assert.ok(globLines.length > 0, "Node tests step carries at least one quoted glob");
+
+  const thisFileRelative = "skills/scribe/tests/structure-page.test.ts";
+  assert.ok(
+    globLines.some((glob) => globToRegExp(glob).test(thisFileRelative)),
+    `Node tests glob covers ${thisFileRelative}`,
+  );
+});
