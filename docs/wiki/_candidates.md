@@ -68,8 +68,8 @@
 - script が決めた値 (比較対象の sha、PR タイトル) は agent に書き写させず、shq で argv 1 要素としてコマンドに直接載せる。relay agent には stdout の逐語中継だけをさせる。git を打たせると比較対象を自分で解決した HEAD に置き換える #623
 - 検証に落ちた成果物も実在すれば数え、verified フラグで区別する。commits から落とすと呼び出し元が unit_commits: 0 と報告し、履歴にあるコミットを無いものとして扱う #623
 - 同じ事実を 2 体の agent に聞かない。verifier の report が持つフィールド (head) を使い、再取得の relay を足さない #623
-- prefix 除去の正規表現は正準の列挙 (verify-commit.py の COMMIT_TYPES) と同じ集合に限定する。任意語だと WIP: や RFC: の先頭語が消える #623
-- 手元の gate (oxlint / oxfmt) は Python を見ないので、push 前に CI と同じ版の ruff (0.16.4) を手元で走らせる。E501 だけで CI が落ちた #623
+- prefix 除去の正規表現は正準の列挙 (verify-commit.ts の COMMIT_TYPES) と同じ集合に限定する。任意語だと WIP: や RFC: の先頭語が消える #623
+- 手元の gate (oxlint/oxfmt) は Python を見ないので、push 前に CI と同じ版の ruff (0.16.4) を手元で走らせる。E501 だけで CI が落ちた #623
 - PR 本文の Review focus 節で、振る舞いが変わったファイルと comment のみの変更ファイルを分けて示す #648
 - TS 化で knip.json の glob 拡張だけでは足りず、CLI 入口ファイル (entry) と静的 import されない test fixture (ignoreFiles) は明示しないと未使用 export として新規に誤検出される #653
 - 既存の共有 helper (entry-point.ts の isMainModule) があるのに、移植元の手書き同等処理をそのまま写した (research)
@@ -79,6 +79,9 @@
 - build 計画の語りを実装のコメントに残さない #667
 - `/// <reference types="node" />` 等のディレクティブは新規ファイル自身が実際に対象 API を使うかで要否を判定する。同じ形の参照ファイルに無くても確認せず複製すると規約からの逸脱になる #667
 - 契約が現時点で呼び出し元の無い機能 (argv 対応等) を明示的に要求するとき、既存の呼び出し元だけを満たす実装はそのギャップが自身のテストから見えない #667
+- Python の round(x, n) (round-half-to-even) を TS へ移すとき Math.round は half-up で丸め、境界値で不一致になる。round-half-to-even を実装する round3 相当の関数を用意し、実測 (全 hit/total ペアを Python の round と突き合わせ) で確認する #672
+- 退役対象ファイル名の残存参照を grep で検査するとき、ブランチ単体の diff では 0 件でも、他 PR が分岐後に main へ入れた新規参照 (退役前は正当だった記述) を merge 後の状態で検査すると検出される。ブランチ diff でなく origin/main との合流点を対象にする #669
+- 退役する対象と同じファイルにあるテストクラスを一括で消す前に、各クラスが実際に退役対象そのものを検査しているかを個別に確認する。1 クラスだけ別の対象 (ドキュメント散文など) を検査しており、退役対象と無関係なら一緒に消さず残す/復元する #672
 
 ## 棄却
 

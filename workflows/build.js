@@ -1247,7 +1247,7 @@ const runSlug = `${issueNumber || "no-issue"}-${String(branch).replace(/[^\w.-]+
 
 // The script applies pr-writing.md's title rule (the issue title minus a feat: / fix: prefix);
 // the Ship agent has opened PRs under a title of its own without reading the issue. Empty when
-// Load could not fetch the title. The type list matches verify-commit.py's COMMIT_TYPES;
+// Load could not fetch the title. The type list matches verify-commit.ts's COMMIT_TYPES;
 // stripping any word would also eat "WIP:" and "RFC:".
 const CONVENTIONAL_PREFIX =
   /^(?:feat|fix|refactor|docs|test|chore|perf|style|ci)(?:\([^()]*\))?!?:\s*/i;
