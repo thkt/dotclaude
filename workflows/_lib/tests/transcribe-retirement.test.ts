@@ -1,9 +1,8 @@
 /// <reference types="node" />
 // scripts/cli.js and scripts/convert.js (skills/transcribe/scripts/ and its .ja mirror) are
-// retired in favor of the .ts ports (established by the preceding units U-001/U-002). This file
-// guards the retirement itself: no tracked file still names either .js path, the EN / .ja
-// transcribe SKILL.md invoke cli.ts through node, and no .test.js is left under the directories
-// U-006..U-009 swept.
+// retired in favor of the .ts ports. This file guards the retirement itself: no tracked file
+// still names either .js path, the EN / .ja transcribe SKILL.md invoke cli.ts through node, and
+// no .test.js is left under the three directories the sweep covered.
 //
 // Full-tree scan per docs/wiki/retire-rename-procedure.md: update both trees and docs in one
 // change, then confirm zero residual references across git ls-files. A mention under
@@ -89,8 +88,8 @@ test(
   },
 );
 
-// The directories U-006..U-009 renamed. skills/ as a whole still holds .test.js files that later
-// slices own, so the sweep is checked over exactly the three it covered.
+// The three directories the sweep covered. skills/ as a whole still holds .test.js files that
+// later slices own, so the check names exactly those three.
 const SWEPT_PREFIXES = ["tests/", "agents/", "skills/transcribe/"];
 
 function isSweptTestJs(path: string): boolean {

@@ -81,8 +81,14 @@ test("T-044 the type-check set contains workflows/_lib/run-workflow.ts and workf
 test("T-254 the type-check set contains every tracked .ts under the tests and agents directories, compared as a set of names against git ls-files", () => {
   // Names, not tsc's absolute paths: listTypeCheckedFiles() reports files rooted at ROOT, and
   // git ls-files already reports repo-relative names, so the file's own name is the join point.
-  const checkedNames = new Set(listTypeCheckedFiles().map((file) => toPosix(path.relative(ROOT, file))));
-  const tracked = execFileSync("git", ["ls-files", "tests/**/*.ts", "agents/**/*.ts"], {
+  const checkedNames = new Set(
+    listTypeCheckedFiles().map((file) => toPosix(path.relative(ROOT, file))),
+  );
+  // `tests/*.ts`, not `tests/**/*.ts`: git's default pathspec matching lets `*` cross `/`, so
+  // the `**` form requires a literal `/` after it and never matches a file sitting directly
+  // under tests/. That silently cut the tracked set from 9 names to 1 -- the depth-2 fixture --
+  // leaving the eight renamed tests, the reason this check exists, out of the comparison.
+  const tracked = execFileSync("git", ["ls-files", "tests/*.ts", "agents/*.ts"], {
     cwd: ROOT,
     encoding: "utf8",
   })
@@ -93,7 +99,10 @@ test("T-254 the type-check set contains every tracked .ts under the tests and ag
   // makes the loop below vacuously pass on a config that never resolves tests/**/*.ts or
   // agents/**/*.ts at all.
   for (const fixture of [TESTS_FIXTURE, AGENTS_FIXTURE]) {
-    assert.ok(tracked.includes(fixture), `${fixture} is not tracked by git, so this test proves nothing`);
+    assert.ok(
+      tracked.includes(fixture),
+      `${fixture} is not tracked by git, so this test proves nothing`,
+    );
   }
   for (const name of tracked) {
     assert.ok(checkedNames.has(name), `${name} is tracked but missing from the type-check set`);
