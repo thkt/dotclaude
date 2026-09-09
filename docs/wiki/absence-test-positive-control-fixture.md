@@ -18,7 +18,7 @@ scenes: []
 
 ## 参照コード
 
-- `skills/scribe/tests/structure_page_test.py` の `StructurePageClaimCoverage.test_the_positive_control_fails_when_it_is_removed`（陽性対照から手掛かりを取り除くと検査漏れとして落ちることを確認する）
+- `skills/scribe/tests/structure-page.test.ts` の T-229（参照コードが名指す定数を改名した写しでは検査が対象を見つけられなくなることを確認する）
 
 ## 根拠
 

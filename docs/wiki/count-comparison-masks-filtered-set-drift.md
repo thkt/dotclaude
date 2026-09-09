@@ -17,7 +17,7 @@ scenes: []
 
 ## 参照コード
 
-- `skills/scribe/tests/structure_page_test.py` の `_unchecked_claim_rows`（検査漏れの主張を件数ではなく行そのものの一覧で返す設計）
+- `skills/scribe/tests/structure-page.test.ts` の T-227（ページ集合を件数ではなく名前の集合として突き合わせる）
 
 ## 根拠
 
