@@ -19,7 +19,7 @@ export const meta = {
 //    Challenge applies to Codex findings only.
 // 2. The gate is computed by schema + script rule from (build, tests, issues), never decoded
 //    from the enhancer's prose.
-// 3. worktree.py / bootstrap.py are deterministic; setup and cleanup derive the same branch /
+// 3. worktree.ts / bootstrap.ts are deterministic; setup and cleanup derive the same branch /
 //    path from $CLAUDE_SESSION_ID.
 // 4. adversarial (codex 600s) starts with Evidence and runs behind Challenge / Triage; in a
 //    barrier the longest stage would block everything.
@@ -253,7 +253,7 @@ const bootstrapPrompt = anchor(
     `1. Check for the codex CLI with \`command -v codex\`. If missing, set codex_available: false, skip the rest, and return mode: none.\n` +
     `2. Run ${OUTCOME_VALIDATOR} .claude/OUTCOME.md. If the JSON state is absent or empty, set outcome: "absent". Otherwise read the file and digest Behavior / Non-goals / Constraints into outcome. Do not generate a stub.\n` +
     `3. ${scopeInstr}\n` +
-    `4. Unless mode is none, prepare an isolated worktree with ${SCRIPTS}/worktree.py "$CLAUDE_SESSION_ID" (if the JSON status is error, set worktree_ok: false and copy stderr into reason), then run ${SCRIPTS}/bootstrap.py "<worktree path>" and copy install / build / reason from its JSON. When diff_kind is uncommitted, mirror the uncommitted changes into the worktree (apply \`git diff HEAD\` on the worktree side, and cp untracked files among scope_files).\n` +
+    `4. Unless mode is none, prepare an isolated worktree with node ${SCRIPTS}/worktree.ts "$CLAUDE_SESSION_ID" (if the JSON status is error, set worktree_ok: false and copy stderr into reason), then run node ${SCRIPTS}/bootstrap.ts "<worktree path>" and copy install / build / reason from its JSON. When diff_kind is uncommitted, mirror the uncommitted changes into the worktree (apply \`git diff HEAD\` on the worktree side, and cp untracked files among scope_files).\n` +
     `Do not review or fix code. This stage's job is environment setup and recording facts only.`,
 );
 const boot = (await agent(bootstrapPrompt, {
@@ -688,7 +688,7 @@ try {
   phase("Cleanup");
   await agent(
     anchor(
-      `You handle the Cleanup stage of assert. Tear down the assert worktree with ${SCRIPTS}/worktree.py --cleanup "$CLAUDE_SESSION_ID". If it fails, reporting it as a warning is enough (best-effort). Do not touch other files.`,
+      `You handle the Cleanup stage of assert. Tear down the assert worktree with node ${SCRIPTS}/worktree.ts --cleanup "$CLAUDE_SESSION_ID". If it fails, reporting it as a warning is enough (best-effort). Do not touch other files.`,
     ),
     {
       agentType: "general-purpose",
