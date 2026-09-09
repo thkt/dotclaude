@@ -33,14 +33,18 @@
     "skills/_lib/review_score.ts",
     ".ja/skills/_lib/review_score.ts",
     "skills/**/scripts/*.{js,mjs,ts}",
-    ".ja/skills/**/scripts/*.{js,mjs,ts}"
+    ".ja/skills/**/scripts/*.{js,mjs,ts}",
+    "tests/*.test.{js,ts}",
+    "agents/**/tests/*.test.{js,ts}"
   ],
   "project": [
     "workflows/**/*.{js,ts}",
     ".ja/workflows/**/*.{js,ts}",
     "hooks/**/*.ts",
     "skills/**/*.{js,mjs,ts}",
-    ".ja/skills/**/*.{js,mjs,ts}"
+    ".ja/skills/**/*.{js,mjs,ts}",
+    "tests/**/*.{js,ts}",
+    "agents/**/*.{js,ts}"
   ],
   "ignoreBinaries": ["codex"],
   "ignoreDependencies": ["oxfmt", "^@?textlint"],
