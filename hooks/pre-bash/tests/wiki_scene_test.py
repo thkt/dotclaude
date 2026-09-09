@@ -45,9 +45,7 @@ def _node_bin_dir() -> str | None:
     return str(Path(real).parent) if real else None
 
 
-NARROW_PATH = os.pathsep.join(
-    part for part in [_node_bin_dir(), "/usr/bin", "/bin"] if part
-)
+NARROW_PATH = os.pathsep.join(part for part in [_node_bin_dir(), "/usr/bin", "/bin"] if part)
 
 # One page per file keeps each fixture's declared pages exactly the ones a test names, so an
 # assertion about "the issue-close pages" checks a closed, known set rather than whatever the
