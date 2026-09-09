@@ -1,8 +1,7 @@
 /// <reference types="node" />
 // Behavioral parity tests for skills/scribe/scripts/structure_page.ts against the retired
-// Python original skills/scribe/scripts/structure_page.py (skills/scribe/tests/structure_page_test.py
-// carries T-001/T-002/T-003/T-004/T-005 there; T-008/T-009's CI discovery is replaced here with
-// a check against test.yml's own Node tests glob, read via
+// Python original (that suite carried T-001/T-002/T-003/T-004/T-005; T-008/T-009's CI discovery
+// is replaced here with a check against test.yml's own Node tests glob, read via
 // skills/scribe/scripts/find_wiki_rule.ts's globToRegExp -- the same reuse
 // skills/scribe/tests/find-wiki-rule.test.ts's own T-218 makes against tracked files).
 //
@@ -24,14 +23,13 @@ const REPO_ROOT = join(HERE, "..", "..", "..");
 const WIKI = join(REPO_ROOT, "docs", "wiki");
 const WORKFLOW_YML = join(REPO_ROOT, ".github", "workflows", "test.yml");
 
-// The one structure page whose 契約/要求 name workflows/*.js machinery
-// (structure_page_test.py's own PAGE). T-229 cross-checks this page against the workflow
-// script it describes, so the page is fixed rather than discovered.
+// The one structure page whose 契約/要求 name workflows/*.js machinery. T-229 cross-checks this
+// page against the workflow script it describes, so the page is fixed rather than discovered.
 const PAGE = join(WIKI, "workflow-structure.md");
 
 // Spelled out here rather than imported from structure_page.ts: the scan below exists to reach
 // the same answer independently, so borrowing the module's own literal would make the two sides
-// echo (structure_page_test.py's own _KIND_LINE carries the same note).
+// echo.
 const KIND_LINE = "kind: structure";
 
 /** The lines between the opening and closing `---` delimiters, found by scanning to the closing

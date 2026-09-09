@@ -1,8 +1,8 @@
 /// <reference types="node" />
 // Behavioral parity tests for skills/scribe/scripts/verify_run.ts against the retired Python
-// original skills/scribe/scripts/verify_run.py (skills/scribe/tests/verify_run_test.py carries
-// the same coverage there). Builds a real temp git repo the same way that Python suite's
-// _init_worktree/_commit_pages/_candidates do, calls `verify` in-process for the report content,
+// original (that suite carried the same coverage). Builds a real temp git repo the same way
+// that Python suite's _init_worktree/_commit_pages/_candidates do, calls `verify` in-process
+// for the report content,
 // and reaches the CLI through the shared runCli/withTempHome harness from
 // workflows/_lib/tests/_cli-fixture.ts (skills/scribe/tests/triage.test.ts carries the sibling
 // pattern) for exit code and stdout/stderr, plus hooks/_lib/shebang_scope.ts's trackedEntries for
@@ -31,7 +31,7 @@ const GIT_ENV: Record<string, string> = {
 };
 
 /** Runs a real `git` command against `repo`, throwing on a non-zero exit -- the same shape
- * verify_run_test.py's own `_git` helper gives its Python callers. */
+ * the retired Python suite's own `_git` helper gave its callers. */
 function git(repo: string, ...args: string[]): string {
   const result = spawnSync("git", ["-C", repo, ...args], { encoding: "utf8", env: GIT_ENV });
   if (result.status !== 0) {
@@ -41,7 +41,7 @@ function git(repo: string, ...args: string[]): string {
 }
 
 /** The `_candidates.md` store body: rows under 昇格待ち, 単発, and 棄却, in that order --
- * verify_run_test.py's `_candidates`. */
+ * the retired Python suite's `_candidates`. */
 function candidates(waiting: string[], rejected: string[] = [], oneOff: string[] = []): string {
   const rows = waiting.map((n) => `- ${n}`);
   const dropped = rejected.map((n) => `- ${n}`);
@@ -66,7 +66,7 @@ function candidates(waiting: string[], rejected: string[] = [], oneOff: string[]
 /** Builds the branch point verify_run.ts is asked to diff against: a fresh git repo, optionally
  * seeded with a `_candidates.md` store, then one `docs(wiki):` commit every branch point in this
  * repository already carries. `startWaiting === null` leaves the store out entirely -- the branch
- * point a first run starts from. verify_run_test.py's `_init_worktree`. */
+ * point a first run starts from. The retired Python suite's `_init_worktree`. */
 function initWorktree(root: string, startWaiting: string[] | null, startOneOff: string[] = []): string {
   const repo = join(root, "worktree");
   const wiki = join(repo, "docs", "wiki");
@@ -85,7 +85,7 @@ function initWorktree(root: string, startWaiting: string[] | null, startOneOff: 
 
 /** One Phase 6 commit: writes `names` as wiki pages and drops their rows from 昇格待ち. Returns
  * the 昇格待ち rows left, for the caller to chain into the next commit.
- * verify_run_test.py's `_commit_pages`. */
+ * the retired Python suite's `_commit_pages`. */
 function commitPages(repo: string, stillWaiting: string[], names: string[]): string[] {
   const wiki = join(repo, "docs", "wiki");
   for (const name of names) {
@@ -104,7 +104,7 @@ function base(repo: string): string {
 
 const WAITING_SECTION = "昇格待ち";
 
-/** A triage row as `verify` reads it -- verify_run_test.py's `_rows`. A plain default parameter
+/** A triage row as `verify` reads it -- the retired Python suite's `_rows`. A plain default parameter
  * cannot carry this: JS triggers a default on an explicit `undefined` too, unlike Python's
  * `_rows(names, None)` where an explicit `None` stays `None`. `sectionArg`'s arity (0 args vs.
  * 1, even when that 1 is `undefined`) is what lets `rows(["brand-new"], undefined)` still mean
