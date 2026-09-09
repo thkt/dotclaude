@@ -1,5 +1,5 @@
 ---
-globs: ["**/skills/**/templates/*.md", "**/skills/**/scripts/validate-*.py", "workflows/build.js"]
+globs: ["**/skills/**/templates/*.md", "**/skills/**/scripts/validate-*.ts", "workflows/build.js"]
 scenes: []
 ---
 
