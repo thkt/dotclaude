@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { checked, run } from "./_hook-harness.ts";
+import { checked, run, TIMEOUT_SECONDS } from "./_hook-harness.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(HERE, "fixtures", "harness");
@@ -19,7 +19,7 @@ const FAIL_FIXTURE = path.join(FIXTURES, "fail-with-stderr.ts");
 const DUMP_ENV_FIXTURE = path.join(FIXTURES, "dump-env.ts");
 const ECHO_STDIN_FIXTURE = path.join(FIXTURES, "echo-stdin.ts");
 
-test("a hook that exits non-zero makes checked throw an error naming the hook and carrying its stderr", () => {
+test("T-240 a hook that exits non-zero makes checked throw an error naming the hook and carrying its stderr", () => {
   assert.throws(
     () => checked(FAIL_FIXTURE, ""),
     (error: unknown) => {
@@ -31,7 +31,7 @@ test("a hook that exits non-zero makes checked throw an error naming the hook an
   );
 });
 
-test("the env passed to checked replaces the process environment instead of extending it", () => {
+test("T-241 the env passed to checked replaces the process environment instead of extending it", () => {
   // A sentinel absent from the real process env, and PATH -- present in every real process env
   // -- both have to land the same way: the sentinel present, PATH gone, because the given env
   // is the whole child environment rather than an addition to the inherited one.
@@ -50,10 +50,16 @@ test("the env passed to checked replaces the process environment instead of exte
   assert.deepEqual(receivedEnv, { HARNESS_SENTINEL: "only-this" });
 });
 
-test("an object payload reaches the hook as its JSON text and a string payload reaches it verbatim", () => {
+test("T-242 an object payload reaches the hook as its JSON text and a string payload reaches it verbatim", () => {
   const objectPayload = { tool_name: "Bash", tool_input: { command: "echo hi" } };
   assert.equal(run(ECHO_STDIN_FIXTURE, objectPayload), JSON.stringify(objectPayload));
 
   const stringPayload = "raw string payload, not JSON: {not valid";
   assert.equal(run(ECHO_STDIN_FIXTURE, stringPayload), stringPayload);
+});
+
+test("T-266 the harness kills a hook at the same 60 seconds hook_harness.py allowed", () => {
+  // The two harnesses run the same hooks from the same settings, so a hook that fits one
+  // budget and not the other would pass a test run and stall a real session.
+  assert.equal(TIMEOUT_SECONDS, 60);
 });

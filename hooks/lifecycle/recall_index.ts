@@ -19,7 +19,6 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
-import { isMainModule } from "../../workflows/_lib/entry-point.ts";
 import { parse } from "../_lib/hook_payload.ts";
 
 // The full path, not a PATH lookup: a hook can run without the homebrew prefix, where the
@@ -91,6 +90,4 @@ function main(): number {
   return 0;
 }
 
-if (isMainModule(import.meta.url)) {
-  process.exit(main());
-}
+process.exit(main());

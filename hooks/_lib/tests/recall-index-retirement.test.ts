@@ -49,7 +49,7 @@ test("T-247 no tracked file outside docs/decisions/ and .claude/workspace/resear
     offenders,
     [],
     `files still naming recall_index.py or recall_index_test.py (docs/decisions/ and ` +
-      `.claude/workspace/research/ are kept as history, not counted): ${offenders.join(", ")}`,
+      `.claude/workspace/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
   );
 });
 
@@ -93,6 +93,6 @@ test("T-248 settings.json's SessionStart command names hooks/lifecycle/recall_in
   assert.equal(
     sessionStartCommandList.some((command) => RETIRED_PYTHON.test(command)),
     false,
-    `a SessionStart command still names recall_index.py: ${sessionStartCommandList.join(", ")}`,
+    "settings.json SessionStart still names recall_index.py",
   );
 });
