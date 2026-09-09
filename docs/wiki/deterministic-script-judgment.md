@@ -19,10 +19,10 @@ scenes: []
 
 ## 参照コード
 
-- `skills/scribe/scripts/triage.py` の `EVIDENCE_THRESHOLD` と `PAGE_CAP` (閾値と 1 回あたりの上限を skill でなく script が持つ)
+- `skills/scribe/scripts/triage.ts` の `EVIDENCE_THRESHOLD` と `PAGE_CAP` (閾値と 1 回あたりの上限を skill でなく script が持つ)
 - `skills/issue/scripts/pick-plan.ts` の `rank` (下書きの選定を、共通語の得点という決まった計算にする)
 - `skills/issue/scripts/validate-issue-body.ts` の `FLOOR` (種別ごとの必須節を、骨格が何を求めるかと別に持つ)
-- `skills/scribe/scripts/find_wiki_rule.py` の `find` (該当ページの絞り込みを glob の照合で行う)
+- `skills/scribe/scripts/find_wiki_rule.ts` の `find` (該当ページの絞り込みを glob の照合で行う)
 - `skills/dr/scripts/validate-dr.ts` の `STATUS_VALUES` (status が lifecycle の値の中にあるかを検査する)
 - `workflows/code.js` の `commitPostcondition` (コミットの実在と検証結果を verifier の report の head と verdict から決め、agent の自己申告に頼らない)
 - `workflows/build.js` の `relayScript` (payload を argv 1 要素で verifier に渡し、stdout を逐語で持ち帰る。解釈は `relayedJson` が script 側で行う)

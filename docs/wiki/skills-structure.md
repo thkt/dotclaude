@@ -15,7 +15,7 @@ skill は `skills/<name>/SKILL.md` を本体とし、Skill tool が読み込む�
 - skill は Skill tool で起動し、workflow は Workflow tool で起動する。両者は別の機構で、skill から workflow を呼ぶ経路は無い
 - `user-invocable: false` の skill は `/名前` で呼べない。他の skill か agent が参照する側になる。12 件がこれに当たる
 - `skills/_lib/` は SKILL.md を持たず、skill として起動しない。`review_score.ts` と `review-harness.md` を読むのは reviewer skill の測定手順で、`rules/development/TESTING.md` と `skills/use-context-reviewer-security/test/README.md` がその経路を書く
-- skill の scripts は他の skill から `${CLAUDE_SKILL_DIR}/../<skill>/scripts/<file>` で呼べる。実在する経路は 3 本で、`issue/validate-issue-body.ts`、`research/find-prior-research.ts`、`scribe/find_wiki_rule.py` が呼ばれる側になる
+- skill の scripts は他の skill から `${CLAUDE_SKILL_DIR}/../<skill>/scripts/<file>` で呼べる。実在する経路は 3 本で、`issue/validate-issue-body.ts`、`research/find-prior-research.ts`、`scribe/find_wiki_rule.ts` が呼ばれる側になる
 
 ## 契約
 
@@ -23,7 +23,7 @@ skill は `skills/<name>/SKILL.md` を本体とし、Skill tool が読み込む�
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | frontmatter の必須           | `name`、`description`、`allowed-tools` の 3 つを 29 件すべてが持つ。`model` は 16 件、`argument-hint` は 14 件、`user-invocable` は 12 件、`context` は 7 件、`agent` は 4 件 |
 | `${CLAUDE_SKILL_DIR}`        | skill 自身のディレクトリを指す。`../` で 1 つ上がると `skills/` に届き、他の skill の scripts へ辿れる                                                                        |
-| `allowed-tools` と呼び出し形 | SKILL.md が書くコマンドと `allowed-tools` の許可が一致しないと拒否される。`Bash(python3:*)` を持たない skill は `python3` で script を呼べない                                |
+| `allowed-tools` と呼び出し形 | SKILL.md が書くコマンドと `allowed-tools` の許可が一致しないと拒否される。script のパスを覆う `Bash(...)` の grant を持たない skill はその script を呼べない |
 | テストの置き場               | `skills/<name>/tests/*_test.py`（Python）または `*.test.js`/`*.test.ts`（Node）。CI は前者を `find agents hooks skills workflows -name '*_test.py'` で、後者を `.github/workflows/test.yml` の `skills/**/tests/*.test.js`/`skills/**/tests/*.test.ts` の明示 glob で拾う。いずれも `docs/` 配下に置くと走らない |
 | テストの ROOT 解決           | `HERE.parents[2]` がリポジトリ root になる。`skills/<name>/tests/` から 3 つ上がった位置                                                                                      |
 
@@ -37,7 +37,7 @@ skill は `skills/<name>/SKILL.md` を本体とし、Skill tool が読み込む�
 ## 参照コード
 
 - `skills/_lib/review_score.ts`（reviewer skill の Recall と FP Rate を出す。skill 本体を持たない共有ライブラリ側にある）
-- `skills/scribe/scripts/find_wiki_rule.py`（他 skill から `${CLAUDE_SKILL_DIR}/../scribe/scripts/` で呼ばれる側）
+- `skills/scribe/scripts/find_wiki_rule.ts` の `find`（他 skill から `${CLAUDE_SKILL_DIR}/../scribe/scripts/` で呼ばれる側）
 - `.github/workflows/test.yml` の `Python tests`（テストを拾う find の範囲）
 - `.github/workflows/test.yml` の `Node tests`（`skills/**/tests/*.test.js`/`*.test.ts` を明示 glob で拾う側）
 

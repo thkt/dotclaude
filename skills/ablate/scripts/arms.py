@@ -25,7 +25,7 @@ BASE_COMMAND = ["claude", "--print", "--output-format", "json"]
 
 # How many times one arm is run before its result counts as measured. 5 is a provisional
 # floor against single-run noise; revisit once the first ablation run's variance is
-# measured (see skills/scribe/scripts/triage.py's COMMIT_CAP for the same provisional shape).
+# measured (see skills/scribe/scripts/triage.ts's COMMIT_CAP for the same provisional shape).
 RUN_COUNT = 5
 
 # The share of an arm's runs that must reproduce the harness-present behavior for the arm to

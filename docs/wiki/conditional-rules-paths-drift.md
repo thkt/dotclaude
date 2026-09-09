@@ -18,7 +18,7 @@ scenes: []
 ## 参照コード
 
 - `rules/conventions/MARKDOWN.md` の `paths:`（複数の起点を並べた例）
-- `skills/scribe/scripts/find_wiki_rule.py` の `glob_to_regexp`（wiki 側で同じ照合をする実装）
+- `skills/scribe/scripts/find_wiki_rule.ts` の `globToRegExp`（wiki 側で同じ照合をする実装）
 
 ## 根拠
 

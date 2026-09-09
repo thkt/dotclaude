@@ -19,8 +19,8 @@ skill や workflow から呼ぶ script の出力は、成功時は JSON 1 つを
 
 ## 参照コード
 
-- `skills/scribe/scripts/triage.py` (stdout に JSON、usage エラーは stderr へ書き exit 2)
-- `skills/scribe/scripts/triage.py` の `read_store`（証拠マーカー除去で本文が空になった行を、件数と本文つきで stderr へ出す）
+- `skills/scribe/scripts/triage.ts` (stdout に JSON、usage エラーは stderr へ書き exit 2)
+- `skills/scribe/scripts/triage.ts` の `readStore`（証拠マーカー除去で本文が空になった行を、件数と本文つきで stderr へ出す）
 - `skills/dr/scripts/validate-dr.ts` (stdout に `{file, errors, warnings, checks}` の JSON)
 
 ## 根拠

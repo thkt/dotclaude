@@ -151,7 +151,7 @@ test("fix reads the wiki rules before it changes anything, and is granted that p
   };
   for (const [lang, path] of Object.entries(skills)) {
     const doc = readFileSync(path, "utf8");
-    assert.match(doc, /find_wiki_rule\.py/, `${lang}: it runs the finder`);
+    assert.match(doc, /find_wiki_rule\.ts/, `${lang}: it runs the finder`);
     const grant = doc.match(/^allowed-tools:.*$/m)?.[0] ?? "";
     assert.match(
       grant,

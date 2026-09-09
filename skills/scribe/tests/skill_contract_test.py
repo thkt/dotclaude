@@ -1,4 +1,4 @@
-"""Contract tests between skills/scribe's SKILL.md, its templates, and triage.py.
+"""Contract tests between skills/scribe's SKILL.md, its templates, and triage.ts.
 
 Run: python3 skills/scribe/tests/skill_contract_test.py
 """
@@ -6,7 +6,6 @@ Run: python3 skills/scribe/tests/skill_contract_test.py
 import json
 import re
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,12 +13,8 @@ from typing import cast
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
-sys.path.insert(0, str(HERE.parent / "scripts"))
 
-from triage import merge, read_store, triage  # noqa: E402
-from verify_run_test import _git, _report, _rows, _run_verify  # noqa: E402
-
-TRIAGE = HERE.parent / "scripts" / "triage.py"
+TRIAGE = HERE.parent / "scripts" / "triage.ts"
 
 LANGS = ["ja", "en"]
 
@@ -29,6 +24,25 @@ CANDIDATES = ROOT / "docs" / "wiki" / "_candidates.md"
 # The two headings Phase 3 sorts into. Both stay even while empty, or a carried-over line has
 # nowhere to land.
 SECTIONS = ("## 昇格待ち", "## 単発", "## 棄却")
+
+
+def _run_triage(patterns: list[dict[str, object]]) -> dict[str, object]:
+    """Runs triage.ts directly by path (its git index mode is 100755) against a fresh, empty
+    store, so the result reflects only `patterns` -- the shape the retired Python suite's
+    in-process `triage()` gave without merging in any carried-over row."""
+    with tempfile.TemporaryDirectory() as tmp:
+        store = Path(tmp) / "_candidates.md"
+        _ = store.write_text(
+            "# candidates\n\n## 昇格待ち\n\n## 単発\n\n## 棄却\n", encoding="utf-8"
+        )
+        proc = subprocess.run(
+            [str(TRIAGE), json.dumps(patterns), str(store)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    assert proc.returncode == 0, proc.stderr
+    return cast(dict[str, object], json.loads(proc.stdout))
 
 
 def at(lang: str, *parts: str) -> Path:
@@ -77,7 +91,7 @@ class SkillContract(unittest.TestCase):
             doc = skill(lang)
             for value in ("page", "candidate", "none"):
                 self.assertIn(f"`{value}`", doc, f"{lang}: {value}")
-        report = triage([{"name": "x", "evidence": ["#1", "#2"], "existing": "page"}])
+        report = _run_triage([{"name": "x", "evidence": ["#1", "#2"], "existing": "page"}])
         self.assertEqual(report["pages"][0]["action"], "update")
 
     def test_the_line_format_the_skill_defines_is_the_one_the_store_already_uses(self) -> None:
@@ -102,8 +116,8 @@ class SkillContract(unittest.TestCase):
         for lang in LANGS:
             doc = skill(lang)
             phase3 = doc[doc.index("## Phase 3") : doc.index("## Phase 4")]
-            self.assertIn("triage.py '<", phase3, f"{lang}: Phase 3 names the triage call")
-            call = phase3[phase3.index("triage.py '<") :]
+            self.assertIn("triage.ts '<", phase3, f"{lang}: Phase 3 names the triage call")
+            call = phase3[phase3.index("triage.ts '<") :]
             call = call[: call.index("`")]
             self.assertIn(
                 "docs/wiki/_candidates.md",
@@ -111,13 +125,15 @@ class SkillContract(unittest.TestCase):
                 f"{lang}: the call hands triage the store",
             )
         proc = subprocess.run(
-            [sys.executable, str(TRIAGE), json.dumps([])],
+            [str(TRIAGE), json.dumps([])],
             capture_output=True,
             text=True,
             check=False,
         )
         self.assertEqual(proc.returncode, 2, "the script refuses the call without the store")
-        report = triage([{"name": "carried", "evidence": ["#1", "#2"], "existing": "candidate"}])
+        report = _run_triage(
+            [{"name": "carried", "evidence": ["#1", "#2"], "existing": "candidate"}]
+        )
         self.assertEqual(report["pages"][0]["action"], "promote")
 
     def test_phase_4_moves_the_candidate_line_of_an_item_it_drops(self) -> None:
@@ -175,7 +191,7 @@ class SkillContract(unittest.TestCase):
                 encoding="utf-8",
             )
             proc = subprocess.run(
-                [sys.executable, str(TRIAGE), json.dumps([]), str(path)],
+                [str(TRIAGE), json.dumps([]), str(path)],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -215,7 +231,7 @@ class SkillContract(unittest.TestCase):
             )
             self.assertIn("2 件目が現れたらページへ昇格", template, lang)
             self.assertIn("初出でも根拠が 2 件揃っていれば直接ページ", template, lang)
-        report = triage(
+        report = _run_triage(
             [
                 {"name": "promoted", "evidence": ["#1", "#2"], "existing": "candidate"},
                 {"name": "fresh", "evidence": ["#3", "#4"], "existing": "none"},
@@ -223,14 +239,14 @@ class SkillContract(unittest.TestCase):
         )
         self.assertEqual(sorted(p["action"] for p in report["pages"]), ["create", "promote"])
 
-    def test_the_skill_runs_the_script_through_python(self) -> None:
-        """The grant and the command have to name the same runtime, or the call is refused."""
+    def test_the_skill_runs_the_script_directly_by_path(self) -> None:
+        """The grant and the invocation have to name the same path, or the call is refused."""
         for lang in LANGS:
             doc = skill(lang)
-            self.assertIn("scripts/triage.py", doc, lang)
+            self.assertIn("scripts/triage.ts", doc, lang)
             grant = re.search(r"^allowed-tools:.*$", doc, re.MULTILINE)
             assert grant is not None, f"{lang}: allowed-tools line"
-            self.assertIn("Bash(python3:*)", grant.group(0), lang)
+            self.assertIn("Bash(${CLAUDE_SKILL_DIR}/scripts/*)", grant.group(0), lang)
 
     def test_every_phase_before_six_defers_its_write_to_the_worktree(self) -> None:
         """The worktree is created in Phase 6. An earlier Phase that writes touches the user's tree,
@@ -314,11 +330,11 @@ class SkillContract(unittest.TestCase):
     def test_the_page_reaches_a_plan_through_thinks_finder(self) -> None:
         """The page a run writes reaches an implementation only by think citing it. No index and
         no lookup at implementation time stand between the two, so this is the whole path."""
-        finder = ROOT / "skills" / "scribe" / "scripts" / "find_wiki_rule.py"
+        finder = ROOT / "skills" / "scribe" / "scripts" / "find_wiki_rule.ts"
         self.assertTrue(finder.exists(), "the finder scribe owns exists")
         for lang in LANGS:
             think = at(lang, "skills", "think", "SKILL.md").read_text(encoding="utf-8")
-            self.assertIn("find_wiki_rule.py", think, f"{lang}: think runs the finder")
+            self.assertIn("find_wiki_rule.ts", think, f"{lang}: think runs the finder")
 
     def phase_6(self, lang: str) -> str:
         doc = skill(lang)
@@ -335,7 +351,7 @@ class SkillContract(unittest.TestCase):
         commit_verb = {"ja": "コミット", "en": "commit"}
         for lang in LANGS:
             phase6 = self.phase_6(lang)
-            self.assertIn("commits", phase6, f"{lang}: Phase 6 names triage.py's commits field")
+            self.assertIn("commits", phase6, f"{lang}: Phase 6 names triage.ts's commits field")
             steps = [line for line in phase6.split("\n") if re.match(r"^\d+\. ", line)]
             self.assertTrue(
                 any("commits" in step and commit_verb[lang] in step for step in steps),
@@ -355,26 +371,26 @@ class SkillContract(unittest.TestCase):
             )
 
     def test_phase_6_runs_verify_run_before_pr_creation(self) -> None:
-        """T-010 両ツリーの Phase 6 が `verify_run.py` を PR 作成前に通す手順を持つ"""
+        """T-010 両ツリーの Phase 6 が `verify_run.ts` を PR 作成前に通す手順を持つ"""
         for lang in LANGS:
             steps = self.phase_6_steps(lang)
-            self.assertIn("verify_run.py", steps, f"{lang}: a numbered step runs verify_run.py")
+            self.assertIn("verify_run.ts", steps, f"{lang}: a numbered step runs verify_run.ts")
             self.assertIn("gh pr create", steps, f"{lang}: a numbered step creates the PR")
             self.assertLess(
-                steps.index("verify_run.py"),
+                steps.index("verify_run.ts"),
                 steps.index("gh pr create"),
-                f"{lang}: verify_run.py runs before PR creation",
+                f"{lang}: verify_run.ts runs before PR creation",
             )
 
     def test_phase_6_step_4_calls_verify_run_without_self_reported_counts(self) -> None:
-        """T-008 両ツリーの SKILL.md 手順 4 が、自己申告の件数を渡さない形で verify_run.py を呼ぶ"""
+        """T-008 両ツリーの SKILL.md 手順 4 が、自己申告の件数を渡さない形で verify_run.ts を呼ぶ"""
         for lang in LANGS:
             steps = self.phase_6_steps(lang)
-            step4 = next(line for line in steps.split("\n") if "verify_run.py" in line)
+            step4 = next(line for line in steps.split("\n") if "verify_run.ts" in line)
             # Not an absence check on the old placeholder names: renaming them alone would pass
             # while the caller still counts both itself. The argument list is what settles it.
-            call = re.search(r"verify_run\.py((?: <[a-z-]+>)*)`", step4)
-            self.assertIsNotNone(call, f"{lang}: step 4 names verify_run.py's argument list")
+            call = re.search(r"verify_run\.ts((?: <[a-z-]+>)*)`", step4)
+            self.assertIsNotNone(call, f"{lang}: step 4 names verify_run.ts's argument list")
             assert call is not None
             self.assertEqual(
                 call.group(1).split(),
@@ -388,65 +404,9 @@ class SkillContract(unittest.TestCase):
                 f"{lang}: step 4 does not read the store with a raw git command of its own",
             )
 
-    def test_triage_commits_length_fed_to_verify_run_is_ok_true_and_a_one_off_shift_is_false(
-        self,
-    ) -> None:
-        """T-011 `triage.py` が返す commits の要素数を `verify_run.py` へ渡すと ok が true になり、
-        1 本ずらすと false になる。この接続自体は U-001/U-002 が済ませているので、この境界テスト
-        単体は現状で通る"""
-        names = [f"item{i}" for i in range(7)]
-
-        def store(waiting: list[str]) -> str:
-            rows = "".join(f"- {n} #1 #2\n" for n in waiting)
-            return f"# candidates\n\n## 昇格待ち\n\n{rows}\n## 単発\n\n## 棄却\n"
-
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = Path(tmp) / "worktree"
-            wiki = repo / "docs" / "wiki"
-            wiki.mkdir(parents=True)
-            _ = (wiki / "_candidates.md").write_text(store(names), encoding="utf-8")
-            # The same composition triage.py's own CLI runs: the store rows carry which section
-            # each row waited in, which is what tells a committed row apart from a fresh one.
-            report = triage(merge(read_store(wiki / "_candidates.md"), []))
-            commits = report["commits"]
-            self.assertTrue(commits, "triage splits 7 qualifying patterns into 2+ commits")
-            _git(repo, "init", "-q")
-            _git(repo, "add", "-A")
-            _git(repo, "commit", "-q", "-m", "chore: seed candidates")
-            _ = (wiki / "an-earlier-page.md").write_text("# earlier\n", encoding="utf-8")
-            _git(repo, "add", "-A")
-            _git(repo, "commit", "-q", "-m", "docs(wiki): an-earlier-page を追加/更新")
-            base = subprocess.run(
-                ["git", "-C", str(repo), "rev-parse", "HEAD"],
-                check=True,
-                capture_output=True,
-                text=True,
-            ).stdout.strip()
-
-            remaining = list(names)
-            for commit_items in commits:
-                committed = [cast(str, item["name"]) for item in commit_items]
-                for n in committed:
-                    _ = (wiki / f"{n}.md").write_text(f"# {n}\n", encoding="utf-8")
-                remaining = [n for n in remaining if n not in committed]
-                _ = (wiki / "_candidates.md").write_text(store(remaining), encoding="utf-8")
-                _git(repo, "add", "-A")
-                _git(repo, "commit", "-q", "-m", f"docs(wiki): {', '.join(committed)} を追加/更新")
-
-            def verify(payload: dict[str, object]) -> tuple[int, dict[str, object]]:
-                proc = _run_verify(repo, base, payload)
-                return proc.returncode, cast(dict[str, object], json.loads(proc.stdout))
-
-            code, matched = verify(cast(dict[str, object], report))
-            self.assertEqual(code, 0)
-            self.assertEqual(matched["ok"], True)
-
-            # One extra element than the run actually committed, with no name in it, so only the
-            # commit count moves.
-            shifted_report = _report([*cast("list[list[dict[str, object]]]", commits), _rows([])])
-            code, shifted = verify(shifted_report)
-            self.assertEqual(code, 1)
-            self.assertEqual(shifted["ok"], False)
+    # T-011 (triage.ts's commits length fed to verify_run.ts is ok true, a one-off shift is
+    # false) moved to skills/scribe/tests/scripts-contract.test.ts's T-235: both scripts are
+    # retired from Python, so the connection between them can only run in-process in TypeScript.
 
 
 class WikiPageFormat(unittest.TestCase):
@@ -488,38 +448,10 @@ class WikiPageFormat(unittest.TestCase):
                 f"{page.name}: scenes is declared",
             )
 
-    def test_every_declared_scene_value_belongs_to_the_scenes_constant_imported_from_find_wiki_rule(
-        self,
-    ) -> None:
-        """T-006: A scene value that only one page spells stays undetected until a --scene query
-        for the misspelling silently returns nothing. Importing SCENES here, rather than
-        restating the list, is what keeps this test and find_wiki_rule.py's own validation from
-        drifting to two different closed sets."""
-        from find_wiki_rule import SCENES, read_scenes
-
-        for page in self.pages():
-            for scene in read_scenes(page):
-                self.assertIn(scene, SCENES, f"{page.name}: {scene!r} is not in SCENES")
-
-    def test_scene_issue_close_returns_exactly_the_five_issue_close_pages(
-        self,
-    ) -> None:
-        """T-007: The five pages whose content is the decision to close an issue a given way."""
-        from find_wiki_rule import find
-
-        report = find(str(ROOT / "docs" / "wiki"), "issue-close", [], scene="issue-close")
-        self.assertEqual(
-            sorted(cast(list[str], report["scenes"])),
-            sorted(
-                [
-                    "incident-driven-deferral.md",
-                    "premise-collapse-not-planned.md",
-                    "runtime-bug-wontfix.md",
-                    "umbrella-issue-recut.md",
-                    "untracked-output-manual-close.md",
-                ]
-            ),
-        )
+    # T-006 (every declared scene value belongs to SCENES) and T-007 (--scene issue-close
+    # returns exactly the five issue-close pages) moved to
+    # skills/scribe/tests/scripts-contract.test.ts's T-233/T-234: find_wiki_rule is retired
+    # from Python, so SCENES/read_scenes/find can only be imported in TypeScript now.
 
     def test_every_rule_page_declares_the_files_it_bears_on(self) -> None:
         """A page with no globs key cannot be told apart from one that bears on no file, and the

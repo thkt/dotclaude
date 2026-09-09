@@ -13,6 +13,9 @@ Run: python3 hooks/pre-bash/tests/wiki_scene_test.py
 """
 
 import json
+import os
+import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -24,6 +27,25 @@ HOOK = Path(__file__).resolve().parents[1] / "wiki_scene.py"
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "_lib"))
 
 import hook_harness  # noqa: E402
+
+
+# The hook resolves a JS runtime to run find_wiki_rule.ts, so a test that narrows PATH still has
+# to leave `node` reachable. Only the no-runtime case below empties PATH, and it does so on
+# purpose. node sits outside /usr/bin on both macOS and the Linux CI image, so the directory is
+# read at run time; process.execPath rather than which("node"), because a version manager puts a
+# shim on PATH that only resolves with that manager's own environment, which a narrowed PATH
+# strips away.
+def _node_bin_dir() -> str | None:
+    node = shutil.which("node")
+    if node is None:
+        return None
+    real = subprocess.run(
+        [node, "-p", "process.execPath"], capture_output=True, text=True, check=False
+    ).stdout.strip()
+    return str(Path(real).parent) if real else None
+
+
+NARROW_PATH = os.pathsep.join(part for part in [_node_bin_dir(), "/usr/bin", "/bin"] if part)
 
 # One page per file keeps each fixture's declared pages exactly the ones a test names, so an
 # assertion about "the issue-close pages" checks a closed, known set rather than whatever the
@@ -143,7 +165,7 @@ class TestWikiScene(unittest.TestCase):
         home = Path(tempfile.mkdtemp(dir=self.root))
         self.with_wiki(under=home / "myrepo")
         out, stdout = self.run_hook(
-            "cd ~/myrepo && gh issue close 42", env={"HOME": str(home), "PATH": "/usr/bin:/bin"}
+            "cd ~/myrepo && gh issue close 42", env={"HOME": str(home), "PATH": NARROW_PATH}
         )
         with self.subTest("parses as JSON"):
             self.assertIsNotNone(out, f"stdout does not parse: {stdout!r}")
@@ -154,6 +176,17 @@ class TestWikiScene(unittest.TestCase):
         """T-012 A repository without docs/wiki yields no output"""
         directory = Path(tempfile.mkdtemp(dir=self.root))
         _, stdout = self.run_hook(f"cd {directory} && gh issue close 42")
+        self.assertEqual(stdout.strip(), "")
+
+    def test_an_unresolvable_runtime_yields_no_output_and_exits_0(self) -> None:
+        """An unresolvable CLAUDE_BUN_BIN with no node on PATH exits 0 with no output: the
+        hook is advisory, so a scene with no way to run find_wiki_rule.ts reads as no page
+        rather than a hook error."""
+        directory = self.with_wiki()
+        _, stdout = self.run_hook(
+            f"cd {directory} && gh issue close 42",
+            env={"CLAUDE_BUN_BIN": "/nonexistent", "PATH": ""},
+        )
         self.assertEqual(stdout.strip(), "")
 
 
