@@ -1,6 +1,6 @@
 # 重複の照合
 
-Phase 2 で plan 下書きがある場合にだけ使う。会話に `/think` の plan 下書きがあれば、それを照合対象に選ぶ。なければ ${CLAUDE_SKILL_DIR}/scripts/pick-plan.py に issue のタイトルを渡す。`path` が返された場合は、その下書きを選ぶ。`ambiguous` が真の場合は、AskUserQuestion で `candidates` を提示し、ユーザーに選択を求める。
+Phase 2 で plan 下書きがある場合にだけ使う。会話に `/think` の plan 下書きがあれば、それを照合対象に選ぶ。なければ ${CLAUDE_SKILL_DIR}/scripts/pick-plan.ts に issue のタイトルを渡す。`path` が返された場合は、その下書きを選ぶ。`ambiguous` が真の場合は、AskUserQuestion で `candidates` を提示し、ユーザーに選択を求める。
 
 本文と `## Plan` の間で同じ知識が重なるすべての箇所を照合対象とする。片方を直すともう片方も直す必要がある場合は、同じ知識と判定する。独立に変わりうる内容は両方に残す。
 

@@ -153,7 +153,7 @@ test("think runs research's finder script and is granted the path it names", () 
   for (const lang of LANGS) {
     // The call and the grant sit in the skill body, not in the reference the table moved to.
     const think = read(at(lang, "skills", "think", "SKILL.md"));
-    const call = think.match(/\$\{CLAUDE_SKILL_DIR\}\/\.\.\/research\/scripts\/([\w.-]+\.py)/);
+    const call = think.match(/\$\{CLAUDE_SKILL_DIR\}\/\.\.\/research\/scripts\/([\w.-]+\.ts)/);
     assert.ok(call, `${lang}: think names research's script under \${CLAUDE_SKILL_DIR}`);
     assert.ok(
       existsSync(join(dirname(skillPath(lang)), "scripts", call[1])),
@@ -222,12 +222,12 @@ test("the script Phase 2 names exists, runs, and returns a JSON object", () => {
   for (const lang of LANGS) {
     const phase2 = phaseOf(lang, 2);
     assert.ok(phase2.length > 0, `${lang}: the Phase 2 section exists`);
-    const scriptMatch = phase2.match(/\$\{CLAUDE_SKILL_DIR\}\/scripts\/([\w.-]+\.py)/);
+    const scriptMatch = phase2.match(/\$\{CLAUDE_SKILL_DIR\}\/scripts\/([\w.-]+\.ts)/);
     assert.ok(scriptMatch, `${lang}: Phase 2 names a script under \${CLAUDE_SKILL_DIR}/scripts/`);
     const scriptPath = join(dirname(skillPath(lang)), "scripts", scriptMatch[1]);
     assert.ok(existsSync(scriptPath), `${lang}: the named script ${scriptPath} exists`);
     const result = spawnSync(
-      "python3",
+      process.execPath,
       [scriptPath, "dummy-slug", join(root, "does-not-exist-dir")],
       {
         encoding: "utf8",

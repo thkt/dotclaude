@@ -3,12 +3,13 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ALLOWED_EXTRA } from "../../issue/scripts/validate-issue-body.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const langs = ["en", "ja"];
 const at = (lang, ...parts) => join(root, ...(lang === "ja" ? [".ja"] : []), ...parts);
 const skill = (lang) => readFileSync(at(lang, "skills", "slice", "SKILL.md"), "utf8");
-const validatorPath = join(root, "skills", "issue", "scripts", "validate-issue-body.py");
+const validatorPath = join(root, "skills", "issue", "scripts", "validate-issue-body.ts");
 const validator = () => readFileSync(validatorPath, "utf8");
 
 // A command a phase invokes without a matching grant is refused at run time, and the refusal
@@ -20,7 +21,7 @@ test("every command the phases invoke is covered by a grant", () => {
     for (const [needle, permission] of [
       ["gh issue create", "Bash(gh:*)"],
       ["cat", "Bash(cat:*)"],
-      ["validate-issue-body.py", "Bash(python3:*)"],
+      ["validate-issue-body.ts", "Bash(${CLAUDE_SKILL_DIR}/../issue/scripts/*)"],
     ]) {
       assert.ok(body.includes(needle), `${lang}: a phase invokes ${needle}`);
       assert.ok(line.includes(permission), `${lang}: ${permission} is granted for ${needle}`);
@@ -35,7 +36,7 @@ test("publishing runs the same validator /issue runs", () => {
     const body = skill(lang);
     assert.match(
       body,
-      /\$\{CLAUDE_SKILL_DIR\}\/\.\.\/issue\/scripts\/validate-issue-body\.py/,
+      /\$\{CLAUDE_SKILL_DIR\}\/\.\.\/issue\/scripts\/validate-issue-body\.ts/,
       `${lang}: it names the validator by a path that resolves from this skill`,
     );
     assert.ok(existsSync(validatorPath), "the validator is where the path points");
@@ -43,24 +44,23 @@ test("publishing runs the same validator /issue runs", () => {
 });
 
 // Unknown to the validator, the two wrapper sections make every slice body come back as
-// unknown_section, and the run stops on its own output.
+// unknown_section, and the run stops on its own output. ALLOWED_EXTRA comes straight from the
+// export, replacing the frozenset-literal regex the retired .py version's source needed.
 test("the sections slice wraps every body in are the ones the validator permits", () => {
-  const allowed = /^ALLOWED_EXTRA = frozenset\(\{(.*?)\}\)/ms.exec(validator())[1];
   for (const lang of langs) {
     for (const section of ["## Parent", "## Blocked by"]) {
       assert.ok(skill(lang).includes(section), `${lang}: slice adds ${section}`);
-      assert.ok(
-        allowed.includes(`"${section.replace("## ", "")}"`),
-        `ALLOWED_EXTRA permits ${section}`,
-      );
+      assert.ok(ALLOWED_EXTRA.has(section.replace("## ", "")), `ALLOWED_EXTRA permits ${section}`);
     }
   }
 });
 
 // A field telling the author to write a plain name produces a correct body under a title the
-// validator rejects for having no bracketed type.
+// validator rejects for having no bracketed type. TYPE_PREFIX stays module-private in the .ts
+// port (only FLOOR / FLOOR_ALIASES / ALLOWED_EXTRA are exported), so this still reads the
+// source text -- adapted to the .ts declaration shape rather than Python's re.compile.
 test("the title field requires the bracketed type the validator checks for", () => {
-  assert.match(validator(), /TYPE_PREFIX = re\.compile/, "the validator reads a bracketed prefix");
+  assert.match(validator(), /const TYPE_PREFIX = \//, "the validator reads a bracketed prefix");
   for (const lang of langs) {
     const row = skill(lang)
       .split("\n")

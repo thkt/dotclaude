@@ -2,7 +2,7 @@
 name: census
 description: Discover design decisions that exist in code but have no DR, and produce a DR promotion candidate list ranked by impact and reversibility. Pairs with adrift, which scans existing DRs for drift against code.
 when_to_use: 判断未記録の発掘, undocumented decisions, DR候補発掘, ADR候補発掘, 設計判断棚卸し, decision archaeology, design rationale audit
-allowed-tools: Read Write LS Bash(date:*) Bash(python3:*) Bash(ugrep:*) Bash(git:*) Agent AskUserQuestion
+allowed-tools: Read Write LS Bash(date:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(ugrep:*) Bash(git:*) Agent AskUserQuestion
 model: opus
 argument-hint: "[file or directory]"
 ---
@@ -19,7 +19,7 @@ Every criterion lives in ${CLAUDE_SKILL_DIR}/references/decision-criteria.md. Th
 
 ## Phase 1: Collect
 
-List source by running ${CLAUDE_SKILL_DIR}/scripts/list-source-files.py with python3. Scan for docs using the file patterns in ${CLAUDE_SKILL_DIR}/references/detection-targets.md. When source exceeds the guideline of 20, confirm narrowing via AskUserQuestion before the Phase 2 reviewer fan-out. Options are a subdirectory, top-N, or a specific module. Where each stream looks is set by the table below.
+List source by running ${CLAUDE_SKILL_DIR}/scripts/list-source-files.ts. Scan for docs using the file patterns in ${CLAUDE_SKILL_DIR}/references/detection-targets.md. When source exceeds the guideline of 20, confirm narrowing via AskUserQuestion before the Phase 2 reviewer fan-out. Options are a subdirectory, top-N, or a specific module. Where each stream looks is set by the table below.
 
 | $ARGUMENTS  | source          | doc                   |
 | ----------- | --------------- | --------------------- |

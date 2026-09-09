@@ -11,6 +11,8 @@ reason names the way out of the state it stops.
 # `X | None` at import time. Deferred annotations keep this file loadable there.
 from __future__ import annotations
 
+import os
+import shutil
 import sys
 from pathlib import Path
 from typing import cast
@@ -20,8 +22,27 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "_lib"))
 from hook_payload import deny, field, parse
 
 ROOT = Path(__file__).resolve().parents[2]
-VALIDATOR = ROOT / "skills" / "issue" / "scripts" / "validate-issue-body.py"
+VALIDATOR = ROOT / "skills" / "issue" / "scripts" / "validate-issue-body.ts"
 TEMPLATES = ROOT / "skills" / "issue" / "templates"
+
+# DR-0114's fixed Homebrew bun path (hooks/_lib/shebang_scope.ts's SHEBANG), the same fallback
+# shape as hooks/_lib/scribe_trigger.py's DEFAULT_GH: a hook can run with PATH cut down to
+# nothing, so a bare "bun" is never trusted to resolve on its own.
+DEFAULT_BUN = Path("/opt/homebrew/bin/bun")
+
+
+def _interpreter() -> Path | None:
+    """The bun/node binary to run the (.ts) validator with, or None when neither is reachable.
+
+    CLAUDE_BUN_BIN overrides DEFAULT_BUN when set, matching CLAUDE_GH_BIN /
+    CLAUDE_RECALL_BIN's `env or default` shape. node via PATH is the last resort for a host
+    with no Homebrew bun (docs/wiki/silent-hook-failure.md: doubt exec permission and PATH
+    before doubting the gate that never fires)."""
+    candidate = Path(os.environ.get("CLAUDE_BUN_BIN") or DEFAULT_BUN)
+    if candidate.is_file() and os.access(candidate, os.X_OK):
+        return candidate
+    node = shutil.which("node")
+    return Path(node) if node else None
 
 
 def _issue_type(title: str) -> str | None:
@@ -47,14 +68,14 @@ def _template(issue_type: str, repo_dir: Path) -> Path | None:
     return None
 
 
-def _errors(template: Path, title: str, body_file: Path) -> list[str] | None:
+def _errors(interpreter: Path, template: Path, title: str, body_file: Path) -> list[str] | None:
     """The validator's findings, or None when it did not report any. It exits 1 both for a
     rejected body and for its own crash, so the JSON on stdout is what separates them.
     stderr stays unredirected so a traceback reaches the debug log."""
     import subprocess
 
     result = subprocess.run(
-        [sys.executable, str(VALIDATOR), str(template), title, str(body_file)],
+        [str(interpreter), str(VALIDATOR), str(template), title, str(body_file)],
         stdout=subprocess.PIPE,
         text=True,
         check=False,
@@ -120,10 +141,18 @@ def main() -> None:
         )
         return
 
-    errors = _errors(template, title, path)
+    interpreter = _interpreter()
+    if interpreter is None:
+        deny(
+            "issue-body-template: bun も node も見つからず validator "
+            f"({VALIDATOR}) を起動できない。CLAUDE_BUN_BIN を設定するか PATH に node を通す"
+        )
+        return
+
+    errors = _errors(interpreter, template, title, path)
     if errors is None:
         deny(
-            f"issue-body-template: validator ({VALIDATOR}) が errors 配列を返さず本文を照合できない。python3 で直接実行して出力を確かめる"
+            f"issue-body-template: validator ({VALIDATOR}) が errors 配列を返さず本文を照合できない。bun か node で直接実行して出力を確かめる"
         )
         return
     if errors:

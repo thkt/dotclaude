@@ -2,7 +2,7 @@
 name: census
 description: コードに存在するが DR の無い設計判断を発掘し、impact と reversibility でランク付けした DR 化候補リストを生成する。既存 DR とコードの drift スキャンを担う adrift と組む。
 when_to_use: 判断未記録の発掘, undocumented decisions, DR候補発掘, ADR候補発掘, 設計判断棚卸し, decision archaeology, design rationale audit
-allowed-tools: Read Write LS Bash(date:*) Bash(python3:*) Bash(ugrep:*) Bash(git:*) Agent AskUserQuestion
+allowed-tools: Read Write LS Bash(date:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(ugrep:*) Bash(git:*) Agent AskUserQuestion
 model: opus
 argument-hint: "[file or directory]"
 ---
@@ -19,7 +19,7 @@ argument-hint: "[file or directory]"
 
 ## Phase 1: 収集
 
-source は ${CLAUDE_SKILL_DIR}/scripts/list-source-files.py を python3 で実行して列挙する。doc は ${CLAUDE_SKILL_DIR}/references/detection-targets.md のファイルパターンでスキャンする。source が目安の 20 件を超えるときは、Phase 2 の reviewer を並列起動する前に AskUserQuestion で絞り込みを確認する。選択肢はサブディレクトリ、上位 N 件、特定モジュールなど。どちらの系統もどこを見るかは下表が定める。
+source は ${CLAUDE_SKILL_DIR}/scripts/list-source-files.ts を実行して列挙する。doc は ${CLAUDE_SKILL_DIR}/references/detection-targets.md のファイルパターンでスキャンする。source が目安の 20 件を超えるときは、Phase 2 の reviewer を並列起動する前に AskUserQuestion で絞り込みを確認する。選択肢はサブディレクトリ、上位 N 件、特定モジュールなど。どちらの系統もどこを見るかは下表が定める。
 
 | $ARGUMENTS   | source            | doc                       |
 | ------------ | ----------------- | ------------------------- |
