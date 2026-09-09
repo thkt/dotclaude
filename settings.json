@@ -318,7 +318,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/lifecycle/recall_index.py",
+            "command": "~/.claude/hooks/lifecycle/recall_index.ts",
             "timeout": 60
           }
         ]
