@@ -5,16 +5,17 @@
 // stdout: JSON { file, errors, warnings, checks }
 // exit: 0 if no errors (warnings allowed), 1 if errors
 //
-// TypeScript port of validate-dr.py, in the header/entry shape skills/_lib/harness_hash.ts,
-// skills/dr/scripts/dr_common.ts, and skills/dr/scripts/pre-check.ts already use: a plain
-// shebang + reference-types + Usage header, named exports for the pieces a test can drive
-// directly, and the CLI's own process.exit(main()) guarded by workflows/_lib/entry-point.ts's
-// isMainModule so importing this module for its exports never runs the CLI as a side effect.
+// TypeScript port of the retired Python validate-dr, in the header/entry shape
+// skills/_lib/harness_hash.ts, skills/dr/scripts/dr_common.ts, and skills/dr/scripts/pre-check.ts
+// already use: a plain shebang + reference-types + Usage header, named exports for the pieces a
+// test can drive directly, and the CLI's own process.exit(main()) guarded by
+// workflows/_lib/entry-point.ts's isMainModule so importing this module for its exports never
+// runs the CLI as a side effect.
 //
-// Contract: skills/dr/scripts/validate-dr.py's REQUIRED_SECTIONS, RECOMMENDED_SECTIONS,
+// Contract: the retired Python validate-dr's REQUIRED_SECTIONS, RECOMMENDED_SECTIONS,
 // STATUS_VALUES, count_options, lint_check, and main. REQUIRED_SECTIONS/RECOMMENDED_SECTIONS/
-// STATUS_VALUES are exported for skills/dr/tests/script-contract.test.js (U-008) to import.
-// Exercised by skills/dr/tests/validate-dr.test.ts.
+// STATUS_VALUES are exported for skills/dr/tests/script-contract.test.js to import. Exercised by
+// skills/dr/tests/validate-dr.test.ts.
 import { accessSync, constants, existsSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -37,14 +38,14 @@ export const RECOMMENDED_SECTIONS = ["Reassessment Triggers"] as const;
 
 // update-index.ts buckets By Status with status.startsWith(), so a value outside the lifecycle
 // lands in no section and drops out of the index. The drop is invisible, so this errors.
-// Anchored ^(?:...)$ the same way validate-dr.py's re.compile(...).fullmatch() requires the
-// whole value to match, not merely contain, one of the alternatives.
+// Anchored ^(?:...)$ the same way the retired Python validate-dr's re.compile(...).fullmatch()
+// requires the whole value to match, not merely contain, one of the alternatives.
 export const STATUS_VALUES: RegExp =
   /^(?:proposed|accepted|rejected|deprecated|superseded by DR-\d{4})$/;
 
-/** validate-dr.py's count_options: bullets or numbered items directly under the Considered
- * Options heading. A heading of the same or shallower depth ends the count; a deeper heading
- * is a subsection of Considered Options, so its bullets still count. */
+/** The retired Python validate-dr's count_options: bullets or numbered items directly under the
+ * Considered Options heading. A heading of the same or shallower depth ends the count; a deeper
+ * heading is a subsection of Considered Options, so its bullets still count. */
 export function countOptions(lines: readonly string[]): number {
   let depth = 0;
   let count = 0;
@@ -79,8 +80,9 @@ function which(command: string): boolean {
   return false;
 }
 
-/** validate-dr.py's lint_check: ('checks' | 'warnings', message) from markdownlint-cli2, if
- * installed on PATH. Absent, this returns the skipped message rather than running anything. */
+/** The retired Python validate-dr's lint_check: ('checks' | 'warnings', message) from
+ * markdownlint-cli2, if installed on PATH. Absent, this returns the skipped message rather than
+ * running anything. */
 export function lintCheck(path: string): ["checks" | "warnings", string] {
   if (!which("markdownlint-cli2")) {
     return ["checks", "markdown_lint=skipped (markdownlint-cli2 not installed)"];
@@ -96,8 +98,8 @@ export function lintCheck(path: string): ["checks" | "warnings", string] {
   return ["warnings", "markdown_lint=issues (run markdownlint-cli2 for details)"];
 }
 
-/** validate-dr.py's main: reads argv[0] as a dr-file path, prints the validation JSON
- * (indent 2), and exits 1 only when results.errors is non-empty. */
+/** The retired Python validate-dr's main: reads argv[0] as a dr-file path, prints the validation
+ * JSON (indent 2), and exits 1 only when results.errors is non-empty. */
 export function main(argv: string[]): number {
   const drFile = argv[0] ?? "";
   if (!drFile || !existsSync(drFile)) {

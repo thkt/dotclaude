@@ -1,6 +1,6 @@
 /// <reference types="node" />
-// Behavior tests for skills/dr/scripts/dr_common.ts: the TS port of dr_common.py's fail,
-// resolveDrDir, guardSkillDir, and splitFrontmatter, in the same shape
+// Behavior tests for skills/dr/scripts/dr_common.ts: the TS port of the retired Python
+// dr_common's fail, resolveDrDir, guardSkillDir, and splitFrontmatter, in the same shape
 // skills/_lib/tests/harness-hash-digest.test.ts and harness-hash-cli.test.ts use -- pure
 // functions asserted in-process, and the process.exit(1) side effect of fail() (and of
 // guardSkillDir's failing branch, which calls fail() internally) asserted by spawning a

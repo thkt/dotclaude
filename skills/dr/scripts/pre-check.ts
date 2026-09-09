@@ -6,23 +6,23 @@
 // status, number, filename, slug, date, dr_dir, similar_drs.
 // stderr: validation failures, exit 1.
 //
-// TypeScript port of pre-check.py, in the header/entry shape skills/_lib/harness_hash.ts and
-// skills/dr/scripts/dr_common.ts already use: a plain shebang + reference-types + Usage header,
-// named exports for the pieces a test can drive directly, and the CLI's own process.exit(main())
-// guarded by workflows/_lib/entry-point.ts's isMainModule so importing this module for its
-// exports never runs the CLI as a side effect.
+// TypeScript port of the retired Python pre-check, in the header/entry shape
+// skills/_lib/harness_hash.ts and skills/dr/scripts/dr_common.ts already use: a plain shebang +
+// reference-types + Usage header, named exports for the pieces a test can drive directly, and
+// the CLI's own process.exit(main()) guarded by workflows/_lib/entry-point.ts's isMainModule so
+// importing this module for its exports never runs the CLI as a side effect.
 //
-// Contract: skills/dr/scripts/pre-check.py's similarity, first_heading, and main; OUTPUT_KEYS
-// mirrors its json.dumps key order and is imported by skills/dr/tests/script-contract.test.js
-// (U-008). Exercised by skills/dr/tests/pre-check.test.ts.
+// Contract: the retired Python pre-check's similarity, first_heading, and main; OUTPUT_KEYS
+// mirrors its json.dumps key order and is imported by skills/dr/tests/script-contract.test.js.
+// Exercised by skills/dr/tests/pre-check.test.ts.
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fail, guardSkillDir, resolveDrDir, type GitTopLevelResult } from "./dr_common.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
-/** The stdout object's key order, and pre-check.py's json.dumps key order it mirrors. The
- * source of truth OUTPUT_KEYS-importing tests (this unit's T-200, and U-008's
+/** The stdout object's key order, and the retired Python pre-check's json.dumps key order it
+ * mirrors. The source of truth OUTPUT_KEYS-importing tests (this unit's T-200, and
  * script-contract.test.js) check the CLI's stdout against. */
 export const OUTPUT_KEYS = [
   "status",
@@ -57,9 +57,9 @@ export function formatScore(score: number): string {
   return `${sign}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, "0")}`;
 }
 
-/** pre-check.py's similarity(): the overlap between title_a and title_b's word sets, divided
- * by title_a's own word COUNT (not the intersection or union size) -- a repeated word in
- * title_a inflates the denominator the same way Python's `len(words_a)` does, so a long
+/** The retired Python pre-check's similarity(): the overlap between title_a and title_b's word
+ * sets, divided by title_a's own word COUNT (not the intersection or union size) -- a repeated
+ * word in title_a inflates the denominator the same way Python's `len(words_a)` does, so a long
  * existing title (title_b) alone can never dilute the score. */
 export function similarity(titleA: string, titleB: string): number {
   const wordsA = splitWords(titleA.toLowerCase());
@@ -81,8 +81,8 @@ function splitWords(text: string): string[] {
   return trimmed === "" ? [] : trimmed.split(/\s+/);
 }
 
-/** pre-check.py's first_heading(): the first `# `-prefixed line's text, or "" when the file
- * carries no top-level heading. */
+/** The retired Python pre-check's first_heading(): the first `# `-prefixed line's text, or ""
+ * when the file carries no top-level heading. */
 export function firstHeading(path: string): string {
   const lines = readFileSync(path, "utf8").split("\n");
   for (const line of lines) {
@@ -91,9 +91,9 @@ export function firstHeading(path: string): string {
   return "";
 }
 
-/** pre-check.py's `sorted(dr_dir.rglob("*.md"))`: every *.md file under drDir, at any depth,
- * as full paths -- sorted by the caller, on the same path-string ordering `rglob`'s Path
- * results carry when sorted. */
+/** The retired Python pre-check's `sorted(dr_dir.rglob("*.md"))`: every *.md file under drDir,
+ * at any depth, as full paths -- sorted by the caller, on the same path-string ordering
+ * `rglob`'s Path results carry when sorted. */
 function markdownFilesUnder(dir: string): string[] {
   const found: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -108,8 +108,8 @@ function markdownFilesUnder(dir: string): string[] {
 }
 
 /** `git rev-parse --show-toplevel`, read only when resolveDrDir needs it (DR_DIR unset and no
- * CLI argument) -- pre-check.ts takes no dr_dir argument of its own, mirroring pre-check.py's
- * `resolve_dr_dir()` call with no argument. */
+ * CLI argument) -- pre-check.ts takes no dr_dir argument of its own, mirroring the retired
+ * Python pre-check's `resolve_dr_dir()` call with no argument. */
 function gitTopLevel(): GitTopLevelResult {
   const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
   return { status: result.status, stdout: result.stdout ?? "", error: result.error };

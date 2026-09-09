@@ -5,16 +5,16 @@
 // stdout: JSON { file, errors, warnings, checks }
 // exit: 0 if no errors (warnings allowed), 1 if errors
 //
-// validate-dr.py の TypeScript 移植。header/entry の形は skills/_lib/harness_hash.ts、
-// skills/dr/scripts/dr_common.ts、skills/dr/scripts/pre-check.ts が既に使っているものと同じ:
-// 素直な shebang + reference-types + Usage ヘッダー、テストが直接動かせる部分は named export
-// にし、CLI 自身の process.exit(main()) は workflows/_lib/entry-point.ts の isMainModule で
-// ガードする。これにより、この module を export 目当てで import しても CLI が副作用として
-// 動くことはない。
+// 退役した Python 版 validate-dr の TypeScript 移植。header/entry の形は
+// skills/_lib/harness_hash.ts、skills/dr/scripts/dr_common.ts、skills/dr/scripts/pre-check.ts
+// が既に使っているものと同じ: 素直な shebang + reference-types + Usage ヘッダー、テストが
+// 直接動かせる部分は named export にし、CLI 自身の process.exit(main()) は
+// workflows/_lib/entry-point.ts の isMainModule でガードする。これにより、この module を
+// export 目当てで import しても CLI が副作用として動くことはない。
 //
-// Contract: skills/dr/scripts/validate-dr.py の REQUIRED_SECTIONS、RECOMMENDED_SECTIONS、
+// Contract: 退役した Python 版 validate-dr の REQUIRED_SECTIONS、RECOMMENDED_SECTIONS、
 // STATUS_VALUES、count_options、lint_check、main。REQUIRED_SECTIONS/RECOMMENDED_SECTIONS/
-// STATUS_VALUES は skills/dr/tests/script-contract.test.js (U-008) が import する。
+// STATUS_VALUES は skills/dr/tests/script-contract.test.js が import する。
 // skills/dr/tests/validate-dr.test.ts が検証する。
 import { accessSync, constants, existsSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
@@ -38,14 +38,14 @@ export const RECOMMENDED_SECTIONS = ["Reassessment Triggers"] as const;
 
 // update-index.ts buckets By Status with status.startsWith(), so a value outside the lifecycle
 // lands in no section and drops out of the index. The drop is invisible, so this errors.
-// Anchored ^(?:...)$ the same way validate-dr.py's re.compile(...).fullmatch() requires the
-// whole value to match, not merely contain, one of the alternatives.
+// Anchored ^(?:...)$ the same way the retired Python validate-dr's re.compile(...).fullmatch()
+// requires the whole value to match, not merely contain, one of the alternatives.
 export const STATUS_VALUES: RegExp =
   /^(?:proposed|accepted|rejected|deprecated|superseded by DR-\d{4})$/;
 
-/** validate-dr.py の count_options: Considered Options 見出しの直下にある bullet または
- * 番号付き項目。同じ深さ以下の見出しが来たらそこで数え終える。より深い見出しは Considered
- * Options の subsection なので、その中の bullet も引き続き数える。 */
+/** 退役した Python 版 validate-dr の count_options: Considered Options 見出しの直下にある
+ * bullet または番号付き項目。同じ深さ以下の見出しが来たらそこで数え終える。より深い見出
+ * しは Considered Options の subsection なので、その中の bullet も引き続き数える。 */
 export function countOptions(lines: readonly string[]): number {
   let depth = 0;
   let count = 0;
@@ -81,9 +81,9 @@ function which(command: string): boolean {
   return false;
 }
 
-/** validate-dr.py の lint_check: markdownlint-cli2 が PATH 上にインストールされていれば、
- * そこから ('checks' | 'warnings', message) を返す。無ければ何も実行せず skip したという
- * message を返す。 */
+/** 退役した Python 版 validate-dr の lint_check: markdownlint-cli2 が PATH 上に
+ * インストールされていれば、そこから ('checks' | 'warnings', message) を返す。
+ * 無ければ何も実行せず skip したという message を返す。 */
 export function lintCheck(path: string): ["checks" | "warnings", string] {
   if (!which("markdownlint-cli2")) {
     return ["checks", "markdown_lint=skipped (markdownlint-cli2 not installed)"];
@@ -99,8 +99,8 @@ export function lintCheck(path: string): ["checks" | "warnings", string] {
   return ["warnings", "markdown_lint=issues (run markdownlint-cli2 for details)"];
 }
 
-/** validate-dr.py の main: argv[0] を dr-file の path として読み、検証結果の JSON
- * (indent 2) を出力する。exit 1 になるのは results.errors が空でないときだけ。 */
+/** 退役した Python 版 validate-dr の main: argv[0] を dr-file の path として読み、検証結果
+ * の JSON (indent 2) を出力する。exit 1 になるのは results.errors が空でないときだけ。 */
 export function main(argv: string[]): number {
   const drFile = argv[0] ?? "";
   if (!drFile || !existsSync(drFile)) {

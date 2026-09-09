@@ -6,23 +6,24 @@
 // similar_drs) のキーを持つ JSON (indent 2)。
 // stderr: 検証に落ちた内容。exit 1。
 //
-// pre-check.py の TypeScript 移植。header/entry の形は skills/_lib/harness_hash.ts と
-// skills/dr/scripts/dr_common.ts が既に使っているものと同じ: 素直な shebang +
-// reference-types + Usage ヘッダー、テストが直接動かせる部分は named export にし、CLI 自身の
-// process.exit(main()) は workflows/_lib/entry-point.ts の isMainModule でガードする。これに
-// より、この module を export 目当てで import しても CLI が副作用として動くことはない。
+// 退役した Python 版 pre-check の TypeScript 移植。header/entry の形は
+// skills/_lib/harness_hash.ts と skills/dr/scripts/dr_common.ts が既に使っているものと同じ:
+// 素直な shebang + reference-types + Usage ヘッダー、テストが直接動かせる部分は named export
+// にし、CLI 自身の process.exit(main()) は workflows/_lib/entry-point.ts の isMainModule で
+// ガードする。これにより、この module を export 目当てで import しても CLI が副作用として
+// 動くことはない。
 //
-// Contract: skills/dr/scripts/pre-check.py の similarity / first_heading / main。OUTPUT_KEYS
-// は json.dumps のキー順に対応し、skills/dr/tests/script-contract.test.js (U-008) が import
-// する。skills/dr/tests/pre-check.test.ts が検証する。
+// Contract: 退役した Python 版 pre-check の similarity / first_heading / main。OUTPUT_KEYS は
+// json.dumps のキー順に対応し、skills/dr/tests/script-contract.test.js が import する。
+// skills/dr/tests/pre-check.test.ts が検証する。
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fail, guardSkillDir, resolveDrDir, type GitTopLevelResult } from "./dr_common.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
-/** stdout オブジェクトのキー順であり、pre-check.py の json.dumps のキー順に対応する。
- * OUTPUT_KEYS を import するテスト (この unit の T-200、および U-008 の
+/** stdout オブジェクトのキー順であり、退役した Python 版 pre-check の json.dumps のキー順に
+ * 対応する。OUTPUT_KEYS を import するテスト (この unit の T-200、および
  * script-contract.test.js) が、CLI の stdout をこれと突き合わせて検証する際の正本。 */
 export const OUTPUT_KEYS = [
   "status",
@@ -58,10 +59,10 @@ export function formatScore(score: number): string {
   return `${sign}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, "0")}`;
 }
 
-/** pre-check.py の similarity(): titleA と titleB の語の集合の重なりを、titleA 自身の語の
- * 「個数」(積集合や和集合のサイズではない) で割る -- titleA の中で語が繰り返されると、
- * Python の `len(words_a)` がそうするのと同じように分母が増える。割る数は和集合でなく
- * title_a の語数なので、長い既存タイトル (titleB) だけでスコアが薄まることはない。 */
+/** 退役した Python 版 pre-check の similarity(): titleA と titleB の語の集合の重なりを、
+ * titleA 自身の語の「個数」(積集合や和集合のサイズではない) で割る -- titleA の中で語が繰り
+ * 返されると、Python の `len(words_a)` がそうするのと同じように分母が増える。割る数は和集合
+ * でなく title_a の語数なので、長い既存タイトル (titleB) だけでスコアが薄まることはない。 */
 export function similarity(titleA: string, titleB: string): number {
   const wordsA = splitWords(titleA.toLowerCase());
   if (wordsA.length === 0) return 0.0;
@@ -82,8 +83,8 @@ function splitWords(text: string): string[] {
   return trimmed === "" ? [] : trimmed.split(/\s+/);
 }
 
-/** pre-check.py の first_heading(): 最初に見つかる `# ` で始まる行のテキスト。ファイルが
- * 最上位の heading を持たないときは "" になる。 */
+/** 退役した Python 版 pre-check の first_heading(): 最初に見つかる `# ` で始まる行の
+ * テキスト。ファイルが最上位の heading を持たないときは "" になる。 */
 export function firstHeading(path: string): string {
   const lines = readFileSync(path, "utf8").split("\n");
   for (const line of lines) {
@@ -92,9 +93,9 @@ export function firstHeading(path: string): string {
   return "";
 }
 
-/** pre-check.py の `sorted(dr_dir.rglob("*.md"))`: drDir 配下のあらゆる深さにある *.md
- * ファイルすべてを、フルパスとして返す -- ソートは呼び出し側が行い、`rglob` が返す Path を
- * ソートしたときと同じパス文字列の順序になる。 */
+/** 退役した Python 版 pre-check の `sorted(dr_dir.rglob("*.md"))`: drDir 配下のあらゆる
+ * 深さにある *.md ファイルすべてを、フルパスとして返す -- ソートは呼び出し側が行い、
+ * `rglob` が返す Path をソートしたときと同じパス文字列の順序になる。 */
 function markdownFilesUnder(dir: string): string[] {
   const found: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -109,8 +110,8 @@ function markdownFilesUnder(dir: string): string[] {
 }
 
 /** `git rev-parse --show-toplevel`。resolveDrDir がこれを必要とするとき (DR_DIR 未設定かつ
- * CLI 引数無し) だけ読む -- pre-check.ts 自身は dr_dir の引数を持たず、pre-check.py が
- * `resolve_dr_dir()` を引数無しで呼ぶのに対応する。 */
+ * CLI 引数無し) だけ読む -- pre-check.ts 自身は dr_dir の引数を持たず、退役した Python 版
+ * pre-check が `resolve_dr_dir()` を引数無しで呼ぶのに対応する。 */
 function gitTopLevel(): GitTopLevelResult {
   const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
   return { status: result.status, stdout: result.stdout ?? "", error: result.error };

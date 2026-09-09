@@ -1,25 +1,24 @@
 /// <reference types="node" />
-// skills/dr/scripts/dr_common.py の共有ヘルパーを TypeScript に移植したもの。形は
+// 退役した Python 版 dr_common の共有ヘルパーを TypeScript に移植したもの。形は
 // skills/_lib/harness_hash.ts と同じ (named export のみ、default export は持たない)。この
-// module 自身は CLI の入口を持たない -- pre-check.py、validate-dr.py、update-index.py が
-// それぞれこれを import しており、それらの TS 移植 (後続の unit) も同様に import する --
-// そのため呼び出す側の script が持つ skills-CLI の shebang + 100755 とは違い、shebang 無しの
-// mode 100644 で置く。
+// module 自身は CLI の入口を持たない -- pre-check.ts、validate-dr.ts、update-index.ts が
+// それぞれこれを import する -- そのため呼び出す側の script が持つ skills-CLI の
+// shebang + 100755 とは違い、shebang 無しの mode 100644 で置く。
 //
-// Contract: skills/dr/scripts/dr_common.py の fail / resolve_dr_dir / guard_skill_dir /
+// Contract: 退役した Python 版 dr_common の fail / resolve_dr_dir / guard_skill_dir /
 // split_frontmatter。Python の snake_case な名前は TS 側では camelCase になる。
 // harness_hash.py の _digest -> harness_hash.ts の digest で既に行ったのと同じリネームである。
 //
 // resolveDrDir はここでは純関数であり、git の exit が非 0 のときに自分で fail() を呼ぶ
-// resolve_dr_dir.py とは違う。env、CLI 引数、git-toplevel の spawn 結果を明示的な引数として
-// すべて受け取り、3 つのどれも見つからなかった呼び出し側が、返ってきた null をどう扱うかを
-// 決める。これにより git の spawn と process.exit という副作用は、main() の Usage ヘッダーの
-// 契約が既に文書化している CLI 側の wrapper に留まり、この module 自身のテストが直接 import
-// する helper の中には埋もれない。
+// 退役した Python 版 resolve_dr_dir とは違う。env、CLI 引数、git-toplevel の spawn 結
+// 果を明示的な引数としてすべて受け取り、3 つのどれも見つからなかった呼び出し側が、返っ
+// てきた null をどう扱うかを決める。これにより git の spawn と process.exit という副作
+// 用は、main() の Usage ヘッダーの契約が既に文書化している CLI 側の wrapper に留まり、
+// この module 自身のテストが直接 import する helper の中には埋もれない。
 import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-/** 各行を stderr に書き、status 1 でプロセスを終了する。dr_common.py の
+/** 各行を stderr に書き、status 1 でプロセスを終了する。退役した Python 版 dr_common の
  * fail(*lines): print(*lines, sep="\n", file=sys.stderr); sys.exit(1) に対応する。 */
 export function fail(...lines: string[]): never {
   process.stderr.write(`${lines.join("\n")}\n`);
@@ -65,8 +64,8 @@ function isFile(path: string): boolean {
 }
 
 /** drDir が SKILL.md を持つとき (skill-definition directory であって Decision Record の
- * archive ではない)、hint を添えて fail する。dr_common.py の guard_skill_dir に対応する。
- * それ以外は通常どおり返る。 */
+ * archive ではない)、hint を添えて fail する。退役した Python 版 dr_common の
+ * guard_skill_dir に対応する。それ以外は通常どおり返る。 */
 export function guardSkillDir(drDir: string, hint: string): void {
   if (isFile(join(drDir, "SKILL.md"))) {
     fail(
@@ -77,10 +76,10 @@ export function guardSkillDir(drDir: string, hint: string): void {
   }
 }
 
-/** text を --- の区切りペアで (frontmatter の行, body の行) に分割する。dr_common.py の
- * split_frontmatter に対応する: 1 行目にある --- だけが fence を開く。先頭行以外の --- は
- * 区切りにしないので、fence を一度も開かなかったファイルの body に出てくる --- を区切りと
- * 誤認することはない。 */
+/** text を --- の区切りペアで (frontmatter の行, body の行) に分割する。退役した Python
+ * 版 dr_common の split_frontmatter に対応する: 1 行目にある --- だけが fence を開く。先
+ * 頭行以外の --- は区切りにしないので、fence を一度も開かなかったファイルの body に出て
+ * くる --- を区切りと誤認することはない。 */
 export function splitFrontmatter(text: string): [string[], string[]] {
   const lines = text.split("\n");
   const fence = /^---[ \t]*$/;

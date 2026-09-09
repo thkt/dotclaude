@@ -1,8 +1,8 @@
 /// <reference types="node" />
-// Behavior tests for skills/dr/scripts/update-index.ts: the TS port of update-index.py's
-// README.md generation (DR List table, By Status sections, atomic write).
-// skills/dr/tests/fixtures/update-index-cases.json (built by U-001) freezes update-index.py's
-// own argv/env -> exit/stdout/README, so T-208 replays it through
+// Behavior tests for skills/dr/scripts/update-index.ts: the TS port of the retired Python
+// update-index's README.md generation (DR List table, By Status sections, atomic write).
+// skills/dr/tests/fixtures/update-index-cases.json (built by U-001) freezes the retired Python
+// update-index's own argv/env -> exit/stdout/README, so T-208 replays it through
 // workflows/_lib/tests/_cli-fixture.ts's runCli rather than hand-writing cases that could drift
 // from the Python script it must match. Unlike pre-check.ts and validate-dr.ts, this CLI's
 // stdout is a bare path line, not JSON, so T-208 compares it and the written README.md
@@ -80,10 +80,10 @@ test("T-208 every frozen case in update-index-cases.json reproduces the python s
     withCaseDir(entry.setup, (dir) => {
       const run = runCli(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
       assert.equal(run.status, entry.exit, `${entry.name}: exit code (stderr: ${run.stderr})`);
-      // update-index.py's stdout is print(index_file) -- a bare path line, not JSON, so this
-      // resolves the fixture's "<dr-dir>" placeholder to the case's own DR_DIR and compares the
-      // line verbatim rather than routing through _cli-fixture.ts's JSON-shaped
-      // assertStdoutShape.
+      // The retired Python update-index's stdout is print(index_file) -- a bare path line, not
+      // JSON, so this resolves the fixture's "<dr-dir>" placeholder to the case's own DR_DIR
+      // and compares the line verbatim rather than routing through _cli-fixture.ts's
+      // JSON-shaped assertStdoutShape.
       const expectedStdout = entry.stdout.replace("<dr-dir>", entry.env.DR_DIR ?? "");
       assert.equal(run.stdout, expectedStdout, `${entry.name}: stdout path`);
       for (const [relPath, expectedContent] of Object.entries(entry.files_after)) {

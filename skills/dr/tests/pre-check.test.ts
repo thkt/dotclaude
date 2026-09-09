@@ -1,7 +1,8 @@
 /// <reference types="node" />
-// Behavior tests for skills/dr/scripts/pre-check.ts: the TS port of pre-check.py's validation,
-// numbering, slug, and similar_drs logic. skills/dr/tests/fixtures/pre-check-cases.json (built
-// by U-001) freezes pre-check.py's own argv/env -> exit/stdout, so T-200 replays it through
+// Behavior tests for skills/dr/scripts/pre-check.ts: the TS port of the retired Python
+// pre-check's validation, numbering, slug, and similar_drs logic.
+// skills/dr/tests/fixtures/pre-check-cases.json (built by U-001) freezes the retired Python
+// pre-check's own argv/env -> exit/stdout, so T-200 replays it through
 // workflows/_lib/tests/_cli-fixture.ts's runCli rather than hand-writing cases that could drift
 // from the Python script it must match. T-201..T-203 isolate the numbering and formatScore
 // pieces the fixture cases only cover indirectly.
@@ -64,10 +65,11 @@ test("T-200 every frozen case in pre-check-cases.json reproduces the python scri
       assertStdoutShape(
         run.stdout,
         entry.stdout,
-        // resolveDrDir returns DR_DIR verbatim (pre-check.py's Path(os.environ["DR_DIR"])
-        // never resolves against cwd either), so every case's dr_dir field is the literal env
-        // value -- confirmed against a real `DR_DIR=archive python3 pre-check.py` run, whose
-        // stdout carries "archive", not a cwd-joined path.
+        // resolveDrDir returns DR_DIR verbatim (the retired Python pre-check's
+        // Path(os.environ["DR_DIR"]) never resolves against cwd either), so every case's dr_dir
+        // field is the literal env value -- confirmed against a real `DR_DIR=archive` run of
+        // the retired Python pre-check script, whose stdout carried "archive", not a
+        // cwd-joined path.
         { "<dr-dir>": entry.env.DR_DIR },
         { "<date>": DATE_SHAPE },
         entry.name,
@@ -121,7 +123,7 @@ test("T-202 a title outside 5 to 64 characters or carrying a forbidden character
       assert.equal(
         run.stderr.split("\n")[0],
         `Error: title length ${title.length} chars (required 5-64)`,
-        `${name}: first stderr line matches pre-check.py's fail(f"Error: title length {len(title)} chars (required 5-64)")`,
+        `${name}: first stderr line matches the retired Python pre-check's fail(f"Error: title length {len(title)} chars (required 5-64)")`,
       );
     }
 
@@ -132,7 +134,7 @@ test("T-202 a title outside 5 to 64 characters or carrying a forbidden character
     assert.equal(
       run.stderr.split("\n")[0],
       'Error: forbidden characters in title (/:*?"<>|)',
-      `${forbidden.name}: first stderr line matches pre-check.py's fail('Error: forbidden characters in title (/:*?"<>|)')`,
+      `${forbidden.name}: first stderr line matches the retired Python pre-check's fail('Error: forbidden characters in title (/:*?"<>|)')`,
     );
   });
 });

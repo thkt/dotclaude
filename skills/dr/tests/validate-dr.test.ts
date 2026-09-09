@@ -1,9 +1,10 @@
 /// <reference types="node" />
-// Behavior tests for skills/dr/scripts/validate-dr.ts: the TS port of validate-dr.py's section
-// checks, frontmatter/status validation, options counting, and markdownlint-cli2 wiring.
-// skills/dr/tests/fixtures/validate-dr-cases.json (built by U-001) freezes validate-dr.py's
-// own argv/env -> exit/stdout, so T-204 replays it through workflows/_lib/tests/_cli-fixture.ts's
-// runCli rather than hand-writing cases that could drift from the Python script it must match.
+// Behavior tests for skills/dr/scripts/validate-dr.ts: the TS port of the retired Python
+// validate-dr's section checks, frontmatter/status validation, options counting, and
+// markdownlint-cli2 wiring. skills/dr/tests/fixtures/validate-dr-cases.json (built by U-001)
+// freezes the retired Python validate-dr's own argv/env -> exit/stdout, so T-204 replays it
+// through workflows/_lib/tests/_cli-fixture.ts's runCli rather than hand-writing cases that
+// could drift from the Python script it must match.
 // T-205..T-207 isolate the STATUS_VALUES, countOptions, and lint_check wiring the fixture
 // cases only cover indirectly.
 //
