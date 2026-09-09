@@ -26,7 +26,7 @@ argument-hint: "[research subject or question]"
 
 ## Phase 2: 過去調査スキャン
 
-`$ARGUMENTS` から小文字ハイフン区切りの slug を作り、`${CLAUDE_SKILL_DIR}/scripts/find-prior-research.py <slug> .claude/workspace/research` を実行する。標準出力の JSON `{ candidates: [{file, shared}, ...], slug_words: int }` (shared 降順) をパースする。
+`$ARGUMENTS` から小文字ハイフン区切りの slug を作り、`${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts <slug> .claude/workspace/research` を実行する。標準出力の JSON `{ candidates: [{file, shared}, ...], slug_words: int }` (shared 降順) をパースする。
 
 - 候補が 0 件のとき、レポートの Prior research を `none found` として先へ進む
 - shared 2 以上、または shared が `slug_words` と等しい候補は下表のとおり引き継ぐ

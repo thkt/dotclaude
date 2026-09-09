@@ -63,7 +63,7 @@ const bundled = (rel) =>
 const SCRIPTS = bundled("workflows/assert");
 // /outcome owns the emptiness criteria for OUTCOME.md, so Bootstrap reads its verdict
 // instead of judging TBD markers by eye.
-const OUTCOME_VALIDATOR = bundled("skills/outcome/scripts/validate-outcome.py");
+const OUTCOME_VALIDATOR = bundled("skills/outcome/scripts/validate-outcome.ts");
 
 // merge-findings.py's two rules, inlined. P1 -> high, P2 -> medium, P3 -> dropped; critical /
 // high / medium / low pass through; an unrecognized severity is dropped. Dedup key is file:line
