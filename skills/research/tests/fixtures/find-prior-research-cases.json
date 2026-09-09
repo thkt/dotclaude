@@ -1,0 +1,87 @@
+[
+  {
+    "name": "two_word_overlap_returns_shared_2",
+    "files": {
+      "2026-06-01-add-user-dashboard.md": ""
+    },
+    "argv": [
+      "add-user-permission-flow"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"candidates\": [\n    {\n      \"file\": \"2026-06-01-add-user-dashboard.md\",\n      \"shared\": 2\n    }\n  ],\n  \"slug_words\": 4\n}\n"
+  },
+  {
+    "name": "missing_search_dir_returns_empty_candidates",
+    "files": {},
+    "argv": [
+      "add-user-permission-flow"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"candidates\": [],\n  \"slug_words\": 4\n}\n"
+  },
+  {
+    "name": "zero_overlap_file_is_excluded",
+    "files": {
+      "2026-06-01-billing-invoice-export.md": ""
+    },
+    "argv": [
+      "add-user-permission-flow"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"candidates\": [],\n  \"slug_words\": 4\n}\n"
+  },
+  {
+    "name": "filename_date_prefix_is_excluded_from_word_matching",
+    "files": {
+      "2026-07-01-schema-export.md": ""
+    },
+    "argv": [
+      "07-01-schema-export"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"candidates\": [\n    {\n      \"file\": \"2026-07-01-schema-export.md\",\n      \"shared\": 2\n    }\n  ],\n  \"slug_words\": 4\n}\n"
+  },
+  {
+    "name": "candidates_come_back_with_the_largest_overlap_first",
+    "files": {
+      "2026-06-01-user-flow.md": "",
+      "2026-06-02-add-user-permission-flow.md": "",
+      "2026-06-03-permission.md": ""
+    },
+    "argv": [
+      "add-user-permission-flow"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"candidates\": [\n    {\n      \"file\": \"2026-06-02-add-user-permission-flow.md\",\n      \"shared\": 4\n    },\n    {\n      \"file\": \"2026-06-01-user-flow.md\",\n      \"shared\": 2\n    },\n    {\n      \"file\": \"2026-06-03-permission.md\",\n      \"shared\": 1\n    }\n  ],\n  \"slug_words\": 4\n}\n"
+  },
+  {
+    "name": "slug_words_lets_a_one_word_slug_read_as_a_complete_match",
+    "files": {
+      "2026-06-01-qualify.md": ""
+    },
+    "argv": [
+      "qualify"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"candidates\": [\n    {\n      \"file\": \"2026-06-01-qualify.md\",\n      \"shared\": 1\n    }\n  ],\n  \"slug_words\": 1\n}\n"
+  },
+  {
+    "name": "non_markdown_file_is_excluded",
+    "files": {
+      "2026-07-02-schema-export.json": "",
+      "2026-07-01-schema-export.md": ""
+    },
+    "argv": [
+      "schema-export"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"candidates\": [\n    {\n      \"file\": \"2026-07-01-schema-export.md\",\n      \"shared\": 2\n    }\n  ],\n  \"slug_words\": 2\n}\n"
+  },
+  {
+    "name": "no_argv_returns_empty_candidates",
+    "files": {},
+    "argv": [],
+    "exit": 0,
+    "stdout": "{\n  \"candidates\": [],\n  \"slug_words\": 0\n}\n"
+  }
+]

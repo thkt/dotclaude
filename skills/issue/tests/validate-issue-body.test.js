@@ -25,7 +25,7 @@ const bugTemplate = join(root, "skills", "issue", "templates", "bug.md");
 const choreTemplate = join(root, "skills", "issue", "templates", "chore.md");
 const featureTemplate = join(root, "skills", "issue", "templates", "feature.md");
 
-// The body is written to a temporary file before being passed. validate-outcome.py also takes a
+// The body is written to a temporary file before being passed. validate-outcome.ts also takes a
 // file path argument, so this matches the shape the caller (/issue's Phase 4 validation) uses.
 // The floor is read from the script so a change there fails these fixtures instead of drifting.
 const floorFor = (type) => {
