@@ -38,8 +38,8 @@ try {
   ({ readXlsx } = await import("hucre/xlsx"));
 } catch {
   err(
-    "hucre が入っていない。このスクリプトより上のディレクトリで `bun add hucre` を実行する。" +
-      "開発ツリーならリポジトリのルート、プラグイン導入先なら ~/.claude。",
+    "hucre is not installed. Run `bun add hucre` in a directory above this script: " +
+      "the repository root in a dev tree, or ~/.claude for a plugin install.",
   );
   process.exit(2);
 }
@@ -81,20 +81,20 @@ if (command === "list") {
       `filled: ${filled.toLocaleString()} (${(ratio * 100).toFixed(1)}%)`,
   );
   // 閾値は書式ごとに違うので、ここで分岐せず判断を読み手に返す。
-  if (ratio < 0.2) out("充填率が低い。extract で整形してから読む。");
+  if (ratio < 0.2) out("Fill ratio is low. Convert with extract before reading.");
   process.exit(0);
 }
 
 if (command === "extract") {
   const outDir = options.out;
   if (!outDir) {
-    err("extract には --out <dir> が要る。");
+    err("extract requires --out <dir>.");
     process.exit(2);
   }
   const profileName = options.profile ?? "generic";
   const profile = profiles[profileName];
   if (!profile) {
-    err(`profile が無い: ${profileName} (${Object.keys(profiles).join(", ")})`);
+    err(`no such profile: ${profileName} (${Object.keys(profiles).join(", ")})`);
     process.exit(2);
   }
   // 読み込み結果はファイル名に要る元のシート位置を落としており、判定関数だけが
@@ -116,7 +116,7 @@ if (command === "extract") {
   }
   const workbook: Workbook = await readXlsx(buffer, filter);
   if (only != null && workbook.sheets.length === 0) {
-    err(`シートが見つからない: ${only}。list で名前と番号を確かめる。`);
+    err(`no such sheet: ${only}. Check the name and index with list.`);
     process.exit(1);
   }
   await mkdir(outDir, { recursive: true });
@@ -126,7 +126,7 @@ if (command === "extract") {
     "",
     `profile: \`${profileName}\``,
     "",
-    "| # | シート | 行数 | ファイル |",
+    "| # | Sheet | Rows | File |",
     "| --- | --- | --- | --- |",
   ];
   for (const [position, sheet] of workbook.sheets.entries() as IterableIterator<[number, Sheet]>) {
@@ -144,7 +144,7 @@ if (command === "extract") {
 
 if (command === "verify") {
   if (!target) {
-    err("verify には出力ディレクトリが要る。");
+    err("verify requires the output directory.");
     process.exit(2);
   }
   const workbook: Workbook = await readXlsx(buffer);
@@ -160,7 +160,7 @@ if (command === "verify") {
     try {
       markdown = await readFile(`${target}/${sheetFileName(index, sheet.name)}`, "utf8");
     } catch {
-      missing.push({ sheet: sheet.name, reason: "出力が無い" });
+      missing.push({ sheet: sheet.name, reason: "no output" });
       continue;
     }
     // escapeCell の変換を戻さないと、エスケープしたセルがすべて欠落として出る。
@@ -183,14 +183,14 @@ if (command === "verify") {
     if (lost) missing.push({ sheet: sheet.name, lost, sample });
   }
   if (!missing.length) {
-    out(`OK: ${workbook.sheets.length} シートの全セルが出力に残っている。`);
+    out(`OK: every cell of ${workbook.sheets.length} sheets survived into the output.`);
     process.exit(0);
   }
   for (const entry of missing) {
-    err(`${entry.sheet}: ${entry.reason ?? `${entry.lost} セル欠落`} ${entry.sample ?? ""}`);
+    err(`${entry.sheet}: ${entry.reason ?? `${entry.lost} cells lost`} ${entry.sample ?? ""}`);
   }
   process.exit(1);
 }
 
-err(`不明なコマンド: ${command}`);
+err(`unknown command: ${command}`);
 process.exit(2);

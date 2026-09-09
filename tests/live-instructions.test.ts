@@ -11,16 +11,17 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 // Letting readdir throw on a missing directory keeps a deleted instruction tree from quietly
 // shrinking the sweep to the directories that remain.
 const instructionFiles = async () => {
-  const found = [];
-  for (const prefix of ["", ".ja"]) {
+  const found: Array<{ lang: "en" | ".ja"; rel: string; full: string }> = [];
+  for (const prefix of ["", ".ja"] as const) {
+    const lang: "en" | ".ja" = prefix === "" ? "en" : prefix;
     for (const dir of ["skills", "agents", "rules", "workflows"]) {
       const base = join(root, prefix, dir);
       for (const entry of await readdir(base, { recursive: true, withFileTypes: true })) {
         if (!entry.isFile() || !/\.(md|js|py)$/.test(entry.name)) continue;
-        const full = join(entry.parentPath ?? entry.path, entry.name);
+        const full = join(entry.parentPath, entry.name);
         const rel = full.slice(join(root, prefix).length + 1);
         if (rel.includes("__pycache__")) continue;
-        found.push({ lang: prefix || "en", rel, full });
+        found.push({ lang, rel, full });
       }
     }
   }
@@ -33,10 +34,11 @@ test("no live instruction or convention still carries the old name ADR", async (
   // A summary of Fowler's article, quoting ADR as the source's own term.
   const EXEMPT = "skills/dr/references/fowler-adr.md";
   const declares = { ja: /このファイルでは ADR と呼ぶ/, en: /it says ADR throughout/ };
-  for (const [lang, rel] of [
+  const exemptPaths: [keyof typeof declares, string][] = [
     ["ja", join(".ja", EXEMPT)],
     ["en", EXEMPT],
-  ]) {
+  ];
+  for (const [lang, rel] of exemptPaths) {
     const doc = await readFile(join(root, rel), "utf8");
     assert.match(doc, declares[lang], `${lang}: the exempt file declares its grounds`);
   }
