@@ -1,0 +1,122 @@
+[
+  {
+    "name": "one_piece_of_evidence_stays_a_candidate",
+    "store": "# candidates\n\n## 昇格待ち\n\n\n## 単発\n",
+    "argv": [
+      "[{\"name\": \"a\", \"evidence\": [\"#a0\"], \"existing\": \"none\"}]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [], \"candidates\": [{\"name\": \"a\", \"count\": 1, \"evidence\": [\"#a0\"], \"existing\": \"none\", \"action\": \"candidate\"}], \"deferred\": [], \"commits\": []}\n"
+  },
+  {
+    "name": "first_sighting_backed_twice_becomes_a_page",
+    "store": "# candidates\n\n## 昇格待ち\n\n\n## 単発\n",
+    "argv": [
+      "[{\"name\": \"a\", \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"none\"}]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [{\"name\": \"a\", \"count\": 2, \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"none\", \"action\": \"create\"}], \"candidates\": [], \"deferred\": [], \"commits\": [[{\"name\": \"a\", \"count\": 2, \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"none\", \"action\": \"create\"}]]}\n"
+  },
+  {
+    "name": "action_follows_where_the_pattern_already_lives",
+    "store": "# candidates\n\n## 昇格待ち\n\n\n## 単発\n",
+    "argv": [
+      "[{\"name\": \"a\", \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"page\"}, {\"name\": \"b\", \"evidence\": [\"#b0\", \"#b1\"], \"existing\": \"candidate\"}]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [{\"name\": \"a\", \"count\": 2, \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"page\", \"action\": \"update\"}, {\"name\": \"b\", \"count\": 2, \"evidence\": [\"#b0\", \"#b1\"], \"existing\": \"candidate\", \"action\": \"promote\"}], \"candidates\": [], \"deferred\": [], \"commits\": [[{\"name\": \"a\", \"count\": 2, \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"page\", \"action\": \"update\"}, {\"name\": \"b\", \"count\": 2, \"evidence\": [\"#b0\", \"#b1\"], \"existing\": \"candidate\", \"action\": \"promote\"}]]}\n"
+  },
+  {
+    "name": "pages_past_the_cap_are_deferred_thinnest_evidence_first",
+    "store": "# candidates\n\n## 昇格待ち\n\n\n## 単発\n",
+    "argv": [
+      "[{\"name\": \"a\", \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"none\"}, {\"name\": \"b\", \"evidence\": [\"#b0\", \"#b1\", \"#b2\", \"#b3\", \"#b4\"], \"existing\": \"none\"}, {\"name\": \"c\", \"evidence\": [\"#c0\", \"#c1\", \"#c2\"], \"existing\": \"none\"}, {\"name\": \"d\", \"evidence\": [\"#d0\", \"#d1\", \"#d2\", \"#d3\"], \"existing\": \"none\"}, {\"name\": \"e\", \"evidence\": [\"#e0\", \"#e1\", \"#e2\", \"#e3\", \"#e4\", \"#e5\"], \"existing\": \"none\"}, {\"name\": \"f\", \"evidence\": [\"#f0\", \"#f1\", \"#f2\", \"#f3\", \"#f4\", \"#f5\", \"#f6\"], \"existing\": \"none\"}, {\"name\": \"g\", \"evidence\": [\"#g0\", \"#g1\", \"#g2\", \"#g3\", \"#g4\", \"#g5\", \"#g6\", \"#g7\"], \"existing\": \"none\"}, {\"name\": \"h\", \"evidence\": [\"#h0\", \"#h1\", \"#h2\", \"#h3\", \"#h4\", \"#h5\", \"#h6\", \"#h7\", \"#h8\"], \"existing\": \"none\"}, {\"name\": \"i\", \"evidence\": [\"#i0\", \"#i1\", \"#i2\", \"#i3\", \"#i4\", \"#i5\", \"#i6\", \"#i7\", \"#i8\", \"#i9\"], \"existing\": \"none\"}, {\"name\": \"j\", \"evidence\": [\"#j0\", \"#j1\", \"#j2\", \"#j3\", \"#j4\", \"#j5\", \"#j6\", \"#j7\", \"#j8\", \"#j9\", \"#j10\"], \"existing\": \"none\"}]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [{\"name\": \"j\", \"count\": 11, \"evidence\": [\"#j0\", \"#j1\", \"#j2\", \"#j3\", \"#j4\", \"#j5\", \"#j6\", \"#j7\", \"#j8\", \"#j9\", \"#j10\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"i\", \"count\": 10, \"evidence\": [\"#i0\", \"#i1\", \"#i2\", \"#i3\", \"#i4\", \"#i5\", \"#i6\", \"#i7\", \"#i8\", \"#i9\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"h\", \"count\": 9, \"evidence\": [\"#h0\", \"#h1\", \"#h2\", \"#h3\", \"#h4\", \"#h5\", \"#h6\", \"#h7\", \"#h8\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"g\", \"count\": 8, \"evidence\": [\"#g0\", \"#g1\", \"#g2\", \"#g3\", \"#g4\", \"#g5\", \"#g6\", \"#g7\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"f\", \"count\": 7, \"evidence\": [\"#f0\", \"#f1\", \"#f2\", \"#f3\", \"#f4\", \"#f5\", \"#f6\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"e\", \"count\": 6, \"evidence\": [\"#e0\", \"#e1\", \"#e2\", \"#e3\", \"#e4\", \"#e5\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"b\", \"count\": 5, \"evidence\": [\"#b0\", \"#b1\", \"#b2\", \"#b3\", \"#b4\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"d\", \"count\": 4, \"evidence\": [\"#d0\", \"#d1\", \"#d2\", \"#d3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"c\", \"count\": 3, \"evidence\": [\"#c0\", \"#c1\", \"#c2\"], \"existing\": \"none\", \"action\": \"create\"}], \"candidates\": [], \"deferred\": [{\"name\": \"a\", \"count\": 2, \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"none\", \"action\": \"create\"}], \"commits\": [[{\"name\": \"j\", \"count\": 11, \"evidence\": [\"#j0\", \"#j1\", \"#j2\", \"#j3\", \"#j4\", \"#j5\", \"#j6\", \"#j7\", \"#j8\", \"#j9\", \"#j10\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"i\", \"count\": 10, \"evidence\": [\"#i0\", \"#i1\", \"#i2\", \"#i3\", \"#i4\", \"#i5\", \"#i6\", \"#i7\", \"#i8\", \"#i9\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"h\", \"count\": 9, \"evidence\": [\"#h0\", \"#h1\", \"#h2\", \"#h3\", \"#h4\", \"#h5\", \"#h6\", \"#h7\", \"#h8\"], \"existing\": \"none\", \"action\": \"create\"}], [{\"name\": \"g\", \"count\": 8, \"evidence\": [\"#g0\", \"#g1\", \"#g2\", \"#g3\", \"#g4\", \"#g5\", \"#g6\", \"#g7\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"f\", \"count\": 7, \"evidence\": [\"#f0\", \"#f1\", \"#f2\", \"#f3\", \"#f4\", \"#f5\", \"#f6\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"e\", \"count\": 6, \"evidence\": [\"#e0\", \"#e1\", \"#e2\", \"#e3\", \"#e4\", \"#e5\"], \"existing\": \"none\", \"action\": \"create\"}], [{\"name\": \"b\", \"count\": 5, \"evidence\": [\"#b0\", \"#b1\", \"#b2\", \"#b3\", \"#b4\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"d\", \"count\": 4, \"evidence\": [\"#d0\", \"#d1\", \"#d2\", \"#d3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"c\", \"count\": 3, \"evidence\": [\"#c0\", \"#c1\", \"#c2\"], \"existing\": \"none\", \"action\": \"create\"}]]}\n"
+  },
+  {
+    "name": "candidates_do_not_consume_the_page_cap",
+    "store": "# candidates\n\n## 昇格待ち\n\n\n## 単発\n",
+    "argv": [
+      "[{\"name\": \"a\", \"evidence\": [\"#a0\"], \"existing\": \"none\"}, {\"name\": \"b\", \"evidence\": [\"#b0\"], \"existing\": \"none\"}, {\"name\": \"c\", \"evidence\": [\"#c0\", \"#c1\"], \"existing\": \"none\"}, {\"name\": \"d\", \"evidence\": [\"#d0\", \"#d1\"], \"existing\": \"none\"}, {\"name\": \"e\", \"evidence\": [\"#e0\", \"#e1\"], \"existing\": \"none\"}]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [{\"name\": \"c\", \"count\": 2, \"evidence\": [\"#c0\", \"#c1\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"d\", \"count\": 2, \"evidence\": [\"#d0\", \"#d1\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"e\", \"count\": 2, \"evidence\": [\"#e0\", \"#e1\"], \"existing\": \"none\", \"action\": \"create\"}], \"candidates\": [{\"name\": \"a\", \"count\": 1, \"evidence\": [\"#a0\"], \"existing\": \"none\", \"action\": \"candidate\"}, {\"name\": \"b\", \"count\": 1, \"evidence\": [\"#b0\"], \"existing\": \"none\", \"action\": \"candidate\"}], \"deferred\": [], \"commits\": [[{\"name\": \"c\", \"count\": 2, \"evidence\": [\"#c0\", \"#c1\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"d\", \"count\": 2, \"evidence\": [\"#d0\", \"#d1\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"e\", \"count\": 2, \"evidence\": [\"#e0\", \"#e1\"], \"existing\": \"none\", \"action\": \"create\"}]]}\n"
+  },
+  {
+    "name": "a_store_that_does_not_exist_yet_reads_as_no_rows",
+    "store": null,
+    "argv": [
+      "[{\"name\": \"a\", \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"none\"}]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [{\"name\": \"a\", \"count\": 2, \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"none\", \"action\": \"create\"}], \"candidates\": [], \"deferred\": [], \"commits\": [[{\"name\": \"a\", \"count\": 2, \"evidence\": [\"#a0\", \"#a1\"], \"existing\": \"none\", \"action\": \"create\"}]]}\n"
+  },
+  {
+    "name": "both_headings_are_read_and_the_evidence_is_cut_off_the_name",
+    "store": "# candidates\n\n## 昇格待ち\n\n- テンプレートは validator が要求するフィールドを載せる #330 (research)\n\n## 単発\n\n- user rule の paths frontmatter は originalCwd 相対で評価される #59",
+    "argv": [
+      "[]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [{\"name\": \"テンプレートは validator が要求するフィールドを載せる\", \"count\": 2, \"evidence\": [\"#330\", \"(research)\"], \"existing\": \"candidate\", \"section\": \"昇格待ち\", \"action\": \"promote\"}], \"candidates\": [{\"name\": \"user rule の paths frontmatter は originalCwd 相対で評価される\", \"count\": 1, \"evidence\": [\"#59\"], \"existing\": \"candidate\", \"section\": \"単発\", \"action\": \"candidate\"}], \"deferred\": [], \"commits\": [[{\"name\": \"テンプレートは validator が要求するフィールドを載せる\", \"count\": 2, \"evidence\": [\"#330\", \"(research)\"], \"existing\": \"candidate\", \"section\": \"昇格待ち\", \"action\": \"promote\"}]]}\n"
+  },
+  {
+    "name": "a_name_held_by_both_sides_folds_into_one_row_with_the_evidence_united",
+    "store": "# candidates\n\n## 昇格待ち\n\n- linter の false positive は理由コメント付き disable で抑止する #167 #168\n\n## 単発\n",
+    "argv": [
+      "[{\"name\": \"linter の false positive は理由コメント付き disable で抑止する\", \"evidence\": [\"#168\", \"#390\"], \"existing\": \"none\"}]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [{\"name\": \"linter の false positive は理由コメント付き disable で抑止する\", \"count\": 3, \"evidence\": [\"#167\", \"#168\", \"#390\"], \"existing\": \"none\", \"section\": \"昇格待ち\", \"action\": \"create\"}], \"candidates\": [], \"deferred\": [], \"commits\": [[{\"name\": \"linter の false positive は理由コメント付き disable で抑止する\", \"count\": 3, \"evidence\": [\"#167\", \"#168\", \"#390\"], \"existing\": \"none\", \"section\": \"昇格待ち\", \"action\": \"create\"}]]}\n"
+  },
+  {
+    "name": "a_store_row_outranks_thinner_fresh_patterns_for_the_page_cap",
+    "store": "# candidates\n\n## 昇格待ち\n\n- hook のコマンド判定は shlex による位置の解析で行う #349 #350 #351 #352 #353 #354 (research)\n\n## 単発\n",
+    "argv": [
+      "[{\"name\": \"a\", \"evidence\": [\"#a0\", \"#a1\", \"#a2\", \"#a3\"], \"existing\": \"none\"}, {\"name\": \"b\", \"evidence\": [\"#b0\", \"#b1\", \"#b2\", \"#b3\"], \"existing\": \"none\"}, {\"name\": \"c\", \"evidence\": [\"#c0\", \"#c1\", \"#c2\", \"#c3\"], \"existing\": \"none\"}, {\"name\": \"d\", \"evidence\": [\"#d0\", \"#d1\", \"#d2\", \"#d3\"], \"existing\": \"none\"}, {\"name\": \"e\", \"evidence\": [\"#e0\", \"#e1\", \"#e2\", \"#e3\"], \"existing\": \"none\"}, {\"name\": \"f\", \"evidence\": [\"#f0\", \"#f1\", \"#f2\", \"#f3\"], \"existing\": \"none\"}, {\"name\": \"g\", \"evidence\": [\"#g0\", \"#g1\", \"#g2\", \"#g3\"], \"existing\": \"none\"}, {\"name\": \"h\", \"evidence\": [\"#h0\", \"#h1\", \"#h2\", \"#h3\"], \"existing\": \"none\"}, {\"name\": \"i\", \"evidence\": [\"#i0\", \"#i1\", \"#i2\", \"#i3\"], \"existing\": \"none\"}]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [{\"name\": \"hook のコマンド判定は shlex による位置の解析で行う\", \"count\": 7, \"evidence\": [\"#349\", \"#350\", \"#351\", \"#352\", \"#353\", \"#354\", \"(research)\"], \"existing\": \"candidate\", \"section\": \"昇格待ち\", \"action\": \"promote\"}, {\"name\": \"a\", \"count\": 4, \"evidence\": [\"#a0\", \"#a1\", \"#a2\", \"#a3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"b\", \"count\": 4, \"evidence\": [\"#b0\", \"#b1\", \"#b2\", \"#b3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"c\", \"count\": 4, \"evidence\": [\"#c0\", \"#c1\", \"#c2\", \"#c3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"d\", \"count\": 4, \"evidence\": [\"#d0\", \"#d1\", \"#d2\", \"#d3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"e\", \"count\": 4, \"evidence\": [\"#e0\", \"#e1\", \"#e2\", \"#e3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"f\", \"count\": 4, \"evidence\": [\"#f0\", \"#f1\", \"#f2\", \"#f3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"g\", \"count\": 4, \"evidence\": [\"#g0\", \"#g1\", \"#g2\", \"#g3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"h\", \"count\": 4, \"evidence\": [\"#h0\", \"#h1\", \"#h2\", \"#h3\"], \"existing\": \"none\", \"action\": \"create\"}], \"candidates\": [], \"deferred\": [{\"name\": \"i\", \"count\": 4, \"evidence\": [\"#i0\", \"#i1\", \"#i2\", \"#i3\"], \"existing\": \"none\", \"action\": \"create\"}], \"commits\": [[{\"name\": \"hook のコマンド判定は shlex による位置の解析で行う\", \"count\": 7, \"evidence\": [\"#349\", \"#350\", \"#351\", \"#352\", \"#353\", \"#354\", \"(research)\"], \"existing\": \"candidate\", \"section\": \"昇格待ち\", \"action\": \"promote\"}, {\"name\": \"a\", \"count\": 4, \"evidence\": [\"#a0\", \"#a1\", \"#a2\", \"#a3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"b\", \"count\": 4, \"evidence\": [\"#b0\", \"#b1\", \"#b2\", \"#b3\"], \"existing\": \"none\", \"action\": \"create\"}], [{\"name\": \"c\", \"count\": 4, \"evidence\": [\"#c0\", \"#c1\", \"#c2\", \"#c3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"d\", \"count\": 4, \"evidence\": [\"#d0\", \"#d1\", \"#d2\", \"#d3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"e\", \"count\": 4, \"evidence\": [\"#e0\", \"#e1\", \"#e2\", \"#e3\"], \"existing\": \"none\", \"action\": \"create\"}], [{\"name\": \"f\", \"count\": 4, \"evidence\": [\"#f0\", \"#f1\", \"#f2\", \"#f3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"g\", \"count\": 4, \"evidence\": [\"#g0\", \"#g1\", \"#g2\", \"#g3\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"h\", \"count\": 4, \"evidence\": [\"#h0\", \"#h1\", \"#h2\", \"#h3\"], \"existing\": \"none\", \"action\": \"create\"}]]}\n"
+  },
+  {
+    "name": "nine_promoted_rows_split_into_three_commits_of_three",
+    "store": "# candidates\n\n## 昇格待ち\n\n\n## 単発\n",
+    "argv": [
+      "[{\"name\": \"p0\", \"evidence\": [\"#p00\", \"#p01\"], \"existing\": \"none\"}, {\"name\": \"p1\", \"evidence\": [\"#p10\", \"#p11\"], \"existing\": \"none\"}, {\"name\": \"p2\", \"evidence\": [\"#p20\", \"#p21\"], \"existing\": \"none\"}, {\"name\": \"p3\", \"evidence\": [\"#p30\", \"#p31\"], \"existing\": \"none\"}, {\"name\": \"p4\", \"evidence\": [\"#p40\", \"#p41\"], \"existing\": \"none\"}, {\"name\": \"p5\", \"evidence\": [\"#p50\", \"#p51\"], \"existing\": \"none\"}, {\"name\": \"p6\", \"evidence\": [\"#p60\", \"#p61\"], \"existing\": \"none\"}, {\"name\": \"p7\", \"evidence\": [\"#p70\", \"#p71\"], \"existing\": \"none\"}, {\"name\": \"p8\", \"evidence\": [\"#p80\", \"#p81\"], \"existing\": \"none\"}]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [{\"name\": \"p0\", \"count\": 2, \"evidence\": [\"#p00\", \"#p01\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p1\", \"count\": 2, \"evidence\": [\"#p10\", \"#p11\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p2\", \"count\": 2, \"evidence\": [\"#p20\", \"#p21\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p3\", \"count\": 2, \"evidence\": [\"#p30\", \"#p31\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p4\", \"count\": 2, \"evidence\": [\"#p40\", \"#p41\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p5\", \"count\": 2, \"evidence\": [\"#p50\", \"#p51\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p6\", \"count\": 2, \"evidence\": [\"#p60\", \"#p61\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p7\", \"count\": 2, \"evidence\": [\"#p70\", \"#p71\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p8\", \"count\": 2, \"evidence\": [\"#p80\", \"#p81\"], \"existing\": \"none\", \"action\": \"create\"}], \"candidates\": [], \"deferred\": [], \"commits\": [[{\"name\": \"p0\", \"count\": 2, \"evidence\": [\"#p00\", \"#p01\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p1\", \"count\": 2, \"evidence\": [\"#p10\", \"#p11\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p2\", \"count\": 2, \"evidence\": [\"#p20\", \"#p21\"], \"existing\": \"none\", \"action\": \"create\"}], [{\"name\": \"p3\", \"count\": 2, \"evidence\": [\"#p30\", \"#p31\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p4\", \"count\": 2, \"evidence\": [\"#p40\", \"#p41\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p5\", \"count\": 2, \"evidence\": [\"#p50\", \"#p51\"], \"existing\": \"none\", \"action\": \"create\"}], [{\"name\": \"p6\", \"count\": 2, \"evidence\": [\"#p60\", \"#p61\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p7\", \"count\": 2, \"evidence\": [\"#p70\", \"#p71\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p8\", \"count\": 2, \"evidence\": [\"#p80\", \"#p81\"], \"existing\": \"none\", \"action\": \"create\"}]]}\n"
+  },
+  {
+    "name": "ten_or_more_promoted_rows_cap_commits_at_three_and_defer_the_rest",
+    "store": "# candidates\n\n## 昇格待ち\n\n\n## 単発\n",
+    "argv": [
+      "[{\"name\": \"p0\", \"evidence\": [\"#p00\", \"#p01\"], \"existing\": \"none\"}, {\"name\": \"p1\", \"evidence\": [\"#p10\", \"#p11\"], \"existing\": \"none\"}, {\"name\": \"p2\", \"evidence\": [\"#p20\", \"#p21\"], \"existing\": \"none\"}, {\"name\": \"p3\", \"evidence\": [\"#p30\", \"#p31\"], \"existing\": \"none\"}, {\"name\": \"p4\", \"evidence\": [\"#p40\", \"#p41\"], \"existing\": \"none\"}, {\"name\": \"p5\", \"evidence\": [\"#p50\", \"#p51\"], \"existing\": \"none\"}, {\"name\": \"p6\", \"evidence\": [\"#p60\", \"#p61\"], \"existing\": \"none\"}, {\"name\": \"p7\", \"evidence\": [\"#p70\", \"#p71\"], \"existing\": \"none\"}, {\"name\": \"p8\", \"evidence\": [\"#p80\", \"#p81\"], \"existing\": \"none\"}, {\"name\": \"p9\", \"evidence\": [\"#p90\", \"#p91\"], \"existing\": \"none\"}]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [{\"name\": \"p0\", \"count\": 2, \"evidence\": [\"#p00\", \"#p01\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p1\", \"count\": 2, \"evidence\": [\"#p10\", \"#p11\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p2\", \"count\": 2, \"evidence\": [\"#p20\", \"#p21\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p3\", \"count\": 2, \"evidence\": [\"#p30\", \"#p31\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p4\", \"count\": 2, \"evidence\": [\"#p40\", \"#p41\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p5\", \"count\": 2, \"evidence\": [\"#p50\", \"#p51\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p6\", \"count\": 2, \"evidence\": [\"#p60\", \"#p61\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p7\", \"count\": 2, \"evidence\": [\"#p70\", \"#p71\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p8\", \"count\": 2, \"evidence\": [\"#p80\", \"#p81\"], \"existing\": \"none\", \"action\": \"create\"}], \"candidates\": [], \"deferred\": [{\"name\": \"p9\", \"count\": 2, \"evidence\": [\"#p90\", \"#p91\"], \"existing\": \"none\", \"action\": \"create\"}], \"commits\": [[{\"name\": \"p0\", \"count\": 2, \"evidence\": [\"#p00\", \"#p01\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p1\", \"count\": 2, \"evidence\": [\"#p10\", \"#p11\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p2\", \"count\": 2, \"evidence\": [\"#p20\", \"#p21\"], \"existing\": \"none\", \"action\": \"create\"}], [{\"name\": \"p3\", \"count\": 2, \"evidence\": [\"#p30\", \"#p31\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p4\", \"count\": 2, \"evidence\": [\"#p40\", \"#p41\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p5\", \"count\": 2, \"evidence\": [\"#p50\", \"#p51\"], \"existing\": \"none\", \"action\": \"create\"}], [{\"name\": \"p6\", \"count\": 2, \"evidence\": [\"#p60\", \"#p61\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p7\", \"count\": 2, \"evidence\": [\"#p70\", \"#p71\"], \"existing\": \"none\", \"action\": \"create\"}, {\"name\": \"p8\", \"count\": 2, \"evidence\": [\"#p80\", \"#p81\"], \"existing\": \"none\", \"action\": \"create\"}]]}\n"
+  },
+  {
+    "name": "a_row_with_no_body_is_dropped_from_the_ranking",
+    "store": "# candidates\n\n## 昇格待ち\n\n- #123 (research)\n- テンプレートは validator が要求するフィールドを載せる #200\n\n## 単発\n",
+    "argv": [
+      "[]",
+      "<store-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\"pages\": [], \"candidates\": [{\"name\": \"テンプレートは validator が要求するフィールドを載せる\", \"count\": 1, \"evidence\": [\"#200\"], \"existing\": \"candidate\", \"section\": \"昇格待ち\", \"action\": \"candidate\"}], \"deferred\": [], \"commits\": []}\n"
+  }
+]

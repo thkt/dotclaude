@@ -1,0 +1,126 @@
+[
+  {
+    "name": "glob_match_beats_word_match",
+    "wiki": {
+      "mirror-drift.md": "---\nglobs: [\"**/.ja/**/*\"]\n---\n\n# mirror_drift\n",
+      "mirror-notes.md": "---\nglobs: []\n---\n\n# mirror_notes\n"
+    },
+    "argv": [
+      "<wiki-dir>",
+      "mirror drift",
+      ".ja/skills/x/SKILL.md"
+    ],
+    "exit": 0,
+    "stdout": "{\"matched\": [{\"page\": \"mirror-drift.md\", \"globs\": [\"**/.ja/**/*\"], \"files\": [\".ja/skills/x/SKILL.md\"]}], \"related\": [{\"page\": \"mirror-notes.md\", \"shared\": 1}]}\n"
+  },
+  {
+    "name": "page_with_no_target_file_is_not_matched",
+    "wiki": {
+      "process-rule.md": "---\nglobs: []\n---\n\n# process_rule\n"
+    },
+    "argv": [
+      "<wiki-dir>",
+      "unrelated",
+      "src/x.ts"
+    ],
+    "exit": 0,
+    "stdout": "{\"matched\": [], \"related\": []}\n"
+  },
+  {
+    "name": "matched_is_ordered_by_file_count",
+    "wiki": {
+      "broad.md": "---\nglobs: [\"**/*.ts\"]\n---\n\n# broad\n",
+      "narrow.md": "---\nglobs: [\"**/a.ts\"]\n---\n\n# narrow\n"
+    },
+    "argv": [
+      "<wiki-dir>",
+      "x",
+      "a.ts",
+      "b.ts"
+    ],
+    "exit": 0,
+    "stdout": "{\"matched\": [{\"page\": \"broad.md\", \"globs\": [\"**/*.ts\"], \"files\": [\"a.ts\", \"b.ts\"]}, {\"page\": \"narrow.md\", \"globs\": [\"**/a.ts\"], \"files\": [\"a.ts\"]}], \"related\": []}\n"
+  },
+  {
+    "name": "readme_and_candidates_are_not_rule_pages",
+    "wiki": {
+      "anything.md": "---\nglobs: []\n---\n\n# anything\n",
+      "README.md": "---\nglobs: [\"**/*\"]\n---\n",
+      "_candidates.md": "---\nglobs: [\"**/*\"]\n---\n"
+    },
+    "argv": [
+      "<wiki-dir>",
+      "anything",
+      "x.ts"
+    ],
+    "exit": 0,
+    "stdout": "{\"matched\": [], \"related\": [{\"page\": \"anything.md\", \"shared\": 1}]}\n"
+  },
+  {
+    "name": "scene_declared_by_a_page_is_returned",
+    "wiki": {
+      "plan-rule.md": "---\nglobs: []\nscenes: [\"plan\"]\n---\n\n# plan-rule\n"
+    },
+    "argv": [
+      "<wiki-dir>",
+      "x",
+      "--scene",
+      "plan"
+    ],
+    "exit": 0,
+    "stdout": "{\"matched\": [], \"related\": [], \"scenes\": [\"plan-rule.md\"]}\n"
+  },
+  {
+    "name": "valid_scene_with_no_declaring_page_is_empty",
+    "wiki": {
+      "some-rule.md": "---\nglobs: []\nscenes: []\n---\n\n# some-rule\n"
+    },
+    "argv": [
+      "<wiki-dir>",
+      "x",
+      "--scene",
+      "pr-create"
+    ],
+    "exit": 0,
+    "stdout": "{\"matched\": [], \"related\": [], \"scenes\": []}\n"
+  },
+  {
+    "name": "unknown_scene_argument_exits_2",
+    "wiki": {},
+    "argv": [
+      "<wiki-dir>",
+      "x",
+      "--scene",
+      "not-a-real-scene"
+    ],
+    "exit": 2,
+    "stdout": ""
+  },
+  {
+    "name": "globs_on_the_fifth_frontmatter_line_is_read",
+    "wiki": {
+      "p.md": "---\nscenes: []\ntitle: p\nextra: y\nglobs: [\"**/x.md\"]\n---\n\n# p\n"
+    },
+    "argv": [
+      "<wiki-dir>",
+      "x",
+      "x.md"
+    ],
+    "exit": 0,
+    "stdout": "{\"matched\": [{\"page\": \"p.md\", \"globs\": [\"**/x.md\"], \"files\": [\"x.md\"]}], \"related\": []}\n"
+  },
+  {
+    "name": "no_scene_argument_keeps_two_key_output",
+    "wiki": {
+      "mirror-drift.md": "---\nglobs: [\"**/.ja/**/*\"]\n---\n\n# mirror_drift\n",
+      "mirror-notes.md": "---\nglobs: []\n---\n\n# mirror_notes\n"
+    },
+    "argv": [
+      "<wiki-dir>",
+      "mirror drift",
+      ".ja/skills/x/SKILL.md"
+    ],
+    "exit": 0,
+    "stdout": "{\"matched\": [{\"page\": \"mirror-drift.md\", \"globs\": [\"**/.ja/**/*\"], \"files\": [\".ja/skills/x/SKILL.md\"]}], \"related\": [{\"page\": \"mirror-notes.md\", \"shared\": 1}]}\n"
+  }
+]
