@@ -18,7 +18,7 @@ export const meta = {
 //    critic-audit / critic-evidence を通過済みなので、assert の Challenge は Codex findings のみ。
 // 2. gate は (build, tests, issues) から schema + script の規則で計算し、enhancer の散文から
 //    decode しない。
-// 3. worktree.py / bootstrap.py は決定論 script で、生成と cleanup は $CLAUDE_SESSION_ID から
+// 3. worktree.ts / bootstrap.ts は決定論 script で、生成と cleanup は $CLAUDE_SESSION_ID から
 //    同じ branch / path を導く。
 // 4. adversarial (codex 600s) は Evidence と同時に始め、Challenge / Triage の裏で走らせる。
 //    barrier に入れると最長 stage が全体を塞ぐ。
@@ -248,7 +248,7 @@ const bootstrapPrompt = anchor(
     `1. \`command -v codex\` で codex CLI の有無を確認する。無ければ codex_available: false とし、以降を省いて mode: none で返す。\n` +
     `2. ${OUTCOME_VALIDATOR} .claude/OUTCOME.md を実行する。JSON の state が absent または empty なら outcome: "absent"。それ以外は本文を読み、Behavior / Non-goals / Constraints を outcome に要約する。stub 生成はしない。\n` +
     `3. ${scopeInstr}\n` +
-    `4. mode が none でなければ、${SCRIPTS}/worktree.py "$CLAUDE_SESSION_ID" で isolated worktree を用意し (JSON の status が error なら worktree_ok: false、reason に stderr を写す)、続けて ${SCRIPTS}/bootstrap.py "<worktree path>" を実行して install / build / reason を JSON から写す。diff_kind が uncommitted のときは worktree に uncommitted 変更を反映する (\`git diff HEAD\` を worktree 側で apply し、scope_files 中の untracked ファイルは cp する)。\n` +
+    `4. mode が none でなければ、node ${SCRIPTS}/worktree.ts "$CLAUDE_SESSION_ID" で isolated worktree を用意し (JSON の status が error なら worktree_ok: false、reason に stderr を写す)、続けて node ${SCRIPTS}/bootstrap.ts "<worktree path>" を実行して install / build / reason を JSON から写す。diff_kind が uncommitted のときは worktree に uncommitted 変更を反映する (\`git diff HEAD\` を worktree 側で apply し、scope_files 中の untracked ファイルは cp する)。\n` +
     `コードの review や修正はしない。この段階の仕事は環境の準備と事実の記録だけ。`,
 );
 const boot = (await agent(bootstrapPrompt, {
@@ -676,7 +676,7 @@ try {
   phase("Cleanup");
   await agent(
     anchor(
-      `assert の Cleanup 段階を担当する。${SCRIPTS}/worktree.py --cleanup "$CLAUDE_SESSION_ID" で assert 用 worktree を撤去する。失敗しても warning として報告するだけでよい (best-effort)。他のファイルに触れない。`,
+      `assert の Cleanup 段階を担当する。node ${SCRIPTS}/worktree.ts --cleanup "$CLAUDE_SESSION_ID" で assert 用 worktree を撤去する。失敗しても warning として報告するだけでよい (best-effort)。他のファイルに触れない。`,
     ),
     {
       agentType: "general-purpose",
