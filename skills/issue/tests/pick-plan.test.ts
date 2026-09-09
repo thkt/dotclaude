@@ -1,20 +1,21 @@
 /// <reference types="node" />
-// Behavior tests for skills/issue/scripts/pick-plan.ts, the TypeScript port of pick-plan.py.
-// T-190 replays the frozen fixture in fixtures/pick-plan-cases.json, produced by running the
-// Python script itself before it was retired (U-001), and compares the port's exit code and
-// stdout against it case by case; the fixture's <draft-path>/<draft-dir> placeholders are text
-// substituted for a temp directory this run seeds with the same drafts each case names. T-191
-// exercises slugify and rank directly. The five tests below them are the ones pick-plan.test.js
-// carried before this port: spawnSync("python3", ...) is swapped for runCli against the .ts
-// script, and "both copies of the script can be run by path" is left targeting the .py files
-// via python3 -- .ja/pick-plan.ts does not exist yet, and U-005 rewrites that one test to a
-// Usage-line comparison once it does.
+// Behavior tests for skills/issue/scripts/pick-plan.ts, the TypeScript port of the retired
+// Python script. T-190 replays the frozen fixture in fixtures/pick-plan-cases.json, produced by
+// running the Python script itself before it was retired (U-001), and compares the port's exit
+// code and stdout against it case by case; the fixture's <draft-path>/<draft-dir> placeholders
+// are text substituted for a temp directory this run seeds with the same drafts each case
+// names. T-191 exercises slugify and rank directly. The five tests below them are the ones
+// pick-plan.test.js carried before this port, driven through runCli against the .ts script
+// instead of spawnSync("python3", ...). "both copies of the script carry the executable bit
+// and print the same Usage line" compares the tracked en/ja .ts files directly.
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { trackedEntries } from "../../../hooks/_lib/shebang_scope.ts";
 import {
   runCli,
   type CliRun,
@@ -23,7 +24,6 @@ import {
 import { rank, slugify } from "../scripts/pick-plan.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(HERE, "..", "..", "..");
 const SCRIPT = join(HERE, "..", "scripts", "pick-plan.ts");
 const HOME = join(tmpdir(), "pick-plan-home");
 const FIXTURES = JSON.parse(
@@ -252,14 +252,23 @@ test("the bracketed type does not enter the score", () =>
   ));
 
 // SKILL.md invokes the script by its path and allowed-tools permits exactly that shape. Without
-// the executable bit the call fails, and prefixing python3 to work around it no longer matches
-// the permission. Both language copies ship the bit because either tree can be the loaded skill.
-// Kept against the .py files (not the new .ts port) until U-005 rewrites this to compare the two
-// languages' Usage lines instead: .ja/pick-plan.ts does not exist yet at this Green step.
-test("both copies of the script can be run by path", () => {
-  for (const prefix of ["", ".ja"]) {
-    const path = join(ROOT, prefix, "skills", "issue", "scripts", "pick-plan.py");
-    const mode = statSync(path).mode;
-    assert.ok(mode & 0o111, `${prefix || "en"}: the script carries the executable bit`);
-  }
+// the executable bit the call fails, and prefixing node to work around it no longer matches the
+// permission. Both language copies ship the bit because either tree can be the loaded skill,
+// and running each directly (no argument) has to fail the same way: the same Usage line, the
+// same exit 1. trackedEntries reads the git index mode the way
+// hooks/_lib/tests/shebang-scope.test.ts does, so a copy committed without the bit fails here
+// rather than only at skill-invocation time.
+test("both copies of the script carry the executable bit and print the same Usage line", () => {
+  const entries = trackedEntries([
+    "skills/issue/scripts/pick-plan.ts",
+    ".ja/skills/issue/scripts/pick-plan.ts",
+  ]);
+  assert.equal(entries.length, 2, "both copies are tracked");
+  const usage = entries.map(([mode, absolutePath]) => {
+    assert.equal(mode, "100755", `${absolutePath}: carries the executable bit`);
+    const result = spawnSync(absolutePath, [], { encoding: "utf8" });
+    assert.equal(result.status, 1, `${absolutePath}: exits 1 with no argument`);
+    return result.stderr;
+  });
+  assert.equal(usage[0], usage[1], "both copies print the same Usage line");
 });

@@ -1,10 +1,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import { FLOOR, contentOnlyReport } from "../scripts/validate-issue-body.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const PICK_PLAN_SCRIPT = join(root, "skills", "issue", "scripts", "pick-plan.ts");
+const VALIDATE_SCRIPT = join(root, "skills", "issue", "scripts", "validate-issue-body.ts");
+const HOME = join(tmpdir(), "skill-contract-home");
 const targets = {
   ja: join(root, ".ja", "skills", "issue", "templates", "feature.md"),
   en: join(root, "skills", "issue", "templates", "feature.md"),
@@ -264,8 +270,8 @@ test("the plan draft is selected in one place", () => {
       0,
       `${lang}: SKILL.md does not restate where the drafts live`,
     );
-    assert.match(ref, /scripts\/pick-plan\.py/, `${lang}: the reference calls the one script`);
-    assert.match(skill, /scripts\/pick-plan\.py/, `${lang}: the transfer calls the same script`);
+    assert.match(ref, /scripts\/pick-plan\.ts/, `${lang}: the reference calls the one script`);
+    assert.match(skill, /scripts\/pick-plan\.ts/, `${lang}: the transfer calls the same script`);
     assert.match(
       phase2(skill),
       lang === "ja" ? /照合する下書きの選択/ : /which draft to match against/,
@@ -373,7 +379,9 @@ test("the prose review settles guesses after the body is drafted", () => {
 
 // Picking the draft reads a directory and returns file contents, which the skill's own tools
 // cannot do: Read errors on a directory and ugrep reports names without order. A script does it,
-// so the skill needs permission to run one, and the script has to hand back what it chose.
+// so the skill needs permission to run one, and the script has to hand back what it chose. The
+// keys returned come from actually running the .ts port rather than scraping the source, the
+// same swap validate-issue-body.test.ts's floorFor comment describes for FLOOR below.
 test("the selection rule stays within the tools the skill is allowed", () => {
   for (const [lang, path] of Object.entries(skills)) {
     assert.match(
@@ -382,10 +390,13 @@ test("the selection rule stays within the tools the skill is allowed", () => {
       `${lang}: running a bundled script is allowed`,
     );
   }
-  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-  const src = readFileSync(join(root, "skills", "issue", "scripts", "pick-plan.py"), "utf8");
+  // A title unlikely to score against any real draft under .claude/workspace/planning, so the
+  // result stays deterministic regardless of what plans exist in this checkout.
+  const res = runCli(PICK_PLAN_SCRIPT, HOME, "", ["zzz-no-such-draft-scores-anything-here"]);
+  assert.equal(res.status, 0, "the script runs to completion");
+  const out = JSON.parse(res.stdout);
   for (const key of ["path", "plan", "backlog", "candidates", "ambiguous"])
-    assert.match(src, new RegExp(`"${key}"`), `the script returns ${key}`);
+    assert.ok(key in out, `the script returns ${key}`);
 });
 
 // Independence alone sends a set that all waits on one unbuilt thing into separate issues, and
@@ -401,22 +412,13 @@ test("the split question carries whether each criterion can be started", () => {
 
 // The floor lives in three places: the validator enforces it, the body names it so the writer
 // knows before drafting, and the skill's own template already carries those sections as required.
-// Changing one leaves the writer drafting against a floor the validator no longer holds.
+// Changing one leaves the writer drafting against a floor the validator no longer holds. FLOOR
+// comes straight from the export, replacing the source-regex read the retired .py version used.
 test("the floor matches between the validator, the body, and the templates", () => {
-  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-  const src = readFileSync(
-    join(root, "skills", "issue", "scripts", "validate-issue-body.py"),
-    "utf8",
-  );
-  const block = src.match(/^FLOOR = \{([\s\S]*?)^\}/m)?.[1];
-  assert.ok(block, "the validator declares a floor");
-  const floor = {};
-  for (const row of block.matchAll(/"(\w+)":\s*\(([^)]*)\)/g))
-    floor[row[1]] = [...row[2].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-  assert.ok(Object.keys(floor).length >= 2, `the floor covers the types (${Object.keys(floor)})`);
+  assert.ok(Object.keys(FLOOR).length >= 2, `the floor covers the types (${Object.keys(FLOOR)})`);
   // The prose stating the floor sits in the reference both /issue and /slice read, so that is
   // where the name has to appear rather than in either skill body.
-  for (const [type, names] of Object.entries(floor)) {
+  for (const [type, names] of Object.entries(FLOOR)) {
     for (const name of names) {
       for (const lang of Object.keys(skills))
         assert.match(
@@ -464,7 +466,6 @@ test("a stated approach routes to /think rather than into the body", () => {
     assert.match(step, skipOnly, `${lang}: the rule states what to skip, not what to catch`);
   }
   for (const lang of ["ja", "en"]) {
-    const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
     const dir = lang === "ja" ? [root, ".ja"] : [root];
     const doc = readFileSync(join(...dir, "skills", "issue", "templates", "feature.md"), "utf8");
     assert.match(doc, /critic-design/, `${lang}: the Approach section names what has to clear it`);
@@ -473,14 +474,28 @@ test("a stated approach routes to /think rather than into the body", () => {
 
 // Updating a filed issue validates through the --content-only flag alone. With the flag named in one place
 // and implemented in the other, either side can lose it while every other test still passes, and
-// the route goes back to writing an unvalidated body.
+// the route goes back to writing an unvalidated body. contentOnlyReport is imported directly
+// rather than grepped for out of the retired .py source, and the CLI itself is run once to
+// confirm the flag actually reaches that branch.
 test("the update route's validation flag exists in both the instruction and the script", () => {
-  const script = readFileSync(
-    join(root, "skills", "issue", "scripts", "validate-issue-body.py"),
-    "utf8",
+  assert.equal(
+    typeof contentOnlyReport,
+    "function",
+    "the validator exports the branch the flag reaches",
   );
-  assert.match(script, /"--content-only"/, "the validator carries the flag");
-  assert.match(script, /^def content_only_report\(/m, "the flag reaches its own branch");
+  const dir = mkdtempSync(join(tmpdir(), "skill-contract-content-only-"));
+  try {
+    const bodyPath = join(dir, "body.md");
+    writeFileSync(bodyPath, "## Anything\n\nSome text.\n", "utf8");
+    const res = runCli(VALIDATE_SCRIPT, HOME, "", ["--content-only", bodyPath]);
+    const out = JSON.parse(res.stdout);
+    assert.ok(
+      "errors" in out && "warnings" in out && "checks" in out,
+      "the validator carries the flag and returns its report",
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
   for (const [lang, path] of Object.entries(skills)) {
     const doc = readFileSync(path, "utf8");
     const step = doc.split(/^## Phase 4/m)[1].split(/^###/m)[0];
@@ -500,7 +515,7 @@ test("Phase 4 validates before it asks for confirmation", () => {
       .split(/^## Phase 4/m)[1]
       .split(/^###/m)[0];
     const steps = [...phase4.matchAll(/^\d+\. .*/gm)].map((m) => m[0]);
-    const validate = steps.findIndex((step) => step.includes("validate-issue-body.py"));
+    const validate = steps.findIndex((step) => step.includes("validate-issue-body.ts"));
     const confirm = steps.findIndex((step) => /AskUserQuestion/.test(step));
     assert.ok(validate >= 0, `${lang}: a step runs the validator`);
     assert.ok(confirm >= 0, `${lang}: a step asks for confirmation`);

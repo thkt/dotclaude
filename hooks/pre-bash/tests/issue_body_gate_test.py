@@ -12,6 +12,7 @@ Run: python3 hooks/pre-bash/tests/issue_body_gate_test.py
 """
 
 import json
+import os
 import re
 import shutil
 import sys
@@ -144,11 +145,16 @@ class TestIssueBodyGate(unittest.TestCase):
     # separators without spaces: the hook's fast-exit greps the raw payload for the literal
     # `"tool_name":"Bash"`, which the default json.dumps spacing misses. Claude Code sends the
     # compact form, so this is what the hook actually receives.
-    def run_hook(self, command: str, hook: Path | None = None) -> tuple[object, str, int]:
+    def run_hook(
+        self,
+        command: str,
+        hook: Path | None = None,
+        env: dict[str, str] | None = None,
+    ) -> tuple[object, str, int]:
         payload = json.dumps(
             {"tool_name": "Bash", "tool_input": {"command": command}}, separators=(",", ":")
         )
-        result = hook_harness.checked(hook if hook else HOOK, payload)
+        result = hook_harness.checked(hook if hook else HOOK, payload, env)
         stdout = result.stdout or ""
         try:
             out = json.loads(stdout) if stdout.strip() else None
@@ -354,6 +360,14 @@ class TestIssueBodyGate(unittest.TestCase):
             + f"--body-file {path}",
             hook=broken,
         )
+        self.assertEqual(self.decision_of(out), "deny")
+
+    def test_no_bun_or_node_interpreter_denies(self) -> None:
+        """An unreachable CLAUDE_BUN_BIN plus an empty PATH deny even a body following the
+        skeleton, since neither the override nor a PATH-found node can run the validator."""
+        path = self.with_body_file(VALID_BUG_BODY)
+        env = dict(os.environ, CLAUDE_BUN_BIN="/nonexistent", PATH="")
+        out, _, _ = self.run_hook(self.bug_issue_cmd(path), env=env)
         self.assertEqual(self.decision_of(out), "deny")
 
     def test_repository_issue_form_becomes_the_skeleton(self) -> None:
