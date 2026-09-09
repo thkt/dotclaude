@@ -1,0 +1,177 @@
+[
+  {
+    "name": "numbers-continue-from-existing-0001-0002",
+    "setup": {
+      "archive/0001-foo.md": "# Some Existing Decision\n\nbody\n",
+      "archive/0002-bar.md": "# Another Decision Here\n\nbody\n"
+    },
+    "argv": [
+      "Choose A New Cache Layer"
+    ],
+    "env": {
+      "DR_DIR": "archive"
+    },
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"ok\",\n  \"number\": \"0003\",\n  \"filename\": \"0003-choose-a-new-cache-layer.md\",\n  \"slug\": \"choose-a-new-cache-layer\",\n  \"date\": \"<date>\",\n  \"dr_dir\": \"<dr-dir>\",\n  \"similar_drs\": []\n}\n",
+    "files_after": {
+      "archive/0001-foo.md": "# Some Existing Decision\n\nbody\n",
+      "archive/0002-bar.md": "# Another Decision Here\n\nbody\n"
+    }
+  },
+  {
+    "name": "slug-normalizes-spaces-symbols-and-repeated-dashes",
+    "setup": {},
+    "argv": [
+      "Adopt  Redis!! Cache--Layer Now"
+    ],
+    "env": {
+      "DR_DIR": "archive"
+    },
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"ok\",\n  \"number\": \"0001\",\n  \"filename\": \"0001-adopt-redis-cache-layer-now.md\",\n  \"slug\": \"adopt-redis-cache-layer-now\",\n  \"date\": \"<date>\",\n  \"dr_dir\": \"<dr-dir>\",\n  \"similar_drs\": []\n}\n",
+    "files_after": {}
+  },
+  {
+    "name": "similarity-at-or-above-default-threshold-is-flagged",
+    "setup": {
+      "archive/0001-existing.md": "# Use Redis For Session Store\n\nbody\n"
+    },
+    "argv": [
+      "Use Redis For Session Cache"
+    ],
+    "env": {
+      "DR_DIR": "archive"
+    },
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"ok\",\n  \"number\": \"0002\",\n  \"filename\": \"0002-use-redis-for-session-cache.md\",\n  \"slug\": \"use-redis-for-session-cache\",\n  \"date\": \"<date>\",\n  \"dr_dir\": \"<dr-dir>\",\n  \"similar_drs\": [\n    {\n      \"file\": \"0001-existing.md\",\n      \"similarity\": \"0.80\",\n      \"title\": \"Use Redis For Session Store\"\n    }\n  ]\n}\n",
+    "files_after": {
+      "archive/0001-existing.md": "# Use Redis For Session Store\n\nbody\n"
+    }
+  },
+  {
+    "name": "similarity-below-default-threshold-is-hidden",
+    "setup": {
+      "archive/0001-existing.md": "# Use Redis For Session Store\n\nbody\n",
+      "archive/0002-other.md": "# Use Redis For Order Processing\n\nbody\n"
+    },
+    "argv": [
+      "Use Redis For Session Cache"
+    ],
+    "env": {
+      "DR_DIR": "archive"
+    },
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"ok\",\n  \"number\": \"0003\",\n  \"filename\": \"0003-use-redis-for-session-cache.md\",\n  \"slug\": \"use-redis-for-session-cache\",\n  \"date\": \"<date>\",\n  \"dr_dir\": \"<dr-dir>\",\n  \"similar_drs\": [\n    {\n      \"file\": \"0001-existing.md\",\n      \"similarity\": \"0.80\",\n      \"title\": \"Use Redis For Session Store\"\n    }\n  ]\n}\n",
+    "files_after": {
+      "archive/0001-existing.md": "# Use Redis For Session Store\n\nbody\n",
+      "archive/0002-other.md": "# Use Redis For Order Processing\n\nbody\n"
+    }
+  },
+  {
+    "name": "duplicate-threshold-0.5-reveals-the-hidden-match",
+    "setup": {
+      "archive/0001-existing.md": "# Use Redis For Session Store\n\nbody\n",
+      "archive/0002-other.md": "# Use Redis For Order Processing\n\nbody\n"
+    },
+    "argv": [
+      "Use Redis For Session Cache"
+    ],
+    "env": {
+      "DR_DIR": "archive",
+      "DUPLICATE_THRESHOLD": "0.5"
+    },
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"ok\",\n  \"number\": \"0003\",\n  \"filename\": \"0003-use-redis-for-session-cache.md\",\n  \"slug\": \"use-redis-for-session-cache\",\n  \"date\": \"<date>\",\n  \"dr_dir\": \"<dr-dir>\",\n  \"similar_drs\": [\n    {\n      \"file\": \"0001-existing.md\",\n      \"similarity\": \"0.80\",\n      \"title\": \"Use Redis For Session Store\"\n    },\n    {\n      \"file\": \"0002-other.md\",\n      \"similarity\": \"0.60\",\n      \"title\": \"Use Redis For Order Processing\"\n    }\n  ]\n}\n",
+    "files_after": {
+      "archive/0001-existing.md": "# Use Redis For Session Store\n\nbody\n",
+      "archive/0002-other.md": "# Use Redis For Order Processing\n\nbody\n"
+    }
+  },
+  {
+    "name": "duplicate-threshold-0.5-exact-tie-rounds-to-0.62",
+    "setup": {
+      "archive/0001-existing.md": "# Use Redis For Session Cache In The Gateway\n\nbody\n"
+    },
+    "argv": [
+      "Use Redis For Session Cache Near Web Workers"
+    ],
+    "env": {
+      "DR_DIR": "archive",
+      "DUPLICATE_THRESHOLD": "0.5"
+    },
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"ok\",\n  \"number\": \"0002\",\n  \"filename\": \"0002-use-redis-for-session-cache-near-web-workers.md\",\n  \"slug\": \"use-redis-for-session-cache-near-web-workers\",\n  \"date\": \"<date>\",\n  \"dr_dir\": \"<dr-dir>\",\n  \"similar_drs\": [\n    {\n      \"file\": \"0001-existing.md\",\n      \"similarity\": \"0.62\",\n      \"title\": \"Use Redis For Session Cache In The Gateway\"\n    }\n  ]\n}\n",
+    "files_after": {
+      "archive/0001-existing.md": "# Use Redis For Session Cache In The Gateway\n\nbody\n"
+    }
+  },
+  {
+    "name": "title-under-5-chars-errors",
+    "setup": {},
+    "argv": [
+      "Abcd"
+    ],
+    "env": {
+      "DR_DIR": "archive"
+    },
+    "exit": 1,
+    "stdout": "",
+    "files_after": {}
+  },
+  {
+    "name": "title-over-64-chars-errors",
+    "setup": {},
+    "argv": [
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    ],
+    "env": {
+      "DR_DIR": "archive"
+    },
+    "exit": 1,
+    "stdout": "",
+    "files_after": {}
+  },
+  {
+    "name": "title-with-forbidden-characters-errors",
+    "setup": {},
+    "argv": [
+      "Bad/Title:Here"
+    ],
+    "env": {
+      "DR_DIR": "archive"
+    },
+    "exit": 1,
+    "stdout": "",
+    "files_after": {}
+  },
+  {
+    "name": "dr-dir-containing-skill-md-errors",
+    "setup": {
+      "skilldir/SKILL.md": ""
+    },
+    "argv": [
+      "Valid Title Here"
+    ],
+    "env": {
+      "DR_DIR": "skilldir"
+    },
+    "exit": 1,
+    "stdout": "",
+    "files_after": {
+      "skilldir/SKILL.md": ""
+    }
+  },
+  {
+    "name": "nonexistent-dr-dir-is-created",
+    "setup": {},
+    "argv": [
+      "Valid Title Here"
+    ],
+    "env": {
+      "DR_DIR": "brand-new-archive"
+    },
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"ok\",\n  \"number\": \"0001\",\n  \"filename\": \"0001-valid-title-here.md\",\n  \"slug\": \"valid-title-here\",\n  \"date\": \"<date>\",\n  \"dr_dir\": \"<dr-dir>\",\n  \"similar_drs\": []\n}\n",
+    "files_after": {}
+  }
+]
