@@ -1,0 +1,133 @@
+[
+  {
+    "name": "four-required-sections-frontmatter-and-two-options-exit-0",
+    "setup": {
+      "full-valid.md": "---\nstatus: \"accepted\"\ndate: \"2024-01-01\"\n---\n# Full Valid Decision Record\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed via review.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    },
+    "argv": [
+      "full-valid.md"
+    ],
+    "env": {},
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"full-valid.md\",\n  \"errors\": [],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Context and Problem Statement=ok\",\n    \"section:Considered Options=ok\",\n    \"section:Decision Outcome=ok\",\n    \"section:Confirmation=ok\",\n    \"section:Reassessment Triggers=ok\",\n    \"frontmatter=present\",\n    \"metadata:status=ok [status: \\\"accepted\\\"]\",\n    \"metadata:date=ok [date: \\\"2024-01-01\\\"]\",\n    \"options_count=2\",\n    \"title_heading=ok\",\n    \"markdown_lint=skipped (markdownlint-cli2 not installed)\"\n  ]\n}\n",
+    "files_after": {
+      "full-valid.md": "---\nstatus: \"accepted\"\ndate: \"2024-01-01\"\n---\n# Full Valid Decision Record\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed via review.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    }
+  },
+  {
+    "name": "missing-required-section-errors",
+    "setup": {
+      "missing-confirmation.md": "---\nstatus: \"accepted\"\ndate: \"2024-01-01\"\n---\n# Missing Confirmation Section\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    },
+    "argv": [
+      "missing-confirmation.md"
+    ],
+    "env": {},
+    "exit": 1,
+    "stdout": "{\n  \"file\": \"missing-confirmation.md\",\n  \"errors\": [\n    \"missing_section:Confirmation\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Context and Problem Statement=ok\",\n    \"section:Considered Options=ok\",\n    \"section:Decision Outcome=ok\",\n    \"section:Reassessment Triggers=ok\",\n    \"frontmatter=present\",\n    \"metadata:status=ok [status: \\\"accepted\\\"]\",\n    \"metadata:date=ok [date: \\\"2024-01-01\\\"]\",\n    \"options_count=2\",\n    \"title_heading=ok\",\n    \"markdown_lint=skipped (markdownlint-cli2 not installed)\"\n  ]\n}\n",
+    "files_after": {
+      "missing-confirmation.md": "---\nstatus: \"accepted\"\ndate: \"2024-01-01\"\n---\n# Missing Confirmation Section\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    }
+  },
+  {
+    "name": "capitalized-status-value-errors",
+    "setup": {
+      "invalid-status.md": "---\nstatus: \"Accepted\"\ndate: \"2024-01-01\"\n---\n# Status Case Decision\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    },
+    "argv": [
+      "invalid-status.md"
+    ],
+    "env": {},
+    "exit": 1,
+    "stdout": "{\n  \"file\": \"invalid-status.md\",\n  \"errors\": [\n    \"invalid_status:Accepted\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Context and Problem Statement=ok\",\n    \"section:Considered Options=ok\",\n    \"section:Decision Outcome=ok\",\n    \"section:Confirmation=ok\",\n    \"section:Reassessment Triggers=ok\",\n    \"frontmatter=present\",\n    \"metadata:status=ok [status: \\\"Accepted\\\"]\",\n    \"metadata:date=ok [date: \\\"2024-01-01\\\"]\",\n    \"options_count=2\",\n    \"title_heading=ok\",\n    \"markdown_lint=skipped (markdownlint-cli2 not installed)\"\n  ]\n}\n",
+    "files_after": {
+      "invalid-status.md": "---\nstatus: \"Accepted\"\ndate: \"2024-01-01\"\n---\n# Status Case Decision\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    }
+  },
+  {
+    "name": "superseded-by-dr-number-status-passes",
+    "setup": {
+      "superseded.md": "---\nstatus: \"superseded by DR-0001\"\ndate: \"2024-01-01\"\n---\n# Status Case Decision\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    },
+    "argv": [
+      "superseded.md"
+    ],
+    "env": {},
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"superseded.md\",\n  \"errors\": [],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Context and Problem Statement=ok\",\n    \"section:Considered Options=ok\",\n    \"section:Decision Outcome=ok\",\n    \"section:Confirmation=ok\",\n    \"section:Reassessment Triggers=ok\",\n    \"frontmatter=present\",\n    \"metadata:status=ok [status: \\\"superseded by DR-0001\\\"]\",\n    \"metadata:date=ok [date: \\\"2024-01-01\\\"]\",\n    \"options_count=2\",\n    \"title_heading=ok\",\n    \"markdown_lint=skipped (markdownlint-cli2 not installed)\"\n  ]\n}\n",
+    "files_after": {
+      "superseded.md": "---\nstatus: \"superseded by DR-0001\"\ndate: \"2024-01-01\"\n---\n# Status Case Decision\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    }
+  },
+  {
+    "name": "zero-options-errors",
+    "setup": {
+      "options-zero.md": "---\nstatus: \"proposed\"\ndate: \"2024-01-01\"\n---\n# Options Zero Decision\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\nNothing listed here, just prose.\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    },
+    "argv": [
+      "options-zero.md"
+    ],
+    "env": {},
+    "exit": 1,
+    "stdout": "{\n  \"file\": \"options-zero.md\",\n  \"errors\": [\n    \"options_count=0\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Context and Problem Statement=ok\",\n    \"section:Considered Options=ok\",\n    \"section:Decision Outcome=ok\",\n    \"section:Confirmation=ok\",\n    \"section:Reassessment Triggers=ok\",\n    \"frontmatter=present\",\n    \"metadata:status=ok [status: \\\"proposed\\\"]\",\n    \"metadata:date=ok [date: \\\"2024-01-01\\\"]\",\n    \"title_heading=ok\",\n    \"markdown_lint=skipped (markdownlint-cli2 not installed)\"\n  ]\n}\n",
+    "files_after": {
+      "options-zero.md": "---\nstatus: \"proposed\"\ndate: \"2024-01-01\"\n---\n# Options Zero Decision\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\nNothing listed here, just prose.\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    }
+  },
+  {
+    "name": "one-option-warns",
+    "setup": {
+      "options-one.md": "---\nstatus: \"proposed\"\ndate: \"2024-01-01\"\n---\n# Options One Decision\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A only\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    },
+    "argv": [
+      "options-one.md"
+    ],
+    "env": {},
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"options-one.md\",\n  \"errors\": [],\n  \"warnings\": [\n    \"options_count=1 (recommended: 2+)\"\n  ],\n  \"checks\": [\n    \"section:Context and Problem Statement=ok\",\n    \"section:Considered Options=ok\",\n    \"section:Decision Outcome=ok\",\n    \"section:Confirmation=ok\",\n    \"section:Reassessment Triggers=ok\",\n    \"frontmatter=present\",\n    \"metadata:status=ok [status: \\\"proposed\\\"]\",\n    \"metadata:date=ok [date: \\\"2024-01-01\\\"]\",\n    \"title_heading=ok\",\n    \"markdown_lint=skipped (markdownlint-cli2 not installed)\"\n  ]\n}\n",
+    "files_after": {
+      "options-one.md": "---\nstatus: \"proposed\"\ndate: \"2024-01-01\"\n---\n# Options One Decision\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A only\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    }
+  },
+  {
+    "name": "missing-frontmatter-warns",
+    "setup": {
+      "no-frontmatter.md": "# No Frontmatter Decision\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    },
+    "argv": [
+      "no-frontmatter.md"
+    ],
+    "env": {},
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"no-frontmatter.md\",\n  \"errors\": [],\n  \"warnings\": [\n    \"missing_frontmatter (MADR v4 supports optional YAML frontmatter for status/date/decision-makers)\"\n  ],\n  \"checks\": [\n    \"section:Context and Problem Statement=ok\",\n    \"section:Considered Options=ok\",\n    \"section:Decision Outcome=ok\",\n    \"section:Confirmation=ok\",\n    \"section:Reassessment Triggers=ok\",\n    \"options_count=2\",\n    \"title_heading=ok\",\n    \"markdown_lint=skipped (markdownlint-cli2 not installed)\"\n  ]\n}\n",
+    "files_after": {
+      "no-frontmatter.md": "# No Frontmatter Decision\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed.\n\n## Reassessment Triggers\n\nRevisit if load doubles.\n"
+    }
+  },
+  {
+    "name": "missing-reassessment-triggers-warns",
+    "setup": {
+      "no-reassessment.md": "---\nstatus: \"accepted\"\ndate: \"2024-01-01\"\n---\n# Full Valid Decision Record\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed via review.\n"
+    },
+    "argv": [
+      "no-reassessment.md"
+    ],
+    "env": {},
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"no-reassessment.md\",\n  \"errors\": [],\n  \"warnings\": [\n    \"missing_section:Reassessment Triggers (recommended)\"\n  ],\n  \"checks\": [\n    \"section:Context and Problem Statement=ok\",\n    \"section:Considered Options=ok\",\n    \"section:Decision Outcome=ok\",\n    \"section:Confirmation=ok\",\n    \"frontmatter=present\",\n    \"metadata:status=ok [status: \\\"accepted\\\"]\",\n    \"metadata:date=ok [date: \\\"2024-01-01\\\"]\",\n    \"options_count=2\",\n    \"title_heading=ok\",\n    \"markdown_lint=skipped (markdownlint-cli2 not installed)\"\n  ]\n}\n",
+    "files_after": {
+      "no-reassessment.md": "---\nstatus: \"accepted\"\ndate: \"2024-01-01\"\n---\n# Full Valid Decision Record\n\n## Context and Problem Statement\n\nSome context.\n\n## Considered Options\n\n- Option A\n- Option B\n\n## Decision Outcome\n\nChose Option A.\n\n### Confirmation\n\nConfirmed via review.\n"
+    }
+  },
+  {
+    "name": "nonexistent-file-errors",
+    "setup": {},
+    "argv": [
+      "does-not-exist.md"
+    ],
+    "env": {},
+    "exit": 1,
+    "stdout": "",
+    "files_after": {}
+  }
+]

@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const decisions = join(dirname(fileURLToPath(import.meta.url)), "..", "docs", "decisions");
 
-// validate-dr.py accepts `superseded by DR-NNNN` as a pointer to one decision, and update-index.py
+// validate-dr.ts accepts `superseded by DR-NNNN` as a pointer to one decision, and update-index.ts
 // prints the number as the link text. Two files sharing a number make that pointer resolve to
 // either of them, and the generated index shows the number twice with different titles.
 test("no two decision records share a number", async () => {
