@@ -6,13 +6,13 @@
 // lists; `契約` and `要求` are tables. A table's header row and its `---` separator row are
 // formatting, not a claim, so they are excluded.
 //
-// TypeScript port of skills/scribe/scripts/structure_page.py, mirroring
+// TypeScript port of the retired Python original, mirroring
 // skills/scribe/scripts/find_wiki_rule.ts's own header. Carries SECTIONS / findStructurePages /
 // readClaims, in node:* only. Not a CLI: nothing runs it from a shell (the Python original
 // carries no argv handling either), so it has neither a shebang nor an
 // isMainModule(import.meta.url) entry point, and its git index mode stays 100644.
 //
-// Contract: skills/scribe/scripts/structure_page.py's own behavior. Exercised by
+// Contract: the retired Python original's own behavior. Exercised by
 // skills/scribe/tests/structure-page.test.ts.
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";

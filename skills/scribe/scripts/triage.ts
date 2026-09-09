@@ -9,12 +9,12 @@
 // stdout: JSON { pages, candidates, deferred, commits }
 // exit: 0, or 2 when an argument is missing
 //
-// TypeScript port of skills/scribe/scripts/triage.py, mirroring skills/scribe/scripts/find_wiki_rule.ts's
+// TypeScript port of the retired Python original, mirroring skills/scribe/scripts/find_wiki_rule.ts's
 // own header and its isMainModule(import.meta.url) entry point. Carries EVIDENCE_THRESHOLD /
 // PAGE_CAP / COMMIT_CAP / ACTION / STORE_SECTIONS / EVIDENCE / triage / readStore / merge / main,
 // in node:* only.
 //
-// Contract: skills/scribe/scripts/triage.py's own behavior, pinned by the fixture
+// Contract: the retired Python original's own behavior, pinned by the fixture
 // skills/scribe/tests/fixtures/triage-cases.json (U-001). Exercised by
 // skills/scribe/tests/triage.test.ts.
 import { existsSync, readFileSync, statSync } from "node:fs";

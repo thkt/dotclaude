@@ -5,13 +5,13 @@
 // `内容` → `境界` → `契約` → `要求` → `参照コード` → `由来`。1 番目・5 番目・6 番目は箇条書き、
 // `契約` と `要求` は表。表のヘッダ行とその `---` 区切り行は書式であって claim ではないので除く。
 //
-// skills/scribe/scripts/structure_page.py の TypeScript 移植。
+// 退役した Python 版の TypeScript 移植。
 // skills/scribe/scripts/find_wiki_rule.ts の header に倣う。SECTIONS / findStructurePages /
 // readClaims を node:* のみで運ぶ。CLI ではない: シェルから起動されることはなく (Python 版も
 // argv 処理を持たない)、shebang も isMainModule(import.meta.url) エントリポイントも持たず、
 // git index の mode は 100644 のまま。
 //
-// Contract: skills/scribe/scripts/structure_page.py 自身の挙動。
+// Contract: 退役した Python 版自身の挙動。
 // skills/scribe/tests/structure-page.test.ts が検証する。
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";

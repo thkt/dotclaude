@@ -156,6 +156,17 @@ class TestWikiScene(unittest.TestCase):
         _, stdout = self.run_hook(f"cd {directory} && gh issue close 42")
         self.assertEqual(stdout.strip(), "")
 
+    def test_an_unresolvable_runtime_yields_no_output_and_exits_0(self) -> None:
+        """An unresolvable CLAUDE_BUN_BIN with no node on PATH exits 0 with no output: the
+        hook is advisory, so a scene with no way to run find_wiki_rule.ts reads as no page
+        rather than a hook error."""
+        directory = self.with_wiki()
+        _, stdout = self.run_hook(
+            f"cd {directory} && gh issue close 42",
+            env={"CLAUDE_BUN_BIN": "/nonexistent", "PATH": ""},
+        )
+        self.assertEqual(stdout.strip(), "")
+
 
 if __name__ == "__main__":
     _ = unittest.main(verbosity=2)

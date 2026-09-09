@@ -4,7 +4,7 @@ registration in settings.json.
 wiki_scene_test.py already pins the hook's own behaviour against fixture pages under a
 temporary docs/wiki/. This file instead runs the hook against *this repository's* real
 docs/wiki/ (T-013), and reads the real settings.json (T-014), so a page whose `scenes:`
-frontmatter never reached find_wiki_rule.py, or a hook that runs standalone but was never
+frontmatter never reached find_wiki_rule.ts, or a hook that runs standalone but was never
 wired into PreToolUse, fails here even though every piece is green on its own.
 
 Run: python3 hooks/pre-bash/tests/wiki_scene_seam_test.py

@@ -276,7 +276,7 @@ test("think finds the wiki rules through scribe's finder and is granted that pat
     const doc = read(path);
     assert.match(
       doc,
-      /\$\{CLAUDE_SKILL_DIR\}\/\.\.\/scribe\/scripts\/find_wiki_rule\.py/,
+      /\$\{CLAUDE_SKILL_DIR\}\/\.\.\/scribe\/scripts\/find_wiki_rule\.ts/,
       `${lang}: Phase 3 runs the finder`,
     );
     const grant = doc.match(/^allowed-tools:.*$/m)?.[0] ?? "";
@@ -287,7 +287,7 @@ test("think finds the wiki rules through scribe's finder and is granted that pat
     );
   }
   assert.ok(
-    existsSync(join(root, "skills", "scribe", "scripts", "find_wiki_rule.py")),
+    existsSync(join(root, "skills", "scribe", "scripts", "find_wiki_rule.ts")),
     "the finder exists under scribe",
   );
 });
@@ -523,11 +523,11 @@ test("think reads the wiki rules before the approaches are generated", () => {
   for (const [lang, path] of Object.entries(skills)) {
     const doc = read(path);
     const phase2 = phase(doc, 2);
-    assert.match(phase2, /find_wiki_rule\.py/, `${lang}: Phase 2 runs the finder`);
+    assert.match(phase2, /find_wiki_rule\.ts/, `${lang}: Phase 2 runs the finder`);
     const phase3 = doc.slice(doc.indexOf("## Phase 3"));
     assert.match(
       phase3,
-      /find_wiki_rule\.py/,
+      /find_wiki_rule\.ts/,
       `${lang}: Phase 3 runs it again on the settled files`,
     );
   }

@@ -11,12 +11,12 @@
 //         plus scenes: [page] when --scene is given
 // exit: 0, or 2 on a missing argument or an unknown --scene value
 //
-// TypeScript port of skills/scribe/scripts/find_wiki_rule.py, mirroring skills/_lib/harness_hash.ts's
+// TypeScript port of the retired Python original, mirroring skills/_lib/harness_hash.ts's
 // own header and its isMainModule(import.meta.url) entry point. Carries SCENES / NOT_A_RULE /
 // glob_to_regexp / normalize / read_globs / read_scenes / words / find / _split_scene_flag /
 // main, in node:* only.
 //
-// Contract: skills/scribe/scripts/find_wiki_rule.py's own behavior, pinned by the fixture
+// Contract: the retired Python original's own behavior, pinned by the fixture
 // skills/scribe/tests/fixtures/find-wiki-rule-cases.json (U-001). Exercised by
 // skills/scribe/tests/find-wiki-rule.test.ts.
 import { readFileSync, readdirSync } from "node:fs";

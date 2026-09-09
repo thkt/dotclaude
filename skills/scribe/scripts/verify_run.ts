@@ -8,12 +8,12 @@
 // stdout: JSON { ok, mismatches: [{field, expected, actual}] }
 // exit: 0 when ok, 1 when not, 2 when an argument or the stdin report is missing
 //
-// TypeScript port of skills/scribe/scripts/verify_run.py, mirroring skills/scribe/scripts/triage.ts's
+// TypeScript port of the retired Python original, mirroring skills/scribe/scripts/triage.ts's
 // own header and its isMainModule(import.meta.url) entry point. Carries COMMIT_PREFIX / WIKI_DIR /
 // WAITING / REJECTED / run_commits / section_rows / _store_at / rejected_added / verify / main, in
 // node:* only.
 //
-// Contract: skills/scribe/scripts/verify_run.py's own behavior. Exercised by
+// Contract: the retired Python original's own behavior. Exercised by
 // skills/scribe/tests/verify-run.test.ts.
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";

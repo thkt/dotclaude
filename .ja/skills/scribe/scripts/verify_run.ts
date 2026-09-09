@@ -8,12 +8,12 @@
 // stdout: JSON { ok, mismatches: [{field, expected, actual}] }
 // exit: ok のとき 0、そうでないとき 1、引数か stdin の report が欠けているとき 2
 //
-// skills/scribe/scripts/verify_run.py の TypeScript 移植。skills/scribe/scripts/triage.ts の
+// 退役した Python 版の TypeScript 移植。skills/scribe/scripts/triage.ts の
 // header と isMainModule(import.meta.url) の entry point を写している。COMMIT_PREFIX /
 // WIKI_DIR / WAITING / REJECTED / run_commits / section_rows / _store_at / rejected_added /
 // verify / main を node:* だけで運ぶ。
 //
-// Contract: skills/scribe/scripts/verify_run.py 自身の挙動。
+// Contract: 退役した Python 版自身の挙動。
 // skills/scribe/tests/verify-run.test.ts が検証する。
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";

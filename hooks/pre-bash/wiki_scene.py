@@ -10,6 +10,8 @@ hook passes its own.
 # `X | None` at import time. Deferred annotations keep this file loadable there.
 from __future__ import annotations
 
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -20,7 +22,12 @@ import command_scan
 from hook_payload import field, notify, parse
 
 ROOT = Path(__file__).resolve().parents[2]
-FIND_WIKI_RULE = ROOT / "skills" / "scribe" / "scripts" / "find_wiki_rule.py"
+FIND_WIKI_RULE = ROOT / "skills" / "scribe" / "scripts" / "find_wiki_rule.ts"
+
+# find_wiki_rule.ts runs on a JS runtime, not python3: CLAUDE_BUN_BIN overrides the default
+# bun install path the same way CLAUDE_GH_BIN overrides DEFAULT_GH in scribe_trigger.py, and
+# `node` off PATH is the fallback when neither resolves to a runnable binary.
+DEFAULT_BUN = Path("/opt/homebrew/bin/bun")
 
 # command_scan.starts_with reads position, not word presence, so `git commit -m "gh issue
 # close 42"` never matches: "gh" sits inside a message argument, not at the position a
@@ -47,19 +54,32 @@ def find(command: str) -> tuple[Path, str] | None:
     return None
 
 
+def _runtime() -> Path | None:
+    """CLAUDE_BUN_BIN, else DEFAULT_BUN, else whatever `node` PATH resolves to. None when none
+    of the three is runnable, which reads the same as "no page" below rather than a hook error."""
+    bun = Path(os.environ.get("CLAUDE_BUN_BIN") or DEFAULT_BUN)
+    if bun.is_file() and os.access(bun, os.X_OK):
+        return bun
+    node = shutil.which("node")
+    return Path(node) if node else None
+
+
 def _scene_pages(directory: Path, scene: str) -> list[str]:
-    """Run as a subprocess rather than imported: find_wiki_rule.py is the scribe skill's own
+    """Run as a subprocess rather than imported: find_wiki_rule.ts is the scribe skill's own
     CLI, and a direct import would read its internals as this hook's API."""
     wiki_dir = directory / "docs" / "wiki"
     if not wiki_dir.is_dir():
         return []
+    runtime = _runtime()
+    if runtime is None:
+        return []
     result = subprocess.run(
-        [sys.executable, str(FIND_WIKI_RULE), str(wiki_dir), "", "--scene", scene],
+        [str(runtime), str(FIND_WIKI_RULE), str(wiki_dir), "", "--scene", scene],
         stdout=subprocess.PIPE,
         text=True,
         check=False,
     )
-    # A non-zero exit means find_wiki_rule.py rejected --scene: no page under wiki_dir
+    # A non-zero exit means find_wiki_rule.ts rejected --scene: no page under wiki_dir
     # declares it, which reads the same as "no pages" here rather than as a hook error.
     pages = parse(result.stdout).get("scenes")
     return [str(page) for page in pages] if isinstance(pages, list) else []

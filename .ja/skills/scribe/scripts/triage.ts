@@ -9,12 +9,12 @@
 // stdout: JSON { pages, candidates, deferred, commits }
 // exit: 0。引数が足りないときは 2
 //
-// skills/scribe/scripts/triage.py の TypeScript 移植。skills/scribe/scripts/find_wiki_rule.ts の
+// 退役した Python 版の TypeScript 移植。skills/scribe/scripts/find_wiki_rule.ts の
 // header と isMainModule(import.meta.url) エントリポイントに倣う。EVIDENCE_THRESHOLD /
 // PAGE_CAP / COMMIT_CAP / ACTION / STORE_SECTIONS / EVIDENCE / triage / readStore / merge /
 // main を node:* のみで運ぶ。
 //
-// Contract: skills/scribe/scripts/triage.py 自身の挙動。fixture
+// Contract: 退役した Python 版自身の挙動。fixture
 // skills/scribe/tests/fixtures/triage-cases.json (U-001) に固定される。
 // skills/scribe/tests/triage.test.ts が検証する。
 import { existsSync, readFileSync, statSync } from "node:fs";
