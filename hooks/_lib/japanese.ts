@@ -19,6 +19,6 @@ export const DEFAULT_THRESHOLD: number = 50;
 /** null or undefined takes the default, so a caller holding an optional threshold passes it
  * as is -- the same contract japanese.py's has_japanese states for None. */
 export function hasJapanese(text: string, threshold?: number | null): boolean {
-  const count = [...text.matchAll(JAPANESE)].length;
+  const count = (text.match(JAPANESE) ?? []).length;
   return count >= (threshold ?? DEFAULT_THRESHOLD);
 }
