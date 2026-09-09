@@ -17,7 +17,12 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { assertStdoutShape, fixture, runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import {
+  assertStdoutShape,
+  fixture,
+  runCli,
+  withTempHome,
+} from "../../../workflows/_lib/tests/_cli-fixture.ts";
 import { countOptions, STATUS_VALUES } from "../scripts/validate-dr.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -131,5 +136,17 @@ test("T-207 with markdownlint-cli2 absent from PATH the checks carry markdown_li
       parsed.checks.includes("markdown_lint=skipped (markdownlint-cli2 not installed)"),
       `checks carries markdown_lint=skipped (checks: ${JSON.stringify(parsed.checks)})`,
     );
+  });
+});
+
+test("T-196 a directory argument fails with the same one stderr line and exit 1 the python validator gave, not a node stack trace", () => {
+  // existsSync answers true for a directory, so the path reached readFileSync and threw EISDIR.
+  // Python's Path.is_file() answered false and the run ended on the contract's one line.
+  withTempHome((home) => {
+    const dir = mkdtempSync(join(home, "not-a-dr-file-"));
+    const run = runCli(TS_SCRIPT, home, "", [dir], { cwd: home });
+    assert.equal(run.status, 1, "exit code");
+    assert.equal(run.stdout, "");
+    assert.equal(run.stderr, `Error: file not found: ${dir}\n`);
   });
 });

@@ -16,7 +16,7 @@
 // STATUS_VALUES、count_options、lint_check、main。REQUIRED_SECTIONS/RECOMMENDED_SECTIONS/
 // STATUS_VALUES は skills/dr/tests/script-contract.test.js が import する。
 // skills/dr/tests/validate-dr.test.ts が検証する。
-import { accessSync, constants, existsSync, readFileSync } from "node:fs";
+import { accessSync, constants, existsSync, readFileSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fail, splitFrontmatter } from "./dr_common.ts";
@@ -99,11 +99,23 @@ export function lintCheck(path: string): ["checks" | "warnings", string] {
   return ["warnings", "markdown_lint=issues (run markdownlint-cli2 for details)"];
 }
 
+/** Python の Path.is_file() と同じ扱い。ディレクトリも壊れた symlink も読めない親も「ファイル
+ * ではない」として読み、readFileSync まで届かせない。届くとディレクトリで EISDIR を送出し、
+ * 契約が stderr 1 行と定めた位置に node の stack trace が出てしまう。上の existsSync は
+ * ディレクトリに true を返すので、ここでは代わりにならない。 */
+function isFile(path: string): boolean {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
+
 /** 退役した Python 版 validate-dr の main: argv[0] を dr-file の path として読み、検証結果
  * の JSON (indent 2) を出力する。exit 1 になるのは results.errors が空でないときだけ。 */
 export function main(argv: string[]): number {
   const drFile = argv[0] ?? "";
-  if (!drFile || !existsSync(drFile)) {
+  if (!isFile(drFile)) {
     fail(`Error: file not found: ${drFile}`);
   }
 

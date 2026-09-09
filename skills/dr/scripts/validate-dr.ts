@@ -16,7 +16,7 @@
 // STATUS_VALUES, count_options, lint_check, and main. REQUIRED_SECTIONS/RECOMMENDED_SECTIONS/
 // STATUS_VALUES are exported for skills/dr/tests/script-contract.test.js to import. Exercised by
 // skills/dr/tests/validate-dr.test.ts.
-import { accessSync, constants, existsSync, readFileSync } from "node:fs";
+import { accessSync, constants, existsSync, readFileSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fail, splitFrontmatter } from "./dr_common.ts";
@@ -98,11 +98,23 @@ export function lintCheck(path: string): ["checks" | "warnings", string] {
   return ["warnings", "markdown_lint=issues (run markdownlint-cli2 for details)"];
 }
 
+/** Python's Path.is_file(): a directory, a broken symlink, or an unreadable parent all read as
+ * "not a file" rather than reaching readFileSync, which throws EISDIR on a directory and would
+ * put a node stack trace where the contract names one stderr line. existsSync above answers
+ * true for a directory, so it cannot stand in here. */
+function isFile(path: string): boolean {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
+
 /** The retired Python validate-dr's main: reads argv[0] as a dr-file path, prints the validation
  * JSON (indent 2), and exits 1 only when results.errors is non-empty. */
 export function main(argv: string[]): number {
   const drFile = argv[0] ?? "";
-  if (!drFile || !existsSync(drFile)) {
+  if (!isFile(drFile)) {
     fail(`Error: file not found: ${drFile}`);
   }
 
