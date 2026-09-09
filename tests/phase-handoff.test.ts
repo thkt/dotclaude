@@ -27,16 +27,16 @@ const CONTROL_ONLY = new Map([
   ["slice 2->3", "Phase 2 says the coverage check surfaces in what Phase 3 presents, a route"],
 ]);
 
-const phaseSections = (doc) => {
+const phaseSections = (doc: string) => {
   const parts = doc.split(/^## (Phase \d+[^\n]*)$/m);
   const out = new Map();
   for (let i = 1; i < parts.length; i += 2) {
-    out.set(Number(parts[i].match(/Phase (\d+)/)[1]), parts[i + 1]);
+    out.set(Number(parts[i].match(/Phase (\d+)/)![1]), parts[i + 1]);
   }
   return out;
 };
 
-const key = (name, from, to) => `${name} ${from}->${to}`;
+const key = (name: string, from: number, to: number) => `${name} ${from}->${to}`;
 
 const crossReferences = async () => {
   const names = (await readdir(skillsDir, { withFileTypes: true }))
