@@ -24,7 +24,7 @@ BASE_COMMAND = ["claude", "--print", "--output-format", "json"]
 
 # 1 アームの結果を measured とみなすまでに要する実行回数。5 は単発ノイズに対する暫定の下限で、
 # 最初の ablation 実行のばらつきを測ったら見直す (同じ暫定の形は
-# skills/scribe/scripts/triage.py の COMMIT_CAP を参照)。
+# skills/scribe/scripts/triage.ts の COMMIT_CAP を参照)。
 RUN_COUNT = 5
 
 # 1 アームが合格と判定されるために、harness ありの挙動を再現しなければならない実行の割合。
