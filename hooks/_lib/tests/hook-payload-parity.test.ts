@@ -5,8 +5,10 @@
 // the migration; the first slice confirms it with a differential test diffing the Python and
 // TypeScript outputs"). The read path is what this slice diffs: field and editedFile, the two
 // every consumer reaches for. notify and deny write to stdout rather than returning, so their
-// parity moves with the first consumer that switches. No consumer switches here -- every hook
-// still imports hook_payload.py.
+// parity moves with the first consumer that switches. hooks/lifecycle/recall_index.ts is that
+// first TS-side consumer, reading parse from this module instead of hook_payload.py; every
+// other hook still imports the Python side, so this test keeps guarding both while they move
+// over one at a time.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
