@@ -1,5 +1,5 @@
 ---
-globs: ["**/skills/research/scripts/find-prior-research.py"]
+globs: ["**/skills/research/scripts/find-prior-research.ts"]
 scenes: []
 ---
 
@@ -17,7 +17,7 @@ scenes: []
 
 ## 参照コード
 
-- `skills/research/scripts/find-prior-research.py` の `main`(ファイル名 slug の語重なりだけで過去調査を探す実装。本文検索を持たない)
+- `skills/research/scripts/find-prior-research.ts` の `main`(ファイル名 slug の語重なりだけで過去調査を探す実装。本文検索を持たない)
 
 ## 根拠
 

@@ -22,7 +22,7 @@ const asserts = {
   en: join(root, "workflows", "assert.js"),
 };
 // The script is an identical copy on both sides, so one path covers the pair.
-const script = join(root, "skills", "outcome", "scripts", "validate-outcome.py");
+const script = join(root, "skills", "outcome", "scripts", "validate-outcome.ts");
 
 // assert's bootstrap and challenge name the headings of a generated OUTCOME.md as their digest
 // targets. A wobbling spelling returns an empty digest and downstream treats the outcome as
@@ -87,14 +87,14 @@ test("the emptiness word is TBD across the template, SKILL.md, and the script", 
   }
   assert.match(
     readFileSync(script, "utf8"),
-    /content\.upper\(\) == "TBD"/,
+    /content\.toUpperCase\(\) === "TBD"/,
     "the script treats TBD as empty",
   );
 });
 
 // The wiring that leaves assert's emptiness check to the script. Reverting the prompt to eyeing
 // TBD itself would split /outcome's criteria from assert's.
-test("assert.js decides whether an outcome exists from validate-outcome.py's state", () => {
+test("assert.js decides whether an outcome exists from validate-outcome.ts's state", () => {
   for (const [lang, path] of Object.entries(asserts)) {
     const src = readFileSync(path, "utf8");
     // It is assembled through bundled(), so the match runs on the relative path argument rather
@@ -102,7 +102,7 @@ test("assert.js decides whether an outcome exists from validate-outcome.py's sta
     // bundled's responsibility.
     assert.match(
       src,
-      /OUTCOME_VALIDATOR = bundled\("skills\/outcome\/scripts\/validate-outcome\.py"\)/,
+      /OUTCOME_VALIDATOR = bundled\("skills\/outcome\/scripts\/validate-outcome\.ts"\)/,
       `${lang}: it carries the script path`,
     );
     assert.match(src, /\$\{OUTCOME_VALIDATOR\}/, `${lang}: the bootstrap prompt runs the script`);
@@ -114,7 +114,7 @@ test("assert.js decides whether an outcome exists from validate-outcome.py's sta
   }
 });
 
-// The words naming the digest targets. assert.js, challenge, and validate-outcome.py's required
+// The words naming the digest targets. assert.js, challenge, and validate-outcome.ts's required
 // sections all name the same three. Reverting one to a parent section name such as Outcome state
 // mixes the opening sentence's aspirational wording into the digest.
 test("the digest targets are Behavior, Non-goals, and Constraints everywhere", () => {
@@ -141,19 +141,19 @@ test("the digest targets are Behavior, Non-goals, and Constraints everywhere", (
   }
   assert.match(
     readFileSync(script, "utf8"),
-    /FILLED_SECTIONS = \("Behavior", "Non-goals", "Constraints"\)/,
+    /FILLED_SECTIONS = \["Behavior", "Non-goals", "Constraints"\]/,
     "the script's fill check looks at the same three sections",
   );
 });
 
 // The wiring that leaves the branching to the script. Once SKILL.md stops calling it, the
 // decision returns to eyeballing.
-test("SKILL.md branches on validate-outcome.py and runs it through the validation too", () => {
+test("SKILL.md branches on validate-outcome.ts and runs it through the validation too", () => {
   for (const [lang, path] of Object.entries(skills)) {
     const doc = readFileSync(path, "utf8");
     assert.match(
       doc,
-      /\$\{CLAUDE_SKILL_DIR\}\/scripts\/validate-outcome\.py \.claude\/OUTCOME\.md/,
+      /\$\{CLAUDE_SKILL_DIR\}\/scripts\/validate-outcome\.ts \.claude\/OUTCOME\.md/,
       `${lang}: the branch runs the script`,
     );
     assert.match(doc, /^\| absent \|/m, `${lang}: the state absent row`);
@@ -166,7 +166,7 @@ test("SKILL.md branches on validate-outcome.py and runs it through the validatio
     );
     // A home-anchored grant names the dev tree, which a plugin copy of the skill never matches.
     assert.doesNotMatch(doc.split("---")[1], /\$HOME|~\//, `${lang}: no hardcoded home path`);
-    const validateSteps = doc.match(/validate-outcome\.py/g) || [];
+    const validateSteps = doc.match(/validate-outcome\.ts/g) || [];
     assert.ok(
       validateSteps.length >= 3,
       `${lang}: the script runs in all three places: branch, generate, update (actual ${validateSteps.length})`,

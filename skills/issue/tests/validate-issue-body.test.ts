@@ -36,7 +36,7 @@ const bugTemplate = join(ROOT, "skills", "issue", "templates", "bug.md");
 const choreTemplate = join(ROOT, "skills", "issue", "templates", "chore.md");
 const featureTemplate = join(ROOT, "skills", "issue", "templates", "feature.md");
 
-// The body is written to a temporary file before being passed. validate-outcome.py also takes a
+// The body is written to a temporary file before being passed. validate-outcome.ts also takes a
 // file path argument, so this matches the shape the caller (/issue's Phase 4 validation) uses.
 // The floor comes straight from the FLOOR export (U-005's plan for skill-contract.test.js and
 // slice/tests/contract.test.js does the same), replacing the source-regex read the retired .js
