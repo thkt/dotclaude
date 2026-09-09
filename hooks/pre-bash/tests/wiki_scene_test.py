@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "_lib"))
 
 import hook_harness  # noqa: E402
 
+
 # The hook resolves a JS runtime to run find_wiki_rule.ts, so a test that narrows PATH still has
 # to leave `node` reachable. Only the no-runtime case below empties PATH, and it does so on
 # purpose. node sits outside /usr/bin on both macOS and the Linux CI image, so the directory is

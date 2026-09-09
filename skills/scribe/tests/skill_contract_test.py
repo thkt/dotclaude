@@ -131,7 +131,9 @@ class SkillContract(unittest.TestCase):
             check=False,
         )
         self.assertEqual(proc.returncode, 2, "the script refuses the call without the store")
-        report = _run_triage([{"name": "carried", "evidence": ["#1", "#2"], "existing": "candidate"}])
+        report = _run_triage(
+            [{"name": "carried", "evidence": ["#1", "#2"], "existing": "candidate"}]
+        )
         self.assertEqual(report["pages"][0]["action"], "promote")
 
     def test_phase_4_moves_the_candidate_line_of_an_item_it_drops(self) -> None:
