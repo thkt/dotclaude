@@ -9,12 +9,12 @@
 // stdout: JSON { errors, warnings, checks }
 // exit: 0 if no errors (warnings allowed), 1 if errors
 //
-// TypeScript port of validate-issue-body.py. Contract: validate-issue-body.py's TYPE_PREFIX /
-// FLOOR / FLOOR_ALIASES / ALLOWED_EXTRA / skeleton_text / skeleton_sections / form_sections /
+// TypeScript port of the retired Python script. Contract: its TYPE_PREFIX / FLOOR /
+// FLOOR_ALIASES / ALLOWED_EXTRA / skeleton_text / skeleton_sections / form_sections /
 // body_section_names / section_body / is_unfilled / placeholders_left / record_placeholders /
 // report / content_only_report / main. Exercised by
 // skills/issue/tests/validate-issue-body.test.ts. Python's snake_case names carry over as TS
-// camelCase; FLOOR / FLOOR_ALIASES / ALLOWED_EXTRA stay upper-snake so U-005's
+// camelCase; FLOOR / FLOOR_ALIASES / ALLOWED_EXTRA stay upper-snake so
 // skill-contract.test.js and slice/tests/contract.test.js can import the same identifiers
 // instead of reading the source with a regex. Python's re.DOTALL/re.MULTILINE become the
 // `[\s\S]` idiom / the `m` flag below; str.casefold() becomes toLowerCase() (the section names

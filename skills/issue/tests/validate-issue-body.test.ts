@@ -1,17 +1,15 @@
 /// <reference types="node" />
-// Behavior tests for skills/issue/scripts/validate-issue-body.ts, the TypeScript port of
-// validate-issue-body.py. T-001 through T-026 (this file's git-mv'd former
+// Behavior tests for skills/issue/scripts/validate-issue-body.ts, the TypeScript port of the
+// retired Python validator. T-001 through T-026 (this file's git-mv'd former
 // validate-issue-body.test.js, 20 test() calls / 26 scenarios once T-013/T-014/T-015/T-017/
 // T-018's loops are counted) drive the port directly through runCli instead of
 // spawnSync("python3", ...), and read the floor via the FLOOR import instead of a source
-// regex. T-192 replays the frozen fixture in fixtures/validate-issue-body-cases.json, produced
-// by running the Python script itself before it was retired (U-001), and compares the port's
-// exit code and its errors / warnings / checks arrays against it case by case; the fixture's
-// <body-path>/<template-path> placeholders are text substituted for temp files this run seeds
-// with the same body (and, for unreadable_skeleton, the same broken template) each case names.
-// T-193 exercises the exported FLOOR / FLOOR_ALIASES / ALLOWED_EXTRA directly against the
-// Python source, the way pick-plan.test.ts's floorFor helper (now retired there) read
-// validate-issue-body.py's FLOOR.
+// regex. T-192 replays the frozen fixture in
+// fixtures/validate-issue-body-cases.json, produced by running the Python script itself before
+// it was retired (U-001), and compares the port's exit code and its errors / warnings / checks
+// arrays against it case by case; the fixture's <body-path>/<template-path> placeholders are
+// text substituted for temp files this run seeds with the same body (and, for
+// unreadable_skeleton, the same broken template) each case names.
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -808,49 +806,49 @@ test("T-192 every frozen validate-issue-body case reproduces the python cli's ex
   }
 });
 
-/** The `{"key": (...)}` rows of the dict literal named `varName` in `src`, each tuple read as
- * its quoted entries in order. Mirrors pick-plan.test.ts's (now-retired) floorFor helper,
- * generalized to also read FLOOR_ALIASES. */
-function parseDictOfTuples(src: string, varName: string): Record<string, string[]> {
-  const block = src.match(new RegExp(`^${varName} = \\{([\\s\\S]*?)^\\}`, "m"))?.[1] ?? "";
-  const result: Record<string, string[]> = {};
-  for (const row of block.matchAll(/"([^"]+)":\s*\(([^)]*)\)/g)) {
-    result[row[1]] = [...row[2].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-  }
-  return result;
-}
+test("the exported floor, floor aliases and allowed extra sections carry the same entries the python validator declared", () => {
+  // FLOOR is the minimum sections a type's body must carry, enforced both by the validator and
+  // checked against the templates and skills by skill-contract.test.js / slice/tests/contract.test.js.
+  // FLOOR_ALIASES allows Japanese form labels to satisfy English floor requirements (T-025).
+  // ALLOWED_EXTRA is the set of sections outside the skeleton that do not trigger unknown_section
+  // (T-002). All three must match what the retired Python validator declared.
 
-/** The quoted entries of the `frozenset({...})` literal named `varName` in `src`. */
-function parseFrozenset(src: string, varName: string): string[] {
-  const block = src.match(new RegExp(`^${varName} = frozenset\\(\\{([^}]*)\\}\\)`, "m"))?.[1] ?? "";
-  return [...block.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-}
-
-test("T-193 the exported floor, floor aliases and allowed extra sections carry the same entries the python validator declared", () => {
-  const src = readFileSync(
-    join(ROOT, "skills", "issue", "scripts", "validate-issue-body.py"),
-    "utf8",
-  );
-  const expectedFloor = parseDictOfTuples(src, "FLOOR");
-  const expectedAliases = parseDictOfTuples(src, "FLOOR_ALIASES");
-  const expectedExtra = parseFrozenset(src, "ALLOWED_EXTRA").sort();
-
-  assert.ok(Object.keys(expectedFloor).length > 0, "the python source's FLOOR is readable");
-  assert.ok(
-    Object.keys(expectedAliases).length > 0,
-    "the python source's FLOOR_ALIASES is readable",
-  );
-  assert.ok(expectedExtra.length > 0, "the python source's ALLOWED_EXTRA is readable");
-
-  assert.deepEqual(FLOOR, expectedFloor, "FLOOR carries the same entries as the python source");
+  // FLOOR must be exported and contain the required types.
+  assert.ok(FLOOR, "FLOOR is exported");
   assert.deepEqual(
-    FLOOR_ALIASES,
-    expectedAliases,
-    "FLOOR_ALIASES carries the same entries as the python source",
+    Object.keys(FLOOR).sort(),
+    ["bug", "feature"],
+    "FLOOR contains the issue types with floors",
   );
   assert.deepEqual(
-    [...ALLOWED_EXTRA].sort(),
-    expectedExtra,
-    "ALLOWED_EXTRA carries the same entries as the python source",
+    FLOOR.feature,
+    ["Acceptance Criteria", "Testing Decisions"],
+    "feature floor matches",
+  );
+  assert.deepEqual(FLOOR.bug, ["Steps to Reproduce", "Expected vs Actual"], "bug floor matches");
+
+  // FLOOR_ALIASES maps English floor sections to their Japanese equivalents, allowing
+  // Japanese-language forms to satisfy the floor without carrying English headings.
+  assert.ok(FLOOR_ALIASES, "FLOOR_ALIASES is exported");
+  assert.deepEqual(
+    Object.keys(FLOOR_ALIASES).sort(),
+    ["Expected vs Actual", "Steps to Reproduce"],
+    "FLOOR_ALIASES covers the bug floor's aliases",
+  );
+  assert.deepEqual(FLOOR_ALIASES["Steps to Reproduce"], ["再現手順"], "Steps to Reproduce alias");
+  assert.deepEqual(
+    FLOOR_ALIASES["Expected vs Actual"],
+    ["期待 / 実際"],
+    "Expected vs Actual alias",
+  );
+
+  // ALLOWED_EXTRA lists sections that may appear outside the skeleton without triggering
+  // unknown_section errors. Plan and Backlog candidates come from /think; Parent and Blocked by
+  // come from /slice.
+  assert.ok(ALLOWED_EXTRA, "ALLOWED_EXTRA is exported");
+  assert.deepEqual(
+    Array.from(ALLOWED_EXTRA).sort(),
+    ["Backlog candidates", "Blocked by", "Parent", "Plan"],
+    "ALLOWED_EXTRA matches the Python validator",
   );
 });

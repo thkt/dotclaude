@@ -14,7 +14,7 @@
 //       していない時点の起票は通常の経路で、skill を止めてはならない。必須引数の
 //       <issue-title | plan-path> が無いときだけ 1。
 //
-// pick-plan.py の TypeScript 移植。Contract: pick-plan.py の slugify / scoring_words / section /
+// 退役した Python 版の TypeScript 移植。Contract: 元の slugify / scoring_words / section /
 // extracted / rank / main。skills/issue/tests/pick-plan.test.ts が検証する。Python の
 // snake_case な名前は TS 側では camelCase になる (scoring_words -> scoringWords)。rank、
 // slugify、section はテストのために export し、残りは harness_hash.ts が自分の内部実装を
@@ -26,7 +26,7 @@ import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 // 日付を名前から読むのは、issue skill に許されたどの道具も mtime を返さないため。
 const NAME = /^(\d{4}-\d{2}-\d{2})-(.+)\.plan\.md$/;
 
-// スクリプト自身の位置に対して解決せず、あえて相対パスのまま残す。pick-plan.py の
+// スクリプト自身の位置に対して解決せず、あえて相対パスのまま残す。退役した Python 版の
 // `Path(".claude/workspace/planning")` と同じく、呼び出し側の cwd に対して読む。
 const DEFAULT_DIR = ".claude/workspace/planning";
 

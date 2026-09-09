@@ -40,33 +40,28 @@ function referencesRetiredScript(content: string): boolean {
   return VALIDATE_ISSUE_BODY_PATTERN.test(content) || PICK_PLAN_PATTERN.test(content);
 }
 
-test(
-  "T-194 no tracked file outside docs/decisions/, .claude/workspace/research/and " +
-    "docs/wiki/deterministic-script-judgment.md references validate-issue-body.py or " +
-    "pick-plan.py as a word, and the same predicate flags a fixture line carrying each",
-  () => {
-    assertDetectsAndMisses(referencesRetiredScript, "validate-issue-body.py");
-    assertDetectsAndMisses(referencesRetiredScript, "pick-plan.py");
+test("no tracked file outside docs/decisions/, .claude/workspace/research/and docs/wiki/deterministic-script-judgment.md references validate-issue-body.py or pick-plan.py as a word, and the same predicate flags a fixture line carrying each", () => {
+  assertDetectsAndMisses(referencesRetiredScript, "validate-issue-body.py");
+  assertDetectsAndMisses(referencesRetiredScript, "pick-plan.py");
 
-    // This test's own file names both retired scripts in comments to describe what it checks,
-    // and docs/wiki/deterministic-script-judgment.md's #389 basis line keeps pick-plan.py as
-    // history rather than as a live reference; the historical directories are offendersAmong's
-    // own default.
-    const offenders = offendersAmong(
-      trackedFiles(REPO_ROOT),
-      (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
-      referencesRetiredScript,
-      [SELF_PATH, HISTORICAL_FILE],
-    );
-    assert.deepEqual(
-      offenders,
-      [],
-      "no tracked file outside docs/decisions/, .claude/workspace/research/ and " +
-        "docs/wiki/deterministic-script-judgment.md references validate-issue-body.py or " +
-        `pick-plan.py\n${offenders.join(", ")}`,
-    );
-  },
-);
+  // This test's own file names both retired scripts in comments to describe what it checks,
+  // and docs/wiki/deterministic-script-judgment.md's #389 basis line keeps pick-plan.py as
+  // history rather than as a live reference; the historical directories are offendersAmong's
+  // own default.
+  const offenders = offendersAmong(
+    trackedFiles(REPO_ROOT),
+    (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
+    referencesRetiredScript,
+    [SELF_PATH, HISTORICAL_FILE],
+  );
+  assert.deepEqual(
+    offenders,
+    [],
+    "no tracked file outside docs/decisions/, .claude/workspace/research/ and " +
+      "docs/wiki/deterministic-script-judgment.md references validate-issue-body.py or " +
+      `pick-plan.py\n${offenders.join(", ")}`,
+  );
+});
 
 // Same extraction shape as workflows/_lib/tests/record-retirement.test.ts's
 // extractRecorderInvocation: read the source text and pull out what the caller actually
@@ -117,35 +112,30 @@ function validatorPathExtension(source: string): string | null {
   return m ? m[1] : null;
 }
 
-test(
-  "T-195 the en and ja issue and slice skill files invoke the issue scripts by their .ts path " +
-    "and the issue body gate hook names the validator's .ts path, and none of them still names " +
-    "python3 for those scripts",
-  () => {
-    for (const { label, path, scripts } of SKILL_SOURCES) {
-      const source = readFileSync(join(REPO_ROOT, path), "utf8");
-      for (const scriptName of scripts) {
-        const ext = scriptInvocationExtension(source, scriptName);
-        assert.equal(ext, "ts", `${label} invokes ${scriptName} by its .ts path, got .${ext}`);
-      }
-      assert.ok(!source.includes("python3"), `${label} still names python3`);
+test("the en and ja issue and slice skill files invoke the issue scripts by their .ts path and the issue body gate hook names the validator's .ts path, and none of them still names python3 for those scripts", () => {
+  for (const { label, path, scripts } of SKILL_SOURCES) {
+    const source = readFileSync(join(REPO_ROOT, path), "utf8");
+    for (const scriptName of scripts) {
+      const ext = scriptInvocationExtension(source, scriptName);
+      assert.equal(ext, "ts", `${label} invokes ${scriptName} by its .ts path, got .${ext}`);
     }
+    assert.ok(!source.includes("python3"), `${label} still names python3`);
+  }
 
-    const hookPath = "hooks/pre-bash/issue_body_gate.py";
-    const hookSource = readFileSync(join(REPO_ROOT, hookPath), "utf8");
-    const validatorExt = validatorPathExtension(hookSource);
-    assert.equal(
-      validatorExt,
-      "ts",
-      `${hookPath} names the validator's .ts path, got .${validatorExt}`,
-    );
-    assert.ok(
-      !hookSource.includes("python3 で直接実行して"),
-      `${hookPath} error text still tells to run python3 directly`,
-    );
-    assert.ok(
-      hookSource.includes("bun か node で直接実行して"),
-      `${hookPath} error text does not tell to run bun or node directly`,
-    );
-  },
-);
+  const hookPath = "hooks/pre-bash/issue_body_gate.py";
+  const hookSource = readFileSync(join(REPO_ROOT, hookPath), "utf8");
+  const validatorExt = validatorPathExtension(hookSource);
+  assert.equal(
+    validatorExt,
+    "ts",
+    `${hookPath} names the validator's .ts path, got .${validatorExt}`,
+  );
+  assert.ok(
+    !hookSource.includes("python3 で直接実行して"),
+    `${hookPath} error text still tells to run python3 directly`,
+  );
+  assert.ok(
+    hookSource.includes("bun か node で直接実行して"),
+    `${hookPath} error text does not tell to run bun or node directly`,
+  );
+});

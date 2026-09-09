@@ -9,12 +9,12 @@
 // stdout: JSON { errors, warnings, checks }
 // exit: errors が無ければ 0 (warnings は許容)、あれば 1
 //
-// validate-issue-body.py の TypeScript 移植。Contract: validate-issue-body.py の TYPE_PREFIX /
+// 退役した Python 版の TypeScript 移植。Contract: 元の TYPE_PREFIX /
 // FLOOR / FLOOR_ALIASES / ALLOWED_EXTRA / skeleton_text / skeleton_sections / form_sections /
 // body_section_names / section_body / is_unfilled / placeholders_left / record_placeholders /
 // report / content_only_report / main。skills/issue/tests/validate-issue-body.test.ts が検証
 // する。Python の snake_case な名前は TS 側では camelCase になる。FLOOR / FLOOR_ALIASES /
-// ALLOWED_EXTRA だけは upper-snake のまま残し、U-005 の skill-contract.test.js と
+// ALLOWED_EXTRA だけは upper-snake のまま残し、skill-contract.test.js と
 // slice/tests/contract.test.js が正規表現でソースを読まずに同じ識別子を import できるように
 // する。Python の re.DOTALL/re.MULTILINE はここでは `[\s\S]` のイディオムと下の `m` フラグに、
 // str.casefold() は toLowerCase() になる (この validator が比較する節名は ASCII か日本語で、

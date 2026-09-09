@@ -14,11 +14,11 @@
 //       issue filed before any planning happened is the normal case and must not stop the
 //       skill. 1 only when the required <issue-title | plan-path> argument is missing.
 //
-// TypeScript port of pick-plan.py. Contract: pick-plan.py's slugify / scoring_words / section /
-// extracted / rank / main. Exercised by skills/issue/tests/pick-plan.test.ts. Python's
-// snake_case names carry over as TS camelCase (scoring_words -> scoringWords); rank, slugify,
-// and section are exported for the tests, the rest stay module-private the way harness_hash.ts
-// keeps its own internals private.
+// TypeScript port of the retired Python script. Contract: its slugify / scoring_words /
+// section / extracted / rank / main. Exercised by skills/issue/tests/pick-plan.test.ts.
+// Python's snake_case names carry over as TS camelCase (scoring_words -> scoringWords); rank,
+// slugify, and section are exported for the tests, the rest stay module-private the way
+// harness_hash.ts keeps its own internals private.
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, extname, join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
@@ -26,8 +26,9 @@ import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 // The date comes from the name because no tool the issue skill may use reports mtime.
 const NAME = /^(\d{4}-\d{2}-\d{2})-(.+)\.plan\.md$/;
 
-// A relative path deliberately left unresolved against the script's own location: like
-// pick-plan.py's `Path(".claude/workspace/planning")`, it is read against the caller's cwd.
+// A relative path deliberately left unresolved against the script's own location: like the
+// retired Python script's `Path(".claude/workspace/planning")`, it is read against the
+// caller's cwd.
 const DEFAULT_DIR = ".claude/workspace/planning";
 
 interface Draft {
