@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -98,4 +98,16 @@ test("T-254 the type-check set contains every tracked .ts under the tests and ag
   for (const name of tracked) {
     assert.ok(checkedNames.has(name), `${name} is tracked but missing from the type-check set`);
   }
+});
+
+// T-254 puts tests/**/*.ts and agents/**/*.ts in the type-check set; the Node tests step
+// names its globs one by one, so a file tsc now compiles still does not run in CI until this
+// step names it too.
+test("T-255 the Node tests step in .github/workflows/test.yml carries tests/*.test.ts and agents/**/tests/*.test.ts", () => {
+  const workflow = readFileSync(path.join(ROOT, ".github", "workflows", "test.yml"), "utf8");
+  const step = workflow.slice(workflow.indexOf("- name: Node tests"));
+  assert.ok(step.startsWith("- name: Node tests"), "the Node tests step is missing from test.yml");
+  const stepBody = step.slice(0, step.indexOf("- name:", 1));
+  assert.match(stepBody, /"tests\/\*\.test\.ts"/);
+  assert.match(stepBody, /"agents\/\*\*\/tests\/\*\.test\.ts"/);
 });
