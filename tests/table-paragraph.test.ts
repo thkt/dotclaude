@@ -39,20 +39,20 @@ const DERIVED_CONCLUSIONS = new Map([
 const CONTINUES_A_BLOCK = /^(?:[|#>*-]|\d+[.)]\s)/;
 const OPENS_A_BLOCK = /^(?:[|*-]|\d+[.)]\s|```)/;
 
-const keyFor = (path, text) => `${path} :: ${text.split(/(?<=[。.])\s*/)[0]}`;
-const nextNonEmpty = (lines, i) => {
+const keyFor = (path: string, text: string) => `${path} :: ${text.split(/(?<=[。.])\s*/)[0]}`;
+const nextNonEmpty = (lines: string[], i: number) => {
   for (let j = i + 1; j < lines.length; j++) if (lines[j].trim()) return lines[j].trim();
   return "";
 };
 
-const markdownUnder = async (dir) => {
+const markdownUnder = async (dir: string): Promise<string[]> => {
   let entries;
   try {
     entries = await readdir(dir, { withFileTypes: true });
   } catch {
     return [];
   }
-  const out = [];
+  const out: string[] = [];
   for (const e of entries) {
     const path = join(dir, e.name);
     if (e.isDirectory()) {
@@ -63,10 +63,10 @@ const markdownUnder = async (dir) => {
 };
 
 // A fenced block carries its own tables and prose, and MARKDOWN.md exempts code from every rule.
-const paragraphsAfterTables = (source) => {
+const paragraphsAfterTables = (source: string): { line: number; text: string }[] => {
   const lines = source.split("\n");
   const start = lines[0] === "---" ? lines.indexOf("---", 1) + 1 : 0;
-  const out = [];
+  const out: { line: number; text: string }[] = [];
   let inTable = false;
   let inFence = false;
   for (let i = start; i < lines.length; i++) {
@@ -133,7 +133,7 @@ test("every DERIVED_CONCLUSIONS entry still names a paragraph that exists", asyn
 // Two of these shapes occur nowhere in the tree, so a scan of it passes however they are handled.
 test("the classifier separates a trailing explanation from the shapes that are not one", () => {
   const table = "| a | b |\n| - | - |\n| 1 | 2 |\n";
-  const cases = [
+  const cases: [string, string, string[]][] = [
     ["a trailing paragraph", `${table}\nExplains the rows above.\n`, ["Explains the rows above."]],
     ["an ordered list", `${table}\n1. A step, not a paragraph.\n`, []],
     ["a lead-in to a list", `${table}\nThe options are:\n\n- one\n`, []],
