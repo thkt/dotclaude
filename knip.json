@@ -31,6 +31,7 @@
     "workflows/tests/index.js",
     "hooks/**/tests/*.test.ts",
     "hooks/_lib/hook_payload.ts",
+    "hooks/lifecycle/recall_index.ts",
     "skills/**/tests/**/*.test.{js,ts}",
     "skills/_lib/harness_hash.ts",
     ".ja/skills/_lib/harness_hash.ts",

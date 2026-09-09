@@ -56,7 +56,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の
 | PostToolUse      | Write/Edit         | edit/rust_post_edit.py, edit/textlint_fix.py, edit/mirror_prose_guard.py, assay, formatter, gates                                                                 |
 | PostToolUse      | Bash               | gates changed                                                                                                                                                     |
 | PostToolUse      | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |
-| SessionStart     | \*                 | lifecycle/recall_index.py                                                                                                                                         |
+| SessionStart     | \*                 | lifecycle/recall_index.ts                                                                                                                                         |
 | UserPromptSubmit | -                  | integrations/amphetamine_agent_session acquire                                                                                                                    |
 | Stop/StopFailure | -                  | lifecycle/failure-alert, integrations/amphetamine_agent_session release                                                                                           |
 | statusLine       | -                  | lifecycle/statusline                                                                                                                                              |
@@ -93,7 +93,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の
 | Hook             | トリガー          | 失敗モード | 用途                                                                        |
 | ---------------- | ----------------- | ---------- | --------------------------------------------------------------------------- |
 | statusline.sh    | statusLine        | fail-open  | ステータスライン表示と、自身が持つセッション単位 state の TTL 掃除          |
-| recall_index.py  | SessionStart      | fail-open  | recall のクロスセッション索引をバックグラウンド更新                         |
+| recall_index.ts  | SessionStart      | fail-open  | recall のクロスセッション索引をバックグラウンド更新                         |
 | failure-alert.sh | Stop, StopFailure | fail-open  | 悪い終わり方をしたターンを音で知らせる。end_turn と subagent では鳴らさない |
 
 ### integrations/

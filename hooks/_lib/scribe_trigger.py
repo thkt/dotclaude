@@ -24,7 +24,7 @@ GhRunner = Callable[[Sequence[str]], str]
 # A hook starts with PATH cut down, so a bare `gh` raises FileNotFoundError before any gate runs.
 DEFAULT_GH = Path("/opt/homebrew/bin/gh")
 
-# The interval a stamp counts as recent, in the shape hooks/lifecycle/recall_index.py's
+# The interval a stamp counts as recent, in the shape hooks/lifecycle/recall_index.ts's
 # WINDOW_MINUTES takes. A nudge costs the user's attention, not just gh's rate limit, so the
 # window is a workday: whichever pull trips the trigger again inside it should stay quiet
 # rather than repeat a suggestion the user already saw once today.
