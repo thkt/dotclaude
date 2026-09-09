@@ -1,6 +1,6 @@
 # Duplication match
 
-Used in Phase 2 only when a plan draft exists. When the conversation carries a `/think` plan draft, pick that one to match against. Without one, pass the issue title to ${CLAUDE_SKILL_DIR}/scripts/pick-plan.py. When it returns a `path`, pick that draft. When `ambiguous` is true, put `candidates` to the user with AskUserQuestion and ask them to choose.
+Used in Phase 2 only when a plan draft exists. When the conversation carries a `/think` plan draft, pick that one to match against. Without one, pass the issue title to ${CLAUDE_SKILL_DIR}/scripts/pick-plan.ts. When it returns a `path`, pick that draft. When `ambiguous` is true, put `candidates` to the user with AskUserQuestion and ask them to choose.
 
 Match every place where the body and `## Plan` carry the same knowledge. Two places carry the same knowledge when editing one forces the other to change. What can change independently stays in both.
 

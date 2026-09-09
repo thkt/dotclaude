@@ -1,0 +1,78 @@
+[
+  {
+    "name": "missing_section",
+    "argv": [
+      "skills/issue/templates/bug.md",
+      "[Bug] Login fails for some users",
+      "<body-path>"
+    ],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "{\n  \"errors\": [\n    \"missing_section:Expected vs Actual\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"type_match:bug=ok\",\n    \"section:What & Why=ok\",\n    \"section:Steps to Reproduce=ok\",\n    \"section:Scope=ok\",\n    \"unknown_section=none\",\n    \"placeholder=none\",\n    \"unfilled_section=none\"\n  ]\n}\n"
+  },
+  {
+    "name": "type_mismatch",
+    "argv": [
+      "skills/issue/templates/feature.md",
+      "[Bug] Login fails for some users",
+      "<body-path>"
+    ],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "{\n  \"errors\": [\n    \"type_mismatch:title=bug template=feature\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:What & Why=ok\",\n    \"section:Acceptance Criteria=ok\",\n    \"section:Scope=ok\",\n    \"section:Testing Decisions=ok\",\n    \"unknown_section=none\",\n    \"placeholder=none\",\n    \"unfilled_section=none\"\n  ]\n}\n"
+  },
+  {
+    "name": "unknown_section",
+    "argv": [
+      "skills/issue/templates/bug.md",
+      "[Bug] Login fails for some users",
+      "<body-path>"
+    ],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "{\n  \"errors\": [\n    \"unknown_section:Changes\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"type_match:bug=ok\",\n    \"section:What & Why=ok\",\n    \"section:Steps to Reproduce=ok\",\n    \"section:Expected vs Actual=ok\",\n    \"section:Scope=ok\",\n    \"placeholder=none\",\n    \"unfilled_section=none\"\n  ]\n}\n"
+  },
+  {
+    "name": "unreadable_skeleton",
+    "argv": [
+      "<template-path>",
+      "[Feature] sample",
+      "<body-path>"
+    ],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "{\n  \"errors\": [\n    \"unreadable_skeleton:feature.yml\",\n    \"missing_section:Acceptance Criteria\",\n    \"missing_section:Testing Decisions\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"type_match:feature=ok\",\n    \"unknown_section=skipped (repository template)\",\n    \"placeholder=none\",\n    \"unfilled_section=none\"\n  ]\n}\n"
+  },
+  {
+    "name": "form_floor",
+    "argv": [
+      ".github/ISSUE_TEMPLATE/bug.yml",
+      "[Bug] x",
+      "<body-path>"
+    ],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "{\n  \"errors\": [\n    \"missing_section:Expected vs Actual\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"type_match:bug=ok\",\n    \"section:Priority=ok\",\n    \"section:What happened?=ok\",\n    \"unknown_section=skipped (repository template)\",\n    \"placeholder=none\",\n    \"unfilled_section=none\"\n  ]\n}\n"
+  },
+  {
+    "name": "placeholder_left",
+    "argv": [
+      "skills/issue/templates/feature.md",
+      "[Feature] sample",
+      "<body-path>"
+    ],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "{\n  \"errors\": [\n    \"placeholder_left:14 [{What to build - 1-2 sentences}]\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"type_match:feature=ok\",\n    \"section:What & Why=ok\",\n    \"section:Acceptance Criteria=ok\",\n    \"section:Scope=ok\",\n    \"section:Testing Decisions=ok\",\n    \"unknown_section=none\",\n    \"unfilled_section=none\"\n  ]\n}\n"
+  },
+  {
+    "name": "content_only_unwritten",
+    "argv": [
+      "--content-only",
+      "<body-path>"
+    ],
+    "stdin": "",
+    "exit": 1,
+    "stdout": "{\n  \"errors\": [\n    \"placeholder_left:1 [{Outcome}]\"\n  ],\n  \"warnings\": [],\n  \"checks\": []\n}\n"
+  }
+]

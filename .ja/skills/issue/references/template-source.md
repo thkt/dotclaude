@@ -4,7 +4,7 @@
 
 `gh api "repos/{owner}/{repo}/contents/.github/ISSUE_TEMPLATE" --jq '.[].name'` でテンプレートを列挙する。種別に対応する骨格を下表の上から順に探し、最初に見つかったものを採用する。リポジトリ内のテンプレートを優先するのは、Web UI と CLI から起票される issue の骨格を揃えるため。
 
-上の 2 種類は、Web UI で入力を求める最小要件を定める。CLI からの起票時に追加の節を設けても逸脱にはならない。骨格に含まれていない場合でも、feature には `Acceptance Criteria` と `Testing Decisions` を書く。bug には `Steps to Reproduce` と `Expected vs Actual` を書く。この 2 つは `validate-issue-body.py` の `FLOOR` が種別ごとに持ち、骨格が何を必須としても足す。
+上の 2 種類は、Web UI で入力を求める最小要件を定める。CLI からの起票時に追加の節を設けても逸脱にはならない。骨格に含まれていない場合でも、feature には `Acceptance Criteria` と `Testing Decisions` を書く。bug には `Steps to Reproduce` と `Expected vs Actual` を書く。この 2 つは `validate-issue-body.ts` の `FLOOR` が種別ごとに持ち、骨格が何を必須としても足す。
 
 | 骨格                           | 節名の取り方                                                                                        |
 | ------------------------------ | --------------------------------------------------------------------------------------------------- |

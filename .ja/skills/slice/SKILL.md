@@ -2,7 +2,7 @@
 name: slice
 description: 計画 / spec / PRD を独立して着手可能な tracer-bullet 垂直スライス issue 群に分解し、依存順で GitHub に公開する。各 issue は全レイヤーを貫く 1 本の細い縦串。1 件の要求を起票するだけなら使わない (代わりに /issue)。
 when_to_use: 計画を issue に分解, plan を issue 化, spec を issue 群に, vertical slice, tracer bullet, issue 分割, slice
-allowed-tools: Bash(gh:*) Bash(cat:*) Bash(python3:*) Bash(ugrep:*) Bash(bfs:*) Read LS Agent AskUserQuestion
+allowed-tools: Bash(gh:*) Bash(cat:*) Bash(${CLAUDE_SKILL_DIR}/../issue/scripts/*) Bash(ugrep:*) Bash(bfs:*) Read LS Agent AskUserQuestion
 model: opus
 argument-hint: "[plan / spec / PRD / issue ref]"
 ---
@@ -39,11 +39,11 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 
 計画を tracer bullet issue に割る。横スライス (1 レイヤーだけ) ではなく縦スライス。各スライスの説明は、レイヤーごとの実装手順でなく端から端までの振る舞いで書く。具体的なファイルパスやコードスニペットは陳腐化が速く、着手時に読む人を誤らせるので書かない。例外は prototype が生んだ state machine、reducer、schema、型のスニペットで、散文より正確に決定を符号化する場合のみ。その場合は prototype 由来と一言添え、決定に効く部分だけに刈り込む。受け入れ基準は、そのスライス単体で demo または検証できる形にする。他スライスの完了を前提にした基準は、依存として Blocked by へ移す。
 
-| ルール       | 内容                                                  |
-| ------------ | ----------------------------------------------------- |
-| 全レイヤー   | 各スライスは Phase 1 で確定した層をすべて貫く         |
-| 単独検証可能 | 完了スライスはそれ単体で demo または検証できる        |
-| prefactor 先 | prefactor が要るなら最初のスライスに置く              |
+| ルール       | 内容                                           |
+| ------------ | ---------------------------------------------- |
+| 全レイヤー   | 各スライスは Phase 1 で確定した層をすべて貫く  |
+| 単独検証可能 | 完了スライスはそれ単体で demo または検証できる |
+| prefactor 先 | prefactor が要るなら最初のスライスに置く       |
 
 ### plan を持つソースの配分
 
@@ -57,11 +57,11 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 
 提案分解を番号付きリストで提示し、末尾に未カバーを 1 行足す。未カバーが無ければ「なし」と書く。提示後に次を問う。粒度は粗すぎず細かすぎないか。依存関係は正しいか。merge か split すべきスライスはあるか。未カバー単位をどう扱うか。扱いの選択肢は、既存スライスへの割り当て、新スライス、理由付きの意図的除外。ユーザーが承認するまで反復する。各スライスに示す項目は下表のとおり。
 
-| 項目         | 内容                                     |
-| ------------ | ---------------------------------------- |
+| 項目         | 内容                                                                       |
+| ------------ | -------------------------------------------------------------------------- |
 | Title        | `[Feature]` のように種別を角括弧で前置した短い名前。検証は前置を必須とする |
-| Blocked by   | 先に完了すべき他スライス (あれば)        |
-| User stories | このスライスが満たす user story (あれば) |
+| Blocked by   | 先に完了すべき他スライス (あれば)                                          |
+| User stories | このスライスが満たす user story (あれば)                                   |
 
 ## Phase 4: issue を publish する
 
@@ -70,7 +70,7 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 承認したら、blocker を先にする依存順で publish する。"Blocked by" に実 issue 番号を書けるよう、blocker を先に作ってその番号を捕捉する。
 
 1. テンプレート選択で決めた骨格に本文を流し込み、heredoc を使って `cat` で一時ファイルへ書き出す。`<path>` は変数でなくリテラルの絶対パスで書く。hook は変数を展開できず、起票が止まる
-2. ${CLAUDE_SKILL_DIR}/../issue/scripts/validate-issue-body.py `<骨格ファイル>` `<title>` `<body-file>` を実行する。エラーは ${CLAUDE_SKILL_DIR}/../issue/references/validation-errors.md に従って直し、直したら再実行する。N 件をまとめて起票するので、1 件の欠落が N 件に広がる
+2. ${CLAUDE_SKILL_DIR}/../issue/scripts/validate-issue-body.ts `<骨格ファイル>` `<title>` `<body-file>` を実行する。エラーは ${CLAUDE_SKILL_DIR}/../issue/references/validation-errors.md に従って直し、直したら再実行する。N 件をまとめて起票するので、1 件の欠落が N 件に広がる
 3. `gh issue create --title "<title>" --body-file <path> --label priority:<値>` で起票する。複数行の markdown は `--body` では壊れるので `--body-file` を使う。priority は critical、high、medium、low から影響度で選ぶ。骨格に priority の節があれば、その値とラベルを揃える
 4. ソースが issue なら、`gh issue edit <ソースの番号> --add-sub-issue <番号1,番号2,...>` で全スライスを sub-issue として紐付ける。ソースが plan ファイルなど issue でない場合は飛ばす
 5. triage label は付けない。AFK consumer 連携は対象外。親 issue は close せず、本文も変更しない
@@ -89,10 +89,10 @@ argument-hint: "[plan / spec / PRD / issue ref]"
 
 ## エラー処理
 
-| エラー               | アクション                                 |
-| -------------------- | ------------------------------------------ |
-| issue 参照が解決不可 | ref を報告して停止                         |
-| git リポジトリでない | git リポジトリでない旨を報告               |
-| gh の認証に失敗      | 認証エラーを報告                           |
-| publish 途中で失敗   | 作成済み番号を報告し、残りの再開可否を問う |
+| エラー               | アクション                                                      |
+| -------------------- | --------------------------------------------------------------- |
+| issue 参照が解決不可 | ref を報告して停止                                              |
+| git リポジトリでない | git リポジトリでない旨を報告                                    |
+| gh の認証に失敗      | 認証エラーを報告                                                |
+| publish 途中で失敗   | 作成済み番号を報告し、残りの再開可否を問う                      |
 | 本文の検証が通らない | 直せないエラーを報告し、その 1 件を飛ばして残りを続けるかを問う |
