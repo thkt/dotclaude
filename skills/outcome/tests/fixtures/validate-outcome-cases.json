@@ -1,0 +1,118 @@
+[
+  {
+    "name": "filled_file_routes_to_update",
+    "files": {
+      "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\n- A reviewer reads the diff without asking what the change is for.\n\n### Indicators\n\n| Indicator  | Value              | Corroborates       |\n| ---------- | ------------------ | ------------------ |\n| Time       | under 10 min       | reviewer behavior  |\n| Error rate | 0 reverted PRs     | reviewer behavior  |\n| Value      | reviewer trusts it | reviewer behavior  |\n\n## Non-goals\n\n- Rewriting the release pipeline.\n\n## Constraints\n\n- GitHub Actions only.\n"
+    },
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"ok\",\n  \"flow\": \"update\",\n  \"errors\": [],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"placeholder=none\",\n    \"indicator:Time=ok\",\n    \"indicator:Error rate=ok\",\n    \"indicator:Value=ok\"\n  ]\n}\n"
+  },
+  {
+    "name": "absent_file_routes_to_generate",
+    "files": {},
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"absent\",\n  \"flow\": \"generate\",\n  \"errors\": [],\n  \"warnings\": [],\n  \"checks\": [\n    \"file=absent\"\n  ]\n}\n"
+  },
+  {
+    "name": "tbd_behavior_routes_to_generate",
+    "files": {
+      "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\nTBD\n\n## Non-goals\n\nTBD\n\n## Constraints\n\nTBD\n"
+    },
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"empty\",\n  \"flow\": \"generate\",\n  \"errors\": [],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"placeholder=none\",\n    \"behavior=unfilled\",\n    \"all_sections=unfilled\",\n    \"indicators=omitted\"\n  ]\n}\n"
+  },
+  {
+    "name": "filled_behavior_with_tbd_elsewhere_routes_to_update",
+    "files": {
+      "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\n- A user sees the total.\n\n## Non-goals\n\nTBD\n\n## Constraints\n\nTBD\n"
+    },
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"ok\",\n  \"flow\": \"update\",\n  \"errors\": [],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"placeholder=none\",\n    \"indicators=omitted\"\n  ]\n}\n"
+  },
+  {
+    "name": "surviving_placeholder_is_an_error",
+    "files": {
+      "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\n{Subject holds the named state in the done condition}\n\n### Indicators\n\n| Indicator  | Value              | Corroborates       |\n| ---------- | ------------------ | ------------------ |\n| Time       | under 10 min       | reviewer behavior  |\n| Error rate | 0 reverted PRs     | reviewer behavior  |\n| Value      | reviewer trusts it | reviewer behavior  |\n\n## Non-goals\n\n- Rewriting the release pipeline.\n\n## Constraints\n\n- GitHub Actions only.\n"
+    },
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 1,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"ok\",\n  \"flow\": \"update\",\n  \"errors\": [\n    \"placeholder_left:1 [{Subject holds the named state in the done condition}]\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"indicator:Time=ok\",\n    \"indicator:Error rate=ok\",\n    \"indicator:Value=ok\"\n  ]\n}\n"
+  },
+  {
+    "name": "inline_braces_in_prose_are_not_placeholders",
+    "files": {
+      "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\n- The CLI returns {status, findings} without a wrapper.\n\n### Indicators\n\n| Indicator  | Value              | Corroborates       |\n| ---------- | ------------------ | ------------------ |\n| Time       | under 10 min       | reviewer behavior  |\n| Error rate | 0 reverted PRs     | reviewer behavior  |\n| Value      | reviewer trusts it | reviewer behavior  |\n\n## Non-goals\n\n- Rewriting the release pipeline.\n\n## Constraints\n\n- GitHub Actions only.\n"
+    },
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"ok\",\n  \"flow\": \"update\",\n  \"errors\": [],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"placeholder=none\",\n    \"indicator:Time=ok\",\n    \"indicator:Error rate=ok\",\n    \"indicator:Value=ok\"\n  ]\n}\n"
+  },
+  {
+    "name": "unfilled_indicator_cell_is_a_placeholder",
+    "files": {
+      "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\n- A reviewer reads the diff without asking what the change is for.\n\n### Indicators\n\n| Indicator  | Value              | Corroborates       |\n| ---------- | ------------------ | ------------------ |\n| Time       | {bound}            | reviewer behavior  |\n| Error rate | 0 reverted PRs     | reviewer behavior  |\n| Value      | reviewer trusts it | reviewer behavior  |\n\n## Non-goals\n\n- Rewriting the release pipeline.\n\n## Constraints\n\n- GitHub Actions only.\n"
+    },
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 1,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"ok\",\n  \"flow\": \"update\",\n  \"errors\": [\n    \"placeholder_left:1 [{bound}]\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"indicator:Time=ok\",\n    \"indicator:Error rate=ok\",\n    \"indicator:Value=ok\"\n  ]\n}\n"
+  },
+  {
+    "name": "missing_required_section_is_an_error",
+    "files": {
+      "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\n- A reviewer reads the diff without asking what the change is for.\n\n### Indicators\n\n| Indicator  | Value              | Corroborates       |\n| ---------- | ------------------ | ------------------ |\n| Time       | under 10 min       | reviewer behavior  |\n| Error rate | 0 reverted PRs     | reviewer behavior  |\n| Value      | reviewer trusts it | reviewer behavior  |\n\n## Non-goals\n\n- Rewriting the release pipeline.\n\n"
+    },
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 1,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"ok\",\n  \"flow\": \"update\",\n  \"errors\": [\n    \"missing_section:Constraints\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"placeholder=none\",\n    \"indicator:Time=ok\",\n    \"indicator:Error rate=ok\",\n    \"indicator:Value=ok\"\n  ]\n}\n"
+  },
+  {
+    "name": "omitted_indicators_draws_no_warning",
+    "files": {
+      "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\n- A user sees the total.\n\n## Non-goals\n\n- None.\n\n## Constraints\n\n- None.\n"
+    },
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"ok\",\n  \"flow\": \"update\",\n  \"errors\": [],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"placeholder=none\",\n    \"indicators=omitted\"\n  ]\n}\n"
+  },
+  {
+    "name": "incomplete_indicators_table_warns",
+    "files": {
+      "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\n- A reviewer reads the diff without asking what the change is for.\n\n### Indicators\n\n| Indicator  | Value              | Corroborates       |\n| ---------- | ------------------ | ------------------ |\n| Time       | under 10 min       | reviewer behavior  |\n| Error rate | 0 reverted PRs     | reviewer behavior  |\n\n## Non-goals\n\n- Rewriting the release pipeline.\n\n## Constraints\n\n- GitHub Actions only.\n"
+    },
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"ok\",\n  \"flow\": \"update\",\n  \"errors\": [],\n  \"warnings\": [\n    \"missing_indicator:Value\"\n  ],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"placeholder=none\",\n    \"indicator:Time=ok\",\n    \"indicator:Error rate=ok\"\n  ]\n}\n"
+  },
+  {
+    "name": "bare_template_fails_until_filled",
+    "argv": [
+      "skills/outcome/templates/outcome.md"
+    ],
+    "exit": 1,
+    "stdout": "{\n  \"file\": \"skills/outcome/templates/outcome.md\",\n  \"state\": \"ok\",\n  \"flow\": \"update\",\n  \"errors\": [\n    \"placeholder_left:11 [{Optional opening prose. The project's reason for being and the direction it evolves toward. Aspirational language allowed.}]\"\n  ],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"indicator:Time=ok\",\n    \"indicator:Error rate=ok\",\n    \"indicator:Value=ok\"\n  ]\n}\n"
+  }
+]

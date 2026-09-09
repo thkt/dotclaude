@@ -62,7 +62,7 @@ const bundled = (rel) =>
 const SCRIPTS = bundled("workflows/assert");
 // OUTCOME.md の空判定の基準は /outcome が持つので、Bootstrap は TBD を目視せず
 // その判定結果を読む。
-const OUTCOME_VALIDATOR = bundled("skills/outcome/scripts/validate-outcome.py");
+const OUTCOME_VALIDATOR = bundled("skills/outcome/scripts/validate-outcome.ts");
 
 // merge-findings.py の 2 規則を inline する。P1 -> high、P2 -> medium、P3 -> 落とす。critical /
 // high / medium / low は素通し、認識できない severity は落とす。dedup key は file:line のみ
