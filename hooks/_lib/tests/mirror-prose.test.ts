@@ -4,17 +4,18 @@
 // determination is the "correspondence" this unit's goal names: a .ja file's prose either still
 // pairs with Japanese (a character survives) or it does not (the file went English-only and its
 // Japanese twin -- the Japanese half of its own prose, not a second file -- is missing).
-// `_python_prose` (mirror_prose.py:44-70) stays out of scope here; unit U-002
+// `_python_prose` (the retired Python module's lines 44-70) stays out of scope here; unit U-002
 // (mirror-prose-python.test.ts) covers it.
 //
 // The two full-tree sweeps mirror_prose_test.py's MirrorSweep class ran against the real repo
 // move here as their own scenarios (T-367, T-368), each against an isolated temp tree rather
 // than the live repo: a temp tree keeps the exclusion behavior deterministic and keeps the test
 // from depending on -- or mutating -- this checkout's actual .ja/ content. node_modules/,
-// projects/, and logs/ replace mirror_prose.py's __pycache__/.git exclusions -- the ones this
-// repo's own tree can actually grow under a plain filesystem walk (git ls-files already leaves
-// gitignored directories out, so a walk that reused it would not need this exclusion at all;
-// mirror_prose's sweep walks the filesystem directly, the same way mirror_prose.py's rglob does).
+// projects/, and logs/ replace the retired Python module's __pycache__/.git exclusions -- the
+// ones this repo's own tree can actually grow under a plain filesystem walk (git ls-files
+// already leaves gitignored directories out, so a walk that reused it would not need this
+// exclusion at all; mirror_prose's sweep walks the filesystem directly, the same way the retired
+// Python module's rglob did).
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

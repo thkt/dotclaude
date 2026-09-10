@@ -1,18 +1,19 @@
 /// <reference types="node" />
-// Detect a .ja/ file whose prose holds no Japanese; the TypeScript side of
-// hooks/_lib/mirror_prose.py (DR-0112's TypeScript migration, issue #644). Ports everything in
-// that module except `_python_prose` (mirror_prose.py:44-70): that extraction walks Python
-// source with `ast` and `tokenize`, which node carries no equivalent for, so unit U-002
-// (hooks/_lib/tests/mirror-prose-python.test.ts) adds a string-state walk for it separately.
+// Detect a .ja/ file whose prose holds no Japanese. Ported from hooks/_lib's original Python
+// mirror_prose module (DR-0112's TypeScript migration, issue #644); that Python module and its
+// hook retired once this file and hooks/edit/mirror_prose_guard.ts took over (unit U-004). Ports
+// everything in the original module except `_python_prose` (its lines 44-70): that extraction
+// walks Python source with `ast` and `tokenize`, which node carries no equivalent for, so unit
+// U-002 (hooks/_lib/tests/mirror-prose-python.test.ts) adds a string-state walk for it separately.
 //
 // The edit-time hook (hooks/edit/mirror_prose_guard.ts, unit U-003) and the repository-wide
 // sweep both import this. The hook answers for one file as it changes; the sweep answers for
 // every file, including what landed while no hook was watching.
 //
-// U-001: the control flow below mirrors mirror_prose.py's (check calls isTarget then
+// U-001: the control flow below mirrors the original Python module's (check calls isTarget then
 // extractProse then hasJapanese, checkEnglish calls isEnglishTarget then extractProse then
 // hasJapanese, extractProse dispatches on suffix). pythonProse itself is U-002
-// (hooks/_lib/tests/mirror-prose-python.test.ts), which ports mirror_prose.py:44-70's
+// (hooks/_lib/tests/mirror-prose-python.test.ts), which ports the original module's lines 44-70
 // ast/tokenize walk as its own string-state scan, since node carries no equivalent for either
 // module.
 import { readFileSync, statSync } from "node:fs";
@@ -27,21 +28,21 @@ export const TARGET_SUFFIXES: readonly string[] = [".py", ".js", ".ts", ".sh", "
 // there is nothing in it to translate.
 export const ENGLISH_SUFFIX = ".en.md";
 
-// mirror_prose.py's COMMENT_LINE / SHEBANG_OR_ENCODING / QUOTED.
+// The original Python module's COMMENT_LINE / SHEBANG_OR_ENCODING / QUOTED.
 const COMMENT_LINE = /^\s*(#|\/\/|\*)/;
 const SHEBANG_OR_ENCODING = /^#!|^# -\*- coding/;
 const QUOTED = /"[^"]*"|'[^']*'|`[^`]*`/g;
 
 /** A .ja/ directory has to be on the path, not merely the string somewhere in a name
- * (mirror_prose.py's `is_target`). */
+ * (the original Python module's `is_target`). */
 export function isTarget(filePath: string): boolean {
   if (filePath.endsWith(ENGLISH_SUFFIX)) return false;
   return filePath.split(sep).includes(".ja") && TARGET_SUFFIXES.includes(extname(filePath));
 }
 
 /** python's `str.expandtabs()`: each tab pads to the next multiple of 8 columns, counted from
- * the start of the line (mirror_prose.py's `_python_prose` runs on `inspect.cleandoc`, which
- * calls this first). */
+ * the start of the line (the original Python module's `_python_prose` runs on
+ * `inspect.cleandoc`, which calls this first). */
 function expandTabs(line: string): string {
   let out = "";
   let col = 0;
@@ -59,7 +60,7 @@ function expandTabs(line: string): string {
 }
 
 /** `inspect.cleandoc`, the dedent `ast.get_docstring(node, clean=True)` applies before
- * mirror_prose.py's `_python_prose` collects a docstring's lines: strip the first line, drop
+ * the original Python module's `_python_prose` collects a docstring's lines: strip the first line, drop
  * the common leading whitespace off every other line, then drop leading/trailing blank
  * lines. */
 function cleandoc(text: string): string[] {
@@ -80,7 +81,7 @@ function cleandoc(text: string): string[] {
 
 const DEF_OR_CLASS_HEADER = /^(async\s+def|def|class)\b.*:$/;
 
-/** mirror_prose.py:44-70's `_python_prose`, ported by U-002 (hooks/_lib/tests/mirror-prose-
+/** The original Python module's lines 44-70, `_python_prose`, ported by U-002 (hooks/_lib/tests/mirror-prose-
  * python.test.ts) as a string-state scan: node has neither `ast` nor `tokenize`, so this walks
  * the source a character at a time, tracking triple-quoted / single-quoted / prefixed string
  * literals and the module / def / class docstring position by hand instead.
@@ -207,7 +208,7 @@ function pythonProse(src: string): string[] {
 }
 
 /** Markdown carries no comment marker: the body is the prose. Fenced blocks come out, where
- * identifiers make up the text (mirror_prose.py's `_markdown_prose`). */
+ * identifiers make up the text (the original Python module's `_markdown_prose`). */
 function markdownProse(src: string): string[] {
   const out: string[] = [];
   let fenced = false;
@@ -221,7 +222,7 @@ function markdownProse(src: string): string[] {
   return out;
 }
 
-/** mirror_prose.py's `_comment_prose`. */
+/** The original Python module's `_comment_prose`. */
 function commentProse(src: string): string[] {
   return src
     .split("\n")
@@ -229,7 +230,7 @@ function commentProse(src: string): string[] {
 }
 
 /** Prose only, never code or string literals. Counting the whole file would pass on any file
- * holding a Japanese string literal (mirror_prose.py's `extract_prose`). */
+ * holding a Japanese string literal (the original Python module's `extract_prose`). */
 export function extractProse(filePath: string): string[] {
   const src = readFileSync(filePath, "utf8");
   const suffix = extname(filePath);
@@ -239,7 +240,7 @@ export function extractProse(filePath: string): string[] {
 }
 
 /** The warning for a file that lost its Japanese, or null when there is nothing to say
- * (mirror_prose.py's `check`). The file has to exist: extractProse reads it. */
+ * (the original Python module's `check`). The file has to exist: extractProse reads it. */
 export function check(filePath: string): string | null {
   if (!isTarget(filePath)) return null;
   const lines = extractProse(filePath);
@@ -258,7 +259,7 @@ export function check(filePath: string): string | null {
 }
 
 /** The .ja/ copy of an English-side file, found by walking up to the directory holding .ja/
- * (mirror_prose.py's `_ja_counterpart`). */
+ * (the original Python module's `_ja_counterpart`). */
 function jaCounterpart(filePath: string): string | null {
   let current = dirname(filePath);
   for (;;) {
@@ -277,7 +278,7 @@ function jaCounterpart(filePath: string): string | null {
 }
 
 /** The English side of a mirrored pair, for the extensions whose prose sits in comments
- * (mirror_prose.py's `is_english_target`). Markdown is out: an English SKILL.md carries its
+ * (the original Python module's `is_english_target`). Markdown is out: an English SKILL.md carries its
  * when_to_use trigger phrases in Japanese on purpose, and markdownProse cannot tell those from
  * prose left untranslated. */
 export function isEnglishTarget(filePath: string): boolean {
@@ -295,7 +296,7 @@ export function isEnglishTarget(filePath: string): boolean {
 }
 
 /** The warning for an English-side file still holding Japanese prose, or null
- * (mirror_prose.py's `check_english`). */
+ * (the original Python module's `check_english`). */
 export function checkEnglish(filePath: string): string | null {
   if (!isEnglishTarget(filePath)) return null;
   // English prose quoting a Japanese literal names data, which keeps its original language.
@@ -308,7 +309,7 @@ export function checkEnglish(filePath: string): string | null {
   );
 }
 
-/** Answer a PostToolUse payload on stdout (mirror_prose.py's `emit`). systemMessage reaches the
+/** Answer a PostToolUse payload on stdout (the original Python module's `emit`). systemMessage reaches the
  * human and additionalContext reaches whoever rewrote the file. */
 export function emit(stdinText: string): void {
   const filePath = editedFile(stdinText);

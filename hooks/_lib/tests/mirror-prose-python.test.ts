@@ -1,18 +1,18 @@
 /// <reference types="node" />
 // Ports hooks/_lib/tests/mirror_prose_test.py's ProseExtraction suite's Python-specific cases to
-// mirror_prose.ts's side (DR-0112, issue #644, unit U-002). mirror_prose.py:44-70's
-// `_python_prose` walks Python source with `ast` and `tokenize`, which node carries no
+// mirror_prose.ts's side (DR-0112, issue #644, unit U-002). The retired Python module's lines
+// 44-70, `_python_prose`, walks Python source with `ast` and `tokenize`, which node carries no
 // equivalent for, so this ports the walk as its own string-state scan (triple-quoted / single-
 // quoted / prefixed literals, module / def / class docstrings) instead of reusing a regex --
-// mirror_prose.py:45 states a regex cannot tell `# Heading` inside a triple-quoted template from
-// a real comment, which is exactly what mirror_prose_test.py:62's
+// that module's line 45 states a regex cannot tell `# Heading` inside a triple-quoted template
+// from a real comment, which is exactly what mirror_prose_test.py:62's
 // `test_a_heading_inside_a_python_literal_is_not_a_comment` pins.
 //
 // pythonProse itself is not exported: extractProse (mirror_prose.ts) is the one export that
 // dispatches a .py file to it, the same seam mirror_prose_test.py's ProseExtraction suite reads
-// through via extract_prose. Every expected value below was captured by running the pinned
-// mirror_prose.py's own `_python_prose` against the same source, so a Green implementation here
-// stays provably parallel to the Python side rather than merely plausible.
+// through via extract_prose. Every expected value below was captured by running the pinned,
+// now-retired Python module's own `_python_prose` against the same source, so a Green
+// implementation here stays provably parallel to the Python side rather than merely plausible.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
