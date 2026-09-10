@@ -23,7 +23,7 @@ function readConfig(repo: string, key: string): string {
 }
 
 test(
-  "a repository the helper creates answers 0 for gc.auto and false for maintenance.auto, " +
+  "T-416 a repository the helper creates answers 0 for gc.auto and false for maintenance.auto, " +
     "read back through git config rather than from the helper's own constant",
   () => {
     withTempRepo((repo) => {
@@ -33,17 +33,21 @@ test(
   },
 );
 
-test("the helper removes the repository even when the body throws, and the path no longer exists afterward", () => {
-  let capturedRepo = "";
-  assert.throws(() => {
-    withTempRepo((repo) => {
-      capturedRepo = repo;
-      throw new Error("body boom");
-    });
-  }, /body boom/);
-  assert.notEqual(capturedRepo, "");
-  assert.equal(existsSync(capturedRepo), false);
-});
+test(
+  "T-417 the helper removes the repository even when the body throws, and the path no longer " +
+    "exists afterwards",
+  () => {
+    let capturedRepo = "";
+    assert.throws(() => {
+      withTempRepo((repo) => {
+        capturedRepo = repo;
+        throw new Error("body boom");
+      });
+    }, /body boom/);
+    assert.notEqual(capturedRepo, "");
+    assert.equal(existsSync(capturedRepo), false);
+  },
+);
 
 // Not a Red-driving assertion for this unit: a plain `git init` repository already reads this
 // way regardless of withTempRepo's implementation (confirmed empirically: `git config gc.auto`
@@ -51,7 +55,7 @@ test("the helper removes the repository even when the body throws, and the path 
 // function's readConfig folds to ""). It exists so T-416 cannot pass vacuously -- if this one
 // ever started reading "0" too, T-416 would stop proving anything about the helper.
 test(
-  "a repository created without the helper still answers the inherited gc.auto, " +
+  "T-418 a repository created without the helper still answers the inherited gc.auto, " +
     "so the assertion above is not vacuous",
   () => {
     const repo = mkdtempSync(join(tmpdir(), "git-repo-control-"));
