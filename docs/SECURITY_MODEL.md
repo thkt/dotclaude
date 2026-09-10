@@ -37,7 +37,7 @@ Important: L1 and L2 tune human intervention points (UX). L3 is the actual secur
 | `excludedCommands` run outside the sandbox | scout reaches the network directly           | Keep the list at two commands; review any addition as an exfil path       |
 | `enableWeakerNetworkIsolation` is true     | Opens an exfiltration path through trustd    | Required for `gh` TLS verification; without it build fails at issue fetch |
 | External transmission via allowed tools    | Data exfiltration possible via scout, gh api | Indistinguishable from legitimate use, handle operationally               |
-| npm/pnpm install postinstall               | Arbitrary code execution                     | `npm_install_guard.py` blocks installs without ignore-scripts             |
+| npm/pnpm install postinstall               | Arbitrary code execution                     | `npm_install_guard.ts` blocks installs without ignore-scripts             |
 
 ## Team Guidelines
 

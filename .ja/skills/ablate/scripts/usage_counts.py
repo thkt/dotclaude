@@ -36,13 +36,13 @@ _VARIABLE_PREFIX_RE = re.compile(r"^\$\{[A-Z_]+\}/")
 # 要素として数える拡張子。`command` には path でなくラベルを載せる発火もあり
 # (実測した transcript では "formatter"、"gates changed"、"guardrails...")、どの harness 要素
 # も名指していないため集計から外す。
-ELEMENT_SUFFIXES = frozenset({".py", ".sh", ".js"})
+ELEMENT_SUFFIXES = frozenset({".py", ".sh", ".js", ".ts"})
 
 # 稀な入力でのみ働く安全網。ここで発火回数 0 を「未使用」と読んではならない。
-# hooks/security/rm_to_trash.py は破壊的なコマンドが試みられたときのみ発火する
+# hooks/security/rm_to_trash.ts は破壊的なコマンドが試みられたときのみ発火する
 # ("Failure mode: fail-closed (security enforcement)") ため、ほとんどのセッションで
 # 一度も発火しない。
-RARE_BY_DESIGN: frozenset[str] = frozenset({"hooks/security/rm_to_trash.py"})
+RARE_BY_DESIGN: frozenset[str] = frozenset({"hooks/security/rm_to_trash.ts"})
 
 # `now` から遡って何日以内の直近発火を「観測済み」と数えるか。この窓を過ぎると、古い
 # last-used 日付を生かしたまま報告するのでなく、その要素を未計測として報告する。
