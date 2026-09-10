@@ -23,6 +23,7 @@
 import { globSync, readFileSync, statSync } from "node:fs";
 import { extname, join, sep } from "node:path";
 import { isMainModule } from "../../workflows/_lib/entry-point.ts";
+import { pythonJsonStringify } from "./python_json.ts";
 
 export const ALWAYS_LOADED = "always-loaded";
 export const PATH_TRIGGERED = "path-triggered";
@@ -69,7 +70,11 @@ export function _frontmatter_lines(path: string): string[] | null {
 }
 
 export function _unquote(item: string): string {
-  if (item.length >= 2 && item[0] === item[item.length - 1] && (item[0] === "'" || item[0] === '"')) {
+  if (
+    item.length >= 2 &&
+    item[0] === item[item.length - 1] &&
+    (item[0] === "'" || item[0] === '"')
+  ) {
     return item.slice(1, -1);
   }
   return item;
@@ -165,21 +170,10 @@ export function enumerate_elements(root: string): HarnessElement[] {
   return [...seen.keys()].sort().map((key) => seen.get(key) as HarnessElement);
 }
 
-// json.dumps(elements, ensure_ascii=False)'s default separators are ", " and ": " (a space
-// after each comma and colon), where JSON.stringify with no indent argument omits both. The
-// frozen fixture (skills/_lib/tests/fixtures/harness-elements-cases.json) recorded the real
-// python3 CLI's stdout byte-for-byte, so main()'s wire format follows that spacing rather than
-// JSON.stringify's default. Each field is itself run through JSON.stringify for its escaping,
-// which matches json.dumps' escaping for the ASCII paths and classifications this population
-// carries.
-function toPythonJson(elements: readonly HarnessElement[]): string {
-  const items = elements.map(
-    (element) =>
-      `{"path": ${JSON.stringify(element.path)}, "classification": ${JSON.stringify(element.classification)}}`,
-  );
-  return `[${items.join(", ")}]`;
-}
-
+// The wire format has to follow json.dumps' byte-for-byte spacing, not JSON.stringify's default
+// -- see python_json.ts's header for why, and for the shared encoder every CLI in this family
+// reuses instead of hand-building its own braces.
+//
 // Python's main(argv) takes sys.argv (script name included), so `len(argv) != 2` there is
 // this CLI's `argv.length !== 1` here: main() receives process.argv.slice(2), the same argv
 // convention harness_hash.ts's main() uses.
@@ -189,7 +183,7 @@ export function main(argv: string[]): number {
     return 2;
   }
   const elements = enumerate_elements(argv[0]);
-  process.stdout.write(`${toPythonJson(elements)}\n`);
+  process.stdout.write(`${pythonJsonStringify(elements)}\n`);
   return 0;
 }
 

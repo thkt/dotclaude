@@ -26,6 +26,7 @@
 import { globSync, readFileSync, statSync } from "node:fs";
 import { extname, join, sep } from "node:path";
 import { isMainModule } from "../../workflows/_lib/entry-point.ts";
+import { pythonJsonStringify } from "./python_json.ts";
 
 export const ALWAYS_LOADED = "always-loaded";
 export const PATH_TRIGGERED = "path-triggered";
@@ -74,7 +75,11 @@ export function _frontmatter_lines(path: string): string[] | null {
 }
 
 export function _unquote(item: string): string {
-  if (item.length >= 2 && item[0] === item[item.length - 1] && (item[0] === "'" || item[0] === '"')) {
+  if (
+    item.length >= 2 &&
+    item[0] === item[item.length - 1] &&
+    (item[0] === "'" || item[0] === '"')
+  ) {
     return item.slice(1, -1);
   }
   return item;
@@ -170,22 +175,10 @@ export function enumerate_elements(root: string): HarnessElement[] {
   return [...seen.keys()].sort().map((key) => seen.get(key) as HarnessElement);
 }
 
-// json.dumps(elements, ensure_ascii=False) の既定の区切り文字は ", " と ": "
-// (カンマとコロンの後にそれぞれ空白 1 つ) であり、indent を渡さない JSON.stringify は
-// どちらの空白も付けない。凍結したフィクスチャ
-// (skills/_lib/tests/fixtures/harness-elements-cases.json) は実際の python3 CLI の
-// stdout をバイト単位で記録しているため、main() の wire format は JSON.stringify の
-// 既定ではなくこの区切り方に合わせる。各フィールドはそれ自体を JSON.stringify に通して
-// エスケープしており、この集団が持つ ASCII のパスと分類については json.dumps の
-// エスケープと一致する。
-function toPythonJson(elements: readonly HarnessElement[]): string {
-  const items = elements.map(
-    (element) =>
-      `{"path": ${JSON.stringify(element.path)}, "classification": ${JSON.stringify(element.classification)}}`,
-  );
-  return `[${items.join(", ")}]`;
-}
-
+// wire format は JSON.stringify の既定ではなく json.dumps のバイト単位の区切り方に合わせる
+// 必要がある -- 理由と、この系統の CLI がそれぞれの波かっこを手書きする代わりに共有する
+// エンコーダについては python_json.ts のヘッダを参照。
+//
 // Python の main(argv) は sys.argv (スクリプト名を含む) を受け取るため、そちらの
 // `len(argv) != 2` はここでの `argv.length !== 1` にあたる: main() は
 // process.argv.slice(2) を受け取る、harness_hash.ts の main() と同じ argv の規約。
@@ -195,7 +188,7 @@ export function main(argv: string[]): number {
     return 2;
   }
   const elements = enumerate_elements(argv[0]);
-  process.stdout.write(`${toPythonJson(elements)}\n`);
+  process.stdout.write(`${pythonJsonStringify(elements)}\n`);
   return 0;
 }
 

@@ -24,6 +24,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 import { ALWAYS_LOADED, enumerate_elements } from "../../_lib/harness_elements.ts";
+import { pythonJsonStringify } from "../../_lib/python_json.ts";
 
 export const DELETE_CANDIDATE = "delete-candidate";
 export const ABLATION_RESIDUE = "ablation-residue";
@@ -102,33 +103,15 @@ export function map_all(root: string, targetFiles?: readonly string[]): Enforcer
   return results;
 }
 
-// Python の json.dumps(entries, ensure_ascii=False) の既定の区切り文字は ", " と ": "
-// (カンマとコロンの後にそれぞれ空白 1 つ) であり、indent を渡さない JSON.stringify は
-// どちらの空白も付けない。凍結したフィクスチャは実際の python3 CLI の stdout をバイト
-// 単位で記録しているため、main() の wire format は JSON.stringify の既定ではなく
-// この区切り方に合わせる -- harness_elements.ts の toPythonJson が自身のエントリに対して
-// 埋めるのと同じ差。
-function toPythonJson(entries: readonly EnforcerMapEntry[]): string {
-  const items = entries.map((entry) => {
-    const fields = [
-      `"file": ${JSON.stringify(entry.file)}`,
-      `"line_number": ${JSON.stringify(entry.line_number)}`,
-      `"verdict": ${JSON.stringify(entry.verdict)}`,
-    ];
-    if (entry.verdict === DELETE_CANDIDATE) {
-      fields.push(`"enforcer": ${JSON.stringify(entry.enforcer)}`);
-    }
-    return `{${fields.join(", ")}}`;
-  });
-  return `[${items.join(", ")}]`;
-}
-
+// wire format は JSON.stringify の既定ではなく json.dumps のバイト単位の区切り方に合わせる
+// 必要がある -- 理由と、この系統の CLI がそれぞれの波かっこを手書きする代わりに共有する
+// エンコーダについては python_json.ts のヘッダを参照。
 export function main(argv: string[]): number {
   if (argv.length !== 1) {
     process.stderr.write("usage: enforcer_map.ts <repo-root>\n");
     return 2;
   }
-  process.stdout.write(`${toPythonJson(map_all(argv[0]))}\n`);
+  process.stdout.write(`${pythonJsonStringify(map_all(argv[0]))}\n`);
   return 0;
 }
 

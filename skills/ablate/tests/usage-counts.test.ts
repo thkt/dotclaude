@@ -9,12 +9,12 @@
 // drift from it (docs/wiki/fixture-freeze-before-port.md), the same DRY choice
 // skills/ablate/tests/enforcer-map.test.ts makes for enforcer_map.ts.
 import assert from "node:assert/strict";
-import { readFileSync, rmSync } from "node:fs";
+import { rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { fixture } from "../../../workflows/_lib/tests/_cli-fixture.ts";
-import { writeTree } from "../../_lib/tests/_python-cli-fixture.ts";
+import { loadTreeFixtures, writeTree } from "../../_lib/tests/_python-cli-fixture.ts";
 import { DELETE_CANDIDATE, NEEDS_HUMAN_JUDGMENT } from "../scripts/verdict.ts";
 import { UNMEASURED } from "../scripts/arms.ts";
 import {
@@ -27,17 +27,7 @@ import type { UsageResult } from "../scripts/usage_counts.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-interface FixtureCase {
-  name: string;
-  files: Record<string, string>;
-  argv: string[];
-  exit: number;
-  stdout: string;
-}
-
-const CASES = JSON.parse(
-  readFileSync(join(HERE, "fixtures", "usage-counts-cases.json"), "utf8"),
-) as FixtureCase[];
+const CASES = loadTreeFixtures(join(HERE, "fixtures", "usage-counts-cases.json"));
 
 test("T-354 count_usage tallies the fires inside the window and drops the ones outside it, driven by the frozen transcript", () => {
   // "the window" here is the set FIRE_EVENTS/ELEMENT_SUFFIXES recognize as one hook fire

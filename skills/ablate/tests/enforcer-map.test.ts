@@ -8,31 +8,29 @@
 // (docs/wiki/fixture-freeze-before-port.md), the same DRY choice
 // skills/_lib/tests/harness-elements.test.ts makes for harness_elements.ts.
 import assert from "node:assert/strict";
-import { readFileSync, rmSync } from "node:fs";
+import { rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { fixture, runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
-import { writeTree } from "../../_lib/tests/_python-cli-fixture.ts";
-import { ABLATION_RESIDUE, DELETE_CANDIDATE, ENFORCER_TABLE, classify_line, map_all } from "../scripts/enforcer_map.ts";
+import {
+  loadTreeFixtures,
+  replayTreeFixtures,
+  writeTree,
+} from "../../_lib/tests/_python-cli-fixture.ts";
+import {
+  ABLATION_RESIDUE,
+  DELETE_CANDIDATE,
+  ENFORCER_TABLE,
+  classify_line,
+  map_all,
+} from "../scripts/enforcer_map.ts";
 import type { EnforcerMapEntry } from "../scripts/enforcer_map.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "enforcer_map.ts");
 
-const ROOT_PLACEHOLDER = "<root>";
-
-interface FixtureCase {
-  name: string;
-  files: Record<string, string>;
-  argv: string[];
-  exit: number;
-  stdout: string;
-}
-
-const CASES = JSON.parse(
-  readFileSync(join(HERE, "fixtures", "enforcer-map-cases.json"), "utf8"),
-) as FixtureCase[];
+const CASES = loadTreeFixtures(join(HERE, "fixtures", "enforcer-map-cases.json"));
 
 test("T-351 classify_line returns the category the table names for each enforcer shape", () => {
   // ENFORCER_TABLE is an exported const object: its binding cannot be reassigned from outside
@@ -78,20 +76,5 @@ test("T-352 map_all runs over an injected file list rather than the real tree, a
 });
 
 test("T-353 the frozen CLI cases replay through the .ts entry point", () => {
-  assert.ok(CASES.length > 0, "the frozen fixture carries at least one case");
-  for (const entry of CASES) {
-    const root = writeTree("enforcer-map-cli", entry.files);
-    try {
-      const argv = entry.argv.map((token) => (token === ROOT_PLACEHOLDER ? root : token));
-      const run = runCli(SCRIPT, root, "", argv);
-      assert.equal(run.status, entry.exit, `${entry.name}: exit code (stderr: ${run.stderr})`);
-      assert.equal(
-        run.stdout,
-        entry.stdout.replaceAll(ROOT_PLACEHOLDER, root),
-        `${entry.name}: stdout`,
-      );
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  }
+  replayTreeFixtures(CASES, "enforcer-map-cli", (argv, root) => runCli(SCRIPT, root, "", argv));
 });

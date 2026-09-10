@@ -23,6 +23,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 import { ALWAYS_LOADED, enumerate_elements } from "../../_lib/harness_elements.ts";
+import { pythonJsonStringify } from "../../_lib/python_json.ts";
 
 export const DELETE_CANDIDATE = "delete-candidate";
 export const ABLATION_RESIDUE = "ablation-residue";
@@ -100,32 +101,15 @@ export function map_all(root: string, targetFiles?: readonly string[]): Enforcer
   return results;
 }
 
-// Python's json.dumps(entries, ensure_ascii=False)'s default separators are ", " and ": " (a
-// space after each comma and colon), where JSON.stringify with no indent argument omits both.
-// The frozen fixture recorded the real python3 CLI's stdout byte-for-byte, so main()'s wire
-// format follows that spacing rather than JSON.stringify's default -- the same gap
-// harness_elements.ts's toPythonJson closes for its own entries.
-function toPythonJson(entries: readonly EnforcerMapEntry[]): string {
-  const items = entries.map((entry) => {
-    const fields = [
-      `"file": ${JSON.stringify(entry.file)}`,
-      `"line_number": ${JSON.stringify(entry.line_number)}`,
-      `"verdict": ${JSON.stringify(entry.verdict)}`,
-    ];
-    if (entry.verdict === DELETE_CANDIDATE) {
-      fields.push(`"enforcer": ${JSON.stringify(entry.enforcer)}`);
-    }
-    return `{${fields.join(", ")}}`;
-  });
-  return `[${items.join(", ")}]`;
-}
-
+// The wire format has to follow json.dumps' byte-for-byte spacing, not JSON.stringify's default
+// -- see python_json.ts's header for why, and for the shared encoder every CLI in this family
+// reuses instead of hand-building its own braces.
 export function main(argv: string[]): number {
   if (argv.length !== 1) {
     process.stderr.write("usage: enforcer_map.ts <repo-root>\n");
     return 2;
   }
-  process.stdout.write(`${toPythonJson(map_all(argv[0]))}\n`);
+  process.stdout.write(`${pythonJsonStringify(map_all(argv[0]))}\n`);
   return 0;
 }
 

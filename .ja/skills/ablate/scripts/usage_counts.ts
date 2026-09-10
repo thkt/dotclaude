@@ -24,6 +24,7 @@
 import { globSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
+import { pythonJsonStringify } from "../../_lib/python_json.ts";
 import { UNMEASURED } from "./arms.ts";
 import { DELETE_CANDIDATE, NEEDS_HUMAN_JUDGMENT } from "./verdict.ts";
 
@@ -214,30 +215,15 @@ export function classify(
   return DELETE_CANDIDATE;
 }
 
-// Python の json.dumps(result, ensure_ascii=False) の default separators は ", " と ": "
-// (comma と colon のそれぞれ後に space)。indent 引数なしの JSON.stringify はどちらも
-// 省く。main() の wire format はこの spacing に合わせる -- enforcer_map.ts の
-// toPythonJson と harness_elements.ts の toPythonJson がそれぞれ自分の shape 用に
-// 埋めているのと同じ gap。
-function toPythonJson(result: UsageResult): string {
-  const elementEntries = Object.entries(result.elements).map(
-    ([path, usage]) =>
-      `${JSON.stringify(path)}: {"fires": ${JSON.stringify(usage.fires)}, "last_used": ${JSON.stringify(usage.last_used)}}`,
-  );
-  const date_range = `{"start": ${JSON.stringify(result.date_range.start)}, "end": ${JSON.stringify(result.date_range.end)}}`;
-  return (
-    `{"elements": {${elementEntries.join(", ")}}, ` +
-    `"transcript_count": ${JSON.stringify(result.transcript_count)}, ` +
-    `"date_range": ${date_range}}`
-  );
-}
-
+// wire format は JSON.stringify の既定ではなく json.dumps のバイト単位の区切り方に合わせる
+// 必要がある -- 理由と、この系統の CLI がそれぞれの波かっこを手書きする代わりに共有する
+// エンコーダについては python_json.ts のヘッダを参照。
 export function main(argv: string[]): number {
   if (argv.length !== 1) {
     process.stderr.write("usage: usage_counts.ts <transcripts-root>\n");
     return 2;
   }
-  process.stdout.write(`${toPythonJson(count_usage(argv[0]))}\n`);
+  process.stdout.write(`${pythonJsonStringify(count_usage(argv[0]))}\n`);
   return 0;
 }
 

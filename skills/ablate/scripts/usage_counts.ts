@@ -24,6 +24,7 @@
 import { globSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
+import { pythonJsonStringify } from "../../_lib/python_json.ts";
 import { UNMEASURED } from "./arms.ts";
 import { DELETE_CANDIDATE, NEEDS_HUMAN_JUDGMENT } from "./verdict.ts";
 
@@ -213,29 +214,15 @@ export function classify(
   return DELETE_CANDIDATE;
 }
 
-// Python's json.dumps(result, ensure_ascii=False)'s default separators are ", " and ": " (a
-// space after each comma and colon), where JSON.stringify with no indent argument omits both.
-// main()'s wire format follows that spacing instead, the same gap enforcer_map.ts's
-// toPythonJson and harness_elements.ts's toPythonJson each close for their own shape.
-function toPythonJson(result: UsageResult): string {
-  const elementEntries = Object.entries(result.elements).map(
-    ([path, usage]) =>
-      `${JSON.stringify(path)}: {"fires": ${JSON.stringify(usage.fires)}, "last_used": ${JSON.stringify(usage.last_used)}}`,
-  );
-  const date_range = `{"start": ${JSON.stringify(result.date_range.start)}, "end": ${JSON.stringify(result.date_range.end)}}`;
-  return (
-    `{"elements": {${elementEntries.join(", ")}}, ` +
-    `"transcript_count": ${JSON.stringify(result.transcript_count)}, ` +
-    `"date_range": ${date_range}}`
-  );
-}
-
+// The wire format has to follow json.dumps' byte-for-byte spacing, not JSON.stringify's default
+// -- see python_json.ts's header for why, and for the shared encoder every CLI in this family
+// reuses instead of hand-building its own braces.
 export function main(argv: string[]): number {
   if (argv.length !== 1) {
     process.stderr.write("usage: usage_counts.ts <transcripts-root>\n");
     return 2;
   }
-  process.stdout.write(`${toPythonJson(count_usage(argv[0]))}\n`);
+  process.stdout.write(`${pythonJsonStringify(count_usage(argv[0]))}\n`);
   return 0;
 }
 
