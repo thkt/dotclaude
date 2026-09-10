@@ -25,7 +25,7 @@ import usage_counts  # noqa: E402
 import verdict  # noqa: E402
 
 # The path RARE_BY_DESIGN ships with, so this case exercises the set the module really holds.
-RARE_PATH = "hooks/security/rm_to_trash.py"
+RARE_PATH = "hooks/security/rm_to_trash.ts"
 
 
 def _fire(command: str, timestamp: str) -> str:

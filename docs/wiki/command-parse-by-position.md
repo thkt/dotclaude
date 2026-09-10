@@ -19,7 +19,7 @@ hook がコマンドを判定するとき、コマンド文字列に語が含ま
 ## 参照コード
 
 - `hooks/_lib/command_scan.py`（コマンドを断片へ分け、各断片の先頭語を返す）
-- `hooks/security/git_sandbox_guard.py`（その解析結果で判定する側）
+- `hooks/security/git_sandbox_guard.ts`（その解析結果で判定する側）
 
 ## 根拠
 

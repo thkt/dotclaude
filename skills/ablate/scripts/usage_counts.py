@@ -36,12 +36,12 @@ _VARIABLE_PREFIX_RE = re.compile(r"^\$\{[A-Z_]+\}/")
 # The suffixes that count as an element. Some fires carry a label instead of a path
 # (measured in this session's transcripts: "formatter", "gates changed", "guardrails..."),
 # and a label names no harness element, so it stays out of the tally.
-ELEMENT_SUFFIXES = frozenset({".py", ".sh", ".js"})
+ELEMENT_SUFFIXES = frozenset({".py", ".sh", ".js", ".ts"})
 
 # Safety nets exercised only on an uncommon input, where zero fires must not read as unused.
-# hooks/security/rm_to_trash.py fires only when a destructive command is attempted ("Failure
+# hooks/security/rm_to_trash.ts fires only when a destructive command is attempted ("Failure
 # mode: fail-closed (security enforcement)"), so most sessions never trigger it.
-RARE_BY_DESIGN: frozenset[str] = frozenset({"hooks/security/rm_to_trash.py"})
+RARE_BY_DESIGN: frozenset[str] = frozenset({"hooks/security/rm_to_trash.ts"})
 
 # How many days back from `now` a most-recent fire still counts as observed. Past this
 # window an element reports as unmeasured, rather than keeping a stale last-used date alive.
