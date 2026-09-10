@@ -1,8 +1,8 @@
 /// <reference types="node" />
-// Unit tests for hooks/pre-bash/wiki_scene.ts's find (unit U-003), the TypeScript side of
-// wiki_scene.py's SCENE_COMMANDS/find. Ported from
-// hooks/pre-bash/tests/wiki_scene_test.py's own gh-command / tilde-cd / no-docs/wiki
-// observations (T-009/T-011/T-012 there), narrowed to what find's cd-walk and scene-table
+// Unit tests for hooks/pre-bash/wiki_scene.ts's find (unit U-003), ported from the retired
+// Python original's SCENE_COMMANDS/find, drawn from the retired Python test's own gh-command
+// / tilde-cd / no-docs/wiki observations (T-009/T-011/T-012 there), narrowed to what find's
+// cd-walk and scene-table
 // match decide -- not _runtime()/find_wiki_rule.ts wiring, which stays out of this unit.
 //
 // Spawns the hook (run(), from _hook-harness.ts) rather than importing wiki_scene.ts

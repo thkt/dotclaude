@@ -1,9 +1,9 @@
 /// <reference types="node" />
-// Unit tests for hooks/pre-bash/wiki_scene.ts's _runtime/_scene_pages (unit U-004), the
-// TypeScript side of wiki_scene.py's own _runtime/_scene_pages. Ported from
-// hooks/pre-bash/tests/wiki_scene_test.py's test_an_unresolvable_runtime_yields_no_output_and_exits_0
-// (T-325) and the finder non-zero-exit reasoning wiki_scene.py's _scene_pages comment states
-// (T-326) -- narrowed to what a missing runtime and a failing/succeeding finder decide, not
+// Unit tests for hooks/pre-bash/wiki_scene.ts's _runtime/_scene_pages (unit U-004), ported from
+// the retired Python original's own _runtime/_scene_pages, drawn from
+// the retired Python test's test_an_unresolvable_runtime_yields_no_output_and_exits_0
+// (T-325) and the finder non-zero-exit reasoning the retired Python original's _scene_pages
+// comment stated (T-326) -- narrowed to what a missing runtime and a failing/succeeding finder decide, not
 // find/SCENE_COMMANDS, which wiki-scene-find.test.ts already covers.
 //
 // Spawns the hook (run(), from _hook-harness.ts) rather than importing wiki_scene.ts

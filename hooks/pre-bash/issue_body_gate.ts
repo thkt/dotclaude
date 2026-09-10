@@ -1,13 +1,13 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
 // PreToolUse hook: match a gh issue create body against the skeleton its title's type points
-// at, and stop the filing when the two diverge. TypeScript side of issue_body_gate.py (unit
+// at, and stop the filing when the two diverge. TypeScript side of the retired Python original (unit
 // U-002, following U-001's skeleton-selection primitives). ROOT / VALIDATOR / TEMPLATES /
 // DEFAULT_BUN / _issue_type / _template / _interpreter / _errors / main carry the Python
 // side's names and shapes.
 //
 // _unmatched_type_reason is not a Python-side name: it extracts the deny message
-// issue_body_gate.py's main() builds inline (the f-string after `if template is None`) into its
+// the retired Python original's main() builds inline (the f-string after `if template is None`) into its
 // own function, so unit U-001's tests could hold that wording to the contract's "deny の文言は1
 // 文字も変えない" before this unit added main() and wired deny() to it. Its output stays
 // byte-identical to that inline string; only the placement is factored out.
@@ -30,7 +30,7 @@ import { deny, field, parse } from "../_lib/hook_payload.ts";
 const HERE = dirname(fileURLToPath(import.meta.url));
 
 // hooks/pre-bash/issue_body_gate.ts -> hooks/pre-bash -> hooks -> repo root, the same two
-// levels issue_body_gate.py's Path(__file__).resolve().parents[2] climbs.
+// levels the retired Python original's Path(__file__).resolve().parents[2] climbs.
 export const ROOT: string = join(HERE, "..", "..");
 export const VALIDATOR: string = join(ROOT, "skills", "issue", "scripts", "validate-issue-body.ts");
 export const TEMPLATES: string = join(ROOT, "skills", "issue", "templates");
@@ -41,7 +41,7 @@ export const TEMPLATES: string = join(ROOT, "skills", "issue", "templates");
 export const DEFAULT_BUN: string = "/opt/homebrew/bin/bun";
 
 /** The lowercased type prefix, or null when the title does not open with one
- * (issue_body_gate.py's _issue_type).
+ * (the retired Python original's _issue_type).
  *
  * `\p{L}` rather than `[A-Za-z]`: Python's `str.isalpha()` accepts any Unicode letter, not
  * ASCII alone, and this mirrors that rather than narrowing it. */
@@ -96,7 +96,7 @@ function _which(name: string): string | null {
 }
 
 /** The repository's own template wins over the skill's: that is what the web UI files against
- * (issue_body_gate.py's _template). */
+ * (the retired Python original's _template). */
 export function _template(issueType: string, repoDir: string): string | null {
   const forms = join(repoDir, ".github", "ISSUE_TEMPLATE");
   const candidates = [
@@ -113,7 +113,7 @@ export function _template(issueType: string, repoDir: string): string | null {
   return null;
 }
 
-/** The deny wording for a type with no template on either path (issue_body_gate.py's main(),
+/** The deny wording for a type with no template on either path (the retired Python original's main(),
  * the branch taken when _template returns None). Byte-identical to that inline f-string; see
  * this module's header for why it is factored out here. */
 export function _unmatched_type_reason(issueType: string): string {
@@ -131,7 +131,7 @@ export function _unmatched_type_reason(issueType: string): string {
 }
 
 /** The bun/node binary to run the (.ts) validator with, or null when neither is reachable
- * (issue_body_gate.py's _interpreter).
+ * (the retired Python original's _interpreter).
  *
  * CLAUDE_BUN_BIN overrides DEFAULT_BUN when set, matching CLAUDE_GH_BIN / CLAUDE_RECALL_BIN's
  * `env or default` shape. node via PATH is the last resort for a host with no Homebrew bun
@@ -145,7 +145,7 @@ export function _interpreter(): string | null {
   return _which("node");
 }
 
-/** The validator's findings, or null when it did not report any (issue_body_gate.py's
+/** The validator's findings, or null when it did not report any (the retired Python original's
  * _errors). It exits 1 both for a rejected body and for its own crash, so the JSON on stdout
  * is what separates them. stderr stays unredirected so a traceback reaches the debug log. */
 export function _errors(

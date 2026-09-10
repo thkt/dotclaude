@@ -1,7 +1,7 @@
 /// <reference types="node" />
 // Unit tests for hooks/pre-bash/issue_body_gate.ts's validator-invocation primitives (unit
-// U-002), the TypeScript side of hooks/pre-bash/issue_body_gate.py's DEFAULT_BUN / _interpreter
-// / _errors / main. Drawn from hooks/pre-bash/tests/issue_body_gate_test.py's
+// U-002), ported from the retired Python original's DEFAULT_BUN / _interpreter
+// / _errors / main. Drawn from the retired Python test's
 // test_no_bun_or_node_interpreter_denies, test_a_validator_that_cannot_run_denies,
 // test_body_missing_a_required_section_is_denied and test_body_following_the_skeleton_passes,
 // narrowed to the two deny wordings this unit adds -- the search order and the skeleton-to-body
@@ -12,43 +12,34 @@
 // process.exit(main()) (DR-0114, no isMainModule guard), so an in-process import would exit the
 // test runner's own process the moment the import ran -- the same hazard
 // hooks/pre-bash/tests/body-proofread-notify.test.ts avoids the same way.
+//
+// VALID_BUG_BODY, bugIssueCmd, withBodyFile, and the decision-reading helpers come from
+// _issue-body-gate-fixtures.ts, shared with issue-body-gate-template.test.ts: both spawn this
+// same hook against this same bug.md skeleton.
 import assert from "node:assert/strict";
 import { copyFileSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { run } from "../../_lib/tests/_hook-harness.ts";
+import {
+  bugIssueCmd,
+  decisionOf,
+  reasonOf,
+  runHook,
+  VALID_BUG_BODY,
+  withBodyFile,
+} from "./_issue-body-gate-fixtures.ts";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
 const HOOK = join(HERE, "..", "issue_body_gate.ts");
 // hooks/pre-bash/tests -> hooks/pre-bash -> hooks -> repo root, the same three levels
-// issue_body_gate.py's Path(__file__).resolve().parents[2] climbs from hooks/pre-bash/.
+// the retired Python original's Path(__file__).resolve().parents[2] climbed from hooks/pre-bash/.
 const REPO_ROOT = join(HERE, "..", "..", "..");
 
-// The same fixture body issue_body_gate_test.py's VALID_BUG_BODY / MISSING_SECTION_BUG_BODY use,
-// narrowed to what this unit's scenarios need: a body the real bug.md skeleton accepts, and the
-// same body with "Expected vs Actual" dropped so the validator's missing_section error fires.
-const VALID_BUG_BODY = `## What & Why
-
-Login fails for some users.
-
-## Steps to Reproduce
-
-1. Open app
-2. Log in
-
-## Expected vs Actual
-
-- Expected: 200 OK
-- Actual: 500 error
-
-## Scope
-
-- In scope: login flow
-- Out of scope: signup flow
-`;
-
+// issue_body_gate_test.py's MISSING_SECTION_BUG_BODY: VALID_BUG_BODY with "Expected vs Actual"
+// dropped so the validator's missing_section error fires, narrowed to what this unit's
+// scenarios need on top of the shared VALID_BUG_BODY.
 const MISSING_SECTION_BUG_BODY = `## What & Why
 
 Login fails for some users.
@@ -64,49 +55,12 @@ Login fails for some users.
 - Out of scope: signup flow
 `;
 
-interface Decision {
-  hookSpecificOutput?: {
-    permissionDecision?: string;
-    permissionDecisionReason?: string;
-  };
-}
-
-function withBodyFile(body: string, name = "body.md"): string {
-  const dir = mkdtempSync(join(tmpdir(), "issue-body-gate-validator-"));
-  const path = join(dir, name);
-  writeFileSync(path, body, "utf8");
-  return path;
-}
-
-// cwd left at bodyPath's own directory: the hook looks for a repository's own
-// .github/ISSUE_TEMPLATE first, and none exists there, so the skill's skills/issue/templates/
-// bug.md is the skeleton every scenario here compares against.
-function bugIssueCmd(bodyPath: string): string {
-  return (
-    `cd ${dirname(bodyPath)} && gh issue create ` +
-    `--title "[Bug] Login fails for some users" --body-file ${bodyPath}`
-  );
-}
-
-function runHook(hook: string, command: string, env?: NodeJS.ProcessEnv): Decision | null {
-  const stdout = run(hook, { tool_name: "Bash", tool_input: { command } }, env);
-  return stdout.trim() ? (JSON.parse(stdout) as Decision) : null;
-}
-
-function decisionOf(out: Decision | null): string | undefined {
-  return out?.hookSpecificOutput?.permissionDecision;
-}
-
-function reasonOf(out: Decision | null): string {
-  return out?.hookSpecificOutput?.permissionDecisionReason ?? "";
-}
-
 /** A scratch checkout carrying the hook, the _lib modules it imports, and
  * skills/issue/templates/bug.md, but no skills/issue/scripts/ -- so _template still resolves
  * the bug skeleton (the interpreter check this test is not exercising) while the interpreter has
- * nothing to run VALIDATOR from. issue_body_gate.py's stdout stays empty the same way a broken
- * skeleton crashes the real validator before report() ever writes
- * (issue_body_gate_test.py's test_a_validator_that_cannot_run_denies). */
+ * nothing to run VALIDATOR from. The retired Python original's stdout stayed empty the same way
+ * a broken skeleton crashes the real validator before report() ever writes
+ * (the retired Python test's test_a_validator_that_cannot_run_denies). */
 function scratchWithoutValidator(): { hook: string; bodyPath: string } {
   const root = mkdtempSync(join(tmpdir(), "issue-body-gate-no-validator-"));
   mkdirSync(join(root, "hooks", "pre-bash"), { recursive: true });
