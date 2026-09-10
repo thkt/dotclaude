@@ -1,12 +1,14 @@
 /// <reference types="node" />
 // PreToolUse hook: stop tree-rewriting git commands from running sandboxed in the Claude
 // config directory. The TypeScript side of hooks/security/git_sandbox_guard.py (DR-0112's
-// migration, unit U-007); REWRITES / HELP / GIT_ENV / READ_FLAGS / WRITE_FLAGS /
-// READ_ARGUMENTS / REASON and _rewrites_tree carry the Python side's names and shapes.
+// migration, units U-007 and U-008); REWRITES / HELP / GIT_ENV / READ_FLAGS / WRITE_FLAGS /
+// READ_ARGUMENTS / REASON / _rewrites_tree (U-007) and PROBE_TIMEOUT_SECONDS / UNRESOLVED_PROBE
+// / Unresolved / _toplevel (U-008) carry the Python side's names and shapes.
 //
-// Scope: the probe (_toplevel's rev-parse spawn) and main() stay out of this unit -- U-007's
-// contract covers only the judgment that never spawns the probe. A later unit ports them.
+// Scope: main() -- the loop that forks _toplevel per target and compares it against the
+// guarded config directory -- stays out of both units so far. A later unit wires it.
 
+import { spawnSync } from "node:child_process";
 import * as command_scan from "../_lib/command_scan.ts";
 
 // Subcommands that reach the working tree. Most move the index and leave the file behind under
@@ -107,4 +109,69 @@ export function _rewrites_tree(tokens: readonly string[]): boolean {
     return rest.includes("--worktree") || !rest.includes("--staged");
   }
   return true;
+}
+
+// --- probe (U-008): which repository one git call reaches ------------------------------------
+//
+// Ports git_sandbox_guard.py's PROBE_TIMEOUT_SECONDS / UNRESOLVED_PROBE and the rev-parse call
+// inside _toplevel. subprocess.run(timeout=...) raises TimeoutExpired on a stall; spawnSync
+// never throws for that, it sets `error` and returns `status: null` instead, so _toplevel has
+// to read `error` itself and turn it into the same Unresolved the Python side raises. The same
+// function also carries the GIT_DIR / GIT_WORK_TREE environment-assignment path: `env` is
+// merged into the child's environment the way Python's `dict(os.environ, **env)` is.
+
+/** rev-parse stalls on a network filesystem or a repository being repacked, and a PreToolUse
+ * hook that waits on it blocks the user's command with no fallback. */
+export const PROBE_TIMEOUT_SECONDS = 10;
+
+export const UNRESOLVED_PROBE =
+  "git-sandbox-guard: この呼び出しがどのリポジトリへ届くかを判定できない。" +
+  "git が PATH にあるか、対象リポジトリを読めるかを確認する。rev-parse の出力: ";
+
+/** The probe could not answer which repository a call reaches. */
+export class Unresolved extends Error {}
+
+// git's own wording for the one failure that means "this is not a repository".
+const NOT_A_REPOSITORY = /not a git repository|this operation must be run in a work tree/;
+
+/** The working tree one git call reaches, or null when git answers that there is none.
+ *
+ * Every other failure -- including a probe that never answers -- raises Unresolved: a probe
+ * that could not run says nothing about where the call lands, and reading that as "not the
+ * guarded one" would turn the guard off. */
+export function _toplevel(
+  cwd: string,
+  redirects: readonly string[],
+  env: Readonly<Record<string, string>>,
+): string | null {
+  const result = spawnSync(
+    "git",
+    ["-C", cwd, ...redirects, "rev-parse", "--show-toplevel"],
+    {
+      encoding: "utf8",
+      env: { ...process.env, ...env },
+      timeout: PROBE_TIMEOUT_SECONDS * 1000,
+    },
+  );
+  // spawnSync never throws on a stall the way subprocess.run(timeout=...) does -- it sets
+  // `error` and returns `status: null` instead, so a stall (or any other failure to run git at
+  // all) is read from `error` here and turned into the same Unresolved the Python side raises
+  // from its `except subprocess.TimeoutExpired`.
+  if (result.error) {
+    const timedOut = (result.error as NodeJS.ErrnoException).code === "ETIMEDOUT";
+    throw new Unresolved(
+      timedOut
+        ? `rev-parse did not answer in ${PROBE_TIMEOUT_SECONDS}s`
+        : result.error.message,
+    );
+  }
+  const stdout = result.stdout ?? "";
+  if (result.status === 0 && stdout.trim()) {
+    return stdout.trim();
+  }
+  const stderr = result.stderr ?? "";
+  if (NOT_A_REPOSITORY.test(stderr)) {
+    return null;
+  }
+  throw new Unresolved(stderr.trim() || `rev-parse exited ${result.status}`);
 }
