@@ -55,7 +55,7 @@
     "tests/**/*.{js,ts}",
     "agents/**/*.{js,ts}"
   ],
-  "ignoreBinaries": ["codex", "markdownlint-cli2"],
+  "ignoreBinaries": ["codex", "markdownlint-cli2", "rumdl"],
   "ignoreDependencies": ["oxfmt", "^@?textlint"],
   "ignoreFiles": [
     "workflows/tests/fixtures/**",

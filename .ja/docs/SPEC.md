@@ -76,12 +76,12 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 | PreToolUse        | `Bash`             | `pre-bash/body_proofread.py`                    | なし               | 60      |
 | PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.py`                   | なし               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.py`            | なし               | 30      |
-| PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.py`                         | `**/*.rs`          | 60      |
+| PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.ts`                         | `**/*.rs`          | 60      |
 | PreToolUse        | `Write\|Edit`      | `guardrails`                                    | なし               | 30      |
 | PreToolUse        | `EnterPlanMode`    | インライン `echo` による deny                   | なし               | なし    |
 | PreToolUse        | `WebFetch\|WebSearch` | インライン `echo` による deny                | なし               | なし    |
-| PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.py`                        | `**/*.rs`          | 30      |
-| PostToolUse       | `Write\|Edit`      | `edit/textlint_fix.py`                          | `**/*.md`          | 60      |
+| PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.ts`                        | `**/*.rs`          | 30      |
+| PostToolUse       | `Write\|Edit`      | `edit/textlint_fix.ts`                          | `**/*.md`          | 60      |
 | PostToolUse       | `Write\|Edit`      | `edit/mirror_prose_guard.py`                    | `**/.ja/**`        | 10      |
 | PostToolUse       | `Write\|Edit`      | `assay`                                         | なし               | 30      |
 | PostToolUse       | `Write\|Edit`      | `formatter`                                     | なし               | 30      |
@@ -109,9 +109,9 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | `body_proofread.py`             | Bash                    | gh filing と commit の本文を校正し additionalContext で返す       | advisory  |
 | `issue_body_gate.py`            | Bash                    | `gh issue create` の本文をタイトル型のテンプレートと照合し、乖離と比較不能をどちらも deny | fail-close |
 | `client_identifier_gate.py`     | Bash                    | 本リポジトリの commit で、外部に置いた識別子リストの語を含む staged diff を deny | fail-close |
-| `rust_pre_edit.py`              | Write / Edit (`*.rs`)   | clippy の指摘を additionalContext として注入                      | advisory  |
-| `rust_post_edit.py`             | Write / Edit (`*.rs`)   | `cargo fmt` の後に clippy を再実行し指摘を返す                    | advisory  |
-| `textlint_fix.py`               | Write / Edit (`*.md`)   | 日本語判定を通った Markdown を textlint で自動修正                | advisory  |
+| `rust_pre_edit.ts`              | Write / Edit (`*.rs`)   | clippy の指摘を additionalContext として注入                      | advisory  |
+| `rust_post_edit.ts`             | Write / Edit (`*.rs`)   | `cargo fmt` の後に clippy を再実行し指摘を返す                    | advisory  |
+| `textlint_fix.ts`               | Write / Edit (`*.md`)   | 日本語判定を通った Markdown を textlint で自動修正                | advisory  |
 | `mirror_prose_guard.py`         | Write / Edit (`.ja/**`) | 日本語を 1 文字も含まない `.ja/` ファイルを警告する。止めない     | advisory  |
 | `amphetamine_agent_session.py`  | UserPromptSubmit / PostToolUse / Stop | session_id 単位の参照カウントで Mac のスリープを抑止 | fail-open |
 | `recall_index.ts`               | SessionStart            | recall の横断索引をバックグラウンドで追いつかせる                 | fail-open |
@@ -128,8 +128,8 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | `hook_payload.py`  | payload の型付き読み出しと deny 封筒の生成                       |
 | `japanese.py`      | 日本語判定としきい値                                             |
 | `mirror_prose.py`  | `.ja/` 配下で日本語が消えた状態の検出                            |
-| `rust_target.py`   | cargo ワークスペース根の解決と clippy 出力の整形                 |
-| `textlint.py`      | textlint の設定解決と実行                                        |
+| `rust_target.ts`   | cargo ワークスペース根の解決と clippy 出力の整形                 |
+| `textlint.ts`      | textlint の設定解決と実行 (body_proofread.py 用に Python 版も残る) |
 | `hook_harness.py`  | テストからの hook 起動と終了コード確認                           |
 
 ## Skill 契約

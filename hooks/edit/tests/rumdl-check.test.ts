@@ -8,6 +8,7 @@
 // one finding and exits non-zero, the shape rumdl_check.ts's spawnSync call reads
 // (status !== 0 and non-empty stdout) before it hands the finding to notify.
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -70,4 +71,31 @@ test("T-384 an edited markdown file reaches rumdl and its findings arrive throug
   const withoutRumdl = { ...process.env, PATH: "/usr/bin:/bin" };
   const silent = runHook(mdPath, withoutRumdl);
   assert.equal(silent, "", "a PATH with no rumdl binary must leave the hook silent");
+});
+
+// The retired suite's violation case ran against whatever rumdl the environment had, with no
+// PATH override; the plan's constraint keeps that form. The stub above proves the composition
+// (a non-zero exit with stdout reaches notify) on any machine; this one proves the real binary
+// still produces MD022 for the same input and still travels the same envelope. CI installs
+// rumdl, so a skip here means a local run without it, not a green that hid a break.
+test("the real rumdl binary reports the same rule on both channels, run without a PATH override", (t) => {
+  const probe = spawnSync("rumdl", ["--version"], { encoding: "utf8" });
+  if (probe.error) {
+    t.skip("rumdl is not installed in this environment");
+    return;
+  }
+
+  const root = mkdtempSync(path.join(tmpdir(), "rumdl-check-real-"));
+  const mdPath = path.join(root, "violation.md");
+  writeFileSync(mdPath, VIOLATING_MD);
+
+  const out = runHook(mdPath, process.env);
+  assert.ok(out, "the real rumdl must report the violation, but the hook stayed silent");
+  const parsed = JSON.parse(out) as {
+    systemMessage: string;
+    hookSpecificOutput: { hookEventName: string; additionalContext: string };
+  };
+  assert.match(parsed.systemMessage, /MD022/, "the finding must reach the human channel");
+  assert.equal(parsed.hookSpecificOutput.hookEventName, "PostToolUse");
+  assert.match(parsed.hookSpecificOutput.additionalContext, /MD022/);
 });

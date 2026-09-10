@@ -14,8 +14,8 @@
 // shape hooks/_lib/rust_target.ts already established for a missing cargo. This hook reads
 // status === null the same way.
 import { spawnSync } from "node:child_process";
-import { readFileSync, statSync } from "node:fs";
-import { editedFile, notify } from "../_lib/hook_payload.ts";
+import { statSync } from "node:fs";
+import { editedFile, notify, readStdin } from "../_lib/hook_payload.ts";
 
 function isFile(path: string): boolean {
   try {
@@ -26,7 +26,7 @@ function isFile(path: string): boolean {
 }
 
 function main(): number {
-  const path = editedFile(readFileSync(0, "utf8"));
+  const path = editedFile(readStdin());
   if (path === null || !path.endsWith(".md")) return 0;
   if (!isFile(path)) return 0;
 

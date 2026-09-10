@@ -37,6 +37,13 @@ function runner(): string[] | null {
   return null;
 }
 
+// Node's spawnSync default maxBuffer is 1 MiB, where python's subprocess.run has no such
+// bound: a long Markdown file's findings can pass it, and exceeding it turns the run into an
+// ENOBUFS error whose stdout the caller then reads as "textlint found nothing". Bounded rather
+// than unbounded so a runaway process still cannot exhaust memory, the same reasoning
+// hooks/_lib/rust_target.ts documents for its own choice.
+const MAX_BUFFER_BYTES = 64 * 1024 * 1024;
+
 /** null when textlint cannot run at all: no config, or no runner to start it with. */
 function run(args: string[]): { stdout: string } | null {
   try {
@@ -52,6 +59,7 @@ function run(args: string[]): { stdout: string } | null {
   const result = spawnSync(found[0], [...found.slice(1), "textlint", ...args, "--config", CONFIG], {
     cwd: REPO_ROOT,
     encoding: "utf8",
+    maxBuffer: MAX_BUFFER_BYTES,
   });
   return { stdout: result.stdout ?? "" };
 }

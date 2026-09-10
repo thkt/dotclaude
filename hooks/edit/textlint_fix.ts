@@ -8,7 +8,7 @@
 // settings.json narrows this to .md paths with an `if` condition. The suffix check below
 // repeats it so the hook still holds when called directly, as the tests do.
 import { readFileSync, statSync } from "node:fs";
-import { editedFile } from "../_lib/hook_payload.ts";
+import { editedFile, readStdin } from "../_lib/hook_payload.ts";
 import { hasJapanese } from "../_lib/japanese.ts";
 import { fix } from "../_lib/textlint.ts";
 
@@ -21,7 +21,7 @@ function isFile(path: string): boolean {
 }
 
 function main(): number {
-  const path = editedFile(readFileSync(0, "utf8"));
+  const path = editedFile(readStdin());
   if (path === null || !path.endsWith(".md")) return 0;
   if (!isFile(path)) return 0;
 

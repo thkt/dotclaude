@@ -4,11 +4,11 @@
 // docs/decisions/0112-adopt-typescript-for-helper-scripts.md): composes hooks/_lib/
 // rust_target.ts's target/clippyOutput, the same shared module rust_post_edit.ts composes, so
 // both hooks land as one unit here.
-import { readFileSync } from "node:fs";
+import { readStdin } from "../_lib/hook_payload.ts";
 import { clippyOutput, target } from "../_lib/rust_target.ts";
 
 function main(): number {
-  const found = target(readFileSync(0, "utf8"));
+  const found = target(readStdin());
   if (found === null) return 0;
   const output = clippyOutput("PreToolUse", ...found);
   if (output) process.stdout.write(`${output}\n`);

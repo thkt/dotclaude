@@ -27,7 +27,7 @@ Python はアンダースコアで区切る。shell はハイフンで区切る�
 
 操作を表す語は、名詞としても読める語 (guard/gate/fix/index/alert/rewrite) を選ぶ。`notify` のような動詞専用の語は名前として据わりが悪い。既に英語として読める動詞句 (`rm_to_trash`, `body_proofread`) はそのまま置く。
 
-例外は 2 つ。外部アプリを丸ごと扱うものは `<アプリ名>_<管理対象>` とし、`amphetamine_agent_session` は「エージェントのターン中だけ」という限定を名前に残す。1 語で足りるものは 1 語で置く (`statusline`)。複数の hook をまとめて見るテストは、その群を表す名前を持つ (`rust-edit.test.sh` は pre/post の 2 本と `_lib/rust_target.py` を見る)。
+例外は 2 つ。外部アプリを丸ごと扱うものは `<アプリ名>_<管理対象>` とし、`amphetamine_agent_session` は「エージェントのターン中だけ」という限定を名前に残す。1 語で足りるものは 1 語で置く (`statusline`)。複数の hook をまとめて見るテストは、その群を表す名前を持つ (`rust-edit.test.ts` は pre/post の 2 本と `_lib/rust_target.ts` を見る)。
 
 | 種別            | 形                  | 例                          |
 | --------------- | ------------------- | --------------------------- |
@@ -50,10 +50,10 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の
 | イベント         | Matcher            | フック                                                                                                                                                            |
 | ---------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PreToolUse       | Bash               | pre-bash/package_manager_rewrite, security/npm_install_guard, security/rm_to_trash, security/git_sandbox_guard, pre-bash/body_proofread, pre-bash/issue_body_gate |
-| PreToolUse       | Write/Edit         | edit/rust_pre_edit.py, guardrails                                                                                                                                 |
+| PreToolUse       | Write/Edit         | edit/rust_pre_edit.ts, guardrails                                                                                                                                 |
 | PreToolUse       | EnterPlanMode      | deny (計画は /think へ誘導)                                                                                                                                       |
 | PreToolUse       | WebFetch/WebSearch | deny (scout CLI へ誘導)                                                                                                                                           |
-| PostToolUse      | Write/Edit         | edit/rust_post_edit.py, edit/textlint_fix.py, edit/mirror_prose_guard.py, assay, formatter, gates                                                                 |
+| PostToolUse      | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/mirror_prose_guard.py, assay, formatter, gates                                                                 |
 | PostToolUse      | Bash               | gates changed                                                                                                                                                     |
 | PostToolUse      | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |
 | SessionStart     | \*                 | lifecycle/recall_index.ts                                                                                                                                         |
@@ -75,9 +75,9 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の
 
 | Hook                  | イベント    | 失敗モード  | 用途                                                                |
 | --------------------- | ----------- | ----------- | ------------------------------------------------------------------- |
-| rust_pre_edit.py      | PreToolUse  | fail-open   | .rs 編集前に cargo clippy を走らせ、結果を additionalContext へ注入 |
-| rust_post_edit.py     | PostToolUse | fail-open   | .rs 編集後に cargo fmt、その結果へ clippy                           |
-| textlint_fix.py       | PostToolUse | fail-closed | 日本語の .md ファイルを textlint で自動修正                         |
+| rust_pre_edit.ts      | PreToolUse  | fail-open   | .rs 編集前に cargo clippy を走らせ、結果を additionalContext へ注入 |
+| rust_post_edit.ts     | PostToolUse | fail-open   | .rs 編集後に cargo fmt、その結果へ clippy                           |
+| textlint_fix.ts       | PostToolUse | fail-closed | 日本語の .md ファイルを textlint で自動修正                         |
 | mirror_prose_guard.py | PostToolUse | fail-closed | `.ja/` のファイルが日本語の散文を失ったら警告する (ブロックしない)  |
 
 ### security/
@@ -112,11 +112,11 @@ hook が読み込む共有コード。単体では登録しない。`japanese.py
 | --------------- | -------------------------------------------------------------------- |
 | command_scan.py | issue_body_gate, body_proofread, security の 3 本                    |
 | gh_filing.py    | issue_body_gate, body_proofread                                      |
-| hook_payload.py | mirror_prose, textlint_fix, body_proofread, rust_target, amphetamine |
+| hook_payload.py | mirror_prose, body_proofread, amphetamine                            |
 | mirror_prose.py | mirror_prose_guard と .ja/ 一括検査テスト                            |
-| japanese.py     | mirror_prose, body_proofread, textlint_fix                           |
-| textlint.py     | body_proofread, textlint_fix                                         |
-| rust_target.py  | rust_pre_edit, rust_post_edit                                        |
+| japanese.py     | mirror_prose, body_proofread                                         |
+| textlint.ts     | textlint_fix (body_proofread は Python 版を使い続ける)                |
+| rust_target.ts  | rust_pre_edit, rust_post_edit                                        |
 
 ## Quality Pipeline (Rust バイナリ)
 
@@ -203,7 +203,7 @@ shields (コマンドガード、ファイル ACL、secrets チェック) と re
 
 このモードが名指すのは、スクリプト自身がエラーにどう反応するかであって、ツール呼び出しが生き延びるかどうかではない。呼び出しを止められるのは PreToolUse の hook だけで、止め方は決定を出力することであり、非 0 で終わることではない。hook がエラーで終わっても Claude Code は動き続ける。
 
-fail-closed の hook が特定の失敗を 1 つだけ無視するのは格下げではない。`textlint_fix.py` は自身の欠陥では止まるが textlint の終了コードは無視する。この hook が走る時点で編集はすでに適用されているからである。
+fail-closed の hook が特定の失敗を 1 つだけ無視するのは格下げではない。`textlint_fix.ts` は自身の欠陥では止まるが textlint の終了コードは無視する。この hook が走る時点で編集はすでに適用されているからである。
 
 | モード      | スクリプトの振る舞い                   | シェルでの書き方    | Python での書き方        | 使う場面          |
 | ----------- | -------------------------------------- | ------------------- | ------------------------ | ----------------- |
