@@ -1,20 +1,19 @@
 /// <reference types="node" />
-// Behavior tests for skills/_lib/harness_elements.ts: the TS port of harness_elements.py's
-// classify, enumerate_elements and main. skills/_lib/tests/fixtures/harness-elements-cases.json
-// (built by U-001) freezes the real python3 harness_elements.py's own argv -> exit/stdout,
-// captured against a constructed temp repo tree; every scenario below drives that same fixture
-// through classify()/enumerate_elements() directly or through the .ts CLI, rather than
-// hand-copying the frontmatter shapes or the expected element list a second time
-// (docs/wiki/harness-production-divergence.md; the same DRY choice harness_elements.py's own
-// _instantiate helper makes for its test suite).
+// Behavior tests for skills/_lib/harness_elements.ts: classify, enumerate_elements and main.
+// skills/_lib/tests/fixtures/harness-elements-cases.json (built by U-001) freezes the real
+// python3 Python version's own argv -> exit/stdout, captured against a constructed temp repo
+// tree; every scenario below drives that same fixture through classify()/enumerate_elements()
+// directly or through the .ts CLI, rather than hand-copying the frontmatter shapes or the
+// expected element list a second time (docs/wiki/harness-production-divergence.md; the same
+// DRY choice the Python version's own _instantiate helper made for its test suite).
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { fixture, runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
-import { loadTreeFixtures, replayTreeFixtures, writeTree } from "./_python-cli-fixture.ts";
-import type { TreeFixtureCase } from "./_python-cli-fixture.ts";
+import { loadTreeFixtures, replayTreeFixtures, writeTree } from "./_tree-fixture.ts";
+import type { TreeFixtureCase } from "./_tree-fixture.ts";
 import { classify, enumerate_elements } from "../harness_elements.ts";
 import type { HarnessElement } from "../harness_elements.ts";
 
@@ -23,9 +22,9 @@ const SCRIPT = join(HERE, "..", "harness_elements.ts");
 
 const CASES = loadTreeFixtures(join(HERE, "fixtures", "harness-elements-cases.json"));
 
-// The one fixture case that carries every frontmatter shape harness_elements.py's own
-// classify() branches on (no-frontmatter rules file, paths-bearing rules file, globs-bearing
-// docs/wiki page, and the non-prompt leftovers), recorded by running the real python3 CLI --
+// The one fixture case that carries every frontmatter shape classify() branches on
+// (no-frontmatter rules file, paths-bearing rules file, globs-bearing docs/wiki page, and the
+// non-prompt leftovers), recorded by running the real python3 CLI against the Python version --
 // not a second, hand-written copy of those shapes.
 const MULTI_SHAPE_CASE = fixture(CASES, "classifies_every_element_kind_and_collapses_a_ja_mirror");
 

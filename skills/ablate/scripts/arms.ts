@@ -1,15 +1,9 @@
-// The TypeScript side of skills/ablate/scripts/arms.py: the arm names, the run count and the
-// pass threshold, and the two functions that build an arm's CLI command and read its
-// measurement status. arms.py stays in the tree through #646 -- report.py and usage_counts.py
-// still import it as a Python module, and skills/ablate/SKILL.md:43 still shells out to a
-// `python3 -c '... import report ...'` path that reaches it -- so both sides carry the same
-// names until that slice retires the Python side.
+// TypeScript port of the Python arm helper this module replaces: the arm names, the run count
+// and the pass threshold, and the two functions that build an arm's CLI command and read its
+// measurement status.
 //
-// Constant and function names stay exactly as arms.py declares them, not camelCased the way
-// hook_payload.ts renames hook_payload.py's edited_file: skills/ablate/tests/arms-parity.test.ts
-// (a later unit of this same plan) spawns python3, collects arms.py's public names, and
-// compares them against this module's export names as a set, so a renamed export here would
-// read as a name only one side has.
+// Constant and function names stay exactly as the Python version declared them, not camelCased
+// the way hook_payload.ts renames hook_payload.py's edited_file.
 
 export const WIPED = "wiped";
 export const WIPED_PLUS_ONE = "wiped+1";

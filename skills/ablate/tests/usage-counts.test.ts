@@ -1,20 +1,18 @@
 /// <reference types="node" />
-// In-process tests for skills/ablate/scripts/usage_counts.ts, the TS port of
-// usage_counts.py's FIRE_EVENTS, ELEMENT_SUFFIXES, RARE_BY_DESIGN, MEASUREMENT_WINDOW_DAYS,
-// element_path, _parse_date, _iter_fires, count_usage, classify and main.
-// skills/ablate/tests/usage-counts-fixture.test.ts already froze
-// skills/ablate/tests/fixtures/usage-counts-cases.json against the real python3
-// usage_counts.py; T-354 below replays that same frozen fixture against the .ts port's
-// count_usage directly, rather than hand-writing a second set of expected rows that could
-// drift from it (docs/wiki/fixture-freeze-before-port.md), the same DRY choice
-// skills/ablate/tests/enforcer-map.test.ts makes for enforcer_map.ts.
+// In-process tests for skills/ablate/scripts/usage_counts.ts: FIRE_EVENTS, ELEMENT_SUFFIXES,
+// RARE_BY_DESIGN, MEASUREMENT_WINDOW_DAYS, element_path, _parse_date, _iter_fires, count_usage,
+// classify and main. skills/ablate/tests/fixtures/usage-counts-cases.json was frozen against
+// the real python3 Python version this module replaced; T-354 below replays that same frozen
+// fixture against the .ts port's count_usage directly, rather than hand-writing a second set
+// of expected rows that could drift from it (docs/wiki/fixture-freeze-before-port.md), the same
+// DRY choice skills/ablate/tests/enforcer-map.test.ts makes for enforcer_map.ts.
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { fixture } from "../../../workflows/_lib/tests/_cli-fixture.ts";
-import { loadTreeFixtures, writeTree } from "../../_lib/tests/_python-cli-fixture.ts";
+import { loadTreeFixtures, writeTree } from "../../_lib/tests/_tree-fixture.ts";
 import { DELETE_CANDIDATE, NEEDS_HUMAN_JUDGMENT } from "../scripts/verdict.ts";
 import { UNMEASURED } from "../scripts/arms.ts";
 import {

@@ -1,7 +1,7 @@
 /// <reference types="node" />
-// U-005: ablate's SKILL.md (EN and .ja) still invoke skills/_lib/harness_elements.py and
-// skills/ablate/scripts/report.py through inline python3, and allowed-tools grants
-// Bash(python3:*) for it. This guards the port to the .ts siblings the preceding units
+// U-005: ablate's SKILL.md (EN and .ja) used to invoke the Python harness_elements and report
+// scripts through inline python3, and allowed-tools granted Bash(python3:*) for it. This
+// guards the port to the .ts siblings the preceding units
 // (U-002/U-003 for report.ts, plus the standing harness_elements.ts) already established:
 // Phase 1 and Phase 3 name a .ts script by path instead, and allowed-tools grants the path
 // that covers it instead of the bare python3 command.
@@ -20,7 +20,7 @@
 // SKILL.md files rather than a full-tree scan -- the scenario names "this skill" alone.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { dirname, join, posix, relative } from "node:path";
+import { dirname, join, posix } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "../../../workflows/_lib/tests/_retirement.ts";
@@ -29,9 +29,9 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 // skills/ablate/tests -> skills/ablate -> skills -> repo root, the same climb
 // harness-hash-cli.test.ts's REPO_ROOT makes from the same starting point.
 const REPO_ROOT = join(HERE, "..", "..", "..");
-const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
-void SELF_PATH; // kept for parity with the sibling retirement tests; T-481 below scopes its
-// own file list instead of scanning the full tree, so no self-exclusion is needed yet.
+// No SELF_PATH here: the sibling retirement tests pass one to offendersAmong so their own
+// comments do not report themselves, and that only matters for a full-tree scan. T-481 scopes
+// its file list to this skill's SKILL.md files, which this file is not one of.
 
 const SKILL_DIR = "skills/ablate";
 
@@ -95,12 +95,12 @@ test(
       assert.ok(harnessToken, `${label} Phase 1 no longer names harness_elements by a file path`);
       assert.ok(
         harnessToken !== null && harnessToken.ext === "ts",
-        `${label} Phase 1 still invokes harness_elements.py`,
+        `${label} Phase 1 still invokes a .py harness_elements script`,
       );
 
       const reportToken = extractScriptToken(phase3Block, "report");
       assert.ok(reportToken, `${label} Phase 3 no longer names report by a file path`);
-      assert.ok(reportToken !== null && reportToken.ext === "ts", `${label} Phase 3 still invokes report.py`);
+      assert.ok(reportToken !== null && reportToken.ext === "ts", `${label} Phase 3 still invokes a .py report script`);
 
       const grantPrefixes = extractPathGrants(source);
       assert.ok(grantPrefixes.length > 0, `${label} allowed-tools grants no path at all`);

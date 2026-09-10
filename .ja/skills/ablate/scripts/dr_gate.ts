@@ -1,13 +1,12 @@
 /// <reference types="node" />
-// skills/ablate/scripts/dr_gate.py の TypeScript 側: ablate skill における削除候補への DR
-// 突き合わせゲート。dr_gate.py は、#646 が Python 側を退役させるまで、report.py の import 元
-// として生き続ける。両側は、それまで同じ名前を持つ。
+// このモジュールが置き換える Python 版の DR 突き合わせゲートを TypeScript へ移植したもの:
+// ablate skill における削除候補への DR 突き合わせゲート。
 //
 // 照合が DR 本文をパス文字列で検索するのは、パスを自分自身へ写す機械可読フィールドを持つ DR
 // がまだ無いため。
 //
-// 定数と関数名は dr_gate.py が宣言する通りに保つ。arms.ts と verdict.ts が持つ、camelCase
-// にしないのと同じ convention。
+// 定数と関数名は Python 版が宣言する通りに保つ。arms.ts と verdict.ts が持つ、camelCase に
+// しないのと同じ convention。
 import { globSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DELETE_CANDIDATE } from "./verdict.ts";
@@ -18,8 +17,7 @@ import { DELETE_CANDIDATE } from "./verdict.ts";
 export const HELD = "held";
 
 // 展開せず node:fs の globSync にそのまま渡し、展開済みのファイル一覧を手で書き写すことは
-// しない (docs/wiki/path-reference-audit.md)。dr_gate.py の _DR_GLOB と同じ glob 文字列
-// なので、両側は同じ DR 集合を歩く。
+// しない (docs/wiki/path-reference-audit.md)。
 const _DR_GLOB = "docs/decisions/*.md";
 
 // このゲートが確認記録を読みに行く節。docs/decisions/*.md には見出しの深さにより "## " と

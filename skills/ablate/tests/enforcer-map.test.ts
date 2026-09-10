@@ -1,11 +1,10 @@
 /// <reference types="node" />
-// In-process and CLI-facing tests for skills/ablate/scripts/enforcer_map.ts, the TS port of
-// enforcer_map.py's DELETE_CANDIDATE, ABLATION_RESIDUE, ENFORCER_TABLE, classify_line,
-// classify_file, target_files, map_all and main. skills/ablate/tests/enforcer-map-fixture.test.ts
-// already froze skills/ablate/tests/fixtures/enforcer-map-cases.json against the real python3
-// enforcer_map.py; the scenarios below replay that same fixture against the .ts port rather
-// than hand-writing a second set of expected rows that could drift from it
-// (docs/wiki/fixture-freeze-before-port.md), the same DRY choice
+// In-process and CLI-facing tests for skills/ablate/scripts/enforcer_map.ts: DELETE_CANDIDATE,
+// ABLATION_RESIDUE, ENFORCER_TABLE, classify_line, classify_file, target_files, map_all and
+// main. skills/ablate/tests/fixtures/enforcer-map-cases.json was frozen against the real
+// python3 Python version this module replaced; the scenarios below replay that same fixture
+// against the .ts port rather than hand-writing a second set of expected rows that could drift
+// from it (docs/wiki/fixture-freeze-before-port.md), the same DRY choice
 // skills/_lib/tests/harness-elements.test.ts makes for harness_elements.ts.
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
@@ -17,7 +16,7 @@ import {
   loadTreeFixtures,
   replayTreeFixtures,
   writeTree,
-} from "../../_lib/tests/_python-cli-fixture.ts";
+} from "../../_lib/tests/_tree-fixture.ts";
 import {
   ABLATION_RESIDUE,
   DELETE_CANDIDATE,

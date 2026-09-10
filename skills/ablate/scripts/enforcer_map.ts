@@ -1,24 +1,25 @@
 #!/usr/bin/env node
 /// <reference types="node" />
 // Usage: enforcer_map.ts <repo-root>, invoked directly (skills/dr/scripts/update-index.ts's
-// shape) rather than imported the way report.ts will import verdict.ts and dr_gate.ts.
+// shape) rather than imported the way report.ts imports verdict.ts and dr_gate.ts.
 // Output: JSON array of {file, line_number, verdict, enforcer?} to stdout, one entry per
 // non-blank line across the always-loaded files, file order then line order.
 //
-// TypeScript port of skills/ablate/scripts/enforcer_map.py: DELETE_CANDIDATE,
+// TypeScript port of the Python enforcer-map script this module replaces: DELETE_CANDIDATE,
 // ABLATION_RESIDUE, ENFORCER_TABLE, classify_line, classify_file, target_files, map_all, main.
-// Constant and function names stay exactly as enforcer_map.py declares them, the same
+// Constant and function names stay exactly as the Python version declared them, the same
 // no-camelCase convention arms.ts, verdict.ts and dr_gate.ts hold in this same directory.
 //
-// DELETE_CANDIDATE is declared locally rather than imported from ./verdict.ts: enforcer_map.py
-// never imports verdict.py either, and report.py:90 compares enforcer_map's and verdict's
-// verdicts to each other by string value alone, never by shared identity. A local constant
-// keeps this port's import graph the same shape as the Python module it mirrors.
+// DELETE_CANDIDATE is declared locally rather than imported from ./verdict.ts: the Python
+// version never imported its own verdict module either, and report.ts's build_report compares
+// enforcer_map's and verdict's verdicts to each other by string value alone, never by shared
+// identity. A local constant keeps this port's import graph the same shape as the Python
+// module it replaced.
 //
-// map_all takes an optional targetFiles override: enforcer_map_test.py substitutes a fake
-// target_files/harness_elements result with unittest.mock.patch.object, which rebinds a name
-// inside the imported module. An ESM namespace import cannot be rebound the same way from
-// outside, so the override is threaded through as an explicit parameter instead.
+// map_all takes an optional targetFiles override, since enforcer-map.test.ts substitutes a
+// fixed file list directly: an ESM namespace import cannot be rebound from outside the way a
+// Python `unittest.mock.patch.object` call rebinds a name inside an imported module, so the
+// override is threaded through as an explicit parameter instead.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
@@ -37,8 +38,8 @@ const PROSE_LANGUAGE_ROW =
 
 // An always-loaded line's exact text -> the enforcer that already guarantees it. A rule whose
 // enforcer could not be confirmed stays out rather than being guessed at, so an absent line
-// reports as ABLATION_RESIDUE instead of as coverage nobody checked. Copied from
-// enforcer_map.py's ENFORCER_TABLE unchanged.
+// reports as ABLATION_RESIDUE instead of as coverage nobody checked. Copied from the Python
+// version's ENFORCER_TABLE unchanged.
 export const ENFORCER_TABLE: Record<string, string> = {
   // settings.json registers the guard as the PostToolUse Edit/Write hook on both trees, and
   // hooks/_lib/mirror_prose.py's warning cites "(MIRROR.md)" for this exact violation.
@@ -46,8 +47,8 @@ export const ENFORCER_TABLE: Record<string, string> = {
 };
 
 /** One classified line of an always-loaded file. `enforcer` is present only when `verdict` is
- * DELETE_CANDIDATE, matching enforcer_map.py's classify_file, which sets the key only in that
- * branch rather than carrying it as `null` on every entry. */
+ * DELETE_CANDIDATE, matching the Python version's classify_file, which set the key only in
+ * that branch rather than carrying it as `null` on every entry. */
 export interface EnforcerMapEntry {
   file: string;
   line_number: number;
@@ -82,8 +83,8 @@ export function classify_file(root: string, rel_path: string): EnforcerMapEntry[
 }
 
 /** The repo-root-relative paths `root`'s harness always loads into every session's context.
- * Derived at run time rather than held as a tuple, the same reason enforcer_map.py's own
- * target_files gives. */
+ * Derived at run time rather than held as a tuple, the same reason the Python version's own
+ * target_files gave. */
 export function target_files(root: string): string[] {
   return enumerate_elements(root)
     .filter((element) => element.classification === ALWAYS_LOADED)
@@ -92,7 +93,7 @@ export function target_files(root: string): string[] {
 
 /** Classifies every non-blank line across the always-loaded files, file order then line order.
  * When `targetFiles` is given, it replaces the `target_files(root)` scan -- the injection
- * enforcer_map_test.py reaches through unittest.mock.patch.object instead. */
+ * enforcer-map.test.ts uses to substitute a fixed file list directly. */
 export function map_all(root: string, targetFiles?: readonly string[]): EnforcerMapEntry[] {
   const results: EnforcerMapEntry[] = [];
   for (const rel_path of targetFiles ?? target_files(root)) {
