@@ -1,75 +1,179 @@
+#!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// The TypeScript port of hooks/integrations/amphetamine_agent_session.py's session-marker
-// primitives (unit U-003): _fresh, _any_fresh, _sweep, and the marker read/write pathlib calls
-// the Python original inlines (`marker.touch()`, `path.unlink(missing_ok=True)`). session_id,
-// _foreign_session, _release, run and main -- the osascript-driving CLI dispatch -- stay out of
-// this file for now; this unit's contract and its three test scenarios (T-393..T-395) cover only
-// the mtime plumbing, so the shebang + `process.exit(main())` shape DR-0114 asks of a finished
-// hook body (hooks/lifecycle/recall_index.ts's shape) lands with the unit that adds that dispatch.
+// The hook body half of hooks/integrations/amphetamine_agent_session.py's port (unit U-004):
+// main's argv dispatch, mirroring the shebang + `process.exit(main())` shape DR-0114 asks of a
+// finished hook body (hooks/lifecycle/recall_index.ts's shape). This is the 6th hook this shape
+// lands in -- #634, #642, #643, #644 and #684 landed first -- so the dispatch below copies that
+// shape rather than redesigning it.
 //
-// Python's Path.touch() bumps the mtime of a file that already exists; this module's
-// closeSync(openSync(p, "a")) does not, because a 0-byte append changes nothing an mtime watches.
-// touchMarker calls utimesSync explicitly afterward to close that gap.
-// removeMarker mirrors Python's `Path.unlink(missing_ok=True)` with `rmSync(path, { force:
-// true })`, which stays quiet for a path already gone.
-import { closeSync, openSync, readdirSync, rmSync, statSync, utimesSync } from "node:fs";
+// The marker-mtime primitives (unit U-003) and session_id (this unit) live in
+// amphetamine_state.ts, a plain module with no top-level side effect, rather than here: a module
+// that calls `process.exit()` unconditionally at its own top level cannot also be imported
+// directly by a `node --test` file. Under `--test-isolation=process`, the test worker's fd 0 is
+// the runner's own IPC channel, not a plain stdin, so a synchronous fd-0 read inside that
+// top-level call (readStdin, which main() reaches through) deadlocks the worker rather than
+// returning -- confirmed by reproduction. hooks/integrations/tests/amphetamine-marker.test.ts
+// (unit U-003) already imports the marker functions directly, so they had to move to keep that
+// import safe once this file gained the unconditional process.exit call; amphetamine_state.ts's
+// own header carries the rest of this reasoning. This mirrors the codebase's existing
+// scribe_trigger.ts (pure, hooks/_lib/) / scribe_prompt.ts (hook body, hooks/post-bash/) split.
+//
+// main mirrors amphetamine_agent_session.py's main + run + _release + _foreign_session: it
+// reads the same argv position Python's sys.argv[1] does, filters to the three known actions,
+// and then branches on release / acquire+background the way run() does. The app-directory and
+// `shutil.which("osascript")` gates main() makes ahead of that are out of this unit's scope --
+// its own goal statement scopes it to the argv-driven acquire/release/background contract, and
+// the source test range this unit ports (amphetamine_agent_session_test.py's T-011..T-024)
+// starts after T-009, the missing-app case. Left for a later unit; see this unit's result notes.
+//
+// amphetamine_agent_session.py defers its `re`, `shutil` and `subprocess` imports to the
+// functions that need them, reasoning that most hook runs return before reaching one. Node's
+// `node:child_process` (subprocess's counterpart) is a built-in with no package to resolve, and
+// none of the five prior TS hook ports that call an external binary (rumdl_check.ts among them)
+// defer that import either, so this port keeps spawnSync as a static top-level import rather
+// than reaching for `import()`. `re`'s counterpart is a regex literal, which carries no import
+// at all. `shutil.which`'s counterpart folds into the spawnSync call itself, the way
+// rumdl_check.ts already reads a missing binary off spawnSync's own result (`status === null`)
+// instead of probing PATH first.
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
+import { readStdin } from "../_lib/hook_payload.ts";
+import {
+  anyFresh,
+  anyMarker,
+  fresh,
+  hasMarkers,
+  removeMarker,
+  sessionId,
+  sweep,
+  touchMarker,
+} from "./amphetamine_state.ts";
 
-/** How fresh a marker's mtime has to be to count as live. Mirrors amphetamine_agent_session.py's
- * _fresh, and STALE_MINUTES is that module's own constant for _sweep's cutoff. */
-export const STALE_MINUTES = 480;
+/** _amph's osascript timeout in seconds. Mirrors amphetamine_agent_session.py's
+ * AMPH_TIMEOUT_SECONDS: osascript can sit on a modal Amphetamine raises, and this hook fires on
+ * every tool call, so a blocked call would wedge the turn. */
+const AMPH_TIMEOUT_SECONDS = 5;
 
-/** Whether path's mtime falls inside the last `minutes`. Mirrors amphetamine_agent_session.py's
- * _fresh, which reads OSError (a marker removed mid-check) as not fresh. */
-export function fresh(path: string, minutes: number): boolean {
+/** How long a session runs. Mirrors amphetamine_agent_session.py's SESSION_MINUTES: release
+ * reads it as the upper bound of what it recognizes as its own, so nothing longer is issued. */
+const SESSION_MINUTES = 60;
+
+/** background returns without calling osascript until this long after the last issue. Mirrors
+ * amphetamine_agent_session.py's BG_REFRESH_MINUTES. */
+const BG_REFRESH_MINUTES = 5;
+
+/** How fresh a bg marker has to be for release to read it as work still running. Mirrors
+ * amphetamine_agent_session.py's BG_FRESH_MINUTES. */
+const BG_FRESH_MINUTES = 15;
+
+/** Amphetamine's own code for "no session running" -- one of the negative codes `remaining`
+ * documents. Mirrors amphetamine_agent_session.py's NO_SESSION. */
+const NO_SESSION = -3;
+
+/** Where markers live absent CLAUDE_AMPHETAMINE_STATE_DIR. Mirrors amphetamine_agent_session.py's
+ * DEFAULT_STATE_DIR, read at call time so a test swapping HOME never touches this machine's own
+ * directory. */
+function defaultStateDir(): string {
+  return join(homedir(), "Library", "Application Support", "claude-amphetamine");
+}
+
+/** Sends one AppleScript command to Amphetamine via osascript, empty on a non-zero exit or a
+ * timeout. Mirrors amphetamine_agent_session.py's _amph. */
+function amph(command: string): string {
+  const result = spawnSync("osascript", ["-e", `tell application "Amphetamine" to ${command}`], {
+    encoding: "utf8",
+    timeout: AMPH_TIMEOUT_SECONDS * 1000,
+  });
+  return result.status === 0 ? (result.stdout ?? "").trim() : "";
+}
+
+/** Issues a new Amphetamine session. The only place one is issued: release's ownership test
+ * (below) assumes this length. Mirrors amphetamine_agent_session.py's start_session -- closed-
+ * display mode stays Amphetamine's own preference rather than set per session, the way the
+ * Python original leaves it out of `options` too. */
+function startSession(): void {
+  amph(
+    `start new session with options {duration:${SESSION_MINUTES}, interval:minutes, displaySleepAllowed:false}`,
+  );
+}
+
+/** Seconds left on the running session, or null when Amphetamine answered with something
+ * unreadable -- which leaves every caller on the side that touches nothing. Mirrors
+ * amphetamine_agent_session.py's remaining, whose `int(...)` raises ValueError on anything
+ * that is not a plain (optionally signed) integer string. */
+function remaining(): number | null {
+  const text = amph("session time remaining");
+  return /^-?\d+$/.test(text) ? Number.parseInt(text, 10) : null;
+}
+
+/** A session no Claude Code process started, which taking over would cut short. Mirrors
+ * amphetamine_agent_session.py's _foreign_session: any marker in the directory means the
+ * running session is ours, since the first process to acquire starts one and every later turn
+ * then sees a positive remaining time and would otherwise stand aside without joining the
+ * count. */
+function foreignSession(stateDir: string, marker: string, bgMarker: string): boolean {
+  if (existsSync(marker) || existsSync(bgMarker) || hasMarkers(stateDir)) return false;
+  return remaining() !== NO_SESSION;
+}
+
+/** Mirrors amphetamine_agent_session.py's _release. */
+function release(stateDir: string, marker: string, bgMarker: string): void {
+  removeMarker(marker);
+
+  // Another Claude Code process is still mid-turn, so its session stays.
+  if (anyMarker(stateDir, "session-")) return;
+
+  // 0 is endless and a negative value is a session from elsewhere. Longer than this hook ever
+  // issues means a manual one slipped in.
+  const left = remaining();
+  if (left === null || left <= 0 || left > SESSION_MINUTES * 60) return;
+
+  // A workflow or subagent still running extends the session past the turn. Nothing reports
+  // their end, so the next release closes it once the marker has gone stale.
+  if (anyFresh(stateDir, "bg-", BG_FRESH_MINUTES)) {
+    startSession();
+    return;
+  }
+
+  removeMarker(bgMarker);
+  amph("end session");
+}
+
+/** Mirrors amphetamine_agent_session.py's run. */
+function run(action: string, payloadText: string, stateDir: string): void {
+  const sid = sessionId(payloadText, action);
+  if (sid === null) return;
   try {
-    return Date.now() - statSync(path).mtimeMs < minutes * 60_000;
+    mkdirSync(stateDir, { recursive: true });
   } catch {
-    return false;
+    return;
   }
-}
+  sweep(stateDir);
 
-/** Every entry name directly under dir that starts with prefix. Mirrors
- * amphetamine_agent_session.py's `state_dir.glob(f"{prefix}*")`, which reads a missing
- * directory as no matches rather than an error. */
-function markerNames(dir: string, prefix: string): string[] {
-  try {
-    return readdirSync(dir).filter((name) => name.startsWith(prefix));
-  } catch {
-    return [];
+  const marker = join(stateDir, `session-${sid}`);
+  const bgMarker = join(stateDir, `bg-${sid}`);
+
+  if (action === "release") {
+    release(stateDir, marker, bgMarker);
+    return;
   }
+
+  if (action === "background" && fresh(bgMarker, BG_REFRESH_MINUTES)) return;
+  if (foreignSession(stateDir, marker, bgMarker)) return;
+  touchMarker(action === "background" ? bgMarker : marker);
+  startSession();
 }
 
-/** Whether any file under stateDir named `${prefix}*` is fresh. Mirrors
- * amphetamine_agent_session.py's _any_fresh. */
-export function anyFresh(stateDir: string, prefix: string, minutes: number): boolean {
-  return markerNames(stateDir, prefix).some((name) => fresh(join(stateDir, name), minutes));
+/** Mirrors amphetamine_agent_session.py's main. The app-directory and osascript-availability
+ * gates it makes ahead of this dispatch are not ported here -- see this file's header. */
+function main(): number {
+  const action = process.argv[2] ?? "";
+  if (action !== "acquire" && action !== "release" && action !== "background") return 0;
+  const stateDir = process.env.CLAUDE_AMPHETAMINE_STATE_DIR || defaultStateDir();
+  run(action, readStdin(), stateDir);
+  return 0;
 }
 
-/** Drops every "session-" and "bg-" prefixed marker under stateDir whose mtime has passed
- * STALE_MINUTES. Mirrors amphetamine_agent_session.py's _sweep. */
-export function sweep(stateDir: string): void {
-  for (const name of [...markerNames(stateDir, "session-"), ...markerNames(stateDir, "bg-")]) {
-    const path = join(stateDir, name);
-    if (!fresh(path, STALE_MINUTES)) {
-      removeMarker(path);
-    }
-  }
-}
-
-/** Creates path if absent, and on an existing path moves its mtime forward the way Python's
- * Path.touch() does. The append alone leaves an existing file's mtime untouched (a 0-byte
- * write changes nothing an mtime watches), so utimesSync sets it explicitly afterward. */
-export function touchMarker(path: string): void {
-  closeSync(openSync(path, "a"));
-  const now = new Date();
-  utimesSync(path, now, now);
-}
-
-/** Removes path, silent when it is already gone. Mirrors Python's
- * `Path.unlink(missing_ok=True)`: settings.json fires this hook's PostToolUse matcher `*` in
- * every Claude Code process, so a concurrent release from another process can already have
- * removed the same marker by the time this one gets to it. */
-export function removeMarker(path: string): void {
-  rmSync(path, { force: true });
-}
+process.exit(main());

@@ -1,18 +1,24 @@
 /// <reference types="node" />
 // Ports 3 of hooks/integrations/tests/amphetamine_agent_session_test.py's mtime-facing
-// observations to amphetamine_agent_session.ts's side (unit U-003): the Python suite never
-// asserts on _fresh/_any_fresh/_sweep directly, reading them only through acquire/release/
-// background and a backdated marker (e.g. test_stale_marker_is_swept,
-// test_release_closes_when_the_bg_marker_went_stale) -- that dispatch is a later unit's scope
-// here (see amphetamine_agent_session.ts's file header), so these three scenarios call the
-// exported primitives straight, the way hooks/_lib/tests/scribe-trigger.test.ts calls
-// scribe_trigger.ts's find/shouldPrompt straight rather than through a hook subprocess.
+// observations to amphetamine_state.ts's side (unit U-003): the Python suite never asserts on
+// _fresh/_any_fresh/_sweep directly, reading them only through acquire/release/background and a
+// backdated marker (e.g. test_stale_marker_is_swept, test_release_closes_when_the_bg_marker_
+// went_stale) -- that dispatch is a later unit's scope here (see amphetamine_agent_session.ts's
+// file header), so these three scenarios call the exported primitives straight, the way
+// hooks/_lib/tests/scribe-trigger.test.ts calls scribe_trigger.ts's find/shouldPrompt straight
+// rather than through a hook subprocess.
+//
+// Imports from amphetamine_state.ts, not amphetamine_agent_session.ts: unit U-004 gave the
+// latter an unconditional `process.exit(main())` at its own top level (DR-0114's hook-body
+// shape), and a module that does that cannot also be imported directly by a `node --test` file
+// (amphetamine_state.ts's own header carries the reasoning). The marker primitives moved there
+// to keep this import safe; the assertions below are otherwise unchanged from unit U-003.
 import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { anyFresh, fresh, removeMarker, STALE_MINUTES, sweep, touchMarker } from "../amphetamine_agent_session.ts";
+import { anyFresh, fresh, removeMarker, STALE_MINUTES, sweep, touchMarker } from "../amphetamine_state.ts";
 
 // The window release reads a bg marker against (amphetamine_agent_session.py's
 // BG_FRESH_MINUTES), independent of STALE_MINUTES: a marker can be well inside the sweep's
