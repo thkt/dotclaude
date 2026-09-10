@@ -69,6 +69,6 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. The lower bar above 
 | ------------ | ---------------------------------------------------------------------------------------------- |
 | Prefix       | SEC                                                                                            |
 | Categories   | A01-A10, LLM01                                                                                        |
-| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields; this reviewer never assigns low |
 | Verification | execution_trace, call_site_check, or pattern_search. What to verify to confirm exploitability. |
 | Extra        | entry_points for execution_trace go into the verification text as `file:line`; the caller's schema carries no extra keys                                    |

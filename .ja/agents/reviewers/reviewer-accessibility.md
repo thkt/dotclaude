@@ -55,6 +55,6 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。HTML が範囲�
 | ------------ | ----------------------------------------------------------------------------------------------------- |
 | Prefix       | A11Y                                                                                                  |
 | カテゴリ     | semantic / keyboard / screen-reader / visual / form                                                   |
-| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照。このレビュアーは low を付けない |
 | Verification | execution_trace または pattern_search。この要素は本当にキーボードまたはスクリーンリーダーで到達可能か |
 | Extra        | WCAG の達成基準 (1.1.1 など) と APG パターンの URL は evidence に、修正済みスニペットは fix に書く。呼び出し元の schema に追加キーは無い |
