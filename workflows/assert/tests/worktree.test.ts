@@ -10,7 +10,9 @@
 // repository, PATH restored so the CLI's own `git` calls reach the real binary. A JSON
 // `status: created` on stdout alone would not show that cwd took effect or that this
 // repository (not some other one) was touched, so T-162 also greps `git worktree list` for the
-// worktree before and after cleanup, and it reads the JSON rather than the bytes.
+// worktree before and after cleanup, and it reads the JSON rather than the bytes. The repository
+// itself comes from workflows/_lib/tests/_git-repo.ts's withTempRepo -- the same disposable-repo
+// helper skills/scribe/tests/verify-run.test.ts and scripts-contract.test.ts share.
 //
 // T-168 is what pins the bytes: it replays every case in the frozen fixture
 // worktree-cases.json against the real CLI, the way workflows/assert/tests/record.test.ts
@@ -25,6 +27,7 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { fixture, runCli, withTempHome, type FixtureCase } from "../../_lib/tests/_cli-fixture.ts";
+import { withTempRepo } from "../../_lib/tests/_git-repo.ts";
 import { create, cleanup, paths, type Runner } from "../worktree.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -55,20 +58,20 @@ function recordingRunner(calls: string[][]): Runner {
   };
 }
 
-/** Builds a fresh git repository with one commit ("chore: seed") under `root`, mirroring
- * workflows/code/tests/verify-commit.test.ts's withUnitRepo / workflows/build/tests/
- * diff-files.test.ts's buildRepo. Returns the repository's absolute path. */
-function initRepo(root: string): string {
-  const repo = mkdtempSync(join(root, "worktree-repo-"));
-  const git = (args: readonly string[]) =>
-    spawnSync("git", ["-C", repo, ...args], { encoding: "utf8" });
-  git(["init", "-q", "-b", "main"]);
-  git(["config", "user.email", "t@example.com"]);
-  git(["config", "user.name", "t"]);
-  writeFileSync(join(repo, "README.md"), "seed\n");
-  git(["add", "README.md"]);
-  git(["commit", "-q", "-m", "chore: seed"]);
-  return repo;
+/** Seeds a fresh repository (`withTempRepo` already ran `git init`) with one commit
+ * ("chore: seed"), mirroring workflows/code/tests/verify-commit.test.ts's withUnitRepo /
+ * workflows/build/tests/diff-files.test.ts's buildRepo, then runs `fn` against its path. */
+function initRepo<T>(fn: (repo: string) => T): T {
+  return withTempRepo((repo) => {
+    const git = (args: readonly string[]) =>
+      spawnSync("git", ["-C", repo, ...args], { encoding: "utf8" });
+    git(["config", "user.email", "t@example.com"]);
+    git(["config", "user.name", "t"]);
+    writeFileSync(join(repo, "README.md"), "seed\n");
+    git(["add", "README.md"]);
+    git(["commit", "-q", "-m", "chore: seed"]);
+    return fn(repo);
+  });
 }
 
 /** `git worktree list`'s stdout for `repo`. */
@@ -101,31 +104,32 @@ test("T-161 create and cleanup report the same branch and path for one session i
 
 test("T-162 create inside a temporary git repository adds a worktree under that repository and cleanup removes it, leaving the repository without it", () => {
   withTempHome((home) => {
-    const repo = initRepo(home);
-    const sessionId = "temp-repo-session";
-    const branchPattern = new RegExp(`\\[assert-${sessionId}\\]`);
+    initRepo((repo) => {
+      const sessionId = "temp-repo-session";
+      const branchPattern = new RegExp(`\\[assert-${sessionId}\\]`);
 
-    const createRun = runCli(SCRIPT, home, "", [sessionId], {
-      cwd: repo,
-      env: { PATH: process.env.PATH ?? "" },
-    });
-    assert.equal(createRun.status, 0, "create: exit code");
-    const createdJson = JSON.parse(createRun.stdout) as Record<string, unknown>;
-    assert.equal(createdJson.status, "created", "create: JSON status");
-    assert.match(worktreeList(repo), branchPattern, "create: worktree appears under the repo");
+      const createRun = runCli(SCRIPT, home, "", [sessionId], {
+        cwd: repo,
+        env: { PATH: process.env.PATH ?? "" },
+      });
+      assert.equal(createRun.status, 0, "create: exit code");
+      const createdJson = JSON.parse(createRun.stdout) as Record<string, unknown>;
+      assert.equal(createdJson.status, "created", "create: JSON status");
+      assert.match(worktreeList(repo), branchPattern, "create: worktree appears under the repo");
 
-    const cleanupRun = runCli(SCRIPT, home, "", ["--cleanup", sessionId], {
-      cwd: repo,
-      env: { PATH: process.env.PATH ?? "" },
+      const cleanupRun = runCli(SCRIPT, home, "", ["--cleanup", sessionId], {
+        cwd: repo,
+        env: { PATH: process.env.PATH ?? "" },
+      });
+      assert.equal(cleanupRun.status, 0, "cleanup: exit code");
+      const removedJson = JSON.parse(cleanupRun.stdout) as Record<string, unknown>;
+      assert.equal(removedJson.status, "removed", "cleanup: JSON status");
+      assert.doesNotMatch(
+        worktreeList(repo),
+        branchPattern,
+        "cleanup: worktree no longer listed under the repo",
+      );
     });
-    assert.equal(cleanupRun.status, 0, "cleanup: exit code");
-    const removedJson = JSON.parse(cleanupRun.stdout) as Record<string, unknown>;
-    assert.equal(removedJson.status, "removed", "cleanup: JSON status");
-    assert.doesNotMatch(
-      worktreeList(repo),
-      branchPattern,
-      "cleanup: worktree no longer listed under the repo",
-    );
   });
 });
 
@@ -162,16 +166,29 @@ test("T-264 every frozen case in worktree-cases.json reproduces the python manag
   // JSON.stringify writes neither, and reading the parsed object back would pass either way.
   assert.ok(FIXTURES.length > 0, "the frozen fixture carries at least one case");
   withTempHome((home) => {
-    const repo = initRepo(home);
-    for (const testCase of FIXTURES) {
-      const needsRepo = (testCase.argv ?? []).includes("fixture-session");
-      const result = runCli(SCRIPT, home, testCase.stdin, testCase.argv ?? [], {
-        cwd: needsRepo ? repo : undefined,
-        env: { PATH: needsRepo ? (process.env.PATH ?? "") : "" },
-      });
-      assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
-      assert.equal(result.stdout, resolveScript(testCase.stdout), `${testCase.name}: stdout`);
-      assert.equal(result.stderr, resolveScript(testCase.stderr), `${testCase.name}: stderr`);
-    }
+    initRepo((repo) => {
+      for (const testCase of FIXTURES) {
+        const needsRepo = (testCase.argv ?? []).includes("fixture-session");
+        const result = runCli(SCRIPT, home, testCase.stdin, testCase.argv ?? [], {
+          cwd: needsRepo ? repo : undefined,
+          env: { PATH: needsRepo ? (process.env.PATH ?? "") : "" },
+        });
+        assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
+        assert.equal(result.stdout, resolveScript(testCase.stdout), `${testCase.name}: stdout`);
+        assert.equal(result.stderr, resolveScript(testCase.stderr), `${testCase.name}: stderr`);
+      }
+    });
   });
 });
+
+test(
+  "T-419 verify-run, scripts-contract and worktree each create their repositories through the " +
+    "helper, asserted by the gc.auto value those repositories report",
+  () => {
+    initRepo((repo) => {
+      const result = spawnSync("git", ["-C", repo, "config", "gc.auto"], { encoding: "utf8" });
+      const gcAuto = result.status === 0 ? result.stdout.trim() : "";
+      assert.equal(gcAuto, "0");
+    });
+  },
+);
