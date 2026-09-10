@@ -30,7 +30,11 @@ export function find(command: string, kind?: Kind): Filing | null {
   let directory = process.cwd();
   for (const tokens of commandScan.commands(command)) {
     if (tokens[0] === "cd" && tokens.length > 1) {
-      directory = join(directory, tokens[1]);
+      const target = tokens[1];
+      // An absolute cd target replaces the directory outright, the way Python's `Path.cwd() /
+      // target` does for pathlib -- `join()` alone would append it under the old directory
+      // instead, since Node's path.join never resets to an absolute component.
+      directory = isAbsolute(target) ? target : join(directory, target);
       continue;
     }
     for (const name of KINDS) {
