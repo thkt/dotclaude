@@ -8,45 +8,28 @@
 // (docs/wiki/harness-production-divergence.md; the same DRY choice harness_elements.py's own
 // _instantiate helper makes for its test suite).
 import assert from "node:assert/strict";
-import { readFileSync, rmSync } from "node:fs";
+import { rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
-import { writeTree } from "./_python-cli-fixture.ts";
+import { fixture, runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import { loadTreeFixtures, replayTreeFixtures, writeTree } from "./_python-cli-fixture.ts";
+import type { TreeFixtureCase } from "./_python-cli-fixture.ts";
 import { classify, enumerate_elements } from "../harness_elements.ts";
 import type { HarnessElement } from "../harness_elements.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "harness_elements.ts");
 
-const ROOT_PLACEHOLDER = "<root>";
-
-interface FixtureCase {
-  name: string;
-  files: Record<string, string>;
-  argv: string[];
-  exit: number;
-  stdout: string;
-}
-
-const CASES = JSON.parse(
-  readFileSync(join(HERE, "fixtures", "harness-elements-cases.json"), "utf8"),
-) as FixtureCase[];
-
-function fixture(name: string): FixtureCase {
-  const found = CASES.find((entry) => entry.name === name);
-  assert.ok(found, `fixture case ${name} exists in the loaded fixtures`);
-  return found as FixtureCase;
-}
+const CASES = loadTreeFixtures(join(HERE, "fixtures", "harness-elements-cases.json"));
 
 // The one fixture case that carries every frontmatter shape harness_elements.py's own
 // classify() branches on (no-frontmatter rules file, paths-bearing rules file, globs-bearing
 // docs/wiki page, and the non-prompt leftovers), recorded by running the real python3 CLI --
 // not a second, hand-written copy of those shapes.
-const MULTI_SHAPE_CASE = fixture("classifies_every_element_kind_and_collapses_a_ja_mirror");
+const MULTI_SHAPE_CASE = fixture(CASES, "classifies_every_element_kind_and_collapses_a_ja_mirror");
 
-function expectedElements(entry: FixtureCase): HarnessElement[] {
+function expectedElements(entry: TreeFixtureCase): HarnessElement[] {
   return JSON.parse(entry.stdout) as HarnessElement[];
 }
 
@@ -82,20 +65,5 @@ test("T-349 enumerate_elements returns the same element list for a constructed t
 });
 
 test("T-350 the frozen CLI cases replay through the .ts entry point", () => {
-  assert.ok(CASES.length > 0, "the frozen fixture carries at least one case");
-  for (const entry of CASES) {
-    const root = writeTree("harness-elements-cli", entry.files);
-    try {
-      const argv = entry.argv.map((token) => (token === ROOT_PLACEHOLDER ? root : token));
-      const run = runCli(SCRIPT, root, "", argv);
-      assert.equal(run.status, entry.exit, `${entry.name}: exit code (stderr: ${run.stderr})`);
-      assert.equal(
-        run.stdout,
-        entry.stdout.replaceAll(ROOT_PLACEHOLDER, root),
-        `${entry.name}: stdout`,
-      );
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  }
+  replayTreeFixtures(CASES, "harness-elements-cli", (argv, root) => runCli(SCRIPT, root, "", argv));
 });
