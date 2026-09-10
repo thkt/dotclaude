@@ -8,8 +8,7 @@
 //
 // 定数と関数名は dr_gate.py が宣言する通りに保つ。arms.ts と verdict.ts が持つ、camelCase
 // にしないのと同じ convention。
-import { readFileSync } from "node:fs";
-import { globSync } from "node:fs";
+import { globSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DELETE_CANDIDATE } from "./verdict.ts";
 

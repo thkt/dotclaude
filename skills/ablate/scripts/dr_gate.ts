@@ -8,8 +8,7 @@
 //
 // Constant and function names stay exactly as dr_gate.py declares them, the same no-camelCase
 // convention arms.ts and verdict.ts hold.
-import { readFileSync } from "node:fs";
-import { globSync } from "node:fs";
+import { globSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DELETE_CANDIDATE } from "./verdict.ts";
 
