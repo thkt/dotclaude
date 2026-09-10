@@ -37,6 +37,8 @@
     "hooks/security/npm_install_guard.ts",
     "hooks/security/rm_to_trash.ts",
     "hooks/pre-bash/client_identifier_gate.ts",
+    "hooks/pre-bash/package_manager_rewrite.ts",
+    "hooks/pre-bash/body_proofread.ts",
     "skills/**/tests/**/*.test.{js,ts}",
     "skills/_lib/harness_hash.ts",
     ".ja/skills/_lib/harness_hash.ts",

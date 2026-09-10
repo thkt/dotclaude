@@ -8,14 +8,16 @@
 // main() and exit the test runner's own process the moment the import ran -- the same hazard
 // git-sandbox-guard.test.ts and npm-install-guard.test.ts avoid the same way.
 //
-// GUARDED_REPO is this repository (fixed, not overridable -- see client_identifier_gate.py's
-// docstring), so T-296 stages its fixture directly here rather than in a scratch repository,
-// the way the Python test's own comment says the deny path "has to be exercised against it".
-// The stage is undone in a finally block: `git add` then `git reset` never touches HEAD or
-// history, only the index, so the repository is left exactly as clean as it started.
+// GUARDED_REPO is derived from the hook file's own location, so a copy of the hook placed at
+// <scratch>/hooks/pre-bash/ guards <scratch>. T-296 stages its fixture there. Writing into this
+// checkout instead would stage a file in the developer's own index, leave one behind whenever
+// the assertions throw before the cleanup, and fail outright wherever the repository root is
+// not writable. The retired Python test reached the same path by importing the module and
+// calling _hit / _added_lines; this module cannot be imported (top-level process.exit), so the
+// scratch tree buys the same isolation while still spawning the hook end to end.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, realpathSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -60,34 +62,54 @@ function runHook(command: string, cwd: string, listPath: string): Decision | nul
   return stdout.trim() ? (JSON.parse(stdout) as Decision) : null;
 }
 
+/** A git repository holding a copy of the hook at hooks/pre-bash/ and the one module it
+ * imports, so the copy's own GUARDED_REPO resolves to this repository rather than to the
+ * checkout the test runs from. Returns the repository root and the copied hook's path. */
+function scratchGuardedRepo(prefix: string): { repo: string; hook: string } {
+  const repo = realpathSync(mkdtempSync(path.join(tmpdir(), prefix)));
+  mkdirSync(path.join(repo, "hooks", "pre-bash"), { recursive: true });
+  mkdirSync(path.join(repo, "hooks", "_lib"), { recursive: true });
+  const hook = path.join(repo, "hooks", "pre-bash", "client_identifier_gate.ts");
+  copyFileSync(HOOK, hook);
+  copyFileSync(
+    path.join(HERE, "..", "..", "_lib", "hook_payload.ts"),
+    path.join(repo, "hooks", "_lib", "hook_payload.ts"),
+  );
+  spawnSync("git", ["init", "-q"], { cwd: repo });
+  spawnSync("git", ["config", "gc.auto", "0"], { cwd: repo });
+  return { repo, hook };
+}
+
 test("T-296 a commit whose added lines carry a listed term is denied with the term and the file named in the reason", () => {
   const scratch = mkdtempSync(path.join(tmpdir(), "client-identifier-gate-hit-"));
   const listPath = path.join(scratch, "client-names.txt");
   writeFileSync(listPath, `# comment\n${TERM}\n\n${OTHER_TERM}\n`);
 
-  // A fixture written directly into GUARDED_REPO (this checkout): the guarded repository is
-  // fixed and not overridable, so the deny path can only be exercised here. The term is
-  // uppercased to also cover the case-insensitive match the Python original relies on.
-  const relPath = "client-identifier-gate-test-fixture.md";
-  const absPath = path.join(GUARDED_REPO, relPath);
-  writeFileSync(absPath, `${TERM.toUpperCase()} appears here\n`);
-  spawnSync("git", ["add", relPath], { cwd: GUARDED_REPO });
-  try {
-    const out = runHook("git commit -m x", GUARDED_REPO, listPath);
-    assert.ok(out, "a staged term must be denied, not passed through");
-    const output = out as Decision;
-    assert.equal(output.hookSpecificOutput?.permissionDecision, "deny");
-    const reason = output.hookSpecificOutput?.permissionDecisionReason ?? "";
-    assert.match(reason, new RegExp(relPath), "the reason must name the file the term is in");
-    assert.doesNotMatch(
-      reason.toLowerCase(),
-      new RegExp(TERM.toLowerCase()),
-      "the reason must not echo the raw term",
-    );
-  } finally {
-    spawnSync("git", ["reset", "--", relPath], { cwd: GUARDED_REPO });
-    rmSync(absPath, { force: true });
-  }
+  // The term is uppercased to also cover the case-insensitive match the Python original relies
+  // on, and the file sits under a directory so the reason has a path to name rather than a
+  // bare filename.
+  const { repo, hook } = scratchGuardedRepo("client-identifier-gate-guarded-");
+  const relPath = path.join("docs", "fixture.md");
+  mkdirSync(path.join(repo, "docs"), { recursive: true });
+  writeFileSync(path.join(repo, relPath), `${TERM.toUpperCase()} appears here\n`);
+  spawnSync("git", ["add", relPath], { cwd: repo });
+
+  const payload = JSON.stringify({
+    tool_name: "Bash",
+    tool_input: { command: "git commit -m x" },
+    cwd: repo,
+  });
+  const stdout = run(hook, payload, { ...process.env, CLAUDE_CLIENT_NAMES_FILE: listPath });
+  assert.ok(stdout.trim(), "a staged term must be denied, not passed through");
+  const output = JSON.parse(stdout) as Decision;
+  assert.equal(output.hookSpecificOutput?.permissionDecision, "deny");
+  const reason = output.hookSpecificOutput?.permissionDecisionReason ?? "";
+  assert.match(reason, /docs\/fixture\.md/, "the reason must name the file the term is in");
+  assert.doesNotMatch(
+    reason.toLowerCase(),
+    new RegExp(TERM.toLowerCase()),
+    "the reason must not echo the raw term",
+  );
 });
 
 test("T-297 a dry-run commit and a commit outside the guarded repository are both allowed", () => {
