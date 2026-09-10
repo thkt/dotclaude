@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Unit tests for the target-selection primitives in hooks/pre-bash/body_proofread.ts (unit
-// U-006), the TypeScript side of hooks/pre-bash/body_proofread.py's _target / _heredoc_body.
+// U-006), the TypeScript side of hooks/pre-bash/the retired Python proofreader's _target / _heredoc_body.
 // Drawn from the target-judgment observations in hooks/pre-bash/tests/body_proofread_test.py
 // (a --body-file filing, an inline commit message, a heredoc commit message, and a command that
 // writes neither) -- the cases that decide *what* the command line is about to write, not the

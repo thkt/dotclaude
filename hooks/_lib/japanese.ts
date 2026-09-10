@@ -1,7 +1,7 @@
 /// <reference types="node" />
 // Japanese detection shared by the hooks that treat Japanese prose differently. The TypeScript
 // side of hooks/_lib/japanese.py (DR-0112's TypeScript migration); japanese.py stays in the tree
-// because hooks/pre-bash/body_proofread.py, hooks/_lib/mirror_prose.py, and hooks/edit/
+// because hooks/_lib/mirror_prose.py and hooks/edit/
 // textlint_fix.py (via mirror_prose) still import it, so both live side by side until every
 // caller moves over.
 //

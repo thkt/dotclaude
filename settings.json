@@ -228,7 +228,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/pre-bash/package_manager_rewrite.py",
+            "command": "~/.claude/hooks/pre-bash/package_manager_rewrite.ts",
             "timeout": 15
           },
           {
@@ -248,7 +248,7 @@
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/pre-bash/body_proofread.py",
+            "command": "~/.claude/hooks/pre-bash/body_proofread.ts",
             "timeout": 60
           },
           {
@@ -258,7 +258,7 @@
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/pre-bash/client_identifier_gate.py",
+            "command": "~/.claude/hooks/pre-bash/client_identifier_gate.ts",
             "timeout": 30
           },
           {

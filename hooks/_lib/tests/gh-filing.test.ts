@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Unit tests for hooks/_lib/gh_filing.ts, the TypeScript side of hooks/_lib/gh_filing.py. No
-// test exercises this module directly yet (hooks/pre-bash/body_proofread.py and
+// test exercises this module directly yet (hooks/pre-bash/body_proofread.ts and
 // hooks/pre-bash/issue_body_gate.py cover it only through the Python original), so the command
 // lines here are drawn from hooks/pre-bash/tests/body_proofread_test.py and
 // hooks/pre-bash/tests/issue_body_gate_test.py's filing-construction inputs: a `gh issue create`

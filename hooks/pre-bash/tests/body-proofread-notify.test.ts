@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Integration tests for hooks/pre-bash/body_proofread.ts's notify pipeline (unit U-007), the
-// TypeScript side of body_proofread.py's _checklist / main. Drawn from the remaining
+// TypeScript side of the retired Python proofreader's _checklist / main. Drawn from the remaining
 // observations in hooks/pre-bash/tests/body_proofread_test.py that unit U-006's
 // body-proofread-target.test.ts left out: what actually reaches notify, not merely which mode
 // _target picks.
@@ -11,7 +11,7 @@
 // the same hazard body-proofread-target.test.ts now avoids the same way.
 //
 // The structure checklist is read straight from hooks/pre-bash/body_proofread.md with the same
-// partition-on-"\n## " logic body_proofread.py's _checklist uses, rather than hardcoded here,
+// partition-on-"\n## " logic the retired Python proofreader's _checklist uses, rather than hardcoded here,
 // so a byte in that file changing does not silently desync this test's expectation from what
 // the hook is meant to send -- the exact-fidelity check the contract's "notify の本文は 1 文字
 // も変えない" asks for.
@@ -28,7 +28,7 @@ const HOOK = join(HERE, "..", "body_proofread.ts");
 const FINDINGS = "textlint 校正結果";
 const CHECKLIST_HEADING = "構造レビュー";
 
-/** body_proofread.py's _checklist, read the same way: from the first "\n## " heading down. */
+/** the retired Python proofreader's _checklist, read the same way: from the first "\n## " heading down. */
 function expectedChecklist(): string {
   const text = readFileSync(join(HERE, "..", "body_proofread.md"), "utf8");
   const marker = "\n## ";

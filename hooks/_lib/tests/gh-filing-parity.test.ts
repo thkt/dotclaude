@@ -10,7 +10,7 @@
 //
 // The corpus is every distinct gh issue create / gh pr create command-line shape
 // hooks/pre-bash/tests/body_proofread_test.py and hooks/pre-bash/tests/issue_body_gate_test.py
-// build to exercise body_proofread.py and issue_body_gate.py -- the two hooks that read a
+// build to exercise the retired proofreading hook and issue_body_gate.py -- the two hooks that read a
 // filing through gh_filing's find/flag/body_file, the viewpoint hooks/_lib/tests/gh-filing.test.ts
 // (U-001) covers directly. Several of those tests call the same command-building helper
 // (issue_body_gate_test.py's bug_issue_cmd) with a different body file's content but an

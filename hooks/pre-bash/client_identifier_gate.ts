@@ -2,7 +2,7 @@
 /// <reference types="node" />
 // PreToolUse hook: stop a commit in this repository when the staged diff adds a term from the
 // operator's private identifier list. TypeScript side of
-// hooks/pre-bash/client_identifier_gate.py (unit U-003); GUARDED_REPO / LIST_PATH / COMMIT_RE /
+// the retired Python gate of the same name; GUARDED_REPO / LIST_PATH / COMMIT_RE /
 // _terms / _repo_root / _added_lines / _hit / main carry the Python side's names and shapes.
 //
 // This repository is public, so a client or organization name that reaches a commit is
@@ -24,7 +24,7 @@ import { deny, field, parse } from "../_lib/hook_payload.ts";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 // hooks/pre-bash/client_identifier_gate.ts -> hooks/pre-bash -> hooks -> repo root, the same
-// two levels Path(__file__).resolve().parents[2] climbs from client_identifier_gate.py.
+// two levels the retired Python gate's Path(__file__).resolve().parents[2] climbed.
 // realpathSync mirrors Path.resolve()'s symlink resolution.
 export const GUARDED_REPO: string = realpathSync(path.join(HERE, "..", ".."));
 

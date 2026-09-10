@@ -67,8 +67,8 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の
 
 | Hook                       | イベント         | 失敗モード  | 用途                                                                                                          |
 | -------------------------- | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
-| package_manager_rewrite.py | PreToolUse(Bash) | fail-closed | パッケージマネージャーコマンドを ni 系へ変換。マネージャー自身のフラグと bun 内蔵のテストランナーは素通しする |
-| body_proofread.py          | PreToolUse(Bash) | fail-closed | gh issue/pr create の本文と commit メッセージを校正し、起票には構造チェックを添える (advisory)                |
+| package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed | パッケージマネージャーコマンドを ni 系へ変換。マネージャー自身のフラグと bun 内蔵のテストランナーは素通しする |
+| body_proofread.ts          | PreToolUse(Bash) | fail-closed | gh issue/pr create の本文と commit メッセージを校正し、起票には構造チェックを添える (advisory)                |
 | issue_body_gate.py         | PreToolUse(Bash) | fail-closed | 本文が骨格から外れた `gh issue create` を deny する                                                           |
 
 ### edit/

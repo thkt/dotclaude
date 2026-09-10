@@ -14,7 +14,7 @@ export const BODY_FLAGS: readonly string[] = ["--body", "-b"];
 export const BODY_FILE_FLAGS: readonly string[] = ["--body-file", "-F"];
 
 export type Kind = "issue" | "pr";
-export const KINDS: readonly Kind[] = ["issue", "pr"];
+const KINDS: readonly Kind[] = ["issue", "pr"];
 
 export interface Filing {
   readonly tokens: readonly string[];

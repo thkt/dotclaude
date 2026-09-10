@@ -1,7 +1,7 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
 // PreToolUse hook: rewrite a package manager command into its ni equivalent.
-// TypeScript side of hooks/pre-bash/package_manager_rewrite.py (unit U-004). MANAGERS / convert
+// TypeScript side of the retired Python rewriter of the same name. MANAGERS / convert
 // / main carry the Python side's names and shapes; convert is exported the way the plan
 // requires.
 //

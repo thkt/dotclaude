@@ -8,14 +8,14 @@
 // package_manager_rewrite.ts in-process: the module carries a top-level `process.exit(main())`
 // (DR-0114, no isMainModule guard), so an in-process import would run main() and exit the test
 // runner's own process the moment the import ran -- the same hazard client-identifier-gate.test.ts
-// avoids the same way, and the reason T-299 diffs the hook's own output against the Python
-// module's convert() (a plain function call is safe there: package_manager_rewrite.py keeps
-// the `if __name__ == "__main__":` guard the .ts side deliberately drops) rather than importing
-// convert from package_manager_rewrite.ts directly.
+// avoids the same way.
 //
-// T-299 reaches the Python side with one python3 spawn per command (hook-payload-parity.test.ts:
-// 41's PY_DRIVER shape) rather than hardcoding the expected strings here a second time -- the
-// conversion table stays single-sourced in the .py file while both sides move over.
+// T-299 compared the hook's output against the Python module's convert() through a python3
+// spawn while both sides ran. That module retires in this same slice, so the comparison is
+// frozen instead: FROZEN_CONVERSIONS holds what convert() answered for each command, read off
+// the Python original at the branch point before it was deleted
+// (docs/wiki/fixture-freeze-before-port.md). The values move only when the conversion itself is
+// meant to move.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
@@ -27,38 +27,9 @@ import { run } from "../../_lib/tests/_hook-harness.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "package_manager_rewrite.ts");
-// hooks/pre-bash/tests -> hooks/pre-bash, the one level package_manager_rewrite.py itself sits
-// under, importable by module name once that directory is on sys.path.
-const HOOKS_PRE_BASH_DIR = path.join(HERE, "..");
 // hooks/pre-bash/tests -> hooks/security, npm_install_guard.ts's own module (T-302:
 // NI_INSTALLS / RUNNERS, the sets a rewritten install-shaped head must land in).
 const NPM_INSTALL_GUARD = path.join(HERE, "..", "..", "security", "npm_install_guard.ts");
-
-// A one-shot driver rather than a CLI: package_manager_rewrite.py has no __main__ export of
-// convert, so this is the smallest way to call it from outside the process. It mirrors the one
-// function package_manager_rewrite.ts exposes.
-const PY_DRIVER = `
-import json
-import sys
-
-sys.path.insert(0, sys.argv[1])
-import package_manager_rewrite as pmr
-
-spec = json.loads(sys.stdin.read())
-result = pmr.convert(spec["parts"])
-print(json.dumps({"result": result}))
-`;
-
-function pythonConvert(parts: readonly string[]): string {
-  const result = spawnSync("python3", ["-c", PY_DRIVER, HOOKS_PRE_BASH_DIR], {
-    input: JSON.stringify({ parts }),
-    encoding: "utf8",
-  });
-  if (result.status !== 0) {
-    throw new Error(`python3 driver failed (exit ${result.status}): ${result.stderr}`);
-  }
-  return (JSON.parse(result.stdout) as { result: string }).result;
-}
 
 interface Decision {
   hookSpecificOutput?: {
@@ -92,24 +63,26 @@ function pathWithoutNi(): string {
   return mkdtempSync(path.join(tmpdir(), "package-manager-rewrite-tests-empty-"));
 }
 
+// What the retired Python rewriter's convert() answered for each command, captured from the
+// module at this branch's base before U-008 deleted it.
+const FROZEN_CONVERSIONS: Record<string, { command: string; rewritten: string }> = {
+  npm: { command: "npm install", rewritten: "ni" },
+  npx: { command: "npx create-vite my-app", rewritten: "nlx create-vite my-app" },
+  pnpm: { command: "pnpm add zod", rewritten: "ni zod" },
+  yarn: { command: "yarn remove zod", rewritten: "nun zod" },
+  bun: { command: "bun run build", rewritten: "nr build" },
+  bunx: { command: "bunx cowsay", rewritten: "nlx cowsay" },
+};
+
 test("T-299 each manager the table names converts to the head the python version emitted, compared as the whole rewritten string", () => {
   const env = { ...process.env, PATH: pathWithNiStub() };
-  const commands: Record<string, string> = {
-    npm: "npm install",
-    npx: "npx create-vite my-app",
-    pnpm: "pnpm add zod",
-    yarn: "yarn remove zod",
-    bun: "bun run build",
-    bunx: "bunx cowsay",
-  };
 
-  for (const [manager, command] of Object.entries(commands)) {
-    const tsResult = convertedByHook(command, env);
-    const pyResult = pythonConvert(command.split(/\s+/));
+  for (const [manager, frozen] of Object.entries(FROZEN_CONVERSIONS)) {
     assert.equal(
-      tsResult,
-      pyResult,
-      `${manager}: package_manager_rewrite.ts and package_manager_rewrite.py must agree on "${command}"`,
+      convertedByHook(frozen.command, env),
+      frozen.rewritten,
+      `${manager}: package_manager_rewrite.ts must answer "${frozen.command}" the way the ` +
+        `retired Python rewriter did`,
     );
   }
 });

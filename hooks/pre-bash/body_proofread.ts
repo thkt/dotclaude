@@ -1,7 +1,7 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
 // PreToolUse hook: proofread the body a gh filing or a commit is about to write. TypeScript
-// side of hooks/pre-bash/body_proofread.py (unit U-007, following U-006's target-selection
+// side of the retired Python proofreader (unit U-007, following U-006's target-selection
 // primitives). HEREDOC / Mode / FILING / COMMIT / COMMIT_INLINE / COMMIT_FILE / _target /
 // _heredoc_body / _flag / _lint_section / _checklist / main carry the Python side's names and
 // shapes.
@@ -54,7 +54,7 @@ function _textlint_runner(): readonly [string, ...string[]] | null {
 
 /** The findings textlint prints for `path`, empty when textlint found none or could not run
  * (no config, or no runner) -- the caller cannot tell the two apart, and neither leaves it
- * anything to report (body_proofread.py's textlint.lint). */
+ * anything to report (the retired Python proofreader's textlint.lint). */
 function _textlint_lint(path: string): string {
   try {
     if (!statSync(TEXTLINT_CONFIG).isFile()) {
@@ -77,7 +77,7 @@ function _textlint_lint(path: string): string {
   return result.stdout ?? "";
 }
 
-/** A heredoc marker, quoted or bare (body_proofread.py's HEREDOC). */
+/** A heredoc marker, quoted or bare (the retired Python proofreader's HEREDOC). */
 export const HEREDOC = /<<-?\s*(['"]?)(\w+)\1/;
 
 export interface Mode {
@@ -196,7 +196,7 @@ export function _target(command: string): readonly [Mode, string] | null {
 }
 
 /** The textlint findings section, empty below the mode's Japanese threshold or once textlint
- * itself has run (body_proofread.py's _lint_section). */
+ * itself has run (the retired Python proofreader's _lint_section). */
 function _lint_section(body: string, mode: Mode): string {
   if (!hasJapanese(body, mode.threshold)) {
     return "";
@@ -220,7 +220,7 @@ function _lint_section(body: string, mode: Mode): string {
   }
 }
 
-/** The structure questions, read from the sibling .md (body_proofread.py's _checklist).
+/** The structure questions, read from the sibling .md (the retired Python proofreader's _checklist).
  *
  * They live there so they read as prose and textlint reaches them, which it cannot do for a
  * string inside this file. Read from the first level-2 heading down, since the lines above it
