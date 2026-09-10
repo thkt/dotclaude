@@ -55,7 +55,9 @@ diff の固定点は呼び出し元の指定 (commit SHA、branch、tag、merge-
 | -------------------- | ------- | ---------------------------------------------------------------------------------------------- |
 | spec_found           | boolean | 照合対象の spec が見つかりレビューしたとき true                                                |
 | findings[].category  | enum    | missing / scope_creep / wrong                                                                  |
-| findings[].severity  | enum    | high (受け入れ基準を満たさない) / medium (主経路は動くが spec から逸脱) / low (文言や軽微な差) |
+| findings[].severity  | enum    | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照。このレビュアーは critical を付けない |
 | findings[].spec_line | string  | 根拠となる spec 行の引用。missing なら欠けている要求文                                         |
 | findings[].location  | string  | diff 内の file:line。scope_creep は逸脱したコードの位置                                        |
 | findings[].detail    | string  | spec が要求した状態と diff の状態の差を 3 文以内で                                             |
+
+この enum のうち、high は受け入れ基準を満たさない finding、medium は主経路は動くが spec から逸脱する finding、low は文言や軽微な差を指す。

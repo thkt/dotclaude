@@ -66,6 +66,6 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no modules are 
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | Prefix       | DP                                                                                                                                |
 | Category     | module-depth (single category; record the shallow pattern's name, such as 1:1 forwarder or config passthrough, in evidence)          |
-| Severity     | critical / high / medium / low                                                                                                    |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Disposition  | Reviewer-settable override of the default, with a disposition_reason. See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-disposition.md § Disposition |
 | Verification | deletion_trace. State what reappears at call sites when the module is deleted                                                     |

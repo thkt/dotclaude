@@ -63,6 +63,6 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。コードが範�
 | ------------ | --------------------------------------------------------------------------------- |
 | Prefix       | EFF                                                                               |
 | カテゴリ     | unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad |
-| Severity     | critical / high / medium / low                                                               |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Verification | hotpath_analysis。経路頻度と、修正で省ける処理を明示する                          |
 | Extra        | 推論内に path_frequency (hot/warm/cold) を含める                                  |

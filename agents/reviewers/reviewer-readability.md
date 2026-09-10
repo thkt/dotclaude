@@ -54,7 +54,7 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no code is in r
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | Prefix       | CQ                                                                                                                                |
 | Categories   | structure / readability                                                                                                           |
-| Severity     | critical / high / medium / low                                                                                                               |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Disposition  | Reviewer-settable override of the default, with a disposition_reason. See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-disposition.md § Disposition |
 | Verification | pattern_search or hotpath_analysis. Is this pattern widespread or in a critical path?                                             |
 | Extra        | subcategory (structure / waste / naming / complexity / comments / ai_smell / cognitive-load, optional, appended as category/subcategory) |

@@ -55,6 +55,6 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no HTML is in r
 | ------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | Prefix       | A11Y                                                                                                                   |
 | Categories   | semantic / keyboard / screen-reader / visual / form                                                                    |
-| Severity     | critical / high / medium                                                                                               |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Verification | execution_trace or pattern_search. Is this element actually reachable by keyboard or screen reader?                    |
 | Extra        | Name the WCAG success criterion (like 1.1.1) and the APG pattern URL in evidence, and a corrected snippet in fix. The caller's schema carries no extra keys |

@@ -67,5 +67,5 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。React が範囲�
 | ------------ | --------------------------------------------------------------------------------------------------------- |
 | Prefix       | RP                                                                                                        |
 | カテゴリ     | container / hook / state / anti-pattern / prop-forwarding / render / effect                               |
-| Severity     | critical / high / medium / low                                                                                       |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Verification | pattern_search または call_site_check。この anti-pattern は一貫して使われているか、それとも孤立した事例か |
