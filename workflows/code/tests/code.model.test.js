@@ -3,7 +3,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkWorkflowSyntax, runWorkflow } from "../../_lib/run-workflow.ts";
@@ -231,7 +232,34 @@ test("the static gates pass on the JA and EN code.js and on tests/*.js", () => {
   for (const file of modules) {
     execFileSync("node", ["--check", file], { cwd: root });
   }
-  execFileSync("npx", ["oxlint", ...scripts, ...modules, ...typed], { cwd: root });
+  // --deny-warnings makes oxlint's exit code reflect a warning-level finding too, not only an
+  // error-level one; without it, a lint issue such as no-debugger (T-434) reports in the
+  // output but leaves the exit code at 0 and this gate would pass over it unnoticed.
+  execFileSync("npx", ["oxlint", "--deny-warnings", ...scripts, ...modules, ...typed], {
+    cwd: root,
+  });
+});
+
+// T-434: oxlint reports no-debugger at "warning" level and exits 0 unless told to treat
+// warnings as failures, so a gate that omits --deny-warnings lets a stray `debugger;`
+// statement through undetected. This pins that the flag the gate above now carries is what
+// turns a warning-level finding into a gate failure instead of a pass.
+test("the static gate reports a warning-level lint finding instead of passing on exit code alone", () => {
+  const dir = mkdtempSync(join(tmpdir(), "code-model-oxlint-warn-"));
+  try {
+    const fixture = join(dir, "warn.js");
+    writeFileSync(fixture, "export function f() {\n  debugger;\n  return 1;\n}\n");
+    // execFileSync's thrown error carries "Command failed: <cmd>" as its message regardless
+    // of which rule tripped -- oxlint writes the finding to stdout, not to that message -- so
+    // reading the output content means matching err.stdout, not the exit code or the message.
+    assert.throws(
+      () => execFileSync("npx", ["oxlint", "--deny-warnings", fixture], { cwd: root }),
+      (err) => /no-debugger/.test(String(err.stdout)),
+      "oxlint's stdout names no-debugger once --deny-warnings turns the finding into a failure",
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 // node --check reads .ts as CommonJS/ambient JS syntax, not as TypeScript: it can pass a
