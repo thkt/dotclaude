@@ -1,0 +1,84 @@
+[
+  {
+    "name": "trigger_task absent from task_set classifies unmeasured",
+    "files": {
+      "skills/sample/scripts/unmeasured-example.py": "# stand-in source\n"
+    },
+    "observations": [
+      {
+        "path": "skills/sample/scripts/unmeasured-example.py",
+        "trigger_task": "task-a",
+        "task_set": [
+          "other-task"
+        ],
+        "complies": null
+      }
+    ],
+    "exit": 0,
+    "stdout": "{\"elements\": [{\"path\": \"skills/sample/scripts/unmeasured-example.py\", \"classification\": \"non-prompt\"}], \"arms\": [\"wiped\", \"wiped+1\", \"full-harness\"], \"verdicts\": {\"skills/sample/scripts/unmeasured-example.py\": \"unmeasured\"}, \"usage_verdicts\": {\"skills/sample/scripts/unmeasured-example.py\": \"delete-candidate\"}, \"delete_candidates\": [], \"usage\": {\"skills/sample/scripts/dr-governed.py\": {\"fires\": 2, \"last_used\": \"2026-08-20\"}}, \"transcripts\": {\"count\": 1, \"date_range\": {\"start\": \"2026-08-01\", \"end\": \"2026-08-20\"}}, \"enforcer_rows\": []}\n"
+  },
+  {
+    "name": "complies true with no governing DR classifies delete-candidate",
+    "files": {
+      "skills/sample/scripts/plain-candidate.py": "# stand-in source\n"
+    },
+    "observations": [
+      {
+        "path": "skills/sample/scripts/plain-candidate.py",
+        "trigger_task": "task-a",
+        "task_set": [
+          "task-a"
+        ],
+        "complies": true
+      }
+    ],
+    "exit": 0,
+    "stdout": "{\"elements\": [{\"path\": \"skills/sample/scripts/plain-candidate.py\", \"classification\": \"non-prompt\"}], \"arms\": [\"wiped\", \"wiped+1\", \"full-harness\"], \"verdicts\": {\"skills/sample/scripts/plain-candidate.py\": \"delete-candidate\"}, \"usage_verdicts\": {\"skills/sample/scripts/plain-candidate.py\": \"delete-candidate\"}, \"delete_candidates\": [\"skills/sample/scripts/plain-candidate.py\"], \"usage\": {\"skills/sample/scripts/dr-governed.py\": {\"fires\": 2, \"last_used\": \"2026-08-20\"}}, \"transcripts\": {\"count\": 1, \"date_range\": {\"start\": \"2026-08-01\", \"end\": \"2026-08-20\"}}, \"enforcer_rows\": []}\n"
+  },
+  {
+    "name": "complies false classifies needs-human-judgment",
+    "files": {
+      "skills/sample/scripts/needs-judgment.py": "# stand-in source\n"
+    },
+    "observations": [
+      {
+        "path": "skills/sample/scripts/needs-judgment.py",
+        "trigger_task": "task-a",
+        "task_set": [
+          "task-a"
+        ],
+        "complies": false
+      }
+    ],
+    "exit": 0,
+    "stdout": "{\"elements\": [{\"path\": \"skills/sample/scripts/needs-judgment.py\", \"classification\": \"non-prompt\"}], \"arms\": [\"wiped\", \"wiped+1\", \"full-harness\"], \"verdicts\": {\"skills/sample/scripts/needs-judgment.py\": \"needs-human-judgment\"}, \"usage_verdicts\": {\"skills/sample/scripts/needs-judgment.py\": \"delete-candidate\"}, \"delete_candidates\": [], \"usage\": {\"skills/sample/scripts/dr-governed.py\": {\"fires\": 2, \"last_used\": \"2026-08-20\"}}, \"transcripts\": {\"count\": 1, \"date_range\": {\"start\": \"2026-08-01\", \"end\": \"2026-08-20\"}}, \"enforcer_rows\": []}\n"
+  },
+  {
+    "name": "a live DR governing the path holds a delete candidate",
+    "files": {
+      "skills/sample/scripts/dr-governed.py": "# stand-in source\n",
+      "docs/decisions/0001-sample.md": "# DR-0001 Sample decision\n\n## Decision Outcome\n\nChosen option governs `skills/sample/scripts/dr-governed.py`.\n\n## More Information\n\n### Reassessment Triggers\n\n- The upstream dependency changes its API.\n"
+    },
+    "observations": [
+      {
+        "path": "skills/sample/scripts/dr-governed.py",
+        "trigger_task": "task-a",
+        "task_set": [
+          "task-a"
+        ],
+        "complies": true
+      }
+    ],
+    "exit": 0,
+    "stdout": "{\"elements\": [{\"path\": \"skills/sample/scripts/dr-governed.py\", \"classification\": \"non-prompt\"}], \"arms\": [\"wiped\", \"wiped+1\", \"full-harness\"], \"verdicts\": {\"skills/sample/scripts/dr-governed.py\": \"held\"}, \"usage_verdicts\": {\"skills/sample/scripts/dr-governed.py\": \"needs-human-judgment\"}, \"delete_candidates\": [], \"usage\": {\"skills/sample/scripts/dr-governed.py\": {\"fires\": 2, \"last_used\": \"2026-08-20\"}}, \"transcripts\": {\"count\": 1, \"date_range\": {\"start\": \"2026-08-01\", \"end\": \"2026-08-20\"}}, \"enforcer_rows\": []}\n"
+  },
+  {
+    "name": "an empty observation list still renders the always-loaded population alone",
+    "files": {
+      "rules/baseline.md": "# Baseline Rule\n\nNo frontmatter here.\n"
+    },
+    "observations": [],
+    "exit": 0,
+    "stdout": "{\"elements\": [{\"path\": \"rules/baseline.md\", \"classification\": \"always-loaded\"}], \"arms\": [\"wiped\", \"wiped+1\", \"full-harness\"], \"verdicts\": {}, \"usage_verdicts\": {\"rules/baseline.md\": \"delete-candidate\"}, \"delete_candidates\": [], \"usage\": {\"skills/sample/scripts/dr-governed.py\": {\"fires\": 2, \"last_used\": \"2026-08-20\"}}, \"transcripts\": {\"count\": 1, \"date_range\": {\"start\": \"2026-08-01\", \"end\": \"2026-08-20\"}}, \"enforcer_rows\": [{\"file\": \"rules/baseline.md\", \"line_number\": 1, \"verdict\": \"ablation-residue\"}, {\"file\": \"rules/baseline.md\", \"line_number\": 3, \"verdict\": \"ablation-residue\"}]}\n"
+  }
+]
