@@ -1,10 +1,10 @@
 /// <reference types="node" />
-// The TypeScript side of skills/ablate/scripts/report.py: mirrors build_report and the
-// aggregation it calls (arms.ts, dr_gate.ts, enforcer_map.ts, usage_counts.ts, verdict.ts,
-// ../../_lib/harness_elements.ts). report.py stays in the tree as report.ts's contract source
-// until #646 retires the Python side, the same shape arms.ts's own header describes. render
-// and write_report are report.py's own Markdown-writing concern, not part of what this unit
-// carries; report.py's docstring already states this module is "Not a CLI entry point," so
+// The TypeScript side of skills/ablate/scripts/report.py: mirrors build_report, write_report,
+// and the render pass write_report drives (report.py's _render/_table/_date_range), plus the
+// aggregation build_report calls (arms.ts, dr_gate.ts, enforcer_map.ts, usage_counts.ts,
+// verdict.ts, ../../_lib/harness_elements.ts). report.py stays in the tree as report.ts's
+// contract source until #646 retires the Python side, the same shape arms.ts's own header
+// describes. report.py's docstring already states this module is "Not a CLI entry point," so
 // report.ts carries no shebang and no main() the way arms.ts, dr_gate.ts and verdict.ts do not
 // either.
 //
@@ -19,6 +19,7 @@
 // Constant and function names stay exactly as report.py declares them, the same no-camelCase
 // convention arms.ts, verdict.ts, dr_gate.ts, enforcer_map.ts and usage_counts.ts hold in this
 // same directory.
+import { mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import * as arms from "./arms.ts";
@@ -143,4 +144,148 @@ export function build_report(
     transcripts: { count: usage.transcript_count, date_range: usage.date_range },
     enforcer_rows: enforcer_map.map_all(root),
   };
+}
+
+// report.py names its written file with this constant appended after the UTC timestamp
+// (REPORT_NAME = "ablate"). Copied unchanged.
+const REPORT_NAME = "ablate";
+
+/** The header + separator + data lines of a Markdown table, factored out because _render
+ * builds every section's table from differently-shaped inputs -- one row-joining rule changed
+ * here changes all of them. Column count comes from `headers`, so a two-column caller and a
+ * wider one share the same rendering. Mirrors report.py's _table. */
+function _table(headers: readonly string[], rows: readonly (readonly string[])[]): string[] {
+  const lines = [`| ${headers.join(" | ")} |`, `| ${headers.map(() => "---").join(" | ")} |`];
+  lines.push(...rows.map((row) => `| ${row.join(" | ")} |`));
+  return lines;
+}
+
+/** The parsed transcripts' date span as one cell. A run whose transcripts hold no fire has no
+ * span, and renders as "none" rather than as a pair of empty cells. Mirrors report.py's
+ * _date_range. */
+function _date_range(date_range: { start: string | null; end: string | null }): string {
+  const { start, end } = date_range;
+  return start && end ? `${start} - ${end}` : "none";
+}
+
+/** Renders build_report's result as Markdown. Reads that result alone, never the raw
+ * `observations` a caller passed in, so a field an observation carries for its own provenance
+ * (such as the settings snapshot a run used) can never reach the written report, verbatim or
+ * otherwise (T-014). Mirrors report.py's _render; the section order below is the contract
+ * skills/ablate/templates/report-template.md's skeleton names, and report-render.test.ts's
+ * T-476 reads that file to check it, so this order must never drift from the template without
+ * updating the template in the same change. */
+function _render(result: ReportResult): string {
+  const lines: string[] = ["# Ablation Report", ""];
+
+  lines.push("## Summary", "");
+  lines.push(
+    ..._table(
+      ["Metric", "Value"],
+      [
+        ["Harness elements enumerated", String(result.elements.length)],
+        ["Arms", String(result.arms.length)],
+        ["Elements observed", String(Object.keys(result.verdicts).length)],
+        ["Delete candidates", String(result.delete_candidates.length)],
+        ["Always-loaded lines mapped", String(result.enforcer_rows.length)],
+        // Counted apart, since without this row the number is only reachable by scanning the
+        // Verdicts table for the held literal.
+        [
+          "Held by a live DR",
+          String(Object.values(result.verdicts).filter((v) => v === dr_gate.HELD).length),
+        ],
+        ["Transcripts parsed", String(result.transcripts.count)],
+        ["Transcript date range", _date_range(result.transcripts.date_range)],
+      ],
+    ),
+  );
+  lines.push("");
+
+  lines.push("## Always-Loaded Elements", "");
+  lines.push(
+    ..._table(
+      ["File", "Line", "Verdict", "Enforcer"],
+      result.enforcer_rows.map((row) => [
+        row.file,
+        String(row.line_number),
+        row.verdict,
+        row.enforcer ?? "",
+      ]),
+    ),
+  );
+  lines.push("");
+
+  lines.push("## Harness Elements", "");
+  lines.push(
+    ..._table(
+      ["Path", "Classification", "Fires", "Last Used", "Usage Verdict"],
+      result.elements.map((element) => {
+        const element_usage = result.usage[element.path] ?? { fires: 0, last_used: null };
+        return [
+          element.path,
+          element.classification,
+          String(element_usage.fires ?? 0),
+          element_usage.last_used ?? "never",
+          result.usage_verdicts[element.path],
+        ];
+      }),
+    ),
+  );
+  lines.push("");
+
+  lines.push("## Arms", "");
+  lines.push(...result.arms.map((arm) => `- ${arm}`));
+  lines.push("");
+
+  lines.push("## Verdicts", "");
+  lines.push(
+    ..._table(
+      ["Path", "Verdict"],
+      Object.keys(result.verdicts)
+        .sort()
+        .map((path) => [path, result.verdicts[path]]),
+    ),
+  );
+  lines.push("");
+
+  lines.push("## Delete Candidates", "");
+  lines.push(
+    result.delete_candidates.length > 0
+      ? result.delete_candidates.map((path) => `- ${path}`).join("\n")
+      : "No delete candidates.",
+  );
+  lines.push("");
+
+  return lines.join("\n");
+}
+
+/** Writes build_report's result under `out_dir` (defaulting to `<root>/docs/audit`) to
+ * `<YYYY-MM-DD>-<HHMMSS>-ablate.md` in UTC (this module's convention, matching
+ * skills/census/SKILL.md Phase 5's `date -u +%Y-%m-%d-%H%M%S` naming so same-day reruns from
+ * different timezones never collide), mirroring report.py's write_report and the `_render`
+ * Markdown pass it calls. */
+export function write_report(
+  root: string,
+  observations: readonly Observation[],
+  out_dir?: string,
+): string {
+  const result = build_report(root, observations);
+  const content = _render(result);
+
+  const target_dir = out_dir ?? join(root, "docs", "audit");
+  mkdirSync(target_dir, { recursive: true });
+
+  const now = new Date();
+  const pad2 = (value: number) => String(value).padStart(2, "0");
+  // Python's `datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M%S")`, read off the UTC
+  // getters so the shape holds regardless of the host's local timezone.
+  const timestamp = [
+    now.getUTCFullYear(),
+    pad2(now.getUTCMonth() + 1),
+    pad2(now.getUTCDate()),
+    `${pad2(now.getUTCHours())}${pad2(now.getUTCMinutes())}${pad2(now.getUTCSeconds())}`,
+  ].join("-");
+  const report_path = join(target_dir, `${timestamp}-${REPORT_NAME}.md`);
+  writeFileSync(report_path, content, "utf8");
+  return report_path;
 }
