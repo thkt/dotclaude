@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Ports 3 of the retired npm_install_guard Python hook test's scenarios to npm_install_guard.ts's
-// side (unit U-006). The REASONS prefixes are asserted as literals rather than read off
+// side. The REASONS prefixes are asserted as literals rather than read off
 // npm_install_guard.ts itself: the module carries a top-level `process.exit(main())` (DR-0114,
 // no isMainModule guard), so importing it in-process would end the test runner's own process
 // the moment the import ran -- exactly the hazard that guard exists for, so only run() (which
@@ -71,4 +71,61 @@ test("T-284 a runner subcommand that fetches and runs is denied while a plain sc
 
   const scriptReason = denyReason(runHook("npm run build", home));
   assert.equal(scriptReason, null, "a plain script run must not be denied");
+});
+
+// The retired Python suite's remaining rows. HOME and the project directory both start without
+// an .npmrc, so a denial here comes from the command's own shape rather than from configuration.
+const UNCONFIGURED_DENIED = [
+  "cd /tmp && npm install",
+  "npm  install",
+  "npm --prefix . install",
+  "FOO=1 npm install",
+  "pnpm dlx create-vite my-app",
+  "yarn dlx create-vite my-app",
+  "bunx create-vite my-app",
+];
+
+const UNCONFIGURED_ALLOWED = [
+  'echo "npm install"',
+  "git commit -m 'npm install を追加'",
+  "npm run build",
+  "git status",
+];
+
+test("an install reached behind another command, extra spacing, an option or an environment prefix is denied", () => {
+  const home = makeDir("npm-install-guard-home-unset-");
+  for (const command of UNCONFIGURED_DENIED) {
+    assert.ok(
+      denyReason(runHook(command, home)),
+      `${JSON.stringify(command)} must be denied`,
+    );
+  }
+});
+
+test("an install word that installs nothing stays allowed", () => {
+  const home = makeDir("npm-install-guard-home-unset-");
+  for (const command of UNCONFIGURED_ALLOWED) {
+    assert.equal(
+      denyReason(runHook(command, home)),
+      null,
+      `${JSON.stringify(command)} must be allowed`,
+    );
+  }
+});
+
+test("ignore-scripts in the home npmrc is read, spacing included, and a project npmrc overriding it is denied", () => {
+  const home = makeDir("npm-install-guard-home-configured-");
+  writeNpmrc(home, "ignore-scripts = true\n");
+  assert.equal(
+    denyReason(runHook("npm install", home)),
+    null,
+    "a home .npmrc setting ignore-scripts, spaced the way npm reads it, must be allowed",
+  );
+
+  const project = makeDir("npm-install-guard-project-override-");
+  writeNpmrc(project, "ignore-scripts=false\n");
+  assert.ok(
+    denyReason(runHook(`cd ${project} && npm install`, home)),
+    "a project .npmrc overriding the home setting must be denied",
+  );
 });

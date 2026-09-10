@@ -1,6 +1,4 @@
 /// <reference types="node" />
-import { basename } from "node:path";
-
 // Command-position scanning shared by the PreToolUse hooks. The TypeScript side of
 // hooks/_lib/command_scan.py (DR-0112's TypeScript migration); command_scan.py stays in the
 // tree because the hooks that still parse a raw Bash string (shlex tokenizing, heredoc and
@@ -12,6 +10,7 @@ import { basename } from "node:path";
 // commands_with_env() are the exception: DR-0112's migration ports them and the shlex-based
 // tokenizing they depend on here too (hooks/_lib/tests/command-scan-tokens.test.ts), since no
 // node:* API is equivalent to shlex.shlex(posix=True, punctuation_chars=...).
+import { basename } from "node:path";
 
 /** Anything taking a subcommand of its own (git, npm) stays out: there the first token already
  * is the command. */
@@ -131,7 +130,7 @@ export function git_clean_only_lists(rest: readonly string[]): boolean {
 }
 
 // --- commands() / commands_with_env() -------------------------------------------------------
-// Ports command_scan.py's shlex-based tokenizing (DR-0112, U-003): no node:* API is equivalent
+// Ports command_scan.py's shlex-based tokenizing (DR-0112): no node:* API is equivalent
 // to shlex.shlex(posix=True, punctuation_chars=..., whitespace_split=True), so
 // _lex()/_resolve() below hand-roll that state machine instead of reaching for one.
 // hooks/_lib/tests/command-scan-tokens.test.ts diffs the result against

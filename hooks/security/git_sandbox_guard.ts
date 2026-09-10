@@ -2,10 +2,10 @@
 /// <reference types="node" />
 // PreToolUse hook: stop tree-rewriting git commands from running sandboxed in the Claude
 // config directory. The TypeScript replacement for the retired git_sandbox_guard Python hook
-// (DR-0112's migration, units U-007, U-008 and U-009); REWRITES / HELP / GIT_ENV / READ_FLAGS /
-// WRITE_FLAGS / READ_ARGUMENTS / REASON / _rewrites_tree (U-007), PROBE_TIMEOUT_SECONDS /
-// UNRESOLVED_PROBE / Unresolved / _toplevel (U-008), and Target / rewriting_targets /
-// _redirects / _guarded_root / UNRESOLVED / main (U-009, which wires the pieces the first two
+// (DR-0112's migration); REWRITES / HELP / GIT_ENV / READ_FLAGS / WRITE_FLAGS /
+// READ_ARGUMENTS / REASON / _rewrites_tree, PROBE_TIMEOUT_SECONDS / UNRESOLVED_PROBE /
+// Unresolved / _toplevel, and Target / rewriting_targets / _redirects / _guarded_root /
+// UNRESOLVED / main (which wires the judgment and the probe
 // units left disconnected) carry the Python side's names and shapes.
 //
 // Failure mode: fail-closed. A line the lexer cannot tokenize, or a probe that cannot answer,
@@ -117,7 +117,7 @@ export function _rewrites_tree(tokens: readonly string[]): boolean {
   return true;
 }
 
-// --- probe (U-008): which repository one git call reaches ------------------------------------
+// --- probe: which repository one git call reaches --------------------------------------------
 //
 // Ports the retired Python hook's PROBE_TIMEOUT_SECONDS / UNRESOLVED_PROBE and the rev-parse
 // call inside _toplevel. subprocess.run(timeout=...) raises TimeoutExpired on a stall;
@@ -183,7 +183,7 @@ export function _toplevel(
   throw new Unresolved(stderr.trim() || `rev-parse exited ${result.status}`);
 }
 
-// --- wiring (U-009): commands to targets, the guarded config directory, and main -------------
+// --- wiring: commands to targets, the guarded config directory, and main ---------------------
 
 // Not a silent pass: reading "cannot tell" as "not protected" turns the guard off exactly when
 // the environment is misconfigured.

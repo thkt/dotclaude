@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Shared, `_`-prefixed input-list generator for hooks/_lib/tests/fixtures/command-scan-tokens.json
-// and for the differential test a later unit adds to diff command_scan.py's and
+// and for the differential test that diffs command_scan.py's and
 // command_scan.ts's commands_with_env() against that frozen table. Follows the same `_`-prefix,
 // no-.ja-mirror shape as hooks/_lib/tests/_hook-harness.ts and workflows/_lib/tests/_retirement.ts:
 // a pure helper other test files import from, not a test file of its own.
@@ -34,7 +34,7 @@ export interface CorpusCase {
 }
 
 /** The 14 special characters the contract names, in the order used to name lexicalCases(). */
-export const SPECIAL_CHARACTERS: readonly string[] = [
+const SPECIAL_CHARACTERS: readonly string[] = [
   "(",
   ")",
   ";",
@@ -70,7 +70,7 @@ const CHAR_LABELS: readonly string[] = [
 ];
 
 /** The 7 placements the contract names, in the order used to name lexicalCases(). */
-export const PLACEMENTS: readonly string[] = [
+const PLACEMENTS: readonly string[] = [
   "unquoted",
   "single-quoted",
   "double-quoted",
@@ -81,7 +81,7 @@ export const PLACEMENTS: readonly string[] = [
 ];
 
 /** The 5 heredoc marker forms the contract names, in the order used to name heredocCases(). */
-export const HEREDOC_FORMS: readonly string[] = [
+const HEREDOC_FORMS: readonly string[] = [
   "<<EOF",
   "<<-EOF",
   "<<'EOF'",
@@ -229,7 +229,7 @@ export function resolveCases(): CorpusCase[] {
 
 // Copied by hand from hooks/_lib/tests/command_scan_test.py's TestCommands (self.names() /
 // command_scan.commands() calls only -- TestFlagValue / TestGitSubcommand / TestStartsWith /
-// TestGitCleanOnlyLists take already-tokenized lists, not raw command text, and are U-001's
+// TestGitCleanOnlyLists take already-tokenized lists, not raw command text, and are the pure
 // command-scan-pure.test.ts territory instead).
 const COMMAND_SCAN_TEST_COMMANDS: readonly string[] = [
   "cd /tmp && rm -rf x",
@@ -428,7 +428,7 @@ const GIT_SANDBOX_GUARD_TEST_COMMANDS: readonly string[] = [
 
 /** Every command string command_scan_test.py and the 3 security hook tests assert against,
  * deduplicated by command text (several appear in more than one suite). */
-export function curatedCases(): CorpusCase[] {
+function curatedCases(): CorpusCase[] {
   const sources: ReadonlyArray<readonly [string, readonly string[]]> = [
     ["command_scan_test", COMMAND_SCAN_TEST_COMMANDS],
     ["npm_install_guard_test", NPM_INSTALL_GUARD_TEST_COMMANDS],

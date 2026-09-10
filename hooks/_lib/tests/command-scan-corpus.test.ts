@@ -1,7 +1,7 @@
 /// <reference types="node" />
 // Guards hooks/_lib/tests/_command-scan-corpus.ts's commandScanCorpus(), the single derivation
-// hooks/_lib/tests/fixtures/command-scan-tokens.json's frozen-behavior table and a later unit's
-// command_scan.py-vs-command_scan.ts differential test both read (this unit's contract). T-273
+// hooks/_lib/tests/fixtures/command-scan-tokens.json's frozen-behavior table and the
+// command_scan.py-vs-command_scan.ts differential test both read. T-273
 // ties the corpus to the frozen table; T-274 ties it to the three products the contract
 // describes (lexical x placement, heredoc forms, and the resolve layer) rather than to the
 // curated cases layered on top, so a corpus that drops a product member cannot hide behind a

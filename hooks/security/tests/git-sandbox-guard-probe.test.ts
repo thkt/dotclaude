@@ -1,6 +1,6 @@
 /// <reference types="node" />
-// Full-hook coverage for git_sandbox_guard.ts's probe (unit U-008: PROBE_TIMEOUT_SECONDS,
-// UNRESOLVED_PROBE, the rev-parse call inside _toplevel) now that main() (U-009) wires it end
+// Full-hook coverage for git_sandbox_guard.ts's probe (PROBE_TIMEOUT_SECONDS,
+// UNRESOLVED_PROBE, the rev-parse call inside _toplevel), now that main() wires it end
 // to end. Spawned through _hook-harness.ts's run rather than imported: the module carries a
 // top-level `process.exit(main())` (DR-0114, no isMainModule guard), and main() reads stdin
 // synchronously, so importing it in-process hangs the test runner on its own open stdin -- the

@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Guards the frozen table itself against staleness while command_scan.py still lives
-// (hooks/_lib/tests/fixtures/command-scan-tokens.json, captured from command_scan.py by U-002).
+// (hooks/_lib/tests/fixtures/command-scan-tokens.json, captured from command_scan.py).
 // command-scan-tokens.test.ts diffs command_scan.ts against that frozen table, so a generation
 // mistake, a python3 version bump that changes shlex's behavior, or a hand-edit to command_scan.py
 // could all still leave that test green: none of them touch command_scan.ts. This file is the one
@@ -51,7 +51,7 @@ interface PythonResult {
 // One python3 spawn for the whole corpus: reads the command list off stdin as a JSON array and
 // hands back command_scan.py's commands_with_env() output per command, in the same {commands_with_env,
 // raises} shape the frozen table itself uses -- a raising command records the exception's type
-// name and a null commands_with_env, the way U-002 captured the freeze.
+// name and a null commands_with_env, the way the freeze was captured.
 const PY_DRIVER = `
 import json
 import sys
