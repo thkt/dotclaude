@@ -35,6 +35,7 @@
     "hooks/edit/rust_pre_edit.ts",
     "hooks/edit/rust_post_edit.ts",
     "hooks/edit/textlint_fix.ts",
+    "hooks/edit/rumdl_check.ts",
     "skills/**/tests/**/*.test.{js,ts}",
     "skills/_lib/harness_hash.ts",
     ".ja/skills/_lib/harness_hash.ts",
