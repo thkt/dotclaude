@@ -70,9 +70,9 @@ The order below is the registration order in `settings.json`. Within one matcher
 | Event             | Matcher            | Implementation                                  | if condition       | timeout |
 | ----------------- | ------------------ | ----------------------------------------------- | ------------------ | ------- |
 | PreToolUse        | `Bash`             | `pre-bash/package_manager_rewrite.py`           | none               | 15      |
-| PreToolUse        | `Bash`             | `security/npm_install_guard.py`                 | none               | 60      |
-| PreToolUse        | `Bash`             | `security/rm_to_trash.py`                       | none               | 15      |
-| PreToolUse        | `Bash`             | `security/git_sandbox_guard.py`                 | none               | 15      |
+| PreToolUse        | `Bash`             | `security/npm_install_guard.ts`                 | none               | 60      |
+| PreToolUse        | `Bash`             | `security/rm_to_trash.ts`                       | none               | 15      |
+| PreToolUse        | `Bash`             | `security/git_sandbox_guard.ts`                 | none               | 15      |
 | PreToolUse        | `Bash`             | `pre-bash/body_proofread.py`                    | none               | 60      |
 | PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.py`                   | none               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.py`            | none               | 30      |
@@ -102,9 +102,9 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 
 | Hook                            | Fires on                | Decision                                                          | Failure mode |
 | ------------------------------- | ----------------------- | ----------------------------------------------------------------- | ------------ |
-| `rm_to_trash.py`                | Bash                    | Denies `rm` / `rmdir` / `unlink` / `shred` plus `find -delete` / `git clean`, and points at `mv ~/.Trash/` | fail-close |
-| `npm_install_guard.py`          | Bash                    | Denies an install with `ignore-scripts` unset. The ni aliases count the same | fail-close |
-| `git_sandbox_guard.py`          | Bash                    | Denies a tree-rewriting git call running sandboxed                | fail-close   |
+| `rm_to_trash.ts`                | Bash                    | Denies `rm` / `rmdir` / `unlink` / `shred` plus `find -delete` / `git clean`, and points at `mv ~/.Trash/` | fail-close |
+| `npm_install_guard.ts`          | Bash                    | Denies an install with `ignore-scripts` unset. The ni aliases count the same | fail-close |
+| `git_sandbox_guard.ts`          | Bash                    | Denies a tree-rewriting git call running sandboxed                | fail-close   |
 | `package_manager_rewrite.py`    | Bash                    | Rewrites a package manager command into its ni equivalent, always deciding allow | advisory |
 | `body_proofread.py`             | Bash                    | Proofreads a gh filing or commit body and returns it as additionalContext | advisory |
 | `issue_body_gate.py`            | Bash                    | Matches a `gh issue create` body against its title's template, denying both a divergence and a state it cannot compare | fail-close |
