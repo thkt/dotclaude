@@ -220,9 +220,9 @@ const matchBrace = (source: string, start: number): number => {
 
 // Not an import of the module: a workflow script's top-level return and its references to
 // injected globals would run, and only the meta literal is wanted here. Not `new Function`
-// either, which the plan named: the guardrails gate blocks every such call site with no
-// per-site opt-out, so this reuses the vm.compileFunction that checkWorkflowSyntax below
-// already compiles isolated strings with.
+// either: the guardrails gate blocks every such call site with no per-site opt-out, so this
+// reuses the vm.compileFunction that checkWorkflowSyntax below already compiles isolated
+// strings with.
 export function readMeta(scriptPath: string): WorkflowMeta {
   const source = readFileSync(scriptPath, "utf8");
   const marker = "export const meta = {";
@@ -250,10 +250,6 @@ export function checkWorkflowSyntax(scriptPath: string): void {
   );
 }
 
-// runWorkflow(scriptPath, { args, stubs, onLog, onPhase }) -> { result, calls, logs }
-// stubs.agent / stubs.workflow receive (prompt|name, opts|args) and return the stub result.
-// stubs.pipeline receives (items, ...stages) and replaces the default pipeline implementation.
-// calls captures the agent / workflow / phase invocations.
 // onLog / onPhase mirror each log() and phase() call as the run makes it, for a caller driving
 // a real run that cannot wait for the returned arrays. Both default to no-op, so a caller that
 // omits them observes exactly what it observed before they existed.
