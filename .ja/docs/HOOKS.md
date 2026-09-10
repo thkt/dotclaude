@@ -31,10 +31,10 @@ Python はアンダースコアで区切る。shell はハイフンで区切る�
 
 | 種別            | 形                  | 例                          |
 | --------------- | ------------------- | --------------------------- |
-| Python hook     | `<対象>_<操作>.py`  | `git_sandbox_guard.py`      |
+| Python hook     | `<対象>_<操作>.py`  | `issue_body_gate.py`      |
 | shell hook      | `<対象>-<操作>.sh`  | `failure-alert.sh`          |
 | _lib モジュール | `<名詞>.py`         | `command_scan.py`           |
-| Python テスト   | `<hook 名>_test.py` | `git_sandbox_guard_test.py` |
+| Python テスト   | `<hook 名>_test.py` | `issue_body_gate_test.py` |
 | shell テスト    | `<hook 名>.test.sh` | `failure-alert.test.sh`     |
 
 ## 実行の絞り込み
@@ -84,9 +84,9 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の
 
 | Hook                 | イベント         | 失敗モード  | 用途                                                                                                        |
 | -------------------- | ---------------- | ----------- | ----------------------------------------------------------------------------------------------------------- |
-| npm_install_guard.py | PreToolUse(Bash) | fail-closed | ignore-scripts が有効でないパッケージインストールをブロック。走らせる先の .npmrc をホーム側より優先して読む |
-| rm_to_trash.py       | PreToolUse(Bash) | fail-closed | rm/rmdir/unlink/shred を `mv ~/.Trash/` へ誘導                                                              |
-| git_sandbox_guard.py | PreToolUse(Bash) | fail-closed | ~/.claude で作業ツリーを書き換える git を sandbox 内で止める。読み取りだけの形は通す                        |
+| npm_install_guard.ts | PreToolUse(Bash) | fail-closed | ignore-scripts が有効でないパッケージインストールをブロック。走らせる先の .npmrc をホーム側より優先して読む |
+| rm_to_trash.ts       | PreToolUse(Bash) | fail-closed | rm/rmdir/unlink/shred を `mv ~/.Trash/` へ誘導                                                              |
+| git_sandbox_guard.ts | PreToolUse(Bash) | fail-closed | ~/.claude で作業ツリーを書き換える git を sandbox 内で止める。読み取りだけの形は通す                        |
 
 ### lifecycle/
 

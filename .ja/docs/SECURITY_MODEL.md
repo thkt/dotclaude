@@ -37,7 +37,7 @@ shields (コマンドガード、ファイル ACL、secrets チェック) は同
 | `excludedCommands` は sandbox 外で走る | scout がネットワークへ直接出られる | 対象を 2 コマンドに絞る。追加するときは流出経路として審査する        |
 | `enableWeakerNetworkIsolation` が true | trustd 経由の流出経路が開く        | `gh` の TLS 検証に必要。無効にすると build が issue 取得段で失敗する |
 | 許可ツール経由の外部送信               | scout, gh api 経由でデータ流出可能 | 正当な利用と区別できない。運用で対応                                 |
-| npm/pnpm install postinstall           | 任意コード実行                     | `npm_install_guard.py` が ignore-scripts なしをブロックする          |
+| npm/pnpm install postinstall           | 任意コード実行                     | `npm_install_guard.ts` が ignore-scripts なしをブロックする          |
 
 ## チームガイドライン
 
