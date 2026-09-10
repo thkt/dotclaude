@@ -42,8 +42,8 @@ const PROSE_LANGUAGE_ROW =
 // version's ENFORCER_TABLE unchanged.
 export const ENFORCER_TABLE: Record<string, string> = {
   // settings.json registers the guard as the PostToolUse Edit/Write hook on both trees, and
-  // hooks/_lib/mirror_prose.py's warning cites "(MIRROR.md)" for this exact violation.
-  [PROSE_LANGUAGE_ROW]: "hooks/edit/mirror_prose_guard.py",
+  // hooks/_lib/mirror_prose.ts's warning cites "(MIRROR.md)" for this exact violation.
+  [PROSE_LANGUAGE_ROW]: "hooks/edit/mirror_prose_guard.ts",
 };
 
 /** One classified line of an always-loaded file. `enforcer` is present only when `verdict` is
