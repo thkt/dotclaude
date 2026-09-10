@@ -51,3 +51,14 @@ export function withTempRepo<T>(fn: (repo: string) => T): T {
     rmSync(repo, { recursive: true, force: true });
   }
 }
+
+/** The value `git -C repo config gc.auto` reports, or `""` when unset -- what a caller reads to
+ * confirm a repository went through `withTempRepo` rather than a bare `git init`. Five T-419 /
+ * T-420 adoption checks (skills/scribe/tests/verify-run.test.ts, scripts-contract.test.ts,
+ * workflows/assert/tests/worktree.test.ts, workflows/build/tests/diff-files.test.ts,
+ * workflows/code/tests/verify-commit.test.ts) shared this same read inline; centralized here so
+ * the five stay one piece of knowledge instead of five copies. */
+export function gcAutoValue(repo: string): string {
+  const result = spawnSync("git", ["-C", repo, "config", "gc.auto"], { encoding: "utf8" });
+  return result.status === 0 ? result.stdout.trim() : "";
+}

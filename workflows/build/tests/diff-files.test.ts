@@ -34,7 +34,7 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { fixture, runCli, withTempHome, type FixtureCase } from "../../_lib/tests/_cli-fixture.ts";
-import { withTempRepo } from "../../_lib/tests/_git-repo.ts";
+import { gcAutoValue, withTempRepo } from "../../_lib/tests/_git-repo.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "diff-files.ts");
@@ -185,9 +185,7 @@ test(
   "T-420 diff-files and verify-commit create their repositories through the helper",
   () => {
     buildRepo([{ type: "write", path: "a.txt", content: "a\n" }], (repo) => {
-      const result = spawnSync("git", ["-C", repo, "config", "gc.auto"], { encoding: "utf8" });
-      const gcAuto = result.status === 0 ? result.stdout.trim() : "";
-      assert.equal(gcAuto, "0");
+      assert.equal(gcAutoValue(repo), "0");
     });
   },
 );

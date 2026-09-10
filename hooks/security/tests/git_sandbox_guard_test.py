@@ -69,14 +69,7 @@ class TestGitSandboxGuard(unittest.TestCase):
     def fixture_repo(path: Path) -> Path:
         path.mkdir(parents=True)
         _ = subprocess.run(["git", "init", "-q", str(path)], check=True, capture_output=True)
-        _ = subprocess.run(
-            ["git", "-C", str(path), "config", "gc.auto", "0"], check=True, capture_output=True
-        )
-        _ = subprocess.run(
-            ["git", "-C", str(path), "config", "maintenance.auto", "false"],
-            check=True,
-            capture_output=True,
-        )
+        hook_harness.disable_background_git_maintenance(path)
         # resolve() because rev-parse reports a physical path and macOS hands out a
         # symlinked TMPDIR.
         return path.resolve()

@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 import { find, readScenes, SCENES } from "../scripts/find_wiki_rule.ts";
 import { merge, readStore, triage, type Triaged } from "../scripts/triage.ts";
 import { verify, type TriageReport } from "../scripts/verify_run.ts";
-import { GIT_ENV, withTempRepo } from "../../../workflows/_lib/tests/_git-repo.ts";
+import { GIT_ENV, gcAutoValue, withTempRepo } from "../../../workflows/_lib/tests/_git-repo.ts";
 
 // skills/scribe/tests -> skills/scribe -> skills -> repo root, the same climb
 // skills/scribe/tests/find-wiki-rule.test.ts's own REPO_ROOT constant makes.
@@ -134,9 +134,7 @@ test(
     "helper, asserted by the gc.auto value those repositories report",
   () => {
     withTempRepo((repo) => {
-      const result = spawnSync("git", ["-C", repo, "config", "gc.auto"], { encoding: "utf8" });
-      const gcAuto = result.status === 0 ? result.stdout.trim() : "";
-      assert.equal(gcAuto, "0");
+      assert.equal(gcAutoValue(repo), "0");
     });
   },
 );

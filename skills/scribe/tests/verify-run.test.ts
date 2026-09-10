@@ -20,7 +20,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { trackedEntries } from "../../../hooks/_lib/shebang_scope.ts";
 import { runCli, withTempHome } from "../../../workflows/_lib/tests/_cli-fixture.ts";
-import { GIT_ENV, withTempRepo } from "../../../workflows/_lib/tests/_git-repo.ts";
+import { GIT_ENV, gcAutoValue, withTempRepo } from "../../../workflows/_lib/tests/_git-repo.ts";
 import { verify, type TriageReport, type TriageRow } from "../scripts/verify_run.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -281,9 +281,7 @@ test(
   () => {
     withTempRepo((repo) => {
       initWorktree(repo, null);
-      const result = spawnSync("git", ["-C", repo, "config", "gc.auto"], { encoding: "utf8" });
-      const gcAuto = result.status === 0 ? result.stdout.trim() : "";
-      assert.equal(gcAuto, "0");
+      assert.equal(gcAutoValue(repo), "0");
     });
   },
 );

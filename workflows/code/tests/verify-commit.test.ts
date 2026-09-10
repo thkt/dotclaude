@@ -20,7 +20,7 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { runCli } from "../../_lib/tests/_cli-fixture.ts";
-import { withTempRepo } from "../../_lib/tests/_git-repo.ts";
+import { gcAutoValue, withTempRepo } from "../../_lib/tests/_git-repo.ts";
 import { verify } from "../verify-commit.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -325,11 +325,7 @@ test(
   "T-420 diff-files and verify-commit create their repositories through the helper",
   () => {
     withUnitRepo((handle) => {
-      const result = spawnSync("git", ["-C", handle.repo, "config", "gc.auto"], {
-        encoding: "utf8",
-      });
-      const gcAuto = result.status === 0 ? result.stdout.trim() : "";
-      assert.equal(gcAuto, "0");
+      assert.equal(gcAutoValue(handle.repo), "0");
     });
   },
 );
